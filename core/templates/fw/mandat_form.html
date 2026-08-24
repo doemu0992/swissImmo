@@ -1,10 +1,10 @@
 {% extends 'fw/base.html' %}
 {% block title %}{% if ist_neu %}Neuer Eigentümer{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/mandate/" class="hover:text-indigo-600">Mandate</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/mandate/" class="hover:fw-marke">Mandate</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">{% if ist_neu %}Neu{% else %}{{ md.firma_oder_name }}{% endif %}</span>
+    <span class="fw-mutet font-medium">{% if ist_neu %}Neu{% else %}{{ md.firma_oder_name }}{% endif %}</span>
 </nav>
 
 <div class="fw-phead">
@@ -16,104 +16,104 @@
 
 <form method="post" enctype="multipart/form-data" class="max-w-3xl space-y-5">
     {% csrf_token %}
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Eigentümer</h3>
-        <div><label for="md-firma" class="block text-xs font-semibold text-slate-500 mb-1">Name / Firma *</label>
-            <input id="md-firma" name="firma_oder_name" required value="{{ md.firma_oder_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Eigentümer</h3>
+        <div><label for="md-firma" class="block text-xs font-semibold fw-mutet mb-1">Name / Firma *</label>
+            <input id="md-firma" name="firma_oder_name" required value="{{ md.firma_oder_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="md-kontakt" class="block text-xs font-semibold text-slate-500 mb-1">Kontaktperson</label>
-                <input id="md-kontakt" name="kontaktperson" value="{{ md.kontaktperson }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label for="md-email" class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
-                <input id="md-email" type="email" name="email" value="{{ md.email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="md-kontakt" class="block text-xs font-semibold fw-mutet mb-1">Kontaktperson</label>
+                <input id="md-kontakt" name="kontaktperson" value="{{ md.kontaktperson }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="md-email" class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+                <input id="md-email" type="email" name="email" value="{{ md.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <div><label for="md-strasse" class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr.</label>
-            <input id="md-strasse" name="strasse" value="{{ md.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="md-strasse" class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr.</label>
+            <input id="md-strasse" name="strasse" value="{{ md.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label for="md-plz" class="block text-xs font-semibold text-slate-500 mb-1">PLZ</label>
-                <input id="md-plz" name="plz" value="{{ md.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label for="md-ort" class="block text-xs font-semibold text-slate-500 mb-1">Ort</label>
-                <input id="md-ort" name="ort" value="{{ md.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label for="md-telefon" class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
-                <input id="md-telefon" name="telefon" value="{{ md.telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="md-plz" class="block text-xs font-semibold fw-mutet mb-1">PLZ</label>
+                <input id="md-plz" name="plz" value="{{ md.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label for="md-ort" class="block text-xs font-semibold fw-mutet mb-1">Ort</label>
+                <input id="md-ort" name="ort" value="{{ md.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="md-telefon" class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+                <input id="md-telefon" name="telefon" value="{{ md.telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="md-bank" class="block text-xs font-semibold text-slate-500 mb-1">Bankname</label>
-                <input id="md-bank" name="bank_name" value="{{ md.bank_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label for="md-iban" class="block text-xs font-semibold text-slate-500 mb-1">IBAN</label>
-                <input id="md-iban" name="iban" value="{{ md.iban }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-            <div><label for="md-honorar" class="block text-xs font-semibold text-slate-500 mb-1">Verwaltungshonorar (% der Mieterträge)</label>
+            <div><label for="md-bank" class="block text-xs font-semibold fw-mutet mb-1">Bankname</label>
+                <input id="md-bank" name="bank_name" value="{{ md.bank_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="md-iban" class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
+                <input id="md-iban" name="iban" value="{{ md.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
+            <div><label for="md-honorar" class="block text-xs font-semibold fw-mutet mb-1">Verwaltungshonorar (% der Mieterträge)</label>
                 <input id="md-honorar" name="honorar_prozent" type="text" inputmode="decimal" value="{{ md.honorar_prozent|default:'0' }}"
-                       placeholder="z. B. 4.5" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] text-slate-400 mt-1">Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank).</p></div>
+                       placeholder="z. B. 4.5" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <p class="text-[11px] fw-faint mt-1">Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank).</p></div>
         </div>
 
-        <div class="border-t border-slate-100 pt-4">
+        <div class="border-t fw-linie pt-4">
             {% include 'fw/_unterschrift_feld.html' with unterschrift_hinweis="(für Briefe im Namen des Eigentümers)" %}
         </div>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-1">Zugeordnete Liegenschaften</h3>
-        <p class="text-xs text-slate-400 mb-3">Wähle die Liegenschaften, die diesem Eigentümer gehören.</p>
+    <div class="fw-card p-5">
+        <h3 class="font-bold fw-strong text-sm mb-1">Zugeordnete Liegenschaften</h3>
+        <p class="text-xs fw-faint mb-3">Wähle die Liegenschaften, die diesem Eigentümer gehören.</p>
         {# Beleg, dass dieser Block wirklich mitgeschickt wurde — sonst rührt die View die Zuordnung nicht an #}
         <input type="hidden" name="lg_zuordnung" value="1">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto">
             {% for lg in alle_liegenschaften %}
-            <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer text-sm">
-                <input type="checkbox" name="liegenschaften" value="{{ lg.id }}" {% if lg.id in zugeordnet %}checked{% endif %} class="accent-indigo-600">
-                <span class="min-w-0"><span class="font-medium text-slate-800">{{ lg.strasse }}</span>
-                    <span class="text-xs text-slate-400 block">{{ lg.plz }} {{ lg.ort }}{% if lg.eigentuemer and lg.eigentuemer_id != md.id %} · aktuell: {{ lg.eigentuemer.firma_oder_name }}{% endif %}</span></span>
+            <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border fw-linie hover:fw-flaeche2 cursor-pointer text-sm">
+                <input type="checkbox" name="liegenschaften" value="{{ lg.id }}" {% if lg.id in zugeordnet %}checked{% endif %} class="fw-akzent">
+                <span class="min-w-0"><span class="font-medium fw-strong">{{ lg.strasse }}</span>
+                    <span class="text-xs fw-faint block">{{ lg.plz }} {{ lg.ort }}{% if lg.eigentuemer and lg.eigentuemer_id != md.id %} · aktuell: {{ lg.eigentuemer.firma_oder_name }}{% endif %}</span></span>
             </label>
             {% empty %}
-            <p class="text-sm text-slate-400 italic col-span-2">Noch keine Liegenschaften erfasst.</p>
+            <p class="text-sm fw-faint italic col-span-2">Noch keine Liegenschaften erfasst.</p>
             {% endfor %}
         </div>
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>Speichern
         </button>
-        <a href="/neu/mandate/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        <a href="/neu/mandate/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
 </form>
 
 {% if not ist_neu %}
 <!-- Eigentümer-Portal-Zugang -->
-<div class="bg-white rounded-xl border border-slate-200 p-5 mt-5 max-w-3xl">
+<div class="fw-card p-5 mt-5 max-w-3xl">
     <div class="flex items-start justify-between gap-3">
         <div>
-            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-building-user text-indigo-500"></i> Eigentümer-Portal-Zugang</h3>
-            <p class="text-xs text-slate-400 mt-1">Login fürs Portal unter <span class="font-mono">/portal/login/</span> — Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug.</p>
+            <h3 class="font-bold fw-strong text-sm flex items-center gap-2"><i class="fa-solid fa-building-user fw-marke"></i> Eigentümer-Portal-Zugang</h3>
+            <p class="text-xs fw-faint mt-1">Login fürs Portal unter <span class="font-mono">/portal/login/</span> — Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug.</p>
         </div>
         {% if portal_user %}
-        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">Aktiv</span>
+        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-1 rounded-full">Aktiv</span>
         {% else %}
-        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-500 px-2 py-1 rounded-full">Kein Zugang</span>
+        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide fw-flaeche2 fw-mutet px-2 py-1 rounded-full">Kein Zugang</span>
         {% endif %}
     </div>
 
     {% if portal_user %}
-    <div class="mt-3 text-sm text-slate-600">Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span></div>
+    <div class="mt-3 text-sm fw-mutet">Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span></div>
     <div class="mt-3 flex flex-wrap gap-2">
         <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/">{% csrf_token %}
-            <button type="submit" class="text-sm font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-4 py-2 rounded-lg">
+            <button type="submit" class="text-sm font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-4 py-2 rounded-lg">
                 <i class="fa-solid fa-rotate mr-1"></i>Neues Passwort senden
             </button>
         </form>
         <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" onsubmit="return confirm('Portal-Zugang wirklich entfernen?');">{% csrf_token %}
             <input type="hidden" name="aktion" value="entfernen">
-            <button type="submit" class="text-sm font-semibold text-rose-600 border border-rose-200 hover:bg-rose-50 px-4 py-2 rounded-lg">
+            <button type="submit" class="text-sm font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-4 py-2 rounded-lg">
                 <i class="fa-solid fa-user-slash mr-1"></i>Zugang entfernen
             </button>
         </form>
     </div>
     {% else %}
     <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" class="mt-3">{% csrf_token %}
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-key mr-1.5"></i>Portal-Zugang erstellen &amp; senden
         </button>
-        {% if not md.email %}<p class="text-xs text-amber-600 mt-2"><i class="fa-solid fa-triangle-exclamation"></i> Keine E-Mail hinterlegt — die Zugangsdaten werden nach dem Erstellen einmalig angezeigt.</p>{% endif %}
+        {% if not md.email %}<p class="text-xs fw-warnton mt-2"><i class="fa-solid fa-triangle-exclamation"></i> Keine E-Mail hinterlegt — die Zugangsdaten werden nach dem Erstellen einmalig angezeigt.</p>{% endif %}
     </form>
     {% endif %}
 </div>

@@ -34,7 +34,11 @@ from django.test import SimpleTestCase
 
 from core.tests.test_palette import kontrast, MINDESTKONTRAST
 
-BASE = pathlib.Path('core/templates/fw/base.html')
+# Seit E2.10 zweigeteilt: Die REGELN stehen in `fw/_schicht.html`, das
+# `<aside>`-MARKUP weiterhin in `fw/base.html`. Dieser Waechter braucht beides
+# — er vergleicht die benutzten Klassen mit den Regeln, die sie treffen.
+BASE = pathlib.Path('core/templates/fw/_schicht.html')
+MARKUP = pathlib.Path('core/templates/fw/base.html')
 
 #: Die beiden Enden des Verlaufs. Beide müssen bestehen — ein Ton, der nur oben
 #: reicht, ist unten unlesbar, und die Leiste ist an beiden Enden beschriftet.
@@ -56,7 +60,7 @@ def _token(name):
 
 
 def _leisten_block():
-    quelle = _stilblock()
+    quelle = MARKUP.read_text(encoding='utf-8')
     anfang = quelle.index('<aside id="fwSidebar"')
     return quelle[anfang:quelle.index('</aside>', anfang)]
 

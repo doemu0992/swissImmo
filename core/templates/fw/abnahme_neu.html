@@ -2,10 +2,10 @@
 {% block title %}Wohnungsabnahme — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 {% if not embed_base %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:text-indigo-600">{{ v.mieter.display_name }}</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">Wohnungsabnahme</span>
+    <span class="fw-mutet font-medium">Wohnungsabnahme</span>
 </nav>
 {% endif %}
 
@@ -21,89 +21,89 @@
     {% if embed_base %}<input type="hidden" name="embed" value="1">{% endif %}
 
     <!-- Kopf -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Art</label>
-            <select name="typ" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+    <div class="fw-card p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Art</label>
+            <select name="typ" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="auszug" {% if typ_default == 'auszug' %}selected{% endif %}>Auszug / Rücknahme</option>
                 <option value="einzug" {% if typ_default == 'einzug' %}selected{% endif %}>Einzug / Übergabe</option>
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Datum</label>
-            <input type="date" name="datum" value="{{ heute }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Abnahme durch</label>
-            <input name="verwalter_name" value="{{ verwalter_default }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Allgemeinzustand</label>
-            <select name="allgemein_zustand" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Datum</label>
+            <input type="date" name="datum" value="{{ heute }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Abnahme durch</label>
+            <input name="verwalter_name" value="{{ verwalter_default }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Allgemeinzustand</label>
+            <select name="allgemein_zustand" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="neuwertig">Neuwertig</option><option value="gut" selected>Gut</option>
                 <option value="gebraucht">Gebraucht</option><option value="renovationsbeduerftig">Renovationsbedürftig</option>
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Schlüssel zurück</label>
-            <input name="schluessel_anzahl" type="number" min="0" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <label class="flex items-center gap-2 text-sm text-slate-700 mt-6"><input type="checkbox" name="mieter_anwesend" checked class="accent-indigo-600">Mieter anwesend</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Schlüssel zurück</label>
+            <input name="schluessel_anzahl" type="number" min="0" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <label class="flex items-center gap-2 text-sm fw-ink mt-6"><input type="checkbox" name="mieter_anwesend" checked class="fw-akzent">Mieter anwesend</label>
     </div>
 
     <!-- Zählerstände -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-3">Zählerstände</h3>
+    <div class="fw-card p-5">
+        <h3 class="font-bold fw-strong text-sm mb-3">Zählerstände</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <input name="zaehler_strom" placeholder="Strom kWh" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-            <input name="zaehler_wasser" placeholder="Wasser m³" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-            <input name="zaehler_gas" placeholder="Gas/Wärme" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <input name="zaehler_strom" placeholder="Strom kWh" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <input name="zaehler_wasser" placeholder="Wasser m³" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <input name="zaehler_gas" placeholder="Gas/Wärme" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
         </div>
     </div>
 
     <!-- Mängel -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="fw-card p-5">
         <div class="flex items-center justify-between mb-3">
-            <h3 class="font-bold text-slate-800 text-sm">Mängel / Zustand je Raum</h3>
-            <button type="button" onclick="addMangel()" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Mangel</button>
+            <h3 class="font-bold fw-strong text-sm">Mängel / Zustand je Raum</h3>
+            <button type="button" onclick="addMangel()" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Mangel</button>
         </div>
         <div id="maengel" class="space-y-3"></div>
-        <p class="text-xs text-slate-400 mt-2">Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").</p>
-        <p class="text-[11px] text-slate-400 mt-2 border-t border-slate-100 pt-2"><i class="fa-solid fa-scale-balanced mr-1 text-slate-300"></i>Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
+        <p class="text-xs fw-faint mt-2">Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").</p>
+        <p class="text-[11px] fw-faint mt-2 border-t fw-linie pt-2"><i class="fa-solid fa-scale-balanced mr-1 fw-faint"></i>Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
     </div>
 
     <!-- Abschluss -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Neue Adresse des Mieters</label>
-            <input name="neue_adresse" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bemerkungen</label>
-            <textarea name="bemerkungen" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+    <div class="fw-card p-5 space-y-3">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Neue Adresse des Mieters</label>
+            <input name="neue_adresse" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Bemerkungen</label>
+            <textarea name="bemerkungen" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Unterschrift Mieter (Name)</label>
-                <input name="unterschrift_mieter" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Unterschrift Verwaltung (Name)</label>
-                <input name="unterschrift_verwalter" value="{{ verwalter_default }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Unterschrift Mieter (Name)</label>
+                <input name="unterschrift_mieter" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Unterschrift Verwaltung (Name)</label>
+                <input name="unterschrift_verwalter" value="{{ verwalter_default }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <label class="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" name="abgeschlossen" class="accent-indigo-600">Protokoll abgeschlossen</label>
+        <label class="flex items-center gap-2 text-sm fw-ink"><input type="checkbox" name="abgeschlossen" class="fw-akzent">Protokoll abgeschlossen</label>
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm"><i class="fa-solid fa-check mr-1.5"></i>Protokoll speichern</button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm"><i class="fa-solid fa-check mr-1.5"></i>Protokoll speichern</button>
+        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
 </form>
 
 <template id="mangelTpl">
-    <div class="mangel-row border border-slate-100 rounded-lg p-2 space-y-2">
+    <div class="mangel-row border fw-linie rounded-lg p-2 space-y-2">
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <select name="m_raum" class="col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
+            <select name="m_raum" class="col-span-3 fw-flaeche2 rounded-lg text-sm px-2 py-2">
                 {% for r in raeume %}<option>{{ r }}</option>{% endfor %}
             </select>
-            <input name="m_beschreibung" placeholder="Mangel beschreiben" class="col-span-4 bg-slate-100 rounded-lg text-sm px-3 py-2">
-            <select name="m_verursacher" class="col-span-2 bg-slate-100 rounded-lg text-sm px-2 py-2">
+            <input name="m_beschreibung" placeholder="Mangel beschreiben" class="col-span-4 fw-flaeche2 rounded-lg text-sm px-3 py-2">
+            <select name="m_verursacher" class="col-span-2 fw-flaeche2 rounded-lg text-sm px-2 py-2">
                 <option value="abnutzung">Abnutzung</option><option value="mieter">Mieter</option><option value="vermieter">Vermieter</option>
             </select>
-            <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="col-span-1 bg-slate-100 rounded-lg text-sm px-2 py-2 text-right" title="Reparatur-/Ersatzkosten">
-            <label class="col-span-1 text-center cursor-pointer text-slate-400 hover:text-indigo-600" title="Foto"><i class="fa-solid fa-camera"></i><input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
-            <button type="button" onclick="this.closest('.mangel-row').remove()" title="Diesen Mangel entfernen" class="col-span-1 text-slate-300 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+            <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="col-span-1 fw-flaeche2 rounded-lg text-sm px-2 py-2 text-right" title="Reparatur-/Ersatzkosten">
+            <label class="col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="Foto"><i class="fa-solid fa-camera"></i><input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
+            <button type="button" onclick="this.closest('.mangel-row').remove()" title="Diesen Mangel entfernen" class="col-span-1 fw-faint hover:fw-kritisch"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <span class="col-span-3 text-[11px] text-slate-400 text-right pr-1"><i class="fa-solid fa-clipboard-list mr-1"></i>Raumbuch-Element</span>
-            <select name="m_ausstattung" class="col-span-6 bg-slate-50 rounded-lg text-xs px-2 py-1.5 text-slate-600">
+            <span class="col-span-3 text-[11px] fw-faint text-right pr-1"><i class="fa-solid fa-clipboard-list mr-1"></i>Raumbuch-Element</span>
+            <select name="m_ausstattung" class="col-span-6 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 fw-mutet">
                 <option value="">— kein Element (voller Betrag) —</option>
                 {% for el in elemente %}<option value="{{ el.id }}">{{ el.raum }} · {{ el.kategorie }}{% if el.einbau_datum %} ({{ el.einbau_datum|date:"Y" }}){% endif %}</option>{% endfor %}
             </select>
-            <input name="m_neuwert" inputmode="decimal" placeholder="Neuwert CHF" class="col-span-3 bg-slate-50 rounded-lg text-xs px-2 py-1.5 text-right text-slate-600" title="Neuwert (optional, sonst vom Element)">
+            <input name="m_neuwert" inputmode="decimal" placeholder="Neuwert CHF" class="col-span-3 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 text-right fw-mutet" title="Neuwert (optional, sonst vom Element)">
         </div>
     </div>
 </template>

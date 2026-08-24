@@ -1,0 +1,906 @@
+/*
+DIE KOMPONENTENSCHICHT — Tokens und `fw-*`-Bausteine.
+
+WARUM SIE SEIT E2.10 IN EINER EIGENEN DATEI STEHT
+
+Bis hierher lag sie im <style>-Block von `fw/base.html`. Wer nicht von dieser
+Huelle erbt, sah sie nie — und das betraf ausgerechnet die zwei dichtesten
+Vorlagen der Anwendung: `schaden_melden.html` (264 Farbklassen) und
+`public_bewerbung_form.html` (205). In E2.3 waren beide bereits umgestellt und
+mussten zurueckgenommen werden, weil sie unformatiert gerendert haetten — die
+Seiten, die MIETER UND BEWERBER sehen.
+
+Jetzt ist die Schicht ein eigener Baustein, den beide Huellen einbinden:
+`fw/_assets.html` (Anwendung) und `core/_assets_aussen.html` (Aussenseiten).
+
+WAS DAS FUER DIE AUSSENSEITEN BEDEUTET
+
+Sie bekommen damit die Petrol-Tokens. Das ist eine Aenderung an dem, was
+Dritte sehen, und ausdruecklich entschieden: Mieterportal und
+Bewerbungsformular tragen dieselbe Marke wie die Anwendung, statt in
+Tailwinds Voreinstellung zu bleiben. Der Dunkelmodus folgt ihnen mit.
+
+DIESE DATEI IST REIN ADDITIV. Alle Klassen tragen `fw-`; sie kollidieren
+weder mit Tailwind noch mit dem Bestand.
+*/
+    <style>
+        body { font-family: 'IBM Plex Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--ds-line); border-radius: 10px; }
+
+        /* ============================================================
+           DESIGN-SYSTEM (fw-*) — theme-fähige Komponenten-Ebene.
+           Token-Variablen (Hell/Dunkel via prefers-color-scheme UND
+           dem manuellen [data-theme]-Umschalter), darunter wieder-
+           verwendbare Bausteine. Rein additiv, alle Klassen `fw-`-
+           präfixiert → keine Kollision mit Tailwind oder Bestand.
+           Seiten werden Stück für Stück auf diese Klassen portiert.
+           ============================================================ */
+        /* Palette nach mockups/konzept-v3 bis v6 (Phase 4b).
+           Der Bestand fuhr Indigo #4f46e5 auf Slate; das Konzept fuehrt Petrol
+           auf waermeren Blaugrautoenen. Radius 16 -> 10 px, weil die Prototypen
+           deutlich flachere Karten zeigen.
+
+           EINE ABWEICHUNG VOM PROTOTYP, bewusst: Dessen `--ds-faint` #7f959c
+           erreicht auf Weiss nur 3.14:1 und verfehlt WCAG AA. Die Prototypen
+           entstanden ohne Kontrastpruefung. Hier steht #5c757c (4.89:1) —
+           derselbe Petrolton, eine Stufe dunkler. Die Regel weiter unten haengt
+           text-slate-400/-300 an --ds-muted; das bleibt unveraendert. */
+        :root{
+            --ds-bg:#eff2f3;--ds-surface:#fff;--ds-surface-2:#f4f7f7;--ds-ink:#0e2227;--ds-muted:#4c6169;--ds-faint:#5c757c;--ds-line:#dde6e8;
+            --ds-brand:#0f6f6a;--ds-brand-600:#0b5450;--ds-brand-soft:#d9efed;
+            /* Eine Stufe deutlicher als die Grundlinie: fuer Umrandungen,
+               die beim Ueberfahren hervortreten sollen. */
+            --ds-line-stark:#c2d2d4;
+            /* Text auf der dunklen Seitenleiste (B4).
+               Der Wert ist in allen drei Bloecken DERSELBE, und das ist Absicht:
+               Die Leiste traegt ihren dunklen Verlauf unabhaengig vom Modus, es
+               gibt also keinen zweiten Grund, gegen den zu rechnen waere.
+               Trotzdem steht er ueberall — `test_ds_tokens` verlangt zu Recht,
+               dass jedes Token in jedem Block definiert ist. Ein Token, das nur
+               im Hellsatz steht, faellt im Dunkeln stillschweigend auf den
+               Hellwert zurueck; heute ist das derselbe Wert, morgen vielleicht
+               nicht mehr. Die Regel schuetzt vor genau diesem leisen Fehler. */
+            --ds-auf-dunkel:#a8c0c5;
+            --ds-good:#166534;--ds-good-soft:#e0f2e5;--ds-warn:#a35a09;--ds-warn-soft:#fbeeda;--ds-crit:#b32133;--ds-crit-soft:#fbe6e9;--ds-info:#0b5c8f;--ds-info-soft:#e0eff8;
+            --ds-shadow-sm:0 1px 2px rgba(14,34,39,.06);--ds-shadow:0 1px 2px rgba(14,34,39,.05),0 6px 20px rgba(14,34,39,.05);
+            --ds-radius:10px;--ds-radius-sm:7px;--ds-pill:999px;
+        }
+        @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+            --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
+            --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-line-stark:#33474d;
+            --ds-auf-dunkel:#a8c0c5;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
+            --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
+            --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+        }}
+        :root[data-theme="dark"]{
+            --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
+            --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-line-stark:#33474d;
+            --ds-auf-dunkel:#a8c0c5;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
+            --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
+            --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+        }
+        .fw-num{font-variant-numeric:tabular-nums}
+        /* A11y-Fundament: Kontrast + Tastatur-Fokus (wirkt global auf /neu) */
+        /* text-slate-400 (#94a3b8 = 2.56:1) und -300 (1.48:1) erfüllen WCAG AA nicht.
+           Nur die Textfarbe auf --ds-muted (≥4.5:1, theme-aware) anheben — Border/BG unberührt. */
+        .text-slate-400{color:var(--ds-muted)!important}
+        .text-slate-300{color:var(--ds-muted)!important}
+        /* ABER NICHT IN DER SEITENLEISTE (B4, E0.3).
+           --ds-muted ist fuer helle Flaechen gerechnet: 8.4:1 auf --ds-surface.
+           Die Seitenleiste hat einen dunklen Verlauf (#122b31 -> #0a1c20); dort
+           erreicht derselbe Wert nur 2.28:1 — die Eintraege «Vermieten», «Geld»,
+           «Uebersichten» waren kaum lesbar. Die Regel oben war also richtig
+           gedacht und an einer Stelle falsch angewandt.
+           `text-slate-500` steht hier mit, weil die Leiste es benutzt (Gruppen-
+           knopf, Einstellungen) und die Regel oben es gar nicht erfasste: 3.03:1.
+           --ds-auf-dunkel erreicht 7.78:1 oben und 9.18:1 unten; Weiss bleibt
+           dem aktiven Eintrag vorbehalten (14.83:1), damit die Stufung sichtbar
+           bleibt. Bewacht von core/tests/test_kontrast_leiste.py. */
+        #fwSidebar .text-slate-300,
+        #fwSidebar .text-slate-400,
+        #fwSidebar .text-slate-500,
+        #fwSidebar .text-slate-600{color:var(--ds-auf-dunkel)!important}
+        /* Beim Ueberfahren wird es heller, nicht gleich hell: sonst waere der
+           Zustand `hover` von `normal` nicht zu unterscheiden. */
+        #fwSidebar .hover\:text-slate-300:hover{color:#ffffff!important}
+        /* Sichtbarer Fokusring nur bei Tastaturnavigation (kein Maus-Klick-Ring) */
+        a:focus-visible,button:focus-visible,summary:focus-visible,[role="button"]:focus-visible,
+        input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+            outline:2px solid var(--ds-brand);outline-offset:2px;border-radius:6px
+        }
+        /* Seitenkopf */
+        .fw-phead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+        .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:800;color:var(--ds-ink)}
+        .fw-phead p{font-size:13px;color:var(--ds-muted);margin-top:2px}
+        /* Buttons */
+        .fw-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;text-decoration:none;padding:9px 14px;border-radius:var(--ds-radius-sm);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
+        .fw-btn:hover{border-color:var(--ds-brand)}
+        .fw-btn.fw-primary{background:var(--ds-brand);color:#fff;border-color:transparent}
+        .fw-btn.fw-primary:hover{background:var(--ds-brand-600);border-color:transparent}
+        /* Farbiger Schatten unter einem Markenknopf. `shadow-indigo-600/25`
+           war zur Bauzeit auf Petrol festgeschrieben; ueber den Token folgt er
+           dem Dunkelmodus und spaeterem Branding. `color-mix` faellt in alten
+           Browsern still auf keinen Schatten zurueck — ein Schatten ist
+           Beiwerk, sein Fehlen kostet keine Information. */
+        .fw-schatten-marke{box-shadow:0 4px 14px color-mix(in srgb, var(--ds-brand) 25%, transparent)}
+        /* Farbige Schatten fuer die zwei uebrigen Bedeutungen. Beiwerk:
+           Wo `color-mix` fehlt, bleibt der Schatten aus, ohne dass
+           Information verloren geht. */
+        .fw-schatten-gut{box-shadow:0 4px 14px color-mix(in srgb, var(--ds-good) 25%, transparent)}
+        .fw-ring-krit{box-shadow:0 0 0 3px color-mix(in srgb, var(--ds-crit) 35%, transparent)}
+        /* Knoepfe mit Bedeutung. Ein Loeschknopf ist rot, weil Rot «Achtung»
+           heisst — nicht, weil `bg-rose-600` gerade zur Hand war. Ueber Tokens
+           folgen sie Dunkelmodus und Branding wie alles andere.
+           Die Schrift bleibt weiss: Sie steht auf einer gesaettigten Flaeche
+           und ist dort nicht tokenabhaengig. */
+        .fw-btn.fw-gefahr{background:var(--ds-crit);color:#fff;border-color:transparent}
+        .fw-btn.fw-gefahr:hover{filter:brightness(.92);border-color:transparent}
+        .fw-btn.fw-warnknopf{background:var(--ds-warn);color:#fff;border-color:transparent}
+        .fw-btn.fw-warnknopf:hover{filter:brightness(.92);border-color:transparent}
+        .fw-btn.fw-gutknopf{background:var(--ds-good);color:#fff;border-color:transparent}
+        .fw-btn.fw-gutknopf:hover{filter:brightness(.92);border-color:transparent}
+        /* KPI-Kacheln */
+        .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:16px}
+        .fw-kpi{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:14px;padding:15px 16px;box-shadow:var(--ds-shadow);display:flex;flex-direction:column;gap:2px}
+        .fw-kpi.fw-accent{background:linear-gradient(150deg,color-mix(in srgb,var(--ds-brand) 12%,var(--ds-surface)),var(--ds-surface))}
+        .fw-kpi .fw-l{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--ds-faint);font-weight:600}
+        .fw-kpi .fw-v{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-kpi .fw-v.fw-crit{color:var(--ds-crit)}.fw-kpi .fw-v.fw-warn{color:var(--ds-warn)}.fw-kpi .fw-v.fw-good{color:var(--ds-good)}
+        .fw-kpi .fw-f{font-size:11.5px;color:var(--ds-muted)}
+        /* Karte */
+        .fw-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);margin-bottom:16px;overflow:hidden}
+        .fw-card>.fw-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--ds-line)}
+        .fw-card>.fw-h .fw-t{font-weight:700;font-size:14px;color:var(--ds-ink)}
+        .fw-card>.fw-h .fw-t small{color:var(--ds-faint);font-weight:500;font-size:12px;margin-left:6px}
+        .fw-card>.fw-h .fw-r{margin-left:auto;display:flex;gap:6px;align-items:center}
+        /* Tabelle (nur mit .fw-table — global bleibt unberührt) */
+        .fw-tablewrap{overflow-x:auto}
+        table.fw-table{width:100%;border-collapse:collapse;font-size:13px}
+        table.fw-table thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600;padding:11px 18px;border-bottom:1px solid var(--ds-line);white-space:nowrap}
+        table.fw-table tbody td{padding:12px 18px;border-bottom:1px solid var(--ds-line);color:var(--ds-ink)}
+        table.fw-table tbody tr:last-child td{border-bottom:0}
+        table.fw-table tbody tr:hover{background:var(--ds-brand-soft)}
+        table.fw-table td.fw-right,table.fw-table th.fw-right{text-align:right;white-space:nowrap}
+        /* Mockup-Optik: Marken-Ton als Zeilen-Hover fuer alle Tabellen in Karten (global) */
+        .fw-card tbody tr:hover{background:var(--ds-brand-soft)}
+        .fw-strong{font-weight:600;color:var(--ds-ink)}.fw-sub2{color:var(--ds-faint);font-size:12px}
+        /* Chips */
+        .fw-chip{font-size:11px;font-weight:700;padding:2px 9px;border-radius:var(--ds-pill);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+        .fw-chip.fw-good{background:var(--ds-good-soft);color:var(--ds-good)}.fw-chip.fw-warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
+        .fw-chip.fw-crit{background:var(--ds-crit-soft);color:var(--ds-crit)}.fw-chip.fw-info{background:var(--ds-info-soft);color:var(--ds-info)}
+        .fw-chip.fw-brand{background:var(--ds-brand-soft);color:var(--ds-brand-600)}.fw-chip.fw-mut{background:var(--ds-surface-2);color:var(--ds-muted)}
+        .fw-chip.fw-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+        /* Filter-Chips */
+        .fw-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+        .fw-fchip{font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-muted);cursor:pointer;text-decoration:none}
+        .fw-fchip.fw-on{background:var(--ds-brand-soft);color:var(--ds-brand-600);border-color:transparent}
+        /* Raster */
+        .fw-grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+        @media (max-width:860px){.fw-grid2{grid-template-columns:1fr}}
+        /* Die Portfolio-Karten (`.fw-pcards`/`.fw-pcard`) und der Vermietungs-
+           balken (`.fw-bar`) standen bis Etappe 4b.15 hier. Ihre einzige
+           Verwendung war die Liegenschaftsliste; die zeigt jetzt eine Zeile je
+           Objekt statt einer Karte (siehe faelle/liegenschaften.py). Regeln
+           ohne Verwendung sind hier nicht harmlos: Diese Datei liefert ihr CSS
+           inline mit JEDER Seite aus. Wer die Karten zurueckholt, holt auch
+           die Regeln zurueck — aus der Versionsgeschichte, nicht aus einer
+           auskommentierten Leiche. */
+        /* Chart + Donut */
+        svg.fw-chart{width:100%;height:150px;display:block}
+        .fw-donut{width:120px;height:120px;border-radius:50%;position:relative;flex:none}
+        .fw-donut::after{content:"";position:absolute;inset:14px;border-radius:50%;background:var(--ds-surface)}
+        .fw-donut .fw-c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+        .fw-donut .fw-c .fw-b{font-size:22px;font-weight:780;color:var(--ds-ink)}
+        .fw-donut .fw-c .fw-s{font-size:10px;color:var(--ds-faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+        .fw-dleg{display:flex;flex-direction:column;gap:8px;font-size:13px;flex:1;min-width:120px;color:var(--ds-ink)}
+        .fw-dleg .fw-r{display:flex;align-items:center;gap:9px}.fw-dleg .fw-r i{width:10px;height:10px;border-radius:3px;flex:none}.fw-dleg .fw-r .fw-n{margin-left:auto;font-weight:700}
+        .fw-avci{width:30px;height:30px;border-radius:50%;background:var(--ds-brand-soft);color:var(--ds-brand-600);display:grid;place-items:center;font-weight:700;font-size:11px;flex:none}
+        /* Info-Karten für Detailseiten: Icon-Kopf + Key/Value-Zeilen (Mockup-Look) */
+        .fw-nomb{margin-bottom:0}
+        .fw-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;font-size:13px}
+        .fw-ic.b{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+        .fw-ic.g{background:var(--ds-good-soft);color:var(--ds-good)}
+        .fw-ic.i{background:var(--ds-info-soft);color:var(--ds-info)}
+        .fw-ic.w{background:var(--ds-warn-soft);color:var(--ds-warn)}
+        .fw-ic.c{background:var(--ds-crit-soft);color:var(--ds-crit)}
+        .fw-cbody{padding:4px 16px 10px}
+        .fw-kv{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--ds-line) 55%,transparent);font-size:13px}
+        .fw-kv:last-child{border-bottom:0}
+        .fw-kv dt{color:var(--ds-muted)}
+        .fw-kv dd{color:var(--ds-ink);font-weight:600;text-align:right}
+        .fw-kv dd.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+        .fw-subhead{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ds-faint);font-weight:800;padding:10px 0 1px}
+        /* Zahlenspalten immer mit gleich breiten Ziffern — sonst «tanzen» die
+           Beträge untereinander und Spaltensummen lassen sich nicht mit dem Auge
+           prüfen. Zentral statt in jedem Template, damit keine Tabelle vergessen
+           geht (Praxis-Audit). Rechtsbündige Zellen sind hier immer Zahlen. */
+        table td.text-right, table th.text-right { font-variant-numeric: tabular-nums; }
+        /* Auf dem Desktop ist die Wert-Hülle wirkungslos — display:contents
+           lässt die Zelle exakt so aussehen wie ohne sie. */
+        .fw-wert { display: contents; }
+        /* ---- Tabellen auf dem Handy: gestapelt statt quer scrollbar ----
+           Eine breite Tabelle in einem overflow-x-auto zwang zum Querscrollen —
+           man sah entweder die Bezeichnung ODER den Betrag, nie beides. Unter
+           768 px wird jede Zeile deshalb zu einer Karte: links die Spalten-
+           überschrift, rechts der Wert. Die Beschriftungen setzt das Skript am
+           Seitenende aus dem <thead>, damit das ohne Eingriff in die ~40
+           Tabellen-Templates greift und auch für neue Tabellen gilt. */
+        @media (max-width: 767px) {
+            /* Tabellen ohne Kopfzeile lassen sich nicht beschriften und werden
+               daher nicht gestapelt. Sie sind in der Praxis schmal (Nummer ·
+               Bezeichnung · Betrag); dort reicht es, die erzwungene Mindestbreite
+               aufzuheben, damit der Text umbricht statt quer zu scrollen. */
+            table.min-w-max { min-width: 0 !important; }
+            /* display:block auch auf der Tabelle selbst — sonst steckt der Browser
+               die Block-Zeilen in eine anonyme Tabellenzelle und misst die Breite
+               wieder am Inhalt, die Tabelle bleibt also breiter als der Bildschirm. */
+            table[data-stack] { display: block; min-width: 0 !important; width: 100% !important; }
+            table[data-stack] thead { display: none; }
+            table[data-stack] tbody,
+            table[data-stack] tfoot,
+            table[data-stack] tr,
+            table[data-stack] td { display: block; width: auto; }
+            /* Kräftiges Trennband statt Haarlinie: bei vier Feldern pro Zeile
+               verschwimmen die Einträge sonst ineinander und man sieht nicht,
+               wo ein Mieter aufhört und der nächste anfängt.
+               !important ist hier nötig, nicht Bequemlichkeit: Tailwinds
+               «divide-y» setzt auf jeder Zeile ausser der ersten
+               border-bottom-width: 0 — ohne Vorrang bekäme nur die erste Karte
+               ein Trennband und der Rest bliebe an der Haarlinie hängen. */
+            table[data-stack] tr {
+                padding: 0.75rem 1rem;
+                border-top: 0 !important;
+                border-bottom: 8px solid var(--ds-bg) !important;
+            }
+            table[data-stack] tr:last-child { border-bottom: 0 !important; }
+            /* Die LETZTE Karte verlor alle Trennlinien in ihrem Innern.
+               Ursache ist eine Desktop-Regel weiter oben:
+
+                   table.fw-table tbody tr:last-child td { border-bottom: 0 }
+
+               Am Tisch ist sie richtig — sie nimmt der untersten Tabellenzeile
+               die Abschlusslinie. Gestapelt wird aber aus JEDER Zelle eine
+               eigene Zeile, und die Regel loescht dann die Linien zwischen
+               Typ, Flaeche, Status und Mieter — aber nur beim letzten Eintrag.
+               Real gemeldet am 20.08.2026 an der Objektliste einer
+               Liegenschaft: Der Parkplatz stand zuunterst und sah als
+               einziger anders aus als die Wohnungen darueber.
+
+               Hoehere Spezifitaet statt !important: `[data-stack].fw-table`
+               schlaegt `.fw-table` sauber, und die Regel greift nur bei
+               Tabellen, die diese Desktop-Regel ueberhaupt betrifft. */
+            table[data-stack].fw-table tbody tr:last-child td {
+                border-bottom: 1px solid var(--ds-line);
+            }
+            /* Dieselbe Trennung für die handgebauten Karten-Listen (Liegenschaften,
+               Objekte, Personen, Verträge, Debitoren, Journal, Kontoblatt). Die sind
+               keine gestapelten Tabellen, hatten also weiter nur die Haarlinie von
+               «divide-y» — nebeneinander sah das aus wie zwei verschiedene Regeln.
+               Der Doppel-Selektor trifft genau diese Listen: nur mobil sichtbar UND
+               unterteilt, das ist per Konstruktion eine Karten-Liste. */
+            .md\:hidden.divide-y > * + * { border-top: 8px solid var(--ds-bg) !important; }
+            /* Aufklapp-Gruppen (Objekte je Liegenschaft, Hypotheken je
+               Liegenschaft) sitzen zu mehreren in EINER Karte und waren nur
+               durch die Haarlinie von «border-b» getrennt — auf dem Handy las
+               sich das wie eine durchgehende Liste ohne Gruppengrenze.
+
+               Eine Stufe dunkler als das Band zwischen einzelnen Einträgen:
+               so bleibt die Hierarchie erkennbar, wenn eine Gruppe offen ist
+               (Gruppengrenze deutlicher als die Trennung ihrer Zeilen). */
+            main details.group.border-b { border-bottom: 8px solid var(--ds-line) !important; }
+            main details.group.border-b:last-child { border-bottom-width: 0 !important; }
+            /* «truncate» im Inhaltsbereich mobil aufheben.
+
+               Auf dem Handy schneidet es genau das weg, was die Zeile
+               identifiziert: «Selzacherstras…», «B..», «Narrezauber Sol…».
+               Auf dem Desktop ist truncate richtig (breite Spalten, eine Zeile
+               pro Datensatz) — mobil ist Platz nach unten, nicht nach rechts.
+
+               Nur innerhalb von <main>: Topbar und Seitenleiste (Benutzername,
+               Menü-Labels) brauchen ihre feste Zeilenhöhe, dort bleibt truncate.
+               Django-seitiges `truncatechars` bleibt ebenfalls unberührt — das
+               kürzt bewusst lange Freitexte und ist keine Layout-Notlösung. */
+            main .truncate {
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                /* break-word, NICHT anywhere: `anywhere` senkt auch die
+                   min-content-Breite auf ein Zeichen. Ein Flex-Element daneben
+                   (Betrag, Button) drückt die Textspalte dann bis auf
+                   Buchstabenbreite und der Titel bricht mitten im Wort
+                   («überfälli/ge Forderun/gen») — real gemeldet auf der Inbox.
+                   Mit break-word bleibt das längste Wort die Untergrenze. */
+                overflow-wrap: break-word;
+            }
+            /* Erste Zelle ist die Überschrift der Zeile — ihr Wert benennt den
+               Eintrag («Dominik Gerber»), das Label davor wäre nur Rauschen. */
+            table[data-stack] td[data-stack-titel] {
+                display: block; text-align: left !important;
+                font-size: 1rem; font-weight: 700; color: var(--ds-ink);
+                margin-bottom: 0.15rem;
+            }
+            table[data-stack] td[data-stack-titel]::before { content: none; }
+            table[data-stack] td[data-stack-titel] > .fw-wert { text-align: left; }
+            table[data-stack] td {
+                padding: 0.2rem 0 !important;
+                text-align: right !important;
+                /* truncate / nowrap / max-w der Desktop-Spalten aufheben — mobil ist Platz nach unten */
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                max-width: none !important;
+                display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+            }
+            table[data-stack] td::before {
+                content: attr(data-label);
+                flex: 0 0 auto;
+                text-align: left;
+                font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+                text-transform: uppercase; color: var(--ds-faint);
+            }
+            /* Der Wert braucht einen eigenen Kasten mit min-width:0 — sonst
+               schrumpft ein Flex-Element nie unter seine Inhaltsbreite und ein
+               breiter Block in der Zelle (z.B. das aufklappbare Kostenaufteilungs-
+               Feld bei den Kreditoren) schiebt die Zeile wieder aus dem Bild. */
+            table[data-stack] td > .fw-wert {
+                display: block; flex: 1 1 auto; min-width: 0;
+                text-align: right; overflow-wrap: anywhere;
+            }
+            /* Zellen ohne Überschrift (Aktionsspalte): kein Label. Leere Zellen ganz weg. */
+            table[data-stack] td[data-label='']::before { content: none; }
+            table[data-stack] td[data-leer] { display: none; }
+            /* Zusammengefasste Zellen (Summenzeilen) über die volle Breite */
+            table[data-stack] td[colspan]::before { content: none; }
+            table[data-stack] tfoot tr { background: var(--ds-surface-2); font-weight: 600; }
+        }
+        /* ---- Tabellen am PC: in die Spalte passen statt quer scrollen ----
+           «min-w-max» stammt aus der Zeit, als dieselbe Tabelle auch das Handy
+           bedienen musste. Seit die Handy-Ansicht gestapelt wird (Block oben),
+           bewirkt es am PC nur noch eines: Die Tabelle wird so breit wie ihr
+           Inhalt, und der Wrapper scrollt quer. Gemessen bei 1440 px Fenster
+           (1134 px Inhaltsspalte, echter Tailwind-Build):
+
+               /neu/debitoren/    1412 px nötig  (+278)
+               /neu/mietzins/     1295 px nötig  (+161)
+               /neu/kreditoren/   1230 px nötig   (+96)
+               /neu/vertraege/    1215 px nötig   (+81)
+
+           Man sah also nie die ganze Zeile — Mahnstufe und Aktionen lagen
+           ausserhalb des Bildes.
+
+           Die Mindestbreite allein aufzuheben bringt NICHTS (gemessen: exakt
+           dieselben 1412 px). Ursache ist «whitespace-nowrap» auf den Text-
+           spalten: eine Zelle, die nicht umbrechen darf, ist ihr eigener
+           Breiten-Boden. Deshalb dürfen linksbündige Textspalten hier
+           umbrechen — rechtsbündige (Beträge, Daten, Aktionsknöpfe) und
+           zentrierte bleiben einzeilig, sonst zerfällt die Zahlenkolonne.
+           Abzeichen behalten ihr nowrap: das sitzt am <span> in der Zelle,
+           nicht an der Zelle selbst.
+
+           Der Wrapper bleibt «overflow-x-auto». Querscrollen soll nicht
+           unmöglich sein (eine Tabelle mit Spalte je Bewerber braucht es
+           weiterhin) — es soll nur nicht der Normalfall sein. */
+        @media (min-width: 768px) {
+            main table.min-w-max { min-width: 100%; }
+            main table.min-w-max td:not(.text-right):not(.text-center) {
+                white-space: normal;
+                overflow-wrap: break-word;
+            }
+            /* Ab sieben Spalten sind 2×20 px Innenabstand je Spalte über
+               280 px allein für Luft — dann lieber enger als hoch. Der
+               Umbruch oben lässt die Debitoren-Zeile sonst von 49 auf 89 px
+               wachsen; mit dem engeren Abstand sind es 69 px, bei den
+               Kreditoren bleibt es bei den ursprünglichen 59 px.
+               Tabellen mit weniger Spalten passten ohnehin und bleiben
+               unverändert. Kennt ein Browser :has() nicht, fällt nur diese
+               Feinheit weg — die Tabelle passt trotzdem. */
+            main table.min-w-max:has(thead th:nth-child(7)) th.px-5,
+            main table.min-w-max:has(thead th:nth-child(7)) td.px-5 {
+                padding-left: 0.75rem; padding-right: 0.75rem;
+            }
+            /* Ab neun Spalten noch eine Stufe enger. Auf einem 1280-px-Laptop
+               (974 px Inhaltsspalte) fehlten den Debitoren sonst genau 16 px —
+               vom Papierkorb blieb die Hälfte im Bild. Die 8 px sparen 72 px
+               und senken die Zeile dort zusätzlich von 89 auf 69 px, weil die
+               Textspalten weniger umbrechen müssen. */
+            main table.min-w-max:has(thead th:nth-child(9)) th.px-5,
+            main table.min-w-max:has(thead th:nth-child(9)) td.px-5 {
+                padding-left: 0.5rem; padding-right: 0.5rem;
+            }
+        }
+        /* Auf einem schmalen Fenster ist die Aktionsspalte oft die breiteste
+           von allen (Debitoren 192 px, Kreditoren 341 px — mehr als jede
+           Datenspalte). Dort dürfen die Knöpfe umbrechen statt die ganze
+           Tabelle wegzuschieben. Nur unterhalb 1280 px: auf breiten Schirmen
+           bleibt die Aktionszeile wie gewohnt einzeilig.
+           `:has(a, button)` trennt Aktions- von Datenzellen — eine letzte
+           Spalte mit einem Betrag darf nicht umbrechen. */
+        @media (min-width: 768px) and (max-width: 1279px) {
+            main table.min-w-max tbody td:last-child:has(a, button) {
+                white-space: normal;
+            }
+        }
+        /* iOS: native date/month/time-Felder haben eine Eigenbreite, die w-full
+           ignoriert und aus dem Container läuft. Auf Containerbreite zwingen. */
+        input[type="date"], input[type="month"], input[type="week"],
+        input[type="time"], input[type="datetime-local"] {
+            -webkit-appearance: none; appearance: none;
+            min-width: 0; max-width: 100%; box-sizing: border-box;
+        }
+        /* Einklappbare Sidebar — nur auf Desktop (ab lg); mobil ist es ein Drawer */
+        @media (min-width: 1024px) {
+            #fwSidebar { transition: width .18s ease; }
+            html._sbc #fwSidebar { width: 4.5rem; }
+            html._sbc #fwSidebar .sb-label,
+            html._sbc #fwSidebar .sb-section,
+            html._sbc #fwSidebar .sb-filter,
+            html._sbc #fwSidebar .sb-logotext,
+            html._sbc #fwSidebar .sb-footlabel { display: none !important; }
+            html._sbc #fwSidebar .sb-item { justify-content: center; gap: 0; }
+            html._sbc #fwSidebar .sb-logo { justify-content: center; }
+            html._sbc #fwSidebar .sb-collapse-icon { transform: rotate(180deg); }
+            html._sbc #fwSidebar .sb-sub { display: none !important; }
+        }
+        /* Aufklapp-Pfeil der Navigationsgruppen */
+        .nav-open .sb-chev i { transform: rotate(90deg); }
+        /* Embed-Modus (im Modal geladen): Sidebar/Topbar aus, Inhalt füllt das Fenster */
+        html._embed #fwSidebar,
+        html._embed header,
+        html._embed #fwBackdrop { display: none !important; }
+        html._embed main { padding: 1.25rem !important; max-width: none !important; }
+    
+        /* ---- Aktenrahmen nach mockups/konzept-v3 (Phase 4b) --------------
+           Nur Tokens, die in :root oben tatsaechlich definiert sind. Der
+           Test core/tests/test_ds_tokens.py prueft das nach — eine frühere
+           Fassung benutzte --ds-brand-100 und --ds-line-stark, die es nie
+           gab, und machte die Regeln damit unwirksam. */
+                /* Leseansicht der Akte: Gruppen aus Bezeichnung und Wert (Phase 4b).
+           Ersetzt die frueheren Karten-Paare mit eingestreuten Formularen. */
+                .fw-leer{padding:26px 16px;text-align:center;font-size:13px;color:var(--ds-faint);font-style:italic}
+        /* ===== GRUNDVOKABULAR DER SCHICHT (E2) =====================
+           Die kleinsten Bausteine: eine Flaeche, eine Linie, ein Textton.
+           Sie ersetzen die fest verdrahteten Tailwind-Farbklassen, von denen
+           es am 23.08.2026 noch 7444 in 135 Vorlagen gab
+           (`core/tests/test_farbklassen.py` zaehlt sie abwaerts).
+
+           WARUM ES SIE BRAUCHT
+           `bg-white` bleibt weiss — auch im Dunkelmodus, auch wenn ein Mandant
+           eine eigene Akzentfarbe hat. `fw-flaeche` zeigt auf ein Token und
+           folgt beidem. Dasselbe fuer Linien und Textstufen.
+
+           NAMEN AUF DEUTSCH, wie der Rest der Schicht (`fw-mutet`,
+           `fw-strong`, `fw-klein`): Wer eine Vorlage liest, soll nicht
+           zwischen zwei Sprachen springen.
+
+           `fw-linie` setzt NUR die Farbe — die Breite kommt weiterhin von
+           Tailwinds `border`, `border-t` &c. Das ist Absicht: Wo eine Linie
+           liegt, ist Layout und gehoert in die Vorlage; WELCHE Farbe sie hat,
+           ist Gestaltung und gehoert hierher.
+           ========================================================== */
+        .fw-flaeche{background:var(--ds-surface)}
+        .fw-flaeche2{background:var(--ds-surface-2)}
+        .fw-linie{border-color:var(--ds-line)}
+        .fw-linie-stark{border-color:var(--ds-line-stark)}
+        .hover\:fw-linie-stark:hover{border-color:var(--ds-line-stark)}
+        .fw-ink{color:var(--ds-ink)}
+        .fw-faint{color:var(--ds-faint)}
+        .fw-marke{color:var(--ds-brand)}
+        .fw-markenflaeche{background:var(--ds-brand-soft)}
+        .fw-kritisch{color:var(--ds-crit)}
+        .fw-gut{color:var(--ds-good)}
+        .fw-linie-gut{border-color:var(--ds-good)}
+        .fw-gut-flaeche{background:var(--ds-good-soft)}
+        .fw-krit-flaeche{background:var(--ds-crit-soft)}
+        .fw-warn-flaeche{background:var(--ds-warn-soft)}
+        .fw-info-flaeche{background:var(--ds-info-soft)}
+        /* Eigener Ton fuer sicherheitsrelevante Protokolleintraege. Keine
+           Wertung: Eine Anmeldung ist weder gut noch schlecht, sondern
+           bemerkenswert. Bis E2.7 war das Violett; seither fiel es mit
+           `finanzen` auf denselben Info-Ton zusammen und der Unterschied,
+           den das Logbuch machen wollte, war weg. */
+        /* Sicherheitsereignisse heben sich durch UMKEHRUNG ab, nicht durch
+           einen zweiten Farbton: dunkle Flaeche, helle Schrift. Damit bleibt
+           die Anwendung einfarbig (Entscheid 4b.6, bewacht von
+           `EinFarbtonTests`) und der Eintrag trotzdem unverwechselbar — er
+           ist der einzige mit invertierter Darstellung.
+           Beide Werte kippen im Dunkelmodus gemeinsam, die Umkehrung bleibt
+           also in beiden Darstellungen lesbar. */
+        .fw-merk{color:var(--ds-surface)}
+        .fw-merk-flaeche{background:var(--ds-ink)}
+        .fw-linie-marke{border-color:var(--ds-brand)}
+        .fw-linie-krit{border-color:var(--ds-crit)}
+        .fw-linie-warn{border-color:var(--ds-warn)}
+        .fw-info{color:var(--ds-info)}
+        /* Bedienelemente: Haken, Schieber und Fokusringe faerbt der Browser
+           selbst — `accent-color` und `outline` sind die einzigen Wege dorthin.
+
+           NACHGEMESSEN, WEIL DIE ERSTE BEGRUENDUNG NICHT TRUG: Hier stand,
+           ohne diese zwei Zeilen blieben «indigoblaue Haken neben
+           petrolfarbenen Knoepfen» stehen. Das stimmt nicht — die Palette in
+           `tailwind.palette.js` definiert `indigo` auf die Marke um, und im
+           Bau steht tatsaechlich `.accent-indigo-600{accent-color:#0f6f6a}`.
+           Die Haken sind also laengst petrol.
+
+           Der Gewinn ist ein anderer, und er ist echt: `accent-indigo-600`
+           steht zur BAUZEIT auf einer festen Farbe. `var(--ds-brand)` folgt
+           dem Token — also dem Dunkelmodus und spaeter der Akzentfarbe je
+           Mandant (D3). Genau das kann die Palette nicht leisten.
+
+           `accent-indigo` steht noch in 17 weiteren Vorlagen. Sie sehen heute
+           richtig aus und fallen erst auf, wenn Branding kommt. */
+        .fw-akzent{accent-color:var(--ds-brand)}
+        /* Ein Haken, der Loeschen bedeutet, ist rot — auch der Haken selbst.
+           `accent-color` ist der einzige Weg dorthin (siehe fw-akzent). */
+        .fw-akzent-krit{accent-color:var(--ds-crit)}
+        .fw-akzent-warn{accent-color:var(--ds-warn)}
+        /* Warnring um ein Feld, das Aufmerksamkeit braucht. */
+        .fw-ring-warn{box-shadow:0 0 0 3px color-mix(in srgb, var(--ds-warn) 35%, transparent)}
+        /* Abdunkelung hinter einem Dialog. Bewusst KEIN Token: Ein Vorhang
+           ist in beiden Darstellungen dunkel — im Hellmodus, damit der Dialog
+           heraussticht, im Dunkelmodus, damit der Hintergrund zurueckfaellt. */
+        .fw-vorhang{background:rgba(6,20,23,.55)}
+        .fw-fokusring:focus{outline:2px solid var(--ds-brand);outline-offset:2px}
+
+        /* ZUSTAENDE — NACHGETRAGEN, WEIL SIE SEIT E2.1 STILL FEHLTEN
+           ------------------------------------------------------------------
+           `hover:bg-slate-50` funktioniert, weil Tailwind die Regel dafuer
+           ERZEUGT. `hover:fw-flaeche2` funktioniert NICHT: `fw-flaeche2` ist
+           von Hand geschrieben, Tailwind kennt sie nicht und baut folglich
+           auch keine Varianten-Regel. Der Browser sieht dann eine Klasse
+           namens `hover:fw-flaeche2`, auf die keine einzige Regel passt.
+
+           Im Browser nachgemessen (Chromium, echte Seite, echte
+           Stylesheets): unter 292 geladenen Regeln passte KEINE auf
+           `hover:fw-*`, `focus:fw-*`, `file:fw-*` oder `group-hover:fw-*`.
+           Die Umstellung auf die Komponentenschicht hatte damit
+           funktionierende Hover-Zustaende durch tote Klassennamen ersetzt —
+           113 Vorkommen in 17 Vorlagen. Sichtbar wird das nie als Fehler,
+           nur als eine Oberflaeche, die sich nicht mehr regt.
+
+           Dieselbe Messung erklaert die Zeilen darunter ohne Modifikator:
+           `fw-markenflaeche/60` ergab `rgba(0,0,0,0)` — der Opazitaets-Zusatz
+           ist ebenfalls reine Tailwind-Syntax und macht aus einer gueltigen
+           Klasse einen toten Namen. Diese Stellen sind in den Vorlagen auf
+           die Grundklasse zurueckgesetzt.
+
+           `core/tests/test_fw_klassen_wirken.py` haelt das fest: Jede
+           `fw-`-Klasse in einer Vorlage muss von einer Regel getroffen
+           werden. Genau dieser Waechter hat in E2.5 die drei Regeln
+           nachgefordert, die unten dazugekommen sind (`file:fw-flaeche2`,
+           `file:fw-ink`, `hover:fw-warn-flaeche`) — die neu umgestellten
+           Seiten brauchten sie. */
+        .hover\:fw-flaeche2:hover{background:var(--ds-surface-2)}
+        .hover\:fw-markenflaeche:hover{background:var(--ds-brand-soft)}
+        .hover\:fw-krit-flaeche:hover{background:var(--ds-crit-soft)}
+        .hover\:fw-warn-flaeche:hover{background:var(--ds-warn-soft)}
+        .hover\:fw-gut-flaeche:hover{background:var(--ds-good-soft)}
+        .hover\:fw-marke:hover{color:var(--ds-brand)}
+        .hover\:fw-kritisch:hover{color:var(--ds-crit)}
+        .hover\:fw-gut:hover{color:var(--ds-good)}
+        .hover\:fw-ink:hover{color:var(--ds-ink)}
+        .hover\:fw-mutet:hover{color:var(--ds-faint)}
+        .hover\:fw-linie-marke:hover{border-color:var(--ds-brand)}
+        .focus\:fw-linie-marke:focus{border-color:var(--ds-brand)}
+        .hover\:fw-linie-krit:hover{border-color:var(--ds-crit)}
+        .hover\:fw-linie-gut:hover{border-color:var(--ds-good)}
+        .hover\:fw-linie-warn:hover{border-color:var(--ds-warn)}
+        .hover\:fw-balken:hover{background:var(--ds-line)}
+        .hover\:fw-balken-voll:hover{background:var(--ds-brand)}
+        .focus-within\:fw-markenflaeche:focus-within{background:var(--ds-brand-soft)}
+        .group:hover .group-hover\:fw-marke{color:var(--ds-brand)}
+        /* Dateiwahl-Knopf: der Browser gestaltet ihn ueber ein eigenes
+           Pseudoelement, an das weder Hintergrund- noch Textfarbe des
+           Elternelements herankommt. */
+        .file\:fw-marke::file-selector-button{color:var(--ds-brand)}
+        /* Nachgetragen mit E2.10: Die oeffentlichen Seiten benutzen diese
+           Zustaende, und seit die Schicht auch dort ankommt, faellt auf,
+           dass es die Regeln dafuer nie gab. */
+        .focus\:fw-ring-krit:focus{box-shadow:0 0 0 3px color-mix(in srgb, var(--ds-crit) 35%, transparent)}
+        .hover\:fw-info:hover{background:var(--ds-info-soft);color:var(--ds-info)}
+        .hover\:fw-strong:hover{font-weight:600;color:var(--ds-ink)}
+        .hover\:file\:fw-markenflaeche:hover::file-selector-button{background:var(--ds-brand-soft)}
+        .hover\:file\:fw-balken:hover::file-selector-button{background:var(--ds-line)}
+        .file\:fw-flaeche2::file-selector-button{background:var(--ds-surface-2)}
+        .file\:fw-ink::file-selector-button{color:var(--ds-ink)}
+        .file\:fw-markenflaeche::file-selector-button{background:var(--ds-brand-soft)}
+        .file\:fw-balken-voll::file-selector-button{background:var(--ds-brand)}
+        .hover\:file\:fw-balken-voll:hover::file-selector-button{background:var(--ds-brand)}
+
+        /* Balken und Fuellstaende (Fortschritt, Auslastung). */
+        .fw-balken{background:var(--ds-line)}
+        .fw-balken-voll{background:var(--ds-brand)}
+        /* Gesaettigtes Gruen als Flaeche — fuer Absendeknoepfe mit
+           eigenen Massen, die `fw-btn` nicht mitnehmen koennen. */
+        .fw-gut-voll{background:var(--ds-good);color:#fff}
+        .fw-gut-voll:hover{filter:brightness(.92)}
+        .fw-link{color:var(--ds-brand);font-weight:600;text-decoration:none;font-size:12.5px}
+        .fw-link:hover{text-decoration:underline}
+        .fw-klein{font-size:11.5px;color:var(--ds-faint)}
+
+        /* Bereichsinhalte (Phase 4b.4). Bis hierher deckte die Komponenten-
+           schicht nur den Aktenkopf ab; die Reiterinhalte blieben deshalb
+           Tailwind. Drei Bausteine fehlten und werden in jedem Bereich
+           gebraucht — Betrag, Eingabefeld, Symbolknopf. */
+        .fw-betrag{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ds-ink);
+            white-space:nowrap}
+        .fw-betrag.crit{color:var(--ds-crit)}
+        .fw-betrag.good{color:var(--ds-good)}
+        .fw-betrag.mut{color:var(--ds-muted);font-weight:500}
+        /* Ein Formularfeld, das nicht nach Systemelement aussieht. `font:inherit`
+           ist Absicht: Ohne das erben `select` und `textarea` die Schriftart des
+           Betriebssystems und stehen neben dem Fliesstext. */
+        .fw-feld{background:var(--ds-surface-2);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius-sm);padding:8px 11px;font-size:13px;
+            color:var(--ds-ink);font-family:inherit;max-width:100%}
+        .fw-feld:focus{outline:2px solid var(--ds-brand);outline-offset:-1px}
+        /* `fw-ikon` war bisher nur Zierrat im Kartenkopf. Als Knopf braucht es
+           einen stummen Ruhezustand (`mut`) und, wo geloescht wird, eine
+           Warnfarbe erst beim Darueberfahren (`gefahr`) — ein dauerrotes
+           Papierkorbsymbol in jeder Zeile schreit ohne Anlass. */
+        /* Zeile in einem Aktionsmenue («Mehr»). Die Farbe sagt, wie weit die
+           Aktion reicht — `crit` loescht, `warn` greift ein. */
+        .fw-menuzeile{width:100%;text-align:left;display:flex;align-items:center;gap:10px;
+            padding:8px 16px;font-size:13px;font-weight:600;background:none;border:0;
+            cursor:pointer;color:var(--ds-ink)}
+        .fw-menuzeile:hover{background:var(--ds-surface-2)}
+        .fw-menuzeile.warn{color:var(--ds-warn)}
+        .fw-menuzeile.warn:hover{background:var(--ds-warn-soft)}
+        .fw-menuzeile.crit{color:var(--ds-crit)}
+        .fw-menuzeile.crit:hover{background:var(--ds-crit-soft)}
+        .fw-menutrenner{margin:5px 0;border-top:1px solid var(--ds-line)}
+        .fw-ikon.mut{background:var(--ds-surface-2);color:var(--ds-faint)}
+        button.fw-ikon{border:0;cursor:pointer;padding:0}
+        button.fw-ikon.gefahr:hover{background:var(--ds-crit-soft);color:var(--ds-crit)}
+
+        .fw-gruppe{padding:12px 16px 5px;font-size:10px;font-weight:800;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--ds-brand);background:var(--ds-surface-2);
+            border-top:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line)}
+        .fw-dz{display:flex;gap:16px;padding:9px 16px;border-bottom:1px solid var(--ds-line);
+            align-items:baseline}
+        .fw-dz:last-child{border-bottom:0}
+        .fw-dl{flex:0 0 205px;font-size:12px;color:var(--ds-faint)}
+        .fw-dv{flex:1;min-width:0;font-size:13.5px;font-weight:500;color:var(--ds-ink)}
+        .fw-dv small{display:block;font-size:11.5px;color:var(--ds-faint);font-weight:400;
+            margin-top:2px;line-height:1.45}
+        @media(max-width:640px){.fw-dz{flex-direction:column;gap:2px}.fw-dl{flex-basis:auto}}
+
+        /* Erfassen gehoert nicht in eine Leseansicht — aber auch nicht weg. */
+        .fw-aufklapp{border-bottom:1px solid var(--ds-line)}
+        .fw-aufklapp>summary{padding:9px 16px;font-size:12.5px;font-weight:600;
+            color:var(--ds-brand);cursor:pointer;list-style:none;display:flex;
+            align-items:center;gap:7px}
+        .fw-aufklapp>summary::before{content:"\f067";font-family:"Font Awesome 6 Free";
+            font-weight:900;font-size:10px}
+        .fw-aufklapp[open]>summary::before{content:"\f068"}
+        .fw-aufklapp>summary:hover{background:var(--ds-surface-2)}
+        .fw-aufklapp-inhalt{padding:4px 16px 14px;background:var(--ds-surface-2)}
+
+        .fw-statuswahl{padding:5px 11px;border-radius:var(--ds-radius-sm);font-size:12px;
+            font-weight:600;color:var(--ds-muted);background:none;border:0;cursor:pointer}
+        .fw-statuswahl:hover{color:var(--ds-ink)}
+        .fw-statuswahl.an{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
+        .fw-statuswahl.an.gut{background:var(--ds-good);color:#fff}
+        .fw-aktenkopf{background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
+            margin-bottom:16px;overflow:hidden}
+        .fw-akte-oben{padding:17px 20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+        .fw-akte-bild{width:48px;height:48px;border-radius:var(--ds-radius-sm);
+            background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
+            align-items:center;justify-content:center;flex:0 0 48px;font-size:20px}
+        .fw-akte-typ{font-size:10px;font-weight:800;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--ds-faint);margin-bottom:4px}
+        .fw-akte-oben h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-akte-pfad{font-size:12px;color:var(--ds-faint);margin-top:4px;line-height:1.55}
+        .fw-akte-pfad b{color:var(--ds-muted);font-weight:600}
+        /* Eine Angabe je Zeile, Beschriftungen untereinander ausgerichtet.
+           Die feste Spaltenbreite ist der Zweck der Uebung: Ohne sie stuenden
+           die Werte je nach Laenge der Beschriftung versetzt und die Spalte
+           waere wieder nicht lesbar. Unter 640 px klappt es auf zwei Zeilen
+           je Angabe um, statt die Werte zu quetschen. */
+        .fw-akte-pfad .fw-pz{display:flex;gap:10px;align-items:baseline}
+        .fw-akte-pfad .fw-pz>span{flex:0 0 84px;color:var(--ds-faint)}
+        .fw-akte-pfad .fw-pz>b{flex:1;min-width:0}
+        @media(max-width:640px){
+            .fw-akte-pfad .fw-pz{flex-direction:column;gap:0;margin-bottom:4px}
+            .fw-akte-pfad .fw-pz>span{flex-basis:auto;font-size:10.5px;
+                text-transform:uppercase;letter-spacing:.08em}
+        }
+        .fw-akte-rechts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+        .fw-kzn{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--ds-line)}
+        .fw-kzn>div{padding:12px 20px;border-right:1px solid var(--ds-line)}
+        .fw-kzn>div:last-child{border-right:0}
+        .fw-kzn .fw-l{font-size:10px;font-weight:700;letter-spacing:.1em;
+            text-transform:uppercase;color:var(--ds-faint)}
+        .fw-kzn .fw-w{font-size:17px;font-weight:700;margin-top:3px;
+            font-variant-numeric:tabular-nums;color:var(--ds-ink)}
+        .fw-kzn .fw-w.warn{color:var(--ds-warn)}
+        .fw-kzn .fw-w.crit{color:var(--ds-crit)}
+        .fw-kzn .fw-w.good{color:var(--ds-good)}
+        .fw-kzn .fw-f{font-size:11.5px;color:var(--ds-faint);margin-top:2px}
+        /* Der Titel einer Frist ist regelmaessig breiter als seine Spalte:
+           «Art. 257d: Zahlungsfrist läuft ab – Behlül Piskin» sind 48 Zeichen.
+           Vorher schnitt `truncatechars:38` ihn mitten im Namen ab («– B…»),
+           und gerade der Name sagt, um wen es geht. Jetzt zwei Zeilen, danach
+           erst die Auslassung; der volle Text steht zusaetzlich im
+           title-Attribut. Kennt ein Browser `-webkit-line-clamp` nicht,
+           bricht der Text einfach vollstaendig um — auch das ist besser als
+           ein abgeschnittenes Wort. */
+        .fw-kzn .fw-f.fw-lang{display:-webkit-box;-webkit-line-clamp:2;
+            -webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
+        @media(max-width:900px){.fw-kzn{grid-template-columns:1fr 1fr}}
+
+        .fw-reiter{display:flex;gap:2px;border-top:1px solid var(--ds-line);
+            padding:0 12px;background:var(--ds-surface-2);flex-wrap:wrap;overflow-x:auto}
+        .fw-reiter button{padding:10px 14px;font-size:13px;font-weight:600;
+            color:var(--ds-muted);cursor:pointer;background:none;border:0;
+            border-bottom:2px solid transparent;white-space:nowrap;
+            display:flex;align-items:center;gap:7px}
+        .fw-reiter button:hover{color:var(--ds-ink)}
+        .fw-reiter button.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
+        .fw-reiter .fw-z{font-size:10px;font-weight:800;background:var(--ds-surface);
+            border:1px solid var(--ds-line);border-radius:var(--ds-pill);padding:1px 6px}
+
+        .fw-kopf{padding:11px 15px;border-bottom:1px solid var(--ds-line);
+            display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .fw-kopf h2,.fw-kopf .fw-t{margin:0;font-size:14px;font-weight:700;color:var(--ds-ink)}
+        .fw-kopf .fw-neben{font-size:12.5px;color:var(--ds-faint)}
+        .fw-kopf .fw-rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+        .fw-ikon{width:27px;height:27px;border-radius:var(--ds-radius-sm);
+            background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
+            align-items:center;justify-content:center;flex:0 0 27px;font-size:13px}
+        .fw-ikon.warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
+        .fw-ikon.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
+        .fw-ikon.good{background:var(--ds-good-soft);color:var(--ds-good)}
+        .fw-fuss{padding:8px 15px;border-top:1px solid var(--ds-line);display:flex;
+            justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ds-faint)}
+
+        .fw-zeile{display:flex;align-items:center;gap:12px;padding:11px 15px;
+            border-bottom:1px solid var(--ds-line)}
+        .fw-zeile:last-child{border-bottom:0}
+        .fw-zeile.klick{cursor:pointer}
+        .fw-zeile.klick:hover{background:var(--ds-surface-2)}
+        .fw-zeile .fw-mitte{flex:1;min-width:0}
+        .fw-zeile .fw-t{font-size:13.5px;font-weight:600;color:var(--ds-ink)}
+        .fw-zeile .fw-s{font-size:11.5px;color:var(--ds-faint);margin-top:2px;line-height:1.45}
+        .fw-zeile .fw-zeit{font-size:12.5px;font-weight:700;color:var(--ds-muted);
+            font-variant-numeric:tabular-nums;white-space:nowrap}
+        /* Auf dem Handy bekommt der Titel die VOLLE Breite, alles andere
+           rutscht darunter.
+           Betrag, Datum und Knopf sind `white-space:nowrap` und geben keine
+           Breite ab; in einer einzeiligen Flexbox wird der Titel dazwischen
+           auf Handbreit zusammengedrueckt und die Zeile dadurch turmhoch —
+           bei 390 px gemessen: Titelbreite 55–95 px.
+           Dieselbe Loesung hatte die alte Inbox als Tailwind-Utilities am
+           einzelnen Element (`basis-full sm:basis-0`). Hier steht sie einmal
+           an `.fw-zeile` und gilt damit fuer jede Zeile der Anwendung —
+           Arbeitsvorrat, Termine, Freigaben, Mandate, Regelwerk. */
+        @media(max-width:640px){
+            .fw-zeile{flex-wrap:wrap}
+            .fw-zeile .fw-mitte{flex-basis:100%;min-width:0}
+        }
+
+        .fw-marker{width:3px;align-self:stretch;border-radius:2px;background:var(--ds-line);
+            flex:0 0 3px;min-height:32px}
+        .fw-marker.crit{background:var(--ds-crit)}
+        .fw-marker.warn{background:var(--ds-warn)}
+        .fw-marker.good{background:var(--ds-good)}
+        .fw-marker.brand{background:var(--ds-brand)}
+
+        .fw-hinweis{padding:13px 16px;display:flex;gap:12px;align-items:flex-start;
+            border-bottom:1px solid var(--ds-line)}
+        .fw-hinweis:last-child{border-bottom:0}
+        .fw-hinweis.warn{background:var(--ds-warn-soft)}
+        .fw-hinweis.crit{background:var(--ds-crit-soft)}
+        .fw-hinweis.info{background:var(--ds-info-soft)}
+        .fw-hinweis.good{background:var(--ds-good-soft)}
+        .fw-hinweis .fw-hi{width:26px;height:26px;border-radius:999px;display:flex;
+            align-items:center;justify-content:center;flex:0 0 26px;color:#fff;font-size:12px}
+        .fw-hinweis.warn .fw-hi{background:var(--ds-warn)}
+        .fw-hinweis.crit .fw-hi{background:var(--ds-crit)}
+        .fw-hinweis.info .fw-hi{background:var(--ds-info)}
+        .fw-hinweis.good .fw-hi{background:var(--ds-good)}
+        .fw-hinweis .fw-ht{flex:1;font-size:13px;line-height:1.55;color:var(--ds-muted)}
+        .fw-hinweis .fw-ht b{display:block;margin-bottom:3px;color:var(--ds-ink)}
+
+        /* Befund einer Regelpruefung (Fristenwaechter). Anders als .fw-hinweis
+           traegt er eine aufklappbare Rechnung und eine Fusszeile mit dem
+           Regelstand — der Rand links macht die Schwere ohne Farbflaeche
+           lesbar, auch bei Rot-Gruen-Schwaeche. */
+        .fw-befund{border:1px solid var(--ds-line);border-left-width:3px;
+            border-radius:var(--ds-radius);overflow:hidden;background:var(--ds-surface)}
+        .fw-befund.good{border-left-color:var(--ds-good);background:var(--ds-good-soft)}
+        .fw-befund.warn{border-left-color:var(--ds-warn);background:var(--ds-warn-soft)}
+        .fw-befund.crit{border-left-color:var(--ds-crit);background:var(--ds-crit-soft)}
+        .fw-befund-kopf{display:flex;gap:12px;align-items:flex-start;padding:13px 16px}
+        .fw-befund-kosten{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;
+            padding:0 16px 13px}
+        .fw-befund-kosten .fw-betrag{font-size:19px}
+        .fw-befund-fuss{padding:9px 16px;border-top:1px solid var(--ds-line);
+            background:var(--ds-surface)}
+        .fw-befund .fw-aufklapp{border-top:1px solid var(--ds-line);border-bottom:0}
+        .fw-befund .fw-aufklapp-inhalt{background:var(--ds-surface)}
+
+        /* Kleinteile, die beim Umstellen der Objektakte (4b.11) aus
+           Tailwind-Utilities wurden. Sie standen dort als je vier bis sechs
+           Klassen nebeneinander — an 170 Stellen. */
+        .fw-pflicht{color:var(--ds-crit)}                 /* das * hinter «Feld *» */
+        .fw-mutet{color:var(--ds-faint)}
+        .fw-kopfzeile{text-align:left;font-size:11px;text-transform:uppercase;
+            letter-spacing:.04em;color:var(--ds-faint);
+            border-bottom:1px solid var(--ds-line)}
+        .fw-hover:hover{background:var(--ds-surface-2)}
+        /* Die aktuell gueltige Zeile einer datierten Reihe (Sollmietzins,
+           Staffel). Weiche Markenflaeche, kein Rahmen — sie soll auffallen,
+           ohne wie ein Fehler auszusehen. */
+        .fw-markiert{background:var(--ds-brand-soft)}
+        /* Kontrollkaestchen und Auswahlknoepfe in Markenfarbe. Ersetzt
+           `accent-indigo-600` — die Utility trug die Farbe fest, statt sie aus
+           dem Token zu nehmen, und lief damit an der Palette vorbei. */
+        .fw-haken{accent-color:var(--ds-brand)}
+        .fw-punkt{width:8px;height:8px;border-radius:999px;flex-shrink:0;
+            background:var(--ds-faint)}
+        .fw-punkt.crit{background:var(--ds-crit)}
+        .fw-punkt.warn{background:var(--ds-warn)}
+        .fw-punkt.good{background:var(--ds-good)}
+        .fw-warnton{color:var(--ds-warn)}
+        .fw-bild{width:100%;height:160px;object-fit:cover;
+            border-radius:var(--ds-radius-sm);border:1px solid var(--ds-line)}
+        .fw-abtrenner{margin-top:12px;padding-top:12px;
+            border-top:1px solid var(--ds-line)}
+
+        /* Lage-Streifen der Startseite (4b.13). Schmal und immer sichtbar —
+           vier Zahlen mit Vormonatspfeil. Er tritt an die Stelle der vier
+           alten Kacheln (Mietertrag, Portfolio-Donut, Belegung, unbelegte Flaeche),
+           die den BESTAND zeigten. Ein Donut, der seit zwei Jahren gleich
+           aussieht, ist Dekoration; der Pfeil daneben ist die Aussage. */
+        .fw-lage{display:grid;grid-template-columns:repeat(4,1fr);
+            background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
+            margin-bottom:14px;overflow:hidden}
+        .fw-lage>div{padding:10px 16px;border-right:1px solid var(--ds-line)}
+        .fw-lage>div:last-child{border-right:0}
+        .fw-lage .fw-l{font-size:10px;font-weight:700;letter-spacing:.1em;
+            text-transform:uppercase;color:var(--ds-faint)}
+        .fw-lage .fw-w{font-size:16px;font-weight:700;margin-top:2px;
+            font-variant-numeric:tabular-nums;color:var(--ds-ink)}
+        .fw-lage .fw-w.crit{color:var(--ds-crit)}
+        .fw-lage .fw-w.warn{color:var(--ds-warn)}
+        .fw-lage .fw-f{font-size:11px;color:var(--ds-faint);margin-top:1px}
+        /* Die Richtung allein sagt nichts: Ein steigender Zahlungseingang ist
+           gut, ein steigender unbelegte Flaeche schlecht. Deshalb heissen die Klassen
+           nach der BEWERTUNG, nicht nach der Richtung — welche ein Pfeil
+           bekommt, entscheidet `delta_gut_wenn` in der Vorlage. */
+        .fw-trend{font-weight:700;margin-right:4px}
+        .fw-trend.hoch{color:var(--ds-crit)}
+        .fw-trend.runter{color:var(--ds-good)}
+        @media(max-width:820px){.fw-lage{grid-template-columns:1fr 1fr}}
+
+        /* Zugeklappter Block — «Lage des Bestands». Zu ist der Normalfall:
+           Was ruhig ist, soll keinen Platz beanspruchen. */
+        .fw-klapp{background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
+            margin-bottom:14px;overflow:hidden}
+        .fw-klapp>summary{padding:11px 15px;font-size:13.5px;font-weight:700;
+            cursor:pointer;list-style:none;display:flex;align-items:center;
+            gap:10px;color:var(--ds-ink)}
+        .fw-klapp>summary::-webkit-details-marker{display:none}
+        .fw-klapp>summary::after{content:"\f078";font-family:"Font Awesome 6 Free";
+            font-weight:900;font-size:10px;color:var(--ds-faint);margin-left:auto}
+        .fw-klapp[open]>summary::after{content:"\f077"}
+        .fw-klapp>summary:hover{background:var(--ds-surface-2)}
+
+        /* Zahl am Reiter der Startseite. `.fw-reiter .fw-z` gibt es schon für
+           die Aktenreiter — dort sitzt sie an einem <button>, hier an einem
+           <a>. Derselbe Bauteil, deshalb keine zweite Klasse. */
+        .fw-reiter a{padding:10px 14px;font-size:13px;font-weight:600;
+            color:var(--ds-muted);text-decoration:none;
+            border-bottom:2px solid transparent;white-space:nowrap;
+            display:flex;align-items:center;gap:7px}
+        .fw-reiter a:hover{color:var(--ds-ink)}
+        .fw-reiter a.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
+
+    </style>

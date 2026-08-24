@@ -19,7 +19,14 @@ import re
 
 from django.test import TestCase
 
-BASE = pathlib.Path('core/templates/fw/base.html')
+# Seit E2.10 stehen Tokens und Bausteine in `fw/_schicht.html`; `base.html`
+# bindet sie ein. Dieser Waechter liest die Schicht, weil dort die Farbwerte
+# liegen — seine Blindheitspruefung («kaum Hexwerte gefunden») hat den Umzug
+# sofort gemeldet, statt still gruen zu bleiben.
+BASE = pathlib.Path('core/templates/fw/_schicht.html')
+#: Die Huelle selbst — sie traegt weiterhin das Dunkelmodus-Overlay fuer
+#: Tailwind-Utilities und wird von `EinFarbtonTests` mitgelesen.
+HUELLE = pathlib.Path('core/templates/fw/base.html')
 
 #: Werte aus mockups/konzept-v3.html. Wer sie ändert, ändert das Konzept —
 #: und muss `docs/KONZEPT-UI.md` mitziehen.
@@ -235,7 +242,8 @@ class EinFarbtonTests(TestCase):
     MERKLICH = 0.12
 
     def _hexwerte(self):
-        quelle = ohne_kommentare(BASE.read_text(encoding='utf-8'))
+        quelle = ohne_kommentare(BASE.read_text(encoding='utf-8')
+                                 + HUELLE.read_text(encoding='utf-8'))
         return sorted(set(m.group(0).lower()
                           for m in re.finditer(r'#[0-9a-fA-F]{6}\b', quelle)))
 
@@ -284,7 +292,8 @@ class EinFarbtonTests(TestCase):
         """Der Verlauf steht in Tailwinds Notation fuer beliebige Werte und
         kommt damit an der Farbrampe vorbei — er braucht eine eigene Pruefung.
         Werte aus `mockups/konzept-v2.html`, Token `--nav`."""
-        quelle = ohne_kommentare(BASE.read_text(encoding='utf-8'))
+        # Der Verlauf steht im MARKUP der Huelle, nicht in der Schicht.
+        quelle = ohne_kommentare(HUELLE.read_text(encoding='utf-8'))
         self.assertIn('from-[#122b31] to-[#0a1c20]', quelle,
                       'Die Seitenleiste fuehrt nicht mehr den Petrol-Verlauf '
                       'des Prototyps.')

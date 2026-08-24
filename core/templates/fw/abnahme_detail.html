@@ -2,10 +2,10 @@
 {% load chf %}
 {% block title %}Abnahmeprotokoll — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:text-indigo-600">{{ v.mieter.display_name }}</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">Abnahmeprotokoll</span>
+    <span class="fw-mutet font-medium">Abnahmeprotokoll</span>
 </nav>
 
 <div class="fw-phead">
@@ -15,20 +15,20 @@
     </div>
     <div class="flex flex-wrap items-center gap-2">
         {% if p.kosten_mieter_total %}
-        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"><i class="fa-solid fa-file-invoice mr-1.5"></i>In Schlussabrechnung</a>
+        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="fw-btn fw-primary text-sm"><i class="fa-solid fa-file-invoice mr-1.5"></i>In Schlussabrechnung</a>
         {% endif %}
         <div class="relative">
             <button type="button" onclick="document.getElementById('aAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-flaeche border fw-linie fw-ink hover:fw-linie-marke hover:fw-marke transition-colors">
                 <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
             </button>
-            <div id="aAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-pdf w-4"></i>Protokoll als PDF</a>
-                <div class="my-1 border-t border-slate-100"></div>
+            <div id="aAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
+                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-file-pdf w-4"></i>Protokoll als PDF</a>
+                <div class="my-1 border-t fw-linie"></div>
                 <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
                       onsubmit="return confirm('Abnahmeprotokoll wirklich löschen?');">
                     {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Protokoll löschen</button>
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-kritisch hover:fw-krit-flaeche"><i class="fa-solid fa-trash w-4"></i>Protokoll löschen</button>
                 </form>
             </div>
         </div>
@@ -42,55 +42,55 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm space-y-2">
-        <div class="flex justify-between"><span class="text-slate-500">Abnahme durch</span><span class="font-medium">{{ p.verwalter_name|default:"—" }}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Mieter anwesend</span><span>{{ p.mieter_anwesend|yesno:"Ja,Nein" }}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Allgemeinzustand</span><span>{{ p.get_allgemein_zustand_display }}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Schlüssel zurück</span><span>{{ p.schluessel_anzahl|default:"—" }}</span></div>
+    <div class="fw-card p-5 text-sm space-y-2">
+        <div class="flex justify-between"><span class="fw-mutet">Abnahme durch</span><span class="font-medium">{{ p.verwalter_name|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="fw-mutet">Mieter anwesend</span><span>{{ p.mieter_anwesend|yesno:"Ja,Nein" }}</span></div>
+        <div class="flex justify-between"><span class="fw-mutet">Allgemeinzustand</span><span>{{ p.get_allgemein_zustand_display }}</span></div>
+        <div class="flex justify-between"><span class="fw-mutet">Schlüssel zurück</span><span>{{ p.schluessel_anzahl|default:"—" }}</span></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm space-y-2">
-        <div class="flex justify-between"><span class="text-slate-500">Zähler Strom</span><span>{{ p.zaehler_strom|default:"—" }}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Zähler Wasser</span><span>{{ p.zaehler_wasser|default:"—" }}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Zähler Gas/Wärme</span><span>{{ p.zaehler_gas|default:"—" }}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Neue Adresse</span><span class="text-right">{{ p.neue_adresse|default:"—" }}</span></div>
+    <div class="fw-card p-5 text-sm space-y-2">
+        <div class="flex justify-between"><span class="fw-mutet">Zähler Strom</span><span>{{ p.zaehler_strom|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="fw-mutet">Zähler Wasser</span><span>{{ p.zaehler_wasser|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="fw-mutet">Zähler Gas/Wärme</span><span>{{ p.zaehler_gas|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="fw-mutet">Neue Adresse</span><span class="text-right">{{ p.neue_adresse|default:"—" }}</span></div>
     </div>
-    <div class="bg-indigo-50 rounded-xl border border-indigo-100 p-5">
-        <div class="text-xs text-indigo-600 mb-1">Kosten zulasten Mieter (Schätzung)</div>
-        <div class="text-2xl font-bold text-indigo-700">CHF {{ p.kosten_mieter_total|chf }}</div>
+    <div class="fw-markenflaeche rounded-xl border fw-linie-marke p-5">
+        <div class="text-xs fw-marke mb-1">Kosten zulasten Mieter (Schätzung)</div>
+        <div class="text-2xl font-bold fw-marke">CHF {{ p.kosten_mieter_total|chf }}</div>
     </div>
 </div>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mt-4">
-    <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Mängel ({{ maengel|length }})</div>
+<div class="fw-card overflow-hidden mt-4">
+    <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">Mängel ({{ maengel|length }})</div>
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+        <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
             <tr><th class="text-left px-5 py-2.5">Raum</th><th class="text-left px-5 py-2.5">Mangel</th>
                 <th class="text-left px-5 py-2.5">Verursacher</th>
                 <th class="text-right px-5 py-2.5">Kosten</th>
                 <th class="text-right px-5 py-2.5">Mieteranteil</th>
                 <th class="px-5 py-2.5">Foto</th></tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="fw-dv">
             {% for m in maengel %}
             <tr>
-                <td class="px-5 py-2.5 text-slate-700">{{ m.raum|default:"—" }}</td>
-                <td class="px-5 py-2.5 text-slate-800">{{ m.beschreibung }}
-                    {% if m.ausstattung %}<div class="text-[11px] text-slate-400"><i class="fa-solid fa-clipboard-list mr-0.5"></i>{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · Lebensdauer {{ m.ausstattung.effektive_lebensdauer }} J{% endif %}</div>{% endif %}</td>
+                <td class="px-5 py-2.5 fw-ink">{{ m.raum|default:"—" }}</td>
+                <td class="px-5 py-2.5 fw-strong">{{ m.beschreibung }}
+                    {% if m.ausstattung %}<div class="text-[11px] fw-faint"><i class="fa-solid fa-clipboard-list mr-0.5"></i>{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · Lebensdauer {{ m.ausstattung.effektive_lebensdauer }} J{% endif %}</div>{% endif %}</td>
                 <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold
-                    {% if m.verursacher == 'mieter' %}bg-rose-50 text-rose-600{% elif m.verursacher == 'vermieter' %}bg-sky-50 text-sky-600{% else %}bg-slate-100 text-slate-500{% endif %}">{{ m.get_verursacher_display }}</span></td>
-                <td class="px-5 py-2.5 text-right tabular-nums text-slate-500">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>
-                <td class="px-5 py-2.5 text-right tabular-nums font-semibold {% if m.verursacher == 'mieter' %}text-rose-600{% else %}text-slate-300{% endif %}">
+                    {% if m.verursacher == 'mieter' %}fw-krit-flaeche fw-kritisch{% elif m.verursacher == 'vermieter' %}fw-info-flaeche fw-info{% else %}fw-flaeche2 fw-mutet{% endif %}">{{ m.get_verursacher_display }}</span></td>
+                <td class="px-5 py-2.5 text-right tabular-nums fw-mutet">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>
+                <td class="px-5 py-2.5 text-right tabular-nums font-semibold {% if m.verursacher == 'mieter' %}fw-kritisch{% else %}fw-faint{% endif %}">
                     {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-2.5 text-center">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="Foto in voller Grösse öffnen"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="px-5 py-6 text-center text-slate-400 italic">Keine Mängel festgestellt.</td></tr>
+            <tr><td colspan="6" class="px-5 py-6 text-center fw-faint italic">Keine Mängel festgestellt.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 </div>
 
-{% if p.bemerkungen %}<div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 text-sm"><div class="text-xs text-slate-500 mb-1">Bemerkungen</div>{{ p.bemerkungen|linebreaksbr }}</div>{% endif %}
+{% if p.bemerkungen %}<div class="fw-card p-5 mt-4 text-sm"><div class="text-xs fw-mutet mb-1">Bemerkungen</div>{{ p.bemerkungen|linebreaksbr }}</div>{% endif %}
 {% endblock %}

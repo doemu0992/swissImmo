@@ -21,7 +21,15 @@ import re
 from django.test import TestCase
 
 WURZEL = pathlib.Path('core/templates')
-BASE = WURZEL / 'fw' / 'base.html'
+
+# Seit E2.10 stehen Tokens und `fw-*`-Regeln in `fw/_schicht.html`, damit auch
+# die Aussenseiten sie sehen (Mieterportal, Bewerbungsformular). `base.html`
+# bindet die Datei ein und traegt weiterhin das Markup und das
+# Dunkelmodus-Overlay fuer Tailwind-Utilities.
+#
+# Dieser Waechter liest die SCHICHT — dort liegen die Werte, die er prueft.
+# Nach dem Umzug meldete er sie als fehlend; still gruen blieb er nicht.
+BASE = WURZEL / 'fw' / '_schicht.html'
 
 DEFINITION = re.compile(r'(--ds-[a-z0-9-]+)\s*:')
 VERWENDUNG = re.compile(r'var\(\s*(--ds-[a-z0-9-]+)')

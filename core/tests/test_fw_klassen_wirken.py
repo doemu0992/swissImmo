@@ -73,9 +73,24 @@ OHNE_REGEL_RICHTIG = {
 }
 
 
+#: Seit E2.10 steht die Komponentenschicht in einer eigenen Datei — sie wird
+#: von `fw/base.html` UND von `core/_assets_aussen.html` eingebunden, damit
+#: auch Mieterportal und Bewerbungsformular sie sehen.
+SCHICHT = VORLAGEN / '_schicht.html'
+
+
 def _regeln():
-    """Alle Selektoren aus dem <style>-Block von fw/base.html."""
+    """Alle Selektoren der Komponentenschicht — aus BEIDEN Dateien.
+
+    Nach dem Herausloesen der Schicht suchte dieser Waechter weiter nur in
+    `base.html` und meldete prompt sechs Klassen als regellos, die es laengst
+    gab (`fw-brand`, `fw-good`, `fw-crit` …) — sie waren mit der Schicht
+    umgezogen. Ein Waechter, der seinem Gegenstand nicht folgt, meldet den
+    Umzug als Schaden.
+    """
     text = BASIS.read_text(encoding='utf-8')
+    if SCHICHT.exists():
+        text += SCHICHT.read_text(encoding='utf-8')
     # Die Maskierung `\:` und `\/` gehört zum Selektor, nicht zum Klassennamen.
     return set(re.findall(r'\.((?:[\w-]|\\.)+)', text))
 
@@ -92,8 +107,23 @@ def _klassen_der_vorlagen():
     fallen weg — statisch ist nicht zu sehen, was herauskommt. Sie sind
     deshalb nicht ungeprüft: `test_die_toene_aus_den_views_sind_definiert`
     nimmt sich die Werte vor, die dort eingesetzt werden.
+
+    SEIT E2.10 ALLE VORLAGEN, NICHT NUR `fw/`
+    -----------------------------------------
+    Solange die Schicht im `<style>`-Block von `fw/base.html` stand, konnte
+    nur eine `fw/`-Vorlage sie benutzen. Mit dem Herauslösen nach
+    `fw/_schicht.html` sehen auch Mieterportal, Schadenmeldung und
+    Bewerbungsformular sie — und benutzen sie.
+
+    Dieser Wächter las weiter nur `core/templates/fw/`. Beim Umzug wurde
+    `_regeln()` erweitert (zwei Quellen), die Verwendungsseite aber nicht.
+    Folge: `fw-gut-flaeche0` im Absendeknopf des öffentlichen
+    Bewerbungsformulars blieb ungemeldet — im Browser gemessen
+    `rgba(0, 0, 0, 0)` bei weisser Schrift, also ein **unsichtbarer Knopf**
+    auf der Seite, die Bewerber ausfüllen. Ein Wächter, dessen Gegenstand
+    umzieht, muss mitziehen — auf BEIDEN Seiten.
     """
-    for pfad in sorted(VORLAGEN.rglob('*.html')):
+    for pfad in sorted((WURZEL / 'core' / 'templates').rglob('*.html')):
         text = pfad.read_text(encoding='utf-8')
         for treffer in re.finditer(r'class\s*=\s*"([^"]*)"', text):
             # Django-Tags zuerst entfernen — sonst klebt `{% if x %}` am
@@ -101,6 +131,9 @@ def _klassen_der_vorlagen():
             roh = re.sub(r'\{%.*?%\}', ' ', treffer.group(1), flags=re.S)
             roh = re.sub(r'\{\{.*?\}\}', _EINGESETZT, roh, flags=re.S)
             for wort in roh.split():
+                # Vue-Bindungen schreiben `:class="a ? 'x' : 'y'"` — die
+                # Anfuehrungszeichen gehoeren zum Ausdruck, nicht zum Namen.
+                wort = wort.strip('\'"')
                 if 'fw-' in wort and _EINGESETZT not in wort:
                     zeile = text.count('\n', 0, treffer.start()) + 1
                     yield wort, f'{pfad.name}:{zeile}'

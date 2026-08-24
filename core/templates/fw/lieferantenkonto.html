@@ -2,8 +2,8 @@
 {% load chf %}
 {% block title %}Lieferantenkonto {{ name }} — swissImmo{% endblock %}
 {% block content %}
-<div class="text-xs text-slate-400 mb-3">
-    <a href="/neu/lieferantenkonten/{{ lg_query }}" class="hover:text-indigo-600">Lieferantenkonten</a>
+<div class="text-xs fw-faint mb-3">
+    <a href="/neu/lieferantenkonten/{{ lg_query }}" class="hover:fw-marke">Lieferantenkonten</a>
     <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>{{ name }}
 </div>
 
@@ -17,43 +17,43 @@
 
 <!-- Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
-    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Rechnungen (Belastung)</div>
-        <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ total_belastung|chf }}</div>
+    <div class="fw-card px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Rechnungen (Belastung)</div>
+        <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total_belastung|chf }}</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Zahlungen</div>
-        <div class="text-xl font-bold text-emerald-600 mt-0.5">CHF {{ total_zahlung|chf }}</div>
+    <div class="fw-card px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Zahlungen</div>
+        <div class="text-xl font-bold fw-gut mt-0.5">CHF {{ total_zahlung|chf }}</div>
     </div>
-    <div class="bg-white rounded-xl border {% if endsaldo > 0 %}border-rose-200{% else %}border-slate-200{% endif %} px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+    <div class="fw-flaeche rounded-xl border {% if endsaldo > 0 %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">
             {% if endsaldo > 0 %}Offen an Lieferant{% else %}Saldo{% endif %}
         </div>
-        <div class="text-xl font-bold {% if endsaldo > 0 %}text-rose-600{% else %}text-slate-900{% endif %} mt-0.5">CHF {{ endsaldo|chf }}{% if endsaldo == 0 %} · ausgeglichen{% endif %}</div>
+        <div class="text-xl font-bold {% if endsaldo > 0 %}fw-kritisch{% else %}fw-strong{% endif %} mt-0.5">CHF {{ endsaldo|chf }}{% if endsaldo == 0 %} · ausgeglichen{% endif %}</div>
     </div>
 </div>
 
 <!-- Offene Posten -->
 {% if op_rows %}
-<div class="bg-white rounded-xl border border-rose-200 overflow-hidden mb-5">
-    <div class="px-5 py-3 border-b border-rose-100 bg-rose-50 flex items-center gap-2">
-        <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
-        <h2 class="font-bold text-slate-800 text-sm">Offene Rechnungen</h2>
-        <span class="text-[11px] font-bold bg-rose-100 text-rose-700 rounded-md px-1.5 py-0.5">{{ op_rows|length }}</span>
-        <span class="ml-auto text-sm font-semibold text-rose-600">CHF {{ op_total|chf }}</span>
+<div class="fw-flaeche rounded-xl border fw-linie-krit overflow-hidden mb-5">
+    <div class="px-5 py-3 border-b fw-linie-krit fw-krit-flaeche flex items-center gap-2">
+        <i class="fa-solid fa-triangle-exclamation fw-kritisch"></i>
+        <h2 class="font-bold fw-strong text-sm">Offene Rechnungen</h2>
+        <span class="text-[11px] font-bold fw-krit-flaeche fw-kritisch rounded-md px-1.5 py-0.5">{{ op_rows|length }}</span>
+        <span class="ml-auto text-sm font-semibold fw-kritisch">CHF {{ op_total|chf }}</span>
     </div>
-    <div class="divide-y divide-slate-50">
+    <div class="fw-dv">
     {% for o in op_rows %}
         <div class="px-5 py-3 flex items-center gap-3">
             <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium text-slate-900">{{ o.k.referenz|default:"Rechnung" }}{% if o.k.liegenschaft %} · {{ o.k.liegenschaft.strasse }}{% endif %}</div>
-                <div class="text-xs text-slate-500 mt-0.5">
+                <div class="text-sm font-medium fw-strong">{{ o.k.referenz|default:"Rechnung" }}{% if o.k.liegenschaft %} · {{ o.k.liegenschaft.strasse }}{% endif %}</div>
+                <div class="text-xs fw-mutet mt-0.5">
                     fällig {{ o.faellig|date:"d.m.Y" }}
-                    {% if o.ueberfaellig %}<span class="text-rose-600 font-semibold">· überfällig</span>{% endif %}
-                    {% if o.k.status == 'teilbezahlt' %}<span class="text-sky-600">· teilbezahlt</span>{% elif o.k.status == 'in_zahlung' %}<span class="text-indigo-600">· in Zahlung</span>{% endif %}
+                    {% if o.ueberfaellig %}<span class="fw-kritisch font-semibold">· überfällig</span>{% endif %}
+                    {% if o.k.status == 'teilbezahlt' %}<span class="fw-info">· teilbezahlt</span>{% elif o.k.status == 'in_zahlung' %}<span class="fw-marke">· in Zahlung</span>{% endif %}
                 </div>
             </div>
-            <div class="text-sm font-semibold text-rose-600">CHF {{ o.offen|chf }}</div>
+            <div class="text-sm font-semibold fw-kritisch">CHF {{ o.offen|chf }}</div>
         </div>
     {% endfor %}
     </div>
@@ -61,11 +61,11 @@
 {% endif %}
 
 <!-- Kontobewegungen -->
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Datum</th>
                 <th class="px-5 py-3 font-semibold">Text</th>
                 <th class="px-5 py-3 font-semibold text-right">Belastung</th>
@@ -73,51 +73,51 @@
                 <th class="px-5 py-3 font-semibold text-right">Saldo</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="fw-dv">
         {% for b in bewegungen %}
-            <tr class="hover:bg-slate-50">
-                <td class="px-5 py-2.5 text-slate-500 whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-2.5 text-slate-800">{{ b.text }}</td>
-                <td class="px-5 py-2.5 text-right {% if b.belastung %}text-slate-900 font-medium{% else %}text-slate-300{% endif %}">{% if b.belastung %}{{ b.belastung|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-2.5 text-right {% if b.zahlung %}text-emerald-600 font-medium{% else %}text-slate-300{% endif %}">{% if b.zahlung %}{{ b.zahlung|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-2.5 text-right font-semibold {% if b.saldo > 0 %}text-rose-600{% else %}text-slate-400{% endif %}">{{ b.saldo|chf }}</td>
+            <tr class="hover:fw-flaeche2">
+                <td class="px-5 py-2.5 fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+                <td class="px-5 py-2.5 fw-strong">{{ b.text }}</td>
+                <td class="px-5 py-2.5 text-right {% if b.belastung %}fw-strong font-medium{% else %}fw-faint{% endif %}">{% if b.belastung %}{{ b.belastung|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-2.5 text-right {% if b.zahlung %}fw-gut font-medium{% else %}fw-faint{% endif %}">{% if b.zahlung %}{{ b.zahlung|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-2.5 text-right font-semibold {% if b.saldo > 0 %}fw-kritisch{% else %}fw-faint{% endif %}">{{ b.saldo|chf }}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400 text-sm">Keine Bewegungen.</td></tr>
+            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">Keine Bewegungen.</td></tr>
         {% endfor %}
         </tbody>
         {% if bewegungen %}
         <tfoot>
-            <tr class="border-t-2 border-slate-200 font-semibold text-slate-900">
+            <tr class="border-t-2 fw-linie font-semibold fw-strong">
                 <td class="px-5 py-3" colspan="2">Total / Endsaldo</td>
                 <td class="px-5 py-3 text-right">{{ total_belastung|chf }}</td>
-                <td class="px-5 py-3 text-right text-emerald-600">{{ total_zahlung|chf }}</td>
-                <td class="px-5 py-3 text-right {% if endsaldo > 0 %}text-rose-600{% endif %}">{{ endsaldo|chf }}</td>
+                <td class="px-5 py-3 text-right fw-gut">{{ total_zahlung|chf }}</td>
+                <td class="px-5 py-3 text-right {% if endsaldo > 0 %}fw-kritisch{% endif %}">{{ endsaldo|chf }}</td>
             </tr>
         </tfoot>
         {% endif %}
     </table>
 </div>
 </div>
-<p class="text-xs text-slate-400 mt-3">Positiver Saldo = offene Verbindlichkeit gegenüber dem Lieferanten. Stornierte Rechnungen sind ausgeblendet.</p>
+<p class="text-xs fw-faint mt-3">Positiver Saldo = offene Verbindlichkeit gegenüber dem Lieferanten. Stornierte Rechnungen sind ausgeblendet.</p>
 
 <!-- Verlauf: alle protokollierten Aktionen zu diesem Lieferanten (Rechnungen erstellt/gescannt/bearbeitet/freigegeben/bezahlt/gelöscht, Mail-Eingang, Stammdaten) -->
 {% if verlauf %}
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mt-6">
-    <div class="px-5 py-3 font-bold text-slate-800 text-sm border-b border-slate-100"><i class="fa-solid fa-clock-rotate-left text-slate-400 mr-1.5"></i>Verlauf — wer hat was gemacht</div>
-    <div class="divide-y divide-slate-50">
+<div class="fw-card overflow-hidden mt-6">
+    <div class="px-5 py-3 font-bold fw-strong text-sm border-b fw-linie"><i class="fa-solid fa-clock-rotate-left fw-faint mr-1.5"></i>Verlauf — wer hat was gemacht</div>
+    <div class="fw-dv">
         {% for e in verlauf %}
         <div class="flex items-start gap-3 px-5 py-3.5">
-            <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+            <div class="w-8 h-8 rounded-full fw-btn fw-primary flex items-center justify-center text-[10px] font-bold shrink-0">
                 {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}
             </div>
             <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium text-slate-900">{{ e.aktion }}</div>
-                {% if e.details %}<div class="text-xs text-slate-500">{{ e.details }}</div>{% endif %}
+                <div class="text-sm font-medium fw-strong">{{ e.aktion }}</div>
+                {% if e.details %}<div class="text-xs fw-mutet">{{ e.details }}</div>{% endif %}
             </div>
-            <div class="text-xs text-slate-400 whitespace-nowrap text-right shrink-0">
+            <div class="text-xs fw-faint whitespace-nowrap text-right shrink-0">
                 {{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
-                <span class="text-slate-400">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span>
+                <span class="fw-faint">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span>
             </div>
         </div>
         {% endfor %}

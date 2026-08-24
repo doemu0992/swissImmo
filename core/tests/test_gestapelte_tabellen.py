@@ -36,7 +36,12 @@ import re
 
 from django.test import TestCase
 
-BASE = pathlib.Path('core/templates/fw/base.html')
+# Seit E2.10 stehen die Regeln in `fw/_schicht.html` (die Aussenseiten sollen
+# sie auch sehen); `base.html` traegt weiterhin das Skript, das die Zellen
+# beschriftet. Dieser Waechter braucht BEIDE Seiten derselben Sache — die
+# Media-Query hier, die Beschriftung dort.
+BASE = pathlib.Path('core/templates/fw/_schicht.html')
+SKRIPT = pathlib.Path('core/templates/fw/base.html')
 
 #: Die Desktop-Regel, die gestapelt zum Problem wird.
 DESKTOP = re.compile(

@@ -28,7 +28,16 @@ E2.7 nahm sechs weitere Seiten — `objekt_form.html` (81 → 0),
 E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 `schaden_detail` (73 → 2), `weiterverrechnung` (72 → 0), `account` (69 → 0),
 `nebenkosten` (68 → 0), `mietzins_anpassung` (66 → 0), `mieterkonto` (65 → 0):
-**STAND 4020 in 112 Vorlagen**.
+4020 in 112 Vorlagen.
+E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
+`anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
+(63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
+**STAND 3178 in 106 Vorlagen**.
+
+Eins weniger als beim Herausloesen geplant: Der Absendeknopf des
+öffentlichen Bewerbungsformulars trug `fw-gut-flaeche0` (eine Klasse, die
+es nicht gibt) und daneben ein `hover:bg-emerald-600`, das zur neuen
+Grundklasse nicht mehr passte. Beides ersetzt durch `fw-gut-voll`.
 
 WAS `text-white` HIER NOCH DARF: Weisse Schrift auf einer gesaettigten
 Flaeche — auf `fw-vorhang`, auf einem Markenknopf, auf `fw-krit-flaeche` —
@@ -140,11 +149,11 @@ OBERGRENZE = {
     'core/templates/core/portal_base.html': 25,
     'core/templates/core/postfach_form.html': 48,
     'core/templates/core/postfach_liste.html': 36,
-    'core/templates/core/public_bewerbung_form.html': 205,
+    'core/templates/core/public_bewerbung_form.html': 1,
     'core/templates/core/public_bewerbung_geschlossen.html': 7,
     'core/templates/core/public_datenschutz.html': 10,
     'core/templates/core/public_ticket_form.html': 120,
-    'core/templates/core/schaden_melden.html': 264,
+    'core/templates/core/schaden_melden.html': 1,
     'core/templates/core/zweifaktor_codes.html': 14,
     'core/templates/core/zweifaktor_einrichten.html': 25,
     'core/templates/core/zweifaktor_uebersicht.html': 53,
@@ -154,16 +163,14 @@ OBERGRENZE = {
     'core/templates/fw/_menu_item.html': 5,
     'core/templates/fw/_modal_done.html': 5,
     'core/templates/fw/_pipeline.html': 13,
+    'core/templates/fw/_schicht.html': 7,
     'core/templates/fw/_unterschrift_feld.html': 34,
-    'core/templates/fw/abnahme_detail.html': 57,
-    'core/templates/fw/abnahme_neu.html': 64,
     'core/templates/fw/abonnement.html': 54,
-    'core/templates/fw/anfangsmietzins.html': 64,
     'core/templates/fw/anlagen.html': 3,
     'core/templates/fw/auswertung.html': 36,
     'core/templates/fw/bankabgleich.html': 6,
     'core/templates/fw/bankkonten.html': 45,
-    'core/templates/fw/base.html': 191,
+    'core/templates/fw/base.html': 184,
     'core/templates/fw/base_embed.html': 8,
     'core/templates/fw/benutzer.html': 19,
     'core/templates/fw/benutzer_form.html': 34,
@@ -184,11 +191,9 @@ OBERGRENZE = {
     'core/templates/fw/lebensdauer.html': 33,
     'core/templates/fw/leerstand_verlauf.html': 36,
     'core/templates/fw/lieferantenkonten.html': 25,
-    'core/templates/fw/lieferantenkonto.html': 64,
     'core/templates/fw/liegenschaften.html': 13,
     'core/templates/fw/maengelruege.html': 18,
     'core/templates/fw/mandat_abrechnung.html': 48,
-    'core/templates/fw/mandat_form.html': 63,
     'core/templates/fw/mandate.html': 21,
     'core/templates/fw/mieterkonten.html': 37,
     'core/templates/fw/mieterspiegel.html': 56,
@@ -204,7 +209,6 @@ OBERGRENZE = {
     'core/templates/fw/schaden_detail.html': 2,
     'core/templates/fw/schaden_kosten.html': 40,
     'core/templates/fw/schaeden.html': 33,
-    'core/templates/fw/schlussabrechnung.html': 58,
     'core/templates/fw/sollstellung.html': 53,
     'core/templates/fw/stub.html': 8,
     'core/templates/fw/suche.html': 47,
@@ -218,7 +222,6 @@ OBERGRENZE = {
     'core/templates/fw/vorlagen.html': 28,
     'core/templates/fw/zahler_zuordnungen.html': 32,
     'core/templates/fw/zahllauf.html': 2,
-    'core/templates/modern_base.html': 5,
 }
 
 
