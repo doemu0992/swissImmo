@@ -9,45 +9,45 @@
 {% block content %}
     {% if mieter %}
         <div class="mb-6">
-            <h1 class="text-2xl font-black tracking-tight text-slate-900">Guten Tag {{ mieter.display_name }}</h1>
-            <p class="text-slate-500 mt-1">Willkommen in Ihrem persönlichen Mieterportal.</p>
+            <h1 class="text-2xl font-black tracking-tight fw-strong">Guten Tag {{ mieter.display_name }}</h1>
+            <p class="fw-mutet mt-1">Willkommen in Ihrem persönlichen Mieterportal.</p>
         </div>
 
         {% for o in objekte %}
-        <div class="rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-800 text-white p-6 shadow-lg shadow-indigo-200 mb-5 relative overflow-hidden">
-            <div class="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-white/10 blur-2xl"></div>
+        <div class="rounded-2xl fw-marke-verlauf text-white p-6 shadow-lg fw-schatten-marke mb-5 relative overflow-hidden">
+            <div class="absolute -top-16 -right-10 w-56 h-56 rounded-full fw-flaeche blur-2xl"></div>
             <div class="relative">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <div class="text-[11px] font-bold uppercase tracking-widest text-indigo-200">Ihr Mietobjekt</div>
+                        <div class="text-[11px] font-bold uppercase tracking-widest fw-faint">Ihr Mietobjekt</div>
                         <div class="text-xl font-bold mt-1">{{ o.adresse }}</div>
-                        <div class="text-indigo-200 text-sm">{{ o.einheit.bezeichnung }}</div>
+                        <div class="fw-faint text-sm">{{ o.einheit.bezeichnung }}</div>
                     </div>
-                    <span class="shrink-0 bg-white/15 text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">seit {{ o.beginn|date:"d.m.Y" }}</span>
+                    <span class="shrink-0 fw-flaeche text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">seit {{ o.beginn|date:"d.m.Y" }}</span>
                 </div>
                 <div class="grid grid-cols-3 gap-3 mt-6">
-                    <div class="bg-white/10 rounded-xl px-3 py-3">
-                        <div class="text-[10px] font-bold uppercase tracking-wide text-indigo-200">Netto</div>
+                    <div class="fw-flaeche rounded-xl px-3 py-3">
+                        <div class="text-[10px] font-bold uppercase tracking-wide fw-faint">Netto</div>
                         <div class="text-base font-bold mt-0.5">{{ o.netto|chf }}</div>
                     </div>
-                    <div class="bg-white/10 rounded-xl px-3 py-3">
-                        <div class="text-[10px] font-bold uppercase tracking-wide text-indigo-200">NK Akonto</div>
+                    <div class="fw-flaeche rounded-xl px-3 py-3">
+                        <div class="text-[10px] font-bold uppercase tracking-wide fw-faint">NK Akonto</div>
                         <div class="text-base font-bold mt-0.5">{{ o.nk|chf }}</div>
                     </div>
-                    <div class="bg-white/20 rounded-xl px-3 py-3">
-                        <div class="text-[10px] font-bold uppercase tracking-wide text-indigo-100">Brutto / Mt.</div>
+                    <div class="fw-flaeche rounded-xl px-3 py-3">
+                        <div class="text-[10px] font-bold uppercase tracking-wide fw-faint">Brutto / Mt.</div>
                         <div class="text-base font-black mt-0.5">{{ o.brutto|chf }}</div>
                     </div>
                 </div>
                 {% if o.kaution %}
-                <div class="mt-3 flex items-center gap-2 text-indigo-100 text-sm">
+                <div class="mt-3 flex items-center gap-2 fw-faint text-sm">
                     <i class="fa-solid fa-shield-halved"></i> Mietkaution: <span class="font-semibold text-white">CHF {{ o.kaution|chf }}</span>
                 </div>
                 {% endif %}
             </div>
         </div>
         {% empty %}
-        <div class="rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 p-5 mb-5 flex items-start gap-3">
+        <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 mb-5 flex items-start gap-3">
             <i class="fa-solid fa-circle-info mt-0.5"></i>
             <p class="text-sm">Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</p>
         </div>
@@ -55,60 +55,60 @@
 
         <!-- Schnellzugriffe als eigene Seiten -->
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <a href="/mieter/rechnungen/" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all p-5">
+            <a href="/mieter/rechnungen/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-file-invoice"></i></span>
-                    {% if offene_count %}<span class="text-[10px] font-bold bg-rose-500 text-white rounded-full px-2 py-0.5">{{ offene_count }}</span>{% endif %}
+                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-file-invoice"></i></span>
+                    {% if offene_count %}<span class="text-[10px] font-bold fw-krit-flaeche text-white rounded-full px-2 py-0.5">{{ offene_count }}</span>{% endif %}
                 </div>
-                <div class="mt-3 font-bold text-slate-900">Rechnungen</div>
-                <div class="text-xs text-slate-400">{% if offene_count %}CHF {{ total_offen|chf }} offen{% else %}Keine offenen Rechnungen{% endif %}</div>
+                <div class="mt-3 font-bold fw-strong">Rechnungen</div>
+                <div class="text-xs fw-faint">{% if offene_count %}CHF {{ total_offen|chf }} offen{% else %}Keine offenen Rechnungen{% endif %}</div>
             </a>
 
-            <a href="/mieter/dokumente/" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all p-5">
+            <a href="/mieter/dokumente/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></span>
-                    {% if dok_count %}<span class="text-[10px] font-bold bg-slate-200 text-slate-600 rounded-full px-2 py-0.5">{{ dok_count }}</span>{% endif %}
+                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></span>
+                    {% if dok_count %}<span class="text-[10px] font-bold fw-balken fw-mutet rounded-full px-2 py-0.5">{{ dok_count }}</span>{% endif %}
                 </div>
-                <div class="mt-3 font-bold text-slate-900">Dokumente</div>
-                <div class="text-xs text-slate-400">Vertrag, Korrespondenz &amp; mehr</div>
+                <div class="mt-3 font-bold fw-strong">Dokumente</div>
+                <div class="text-xs fw-faint">Vertrag, Korrespondenz &amp; mehr</div>
             </a>
 
-            <a href="/mieter/tickets/" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all p-5">
+            <a href="/mieter/tickets/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-screwdriver-wrench"></i></span>
-                    {% if ticket_count %}<span class="text-[10px] font-bold bg-slate-200 text-slate-600 rounded-full px-2 py-0.5">{{ ticket_count }}</span>{% endif %}
+                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                    {% if ticket_count %}<span class="text-[10px] font-bold fw-balken fw-mutet rounded-full px-2 py-0.5">{{ ticket_count }}</span>{% endif %}
                 </div>
-                <div class="mt-3 font-bold text-slate-900">Meine Meldungen</div>
-                <div class="text-xs text-slate-400">Status &amp; Verlauf</div>
+                <div class="mt-3 font-bold fw-strong">Meine Meldungen</div>
+                <div class="text-xs fw-faint">Status &amp; Verlauf</div>
             </a>
 
-            <a href="/mieter/schaden/neu/" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-rose-300 hover:shadow-md transition-all p-5">
+            <a href="/mieter/schaden/neu/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-krit hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <span class="w-10 h-10 rounded-xl fw-krit-flaeche fw-kritisch flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></span>
                 </div>
-                <div class="mt-3 font-bold text-slate-900">Schaden melden</div>
-                <div class="text-xs text-slate-400">Reparatur beantragen</div>
+                <div class="mt-3 font-bold fw-strong">Schaden melden</div>
+                <div class="text-xs fw-faint">Reparatur beantragen</div>
             </a>
 
-            <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all p-5">
+            <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-file-lines"></i></span>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-slate-300 text-xs"></i>
+                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-file-lines"></i></span>
+                    <i class="fa-solid fa-arrow-up-right-from-square fw-faint text-xs"></i>
                 </div>
-                <div class="mt-3 font-bold text-slate-900">Kontoauszug</div>
-                <div class="text-xs text-slate-400">als PDF öffnen</div>
+                <div class="mt-3 font-bold fw-strong">Kontoauszug</div>
+                <div class="text-xs fw-faint">als PDF öffnen</div>
             </a>
 
-            <a href="/mieter/kuendigung/" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-rose-300 hover:shadow-md transition-all p-5">
+            <a href="/mieter/kuendigung/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-krit hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-envelope-open-text"></i></span>
+                    <span class="w-10 h-10 rounded-xl fw-krit-flaeche fw-kritisch flex items-center justify-center"><i class="fa-solid fa-envelope-open-text"></i></span>
                 </div>
-                <div class="mt-3 font-bold text-slate-900">Kündigung</div>
-                <div class="text-xs text-slate-400">erfassen &amp; Brief laden</div>
+                <div class="mt-3 font-bold fw-strong">Kündigung</div>
+                <div class="text-xs fw-faint">erfassen &amp; Brief laden</div>
             </a>
         </div>
     {% else %}
-        <div class="rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 p-5 flex items-start gap-3">
+        <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 flex items-start gap-3">
             <i class="fa-solid fa-circle-info mt-0.5"></i>
             <p class="text-sm">Ihr Login ist noch keinem Mieter-Dossier zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</p>
         </div>

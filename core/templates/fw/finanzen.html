@@ -40,31 +40,31 @@
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
     <!-- ARBEITSKORB -->
     <div class="xl:col-span-2">
-        <h2 class="text-xs uppercase tracking-[0.2em] text-slate-500 font-bold mb-3">Arbeitskorb</h2>
+        <h2 class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Arbeitskorb</h2>
         <div class="space-y-2.5">
         {% for i in arbeitskorb %}
-            <div class="bg-white rounded-xl border {% if i.dringend %}border-rose-200{% else %}border-slate-200{% endif %} px-4 py-3.5 flex items-center gap-4">
+            <div class="fw-flaeche rounded-xl border {% if i.dringend %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3.5 flex items-center gap-4">
                 <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {{ i.icon_cls }}">
                     <i class="fa-solid {{ i.icon }}"></i>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="text-sm font-semibold text-slate-900">{{ i.titel }}</span>
-                        {% if i.anzahl %}<span class="text-[11px] font-bold {% if i.dringend %}bg-rose-100 text-rose-700{% else %}bg-slate-100 text-slate-600{% endif %} rounded-md px-1.5 py-0.5">{{ i.anzahl }}</span>{% endif %}
-                        {% if i.dringend %}<span class="text-[10px] font-bold uppercase tracking-wide text-rose-600">dringend</span>{% endif %}
+                        <span class="text-sm font-semibold fw-strong">{{ i.titel }}</span>
+                        {% if i.anzahl %}<span class="text-[11px] font-bold {% if i.dringend %}fw-krit-flaeche fw-kritisch{% else %}fw-flaeche2 fw-mutet{% endif %} rounded-md px-1.5 py-0.5">{{ i.anzahl }}</span>{% endif %}
+                        {% if i.dringend %}<span class="text-[10px] font-bold uppercase tracking-wide fw-kritisch">dringend</span>{% endif %}
                     </div>
-                    <div class="text-xs text-slate-500 mt-0.5 truncate">{{ i.sub }}{% if i.chf %} · <span class="font-medium text-slate-600">CHF {{ i.chf|chf }}</span>{% endif %}</div>
+                    <div class="text-xs fw-mutet mt-0.5 truncate">{{ i.sub }}{% if i.chf %} · <span class="font-medium fw-mutet">CHF {{ i.chf|chf }}</span>{% endif %}</div>
                 </div>
                 {% if i.anzahl %}
                 <a href="{{ i.url }}" class="shrink-0 text-white text-xs font-semibold px-3.5 py-2 rounded-lg {{ i.btn_cls }}">{{ i.cta }} ›</a>
                 {% else %}
-                <span class="shrink-0 text-emerald-600 text-xs font-semibold px-2"><i class="fa-solid fa-check mr-1"></i>erledigt</span>
+                <span class="shrink-0 fw-gut text-xs font-semibold px-2"><i class="fa-solid fa-check mr-1"></i>erledigt</span>
                 {% endif %}
             </div>
         {% endfor %}
         </div>
         {% if offene_posten == 0 %}
-        <div class="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 text-sm text-emerald-700">
+        <div class="mt-3 fw-gut-flaeche border fw-linie-gut rounded-xl px-4 py-3 text-sm fw-gut">
             <i class="fa-solid fa-circle-check mr-1.5"></i>Alle Finanzaufgaben erledigt — nichts offen.
         </div>
         {% endif %}
@@ -72,41 +72,41 @@
 
     <!-- MONATSABSCHLUSS-CHECKLISTE -->
     <div>
-        <h2 class="text-xs uppercase tracking-[0.2em] text-slate-500 font-bold mb-3">Monatsabschluss {{ heute|date:"m/Y" }}</h2>
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div class="divide-y divide-slate-50">
+        <h2 class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Monatsabschluss {{ heute|date:"m/Y" }}</h2>
+        <div class="fw-card overflow-hidden">
+            <div class="fw-dv">
             {% for c in checkliste %}
-                <a href="{{ c.url }}" class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50">
+                <a href="{{ c.url }}" class="flex items-start gap-3 px-4 py-3 hover:fw-flaeche2">
                     {% if c.ok is True %}
-                        <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                        <i class="fa-solid fa-circle-check fw-gut mt-0.5"></i>
                     {% elif c.ok is False %}
-                        <i class="fa-regular fa-circle text-amber-400 mt-0.5"></i>
+                        <i class="fa-regular fa-circle fw-warnton mt-0.5"></i>
                     {% else %}
-                        <i class="fa-regular fa-circle-question text-slate-300 mt-0.5"></i>
+                        <i class="fa-regular fa-circle-question fw-faint mt-0.5"></i>
                     {% endif %}
                     <div class="flex-1 min-w-0">
-                        <div class="text-sm {% if c.ok is True %}text-slate-400 line-through{% else %}text-slate-800 font-medium{% endif %}">{{ c.titel }}</div>
-                        <div class="text-xs text-slate-400 mt-0.5">{{ c.hinweis }}</div>
+                        <div class="text-sm {% if c.ok is True %}fw-faint line-through{% else %}fw-strong font-medium{% endif %}">{{ c.titel }}</div>
+                        <div class="text-xs fw-faint mt-0.5">{{ c.hinweis }}</div>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 mt-1"></i>
+                    <i class="fa-solid fa-chevron-right text-[10px] fw-faint mt-1"></i>
                 </a>
             {% endfor %}
             </div>
-            <div class="px-4 py-2 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-400">
+            <div class="px-4 py-2 fw-flaeche2 border-t fw-linie text-[11px] fw-faint">
                 Reihenfolge = empfohlener Ablauf. Grün = erledigt, gelb = offen, grau = manuell prüfen.
             </div>
         </div>
 
-        <div class="mt-4 bg-white rounded-xl border border-slate-200 p-4">
-            <div class="text-xs uppercase tracking-wide text-slate-400 font-semibold mb-2">Direkt zu</div>
+        <div class="mt-4 fw-card p-4">
+            <div class="text-xs uppercase tracking-wide fw-faint font-semibold mb-2">Direkt zu</div>
             <div class="grid grid-cols-2 gap-2 text-sm">
-                <a href="/neu/buchhaltung/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-calculator w-4 mr-1"></i>Journal</a>
-                <a href="/neu/mieterkonten/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-file-invoice-dollar w-4 mr-1"></i>Mieterkonten</a>
-                <a href="/neu/lieferantenkonten/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-file-invoice w-4 mr-1"></i>Lieferantenkonten</a>
-                <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-chart-column w-4 mr-1"></i>Debitoren-Aging</a>
-                <a href="/neu/mwst/" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-percent w-4 mr-1"></i>MWST</a>
-                <a href="/neu/nebenkosten/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-bolt w-4 mr-1"></i>Nebenkosten</a>
-                <a href="/neu/anlagen/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-building-columns w-4 mr-1"></i>Abschluss</a>
+                <a href="/neu/buchhaltung/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-calculator w-4 mr-1"></i>Journal</a>
+                <a href="/neu/mieterkonten/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-file-invoice-dollar w-4 mr-1"></i>Mieterkonten</a>
+                <a href="/neu/lieferantenkonten/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-file-invoice w-4 mr-1"></i>Lieferantenkonten</a>
+                <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-chart-column w-4 mr-1"></i>Debitoren-Aging</a>
+                <a href="/neu/mwst/" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-percent w-4 mr-1"></i>MWST</a>
+                <a href="/neu/nebenkosten/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-bolt w-4 mr-1"></i>Nebenkosten</a>
+                <a href="/neu/anlagen/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-building-columns w-4 mr-1"></i>Abschluss</a>
             </div>
         </div>
     </div>

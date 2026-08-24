@@ -11,16 +11,16 @@
 {% block content %}
     {% if objekte %}
     <div class="mb-6">
-        <h1 class="text-2xl font-black tracking-tight text-slate-900">Kündigung erfassen</h1>
-        <p class="text-slate-500 mt-1">Reichen Sie Ihre Kündigung ein und laden Sie den vorbereiteten Brief herunter.</p>
+        <h1 class="text-2xl font-black tracking-tight fw-strong">Kündigung erfassen</h1>
+        <p class="fw-mutet mt-1">Reichen Sie Ihre Kündigung ein und laden Sie den vorbereiteten Brief herunter.</p>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-100">
-            <h2 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-file-signature text-slate-400"></i> Mietvertrag kündigen</h2>
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm mb-6 overflow-hidden">
+        <div class="px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong flex items-center gap-2"><i class="fa-solid fa-file-signature fw-faint"></i> Mietvertrag kündigen</h2>
         </div>
         <div class="p-5">
-            <div class="flex items-start gap-3 bg-indigo-50 border border-indigo-100 text-indigo-800 rounded-xl px-4 py-3 text-sm mb-5">
+            <div class="flex items-start gap-3 fw-markenflaeche border fw-linie-marke fw-marke rounded-xl px-4 py-3 text-sm mb-5">
                 <i class="fa-solid fa-circle-info mt-0.5"></i>
                 <p>Ihre Kündigung wird der Verwaltung als Eingang übermittelt. Laden Sie anschliessend den
                 vorbereiteten Kündigungsbrief herunter und senden Sie ihn zusätzlich <strong>per Einschreiben</strong> —
@@ -30,9 +30,9 @@
             <form method="post" action="/mieter/kuendigung/" class="space-y-4">
                 {% csrf_token %}
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">Mietobjekt</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1.5">Mietobjekt</label>
                     <select name="vertrag_id" id="objektWahl" onchange="terminAnzeigen()"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
+                            class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
                         {% for o in objekte %}
                         <option value="{{ o.vertrag.id }}"
                             data-termin="{{ o.termin|date:'d.m.Y' }}" data-termin-iso="{{ o.termin|date:'Y-m-d' }}"
@@ -43,55 +43,55 @@
                     </select>
                 </div>
 
-                <div id="terminInfo" class="flex items-start gap-2.5 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl px-4 py-3 text-sm"></div>
+                <div id="terminInfo" class="flex items-start gap-2.5 fw-flaeche2 border fw-linie fw-mutet rounded-xl px-4 py-3 text-sm"></div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">Gewünschtes Vertragsende <span class="text-slate-300 font-normal">(optional — leer = nächster ordentlicher Termin)</span></label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1.5">Gewünschtes Vertragsende <span class="fw-faint font-normal">(optional — leer = nächster ordentlicher Termin)</span></label>
                     <input type="date" name="gewuenschtes_ende" min="{{ heute_iso }}"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
+                           class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">Bemerkung <span class="text-slate-300 font-normal">(optional)</span></label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1.5">Bemerkung <span class="fw-faint font-normal">(optional)</span></label>
                     <textarea name="bemerkung" rows="2" placeholder="z.B. neue Adresse, Nachmieter-Vorschlag"
-                              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 placeholder:text-slate-300"></textarea>
+                              class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint"></textarea>
                 </div>
 
-                <div id="famHinweis" style="display:none;" class="flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">
+                <div id="famHinweis" style="display:none;" class="flex items-start gap-2.5 fw-warn-flaeche border fw-linie-warn fw-warnton rounded-xl px-4 py-3 text-sm">
                     <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
                     <p>Familienwohnung: Die Kündigung ist nur gültig, wenn <strong>beide Ehegatten/Partner</strong> den Brief
                     unterschreiben (Art. 266m OR). Der Brief enthält zwei Unterschriftszeilen.</p>
                 </div>
 
-                <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+                <button type="submit" class="w-full sm:w-auto fw-balken-voll hover:fw-balken-voll transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg fw-schatten-marke flex items-center justify-center gap-2">
                     <i class="fa-solid fa-paper-plane"></i> Kündigung erfassen
                 </button>
             </form>
         </div>
     </div>
     {% else %}
-    <div class="rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 p-5 flex items-start gap-3">
+    <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 flex items-start gap-3">
         <i class="fa-solid fa-circle-info mt-0.5"></i>
         <p class="text-sm">Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</p>
     </div>
     {% endif %}
 
     {% if kuendigungen %}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-100">
-            <h2 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Ihre Kündigungen</h2>
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left fw-faint"></i> Ihre Kündigungen</h2>
         </div>
-        <div class="divide-y divide-slate-100">
+        <div class="fw-dv">
             {% for k in kuendigungen %}
             <div class="flex items-center justify-between gap-3 px-5 py-3.5">
                 <div class="min-w-0">
-                    <div class="font-semibold text-sm text-slate-800 truncate">{{ k.objekt }}</div>
-                    <div class="text-xs text-slate-400 mt-0.5">per {{ k.per|date:"d.m.Y" }} · eingereicht {{ k.eingereicht|date:"d.m.Y" }}</div>
+                    <div class="font-semibold text-sm fw-strong truncate">{{ k.objekt }}</div>
+                    <div class="text-xs fw-faint mt-0.5">per {{ k.per|date:"d.m.Y" }} · eingereicht {{ k.eingereicht|date:"d.m.Y" }}</div>
                 </div>
                 <div class="flex items-center gap-2.5 shrink-0">
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">{{ k.status }}</span>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full fw-markenflaeche fw-marke">{{ k.status }}</span>
                     <a href="/mieter/kuendigung/{{ k.id }}/brief/" target="_blank" rel="noopener"
-                       class="bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap flex items-center gap-1.5">
+                       class="fw-flaeche border fw-linie-marke fw-marke hover:fw-markenflaeche transition-colors text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap flex items-center gap-1.5">
                         <i class="fa-solid fa-file-pdf"></i> Brief
                     </a>
                 </div>

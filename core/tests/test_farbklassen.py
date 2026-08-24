@@ -32,7 +32,7 @@ E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 `anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
-**STAND 2743 in 103 Vorlagen**.
+**STAND 2108 in 97 Vorlagen**.
 
 Eins weniger als beim Herausloesen geplant: Der Absendeknopf des
 öffentlichen Bewerbungsformulars trug `fw-gut-flaeche0` (eine Klasse, die
@@ -115,6 +115,30 @@ FARBMUSTER = re.compile(
     r'white|black)(?:-\d{2,3})?(?:/\d{1,3})?\b')
 
 #: Stand vom 23.08.2026 (Beginn E2). Obergrenze je Vorlage — nur senken.
+#: WARUM `fw/base.html` MIT 184 GANZ OBEN STEHT UND TROTZDEM WARTEN MUSS
+#:
+#: NACHGEMESSEN, WEIL DIE ERSTE FASSUNG «alle 184» BEHAUPTETE: Es sind
+#: **51 von 184**, die im Dunkelmodus-Overlay stecken — dem Block, der
+#: Tailwind-Utilities fuer `[data-theme="dark"]` umdefiniert (`.bg-slate-100`,
+#: `.text-slate-400` &c.). Gezaehlt je Regelblock, nicht je Zeile: Ein
+#: zeilenweiser Blick verfehlt die mehrzeiligen Regeln.
+#:
+#: Die **133 uebrigen** sind gewoehnliches Markup der Huelle — `text-slate-400`
+#: (19x), `text-white` (15x), `text-slate-500` (12x) in Seitenleiste und
+#: Kopfzeile. Die sind NICHT blockiert und koennten jederzeit umgestellt
+#: werden; nur die 51 muessen warten.
+#:
+#: Warum die 51 warten: Sie sind die Gegenstuecke zu Klassen, die in ANDEREN
+#: Vorlagen stehen. Gemessen am 24.08.2026 mit der Zaehl-Logik dieses Tests:
+#: `text-slate-400` in 56 Vorlagen, `border-slate-200` in 56,
+#: `bg-slate-100` in 38 (jeweils inklusive base.html selbst). Wer das Overlay
+#: jetzt abbaut, nimmt diesen Seiten den Dunkelmodus — sie faerben sich nicht
+#: mehr um und stehen hell in einer dunklen Anwendung.
+#:
+#: Das Overlay ist deshalb der LETZTE Schritt von E2, nicht der naechste: Es
+#: kann verschwinden, sobald die Zahl darunter 0 erreicht. Bis dahin ist seine
+#: Obergrenze eine Buchhaltung ueber fremde Schuld.
+
 OBERGRENZE = {
     'core/templates/403.html': 10,
     'core/templates/404.html': 10,
@@ -131,9 +155,9 @@ OBERGRENZE = {
     'core/templates/core/mieter_daten.html': 27,
     'core/templates/core/mieter_dokumente.html': 21,
     'core/templates/core/mieter_konto.html': 40,
-    'core/templates/core/mieter_kuendigung.html': 55,
+    'core/templates/core/mieter_kuendigung.html': 1,
     'core/templates/core/mieter_passwort.html': 16,
-    'core/templates/core/mieter_portal.html': 73,
+    'core/templates/core/mieter_portal.html': 3,
     'core/templates/core/mieter_rechnungen.html': 36,
     'core/templates/core/mieter_schaden.html': 42,
     'core/templates/core/mieter_ticket_detail.html': 37,
@@ -153,7 +177,6 @@ OBERGRENZE = {
     'core/templates/core/schaden_melden.html': 1,
     'core/templates/core/zweifaktor_codes.html': 14,
     'core/templates/core/zweifaktor_einrichten.html': 25,
-    'core/templates/core/zweifaktor_uebersicht.html': 53,
     'core/templates/fw/_bezahlt_leer.html': 7,
     'core/templates/fw/_empty.html': 7,
     'core/templates/fw/_fwmodal.html': 7,
@@ -162,7 +185,6 @@ OBERGRENZE = {
     'core/templates/fw/_pipeline.html': 13,
     'core/templates/fw/_schicht.html': 7,
     'core/templates/fw/_unterschrift_feld.html': 34,
-    'core/templates/fw/abonnement.html': 54,
     'core/templates/fw/anlagen.html': 3,
     'core/templates/fw/auswertung.html': 36,
     'core/templates/fw/bankabgleich.html': 6,
@@ -173,18 +195,16 @@ OBERGRENZE = {
     'core/templates/fw/benutzer_form.html': 34,
     'core/templates/fw/berichte.html': 18,
     'core/templates/fw/betriebskostenspiegel.html': 32,
-    'core/templates/fw/bewerber_vergleich.html': 50,
+    'core/templates/fw/bewerber_vergleich.html': 3,
     'core/templates/fw/bewerbung_detail.html': 3,
     'core/templates/fw/bewerbungen.html': 12,
-    'core/templates/fw/debitoren_aging.html': 50,
-    'core/templates/fw/dokumente.html': 50,
+    'core/templates/fw/dokumente.html': 1,
     'core/templates/fw/einstellungen.html': 10,
-    'core/templates/fw/finanzen.html': 49,
+    'core/templates/fw/finanzen.html': 1,
     'core/templates/fw/integrationen.html': 48,
     'core/templates/fw/kautionen.html': 28,
     'core/templates/fw/kontoblatt.html': 36,
     'core/templates/fw/kreditoren.html': 8,
-    'core/templates/fw/kuendigung_form.html': 50,
     'core/templates/fw/lebensdauer.html': 33,
     'core/templates/fw/leerstand_verlauf.html': 36,
     'core/templates/fw/lieferantenkonten.html': 25,
@@ -193,10 +213,9 @@ OBERGRENZE = {
     'core/templates/fw/mandat_abrechnung.html': 48,
     'core/templates/fw/mandate.html': 21,
     'core/templates/fw/mieterkonten.html': 37,
-    'core/templates/fw/mieterspiegel.html': 56,
     'core/templates/fw/mieterspiegel_auswahl.html': 21,
     'core/templates/fw/mieterwechsel.html': 3,
-    'core/templates/fw/mietzins.html': 52,
+    'core/templates/fw/mietzins.html': 1,
     'core/templates/fw/mietzins_massen.html': 27,
     'core/templates/fw/nebenkosten_detail.html': 3,
     'core/templates/fw/objekt_ausschreiben.html': 20,
@@ -206,7 +225,6 @@ OBERGRENZE = {
     'core/templates/fw/schaden_detail.html': 2,
     'core/templates/fw/schaden_kosten.html': 40,
     'core/templates/fw/schaeden.html': 33,
-    'core/templates/fw/sollstellung.html': 53,
     'core/templates/fw/stub.html': 8,
     'core/templates/fw/suche.html': 47,
     'core/templates/fw/untermiete.html': 20,

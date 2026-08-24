@@ -9,36 +9,36 @@
 </div>
 
 <!-- Monatlich / Jährlich -->
-<div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 mb-6 shadow-sm">
+<div class="inline-flex items-center gap-1 fw-flaeche border fw-linie rounded-xl p-1 mb-6 shadow-sm">
     <form method="post">{% csrf_token %}
         <input type="hidden" name="plan" value="{{ aktiver_plan }}">
-        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if not jaehrlich %}bg-indigo-600 text-white{% else %}text-slate-500 hover:text-slate-700{% endif %}">Monatlich</button>
+        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if not jaehrlich %}fw-btn fw-primary{% else %}fw-mutet hover:fw-ink{% endif %}">Monatlich</button>
     </form>
     <form method="post">{% csrf_token %}
         <input type="hidden" name="plan" value="{{ aktiver_plan }}">
         <input type="hidden" name="jaehrlich" value="on">
-        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if jaehrlich %}bg-indigo-600 text-white{% else %}text-slate-500 hover:text-slate-700{% endif %}">
-            Jährlich <span class="text-[10px] font-bold {% if jaehrlich %}text-indigo-100{% else %}text-emerald-600{% endif %}">−15 %</span></button>
+        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if jaehrlich %}fw-btn fw-primary{% else %}fw-mutet hover:fw-ink{% endif %}">
+            Jährlich <span class="text-[10px] font-bold {% if jaehrlich %}fw-faint{% else %}fw-gut{% endif %}">−15 %</span></button>
     </form>
 </div>
 
 <div class="grid md:grid-cols-3 gap-5 items-start">
     {% for p in plaene %}
-    <div class="relative bg-white rounded-xl border shadow-sm overflow-hidden
-        {% if p.empfohlen %}border-indigo-300 ring-2 ring-indigo-100{% else %}border-slate-200{% endif %}">
-        {% if p.empfohlen %}<div class="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl">Empfohlen</div>{% endif %}
+    <div class="relative fw-flaeche rounded-xl border shadow-sm overflow-hidden
+        {% if p.empfohlen %}fw-linie-marke ring-2 fw-fokusring{% else %}fw-linie{% endif %}">
+        {% if p.empfohlen %}<div class="absolute top-0 right-0 fw-btn fw-primary text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl">Empfohlen</div>{% endif %}
         <div class="p-6">
             <div class="flex items-center gap-2">
-                <h2 class="text-lg font-extrabold text-slate-900">{{ p.name }}</h2>
-                {% if p.aktiv %}<span class="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Aktiv</span>{% endif %}
+                <h2 class="text-lg font-extrabold fw-strong">{{ p.name }}</h2>
+                {% if p.aktiv %}<span class="text-[10px] font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-0.5 rounded-full">Aktiv</span>{% endif %}
             </div>
-            <p class="text-xs text-slate-400 mt-0.5 mb-4">{{ p.zielgruppe }}</p>
+            <p class="text-xs fw-faint mt-0.5 mb-4">{{ p.zielgruppe }}</p>
 
             <div class="flex items-end gap-1">
-                <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">CHF {{ p.monatlich }}</span>
-                <span class="text-sm text-slate-400 mb-1">/ Monat</span>
+                <span class="text-2xl sm:text-3xl font-extrabold fw-strong">CHF {{ p.monatlich }}</span>
+                <span class="text-sm fw-faint mb-1">/ Monat</span>
             </div>
-            <p class="text-xs text-slate-400 mt-1">
+            <p class="text-xs fw-faint mt-1">
                 CHF {{ p.preis_einheit }}/Einheit · min. CHF {{ p.grund }}{% if p.gratis_bis %} · gratis bis {{ p.gratis_bis }} Einheiten{% endif %}
                 {% if jaehrlich %}<br>CHF {{ p.jahr }}/Jahr (−15 %){% endif %}
             </p>
@@ -47,7 +47,7 @@
                 <input type="hidden" name="plan" value="{{ p.key }}">
                 {% if jaehrlich %}<input type="hidden" name="jaehrlich" value="on">{% endif %}
                 <button type="submit" class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors
-                    {% if p.aktiv %}bg-slate-100 text-slate-400 cursor-default{% elif p.empfohlen %}bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200{% else %}bg-slate-900 hover:bg-slate-800 text-white{% endif %}"
+                    {% if p.aktiv %}fw-flaeche2 fw-faint cursor-default{% elif p.empfohlen %}fw-btn fw-primary shadow-lg fw-schatten-marke{% else %}fw-balken-voll hover:fw-balken-voll{% endif %}"
                     {% if p.aktiv %}disabled{% endif %}>
                     {% if p.aktiv %}Aktueller Plan{% else %}Plan wählen{% endif %}
                 </button>
@@ -55,10 +55,10 @@
 
             <ul class="mt-5 space-y-2">
                 {% for f in p.features %}
-                <li class="flex items-start gap-2 text-sm text-slate-600"><i class="fa-solid fa-check text-emerald-500 mt-0.5"></i> {{ f }}</li>
+                <li class="flex items-start gap-2 text-sm fw-mutet"><i class="fa-solid fa-check fw-gut mt-0.5"></i> {{ f }}</li>
                 {% endfor %}
                 {% for f in p.nicht %}
-                <li class="flex items-start gap-2 text-sm text-slate-300"><i class="fa-solid fa-xmark mt-0.5"></i> {{ f }}</li>
+                <li class="flex items-start gap-2 text-sm fw-faint"><i class="fa-solid fa-xmark mt-0.5"></i> {{ f }}</li>
                 {% endfor %}
             </ul>
         </div>
@@ -66,14 +66,14 @@
     {% endfor %}
 </div>
 
-<div class="mt-6 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-    <h3 class="font-bold text-slate-900 flex items-center gap-2 mb-3"><i class="fa-solid fa-puzzle-piece text-slate-400"></i> Add-ons</h3>
+<div class="mt-6 fw-card p-5">
+    <h3 class="font-bold fw-strong flex items-center gap-2 mb-3"><i class="fa-solid fa-puzzle-piece fw-faint"></i> Add-ons</h3>
     <div class="grid sm:grid-cols-3 gap-3 text-sm">
-        <div class="rounded-xl bg-slate-50 border border-slate-100 p-4"><div class="font-semibold text-slate-800">Datenmigration</div><div class="text-slate-500 text-xs mt-1">Einmalig CHF 200–800, schmerzloser Umzug bestehender Mandate.</div></div>
-        <div class="rounded-xl bg-slate-50 border border-slate-100 p-4"><div class="font-semibold text-slate-800">E-Signaturen</div><div class="text-slate-500 text-xs mt-1">CHF 1.50/Signatur (in Premium inkl. Kontingent).</div></div>
-        <div class="rounded-xl bg-slate-50 border border-slate-100 p-4"><div class="font-semibold text-slate-800">SMS & Speicher</div><div class="text-slate-500 text-xs mt-1">SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher.</div></div>
+        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">Datenmigration</div><div class="fw-mutet text-xs mt-1">Einmalig CHF 200–800, schmerzloser Umzug bestehender Mandate.</div></div>
+        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">E-Signaturen</div><div class="fw-mutet text-xs mt-1">CHF 1.50/Signatur (in Premium inkl. Kontingent).</div></div>
+        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">SMS & Speicher</div><div class="fw-mutet text-xs mt-1">SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher.</div></div>
     </div>
 </div>
 
-<p class="text-xs text-slate-400 mt-4">Alle Preise exkl. MWST. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet. Preise sind ein Startgerüst und können in den Einstellungen angepasst werden.</p>
+<p class="text-xs fw-faint mt-4">Alle Preise exkl. MWST. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet. Preise sind ein Startgerüst und können in den Einstellungen angepasst werden.</p>
 {% endblock %}

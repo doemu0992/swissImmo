@@ -589,10 +589,19 @@ und einen Stilblock enthaelt.
            `file:fw-ink`, `hover:fw-warn-flaeche`) — die neu umgestellten
            Seiten brauchten sie. */
         .hover\:fw-flaeche2:hover{background:var(--ds-surface-2)}
+        /* Weitere Zustands-Praefixe, die beim Umstellen entstanden sind.
+           `placeholder:` und `disabled:` tragen Bedeutung — ein deaktiviertes
+           Feld MUSS anders aussehen —, deshalb bekommen sie Regeln statt
+           gekuerzt zu werden. */
+        .placeholder\:fw-faint::placeholder{color:var(--ds-faint)}
+        .disabled\:fw-balken:disabled{background:var(--ds-line)}
+        .disabled\:fw-faint:disabled{color:var(--ds-faint)}
+        .disabled\:fw-flaeche2:disabled{background:var(--ds-surface-2)}
         .hover\:fw-flaeche:hover{background:var(--ds-surface)}
         .focus\:fw-flaeche:focus{background:var(--ds-surface)}
         .hover\:fw-markenflaeche:hover{background:var(--ds-brand-soft)}
         .hover\:fw-krit-flaeche:hover{background:var(--ds-crit-soft)}
+        .hover\:fw-info-flaeche:hover{background:var(--ds-info-soft)}
         .hover\:fw-warn-flaeche:hover{background:var(--ds-warn-soft)}
         .hover\:fw-gut-flaeche:hover{background:var(--ds-good-soft)}
         .hover\:fw-marke:hover{color:var(--ds-brand)}
@@ -630,6 +639,9 @@ und einen Stilblock enthaelt.
         /* Balken und Fuellstaende (Fortschritt, Auslastung). */
         .fw-balken{background:var(--ds-line)}
         .fw-balken-voll{background:var(--ds-brand)}
+        /* Verlauf in der Markenfarbe — Kopfzeile des Mieterportals.
+           Ueber Tokens, damit er dem Dunkelmodus und spaeterem Branding folgt. */
+        .fw-marke-verlauf{background:linear-gradient(135deg,var(--ds-brand),var(--ds-brand-600))}
         /* Gesaettigtes Gruen als Flaeche — fuer Absendeknoepfe mit
            eigenen Massen, die `fw-btn` nicht mitnehmen koennen. */
         .fw-gut-voll{background:var(--ds-good);color:#fff}

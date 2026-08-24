@@ -1,12 +1,12 @@
 {% extends 'fw/base.html' %}
 {% block title %}Kündigung erfassen — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/{{ lg_query }}" class="hover:text-indigo-600">Verträge</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/vertraege/{{ lg_query }}" class="hover:fw-marke">Verträge</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:text-indigo-600">{{ v.mieter.display_name }}</a>
+    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">Kündigung</span>
+    <span class="fw-mutet font-medium">Kündigung</span>
 </nav>
 
 <div class="fw-phead">
@@ -21,38 +21,38 @@
     {# Im Cockpit-Modal geladen? Dann nach dem Speichern das Popup schliessen. #}
     <input type="hidden" name="embed" id="k_embed" value="">
     <script>if (window.self !== window.top) document.getElementById('k_embed').value = '1';</script>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+    <div class="fw-card p-5 space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="s_absender" class="block text-xs font-semibold text-slate-500 mb-1">Gekündigt durch *</label>
-                <select name="absender" onchange="syncZustellung(); kuendigungCheck()" id="s_absender" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label for="s_absender" class="block text-xs font-semibold fw-mutet mb-1">Gekündigt durch *</label>
+                <select name="absender" onchange="syncZustellung(); kuendigungCheck()" id="s_absender" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="mieter">Mieter</option>
                     <option value="vermieter">Vermieter</option>
                 </select></div>
-            <div><label for="s_zustellung" class="block text-xs font-semibold text-slate-500 mb-1">Zustellung</label>
-                <select name="zustellung" id="s_zustellung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label for="s_zustellung" class="block text-xs font-semibold fw-mutet mb-1">Zustellung</label>
+                <select name="zustellung" id="s_zustellung" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="einschreiben">Einschreiben (Mieter)</option>
                     <option value="amtliches_formular">Amtliches Formular (Vermieter)</option>
                     <option value="normal">Normal / persönlich</option>
                 </select></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="s_eingang" class="block text-xs font-semibold text-slate-500 mb-1">Eingang / Poststempel *</label>
-                <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" onchange="berechne()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label for="s_gew_ende" class="block text-xs font-semibold text-slate-500 mb-1">Gewünschtes Ende <span class="text-slate-400 font-normal">(optional)</span></label>
-                <input type="date" name="gewuenschtes_ende" id="s_gew_ende" onchange="kuendigungCheck()" {% if ao_termin %}value="{{ ao_termin|date:'Y-m-d' }}"{% endif %} class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="s_eingang" class="block text-xs font-semibold fw-mutet mb-1">Eingang / Poststempel *</label>
+                <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" onchange="berechne()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="s_gew_ende" class="block text-xs font-semibold fw-mutet mb-1">Gewünschtes Ende <span class="fw-faint font-normal">(optional)</span></label>
+                <input type="date" name="gewuenschtes_ende" id="s_gew_ende" onchange="kuendigungCheck()" {% if ao_termin %}value="{{ ao_termin|date:'Y-m-d' }}"{% endif %} class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
 
         <!-- Mietrechtliche Live-Prüfung -->
-        <div id="k-warn" class="hidden rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-800">
+        <div id="k-warn" class="hidden rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
             <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
             <ul id="k-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
 
         <!-- Berechneter Termin -->
-        <div class="bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-3">
-            <div class="text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-0.5">Nächster ordentlicher Kündigungstermin</div>
-            <div class="text-lg font-bold text-indigo-700" id="termin-anzeige">{{ vorschau_termin|date:"d.m.Y" }}</div>
-            <p class="text-xs text-indigo-400 mt-0.5">Berechnet aus Eingang + {{ v.kuendigungsfrist_monate }} Monaten, auf den nächsten erlaubten Termin.</p>
+        <div class="fw-markenflaeche border fw-linie-marke rounded-lg px-4 py-3">
+            <div class="text-xs font-semibold fw-marke uppercase tracking-wide mb-0.5">Nächster ordentlicher Kündigungstermin</div>
+            <div class="text-lg font-bold fw-marke" id="termin-anzeige">{{ vorschau_termin|date:"d.m.Y" }}</div>
+            <p class="text-xs fw-marke mt-0.5">Berechnet aus Eingang + {{ v.kuendigungsfrist_monate }} Monaten, auf den nächsten erlaubten Termin.</p>
         </div>
 
         {% comment %} FRISTENWÄCHTER (Phase 4b.10). Die Prüfung läuft auf dem
@@ -68,44 +68,44 @@
 
         {% if ao_termin %}
         <!-- Ausserordentlicher Termin bei Zahlungsverzug (Art. 257d Abs. 2) -->
-        <div class="bg-rose-50 border border-rose-100 rounded-lg px-4 py-3">
-            <div class="text-xs font-semibold text-rose-500 uppercase tracking-wide mb-0.5">Ausserordentlich wegen Zahlungsverzug</div>
-            <div class="text-lg font-bold text-rose-700">frühestens {{ ao_termin|date:"d.m.Y" }}</div>
-            <p class="text-xs text-rose-400 mt-0.5">Art. 257d Abs. 2 OR: mindestens 30 Tage auf Ende eines Monats — erst nach fruchtlosem Ablauf der gesetzten Zahlungsfrist.</p>
+        <div class="fw-krit-flaeche border fw-linie-krit rounded-lg px-4 py-3">
+            <div class="text-xs font-semibold fw-kritisch uppercase tracking-wide mb-0.5">Ausserordentlich wegen Zahlungsverzug</div>
+            <div class="text-lg font-bold fw-kritisch">frühestens {{ ao_termin|date:"d.m.Y" }}</div>
+            <p class="text-xs fw-kritisch mt-0.5">Art. 257d Abs. 2 OR: mindestens 30 Tage auf Ende eines Monats — erst nach fruchtlosem Ablauf der gesetzten Zahlungsfrist.</p>
         </div>
         {% endif %}
 
-        <label class="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="accent-indigo-600"> Ausserordentliche Kündigung
+        <label class="flex items-center gap-2 text-sm fw-ink">
+            <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="fw-akzent"> Ausserordentliche Kündigung
         </label>
         <div id="ao-box" class="{% if not prefill_ao %}hidden {% endif %}space-y-3 pl-6">
-            <div><label for="s_ao_grund" class="block text-xs font-semibold text-slate-500 mb-1">Grund</label>
-                <input id="s_ao_grund" name="ausserordentlich_grund" value="{{ prefill_grund }}" placeholder="z. B. wichtiger Grund (Art. 266g), Zahlungsverzug (257d) …" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="s_ao_grund" class="block text-xs font-semibold fw-mutet mb-1">Grund</label>
+                <input id="s_ao_grund" name="ausserordentlich_grund" value="{{ prefill_grund }}" placeholder="z. B. wichtiger Grund (Art. 266g), Zahlungsverzug (257d) …" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
 
-        <div><label for="s_erstreckung" class="block text-xs font-semibold text-slate-500 mb-1">Erstreckung bis <span class="text-slate-400 font-normal">(optional)</span></label>
-            <input id="s_erstreckung" type="date" name="erstreckung_bis" class="w-full sm:w-56 bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="s_bemerkung" class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
-            <textarea id="s_bemerkung" name="bemerkung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+        <div><label for="s_erstreckung" class="block text-xs font-semibold fw-mutet mb-1">Erstreckung bis <span class="fw-faint font-normal">(optional)</span></label>
+            <input id="s_erstreckung" type="date" name="erstreckung_bis" class="w-full sm:w-56 fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="s_bemerkung" class="block text-xs font-semibold fw-mutet mb-1">Bemerkung</label>
+            <textarea id="s_bemerkung" name="bemerkung" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
 
-        <label class="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" name="bestaetigen" checked class="accent-indigo-600"> Kündigung als bestätigt markieren (Vertrag wird auf „Gekündigt" gesetzt)
+        <label class="flex items-center gap-2 text-sm fw-ink">
+            <input type="checkbox" name="bestaetigen" checked class="fw-akzent"> Kündigung als bestätigt markieren (Vertrag wird auf „Gekündigt" gesetzt)
         </label>
-        <label class="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" name="leerstand_anlegen" class="accent-indigo-600"> Objekt wird frei — Leerstand ab Vertragsende anlegen &amp; Nachmieter-Pendenz erstellen
+        <label class="flex items-center gap-2 text-sm fw-ink">
+            <input type="checkbox" name="leerstand_anlegen" class="fw-akzent"> Objekt wird frei — Leerstand ab Vertragsende anlegen &amp; Nachmieter-Pendenz erstellen
         </label>
-        <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-xs text-slate-600">
-            <i class="fa-solid fa-list-check text-indigo-500 mr-1"></i>
+        <div class="fw-markenflaeche border fw-linie-marke rounded-lg p-3 text-xs fw-mutet">
+            <i class="fa-solid fa-list-check fw-marke mr-1"></i>
             Beim Speichern wird automatisch eine <b>Auszugscheckliste</b> als Pendenzen angelegt (Abnahmetermin, Wohnungsabnahme,
             Zählerstände, Schlüssel, Schlussabrechnung, Kaution abrechnen …) — mit Fälligkeiten rund um das Vertragsende.
         </div>
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>Kündigung speichern
         </button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
 </form>
 

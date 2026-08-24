@@ -12,68 +12,68 @@
 <div class="max-w-2xl space-y-5">
     {% if messages %}{% for m in messages %}
     <div class="rounded-xl p-4 text-sm border
-                {% if m.tags == 'error' %}bg-red-50 border-red-200 text-red-700
-                {% elif m.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900
-                {% else %}bg-emerald-50 border-emerald-200 text-emerald-800{% endif %}">{{ m }}</div>
+                {% if m.tags == 'error' %}fw-krit-flaeche fw-linie-krit fw-kritisch
+                {% elif m.tags == 'warning' %}fw-warn-flaeche fw-linie-warn fw-warnton
+                {% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}">{{ m }}</div>
     {% endfor %}{% endif %}
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="fw-card p-5">
         {% if faktor %}
             <div class="flex items-center gap-2 mb-1">
-                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-                <h3 class="font-bold text-slate-800 text-sm">Aktiv</h3>
+                <span class="inline-block w-2 h-2 rounded-full fw-gut-voll"></span>
+                <h3 class="font-bold fw-strong text-sm">Aktiv</h3>
             </div>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs fw-mutet">
                 Eingerichtet am {{ faktor.bestaetigt_am|date:"d.m.Y" }}.
                 {% if faktor.letzte_verwendung %}Zuletzt verwendet am
                 {{ faktor.letzte_verwendung|date:"d.m.Y H:i" }}.{% endif %}
             </p>
-            <p class="text-xs mt-3 {% if offene_codes < 3 %}text-amber-700 font-semibold{% else %}text-slate-500{% endif %}">
+            <p class="text-xs mt-3 {% if offene_codes < 3 %}fw-warnton font-semibold{% else %}fw-mutet{% endif %}">
                 Offene Notfallcodes: {{ offene_codes }}{% if offene_codes < 3 %} — neue erzeugen{% endif %}
             </p>
         {% else %}
             <div class="flex items-center gap-2 mb-1">
-                <span class="inline-block w-2 h-2 rounded-full bg-slate-300"></span>
-                <h3 class="font-bold text-slate-800 text-sm">Nicht eingerichtet</h3>
+                <span class="inline-block w-2 h-2 rounded-full fw-balken"></span>
+                <h3 class="font-bold fw-strong text-sm">Nicht eingerichtet</h3>
             </div>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs fw-mutet">
                 Ihr Konto ist derzeit nur durch das Passwort geschützt.
             </p>
             <a href="{% url 'zweifaktor_einrichten' %}"
-               class="inline-block mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm
+               class="inline-block mt-4 fw-btn fw-primary text-sm
                       font-semibold px-5 py-2.5 rounded-lg shadow-sm">Jetzt einrichten</a>
         {% endif %}
     </div>
 
     {% if faktor %}
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-1">Notfallcodes</h3>
-        <p class="text-xs text-slate-500 mb-4">
+    <div class="fw-card p-5">
+        <h3 class="font-bold fw-strong text-sm mb-1">Notfallcodes</h3>
+        <p class="text-xs fw-mutet mb-4">
             Neue Codes erzeugen macht alle bisherigen ungültig.
         </p>
         <form method="post" action="{% url 'zweifaktor_codes_neu' %}">
             {% csrf_token %}
-            <button class="bg-white border border-slate-300 text-slate-700 text-sm font-semibold
+            <button class="fw-flaeche border fw-linie fw-ink text-sm font-semibold
                            px-4 py-2.5 rounded-lg">Neue Codes erzeugen</button>
         </form>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-1">Abschalten</h3>
+    <div class="fw-card p-5">
+        <h3 class="font-bold fw-strong text-sm mb-1">Abschalten</h3>
         {% if pflicht %}
-        <p class="text-xs text-slate-500">
+        <p class="text-xs fw-mutet">
             Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung — sie lässt sich nicht abschalten.
         </p>
         {% else %}
-        <p class="text-xs text-slate-500 mb-4">
+        <p class="text-xs fw-mutet mb-4">
             Zur Sicherheit ist dafür Ihr Passwort nötig.
         </p>
         <form method="post" action="{% url 'zweifaktor_aus' %}" class="flex flex-wrap gap-3 items-center">
             {% csrf_token %}
             <input type="password" name="password" required placeholder="Passwort"
                    autocomplete="current-password"
-                   class="border border-slate-300 rounded-lg px-4 py-2.5 text-sm w-56">
-            <button class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold
+                   class="border fw-linie rounded-lg px-4 py-2.5 text-sm w-56">
+            <button class="fw-btn fw-gefahr text-sm font-semibold
                            px-5 py-2.5 rounded-lg">Abschalten</button>
         </form>
         {% endif %}
@@ -81,11 +81,11 @@
     {% endif %}
 
     {% if darf_verwalten %}
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-1">Für die ganze Verwaltung</h3>
+    <div class="fw-card p-5">
+        <h3 class="font-bold fw-strong text-sm mb-1">Für die ganze Verwaltung</h3>
         {% if organisation.zweifaktor_pflicht %}
-            <p class="text-xs text-slate-500 mb-4">
-                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 align-middle"></span>
+            <p class="text-xs fw-mutet mb-4">
+                <span class="inline-block w-2 h-2 rounded-full fw-gut-voll align-middle"></span>
                 Alle Konten von <strong>{{ organisation.firma }}</strong> müssen den zweiten
                 Faktor einrichten. Wer ihn noch nicht hat, landet beim nächsten Aufruf
                 auf der Einrichtungsseite.
@@ -93,16 +93,16 @@
             <form method="post" action="{% url 'zweifaktor_pflicht_setzen' %}">
                 {% csrf_token %}
                 <input type="hidden" name="pflicht" value="aus">
-                <button class="bg-white border border-slate-300 text-slate-700 text-sm
+                <button class="fw-flaeche border fw-linie fw-ink text-sm
                                font-semibold px-4 py-2.5 rounded-lg">Pflicht aufheben</button>
             </form>
         {% else %}
-            <p class="text-xs text-slate-500 mb-3">
+            <p class="text-xs fw-mutet mb-3">
                 Verlangt die Einrichtung von allen Konten dieser Verwaltung. Bereits
                 angemeldete Sitzungen sind ab sofort betroffen — nicht erst beim nächsten Login.
             </p>
             {% if ohne_faktor %}
-            <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3 text-xs mb-4">
+            <div class="fw-warn-flaeche border fw-linie-warn fw-warnton rounded-lg p-3 text-xs mb-4">
                 <strong>{{ ohne_faktor|length }} Konto/Konten ohne zweiten Faktor:</strong>
                 {% for b in ohne_faktor %}{{ b.get_username }}{% if not forloop.last %}, {% endif %}{% endfor %}.<br>
                 Sie können ab dem Einschalten nur noch die Einrichtungsseite aufrufen.
@@ -112,7 +112,7 @@
             <form method="post" action="{% url 'zweifaktor_pflicht_setzen' %}">
                 {% csrf_token %}
                 <input type="hidden" name="pflicht" value="an">
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm
+                <button class="fw-btn fw-primary text-sm
                                font-semibold px-5 py-2.5 rounded-lg shadow-sm">
                     Für alle verlangen</button>
             </form>

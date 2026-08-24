@@ -13,17 +13,17 @@
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-up"></i></div>
-        <div><div class="text-2xl font-bold text-emerald-600">{{ n_inc }}</div><div class="text-sm text-slate-500">Erhöhung möglich</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        <div><div class="text-2xl font-bold fw-gut">{{ n_inc }}</div><div class="text-sm fw-mutet">Erhöhung möglich</div></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-down"></i></div>
-        <div><div class="text-2xl font-bold text-rose-600">{{ n_dec }}</div><div class="text-sm text-slate-500">Senkungsanspruch</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-down"></i></div>
+        <div><div class="text-2xl font-bold fw-kritisch">{{ n_dec }}</div><div class="text-sm fw-mutet">Senkungsanspruch</div></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-lines"></i></div>
-        <div><div class="text-2xl font-bold text-slate-800">{{ anzahl }}</div><div class="text-sm text-slate-500">Aktive Verträge</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">Aktive Verträge</div></div>
     </div>
 </div>
 
@@ -31,19 +31,19 @@
 <form method="post" action="/neu/mietzins/massenanpassung/">
 {% csrf_token %}
 <input type="hidden" name="aktion" value="vorschau">
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+<div class="fw-card overflow-hidden">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b fw-linie">
         <div class="flex items-center gap-1.5 flex-wrap">
             {% for wert, label in pot_chips %}
             <a href="?potenzial={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if pot_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+                      {% if pot_filter == wert %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
         <div class="ml-auto flex items-center gap-3">
-            <span class="text-xs text-slate-400">{{ anzahl }} Vertrag/Verträge</span>
+            <span class="text-xs fw-faint">{{ anzahl }} Vertrag/Verträge</span>
             <button type="submit" id="massenBtn" disabled
-                    class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors">
+                    class="inline-flex items-center gap-1.5 fw-balken-voll hover:fw-balken-voll disabled:fw-balken disabled:fw-faint text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors">
                 <i class="fa-solid fa-layer-group"></i> Ausgewählte anpassen (Vorschau)
             </button>
         </div>
@@ -52,8 +52,8 @@
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="pl-5 pr-1 py-3"><input type="checkbox" id="alleWahl" class="accent-indigo-600" title="Alle auswählen"></th>
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+                <th class="pl-5 pr-1 py-3"><input type="checkbox" id="alleWahl" class="fw-akzent" title="Alle auswählen"></th>
                 <th class="px-5 py-3 font-semibold">Mieter</th>
                 <th class="px-5 py-3 font-semibold">Objekt</th>
                 <th class="px-5 py-3 font-semibold text-right">Netto effektiv</th>
@@ -63,29 +63,29 @@
                 <th class="px-5 py-3 font-semibold text-right">Aktion</th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors">
-                <td class="pl-5 pr-1 py-3.5"><input type="checkbox" name="vertrag_id" value="{{ row.v.id }}" class="vertragWahl accent-indigo-600"></td>
-                <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
-                    <a href="/neu/vertraege/{{ row.v.id }}/" class="hover:text-indigo-600">{{ row.mieter }}</a>
+            <tr class="hover:fw-flaeche2 transition-colors">
+                <td class="pl-5 pr-1 py-3.5"><input type="checkbox" name="vertrag_id" value="{{ row.v.id }}" class="vertragWahl fw-akzent"></td>
+                <td class="px-5 py-3.5 font-medium fw-strong whitespace-nowrap">
+                    <a href="/neu/vertraege/{{ row.v.id }}/" class="hover:fw-marke">{{ row.mieter }}</a>
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
-                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.netto|chf }}</td>
-                <td class="px-5 py-3.5 text-center text-slate-600 whitespace-nowrap">{% localize off %}{{ row.basis_zins }}{% endlocalize %}%</td>
-                <td class="px-5 py-3.5 text-center text-slate-600 whitespace-nowrap">{% if row.letzte_anpassung %}{{ row.letzte_anpassung|date:"d.m.Y" }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">{{ row.netto|chf }}</td>
+                <td class="px-5 py-3.5 text-center fw-mutet whitespace-nowrap">{% localize off %}{{ row.basis_zins }}{% endlocalize %}%</td>
+                <td class="px-5 py-3.5 text-center fw-mutet whitespace-nowrap">{% if row.letzte_anpassung %}{{ row.letzte_anpassung|date:"d.m.Y" }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
                 <td class="px-5 py-3.5"><span class="inline-flex items-center gap-1.5 fw-chip whitespace-nowrap {{ row.pot_cls }}"><i class="fa-solid {{ row.pot_icon }}"></i> {{ row.pot_label }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/mietzins/{{ row.v.id }}/anpassung/"
-                       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                       class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                         <i class="fa-solid fa-percent"></i> Anpassen
                     </a>
                 </td>
             </tr>
             {% empty %}
             <tr><td colspan="8" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-percent"></i></div>
-                <p class="text-sm font-medium text-slate-700">{% if pot_filter %}Keine Verträge mit diesem Potenzial{% else %}Keine aktiven Verträge{% endif %}</p>
+                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-percent"></i></div>
+                <p class="text-sm font-medium fw-ink">{% if pot_filter %}Keine Verträge mit diesem Potenzial{% else %}Keine aktiven Verträge{% endif %}</p>
             </td></tr>
             {% endfor %}
             </tbody>
@@ -107,7 +107,7 @@
   })();
 </script>
 
-<p class="text-xs text-slate-400 mt-4">
+<p class="text-xs fw-faint mt-4">
     <i class="fa-solid fa-circle-info mr-1"></i>
     „Anpassen" öffnet das amtliche Mietzinsanpassungs-Formular mit vorberechneten Werten (Referenzzins, LIK, Teuerung).
     Netto und Basis sind die <b>effektiven</b> Werte (inkl. wirksamer Anpassungen und Staffelstufen) — das Potenzial
