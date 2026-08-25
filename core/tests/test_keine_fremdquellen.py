@@ -28,21 +28,40 @@ from django.conf import settings
 from django.test import SimpleTestCase
 
 # Die Quellen, die E0.2 entfernt hat. Ab hier gesperrt.
+#
+# E2.23 hat `cdn.jsdelivr.net` und `unpkg.com` dazugenommen: Alpine, Vue,
+# signature_pad, bootstrap-icons und chart.js liegen jetzt unter `static/`,
+# geholt ueber npm statt ueber ein CDN. Damit schickt keine oeffentliche Seite
+# mehr die IP-Adresse eines Mieters oder Bewerbers an einen fremden Server —
+# und sie funktioniert auch, wenn das CDN nicht erreichbar ist.
 GESPERRT = (
     'cdn.tailwindcss.com',
     'cdnjs.cloudflare.com',
     'fonts.googleapis.com',
     'fonts.gstatic.com',
+    'cdn.jsdelivr.net',
+    'unpkg.com',
 )
 
 # Noch offen, mit Namen und Ort. Kein Freibrief, sondern eine Liste, die kürzer
 # werden soll — jede Zeile ist eine offene Aufgabe.
-ANDERE_FREMDQUELLEN = {
-    'core/templates/modern_base.html',                  # bootstrap-icons, alpine, signature_pad
-    'core/templates/core/public_bewerbung_form.html',   # vue
-    'core/templates/core/public_ticket_form.html',      # alpine
-    'templates/admin/dashboard_stats.html',             # chart.js
-}
+ANDERE_FREMDQUELLEN = set()
+# LEER SEIT E2.23 — und das ist der Punkt.
+#
+# Diese Liste stand seit E0.2 fuer die fuenf Bibliotheken, die noch von fremden
+# Servern kamen: bootstrap-icons, Alpine (zweimal), signature_pad, Vue und
+# chart.js. Drei der vier Vorlagen sind oeffentlich; jeder Aufruf schickte die
+# IP-Adresse eines Mieters oder Bewerbers an einen Dritten, und die Seite brach,
+# wenn das CDN nicht erreichbar war.
+#
+# Die Dateien liegen jetzt unter `static/`, geholt ueber npm — dieselbe Quelle
+# wie das CDN, nur ohne Laufzeitabhaengigkeit. Ihre Herkunft ist nachgemessen
+# (byteweise gegen das npm-Paket), nicht angenommen; welche Fassung wo liegt,
+# steht in `docs/FREMDBIBLIOTHEKEN.md`. `cdn.jsdelivr.net` und `unpkg.com`
+# stehen darum oben in GESPERRT.
+#
+# Eine leere Liste ist kein Freibrief: Wer eine neue Fremdquelle einbaut, muss
+# sie hier eintragen UND begruenden. Der Test darueber faellt sonst.
 
 WURZEL = Path(settings.BASE_DIR)
 

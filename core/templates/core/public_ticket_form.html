@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -6,7 +7,7 @@
     <title>Service | SwissImmo</title>
 
 {% include 'core/_assets_aussen.html' %}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script defer src="{% static 'js/alpine.min.js' %}"></script>
 
     <style>
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: #f3f4f6; margin: 0; }

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -5,7 +6,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Bewerbung: {{ einheit.bezeichnung }} - swissImmo</title>
 {% include 'core/_assets_aussen.html' %}
- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+ <script src="{% static 'js/vue.global.prod.js' %}"></script>
  <style>
  body { font-family: 'Nunito', sans-serif; background-color: var(--ds-bg); }
  .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }

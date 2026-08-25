@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -6,14 +7,28 @@
     <title>SwissImmo Portal</title>
 
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% comment %}
+bootstrap-icons stand hier bis E2.23 als CDN-Verweis. Entfernt statt ins Repo
+geholt: KEINE Vorlage, kein View und kein Skript benutzt eine `bi-`-Klasse —
+die Symbole dieser Huelle kommen aus Font Awesome (`fa-solid fa-buildings`
+weiter unten, geladen ueber `_assets_aussen`). Der Verweis war ein Rest aus
+einer frueheren Fassung und lud 98 KB CSS bei jedem Aufruf von
+/schaden/melden/, um daraus 0 von 2050 Symbolen zu benutzen. Mitgeholt worden
+waeren zusaetzlich 300 KB Schriftdateien.
+
+MEHRZEILIG HEISST `{% templatetag openblock %} comment {% templatetag closeblock %}`, NICHT die Raute. Genau hier stand zuerst
+ein mehrzeiliger `{% templatetag openbrace %}#  …  #{% templatetag closebrace %}` — den kennt Django nur EINZEILIG, also erschien
+der ganze Text als Fliesstext oben auf der oeffentlichen Schadenmeldung.
+`faelle.test_template_struktur.test_keine_mehrzeiligen_rautenkommentare` hat
+es gemeldet.
+{% endcomment %}
 
 
 {% include 'core/_assets_aussen.html' %}
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="{% static 'js/alpine.min.js' %}"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <script src="{% static 'js/signature_pad.umd.min.js' %}"></script>
 
     <style>
         body {
