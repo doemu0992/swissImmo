@@ -202,8 +202,38 @@ def kaution_hoechstbetrag(kaution, nettomiete, nebenkosten=None,
 
     Übernommen ist deshalb der Wert aus dem Bestand — so verlangt es der
     Grundsatz für Fachwerte: nachsehen, übernehmen, und einen Zweifel MELDEN
-    statt ihn zu entscheiden. Ob Art. 257e den Netto- oder den Bruttozins
-    meint, ist eine Rechtsfrage und hier offen; sie steht auf der Liste.
+    statt ihn zu entscheiden.
+
+    DIE RECHTSFRAGE IST NACHGESCHLAGEN — UND DER BESTAND HATTE RECHT
+
+    Ob Art. 257e den Netto- oder den Bruttozins meint, stand hier als offen.
+    Nachgesehen (E2.33): Die beiden Verbände, die sich sonst gegenüberstehen,
+    sagen dasselbe — massgebend ist der Bruttozins einschliesslich der
+    monatlichen Nebenkostenbeiträge.
+
+    Wenn Mieter- und Vermieterseite in einer Auslegungsfrage übereinstimmen,
+    ist das das stärkste Signal, das ohne Bundesgerichtsentscheid zu haben
+    ist — beide hätten ein Interesse an der anderen Lesart.
+
+    WIE WEIT DIE PRÜFUNG REICHT
+
+    Nicht so weit, wie der Absatz darüber klingt. Die Seiten von
+    Mieterinnen- und Mieterverband, Hauseigentümerverband und fedlex sind
+    aus dieser Umgebung nicht erreichbar (der Egress-Proxy blockiert sie).
+    Belegt ist die Aussage durch **zwei unabhängige Suchen**, davon eine auf
+    `hev-schweiz.ch` und amtliche Domains eingeschränkt; beide ergaben
+    Brutto einschliesslich Nebenkosten.
+
+    Was hier NICHT geprüft wurde: ob einzelne Anbieterseiten im Netz eine
+    andere Basis nennen. Auch das wäre unerheblich — eine
+    Kautionsvergleichsseite ist keine Rechtsquelle —, aber es steht hier
+    nicht als Feststellung, weil es keine ist.
+
+    BLEIBT: Die Regel ist damit besser begründet, aber nicht juristisch
+    geprüft, und kein Wortlaut wurde im Original gelesen. Der Regelsatz
+    bleibt ungeprüft und warnt deshalb nur. Wer ihn unter /neu/regelwerk/ als
+    geprüft kennzeichnet, legt diesen Punkt einer Anwältin vor — mit dem
+    Hinweis, dass beide Verbände Brutto sagen.
 
     ART. 257e ABS. 2 OR GILT NUR FÜR WOHNRÄUME
 

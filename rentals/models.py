@@ -252,9 +252,17 @@ class Mietvertrag(OrganisationAusKette):
 
         DIE BASIS IST NETTO + NEBENKOSTEN — SO STAND ES IM BESTAND
 
-        Ob Art. 257e den Netto- oder den Bruttomietzins meint, ist eine
-        Rechtsfrage. Sie ist hier NICHT entschieden: Übernommen ist der Wert,
-        der im Bestand stand. Wer sie klären lässt, ändert diese eine Stelle.
+        Ob Art. 257e den Netto- oder den Bruttomietzins meint, stand als
+        offene Rechtsfrage hier. Nachgeschlagen (E2.33): Mieterinnen- und
+        Mieterverband und Hauseigentümerverband nennen beide den Bruttozins
+        einschliesslich der Nebenkostenbeiträge — und wenn Mieter- und
+        Vermieterseite sich einig sind, ist das das stärkste Signal ohne
+        Bundesgerichtsentscheid.
+
+        Die Basis hier ist damit belegt, nicht bloss übernommen. Wie weit die
+        Prüfung reicht, steht bei `faelle.regelwerk.kaution_hoechstbetrag`:
+        zwei Suchen, kein im Original gelesener Wortlaut, keine juristische
+        Prüfung. Wer sie klären lässt, ändert diese eine Stelle.
         """
         monate = self.kaution_max_monate
         if not monate:
