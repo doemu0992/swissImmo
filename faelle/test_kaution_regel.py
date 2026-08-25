@@ -103,9 +103,15 @@ class KautionHoechstbetragTest(TestCase):
         Sechs Monatszinse bei einem Ladenlokal sind zulässig. Eine Warnung
         hier würde die Regel entwerten.
         """
+        # `gewerbe`, nicht `geschaeft`: Das Vokabular steht in
+        # `portfolio.Einheit.MIETRECHT_KATEGORIE` und kennt genau drei Werte —
+        # `wohnen`, `gewerbe`, `nebenobjekt`. Die erste Fassung prueste mit
+        # einem Wert, den der Bestand nie liefert. Sie war gruen, weil jeder
+        # unbekannte Wert in denselben Zweig faellt — also gruen, ohne den
+        # wirklichen Fall zu treffen.
         befund = kaution_hoechstbetrag(
             kaution=Decimal('9000'), nettomiete=Decimal('1500'),
-            kategorie='geschaeft')
+            kategorie='gewerbe')
         self.assertTrue(befund.ok, befund.meldung)
         self.assertIn('Wohnräume', befund.meldung)
         self.assertIs(befund.rechnung['gilt'], False)

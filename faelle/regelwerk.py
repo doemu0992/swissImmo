@@ -291,6 +291,130 @@ def kaution_hoechstbetrag(kaution, nettomiete, nebenkosten=None,
         rechnung=rechnung)
 
 
+#: Wie lang die Zahlungsfrist nach Art. 257d Abs. 1 OR mindestens ist —
+#: je mietrechtlicher Kategorie.
+#:
+#: DER BESTAND KANNTE DIE ZWEITE ZAHL, DIE ETAPPE NICHT
+#:
+#: E2.34 kam mit einem festen Wert von dreissig Tagen und der Begruendung:
+#: «Anders als bei der Kaution gibt es hier keinen Geltungsbereich: Die Frist
+#: gilt fuer Wohn- UND Geschaeftsraeume.» Beide genannten Faelle stimmen —
+#: der dritte fehlte.
+#:
+#: `core/views/fw/kuendigung.py` rechnet seit jeher:
+#:
+#:     min_frist = 30 if v.ist_geschuetzt else 10   # Art. 257d Abs. 1
+#:
+#: `ist_geschuetzt` ist `mietrecht_kategorie in ('wohnen', 'gewerbe')`. Fuer
+#: ein Nebenobjekt — gesondert vermieteter Parkplatz, Garage, Bastelraum —
+#: sind es also ZEHN Tage, nicht dreissig.
+#:
+#: Ohne diese Unterscheidung haette die Regel bei einem Parkplatzvertrag
+#: «zwanzig Tage zu frueh» gemeldet, wo Gesetz und Bestand die Kuendigung
+#: zulassen. Das ist genau die unbegruendete Warnung, die dieselbe Etappe bei
+#: der Kaution zu Recht vermeidet: Wer sie wegklickt, klickt auch die
+#: begruendete weg.
+#:
+#: Das Vokabular stammt aus `portfolio.Einheit.MIETRECHT_KATEGORIE` — dort
+#: gibt es genau diese drei Werte.
+ZAHLUNGSFRIST_JE_KATEGORIE = {
+    'wohnen': 30,
+    'gewerbe': 30,
+    'nebenobjekt': 10,
+}
+
+
+def zahlungsfrist(zugang, gekuendigt_am=None, mindest_tage=None,
+                  kategorie='wohnen', je_kategorie=None):
+    """Prüft die Zahlungsfrist bei Verzug (Art. 257d Abs. 1 OR).
+
+    ``zugang``         Tag, an dem die Mahnung mit Kündigungsandrohung beim
+                       Mieter ANKAM. Nicht der Versandtag — massgebend ist
+                       der Zugang, wie beim Kündigungstermin.
+    ``gekuendigt_am``  Tag der Kündigung. ``None`` = noch nicht gekündigt;
+                       dann wird der frühestmögliche Tag vorgeschlagen.
+    ``mindest_tage``   Feste Frist aus der Regel. ``None`` = nach Kategorie
+                       (Normalfall), sonst hat dieser Wert Vorrang.
+    ``kategorie``      `wohnen`, `gewerbe` oder `nebenobjekt`.
+    ``je_kategorie``   Abweichende Zuordnung aus der Regel.
+
+    WORUM ES GEHT
+
+    Art. 257d Abs. 1 OR: Ist der Mieter mit einer fälligen Zahlung im
+    Rückstand, setzt ihm der Vermieter SCHRIFTLICH eine Zahlungsfrist und
+    droht an, bei Nichtzahlung zu kündigen. Bei Wohn- und Geschäftsräumen
+    beträgt diese Frist mindestens dreissig Tage.
+
+    Wird zu früh gekündigt, ist die Kündigung NICHTIG — nicht anfechtbar,
+    sondern von Anfang an wirkungslos. Der Vermieter merkt das oft erst vor
+    der Schlichtungsbehörde, nachdem er das Verfahren schon geführt hat.
+
+    Genau deshalb gehört das zu den Regeln und nicht in eine Fristenliste:
+    Die Liste sagt, wann etwas fällig ist. Die Regel sagt, dass dieser
+    Kündigungstermin nicht durchgeht.
+
+    ZEHN TAGE BEI NEBENOBJEKTEN
+
+    Die dreissig Tage gelten für Wohn- und Geschäftsräume. Bei einem
+    gesondert vermieteten Parkplatz, einer Garage oder einem Bastelraum sind
+    es zehn — siehe `ZAHLUNGSFRIST_JE_KATEGORIE` und die dortige Begründung.
+
+    DIE FRIST BEGINNT MIT DEM ZUGANG
+
+    Nicht mit dem Poststempel und nicht mit dem Datum auf der Mahnung.
+    Dieselbe Unterscheidung wie beim Kündigungstermin — sie ist der
+    häufigste Fehler in beiden Fällen.
+
+    Diese Funktion bekommt den Zugang bereits als Datum. Wer vom Versandtag
+    aus rechnet, schlägt vorher den Zustellpuffer auf (Postweg plus
+    siebentägige Abholfrist beim Einschreiben); `fw_verzug_257d` macht das
+    mit `ZUSTELL_PUFFER = 7`.
+
+    DER TAG DES ZUGANGS ZAEHLT NICHT MIT
+
+    Art. 77 Abs. 1 Ziff. 3 OR: Bei einer nach Tagen bestimmten Frist zählt
+    der Tag, an dem sie zu laufen beginnt, nicht mit. Zugang am 1. plus
+    dreissig Tage ergibt den 31. als letzten Tag der Frist; gekündigt werden
+    darf ab dem 1. des Folgemonats.
+    """
+    from datetime import timedelta
+
+    tabelle = je_kategorie or ZAHLUNGSFRIST_JE_KATEGORIE
+    if mindest_tage is None:
+        mindest_tage = tabelle.get(kategorie, 30)
+
+    fruehestens = zugang + timedelta(days=mindest_tage + 1)
+    rechnung = {
+        'zugang': zugang.isoformat(), 'mindest_tage': mindest_tage,
+        'fruehestens': fruehestens.isoformat(), 'kategorie': kategorie,
+    }
+    if gekuendigt_am is None:
+        return Befund(
+            ok=True,
+            meldung=(f'Frist läuft bis und mit '
+                     f'{(fruehestens - timedelta(days=1)).strftime("%d.%m.%Y")}; '
+                     f'gekündigt werden darf ab '
+                     f'{fruehestens.strftime("%d.%m.%Y")}.'),
+            vorschlag=fruehestens, rechnung=rechnung)
+
+    rechnung['gekuendigt_am'] = gekuendigt_am.isoformat()
+    if gekuendigt_am >= fruehestens:
+        return Befund(
+            ok=True,
+            meldung=(f'Die Zahlungsfrist von {mindest_tage} Tagen war am '
+                     f'{gekuendigt_am.strftime("%d.%m.%Y")} abgelaufen.'),
+            rechnung=rechnung)
+
+    zu_frueh = (fruehestens - gekuendigt_am).days
+    return Befund(
+        ok=False,
+        meldung=(f'Gekündigt {zu_frueh} Tag(e) zu früh: Die Frist nach '
+                 f'Art. 257d OR läuft bis '
+                 f'{(fruehestens - timedelta(days=1)).strftime("%d.%m.%Y")}. '
+                 f'Eine vorher ausgesprochene Kündigung ist NICHTIG.'),
+        vorschlag=fruehestens, rechnung=rechnung)
+
+
 def pruefen(art, organisation, fall=None, kanton='', protokollieren=True, **eingabe):
     """Wendet eine Regel an und protokolliert die Anwendung.
 
@@ -324,6 +448,16 @@ def pruefen(art, organisation, fall=None, kanton='', protokollieren=True, **eing
             kategorie=eingabe.get('kategorie', 'wohnen'),
             hoechst_monate=parameter.get('hoechst_monate', 3),
             gilt_fuer=parameter.get('gilt_fuer', ('wohnen',)))
+    elif art == 'zahlungsfrist':
+        befund = zahlungsfrist(
+            zugang=eingabe['zugang'],
+            gekuendigt_am=eingabe.get('gekuendigt_am'),
+            # `None` heisst «nach Kategorie» — nicht 30. Ein fester
+            # Vorgabewert haette die Zehn-Tage-Frist bei Nebenobjekten
+            # ueberschrieben, sobald die Regel keinen Parameter traegt.
+            mindest_tage=parameter.get('mindest_tage'),
+            kategorie=eingabe.get('kategorie', 'wohnen'),
+            je_kategorie=parameter.get('je_kategorie'))
     else:
         raise NotImplementedError(
             f'Die Regelart {art!r} ist als Datenmodell vorhanden, aber noch nicht '

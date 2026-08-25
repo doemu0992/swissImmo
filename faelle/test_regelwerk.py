@@ -237,10 +237,14 @@ class AnwendungTests(_Basis):
         """
         with mandant(self.a.organisation):
             satz = self._regelsatz(self.a.organisation)
-            Regel(regelsatz=satz, art=Regel.ZAHLUNGSFRIST,
+            # `MIETZINS_ZUSTELLUNG` statt `ZAHLUNGSFRIST`: Die
+            # Zahlungsfrist wird seit E2.34 gerechnet. Dieser Test
+            # braucht eine Art, die es NICHT wird — sonst prueft er
+            # eine Meldung, die nicht mehr kommt.
+            Regel(regelsatz=satz, art=Regel.MIETZINS_ZUSTELLUNG,
                   parameter={'frist_tage': 30}).save()
             with self.assertRaises(NotImplementedError):
-                pruefen('zahlungsfrist', self.a.organisation)
+                pruefen('mietzins_zustellung', self.a.organisation)
 
 
 class SperreTests(_Basis):
