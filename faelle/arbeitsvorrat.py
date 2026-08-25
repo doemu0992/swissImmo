@@ -75,20 +75,95 @@ def _dringlichkeit(tage):
     return 'neutral'
 
 
+#: Wie weit ein blockierter Lauf VOR seinem Stichtag sichtbar wird — je
+#: Rhythmus verschieden.
+#:
+#: DER BEFUND, DER DAZU GEFUEHRT HAT
+#:
+#: Der Arbeitsvorrat blickte 14 Tage voraus, fuer jeden Lauf gleich. Bei einem
+#: Monatslauf ist das reichlich: Wer zwei Wochen vor der Sollstellung erfaehrt,
+#: dass etwas fehlt, hat Zeit.
+#:
+#: Bei der Nebenkostenabrechnung — JAEHRLICH — ist es zu spaet. Eine fehlende
+#: Verbrauchsablesung zwei Wochen vor Stichtag heisst: Techem anschreiben,
+#: warten, mahnen, und dann ist die Abrechnung verspaetet. Wer denselben
+#: Befund im Februar bekommt, holt ihn nach.
+#:
+#: Die Zahlen sind Erfahrungswerte, keine Rechnung: Ein Vorlauf soll so lang
+#: sein, dass eine Rueckfrage an einen Dritten noch beantwortet werden kann.
+#: Bei Quartals- und Jahreslaeufen haengt daran regelmaessig ein Externer
+#: (Ablesedienst, Treuhand, ESTV).
+VORLAUF_JE_RHYTHMUS = {
+    'monatlich': 14,
+    'quartalsweise': 45,
+    'jaehrlich': 90,
+}
+
+
 def _laeufe(heute, bis):
     """Läufe, die fällig sind oder blockiert stehen.
 
     Ein blockierter Lauf zeigt den **Grund** («Verbrauchsablesung Techem
     fehlt»), nicht das Wort «blockiert». Der Grund führt zu einer Handlung,
     das Wort zu einer Rückfrage.
+
+    BLOCKIERTE LAEUFE ERSCHEINEN FRUEHER — JE NACH RHYTHMUS
+
+    Ein Lauf ohne Blockade wird zum Stichtag hin sichtbar; das ist der
+    normale Rhythmus der Arbeit. Ein BLOCKIERTER Lauf ist etwas anderes: Dort
+    fehlt etwas, das von aussen kommen muss, und die Zeit dafuer beginnt
+    sofort zu laufen.
+
+    Deshalb gilt fuer blockierte Laeufe der Vorlauf aus
+    `VORLAUF_JE_RHYTHMUS` — 90 Tage bei einem Jahreslauf, 14 bei einem
+    Monatslauf. Das ist G7 in seiner eigentlichen Bedeutung: nicht die Liste
+    zeigen, sondern rechtzeitig warnen.
     """
-    from faelle.lauf_models import Lauf
+    from datetime import timedelta
+
+    from django.db.models import Prefetch
+
+    from faelle.lauf_models import Blockade, Lauf
+
+    # Die Grundmenge muss den WEITESTEN Vorlauf abdecken; gefiltert wird
+    # danach je Lauf, weil der Rhythmus an der Laufart haengt.
+    weitester = max(VORLAUF_JE_RHYTHMUS.values())
+
+    # BLOCKADEN IM VORAUS HOLEN, NICHT JE LAUF NACHFRAGEN
+    #
+    # Das weitere Fenster hat die Kandidatenmenge von 20 auf 60 vergroessert,
+    # und die Blockade wird jetzt fuer JEDEN Kandidaten gebraucht — auch fuer
+    # die, die gleich wieder wegfallen. Gemessen ohne dieses Prefetch:
+    # 61 Abfragen, um NULL Zeilen anzuzeigen (60 Monatslaeufe ausserhalb ihres
+    # Vorlaufs, jeder einzeln nach seinen Blockaden gefragt, alle verworfen).
+    #
+    # `to_attr` statt `offene_blockaden`: Die Eigenschaft filtert selbst
+    # (`behoben_am__isnull=True`) und ginge damit an jedem Prefetch vorbei —
+    # sie wuerde weiter je Lauf fragen. Der gefilterte Prefetch liefert
+    # dieselbe Menge in EINER Abfrage.
+    kandidaten = (Lauf.objects.offen()
+                  .filter(faellig_am__lte=max(bis, heute + timedelta(days=weitester)))
+                  .select_related('laufart')
+                  .prefetch_related(Prefetch(
+                      'blockaden',
+                      queryset=Blockade.objects.filter(behoben_am__isnull=True),
+                      to_attr='_offene_blockaden'))[:60])
 
     zeilen = []
-    for lauf in (Lauf.objects.offen().filter(faellig_am__lte=bis)
-                 .select_related('laufart')[:20]):
+    for lauf in kandidaten:
+        blockaden_vorab = lauf._offene_blockaden
+        if lauf.faellig_am > bis:
+            # Noch nicht im normalen Fenster — nur mit Blockade, und nur
+            # innerhalb des Vorlaufs fuer seinen Rhythmus.
+            if not blockaden_vorab:
+                continue
+            vorlauf = VORLAUF_JE_RHYTHMUS.get(lauf.laufart.rhythmus, 14)
+            if (lauf.faellig_am - heute).days > vorlauf:
+                continue
+        if len(zeilen) >= 20:
+            break
         tage = (lauf.faellig_am - heute).days
-        blockaden = list(lauf.offene_blockaden)
+        blockaden = blockaden_vorab      # oben schon geholt, nicht zweimal fragen
         zeilen.append({
             'art': 'lauf', 'ikon': 'fa-rotate',
             'titel': f'{lauf.laufart.bezeichnung} {lauf.periode}'
