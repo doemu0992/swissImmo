@@ -34,9 +34,9 @@ from core.tenancy import aktuelle_organisation
 # ============================================================
 
 POTENZIAL_PILL = {
-    'increase': ('Erhöhung möglich', 'bg-emerald-50 text-emerald-700', 'fa-arrow-trend-up'),
-    'decrease': ('Senkungsanspruch', 'bg-rose-50 text-rose-600', 'fa-arrow-trend-down'),
-    'neutral':  ('Aktuell', 'bg-slate-100 text-slate-500', 'fa-equals'),
+    'increase': ('Erhöhung möglich', 'fw-gut-flaeche fw-gut', 'fa-arrow-trend-up'),
+    'decrease': ('Senkungsanspruch', 'fw-krit-flaeche fw-kritisch', 'fa-arrow-trend-down'),
+    'neutral':  ('Aktuell', 'fw-flaeche2 fw-mutet', 'fa-equals'),
 }
 
 

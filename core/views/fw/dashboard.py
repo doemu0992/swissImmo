@@ -199,12 +199,12 @@ def fw_finanzen(request):
     # ---------- Arbeitskorb (Reihenfolge = Prozess) ----------
     # Volle Tailwind-Klassen (CDN-sicher, keine dynamisch zusammengesetzten Namen).
     P = {
-        'sky':    ('bg-sky-100 text-sky-600',       'bg-sky-600 hover:bg-sky-700'),
-        'amber':  ('bg-amber-100 text-amber-600',   'bg-amber-500 hover:bg-amber-600'),
-        'indigo': ('bg-indigo-100 text-indigo-600', 'bg-indigo-600 hover:bg-indigo-700'),
-        'violet': ('bg-violet-100 text-violet-600', 'bg-violet-600 hover:bg-violet-700'),
-        'rose':   ('bg-rose-100 text-rose-600',     'bg-rose-600 hover:bg-rose-700'),
-        'teal':   ('bg-teal-100 text-teal-600',     'bg-teal-600 hover:bg-teal-700'),
+        'sky':    ('fw-info-flaeche fw-info',       'fw-info-voll hover:fw-info-voll'),
+        'amber':  ('fw-warn-flaeche fw-warnton',   'fw-warn-voll hover:fw-warn-voll'),
+        'indigo': ('fw-markenflaeche fw-marke', 'fw-btn fw-primary'),
+        'violet': ('fw-info-flaeche fw-info', 'fw-btn fw-primary'),
+        'rose':   ('fw-krit-flaeche fw-kritisch',     'fw-btn fw-gefahr'),
+        'teal':   ('fw-markenflaeche fw-marke',     'fw-btn fw-primary'),
     }
     _korb = [
         ('bank', 'fa-right-left', 'sky', 'Zahlungseingänge abgleichen',

@@ -33,9 +33,9 @@ logger = logging.getLogger(__name__)
 # ============================================================
 
 KAUTION_PILL = {
-    'erwartet':       ('Erwartet',       'bg-amber-50 text-amber-700'),
-    'einbezahlt':     ('Einbezahlt',     'bg-emerald-50 text-emerald-700'),
-    'zurueckbezahlt': ('Zurückbezahlt',  'bg-slate-100 text-slate-500'),
+    'erwartet':       ('Erwartet',       'fw-warn-flaeche fw-warnton'),
+    'einbezahlt':     ('Einbezahlt',     'fw-gut-flaeche fw-gut'),
+    'zurueckbezahlt': ('Zurückbezahlt',  'fw-flaeche2 fw-mutet'),
 }
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -51,7 +51,7 @@ def fw_kautionen(request):
     rows, sum_erwartet, sum_gehalten = [], Decimal('0.00'), Decimal('0.00')
     for v in qs:
         st = v.kautions_status
-        label, cls = KAUTION_PILL.get(st, (st, 'bg-slate-100 text-slate-500'))
+        label, cls = KAUTION_PILL.get(st, (st, 'fw-flaeche2 fw-mutet'))
         rows.append({'v': v, 'status': st, 'label': label, 'cls': cls})
         if st == 'erwartet':
             sum_erwartet += v.kautions_betrag or Decimal('0.00')

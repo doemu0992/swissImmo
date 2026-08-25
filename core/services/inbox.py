@@ -13,11 +13,11 @@ from django.db.models import Q
 from django.utils import timezone
 
 TYP_META = {
-    'geld':    {'label': 'Geld',    'chip': 'bg-rose-50 text-rose-700'},
-    'frist':   {'label': 'Frist',   'chip': 'bg-amber-50 text-amber-700'},
-    'schaden': {'label': 'Schaden', 'chip': 'bg-orange-50 text-orange-700'},
-    'prozess': {'label': 'Prozess', 'chip': 'bg-indigo-50 text-indigo-700'},
-    'aufgabe': {'label': 'Aufgabe', 'chip': 'bg-slate-100 text-slate-600'},
+    'geld':    {'label': 'Geld',    'chip': 'fw-krit-flaeche fw-kritisch'},
+    'frist':   {'label': 'Frist',   'chip': 'fw-warn-flaeche fw-warnton'},
+    'schaden': {'label': 'Schaden', 'chip': 'fw-warn-flaeche fw-warnton'},
+    'prozess': {'label': 'Prozess', 'chip': 'fw-markenflaeche fw-marke'},
+    'aufgabe': {'label': 'Aufgabe', 'chip': 'fw-flaeche2 fw-mutet'},
 }
 
 

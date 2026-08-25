@@ -182,7 +182,7 @@
                 <div><label class="block text-xs font-semibold fw-mutet mb-1">Bewilligung gültig bis</label>
                     <input type="date" name="bewilligung_gueltig_bis" value="{{ m.bewilligung_gueltig_bis|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             </div>
-            <div id="bewilligung_hinweis" class="hidden text-xs rounded-lg px-3 py-2.5 fw-info-flaeche border border-sky-200 text-sky-800">
+            <div id="bewilligung_hinweis" class="hidden text-xs rounded-lg px-3 py-2.5 fw-info-flaeche border fw-linie fw-info">
                 <p id="bewilligung_hinweis_txt" class="font-medium"></p>
                 <p class="text-[11px] fw-info mt-1">Mieten ist für alle Aufenthaltstitel zulässig (Privatrecht, Art. 253 ff. OR) — der Titel ist kein Mietverbot, sondern ein Risiko-/Verfahrenshinweis. Meldepflicht: Anmeldung bei der Einwohnerkontrolle binnen 14 Tagen (in einzelnen Kantonen zusätzlich Vermieter-Meldepflicht).</p>
             </div>
@@ -309,7 +309,7 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="{% if dublette_warnung %}fw-warn-flaeche hover:bg-amber-600{% else %}fw-balken-voll hover:fw-balken-voll{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="{% if dublette_warnung %}fw-warn-flaeche hover:fw-warn-voll{% else %}fw-balken-voll hover:fw-balken-voll{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>{% if dublette_warnung %}Trotzdem speichern{% else %}Speichern{% endif %}
         </button>
         <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>

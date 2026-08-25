@@ -15,14 +15,14 @@ from ._basis import _global_filter
 # ============================================================
 
 BRANCHE_ICON = {
-    'sanitaer': ('fa-faucet-drip', 'bg-sky-50 text-sky-600'),
-    'elektro': ('fa-bolt', 'bg-amber-50 text-amber-600'),
-    'maler': ('fa-paint-roller', 'bg-orange-50 text-orange-600'),
-    'schreiner': ('fa-hammer', 'bg-yellow-50 text-yellow-700'),
-    'schloss': ('fa-key', 'bg-slate-100 text-slate-600'),
-    'allgemein': ('fa-screwdriver-wrench', 'bg-indigo-50 text-indigo-600'),
-    'garten': ('fa-tree', 'bg-emerald-50 text-emerald-600'),
-    'reinigung': ('fa-broom', 'bg-teal-50 text-teal-600'),
+    'sanitaer': ('fa-faucet-drip', 'fw-info-flaeche fw-info'),
+    'elektro': ('fa-bolt', 'fw-warn-flaeche fw-warnton'),
+    'maler': ('fa-paint-roller', 'fw-warn-flaeche fw-warnton'),
+    'schreiner': ('fa-hammer', 'fw-warn-flaeche fw-warnton'),
+    'schloss': ('fa-key', 'fw-flaeche2 fw-mutet'),
+    'allgemein': ('fa-screwdriver-wrench', 'fw-markenflaeche fw-marke'),
+    'garten': ('fa-tree', 'fw-gut-flaeche fw-gut'),
+    'reinigung': ('fa-broom', 'fw-markenflaeche fw-marke'),
 }
 
 
@@ -47,7 +47,7 @@ def fw_dienstleister(request):
 
     rows = []
     for h in qs:
-        icon, cls = BRANCHE_ICON.get(h.branche, ('fa-screwdriver-wrench', 'bg-slate-100 text-slate-600'))
+        icon, cls = BRANCHE_ICON.get(h.branche, ('fa-screwdriver-wrench', 'fw-flaeche2 fw-mutet'))
         rows.append({
             'h': h, 'icon': icon, 'icon_cls': cls,
             'branche': h.get_branche_display(),

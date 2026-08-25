@@ -746,11 +746,11 @@ def _verwaltung_empfaenger(lg):
 
 # Status → (Label, Tailwind-Klassen) fürs Mieterportal
 TICKET_STATUS_PILL = {
-    'neu':                  ('Neu',                 'bg-rose-100 text-rose-700'),
-    'in_bearbeitung':       ('In Bearbeitung',      'bg-sky-100 text-sky-700'),
-    'warte_auf_mieter':     ('Warte auf Sie',       'bg-amber-100 text-amber-700'),
-    'warte_auf_handwerker': ('Handwerker beauftragt','bg-indigo-100 text-indigo-700'),
-    'erledigt':             ('Erledigt',            'bg-emerald-100 text-emerald-700'),
+    'neu':                  ('Neu',                 'fw-krit-flaeche fw-kritisch'),
+    'in_bearbeitung':       ('In Bearbeitung',      'fw-info-flaeche fw-info'),
+    'warte_auf_mieter':     ('Warte auf Sie',       'fw-warn-flaeche fw-warnton'),
+    'warte_auf_handwerker': ('Handwerker beauftragt','fw-markenflaeche fw-marke'),
+    'erledigt':             ('Erledigt',            'fw-gut-flaeche fw-gut'),
 }
 
 
@@ -766,7 +766,7 @@ def mieter_tickets_view(request):
           .select_related('liegenschaft', 'betroffene_einheit').order_by('-erstellt_am'))
     tickets = []
     for t in qs:
-        label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-600'))
+        label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'fw-flaeche2 fw-mutet'))
         tickets.append({'t': t, 'status_label': label, 'status_cls': cls,
                         'objekt': f"{t.liegenschaft.strasse}" if t.liegenschaft_id else '—'})
     return render(request, 'core/mieter_tickets.html', {'mieter': mieter, 'tickets': tickets})
@@ -781,7 +781,7 @@ def mieter_ticket_detail(request, pk):
         return redirect('mieter_portal')
     from tickets.models import SchadenMeldung
     t = get_object_or_404(SchadenMeldung, pk=pk, gemeldet_von=mieter)
-    label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-600'))
+    label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'fw-flaeche2 fw-mutet'))
     # Nur mieter-relevante Verlaufseinträge (keine internen Notizen / Handwerker-Mails)
     verlauf = (t.nachrichten.exclude(is_intern=True)
                .exclude(typ='handwerker_mail').order_by('erstellt_am'))

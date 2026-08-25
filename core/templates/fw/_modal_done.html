@@ -5,11 +5,11 @@
 {% include 'fw/_assets.html' %}
     <style>body{font-family:'Inter',sans-serif;}</style>
 </head>
-<body class="bg-slate-50">
+<body class="fw-flaeche2">
 <div class="min-h-[40vh] flex flex-col items-center justify-center text-center p-8">
-    <span class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4"><i class="fa-solid fa-circle-check text-2xl"></i></span>
-    <p class="font-bold text-slate-800 text-lg">{{ msg|default:"Erledigt" }}</p>
-    <p class="text-sm text-slate-400 mt-1">Fenster wird geschlossen …</p>
+    <span class="w-16 h-16 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mb-4"><i class="fa-solid fa-circle-check text-2xl"></i></span>
+    <p class="font-bold fw-strong text-lg">{{ msg|default:"Erledigt" }}</p>
+    <p class="text-sm fw-faint mt-1">Fenster wird geschlossen …</p>
 </div>
 <script>
     // Elternfenster (Cockpit) informieren: Schritt erledigt → Modal schliessen + neu laden

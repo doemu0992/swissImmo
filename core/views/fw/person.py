@@ -112,7 +112,7 @@ def fw_person_detail(request, pk):
 
     vertrag_rows = []
     for v in vertraege:
-        label, cls = VERTRAG_PILL.get(v.status, (v.status, 'bg-slate-100 text-slate-500'))
+        label, cls = VERTRAG_PILL.get(v.status, (v.status, 'fw-flaeche2 fw-mutet'))
         vertrag_rows.append({'v': v, 'label': label, 'cls': cls,
                              'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0'))})
 

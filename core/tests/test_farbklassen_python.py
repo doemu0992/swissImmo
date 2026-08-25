@@ -21,23 +21,40 @@ Dunkelmodus ausgefallen — lautlos, und nur im Dunkelmodus sichtbar.
 
 WAS DARAUS FOLGT
 
-Gemessen am 24.08.2026: **221 Farbklassen in 20 Python-Dateien**. Zusammen mit
-den 408 aus den Vorlagen sind das 629 — gut ein Drittel der Restschuld war
-nicht gezählt. Für die drei Zwecke aus dem Kopf von `test_farbklassen.py`
-(Dunkelmodus, mandantenspezifisches Branding, eine Änderung an einer Stelle)
-macht es keinen Unterschied, ob eine Klasse in einer Vorlage oder in einem
-View steht.
+Für die drei Zwecke aus dem Kopf von `test_farbklassen.py` (Dunkelmodus,
+mandantenspezifisches Branding, eine Änderung an einer Stelle) macht es keinen
+Unterschied, ob eine Klasse in einer Vorlage oder in einem View steht.
 
 Dieser Zähler arbeitet wie sein Geschwister: eine Obergrenze je Datei, die nur
 sinken darf. Wer aufräumt, trägt die neue Zahl ein.
 
-WAS GEZÄHLT WIRD
+DIE ERSTE FASSSUNG MASS FALSCH — UM DEN FAKTOR DREI
+---------------------------------------------------
 
-Nur **Zeichenketten-Literale**. Ein Kommentar, der `bg-slate-100` erwähnt,
-zählt nicht — dieselbe Lehre wie beim Vorlagen-Zähler, der über seinen eigenen
-Erklärtext gestolpert ist.
+Sie suchte Zeichenketten mit `['"]([^'"\n]{0,300})['"]` und meldete **221 in
+20 Dateien**. Die Admin-Dateien schreiben ihre Kennzeichen aber als
+HTML-Fragmente:
 
-**STAND 221 in 20 Dateien.**
+    format_html('<span class="bg-indigo-100 text-indigo-800">…</span>')
+
+Das äussere Literal steht in einfachen, das Klassenattribut in doppelten
+Anführungszeichen. Der Ausdruck bricht am ersten `"` ab, setzt dort neu an —
+und die Klassenkette fällt **zwischen** zwei Treffer. Ergebnis: `crm/admin.py`
+mit 112 Farbklassen wurde als **0** gezählt.
+
+Gemessen mit dem Syntaxbaum: **687 in 24 Dateien**, nicht 221 in 20. Der
+Zähler übersah 466 — mehr als das Doppelte dessen, was er fand. Ein Zähler,
+der zwei Drittel nicht sieht, ist schlimmer als keiner: Er beziffert die
+Schuld und beruhigt.
+
+Jetzt liest `_zaehle` den **Syntaxbaum**. Der kennt Verschachtelung und
+Anführungszeichen von sich aus, und er kennt keine Kommentare. Docstrings
+werden ausgenommen — sie sind Prosa, sonst zählte dieser Erklärtext hier mit.
+
+**STAND 478 in 5 Dateien.**
+
+Alles davon steht in `admin.py`: Djangos eigene Oberfläche lädt die
+Komponentenschicht nicht. Views und Dienste sind seit E2.20 auf null.
 
 WAS ER NICHT SIEHT
 
@@ -45,6 +62,7 @@ Zusammengesetzte Namen (`f'bg-{farbe}-50'`) und Werte aus der Datenbank. Wer
 so etwas einführt, entzieht es dieser Messung; das steht hier, damit niemand
 mehr Sicherheit annimmt, als da ist.
 """
+import ast
 import pathlib
 import re
 
@@ -62,38 +80,44 @@ FARBMUSTER = re.compile(
     r'emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|'
     r'white|black)(?:-\d{2,3})?(?:/\d{1,3})?\b')
 
-#: Einzeilige Zeichenketten-Literale. Reicht für den Bestand: Die Klassen
-#: stehen durchweg in kurzen Literalen wie `{'ton': 'bg-sky-50'}`.
-LITERAL = re.compile(r'''['"]([^'"\n]{0,300})['"]''')
 
 #: Stand vom 24.08.2026. Obergrenze je Datei — nur senken.
 OBERGRENZE = {
-    'core/services/ersatzplanung.py': 8,
-    'core/services/inbox.py': 10,
-    'core/services/mahnstufen.py': 9,
-    'core/views/dashboard_view.py': 8,
-    'core/views/fw/_basis.py': 20,
-    'core/views/fw/bankkonten.py': 6,
-    'core/views/fw/dashboard.py': 24,
-    'core/views/fw/detailseiten.py': 4,
-    'core/views/fw/dienstleister.py': 18,
-    'core/views/fw/dokumente.py': 10,
-    'core/views/fw/kautionen.py': 8,
-    'core/views/fw/kreditoren.py': 14,
-    'core/views/fw/listen.py': 6,
-    'core/views/fw/mietprozess.py': 12,
-    'core/views/fw/mietzins.py': 6,
-    'core/views/fw/pendenzen.py': 4,
-    'core/views/fw/person.py': 2,
-    'core/views/fw/schaeden.py': 26,
-    'core/views/portal.py': 14,
-    'tickets/admin.py': 12,
+    'crm/admin.py': 112,
+    'finance/admin.py': 63,
+    'portfolio/admin.py': 189,
+    'rentals/admin.py': 63,
+    'tickets/admin.py': 51,
 }
 
 
+def _zeichenketten(baum):
+    """Alle Zeichenketten-Literale ausser Docstrings.
+
+    Über den Syntaxbaum, nicht über einen Ausdruck: Er kennt Verschachtelung
+    und gemischte Anführungszeichen von sich aus. Genau daran ist die erste
+    Fassung gescheitert (siehe Kopf dieser Datei).
+    """
+    prosa = set()
+    for k in ast.walk(baum):
+        if isinstance(k, (ast.Module, ast.ClassDef,
+                          ast.FunctionDef, ast.AsyncFunctionDef)):
+            if (k.body and isinstance(k.body[0], ast.Expr)
+                    and isinstance(k.body[0].value, ast.Constant)
+                    and isinstance(k.body[0].value.value, str)):
+                prosa.add(id(k.body[0].value))
+    for k in ast.walk(baum):
+        if (isinstance(k, ast.Constant) and isinstance(k.value, str)
+                and id(k) not in prosa):
+            yield k.value
+
+
 def _zaehle(pfad):
-    text = pfad.read_text(encoding='utf-8', errors='ignore')
-    return sum(len(FARBMUSTER.findall(l)) for l in LITERAL.findall(text))
+    try:
+        baum = ast.parse(pfad.read_text(encoding='utf-8', errors='ignore'))
+    except SyntaxError:
+        return 0
+    return sum(len(FARBMUSTER.findall(s)) for s in _zeichenketten(baum))
 
 
 def _alle_quellen():
@@ -167,17 +191,38 @@ class FarbklassenImPythonCodeTest(SimpleTestCase):
         Fehler, sobald die aufgeräumt ist. Dieselbe Lehre wie bei
         `test_die_messung_findet_ueberhaupt_etwas` in
         `faelle/test_bereichsgestaltung.py`.
+
+        DER DRITTE FALL IST DIE EIGENTLICHE REGRESSIONSPRÜFUNG: An genau
+        diesem Muster — HTML-Fragment in einfachen, Klassenattribut in
+        doppelten Anführungszeichen — hat die erste Fassung dieses Zählers
+        112 Vorkommen in `crm/admin.py` als 0 gemeldet.
         """
-        beispiel = '''kontext = {'ton': 'bg-sky-50', 'rand': "border-slate-200"}'''
+        def zaehle(quelle):
+            return sorted(x for s in _zeichenketten(ast.parse(quelle))
+                          for x in FARBMUSTER.findall(s))
+
         self.assertEqual(
-            sorted(FARBMUSTER.findall(' '.join(LITERAL.findall(beispiel)))),
+            zaehle("""kontext = {'ton': 'bg-sky-50', 'rand': "border-slate-200"}"""),
             ['bg-sky-50', 'border-slate-200'],
             'Der Ausdruck erkennt Farbklassen in Zeichenketten nicht mehr — '
             'dann sind alle Zahlen oben wertlos.')
+
         self.assertEqual(
-            FARBMUSTER.findall(' '.join(LITERAL.findall('# bg-slate-100 im Kommentar'))),
-            [],
+            zaehle('x = 1  # bg-slate-100 im Kommentar'), [],
             'Ein Kommentar wird als Verwendung gezählt.')
+
+        self.assertEqual(
+            zaehle("""s = format_html('<span class="bg-indigo-100 text-indigo-800">x</span>')"""),
+            ['bg-indigo-100', 'text-indigo-800'],
+            'Das HTML-Fragment mit gemischten Anführungszeichen wird nicht '
+            'erkannt — genau daran ist die erste Fassung gescheitert, und '
+            'genau so schreiben die admin.py ihre Kennzeichen.')
+
+        self.assertEqual(
+            zaehle('"""Ein Docstring mit bg-rose-50."""\nx = 1'), [],
+            'Ein Docstring wird als Verwendung gezählt — dann zählte der '
+            'Erklärtext dieser Datei mit.')
+
         self.assertGreater(
             len(list(_alle_quellen())), 50,
             'Kaum Python-Dateien gefunden — stimmt der Suchpfad noch?')

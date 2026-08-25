@@ -32,12 +32,12 @@ from core.tenancy import aktuelle_organisation
 # ============================================================
 
 KRED_PILL = {
-    'neu':         ('Neu / Prüfen', 'bg-amber-50 text-amber-700'),
-    'freigegeben': ('Freigegeben',  'bg-sky-50 text-sky-700'),
-    'in_zahlung':  ('In Zahlung',   'bg-indigo-50 text-indigo-700'),
-    'teilbezahlt': ('Teilbezahlt',  'bg-yellow-50 text-yellow-700'),
-    'bezahlt':     ('Bezahlt',      'bg-emerald-50 text-emerald-700'),
-    'storniert':   ('Storniert',    'bg-slate-100 text-slate-500'),
+    'neu':         ('Neu / Prüfen', 'fw-warn-flaeche fw-warnton'),
+    'freigegeben': ('Freigegeben',  'fw-info-flaeche fw-info'),
+    'in_zahlung':  ('In Zahlung',   'fw-markenflaeche fw-marke'),
+    'teilbezahlt': ('Teilbezahlt',  'fw-warn-flaeche fw-warnton'),
+    'bezahlt':     ('Bezahlt',      'fw-gut-flaeche fw-gut'),
+    'storniert':   ('Storniert',    'fw-flaeche2 fw-mutet'),
 }
 
 
@@ -109,7 +109,7 @@ def fw_kreditoren(request):
     rows = []
     total_offen = Decimal('0.00')     # freigegeben, noch nicht bezahlt (diese Seite)
     for k in seite.object_list:
-        label, cls = KRED_PILL.get(k.status, (k.status, 'bg-slate-100 text-slate-500'))
+        label, cls = KRED_PILL.get(k.status, (k.status, 'fw-flaeche2 fw-mutet'))
         betrag = k.betrag or Decimal('0.00')
         offen_betrag = k.offener_betrag
         faellig = k.faellig_am

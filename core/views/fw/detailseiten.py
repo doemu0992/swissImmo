@@ -197,7 +197,7 @@ def _vertrag_status_pill(v):
     trauen ist.
     """
     anzeige = v.anzeige_status
-    label, cls = VERTRAG_PILL.get(anzeige, (anzeige, 'bg-slate-100 text-slate-500'))
+    label, cls = VERTRAG_PILL.get(anzeige, (anzeige, 'fw-flaeche2 fw-mutet'))
     return {'label': label, 'cls': cls}
 
 
@@ -1791,7 +1791,7 @@ def fw_vertrag_detail(request, pk):
 
     rechnungs_rows = []
     for r in rechnungen:
-        label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'bg-slate-100 text-slate-500'))
+        label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'fw-flaeche2 fw-mutet'))
         rechnungs_rows.append({'r': r, 'status_label': label, 'pill_cls': pill_cls,
                                'offen': r.offener_betrag if r.status in ('offen', 'teilbezahlt') else Decimal('0.00')})
 

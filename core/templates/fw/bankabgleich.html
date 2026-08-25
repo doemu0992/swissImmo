@@ -185,7 +185,7 @@
                             {% for lg in alle_liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}</option>{% endfor %}
                         </select>
                     </label>
-                    <button class="bg-slate-800 fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Auf Konto buchen</button>
+                    <button class="fw-balken-voll fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Auf Konto buchen</button>
                 </form>
                 <form method="post" action="/neu/bankabgleich/bewegung/"
                       onsubmit="return confirm('Diese Bewegung als nicht buchungsrelevant markieren?');">
@@ -208,7 +208,7 @@
 {% if geparkt %}
 <!-- Geparkte / ungeklärte Zahlungen (1190 + Mieterguthaben 2030) -->
 <div class="fw-flaeche rounded-xl border fw-linie-warn overflow-hidden mb-6">
-    <div class="px-5 py-3 border-b border-amber-100 fw-warn-flaeche flex items-center justify-between flex-wrap gap-2">
+    <div class="px-5 py-3 border-b fw-linie-warn fw-warn-flaeche flex items-center justify-between flex-wrap gap-2">
         <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-question"></i></span>Ungeklärte Zahlungen &amp; Guthaben</div>
         <div class="text-xs fw-mutet">{{ geparkt|length }} Position(en)
             {% if geparkt_unklar %}· CHF {{ geparkt_unklar|chf }} ungeklärt (1190){% endif %}
@@ -363,7 +363,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                        <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                        <button type="submit" class="inline-flex items-center gap-1.5 fw-btn fw-gutknopf text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                             <i class="fa-solid fa-check"></i> Verbuchen
                         </button>
                     </form>

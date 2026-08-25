@@ -51,7 +51,7 @@ def _mahnstufe(faellig, heute, status, eigentuemer=None):
     s = _stufe_fuer_tage(tage, eigentuemer)
     if s:
         return {'label': s['label'], 'cls': s['cls'], 'tage': tage}
-    return {'label': 'Fällig', 'cls': 'bg-amber-50 text-amber-600', 'tage': tage}
+    return {'label': 'Fällig', 'cls': 'fw-warn-flaeche fw-warnton', 'tage': tage}
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -151,7 +151,7 @@ def fw_debitoren(request):
         offen = r._o if r.status in _OFFEN_STATUS else Decimal('0.00')
         faellig = r.faellig_am or r.datum
         mahn = _mahnstufe(faellig, heute, r.status, _eigentuemer_von_rechnung(r))
-        label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'bg-slate-100 text-slate-500'))
+        label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'fw-flaeche2 fw-mutet'))
         rows.append({
             'r': r,
             'mieter': r.vertrag.mieter.display_name if r.vertrag_id else '—',
@@ -1161,7 +1161,7 @@ def fw_vertraege(request):
     for v in qs:
         anzeige = v.anzeige_status
         label, pill_cls = VERTRAG_PILL.get(
-            anzeige, (anzeige, 'bg-slate-100 text-slate-500'))
+            anzeige, (anzeige, 'fw-flaeche2 fw-mutet'))
         rows.append({
             'v': v,
             'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),

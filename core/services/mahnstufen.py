@@ -19,8 +19,8 @@ MAHN_KONFIG_DEFAULT = [
 _STD_TAGE   = {1: 14, 2: 30, 3: 60}
 _STD_GEBUEHR = {1: '0.00', 2: '20.00', 3: '40.00'}
 _LABEL = {1: '1. Mahnung', 2: '2. Mahnung', 3: '3. Mahnung'}
-_CLS   = {1: 'bg-amber-100 text-amber-700', 2: 'bg-rose-50 text-rose-600', 3: 'bg-rose-100 text-rose-700'}
-_DOT   = {1: 'bg-amber-500', 2: 'bg-rose-400', 3: 'bg-rose-500'}
+_CLS   = {1: 'fw-warn-flaeche fw-warnton', 2: 'fw-krit-flaeche fw-kritisch', 3: 'fw-krit-flaeche fw-kritisch'}
+_DOT   = {1: 'fw-warn-voll', 2: 'fw-krit-voll', 3: 'fw-krit-voll'}
 _UNTER_STD = {1: 'Erste Zahlungserinnerung', 2: 'Zweite schriftliche Erinnerung',
               3: 'Dritte Mahnung'}
 _UNTER_KUEND = 'Kündigungsandrohung (Art. 257d OR)'

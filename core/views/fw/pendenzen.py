@@ -201,13 +201,13 @@ def fw_fristen(request):
     grenze_monat = heute + timedelta(days=30)
     buckets = [
         {'key': 'ueberfaellig', 'titel': 'Überfällig', 'icon': 'fa-triangle-exclamation',
-         'cls': 'text-rose-600', 'items': [e for e in eintraege if e['faellig'] < heute]},
+         'cls': 'fw-kritisch', 'items': [e for e in eintraege if e['faellig'] < heute]},
         {'key': 'woche', 'titel': 'Diese Woche', 'icon': 'fa-calendar-day',
-         'cls': 'text-amber-600', 'items': [e for e in eintraege if heute <= e['faellig'] <= grenze_woche]},
+         'cls': 'fw-warnton', 'items': [e for e in eintraege if heute <= e['faellig'] <= grenze_woche]},
         {'key': 'monat', 'titel': 'Diesen Monat', 'icon': 'fa-calendar-week',
-         'cls': 'text-indigo-600', 'items': [e for e in eintraege if grenze_woche < e['faellig'] <= grenze_monat]},
+         'cls': 'fw-marke', 'items': [e for e in eintraege if grenze_woche < e['faellig'] <= grenze_monat]},
         {'key': 'spaeter', 'titel': 'Später', 'icon': 'fa-calendar',
-         'cls': 'text-slate-500', 'items': [e for e in eintraege if e['faellig'] > grenze_monat]},
+         'cls': 'fw-mutet', 'items': [e for e in eintraege if e['faellig'] > grenze_monat]},
     ]
     from core.services.ical import feed_token
     return render(request, 'fw/fristen.html', {

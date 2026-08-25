@@ -332,15 +332,15 @@ def _park_konto(nummer):
 # ein gemeinsamer Ort: Zwei Fassungen driften auseinander, und dann heisst
 # derselbe Vertragsstatus auf zwei Seiten verschieden.
 VERTRAG_PILL = {
-    'entwurf':    ('Entwurf',    'bg-slate-100 text-slate-600'),
-    'aktiv':      ('Aktiv',      'bg-emerald-50 text-emerald-700'),
-    'gekuendigt': ('Gekündigt',  'bg-rose-50 text-rose-600'),
+    'entwurf':    ('Entwurf',    'fw-flaeche2 fw-mutet'),
+    'aktiv':      ('Aktiv',      'fw-gut-flaeche fw-gut'),
+    'gekuendigt': ('Gekündigt',  'fw-krit-flaeche fw-kritisch'),
     # «Beendet» ist kein gespeicherter Status, sondern der ANZEIGE-Status aus
     # `Mietvertrag.anzeige_status`: archiviert, oder gekuendigt mit
     # abgelaufenem Ende. Vorher zeigte die Liste einen solchen Vertrag
     # weiterhin als «gekuendigt» — und der Filter «Gekuendigt» lieferte ihn mit.
-    'beendet':    ('Beendet',    'bg-slate-100 text-slate-500'),
-    'archiviert': ('Archiviert', 'bg-slate-100 text-slate-500'),
+    'beendet':    ('Beendet',    'fw-flaeche2 fw-mutet'),
+    'archiviert': ('Archiviert', 'fw-flaeche2 fw-mutet'),
 }
 
 
@@ -349,9 +349,9 @@ VERTRAG_PILL = {
 # VERTRAG_PILL hatte letztere die schliessende Klammer abgeschnitten, weil
 # sie bei einem mehrzeiligen Literal selbst in Spalte 0 steht.
 STATUS_PILL = {
-    'offen':       ('Offen',       'bg-amber-50 text-amber-700'),
-    'teilbezahlt': ('Teilbezahlt', 'bg-sky-50 text-sky-700'),
-    'bezahlt':     ('Bezahlt',     'bg-emerald-50 text-emerald-700'),
-    'storniert':   ('Storniert',   'bg-slate-100 text-slate-500'),
-    'abgeschrieben': ('Abgeschrieben', 'bg-slate-100 text-slate-500'),
+    'offen':       ('Offen',       'fw-warn-flaeche fw-warnton'),
+    'teilbezahlt': ('Teilbezahlt', 'fw-info-flaeche fw-info'),
+    'bezahlt':     ('Bezahlt',     'fw-gut-flaeche fw-gut'),
+    'storniert':   ('Storniert',   'fw-flaeche2 fw-mutet'),
+    'abgeschrieben': ('Abgeschrieben', 'fw-flaeche2 fw-mutet'),
 }

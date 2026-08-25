@@ -62,10 +62,10 @@ def geraet_lebensdauer(geraet):
 
 
 STATUS_META = {
-    'faellig': ('Ersatz fällig', 'bg-rose-50 text-rose-700'),
-    'bald': ('Ersatz bald', 'bg-amber-50 text-amber-700'),
-    'ok': ('Im Nutzungszeitraum', 'bg-emerald-50 text-emerald-700'),
-    'unbekannt': ('Keine Datenbasis', 'bg-slate-100 text-slate-400'),
+    'faellig': ('Ersatz fällig', 'fw-krit-flaeche fw-kritisch'),
+    'bald': ('Ersatz bald', 'fw-warn-flaeche fw-warnton'),
+    'ok': ('Im Nutzungszeitraum', 'fw-gut-flaeche fw-gut'),
+    'unbekannt': ('Keine Datenbasis', 'fw-flaeche2 fw-faint'),
 }
 ORDNUNG = {'faellig': 0, 'bald': 1, 'ok': 2, 'unbekannt': 3}
 

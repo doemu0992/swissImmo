@@ -119,9 +119,9 @@
             </form>
         </div>
 
-        <div class="bg-indigo-600 rounded-xl p-5 text-white">
+        <div class="fw-balken-voll rounded-xl p-5 text-white">
             <h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-file-signature mr-1"></i>Zusage & Vertrag</h3>
-            <p class="text-xs text-indigo-100 mb-3">Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ b.einheit.bezeichnung }}.</p>
+            <p class="text-xs fw-faint mb-3">Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ b.einheit.bezeichnung }}.</p>
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" onsubmit="return confirm('Mieter anlegen und Vertragsentwurf erstellen?');">
                 {% csrf_token %}
                 <button class="w-full fw-flaeche fw-marke text-sm font-bold px-3 py-2.5 rounded-lg hover:fw-markenflaeche">

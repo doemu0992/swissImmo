@@ -32,19 +32,23 @@ E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 `anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
-**STAND 408 in 52 Vorlagen**.
+**STAND 348 in 44 Vorlagen**.
 
 DIESE ZAHL IST NICHT DIE GANZE SCHULD
 -------------------------------------
 Sie zählt **Vorlagen**. Farbklassen entstehen aber auch im Python-Code und
-werden erst beim Rendern eingesetzt (`{'ton': 'bg-sky-50'}` in einem View).
-Gemessen am 24.08.2026: **221 weitere in 20 Dateien**, gezählt von
-`core/tests/test_farbklassen_python.py`.
+werden erst beim Rendern eingesetzt. `core/tests/test_farbklassen_python.py`
+zählt die: nach E2.20 noch **478 in fünf `admin.py`**; Views und Dienste sind
+auf null.
 
 Aufgefallen ist das beim Aufräumen des Dunkelmodus-Overlays: Vierzehn Klassen
 hatten in keiner Vorlage mehr ein Gegenstück und sahen nach totem Code aus —
 neun von ihnen standen im Python-Code. Ihre Overlay-Regeln zu entfernen hätte
 den Dunkelmodus für sie lautlos abgeschaltet.
+
+Dieser Hinweis stand schon einmal hier und ist beim Anwenden von E2.20
+verlorengegangen; ohne ihn liest sich die Zahl oben als Gesamtstand, und
+genau das war der Fehler, den sie verhindern soll.
 
 Eins weniger als beim Herausloesen geplant: Der Absendeknopf des
 öffentlichen Bewerbungsformulars trug `fw-gut-flaeche0` (eine Klasse, die
@@ -168,24 +172,17 @@ OBERGRENZE = {
     'core/templates/core/mieter_ticket_detail.html': 1,
     'core/templates/core/mieter_tickets.html': 2,
     'core/templates/core/mietzins_form.html': 73,
-    'core/templates/core/passwort_reset_done.html': 4,
     'core/templates/core/portal_base.html': 8,
     'core/templates/core/public_bewerbung_form.html': 1,
-    'core/templates/core/public_bewerbung_geschlossen.html': 7,
     'core/templates/core/public_ticket_form.html': 1,
     'core/templates/core/schaden_melden.html': 1,
-    'core/templates/fw/_bezahlt_leer.html': 7,
-    'core/templates/fw/_empty.html': 7,
-    'core/templates/fw/_fwmodal.html': 7,
-    'core/templates/fw/_menu_item.html': 5,
-    'core/templates/fw/_modal_done.html': 5,
     'core/templates/fw/_pipeline.html': 1,
     'core/templates/fw/_schicht.html': 7,
     'core/templates/fw/anlagen.html': 3,
-    'core/templates/fw/bankabgleich.html': 6,
+    'core/templates/fw/bankabgleich.html': 1,
     'core/templates/fw/base.html': 74,
     'core/templates/fw/bewerber_vergleich.html': 3,
-    'core/templates/fw/bewerbung_detail.html': 3,
+    'core/templates/fw/bewerbung_detail.html': 1,
     'core/templates/fw/dokumente.html': 1,
     'core/templates/fw/einstellungen.html': 1,
     'core/templates/fw/finanzen.html': 1,
@@ -197,9 +194,8 @@ OBERGRENZE = {
     'core/templates/fw/mietzins.html': 1,
     'core/templates/fw/nebenkosten_detail.html': 3,
     'core/templates/fw/objekt_ausschreiben.html': 1,
-    'core/templates/fw/person_form.html': 5,
+    'core/templates/fw/person_form.html': 2,
     'core/templates/fw/schaden_detail.html': 2,
-    'core/templates/fw/stub.html': 8,
     'core/templates/fw/vermarktung.html': 2,
     'core/templates/fw/vertrag_detail.html': 1,
     'core/templates/fw/vertrag_neu.html': 2,

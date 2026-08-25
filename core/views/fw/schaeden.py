@@ -34,17 +34,17 @@ from core.tenancy import aktuelle_organisation
 # ============================================================
 
 TICKET_PILL = {
-    'neu':                   ('Neu',                'bg-rose-50 text-rose-600'),
-    'in_bearbeitung':        ('In Bearbeitung',     'bg-sky-50 text-sky-700'),
-    'warte_auf_mieter':      ('Warte auf Mieter',   'bg-amber-50 text-amber-700'),
-    'warte_auf_handwerker':  ('Warte auf Handwerker','bg-amber-50 text-amber-700'),
-    'erledigt':              ('Erledigt',           'bg-emerald-50 text-emerald-700'),
+    'neu':                   ('Neu',                'fw-krit-flaeche fw-kritisch'),
+    'in_bearbeitung':        ('In Bearbeitung',     'fw-info-flaeche fw-info'),
+    'warte_auf_mieter':      ('Warte auf Mieter',   'fw-warn-flaeche fw-warnton'),
+    'warte_auf_handwerker':  ('Warte auf Handwerker','fw-warn-flaeche fw-warnton'),
+    'erledigt':              ('Erledigt',           'fw-gut-flaeche fw-gut'),
 }
 PRIO_PILL = {
-    'hoch':   ('Hoch',   'bg-rose-100 text-rose-700'),
-    'mittel': ('Mittel', 'bg-amber-50 text-amber-700'),
-    'tief':   ('Tief',   'bg-slate-100 text-slate-500'),
-    'niedrig':('Tief',   'bg-slate-100 text-slate-500'),
+    'hoch':   ('Hoch',   'fw-krit-flaeche fw-kritisch'),
+    'mittel': ('Mittel', 'fw-warn-flaeche fw-warnton'),
+    'tief':   ('Tief',   'fw-flaeche2 fw-mutet'),
+    'niedrig':('Tief',   'fw-flaeche2 fw-mutet'),
 }
 
 
@@ -106,10 +106,10 @@ def fw_schaeden(request):
     for zeile in rows:
         t = zeile['t']
         zeile['s_label'], zeile['s_cls'] = TICKET_PILL.get(
-            t.status, (t.status, 'bg-slate-100 text-slate-500'))
+            t.status, (t.status, 'fw-flaeche2 fw-mutet'))
         zeile['p_label'], zeile['p_cls'] = PRIO_PILL.get(
             (t.prioritaet or '').lower(),
-            (t.prioritaet or 'Mittel', 'bg-slate-100 text-slate-500'))
+            (t.prioritaet or 'Mittel', 'fw-flaeche2 fw-mutet'))
         zeile['objekt'] = (f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}"
                            if t.liegenschaft_id else '—')
         zeile['melder'] = (t.gemeldet_von.display_name if t.gemeldet_von_id
@@ -276,8 +276,8 @@ def fw_schaden_detail(request, pk):
         t.gelesen = True
         t.save(update_fields=['gelesen'])
 
-    s_label, s_cls = TICKET_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-500'))
-    p_label, p_cls = PRIO_PILL.get((t.prioritaet or '').lower(), (t.prioritaet or 'Mittel', 'bg-slate-100 text-slate-500'))
+    s_label, s_cls = TICKET_PILL.get(t.status, (t.status, 'fw-flaeche2 fw-mutet'))
+    p_label, p_cls = PRIO_PILL.get((t.prioritaet or '').lower(), (t.prioritaet or 'Mittel', 'fw-flaeche2 fw-mutet'))
     nachrichten = t.nachrichten.order_by('erstellt_am')
     auftraege = t.handwerker_auftraege.select_related('handwerker').order_by('-beauftragt_am')
     melder = (t.gemeldet_von.display_name if t.gemeldet_von_id

@@ -30,11 +30,11 @@ from core.tenancy import aktuelle_organisation
 # ============================================================
 
 BEWERBUNG_SPALTEN = [
-    ('neu', 'Neu eingegangen', 'bg-sky-50 text-sky-700'),
-    ('geprueft', 'Bonität geprüft', 'bg-amber-50 text-amber-700'),
-    ('besichtigung', 'Besichtigung', 'bg-violet-50 text-violet-700'),
-    ('zugesagt', 'Zusage erteilt', 'bg-emerald-50 text-emerald-700'),
-    ('abgelehnt', 'Abgelehnt', 'bg-rose-50 text-rose-700'),
+    ('neu', 'Neu eingegangen', 'fw-info-flaeche fw-info'),
+    ('geprueft', 'Bonität geprüft', 'fw-warn-flaeche fw-warnton'),
+    ('besichtigung', 'Besichtigung', 'fw-info-flaeche fw-info'),
+    ('zugesagt', 'Zusage erteilt', 'fw-gut-flaeche fw-gut'),
+    ('abgelehnt', 'Abgelehnt', 'fw-krit-flaeche fw-kritisch'),
 ]
 
 
@@ -79,7 +79,7 @@ def fw_bewerber_vergleich(request, einheit_id):
     kandidaten = []
     for b in qs:
         bewertung = bewerte_bewerbung(b, brutto_monat)
-        s_label, s_cls = dict((k, (l, c)) for k, l, c in BEWERBUNG_SPALTEN).get(b.status, (b.status, 'bg-slate-100 text-slate-500'))
+        s_label, s_cls = dict((k, (l, c)) for k, l, c in BEWERBUNG_SPALTEN).get(b.status, (b.status, 'fw-flaeche2 fw-mutet'))
         kandidaten.append({
             'b': b, 'name': f"{b.vorname} {b.nachname}",
             'haushalt': b.anzahl_erwachsene + b.anzahl_kinder,
