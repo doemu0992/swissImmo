@@ -334,6 +334,44 @@ def fw_objekt_form(request, pk=None):
     })
 
 
+def telefon_kern(text):
+    """Eine Telefonnummer auf ihren vergleichbaren Kern reduzieren.
+
+    DER BEFUND, DER DAZU GEFUEHRT HAT
+
+    Die Kopfzeilensuche fand `+41 79 123 45 67` nicht, wenn die Nummer als
+    `079 123 45 67` gespeichert war — auch im eigenen Bestand. Der Kommentar
+    im Code nannte genau dieses Format als Ziel.
+
+    Ursache: «Nur die Ziffern behalten» macht aus der Eingabe `41791234567`
+    und aus dem Feld `0791234567`. Die Landesvorwahl ERSETZT die fuehrende
+    Null, sie ergaenzt sie nicht — die eine Zeichenkette kommt in der anderen
+    nicht vor.
+
+    Betroffen ist der Alltagsfall: Ein Anrufer erscheint auf dem Display in
+    internationaler Schreibweise, der Sachbearbeiter tippt sie ab und findet
+    nichts.
+
+    WAS DIE FUNKTION TUT
+
+    Landesvorwahl (`0041`, `+41`, `41`) und fuehrende Null fallen weg. Uebrig
+    bleibt die Nummer ohne Vorsatz — `791234567` in beiden Schreibweisen.
+
+    Nur die Schweizer Vorwahl wird behandelt. Eine auslaendische Nummer
+    (`+49 30 …`) bleibt vollstaendig; sie waere sonst nicht mehr von einer
+    Schweizer Nummer zu unterscheiden.
+    """
+    ziffern = ''.join(ch for ch in (text or '') if ch.isdigit())
+    if ziffern.startswith('0041'):
+        ziffern = ziffern[4:]
+    elif ziffern.startswith('41') and len(ziffern) >= 11:
+        # `41` am Anfang ist nur dann Landesvorwahl, wenn danach eine
+        # vollstaendige Nummer folgt. Sonst waere `41 22 …` (Genf, ohne Null)
+        # faelschlich gekuerzt.
+        ziffern = ziffern[2:]
+    return ziffern.lstrip('0')
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_suche(request):
     """Globale Suche über Personen, Liegenschaften, Objekte und Verträge."""
@@ -352,14 +390,19 @@ def fw_suche(request):
                       | Q(telefon_geschaeft__icontains=q))
         personen = list(Mieter.objects.filter(personen_q)
                         .order_by('nachname', 'firmen_name')[:20])
-        ziffern = ''.join(ch for ch in q if ch.isdigit())
+        ziffern = telefon_kern(q)
         if len(ziffern) >= 5 and len(personen) < 20:
             # Format-agnostischer Nachfilter über die Telefon-Felder.
             vorhandene = {p.id for p in personen}
             for p in Mieter.objects.exclude(id__in=vorhandene).exclude(
                     mobile='', telefon_privat='', telefon_geschaeft='')[:500]:
-                nummern = ''.join(ch for ch in f"{p.mobile}|{p.telefon_privat}|{p.telefon_geschaeft}" if ch.isdigit())
-                if ziffern in nummern:
+                # Jedes Feld einzeln normalisieren: Ein Zusammenkleben mit
+                # Trennzeichen und anschliessendes Ziffernfiltern wuerde
+                # Nummern aneinanderhaengen und Treffer ueber Feldgrenzen
+                # hinweg erzeugen.
+                nummern = [telefon_kern(x) for x in
+                           (p.mobile, p.telefon_privat, p.telefon_geschaeft)]
+                if any(ziffern in n for n in nummern if n):
                     personen.append(p)
                     if len(personen) >= 20:
                         break
