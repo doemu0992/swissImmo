@@ -170,6 +170,97 @@ def regel_holen(organisation, art, kanton=''):
     return grund.filter(regelsatz__kanton='').first()
 
 
+def kaution_hoechstbetrag(kaution, nettomiete, nebenkosten=None,
+                          kategorie='wohnen', hoechst_monate=3,
+                          gilt_fuer=('wohnen',)):
+    """Prüft, ob eine Kaution die Obergrenze überschreitet (Art. 257e OR).
+
+    ``kaution``        vereinbarter Betrag in Franken.
+    ``nettomiete``     monatlicher Nettomietzins.
+    ``nebenkosten``    monatliche Nebenkosten — **gehören zur Basis**, siehe
+                       unten. ``None`` wird als 0 gerechnet.
+    ``kategorie``      mietrechtliche Einordnung des Objekts.
+    ``hoechst_monate`` Grenze in Monatszinsen, aus der Regel.
+    ``gilt_fuer``      Kategorien, für die die Grenze überhaupt gilt.
+
+    DIE BASIS IST NETTO + NEBENKOSTEN — WEIL SIE ES IM BESTAND IST
+
+    Die erste Fassung dieser Regel rechnete auf dem Nettozins allein, mit der
+    Begründung, Art. 257e spreche vom Mietzins und die Nebenkosten seien
+    Auslagenersatz. Das mag rechtlich stimmen — aber `Mietvertrag.save()`
+    klemmt seit jeher auf **Netto + Nebenkosten**, und zwei Rechnungen für
+    eine Vorschrift widersprechen sich.
+
+    Nachgemessen, bei Netto 1'500 und NK 200:
+
+        erfasst 5'000  ->  gespeichert 5'000  ->  Regel BEANSTANDET
+        erfasst 6'000  ->  geklemmt   5'100  ->  Regel BEANSTANDET
+
+    Im zweiten Fall beanstandete die Regel einen Betrag, den die Anwendung
+    soeben selbst hergestellt hatte. Ein Sachbearbeiter sieht dort eine
+    Warnung zu einer Zahl, die er nie eingegeben hat.
+
+    Übernommen ist deshalb der Wert aus dem Bestand — so verlangt es der
+    Grundsatz für Fachwerte: nachsehen, übernehmen, und einen Zweifel MELDEN
+    statt ihn zu entscheiden. Ob Art. 257e den Netto- oder den Bruttozins
+    meint, ist eine Rechtsfrage und hier offen; sie steht auf der Liste.
+
+    ART. 257e ABS. 2 OR GILT NUR FÜR WOHNRÄUME
+
+    Bei Geschäftsräumen ist die Sicherheit frei vereinbar. Eine Regel, die
+    dort warnt, wäre schlimmer als keine: Wer bei jedem Gewerbevertrag eine
+    unbegründete Warnung wegklickt, klickt sie auch beim Wohnungsvertrag weg.
+
+    WANN SIE ÜBERHAUPT ANSCHLÄGT
+
+    `Mietvertrag.save()` klemmt bereits — ein über die Oberfläche erfasster
+    Vertrag kann die Grenze gar nicht überschreiten. Die Regel greift dort,
+    wo die Klemme nicht läuft: bei `.update()`, `bulk_create()`, Importen und
+    Datenmigrationen. Nachgemessen: Ein per `.update()` gesetzter Betrag von
+    9'000 bleibt stehen und wird hier beanstandet.
+
+    WAS SIE NICHT TUT
+
+    Sie sperrt nicht — das tut die Klemme in `save()`, und die ist die
+    eigentliche Durchsetzung. Diese Regel macht die Grenze SICHTBAR und
+    protokolliert ihre Anwendung.
+    """
+    if kategorie not in tuple(gilt_fuer):
+        return Befund(
+            ok=True,
+            meldung=(f'Keine gesetzliche Obergrenze: Art. 257e OR gilt für '
+                     f'Wohnräume, hier «{kategorie}».'),
+            rechnung={'kategorie': kategorie, 'gilt': False})
+
+    basis = (nettomiete or 0) + (nebenkosten or 0)
+    if basis <= 0:
+        return Befund(
+            ok=True,
+            meldung='Ohne Mietzins lässt sich die Grenze nicht rechnen.',
+            rechnung={'nettomiete': str(nettomiete),
+                      'nebenkosten': str(nebenkosten)})
+
+    grenze = basis * hoechst_monate
+    rechnung = {
+        'nettomiete': str(nettomiete), 'nebenkosten': str(nebenkosten or 0),
+        'basis': str(basis), 'hoechst_monate': hoechst_monate,
+        'grenze': str(grenze), 'kaution': str(kaution),
+        'monate_ist': str(round(kaution / basis, 2)),
+    }
+    if kaution <= grenze:
+        return Befund(
+            ok=True,
+            meldung=(f'{kaution} liegt innerhalb von {hoechst_monate} '
+                     f'Monatszinsen ({grenze}).'),
+            rechnung=rechnung)
+    return Befund(
+        ok=False,
+        meldung=(f'{kaution} übersteigt {hoechst_monate} Monatszinse '
+                 f'({grenze}) um {kaution - grenze}. Art. 257e Abs. 2 OR — '
+                 f'die Vereinbarung ist insoweit nichtig.'),
+        rechnung=rechnung)
+
+
 def pruefen(art, organisation, fall=None, kanton='', protokollieren=True, **eingabe):
     """Wendet eine Regel an und protokolliert die Anwendung.
 
@@ -191,6 +282,18 @@ def pruefen(art, organisation, fall=None, kanton='', protokollieren=True, **eing
             termine=eingabe.get('termine') or parameter.get('termine', []),
             frist_monate=eingabe.get('frist_monate')
             or parameter.get('frist_monate', 3))
+    elif art == 'kaution_hoechstbetrag':
+        befund = kaution_hoechstbetrag(
+            kaution=eingabe['kaution'],
+            nettomiete=eingabe['nettomiete'],
+            # Die Nebenkosten gehoeren zur Basis — dieselbe wie in
+            # `Mietvertrag.save()`. Fehlen sie im Aufruf, rechnet die Regel
+            # STRENGER als die Klemme und beanstandet Betraege, die die
+            # Anwendung selbst zulaesst.
+            nebenkosten=eingabe.get('nebenkosten'),
+            kategorie=eingabe.get('kategorie', 'wohnen'),
+            hoechst_monate=parameter.get('hoechst_monate', 3),
+            gilt_fuer=parameter.get('gilt_fuer', ('wohnen',)))
     else:
         raise NotImplementedError(
             f'Die Regelart {art!r} ist als Datenmodell vorhanden, aber noch nicht '

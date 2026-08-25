@@ -231,6 +231,39 @@ class Mietvertrag(OrganisationAusKette):
         return 3 if self.mietrecht_kategorie == 'wohnen' else None
 
     @property
+    def kaution_obergrenze(self):
+        """Der höchstzulässige Kautionsbetrag in Franken — oder None.
+
+        WARUM DAS EINE EIGENSCHAFT IST (E2.32)
+
+        Die Rechnung stand als drei Zeilen mitten in `save()`. Als das
+        Regelwerk dieselbe Grenze prüfen sollte, entstand daneben eine ZWEITE
+        Rechnung — mit einer anderen Basis: `save()` nimmt Netto **plus**
+        Nebenkosten, die neue Regel nahm den Nettozins allein.
+
+        Nachgemessen, bei Netto 1'500 und NK 200: Die Klemme lässt 5'100 zu,
+        die Regel beanstandete ab 4'500. Eine Kaution von 5'000 wurde also
+        gespeichert UND beanstandet; bei 6'000 klemmte `save()` auf 5'100 und
+        die Regel beanstandete den Wert, den die Anwendung selbst gerade
+        hergestellt hatte.
+
+        Zwei Rechnungen für eine Vorschrift laufen auseinander, sobald jemand
+        nur eine anfasst. Deshalb steht sie hier, einmal.
+
+        DIE BASIS IST NETTO + NEBENKOSTEN — SO STAND ES IM BESTAND
+
+        Ob Art. 257e den Netto- oder den Bruttomietzins meint, ist eine
+        Rechtsfrage. Sie ist hier NICHT entschieden: Übernommen ist der Wert,
+        der im Bestand stand. Wer sie klären lässt, ändert diese eine Stelle.
+        """
+        monate = self.kaution_max_monate
+        if not monate:
+            return None
+        basis = (self.netto_mietzins or Decimal('0')) + (self.nebenkosten or Decimal('0'))
+        grenze = basis * monate
+        return grenze if grenze > 0 else None
+
+    @property
     def kuendigungsfrist_anzeige(self):
         """Anzeigetext der Kündigungsfrist. Bei gesondert vermieteten
         Einstellplätzen gilt von Gesetzes wegen mindestens die 2-Wochen-Frist
@@ -584,10 +617,9 @@ class Mietvertrag(OrganisationAusKette):
         # Kaution-Obergrenze durchsetzen (Art. 257e OR: max. 3 Monatsmieten bei
         # Wohnräumen). Bisher nur eine JS-Warnung — der überschiessende Teil ist
         # gesetzlich nicht durchsetzbar, daher serverseitig auf 3× (netto+NK) klemmen.
-        if self.kaution_max_monate and self.kautions_betrag:
-            basis = (self.netto_mietzins or Decimal('0')) + (self.nebenkosten or Decimal('0'))
-            maxbetrag = basis * self.kaution_max_monate
-            if maxbetrag > 0 and self.kautions_betrag > maxbetrag:
+        maxbetrag = self.kaution_obergrenze
+        if maxbetrag and self.kautions_betrag:
+            if self.kautions_betrag > maxbetrag:
                 self.kautions_betrag = maxbetrag
                 uf = kwargs.get('update_fields')
                 if uf is not None:

@@ -81,6 +81,32 @@ class Command(BaseCommand):
                 parameter={'frist_monate': 3},
                 begruendung='Art. 266c OR: drei Monate bei Wohnräumen.',
                 aktiv=True)
+            # KAUTIONSHOECHSTBETRAG — und warum er NUR fuer Wohnraeume gilt
+            #
+            # Art. 257e Abs. 2 OR: Bei Wohnraeumen darf die Sicherheit drei
+            # Monatszinse nicht uebersteigen. Bei GESCHAEFTSRAEUMEN gilt die
+            # Grenze NICHT — dort ist sie frei vereinbar.
+            #
+            # Das steht bereits im Modell (`Mietvertrag.kaution_max_monate`
+            # gibt 3 bei `mietrecht_kategorie == 'wohnen'` und sonst None).
+            # Die Regel wiederholt es nicht, sie macht es pruefbar: Der
+            # Parameter nennt die Grenze UND den Geltungsbereich, damit eine
+            # Verwaltung mit Gewerbebestand nicht faelschlich gewarnt wird.
+            #
+            # Eine zu hohe Kaution ist nicht bloss unschoen: Die Vereinbarung
+            # ist insoweit nichtig, und der Mieter kann den Ueberschuss
+            # jederzeit zurueckfordern. Deshalb gehoert sie zu den Regeln, die
+            # nach juristischer Pruefung SPERREN sollten — bis dahin warnt sie,
+            # wie alle anderen auch.
+            Regel.alle_organisationen.create(
+                organisation=organisation, regelsatz=satz,
+                art=Regel.KAUTION_HOECHSTBETRAG,
+                verbindlichkeit=Regel.WARNUNG,
+                parameter={'hoechst_monate': 3, 'gilt_fuer': ['wohnen']},
+                begruendung=('Art. 257e Abs. 2 OR: hoechstens drei '
+                             'Monatszinse bei Wohnraeumen. Bei '
+                             'Geschaeftsraeumen frei vereinbar.'),
+                aktiv=True)
             self.stdout.write(self.style.SUCCESS(
                 f'  + {organisation.firma}: «{satz}» angelegt.'))
             angelegt += 1

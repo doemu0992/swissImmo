@@ -541,8 +541,14 @@ class GrundsatzBefehlTests(_Basis):
         self._ohne_regelsatz(self.a)
         self._ohne_regelsatz(self.b)
         self._laufen(organisation=self.a.organisation.pk)
+        # Nach der ART suchen, nicht `.first()` nehmen: Seit E2.32 legt der
+        # Grundsatz-Befehl ZWEI Regeln an (Kuendigungstermin und
+        # Kautionshoechstbetrag), und ohne Sortierung ist offen, welche zuerst
+        # kommt. Derselbe Fall wie bei den festen Indizes im Finanzkorb.
+        from faelle.regelwerk_models import Regel
         regel = Regelsatz.alle_organisationen.get(
-            organisation=self.a.organisation).regeln.all().first()
+            organisation=self.a.organisation).regeln.get(
+                art=Regel.KUENDIGUNGSTERMIN)
         self.assertEqual(regel.parameter, {'frist_monate': 3})
         self.assertNotIn('termine', regel.parameter)
 
