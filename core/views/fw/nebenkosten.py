@@ -18,6 +18,49 @@ from django.utils import timezone
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
+
+
+#: Ab dieser Abweichung wird eine Anpassung des Akontobetrags empfohlen:
+#: 10 % des heutigen Akontos, mindestens aber CHF 10.
+AKONTO_ANTEIL = Decimal('0.10')
+AKONTO_UNTERGRENZE = Decimal('10')
+
+
+def akonto_empfehlung(kosten_monat, akonto_monat):
+    """Empfohlener Akonto, Abweichung und Schwelle — als reine Rechnung.
+
+    WARUM DAS EINE EIGENE FUNKTION IST (E2.25)
+
+    Die vier Zeilen standen bis hierher mitten in `fw_nebenkosten_detail`,
+    eingebettet in eine Schleife ueber die fertige Abrechnung. Pruefbar waren
+    sie damit nur ueber die ganze Kette — Periode, Verteilschluessel,
+    Buchungen — oder gar nicht.
+
+    Die erste Fassung des Waechters las deshalb den QUELLTEXT und suchte die
+    Zahlen mit einem regulaeren Ausdruck. Das faengt den Zahlendreher (aus
+    10 wird 100), aber NICHT die gekippte Vergleichsrichtung: Wird aus
+    `>=` ein `>`, bleibt der Text mit den Zahlen unveraendert und der
+    Waechter gruen — nachgemessen, nicht vermutet. Ein Test, der eine Datei
+    liest statt Code auszufuehren, prueft die Schreibweise, nicht das
+    Verhalten.
+
+    Herausgeloest ist die Grenze an ihrem Rand pruefbar: genau auf der
+    Schwelle wird empfohlen, einen Rappen darunter nicht.
+
+    WARUM ZWEI ZAHLEN, NICHT EINE
+
+    Der Anteil allein erzeugte bei kleinen Akontobetraegen sinnlose
+    Empfehlungen (10 % von CHF 30 sind CHF 3). Die Untergrenze allein wuerde
+    bei grossen Betraegen jede Schwankung melden. `max()` nimmt die hoehere.
+
+    Der Rundungsschritt auf CHF 5 bleibt unveraendert — ein Akonto von
+    CHF 247 vorzuschlagen waere rechnerisch richtig und praktisch unbrauchbar.
+    """
+    empfohlen = (Decimal(round(float(kosten_monat) / 5.0)) * 5).quantize(Decimal('1'))
+    diff = empfohlen - akonto_monat
+    schwelle = max(AKONTO_UNTERGRENZE, (akonto_monat * AKONTO_ANTEIL))
+    empfehlen = abs(diff) >= schwelle and empfohlen > 0
+    return empfohlen, diff, schwelle, empfehlen
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
 
@@ -113,11 +156,11 @@ def fw_nebenkosten_detail(request, pk):
             continue
         kosten_monat = (a['kosten'] / monate) if monate else a['kosten']
         akonto_monat = (a['akonto'] / monate) if monate else a['akonto']
-        # auf CHF 5 runden
-        empfohlen = (Decimal(round(float(kosten_monat) / 5.0)) * 5).quantize(Decimal('1'))
-        diff = empfohlen - akonto_monat
-        schwelle = max(Decimal('10'), (akonto_monat * Decimal('0.10')))
-        if abs(diff) >= schwelle and empfohlen > 0:
+        # Rundung auf CHF 5 und Schwelle stehen in `akonto_empfehlung` —
+        # herausgeloest in E2.25, damit die Grenze an ihrem Rand pruefbar ist.
+        empfohlen, diff, _schwelle, empfehlen = akonto_empfehlung(
+            kosten_monat, akonto_monat)
+        if empfehlen:
             akonto_vorschlaege.append({
                 'vertrag_id': vid, 'mieter': a['mieter'], 'einheit': a['einheit'],
                 'aktuell': akonto_monat.quantize(Decimal('1')),
