@@ -5,7 +5,24 @@
 <div class="fw-phead">
     <div>
         <h1>Finanz-Cockpit</h1>
-        <p>Ihr Arbeitskorb — was ist zu tun, in der richtigen Reihenfolge.{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
+        {% comment %}
+DIESE SEITE IST NICHT DER ARBEITSVORRAT.
+
+Bis E2.29 stand hier «Ihr Arbeitskorb — was ist zu tun, in der richtigen
+Reihenfolge». Das behauptete eine Rolle, die nach G2 «Heute» hat: «Ein
+Arbeitsvorrat, nicht zwei Listen.»
+
+Die Arbeitsteilung steht in G2 und ist bereits umgesetzt: EINZELNE datierte
+Vorgaenge stehen im Arbeitsvorrat, SAMMELPOSTEN («12 Rechnungen pruefen») in
+der Inbox auf «Heute». Die vier Eintraege unten sind Sammelposten — sie
+stehen dort bereits. Was diese Seite leistet, ist der Blick auf die Zahlen
+dahinter und der kurze Weg in die jeweilige Liste.
+
+Der Untertitel war deshalb kein kleiner Textfehler: Wer ihn las, konnte
+glauben, seine Arbeit stehe an zwei Orten — und genau davor warnt das
+Konzept in Abschnitt 1 («Heute skaliert nicht»).
+{% endcomment %}
+        <p>Die Zahlen hinter den Finanzaufgaben — der Arbeitsvorrat steht auf <a href="/neu/" class="fw-link">Heute</a>.{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
     <div style="text-align:right">
         <div class="fw-num" style="font-size:28px;font-weight:800;letter-spacing:-.02em;color:{% if dringend_n %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">{{ offene_posten }}</div>
@@ -31,7 +48,7 @@
         <span class="fw-f">{% if durchlauf_saldo %}geparkte Positionen klären{% else %}alles abgestimmt{% endif %}</span>
     </div>
     <div class="fw-kpi">
-        <span class="fw-l">Monatsabschluss</span>
+        <span class="fw-l">Periodenabschluss</span>
         <span class="fw-v fw-num">{{ erledigt_n }}/{{ pflicht_n }}</span>
         <span class="fw-f">Pflichtschritte erledigt</span>
     </div>
@@ -40,7 +57,7 @@
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
     <!-- ARBEITSKORB -->
     <div class="xl:col-span-2">
-        <h2 class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Arbeitskorb</h2>
+        <h2 class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Offene Posten</h2>
         <div class="space-y-2.5">
         {% for i in arbeitskorb %}
             <div class="fw-flaeche rounded-xl border {% if i.dringend %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3.5 flex items-center gap-4">
@@ -72,7 +89,7 @@
 
     <!-- MONATSABSCHLUSS-CHECKLISTE -->
     <div>
-        <h2 class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Monatsabschluss {{ heute|date:"m/Y" }}</h2>
+        <h2 class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Periodenabschluss</h2>
         <div class="fw-card overflow-hidden">
             <div class="fw-dv">
             {% for c in checkliste %}

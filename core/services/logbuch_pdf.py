@@ -26,7 +26,22 @@ def _wrap(text, breite):
     return zeilen or ['']
 
 
-def logbuch_pdf(eintraege, erstellt_von='', heute=None):
+def _kopfzeile(gezeigt, gesamt):
+    """Sagt, wenn der Bericht nur ein Ausschnitt ist.
+
+    «unveraenderlicher Revisions-Trail» darf nur dastehen, wenn der Bericht
+    auch vollstaendig ist. Bei mehr Eintraegen als der Obergrenze wird daraus
+    eine Ansage — sonst legt jemand einer Revision einen Ausschnitt vor und
+    haelt ihn fuer das Ganze.
+    """
+    if gesamt is not None and gesamt > gezeigt:
+        return (f"{gezeigt} von {gesamt} Eintraegen · AUSSCHNITT, nach "
+                f"Zeitpunkt absteigend · fuer den vollstaendigen Trail bitte "
+                f"den Zeitraum eingrenzen")
+    return f"{gezeigt} Eintraege · unveraenderlicher Revisions-Trail"
+
+
+def logbuch_pdf(eintraege, erstellt_von='', heute=None, gesamt=None):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     W, H = A4
@@ -38,7 +53,7 @@ def logbuch_pdf(eintraege, erstellt_von='', heute=None):
         c.setFont("Helvetica", 8.5); c.setFillColorRGB(0.4, 0.4, 0.4)
         c.drawString(20 * mm, H - 26 * mm,
                      f"Erstellt am {heute}{(' von ' + erstellt_von) if erstellt_von else ''} · "
-                     f"{len(eintraege)} Einträge · unveränderlicher Revisions-Trail")
+                     + _kopfzeile(len(eintraege), gesamt))
         c.setFillColorRGB(0, 0, 0)
         c.setFont("Helvetica-Bold", 8)
         y = H - 34 * mm

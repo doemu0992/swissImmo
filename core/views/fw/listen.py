@@ -755,7 +755,7 @@ def fw_berichte(request):
             {'icon': 'fa-percent', 'farbe': 'violet', 'titel': 'MWST-Abrechnung',
              'sub': 'Umsatz-/Vorsteuer, ESTV-Export', 'url': '/neu/mwst/', 'kennzahl': None, 'pdf': False},
             {'icon': 'fa-gauge-high', 'farbe': 'sky', 'titel': 'Finanz-Cockpit',
-             'sub': 'Arbeitskorb + Monatsabschluss', 'url': '/neu/finanzen/' + lgq, 'kennzahl': None, 'pdf': False},
+             'sub': 'Offene Posten + Monatsabschluss', 'url': '/neu/finanzen/' + lgq, 'kennzahl': None, 'pdf': False},
         ]},
         {'gruppe': 'Forderungen & Zahlungen', 'items': [
             {'icon': 'fa-chart-column', 'farbe': 'rose', 'titel': 'Debitoren-Altersstruktur',

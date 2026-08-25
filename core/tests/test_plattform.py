@@ -155,7 +155,13 @@ class LogbuchTests(TestCase):
         r = c.get('/neu/logbuch/?export=csv')
         self.assertEqual(r.status_code, 200)
         self.assertIn('text/csv', r['Content-Type'])
-        self.assertIn('Kaution zurückbezahlt', r.content.decode('utf-8'))
+        # `streaming_content`, nicht `content`: Der Export streamt seit E2.29.
+        # Er hatte vorher eine stille Obergrenze von 10'000 Zeilen — in einem
+        # Bericht, der sich «revisionssicher für die Ablage» nennt. Die Grenze
+        # ist weg statt angesagt, weil eine CSV zeilenweise entsteht; dafür
+        # baut die Antwort nicht mehr am Stück im Speicher auf.
+        self.assertIn('Kaution zurückbezahlt',
+                      b''.join(r.streaming_content).decode('utf-8'))
 
     def test_pdf_auditbericht(self):
         u = _team_user(); c = Client(); c.force_login(u)

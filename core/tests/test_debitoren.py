@@ -236,7 +236,7 @@ class FinanzCockpitTests(TestCase):
         r = c.get('/neu/finanzen/')
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Finanz-Cockpit')
-        self.assertContains(r, 'Arbeitskorb')
+        self.assertContains(r, 'Offene Posten')  # hiess bis E2.29 «Arbeitskorb» (G2)
         self.assertContains(r, 'Alle Finanzaufgaben erledigt')
 
     def test_offene_debitoren_und_kreditoren_im_korb(self):
@@ -256,7 +256,9 @@ class FinanzCockpitTests(TestCase):
         r = c.get('/neu/finanzen/')
         self.assertContains(r, 'Zahlungseingänge abgleichen')
         self.assertContains(r, 'Eingangsrechnungen freigeben')
-        self.assertContains(r, 'Zahllauf ausführen')
+        # Der Zahllauf steht seit E2.29 im Periodenabschluss, nicht im Korb:
+        # Er ist ein Lauf und stand zweimal auf derselben Seite.
+        self.assertNotContains(r, 'Zahllauf ausführen')
         self.assertContains(r, 'dringend')                    # überfällige Debitoren
         self.assertContains(r, 'Überfällige Forderungen mahnen')
         self.assertNotContains(r, 'Alle Finanzaufgaben erledigt')
@@ -272,28 +274,60 @@ class FinanzCockpitTests(TestCase):
         c = Client(); c.force_login(_team_user())
         # noch nichts weiterverrechnet → Anzahl 0 (Kachel zeigt "erledigt")
         r = c.get('/neu/finanzen/')
-        self.assertEqual(r.context['arbeitskorb'][3]['key'], 'weiterverrechnung')
-        self.assertEqual(r.context['arbeitskorb'][3]['anzahl'], 0)
+        # Nach dem SCHLUESSEL, nicht nach der Position (siehe unten).
+        korb = {i['key']: i for i in r.context['arbeitskorb']}
+        self.assertIn('weiterverrechnung', korb)
+        self.assertEqual(korb['weiterverrechnung']['anzahl'], 0)
         # 300 von 500 weiterverrechnen → jetzt offener Rest = Todo
         c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/',
                {'vertrag_id': v.id, 'betrag': '300', 'zuschlag': '0'})
         r2 = c.get('/neu/finanzen/')
-        self.assertEqual(r2.context['arbeitskorb'][3]['anzahl'], 1)
+        # Nach dem SCHLUESSEL suchen, nicht nach der Position: Der Index
+        # verschob sich, als der Zahllauf aus dem Korb wanderte (E2.29). Ein
+        # Test an fester Position bricht bei jeder Umsortierung — dieselbe
+        # Lehre wie bei den Sortiertests in E1.1.
+        korb = {i['key']: i for i in r2.context['arbeitskorb']}
+        self.assertEqual(korb['weiterverrechnung']['anzahl'], 1)
 
-    def test_checkliste_sollstellung_ampel(self):
-        from core.services.automation import run_sollstellung
-        lg, e, m, v = _basis_objekte()
+    def test_periodenabschluss_zeigt_den_lauf_status(self):
+        """Der Abschluss kommt aus `Lauf.status`, nicht aus Rechnungstiteln.
+
+        Bis E2.29 erriet die Ampel den Zustand: Gibt es Rechnungen mit dem
+        Titel «Miete & NK 08/2026»? Das ist ein Indiz, keine Regel — und G7
+        verlangt Regeln als Daten. `Lauf` traegt den Status selbst, dazu
+        Abschlusszeitpunkt, Abschliessenden und Blockaden mit Grund.
+
+        Der Abschnitt bleibt LEER, solange keine Laeufe geplant sind
+        (`manage.py laeufe_planen`). Das ist beabsichtigt: Eine leere Liste
+        ist ehrlicher als eine erratene.
+        """
+        from django.core.management import call_command
+        from django.utils import timezone
+        from faelle.lauf_models import Lauf
+
+        _basis_objekte()
         c = Client(); c.force_login(_team_user())
-        heute = date.today()
-        r = c.get('/neu/finanzen/')
-        # vor Sollstellung: der Sollstellungs-Schritt ist offen (ok=False)
-        soll = next(x for x in r.context['checkliste'] if x['titel'].startswith('Sollstellung'))
-        self.assertIs(soll['ok'], False)
-        # Sollstellung für aktuellen Monat laufen lassen
-        run_sollstellung(heute.year, heute.month)
-        r2 = c.get('/neu/finanzen/')
-        soll2 = next(x for x in r2.context['checkliste'] if x['titel'].startswith('Sollstellung'))
-        self.assertIs(soll2['ok'], True)
+
+        # Ohne geplante Laeufe: kein Periodenabschluss.
+        self.assertEqual(list(c.get('/neu/finanzen/').context['checkliste']), [])
+
+        call_command('laeufe_planen', verbosity=0)
+        zeilen = c.get('/neu/finanzen/').context['checkliste']
+        self.assertTrue(zeilen, 'Nach `laeufe_planen` ist der Abschluss leer.')
+        self.assertTrue(all(z['ok'] is False for z in zeilen),
+                        'Ein frisch geplanter Lauf gilt als abgeschlossen.')
+
+        lauf = Lauf.objects.first()
+        lauf.status = Lauf.ABGESCHLOSSEN
+        lauf.abgeschlossen_am = timezone.now()
+        lauf.save(update_fields=['status', 'abgeschlossen_am'])
+
+        zeilen2 = c.get('/neu/finanzen/').context['checkliste']
+        treffer = [z for z in zeilen2
+                   if z['titel'].startswith(lauf.laufart.bezeichnung)]
+        self.assertTrue(treffer, 'Der abgeschlossene Lauf fehlt in der Liste.')
+        self.assertIs(treffer[0]['ok'], True,
+                      'Ein abgeschlossener Lauf wird nicht als erledigt gezeigt.')
 
     def test_durchlaufkonto_saldo_sichtbar(self):
         from finance.booking import buche

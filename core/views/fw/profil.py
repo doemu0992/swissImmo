@@ -346,25 +346,65 @@ def fw_logbuch(request):
         qs = qs.filter(zeitpunkt__gte=von)
 
     # CSV-Export (gleiche Filter) — revisionssicher für die Ablage
+    #
+    # OHNE OBERGRENZE, UND DAS IST DER PUNKT
+    #
+    # Hier stand `qs[:10000]` — dieselbe stille Kuerzung wie im PDF darunter,
+    # nur eine Zeile hoeher und in dem Export, den man tatsaechlich «fuer die
+    # Ablage» nimmt. E2.28 hat das PDF ehrlich gemacht und dabei die
+    # Gegensuche nach weiteren stillen Grenzen als ergebnislos gemeldet —
+    # diese hier stand vier Zeilen darueber.
+    #
+    # Beim PDF ist die Grenze berechtigt: 200'000 Zeilen ergeben ein
+    # unbrauchbares Dokument, und der Aufbau dauert. Fuer eine CSV gilt
+    # nichts davon — sie wird zeilenweise erzeugt und zeilenweise gelesen.
+    # Statt die Kuerzung anzusagen, faellt sie weg.
+    #
+    # `StreamingHttpResponse` + `iterator()`: Der Speicherbedarf haengt nicht
+    # mehr an der Zeilenzahl, und der Download beginnt sofort statt nach dem
+    # vollstaendigen Aufbau. `select_related('benutzer')` verhindert dabei
+    # eine Abfrage je Zeile — bei 50'000 Eintraegen der Unterschied zwischen
+    # Sekunden und Minuten.
     if request.GET.get('export') == 'csv':
         import csv
-        from django.http import HttpResponse
-        resp = HttpResponse(content_type='text/csv; charset=utf-8')
+        from django.http import StreamingHttpResponse
+
+        class _Durchreiche:
+            """`csv.writer` will ein Dateiobjekt; gebraucht wird die Zeile."""
+
+            def write(self, wert):
+                return wert
+
+        def _zeilen():
+            w = csv.writer(_Durchreiche(), delimiter=';')
+            yield '\ufeff'      # BOM → Excel erkennt UTF-8
+            yield w.writerow(['Zeitpunkt', 'Benutzer', 'Aktion', 'Objekt', 'Details'])
+            for e in qs.select_related('benutzer').iterator(chunk_size=2000):
+                yield w.writerow([
+                    timezone.localtime(e.zeitpunkt).strftime('%d.%m.%Y %H:%M'),
+                    e.benutzer.get_full_name() or e.benutzer.username if e.benutzer else 'System',
+                    e.aktion, e.objekt, e.details])
+
+        resp = StreamingHttpResponse(_zeilen(), content_type='text/csv; charset=utf-8')
         resp['Content-Disposition'] = 'attachment; filename="logbuch.csv"'
-        resp.write('﻿')  # BOM → Excel erkennt UTF-8
-        w = csv.writer(resp, delimiter=';')
-        w.writerow(['Zeitpunkt', 'Benutzer', 'Aktion', 'Objekt', 'Details'])
-        for e in qs[:10000]:
-            w.writerow([timezone.localtime(e.zeitpunkt).strftime('%d.%m.%Y %H:%M'),
-                        e.benutzer.get_full_name() or e.benutzer.username if e.benutzer else 'System',
-                        e.aktion, e.objekt, e.details])
         return resp
 
     # PDF-Auditbericht (revisionssicher, gleiche Filter)
     if request.GET.get('export') == 'pdf':
         from django.http import HttpResponse
         from core.services.logbuch_pdf import logbuch_pdf
-        pdf = logbuch_pdf(list(qs[:2000]), erstellt_von=(request.user.get_full_name() or request.user.username))
+        # OBERGRENZE MIT ANSAGE
+        #
+        # Der Bericht nennt sich «revisionssicher». Ein Auditbericht, der
+        # stillschweigend beim 2000. Eintrag aufhoert, ist genau das nicht:
+        # Wer ihn einer Revision vorlegt, legt einen Ausschnitt vor und weiss
+        # es nicht. Die Grenze bleibt (ein PDF mit 200'000 Zeilen hilft
+        # niemandem), aber sie steht jetzt IM Bericht.
+        GRENZE = 2000
+        gesamt = qs.count()
+        pdf = logbuch_pdf(list(qs[:GRENZE]),
+                          erstellt_von=(request.user.get_full_name() or request.user.username),
+                          gesamt=gesamt)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = 'inline; filename="Logbuch-Auditbericht.pdf"'
         return resp

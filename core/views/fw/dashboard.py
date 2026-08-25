@@ -138,7 +138,23 @@ def fw_dashboard(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_finanzen(request):
-    """Finanz-Cockpit — EIN Arbeitskorb statt 11 Menüs einzeln abzuklappern.
+    """Finanz-Cockpit — die Zahlen hinter den Finanzaufgaben.
+
+    NICHT DER ARBEITSVORRAT (G2)
+
+    Diese Seite hiess bis E2.29 «EIN Arbeitskorb statt 11 Menues einzeln
+    abzuklappern». Der Nutzen stimmt — elf Listen an einem Ort —, die
+    Bezeichnung nicht: «Ein Arbeitsvorrat, nicht zwei Listen» ist G2, und
+    dieser Vorrat steht auf «Heute».
+
+    Die Arbeitsteilung ist bereits umgesetzt: EINZELNE datierte Vorgaenge
+    gehen in den Arbeitsvorrat, SAMMELPOSTEN («12 Rechnungen pruefen») in
+    die Inbox. Die vier Eintraege hier sind Sammelposten und stehen dort
+    bereits — `core/services/inbox.py` holt dieselben Aggregate.
+
+    Wer die Seite als zweiten Arbeitskorb beschreibt, laedt genau den
+    Fehler ein, vor dem das Konzept in Abschnitt 1 warnt: einen zweiten
+    Posteingang, den man ebenfalls ignoriert.
 
     Die Reihenfolge der Abschnitte bildet den realen Buchhalter-Ablauf ab:
     Eingänge klären (Bank) → Eingangsrechnungen freigeben → Zahllauf →
@@ -213,10 +229,17 @@ def fw_finanzen(request):
         ('freigabe', 'fa-stamp', 'amber', 'Eingangsrechnungen freigeben',
          'Neu erfasste Kreditoren prüfen & freigeben',
          len(zur_freigabe), _chf(zur_freigabe, 'betrag'), '/neu/kreditoren/', 'Freigeben', False),
-        ('zahllauf', 'fa-money-bill-transfer', 'indigo', 'Zahllauf ausführen',
-         'Freigegebene Kreditoren zur Zahlung (pain.001)',
-         len(zur_zahlung), _chf(zur_zahlung), '/neu/kreditoren/', 'Zahlen',
-         any((k.faellig_am and k.faellig_am < heute) for k in zur_zahlung)),
+        # DER ZAHLLAUF STEHT NICHT MEHR HIER.
+        #
+        # Er ist ein LAUF (`laeufe_planen` legt ihn als `zahllauf` an,
+        # monatlich, Stichtag 25.) und stand damit zweimal auf DERSELBEN
+        # Seite: als Aufgabe im Korb und als Zeile im Periodenabschluss
+        # darunter. Dazu ein drittes Mal auf «Heute» aus derselben Quelle.
+        #
+        # 4b.5 hat für denselben Fall die Regel gesetzt: Die Blöcke WANDERN,
+        # sie werden nicht kopiert. Der Korb behält die Handlungen, die keine
+        # Läufe sind (freigeben, weiterverrechnen, Kautionen); die Läufe
+        # stehen im Periodenabschluss und im Bereich «Läufe».
         ('weiterverrechnung', 'fa-share-from-square', 'violet', 'Weiterverrechnungen abschliessen',
          'Angefangene Weiterverrechnungen an Mieter fertigstellen',
          len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', 'Weiterverrechnen', False),
@@ -235,36 +258,56 @@ def fw_finanzen(request):
     offene_posten = sum(1 for i in arbeitskorb if i['anzahl'])
     dringend_n = sum(1 for i in arbeitskorb if i['dringend'])
 
-    # ---------- Monatsabschluss-Checkliste (Ampel) ----------
-    j, m = heute.year, heute.month
-    soll_titel = f"Miete & NK {m:02d}/{j}"
-    soll_qs = DebitorenRechnung.objects.filter(titel=soll_titel).exclude(status='storniert')
-    if aktive_lg:
-        soll_qs = soll_qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
-    soll_gelaufen = soll_qs.exists()
+    # ---------- Periodenabschluss: die Läufe selbst ----------
+    #
+    # G7 — REGELN STATT LISTEN, ALS DATEN STATT ALS CODE
+    #
+    # Bis E2.29 stand hier eine Checkliste, die den Zustand ERRIET:
+    # `DebitorenRechnung.objects.filter(titel=f"Miete & NK {m:02d}/{j}")` —
+    # eine Regel als Zeichenkette. Sie konnte nur «gibt es solche Rechnungen?»
+    # beantworten, nicht «ist der Lauf abgeschlossen, von wem, und was
+    # blockiert ihn».
+    #
+    # `faelle.Lauf` trägt genau das: Status, `abgeschlossen_am`,
+    # `abgeschlossen_durch`, den Rhythmus (monatlich/quartalsweise/jährlich)
+    # und BLOCKADEN MIT GRUND. Das ist G7s eigentlicher Punkt: Die alte Ampel
+    # zeigte ein rotes Häkchen, der Lauf zeigt «Verbrauchsablesung Techem
+    # fehlt» — das eine führt zu einer Rückfrage, das andere zu einer
+    # Handlung.
+    #
+    # DER RHYTHMUS WAR MITGEMESSEN FALSCH: Die MWST-Zeile stand monatlich in
+    # der Liste, obwohl sie quartalsweise fällig ist. Ein Abschluss, der
+    # jeden Monat «noch offen» meldet, wird nach zwei Monaten ignoriert.
+    #
+    # Angelegt werden die Laufarten von `manage.py laeufe_planen`
+    # (6 Standardarten). Ohne sie bleibt der Abschnitt leer — und das ist
+    # richtig so: Eine leere Liste ist ehrlicher als eine erratene.
+    from faelle.lauf_models import Lauf
 
-    # MWST: welches Quartal ist als letztes abgeschlossen und damit abrechnungsreif?
-    aktuelles_q = (m - 1) // 3 + 1
-    letztes_q = aktuelles_q - 1 or 4
-    letztes_q_jahr = j if aktuelles_q > 1 else j - 1
+    # `faellig_am`, nicht `periode_bis` — nachgesehen, nicht geraten. Ein
+    # erster Entwurf nahm ein Feld an, das es nicht gibt; `periode` ist ein
+    # Textfeld («2026-08»), das Datum steht in `faellig_am`.
+    #
+    # Gezeigt werden die Laeufe, deren Stichtag erreicht ist — der Abschluss
+    # einer Periode ist erst dann eine Aufgabe.
+    laeufe_qs = (Lauf.objects.filter(faellig_am__lte=heute)
+                 .select_related('laufart')
+                 .order_by('laufart__reihenfolge', '-faellig_am')[:8])
 
-    checkliste = [
-        {'titel': f'Sollstellung Miete {m:02d}/{j} gebucht', 'ok': soll_gelaufen,
-         'url': '/neu/sollstellung/' + basis['lg_query'],
-         'hinweis': 'Monatlicher Mietenlauf erzeugt Debitoren + Buchungen'},
-        {'titel': 'Eingangsrechnungen alle freigegeben', 'ok': not zur_freigabe,
-         'url': '/neu/kreditoren/' + basis['lg_query'],
-         'hinweis': f'{len(zur_freigabe)} noch offen' if zur_freigabe else 'keine offenen'},
-        {'titel': 'Zahllauf ausgeführt', 'ok': not zur_zahlung,
-         'url': '/neu/kreditoren/' + basis['lg_query'],
-         'hinweis': f'{len(zur_zahlung)} zur Zahlung' if zur_zahlung else 'nichts offen'},
-        {'titel': 'Zahlungseingänge abgeglichen', 'ok': not deb_ueberf,
-         'url': '/neu/bankabgleich/' + basis['lg_query'],
-         'hinweis': f'{len(deb_ueberf)} überfällig' if deb_ueberf else 'keine überfälligen'},
-        {'titel': f'MWST-Abrechnung Q{letztes_q}/{letztes_q_jahr} prüfen', 'ok': None,
-         'url': f'/neu/mwst/?jahr={letztes_q_jahr}&quartal={letztes_q}',
-         'hinweis': 'Quartalsweise an die ESTV — manuell bestätigen'},
-    ]
+    checkliste = []
+    for lauf in laeufe_qs:
+        blockaden = list(lauf.offene_blockaden)
+        checkliste.append({
+            'titel': f'{lauf.laufart.bezeichnung} {lauf.periode}',
+            'ok': lauf.status == Lauf.ABGESCHLOSSEN,
+            'url': '/neu/laeufe/' + basis['lg_query'],
+            'hinweis': (', '.join(b.grund for b in blockaden) if blockaden
+                        else (f'abgeschlossen am '
+                              f'{lauf.abgeschlossen_am:%d.%m.%Y}'
+                              if lauf.abgeschlossen_am
+                              else f'Stichtag {lauf.faellig_am:%d.%m.%Y}')),
+        })
+
     erledigt_n = sum(1 for c in checkliste if c['ok'] is True)
     pflicht_n = sum(1 for c in checkliste if c['ok'] is not None)
 
