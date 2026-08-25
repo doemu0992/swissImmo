@@ -262,10 +262,19 @@ class HuellenTests(TestCase):
     """
 
     def _huellen_im_dateisystem(self):
-        """Alle Vorlagen, die einen Stilbaustein einbinden."""
+        """Alle Vorlagen, die einen Stilbaustein EINBINDEN.
+
+        Gesucht wird die Einbindung, nicht das Wort. Seit E2.22 gibt es
+        `fw/_schicht.html` und `fw/_schicht_link.html`; beide NENNEN
+        `_assets.html` in ihrem Erklaertext, um zu sagen, wer sie laedt. Eine
+        Suche nach der Zeichenkette zaehlte sie deshalb als Huellen ohne
+        Palette — derselbe blinde Fleck wie in `test_keine_fremdquellen.py`
+        und `test_farbklassen.py`: Erklaerung fuer Tatsache gehalten.
+        """
         wurzel = pathlib.Path('core/templates')
+        muster = re.compile(r"\{%\s*include\s+['\"][^'\"]*_assets[^'\"]*['\"]\s*%\}")
         return sorted(str(p) for p in wurzel.rglob('*.html')
-                      if '_assets' in p.read_text(encoding='utf-8')
+                      if muster.search(p.read_text(encoding='utf-8'))
                       and not p.name.startswith('_assets'))
 
     def test_die_suche_findet_ueberhaupt_huellen(self):

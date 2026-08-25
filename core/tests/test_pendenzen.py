@@ -69,7 +69,21 @@ class TagesstartCockpitTests(TestCase):
                              for x in r.context['inbox']),
                          'Die Pendenz steht zweimal auf der Seite — G2 verletzt.')
         body = r.content.decode()
-        self.assertIn('Inbox', body)
+        # Der Zulauf-Bereich muss auf der Seite stehen.
+        #
+        # ZWEIMAL AM FALSCHEN ORT GEMESSEN: Zuerst suchte dieser Test «Inbox»
+        # — das Wort stand nur in einem Vorlagenkommentar. E2.22 ersetzte es
+        # durch «Zulauf», und das ist ebenfalls unbrauchbar: «Zulauf» ist ein
+        # Menuepunkt der Seitenleiste und steht damit auf JEDER Seite.
+        # Nachgezaehlt: 4x auf /neu/, aber auch 2x auf /neu/liegenschaften/,
+        # wo es gar keinen Zulauf-Bereich gibt.
+        #
+        # Geprueft wird jetzt der Knopf, den nur das Dashboard rendert —
+        # 1x auf /neu/, 0x auf /neu/liegenschaften/.
+        self.assertIn('href="/neu/zulauf/" class="fw-btn"', body,
+                      'Der Zulauf-Bereich fehlt auf dem Tagesstart. Ein Wort '
+                      'aus der Seitenleiste zu pruefen genuegt nicht — das '
+                      'steht ueberall.')
         self.assertIn(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', body)
         self.assertIn('id="fwModal"', body)
 

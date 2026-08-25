@@ -1,0 +1,56 @@
+{% comment %}
+DIE KOMPONENTENSCHICHT — Tokens und `fw-*`-Bausteine.
+
+WARUM SIE SEIT E2.10 IN EINER EIGENEN DATEI STEHT
+
+Bis hierher lag sie im <style>-Block von `fw/base.html`. Wer nicht von dieser
+Huelle erbt, sah sie nie — und das betraf ausgerechnet die zwei dichtesten
+Vorlagen der Anwendung: `schaden_melden.html` (264 Farbklassen) und
+`public_bewerbung_form.html` (205). In E2.3 waren beide bereits umgestellt und
+mussten zurueckgenommen werden, weil sie unformatiert gerendert haetten — die
+Seiten, die MIETER UND BEWERBER sehen.
+
+Jetzt ist die Schicht ein eigener Baustein, den beide Huellen einbinden:
+`fw/_assets.html` (Anwendung) und `core/_assets_aussen.html` (Aussenseiten).
+
+WAS DAS FUER DIE AUSSENSEITEN BEDEUTET
+
+Sie bekommen damit die Petrol-Tokens. Das ist eine Aenderung an dem, was
+Dritte sehen, und ausdruecklich entschieden: Mieterportal und
+Bewerbungsformular tragen dieselbe Marke wie die Anwendung, statt in
+Tailwinds Voreinstellung zu bleiben. Der Dunkelmodus folgt ihnen mit.
+
+DIESE DATEI IST REIN ADDITIV. Alle Klassen tragen `fw-`; sie kollidieren
+weder mit Tailwind noch mit dem Bestand.
+
+ACHTUNG — DIESER KOPF MUSS EIN DJANGO-KOMMENTAR BLEIBEN
+
+Er steht VOR dem `<style>`-Tag. Als CSS-Kommentar (`/* … */`) ist er dort
+kein Kommentar, sondern Text: Der Browser hat ihn oben auf jeder Seite
+ausgegeben, sichtbar auch auf dem oeffentlichen Ticketformular.
+
+Passiert beim Zurueckstellen einer Massenaenderung: Erst wurden alle
+CSS-Kommentare in Django-Kommentare umgewandelt (falsch — der schliessende Django-Kommentar
+enthaelt eine geschweifte Klammer und zerschneidet den Tokenblock fuer die
+Waechter), dann alle zurueck — und dabei auch dieser eine, der von Anfang an
+richtig war.
+
+Regel: INNERHALB von `<style>` gehoeren CSS-Kommentare hin, AUSSERHALB
+Django-Kommentare. Beides ist hier noetig, weil die Datei eine Vorlage ist
+und einen Stilblock enthaelt.
+
+SEIT E2.22 STEHT DIE SCHICHT IN EINER STATISCHEN DATEI
+
+Sie lag als <style>-Block in jeder Seite — 61 KB bei JEDEM Aufruf, davon
+24 KB Erklaertext, den der Browser mitlaedt und niemand liest.
+
+Jetzt: `static/css/schicht.css` (ohne Kommentare, ausgeliefert und
+zwischengespeichert) und `static/css/schicht.src.css` (mit Erklaerungen, zum
+Lesen). Beide werden aus DIESER Datei erzeugt — sie bleibt die Quelle, damit
+die Begruendungen bei den Regeln stehen.
+
+Wer die Schicht aendert, fuehrt danach `python manage.py schicht_bauen` aus;
+`core/tests/test_schicht_gebaut.py` prueft, dass die drei Fassungen
+uebereinstimmen.
+{% endcomment %}
+{% load static %}<link rel="stylesheet" href="{% static 'css/schicht.css' %}">

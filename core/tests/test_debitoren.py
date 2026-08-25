@@ -10,6 +10,7 @@ from django.test import TestCase, Client
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, _sig_bytes, _heute, Mieter,
     Eigentuemer, Organisation, Liegenschaft, Einheit, Mietvertrag, User)
+from ._stil import ausgelieferter_stil
 
 
 
@@ -402,7 +403,7 @@ class MieterkontoblattTests(TestCase):
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/mieterkonten/').content.decode('utf-8')
         self.assertIn('data-stack-titel', html)         # Skript setzt das Attribut
-        self.assertIn("td[data-stack-titel]::before { content: none; }", html)
+        self.assertIn("td[data-stack-titel]::before { content: none; }", ausgelieferter_stil(html))
 
     def test_trennband_auch_in_den_handgebauten_kartenlisten(self):
         """Liegenschaften, Personen, Verträge und Debitoren sind keine gestapelten
@@ -411,9 +412,9 @@ class MieterkontoblattTests(TestCase):
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/liegenschaften/').content.decode('utf-8')
         self.assertIn(r'.md\:hidden.divide-y > * + * { border-top: 8px solid var(--ds-bg) !important; }',
-                      html)
+                      ausgelieferter_stil(html))
         # und der Strassenname wird nicht mehr abgeschnitten
-        self.assertNotIn('font-semibold text-slate-900 truncate">{{ row.lg.strasse', html)
+        self.assertNotIn('font-semibold text-slate-900 truncate">{{ row.lg.strasse', ausgelieferter_stil(html))
 
     def test_aufklappgruppen_bekommen_mobil_ein_trennband(self):
         """Auf /neu/objekte/ sitzen die Liegenschafts-Gruppen zu mehreren in
@@ -452,9 +453,9 @@ class MieterkontoblattTests(TestCase):
         # ausgeliefert, ist also auf jeder Seite nachweisbar.
         html = c.get('/neu/hypotheken/').content.decode('utf-8')
         self.assertIn('main details.group.border-b { border-bottom: 8px solid var(--ds-line) !important; }',
-                      html)
+                      ausgelieferter_stil(html))
         self.assertIn('main details.group.border-b:last-child { border-bottom-width: 0 !important; }',
-                      html)
+                      ausgelieferter_stil(html))
         # Und die Vorlage, die auf die Regel zielt, traegt die Klassen noch.
         vorlage = (pathlib.Path(settings.BASE_DIR)
                    / 'core/templates/fw/hypotheken.html').read_text()
@@ -524,7 +525,9 @@ class MieterkontoblattTests(TestCase):
         Median 760 px → 76 px."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/liegenschaften/').content.decode('utf-8')
-        block = html.split('main .truncate {', 1)[1].split('}', 1)[0]
+        # Zerlegt den ausgelieferten Stil, nicht das HTML: Seit E2.22 steht
+        # die Regel in `static/css/schicht.css`, nicht mehr im <style>-Block.
+        block = ausgelieferter_stil(html).split('main .truncate {', 1)[1].split('}', 1)[0]
         self.assertIn('overflow-wrap: break-word;', block)
         # Die Deklaration selbst darf nicht mehr vorkommen (das Wort steht noch
         # in der Begründung darüber).
@@ -554,7 +557,7 @@ class MieterkontoblattTests(TestCase):
         # die Regel existiert. Nur das eine zu pruefen liesse offen, ob der
         # Titel mobil wirklich Platz bekommt.
         self.assertIn('class="fw-zeile"', html)
-        self.assertIn('.fw-zeile .fw-mitte{flex-basis:100%', html)
+        self.assertIn('.fw-zeile .fw-mitte{flex-basis:100%', ausgelieferter_stil(html))
 
     def test_truncate_wird_mobil_zentral_aufgehoben(self):
         """«truncate» schneidet auf dem Handy genau das weg, was die Zeile
@@ -566,18 +569,18 @@ class MieterkontoblattTests(TestCase):
         — nachher 0."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/liegenschaften/').content.decode('utf-8')
-        self.assertIn('main .truncate {', html)
+        self.assertIn('main .truncate {', ausgelieferter_stil(html))
         for regel in ('white-space: normal !important;',
                       'overflow: visible !important;',
                       'text-overflow: clip !important;'):
-            self.assertIn(regel, html)
+            self.assertIn(regel, ausgelieferter_stil(html))
 
     def test_truncate_bleibt_in_topbar_und_seitenleiste(self):
         """Die Regel ist auf <main> begrenzt: Benutzername und Menü-Labels
         brauchen ihre feste Zeilenhöhe, dort ist truncate richtig."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/liegenschaften/').content.decode('utf-8')
-        self.assertNotIn('\n            .truncate {', html)
+        self.assertNotIn('\n            .truncate {', ausgelieferter_stil(html))
         # Der Benutzername in der Topbar trägt weiterhin truncate.
         #
         # Geprüft wird die SACHE, nicht die Zeichenkette: Seit E2.14 heisst die
@@ -596,7 +599,7 @@ class MieterkontoblattTests(TestCase):
         was aber nur zufällig zum Datenbild passte."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/mieterkonten/').content.decode('utf-8')
-        self.assertIn('border-bottom: 8px solid var(--ds-bg) !important', html)
+        self.assertIn('border-bottom: 8px solid var(--ds-bg) !important', ausgelieferter_stil(html))
 
 
 class DebitorenAgingTests(TestCase):
@@ -1118,8 +1121,8 @@ class FinanzUIP5Tests(TestCase):
         gilt — und ist deshalb leicht versehentlich zu entfernen."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/debitoren/').content.decode('utf-8')
-        self.assertIn('@media (min-width: 768px)', html)
-        self.assertIn('main table.min-w-max td:not(.text-right):not(.text-center)', html)
+        self.assertIn('@media (min-width: 768px)', ausgelieferter_stil(html))
+        self.assertIn('main table.min-w-max td:not(.text-right):not(.text-center)', ausgelieferter_stil(html))
         # Der Wrapper bleibt scrollbar — sehr breite Tabellen (Spalte je
         # Bewerber) brauchen ihn weiterhin.
         self.assertIn('overflow-x-auto', html)
@@ -1168,11 +1171,11 @@ class FinanzUIP5Tests(TestCase):
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/kreditoren/').content.decode('utf-8')
         self.assertIn('fwTabellenStapeln', html)                 # Skript ausgeliefert
-        self.assertIn("table[data-stack]", html)                 # CSS vorhanden
-        self.assertIn('@media (max-width: 767px)', html)         # nur mobil
+        self.assertIn("table[data-stack]", ausgelieferter_stil(html))                 # CSS vorhanden
+        self.assertIn('@media (max-width: 767px)', ausgelieferter_stil(html))         # nur mobil
         # display:block auf der Tabelle selbst — sonst misst der Browser die
         # Breite über eine anonyme Tabellenzelle wieder am Inhalt.
-        self.assertIn('table[data-stack] { display: block;', html)
+        self.assertIn('table[data-stack] { display: block;', ausgelieferter_stil(html))
 
     def test_kontoblatt_hat_kartenansicht_fuers_handy(self):
         """Das Kontoblatt ist der nächste Klick aus der Erfolgsrechnung."""

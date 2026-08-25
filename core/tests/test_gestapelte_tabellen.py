@@ -35,6 +35,8 @@ import pathlib
 import re
 
 from django.test import TestCase
+from ._stil import ausgelieferter_stil
+
 
 # Seit E2.10 stehen die Regeln in `fw/_schicht.html` (die Aussenseiten sollen
 # sie auch sehen); `base.html` traegt weiterhin das Skript, das die Zellen

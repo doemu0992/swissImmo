@@ -7,6 +7,7 @@ from django.test import TestCase, Client
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, Mieter, Liegenschaft, Einheit,
     Mietvertrag, User)
+from ._stil import ausgelieferter_stil
 
 
 
@@ -249,7 +250,11 @@ class NavigationTests(TestCase):
         for ziel in ('/neu/account/', '/neu/benutzer/', '/neu/vorlagen/',
                      '/neu/integrationen/', '/neu/logbuch/', '/neu/rechtsgrundlagen/'):
             self.assertContains(r, ziel)
-        self.assertContains(r, 'Ansicht')  # Modus-Schalter vorhanden
+        # Der Modus-Schalter ist mit E1.1 entfallen (Entscheid D1: eine
+        # Navigation statt zweier Modi). Diese Pruefung suchte ihn 23 Etappen
+        # lang weiter und war gruen, weil das Wort «Ansicht» zufaellig
+        # anderswo auf der Seite stand.
+        self.assertNotContains(r, '/neu/modus/')
 
     def test_palette_daten_vorhanden(self):
         c = Client(); c.force_login(_team_user())
