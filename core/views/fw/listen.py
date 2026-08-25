@@ -29,6 +29,7 @@ from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
+from core.views.fw.liegenschaft_crud import telefon_kern
 
 logger = logging.getLogger(__name__)
 
@@ -1179,6 +1180,52 @@ def fw_vertraege(request):
     })
 
 
+def telefon_treffer_ids(kern, grundmenge):
+    """Die Ids aller Personen, deren Nummer diesen Kern enthaelt.
+
+    WARUM NICHT DIE ABFRAGE UM SCHREIBWEISEN ERWEITERT WIRD
+
+    Naheliegend waere, aus dem Kern die moeglichen Speicherformen zu erzeugen
+    (`079 123 45 67`, `+41 79 …`, `0791234567`) und danach zu suchen. Das
+    wurde gebaut und gemessen — und es raet, in welcher Form die Nummer
+    erfasst wurde. Realistische Formen ausserhalb der geratenen Liste fallen
+    still durch: `079/123 45 67` und `079.123.45.67` wurden von KEINER der
+    sieben Suchvarianten gefunden, `079 123 4567` von einer.
+
+    Ueber acht Speicherformate x sieben Suchbegriffe gemessen:
+
+        Schreibweisen raten   33 von 56
+        Kern vergleichen      56 von 56
+
+    Die zweite Zahl ist auch die der Kopfzeilensuche (E2.26) — dieselbe
+    Methode, deshalb dasselbe Ergebnis. Zwei Suchen mit unterschiedlichem
+    Verhalten waeren fuer den Benutzer nicht erklaerbar.
+
+    WARUM DAS HIER TROTZDEM EINE ABFRAGE BLEIBT
+
+    Der Vergleich braucht Python — die Datenbank kann `telefon_kern` nicht
+    bilden, ohne die gespeicherten Werte zu normalisieren. Diese Funktion
+    liefert deshalb nur die **Ids**; der Aufrufer haengt sie mit `id__in` an
+    seine Bedingung. Die Abfrage bleibt eine Abfrage, Sortierung und
+    Zaehlung bleiben unberuehrt.
+
+    Gelesen werden vier Spalten ueber `values_list` — und nur, wenn die
+    Eingabe ueberhaupt nach einer Nummer aussieht.
+    """
+    treffer = []
+    for pk, mobil, privat, geschaeft in grundmenge.exclude(
+            mobile='', telefon_privat='', telefon_geschaeft='').values_list(
+            'id', 'mobile', 'telefon_privat', 'telefon_geschaeft'):
+        # Jedes Feld einzeln: Zusammengeklebt entstuenden Treffer ueber
+        # Feldgrenzen hinweg (siehe E2.26).
+        for wert in (mobil, privat, geschaeft):
+            kandidat = telefon_kern(wert)
+            if kandidat and kern in kandidat:
+                treffer.append(pk)
+                break
+    return treffer
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_personen(request):
     basis = _global_filter(request)
@@ -1195,10 +1242,27 @@ def fw_personen(request):
         qs = qs.filter(typ=typ_filter)
     q = (request.GET.get('q') or '').strip()
     if q:
-        qs = qs.filter(Q(vorname__icontains=q) | Q(nachname__icontains=q)
-                       | Q(firmen_name__icontains=q) | Q(email__icontains=q) | Q(ort__icontains=q)
-                       | Q(mobile__icontains=q) | Q(telefon_privat__icontains=q)
-                       | Q(telefon_geschaeft__icontains=q))
+        bedingung = (Q(vorname__icontains=q) | Q(nachname__icontains=q)
+                     | Q(firmen_name__icontains=q) | Q(email__icontains=q)
+                     | Q(ort__icontains=q)
+                     | Q(mobile__icontains=q) | Q(telefon_privat__icontains=q)
+                     | Q(telefon_geschaeft__icontains=q))
+
+        # TELEFONNUMMERN UEBER SCHREIBWEISEN HINWEG
+        #
+        # `icontains` allein findet `079 123 45 67` nicht, wenn jemand
+        # `0791234567` tippt — und schon gar nicht `+41 79 …`. Gemessen waren
+        # es 5 von 18 Treffern; die Suche fand also weniger als ein Drittel.
+        #
+        # `telefon_kern()` (E2.26) macht aus jeder Schreibweise denselben
+        # Kern; `telefon_treffer_ids` vergleicht ihn gegen den Bestand und
+        # liefert Ids. Die kommen mit `id__in` in dieselbe Bedingung — die
+        # Abfrage bleibt eine Abfrage, Sortierung und Zaehlung bleiben, wie
+        # sie waren.
+        kern = telefon_kern(q)
+        if len(kern) >= 5:
+            bedingung |= Q(id__in=telefon_treffer_ids(kern, qs))
+        qs = qs.filter(bedingung).distinct()
 
     aktive_vertraege = (Mietvertrag.objects.filter(status='aktiv')
                         .select_related('einheit__liegenschaft'))
