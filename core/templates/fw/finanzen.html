@@ -105,6 +105,18 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
                         <div class="text-sm {% if c.ok is True %}fw-faint line-through{% else %}fw-strong font-medium{% endif %}">{{ c.titel }}</div>
                         <div class="text-xs fw-faint mt-0.5">{{ c.hinweis }}</div>
                     </div>
+                    {% comment %}
+                    Anzahl und Betrag standen bis E2.30 im Arbeitskorb daneben.
+                    Der Plan will die Handlung im Lauf; damit sie beim Wandern
+                    nicht verlorengehen, stehen sie jetzt hier — am selben Ort
+                    wie Status und Blockade.
+                    {% endcomment %}
+                    {% if c.anzahl %}
+                    <div class="text-right shrink-0">
+                        <div class="text-sm fw-num font-bold {% if c.ok is True %}fw-faint{% else %}fw-strong{% endif %}">{{ c.anzahl }}</div>
+                        {% if c.chf %}<div class="text-[11px] fw-faint fw-num">CHF {{ c.chf|chf }}</div>{% endif %}
+                    </div>
+                    {% endif %}
                     <i class="fa-solid fa-chevron-right text-[10px] fw-faint mt-1"></i>
                 </a>
             {% endfor %}

@@ -254,13 +254,25 @@ class FinanzCockpitTests(TestCase):
                                           status='freigegeben', liegenschaft=lg, konto=_k('4000'))
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/finanzen/')
-        self.assertContains(r, 'Zahlungseingänge abgleichen')
+        # Gewandert in den Periodenabschluss (E2.30) — der Plan will die
+        # Handlung im Lauf, nicht daneben.
+        self.assertNotContains(r, 'Zahlungseingänge abgleichen')
         self.assertContains(r, 'Eingangsrechnungen freigeben')
         # Der Zahllauf steht seit E2.29 im Periodenabschluss, nicht im Korb:
         # Er ist ein Lauf und stand zweimal auf derselben Seite.
         self.assertNotContains(r, 'Zahllauf ausführen')
-        self.assertContains(r, 'dringend')                    # überfällige Debitoren
-        self.assertContains(r, 'Überfällige Forderungen mahnen')
+        # DRINGEND HAENGT SEIT E2.30 AM LAUF, NICHT AM KORB.
+        #
+        # Ueberfaellige Debitoren allein machen die Seite nicht mehr dringend —
+        # der Mahnlauf tut es, sobald sein Stichtag ueberschritten oder er
+        # blockiert ist. Das ist die genauere Aussage: «Es gibt Ueberfaellige»
+        # ist ein Zustand, «der Mahnlauf haette am 15. laufen sollen» ist eine
+        # Handlung.
+        #
+        # Ohne geplante Laeufe (`laeufe_planen`) steht deshalb nichts Dringendes
+        # da — geprueft wird das im Periodenabschluss-Test.
+        self.assertNotContains(r, 'dringend')
+        self.assertNotContains(r, 'Überfällige Forderungen mahnen')  # E2.30: gewandert
         self.assertNotContains(r, 'Alle Finanzaufgaben erledigt')
 
     def test_nur_angefangene_weiterverrechnung_ist_todo(self):

@@ -136,6 +136,26 @@ def fw_dashboard(request):
     })
 
 
+def _lauf_url(ziel_ansicht):
+    """Die Adresse zu einem Laufart-Ziel — oder die Laufliste.
+
+    `Laufart.ziel_ansicht` traegt den NAMEN einer View («fw_bankabgleich»),
+    nicht ihre Adresse. Wer ihn direkt in ein `href` schreibt, erzeugt einen
+    relativen Verweis, der ins Leere fuehrt.
+
+    Ist der Name (noch) nicht verdrahtet, faellt der Verweis auf die
+    Laufliste zurueck — dort ist der Lauf in jedem Fall zu finden.
+    """
+    from django.urls import NoReverseMatch, reverse
+
+    if not ziel_ansicht:
+        return '/neu/laeufe/'
+    try:
+        return reverse(ziel_ansicht)
+    except NoReverseMatch:
+        return '/neu/laeufe/'
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_finanzen(request):
     """Finanz-Cockpit — die Zahlen hinter den Finanzaufgaben.
@@ -223,9 +243,7 @@ def fw_finanzen(request):
         'teal':   ('fw-markenflaeche fw-marke',     'fw-btn fw-primary'),
     }
     _korb = [
-        ('bank', 'fa-right-left', 'sky', 'Zahlungseingänge abgleichen',
-         'Offene Forderungen mit Bankgutschriften verbuchen',
-         len(deb), deb_offen_chf, '/neu/bankabgleich/', 'Abgleichen', bool(deb_ueberf)),
+        # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)
         ('freigabe', 'fa-stamp', 'amber', 'Eingangsrechnungen freigeben',
          'Neu erfasste Kreditoren prüfen & freigeben',
          len(zur_freigabe), _chf(zur_freigabe, 'betrag'), '/neu/kreditoren/', 'Freigeben', False),
@@ -243,9 +261,7 @@ def fw_finanzen(request):
         ('weiterverrechnung', 'fa-share-from-square', 'violet', 'Weiterverrechnungen abschliessen',
          'Angefangene Weiterverrechnungen an Mieter fertigstellen',
          len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', 'Weiterverrechnen', False),
-        ('mahnen', 'fa-envelope-open-text', 'rose', 'Überfällige Forderungen mahnen',
-         'Fällige Debitoren mit Mahnung anstossen',
-         len(deb_ueberf), deb_ueberf_chf, '/neu/mahnwesen/', 'Mahnen', bool(deb_ueberf)),
+        # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)
         ('kaution', 'fa-shield-halved', 'teal', 'Kautionen freigeben',
          'Rückzahlungsfristen nach Auszug (Art. 257e)',
          kaut_offen, None, '/neu/kautionen/', 'Kautionen', kaut_faellig > 0),
@@ -256,7 +272,10 @@ def fw_finanzen(request):
         'url': u + basis['lg_query'], 'cta': cta, 'dringend': d,
     } for (k, ic, f, t, s, n, c, u, cta, d) in _korb]
     offene_posten = sum(1 for i in arbeitskorb if i['anzahl'])
-    dringend_n = sum(1 for i in arbeitskorb if i['dringend'])
+    # `dringend_n` wird ERST NACH der Checkliste berechnet — sie entsteht
+    # weiter unten. Ein erster Entwurf zaehlte hier und traf eine leere Liste:
+    # Die Zahl im Kopf haette die dringenden Laeufe verschwiegen.
+    dringend_korb = sum(1 for i in arbeitskorb if i['dringend'])
 
     # ---------- Periodenabschluss: die Läufe selbst ----------
     #
@@ -294,13 +313,56 @@ def fw_finanzen(request):
                  .select_related('laufart')
                  .order_by('laufart__reihenfolge', '-faellig_am')[:8])
 
+    # WAS OFFEN IST, GEHOERT AN DEN LAUF (E2.30)
+    #
+    # Der Plan zur Zeile «Finanzen»: «Register und Konten. HANDLUNGEN
+    # (abgleichen, mahnen, zahlen) SPRINGEN IN DEN ZUGEHOERIGEN LAUF.»
+    #
+    # E2.29 hat das fuer den Zahllauf getan, aber nur fuer ihn: Der Test
+    # verglich BEZEICHNUNGEN, und «Zahllauf» stand in beiden Texten. Bank und
+    # Mahnwesen fielen nicht auf, weil sie verschieden heissen — dabei zeigten
+    # sie auf DASSELBE ZIEL, was die haertere Doppelung ist.
+    #
+    # Beim Wandern droht ein Verlust: Der Korb zeigte Anzahl und CHF-Summe,
+    # der Abschluss nur Status und Blockade. `Lauf.kennzahlen` traegt sie
+    # zwar, aber erst `abschliessen()` fuellt sie — vorher stehen sie nicht
+    # zur Verfuegung.
+    #
+    # Deshalb rechnet die Ansicht sie hier aus, wo die Zahlen ohnehin schon
+    # stehen. Sie gehen also nicht verloren; sie stehen nur nicht mehr an
+    # zwei Orten.
+    OFFENE_ZAHLEN = {
+        'bankabgleich': (len(deb), deb_offen_chf),
+        'mahnlauf': (len(deb_ueberf), deb_ueberf_chf),
+        'zahllauf': (len(zur_zahlung), _chf(zur_zahlung)),
+    }
+
     checkliste = []
     for lauf in laeufe_qs:
         blockaden = list(lauf.offene_blockaden)
+        anzahl, summe = OFFENE_ZAHLEN.get(lauf.laufart.schluessel, (None, None))
         checkliste.append({
             'titel': f'{lauf.laufart.bezeichnung} {lauf.periode}',
             'ok': lauf.status == Lauf.ABGESCHLOSSEN,
-            'url': '/neu/laeufe/' + basis['lg_query'],
+            # `ziel_ansicht` ist ein VIEW-NAME, keine Adresse — das Feld
+            # sagt es selbst: «Name der bestehenden View, die den Lauf
+            # tatsaechlich ausfuehrt». Ohne `reverse()` stand
+            # `href="fw_bankabgleich"` im HTML; der Browser loest das relativ
+            # auf und landet auf `/neu/fw_bankabgleich` — ein 404 auf JEDER
+            # Zeile des Abschlusses.
+            #
+            # Gefunden wurde das nicht vom Test, sondern beim Nachsehen, was
+            # in der Zeile wirklich steht. Ein Verweis, der ins Leere zeigt,
+            # sieht im HTML aus wie einer, der funktioniert.
+            'url': _lauf_url(lauf.laufart.ziel_ansicht) + basis['lg_query'],
+            'anzahl': anzahl, 'chf': summe,
+            # DRINGEND hing bis E2.30 an den Korb-Eintraegen. Mit ihnen waere
+            # die Aussage verlorengegangen — dabei ist sie am Lauf besser
+            # aufgehoben: Dringend ist, was den Stichtag ueberschritten hat
+            # oder blockiert ist. Das ist eine Tatsache aus den Daten, nicht
+            # eine Einschaetzung im Code.
+            'dringend': (lauf.status != Lauf.ABGESCHLOSSEN
+                         and (bool(blockaden) or lauf.faellig_am < heute)),
             'hinweis': (', '.join(b.grund for b in blockaden) if blockaden
                         else (f'abgeschlossen am '
                               f'{lauf.abgeschlossen_am:%d.%m.%Y}'
@@ -310,6 +372,19 @@ def fw_finanzen(request):
 
     erledigt_n = sum(1 for c in checkliste if c['ok'] is True)
     pflicht_n = sum(1 for c in checkliste if c['ok'] is not None)
+
+    # OFFEN UND DRINGEND ZAEHLEN BEIDE QUELLEN.
+    #
+    # Ein erster Entwurf zaehlte `offene_posten` weiter nur ueber den Korb.
+    # Im Browser sah man sofort, was das anrichtet: «0 offene Aufgaben ·
+    # 3 dringend» im Kopf und «Alle Finanzaufgaben erledigt» darunter,
+    # waehrend rechts drei ueberfaellige Laeufe standen.
+    #
+    # Ein Widerspruch auf einem Bildschirm ist genau das, was B3 der Analyse
+    # meint: «Ein 10k-Werkzeug darf sich nicht widersprechen.»
+    offene_laeufe = sum(1 for c in checkliste if c['ok'] is not True)
+    offene_posten = offene_posten + offene_laeufe
+    dringend_n = dringend_korb + sum(1 for c in checkliste if c.get('dringend'))
 
     return render(request, 'fw/finanzen.html', {
         **basis, 'nav': 'finanzen',
