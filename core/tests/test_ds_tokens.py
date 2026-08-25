@@ -51,6 +51,69 @@ def verwendungen():
 
 
 class TokenTests(TestCase):
+    def test_jede_gesaettigte_flaeche_setzt_die_schrift_ueber_den_token(self):
+        """Wer eine gesättigte Fläche MIT TEXT setzt, muss die Schrift setzen.
+
+        WARUM, MIT ZAHLEN
+
+        Auf `--ds-crit` gewinnt im Hellmodus Weiss (6.60:1), im Dunkelmodus die
+        dunkle Tinte (7.71:1). Ein fester Wert kann beides nicht: `color:#fff`
+        erreichte im Dunkeln 2.40:1, und eine Fläche ganz OHNE Schriftfarbe
+        erbt die Tinte — das Zähler-Abzeichen der Seitenleiste stand so bei
+        2.49:1 hell und 2.02:1 dunkel. Beides gemessen, beides unter AA.
+
+        `--ds-auf-satt` löst das für alle vier Familien; die Gewinnerpaarung
+        liegt zwischen 5.22:1 und 8.86:1.
+
+        ZWEI AUSNAHMEN, BEIDE NACHGEZÄHLT
+
+        **Zustandsvarianten** (`hover:`, `file:`, `group-hover:`) wechseln nur
+        die Fläche; die Schrift steht an der Grundklasse. Sie hier zu
+        verlangen, wäre doppelt.
+
+        **Textlose Marker**: `fw-marker` (31 Vorkommen), `fw-hi` (13),
+        `fw-punkt` (2) — in KEINEM davon steht Text, es sind farbige Punkte
+        und Balken. Eine Schriftfarbe auf einem Punkt zu fordern, hiesse ein
+        richtiges Muster anzeigen, und ein solcher Wächter wird abgeschaltet.
+
+        WAS DIESER TEST HINZUFÜGT
+
+        `test_definierte_tokens_werden_auch_benutzt` prüft nur, dass der Token
+        IRGENDWO steht. Wer ihn an einer von sechs Stellen entfernt, bliebe
+        dort unbemerkt.
+        """
+        quelle = BASE.read_text(encoding='utf-8')
+        schicht = BASE.parent / '_schicht.html'
+        if schicht.exists():
+            quelle += schicht.read_text(encoding='utf-8')
+
+        OHNE_TEXT = ('fw-marker', 'fw-hi', 'fw-punkt')
+        regel = re.compile(
+            r'(\.[\w.\\:-]+)\{([^}]*background:var\(--ds-(?:brand|crit|good|warn)\)[^}]*)\}')
+
+        betroffen, ohne = 0, []
+        for m in regel.finditer(quelle):
+            sel, block = m.group(1), m.group(2)
+            if '\\:' in sel or '::' in sel:        # Zustandsvariante
+                continue
+            if any(k in sel for k in OHNE_TEXT):    # textloser Marker
+                continue
+            betroffen += 1
+            if 'var(--ds-auf-satt)' not in block:
+                ohne.append(sel)
+
+        self.assertGreater(
+            betroffen, 4,
+            'Kaum textführende Regeln mit gesättigter Fläche gefunden — prüft '
+            'dieser Test überhaupt etwas? (Schreibweise geändert?)')
+        self.assertEqual(
+            sorted(set(ohne)), [],
+            'Diese Regeln setzen eine gesättigte Fläche mit Text, aber nicht '
+            f'die Schrift darauf: {sorted(set(ohne))}. Ohne '
+            '`color:var(--ds-auf-satt)` erbt das Element die Tinte — gemessen '
+            '2.02:1 bis 2.49:1, also unter WCAG AA. Ein festes `color:#fff` '
+            'hilft nur im Hellmodus.')
+
     def test_es_gibt_ueberhaupt_definitionen(self):
         """Ohne diese Prüfung hinge der Test unten in der Luft.
 

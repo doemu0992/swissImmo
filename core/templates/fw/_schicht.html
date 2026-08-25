@@ -65,19 +65,15 @@ und einen Stilblock enthaelt.
         :root{
             --ds-bg:#eff2f3;--ds-surface:#fff;--ds-surface-2:#f4f7f7;--ds-ink:#0e2227;--ds-muted:#4c6169;--ds-faint:#5c757c;--ds-line:#dde6e8;
             --ds-brand:#0f6f6a;--ds-brand-600:#0b5450;--ds-brand-soft:#d9efed;
+            /* Schrift auf einer GESAETTIGTEN Flaeche — Marke, kritisch,
+               gut, Warnung. Nachgemessen fuer alle vier: Im Hellmodus
+               gewinnt Weiss (5.2-7.1:1), im Dunkelmodus die dunkle Tinte
+               (7.4-8.9:1). Ein fester Wert kann das nicht leisten —
+               `color:#fff` erreichte im Dunkeln 2.0-2.5:1. */
+            --ds-auf-satt:#ffffff;
             /* Eine Stufe deutlicher als die Grundlinie: fuer Umrandungen,
                die beim Ueberfahren hervortreten sollen. */
             --ds-line-stark:#c2d2d4;
-            /* Text auf der dunklen Seitenleiste (B4).
-               Der Wert ist in allen drei Bloecken DERSELBE, und das ist Absicht:
-               Die Leiste traegt ihren dunklen Verlauf unabhaengig vom Modus, es
-               gibt also keinen zweiten Grund, gegen den zu rechnen waere.
-               Trotzdem steht er ueberall — `test_ds_tokens` verlangt zu Recht,
-               dass jedes Token in jedem Block definiert ist. Ein Token, das nur
-               im Hellsatz steht, faellt im Dunkeln stillschweigend auf den
-               Hellwert zurueck; heute ist das derselbe Wert, morgen vielleicht
-               nicht mehr. Die Regel schuetzt vor genau diesem leisen Fehler. */
-            --ds-auf-dunkel:#a8c0c5;
             --ds-good:#166534;--ds-good-soft:#e0f2e5;--ds-warn:#a35a09;--ds-warn-soft:#fbeeda;--ds-crit:#b32133;--ds-crit-soft:#fbe6e9;--ds-info:#0b5c8f;--ds-info-soft:#e0eff8;
             --ds-shadow-sm:0 1px 2px rgba(14,34,39,.06);--ds-shadow:0 1px 2px rgba(14,34,39,.05),0 6px 20px rgba(14,34,39,.05);
             --ds-radius:10px;--ds-radius-sm:7px;--ds-pill:999px;
@@ -85,16 +81,16 @@ und einen Stilblock enthaelt.
         @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
             --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
             --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
-            --ds-line-stark:#33474d;
-            --ds-auf-dunkel:#a8c0c5;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
+            --ds-auf-satt:#0a1518;
+            --ds-line-stark:#33474d;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
             --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
         }}
         :root[data-theme="dark"]{
             --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
             --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
-            --ds-line-stark:#33474d;
-            --ds-auf-dunkel:#a8c0c5;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
+            --ds-auf-satt:#0a1518;
+            --ds-line-stark:#33474d;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
             --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
         }
@@ -104,32 +100,8 @@ und einen Stilblock enthaelt.
            Nur die Textfarbe auf --ds-muted (≥4.5:1, theme-aware) anheben — Border/BG unberührt. */
         .text-slate-400{color:var(--ds-muted)!important}
         .text-slate-300{color:var(--ds-muted)!important}
-        /* ABER NICHT IN DER SEITENLEISTE (B4, E0.3).
-           --ds-muted ist fuer helle Flaechen gerechnet: 8.4:1 auf --ds-surface.
-           Die Seitenleiste hat einen dunklen Verlauf (#122b31 -> #0a1c20); dort
-           erreicht derselbe Wert nur 2.28:1 — die Eintraege «Vermieten», «Geld»,
-           «Uebersichten» waren kaum lesbar. Die Regel oben war also richtig
-           gedacht und an einer Stelle falsch angewandt.
-           `text-slate-500` steht hier mit, weil die Leiste es benutzt (Gruppen-
-           knopf, Einstellungen) und die Regel oben es gar nicht erfasste: 3.03:1.
-           --ds-auf-dunkel erreicht 7.78:1 oben und 9.18:1 unten; Weiss bleibt
-           dem aktiven Eintrag vorbehalten (14.83:1), damit die Stufung sichtbar
-           bleibt. Bewacht von core/tests/test_kontrast_leiste.py. */
-        #fwSidebar .text-slate-300,
-        #fwSidebar .text-slate-400,
-        #fwSidebar .text-slate-500,
-        /* Die Schichtklassen brauchen dieselbe Ausnahme wie die
-           Tailwind-Klassen darueber: Auf dem dunklen Verlauf der Leiste sind
-           `--ds-muted` (8.4:1 auf hell) und `--ds-faint` nicht lesbar.
-           Gemessen in E0.3: 2.28:1. */
-        #fwSidebar .fw-mutet,
-        #fwSidebar .fw-faint,
-        #fwSidebar .fw-ink,
-        #fwSidebar .fw-strong{color:var(--ds-auf-dunkel)!important}
-        #fwSidebar .text-slate-600{color:var(--ds-auf-dunkel)!important}
         /* Beim Ueberfahren wird es heller, nicht gleich hell: sonst waere der
            Zustand `hover` von `normal` nicht zu unterscheiden. */
-        #fwSidebar .hover\:text-slate-300:hover{color:#ffffff!important}
         /* Sichtbarer Fokusring nur bei Tastaturnavigation (kein Maus-Klick-Ring) */
         a:focus-visible,button:focus-visible,summary:focus-visible,[role="button"]:focus-visible,
         input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
@@ -142,7 +114,7 @@ und einen Stilblock enthaelt.
         /* Buttons */
         .fw-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;text-decoration:none;padding:9px 14px;border-radius:var(--ds-radius-sm);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
         .fw-btn:hover{border-color:var(--ds-brand)}
-        .fw-btn.fw-primary{background:var(--ds-brand);color:#fff;border-color:transparent}
+        .fw-btn.fw-primary{background:var(--ds-brand);color:var(--ds-auf-satt);border-color:transparent}
         .fw-btn.fw-primary:hover{background:var(--ds-brand-600);border-color:transparent}
         /* Farbiger Schatten unter einem Markenknopf. `shadow-indigo-600/25`
            war zur Bauzeit auf Petrol festgeschrieben; ueber den Token folgt er
@@ -160,11 +132,11 @@ und einen Stilblock enthaelt.
            folgen sie Dunkelmodus und Branding wie alles andere.
            Die Schrift bleibt weiss: Sie steht auf einer gesaettigten Flaeche
            und ist dort nicht tokenabhaengig. */
-        .fw-btn.fw-gefahr{background:var(--ds-crit);color:#fff;border-color:transparent}
+        .fw-btn.fw-gefahr{background:var(--ds-crit);color:var(--ds-auf-satt);border-color:transparent}
         .fw-btn.fw-gefahr:hover{filter:brightness(.92);border-color:transparent}
-        .fw-btn.fw-warnknopf{background:var(--ds-warn);color:#fff;border-color:transparent}
+        .fw-btn.fw-warnknopf{background:var(--ds-warn);color:var(--ds-auf-satt);border-color:transparent}
         .fw-btn.fw-warnknopf:hover{filter:brightness(.92);border-color:transparent}
-        .fw-btn.fw-gutknopf{background:var(--ds-good);color:#fff;border-color:transparent}
+        .fw-btn.fw-gutknopf{background:var(--ds-good);color:var(--ds-auf-satt);border-color:transparent}
         .fw-btn.fw-gutknopf:hover{filter:brightness(.92);border-color:transparent}
         /* KPI-Kacheln */
         .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:16px}
@@ -456,7 +428,6 @@ und einen Stilblock enthaelt.
         }
         /* Einklappbare Sidebar — nur auf Desktop (ab lg); mobil ist es ein Drawer */
         @media (min-width: 1024px) {
-            #fwSidebar { transition: width .18s ease; }
             html._sbc #fwSidebar { width: 4.5rem; }
             html._sbc #fwSidebar .sb-label,
             html._sbc #fwSidebar .sb-section,
@@ -607,6 +578,7 @@ und einen Stilblock enthaelt.
         .disabled\:fw-flaeche2:disabled{background:var(--ds-surface-2)}
         .hover\:fw-flaeche:hover{background:var(--ds-surface)}
         .focus\:fw-flaeche:focus{background:var(--ds-surface)}
+        .focus\:fw-linie:focus{border-color:var(--ds-line)}
         .hover\:fw-markenflaeche:hover{background:var(--ds-brand-soft)}
         .hover\:fw-krit-flaeche:hover{background:var(--ds-crit-soft)}
         .hover\:fw-info-flaeche:hover{background:var(--ds-info-soft)}
@@ -652,15 +624,15 @@ und einen Stilblock enthaelt.
 
         /* Balken und Fuellstaende (Fortschritt, Auslastung). */
         .fw-balken{background:var(--ds-line)}
-        .fw-balken-voll{background:var(--ds-brand)}
+        .fw-balken-voll{background:var(--ds-brand);color:var(--ds-auf-satt)}
         /* Verlauf in der Markenfarbe — Kopfzeile des Mieterportals.
            Ueber Tokens, damit er dem Dunkelmodus und spaeterem Branding folgt. */
         .fw-marke-verlauf{background:linear-gradient(135deg,var(--ds-brand),var(--ds-brand-600))}
         /* Gesaettigtes Gruen als Flaeche — fuer Absendeknoepfe mit
            eigenen Massen, die `fw-btn` nicht mitnehmen koennen. */
-        .fw-gut-voll{background:var(--ds-good);color:#fff}
-        .fw-krit-voll{background:var(--ds-crit)}
-        .fw-warn-voll{background:var(--ds-warn)}
+        .fw-gut-voll{background:var(--ds-good);color:var(--ds-auf-satt)}
+        .fw-krit-voll{background:var(--ds-crit);color:var(--ds-auf-satt)}
+        .fw-warn-voll{background:var(--ds-warn);color:var(--ds-auf-satt)}
         /* Neutraler Schatten — bisher `shadow-slate-300/40` im Profilmenue. */
         .fw-schatten{box-shadow:var(--ds-shadow)}
         .fw-gut-voll:hover{filter:brightness(.92)}
@@ -730,7 +702,7 @@ und einen Stilblock enthaelt.
             font-weight:600;color:var(--ds-muted);background:none;border:0;cursor:pointer}
         .fw-statuswahl:hover{color:var(--ds-ink)}
         .fw-statuswahl.an{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
-        .fw-statuswahl.an.gut{background:var(--ds-good);color:#fff}
+        .fw-statuswahl.an.gut{background:var(--ds-good);color:var(--ds-auf-satt)}
         .fw-aktenkopf{background:var(--ds-surface);border:1px solid var(--ds-line);
             border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
             margin-bottom:16px;overflow:hidden}

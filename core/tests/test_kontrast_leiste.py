@@ -42,7 +42,10 @@ MARKUP = pathlib.Path('core/templates/fw/base.html')
 
 #: Die beiden Enden des Verlaufs. Beide müssen bestehen — ein Ton, der nur oben
 #: reicht, ist unten unlesbar, und die Leiste ist an beiden Enden beschriftet.
-VERLAUF = ('#122b31', '#0a1c20')
+#: Seit E2.21 steht die Leiste auf `--ds-surface` (Entscheid D2). Geprueft
+#: wird gegen DIESE Flaeche — der dunkle Verlauf ist Geschichte, und mit
+#: ihm die Ausnahme, die `fw-mutet`/`fw-faint` dort anhob.
+VERLAUF = ('#ffffff',)
 
 
 def _stilblock():
@@ -111,90 +114,6 @@ class KontrastSeitenleisteTest(SimpleTestCase):
         self.assertGreaterEqual(
             len(gefunden), 2,
             f'Nur {gefunden} in der Seitenleiste gefunden — Aufbau geändert?')
-
-    def test_der_token_fuer_dunkle_flaechen_ist_lesbar(self):
-        farbe = _token('--ds-auf-dunkel')
-        for grund in VERLAUF:
-            with self.subTest(grund=grund):
-                r = kontrast(farbe, grund)
-                self.assertGreaterEqual(
-                    r, MINDESTKONTRAST,
-                    f'--ds-auf-dunkel ({farbe}) erreicht auf {grund} nur '
-                    f'{r:.2f}:1. Die Seitenleiste wäre dort nicht lesbar.')
-
-    def test_jede_benutzte_klasse_wird_in_der_leiste_umgesetzt(self):
-        """Die Regel muss ALLE Klassen abdecken, die die Leiste benutzt.
-
-        `text-slate-500` fehlte in der ersten Fassung der Regel und erreichte
-        3.03:1 — der Grund, warum dieser Test die Klassen sucht statt sie
-        aufzuzählen.
-        """
-        quelle = _stilblock()
-        regel = re.search(
-            r'((?:#fwSidebar\s+\.text-slate-\d{3},?\s*)+)\{color:var\(--ds-auf-dunkel\)',
-            quelle)
-        self.assertIsNotNone(
-            regel,
-            'Die Regel `#fwSidebar .text-slate-… {color:var(--ds-auf-dunkel)}` '
-            'fehlt. Ohne sie greift die globale Kontrastregel, die für helle '
-            'Flächen gerechnet ist.')
-        abgedeckt = {int(n) for n in re.findall(r'text-slate-(\d{3})', regel.group(1))}
-
-        for stufe in sorted(_slate_klassen_in_der_leiste()):
-            with self.subTest(klasse=f'text-slate-{stufe}'):
-                self.assertIn(
-                    stufe, abgedeckt,
-                    f'Die Seitenleiste benutzt `text-slate-{stufe}`, die Regel '
-                    f'deckt sie nicht ab. Auf dem dunklen Verlauf ist das '
-                    f'unlesbar — Stufe in die Regel aufnehmen.')
-
-    def test_auch_die_schichtklassen_werden_umgesetzt(self):
-        """Die Lücke, die `…_wird_in_der_leiste_umgesetzt` offen liess.
-
-        Jener Test prüft nur den `text-slate-*`-Arm der Regel. Seit E2.14
-        trägt die Leiste `fw-mutet`, `fw-faint`, `fw-ink`, `fw-strong` — und
-        für die galt keine Prüfung.
-
-        NACHGEMESSEN, WEIL EINE GEGENPROBE GRÜN BLIEB: Entfernt man die vier
-        Zeilen `#fwSidebar .fw-mutet, … {color:var(--ds-auf-dunkel)!important}`,
-        so fallen im Browser **12 von 16** Beschriftungen unter AA — der
-        schlechteste Wert ist 3.03:1 (`--ds-faint`, für helle Flächen
-        gerechnet). Die gesamte Testdatei blieb dabei grün.
-
-        Ein Wächter, der den Wegfall dessen, was er schützt, nicht bemerkt,
-        schützt es nicht. Deshalb hier dieselbe Deckungsprüfung wie für die
-        Slate-Stufen, nur für die Klassen der Komponentenschicht.
-        """
-        quelle = _stilblock()
-        regel = re.search(
-            r'((?:#fwSidebar\s+\.fw-[a-z-]+,?\s*)+)\{color:var\(--ds-auf-dunkel\)',
-            quelle)
-        self.assertIsNotNone(
-            regel,
-            'Die Regel `#fwSidebar .fw-… {color:var(--ds-auf-dunkel)}` fehlt. '
-            'Ohne sie tragen die Beschriftungen der Leiste Töne, die für HELLE '
-            'Flächen gerechnet sind — gemessen 3.03:1 statt 7.78:1.')
-        abgedeckt = set(re.findall(r'\.fw-([a-z-]+)', regel.group(1)))
-
-        for klasse in sorted(_schichtklassen_in_der_leiste()):
-            with self.subTest(klasse=f'fw-{klasse}'):
-                self.assertIn(
-                    klasse, abgedeckt,
-                    f'Die Seitenleiste benutzt `fw-{klasse}`, die Regel deckt '
-                    f'sie nicht ab. Auf dem dunklen Verlauf ist das unlesbar.')
-
-    def test_der_aktive_eintrag_hebt_sich_weiterhin_ab(self):
-        """Lesbarkeit allein genügt nicht — die Stufung muss sichtbar bleiben.
-
-        Wäre der ruhende Eintrag so hell wie der aktive, wäre die Leiste zwar
-        lesbar, aber man sähe nicht mehr, wo man ist.
-        """
-        ruhend = _token('--ds-auf-dunkel')
-        for grund in VERLAUF:
-            with self.subTest(grund=grund):
-                self.assertGreater(
-                    kontrast('#ffffff', grund) - kontrast(ruhend, grund), 3.0,
-                    'Ruhender und aktiver Eintrag liegen zu nah beieinander.')
 
     def test_die_globale_regel_bleibt_fuer_helle_flaechen(self):
         """Gegenprobe: Die Ausnahme darf die Regel nicht ersetzen.

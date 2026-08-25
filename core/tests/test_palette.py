@@ -288,12 +288,24 @@ class EinFarbtonTests(TestCase):
         self.assertNotIn('#15182e', ohne_kommentare('/* frueher #15182e */'))
         self.assertIn('#15182e', ohne_kommentare('a{color:#15182e}'))
 
-    def test_die_seitenleiste_traegt_den_prototyp_verlauf(self):
-        """Der Verlauf steht in Tailwinds Notation fuer beliebige Werte und
-        kommt damit an der Farbrampe vorbei — er braucht eine eigene Pruefung.
-        Werte aus `mockups/konzept-v2.html`, Token `--nav`."""
-        # Der Verlauf steht im MARKUP der Huelle, nicht in der Schicht.
+    def test_die_seitenleiste_traegt_keinen_dunklen_verlauf_mehr(self):
+        """Entscheid D2, umgesetzt in E2.21.
+
+        Bis hierher trug die Leiste `from-[#122b31] to-[#0a1c20]` — einen
+        dunklen Verlauf in Tailwinds Notation fuer beliebige Werte, der an der
+        Farbrampe vorbeikam und deshalb eine eigene Pruefung brauchte.
+
+        D2 nennt drei Gruende gegen ihn; der schwerste: Er traegt
+        Mandanten-Branding schlecht. Eine Verwaltung mit eigener Akzentfarbe
+        bekaeme sie auf einer Flaeche, die immer dunkelgruen bleibt.
+
+        Die Leiste steht jetzt auf `fw-flaeche` — sie folgt damit dem Token,
+        dem Dunkelmodus und spaeterem Branding.
+        """
         quelle = ohne_kommentare(HUELLE.read_text(encoding='utf-8'))
-        self.assertIn('from-[#122b31] to-[#0a1c20]', quelle,
-                      'Die Seitenleiste fuehrt nicht mehr den Petrol-Verlauf '
-                      'des Prototyps.')
+        self.assertNotIn(
+            'from-[#122b31]', quelle,
+            'Der dunkle Verlauf ist zurueck. D2 hat ihn abgeschafft.')
+        self.assertRegex(
+            quelle, r'<aside id="fwSidebar"[^>]*fw-flaeche',
+            'Die Seitenleiste steht nicht mehr auf der Token-Flaeche.')

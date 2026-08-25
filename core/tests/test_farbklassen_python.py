@@ -56,6 +56,43 @@ werden ausgenommen — sie sind Prosa, sonst zählte dieser Erklärtext hier mit
 Alles davon steht in `admin.py`: Djangos eigene Oberfläche lädt die
 Komponentenschicht nicht. Views und Dienste sind seit E2.20 auf null.
 
+DIE ADMIN-FRAGE IST ENTSCHIEDEN: SIE BLEIBEN
+=============================================
+
+Diese 478 plus 191 in sechs Admin-Vorlagen — zusammen 669 — werden NICHT
+umgestellt. Das ist eine Entscheidung, kein übersehener Rest.
+
+WARUM
+
+Die Komponentenschicht existiert für drei Dinge: Dunkelmodus,
+mandantenspezifisches Branding (Entscheid D3, ab Professional), und eine
+Änderung statt siebentausend. Keines davon trifft auf Djangos Admin zu.
+
+Die Admin-Oberfläche sieht kein Kunde — weder Mieter noch Eigentümer noch die
+Sachbearbeiterin einer Verwaltung. Sie ist das Werkzeug der Entwicklung. Ein
+Mandant wird dort nie sein Logo sehen wollen, weil er die Seite nie aufruft.
+Und `unfold` bringt einen eigenen Dunkelmodus mit.
+
+Der Preis wäre auch nicht klein: Eine der beiden Hüllen stammt aus dem
+Fremdpaket `django-unfold`. Sie zu überschreiben koppelt das Projekt an dessen
+Innenleben — jede Aktualisierung kann das brechen, und zwar STILL, weil es
+niemandem auffällt, der die Seite selten öffnet. Laufender Aufwand gegen einen
+Nutzen, der sich nicht benennen lässt.
+
+DAS ZIEL VON E2 HEISST DESHALB PRÄZISER
+
+Nicht «null überall», sondern **null in dem, was wir selbst rendern**. Djangos
+Admin ist eine fremde Oberfläche mit fremdem Gestaltungssystem — Werkzeugkasten,
+nicht Produkt.
+
+Die 478 unten sind damit keine Schuld, sondern eine Grenze. Die Obergrenze
+hält sie fest: Sie darf nicht wachsen.
+
+WANN DIESE ENTSCHEIDUNG ZU ÜBERDENKEN IST
+
+Wenn die Admin-Oberfläche einmal Kunden gezeigt wird — etwa einer Verwaltung
+zur Stammdatenpflege. Dann wird sie Produkt, und die Rechnung dreht sich.
+
 WAS ER NICHT SIEHT
 
 Zusammengesetzte Namen (`f'bg-{farbe}-50'`) und Werte aus der Datenbank. Wer

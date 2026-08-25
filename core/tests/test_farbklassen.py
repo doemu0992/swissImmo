@@ -32,7 +32,7 @@ E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 `anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
-**STAND 348 in 44 Vorlagen**.
+**STAND 325 in 44 Vorlagen**.
 
 DIESE ZAHL IST NICHT DIE GANZE SCHULD
 -------------------------------------
@@ -177,10 +177,10 @@ OBERGRENZE = {
     'core/templates/core/public_ticket_form.html': 1,
     'core/templates/core/schaden_melden.html': 1,
     'core/templates/fw/_pipeline.html': 1,
-    'core/templates/fw/_schicht.html': 7,
+    'core/templates/fw/_schicht.html': 2,
     'core/templates/fw/anlagen.html': 3,
     'core/templates/fw/bankabgleich.html': 1,
-    'core/templates/fw/base.html': 74,
+    'core/templates/fw/base.html': 56,
     'core/templates/fw/bewerber_vergleich.html': 3,
     'core/templates/fw/bewerbung_detail.html': 1,
     'core/templates/fw/dokumente.html': 1,
