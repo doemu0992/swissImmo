@@ -456,11 +456,75 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             neuer_netto = (v.netto_mietzins * faktor).quantize(Decimal('0.01'))
             if neuer_netto <= (v.netto_mietzins or Decimal('0')):
                 continue
+            # DER ZUSTELLTERMIN WIRD GERECHNET, NICHT GESCHAETZT
+            #
+            # Bis E2.37 stand hier woertlich «30 Tage vor Termin». Das war
+            # ZWEIFACH falsch:
+            #
+            #   · dreissig statt zehn Tage — die dreissig sind die
+            #     ANFECHTUNGSFRIST des Mieters (Art. 270b OR), andere Frist,
+            #     andere Richtung;
+            #   · «vor Termin» statt «vor Beginn der Kuendigungsfrist» — und
+            #     der liegt eine ganze Kuendigungsfrist frueher.
+            #
+            # Wer die Pendenz befolgte, stellte drei Monate zu spaet zu. Eine
+            # verspaetet zugestellte Erhoehung ist NICHTIG (Art. 269d Abs. 2
+            # OR) — nicht verschoben. Der Text war also nicht bloss ungenau,
+            # er war die Anleitung zum Verlust.
+            #
+            # Gerechnet wird mit `mietzins_zustellung()` aus dem Regelwerk
+            # (E2.36) — dieselbe Rechnung, die die Regel prueft. Zwei
+            # Rechnungen fuer eine Vorschrift widersprechen sich frueher oder
+            # spaeter; das war der Befund B3.
+            from faelle.regelwerk import mietzins_zustellung
+
+            # DIE ZWEI-WOCHEN-FRIST GILT NUR BEIM EINSTELLPLATZ
+            #
+            # `kuendigungsfrist_monate <= 0` heisst NICHT ueberall «zwei
+            # Wochen». Der Bestand ist da genau: In
+            # `Mietvertrag.kuendigungsfrist_anzeige` wird `<= 0` nur dann als
+            # Zwei-Wochen-Frist nach Art. 266e OR gelesen, wenn
+            # `einheit.ist_einstellplatz` gilt. Das Feld ist ein
+            # `IntegerField(default=3)` ohne Untergrenze — eine 0 auf einer
+            # Wohnung ist eine Datenluecke, keine Kurzfrist.
+            #
+            # Die erste Fassung dieser Etappe pruefte nur `<= 0`. Damit haette
+            # eine Wohnung mit fehlender Frist einen Zustelltermin 24 Tage vor
+            # dem Termin bekommen statt gut drei Monate — also GENAU den
+            # Fehler, den diese Etappe behebt, nur an anderer Stelle.
+            monate_roh = v.kuendigungsfrist_monate or 0
+            kurzfrist = (monate_roh <= 0
+                         and v.einheit.ist_einstellplatz)
+            if kurzfrist:
+                # Zwei Wochen Frist plus zehn Tage Vorlauf, ab dem Termin
+                # zurueck. `mietzins_zustellung()` rechnet in Monaten und hat
+                # fuer diese Frist keine Entsprechung.
+                zustellung = naechste - timedelta(days=24)
+                fristtext = '2-wöchigen'
+            else:
+                # Ohne Angabe die gesetzliche Mindestfrist fuer Wohnraeume
+                # (Art. 266c OR) — dieselbe Vorgabe wie im Regelwerk.
+                frist_monate = monate_roh if monate_roh > 0 else 3
+                zustellung = mietzins_zustellung(
+                    termin=naechste, frist_monate=frist_monate).vorschlag
+                fristtext = f'{frist_monate}-monatigen'
+
             _ensure(f"auto:index:{v.id}:{naechste.isoformat()}",
                     f"Indexmiete anpassen: {v.mieter.display_name} ({v.einheit.bezeichnung})",
-                    max(naechste, heute), 'vertrag',
+                    # Faellig ist die Pendenz, wenn ZUGESTELLT sein muss —
+                    # nicht am Termin selbst. Bis dahin ist nichts zu tun,
+                    # danach ist es zu spaet.
+                    max(zustellung, heute), 'vertrag',
+                    # `fristtext` statt einer festen Monatszahl: Im
+                    # Kurzfristfall stand hier zuvor «3-monatigen», waehrend
+                    # das Datum aus zwei Wochen gerechnet war. Datum und
+                    # Begruendung widersprachen sich damit in einem Satz —
+                    # wer nachrechnet, glaubt der Pendenz danach nichts mehr.
                     (f"LIK {basis_lik}→{aktuell_pkt} Pkt.: Netto CHF {v.netto_mietzins}→{neuer_netto} "
-                     f"möglich. Mit amtlichem Formular (Art. 269d) ankündigen, 30 Tage vor Termin."),
+                     f"möglich auf {naechste.strftime('%d.%m.%Y')}. Amtliches Formular "
+                     f"(Art. 269d) muss bis {zustellung.strftime('%d.%m.%Y')} beim Mieter "
+                     f"sein — zehn Tage vor Beginn der {fristtext} "
+                     f"Kündigungsfrist. Später zugestellt ist die Erhöhung nichtig."),
                     liegenschaft=v.einheit.liegenschaft, vertrag=v)
 
     # f) Referenzzinssenkung: liegt der aktuelle Referenzzinssatz unter der
