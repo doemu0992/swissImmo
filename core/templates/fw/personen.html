@@ -53,7 +53,7 @@
         </a>
         {% empty %}
         <div class="px-4">
-            {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Personen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-user-plus' titel='Noch keine Personen' subtext='Erfassen Sie Mieter, Bewerber und weitere Kontakte.' cta_url='/neu/personen/neu/' cta_label='Erste Person erfassen' %}{% endif %}
+            {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='suchen' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Personen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='neu' titel='Noch keine Personen' subtext='Erfassen Sie Mieter, Bewerber und weitere Kontakte.' cta_url='/neu/personen/neu/' cta_label='Erste Person erfassen' %}{% endif %}
         </div>
         {% endfor %}
     </div>
@@ -102,7 +102,7 @@
             </tr>
             {% empty %}
             <tr><td colspan="5">
-                {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Personen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-user-plus' titel='Noch keine Personen' subtext='Erfassen Sie Mieter, Bewerber und weitere Kontakte.' cta_url='/neu/personen/neu/' cta_label='Erste Person erfassen' %}{% endif %}
+                {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='suchen' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Personen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='neu' titel='Noch keine Personen' subtext='Erfassen Sie Mieter, Bewerber und weitere Kontakte.' cta_url='/neu/personen/neu/' cta_label='Erste Person erfassen' %}{% endif %}
             </td></tr>
             {% endfor %}
             </tbody>

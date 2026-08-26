@@ -3,7 +3,7 @@
 Parameter: icon (fa-Klasse), titel, subtext, cta_url (optional), cta_label (optional){% endcomment %}
 <div class="py-12 text-center">
     <span class="w-14 h-14 rounded-2xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4">
-        <i class="fa-solid {{ icon|default:'fa-inbox' }} text-xl"></i>
+        {% zeichen_wert icon|default:'wartet' klasse='text-xl' %}
     </span>
     <p class="font-semibold fw-strong">{{ titel }}</p>
     {% if subtext %}<p class="text-sm fw-faint mt-1 max-w-sm mx-auto">{{ subtext }}</p>{% endif %}

@@ -67,7 +67,7 @@ def fw_bankkonten(request):
         is_qr = _ist_qr_iban(lg.iban)
         qr_count += 1 if is_qr else 0
         konten.append({
-            'typ': 'Mietkonto', 'typ_icon': 'fa-building', 'typ_cls': 'fw-markenflaeche fw-marke',
+            'typ': 'Mietkonto', 'typ_icon': 'liegenschaft', 'typ_cls': 'fw-markenflaeche fw-marke',
             'inhaber': lg.strasse, 'kontext': f"{lg.plz} {lg.ort}",
             'bank': lg.bank_name, 'iban': _iban_format(lg.iban),
             'ist_qr': is_qr, 'mietertrag': mietertrag,
@@ -81,7 +81,7 @@ def fw_bankkonten(request):
             is_qr = _ist_qr_iban(vw.iban)
             qr_count += 1 if is_qr else 0
             konten.append({
-                'typ': 'Verwaltung', 'typ_icon': 'fa-briefcase', 'typ_cls': 'fw-flaeche2 fw-mutet',
+                'typ': 'Verwaltung', 'typ_icon': 'dokument', 'typ_cls': 'fw-flaeche2 fw-mutet',
                 'inhaber': vw.firma, 'kontext': 'Verwaltungskonto',
                 'bank': getattr(vw, 'bank_name', ''), 'iban': _iban_format(vw.iban),
                 'ist_qr': is_qr, 'mietertrag': None, 'lg_id': None,
@@ -92,7 +92,7 @@ def fw_bankkonten(request):
             is_qr = _ist_qr_iban(m.iban)
             qr_count += 1 if is_qr else 0
             konten.append({
-                'typ': 'Eigentümer', 'typ_icon': 'fa-user-tie', 'typ_cls': 'fw-gut-flaeche fw-gut',
+                'typ': 'Eigentümer', 'typ_icon': 'person', 'typ_cls': 'fw-gut-flaeche fw-gut',
                 'inhaber': m.firma_oder_name, 'kontext': 'Eigentümer-Auszahlungskonto',
                 'bank': m.bank_name, 'iban': _iban_format(m.iban),
                 'ist_qr': is_qr, 'mietertrag': None, 'lg_id': None,

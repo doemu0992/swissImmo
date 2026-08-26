@@ -9,7 +9,7 @@ Einbinden mit: {% include 'fw/_pipeline.html' %} (Kontext via _vermietung_pipeli
         <a href="{{ s.url }}"
            class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors
                   {% if s.aktiv %}fw-btn fw-primary shadow-sm{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
-            <i class="fa-solid {{ s.icon }} text-[11px] {% if not s.aktiv %}fw-faint{% endif %}"></i>
+            <span class="text-[11px] {% if not s.aktiv %}fw-faint{% endif %}">{% zeichen_wert s.icon %}</span>
             {{ s.label }}
             {% if s.n %}<span class="min-w-[18px] text-center text-[10px] font-bold rounded-full px-1.5 py-0.5 {% if s.aktiv %}fw-flaeche text-white{% else %}fw-flaeche2 fw-mutet{% endif %}">{{ s.n }}</span>{% endif %}
         </a>

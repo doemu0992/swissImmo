@@ -42,7 +42,7 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
     # a) Befristete Vertragsenden im Horizont (nur echte befristete Verhältnisse)
     for v in aktive.filter(ist_befristet=True, ende__range=[heute, grenze]).order_by('ende'):
         fristen.append({
-            'kategorie': 'Befristetes Vertragsende', 'farbe': 'amber', 'icon': 'fa-hourglass-end',
+            'kategorie': 'Befristetes Vertragsende', 'farbe': 'amber', 'icon': 'wartet',
             'titel': f"Vertrag {v.mieter.display_name} endet",
             'sub': f"{v.einheit.bezeichnung}, {v.einheit.liegenschaft.strasse}",
             'faellig': v.ende, 'url': f'/neu/vertraege/{v.id}/',
@@ -52,7 +52,7 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
     # b) Gekündigte Verträge — Auszug/Übergabe steht an
     for v in gek.filter(ende__range=[heute, grenze]).order_by('ende'):
         fristen.append({
-            'kategorie': 'Auszug (gekündigt)', 'farbe': 'rose', 'icon': 'fa-person-walking-arrow-right',
+            'kategorie': 'Auszug (gekündigt)', 'farbe': 'rose', 'icon': 'vertrag',
             'titel': f"Auszug {v.mieter.display_name}",
             'sub': f"{v.einheit.bezeichnung} — Abnahme & Kautionsabrechnung vorbereiten",
             'faellig': v.ende, 'url': f'/neu/vertraege/{v.id}/',
@@ -62,7 +62,7 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
     # c) Erstmals kündbar im Horizont
     for v in aktive.filter(erstmals_kuendbar_auf__range=[heute, grenze]).order_by('erstmals_kuendbar_auf'):
         fristen.append({
-            'kategorie': 'Erstmals kündbar', 'farbe': 'indigo', 'icon': 'fa-calendar-check',
+            'kategorie': 'Erstmals kündbar', 'farbe': 'indigo', 'icon': 'termin',
             'titel': f"{v.mieter.display_name}: erstmals kündbar",
             'sub': f"{v.einheit.bezeichnung} — Mietzins-/Konditionen-Review möglich",
             'faellig': v.erstmals_kuendbar_auf, 'url': f'/neu/vertraege/{v.id}/',
@@ -124,12 +124,12 @@ def fw_pendenzen(request):
             titel = (f"{strasse} · {obj}".strip(' ·') or f"Vertrag #{p.vertrag_id}")
             g = _grp(f"v{p.vertrag_id}", titel,
                      (v.mieter.display_name if v and v.mieter_id else ''),
-                     'fa-right-from-bracket', f'/neu/vertraege/{p.vertrag_id}/', True)
+                     'extern', f'/neu/vertraege/{p.vertrag_id}/', True)
         elif p.liegenschaft_id:
             g = _grp(f"l{p.liegenschaft_id}", p.liegenschaft.strasse, p.liegenschaft.ort,
-                     'fa-building', f'/neu/liegenschaften/{p.liegenschaft_id}/', True)
+                     'liegenschaft', f'/neu/liegenschaften/{p.liegenschaft_id}/', True)
         else:
-            g = _grp('allgemein', 'Allgemein', '', 'fa-list-check', None, False)
+            g = _grp('allgemein', 'Allgemein', '', 'arbeit', None, False)
         g['pendenzen'].append(p)
         if p.faellig_am and (g['min_faellig'] is None or p.faellig_am < g['min_faellig']):
             g['min_faellig'] = p.faellig_am
@@ -200,13 +200,13 @@ def fw_fristen(request):
     grenze_woche = heute + timedelta(days=7)
     grenze_monat = heute + timedelta(days=30)
     buckets = [
-        {'key': 'ueberfaellig', 'titel': 'Überfällig', 'icon': 'fa-triangle-exclamation',
+        {'key': 'ueberfaellig', 'titel': 'Überfällig', 'icon': 'warnung',
          'cls': 'fw-kritisch', 'items': [e for e in eintraege if e['faellig'] < heute]},
-        {'key': 'woche', 'titel': 'Diese Woche', 'icon': 'fa-calendar-day',
+        {'key': 'woche', 'titel': 'Diese Woche', 'icon': 'termin',
          'cls': 'fw-warnton', 'items': [e for e in eintraege if heute <= e['faellig'] <= grenze_woche]},
-        {'key': 'monat', 'titel': 'Diesen Monat', 'icon': 'fa-calendar-week',
+        {'key': 'monat', 'titel': 'Diesen Monat', 'icon': 'termin',
          'cls': 'fw-marke', 'items': [e for e in eintraege if grenze_woche < e['faellig'] <= grenze_monat]},
-        {'key': 'spaeter', 'titel': 'Später', 'icon': 'fa-calendar',
+        {'key': 'spaeter', 'titel': 'Später', 'icon': 'termin',
          'cls': 'fw-mutet', 'items': [e for e in eintraege if e['faellig'] > grenze_monat]},
     ]
     from core.services.ical import feed_token

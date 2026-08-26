@@ -54,7 +54,7 @@
         </a>
         {% empty %}
         <div class="px-4">
-            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Verträge gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-file-signature' titel='Noch keine Verträge' subtext='Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.' cta_url='/neu/vertraege/neu/' cta_label='Ersten Vertrag erstellen' %}{% endif %}
+            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Verträge gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel='Noch keine Verträge' subtext='Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.' cta_url='/neu/vertraege/neu/' cta_label='Ersten Vertrag erstellen' %}{% endif %}
         </div>
         {% endfor %}
     </div>
@@ -102,7 +102,7 @@
             </tr>
             {% empty %}
             <tr><td colspan="9">
-                {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Verträge gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-file-signature' titel='Noch keine Verträge' subtext='Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.' cta_url='/neu/vertraege/neu/' cta_label='Ersten Vertrag erstellen' %}{% endif %}
+                {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Verträge gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel='Noch keine Verträge' subtext='Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.' cta_url='/neu/vertraege/neu/' cta_label='Ersten Vertrag erstellen' %}{% endif %}
             </td></tr>
             {% endfor %}
             </tbody>

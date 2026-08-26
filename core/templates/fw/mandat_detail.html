@@ -78,7 +78,7 @@
 <div class="fw-card">
     {% for h in mandat_hinweise %}
     <div class="fw-hinweis {{ h.ton }}">
-        <span class="fw-hi"><i class="fa-solid {{ h.symbol }}"></i></span>
+        <span class="fw-hi">{% zeichen_wert h.symbol %}</span>
         <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
             <div class="mt-1.5"><a href="{{ h.url }}" class="fw-link">{{ h.knopf }} →</a></div></div>
     </div>

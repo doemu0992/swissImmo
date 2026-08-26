@@ -244,7 +244,7 @@ def fw_finanzen(request):
     }
     _korb = [
         # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)
-        ('freigabe', 'fa-stamp', 'amber', 'Eingangsrechnungen freigeben',
+        ('freigabe', 'freigeben', 'amber', 'Eingangsrechnungen freigeben',
          'Neu erfasste Kreditoren prüfen & freigeben',
          len(zur_freigabe), _chf(zur_freigabe, 'betrag'), '/neu/kreditoren/', 'Freigeben', False),
         # DER ZAHLLAUF STEHT NICHT MEHR HIER.
@@ -262,7 +262,7 @@ def fw_finanzen(request):
          'Angefangene Weiterverrechnungen an Mieter fertigstellen',
          len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', 'Weiterverrechnen', False),
         # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)
-        ('kaution', 'fa-shield-halved', 'teal', 'Kautionen freigeben',
+        ('kaution', 'gesperrt', 'teal', 'Kautionen freigeben',
          'Rückzahlungsfristen nach Auszug (Art. 257e)',
          kaut_offen, None, '/neu/kautionen/', 'Kautionen', kaut_faellig > 0),
     ]

@@ -23,7 +23,7 @@
             {% if t.zeit %}{{ t.zeit|time:"H:i" }}{% else %}{{ t.datum|date:"d.m." }}{% endif %}
             {% if t.zeit %}<br><span class="fw-klein">{{ t.datum|date:"d.m." }}</span>{% endif %}
         </div>
-        <span class="fw-ikon"><i class="fa-solid {{ t.ikon }}"></i></span>
+        <span class="fw-ikon">{% zeichen_wert t.ikon %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ t.titel }}</div>
             <div class="fw-s">{{ t.zeile }}</div>
@@ -49,7 +49,7 @@
     {% for f in av_freigaben %}
     <div class="fw-zeile">
         <span class="fw-marker {% if f.tage and f.tage > 5 %}crit{% elif f.tage and f.tage > 2 %}warn{% endif %}"></span>
-        <span class="fw-ikon"><i class="fa-solid {{ f.ikon }}"></i></span>
+        <span class="fw-ikon">{% zeichen_wert f.ikon %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ f.titel }}</div>
             <div class="fw-s">{{ f.zeile }}{% if f.tage %} · liegt seit {{ f.tage }} Tag{{ f.tage|pluralize:"en" }}{% endif %}</div>

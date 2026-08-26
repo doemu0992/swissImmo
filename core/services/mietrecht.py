@@ -97,16 +97,16 @@ def label(key):
 
 # ── Gruppierte Übersicht für die Rechtsgrundlagen-Seite ──────────────────────
 GRUPPEN = [
-    ('Kaution', 'fa-shield-halved', ['kaution']),
-    ('Zahlungsverzug', 'fa-triangle-exclamation', ['verzug', 'verzugszins']),
-    ('Kündigung – Form & Fristen', 'fa-file-circle-xmark',
+    ('Kaution', 'geld', ['kaution']),
+    ('Zahlungsverzug', 'warnung', ['verzug', 'verzugszins']),
+    ('Kündigung – Form & Fristen', 'kritisch',
      ['kuendigung_form', 'kuendigung_termine', 'kuendigung_wohnung', 'kuendigung_geschaeft',
       'kuendigung_platz', 'kuendigung_uebrige', 'kuendigung_ao', 'familienwohnung', 'kuendigung_nichtig']),
-    ('Kündigungsschutz', 'fa-scale-balanced', ['anfechtung', 'anfechtung_frist', 'erstreckung']),
-    ('Mietzins', 'fa-percent',
+    ('Kündigungsschutz', 'recht', ['anfechtung', 'anfechtung_frist', 'erstreckung']),
+    ('Mietzins', 'bericht',
      ['missbrauch', 'indexmiete', 'staffelmiete', 'mietzinserhoehung', 'herabsetzung',
       'referenzzins', 'anfangsmietzins']),
-    ('Rückgabe & Nebenkosten', 'fa-key', ['rueckgabe', 'rueckgabe_pruefung', 'nebenkosten', 'zahlungstermin', 'uebergabe']),
+    ('Rückgabe & Nebenkosten', 'schluessel', ['rueckgabe', 'rueckgabe_pruefung', 'nebenkosten', 'zahlungstermin', 'uebergabe']),
 ]
 
 

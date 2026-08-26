@@ -846,17 +846,17 @@ def fw_integrationen(request):
         zweck=Postfach.ZWECK_RECHNUNGEN, aktiv=True).first()
 
     integrationen = [
-        {'key': 'email', 'name': 'E-Mail-Versand', 'icon': 'fa-envelope', 'farbe': 'indigo',
+        {'key': 'email', 'name': 'E-Mail-Versand', 'icon': 'senden', 'farbe': 'indigo',
          'aktiv': email_ok, 'status': 'Verbunden' if email_ok else 'Nicht konfiguriert',
          'beschreibung': 'Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über deinen SMTP-Server.',
          'detail': (getattr(dj_settings, 'EMAIL_HOST', '') or '') if email_ok else 'E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen.',
          'aktion': 'test_email' if email_ok else None},
-        {'key': 'docuseal', 'name': 'DocuSeal — digitale Signatur', 'icon': 'fa-file-signature', 'farbe': 'emerald',
+        {'key': 'docuseal', 'name': 'DocuSeal — digitale Signatur', 'icon': 'vertrag', 'farbe': 'emerald',
          'aktiv': gesetzt('DOCUSEAL_API_KEY'), 'status': 'Verbunden' if gesetzt('DOCUSEAL_API_KEY') else 'Nicht konfiguriert',
          'beschreibung': 'Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt.',
          'detail': 'Nutzbar über „An DocuSeal senden" auf der Vertrags-Detailseite.' if gesetzt('DOCUSEAL_API_KEY') else 'DOCUSEAL_API_KEY hinterlegen.',
          'aktion': None},
-        {'key': 'ki', 'name': 'KI-Rechnungsscanner', 'icon': 'fa-robot', 'farbe': 'violet',
+        {'key': 'ki', 'name': 'KI-Rechnungsscanner', 'icon': 'einstellungen', 'farbe': 'violet',
          'aktiv': gesetzt('GROQ_API_KEY'), 'status': 'Verbunden' if gesetzt('GROQ_API_KEY') else 'Nicht konfiguriert',
          'beschreibung': 'Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für Handwerker-Rechnungen.',
          'detail': (('Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload). '
@@ -867,7 +867,7 @@ def fw_integrationen(request):
                     if gesetzt('GROQ_API_KEY')
                     else 'GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung aus Text-PDFs.'),
          'aktion': None},
-        {'key': 'bank', 'name': 'Banken-Abgleich (camt.053 / QR)', 'icon': 'fa-building-columns', 'farbe': 'sky',
+        {'key': 'bank', 'name': 'Banken-Abgleich (camt.053 / QR)', 'icon': 'bank', 'farbe': 'sky',
          'aktiv': True, 'status': 'Aktiv',
          'beschreibung': 'Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per QR-Referenz den Debitoren zu.',
          'detail': 'Nutzbar im Bereich Bankabgleich.',

@@ -114,7 +114,7 @@ def nav_gruppen():
         # Arbeitsvorrat (seit 4b.13). Ein zusätzlicher Eintrag «Arbeit» wäre ein
         # zweiter Weg auf dieselbe Seite: keine Auswahl, sondern eine Frage, die
         # der Benutzer nicht beantworten kann.
-        _g('heute', 'Heute', 'fa-inbox', '/neu/', [
+        _g('heute', 'Heute', 'wartet', '/neu/', [
             _i('Zulauf', '/neu/zulauf/', ['zulauf']),
             _i('Termine', '/neu/termine/', ['termine']),
             _i('Pendenzen', '/neu/pendenzen/', ['pendenzen']),
@@ -129,7 +129,7 @@ def nav_gruppen():
         # Die Register in der Reihenfolge, in der man sie aufschlägt: vom
         # Auftraggeber über das Haus zur einzelnen Person. Darunter die
         # laufenden Vorgänge, die an diesen Akten hängen.
-        _g('akten', 'Akten', 'fa-folder-open', '/neu/liegenschaften/', [
+        _g('akten', 'Akten', 'dokument', '/neu/liegenschaften/', [
             _i('Mandate', '/neu/mandate/', ['mandate']),
             _i('Liegenschaften', '/neu/liegenschaften/', ['liegenschaften']),
             _i('Objekte', '/neu/objekte/', ['objekte']),
@@ -148,7 +148,7 @@ def nav_gruppen():
         # ── LÄUFE ────────────────────────────────────────────────────────────
         # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
         # im Einfachmodus vollständig, obwohl die Seiten seit 4b.5 stehen.
-        _g('laeufe', 'Läufe', 'fa-arrows-rotate', '/neu/laeufe/', [
+        _g('laeufe', 'Läufe', 'lauf', '/neu/laeufe/', [
             _i('Sollstellung', '/neu/sollstellung/', ['sollstellung'], section='Monat'),
             _i('Bankabgleich', '/neu/bankabgleich/', ['bankabgleich']),
             _i('Mahnwesen', '/neu/mahnwesen/', ['mahnwesen']),
@@ -160,7 +160,7 @@ def nav_gruppen():
 
         # ── FINANZEN ─────────────────────────────────────────────────────────
         # Register und Konten. Handlungen führen in den zugehörigen Lauf.
-        _g('finanzen', 'Finanzen', 'fa-coins', '/neu/finanzen/', [
+        _g('finanzen', 'Finanzen', 'geld', '/neu/finanzen/', [
             _i('Mieterkonten', '/neu/mieterkonten/', ['mieterkonten'], section='Forderungen'),
             _i('Debitoren', '/neu/debitoren/', ['debitoren']),
             _i('Kautionen', '/neu/kautionen/', ['kautionen']),
@@ -174,7 +174,7 @@ def nav_gruppen():
         ]),
 
         # ── BERICHTE ─────────────────────────────────────────────────────────
-        _g('berichte', 'Berichte', 'fa-chart-pie', '/neu/berichte/', [
+        _g('berichte', 'Berichte', 'bericht', '/neu/berichte/', [
             _i('Übersicht', '/neu/berichte/', ['berichte']),
             _i('Auswertung', '/neu/auswertung/', ['auswertung']),
         ]),

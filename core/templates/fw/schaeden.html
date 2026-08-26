@@ -121,9 +121,9 @@
     {% empty %}
     <div style="padding:0 16px">
     {% if gefiltert or q or status_filter %}
-        {% include 'fw/_empty.html' with icon='fa-check' titel='Nichts zu tun' subtext='Für diese Sicht gibt es keine Meldung. Das ist eine gute Nachricht — oder die Sicht ist zu eng.' cta_url='/neu/schaeden/?sicht=' cta_label='Alle Meldungen zeigen' %}
+        {% include 'fw/_empty.html' with icon='gut' titel='Nichts zu tun' subtext='Für diese Sicht gibt es keine Meldung. Das ist eine gute Nachricht — oder die Sicht ist zu eng.' cta_url='/neu/schaeden/?sicht=' cta_label='Alle Meldungen zeigen' %}
     {% else %}
-        {% include 'fw/_empty.html' with icon='fa-check' titel='Keine Schadensfälle' subtext='Aktuell ist nichts gemeldet. Telefonisch eingegangene Schäden erfassen Sie oben.' %}
+        {% include 'fw/_empty.html' with icon='gut' titel='Keine Schadensfälle' subtext='Aktuell ist nichts gemeldet. Telefonisch eingegangene Schäden erfassen Sie oben.' %}
     {% endif %}
     </div>
     {% endfor %}

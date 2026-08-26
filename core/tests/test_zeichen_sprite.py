@@ -227,3 +227,45 @@ class SchliessenKnoepfeTest(SimpleTestCase):
     def test_die_pruefung_findet_ueberhaupt_knoepfe(self):
         """Gegenprobe: Ohne Fundstellen wäre die Prüfung oben trivial grün."""
         self.assertGreaterEqual(len(list(self._knoepfe())), 4)
+
+
+class KeineVerschachtelungTest(SimpleTestCase):
+    """Ein Django-Baustein im Klassenwert eines Bausteins geht nicht auf.
+
+    DERSELBE FEHLER, ZWEIMAL
+
+    In E2.39 und E2.41 hat die Umstellung eine Bedingung in den
+    `klasse='…'`-Wert geschrieben:
+
+        {% zeichen 'recht' klasse='{% if differenz %}fw-warnton{% endif %}' %}
+
+    Die Anführungszeichen verschachteln sich, und die Vorlage ist unlesbar —
+    beim ersten Mal fielen 27 Tests aus, beim zweiten 39. Behoben wird es,
+    indem die Bedingung in ein umschliessendes `<span>` wandert.
+
+    Dieser Test fängt es, bevor ein Testlauf es tut. Der Unterschied ist
+    nicht die Erkennung, sondern die MELDUNG: 39 Fehler in fremden Modulen
+    sagen nicht, was zu tun ist; diese Zeile schon.
+    """
+
+    def test_kein_django_baustein_im_klassenwert(self):
+        muster = re.compile(r"\{% zeichen(?:_wert)? [^%]*klasse='[^']*\{%")
+        funde = []
+        for p in sorted((WURZEL / 'core' / 'templates').rglob('*.html')):
+            for treffer in muster.findall(p.read_text(encoding='utf-8')):
+                funde.append(f'{p.name}: {treffer[:60]}')
+        self.assertEqual(
+            funde, [],
+            'Hier steht eine Django-Bedingung im `klasse`-Wert:\n  '
+            + '\n  '.join(funde)
+            + '\n\nDie Anführungszeichen verschachteln sich — die Vorlage '
+              'wird unlesbar. Die Bedingung gehört in ein umschliessendes '
+              '<span>:\n'
+              '  <span class="{% if … %}…{% endif %}">{% zeichen \'name\' %}</span>')
+
+    def test_die_pruefung_wuerde_einen_fall_erkennen(self):
+        """Gegenprobe: Das Muster muss den Fall auch treffen."""
+        muster = re.compile(r"\{% zeichen(?:_wert)? [^%]*klasse='[^']*\{%")
+        self.assertTrue(muster.search(
+            "{% zeichen 'recht' klasse='{% if x %}a{% endif %}' %}"))
+        self.assertIsNone(muster.search("{% zeichen 'recht' klasse='fw-gut' %}"))

@@ -270,16 +270,16 @@ def _vermietung_pipeline(aktiv, lg_query=''):
     from mietprozess.models import Mietbewerbung
     from rentals.models import Kuendigung
     stufen = [
-        {'key': 'vermarktung', 'label': 'Vermarktung', 'icon': 'fa-bullhorn',
+        {'key': 'vermarktung', 'label': 'Vermarktung', 'icon': 'senden',
          'url': '/neu/vermarktung/' + lg_query,
          'n': Einheit.objects.filter(zur_ausschreibung=True).count()},
-        {'key': 'bewerbungen', 'label': 'Bewerbungen', 'icon': 'fa-user-check',
+        {'key': 'bewerbungen', 'label': 'Bewerbungen', 'icon': 'person',
          'url': '/neu/bewerbungen/' + lg_query,
          'n': Mietbewerbung.objects.filter(status__in=['neu', 'geprueft']).count()},
-        {'key': 'vertraege', 'label': 'Verträge', 'icon': 'fa-file-lines',
+        {'key': 'vertraege', 'label': 'Verträge', 'icon': 'dokument',
          'url': '/neu/vertraege/' + lg_query,
          'n': Mietvertrag.objects.filter(status='entwurf').count()},
-        {'key': 'mieterwechsel', 'label': 'Mieterwechsel', 'icon': 'fa-right-left',
+        {'key': 'mieterwechsel', 'label': 'Mieterwechsel', 'icon': 'geld',
          'url': '/neu/mieterwechsel/' + lg_query,
          'n': Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt']).count()},
     ]

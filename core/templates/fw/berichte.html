@@ -27,7 +27,7 @@
     <a href="{{ i.url }}" class="group fw-card p-4 hover:fw-linie-marke hover:shadow-sm transition">
         <div class="flex items-start gap-3">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-{{ i.farbe }}-50 text-{{ i.farbe }}-600">
-                <i class="fa-solid {{ i.icon }}"></i>
+                {% zeichen_wert i.icon %}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5">

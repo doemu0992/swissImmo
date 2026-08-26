@@ -26,6 +26,7 @@ sagt, und ein Vorleseprogramm soll es nicht doppelt nennen. Mit `titel` wird
 es zu einem `img` mit Beschriftung — fuer die Faelle, in denen es allein
 steht (etwa ein Knopf ohne Beschriftung).
 """
+import logging
 import pathlib
 import re
 
@@ -85,3 +86,55 @@ def zeichen(name, klasse='', titel=''):
     return format_html(
         '<svg class="fw-zeichen {}" aria-hidden="true"><use href="#z-{}"/></svg>',
         klasse, name)
+
+@register.simple_tag(name='zeichen_wert')
+def zeichen_wert(name, klasse='', titel=''):
+    """Ein Zeichen, dessen Name erst zur Laufzeit feststeht.
+
+    WOFUER
+
+    An 62 Stellen setzt eine Vorlage den Namen aus den Daten ein:
+
+        <i class="fa-solid {{ i.icon }}"></i>
+
+    Der Name steht dort in einer Tabelle im Python-Code — Kachellisten,
+    Termin-Arten, Gewerke. Das Zeichen ist dort ein DATENWERT, kein Markup,
+    und `{% templatetag openblock %} zeichen 'name' {% templatetag closeblock %}` mit fester Zeichenkette hilft nicht.
+
+    WARUM NICHT DERSELBE BAUSTEIN
+
+    `zeichen` wirft bei unbekanntem Namen — richtig, wenn jemand ihn tippt.
+    Hier kommt der Name aus den Daten: Ein alter Wert in der Datenbank oder
+    eine Zeile, die noch nicht umgestellt ist, wuerde die ganze SEITE
+    abstuerzen lassen. Das ist unverhaeltnismaessig.
+
+    Deshalb: unbekannter Name -> `hinweis` als Rueckfall, und der Fall wird
+    protokolliert. Die Seite bleibt lesbar, und der Betreiber sieht im
+    Logbuch, was fehlt.
+    """
+    if name and name.startswith('fa-'):
+        # Ein noch nicht umgestellter Datenwert. Nicht raten — den Rueckfall
+        # nehmen und melden.
+        _melde_alt(name)
+        name = 'hinweis'
+    if name not in erlaubte_zeichen():
+        _melde_alt(name)
+        name = 'hinweis'
+    return zeichen(name, klasse=klasse, titel=titel)
+
+
+_gemeldet = set()
+
+
+def _melde_alt(name):
+    """Einmal je Name protokollieren — nicht bei jedem Seitenaufruf.
+
+    Ohne die Begrenzung fuellt eine Kachelliste mit zwanzig Zeilen das
+    Logbuch bei jedem Aufruf; dann liest es niemand mehr.
+    """
+    if name in _gemeldet:
+        return
+    _gemeldet.add(name)
+    logging.getLogger(__name__).warning(
+        'Unbekannter Zeichenname «%s» — Rueckfall auf «hinweis». '
+        'Erlaubte stehen in docs/ZEICHEN.md.', name)

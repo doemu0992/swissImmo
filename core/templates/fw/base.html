@@ -187,7 +187,7 @@
                 <a href="{{ g.ziel }}{{ lg_query }}" title="{{ g.label }}"
                    class="sb-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold transition-all
                           {% if nav in g.alle_keys %}fw-btn fw-primary shadow-md{% else %}fw-faint hover:fw-flaeche hover:fw-strong{% endif %}">
-                    <i class="fa-solid {{ g.icon }} w-4 text-center text-[13px]"></i>
+                    {% zeichen_wert g.icon klasse='w-4 text-center text-[13px]' %}
                     <span class="sb-label flex-1">{{ g.label }}</span>
                     {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label min-w-[18px] text-center text-[10px] font-bold fw-krit-voll fw-strong rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
                     {% if g.items %}
@@ -198,7 +198,7 @@
                 {% else %}
                 <button type="button" onclick="fwNavToggle('{{ g.key }}')" title="{{ g.label }}"
                         class="sb-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold fw-mutet hover:fw-flaeche hover:fw-strong transition-all">
-                    <i class="fa-solid {{ g.icon }} w-4 text-center text-[13px]"></i>
+                    {% zeichen_wert g.icon klasse='w-4 text-center text-[13px]' %}
                     <span class="sb-label flex-1 text-left">{{ g.label }}</span>
                     <span class="sb-label sb-chev text-[10px] fw-mutet p-1 -m-1">{% zeichen 'weiter' klasse='transition-transform' %}</span>
                 </button>
@@ -277,7 +277,7 @@
                         </div>
                     </div>
                     <div class="border-t fw-linie my-1.5"></div>
-                    {% include 'fw/_menu_item.html' with ziel='/neu/einstellungen/' icon='fa-gear' label='Einstellungen' %}
+                    {% include 'fw/_menu_item.html' with ziel='/neu/einstellungen/' icon='einstellungen' label='Einstellungen' %}
                     <div class="border-t fw-linie my-1.5"></div>
                     <a href="/logout/" class="flex items-center gap-3 px-4 py-2 text-sm fw-kritisch hover:fw-krit-flaeche">
                         {% zeichen 'extern' klasse='w-4 text-center' %} Abmelden
@@ -692,7 +692,7 @@ fwSyncThemeButtons();
        class="flex flex-col items-center justify-center gap-1 py-2 min-h-[52px] min-w-0 text-[11px] transition-colors
               {% if nav in g.alle_keys %}fw-marke font-semibold{% else %}fw-mutet{% endif %}"
        {% if nav in g.alle_keys %}aria-current="page"{% endif %}>
-        <i class="fa-solid {{ g.icon }} text-[15px]"></i>
+        {% zeichen_wert g.icon klasse='text-[15px]' %}
         <span class="truncate max-w-full px-0.5">{{ g.label }}</span>
     </a>
     {% endfor %}

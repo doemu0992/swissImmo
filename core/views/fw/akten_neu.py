@@ -73,21 +73,21 @@ def _mandat_kopf(md, liegenschaften, soll_monat, offene_auszahlungen, faelle):
     hinweise = []
     if not md.iban:
         hinweise.append({
-            'ton': 'warn', 'symbol': 'fa-building-columns',
+            'ton': 'warn', 'symbol': 'bank',
             'titel': 'Keine IBAN erfasst',
             'text': 'Ohne IBAN lässt sich keine Auszahlung ausführen — der '
                     'Ertragsüberschuss bleibt auf dem Verwaltungskonto liegen.',
             'url': f'/neu/mandate/{md.id}/bearbeiten/', 'knopf': 'IBAN erfassen'})
     if not liegenschaften:
         hinweise.append({
-            'ton': 'info', 'symbol': 'fa-building',
+            'ton': 'info', 'symbol': 'liegenschaft',
             'titel': 'Keine Liegenschaft zugeordnet',
             'text': 'Ein Mandat ohne Liegenschaft erzeugt keine Abrechnung und '
                     'kein Honorar — vermutlich fehlt die Zuordnung.',
             'url': '/neu/liegenschaften/', 'knopf': 'Liegenschaft zuordnen'})
     if not md.honorar_prozent:
         hinweise.append({
-            'ton': 'info', 'symbol': 'fa-percent',
+            'ton': 'info', 'symbol': 'bericht',
             'titel': 'Kein Honorarsatz hinterlegt',
             'text': 'Die Mandatsabrechnung rechnet dann mit dem Vorgabewert der '
                     'Verwaltung statt mit dem vereinbarten Satz.',
@@ -198,7 +198,7 @@ def _dienstleister_kopf(h, auftraege, offen, kosten_jahr, faelle):
     hinweise = []
     if not h.telefon:
         hinweise.append({
-            'ton': 'warn', 'symbol': 'fa-phone',
+            'ton': 'warn', 'symbol': 'senden',
             'titel': 'Keine Telefonnummer',
             'text': 'Bei einem Wasserschaden ausserhalb der Bürozeit ist eine '
                     'E-Mail-Adresse wertlos.',
@@ -210,7 +210,7 @@ def _dienstleister_kopf(h, auftraege, offen, kosten_jahr, faelle):
               if a.beauftragt_am and (heute - _als_datum(a.beauftragt_am)).days > 30]
     if liegen:
         hinweise.append({
-            'ton': 'crit', 'symbol': 'fa-hourglass-end',
+            'ton': 'crit', 'symbol': 'wartet',
             'titel': f'{len(liegen)} Auftrag{"" if len(liegen) == 1 else "s"} '
                      f'älter als 30 Tage',
             'text': 'Beauftragt, aber nicht als erledigt gemeldet. Entweder '

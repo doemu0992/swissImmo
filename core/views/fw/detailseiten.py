@@ -76,7 +76,7 @@ def _liegenschaft_kopf(lg, gesamt, vermietet, soll_monat, wartungsfristen,
     hinweise = []
     if rendite.get('bruttorendite') is None:
         hinweise.append({
-            'ton': 'info', 'symbol': 'fa-percent',
+            'ton': 'info', 'symbol': 'bericht',
             'titel': 'Rendite nicht berechenbar',
             'text': 'Ohne Verkehrswert (ersatzweise Anlagekosten) fehlt der Nenner. '
                     'Der Versicherungswert taugt dafür nicht — er bemisst den '
@@ -85,7 +85,7 @@ def _liegenschaft_kopf(lg, gesamt, vermietet, soll_monat, wartungsfristen,
     if ueberfaellig:
         aelteste = min(ueberfaellig, key=lambda f: f['wf'].naechste_faelligkeit)
         hinweise.append({
-            'ton': 'crit', 'symbol': 'fa-triangle-exclamation',
+            'ton': 'crit', 'symbol': 'warnung',
             'titel': 'Wartungsfrist überfällig',
             'text': f'«{aelteste["wf"].bezeichnung}» war am '
                     f'{aelteste["wf"].naechste_faelligkeit.strftime("%d.%m.%Y")} fällig '
@@ -93,7 +93,7 @@ def _liegenschaft_kopf(lg, gesamt, vermietet, soll_monat, wartungsfristen,
             'url': '?tab=faelle', 'knopf': 'Zu den Fristen'})
     if not lg.hauswart_name and not lg.sanitaer_name and not lg.elektriker_name:
         hinweise.append({
-            'ton': 'warn', 'symbol': 'fa-screwdriver-wrench',
+            'ton': 'warn', 'symbol': 'arbeit',
             'titel': 'Keine Notfallkontakte',
             'text': 'Ohne Hauswart, Sanitär oder Elektriker steht bei einem '
                     'Wasserschaden ausserhalb der Bürozeit niemand bereit.',
@@ -156,14 +156,14 @@ def _objekt_kopf(e, aktiver_vertrag, verhaeltnisse, raeume, ausst_rows,
     hinweise = []
     if not aktiver_vertrag and not e.zur_ausschreibung:
         hinweise.append({
-            'ton': 'warn', 'symbol': 'fa-bullhorn',
+            'ton': 'warn', 'symbol': 'senden',
             'titel': 'Leer und nicht ausgeschrieben',
             'text': 'Das Objekt steht leer, ist aber nicht zur Vermarktung '
                     'freigegeben — es sucht niemand einen Nachmieter.',
             'url': f'/neu/objekte/{e.id}/', 'knopf': 'Ausschreiben'})
     if not raeume:
         hinweise.append({
-            'ton': 'info', 'symbol': 'fa-clipboard-list',
+            'ton': 'info', 'symbol': 'dokument',
             'titel': 'Kein Raumbuch erfasst',
             'text': 'Ohne erfasste Ausstattung lässt sich bei der Rückgabe kein '
                     'Lebensdaueranteil berechnen — die Mängelabrechnung wird '
@@ -171,7 +171,7 @@ def _objekt_kopf(e, aktiver_vertrag, verhaeltnisse, raeume, ausst_rows,
             'url': '?tab=ausstattung', 'knopf': 'Ausstattung erfassen'})
     if faellig:
         hinweise.append({
-            'ton': 'warn', 'symbol': 'fa-hourglass-end',
+            'ton': 'warn', 'symbol': 'wartet',
             'titel': f'{len(faellig)} Element{"e" if len(faellig) > 1 else ""} am '
                      f'Ende der Lebensdauer',
             'text': 'Bei einem Mieterwechsel trägt der Vermieter die Kosten '
@@ -1652,29 +1652,29 @@ def fw_objekt_foto_loeschen(request, pk):
 def _erstellbare_dokumente(v):
     """Verlinkt die bestehenden PDF-/Prozess-Endpunkte als 'Erstellbare Dokumente'."""
     docs = [
-        {'titel': 'Mietvertrag (PDF)', 'icon': 'fa-file-contract',
+        {'titel': 'Mietvertrag (PDF)', 'icon': 'vertrag',
          'url': f'/vertrag/{v.id}/pdf/', 'sub': 'Kompletter Vertrag als PDF'},
-        {'titel': 'QR-Rechnung', 'icon': 'fa-qrcode',
+        {'titel': 'QR-Rechnung', 'icon': 'bank',
          'url': f'/vertrag/{v.id}/qr/', 'sub': 'Einzahlungsschein mit QR-IBAN'},
-        {'titel': 'Mahnung (Art. 257d OR)', 'icon': 'fa-triangle-exclamation',
+        {'titel': 'Mahnung (Art. 257d OR)', 'icon': 'warnung',
          'url': f'/vertrag/{v.id}/mahnung/', 'sub': 'Zahlungsfrist mit Kündigungsandrohung'},
-        {'titel': 'Mietzinsanpassung', 'icon': 'fa-percent',
+        {'titel': 'Mietzinsanpassung', 'icon': 'bericht',
          'url': f'/mietzins/{v.id}/', 'sub': 'Amtliches Formular berechnen'},
-        {'titel': 'Begleitbrief Mietvertrag', 'icon': 'fa-envelope',
+        {'titel': 'Begleitbrief Mietvertrag', 'icon': 'senden',
          'url': f'/vertrag/{v.id}/dokument/begleitbrief/', 'sub': 'Anschreiben zur Unterzeichnung'},
-        {'titel': 'Begleitbrief unterzeichnet', 'icon': 'fa-envelope-circle-check',
+        {'titel': 'Begleitbrief unterzeichnet', 'icon': 'gut',
          'url': f'/vertrag/{v.id}/dokument/begleitbrief-signiert/', 'sub': 'Zustellung des signierten Vertrags'},
-        {'titel': 'Allgemeine Bedingungen', 'icon': 'fa-file-lines',
+        {'titel': 'Allgemeine Bedingungen', 'icon': 'dokument',
          'url': f'/vertrag/{v.id}/dokument/allgemeine-bedingungen/', 'sub': 'Vertragsbeilage'},
-        {'titel': 'Hausordnung', 'icon': 'fa-list-check',
+        {'titel': 'Hausordnung', 'icon': 'arbeit',
          'url': f'/vertrag/{v.id}/dokument/hausordnung/', 'sub': 'Vertragsbeilage'},
-        {'titel': 'Merkblatt Lüften & Pflegen', 'icon': 'fa-wind',
+        {'titel': 'Merkblatt Lüften & Pflegen', 'icon': 'zaehler',
          'url': f'/vertrag/{v.id}/dokument/merkblatt-lueften/', 'sub': 'Vertragsbeilage'},
-        {'titel': 'Wohnungsausweis', 'icon': 'fa-id-card',
+        {'titel': 'Wohnungsausweis', 'icon': 'person',
          'url': f'/vertrag/{v.id}/dokument/wohnungsausweis/', 'sub': 'Mieter- und Objektdaten'},
     ]
     if v.kuendigungen.exists():
-        docs.append({'titel': 'Kündigungsbestätigung', 'icon': 'fa-file-circle-xmark',
+        docs.append({'titel': 'Kündigungsbestätigung', 'icon': 'dokument',
                      'url': f'/vertrag/{v.id}/dokument/kuendigungsbestaetigung/', 'sub': 'Bestätigung mit Vertragsende'})
     return docs
 
@@ -1701,48 +1701,48 @@ def _formulare_prozesse(v, user=None):
         return any(b.startswith(prefix) for b in labels)
 
     gruppen = [
-        {'titel': 'Mietrechtliche Formulare', 'icon': 'fa-scale-balanced', 'items': [
-            {'titel': 'Anfangsmietzins (Art. 270)', 'icon': 'fa-file-invoice',
+        {'titel': 'Mietrechtliche Formulare', 'icon': 'recht', 'items': [
+            {'titel': 'Anfangsmietzins (Art. 270)', 'icon': 'rechnung',
              'url': f'/neu/mietzins/{v.id}/anfangsmietzins/', 'erledigt': hat('Anfangsmietzins'),
              'pflicht': (pflicht == 'ja' and wohnraum),
              'sub': ('Formularpflicht' if (pflicht == 'ja' and wohnraum) else 'Mitteilung des Anfangsmietzinses')},
-            {'titel': 'Mietzinsanpassung (Art. 269d)', 'icon': 'fa-arrow-trend-up',
+            {'titel': 'Mietzinsanpassung (Art. 269d)', 'icon': 'trend',
              'url': f'/neu/mietzins/{v.id}/anpassung/', 'verfuegbar': aktiv,
              'sub': 'Erhöhung / Senkung amtlich mitteilen'},
-            {'titel': 'Kündigung (Art. 266)', 'icon': 'fa-file-circle-xmark',
+            {'titel': 'Kündigung (Art. 266)', 'icon': 'dokument',
              'url': f'/neu/vertraege/{v.id}/kuendigen/', 'verfuegbar': not gek,
              'erledigt': v.kuendigungen.exists(), 'sub': 'Vermieter- / Mieterkündigung'},
         ]},
-        {'titel': 'Kaution (Art. 257e)', 'icon': 'fa-shield-halved', 'items': [
-            {'titel': 'Hinterlegungsbestätigung', 'icon': 'fa-file-pdf',
+        {'titel': 'Kaution (Art. 257e)', 'icon': 'geld', 'items': [
+            {'titel': 'Hinterlegungsbestätigung', 'icon': 'drucken',
              'url': f'/neu/vertraege/{v.id}/kaution-beleg/hinterlegung/', 'verfuegbar': hat_kaution,
              'erledigt': hat('Kaution-Bestätigung'), 'sub': 'an die Mieterschaft'},
-            {'titel': 'Freigabe an Bank', 'icon': 'fa-building-columns',
+            {'titel': 'Freigabe an Bank', 'icon': 'bank',
              'url': f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', 'verfuegbar': sperrkonto,
              'erledigt': hat('Kaution-Freigabe'), 'sub': 'Sperrkonto freigeben'},
         ]},
-        {'titel': 'Prozesse', 'icon': 'fa-gears', 'items': [
-            {'titel': 'Zahlungsverzug (Art. 257d)', 'icon': 'fa-gavel',
+        {'titel': 'Prozesse', 'icon': 'einstellungen', 'items': [
+            {'titel': 'Zahlungsverzug (Art. 257d)', 'icon': 'recht',
              'url': f'/neu/vertraege/{v.id}/verzug/', 'sub': 'Frist + Kündigungsandrohung'},
-            {'titel': 'Mängelrüge (Art. 259)', 'icon': 'fa-triangle-exclamation',
+            {'titel': 'Mängelrüge (Art. 259)', 'icon': 'warnung',
              'url': f'/neu/vertraege/{v.id}/maengelruege/', 'erledigt': hat('Mängelrüge'),
              'sub': 'Fristansetzung zur Mängelbehebung'},
-            {'titel': 'Untermiete (Art. 262)', 'icon': 'fa-people-arrows',
+            {'titel': 'Untermiete (Art. 262)', 'icon': 'person',
              'url': f'/neu/vertraege/{v.id}/untermiete/', 'erledigt': hat('Untermiete-'),
              'sub': 'Zustimmung / Ablehnung'},
-            {'titel': 'Wohnungsabnahme', 'icon': 'fa-clipboard-check',
+            {'titel': 'Wohnungsabnahme', 'icon': 'dokument',
              'url': f'/neu/vertraege/{v.id}/abnahme/neu/', 'sub': 'Ein- / Auszugsprotokoll'},
-            {'titel': 'Schlussabrechnung', 'icon': 'fa-file-invoice-dollar',
+            {'titel': 'Schlussabrechnung', 'icon': 'rechnung',
              'url': f'/neu/vertraege/{v.id}/schlussabrechnung/', 'verfuegbar': (aktiv or beendet),
              'sub': 'beim Auszug'},
         ]},
-        {'titel': 'Vertrag & Beilagen', 'icon': 'fa-file-contract', 'items': [
-            {'titel': 'Mietvertrag (PDF)', 'icon': 'fa-file-contract', 'url': f'/vertrag/{v.id}/pdf/', 'sub': 'kompletter Vertrag'},
-            {'titel': 'QR-Rechnung', 'icon': 'fa-qrcode', 'url': f'/vertrag/{v.id}/qr/', 'sub': 'Einzahlungsschein QR-IBAN'},
-            {'titel': 'Begleitbrief', 'icon': 'fa-envelope', 'url': f'/vertrag/{v.id}/dokument/begleitbrief/', 'sub': 'Anschreiben zur Unterzeichnung'},
-            {'titel': 'Allgemeine Bedingungen', 'icon': 'fa-file-lines', 'url': f'/vertrag/{v.id}/dokument/allgemeine-bedingungen/', 'sub': 'Vertragsbeilage'},
-            {'titel': 'Hausordnung', 'icon': 'fa-list-check', 'url': f'/vertrag/{v.id}/dokument/hausordnung/', 'sub': 'Vertragsbeilage'},
-            {'titel': 'Wohnungsausweis', 'icon': 'fa-id-card', 'url': f'/vertrag/{v.id}/dokument/wohnungsausweis/', 'sub': 'Mieter- und Objektdaten'},
+        {'titel': 'Vertrag & Beilagen', 'icon': 'vertrag', 'items': [
+            {'titel': 'Mietvertrag (PDF)', 'icon': 'vertrag', 'url': f'/vertrag/{v.id}/pdf/', 'sub': 'kompletter Vertrag'},
+            {'titel': 'QR-Rechnung', 'icon': 'bank', 'url': f'/vertrag/{v.id}/qr/', 'sub': 'Einzahlungsschein QR-IBAN'},
+            {'titel': 'Begleitbrief', 'icon': 'senden', 'url': f'/vertrag/{v.id}/dokument/begleitbrief/', 'sub': 'Anschreiben zur Unterzeichnung'},
+            {'titel': 'Allgemeine Bedingungen', 'icon': 'dokument', 'url': f'/vertrag/{v.id}/dokument/allgemeine-bedingungen/', 'sub': 'Vertragsbeilage'},
+            {'titel': 'Hausordnung', 'icon': 'arbeit', 'url': f'/vertrag/{v.id}/dokument/hausordnung/', 'sub': 'Vertragsbeilage'},
+            {'titel': 'Wohnungsausweis', 'icon': 'person', 'url': f'/vertrag/{v.id}/dokument/wohnungsausweis/', 'sub': 'Mieter- und Objektdaten'},
         ]},
     ]
     for g in gruppen:
@@ -2277,7 +2277,7 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
     hinweise = []
     if potenzial == 'decrease':
         hinweise.append({
-            'art': 'info', 'ikon': 'fa-circle-info',
+            'art': 'info', 'ikon': 'hinweis',
             'titel': 'Offener Senkungsanspruch des Mieters',
             'text': ('Der Referenzzinssatz ist seit der Festsetzung dieses '
                      'Mietzinses gesunken. Ein Senkungsbegehren wäre begründet, '
@@ -2285,14 +2285,14 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
             'url': f'/neu/mietzins/{v.id}/anpassung/', 'knopf': 'Berechnung öffnen'})
     elif potenzial == 'increase':
         hinweise.append({
-            'art': 'info', 'ikon': 'fa-arrow-trend-up',
+            'art': 'info', 'ikon': 'trend',
             'titel': 'Erhöhung wäre begründbar',
             'text': ('Referenzzins oder Teuerung liegen über der Basis dieses '
                      'Mietzinses.'),
             'url': f'/neu/mietzins/{v.id}/anpassung/', 'knopf': 'Berechnung öffnen'})
     if v.kautions_art and v.kautions_art != 'keine' and not v.kautions_einbezahlt_am:
         hinweise.append({
-            'art': 'warn', 'ikon': 'fa-shield-halved',
+            'art': 'warn', 'ikon': 'gesperrt',
             'titel': 'Kaution vereinbart, aber nicht bestätigt',
             'text': ('Es ist eine Sicherheit vereinbart; Einzahlung oder '
                      'Zertifikat sind nicht erfasst. Bis dahin fehlt der '

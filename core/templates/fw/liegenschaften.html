@@ -98,11 +98,11 @@
     </div>
     {% elif alle_rows %}
     <div class="fw-card overflow-hidden px-4">
-        {% include 'fw/_empty.html' with icon='fa-check' titel='Keine Liegenschaft mit diesem Befund' subtext='Der Filter greift — hier gibt es nichts zu tun. Über «Alle» zurück zur ganzen Liste.' cta_url='/neu/liegenschaften/' cta_label='Alle anzeigen' %}
+        {% include 'fw/_empty.html' with icon='gut' titel='Keine Liegenschaft mit diesem Befund' subtext='Der Filter greift — hier gibt es nichts zu tun. Über «Alle» zurück zur ganzen Liste.' cta_url='/neu/liegenschaften/' cta_label='Alle anzeigen' %}
     </div>
     {% else %}
     <div class="fw-card overflow-hidden px-4">
-        {% include 'fw/_empty.html' with icon='fa-building' titel='Noch keine Liegenschaften' subtext='Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus dem Gebäude- und Wohnungsregister (GWR) importiert werden.' cta_url='/neu/liegenschaften/neu/' cta_label='Erste Liegenschaft erfassen' %}
+        {% include 'fw/_empty.html' with icon='liegenschaft' titel='Noch keine Liegenschaften' subtext='Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus dem Gebäude- und Wohnungsregister (GWR) importiert werden.' cta_url='/neu/liegenschaften/neu/' cta_label='Erste Liegenschaft erfassen' %}
     </div>
     {% endif %}
 </div>

@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Einstellungen — swissImmo{% endblock %}
 
 {% block content %}
@@ -16,7 +17,7 @@
     {% for k in karten %}
     <a href="{{ k.url }}" class="fw-card p-5 shadow-sm hover:fw-linie-marke hover:shadow-md transition-all group">
         <div class="w-10 h-10 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center mb-3 group-hover:fw-balken-voll group-hover:text-white transition-colors">
-            <i class="fa-solid {{ k.icon }}"></i>
+            {% zeichen_wert k.icon %}
         </div>
         <div class="font-bold fw-strong group-hover:fw-marke transition-colors">{{ k.titel }}</div>
         <div class="text-xs fw-mutet mt-0.5">{{ k.sub }}</div>

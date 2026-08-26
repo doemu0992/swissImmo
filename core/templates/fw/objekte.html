@@ -102,9 +102,9 @@
 {% empty %}
 <div class="fw-card" style="padding:0 16px">
 {% if gefiltert or q or typ_filter %}
-    {% include 'fw/_empty.html' with icon='fa-check' titel='Nichts zu tun' subtext='Für diesen Filter gibt es kein Objekt. Das ist eine gute Nachricht — oder der Filter ist zu eng.' cta_url='/neu/objekte/' cta_label='Alle Objekte zeigen' %}
+    {% include 'fw/_empty.html' with icon='gut' titel='Nichts zu tun' subtext='Für diesen Filter gibt es kein Objekt. Das ist eine gute Nachricht — oder der Filter ist zu eng.' cta_url='/neu/objekte/' cta_label='Alle Objekte zeigen' %}
 {% else %}
-    {% include 'fw/_empty.html' with icon='fa-door-open' titel='Noch keine Objekte' subtext='Objekte gehören zu einer Liegenschaft — legen Sie zuerst eine Liegenschaft an oder importieren Sie die Wohnungen aus dem GWR.' cta_url='/neu/liegenschaften/neu/' cta_label='Liegenschaft erfassen' %}
+    {% include 'fw/_empty.html' with icon='einheit' titel='Noch keine Objekte' subtext='Objekte gehören zu einer Liegenschaft — legen Sie zuerst eine Liegenschaft an oder importieren Sie die Wohnungen aus dem GWR.' cta_url='/neu/liegenschaften/neu/' cta_label='Liegenschaft erfassen' %}
 {% endif %}
 </div>
 {% endfor %}

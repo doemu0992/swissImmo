@@ -93,7 +93,7 @@
     {% for e in vorrat %}
     <div class="fw-zeile">
         <span class="fw-marker {{ e.dringlichkeit }}"></span>
-        <span class="fw-ikon{% if e.dringlichkeit != 'neutral' %} {{ e.dringlichkeit }}{% endif %}"><i class="fa-solid {{ e.ikon }}"></i></span>
+        <span class="fw-ikon{% if e.dringlichkeit != 'neutral' %} {{ e.dringlichkeit }}{% endif %}">{% zeichen_wert e.ikon %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ e.titel }}</div>
             <div class="fw-s">{{ e.zeile }}</div>

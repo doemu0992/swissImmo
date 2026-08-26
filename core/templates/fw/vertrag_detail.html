@@ -257,7 +257,7 @@
                 <span class="fw-neben">{{ kopf_hinweise|length }}</span></div>
             {% for h in kopf_hinweise %}
             <div class="fw-hinweis {{ h.art }}">
-                <span class="fw-hi"><i class="fa-solid {{ h.ikon }}"></i></span>
+                <span class="fw-hi">{% zeichen_wert h.ikon %}</span>
                 <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
                     <div style="margin-top:9px"><a href="{{ h.url }}" class="fw-btn" style="padding:6px 12px;font-size:12px">{{ h.knopf }}</a></div></div>
             </div>
@@ -581,7 +581,7 @@
             <a href="{{ d.url }}" target="_blank" rel="noopener"
                class="flex items-center gap-3 p-3.5 rounded-lg border fw-linie hover:fw-linie-marke hover:fw-markenflaeche transition-all group">
                 <div class="fw-ikon" style="width:38px;height:38px;flex:0 0 38px">
-                    <i class="fa-solid {{ d.icon }}"></i>
+                    {% zeichen_wert d.icon %}
                 </div>
                 <div class="flex-1 min-w-0"><div class="fw-t">{{ d.titel }}</div>
                     <div class="fw-klein">{{ d.sub }}</div></div>
@@ -613,12 +613,12 @@
     <div class="space-y-4">
         {% for g in formular_gruppen %}
         <div class="fw-card">
-            <div class="fw-kopf"><i class="fa-solid {{ g.icon }} fw-marke mr-1.5"></i>{{ g.titel }}</div>
+            <div class="fw-kopf">{% zeichen_wert g.icon klasse='fw-marke mr-1.5' %}{{ g.titel }}</div>
             <div class="">
                 {% for it in g.items %}
                 {% if it.verfuegbar %}
                 <a href="{{ it.url }}" {% if '/pdf/' in it.url or '/qr/' in it.url or '/dokument/' in it.url or 'kaution-beleg' in it.url %}target="_blank" rel="noopener"{% endif %} class="fw-zeile klick group">
-                    <div class="fw-ikon" style="width:34px;height:34px;flex:0 0 34px"><i class="fa-solid {{ it.icon }}"></i></div>
+                    <div class="fw-ikon" style="width:34px;height:34px;flex:0 0 34px">{% zeichen_wert it.icon %}</div>
                     <div class="flex-1 min-w-0">
                         <div class="fw-t">{{ it.titel }}
                             {% if it.pflicht %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold fw-warn-flaeche fw-warnton">Formularpflicht</span>{% endif %}

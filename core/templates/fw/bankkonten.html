@@ -35,7 +35,7 @@
     <div class="fw-card p-5">
         <div class="flex items-start justify-between gap-3 mb-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg {{ k.typ_cls }} flex items-center justify-center shrink-0"><i class="fa-solid {{ k.typ_icon }}"></i></div>
+                <div class="w-10 h-10 rounded-lg {{ k.typ_cls }} flex items-center justify-center shrink-0">{% zeichen_wert k.typ_icon %}</div>
                 <div>
                     <div class="font-semibold fw-strong">{{ k.inhaber }}</div>
                     <div class="text-xs fw-faint">{{ k.kontext }}</div>

@@ -21,7 +21,7 @@
             <div class="fw-dv">
                 {% for f in auto %}
                 <a href="{{ f.url }}" onclick="return fwModalOpen(this,'{{ f.titel|escapejs }}',true)" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-                    <div class="w-9 h-9 rounded-lg bg-{{ f.farbe }}-50 text-{{ f.farbe }}-600 flex items-center justify-center text-sm shrink-0"><i class="fa-solid {{ f.icon }}"></i></div>
+                    <div class="w-9 h-9 rounded-lg bg-{{ f.farbe }}-50 text-{{ f.farbe }}-600 flex items-center justify-center text-sm shrink-0">{% zeichen_wert f.icon %}</div>
                     <div class="min-w-0 flex-1">
                         <div class="text-sm font-medium fw-strong truncate">{{ f.titel }}</div>
                         <div class="text-xs fw-mutet truncate">{{ f.kategorie }} · {{ f.sub }}</div>
@@ -41,7 +41,7 @@
         {% for g in gruppen %}
         <div class="fw-card overflow-hidden">
             <div class="px-5 py-3 border-b fw-linie flex items-center gap-2.5">
-                <span class="w-7 h-7 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-xs shrink-0"><i class="fa-solid {{ g.icon }}"></i></span>
+                <span class="w-7 h-7 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-xs shrink-0">{% zeichen_wert g.icon %}</span>
                 <div class="min-w-0 flex-1">
                     {% if g.url %}
                     <a href="{{ g.url }}" class="font-bold fw-strong text-sm hover:fw-marke truncate block">{{ g.titel }}</a>

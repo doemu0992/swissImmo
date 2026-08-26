@@ -65,7 +65,7 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     if ueberfaellig.exists():
         total_offen = sum(r.offener_betrag for r in ueberfaellig)
         aufgaben.append(aufgabe(
-            'rose', 'fa-file-invoice-dollar',
+            'rose', 'rechnung',
             f"{ueberfaellig.count()} überfällige Forderung(en)",
             f"CHF {total_offen:.2f} ausstehend — Mietzins-Kontrolle & Mahnung prüfen",
             'finance'
@@ -76,7 +76,7 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     if aktive.exists() and not DebitorenRechnung.objects.filter(
             titel=titel_monat).exclude(status='storniert').exists():
         aufgaben.append(aufgabe(
-            'amber', 'fa-rotate',
+            'amber', 'lauf',
             f"Sollstellung {heute.month:02d}/{heute.year} noch nicht gelaufen",
             "Monatlichen Mietenlauf im Finanz-Tab starten",
             'finance'
@@ -88,7 +88,7 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     ).count()
     if kaution_fehlt:
         aufgaben.append(aufgabe(
-            'amber', 'fa-shield-halved',
+            'amber', 'gesperrt',
             f"{kaution_fehlt} Kaution(en) noch nicht einbezahlt",
             "Eingang prüfen und im Vertrag erfassen",
             'rentals'
@@ -99,7 +99,7 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     if kuendbar.exists():
         naechster = kuendbar.order_by('erstmals_kuendbar_auf').first()
         aufgaben.append(aufgabe(
-            'indigo', 'fa-calendar-check',
+            'indigo', 'gut',
             f"{kuendbar.count()} Vertrag/Verträge erstmals kündbar bis {in_90_tagen.strftime('%d.%m.%Y')}",
             f"Nächster: {naechster.mieter} am {naechster.erstmals_kuendbar_auf.strftime('%d.%m.%Y')}",
             'rentals'
@@ -109,7 +109,7 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     garantien = Geraet.objects.filter(garantie_bis__range=[heute, in_90_tagen]).count()
     if garantien:
         aufgaben.append(aufgabe(
-            'indigo', 'fa-screwdriver-wrench',
+            'indigo', 'arbeit',
             f"{garantien} Gerätegarantie(n) laufen in 90 Tagen ab",
             "Vor Ablauf prüfen: Mängel jetzt kostenlos reparieren lassen",
             'portfolio'
@@ -118,7 +118,7 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     # f) LEERSTAND
     if leerstand_count:
         aufgaben.append(aufgabe(
-            'amber', 'fa-house-circle-exclamation',
+            'amber', 'kritisch',
             f"{leerstand_count} Einheit(en) im Leerstand",
             "Bewerbungs-Link teilen oder Inserat aufschalten",
             'portfolio'
@@ -127,14 +127,14 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     # g) MIETZINS-POTENZIAL (Referenzzins)
     if potenzial_down:
         aufgaben.append(aufgabe(
-            'rose', 'fa-arrow-trend-down',
+            'rose', 'trend',
             f"{potenzial_down} Vertrag/Verträge über dem aktuellen Referenzzins",
             "Mieter haben Anspruch auf Senkung — proaktiv anpassen",
             'rentals'
         ))
     if potenzial_up:
         aufgaben.append(aufgabe(
-            'emerald', 'fa-arrow-trend-up',
+            'emerald', 'trend',
             f"{potenzial_up} Vertrag/Verträge mit Erhöhungspotenzial",
             "Referenzzins/LIK gestiegen — Mietzinsanpassung prüfen",
             'rentals'

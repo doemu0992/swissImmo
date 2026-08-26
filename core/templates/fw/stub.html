@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}{{ titel }} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead"><h1>{{ titel }}</h1></div>
 <div class="max-w-2xl mt-8 fw-card p-8 text-center">
     <div class="w-16 h-16 rounded-2xl fw-markenflaeche fw-marke flex items-center justify-center text-2xl mx-auto mb-4">
-        <i class="fa-solid {{ icon }}"></i>
+        {% zeichen_wert icon %}
     </div>
     <h2 class="text-lg font-bold fw-strong mb-2">{{ titel }}</h2>
     <p class="text-sm fw-mutet leading-relaxed">{{ text }}</p>

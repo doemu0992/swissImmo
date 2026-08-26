@@ -16,7 +16,7 @@
         <div class="flex items-start gap-4">
             <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0
                         {% if i.aktiv %}bg-{{ i.farbe }}-50 text-{{ i.farbe }}-600{% else %}fw-flaeche2 fw-faint{% endif %}">
-                <i class="fa-solid {{ i.icon }} text-lg"></i>
+                {% zeichen_wert i.icon klasse='text-lg' %}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">

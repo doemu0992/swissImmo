@@ -60,7 +60,7 @@
 <div class="fw-card">
     {% for hw in dl_hinweise %}
     <div class="fw-hinweis {{ hw.ton }}">
-        <span class="fw-hi"><i class="fa-solid {{ hw.symbol }}"></i></span>
+        <span class="fw-hi">{% zeichen_wert hw.symbol %}</span>
         <div class="fw-ht"><b>{{ hw.titel }}</b>{{ hw.text }}
             <div class="mt-1.5"><a href="{{ hw.url }}" class="fw-link">{{ hw.knopf }} →</a></div></div>
     </div>

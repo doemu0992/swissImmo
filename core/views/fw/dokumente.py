@@ -21,15 +21,15 @@ from ._basis import _global_filter
 # ============================================================
 
 DOK_ICON = {
-    'vertrag': ('fa-file-contract', 'fw-markenflaeche fw-marke'),
-    'protokoll': ('fa-clipboard-check', 'fw-gut-flaeche fw-gut'),
-    'korrespondenz': ('fa-envelope', 'fw-info-flaeche fw-info'),
-    'sonstiges': ('fa-file', 'fw-flaeche2 fw-mutet'),
+    'vertrag': ('vertrag', 'fw-markenflaeche fw-marke'),
+    'protokoll': ('gut', 'fw-gut-flaeche fw-gut'),
+    'korrespondenz': ('senden', 'fw-info-flaeche fw-info'),
+    'sonstiges': ('dokument', 'fw-flaeche2 fw-mutet'),
 }
 
 
 def _dok_icon(kat):
-    return DOK_ICON.get((kat or '').lower(), ('fa-file-lines', 'fw-flaeche2 fw-mutet'))
+    return DOK_ICON.get((kat or '').lower(), ('dokument', 'fw-flaeche2 fw-mutet'))
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

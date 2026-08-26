@@ -66,12 +66,12 @@ Raums daneben, und das Bett trägt nichts bei.
 
 | Zeichen | Bedeutung | ersetzt heute |
 |---|---|---|
-| `gut` | Erledigt, in Ordnung | `check`, `check-double`, `circle-check`, `envelope-circle-check`, `calendar-check`, `clipboard-check`, `user-check` |
+| `gut` | Erledigt, in Ordnung | `check`, `check-double`, `circle-check`, `envelope-circle-check`, `calendar-check`, `clipboard-check`, `user-check` — die `*-check` jeweils **nur wo sie einen Zustand meinen** |
 | `warnung` | Beanstandet, aber nicht blockiert | `triangle-exclamation` |
-| `kritisch` | Blockiert, Frist verletzt | `circle-exclamation`, `fire`, `fire-burner`, `house-crack`, `house-chimney-crack`, `house-circle-exclamation`, `cloud-bolt`, `bolt`, `file-circle-xmark`, `file-circle-minus` |
+| `kritisch` | Blockiert, Frist verletzt | `circle-exclamation`, `fire`, `fire-burner`, `house-crack`, `house-chimney-crack`, `house-circle-exclamation`, `cloud-bolt`, `bolt` (nicht als Gewerk «Elektro»), `file-circle-xmark`, `file-circle-minus` (beide **nur wo blockierend**, nicht als Kündigungs-Dokument) |
 | `hinweis` | Erklärung, kein Handlungsbedarf | `circle-info`, `circle-question`, `lightbulb`, `note-sticky`, `flag` |
 | `wartet` | Auf Dritte, auf Zeitablauf | `clock`, `hourglass-end`, `hourglass-half`, `spinner`, `circle-notch`, `user-clock`, `inbox` |
-| `gesperrt` | Kein Zugriff, nicht änderbar | `lock`, `shield-halved`, `shield-heart`, `user-slash`, `user-shield` |
+| `gesperrt` | Kein Zugriff, nicht änderbar | `lock`, `shield-halved` (**nicht** als Kaution — das ist `geld`), `shield-heart`, `user-slash`, `user-shield` |
 | `offen` | Noch nicht bearbeitet | `circle` (leer) |
 | `entwurf` | Angefangen, nicht gültig | `pen-ruler`, `file-pen` |
 
@@ -171,6 +171,27 @@ Fundstellen, zwei Bedeutungen, zwei Zeichen.
 > `trend`, mit drei Richtungen wie `aufklappen` mit zwei.
 >
 > D5 sagt »~40 Zeichen«. Die Tilde ist hier der Punkt.
+
+## Eine Klasse, zwei Bedeutungen — der Fallstrick der Spalte «ersetzt heute»
+
+Die Spalte liest sich wie eine Umrechnungstabelle, und für die meisten
+Klassen ist sie das auch. Für einige nicht: Dieselbe Klasse stand im Bestand
+einmal für einen **Zustand** und einmal für einen **Gegenstand**.
+
+`shield-halved` ist das deutlichste Beispiel. Es steht unter `gesperrt` — und
+war zugleich das Zeichen der **Kaution**, an drei Stellen. Klassenweise
+umgesetzt trägt die Kaution danach ein Vorhängeschloss.
+
+Ebenso: `file-circle-xmark` (unter `kritisch`) war das Zeichen der
+**Kündigungs-Dokumente**; `user-check`, `clipboard-check` und
+`calendar-check` (unter `gut`) standen für **Bewerbungen**, die
+**Wohnungsabnahme** und die Kategorie **Erstmals kündbar**; `bolt` (unter
+`kritisch`) war das **Gewerk Elektro**.
+
+Bei `check` und `xmark` steht der Vorbehalt seit E2.35 in der Zeile. Bei den
+übrigen fehlte er — nachgetragen. Wer umstellt, entscheidet am **Ort**, nicht
+am Namen; und wo eine Kategorie oder ein Dokument gemeint ist, gehört ein
+Fachbegriff hin, kein Zustand.
 
 ## Noch ohne Bedeutung (3 Klassen, 2 Fragen)
 

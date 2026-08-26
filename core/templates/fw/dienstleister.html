@@ -63,7 +63,7 @@
             {% comment %} Seit 4b.12 führt die Kachel zur Dienstleisterakte —
                vorher gab es keine, und die Kachel führte nirgendwohin. {% endcomment %}
             <a href="/neu/dienstleister/{{ row.h.id }}/" class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-lg {{ row.icon_cls }} flex items-center justify-center text-lg shrink-0"><i class="fa-solid {{ row.icon }}"></i></div>
+                <div class="w-11 h-11 rounded-lg {{ row.icon_cls }} flex items-center justify-center text-lg shrink-0">{% zeichen_wert row.icon %}</div>
                 <div>
                     <div class="font-semibold fw-strong leading-tight">{{ row.h.firma }}</div>
                     <div class="fw-klein">{{ row.branche }}</div>

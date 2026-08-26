@@ -52,11 +52,11 @@ VORSCHAU_TAGE = 14
 #: Symbol je Terminart. Als Tabelle, damit eine neue Art eine Zeile kostet
 #: und nicht eine Verzweigung in der Vorlage.
 TERMIN_IKON = {
-    'abnahme': 'fa-clipboard-check',
-    'besichtigung': 'fa-key',
-    'gespraech': 'fa-handshake',
-    'begehung': 'fa-person-walking',
-    'sonstiges': 'fa-calendar-day',
+    'abnahme': 'gut',
+    'besichtigung': 'schluessel',
+    'gespraech': 'person',
+    'begehung': 'person',
+    'sonstiges': 'termin',
 }
 
 #: Zeilen je Abschnitt auf der Startseite. Der Rest steht hinter «Alle …» —
@@ -165,7 +165,7 @@ def _laeufe(heute, bis):
         tage = (lauf.faellig_am - heute).days
         blockaden = blockaden_vorab      # oben schon geholt, nicht zweimal fragen
         zeilen.append({
-            'art': 'lauf', 'ikon': 'fa-rotate',
+            'art': 'lauf', 'ikon': 'lauf',
             'titel': f'{lauf.laufart.bezeichnung} {lauf.periode}'
                      + (' nicht ausgelöst' if tage < 0 else ''),
             'zeile': (', '.join(b.grund for b in blockaden) if blockaden
@@ -194,7 +194,7 @@ def _fallschritte(heute, bis):
               .select_related('fall', 'fall__fallart')[:20]):
         tage = (s.frist - heute).days
         zeilen.append({
-            'art': 'fall', 'ikon': 'fa-folder-open',
+            'art': 'fall', 'ikon': 'dokument',
             'titel': s.bezeichnung,
             'zeile': (f'{s.fall.fallart.bezeichnung} · {s.fall.betreff}'
                       if s.fall.betreff else s.fall.fallart.bezeichnung),
@@ -232,7 +232,7 @@ def _pendenzen(heute, bis, aktive_lg=None):
         url, knopf, _wide, modal = _pendenz_ziel(p)
         tage = (p.faellig_am - heute).days
         zeilen.append({
-            'art': 'pendenz', 'ikon': 'fa-clock',
+            'art': 'pendenz', 'ikon': 'wartet',
             'titel': p.titel,
             'zeile': p.beschreibung[:120] or p.get_kategorie_display(),
             'datum': p.faellig_am, 'tage': tage,
@@ -255,7 +255,7 @@ def _wartungsfristen(heute, bis, aktive_lg=None):
     for w in wf.order_by('naechste_faelligkeit')[:20]:
         tage = (w.naechste_faelligkeit - heute).days
         zeilen.append({
-            'art': 'wartung', 'ikon': 'fa-screwdriver-wrench',
+            'art': 'wartung', 'ikon': 'arbeit',
             'titel': w.bezeichnung,
             'zeile': (w.liegenschaft.strasse if w.liegenschaft_id else '')
                      + (f' · {w.anbieter}' if w.anbieter else ''),
@@ -359,7 +359,7 @@ def termine(heute=None, tage=7):
                   .order_by('datum')[:20]):
             einheit = getattr(a.vertrag, 'einheit', None)
             zeilen.append({
-                'art': 'abnahme', 'ikon': 'fa-clipboard-check',
+                'art': 'abnahme', 'ikon': 'gut',
                 'titel': 'Wohnungsabnahme' if a.typ == 'auszug' else 'Übergabe',
                 'zeile': str(einheit) if einheit else '',
                 'datum': a.datum, 'zeit': None,
@@ -379,7 +379,7 @@ def termine(heute=None, tage=7):
                   .select_related('einheit__liegenschaft')
                   .order_by('besichtigung_am')[:20]):
             zeilen.append({
-                'art': 'besichtigung', 'ikon': 'fa-key',
+                'art': 'besichtigung', 'ikon': 'schluessel',
                 'titel': 'Besichtigung',
                 'zeile': f'{b.einheit} · {b.vorname} {b.nachname}',
                 'datum': timezone.localtime(b.besichtigung_am).date(),
@@ -397,7 +397,7 @@ def termine(heute=None, tage=7):
                   .select_related('zustaendig')[:20]):
             ortszeit = timezone.localtime(t.beginn)
             zeilen.append({
-                'art': t.art, 'ikon': TERMIN_IKON.get(t.art, 'fa-calendar-day'),
+                'art': t.art, 'ikon': TERMIN_IKON.get(t.art, 'termin'),
                 'titel': t.titel,
                 'zeile': ' · '.join(x for x in (
                     t.ort, str(t.akte) if t.akte_id else '',
@@ -478,7 +478,7 @@ def wartet_auf_freigabe():
         for r in (KreditorenRechnung.objects.filter(status='neu')
                   .select_related('liegenschaft').order_by('datum')[:10]):
             zeilen.append({
-                'art': 'rechnung', 'ikon': 'fa-file-invoice',
+                'art': 'rechnung', 'ikon': 'rechnung',
                 'titel': f'Rechnung {r.lieferant}' if r.lieferant else 'Eingangsrechnung',
                 'zeile': str(r.liegenschaft or ''),
                 'betrag': r.betrag, 'tage': _alter(r.datum),
@@ -492,7 +492,7 @@ def wartet_auf_freigabe():
         for a in (HandwerkerAuftrag.objects.filter(freigabe_status='ausstehend')
                   .select_related('handwerker', 'ticket')[:10]):
             zeilen.append({
-                'art': 'offerte', 'ikon': 'fa-file-signature',
+                'art': 'offerte', 'ikon': 'vertrag',
                 'titel': f'Offerte {a.handwerker}' if a.handwerker_id else 'Offerte',
                 'zeile': str(getattr(a.ticket, 'titel', '') or ''),
                 'betrag': a.kosten_geschaetzt, 'tage': _alter(a.beauftragt_am),
@@ -507,7 +507,7 @@ def wartet_auf_freigabe():
                   .select_related('mieter', 'einheit__liegenschaft')
                   .order_by('beginn')[:10]):
             zeilen.append({
-                'art': 'vertrag', 'ikon': 'fa-pen-nib',
+                'art': 'vertrag', 'ikon': 'bearbeiten',
                 'titel': f'Mietvertrag {v.mieter.display_name}' if v.mieter_id
                          else 'Mietvertrag',
                 'zeile': f'{v.einheit} · zur Unterschrift',

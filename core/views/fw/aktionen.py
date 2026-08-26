@@ -846,24 +846,24 @@ def fw_einstellungen(request):
     Rechtsgrundlagen) als eine Hub-Seite mit Sektionen."""
     basis = _global_filter(request)
     karten = [
-        {'titel': 'Account', 'sub': 'Verwaltungs-Stammdaten, Logo, Absender', 'url': '/neu/account/', 'icon': 'fa-id-card'},
-        {'titel': 'Benutzer & Rollen', 'sub': 'Team-Mitglieder und Berechtigungen', 'url': '/neu/benutzer/', 'icon': 'fa-users'},
-        {'titel': 'Vorlagen', 'sub': 'Textvorlagen mit Platzhaltern', 'url': '/neu/vorlagen/', 'icon': 'fa-file-lines'},
-        {'titel': 'Integrationen', 'sub': 'E-Mail, DocuSeal, KI, Banken, Portal-Feed', 'url': '/neu/integrationen/', 'icon': 'fa-plug'},
-        {'titel': 'Abonnement', 'sub': 'Plan und Rechnungsstellung', 'url': '/neu/abonnement/', 'icon': 'fa-star'},
+        {'titel': 'Account', 'sub': 'Verwaltungs-Stammdaten, Logo, Absender', 'url': '/neu/account/', 'icon': 'person'},
+        {'titel': 'Benutzer & Rollen', 'sub': 'Team-Mitglieder und Berechtigungen', 'url': '/neu/benutzer/', 'icon': 'person'},
+        {'titel': 'Vorlagen', 'sub': 'Textvorlagen mit Platzhaltern', 'url': '/neu/vorlagen/', 'icon': 'dokument'},
+        {'titel': 'Integrationen', 'sub': 'E-Mail, DocuSeal, KI, Banken, Portal-Feed', 'url': '/neu/integrationen/', 'icon': 'einstellungen'},
+        {'titel': 'Abonnement', 'sub': 'Plan und Rechnungsstellung', 'url': '/neu/abonnement/', 'icon': 'einstellungen'},
         {'titel': 'Anmeldung & Sicherheit', 'sub': 'Zwei-Faktor-Anmeldung für Sie und Ihr Team',
-         'url': '/konto/zwei-faktor/', 'icon': 'fa-shield-halved'},
+         'url': '/konto/zwei-faktor/', 'icon': 'gesperrt'},
         {'titel': 'Postfächer', 'sub': 'E-Mail-Eingang für Ticket-Antworten und Rechnungen',
-         'url': '/neu/postfaecher/', 'icon': 'fa-inbox'},
-        {'titel': 'Logbuch', 'sub': 'Wer hat wann was geändert', 'url': '/neu/logbuch/', 'icon': 'fa-clock-rotate-left'},
-        {'titel': 'Rechtsgrundlagen', 'sub': 'OR/VMWG-Artikel mit Anwendung im Programm', 'url': '/neu/rechtsgrundlagen/', 'icon': 'fa-scale-balanced'},
+         'url': '/neu/postfaecher/', 'icon': 'wartet'},
+        {'titel': 'Logbuch', 'sub': 'Wer hat wann was geändert', 'url': '/neu/logbuch/', 'icon': 'verlauf'},
+        {'titel': 'Rechtsgrundlagen', 'sub': 'OR/VMWG-Artikel mit Anwendung im Programm', 'url': '/neu/rechtsgrundlagen/', 'icon': 'recht'},
         # E1.1: Das Regelwerk hing bis hierher unter «Erweitert» im
         # Einfachmodus. Mit den fuenf Bereichen hat es dort keinen Platz mehr —
         # Fristenregeln sind eine Einstellung, keine Tagesarbeit. Ohne diese
         # Kachel waere die Seite beim Umbau unauffindbar geworden, wie schon
         # einmal in Phase 4a (vier Etappen lang).
         {'titel': 'Regelwerk (Fristen)', 'sub': 'Kuendigungstermine und Fristen je Kanton',
-         'url': '/neu/regelwerk/', 'icon': 'fa-scale-balanced'},
+         'url': '/neu/regelwerk/', 'icon': 'recht'},
     ]
     return render(request, 'fw/einstellungen.html', {
         **basis, 'nav': 'einstellungen', 'karten': karten,

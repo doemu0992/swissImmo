@@ -65,8 +65,31 @@ TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
 #: «Noch ohne Bedeutung» — bewusst nicht zugeordnet. Die Umstellung hat
 #: sie beim Sortieren erfunden; genau davor warnt die Tabelle. Sie
 #: bleiben bei Font Awesome, bis jemand die Bedeutung ENTSCHEIDET.
-STAND_ZEICHEN = 79
-STAND_VORKOMMEN = 156
+#: E2.41: 79 -> 11. Die DATENWERTE im Python-Code sind umgestellt
+#: (Kachellisten, Termin-Arten, Gewerke) und die 29 Einsetzstellen in den
+#: Vorlagen auf `{% templatetag openblock %} zeichen_wert … {% templatetag closeblock %}`.
+#:
+#: Was bleibt, sind DREI Gruppen — nicht zwei. Nachgezaehlt:
+#:
+#:   7  templates/admin/dashboard_stats.html   die benannte Ausnahme,
+#:                                             wie bei den Farbklassen
+#:   2  `share-from-square`, `code`            die offenen Fragen aus E2.40
+#:   2  Spinner, die JAVASCRIPT setzt          fw/base.html:532 (nach dem
+#:                                             Absenden) und
+#:                                             public_bewerbung_form.html:266
+#:                                             (Vue, `v-if=isSubmitting`)
+#:
+#: Die Etappe nannte nur die ersten beiden Gruppen («der Rest steht in den
+#: Admin-Vorlagen»). Die Spinner stehen in lebenden Anwendungsvorlagen und
+#: sind eine eigene Art: Das Zeichen entsteht erst im Browser, `{% zeichen %}`
+#: erreicht sie nicht. Solange sie da sind, muss Font Awesome weiter geladen
+#: werden — gemessen 89 KB CSS und 119 KB Schrift je Aufruf.
+#:
+#: (`fa-buildings` in modern_base.html zaehlt der Waechter mit, obwohl es dort
+#: nur im ERKLAERTEXT eines {% comment %}-Blocks steht. Kein gerendertes
+#: Zeichen, aber die Sperrklinke soll auch Erwaehnungen nicht wachsen lassen.)
+STAND_ZEICHEN = 11
+STAND_VORKOMMEN = 15
 
 #: Anzahl Zeichen mit fester Bedeutung, aus `docs/ZEICHEN.md`.
 #:
@@ -224,10 +247,10 @@ class ZeichensatzTest(SimpleTestCase):
     def test_die_messung_findet_ueberhaupt_etwas(self):
         """Gegenprobe: Ein leeres Ergebnis wäre trivial grün."""
         zeichen = _zeichen_im_bestand()
-        self.assertGreater(len(zeichen), 20,
+        self.assertGreater(len(zeichen), 5,
                            'Die Suche findet fast nichts — dann prüfen die '
                            'Tests oben nichts.')
-        self.assertGreater(sum(zeichen.values()), 100)
+        self.assertGreater(sum(zeichen.values()), 8)
 
     def test_auch_in_python_gewaehlte_zeichen_werden_gesehen(self):
         """Sonst wäre die Sperre an der Stelle blind, wo sie gebraucht wird.
@@ -246,5 +269,19 @@ class ZeichensatzTest(SimpleTestCase):
             len(zeichen), len(nur_vorlagen),
             'Der Wächter sieht nicht mehr als core/templates/ — dann greift '
             'er nicht für Zeichen, die in View-Code gewählt werden.')
-        self.assertIn('fa-plug', zeichen)
-        self.assertIn('fa-paint-roller', zeichen)
+        # KEINE festen Beispielwerte mehr.
+        #
+        # Bis E2.41 stand hier `assertIn('fa-plug', …)`. Der Test belegte die
+        # Erfassung an einem konkreten Wert — und wurde rot, als genau dieser
+        # Wert umgestellt wurde. Er meldete damit einen FORTSCHRITT als
+        # Fehler.
+        #
+        # Geprueft wird jetzt die Aussage selbst: Es gibt Zeichen, die NUR in
+        # Python gewaehlt werden. Solange das stimmt, greift der Waechter
+        # dort; wenn nicht mehr, ist er ueberfluessig und sagt es.
+        nur_python = set(zeichen) - set(nur_vorlagen)
+        self.assertTrue(
+            nur_python,
+            'Kein Zeichen wird mehr ausschliesslich in Python gewaehlt. '
+            'Entweder ist Schritt 4 fertig — dann darf dieser Test weg — '
+            'oder die Suche findet den Python-Teil nicht mehr.')
