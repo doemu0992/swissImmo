@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Lieferantenkonto {{ name }} — swissImmo{% endblock %}
 {% block content %}
 <div class="text-xs fw-faint mb-3">
     <a href="/neu/lieferantenkonten/{{ lg_query }}" class="hover:fw-marke">Lieferantenkonten</a>
-    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>{{ name }}
+    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{{ name }}
 </div>
 
 <div class="fw-phead">
@@ -12,7 +13,7 @@
         <h1>Lieferantenkonto</h1>
         <p>{{ name }} · alle Rechnungen und Zahlungen mit laufendem Saldo.</p>
     </div>
-    <a href="/neu/kreditoren/{{ lg_query }}" class="fw-btn"><i class="fa-solid fa-credit-card"></i>Kreditoren</a>
+    <a href="/neu/kreditoren/{{ lg_query }}" class="fw-btn">{% zeichen 'bank' %}Kreditoren</a>
 </div>
 
 <!-- Kennzahlen -->
@@ -37,7 +38,7 @@
 {% if op_rows %}
 <div class="fw-flaeche rounded-xl border fw-linie-krit overflow-hidden mb-5">
     <div class="px-5 py-3 border-b fw-linie-krit fw-krit-flaeche flex items-center gap-2">
-        <i class="fa-solid fa-triangle-exclamation fw-kritisch"></i>
+        {% zeichen 'warnung' klasse='fw-kritisch' %}
         <h2 class="font-bold fw-strong text-sm">Offene Rechnungen</h2>
         <span class="text-[11px] font-bold fw-krit-flaeche fw-kritisch rounded-md px-1.5 py-0.5">{{ op_rows|length }}</span>
         <span class="ml-auto text-sm font-semibold fw-kritisch">CHF {{ op_total|chf }}</span>
@@ -104,12 +105,12 @@
 <!-- Verlauf: alle protokollierten Aktionen zu diesem Lieferanten (Rechnungen erstellt/gescannt/bearbeitet/freigegeben/bezahlt/gelöscht, Mail-Eingang, Stammdaten) -->
 {% if verlauf %}
 <div class="fw-card overflow-hidden mt-6">
-    <div class="px-5 py-3 font-bold fw-strong text-sm border-b fw-linie"><i class="fa-solid fa-clock-rotate-left fw-faint mr-1.5"></i>Verlauf — wer hat was gemacht</div>
+    <div class="px-5 py-3 font-bold fw-strong text-sm border-b fw-linie">{% zeichen 'verlauf' klasse='fw-faint mr-1.5' %}Verlauf — wer hat was gemacht</div>
     <div class="fw-dv">
         {% for e in verlauf %}
         <div class="flex items-start gap-3 px-5 py-3.5">
             <div class="w-8 h-8 rounded-full fw-btn fw-primary flex items-center justify-center text-[10px] font-bold shrink-0">
-                {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}
+                {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="text-sm font-medium fw-strong">{{ e.aktion }}</div>

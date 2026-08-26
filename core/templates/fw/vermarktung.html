@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Vermarktung · swissImmo{% endblock %}
 {% block content %}
 
@@ -23,12 +24,12 @@
                 {% if r.titelbild %}
                 <img src="{{ r.titelbild }}" alt="" class="w-16 h-16 rounded-lg object-cover border fw-linie shrink-0">
                 {% else %}
-                <div class="w-16 h-16 rounded-lg fw-flaeche2 flex items-center justify-center fw-faint shrink-0"><i class="fa-solid fa-image"></i></div>
+                <div class="w-16 h-16 rounded-lg fw-flaeche2 flex items-center justify-center fw-faint shrink-0">{% zeichen 'dokument' %}</div>
                 {% endif %}
                 <div class="min-w-0">
                     <div class="font-bold fw-strong truncate">{{ r.objekt }}</div>
                     <div class="text-sm fw-mutet">{{ r.bezeichnung }}</div>
-                    {% if r.fotos_n %}<div class="text-[11px] fw-faint mt-0.5"><i class="fa-solid fa-image mr-0.5"></i>{{ r.fotos_n }} Foto{{ r.fotos_n|pluralize:",s" }}</div>{% endif %}
+                    {% if r.fotos_n %}<div class="text-[11px] fw-faint mt-0.5">{% zeichen 'dokument' klasse='mr-0.5' %}{{ r.fotos_n }} Foto{{ r.fotos_n|pluralize:",s" }}</div>{% endif %}
                 </div>
             </div>
             {% if r.frei %}
@@ -57,10 +58,10 @@
 
         <div class="mt-4 flex items-center justify-between gap-3">
             <a href="/neu/vermarktung/{{ r.e.id }}/bewerber/{{ lg_query }}" class="text-sm font-semibold fw-marke hover:fw-marke">
-                <i class="fa-solid fa-users mr-1"></i>{{ r.bewerbungen }} Bewerbung{{ r.bewerbungen|pluralize:",en" }}{% if r.bewerbungen %} vergleichen{% endif %}
+                {% zeichen 'person' klasse='mr-1' %}{{ r.bewerbungen }} Bewerbung{{ r.bewerbungen|pluralize:",en" }}{% if r.bewerbungen %} vergleichen{% endif %}
             </a>
             <div class="flex items-center gap-2">
-                <a href="/neu/vermarktung/{{ r.e.id }}/expose/" target="_blank" rel="noopener" class="text-xs font-semibold text-white fw-balken-voll hover:fw-balken-voll px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-pdf mr-1"></i>Exposé</a>
+                <a href="/neu/vermarktung/{{ r.e.id }}/expose/" target="_blank" rel="noopener" class="text-xs font-semibold text-white fw-balken-voll hover:fw-balken-voll px-3 py-1.5 rounded-lg">{% zeichen 'drucken' klasse='mr-1' %}Exposé</a>
                 <form method="post" action="/neu/objekte/{{ r.e.id }}/ausschreiben/">
                     {% csrf_token %}
                     <input type="hidden" name="ziel" value="aus">
@@ -74,7 +75,7 @@
 </div>
 {% else %}
 <div class="fw-card p-10 text-center">
-    <span class="w-14 h-14 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-bullhorn text-xl"></i></span>
+    <span class="w-14 h-14 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4">{% zeichen 'senden' klasse='text-xl' %}</span>
     <p class="font-semibold fw-ink">Kein Objekt in der Vermarktung</p>
     <p class="text-sm fw-faint mt-1">Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur Nachmietersuche ausschreiben.</p>
     <a href="/neu/mieterwechsel/" class="inline-block mt-4 text-sm font-semibold text-white fw-balken-voll hover:fw-balken-voll px-4 py-2 rounded-lg">Zum Mieterwechsel-Cockpit</a>

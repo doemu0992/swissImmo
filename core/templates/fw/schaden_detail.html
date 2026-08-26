@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Ticket #{{ t.id }} — swissImmo{% endblock %}
 
@@ -6,7 +7,7 @@
 
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
     <a href="/neu/schaeden/{{ lg_query }}">Schadensfälle</a>
-    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    {% zeichen 'weiter' %}
     <b>Schaden #{{ t.id }}</b>
 </nav>
 
@@ -16,7 +17,7 @@
    Zustands-Chips, darunter vier Kennzahlen, darunter die Reiter. {% endcomment %}
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
-        <div class="fw-akte-bild"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="fw-akte-bild">{% zeichen 'warnung' %}</div>
         <div style="min-width:0">
             <div class="fw-akte-typ">Schaden · SC-{{ t.id|stringformat:"05d" }}</div>
             <h1>{{ t.titel }}</h1>
@@ -37,13 +38,13 @@
             <div class="relative">
                 <button type="button" onclick="document.getElementById('sAktionen').classList.toggle('hidden'); event.stopPropagation();"
                         class="fw-btn" style="padding:6px 12px;font-size:12px">
-                    <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
+                    {% zeichen 'mehr' klasse='mr-1' %}Mehr
                 </button>
                 <div id="sAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
                     <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/"
                           onsubmit="return confirm('Schadensmeldung #{{ t.id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.');">
                         {% csrf_token %}
-                        <button class="fw-menuzeile crit"><i class="fa-solid fa-trash w-4"></i>Schadensmeldung löschen</button>
+                        <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}Schadensmeldung löschen</button>
                     </form>
                 </div>
             </div>
@@ -92,7 +93,7 @@
        gehoert zur Sache, nicht in eine Kopfzeile, die auf dem Handy hoch
        wird. `faelle/test_aktionen_vollstaendig.py` haelt ihn fest. {% endcomment %}
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-flag"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
             <span class="fw-t">Status</span>
             <span class="fw-neben">steuert Sidebar-Zähler und Auswertungen</span></div>
         <div style="padding:13px 15px">
@@ -131,7 +132,7 @@
             </dl>
             <!-- Raumbuch-Element verknüpfen -->
             <div class="mt-4 pt-4 border-t fw-linie">
-                <h4 class="text-xs font-bold uppercase tracking-wider fw-faint mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i>Betroffenes Element</h4>
+                <h4 class="text-xs font-bold uppercase tracking-wider fw-faint mb-2">{% zeichen 'dokument' klasse='mr-1' %}Betroffenes Element</h4>
                 {% if t.betroffene_einheit_id %}
                 <form method="post" action="/neu/schaeden/{{ t.id }}/ausstattung/" class="flex flex-col gap-2">
                     {% csrf_token %}
@@ -155,11 +156,11 @@
 <div data-panel="sc" id="sc-chronik" class="hidden">
     <!-- Antwort an Melder -->
     <div class="fw-card p-5 mb-4">
-        <h3 class="fw-t mb-3"><i class="fa-solid fa-reply fw-marke mr-1.5"></i>Antwort an Melder{% if melder_email %} <span class="text-xs font-normal fw-faint">({{ melder_email }})</span>{% endif %}</h3>
+        <h3 class="fw-t mb-3">{% zeichen 'senden' klasse='fw-marke mr-1.5' %}Antwort an Melder{% if melder_email %} <span class="text-xs font-normal fw-faint">({{ melder_email }})</span>{% endif %}</h3>
         <form method="post" action="/neu/schaeden/{{ t.id }}/antwort/">
             {% csrf_token %}
             <textarea name="text" rows="3" required placeholder="Ihre Nachricht an den Melder…" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3"></textarea>
-            <button class="fw-btn fw-primary"><i class="fa-solid fa-paper-plane mr-1.5"></i>Senden</button>
+            <button class="fw-btn fw-primary">{% zeichen 'senden' klasse='mr-1.5' %}Senden</button>
             {% if not melder_email %}<span class="text-xs fw-warnton ml-2">Kein E-Mail des Melders — wird nur im Verlauf gespeichert.</span>{% endif %}
         </form>
     </div>
@@ -177,7 +178,7 @@
                     <span class="fw-klein">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="text-sm fw-ink mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
-                {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="text-xs fw-marke hover:underline mt-1 inline-block"><i class="fa-solid fa-paperclip mr-1"></i>Anhang</a>{% endif %}
+                {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="text-xs fw-marke hover:underline mt-1 inline-block">{% zeichen 'hochladen' klasse='mr-1' %}Anhang</a>{% endif %}
             </div>
         </div>
         {% empty %}
@@ -202,7 +203,7 @@
         </div>
     </div>
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-coins"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'geld' %}</span>
             <span class="fw-t">Kosten je Auftrag</span></div>
         {% for a in auftraege %}
         <div class="fw-zeile">
@@ -230,7 +231,7 @@
 <!-- ===== REITER: FAELLE ===== -->
 <div data-panel="sc" id="sc-faelle" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-tree"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'filtern' %}</span>
             <span class="fw-t">Fälle zu diesem Schaden</span>
             <span class="fw-neben">{{ schaden_faelle|length }}</span></div>
         {% for f in schaden_faelle %}
@@ -255,7 +256,7 @@
     {% load chf %}
     <!-- Handwerker beauftragen (automatisiert) -->
     <div class="fw-flaeche rounded-xl border fw-linie-marke p-5 mb-4">
-        <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-screwdriver-wrench fw-marke mr-1.5"></i>Handwerker beauftragen</h3>
+        <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'arbeit' klasse='fw-marke mr-1.5' %}Handwerker beauftragen</h3>
         <p class="text-xs fw-faint mb-4">Vergibt den Auftrag, mailt Handwerker <span class="font-medium">und</span> Melder automatisch und setzt den Status auf „In Bearbeitung".</p>
         {% if handwerker_liste %}
         <form method="post" action="/neu/schaeden/{{ t.id }}/auftrag/" class="space-y-3">
@@ -274,7 +275,7 @@
                 <textarea name="auftragstext" rows="6" class="fw-feld w-full">{{ auftrag_vorschlag }}</textarea>
                 <p class="fw-klein mt-1">Vorlagen bearbeitest du unter <a href="/neu/vorlagen/" class="fw-link">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker").</p>
             </div>
-            <button class="fw-btn fw-primary"><i class="fa-solid fa-paper-plane mr-1.5"></i>Beauftragen & Mails senden</button>
+            <button class="fw-btn fw-primary">{% zeichen 'senden' klasse='mr-1.5' %}Beauftragen & Mails senden</button>
         </form>
         {% else %}
         <p class="text-sm fw-mutet">Noch keine Handwerker erfasst — lege zuerst unter <a href="/neu/dienstleister/" class="fw-link">Dienstleister</a> einen an.</p>
@@ -304,9 +305,9 @@
                     {% if a.bemerkung %}<div class="text-xs fw-mutet mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
-                    <a href="/neu/auftrag/{{ a.id }}/pdf/" target="_blank" rel="noopener" class="text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-file-pdf mr-1"></i>Auftrags-PDF</a>
+                    <a href="/neu/auftrag/{{ a.id }}/pdf/" target="_blank" rel="noopener" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'drucken' klasse='mr-1' %}Auftrags-PDF</a>
                     {% if a.kreditoren_rechnung_id %}
-                    <a href="/neu/kreditoren/" class="text-xs font-semibold fw-gut hover:underline"><i class="fa-solid fa-link mr-1"></i>Kreditor #{{ a.kreditoren_rechnung_id }}</a>
+                    <a href="/neu/kreditoren/" class="text-xs font-semibold fw-gut hover:underline">{% zeichen 'extern' klasse='mr-1' %}Kreditor #{{ a.kreditoren_rechnung_id }}</a>
                     {% endif %}
                 </div>
             </div>
@@ -335,7 +336,7 @@
         <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Noch kein Handwerker beauftragt.</div>
         {% endfor %}
     </div>
-    <p class="text-xs fw-faint mt-3"><i class="fa-solid fa-circle-info mr-1"></i>
+    <p class="text-xs fw-faint mt-3">{% zeichen 'hinweis' klasse='mr-1' %}
         Beim Anhaken von „Kreditorenrechnung erstellen" wird aus den effektiven Kosten eine Kreditorenrechnung (Status Neu)
         angelegt und mit diesem Auftrag verknüpft — Freigabe und Zahlung erfolgen im Kreditoren-Tab.</p>
 </div>
@@ -348,7 +349,7 @@
             {% csrf_token %}
             <input name="fotos" type="file" accept="image/*" multiple required
                    class="text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold">
-            <button class="fw-btn fw-primary"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
+            <button class="fw-btn fw-primary">{% zeichen 'hochladen' klasse='mr-1.5' %}Hochladen</button>
         </form>
     </div>
 
@@ -368,7 +369,7 @@
             <form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
                   onsubmit="return confirm('Foto löschen?');">
                 {% csrf_token %}
-                <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="Löschen">{% zeichen 'loeschen' %}</button>
             </form>
             {% if f.hochgeladen_am %}<span class="absolute bottom-1 left-1 text-[10px] fw-vorhang text-white px-1.5 py-0.5 rounded">{{ f.hochgeladen_am|date:"d.m.Y" }}</span>{% endif %}
         </div>

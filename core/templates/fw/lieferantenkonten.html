@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Lieferantenkonten — swissImmo{% endblock %}
 {% block content %}
@@ -39,7 +40,7 @@
                 <td class="px-5 py-3 text-right tabular-nums font-semibold {% if g.offen > 0 %}fw-kritisch{% else %}fw-faint{% endif %}">
                     {% if g.offen > 0 %}CHF {{ g.offen|chf }}{% else %}bezahlt{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-[10px] fw-faint"></i></td>
+                <td class="px-5 py-3 text-right">{% zeichen 'weiter' klasse='text-[10px] fw-faint' %}</td>
             </tr>
         {% empty %}
             <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">Keine Lieferantenkonten{% if filter_op %} mit offenem Saldo{% endif %}.</td></tr>

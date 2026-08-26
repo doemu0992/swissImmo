@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% include 'core/_passwort_shell_top.html' %}
 {% if validlink %}
 <h3 class="text-lg font-bold fw-strong mb-2">Neues Passwort setzen</h3>
@@ -21,7 +22,7 @@
 </form>
 {% else %}
 <div class="text-center py-4">
-    <span class="w-14 h-14 rounded-2xl fw-krit-flaeche fw-kritisch flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-link-slash text-xl"></i></span>
+    <span class="w-14 h-14 rounded-2xl fw-krit-flaeche fw-kritisch flex items-center justify-center mx-auto mb-4">{% zeichen 'extern' klasse='text-xl' %}</span>
     <h3 class="text-lg font-bold fw-strong mb-2">Link ungültig</h3>
     <p class="text-sm fw-mutet">Der Link wurde bereits verwendet oder ist abgelaufen. <a href="/passwort/vergessen/" class="fw-marke font-semibold">Neuen Link anfordern</a></p>
 </div>

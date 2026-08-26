@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Mieterkonten — swissImmo{% endblock %}
 {% block content %}
@@ -23,7 +24,7 @@
     <form method="get" class="relative sm:ml-auto w-full sm:w-auto">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         {% if filter_op %}<input type="hidden" name="filter" value="offen">{% endif %}
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs"></i>
+        {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
         <input type="search" name="q" value="{{ q }}" placeholder="Mieter oder Objekt suchen…"
                class="fw-flaeche border fw-linie pl-8 pr-3 py-1.5 rounded-lg text-xs w-full sm:w-64 focus:outline-none focus:ring-2 fw-fokusring">
     </form>
@@ -62,7 +63,7 @@
                     {% elif r.saldo < 0 %}CHF {{ r.saldo|chf }}<div class="text-[10px] font-normal fw-faint">Guthaben</div>
                     {% else %}ausgeglichen{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-[10px] fw-faint"></i></td>
+                <td class="px-5 py-3 text-right">{% zeichen 'weiter' klasse='text-[10px] fw-faint' %}</td>
             </tr>
         {% empty %}
             <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">Keine Mieterkonten{% if filter_op %} mit offenem Saldo{% endif %}.</td></tr>

@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% comment %}
 Einschreiben-Zeile für eine 257d-Frist-Pendenz: Track & Trace (Swiss Post) +
 «Zugang bestätigen» (strikte Empfangstheorie). Wird im Fristen-Center, auf der
@@ -12,12 +13,12 @@ Parameter (per {% include ... with %}):
     <a href="https://www.post.ch/swisspost-tracking?formattedParcelCodes={{ p.sendungsnummer|urlencode }}&p_language=de"
        target="_blank" rel="noopener"
        class="fw-link inline-flex items-center gap-1">
-        <i class="fa-solid fa-truck-fast"></i> Track &amp; Trace
+        {% zeichen 'lauf' %} Track &amp; Trace
         <span class="font-mono fw-klein">{{ p.sendungsnummer }}</span>
     </a>
     {% if p.zugang_am %}
     <span class="fw-chip fw-good">
-        <i class="fa-solid fa-circle-check"></i> Zugang {{ p.zugang_am|date:"d.m.Y" }}
+        {% zeichen 'gut' %} Zugang {{ p.zugang_am|date:"d.m.Y" }}
     </span>
     {% else %}
     <form method="post" action="/neu/fristen/verzug/{{ p.id }}/zugang/" class="inline-flex items-center gap-1.5">
@@ -29,12 +30,12 @@ Parameter (per {% include ... with %}):
                class="fw-feld">
         <button type="submit"
                 class="fw-btn">
-            <i class="fa-solid fa-check"></i> Zugang bestätigen
+            {% zeichen 'speichern' %} Zugang bestätigen
         </button>
     </form>
     {% endif %}
     <details class="text-[11px]">
-        <summary class="fw-link cursor-pointer select-none"><i class="fa-solid fa-pen-to-square mr-0.5"></i>Nummer korrigieren</summary>
+        <summary class="fw-link cursor-pointer select-none">{% zeichen 'bearbeiten' klasse='mr-0.5' %}Nummer korrigieren</summary>
         <form method="post" action="/neu/fristen/verzug/{{ p.id }}/sendung/" class="mt-1.5 flex items-center gap-1.5 flex-wrap">
             {% csrf_token %}
             {% if zugang_next %}<input type="hidden" name="next" value="{{ zugang_next }}">{% endif %}
@@ -45,7 +46,7 @@ Parameter (per {% include ... with %}):
                    title="Versanddatum" class="fw-feld">
             {% endif %}
             <button type="submit" class="fw-btn fw-primary">
-                <i class="fa-solid fa-check"></i> Speichern
+                {% zeichen 'speichern' %} Speichern
             </button>
         </form>
     </details>

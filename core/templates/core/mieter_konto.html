@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Mieterkonto — Mieterportal{% endblock %}
 {% block brand_icon %}fa-scale-balanced{% endblock %}
@@ -12,22 +13,22 @@
             <p class="fw-mutet mt-1">Alle Rechnungen und Ihre Zahlungen im Überblick.</p>
         </div>
         <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="fw-flaeche border fw-linie hover:fw-linie-marke fw-ink text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2">
-            <i class="fa-solid fa-file-pdf fw-kritisch"></i> Kontoauszug (PDF)
+            {% zeichen 'drucken' klasse='fw-kritisch' %} Kontoauszug (PDF)
         </a>
     </div>
 
     <!-- Saldo-Karte, laienverständlich -->
     <div class="rounded-2xl p-5 mb-6 border {% if endsaldo > 0 %}fw-krit-flaeche fw-linie-krit{% elif endsaldo < 0 %}fw-gut-flaeche fw-linie-gut{% else %}fw-gut-flaeche fw-linie-gut{% endif %}">
         {% if endsaldo > 0 %}
-            <div class="text-sm font-bold fw-kritisch"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>Offener Betrag</div>
+            <div class="text-sm font-bold fw-kritisch">{% zeichen 'kritisch' klasse='mr-1.5' %}Offener Betrag</div>
             <div class="text-3xl font-black fw-kritisch mt-1">CHF {{ saldo_abs|chf }}</div>
             <p class="text-sm fw-kritisch mt-1">Bitte begleichen Sie den offenen Betrag — den QR-Einzahlschein finden Sie unter «Rechnungen».</p>
         {% elif endsaldo < 0 %}
-            <div class="text-sm font-bold fw-gut"><i class="fa-solid fa-circle-check mr-1.5"></i>Guthaben</div>
+            <div class="text-sm font-bold fw-gut">{% zeichen 'gut' klasse='mr-1.5' %}Guthaben</div>
             <div class="text-3xl font-black fw-gut mt-1">CHF {{ saldo_abs|chf }}</div>
             <p class="text-sm fw-gut mt-1">Sie haben ein Guthaben — es wird mit der nächsten Miete verrechnet oder zurückerstattet.</p>
         {% else %}
-            <div class="text-sm font-bold fw-gut"><i class="fa-solid fa-circle-check mr-1.5"></i>Alles bezahlt</div>
+            <div class="text-sm font-bold fw-gut">{% zeichen 'gut' klasse='mr-1.5' %}Alles bezahlt</div>
             <div class="text-3xl font-black fw-gut mt-1">CHF 0.00</div>
             <p class="text-sm fw-gut mt-1">Ihr Konto ist ausgeglichen — vielen Dank.</p>
         {% endif %}

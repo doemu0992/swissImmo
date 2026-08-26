@@ -1,14 +1,15 @@
+{% load zeichen %}
 {% comment %}Leerzustand Debitoren im Mockup-Stil: "Bezahlt"-Kopf (gruener Haken)
 + "Keine offenen Posten". Genutzt in debitoren.html (Desktop + Mobil), wenn
 ohne Filter keine Rechnungen vorhanden sind.{% endcomment %}
 <div class="px-5 py-4">
     <div class="flex items-center gap-2.5 mb-2">
-        <span class="w-7 h-7 rounded-lg fw-gut-flaeche fw-gut grid place-items-center shrink-0"><i class="fa-solid fa-check text-xs"></i></span>
+        <span class="w-7 h-7 rounded-lg fw-gut-flaeche fw-gut grid place-items-center shrink-0">{% zeichen 'gut' klasse='text-xs' %}</span>
         <span class="font-bold fw-strong">Bezahlt</span>
     </div>
     <div class="py-8 text-center">
         <span class="w-14 h-14 rounded-2xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4">
-            <i class="fa-solid fa-inbox text-xl"></i>
+            {% zeichen 'wartet' klasse='text-xl' %}
         </span>
         <p class="font-semibold fw-strong">Keine offenen Posten</p>
         <p class="text-sm fw-faint mt-1 max-w-sm mx-auto">Alle Zahlungen in dieser Kategorie sind eingegangen.</p>

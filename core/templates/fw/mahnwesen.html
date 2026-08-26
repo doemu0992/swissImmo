@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Mahnwesen — swissImmo{% endblock %}
 
@@ -10,13 +11,13 @@
         <p>Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
             {% if aktive_lg %}· gefiltert auf <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
             <a href="/neu/mahnwesen/" class="text-xs fw-faint hover:fw-marke">× aufheben</a>{% endif %}</p>
-        <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="inline-block mt-2 text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-chart-column mr-1"></i>Altersstruktur (OP-Aging) ansehen</a>
+        <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="inline-block mt-2 text-xs font-semibold fw-marke hover:underline">{% zeichen 'bericht' klasse='mr-1' %}Altersstruktur (OP-Aging) ansehen</a>
     </div>
     {% if anzahl_total %}
     <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt.');" class="shrink-0 text-right">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <button type="submit" class="fw-btn fw-primary" style="white-space:nowrap"><i class="fa-solid fa-bolt"></i>Mahnlauf ausführen</button>
+        <button type="submit" class="fw-btn fw-primary" style="white-space:nowrap">{% zeichen 'kritisch' %}Mahnlauf ausführen</button>
         <label class="flex items-center gap-1.5 text-[11px] fw-mutet mt-1.5 justify-end"><input type="checkbox" name="mit_zins" class="fw-akzent">Verzugszins (5%) berechnen</label>
         <label class="flex items-center gap-1.5 text-[11px] fw-mutet mt-1 justify-end"><input type="checkbox" name="kein_versand" class="fw-akzent">Testlauf: nur erstellen, keine E-Mails versenden</label>
     </form>
@@ -26,7 +27,7 @@
 <!-- Stufen-KPI -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-envelope-open-text"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0">{% zeichen 'senden' %}</div>
         <div><div class="text-2xl font-bold fw-kritisch">CHF {{ total|chf }}</div><div class="text-sm fw-mutet">Total überfällig</div></div>
     </div>
     {% for s in mahnstufen %}
@@ -88,7 +89,7 @@
                     {% if row.mahn_url %}
                     <a href="{{ row.mahn_url }}" target="_blank" rel="noopener"
                        class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                        <i class="fa-solid fa-file-pdf"></i> PDF
+                        {% zeichen 'drucken' %} PDF
                     </a>
                     <form method="post" action="/neu/mahnwesen/erfassen/" class="inline">
                         {% csrf_token %}
@@ -97,7 +98,7 @@
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                         <button type="submit" title="{{ row.stufe.label }} in Historie erfassen (inkl. Gebühr)"
                            class="inline-flex items-center gap-1.5 fw-balken-voll hover:fw-balken-voll text-xs font-semibold px-3 py-1.5 rounded-lg">
-                            <i class="fa-solid fa-clock-rotate-left"></i> Erfassen
+                            {% zeichen 'verlauf' %} Erfassen
                         </button>
                     </form>
                     {% else %}<span class="fw-faint text-xs">kein Vertrag</span>{% endif %}
@@ -106,7 +107,7 @@
             </tr>
             {% empty %}
             <tr><td colspan="7" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
+                <div class="w-10 h-10 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'gut' %}</div>
                 <p class="text-sm font-medium fw-ink">Keine offenen Mahnfälle</p>
                 <p class="text-xs fw-faint mt-1">{% if stufe_filter %}Keine Position in dieser Stufe.{% else %}Alle Forderungen sind aktuell oder noch nicht mahnfällig.{% endif %}</p>
             </td></tr>
@@ -127,7 +128,7 @@
 </div>
 
 <p class="text-xs fw-faint mt-3">
-    <i class="fa-solid fa-circle-info mr-1"></i>
+    {% zeichen 'hinweis' klasse='mr-1' %}
     Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. „PDF" öffnet die fertige Mahnung
     (inkl. QR-Rechnung und — ab Stufe 3 — Kündigungsandrohung nach Art. 257d OR). „Erfassen" schreibt den
     Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr (Stufe 2: CHF 20, Stufe 3: CHF 40).
@@ -136,7 +137,7 @@
 <!-- Mahn-Historie (revisionssicher) -->
 <div class="fw-card overflow-hidden mt-6">
     <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">
-        <i class="fa-solid fa-clock-rotate-left fw-faint mr-1.5"></i>Mahn-Historie
+        {% zeichen 'verlauf' klasse='fw-faint mr-1.5' %}Mahn-Historie
     </div>
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">

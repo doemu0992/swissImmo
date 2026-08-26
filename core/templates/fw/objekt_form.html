@@ -1,13 +1,14 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% load l10n %}
 {% block title %}{% if ist_neu %}Neues Objekt{% else %}{{ e.bezeichnung }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/objekte/{{ lg_query }}" class="hover:fw-marke">Objekte</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     {% if not ist_neu %}<a href="/neu/objekte/{{ e.id }}/" class="hover:fw-marke">{{ e.bezeichnung }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>{% endif %}
+    {% zeichen 'weiter' klasse='text-[9px]' %}{% endif %}
     <span class="fw-mutet font-medium">{% if ist_neu %}Neu{% else %}Bearbeiten{% endif %}</span>
 </nav>
 
@@ -120,9 +121,9 @@
 </div>
         </div>
         {% else %}
-        <div class="fw-flaeche2 border fw-linie rounded-lg px-4 py-3 text-[12.5px] fw-mutet"><i class="fa-solid fa-circle-info fw-marke mr-1"></i>Noch kein Sollmietzins erfasst.</div>
+        <div class="fw-flaeche2 border fw-linie rounded-lg px-4 py-3 text-[12.5px] fw-mutet">{% zeichen 'hinweis' klasse='fw-marke mr-1' %}Noch kein Sollmietzins erfasst.</div>
         {% endif %}
-        <a href="/neu/objekte/{{ e.id }}/?tab=mietzins" class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg"><i class="fa-solid fa-layer-group"></i>Mietzins verwalten (Gratismonate, Anpassungen)</a>
+        <a href="/neu/objekte/{{ e.id }}/?tab=mietzins" class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg">{% zeichen 'mehr' %}Mietzins verwalten (Gratismonate, Anpassungen)</a>
         {% endif %}
 
         <div><label class="block text-xs font-semibold fw-mutet mb-1">Interne Notizen</label>
@@ -131,7 +132,7 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Speichern
+            {% zeichen 'speichern' klasse='mr-1.5' %}Speichern
         </button>
         <a href="{% if ist_neu %}/neu/objekte/{% else %}/neu/objekte/{{ e.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>

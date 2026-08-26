@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Lebensdauertabelle — swissImmo{% endblock %}
 {% block content %}
 
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/ersatzplanung/" class="hover:fw-marke">Ersatzplanung</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Lebensdauertabelle</span>
 </nav>
 
@@ -16,13 +17,13 @@
     <form method="post" action="/neu/lebensdauer/">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="seed">
-        <button class="fw-btn"><i class="fa-solid fa-rotate"></i>Standardwerte ergänzen</button>
+        <button class="fw-btn">{% zeichen 'lauf' %}Standardwerte ergänzen</button>
     </form>
 </div>
 
 <!-- Neue Kategorie -->
 <div class="fw-flaeche rounded-xl border fw-linie-marke p-5 mb-5">
-    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-plus fw-marke mr-1.5"></i>Kategorie hinzufügen</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'neu' klasse='fw-marke mr-1.5' %}Kategorie hinzufügen</h3>
     <form method="post" action="/neu/lebensdauer/" class="flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
@@ -32,7 +33,7 @@
             <input name="jahre" inputmode="numeric" required class="w-24 fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="flex-1 min-w-[160px]"><label class="block text-xs font-semibold fw-mutet mb-1">Bemerkung</label>
             <input name="bemerkung" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Hinzufügen</button>
+        <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Hinzufügen</button>
     </form>
 </div>
 
@@ -56,7 +57,7 @@
                     <td class="px-5 py-2.5"><input name="jahre_{{ r.id }}" value="{{ r.jahre }}" inputmode="numeric" class="w-24 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right"></td>
                     <td class="px-5 py-2.5"><input name="bemerkung_{{ r.id }}" value="{{ r.bemerkung }}" class="w-full fw-flaeche2 rounded-lg text-sm px-2 py-1.5"></td>
                     <td class="px-5 py-2.5 text-right">
-                        <button type="submit" form="del_{{ r.id }}" class="fw-faint hover:fw-kritisch text-xs" title="Löschen" onclick="return confirm('Kategorie «{{ r.kategorie|escapejs }}» löschen?');"><i class="fa-solid fa-trash"></i></button>
+                        <button type="submit" form="del_{{ r.id }}" class="fw-faint hover:fw-kritisch text-xs" title="Löschen" onclick="return confirm('Kategorie «{{ r.kategorie|escapejs }}» löschen?');">{% zeichen 'loeschen' %}</button>
                     </td>
                 </tr>
                 {% empty %}
@@ -67,7 +68,7 @@
         </div>
         {% if rows %}
         <div class="px-5 py-3 border-t fw-linie flex justify-end">
-            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2 rounded-lg"><i class="fa-solid fa-floppy-disk mr-1.5"></i>Änderungen speichern</button>
+            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2 rounded-lg">{% zeichen 'speichern' klasse='mr-1.5' %}Änderungen speichern</button>
         </div>
         {% endif %}
     </div>
@@ -79,7 +80,7 @@
 {% endfor %}
 
 <p class="text-xs fw-faint mt-4">
-    <i class="fa-solid fa-scale-balanced mr-1"></i>
+    {% zeichen 'recht' klasse='mr-1' %}
     Bei mieterverursachten Schäden zahlt der Mieter nur den <span class="font-semibold">Zeitwert</span> (Restnutzungsdauer / Lebensdauer × Neuwert bzw. Reparaturkosten). Ein vollständig abgeschriebenes Element ist für den Mieter kostenlos.
 </p>
 {% endblock %}

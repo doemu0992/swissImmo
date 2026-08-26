@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% block title %}Meine Daten — Mieterportal{% endblock %}
 {% block brand_icon %}fa-id-card{% endblock %}
 {% block brand_mobile %}Meine Daten{% endblock %}
@@ -41,7 +42,7 @@
         </div>
 
         <button type="submit" class="fw-btn fw-primary text-sm font-bold px-5 py-3 rounded-xl">
-            <i class="fa-solid fa-check mr-1.5"></i>Speichern &amp; melden
+            {% zeichen 'speichern' klasse='mr-1.5' %}Speichern &amp; melden
         </button>
     </form>
 {% endblock %}

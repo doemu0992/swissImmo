@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Kontenplan & Saldenliste — swissImmo{% endblock %}
 
@@ -32,7 +33,7 @@
     <div class="fw-flaeche rounded-xl border p-5 {% if differenz %}fw-linie-krit fw-krit-flaeche{% else %}fw-linie-gut{% endif %}">
         <div class="text-2xl font-bold tabular-nums {% if differenz %}fw-kritisch{% else %}fw-gut{% endif %}">CHF {{ differenz|chf }}</div>
         <div class="text-sm fw-mutet">
-            {% if differenz %}<i class="fa-solid fa-triangle-exclamation mr-1"></i>Differenz — das Journal ist nicht ausgeglichen{% else %}<i class="fa-solid fa-check mr-1"></i>Soll = Haben{% endif %}
+            {% if differenz %}{% zeichen 'warnung' klasse='mr-1' %}Differenz — das Journal ist nicht ausgeglichen{% else %}{% zeichen 'gut' klasse='mr-1' %}Soll = Haben{% endif %}
         </div>
     </div>
 </div>
@@ -41,7 +42,7 @@
 <div class="mb-6">
     <button onclick="document.getElementById('kontoform').classList.toggle('hidden')"
             class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
-        <i class="fa-solid fa-plus mr-1.5"></i>Neues Konto
+        {% zeichen 'neu' klasse='mr-1.5' %}Neues Konto
     </button>
 </div>
 <div id="kontoform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
@@ -68,7 +69,7 @@
                 HNK-relevant (fliesst in die Nebenkostenabrechnung)
             </label>
             <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
-                <i class="fa-solid fa-check mr-1.5"></i>Anlegen
+                {% zeichen 'gut' klasse='mr-1.5' %}Anlegen
             </button>
         </div>
     </form>
@@ -109,7 +110,7 @@
                     <button onclick="document.getElementById('edit-{{ z.k.id }}').classList.toggle('hidden')"
                             title="Konto bearbeiten"
                             class="text-xs font-semibold fw-mutet hover:fw-marke">
-                        <i class="fa-solid fa-pen"></i>
+                        {% zeichen 'bearbeiten' %}
                     </button>
                     {% endif %}
                 </td>
@@ -158,7 +159,7 @@
 </div>
 
 <p class="text-xs fw-faint mt-4">
-    <i class="fa-solid fa-circle-info mr-1"></i>
+    {% zeichen 'hinweis' klasse='mr-1' %}
     Konten ohne Bewegung sind ausgegraut, bleiben aber sichtbar — anders als in Bilanz und
     Erfolgsrechnung, die nur bebuchte Konten zeigen. Klick auf die Nummer öffnet das Kontoblatt.
 </p>

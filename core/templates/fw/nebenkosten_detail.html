@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}{{ p.bezeichnung }} — swissImmo{% endblock %}
 
@@ -6,14 +7,14 @@
 
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/nebenkosten/{{ lg_query }}" class="hover:fw-marke">Nebenkosten</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">{{ p.bezeichnung }}</span>
 </nav>
 
 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
     <div class="flex items-center gap-4">
         <div class="w-14 h-14 rounded-xl fw-btn fw-primary flex items-center justify-center text-xl shadow-lg fw-schatten-marke shrink-0">
-            <i class="fa-solid fa-file-invoice-dollar"></i>
+            {% zeichen 'rechnung' %}
         </div>
         <div>
             <h1 class="text-2xl font-extrabold fw-strong">{{ p.bezeichnung }}</h1>
@@ -24,13 +25,13 @@
         {% if hkvo_angewendet %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-info-flaeche fw-info" title="Verbrauchsabhängige Heizkostenabrechnung angewendet">HKVO ✓</span>{% endif %}
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/versand/" title="Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF">
             {% csrf_token %}
-            <button class="text-sm font-semibold fw-flaeche border fw-linie-marke fw-marke hover:fw-markenflaeche px-4 py-1.5 rounded-lg"><i class="fa-solid fa-file-arrow-down mr-1"></i>Abrechnungen erstellen &amp; ablegen</button>
+            <button class="text-sm font-semibold fw-flaeche border fw-linie-marke fw-marke hover:fw-markenflaeche px-4 py-1.5 rounded-lg">{% zeichen 'herunterladen' klasse='mr-1' %}Abrechnungen erstellen &amp; ablegen</button>
         </form>
         {% if p.abgeschlossen %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-gut-flaeche fw-gut">Abgeschlossen</span>
         {% else %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-warn-flaeche fw-warnton">Offen</span>
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" onsubmit="return confirm('Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen.');">
             {% csrf_token %}
-            <button class="text-sm font-semibold fw-btn fw-primary px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Verbuchen</button>
+            <button class="text-sm font-semibold fw-btn fw-primary px-4 py-1.5 rounded-lg">{% zeichen 'gut' klasse='mr-1' %}Verbuchen</button>
         </form>
         {% endif %}
     </div>
@@ -39,7 +40,7 @@
 {% if warnungen %}
 <div class="mt-6 rounded-xl border fw-linie-warn fw-warn-flaeche p-4">
     <div class="flex items-start gap-2 fw-warnton">
-        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+        {% zeichen 'warnung' klasse='mt-0.5' %}
         <div class="text-sm">
             {% for w in warnungen %}<div>{{ w }}</div>{% endfor %}
         </div>
@@ -90,7 +91,7 @@
         {% endfor %}
         </div>
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
-            <i class="fa-solid fa-check mr-1.5"></i>Akonto anpassen
+            {% zeichen 'speichern' klasse='mr-1.5' %}Akonto anpassen
         </button>
         <p class="text-xs fw-marke mt-2">Übernimmt die neue Akonto-Höhe in den Vertrag (künftige Sollstellungen). Eine formelle Mitteilung an den Mieter ist separat zu versenden.</p>
     </form>

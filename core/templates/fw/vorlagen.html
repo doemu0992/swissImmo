@@ -1,16 +1,17 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Vorlagen — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <h1>Vorlagen</h1>
     <div class="flex items-center gap-2">
-        <a href="/neu/vorlagen/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Vorlage erstellen</a>
+        <a href="/neu/vorlagen/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} Vorlage erstellen</a>
         <div class="relative" data-menu>
-            <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+            <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
                 <form method="post" action="/neu/vorlagen/standard/">
                     {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2" title="Legt fehlende Standardvorlagen mit vorbelegtem Text an"><i class="fa-solid fa-wand-magic-sparkles w-4 fw-marke"></i>Standardvorlagen erstellen</button>
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2" title="Legt fehlende Standardvorlagen mit vorbelegtem Text an">{% zeichen 'einstellungen' klasse='w-4 fw-marke' %}Standardvorlagen erstellen</button>
                 </form>
             </div>
         </div>
@@ -27,26 +28,26 @@
             <span class="px-2.5 py-1 rounded-md text-[11px] font-semibold fw-markenflaeche fw-marke">{{ v.get_kategorie_display }}</span>
             <form method="post" action="/neu/vorlagen/{{ v.id }}/loeschen/" onsubmit="return confirm('Vorlage löschen?');">
                 {% csrf_token %}
-                <button title="Vorlage löschen" class="fw-faint hover:fw-kritisch text-xs"><i class="fa-solid fa-trash"></i></button>
+                <button title="Vorlage löschen" class="fw-faint hover:fw-kritisch text-xs">{% zeichen 'loeschen' %}</button>
             </form>
         </div>
         <h3 class="font-bold fw-strong text-sm mb-1">{{ v.name }}</h3>
         {% if v.betreff %}<p class="text-xs fw-mutet mb-1">Betreff: {{ v.betreff }}</p>{% endif %}
         <p class="text-xs fw-faint line-clamp-3 flex-1">{{ v.inhalt|truncatechars:120 }}</p>
-        <a href="/neu/vorlagen/{{ v.id }}/bearbeiten/" class="mt-3 text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-pen text-[10px] mr-1"></i>Bearbeiten</a>
+        <a href="/neu/vorlagen/{{ v.id }}/bearbeiten/" class="mt-3 text-xs font-semibold fw-marke hover:underline">{% zeichen 'bearbeiten' klasse='text-[10px] mr-1' %}Bearbeiten</a>
     </div>
     {% endfor %}
 </div>
 {% else %}
 <div class="fw-card p-10 text-center max-w-2xl">
-    <div class="w-14 h-14 rounded-2xl fw-markenflaeche fw-marke flex items-center justify-center text-xl mx-auto mb-3"><i class="fa-solid fa-file-lines"></i></div>
+    <div class="w-14 h-14 rounded-2xl fw-markenflaeche fw-marke flex items-center justify-center text-xl mx-auto mb-3">{% zeichen 'dokument' %}</div>
     <p class="text-sm fw-mutet mb-4">Noch keine Vorlagen. Lege mit einem Klick die vorbelegten Standardvorlagen an — oder erstelle eine eigene.</p>
     <div class="flex items-center justify-center gap-2">
         <form method="post" action="/neu/vorlagen/standard/">
             {% csrf_token %}
-            <button class="inline-block fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Standardvorlagen erstellen</button>
+            <button class="inline-block fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% zeichen 'einstellungen' klasse='mr-1.5' %}Standardvorlagen erstellen</button>
         </form>
-        <a href="/neu/vorlagen/neu/" class="inline-block fw-flaeche border fw-linie fw-ink text-sm font-semibold px-4 py-2 rounded-lg hover:fw-linie-marke"><i class="fa-solid fa-plus mr-1.5"></i>Eigene Vorlage</a>
+        <a href="/neu/vorlagen/neu/" class="inline-block fw-flaeche border fw-linie fw-ink text-sm font-semibold px-4 py-2 rounded-lg hover:fw-linie-marke">{% zeichen 'neu' klasse='mr-1.5' %}Eigene Vorlage</a>
     </div>
 </div>
 {% endif %}

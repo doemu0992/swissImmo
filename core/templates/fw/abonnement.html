@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Abonnement · swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -55,10 +56,10 @@
 
             <ul class="mt-5 space-y-2">
                 {% for f in p.features %}
-                <li class="flex items-start gap-2 text-sm fw-mutet"><i class="fa-solid fa-check fw-gut mt-0.5"></i> {{ f }}</li>
+                <li class="flex items-start gap-2 text-sm fw-mutet">{% zeichen 'gut' klasse='fw-gut mt-0.5' %} {{ f }}</li>
                 {% endfor %}
                 {% for f in p.nicht %}
-                <li class="flex items-start gap-2 text-sm fw-faint"><i class="fa-solid fa-xmark mt-0.5"></i> {{ f }}</li>
+                <li class="flex items-start gap-2 text-sm fw-faint">{% zeichen 'mehr' klasse='mt-0.5' %} {{ f }}</li>
                 {% endfor %}
             </ul>
         </div>
@@ -67,7 +68,7 @@
 </div>
 
 <div class="mt-6 fw-card p-5">
-    <h3 class="font-bold fw-strong flex items-center gap-2 mb-3"><i class="fa-solid fa-puzzle-piece fw-faint"></i> Add-ons</h3>
+    <h3 class="font-bold fw-strong flex items-center gap-2 mb-3">{% zeichen 'hinweis' klasse='fw-faint' %} Add-ons</h3>
     <div class="grid sm:grid-cols-3 gap-3 text-sm">
         <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">Datenmigration</div><div class="fw-mutet text-xs mt-1">Einmalig CHF 200–800, schmerzloser Umzug bestehender Mandate.</div></div>
         <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">E-Signaturen</div><div class="fw-mutet text-xs mt-1">CHF 1.50/Signatur (in Premium inkl. Kontingent).</div></div>

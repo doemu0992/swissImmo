@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}MWST-Abrechnung — swissImmo{% endblock %}
 {% block content %}
@@ -22,7 +23,7 @@
         </select></div>
     <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Anzeigen</button>
     <a href="/neu/mwst/estv-export/?jahr={{ jahr }}&quartal={{ quartal }}" class="fw-flaeche border fw-linie hover:fw-linie-marke fw-mutet hover:fw-marke text-sm font-semibold px-4 py-2 rounded-lg">
-        <i class="fa-solid fa-file-csv mr-1.5"></i>ESTV-Export (CSV)
+        {% zeichen 'herunterladen' klasse='mr-1.5' %}ESTV-Export (CSV)
     </a>
 </form>
 
@@ -55,7 +56,7 @@
         <!-- Abrechnung verbuchen: 2200 ausbuchen (sonst wächst das Konto endlos) -->
         <div class="px-5 py-3 border-t fw-linie flex items-center justify-between gap-3 flex-wrap">
             {% if mwst_verbucht %}
-            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Periode verbucht</span>
+            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'gut' klasse='mr-1' %}Periode verbucht</span>
             <span class="text-xs fw-faint">Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 (ESTV) bis zur Zahlung.</span>
             {% else %}
             <span class="text-xs fw-mutet">Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV){% if mwst_methode == 'saldo' %}, Saldosatz-Vorteil als Ertrag{% endif %}. Die Zahlung selbst wird später über den Bankabgleich gebucht.</span>
@@ -69,7 +70,7 @@
                 {% endcomment %}
                 {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                 <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
-                    <i class="fa-solid fa-check-double mr-1.5"></i>Abrechnung verbuchen
+                    {% zeichen 'gut' klasse='mr-1.5' %}Abrechnung verbuchen
                 </button>
             </form>
             {% endif %}
@@ -99,7 +100,7 @@
 
 <!-- MWST-Einstellungen -->
 <details class="max-w-xl mt-4">
-    <summary class="cursor-pointer text-sm font-semibold fw-mutet hover:fw-marke"><i class="fa-solid fa-gear mr-1.5"></i>MWST-Einstellungen (Methode / Satz / Nummer)</summary>
+    <summary class="cursor-pointer text-sm font-semibold fw-mutet hover:fw-marke">{% zeichen 'einstellungen' klasse='mr-1.5' %}MWST-Einstellungen (Methode / Satz / Nummer)</summary>
     <form method="post" action="/neu/mwst/einstellungen/" class="fw-card p-5 mt-2 space-y-3">
         {% csrf_token %}
         <input type="hidden" name="zurueck" value="/neu/mwst/?jahr={{ jahr }}&quartal={{ quartal }}">

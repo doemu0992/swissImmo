@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% block title %}Meine Meldungen — Mieterportal{% endblock %}
 {% block brand_icon %}fa-screwdriver-wrench{% endblock %}
 {% block brand_mobile %}Meldungen{% endblock %}
@@ -11,7 +12,7 @@
             <p class="fw-mutet mt-1">Status und Verlauf Ihrer gemeldeten Schäden.</p>
         </div>
         <a href="/mieter/schaden/neu/" class="shrink-0 fw-balken-voll hover:fw-balken-voll transition-colors text-white text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2">
-            <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Neue Meldung</span>
+            {% zeichen 'neu' %} <span class="hidden sm:inline">Neue Meldung</span>
         </a>
     </div>
 
@@ -33,18 +34,18 @@
             <p class="text-sm fw-mutet mt-2 line-clamp-2">{{ row.t.beschreibung|truncatechars:120 }}</p>
             {% endif %}
             <div class="mt-3 text-xs font-semibold fw-marke flex items-center gap-1.5">
-                Öffnen &amp; antworten <i class="fa-solid fa-arrow-right"></i>
+                Öffnen &amp; antworten {% zeichen 'weiter' %}
             </div>
         </a>
         {% endfor %}
     </div>
     {% else %}
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
-        <span class="w-14 h-14 rounded-2xl fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-clipboard-check text-xl"></i></span>
+        <span class="w-14 h-14 rounded-2xl fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-4">{% zeichen 'gut' klasse='text-xl' %}</span>
         <p class="font-semibold fw-ink">Noch keine Meldungen</p>
         <p class="text-sm fw-faint mt-1 mb-5">Sie haben bisher keinen Schaden gemeldet.</p>
         <a href="/mieter/schaden/neu/" class="inline-flex items-center gap-2 fw-balken-voll hover:fw-balken-voll transition-colors text-white text-sm font-bold px-5 py-2.5 rounded-xl">
-            <i class="fa-solid fa-plus"></i> Schaden melden
+            {% zeichen 'neu' %} Schaden melden
         </a>
     </div>
     {% endif %}

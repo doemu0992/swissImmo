@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% block title %}Schaden melden — Mieterportal{% endblock %}
 {% block brand_icon %}fa-triangle-exclamation{% endblock %}
 {% block brand_mobile %}Schaden melden{% endblock %}
@@ -44,13 +45,13 @@
                 <p class="text-xs fw-faint mt-1">Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen.</p>
             </div>
             <button type="submit" class="w-full sm:w-auto fw-balken-voll hover:fw-balken-voll transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg fw-schatten-marke flex items-center justify-center gap-2">
-                <i class="fa-solid fa-paper-plane"></i> Meldung senden
+                {% zeichen 'senden' %} Meldung senden
             </button>
         </form>
     </div>
     {% else %}
     <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 flex items-start gap-3">
-        <i class="fa-solid fa-circle-info mt-0.5"></i>
+        {% zeichen 'hinweis' klasse='mt-0.5' %}
         <p class="text-sm">Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</p>
     </div>
     {% endif %}

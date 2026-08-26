@@ -154,4 +154,76 @@ class TabelleUndSpriteTest(SimpleTestCase):
 
     def test_die_offene_liste_wird_ueberhaupt_gefunden(self):
         """Gegenprobe: Eine leere Menge machte die zwei Prüfungen trivial."""
-        self.assertGreaterEqual(len(_offene_zeichen()), 6)
+        # Drei seit E2.40: `stamp`, `rotate-left` und `bell` sind
+        # entschieden und aus der Liste gestrichen.
+        self.assertGreaterEqual(len(_offene_zeichen()), 3)
+
+    def test_kein_zeichen_steht_in_beiden_listen(self):
+        """Entschieden UND offen zugleich geht nicht.
+
+        E2.40 entschied `stamp`, `rotate-left` und `bell` (zu `freigeben`,
+        `storno`, `meldung`), liess ihre Einträge unter »Noch ohne
+        Bedeutung« aber stehen — samt der Begründung, warum die Bedeutung
+        noch fehle. Das Dokument behauptete und widerlegte dieselbe Sache.
+
+        Die bestehenden Prüfungen blieben grün: Die eine fragt, ob jeder
+        Name irgendwo im Dokument vorkommt, die andere liest nur bis zur
+        offenen Liste. Keine sieht, dass ein Name in beiden steht.
+        """
+        doppelt = _aus_tabelle() & _offene_zeichen()
+        self.assertEqual(
+            sorted(doppelt), [],
+            f'Diese Zeichen stehen als entschieden UND als offen in '
+            f'docs/ZEICHEN.md: {sorted(doppelt)}. Wer entscheidet, streicht '
+            f'den alten Eintrag.')
+
+
+class SchliessenKnoepfeTest(SimpleTestCase):
+    """Ein Knopf zum Schliessen darf nicht aussehen wie etwas anderes.
+
+    DER BEFUND
+
+    Die Umstellung in E2.39 setzte `xmark` auf vier Schliessen-Knöpfen auf
+    `mehr` (»Weitere Handlungen«), und E2.38 hatte »Menü schliessen« in
+    `base.html` auf `loeschen` gesetzt — einen Papierkorb. Ein Knopf, der
+    aussieht, als lösche er etwas, ist schlimmer als gar kein Zeichen: Er
+    wird gelesen, bevor der Text daneben gelesen wird, und hier steht oft
+    gar kein Text daneben.
+
+    `mehr` hätte damit an zwei Orten Verschiedenes geheissen — genau der
+    Fehler, gegen den `docs/ZEICHEN.md` geschrieben ist.
+
+    WARUM AM MARKUP UND NICHT AM QUELLTEXT
+
+    Geprüft wird die Beschriftung neben dem Zeichen (`title`, `aria-label`),
+    nicht ein Vorkommen im Code. Wer einen neuen Schliessen-Knopf baut und
+    das falsche Zeichen wählt, wird hier rot — unabhängig davon, wie die
+    Zeile sonst aussieht.
+    """
+
+    #: Zeichen, die auf einem Schliessen-Knopf nichts zu suchen haben.
+    FALSCH = ('mehr', 'loeschen', 'zurueck')
+
+    def _knoepfe(self):
+        for ordner in ('core/templates', 'templates'):
+            for pfad in sorted((WURZEL / ordner).rglob('*.html')):
+                for nr, zeile in enumerate(
+                        pfad.read_text(encoding='utf-8').splitlines(), 1):
+                    beschr = re.findall(r'(?:title|aria-label)="([^"]*)"', zeile)
+                    if any('schliess' in b.lower() for b in beschr):
+                        yield pfad, nr, zeile
+
+    def test_kein_schliessen_knopf_traegt_ein_fremdes_zeichen(self):
+        funde = []
+        for pfad, nr, zeile in self._knoepfe():
+            for name in re.findall(r"zeichen '([a-z]+)'", zeile):
+                if name in self.FALSCH:
+                    funde.append(f'{pfad.name}:{nr} → «{name}»')
+        self.assertEqual(
+            funde, [],
+            f'Diese Schliessen-Knöpfe tragen ein fremdes Zeichen: {funde}. '
+            f'Zum Wegklicken gibt es `schliessen`.')
+
+    def test_die_pruefung_findet_ueberhaupt_knoepfe(self):
+        """Gegenprobe: Ohne Fundstellen wäre die Prüfung oben trivial grün."""
+        self.assertGreaterEqual(len(list(self._knoepfe())), 4)

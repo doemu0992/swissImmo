@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Anlagen & Abschluss — swissImmo{% endblock %}
 {% block content %}
@@ -13,11 +14,11 @@
 <!-- ANLAGEN -->
 <div class="fw-card overflow-hidden mb-6">
     <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-        <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0"><i class="fa-solid fa-building-columns"></i></span>Anlagegüter</h3>
+        <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'bank' %}</span>Anlagegüter</h3>
         <form method="post" class="flex items-center gap-2">{% csrf_token %}
             <input type="hidden" name="aktion" value="afa_lauf">
             <input type="number" name="jahr" value="{{ jahr_default }}" class="w-24 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">
-            <button onclick="return confirm('AfA-Lauf für das Jahr buchen? (idempotent)');" class="fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bolt mr-1"></i>AfA-Lauf</button>
+            <button onclick="return confirm('AfA-Lauf für das Jahr buchen? (idempotent)');" class="fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg">{% zeichen 'kritisch' klasse='mr-1' %}AfA-Lauf</button>
         </form>
     </div>
     <div class="overflow-x-auto">
@@ -65,7 +66,7 @@
             <div class="flex gap-2">
                 <div><label class="block text-xs fw-mutet mb-1">ND (J)</label>
                     <input name="nutzungsdauer_jahre" type="number" value="10" class="w-16 fw-flaeche border fw-linie rounded-lg text-sm px-2 py-2 text-right"></div>
-                <button title="Anlage erfassen" class="fw-btn fw-primary text-sm font-semibold px-3 py-2 rounded-lg self-end"><i class="fa-solid fa-plus"></i></button>
+                <button title="Anlage erfassen" class="fw-btn fw-primary text-sm font-semibold px-3 py-2 rounded-lg self-end">{% zeichen 'neu' %}</button>
             </div>
             <div class="sm:col-span-4">
                 {% comment %}
@@ -87,11 +88,11 @@
 <!-- ERNEUERUNGSFONDS -->
 <div class="fw-card overflow-hidden mb-6">
     <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-        <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center shrink-0"><i class="fa-solid fa-piggy-bank"></i></span>Erneuerungsfonds (Rückstellung)</h3>
+        <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center shrink-0">{% zeichen 'geld' %}</span>Erneuerungsfonds (Rückstellung)</h3>
         <form method="post" class="flex items-center gap-2">{% csrf_token %}
             <input type="hidden" name="aktion" value="fonds_lauf">
             <input type="number" name="jahr" value="{{ jahr_default }}" class="w-24 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">
-            <button onclick="return confirm('Jährliche Einlagen für das Jahr buchen?');" class="fw-btn fw-gutknopf text-white text-xs font-semibold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bolt mr-1"></i>Einlage buchen</button>
+            <button onclick="return confirm('Jährliche Einlagen für das Jahr buchen?');" class="fw-btn fw-gutknopf text-white text-xs font-semibold px-3 py-1.5 rounded-lg">{% zeichen 'kritisch' klasse='mr-1' %}Einlage buchen</button>
         </form>
     </div>
     <div class="overflow-x-auto">
@@ -130,7 +131,7 @@
 
 <!-- PERIODENSPERRE -->
 <div class="fw-card p-5 max-w-xl">
-    <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-lock fw-warnton mr-1.5"></i>Periodensperre</h3>
+    <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'gesperrt' klasse='fw-warnton mr-1.5' %}Periodensperre</h3>
     <p class="text-xs fw-faint mb-3">Buchungen mit Datum ≤ Stichtag werden gesperrt (abgeschlossene Periode, Revisionssicherheit).
         {% if gesperrt_bis %}<span class="fw-warnton font-semibold">Aktuell gesperrt bis {{ gesperrt_bis|date:"d.m.Y" }}.</span>{% else %}Aktuell keine Sperre.{% endif %}</p>
     <form method="post" class="flex items-end gap-2">{% csrf_token %}

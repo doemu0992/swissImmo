@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Massenanpassung — swissImmo{% endblock %}
 
@@ -9,7 +10,7 @@
         <h1>Mietzins-Massenanpassung</h1>
         <p>Vorschau — aktueller Referenzzinssatz <span style="color:var(--ds-ink);font-weight:600">{{ aktuell_ref }} %</span> · LIK <span style="color:var(--ds-ink);font-weight:600">{{ aktuell_lik }}</span>. Wirksamkeitstermin je Vertrag = nächster zulässiger Termin (Kündigungsfrist + 10 Tage Ankündigung, Art. 269d OR).</p>
     </div>
-    <a href="/neu/mietzins/" class="fw-btn"><i class="fa-solid fa-arrow-left"></i>Zurück</a>
+    <a href="/neu/mietzins/" class="fw-btn">{% zeichen 'zurueck' %}Zurück</a>
 </div>
 
 <div class="fw-card overflow-hidden mb-5">
@@ -61,7 +62,7 @@
     <input type="hidden" name="aktion" value="ausfuehren">
     {% for r in rows %}<input type="hidden" name="vertrag_id" value="{{ r.v.id }}">{% endfor %}
     <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors" {% if not machbar %}disabled{% endif %}>
-        <i class="fa-solid fa-file-signature mr-1.5"></i>{{ machbar }} Anpassung(en) erfassen + amtliche Formulare (Sammel-PDF)
+        {% zeichen 'vertrag' klasse='mr-1.5' %}{{ machbar }} Anpassung(en) erfassen + amtliche Formulare (Sammel-PDF)
     </button>
     <a href="/neu/mietzins/" class="text-sm fw-mutet hover:fw-ink">Abbrechen</a>
 </form>

@@ -10,8 +10,8 @@ stehen für dasselbe, ebenso `fa-list`/`fa-list-ol` und `fa-gauge`/
 `fa-gauge-high`. Wer eine neue Seite baut, wählt aus zweitausend Zeichen und
 trifft nie dieselbe Wahl wie der Vorgänger.
 
-`docs/ZEICHEN.md` legt zweiundvierzig Zeichen mit fester Bedeutung fest, plus
-sechs, für die eine Entscheidung aussteht.
+`docs/ZEICHEN.md` legt sechsundvierzig Zeichen mit fester Bedeutung fest, plus
+drei, für die eine Entscheidung aussteht.
 
 AN DREI ORTEN, NICHT AN EINEM
 
@@ -56,8 +56,17 @@ WURZEL = pathlib.Path(settings.BASE_DIR)
 TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
 
 #: Gemessen bei Anlage der Tabelle (E2.35). Die Zahl darf sinken, nicht steigen.
-STAND_ZEICHEN = 207
-STAND_VORKOMMEN = 1136
+#: E2.39: 207 -> 78. Die Vorlagen sind umgestellt; was bleibt, steht in
+#: PYTHON-CODE (Kachellisten, Termin-Arten, Gewerke) und in den
+#: Admin-Vorlagen. Das ist Schritt 4 und braucht einen anderen Weg: Dort
+#: ist das Zeichen ein Datenwert, kein Markup.
+#: 79 statt 78: Vier Zeichen sind in E2.39 ZURUECKGENOMMEN worden.
+#: `stamp`, `bell`, `code` und `trend` stehen in `docs/ZEICHEN.md` unter
+#: «Noch ohne Bedeutung» — bewusst nicht zugeordnet. Die Umstellung hat
+#: sie beim Sortieren erfunden; genau davor warnt die Tabelle. Sie
+#: bleiben bei Font Awesome, bis jemand die Bedeutung ENTSCHEIDET.
+STAND_ZEICHEN = 79
+STAND_VORKOMMEN = 156
 
 #: Anzahl Zeichen mit fester Bedeutung, aus `docs/ZEICHEN.md`.
 #:
@@ -65,13 +74,31 @@ STAND_VORKOMMEN = 1136
 #: (`gear`), und die Trendpfeile zeigen die Richtung einer Zahl, nicht eine
 #: Bewegung durch die Anwendung — unter `weiter`/`zurueck` gezwungen haetten
 #: sie an zwei Orten Verschiedenes geheissen.
-ZIEL_ZEICHEN = 42
+#: 45 seit E2.40. Vier Zeichen sind aus der Liste «Noch ohne Bedeutung»
+#: nach oben gewandert, weil eine ENTSCHEIDUNG getroffen wurde:
+#: `freigeben`, `storno`, `meldung`, `trend`. Keines liess sich auf ein
+#: bestehendes abbilden — und ein falsch zugeordnetes Zeichen ist
+#: schlechter als ein zusaetzliches.
+#:
+#: 46 seit der Gegenpruefung zu E2.40: `schliessen` fehlte. Die Umstellung
+#: setzte `xmark` auf Schliessen-Knoepfen auf `mehr`, E2.38 eines davon auf
+#: `loeschen` — ein Knopf mit Papierkorb, der nichts loescht. Wegklicken ist
+#: eine eigene Bedeutung.
+#:
+#: D5 sagt «~40». Die Tilde traegt inzwischen sechs Zeichen; wer die
+#: naechsten dazunimmt, sollte begruenden, warum die Bedeutung fehlte.
+ZIEL_ZEICHEN = 46
 
 #: Klassen, die in Gebrauch sind und bewusst noch keiner Bedeutung zugeordnet
 #: wurden. Diese Liste darf schrumpfen, nicht wachsen — sonst wird «noch offen»
 #: zum bequemen Ablageort fuer jedes neue Zeichen.
-OFFEN = ('stamp', 'share', 'share-from-square', 'rotate-left', 'bell', 'code')
-STAND_OFFEN = 6
+#: E2.40 hat `stamp`, `rotate-left` und `bell` entschieden (`freigeben`,
+#: `storno`, `meldung`). Sie standen danach in BEIDEN Listen — entschieden
+#: oben, offen unten — und dieser Waechter blieb gruen, weil er nur prueft,
+#: dass jeder Name irgendwo im Dokument vorkommt. Aus der offenen Liste
+#: entfernt; hier nachgefuehrt.
+OFFEN = ('share', 'share-from-square', 'code')
+STAND_OFFEN = 3
 
 #: In Vorlagen steht die Klasse hinter dem Stil: `class="fa-solid fa-plug"`.
 MUSTER_VORLAGE = re.compile(r'fa-(?:solid|regular|brands)\s+(fa-[a-z0-9-]+)')
@@ -197,10 +224,10 @@ class ZeichensatzTest(SimpleTestCase):
     def test_die_messung_findet_ueberhaupt_etwas(self):
         """Gegenprobe: Ein leeres Ergebnis wäre trivial grün."""
         zeichen = _zeichen_im_bestand()
-        self.assertGreater(len(zeichen), 50,
+        self.assertGreater(len(zeichen), 20,
                            'Die Suche findet fast nichts — dann prüfen die '
                            'Tests oben nichts.')
-        self.assertGreater(sum(zeichen.values()), 500)
+        self.assertGreater(sum(zeichen.values()), 100)
 
     def test_auch_in_python_gewaehlte_zeichen_werden_gesehen(self):
         """Sonst wäre die Sperre an der Stelle blind, wo sie gebraucht wird.

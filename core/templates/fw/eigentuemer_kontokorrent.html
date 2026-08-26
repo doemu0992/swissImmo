@@ -1,11 +1,12 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Kontokorrent {{ md.firma_oder_name }} — swissImmo{% endblock %}
 {% block content %}
 <div class="text-xs fw-faint mb-3">
     <a href="/neu/mandate/" class="hover:fw-marke">Mandate</a>
-    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>{{ md.firma_oder_name }}
-    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>Kontokorrent
+    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{{ md.firma_oder_name }}
+    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}Kontokorrent
 </div>
 
 <div class="fw-phead">
@@ -14,8 +15,8 @@
         <p>{{ md.firma_oder_name }} · Ergebnis der Liegenschaften abzüglich Auszahlungen.</p>
     </div>
     <div class="flex items-center gap-2">
-        <a href="/neu/mandate/{{ md.id }}/kontokorrent/?pdf=1{% if jahr %}&jahr={{ jahr }}{% endif %}" target="_blank" rel="noopener" class="fw-btn"><i class="fa-solid fa-file-pdf"></i>PDF</a>
-        <a href="/neu/mandate/{{ md.id }}/abrechnung/{% if jahr %}?jahr={{ jahr }}{% endif %}" class="fw-btn"><i class="fa-solid fa-file-invoice"></i>Abrechnung</a>
+        <a href="/neu/mandate/{{ md.id }}/kontokorrent/?pdf=1{% if jahr %}&jahr={{ jahr }}{% endif %}" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}PDF</a>
+        <a href="/neu/mandate/{{ md.id }}/abrechnung/{% if jahr %}?jahr={{ jahr }}{% endif %}" class="fw-btn">{% zeichen 'rechnung' %}Abrechnung</a>
         <form method="get" class="inline-flex items-center gap-1">
             <select name="jahr" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                 <option value="alle" {% if not jahr %}selected{% endif %}>Kumuliert</option>
@@ -132,11 +133,11 @@
                 <input type="hidden" name="konto_nummer" value="2850">
                 <button class="w-full fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg"
                         onclick="return confirm('Verwaltungshonorar {{ jahr }} verbuchen: CHF {{ honorar.total|chf }}?');">
-                    <i class="fa-solid fa-percent mr-1.5"></i>Honorar {{ jahr }} buchen (CHF {{ honorar.total|chf }})
+                    {% zeichen 'bericht' klasse='mr-1.5' %}Honorar {{ jahr }} buchen (CHF {{ honorar.total|chf }})
                 </button>
             </form>
             {% else %}
-            <p class="text-xs fw-gut font-medium"><i class="fa-solid fa-check mr-1"></i>Honorar {{ jahr }} vollständig verbucht.</p>
+            <p class="text-xs fw-gut font-medium">{% zeichen 'gut' klasse='mr-1' %}Honorar {{ jahr }} vollständig verbucht.</p>
             {% endif %}
         </div>
         {% elif jahr and md.honorar_prozent == 0 %}
@@ -173,7 +174,7 @@
                            class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                 </div>
                 <button class="w-full fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
-                    <i class="fa-solid fa-money-bill-transfer mr-1.5"></i>Auszahlung verbuchen
+                    {% zeichen 'geld' klasse='mr-1.5' %}Auszahlung verbuchen
                 </button>
             </form>
             {% if md.iban %}<p class="text-[11px] fw-faint mt-3">Eigentümer-IBAN: {{ md.iban }}</p>{% endif %}

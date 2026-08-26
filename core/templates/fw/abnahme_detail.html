@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Abnahmeprotokoll — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Abnahmeprotokoll</span>
 </nav>
 
@@ -15,20 +16,20 @@
     </div>
     <div class="flex flex-wrap items-center gap-2">
         {% if p.kosten_mieter_total %}
-        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="fw-btn fw-primary text-sm"><i class="fa-solid fa-file-invoice mr-1.5"></i>In Schlussabrechnung</a>
+        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="fw-btn fw-primary text-sm">{% zeichen 'rechnung' klasse='mr-1.5' %}In Schlussabrechnung</a>
         {% endif %}
         <div class="relative">
             <button type="button" onclick="document.getElementById('aAktionen').classList.toggle('hidden'); event.stopPropagation();"
                     class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-flaeche border fw-linie fw-ink hover:fw-linie-marke hover:fw-marke transition-colors">
-                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
+                {% zeichen 'mehr' klasse='mr-1' %}Mehr
             </button>
             <div id="aAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
-                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-file-pdf w-4"></i>Protokoll als PDF</a>
+                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'drucken' klasse='w-4' %}Protokoll als PDF</a>
                 <div class="my-1 border-t fw-linie"></div>
                 <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
                       onsubmit="return confirm('Abnahmeprotokoll wirklich löschen?');">
                     {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-kritisch hover:fw-krit-flaeche"><i class="fa-solid fa-trash w-4"></i>Protokoll löschen</button>
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-kritisch hover:fw-krit-flaeche">{% zeichen 'loeschen' klasse='w-4' %}Protokoll löschen</button>
                 </form>
             </div>
         </div>
@@ -76,7 +77,7 @@
             <tr>
                 <td class="px-5 py-2.5 fw-ink">{{ m.raum|default:"—" }}</td>
                 <td class="px-5 py-2.5 fw-strong">{{ m.beschreibung }}
-                    {% if m.ausstattung %}<div class="text-[11px] fw-faint"><i class="fa-solid fa-clipboard-list mr-0.5"></i>{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · Lebensdauer {{ m.ausstattung.effektive_lebensdauer }} J{% endif %}</div>{% endif %}</td>
+                    {% if m.ausstattung %}<div class="text-[11px] fw-faint">{% zeichen 'dokument' klasse='mr-0.5' %}{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · Lebensdauer {{ m.ausstattung.effektive_lebensdauer }} J{% endif %}</div>{% endif %}</td>
                 <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold
                     {% if m.verursacher == 'mieter' %}fw-krit-flaeche fw-kritisch{% elif m.verursacher == 'vermieter' %}fw-info-flaeche fw-info{% else %}fw-flaeche2 fw-mutet{% endif %}">{{ m.get_verursacher_display }}</span></td>
                 <td class="px-5 py-2.5 text-right tabular-nums fw-mutet">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>

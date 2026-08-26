@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Auswertung — swissImmo{% endblock %}
 {% block content %}
@@ -7,7 +8,7 @@
         <h1>Auswertung</h1>
         <p>Kennzahlen im Monatsverlauf und je Liegenschaft — nach Jahr, Kennzahl und Liegenschaft filterbar.</p>
     </div>
-    <a href="/neu/auswertung/?pdf=1&typ={{ typ }}&jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary"><i class="fa-solid fa-file-pdf"></i>PDF</a>
+    <a href="/neu/auswertung/?pdf=1&typ={{ typ }}&jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary">{% zeichen 'drucken' %}PDF</a>
 </div>
 
 <!-- Filter -->

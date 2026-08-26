@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% comment %} Die beiden Abschnitte «Termine» und «Wartet auf Freigabe» aus
    dem Prototyp (mockups/konzept-struktur.html, Screen «Heute»). Einmal
    gebaut, von Startseite UND Arbeit-Seite eingebunden — nicht zweimal
@@ -12,7 +13,7 @@
 {% if av_termine %}
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-ikon"><i class="fa-solid fa-calendar-day"></i></span>
+        <span class="fw-ikon">{% zeichen 'termin' %}</span>
         <span class="fw-t">Termine</span>
         <span class="fw-neben">{{ av_termine_gesamt }} in den nächsten 7 Tagen</span>
     </div>
@@ -38,7 +39,7 @@
 {% if av_freigaben %}
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-ikon warn"><i class="fa-solid fa-hand"></i></span>
+        <span class="fw-ikon warn">{% zeichen 'einstellungen' %}</span>
         {% comment %} Der Prototyp nennt den Abschnitt «Wartet auf mich».
            Das Datenmodell trägt das «mich» nicht: Weder KreditorenRechnung
            noch HandwerkerAuftrag führen einen Freigeber. {% endcomment %}
@@ -71,7 +72,7 @@
    eine gedeckte auszusehen. {% endcomment %}
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-ikon"><i class="fa-solid fa-user-clock"></i></span>
+        <span class="fw-ikon">{% zeichen 'wartet' %}</span>
         <span class="fw-t">Vertretung</span>
         <span class="fw-rechts"><a href="/neu/abwesenheiten/" class="fw-link">Abwesenheiten</a></span>
     </div>

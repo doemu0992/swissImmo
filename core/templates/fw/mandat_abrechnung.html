@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Abrechnung {{ md.firma_oder_name }} {{ jahr }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mandate/" class="hover:fw-marke">Mandate</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">{{ md.firma_oder_name }} · Abrechnung {{ jahr }}</span>
 </nav>
 
@@ -16,11 +17,11 @@
     <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <a href="/neu/mandate/{{ md.id }}/kontokorrent/?jahr={{ jahr }}"
            class="fw-flaeche border fw-linie hover:fw-linie-marke fw-mutet hover:fw-marke text-sm font-semibold px-4 py-2 rounded-lg">
-            <i class="fa-solid fa-scale-balanced mr-1.5"></i>Kontokorrent
+            {% zeichen 'recht' klasse='mr-1.5' %}Kontokorrent
         </a>
         <a href="/neu/mandate/{{ md.id }}/abrechnung/?jahr={{ jahr }}&pdf=1" target="_blank" rel="noopener"
            class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg shadow-sm">
-            <i class="fa-solid fa-file-pdf mr-1.5"></i>PDF
+            {% zeichen 'drucken' klasse='mr-1.5' %}PDF
         </a>
     </div>
 </div>
@@ -83,7 +84,7 @@
         </table>
     </div>
 </div>
-<p class="text-xs fw-faint mt-4"><i class="fa-solid fa-circle-info mr-1"></i>
+<p class="text-xs fw-faint mt-4">{% zeichen 'hinweis' klasse='mr-1' %}
     Erträge und Aufwände stammen aus den verbuchten Buchungen der zugeordneten Liegenschaften. Der Saldo ist die
     Auszahlung an den Eigentümer (bzw. ein Nachschuss bei negativem Saldo).</p>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Zahllauf — swissImmo{% endblock %}
 
@@ -6,7 +7,7 @@
 
 <div class="fw-phead">
     <h1>Zahllauf</h1>
-    <a href="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" class="fw-btn"><i class="fa-solid fa-arrow-left"></i>Zurück zu den Kreditoren</a>
+    <a href="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'zurueck' %}Zurück zu den Kreditoren</a>
 </div>
 <p class="text-sm fw-mutet mb-5">
     Rechnungen auswählen → Zahlungsdatei (pain.001) erzeugen → nach der Bankbestätigung
@@ -17,7 +18,7 @@
 
 {% if not verwaltung_iban %}
 <div class="rounded-xl border fw-linie-warn fw-warn-flaeche px-5 py-4 mb-6 text-sm fw-warnton">
-    <i class="fa-solid fa-triangle-exclamation mr-1.5"></i>
+    {% zeichen 'warnung' klasse='mr-1.5' %}
     Für die Zahlungsdatei fehlt die <b>IBAN der Verwaltung</b> —
     unter <a href="/neu/account/" class="underline font-semibold">Profil → Account</a> hinterlegen.
 </div>
@@ -46,7 +47,7 @@
     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
     <div class="px-5 py-3 border-b fw-linie flex items-center justify-between flex-wrap gap-3">
         <div class="font-bold fw-strong text-sm">
-            <i class="fa-solid fa-list-check fw-info mr-1.5"></i>Zahlungsvorschlag (freigegeben)
+            {% zeichen 'arbeit' klasse='fw-info mr-1.5' %}Zahlungsvorschlag (freigegeben)
         </div>
         <label class="flex items-center gap-2 text-xs fw-mutet">
             <input type="date" name="ausfuehrungsdatum" value="{{ heute|date:'Y-m-d' }}"
@@ -102,7 +103,7 @@
     <div class="px-5 py-4 border-t fw-linie flex items-center gap-3 flex-wrap">
         <button name="aktion" value="datei"
                 class="fw-btn fw-gutknopf text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
-            <i class="fa-solid fa-file-arrow-down mr-1.5"></i>Zahlungsdatei erzeugen (pain.001)
+            {% zeichen 'herunterladen' klasse='mr-1.5' %}Zahlungsdatei erzeugen (pain.001)
         </button>
         <span class="text-xs fw-faint">
             Die enthaltenen Rechnungen wechseln auf «In Zahlung» und erscheinen unten —
@@ -122,7 +123,7 @@
     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
     <div class="px-5 py-3 border-b border-indigo-100 fw-markenflaeche flex items-center justify-between flex-wrap gap-3">
         <div class="font-bold fw-strong text-sm">
-            <i class="fa-solid fa-hourglass-half fw-marke mr-1.5"></i>In Zahlung — auf Bankbestätigung wartend
+            {% zeichen 'wartet' klasse='fw-marke mr-1.5' %}In Zahlung — auf Bankbestätigung wartend
         </div>
         <div class="flex items-center gap-3 flex-wrap">
             <label class="flex items-center gap-2 text-xs fw-mutet">
@@ -180,7 +181,7 @@
                 onsubmit="return true;"
                 onclick="return confirm('Ausgewählte Zahlungen verbuchen (2000 an Bank)?');"
                 class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
-            <i class="fa-solid fa-check mr-1.5"></i>Als bezahlt verbuchen
+            {% zeichen 'gut' klasse='mr-1.5' %}Als bezahlt verbuchen
         </button>
         <button name="aktion" value="zuruecksetzen"
                 onclick="return confirm('Auswahl wieder auf «freigegeben» setzen? (Lauf wurde nicht ausgeführt)');"

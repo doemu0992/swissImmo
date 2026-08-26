@@ -164,7 +164,7 @@
                 {% zeichen 'zurueck' klasse='text-xs sb-collapse-icon' %}
             </button>
             <button type="button" onclick="fwCloseMobileNav()" aria-label="Menü schliessen" class="lg:hidden fw-faint hover:fw-strong transition-colors">
-                {% zeichen 'loeschen' %}
+                {% zeichen 'schliessen' %}
             </button>
         </div>
 
@@ -234,10 +234,10 @@
 
         <!-- TOPBAR -->
         <header class="h-16 px-6 md:px-8 flex items-center gap-4 fw-flaeche border-b fw-linie sticky top-0 z-40">
-            <button type="button" onclick="fwOpenMobileNav()" aria-label="Menü öffnen" class="lg:hidden fw-mutet hover:fw-strong text-lg -ml-1 p-1"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" onclick="fwOpenMobileNav()" aria-label="Menü öffnen" class="lg:hidden fw-mutet hover:fw-strong text-lg -ml-1 p-1">{% zeichen 'mehr' %}</button>
             <form method="get" action="/neu/suche/" class="w-full max-w-md">
                 <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 fw-faint text-sm"></i>
+                    {% zeichen 'suchen' klasse='absolute left-4 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
                     <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Suche nach Person, Objekt, Vertrag …"
                            class="w-full fw-flaeche2 pl-11 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 fw-fokusring placeholder:fw-faint">
                 </div>
@@ -246,11 +246,11 @@
             <div class="ml-auto flex items-center gap-2 md:gap-3">
             <a href="/neu/dokumente/{{ lg_query }}" title="Dokumente"
                class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'dokumente' %}fw-markenflaeche fw-marke{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
-                <i class="fa-solid fa-folder-open text-[15px]"></i>
+                {% zeichen 'dokument' klasse='text-[15px]' %}
             </a>
             <a href="/neu/kommunikation/{{ lg_query }}" title="Kommunikation"
                class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'kommunikation' %}fw-markenflaeche fw-marke{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
-                <i class="fa-solid fa-comment text-[15px]"></i>
+                {% zeichen 'senden' klasse='text-[15px]' %}
             </a>
             <div class="relative">
                 <button onclick="fwProfilMenu()" class="flex items-center gap-2.5 group">
@@ -280,7 +280,7 @@
                     {% include 'fw/_menu_item.html' with ziel='/neu/einstellungen/' icon='fa-gear' label='Einstellungen' %}
                     <div class="border-t fw-linie my-1.5"></div>
                     <a href="/logout/" class="flex items-center gap-3 px-4 py-2 text-sm fw-kritisch hover:fw-krit-flaeche">
-                        <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Abmelden
+                        {% zeichen 'extern' klasse='w-4 text-center' %} Abmelden
                     </a>
                 </div>
             </div>
@@ -295,7 +295,7 @@
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
                 <i class="fa-solid {% if 'error' in m.tags %}fa-circle-exclamation{% elif 'warning' in m.tags %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %} mt-0.5"></i>
                 <div class="flex-1">{{ m }}</div>
-                <button type="button" onclick="this.closest('.fw-toast').remove()" title="Meldung schliessen" class="fw-faint hover:fw-mutet"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="this.closest('.fw-toast').remove()" title="Meldung schliessen" class="fw-faint hover:fw-mutet">{% zeichen 'schliessen' %}</button>
             </div>
             {% endfor %}
         </div>
@@ -323,7 +323,7 @@
     <div class="absolute inset-0 bg-black/40" onclick="fwPaletteClose()"></div>
     <div class="relative max-w-lg mx-auto mt-[12vh] fw-flaeche rounded-2xl shadow-2xl border fw-linie overflow-hidden">
         <div class="flex items-center gap-3 px-4 border-b fw-linie">
-            <i class="fa-solid fa-magnifying-glass fw-faint text-sm"></i>
+            {% zeichen 'suchen' klasse='fw-faint text-sm' %}
             <input id="fwPaletteInput" type="text" placeholder="Person, Objekt, Mietverhältnis oder Seite …" autocomplete="off"
                    class="flex-1 py-3.5 text-sm focus:outline-none placeholder:fw-faint">
             <span class="text-[10px] font-semibold fw-faint border fw-linie rounded px-1.5 py-0.5">ESC</span>
@@ -404,7 +404,7 @@ function fwNavToggle(key) {
         return '<a href="' + url + '" class="fw-pal-item flex items-center gap-3 px-4 py-2.5 text-sm ' +
                (aktiv ? 'fw-markenflaeche fw-marke' : 'fw-ink hover:fw-flaeche2 ') + '">' +
                (art ? '<span class="text-[10px] font-semibold uppercase tracking-wide fw-faint w-[92px] shrink-0">' + esc(art) + '</span>'
-                    : '<i class="fa-solid fa-arrow-right text-[10px] fw-faint w-[92px] shrink-0"></i>') +
+                    : '{% zeichen 'weiter' klasse='text-[10px] fw-faint w-[92px] shrink-0' %}') +
                '<span class="flex-1 truncate">' + esc(label) + '</span>' +
                (zusatz ? '<span class="text-[11px] fw-faint truncate max-w-[45%]">' + esc(zusatz) + '</span>' : '') +
                '</a>';

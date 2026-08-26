@@ -1,12 +1,13 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf l10n %}
 {% block title %}Anfangsmietzins — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mietzins/" class="hover:fw-marke">Mietzins</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Anfangsmietzins</span>
 </nav>
 
@@ -18,31 +19,31 @@
 </div>
 
 <div class="max-w-3xl mb-5 text-xs fw-markenflaeche border fw-linie-marke fw-marke rounded-lg px-3 py-2.5">
-    <i class="fa-solid fa-circle-info mr-1"></i>Bei Neuabschluss muss der Mieterschaft in Kantonen mit
+    {% zeichen 'hinweis' klasse='mr-1' %}Bei Neuabschluss muss der Mieterschaft in Kantonen mit
     Formularpflicht der bisherige Mietzins (Vormiete) mitgeteilt werden. Sie kann den Anfangsmietzins
     innert <b>30 Tagen</b> nach Übernahme bei der Schlichtungsbehörde anfechten.
 </div>
 
 {% if pflicht == 'ja' %}
 <div class="max-w-3xl mb-5 text-xs fw-warn-flaeche border fw-linie-warn fw-warnton rounded-lg px-3 py-2.5">
-    <i class="fa-solid fa-triangle-exclamation mr-1"></i><b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
+    {% zeichen 'warnung' klasse='mr-1' %}<b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
     Die Verwendung dieses Formulars ist beim Neuabschluss obligatorisch.
     {% if pflicht_info.gesetz %}<span class="fw-warnton">Grundlage: {{ pflicht_info.gesetz }}.</span>{% endif %}
     {% if pflicht_info.leerziffer %}<span class="fw-warnton">Leerwohnungsziffer {{ pflicht_info.leerziffer }} (per {{ pflicht_info.stand }}).</span>{% endif %}
 </div>
 {% elif pflicht == 'teilweise' %}
 <div class="max-w-3xl mb-5 text-xs fw-warn-flaeche border fw-linie-warn fw-warnton rounded-lg px-3 py-2.5">
-    <i class="fa-solid fa-triangle-exclamation mr-1"></i><b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
+    {% zeichen 'warnung' klasse='mr-1' %}<b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
     {% if pflicht_info.gesetz %}{{ pflicht_info.gesetz }}.{% endif %} Bitte prüfen, ob dieses Objekt betroffen ist.
 </div>
 {% elif pflicht == 'nein' %}
 <div class="max-w-3xl mb-5 text-xs fw-flaeche2 border fw-linie fw-mutet rounded-lg px-3 py-2.5">
-    <i class="fa-solid fa-circle-info mr-1"></i>Im Kanton {{ pflicht_info.kanton_name }} besteht <b>keine Formularpflicht</b> —
+    {% zeichen 'hinweis' klasse='mr-1' %}Im Kanton {{ pflicht_info.kanton_name }} besteht <b>keine Formularpflicht</b> —
     das Formular kann freiwillig verwendet werden.
 </div>
 {% else %}
 <div class="max-w-3xl mb-5 text-xs fw-flaeche2 border fw-linie fw-mutet rounded-lg px-3 py-2.5">
-    <i class="fa-solid fa-circle-info mr-1"></i>Formularpflicht für diesen Kanton nicht hinterlegt — bitte die aktuelle
+    {% zeichen 'hinweis' klasse='mr-1' %}Formularpflicht für diesen Kanton nicht hinterlegt — bitte die aktuelle
     kantonale Bekanntmachung (Leerwohnungsziffer) prüfen.
 </div>
 {% endif %}
@@ -55,7 +56,7 @@
         <h3 class="font-bold fw-strong text-sm mb-4">Mietzins des Vormieters (Vormiete)</h3>
         {% if vormiete %}
         <div class="mb-4 text-xs fw-flaeche2 border fw-linie fw-mutet rounded-lg px-3 py-2">
-            <i class="fa-solid fa-clock-rotate-left mr-1"></i>Vorschlag aus dem letzten Vertrag dieses Objekts
+            {% zeichen 'verlauf' klasse='mr-1' %}Vorschlag aus dem letzten Vertrag dieses Objekts
             (ab {{ vormiete.beginn|date:"d.m.Y" }}) — bitte prüfen.
         </div>
         {% endif %}
@@ -76,7 +77,7 @@
     <div class="fw-card p-5">
         <h3 class="font-bold fw-strong text-sm mb-1">Neuer Anfangsmietzins</h3>
         {% if soll %}
-        <p class="text-[11px] fw-gut mb-3"><i class="fa-solid fa-circle-check mr-1"></i>Automatisch aus
+        <p class="text-[11px] fw-gut mb-3">{% zeichen 'gut' klasse='mr-1' %}Automatisch aus
             dem Sollmietzins «gültig ab {{ soll.gueltig_ab|date:"d.m.Y" }}» übernommen — bei Bedarf anpassbar.</p>
         {% else %}
         <p class="text-[11px] fw-faint mb-3">Aus dem Vertrag übernommen (keine datierte Sollmietzins-Zeile hinterlegt).</p>
@@ -132,7 +133,7 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" class="inline-flex items-center gap-2 fw-btn fw-primary text-sm font-semibold rounded-lg px-5 py-2.5">
-            <i class="fa-solid fa-file-pdf"></i>Formular als PDF erstellen
+            {% zeichen 'drucken' %}Formular als PDF erstellen
         </button>
         <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink">Abbrechen</a>
     </div>

@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Zahlungsverzug (Art. 257d) — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Zahlungsverzug</span>
 </nav>
 
@@ -27,7 +28,7 @@
         <p class="text-xs fw-faint mt-1">{{ anzahl_faellig }} fällige Rechnung(en) dieses Vertrags.</p>
         {% if offen_total <= 0 %}
         <div class="mt-3 text-xs fw-warn-flaeche border fw-linie-warn fw-warnton rounded-lg px-3 py-2">
-            <i class="fa-solid fa-circle-info mr-1"></i>Aktuell keine fälligen offenen Mietzinse — eine Fristansetzung nach Art. 257d setzt einen tatsächlichen Zahlungsrückstand voraus.
+            {% zeichen 'hinweis' klasse='mr-1' %}Aktuell keine fälligen offenen Mietzinse — eine Fristansetzung nach Art. 257d setzt einen tatsächlichen Zahlungsrückstand voraus.
         </div>
         {% endif %}
     </div>
@@ -46,12 +47,12 @@
 
         <!-- Live-Prüfung -->
         <div id="v-warn" class="hidden rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
-            <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
+            <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} Mietrechtlicher Hinweis</div>
             <ul id="v-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
 
         <div class="fw-markenflaeche border fw-linie-marke rounded-lg p-3 text-xs fw-mutet">
-            <i class="fa-solid fa-list-check fw-marke mr-1"></i>
+            {% zeichen 'arbeit' klasse='fw-marke mr-1' %}
             Beim Speichern wird eine <b>Zahlungsaufforderung mit Fristansetzung</b> (PDF) erstellt und in die Akte gelegt,
             sowie eine <b>Fristen-Pendenz</b> angelegt. Nach fruchtlosem Ablauf kann ausserordentlich gekündigt werden
             (Art. 257d Abs. 2 OR — 30 Tage auf Monatsende).
@@ -61,7 +62,7 @@
     <!-- Einschreiben / Zugang (strikte Empfangstheorie) -->
     <div class="fw-card p-5 space-y-4">
         <div class="flex items-center gap-2">
-            <i class="fa-solid fa-envelope-circle-check fw-marke"></i>
+            {% zeichen 'gut' klasse='fw-marke' %}
             <div class="text-sm font-bold fw-strong">Einschreiben &amp; Zugang</div>
         </div>
         <div class="grid sm:grid-cols-2 gap-4">
@@ -77,7 +78,7 @@
             </div>
         </div>
         <div class="fw-flaeche2 border fw-linie rounded-lg p-3 text-xs fw-mutet leading-relaxed">
-            <i class="fa-solid fa-scale-balanced fw-faint mr-1"></i>
+            {% zeichen 'recht' klasse='fw-faint mr-1' %}
             <b>Strikte Empfangstheorie:</b> Die 30-Tage-Frist läuft ab dem <b>Zugang</b> (Zustellung bzw.
             Abholeinladung tritt in den Machtbereich des Mieters) — nicht ab Versand und ohne 7-Tage-Fiktion.
             Der Zugang wird später im <b>Fristen-Center</b> aus <b>Track&nbsp;&amp;&nbsp;Trace</b> per
@@ -88,10 +89,10 @@
 
     <div class="flex items-center gap-3 flex-wrap">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Frist ansetzen &amp; Pendenz anlegen
+            {% zeichen 'speichern' klasse='mr-1.5' %}Frist ansetzen &amp; Pendenz anlegen
         </button>
         <button type="submit" name="als_pdf" value="1" formtarget="_blank" class="fw-flaeche border fw-linie hover:fw-flaeche2 fw-ink text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-file-pdf mr-1.5 fw-kritisch"></i>Zusätzlich als PDF öffnen
+            {% zeichen 'drucken' klasse='mr-1.5 fw-kritisch' %}Zusätzlich als PDF öffnen
         </button>
         <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>

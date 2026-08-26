@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Läufe — swissImmo{% endblock %}
 
 {% block content %}
@@ -14,13 +15,13 @@
    «blockiert»: Der Grund führt zu einer Handlung, das Wort zu einer
    Rückfrage. {% endcomment %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-rotate"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'lauf' %}</span>
         <span class="fw-t">Offen</span>
         <span class="fw-neben">{{ offen|length }}</span></div>
     {% for z in offen %}
     <div class="fw-zeile">
         <span class="fw-marker {% if z.blockaden %}crit{% elif z.tage < 0 %}crit{% elif z.tage <= 3 %}warn{% endif %}"></span>
-        <span class="fw-ikon{% if z.blockaden %} crit{% endif %}"><i class="fa-solid fa-rotate"></i></span>
+        <span class="fw-ikon{% if z.blockaden %} crit{% endif %}">{% zeichen 'lauf' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
             <div class="fw-s">
@@ -42,7 +43,7 @@
     {% for z in erledigt %}
     <div class="fw-zeile">
         <span class="fw-marker good"></span>
-        <span class="fw-ikon good"><i class="fa-solid fa-check"></i></span>
+        <span class="fw-ikon good">{% zeichen 'gut' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
             <div class="fw-s">{% for schluessel, wert in z.lauf.kennzahlen.items %}{{ schluessel }} {{ wert }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>

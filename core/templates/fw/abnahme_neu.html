@@ -1,10 +1,11 @@
 {% extends embed_base|default:'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Wohnungsabnahme — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 {% if not embed_base %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Wohnungsabnahme</span>
 </nav>
 {% endif %}
@@ -55,11 +56,11 @@
     <div class="fw-card p-5">
         <div class="flex items-center justify-between mb-3">
             <h3 class="font-bold fw-strong text-sm">Mängel / Zustand je Raum</h3>
-            <button type="button" onclick="addMangel()" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Mangel</button>
+            <button type="button" onclick="addMangel()" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">{% zeichen 'neu' klasse='mr-1' %}Mangel</button>
         </div>
         <div id="maengel" class="space-y-3"></div>
         <p class="text-xs fw-faint mt-2">Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").</p>
-        <p class="text-[11px] fw-faint mt-2 border-t fw-linie pt-2"><i class="fa-solid fa-scale-balanced mr-1 fw-faint"></i>Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
+        <p class="text-[11px] fw-faint mt-2 border-t fw-linie pt-2">{% zeichen 'recht' klasse='mr-1 fw-faint' %}Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
     </div>
 
     <!-- Abschluss -->
@@ -78,7 +79,7 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm"><i class="fa-solid fa-check mr-1.5"></i>Protokoll speichern</button>
+        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">{% zeichen 'speichern' klasse='mr-1.5' %}Protokoll speichern</button>
         <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
 </form>
@@ -94,11 +95,11 @@
                 <option value="abnutzung">Abnutzung</option><option value="mieter">Mieter</option><option value="vermieter">Vermieter</option>
             </select>
             <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="col-span-1 fw-flaeche2 rounded-lg text-sm px-2 py-2 text-right" title="Reparatur-/Ersatzkosten">
-            <label class="col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="Foto"><i class="fa-solid fa-camera"></i><input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
-            <button type="button" onclick="this.closest('.mangel-row').remove()" title="Diesen Mangel entfernen" class="col-span-1 fw-faint hover:fw-kritisch"><i class="fa-solid fa-xmark"></i></button>
+            <label class="col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="Foto">{% zeichen 'dokument' %}<input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
+            <button type="button" onclick="this.closest('.mangel-row').remove()" title="Diesen Mangel entfernen" class="col-span-1 fw-faint hover:fw-kritisch">{% zeichen 'loeschen' %}</button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <span class="col-span-3 text-[11px] fw-faint text-right pr-1"><i class="fa-solid fa-clipboard-list mr-1"></i>Raumbuch-Element</span>
+            <span class="col-span-3 text-[11px] fw-faint text-right pr-1">{% zeichen 'dokument' klasse='mr-1' %}Raumbuch-Element</span>
             <select name="m_ausstattung" class="col-span-6 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 fw-mutet">
                 <option value="">— kein Element (voller Betrag) —</option>
                 {% for el in elemente %}<option value="{{ el.id }}">{{ el.raum }} · {{ el.kategorie }}{% if el.einbau_datum %} ({{ el.einbau_datum|date:"Y" }}){% endif %}</option>{% endfor %}

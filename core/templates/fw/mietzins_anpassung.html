@@ -1,12 +1,13 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf l10n %}
 {% block title %}Mietzinsanpassung — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mietzins/" class="hover:fw-marke">Mietzins</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Anpassung</span>
 </nav>
 
@@ -25,7 +26,7 @@
         <h3 class="font-bold fw-strong text-sm mb-4">Grundlagen (bisher → aktuell)</h3>
         {% if basis_fehlt %}
         <div class="mb-4 text-xs fw-warn-flaeche border fw-linie-warn fw-warnton rounded-lg px-3 py-2">
-            <i class="fa-solid fa-circle-info mr-1"></i>Die Vertragsbasis (Referenzzins/LIK) war nicht erfasst — bitte die Basiswerte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert.
+            {% zeichen 'hinweis' klasse='mr-1' %}Die Vertragsbasis (Referenzzins/LIK) war nicht erfasst — bitte die Basiswerte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert.
         </div>
         {% endif %}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -87,7 +88,7 @@
 
         <!-- Mietrechtliche Live-Prüfung -->
         <div id="mz-warn" class="hidden mt-4 rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
-            <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
+            <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} Mietrechtlicher Hinweis</div>
             <ul id="mz-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
     </div>
@@ -97,7 +98,7 @@
         <h3 class="font-bold fw-strong text-sm">Begründung & Rechtliches</h3>
         {% if index_vorschlag %}
         <div class="fw-markenflaeche border fw-linie-marke rounded-lg px-3 py-2.5 text-xs fw-marke">
-            <i class="fa-solid fa-arrow-trend-up mr-1"></i><b>Indexmiete (Art. 269b OR):</b>
+            {% zeichen 'trend' klasse='mr-1' %}<b>Indexmiete (Art. 269b OR):</b>
             LIK {{ index_vorschlag.basis_lik }} → {{ index_vorschlag.aktuell_lik }} Punkte
             → Netto CHF {{ index_vorschlag.alt_netto|chf }} → <b>CHF {{ index_vorschlag.neu_netto|chf }}</b>
             (+{{ index_vorschlag.delta_prozent }}%). Begründung und neuer Mietzins sind vorbefüllt.
@@ -122,10 +123,10 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-file-pdf mr-1.5"></i>Formular als PDF
+            {% zeichen 'drucken' klasse='mr-1.5' %}Formular als PDF
         </button>
         <button type="submit" name="aktion" value="speichern" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Anpassung erfassen
+            {% zeichen 'speichern' klasse='mr-1.5' %}Anpassung erfassen
         </button>
         <a href="/neu/mietzins/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>

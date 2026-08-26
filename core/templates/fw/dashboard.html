@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}{{ ansicht_titel }} — swissImmo{% endblock %}
 
@@ -26,7 +27,7 @@
     </div>
     <div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center">
         {% if aktive_lg %}<a href="/neu/" class="fw-btn">× Filter aufheben</a>{% endif %}
-        <a href="/neu/zulauf/" class="fw-btn"><i class="fa-solid fa-inbox"></i> Zulauf</a>
+        <a href="/neu/zulauf/" class="fw-btn">{% zeichen 'wartet' %} Zulauf</a>
     </div>
 </div>
 
@@ -55,7 +56,7 @@
        zeigt Überfälliges und bald Fallendes, nicht den Bestand. Die
        Überschrift der Seite nennt dagegen die gewählte Ansicht. {% endcomment %}
     <div class="fw-kopf">
-        <span class="fw-ikon{% if vorrat %} crit{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span class="fw-ikon{% if vorrat %} crit{% endif %}">{% zeichen 'warnung' %}</span>
         <span class="fw-t">Was reisst</span>
         <span class="fw-neben">{% if ansicht == 'liegen' or ansicht == 'wartet' %}{{ faelle|length }}{% else %}{{ vorrat|length }}{% endif %} in dieser Ansicht</span>
     </div>
@@ -71,7 +72,7 @@
     {% for f in faelle %}
     <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick" style="text-decoration:none">
         <span class="fw-marker {% if ansicht == 'liegen' %}crit{% else %}warn{% endif %}"></span>
-        <span class="fw-ikon {% if ansicht == 'liegen' %}crit{% else %}warn{% endif %}"><i class="fa-solid fa-hourglass-half"></i></span>
+        <span class="fw-ikon {% if ansicht == 'liegen' %}crit{% else %}warn{% endif %}">{% zeichen 'wartet' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ f.betreff|default:f.fallart.bezeichnung }}</div>
             <div class="fw-s">{{ f.nummer }} · {{ f.get_status_display }}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</div>
@@ -114,7 +115,7 @@
 {% include 'fw/_arbeitsvorrat_abschnitte.html' %}
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-inbox"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'wartet' %}</span>
         <span class="fw-t">Zulauf</span>
         <span class="fw-neben">{{ av_eingaenge_gesamt }} nicht zugeordnet</span></div>
     {% for z in av_eingaenge %}
@@ -149,7 +150,7 @@
    alte Vorlage vor dem Überschreiben gelesen wurde. {% endcomment %}
 {% if inbox %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-list-check"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'arbeit' %}</span>
         <span class="fw-t">Aufgaben</span>
         <span class="fw-neben">{{ inbox|length }} ohne eigene Frist</span></div>
     {% for e in inbox %}
@@ -176,7 +177,7 @@
    oben liest, sieht zuerst, wo es klemmt. {% endcomment %}
 {% if lg_mandate %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-building-user"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
         <span class="fw-t">Mandate</span>
         <span class="fw-neben">{{ lg_mandate|length }} · Stand heute</span></div>
     {% for m in lg_mandate|slice:":8" %}
@@ -203,7 +204,7 @@
    beanspruchen. Nur wenn etwas abweicht, steht der Block offen. {% endcomment %}
 <details class="fw-klapp"{% if lg_abweichungen_anzahl %} open{% endif %}>
     <summary>
-        <span class="fw-ikon{% if lg_abweichungen_anzahl %} warn{% endif %}"><i class="fa-solid fa-chart-line"></i></span>
+        <span class="fw-ikon{% if lg_abweichungen_anzahl %} warn{% endif %}">{% zeichen 'bericht' %}</span>
         Lage des Bestands
         <span class="fw-klein">{% if lg_abweichungen_anzahl %}— {{ lg_abweichungen_anzahl }} Abweichung{{ lg_abweichungen_anzahl|pluralize:"en" }}{% else %}— keine Abweichung{% endif %}</span>
     </summary>

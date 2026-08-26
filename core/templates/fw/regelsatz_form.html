@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}{% if satz %}{{ satz.bezeichnung }}{% else %}Neuer Regelsatz{% endif %} — swissImmo{% endblock %}
 
 {% block content %}
@@ -13,7 +14,7 @@
 
 <form method="post">{% csrf_token %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-scale-balanced"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'recht' %}</span>
         <span class="fw-t">Geltungsbereich</span></div>
     <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -47,7 +48,7 @@
                 <b>Juristisch geprüft</b></label>
         </div>
         <div class="fw-hinweis warn mt-3" style="border:1px solid var(--ds-line);border-radius:var(--ds-radius)">
-            <span class="fw-hi"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <span class="fw-hi">{% zeichen 'warnung' %}</span>
             <div class="fw-ht">Das Kennzeichen «geprüft» ist die einzige Stelle, an der
                 aus einer Warnung eine <b>Sperre</b> wird. Setze es erst, wenn jemand die
                 Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb
@@ -59,7 +60,7 @@
 {% for z in zeilen %}
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-ikon {% if not z.rechnet %}mut{% endif %}"><i class="fa-solid fa-ruler"></i></span>
+        <span class="fw-ikon {% if not z.rechnet %}mut{% endif %}">{% zeichen 'zaehler' %}</span>
         <span class="fw-t">{{ z.bezeichnung }}</span>
         {% if not z.rechnet %}<span class="fw-chip fw-warn">prüft noch nichts</span>{% endif %}
     </div>
@@ -105,7 +106,7 @@
 <div class="fw-card">
     <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
         <div class="flex gap-2 flex-wrap">
-            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Speichern</button>
+            <button class="fw-btn fw-primary">{% zeichen 'speichern' %}Speichern</button>
             <a href="/neu/regelwerk/" class="fw-btn">Abbrechen</a>
         </div>
     </div>
@@ -116,7 +117,7 @@
 <form method="post" action="/neu/regelwerk/{{ satz.id }}/loeschen/"
       onsubmit="return confirm('Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten.')">
     {% csrf_token %}
-    <button class="fw-btn gefahr"><i class="fa-solid fa-trash"></i>Regelsatz löschen</button>
+    <button class="fw-btn gefahr">{% zeichen 'loeschen' %}Regelsatz löschen</button>
 </form>
 {% endif %}
 {% endblock %}

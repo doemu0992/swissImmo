@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Suche{% if q %}: {{ q }}{% endif %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead"><h1>Suche</h1></div>
@@ -10,7 +11,7 @@
 
 {% if q and total == 0 %}
 <div class="fw-card p-8 text-center fw-faint">
-    <i class="fa-solid fa-magnifying-glass text-2xl mb-3 fw-faint"></i>
+    {% zeichen 'suchen' klasse='text-2xl mb-3 fw-faint' %}
     <p class="text-sm">Keine Treffer für „{{ q }}".</p>
 </div>
 {% endif %}
@@ -24,7 +25,7 @@
             <span class="w-8 h-8 rounded-full fw-btn fw-primary flex items-center justify-center text-xs font-bold">{{ m.display_name|slice:":2"|upper }}</span>
             <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ m.display_name }}</div>
                 <div class="text-xs fw-faint">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</div></div>
-            <i class="fa-solid fa-chevron-right text-xs fw-faint"></i>
+            {% zeichen 'weiter' klasse='text-xs fw-faint' %}
         </a>
         {% endfor %}
     </div>
@@ -37,10 +38,10 @@
     <div class="fw-card fw-dv">
         {% for lg in liegenschaften %}
         <a href="/neu/liegenschaften/{{ lg.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-building text-xs"></i></span>
+            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'liegenschaft' klasse='text-xs' %}</span>
             <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ lg.strasse }}</div>
                 <div class="text-xs fw-faint">{{ lg.plz }} {{ lg.ort }}</div></div>
-            <i class="fa-solid fa-chevron-right text-xs fw-faint"></i>
+            {% zeichen 'weiter' klasse='text-xs fw-faint' %}
         </a>
         {% endfor %}
     </div>
@@ -53,10 +54,10 @@
     <div class="fw-card fw-dv">
         {% for e in objekte %}
         <a href="/neu/objekte/{{ e.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-house text-xs"></i></span>
+            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'liegenschaft' klasse='text-xs' %}</span>
             <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ e.bezeichnung }}</div>
                 <div class="text-xs fw-faint">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.ort }}{% if e.etage %} · {{ e.etage }}{% endif %}</div></div>
-            <i class="fa-solid fa-chevron-right text-xs fw-faint"></i>
+            {% zeichen 'weiter' klasse='text-xs fw-faint' %}
         </a>
         {% endfor %}
     </div>
@@ -69,10 +70,10 @@
     <div class="fw-card fw-dv">
         {% for v in vertraege %}
         <a href="/neu/vertraege/{{ v.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-file-contract text-xs"></i></span>
+            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'vertrag' klasse='text-xs' %}</span>
             <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</div>
                 <div class="text-xs fw-faint">{{ v.einheit.liegenschaft.strasse }} · ab {{ v.beginn|date:"d.m.Y" }}</div></div>
-            <i class="fa-solid fa-chevron-right text-xs fw-faint"></i>
+            {% zeichen 'weiter' klasse='text-xs fw-faint' %}
         </a>
         {% endfor %}
     </div>

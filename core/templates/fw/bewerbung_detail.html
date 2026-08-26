@@ -1,16 +1,17 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}{{ b.vorname }} {{ b.nachname }} — Bewerbung{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/bewerbungen/" class="hover:fw-marke">Bewerbungen</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">{{ b.vorname }} {{ b.nachname }}</span>
 </nav>
 
 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-6">
     <div class="flex items-center gap-4">
         <div class="w-14 h-14 rounded-xl fw-btn fw-primary flex items-center justify-center text-xl shadow-lg fw-schatten-marke">
-            <i class="fa-solid fa-user"></i>
+            {% zeichen 'person' %}
         </div>
         <div>
             <h1 class="text-2xl font-extrabold fw-strong">{{ b.vorname }} {{ b.nachname }}</h1>
@@ -18,8 +19,8 @@
         </div>
     </div>
     <div class="flex flex-col items-end gap-2">
-        {% if b.hat_betreibungen %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-krit-flaeche fw-kritisch"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Betreibungen vorhanden</span>
-        {% else %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-gut-flaeche fw-gut"><i class="fa-solid fa-circle-check mr-1"></i>Keine Betreibungen</span>{% endif %}
+        {% if b.hat_betreibungen %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-krit-flaeche fw-kritisch">{% zeichen 'warnung' klasse='mr-1' %}Betreibungen vorhanden</span>
+        {% else %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-gut-flaeche fw-gut">{% zeichen 'gut' klasse='mr-1' %}Keine Betreibungen</span>{% endif %}
         <span class="text-xs fw-faint">Status: {{ status_label }}</span>
     </div>
 </div>
@@ -74,7 +75,7 @@
             <div class="space-y-2">
                 {% for d in dokumente %}
                 <a href="{{ d.url }}" target="_blank" rel="noopener" class="flex items-center gap-2 text-sm fw-marke hover:fw-marke">
-                    <i class="fa-solid fa-file-pdf"></i>{{ d.label }}
+                    {% zeichen 'drucken' %}{{ d.label }}
                 </a>
                 {% endfor %}
             </div>
@@ -120,7 +121,7 @@
         </div>
 
         <div class="fw-balken-voll rounded-xl p-5 text-white">
-            <h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-file-signature mr-1"></i>Zusage & Vertrag</h3>
+            <h3 class="font-bold text-sm mb-1">{% zeichen 'vertrag' klasse='mr-1' %}Zusage & Vertrag</h3>
             <p class="text-xs fw-faint mb-3">Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ b.einheit.bezeichnung }}.</p>
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" onsubmit="return confirm('Mieter anlegen und Vertragsentwurf erstellen?');">
                 {% csrf_token %}

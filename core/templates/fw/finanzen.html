@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Finanzen — swissImmo{% endblock %}
 {% block content %}
@@ -75,14 +76,14 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
                 {% if i.anzahl %}
                 <a href="{{ i.url }}" class="shrink-0 text-white text-xs font-semibold px-3.5 py-2 rounded-lg {{ i.btn_cls }}">{{ i.cta }} ›</a>
                 {% else %}
-                <span class="shrink-0 fw-gut text-xs font-semibold px-2"><i class="fa-solid fa-check mr-1"></i>erledigt</span>
+                <span class="shrink-0 fw-gut text-xs font-semibold px-2">{% zeichen 'gut' klasse='mr-1' %}erledigt</span>
                 {% endif %}
             </div>
         {% endfor %}
         </div>
         {% if offene_posten == 0 %}
         <div class="mt-3 fw-gut-flaeche border fw-linie-gut rounded-xl px-4 py-3 text-sm fw-gut">
-            <i class="fa-solid fa-circle-check mr-1.5"></i>Alle Finanzaufgaben erledigt — nichts offen.
+            {% zeichen 'gut' klasse='mr-1.5' %}Alle Finanzaufgaben erledigt — nichts offen.
         </div>
         {% endif %}
     </div>
@@ -95,11 +96,11 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
             {% for c in checkliste %}
                 <a href="{{ c.url }}" class="flex items-start gap-3 px-4 py-3 hover:fw-flaeche2">
                     {% if c.ok is True %}
-                        <i class="fa-solid fa-circle-check fw-gut mt-0.5"></i>
+                        {% zeichen 'gut' klasse='fw-gut mt-0.5' %}
                     {% elif c.ok is False %}
-                        <i class="fa-regular fa-circle fw-warnton mt-0.5"></i>
+                        {% zeichen 'offen' klasse='fw-warnton mt-0.5' %}
                     {% else %}
-                        <i class="fa-regular fa-circle-question fw-faint mt-0.5"></i>
+                        {% zeichen 'hinweis' klasse='fw-faint mt-0.5' %}
                     {% endif %}
                     <div class="flex-1 min-w-0">
                         <div class="text-sm {% if c.ok is True %}fw-faint line-through{% else %}fw-strong font-medium{% endif %}">{{ c.titel }}</div>
@@ -117,7 +118,7 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
                         {% if c.chf %}<div class="text-[11px] fw-faint fw-num">CHF {{ c.chf|chf }}</div>{% endif %}
                     </div>
                     {% endif %}
-                    <i class="fa-solid fa-chevron-right text-[10px] fw-faint mt-1"></i>
+                    {% zeichen 'weiter' klasse='text-[10px] fw-faint mt-1' %}
                 </a>
             {% endfor %}
             </div>
@@ -129,13 +130,13 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
         <div class="mt-4 fw-card p-4">
             <div class="text-xs uppercase tracking-wide fw-faint font-semibold mb-2">Direkt zu</div>
             <div class="grid grid-cols-2 gap-2 text-sm">
-                <a href="/neu/buchhaltung/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-calculator w-4 mr-1"></i>Journal</a>
-                <a href="/neu/mieterkonten/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-file-invoice-dollar w-4 mr-1"></i>Mieterkonten</a>
-                <a href="/neu/lieferantenkonten/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-file-invoice w-4 mr-1"></i>Lieferantenkonten</a>
-                <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-chart-column w-4 mr-1"></i>Debitoren-Aging</a>
-                <a href="/neu/mwst/" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-percent w-4 mr-1"></i>MWST</a>
-                <a href="/neu/nebenkosten/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-bolt w-4 mr-1"></i>Nebenkosten</a>
-                <a href="/neu/anlagen/{{ lg_query }}" class="fw-mutet hover:fw-marke"><i class="fa-solid fa-building-columns w-4 mr-1"></i>Abschluss</a>
+                <a href="/neu/buchhaltung/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'bericht' klasse='w-4 mr-1' %}Journal</a>
+                <a href="/neu/mieterkonten/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'rechnung' klasse='w-4 mr-1' %}Mieterkonten</a>
+                <a href="/neu/lieferantenkonten/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'rechnung' klasse='w-4 mr-1' %}Lieferantenkonten</a>
+                <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'bericht' klasse='w-4 mr-1' %}Debitoren-Aging</a>
+                <a href="/neu/mwst/" class="fw-mutet hover:fw-marke">{% zeichen 'bericht' klasse='w-4 mr-1' %}MWST</a>
+                <a href="/neu/nebenkosten/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'kritisch' klasse='w-4 mr-1' %}Nebenkosten</a>
+                <a href="/neu/anlagen/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'bank' klasse='w-4 mr-1' %}Abschluss</a>
             </div>
         </div>
     </div>

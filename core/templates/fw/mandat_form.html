@@ -1,9 +1,10 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}{% if ist_neu %}Neuer Eigentümer{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mandate/" class="hover:fw-marke">Mandate</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">{% if ist_neu %}Neu{% else %}{{ md.firma_oder_name }}{% endif %}</span>
 </nav>
 
@@ -72,7 +73,7 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Speichern
+            {% zeichen 'speichern' klasse='mr-1.5' %}Speichern
         </button>
         <a href="/neu/mandate/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
@@ -83,7 +84,7 @@
 <div class="fw-card p-5 mt-5 max-w-3xl">
     <div class="flex items-start justify-between gap-3">
         <div>
-            <h3 class="font-bold fw-strong text-sm flex items-center gap-2"><i class="fa-solid fa-building-user fw-marke"></i> Eigentümer-Portal-Zugang</h3>
+            <h3 class="font-bold fw-strong text-sm flex items-center gap-2">{% zeichen 'liegenschaft' klasse='fw-marke' %} Eigentümer-Portal-Zugang</h3>
             <p class="text-xs fw-faint mt-1">Login fürs Portal unter <span class="font-mono">/portal/login/</span> — Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug.</p>
         </div>
         {% if portal_user %}
@@ -98,22 +99,22 @@
     <div class="mt-3 flex flex-wrap gap-2">
         <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/">{% csrf_token %}
             <button type="submit" class="text-sm font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-4 py-2 rounded-lg">
-                <i class="fa-solid fa-rotate mr-1"></i>Neues Passwort senden
+                {% zeichen 'lauf' klasse='mr-1' %}Neues Passwort senden
             </button>
         </form>
         <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" onsubmit="return confirm('Portal-Zugang wirklich entfernen?');">{% csrf_token %}
             <input type="hidden" name="aktion" value="entfernen">
             <button type="submit" class="text-sm font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-4 py-2 rounded-lg">
-                <i class="fa-solid fa-user-slash mr-1"></i>Zugang entfernen
+                {% zeichen 'gesperrt' klasse='mr-1' %}Zugang entfernen
             </button>
         </form>
     </div>
     {% else %}
     <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" class="mt-3">{% csrf_token %}
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-key mr-1.5"></i>Portal-Zugang erstellen &amp; senden
+            {% zeichen 'schluessel' klasse='mr-1.5' %}Portal-Zugang erstellen &amp; senden
         </button>
-        {% if not md.email %}<p class="text-xs fw-warnton mt-2"><i class="fa-solid fa-triangle-exclamation"></i> Keine E-Mail hinterlegt — die Zugangsdaten werden nach dem Erstellen einmalig angezeigt.</p>{% endif %}
+        {% if not md.email %}<p class="text-xs fw-warnton mt-2">{% zeichen 'warnung' %} Keine E-Mail hinterlegt — die Zugangsdaten werden nach dem Erstellen einmalig angezeigt.</p>{% endif %}
     </form>
     {% endif %}
 </div>

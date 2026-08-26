@@ -1,12 +1,13 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load l10n %}
 {% block title %}{% if ist_neu %}Neue Liegenschaft{% else %}{{ lg.strasse }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/liegenschaften/{{ lg_query }}" class="hover:fw-marke">Liegenschaften</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     {% if not ist_neu %}<a href="/neu/liegenschaften/{{ lg.id }}/" class="hover:fw-marke">{{ lg.strasse }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>{% endif %}
+    {% zeichen 'weiter' klasse='text-[9px]' %}{% endif %}
     <span class="fw-mutet font-medium">{% if ist_neu %}Neu{% else %}Bearbeiten{% endif %}</span>
 </nav>
 
@@ -141,7 +142,7 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Speichern
+            {% zeichen 'speichern' klasse='mr-1.5' %}Speichern
         </button>
         <a href="{% if ist_neu %}/neu/liegenschaften/{% else %}/neu/liegenschaften/{{ lg.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>

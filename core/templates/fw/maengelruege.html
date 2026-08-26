@@ -1,11 +1,12 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Mängelrüge — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/" class="hover:fw-marke">Verträge</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Mängelrüge</span>
 </nav>
 
@@ -17,7 +18,7 @@
 </div>
 
 <div class="max-w-3xl mb-5 text-xs fw-markenflaeche border fw-linie-marke fw-marke rounded-lg px-3 py-2.5">
-    <i class="fa-solid fa-circle-info mr-1"></i>Setzt der Mieterschaft eine Frist zur Behebung eines Mangels.
+    {% zeichen 'hinweis' klasse='mr-1' %}Setzt der Mieterschaft eine Frist zur Behebung eines Mangels.
     Es wird automatisch eine Frist-Pendenz zur Nachkontrolle erstellt und der Brief in der Akte abgelegt.
 </div>
 
@@ -31,7 +32,7 @@
     </div>
     <div class="flex items-center gap-3">
         <button type="submit" class="inline-flex items-center gap-2 fw-btn fw-primary text-sm font-semibold rounded-lg px-5 py-2.5">
-            <i class="fa-solid fa-file-pdf"></i>Mängelrüge als PDF erstellen
+            {% zeichen 'drucken' %}Mängelrüge als PDF erstellen
         </button>
         <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink">Abbrechen</a>
     </div>

@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Zulauf — swissImmo{% endblock %}
 
 {% block content %}
@@ -11,7 +12,7 @@
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-inbox"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'wartet' %}</span>
         <span class="fw-t">Nicht zugeordnet</span>
         <span class="fw-neben">{{ gesamt }}</span></div>
     {% for z in zeilen %}
@@ -32,7 +33,7 @@
             {% if z.v %}
             <label class="fw-klein" title="Merkt sich das Merkmal für künftige Eingänge">
                 <input type="checkbox" name="regel_lernen" value="1"> Regel lernen</label>
-            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Übernehmen</button>
+            <button class="fw-btn fw-primary">{% zeichen 'gut' %}Übernehmen</button>
             {% endif %}
             <input name="ablegen" class="fw-feld" placeholder="Grund der Ablage" style="width:150px">
             <button class="fw-btn">Ablegen</button>

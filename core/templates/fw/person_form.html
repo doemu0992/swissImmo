@@ -1,12 +1,13 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}{% if ist_neu %}Neue Person{% else %}{{ m.display_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
 
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/personen/{{ lg_query }}" class="hover:fw-marke">Personen</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     {% if not ist_neu %}<a href="/neu/personen/{{ m.id }}/" class="hover:fw-marke">{{ m.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>{% endif %}
+    {% zeichen 'weiter' klasse='text-[9px]' %}{% endif %}
     <span class="fw-mutet font-medium">{% if ist_neu %}Neue Person{% else %}Bearbeiten{% endif %}</span>
 </nav>
 
@@ -310,7 +311,7 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" class="{% if dublette_warnung %}fw-warn-flaeche hover:fw-warn-voll{% else %}fw-balken-voll hover:fw-balken-voll{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>{% if dublette_warnung %}Trotzdem speichern{% else %}Speichern{% endif %}
+            {% zeichen 'speichern' klasse='mr-1.5' %}{% if dublette_warnung %}Trotzdem speichern{% else %}Speichern{% endif %}
         </button>
         <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>

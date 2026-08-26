@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Hypotheken — swissImmo{% endblock %}
 {% block content %}
@@ -9,13 +10,13 @@
         <p>Finanzierung je Liegenschaft — Schuld, Zinssatz und Fälligkeiten{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/hypotheken/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
     {% if kann_schreiben %}
-    <button type="button" onclick="document.getElementById('hypoform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Hypothek erfassen</button>
+    <button type="button" onclick="document.getElementById('hypoform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %}Hypothek erfassen</button>
     {% endif %}
 </div>
 
 {% if kann_schreiben %}
 <div id="hypoform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-building-columns fw-marke mr-1.5"></i>Hypothek erfassen</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'bank' klasse='fw-marke mr-1.5' %}Hypothek erfassen</h3>
     <form method="post" action="/neu/hypotheken/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
@@ -40,7 +41,7 @@
             <input type="date" name="beginn" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div><label class="block text-xs font-semibold fw-mutet mb-1">Ablauf / Fälligkeit</label>
             <input type="date" name="ablauf" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="flex items-end"><button class="w-full fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
+        <div class="flex items-end"><button class="w-full fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Erfassen</button></div>
     </form>
 </div>
 {% endif %}
@@ -69,8 +70,8 @@
     {% for g in gruppen %}
     <details class="group border-b fw-linie last:border-0">
         <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer select-none hover:fw-flaeche2 list-none flex-wrap">
-            <i class="fa-solid fa-chevron-right text-xs fw-faint transition-transform group-open:rotate-90"></i>
-            <i class="fa-solid fa-building fw-marke"></i>
+            {% zeichen 'weiter' klasse='text-xs fw-faint transition-transform group-open:rotate-90' %}
+            {% zeichen 'liegenschaft' klasse='fw-marke' %}
             <span class="font-bold fw-strong">{{ g.lg.strasse }}, {{ g.lg.plz }} {{ g.lg.ort }}</span>
             <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">CHF {{ g.schuld|chf }}</span>
             <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">Zins {{ g.zins|chf }}/J</span>
@@ -111,7 +112,7 @@
                         <form method="post" action="/neu/hypotheken/" onsubmit="return confirm('Hypothek löschen?');">
                             {% csrf_token %}
                             <input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ r.hy.id }}">
-                            <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                            <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen">{% zeichen 'loeschen' %}</button>
                         </form>
                         {% endif %}
                     </td>
@@ -123,12 +124,12 @@
     </details>
     {% empty %}
     <div class="px-5 py-12 text-center">
-        <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-building-columns"></i></div>
+        <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'bank' %}</div>
         <p class="text-sm font-medium fw-ink">Keine Hypotheken erfasst</p>
         <p class="text-xs fw-faint mt-1">Erfasse die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten.</p>
     </div>
     {% endfor %}
 </div>
 
-<p class="text-xs fw-faint mt-4"><i class="fa-solid fa-circle-info mr-1"></i>„Belehnung" ist eine grobe Kennzahl gegenüber dem Versicherungswert (nicht dem Verkehrswert). „Bald fällig" umfasst Tranchen mit Ablauf in den nächsten 180 Tagen — rechtzeitig Refinanzierung/Verlängerung prüfen.</p>
+<p class="text-xs fw-faint mt-4">{% zeichen 'hinweis' klasse='mr-1' %}„Belehnung" ist eine grobe Kennzahl gegenüber dem Versicherungswert (nicht dem Verkehrswert). „Bald fällig" umfasst Tranchen mit Ablauf in den nächsten 180 Tagen — rechtzeitig Refinanzierung/Verlängerung prüfen.</p>
 {% endblock %}

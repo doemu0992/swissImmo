@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Buchhaltung — swissImmo{% endblock %}
 
@@ -6,7 +7,7 @@
 
 <div class="fw-phead">
     <h1>Buchhaltung</h1>
-    <button type="button" onclick="document.getElementById('buchform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Buchung erfassen</button>
+    <button type="button" onclick="document.getElementById('buchform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} Buchung erfassen</button>
 </div>
 <p class="text-sm fw-mutet mb-4">Erfolgsrechnung, Bilanz und Buchungsjournal
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
@@ -26,15 +27,15 @@
     {% if jahr != 'alle' %}
     <div class="ml-auto flex items-center gap-2 flex-wrap">
         <a href="/neu/buchhaltung/pdf/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener"
-           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary fw-primary"><i class="fa-solid fa-file-pdf mr-1"></i>Erfolgsrechnung &amp; Bilanz (PDF)</a>
+           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary fw-primary">{% zeichen 'drucken' klasse='mr-1' %}Erfolgsrechnung &amp; Bilanz (PDF)</a>
         <a href="/neu/buchhaltung/export/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary hover:fw-balken-voll"><i class="fa-solid fa-file-csv mr-1"></i>Journal-Export (CSV)</a>
+           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary hover:fw-balken-voll">{% zeichen 'herunterladen' klasse='mr-1' %}Journal-Export (CSV)</a>
     </div>
     {% endif %}
 </div>
 
 <div id="buchform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-pen-to-square fw-marke mr-1.5"></i>Manuelle Buchung (Soll an Haben)</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'bearbeiten' klasse='fw-marke mr-1.5' %}Manuelle Buchung (Soll an Haben)</h3>
     <form method="post" action="/neu/buchhaltung/buchung/" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {% csrf_token %}
         <div><label class="block text-xs font-semibold fw-mutet mb-1">Datum</label>
@@ -63,13 +64,13 @@
         <div><label class="block text-xs font-semibold fw-mutet mb-1">Belegtext *</label>
             <input name="beleg_text" id="bu-text" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="lg:col-span-3 flex items-center gap-3 flex-wrap">
-            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Buchen</button>
+            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Buchen</button>
             <label class="flex items-center gap-2 text-xs fw-mutet">
                 <input type="checkbox" name="weiter" value="1" {% if serienerfassung %}checked{% endif %} class="fw-akzent">
                 Serienerfassung — Maske bleibt offen, Datum und Konten bleiben stehen
             </label>
             <a href="/neu/kontenplan/{{ lg_query }}" class="text-xs fw-marke hover:underline">
-                <i class="fa-solid fa-list-ol mr-1"></i>Kontenplan verwalten
+                {% zeichen 'verlauf' klasse='mr-1' %}Kontenplan verwalten
             </a>
         </div>
     </form>
@@ -96,15 +97,15 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'trend' %}</div>
         <div><div class="text-2xl font-bold fw-gut">CHF {{ total_ertrag|chf }}</div><div class="text-sm fw-mutet">Ertrag</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-down"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0">{% zeichen 'zurueck' %}</div>
         <div><div class="text-2xl font-bold fw-kritisch">CHF {{ total_aufwand|chf }}</div><div class="text-sm fw-mutet">Aufwand</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg {% if erfolg >= 0 %}fw-markenflaeche fw-marke{% else %}fw-krit-flaeche fw-kritisch{% endif %} flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="w-11 h-11 rounded-lg {% if erfolg >= 0 %}fw-markenflaeche fw-marke{% else %}fw-krit-flaeche fw-kritisch{% endif %} flex items-center justify-center text-lg shrink-0">{% zeichen 'recht' %}</div>
         <div><div class="text-2xl font-bold {% if erfolg >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">CHF {{ erfolg|chf }}</div><div class="text-sm fw-mutet">Erfolg (Gewinn/Verlust)</div></div>
     </div>
 </div>
@@ -216,18 +217,18 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="fw-card p-5 mt-4 flex items-center justify-between">
         <span class="font-bold fw-strong">Bilanzsumme</span>
         <span class="text-sm {% if bilanz_differenz == 0 %}fw-gut{% else %}fw-warnton{% endif %} font-semibold">
-            {% if bilanz_differenz == 0 %}<i class="fa-solid fa-check mr-1"></i>Aktiven = Passiven · CHF {{ total_aktiven|chf }}
-            {% else %}<i class="fa-solid fa-triangle-exclamation mr-1"></i>Differenz CHF {{ bilanz_differenz|chf }} (Buchungen ausserhalb Kontenrahmen){% endif %}
+            {% if bilanz_differenz == 0 %}{% zeichen 'gut' klasse='mr-1' %}Aktiven = Passiven · CHF {{ total_aktiven|chf }}
+            {% else %}{% zeichen 'warnung' klasse='mr-1' %}Differenz CHF {{ bilanz_differenz|chf }} (Buchungen ausserhalb Kontenrahmen){% endif %}
         </span>
     </div>
-    <p class="text-xs fw-faint mt-3"><i class="fa-solid fa-circle-info mr-1"></i>
+    <p class="text-xs fw-faint mt-3">{% zeichen 'hinweis' klasse='mr-1' %}
         Bilanz kumulativ bis Jahresende (Bilanzkonten tragen Eröffnungssalden über). Das kumulierte Ergebnis (Vortrag + laufendes Jahr) wird dem Eigenkapital zugerechnet.</p>
 
     <!-- JAHRESABSCHLUSS: Erfolgskonten gegen 2970 saldieren -->
     {% if jahr != 'alle' %}
     <div class="fw-card p-5 mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0"><i class="fa-solid fa-lock"></i></span>Jahresabschluss {{ jahr }}</div>
+            <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'gesperrt' %}</span>Jahresabschluss {{ jahr }}</div>
             <p class="text-xs fw-mutet mt-0.5 max-w-xl">
                 {% if jahr_abgeschlossen %}
                 Erfolgskonten sind gegen «2970 Jahresergebnis» saldiert — die Abschlussbuchungen stehen im Journal und im Treuhand-Export.
@@ -238,14 +239,14 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
         {% if jahr_abgeschlossen %}
         <div class="shrink-0 flex items-center gap-2">
-            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fa-solid fa-check mr-1"></i>Abgeschlossen</span>
+            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg whitespace-nowrap">{% zeichen 'gut' klasse='mr-1' %}Abgeschlossen</span>
             {% if ist_verwaltung %}
             <form method="post" class="shrink-0" onsubmit="return confirm('Jahresabschluss {{ jahr }} zurücknehmen? Alle Abschlussbuchungen werden storniert und das Jahr wieder geöffnet.');">
                 {% csrf_token %}
                 <input type="hidden" name="aktion" value="abschluss_zuruecknehmen">
                 <input type="hidden" name="jahr" value="{{ jahr }}">
                 <button type="submit" class="fw-mutet hover:fw-kritisch text-xs font-semibold px-3 py-1.5 rounded-lg border fw-linie hover:fw-linie-krit whitespace-nowrap transition-colors">
-                    <i class="fa-solid fa-lock-open mr-1"></i>Zurücknehmen
+                    {% zeichen 'schluessel' klasse='mr-1' %}Zurücknehmen
                 </button>
             </form>
             {% endif %}
@@ -256,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <input type="hidden" name="aktion" value="jahresabschluss">
             <input type="hidden" name="jahr" value="{{ jahr }}">
             <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
-                <i class="fa-solid fa-lock mr-1.5"></i>Jahr abschliessen
+                {% zeichen 'gesperrt' klasse='mr-1.5' %}Jahr abschliessen
             </button>
         </form>
         {% endif %}
@@ -291,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </label>
         <div class="sm:col-span-1 flex gap-2">
             <button class="w-full fw-btn fw-primary text-sm font-semibold px-3 py-2 rounded-lg" title="Filtern">
-                <i class="fa-solid fa-magnifying-glass"></i>
+                {% zeichen 'suchen' %}
             </button>
         </div>
         {% if j_suche or j_konto or j_von or j_bis %}
@@ -329,17 +330,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <div class="mt-2 flex items-center gap-3 flex-wrap">
                     {% if b.kreditoren_rechnung_id %}
-                    <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" class="text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-file-invoice mr-1"></i>Beleg</a>
+                    <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'rechnung' klasse='mr-1' %}Beleg</a>
                     {% elif b.debitoren_rechnung_id %}
-                    <a href="/neu/debitoren/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Beleg</a>
+                    <a href="/neu/debitoren/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'rechnung' klasse='mr-1' %}Beleg</a>
                     {% elif b.zahlungseingang_id %}
-                    <a href="/neu/bankabgleich/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-right-left mr-1"></i>Zahlung</a>
+                    <a href="/neu/bankabgleich/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'geld' klasse='mr-1' %}Zahlung</a>
                     {% endif %}
                     {% if not b.ist_storno and not b.storniert_am %}
                     <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
                           onsubmit="return confirm('Beleg #{{ b.beleg_nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).');">
                         {% csrf_token %}
-                        <button class="text-xs font-semibold fw-kritisch hover:underline"><i class="fa-solid fa-rotate-left mr-1"></i>Stornieren</button>
+                        <button class="text-xs font-semibold fw-kritisch hover:underline">{% zeichen 'lauf' klasse='mr-1' %}Stornieren</button>
                     </form>
                     {% endif %}
                 </div>
@@ -390,19 +391,19 @@ document.addEventListener('DOMContentLoaded', function () {
                         {% endcomment %}
                         {% if b.kreditoren_rechnung_id %}
                         <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" title="Kreditorenrechnung öffnen"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3"><i class="fa-solid fa-file-invoice mr-1"></i>Beleg</a>
+                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'rechnung' klasse='mr-1' %}Beleg</a>
                         {% elif b.debitoren_rechnung_id %}
                         <a href="/neu/debitoren/{{ lg_query }}" title="Debitorenrechnung"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Beleg</a>
+                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'rechnung' klasse='mr-1' %}Beleg</a>
                         {% elif b.zahlungseingang_id %}
                         <a href="/neu/bankabgleich/{{ lg_query }}" title="Zahlungseingang"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3"><i class="fa-solid fa-right-left mr-1"></i>Zahlung</a>
+                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'geld' klasse='mr-1' %}Zahlung</a>
                         {% endif %}
                         {% if not b.ist_storno and not b.storniert_am %}
                         <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
                               onsubmit="return confirm('Beleg #{{ b.beleg_nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).');">
                             {% csrf_token %}
-                            <button class="text-xs font-semibold fw-kritisch hover:fw-kritisch hover:underline"><i class="fa-solid fa-rotate-left mr-1"></i>Stornieren</button>
+                            <button class="text-xs font-semibold fw-kritisch hover:fw-kritisch hover:underline">{% zeichen 'lauf' klasse='mr-1' %}Stornieren</button>
                         </form>
                         {% endif %}
                     </td>

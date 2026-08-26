@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Rechnungen — Mieterportal{% endblock %}
 {% block brand_icon %}fa-file-invoice{% endblock %}
@@ -31,7 +32,7 @@
                     <span class="text-sm font-bold fw-strong whitespace-nowrap">CHF {{ r.betrag|chf }}</span>
                     <a href="/mieter/rechnung/{{ r.id }}/" target="_blank" rel="noopener"
                        class="fw-balken-voll hover:fw-balken-voll transition-colors text-white text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap flex items-center gap-1.5">
-                        <i class="fa-solid fa-qrcode"></i> QR
+                        {% zeichen 'bank' %} QR
                     </a>
                 </div>
             </div>
@@ -40,7 +41,7 @@
     </div>
     {% else %}
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
-        <span class="w-14 h-14 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-circle-check text-xl"></i></span>
+        <span class="w-14 h-14 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mx-auto mb-4">{% zeichen 'gut' klasse='text-xl' %}</span>
         <p class="font-semibold fw-ink">Keine offenen Rechnungen</p>
         <p class="text-sm fw-faint mt-1">Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug.</p>
     </div>
@@ -50,7 +51,7 @@
     <details class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mt-6">
         <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
             <span class="font-bold fw-strong">Bezahlte Rechnungen <span class="fw-faint font-normal text-sm">(letzte 24 Monate)</span></span>
-            <i class="fa-solid fa-chevron-down fw-faint text-xs"></i>
+            {% zeichen 'aufklappen' klasse='fw-faint text-xs' %}
         </summary>
         <div class="fw-dv border-t fw-linie">
             {% for r in bezahlte %}
@@ -63,7 +64,7 @@
                     <span class="text-sm font-semibold fw-mutet whitespace-nowrap">CHF {{ r.betrag|chf }}</span>
                     <a href="/mieter/rechnung/{{ r.id }}/" target="_blank" rel="noopener"
                        class="border fw-linie hover:fw-linie-marke fw-mutet hover:fw-marke text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap">
-                        <i class="fa-solid fa-file-pdf"></i> Beleg
+                        {% zeichen 'drucken' %} Beleg
                     </a>
                 </div>
             </div>

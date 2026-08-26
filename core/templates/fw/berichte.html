@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Berichte — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -7,12 +8,12 @@
         <p>Alle Reports und Exporte an einem Ort.{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-        <a href="/neu/auswertung/{{ lg_query }}" class="fw-btn fw-primary"><i class="fa-solid fa-chart-line"></i>Interaktive Auswertung</a>
+        <a href="/neu/auswertung/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'bericht' %}Interaktive Auswertung</a>
         <div class="relative" data-menu>
-            <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+            <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
-                <a href="/neu/berichte/betriebskostenspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-gauge-high w-4"></i>Betriebskostenspiegel</a>
-                <a href="/neu/berichte/leerstand-verlauf/" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-chart-column w-4"></i>Leerstands-Verlauf</a>
+                <a href="/neu/berichte/betriebskostenspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'zaehler' klasse='w-4' %}Betriebskostenspiegel</a>
+                <a href="/neu/berichte/leerstand-verlauf/" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'bericht' klasse='w-4' %}Leerstands-Verlauf</a>
             </div>
         </div>
     </div>
@@ -36,7 +37,7 @@
                 <div class="text-xs fw-mutet mt-0.5">{{ i.sub }}</div>
                 {% if i.kennzahl %}<div class="text-xs font-semibold fw-ink mt-1.5">{{ i.kennzahl }}</div>{% endif %}
             </div>
-            <i class="fa-solid fa-chevron-right text-[10px] fw-faint group-hover:fw-marke mt-1"></i>
+            {% zeichen 'weiter' klasse='text-[10px] fw-faint group-hover:fw-marke mt-1' %}
         </div>
     </a>
     {% endfor %}

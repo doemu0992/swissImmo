@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}{{ lg.strasse }} — swissImmo{% endblock %}
 
@@ -6,13 +7,13 @@
 
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
     <a href="/neu/liegenschaften/{{ lg_query }}">Liegenschaften</a>
-    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    {% zeichen 'weiter' %}
     <b>{{ lg.strasse }}</b>
 </nav>
 
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
-        <div class="fw-akte-bild"><i class="fa-solid fa-building"></i></div>
+        <div class="fw-akte-bild">{% zeichen 'liegenschaft' %}</div>
         <div>
             <div class="fw-akte-typ">Liegenschaft · {{ lg_nummer }}</div>
             <h1>{{ lg.strasse }}</h1>
@@ -32,27 +33,27 @@
             </div>
         </div>
         <div class="fw-akte-rechts">
-            <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-btn"><i class="fa-solid fa-pen"></i>Bearbeiten</a>
+            <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}Bearbeiten</a>
             <div class="relative">
                 <button type="button" onclick="document.getElementById('lAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                        class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+                        class="fw-btn">{% zeichen 'mehr' %}Mehr</button>
                 <div id="lAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
-                    <a href="/neu/mieterspiegel/?lg={{ lg.id }}" class="fw-menuzeile"><i class="fa-solid fa-table-list w-4"></i>Mieterspiegel</a>
+                    <a href="/neu/mieterspiegel/?lg={{ lg.id }}" class="fw-menuzeile">{% zeichen 'filtern' klasse='w-4' %}Mieterspiegel</a>
                     {% if lg.eigentuemer_id %}
-                    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/abrechnung/" class="fw-menuzeile"><i class="fa-solid fa-file-invoice-dollar w-4"></i>Eigentümerabrechnung</a>
-                    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="fw-menuzeile"><i class="fa-solid fa-scale-balanced w-4"></i>Kontokorrent</a>
+                    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/abrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='w-4' %}Eigentümerabrechnung</a>
+                    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="fw-menuzeile">{% zeichen 'recht' klasse='w-4' %}Kontokorrent</a>
                     {% endif %}
-                    <a href="/neu/hypotheken/" class="fw-menuzeile"><i class="fa-solid fa-landmark w-4"></i>Hypotheken</a>
+                    <a href="/neu/hypotheken/" class="fw-menuzeile">{% zeichen 'liegenschaft' klasse='w-4' %}Hypotheken</a>
                     <div class="fw-menutrenner"></div>
                     <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
                         {% csrf_token %}
-                        <button title="EGID ermitteln & Objekte aus dem GWR importieren" class="fw-menuzeile"><i class="fa-solid fa-cloud-arrow-down w-4"></i>GWR-Import (Objekte)</button>
+                        <button title="EGID ermitteln & Objekte aus dem GWR importieren" class="fw-menuzeile">{% zeichen 'herunterladen' klasse='w-4' %}GWR-Import (Objekte)</button>
                     </form>
                     <div class="fw-menutrenner"></div>
                     <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/"
                           onsubmit="return confirm('Liegenschaft {{ lg.strasse|escapejs }} inkl. aller Objekte wirklich löschen? Dies kann nicht rückgängig gemacht werden.');">
                         {% csrf_token %}
-                        <button class="fw-menuzeile crit"><i class="fa-solid fa-trash w-4"></i>Liegenschaft löschen</button>
+                        <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}Liegenschaft löschen</button>
                     </form>
                 </div>
             </div>
@@ -130,12 +131,12 @@
        und dann weiss niemand, welcher Seite zu trauen ist. {% endcomment %}
     {% if lg_befunde %}
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon{% if lg_stufe != 'good' %} {{ lg_stufe }}{% endif %}"><i class="fa-solid fa-lightbulb"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon{% if lg_stufe != 'good' %} {{ lg_stufe }}{% endif %}">{% zeichen 'hinweis' %}</span>
             <span class="fw-t">Was auffällt</span>
             <span class="fw-neben">{{ lg_befunde|length }}</span></div>
         {% for b in lg_befunde %}
         <div class="fw-hinweis {{ b.0 }}">
-            <span class="fw-hi"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <span class="fw-hi">{% zeichen 'warnung' %}</span>
             <div class="fw-ht"><b>{{ b.1 }}</b>{% if b.3 %}{{ b.3 }}{% endif %}</div>
         </div>
         {% endfor %}
@@ -144,7 +145,7 @@
 
     <div class="fw-card">
         <div class="fw-hinweis info">
-            <span class="fw-hi"><i class="fa-solid fa-circle-info"></i></span>
+            <span class="fw-hi">{% zeichen 'hinweis' %}</span>
             <div class="fw-ht"><b>Die Liegenschaft ist das Gebäude, nicht das Mietverhältnis</b>
                 Mietzins, Kaution und Nebenkostenabrechnung hängen am einzelnen Vertrag.
                 Hier steht, was für das ganze Haus gilt: Register, Bausubstanz, Werte,
@@ -155,7 +156,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start mb-4">
         {% if lg.eigentuemer or lg.egid or lg.kataster_nummer %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic i"><i class="fa-solid fa-landmark"></i></span><span class="fw-t">Eigentum &amp; Register</span></div>
+            <div class="fw-h"><span class="fw-ic i">{% zeichen 'liegenschaft' %}</span><span class="fw-t">Eigentum &amp; Register</span></div>
             <div class="fw-cbody"><dl>
                 {% if lg.eigentuemer %}<div class="fw-kv"><dt>Eigentümer</dt><dd>{{ lg.eigentuemer.firma_oder_name }}</dd></div>{% endif %}
                 {% if lg.egid %}<div class="fw-kv"><dt>EGID</dt><dd class="mono">{{ lg.egid }}</dd></div>{% endif %}
@@ -165,7 +166,7 @@
         {% endif %}
         {% if lg.grundstuecksflaeche_m2 or lg.gebaeudevolumen_m3 or lg.heizsystem or lg.warmwasser or lg.geak_klasse or lg.geak_klasse_gesamt %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic b"><i class="fa-solid fa-building"></i></span><span class="fw-t">Gebäude &amp; Energie</span></div>
+            <div class="fw-h"><span class="fw-ic b">{% zeichen 'liegenschaft' %}</span><span class="fw-t">Gebäude &amp; Energie</span></div>
             <div class="fw-cbody"><dl>
                 {% if lg.grundstuecksflaeche_m2 %}<div class="fw-kv"><dt>Grundstücksfläche</dt><dd>{{ lg.grundstuecksflaeche_m2|floatformat:0 }} m²</dd></div>{% endif %}
                 {% if lg.gebaeudevolumen_m3 %}<div class="fw-kv"><dt>Gebäudevolumen</dt><dd>{{ lg.gebaeudevolumen_m3|floatformat:0 }} m³</dd></div>{% endif %}
@@ -178,7 +179,7 @@
         {% endif %}
         {% if lg.verkehrswert or lg.anlagekosten or lg.versicherungswert %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic g"><i class="fa-solid fa-coins"></i></span><span class="fw-t">Werte</span></div>
+            <div class="fw-h"><span class="fw-ic g">{% zeichen 'geld' %}</span><span class="fw-t">Werte</span></div>
             <div class="fw-cbody"><dl>
                 {% if lg.verkehrswert %}<div class="fw-kv"><dt>Verkehrswert</dt><dd>CHF {{ lg.verkehrswert|chf:0 }}</dd></div>{% endif %}
                 {% if lg.anlagekosten %}<div class="fw-kv"><dt>Anlagekosten</dt><dd>CHF {{ lg.anlagekosten|chf:0 }}</dd></div>{% endif %}
@@ -188,7 +189,7 @@
         {% endif %}
         {% if lg.bank_name or lg.iban %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic g"><i class="fa-solid fa-building-columns"></i></span><span class="fw-t">Bankverbindung</span></div>
+            <div class="fw-h"><span class="fw-ic g">{% zeichen 'bank' %}</span><span class="fw-t">Bankverbindung</span></div>
             <div class="fw-cbody"><dl>
                 {% if lg.bank_name %}<div class="fw-kv"><dt>Mietzinskonto</dt><dd>{{ lg.bank_name }}</dd></div>{% endif %}
                 {% if lg.iban %}<div class="fw-kv"><dt>IBAN</dt><dd class="mono">{{ lg.iban }}</dd></div>{% endif %}
@@ -196,7 +197,7 @@
         </div>
         {% endif %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic w"><i class="fa-solid fa-screwdriver-wrench"></i></span><span class="fw-t">Handwerker &amp; Notfall</span></div>
+            <div class="fw-h"><span class="fw-ic w">{% zeichen 'arbeit' %}</span><span class="fw-t">Handwerker &amp; Notfall</span></div>
             <div class="fw-cbody"><dl>
                 {% if lg.hauswart_name %}<div class="fw-kv"><dt>Hauswart</dt><dd>{{ lg.hauswart_name }}{% if lg.hauswart_telefon %} · {{ lg.hauswart_telefon }}{% endif %}</dd></div>{% endif %}
                 {% if lg.sanitaer_name %}<div class="fw-kv"><dt>Sanitär</dt><dd>{{ lg.sanitaer_name }}{% if lg.sanitaer_telefon %} · {{ lg.sanitaer_telefon }}{% endif %}</dd></div>{% endif %}
@@ -208,7 +209,7 @@
 
     <div class="fw-subhead">Versicherungen</div>
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon warn"><i class="fa-solid fa-shield-halved"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon warn">{% zeichen 'gesperrt' %}</span>
             <span class="fw-t">Policen</span>
             <span class="fw-neben">{{ versicherungen|length }}</span></div>
         <details class="fw-aufklapp">
@@ -247,7 +248,7 @@
                 <td class="fw-num">{% if vs.ablauf_datum %}{{ vs.ablauf_datum|date:"d.m.Y" }}{% endif %}</td>
                 <td class="fw-right">
                     <form method="post" action="/neu/versicherung/{{ vs.id }}/loeschen/" onsubmit="return confirm('Police entfernen?');">{% csrf_token %}
-                        <button title="Police löschen" class="fw-ikon mut gefahr"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button title="Police löschen" class="fw-ikon mut gefahr">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                     </form>
                 </td>
             </tr>
@@ -265,7 +266,7 @@
     <datalist id="lgzaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}"></option>{% endfor %}</datalist>
 
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-gears"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'einstellungen' %}</span>
             <span class="fw-t">Allgemeine Geräte <small>Heizung, Boiler, Lüftung, Aufzug …</small></span>
             <span class="fw-neben">{{ lg_geraete|length }}</span></div>
         <details class="fw-aufklapp">
@@ -288,7 +289,7 @@
                     <div><label class="fw-klein block mb-1">Garantie bis</label>
                         <input type="date" name="garantie_bis" class="fw-feld w-full"></div>
                     <div><label class="fw-klein block mb-1">Notiz</label><input name="notiz" class="fw-feld w-full"></div>
-                    <div class="sm:col-span-3"><button class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Gerät erfassen</button></div>
+                    <div class="sm:col-span-3"><button class="fw-btn fw-primary">{% zeichen 'neu' %}Gerät erfassen</button></div>
                 </form>
             </div>
         </details>
@@ -302,9 +303,9 @@
                 <td class="fw-num">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
                 <td class="fw-num">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="fw-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
                     <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('Gerät löschen?');">{% csrf_token %}
-                        <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button class="fw-ikon mut gefahr" title="Löschen">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                     </form>
                 </td></tr>
             <tr id="lggedit-{{ g.id }}" class="hidden">
@@ -327,7 +328,7 @@
                             <input name="notiz" value="{{ g.notiz }}" class="fw-feld w-full"></div>
                         <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
-                            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Speichern</button>
+                            <button class="fw-btn fw-primary">{% zeichen 'speichern' %}Speichern</button>
                         </div>
                     </form>
                 </td></tr>
@@ -339,7 +340,7 @@
     </div>
 
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-gauge"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'zaehler' %}</span>
             <span class="fw-t">Allgemeine Zähler <small>Allgemeinstrom, Hauptwasser …</small></span>
             <span class="fw-neben">{{ lg_zaehler|length }}</span></div>
         <details class="fw-aufklapp">
@@ -356,7 +357,7 @@
                         <input name="standort" placeholder="z.B. Technikraum" class="fw-feld w-full"></div>
                     <div><label class="fw-klein block mb-1">Aktueller Stand</label>
                         <input name="aktueller_stand" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
-                    <div class="sm:col-span-4"><button class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Zähler erfassen</button></div>
+                    <div class="sm:col-span-4"><button class="fw-btn fw-primary">{% zeichen 'neu' %}Zähler erfassen</button></div>
                 </form>
             </div>
         </details>
@@ -369,9 +370,9 @@
                 <td>{{ z.standort|default:"—" }}</td>
                 <td class="fw-right"><span class="fw-betrag mut">{{ z.aktueller_stand|floatformat:2 }}</span></td>
                 <td class="fw-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
                     <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('Zähler löschen?');">{% csrf_token %}
-                        <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button class="fw-ikon mut gefahr" title="Löschen">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                     </form>
                 </td></tr>
             <tr id="lgzedit-{{ z.id }}" class="hidden">
@@ -388,7 +389,7 @@
                             <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="fw-feld w-full"></div>
                         <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
-                            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Speichern</button>
+                            <button class="fw-btn fw-primary">{% zeichen 'speichern' %}Speichern</button>
                         </div>
                     </form>
                 </td></tr>
@@ -403,7 +404,7 @@
 <!-- ===== REITER: CHRONIK (Unterhalt + Protokoll) ===== -->
 <div data-panel="lg" id="lg-chronik" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-hammer"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'arbeit' %}</span>
             <span class="fw-t">Unterhalt <small>ausgeführte Massnahmen</small></span>
             <span class="fw-neben">{{ unterhalt|length }}</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
@@ -421,11 +422,11 @@
     </div>
 
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
             <span class="fw-t">Verlauf <small>Aktionen an den Mietverhältnissen dieser Liegenschaft</small></span></div>
         {% for e in verlauf %}
         <div class="fw-zeile">
-            <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}</span>
+            <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ e.aktion }}</div>
                 <div class="fw-s">{% if e.objekt %}{{ e.objekt }}{% endif %}{% if e.details %} · {{ e.details }}{% endif %}</div>
@@ -464,8 +465,8 @@
     </div>
     <div class="fw-card">
         <div class="fw-fuss">
-            <a href="/neu/liegenschaften/{{ lg.id }}/betriebsrechnung/" class="fw-btn fw-primary"><i class="fa-solid fa-file-invoice"></i>Betriebsrechnung (PDF)</a>
-            <a href="/neu/berichte/leerstand-verlauf/" class="fw-btn"><i class="fa-solid fa-chart-column"></i>Leerstands-Verlauf</a>
+            <a href="/neu/liegenschaften/{{ lg.id }}/betriebsrechnung/" class="fw-btn fw-primary">{% zeichen 'rechnung' %}Betriebsrechnung (PDF)</a>
+            <a href="/neu/berichte/leerstand-verlauf/" class="fw-btn">{% zeichen 'bericht' %}Leerstands-Verlauf</a>
         </div>
     </div>
 
@@ -475,7 +476,7 @@
        Liegenschaft. Erfassen unter einem Aufklapper, damit die Leseansicht
        Leseansicht bleibt. {% endcomment %}
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon{% if lg_budget_stufe %} {{ lg_budget_stufe }}{% endif %}"><i class="fa-solid fa-sack-dollar"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon{% if lg_budget_stufe %} {{ lg_budget_stufe }}{% endif %}">{% zeichen 'geld' %}</span>
             <span class="fw-t">Unterhaltsbudget</span>
             <span class="fw-neben">{% if lg_budget %}{{ lg_jahr }}: CHF {{ lg_budget_ist|chf }} von {{ lg_budget|chf }} verbraucht{% else %}für {{ lg_jahr }} nicht erfasst{% endif %}</span></div>
 
@@ -494,7 +495,7 @@
                     <div class="sm:col-span-2"><label class="fw-klein block mb-1">Bemerkung</label>
                         <input name="bemerkung" placeholder="z.B. ohne Dachsanierung" class="fw-feld w-full"></div>
                     <div class="sm:col-span-4">
-                        <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Budget speichern</button>
+                        <button class="fw-btn fw-primary">{% zeichen 'gut' %}Budget speichern</button>
                         <span class="fw-klein" style="margin-left:10px">Ein bestehendes Budget desselben Jahres wird überschrieben.</span>
                     </div>
                 </form>
@@ -511,7 +512,7 @@
             <form method="post" action="/neu/budget/{{ b.id }}/loeschen/"
                   onsubmit="return confirm('Budget {{ b.jahr }} entfernen? Der Unterhaltsbefund verschwindet damit.');">
                 {% csrf_token %}
-                <button class="fw-ikon mut gefahr" title="Budget entfernen"><i class="fa-solid fa-trash text-xs"></i></button>
+                <button class="fw-ikon mut gefahr" title="Budget entfernen">{% zeichen 'loeschen' klasse='text-xs' %}</button>
             </form>
         </div>
         {% empty %}
@@ -520,7 +521,7 @@
     </div>
 
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-fire-burner"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'kritisch' %}</span>
             <span class="fw-t">Nebenkosten-Perioden</span>
             <span class="fw-rechts"><a href="/neu/nebenkosten/{% if lg %}?lg={{ lg.id }}{% endif %}" class="fw-link">Zur Abrechnung →</a></span></div>
         {% for p in perioden %}
@@ -540,19 +541,19 @@
 
 <!-- ===== REITER: DOKUMENTE (nach Objekt gruppiert) ===== -->
 <div data-panel="lg" id="lg-dokumente" class="hidden">
-    <p class="fw-klein mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente findest du beim jeweiligen Objekt unter «Chronik» und bei der Person.</p>
+    <p class="fw-klein mb-2">{% zeichen 'hinweis' klasse='mr-1' %}Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente findest du beim jeweiligen Objekt unter «Chronik» und bei der Person.</p>
     {% for g in dok_gruppen %}
     <details class="fw-card group">
         <summary class="fw-kopf cursor-pointer select-none list-none">
-            <i class="fa-solid fa-chevron-right fw-klein transition-transform group-open:rotate-90"></i>
+            {% zeichen 'weiter' klasse='fw-klein transition-transform group-open:rotate-90' %}
             <span class="fw-ikon"><i class="fa-solid {% if g.einheit %}fa-house{% else %}fa-building{% endif %}"></i></span>
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
-            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">Objekt <i class="fa-solid fa-arrow-right text-[10px]"></i></a></span>{% endif %}
+            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">Objekt {% zeichen 'weiter' klasse='text-[10px]' %}</a></span>{% endif %}
         </summary>
         {% for d in g.dokumente %}
         <div class="fw-zeile">
-            <span class="fw-ikon mut"><i class="fa-solid fa-file-lines"></i></span>
+            <span class="fw-ikon mut">{% zeichen 'dokument' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t truncate">{{ d.titel }}</div>
                 {% comment %} Dokument.datum ist ein DateField — «H:i» darauf wirft
@@ -562,7 +563,7 @@
             {% if d.url %}<a href="{{ d.url }}" target="_blank" rel="noopener" class="fw-link shrink-0">Öffnen</a>{% endif %}
             {% if d.del_url %}
             <form method="post" action="{{ d.del_url }}" class="shrink-0" onsubmit="return confirm('Dokument «{{ d.titel|escapejs }}» löschen?');">{% csrf_token %}
-                <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
+                <button class="fw-ikon mut gefahr" title="Löschen">{% zeichen 'loeschen' klasse='text-xs' %}</button>
             </form>
             {% endif %}
         </div>
@@ -576,7 +577,7 @@
 <!-- ===== REITER: FAELLE (Fallmaschine + Fristen + Schaeden) ===== -->
 <div data-panel="lg" id="lg-faelle" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-tree"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'filtern' %}</span>
             <span class="fw-t">Fälle zu dieser Liegenschaft</span>
             <span class="fw-neben">{{ lg_faelle|length }}</span></div>
         {% for f in lg_faelle %}
@@ -595,7 +596,7 @@
 
     <div class="fw-subhead">Wartungs- und Versicherungsfristen</div>
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon warn"><i class="fa-solid fa-hourglass-half"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon warn">{% zeichen 'wartet' %}</span>
             <span class="fw-t">Fristen</span>
             <span class="fw-neben">{{ wartungsfristen|length }}</span>
             <span class="fw-rechts"><a href="/neu/fristen/" class="fw-link">Fristen-Center</a></span></div>
@@ -620,7 +621,7 @@
                     <div><label class="fw-klein block mb-1">Intervall (Monate, 0 = einmalig)</label>
                         <input type="number" name="intervall_monate" value="12" min="0" class="fw-feld w-full"></div>
                     <div class="sm:col-span-2"><label class="fw-klein block mb-1">Notiz</label><input name="notiz" class="fw-feld w-full"></div>
-                    <div class="sm:col-span-2"><button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Frist speichern</button></div>
+                    <div class="sm:col-span-2"><button class="fw-btn fw-primary">{% zeichen 'gut' %}Frist speichern</button></div>
                 </form>
             </div>
         </details>
@@ -638,9 +639,9 @@
                     {% elif f.faellig_bald %}<span class="fw-chip fw-warn">in {{ f.tage }} T</span>{% endif %}</td>
                 <td class="fw-right">{% if f.wf.intervall_monate %}{{ f.wf.intervall_monate }} Mt.{% else %}einmalig{% endif %}</td>
                 <td class="fw-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
                     <form method="post" action="/neu/frist/{{ f.wf.id }}/loeschen/" class="inline" onsubmit="return confirm('Frist löschen?');">{% csrf_token %}
-                        <button title="Frist löschen" class="fw-ikon mut gefahr"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button title="Frist löschen" class="fw-ikon mut gefahr">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                     </form>
                 </td>
             </tr>
@@ -668,7 +669,7 @@
                             <input name="notiz" value="{{ f.wf.notiz }}" class="fw-feld w-full"></div>
                         <div class="sm:col-span-2 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
-                            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Speichern</button>
+                            <button class="fw-btn fw-primary">{% zeichen 'speichern' %}Speichern</button>
                         </div>
                     </form>
                 </td>
@@ -685,7 +686,7 @@
     <div class="fw-card">
         {% for t in tickets %}
         <a href="/neu/schaeden/{{ t.id }}/" class="fw-zeile klick">
-            <span class="fw-ikon crit"><i class="fa-solid fa-cloud-bolt"></i></span>
+            <span class="fw-ikon crit">{% zeichen 'kritisch' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ t.titel|default:t.beschreibung|truncatechars:60 }}</div>
                 <div class="fw-s">{{ t.get_status_display|default:t.status }}</div>
@@ -701,7 +702,7 @@
 <!-- ===== REITER: EINHEITEN (frueher «Objekte») ===== -->
 <div data-panel="lg" id="lg-einheiten" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-house"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
             <span class="fw-t">Objekte</span>
             <span class="fw-neben">{{ vermietet }} von {{ total_einheiten }} vermietet</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
@@ -715,7 +716,7 @@
                 <td>{% if row.vertrag %}<span class="fw-chip fw-good fw-dot">Vermietet</span>
                     {% else %}<span class="fw-chip fw-warn fw-dot">Leerstand</span>{% endif %}</td>
                 <td>{% if row.vertrag %}{{ row.vertrag.mieter.display_name }}{% else %}<span class="fw-klein">—</span>{% endif %}</td>
-                <td class="fw-right"><i class="fa-solid fa-chevron-right fw-klein"></i></td>
+                <td class="fw-right">{% zeichen 'weiter' klasse='fw-klein' %}</td>
             </tr>
             {% empty %}
             <tr><td colspan="6"><p class="fw-leer">Keine Objekte erfasst.</p></td></tr>

@@ -1,4 +1,5 @@
 {% extends "modern_base.html" %}
+{% load zeichen %}
 
 {% block content %}
 
@@ -56,7 +57,7 @@
  {% if success %}
  <div class="fw-flaeche rounded-2xl shadow-[0_1px_2px_rgba(23,26,43,0.05),0_10px_30px_rgba(23,26,43,0.08)] border fw-linie p-10 text-center">
  <div class="w-20 h-20 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
- <i class="fa-solid fa-check"></i>
+ {% zeichen 'gut' %}
  </div>
  <h2 class="text-3xl font-black fw-strong mb-4">Vielen Dank!</h2>
  <p class="fw-mutet font-medium mb-8">Ihre Meldung wurde erfolgreich an die Verwaltung übermittelt. Wir werden uns in Kürze darum kümmern.</p>
@@ -86,106 +87,106 @@
 
  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
  <button type="button" @click="selectCategory('Schadensmeldung')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- <i class="fa-solid fa-house-crack text-4xl fw-faint group-hover:fw-marke transition-colors"></i>
+ {% zeichen 'kritisch' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
  <span class="font-bold fw-mutet group-hover:fw-marke text-sm">Schadensmeldung</span>
  </button>
  <button type="button" @click="selectCategory('Allgemeine Anfrage')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- <i class="fa-regular fa-comments text-4xl fw-faint group-hover:fw-marke transition-colors"></i>
+ {% zeichen 'senden' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
  <span class="font-bold fw-mutet group-hover:fw-marke text-sm">Allgemeine Anfrage</span>
  </button>
  <button type="button" @click="selectCategory('Namensschilder')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- <i class="fa-regular fa-id-badge text-4xl fw-faint group-hover:fw-marke transition-colors"></i>
+ {% zeichen 'person' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
  <span class="font-bold fw-mutet group-hover:fw-marke text-sm text-center">Namensschilder-bestellung</span>
  </button>
  <button type="button" @click="selectCategory('Schlüsselbestellung')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- <i class="fa-solid fa-key text-4xl fw-faint group-hover:fw-marke transition-colors"></i>
+ {% zeichen 'schluessel' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
  <span class="font-bold fw-mutet group-hover:fw-marke text-sm text-center">Schlüsselbestellung</span>
  </button>
  <button type="button" @click="selectCategory('Frage zu Dokumenten')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- <i class="fa-regular fa-file-lines text-4xl fw-faint group-hover:fw-marke transition-colors"></i>
+ {% zeichen 'dokument' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
  <span class="font-bold fw-mutet group-hover:fw-marke text-sm text-center">Frage zu Dokumenten</span>
  </button>
  </div>
  </div>
 
  <div x-show="step === 2" x-transition style="display: none;">
- <button type="button" @click="step = 1" class="absolute top-6 left-6 fw-faint hover:fw-mutet"><i class="fa-solid fa-arrow-left"></i> Zurück</button>
+ <button type="button" @click="step = 1" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} Zurück</button>
  <h2 class="text-2xl font-black fw-strong mb-8 text-center mt-10 md:mt-0">In welchem Raum?</h2>
 
  <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
  <button type="button" @click="selectRoom('Küche')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-kitchen-set text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Küche</span>
+ {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Küche</span>
  </button>
  <button type="button" @click="selectRoom('Bad')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-bath text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Bad</span>
+ {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Bad</span>
  </button>
  <button type="button" @click="selectRoom('Korridor')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-door-open text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Korridor</span>
+ {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Korridor</span>
  </button>
  <button type="button" @click="selectRoom('Zimmer')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-bed text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Zimmer</span>
+ {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Zimmer</span>
  </button>
  <button type="button" @click="selectRoom('Reduit')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-boxes-stacked text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Reduit</span>
+ {% zeichen 'dokument' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Reduit</span>
  </button>
  <button type="button" @click="selectRoom('Balkon/Terrasse')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-sun text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Balkon/Terrasse</span>
+ {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Balkon/Terrasse</span>
  </button>
  <button type="button" @click="selectRoom('Treppenhaus')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-stairs text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Treppenhaus</span>
+ {% zeichen 'liegenschaft' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Treppenhaus</span>
  </button>
  <button type="button" @click="selectRoom('Waschküche')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-jug-detergent text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Waschküche</span>
+ {% zeichen 'arbeit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Waschküche</span>
  </button>
  <button type="button" @click="selectRoom('Keller')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-box text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Keller</span>
+ {% zeichen 'dokument' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Keller</span>
  </button>
  <button type="button" @click="selectRoom('Anderer Raum')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-pen text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Anderer Raum</span>
+ {% zeichen 'bearbeiten' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Anderer Raum</span>
  </button>
  </div>
  </div>
 
  <div x-show="step === 3" x-transition style="display: none;">
- <button type="button" @click="step = 2" class="absolute top-6 left-6 fw-faint hover:fw-mutet"><i class="fa-solid fa-arrow-left"></i> Zurück</button>
+ <button type="button" @click="step = 2" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} Zurück</button>
  <h2 class="text-2xl font-black fw-strong mb-8 text-center mt-10 md:mt-0">Was genau ist betroffen?</h2>
 
  <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
  <button type="button" @click="selectObject('Kühlschrank')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-snowflake text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Kühlschrank</span>
+ {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Kühlschrank</span>
  </button>
  <button type="button" @click="selectObject('Geschirrspüler')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-plate-wheat text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Geschirrspüler</span>
+ {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Geschirrspüler</span>
  </button>
  <button type="button" @click="selectObject('Dampfabzug')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-wind text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Dampfabzug</span>
+ {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Dampfabzug</span>
  </button>
  <button type="button" @click="selectObject('Kochherd')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-fire-burner text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Kochherd</span>
+ {% zeichen 'kritisch' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Kochherd</span>
  </button>
  <button type="button" @click="selectObject('Backofen')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-temperature-arrow-up text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs text-center">Backofen, Steamer</span>
+ {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs text-center">Backofen, Steamer</span>
  </button>
  <button type="button" @click="selectObject('Armaturen')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-faucet-drip text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs text-center">Spülbecken, Armaturen</span>
+ {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs text-center">Spülbecken, Armaturen</span>
  </button>
  <button type="button" @click="selectObject('Fenster')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-regular fa-window-maximize text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Fenster</span>
+ {% zeichen 'extern' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Fenster</span>
  </button>
  <button type="button" @click="selectObject('Jalousien')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-bars text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs text-center">Jalousien, Rollläden</span>
+ {% zeichen 'mehr' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs text-center">Jalousien, Rollläden</span>
  </button>
  <button type="button" @click="selectObject('Licht')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-regular fa-lightbulb text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Licht</span>
+ {% zeichen 'hinweis' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Licht</span>
  </button>
  <button type="button" @click="selectObject('Anderes')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- <i class="fa-solid fa-pen text-3xl fw-faint group-hover:fw-marke"></i><span class="font-bold fw-mutet text-xs">Anderes</span>
+ {% zeichen 'bearbeiten' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Anderes</span>
  </button>
  </div>
  </div>
 
  <div x-show="step === 4" x-transition style="display: none;">
- <button type="button" @click="step = formData.kategorie === 'Schadensmeldung' ? 3 : 1" class="absolute top-6 left-6 fw-faint hover:fw-mutet"><i class="fa-solid fa-arrow-left"></i> Zurück</button>
+ <button type="button" @click="step = formData.kategorie === 'Schadensmeldung' ? 3 : 1" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} Zurück</button>
 
  <h2 class="text-2xl font-black fw-strong mb-6 text-center mt-10 md:mt-0">Details & Kontaktdaten</h2>
 
@@ -222,7 +223,7 @@
  @click="selectLiegenschaft(l)"
  class="w-full text-left px-4 py-3 text-sm fw-ink hover:fw-markenflaeche hover:fw-marke font-bold border-b fw-linie transition-colors last:border-0"
  >
- <i class="fa-solid fa-location-dot fw-marke mr-2"></i> <span x-text="l.text"></span>
+ {% zeichen 'liegenschaft' klasse='fw-marke mr-2' %} <span x-text="l.text"></span>
  </button>
  </template>
  </div>
@@ -272,7 +273,7 @@
 
  <div class="pt-4">
  <button type="submit" class="w-full fw-gut-voll text-white py-4 rounded-xl font-bold fw-schatten-gut hover:-translate-y-0.5 transition-all text-lg hover:brightness-105">
- Meldung jetzt absenden <i class="fa-solid fa-paper-plane ml-2"></i>
+ Meldung jetzt absenden {% zeichen 'senden' klasse='ml-2' %}
  </button>
  </div>
  </div>

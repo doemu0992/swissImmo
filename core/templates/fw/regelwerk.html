@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Regelwerk — swissImmo{% endblock %}
 
 {% block content %}
@@ -13,8 +14,8 @@
            Berichtigung eine Eingabe ist und keine Auslieferung.</p>
     </div>
     <div class="flex gap-2">
-        <a href="/neu/regelwerk/protokoll/" class="fw-btn"><i class="fa-solid fa-clock-rotate-left"></i>Protokoll</a>
-        <a href="/neu/regelwerk/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Regelsatz</a>
+        <a href="/neu/regelwerk/protokoll/" class="fw-btn">{% zeichen 'verlauf' %}Protokoll</a>
+        <a href="/neu/regelwerk/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %}Regelsatz</a>
     </div>
 </div>
 
@@ -22,7 +23,7 @@
    Regelwerk sieht, nimmt an, es sei geprüft. {% endcomment %}
 <div class="fw-card">
     <div class="fw-hinweis warn">
-        <span class="fw-hi"><i class="fa-solid fa-scale-balanced"></i></span>
+        <span class="fw-hi">{% zeichen 'recht' %}</span>
         <div class="fw-ht"><b>Die mitgelieferten Regeln sind nicht juristisch geprüft.</b>
             Sie geben die gesetzliche Grundregel wieder — drei Monate auf einen
             ortsüblichen Termin (Art. 266c OR). Ortsübliche Termine sind kantonal
@@ -36,7 +37,7 @@
 {% if beanstandet %}
 <div class="fw-card">
     <div class="fw-hinweis crit">
-        <span class="fw-hi"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
         <div class="fw-ht"><b>{{ beanstandet }} Beanstandung{{ beanstandet|pluralize:"en" }} ohne Übersteuerung</b>
             Ein Befund wurde beanstandet und weder korrigiert noch mit Begründung
             überstimmt.
@@ -90,13 +91,13 @@
 </div>
 {% empty %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-scale-balanced"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'recht' %}</span>
         <span class="fw-t">Kein Regelsatz hinterlegt</span></div>
     <p class="fw-leer">Ohne Regelsatz prüft die Kündigungserfassung nur gegen die
         Angaben im einzelnen Vertrag — Frist und Termine, wie sie dort stehen.
         Das ist keine Fehlfunktion, aber es gibt weder eine kantonale Fassung
         noch eine Sperre.<br>
-        <a href="/neu/regelwerk/neu/" class="fw-btn fw-primary mt-3"><i class="fa-solid fa-plus"></i>Ersten Regelsatz anlegen</a></p>
+        <a href="/neu/regelwerk/neu/" class="fw-btn fw-primary mt-3">{% zeichen 'neu' %}Ersten Regelsatz anlegen</a></p>
 </div>
 {% endfor %}
 

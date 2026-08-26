@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Bankabgleich — swissImmo{% endblock %}
 
@@ -10,24 +11,24 @@
         <p>Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen (Bank an Debitoren){% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/bankabgleich/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
     {# Einstieg zu den gelernten Absendern: Die Automatik ordnet sonst unsichtbar zu. #}
-    <a href="/neu/bankabgleich/zahler/" class="fw-btn"><i class="fa-solid fa-user-check"></i>Gelernte Zahler</a>
+    <a href="/neu/bankabgleich/zahler/" class="fw-btn">{% zeichen 'gut' %}Gelernte Zahler</a>
 </div>
 
 <!-- KPI + Import-Hinweis -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-right-left"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'geld' %}</div>
         <div><div class="text-2xl font-bold fw-marke">CHF {{ total_offen|chf }}</div><div class="text-sm fw-mutet">Abzugleichen (offen)</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list-check"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0">{% zeichen 'arbeit' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">Offene Posten</div></div>
     </div>
     <form method="post" action="/neu/bankabgleich/camt-import/" enctype="multipart/form-data"
           class="fw-card p-5 flex items-center gap-4">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <div class="w-11 h-11 rounded-lg fw-info-flaeche fw-info flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-import"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-info-flaeche fw-info flex items-center justify-center text-lg shrink-0">{% zeichen 'hochladen' %}</div>
         <div class="min-w-0 flex-1">
             <div class="text-sm font-semibold fw-ink mb-1.5">Kontoauszug importieren <span class="font-normal fw-faint">(camt.053-XML oder Bank-CSV)</span></div>
             <input type="file" name="camt_datei" accept=".xml,.csv,.txt,text/xml,application/xml,text/csv" required
@@ -40,7 +41,7 @@
             {% endif %}
         </div>
         <button type="submit" class="fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg shrink-0 transition-colors">
-            <i class="fa-solid fa-upload mr-1"></i>Import
+            {% zeichen 'hochladen' klasse='mr-1' %}Import
         </button>
     </form>
 </div>
@@ -50,7 +51,7 @@
      (storniert alle daraus gebuchten Zahlungen und entfernt den Auszug). -->
 <div class="fw-card mb-6 overflow-hidden">
     <div class="px-5 py-3 border-b fw-linie flex items-center gap-2.5">
-        <span class="w-8 h-8 rounded-lg fw-flaeche2 fw-mutet flex items-center justify-center shrink-0"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <span class="w-8 h-8 rounded-lg fw-flaeche2 fw-mutet flex items-center justify-center shrink-0">{% zeichen 'verlauf' %}</span>
         <div class="font-bold fw-strong text-sm">Letzte Importe</div>
     </div>
     <div class="fw-dv">
@@ -69,7 +70,7 @@
                 {% csrf_token %}
                 {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                 <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-3 py-1.5 rounded-lg whitespace-nowrap">
-                    <i class="fa-solid fa-rotate-left"></i> Import rückgängig
+                    {% zeichen 'lauf' %} Import rückgängig
                 </button>
             </form>
         </div>
@@ -86,7 +87,7 @@
     <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
             <div class="font-bold fw-strong text-sm mb-1">
-                <i class="fa-solid fa-scale-balanced {% if saldo_abgleich.differenz %}fw-warnton{% else %}fw-gut{% endif %} mr-1.5"></i>
+                <span class="{% if saldo_abgleich.differenz %}fw-warnton{% else %}fw-gut{% endif %} mr-1.5">{% zeichen 'recht' %}</span>
                 Saldoabgleich {{ saldo_abgleich.auszug.konto.nummer }}
             </div>
             <div class="text-xs fw-mutet">
@@ -119,7 +120,7 @@
 <div class="fw-card overflow-hidden mb-6">
     <div class="px-5 py-3 border-b fw-linie flex items-center justify-between flex-wrap gap-2">
         <div class="font-bold fw-strong text-sm">
-            <i class="fa-solid fa-building-columns fw-marke mr-1.5"></i>Bank-Eingang — offene Auszugszeilen
+            {% zeichen 'bank' klasse='fw-marke mr-1.5' %}Bank-Eingang — offene Auszugszeilen
         </div>
         <div class="text-xs fw-mutet">
             {{ bew_offen_n }} offen
@@ -209,7 +210,7 @@
 <!-- Geparkte / ungeklärte Zahlungen (1190 + Mieterguthaben 2030) -->
 <div class="fw-flaeche rounded-xl border fw-linie-warn overflow-hidden mb-6">
     <div class="px-5 py-3 border-b fw-linie-warn fw-warn-flaeche flex items-center justify-between flex-wrap gap-2">
-        <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-question"></i></span>Ungeklärte Zahlungen &amp; Guthaben</div>
+        <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center shrink-0">{% zeichen 'hinweis' %}</span>Ungeklärte Zahlungen &amp; Guthaben</div>
         <div class="text-xs fw-mutet">{{ geparkt|length }} Position(en)
             {% if geparkt_unklar %}· CHF {{ geparkt_unklar|chf }} ungeklärt (1190){% endif %}
             {% if geparkt_guthaben %}· CHF {{ geparkt_guthaben|chf }} Mieterguthaben (2030){% endif %}</div>
@@ -275,7 +276,7 @@
                 {% if z.mitteilung %}<div class="text-xs fw-mutet break-words mt-0.5">{{ z.mitteilung }}</div>{% endif %}
                 {% if z.zahler %}
                 <div class="text-[11px] fw-marke mt-1">
-                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Nach dem Zuordnen wird dieser Absender gemerkt —
+                    {% zeichen 'einstellungen' klasse='mr-1' %}Nach dem Zuordnen wird dieser Absender gemerkt —
                     die nächste Zahlung von ihm ordnet sich selbst zu.
                     {% if sammel_vertraege %}
                     · <button type="button" data-alle-von="{{ z.zahler|lower }}"
@@ -364,7 +365,7 @@
                         <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                         <button type="submit" class="inline-flex items-center gap-1.5 fw-btn fw-gutknopf text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                            <i class="fa-solid fa-check"></i> Verbuchen
+                            {% zeichen 'speichern' %} Verbuchen
                         </button>
                     </form>
                     {% else %}<span class="fw-faint text-xs">kein Vertrag</span>{% endif %}
@@ -372,7 +373,7 @@
             </tr>
             {% empty %}
             <tr><td colspan="6" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
+                <div class="w-10 h-10 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'gut' %}</div>
                 <p class="text-sm font-medium fw-ink">Alles abgeglichen</p>
                 <p class="text-xs fw-faint mt-1">Keine offenen Posten — jede Forderung ist verbucht.</p>
             </td></tr>
@@ -394,7 +395,7 @@
         {% endcomment %}
         <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-5 py-3">
             <div class="flex items-start gap-3 min-w-0 flex-1">
-                <div class="w-8 h-8 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-check"></i></div>
+                <div class="w-8 h-8 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-xs shrink-0">{% zeichen 'gut' %}</div>
                 <div class="min-w-0">
                     <div class="text-sm fw-strong break-words">{{ z.titel }}</div>
                     {% if z.zusatz %}<div class="text-xs fw-faint break-words">{{ z.zusatz }}</div>{% endif %}
@@ -409,7 +410,7 @@
                     <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
                     <button type="submit" title="Zahlung stornieren"
                             class="text-xs font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-2.5 py-1 rounded-lg whitespace-nowrap transition-colors">
-                        <i class="fa-solid fa-rotate-left mr-1"></i>Stornieren
+                        {% zeichen 'lauf' klasse='mr-1' %}Stornieren
                     </button>
                 </form>
             </div>
@@ -420,7 +421,7 @@
 {% endif %}
 
 <p class="text-xs fw-faint mt-4">
-    <i class="fa-solid fa-circle-info mr-1"></i>
+    {% zeichen 'hinweis' klasse='mr-1' %}
     „Verbuchen" bucht den offenen Betrag als Zahlungseingang (Bank 1020 an Debitoren 1100) und schreibt den
     OP-Status fort (offen → teilbezahlt → bezahlt). Der camt.053-Kontoauszug-Import ordnet Eingänge künftig
     automatisch über die QRR-Referenz zu.

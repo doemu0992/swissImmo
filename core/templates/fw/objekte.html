@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Objekte — swissImmo{% endblock %}
 
@@ -23,7 +24,7 @@
         <p>{% if aktive_lg %}gefiltert auf {{ aktive_lg.strasse }}
             <a href="/neu/objekte/" class="fw-link">× aufheben</a>{% else %}Nach Befund geordnet — was klemmt, steht oben.{% endif %}</p>
     </div>
-    <a href="/neu/objekte/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Objekt erfassen</a>
+    <a href="/neu/objekte/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} Objekt erfassen</a>
 </div>
 
 {% comment %} Die Zahlen zeigen IMMER das ganze Portfolio, auch bei aktivem
@@ -63,8 +64,8 @@
 {% for g in gruppen %}
 <details class="fw-card"{% if g.offen %} open{% endif %}>
     <summary class="fw-kopf" style="cursor:pointer;list-style:none">
-        <i class="fa-solid fa-chevron-right fw-klein" style="transition:transform .15s"></i>
-        <span class="fw-ikon{% if g.stufe != 'good' %} {{ g.stufe }}{% endif %}"><i class="fa-solid fa-building"></i></span>
+        {% zeichen 'weiter' klasse='fw-klein' %}
+        <span class="fw-ikon{% if g.stufe != 'good' %} {{ g.stufe }}{% endif %}">{% zeichen 'liegenschaft' %}</span>
         <span class="fw-t">{{ g.lg.strasse }}<small>{{ g.lg.plz }} {{ g.lg.ort }}</small></span>
         <span class="fw-rechts">
             {% if g.leer %}<span class="fw-chip fw-warn fw-dot">{{ g.leer }} leer</span>{% endif %}
@@ -94,7 +95,7 @@
         <div class="fw-zeit">
             {% if z.e.nettomiete_aktuell %}CHF {{ z.e.nettomiete_aktuell|chf }}{% else %}<span class="fw-warnton">kein Zins</span>{% endif %}
         </div>
-        <i class="fa-solid fa-chevron-right fw-klein"></i>
+        {% zeichen 'weiter' klasse='fw-klein' %}
     </a>
     {% endfor %}
 </details>

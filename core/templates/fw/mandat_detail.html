@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}{{ md.firma_oder_name }} — swissImmo{% endblock %}
 
@@ -13,13 +14,13 @@
 
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
     <a href="/neu/mandate/">Mandate</a>
-    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    {% zeichen 'weiter' %}
     <b>{{ md.firma_oder_name }}</b>
 </nav>
 
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
-        <div class="fw-akte-bild"><i class="fa-solid fa-handshake"></i></div>
+        <div class="fw-akte-bild">{% zeichen 'person' %}</div>
         <div>
             <div class="fw-akte-typ">Mandat · {{ mandat_nummer }}</div>
             <h1>{{ md.firma_oder_name }}</h1>
@@ -33,18 +34,18 @@
             </div>
         </div>
         <div class="fw-akte-rechts">
-            <a href="/neu/mandate/{{ md.id }}/bearbeiten/" class="fw-btn"><i class="fa-solid fa-pen"></i>Bearbeiten</a>
+            <a href="/neu/mandate/{{ md.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}Bearbeiten</a>
             <div class="relative">
                 <button type="button" onclick="document.getElementById('mdAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                        class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+                        class="fw-btn">{% zeichen 'mehr' %}Mehr</button>
                 <div id="mdAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
-                    <a href="/neu/mandate/{{ md.id }}/abrechnung/" class="fw-menuzeile"><i class="fa-solid fa-file-invoice-dollar w-4"></i>Eigentümerabrechnung</a>
-                    <a href="/neu/mandate/{{ md.id }}/kontokorrent/" class="fw-menuzeile"><i class="fa-solid fa-scale-balanced w-4"></i>Kontokorrent</a>
-                    <a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-menuzeile"><i class="fa-solid fa-money-bill-transfer w-4"></i>Auszahlung erfassen</a>
+                    <a href="/neu/mandate/{{ md.id }}/abrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='w-4' %}Eigentümerabrechnung</a>
+                    <a href="/neu/mandate/{{ md.id }}/kontokorrent/" class="fw-menuzeile">{% zeichen 'recht' klasse='w-4' %}Kontokorrent</a>
+                    <a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-menuzeile">{% zeichen 'geld' klasse='w-4' %}Auszahlung erfassen</a>
                     <div class="fw-menutrenner"></div>
-                    <a href="/neu/mandate/{{ md.id }}/honorar/" class="fw-menuzeile"><i class="fa-solid fa-percent w-4"></i>Honorar</a>
-                    <a href="/neu/mandate/{{ md.id }}/mahnstufen/" class="fw-menuzeile"><i class="fa-solid fa-envelope-open-text w-4"></i>Mahnstufen</a>
-                    <a href="/neu/mandate/{{ md.id }}/portal-zugang/" class="fw-menuzeile"><i class="fa-solid fa-key w-4"></i>Portalzugang</a>
+                    <a href="/neu/mandate/{{ md.id }}/honorar/" class="fw-menuzeile">{% zeichen 'bericht' klasse='w-4' %}Honorar</a>
+                    <a href="/neu/mandate/{{ md.id }}/mahnstufen/" class="fw-menuzeile">{% zeichen 'senden' klasse='w-4' %}Mahnstufen</a>
+                    <a href="/neu/mandate/{{ md.id }}/portal-zugang/" class="fw-menuzeile">{% zeichen 'schluessel' klasse='w-4' %}Portalzugang</a>
                 </div>
             </div>
             <script>
@@ -88,7 +89,7 @@
 <!-- ===== BEREICH: STAMMDATEN ===== -->
 <div data-panel="md" id="md-stammdaten">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-address-card"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'person' %}</span>
             <span class="fw-t">Angaben</span></div>
         <table class="fw-table" data-stack>
             <tbody>
@@ -102,7 +103,7 @@
     </div>
 
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon{% if not md.iban %} warn{% endif %}"><i class="fa-solid fa-building-columns"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon{% if not md.iban %} warn{% endif %}">{% zeichen 'bank' %}</span>
             <span class="fw-t">Bank und Honorar</span></div>
         <table class="fw-table" data-stack>
             <tbody>
@@ -118,13 +119,13 @@
 <!-- ===== BEREICH: LIEGENSCHAFTEN ===== -->
 <div data-panel="md" id="md-liegenschaften" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-building"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
             <span class="fw-t">Verwaltete Liegenschaften</span>
             <span class="fw-neben">{{ liegenschaften|length }}</span></div>
         {% for l in liegenschaften %}
         <a href="/neu/liegenschaften/{{ l.lg.id }}/" class="fw-zeile klick">
             <span class="fw-marker {% if l.leer %}warn{% else %}good{% endif %}"></span>
-            <span class="fw-ikon"><i class="fa-solid fa-building"></i></span>
+            <span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ l.lg.strasse }}</div>
                 <div class="fw-s">{{ l.lg.plz }} {{ l.lg.ort }} · {{ l.vermietet }} von {{ l.einheiten }} vermietet{% if l.leer %} · {{ l.leer }} leer{% endif %}</div>
@@ -140,10 +141,10 @@
 <!-- ===== BEREICH: FINANZEN ===== -->
 <div data-panel="md" id="md-finanzen" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-money-bill-transfer"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'geld' %}</span>
             <span class="fw-t">Auszahlungen</span>
             <span class="fw-neben">{{ auszahlungen|length }}</span>
-            <span class="fw-rechts"><a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Erfassen</a></span></div>
+            <span class="fw-rechts"><a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-btn fw-primary">{% zeichen 'neu' %}Erfassen</a></span></div>
         {% for a in auszahlungen %}
         <div class="fw-zeile">
             <span class="fw-marker {% if a.ausgefuehrt_am %}good{% else %}warn{% endif %}"></span>
@@ -166,11 +167,11 @@
 <!-- ===== BEREICH: DOKUMENTE ===== -->
 <div data-panel="md" id="md-dokumente" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-open"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
             <span class="fw-t">Dokumente</span><span class="fw-neben">{{ dokumente|length }}</span></div>
         {% for d in dokumente %}
         <div class="fw-zeile">
-            <span class="fw-ikon"><i class="fa-solid fa-file-lines"></i></span>
+            <span class="fw-ikon">{% zeichen 'dokument' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ d.get_kategorie_display|default:d.kategorie }}</div>
                 <div class="fw-s">{% if d.datum %}{{ d.datum|date:"d.m.Y" }}{% endif %}</div>
@@ -185,7 +186,7 @@
 <!-- ===== BEREICH: FÄLLE ===== -->
 <div data-panel="md" id="md-faelle" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-open"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
             <span class="fw-t">Fälle</span><span class="fw-neben">{{ mandat_faelle|length }}</span></div>
         {% for f in mandat_faelle %}
         <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
@@ -208,12 +209,12 @@
        Der belastbare Bezug fuehrt ueber die Vertraege seiner Liegenschaften —
        derselbe Weg wie bei Liegenschaft und Objekt. {% endcomment %}
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
             <span class="fw-t">Protokoll</span>
             <span class="fw-neben">Vorgänge an den Verträgen dieses Mandats</span></div>
         {% for a in verlauf %}
         <div class="fw-zeile">
-            <span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <span class="fw-ikon">{% zeichen 'verlauf' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ a.aktion }}{% if a.objekt %} · {{ a.objekt }}{% endif %}</div>
                 <div class="fw-s">{{ a.details }}{% if a.benutzer %} · {{ a.benutzer.get_full_name|default:a.benutzer.username }}{% endif %}</div>

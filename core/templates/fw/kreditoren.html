@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Kreditoren — swissImmo{% endblock %}
 
@@ -7,14 +8,14 @@
 <div class="fw-phead">
     <h1>Kreditoren</h1>
     <div class="flex items-center gap-2">
-        <button type="button" onclick="document.getElementById('kredform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Rechnung erfassen</button>
+        <button type="button" onclick="document.getElementById('kredform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} Rechnung erfassen</button>
         <div class="relative" data-menu>
-            <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+            <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-72 fw-card shadow-lg py-1.5 z-30">
-                <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-robot w-4 fw-marke"></i>Beleg scannen (KI)</button>
+                <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'einstellungen' klasse='w-4 fw-marke' %}Beleg scannen (KI)</button>
                 {% if darf_bezahlen %}
                 <div class="my-1 border-t fw-linie"></div>
-                <a href="/neu/zahllauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" title="Auswählen, pain.001 erzeugen, Lauf sammelverbuchen" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-gut hover:fw-gut-flaeche"><i class="fa-solid fa-money-bill-transfer w-4"></i>Zahllauf öffnen · {{ anzahl_zahlbar }} zahlbar</a>
+                <a href="/neu/zahllauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" title="Auswählen, pain.001 erzeugen, Lauf sammelverbuchen" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-gut hover:fw-gut-flaeche">{% zeichen 'geld' klasse='w-4' %}Zahllauf öffnen · {{ anzahl_zahlbar }} zahlbar</a>
                 {% endif %}
             </div>
         </div>
@@ -26,19 +27,19 @@
 
 <!-- KI-Rechnungsscanner: Upload → Beleg wird direkt gescannt und als Rechnung angelegt -->
 <div id="scanform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-robot fw-info mr-1.5"></i>KI-Rechnungsscanner</h3>
+    <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'einstellungen' klasse='fw-info mr-1.5' %}KI-Rechnungsscanner</h3>
     <p class="text-xs fw-faint mb-4">Belege (PDF oder Foto, <b>auch mehrere gleichzeitig</b>) hochladen — Lieferant, Betrag,
         Datum, IBAN und QR-Referenz werden automatisch ausgelesen und je Beleg eine Rechnung mit Status «Neu» angelegt.
         Zeile anklicken, um die Werte neben der Beleg-Vorschau zu prüfen/korrigieren, dann freigeben.</p>
     {% if rechnungs_mail %}
     <div class="mb-4 rounded-lg border fw-linie fw-info-flaeche px-4 py-3 text-[12.5px] fw-info">
-        <i class="fa-solid fa-envelope mr-1"></i><b>Rechnungen per E-Mail:</b> Handwerker/Lieferanten können ihre Rechnung direkt an
+        {% zeichen 'senden' klasse='mr-1' %}<b>Rechnungen per E-Mail:</b> Handwerker/Lieferanten können ihre Rechnung direkt an
         <b>{{ rechnungs_mail }}</b> senden — PDF-/Foto-Anhänge werden automatisch gescannt und erscheinen hier als Status «Neu».
     </div>
     {% endif %}
     {% if not ki_aktiv %}
     <div class="mb-4 rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
-        <i class="fa-solid fa-circle-info mr-1"></i><b>KI nicht konfiguriert</b> — es läuft nur die regelbasierte Erkennung (IBAN/Betrag/Datum
+        {% zeichen 'hinweis' klasse='mr-1' %}<b>KI nicht konfiguriert</b> — es läuft nur die regelbasierte Erkennung (IBAN/Betrag/Datum
         aus Text-PDFs; Foto-Belege werden nicht ausgelesen). Für die volle KI-Erkennung den <code>GROQ_API_KEY</code> unter
         <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.
     </div>
@@ -55,19 +56,19 @@
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
         <button id="scan-btn" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
-            <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Hochladen &amp; scannen
+            {% zeichen 'einstellungen' klasse='mr-1.5' %}Hochladen &amp; scannen
         </button>
     </form>
     <script>
       function fwScanStart(f){
         var b=document.getElementById('scan-btn');
-        b.disabled=true; b.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Wird gescannt …';
+        b.disabled=true; b.innerHTML='{% zeichen 'wartet' klasse='fa-spin mr-1.5' %}Wird gescannt …';
       }
     </script>
 </div>
 
 <div id="kredform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-file-invoice fw-marke mr-1.5"></i>Kreditorenrechnung erfassen</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'rechnung' klasse='fw-marke mr-1.5' %}Kreditorenrechnung erfassen</h3>
     <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
@@ -105,22 +106,22 @@
         <div class="sm:col-span-2 flex items-center">
             <label class="inline-flex items-center gap-2 text-sm fw-mutet cursor-pointer"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">In Nebenkostenabrechnung einbeziehen (HNK)</label>
             <span class="ml-2 text-[11px] fw-faint">— wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt</span></div>
-        <div class="sm:col-span-3"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen (Status: Neu)</button></div>
+        <div class="sm:col-span-3"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Erfassen (Status: Neu)</button></div>
     </form>
 </div>
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-info-flaeche fw-info flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-info-flaeche fw-info flex items-center justify-center text-lg shrink-0">{% zeichen 'geld' %}</div>
         <div><div class="text-2xl font-bold fw-info">CHF {{ total_offen|chf }}</div><div class="text-sm fw-mutet">Freigegeben, offen</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-inbox"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0">{% zeichen 'wartet' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ anzahl_neu }}</div><div class="text-sm fw-mutet">Neu / zu prüfen</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'verlauf' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">Rechnungen total</div></div>
     </div>
 </div>
@@ -186,7 +187,7 @@
                 <td class="px-5 py-3.5"><span class="fw-chip whitespace-nowrap {{ row.pill_cls }}">● {{ row.status_label }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <div class="inline-flex items-center gap-2">
-                        {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="fw-faint hover:fw-marke" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}
+                        {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="fw-faint hover:fw-marke" title="Beleg ansehen">{% zeichen 'hochladen' %}</a>{% endif %}
                         {% if row.kann_bezahlen and darf_bezahlen %}
                         <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('Zahlung an {{ row.lieferant|escapejs }} verbuchen?');" class="inline-flex items-center gap-1">
                             {% csrf_token %}
@@ -195,14 +196,14 @@
                             <input type="number" step="0.05" min="0" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
                                    class="w-20 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 text-right" title="Betrag (Teilzahlung möglich)">
                             <button type="submit" class="inline-flex items-center gap-1.5 fw-balken-voll fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                                <i class="fa-solid fa-check"></i> {% if row.in_zahlung %}Bestätigen{% else %}Bezahlen{% endif %}
+                                {% zeichen 'speichern' %} {% if row.in_zahlung %}Bestätigen{% else %}Bezahlen{% endif %}
                             </button>
                         </form>
                         {% if row.in_zahlung %}
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-zuruecksetzen/" onsubmit="return confirm('Zahlung zurücksetzen — Rechnung kommt im nächsten Zahllauf wieder mit?');" class="inline">
                             {% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                            <button type="submit" class="fw-faint hover:fw-ink text-xs" title="Zahllauf zurücksetzen"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button type="submit" class="fw-faint hover:fw-ink text-xs" title="Zahllauf zurücksetzen">{% zeichen 'lauf' %}</button>
                         </form>
                         {% endif %}
                         {% elif row.k.status == 'neu' and darf_bezahlen %}
@@ -216,17 +217,17 @@
                             </select>
                             {% endif %}
                             <button type="submit" class="inline-flex items-center gap-1.5 fw-warn-flaeche hover:fw-warn-voll text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                                <i class="fa-solid fa-check"></i> Freigeben
+                                {% zeichen 'speichern' %} Freigeben
                             </button>
                         </form>
                         {% elif row.k.status == 'bezahlt' %}
-                        <span class="fw-gut text-xs"><i class="fa-solid fa-check-double"></i> erledigt</span>
+                        <span class="fw-gut text-xs">{% zeichen 'gut' %} erledigt</span>
                         {% endif %}
                         {% if row.letzte_zahlung and darf_bezahlen %}
                         <form method="post" action="/neu/kreditoren/zahlung/{{ row.letzte_zahlung.id }}/stornieren/" onsubmit="return confirm('Letzte Zahlung (CHF {{ row.letzte_zahlung.betrag|chf }}) an {{ row.lieferant|escapejs }} stornieren? Der offene Posten öffnet sich wieder.');" class="inline">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}">
-                            <button type="submit" class="fw-faint hover:fw-kritisch text-xs" title="Letzte Zahlung stornieren"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button type="submit" class="fw-faint hover:fw-kritisch text-xs" title="Letzte Zahlung stornieren">{% zeichen 'lauf' %}</button>
                         </form>
                         {% endif %}
                         {% if row.kann_weiterverrechnen %}
@@ -234,14 +235,14 @@
                            onclick="return fwModalOpen(this,'Weiterverrechnen',false)"
                            class="inline-flex items-center gap-1.5 border fw-linie-marke fw-marke hover:fw-markenflaeche text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
                            title="Offen: CHF {{ row.offen_wv|chf }}">
-                            <i class="fa-solid fa-share"></i> Weiterverrechnen
+                            {% zeichen 'extern' %} Weiterverrechnen
                         </a>
                         {% endif %}
                         {% if row.k.status == 'neu' %}
-                        <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.toggle('hidden')" class="fw-faint hover:fw-marke text-xs" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                        <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.toggle('hidden')" class="fw-faint hover:fw-marke text-xs" title="Bearbeiten">{% zeichen 'bearbeiten' %}</button>
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/loeschen/" class="inline" onsubmit="return confirm('Kreditorenrechnung «{{ row.lieferant|escapejs }}» löschen? (nur solange nicht verbucht)');">{% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                            <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                            <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen">{% zeichen 'loeschen' %}</button>
                         </form>
                         {% endif %}
                     </div>
@@ -251,19 +252,19 @@
             <tr id="kedit-{{ row.k.id }}" class="hidden fw-markenflaeche">
                 <td colspan="7" class="px-5 py-4">
                     {% if row.k.fehlermeldung %}
-                    <div class="mb-3 rounded-lg border fw-linie-warn fw-warn-flaeche px-3 py-2 text-[12px] fw-warnton"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ row.k.fehlermeldung }}</div>
+                    <div class="mb-3 rounded-lg border fw-linie-warn fw-warn-flaeche px-3 py-2 text-[12px] fw-warnton">{% zeichen 'warnung' klasse='mr-1' %}{{ row.k.fehlermeldung }}</div>
                     {% endif %}
                     <div class="grid grid-cols-1 {% if row.beleg_url %}lg:grid-cols-2{% endif %} gap-5 items-start">
                     {% if row.beleg_url %}
                     <!-- Beleg-Vorschau: gescannte Rechnung neben den Feldern prüfen -->
                     <div>
-                        <div class="text-[11px] font-semibold uppercase tracking-wider fw-faint mb-1.5"><i class="fa-solid fa-receipt mr-1"></i>Beleg-Vorschau</div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wider fw-faint mb-1.5">{% zeichen 'rechnung' klasse='mr-1' %}Beleg-Vorschau</div>
                         {% if row.beleg_ist_pdf %}
                         <embed src="{{ row.beleg_url }}#toolbar=0" type="application/pdf" class="w-full h-[26rem] rounded-lg border fw-linie fw-flaeche">
                         {% else %}
                         <img src="{{ row.beleg_url }}" alt="Beleg" class="max-h-[26rem] w-auto rounded-lg border fw-linie fw-flaeche">
                         {% endif %}
-                        <a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="inline-block mt-1.5 text-[11px] fw-marke hover:underline"><i class="fa-solid fa-up-right-from-square mr-1"></i>In neuem Tab öffnen</a>
+                        <a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="inline-block mt-1.5 text-[11px] fw-marke hover:underline">{% zeichen 'extern' klasse='mr-1' %}In neuem Tab öffnen</a>
                     </div>
                     {% endif %}
                     <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -304,7 +305,7 @@
                         </div>
                         <div class="col-span-2 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.add('hidden')" class="text-sm fw-mutet hover:fw-ink px-3 py-1.5">Abbrechen</button>
-                            <button class="fw-btn fw-primary text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                            <button class="fw-btn fw-primary text-sm font-semibold px-4 py-1.5 rounded-lg">{% zeichen 'speichern' klasse='mr-1.5' %}Speichern</button>
                         </div>
                     </form>
                     </div>
@@ -312,7 +313,7 @@
                     <!-- ===== KOSTENAUFTEILUNG (Split) ===== -->
                     <div class="mt-4 pt-4 border-t fw-linie-marke">
                         <div class="flex items-center justify-between mb-2">
-                            <div class="text-[11px] font-semibold uppercase tracking-wider fw-faint"><i class="fa-solid fa-code-branch mr-1"></i>Kostenaufteilung (optional)</div>
+                            <div class="text-[11px] font-semibold uppercase tracking-wider fw-faint">{% zeichen 'verlauf' klasse='mr-1' %}Kostenaufteilung (optional)</div>
                             {% if row.positionen %}
                             <div class="text-[11px] {% if row.pos_diff == 0 %}fw-gut{% else %}fw-kritisch font-semibold{% endif %}">
                                 Summe CHF {{ row.pos_summe|chf }} / {{ row.k.betrag|chf }}
@@ -329,7 +330,7 @@
                                 {% if p.is_hnk_relevant %}<span class="text-[10px] font-semibold fw-warn-flaeche fw-warnton rounded px-1.5 py-0.5">HNK</span>{% endif %}
                                 <span class="ml-auto font-semibold fw-strong whitespace-nowrap">CHF {{ p.betrag|chf }}</span>
                                 <form method="post" action="/neu/kreditoren/position/{{ p.id }}/loeschen/" class="inline" onsubmit="return confirm('Position entfernen?');">{% csrf_token %}
-                                    <button class="fw-faint hover:fw-kritisch text-xs" title="Entfernen"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="fw-faint hover:fw-kritisch text-xs" title="Entfernen">{% zeichen 'loeschen' %}</button>
                                 </form>
                             </div>
                             {% endfor %}
@@ -349,7 +350,7 @@
                             <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">Betrag</label>
                                 <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5 text-right tabular-nums"></div>
                             <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 text-[11px] fw-mutet cursor-pointer" title="In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">HNK</label></div>
-                            <div class="sm:col-span-1"><button class="w-full fw-balken-voll fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
+                            <div class="sm:col-span-1"><button class="w-full fw-balken-voll fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen">{% zeichen 'neu' %}</button></div>
                         </form>
                     </div>
                 </td>
@@ -357,7 +358,7 @@
             {% endif %}
             {% empty %}
             <tr><td colspan="7" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-file-invoice"></i></div>
+                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'rechnung' %}</div>
                 <p class="text-sm font-medium fw-ink">Keine Kreditorenrechnungen</p>
                 <p class="text-xs fw-faint mt-1">{% if suche %}Kein Treffer für «{{ suche }}».{% elif status_filter %}Keine Rechnung in diesem Status.{% else %}Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung manuell.{% endif %}</p>
             </td></tr>
@@ -394,7 +395,7 @@
 </div>
 
 <p class="text-xs fw-faint mt-4">
-    <i class="fa-solid fa-circle-info mr-1"></i>
+    {% zeichen 'hinweis' klasse='mr-1' %}
     „Bezahlen" bucht die Zahlung (Kreditoren 2000 an Bank 1020) und setzt den Status auf bezahlt.
     Der KI-Scanner liest hochgeladene Belege automatisch aus (Lieferant, Betrag, IBAN, QR-Referenz) — Werte vor der Freigabe prüfen.
 </p>

@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Bewerber-Vergleich — swissImmo{% endblock %}
 {% block content %}
 <div class="text-xs fw-faint mb-3">
     <a href="/neu/vermarktung/{{ lg_query }}" class="hover:fw-marke">Vermarktung</a>
-    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>Bewerber-Vergleich
+    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}Bewerber-Vergleich
 </div>
 
 <div class="fw-phead">
@@ -13,7 +14,7 @@
         <p>{{ objekt }} · {{ e.bezeichnung }} · Bruttomiete CHF {{ brutto_monat|chf }}/Mt. ({{ jahresmiete|chf }}/Jahr)</p>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-        <a href="/neu/vermarktung/{{ e.id }}/expose/" target="_blank" rel="noopener" class="fw-btn"><i class="fa-solid fa-file-pdf"></i>Exposé</a>
+        <a href="/neu/vermarktung/{{ e.id }}/expose/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}Exposé</a>
         <a href="?{% if not mit_abgelehnt %}alle=1{% endif %}{% if aktive_lg %}{% if not mit_abgelehnt %}&{% endif %}lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% if mit_abgelehnt %}Abgelehnte ausblenden{% else %}Abgelehnte einblenden{% endif %}</a>
     </div>
 </div>
@@ -24,7 +25,7 @@
 <form method="post" action="/neu/vermarktung/{{ e.id }}/bewerber/absage-uebrige/{{ lg_query }}" class="mb-4"
       onsubmit="return confirm('Allen {{ offene_n }} noch offenen Bewerbern eine Absage senden?');">
     {% csrf_token %}
-    <button class="text-xs font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-3 py-1.5 rounded-lg"><i class="fa-solid fa-envelope mr-1"></i>Übrige {{ offene_n }} absagen</button>
+    <button class="text-xs font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'senden' klasse='mr-1' %}Übrige {{ offene_n }} absagen</button>
 </form>
 {% endif %}
 
@@ -62,19 +63,19 @@
                 </td>
                 {% endfor %}
                 <td class="px-4 py-3 fw-mutet text-[13px]">
-                    {{ k.haushalt }} Pers.{% if k.haustiere %} · <i class="fa-solid fa-paw fw-faint" title="Haustiere"></i>{% endif %}
+                    {{ k.haushalt }} Pers.{% if k.haustiere %} · {% zeichen 'arbeit' klasse='fw-faint' %}{% endif %}
                     {% if k.bezug %}<div class="text-xs fw-faint">ab {{ k.bezug|date:"d.m.Y" }}</div>{% endif %}
                 </td>
                 <td class="px-4 py-3 text-right whitespace-nowrap">
                     {% if k.status == 'zugesagt' %}
-                        <span class="text-xs font-semibold fw-gut"><i class="fa-solid fa-check mr-1"></i>Zugesagt</span>
+                        <span class="text-xs font-semibold fw-gut">{% zeichen 'gut' klasse='mr-1' %}Zugesagt</span>
                     {% elif k.status == 'abgelehnt' %}
                         <span class="text-xs font-semibold fw-faint">Abgesagt</span>
                     {% else %}
                     <div class="inline-flex items-center gap-1.5">
                         <button type="button" onclick="document.getElementById('besi-{{ k.b.id }}').classList.toggle('hidden')"
                                 class="text-xs font-semibold fw-info border fw-linie hover:fw-info-flaeche px-2.5 py-1.5 rounded-lg">
-                            <i class="fa-regular fa-calendar mr-1"></i>Besichtigung</button>
+                            {% zeichen 'termin' klasse='mr-1' %}Besichtigung</button>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
                               onsubmit="return confirm('{{ k.name|escapejs }} zusagen{% if k.b.email %} und E-Mail senden{% endif %}?');">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="zusage">
@@ -88,7 +89,7 @@
                     </div>
                     {% endif %}
                     {% if k.b.besichtigung_am %}
-                    <div class="text-[10px] font-semibold fw-info mt-1"><i class="fa-regular fa-calendar mr-0.5"></i>Besichtigung {{ k.b.besichtigung_am|date:"d.m.Y H:i" }}</div>
+                    <div class="text-[10px] font-semibold fw-info mt-1">{% zeichen 'termin' klasse='mr-0.5' %}Besichtigung {{ k.b.besichtigung_am|date:"d.m.Y H:i" }}</div>
                     {% endif %}
                 </td>
             </tr>
@@ -104,7 +105,7 @@
                                    class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                         </div>
                         <button class="fw-btn fw-primary text-white text-xs font-semibold px-3.5 py-2.5 rounded-lg">
-                            <i class="fa-solid fa-paper-plane mr-1.5"></i>Einladen{% if k.b.email %} ({{ k.b.email }}){% endif %}
+                            {% zeichen 'senden' klasse='mr-1.5' %}Einladen{% if k.b.email %} ({{ k.b.email }}){% endif %}
                         </button>
                         <span class="text-[11px] fw-faint">Termin erscheint im Fristen-Center; Einladung per E-Mail mit Journal-Eintrag.</span>
                     </form>
@@ -117,7 +118,7 @@
 </div>
 {% else %}
 <div class="fw-card p-10 text-center fw-faint">
-    <i class="fa-solid fa-users text-2xl mb-2 fw-faint"></i>
+    {% zeichen 'person' klasse='text-2xl mb-2 fw-faint' %}
     <p class="text-sm">Noch keine Bewerbungen für dieses Objekt.</p>
 </div>
 {% endif %}

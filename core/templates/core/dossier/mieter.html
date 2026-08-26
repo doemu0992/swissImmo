@@ -1,10 +1,11 @@
 {% extends 'core/dossier/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}{{ mieter.display_name }}{% endblock %}
 {% block nav_crm %}fw-btn fw-primary shadow-md{% endblock %}
 {% block breadcrumb %}
     <a href="/app/?tab=crm" class="fw-faint hover:fw-marke transition-colors">Mieterstamm</a>
-    <i class="fa-solid fa-chevron-right text-[9px] fw-faint"></i>
+    {% zeichen 'weiter' klasse='text-[9px] fw-faint' %}
     <span class="font-semibold fw-ink truncate">{{ mieter.display_name }}</span>
 {% endblock %}
 
@@ -40,11 +41,11 @@
         <div class="fw-card">
             <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink">Kontakt</div>
             <div class="p-5 space-y-3 text-sm">
-                {% if mieter.email %}<div class="flex items-center gap-3"><i class="fa-solid fa-envelope fw-faint w-4"></i><a href="mailto:{{ mieter.email }}" class="fw-marke font-medium hover:underline truncate">{{ mieter.email }}</a></div>{% endif %}
-                {% if mieter.mobile %}<div class="flex items-center gap-3"><i class="fa-solid fa-mobile-screen fw-faint w-4"></i><span>{{ mieter.mobile }}</span></div>{% endif %}
-                {% if mieter.telefon_privat %}<div class="flex items-center gap-3"><i class="fa-solid fa-phone fw-faint w-4"></i><span>{{ mieter.telefon_privat }}</span></div>{% endif %}
-                {% if mieter.telefon_geschaeft %}<div class="flex items-center gap-3"><i class="fa-solid fa-briefcase fw-faint w-4"></i><span>{{ mieter.telefon_geschaeft }}</span></div>{% endif %}
-                <div class="flex items-center gap-3"><i class="fa-solid fa-language fw-faint w-4"></i><span>{{ mieter.get_sprache_display }}</span></div>
+                {% if mieter.email %}<div class="flex items-center gap-3">{% zeichen 'senden' klasse='fw-faint w-4' %}<a href="mailto:{{ mieter.email }}" class="fw-marke font-medium hover:underline truncate">{{ mieter.email }}</a></div>{% endif %}
+                {% if mieter.mobile %}<div class="flex items-center gap-3">{% zeichen 'person' klasse='fw-faint w-4' %}<span>{{ mieter.mobile }}</span></div>{% endif %}
+                {% if mieter.telefon_privat %}<div class="flex items-center gap-3">{% zeichen 'senden' klasse='fw-faint w-4' %}<span>{{ mieter.telefon_privat }}</span></div>{% endif %}
+                {% if mieter.telefon_geschaeft %}<div class="flex items-center gap-3">{% zeichen 'dokument' klasse='fw-faint w-4' %}<span>{{ mieter.telefon_geschaeft }}</span></div>{% endif %}
+                <div class="flex items-center gap-3">{% zeichen 'einstellungen' klasse='fw-faint w-4' %}<span>{{ mieter.get_sprache_display }}</span></div>
             </div>
         </div>
 
@@ -65,7 +66,7 @@
 
         {% if mieter.notizen %}
         <div class="fw-card">
-            <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink"><i class="fa-solid fa-note-sticky fw-warnton mr-1.5"></i>Interne Notizen</div>
+            <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink">{% zeichen 'hinweis' klasse='fw-warnton mr-1.5' %}Interne Notizen</div>
             <p class="p-5 text-xs fw-mutet whitespace-pre-line leading-relaxed">{{ mieter.notizen|truncatechars:600 }}</p>
         </div>
         {% endif %}
@@ -80,7 +81,7 @@
             {% for v in vertraege %}
                 <a href="{% url 'dossier_vertrag' v.id %}" class="flex items-center gap-4 px-5 py-3.5 hover:fw-flaeche2 transition-colors">
                     <div class="w-9 h-9 rounded-lg {% if v.status == 'aktiv' %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %} flex items-center justify-center shrink-0 text-sm">
-                        <i class="fa-solid fa-file-signature"></i>
+                        {% zeichen 'vertrag' %}
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="font-medium text-sm fw-strong truncate">{{ v.einheit }}</div>
@@ -90,7 +91,7 @@
                         <div class="font-semibold text-sm">CHF {{ v.brutto_mietzins|chf }}</div>
                         <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if v.status == 'aktiv' %}fw-gut-flaeche fw-gut{% elif v.status == 'entwurf' %}fw-flaeche2 fw-mutet{% else %}fw-warn-flaeche fw-warnton{% endif %}">{{ v.get_status_display }}</span>
                     </div>
-                    <i class="fa-solid fa-chevron-right fw-faint text-xs"></i>
+                    {% zeichen 'weiter' klasse='fw-faint text-xs' %}
                 </a>
             {% empty %}
                 <p class="px-5 py-4 text-sm fw-faint italic">Keine Verträge vorhanden.</p>
@@ -101,7 +102,7 @@
         {% if offene_rechnungen %}
         <div class="fw-flaeche rounded-xl border fw-linie-krit">
             <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-kritisch flex justify-between">
-                <span><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>Offene Posten</span>
+                <span>{% zeichen 'rechnung' klasse='mr-1.5' %}Offene Posten</span>
                 <span>CHF {{ total_offen|chf }}</span>
             </div>
             <table class="w-full text-sm">
@@ -142,7 +143,7 @@
                 <div class="fw-dv">
                 {% for d in dokumente %}
                     <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank" rel="noopener"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:fw-marke transition-colors">
-                        <i class="fa-solid fa-file-lines fw-faint"></i>
+                        {% zeichen 'dokument' klasse='fw-faint' %}
                         <span class="text-sm flex-1 truncate">{{ d.bezeichnung }}</span>
                         <span class="text-xs fw-faint">{{ d.datum|date:"d.m.y" }}</span>
                     </a>
@@ -157,7 +158,7 @@
                 <div class="fw-dv">
                 {% for t in tickets %}
                     <div class="flex items-center gap-3 px-5 py-2.5">
-                        <i class="fa-solid fa-screwdriver-wrench {% if t.status == 'erledigt' %}fw-faint{% else %}fw-kritisch{% endif %}"></i>
+                        <span class="{% if t.status == 'erledigt' %}fw-faint{% else %}fw-kritisch{% endif %}">{% zeichen 'arbeit' %}</span>
                         <span class="text-sm flex-1 truncate">{{ t.titel }}</span>
                         <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if t.status == 'erledigt' %}fw-flaeche2 fw-faint{% else %}fw-krit-flaeche fw-kritisch{% endif %}">{{ t.status }}</span>
                     </div>

@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Schadensfälle — swissImmo{% endblock %}
 
 {% block content %}
@@ -9,11 +10,11 @@
         <p>Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/schaeden/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-        <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Schaden erfassen</button>
+        <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} Schaden erfassen</button>
         <div class="relative" data-menu>
-            <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+            <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
-                <a href="/neu/schaeden/kosten/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-coins w-4"></i>Kostenübersicht</a>
+                <a href="/neu/schaeden/kosten/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'geld' klasse='w-4' %}Kostenübersicht</a>
             </div>
         </div>
     </div>
@@ -21,7 +22,7 @@
 
 <!-- Schaden intern erfassen -->
 <div id="neuschaden" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-triangle-exclamation fw-kritisch mr-1.5"></i>Schaden erfassen (z.B. telefonisch gemeldet)</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'warnung' klasse='fw-kritisch mr-1.5' %}Schaden erfassen (z.B. telefonisch gemeldet)</h3>
     <form method="post" action="/neu/schaeden/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {% csrf_token %}
         <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Titel / Schaden *</label>
@@ -54,7 +55,7 @@
         <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Fotos (mehrere möglich)</label>
             <input name="fotos" type="file" accept="image/*" multiple class="w-full text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold"></div>
         <div class="sm:col-span-2">
-            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Ticket erstellen</button>
+            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Ticket erstellen</button>
             <span class="text-xs fw-faint ml-2">Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung.</span>
         </div>
     </form>
@@ -115,7 +116,7 @@
         </div>
         {% if row.t.prioritaet|lower == 'hoch' %}<span class="fw-chip fw-crit">Hoch</span>{% endif %}
         <span class="fw-chip fw-mut">{{ row.s_label }}</span>
-        <i class="fa-solid fa-chevron-right fw-klein"></i>
+        {% zeichen 'weiter' klasse='fw-klein' %}
     </div>
     {% empty %}
     <div style="padding:0 16px">

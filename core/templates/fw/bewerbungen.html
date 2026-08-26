@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Bewerbungen — swissImmo{% endblock %}
 {% block content %}
 
@@ -23,13 +24,13 @@
             <a href="/neu/bewerbungen/{{ b.id }}/" class="block fw-card p-3 hover:fw-linie-marke hover:shadow-sm transition-all">
                 <div class="flex items-center justify-between gap-2">
                     <span class="font-semibold fw-strong text-sm truncate">{{ b.vorname }} {{ b.nachname }}</span>
-                    {% if b.hat_betreibungen %}<i class="fa-solid fa-triangle-exclamation fw-kritisch text-xs" title="Betreibungen"></i>
-                    {% else %}<i class="fa-solid fa-circle-check fw-gut text-xs" title="Keine Betreibungen"></i>{% endif %}
+                    {% if b.hat_betreibungen %}{% zeichen 'warnung' klasse='fw-kritisch text-xs' %}
+                    {% else %}{% zeichen 'gut' klasse='fw-gut text-xs' %}{% endif %}
                 </div>
                 <div class="text-xs fw-mutet mt-1 truncate">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
                 <div class="flex items-center gap-2 mt-2 text-[11px] fw-faint">
-                    <span><i class="fa-solid fa-user mr-0.5"></i>{{ b.anzahl_erwachsene }}{% if b.anzahl_kinder %}+{{ b.anzahl_kinder }}K{% endif %}</span>
-                    {% if b.gewuenschter_bezugstermin %}<span><i class="fa-solid fa-calendar mr-0.5"></i>{{ b.gewuenschter_bezugstermin|date:"d.m.y" }}</span>{% endif %}
+                    <span>{% zeichen 'person' klasse='mr-0.5' %}{{ b.anzahl_erwachsene }}{% if b.anzahl_kinder %}+{{ b.anzahl_kinder }}K{% endif %}</span>
+                    {% if b.gewuenschter_bezugstermin %}<span>{% zeichen 'termin' klasse='mr-0.5' %}{{ b.gewuenschter_bezugstermin|date:"d.m.y" }}</span>{% endif %}
                     <span class="ml-auto">{{ b.erstellt_am|date:"d.m." }}</span>
                 </div>
             </a>

@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Mieterportal — SwissImmo{% endblock %}
 {% block brand_icon %}fa-key{% endblock %}
@@ -41,14 +42,14 @@
                 </div>
                 {% if o.kaution %}
                 <div class="mt-3 flex items-center gap-2 fw-faint text-sm">
-                    <i class="fa-solid fa-shield-halved"></i> Mietkaution: <span class="font-semibold text-white">CHF {{ o.kaution|chf }}</span>
+                    {% zeichen 'gesperrt' %} Mietkaution: <span class="font-semibold text-white">CHF {{ o.kaution|chf }}</span>
                 </div>
                 {% endif %}
             </div>
         </div>
         {% empty %}
         <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 mb-5 flex items-start gap-3">
-            <i class="fa-solid fa-circle-info mt-0.5"></i>
+            {% zeichen 'hinweis' klasse='mt-0.5' %}
             <p class="text-sm">Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</p>
         </div>
         {% endfor %}
@@ -57,7 +58,7 @@
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <a href="/mieter/rechnungen/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-file-invoice"></i></span>
+                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'rechnung' %}</span>
                     {% if offene_count %}<span class="text-[10px] font-bold fw-krit-flaeche text-white rounded-full px-2 py-0.5">{{ offene_count }}</span>{% endif %}
                 </div>
                 <div class="mt-3 font-bold fw-strong">Rechnungen</div>
@@ -66,7 +67,7 @@
 
             <a href="/mieter/dokumente/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></span>
+                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'dokument' %}</span>
                     {% if dok_count %}<span class="text-[10px] font-bold fw-balken fw-mutet rounded-full px-2 py-0.5">{{ dok_count }}</span>{% endif %}
                 </div>
                 <div class="mt-3 font-bold fw-strong">Dokumente</div>
@@ -75,7 +76,7 @@
 
             <a href="/mieter/tickets/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'arbeit' %}</span>
                     {% if ticket_count %}<span class="text-[10px] font-bold fw-balken fw-mutet rounded-full px-2 py-0.5">{{ ticket_count }}</span>{% endif %}
                 </div>
                 <div class="mt-3 font-bold fw-strong">Meine Meldungen</div>
@@ -84,7 +85,7 @@
 
             <a href="/mieter/schaden/neu/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-krit hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl fw-krit-flaeche fw-kritisch flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <span class="w-10 h-10 rounded-xl fw-krit-flaeche fw-kritisch flex items-center justify-center">{% zeichen 'warnung' %}</span>
                 </div>
                 <div class="mt-3 font-bold fw-strong">Schaden melden</div>
                 <div class="text-xs fw-faint">Reparatur beantragen</div>
@@ -92,8 +93,8 @@
 
             <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-file-lines"></i></span>
-                    <i class="fa-solid fa-arrow-up-right-from-square fw-faint text-xs"></i>
+                    <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'dokument' %}</span>
+                    {% zeichen 'extern' klasse='fw-faint text-xs' %}
                 </div>
                 <div class="mt-3 font-bold fw-strong">Kontoauszug</div>
                 <div class="text-xs fw-faint">als PDF öffnen</div>
@@ -101,7 +102,7 @@
 
             <a href="/mieter/kuendigung/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-krit hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
-                    <span class="w-10 h-10 rounded-xl fw-krit-flaeche fw-kritisch flex items-center justify-center"><i class="fa-solid fa-envelope-open-text"></i></span>
+                    <span class="w-10 h-10 rounded-xl fw-krit-flaeche fw-kritisch flex items-center justify-center">{% zeichen 'senden' %}</span>
                 </div>
                 <div class="mt-3 font-bold fw-strong">Kündigung</div>
                 <div class="text-xs fw-faint">erfassen &amp; Brief laden</div>
@@ -109,7 +110,7 @@
         </div>
     {% else %}
         <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 flex items-start gap-3">
-            <i class="fa-solid fa-circle-info mt-0.5"></i>
+            {% zeichen 'hinweis' klasse='mt-0.5' %}
             <p class="text-sm">Ihr Login ist noch keinem Mieter-Dossier zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</p>
         </div>
     {% endif %}

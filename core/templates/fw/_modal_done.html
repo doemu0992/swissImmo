@@ -1,3 +1,4 @@
+{% load zeichen %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -7,7 +8,7 @@
 </head>
 <body class="fw-flaeche2">
 <div class="min-h-[40vh] flex flex-col items-center justify-center text-center p-8">
-    <span class="w-16 h-16 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mb-4"><i class="fa-solid fa-circle-check text-2xl"></i></span>
+    <span class="w-16 h-16 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mb-4">{% zeichen 'gut' klasse='text-2xl' %}</span>
     <p class="font-bold fw-strong text-lg">{{ msg|default:"Erledigt" }}</p>
     <p class="text-sm fw-faint mt-1">Fenster wird geschlossen …</p>
 </div>

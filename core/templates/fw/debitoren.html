@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Debitoren — swissImmo{% endblock %}
 
@@ -9,7 +10,7 @@
         <h1>Debitoren</h1>
         <p>Offene Posten aus Sollstellung und Weiterverrechnung (Sonnerie, Schlüssel, Ersatz …){% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}, {{ aktive_lg.ort }} <a href="/neu/debitoren/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
-    <button type="button" onclick="document.getElementById('adhoc').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Rechnung erstellen</button>
+    <button type="button" onclick="document.getElementById('adhoc').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} Rechnung erstellen</button>
 </div>
 
 
@@ -17,16 +18,16 @@
 {{ vertrag_daten|json_script:"vd-data" }}
 {{ absender|json_script:"abs-data" }}
 <div id="adhoc" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-file-invoice-dollar fw-marke mr-1.5"></i>Rechnung / Weiterverrechnung erstellen</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'rechnung' klasse='fw-marke mr-1.5' %}Rechnung / Weiterverrechnung erstellen</h3>
     <!-- Schnellauswahl wiederkehrender Positionen -->
     <div class="flex flex-wrap gap-2 mb-4">
         <span class="text-xs font-semibold fw-faint self-center mr-1">Schnellauswahl:</span>
-        <button type="button" onclick="fwPos('Sonnerie-Beschriftung','20')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke"><i class="fa-solid fa-bell mr-1"></i>Sonnerie-Beschriftung</button>
-        <button type="button" onclick="fwPos('Namensschild Briefkasten','15')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke"><i class="fa-solid fa-envelope mr-1"></i>Briefkasten-Schild</button>
-        <button type="button" onclick="fwPos('Ersatzschlüssel','80')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke"><i class="fa-solid fa-key mr-1"></i>Ersatzschlüssel</button>
-        <button type="button" onclick="fwPos('Zylinderwechsel','150')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke"><i class="fa-solid fa-lock mr-1"></i>Zylinderwechsel</button>
-        <button type="button" onclick="fwPos('Reinigung / Endreinigung','')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke"><i class="fa-solid fa-broom mr-1"></i>Reinigung</button>
-        <button type="button" onclick="fwPos('Schadenersatz','')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke"><i class="fa-solid fa-screwdriver-wrench mr-1"></i>Schadenersatz</button>
+        <button type="button" onclick="fwPos('Sonnerie-Beschriftung','20')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'dokument' klasse='mr-1' %}Sonnerie-Beschriftung</button>
+        <button type="button" onclick="fwPos('Namensschild Briefkasten','15')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'senden' klasse='mr-1' %}Briefkasten-Schild</button>
+        <button type="button" onclick="fwPos('Ersatzschlüssel','80')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'schluessel' klasse='mr-1' %}Ersatzschlüssel</button>
+        <button type="button" onclick="fwPos('Zylinderwechsel','150')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'gesperrt' klasse='mr-1' %}Zylinderwechsel</button>
+        <button type="button" onclick="fwPos('Reinigung / Endreinigung','')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'arbeit' klasse='mr-1' %}Reinigung</button>
+        <button type="button" onclick="fwPos('Schadenersatz','')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'arbeit' klasse='mr-1' %}Schadenersatz</button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -45,13 +46,13 @@
                 </select></div>
             <div class="sm:col-span-2"><label for="deb-beschreibung" class="block text-xs font-semibold fw-mutet mb-1">Beschreibung</label>
                 <input id="deb-beschreibung" name="beschreibung" oninput="debPreview()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><button class="w-full fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Rechnung erstellen</button></div>
+            <div class="sm:col-span-2"><button class="w-full fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% zeichen 'gut' klasse='mr-1' %}Rechnung erstellen</button></div>
             <p class="sm:col-span-2 text-xs fw-faint">Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugst du danach über den QR-Button in der Liste.</p>
         </form>
 
         <!-- RECHTS: Live-Vorschau -->
         <div>
-            <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Live-Vorschau</div>
+            <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2">{% zeichen 'rechnung' %} Live-Vorschau</div>
             <div id="deb-pv" class="fw-card p-6 text-[13px] fw-strong leading-relaxed"></div>
         </div>
     </div>
@@ -88,7 +89,7 @@
             <tr><td class="py-2 font-semibold">Rechnungsbetrag</td><td class="py-2 text-right tabular-nums font-bold fw-marke">CHF ${debFmt(betrag)}</td></tr>
           </tbody></table>
           <div class="mt-4 rounded-lg fw-flaeche2 border border-dashed fw-linie px-3 py-2.5 text-[11px] fw-faint flex items-center gap-2">
-            <i class="fa-solid fa-qrcode fw-faint text-base"></i>
+            {% zeichen 'bank' klasse='fw-faint text-base' %}
             <span>QR-Zahlteil mit Referenz wird nach dem Erstellen erzeugt${DEB_ABS.iban?' · IBAN '+debEsc(DEB_ABS.iban):''}.</span>
           </div>`;
       }
@@ -128,7 +129,7 @@
         <form method="get" class="relative" style="margin-left:auto">
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs"></i>
+            {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
             <input type="text" name="q" value="{{ q }}" placeholder="Mieter oder Titel suchen…" aria-label="Debitoren nach Mieter oder Titel durchsuchen"
                    class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
         </form>
@@ -156,21 +157,21 @@
                 </div>
             </div>
             <div class="mt-2.5 flex items-center gap-3 flex-wrap">
-                <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" rel="noopener" class="text-xs fw-gut font-medium hover:underline"><i class="fa-solid fa-qrcode"></i> QR</a>
+                <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" rel="noopener" class="text-xs fw-gut font-medium hover:underline">{% zeichen 'bank' %} QR</a>
                 {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="text-xs fw-marke font-medium hover:underline">Vertrag</a>{% endif %}
                 {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
                 <form method="post" action="/neu/debitoren/{{ row.r.id }}/abschreiben/" class="inline"
                       onsubmit="var g = prompt('Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?\nGrund (z.B. Verlustschein, Betreibung erfolglos):'); if (g === null) return false; this.grund.value = g; return true;">
                     {% csrf_token %}
                     <input type="hidden" name="grund" value="">
-                    <button type="submit" class="text-xs fw-mutet font-medium hover:fw-kritisch"><i class="fa-solid fa-file-circle-minus"></i> Abschreiben</button>
+                    <button type="submit" class="text-xs fw-mutet font-medium hover:fw-kritisch">{% zeichen 'kritisch' %} Abschreiben</button>
                 </form>
                 {% endif %}
                 {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' and row.r.status != 'abgeschrieben' %}
                 <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel|escapejs }}“ stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
                     {% csrf_token %}
                     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                    <button type="submit" class="text-xs fw-kritisch font-medium hover:fw-kritisch"><i class="fa-solid fa-trash"></i> Stornieren</button>
+                    <button type="submit" class="text-xs fw-kritisch font-medium hover:fw-kritisch">{% zeichen 'loeschen' %} Stornieren</button>
                 </form>
                 {% endif %}
             </div>
@@ -218,21 +219,21 @@
                     {% else %}<span class="fw-faint">—</span>{% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" rel="noopener" class="text-xs fw-gut font-medium hover:underline mr-2" title="QR-Rechnung als PDF"><i class="fa-solid fa-qrcode"></i> QR</a>
+                    <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" rel="noopener" class="text-xs fw-gut font-medium hover:underline mr-2" title="QR-Rechnung als PDF">{% zeichen 'bank' %} QR</a>
                     {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" onclick="return fwModalOpen(this,'Vertrag',true)" class="text-xs fw-marke font-medium hover:underline mr-2">Ansehen</a>{% endif %}
                     {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
                     <form method="post" action="/neu/debitoren/{{ row.r.id }}/abschreiben/" class="inline"
                           onsubmit="var g = prompt('Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?\nGrund (z.B. Verlustschein, Betreibung erfolglos):'); if (g === null) return false; this.grund.value = g; return true;">
                         {% csrf_token %}
                         <input type="hidden" name="grund" value="">
-                        <button type="submit" class="text-xs fw-mutet font-medium hover:fw-kritisch mr-2" title="Als Debitorenverlust abschreiben (uneinbringlich)"><i class="fa-solid fa-file-circle-minus"></i> Abschreiben</button>
+                        <button type="submit" class="text-xs fw-mutet font-medium hover:fw-kritisch mr-2" title="Als Debitorenverlust abschreiben (uneinbringlich)">{% zeichen 'kritisch' %} Abschreiben</button>
                     </form>
                     {% endif %}
                     {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' and row.r.status != 'abgeschrieben' %}
                     <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel|escapejs }}“ stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                        <button type="submit" class="text-xs fw-kritisch font-medium hover:fw-kritisch" title="Stornieren / löschen"><i class="fa-solid fa-trash"></i></button>
+                        <button type="submit" class="text-xs fw-kritisch font-medium hover:fw-kritisch" title="Stornieren / löschen">{% zeichen 'loeschen' %}</button>
                     </form>
                     {% endif %}
                 </td>

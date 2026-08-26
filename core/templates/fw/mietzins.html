@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf l10n %}
 {% block title %}Mietzins — swissImmo{% endblock %}
 
@@ -14,15 +15,15 @@
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'trend' %}</div>
         <div><div class="text-2xl font-bold fw-gut">{{ n_inc }}</div><div class="text-sm fw-mutet">Erhöhung möglich</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-down"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0">{% zeichen 'zurueck' %}</div>
         <div><div class="text-2xl font-bold fw-kritisch">{{ n_dec }}</div><div class="text-sm fw-mutet">Senkungsanspruch</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'dokument' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">Aktive Verträge</div></div>
     </div>
 </div>
@@ -44,7 +45,7 @@
             <span class="text-xs fw-faint">{{ anzahl }} Vertrag/Verträge</span>
             <button type="submit" id="massenBtn" disabled
                     class="inline-flex items-center gap-1.5 fw-balken-voll hover:fw-balken-voll disabled:fw-balken disabled:fw-faint text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors">
-                <i class="fa-solid fa-layer-group"></i> Ausgewählte anpassen (Vorschau)
+                {% zeichen 'mehr' %} Ausgewählte anpassen (Vorschau)
             </button>
         </div>
     </div>
@@ -78,13 +79,13 @@
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/mietzins/{{ row.v.id }}/anpassung/"
                        class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                        <i class="fa-solid fa-percent"></i> Anpassen
+                        {% zeichen 'bericht' %} Anpassen
                     </a>
                 </td>
             </tr>
             {% empty %}
             <tr><td colspan="8" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-percent"></i></div>
+                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'bericht' %}</div>
                 <p class="text-sm font-medium fw-ink">{% if pot_filter %}Keine Verträge mit diesem Potenzial{% else %}Keine aktiven Verträge{% endif %}</p>
             </td></tr>
             {% endfor %}
@@ -100,7 +101,7 @@
     function sync() {
       var n = document.querySelectorAll('input.vertragWahl:checked').length;
       btn.disabled = n === 0;
-      btn.innerHTML = '<i class="fa-solid fa-layer-group"></i> ' + (n ? n + ' ausgewählte anpassen (Vorschau)' : 'Ausgewählte anpassen (Vorschau)');
+      btn.innerHTML = '{% zeichen 'mehr' %} ' + (n ? n + ' ausgewählte anpassen (Vorschau)' : 'Ausgewählte anpassen (Vorschau)');
     }
     if (alle) alle.addEventListener('change', function () { boxen.forEach(function (b) { b.checked = alle.checked; }); sync(); });
     boxen.forEach(function (b) { b.addEventListener('change', sync); });
@@ -108,7 +109,7 @@
 </script>
 
 <p class="text-xs fw-faint mt-4">
-    <i class="fa-solid fa-circle-info mr-1"></i>
+    {% zeichen 'hinweis' klasse='mr-1' %}
     „Anpassen" öffnet das amtliche Mietzinsanpassungs-Formular mit vorberechneten Werten (Referenzzins, LIK, Teuerung).
     Netto und Basis sind die <b>effektiven</b> Werte (inkl. wirksamer Anpassungen und Staffelstufen) — das Potenzial
     vergleicht diese effektive Basis mit dem aktuellen Stand.

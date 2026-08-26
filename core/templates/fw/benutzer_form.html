@@ -1,9 +1,10 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}{% if ist_neu %}Neuer Benutzer{% else %}{{ ziel.username }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/benutzer/" class="hover:fw-marke">Benutzer</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">{% if ist_neu %}Neu{% else %}{{ ziel.username }}{% endif %}</span>
 </nav>
 
@@ -51,7 +52,7 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Speichern
+            {% zeichen 'speichern' klasse='mr-1.5' %}Speichern
         </button>
         <a href="/neu/benutzer/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>

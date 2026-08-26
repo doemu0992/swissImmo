@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Abwesenheiten — swissImmo{% endblock %}
 
 {% block content %}
@@ -11,7 +12,7 @@
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-user-clock"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'wartet' %}</span>
         <span class="fw-t">Zurzeit abwesend</span>
         <span class="fw-neben">{{ laufend|length }}</span></div>
     <details class="fw-aufklapp">
@@ -37,7 +38,7 @@
                     </select></div>
                 <div><label class="fw-klein block mb-1">Notiz</label>
                     <input name="notiz" class="fw-feld w-full"></div>
-                <div class="sm:col-span-3"><button class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Erfassen</button></div>
+                <div class="sm:col-span-3"><button class="fw-btn fw-primary">{% zeichen 'neu' %}Erfassen</button></div>
             </form>
         </div>
     </details>
@@ -67,7 +68,7 @@
 <div class="fw-card">
     {% for a in kommend %}
     <div class="fw-zeile">
-        <span class="fw-ikon mut"><i class="fa-solid fa-plane-departure"></i></span>
+        <span class="fw-ikon mut">{% zeichen 'termin' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ a.benutzer.get_full_name|default:a.benutzer.username }}</div>
             <div class="fw-s">{{ a.get_grund_display }}{% if a.vertreten_durch_id %} · Vertretung {{ a.vertreten_durch.get_full_name|default:a.vertreten_durch.username }}{% else %} · noch ohne Vertretung{% endif %}</div>
@@ -83,7 +84,7 @@
 <div class="fw-card">
     {% for a in vergangen %}
     <div class="fw-zeile">
-        <span class="fw-ikon mut"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <span class="fw-ikon mut">{% zeichen 'verlauf' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ a.benutzer.get_full_name|default:a.benutzer.username }}</div>
             <div class="fw-s">{{ a.get_grund_display }}</div>

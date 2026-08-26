@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Fristen-Center — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -8,7 +9,7 @@
         <a href="/neu/fristen/?nur=frist" class="px-3 py-2 rounded-lg font-semibold {% if nur_frist %}fw-btn fw-primary{% else %}fw-btn border fw-linie fw-mutet hover:fw-flaeche2{% endif %}">Nur gesetzliche Fristen</a>
         <button type="button" onclick="document.getElementById('kalender-box').classList.toggle('hidden')"
                 class="px-3 py-2 rounded-lg font-semibold fw-flaeche border fw-linie fw-mutet hover:fw-flaeche2">
-            <i class="fa-regular fa-calendar-plus mr-1"></i>Kalender
+            {% zeichen 'neu' klasse='mr-1' %}Kalender
         </button>
     </div>
 </div>
@@ -17,7 +18,7 @@
 <div id="kalender-box" class="hidden fw-card p-4 mb-5">
     <div class="flex items-center gap-2 mb-3">
         <a href="/neu/fristen/export.ics" class="inline-flex items-center gap-1.5 fw-btn fw-primary text-sm font-semibold px-3.5 py-2 rounded-lg">
-            <i class="fa-solid fa-download"></i> .ics herunterladen
+            {% zeichen 'herunterladen' %} .ics herunterladen
         </a>
         <span class="text-xs fw-faint">einmaliger Import in Outlook / Apple / Google Calendar</span>
     </div>
@@ -79,7 +80,7 @@
 
 {% if not gesamt %}
 <div class="fw-card p-10 text-center fw-faint">
-    <i class="fa-solid fa-calendar-check text-3xl mb-3 fw-faint"></i>
+    {% zeichen 'gut' klasse='text-3xl mb-3 fw-faint' %}
     <p class="text-sm">Keine offenen Fristen im gewählten Bereich.</p>
 </div>
 {% endif %}

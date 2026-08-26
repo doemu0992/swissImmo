@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Regelprotokoll — swissImmo{% endblock %}
 
 {% block content %}
@@ -51,7 +52,7 @@
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
         <span class="fw-t">Anwendungen</span>
         <span class="fw-neben">{{ gesamt }}{% if gesamt > 200 %} — die neuesten 200 angezeigt{% endif %}</span></div>
     {% for a in zeilen %}

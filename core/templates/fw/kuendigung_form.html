@@ -1,11 +1,12 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Kündigung erfassen — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/{{ lg_query }}" class="hover:fw-marke">Verträge</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Kündigung</span>
 </nav>
 
@@ -44,7 +45,7 @@
 
         <!-- Mietrechtliche Live-Prüfung -->
         <div id="k-warn" class="hidden rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
-            <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
+            <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} Mietrechtlicher Hinweis</div>
             <ul id="k-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
 
@@ -95,7 +96,7 @@
             <input type="checkbox" name="leerstand_anlegen" class="fw-akzent"> Objekt wird frei — Leerstand ab Vertragsende anlegen &amp; Nachmieter-Pendenz erstellen
         </label>
         <div class="fw-markenflaeche border fw-linie-marke rounded-lg p-3 text-xs fw-mutet">
-            <i class="fa-solid fa-list-check fw-marke mr-1"></i>
+            {% zeichen 'arbeit' klasse='fw-marke mr-1' %}
             Beim Speichern wird automatisch eine <b>Auszugscheckliste</b> als Pendenzen angelegt (Abnahmetermin, Wohnungsabnahme,
             Zählerstände, Schlüssel, Schlussabrechnung, Kaution abrechnen …) — mit Fälligkeiten rund um das Vertragsende.
         </div>
@@ -103,7 +104,7 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Kündigung speichern
+            {% zeichen 'speichern' klasse='mr-1.5' %}Kündigung speichern
         </button>
         <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>

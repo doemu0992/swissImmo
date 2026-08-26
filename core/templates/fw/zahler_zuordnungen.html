@@ -1,11 +1,12 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Gelernte Zahler — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
     <h1>Gelernte Zahler</h1>
-    <a href="/neu/bankabgleich/" class="fw-btn"><i class="fa-solid fa-arrow-left"></i>Zum Bankabgleich</a>
+    <a href="/neu/bankabgleich/" class="fw-btn">{% zeichen 'zurueck' %}Zum Bankabgleich</a>
 </div>
 <p class="text-sm fw-mutet mb-6 max-w-3xl">
     Wer ohne QR-Referenz überweist, wird beim ersten Mal von Hand zugeordnet — danach merkt sich
@@ -17,11 +18,11 @@
 {% if zuordnungen %}
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 max-w-2xl">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-user-check"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'gut' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ zuordnungen|length }}</div><div class="text-sm fw-mutet">Gelernte Absender</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-bolt"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'kritisch' %}</div>
         <div><div class="text-2xl font-bold fw-gut">{{ getroffen_n }}</div><div class="text-sm fw-mutet">Zahlung(en) automatisch zugeordnet</div></div>
     </div>
 </div>
@@ -34,7 +35,7 @@
                 <div class="min-w-0 flex-1">
                     <div class="font-semibold fw-strong break-words">{{ z.name_anzeige|default:z.name_norm }}</div>
                     <div class="text-xs fw-mutet break-words mt-0.5">
-                        <i class="fa-solid fa-arrow-right-long fw-faint mr-1"></i>
+                        {% zeichen 'weiter' klasse='fw-faint mr-1' %}
                         {% if z.vertrag_id %}{{ z.vertrag.mieter.display_name }}{% if z.vertrag.einheit_id %} · {{ z.vertrag.einheit.liegenschaft.strasse }}{% if z.vertrag.einheit.bezeichnung %} · {{ z.vertrag.einheit.bezeichnung }}{% endif %}{% endif %}{% else %}—{% endif %}
                     </div>
                     <div class="mt-1.5 flex items-center gap-2 flex-wrap">
@@ -58,7 +59,7 @@
                             {% endfor %}
                         </select>
                         <button class="fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg transition-colors" title="Zuordnung auf diesen Mieter umbiegen">
-                            <i class="fa-solid fa-check"></i>
+                            {% zeichen 'gut' %}
                         </button>
                     </form>
                     <form method="post" action="/neu/bankabgleich/zahler/speichern/"
@@ -67,7 +68,7 @@
                         <input type="hidden" name="id" value="{{ z.id }}">
                         <input type="hidden" name="aktion" value="loeschen">
                         <button class="fw-faint hover:fw-kritisch text-sm px-2 py-2" title="Absender vergessen">
-                            <i class="fa-solid fa-trash"></i>
+                            {% zeichen 'loeschen' %}
                         </button>
                     </form>
                 </div>

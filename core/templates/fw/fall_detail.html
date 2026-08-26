@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}{{ fall.nummer }} — swissImmo{% endblock %}
 
 {% block content %}
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
     <a href="/neu/">Arbeit</a>
-    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    {% zeichen 'weiter' %}
     <b>{{ fall.nummer }}</b>
 </nav>
 
@@ -13,7 +14,7 @@
    Zuständigkeit — die vier Fragen, die man vor einem Vorgang stellt. {% endcomment %}
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
-        <div class="fw-akte-bild"><i class="fa-solid fa-folder-open"></i></div>
+        <div class="fw-akte-bild">{% zeichen 'dokument' %}</div>
         <div style="min-width:0">
             <div class="fw-akte-typ">Fall · {{ fall.nummer }}</div>
             <h1>{{ fall.betreff|default:fall.fallart.bezeichnung }}</h1>
@@ -51,7 +52,7 @@
 {% if liegengeblieben %}
 <div class="fw-card">
     <div class="fw-hinweis crit">
-        <span class="fw-hi"><i class="fa-solid fa-hourglass-end"></i></span>
+        <span class="fw-hi">{% zeichen 'wartet' %}</span>
         <div class="fw-ht"><b>Seit {{ tage_ohne_bewegung }} Tagen keine Bewegung</b>
             Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird
             erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem
@@ -81,7 +82,7 @@
         </div>
         {% if not s.erledigt_am %}
         <form method="post" action="/neu/fallschritte/{{ s.id }}/erledigen/">{% csrf_token %}
-            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Erledigt</button>
+            <button class="fw-btn fw-primary">{% zeichen 'gut' %}Erledigt</button>
         </form>
         {% endif %}
     </div>
@@ -93,7 +94,7 @@
 
 {% if fall.notiz %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-note-sticky"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
         <span class="fw-t">Notiz</span></div>
     <div style="padding:14px 16px;font-size:13px;color:var(--ds-muted);white-space:pre-line">{{ fall.notiz }}</div>
 </div>

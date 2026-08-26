@@ -1,9 +1,10 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Mandate — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <h1>Mandate</h1>
-    <a href="/neu/mandate/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Eigentümer erfassen</a>
+    <a href="/neu/mandate/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} Eigentümer erfassen</a>
 </div>
 <p class="text-sm fw-mutet mb-6">{{ rows|length }} Eigentümer, für die du Liegenschaften verwaltest.</p>
 
@@ -21,7 +22,7 @@
             <tr class="hover:fw-flaeche2">
                 <td class="px-5 py-3.5">
                     <a href="/neu/mandate/{{ row.md.id }}/" class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-briefcase text-xs"></i></span>
+                        <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'dokument' klasse='text-xs' %}</span>
                         <span class="font-medium fw-strong">{{ row.md.firma_oder_name }}</span>
                     </a>
                 </td>
@@ -29,14 +30,14 @@
                 <td class="px-5 py-3.5 fw-mutet">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3.5 text-center"><span class="fw-chip fw-flaeche2 fw-ink">{{ row.anzahl_lg }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium fw-gut hover:underline mr-3"><i class="fa-solid fa-file-invoice-dollar text-[10px] mr-0.5"></i>Abrechnung</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium fw-info hover:underline mr-3"><i class="fa-solid fa-scale-balanced text-[10px] mr-0.5"></i>Kontokorrent</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="text-xs font-medium fw-kritisch hover:underline mr-3"><i class="fa-solid fa-gavel text-[10px] mr-0.5"></i>Mahnstufen</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium fw-gut hover:underline mr-3">{% zeichen 'rechnung' klasse='text-[10px] mr-0.5' %}Abrechnung</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium fw-info hover:underline mr-3">{% zeichen 'recht' klasse='text-[10px] mr-0.5' %}Kontokorrent</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="text-xs font-medium fw-kritisch hover:underline mr-3">{% zeichen 'recht' klasse='text-[10px] mr-0.5' %}Mahnstufen</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3">{% zeichen 'bearbeiten' klasse='text-[10px] mr-0.5' %}Bearbeiten</a>
                     <form method="post" action="/neu/mandate/{{ row.md.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('Eigentümer „{{ row.md.firma_oder_name|escapejs }}“ löschen?{% if row.anzahl_lg %}\n\nAchtung: {{ row.anzahl_lg }} Liegenschaft(en) zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% endif %}');">
                         {% csrf_token %}
-                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch"><i class="fa-solid fa-trash text-[10px] mr-0.5"></i>Löschen</button>
+                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch">{% zeichen 'loeschen' klasse='text-[10px] mr-0.5' %}Löschen</button>
                     </form>
                 </td>
             </tr>

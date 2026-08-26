@@ -1,9 +1,10 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Betriebskostenspiegel {{ jahr }} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/berichte/" class="hover:fw-marke">Berichte</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Betriebskostenspiegel</span>
 </nav>
 

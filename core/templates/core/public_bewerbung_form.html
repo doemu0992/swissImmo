@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="de">
@@ -21,7 +22,7 @@
 
  <div v-if="success" class="fw-flaeche rounded-3xl shadow-xl p-12 text-center animate-fade-in">
  <div class="w-24 h-24 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-5xl mx-auto mb-6">
- <i class="fa-solid fa-check"></i>
+ {% zeichen 'gut' %}
  </div>
  <h1 class="text-4xl font-black fw-strong mb-4">Bewerbung eingereicht!</h1>
  <p class="fw-mutet text-lg mb-8">Vielen Dank für dein Interesse. Wir haben deine Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei dir.</p>
@@ -32,12 +33,12 @@
 
  <div class="fw-btn fw-primary p-8">
  <div class="flex items-center gap-3 mb-6">
- <div class="w-10 h-10 rounded-xl fw-markenflaeche flex items-center justify-center text-sm shadow-lg fw-schatten-marke"><i class="fa-solid fa-building"></i></div>
+ <div class="w-10 h-10 rounded-xl fw-markenflaeche flex items-center justify-center text-sm shadow-lg fw-schatten-marke">{% zeichen 'liegenschaft' %}</div>
  <span class="text-xl font-black tracking-tighter">swissImmo</span>
  </div>
  <p class="fw-marke font-black uppercase tracking-widest text-xs mb-1">Digitale Bewerbung</p>
  <h1 class="text-3xl font-black mb-2">{{ einheit.bezeichnung }}</h1>
- <p class="fw-faint flex items-center gap-2"><i class="fa-solid fa-location-dot"></i> {{ einheit.liegenschaft.strasse }}, {{ einheit.liegenschaft.plz }} {{ einheit.liegenschaft.ort }}</p>
+ <p class="fw-faint flex items-center gap-2">{% zeichen 'liegenschaft' %} {{ einheit.liegenschaft.strasse }}, {{ einheit.liegenschaft.plz }} {{ einheit.liegenschaft.ort }}</p>
  </div>
 
  <div class="fw-flaeche2 border-b fw-linie p-4 flex justify-between items-center px-8">
@@ -50,7 +51,7 @@
  <div class="p-8">
 
  <div v-if="error" class="fw-krit-flaeche border fw-linie-krit fw-kritisch p-4 rounded-xl mb-6 text-sm font-bold flex items-center gap-3 animate-fade-in">
- <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+ {% zeichen 'warnung' klasse='text-lg' %}
  {% verbatim %}{{ error }}{% endverbatim %}
  </div>
 
@@ -140,18 +141,18 @@
 
  <div class="space-y-3">
  <label class="flex items-center justify-between p-4 fw-flaeche2 border fw-linie rounded-xl cursor-pointer hover:fw-flaeche2 transition-colors">
- <span class="font-bold fw-strong"><i class="fa-solid fa-paw w-6 fw-faint"></i> Gibt es Haustiere?</span>
+ <span class="font-bold fw-strong">{% zeichen 'arbeit' klasse='w-6 fw-faint' %} Gibt es Haustiere?</span>
  <input type="checkbox" v-model="form.haustiere" class="w-5 h-5 rounded fw-marke fw-fokusring">
  </label>
  <div v-if="form.haustiere" class="pl-10"><input v-model="form.haustiere_details" type="text" placeholder="Welche Tiere? (Rasse/Art)" class="w-full fw-flaeche border fw-linie p-3 rounded-xl text-sm"></div>
 
  <label class="flex items-center justify-between p-4 fw-flaeche2 border fw-linie rounded-xl cursor-pointer hover:fw-flaeche2 transition-colors">
- <span class="font-bold fw-strong"><i class="fa-solid fa-guitar w-6 fw-faint"></i> Spielt jemand ein Instrument?</span>
+ <span class="font-bold fw-strong">{% zeichen 'hinweis' klasse='w-6 fw-faint' %} Spielt jemand ein Instrument?</span>
  <input type="checkbox" v-model="form.musikinstrumente" class="w-5 h-5 rounded fw-marke fw-fokusring">
  </label>
 
  <label class="flex items-center justify-between p-4 fw-flaeche2 border fw-linie rounded-xl cursor-pointer hover:fw-flaeche2 transition-colors">
- <span class="font-bold fw-strong"><i class="fa-solid fa-car w-6 fw-faint"></i> Interesse an Parkplatz/Garage?</span>
+ <span class="font-bold fw-strong">{% zeichen 'einheit' klasse='w-6 fw-faint' %} Interesse an Parkplatz/Garage?</span>
  <input type="checkbox" v-model="form.interesse_parkplatz" class="w-5 h-5 rounded fw-marke fw-fokusring">
  </label>
  </div>
@@ -189,7 +190,7 @@
 
  <div v-if="!form.digitaler_betreibungsauszug">
  <div class="fw-info-flaeche border fw-linie p-3 rounded-xl mb-4 text-xs fw-info">
- <i class="fa-solid fa-circle-info mr-1"></i> Keinen aktuellen Auszug zur Hand?
+ {% zeichen 'hinweis' klasse='mr-1' %} Keinen aktuellen Auszug zur Hand?
  <a href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de" target="_blank" rel="noopener" class="font-bold underline hover:fw-info">
  Hier beim Bund online bestellen (PDF)
  </a>
@@ -256,14 +257,14 @@
  </div>
 
  <div class="flex justify-between items-center mt-10 pt-6 border-t fw-linie">
- <button v-if="step > 1" @click="step--" class="fw-faint font-bold hover:fw-strong transition-colors px-4 py-2"><i class="fa-solid fa-arrow-left mr-2"></i> Zurück</button>
+ <button v-if="step > 1" @click="step--" class="fw-faint font-bold hover:fw-strong transition-colors px-4 py-2">{% zeichen 'zurueck' klasse='mr-2' %} Zurück</button>
  <div v-else></div> <button v-if="step < 5" @click="nextStep" class="fw-btn fw-primary px-8 py-3.5 rounded-xl font-black fw-schatten-marke hover:fw-balken-voll transition-all flex items-center gap-2">
- Weiter <i class="fa-solid fa-arrow-right"></i>
+ Weiter {% zeichen 'weiter' %}
  </button>
 
  <button v-if="step === 5" @click="submitForm" :disabled="isSubmitting" class="fw-gut-voll text-white px-8 py-3.5 rounded-xl font-black fw-schatten-gut transition-all flex items-center gap-2 disabled:opacity-50">
  <i v-if="isSubmitting" class="fa-solid fa-circle-notch fa-spin"></i>
- <span v-else><i class="fa-solid fa-paper-plane mr-2"></i> Verbindlich einreichen</span>
+ <span v-else>{% zeichen 'senden' klasse='mr-2' %} Verbindlich einreichen</span>
  </button>
  </div>
 

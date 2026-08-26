@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Termine — swissImmo{% endblock %}
 
 {% block content %}
@@ -12,7 +13,7 @@
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-calendar-day"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'termin' %}</span>
         <span class="fw-t">Kommende Termine</span>
         <span class="fw-neben">{{ kommend|length }}</span></div>
     <details class="fw-aufklapp">
@@ -33,7 +34,7 @@
                     <input name="ort" placeholder="z.B. Perdtemps 3, EG" class="fw-feld w-full"></div>
                 <div><label class="fw-klein block mb-1">Notiz</label>
                     <input name="notiz" class="fw-feld w-full"></div>
-                <div class="sm:col-span-3"><button class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Termin erfassen</button></div>
+                <div class="sm:col-span-3"><button class="fw-btn fw-primary">{% zeichen 'neu' %}Termin erfassen</button></div>
             </form>
         </div>
     </details>
@@ -41,13 +42,13 @@
     <div class="fw-zeile">
         <div class="fw-zeit" style="min-width:66px">{{ t.beginn|date:"H:i" }}<br>
             <span class="fw-klein">{{ t.beginn|date:"d.m.Y" }}</span></div>
-        <span class="fw-ikon"><i class="fa-solid fa-calendar-day"></i></span>
+        <span class="fw-ikon">{% zeichen 'termin' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ t.titel }} <span class="fw-chip fw-mut">{{ t.get_art_display }}</span></div>
             <div class="fw-s">{{ t.dauer_minuten }} Min.{% if t.ort %} · {{ t.ort }}{% endif %}{% if t.zustaendig %} · {{ t.zustaendig.get_full_name|default:t.zustaendig.username }}{% endif %}{% if t.notiz %} · {{ t.notiz }}{% endif %}</div>
         </div>
         <form method="post" action="/neu/termine/{{ t.id }}/status/" class="flex gap-1.5">{% csrf_token %}
-            <button name="status" value="erledigt" class="fw-btn"><i class="fa-solid fa-check"></i>Erledigt</button>
+            <button name="status" value="erledigt" class="fw-btn">{% zeichen 'gut' %}Erledigt</button>
             <button name="status" value="abgesagt" class="fw-btn">Absagen</button>
         </form>
     </div>

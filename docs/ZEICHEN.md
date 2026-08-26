@@ -1,4 +1,4 @@
-# Zeichensatz — 42 Zeichen mit fester Bedeutung
+# Zeichensatz — 46 Zeichen mit fester Bedeutung
 
 > Grundlage: Entscheid **D5** in `docs/ENTSCHEIDE-V7.md`, Befund **B8** in
 > `docs/UX-ANALYSE-V7.md`.
@@ -35,7 +35,7 @@ Raums daneben, und das Bett trägt nichts bei.
 
 ## Die Tabelle
 
-### Navigation und Struktur (7)
+### Navigation und Struktur (8)
 
 | Zeichen | Bedeutung | ersetzt heute |
 |---|---|---|
@@ -43,6 +43,7 @@ Raums daneben, und das Bett trägt nichts bei.
 | `zurueck` | Eine Ebene höher | `chevron-left`, `arrow-left`, `angles-left` |
 | `aufklappen` | Abschnitt öffnen/schliessen | `chevron-down`, `chevron-up`, `caret-down` |
 | `mehr` | Weitere Handlungen (Menü) | `ellipsis`, `ellipsis-vertical`, `bars`, `grid-2`, `layer-group` |
+| `schliessen` | Dialog, Meldung oder Menü wegklicken | `xmark` (nur wo schliessend) |
 | `extern` | Führt aus der Anwendung heraus | `up-right-from-square`, `arrow-up-right-from-square`, `link`, `share-nodes`, `arrow-right-from-bracket`, `right-from-bracket`, `window-maximize` |
 | `suchen` | Suche | `magnifying-glass` |
 | `filtern` | Auswahl einschränken | `filter`, `sliders`, `table-list`, `folder-tree` |
@@ -107,7 +108,51 @@ Raums daneben, und das Bett trägt nichts bei.
 |---|---|---|
 | `einstellungen` | Konfiguration, Verhalten ändern | `gear`, `gears`, `plug`, `star`, `wand-magic-sparkles`, `robot`, `language`, `eye`, `hand` |
 
-**Summe: 42 Zeichen.**
+> **Warum `schliessen` dazukam (E2.40, Gegenprüfung).** Die Umstellung
+> setzte `xmark` auf Schliessen-Knöpfen auf `mehr` (»Weitere Handlungen«) —
+> vier Stellen —, und E2.38 hatte »Menü schliessen« in `base.html` auf
+> `loeschen` gesetzt, also auf einen Papierkorb. Ein Knopf, der aussieht,
+> als lösche er etwas, ist schlimmer als gar kein Zeichen.
+>
+> `mehr` hätte damit an zwei Orten Verschiedenes geheissen — genau der
+> Fehler, gegen den diese Tabelle geschrieben ist. Wegklicken ist eine
+> eigene Bedeutung; sie fehlte.
+
+### Fachliche Handlungen (3) — entschieden in E2.40
+
+Diese drei standen unter »Noch ohne Bedeutung«. Sie sind jetzt eigene Zeichen,
+weil keine der bestehenden Bedeutungen sie trägt — und weil ein falsch
+zugeordnetes Zeichen schlechter ist als ein zusätzliches.
+
+| Zeichen | Bedeutung | ersetzt heute |
+|---|---|---|
+| `freigeben` | Prüfen und zur Zahlung freigeben | `stamp` |
+| `storno` | Aufheben — der Beleg bleibt | `rotate-left` |
+| `meldung` | Etwas wartet auf Aufmerksamkeit | `bell` |
+
+**`freigeben`** ist weder `speichern` (es entsteht nichts Neues) noch `gut`
+(das ist ein Zustand, keine Handlung). Wer eine Rechnung freigibt, trifft eine
+Entscheidung mit Geldfolge.
+
+**`storno`** ist weder `loeschen` (der Beleg bleibt, und das ist der ganze
+Punkt) noch `bearbeiten`. Buchhalterisch entsteht eine Gegenbuchung. Der Pfeil
+läuft deshalb rückwärts — anders als bei `lauf`, der vorwärts läuft.
+
+**`meldung`** ist nicht `hinweis`: Ein Hinweis erklärt, eine Meldung verlangt
+Aufmerksamkeit.
+
+`bell` stand für **zwei** Dinge, und das war richtig gemessen: das
+Klingelschild in `debitoren.html` (eine Rechnungsposition) und »Neueste
+Tickets« in `templates/admin/dashboard_stats.html` (eine Meldung). E2.40
+nahm an, es gebe nur die erste Fundstelle — dabei fehlten die
+Admin-Vorlagen im Suchbereich, genau die Verengung, gegen die der Wächter
+seit E2.35 alle drei Orte misst.
+
+Der Konflikt ist damit nicht widerlegt, sondern **aufgelöst**: Die
+Rechnungsposition bekommt `dokument`, die Tickets bekommen `meldung`. Zwei
+Fundstellen, zwei Bedeutungen, zwei Zeichen.
+
+**Summe: 46 Zeichen.**
 
 > **Warum es 42 geworden sind.** Die Tabelle entstand aus der
 > Häufigkeitsliste; der Wächter meldete danach Zeichen, die keiner Bedeutung
@@ -127,18 +172,15 @@ Raums daneben, und das Bett trägt nichts bei.
 >
 > D5 sagt »~40 Zeichen«. Die Tilde ist hier der Punkt.
 
-## Noch ohne Bedeutung (6 Klassen, 5 Fragen)
+## Noch ohne Bedeutung (3 Klassen, 2 Fragen)
 
-Diese sechs sind heute in Gebrauch und **bewusst nicht** zugeordnet. Für jedes
+Diese sind heute in Gebrauch und **bewusst nicht** zugeordnet. Für jedes
 fehlt eine Entscheidung, die nicht beim Sortieren nebenbei fällt — sie hier
 zu erfinden, hiesse eine Bedeutung festzuschreiben, die niemand geprüft hat.
 
 | Klasse | Wo | Wofür es eine Bedeutung bräuchte |
 |---|---|---|
-| `stamp` | »Eingangsrechnungen freigeben« (Dashboard) | **Freigeben** ist eine eigene Handlung: nicht speichern, nicht erledigen — jemand mit Berechtigung lässt etwas zu. Fehlt in »Handlungen«. |
 | `share`, `share-from-square` | »Weiterverrechnen & Debitor erstellen« | **Weiterverrechnen** ist Fachlogik, kein Teilen. `extern` passt nicht (nichts verlässt die Anwendung), `senden` auch nicht (niemand bekommt Post). Zwei Klassen für eine Sache — eine davon fällt ohnehin weg. |
-| `rotate-left` | »Stornieren« | **Rückgängig** ist weder `loeschen` (der Beleg bleibt) noch `bearbeiten`. Buchhalterisch ist ein Storno ein eigener Vorgang. |
-| `bell` | »Neueste Tickets«, »Sonnerie-Beschriftung« | Steht heute schon für **zwei Dinge**: eine Meldung und ein Klingelschild. Beide brauchen eine Zuordnung, und es kann nicht dieselbe sein. |
 | `code` | »JSON ansehen« | Rohdaten für die Fehlersuche. Ob so etwas überhaupt ein Zeichen tragen soll, ist Teil der Frage. |
 
 Der Wächter zählt sie mit (`STAND_OFFEN`): Die Liste darf schrumpfen, nicht
@@ -170,3 +212,5 @@ Das ist Absicht: Über die Bedeutung lässt sich streiten, bevor eine einzige
 Zeile SVG geschrieben ist. Wer die Reihenfolge umdreht, diskutiert am Ende über
 Strichstärken statt über die Frage, ob `wartet` und `offen` zwei Zustände sind
 oder einer.
+
+> **Nachgetragen in E2.39.** Bei der Umstellung tauchten Klassen auf, die in der Häufigkeitsliste nicht vorkamen: `arrows-left-right`, `ban`, `calendar-day`, `circle-notch`, `circle-xmark`, `file`, `folder`, `guitar`, `heart`, `link-slash`, `list`, `plane-departure`, `puzzle-piece`, `rotate-left`, `share`, `signature`, `snowflake`, `star`, `sun`, `wind`. Alle sind bestehenden Bedeutungen zugeordnet — keine neue nötig.

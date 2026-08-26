@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% comment %}
 Unterschriftsfeld: direkt zeichnen ODER Datei hochladen.
 Erwartet im Kontext: unterschrift_url (aktuell gespeichertes Bild, ggf. leer).
@@ -15,19 +16,19 @@ Das Formular MUSS enctype="multipart/form-data" haben.
     <div class="flex items-center gap-1.5 mb-3">
         <button type="button" data-us-tab="zeichnen"
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary transition-colors">
-            <i class="fa-solid fa-pen-nib mr-1"></i>Zeichnen
+            {% zeichen 'bearbeiten' klasse='mr-1' %}Zeichnen
         </button>
         <button type="button" data-us-tab="datei"
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken transition-colors">
-            <i class="fa-solid fa-image mr-1"></i>Bild hochladen
+            {% zeichen 'dokument' klasse='mr-1' %}Bild hochladen
         </button>
         {% if unterschrift_url %}
         <span class="ml-auto inline-flex items-center gap-1.5 text-xs fw-gut font-medium">
-            <i class="fa-solid fa-check"></i>hinterlegt
+            {% zeichen 'gut' %}hinterlegt
         </span>
         {% elif unterschrift_verwaist %}
         <span class="ml-auto inline-flex items-center gap-1.5 text-xs fw-kritisch font-medium">
-            <i class="fa-solid fa-triangle-exclamation"></i>nicht verwendbar
+            {% zeichen 'warnung' %}nicht verwendbar
         </span>
         {% endif %}
     </div>
@@ -37,7 +38,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
         <div class="shrink-0">
             <div class="w-36 h-24 rounded-lg border fw-linie fw-flaeche2 flex items-center justify-center overflow-hidden">
                 {% if unterschrift_url %}<img src="{{ unterschrift_url }}" alt="Unterschrift" class="max-h-full max-w-full object-contain">
-                {% else %}<span class="text-xs fw-faint"><i class="fa-solid fa-signature text-lg"></i></span>{% endif %}
+                {% else %}<span class="text-xs fw-faint">{% zeichen 'vertrag' klasse='text-lg' %}</span>{% endif %}
             </div>
             <p class="text-[11px] fw-faint mt-1 text-center">aktuell</p>
         </div>
@@ -61,7 +62,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
                 <div class="flex items-center gap-3 mt-2 flex-wrap">
                     <button type="button" data-us-loeschen
                             class="text-xs font-semibold fw-mutet hover:fw-kritisch">
-                        <i class="fa-solid fa-eraser mr-1"></i>Nochmals
+                        {% zeichen 'bearbeiten' klasse='mr-1' %}Nochmals
                     </button>
                     <span class="text-xs fw-faint">Wird beim Speichern des Formulars übernommen.</span>
                 </div>
@@ -83,13 +84,13 @@ Das Formular MUSS enctype="multipart/form-data" haben.
             </label>
             {% elif unterschrift_verwaist %}
             <p class="text-xs fw-kritisch mt-2.5">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i>Es ist zwar eine Unterschrift eingetragen, sie ist aber
+                {% zeichen 'warnung' klasse='mr-1' %}Es ist zwar eine Unterschrift eingetragen, sie ist aber
                 leer oder die Bilddatei fehlt auf dem Server. Bitte nochmals unterschreiben — bis dahin bleibt die Linie
                 auf jedem Brief leer.
             </p>
             {% else %}
             <p class="text-xs fw-warnton mt-2.5">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i>Ohne Unterschrift bleibt die Linie auf jedem Brief leer.
+                {% zeichen 'warnung' klasse='mr-1' %}Ohne Unterschrift bleibt die Linie auf jedem Brief leer.
             </p>
             {% endif %}
         </div>

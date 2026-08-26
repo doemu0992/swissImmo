@@ -1,13 +1,14 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load l10n %}
 {% load chf %}
 {% block title %}Vertrag bearbeiten — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/" class="hover:fw-marke">Verträge</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Bearbeiten</span>
 </nav>
 
@@ -20,12 +21,12 @@
 
 {% if gesperrt %}
 <div class="max-w-3xl fw-warn-flaeche border fw-linie-warn rounded-xl px-4 py-3 mb-5 text-[13px] fw-warnton">
-    <div class="font-bold mb-0.5"><i class="fa-solid fa-lock mr-1.5"></i>Aktiver Vertrag — eingeschränkte Bearbeitung</div>
+    <div class="font-bold mb-0.5">{% zeichen 'gesperrt' klasse='mr-1.5' %}Aktiver Vertrag — eingeschränkte Bearbeitung</div>
     Miete, Objekt, Mieter, Mietbeginn und MWST sind gesperrt (nur zur Ansicht). Eine <b>Mietzinsänderung</b> läuft über das <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="underline font-semibold">amtliche Formular (Art. 269d)</a>. Hier änderst du nur Detailfelder wie Fristen, Nebenräume und Vereinbarungen.
 </div>
 {% else %}
 <div class="max-w-3xl fw-markenflaeche border fw-linie-marke rounded-xl px-4 py-3 mb-5 text-[13px] fw-marke">
-    <i class="fa-solid fa-pen-to-square mr-1.5"></i><b>Entwurf</b> — alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="underline font-semibold">Objekt → Mietzins</a> gepflegt.
+    {% zeichen 'bearbeiten' klasse='mr-1.5' %}<b>Entwurf</b> — alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="underline font-semibold">Objekt → Mietzins</a> gepflegt.
 </div>
 {% endif %}
 
@@ -38,7 +39,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><label class="block text-xs font-semibold fw-mutet mb-1">Mieter</label>
                 {% if gesperrt %}
-                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.mieter.display_name }} <span class="text-[10px] fw-faint ml-1"><i class="fa-solid fa-lock"></i></span></div>
+                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.mieter.display_name }} <span class="text-[10px] fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
                 {% else %}
                 <select name="mieter_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for m in mieter_liste %}<option value="{{ m.id }}" {% if m.id == v.mieter_id %}selected{% endif %}>{{ m.display_name }}</option>{% endfor %}
@@ -46,7 +47,7 @@
             </div>
             <div><label class="block text-xs font-semibold fw-mutet mb-1">Objekt</label>
                 {% if gesperrt %}
-                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.einheit.bezeichnung }} — {{ v.einheit.liegenschaft.strasse }} <span class="text-[10px] fw-faint ml-1"><i class="fa-solid fa-lock"></i></span></div>
+                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.einheit.bezeichnung }} — {{ v.einheit.liegenschaft.strasse }} <span class="text-[10px] fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
                 {% else %}
                 <select name="einheit_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for o in objekte %}<option value="{{ o.id }}" {% if o.id == v.einheit_id %}selected{% endif %}>{{ o.bezeichnung }} — {{ o.liegenschaft.strasse }}</option>{% endfor %}
@@ -67,7 +68,7 @@
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">Mietdauer & Kündigung</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Mietbeginn{% if gesperrt %} <i class="fa-solid fa-lock text-[10px] fw-faint"></i>{% endif %}</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Mietbeginn{% if gesperrt %} {% zeichen 'gesperrt' klasse='text-[10px] fw-faint' %}{% endif %}</label>
                 {% if gesperrt %}
                 <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.beginn|date:"d.m.Y" }}</div>
                 {% else %}
@@ -86,7 +87,7 @@
 
     <!-- Mietzins -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Mietzins{% if gesperrt %} <span class="text-[11px] font-normal fw-faint ml-1"><i class="fa-solid fa-lock"></i> gesperrt (amtliches Formular für Änderungen)</span>{% endif %}</h3>
+        <h3 class="font-bold fw-strong text-sm">Mietzins{% if gesperrt %} <span class="text-[11px] font-normal fw-faint ml-1">{% zeichen 'gesperrt' %} gesperrt (amtliches Formular für Änderungen)</span>{% endif %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div><label class="block text-xs font-semibold fw-mutet mb-1">Nettomietzins (CHF)</label>
                 {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">CHF {{ v.netto_mietzins|chf }}</div>
@@ -153,7 +154,7 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Änderungen speichern</button>
+        <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Änderungen speichern</button>
         <a href="/neu/vertraege/{{ v.id }}/" class="text-sm font-medium fw-mutet hover:fw-ink">Abbrechen</a>
     </div>
 </form>

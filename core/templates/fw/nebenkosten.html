@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Nebenkosten — swissImmo{% endblock %}
 
@@ -6,7 +7,7 @@
 
 <div class="fw-phead">
     <h1>Nebenkosten</h1>
-    <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Periode anlegen</button>
+    <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} Periode anlegen</button>
 </div>
 <p class="text-sm fw-mutet mb-5">Heiz- und Nebenkosten-Abrechnungsperioden
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
@@ -14,7 +15,7 @@
 
 
 <div id="nkform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-bolt fw-marke mr-1.5"></i>Neue Abrechnungsperiode</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'kritisch' klasse='fw-marke mr-1.5' %}Neue Abrechnungsperiode</h3>
     <form method="post" action="/neu/nebenkosten/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {% csrf_token %}
         <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft *</label>
@@ -28,22 +29,22 @@
             <input type="date" name="start_datum" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div><label class="block text-xs font-semibold fw-mutet mb-1">Bis *</label>
             <input type="date" name="ende_datum" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Periode anlegen</button></div>
+        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Periode anlegen</button></div>
     </form>
 </div>
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-bolt"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'kritisch' %}</div>
         <div><div class="text-2xl font-bold fw-marke">CHF {{ total_kosten_offen|chf }}</div><div class="text-sm fw-mutet">Kosten offene Perioden</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0">{% zeichen 'wartet' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ n_offen }}</div><div class="text-sm fw-mutet">Offene Perioden</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'gut' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ n_zu }}</div><div class="text-sm fw-mutet">Abgeschlossen</div></div>
     </div>
 </div>
@@ -79,7 +80,7 @@
             <tr class="hover:fw-flaeche2 transition-colors cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
                 <td class="px-5 py-3.5">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'rechnung' %}</div>
                         <span class="font-semibold fw-strong">{{ row.p.bezeichnung }}</span>
                     </div>
                 </td>
@@ -94,14 +95,14 @@
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     {% if not row.p.abgeschlossen %}
                     <form method="post" action="/neu/nebenkosten/{{ row.p.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('Abrechnungsperiode «{{ row.p.bezeichnung|escapejs }}» löschen?');">{% csrf_token %}
-                        <button class="fw-faint hover:fw-kritisch text-xs mr-2" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        <button class="fw-faint hover:fw-kritisch text-xs mr-2" title="Löschen">{% zeichen 'loeschen' %}</button>
                     </form>
                     {% endif %}
-                    <i class="fa-solid fa-chevron-right fw-faint text-xs"></i></td>
+                    {% zeichen 'weiter' klasse='fw-faint text-xs' %}</td>
             </tr>
             {% empty %}
             <tr><td colspan="7" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-bolt"></i></div>
+                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'kritisch' %}</div>
                 <p class="text-sm font-medium fw-ink">{% if status_filter %}Keine Perioden in diesem Status{% else %}Noch keine Abrechnungsperioden{% endif %}</p>
                 <p class="text-xs fw-faint mt-1">Perioden werden in der klassischen Ansicht angelegt.</p>
             </td></tr>

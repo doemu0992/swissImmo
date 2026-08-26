@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Sollstellung Miete — swissImmo{% endblock %}
 
@@ -43,12 +44,12 @@
             {% endcomment %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors">
-                <i class="fa-solid fa-rotate mr-1.5"></i> Sollstellung starten ({{ n_offen }})
+                {% zeichen 'lauf' klasse='mr-1.5' %} Sollstellung starten ({{ n_offen }})
             </button>
         </form>
         {% else %}
         <span class="inline-flex items-center gap-1.5 text-sm fw-gut font-medium fw-gut-flaeche px-4 py-2 rounded-lg">
-            <i class="fa-solid fa-check"></i> {{ monat_name }} {{ jahr }} vollständig gestellt
+            {% zeichen 'gut' %} {{ monat_name }} {{ jahr }} vollständig gestellt
         </span>
         {% endif %}
     </div>
@@ -57,15 +58,15 @@
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-coins"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'geld' %}</div>
         <div><div class="text-2xl font-bold fw-marke">CHF {{ total_soll|chf }}</div><div class="text-sm fw-mutet">Zu stellen ({{ monat_name }})</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0">{% zeichen 'wartet' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ n_offen }}</div><div class="text-sm fw-mutet">Noch offen</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'gut' %}</div>
         <div><div class="text-2xl font-bold fw-strong">{{ n_gestellt }}</div><div class="text-sm fw-mutet">Bereits gestellt</div></div>
     </div>
 </div>
@@ -111,7 +112,7 @@
 </div>
 
 <p class="text-xs fw-faint mt-4">
-    <i class="fa-solid fa-circle-info mr-1"></i>
+    {% zeichen 'hinweis' klasse='mr-1' %}
     Der Mietenlauf ist idempotent — bereits gestellte Verträge werden übersprungen. Pro-Rata rechnet Ein-/Auszüge
     mitten im Monat tagegenau ab. Gebucht wird Debitoren 1100 an Ertrag 3000 (Netto) bzw. NK-Akonto 3020 (Nebenkosten).
 </p>

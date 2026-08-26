@@ -1,3 +1,4 @@
+{% load zeichen %}
 <!-- Wiederverwendbares Cockpit-Modal: lädt fw-Seiten inline (iframe), Chrome wird
      im Embed-/iframe-Kontext (base.html) automatisch ausgeblendet. -->
 <div id="fwModal" class="fixed inset-0 z-[60] hidden">
@@ -6,7 +7,7 @@
         <div id="fwModalBox" class="fw-flaeche rounded-2xl shadow-2xl w-full max-w-3xl h-[88vh] flex flex-col overflow-hidden pointer-events-auto">
             <div class="flex items-center justify-between px-5 py-3 border-b fw-linie shrink-0">
                 <h2 id="fwModalTitle" class="font-bold fw-strong">Schritt</h2>
-                <button onclick="fwModalClose()" title="Schliessen" class="w-8 h-8 rounded-lg fw-faint hover:fw-flaeche2 hover:fw-ink"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="fwModalClose()" title="Schliessen" class="w-8 h-8 rounded-lg fw-faint hover:fw-flaeche2 hover:fw-ink">{% zeichen 'schliessen' %}</button>
             </div>
             <iframe id="fwModalFrame" class="flex-1 w-full border-0" src="about:blank" title="Schritt"></iframe>
         </div>

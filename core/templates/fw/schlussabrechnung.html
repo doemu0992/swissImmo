@@ -1,13 +1,14 @@
 {% extends embed_base|default:'fw/base.html' %}
+{% load zeichen %}
 {% load chf l10n %}
 {% block title %}Schlussabrechnung — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 {% if not embed_base %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/" class="hover:fw-marke">Verträge</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">Schlussabrechnung</span>
 </nav>
 {% endif %}
@@ -41,7 +42,7 @@
             <div class="text-xs fw-mutet mb-1">Mietkaution {% if ist_versicherung %}<span class="fw-marke font-semibold">· Versicherung</span>{% else %}<span class="fw-faint">· Sperrkonto</span>{% endif %}</div>
             <div class="text-lg font-bold {% if ist_versicherung %}fw-marke{% else %}fw-gut{% endif %}">CHF {{ kaution|chf }}</div>
             {% if ist_versicherung %}
-                <div class="text-[11px] fw-mutet mt-1"><i class="fa-solid fa-shield-halved mr-0.5"></i>Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position „zulasten" erfassen.</div>
+                <div class="text-[11px] fw-mutet mt-1">{% zeichen 'gesperrt' klasse='mr-0.5' %}Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position „zulasten" erfassen.</div>
                 <input type="hidden" name="kaution_verrechnen" value="">
             {% else %}
                 <label class="flex items-center gap-2 text-[11px] fw-mutet mt-1">
@@ -111,10 +112,10 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-file-pdf mr-1.5"></i>Schlussabrechnung als PDF
+            {% zeichen 'drucken' klasse='mr-1.5' %}Schlussabrechnung als PDF
         </button>
         <button type="submit" name="aktion" value="buchen" onclick="return confirm('Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige Nachzahlung als Debitor gestellt.');" class="fw-btn fw-gutknopf text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Verbuchen (Kaution + Nachzahlung)
+            {% zeichen 'gut' klasse='mr-1.5' %}Verbuchen (Kaution + Nachzahlung)
         </button>
         <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>

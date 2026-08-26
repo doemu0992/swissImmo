@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}{{ h.firma }} — swissImmo{% endblock %}
 
@@ -10,13 +11,13 @@
 
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
     <a href="/neu/dienstleister/">Dienstleister</a>
-    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    {% zeichen 'weiter' %}
     <b>{{ h.firma }}</b>
 </nav>
 
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
-        <div class="fw-akte-bild"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        <div class="fw-akte-bild">{% zeichen 'arbeit' %}</div>
         <div>
             <div class="fw-akte-typ">Dienstleister · {{ dl_nummer }}</div>
             <h1>{{ h.firma }}</h1>
@@ -30,8 +31,8 @@
             </div>
         </div>
         <div class="fw-akte-rechts">
-            {% if h.telefon %}<a href="tel:{{ h.telefon }}" class="fw-btn"><i class="fa-solid fa-phone"></i>Anrufen</a>{% endif %}
-            <a href="/neu/dienstleister/{{ h.id }}/bearbeiten/" class="fw-btn"><i class="fa-solid fa-pen"></i>Bearbeiten</a>
+            {% if h.telefon %}<a href="tel:{{ h.telefon }}" class="fw-btn">{% zeichen 'senden' %}Anrufen</a>{% endif %}
+            <a href="/neu/dienstleister/{{ h.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}Bearbeiten</a>
         </div>
     </div>
 
@@ -70,7 +71,7 @@
 <!-- ===== BEREICH: STAMMDATEN ===== -->
 <div data-panel="dl" id="dl-stammdaten">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-address-card"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'person' %}</span>
             <span class="fw-t">Angaben</span></div>
         <table class="fw-table" data-stack>
             <tbody>
@@ -86,7 +87,7 @@
 
     {% if schluessel %}
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon warn"><i class="fa-solid fa-key"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon warn">{% zeichen 'schluessel' %}</span>
             <span class="fw-t">Ausgegebene Schlüssel</span>
             <span class="fw-neben">{{ schluessel|length }} nicht zurückgegeben</span></div>
         {% for a in schluessel %}
@@ -105,13 +106,13 @@
 <!-- ===== BEREICH: AUFTRÄGE ===== -->
 <div data-panel="dl" id="dl-auftraege" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon{% if dl_offen %} warn{% endif %}"><i class="fa-solid fa-clipboard-list"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon{% if dl_offen %} warn{% endif %}">{% zeichen 'dokument' %}</span>
             <span class="fw-t">Aufträge</span>
             <span class="fw-neben">{{ dl_offen }} offen von {{ auftraege|length }}</span></div>
         {% for a in auftraege %}
         <div class="fw-zeile">
             <span class="fw-marker {% if a.status == 'erledigt' %}good{% elif a.liegt %}crit{% else %}warn{% endif %}"></span>
-            <span class="fw-ikon"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+            <span class="fw-ikon">{% zeichen 'arbeit' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{% if a.ticket %}{{ a.ticket.titel|default:a.ticket.beschreibung|truncatechars:70 }}{% else %}Auftrag {{ a.id }}{% endif %}</div>
                 <div class="fw-s">{{ a.get_status_display }}{% if a.beauftragt_am %} · beauftragt {{ a.beauftragt_am|date:"d.m.Y" }}{% endif %}{% if a.bemerkung %} · {{ a.bemerkung|truncatechars:60 }}{% endif %}</div>
@@ -134,11 +135,11 @@
 <!-- ===== BEREICH: FINANZEN ===== -->
 <div data-panel="dl" id="dl-finanzen" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'rechnung' %}</span>
             <span class="fw-t">Rechnungen zu Aufträgen</span></div>
         {% for a in auftraege %}{% if a.kreditoren_rechnung_id %}
         <div class="fw-zeile">
-            <span class="fw-ikon"><i class="fa-solid fa-file-invoice"></i></span>
+            <span class="fw-ikon">{% zeichen 'rechnung' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ a.kreditoren_rechnung.beleg_nr|default:"ohne Belegnummer" }}</div>
                 <div class="fw-s">{{ a.kreditoren_rechnung.get_status_display }}{% if a.kreditoren_rechnung.datum %} · {{ a.kreditoren_rechnung.datum|date:"d.m.Y" }}{% endif %}</div>
@@ -159,7 +160,7 @@
 <!-- ===== BEREICH: DOKUMENTE ===== -->
 <div data-panel="dl" id="dl-dokumente" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-open"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
             <span class="fw-t">Dokumente</span></div>
         {% comment %} `crm.Handwerker` führt keine Dokumentenbeziehung. Das ist
            eine Lücke im Datenmodell, keine leere Liste — und es steht hier so,
@@ -173,7 +174,7 @@
 <!-- ===== BEREICH: FÄLLE ===== -->
 <div data-panel="dl" id="dl-faelle" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-open"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
             <span class="fw-t">Fälle</span><span class="fw-neben">{{ dl_faelle|length }}</span></div>
         {% for f in dl_faelle %}
         <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
@@ -193,7 +194,7 @@
 <!-- ===== BEREICH: CHRONIK ===== -->
 <div data-panel="dl" id="dl-chronik" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
             <span class="fw-t">Verlauf</span></div>
         {% comment %} Die Chronik eines Dienstleisters ist die Folge seiner
            Auftraege — `AktivitaetsLog` kennt keinen Ziel-Typ dafuer, und ein

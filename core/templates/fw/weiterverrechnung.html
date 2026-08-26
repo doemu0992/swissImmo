@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf l10n %}
 {% block title %}Weiterverrechnen — {{ k.lieferant }}{% endblock %}
 {% block content %}
@@ -13,7 +14,7 @@
 
 {% if ist_hnk %}
 <div class="rounded-xl border fw-linie-krit fw-krit-flaeche px-4 py-3 mb-5 text-[13px] fw-kritisch">
-    <div class="font-bold mb-0.5"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Achtung: HNK-relevante Rechnung</div>
+    <div class="font-bold mb-0.5">{% zeichen 'warnung' klasse='mr-1' %}Achtung: HNK-relevante Rechnung</div>
     Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte
     Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn du das bewusst willst — dann unten das
     Häkchen «Trotzdem direkt weiterverrechnen» setzen.
@@ -25,7 +26,7 @@
 <form method="post" class="fw-card p-5 mb-6">
     {% csrf_token %}
     <input type="hidden" name="modus" value="verteilen">
-    <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-people-group fw-marke mr-1.5"></i>Auf alle Mieter verteilen</h3>
+    <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'person' klasse='fw-marke mr-1.5' %}Auf alle Mieter verteilen</h3>
     <p class="text-[12px] fw-mutet mb-3">Verteilt den offenen Betrag (CHF {{ offen_wv|chf }}) in einem Schritt auf die
         <b>{{ verteil_mieter }}</b> aktiven Mietverhältnisse in {{ k.liegenschaft.strasse }} nach gewähltem Schlüssel.</p>
     <div class="flex flex-wrap items-end gap-3">
@@ -42,7 +43,7 @@
         {% endif %}
         <button class="fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg"
                 onclick="return confirm('Offenen Betrag auf alle {{ verteil_mieter }} Mieter verteilen?');">
-            <i class="fa-solid fa-share-nodes mr-1.5"></i>Verteilen
+            {% zeichen 'extern' klasse='mr-1.5' %}Verteilen
         </button>
     </div>
 </form>
@@ -93,12 +94,12 @@
         </div>
 
         <div id="wv-warn" class="hidden rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
-            <div class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i>Hinweis</div>
+            <div class="font-bold mb-1">{% zeichen 'hinweis' klasse='mr-1' %}Hinweis</div>
             <span id="wv-warn-text"></span>
         </div>
 
         <div class="fw-markenflaeche border fw-linie-marke rounded-lg p-3 text-xs fw-mutet">
-            <i class="fa-solid fa-book fw-marke mr-1"></i>
+            {% zeichen 'dokument' klasse='fw-marke mr-1' %}
             Buchung: Grundbetrag <b>1100 Debitor an 1190 Durchlauf</b> und <b>1190 an {{ aufwand_konto }} Aufwand</b>
             (ertragsneutral). Zuschlag <b>1100 an 3600 Ertrag</b>. Die neue Rechnung bleibt mit dieser
             Lieferantenrechnung verknüpft.
@@ -110,7 +111,7 @@
     {% endif %}
     <div class="flex items-center gap-3">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-share mr-1.5"></i>Weiterverrechnen &amp; Debitor erstellen
+            {% zeichen 'extern' klasse='mr-1.5' %}Weiterverrechnen &amp; Debitor erstellen
         </button>
         <a href="/neu/kreditoren/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
@@ -118,7 +119,7 @@
 
 <!-- RECHTS: Live-Vorschau der entstehenden Debitorenrechnung -->
 <div class="lg:sticky lg:top-24">
-    <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Live-Vorschau</div>
+    <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2">{% zeichen 'rechnung' %} Live-Vorschau</div>
     <div id="wv-pv" class="fw-card p-6 text-[13px] fw-strong leading-relaxed"></div>
 </div>
 </div>
@@ -166,7 +167,7 @@ function wvPreview(){
       +'<tr><td class="py-2 font-semibold">Rechnungsbetrag</td><td class="py-2 text-right font-bold fw-marke">CHF '+wvFmt(total)+'</td></tr>'
       +'</tbody></table>'
       +'<div class="mt-4 rounded-lg fw-flaeche2 border border-dashed fw-linie px-3 py-2.5 text-[11px] fw-faint flex items-center gap-2">'
-      +'<i class="fa-solid fa-qrcode fw-faint text-base"></i>'
+      +'{% zeichen 'bank' klasse='fw-faint text-base' %}'
       +'<span>QR-Zahlteil mit Referenz wird nach dem Erstellen erzeugt'+(WV_ABS.iban?' · IBAN '+wvEsc(WV_ABS.iban):'')+'.</span></div>';
 }
 wvCheck();

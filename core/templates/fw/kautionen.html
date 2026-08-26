@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Kautionen — swissImmo{% endblock %}
 {% block content %}
@@ -32,7 +33,7 @@
                 <td class="px-5 py-3.5"><div class="font-medium fw-strong">{{ row.v.mieter.display_name }}</div>
                     <div class="text-xs fw-faint">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div></td>
                 <td class="px-5 py-3.5 text-right font-semibold tabular-nums">CHF {{ row.v.kautions_betrag|chf }}</td>
-                <td class="px-5 py-3.5">{% if row.v.ist_kautionsversicherung %}<span class="px-2 py-0.5 rounded fw-markenflaeche fw-marke text-xs font-semibold"><i class="fa-solid fa-shield-halved mr-0.5"></i>Versicherung</span>{% else %}<span class="px-2 py-0.5 rounded fw-flaeche2 fw-mutet text-xs font-semibold">Sperrkonto</span>{% endif %}</td>
+                <td class="px-5 py-3.5">{% if row.v.ist_kautionsversicherung %}<span class="px-2 py-0.5 rounded fw-markenflaeche fw-marke text-xs font-semibold">{% zeichen 'gesperrt' klasse='mr-0.5' %}Versicherung</span>{% else %}<span class="px-2 py-0.5 rounded fw-flaeche2 fw-mutet text-xs font-semibold">Sperrkonto</span>{% endif %}</td>
                 <td class="px-5 py-3.5 font-mono text-xs fw-mutet">{% if row.v.ist_kautionsversicherung %}{{ row.v.kautions_versicherer|default:"—" }}{% if row.v.kautions_policennummer %} · {{ row.v.kautions_policennummer }}{% endif %}{% else %}{{ row.v.kautions_konto|default:"—" }}{% endif %}</td>
                 <td class="px-5 py-3.5 fw-mutet">{{ row.v.kautions_einbezahlt_am|date:"d.m.Y"|default:"—" }}</td>
                 <td class="px-5 py-3.5"><span class="fw-chip {{ row.cls }}">● {{ row.label }}</span>

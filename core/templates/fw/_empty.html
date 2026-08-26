@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% comment %}Einheitlicher Leerzustand mit Handlungsaufforderung.
 Parameter: icon (fa-Klasse), titel, subtext, cta_url (optional), cta_label (optional){% endcomment %}
 <div class="py-12 text-center">
@@ -8,7 +9,7 @@ Parameter: icon (fa-Klasse), titel, subtext, cta_url (optional), cta_label (opti
     {% if subtext %}<p class="text-sm fw-faint mt-1 max-w-sm mx-auto">{{ subtext }}</p>{% endif %}
     {% if cta_url %}
     <a href="{{ cta_url }}" class="inline-flex items-center gap-2 mt-4 fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
-        <i class="fa-solid fa-plus"></i>{{ cta_label|default:'Erfassen' }}
+        {% zeichen 'neu' %}{{ cta_label|default:'Erfassen' }}
     </a>
     {% endif %}
 </div>

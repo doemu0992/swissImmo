@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Kündigung — Mieterportal{% endblock %}
 {% block brand_icon %}fa-envelope-open-text{% endblock %}
@@ -17,11 +18,11 @@
 
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm mb-6 overflow-hidden">
         <div class="px-5 py-4 border-b fw-linie">
-            <h2 class="font-bold fw-strong flex items-center gap-2"><i class="fa-solid fa-file-signature fw-faint"></i> Mietvertrag kündigen</h2>
+            <h2 class="font-bold fw-strong flex items-center gap-2">{% zeichen 'vertrag' klasse='fw-faint' %} Mietvertrag kündigen</h2>
         </div>
         <div class="p-5">
             <div class="flex items-start gap-3 fw-markenflaeche border fw-linie-marke fw-marke rounded-xl px-4 py-3 text-sm mb-5">
-                <i class="fa-solid fa-circle-info mt-0.5"></i>
+                {% zeichen 'hinweis' klasse='mt-0.5' %}
                 <p>Ihre Kündigung wird der Verwaltung als Eingang übermittelt. Laden Sie anschliessend den
                 vorbereiteten Kündigungsbrief herunter und senden Sie ihn zusätzlich <strong>per Einschreiben</strong> —
                 massgebend für die Frist ist der Zugang beim Vermieter.</p>
@@ -58,20 +59,20 @@
                 </div>
 
                 <div id="famHinweis" style="display:none;" class="flex items-start gap-2.5 fw-warn-flaeche border fw-linie-warn fw-warnton rounded-xl px-4 py-3 text-sm">
-                    <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                    {% zeichen 'warnung' klasse='mt-0.5' %}
                     <p>Familienwohnung: Die Kündigung ist nur gültig, wenn <strong>beide Ehegatten/Partner</strong> den Brief
                     unterschreiben (Art. 266m OR). Der Brief enthält zwei Unterschriftszeilen.</p>
                 </div>
 
                 <button type="submit" class="w-full sm:w-auto fw-balken-voll hover:fw-balken-voll transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg fw-schatten-marke flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> Kündigung erfassen
+                    {% zeichen 'senden' %} Kündigung erfassen
                 </button>
             </form>
         </div>
     </div>
     {% else %}
     <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 flex items-start gap-3">
-        <i class="fa-solid fa-circle-info mt-0.5"></i>
+        {% zeichen 'hinweis' klasse='mt-0.5' %}
         <p class="text-sm">Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</p>
     </div>
     {% endif %}
@@ -79,7 +80,7 @@
     {% if kuendigungen %}
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b fw-linie">
-            <h2 class="font-bold fw-strong flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left fw-faint"></i> Ihre Kündigungen</h2>
+            <h2 class="font-bold fw-strong flex items-center gap-2">{% zeichen 'verlauf' klasse='fw-faint' %} Ihre Kündigungen</h2>
         </div>
         <div class="fw-dv">
             {% for k in kuendigungen %}
@@ -92,7 +93,7 @@
                     <span class="text-xs font-semibold px-2.5 py-1 rounded-full fw-markenflaeche fw-marke">{{ k.status }}</span>
                     <a href="/mieter/kuendigung/{{ k.id }}/brief/" target="_blank" rel="noopener"
                        class="fw-flaeche border fw-linie-marke fw-marke hover:fw-markenflaeche transition-colors text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap flex items-center gap-1.5">
-                        <i class="fa-solid fa-file-pdf"></i> Brief
+                        {% zeichen 'drucken' %} Brief
                     </a>
                 </div>
             </div>
@@ -109,7 +110,7 @@
     if(!sel||!sel.options.length)return;
     var o=sel.options[sel.selectedIndex];
     document.getElementById('terminInfo').innerHTML =
-      '<i class="fa-solid fa-calendar-check mt-0.5"></i><span>Nächster ordentlicher Kündigungstermin: <strong>'+o.dataset.termin+'</strong> (Kündigungsfrist '+o.dataset.frist+' Monate).</span>';
+      '{% zeichen 'gut' klasse='mt-0.5' %}<span>Nächster ordentlicher Kündigungstermin: <strong>'+o.dataset.termin+'</strong> (Kündigungsfrist '+o.dataset.frist+' Monate).</span>';
     document.getElementById('famHinweis').style.display = o.dataset.fam==='1' ? 'flex' : 'none';
   }
   terminAnzeigen();

@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% block title %}Ticket #{{ t.id }} — Mieterportal{% endblock %}
 {% block brand_icon %}fa-screwdriver-wrench{% endblock %}
 {% block brand_mobile %}Ticket #{{ t.id }}{% endblock %}
@@ -6,7 +7,7 @@
 
 {% block content %}
     <a href="/mieter/tickets/" class="inline-flex items-center gap-2 text-sm font-medium fw-faint hover:fw-mutet mb-4">
-        <i class="fa-solid fa-arrow-left"></i> Alle Meldungen
+        {% zeichen 'zurueck' %} Alle Meldungen
     </a>
 
     <!-- Kopf / Status -->
@@ -27,7 +28,7 @@
     <!-- Verlauf -->
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-5">
         <div class="px-5 py-4 border-b fw-linie">
-            <h2 class="font-bold fw-strong flex items-center gap-2"><i class="fa-solid fa-comments fw-faint"></i> Verlauf</h2>
+            <h2 class="font-bold fw-strong flex items-center gap-2">{% zeichen 'senden' klasse='fw-faint' %} Verlauf</h2>
         </div>
         <div class="p-5 space-y-3">
             {% for n in verlauf %}
@@ -52,7 +53,7 @@
             <textarea name="text" rows="3" required placeholder="Ihre Nachricht oder Rückfrage…"
                       class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint"></textarea>
             <button type="submit" class="w-full sm:w-auto fw-balken-voll hover:fw-balken-voll transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg fw-schatten-marke flex items-center justify-center gap-2">
-                <i class="fa-solid fa-paper-plane"></i> Nachricht senden
+                {% zeichen 'senden' %} Nachricht senden
             </button>
         </form>
         {% endif %}

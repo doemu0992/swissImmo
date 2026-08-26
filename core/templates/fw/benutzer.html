@@ -1,9 +1,10 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Benutzer — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <h1>Benutzer</h1>
-    <a href="/neu/benutzer/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Benutzer erfassen</a>
+    <a href="/neu/benutzer/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} Benutzer erfassen</a>
 </div>
 <p class="text-sm fw-mutet mb-6">{{ rows|length }} Team-Mitglied(er) mit Zugriff auf die Verwaltung.</p>
 
@@ -27,11 +28,11 @@
                 <td class="px-5 py-3.5"><span class="fw-chip fw-markenflaeche fw-marke">{{ row.rolle }}</span></td>
                 <td class="px-5 py-3.5 fw-mutet">{{ row.u.email|default:"—" }}</td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>
+                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3">{% zeichen 'bearbeiten' klasse='text-[10px] mr-0.5' %}Bearbeiten</a>
                     <form method="post" action="/neu/benutzer/{{ row.u.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('Benutzer {{ row.u.username|escapejs }} wirklich löschen?');">
                         {% csrf_token %}
-                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch"><i class="fa-solid fa-trash text-[10px] mr-0.5"></i>Löschen</button>
+                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch">{% zeichen 'loeschen' klasse='text-[10px] mr-0.5' %}Löschen</button>
                     </form>
                 </td>
             </tr>

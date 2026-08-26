@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Personen — swissImmo{% endblock %}
 
 {% block content %}
@@ -8,7 +9,7 @@
         <h1>Personen</h1>
         <p>{{ rows|length }} Person(en) · <span style="color:var(--ds-good);font-weight:600">{{ mit_vertrag_count }} mit aktivem Vertrag</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/personen/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
-    <a href="/neu/personen/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Person erfassen</a>
+    <a href="/neu/personen/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} Person erfassen</a>
 </div>
 
 <div class="fw-card">
@@ -23,7 +24,7 @@
         <form method="get" class="relative" style="margin-left:auto" onsubmit="return true;">
             {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs"></i>
+            {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
             <input type="text" name="q" id="personSearch" value="{{ q }}" placeholder="Name, E-Mail oder Ort suchen…"
                    autocomplete="off" oninput="livePersonFilter(this.value)"
                    class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
@@ -48,7 +49,7 @@
                 <div class="mt-1"><span class="fw-chip fw-good" style="max-width:100%;overflow:hidden;text-overflow:ellipsis">{{ row.objekt }}</span></div>
                 {% endif %}
             </div>
-            <i class="fa-solid fa-chevron-right fw-faint text-xs shrink-0"></i>
+            {% zeichen 'weiter' klasse='fw-faint text-xs shrink-0' %}
         </a>
         {% empty %}
         <div class="px-4">
@@ -84,8 +85,8 @@
                     </a>
                 </td>
                 <td class="hidden md:table-cell">
-                    {% if row.m.email %}<div style="white-space:nowrap"><i class="fa-regular fa-envelope fw-faint mr-1.5 text-xs"></i>{{ row.m.email }}</div>{% endif %}
-                    {% if row.telefon %}<div class="fw-sub2" style="white-space:nowrap;margin-top:2px"><i class="fa-solid fa-phone fw-faint mr-1.5 text-[10px]"></i>{{ row.telefon }}</div>{% endif %}
+                    {% if row.m.email %}<div style="white-space:nowrap">{% zeichen 'senden' klasse='fw-faint mr-1.5 text-xs' %}{{ row.m.email }}</div>{% endif %}
+                    {% if row.telefon %}<div class="fw-sub2" style="white-space:nowrap;margin-top:2px">{% zeichen 'senden' klasse='fw-faint mr-1.5 text-[10px]' %}{{ row.telefon }}</div>{% endif %}
                     {% if not row.m.email and not row.telefon %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
                 <td class="hidden lg:table-cell" style="white-space:nowrap">
@@ -97,7 +98,7 @@
                     {% if row.aktive|length > 1 %}<span class="fw-sub2" style="margin-left:4px">+{{ row.aktive|length|add:"-1" }}</span>{% endif %}
                     {% else %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
-                <td class="fw-right"><i class="fa-solid fa-chevron-right fw-faint text-xs"></i></td>
+                <td class="fw-right">{% zeichen 'weiter' klasse='fw-faint text-xs' %}</td>
             </tr>
             {% empty %}
             <tr><td colspan="5">

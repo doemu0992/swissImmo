@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% block title %}Dokumente — Mieterportal{% endblock %}
 {% block brand_icon %}fa-folder-open{% endblock %}
 {% block brand_mobile %}Dokumente{% endblock %}
@@ -19,12 +20,12 @@
                 {% for d in g.docs %}
                 <a href="/mieter/dokument/{{ d.id }}/" target="_blank" rel="noopener"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:fw-flaeche2 transition-colors group">
-                    <span class="w-9 h-9 rounded-lg fw-flaeche2 fw-mutet group-hover:fw-markenflaeche group-hover:fw-marke flex items-center justify-center transition-colors"><i class="fa-solid fa-file-pdf"></i></span>
+                    <span class="w-9 h-9 rounded-lg fw-flaeche2 fw-mutet group-hover:fw-markenflaeche group-hover:fw-marke flex items-center justify-center transition-colors">{% zeichen 'drucken' %}</span>
                     <span class="flex-1 min-w-0">
                         <span class="block text-sm font-semibold fw-ink truncate">{{ d.titel }}</span>
                         <span class="block text-xs fw-faint">{{ d.datum|date:"d.m.Y" }}</span>
                     </span>
-                    <i class="fa-solid fa-download fw-faint group-hover:fw-marke transition-colors"></i>
+                    {% zeichen 'herunterladen' klasse='fw-faint group-hover:fw-marke transition-colors' %}
                 </a>
                 {% endfor %}
             </div>
@@ -33,7 +34,7 @@
     </div>
     {% else %}
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
-        <span class="w-14 h-14 rounded-2xl fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-folder-open text-xl"></i></span>
+        <span class="w-14 h-14 rounded-2xl fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-4">{% zeichen 'dokument' klasse='text-xl' %}</span>
         <p class="font-semibold fw-ink">Noch keine Dokumente</p>
         <p class="text-sm fw-faint mt-1">Sobald Ihre Verwaltung Unterlagen freigibt, erscheinen sie hier.</p>
     </div>

@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Verträge — swissImmo{% endblock %}
 
@@ -11,7 +12,7 @@
         <h1>Mietverhältnisse</h1>
         <p>{{ rows|length }} Vertrag/Verträge · <span style="color:var(--ds-good);font-weight:600">{{ aktiv_count }} aktiv</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/vertraege/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
-    <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Vertrag erstellen</a>
+    <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'neu' %} Vertrag erstellen</a>
 </div>
 
 <div class="fw-card">
@@ -26,7 +27,7 @@
         <form method="get" class="relative" style="margin-left:auto">
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs"></i>
+            {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
             <input type="text" name="q" value="{{ q }}" placeholder="Mieter oder Objekt suchen…"
                    class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
         </form>
@@ -36,7 +37,7 @@
     <div class="md:hidden fw-dv">
         {% for row in rows %}
         <a href="/neu/vertraege/{{ row.v.id }}/" class="flex items-center gap-3 px-4 py-3.5 hover:fw-flaeche2 transition-colors">
-            <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'dokument' %}</div>
             <div class="min-w-0 flex-1">
                 <div class="font-semibold fw-strong break-words">{{ row.v.mieter.display_name }}</div>
                 <div class="text-xs fw-mutet break-words">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div>
@@ -49,7 +50,7 @@
                 <div class="font-bold fw-strong whitespace-nowrap">{{ row.brutto|chf }}</div>
                 <div class="text-[11px] fw-faint">Brutto</div>
             </div>
-            <i class="fa-solid fa-chevron-right fw-faint text-xs shrink-0"></i>
+            {% zeichen 'weiter' klasse='fw-faint text-xs shrink-0' %}
         </a>
         {% empty %}
         <div class="px-4">
@@ -79,7 +80,7 @@
             <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
                 <td>
                     <a href="/neu/vertraege/{{ row.v.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
-                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'dokument' %}</div>
                         <span class="fw-strong" style="white-space:nowrap">{{ row.v.mieter.display_name }}</span>
                     </a>
                 </td>
@@ -94,9 +95,9 @@
                 <td><span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span></td>
                 <td class="fw-right" style="white-space:nowrap">
                     {% if row.v.status == 'aktiv' %}
-                    <a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'Kündigung erfassen')" class="text-xs font-semibold fw-warnton hover:fw-warnton mr-1"><i class="fa-solid fa-file-circle-xmark mr-0.5"></i>Kündigen</a>
+                    <a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'Kündigung erfassen')" class="text-xs font-semibold fw-warnton hover:fw-warnton mr-1">{% zeichen 'kritisch' klasse='mr-0.5' %}Kündigen</a>
                     {% endif %}
-                    <i class="fa-solid fa-chevron-right fw-faint text-xs"></i>
+                    {% zeichen 'weiter' klasse='fw-faint text-xs' %}
                 </td>
             </tr>
             {% empty %}

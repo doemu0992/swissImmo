@@ -1,3 +1,4 @@
+{% load zeichen %}
 <a href="{{ ziel }}"{% if extern %} target="_blank" rel="noopener"{% endif %} class="flex items-center gap-3 px-4 py-2 text-sm fw-ink hover:fw-markenflaeche hover:fw-marke transition-colors">
-    <i class="fa-solid {{ icon }} w-4 text-center fw-faint"></i> {{ label }}{% if extern %} <i class="fa-solid fa-arrow-up-right-from-square text-[9px] fw-faint ml-auto"></i>{% endif %}
+    <i class="fa-solid {{ icon }} w-4 text-center fw-faint"></i> {{ label }}{% if extern %} {% zeichen 'extern' klasse='text-[9px] fw-faint ml-auto' %}{% endif %}
 </a>

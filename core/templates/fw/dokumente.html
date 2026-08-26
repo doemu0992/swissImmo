@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Dokumente — swissImmo{% endblock %}
 
 {% block content %}
@@ -8,12 +9,12 @@
         <h1>Dokumente</h1>
         <p>Zentrale Ablage aus Vertrags- und Objektdokumenten{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/dokumente/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
-    <button type="button" onclick="document.getElementById('dokform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-upload"></i> Dokument hochladen</button>
+    <button type="button" onclick="document.getElementById('dokform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'hochladen' %} Dokument hochladen</button>
 </div>
 
 
 <div id="dokform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-upload fw-marke mr-1.5"></i>Dokument hochladen</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'hochladen' klasse='fw-marke mr-1.5' %}Dokument hochladen</h3>
     <form method="post" action="/neu/dokumente/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
@@ -36,7 +37,7 @@
             </select></div>
         <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Datei *</label>
             <input type="file" name="datei" required class="w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white"></div>
-        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Hochladen</button></div>
+        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Hochladen</button></div>
     </form>
 </div>
 
@@ -53,7 +54,7 @@
         <form method="get" class="ml-auto relative">
             {% if kat_filter %}<input type="hidden" name="kat" value="{{ kat_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs"></i>
+            {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
             <input type="text" name="q" value="{{ q }}" placeholder="Dokument oder Kontext suchen…"
                    class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
         </form>
@@ -90,14 +91,14 @@
                     <form method="post" action="/neu/dokumente/{{ e.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('Dokument «{{ e.name|escapejs }}» löschen?');">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                        <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen">{% zeichen 'loeschen' %}</button>
                     </form>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
             <tr><td colspan="6" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-folder-open"></i></div>
+                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'dokument' %}</div>
                 <p class="text-sm font-medium fw-ink">{% if q or kat_filter %}Keine Treffer{% else %}Noch keine Dokumente abgelegt{% endif %}</p>
                 <p class="text-xs fw-faint mt-1">Dokumente entstehen automatisch (unterzeichnete Verträge) oder per Upload in der klassischen Ansicht.</p>
             </td></tr>

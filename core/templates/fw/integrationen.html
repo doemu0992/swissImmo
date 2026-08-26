@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Integrationen — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -22,7 +23,7 @@
                     <h3 class="font-bold fw-strong text-sm">{{ i.name }}</h3>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
                                  {% if i.aktiv %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                        {% if i.aktiv %}<i class="fa-solid fa-circle-check mr-0.5"></i>{% endif %}{{ i.status }}
+                        {% if i.aktiv %}{% zeichen 'gut' klasse='mr-0.5' %}{% endif %}{{ i.status }}
                     </span>
                 </div>
                 <p class="text-xs fw-mutet leading-relaxed">{{ i.beschreibung }}</p>
@@ -32,12 +33,12 @@
                 <form method="post" action="/neu/integrationen/test-email/" class="mt-3">
                     {% csrf_token %}
                     <button class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">
-                        <i class="fa-solid fa-paper-plane mr-1"></i>Test-E-Mail senden
+                        {% zeichen 'senden' klasse='mr-1' %}Test-E-Mail senden
                     </button>
                 </form>
                 {% elif i.aktion == 'bank_link' %}
                 <a href="/neu/bankabgleich/" class="inline-block mt-3 text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">
-                    <i class="fa-solid fa-arrow-right mr-1"></i>Zum Bankabgleich
+                    {% zeichen 'weiter' klasse='mr-1' %}Zum Bankabgleich
                 </a>
                 {% endif %}
             </div>
@@ -51,13 +52,13 @@
     <div class="fw-card p-5">
         <div class="flex items-start gap-4">
             <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {% if portal_token %}fw-warn-flaeche fw-warnton{% else %}fw-flaeche2 fw-faint{% endif %}">
-                <i class="fa-solid fa-bullhorn text-lg"></i>
+                {% zeichen 'senden' klasse='text-lg' %}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
                     <h3 class="font-bold fw-strong text-sm">Immobilien-Portale — Objekt-Feed</h3>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide {% if portal_token %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                        {% if portal_token %}<i class="fa-solid fa-circle-check mr-0.5"></i>Aktiv{% else %}Deaktiviert{% endif %}
+                        {% if portal_token %}{% zeichen 'gut' klasse='mr-0.5' %}Aktiv{% else %}Deaktiviert{% endif %}
                     </span>
                 </div>
                 <p class="text-xs fw-mutet leading-relaxed">Stellt alle zur Ausschreibung markierten Objekte ({{ portal_ausgeschrieben_n }}) als standardisierten, token-gesicherten Feed (JSON/CSV) bereit — abrufbar von Portalen wie <span class="font-medium">Homegate, ImmoScout24 (SMG), Flatfox</span> bzw. deren Import/Middleware.</p>
@@ -69,16 +70,16 @@
                         <input id="feedurl" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ portal_feed_pfad }}"
                                class="flex-1 fw-flaeche2 rounded-lg text-xs px-3 py-2 font-mono fw-ink">
                         <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feedurl').value)"
-                                class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-2 rounded-lg shrink-0"><i class="fa-solid fa-copy mr-1"></i>Kopieren</button>
+                                class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-2 rounded-lg shrink-0">{% zeichen 'kopieren' klasse='mr-1' %}Kopieren</button>
                     </div>
                     <div class="flex items-center gap-3 mt-3">
                         <a href="{{ portal_feed_pfad }}" target="_blank" rel="noopener" class="text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-code mr-1"></i>JSON ansehen</a>
-                        <a href="{{ portal_feed_pfad }}&format=csv" class="text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-file-csv mr-1"></i>CSV herunterladen</a>
+                        <a href="{{ portal_feed_pfad }}&format=csv" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'herunterladen' klasse='mr-1' %}CSV herunterladen</a>
                     </div>
                     <div class="flex items-center gap-2 mt-4">
                         <form method="post" action="/neu/integrationen/portal-token/" onsubmit="return confirm('Neuen Token erzeugen? Die alte Feed-URL wird ungültig.');">
                             {% csrf_token %}
-                            <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-rotate mr-1"></i>Token neu erzeugen</button>
+                            <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-3 py-1.5 rounded-lg">{% zeichen 'lauf' klasse='mr-1' %}Token neu erzeugen</button>
                         </form>
                         <form method="post" action="/neu/integrationen/portal-token/" onsubmit="return confirm('Feed deaktivieren?');">
                             {% csrf_token %}<input type="hidden" name="aktion" value="entfernen">
@@ -89,7 +90,7 @@
                 {% else %}
                 <form method="post" action="/neu/integrationen/portal-token/" class="mt-3">
                     {% csrf_token %}
-                    <button class="text-xs font-semibold text-white fw-balken-voll hover:fw-balken-voll px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Feed aktivieren (Token erzeugen)</button>
+                    <button class="text-xs font-semibold text-white fw-balken-voll hover:fw-balken-voll px-3 py-1.5 rounded-lg">{% zeichen 'schluessel' klasse='mr-1' %}Feed aktivieren (Token erzeugen)</button>
                 </form>
                 {% endif %}
                 <p class="text-[11px] fw-faint mt-3">Der Token schützt die URL — teile sie nur mit dem Portal/der Middleware. Bei Verdacht auf Missbrauch Token neu erzeugen.</p>

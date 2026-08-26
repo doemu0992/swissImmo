@@ -1,4 +1,5 @@
 {% extends embed_base|default:'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Objekt ausschreiben — {{ e.bezeichnung }}{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -32,7 +33,7 @@
 
     <div class="flex items-center justify-end gap-2">
         <button type="submit" class="text-sm font-semibold text-white fw-balken-voll hover:fw-balken-voll px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-bullhorn mr-1"></i>Ausschreiben
+            {% zeichen 'senden' klasse='mr-1' %}Ausschreiben
         </button>
     </div>
 </form>

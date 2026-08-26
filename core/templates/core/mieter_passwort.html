@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load zeichen %}
 {% block title %}Passwort ändern — Mieterportal{% endblock %}
 {% block brand_icon %}fa-key{% endblock %}
 {% block brand_mobile %}Passwort{% endblock %}
@@ -25,7 +26,7 @@
         <div><label class="block text-xs font-semibold fw-mutet mb-1">Neues Passwort wiederholen</label>
             <input type="password" name="new_password2" required autocomplete="new-password" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
         <button type="submit" class="fw-btn fw-primary text-sm font-bold px-5 py-3 rounded-xl">
-            <i class="fa-solid fa-check mr-1.5"></i>Passwort ändern
+            {% zeichen 'speichern' klasse='mr-1.5' %}Passwort ändern
         </button>
     </form>
 {% endblock %}

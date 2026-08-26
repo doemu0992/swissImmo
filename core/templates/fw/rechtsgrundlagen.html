@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Rechtsgrundlagen — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -11,7 +12,7 @@
 <!-- Suche -->
 <form method="get" class="mb-5">
     <div class="relative max-w-xl">
-        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 fw-faint text-sm"></i>
+        {% zeichen 'suchen' klasse='absolute left-4 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
         <input name="q" value="{{ q }}" autofocus placeholder="Stichwort, Artikel oder Thema … (z. B. Kaution, 257d, Kündigung, Referenzzins)"
                class="w-full fw-flaeche border fw-linie pl-11 pr-24 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 fw-fokusring">
         <button class="absolute right-1.5 top-1/2 -translate-y-1/2 fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-md">Suchen</button>
@@ -25,7 +26,7 @@
 {% for g in gruppen %}
 <div class="fw-card overflow-hidden">
     <div class="px-5 py-3 border-b fw-linie flex items-center gap-2">
-        <i class="fa-solid fa-scale-balanced fw-marke"></i>
+        {% zeichen 'recht' klasse='fw-marke' %}
         <h2 class="font-bold fw-strong text-sm">{{ g.label }}</h2>
         <span class="text-[11px] font-bold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ g.artikel|length }}</span>
     </div>
@@ -34,7 +35,7 @@
         <div class="px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
             <div class="sm:w-32 shrink-0">
                 <a href="{{ a.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold fw-markenflaeche fw-marke hover:fw-markenflaeche whitespace-nowrap">
-                    Art. {{ a.art }} {{ a.gesetz }}<i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+                    Art. {{ a.art }} {{ a.gesetz }}{% zeichen 'extern' klasse='text-[8px]' %}
                 </a>
             </div>
             <div class="flex-1 min-w-0">
@@ -42,7 +43,7 @@
                 <div class="text-[13px] fw-mutet mt-0.5">{{ a.kurz }}</div>
                 {% if a.anwendung %}
                 <div class="text-xs fw-gut fw-gut-flaeche rounded px-2 py-1 mt-1.5 inline-block">
-                    <i class="fa-solid fa-gears mr-1"></i>In swissImmo: {{ a.anwendung }}
+                    {% zeichen 'einstellungen' klasse='mr-1' %}In swissImmo: {{ a.anwendung }}
                 </div>
                 {% endif %}
                 {% if a.stichworte %}
@@ -57,7 +58,7 @@
 </div>
 {% empty %}
 <div class="fw-card p-10 text-center fw-faint">
-    <i class="fa-solid fa-magnifying-glass text-2xl mb-2 fw-faint"></i>
+    {% zeichen 'suchen' klasse='text-2xl mb-2 fw-faint' %}
     <p class="text-sm">Keine Artikel zu „{{ q }}" gefunden.</p>
 </div>
 {% endfor %}

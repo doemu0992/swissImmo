@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load chf %}
 {% block title %}Mieterspiegel — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mieterspiegel/" class="hover:fw-marke">Mieterspiegel</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% zeichen 'weiter' klasse='text-[9px]' %}
     <span class="fw-mutet font-medium">{{ aktive_lg.strasse }}</span>
 </nav>
 
@@ -19,7 +20,7 @@
             {% for l in alle_lgs %}<option value="{{ l.id }}" {% if l.id == aktive_lg.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
         </select>
         {% endif %}
-        <a href="/neu/mieterspiegel/?pdf=1&lg={{ aktive_lg.id }}" target="_blank" rel="noopener" class="fw-btn fw-primary"><i class="fa-solid fa-file-pdf"></i>PDF</a>
+        <a href="/neu/mieterspiegel/?pdf=1&lg={{ aktive_lg.id }}" target="_blank" rel="noopener" class="fw-btn fw-primary">{% zeichen 'drucken' %}PDF</a>
     </div>
 </div>
 
@@ -50,7 +51,7 @@
 {% for b in spiegel %}
 <div class="fw-card overflow-hidden mb-5">
     <div class="px-5 py-3 border-b fw-linie flex items-center gap-2 flex-wrap">
-        <i class="fa-solid fa-building fw-marke"></i>
+        {% zeichen 'liegenschaft' klasse='fw-marke' %}
         <h2 class="font-bold fw-strong text-sm">{{ b.lg.strasse }}, {{ b.lg.plz }} {{ b.lg.ort }}</h2>
         <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ b.totals.belegt }}/{{ b.totals.anzahl }} belegt</span>
         {% if b.totals.leer %}<span class="text-[11px] font-semibold fw-warn-flaeche fw-warnton rounded-md px-1.5 py-0.5">{{ b.totals.leerstandsquote }}% Leerstand</span>{% endif %}

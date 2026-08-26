@@ -1,11 +1,12 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% block title %}Logbuch — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <h1>Logbuch</h1>
     <div class="flex items-center gap-2">
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=pdf" target="_blank" rel="noopener" class="fw-btn"><i class="fa-solid fa-file-pdf fw-kritisch"></i> PDF-Bericht</a>
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=csv" class="fw-btn"><i class="fa-solid fa-file-csv fw-gut"></i> CSV-Export</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=pdf" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' klasse='fw-kritisch' %} PDF-Bericht</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=csv" class="fw-btn">{% zeichen 'herunterladen' klasse='fw-gut' %} CSV-Export</a>
     </div>
 </div>
 <p class="text-sm fw-mutet mb-5">Nachvollziehbarer Verlauf: <b>wer</b> hat <b>wann</b> <b>was</b> getan.
@@ -79,7 +80,7 @@
         </div>
         <div class="flex items-end gap-2 lg:col-span-4">
             <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg shadow-sm">
-                <i class="fa-solid fa-filter mr-1.5"></i>Filtern
+                {% zeichen 'filtern' klasse='mr-1.5' %}Filtern
             </button>
             <a href="/neu/logbuch/" class="text-sm fw-mutet hover:fw-ink font-medium px-2 py-2.5">Zurücksetzen</a>
         </div>
@@ -112,7 +113,7 @@
                     </span>
                     {% else %}
                     <span class="flex items-center gap-2 fw-faint">
-                        <span class="w-6 h-6 rounded-full fw-balken fw-mutet flex items-center justify-center text-[10px]"><i class="fa-solid fa-robot"></i></span>
+                        <span class="w-6 h-6 rounded-full fw-balken fw-mutet flex items-center justify-center text-[10px]">{% zeichen 'einstellungen' %}</span>
                         System
                     </span>
                     {% endif %}
@@ -127,7 +128,7 @@
                     {% elif e.kategorie == 'finanzen' %}
                     <span class="fw-chip fw-info-flaeche fw-info whitespace-nowrap">{{ e.aktion }}</span>
                     {% elif e.kategorie == 'sicherheit' %}
-                    <span class="fw-chip fw-merk-flaeche fw-merk whitespace-nowrap"><i class="fa-solid fa-shield-halved text-[9px] mr-1"></i>{{ e.aktion }}</span>
+                    <span class="fw-chip fw-merk-flaeche fw-merk whitespace-nowrap">{% zeichen 'gesperrt' klasse='text-[9px] mr-1' %}{{ e.aktion }}</span>
                     {% elif e.kategorie == 'versand' %}
                     <span class="fw-chip fw-markenflaeche fw-marke whitespace-nowrap">{{ e.aktion }}</span>
                     {% else %}
@@ -136,12 +137,12 @@
                 </td>
                 <td class="px-5 py-3.5 fw-ink">
                     {% if e.ziel_url %}
-                    <a href="{{ e.ziel_url }}" class="fw-marke hover:underline font-medium">{{ e.objekt|default:"öffnen" }}<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1 fw-faint"></i></a>
+                    <a href="{{ e.ziel_url }}" class="fw-marke hover:underline font-medium">{{ e.objekt|default:"öffnen" }}{% zeichen 'extern' klasse='text-[9px] ml-1 fw-faint' %}</a>
                     {% else %}{{ e.objekt|default:"—" }}{% endif %}
                 </td>
                 <td class="px-5 py-3.5 fw-faint text-xs">
                     {{ e.details|default:"" }}
-                    {% if e.ip_adresse %}<span class="fw-faint whitespace-nowrap"><i class="fa-solid fa-location-dot text-[9px] ml-1 mr-0.5"></i>{{ e.ip_adresse }}</span>{% endif %}
+                    {% if e.ip_adresse %}<span class="fw-faint whitespace-nowrap">{% zeichen 'liegenschaft' klasse='text-[9px] ml-1 mr-0.5' %}{{ e.ip_adresse }}</span>{% endif %}
                 </td>
             </tr>
             {% empty %}
@@ -157,10 +158,10 @@
     <span class="fw-faint">Seite {{ seite.number }} von {{ seite.paginator.num_pages }} · {{ total }} Einträge</span>
     <div class="flex items-center gap-2">
         {% if seite.has_previous %}
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.previous_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet"><i class="fa-solid fa-chevron-left text-[10px] mr-1"></i>Zurück</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.previous_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">{% zeichen 'zurueck' klasse='text-[10px] mr-1' %}Zurück</a>
         {% endif %}
         {% if seite.has_next %}
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.next_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">Weiter<i class="fa-solid fa-chevron-right text-[10px] ml-1"></i></a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.next_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">Weiter{% zeichen 'weiter' klasse='text-[10px] ml-1' %}</a>
         {% endif %}
     </div>
 </div>

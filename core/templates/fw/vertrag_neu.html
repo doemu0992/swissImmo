@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load zeichen %}
 {% load l10n %}
 {% block title %}Vertragserfassung — swissImmo{% endblock %}
 
@@ -10,7 +11,7 @@
 
 <div class="fw-phead">
     <h1>{% if edit_vertrag %}Vertrag (Entwurf) bearbeiten{% else %}Vertragserfassung{% endif %}</h1>
-    <a href="{% if edit_vertrag %}/neu/vertraege/{{ edit_vertrag.id }}/{% else %}/neu/vertraege/{{ lg_query }}{% endif %}" title="Erfassung schliessen" class="fw-faint hover:fw-mutet"><i class="fa-solid fa-xmark text-xl"></i></a>
+    <a href="{% if edit_vertrag %}/neu/vertraege/{{ edit_vertrag.id }}/{% else %}/neu/vertraege/{{ lg_query }}{% endif %}" title="Erfassung schliessen" class="fw-faint hover:fw-mutet">{% zeichen 'schliessen' klasse='text-xl' %}</a>
 </div>
 
 <form method="post" action="/neu/vertraege/neu/speichern/" id="vform" onsubmit="return vorSubmit()">
@@ -162,7 +163,7 @@
                             <input name="erstmals_kuendbar" type="date" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                     </div>
                     <p id="frist-ep-note" class="hidden text-xs fw-marke fw-markenflaeche border fw-linie-marke rounded-lg px-3 py-2 mt-2">
-                        <i class="fa-solid fa-circle-info mr-1"></i>Einstellplatz: gesetzliche Mindestfrist <b>2 Wochen auf Ende einer Monatsperiode</b> (Art. 266e OR) — kein amtliches Formular, keine Erstreckung. <b>0 = 2 Wochen</b>; eine <b>längere</b> Frist auf Monatsende (z.B. 1 oder 3 Monate) kann vereinbart werden.
+                        {% zeichen 'hinweis' klasse='mr-1' %}Einstellplatz: gesetzliche Mindestfrist <b>2 Wochen auf Ende einer Monatsperiode</b> (Art. 266e OR) — kein amtliches Formular, keine Erstreckung. <b>0 = 2 Wochen</b>; eine <b>längere</b> Frist auf Monatsende (z.B. 1 oder 3 Monate) kann vereinbart werden.
                     </p>
 
                     <label class="block text-xs font-semibold fw-mutet mb-1 mt-4">Zur Mitbenützung</label>
@@ -206,7 +207,7 @@
 
                     <!-- Geschäftsraum: Zweck + Mietzinsmodell (nur bei Gewerbe sichtbar) -->
                     <div id="gewerbe-box" class="hidden border fw-linie-marke fw-markenflaeche rounded-xl p-4 mb-4">
-                        <h4 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-briefcase fw-marke mr-1"></i>Geschäftsraum</h4>
+                        <h4 class="font-bold fw-strong text-sm mb-1">{% zeichen 'dokument' klasse='fw-marke mr-1' %}Geschäftsraum</h4>
                         <p class="text-xs fw-faint mb-3">Zweckbestimmung und Mietzinsmodell für Geschäftsräume.</p>
                         <label class="block text-xs font-semibold fw-mutet mb-1">Nutzungszweck</label>
                         <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="z. B. Betrieb eines Coiffeursalons" class="w-full fw-flaeche rounded-lg text-sm px-3 py-2.5 mb-3">
@@ -306,7 +307,7 @@
                         {% if docuseal_konfiguriert %}
                         <p class="text-xs fw-faint mt-1 ml-6">Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, Person, Objekt).</p>
                         {% else %}
-                        <p class="text-xs fw-warnton mt-1 ml-6"><i class="fa-solid fa-circle-info mr-1"></i>DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. API-Key unter <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.</p>
+                        <p class="text-xs fw-warnton mt-1 ml-6">{% zeichen 'hinweis' klasse='mr-1' %}DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. API-Key unter <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.</p>
                         {% endif %}
                     </div>
                 </div>
@@ -316,28 +317,28 @@
         <!-- Navigation -->
         <div class="border-t fw-linie px-6 py-4 flex items-center justify-between fw-flaeche2">
             <button type="button" id="btn-back" onclick="stepMove(-1)" class="text-sm font-semibold fw-mutet hover:fw-ink px-3 py-2 rounded-lg invisible">
-                <i class="fa-solid fa-arrow-left mr-1"></i> Zurück
+                {% zeichen 'zurueck' klasse='mr-1' %} Zurück
             </button>
             <button type="button" id="btn-next" onclick="stepMove(1)" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
-                Weiter <i class="fa-solid fa-arrow-right ml-1"></i>
+                Weiter {% zeichen 'weiter' klasse='ml-1' %}
             </button>
             <button type="submit" id="btn-save" class="hidden fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
-                <i class="fa-solid fa-check mr-1"></i> Vertrag erstellen
+                {% zeichen 'speichern' klasse='mr-1' %} Vertrag erstellen
             </button>
         </div>
     </div>
 
     <!-- ========== RECHTS: LIVE-VERTRAGSVORSCHAU ========== -->
     <div class="lg:sticky lg:top-24">
-        <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2"><i class="fa-solid fa-file-contract"></i> Live-Vorschau</div>
+        <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2">{% zeichen 'vertrag' %} Live-Vorschau</div>
         <div id="mietrecht-warn" class="hidden mb-2 rounded-xl border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
-            <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
+            <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} Mietrechtlicher Hinweis</div>
             <ul id="mietrecht-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
         <div class="fw-card overflow-hidden">
             <iframe id="pvFrame" title="Vertrags-Vorschau" class="block fw-flaeche w-full" style="height:75vh; border:0;"></iframe>
         </div>
-        <p class="text-[11px] fw-faint mt-1.5 text-center"><i class="fa-solid fa-circle-check fw-gut mr-1"></i>Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF.</p>
+        <p class="text-[11px] fw-faint mt-1.5 text-center">{% zeichen 'gut' klasse='fw-gut mr-1' %}Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF.</p>
     </div>
 </div>
 </form>
@@ -600,7 +601,7 @@ function staffelAdd(){
   row.innerHTML = `
     <input type="date" name="staffel_ab" oninput="live()" class="flex-1 fw-flaeche rounded-lg text-sm px-2 py-1.5">
     <input type="number" step="0.01" name="staffel_netto" oninput="live()" placeholder="Netto CHF" class="w-28 fw-flaeche rounded-lg text-sm px-2 py-1.5">
-    <button type="button" onclick="this.closest('.staffel-row').remove(); live()" title="Staffelstufe entfernen" class="fw-faint hover:fw-kritisch text-sm px-1"><i class="fa-solid fa-xmark"></i></button>`;
+    <button type="button" onclick="this.closest('.staffel-row').remove(); live()" title="Staffelstufe entfernen" class="fw-faint hover:fw-kritisch text-sm px-1">{% zeichen 'loeschen' %}</button>`;
   wrap.appendChild(row);
 }
 function mieterTab(m){

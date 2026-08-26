@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% load chf %}<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -28,7 +29,7 @@
                 <div class="font-extrabold tracking-wide text-sm uppercase">{% block brand %}Mieterportal{% endblock %}</div>
                 <div class="text-[11px] fw-faint">SwissImmo</div>
             </div>
-            <button type="button" onclick="pCloseNav()" aria-label="Menü schliessen" class="lg:hidden fw-faint hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" onclick="pCloseNav()" aria-label="Menü schliessen" class="lg:hidden fw-faint hover:text-white">{% zeichen 'schliessen' %}</button>
         </div>
 
         <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto text-sm">
@@ -38,7 +39,7 @@
         <div class="px-3 py-4 border-t border-white/5">
             <form method="post" action="/logout/">{% csrf_token %}
                 <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg fw-faint hover:fw-flaeche hover:text-white transition-colors">
-                    <i class="fa-solid fa-right-from-bracket w-5 text-center"></i> Abmelden
+                    {% zeichen 'extern' klasse='w-5 text-center' %} Abmelden
                 </button>
             </form>
         </div>
@@ -48,7 +49,7 @@
     <div class="flex-1 min-w-0 flex flex-col">
         <!-- Topbar (mobil) -->
         <header class="lg:hidden h-16 px-4 flex items-center gap-3 bg-[#161926] text-white sticky top-0 z-30">
-            <button type="button" onclick="pOpenNav()" aria-label="Menü öffnen" class="fw-faint hover:text-white text-lg p-1"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" onclick="pOpenNav()" aria-label="Menü öffnen" class="fw-faint hover:text-white text-lg p-1">{% zeichen 'mehr' %}</button>
             <span class="font-extrabold tracking-wide text-sm uppercase">{% block brand_mobile %}Mieterportal{% endblock %}</span>
         </header>
 
