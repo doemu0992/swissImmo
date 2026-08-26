@@ -90,6 +90,27 @@ def _regelvorlagen(Regel):
          'Art. 257d Abs. 1 OR: mindestens dreissig Tage Zahlungsfrist mit '
          'Kuendigungsandrohung bei Wohn- und Geschaeftsraeumen, zehn bei '
          'Nebenobjekten.'),
+
+        # ZUSTELLFRIST MIETZINSAENDERUNG — Art. 269d Abs. 1 OR
+        #
+        # Zwei Parameter, weil die Rechnung zwei Stufen hat: Die zehn Tage
+        # zaehlen ab BEGINN DER KUENDIGUNGSFRIST, nicht ab dem Termin. Wer sie
+        # direkt vom Termin abzieht, liegt eine ganze Kuendigungsfrist daneben.
+        #
+        # `frist_monate` steht als Vorgabe fuer Wohnraeume; der tatsaechliche
+        # Wert kommt aus dem Vertrag, sobald die Regel von dort gerufen wird.
+        #
+        # WARUM HIER UND NICHT IM ANLEGEPFAD (E2.36)
+        #
+        # Die gelieferte Fassung legte diese Regel mit einem eigenen
+        # `create()` neben `_fehlende_nachtragen` an — also NUR bei einer
+        # Neuanlage. Nachgemessen: Auf einem Bestand mit Regelsatz blieb es
+        # bei drei Regeln, und `--probe` meldete dabei «vollstaendig». Das ist
+        # genau der Fehler, den E2.34 behoben hatte. Eine Regel, die nicht in
+        # dieser Liste steht, erreicht keine bestehende Installation.
+        (Regel.MIETZINS_ZUSTELLUNG, {'frist_monate': 3, 'vorlauf_tage': 10},
+         'Art. 269d Abs. 1 OR: amtliches Formular mindestens zehn Tage vor '
+         'Beginn der Kuendigungsfrist, wirksam auf einen Kuendigungstermin.'),
     ]
 
 

@@ -415,6 +415,81 @@ def zahlungsfrist(zugang, gekuendigt_am=None, mindest_tage=None,
         vorschlag=fruehestens, rechnung=rechnung)
 
 
+def mietzins_zustellung(termin, zugang=None, frist_monate=3,
+                        vorlauf_tage=10):
+    """Prüft die Zustellfrist einer Mietzinsänderung (Art. 269d OR).
+
+    ``termin``        Der Kündigungstermin, auf den die Änderung wirken soll.
+    ``zugang``        Tag, an dem das amtliche Formular beim Mieter ANKAM.
+                      ``None`` = noch nicht zugestellt; dann wird der letzte
+                      zulässige Tag vorgeschlagen.
+    ``frist_monate``  Kündigungsfrist aus dem Vertrag (Wohnräume: 3 Monate).
+    ``vorlauf_tage``  Vorlauf vor Beginn der Kündigungsfrist, gesetzlich 10.
+
+    DIE RECHNUNG HAT ZWEI STUFEN, UND DAS IST DER HAEUFIGSTE FEHLER
+
+    Art. 269d Abs. 1 OR: Der Vermieter muss die Erhöhung mit amtlichem
+    Formular und Begründung **mindestens zehn Tage vor Beginn der
+    Kündigungsfrist** zustellen, wirksam auf einen Kündigungstermin.
+
+    Die zehn Tage zählen also nicht ab dem Termin, sondern ab dem BEGINN DER
+    KÜNDIGUNGSFRIST — und der liegt seinerseits eine Kündigungsfrist vor dem
+    Termin. Bei drei Monaten Frist und Termin 31.03. beginnt die Frist am
+    31.12.; zugestellt sein muss bis zum 21.12.
+
+    Wer die zehn Tage direkt vom Termin abzieht, landet auf dem 21.03. — drei
+    Monate zu spät.
+
+    NICHT DREISSIG TAGE
+
+    Im Bestand stand an einer Stelle «30 Tage Vorlauf» (`automation.py`, zur
+    Indexanpassung). Das ist eine verbreitete Verwechslung mit der
+    Anfechtungsfrist des Mieters nach Art. 270b OR — die beträgt dreissig
+    Tage, läuft aber ab Empfang und in die andere Richtung. Der Gesetzestext
+    im Bestand nennt korrekt zehn Tage.
+
+    DIE FOLGE EINER VERSPÄTUNG
+
+    Eine zu spät zugestellte Erhöhung ist NICHTIG (Art. 269d Abs. 2 OR) —
+    nicht bloss auf den nächsten Termin verschoben. Sie muss neu zugestellt
+    werden, und der Mietzins bleibt bis dahin der alte.
+    """
+    from datetime import timedelta
+
+    beginn_frist = monate_dazu(termin, -frist_monate)
+    spaetestens = beginn_frist - timedelta(days=vorlauf_tage)
+    rechnung = {
+        'termin': termin.isoformat(), 'frist_monate': frist_monate,
+        'beginn_kuendigungsfrist': beginn_frist.isoformat(),
+        'vorlauf_tage': vorlauf_tage, 'spaetestens': spaetestens.isoformat(),
+    }
+    if zugang is None:
+        return Befund(
+            ok=True,
+            meldung=(f'Zustellung spätestens am '
+                     f'{spaetestens.strftime("%d.%m.%Y")} — die '
+                     f'Kündigungsfrist beginnt am '
+                     f'{beginn_frist.strftime("%d.%m.%Y")}.'),
+            vorschlag=spaetestens, rechnung=rechnung)
+
+    rechnung['zugang'] = zugang.isoformat()
+    if zugang <= spaetestens:
+        return Befund(
+            ok=True,
+            meldung=(f'Rechtzeitig: zugestellt am '
+                     f'{zugang.strftime("%d.%m.%Y")}, zulässig bis '
+                     f'{spaetestens.strftime("%d.%m.%Y")}.'),
+            rechnung=rechnung)
+
+    return Befund(
+        ok=False,
+        meldung=(f'Zu spät um {(zugang - spaetestens).days} Tag(e): zulässig '
+                 f'war bis {spaetestens.strftime("%d.%m.%Y")}. Eine verspätet '
+                 f'zugestellte Änderung ist NICHTIG (Art. 269d Abs. 2 OR) und '
+                 f'muss neu zugestellt werden.'),
+        vorschlag=spaetestens, rechnung=rechnung)
+
+
 def pruefen(art, organisation, fall=None, kanton='', protokollieren=True, **eingabe):
     """Wendet eine Regel an und protokolliert die Anwendung.
 
@@ -458,6 +533,12 @@ def pruefen(art, organisation, fall=None, kanton='', protokollieren=True, **eing
             mindest_tage=parameter.get('mindest_tage'),
             kategorie=eingabe.get('kategorie', 'wohnen'),
             je_kategorie=parameter.get('je_kategorie'))
+    elif art == 'mietzins_zustellung':
+        befund = mietzins_zustellung(
+            termin=eingabe['termin'],
+            zugang=eingabe.get('zugang'),
+            frist_monate=parameter.get('frist_monate', 3),
+            vorlauf_tage=parameter.get('vorlauf_tage', 10))
     else:
         raise NotImplementedError(
             f'Die Regelart {art!r} ist als Datenmodell vorhanden, aber noch nicht '

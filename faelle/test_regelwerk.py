@@ -228,23 +228,91 @@ class AnwendungTests(_Basis):
                 regel_holen(self.a.organisation, 'kuendigungstermin', 'ZH')
                 .parameter['termine'], TERMINE)
 
-    def test_nicht_gerechnete_regelart_wirft_klar(self):
-        """Eine hinterlegte, aber noch nicht gerechnete Regelart schweigt nicht.
+    def test_eine_hinterlegte_art_ohne_rechnung_wuerde_klar_scheitern(self):
+        """Eine Regelart, die es im Modell gibt, muss auch gerechnet werden.
 
-        Die Regelart wird an den bestehenden Regelsatz gehängt statt an einen
-        neuen: `(organisation, kanton)` ist eindeutig, und die Organisation hat
-        ihren allgemeinen Satz bereits.
+        DIESER TEST HAT SEIN ZIEL ERREICHT UND PRUEFT JETZT DIE ANDERE SEITE
+
+        Bis E2.36 gab es Regelarten, die `pruefen()` mit einem
+        `NotImplementedError` quittierte — der Test hielt fest, dass sie
+        wenigstens LAUT scheitern statt still «ok» zu melden.
+
+        Seit E2.36 wird jede der vier Arten gerechnet. Die Aussage laesst
+        sich damit nicht mehr an einer echten Art zeigen, und an einer
+        ERFUNDENEN auch nicht: `pruefen()` sucht zuerst die Regel und kehrt
+        zurueck, wenn keine hinterlegt ist («Fuer diese Pruefung ist keine
+        Regel hinterlegt») — das ist richtig so und trifft den Zweig gar
+        nicht.
+
+        Geprueft wird deshalb am Quelltext: Fuer JEDE im Modell definierte
+        Art existiert ein Zweig. Wer eine fuenfte einfuehrt, ohne sie zu
+        rechnen, wird hier rot — und das ist genau die Sorge, die den
+        urspruenglichen Test getragen hat.
         """
+        import inspect
+
+        quelle = inspect.getsource(pruefen)
+        fehlend = [wert for wert, _ in Regel.ARTEN
+                   if f"art == '{wert}'" not in quelle]
+        self.assertEqual(
+            fehlend, [],
+            f'Diese hinterlegten Regelarten haben keine Rechnung: {fehlend}. '
+            f'Sie wuerden in den `NotImplementedError`-Zweig laufen, sobald '
+            f'jemand eine Regel dafuer anlegt.')
+
+    def test_eine_ungerechnete_art_scheitert_laut(self):
+        """Die Absicherung wird AUSGEFÜHRT, nicht im Quelltext gesucht.
+
+        WARUM NICHT `assertIn('NotImplementedError', quelle)`
+
+        Diese Fassung stand hier zwischenzeitlich. Sie prüft, dass ein Wort
+        im Quelltext vorkommt — nicht, dass der Zweig lebt. Gegenprobe:
+        ein `return Befund(ok=True, …)` VOR das `raise` gesetzt, und der
+        Test blieb grün. Ein toter Zweig sieht für ihn aus wie ein
+        wirksamer, und genau die Verwechslung soll er ausschliessen.
+
+        WARUM ES DOCH GEHT
+
+        Die Etappe hielt fest, die Aussage lasse sich an einer erfundenen
+        Art nicht zeigen, weil `pruefen()` zurückkehrt, wenn keine Regel
+        hinterlegt ist. Das trifft zu — solange keine hinterlegt ist. Wird
+        eine Regel mit erfundener Art angelegt, findet `regel_holen` sie,
+        und die Verteilung läuft bis zum `else`. `art` ist ein
+        `CharField` mit `choices`; Django prüft die Auswahl beim Speichern
+        nicht, nur in `full_clean()`.
+
+        Die erfundene Art ist hier das richtige Mittel: An einer echten
+        liesse sich die Aussage nicht mehr zeigen, seit alle vier gerechnet
+        werden — und sie soll ja gerade gelten, wenn jemand eine fünfte
+        einführt.
+
+        WARUM NICHT EINFACH EINE REGEL MIT ERFUNDENER ART ANLEGEN
+
+        Der erste Versuch tat das — und `core.tests.test_auswahlwerte`
+        wurde rot, zu Recht: Django prüft `choices` bei `save()` nicht, der
+        Wert landet stumm in der Datenbank, und jede Auswertung, die nach
+        dem Feld filtert, übersieht den Datensatz danach. Der Wächter
+        verbietet ungültige Auswahlwerte in Testdaten, und er soll nicht
+        für die Bequemlichkeit eines Tests aufgeweicht werden.
+
+        Also gar nichts Ungültiges speichern: `regel_holen` wird durch eine
+        ECHTE, gültige Regel ersetzt, und die erfundene Art steht nur im
+        Aufruf. Für die Verteilung zählt ohnehin das Argument, nicht das
+        Feld der gefundenen Regel — die Aussage bleibt dieselbe.
+        """
+        from unittest.mock import patch
+
         with mandant(self.a.organisation):
             satz = self._regelsatz(self.a.organisation)
-            # `MIETZINS_ZUSTELLUNG` statt `ZAHLUNGSFRIST`: Die
-            # Zahlungsfrist wird seit E2.34 gerechnet. Dieser Test
-            # braucht eine Art, die es NICHT wird — sonst prueft er
-            # eine Meldung, die nicht mehr kommt.
-            Regel(regelsatz=satz, art=Regel.MIETZINS_ZUSTELLUNG,
-                  parameter={'frist_tage': 30}).save()
-            with self.assertRaises(NotImplementedError):
-                pruefen('mietzins_zustellung', self.a.organisation)
+            # `(regelsatz, art)` ist eindeutig, und `_regelsatz` legt die
+            # Kuendigungstermin-Regel bereits an — also die vorhandene
+            # nehmen statt eine zweite anlegen.
+            echte, _neu = Regel.objects.get_or_create(
+                regelsatz=satz, art=Regel.KUENDIGUNGSTERMIN,
+                defaults={'parameter': {}})
+            with patch('faelle.regelwerk.regel_holen', return_value=echte):
+                with self.assertRaises(NotImplementedError):
+                    pruefen('noch_nicht_gerechnet', self.a.organisation)
 
 
 class SperreTests(_Basis):

@@ -212,29 +212,42 @@ class AnbindungTest(TestCase):
             "art == 'zahlungsfrist'", quelle,
             'Die Zahlungsfrist ist nicht an `pruefen()` angebunden.')
 
-    def test_der_grundsatz_legt_sie_an(self):
-        import inspect
+    def test_der_grundsatz_legt_sie_ohne_festen_parameter_an(self):
+        """An den Daten, nicht am Quelltext.
 
-        from faelle.management.commands import regelwerk_grundsatz
-        quelle = inspect.getsource(regelwerk_grundsatz)
-        self.assertIn('ZAHLUNGSFRIST', quelle)
-        self.assertIn("'mindest_tage': 30", quelle)
+        Diese Prüfung stand hier als `assertIn("'mindest_tage': 30",
+        quelle)` — und war grün, obwohl E2.34 den Parameter GENAU DESHALB
+        entfernt hatte: Ein fester Wert überschriebe die Zehn-Tage-Frist bei
+        Nebenobjekten (Art. 257d Abs. 1 OR). Grün blieb sie, weil die
+        Zeichenkette noch in dem Kommentar steht, der die Entfernung
+        begründet. Ein Test, den Fliesstext erfüllt, sichert nichts — er
+        behauptete hier sogar das Gegenteil des Gewollten.
+        """
+        from faelle.management.commands.regelwerk_grundsatz import (
+            _regelvorlagen)
+        from faelle.regelwerk_models import Regel
 
-    def test_es_bleibt_genau_eine_ungerechnete_regelart(self):
-        """Damit der Fortschritt gezählt wird und nicht behauptet.
+        vorlagen = {art: parameter for art, parameter, _b
+                    in _regelvorlagen(Regel)}
+        self.assertIn(Regel.ZAHLUNGSFRIST, vorlagen)
+        self.assertNotIn(
+            'mindest_tage', vorlagen[Regel.ZAHLUNGSFRIST],
+            'Ein fester `mindest_tage` überschreibt die Zehn-Tage-Frist bei '
+            'Nebenobjekten. Ohne Parameter rechnet die Regel nach Kategorie.')
 
-        Vier Regelarten, drei gerechnet. Wer die vierte nachrüstet, ändert
-        diesen Test — und wer eine fünfte einführt, ohne sie zu rechnen,
-        wird hier rot.
+    def test_alle_regelarten_werden_gerechnet(self):
+        """Nachfolger von `test_es_bleibt_genau_eine_ungerechnete_regelart`.
+
+        Der hielt fest, dass noch eine Art fehlt. Seit E2.36 fehlt keine —
+        die Aussage steht jetzt in `test_zustellfrist_regel.py` und prueft
+        die andere Richtung: Wer eine fuenfte Art einfuehrt, ohne sie zu
+        rechnen, wird dort rot.
         """
         from faelle.regelwerk_models import Regel
 
-        gerechnet = {Regel.KUENDIGUNGSTERMIN, Regel.KAUTION_HOECHSTBETRAG,
-                     Regel.ZAHLUNGSFRIST}
-        alle = {wert for wert, _ in Regel.ARTEN}
-        self.assertEqual(
-            alle - gerechnet, {Regel.MIETZINS_ZUSTELLUNG},
-            'Die Liste der ungerechneten Regelarten hat sich geändert.')
+        self.assertEqual(len(Regel.ARTEN), 4,
+                         'Die Anzahl Regelarten hat sich geaendert — bitte '
+                         'in test_zustellfrist_regel.py nachsehen.')
 
 
 class UeberDieGanzeKetteTest(TestCase):
