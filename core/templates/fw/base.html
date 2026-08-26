@@ -1,3 +1,4 @@
+{% load zeichen %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -8,6 +9,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230f6f6a%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
 {% include 'fw/_assets.html' %}
     {% include 'fw/_schicht_link.html' %}
+{% include 'fw/_zeichen.html' %}
     <script>
         // Zustand vor dem ersten Paint anwenden (kein Flackern)
         if (localStorage.getItem('sbCollapsed') === '1') document.documentElement.classList.add('_sbc');
@@ -155,14 +157,14 @@
 
         <div class="px-5 py-5 flex items-center gap-2.5 border-b fw-linie sb-logo">
             <a href="/neu/" title="Zur Übersicht" class="w-8 h-8 rounded-lg fw-balken-voll flex items-center justify-center text-xs shadow-lg fw-schatten-marke shrink-0">
-                <i class="fa-solid fa-building"></i>
+                {% zeichen 'liegenschaft' %}
             </a>
             <a href="/neu/" class="font-extrabold tracking-wide text-sm uppercase sb-logotext flex-1">swissImmo</a>
             <button onclick="fwToggleSidebar()" title="Menü ein-/ausklappen" class="hidden lg:block fw-faint hover:fw-strong transition-colors">
-                <i class="fa-solid fa-angles-left text-xs sb-collapse-icon"></i>
+                {% zeichen 'zurueck' klasse='text-xs sb-collapse-icon' %}
             </button>
             <button type="button" onclick="fwCloseMobileNav()" aria-label="Menü schliessen" class="lg:hidden fw-faint hover:fw-strong transition-colors">
-                <i class="fa-solid fa-xmark"></i>
+                {% zeichen 'loeschen' %}
             </button>
         </div>
 
@@ -190,7 +192,7 @@
                     {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label min-w-[18px] text-center text-[10px] font-bold fw-krit-voll fw-strong rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
                     {% if g.items %}
                     <span class="sb-label sb-chev text-[10px] {% if nav in g.alle_keys %}fw-faint{% else %}fw-mutet{% endif %} p-1 -m-1"
-                          onclick="event.preventDefault();event.stopPropagation();fwNavToggle('{{ g.key }}')"><i class="fa-solid fa-chevron-right transition-transform"></i></span>
+                          onclick="event.preventDefault();event.stopPropagation();fwNavToggle('{{ g.key }}')">{% zeichen 'weiter' klasse='transition-transform' %}</span>
                     {% endif %}
                 </a>
                 {% else %}
@@ -198,7 +200,7 @@
                         class="sb-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold fw-mutet hover:fw-flaeche hover:fw-strong transition-all">
                     <i class="fa-solid {{ g.icon }} w-4 text-center text-[13px]"></i>
                     <span class="sb-label flex-1 text-left">{{ g.label }}</span>
-                    <span class="sb-label sb-chev text-[10px] fw-mutet p-1 -m-1"><i class="fa-solid fa-chevron-right transition-transform"></i></span>
+                    <span class="sb-label sb-chev text-[10px] fw-mutet p-1 -m-1">{% zeichen 'weiter' klasse='transition-transform' %}</span>
                 </button>
                 {% endif %}
                 {% if g.items %}
@@ -221,7 +223,7 @@
         <div class="px-3 pb-4 sb-filter">
             <a href="/neu/einstellungen/{{ lg_query }}"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] {% if nav in fw_einstellungen_keys %}fw-flaeche fw-strong{% else %}fw-mutet hover:fw-flaeche hover:fw-strong{% endif %} transition-colors">
-                <i class="fa-solid fa-gear w-4 text-center text-[12px]"></i> <span class="sb-label">Einstellungen</span>
+                {% zeichen 'einstellungen' klasse='text-[12px]' %} <span class="sb-label">Einstellungen</span>
             </a>
         </div>
 

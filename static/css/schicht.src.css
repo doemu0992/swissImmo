@@ -886,3 +886,33 @@
         .fw-reiter a.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
 
     
+        /* Zeichen aus dem Sprite (D5). Groesse und Farbe kommen aus der
+           Umgebung: ein Zeichen waechst mit der Schrift und uebernimmt die
+           Farbe der Zeile.
+
+           WARUM ES DIESE REGEL BRAUCHT. Tailwinds Preflight setzt
+           `audio,canvas,embed,iframe,img,object,svg,video{display:block}` —
+           eine Vorgabe fuer BILDER. Ein SVG ohne eigene Groesse faellt damit
+           auf die Ersatzmasse zurueck. In Chromium gemessen, ohne diese
+           Regel: 300x150 Pixel statt 12x12. Der Fehler ist still — das
+           Zeichen ist da, nur riesig.
+
+           WARUM `!important`. Nicht wegen der Ladereihenfolge: `.fw-zeichen`
+           ist ein Klassenwaehler und schlaegt den Elementwaehler `svg` in
+           jeder Reihenfolge. Nachgemessen ohne `!important`: unveraendert
+           12x12. Es wirkt gegen die Hilfsklassen GLEICHER Spezifitaet, die
+           ein Aufruf mitgeben kann — `tailwind.css` laedt nach der Schicht,
+           also gewaenne dort ein `w-4`. Gemessen: mit `klasse='w-4'` ohne
+           `!important` 16x12 statt 12x12, also ein verzerrtes Zeichen.
+
+           Die Groesse steuert man folglich ueber die SCHRIFTGROESSE
+           (`text-[12px]`), nicht ueber `w-*`. Gemessen: `text-[12px]` ergibt
+           12x12, `w-4` allein bleibt bei 16x16 (der geerbten Schrift).
+
+           HEISST `fw-zeichen`, NICHT `fw-z`: Letzteres ist seit langem die
+           Zaehler-Plakette in den Reitern (`.fw-reiter .fw-z`,
+           schicht.css:381). Ein Zeichen haette dort Rahmen und Innenabstand
+           geerbt. */
+        .fw-zeichen{width:1em!important;height:1em!important;
+              display:inline-block!important;vertical-align:-.125em;
+              flex-shrink:0}

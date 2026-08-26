@@ -478,36 +478,50 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             # spaeter; das war der Befund B3.
             from faelle.regelwerk import mietzins_zustellung
 
-            # DIE ZWEI-WOCHEN-FRIST GILT NUR BEIM EINSTELLPLATZ
+            # DIE KURZFRIST-VERZWEIGUNG IST ENTFALLEN (E2.38)
             #
-            # `kuendigungsfrist_monate <= 0` heisst NICHT ueberall «zwei
-            # Wochen». Der Bestand ist da genau: In
-            # `Mietvertrag.kuendigungsfrist_anzeige` wird `<= 0` nur dann als
-            # Zwei-Wochen-Frist nach Art. 266e OR gelesen, wenn
-            # `einheit.ist_einstellplatz` gilt. Das Feld ist ein
-            # `IntegerField(default=3)` ohne Untergrenze — eine 0 auf einer
-            # Wohnung ist eine Datenluecke, keine Kurzfrist.
+            # Sie fragte: Wie rechnet man die 269d-Frist bei einem
+            # Einstellplatz mit Zwei-Wochen-Kuendigungsfrist? Die Frage davor
+            # war offen und wichtiger: Faellt eine Mietzinserhoehung beim
+            # GESONDERT VERMIETETEN Einstellplatz ueberhaupt unter Art. 269d?
             #
-            # Die erste Fassung dieser Etappe pruefte nur `<= 0`. Damit haette
-            # eine Wohnung mit fehlender Frist einen Zustelltermin 24 Tage vor
-            # dem Termin bekommen statt gut drei Monate — also GENAU den
-            # Fehler, den diese Etappe behebt, nur an anderer Stelle.
+            # NACHGESCHLAGEN: Art. 269d steht im «Zweiten Abschnitt: Schutz vor
+            # missbraeuchlichen Mietzinsen ... BEI DER MIETE VON WOHN- UND
+            # GESCHAEFTSRAEUMEN». Ein allein vermieteter Parkplatz ist keines
+            # von beidem. Der Bestand zieht dieselbe Linie schon bei der
+            # Kuendigung: `rentals/models.py` haelt fest, dass gesondert
+            # vermietete Nebenobjekte kein amtliches Formular brauchen
+            # (Art. 266l gilt ebenfalls nur fuer Wohn- und Geschaeftsraeume).
+            #
+            # Wird der Platz ZUSAMMEN mit einer Wohnung vermietet, gilt er
+            # nach Art. 253a Abs. 1 OR als Teil davon — dann greift 269d sehr
+            # wohl. Genau deshalb sagt der Bestand «gesondert vermietet».
+            #
+            # WARUM TROTZDEM DIE LANGE FRIST GERECHNET WIRD
+            #
+            # Die Folgen sind unsymmetrisch: Das Formular zu verwenden, wo es
+            # nicht noetig ist, kostet ein Blatt Papier. Es wegzulassen, wo es
+            # noetig ist, macht die Erhoehung NICHTIG. Bei einer Rechtsfrage
+            # ohne Bundesgerichtsentscheid ist der teurere Irrtum der, den man
+            # vermeidet.
+            #
+            # Deshalb: keine Sonderbehandlung, keine 24-Tage-Frist. Fehlt die
+            # Kuendigungsfrist im Vertrag, gilt die gesetzliche Mindestfrist
+            # fuer Wohnraeume (drei Monate) — dieselbe Vorgabe wie im
+            # Regelwerk. Das ist die vorsichtigere Seite und die einfachere.
+            #
+            # `> 0` und nicht `or 3`: Das Feld ist ein `IntegerField` ohne
+            # Untergrenze, ein negativer Wert ist eintragbar. `or 3` reicht
+            # ihn durch, und `mietzins_zustellung()` rechnet dann VORWAERTS —
+            # gemessen: bei -1 Monat liegt die Zustellung am 20.04.2027 fuer
+            # einen Termin am 31.03.2027, also nach dem Termin. Der Satz in
+            # der Pendenz waere unsinnig, und zwar in die gefaehrliche
+            # Richtung.
             monate_roh = v.kuendigungsfrist_monate or 0
-            kurzfrist = (monate_roh <= 0
-                         and v.einheit.ist_einstellplatz)
-            if kurzfrist:
-                # Zwei Wochen Frist plus zehn Tage Vorlauf, ab dem Termin
-                # zurueck. `mietzins_zustellung()` rechnet in Monaten und hat
-                # fuer diese Frist keine Entsprechung.
-                zustellung = naechste - timedelta(days=24)
-                fristtext = '2-wöchigen'
-            else:
-                # Ohne Angabe die gesetzliche Mindestfrist fuer Wohnraeume
-                # (Art. 266c OR) — dieselbe Vorgabe wie im Regelwerk.
-                frist_monate = monate_roh if monate_roh > 0 else 3
-                zustellung = mietzins_zustellung(
-                    termin=naechste, frist_monate=frist_monate).vorschlag
-                fristtext = f'{frist_monate}-monatigen'
+            frist_monate = monate_roh if monate_roh > 0 else 3
+            zustellung = mietzins_zustellung(
+                termin=naechste, frist_monate=frist_monate).vorschlag
+            fristtext = f'{frist_monate}-monatigen'
 
             _ensure(f"auto:index:{v.id}:{naechste.isoformat()}",
                     f"Indexmiete anpassen: {v.mieter.display_name} ({v.einheit.bezeichnung})",

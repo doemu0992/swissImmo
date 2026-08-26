@@ -493,3 +493,6 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
             display:flex;align-items:center;gap:7px}
         .fw-reiter a:hover{color:var(--ds-ink)}
         .fw-reiter a.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
+        .fw-zeichen{width:1em!important;height:1em!important;
+              display:inline-block!important;vertical-align:-.125em;
+              flex-shrink:0}

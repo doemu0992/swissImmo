@@ -72,23 +72,38 @@ class IndexpendenzTextTest(TestCase):
             'Die Pendenz ist wieder auf den Termin datiert. An dem Tag ist '
             'nichts mehr zu tun.')
 
-    def test_der_einstellplatz_faellt_nicht_auf_drei_monate(self):
-        """`kuendigungsfrist_monate <= 0` heisst zwei Wochen, nicht keine.
+    def test_keine_sonderbehandlung_fuer_nebenobjekte(self):
+        """Die Kurzfrist-Verzweigung ist entfallen — und das ist die Antwort
+        auf eine Rechtsfrage, nicht eine Vereinfachung.
 
-        Ein schlichtes `or 3` hätte daraus stillschweigend drei Monate
-        gemacht — und die Zustellung zweieinhalb Monate zu früh gemeldet.
-        Eine zu frühe Meldung ist harmloser als eine zu späte, aber sie ist
-        falsch, und sie macht die Pendenz unglaubwürdig.
+        Sie fragte: Wie rechnet man die 269d-Frist bei einem Einstellplatz mit
+        Zwei-Wochen-Kuendigungsfrist? Die Frage davor war offen und wichtiger:
+        Faellt eine Mietzinserhoehung beim GESONDERT VERMIETETEN Einstellplatz
+        ueberhaupt unter Art. 269d?
+
+        Art. 269d steht im «Zweiten Abschnitt: Schutz vor missbraeuchlichen
+        Mietzinsen ... bei der Miete von WOHN- UND GESCHAEFTSRAEUMEN». Ein
+        allein vermieteter Parkplatz ist keines von beidem. Der Bestand zieht
+        dieselbe Linie schon bei der Kuendigung.
+
+        WARUM TROTZDEM DIE LANGE FRIST GERECHNET WIRD: Die Folgen sind
+        unsymmetrisch. Das Formular zu verwenden, wo es nicht noetig ist,
+        kostet ein Blatt Papier. Es wegzulassen, wo es noetig ist, macht die
+        Erhoehung NICHTIG. Bei einer Rechtsfrage ohne Bundesgerichtsentscheid
+        vermeidet man den teureren Irrtum.
         """
         quelle = self._quelle()
-        self.assertIn(
+        self.assertNotIn(
             'kurzfrist', quelle,
-            'Der Sonderfall der Zwei-Wochen-Frist bei Einstellplätzen wird '
-            'nicht behandelt.')
-
-
-class ZustellrechnungTest(TestCase):
-    """Die Rechnung selbst, damit der Quelltexttest nicht allein steht."""
+            'Die Kurzfrist-Verzweigung ist zurueck. Sie beantwortet eine '
+            'Frage, die vor ihr geklaert werden muesste — und sie meldet '
+            'einen Zustelltermin 24 Tage vor dem Termin, wo drei Monate '
+            'noetig waeren.')
+        self.assertIn(
+            'monate_roh if monate_roh > 0 else 3', quelle,
+            'Fehlt die Kuendigungsfrist, muss die gesetzliche Mindestfrist '
+            'fuer Wohnraeume gelten — die vorsichtigere Seite. `or 3` reicht '
+            'dafuer nicht: Es laesst negative Werte durch.')
 
     def test_die_regel_liefert_den_erwarteten_tag(self):
         from faelle.regelwerk import mietzins_zustellung
@@ -189,12 +204,6 @@ class IndexpendenzWirdErzeugtTest(TestCase):
                                        frist_monate=3).vorschlag
         self.assertEqual(treffer.group(1), erwartet.strftime('%d.%m.%Y'))
 
-    def test_der_einstellplatz_bekommt_die_zwei_wochen(self):
-        pendenz = self._pendenz(self._vertrag(typ='pp', frist_monate=0))
-        self.assertIn('2-wöchigen', pendenz.beschreibung,
-                      'Beim Einstellplatz gilt Art. 266e OR — zwei Wochen.')
-        self.assertNotIn('3-monatigen', pendenz.beschreibung)
-
     def test_eine_wohnung_ohne_frist_faellt_nicht_auf_zwei_wochen(self):
         """`kuendigungsfrist_monate = 0` auf einer Wohnung ist eine Datenlücke.
 
@@ -218,3 +227,25 @@ class IndexpendenzWirdErzeugtTest(TestCase):
             pendenz.faellig_am, termin_datum,
             'Die Pendenz ist erst am Kündigungstermin fällig — dann ist sie '
             'eine Nachricht und keine Aufgabe.')
+
+
+    def test_eine_negative_frist_kippt_die_zustellung_nicht_hinter_den_termin(self):
+        """Ein `IntegerField` ohne Untergrenze nimmt auch -1 an.
+
+        `or 3` reicht den Wert durch, und `mietzins_zustellung()` rechnet
+        dann vorwärts: Zustellung am 20.04.2027 für einen Termin am
+        31.03.2027. Die Pendenz nennte damit einen Tag, an dem die Frist
+        längst abgelaufen ist — derselbe Fehler wie der alte Text, nur
+        anders erzeugt.
+        """
+        pendenz = self._pendenz(self._vertrag(frist_monate=-1))
+        termin = re.search(r'möglich auf (\d{2}\.\d{2}\.\d{4})',
+                           pendenz.beschreibung)
+        termin_datum = date(*reversed([int(t) for t in
+                                       termin.group(1).split('.')]))
+        zustell = re.search(r'muss bis (\d{2}\.\d{2}\.\d{4})',
+                            pendenz.beschreibung)
+        zustell_datum = date(*reversed([int(t) for t in
+                                        zustell.group(1).split('.')]))
+        self.assertLess(zustell_datum, termin_datum)
+        self.assertIn('3-monatigen', pendenz.beschreibung)
