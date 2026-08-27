@@ -418,6 +418,11 @@ class MandantenFixture:
         # Die Reihenfolge ist bedeutsam: 'regelanwendung' muss VOR 'regelsatz'
         # stehen, sonst greift kein Muster fuer die Anwendung — beide enthalten
         # 'regel'.
+        # E2.46 — die Zeiterfassung. Wieder von der Selbstpruefung gemeldet,
+        # bevor der Sweep sie uebersprungen haette. `fw_zeit_erfassen` nimmt
+        # die Fall-`pk`: Ein POST auf einen fremden Fall darf keinen Aufwand
+        # dort anlegen.
+        ('zeit_erfassen',   'fall'),
         ('regelanwendung',  'regelanwendung'),
         ('regelsatz',       'regelsatz'),
         # Phase 4b.16 — Liegenschaftsbudget. Die Selbstpruefung

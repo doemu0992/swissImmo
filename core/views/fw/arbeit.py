@@ -64,6 +64,81 @@ def fw_arbeit(request):
     return redirect(ziel)
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_zeit_erfassen(request, pk):
+    """Aufwand auf einem Fall erfassen (E2.46).
+
+    `SCHREIB_ROLLEN`, NICHT `TEAM_ROLLEN`
+
+    Der erste Entwurf nahm `TEAM_ROLLEN` — dieselbe Zeile wie bei der Ansicht
+    darunter, kopiert ohne nachzudenken. `TEAM_ROLLEN` schliesst aber den
+    LESEZUGRIFF ein: Wer nur lesen darf, haette Aufwand buchen koennen.
+
+    `test_lesende_rolle_kann_nirgends_unbemerkt_schreiben` hat es beim ersten
+    vollen Lauf gemeldet. Das Wort «unbemerkt» im Testnamen ist woertlich zu
+    nehmen — es waere niemandem aufgefallen.
+
+    WARUM ES DAS BIS HIERHER NICHT GAB
+
+    `faelle.Zeiteintrag` steht seit der ersten Migration im Modell, mit
+    Fallbezug, Minuten, Taetigkeit und `verrechenbar`. Ausser den Migrationen
+    hat es NIEMAND benutzt — es gab keinen Weg, einen Eintrag anzulegen.
+    `Fall.erfasste_minuten` zeigte deshalb auf jeder Fallakte «0 min», und
+    `mandat_detail.html` traegt bis heute die Notiz, dass die
+    Rentabilitaetsansicht «Zeiterfassung pro Fall voraussetzt, die es nicht
+    gibt».
+
+    MINUTEN, NICHT STUNDEN
+
+    So steht es im Modell begruendet: «Eine Zeiterfassung, die nicht
+    beilaeufig geht, wird nicht gepflegt.» Das Formular hat deshalb ein Feld
+    und einen Knopf, keine Maske.
+
+    DER STUNDENSATZ IST FREI
+
+    Leer heisst «Vorgabe der Organisation». Ein eigener Wert traegt den Fall,
+    in dem ein Einsatz anders kostet — Notfall am Sonntag, Pauschale, Kulanz.
+    Ist WEDER hier NOCH an der Organisation ein Satz hinterlegt, bleibt der
+    Betrag leer statt null: «nicht berechenbar» ist eine Aussage, «CHF 0.00»
+    waere eine falsche.
+    """
+    from faelle.models import Fall, Zeiteintrag
+
+    fall = get_object_or_404(Fall, pk=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/faelle/{pk}/')
+
+    try:
+        minuten = int(request.POST.get('minuten') or 0)
+    except ValueError:
+        minuten = 0
+    if minuten <= 0:
+        messages.error(request, 'Bitte eine Dauer in Minuten angeben.')
+        return redirect(f'/neu/faelle/{pk}/')
+
+    satz_roh = (request.POST.get('satz') or '').strip().replace("'", '')
+    satz = None
+    if satz_roh:
+        from decimal import Decimal, InvalidOperation
+        try:
+            satz = Decimal(satz_roh.replace(',', '.'))
+        except InvalidOperation:
+            messages.error(request, f'«{satz_roh}» ist kein Betrag.')
+            return redirect(f'/neu/faelle/{pk}/')
+
+    Zeiteintrag.objects.create(
+        fall=fall, benutzer=request.user, minuten=minuten,
+        taetigkeit=request.POST.get('taetigkeit') or Zeiteintrag.SONDER,
+        notiz=(request.POST.get('notiz') or '')[:200],
+        verrechenbar=bool(request.POST.get('verrechenbar')),
+        satz=satz)
+    from core.auth import log_aktion
+    log_aktion(request, 'Aufwand erfasst', objekt=f'Fall {fall.pk}',
+               details=f'{minuten} Min.')
+    messages.success(request, f'{minuten} Minuten erfasst.')
+    return redirect(f'/neu/faelle/{pk}/')
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_fall_detail(request, pk):
     """Die Fallakte: Etappen, Schritte, Verfallsregel.
@@ -76,6 +151,7 @@ def fw_fall_detail(request, pk):
 
     fall = get_object_or_404(
         Fall.objects.select_related('fallart', 'zustaendig', 'akte_typ'), pk=pk)
+    from faelle.models import Zeiteintrag
     schritte = list(fall.schritte.select_related('erledigt_durch').order_by('nr'))
 
     # Nach Etappen gruppieren, ohne die Reihenfolge zu verlieren. `groupby`
@@ -103,6 +179,9 @@ def fw_fall_detail(request, pk):
         'schritte_gesamt': gesamt,
         'liegengeblieben': fall.ist_liegengeblieben,
         'tage_ohne_bewegung': fall.tage_ohne_bewegung,
+        'zeiteintraege': list(fall.zeiteintraege.select_related('benutzer')
+                              .order_by('-datum', '-pk')[:20]),
+        'zeit_arten': Zeiteintrag.TAETIGKEITEN,
         'heute': timezone.localdate(),
     })
 

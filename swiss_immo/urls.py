@@ -87,7 +87,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_konto_view, mieter_daten_view, mieter_passwort_view)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
-from core.views.fw import (fw_arbeit, fw_fall_detail, fw_fallschritt_erledigen,
+from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fallschritt_erledigen,
                            fw_termine, fw_termin_neu, fw_termin_status,
                            fw_abwesenheiten, fw_abwesenheit_neu,
                            fw_regelwerk, fw_regelsatz_form, fw_regelsatz_loeschen,
@@ -401,6 +401,7 @@ urlpatterns = [
     path('neu/vertraege/<int:vertrag_id>/kuendigen/pruefen/', fw_kuendigung_pruefen,
          name='fw_kuendigung_pruefen'),
     path('neu/faelle/<int:pk>/', fw_fall_detail, name='fw_fall_detail'),
+    path('neu/faelle/<int:pk>/zeit/', fw_zeit_erfassen, name='fw_zeit_erfassen'),
     path('neu/fallschritte/<int:pk>/erledigen/', fw_fallschritt_erledigen,
          name='fw_fallschritt_erledigen'),
     path('neu/laeufe/', fw_laeufe, name='fw_laeufe'),

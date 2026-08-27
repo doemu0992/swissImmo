@@ -59,6 +59,19 @@ class Organisation(models.Model):
     telefon = models.CharField("Telefon", max_length=30, blank=True)
     email = models.EmailField("E-Mail", blank=True)
     iban = models.CharField("IBAN", max_length=34, blank=True)
+    #: Stundensatz fuer separat verrechenbaren Aufwand (E2.46).
+    #:
+    #: FREI EINGEBBAR UND OHNE VORGABE. `null` heisst «nicht hinterlegt», nicht
+    #: «null Franken» — dieselbe Unterscheidung wie bei `Geraet.neuwert`. Wer
+    #: keinen Satz erfasst, bekommt in der Auswertung «Keine Datenbasis» statt
+    #: einer Zahl, die nach Aussage aussieht.
+    #:
+    #: Der Satz ist eine ORGANISATIONSVORGABE, kein Gesetz: Jeder Zeiteintrag
+    #: kann ihn uebersteuern (`Zeiteintrag.satz`), weil ein Notfalleinsatz am
+    #: Sonntag anders kostet als eine Aktennotiz.
+    stundensatz = models.DecimalField(
+        "Stundensatz (CHF)", max_digits=8, decimal_places=2,
+        null=True, blank=True)
     logo = models.ImageField("Firmenlogo", upload_to="logos/", blank=True, null=True)
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
     aktueller_referenzzinssatz = models.DecimalField("Aktueller Ref.Zins", max_digits=4, decimal_places=2, default=1.25)

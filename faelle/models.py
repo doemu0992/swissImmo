@@ -382,6 +382,45 @@ class Zeiteintrag(OrganisationAusKette):
     #: Aufwand ausserhalb des Verwaltungshonorars — der Treiber, den die
     #: Mandatsrentabilität sichtbar machen soll.
     verrechenbar = models.BooleanField('Separat verrechenbar', default=False)
+    #: Abweichender Stundensatz fuer DIESEN Eintrag (E2.46).
+    #:
+    #: Leer = die Vorgabe der Organisation gilt. Ein eigener Wert traegt den
+    #: Fall, in dem ein Einsatz anders kostet — Notfall am Sonntag, ein
+    #: vereinbarter Pauschalsatz fuer ein Mandat, eine Kulanz.
+    #:
+    #: Nicht `default=organisation.stundensatz`: Ein kopierter Wert friert den
+    #: Satz zum Erfassungszeitpunkt ein, und niemand sieht spaeter, ob er
+    #: bewusst gesetzt oder nur mitgeschrieben wurde.
+    satz = models.DecimalField(
+        'Stundensatz (CHF)', max_digits=8, decimal_places=2,
+        null=True, blank=True)
+
+    @property
+    def betrag(self):
+        """Der verrechenbare Betrag — oder `None`, wenn er sich nicht ergibt.
+
+        `None` heisst «nicht berechenbar», nicht «null Franken»: entweder ist
+        der Aufwand nicht separat verrechenbar, oder es ist gar kein Satz
+        hinterlegt. Beides ist eine Aussage, eine Null waere eine falsche.
+        """
+        if not self.verrechenbar:
+            return None
+        satz = self.satz if self.satz is not None else self.organisation.stundensatz
+        if satz is None:
+            return None
+        from decimal import Decimal
+        # AUF RAPPEN, WIE ALLES ANDERE — und `0.01`, nicht `0.05`.
+        #
+        # Hier stand `quantize(Decimal('0.05'))`. Das liest sich wie die
+        # 5-Rappen-Rundung, die der Zahlungsverkehr an manchen Stellen
+        # verlangt, TUT SIE ABER NICHT: Das Argument bestimmt nur den
+        # Exponenten, nicht die Schrittweite. Nachgerechnet — 100 CHF/h fuer
+        # 7 Minuten ergibt 11.6667 und wird mit BEIDEN Schreibweisen zu
+        # 11.67. Gleiches Ergebnis, irrefuehrende Schreibweise.
+        #
+        # Der Bestand rundet Geld an 36 Stellen auf `0.01`; das ist der
+        # vorhandene Wert, und er gilt auch hier.
+        return (satz * Decimal(self.minuten) / Decimal(60)).quantize(Decimal('0.01'))
 
     objects = TenantManager()
     alle_organisationen = AlleOrganisationenManager()
