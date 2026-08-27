@@ -47,18 +47,12 @@ OHNE_WEG = {
     '/neu/palette/': 'JSON für die ⌘K-Palette, keine Seite. Wird aus '
                      'base.html per fetch() gelesen.',
 
-    # ÜBERHOLT, ABER NOCH ERREICHBAR — vom Wächter beim ersten Lauf gefunden.
-    # `fw_kreditoren_pain001` erzeugt eine Zahlungsdatei aus ALLEN freigegebenen
-    # Kreditorenrechnungen, ohne Auswahl und ohne den Vorgang als Zahllauf
-    # festzuhalten. `/neu/zahllauf/` leistet dasselbe mit Auswahl und
-    # Buchführung und ist der Weg, den die Oberfläche anbietet.
+    # `/neu/kreditoren/pain001/` IST IN E2.45 ENTFERNT.
     #
-    # Die Adresse antwortet weiterhin. Wer sie kennt, erzeugt eine gültige
-    # Zahlungsdatei, die in keinem Zahllauf steht — das ist der Grund, warum
-    # der Eintrag hier nicht als «harmlos» steht, sondern als offener Punkt.
-    # Entfernen ist eine Entscheidung des Betriebs, nicht des Umbaus.
-    '/neu/kreditoren/pain001/': 'Überholt durch /neu/zahllauf/ — siehe Notiz, '
-                                'noch nicht entfernt.',
+    # Sie stand hier als offener Punkt: eine Adresse, die eine gueltige
+    # Zahlungsdatei aus ALLEN freigegebenen Rechnungen erzeugte, ohne Auswahl
+    # und ohne Zahllauf-Eintrag. Entscheidung von Dominik: entfernen,
+    # `/neu/zahllauf/` ist der Weg.
 
     # Umleitung auf `/neu/`. Bewusst erreichbar gelassen, weil Lesezeichen und
     # aeltere Verweise darauf zeigen koennen — eine Adresse, die einmal

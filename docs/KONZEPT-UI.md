@@ -936,9 +936,10 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > `core/tests/test_erreichbarkeit.py`: Jede parameterlose `/neu/`-Adresse braucht einen Weg —
 > aus der Navigation, aus einer Vorlage oder aus einer Weiterleitung; ein Test, der die Adresse
 > aufruft, zählt ausdrücklich **nicht** als Weg. Beim ersten Lauf fand der Wächter einen
-> weiteren, älteren Fall: `/neu/kreditoren/pain001/` erzeugt eine gültige Zahlungsdatei aus
+> weiteren, älteren Fall: `/neu/kreditoren/pain001/` erzeugte eine gültige Zahlungsdatei aus
 > allen freigegebenen Rechnungen, ohne Auswahl und ohne Zahllauf-Buchung — überholt durch
-> `/neu/zahllauf/`, aber weiterhin antwortend.
+> `/neu/zahllauf/`, aber weiterhin antwortend. **In E2.45 entfernt**; die Adresse liefert
+> jetzt 404, und `/neu/zahllauf/` leistet dasselbe mit Auswahl und Buchführung.
 
 > **Warum 4b.5 dazwischenkam.** `Fall`, `Fallschritt`, `Eingang`, `Zuordnungsregel`, `Lauf`
 > und `Blockade` waren nach vier Etappen vollständig gebaut und vollständig getestet — und

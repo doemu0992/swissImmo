@@ -78,18 +78,83 @@ class KreditorZahllaufTests(TestCase):
             iban='CH9300762011623852957', referenz='R-1')
         return lg, k
 
-    def test_pain001_markiert_in_zahlung(self):
+    def test_zahllauf_markiert_in_zahlung(self):
+        """Nachfolger von `test_pain001_markiert_in_zahlung` (E2.45).
+
+        Die Sache bleibt dieselbe: Wer eine Zahlungsdatei erzeugt, darf
+        dieselbe Rechnung nicht ein zweites Mal darin haben. Der Weg ist ein
+        anderer — `/neu/kreditoren/pain001/` ist entfernt, weil es die Datei
+        OHNE Zahllauf-Eintrag erzeugte.
+
+        Geprueft wird deshalb `/neu/zahllauf/`: Es setzt ebenfalls
+        `in_zahlung` und haelt den Lauf zusaetzlich fest.
+        """
         from finance.models import KreditorenRechnung
         lg, k = self._setup()
         c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
-        r = c.get('/neu/kreditoren/pain001/')
-        self.assertEqual(r.status_code, 200)
-        self.assertIn('xml', r['Content-Type'])
+        # Feldnamen aus `fw_zahllauf` nachgesehen, nicht geraten:
+        # `rechnung_ids` und `aktion` — ein erster Entwurf nahm
+        # `wahl_<id>`/`erzeugen` an und blieb wirkungslos, ohne zu scheitern.
+        r = c.post('/neu/zahllauf/',
+                   {'aktion': 'datei', 'rechnung_ids': [str(k.id)],
+                    'ausfuehrung': ''})
+        self.assertIn(r.status_code, (200, 302))
         k.refresh_from_db()
-        self.assertEqual(k.status, 'in_zahlung')
-        # Zweiter Lauf enthält sie NICHT mehr → keine freigegebenen mehr
-        r2 = c.get('/neu/kreditoren/pain001/')
-        self.assertEqual(r2.status_code, 302)   # keine freigegebenen → Redirect mit Fehler
+        self.assertEqual(
+            k.status, 'in_zahlung',
+            'Der Zahllauf markiert die Rechnung nicht — dann kann sie in '
+            'einer zweiten Datei erneut auftauchen.')
+
+    def test_wer_geld_bewegt_braucht_die_rolle(self):
+        """Jede Ansicht, die eine Zahlung auslöst, ist rollengeschützt.
+
+        DER BEFUND (E2.45, Gegenprüfung)
+
+        Der Patch, der `/neu/kreditoren/pain001/` entfernte, nahm eine
+        Dekorator-Zeile zu viel mit — die von `fw_kreditor_bezahlen`.
+        Gemessen, was das bedeutete: Ein **Lesezugriff** bekam HTTP 302, die
+        Rechnung stand auf «bezahlt», und eine Buchung war angelegt
+        (Kreditoren 2000 an Bank 1020). Ein **anonymer** Aufruf erreichte
+        denselben Code und legte eine `KreditorenZahlung` an, bevor er an
+        `erstellt_von` scheiterte.
+
+        `rolle_erforderlich` ersetzt zugleich `login_required` — ohne den
+        Dekorator gibt es also gar keine Anmeldeprüfung.
+
+        Geprüft wird nicht der Dekorator im Quelltext, sondern die WIRKUNG:
+        Ein Lesezugriff darf die Rechnung nicht bewegen.
+        """
+        from finance.models import Buchung, KreditorenRechnung
+        lg, k = self._setup()
+        c = Client(); c.force_login(_team_user(rolle='Lesezugriff'))
+        r = c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': str(k.id)})
+        k.refresh_from_db()
+        self.assertEqual(r.status_code, 403, 'Lesezugriff kommt durch.')
+        self.assertEqual(k.status, 'freigegeben',
+                         'Ein Lesezugriff hat die Rechnung bezahlt.')
+        self.assertEqual(Buchung.objects.count(), 0,
+                         'Ein Lesezugriff hat gebucht.')
+
+    def test_ohne_anmeldung_geht_gar_nichts(self):
+        """Der Dekorator ersetzt auch `login_required`."""
+        from finance.models import Buchung
+        lg, k = self._setup()
+        r = Client().post('/neu/kreditoren/bezahlen/',
+                          {'rechnung_id': str(k.id)})
+        k.refresh_from_db()
+        self.assertIn(r.status_code, (302, 403))
+        self.assertEqual(k.status, 'freigegeben')
+        self.assertEqual(Buchung.objects.count(), 0)
+
+    def test_die_alte_adresse_ist_weg(self):
+        """`/neu/kreditoren/pain001/` darf nicht zurueckkommen.
+
+        Sie erzeugte eine gueltige Zahlungsdatei aus ALLEN freigegebenen
+        Rechnungen, ohne Auswahl und ohne Zahllauf. Wer sie kannte, brachte
+        Geld auf den Weg, das in keiner Aufstellung stand.
+        """
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        self.assertEqual(c.get('/neu/kreditoren/pain001/').status_code, 404)
 
     def test_bestaetigen_bucht_aus(self):
         from finance.models import KreditorenRechnung, Buchung

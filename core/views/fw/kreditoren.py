@@ -174,61 +174,36 @@ def fw_kreditoren(request):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
-def fw_kreditoren_pain001(request):
-    """Erzeugt eine ISO-20022 pain.001-Zahlungsdatei aus allen freigegebenen
-    Kreditorenrechnungen (für den e-Banking-Massenupload)."""
-    from django.http import HttpResponse
-    from django.contrib import messages
-    from django.shortcuts import redirect
-    from finance.models import KreditorenRechnung
-    from crm.models import Organisation
-    from core.services.pain001 import generate_pain001
-    from core.auth import log_aktion
-
-    basis = _global_filter(request)
-    qs = KreditorenRechnung.objects.filter(status='freigegeben')
-    if basis['aktive_lg']:
-        qs = qs.filter(liegenschaft=basis['aktive_lg'])
-    rechnungen = list(qs)
-    if not rechnungen:
-        messages.error(request, "Keine freigegebenen Kreditorenrechnungen für die Zahlungsdatei.")
-        return redirect('/neu/kreditoren/?status=freigegeben')
-
-    vw = aktuelle_organisation()
-    debtor_iban = (vw.iban if vw else '') or ''
-    if not debtor_iban.strip():
-        messages.error(request, "Für die Zahlungsdatei fehlt die IBAN der Verwaltung (Profil → Account).")
-        return redirect('/neu/kreditoren/?status=freigegeben')
-
-    heute = timezone.localdate()
-    jetzt = timezone.now()
-    msg_id = f"SWISSIMMO-{jetzt.strftime('%Y%m%d%H%M%S')}"
-    xml, anzahl, summe, skipped = generate_pain001(
-        rechnungen, debtor_name=(vw.firma if vw else 'Immobilienverwaltung'),
-        debtor_iban=debtor_iban, msg_id=msg_id,
-        exec_date=heute.isoformat(), now_iso=jetzt.strftime('%Y-%m-%dT%H:%M:%S'))
-
-    if anzahl == 0:
-        messages.error(request, "Keine zahlbaren Rechnungen (fehlende IBAN/Betrag).")
-        return redirect('/neu/kreditoren/?status=freigegeben')
-
-    # Enthaltene Rechnungen auf "in Zahlung" setzen → tauchen im nächsten
-    # Zahllauf NICHT wieder auf (Doppelzahlungsschutz). Bestätigung via "Bezahlen".
-    n_markiert = 0
-    for r in rechnungen:
-        if (r.iban or '').strip() and (r.betrag or 0) > 0:
-            r.status = 'in_zahlung'
-            r.save(update_fields=['status'])
-            n_markiert += 1
-
-    log_aktion(request, "pain.001 erzeugt", msg_id,
-               f"{anzahl} Zahlungen, CHF {summe} · {n_markiert} auf 'in Zahlung'")
-    resp = HttpResponse(xml, content_type='application/xml')
-    resp['Content-Disposition'] = f'attachment; filename="{msg_id}.xml"'
-    return resp
+# `fw_kreditoren_pain001` IST IN E2.45 ENTFERNT.
+#
+# Sie erzeugte eine gueltige pain.001-Datei aus ALLEN freigegebenen
+# Kreditorenrechnungen — ohne Auswahl und ohne den Vorgang als Zahllauf
+# festzuhalten. Aus der Navigation war sie laengst verschwunden, die Adresse
+# antwortete aber weiter.
+#
+# WAS DAS BEDEUTETE: Wer sie kannte oder ein Lesezeichen hatte, erzeugte eine
+# Zahlungsdatei, die in KEINEM Zahllauf steht. Beim naechsten
+# Periodenabschluss fehlte sie in der Aufstellung, waehrend das Geld die Bank
+# verlassen hatte. Nicht falsch, sondern unbemerkt — die Fehlerart, vor der
+# G7 warnt.
+#
+# `fw_zahllauf` unten leistet dasselbe MIT Auswahl und Buchfuehrung: Es setzt
+# ebenfalls `in_zahlung` (nachgesehen, nicht angenommen) und haelt den Lauf
+# fest. Das ist der Weg, den die Oberflaeche anbietet.
 
 
+# DER ROLLEN-WAECHTER GEHOERT HIERHER — ER WAR IN E2.45 MIT VERSCHWUNDEN.
+#
+# Der Patch, der `fw_kreditoren_pain001` entfernte, nahm eine Dekorator-Zeile
+# zu viel mit: die von DIESER Ansicht. Gemessen, was das bedeutete:
+#
+#   Lesezugriff  -> HTTP 302, Rechnung auf «bezahlt», eine Buchung angelegt
+#   anonym       -> erreicht den Buchungscode und legt eine
+#                   `KreditorenZahlung` an, bevor er an `erstellt_von`
+#                   scheitert
+#
+# `rolle_erforderlich` ersetzt zugleich `login_required` — ohne den Dekorator
+# gibt es also GAR KEINE Anmeldepruefung, nicht bloss keine Rollenpruefung.
 @rolle_erforderlich(ROLLE_VERWALTER)
 def fw_kreditor_bezahlen(request):
     """Bezahlt eine freigegebene Kreditorenrechnung — Kreditoren 2000 an Bank 1020

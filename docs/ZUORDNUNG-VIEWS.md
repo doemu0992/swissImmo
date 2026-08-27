@@ -393,7 +393,6 @@ Nach Zielbereich gruppiert; innerhalb einer Gruppe nach Herkunftsmodul.
 | `fw_kreditor_bezahlen` | `kreditoren` |
 | `fw_kreditor_zahlung_stornieren` | `kreditoren` |
 | `fw_kreditor_zahlung_zuruecksetzen` | `kreditoren` |
-| `fw_kreditoren_pain001` | `kreditoren` |
 | `fw_zahllauf` | `kreditoren` |
 
 ### AKTEN Listenansicht — 4 Views
