@@ -1,7 +1,7 @@
 {% extends 'core/portal_base.html' %}
 {% load zeichen %}
 {% block title %}Dokumente — Mieterportal{% endblock %}
-{% block brand_icon %}fa-folder-open{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-dokument"/></svg>{% endblock %}
 {% block brand_mobile %}Dokumente{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='dokumente' %}{% endblock %}
 

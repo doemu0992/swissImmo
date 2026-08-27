@@ -1,7 +1,7 @@
 {% extends 'core/portal_base.html' %}
 {% load zeichen %}
 {% block title %}Schaden melden — Mieterportal{% endblock %}
-{% block brand_icon %}fa-triangle-exclamation{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-warnung"/></svg>{% endblock %}
 {% block brand_mobile %}Schaden melden{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='schaden' %}{% endblock %}
 

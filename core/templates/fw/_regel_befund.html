@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% comment %} Das Ergebnis einer Regelprüfung. Eigenes Bruchstück, weil es an
    zwei Stellen erscheint: laufend im Kündigungsformular (ohne Protokoll) und
    in der Regelwerk-Übersicht als Vorschau.
@@ -11,7 +12,7 @@
 <div class="fw-befund {% if befund.ok %}good{% elif sperrt %}crit{% else %}warn{% endif %}">
     <div class="fw-befund-kopf">
         <span class="fw-ikon {% if befund.ok %}good{% elif sperrt %}crit{% else %}warn{% endif %}">
-            <i class="fa-solid {% if befund.ok %}fa-check{% elif sperrt %}fa-ban{% else %}fa-triangle-exclamation{% endif %}"></i>
+            {% if befund.ok %}{% zeichen 'gut' %}{% elif sperrt %}{% zeichen 'gesperrt' %}{% else %}{% zeichen 'warnung' %}{% endif %}
         </span>
         <div class="fw-mitte">
             <div class="fw-t">{% if befund.ok %}Termin trägt{% elif sperrt %}Termin wird nicht gespeichert{% else %}Termin beanstandet{% endif %}</div>

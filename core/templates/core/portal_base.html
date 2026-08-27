@@ -23,7 +23,7 @@
     <aside id="pSidebar" class="w-60 bg-[#161926] text-white flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
         <div class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5">
             <span class="w-9 h-9 rounded-lg fw-balken-voll flex items-center justify-center shadow-lg fw-schatten-marke shrink-0">
-                <i class="fa-solid {% block brand_icon %}fa-key{% endblock %} text-white text-sm"></i>
+                {% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-schluessel"/></svg>{% endblock %}
             </span>
             <div class="leading-tight flex-1">
                 <div class="font-extrabold tracking-wide text-sm uppercase">{% block brand %}Mieterportal{% endblock %}</div>
@@ -57,7 +57,7 @@
             {% if messages %}{% for m in messages %}
             <div class="flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border mb-4
                 {% if 'error' in m.tags %}fw-krit-flaeche fw-linie-krit fw-kritisch{% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}">
-                <i class="fa-solid {% if 'error' in m.tags %}fa-circle-exclamation{% else %}fa-circle-check{% endif %} mt-0.5"></i>
+                {% if 'error' in m.tags %}{% zeichen 'kritisch' klasse='mt-0.5' %}{% else %}{% zeichen 'gut' klasse='mt-0.5' %}{% endif %}
                 <div>{{ m }}</div>
             </div>
             {% endfor %}{% endif %}

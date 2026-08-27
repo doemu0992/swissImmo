@@ -341,7 +341,7 @@
            war aber nicht lesbar. `fw-ikon.mut` (4b.4) macht daraus einen
            Modifikator. {% endcomment %}
         <span class="fw-ikon{% if not r.aktiv %} mut{% endif %}">
-            <i class="fa-solid {% if r.art == 'Schadenmelder' %}fa-triangle-exclamation{% else %}fa-key{% endif %}"></i></span>
+            {% if r.art == 'Schadenmelder' %}{% zeichen 'warnung' %}{% else %}{% zeichen 'schluessel' %}{% endif %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ r.art }} — {{ r.ort }}</div>
             <div class="fw-s">{% if r.mandat %}Mandat {{ r.mandat }} · {% endif %}{% if r.brutto %}CHF {{ r.brutto|chf }} brutto · {% endif %}{{ r.status }}</div>
@@ -449,7 +449,7 @@
     <details class="fw-card group">
         <summary class="fw-kopf cursor-pointer select-none list-none">
             {% zeichen 'weiter' klasse='fw-klein transition-transform group-open:rotate-90' %}
-            <span class="fw-ikon"><i class="fa-solid {% if g.vertrag %}fa-file-signature{% else %}fa-user{% endif %}"></i></span>
+            <span class="fw-ikon">{% if g.vertrag %}{% zeichen 'vertrag' %}{% else %}{% zeichen 'person' %}{% endif %}</span>
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
             <span class="fw-rechts">
@@ -468,7 +468,7 @@
                 {% csrf_token %}
                 <button aria-label="{% if d.im_portal_sichtbar %}Im Mieterportal ausblenden{% else %}Im Mieterportal anzeigen{% endif %}"
                         class="fw-ikon {% if d.im_portal_sichtbar %}good{% else %}mut{% endif %}">
-                    <i class="fa-solid {% if d.im_portal_sichtbar %}fa-eye{% else %}fa-eye-slash{% endif %} text-xs"></i>
+                    {% if d.im_portal_sichtbar %}{% zeichen 'gut' klasse='text-xs' %}{% else %}{% zeichen 'gesperrt' klasse='text-xs' %}{% endif %}
                 </button>
             </form>
             {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="fw-link shrink-0">Öffnen</a>{% endif %}
@@ -518,7 +518,7 @@
         {% for k in kommunikationen %}
         <div class="fw-zeile">
             <span class="fw-ikon {% if k.typ == 'telefon' %}good{% elif k.typ == 'email' %}{% elif k.typ == 'brief' %}warn{% else %}mut{% endif %}">
-                <i class="fa-solid {% if k.typ == 'telefon' %}fa-phone{% elif k.typ == 'email' %}fa-envelope{% elif k.typ == 'brief' %}fa-file-lines{% elif k.typ == 'persoenlich' %}fa-user{% else %}fa-note-sticky{% endif %} text-xs"></i>
+                {% if k.typ == 'telefon' %}{% zeichen 'senden' klasse='text-xs' %}{% elif k.typ == 'email' %}{% zeichen 'senden' klasse='text-xs' %}{% elif k.typ == 'brief' %}{% zeichen 'dokument' klasse='text-xs' %}{% elif k.typ == 'persoenlich' %}{% zeichen 'person' klasse='text-xs' %}{% else %}{% zeichen 'hinweis' klasse='text-xs' %}{% endif %}
             </span>
             <div class="fw-mitte">
                 <div class="fw-t">{% if k.betreff %}{{ k.betreff }} · {% endif %}{{ k.inhalt }}</div>

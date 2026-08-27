@@ -144,7 +144,7 @@
                         <input type="hidden" name="aktion" value="solidarhaftung">
                         <input type="hidden" name="wert" value="{% if v.solidarhaftung %}off{% else %}on{% endif %}">
                         <button type="submit" class="text-[11px] {% if v.solidarhaftung %}fw-gut{% else %}fw-faint{% endif %} hover:underline">
-                            <i class="fa-solid {% if v.solidarhaftung %}fa-toggle-on{% else %}fa-toggle-off{% endif %} mr-0.5"></i>Solidarhaftung {% if v.solidarhaftung %}an{% else %}aus{% endif %}
+                            {% if v.solidarhaftung %}{% zeichen 'gut' klasse='mr-0.5' %}{% else %}{% zeichen 'offen' klasse='mr-0.5' %}{% endif %}Solidarhaftung {% if v.solidarhaftung %}an{% else %}aus{% endif %}
                         </button>
                     </form>
                 </div>
@@ -630,7 +630,7 @@
                 </a>
                 {% else %}
                 <div class="flex items-center gap-3 px-5 py-3 opacity-40 cursor-not-allowed" title="{% if it.gesperrt %}Ihre Rolle darf diesen Vorgang nicht auslösen{% else %}Für diesen Vertragsstatus nicht verfügbar{% endif %}">
-                    <div class="w-9 h-9 rounded-lg fw-flaeche2 fw-faint flex items-center justify-center shrink-0"><i class="fa-solid {% if it.gesperrt %}fa-lock{% else %}{{ it.icon }}{% endif %}"></i></div>
+                    <div class="w-9 h-9 rounded-lg fw-flaeche2 fw-faint flex items-center justify-center shrink-0">{% if it.gesperrt %}{% zeichen 'gesperrt' %}{% else %}{% zeichen_wert it.icon %}{% endif %}</div>
                     <div class="flex-1 min-w-0">
                         <div class="text-sm font-semibold fw-mutet truncate">{{ it.titel }}</div>
                         <div class="fw-klein truncate">{{ it.sub }} · {% if it.gesperrt %}nicht für Ihre Rolle{% else %}derzeit nicht verfügbar{% endif %}</div>

@@ -32,7 +32,7 @@ E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 `anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
-**STAND 325 in 44 Vorlagen**.
+**STAND 324 in 44 Vorlagen**.
 
 DIESE ZAHL IST NICHT DIE GANZE SCHULD
 -------------------------------------
@@ -172,7 +172,7 @@ OBERGRENZE = {
     'core/templates/core/mieter_ticket_detail.html': 1,
     'core/templates/core/mieter_tickets.html': 2,
     'core/templates/core/mietzins_form.html': 73,
-    'core/templates/core/portal_base.html': 8,
+    'core/templates/core/portal_base.html': 7,
     'core/templates/core/public_bewerbung_form.html': 1,
     'core/templates/core/public_ticket_form.html': 1,
     'core/templates/core/schaden_melden.html': 1,

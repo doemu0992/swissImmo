@@ -52,15 +52,15 @@
         <div class="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-[11px]">
             <div class="rounded-lg py-2 fw-krit-flaeche fw-kritisch font-semibold">{% zeichen 'vertrag' %}<br>Gekündigt</div>
             <div class="rounded-lg py-2 {% if r.auszug %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                <i class="fa-solid {% if r.auszug %}fa-circle-check{% else %}fa-box-open{% endif %}"></i><br>Rücknahme</div>
+                {% if r.auszug %}{% zeichen 'gut' %}{% else %}{% zeichen 'dokument' %}{% endif %}<br>Rücknahme</div>
             <div class="rounded-lg py-2 {% if r.bewerbungen %}fw-markenflaeche fw-marke{% else %}fw-flaeche2 fw-faint{% endif %}">
                 {% zeichen 'person' %}<br>{{ r.bewerbungen }} Bewerb.</div>
             <div class="rounded-lg py-2 {% if r.nachmieter %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                <i class="fa-solid {% if r.nachmieter %}fa-circle-check{% else %}fa-file-lines{% endif %}"></i><br>Neuer Vertrag</div>
+                {% if r.nachmieter %}{% zeichen 'gut' %}{% else %}{% zeichen 'dokument' %}{% endif %}<br>Neuer Vertrag</div>
             <div class="rounded-lg py-2 {% if r.einzug %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                <i class="fa-solid {% if r.einzug %}fa-circle-check{% else %}fa-key{% endif %}"></i><br>Übergabe</div>
+                {% if r.einzug %}{% zeichen 'gut' %}{% else %}{% zeichen 'schluessel' %}{% endif %}<br>Übergabe</div>
             <div class="rounded-lg py-2 {% if r.schluss_offen %}fw-warn-flaeche fw-warnton font-semibold{% elif r.auszug and not r.schluss_offen %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                <i class="fa-solid {% if r.auszug and not r.schluss_offen %}fa-circle-check{% else %}fa-file-invoice-dollar{% endif %}"></i><br>Abrechnung</div>
+                {% if r.auszug and not r.schluss_offen %}{% zeichen 'gut' %}{% else %}{% zeichen 'rechnung' %}{% endif %}<br>Abrechnung</div>
         </div>
 
         {% if r.aktion != '—' %}

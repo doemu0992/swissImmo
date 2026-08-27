@@ -1,7 +1,7 @@
 {% extends 'core/portal_base.html' %}
 {% load zeichen %}
 {% block title %}Passwort ändern — Mieterportal{% endblock %}
-{% block brand_icon %}fa-key{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-schluessel"/></svg>{% endblock %}
 {% block brand_mobile %}Passwort{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='passwort' %}{% endblock %}
 

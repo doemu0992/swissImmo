@@ -1,4 +1,4 @@
-# Zeichensatz — 46 Zeichen mit fester Bedeutung
+# Zeichensatz — 48 Zeichen mit fester Bedeutung
 
 > Grundlage: Entscheid **D5** in `docs/ENTSCHEIDE-V7.md`, Befund **B8** in
 > `docs/UX-ANALYSE-V7.md`.
@@ -56,7 +56,7 @@ Raums daneben, und das Bett trägt nichts bei.
 | `bearbeiten` | Bestehendes ändern | `pen`, `pen-to-square`, `pen-nib`, `eraser` |
 | `loeschen` | Entfernen | `trash`, `trash-can`, `xmark` (nur wo löschend) |
 | `speichern` | Festschreiben | `floppy-disk`, `check` (nur wo speichernd) |
-| `senden` | An jemanden hinausgeben | `paper-plane`, `envelope`, `envelope-open-text`, `reply`, `bullhorn`, `comments`, `phone`, `phone-volume` |
+| `senden` | An jemanden hinausgeben | `paper-plane`, `envelope`, `envelope-open-text` (**nur ausgehend** — ein Eingang ist `dokument`), `reply`, `bullhorn`, `comments`, `phone`, `phone-volume` |
 | `drucken` | Auf Papier oder als PDF | `print`, `file-pdf` |
 | `kopieren` | Vervielfältigen | `copy`, `clone` |
 | `hochladen` | Datei hereingeben | `upload`, `file-import`, `paperclip` |
@@ -101,12 +101,14 @@ Raums daneben, und das Bett trägt nichts bei.
 | `lauf` | Wiederkehrender Vorgang | `rotate`, `arrows-rotate`, `truck-fast` |
 | `bericht` | Auswertung, Zahlenbild | `chart-simple`, `chart-pie`, `chart-column`, `chart-line`, `percent`, `calculator` |
 | `trend` | Richtung einer Zahl: steigt, fällt, unverändert | `arrow-trend-up`, `arrow-trend-down`, `equals`, `arrow-down-long` |
+| `laedt` | Es läuft gerade — dreht sich | `circle-notch fa-spin`, `spinner` |
+| `code` | Rohdaten zur Fehlersuche | `code` |
 
 ### Bedienung (1)
 
 | Zeichen | Bedeutung | ersetzt heute |
 |---|---|---|
-| `einstellungen` | Konfiguration, Verhalten ändern | `gear`, `gears`, `plug`, `star`, `wand-magic-sparkles`, `robot`, `language`, `eye`, `hand` |
+| `einstellungen` | Konfiguration, Verhalten ändern | `gear`, `gears`, `plug`, `star`, `wand-magic-sparkles`, `robot`, `language`, `eye` (**nicht** als «sichtbar» — dafür `gut`/`gesperrt`), `hand` |
 
 > **Warum `schliessen` dazukam (E2.40, Gegenprüfung).** Die Umstellung
 > setzte `xmark` auf Schliessen-Knöpfen auf `mehr` (»Weitere Handlungen«) —
@@ -152,7 +154,7 @@ Der Konflikt ist damit nicht widerlegt, sondern **aufgelöst**: Die
 Rechnungsposition bekommt `dokument`, die Tickets bekommen `meldung`. Zwei
 Fundstellen, zwei Bedeutungen, zwei Zeichen.
 
-**Summe: 46 Zeichen.**
+**Summe: 48 Zeichen.**
 
 > **Warum es 42 geworden sind.** Die Tabelle entstand aus der
 > Häufigkeitsliste; der Wächter meldete danach Zeichen, die keiner Bedeutung
@@ -193,7 +195,7 @@ Bei `check` und `xmark` steht der Vorbehalt seit E2.35 in der Zeile. Bei den
 am Namen; und wo eine Kategorie oder ein Dokument gemeint ist, gehört ein
 Fachbegriff hin, kein Zustand.
 
-## Noch ohne Bedeutung (3 Klassen, 2 Fragen)
+## Noch ohne Bedeutung (2 Klassen, 1 Frage)
 
 Diese sind heute in Gebrauch und **bewusst nicht** zugeordnet. Für jedes
 fehlt eine Entscheidung, die nicht beim Sortieren nebenbei fällt — sie hier
@@ -202,7 +204,6 @@ zu erfinden, hiesse eine Bedeutung festzuschreiben, die niemand geprüft hat.
 | Klasse | Wo | Wofür es eine Bedeutung bräuchte |
 |---|---|---|
 | `share`, `share-from-square` | »Weiterverrechnen & Debitor erstellen« | **Weiterverrechnen** ist Fachlogik, kein Teilen. `extern` passt nicht (nichts verlässt die Anwendung), `senden` auch nicht (niemand bekommt Post). Zwei Klassen für eine Sache — eine davon fällt ohnehin weg. |
-| `code` | »JSON ansehen« | Rohdaten für die Fehlersuche. Ob so etwas überhaupt ein Zeichen tragen soll, ist Teil der Frage. |
 
 Der Wächter zählt sie mit (`STAND_OFFEN`): Die Liste darf schrumpfen, nicht
 wachsen.
@@ -235,3 +236,12 @@ Strichstärken statt über die Frage, ob `wartet` und `offen` zwei Zustände sin
 oder einer.
 
 > **Nachgetragen in E2.39.** Bei der Umstellung tauchten Klassen auf, die in der Häufigkeitsliste nicht vorkamen: `arrows-left-right`, `ban`, `calendar-day`, `circle-notch`, `circle-xmark`, `file`, `folder`, `guitar`, `heart`, `link-slash`, `list`, `plane-departure`, `puzzle-piece`, `rotate-left`, `share`, `signature`, `snowflake`, `star`, `sun`, `wind`. Alle sind bestehenden Bedeutungen zugeordnet — keine neue nötig.
+
+> **`laedt` und `code`, nachgetragen in E2.42.** `laedt` ersetzt die zwei
+> `fa-spin`-Spinner: Sie allein hielten 89 KB Font-Awesome-CSS und 119 KB
+> Schrift am Leben, nachdem 1136 Vorkommen auf 11 gefallen waren. Die
+> Drehung macht die Schicht mit acht Zeilen CSS.
+>
+> `code` stand unter «Noch ohne Bedeutung» — die Frage war, ob Rohdaten
+> überhaupt ein Zeichen tragen sollen. Sie bekommen eines, weil die
+> Alternative war, für eine Fundstelle ein ganzes Schriftpaket zu laden.

@@ -24,7 +24,7 @@
    stellt — sie stehen jetzt in den Stammdaten, wo sie hingehören. {% endcomment %}
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
-        <div class="fw-akte-bild"><i class="fa-solid {% if e.typ == 'pp' or e.typ == 'gar' %}fa-square-parking{% elif e.typ == 'gew' %}fa-shop{% else %}fa-house{% endif %}"></i></div>
+        <div class="fw-akte-bild">{% zeichen 'einheit' %}</div>
         <div>
             <div class="fw-akte-typ">Objekt · {{ objekt_nummer }}</div>
             <h1>{{ e.bezeichnung }}</h1>

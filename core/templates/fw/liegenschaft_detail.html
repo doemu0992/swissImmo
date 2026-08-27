@@ -546,7 +546,7 @@
     <details class="fw-card group">
         <summary class="fw-kopf cursor-pointer select-none list-none">
             {% zeichen 'weiter' klasse='fw-klein transition-transform group-open:rotate-90' %}
-            <span class="fw-ikon"><i class="fa-solid {% if g.einheit %}fa-house{% else %}fa-building{% endif %}"></i></span>
+            <span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
             {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">Objekt {% zeichen 'weiter' klasse='text-[10px]' %}</a></span>{% endif %}

@@ -496,3 +496,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         .fw-zeichen{width:1em!important;height:1em!important;
               display:inline-block!important;vertical-align:-.125em;
               flex-shrink:0}
+        @keyframes fw-drehung{to{transform:rotate(360deg)}}
+        .fw-dreht{animation:fw-drehung 1s linear infinite}
+        @media (prefers-reduced-motion: reduce){.fw-dreht{animation:none}}
+        .fw-auf-marke{color:var(--ds-auf-satt)}

@@ -954,4 +954,27 @@ und einen Stilblock enthaelt.
         .fw-zeichen{width:1em!important;height:1em!important;
               display:inline-block!important;vertical-align:-.125em;
               flex-shrink:0}
+
+        /* Die Drehung fuer `laedt` — der letzte Grund, Font Awesome zu laden.
+           Zwei Spinner (`fa-spin`) hielten 89 KB CSS und 119 KB Schrift am
+           Leben, nachdem 1136 Vorkommen auf 11 gefallen waren. Acht Zeilen
+           hier ersetzen das.
+
+           `prefers-reduced-motion`: Wer Bewegung abgestellt hat, bekommt
+           keine. Das Zeichen bleibt sichtbar — es sagt weiterhin «es laeuft»,
+           nur ohne zu drehen. */
+        @keyframes fw-drehung{to{transform:rotate(360deg)}}
+        .fw-dreht{animation:fw-drehung 1s linear infinite}
+        @media (prefers-reduced-motion: reduce){.fw-dreht{animation:none}}
+
+        /* Schrift auf der Markenflaeche — dieselbe Frage wie bei
+           `.fw-btn.fw-primary` in E2.21: Weiss stimmt im Hellmodus und bricht
+           im Dunkelmodus, weil die Marke dort heller wird. Der Token
+           `--ds-auf-satt` traegt beides — das Token heisst so, nicht
+           `--ds-auf-marke`; nachgesehen statt geraten.
+
+           Angelegt, weil die Portalseiten `text-white` hart im SVG hatten:
+           sieben Vorlagen ohne jede Farbklasse bekamen dadurch eine, und der
+           Farbklassen-Waechter stieg von 325 auf 332. */
+        .fw-auf-marke{color:var(--ds-auf-satt)}
 </style>

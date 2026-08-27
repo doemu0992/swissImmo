@@ -38,7 +38,7 @@
            class="person-row flex items-center gap-3 px-4 py-3.5 hover:fw-flaeche2 transition-colors"
            data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}">
             <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">
-                <i class="fa-solid {% if row.m.typ == 'firma' %}fa-briefcase{% elif row.m.typ == 'verein' %}fa-people-group{% else %}fa-user{% endif %}"></i>
+                {% zeichen 'person' %}
             </div>
             <div class="min-w-0 flex-1">
                 <div class="font-semibold fw-strong truncate">{{ row.m.display_name }}</div>
@@ -76,7 +76,7 @@
                 <td>
                     <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
                         <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">
-                            <i class="fa-solid {% if row.m.typ == 'firma' %}fa-briefcase{% elif row.m.typ == 'verein' %}fa-people-group{% else %}fa-user{% endif %}"></i>
+                            {% zeichen 'person' %}
                         </div>
                         <div>
                             <div class="fw-strong" style="white-space:nowrap">{{ row.m.display_name }}</div>

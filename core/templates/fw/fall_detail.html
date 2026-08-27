@@ -70,7 +70,7 @@
     <div class="fw-zeile" id="schritt-{{ s.id }}">
         <span class="fw-marker {% if s.erledigt_am %}good{% elif s.frist and s.frist < heute %}crit{% elif s.frist %}warn{% endif %}"></span>
         <span class="fw-ikon {% if s.erledigt_am %}good{% else %}mut{% endif %}">
-            <i class="fa-solid {% if s.erledigt_am %}fa-check{% else %}fa-hourglass-half{% endif %}"></i></span>
+            {% if s.erledigt_am %}{% zeichen 'gut' %}{% else %}{% zeichen 'wartet' %}{% endif %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ s.bezeichnung }}{% if not s.pflicht %} <span class="fw-chip fw-mut">optional</span>{% endif %}</div>
             <div class="fw-s">

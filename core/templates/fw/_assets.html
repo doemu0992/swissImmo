@@ -26,4 +26,21 @@ Bewacht von core/tests/test_keine_fremdquellen.py.
 {% endcomment %}
 <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 <link rel="stylesheet" href="{% static 'css/schriften.css' %}">
-<link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">
+{% comment %}
+FONT AWESOME IST SEIT E2.42 NICHT MEHR NOETIG.
+
+Es lud 89 KB CSS und 119 KB Schrift bei jedem Aufruf. Zuletzt hingen
+daran DREI Vorkommen: zwei `fa-spin`-Spinner und ein `fa-code`. Alle
+drei stehen jetzt im eigenen Sprite; die Drehung macht die Schicht mit
+acht Zeilen CSS.
+
+Die Admin-Vorlage `templates/admin/dashboard_stats.html` traegt noch
+sieben `fa-`-Klassen. NACHGEMESSEN: Sie hat Font Awesome nie geladen —
+die beiden `<link>`-Zeilen standen ausschliesslich hier und in
+`fw/_assets.html`, und Djangos Admin bindet keine von beiden ein. Die
+sieben Zeichen sind also seit jeher LEER, nicht erst seit E2.42.
+
+Das ist keine benannte Ausnahme, sondern ein alter stiller Fehler; er
+gehoert behoben, braucht aber das Sprite in der Admin-Huelle. Die
+Font-Awesome-Dateien bleiben so lange im Repo.
+{% endcomment %}

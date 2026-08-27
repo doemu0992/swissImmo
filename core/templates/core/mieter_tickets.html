@@ -1,7 +1,7 @@
 {% extends 'core/portal_base.html' %}
 {% load zeichen %}
 {% block title %}Meine Meldungen — Mieterportal{% endblock %}
-{% block brand_icon %}fa-screwdriver-wrench{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-arbeit"/></svg>{% endblock %}
 {% block brand_mobile %}Meldungen{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='meldungen' %}{% endblock %}
 

@@ -263,7 +263,7 @@
  </button>
 
  <button v-if="step === 5" @click="submitForm" :disabled="isSubmitting" class="fw-gut-voll text-white px-8 py-3.5 rounded-xl font-black fw-schatten-gut transition-all flex items-center gap-2 disabled:opacity-50">
- <i v-if="isSubmitting" class="fa-solid fa-circle-notch fa-spin"></i>
+ <svg v-if="isSubmitting" class="fw-zeichen fw-dreht" aria-hidden="true"><use href="#z-laedt"/></svg>
  <span v-else>{% zeichen 'senden' klasse='mr-2' %} Verbindlich einreichen</span>
  </button>
  </div>

@@ -110,7 +110,7 @@ STAND_VORKOMMEN = 15
 #:
 #: D5 sagt «~40». Die Tilde traegt inzwischen sechs Zeichen; wer die
 #: naechsten dazunimmt, sollte begruenden, warum die Bedeutung fehlte.
-ZIEL_ZEICHEN = 46
+ZIEL_ZEICHEN = 48
 
 #: Klassen, die in Gebrauch sind und bewusst noch keiner Bedeutung zugeordnet
 #: wurden. Diese Liste darf schrumpfen, nicht wachsen — sonst wird «noch offen»
@@ -120,8 +120,12 @@ ZIEL_ZEICHEN = 46
 #: oben, offen unten — und dieser Waechter blieb gruen, weil er nur prueft,
 #: dass jeder Name irgendwo im Dokument vorkommt. Aus der offenen Liste
 #: entfernt; hier nachgefuehrt.
-OFFEN = ('share', 'share-from-square', 'code')
-STAND_OFFEN = 3
+#: `code` ist in E2.42 ENTSCHIEDEN worden — nicht weil die Frage geklaert
+#: waere, ob Rohdaten ein Zeichen tragen sollen, sondern weil die
+#: Alternative war, fuer EINE Fundstelle 89 KB CSS und 119 KB Schrift zu
+#: laden. Manche Fragen entscheidet der Preis.
+OFFEN = ('share', 'share-from-square')
+STAND_OFFEN = 2
 
 #: In Vorlagen steht die Klasse hinter dem Stil: `class="fa-solid fa-plug"`.
 MUSTER_VORLAGE = re.compile(r'fa-(?:solid|regular|brands)\s+(fa-[a-z0-9-]+)')

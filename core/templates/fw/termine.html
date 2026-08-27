@@ -62,7 +62,7 @@
     {% for t in vergangen %}
     <div class="fw-zeile">
         <span class="fw-ikon {% if t.status == 'erledigt' %}good{% else %}mut{% endif %}">
-            <i class="fa-solid {% if t.status == 'erledigt' %}fa-check{% elif t.status == 'abgesagt' %}fa-xmark{% else %}fa-clock{% endif %}"></i></span>
+            {% if t.status == 'erledigt' %}{% zeichen 'gut' %}{% elif t.status == 'abgesagt' %}{% zeichen 'storno' %}{% else %}{% zeichen 'wartet' %}{% endif %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ t.titel }}</div>
             <div class="fw-s">{{ t.get_art_display }} · {{ t.get_status_display }}{% if t.ort %} · {{ t.ort }}{% endif %}</div>

@@ -293,7 +293,7 @@
             <div class="fw-toast flex items-start gap-2 text-sm px-4 py-3 rounded-xl shadow-lg border
                 {% if 'error' in m.tags %}fw-krit-flaeche fw-linie-krit fw-kritisch{% elif 'warning' in m.tags %}fw-warn-flaeche fw-linie-warn fw-warnton{% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}"
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
-                <i class="fa-solid {% if 'error' in m.tags %}fa-circle-exclamation{% elif 'warning' in m.tags %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %} mt-0.5"></i>
+                {% if 'error' in m.tags %}{% zeichen 'kritisch' klasse='mt-0.5' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' klasse='mt-0.5' %}{% else %}{% zeichen 'gut' klasse='mt-0.5' %}{% endif %}
                 <div class="flex-1">{{ m }}</div>
                 <button type="button" onclick="this.closest('.fw-toast').remove()" title="Meldung schliessen" class="fw-faint hover:fw-mutet">{% zeichen 'schliessen' %}</button>
             </div>

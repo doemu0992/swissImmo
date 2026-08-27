@@ -50,7 +50,7 @@
 <div class="fw-card">
     <div class="fw-kopf">
         <span class="fw-ikon {% if s.satz.geprueft %}good{% else %}warn{% endif %}">
-            <i class="fa-solid {% if s.satz.geprueft %}fa-scale-balanced{% else %}fa-flask{% endif %}"></i></span>
+            {% if s.satz.geprueft %}{% zeichen 'recht' %}{% else %}{% zeichen 'entwurf' %}{% endif %}</span>
         <span class="fw-t">{{ s.satz.bezeichnung }}</span>
         {% if s.satz.kanton %}<span class="fw-chip fw-brand">{{ s.satz.kanton }}</span>
         {% else %}<span class="fw-chip fw-mut">alle Kantone</span>{% endif %}

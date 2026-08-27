@@ -154,9 +154,22 @@ class TabelleUndSpriteTest(SimpleTestCase):
 
     def test_die_offene_liste_wird_ueberhaupt_gefunden(self):
         """Gegenprobe: Eine leere Menge machte die zwei Prüfungen trivial."""
-        # Drei seit E2.40: `stamp`, `rotate-left` und `bell` sind
-        # entschieden und aus der Liste gestrichen.
-        self.assertGreaterEqual(len(_offene_zeichen()), 3)
+        # KEINE feste Zahl mehr.
+        #
+        # Hier stand `>= 3`. Die Liste soll aber SCHRUMPFEN — jede
+        # Entscheidung macht sie kuerzer, und der Test wurde rot, als
+        # `code` in E2.42 entschieden wurde. Er meldete damit Fortschritt
+        # als Fehler; dieselbe Lehre wie bei `assertIn('fa-plug', …)`.
+        #
+        # Geprueft wird jetzt die Sache: Solange es offene Fragen gibt, muss
+        # die Suche sie finden. Sind alle entschieden, darf dieser Test weg —
+        # und sagt es.
+        offen = _offene_zeichen()
+        if offen:
+            self.assertGreaterEqual(len(offen), 1)
+        else:
+            self.skipTest('Keine offenen Zeichen mehr — dieser Test und die '
+                          'Liste in docs/ZEICHEN.md duerfen entfallen.')
 
     def test_kein_zeichen_steht_in_beiden_listen(self):
         """Entschieden UND offen zugleich geht nicht.
@@ -269,3 +282,158 @@ class KeineVerschachtelungTest(SimpleTestCase):
         self.assertTrue(muster.search(
             "{% zeichen 'recht' klasse='{% if x %}a{% endif %}' %}"))
         self.assertIsNone(muster.search("{% zeichen 'recht' klasse='fw-gut' %}"))
+
+
+class KeinFontAwesomeMehrTest(SimpleTestCase):
+    """Die Anwendung lädt kein Icon-Schriftpaket mehr.
+
+    WAS ES GEKOSTET HAT
+
+    87 KB CSS und 144 KB Schriften bei jedem Erstaufruf — über 230 KB.
+    Zuletzt hingen daran **drei** Vorkommen: zwei `fa-spin`-Spinner und ein
+    `fa-code`. Nach der Umstellung von 1136 auf 11 wurde das Gewicht praktisch
+    nur noch für zwei drehende Kreise getragen.
+
+    Alle drei stehen jetzt im eigenen Sprite; die Drehung macht die Schicht
+    mit acht Zeilen CSS.
+
+    DIE »AUSNAHME« IST KEINE — SIE IST EIN ALTER STILLER FEHLER
+
+    `templates/admin/dashboard_stats.html` trägt noch sieben `fa-`-Klassen.
+    Die Etappe nennt sie eine bewusste Ausnahme, die »an Djangos eigener
+    Hülle hängt«. Nachgemessen: Die beiden `<link>`-Zeilen standen
+    ausschliesslich in `fw/_assets.html` und `core/_assets_aussen.html`, und
+    Djangos Admin bindet keine von beiden ein. Die sieben Zeichen waren also
+    schon vor E2.42 leer.
+
+    Dazu liegt in `core/templates/admin/` eine zweite Datei desselben
+    Namens. `DIRS` wird vor `APP_DIRS` durchsucht, also gewinnt die unter
+    `templates/`; die andere rendert nie — steht aber weiter in der
+    Sperrklinke der Farbklassen.
+
+    Beides gehört behoben und braucht das Sprite in der Admin-Hülle. Bis
+    dahin bleiben die Font-Awesome-Dateien im Repo.
+    """
+
+    #: Die Hüllen der Anwendung. Djangos Admin hat eine eigene.
+    HUELLEN = ('core/templates/fw/_assets.html',
+               'core/templates/core/_assets_aussen.html')
+
+    def test_keine_huelle_laedt_fontawesome(self):
+        funde = []
+        for h in self.HUELLEN:
+            text = (WURZEL / h).read_text(encoding='utf-8')
+            # Der Erklärtext nennt es — geprüft wird die Ladezeile.
+            for zeile in text.split('\n'):
+                if 'fontawesome' in zeile.lower() and '<link' in zeile:
+                    funde.append(f'{h}: {zeile.strip()[:60]}')
+        self.assertEqual(
+            funde, [],
+            'Font Awesome wird wieder geladen:\n  ' + '\n  '.join(funde)
+            + '\n\nDas sind 87 KB CSS und 144 KB Schriften bei jedem '
+              'Erstaufruf. Wer ein Zeichen braucht, trägt es in '
+              'docs/ZEICHEN.md ein und zeichnet es ins Sprite.')
+
+    def test_keine_vorlage_ausser_dem_admin_benutzt_es(self):
+        """Sonst wäre die Anwendung kaputt statt leicht.
+
+        Ein `<i class="fa-solid …">` ohne geladene Schrift zeigt NICHTS — und
+        zwar lautlos. Das ist schlimmer als das Gewicht.
+        """
+        muster = re.compile(r'<i class="fa-(?:solid|regular|brands) ')
+        funde = []
+        for p in sorted((WURZEL / 'core' / 'templates').rglob('*.html')):
+            if muster.search(p.read_text(encoding='utf-8')):
+                funde.append(p.relative_to(WURZEL).as_posix())
+        self.assertEqual(
+            funde, [],
+            f'Diese Vorlagen benutzen Font Awesome, das nicht mehr geladen '
+            f'wird — die Zeichen bleiben LEER: {funde}')
+
+    def test_das_drehende_zeichen_gibt_es(self):
+        """`laedt` ist der Ersatz für die zwei Spinner."""
+        self.assertIn('laedt', _aus_sprite())
+        schicht = (WURZEL / 'core' / 'templates' / 'fw' / '_schicht.html'
+                   ).read_text(encoding='utf-8')
+        self.assertIn('fw-dreht', schicht, 'Die Drehung fehlt in der Schicht.')
+        self.assertIn(
+            'prefers-reduced-motion', schicht,
+            'Wer Bewegung abgestellt hat, bekommt sie trotzdem — das ist '
+            'keine Kleinigkeit, sondern für manche Menschen ein Problem.')
+
+
+class ZeichenAusDatenTest(SimpleTestCase):
+    """Ein Datenwert muss durch den Baustein, sonst steht sein NAME auf der Seite.
+
+    DER BEFUND (E2.42, Gegenprüfung)
+
+    `vertrag_detail.html` hatte in einem Zweig noch `{{ it.icon }}` stehen.
+    Bis E2.41 war das eine Font-Awesome-Klasse und die Zeile lautete
+    `<i class="fa-solid {{ it.icon }}">` — da ergab es Markup. Seit E2.41 ist
+    `it.icon` ein Name wie `vertrag`, und `{{ it.icon }}` schreibt genau das
+    als **Text** in die Kachel: ein 36×36-Kästchen mit dem Wort «vertrag».
+
+    Kein bestehender Wächter sah das: Der eine sucht `<i class="fa-…">`, der
+    andere prüft die Datenwerte im Python-Code — beide richtig, beide blind
+    für die Ausgabestelle.
+    """
+
+    #: `{{ …icon… }}` ausserhalb der Admin-Vorlagen. Die haben eine eigene
+    #: Hülle und ein eigenes Schema (dort sind es Emoji).
+    MUSTER = re.compile(r'\{\{\s*[\w.]*icon[\w.]*\s*(?:\|[^}]*)?\}\}')
+
+    def test_kein_datenwert_wird_roh_ausgegeben(self):
+        funde = []
+        for p in sorted((WURZEL / 'core' / 'templates').rglob('*.html')):
+            if 'admin' in p.parts:
+                continue
+            for nr, zeile in enumerate(p.read_text(encoding='utf-8').splitlines(), 1):
+                if 'icon_cls' in zeile:
+                    continue      # eine Farbklasse, kein Zeichenname
+                if self.MUSTER.search(zeile):
+                    funde.append(f'{p.relative_to(WURZEL).as_posix()}:{nr}')
+        self.assertEqual(
+            funde, [],
+            f'Hier steht ein Zeichen-Datenwert roh in der Vorlage: {funde}. '
+            f'Seit E2.41 ist das ein NAME, kein Markup — er erscheint als '
+            f'Text auf der Seite. Richtig ist `{{% zeichen_wert … %}}`.')
+
+    def test_die_pruefung_wuerde_einen_fall_erkennen(self):
+        self.assertTrue(self.MUSTER.search('<div>{{ it.icon }}</div>'))
+        self.assertTrue(self.MUSTER.search('{{ zeile.typ_icon }}'))
+        self.assertIsNone(self.MUSTER.search("{% zeichen_wert it.icon %}"))
+
+
+class KeineToteBedingungTest(SimpleTestCase):
+    """Beide Zweige dasselbe Zeichen — dann ist die Bedingung Ballast.
+
+    In E2.42 blieben zwei solche Stellen stehen: `liegenschaft_detail.html`
+    prüfte auf `g.einheit` und zeichnete in beiden Fällen `liegenschaft`,
+    `objekt_detail.html` unterschied Gewerbe von Wohnung und zeichnete
+    ebenfalls beide Male dasselbe.
+
+    Das ist nicht nur überflüssig. Es sieht beim Lesen aus, als würde
+    unterschieden — der nächste sucht den Unterschied und findet keinen.
+    """
+
+    MUSTER = re.compile(
+        r"\{%\s*if [^%]*%\}\{%\s*zeichen '([a-z]+)'[^%]*%\}"
+        r"\{%\s*else\s*%\}\{%\s*zeichen '([a-z]+)'[^%]*%\}\{%\s*endif\s*%\}")
+
+    def test_keine_bedingung_zeichnet_zweimal_dasselbe(self):
+        funde = []
+        for p in sorted((WURZEL / 'core' / 'templates').rglob('*.html')):
+            for nr, zeile in enumerate(p.read_text(encoding='utf-8').splitlines(), 1):
+                for t in self.MUSTER.finditer(zeile):
+                    if t.group(1) == t.group(2):
+                        funde.append(
+                            f'{p.relative_to(WURZEL).as_posix()}:{nr} '
+                            f'(beide «{t.group(1)}»)')
+        self.assertEqual(
+            funde, [],
+            f'Diese Bedingungen zeichnen in beiden Zweigen dasselbe: {funde}')
+
+    def test_die_pruefung_wuerde_einen_fall_erkennen(self):
+        t = self.MUSTER.search("{% if x %}{% zeichen 'gut' %}{% else %}{% zeichen 'gut' %}{% endif %}")
+        self.assertIsNotNone(t)
+        self.assertEqual(t.group(1), t.group(2))

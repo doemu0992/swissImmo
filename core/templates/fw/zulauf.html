@@ -17,7 +17,7 @@
         <span class="fw-neben">{{ gesamt }}</span></div>
     {% for z in zeilen %}
     <div class="fw-zeile">
-        <span class="fw-ikon{% if not z.v %} warn{% endif %}"><i class="fa-solid {% if z.eingang.quelle == 'mail' %}fa-envelope{% elif z.eingang.quelle == 'post' %}fa-envelope-open-text{% elif z.eingang.quelle == 'scan' %}fa-file-lines{% else %}fa-inbox{% endif %}"></i></span>
+        <span class="fw-ikon{% if not z.v %} warn{% endif %}">{% if z.eingang.quelle == 'mail' or z.eingang.quelle == 'post' or z.eingang.quelle == 'scan' %}{% zeichen 'dokument' %}{% else %}{% zeichen 'wartet' %}{% endif %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ z.eingang.betreff|default:"Ohne Betreff" }}{% if z.eingang.absender %} — {{ z.eingang.absender }}{% endif %}</div>
             <div class="fw-s">{{ z.eingang.eingegangen_am|date:"d.m.Y H:i" }} · {{ z.eingang.get_quelle_display }}{% if z.eingang.referenz %} · {{ z.eingang.referenz }}{% endif %}</div>
@@ -49,7 +49,7 @@
     {% for e in erledigt %}
     <div class="fw-zeile">
         <span class="fw-ikon {% if e.status == 'abgelegt' %}mut{% else %}good{% endif %}">
-            <i class="fa-solid {% if e.status == 'abgelegt' %}fa-box-archive{% else %}fa-check{% endif %}"></i></span>
+            {% if e.status == 'abgelegt' %}{% zeichen 'dokument' %}{% else %}{% zeichen 'gut' %}{% endif %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ e.betreff|default:"Ohne Betreff" }}</div>
             <div class="fw-s">{{ e.get_status_display }}{% if e.ablage_grund %} · {{ e.ablage_grund }}{% elif e.akte %} · {{ e.akte }}{% endif %}</div>
