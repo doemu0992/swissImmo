@@ -1,3 +1,4 @@
+{% load zeichen %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="de">
@@ -105,11 +106,33 @@
 
         <div class="fw-balken-voll p-6 md:p-8 text-center text-white relative z-10 shadow-md">
             <h1 class="text-xl md:text-3xl font-bold mb-2">Service Portal</h1>
-            <p class="fw-faint text-xs md:text-sm uppercase tracking-wide opacity-90">{{ liegenschaft.strasse }}, {{ liegenschaft.ort }}</p>
+            {% comment %}
+            `fw-faint` STAND HIER FALSCH (E2.50)
+
+            Gemessen im Browser, die Adresse gegen den Balken:
+
+                hell    rgb(92,117,124)  auf rgb(15,111,106)  -> 1.23:1
+                dunkel  rgb(139,164,170) auf rgb(79,179,170)  -> 1.05:1
+
+            Gefordert sind 4.5:1. Die Adresse der Liegenschaft war auf der
+            Seite, die am Treppenhaus haengt, praktisch unsichtbar — in beiden
+            Modi.
+
+            `fw-faint` ist ein gedaempftes Grau fuer den SEITENgrund. Auf einer
+            satten Flaeche gilt `--ds-auf-satt`, und genau das setzt
+            `fw-balken-voll` bereits — die Ueberschrift daneben liegt damit bei
+            6.00:1. Ohne die Klasse erbt die Zeile dieselbe Farbe; `opacity-90`
+            haelt sie weiterhin zurueck.
+
+            (`text-white` am Elternelement ist wirkungslos: `fw-balken-voll`
+            setzt die Farbe selbst und gewinnt. Nachgemessen ist die
+            Ueberschrift im Dunkelmodus rgb(10,21,24), nicht weiss.)
+            {% endcomment %}
+            <p class="text-xs md:text-sm uppercase tracking-wide opacity-90">{{ liegenschaft.strasse }}, {{ liegenschaft.ort }}</p>
 
             <button x-show="step > 1" @click="goBack()"
                     class="absolute left-4 top-6 md:top-8 p-2 rounded-full hover:fw-markenflaeche transition">
-                <span class="material-symbols-outlined text-xl md:text-2xl">arrow_back</span>
+                {% zeichen 'zurueck' klasse='text-xl md:text-2xl' %}
             </button>
 
             <div class="flex justify-center gap-2 mt-6" x-show="step < 4">
@@ -125,7 +148,7 @@
             {% if success %}
             <div class="h-full flex flex-col items-center justify-center text-center animate-fade-in">
                 <div class="w-24 h-24 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center mb-6 shadow-inner">
-                    <span class="material-symbols-outlined text-6xl">check_circle</span>
+                    {% zeichen 'gut' klasse='text-6xl' %}
                 </div>
                 <h2 class="text-2xl md:text-3xl font-bold fw-strong mb-2">Vielen Dank!</h2>
                 <p class="fw-mutet mb-8 md:text-lg">Wir haben Ihre Meldung erhalten und eine Bestätigung per E-Mail gesendet.</p>
@@ -137,13 +160,45 @@
 
             <div x-show="step === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-10">
                 <h2 class="text-center fw-strong font-bold text-lg md:text-2xl mb-8">Wie können wir helfen?</h2>
+                {% comment %}
+                VIER KACHELN STATT EINER SCHLEIFE (E2.50)
+
+                Die Raumsymbole weiter unten fallen weg — so steht es in
+                docs/ZEICHEN.md: «Im Raumkatalog steht der Name des Raums
+                daneben. Das Symbol wiederholt ihn nur. Stattdessen:
+                `einheit` ueberall, oder gar keines.»
+
+                DIESE VIER SIND KEIN RAUMKATALOG. Es sind vier verschiedene
+                Anliegen, und fuer jedes gibt es bereits ein Zeichen:
+                `arbeit`, `hinweis`, `schluessel`, `dokument`. Sie alle auf
+                `einheit` zu setzen haette ein Haus-Symbol auf die
+                Schluesselbestellung gelegt.
+
+                Eine `x-for`-Schleife kann das nicht: `{% templatetag openblock %} zeichen ... {% templatetag closeblock %}` wird
+                einmal auf dem Server gezeichnet, nicht je Eintrag. Die Liste
+                ist ein Literal mit genau vier Eintraegen und wird nur hier
+                gelesen — also stehen die vier Kacheln jetzt ausgeschrieben,
+                jede mit ihrem eigenen Zeichen. Ein Tippfehler im Namen laesst
+                `{% templatetag openblock %} zeichen {% templatetag closeblock %}` werfen; ein Name aus den Daten wuerde
+                stillschweigend nichts zeichnen.
+                {% endcomment %}
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                    <template x-for="cat in categories">
-                        <div @click="selectCategory(cat.id)" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
-                            <span class="material-symbols-outlined text-4xl md:text-5xl fw-marke" x-text="cat.icon"></span>
-                            <span class="text-sm md:text-base font-semibold fw-mutet text-center" x-text="cat.name"></span>
-                        </div>
-                    </template>
+                    <div @click="selectCategory('Schaden')" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
+                        {% zeichen 'arbeit' klasse='text-4xl md:text-5xl fw-marke' %}
+                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">Schadensmeldung</span>
+                    </div>
+                    <div @click="selectCategory('Anfrage')" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
+                        {% zeichen 'hinweis' klasse='text-4xl md:text-5xl fw-marke' %}
+                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">Allgemeine Anfrage</span>
+                    </div>
+                    <div @click="selectCategory('Schlüssel')" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
+                        {% zeichen 'schluessel' klasse='text-4xl md:text-5xl fw-marke' %}
+                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">Schlüsselbestellung</span>
+                    </div>
+                    <div @click="selectCategory('Admin')" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
+                        {% zeichen 'dokument' klasse='text-4xl md:text-5xl fw-marke' %}
+                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">Frage zu Dokumenten</span>
+                    </div>
                 </div>
             </div>
 
@@ -152,7 +207,7 @@
                 <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                     <template x-for="r in rooms">
                         <div @click="selectRoom(r.name)" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-xl p-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md h-28 md:h-32 text-center">
-                            <span class="material-symbols-outlined text-3xl md:text-4xl fw-faint" x-text="r.icon"></span>
+                            {% zeichen 'einheit' klasse='text-3xl md:text-4xl fw-faint' %}
                             <span class="text-xs md:text-sm font-medium fw-mutet leading-tight" x-text="r.name"></span>
                         </div>
                     </template>
@@ -165,12 +220,12 @@
                 <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                     <template x-for="obj in getCurrentObjects()">
                         <div @click="selectObject(obj)" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-xl p-2 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md h-28 md:h-32 text-center">
-                            <span class="material-symbols-outlined text-3xl md:text-4xl fw-marke" x-text="obj.icon"></span>
+                            {% zeichen 'einheit' klasse='text-3xl md:text-4xl fw-marke' %}
                             <span class="text-xs md:text-sm font-medium fw-mutet leading-tight" x-text="obj.name"></span>
                         </div>
                     </template>
                     <div @click="selectObject({name: 'Sonstiges', isAppliance: false})" class="icon-card cursor-pointer fw-flaeche2 border fw-linie border-dashed rounded-xl p-2 flex flex-col items-center justify-center gap-2 h-28 md:h-32 text-center">
-                        <span class="material-symbols-outlined text-3xl md:text-4xl fw-faint">more_horiz</span>
+                        {% zeichen 'mehr' klasse='text-3xl md:text-4xl fw-faint' %}
                         <span class="text-xs md:text-sm font-medium fw-mutet">Anderes</span>
                     </div>
                 </div>
@@ -184,7 +239,7 @@
 
                     <div class="fw-flaeche p-6 rounded-2xl shadow-sm border fw-linie">
                         <h3 class="text-lg font-bold fw-strong mb-4 flex items-center gap-2">
-                            <span class="material-symbols-outlined fw-marke">person</span> Ihre Kontaktdaten
+                            {% zeichen 'person' klasse='fw-marke' %} Ihre Kontaktdaten
                         </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -225,7 +280,7 @@
                                         <option value="{{ einheit.id }}">{{ einheit.bezeichnung }}{% if einheit.etage %} · {{ einheit.etage }}{% endif %}</option>
                                     {% endfor %}
                                 </select>
-                                <span class="material-symbols-outlined absolute right-3 top-3 fw-faint pointer-events-none">expand_more</span>
+                                {% zeichen 'aufklappen' klasse='absolute right-3 top-3 fw-faint pointer-events-none' %}
                             </div>
                         </div>
 
@@ -255,7 +310,7 @@
                     <div class="fw-flaeche p-6 rounded-2xl shadow-sm border fw-linie">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-bold fw-strong flex items-center gap-2">
-                                <span class="material-symbols-outlined fw-marke">build</span> Details zur Meldung
+                                {% zeichen 'arbeit' klasse='fw-marke' %} Details zur Meldung
                             </h3>
                             <div class="text-sm font-medium fw-marke fw-markenflaeche px-3 py-1 rounded-full" x-text="generateTitleDisplay()"></div>
                         </div>
@@ -280,7 +335,7 @@
                             <label class="block text-xs font-bold fw-mutet uppercase mb-2">Foto (Optional)</label>
                             <label class="flex items-center gap-3 w-full p-3 border fw-linie rounded-xl cursor-pointer fw-flaeche2 hover:fw-flaeche transition shadow-sm">
                                 <div class="w-10 h-10 rounded-full fw-markenflaeche fw-marke flex items-center justify-center">
-                                    <span class="material-symbols-outlined">camera_alt</span>
+                                    {% zeichen 'dokument' %}
                                 </div>
                                 <div class="flex-grow">
                                     <span class="text-sm font-medium fw-ink" x-text="fileName || 'Foto aufnehmen oder hochladen'"></span>
@@ -292,7 +347,7 @@
 
                     <button type="submit" class="w-full fw-btn fw-primary font-bold py-4 rounded-xl shadow-lg hover:fw-balken-voll hover:shadow-xl transition transform active:scale-[0.99] flex justify-center items-center gap-2 text-lg">
                         <span>Meldung absenden</span>
-                        <span class="material-symbols-outlined">send</span>
+                        {% zeichen 'senden' %}
                     </button>
                 </form>
             </div>
@@ -309,11 +364,25 @@
                 step: 1, category: '', room: '', objectName: '', isAppliance: false, fileName: '',
 
                 // DATA
+                //
+                // DIE `icon`-SCHLUESSEL WERDEN SEIT E2.50 NIRGENDS MEHR GELESEN.
+                // Sie trugen Namen aus Googles «Material Symbols» — einer
+                // Schrift, die im Repo nie lag und nirgends geladen wurde. Die
+                // Seite schrieb sie deshalb als TEXT hin: «broken_image»,
+                // «kitchen», «bathtub». Kein Absturz, kein roter Test, 200er
+                // Antwort — und so haengt es an jedem Treppenhaus.
+                //
+                // Die Raumsymbole sind ersatzlos weg (docs/ZEICHEN.md: «Im
+                // Raumkatalog steht der Name des Raums daneben»); die vier
+                // Kategorien stehen oben als eigene Kacheln mit je eigenem
+                // Zeichen. Die Schluessel bleiben vorerst stehen, damit dieser
+                // Umbau die Datenliste nicht mit anfasst — gelesen wird keiner
+                // mehr.
                 categories: [
-                    { id: 'Schaden', name: 'Schadensmeldung', icon: 'broken_image' },
-                    { id: 'Anfrage', name: 'Allgemeine Anfrage', icon: 'help_outline' },
-                    { id: 'Schlüssel', name: 'Schlüsselbestellung', icon: 'key' },
-                    { id: 'Admin', name: 'Frage zu Dokumenten', icon: 'description' }
+                    { id: 'Schaden', name: 'Schadensmeldung' },
+                    { id: 'Anfrage', name: 'Allgemeine Anfrage' },
+                    { id: 'Schlüssel', name: 'Schlüsselbestellung' },
+                    { id: 'Admin', name: 'Frage zu Dokumenten' }
                 ],
                 rooms: [
                     { name: 'Küche', icon: 'kitchen' }, { name: 'Bad', icon: 'bathtub' }, { name: 'Korridor', icon: 'hallway' },

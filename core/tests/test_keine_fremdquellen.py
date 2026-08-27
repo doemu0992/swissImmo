@@ -67,12 +67,38 @@ WURZEL = Path(settings.BASE_DIR)
 
 
 def _vorlagen():
-    """Alle Vorlagen ausser den Prototypen unter mockups/."""
-    for pfad in WURZEL.rglob('*.html'):
-        rel = pfad.relative_to(WURZEL).as_posix()
-        if rel.startswith(('mockups/', 'node_modules/', 'staticfiles/')):
-            continue
-        yield rel, pfad
+    """Alle Vorlagen UND eigene Stylesheets, ausser Prototypen und Fremdcode.
+
+    CSS KAM ERST IN E2.50 DAZU — UND DAS WAR DIE LUECKE
+
+    Der Waechter las ausschliesslich `*.html`. `static/css/fairwalter_theme.css`
+    rief in Zeile 4 `fonts.googleapis.com` auf, und die Datei wird ueber
+    `UNFOLD["STYLES"]` in JEDE Admin-Seite geladen — ein Fremdaufruf bei jedem
+    Aufruf, seit E0.2 unbemerkt.
+
+    Ein Wächter, der nur eine Dateiart liest, sperrt auch nur diese. Das ist
+    dieselbe Fehlerart wie die Farbklassen in Python-Views (E2.20) und die
+    Zeichen in Datenwerten (E2.41): Die Regel stimmte, der Suchbereich nicht.
+
+    Die gebauten Dateien (`tailwind*.css`, `schicht*.css`) sind ausgenommen —
+    sie entstehen aus Quellen, die hier ohnehin geprueft werden, und ein
+    Treffer dort waere ein Symptom, keine Ursache.
+    """
+    GEBAUT = ('static/css/tailwind.css', 'static/css/tailwind-aussen.css',
+              'static/css/schicht.css', 'static/css/schicht.src.css')
+    for muster in ('*.html', '*.css'):
+        for pfad in WURZEL.rglob(muster):
+            rel = pfad.relative_to(WURZEL).as_posix()
+            if rel.startswith(('mockups/', 'node_modules/', 'staticfiles/')):
+                continue
+            if rel in GEBAUT:
+                continue
+            # Fremde Bibliotheken: bootstrap-icons, fontawesome und Aehnliches
+            # tragen ihre eigenen Verweise; die sind nicht unsere Entscheidung.
+            if rel.startswith('static/css/') and any(
+                    x in rel for x in ('fontawesome', 'bootstrap-icons')):
+                continue
+            yield rel, pfad
 
 
 class KeineFremdquellenTest(SimpleTestCase):
@@ -81,10 +107,19 @@ class KeineFremdquellenTest(SimpleTestCase):
         funde = []
         for rel, pfad in _vorlagen():
             text = pfad.read_text(encoding='utf-8')
-            # Der Baustein selbst nennt die Hosts im erklärenden Kommentar.
-            if rel.endswith(('fw/_assets.html', 'core/_assets_aussen.html')):
-                text = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}', '',
-                              text, flags=re.S)
+            # KOMMENTARE FALLEN IMMER WEG, NICHT NUR IN ZWEI DATEIEN.
+            #
+            # Bis E2.50 galt das nur für `_assets.html` und
+            # `_assets_aussen.html`. Beim Ausweiten auf CSS meldete der
+            # Wächter sofort `schriften.css` — wo der Host in der BEGRÜNDUNG
+            # steht, warum er nicht mehr benutzt wird.
+            #
+            # Ein Wächter, der die Erklärung seines eigenen Verbots als
+            # Verstoss meldet, wird weggeklickt. Achtes Mal in dieser Reihe,
+            # dass Erklärtext für Inhalt gehalten wurde.
+            text = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}', '',
+                          text, flags=re.S)
+            text = re.sub(r'\{#.*?#\}|<!--.*?-->|/\*.*?\*/', '', text, flags=re.S)
             for host in GESPERRT:
                 if host in text:
                     funde.append(f'{rel}: {host}')

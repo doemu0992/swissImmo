@@ -116,7 +116,104 @@ test('Kontrastrechnung ist geeicht', async () => {
   }
 });
 
+/**
+ * Jede Textstelle der Seite gegen ihren tatsächlichen Hintergrund.
+ *
+ * WARUM `body` ALLEIN NICHT REICHT — DER FALL AUS E2.50
+ *
+ * Die Prüfungen weiter unten messen `document.body`. Damit fanden sie den
+ * eingefrorenen Seitengrund (E2.48), aber nicht das hier: Im Kopfbalken von
+ * `/report/<id>/` stand die Adresse der Liegenschaft in `fw-faint` — einem
+ * gedämpften Grau für den SEITENgrund — auf der satten Markenfläche.
+ *
+ *     hell    rgb(92,117,124)  auf rgb(15,111,106)  → 1.23:1
+ *     dunkel  rgb(139,164,170) auf rgb(79,179,170)  → 1.05:1
+ *
+ * Die Adresse war in beiden Modi praktisch unsichtbar, auf der Seite, die am
+ * Treppenhaus hängt. Kein Test sah es: `body` war in Ordnung, der Balken nicht.
+ *
+ * Deshalb läuft dieser Durchgang über ALLE Elemente mit eigenem Text und
+ * sucht den nächsten undurchsichtigen Hintergrund darüber — so, wie das Auge
+ * es sieht.
+ */
+async function schwacheStellen(page: Page) {
+  return page.evaluate(() => {
+    const lum = ([r, g, b]: number[]) => {
+      const k = [r, g, b].map((v) => {
+        const s = v / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * k[0] + 0.7152 * k[1] + 0.0722 * k[2];
+    };
+    const kon = (a: number[], b: number[]) => {
+      const [h, d] = [lum(a), lum(b)].sort((x, y) => y - x);
+      return (h + 0.05) / (d + 0.05);
+    };
+    const zer = (s: string) => {
+      const m = s.match(/\d+(\.\d+)?/g);
+      return m ? m.slice(0, 3).map(Number) : null;
+    };
+    // `rgba(…, 0)` ist durchsichtig — dann zaehlt der Hintergrund darueber.
+    const undurchsichtig = (c: string) => {
+      const m = c.match(/rgba?\([^)]*\)/);
+      return !!m && !/,\s*0\s*\)$/.test(m[0]);
+    };
+    const grundVon = (el: Element) => {
+      let n: Element | null = el;
+      while (n) {
+        const c = getComputedStyle(n).backgroundColor;
+        if (undurchsichtig(c)) return zer(c)!;
+        n = n.parentElement;
+      }
+      return [255, 255, 255];
+    };
+    const funde: string[] = [];
+    for (const el of Array.from(document.querySelectorAll('body *'))) {
+      // Nur EIGENER Text — sonst wird jeder Vorfahr mitgezaehlt.
+      const txt = Array.from(el.childNodes)
+        .filter((n) => n.nodeType === 3)
+        .map((n) => (n.textContent || '').trim())
+        .join(' ')
+        .trim();
+      if (!txt) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') continue;
+      const fg = zer(cs.color);
+      if (!fg) continue;
+      const k = kon(fg, grundVon(el));
+      if (k < 4.5) {
+        funde.push(
+          `${k.toFixed(2)}:1 «${txt.slice(0, 40)}» ` +
+            `[${(el.className || '').toString().slice(0, 50)}]`,
+        );
+      }
+    }
+    return funde;
+  });
+}
+
 for (const [pfad, name] of AUSSENSEITEN) {
+  test(`Lesbarer Text: ${name}`, async ({ browser }) => {
+    for (const modus of ['light', 'dark'] as const) {
+      const ctx = await browser.newContext({ colorScheme: modus });
+      const page = await ctx.newPage();
+      await page.goto(pfad, { waitUntil: 'load' });
+      // Das Ticket-Formular legt einen Vorhang ueber die Seite, bis Alpine
+      // startet — spaetestens nach 3 s raeumt ein Notausgang ihn weg. Vorher
+      // gemessen misst man den Vorhang, nicht die Seite.
+      await page.waitForTimeout(3500);
+      const funde = await schwacheStellen(page);
+      await ctx.close();
+      expect(
+        funde,
+        `${pfad} (${modus}): Diese Stellen liegen unter 4.5:1 zu ihrem ` +
+          `eigenen Hintergrund:\n  ${funde.join('\n  ')}`,
+      ).toEqual([]);
+    }
+  });
+
   test(`Dunkelmodus: ${name}`, async ({ browser }) => {
     const messungen: Record<string, Messung> = {};
     for (const modus of ['light', 'dark'] as const) {

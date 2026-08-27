@@ -1,7 +1,31 @@
 /* static/css/fairwalter_theme.css */
 
-/* 1. Import der Inter-Schriftart */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* 1. KEINE SCHRIFT VON AUSSEN MEHR (E2.50)
+
+   Hier stand `@import url('https://fonts.googleapis.com/…')` fuer Inter.
+
+   Die Datei wird ueber `UNFOLD["STYLES"]` in JEDE Admin-Seite geladen — also
+   ein Fremdaufruf bei jedem Aufruf. Genau das, was E0.2 und E2.23 beendet
+   haben; nur sah es niemand, weil `test_keine_fremdquellen.py` ausschliesslich
+   `*.html` liest. Eine CSS-Datei konnte der Waechter nicht sehen.
+
+   Ersetzt durch IBM PLEX SANS aus `schriften.css` — selbst gehostet
+   (Entscheid D3). Inter war der Rest der alten Gestaltung.
+
+   ACHTUNG, DAS WAR NICHT VON SELBST DA: «Liegt ohnehin im Repo und wird auf
+   jeder Seite geladen» stimmt fuer die Anwendung, NICHT fuer den Admin. Im
+   Browser nachgemessen fehlte `schriften.css` dort — ohne die
+   `@font-face`-Regeln gibt es die Familie auf einer Admin-Seite gar nicht,
+   und die Zeile unten fiel auf die System-Serifenlose durch. Der Ausbau
+   stimmte, die Ersatz-Angabe war leer.
+
+   `schriften.css` steht deshalb jetzt in `UNFOLD["STYLES"]` (settings.py),
+   vor dieser Datei. Nachgemessen: Plex geladen, Textbreite 506 px gegen
+   494 px beim Fallback, null Fremdaufrufe.
+
+   Eine Schrift von aussen kostet nicht nur einen Aufruf: Sie schickt die
+   IP-Adresse jedes Benutzers an Google und macht die Anwendung ohne Internet
+   unbrauchbar. */
 
 /* =====================================================================
    GLOBALE DESIGN-VARIABLEN (SwissImmo Master-Theme)
@@ -22,7 +46,7 @@
    BASIS & TYPOGRAFIE
    ===================================================================== */
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     background-color: var(--si-bg) !important;
     color: var(--si-text-main) !important;
 }

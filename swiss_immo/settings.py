@@ -473,6 +473,23 @@ UNFOLD = {
 
     # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
     "STYLES": [
+        # DIE SCHRIFT MUSS MIT (E2.50)
+        #
+        # `fairwalter_theme.css` zog Inter per `@import` von
+        # fonts.googleapis.com — ein Fremdaufruf bei JEDER Admin-Seite, und
+        # die IP-Adresse jedes Benutzers ging an Google. Der Aufruf ist raus
+        # und die Datei sagt jetzt `font-family: 'IBM Plex Sans'`.
+        #
+        # NUR: `schriften.css` stand hier nicht, und ohne die `@font-face`-
+        # Regeln gibt es die Familie auf einer Admin-Seite gar nicht. Im
+        # Browser nachgemessen war die Schrift nach dem Ausbau die
+        # System-Serifenlose, nicht Plex — der Ausbau stimmte, die
+        # Ersatz-Angabe war leer.
+        #
+        # Die Datei enthaelt AUSSCHLIESSLICH `@font-face`; sie kann kein
+        # Layout veraendern, nur die Familie bereitstellen. Sie steht vorn,
+        # damit die Regeln vor ihrer ersten Verwendung geladen sind.
+        lambda request: static("css/schriften.css"),
         lambda request: static("css/fairwalter_theme.css") + "?v=2",
         lambda request: static("css/custom_admin.css") + "?v=999",
     ],
