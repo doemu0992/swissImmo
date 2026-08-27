@@ -32,10 +32,38 @@ es gemeldet.
     <script src="{% static 'js/signature_pad.umd.min.js' %}"></script>
 
     <style>
+        /* TOKENS STATT FESTER WERTE (E2.48)
+
+           Hier standen `#f8fafc` und `#1e293b` — Tailwinds slate-50 und
+           slate-800, fest verdrahtet.
+
+           NACHGEMESSEN, WEIL DIE NAHELIEGENDE ERKLAERUNG FALSCH IST
+
+           Die Vermutung war: Der `<body>` traegt `fw-flaeche2`, die zwei
+           Zeilen ueberschreiben es, also blieb die Seite im Dunkelmodus
+           hell. Im Browser gemessen, `/schaden/melden/`, beide Modi:
+
+                        Grund                  Schrift
+             vorher hell   rgb(244,247,247)   rgb(30,41,59)
+             vorher dunkel rgb(23,48,56)      rgb(30,41,59)
+             nachher hell  rgb(244,247,247)   rgb(14,34,39)
+             nachher dunkel rgb(23,48,56)     rgb(228,237,238)
+
+           DER GRUND HAT SICH NIE GEAENDERT. `.fw-flaeche2` ist eine Klasse
+           (0,1,0), `body` ein Element (0,0,1) — die Klasse gewinnt, egal in
+           welcher Reihenfolge. `#f8fafc` war toter Code.
+
+           DIE SCHRIFT WAR DER FEHLER, und `fw-flaeche2` setzt kein `color`:
+           `#1e293b` galt in BEIDEN Modi. Im Dunkelmodus hiess das `#1e293b`
+           auf `#173038` — Kontrast 1.06:1, gefordert sind 4.5:1. Der Text
+           stand da und war nicht zu sehen.
+
+           Es ist die halbe Behauptung — aber die richtige Haelfte, und die
+           Zeilen gehoerten so oder so weg. */
         body {
             font-family: 'IBM Plex Sans', sans-serif;
-            background-color: #f8fafc; /* Tailwind slate-50 */
-            color: #1e293b; /* Tailwind slate-800 */
+            background-color: var(--ds-surface-2);
+            color: var(--ds-ink);
         }
     </style>
 </head>

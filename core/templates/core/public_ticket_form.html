@@ -10,7 +10,21 @@
     <script defer src="{% static 'js/alpine.min.js' %}"></script>
 
     <style>
-        body { font-family: 'IBM Plex Sans', sans-serif; background-color: #f3f4f6; margin: 0; }
+        /* TOKEN STATT HEXWERT (E2.48)
+
+           Hier stand `#f3f4f6`, und `color` war gar nicht gesetzt. Gemessen
+           im Browser, hell wie dunkel identisch:
+
+               Grund   rgb(243,244,246)   Schrift rgb(0,0,0)
+
+           Das ist die Seite vom Aushang im Treppenhaus — wer nachts einen
+           Wasserschaden meldet, bekam ein weisses Rechteck ins Gesicht.
+
+           E2.48 hat zuerst nur `modern_base.html` umgestellt und dabei
+           behauptet, das seien «die letzten zwei». Nachgemessen waren es
+           nicht die letzten: diese Seite hier und die Absageseite der
+           Bewerbung trugen denselben Fehler. */
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--ds-surface-2); color: var(--ds-ink); margin: 0; }
         .icon-card { transition: all 0.2s ease; }
         .icon-card:active { transform: scale(0.95); background-color: #eff6ff; border-color: #3b82f6; }
         [x-cloak] { display: none !important; }
@@ -23,13 +37,26 @@
         /* Loader */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #ffffff; z-index: 9999;
+            /* Vorhang ueber die ganze Seite, sichtbar bis Alpine startet
+               (spaetestens nach 3 s, siehe unten). Als `#ffffff` war das im
+               Dunkelmodus ein weisses Aufblitzen bei JEDEM Aufruf. */
+            background-color: var(--ds-surface); z-index: 9999;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            font-family: sans-serif; color: #666;
+            font-family: sans-serif; color: var(--ds-muted);
         }
         .spinner {
-            width: 40px; height: 40px; border: 4px solid #e5e7eb;
+            /* Der Ring lief auf `#e5e7eb` — hell und damit auf dunklem Grund
+               ein leuchtender Kreis.
+
+               Die bewegte Sichel bleibt blau, ebenso die Auswahlkacheln
+               weiter oben (`#eff6ff`, `#3b82f6`, `#1d4ed8`). Sie setzen Grund,
+               Rand und Schrift zusammen und sind in beiden Modi lesbar — das
+               ist kein Messfehler, sondern Blau auf einer Petrol-Seite. Sie
+               umzufaerben aendert, was MIETER sehen, und ist deshalb in
+               docs/KONZEPT-UI.md als offene Gestaltungsfrage vermerkt statt
+               hier nebenbei entschieden. */
+            width: 40px; height: 40px; border: 4px solid var(--ds-line);
             border-top: 4px solid #2563eb; border-radius: 50%;
             animation: spin 1s linear infinite; margin-bottom: 15px;
         }

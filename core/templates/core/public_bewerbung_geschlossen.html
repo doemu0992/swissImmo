@@ -6,7 +6,21 @@
     <title>Objekt nicht mehr ausgeschrieben – swissImmo</title>
 {% include 'core/_assets_aussen.html' %}
     <style>
-        body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; }
+        /* TOKEN STATT HEXWERT (E2.48)
+
+           Hier stand `#f8fafc`. Gemessen im Browser, Dunkelmodus:
+
+               Grund   rgb(248,250,252)   — eingefroren, folgte dem Modus nicht
+               Schrift rgb(228,237,238)   — folgte ihm sehr wohl
+
+           Fast weisse Schrift auf fast weissem Grund, Kontrast 1.14:1 —
+           gefordert sind 4.5:1. Der Text war nicht schwer zu lesen, er war
+           weg. Und zwar auf einer Seite, die ohne Anmeldung erreichbar ist
+           und die jemand sieht, weil er einem Link gefolgt ist, der einmal
+           richtig war.
+
+           Ein Hexwert wechselt nicht mit dem Modus, ein Token schon. */
+        body { font-family: 'Nunito', sans-serif; background-color: var(--ds-surface-2); }
     </style>
 </head>
 <body class="fw-strong antialiased min-h-screen flex items-center justify-center px-4 py-10">

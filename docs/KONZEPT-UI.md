@@ -1235,12 +1235,82 @@ ist die Komponentenschicht; die Aktenseiten gehen ihn bereits.
 > `core/tests/test_palette.py` misst **jeden** Farbwert der Datei auf seinen Farbton und lässt
 > keinen zwischen 215° und 300° durch.
 
+> **Erledigt seit E2.10 bis E2.48 — dieser Absatz beschreibt einen Stand, den es
+> nicht mehr gibt.** Er bleibt stehen, weil er zeigt, wie die Lücke aussah;
+> was heute gilt, steht darunter.
+
 **Was die Palette weiterhin nicht abdeckt: die Aussenseiten.** Zwölf Vorlagen laden Tailwind vom
 CDN ohne den Baustein — Mieterportal, Bewerbungsformular (allein 79 der 92 verbliebenen
 Indigo-Klassen), öffentliches Ticket-Formular, Datenschutzseite, Fehlerseiten, Dossier. Das ist
 eine Entscheidung, keine Nachlässigkeit: Sie einzuziehen ändert, was **Mieter und Bewerber**
 sehen. Die Zahl ist in `test_tailwind_palette.py` festgehalten, damit die Lücke benannt bleibt
 und nicht stillschweigend wächst.
+
+**Der gemessene Stand (E2.48).** Nachgemessen an `/schaden/melden/` im Browser:
+
+| | |
+|---|---|
+| geladen | `tailwind-aussen.css`, `schriften.css`, **`schicht.css`** |
+| `--ds-brand` | **`#0f6f6a`** — die Petrol-Marke wirkt |
+| Zeichen | **30** aus dem eigenen Sprite |
+| CDN-Aufrufe | **keine** |
+
+Die Aussenseiten tragen die Komponentenschicht seit **E2.10**
+(`core/_assets_aussen.html` bindet `fw/_schicht_link.html` ein), **E2.23** hat die
+CDN-Aufrufe entfernt und die Bibliotheken ins Repo geholt, **E2.39–E2.44** den
+Zeichensatz umgestellt.
+
+**Drei Hüllen hatten feste Farbwerte im `<style>`-Block** — und die naheliegende
+Erklärung dafür war falsch. E2.48 nahm an, `#f8fafc` in `modern_base.html` habe
+das `fw-flaeche2` des `<body>` überschrieben und die Seite deshalb im
+Dunkelmodus hell gelassen. Im Browser gemessen, beide Modi:
+
+| | Grund hell | Grund dunkel | Schrift hell | Schrift dunkel |
+|---|---|---|---|---|
+| `modern_base.html` vorher | `rgb(244,247,247)` | `rgb(23,48,56)` | `rgb(30,41,59)` | `rgb(30,41,59)` |
+| `modern_base.html` nachher | `rgb(244,247,247)` | `rgb(23,48,56)` | `rgb(14,34,39)` | `rgb(228,237,238)` |
+
+**Der Grund hat sich nie geändert.** `.fw-flaeche2` ist eine Klasse (0,1,0),
+`body` ein Element (0,0,1) — die Klasse gewinnt unabhängig von der Reihenfolge.
+`#f8fafc` war toter Code. Der Fehler steckte in der **Schrift**: `fw-flaeche2`
+setzt kein `color`, also galt `#1e293b` in beiden Modi. Im Dunkeln hiess das
+`#1e293b` auf `#173038` — **Kontrast 1.06:1** bei geforderten 4.5:1. Der Text
+stand da und war nicht zu sehen.
+
+**Und es waren nicht die letzten zwei.** Nachgemessen trugen zwei weitere
+Aussenseiten denselben Fehler, dort ohne `fw-flaeche2` und damit mit voller
+Wirkung auf den Grund:
+
+| Seite | Grund (beide Modi) | Schrift dunkel | Kontrast dunkel | Folge |
+|---|---|---|---|---|
+| `public_bewerbung_geschlossen.html` | `rgb(248,250,252)` | `rgb(228,237,238)` | **1.14:1** | hell auf hell — der Text war weg |
+| `public_ticket_form.html` | `rgb(243,244,246)` | `rgb(0,0,0)` | 19.08:1 | lesbar, aber im falschen Modus: weisses Rechteck, dazu ein weisser Vollbild-Vorhang beim Laden |
+
+Die Absageseite ist ohne Anmeldung erreichbar; das Ticket-Formular ist die
+Seite vom Aushang im Treppenhaus. Beide sind jetzt auf Tokens umgestellt.
+
+**Bewacht von zwei Tests, weil einer nicht reicht.**
+`core/tests/test_dunkelmodus_huellen.py` sucht feste Farbwerte in `body`-Regeln
+— das findet den Fehler an der Quelle, rechnet aber keine Stile aus. Genau
+daran ist die Vermutung oben gescheitert: Ob eine Regel greift, entscheidet die
+Spezifität, und die lässt sich nicht lesen. `e2e/tests/dunkelmodus.spec.ts`
+misst deshalb im Browser, dass Grund **und** Schrift auf allen drei Seiten dem
+Modus folgen und der Kontrast in beiden Modi über 4.5:1 liegt. Zwei benannte
+Ausnahmen bleiben: die E-Mail-Vorlage (Mailprogramme kennen keine
+CSS-Variablen) und das Druckfenster in `fw/kommunikation.html` (Papier hat
+keinen Dunkelmodus).
+
+**Was offen bleibt — eine Gestaltungsfrage, kein Messfehler:**
+`public_ticket_form.html` trägt vier Tailwind-Blautöne (`#eff6ff`, `#3b82f6`,
+`#1d4ed8`, `#2563eb`) in Auswahlkacheln und Ladeanzeige. Sie setzen Grund,
+Rand und Schrift zusammen und sind in beiden Modi lesbar — kein Defekt,
+sondern Blau auf einer Petrol-Seite. Umfärben ändert, was **Mieter** sehen,
+und wird deshalb hier benannt statt nebenbei entschieden.
+
+**Was weiterhin nicht gilt:** Die Aussenseiten bekommen `tailwind-aussen.css`,
+nicht `tailwind.css`. Das ist die Entscheidung, die dieser Absatz ursprünglich
+meinte — sie betrifft Tailwinds Standardfarben, nicht die Anbindung. Dass die
+Petrol-Tokens dort trotzdem wirken, liegt an der Komponentenschicht.
 
 ### 16.5 Was hier bewusst nicht steht
 
