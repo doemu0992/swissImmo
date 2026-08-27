@@ -26,12 +26,46 @@
            Bewerbung trugen denselben Fehler. */
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--ds-surface-2); color: var(--ds-ink); margin: 0; }
         .icon-card { transition: all 0.2s ease; }
-        .icon-card:active { transform: scale(0.95); background-color: #eff6ff; border-color: #3b82f6; }
+        /* TOKENS STATT BLAU (E2.49)
+
+           Hier standen Tailwinds blue-50/500/600 als Hexwerte. E2.48 hatte sie
+           als «Gestaltungsfrage» stehen lassen — blau auf einer Petrol-Seite,
+           in beiden Modi lesbar. Die Lesbarkeit stimmt, die Einordnung nicht:
+           Ein Hexwert wechselt nicht mit dem Modus, und `#eff6ff` ist auf
+           dunklem Grund ein fast weisser Block.
+
+           NICHT DIESE REGEL IST DER WICHTIGE FALL. `:active` gilt nur, solange
+           die Maus gedrueckt ist — Sekundenbruchteile. Der BLEIBENDE Zustand
+           steht weiter unten bei `.time-checkbox:checked + div`: die gewaehlten
+           Zeitfenster, die waehrend des ganzen Formulars ausgewaehlt bleiben.
+           Dort ist der Wert nachgemessen, hier folgt er der Einheitlichkeit. */
+        .icon-card:active { transform: scale(0.95);
+                            background-color: var(--ds-brand-soft);
+                            border-color: var(--ds-brand); }
         [x-cloak] { display: none !important; }
 
-        /* Custom Checkbox Style */
+        /* Custom Checkbox Style — DER BLEIBENDE AUSWAHLZUSTAND (E2.49)
+
+           Die gewaehlten Zeitfenster («Erreichbarkeit fuer Handwerker»)
+           bleiben markiert, solange das Formular offen ist. Hier standen
+           `#eff6ff` / `#3b82f6` / `#1d4ed8`. Im Browser gemessen und gerechnet:
+
+                                                 alt         neu (dunkel)
+             Kachel gegen Schrift              6.16:1        7.44:1
+             Kachel gegen den Seitengrund     12.73:1        1.03:1
+
+           Die alte Kachel war IMMER hell — auf dunkler Seite ein leuchtend
+           weisser Block, lesbar, aber wie ein Fremdkoerper. Die neue fuegt
+           sich in die Flaeche ein; die Auswahl traegt jetzt der RAND
+           (`--ds-brand`, das umgebende `<div>` hat `border fw-linie`) und die
+           SCHRIFT. Das ist bewusst so: Es ist dieselbe Sprache, in der die
+           Anwendung sonst Auswahl anzeigt.
+
+           Wer den Rand aus dem Markup entfernt, nimmt der Auswahl damit ihr
+           letztes Merkmal — die Fuellung allein reicht im Dunkelmodus nicht. */
         .time-checkbox:checked + div {
-            background-color: #eff6ff; border-color: #3b82f6; color: #1d4ed8;
+            background-color: var(--ds-brand-soft); border-color: var(--ds-brand);
+            color: var(--ds-brand-600);
         }
 
         /* Loader */
@@ -49,15 +83,10 @@
             /* Der Ring lief auf `#e5e7eb` — hell und damit auf dunklem Grund
                ein leuchtender Kreis.
 
-               Die bewegte Sichel bleibt blau, ebenso die Auswahlkacheln
-               weiter oben (`#eff6ff`, `#3b82f6`, `#1d4ed8`). Sie setzen Grund,
-               Rand und Schrift zusammen und sind in beiden Modi lesbar — das
-               ist kein Messfehler, sondern Blau auf einer Petrol-Seite. Sie
-               umzufaerben aendert, was MIETER sehen, und ist deshalb in
-               docs/KONZEPT-UI.md als offene Gestaltungsfrage vermerkt statt
-               hier nebenbei entschieden. */
+               DIE SICHEL UND DIE KACHELN SIND IN E2.49 GEFOLGT — siehe die
+               Begruendung oben bei `.time-checkbox:checked + div`. */
             width: 40px; height: 40px; border: 4px solid var(--ds-line);
-            border-top: 4px solid #2563eb; border-radius: 50%;
+            border-top: 4px solid var(--ds-brand); border-radius: 50%;
             animation: spin 1s linear infinite; margin-bottom: 15px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

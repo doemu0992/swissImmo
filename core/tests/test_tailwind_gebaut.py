@@ -177,3 +177,40 @@ class TailwindGebautTest(SimpleTestCase):
         self.assertEqual(
             [p.removeprefix('./') for p in aus_datei], list(ORTE),
             'ORTE und tailwind.inhalt.js sind auseinandergelaufen.')
+
+    def test_die_baukonfiguration_ist_unversehrt(self):
+        """`tailwind.inhalt.js` muss ladbar bleiben — sonst baut gar nichts.
+
+        DER FALL, DER DIESE PRÜFUNG AUSGELÖST HAT
+
+        E2.49 ergänzte einen Kommentar, der einen Glob ausschrieb. Ein Glob für
+        «alle .py unterhalb» enthält die Zeichenfolge, die einen Blockkommentar
+        SCHLIESST — der Kommentar endete mitten im Satz, der Rest wurde zu Code,
+        und `npm run css:alle` brach mit `SyntaxError: Unexpected token (9:15)`
+        ab. Das Stylesheet blieb auf dem alten Stand.
+
+        Die anderen Prüfungen hier merkten davon nichts: Sie vergleichen
+        Vorlagen mit dem GEBAUTEN CSS, und das war ja noch da — nur veraltet.
+        Solange keine neue Klasse dazukam, blieb alles grün, während der Bau
+        seit Tagen nicht mehr lief.
+
+        WIE GEPRÜFT WIRD, OHNE NODE
+
+        Kommentare entfernen; übrig bleiben muss genau `module.exports = [ … ];`
+        mit Zeichenketten darin. Endet ein Kommentar zu früh, steht dort Prosa —
+        und die fällt auf.
+        """
+        quelle = (WURZEL / 'tailwind.inhalt.js').read_text(encoding='utf-8')
+        rest = re.sub(r'/\*.*?\*/', '', quelle, flags=re.S).strip()
+        self.assertTrue(
+            rest.startswith('module.exports'),
+            'Nach dem Entfernen der Kommentare beginnt die Datei nicht mit '
+            '`module.exports` — vermutlich hat ein Kommentar zu früh geendet '
+            f'(ein ausgeschriebener Glob?). Rest beginnt mit: {rest[:70]!r}')
+        # Nur Zuweisung, Klammern, Zeichenketten, Kommas, Leerraum.
+        erlaubt = re.compile(
+            r"""^module\.exports\s*=\s*\[\s*(?:'[^']*'\s*,\s*)*'[^']*'\s*,?\s*\]\s*;?$""")
+        self.assertRegex(
+            rest, erlaubt,
+            'Zwischen den Kommentaren steht etwas anderes als die Musterliste. '
+            f'Das lädt Node nicht mehr:\n{rest[:400]}')

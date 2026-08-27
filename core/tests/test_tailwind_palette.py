@@ -38,6 +38,20 @@ PALETTE = pathlib.Path('tailwind.palette.js')
 #: Die gebaute Datei. Sie ist das, was der Browser wirklich bekommt; die
 #: Konfiguration allein sagt nichts darueber, ob der Bau auch gelaufen ist.
 GEBAUT = pathlib.Path('static/css/tailwind.css')
+WURZEL = pathlib.Path('.')
+#: Die Klasse, an der abgelesen wird, ob die Rampe im Bau angekommen ist.
+#:
+#: Sie muss zwei Bedingungen erfuellen: aus der Indigo-Rampe stammen (nur
+#: dann unterscheiden sich die zwei Bauten) UND von echtem Code benutzt
+#: werden (sonst baut Tailwind keine Regel dafuer). `text-indigo-600` steht
+#: in `crm/admin.py` und `rentals/admin.py`.
+#:
+#: Vorher stand hier `bg-indigo-600` — die gab es im ganzen Bestand nur als
+#: BEISPIEL in einem Waechter. Siehe
+#: `test_die_sonde_wird_von_echtem_code_am_leben_gehalten`.
+SONDE = 'text-indigo-600'
+SONDE_HINWEIS = (f'Die Sonde ist `{SONDE}`; sie muss von echtem Code '
+                 f'benutzt werden, sonst baut Tailwind sie nicht.')
 #: Jede Huelle der Anwendung. Sie muessen den Stilbaustein mit der
 #: Petrol-Palette einbinden. Die aussenstehenden Seiten (Portal, Bewerbung,
 #: oeffentliche Formulare, Fehlerseiten) fehlen hier absichtlich — siehe
@@ -312,6 +326,45 @@ class HuellenTests(TestCase):
             'tailwind-aussen.css', zusammen,
             'Die Anwendung wuerde Tailwind OHNE die Markenpalette laden.')
 
+    def test_die_sonde_wird_von_echtem_code_am_leben_gehalten(self):
+        """Die zwei Prüfungen darunter stehen und fallen mit dieser Klasse.
+
+        WAS IN E2.49 PASSIERT IST
+
+        Sie benutzten `bg-indigo-600` als Sonde. Diese Klasse stand im ganzen
+        Bestand nur EINMAL: in `faelle/test_bereichsgestaltung.py`, wo sie als
+        Beispiel für eine VERBOTENE Klasse dient. Tailwind las damals auch die
+        Testdateien und baute brav eine Regel daraus — beide Prüfungen liefen
+        also jahrelang gegen ein Artefakt ihrer eigenen Testsammlung.
+
+        E2.49 nahm die Testdateien aus dem Bau. Die Regel verschwand, und
+        beide Prüfungen schlugen fehl mit «wurde nicht gebaut» — obwohl der
+        Bau in Ordnung war. Die Meldung zeigte in die falsche Richtung, was
+        schlimmer ist als gar keine.
+
+        Die Sonde ist jetzt `text-indigo-600`, und diese Prüfung hält fest,
+        WARUM sie existiert: weil echter Code sie benutzt. Verschwindet sie
+        dort, meldet sich diese Prüfung — mit dem richtigen Grund.
+        """
+        treffer = []
+        for datei in WURZEL.rglob('*.py'):
+            teile = datei.parts
+            if ('node_modules' in teile or 'migrations' in teile
+                    or 'tests' in teile or datei.name.startswith('test_')):
+                continue
+            if SONDE in datei.read_text(encoding='utf-8'):
+                treffer.append(datei.relative_to(WURZEL).as_posix())
+        for datei in (WURZEL / 'core/templates').rglob('*.html'):
+            if SONDE in datei.read_text(encoding='utf-8'):
+                treffer.append(datei.relative_to(WURZEL).as_posix())
+        self.assertTrue(
+            treffer,
+            f'`{SONDE}` steht in keiner Datei ausserhalb der Testsammlung. '
+            f'Damit baut Tailwind keine Regel dafür, und die zwei Prüfungen '
+            f'darunter melden «nicht gebaut», obwohl der Bau stimmt. Eine '
+            f'andere Klasse aus der Indigo-Rampe als SONDE wählen — eine, '
+            f'die echter Code benutzt.')
+
     def test_der_bau_traegt_die_rampe_auch_wirklich(self):
         """Der Schritt, den es vorher nicht geben konnte.
 
@@ -327,14 +380,15 @@ class HuellenTests(TestCase):
         # `assertIn` mit der ganzen Datei als Heuhaufen wuerde im Fehlerfall
         # 67 KB CSS in den Bericht schreiben. Eine Fehlermeldung, die niemand
         # liest, ist so gut wie keine — deshalb erst suchen, dann urteilen.
-        gefunden = re.search(r'\.bg-indigo-600\{[^}]*?(\d+ \d+ \d+)', css)
+        gefunden = re.search(rf'\.{SONDE}\{{[^}}]*?(\d+ \d+ \d+)', css)
         self.assertIsNotNone(
             gefunden,
-            f'In {GEBAUT} gibt es keine Regel `.bg-indigo-600` — wurde die '
-            f'Datei ueberhaupt gebaut? `npm run css` ausfuehren.')
+            f'In {GEBAUT} gibt es keine Regel `.{SONDE}` — wurde die '
+            f'Datei ueberhaupt gebaut? `npm run css` ausfuehren. '
+            f'{SONDE_HINWEIS}')
         self.assertEqual(
             gefunden.group(1), f'{r} {g} {b}',
-            f'`bg-indigo-600` steht in {GEBAUT} auf rgb({gefunden.group(1)}), '
+            f'`{SONDE}` steht in {GEBAUT} auf rgb({gefunden.group(1)}), '
             f'die Palette sagt #{marke} = rgb({r} {g} {b}). Die Palette wurde '
             f'geaendert, aber nicht neu gebaut — `npm run css` ausfuehren.')
 
@@ -346,8 +400,9 @@ class HuellenTests(TestCase):
         die Aussenseiten waeren beim Umstellen nebenbei umgefaerbt worden.
         """
         aussen = pathlib.Path('static/css/tailwind-aussen.css').read_text(encoding='utf-8')
-        gefunden = re.search(r'\.bg-indigo-600\{[^}]*?(\d+ \d+ \d+)', aussen)
-        self.assertIsNotNone(gefunden, 'tailwind-aussen.css wurde nicht gebaut.')
+        gefunden = re.search(rf'\.{SONDE}\{{[^}}]*?(\d+ \d+ \d+)', aussen)
+        self.assertIsNotNone(
+            gefunden, f'tailwind-aussen.css wurde nicht gebaut. {SONDE_HINWEIS}')
         marke = rampen()['indigo'][600].lstrip('#')
         r, g, b = (int(marke[i:i + 2], 16) for i in (0, 2, 4))
         self.assertNotEqual(
