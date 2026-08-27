@@ -36,6 +36,8 @@
             <input type="hidden" name="telefon" value="{{ vw.telefon }}">
             <input type="hidden" name="email" value="{{ vw.email }}">
             <input type="hidden" name="iban" value="{{ vw.iban }}">
+            {# Sonst loescht ein Speichern hier den Stundensatz: Die Ansicht setzt bei leerer Eingabe auf `None`. #}
+            <input type="hidden" name="stundensatz" value="{% localize off %}{{ vw.stundensatz|default_if_none:'' }}{% endlocalize %}">
             <div><label class="block text-xs font-semibold fw-mutet mb-1">Referenzzinssatz (%)</label>
                 <input name="aktueller_referenzzinssatz" type="number" step="0.05" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold fw-mutet mb-1">Landesindex LIK (Punkte)</label>
@@ -103,6 +105,24 @@
         </div>
         <div><label class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
             <input name="iban" value="{{ vw.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
+            {% comment %}
+            STUNDENSATZ (E2.47)
+
+            Das Feld kam mit E2.46 ins Modell, aber es gab keinen Weg, es zu
+            erfassen — dieselbe Luecke wie bei `Zeiteintrag` selbst: ein
+            Modell ohne Eingabe.
+
+            LEER IST EIN GUELTIGER WERT. Wer den Satz loeschen will, leert das
+            Feld; dann bleibt der Betrag auf der Fallakte leer. Das ist
+            Absicht: «nicht hinterlegt» ist eine Aussage, «CHF 0.00» waere
+            eine falsche.
+            {% endcomment %}
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Stundensatz (CHF/h)</label>
+                <input name="stundensatz" value="{% localize off %}{{ vw.stundensatz|default_if_none:'' }}{% endlocalize %}"
+                       placeholder="leer = nicht hinterlegt"
+                       class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
+                <div class="text-[11px] fw-faint mt-1">Für separat verrechenbaren Aufwand. Leer lassen, wenn keiner vereinbart ist.</div>
+            </div>
         <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             {% zeichen 'gut' klasse='mr-1.5' %}Stammdaten speichern
         </button>

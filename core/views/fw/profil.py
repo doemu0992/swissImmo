@@ -66,6 +66,40 @@ def fw_account(request):
                 return Decimal((_num(P.get(key)) or str(fallback)))
             except Exception:
                 return fallback
+        # STUNDENSATZ: LEER BLEIBEN DARF ER (E2.47)
+        #
+        # `dec()` oben nimmt einen Vorgabewert und gibt bei leerer Eingabe den
+        # alten zurueck — richtig fuer Referenzzins und LIK, die immer einen
+        # Wert haben. Der Stundensatz ist anders: `null` heisst «nicht
+        # hinterlegt», und das muss sich auch WIEDER herstellen lassen. Wer
+        # das Feld leert, will den Satz loswerden, nicht den alten behalten.
+        #
+        # Ohne Satz bleibt der Betrag auf der Fallakte leer — Absicht, keine
+        # Fehlfunktion. Eine Null waere eine Aussage, die niemand getroffen
+        # hat.
+        # FEHLT das Feld, bleibt der Satz unangetastet; ist es LEER, wird er
+        # geloescht. Zwei verschiedene Dinge, und der Unterschied traegt hier:
+        #
+        # Auf dieser Seite posten ZWEI Formulare auf dieselbe Ansicht. Das
+        # Kennzahlen-Formular oben schickt den Stundensatz nur mit, weil es
+        # ihn versteckt mitfuehrt. Wuerde diese Zeile «nicht da» wie «leer»
+        # behandeln, loeschte ein Speichern der Kennzahlen den Satz, sobald
+        # jemand das versteckte Feld entfernt — lautlos.
+        #
+        # `'x' in P` unterscheidet das, `P.get('x')` nicht. Damit ist das
+        # versteckte Feld eine Bequemlichkeit, keine Voraussetzung.
+        if 'stundensatz' in P:
+            roh = (P.get('stundensatz') or '').strip()
+            if roh:
+                try:
+                    vw.stundensatz = Decimal(_num(roh))
+                except Exception:
+                    messages.error(
+                        request,
+                        f'«{roh}» ist kein Betrag — Stundensatz unverändert.')
+            else:
+                vw.stundensatz = None
+
         vw.aktueller_referenzzinssatz = dec('aktueller_referenzzinssatz', vw.aktueller_referenzzinssatz)
         vw.aktueller_lik_punkte = dec('aktueller_lik_punkte', vw.aktueller_lik_punkte)
         vw.nk_honorar_prozent = dec('nk_honorar_prozent', vw.nk_honorar_prozent)

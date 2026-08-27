@@ -292,3 +292,128 @@ class ZeitRollenTest(TestCase):
         self.assertEqual(antwort.status_code, 403)
         fall.refresh_from_db()
         self.assertEqual(fall.erfasste_minuten, 0)
+
+
+class StundensatzErfassenTest(TestCase):
+    """Der Satz muss sich eintragen — und wieder löschen — lassen.
+
+    DIE LÜCKE, DIE E2.47 SCHLIESST
+
+    E2.46 hat `Organisation.stundensatz` ins Modell gelegt und in der Fallakte
+    als Platzhalter angezeigt. **Erfassen konnte man ihn nirgends.** Das ist
+    genau dieselbe Lücke wie bei `Zeiteintrag` selbst: ein Modell ohne
+    Eingabe, das aussieht, als sei die Funktion da.
+
+    Zweimal derselbe Fehler in zwei aufeinanderfolgenden Etappen — beim
+    zweiten Mal von Dominik bemerkt, nicht von mir.
+
+    LEER IST EIN GÜLTIGER WERT
+
+    Wer das Feld leert, will den Satz loswerden. Die Ansicht setzt deshalb auf
+    `None` statt den alten Wert zu behalten — anders als bei Referenzzins und
+    LIK, die immer einen Wert haben.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _post(self, **zusatz):
+        org = self.a.organisation
+        # KEIN `org_speichern`: Das Feld gibt es weder in der Vorlage noch
+        # in der Ansicht — die erste Fassung dieses Tests hat es erfunden.
+        # `fw_account` handelt bei JEDEM POST einer Schreibrolle.
+        daten = {'firma': org.firma, 'strasse': org.strasse, 'plz': org.plz,
+                 'ort': org.ort, 'telefon': '', 'email': '', 'iban': ''}
+        daten.update(zusatz)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        return c.post('/neu/account/', daten)
+
+    def test_der_satz_laesst_sich_erfassen(self):
+        self._post(stundensatz='140')
+        self.a.organisation.refresh_from_db()
+        self.assertEqual(self.a.organisation.stundensatz, Decimal('140'))
+
+    def test_leeren_setzt_auf_nicht_hinterlegt(self):
+        """`None`, nicht der alte Wert.
+
+        Bei Referenzzins und LIK ist «leer = unverändert» richtig; sie haben
+        immer einen Wert. Beim Stundensatz ist «leer» eine Entscheidung.
+        """
+        self.a.organisation.stundensatz = Decimal('140')
+        self.a.organisation.save(update_fields=['stundensatz'])
+        self._post(stundensatz='')
+        self.a.organisation.refresh_from_db()
+        self.assertIsNone(
+            self.a.organisation.stundensatz,
+            'Der alte Satz bleibt stehen — dann lässt er sich nie wieder '
+            'entfernen.')
+
+    def test_das_feld_steht_auf_der_seite(self):
+        """Sonst gäbe es das Modellfeld, aber keinen Weg dorthin."""
+        c = Client()
+        c.force_login(self.a.benutzer)
+        html = c.get('/neu/account/').content.decode()
+        self.assertIn('name="stundensatz"', html)
+        self.assertIn('Stundensatz', html)
+
+    def test_das_kennzahlen_formular_loescht_den_satz_nicht(self):
+        """Zwei Formulare, eine Ansicht — das Speichern oben darf nichts unten löschen.
+
+        WARUM NICHT AM QUELLTEXT GEZÄHLT
+
+        Die erste Fassung prüfte `text.count('name="stundensatz"') == 2`. Das
+        liest die Datei, nicht die Seite: Es sagt nichts darüber, ob die
+        beiden Vorkommen in verschiedenen Formularen stehen, ob das zweite
+        den richtigen Wert trägt, oder ob die Ansicht ihn überhaupt
+        auswertet. Ein `name="stundensatz"` im Erklärtext hätte gezählt.
+
+        Dieser Test rendert die Seite, sammelt die Felder des
+        Kennzahlen-Formulars **so, wie sie ausgeliefert werden**, und sendet
+        sie ab.
+        """
+        import re
+
+        self.a.organisation.stundensatz = Decimal('140')
+        self.a.organisation.save(update_fields=['stundensatz'])
+
+        c = Client()
+        c.force_login(self.a.benutzer)
+        html = c.get('/neu/account/').content.decode()
+
+        # Das erste Formular ohne `action` — das Kennzahlen-Formular.
+        formulare = re.findall(r'<form method="post"(?![^>]*action=).*?</form>',
+                               html, re.S)
+        self.assertGreaterEqual(len(formulare), 1, 'Kein Formular gefunden.')
+        felder = dict(re.findall(r'<input[^>]*name="([^"]+)"[^>]*value="([^"]*)"',
+                                 formulare[0]))
+        self.assertIn('stundensatz', felder,
+                      'Das Kennzahlen-Formular führt den Satz nicht mit.')
+        self.assertEqual(felder['stundensatz'], '140.00')
+
+        c.post('/neu/account/', felder)
+        self.a.organisation.refresh_from_db()
+        self.assertEqual(
+            self.a.organisation.stundensatz, Decimal('140'),
+            'Ein Speichern der Kennzahlen hat den Stundensatz verändert.')
+
+    def test_ein_formular_ohne_das_feld_laesst_den_satz_stehen(self):
+        """Die Absicherung dahinter: «nicht da» ist nicht «leer».
+
+        Das versteckte Feld ist eine Bequemlichkeit. Entfernt es jemand,
+        darf der Satz trotzdem nicht verschwinden — deshalb prüft die
+        Ansicht `'stundensatz' in P`, nicht `P.get('stundensatz')`.
+        """
+        self.a.organisation.stundensatz = Decimal('140')
+        self.a.organisation.save(update_fields=['stundensatz'])
+        org = self.a.organisation
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.post('/neu/account/', {'firma': org.firma, 'strasse': org.strasse,
+                                 'plz': org.plz, 'ort': org.ort,
+                                 'aktueller_referenzzinssatz': '1.25'})
+        self.a.organisation.refresh_from_db()
+        self.assertEqual(
+            self.a.organisation.stundensatz, Decimal('140'),
+            'Ein POST ohne das Feld hat den Satz gelöscht.')
