@@ -27,20 +27,29 @@ Bewacht von core/tests/test_keine_fremdquellen.py.
 <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 <link rel="stylesheet" href="{% static 'css/schriften.css' %}">
 {% comment %}
-FONT AWESOME IST SEIT E2.42 NICHT MEHR NOETIG.
+FONT AWESOME IST SEIT E2.42 NICHT MEHR NOETIG — UND SEIT E2.43 NIRGENDS MEHR.
 
-Es lud 89 KB CSS und 119 KB Schrift bei jedem Aufruf. Zuletzt hingen
-daran DREI Vorkommen: zwei `fa-spin`-Spinner und ein `fa-code`. Alle
-drei stehen jetzt im eigenen Sprite; die Drehung macht die Schicht mit
-acht Zeilen CSS.
+Es lud 87 KB CSS und 144 KB Schriften bei jedem Aufruf. Zuletzt hingen daran
+drei Vorkommen: zwei `fa-spin`-Spinner und ein `fa-code`. Alle drei stehen
+jetzt im eigenen Sprite; die Drehung macht die Schicht mit acht Zeilen CSS.
 
-Die Admin-Vorlage `templates/admin/dashboard_stats.html` traegt noch
-sieben `fa-`-Klassen. NACHGEMESSEN: Sie hat Font Awesome nie geladen —
-die beiden `<link>`-Zeilen standen ausschliesslich hier und in
-`fw/_assets.html`, und Djangos Admin bindet keine von beiden ein. Die
-sieben Zeichen sind also seit jeher LEER, nicht erst seit E2.42.
+DIE «BENANNTE AUSNAHME» WAR KEINE.
 
-Das ist keine benannte Ausnahme, sondern ein alter stiller Fehler; er
-gehoert behoben, braucht aber das Sprite in der Admin-Huelle. Die
-Font-Awesome-Dateien bleiben so lange im Repo.
+E2.42 fuehrte `templates/admin/dashboard_stats.html` als bewussten Rest —
+sieben `fa-`-Klassen in Djangos eigener Huelle. Nachgemessen stimmte daran
+zweierlei nicht:
+
+  · Die Vorlage hat Font Awesome NIE geladen. Die beiden `<link>`-Zeilen
+    standen ausschliesslich hier und in der Gegenstelle; Djangos Admin bindet
+    keine von beiden ein. Die sieben Zeichen waren seit jeher leer.
+
+  · Sie wurde ueberhaupt nie gerendert. Bereitgestellt ueber ein
+    `inclusion_tag`, das NIEMAND aufruft — und sie existierte ZWEIMAL, in
+    zwei verschiedenen Fassungen (150 und 212 Zeilen). Django haette nach
+    Suchpfad die eine geladen, die andere war unerreichbar.
+
+E2.43 hat beide Vorlagen und den Tag entfernt: 619 Zeilen toter Code, 82
+Farbklassen, die niemand sah. Der Tag fragte ausserdem `.objects` ohne
+Mandantenfilter — er waere ein Isolationsproblem gewesen, sobald ihn jemand
+aufgerufen haette.
 {% endcomment %}

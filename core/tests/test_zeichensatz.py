@@ -10,8 +10,8 @@ stehen für dasselbe, ebenso `fa-list`/`fa-list-ol` und `fa-gauge`/
 `fa-gauge-high`. Wer eine neue Seite baut, wählt aus zweitausend Zeichen und
 trifft nie dieselbe Wahl wie der Vorgänger.
 
-`docs/ZEICHEN.md` legt sechsundvierzig Zeichen mit fester Bedeutung fest, plus
-drei, für die eine Entscheidung aussteht.
+`docs/ZEICHEN.md` legt achtundvierzig Zeichen mit fester Bedeutung fest, plus
+zwei, für die eine Entscheidung aussteht.
 
 AN DREI ORTEN, NICHT AN EINEM
 
@@ -69,27 +69,29 @@ TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
 #: (Kachellisten, Termin-Arten, Gewerke) und die 29 Einsetzstellen in den
 #: Vorlagen auf `{% templatetag openblock %} zeichen_wert … {% templatetag closeblock %}`.
 #:
-#: Was bleibt, sind DREI Gruppen — nicht zwei. Nachgezaehlt:
+#: E2.43: 11 -> 3. Die Admin-Vorlage `dashboard_stats.html` ist ENTFERNT —
+#: toter Code: kein Aufrufer, doppelt vorhanden, Font Awesome nie geladen.
+#: Damit fielen sieben Zeichen und 82 Farbklassen weg, die niemand je sah.
 #:
-#:   7  templates/admin/dashboard_stats.html   die benannte Ausnahme,
-#:                                             wie bei den Farbklassen
-#:   2  `share-from-square`, `code`            die offenen Fragen aus E2.40
-#:   2  Spinner, die JAVASCRIPT setzt          fw/base.html:532 (nach dem
-#:                                             Absenden) und
-#:                                             public_bewerbung_form.html:266
-#:                                             (Vue, `v-if=isSubmitting`)
+#: DIE DREI VERBLEIBENDEN, NACHGEZAEHLT — nicht die, die E2.43 nannte
+#: («`share` und `share-from-square`»: das sind zwei Namen fuer drei
+#: Vorkommen, und `fa-share` steht im Bestand gar nicht mehr):
 #:
-#: Die Etappe nannte nur die ersten beiden Gruppen («der Rest steht in den
-#: Admin-Vorlagen»). Die Spinner stehen in lebenden Anwendungsvorlagen und
-#: sind eine eigene Art: Das Zeichen entsteht erst im Browser, `{% zeichen %}`
-#: erreicht sie nicht. Solange sie da sind, muss Font Awesome weiter geladen
-#: werden — gemessen 89 KB CSS und 119 KB Schrift je Aufruf.
+#:   fa-share-from-square   core/views/fw/dashboard.py — die letzte offene
+#:                          Frage aus E2.40 («Weiterverrechnen» ist
+#:                          Fachlogik, kein Teilen).
+#:   fa-buildings           modern_base.html, nur im ERKLAERTEXT eines
+#:                          Kommentarblocks. Kein gerendertes Zeichen; die
+#:                          Sperrklinke zaehlt Erwaehnungen mit, damit auch
+#:                          sie nicht wachsen.
 #:
-#: (`fa-buildings` in modern_base.html zaehlt der Waechter mit, obwohl es dort
-#: nur im ERKLAERTEXT eines {% comment %}-Blocks steht. Kein gerendertes
-#: Zeichen, aber die Sperrklinke soll auch Erwaehnungen nicht wachsen lassen.)
-STAND_ZEICHEN = 11
-STAND_VORKOMMEN = 15
+#: Der dritte, `fa-circle-notch` in fw/base.html, ist in der Gegenpruefung zu
+#: E2.43 mit umgestellt worden — E2.42 hatte ihn uebersehen, und das
+#: JavaScript daneben suchte `i.fa-solid`, was es seit E2.39 nicht mehr gibt.
+#: KEIN Absendeknopf der Anwendung zeigte darum noch einen Spinner. Deshalb
+#: steht hier 2, nicht die von E2.43 genannte 3.
+STAND_ZEICHEN = 2
+STAND_VORKOMMEN = 2
 
 #: Anzahl Zeichen mit fester Bedeutung, aus `docs/ZEICHEN.md`.
 #:
@@ -139,6 +141,10 @@ def _quellen():
     Testdateien bleiben aussen vor: Was dort in einer Vorrichtung oder einer
     Zusicherung steht, ist keine Wahl der Anwendung.
     """
+    # `templates/` gab es bis E2.43 — dort lag genau eine Datei, die tote
+    # Admin-Statistik. Der Ordner ist mit ihr verschwunden; der Eintrag
+    # bleibt, weil `DIRS` weiter dorthin zeigt und jemand ihn wieder
+    # befuellen kann. `rglob` auf einen fehlenden Pfad liefert nichts.
     for ordner in ('core/templates', 'templates'):
         yield from ((p, MUSTER_VORLAGE) for p in sorted((WURZEL / ordner).rglob('*.html')))
     for p in sorted(WURZEL.rglob('*.py')):
@@ -251,10 +257,10 @@ class ZeichensatzTest(SimpleTestCase):
     def test_die_messung_findet_ueberhaupt_etwas(self):
         """Gegenprobe: Ein leeres Ergebnis wäre trivial grün."""
         zeichen = _zeichen_im_bestand()
-        self.assertGreater(len(zeichen), 5,
+        self.assertGreater(len(zeichen), 1,
                            'Die Suche findet fast nichts — dann prüfen die '
                            'Tests oben nichts.')
-        self.assertGreater(sum(zeichen.values()), 8)
+        self.assertGreater(sum(zeichen.values()), 1)
 
     def test_auch_in_python_gewaehlte_zeichen_werden_gesehen(self):
         """Sonst wäre die Sperre an der Stelle blind, wo sie gebraucht wird.

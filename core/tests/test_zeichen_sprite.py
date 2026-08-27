@@ -299,7 +299,7 @@ class KeinFontAwesomeMehrTest(SimpleTestCase):
 
     DIE »AUSNAHME« IST KEINE — SIE IST EIN ALTER STILLER FEHLER
 
-    `templates/admin/dashboard_stats.html` trägt noch sieben `fa-`-Klassen.
+    `templates/admin/ [entfernt in E2.43 — die Vorlage war toter Code]
     Die Etappe nennt sie eine bewusste Ausnahme, die »an Djangos eigener
     Hülle hängt«. Nachgemessen: Die beiden `<link>`-Zeilen standen
     ausschliesslich in `fw/_assets.html` und `core/_assets_aussen.html`, und
@@ -437,3 +437,92 @@ class KeineToteBedingungTest(SimpleTestCase):
         t = self.MUSTER.search("{% if x %}{% zeichen 'gut' %}{% else %}{% zeichen 'gut' %}{% endif %}")
         self.assertIsNotNone(t)
         self.assertEqual(t.group(1), t.group(2))
+
+
+class KeineTotenFontAwesomeGriffeTest(SimpleTestCase):
+    """Kein Skript darf noch nach Font-Awesome-Klassen greifen.
+
+    DER BEFUND (E2.43, Gegenprüfung)
+
+    `base.html` suchte in JavaScript `btn.querySelector('i.fa-solid,
+    i.fa-regular')`, um beim Absenden einen Spinner einzublenden. Seit E2.39
+    tragen die Knöpfe `<svg class="fw-zeichen">` — **kein einziges**
+    `<i class="fa-…">` ist im Bestand übrig, gemessen. Die Abfrage traf also
+    nie mehr, und kein Absendeknopf der Anwendung zeigte noch einen Spinner.
+
+    `kreditoren.html` setzte `klasse='fa-spin'` auf ein Sprite-Zeichen. Die
+    Klasse gibt es seit E2.42 nicht mehr; die Drehung heisst `fw-dreht`. Der
+    Knopf zeigte eine stillstehende Uhr.
+
+    Beides ist die stillste Fehlerart dieser Reihe: Etwas fehlt, statt falsch
+    zu sein — kein Absturz, keine Meldung, kein roter Test. E2.42 zählte
+    »zwei `fa-spin`-Spinner«, stellte aber nur einen um und liess den zweiten
+    mitsamt seiner toten Abfrage stehen.
+    """
+
+    #: Namen, die es nach dem Entfernen von Font Awesome nicht mehr gibt.
+    TOT = ('fa-spin', 'i.fa-solid', 'i.fa-regular', "'fa-solid ", 'fa-fw')
+
+    def _zeilen(self):
+        """Nur Code — Erklärtext nennt die alten Namen selbstverständlich.
+
+        Drei Kommentararten kommen vor: `{% comment %}` in Vorlagen, `/* */`
+        in der Schicht und `//` im JavaScript. Übersprungen werden sie beim
+        DURCHLAUFEN, nicht durch vorheriges Kürzen — sonst stimmen die
+        gemeldeten Zeilennummern nicht mehr mit der Datei überein, und die
+        Meldung führt an die falsche Stelle.
+        """
+        for ordner in ('core/templates', 'static/js'):
+            wurzel = WURZEL / ordner
+            if not wurzel.exists():
+                continue
+            for p in sorted(wurzel.rglob('*')):
+                if p.suffix not in ('.html', '.js'):
+                    continue
+                in_vorlage = in_block = False
+                for nr, zeile in enumerate(
+                        p.read_text(encoding='utf-8').splitlines(), 1):
+                    if '{% comment %}' in zeile:
+                        in_vorlage = True
+                    if in_vorlage:
+                        if '{% endcomment %}' in zeile:
+                            in_vorlage = False
+                        continue
+                    rest = zeile
+                    if in_block:
+                        if '*/' not in rest:
+                            continue
+                        in_block = False
+                        rest = rest.split('*/', 1)[1]
+                    if '/*' in rest:
+                        vor, nach = rest.split('/*', 1)
+                        if '*/' in nach:
+                            rest = vor + nach.split('*/', 1)[1]
+                        else:
+                            in_block = True
+                            rest = vor
+                    if '//' in rest:
+                        rest = rest.split('//', 1)[0]
+                    yield p, nr, rest
+
+    def test_kein_skript_greift_nach_font_awesome(self):
+        funde = []
+        for p, nr, zeile in self._zeilen():
+            for name in self.TOT:
+                if name in zeile:
+                    funde.append(
+                        f'{p.relative_to(WURZEL).as_posix()}:{nr} → «{name}»')
+        self.assertEqual(
+            funde, [],
+            f'Hier wird noch nach Font Awesome gegriffen: {funde}. Diese '
+            f'Klassen gibt es nicht mehr — der Griff geht ins Leere, und '
+            f'zwar lautlos. Die Drehung heisst `fw-dreht`, das Zeichen '
+            f'`laedt`.')
+
+    def test_die_pruefung_findet_ueberhaupt_zeilen(self):
+        """Gegenprobe: Ohne Zeilen wäre die Prüfung oben trivial grün."""
+        self.assertGreater(len(list(self._zeilen())), 5000)
+        # Und die Kommentare werden wirklich uebersprungen:
+        text = ' '.join(z for _p, _n, z in self._zeilen())
+        self.assertNotIn('Zwei Spinner', text,
+                         'Der Erklaertext in /* */ wird mitgelesen.')

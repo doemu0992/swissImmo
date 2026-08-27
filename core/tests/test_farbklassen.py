@@ -32,7 +32,7 @@ E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 `anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
-**STAND 324 in 44 Vorlagen**.
+**STAND 242 in 43 Vorlagen**.
 
 DIESE ZAHL IST NICHT DIE GANZE SCHULD
 -------------------------------------
@@ -159,7 +159,6 @@ OBERGRENZE = {
     'core/templates/admin/crm/handwerker_header.html': 2,
     'core/templates/admin/crm/mieter_header.html': 2,
     'core/templates/admin/crm/verwaltung_header.html': 2,
-    'core/templates/admin/dashboard_stats.html': 82,
     'core/templates/admin/finance/abrechnung_vorschau.html': 30,
     'core/templates/core/_mieter_nav.html': 9,
     'core/templates/core/_passwort_shell_bottom.html': 2,

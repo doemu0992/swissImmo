@@ -3,7 +3,9 @@
 WARUM ES DIESEN WÄCHTER GIBT
 
 E2.23 hat fünf Bibliotheken von `cdn.jsdelivr.net` und `unpkg.com` ins Repo
-geholt — bootstrap-icons, Alpine (zweimal), signature_pad, Vue und chart.js.
+geholt — bootstrap-icons, Alpine (zweimal), signature_pad und Vue.
+(chart.js kam dazu, ist aber in E2.43 mit der toten Admin-Vorlage
+entfallen: 204 KB, die keine Seite je geladen hat.)
 Drei der vier Vorlagen sind öffentlich; jeder Aufruf schickte die IP-Adresse
 eines Mieters oder Bewerbers an einen Dritten.
 
@@ -60,7 +62,6 @@ WURZEL = pathlib.Path(settings.BASE_DIR)
 #: `docs/FREMDBIBLIOTHEKEN.md` wäre still hinfällig.
 VENDOR = {
     'alpinejs': '3.13.3',
-    'chart.js': '4.5.1',
     'signature_pad': '4.1.7',
     'vue': '3.5.41',
 }
@@ -174,8 +175,12 @@ class VendorDateienTest(SimpleTestCase):
             len(verweise), 8,
             f'Nur {len(verweise)} static-Adressen gefunden. Entweder stimmen '
             'die Suchpfade nicht mehr, oder das Muster greift daneben.')
+        # `js/chart.umd.js` ist in E2.43 ENTFALLEN: Die einzige Vorlage, die
+        # es lud, war `admin/dashboard_stats.html` — toter Code ohne Aufrufer,
+        # doppelt vorhanden. Mit ihr fielen 204 KB weg, die niemand je geladen
+        # hat. Die Bibliothek ist auch aus `package.json` entfernt.
         for erwartet in ('js/alpine.min.js', 'js/vue.global.prod.js',
-                         'js/chart.umd.js', 'js/signature_pad.umd.min.js'):
+                         'js/signature_pad.umd.min.js'):
             self.assertIn(
                 erwartet, verweise,
                 f'`{erwartet}` wird von keiner Vorlage mehr geladen. Entweder '

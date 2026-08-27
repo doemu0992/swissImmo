@@ -528,8 +528,16 @@ document.addEventListener('submit', function(e) {
     setTimeout(function() {                       // erst NACH dem Submit deaktivieren
         btn.disabled = true;
         btn.classList.add('opacity-60', 'cursor-wait');
-        var ic = btn.querySelector('i.fa-solid, i.fa-regular');
-        if (ic) { ic.className = 'fa-solid fa-circle-notch fa-spin mr-1.5'; }
+        // SEIT E2.39 GIBT ES KEIN `<i class="fa-…">` MEHR.
+        //
+        // Hier stand `btn.querySelector('i.fa-solid, i.fa-regular')`. Nach
+        // der Umstellung tragen die Knoepfe `<svg class="fw-zeichen">`, also
+        // traf die Abfrage nie mehr — und KEIN Absendeknopf der Anwendung
+        // zeigte noch einen Spinner. Lautlos, wie immer bei einem Zeichen,
+        // das fehlt statt falsch zu sein.
+        var ic = btn.querySelector('svg.fw-zeichen use');
+        if (ic) { ic.setAttribute('href', '#z-laedt');
+                  ic.parentNode.classList.add('fw-dreht'); }
     }, 0);
     // Sicherheitsnetz: nach 15 s wieder aktivieren (z.B. Validierungsfehler ohne Reload)
     setTimeout(function() {
