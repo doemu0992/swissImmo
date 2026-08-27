@@ -39,6 +39,25 @@ def _aus_tabelle():
     return erlaubte_zeichen()
 
 
+def _klassen_der_tabelle():
+    """Die Font-Awesome-Klassen aus der Spalte »ersetzt heute«.
+
+    Nicht die Zeichennamen der ersten Spalte — genau diese Verwechslung hat
+    den Doppeleintrag zweimal durchgelassen.
+    """
+    from core.templatetags.zeichen import MARKE_OFFEN
+
+    text = TABELLE.read_text(encoding='utf-8')
+    if MARKE_OFFEN in text:
+        text = text[:text.index(MARKE_OFFEN)]
+    klassen = set()
+    for zeile in text.splitlines():
+        m = re.match(r'\| `[a-z]+` \| [^|]* \| (.*) \|$', zeile)
+        if m:
+            klassen.update(re.findall(r'`([a-z0-9-]+)`', m.group(1)))
+    return klassen
+
+
 def _offene_zeichen():
     """Die Namen in der ERSTEN SPALTE der Liste »Noch ohne Bedeutung«.
 
@@ -183,7 +202,16 @@ class TabelleUndSpriteTest(SimpleTestCase):
         Name irgendwo im Dokument vorkommt, die andere liest nur bis zur
         offenen Liste. Keine sieht, dass ein Name in beiden steht.
         """
-        doppelt = _aus_tabelle() & _offene_zeichen()
+        # DIE KLASSEN vergleichen, nicht die Zeichennamen.
+        #
+        # Hier stand `_aus_tabelle() & _offene_zeichen()`. Links stehen die
+        # ZEICHENNAMEN der Tabelle (`weiterverrechnen`), rechts die
+        # KLASSENNAMEN der offenen Liste (`share`) — zwei Namensraeume, die
+        # Schnittmenge ist immer leer. Der Test konnte den Fall nie treffen,
+        # obwohl er ihn zu pruefen behauptete: Weder die drei aus E2.40 noch
+        # `share` aus E2.44 machten ihn rot. Nur die Gegenprobe traf, weil
+        # sie zufaellig einen ZEICHENNAMEN in die offene Liste schrieb.
+        doppelt = _klassen_der_tabelle() & _offene_zeichen()
         self.assertEqual(
             sorted(doppelt), [],
             f'Diese Zeichen stehen als entschieden UND als offen in '

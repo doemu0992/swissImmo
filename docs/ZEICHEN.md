@@ -1,4 +1,4 @@
-# Zeichensatz — 48 Zeichen mit fester Bedeutung
+# Zeichensatz — 49 Zeichen mit fester Bedeutung
 
 > Grundlage: Entscheid **D5** in `docs/ENTSCHEIDE-V7.md`, Befund **B8** in
 > `docs/UX-ANALYSE-V7.md`.
@@ -130,6 +130,7 @@ zugeordnetes Zeichen schlechter ist als ein zusätzliches.
 |---|---|---|
 | `freigeben` | Prüfen und zur Zahlung freigeben | `stamp` |
 | `storno` | Aufheben — der Beleg bleibt | `rotate-left` |
+| `weiterverrechnen` | Kosten an den Mieter weitergeben | `share-from-square`, `share` |
 | `meldung` | Etwas wartet auf Aufmerksamkeit | `bell` |
 
 **`freigeben`** ist weder `speichern` (es entsteht nichts Neues) noch `gut`
@@ -154,7 +155,7 @@ Der Konflikt ist damit nicht widerlegt, sondern **aufgelöst**: Die
 Rechnungsposition bekommt `dokument`, die Tickets bekommen `meldung`. Zwei
 Fundstellen, zwei Bedeutungen, zwei Zeichen.
 
-**Summe: 48 Zeichen.**
+**Summe: 49 Zeichen.**
 
 > **Warum es 42 geworden sind.** Die Tabelle entstand aus der
 > Häufigkeitsliste; der Wächter meldete danach Zeichen, die keiner Bedeutung
@@ -195,18 +196,25 @@ Bei `check` und `xmark` steht der Vorbehalt seit E2.35 in der Zeile. Bei den
 am Namen; und wo eine Kategorie oder ein Dokument gemeint ist, gehört ein
 Fachbegriff hin, kein Zustand.
 
-## Noch ohne Bedeutung (2 Klassen, 1 Frage)
+## Noch ohne Bedeutung (keine)
 
-Diese sind heute in Gebrauch und **bewusst nicht** zugeordnet. Für jedes
-fehlt eine Entscheidung, die nicht beim Sortieren nebenbei fällt — sie hier
-zu erfinden, hiesse eine Bedeutung festzuschreiben, die niemand geprüft hat.
+Hier standen bis E2.44 die Klassen, deren Bedeutung noch niemand entschieden
+hatte. Die Überschrift bleibt genau so stehen: `core/templatetags/zeichen.py`
+schneidet die Tabelle an ihr ab (`MARKE_OFFEN`), damit ein ungeklärtes Zeichen
+nicht als gültig durchgeht. Wer sie umbenennt, macht die offene Liste wieder
+zu einem Teil der Tabelle — beim ersten Versuch hier prompt passiert. Mit `weiterverrechnen` ist die letzte beantwortet; der Abschnitt bleibt
+als Ort für die nächste.
 
-| Klasse | Wo | Wofür es eine Bedeutung bräuchte |
-|---|---|---|
-| `share`, `share-from-square` | »Weiterverrechnen & Debitor erstellen« | **Weiterverrechnen** ist Fachlogik, kein Teilen. `extern` passt nicht (nichts verlässt die Anwendung), `senden` auch nicht (niemand bekommt Post). Zwei Klassen für eine Sache — eine davon fällt ohnehin weg. |
-
-Der Wächter zählt sie mit (`STAND_OFFEN`): Die Liste darf schrumpfen, nicht
-wachsen.
+> **Der Eintrag blieb einmal zu lange stehen.** E2.40 entschied `stamp`,
+> `rotate-left` und `bell`, liess ihre Zeilen hier aber stehen — und E2.44
+> tat dasselbe mit `share`/`share-from-square`: oben entschieden, unten
+> weiter als offen beschrieben, samt Begründung, warum die Bedeutung fehle.
+>
+> Beide Male blieb der Wächter grün. Er verglich die **Zeichennamen** der
+> Tabelle (`weiterverrechnen`) mit den **Klassennamen** der offenen Liste
+> (`share`) — zwei Namensräume, Schnittmenge immer leer. Er konnte den Fall
+> nie treffen, auch wenn er ihn zu prüfen behauptete. Verglichen werden jetzt
+> die Klassen aus »ersetzt heute« gegen die offene Liste.
 
 ## Was bewusst wegfällt
 
@@ -245,3 +253,10 @@ oder einer.
 > `code` stand unter «Noch ohne Bedeutung» — die Frage war, ob Rohdaten
 > überhaupt ein Zeichen tragen sollen. Sie bekommen eines, weil die
 > Alternative war, für eine Fundstelle ein ganzes Schriftpaket zu laden.
+
+> **`weiterverrechnen`, entschieden in E2.44.** Die letzte offene Frage.
+> Aus einer Kreditorenrechnung wird eine Forderung an den Mieter — die
+> Schuld wechselt den Träger. Das ist weder `senden` (es wird nichts
+> verschickt) noch `rechnung` (die gibt es vorher und nachher) noch
+> `geld` (kein Betrag fliesst). Der Pfeil tritt deshalb aus dem Beleg
+> aus, statt ihn zu teilen.

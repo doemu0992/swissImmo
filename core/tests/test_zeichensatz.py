@@ -10,8 +10,8 @@ stehen für dasselbe, ebenso `fa-list`/`fa-list-ol` und `fa-gauge`/
 `fa-gauge-high`. Wer eine neue Seite baut, wählt aus zweitausend Zeichen und
 trifft nie dieselbe Wahl wie der Vorgänger.
 
-`docs/ZEICHEN.md` legt achtundvierzig Zeichen mit fester Bedeutung fest, plus
-zwei, für die eine Entscheidung aussteht.
+`docs/ZEICHEN.md` legt neunundvierzig Zeichen mit fester Bedeutung fest —
+seit E2.44 ohne offene Frage.
 
 AN DREI ORTEN, NICHT AN EINEM
 
@@ -90,8 +90,16 @@ TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
 #: JavaScript daneben suchte `i.fa-solid`, was es seit E2.39 nicht mehr gibt.
 #: KEIN Absendeknopf der Anwendung zeigte darum noch einen Spinner. Deshalb
 #: steht hier 2, nicht die von E2.43 genannte 3.
-STAND_ZEICHEN = 2
-STAND_VORKOMMEN = 2
+#: E2.44: 3 -> 1. `share-from-square` ist entschieden (eigenes Zeichen
+#: `weiterverrechnen`), `fa-share` kam im Bestand gar nicht mehr vor, und
+#: der dritte war der zweite Spinner — in der Gegenpruefung behoben.
+#:
+#: WAS BLEIBT, IST KEIN ZEICHEN MEHR, SONDERN ERKLAERTEXT: `fa-buildings`
+#: in einem `{% comment %}`-Block von `modern_base.html`. Die Sperrklinke
+#: zaehlt es mit, damit auch Erwaehnungen nicht wachsen — gerendert wird
+#: nichts davon.
+STAND_ZEICHEN = 1
+STAND_VORKOMMEN = 1
 
 #: Anzahl Zeichen mit fester Bedeutung, aus `docs/ZEICHEN.md`.
 #:
@@ -112,7 +120,7 @@ STAND_VORKOMMEN = 2
 #:
 #: D5 sagt «~40». Die Tilde traegt inzwischen sechs Zeichen; wer die
 #: naechsten dazunimmt, sollte begruenden, warum die Bedeutung fehlte.
-ZIEL_ZEICHEN = 48
+ZIEL_ZEICHEN = 49
 
 #: Klassen, die in Gebrauch sind und bewusst noch keiner Bedeutung zugeordnet
 #: wurden. Diese Liste darf schrumpfen, nicht wachsen — sonst wird «noch offen»
@@ -126,8 +134,13 @@ ZIEL_ZEICHEN = 48
 #: waere, ob Rohdaten ein Zeichen tragen sollen, sondern weil die
 #: Alternative war, fuer EINE Fundstelle 89 KB CSS und 119 KB Schrift zu
 #: laden. Manche Fragen entscheidet der Preis.
-OFFEN = ('share', 'share-from-square')
-STAND_OFFEN = 2
+#: E2.44 hat `share`/`share-from-square` entschieden (`weiterverrechnen`) —
+#: und sie, wie E2.40 bei `stamp`/`bell`, in der offenen Liste stehen lassen.
+#: Beide Male blieb der Waechter gruen, weil er Zeichennamen mit
+#: Klassennamen verglich. Beides in der Gegenpruefung behoben; die Liste ist
+#: jetzt LEER, und das ist der Zielzustand von D5.
+OFFEN = ()
+STAND_OFFEN = 0
 
 #: In Vorlagen steht die Klasse hinter dem Stil: `class="fa-solid fa-plug"`.
 MUSTER_VORLAGE = re.compile(r'fa-(?:solid|regular|brands)\s+(fa-[a-z0-9-]+)')
@@ -257,41 +270,68 @@ class ZeichensatzTest(SimpleTestCase):
     def test_die_messung_findet_ueberhaupt_etwas(self):
         """Gegenprobe: Ein leeres Ergebnis wäre trivial grün."""
         zeichen = _zeichen_im_bestand()
-        self.assertGreater(len(zeichen), 1,
+        self.assertGreaterEqual(len(zeichen), 1,
                            'Die Suche findet fast nichts — dann prüfen die '
                            'Tests oben nichts.')
-        self.assertGreater(sum(zeichen.values()), 1)
+        self.assertGreaterEqual(sum(zeichen.values()), 1)
 
-    def test_auch_in_python_gewaehlte_zeichen_werden_gesehen(self):
+    def test_die_suche_liest_auch_den_python_code(self):
         """Sonst wäre die Sperre an der Stelle blind, wo sie gebraucht wird.
 
-        17 Klassen stehen in keiner Vorlage, sondern nur in View-Code —
-        `fa-plug` für »Integrationen«, `fa-paint-roller` für das Gewerk
-        Maler. Misst der Wächter nur `core/templates/`, lassen sich neue
-        Zeichen dort beliebig nachlegen.
+        WARUM NICHT MEHR AN DEN DATEN GEMESSEN
+
+        Bis E2.41 stand hier `assertIn('fa-plug', …)` — der Test belegte die
+        Erfassung an einem konkreten Wert und wurde rot, als genau dieser
+        umgestellt wurde. Danach hiess es »es gibt Zeichen, die NUR in Python
+        gewählt werden«; das wurde rot, als es keine mehr gab. Zweimal
+        derselbe Fehler: **ein Wächter, der einen Zwischenstand festschreibt,
+        wird zum Hindernis, sobald das Ziel näher rückt.**
+
+        E2.44 ersetzte ihn durch
+        `assertGreaterEqual(len(zeichen), len(nur_vorlagen))` plus einen
+        `skipTest`. Das prüft nichts: `zeichen` enthält `nur_vorlagen`
+        konstruktionsbedingt, die Zusicherung ist immer wahr, und danach wird
+        übersprungen. Der Wächter war damit still abgeschaltet.
+
+        WAS STATTDESSEN GEPRÜFT WIRD: DER MECHANISMUS
+
+        Nicht, ob heute Zeichen in Python stehen — sondern ob die Suche
+        **dorthin schaut**. Diese Aussage bleibt wahr und prüfbar, auch wenn
+        kein einziges Zeichen mehr zu finden ist, und sie wird falsch, sobald
+        jemand `_quellen()` auf die Vorlagen verengt.
         """
-        zeichen = _zeichen_im_bestand()
-        nur_vorlagen = {}
-        for p in sorted((WURZEL / 'core' / 'templates').rglob('*.html')):
-            for t in MUSTER_VORLAGE.findall(p.read_text(encoding='utf-8')):
-                nur_vorlagen[t] = nur_vorlagen.get(t, 0) + 1
+        quellen = list(_quellen())
+        py = [p for p, muster in quellen if p.suffix == '.py']
+        html = [p for p, muster in quellen if p.suffix == '.html']
         self.assertGreater(
-            len(zeichen), len(nur_vorlagen),
-            'Der Wächter sieht nicht mehr als core/templates/ — dann greift '
-            'er nicht für Zeichen, die in View-Code gewählt werden.')
-        # KEINE festen Beispielwerte mehr.
-        #
-        # Bis E2.41 stand hier `assertIn('fa-plug', …)`. Der Test belegte die
-        # Erfassung an einem konkreten Wert — und wurde rot, als genau dieser
-        # Wert umgestellt wurde. Er meldete damit einen FORTSCHRITT als
-        # Fehler.
-        #
-        # Geprueft wird jetzt die Aussage selbst: Es gibt Zeichen, die NUR in
-        # Python gewaehlt werden. Solange das stimmt, greift der Waechter
-        # dort; wenn nicht mehr, ist er ueberfluessig und sagt es.
-        nur_python = set(zeichen) - set(nur_vorlagen)
-        self.assertTrue(
-            nur_python,
-            'Kein Zeichen wird mehr ausschliesslich in Python gewaehlt. '
-            'Entweder ist Schritt 4 fertig — dann darf dieser Test weg — '
-            'oder die Suche findet den Python-Teil nicht mehr.')
+            len(py), 100,
+            'Die Suche liest keinen Python-Code mehr — dann lassen sich '
+            'Zeichen in View-Code beliebig nachlegen, ohne dass die Sperre '
+            'es merkt.')
+        self.assertGreater(len(html), 100, 'Die Suche liest keine Vorlagen mehr.')
+
+        # Und sie benutzt dort das richtige Muster: In Python steht der Name
+        # allein in Anfuehrungszeichen, nicht hinter `fa-solid`.
+        muster_py = {muster for p, muster in quellen if p.suffix == '.py'}
+        self.assertEqual(muster_py, {MUSTER_PYTHON})
+        muster_html = {muster for p, muster in quellen if p.suffix == '.html'}
+        self.assertEqual(muster_html, {MUSTER_VORLAGE})
+
+    def test_ein_zeichen_im_view_code_wird_gefunden(self):
+        """Gegenprobe zum Mechanismus — an einer echten Datei.
+
+        `_zeichen_im_bestand()` muss einen Namen finden, der NUR in einer
+        Python-Datei steht. Geprüft wird das an einer angelegten Datei, nicht
+        am Bestand: So bleibt die Aussage gültig, wenn der Bestand sauber ist.
+        """
+        import tempfile
+
+        with tempfile.TemporaryDirectory(dir=str(WURZEL)) as ordner:
+            datei = pathlib.Path(ordner) / 'probe_zeichen.py'
+            datei.write_text("KACHELN = [{'icon': 'fa-erfunden'}]\n",
+                             encoding='utf-8')
+            gefunden = _zeichen_im_bestand()
+        self.assertIn(
+            'fa-erfunden', gefunden,
+            'Ein Zeichen, das nur in einer Python-Datei steht, wird nicht '
+            'gefunden — die Sperre greift dort nicht.')

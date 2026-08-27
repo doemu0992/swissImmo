@@ -258,7 +258,7 @@ def fw_finanzen(request):
         # sie werden nicht kopiert. Der Korb behält die Handlungen, die keine
         # Läufe sind (freigeben, weiterverrechnen, Kautionen); die Läufe
         # stehen im Periodenabschluss und im Bereich «Läufe».
-        ('weiterverrechnung', 'fa-share-from-square', 'violet', 'Weiterverrechnungen abschliessen',
+        ('weiterverrechnung', 'weiterverrechnen', 'violet', 'Weiterverrechnungen abschliessen',
          'Angefangene Weiterverrechnungen an Mieter fertigstellen',
          len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', 'Weiterverrechnen', False),
         # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)
