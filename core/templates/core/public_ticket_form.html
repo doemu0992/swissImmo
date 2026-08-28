@@ -207,8 +207,8 @@
                 <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                     <template x-for="r in rooms">
                         <div @click="selectRoom(r.name)" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-xl p-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md h-28 md:h-32 text-center">
-                            {% zeichen 'einheit' klasse='text-3xl md:text-4xl fw-faint' %}
-                            <span class="text-xs md:text-sm font-medium fw-mutet leading-tight" x-text="r.name"></span>
+                            <svg class="fw-zeichen fw-marke text-2xl md:text-3xl" aria-hidden="true"><use :href="'#z-' + r.z"></use></svg>
+                            <span class="text-sm md:text-base font-medium fw-strong leading-tight" x-text="r.name"></span>
                         </div>
                     </template>
                 </div>
@@ -220,8 +220,7 @@
                 <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                     <template x-for="obj in getCurrentObjects()">
                         <div @click="selectObject(obj)" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-xl p-2 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md h-28 md:h-32 text-center">
-                            {% zeichen 'einheit' klasse='text-3xl md:text-4xl fw-marke' %}
-                            <span class="text-xs md:text-sm font-medium fw-mutet leading-tight" x-text="obj.name"></span>
+                            <span class="text-sm md:text-base font-medium fw-strong leading-tight" x-text="obj.name"></span>
                         </div>
                     </template>
                     <div @click="selectObject({name: 'Sonstiges', isAppliance: false})" class="icon-card cursor-pointer fw-flaeche2 border fw-linie border-dashed rounded-xl p-2 flex flex-col items-center justify-center gap-2 h-28 md:h-32 text-center">
@@ -385,45 +384,106 @@
                     { id: 'Admin', name: 'Frage zu Dokumenten' }
                 ],
                 rooms: [
-                    { name: 'Küche', icon: 'kitchen' }, { name: 'Bad', icon: 'bathtub' }, { name: 'Korridor', icon: 'hallway' },
-                    { name: 'Zimmer', icon: 'bed' }, { name: 'Reduit', icon: 'inventory_2' }, { name: 'Balkon/Terrasse', icon: 'balcony' },
-                    { name: 'Treppenhaus', icon: 'stairs' }, { name: 'Waschküche', icon: 'local_laundry_service' }, { name: 'Keller', icon: 'warehouse' },
-                    { name: 'Estrich', icon: 'roofing' }, { name: 'Veloraum', icon: 'pedal_bike' }, { name: 'Briefkasten', icon: 'mark_as_unread' }
+                    { name: 'Küche', z: 'kueche' }, { name: 'Bad', z: 'bad' }, { name: 'Korridor', z: 'korridor' },
+                    { name: 'Zimmer', z: 'zimmer' }, { name: 'Reduit', z: 'reduit' }, { name: 'Balkon/Terrasse', z: 'balkon' },
+                    { name: 'Treppenhaus', z: 'treppenhaus' }, { name: 'Waschküche', z: 'waschkueche' }, { name: 'Keller', z: 'keller' },
+                    { name: 'Estrich', z: 'estrich' }, { name: 'Veloraum', z: 'veloraum' }, { name: 'Briefkasten', z: 'briefkasten' }
                 ],
-                standardItems: [
-                    { name: 'Licht', icon: 'lightbulb', isAppliance: false }, { name: 'Steckdose', icon: 'power', isAppliance: false },
-                    { name: 'Fenster', icon: 'window', isAppliance: false }, { name: 'Storen/Markise', icon: 'blinds', isAppliance: false },
-                    { name: 'Boden', icon: 'texture', isAppliance: false }, { name: 'Wand', icon: 'wallpaper', isAppliance: false },
-                    { name: 'Decke', icon: 'roofing', isAppliance: false }
-                ],
+                // WAS ES IN JEDEM RAUM GIBT — aber nicht in jedem.
+                //
+                // Bis E2.51 wurden diese Posten an JEDEN Raum angehaengt:
+                // `[...specific, ...standardItems]`. Ein Briefkasten hat keine
+                // Decke, ein Balkon keine Steckdose, ein Veloraum keine
+                // Storen. Wer das anwaehlt, meldet einen Schaden an etwas,
+                // das es dort nicht gibt — und die Verwaltung schickt einen
+                // Handwerker los.
+                //
+                // Jetzt steht je Raum, was dort vorkommt. `alle` ist die
+                // Abkuerzung fuer Innenraeume.
+                standardItems: {
+                    alle: ['Licht', 'Steckdose', 'Fenster', 'Storen/Markise',
+                           'Boden', 'Wand', 'Decke'],
+                    // Eine Abstellkammer hat kein Fenster (E2.51, Sichtpruefung).
+                    'Reduit': ['Licht', 'Steckdose', 'Boden', 'Wand', 'Decke'],
+                    // OHNE `Storen/Markise`: Der Balkon hat schon `Sonnenstore`
+                    // in seiner eigenen Liste. Beides zusammen bot dieselbe
+                    // Sache zweimal an — genau die Dopplung, die diese Etappe
+                    // beseitigen wollte.
+                    'Balkon/Terrasse': ['Licht', 'Boden'],
+                    'Keller': ['Licht', 'Steckdose', 'Boden', 'Wand', 'Decke'],
+                    'Estrich': ['Licht', 'Boden', 'Wand', 'Decke'],
+                    'Veloraum': ['Licht', 'Steckdose', 'Boden', 'Wand'],
+                    'Briefkasten': [],
+                    'Treppenhaus': ['Licht', 'Boden', 'Wand', 'Decke', 'Fenster'],
+                },
                 objectMap: {
                     'Küche': [
-                        { name: 'Kühlschrank', icon: 'kitchen', isAppliance: true }, { name: 'Geschirrspüler', icon: 'dishwasher_gen', isAppliance: true },
-                        { name: 'Dampfabzug', icon: 'air', isAppliance: true }, { name: 'Kochherd', icon: 'grid_view', isAppliance: true },
-                        { name: 'Backofen/Steamer', icon: 'microwave', isAppliance: true }, { name: 'Spülbecken', icon: 'water_drop', isAppliance: false }
+                        { name: 'Kühlschrank', isAppliance: true }, { name: 'Geschirrspüler', isAppliance: true },
+                        { name: 'Dampfabzug', isAppliance: true }, { name: 'Kochherd', isAppliance: true },
+                        { name: 'Backofen/Steamer', isAppliance: true }, { name: 'Spülbecken', isAppliance: false }
                     ],
                     'Bad': [
-                        { name: 'Lavabo', icon: 'water_drop', isAppliance: false }, { name: 'WC', icon: 'wc', isAppliance: false },
-                        { name: 'Dusche', icon: 'shower', isAppliance: false }, { name: 'Badewanne', icon: 'bathtub', isAppliance: false },
-                        { name: 'Spiegelschrank', icon: 'shelves', isAppliance: false }, { name: 'Lüftung', icon: 'mode_fan', isAppliance: false }
+                        { name: 'Lavabo', isAppliance: false }, { name: 'WC', isAppliance: false },
+                        { name: 'Dusche', isAppliance: false }, { name: 'Badewanne', isAppliance: false },
+                        { name: 'Spiegelschrank', isAppliance: false }, { name: 'Lüftung', isAppliance: false }
                     ],
+                    // `Secomat` stand hier seit jeher und war in E2.51 ohne
+                    // Not herausgefallen. Ein Secomat (Trocknungsgeraet) steht
+                    // in Schweizer Waschkuechen so haeufig wie der Tumbler und
+                    // ist ein gaengiger Stoerungsfall — wer ihn nicht anwaehlen
+                    // kann, meldet ihn als «Sonstiges».
                     'Waschküche': [
-                        { name: 'Waschmaschine', icon: 'local_laundry_service', isAppliance: true }, { name: 'Tumbler', icon: 'mode_fan', isAppliance: true },
-                        { name: 'Secomat', icon: 'air', isAppliance: true }
+                        { name: 'Waschmaschine', isAppliance: true }, { name: 'Tumbler', isAppliance: true },
+                        { name: 'Secomat', isAppliance: true },
+                        { name: 'Waschbecken', isAppliance: false }, { name: 'Abfluss', isAppliance: false }
                     ],
                     'Korridor': [
-                        { name: 'Gegensprechanlage', icon: 'call', isAppliance: false }, { name: 'Eingangstür', icon: 'door_front', isAppliance: false },
-                        { name: 'Wandschrank', icon: 'door_sliding', isAppliance: false }
+                        { name: 'Wohnungstür', isAppliance: false }, { name: 'Gegensprechanlage', isAppliance: false },
+                        { name: 'Einbauschrank', isAppliance: false }
                     ],
                     'Treppenhaus': [
-                        { name: 'Geländer', icon: 'fence', isAppliance: false }, { name: 'Lift', icon: 'elevator', isAppliance: false },
-                        { name: 'Eingangstür', icon: 'door_front', isAppliance: false }
+                        { name: 'Haustür', isAppliance: false }, { name: 'Treppe/Geländer', isAppliance: false },
+                        { name: 'Lift', isAppliance: true }
+                    ],
+                    // E2.51 ergaenzt: Bis hierher fielen diese sieben Raeume auf
+                    // die Standardposten zurueck — «Licht, Steckdose, Fenster»
+                    // fuer einen Briefkasten.
+                    'Zimmer': [
+                        { name: 'Heizkörper', isAppliance: false }, { name: 'Einbauschrank', isAppliance: false },
+                        { name: 'Zimmertür', isAppliance: false }
+                    ],
+                    'Reduit': [
+                        { name: 'Waschturm', isAppliance: true }, { name: 'Regal', isAppliance: false },
+                        { name: 'Anschluss', isAppliance: false }
+                    ],
+                    'Balkon/Terrasse': [
+                        { name: 'Geländer', isAppliance: false }, { name: 'Sonnenstore', isAppliance: false },
+                        { name: 'Abfluss', isAppliance: false }, { name: 'Balkontür', isAppliance: false }
+                    ],
+                    'Keller': [
+                        { name: 'Kellerabteil', isAppliance: false }, { name: 'Kellertür', isAppliance: false },
+                        { name: 'Feuchtigkeit', isAppliance: false }
+                    ],
+                    'Estrich': [
+                        { name: 'Estrichabteil', isAppliance: false }, { name: 'Dachfenster', isAppliance: false },
+                        { name: 'Feuchtigkeit', isAppliance: false }
+                    ],
+                    'Veloraum': [
+                        { name: 'Veloständer', isAppliance: false }, { name: 'Tür/Schloss', isAppliance: false }
+                    ],
+                    'Briefkasten': [
+                        { name: 'Schloss', isAppliance: false }, { name: 'Beschriftung', isAppliance: false },
+                        { name: 'Klappe', isAppliance: false }
                     ]
                 },
 
                 getCurrentObjects() {
+                    // Je Raum: erst was dort steht, dann die allgemeinen
+                    // Posten DIESES Raums — nicht alle ueberall (E2.51).
                     let specific = this.objectMap[this.room] || [];
-                    return [...specific, ...this.standardItems];
+                    let namen = this.standardItems[this.room] || this.standardItems.alle;
+                    let allgemein = namen.map(n => ({ name: n, isAppliance: false }));
+                    return [...specific, ...allgemein];
                 },
                 selectCategory(cat) {
                     this.category = cat;

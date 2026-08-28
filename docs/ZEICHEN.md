@@ -1,4 +1,4 @@
-# Zeichensatz — 49 Zeichen mit fester Bedeutung
+# Zeichensatz — 61 Zeichen mit fester Bedeutung
 
 > Grundlage: Entscheid **D5** in `docs/ENTSCHEIDE-V7.md`, Befund **B8** in
 > `docs/UX-ANALYSE-V7.md`.
@@ -92,7 +92,7 @@ Raums daneben, und das Bett trägt nichts bei.
 | `schluessel` | Zutritt, Übergabe | `key`, `lock-open` |
 | `zaehler` | Verbrauch, Ablesung | `gauge`, `gauge-high`, `faucet-drip`, `temperature-arrow-up` |
 
-### Zeit und Verlauf (5)
+### Zeit und Verlauf (7)
 
 | Zeichen | Bedeutung | ersetzt heute |
 |---|---|---|
@@ -120,7 +120,34 @@ Raums daneben, und das Bett trägt nichts bei.
 > Fehler, gegen den diese Tabelle geschrieben ist. Wegklicken ist eine
 > eigene Bedeutung; sie fehlte.
 
-### Fachliche Handlungen (3) — entschieden in E2.40
+### Räume im Schadenformular (12) — entschieden in E2.51
+
+Diese zwölf stehen bewusst **nicht** unter »Fachbegriffe«. Sie sind kein Teil
+des Vokabulars der Anwendung, sondern der Katalog **einer einzigen Seite**:
+`/report/<id>/`, das öffentliche Schadenformular vom Aushang im Treppenhaus.
+Dort wählt ein Mieter am Handy aus zwölf Kacheln, oft in Eile — dort führt ein
+Symbol das Auge schneller als zwölfmal gleich aussehender Text.
+
+Wer sie in der Anwendung verwenden will, soll erst begründen, warum
+`liegenschaft` oder `einheit` nicht reicht. Ein Katalog, der in die
+Innenansicht wandert, wird zum Sonderfall-Sammelbecken.
+
+| Zeichen | Bedeutung | ersetzt heute |
+|---|---|---|
+| `kueche` | Raum: Küche | (neu, E2.51) |
+| `bad` | Raum: Bad | (neu, E2.51) |
+| `korridor` | Raum: Korridor | (neu, E2.51) |
+| `zimmer` | Raum: Zimmer | (neu, E2.51) |
+| `reduit` | Raum: Reduit | (neu, E2.51) |
+| `balkon` | Raum: Balkon/Terrasse | (neu, E2.51) |
+| `treppenhaus` | Raum: Treppenhaus | (neu, E2.51) |
+| `waschkueche` | Raum: Waschküche | (neu, E2.51) |
+| `keller` | Raum: Keller | (neu, E2.51) |
+| `estrich` | Raum: Estrich | (neu, E2.51) |
+| `veloraum` | Raum: Veloraum | (neu, E2.51) |
+| `briefkasten` | Raum: Briefkasten | (neu, E2.51) |
+
+### Fachliche Handlungen (4) — entschieden in E2.40
 
 Diese drei standen unter »Noch ohne Bedeutung«. Sie sind jetzt eigene Zeichen,
 weil keine der bestehenden Bedeutungen sie trägt — und weil ein falsch
@@ -155,7 +182,9 @@ Der Konflikt ist damit nicht widerlegt, sondern **aufgelöst**: Die
 Rechnungsposition bekommt `dokument`, die Tickets bekommen `meldung`. Zwei
 Fundstellen, zwei Bedeutungen, zwei Zeichen.
 
-**Summe: 49 Zeichen.**
+**Summe: 61 Zeichen** — 49 fuer die Anwendung, dazu die zwoelf
+Raumzeichen des oeffentlichen Schadenformulars (E2.51, eigener
+Abschnitt weiter unten).
 
 > **Warum es 42 geworden sind.** Die Tabelle entstand aus der
 > Häufigkeitsliste; der Wächter meldete danach Zeichen, die keiner Bedeutung
@@ -260,3 +289,16 @@ oder einer.
 > verschickt) noch `rechnung` (die gibt es vorher und nachher) noch
 > `geld` (kein Betrag fliesst). Der Pfeil tritt deshalb aus dem Beleg
 > aus, statt ihn zu teilen.
+
+> **Raumzeichen, entschieden in E2.51 — und das kehrt einen früheren
+> Entscheid um.** Oben steht unter «Was bewusst wegfällt»: Raumkatalog-
+> Symbole seien überflüssig, weil der Name daneben steht. Das war für
+> die INNENANSICHT gedacht, wo Räume in Listen erscheinen.
+>
+> Im öffentlichen Schadenformular ist es anders: Dort wählt ein Mieter
+> am Handy aus zwölf Kacheln, oft in Eile und im Treppenhaus. Ein
+> Symbol führt das Auge schneller als zwölfmal gleich aussehender Text.
+> Zwölf gleiche `einheit`-Zeichen wären schlechter als keine — zwölf
+> verschiedene sind besser als beides.
+>
+> Der frühere Absatz bleibt stehen und gilt weiter für die Innenansicht.

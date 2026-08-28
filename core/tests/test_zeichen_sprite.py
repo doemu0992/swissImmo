@@ -554,3 +554,76 @@ class KeineTotenFontAwesomeGriffeTest(SimpleTestCase):
         text = ' '.join(z for _p, _n, z in self._zeilen())
         self.assertNotIn('Zwei Spinner', text,
                          'Der Erklaertext in /* */ wird mitgelesen.')
+
+
+class AnzahlenInDenUeberschriftenTest(SimpleTestCase):
+    """Die Zahlen in den Abschnittsüberschriften müssen die Zeilen zählen.
+
+    WARUM DAS EIN EIGENER WÄCHTER IST
+
+    `docs/ZEICHEN.md` gliedert die Zeichen in Abschnitte, und jede Überschrift
+    trägt ihre Anzahl: «### Fachbegriffe (12)». Diese Zahl liest man beim
+    Überfliegen und glaubt sie — sie ist die einzige Stelle, an der steht, wie
+    gross eine Gruppe ist.
+
+    NACHGEZÄHLT WAREN DREI FALSCH:
+
+      · «Fachbegriffe (12)» hatte 24 Zeilen. E2.51 legte zwölf Raumzeichen
+        dort ab, ohne die Zahl anzurühren — und ohne zu prüfen, ob sie
+        überhaupt Fachbegriffe sind. Sie haben jetzt einen eigenen Abschnitt.
+
+      · «Zeit und Verlauf (5)» hatte 7 und «Fachliche Handlungen (3)» hatte 4.
+        Beides stand schon vor E2.51 falsch da — seit `laedt`, `code` und
+        `meldung` dazukamen. Niemand hat es gemeldet, weil niemand nachzählt.
+
+    Eine Zahl, die nicht stimmt, ist schlechter als keine: Sie steht in einem
+    Dokument, das als Standard gilt, und sieht aus wie eine Feststellung.
+    """
+
+    #: `### Name (12)` oder `### Name (12) — entschieden in E2.40`
+    UEBERSCHRIFT = re.compile(r'^###\s+(.+?)\s+\((\d+)\)(?:\s|$)')
+    #: Eine Zeichenzeile der Tabelle: `| `name` | Bedeutung | … |`
+    ZEICHENZEILE = re.compile(r'^\|\s*`[a-z][a-z0-9_-]*`\s*\|')
+
+    def _abschnitte(self):
+        """Ergibt `(name, behauptet, gezaehlt)` je Abschnitt mit Zahl."""
+        name = behauptet = None
+        gezaehlt = 0
+        for zeile in TABELLE.read_text(encoding='utf-8').splitlines():
+            treffer = self.UEBERSCHRIFT.match(zeile)
+            if zeile.startswith('### '):
+                if name is not None:
+                    yield name, behauptet, gezaehlt
+                name = behauptet = None
+                gezaehlt = 0
+                if treffer:
+                    name, behauptet = treffer.group(1), int(treffer.group(2))
+            elif name is not None and self.ZEICHENZEILE.match(zeile):
+                gezaehlt += 1
+        if name is not None:
+            yield name, behauptet, gezaehlt
+
+    def test_jede_ueberschrift_zaehlt_ihre_zeilen(self):
+        falsch = [f'«{n}» behauptet {b}, gezählt {g}'
+                  for n, b, g in self._abschnitte() if b != g]
+        self.assertEqual(
+            falsch, [],
+            'Diese Überschriften nennen eine Zahl, die nicht zu den Zeilen '
+            f'darunter passt: {falsch}')
+
+    def test_die_summe_am_ende_stimmt(self):
+        """«Summe: N Zeichen» muss die Abschnitte zusammenzählen."""
+        text = TABELLE.read_text(encoding='utf-8')
+        treffer = re.search(r'\*\*Summe:\s*(\d+)\s*Zeichen', text)
+        self.assertIsNotNone(treffer, 'Die Summenzeile fehlt.')
+        gesamt = sum(g for _n, _b, g in self._abschnitte())
+        self.assertEqual(
+            int(treffer.group(1)), gesamt,
+            f'Die Summe nennt {treffer.group(1)}, gezählt sind {gesamt}.')
+
+    def test_die_suche_findet_ueberhaupt_abschnitte(self):
+        """Gegenprobe: Ein Muster, das nie greift, ist immer grün."""
+        abschnitte = list(self._abschnitte())
+        self.assertGreater(len(abschnitte), 5, f'Nur {len(abschnitte)} gefunden.')
+        self.assertTrue(all(g > 0 for _n, _b, g in abschnitte),
+                        f'Ein Abschnitt ohne Zeilen: {abschnitte}')

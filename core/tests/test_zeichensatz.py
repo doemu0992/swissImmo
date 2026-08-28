@@ -120,7 +120,19 @@ STAND_VORKOMMEN = 1
 #:
 #: D5 sagt «~40». Die Tilde traegt inzwischen sechs Zeichen; wer die
 #: naechsten dazunimmt, sollte begruenden, warum die Bedeutung fehlte.
-ZIEL_ZEICHEN = 49
+#: 61 seit E2.51 — ZWOELF RAUMZEICHEN auf einmal, und das ist eine
+#: Entscheidung, keine Nebensache.
+#:
+#: Sie kehrt einen frueheren Entscheid um: «Raumkatalog-Symbole fallen weg,
+#: der Name steht daneben.» Das galt fuer die INNENANSICHT, wo Raeume in
+#: Listen erscheinen. Im oeffentlichen Schadenformular waehlt ein Mieter am
+#: Handy aus zwoelf Kacheln, oft in Eile im Treppenhaus — dort fuehrt ein
+#: Symbol das Auge schneller als zwoelfmal gleich aussehender Text.
+#:
+#: D5 sagt «~40». Die Tilde traegt jetzt einundzwanzig Zeichen. Wer die
+#: naechsten dazunimmt, sollte begruenden, warum keines der bestehenden
+#: passt — und pruefen, ob das noch ein Satz ist oder schon ein Katalog.
+ZIEL_ZEICHEN = 61
 
 #: Klassen, die in Gebrauch sind und bewusst noch keiner Bedeutung zugeordnet
 #: wurden. Diese Liste darf schrumpfen, nicht wachsen — sonst wird «noch offen»
