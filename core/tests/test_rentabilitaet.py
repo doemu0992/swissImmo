@@ -205,3 +205,64 @@ class RentabilitaetMandantengrenzeTest(TestCase):
         c = Client(raise_request_exception=False)
         c.force_login(self.a.benutzer)
         self.assertEqual(c.get(f'/neu/mandate/{fremd.id}/').status_code, 404)
+
+    def test_die_kette_bindet_den_zeiteintrag_an_den_fall(self):
+        """Warum es hier keinen «fremden Zeiteintrag» geben kann.
+
+        DER VERSUCH, DER DAHINTER STEHT
+
+        Zwei Gegenproben zu den Isolationstests blieben grün: Weder das
+        Aufheben des Mandantenfilters auf `Zeiteintrag` noch das auf `Fall`
+        änderte etwas. Die Ansicht hat zwei Schranken, und eine hält immer.
+
+        WELCHE MUTATION WAS TUT — nachgemessen, weil sich das sonst als
+        Widerspruch zur Gegenprobe aus E2.56 liest:
+
+            Zeiteintrag.alle_organisationen.filter(fall_id__in=ident)   grün
+            Zeiteintrag.alle_organisationen.all()                       ROT
+
+        Der Manager allein trägt hier nichts: `ident` stammt bereits aus
+        gefilterten Fällen. Erst wer AUCH den Filter wegnimmt, hebt beide
+        Schranken auf — und genau das tat die Gegenprobe in E2.56. Beide
+        Beobachtungen stimmen, sie meinen verschiedene Eingriffe.
+
+        Ein Test, dessen Fehlerfall sich nicht herstellen lässt, beweist
+        nichts — also habe ich versucht, den Fall zu bauen, der wirklich
+        vorkommen kann: einen Zeiteintrag mit fremder Organisation an einem
+        eigenen Fall, wie er durch einen Importfehler entstünde.
+
+        DAS GEHT NICHT, UND DAS IST DAS ERGEBNIS
+
+        `Zeiteintrag.ORGANISATION_PFAD = 'fall'`: Die Organisation wird beim
+        Speichern AUS DEM FALL abgeleitet, nicht aus dem Kontext. Ein im
+        Kontext B angelegter Eintrag an einem Fall aus A trägt A.
+
+        Ein Zeiteintrag gehört dorthin, wo sein Fall hingehört — nicht dorthin,
+        wo jemand ihn gerade anlegt. Das ist keine Prüfung, die man umgehen
+        kann, sondern eine Ableitung.
+
+        Dieser Test hält es fest, damit niemand die Kette später durch ein
+        eigenes `organisation`-Feld ersetzt und dabei die Bindung verliert.
+        """
+        from faelle.models import Zeiteintrag
+
+        md = self._mit_zeit(self.a, 60)
+        from django.contrib.contenttypes.models import ContentType
+        from crm.models import Eigentuemer
+        from faelle.models import Fall
+        with mandant(self.a.organisation):
+            fall = Fall.objects.filter(
+                akte_typ=ContentType.objects.get_for_model(Eigentuemer),
+                akte_id=md.id).first()
+
+        # Im FREMDEN Kontext angelegt — trägt trotzdem die Organisation des Falls.
+        with mandant(self.b.organisation):
+            eintrag = Zeiteintrag.objects.create(
+                fall=fall, benutzer=self.b.benutzer,
+                minuten=999, taetigkeit='sonder')
+
+        self.assertEqual(
+            eintrag.organisation_id, fall.organisation_id,
+            'Der Zeiteintrag trägt eine andere Organisation als sein Fall — '
+            'dann ist die Kette unterbrochen, und Aufwand kann in eine fremde '
+            'Rentabilität fliessen.')
