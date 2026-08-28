@@ -21,14 +21,22 @@
 #
 # WAS HIER BEWUSST NICHT ENTSTEHT
 #
-# **Keine Mandatsrentabilität.** Der Prototyp (`mockups/konzept-v2.html`,
-# Screen «Mandat») zeigt eine Karte «Honorarertrag gegen erfasste Stunden,
-# CHF/Stunde gegen Ziel». Dafür fehlt die Zeiterfassung pro Fall — und seine
-# eigene Notiz sagt dazu: «Das ist eine Zumutung an den Alltag … Ob deine
-# Leute das mitmachen, kann nur jemand entscheiden, der das Büro kennt.» Eine
-# Kennzahl aus geschätzten Stunden wäre schlimmer als keine. Die Karte fehlt
-# deshalb, und der Aktenkopf sagt an ihrer Stelle, was er wirklich weiss:
-# Honorarsatz, verwaltete Liegenschaften, Sollmiete.
+# **Mandatsrentabilität — seit E2.56 gebaut, mit Hinweis auf die Datenbasis.**
+#
+# Bis hierher stand hier: «Dafür fehlt die Zeiterfassung pro Fall.» Das galt
+# bis E2.46; seither gibt es `faelle.Zeiteintrag` mit Fallbezug und
+# Stundensatz. Die Notiz war überholt und stand an der Stelle, wo man sie am
+# ehesten glaubt.
+#
+# DIE FACHLICHE SORGE BLEIBT RICHTIG. Der Prototyp notierte: «Das ist eine
+# Zumutung an den Alltag … Ob deine Leute das mitmachen, kann nur jemand
+# entscheiden, der das Büro kennt.» Und: Eine Kennzahl aus geschätzten Stunden
+# wäre schlimmer als keine.
+#
+# DESHALB SAGT DIE KARTE, WORAUF SIE BERUHT. Sie zeigt, wie viele Fälle des
+# Mandats überhaupt Zeit erfasst haben. Sind es wenige, steht das dort — statt
+# einer Zahl, die nach Aussage aussieht. Ohne Stundensatz oder ohne erfasste
+# Zeit erscheint «Keine Datenbasis», nicht «CHF 0.00».
 
 from decimal import Decimal
 
@@ -170,8 +178,64 @@ def fw_mandat_detail(request, pk):
     tab_liste = [(s, b, len(liegenschaften) or None) if s == 'liegenschaften'
                  else (s, b, z) for s, b, z in tab_liste]
 
+    # RENTABILITAET — nur was gemessen ist (E2.56)
+    #
+    # Honorarertrag: Sollmiete des Mandats mal Honorarsatz. Aufwand: erfasste
+    # Minuten auf Faellen dieses Mandats. Beides sind IST-Werte, keine
+    # Schaetzungen.
+    #
+    # `abdeckung` ist der ehrlichste Teil der Karte: Wie viele Faelle haben
+    # ueberhaupt Zeit erfasst? Bei zwei von neunzehn ist «CHF 340 pro Stunde»
+    # keine Aussage, sondern ein Zufall. Die Karte sagt das, statt die Zahl
+    # allein stehen zu lassen.
+    from faelle.models import Zeiteintrag
+
+    ident = [f.id for f in faelle] if faelle else []
+    minuten = 0
+    mit_zeit = 0
+    if ident:
+        from django.db.models import Sum, Count
+        zs = (Zeiteintrag.objects.filter(fall_id__in=ident)
+              .aggregate(s=Sum('minuten'), n=Count('fall_id', distinct=True)))
+        minuten = zs['s'] or 0
+        mit_zeit = zs['n'] or 0
+
+    # `quantize(Decimal('0.01'))`, NICHT `0.05` — DAS ARGUMENT IST DER
+    # EXPONENT, KEINE RUNDUNGSSTUFE.
+    #
+    # `Decimal('0.05')` liest sich wie Fuenfrappen-Rundung und ist keine:
+    # Beide Schreibweisen liefern Ziffer fuer Ziffer dasselbe (nachgerechnet an
+    # 1020.004 / 1020.02 / 1020.07 / 291.428). Derselbe Fund wie in E2.46.
+    #
+    # Hier waere Fuenfrappen-Rundung ohnehin falsch: Das ist eine Kennzahl zum
+    # Lesen, kein Betrag, der bezahlt wird.
+    honorar_jahr = None
+    if md.honorar_prozent:
+        honorar_jahr = (soll_monat * Decimal(12)
+                        * Decimal(md.honorar_prozent) / Decimal(100)
+                        ).quantize(Decimal('0.01'))
+
+    chf_pro_stunde = None
+    if honorar_jahr is not None and minuten >= 60:
+        chf_pro_stunde = (honorar_jahr / (Decimal(minuten) / Decimal(60))
+                          ).quantize(Decimal('0.01'))
+
+    rentabilitaet = {
+        'honorar_jahr': honorar_jahr,
+        'minuten': minuten,
+        'stunden': (Decimal(minuten) / Decimal(60)).quantize(Decimal('0.1')) if minuten else None,
+        'chf_pro_stunde': chf_pro_stunde,
+        'faelle_gesamt': len(ident),
+        'faelle_mit_zeit': mit_zeit,
+        # Warum die Zahl fehlt — als Text, nicht als Leerstelle.
+        'fehlt': (None if chf_pro_stunde is not None else
+                  'Kein Honorarsatz hinterlegt' if not md.honorar_prozent else
+                  'Noch keine Stunde erfasst'),
+    }
+
     return render(request, 'fw/mandat_detail.html', {
         **basis, 'nav': 'mandate', 'md': md,
+        'rentabilitaet': rentabilitaet,
         **_mandat_kopf(md, liegenschaften, soll_monat, offene_auszahlungen, faelle),
         'liegenschaften': liegenschaften,
         'soll_monat': soll_monat,

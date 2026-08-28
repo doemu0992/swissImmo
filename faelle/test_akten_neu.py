@@ -97,17 +97,32 @@ class MandatsakteTests(_Basis):
         self.assertEqual(
             [h for h in antwort.context['mandat_hinweise'] if 'IBAN' in h['titel']], [])
 
-    def test_keine_rentabilitaetskarte(self):
-        """Der Prototyp zeigt sie; sie setzt Zeiterfassung pro Fall voraus.
+    def test_rentabilitaet_nur_aus_gemessenen_stunden(self):
+        """Die Karte gibt es seit E2.56 — die Sorge dahinter gilt weiter.
 
-        Sie fehlt absichtlich. Dieser Test hält das fest, damit sie nicht
+        Bis dahin prüfte dieser Test, dass die Karte FEHLT: «damit sie nicht
         eines Tages mit geschätzten Stunden nachgereicht wird — eine Zahl aus
-        Schätzungen wäre schlimmer als keine Zahl.
+        Schätzungen wäre schlimmer als keine Zahl.»
+
+        Das Ziel war nie die Abwesenheit der Karte, sondern die Abwesenheit
+        von Schätzungen. Seit E2.46 gibt es `faelle.Zeiteintrag`; die Karte
+        rechnet mit ERFASSTEN Minuten.
+
+        Vierter Fall in dieser Reihe, in dem ein Wächter einen Zwischenstand
+        festschrieb und rot wurde, als das Ziel näher rückte. Er prüft jetzt
+        die Sache: Ohne erfasste Zeit steht dort der GRUND, keine Zahl.
         """
         antwort = self.client.get(f'/neu/mandate/{self.a.eigentuemer.pk}/')
-        html = antwort.content.decode()
-        self.assertNotIn('Rentabilität', html)
-        self.assertNotIn('CHF/Stunde', html)
+        rent = antwort.context['rentabilitaet']
+        self.assertEqual(
+            rent['minuten'], 0,
+            'Die Fixture hat keine Zeiteinträge — hier darf nichts stehen.')
+        self.assertIsNone(
+            rent['chf_pro_stunde'],
+            'Ohne erfasste Minute entsteht eine Kennzahl. Woraus?')
+        self.assertNotIn(
+            'CHF 0.00', antwort.content.decode(),
+            'Eine Null sieht aus wie eine gemessene Zahl.')
 
 
 class DienstleisterakteTests(_Basis):

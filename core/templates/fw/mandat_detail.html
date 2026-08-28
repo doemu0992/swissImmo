@@ -8,8 +8,8 @@
    Liste, ein Formular und drei Spezialseiten (Abrechnung, Kontokorrent,
    Auszahlung), aber keine Stelle, an der ein Eigentümer als Ganzes steht.
 
-   Die Rentabilitätskarte aus mockups/konzept-v2.html fehlt hier absichtlich:
-   Sie setzt Zeiterfassung pro Fall voraus, die es nicht gibt. Begründung im
+   Die Rentabilitätskarte gibt es seit E2.56. Sie fehlte, weil die
+   Zeiterfassung pro Fall fehlte — die gibt es seit E2.46. Begründung im
    Kopf von core/views/fw/akten_neu.py. {% endcomment %}
 
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
@@ -17,6 +17,44 @@
     {% zeichen 'weiter' %}
     <b>{{ md.firma_oder_name }}</b>
 </nav>
+
+{% comment %}
+RENTABILITÄT — UND WORAUF SIE BERUHT
+
+Der Prototyp notierte zu dieser Karte: «Das ist eine Zumutung an den Alltag …
+Ob deine Leute das mitmachen, kann nur jemand entscheiden, der das Büro
+kennt.» Und: Eine Kennzahl aus geschätzten Stunden wäre schlimmer als keine.
+
+Deshalb steht die Abdeckung DANEBEN, nicht im Kleingedruckten: Bei zwei von
+neunzehn Fällen mit erfasster Zeit ist «CHF 340 pro Stunde» kein Ergebnis,
+sondern ein Zufall.
+
+Fehlt der Stundensatz oder die Zeit, steht dort der GRUND — nicht «CHF 0.00».
+Eine Null wäre eine Aussage, die niemand getroffen hat.
+{% endcomment %}
+<div class="fw-card p-4 mb-4">
+    <div class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Rentabilität</div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div><div class="fw-l">Honorar pro Jahr</div>
+            <div class="fw-w">{% if rentabilitaet.honorar_jahr %}CHF {{ rentabilitaet.honorar_jahr|chf }}{% else %}—{% endif %}</div>
+            <div class="fw-f">{{ md.honorar_prozent|default:'kein Satz' }} % der Sollmiete</div></div>
+        <div><div class="fw-l">Erfasster Aufwand</div>
+            <div class="fw-w">{% if rentabilitaet.stunden %}{{ rentabilitaet.stunden }} h{% else %}—{% endif %}</div>
+            <div class="fw-f">auf Fällen dieses Mandats</div></div>
+        <div><div class="fw-l">CHF pro Stunde</div>
+            <div class="fw-w">{% if rentabilitaet.chf_pro_stunde %}CHF {{ rentabilitaet.chf_pro_stunde|chf }}{% else %}<span class="fw-faint">—</span>{% endif %}</div>
+            <div class="fw-f">{% if rentabilitaet.fehlt %}{{ rentabilitaet.fehlt }}{% else %}Honorar geteilt durch Aufwand{% endif %}</div></div>
+        <div><div class="fw-l">Datenbasis</div>
+            <div class="fw-w">{{ rentabilitaet.faelle_mit_zeit }} / {{ rentabilitaet.faelle_gesamt }}</div>
+            <div class="fw-f">Fälle mit erfasster Zeit</div></div>
+    </div>
+    {% if rentabilitaet.chf_pro_stunde and rentabilitaet.faelle_gesamt %}
+    {% widthratio rentabilitaet.faelle_mit_zeit rentabilitaet.faelle_gesamt 100 as abdeckung %}
+    {% if abdeckung|add:0 < 50 %}
+    <p class="text-[11px] fw-warnton mt-3">Nur {{ abdeckung }} % der Fälle haben Zeit erfasst — die Zahl trägt noch nicht weit.</p>
+    {% endif %}
+    {% endif %}
+</div>
 
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
