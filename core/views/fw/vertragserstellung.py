@@ -694,25 +694,73 @@ def fw_vertrag_bearbeiten(request, pk):
             v.kuendigungsfrist_monate = int(P.get('kuendigungsfrist') or v.kuendigungsfrist_monate)
         except ValueError:
             pass
-        # DIE INDEXPARAMETER STEHEN HIER BEWUSST NICHT (E2.52, Gegenprüfung).
+        # DIE INDEXPARAMETER SIND EDITIERBAR — MIT PROTOKOLLEINTRAG (E2.53)
         #
-        # E2.52 hatte an dieser Stelle zwei Zuweisungen über `_idx(...)`. Die
-        # Funktion ist in `fw_vertrag_neu_speichern` definiert, nicht hier —
-        # ein `NameError`, den das umgebende `except ValueError` NICHT fängt.
-        # Er blieb nur deshalb ungefährlich, weil `vertrag_bearbeiten.html`
-        # die zwei Felder gar nicht mitschickt: toter Code, der beim ersten
-        # Ergänzen des Formulars mit einem 500er quittiert hätte.
+        # Die Gegenprüfung zu E2.52 hat sie hier entfernt, mit einem guten
+        # Grund: Die Weitergabe ändert künftige Mietzinse, und in dieser
+        # Ansicht sind mietzinswirksame Felder gesperrt.
         #
-        # ERSATZLOS, nicht repariert. Diese Ansicht bearbeitet AKTIVE und
-        # gekündigte Verträge, und dort sind alle mietzinswirksamen Felder
-        # gesperrt (siehe Docstring: Mietzinsänderungen laufen über das
-        # amtliche Formular nach Art. 269d). Die Weitergabe in Prozent ist
-        # genau so ein Feld — sie ändert künftige Mietzinse.
+        # DOMINIKS ENTSCHEIDUNG WIEGT DEN ANDEREN FALL SCHWERER: Wer eine
+        # Weitergabe unter 100 % vereinbart hat (Art. 269b OR lässt das
+        # ausdrücklich zu), konnte sie bei einem AKTIVEN Vertrag nirgends
+        # nachtragen. Dann rechnet jede Indexanpassung zu hoch — und eine zu
+        # hohe Erhöhung ist anfechtbar.
         #
-        # ENTWÜRFE sind nicht betroffen: Sie gehen oben nach
-        # `/neu/vertraege/neu/?edit=<id>` und werden vom Assistenten über
-        # `fw_vertrag_neu_speichern` gespeichert, wo beide Felder im
-        # gemeinsamen `felder`-Wörterbuch stehen.
+        # WARUM DAS TROTZDEM ETWAS ANDERES IST als eine Mietzinsänderung:
+        # Diese Felder ändern KEINEN Mietzins. Sie halten fest, was im Vertrag
+        # vereinbart wurde — die Erhöhung selbst läuft weiterhin über das
+        # amtliche Formular nach Art. 269d.
+        #
+        # DESHALB MIT PROTOKOLL: Jede Änderung landet im Logbuch, mit altem
+        # und neuem Wert. Wer später fragt, warum eine Anpassung anders
+        # gerechnet hat, findet die Antwort.
+        #
+        # Auch hier: nur überschreiben, wenn das Feld MITGESCHICKT wurde.
+        # Sonst löscht ein Formular ohne diese Felder die Werte still.
+        # (`messages` und `log_aktion` sind oben in dieser Funktion bereits
+        # eingebunden — ein zweiter Import an dieser Stelle war überflüssig.)
+
+        def _idx_feld(name, hoechstens=None):
+            """Einen Indexparameter übernehmen, wenn er gesetzt und gültig ist."""
+            roh = (P.get(name) or '').strip().replace("'", '').replace(',', '.')
+            if not roh:
+                return None
+            try:
+                wert = Decimal(roh)
+            except Exception:
+                messages.error(request, f'«{roh}» ist keine Zahl — {name} unverändert.')
+                return None
+            if wert <= 0:
+                return None
+            return min(wert, hoechstens) if hoechstens is not None else wert
+
+        # `ziel=v` IST DER GANZE PUNKT (Gegenprüfung E2.53).
+        #
+        # Die erste Fassung übergab nur `objekt=f'Vertrag {v.id}'`. Im Logbuch
+        # nachgemessen stand der Eintrag dann mit `ziel_typ=''` und
+        # `ziel_id=None` da — er erscheint NICHT im Verlauf des Vertrags und
+        # ist nicht anklickbar. Genau dort schaut aber nach, wer fragt, warum
+        # eine Anpassung anders gerechnet hat. Der Ausgleich für die
+        # Editierbarkeit hätte dort gefehlt, wo man ihn sucht.
+        #
+        # ZWEITER EINTRAG MIT ABSICHT: Das allgemeine «Vertrag bearbeitet» am
+        # Ende dieser Funktion protokolliert die Änderung über `diff_model`
+        # ohnehin mit («Index-Weitergabe (%): 100.0 → 80», ebenfalls `ziel=v`).
+        # Eine eigene, benannte Zeile ist trotzdem sinnvoll: Sie lässt sich
+        # suchen, eine Zeile im Sammel-Diff nicht.
+        if 'index_weitergabe_prozent' in P:
+            neu_w = _idx_feld('index_weitergabe_prozent', Decimal('100'))
+            if neu_w is not None and neu_w != v.index_weitergabe_prozent:
+                log_aktion(request, 'Index-Weitergabe geändert', str(v.mieter),
+                           f'{v.index_weitergabe_prozent} % → {neu_w} %', ziel=v)
+                v.index_weitergabe_prozent = neu_w
+        if 'index_intervall_monate' in P:
+            neu_i = _idx_feld('index_intervall_monate')
+            if neu_i is not None and int(neu_i) != v.index_intervall_monate:
+                log_aktion(request, 'Index-Intervall geändert', str(v.mieter),
+                           f'{v.index_intervall_monate} → {int(neu_i)} Monate', ziel=v)
+                v.index_intervall_monate = int(neu_i)
+
         v.kuendigungstermine = P.get('kuendigungstermine', '').strip() or v.kuendigungstermine
         v.familienwohnung = P.get('familienwohnung') == 'on'
         v.mitmieter_name = P.get('mitmieter_name', '').strip()

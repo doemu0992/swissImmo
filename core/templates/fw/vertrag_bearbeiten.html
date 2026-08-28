@@ -80,6 +80,27 @@
                 <input name="kuendigungsfrist" type="number" min="1" value="{{ v.kuendigungsfrist_monate }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold fw-mutet mb-1">Erstmals kündbar auf</label>
                 <input name="erstmals_kuendbar" type="date" value="{{ v.erstmals_kuendbar_auf|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% comment %}
+            INDEXPARAMETER — EDITIERBAR AUCH BEI AKTIVEN VERTRÄGEN (E2.53)
+
+            Sie standen bis E2.52 nur im Neu-Assistenten, der ausschliesslich
+            ENTWÜRFE bearbeitet. Wer eine Weitergabe unter 100 % vereinbart
+            hatte (Art. 269b OR), konnte sie bei einem laufenden Vertrag
+            nirgends nachtragen — und dann rechnet jede Anpassung zu hoch.
+
+            Sie ändern KEINEN Mietzins: Sie halten fest, was vereinbart wurde.
+            Die Erhöhung selbst läuft weiter über das amtliche Formular nach
+            Art. 269d. Jede Änderung steht mit altem und neuem Wert im Logbuch.
+            {% endcomment %}
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Index-Weitergabe (%)</label>
+                <input name="index_weitergabe_prozent" type="number" step="0.1" min="0" max="100"
+                       value="{{ v.index_weitergabe_prozent }}"
+                       class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
+                <p class="text-[11px] fw-faint mt-1">Anteil der Teuerung, der weitergegeben wird. Änderung wird protokolliert.</p></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Index-Mindestintervall (Monate)</label>
+                <input name="index_intervall_monate" type="number" step="1" min="1"
+                       value="{{ v.index_intervall_monate }}"
+                       class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num"></div>
             <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Kündigungstermine</label>
                 <input name="kuendigungstermine" value="{{ v.kuendigungstermine }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>

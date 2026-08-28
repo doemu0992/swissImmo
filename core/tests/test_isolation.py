@@ -1123,3 +1123,66 @@ class BestandszaehlungTests(TestCase):
         _stand1, stumm1 = _bestandszaehlung()
         _stand2, stumm2 = _bestandszaehlung()
         self.assertEqual(sorted(stumm1), sorted(stumm2))
+
+
+class IndexparameterFremderVertragTest(TestCase):
+    """Der neue Schreibweg aus E2.53 endet an der Mandantengrenze.
+
+    E2.53 macht `index_weitergabe_prozent` und `index_intervall_monate` in
+    `fw_vertrag_bearbeiten` beschreibbar — auch bei AKTIVEN Verträgen. Damit
+    entsteht ein neuer Schreibweg auf einer Ansicht, die eine ID aus der URL
+    nimmt. IDs sind fortlaufend und damit ratbar.
+
+    Die Weitergabe steuert künftige Mietzinsanpassungen. Wer sie an einem
+    fremden Vertrag verstellen könnte, verstellte die Mieten einer anderen
+    Verwaltung — und niemand dort sähe, woher es kam.
+
+    404, NICHT 403: Ein 403 bestätigt, dass die ID existiert, und erlaubt,
+    über fortlaufende Nummern den Bestand eines Wettbewerbers abzuzählen.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def setUp(self):
+        self.client = Client(raise_request_exception=False)
+        self.client.force_login(self.a.benutzer)
+
+    def test_fremder_vertrag_nicht_beschreibbar(self):
+        from decimal import Decimal
+
+        fremd = self.b.vertrag
+        fremd.index_weitergabe_prozent = Decimal('100')
+        fremd.save(update_fields=['index_weitergabe_prozent'])
+
+        antwort = self.client.post(
+            f'/neu/vertraege/{fremd.pk}/bearbeiten/',
+            {'ende': '', 'erstmals_kuendbar': '', 'kuendigungsfrist': '3',
+             'kuendigungstermine': '', 'anzahl_personen': '1',
+             'index_weitergabe_prozent': '40'})
+
+        self.assertEqual(
+            antwort.status_code, 404,
+            'Ein fremder Vertrag muss 404 geben — ein 403 verrät, dass die ID '
+            'existiert.')
+        fremd.refresh_from_db()
+        self.assertEqual(
+            fremd.index_weitergabe_prozent, Decimal('100'),
+            'Die Weitergabe eines fremden Vertrags wurde verändert.')
+
+    def test_der_eigene_vertrag_geht_weiterhin(self):
+        """Gegenprobe: Sonst wäre der Test oben auch bei einer kaputten
+        Ansicht grün — 404 für alle ist keine Isolation."""
+        from decimal import Decimal
+
+        eigen = self.a.vertrag
+        antwort = self.client.post(
+            f'/neu/vertraege/{eigen.pk}/bearbeiten/',
+            {'ende': '', 'erstmals_kuendbar': '', 'kuendigungsfrist': '3',
+             'kuendigungstermine': '', 'anzahl_personen': '1',
+             'index_weitergabe_prozent': '40'})
+        self.assertIn(antwort.status_code, (200, 302))
+        eigen.refresh_from_db()
+        self.assertEqual(eigen.index_weitergabe_prozent, Decimal('40'))

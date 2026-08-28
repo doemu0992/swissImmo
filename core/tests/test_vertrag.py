@@ -1470,3 +1470,129 @@ class IndexparameterErfassbarTests(TestCase):
         self.assertEqual(erh_voll, Decimal('100.00'))    # 10 % auf CHF 1000
         self.assertEqual(erh_teil, Decimal('60.00'))     # davon 60 %
         self.assertIn('Weitergabe 60', a_teil['begruendung'])
+
+
+class IndexparameterBearbeitenTests(TestCase):
+    """Weitergabe und Intervall lassen sich auch bei AKTIVEN Verträgen ändern.
+
+    WARUM DAS EINE EIGENE ENTSCHEIDUNG WAR
+
+    In dieser Ansicht sind mietzinswirksame Felder gesperrt: Mietzinsänderungen
+    laufen über das amtliche Formular nach Art. 269d. Die Gegenprüfung zu E2.52
+    hat die Indexparameter deshalb dort entfernt.
+
+    Der andere Fall wiegt schwerer. Art. 269b OR lässt eine Weitergabe unter
+    100 % ausdrücklich zu — sie wird verhandelt. Wer sie vereinbart hat, konnte
+    sie bei einem laufenden Vertrag nirgends nachtragen. Dann rechnet jede
+    Indexanpassung zu hoch, und eine zu hohe Erhöhung ist anfechtbar.
+
+    DER UNTERSCHIED: Diese Felder ändern keinen Mietzins. Sie halten fest, was
+    vereinbart wurde. Die Erhöhung selbst läuft weiterhin über Art. 269d.
+
+    Der Ausgleich ist das Protokoll — jede Änderung mit altem und neuem Wert.
+    """
+
+    def _aktiver_vertrag(self):
+        lg, e, m, v = _basis_objekte()
+        v.status = 'aktiv'
+        v.index_weitergabe_prozent = Decimal('100')
+        v.index_intervall_monate = 12
+        v.save()
+        return v
+
+    def _post(self, c, v, **zusatz):
+        daten = {'ende': '', 'erstmals_kuendbar': '', 'kuendigungsfrist': '3',
+                 'kuendigungstermine': v.kuendigungstermine or '',
+                 'anzahl_personen': '1'}
+        daten.update(zusatz)
+        return c.post(f'/neu/vertraege/{v.id}/bearbeiten/', daten)
+
+    def test_die_weitergabe_laesst_sich_aendern(self):
+        v = self._aktiver_vertrag()
+        c = Client(); c.force_login(_team_user())
+        self._post(c, v, index_weitergabe_prozent='80')
+        v.refresh_from_db()
+        self.assertEqual(
+            v.index_weitergabe_prozent, Decimal('80'),
+            'Die Weitergabe bleibt bei 100 % — dann rechnet jede Anpassung '
+            'zu hoch, und eine zu hohe Erhöhung ist anfechtbar.')
+
+    def test_die_aenderung_steht_im_logbuch(self):
+        """Der Ausgleich für die Editierbarkeit.
+
+        Wer später fragt, warum eine Anpassung anders gerechnet hat, muss die
+        Antwort finden — mit altem UND neuem Wert.
+        """
+        from core.models import AktivitaetsLog
+
+        v = self._aktiver_vertrag()
+        c = Client(); c.force_login(_team_user())
+        self._post(c, v, index_weitergabe_prozent='80')
+        eintrag = AktivitaetsLog.objects.filter(
+            aktion__icontains='Weitergabe').order_by('-id').first()
+        self.assertIsNotNone(eintrag, 'Kein Protokolleintrag entstanden.')
+        self.assertIn('100', eintrag.details)
+        self.assertIn('80', eintrag.details)
+
+    def test_ohne_aenderung_kein_eintrag(self):
+        """Sonst füllt jedes Speichern das Logbuch mit Nichts.
+
+        Ein Protokoll, in dem jede Zeile eine Änderung behauptet, die keine
+        war, ist beim Nachschlagen wertlos.
+        """
+        from core.models import AktivitaetsLog
+
+        v = self._aktiver_vertrag()
+        c = Client(); c.force_login(_team_user())
+        vorher = AktivitaetsLog.objects.filter(aktion__icontains='Weitergabe').count()
+        self._post(c, v, index_weitergabe_prozent='100')
+        self.assertEqual(
+            AktivitaetsLog.objects.filter(aktion__icontains='Weitergabe').count(),
+            vorher)
+
+    def test_ein_fehlendes_feld_loescht_nichts(self):
+        """Ein Formular ohne diese Felder darf die Werte nicht stillschweigend
+        auf die Vorgabe zurücksetzen — derselbe Fall wie beim Stundensatz
+        (E2.47), wo zwei Formulare auf dieselbe Ansicht posten.
+        """
+        v = self._aktiver_vertrag()
+        v.index_weitergabe_prozent = Decimal('75'); v.save()
+        c = Client(); c.force_login(_team_user())
+        self._post(c, v)                      # ohne die Indexfelder
+        v.refresh_from_db()
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('75'))
+
+    def test_ueber_hundert_prozent_wird_gekappt(self):
+        """Mehr als die Teuerung weiterzugeben, sieht das Gesetz nicht vor.
+
+        DER VERTRAG STARTET BEI 80 %, NICHT BEI 100 — sonst prüft der Test
+        nichts: Aus 150 wird 100, der Vertrag stand schon auf 100, und
+        «gekappt» wäre von «stillschweigend ignoriert» nicht zu
+        unterscheiden. Bei 80 → 100 ist der Unterschied sichtbar.
+        """
+        v = self._aktiver_vertrag()
+        v.index_weitergabe_prozent = Decimal('80'); v.save()
+        c = Client(); c.force_login(_team_user())
+        self._post(c, v, index_weitergabe_prozent='150')
+        v.refresh_from_db()
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
+
+    def test_der_eintrag_haengt_am_vertrag(self):
+        """Ohne `ziel` steht er nicht im Verlauf des Vertrags.
+
+        Die erste Fassung übergab nur `objekt='Vertrag 7'`. Der Eintrag
+        entstand, war aber nicht mit dem Vertrag verknüpft — und damit
+        unsichtbar an der einzigen Stelle, an der jemand nachschaut. Der
+        bestehende Test oben hätte das nicht bemerkt: Er sucht den Eintrag
+        über die Aktion, nicht über den Vertrag.
+        """
+        from core.models import AktivitaetsLog
+
+        v = self._aktiver_vertrag()
+        c = Client(); c.force_login(_team_user())
+        self._post(c, v, index_weitergabe_prozent='80', index_intervall_monate='24')
+        am_vertrag = AktivitaetsLog.objects.filter(ziel_typ='vertrag', ziel_id=v.id)
+        aktionen = set(am_vertrag.values_list('aktion', flat=True))
+        for erwartet in ('Index-Weitergabe geändert', 'Index-Intervall geändert'):
+            with self.subTest(aktion=erwartet):
+                self.assertIn(erwartet, aktionen)
