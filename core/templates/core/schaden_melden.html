@@ -42,6 +42,51 @@
  }
  window.scrollTo({ top: 0, behavior: 'smooth' });
  },
+ raeume: [
+ { name: 'Küche', z: 'kueche' }, { name: 'Bad', z: 'bad' },
+ { name: 'Korridor', z: 'korridor' }, { name: 'Zimmer', z: 'zimmer' },
+ { name: 'Reduit', z: 'reduit' }, { name: 'Balkon/Terrasse', z: 'balkon' },
+ { name: 'Treppenhaus', z: 'treppenhaus' }, { name: 'Waschküche', z: 'waschkueche' },
+ { name: 'Keller', z: 'keller' }, { name: 'Estrich', z: 'estrich' },
+ { name: 'Veloraum', z: 'veloraum' }, { name: 'Briefkasten', z: 'briefkasten' },
+ // AUSWEG, DER IN E2.55 VERLOREN GING: Die alte, fest verdrahtete Liste
+ // hatte «Anderer Raum»; die datengetriebene nicht mehr. Wer eine Garage
+ // oder den Sitzplatz meldet, musste sonst einen falschen Raum waehlen —
+ // und die Verwaltung bekaeme einen Auftrag mit falschem Ort.
+ { name: 'Anderer Raum', z: 'einheit' }
+ ],
+ allgemein: {
+ alle: ['Licht', 'Steckdose', 'Fenster', 'Storen/Markise', 'Boden', 'Wand', 'Decke'],
+ 'Reduit': ['Licht', 'Steckdose', 'Boden', 'Wand', 'Decke'],
+ 'Balkon/Terrasse': ['Licht', 'Boden'],
+ 'Keller': ['Licht', 'Steckdose', 'Boden', 'Wand', 'Decke'],
+ 'Estrich': ['Licht', 'Boden', 'Wand', 'Decke'],
+ 'Veloraum': ['Licht', 'Steckdose', 'Boden', 'Wand'],
+ 'Treppenhaus': ['Licht', 'Boden', 'Wand', 'Decke', 'Fenster'],
+ 'Briefkasten': []
+ },
+ objekte: {
+ 'Küche': ['Kühlschrank', 'Geschirrspüler', 'Dampfabzug', 'Kochherd', 'Backofen/Steamer', 'Spülbecken'],
+ 'Bad': ['Lavabo', 'WC', 'Dusche', 'Badewanne', 'Spiegelschrank', 'Lüftung'],
+ 'Korridor': ['Wohnungstür', 'Gegensprechanlage', 'Einbauschrank'],
+ 'Zimmer': ['Heizkörper', 'Einbauschrank', 'Zimmertür'],
+ 'Reduit': ['Waschturm', 'Regal', 'Anschluss'],
+ 'Balkon/Terrasse': ['Geländer', 'Sonnenstore', 'Abfluss', 'Balkontür'],
+ 'Treppenhaus': ['Haustür', 'Treppe/Geländer', 'Lift'],
+ 'Waschküche': ['Waschmaschine', 'Tumbler', 'Secomat', 'Waschbecken', 'Abfluss'],
+ 'Keller': ['Kellerabteil', 'Kellertür', 'Feuchtigkeit'],
+ 'Estrich': ['Estrichabteil', 'Dachfenster', 'Feuchtigkeit'],
+ 'Veloraum': ['Veloständer', 'Tür/Schloss'],
+ 'Briefkasten': ['Schloss', 'Beschriftung', 'Klappe'],
+ // Bewusst leer: Was dort steht, weiss nur die Meldung selbst.
+ // Die allgemeinen Posten kommen ueber `allgemein.alle` dazu.
+ 'Anderer Raum': []
+ },
+ objekteFuerRaum() {
+ const eigen = this.objekte[this.formData.raum] || [];
+ const auch = this.allgemein[this.formData.raum] || this.allgemein.alle;
+ return [...eigen, ...auch, 'Anderes'];
+ },
  selectRoom(raum) {
  this.formData.raum = raum;
  this.step = 3;
@@ -114,36 +159,15 @@
  <h2 class="text-2xl font-black fw-strong mb-8 text-center mt-10 md:mt-0">In welchem Raum?</h2>
 
  <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
- <button type="button" @click="selectRoom('Küche')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Küche</span>
+ <template x-for="r in raeume" :key="r.name">
+ <button type="button" @click="selectRoom(r.name)" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-2 aspect-square hover:fw-linie-marke hover:shadow-md transition">
+ {% comment %} Je Raum sein EIGENES Zeichen. Alpine setzt das `href` zur Laufzeit —
+    ein Django-Baustein kann das nicht, weil `r` erst im Browser entsteht
+    (der Fehler aus E2.51). {% endcomment %}
+ <svg class="fw-zeichen fw-marke text-3xl" aria-hidden="true"><use :href="'#z-' + r.z"></use></svg>
+ <span class="font-bold fw-mutet text-xs text-center leading-tight" x-text="r.name"></span>
  </button>
- <button type="button" @click="selectRoom('Bad')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Bad</span>
- </button>
- <button type="button" @click="selectRoom('Korridor')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Korridor</span>
- </button>
- <button type="button" @click="selectRoom('Zimmer')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Zimmer</span>
- </button>
- <button type="button" @click="selectRoom('Reduit')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'dokument' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Reduit</span>
- </button>
- <button type="button" @click="selectRoom('Balkon/Terrasse')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Balkon/Terrasse</span>
- </button>
- <button type="button" @click="selectRoom('Treppenhaus')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'liegenschaft' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Treppenhaus</span>
- </button>
- <button type="button" @click="selectRoom('Waschküche')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'arbeit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Waschküche</span>
- </button>
- <button type="button" @click="selectRoom('Keller')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'dokument' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Keller</span>
- </button>
- <button type="button" @click="selectRoom('Anderer Raum')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'bearbeiten' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Anderer Raum</span>
- </button>
+ </template>
  </div>
  </div>
 
@@ -152,36 +176,14 @@
  <h2 class="text-2xl font-black fw-strong mb-8 text-center mt-10 md:mt-0">Was genau ist betroffen?</h2>
 
  <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
- <button type="button" @click="selectObject('Kühlschrank')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Kühlschrank</span>
+ <template x-for="o in objekteFuerRaum()" :key="o">
+ {% comment %} KEIN Zeichen: Der Name steht daneben und sagt alles. `docs/ZEICHEN.md`
+    — «das Symbol wiederholt ihn nur». Vorher trugen die Objekte Zeichen,
+    die nicht passten: Kuehlschrank als Zifferblatt, Fenster als Pfeil. {% endcomment %}
+ <button type="button" @click="selectObject(o)" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-2 aspect-square hover:fw-linie-marke hover:shadow-md transition">
+ <span class="font-bold fw-mutet text-xs text-center leading-tight" x-text="o"></span>
  </button>
- <button type="button" @click="selectObject('Geschirrspüler')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'einheit' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Geschirrspüler</span>
- </button>
- <button type="button" @click="selectObject('Dampfabzug')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Dampfabzug</span>
- </button>
- <button type="button" @click="selectObject('Kochherd')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'kritisch' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Kochherd</span>
- </button>
- <button type="button" @click="selectObject('Backofen')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs text-center">Backofen, Steamer</span>
- </button>
- <button type="button" @click="selectObject('Armaturen')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'zaehler' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs text-center">Spülbecken, Armaturen</span>
- </button>
- <button type="button" @click="selectObject('Fenster')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'extern' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Fenster</span>
- </button>
- <button type="button" @click="selectObject('Jalousien')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'mehr' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs text-center">Jalousien, Rollläden</span>
- </button>
- <button type="button" @click="selectObject('Licht')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'hinweis' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Licht</span>
- </button>
- <button type="button" @click="selectObject('Anderes')" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:fw-linie-marke hover:fw-markenflaeche transition-all">
- {% zeichen 'bearbeiten' klasse='text-3xl fw-faint group-hover:fw-marke' %}<span class="font-bold fw-mutet text-xs">Anderes</span>
- </button>
+ </template>
  </div>
  </div>
 

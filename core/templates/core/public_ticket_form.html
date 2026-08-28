@@ -387,7 +387,14 @@
                     { name: 'Küche', z: 'kueche' }, { name: 'Bad', z: 'bad' }, { name: 'Korridor', z: 'korridor' },
                     { name: 'Zimmer', z: 'zimmer' }, { name: 'Reduit', z: 'reduit' }, { name: 'Balkon/Terrasse', z: 'balkon' },
                     { name: 'Treppenhaus', z: 'treppenhaus' }, { name: 'Waschküche', z: 'waschkueche' }, { name: 'Keller', z: 'keller' },
-                    { name: 'Estrich', z: 'estrich' }, { name: 'Veloraum', z: 'veloraum' }, { name: 'Briefkasten', z: 'briefkasten' }
+                    { name: 'Estrich', z: 'estrich' }, { name: 'Veloraum', z: 'veloraum' }, { name: 'Briefkasten', z: 'briefkasten' },
+                    // GLEICHE LISTE WIE AUF `/schaden/melden/` (E2.55,
+                    // Gegenpruefung). Das Auseinanderlaufen der zwei
+                    // Formulare war der Fehler dieser Etappe; ein
+                    // E2E-Test haelt die Raumlisten jetzt gleich.
+                    // «Anderer Raum» gab es hier noch nie — wer eine
+                    // Garage meldet, musste einen falschen Raum waehlen.
+                    { name: 'Anderer Raum', z: 'einheit' }
                 ],
                 // WAS ES IN JEDEM RAUM GIBT — aber nicht in jedem.
                 //
@@ -474,7 +481,10 @@
                     'Briefkasten': [
                         { name: 'Schloss', isAppliance: false }, { name: 'Beschriftung', isAppliance: false },
                         { name: 'Klappe', isAppliance: false }
-                    ]
+                    ],
+                    // Bewusst leer: Was dort steht, weiss nur die Meldung
+                    // selbst. Die allgemeinen Posten kommen dazu.
+                    'Anderer Raum': []
                 },
 
                 getCurrentObjects() {
