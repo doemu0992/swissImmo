@@ -36,22 +36,28 @@ Sie sucht Zeichenketten. Der erste Entwurf nannte als Blindstelle nur
 `ModelForm` mit `fields = '__all__'`. Nachgezählt ist die Lücke viel grösser,
 und das muss dastehen, damit niemand dem Wächter mehr zutraut als er kann.
 
-Von den geprüften Feldern bestehen:
+Von den geprüften Feldern bestehen (Stand E2.52):
 
-  542  über einen ECHTEN Eingabeweg — `name="…"` in einer Vorlage oder
-       `form.…` in einem Vue-Formular. Das ist der harte Teil.
+  618  über einen ECHTEN Eingabeweg — `name="…"` in einer Vorlage oder
+       `form.…` in einem Vue-Formular, samt der abgeleiteten Namen unten.
+       Das ist der harte Teil.
 
-  239  NUR, weil ihr Name irgendwo in Anführungszeichen vorkommt. Das kann
+  169  NUR, weil ihr Name irgendwo in Anführungszeichen vorkommt. Das kann
        ein Formular sein — oder ein Wörterbuchschlüssel, ein `order_by`, eine
        Protokollzeile. Für diese Felder sagt der Wächter nichts aus.
 
+E2.52 hat die Blindstelle von 239 auf 169 gedrückt, indem `_echter_weg` die
+üblichen Namensabweichungen kennt. Nachgezählt sind rund **siebzig** der neu
+erkannten Felder Fremdschlüssel, die als `name="<feld>_id"` gepostet werden —
+eine ganze Fehlalarm-Klasse, nicht vier Einzelfälle.
+
 Ein engerer Abgleich (Name als POST-Schlüssel oder in einer `fields`-Liste)
-wurde durchgerechnet: Er liesse **81** Felder rot. Die meisten davon zu Recht
-still — `MietzinsAnpassung.alter_lik_index` etwa entsteht in der Berechnung.
-Sie alle einzeln einzuordnen ist eigene Arbeit; solange das nicht geschehen
-ist, bleibt der weite Abgleich UND die Zahl 239 steht als Sperrklinke
-(`test_der_lose_abgleich_wird_nicht_grosszuegiger`), damit die Blindstelle
-nicht unbemerkt wächst.
+wurde durchgerechnet: Er liesse noch **75** Felder rot. Die meisten davon zu
+Recht still — `MietzinsAnpassung.alter_lik_index` etwa entsteht in der
+Berechnung. Sie alle einzeln einzuordnen ist eigene Arbeit; solange das nicht
+geschehen ist, bleibt der weite Abgleich UND die Zahl 169 steht als
+Sperrklinke (`test_der_lose_abgleich_wird_nicht_grosszuegiger`), damit die
+Blindstelle nicht unbemerkt wächst.
 
 WAS ER DAFÜR SICHER KANN: Der Fall, für den er gebaut wurde, wird gefunden.
 Nachgestellt, indem der Eingabeweg aus E2.47 wieder entfernt wurde —
@@ -99,6 +105,11 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'rentals.AbnahmeMangel.mieteranteil':
+     'BERECHNET aus der Lebensdauer (`berechne_mieteranteil`, '
+     'abnahme.py:100), nicht eingegeben',
+    'finance.Buchung.zahlungseingang': 'setzt die Zuordnung im Bankabgleich (booking.py:133)',
+    'finance.Buchung.ist_storno': 'setzt `finance/booking.py:156` beim Stornieren — angezeigt, nicht eingegeben',
     'faelle.Eingang.absender_email': 'kommt aus dem Postfach',
     'faelle.Eingang.absender_norm': 'aus `absender_email` normalisiert',
     'faelle.Fallschritt.etappe': 'von der Vorlage uebernommen',
@@ -156,16 +167,34 @@ AUSNAHMEN = {
 #: Jede Zeile nennt die Vorlage, in der das Feld ERSCHEINT — nachgesehen, statt
 #: behauptet. Ohne diesen Beleg wäre «wird angezeigt» eine Vermutung.
 OFFENE_LUECKEN = {
-    'finance.Buchung.ist_storno': 'steht in fw/kontoblatt.html',
-    'finance.Buchung.zahlungseingang': 'steht in fw/buchhaltung.html',
-    'portfolio.Einheit.gehoert_zu': 'steht in fw/objekt_form.html',
-    'rentals.AbnahmeMangel.kostenschaetzung': 'steht in fw/abnahme_detail.html',
-    'rentals.AbnahmeMangel.mieteranteil': 'steht in fw/abnahme_detail.html',
-    'rentals.AbnahmeMangel.verursacher': 'steht in fw/abnahme_detail.html',
-    'rentals.Mietvertrag.index_intervall_monate': 'steht in core/mietvertrag_pdf.html',
-    'rentals.Mietvertrag.index_weitergabe_prozent': 'steht in core/mietvertrag_pdf.html',
-    'rentals.Mietvertrag.kuendigungsfrist_monate': 'steht in fw/kuendigung_form.html',
+    # LEER SEIT E2.52 — und das ist ein Ergebnis, kein Versehen.
+    #
+    # E2.49 fand sechzehn Felder, die angezeigt, aber angeblich nirgends
+    # erfasst wurden. Nachgegangen zerfielen sie in drei Gruppen:
+    #
+    #   ACHT waren FEHLALARME des Waechters. Ein Formularfeld heisst oft
+    #   anders als das Modellfeld — `kuendigungsfrist` fuer
+    #   `kuendigungsfrist_monate`, `m_kosten` fuer `kostenschaetzung`,
+    #   `gehoert_zu_id` fuer `gehoert_zu`. `_echter_weg()` kennt diese
+    #   Abweichungen jetzt.
+    #
+    #   SECHS setzt der CODE: `ist_storno` beim Stornieren, `zahlungseingang`
+    #   im Bankabgleich, `mieteranteil` aus der Lebensdauer. Sie stehen mit
+    #   Fundstelle in AUSNAHMEN.
+    #
+    #   ZWEI waren ECHT und sind in E2.52 geschlossen:
+    #   `index_weitergabe_prozent` und `index_intervall_monate` steuerten die
+    #   Indexanpassung, ohne dass jemand sie eintragen konnte.
+    #
+    # DIE KORREKTUR EINES EIGENEN BEFUNDS: E2.49 behauptete, E2.37 rechne eine
+    # Rechtsfrist «auf einem Wert, den niemand eingeben kann». Das war falsch —
+    # der Wert ist erfassbar, der Waechter suchte den falschen Namen.
+    #
+    # Bleibt die Liste leer, ist das gut. Waechst sie, hat jemand ein Feld
+    # angelegt und den Weg dorthin vergessen.
 }
+
+
 
 #: TOTE SPALTEN — nirgends gezeigt, nirgends gelesen, nirgends geschrieben.
 #:
@@ -215,10 +244,54 @@ def _quellen():
     return '\n'.join(teile)
 
 
+#: FORMULARNAMEN, DIE SICH NICHT ABLEITEN LASSEN.
+#:
+#: Die Regeln in `_echter_weg` decken die üblichen Abweichungen ab (`_id`
+#: beim Fremdschlüssel, `m_` in Wiederholzeilen, Endungen wie `_monate`).
+#: Manche Formularfelder heissen aber schlicht anders — `m_kosten` für
+#: `kostenschaetzung`. Die stehen hier, mit dem Namen, unter dem sie erfasst
+#: werden.
+#:
+#: WARUM NICHT IN `AUSNAHMEN`: Dort steht «der CODE füllt das Feld». Ein
+#: Feld, das ein Mensch unter anderem Namen eingibt, ist etwas anderes —
+#: E2.52 hatte `kostenschaetzung` dort abgelegt und im Grund selbst
+#: geschrieben, dass es aus einem Formular kommt. Ein falsch einsortierter
+#: Eintrag sieht aus wie eine Feststellung und ist keine.
+ALIAS = {
+    'rentals.AbnahmeMangel.kostenschaetzung': 'm_kosten',
+}
+
+
 #: Ein echter Eingabeweg: ein Formularfeld oder eine Vue-Bindung.
 def _echter_weg(name, text):
-    return any(x in text for x in (f'name="{name}"', f"name='{name}'",
-                                   f'form.{name}'))
+    if any(x in text for x in (f'name="{name}"', f"name='{name}'",
+                               f'form.{name}')):
+        return True
+
+    # NAMENSABWEICHUNGEN — sonst irrt der Wächter zu einem Drittel.
+    #
+    # Ein Formularfeld heisst oft anders als das Modellfeld:
+    #
+    #   `kuendigungsfrist`   für   `kuendigungsfrist_monate`
+    #   `m_verursacher`      für   `verursacher`
+    #   `gehoert_zu_id`      für   `gehoert_zu`
+    #
+    # Von neun gemeldeten Feldern waren drei solche Fälle — erfassbar, nur
+    # unter anderem Namen. Ein Wächter, der so oft irrt, wird weggeklickt,
+    # und dann meldet er auch den echten Fall vergeblich.
+    #
+    # Geprüft wird der KERN: ohne die Endungen, die nur die Einheit nennen,
+    # und mit den Zusätzen, die Formulare anhängen.
+    kern = name
+    for endung in ('_monate', '_prozent', '_betrag', '_id', '_tage'):
+        if kern.endswith(endung):
+            kern = kern[:-len(endung)]
+            break
+    if kern != name and any(x in text for x in (f'name="{kern}"',
+                                                f"name='{kern}'")):
+        return True
+    return any(f'name="{v}"' in text
+               for v in (f'{name}_id', f'm_{name}', f'f_{name}'))
 
 
 #: Der Name irgendwo in Anführungszeichen. Das KANN ein Formular sein — oder
@@ -253,6 +326,8 @@ def _einordnung():
             voll = f'{modell._meta.label}.{name}'
             if voll in AUSNAHMEN or voll in OFFENE_LUECKEN or voll in TOTE_SPALTEN:
                 gelistet.append(voll)
+            elif voll in ALIAS and f'name="{ALIAS[voll]}"' in text:
+                echt.append(voll)
             elif _echter_weg(name, text):
                 echt.append(voll)
             elif _nur_erwaehnt(name, text):
@@ -277,11 +352,15 @@ class FelderOhneEingabewegTest(SimpleTestCase):
     def test_der_lose_abgleich_wird_nicht_grosszuegiger(self):
         """Die Blindstelle darf schrumpfen, nicht wachsen.
 
-        239 Felder bestehen nur, weil ihr Name irgendwo in Anführungszeichen
+        169 Felder bestehen nur, weil ihr Name irgendwo in Anführungszeichen
         steht — ohne belegten Eingabeweg (siehe Kopf). Das ist die Grenze
         dieses Wächters, und sie muss sichtbar bleiben: Ohne diese Zahl könnte
         die stille Menge wachsen, während der Wächter grün bleibt und immer
         weniger prüft.
+
+        E2.52 hat sie von 239 auf 169 gedrückt — die Sperrklinke ist deshalb
+        NACHGEZOGEN. Eine Obergrenze, die siebzig über dem Ist liegt, sperrt
+        nichts; sie hätte den Gewinn der Etappe wieder verspielbar gemacht.
 
         Nur eine Obergrenze, keine Untergrenze — anders als bei
         `OFFENE_LUECKEN`. Die Liste dort ist gepflegt und soll beim
@@ -290,9 +369,9 @@ class FelderOhneEingabewegTest(SimpleTestCase):
         """
         lose = _einordnung()['lose']
         self.assertLessEqual(
-            len(lose), 239,
+            len(lose), 169,
             f'Es sind {len(lose)} Felder ohne belegten Eingabeweg geworden '
-            f'(vorher 239). Für ein neues Feld bitte einen echten Weg bauen '
+            f'(vorher 169). Für ein neues Feld bitte einen echten Weg bauen '
             f'(`name="…"` oder `form.…`), statt sich auf eine beliebige '
             f'Erwähnung zu verlassen.')
 
@@ -341,8 +420,8 @@ class FelderOhneEingabewegTest(SimpleTestCase):
         nichts, und ein geschlossener Fall soll hier vermerkt werden.
         """
         self.assertEqual(
-            len(OFFENE_LUECKEN), 9,
-            f'{len(OFFENE_LUECKEN)} statt 9 offene Lücken. Wer ein Feld '
+            len(OFFENE_LUECKEN), 0,
+            f'{len(OFFENE_LUECKEN)} statt keine offenen Lücken. Wer ein Feld '
             f'anlegt, baut auch den Weg dorthin — oder trägt es mit '
             f'Begründung in AUSNAHMEN ein. Wer eine schliesst, führt die '
             f'Zahl hier nach.')

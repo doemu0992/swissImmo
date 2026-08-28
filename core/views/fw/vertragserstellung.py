@@ -340,6 +340,20 @@ def fw_vertrag_neu_speichern(request):
         _kfrist = int(P.get('kuendigungsfrist') or _kfrist_default)
     except ValueError:
         _kfrist = _kfrist_default
+    # Indexparameter (E2.52). Beide steuerten die Anpassung seit jeher und
+    # liessen sich nicht erfassen; es galt still 100 % und 12 Monate.
+    def _idx(name, vorgabe, hoechstens=None):
+        try:
+            wert = Decimal(_num(P.get(name)) or str(vorgabe))
+        except Exception:
+            return vorgabe
+        if wert <= 0:
+            return vorgabe
+        return min(wert, hoechstens) if hoechstens is not None else wert
+
+    _idx_weiter = _idx('index_weitergabe_prozent', Decimal('100'), Decimal('100'))
+    _idx_intervall = int(_idx('index_intervall_monate', 12))
+
     _mietzins_modell = P.get('mietzins_modell', 'fest')
     if _mietzins_modell not in ('fest', 'index', 'staffel'):
         _mietzins_modell = 'fest'
@@ -369,6 +383,8 @@ def fw_vertrag_neu_speichern(request):
         beginn=beginn, ende=(_ende if _ist_befristet else None), ist_befristet=_ist_befristet,
         erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
         kuendigungsfrist_monate=_kfrist,
+        index_weitergabe_prozent=_idx_weiter,
+        index_intervall_monate=_idx_intervall,
         kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
         mitmieter_name=mitmieter, mitmieter=zweiter_obj, familienwohnung=familienwohnung,
         anzahl_personen=int(P.get('anzahl_personen') or 1),
@@ -678,6 +694,25 @@ def fw_vertrag_bearbeiten(request, pk):
             v.kuendigungsfrist_monate = int(P.get('kuendigungsfrist') or v.kuendigungsfrist_monate)
         except ValueError:
             pass
+        # DIE INDEXPARAMETER STEHEN HIER BEWUSST NICHT (E2.52, Gegenprüfung).
+        #
+        # E2.52 hatte an dieser Stelle zwei Zuweisungen über `_idx(...)`. Die
+        # Funktion ist in `fw_vertrag_neu_speichern` definiert, nicht hier —
+        # ein `NameError`, den das umgebende `except ValueError` NICHT fängt.
+        # Er blieb nur deshalb ungefährlich, weil `vertrag_bearbeiten.html`
+        # die zwei Felder gar nicht mitschickt: toter Code, der beim ersten
+        # Ergänzen des Formulars mit einem 500er quittiert hätte.
+        #
+        # ERSATZLOS, nicht repariert. Diese Ansicht bearbeitet AKTIVE und
+        # gekündigte Verträge, und dort sind alle mietzinswirksamen Felder
+        # gesperrt (siehe Docstring: Mietzinsänderungen laufen über das
+        # amtliche Formular nach Art. 269d). Die Weitergabe in Prozent ist
+        # genau so ein Feld — sie ändert künftige Mietzinse.
+        #
+        # ENTWÜRFE sind nicht betroffen: Sie gehen oben nach
+        # `/neu/vertraege/neu/?edit=<id>` und werden vom Assistenten über
+        # `fw_vertrag_neu_speichern` gespeichert, wo beide Felder im
+        # gemeinsamen `felder`-Wörterbuch stehen.
         v.kuendigungstermine = P.get('kuendigungstermine', '').strip() or v.kuendigungstermine
         v.familienwohnung = P.get('familienwohnung') == 'on'
         v.mitmieter_name = P.get('mitmieter_name', '').strip()

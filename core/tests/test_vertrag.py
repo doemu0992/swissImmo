@@ -1355,3 +1355,118 @@ class UnterschriftBriefeTests(TestCase):
                 'liegenschaften': [str(lg.id)]})
         lg.refresh_from_db()
         self.assertEqual(lg.eigentuemer_id, md.id)
+
+
+class IndexparameterErfassbarTests(TestCase):
+    """Weitergabe und Mindestintervall müssen ankommen (E2.52).
+
+    WARUM DAS EIN TEST BRAUCHT
+
+    Beide Felder stehen seit jeher im Modell und steuern die Indexanpassung an
+    zwei Stellen: `mietrecht.py` rechnet den Faktor mit
+    `index_weitergabe_prozent`, `automation.py` den nächsten Termin mit
+    `index_intervall_monate`. Erfassen konnte man sie nirgends — es galt still
+    100 % und 12 Monate.
+
+    E2.52 hat die zwei Eingabefelder ergänzt, aber keinen Test dazu. Ein
+    Formularfeld, das nirgends geprüft wird, ist genau der Zustand, den der
+    Feldwächter aufdeckt: Es sieht nach einer Funktion aus. Ob der Wert
+    tatsächlich am Modell ankommt, steht in keiner Vorlage.
+
+    Art. 269b OR lässt eine Weitergabe unter 100 % zu; sie wird verhandelt.
+    Wer 60 % vereinbart hat und 100 % gespeichert bekommt, rechnet zu hoch —
+    und eine zu hohe Erhöhung ist anfechtbar.
+    """
+
+    def _objekte(self):
+        from portfolio.models import Einheit
+        lg = Liegenschaft.objects.create(
+            organisation=_test_organisation(), strasse='Indexweg 1', plz='8000',
+            ort='Zürich', versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg', typ='whg',
+                                   nettomiete_aktuell=Decimal('1500'))
+        m = Mieter.objects.create(typ='person', vorname='Ida', nachname='Index')
+        return e, m
+
+    def setUp(self):
+        # EIN Benutzer fuer die ganze Klasse: `_team_user()` legt immer
+        # denselben Benutzernamen an — zweimal aufgerufen bricht es an der
+        # Eindeutigkeitsregel von `auth_user.username`.
+        self.c = Client(); self.c.force_login(_team_user(rolle='Verwaltung'))
+
+    def _speichern(self, **extra):
+        e, m = self._objekte()
+        c = self.c
+        daten = {'einheit_id': str(e.id), 'mieter_id': str(m.id),
+                 'netto_mietzins': '1500', 'nebenkosten': '200',
+                 'beginn': '2025-01-01'}
+        daten.update(extra)
+        r = c.post('/neu/vertraege/neu/speichern/', daten)
+        self.assertEqual(r.status_code, 302)
+        return Mietvertrag.objects.get(einheit=e)
+
+    def test_die_vereinbarte_weitergabe_kommt_an(self):
+        v = self._speichern(index_weitergabe_prozent='60',
+                            index_intervall_monate='24')
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('60'))
+        self.assertEqual(v.index_intervall_monate, 24)
+
+    def test_ohne_angabe_gilt_weiterhin_100_prozent_und_12_monate(self):
+        """Der bisherige stille Vorgabewert bleibt der Vorgabewert."""
+        v = self._speichern()
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
+        self.assertEqual(v.index_intervall_monate, 12)
+
+    def test_ueber_hundert_prozent_wird_gedeckelt(self):
+        """Mehr als die volle Teuerung gibt es nicht — Art. 269b OR."""
+        v = self._speichern(index_weitergabe_prozent='150')
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
+
+    def test_unsinn_faellt_auf_den_vorgabewert_zurueck(self):
+        """Leer, null, negativ oder Buchstaben dürfen nichts kaputtmachen."""
+        for roh in ('', '0', '-20', 'abc'):
+            with self.subTest(eingabe=roh):
+                v = self._speichern(index_weitergabe_prozent=roh,
+                                    index_intervall_monate=roh)
+                self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
+                self.assertEqual(v.index_intervall_monate, 12)
+
+    def test_die_felder_stehen_auch_wirklich_im_formular(self):
+        """Ein Speicherweg ohne Eingabefeld ist die halbe Miete.
+
+        Der Feldwächter (`test_felder_ohne_eingabe`) sucht `name="…"` in den
+        Vorlagen. Er ist damit zufrieden, sobald der Name IRGENDWO steht —
+        auch in einer Vorlage, die niemand ausliefert. Hier wird die Seite
+        wirklich gerendert.
+        """
+        self._objekte()
+        r = self.c.get('/neu/vertraege/neu/')
+        self.assertEqual(r.status_code, 200)
+        html = r.content.decode()
+        for feld in ('index_weitergabe_prozent', 'index_intervall_monate'):
+            with self.subTest(feld=feld):
+                self.assertIn('name="%s"' % feld, html)
+
+    def test_die_weitergabe_wirkt_auch_wirklich_auf_die_erhoehung(self):
+        """Sonst wäre das Feld erfassbar und trotzdem folgenlos.
+
+        60 % Weitergabe muss rund 60 % der Erhöhung ergeben, die 100 % gäbe.
+        """
+        from core.services.mietrecht import index_anpassung_vorschlag
+        e, m = self._objekte()
+        gemeinsam = dict(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                         netto_mietzins=Decimal('1000'), nebenkosten=Decimal('0'),
+                         status='aktiv', mietzins_modell='index',
+                         basis_lik_punkte=Decimal('100'))
+        voll = Mietvertrag.objects.create(index_weitergabe_prozent=Decimal('100'),
+                                          **gemeinsam)
+        teil = Mietvertrag.objects.create(index_weitergabe_prozent=Decimal('60'),
+                                          **dict(gemeinsam, einheit=e))
+        a_voll = index_anpassung_vorschlag(voll, aktuell_lik=Decimal('110'))
+        a_teil = index_anpassung_vorschlag(teil, aktuell_lik=Decimal('110'))
+        self.assertIsNotNone(a_voll); self.assertIsNotNone(a_teil)
+        erh_voll = a_voll['neu_netto'] - a_voll['alt_netto']
+        erh_teil = a_teil['neu_netto'] - a_teil['alt_netto']
+        self.assertEqual(erh_voll, Decimal('100.00'))    # 10 % auf CHF 1000
+        self.assertEqual(erh_teil, Decimal('60.00'))     # davon 60 %
+        self.assertIn('Weitergabe 60', a_teil['begruendung'])
