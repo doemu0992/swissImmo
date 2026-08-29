@@ -227,6 +227,15 @@ def _fallschritte(heute, bis, wer=None, mandat=None):
                       if s.fall.betreff else s.fall.fallart.bezeichnung),
             'datum': s.frist, 'tage': tage,
             'dringlichkeit': _dringlichkeit(tage),
+            # DIE FALLART ALS WERT, NICHT NUR ALS TEXT (E2.61).
+            #
+            # Bis hierher stand sie nur in `zeile` («Mieterwechsel · Blaser»).
+            # Das Filterband aus v7 braucht sie als SCHLUESSEL: Ein Vergleich
+            # auf die Anzeigezeichenkette bricht, sobald jemand eine Fallart
+            # umbenennt — und Umbenennen ist erlaubt, jede Organisation fuehrt
+            # ihre eigenen (siehe `Fallart`-Kopf).
+            'fallart': s.fall.fallart.schluessel,
+            'fallart_text': s.fall.fallart.bezeichnung,
             'ziel': f'/neu/faelle/{s.fall_id}/', 'knopf': 'Fall öffnen',
             'objekt': s,
         })

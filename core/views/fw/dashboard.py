@@ -11,6 +11,8 @@
 import logging
 from decimal import Decimal
 
+from urllib.parse import quote
+
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Sum
 from django.shortcuts import render
@@ -70,6 +72,8 @@ def _kopf_filter(request):
 
     wer_id = request.GET.get('wer') or None
     mandat_id = request.GET.get('mandat') or None
+    # `or None`, damit `?fallart=` nicht als «Fallart mit leerem Namen» gilt.
+    fallart = request.GET.get('fallart') or None
 
     wer = mandat = None
     if wer_id and str(wer_id).isdigit():
@@ -86,9 +90,89 @@ def _kopf_filter(request):
         # nicht verliert. Die Reiter sind einfache `<a href="?…">` — sie
         # ersetzen die ganze Abfragezeichenfolge, also muss alles mit, was
         # gelten soll.
-        'f_query': ''.join([f'&wer={wer.pk}' if wer else '',
-                            f'&mandat={mandat.pk}' if mandat else '']),
+        # `f_query` traegt ALLE Filter der Seite — auch das Fallart-Band.
+        # Ohne die dritte Zeile verliert jeder Reiterwechsel die Bandauswahl.
+        'f_fallart': fallart,
+        # OHNE die Fallart — fuer die Felder des Bandes selbst. Traegt ein
+        # Bandfeld die AKTUELLE Auswahl mit, entstuende `?fallart=a&fallart=b`,
+        # und «Alle» koennte den Filter nie aufheben, weil es ihn mitschleppt.
+        'f_query_ohne_fallart': ''.join([
+            f'&wer={wer.pk}' if wer else '',
+            f'&mandat={mandat.pk}' if mandat else '',
+        ]),
+        'f_query': ''.join([
+            f'&wer={wer.pk}' if wer else '',
+            f'&mandat={mandat.pk}' if mandat else '',
+            f'&fallart={quote(fallart)}' if fallart else '',
+        ]),
     }
+
+
+def _band(zeilen, aktiv):
+    """Das Fallart-Band aus Konzept v7 — «Alle 3 · Schaden 2 · Mietzins 1».
+
+    ES ZAEHLT UEBER GENAU DIE LISTE, DIE DARUNTER STEHT.
+
+    Der erste Entwurf baute das Band in `arbeitsvorrat()`, aus einem eigenen
+    Aufruf von `was_reisst()` mit dem 14-Tage-Fenster. Die Ansicht zeigt aber
+    je Reiter etwas anderes: «Heute» nur Faelliges, «Alle» ein Jahr. Gemessen
+    ergab das im Reiter «Alle» ein Band «Alle 2» ueber einer Liste von VIER
+    Zeilen — und die vierte Fallart hatte gar kein Feld im Band, war also
+    nicht auswaehlbar. Ein Zaehler, der nicht zu seiner Liste passt, ist
+    schlimmer als keiner: Er sieht aus wie eine Auskunft.
+
+    Deshalb bekommt diese Funktion die Liste des aktuellen Reiters, VOR dem
+    Filtern. Die Zaehler stehen damit fest: Wer «Schaden 2» sieht und darauf
+    klickt, sieht daneben weiterhin «Mietzins 1» und findet zurueck.
+
+    `zeilen` sind entweder Vorrats-Eintraege (Woerterbuecher) oder `Fall`-
+    Objekte (Reiter «Wartet auf Dritte» und «Liegengeblieben») — beide Formen
+    kommen aus derselben Ansicht und muessen dasselbe Band tragen.
+    """
+    band = {}
+    for e in zeilen:
+        if isinstance(e, dict):
+            schluessel, text = e.get('fallart'), e.get('fallart_text')
+        else:                                   # `Fall`-Objekt
+            art = getattr(e, 'fallart', None)
+            schluessel = getattr(art, 'schluessel', None)
+            text = getattr(art, 'bezeichnung', None)
+        if not schluessel:
+            continue
+        if schluessel not in band:
+            band[schluessel] = {'schluessel': schluessel, 'anzahl': 0,
+                                'text': text or schluessel}
+        band[schluessel]['anzahl'] += 1
+    return {
+        'av_band': sorted(band.values(), key=lambda b: (-b['anzahl'], b['text'])),
+        'av_band_aktiv': aktiv or '',
+        'av_band_gesamt': len(zeilen),
+    }
+
+
+def _nach_fallart(zeilen, fallart):
+    """Filtert die fertige Liste — Vorrats-Eintraege wie `Fall`-Objekte.
+
+    WARUM AUF DER FERTIGEN LISTE, anders als «Zustaendigkeit» und «Mandat»
+
+    Das Band filtert QUER UEBER ALLE QUELLEN, und die meisten kennen gar keine
+    Fallart: Ein Lauf, eine Pendenz, eine Wartungsfrist haben keine. Sie fallen
+    beim Filtern heraus, und das ist richtig — wer «Mieterwechsel» waehlt, will
+    Mieterwechsel sehen, nicht Zahllaeufe.
+
+    Die zwei Kopf-Filter muessen dagegen in die ABFRAGE greifen, weil dort
+    `[:20]` vor dem Filter schneidet.
+    """
+    if not fallart:
+        return zeilen
+    gefiltert = []
+    for e in zeilen:
+        if isinstance(e, dict):
+            if e.get('fallart') == fallart:
+                gefiltert.append(e)
+        elif getattr(getattr(e, 'fallart', None), 'schluessel', None) == fallart:
+            gefiltert.append(e)
+    return gefiltert
 
 
 def _vertretung_fuer(request, heute):
@@ -208,6 +292,23 @@ def fw_dashboard(request):
         # allein fuellt.
         vorrat = alle
 
+    # DAS FALLART-BAND (E2.61) — «Alle 3 · Schaden 2 · Mietzins 1».
+    #
+    # Es gehoert HIER hin und nicht in `arbeitsvorrat()`: Jeder Reiter zeigt
+    # eine andere Liste, und das Band steht ueber genau dieser. In
+    # `arbeitsvorrat()` gebaut, zaehlte es das 14-Tage-Fenster ueber einer
+    # Jahresliste — gemessen «Alle 2» ueber vier Zeilen, mit einer Fallart, die
+    # gar kein Feld bekam.
+    #
+    # ZUERST ZAEHLEN, DANN FILTERN. Sonst zeigte jedes Feld nach dem Klick nur
+    # noch seine eigene Zahl, und es gaebe keinen Weg zurueck ausser ueber
+    # «Alle». Und BEIDE Listen werden gefiltert — `faelle` traegt die Reiter
+    # «Wartet auf Dritte» und «Liegengeblieben»; blieben sie aussen vor, waere
+    # das Band dort sichtbar und wirkungslos.
+    band = _band(faelle or vorrat, kf['f_fallart'])
+    vorrat = _nach_fallart(vorrat, kf['f_fallart'])
+    faelle = _nach_fallart(faelle, kf['f_fallart'])
+
     # DIE INBOX BLEIBT. Sie stand auf der alten Startseite und waere beim
     # Zusammenlegen fast verschwunden — nichts anderes rendert sie. Seit 4b.5
     # fuehrt sie nur noch die Sammelposten: die Pendenzen und Wartungsfristen
@@ -240,6 +341,7 @@ def fw_dashboard(request):
         # Tag, und die Woche mit dem ersten Donnerstag ist die erste des Jahres.
         # Das ist die Zaehlung, die auf Schweizer Kalendern steht.
         **kf,
+        **band,
         'kw': heute.isocalendar()[1],
         'vertretung_fuer': _vertretung_fuer(request, heute),
         **lage(heute, aktive_lg),

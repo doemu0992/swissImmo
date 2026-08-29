@@ -145,6 +145,39 @@ hier die Auswahl dort.
         {% endfor %}
     </div>
 
+    {% comment %}
+    DAS FALLART-BAND AUS KONZEPT v7 (E2.61)
+
+    «Alle 3 · Schaden 2 · Mietzins 1» unter den Reitern.
+
+    ES ZÄHLT ÜBER GENAU DIE LISTE DARUNTER, und zwar in jedem Reiter — auch in
+    «Wartet auf Dritte» und «Liegengeblieben», die `faelle` statt `vorrat`
+    zeigen. Ein Band, das dort sichtbar wäre und nichts täte, ist der Fehler,
+    den diese Etappe eigentlich behebt.
+
+    ES TRÄGT DIESELBEN FILTER MIT wie die Reiter darüber — `ansicht`, `lg` und
+    `f_query`. Ein Band, das die Ansicht zurücksetzt, wäre eine Falle: Wer auf
+    «Liegengeblieben» steht und dann «Schaden» wählt, will liegengebliebene
+    Schäden sehen, nicht alle.
+
+    DIE ZÄHLER STEHEN VOR DEM FILTERN FEST. Sonst zeigte jedes Feld nach dem
+    Klick nur noch seine eigene Zahl und es gäbe keinen Weg zurück ausser über
+    «Alle».
+
+    Das Band erscheint nur, wenn es etwas zu unterscheiden gibt: Bei einer
+    einzigen Fallart ist es eine Zeile ohne Wahl.
+    {% endcomment %}
+    {% if av_band|length > 1 %}
+    <div class="fw-band">
+        <a href="?ansicht={{ ansicht }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{{ f_query_ohne_fallart }}"
+           class="{% if not av_band_aktiv %}hier{% endif %}">Alle {{ av_band_gesamt }}</a>
+        {% for b in av_band %}
+        <a href="?ansicht={{ ansicht }}&amp;fallart={{ b.schluessel|urlencode }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{{ f_query_ohne_fallart }}"
+           class="{% if av_band_aktiv == b.schluessel %}hier{% endif %}">{{ b.text }} {{ b.anzahl }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% if ansicht == 'wartet' or ansicht == 'liegen' %}
     {% for f in faelle %}
     <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick" style="text-decoration:none">

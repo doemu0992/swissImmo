@@ -1429,3 +1429,209 @@ class KopfFilterTests(TestCase):
 
         self.assertIn(f'?ansicht=woche&amp;lg={self.a.liegenschaft.pk}', inhalt,
                       'Ein Reiterwechsel wirft den Liegenschaftsfilter weg.')
+
+
+class FallartBandTests(TestCase):
+    """Das Filterband aus Konzept v7 — geprüft an der SEITE, nicht an der Funktion.
+
+    WARUM AN DER SEITE
+
+    Ein Test auf `was_reisst()` wäre grün geblieben, während die Seite alles
+    zeigte: Die Ansicht ruft die Sammelfunktion ein ZWEITES Mal als Obermenge
+    für alle Reiter, und diese Liste überschrieb das gefilterte Ergebnis.
+    Adresse richtig, Band markiert, Zähler stimmten — und die Liste
+    unverändert. Ein Filter, der aussieht, als wirke er, ist schlimmer als
+    keiner.
+
+    UND WARUM IN JEDEM REITER
+
+    Die Reiter «Wartet auf Dritte» und «Liegengeblieben» zeigen `Fall`-Objekte
+    statt Vorratszeilen. Der erste Entwurf filterte nur die Vorratszeilen; dort
+    stand das Band sichtbar und wirkungslos — derselbe Fehler, eine Ebene
+    tiefer. Gemessen, nicht vermutet.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _fall(self, schluessel, bezeichnung, betreff, tage=0, org=None):
+        from faelle.models import Fall, Fallart, SchrittVorlage
+
+        org = org or self.a.organisation
+        with mandant(org):
+            art, neu = Fallart.objects.get_or_create(
+                organisation=org, schluessel=schluessel,
+                defaults={'bezeichnung': bezeichnung})
+            if neu:
+                SchrittVorlage(fallart=art, nr=1, etappe_nr=1, etappe='E',
+                               bezeichnung=f'{bezeichnung} prüfen').save()
+            fall = Fall(organisation=org, fallart=art, akte=None, betreff=betreff)
+            fall.save()
+            fall.schritte_anlegen()
+            s = fall.schritte.first()
+            self.assertIsNotNone(
+                s, 'Ohne Schritt steht der Fall nicht im Vorrat — dann prüft '
+                   'der Test nichts.')
+            s.frist = timezone.localdate() + timedelta(days=tage)
+            s.save()
+        return fall
+
+    def _liegengeblieben(self, fall):
+        from faelle.models import Fall
+
+        with mandant(self.a.organisation):
+            Fall.objects.filter(pk=fall.pk).update(
+                letzte_bewegung=timezone.now() - timedelta(days=30))
+
+    def _seite(self, **abfrage):
+        c = Client()
+        c.force_login(self.a.benutzer)
+        teile = '&'.join(f'{k}={v}' for k, v in abfrage.items())
+        return c.get(f'/neu/?{teile}' if teile else '/neu/')
+
+    # -- Die Wirkung -------------------------------------------------------
+
+    def test_ohne_band_stehen_beide_arten_da(self):
+        """Die Gegenprobe. Ohne sie wäre «gefiltert» nicht von «leer» zu
+        unterscheiden."""
+        self._fall('schaden-b', 'Schaden', 'Wasserschaden')
+        self._fall('mietzins-b', 'Mietzins', 'Erhöhung')
+
+        html = self._seite(ansicht='alle').content.decode()
+        self.assertIn('Wasserschaden', html)
+        self.assertIn('Erhöhung', html)
+
+    def test_das_band_filtert_die_ausgelieferte_seite(self):
+        self._fall('schaden-c', 'Schaden', 'Wasserschaden')
+        self._fall('mietzins-c', 'Mietzins', 'Erhöhung')
+
+        html = self._seite(ansicht='alle', fallart='schaden-c').content.decode()
+        self.assertIn('Wasserschaden', html)
+        self.assertNotIn(
+            'Erhöhung', html,
+            'Eine fremde Fallart steht trotz Band auf der Seite — dann '
+            'filtert die Ansicht nur die Zähler, nicht die Liste.')
+
+    def test_das_band_wirkt_auch_im_reiter_liegengeblieben(self):
+        """Der Reiter zeigt `Fall`-Objekte, nicht Vorratszeilen.
+
+        Der erste Entwurf filterte nur die Vorratszeilen. In «Wartet auf
+        Dritte» und «Liegengeblieben» war das Band damit sichtbar und
+        wirkungslos — genau der Zustand, den diese Etappe beheben soll, nur
+        eine Ebene tiefer. Gemessen: Liste vor und nach dem Klick identisch.
+        """
+        a = self._fall('schaden-l', 'Schaden', 'Wasserschaden')
+        b = self._fall('mietzins-l', 'Mietzins', 'Erhöhung')
+        self._liegengeblieben(a)
+        self._liegengeblieben(b)
+
+        offen = self._seite(ansicht='liegen')
+        self.assertEqual(len(offen.context['faelle']), 2,
+                         'Ohne zwei liegengebliebene Fälle prüft der Test nichts.')
+
+        eng = self._seite(ansicht='liegen', fallart='schaden-l')
+        betreffe = {f.betreff for f in eng.context['faelle']}
+        self.assertEqual(
+            betreffe, {'Wasserschaden'},
+            'Das Band lässt die Liste im Reiter «Liegengeblieben» unverändert — '
+            'dann steht dort ein Filter, der nichts tut.')
+
+    # -- Die Zähler --------------------------------------------------------
+
+    def test_die_zaehler_passen_zur_liste_darunter(self):
+        """Der Fund, der diese Etappe geprägt hat.
+
+        Das Band wurde in `arbeitsvorrat()` gebaut, aus einem eigenen Aufruf
+        von `was_reisst()` mit dem 14-Tage-Fenster. Der Reiter «Alle» zeigt
+        aber ein Jahr. Gemessen: Band «Alle 2» über einer Liste von VIER
+        Zeilen — und die Fallart der vierten hatte gar kein Feld im Band, war
+        also nicht auswählbar.
+
+        Ein Zähler, der nicht zu seiner Liste passt, ist schlimmer als keiner:
+        Er sieht aus wie eine Auskunft.
+        """
+        self._fall('schaden-z', 'Schaden', 'Wasserschaden', tage=0)
+        self._fall('mietzins-z', 'Mietzins', 'Erhöhung', tage=100)
+
+        antwort = self._seite(ansicht='alle')
+        self.assertEqual(
+            antwort.context['av_band_gesamt'], len(antwort.context['vorrat']),
+            '«Alle N» zählt etwas anderes als die Liste darunter.')
+        arten = {b['schluessel'] for b in antwort.context['av_band']}
+        self.assertIn(
+            'mietzins-z', arten,
+            'Eine Fallart aus der Liste fehlt im Band — sie ist damit nicht '
+            'auswählbar, und der Nutzer sieht nicht, warum.')
+
+    def test_die_zaehler_stehen_vor_dem_filtern_fest(self):
+        """Wer «Schaden 2» sieht und klickt, muss «Mietzins 1» daneben behalten.
+
+        Sonst gäbe es keinen Weg zurück ausser über «Alle».
+        """
+        self._fall('schaden-d', 'Schaden', 'Wasserschaden')
+        self._fall('mietzins-d', 'Mietzins', 'Erhöhung')
+
+        band = self._seite(ansicht='alle', fallart='schaden-d').context['av_band']
+        self.assertIn('mietzins-d', {b['schluessel'] for b in band},
+                      'Nach dem Filtern fehlt die andere Fallart im Band.')
+
+    def test_bei_einer_einzigen_fallart_erscheint_kein_band(self):
+        """Eine Zeile ohne Wahl ist keine Wahl."""
+        self._fall('schaden-e1', 'Schaden', 'Wasserschaden')
+        antwort = self._seite(ansicht='alle')
+        self.assertLessEqual(len(antwort.context['av_band']), 1)
+        self.assertNotIn('fw-band', antwort.content.decode())
+
+    # -- Die Adressen ------------------------------------------------------
+
+    def test_ein_reiterwechsel_behaelt_die_fallart(self):
+        """Am gerenderten Verweis geprüft, nicht am berechneten Wert.
+
+        `f_query` stand in E2.60 schon einmal richtig im Kontext und war
+        NIRGENDS verdrahtet. Ein Test auf `context['f_query']` hätte das nicht
+        gemeldet.
+        """
+        self._fall('schaden-f', 'Schaden', 'Wasserschaden')
+        self._fall('mietzins-f', 'Mietzins', 'Erhöhung')
+
+        html = self._seite(ansicht='alle', fallart='schaden-f').content.decode()
+        self.assertIn('?ansicht=woche&amp;fallart=schaden-f', html,
+                      'Ein Reiterwechsel verliert die Bandauswahl.')
+
+    def test_die_bandfelder_tragen_die_eigene_auswahl_nicht_mit(self):
+        """Sonst entstünde `?fallart=a&fallart=b`, und «Alle» höbe nichts auf.
+
+        Die Felder des Bandes setzen die Fallart selbst; sie dürfen sie nicht
+        zusätzlich aus `f_query` mitschleppen.
+        """
+        self._fall('schaden-g', 'Schaden', 'Wasserschaden')
+        self._fall('mietzins-g', 'Mietzins', 'Erhöhung')
+
+        html = self._seite(ansicht='alle', fallart='schaden-g').content.decode()
+        self.assertNotIn('fallart=mietzins-g&amp;fallart=', html)
+        self.assertNotIn('fallart=schaden-g&amp;fallart=', html)
+        # «Alle» muss den Filter wirklich aufheben.
+        self.assertIn('href="?ansicht=alle"', html,
+                      'Das Feld «Alle» trägt noch einen Filter mit.')
+
+    def test_eine_fremde_fallart_zeigt_keine_fremden_faelle(self):
+        """Die Mandantengrenze — hier über die Liste, nicht über die Abfrage.
+
+        Der Bandfilter vergleicht eine Zeichenkette aus der Adresse gegen die
+        fertige Liste. Die Liste stammt bereits aus mandantengetrennten
+        Abfragen, ein fremder Schlüssel kann also nichts Fremdes hereinholen.
+        Der Test hält das fest, weil `Fallart.schluessel` NUR je Organisation
+        eindeutig ist: Zwei Verwaltungen dürfen «schaden» heissen, ohne dass
+        die eine die Fälle der anderen sieht.
+        """
+        b = MandantenFixture('B', '3000', 'Bern')
+        self._fall('gleich', 'Schaden', 'Meiner')
+        self._fall('gleich', 'Schaden', 'Ihrer', org=b.organisation)
+
+        html = self._seite(ansicht='alle', fallart='gleich').content.decode()
+        self.assertIn('Meiner', html)
+        self.assertNotIn(
+            'Ihrer', html,
+            'Ein gleichnamiger Schlüssel holt Fälle aus der anderen '
+            'Organisation herein.')
