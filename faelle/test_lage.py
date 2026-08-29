@@ -26,10 +26,11 @@ rechnet, kostet dort dreistellig. Gemessen an einem Bestand mit zwanzig
 Mandaten: 64 Abfragen für die Mandatsliste statt einer, 203 für die
 Senkungsansprüche statt zwei.
 """
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from core.tenancy import organisation_kontext as mandant
 from core.tests._isolation import MandantenFixture
@@ -526,3 +527,358 @@ class AbschnitteErreichenDieSeiteTests(TestCase):
             inhalt = self._seite()
         self.assertIn('Heizung im Bad wieder kalt', inhalt,
                       'Der Zulauf wird berechnet, aber nicht angezeigt.')
+
+
+class VergleichswerteTests(TestCase):
+    """«Kennzahlen nur mit Vergleich» — Konzept v7.
+
+    Bis E2.58 hatten zwei der vier Kacheln `delta: None`: Ausstände und offene
+    Fälle. «CHF 23'140» ohne Bezugspunkt ist eine Zahl, keine Aussage.
+
+    WARUM DIE AUSSTÄNDE IN POSITIONEN VERGLICHEN WERDEN, NICHT IN FRANKEN
+
+    Eine einzelne grosse Rechnung lässt den Betrag springen, ohne dass sich an
+    der Lage etwas geändert hätte. Zwei Positionen mehr heisst: zwei Mieter
+    mehr, die nicht bezahlt haben.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _kachel(self, schluessel, stichtag=None, org=None):
+        with mandant(org or self.a.organisation):
+            for k in streifen(stichtag or timezone.localdate()):
+                if k['schluessel'] == schluessel:
+                    return k
+        self.fail(f'Kachel «{schluessel}» fehlt.')
+
+    def _fall(self, org, betreff, tage_zurueck=0, **felder):
+        from faelle.models import Fall, Fallart
+
+        with mandant(org):
+            art = Fallart.objects.filter(schluessel='mieterwechsel').first()
+            f = Fall(organisation=org, fallart=art, betreff=betreff, **felder)
+            f.save()
+            if tage_zurueck:
+                Fall.objects.filter(pk=f.pk).update(
+                    eroeffnet_am=timezone.now() - timedelta(days=tage_zurueck))
+        return f
+
+    def test_jede_kachel_kann_einen_vergleich_tragen(self):
+        """Keine darf `delta` gar nicht erst kennen.
+
+        `None` heisst «kein Vergleichswert vorhanden» und ist erlaubt — der
+        Schlüssel zu fehlen heisst «hier war nie einer vorgesehen», und das
+        widerspricht v7.
+        """
+        for schluessel in ('eingang', 'ausstaende', 'leerstand', 'faelle'):
+            with self.subTest(kachel=schluessel):
+                self.assertIn('delta', self._kachel(schluessel))
+
+    def test_die_richtung_ist_bei_jedem_vergleich_benannt(self):
+        """Ohne sie weiss die Oberfläche nicht, ob mehr gut oder schlecht ist.
+
+        Bei den Ausständen ist weniger besser, beim Zahlungseingang mehr. Ein
+        Pfeil nach oben in Grün wäre bei den Ausständen genau falsch.
+        """
+        for schluessel in ('eingang', 'ausstaende', 'leerstand', 'faelle'):
+            with self.subTest(kachel=schluessel):
+                k = self._kachel(schluessel)
+                self.assertIn(
+                    'delta_gut_wenn', k,
+                    f'«{schluessel}» sagt nicht, in welche Richtung gut ist.')
+                # `hoch` oder `runter` — die Vorlage prüft NUR auf `runter`
+                # (`dashboard.html:45/46`). Jeder andere Wert fiele durch beide
+                # Zweige und färbte den Pfeil falsch, ohne zu scheitern.
+                #
+                # Im Bestand stand das nie falsch: Vor E2.58 gab es genau zwei
+                # `delta_gut_wenn`, `hoch` und `runter`, beide richtig. Das
+                # Skript zu dieser Etappe meldete «dreimal `tief`» — nachgesehen
+                # in `git log -S`, im ganzen Verlauf null Treffer. Der Wächter
+                # bleibt trotzdem: Er kostet nichts und fängt den Tippfehler ab,
+                # der beim nächsten Zusatz naheliegt.
+                self.assertIn(k['delta_gut_wenn'], ('hoch', 'runter'))
+
+    def test_offene_faelle_vergleichen_gegen_den_vormonat(self):
+        # Ein Fall von vor zwei Monaten, noch offen: zählt damals und heute.
+        self._fall(self.a.organisation, 'Alt', tage_zurueck=60)
+
+        # RELATIV MESSEN, NICHT ABSOLUT.
+        #
+        # Ein erster Entwurf erwartete `delta == 1`. Die Fixture bringt aber
+        # selbst einen heute eröffneten Fall mit — es sind zwei. Derselbe
+        # Fehler wie bei den festen Positionen im Finanzkorb (E2.30): ein Test,
+        # der die eigene Ausgangslage nicht mitzählt, bricht, sobald jemand die
+        # Fixture ergänzt.
+        vorher = self._kachel('faelle')['delta']
+        self.assertIsNotNone(vorher, 'Ohne Vergleichswert misst der Rest nichts.')
+
+        self._fall(self.a.organisation, 'Neu')
+
+        self.assertEqual(
+            self._kachel('faelle')['delta'], vorher + 1,
+            'Ein neuer Fall erhöht den Vergleich nicht — dann steht dort eine '
+            'Zahl ohne Bezug zum Vormonat.')
+
+    def test_ein_alter_fall_zaehlt_auf_beiden_seiten_und_veraendert_nichts(self):
+        """Die Gegenprobe zum Test darüber.
+
+        Ein Fall von vor zwei Monaten war damals offen UND ist es heute. Er
+        gehört in beide Zahlen, hebt sich also auf. Zählte die historische
+        Abfrage ihn nicht mit — etwa weil sie auf `eroeffnet_am__gte` steht
+        oder die Zeitgrenze falsch liegt —, spränge das Delta bei jedem
+        Altbestand nach oben, und die Kachel meldete Wachstum, wo nichts
+        wächst.
+        """
+        vorher = self._kachel('faelle')['delta']
+        self._fall(self.a.organisation, 'Altlast', tage_zurueck=60)
+        self.assertEqual(
+            self._kachel('faelle')['delta'], vorher,
+            'Ein seit zwei Monaten offener Fall verändert den Vormonatsvergleich '
+            '— dann zählt die historische Abfrage ihn nur auf einer Seite.')
+
+    def test_ein_diesen_monat_erledigter_altfall_senkt_den_vergleich(self):
+        """Er zählte damals mit und heute nicht mehr — genau das ist Fortschritt.
+
+        Die historische Zahl richtet sich nach dem damaligen Zustand, NICHT nach
+        dem heutigen Status. Nähme sie den Status von heute, verschwände der
+        Fall aus beiden Zahlen, und das Delta bliebe stehen: Erledigte Arbeit
+        wäre auf der Startseite unsichtbar.
+        """
+        from faelle.models import Fall
+
+        vorher = self._kachel('faelle')['delta']
+        f = self._fall(self.a.organisation, 'Erledigt', tage_zurueck=60)
+        with mandant(self.a.organisation):
+            Fall.objects.filter(pk=f.pk).update(
+                status=Fall.ABGESCHLOSSEN, abgeschlossen_am=timezone.now())
+        self.assertEqual(
+            self._kachel('faelle')['delta'], vorher - 1,
+            'Ein diesen Monat erledigter Altfall senkt den Vergleich nicht — '
+            'dann rechnet die historische Zahl mit dem heutigen Status.')
+
+    def test_ein_laengst_erledigter_fall_zaehlt_auf_KEINER_seite(self):
+        """HIER wird `abgeschlossen_am` wirklich gebraucht — und nur hier.
+
+        Der Test darüber blieb bei der Gegenprobe GRÜN, als ich die
+        `abgeschlossen_am`-Bedingung entfernte: Er schliesst den Fall HEUTE ab,
+        also nach der Monatsgrenze, wo die Bedingung ohnehin nicht greift. Das
+        Delta bewegte sich dort, weil die heutige Zahl sinkt — nicht, weil die
+        historische richtig rechnet. Ein Test, dessen Fehlerfall sich nicht
+        herstellen lässt, beweist nichts.
+
+        Der Fall, der die Bedingung braucht, liegt ganz im VORMONAT: vor drei
+        Monaten eröffnet, vor eineinhalb abgeschlossen. Er gehört in keine der
+        beiden Zahlen. Ohne `abgeschlossen_am` zählte er im Vormonat mit, und
+        die Startseite meldete einen Rückgang, den es nicht gab — jeden Monat
+        aufs Neue, für jeden je erledigten Fall.
+        """
+        from faelle.models import Fall
+
+        vorher = self._kachel('faelle')['delta']
+        f = self._fall(self.a.organisation, 'Längst erledigt', tage_zurueck=90)
+        with mandant(self.a.organisation):
+            Fall.objects.filter(pk=f.pk).update(
+                status=Fall.ABGESCHLOSSEN,
+                abgeschlossen_am=timezone.now() - timedelta(days=45))
+        self.assertEqual(
+            self._kachel('faelle')['delta'], vorher,
+            'Ein vor eineinhalb Monaten abgeschlossener Fall bewegt den '
+            'Vergleich — dann wird `abgeschlossen_am` nicht gelesen und er '
+            'zählt im Vormonat als offen.')
+
+    def test_der_vormonatsstand_endet_wirklich_am_monatsersten(self):
+        """Die Zeitgrenze, an der der erste Entwurf danebenlag.
+
+        `eroeffnet_am` ist ein `DateTimeField` und `USE_TZ` ist an. Gegen
+        `vor_letzter` (ein `date`) zu filtern legt die Grenze auf MITTERNACHT
+        des letzten Vormonatstags — der ganze 31. fällt heraus, und Django
+        warnt bei jedem Seitenaufruf über die naive Zeitangabe.
+
+        Ein Fall vom letzten Tag des Vormonats, mittags, gehört auf beide
+        Seiten und darf das Delta nicht bewegen. Mit der falschen Grenze zählt
+        er nur heute — Delta um eins zu hoch.
+        """
+        heute = timezone.localdate()
+        letzter_vormonat = heute.replace(day=1) - timedelta(days=1)
+        vorher = self._kachel('faelle')['delta']
+
+        from faelle.models import Fall
+        f = self._fall(self.a.organisation, 'Letzter Vormonatstag')
+        mittags = timezone.make_aware(
+            timezone.datetime.combine(letzter_vormonat,
+                                      timezone.datetime.min.time())
+            + timedelta(hours=12))
+        with mandant(self.a.organisation):
+            Fall.objects.filter(pk=f.pk).update(eroeffnet_am=mittags)
+
+        self.assertEqual(
+            self._kachel('faelle')['delta'], vorher,
+            f'Ein am {letzter_vormonat} um 12:00 eröffneter Fall bewegt den '
+            'Vergleich — dann endet der Vormonat um Mitternacht statt am '
+            'Monatsersten.')
+
+    def test_faelle_fremder_organisationen_zaehlen_im_vergleich_nicht_mit(self):
+        """Die Mandantengrenze gilt auch für die historische Zahl.
+
+        Der neue Vergleich ist eine ZWEITE Abfrage auf `Fall` — die erste ist
+        seit E2.29 mandantengetrennt, die neue muss es eigenständig sein. Ein
+        `alle_organisationen` an dieser Stelle liesse die Kachel von A mit den
+        Fällen von B rechnen: kein sichtbares Leck, aber eine Zahl, die den
+        Bestand eines Wettbewerbers verrät.
+        """
+        b = MandantenFixture('B', '3000', 'Bern')
+        vorher = self._kachel('faelle')['delta']
+        self._fall(b.organisation, 'Fremd, alt', tage_zurueck=60)
+        self._fall(b.organisation, 'Fremd, neu')
+        self.assertEqual(
+            self._kachel('faelle')['delta'], vorher,
+            'Die Fälle von B verändern den Vergleich von A — dann rechnet die '
+            'historische Abfrage über die Mandantengrenze hinweg.')
+
+    def test_ein_abgebrochener_fall_zaehlt_auf_KEINER_seite(self):
+        """Sonst vergleicht die Kachel zwei verschieden gerechnete Zahlen.
+
+        Die heutige Zahl schliesst `ABGEBROCHEN` seit E2.29 aus. Täte die
+        historische es nicht, zählte ein abgebrochener Altfall nur im Vormonat
+        — und ein Abbruch sähe aus wie ein erledigter Fall, obwohl niemand
+        etwas erledigt hat.
+        """
+        from faelle.models import Fall
+
+        vorher = self._kachel('faelle')['delta']
+        f = self._fall(self.a.organisation, 'Abgebrochen', tage_zurueck=60)
+        with mandant(self.a.organisation):
+            Fall.objects.filter(pk=f.pk).update(status=Fall.ABGEBROCHEN)
+        self.assertEqual(
+            self._kachel('faelle')['delta'], vorher,
+            'Ein abgebrochener Altfall bewegt den Vergleich — dann zählt die '
+            'historische Abfrage ihn mit und die heutige nicht.')
+
+    def test_ausstaende_vergleichen_positionen_und_nicht_franken(self):
+        """Die zweite Kachel, die bis E2.58 `delta: None` trug.
+
+        Verglichen wird die ANZAHL: Eine einzelne grosse Rechnung lässt den
+        Betrag springen, ohne dass sich an der Lage etwas geändert hätte. Der
+        Test setzt deshalb im Vormonat EINE kleine offene Position und im
+        laufenden Monat ZWEI grosse — der Franken-Betrag verzehnfacht sich, das
+        Delta ist +1.
+        """
+        with mandant(self.a.organisation):
+            _rechnung(self.a.vertrag, '100', date(2026, 7, 5), 'offen')
+            _rechnung(self.a.vertrag, '5000', date(2026, 8, 1), 'offen')
+            _rechnung(self.a.vertrag, '5000', date(2026, 8, 2), 'offen')
+
+        k = self._kachel('ausstaende', stichtag=STICHTAG)
+        self.assertEqual(
+            k['delta'], 1,
+            'Eine Position mehr als im Vormonat — steht dort `None`, ist die '
+            'Kachel eine Zahl ohne Bezugspunkt; steht dort 9900, wird in '
+            'Franken verglichen.')
+        self.assertEqual(k['delta_einheit'], 'Position')
+
+    def test_ohne_vormonat_bleibt_der_vergleich_leer(self):
+        """`None`, nicht `0`.
+
+        Eine Null hiesse «unverändert» und wäre eine Aussage. «Kein
+        Vormonatswert» ist eine andere — dieselbe Unterscheidung wie beim
+        Stundensatz und bei `Geraet.neuwert`.
+
+        DIE LAGE WIRD HERGESTELLT, NICHT ABGEWARTET. Ein erster Entwurf prüfte
+        `if k['delta'] is None:` und war grün, sobald sie nicht eintrat — ein
+        Test ohne Zusicherung. Ein Stichtag im Jahr 2099 hat garantiert keinen
+        Vormonat mit Sollstellung, und damit ist der Fall gebaut statt erhofft.
+        """
+        for schluessel in ('eingang', 'ausstaende'):
+            with self.subTest(kachel=schluessel):
+                k = self._kachel(schluessel, stichtag=date(2099, 2, 15))
+                self.assertIsNone(
+                    k['delta'],
+                    f'«{schluessel}» meldet einen Vergleich gegen einen Monat, '
+                    'in dem nichts fällig war. Auf einer frischen Installation '
+                    'stünde dort ein Anstieg gegen nichts.')
+        self.assertIn('kein Vormonatswert',
+                      self._kachel('eingang', stichtag=date(2099, 2, 15))['fuss'])
+
+    def test_die_startseite_zeigt_den_pfeil_mit_einheit_und_richtung(self):
+        """Von der Zahl bis zum Pixel — die Vorlage wurde mitgeändert.
+
+        Drei Dinge, die nur hier zusammenkommen:
+
+        · Die EINHEIT. Ohne sie steht dort «▲ 3» und niemand weiss, wovon.
+        · Die ZAHLFORM. `floatformat:1` erzwang «▲ 3,0 Fälle»; eine Fallzahl
+          ist ganz. Ohne Argument zeigt Django die Stelle nur, wenn es eine gibt.
+        · Die RICHTUNG, und zwar als FARBE. Die Klassen heissen `hoch`/`runter`,
+          meinen aber die BEWERTUNG, nicht die Pfeilrichtung: `_schicht.html:898`
+          setzt `.fw-trend.hoch` auf `--ds-crit` (rot) und `.fw-trend.runter`
+          auf `--ds-good` (grün). Ein wachsender Fallvorrat ist schlecht, also
+          rot, also `hoch` — obwohl der Name das Gegenteil nahelegt.
+
+          Ich habe die Namen beim Schreiben dieses Tests als Richtung gelesen
+          und `runter` erwartet. Deshalb prüft er unten nicht nur die Klasse,
+          sondern hält daneben fest, welche Farbe sie trägt.
+
+        ZAHL RELATIV, NICHT ABSOLUT: Die Fixture bringt selbst einen heute
+        eröffneten Fall mit, das Delta startet also bei 1 und nicht bei 0. Der
+        erste Entwurf erwartete «▲ 3 Fälle» und mass «▲ 4» — genau der Fehler,
+        den diese Etappe im Nachbartest korrigiert hat.
+        """
+        vorher = self._kachel('faelle')['delta']
+        for i in range(3):
+            self._fall(self.a.organisation, f'Neu {i}')
+        erwartet = vorher + 3
+
+        with mandant(self.a.organisation):
+            c = Client()
+            c.force_login(self.a.benutzer)
+            inhalt = c.get('/neu/').content.decode()
+
+        self.assertIn(f'▲ {erwartet} Fälle</span>', inhalt,
+                      f'Kein «▲ {erwartet} Fälle» auf der Startseite — entweder '
+                      'fehlt die Einheit, oder `floatformat:1` macht «,0» daraus.')
+        self.assertNotIn(f'{erwartet},0 Fälle', inhalt)
+        self.assertIn(f'class="fw-trend hoch">▲ {erwartet} Fälle', inhalt,
+                      'Der Pfeil trägt nicht die kritische Klasse — ein '
+                      'wachsender Fallvorrat stünde damit in Grün.')
+        # Und der Beleg, dass «hoch» hier wirklich rot bedeutet. Ohne ihn prüft
+        # die Zeile darüber nur einen Namen. Die Farbe steht nicht in der Seite,
+        # sondern in der gebauten Schicht (`schicht_bauen`), die sie verlinkt.
+        from pathlib import Path
+
+        from django.conf import settings
+
+        schicht = Path(settings.BASE_DIR) / 'static' / 'css' / 'schicht.css'
+        self.assertIn('.fw-trend.hoch{color:var(--ds-crit)}',
+                      schicht.read_text(encoding='utf-8').replace('\n', '').replace(' ', ''),
+                      '`fw-trend hoch` ist nicht mehr die kritische Farbe — dann '
+                      'sagt die Klasse oben das Gegenteil dessen, was sie malt.')
+
+    def test_die_einheit_steht_in_der_richtigen_zahlform(self):
+        """«▲ 1 Fälle» — und ±1 ist der häufigste Wert überhaupt."""
+        from faelle.lage import _einheit
+
+        self.assertEqual(_einheit(1, 'Fall', 'Fälle'), 'Fall')
+        self.assertEqual(_einheit(-1, 'Fall', 'Fälle'), 'Fall')
+        self.assertEqual(_einheit(2, 'Fall', 'Fälle'), 'Fälle')
+        self.assertEqual(_einheit(0, 'Fall', 'Fälle'), 'Fälle')
+        self.assertEqual(_einheit(None, 'Fall', 'Fälle'), 'Fälle')
+
+    def test_die_startseite_warnt_nicht_ueber_naive_zeitangaben(self):
+        """Der Nebenbefund, der den Zeitgrenzen-Fehler sichtbar gemacht hat.
+
+        `DateTimeField … received a naive datetime while time zone support is
+        active` ist eine `RuntimeWarning` und bricht nichts — sie stand nur bei
+        jedem Aufruf der meistbesuchten Seite im Log. Wer eine Warnung dauerhaft
+        im Log stehen lässt, liest bald keine mehr.
+        """
+        import warnings
+
+        with warnings.catch_warnings(record=True) as gesammelt:
+            warnings.simplefilter('always')
+            self._kachel('faelle')
+        naiv = [str(w.message) for w in gesammelt
+                if 'naive datetime' in str(w.message)]
+        self.assertEqual(
+            naiv, [],
+            'Die Lage vergleicht ein `DateTimeField` gegen ein `date`.')

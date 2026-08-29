@@ -34,7 +34,15 @@
 {% comment %} Vier Zahlen mit Vormonatspfeil. Der Pfeil ist die Aussage — eine
    Zahl ohne Vergleich sagt nur, dass gemessen wurde. Ob ein Anstieg gut oder
    schlecht ist, entscheidet `delta_gut_wenn`: Zahlungseingang hoch ist gut,
-   Leerstand hoch ist schlecht. {% endcomment %}
+   Leerstand hoch ist schlecht. Geprüft wird nur auf `runter` — ein anderer
+   Wert als `hoch`/`runter` fällt durch beide Zweige und färbt den Pfeil
+   falsch, ohne zu scheitern. `VergleichswerteTests` hält die zwei Werte fest.
+
+   `floatformat` OHNE ZAHL, nicht `floatformat:1`: Eine Fallzahl ist ganz, und
+   «▲ 3,0 Fälle» ist keine. Ohne Argument zeigt Django die Nachkommastelle nur,
+   wenn es eine gibt — 3 bleibt 3, die 0,4 Prozentpunkte Leerstand bleiben 0,4.
+   Die Einheit kommt aus `delta_einheit` und steht dort schon in der richtigen
+   Zahlform. {% endcomment %}
 <div class="fw-lage">
     {% for k in lg_streifen %}
     <div>
@@ -42,8 +50,8 @@
         <div class="fw-w{% if k.stufe %} {{ k.stufe }}{% endif %}">{{ k.wert }}</div>
         <div class="fw-f">
             {% if k.delta %}
-                {% if k.delta > 0 %}<span class="fw-trend {% if k.delta_gut_wenn == 'runter' %}hoch{% else %}runter{% endif %}">▲ {{ k.delta|floatformat:1 }}</span>
-                {% else %}<span class="fw-trend {% if k.delta_gut_wenn == 'runter' %}runter{% else %}hoch{% endif %}">▼ {{ k.delta|floatformat:1|cut:"-" }}</span>{% endif %}
+                {% if k.delta > 0 %}<span class="fw-trend {% if k.delta_gut_wenn == 'runter' %}hoch{% else %}runter{% endif %}">▲ {{ k.delta|floatformat }}{% if k.delta_einheit %} {{ k.delta_einheit }}{% endif %}</span>
+                {% else %}<span class="fw-trend {% if k.delta_gut_wenn == 'runter' %}runter{% else %}hoch{% endif %}">▼ {{ k.delta|floatformat|cut:"-" }}{% if k.delta_einheit %} {{ k.delta_einheit }}{% endif %}</span>{% endif %}
             {% endif %}
             {{ k.fuss }}
         </div>

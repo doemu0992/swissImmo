@@ -28,7 +28,7 @@ sie nicht versehentlich zurückgebaut werden. Der Wächter dazu steht in
 `faelle/test_lage.py::AbfragezahlTests`.
 """
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.db.models import Count, Q, Sum
@@ -92,6 +92,17 @@ def _eingangsquote(von, bis, aktive_lg=None):
     return quote.quantize(Decimal('0.1')), soll, offen, zahlen['anzahl_offen'] or 0
 
 
+def _einheit(delta, singular, plural):
+    """Die Einheit hinter dem Vormonatspfeil, in der richtigen Zahlform.
+
+    «▲ 1 Fälle» steht sonst auf der Startseite, und ±1 ist der haeufigste Wert
+    ueberhaupt. Zwei Zeilen weiter unten wird die Fusszeile schon so gebildet
+    (`Position{"en" if … != 1}`); das hier ist dieselbe Regel, nur auf dem
+    Betrag der Veraenderung statt auf dem Bestand.
+    """
+    return singular if abs(delta or 0) == 1 else plural
+
+
 def _leerstandsquote(stichtag, aktive_lg=None):
     """Anteil der Einheiten ohne laufenden Vertrag, in Prozent."""
     from portfolio.models import Einheit
@@ -119,12 +130,17 @@ def streifen(stichtag=None, aktive_lg=None):
     erster, vor_erster, vor_letzter = _monatsgrenzen(stichtag)
 
     quote, _soll, offen, anzahl_offen = _eingangsquote(erster, stichtag, aktive_lg)
-    vor_quote, _s, _o, _a = _eingangsquote(vor_erster, vor_letzter, aktive_lg)
+    # Die vierte Stelle ist die ANZAHL offener Positionen im Vormonat. Sie wurde
+    # bis E2.58 verworfen; ein zweiter Aufruf mit denselben Argumenten waere eine
+    # zusaetzliche Abfrage auf der meistbesuchten Seite gewesen, fuer eine Zahl,
+    # die hier schon vorliegt.
+    vor_quote, _s, _o, vor_anzahl = _eingangsquote(vor_erster, vor_letzter, aktive_lg)
 
     leer_quote, leer_anzahl, _gesamt = _leerstandsquote(stichtag, aktive_lg)
     vor_leer, _la, _lg = _leerstandsquote(vor_letzter, aktive_lg)
 
     faelle_offen = liegen = 0
+    vor_faelle = None
     try:
         from faelle.models import Fall
         # ABGEBROCHEN gehoert genauso wenig zu den offenen wie ABGESCHLOSSEN.
@@ -133,6 +149,37 @@ def streifen(stichtag=None, aktive_lg=None):
         faelle_offen = Fall.objects.exclude(
             status__in=(Fall.ABGESCHLOSSEN, Fall.ABGEBROCHEN)).count()
         liegen = Fall.objects.liegengeblieben().count()
+        # DER STAND VOR EINEM MONAT — gerechnet, nicht gespeichert.
+        #
+        # Offen war damals, was bis dahin eroeffnet und noch nicht abgeschlossen
+        # war. `abgeschlossen_am` traegt das Datum; fehlt es, ist der Fall bis
+        # heute offen und zaehlt mit.
+        #
+        # DIE GRENZE IST EIN ZEITPUNKT MIT ZEITZONE, KEIN DATUM.
+        #
+        # `eroeffnet_am` und `abgeschlossen_am` sind `DateTimeField`, und
+        # `USE_TZ` ist an. Gegen `vor_letzter` (ein `date`) zu filtern hat zwei
+        # Folgen, beide gemessen: Django warnt bei JEDEM Aufruf der Startseite
+        # («received a naive datetime … while time zone support is active»),
+        # und die Grenze liegt auf MITTERNACHT des letzten Vormonatstags — der
+        # ganze 31. faellt heraus. Ein am 31. um 09:00 eroeffneter Fall galt
+        # damit als «damals noch nicht da», ein am 31. abgeschlossener als
+        # «damals noch offen». Zwei Fehler in entgegengesetzte Richtungen.
+        #
+        # `erster` (00:00 des laufenden Monats) ist dieselbe Grenze, nur richtig
+        # ausgedrueckt: alles davor liegt im Vormonat oder frueher.
+        grenze = datetime.combine(erster, time.min)
+        if timezone.is_naive(grenze):          # `USE_TZ = True` — immer der Fall
+            grenze = timezone.make_aware(grenze)
+        # ABGEBROCHENE ZAEHLEN AUCH DAMALS NICHT MIT — sonst vergleicht die
+        # Kachel zwei verschieden gerechnete Zahlen, und ein abgebrochener Fall
+        # sieht aus wie ein erledigter. `abgebrochen_am` gibt es nicht; ein
+        # heute abgebrochener Fall wird deshalb auch rueckwirkend nicht
+        # mitgezaehlt. Das ist die Naeherung, die zur Zeile oben passt.
+        vor_faelle = Fall.objects.exclude(status=Fall.ABGEBROCHEN).filter(
+            eroeffnet_am__lt=grenze).exclude(
+            abgeschlossen_am__isnull=False,
+            abgeschlossen_am__lt=grenze).count()
     except Exception:
         log.exception('Lage: Fallzahlen nicht ermittelbar')
 
@@ -143,10 +190,30 @@ def streifen(stichtag=None, aktive_lg=None):
          'delta': (quote - vor_quote) if (quote is not None and vor_quote is not None) else None,
          'delta_gut_wenn': 'hoch',
          'fuss': 'gegen Vormonat' if vor_quote is not None else 'kein Vormonatswert'},
+        # AUSSTAENDE: DER VERGLEICH ZAEHLT POSITIONEN, NICHT FRANKEN.
+        #
+        # Konzept v7 verlangt «Kennzahlen nur mit Vergleich». Bis E2.58 stand
+        # hier `delta: None` — CHF 23'140 ohne Bezugspunkt.
+        #
+        # Verglichen wird die ANZAHL, nicht der Betrag: Eine einzelne grosse
+        # Rechnung laesst den Franken-Wert springen, ohne dass sich an der Lage
+        # etwas geaendert haette. Zwei Positionen mehr heisst zwei Mieter mehr,
+        # die nicht bezahlt haben — das ist die Aussage.
+        #
+        # DIE SCHRANKE IST `vor_quote`, NICHT `vor_anzahl`.
+        #
+        # `_eingangsquote` gibt die Anzahl als `0` zurueck, wenn im Vormonat gar
+        # nichts faellig war — `0` und «kein Vormonat» sind dort nicht zu
+        # unterscheiden. Nur die QUOTE ist in diesem Fall `None`. Auf `vor_anzahl
+        # is not None` zu pruefen waere immer wahr gewesen und haette auf einer
+        # frischen Installation «▲ 3 Positionen» gezeigt: einen Anstieg gegen
+        # einen Monat, den es nicht gab.
         {'schluessel': 'ausstaende', 'label': 'Ausstände',
          'wert': f'CHF {offen:,.0f}'.replace(',', "'"),
          'stufe': 'crit' if offen else '',
-         'delta': None,
+         'delta': (anzahl_offen - vor_anzahl) if vor_quote is not None else None,
+         'delta_gut_wenn': 'runter',
+         'delta_einheit': _einheit(anzahl_offen - vor_anzahl, 'Position', 'Positionen'),
          'fuss': f'{anzahl_offen} Position{"en" if anzahl_offen != 1 else ""}'},
         {'schluessel': 'leerstand', 'label': 'Leerstand',
          'wert': f'{leer_quote} %' if leer_quote is not None else '—',
@@ -156,9 +223,18 @@ def streifen(stichtag=None, aktive_lg=None):
                                               and vor_leer is not None) else None,
          'delta_gut_wenn': 'runter',
          'fuss': f'{leer_anzahl} Objekt{"e" if leer_anzahl != 1 else ""}'},
+        # OFFENE FAELLE: gegen den Stand vor einem Monat.
+        #
+        # `eroeffnet_am` und `abgeschlossen_am` stehen im Modell; daraus laesst
+        # sich der damalige Stand rechnen, ohne ihn zu speichern. Ein wachsender
+        # Vorrat ist die Aussage, nicht die absolute Zahl — 27 offene Faelle sind
+        # bei einer grossen Verwaltung wenig und bei einer kleinen viel.
         {'schluessel': 'faelle', 'label': 'Offene Fälle',
          'wert': str(faelle_offen), 'stufe': 'warn' if liegen else '',
-         'delta': None,
+         'delta': (faelle_offen - vor_faelle) if vor_faelle is not None else None,
+         'delta_gut_wenn': 'runter',
+         'delta_einheit': _einheit((faelle_offen - vor_faelle)
+                                   if vor_faelle is not None else 0, 'Fall', 'Fälle'),
          'fuss': (f'{liegen} liegengeblieben' if liegen else 'alle in Bewegung')},
     ]
 
