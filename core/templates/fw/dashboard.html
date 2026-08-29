@@ -205,9 +205,25 @@ hier die Auswahl dort.
         <span class="fw-marker {{ e.dringlichkeit }}"></span>
         <span class="fw-ikon{% if e.dringlichkeit != 'neutral' %} {{ e.dringlichkeit }}{% endif %}">{% zeichen_wert e.ikon %}</span>
         <div class="fw-mitte">
+            {% comment %}
+            FALLNUMMER, FORTSCHRITT, ZUSTÄNDIGKEIT (E2.62)
+
+            Konzept v7 zeigt je Zeile mehr als Titel und Betreff: die
+            Fallnummer als Kopf, «Schritt 3 von 6» als Einordnung und rechts
+            das Kürzel der zuständigen Person.
+
+            Ein Fall bei Schritt 3 von 6 ist etwas anderes als einer bei 5 von
+            6 — und wer ihn führt, entscheidet, ob man ihn anfasst oder liegen
+            lässt. «niemand» steht bewusst da: Ein Fall ohne Zuständigkeit
+            fällt sonst keinem auf.
+
+            Alles drei nur, wenn vorhanden — Läufe und Pendenzen haben weder
+            Nummer noch Fortschritt.
+            {% endcomment %}
             <div class="fw-t">{{ e.titel }}</div>
-            <div class="fw-s">{{ e.zeile }}</div>
+            <div class="fw-s">{{ e.zeile }}{% if e.nummer %} · {{ e.nummer }}{% endif %}{% if e.fortschritt %} · {{ e.fortschritt }}{% endif %}</div>
         </div>
+        {% if e.wer %}<span class="fw-kuerzel" title="zuständig">{{ e.wer }}</span>{% endif %}
         <div class="fw-zeit">{{ e.datum|date:"d.m.Y" }}<br>
             <span class="fw-klein">{% if e.tage < 0 %}{{ e.tage|cut:"-" }} Tage über{% elif e.tage == 0 %}heute{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}</span></div>
         {% comment %} `e.modal` kommt aus der Quelle (siehe `_pendenz_ziel`):

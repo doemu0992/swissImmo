@@ -177,6 +177,21 @@ def _laeufe(heute, bis):
     return zeilen
 
 
+def _kuerzel(benutzer):
+    """«Dominik Muster» -> «DM». Fuer die enge Zeile im Arbeitsvorrat.
+
+    Ohne Vor- und Nachnamen faellt es auf die ersten zwei Zeichen des
+    Anmeldenamens zurueck — besser als ein leeres Feld, das aussieht, als
+    waere niemand zustaendig.
+    """
+    vor = (benutzer.first_name or '').strip()
+    nach = (benutzer.last_name or '').strip()
+    if vor and nach:
+        return f'{vor[0]}{nach[0]}'.upper()
+    name = vor or nach or benutzer.get_username()
+    return name[:2].upper()
+
+
 def _fallschritte(heute, bis, wer=None, mandat=None):
     """Offene Fallschritte mit Frist.
 
@@ -218,13 +233,53 @@ def _fallschritte(heute, bis, wer=None, mandat=None):
         from crm.models import Eigentuemer
         typ = ContentType.objects.get_for_model(Eigentuemer)
         schritte = schritte.filter(fall__akte_typ=typ, fall__akte_id=mandat.pk)
-    for s in schritte.select_related('fall', 'fall__fallart')[:20]:
+    # DER FORTSCHRITT KOMMT AUS EINER ANNOTATION, NICHT AUS DER EIGENSCHAFT.
+    #
+    # `Fall.fortschritt` rechnet mit ZWEI `COUNT`-Abfragen je Aufruf. In dieser
+    # Schleife heisst das zwei Abfragen JE ZEILE — gemessen: 16 Zeilen kosteten
+    # 36 statt 4 Abfragen, bei der Obergrenze von 20 Zeilen also bis zu 40
+    # zusaetzliche auf der meistbesuchten Seite der Anwendung. Genau der
+    # Rueckbau «je Datensatz statt je Menge», vor dem der Kopf dieser Datei
+    # warnt und den `AbfragezahlTests` abfangen soll.
+    #
+    # Die Eigenschaft bleibt, wo sie ist — sie ist fuer die Detailansicht
+    # richtig, wo sie einmal laeuft.
+    from django.db.models import Count
+
+    for s in (schritte
+              .select_related('fall', 'fall__fallart', 'fall__zustaendig')
+              .annotate(_gesamt=Count('fall__schritte', distinct=True))[:20]):
         tage = (s.frist - heute).days
+        # FALLNUMMER, FORTSCHRITT UND ZUSTAENDIGKEIT (E2.62)
+        #
+        # Konzept v7 zeigt je Zeile: «Mieterwechsel · F-2026-0184» als Kopf,
+        # darunter «Schritt 3 von 6 · Ausschreibung» und rechts das Kuerzel
+        # der zustaendigen Person.
+        #
+        # Bis hierher stand nur «Mieterwechsel · Blaser». WAS FEHLTE, IST DIE
+        # EINORDNUNG: Ein Fall bei Schritt 3 von 6 ist etwas anderes als einer
+        # bei 5 von 6, und wer ihn fuehrt, entscheidet, ob man ihn anfasst
+        # oder liegen laesst.
+        #
+        # DIE NUMMER DES SCHRITTS, NICHT «ERLEDIGTE + 1».
+        #
+        # Der Entwurf rechnete die Position aus der Zahl der erledigten
+        # Schritte. Das stimmt nur, solange in der Reihenfolge abgearbeitet
+        # wird: Sind Schritt 1 und 3 erledigt und 2 offen, stuende an der Zeile
+        # von Schritt 2 «Schritt 3 von 6». Die Zeile IST ein bestimmter Schritt
+        # und traegt seine Nummer — die braucht nicht geschaetzt zu werden.
         zeilen.append({
             'art': 'fall', 'ikon': 'dokument',
             'titel': s.bezeichnung,
             'zeile': (f'{s.fall.fallart.bezeichnung} · {s.fall.betreff}'
                       if s.fall.betreff else s.fall.fallart.bezeichnung),
+            'nummer': s.fall.nummer,
+            'fortschritt': f'Schritt {s.nr} von {s._gesamt}' if s._gesamt else '',
+            # Das Kuerzel, nicht der ganze Name: Die Zeile ist eng, und wer im
+            # Buero arbeitet, kennt die Kuerzel. «niemand» ist eine Aussage —
+            # ein Fall ohne Zustaendigkeit faellt sonst niemandem auf.
+            'wer': (_kuerzel(s.fall.zustaendig) if s.fall.zustaendig_id
+                    else 'niemand'),
             'datum': s.frist, 'tage': tage,
             'dringlichkeit': _dringlichkeit(tage),
             # DIE FALLART ALS WERT, NICHT NUR ALS TEXT (E2.61).

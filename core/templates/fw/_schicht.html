@@ -995,4 +995,17 @@ und einen Stilblock enthaelt.
            sieben Vorlagen ohne jede Farbklasse bekamen dadurch eine, und der
            Farbklassen-Waechter stieg von 325 auf 332. */
         .fw-auf-marke{color:var(--ds-auf-satt)}
+
+        /* Das Kuerzel der zustaendigen Person im Arbeitsvorrat (E2.62).
+           Rund und gedaempft: Es soll die Zeile einordnen, nicht mit dem
+           Titel um Aufmerksamkeit streiten. */
+        .fw-kuerzel{display:inline-flex;align-items:center;justify-content:center;
+              min-width:26px;height:22px;padding:0 6px;border-radius:999px;
+              background:var(--ds-surface-2);border:1px solid var(--ds-line);
+              /* `--ds-muted`, nicht `--ds-mute` — nachgesehen, nicht geraten.
+                 Ein Tippfehler im Tokennamen faellt durch: Der Browser nimmt
+                 den Erbwert, die Farbe stimmt zufaellig ungefaehr, und
+                 auffallen wuerde es erst im Dunkelmodus. */
+              color:var(--ds-muted);font-size:11px;font-weight:700;
+              letter-spacing:.02em}
 </style>

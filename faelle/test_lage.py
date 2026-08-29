@@ -1635,3 +1635,199 @@ class FallartBandTests(TestCase):
             'Ihrer', html,
             'Ein gleichnamiger Schlüssel holt Fälle aus der anderen '
             'Organisation herein.')
+
+
+class ZeilenangabenTests(TestCase):
+    """Fallnummer, Fortschritt und Zuständigkeit in der Vorratszeile.
+
+    Konzept v7 zeigt je Zeile mehr als Titel und Betreff: «Mieterwechsel ·
+    F-2026-0184», darunter «Schritt 3 von 6» und rechts das Kürzel der
+    zuständigen Person.
+
+    WAS FEHLTE, IST DIE EINORDNUNG. Ein Fall bei Schritt 3 von 6 ist etwas
+    anderes als einer bei 5 von 6 — und wer ihn führt, entscheidet, ob man ihn
+    anfasst oder liegen lässt.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _fall(self, zustaendig=None):
+        from faelle.models import Fall, Fallart, SchrittVorlage
+
+        org = self.a.organisation
+        with mandant(org):
+            art, neu = Fallart.objects.get_or_create(
+                organisation=org, schluessel='za',
+                defaults={'bezeichnung': 'Prüfung'})
+            if neu:
+                for nr in (1, 2):
+                    SchrittVorlage(fallart=art, nr=nr, etappe_nr=1, etappe='E',
+                                   bezeichnung=f'Schritt {nr}').save()
+            fall = Fall(organisation=org, fallart=art, akte=None,
+                        betreff='Prüffall', zustaendig=zustaendig)
+            fall.save()
+            fall.schritte_anlegen()
+            s = fall.schritte.first()
+            s.frist = timezone.localdate()
+            s.save()
+        return fall
+
+    def _zeile(self):
+        from faelle.arbeitsvorrat import was_reisst
+
+        with mandant(self.a.organisation):
+            for e in was_reisst(timezone.localdate()):
+                if e.get('art') == 'fall':
+                    return e
+        self.fail('Keine Fallzeile im Vorrat.')
+
+    def test_die_fallnummer_steht_in_der_zeile(self):
+        fall = self._fall()
+        self.assertEqual(self._zeile()['nummer'], fall.nummer)
+
+    def test_der_fortschritt_zaehlt_die_schritte(self):
+        """«Schritt 1 von 2» — nicht «0 von 2».
+
+        Die Zeile IST ein bestimmter Schritt; gezeigt wird seine Nummer.
+        """
+        self._fall()
+        self.assertEqual(self._zeile()['fortschritt'], 'Schritt 1 von 2')
+
+    def test_der_fortschritt_nennt_den_schritt_der_zeile(self):
+        """Nicht «erledigte + 1» — das stimmt nur bei Abarbeitung der Reihe nach.
+
+        Der Entwurf rechnete die Position aus der Zahl der ERLEDIGTEN Schritte.
+        Sind Schritt 1 und 3 erledigt und 2 offen, stünde an der Zeile von
+        Schritt 2 «Schritt 3 von 3» — die Zeile spräche über einen anderen
+        Schritt als den, den sie zeigt.
+
+        Aus der Reihe zu arbeiten ist erlaubt: `Fallschritt` kennt keine
+        Sperre, die den nächsten Schritt erzwingt.
+        """
+        from faelle.models import Fallschritt
+
+        fall = self._fall()
+        with mandant(self.a.organisation):
+            spaeter = fall.schritte.order_by('nr').last()
+            Fallschritt.objects.filter(pk=spaeter.pk).update(
+                erledigt_am=timezone.now())
+
+        self.assertEqual(
+            self._zeile()['fortschritt'], 'Schritt 1 von 2',
+            'Die Zeile nennt eine andere Schrittnummer als den Schritt, den '
+            'sie zeigt — dann wird die Position geschätzt statt gelesen.')
+
+    def test_der_fortschritt_kostet_keine_abfrage_je_zeile(self):
+        """Der Wächter gegen den Rückbau auf «je Datensatz».
+
+        `Fall.fortschritt` rechnet mit ZWEI `COUNT`-Abfragen. In der Schleife
+        heisst das zwei je Zeile — gemessen: 16 Zeilen kosteten 36 statt 4
+        Abfragen, bei der Obergrenze von 20 Zeilen also bis zu 40 zusätzliche
+        auf der meistbesuchten Seite.
+
+        Die Zahl unten ist bewusst grosszügig: Sie soll nicht jede Verfeinerung
+        rot färben, sondern den Rückbau abfangen. Bei zehn Fällen wären es 24.
+        """
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        from faelle.arbeitsvorrat import was_reisst
+        from faelle.models import Fall
+
+        for i in range(10):
+            with mandant(self.a.organisation):
+                art = self._fall().fallart
+                f = Fall(organisation=self.a.organisation, fallart=art,
+                         akte=None, betreff=f'Weiterer {i}')
+                f.save()
+                f.schritte_anlegen()
+                s = f.schritte.first()
+                s.frist = timezone.localdate()
+                s.save()
+
+        with mandant(self.a.organisation):
+            with CaptureQueriesContext(connection) as c:
+                zeilen = was_reisst(timezone.localdate())
+        faelle = [z for z in zeilen if z.get('art') == 'fall']
+        self.assertGreaterEqual(len(faelle), 10,
+                                'Ohne Zeilen sagt die Abfragezahl nichts.')
+        self.assertLess(
+            len(c), 12,
+            f'{len(faelle)} Fallzeilen kosten {len(c)} Abfragen — der '
+            'Fortschritt wird je Zeile nachgefragt statt annotiert.')
+
+    def test_das_kuerzel_kommt_aus_dem_namen(self):
+        from benutzer.models import Benutzer
+
+        with mandant(self.a.organisation):
+            dm = Benutzer.objects.create_user(
+                username='dm-z', password='x',
+                first_name='Dominik', last_name='Muster')
+        self._fall(zustaendig=dm)
+        self.assertEqual(self._zeile()['wer'], 'DM')
+
+    def test_ohne_zustaendigkeit_steht_niemand_da(self):
+        """Nicht ein leeres Feld.
+
+        Ein leeres Feld sähe aus wie ein Darstellungsfehler. Ein Fall ohne
+        Zuständigkeit soll auffallen — das ist der Sinn der Angabe.
+        """
+        self._fall()
+        self.assertEqual(self._zeile()['wer'], 'niemand')
+
+    def test_die_angaben_stehen_auch_auf_der_seite(self):
+        """Am gerenderten HTML geprüft, nicht nur am Wörterbuch.
+
+        In E2.60 stand `f_query` schon einmal richtig im Kontext und war
+        NIRGENDS verdrahtet. Ein Test auf die Sammelfunktion hätte das nicht
+        gemeldet — dieselbe Lücke wie hier, wenn niemand die Vorlage prüft.
+        """
+        from django.contrib.auth import get_user_model
+
+        from crm.models import Mitgliedschaft
+
+        with mandant(self.a.organisation):
+            dm = get_user_model().objects.create_user(
+                username='dm-seite', password='x',
+                first_name='Dominik', last_name='Muster')
+            Mitgliedschaft.objects.create(
+                benutzer=dm, organisation=self.a.organisation,
+                rolle=Mitgliedschaft.ROLLE_SACHBEARBEITER)
+        fall = self._fall(zustaendig=dm)
+
+        c = Client()
+        c.force_login(self.a.benutzer)
+        html = c.get('/neu/?ansicht=alle').content.decode()
+
+        self.assertIn(fall.nummer, html, 'Die Fallnummer fehlt in der Zeile.')
+        self.assertIn('Schritt 1 von 2', html, 'Der Fortschritt fehlt in der Zeile.')
+        self.assertIn('class="fw-kuerzel"', html,
+                      'Das Kürzel wird berechnet, aber nicht gezeigt.')
+        self.assertIn('>DM</span>', html)
+
+    def test_ohne_namen_traegt_das_kuerzel_den_anmeldenamen(self):
+        """Sonst stünde dort ein leeres Feld — und das sähe aus wie ein Fehler.
+
+        Ein Konto ohne Vor- und Nachnamen ist der Normalfall bei
+        Sammelzugängen und frisch eingeladenen Mitgliedern.
+        """
+        from django.contrib.auth import get_user_model
+
+        from faelle.arbeitsvorrat import _kuerzel
+
+        with mandant(self.a.organisation):
+            nur_login = get_user_model().objects.create_user(
+                username='rezeption', password='x')
+        self.assertEqual(_kuerzel(nur_login), 'RE')
+
+    def test_nur_der_vorname_genuegt(self):
+        from django.contrib.auth import get_user_model
+
+        from faelle.arbeitsvorrat import _kuerzel
+
+        with mandant(self.a.organisation):
+            lea = get_user_model().objects.create_user(
+                username='lea-k', password='x', first_name='Lea')
+        self.assertEqual(_kuerzel(lea), 'LE')
