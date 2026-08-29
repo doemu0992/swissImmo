@@ -1165,3 +1165,267 @@ class KopfzeileTests(TestCase):
             antwort.context['av_vertretung'], [],
             'Der Abschnitt «Vertretung» im Arbeitsvorrat hat den Ausfall nicht '
             'aufgefangen.')
+
+
+class KopfFilterTests(TestCase):
+    """«Zuständigkeit» und «Mandat» — Konzept v7.
+
+    SIE GREIFEN IN DIE ABFRAGE, NICHT AUF DIE FERTIGE LISTE
+
+    Das ist der Kern: Würde erst die fertige Liste gefiltert, zeigte die
+    Kopfzeile weiter «6 fällig heute» und nur die sichtbaren Zeilen wären
+    weniger. Ausserdem schneidet `[:20]` VOR dem Filter — die eigenen Fälle
+    könnten aus dem Fenster fallen, während fremde den Platz belegen.
+
+    NUR DIE FALLSCHRITTE WERDEN GEFILTERT
+
+    Läufe, Pendenzen und Wartungsfristen hängen an keinem Fall. Sie
+    ungefiltert zu lassen ist richtig: Ein Zahllauf gehört allen, auch wenn
+    gerade jemand nach seinen eigenen Fällen sucht.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _mit_frist(self, betreff, zustaendig=None, akte=None, org=None):
+        """Ein Fall mit fälligem Schritt — sonst steht er nicht im Vorrat."""
+        from faelle.models import Fall, Fallart, SchrittVorlage
+
+        org = org or self.a.organisation
+        with mandant(org):
+            art = Fallart.objects.create(
+                organisation=org, schluessel=betreff[:8].lower(),
+                bezeichnung=betreff)
+            # OHNE SCHRITTVORLAGE ENTSTEHEN KEINE SCHRITTE.
+            #
+            # `schritte_anlegen()` kopiert die Vorlagen der Fallart. Fehlt eine,
+            # bleibt der Fall ohne Schritt — und damit ohne Frist und ohne Zeile
+            # im Arbeitsvorrat. Ein leerer Vorrat sieht dann aus wie ein
+            # Filterfehler und ist keiner.
+            SchrittVorlage(fallart=art, nr=1, etappe_nr=1, etappe='E',
+                           bezeichnung=f'Schritt {betreff}').save()
+            fall = Fall(organisation=org, fallart=art, akte=akte,
+                        betreff=betreff, zustaendig=zustaendig)
+            fall.save()
+            fall.schritte_anlegen()
+            s = fall.schritte.first()
+            self.assertIsNotNone(
+                s, 'Der Fall hat keinen Schritt — dann prüft der Test nichts.')
+            s.frist = timezone.localdate()
+            s.save()
+        return fall
+
+    def _vorrat(self, org=None, **filter):
+        from faelle.arbeitsvorrat import was_reisst
+
+        # `titel` ist die SCHRITTbezeichnung; der Fallbetreff steht in `zeile`.
+        # Nachgesehen in `_fallschritte`, nicht geraten.
+        with mandant(org or self.a.organisation):
+            return [f"{e.get('titel', '')} {e.get('zeile', '')}"
+                    for e in was_reisst(timezone.localdate(), **filter)]
+
+    def _team_mitglied(self, org, username):
+        from django.contrib.auth import get_user_model
+
+        from crm.models import Mitgliedschaft
+
+        with mandant(org):
+            u = get_user_model().objects.create_user(username=username,
+                                                     password='x')
+            Mitgliedschaft.objects.create(
+                benutzer=u, organisation=org,
+                rolle=Mitgliedschaft.ROLLE_SACHBEARBEITER)
+        return u
+
+    # -- Die Wirkung der Filter -------------------------------------------
+
+    def test_ohne_filter_stehen_beide_faelle_da(self):
+        """Die Gegenprobe zum Test darunter.
+
+        Ohne sie wäre «gefiltert» nicht von «gar nichts gefunden» zu
+        unterscheiden.
+        """
+        lea = self._team_mitglied(self.a.organisation, 'lea-f')
+        self._mit_frist('Meiner', zustaendig=self.a.benutzer)
+        self._mit_frist('Ihrer', zustaendig=lea)
+
+        alle = ' '.join(self._vorrat())
+        self.assertIn('Meiner', alle)
+        self.assertIn('Ihrer', alle)
+
+    def test_die_zustaendigkeit_schraenkt_ein(self):
+        lea = self._team_mitglied(self.a.organisation, 'lea-g')
+        self._mit_frist('Meiner', zustaendig=self.a.benutzer)
+        self._mit_frist('Ihrer', zustaendig=lea)
+
+        meins = ' '.join(self._vorrat(wer=self.a.benutzer))
+        self.assertIn('Meiner', meins)
+        self.assertNotIn(
+            'Ihrer', meins,
+            'Ein fremder Fall steht trotz Filter im Vorrat — dann filtert die '
+            'Seite nur die Anzeige, nicht die Abfrage.')
+
+    def test_der_mandatsfilter_schraenkt_auf_die_akte_ein(self):
+        """«Fälle dieses Mandats» — was DIREKT am Eigentümer hängt.
+
+        Ein Fall an einer Liegenschaft dieses Eigentümers erscheint nicht. Das
+        ist eine benannte Einschränkung: `Fall` hat kein `liegenschaft`-Feld,
+        er hängt über `akte_typ`/`akte_id` an einer beliebigen Akte.
+        """
+        from crm.models import Eigentuemer
+
+        with mandant(self.a.organisation):
+            zweiter = Eigentuemer.objects.create(
+                organisation=self.a.organisation, firma_oder_name='Zweiter')
+        self._mit_frist('AmMandat', akte=self.a.eigentuemer)
+        self._mit_frist('AmAndern', akte=zweiter)
+
+        nur = ' '.join(self._vorrat(mandat=self.a.eigentuemer))
+        self.assertIn('AmMandat', nur)
+        self.assertNotIn('AmAndern', nur)
+
+    def test_laeufe_bleiben_trotz_filter_stehen(self):
+        """Ein Zahllauf gehört allen — GEMESSEN, nicht an der Tabelle abgelesen.
+
+        Die erste Fassung dieses Tests las nur `QUELLEN` und prüfte, dass dort
+        genau `_fallschritte` steht. Das ist eine Aussage über eine Liste, nicht
+        über das Verhalten: Sie bliebe grün, wenn `was_reisst` beim Filtern
+        alle anderen Quellen überspringt. Jetzt wird ein echter Lauf angelegt
+        und im gefilterten Vorrat gesucht.
+
+        Warum das zählt: Wer nach seinen eigenen Fällen sucht, verlöre sonst
+        den Blick auf einen blockierten Lauf — und ein Lauf, der nicht
+        ausgelöst wurde, kostet mehr als ein übersehener Fallschritt.
+        """
+        from faelle.lauf_models import Lauf, Laufart
+
+        org = self.a.organisation
+        with mandant(org):
+            art = Laufart.objects.create(
+                organisation=org, schluessel='soll', bezeichnung='Sollstellung',
+                rhythmus='monatlich')
+            Lauf.objects.create(organisation=org, laufart=art, periode='2026-08',
+                                faellig_am=timezone.localdate())
+        self._mit_frist('Meiner', zustaendig=self.a.benutzer)
+
+        gefiltert = ' '.join(self._vorrat(wer=self.a.benutzer))
+        self.assertIn('Meiner', gefiltert)
+        self.assertIn(
+            'Sollstellung', gefiltert,
+            'Der Lauf verschwindet, sobald jemand nach seinen Fällen filtert — '
+            'dann greift der Filter auf Quellen, die an keinem Fall hängen.')
+
+    def test_ein_ausfall_der_gefilterten_abfrage_kostet_die_seite_nicht(self):
+        """Der Ausfallschutz muss auch im gefilterten Zweig greifen.
+
+        Ein erster Entwurf zog den gefilterten Aufruf mit `continue` VOR den
+        `try`. Damit lief ausgerechnet die neue Abfrage ohne Schutz, und ein
+        Fehler dort hätte die Startseite mit 500 beendet statt eine Quelle
+        auszulassen. Derselbe Fund wie in E2.59 bei `vertretung()` — dort lag
+        der `try` um den Import statt um die Abfrage.
+        """
+        from unittest.mock import patch
+
+        import faelle.arbeitsvorrat as av
+
+        def kaputt(*a, **k):
+            raise RuntimeError('Fallschritte nicht ladbar')
+
+        quellen = tuple((n, kaputt if f is av._fallschritte else f, lg)
+                        for n, f, lg in av.QUELLEN)
+        with patch.object(av, 'QUELLEN', quellen), \
+                patch.object(av, '_fallschritte', kaputt), \
+                self.assertLogs('faelle.arbeitsvorrat', level='ERROR'):
+            zeilen = self._vorrat(wer=self.a.benutzer)
+
+        self.assertIsInstance(zeilen, list)
+
+    # -- Die Mandantengrenze ----------------------------------------------
+
+    def test_das_auswahlfeld_zeigt_nur_das_eigene_team(self):
+        """`Benutzer.objects` IST NICHT MANDANTENGETRENNT.
+
+        Das Modell ist ein schlichter `AbstractUser` mit Djangos `UserManager`;
+        die Zugehörigkeit hängt an `Mitgliedschaft`, weil eine Treuhänderin für
+        zwei Verwaltungen arbeiten kann. Ohne `mitgliedschaften__organisation`
+        stünde hier das vollständige Team jeder anderen Verwaltung, mit Namen.
+
+        Genau dieser Fund steht seit dem 17.08.2026 in `profil.py` — dort fiel
+        er durchs Raster des Registrylaufs, weil die URL keinen ID-Parameter
+        trägt. Ein Auswahlfeld trägt auch keinen.
+        """
+        b = MandantenFixture('B', '3000', 'Bern')
+        c = Client()
+        c.force_login(self.a.benutzer)
+        antwort = c.get('/neu/')
+
+        namen = {u.username for u in antwort.context['f_wer_auswahl']}
+        self.assertIn(self.a.benutzer.username, namen,
+                      'Ohne das eigene Team prüft der Test nichts.')
+        self.assertNotIn(
+            b.benutzer.username, namen,
+            'Im Auswahlfeld von A steht ein Benutzer von B — dann liest die '
+            'Startseite das Team der anderen Verwaltung.')
+
+    def test_das_mandatsfeld_zeigt_nur_die_eigenen_eigentuemer(self):
+        b = MandantenFixture('B', '3000', 'Bern')
+        c = Client()
+        c.force_login(self.a.benutzer)
+        antwort = c.get('/neu/')
+
+        ids = {m.pk for m in antwort.context['f_mandat_auswahl']}
+        self.assertIn(self.a.eigentuemer.pk, ids)
+        self.assertNotIn(b.eigentuemer.pk, ids)
+
+    def test_eine_fremde_benutzer_id_greift_nicht(self):
+        """Ein geratener `?wer=` darf nicht auf einen fremden Benutzer zeigen.
+
+        Die Fälle sind ohnehin mandantengetrennt, das Ergebnis bliebe also
+        leer. Aber `f_wer` landet im Auswahlfeld als ausgewählter Eintrag —
+        dort stünde dann der NAME einer fremden Person.
+        """
+        b = MandantenFixture('B', '3000', 'Bern')
+        c = Client()
+        c.force_login(self.a.benutzer)
+        antwort = c.get(f'/neu/?wer={b.benutzer.pk}')
+
+        self.assertIsNone(
+            antwort.context['f_wer'],
+            'Eine fremde Benutzer-ID wird aufgelöst — dann steht der Name '
+            'einer fremden Person im Auswahlfeld von A.')
+
+    # -- Die Filter überleben einen Reiterwechsel --------------------------
+
+    def test_ein_reiterwechsel_verliert_die_filter_nicht(self):
+        """`?ansicht=x` ersetzt die ganze Abfragezeichenfolge.
+
+        Ohne `f_query` in den Reiter-Adressen hebt jeder Wechsel still alle
+        Filter auf. `f_query` wurde im ersten Entwurf berechnet und NIRGENDS
+        verwendet — die Begründung stand da, die Wirkung fehlte.
+        """
+        lea = self._team_mitglied(self.a.organisation, 'lea-reiter')
+        c = Client()
+        c.force_login(self.a.benutzer)
+        inhalt = c.get(f'/neu/?wer={lea.pk}').content.decode()
+
+        # `&amp;`, nicht `&` — Django maskiert die Adresse beim Rendern. Die
+        # erste Fassung suchte das rohe Zeichen und war rot, obwohl die
+        # Verdrahtung stimmte.
+        self.assertIn(f'?ansicht=woche&amp;wer={lea.pk}', inhalt,
+                      'Die Reiter tragen den Zuständigkeitsfilter nicht mit.')
+
+    def test_ein_reiterwechsel_verliert_den_liegenschaftsfilter_nicht(self):
+        """Derselbe Verlust, nur älter — und schwerer.
+
+        Der Liegenschaftsfilter gilt für die ganze Anwendung. Bis E2.60 warf
+        jeder Reiterwechsel auf der Startseite ihn weg, weil `?ansicht=x` die
+        Adresse ersetzt. Aufgefallen beim Einbauen von `f_query`, nicht durch
+        einen Bericht.
+        """
+        c = Client()
+        c.force_login(self.a.benutzer)
+        inhalt = c.get(f'/neu/?lg={self.a.liegenschaft.pk}').content.decode()
+
+        self.assertIn(f'?ansicht=woche&amp;lg={self.a.liegenschaft.pk}', inhalt,
+                      'Ein Reiterwechsel wirft den Liegenschaftsfilter weg.')

@@ -40,6 +40,54 @@
     </div>
 </div>
 
+{% comment %}
+DIE ZWEI FILTER AUS KONZEPT v7 (E2.60)
+
+«Zuständigkeit: Alle · Mandat: Alle 9» — zwei Fragen an den Arbeitsvorrat:
+«Was liegt bei mir?» und «Was gehört zu diesem Eigentümer?»
+
+SIE STEHEN NICHT IN DER SEITENLEISTE. Der Liegenschaftsfilter dort gilt für
+die ganze Anwendung; diese zwei gelten nur hier. Ein Filter, der überall
+sichtbar ist, aber nur auf einer Seite wirkt, ist eine Falle.
+
+UND SIE STEHEN UNTER `fw-phead`, NICHT DARIN. Der Kopf ist ein
+`display:flex` mit `justify-content:space-between` und genau zwei Kindern:
+Titelblock links, Knöpfe rechts. Ein drittes Kind dazwischen drängt sich in
+die Zeile und schiebt die Knöpfe um — der erste Entwurf hat das getan.
+
+«Alle» ist kein Wert, sondern das Fehlen eines Wertes — der leere Eintrag
+trägt deshalb keine ID.
+
+Der Liegenschaftsfilter wird mitgeführt (`lg`), sonst verliert ein Wechsel
+hier die Auswahl dort.
+{% endcomment %}
+<form method="get" class="fw-kopffilter">
+    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+    <input type="hidden" name="ansicht" value="{{ ansicht }}">
+    <label>
+        <span class="fw-faint">Zuständigkeit:</span>
+        <select name="wer" onchange="this.form.submit()" class="fw-feld">
+            <option value="">Alle</option>
+            {% for b in f_wer_auswahl %}
+            <option value="{{ b.pk }}" {% if f_wer and f_wer.pk == b.pk %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        <span class="fw-faint">Mandat:</span>
+        <select name="mandat" onchange="this.form.submit()" class="fw-feld">
+            {# «Alle 0» las sich wie ein Fehler. Ohne Mandate gibt es nichts zu filtern — dann steht schlicht «Alle». #}
+            <option value="">Alle{% if f_mandat_auswahl %} {{ f_mandat_auswahl|length }}{% endif %}</option>
+            {% for m in f_mandat_auswahl %}
+            <option value="{{ m.pk }}" {% if f_mandat and f_mandat.pk == m.pk %}selected{% endif %}>{{ m.firma_oder_name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    {% if f_wer or f_mandat %}
+    <a href="?ansicht={{ ansicht }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-faint">× Filter aufheben</a>
+    {% endif %}
+</form>
+
 {% comment %} Vier Zahlen mit Vormonatspfeil. Der Pfeil ist die Aussage — eine
    Zahl ohne Vergleich sagt nur, dass gemessen wurde. Ob ein Anstieg gut oder
    schlecht ist, entscheidet `delta_gut_wenn`: Zahlungseingang hoch ist gut,
@@ -79,7 +127,19 @@
     </div>
     <div class="fw-reiter">
         {% for schluessel, bezeichnung, aktiv, anzahl in ansichten %}
-        <a href="?ansicht={{ schluessel }}" class="{% if aktiv %}hier{% endif %}">
+        {% comment %} DIE REITER TRAGEN DIE FILTER MIT.
+
+           `?ansicht=x` ersetzt die ganze Abfragezeichenfolge. Ohne `lg` und
+           `f_query` hebt jeder Reiterwechsel still alle Filter auf — den
+           Liegenschaftsfilter aus der Seitenleiste eingeschlossen, und der
+           gilt für die ganze Anwendung. `f_query` beginnt selbst mit `&`
+           und ist leer, wenn nichts gefiltert ist.
+
+           `&amp;` IM VORLAGENTEXT, NICHT `&`. Ein rohes `&` in einem `href`
+           ist ungültiges HTML. `{{ f_query }}` wird als Variable ohnehin
+           maskiert — stünde daneben ein rohes `&`, lieferte dieselbe Adresse
+           zwei verschiedene Schreibweisen. {% endcomment %}
+        <a href="?ansicht={{ schluessel }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{{ f_query }}" class="{% if aktiv %}hier{% endif %}">
             {{ bezeichnung }}{% if anzahl %}<span class="fw-z">{{ anzahl }}</span>{% endif %}
         </a>
         {% endfor %}

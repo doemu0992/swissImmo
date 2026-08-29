@@ -34,6 +34,10 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
             outline:2px solid var(--ds-brand);outline-offset:2px;border-radius:6px
         }
         .fw-phead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+        .fw-kopffilter{display:flex;flex-wrap:wrap;align-items:center;gap:12px;
+            margin:-8px 0 16px;font-size:13px}
+        .fw-kopffilter label{display:flex;align-items:center;gap:7px}
+        .fw-kopffilter .fw-feld{padding:5px 9px}
         .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:800;color:var(--ds-ink)}
         .fw-phead p{font-size:13px;color:var(--ds-muted);margin-top:2px}
         .fw-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;text-decoration:none;padding:9px 14px;border-radius:var(--ds-radius-sm);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}

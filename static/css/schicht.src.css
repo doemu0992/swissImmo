@@ -71,6 +71,13 @@
         }
         /* Seitenkopf */
         .fw-phead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+        /* Die zwei Kopf-Filter aus v7. Eine eigene Zeile UNTER dem Kopf, nicht
+           darin: `fw-phead` verteilt genau zwei Kinder auf die Zeilenenden,
+           ein drittes schoebe die Knoepfe um. */
+        .fw-kopffilter{display:flex;flex-wrap:wrap;align-items:center;gap:12px;
+            margin:-8px 0 16px;font-size:13px}
+        .fw-kopffilter label{display:flex;align-items:center;gap:7px}
+        .fw-kopffilter .fw-feld{padding:5px 9px}
         .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:800;color:var(--ds-ink)}
         .fw-phead p{font-size:13px;color:var(--ds-muted);margin-top:2px}
         /* Buttons */

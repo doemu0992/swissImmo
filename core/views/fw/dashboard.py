@@ -11,6 +11,7 @@
 import logging
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
 from django.db.models import Q, Sum
 from django.shortcuts import render
 from django.utils import timezone
@@ -30,6 +31,64 @@ from ._basis import _global_filter, _pendenz_ziel
 # und die Leerstandsliste; `fw_finanzen` darunter braucht keinen davon.
 
 logger = logging.getLogger(__name__)
+
+
+def _kopf_filter(request):
+    """Die zwei Filter aus Konzept v7: Zustaendigkeit und Mandat.
+
+    WARUM SIE HIER STEHEN UND NICHT IN `_global_filter`
+
+    Der Liegenschaftsfilter gilt fuer die ganze Anwendung — er steht in der
+    Seitenleiste und wirkt auf jeder Seite. Diese zwei gelten NUR fuer den
+    Arbeitsvorrat: «Was liegt bei mir?» ist eine Frage an die Faelle, nicht an
+    die Liegenschaften.
+
+    DIE ZWEI SEITEN LAUFEN NICHT UEBER DENSELBEN WEG — DAS IST DER KERN HIER
+
+    `Eigentuemer.objects` ist ein `TenantManager`; eine fremde ID findet dort
+    schlicht nichts, und eine eigene Besitzpruefung waere tautologisch.
+
+    `Benutzer` IST ANDERS. Das Modell ist ein schlichter `AbstractUser`, sein
+    `objects` ist Djangos `UserManager` — NICHT mandantengetrennt. Die
+    Zugehoerigkeit haengt an `Mitgliedschaft`, weil eine Treuhaenderin fuer
+    zwei Verwaltungen arbeiten kann. Ohne `mitgliedschaften__organisation`
+    stuende im Auswahlfeld das VOLLSTAENDIGE Team jeder anderen Verwaltung,
+    mit Namen. Genau dieser Fund steht seit dem 17.08.2026 in
+    `core/views/fw/profil.py` — dort fiel er durchs Raster, weil die URL
+    keinen ID-Parameter traegt. Ein Auswahlfeld traegt auch keinen.
+
+    «Alle» IST KEIN WERT, SONDERN DAS FEHLEN EINES WERTES. `None` heisst
+    «nicht eingeschraenkt»; ein leerer Filter waere etwas anderes als «keine
+    Zustaendigkeit gesetzt».
+    """
+    from crm.models import Eigentuemer
+
+    User = get_user_model()
+    organisation = getattr(request, 'organisation', None)
+    team = User.objects.filter(is_active=True,
+                               mitgliedschaften__organisation=organisation).distinct()
+
+    wer_id = request.GET.get('wer') or None
+    mandat_id = request.GET.get('mandat') or None
+
+    wer = mandat = None
+    if wer_id and str(wer_id).isdigit():
+        wer = team.filter(pk=wer_id).first()
+    if mandat_id and str(mandat_id).isdigit():
+        mandat = Eigentuemer.objects.filter(pk=mandat_id).first()
+
+    return {
+        'f_wer': wer,
+        'f_mandat': mandat,
+        'f_wer_auswahl': list(team.order_by('first_name', 'username')[:50]),
+        'f_mandat_auswahl': list(Eigentuemer.objects.order_by('firma_oder_name')[:50]),
+        # Beide Filter in der Adresse behalten, damit ein Reiterwechsel sie
+        # nicht verliert. Die Reiter sind einfache `<a href="?…">` — sie
+        # ersetzen die ganze Abfragezeichenfolge, also muss alles mit, was
+        # gelten soll.
+        'f_query': ''.join([f'&wer={wer.pk}' if wer else '',
+                            f'&mandat={mandat.pk}' if mandat else '']),
+    }
 
 
 def _vertretung_fuer(request, heute):
@@ -105,7 +164,12 @@ def fw_dashboard(request):
     # zusammenzusuchen, war der erste Entwurf; damit haette `arbeitsvorrat()`
     # ausser Tests keinen Aufrufer mehr gehabt — genau die Waise, die in
     # dieser Phase schon dreimal aufgetaucht ist.
-    av = arbeitsvorrat(request, aktive_lg)
+    # Die zwei Kopf-Filter aus v7 (E2.60). Sie greifen in die Abfrage der
+    # Fallschritte, nicht auf die fertige Liste — sonst zaehlte die Kopfzeile
+    # weiter alles.
+    kf = _kopf_filter(request)
+    av = arbeitsvorrat(request, aktive_lg,
+                       wer=kf['f_wer'], mandat=kf['f_mandat'])
 
     # EIN Durchgang fuer alle Fenster. `was_reisst(365)` ist die Obermenge;
     # «Diese Woche» und «Heute» sind daraus gefiltert, statt die Sammelarbeit
@@ -175,6 +239,7 @@ def fw_dashboard(request):
         # der Vorlage. `isocalendar()[1]` ist die ISO-Woche: Montag als erster
         # Tag, und die Woche mit dem ersten Donnerstag ist die erste des Jahres.
         # Das ist die Zaehlung, die auf Schweizer Kalendern steht.
+        **kf,
         'kw': heute.isocalendar()[1],
         'vertretung_fuer': _vertretung_fuer(request, heute),
         **lage(heute, aktive_lg),

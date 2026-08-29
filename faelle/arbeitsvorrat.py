@@ -177,7 +177,7 @@ def _laeufe(heute, bis):
     return zeilen
 
 
-def _fallschritte(heute, bis):
+def _fallschritte(heute, bis, wer=None, mandat=None):
     """Offene Fallschritte mit Frist.
 
     Das Fristfeld heisst `frist`, nicht `faellig_am` — nachgesehen, nicht
@@ -189,9 +189,36 @@ def _fallschritte(heute, bis):
     from faelle.models import Fallschritt
 
     zeilen = []
-    for s in (Fallschritt.objects.filter(erledigt_am__isnull=True,
-                                         frist__isnull=False, frist__lte=bis)
-              .select_related('fall', 'fall__fallart')[:20]):
+    # DIE FILTER GREIFEN IN DER ABFRAGE, NICHT AUF DER FERTIGEN LISTE.
+    #
+    # Konzept v7 zeigt im Kopf «Zustaendigkeit» und «Mandat» — Fragen an die
+    # FAELLE. Sie erst auf die fertige Liste anzuwenden waere falsch: Dann
+    # zeigte die Kopfzeile «6 faellig heute» weiter alles und nur die
+    # sichtbaren Zeilen waeren weniger. Ausserdem schneidet `[:20]` VOR dem
+    # Filter — die eigenen Faelle koennten aus dem Fenster fallen, waehrend
+    # fremde den Platz belegen.
+    schritte = Fallschritt.objects.filter(erledigt_am__isnull=True,
+                                          frist__isnull=False, frist__lte=bis)
+    if wer is not None:
+        schritte = schritte.filter(fall__zustaendig=wer)
+    if mandat is not None:
+        # NUR UEBER DIE AKTE — `Fall` hat kein `liegenschaft`-Feld.
+        #
+        # Ein Fall haengt ueber `akte_typ`/`akte_id` an einer beliebigen Akte
+        # (Vertrag, Einheit, Liegenschaft, Eigentuemer, Mieter, Schaden). Ein
+        # Filter ueber `fall__liegenschaft__eigentuemer` waere beim ersten
+        # Aufruf gescheitert; das Feld gibt es nicht.
+        #
+        # Fuer «Mandat» heisst das: gezaehlt wird, was DIREKT am Eigentuemer
+        # haengt. Ein Fall an einer Liegenschaft dieses Eigentuemers erscheint
+        # nicht — das ist eine Einschraenkung und keine Luecke: Der Filter
+        # sagt «Faelle dieses Mandats», nicht «alles, was ihn beruehrt».
+        from django.contrib.contenttypes.models import ContentType
+
+        from crm.models import Eigentuemer
+        typ = ContentType.objects.get_for_model(Eigentuemer)
+        schritte = schritte.filter(fall__akte_typ=typ, fall__akte_id=mandat.pk)
+    for s in schritte.select_related('fall', 'fall__fallart')[:20]:
         tage = (s.frist - heute).days
         zeilen.append({
             'art': 'fall', 'ikon': 'dokument',
@@ -278,7 +305,8 @@ QUELLEN = (
 )
 
 
-def was_reisst(heute=None, grenze=VORSCHAU_TAGE, aktive_lg=None):
+def was_reisst(heute=None, grenze=VORSCHAU_TAGE, aktive_lg=None,
+               wer=None, mandat=None):
     """Überfälliges und bald Fälliges, über alle Quellen gemischt.
 
     Rückgabe: nach Fälligkeit sortierte Liste. Jede Zeile trägt `art`, damit
@@ -289,6 +317,18 @@ def was_reisst(heute=None, grenze=VORSCHAU_TAGE, aktive_lg=None):
     eintraege = []
     for name, funktion, nimmt_lg in QUELLEN:
         try:
+            # Nur `_fallschritte` kennt Zustaendigkeit und Mandat: Laeufe,
+            # Pendenzen und Wartungsfristen haengen an keinem Fall. Sie
+            # ungefiltert zu lassen ist richtig — ein Zahllauf gehoert allen.
+            #
+            # DER AUFRUF STEHT IM `try`, NICHT DAVOR. Ein erster Entwurf zog
+            # ihn mit `continue` vor den Block; damit lief ausgerechnet die
+            # gefilterte Abfrage OHNE Ausfallschutz, und ein Fehler dort haette
+            # die Startseite mit 500 beendet statt eine Quelle auszulassen.
+            # Derselbe Fund wie in E2.59 bei `vertretung()`.
+            if funktion is _fallschritte and (wer is not None or mandat is not None):
+                eintraege += funktion(heute, bis, wer=wer, mandat=mandat)
+                continue
             eintraege += (funktion(heute, bis, aktive_lg) if nimmt_lg
                           else funktion(heute, bis))
         except Exception:
@@ -540,10 +580,10 @@ def liegezeit(zeilen):
     return round(sum(alter) / len(alter), 1) if alter else None
 
 
-def arbeitsvorrat(request, aktive_lg=None):
+def arbeitsvorrat(request, aktive_lg=None, wer=None, mandat=None):
     """Alles, was die Heute-Ansicht braucht — in einem Aufruf."""
     heute = timezone.localdate()
-    reisst = was_reisst(heute, aktive_lg=aktive_lg)
+    reisst = was_reisst(heute, aktive_lg=aktive_lg, wer=wer, mandat=mandat)
     eingaenge, eingaenge_gesamt = posteingang()
     termin_zeilen = termine(heute)
     freigaben = wartet_auf_freigabe()
