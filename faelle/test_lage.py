@@ -1719,44 +1719,14 @@ class ZeilenangabenTests(TestCase):
             'Die Zeile nennt eine andere Schrittnummer als den Schritt, den '
             'sie zeigt — dann wird die Position geschätzt statt gelesen.')
 
-    def test_der_fortschritt_kostet_keine_abfrage_je_zeile(self):
-        """Der Wächter gegen den Rückbau auf «je Datensatz».
-
-        `Fall.fortschritt` rechnet mit ZWEI `COUNT`-Abfragen. In der Schleife
-        heisst das zwei je Zeile — gemessen: 16 Zeilen kosteten 36 statt 4
-        Abfragen, bei der Obergrenze von 20 Zeilen also bis zu 40 zusätzliche
-        auf der meistbesuchten Seite.
-
-        Die Zahl unten ist bewusst grosszügig: Sie soll nicht jede Verfeinerung
-        rot färben, sondern den Rückbau abfangen. Bei zehn Fällen wären es 24.
-        """
-        from django.db import connection
-        from django.test.utils import CaptureQueriesContext
-
-        from faelle.arbeitsvorrat import was_reisst
-        from faelle.models import Fall
-
-        for i in range(10):
-            with mandant(self.a.organisation):
-                art = self._fall().fallart
-                f = Fall(organisation=self.a.organisation, fallart=art,
-                         akte=None, betreff=f'Weiterer {i}')
-                f.save()
-                f.schritte_anlegen()
-                s = f.schritte.first()
-                s.frist = timezone.localdate()
-                s.save()
-
-        with mandant(self.a.organisation):
-            with CaptureQueriesContext(connection) as c:
-                zeilen = was_reisst(timezone.localdate())
-        faelle = [z for z in zeilen if z.get('art') == 'fall']
-        self.assertGreaterEqual(len(faelle), 10,
-                                'Ohne Zeilen sagt die Abfragezahl nichts.')
-        self.assertLess(
-            len(c), 12,
-            f'{len(faelle)} Fallzeilen kosten {len(c)} Abfragen — der '
-            'Fortschritt wird je Zeile nachgefragt statt annotiert.')
+    # DER ABFRAGEZAEHLER STEHT JETZT IN `ArbeitsvorratAbfragezahlTests`.
+    #
+    # E2.62 hatte ihn hier, mit einer Obergrenze (`< 12`) und einem inline
+    # aufgebauten Bestand. Der eigene Waechter unten misst dieselbe Sache
+    # GENAU (vier Abfragen, eine je Quelle), an einem Fixture, das gross genug
+    # ist, dass eine Schleife nicht wie eine Abfrage aussieht. Zwei Waechter
+    # fuer dieselbe Zusicherung waeren einer zu viel — und der schwaechere
+    # bliebe stehen, wenn jemand den staerkeren lockert.
 
     def test_das_kuerzel_kommt_aus_dem_namen(self):
         from benutzer.models import Benutzer
@@ -1831,3 +1801,108 @@ class ZeilenangabenTests(TestCase):
             lea = get_user_model().objects.create_user(
                 username='lea-k', password='x', first_name='Lea')
         self.assertEqual(_kuerzel(lea), 'LE')
+
+
+class ArbeitsvorratAbfragezahlTests(TestCase):
+    """Auch `was_reisst()` darf nicht je Zeile rechnen.
+
+    DIE LÜCKE, DIE DIESER TEST SCHLIESST
+
+    `AbfragezahlTests` oben prüft `mandate()` und die Senkungsansprüche — nicht
+    die Sammelfunktion des Arbeitsvorrats. Genau dort ist in E2.62 ein N+1
+    entstanden: `Fall.fortschritt` in der Schleife, zwei `COUNT` je Zeile.
+
+    GEMESSEN: 4 Abfragen mit Annotation, 28 mit der Eigenschaft — bei zwölf
+    Zeilen. Bei der Obergrenze von zwanzig wären es 44 statt 4. Auf der
+    meistbesuchten Seite der Anwendung.
+
+    Aufgefallen ist es der Gegenprüfung, nicht der Suite: Meine eigene
+    Gegenprobe blieb grün, weil sie den falschen Test anstiess.
+
+    WARUM DIE DATENMENGE HIER WÄCHST
+
+    Bei drei Fällen sähe eine Schleife wie eine Abfrage aus. Erst ab einem
+    Dutzend wird der Unterschied zwischen «je Menge» und «je Datensatz»
+    sichtbar — derselbe Grund wie beim Fixture oben.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        from django.contrib.auth import get_user_model
+
+        from faelle.models import Fall, Fallart, SchrittVorlage
+
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        with mandant(cls.a.organisation):
+            art = Fallart.objects.create(
+                organisation=cls.a.organisation, schluessel='az',
+                bezeichnung='Abfragezahl')
+            for nr in range(1, 5):
+                SchrittVorlage(fallart=art, nr=nr, etappe_nr=1, etappe='E',
+                               bezeichnung=f'Schritt {nr}').save()
+            # JEDER FALL HAT EINE ZUSTAENDIGE PERSON — sonst prueft der
+            # Zaehler die halbe Zeile.
+            #
+            # Ohne sie ruft `_kuerzel` nie auf, `s.fall.zustaendig` wird nie
+            # gelesen, und `select_related('fall__zustaendig')` ist unbelegt:
+            # Die Gegenprobe «select_related entfernt» blieb GRUEN. Ein
+            # Waechter, der einen Verweis zaehlt, den sein Bestand nicht
+            # benutzt, zaehlt die falsche Sache.
+            wer = get_user_model().objects.create_user(
+                username='az-zustaendig', password='x',
+                first_name='Dominik', last_name='Muster')
+            for i in range(12):
+                fall = Fall(organisation=cls.a.organisation, fallart=art,
+                            akte=None, betreff=f'Fall {i}', zustaendig=wer)
+                fall.save()
+                fall.schritte_anlegen()
+                s = fall.schritte.first()
+                s.frist = timezone.localdate()
+                s.save()
+
+    def test_der_vorrat_rechnet_je_menge(self):
+        """Die Obergrenze ist grosszügig — sie fängt den Rückbau ab, nicht
+        jede Verfeinerung."""
+        from faelle.arbeitsvorrat import was_reisst
+
+        with mandant(self.a.organisation):
+            # VIER — EINE JE QUELLE, und das ist die ganze Aussage.
+            #
+            # `assertNumQueries` prueft auf GLEICHHEIT, nicht auf eine
+            # Obergrenze: Ein zu hoher Wert schlaegt genauso fehl wie ein zu
+            # tiefer. Das ist hier Absicht und entspricht den zwei Waechtern
+            # oben (`mandate` = 1, Senkungsansprueche = 2). Ein «Puffer» waere
+            # kein Puffer, sondern eine unmessbare Erwartung.
+            #
+            # WAS DIESE ZAHL LEGITIM AENDERT: eine fuenfte Quelle in `QUELLEN`,
+            # oder ein Lauf im Fixture — `_laeufe` holt seine Blockaden per
+            # `prefetch_related`, und Django ueberspringt das nur bei leerer
+            # Grundmenge. Dann ist die neue Zahl zu messen und einzutragen,
+            # nicht aufzurunden.
+            #
+            # Der N+1 aus E2.62 lag bei 28.
+            with self.assertNumQueries(4):
+                zeilen = was_reisst(timezone.localdate())
+            self.assertGreaterEqual(
+                len(zeilen), 12,
+                'Der Vorrat liefert weniger Zeilen als angelegt — dann misst '
+                'der Test eine leere Menge und beweist nichts.')
+            self.assertTrue(
+                all(z.get('wer') == 'DM' for z in zeilen
+                    if z.get('art') == 'fall'),
+                'Die Zeilen tragen keine Zustaendigkeit — dann bleibt der '
+                'Verweis auf `zustaendig` ungelesen und ungezaehlt.')
+
+    def test_der_fortschritt_kommt_ohne_zusatzabfrage(self):
+        """Die Angabe selbst muss dastehen, nicht nur die Abfragezahl stimmen.
+
+        Ein Test, der nur zählt, bliebe grün, wenn jemand den Fortschritt
+        ersatzlos entfernt.
+        """
+        from faelle.arbeitsvorrat import was_reisst
+
+        with mandant(self.a.organisation):
+            zeilen = [e for e in was_reisst(timezone.localdate())
+                      if e.get('art') == 'fall']
+        self.assertTrue(zeilen)
+        self.assertEqual(zeilen[0]['fortschritt'], 'Schritt 1 von 4')
