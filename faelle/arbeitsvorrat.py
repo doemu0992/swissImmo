@@ -426,28 +426,36 @@ def vertretung(heute=None):
     als ungedeckt gemeldet, statt still wie eine gedeckte auszusehen.
     """
     heute = heute or timezone.localdate()
+    # DER SCHUTZ MUSS DIE ABFRAGE UMFASSEN, NICHT NUR DEN IMPORT.
+    #
+    # Bis E2.59 stand hier nur `from … import Abwesenheit` im `try`. Ein Import
+    # aus der eigenen App faellt praktisch nie aus; die ABFRAGE kann es. Damit
+    # war der Schutz genau um die Zeile herumgelegt, die ihn nicht braucht —
+    # und ein Fehler beim Laden der Abwesenheiten riss die ganze Startseite mit
+    # (500 statt eines fehlenden Abschnitts). Gefunden vom Ausfalltest zum
+    # Vertretungshinweis im Kopf, der denselben Ausfall herstellt.
     try:
         from faelle.termin_models import Abwesenheit
+
+        zeilen = []
+        for a in (Abwesenheit.objects.laufend(heute)
+                  .select_related('benutzer', 'vertreten_durch')[:10]):
+            name = a.benutzer.get_full_name() or a.benutzer.username
+            zeilen.append({
+                'abwesenheit': a,
+                'wer': name,
+                'bis': a.bis,
+                'grund': a.get_grund_display(),
+                'vertreter': ((a.vertreten_durch.get_full_name()
+                               or a.vertreten_durch.username)
+                              if a.vertreten_durch_id else None),
+                'faelle': a.offene_faelle,
+                'ungedeckt': a.vertreten_durch_id is None,
+            })
+        return zeilen
     except Exception:
         log.exception('Vertretung: Abwesenheiten konnten nicht geladen werden')
         return []
-
-    zeilen = []
-    for a in (Abwesenheit.objects.laufend(heute)
-              .select_related('benutzer', 'vertreten_durch')[:10]):
-        name = a.benutzer.get_full_name() or a.benutzer.username
-        zeilen.append({
-            'abwesenheit': a,
-            'wer': name,
-            'bis': a.bis,
-            'grund': a.get_grund_display(),
-            'vertreter': ((a.vertreten_durch.get_full_name()
-                           or a.vertreten_durch.username)
-                          if a.vertreten_durch_id else None),
-            'faelle': a.offene_faelle,
-            'ungedeckt': a.vertreten_durch_id is None,
-        })
-    return zeilen
 
 
 def wartet_auf_freigabe():

@@ -175,8 +175,8 @@ class DunkelmodusHuellenTest(SimpleTestCase):
         Ein CSS-Kommentar direkt über `body { … }` schob den Selektor aus der
         Reichweite des Musters. Ergebnis: grün, obwohl der Hexwert dastand.
         """
-        block = '/* Warum das hier so ist, in mehreren\n   Zeilen erklärt. */\n' \
-                'body { background-color: #f8fafc; }'
+        block = ('/* Warum das hier so ist, in mehreren\n   Zeilen erklärt. */\n'
+                 'body { background-color: #f8fafc; }')
         ohne = KOMMENTAR.sub(' ', block)
         treffer = [t.group(1) for t in REGEL.finditer(ohne)]
         self.assertEqual(len(treffer), 1, f'Regel nicht gefunden in: {ohne!r}')

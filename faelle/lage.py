@@ -149,6 +149,27 @@ def streifen(stichtag=None, aktive_lg=None):
         faelle_offen = Fall.objects.exclude(
             status__in=(Fall.ABGESCHLOSSEN, Fall.ABGEBROCHEN)).count()
         liegen = Fall.objects.liegengeblieben().count()
+        # WARUM HIER KEINE «KEIN VORMONATSWERT»-SCHRANKE STEHT
+        #
+        # Bei den Ausstaenden gibt es eine: War im Vormonat NICHTS faellig, ist
+        # `vor_quote` `None` und der Vergleich entfaellt. (Nicht `vor_anzahl` —
+        # die ist dann `0` und von einem echten Nullstand nicht zu
+        # unterscheiden; siehe die Begruendung bei der Kachel unten.) Eine Null
+        # waere dort eine ERFUNDENE Vergleichsbasis.
+        #
+        # Bei den Faellen ist ein Nullstand eine GEMESSENE Zahl. Am ersten Tag
+        # gab es null offene Faelle — das ist wahr, nicht unbekannt. Wer am 15.
+        # drei anlegt, hat drei mehr als am 31. des Vormonats, und «▲ 3 Faelle»
+        # beschreibt genau das.
+        #
+        # Der Unterschied ist derselbe wie zwischen `Geraet.neuwert = None`
+        # («nicht erfasst») und `= 0` («kostet nichts»): eine fehlende Messung
+        # ist etwas anderes als ein gemessener Nullwert.
+        #
+        # Bei leerer Installation steht ohnehin nichts: `delta` ist 0, und die
+        # Vorlage blendet ein Delta von 0 aus (`{% if k.delta %}`). Gemessen,
+        # nicht gemeint — `ErsterTagTests` haelt beides fest.
+        #
         # DER STAND VOR EINEM MONAT — gerechnet, nicht gespeichert.
         #
         # Offen war damals, was bis dahin eroeffnet und noch nicht abgeschlossen

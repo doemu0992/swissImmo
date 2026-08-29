@@ -32,6 +32,45 @@ from ._basis import _global_filter, _pendenz_ziel
 logger = logging.getLogger(__name__)
 
 
+def _vertretung_fuer(request, heute):
+    """Wen vertritt der angemeldete Benutzer gerade?
+
+    Gibt eine Liste von `(Name, bis)` zurueck — meist leer, gelegentlich eine,
+    selten mehrere.
+
+    `Abwesenheit.laufend()` prueft `von <= heute <= bis`, beide INKLUSIV: Wer
+    «bis 25.08.» abwesend ist, ist am 25. noch weg. Das steht im Modell
+    begruendet und ist die haeufigste Fehlerquelle bei Zeitraeumen.
+
+    WARUM NICHT AUS `av_vertretung` ABGELEITET
+
+    Der Arbeitsvorrat laedt die laufenden Abwesenheiten ohnehin, und die Zeile
+    hier daraus zu filtern haette keine Abfrage gekostet. Aber `vertretung()`
+    schneidet bei ZEHN ab (`[:10]`) — bei mehr gleichzeitigen Abwesenheiten
+    fiele ausgerechnet die eigene Vertretung stillschweigend aus dem Kopf,
+    und zwar genau in der Ferienwoche, in der der Hinweis am meisten zaehlt.
+    Eine eigene, auf `vertreten_durch` gefilterte Abfrage liefert praktisch
+    immer null Zeilen und ist immer vollstaendig.
+
+    Der Mandantenbezug kommt vom `TenantManager` auf `Abwesenheit.objects` —
+    eine Abwesenheit aus einer fremden Organisation darf hier nie auftauchen,
+    auch dann nicht, wenn dort jemand denselben Benutzer als Vertretung
+    eingetragen hat.
+    """
+    try:
+        from faelle.termin_models import Abwesenheit
+        return [
+            (a.benutzer.get_short_name() or a.benutzer.get_username(), a.bis)
+            for a in Abwesenheit.objects.laufend(heute)
+                              .filter(vertreten_durch=request.user)
+                              .select_related('benutzer')
+        ]
+    except Exception:
+        # Eine fehlende Vertretungsangabe darf die Startseite nicht kosten.
+        logger.exception('Vertretungshinweis nicht ladbar')
+        return []
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_dashboard(request):
     """Die Startseite: Arbeitsvorrat mit Ansichten, Lage, Mandate.
@@ -132,6 +171,12 @@ def fw_dashboard(request):
         **av,
         'inbox': inbox,
         'inbox_mehr': inbox_mehr,
+        # Kopfzeile nach Konzept v7 — Begruendung in `_vertretung_fuer` und in
+        # der Vorlage. `isocalendar()[1]` ist die ISO-Woche: Montag als erster
+        # Tag, und die Woche mit dem ersten Donnerstag ist die erste des Jahres.
+        # Das ist die Zaehlung, die auf Schweizer Kalendern steht.
+        'kw': heute.isocalendar()[1],
+        'vertretung_fuer': _vertretung_fuer(request, heute),
         **lage(heute, aktive_lg),
     })
 

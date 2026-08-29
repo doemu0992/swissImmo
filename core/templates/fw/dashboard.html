@@ -23,7 +23,16 @@
 <div class="fw-phead">
     <div>
         <h1>{{ ansicht_titel }}</h1>
-        <p>{{ heute|date:"l, d. F Y" }}{% if aktive_lg %} · Gefiltert auf {{ aktive_lg.strasse }}, {{ aktive_lg.ort }}{% endif %}</p>
+        {% comment %} KOPFZEILE NACH KONZEPT v7: «Freitag, 21. August 2026 · KW 34 ·
+           Vertretung für Lea F. bis 29.08.»
+
+           Die KALENDERWOCHE ist in der Schweizer Verwaltung die übliche
+           Zeitangabe — Termine, Handwerker und Läufe werden in KW vereinbart.
+
+           Der VERTRETUNGSHINWEIS sagt, dass gerade fremde Arbeit mitläuft. Ohne
+           ihn wundert man sich über Fälle, die einem nicht gehören. Er steht nur
+           da, wenn er zutrifft — kein leerer Platzhalter. {% endcomment %}
+        <p>{{ heute|date:"l, d. F Y" }} · KW&nbsp;{{ kw }}{% for name, bis in vertretung_fuer %} · <b class="fw-marke">Vertretung für {{ name }} bis {{ bis|date:"d.m." }}</b>{% endfor %}{% if aktive_lg %} · Gefiltert auf {{ aktive_lg.strasse }}, {{ aktive_lg.ort }}{% endif %}</p>
     </div>
     <div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center">
         {% if aktive_lg %}<a href="/neu/" class="fw-btn">× Filter aufheben</a>{% endif %}

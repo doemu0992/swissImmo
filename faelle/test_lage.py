@@ -882,3 +882,286 @@ class VergleichswerteTests(TestCase):
         self.assertEqual(
             naiv, [],
             'Die Lage vergleicht ein `DateTimeField` gegen ein `date`.')
+
+
+class ErsterTagTests(TestCase):
+    """Was eine taufrische Installation zeigt — und was nicht.
+
+    DIE FRAGE AUS DER GEGENPRÜFUNG ZU E2.58
+
+    Die Fall-Kachel rechnet auch am ersten Tag `delta = offen - 0`, während die
+    Ausstände dort «kein Vormonatswert» sagen. Ist das zu forsch?
+
+    NEIN — UND DER UNTERSCHIED IST DERSELBE WIE ÜBERALL SONST.
+
+    Eine Fallzahl von null ist eine GEMESSENE Zahl: Am ersten Tag gab es keine
+    offenen Fälle. Eine Sollstellung von null im Vormonat ist eine FEHLENDE
+    MESSUNG: Es war nichts fällig, also gibt es nichts zu vergleichen.
+
+    Wie bei `Geraet.neuwert`: `None` heisst «nicht erfasst», `0` heisst «kostet
+    nichts». Zwei verschiedene Aussagen.
+    """
+
+    def _neue_organisation(self, name):
+        from crm.models import Organisation
+        return Organisation.objects.create(
+            firma=name, strasse='X 1', plz='8000', ort='Zürich')
+
+    def test_leere_installation_zeigt_keinen_pfeil(self):
+        """`delta = 0`, und die Vorlage blendet das aus.
+
+        Am ersten Tag steht also nichts Falsches da — auch ohne Schranke.
+        """
+        org = self._neue_organisation('Neu AG')
+        with mandant(org):
+            kacheln = {k['schluessel']: k for k in streifen()}
+        self.assertEqual(kacheln['faelle']['delta'], 0)
+        self.assertIsNone(
+            kacheln['ausstaende']['delta'],
+            'Ohne fällige Sollstellung im Vormonat darf kein Vergleich '
+            'entstehen — eine Null wäre eine erfundene Vergleichsbasis.')
+
+    def test_die_vorlage_blendet_ein_delta_von_null_wirklich_aus(self):
+        """Die zweite Hälfte der Antwort — und sie steht nicht in `lage.py`.
+
+        Der Test darüber zeigt `delta == 0`. Dass daraus KEIN Pfeil wird, ist
+        eine Eigenschaft der Vorlage (`{% if k.delta %}`, und `0` ist falsch).
+        Ohne diese Prüfung ruht die ganze Begründung «am ersten Tag steht
+        nichts Falsches da» auf einer Annahme über Django-Wahrheitswerte.
+        """
+        from django.template import Context, Template
+
+        gerendert = Template(
+            '{% if k.delta %}PFEIL{% endif %}'
+        ).render(Context({'k': {'delta': 0}}))
+        self.assertEqual(gerendert, '',
+                         'Ein Delta von 0 erzeugt einen Pfeil — dann meldet '
+                         'die frische Installation eine Veränderung gegen '
+                         'nichts.')
+
+    def test_der_erste_fall_ergibt_einen_echten_vergleich(self):
+        """«▲ 1 Fall» ist wahr: vorher null, jetzt einer."""
+        from faelle.models import Fall, Fallart
+
+        org = self._neue_organisation('Neu 2 AG')
+        with mandant(org):
+            art = Fallart.objects.create(
+                organisation=org, schluessel='e', bezeichnung='E')
+            Fall(organisation=org, fallart=art, akte=None, betreff='Erster').save()
+            kacheln = {k['schluessel']: k for k in streifen()}
+        self.assertEqual(kacheln['faelle']['delta'], 1)
+        self.assertEqual(kacheln['faelle']['delta_einheit'], 'Fall')
+
+
+class KopfzeileTests(TestCase):
+    """Kalenderwoche und Vertretungshinweis — Konzept v7.
+
+    Der Prototyp zeigt: «Freitag, 21. August 2026 · KW 34 · Vertretung für
+    Lea F. bis 29.08.»
+
+    DIE KALENDERWOCHE ist in der Schweizer Verwaltung die übliche Zeitangabe:
+    Termine, Handwerker und Läufe werden in KW vereinbart, nicht im Datum. Sie
+    stand bis E2.59 nirgends.
+
+    DER VERTRETUNGSHINWEIS sagt, dass gerade FREMDE Arbeit mitläuft. Ohne ihn
+    wundert man sich über Fälle, die einem nicht gehören.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _seite(self, benutzer=None):
+        c = Client()
+        c.force_login(benutzer or self.a.benutzer)
+        return c.get('/neu/')
+
+    def _abwesend(self, org, username, vertreter, von, bis):
+        from django.contrib.auth import get_user_model
+
+        from faelle.termin_models import Abwesenheit
+
+        with mandant(org):
+            wer = get_user_model().objects.create_user(
+                username=username, password='x', first_name='Lea')
+            Abwesenheit.objects.create(
+                organisation=org, benutzer=wer, von=von, bis=bis,
+                vertreten_durch=vertreter)
+        return wer
+
+    def test_die_kalenderwoche_steht_im_kopf(self):
+        """Nicht nur «KW» irgendwo — die richtige Zahl an der richtigen Stelle.
+
+        `assertIn('KW', …)` wäre wertlos: Zwei Buchstaben, die auf einer
+        Verwaltungsseite überall vorkommen können. Geprüft wird der gerenderte
+        Text mitsamt Nummer.
+        """
+        kw = timezone.localdate().isocalendar()[1]
+        antwort = self._seite()
+        self.assertEqual(antwort.context['kw'], kw)
+        self.assertIn(f'KW&nbsp;{kw}', antwort.content.decode(),
+                      'Die Kalenderwoche steht nicht in der Kopfzeile.')
+
+    def test_ohne_vertretung_steht_dort_nichts(self):
+        """Kein leerer Platzhalter, keine Null.
+
+        Wer niemanden vertritt, soll auch nichts darüber lesen.
+        """
+        antwort = self._seite()
+        self.assertEqual(antwort.context['vertretung_fuer'], [])
+        self.assertNotIn('Vertretung für', antwort.content.decode())
+
+    def test_wer_vertritt_sieht_es_im_kopf(self):
+        heute = timezone.localdate()
+        self._abwesend(self.a.organisation, 'lea-kopf', self.a.benutzer,
+                       heute - timedelta(days=1), heute + timedelta(days=3))
+
+        antwort = self._seite()
+        self.assertEqual(len(antwort.context['vertretung_fuer']), 1)
+        self.assertIn('Vertretung für Lea bis', antwort.content.decode())
+
+    def test_wer_nicht_vertritt_sieht_fremde_abwesenheiten_nicht_im_kopf(self):
+        """Die Gegenprobe: Der Hinweis hängt an `vertreten_durch`, nicht daran,
+        dass überhaupt jemand weg ist.
+
+        Ohne diesen Filter stünde bei JEDEM im Team «Vertretung für Lea» —
+        und dann übernimmt niemand, weil alle es für den anderen halten.
+        """
+        heute = timezone.localdate()
+        # Abwesend, aber von NIEMANDEM vertreten.
+        self._abwesend(self.a.organisation, 'lea-ungedeckt', None,
+                       heute - timedelta(days=1), heute + timedelta(days=3))
+
+        antwort = self._seite()
+        self.assertEqual(antwort.context['vertretung_fuer'], [])
+        self.assertNotIn('Vertretung für', antwort.content.decode())
+
+    def test_eine_fremde_abwesenheit_erscheint_nie_im_kopf(self):
+        """Die Mandantengrenze — der Hinweis ist eine NEUE Abfrage.
+
+        `_vertretung_fuer` fragt `Abwesenheit` eigenständig ab; der Bezug kommt
+        allein vom `TenantManager`. Trägt eine fremde Organisation denselben
+        Benutzer als Vertretung ein — bei geteilten Konten oder schlicht durch
+        einen Importfehler —, dürfte im Kopf von A trotzdem nie ein Name aus B
+        stehen. Ein Name ist hier bereits die Auskunft: Er verrät, wer bei der
+        anderen Verwaltung arbeitet und wann diese Person Ferien hat.
+        """
+        from faelle.termin_models import Abwesenheit
+
+        b = MandantenFixture('B', '3000', 'Bern')
+        heute = timezone.localdate()
+        # Angelegt im Kontext B, Vertretung ist der Benutzer von A.
+        self._abwesend(b.organisation, 'lea-fremd', self.a.benutzer,
+                       heute - timedelta(days=1), heute + timedelta(days=3))
+
+        # Die Abwesenheit existiert wirklich — sonst prüfte der Test nichts.
+        self.assertEqual(
+            Abwesenheit.alle_organisationen.filter(
+                vertreten_durch=self.a.benutzer).count(), 1,
+            'Die fremde Abwesenheit wurde gar nicht angelegt.')
+
+        antwort = self._seite()
+        self.assertEqual(
+            antwort.context['vertretung_fuer'], [],
+            'Eine Abwesenheit aus einer fremden Organisation steht im Kopf von '
+            'A — dann fragt `_vertretung_fuer` über die Mandantengrenze hinweg.')
+        self.assertNotIn('Vertretung für', antwort.content.decode())
+
+    def test_der_abschnitt_vertretung_zeigt_keine_fremden_abwesenheiten(self):
+        """Die Mandantengrenze auch für den Abschnitt unter dem Kopf.
+
+        Aufgefallen bei der Gegenprobe: Der `alle_organisationen`-Tausch in
+        `arbeitsvorrat.vertretung()` blieb GRÜN — für den Abschnitt gab es
+        keinen Isolationstest, obwohl er Namen und Ferienzeiten von Kolleginnen
+        auflistet. Der Schutz war da (der `TenantManager`), der Nachweis nicht.
+
+        Jetzt geprüft, weil E2.59 diese Funktion angefasst hat.
+
+        GEMESSEN WIRD DIE ZUGEHÖRIGKEIT, NICHT DIE LEERE LISTE. Die Fixture
+        legt für A selbst eine laufende Abwesenheit an — auf `[]` zu prüfen war
+        von Anfang an falsch und scheiterte auch am unveränderten Bestand.
+        Dieselbe Lehre wie beim Fallvergleich: ein Test, der die eigene
+        Ausgangslage nicht mitzählt, misst die Fixture statt die Sache.
+        """
+        b = MandantenFixture('B', '3000', 'Bern')
+        heute = timezone.localdate()
+        self._abwesend(b.organisation, 'lea-b-abschnitt', b.benutzer,
+                       heute - timedelta(days=1), heute + timedelta(days=3))
+
+        zeilen = self._seite().context['av_vertretung']
+        self.assertTrue(zeilen, 'Ohne Zeilen sagt die Prüfung nichts.')
+        fremd = [z['wer'] for z in zeilen
+                 if z['abwesenheit'].organisation_id != self.a.organisation.id]
+        self.assertEqual(
+            fremd, [],
+            'Der Abschnitt «Vertretung» von A führt eine Abwesenheit aus B — '
+            'dann steht dort, wer bei der anderen Verwaltung wann Ferien hat.')
+
+    def test_bis_ist_einschliesslich(self):
+        """Wer «bis heute» abwesend ist, ist HEUTE noch weg.
+
+        `von` und `bis` sind beide inklusiv — das steht im Modell begründet und
+        ist die häufigste Fehlerquelle bei Zeiträumen. Ein exklusives Ende
+        liesse den Hinweis einen Tag zu früh verschwinden, und zwar an dem Tag,
+        an dem die Vertretung noch gilt.
+        """
+        heute = timezone.localdate()
+        self._abwesend(self.a.organisation, 'lea-heute', self.a.benutzer,
+                       heute - timedelta(days=3), heute)
+
+        self.assertEqual(
+            len(self._seite().context['vertretung_fuer']), 1,
+            'Der Hinweis fehlt am letzten Tag der Abwesenheit — dann steht '
+            'jemand ohne Vertretung da, während sie noch gilt.')
+
+    def test_eine_abgelaufene_vertretung_steht_nicht_mehr_da(self):
+        """Die Gegenprobe zur Zeile darüber.
+
+        Ohne sie wäre «bis ist einschliesslich» auch dann grün, wenn der
+        Hinweis gar nie verschwände — und ein Hinweis, der immer steht, ist
+        keiner.
+        """
+        heute = timezone.localdate()
+        self._abwesend(self.a.organisation, 'lea-vorbei', self.a.benutzer,
+                       heute - timedelta(days=5), heute - timedelta(days=1))
+
+        self.assertEqual(
+            self._seite().context['vertretung_fuer'], [],
+            'Eine gestern abgelaufene Vertretung steht noch im Kopf.')
+
+    def test_der_hinweis_kostet_die_startseite_nicht(self):
+        """Fällt die Abfrage aus, bleibt die Zeile leer — die Seite steht.
+
+        Der Hinweis ist Beiwerk; die Startseite ist es nicht. Geprüft wird der
+        echte Ausfall, nicht der Kommentar darüber: Das Modell wird durch eines
+        ersetzt, dessen Abfrage wirft.
+
+        DIESER TEST HAT EINEN FEHLER IM BESTAND GEFUNDEN.
+
+        Er scheiterte beim ersten Lauf — nicht am neuen Kopf, sondern an
+        `arbeitsvorrat.vertretung()` darunter. Dort lag der `try` nur um den
+        IMPORT, nicht um die Abfrage: also genau um die Zeile herum, die keinen
+        Schutz braucht. Ein Fehler beim Laden der Abwesenheiten riss die ganze
+        Startseite mit. Beide Stellen fangen jetzt die Abfrage, und der Test
+        deckt beide ab — er misst die Seite, nicht eine Funktion.
+        """
+        from unittest.mock import patch
+
+        import faelle.termin_models as tm
+
+        class Kaputt:
+            class objects:
+                @staticmethod
+                def laufend(*a, **k):
+                    raise RuntimeError('Abwesenheiten nicht ladbar')
+
+        with patch.object(tm, 'Abwesenheit', Kaputt), \
+                self.assertLogs('core.views.fw.dashboard', level='ERROR'):
+            antwort = self._seite()
+
+        self.assertEqual(antwort.status_code, 200)
+        self.assertEqual(antwort.context['vertretung_fuer'], [])
+        self.assertEqual(
+            antwort.context['av_vertretung'], [],
+            'Der Abschnitt «Vertretung» im Arbeitsvorrat hat den Ausfall nicht '
+            'aufgefangen.')
