@@ -2045,3 +2045,69 @@ class FusszeilenZweiteAngabeTests(TestCase):
 
         self.assertNotIn('ohne Ausschreibung',
                          self._kacheln()['leerstand']['fuss'])
+
+
+class EingangskachelTests(TestCase):
+    """Der Betrag ist der Wert, die Quote die Einordnung (v7).
+
+    Bis E2.68 stand dort «92 %». Der Betrag ist die Frage, die man morgens hat
+    — «92 %» allein sagt nicht, ob es um zwei- oder zweihunderttausend Franken
+    geht.
+
+    DASS DER PFEIL WEITERHIN DIE QUOTE ZEIGT, ist der heikle Teil: Über einem
+    Frankenbetrag liest sich «▲ 3» wie drei Franken mehr. Deshalb muss die
+    Einheit dabeistehen — und in der richtigen Zahlform, wie bei den drei
+    Kacheln daneben seit E2.58.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _eingang(self, stichtag=STICHTAG):
+        with mandant(self.a.organisation):
+            return streifen(stichtag)[0]
+
+    def test_der_wert_ist_der_eingegangene_betrag(self):
+        """Soll minus offen — nicht die Quote und nicht das Soll."""
+        with mandant(self.a.organisation):
+            _rechnung(self.a.vertrag, '1000', date(2026, 8, 1), 'bezahlt')
+            _rechnung(self.a.vertrag, '400', date(2026, 8, 2), 'offen')
+
+        self.assertEqual(
+            self._eingang()['wert'], "CHF 1'000",
+            'Die Kachel zeigt nicht den eingegangenen Betrag — «%» sagt nicht, '
+            'ob es um zwei- oder zweihunderttausend Franken geht.')
+
+    def test_die_quote_steht_in_der_fusszeile(self):
+        """Sie ist nicht verschwunden, sondern zur Einordnung geworden."""
+        with mandant(self.a.organisation):
+            _rechnung(self.a.vertrag, '1000', date(2026, 8, 1), 'bezahlt')
+            _rechnung(self.a.vertrag, '1000', date(2026, 8, 2), 'offen')
+
+        self.assertIn('50.0 % des Solls', self._eingang()['fuss'])
+
+    def test_der_pfeil_nennt_seine_einheit_in_der_richtigen_zahlform(self):
+        """«▲ 1 Prozentpunkt», nicht «1 Prozentpunkte».
+
+        Ohne Einheit stünde «▲ 1» über einem Frankenbetrag und läse sich wie
+        ein Franken mehr. Ein fester Plural wäre bei ±1 falsch — und ±1 ist
+        beim Zahlungseingang der häufigste Wert überhaupt.
+        """
+        with mandant(self.a.organisation):
+            # Vormonat 98 %, dieser Monat 99 % → Delta genau 1 Prozentpunkt.
+            _rechnung(self.a.vertrag, '9800', date(2026, 7, 5), 'bezahlt')
+            _rechnung(self.a.vertrag, '200', date(2026, 7, 6), 'offen')
+            _rechnung(self.a.vertrag, '9900', date(2026, 8, 1), 'bezahlt')
+            _rechnung(self.a.vertrag, '100', date(2026, 8, 2), 'offen')
+
+        k = self._eingang()
+        self.assertEqual(k['delta'], Decimal('1.0'),
+                         'Ohne ein Delta von genau 1 prüft die Zahlform nichts.')
+        self.assertEqual(
+            k['delta_einheit'], 'Prozentpunkt',
+            'Die Einheit steht im Plural bei einem einzelnen Prozentpunkt.')
+
+    def test_ohne_sollstellung_steht_ein_strich(self):
+        """Nicht «CHF 0» — eine Null wäre eine Aussage, die niemand traf."""
+        self.assertEqual(self._eingang(date(2099, 2, 15))['wert'], '—')

@@ -87,8 +87,33 @@
         .fw-band>a:hover{border-color:var(--ds-brand);color:var(--ds-brand)}
         .fw-band>a.hier{border-color:var(--ds-brand);color:var(--ds-brand);
             background:var(--ds-brand-soft);font-weight:700}
-        .fw-kopffilter label{display:flex;align-items:center;gap:7px}
-        .fw-kopffilter .fw-feld{padding:5px 9px}
+        /* DIE FILTER ALS KAPSELN — NACH KONZEPT v7 (E2.68).
+
+           Der Prototyp zeigt zwei Kapseln nebeneinander: «Zuständigkeit:
+           Alle ⌄» und «Mandat: Alle 9 ⌄». Beschriftung und Wert stehen IN
+           der Kapsel.
+
+           Vorher stand die Beschriftung daneben und das Auswahlfeld trug
+           einen eigenen Rahmen — am Telefon wurden daraus zwei volle Zeilen,
+           weil `label` und `select` je eigene Breite beanspruchten. Mit dem
+           Rahmen am `label` und dem Feld ohne eigenen bleiben es zwei
+           Kapseln, die nebeneinander passen. */
+        .fw-kopffilter label{display:inline-flex;align-items:center;gap:5px;
+            padding:5px 11px;border:1px solid var(--ds-line);border-radius:999px;
+            background:var(--ds-surface);white-space:nowrap;max-width:100%}
+        .fw-kopffilter label:focus-within{border-color:var(--ds-brand)}
+        /* DAS AUSWAHLFELD BEMISST SICH AM LAENGSTEN EINTRAG, nicht an der
+           Auswahl. Ein Mandat «Muster Immobilien AG» machte die Kapsel 235
+           Pixel breit — dann passen die zwei nicht mehr nebeneinander. */
+        .fw-kopffilter .fw-feld{padding:0;border:0;background:none;
+            font-weight:700;color:var(--ds-ink);max-width:130px;
+            text-overflow:ellipsis}
+        .fw-kopffilter .fw-feld:focus{outline:none;box-shadow:none}
+        @media (max-width:640px){
+            .fw-kopffilter{gap:8px}
+            .fw-kopffilter label{padding:4px 9px;font-size:12px}
+            .fw-kopffilter .fw-feld{max-width:78px}
+        }
         .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:800;color:var(--ds-ink)}
         .fw-phead p{font-size:13px;color:var(--ds-muted);margin-top:2px}
         /* Buttons */
@@ -733,8 +758,20 @@
             -webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
         @media(max-width:900px){.fw-kzn{grid-template-columns:1fr 1fr}}
 
+        /* EINE REIHE, SEITLICH ROLLBAR — nicht umbrechen.
+
+           `flex-wrap:wrap` machte auf 390 Pixel drei Reihen und 130 Pixel
+           Hoehe; Konzept v7 zeigt eine Reihe.
+
+           Nur der Behaelter aendert sich. Die Reiter selbst tragen bereits
+           `white-space:nowrap` — sowohl `.fw-reiter a` (Startseite) als auch
+           `.fw-reiter button` (Aktenreiter). Eine zusaetzliche Regel dafuer
+           waere doppelt, und die auf `button` griffe auf der Startseite
+           ohnehin nicht: Dort sind die Reiter `<a>`. */
         .fw-reiter{display:flex;gap:2px;border-top:1px solid var(--ds-line);
-            padding:0 12px;background:var(--ds-surface-2);flex-wrap:wrap;overflow-x:auto}
+            padding:0 12px;background:var(--ds-surface-2);
+            flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+        .fw-reiter::-webkit-scrollbar{display:none}
         .fw-reiter button{padding:10px 14px;font-size:13px;font-weight:600;
             color:var(--ds-muted);cursor:pointer;background:none;border:0;
             border-bottom:2px solid transparent;white-space:nowrap;
@@ -759,7 +796,7 @@
             justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ds-faint)}
 
         .fw-zeile{display:flex;align-items:center;gap:12px;padding:11px 15px;
-            border-bottom:1px solid var(--ds-line)}
+            flex-wrap:nowrap;border-bottom:1px solid var(--ds-line)}
         .fw-zeile:last-child{border-bottom:0}
         .fw-zeile.klick{cursor:pointer}
         .fw-zeile.klick:hover{background:var(--ds-surface-2)}
@@ -780,7 +817,29 @@
            Arbeitsvorrat, Termine, Freigaben, Mandate, Regelwerk. */
         @media(max-width:640px){
             .fw-zeile{flex-wrap:wrap}
-            .fw-zeile .fw-mitte{flex-basis:100%;min-width:0}
+            /* DER MARKER GEHOERT NEBEN DEN TEXT, NICHT DARUEBER.
+
+               `flex-basis:100%` an der Mitte draengte ihn auf eine eigene
+               Zeile — ein Farbbalken ueber leerem Grund. Abgezogen werden
+               genau seine 3 Pixel plus die 12 des `gap` an `.fw-zeile`:
+               fuenfzehn. Elf waeren vier zu wenig, und die Zeile braeche
+               trotzdem um; bei Flexbox entscheidet das einzelne Pixel.
+
+               MEHR ABZUZIEHEN IST NICHT ERLAUBT. Ein Zwischenstand nahm 120
+               Pixel, um die Zeit neben den Titel zu stellen — die Zeile wurde
+               kuerzer, aber der Titel schmaler, und genau davor warnt die
+               Messung an `test_inbox_titel_bekommt_mobil_die_volle_breite`
+               (55-95 Pixel Restbreite). Kuerzer ist nicht richtig. */
+            .fw-zeile .fw-mitte{flex-basis:calc(100% - 15px);min-width:0}
+            .fw-zeile .fw-marker{align-self:stretch}
+            .fw-zeile .fw-zeit{flex:0 0 auto;text-align:left;font-size:11px;
+                display:flex;align-items:baseline;gap:6px}
+            .fw-zeile .fw-zeit br{display:none}
+            .fw-zeile .fw-kuerzel{order:5}
+            .fw-zeile .fw-btn{order:6;flex:0 0 auto}
+            /* Die Ikone entfaellt: Der Balken links sagt dasselbe in 3 statt
+               27 Pixel, und die sind am Telefon der Unterschied. */
+            .fw-zeile .fw-ikon{display:none}
         }
 
         .fw-marker{width:3px;align-self:stretch;border-radius:2px;background:var(--ds-line);

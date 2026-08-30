@@ -117,12 +117,16 @@ hier die Auswahl dort.
 </div>
 
 <div class="fw-card">
-    {% comment %} Der Kartenkopf heisst «Was reisst» und nicht «Vorgänge»: Er
-       zeigt Überfälliges und bald Fallendes, nicht den Bestand. Die
-       Überschrift der Seite nennt dagegen die gewählte Ansicht. {% endcomment %}
+    {% comment %} «ARBEITSVORRAT» — SO HEISST DIE KARTE IM PROTOTYP.
+
+       Hier stand «Was reisst». Das war treffend für den Inhalt des ERSTEN
+       Reiters, aber «Diese Woche», «Wartet auf Dritte» und «Alle» zeigen auch,
+       was nicht reisst. Der Name beschrieb einen Reiter, nicht die Karte.
+
+       Die Überschrift der Seite nennt dagegen die gewählte Ansicht. {% endcomment %}
     <div class="fw-kopf">
         <span class="fw-ikon{% if vorrat %} crit{% endif %}">{% zeichen 'warnung' %}</span>
-        <span class="fw-t">Was reisst</span>
+        <span class="fw-t">Arbeitsvorrat</span>
         <span class="fw-neben">{% if ansicht == 'liegen' or ansicht == 'wartet' %}{{ faelle|length }}{% else %}{{ vorrat|length }}{% endif %} in dieser Ansicht</span>
     </div>
     <div class="fw-reiter">

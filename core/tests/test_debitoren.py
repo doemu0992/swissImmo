@@ -603,7 +603,20 @@ class MieterkontoblattTests(TestCase):
         # die Regel existiert. Nur das eine zu pruefen liesse offen, ob der
         # Titel mobil wirklich Platz bekommt.
         self.assertIn('class="fw-zeile"', html)
-        self.assertIn('.fw-zeile .fw-mitte{flex-basis:100%', ausgelieferter_stil(html))
+        # `calc(100% - 15px)` SEIT E2.68 — DIE MESSUNG GILT WEITER.
+        #
+        # Abgezogen wird genau der Marker: 3 Pixel Balken plus 12 Pixel `gap`
+        # an `.fw-zeile`. Mit vollen 100 % drängte er sich auf eine EIGENE
+        # Zeile — ein Farbbalken über leerem Grund. Elf wären vier zu wenig
+        # gewesen, und die Zeile bräche trotzdem um.
+        #
+        # Der Titel behält damit 375 der 390 Pixel; die Messung, die diesen
+        # Wächter begründet (55-95 Pixel Restbreite), bleibt weit eingehalten.
+        # Ein Zwischenstand zog hier 120 Pixel ab, um die Zeit danebenzu-
+        # stellen — DAS war der Fall, vor dem der Wächter schützt, und er hat
+        # ihn gefangen.
+        self.assertIn('.fw-zeile .fw-mitte{flex-basis:calc(100% - 15px)',
+                      ausgelieferter_stil(html))
 
     def test_truncate_wird_mobil_zentral_aufgehoben(self):
         """«truncate» schneidet auf dem Handy genau das weg, was die Zeile

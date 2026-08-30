@@ -415,9 +415,17 @@ class SeitenTests(TestCase):
             _fall_mit_frist(self.a.organisation, -3, 'Antwortfrist Blaser')
         antwort = self._hole('/neu/')
         self.assertEqual(antwort.status_code, 200)
-        self.assertContains(antwort, 'Was reisst')
+        # «ARBEITSVORRAT» SEIT E2.68 — so heisst die Karte im Prototyp.
+        #
+        # Hier stand «Was reisst». Der Name war treffend für den ersten Reiter,
+        # aber «Diese Woche», «Wartet auf Dritte» und «Alle» zeigen auch, was
+        # NICHT reisst — er beschrieb einen Reiter, nicht die Karte.
+        self.assertContains(antwort, 'Arbeitsvorrat')
         self.assertContains(antwort, 'Antwort verfassen')
-        self.assertContains(antwort, 'Tage über')
+        # «3 Tage über» — der Fall ist drei Tage überfällig, also Plural.
+        # `Tag` allein zu prüfen wäre schwächer als vorher: Es passte auch auf
+        # «1 Tage über», den Fehler, den E2.67 behoben hat.
+        self.assertContains(antwort, '3 Tage über')
 
     def test_ohne_anlass_steht_der_leerzustand_da(self):
         """Gegenprobe: kein Dauerlärm, wenn nichts ansteht.

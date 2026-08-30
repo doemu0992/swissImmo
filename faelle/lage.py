@@ -129,7 +129,7 @@ def streifen(stichtag=None, aktive_lg=None):
     stichtag = stichtag or timezone.localdate()
     erster, vor_erster, vor_letzter = _monatsgrenzen(stichtag)
 
-    quote, _soll, offen, anzahl_offen = _eingangsquote(erster, stichtag, aktive_lg)
+    quote, soll, offen, anzahl_offen = _eingangsquote(erster, stichtag, aktive_lg)
     # Die vierte Stelle ist die ANZAHL offener Positionen im Vormonat. Sie wurde
     # bis E2.58 verworfen; ein zweiter Aufruf mit denselben Argumenten waere eine
     # zusaetzliche Abfrage auf der meistbesuchten Seite gewesen, fuer eine Zahl,
@@ -257,12 +257,36 @@ def streifen(stichtag=None, aktive_lg=None):
         log.exception('Lage: Fallzahlen nicht ermittelbar')
 
     return [
-        {'schluessel': 'eingang', 'label': f'Eingang {stichtag.strftime("%B")}',
-         'wert': f'{quote} %' if quote is not None else '—',
+        # DER BETRAG IST DER WERT, DIE QUOTE DIE EINORDNUNG (v7).
+        #
+        # Der Prototyp zeigt «CHF 184'320», darunter «92 % des Solls» und den
+        # Vormonat. Wir zeigten nur die Quote.
+        #
+        # DER BETRAG IST DIE FRAGE, DIE MAN MORGENS HAT: Wie viel ist
+        # eingegangen? Die Quote sagt, ob das gut ist — sie beantwortet die
+        # zweite Frage, nicht die erste. Und «92 %» allein sagt nicht, ob es um
+        # zweitausend oder zweihunderttausend Franken geht.
+        #
+        # DER PFEIL BLEIBT DIE QUOTE, und deshalb steht die Einheit dabei.
+        # Ohne sie stuende «▲ 3» ueber einem Frankenbetrag und laese sich wie
+        # drei Franken mehr. `_einheit` liefert dazu die richtige Zahlform —
+        # «▲ 1 Prozentpunkt», nicht «1 Prozentpunkte»; dieselbe Regel wie bei
+        # den drei Kacheln daneben seit E2.58.
+        {'schluessel': 'eingang', 'label': f'Zahlungseingang {stichtag.strftime("%B")}',
+         'wert': (f'CHF {(soll - offen):,.0f}'.replace(',', "'")
+                  if quote is not None else '—'),
          'stufe': 'crit' if quote is not None and quote < SCHWELLE_EINGANG else '',
          'delta': (quote - vor_quote) if (quote is not None and vor_quote is not None) else None,
          'delta_gut_wenn': 'hoch',
-         'fuss': 'gegen Vormonat' if vor_quote is not None else 'kein Vormonatswert'},
+         'delta_einheit': _einheit((quote - vor_quote)
+                                   if (quote is not None and vor_quote is not None) else 0,
+                                   'Prozentpunkt', 'Prozentpunkte'),
+         # Die Teile erst sammeln, dann verbinden — sonst beginnt die Zeile mit
+         # «· kein Vormonatswert», wenn die Quote fehlt.
+         'fuss': ' · '.join(t for t in (
+             f'{quote} % des Solls' if quote is not None else '',
+             f'Vormonat {vor_quote} %' if vor_quote is not None
+             else 'kein Vormonatswert') if t)},
         # AUSSTAENDE: DER VERGLEICH ZAEHLT POSITIONEN, NICHT FRANKEN.
         #
         # Konzept v7 verlangt «Kennzahlen nur mit Vergleich». Bis E2.58 stand
