@@ -270,9 +270,34 @@ def _fallschritte(heute, bis, wer=None, mandat=None):
         # und traegt seine Nummer — die braucht nicht geschaetzt zu werden.
         zeilen.append({
             'art': 'fall', 'ikon': 'dokument',
-            'titel': s.bezeichnung,
-            'zeile': (f'{s.fall.fallart.bezeichnung} · {s.fall.betreff}'
-                      if s.fall.betreff else s.fall.fallart.bezeichnung),
+            # DIE ZEILE NACH KONZEPT v7 (E2.66)
+            #
+            # Der Prototyp zeigt je Zeile:
+            #
+            #     [Mieterwechsel] F-2026-0184
+            #     Bahnhofstrasse 12, 3.2 — Blaser → offen
+            #     Schritt 3 von 6 · Ausschreibung · Besichtigung heute 14:00
+            #     Naechster Schritt: Besichtigung durchfuehren        DM
+            #
+            # DER TITEL IST DER FALL, NICHT DER SCHRITT. Bis hierher stand der
+            # Schrittname oben («Besichtigung durchfuehren») und der Fall
+            # darunter. Das ist verkehrt: Wer den Vorrat ueberfliegt, sucht
+            # den FALL — welcher Schritt gerade ansteht, ist die Antwort auf
+            # die zweite Frage, nicht auf die erste.
+            #
+            # `marke` traegt die Fallart als eigene Kapsel (`tag` im
+            # Prototyp), damit sie nicht im Fliesstext untergeht.
+            'titel': s.fall.betreff or s.fall.fallart.bezeichnung,
+            'marke': s.fall.fallart.bezeichnung,
+            # DIE BESCHRIFTUNG VOR DEM DATUM (v7: `st`).
+            #
+            # Der Prototyp stellt dem Datum ein Wort voran, das sagt, WOFUER
+            # die Frist gilt: «Naechster Schritt», «Blockiert seit», «Wartet
+            # auf». Ein Datum ohne dieses Wort ist eine Zahl — man weiss
+            # nicht, ob es der Termin, die Frist oder der Beginn ist.
+            'wofuer': 'Nächster Schritt',
+            'schritt': s.bezeichnung,
+            'zeile': '',
             'nummer': s.fall.nummer,
             'fortschritt': f'Schritt {s.nr} von {s._gesamt}' if s._gesamt else '',
             # Das Kuerzel, nicht der ganze Name: Die Zeile ist eng, und wer im

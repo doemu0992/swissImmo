@@ -55,6 +55,62 @@ def _ohne_kommentare(text):
     return re.sub(r'\{#.*?#\}|<!--.*?-->', '', text, flags=re.S)
 
 
+class DefiniertTest(SimpleTestCase):
+    """Jede `fw-*`-Klasse der Startseite ist auch definiert.
+
+    WARUM GENAU DIESE SEITE
+
+    E2.66 hat vier neue Klassen ins Markup gesetzt — `fw-zkopf`,
+    `fw-marke-kapsel`, `fw-mono`, `fw-wofuer` — und ihre Regeln kamen in einem
+    Teil des Patches, der hier nicht ankam. Die Zeile hatte damit eine
+    Kopfzeile ohne Abstand, eine Kapsel ohne Kapselform und ein Wort ohne
+    Schriftgrad. Nichts stürzte ab, nichts wurde rot.
+
+    Dieselbe Fehlerart wie `--ds-mute` in E2.62 und wie `fw-l` ausserhalb
+    seines Behälters in E2.65: ein Name, den es nicht gibt, fällt still durch.
+    Drei Etappen, dreimal dasselbe.
+
+    WARUM NICHT GLEICH ÜBER ALLE VORLAGEN
+
+    Gemessen: 31 vermeintlich undefinierte Klassen im ganzen Bestand, davon
+    fast alle Artefakte — `class="fw-btn{% if x %} …"` zerfällt beim Trennen
+    an Leerzeichen zu `fw-btn{%`. Ein Wächter über alles bräuchte erst
+    sauberes Entfernen der Vorlagenmarken und dann eine Entscheidung je echtem
+    Fund. Das ist eine eigene Etappe; ein Wächter mit langer Ausnahmeliste
+    wäre schlechter als keiner.
+
+    Die Startseite ist die meistbesuchte Seite und die, die diese Reihe
+    laufend umbaut. Hier fängt er die Klasse Fehler, die dreimal vorkam.
+    """
+
+    SEITE = VORLAGEN / 'fw' / 'dashboard.html'
+
+    def test_jede_klasse_der_startseite_ist_definiert(self):
+        schicht = SCHICHT.read_text(encoding='utf-8')
+        tailwind = (WURZEL / 'static' / 'css' / 'tailwind.css').read_text(encoding='utf-8')
+        text = _ohne_kommentare(self.SEITE.read_text(encoding='utf-8'))
+
+        benutzt = set()
+        for treffer in re.finditer(r'class="([^"]*)"', text):
+            # Vorlagenmarken raus, SONST zerfaellt `fw-btn{% if %}` zu einem
+            # Klassennamen, den es nie gab — genau der Fehlalarm, an dem der
+            # Wächter über alle Vorlagen gescheitert ist.
+            roh = re.sub(r'\{%.*?%\}|\{\{.*?\}\}', ' ', treffer.group(1), flags=re.S)
+            benutzt |= {k for k in roh.split() if k.startswith('fw-')}
+
+        fehlend = sorted(k for k in benutzt
+                         if f'.{k}{{' not in schicht.replace('\n', '')
+                         and f'.{k} ' not in schicht
+                         and f'.{k}{{' not in tailwind
+                         and f'.{k}:' not in schicht)
+        self.assertEqual(
+            fehlend, [],
+            'Diese Klassen stehen auf der Startseite, sind aber nirgends '
+            'definiert. Der Browser meldet das nicht — das Markup sieht '
+            'richtig aus und wird schlicht nicht gestaltet:\n  '
+            + '\n  '.join(fehlend))
+
+
 class GeltungsbereichTest(SimpleTestCase):
     def test_die_drei_klassen_sind_nur_als_nachfahre_definiert(self):
         """Die Voraussetzung des Wächters — gemessen, nicht angenommen.

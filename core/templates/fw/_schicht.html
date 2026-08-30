@@ -1022,4 +1022,21 @@ und einen Stilblock enthaelt.
                  auffallen wuerde es erst im Dunkelmodus. */
               color:var(--ds-muted);font-size:11px;font-weight:700;
               letter-spacing:.02em}
+
+        /* DIE ZEILENKOPFZEILE NACH KONZEPT v7 (E2.66).
+           Fallart als Kapsel, Nummer in Ziffernschrift — beide klein und
+           gedaempft, damit der Titel darunter die Zeile fuehrt. */
+        .fw-zkopf{display:flex;align-items:center;gap:7px;margin-bottom:2px}
+        .fw-marke-kapsel{display:inline-block;padding:1px 7px;border-radius:999px;
+              background:var(--ds-surface-2);border:1px solid var(--ds-line);
+              color:var(--ds-muted);font-size:10px;font-weight:700;
+              letter-spacing:.04em;text-transform:uppercase}
+        .fw-mono{font-variant-numeric:tabular-nums;font-size:11px;
+              color:var(--ds-faint);letter-spacing:.02em}
+
+        /* Das Wort vor dem Datum (v7: `st`). Klein und gedaempft — es ordnet
+           die Frist ein, ohne mit ihr zu konkurrieren. Ein Datum ohne dieses
+           Wort ist eine Zahl: Termin, Frist oder Beginn? */
+        .fw-wofuer{font-size:10px;font-weight:700;letter-spacing:.06em;
+              text-transform:uppercase;color:var(--ds-faint)}
 </style>

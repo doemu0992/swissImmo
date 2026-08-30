@@ -69,12 +69,32 @@ class WasReisstTests(TestCase):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
 
     def test_ueberfaelliger_fallschritt_erscheint(self):
-        """Der Test, der den Feldfehler gefunden hätte."""
+        """Der Test, der den Feldfehler gefunden hätte.
+
+        SEIT E2.66 IST DER TITEL DER FALL, NICHT DER SCHRITT.
+
+        Vorher stand hier `schritt.bezeichnung`. Konzept v7 zeigt in der
+        Vorratszeile den FALL oben («Bahnhofstrasse 12, 3.2 — Blaser») und den
+        Schritt darunter — und das ist die richtige Reihenfolge: Wer den
+        Vorrat überfliegt, sucht den Fall. Bei zwanzig Zeilen mit «Prüfen»,
+        «Nachfassen», «Freigeben» als Überschrift findet man nichts wieder.
+
+        Der Schrittname ist deshalb nicht verschwunden, sondern in `schritt`
+        gewandert und steht in der Zeile darunter. Beides wird hier geprüft,
+        damit die Umstellung nicht zum Verlust wird.
+        """
         with mandant(self.a.organisation):
-            _fall, schritt = _fall_mit_frist(self.a.organisation, -3)
+            fall, schritt = _fall_mit_frist(self.a.organisation, -3)
             treffer = [e for e in was_reisst() if e['art'] == 'fall']
             self.assertEqual(len(treffer), 1)
-            self.assertEqual(treffer[0]['titel'], schritt.bezeichnung)
+            self.assertEqual(
+                treffer[0]['titel'], fall.betreff or fall.fallart.bezeichnung,
+                'Der Titel ist nicht der Fall — dann sucht man in der Liste '
+                'nach Schrittnamen statt nach Fällen.')
+            self.assertEqual(
+                treffer[0]['schritt'], schritt.bezeichnung,
+                'Der Schrittname fehlt ganz — die Umstellung hätte ihn '
+                'verloren statt verschoben.')
             self.assertEqual(treffer[0]['tage'], -3)
             self.assertEqual(treffer[0]['dringlichkeit'], 'crit')
 

@@ -139,6 +139,58 @@ def streifen(stichtag=None, aktive_lg=None):
     leer_quote, leer_anzahl, _gesamt = _leerstandsquote(stichtag, aktive_lg)
     vor_leer, _la, _lg = _leerstandsquote(vor_letzter, aktive_lg)
 
+    # DIE ZWEITEN ANGABEN DER FUSSZEILEN (v7).
+    #
+    # «11 Positionen, 3 in Mahnstufe 2» und «10 Objekte, 4 ohne Ausschreibung».
+    # Beide lesen sich als TEILMENGE der ersten Zahl — und muessen deshalb
+    # dieselbe Menge einschraenken, nicht eine andere zaehlen.
+    #
+    # DER ERSTE ENTWURF TAT DAS NICHT, GEMESSEN:
+    #
+    #   `Mahnung.objects.filter(stufe__gte=2)` zaehlte JEDE je ausgestellte
+    #   Mahnung — auch zu laengst bezahlten Rechnungen und aus beliebigen
+    #   Monaten. Eine im Januar 2025 gemahnte, inzwischen bezahlte Rechnung
+    #   ergab «1 Position, 1 in Mahnstufe 2», obwohl die eine offene Position
+    #   nie gemahnt wurde. Zwei fremde Mengen, als Teilmenge geschrieben.
+    #
+    #   `exclude(vertraege__status='aktiv')` ist zudem eine ANDERE
+    #   Leerstandsdefinition als die des Streifens: `_leerstandsquote` prueft
+    #   den Vertrag am Stichtag (`beginn <= tag <= ende`), nicht nur seinen
+    #   Status. Eine Einheit mit einem aktiven, aber erst naechsten Monat
+    #   beginnenden Vertrag zaehlt dort leer und hier belegt.
+    #
+    # UND BEIDE MISSACHTETEN DEN LIEGENSCHAFTSFILTER, waehrend jede andere
+    # Zahl im Streifen ihn beachtet — mit gesetztem Filter waere die erste
+    # Zahl eingeschraenkt gewesen und die zweite nicht.
+    gemahnt = ohne_aussch = 0
+    try:
+        from finance.models import DebitorenRechnung
+
+        # Dieselbe Fensterung und derselbe Status wie `anzahl_offen` oben.
+        gem = DebitorenRechnung.objects.filter(
+            faellig_am__gte=erster, faellig_am__lte=stichtag,
+            status__in=('offen', 'teilbezahlt'))
+        if aktive_lg:
+            gem = gem.filter(Q(liegenschaft=aktive_lg)
+                             | Q(vertrag__einheit__liegenschaft=aktive_lg))
+        gemahnt = gem.filter(mahnungen__stufe__gte=2).distinct().count()
+    except Exception:
+        log.exception('Mahnstufen fuer die Kachel nicht ladbar')
+    try:
+        from portfolio.models import Einheit
+        from rentals.models import Mietvertrag
+
+        # Dieselbe Leerstandsdefinition wie `_leerstandsquote`.
+        belegt = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=stichtag)
+                  .filter(Q(ende__isnull=True) | Q(ende__gte=stichtag)))
+        eh = Einheit.objects.filter(zur_ausschreibung=False)
+        if aktive_lg:
+            eh = eh.filter(liegenschaft=aktive_lg)
+            belegt = belegt.filter(einheit__liegenschaft=aktive_lg)
+        ohne_aussch = eh.exclude(id__in=belegt.values('einheit_id')).count()
+    except Exception:
+        log.exception('Ausschreibungsstand fuer die Kachel nicht ladbar')
+
     faelle_offen = liegen = 0
     vor_faelle = None
     try:
@@ -235,7 +287,14 @@ def streifen(stichtag=None, aktive_lg=None):
          'delta': (anzahl_offen - vor_anzahl) if vor_quote is not None else None,
          'delta_gut_wenn': 'runter',
          'delta_einheit': _einheit(anzahl_offen - vor_anzahl, 'Position', 'Positionen'),
-         'fuss': f'{anzahl_offen} Position{"en" if anzahl_offen != 1 else ""}'},
+         # DIE FUSSZEILE TRAEGT ZWEI ANGABEN (v7).
+         #
+         # Der Prototyp zeigt «11 Positionen, 3 in Mahnstufe 2». Die zweite
+         # sagt, wie ERNST der Ausstand ist: Elf offene Posten sind Alltag,
+         # drei davon in der zweiten Mahnung nicht. Ohne sie ist die Zahl
+         # ein Betrag ohne Dringlichkeit.
+         'fuss': (f'{anzahl_offen} Position{"en" if anzahl_offen != 1 else ""}'
+                  + (f', {gemahnt} in Mahnstufe 2' if gemahnt else '')),},
         {'schluessel': 'leerstand', 'label': 'Leerstand',
          'wert': f'{leer_quote} %' if leer_quote is not None else '—',
          'stufe': ('warn' if leer_quote is not None
@@ -243,7 +302,11 @@ def streifen(stichtag=None, aktive_lg=None):
          'delta': (leer_quote - vor_leer) if (leer_quote is not None
                                               and vor_leer is not None) else None,
          'delta_gut_wenn': 'runter',
-         'fuss': f'{leer_anzahl} Objekt{"e" if leer_anzahl != 1 else ""}'},
+         # «10 Objekte, 4 ohne Ausschreibung» — die zweite Angabe sagt, was
+         # man TUN kann. Leerstand allein ist eine Zahl; Leerstand ohne
+         # Ausschreibung ist eine Unterlassung.
+         'fuss': (f'{leer_anzahl} Objekt{"e" if leer_anzahl != 1 else ""}'
+                  + (f', {ohne_aussch} ohne Ausschreibung' if ohne_aussch else '')),},
         # OFFENE FAELLE: gegen den Stand vor einem Monat.
         #
         # `eroeffnet_am` und `abgeschlossen_am` stehen im Modell; daraus laesst

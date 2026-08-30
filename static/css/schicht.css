@@ -523,3 +523,12 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
               background:var(--ds-surface-2);border:1px solid var(--ds-line);
               color:var(--ds-muted);font-size:11px;font-weight:700;
               letter-spacing:.02em}
+        .fw-zkopf{display:flex;align-items:center;gap:7px;margin-bottom:2px}
+        .fw-marke-kapsel{display:inline-block;padding:1px 7px;border-radius:999px;
+              background:var(--ds-surface-2);border:1px solid var(--ds-line);
+              color:var(--ds-muted);font-size:10px;font-weight:700;
+              letter-spacing:.04em;text-transform:uppercase}
+        .fw-mono{font-variant-numeric:tabular-nums;font-size:11px;
+              color:var(--ds-faint);letter-spacing:.02em}
+        .fw-wofuer{font-size:10px;font-weight:700;letter-spacing:.06em;
+              text-transform:uppercase;color:var(--ds-faint)}

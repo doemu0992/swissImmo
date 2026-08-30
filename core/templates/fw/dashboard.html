@@ -220,12 +220,28 @@ hier die Auswahl dort.
             Alles drei nur, wenn vorhanden — Läufe und Pendenzen haben weder
             Nummer noch Fortschritt.
             {% endcomment %}
+            {% comment %}
+            DIE ZEILE NACH KONZEPT v7 (E2.66)
+
+            Der Prototyp gliedert dreifach: Kopfzeile mit Fallart-Kapsel und
+            Nummer, dann der FALL als Titel, dann der Stand.
+
+            Bis hierher stand der Schrittname oben und der Fall darunter. Wer
+            den Vorrat überfliegt, sucht aber den Fall — welcher Schritt
+            ansteht, ist die zweite Frage.
+            {% endcomment %}
+            {% if e.marke or e.nummer %}
+            <div class="fw-zkopf">
+                {% if e.marke %}<span class="fw-marke-kapsel">{{ e.marke }}</span>{% endif %}
+                {% if e.nummer %}<span class="fw-mono">{{ e.nummer }}</span>{% endif %}
+            </div>
+            {% endif %}
             <div class="fw-t">{{ e.titel }}</div>
-            <div class="fw-s">{{ e.zeile }}{% if e.nummer %} · {{ e.nummer }}{% endif %}{% if e.fortschritt %} · {{ e.fortschritt }}{% endif %}</div>
+            <div class="fw-s">{% if e.fortschritt %}{{ e.fortschritt }}{% if e.schritt %} · {{ e.schritt }}{% endif %}{% else %}{{ e.zeile }}{% endif %}</div>
         </div>
         {% if e.wer %}<span class="fw-kuerzel" title="zuständig">{{ e.wer }}</span>{% endif %}
-        <div class="fw-zeit">{{ e.datum|date:"d.m.Y" }}<br>
-            <span class="fw-klein">{% if e.tage < 0 %}{{ e.tage|cut:"-" }} Tage über{% elif e.tage == 0 %}heute{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}</span></div>
+        <div class="fw-zeit">{% if e.wofuer %}<span class="fw-wofuer">{{ e.wofuer }}</span><br>{% endif %}{{ e.datum|date:"d.m.Y" }}<br>
+            <span class="fw-klein">{% if e.tage < 0 %}{{ e.tage|cut:"-" }} Tag{{ e.tage|cut:"-"|add:0|pluralize:"e" }} über{% elif e.tage == 0 %}heute{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}</span></div>
         {% comment %} `e.modal` kommt aus der Quelle (siehe `_pendenz_ziel`):
            Die Zugangserfassung nach Art. 257d etwa gehoert ins Popup, damit
            man die Liste nicht verlaesst. Ohne dieses Attribut waere aus einer

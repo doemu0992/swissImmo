@@ -1906,3 +1906,142 @@ class ArbeitsvorratAbfragezahlTests(TestCase):
                       if e.get('art') == 'fall']
         self.assertTrue(zeilen)
         self.assertEqual(zeilen[0]['fortschritt'], 'Schritt 1 von 4')
+
+
+class FusszeilenZweiteAngabeTests(TestCase):
+    """«11 Positionen, 3 in Mahnstufe 2» — die zweite Zahl ist eine TEILMENGE.
+
+    Beide Fusszeilen lesen sich so, und deshalb müssen sie dieselbe Menge
+    einschränken statt eine andere zu zählen. Elf offene Posten sind Alltag,
+    drei davon in der zweiten Mahnung nicht; Leerstand ist eine Zahl,
+    Leerstand ohne Ausschreibung eine Unterlassung.
+
+    DER ERSTE ENTWURF ZÄHLTE ZWEI FREMDE MENGEN — gemessen: Eine im Januar
+    2025 gemahnte, längst bezahlte Rechnung ergab «1 Position, 1 in Mahnstufe
+    2», obwohl die eine offene Position nie gemahnt worden war.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _kacheln(self, stichtag=None, aktive_lg=None):
+        with mandant(self.a.organisation):
+            return {k['schluessel']: k
+                    for k in streifen(stichtag or timezone.localdate(), aktive_lg)}
+
+    def test_eine_bezahlte_altmahnung_faerbt_die_fusszeile_nicht(self):
+        """Der gemessene Fall.
+
+        Die Mahnung gehört zu einer bezahlten Rechnung aus dem Vorjahr. Sie
+        gehört in keine Aussage über die offenen Positionen DIESES Monats.
+        """
+        from finance.models import Mahnung
+
+        heute = timezone.localdate()
+        with mandant(self.a.organisation):
+            alt = _rechnung(self.a.vertrag, '500', date(2025, 1, 5), 'bezahlt')
+            Mahnung.objects.create(debitoren_rechnung=alt, stufe=3)
+            _rechnung(self.a.vertrag, '900', heute.replace(day=1), 'offen')
+
+        fuss = self._kacheln()['ausstaende']['fuss']
+        self.assertIn('1 Position', fuss)
+        self.assertNotIn(
+            'Mahnstufe', fuss,
+            'Eine bezahlte Rechnung aus dem Vorjahr steht in der Fusszeile '
+            'dieses Monats — dann zählt die zweite Zahl eine andere Menge als '
+            'die erste.')
+
+    def test_eine_gemahnte_offene_position_steht_in_der_fusszeile(self):
+        """Die Gegenprobe: Der echte Fall MUSS erscheinen.
+
+        Ohne sie wäre der Test darüber auch dann grün, wenn die Angabe nie
+        erscheint.
+        """
+        from finance.models import Mahnung
+
+        heute = timezone.localdate()
+        with mandant(self.a.organisation):
+            offen = _rechnung(self.a.vertrag, '900', heute.replace(day=1), 'offen')
+            Mahnung.objects.create(debitoren_rechnung=offen, stufe=2)
+
+        self.assertIn('1 in Mahnstufe 2', self._kacheln()['ausstaende']['fuss'])
+
+    def test_die_erste_mahnstufe_zaehlt_nicht_mit(self):
+        """«Mahnstufe 2» heisst ab der zweiten — die erste ist Alltag."""
+        from finance.models import Mahnung
+
+        heute = timezone.localdate()
+        with mandant(self.a.organisation):
+            offen = _rechnung(self.a.vertrag, '900', heute.replace(day=1), 'offen')
+            Mahnung.objects.create(debitoren_rechnung=offen, stufe=1)
+
+        self.assertNotIn('Mahnstufe', self._kacheln()['ausstaende']['fuss'])
+
+    def test_der_liegenschaftsfilter_gilt_fuer_beide_zahlen(self):
+        """Sonst ist die erste Zahl gefiltert und die zweite nicht.
+
+        Jede andere Zahl im Streifen beachtet `aktive_lg`. Eine Fusszeile, die
+        ihn übergeht, meldet eine Mahnstufe zu einer Liegenschaft, die gerade
+        gar nicht angezeigt wird.
+        """
+        from finance.models import Mahnung
+        from portfolio.models import Liegenschaft
+
+        heute = timezone.localdate()
+        with mandant(self.a.organisation):
+            offen = _rechnung(self.a.vertrag, '900', heute.replace(day=1), 'offen')
+            Mahnung.objects.create(debitoren_rechnung=offen, stufe=2)
+            fremd = Liegenschaft.objects.create(
+                organisation=self.a.organisation, eigentuemer=self.a.eigentuemer,
+                strasse='Anderswo 1', plz='3000', ort='Bern')
+
+        # Auf der eigenen Liegenschaft sichtbar …
+        self.assertIn('Mahnstufe 2',
+                      self._kacheln(aktive_lg=self.a.liegenschaft)['ausstaende']['fuss'])
+        # … auf einer anderen nicht.
+        self.assertNotIn(
+            'Mahnstufe',
+            self._kacheln(aktive_lg=fremd)['ausstaende']['fuss'],
+            'Die Mahnstufe erscheint trotz Filter auf eine fremde '
+            'Liegenschaft — dann übergeht die zweite Zahl den Filter.')
+
+    def test_ohne_ausschreibung_zaehlt_nur_wirklich_leere_objekte(self):
+        """Dieselbe Leerstandsdefinition wie der Wert darüber.
+
+        `_leerstandsquote` prüft den Vertrag AM STICHTAG (`beginn <= tag <=
+        ende`), nicht nur seinen Status. Ein aktiver Vertrag, der erst nächsten
+        Monat beginnt, macht die Einheit heute nicht belegt — sie gehört in
+        beide Zahlen.
+        """
+        from portfolio.models import Einheit
+        from rentals.models import Mietvertrag
+
+        heute = timezone.localdate()
+        with mandant(self.a.organisation):
+            eh = Einheit.objects.create(
+                liegenschaft=self.a.liegenschaft, bezeichnung='Leer 1',
+                zur_ausschreibung=False)
+            # Aktiv, aber erst in einem Monat — heute also leer.
+            Mietvertrag.objects.create(
+                mieter=self.a.mieter, einheit=eh, status='aktiv',
+                beginn=heute + timedelta(days=30),
+                netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'))
+
+        fuss = self._kacheln()['leerstand']['fuss']
+        self.assertIn(
+            'ohne Ausschreibung', fuss,
+            'Die künftig vermietete Einheit zählt als belegt — dann benutzt '
+            'die zweite Zahl eine andere Leerstandsdefinition als die erste.')
+
+    def test_ein_ausgeschriebenes_leeres_objekt_zaehlt_nicht(self):
+        """Die Gegenprobe: Ausgeschrieben ist keine Unterlassung."""
+        from portfolio.models import Einheit
+
+        with mandant(self.a.organisation):
+            Einheit.objects.create(
+                liegenschaft=self.a.liegenschaft, bezeichnung='Leer 2',
+                zur_ausschreibung=True)
+
+        self.assertNotIn('ohne Ausschreibung',
+                         self._kacheln()['leerstand']['fuss'])
