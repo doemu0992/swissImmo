@@ -21,7 +21,7 @@ Kosten still vermischt, sieht genauer aus, als sie ist — dafür steht
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.test import Client, TestCase
+from django.test import Client, SimpleTestCase, TestCase
 from django.utils import timezone
 
 from core.tenancy import organisation_kontext as mandant
@@ -267,3 +267,124 @@ class MandantentrennungTests(_Basis):
                 kosten_effektiv=Decimal('99999.00'))
         antwort = self.client.get(f'/neu/dienstleister/{self.a.handwerker.pk}/')
         self.assertLess(antwort.context['dl_kosten_jahr'], Decimal('99999.00'))
+
+
+class WasAuffaelltEinheitlichTest(SimpleTestCase):
+    """«Was auffällt» sieht auf jeder Akte gleich aus — und steht vorne.
+
+    Konzept v7 zur Akte: «Deckblatt mit gerechneten Zuständen, ‹Was auffällt›
+    VOR dem Inhalt, ein Reitersatz für alle Typen.»
+
+    DIE REIHENFOLGE IST KEINE GESTALTUNGSFRAGE. Wer eine Akte öffnet, soll
+    zuerst sehen, was nicht stimmt — nicht die Adresse. Eine fehlende IBAN
+    unter den Stammdaten liest man erst, wenn man ohnehin schon scrollt.
+
+    DIE FORM AUCH NICHT. Wer drei Aktentypen kennt, soll den vierten nicht neu
+    lernen müssen: Überschrift, Zähler, Hinweiszeilen mit Ton.
+
+    WAS DIESER TEST NICHT PRÜFT
+
+    Ob eine Akte überhaupt Befunde HAT. Objekt, Person und Dienstleister haben
+    heute keine — welche Zustände dort auffallen sollen, ist Wissen aus dem
+    Büro und keine Entscheidung, die beim Vereinheitlichen nebenbei fällt.
+    Erfundene Befunde wären schlimmer als keine.
+    """
+    import pathlib
+
+    from django.conf import settings
+
+    WURZEL = pathlib.Path(settings.BASE_DIR)
+
+    #: Akten, die heute Befunde rechnen.
+    MIT_BEFUNDEN = ('liegenschaft_detail.html', 'vertrag_detail.html',
+                    'mandat_detail.html')
+
+    #: Akten, deren Befunde noch HINTER dem Aktenkopf stehen — gemessen, nicht
+    #: vermutet.
+    #:
+    #: KONZEPT v7 VERLANGT SIE VORNE, und auf der Mandatsakte stehen sie das
+    #: seit E2.65. Bei diesen zweien sitzt der Block INNERHALB eines
+    #: Reiter-Panels; ihn nach vorn zu ziehen heisst, ihn aus dem Panel zu
+    #: loesen, und dann erscheint er auf JEDEM Reiter statt nur auf der
+    #: Uebersicht. Das ist eine Entscheidung ueber das Verhalten der Seite,
+    #: keine Verschiebung von Markup — und sie faellt nicht nebenbei beim
+    #: Vereinheitlichen einer dritten Akte.
+    #:
+    #: DIESE LISTE DARF NUR SCHRUMPFEN. Wer eine Akte umstellt, streicht sie
+    #: hier; der Test wird sonst rot. Ein blosser Kommentar waere nach zwei
+    #: Etappen vergessen.
+    #:
+    #: Aufgefallen ist das erst, als der Reihenfolge-Test ueberhaupt etwas
+    #: geprueft hat: Er suchte die Marken `MANDAT` und `fw-akte-kopf`, beide
+    #: gibt es nicht (der Kopf heisst `fw-aktenkopf`), und uebersprang die Akte
+    #: dann mit `continue` — gruen, ohne eine einzige Zusicherung.
+    NOCH_HINTEN = ('liegenschaft_detail.html', 'vertrag_detail.html')
+
+    def _text(self, name):
+        """Die Vorlage OHNE Kommentare.
+
+        Der Erklärtext nennt «Was auffällt» selbst — er begründet ja die
+        Sache. Ein Test, der ihn mitliest, bleibt grün, wenn das Markup
+        verschwindet und nur die Begründung stehen bleibt.
+
+        Beim ersten Anlauf genau das passiert: Überschrift entfernt, Test
+        weiterhin grün. Neuntes Mal in dieser Reihe, dass Erklärtext für
+        Inhalt gehalten wurde.
+        """
+        import re
+
+        roh = (self.WURZEL / 'core/templates/fw' / name).read_text(encoding='utf-8')
+        ohne = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}', '',
+                      roh, flags=re.S)
+        return re.sub(r'\{#.*?#\}|<!--.*?-->', '', ohne, flags=re.S)
+
+    def test_ueberschrift_und_zaehler_auf_jeder_akte(self):
+        for name in self.MIT_BEFUNDEN:
+            with self.subTest(akte=name):
+                text = self._text(name)
+                self.assertIn(
+                    'Was auffällt', text,
+                    f'{name} zeigt Befunde ohne Überschrift — dann liest sie '
+                    f'niemand als Befunde.')
+                self.assertIn(
+                    'fw-neben', text,
+                    f'{name} nennt die Anzahl nicht. «Was auffällt» ohne Zahl '
+                    f'sagt nicht, ob es einer oder sieben sind.')
+
+    def test_die_befunde_stehen_vor_den_stammdaten(self):
+        """Sonst liest man sie erst nach dem Scrollen.
+
+        Geprüft an der Reihenfolge im Markup: Der Befundblock muss vor dem
+        Aktenkopf mit den Stammdaten stehen.
+
+        DIESER TEST HAT ZUERST GAR NICHTS GEPRÜFT.
+
+        Er suchte die Marken `MANDAT` und `fw-akte-kopf` und übersprang die
+        Akte mit `continue`, wenn sie fehlten. Beide fehlen — der Kopf heisst
+        `fw-aktenkopf`, mit einem `n`. Damit lief der Test durch BEIDE
+        Durchgänge, ohne eine einzige Zusicherung auszuführen, und war grün,
+        was immer im Markup stand.
+
+        Ein `continue` auf eine fehlende Marke ist kein Auslassen, sondern ein
+        stilles Bestehen. Die Marke wird jetzt zuerst BELEGT; fehlt sie,
+        scheitert der Test, statt sich selbst abzuschalten.
+        """
+        for name in self.MIT_BEFUNDEN:
+            with self.subTest(akte=name):
+                text = self._text(name)
+                self.assertIn(
+                    'fw-aktenkopf', text,
+                    f'{name} hat keinen Aktenkopf — dann misst der Test eine '
+                    f'Reihenfolge, die es nicht gibt.')
+                self.assertIn('Was auffällt', text)
+                vorne = text.index('Was auffällt') < text.index('fw-aktenkopf')
+                if name in self.NOCH_HINTEN:
+                    self.assertFalse(
+                        vorne,
+                        f'{name} zeigt die Befunde jetzt vorne — dann gehört '
+                        f'die Akte aus `NOCH_HINTEN` heraus. Die Liste darf '
+                        f'nur schrumpfen.')
+                else:
+                    self.assertTrue(
+                        vorne, f'{name}: Die Befunde stehen hinter den '
+                               f'Stammdaten.')

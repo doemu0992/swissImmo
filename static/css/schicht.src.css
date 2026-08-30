@@ -863,6 +863,20 @@
             margin-bottom:14px;overflow:hidden}
         .fw-lage>div{padding:10px 16px;border-right:1px solid var(--ds-line)}
         .fw-lage>div:last-child{border-right:0}
+        /* AUF DEM TELEFON ZWEI SPALTEN STATT VIER.
+           
+           Vier feste Spalten heissen auf 390 Pixel Breite je 90 Pixel — die
+           Beschriftung bricht ueber drei Zeilen, und der Wert geht darin
+           unter. Gemeldet mit einem Bildschirmfoto von der Mandatsakte.
+           
+           Bei zwei Spalten steht der Trennstrich rechts nur bei ungeraden
+           Feldern falsch; deshalb wird er dort unten gezogen. */
+        @media (max-width:640px){
+            .fw-lage{grid-template-columns:repeat(2,1fr)}
+            .fw-lage>div{border-bottom:1px solid var(--ds-line)}
+            .fw-lage>div:nth-child(2n){border-right:0}
+            .fw-lage>div:nth-last-child(-n+2){border-bottom:0}
+        }
         .fw-lage .fw-l{font-size:10px;font-weight:700;letter-spacing:.1em;
             text-transform:uppercase;color:var(--ds-faint)}
         .fw-lage .fw-w{font-size:16px;font-weight:700;margin-top:2px;

@@ -32,29 +32,76 @@ sondern ein Zufall.
 Fehlt der Stundensatz oder die Zeit, steht dort der GRUND — nicht «CHF 0.00».
 Eine Null wäre eine Aussage, die niemand getroffen hat.
 {% endcomment %}
-<div class="fw-card p-4 mb-4">
-    <div class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Rentabilität</div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div><div class="fw-l">Honorar pro Jahr</div>
-            <div class="fw-w">{% if rentabilitaet.honorar_jahr %}CHF {{ rentabilitaet.honorar_jahr|chf }}{% else %}—{% endif %}</div>
-            <div class="fw-f">{{ md.honorar_prozent|default:'kein Satz' }} % der Sollmiete</div></div>
-        <div><div class="fw-l">Erfasster Aufwand</div>
-            <div class="fw-w">{% if rentabilitaet.stunden %}{{ rentabilitaet.stunden }} h{% else %}—{% endif %}</div>
-            <div class="fw-f">auf Fällen dieses Mandats</div></div>
-        <div><div class="fw-l">CHF pro Stunde</div>
-            <div class="fw-w">{% if rentabilitaet.chf_pro_stunde %}CHF {{ rentabilitaet.chf_pro_stunde|chf }}{% else %}<span class="fw-faint">—</span>{% endif %}</div>
-            <div class="fw-f">{% if rentabilitaet.fehlt %}{{ rentabilitaet.fehlt }}{% else %}Honorar geteilt durch Aufwand{% endif %}</div></div>
-        <div><div class="fw-l">Datenbasis</div>
-            <div class="fw-w">{{ rentabilitaet.faelle_mit_zeit }} / {{ rentabilitaet.faelle_gesamt }}</div>
-            <div class="fw-f">Fälle mit erfasster Zeit</div></div>
+{% comment %}
+«WAS AUFFÄLLT» — ÜBERSCHRIFT, ZÄHLER, UND VOR DEM INHALT (E2.64)
+
+Konzept v7 zur Akte: «Deckblatt mit gerechneten Zuständen, ‹Was auffällt› VOR
+dem Inhalt, ein Reitersatz für alle Typen.»
+
+Die Hinweise gab es hier bereits — mit Ton, Zeichen und Handlungsknopf. Sie
+standen nur ohne Titel, ohne Zähler und UNTERHALB der Stammdaten.
+
+DIE REIHENFOLGE IST KEINE GESTALTUNGSFRAGE. Wer eine Akte öffnet, soll zuerst
+sehen, was nicht stimmt — nicht die Adresse. Eine fehlende IBAN unter den
+Stammdaten liest man erst, wenn man ohnehin schon scrollt.
+
+Dieselbe Form wie bei Liegenschaft und Vertrag: Ein Leser, der drei Aktentypen
+kennt, soll den vierten nicht neu lernen müssen.
+{% endcomment %}
+{% if mandat_hinweise %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon warn">{% zeichen 'warnung' %}</span>
+        <span class="fw-t">Was auffällt</span>
+        <span class="fw-neben">{{ mandat_hinweise|length }}</span></div>
+    {% for h in mandat_hinweise %}
+    <div class="fw-hinweis {{ h.ton }}">
+        <span class="fw-hi">{% zeichen_wert h.symbol %}</span>
+        <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
+            <div class="mt-1.5"><a href="{{ h.url }}" class="fw-link">{{ h.knopf }} →</a></div></div>
     </div>
-    {% if rentabilitaet.chf_pro_stunde and rentabilitaet.faelle_gesamt %}
-    {% widthratio rentabilitaet.faelle_mit_zeit rentabilitaet.faelle_gesamt 100 as abdeckung %}
-    {% if abdeckung|add:0 < 50 %}
-    <p class="text-[11px] fw-warnton mt-3">Nur {{ abdeckung }} % der Fälle haben Zeit erfasst — die Zahl trägt noch nicht weit.</p>
-    {% endif %}
-    {% endif %}
+    {% endfor %}
 </div>
+{% endif %}
+
+{% comment %}
+DER LAGE-STREIFEN, NICHT EIGENE KLASSEN (E2.65)
+
+Die Karte trug ein eigenes Raster (`grid-cols-2 md:grid-cols-4`) und eigene
+Schriftgroessen. Auf dem Telefon wurde daraus eine Wand aus Fliesstext: Die
+Beschriftung «Honorar pro Jahr» stand so gross wie der Wert, und «kein Satz %
+der Sollmiete» brach ueber zwei Zeilen.
+
+`fw-lage` ist derselbe Streifen wie auf «Heute» — Beschriftung klein und
+gesperrt, Wert gross, Fusszeile gedaempft. Wer die Startseite kennt, liest
+hier dasselbe Muster.
+{% endcomment %}
+{% comment %} Der Streifen auf «Heute» braucht keine Überschrift — dort ist klar, worum
+   es geht. Hier steht er zwischen Befunden und Stammdaten und muss sagen,
+   was er zeigt. {% endcomment %}
+<div class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-2">Rentabilität</div>
+<div class="fw-lage">
+    <div><div class="fw-l">Honorar pro Jahr</div>
+        <div class="fw-w">{% if rentabilitaet.honorar_jahr %}CHF {{ rentabilitaet.honorar_jahr|chf }}{% else %}—{% endif %}</div>
+        {% comment %} «kein Satz % der Sollmiete» — `default` ersetzt nur die Zahl,
+           das Prozentzeichen blieb stehen. Ein halber Satz liest sich wie
+           ein Fehler, und er ist einer. {% endcomment %}
+        <div class="fw-f">{% if md.honorar_prozent %}{{ md.honorar_prozent }} % der Sollmiete{% else %}kein Satz hinterlegt{% endif %}</div></div>
+    <div><div class="fw-l">Erfasster Aufwand</div>
+        <div class="fw-w">{% if rentabilitaet.stunden %}{{ rentabilitaet.stunden }} h{% else %}—{% endif %}</div>
+        <div class="fw-f">auf Fällen dieses Mandats</div></div>
+    <div><div class="fw-l">CHF pro Stunde</div>
+        <div class="fw-w">{% if rentabilitaet.chf_pro_stunde %}CHF {{ rentabilitaet.chf_pro_stunde|chf }}{% else %}<span class="fw-faint">—</span>{% endif %}</div>
+        <div class="fw-f">{% if rentabilitaet.fehlt %}{{ rentabilitaet.fehlt }}{% else %}Honorar geteilt durch Aufwand{% endif %}</div></div>
+    <div><div class="fw-l">Datenbasis</div>
+        <div class="fw-w">{{ rentabilitaet.faelle_mit_zeit }} / {{ rentabilitaet.faelle_gesamt }}</div>
+        <div class="fw-f">Fälle mit erfasster Zeit</div></div>
+</div>
+{% if rentabilitaet.chf_pro_stunde and rentabilitaet.faelle_gesamt %}
+{% widthratio rentabilitaet.faelle_mit_zeit rentabilitaet.faelle_gesamt 100 as abdeckung %}
+{% if abdeckung|add:0 < 50 %}
+<p class="text-[11px] fw-warnton mb-4">Nur {{ abdeckung }} % der Fälle haben Zeit erfasst — die Zahl trägt noch nicht weit.</p>
+{% endif %}
+{% endif %}
 
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
@@ -96,33 +143,21 @@ Eine Null wäre eine Aussage, die niemand getroffen hat.
     </div>
 
     <div class="fw-kzn">
-        <div><div class="fw-l">Liegenschaften</div>
-            <div class="fw-w">{{ liegenschaften|length }}</div>
-            <div class="fw-f">verwaltet für dieses Mandat</div></div>
-        <div><div class="fw-l">Soll / Monat</div>
-            <div class="fw-w">CHF {{ soll_monat|chf }}</div>
-            <div class="fw-f">brutto aus aktiven Verträgen</div></div>
-        <div><div class="fw-l">Honorarsatz</div>
+    <div><div class="fw-l">Liegenschaften</div>
+        <div class="fw-w">{{ liegenschaften|length }}</div>
+        <div class="fw-f">verwaltet für dieses Mandat</div></div>
+    <div><div class="fw-l">Soll / Monat</div>
+        <div class="fw-w">CHF {{ soll_monat|chf }}</div>
+        <div class="fw-f">brutto aus aktiven Verträgen</div></div>
+    <div><div class="fw-l">Honorarsatz</div>
             <div class="fw-w{% if not md.honorar_prozent %} warn{% endif %}">{% if md.honorar_prozent %}{{ md.honorar_prozent }} %{% else %}—{% endif %}</div>
             <div class="fw-f fw-lang">{% if md.honorar_prozent %}vereinbart{% else %}Vorgabewert der Verwaltung{% endif %}</div></div>
-        <div><div class="fw-l">Auszahlungen</div>
-            <div class="fw-w">{{ auszahlungen|length }}</div>
+    <div><div class="fw-l">Auszahlungen</div>
+        <div class="fw-w">{{ auszahlungen|length }}</div>
             <div class="fw-f fw-lang">{% if mandat_auszahlungen %}{{ mandat_auszahlungen }} noch nicht ausgeführt{% else %}alle ausgeführt{% endif %}</div></div>
     </div>
     {% include 'fw/_detail_tabs.html' with gruppe='md' tabs=tab_liste %}
 </div>
-
-{% if mandat_hinweise %}
-<div class="fw-card">
-    {% for h in mandat_hinweise %}
-    <div class="fw-hinweis {{ h.ton }}">
-        <span class="fw-hi">{% zeichen_wert h.symbol %}</span>
-        <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
-            <div class="mt-1.5"><a href="{{ h.url }}" class="fw-link">{{ h.knopf }} →</a></div></div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
 
 <!-- ===== BEREICH: STAMMDATEN ===== -->
 <div data-panel="md" id="md-stammdaten">
