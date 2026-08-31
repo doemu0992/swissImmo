@@ -17,7 +17,7 @@ from crm.models import Mieter
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
 
-from ._basis import _global_filter, _num
+from ._basis import _global_filter, _num, team_der_organisation
 
 
 # ============================================================
@@ -42,6 +42,32 @@ def fw_liegenschaft_form(request, pk=None):
         obj.plz = P.get('plz', '').strip()
         obj.ort = P.get('ort', '').strip()
         obj.kanton = P.get('kanton', '').strip()
+        # DIE BETREUUNG (E2.70). `'x' in P` statt `P.get()`: Ein Formular, das
+        # das Feld NICHT mitschickt, darf die Zuteilung nicht loeschen —
+        # derselbe Fall wie beim Stundensatz (E2.47).
+        #
+        # DIE ID WIRD GEPRUEFT, NICHT GEGLAUBT.
+        #
+        # Ein erster Entwurf schrieb `int(wert)` direkt ins Feld. GEMESSEN: Ein
+        # POST mit der ID einer Person aus einer FREMDEN Verwaltung ging durch
+        # (302, Feld gesetzt) — und ueber `zulauf._betreuer_fuer` erbte diese
+        # Person danach JEDEN neuen Fall an dieser Liegenschaft.
+        #
+        # Dieselbe Luecke, die dieselbe Etappe am Fall geschlossen hat: `Fall`
+        # prueft ueber `Mitgliedschaft`, das Formular hier tat es nicht. Eine
+        # Grenze, die an drei Stellen einzeln gezogen wird, ist an zweien
+        # gezogen — deshalb jetzt beide ueber `team_der_organisation`.
+        if 'betreut_von' in P:
+            wert = (P.get('betreut_von') or '').strip()
+            person = None
+            if wert.isdigit():
+                person = team_der_organisation(
+                    getattr(request, 'organisation', None)).filter(pk=wert).first()
+                if person is None:
+                    messages.error(
+                        request, 'Diese Person gehört nicht zu Ihrer Verwaltung.')
+                    return redirect(request.path)
+            obj.betreut_von = person
         obj.egid = P.get('egid', '').strip()
         obj.kataster_nummer = P.get('kataster_nummer', '').strip()
 
@@ -121,6 +147,11 @@ def fw_liegenschaft_form(request, pk=None):
         return redirect(f'/neu/liegenschaften/{obj.id}/')
 
     return render(request, 'fw/liegenschaft_form.html', {
+        # Wer zur Auswahl steht: die Mitglieder dieser Organisation. Der
+        # `TenantManager` sorgt fuer die Grenze — eine fremde Person kann
+        # keine Liegenschaft betreuen.
+        'benutzer_auswahl': list(team_der_organisation(
+            getattr(request, 'organisation', None))[:100]),
         **basis, 'nav': 'liegenschaften', 'lg': lg, 'ist_neu': lg is None,
         'eigentuemer': Eigentuemer.objects.all().order_by('firma_oder_name'),
         'heiz_choices': Liegenschaft.HEIZ_CHOICES,

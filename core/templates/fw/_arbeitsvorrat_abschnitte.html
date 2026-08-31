@@ -10,6 +10,48 @@
    und «Termine» speist sich zusätzlich aus `faelle.Termin`. {% endcomment %}
 {% load chf %}
 
+{% comment %}
+DIE LÄUFE ALS EIGENE KARTE (v7)
+
+Der Prototyp zeigt «Läufe · 2 fällig, 1 blockiert» mit einem Knopf zur
+Übersicht. Bei uns standen sie NUR im Arbeitsvorrat, zwischen Fällen und
+Pendenzen.
+
+DAS IST EIN UNTERSCHIED IN DER SACHE: Ein blockierter Lauf hält eine ganze
+Verwaltung auf — die Sollstellung eines Monats, den Zahllauf. Ein einzelner
+Fall betrifft eine Wohnung. Im gemeinsamen Vorrat sortiert sich der Lauf
+zwischen Kleinigkeiten ein und geht unter.
+
+Die Zeilen bleiben ZUSÄTZLICH im Vorrat — wer nach Frist arbeitet, findet sie
+dort. Die Karte ist der zweite Weg, nicht der einzige.
+
+`av_laeufe`, `av_laeufe_faellig` und `av_laeufe_blockiert` wurden mit dieser
+Begründung berechnet und NIRGENDS gerendert — dritter Fall dieser Art in
+dieser Reihe nach `f_query` (E2.60) und den vier Klassen (E2.66). Hier ist die
+Karte, die sie sichtbar macht.
+{% endcomment %}
+{% if av_laeufe %}
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon{% if av_laeufe_blockiert %} crit{% endif %}">{% zeichen 'lauf' %}</span>
+        <span class="fw-t">Läufe</span>
+        <span class="fw-neben">{{ av_laeufe_faellig }} fällig{% if av_laeufe_blockiert %}, {{ av_laeufe_blockiert }} blockiert{% endif %}</span>
+        <span class="fw-rechts"><a href="/neu/laeufe/" class="fw-link">Alle Läufe</a></span>
+    </div>
+    {% for l in av_laeufe %}
+    <div class="fw-zeile">
+        <span class="fw-marker {{ l.dringlichkeit }}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ l.titel }}</div>
+            <div class="fw-s">{{ l.zeile }}</div>
+        </div>
+        <div class="fw-zeit">{{ l.datum|date:"d.m.Y" }}</div>
+        <a href="{{ l.ziel }}" class="fw-btn">{{ l.knopf }}</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 {% if av_termine %}
 <div class="fw-card">
     <div class="fw-kopf">
@@ -76,6 +118,27 @@
         <span class="fw-t">Vertretung</span>
         <span class="fw-rechts"><a href="/neu/abwesenheiten/" class="fw-link">Abwesenheiten</a></span>
     </div>
+    {% comment %}
+    DER SATZ AUS KONZEPT v7 — ÜBER der Liste, nicht statt ihr.
+
+    v7 zeigt: «Lea Frey ist bis 29.08. abwesend. Du vertrittst 7 Fälle.»
+    Das sagt, was auf MICH zukommt — bei einer Abwesenheit liest es sich
+    besser als eine Zeile mit Kürzel und Kapsel.
+
+    Die Liste darunter bleibt, weil sie eine ANDERE Frage beantwortet: wer im
+    Team fehlt und wer OHNE VERTRETUNG ist. Diese Warnfarbe (G8) darf nicht in
+    einen Fliesstext verschwinden — eine ungedeckte Abwesenheit soll auffallen.
+
+    Bei vier gleichzeitigen Abwesenheiten in der Ferienzeit bleibt die Liste
+    vier Zeilen, während der Satz zum Absatz würde. Deshalb steht er nur, wenn
+    ich selbst jemanden vertrete.
+    {% endcomment %}
+    {% if vertretung_fuer %}
+    <p class="fw-vertretungssatz">
+        {% for name, bis in vertretung_fuer %}<b>{{ name }}</b> ist bis {{ bis|date:"d.m." }} abwesend.{% if not forloop.last %} {% endif %}{% endfor %}
+        {% if vertretung_faelle %}Du vertrittst <b>{{ vertretung_faelle }}</b> offene{{ vertretung_faelle|pluralize:"n" }} Fall{{ vertretung_faelle|pluralize:"ä" }}{{ vertretung_faelle|pluralize:"lle" }}.{% endif %}
+    </p>
+    {% endif %}
     {% for v in av_vertretung %}
     <div class="fw-zeile">
         <span class="fw-marker {% if v.ungedeckt %}warn{% else %}brand{% endif %}"></span>

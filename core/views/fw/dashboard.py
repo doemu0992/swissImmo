@@ -175,6 +175,39 @@ def _nach_fallart(zeilen, fallart):
     return gefiltert
 
 
+def _uebernommene_faelle(benutzer_ids):
+    """Wie viele offene Fälle bei den Abwesenden liegen.
+
+    Der Satz aus Konzept v7 lautet «Du vertrittst 7 Fälle und 3 Mandate».
+    Ohne die Zahl bliebe «Du vertrittst Lea Frey» — richtig, aber ohne
+    Gewicht: Ob das eine Nachfrage oder eine Woche Arbeit ist, steht nicht da.
+
+    EINE Abfrage für alle Abwesenden zusammen, nicht eine je Person.
+    """
+    if not benutzer_ids:
+        return 0
+    try:
+        from faelle.models import Fall
+        return (Fall.objects.filter(zustaendig_id__in=benutzer_ids)
+                .exclude(status__in=(Fall.ABGESCHLOSSEN, Fall.ABGEBROCHEN))
+                .count())
+    except Exception:
+        logger.exception('Übernommene Fälle nicht zählbar')
+        return 0
+
+
+def _vertretene_ids(request, heute):
+    """Die Benutzer, die ich gerade vertrete — für die Fallzählung."""
+    try:
+        from faelle.termin_models import Abwesenheit
+        return list(Abwesenheit.objects.laufend(heute)
+                    .filter(vertreten_durch=request.user)
+                    .values_list('benutzer_id', flat=True))
+    except Exception:
+        logger.exception('Vertretene Benutzer nicht ladbar')
+        return []
+
+
 def _vertretung_fuer(request, heute):
     """Wen vertritt der angemeldete Benutzer gerade?
 
@@ -251,6 +284,8 @@ def fw_dashboard(request):
     # Die zwei Kopf-Filter aus v7 (E2.60). Sie greifen in die Abfrage der
     # Fallschritte, nicht auf die fertige Liste — sonst zaehlte die Kopfzeile
     # weiter alles.
+    vertretung_fuer = _vertretung_fuer(request, heute)
+    vertretung_ids = _vertretene_ids(request, heute)
     kf = _kopf_filter(request)
     av = arbeitsvorrat(request, aktive_lg,
                        wer=kf['f_wer'], mandat=kf['f_mandat'])
@@ -343,7 +378,23 @@ def fw_dashboard(request):
         **kf,
         **band,
         'kw': heute.isocalendar()[1],
-        'vertretung_fuer': _vertretung_fuer(request, heute),
+        # DAS BESTE AUS BEIDEM (E2.69).
+        #
+        # Konzept v7 zeigt einen SATZ: «Lea Frey ist bis 29.08. abwesend. Du
+        # vertrittst 7 Fälle.» Unsere Fassung war eine LISTE mit Warnfarbe für
+        # ungedeckte Abwesenheiten (G8).
+        #
+        # Beides hat seinen Grund. Der Satz sagt, was auf MICH zukommt — bei
+        # einer Abwesenheit liest er sich besser als eine Zeile mit Kürzel und
+        # Kapsel. Die Liste zeigt, wer im TEAM fehlt und wer OHNE VERTRETUNG
+        # ist; das ist eine andere Frage, und die Warnfarbe darf nicht in
+        # einen Fliesstext verschwinden.
+        #
+        # Deshalb jetzt beides: der Satz oben, die Liste darunter. Bei vier
+        # gleichzeitigen Abwesenheiten in der Ferienzeit bleibt die Liste
+        # vier Zeilen, während ein Satz zum Absatz würde.
+        'vertretung_fuer': vertretung_fuer,
+        'vertretung_faelle': _uebernommene_faelle(vertretung_ids),
         **lage(heute, aktive_lg),
     })
 

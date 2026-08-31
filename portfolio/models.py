@@ -10,6 +10,21 @@ from core.organisation_kette import OrganisationAusKette, organisation_aus_konte
 
 class Liegenschaft(models.Model):
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='liegenschaften', null=True, blank=True)
+    #: WER DIESE LIEGENSCHAFT BETREUT (E2.70).
+    #
+    # In einer Verwaltung wird liegenschaftsweise aufgeteilt, nicht Fall für
+    # Fall: «Die Bahnhofstrasse macht Lea, die Weststrasse Dominik.» Neue
+    # Fälle an dieser Liegenschaft bekommen diese Person automatisch.
+    #
+    # `null` heisst «nicht zugeteilt» und ist eine Aussage, keine Lücke: Eine
+    # Liegenschaft ohne Betreuung soll auffallen, nicht still dem Ersten
+    # zufallen, der sie öffnet.
+    #
+    # `SET_NULL`, nicht `CASCADE`: Wer das Büro verlässt, nimmt die
+    # Liegenschaften nicht mit.
+    betreut_von = models.ForeignKey(
+        'benutzer.Benutzer', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='betreute_liegenschaften', verbose_name='Betreut von')
     # Der Anker der ganzen Kette. Bis Etappe 5 war er `null=True, SET_NULL` —
     # damit war er als Anker wertlos: Eine Kette ist nur so pflichtig wie ihr
     # schwaechstes Glied, also haette kein abgeleitetes Modell `null=False`

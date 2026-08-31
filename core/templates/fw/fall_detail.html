@@ -23,7 +23,31 @@
                 <div class="fw-pz"><span>Fallart</span><b>{{ fall.fallart.bezeichnung }}</b></div>
                 {% if fall.akte %}<div class="fw-pz"><span>Akte</span><b>{{ fall.akte }}</b></div>{% endif %}
                 <div class="fw-pz"><span>Eröffnet</span><b>{{ fall.eroeffnet_am|date:"d.m.Y" }}</b></div>
-                <div class="fw-pz"><span>Zuständig</span><b>{% if fall.zustaendig %}{{ fall.zustaendig.get_full_name|default:fall.zustaendig.username }}{% else %}niemand zugewiesen{% endif %}</b></div>
+                {% comment %}
+                DIE ZUSTÄNDIGKEIT LÄSST SICH ÄNDERN (E2.70)
+
+                Sie stand hier nur als Text. Gesetzt wurde sie an genau einer
+                Stelle — beim Übernehmen aus dem Posteingang, auf den gerade
+                Anwesenden. Der Filter auf «Heute» und das Kürzel in der Zeile
+                zeigten damit einen Wert, den niemand pflegen konnte.
+
+                Seit E2.70 erbt ein neuer Fall die Betreuung der Liegenschaft;
+                das deckt den Normalfall. Dieser Weg deckt den Rest: Ferien,
+                Wechsel, Fehlzuordnung. Jeder Wechsel steht im Logbuch.
+                {% endcomment %}
+                <div class="fw-pz"><span>Zuständig</span>
+                    {% if kann_schreiben %}
+                    <form method="post" action="/neu/faelle/{{ fall.pk }}/zustaendig/" class="inline">
+                        {% csrf_token %}
+                        <select name="zustaendig" onchange="this.form.submit()" class="fw-feld-schlank">
+                            <option value="">— niemand —</option>
+                            {% for b in benutzer_auswahl %}
+                            <option value="{{ b.pk }}" {% if fall.zustaendig_id == b.pk %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    {% else %}<b>{% if fall.zustaendig %}{{ fall.zustaendig.get_full_name|default:fall.zustaendig.username }}{% else %}niemand{% endif %}</b>{% endif %}
+                </div>
             </div>
             <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap">
                 <span class="fw-chip {% if fall.status == 'offen' %}fw-brand{% elif fall.status == 'wartet' %}fw-warn{% elif fall.status == 'abgeschlossen' %}fw-good{% else %}fw-mut{% endif %} fw-dot">{{ fall.get_status_display }}</span>

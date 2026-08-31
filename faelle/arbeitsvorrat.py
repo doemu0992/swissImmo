@@ -166,12 +166,32 @@ def _laeufe(heute, bis):
         blockaden = blockaden_vorab      # oben schon geholt, nicht zweimal fragen
         zeilen.append({
             'art': 'lauf', 'ikon': 'lauf',
+            # DIE KAPSEL «LAUF» (v7, E2.69).
+            #
+            # Der Prototyp gibt der Lauf-Zeile dieselbe Marke wie den Fällen
+            # («Mieterwechsel», «Schaden», «Lauf») und führt «Lauf» auch im
+            # Fallart-Band. Ohne sie war die Lauf-Zeile die einzige ohne
+            # Kennzeichnung — man sah erst am Text, worum es ging.
+            #
+            # `fallart` heisst der Schlüssel, weil das Band danach filtert;
+            # ein Lauf ist keine Fallart, aber für das Band ist er eine
+            # Auswahl wie die anderen.
+            'fallart': 'lauf', 'fallart_text': 'Lauf',
+            'marke': 'Lauf',
             'titel': f'{lauf.laufart.bezeichnung} {lauf.periode}'
                      + (' nicht ausgelöst' if tage < 0 else ''),
             'zeile': (', '.join(b.grund for b in blockaden) if blockaden
                       else f'Stichtag {lauf.faellig_am.strftime("%d.%m.")}'),
             'datum': lauf.faellig_am, 'tage': tage,
             'dringlichkeit': 'crit' if blockaden else _dringlichkeit(tage),
+            # NUR ZUM ZAEHLEN, NICHT ZUM ANZEIGEN (E2.69).
+            #
+            # Die Kopfzeile der Laeufe-Karte sagt «2 fällig, 1 blockiert».
+            # Dafuer braucht es den Zustand als Wert — die ZEILE zeigt
+            # weiterhin den GRUND («Verbrauchsablesung Techem fehlt»), wie im
+            # Kopf dieser Funktion begruendet: Der Grund fuehrt zu einer
+            # Handlung, das Wort «blockiert» nicht.
+            'blockiert': bool(blockaden),
             'ziel': '/neu/laeufe/', 'knopf': 'Zum Lauf', 'objekt': lauf,
         })
     return zeilen
@@ -685,6 +705,25 @@ def arbeitsvorrat(request, aktive_lg=None, wer=None, mandat=None):
         'av_reisst_weitere': max(len(reisst) - ZEILEN, 0),
         'av_ueberfaellig': sum(1 for e in reisst if e['tage'] < 0),
         'av_vorschau_tage': VORSCHAU_TAGE,
+        # DIE LAEUFE ALS EIGENE KARTE (v7, E2.69).
+        #
+        # Der Prototyp zeigt «Läufe · 2 fällig, 1 blockiert» mit einem Knopf
+        # zur Uebersicht. Bei uns standen sie NUR im Arbeitsvorrat, zwischen
+        # Faellen und Pendenzen.
+        #
+        # DAS IST EIN UNTERSCHIED IN DER SACHE: Ein blockierter Lauf haelt
+        # eine ganze Verwaltung auf — die Sollstellung eines Monats, den
+        # Zahllauf. Ein einzelner Fall betrifft eine Wohnung. Im gemeinsamen
+        # Vorrat sortiert sich der Lauf zwischen Kleinigkeiten ein und geht
+        # unter.
+        #
+        # Die Zeilen bleiben ZUSAETZLICH im Vorrat — wer nach Frist arbeitet,
+        # findet sie dort. Die Karte ist der zweite Weg, nicht der einzige.
+        'av_laeufe': [e for e in reisst if e.get('art') == 'lauf'][:ZEILEN],
+        'av_laeufe_faellig': sum(1 for e in reisst
+                                 if e.get('art') == 'lauf' and not e.get('blockiert')),
+        'av_laeufe_blockiert': sum(1 for e in reisst
+                                   if e.get('art') == 'lauf' and e.get('blockiert')),
         'av_eingaenge': eingaenge,
         'av_eingaenge_gesamt': eingaenge_gesamt,
         'av_termine': termin_zeilen[:ZEILEN],

@@ -417,14 +417,15 @@ class SeitenTests(TestCase):
         self.assertEqual(antwort.status_code, 200)
         # «ARBEITSVORRAT» SEIT E2.68 — so heisst die Karte im Prototyp.
         #
-        # Hier stand «Was reisst». Der Name war treffend für den ersten Reiter,
-        # aber «Diese Woche», «Wartet auf Dritte» und «Alle» zeigen auch, was
-        # NICHT reisst — er beschrieb einen Reiter, nicht die Karte.
+        # Hier stand «Was reisst». Der Name war treffend für den ersten
+        # Reiter, aber «Diese Woche», «Wartet auf Dritte» und «Alle» zeigen
+        # auch, was NICHT reisst — er beschrieb einen Reiter, nicht die Karte.
         self.assertContains(antwort, 'Arbeitsvorrat')
         self.assertContains(antwort, 'Antwort verfassen')
         # «3 Tage über» — der Fall ist drei Tage überfällig, also Plural.
         # `Tag` allein zu prüfen wäre schwächer als vorher: Es passte auch auf
-        # «1 Tage über», den Fehler, den E2.67 behoben hat.
+        # «1 Tage über», genau den Fehler, den E2.67 behoben hat. E2.70 hat
+        # diese Abschwächung nochmals mitgebracht; sie bleibt draussen.
         self.assertContains(antwort, '3 Tage über')
 
     def test_ohne_anlass_steht_der_leerzustand_da(self):
@@ -784,3 +785,292 @@ class ProtoypVollstaendigkeitTests(TestCase):
             self.NICHT_GEBAUT, set(),
             'Es steht wieder eine Lücke in NICHT_GEBAUT — dann gehört der '
             'Grund in die Vorlage und in KONZEPT-UI.md 3.1.')
+
+
+class ZustaendigkeitTests(TestCase):
+    """Wer einen Fall bearbeitet — und wie man das ändert.
+
+    DIE LÜCKE, DIE E2.70 SCHLIESST
+
+    `Fall.zustaendig` wurde an GENAU EINER Stelle gesetzt: beim Übernehmen aus
+    dem Posteingang, auf den gerade Anwesenden. Ändern konnte man es nirgends
+    — es gab kein Formularfeld in der ganzen Anwendung.
+
+    Damit zeigten der Filter «Zuständigkeit» auf «Heute» und das Kürzel in der
+    Vorratszeile einen Wert, den NIEMAND PFLEGEN KONNTE.
+
+    Zwei Wege schliessen das: Die Liegenschaft trägt eine Betreuung, die neue
+    Fälle erben — das ist die übliche Aufteilung in einer Verwaltung. Und der
+    einzelne Fall lässt sich umhängen, für Ferien, Wechsel, Fehlzuordnung.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def test_die_liegenschaft_traegt_eine_betreuung(self):
+        from benutzer.models import Benutzer
+        from portfolio.models import Liegenschaft
+
+        with mandant(self.a.organisation):
+            lea = Benutzer.objects.create_user(
+                username='lea-b', password='x', first_name='Lea')
+            lg = Liegenschaft.objects.first()
+            lg.betreut_von = lea
+            lg.save(update_fields=['betreut_von'])
+            lg.refresh_from_db()
+        self.assertEqual(lg.betreut_von_id, lea.pk)
+
+    def test_ohne_betreuung_ist_das_feld_leer(self):
+        """`None` heisst «nicht zugeteilt» und ist eine Aussage.
+
+        Eine Liegenschaft ohne Betreuung soll auffallen, nicht still dem
+        Ersten zufallen, der sie öffnet — dieselbe Unterscheidung wie bei
+        `Geraet.neuwert`.
+        """
+        from portfolio.models import Liegenschaft
+
+        with mandant(self.a.organisation):
+            self.assertIsNone(Liegenschaft.objects.first().betreut_von_id)
+
+    def test_der_wechsel_steht_im_logbuch(self):
+        """Der Ausgleich dafür, dass jeder im Team umhängen darf.
+
+        Wer später fragt, warum ein Fall bei jemand anderem liegt, findet die
+        Antwort — mit altem und neuem Namen.
+        """
+        from core.models import AktivitaetsLog
+        from benutzer.models import Benutzer
+
+        with mandant(self.a.organisation):
+            fall, _ = _fall_mit_frist(self.a.organisation, -1)
+            # EINE MITGLIEDSCHAFT GEHOERT DAZU.
+            #
+            # Ein Benutzer ohne `Mitgliedschaft` in dieser Organisation kann
+            # keinen Fall uebernehmen — genau das prueft der Test darunter.
+            # Ein erster Entwurf legte nur den Benutzer an; der Wechsel
+            # scheiterte dann zu Recht.
+            from crm.models import Mitgliedschaft
+            lea = Benutzer.objects.create_user(
+                username='lea-l', password='x', first_name='Lea', last_name='Frey')
+            Mitgliedschaft.objects.create(
+                benutzer=lea, organisation=self.a.organisation)
+
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.post(f'/neu/faelle/{fall.pk}/zustaendig/', {'zustaendig': lea.pk})
+
+        fall.refresh_from_db()
+        self.assertEqual(fall.zustaendig_id, lea.pk)
+        # Der `TenantManager` verlangt den Kontext auch beim LESEN.
+        with mandant(self.a.organisation):
+            eintrag = AktivitaetsLog.objects.filter(
+                aktion__icontains='Zuständigkeit').order_by('-id').first()
+        self.assertIsNotNone(eintrag, 'Kein Protokolleintrag entstanden.')
+        self.assertIn('Lea', eintrag.details)
+
+    def test_eine_fremde_person_wird_abgewiesen(self):
+        """Die Grenze läuft über `Mitgliedschaft`, nicht über den Manager.
+
+        DIESER TEST HAT EINEN ECHTEN FEHLER GEFUNDEN.
+
+        Die erste Fassung des Wechsels verliess sich darauf, dass
+        `Benutzer.objects` durch den `TenantManager` läuft — die Begründung
+        war aus Etappe 6.2 übernommen, wo sie stimmt.
+
+        HIER STIMMT SIE NICHT: `Benutzer` erbt von `AbstractUser` und trägt
+        keinen Mandantenfilter. Die Zugehörigkeit läuft über `Mitgliedschaft`,
+        weil ein Mensch in mehreren Verwaltungen arbeiten kann.
+
+        Der Test wies daraufhin einen Fall einer FREMDEN Verwaltung zu. Eine
+        Begründung ist nicht übertragbar, nur weil sie überzeugend klingt.
+        """
+        from benutzer.models import Benutzer
+
+        b = MandantenFixture('B', '3000', 'Bern')
+        with mandant(self.a.organisation):
+            fall, _ = _fall_mit_frist(self.a.organisation, -1)
+        vorher = fall.zustaendig_id
+
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.post(f'/neu/faelle/{fall.pk}/zustaendig/',
+               {'zustaendig': b.benutzer.pk})
+
+        fall.refresh_from_db()
+        self.assertEqual(
+            fall.zustaendig_id, vorher,
+            'Ein Fall wurde einer fremden Verwaltung zugewiesen.')
+
+    def test_eine_fremde_person_kann_keine_liegenschaft_betreuen(self):
+        """DIESELBE LÜCKE, EINE DATEI WEITER — gemessen, nicht vermutet.
+
+        E2.70 hat sie am Fall geschlossen und am Liegenschaftsformular offen
+        gelassen: Dort stand `obj.betreut_von_id = int(wert)`, ohne Prüfung.
+
+        Gemessen ging ein POST mit der ID einer Person aus einer FREMDEN
+        Verwaltung durch — Status 302, Feld gesetzt. Und das wiegt schwerer als
+        ein einzelnes falsches Feld: `zulauf._betreuer_fuer` vererbt die
+        Betreuung auf JEDEN neuen Fall an dieser Liegenschaft. Der Weg, den der
+        Nachbartest am Fall versperrt, stand hier offen.
+        """
+        b = MandantenFixture('B', '3000', 'Bern')
+        lg = self.a.liegenschaft
+
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.post(f'/neu/liegenschaften/{lg.pk}/bearbeiten/', {
+            'strasse': lg.strasse, 'plz': lg.plz, 'ort': lg.ort,
+            'betreut_von': str(b.benutzer.pk),
+        })
+
+        lg.refresh_from_db()
+        self.assertIsNone(
+            lg.betreut_von_id,
+            'Eine Person aus einer fremden Verwaltung betreut jetzt eine '
+            'Liegenschaft von A — und erbt über den Zulauf jeden neuen Fall.')
+
+    def test_die_eigene_person_laesst_sich_eintragen(self):
+        """Die Gegenprobe. Ohne sie wäre «abgewiesen» nicht von «das Feld
+        funktioniert gar nicht» zu unterscheiden."""
+        from crm.models import Mitgliedschaft
+        from django.contrib.auth import get_user_model
+
+        lg = self.a.liegenschaft
+        with mandant(self.a.organisation):
+            lea = get_user_model().objects.create_user(
+                username='lea-lg', password='x', first_name='Lea')
+            Mitgliedschaft.objects.create(
+                benutzer=lea, organisation=self.a.organisation)
+
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.post(f'/neu/liegenschaften/{lg.pk}/bearbeiten/', {
+            'strasse': lg.strasse, 'plz': lg.plz, 'ort': lg.ort,
+            'betreut_von': str(lea.pk),
+        })
+
+        lg.refresh_from_db()
+        self.assertEqual(lg.betreut_von_id, lea.pk)
+
+    def test_der_protokolleintrag_haengt_am_fall(self):
+        """`ziel=fall` — sonst steht er nur in der Gesamtliste.
+
+        Mit `ziel` wird der Eintrag anklickbar und erscheint im Verlauf DES
+        FALLS. Wer fragt, warum ein Fall bei jemand anderem liegt, sucht die
+        Antwort dort. Derselbe Fund wie in E2.53 beim Index-Parameter.
+        """
+        from django.contrib.auth import get_user_model
+
+        from core.models import AktivitaetsLog
+        from crm.models import Mitgliedschaft
+
+        with mandant(self.a.organisation):
+            fall, _ = _fall_mit_frist(self.a.organisation, -1)
+            lea = get_user_model().objects.create_user(
+                username='lea-ziel', password='x', first_name='Lea')
+            Mitgliedschaft.objects.create(
+                benutzer=lea, organisation=self.a.organisation)
+
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.post(f'/neu/faelle/{fall.pk}/zustaendig/', {'zustaendig': lea.pk})
+
+        with mandant(self.a.organisation):
+            eintrag = AktivitaetsLog.objects.filter(
+                aktion__icontains='Zuständigkeit').order_by('-id').first()
+        self.assertIsNotNone(eintrag)
+        # `ziel_typ` ist eine Zeichenkette, kein `ContentType` — nachgesehen
+        # in `core/models.py:336`, nachdem der erste Entwurf einen
+        # `ContentType` erwartete und «'fall' != <ContentType: Fälle | Fall>»
+        # meldete.
+        self.assertEqual(
+            (eintrag.ziel_typ, eintrag.ziel_id), ('fall', fall.pk),
+            'Der Eintrag hängt an keinem Fall — dann findet ihn niemand im '
+            'Verlauf des Falls, sondern nur in der Gesamtliste.')
+
+    def test_die_laeufe_karte_steht_auf_der_seite(self):
+        """`av_laeufe` wurde berechnet und nirgends gerendert.
+
+        Die Begründung dafür stand ausführlich im Code — «ein blockierter Lauf
+        hält eine ganze Verwaltung auf» —, die Karte fehlte. Dritter Fall
+        dieser Art nach `f_query` (E2.60) und den vier Klassen (E2.66).
+        """
+        from faelle.lauf_models import Lauf, Laufart
+
+        org = self.a.organisation
+        with mandant(org):
+            art = Laufart.objects.create(
+                organisation=org, schluessel='soll-k', bezeichnung='Sollstellung',
+                rhythmus='monatlich')
+            Lauf.objects.create(organisation=org, laufart=art, periode='2026-08',
+                                faellig_am=timezone.localdate())
+
+        c = Client()
+        c.force_login(self.a.benutzer)
+        html = c.get('/neu/').content.decode()
+
+        self.assertIn('>Läufe<', html, 'Die Läufe-Karte fehlt auf der Seite.')
+        self.assertIn('Alle Läufe', html)
+        self.assertIn('1 fällig', html)
+
+    def test_ein_neuer_fall_erbt_die_betreuung_der_liegenschaft(self):
+        """Die zentrale Zusage dieser Etappe — und sie war ungeprüft.
+
+        «Neue Fälle erben die Betreuung» ist der Grund, warum es das Feld
+        überhaupt gibt: In einer Verwaltung wird liegenschaftsweise
+        aufgeteilt, nicht Fall für Fall. Bisher bekam der Fall den, der gerade
+        den Posteingang leerte.
+
+        Die Gegenprobe dazu (Vererbung entfernt) blieb GRÜN — kein Test hat
+        die Zusage gemessen.
+        """
+        from django.contrib.auth import get_user_model
+
+        from crm.models import Mitgliedschaft
+        from faelle.models import Fallart
+        from faelle.zulauf import uebernehmen
+        from faelle.zulauf_models import Eingang
+
+        org = self.a.organisation
+        with mandant(org):
+            lea = get_user_model().objects.create_user(
+                username='lea-erbt', password='x', first_name='Lea')
+            Mitgliedschaft.objects.create(benutzer=lea, organisation=org)
+            self.a.liegenschaft.betreut_von = lea
+            self.a.liegenschaft.save(update_fields=['betreut_von'])
+
+            art = Fallart.objects.create(
+                organisation=org, schluessel='erbt', bezeichnung='Erbt')
+            eingang = Eingang.objects.create(
+                quelle=Eingang.MAIL, betreff='Heizung kalt')
+            # `benutzer` ist, WER GERADE ÜBERNIMMT — nicht die Betreuung.
+            fall = uebernehmen(eingang, ziel=self.a.vertrag, fallart=art,
+                               benutzer=self.a.benutzer)
+
+        self.assertEqual(
+            fall.zustaendig_id, lea.pk,
+            'Der Fall ging an den Übernehmenden statt an die Betreuung der '
+            'Liegenschaft — dann nützt das Feld nichts.')
+
+    def test_ohne_betreuung_bleibt_es_beim_uebernehmenden(self):
+        """Die Gegenprobe: `None` darf nicht heissen «niemand zuständig».
+
+        Fehlt die Betreuung, ist der Übernehmende besser als niemand — und der
+        Fall lässt sich am Fall umhängen.
+        """
+        from faelle.models import Fallart
+        from faelle.zulauf import uebernehmen
+        from faelle.zulauf_models import Eingang
+
+        org = self.a.organisation
+        with mandant(org):
+            self.assertIsNone(self.a.liegenschaft.betreut_von_id)
+            art = Fallart.objects.create(
+                organisation=org, schluessel='ohne-b', bezeichnung='Ohne')
+            eingang = Eingang.objects.create(
+                quelle=Eingang.MAIL, betreff='Ohne Betreuung')
+            fall = uebernehmen(eingang, ziel=self.a.vertrag, fallart=art,
+                               benutzer=self.a.benutzer)
+
+        self.assertEqual(fall.zustaendig_id, self.a.benutzer.pk)

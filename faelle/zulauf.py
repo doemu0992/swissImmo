@@ -17,6 +17,7 @@ Was hier bewusst NICHT steht: Ähnlichkeitsvergleiche auf Betreff oder Namen.
 Sie treffen oft und irren selten sichtbar — genau die Kombination, die Vertrauen
 aufbaut und dann teuer wird.
 """
+import logging
 from dataclasses import dataclass
 from typing import Any
 
@@ -43,6 +44,28 @@ class Vorschlag:
     def __bool__(self):
         return self.sicherheit == SICHER
 
+
+
+def _betreuer_fuer(akte):
+    """Wer die Liegenschaft hinter dieser Akte betreut — oder `None`.
+
+    Die Akte kann alles Moegliche sein: Liegenschaft, Einheit, Vertrag,
+    Mieter, Eigentuemer. Nur die ersten drei fuehren zu einer Liegenschaft;
+    bei den anderen gibt es keine, und dann ist `None` die richtige Antwort.
+
+    Ein Fehler hier darf die Zuordnung nicht kosten — sie ist die
+    Hauptsache, die Betreuung eine Verbesserung.
+    """
+    try:
+        lg = getattr(akte, 'liegenschaft', None) or (
+            akte if akte.__class__.__name__ == 'Liegenschaft' else None)
+        if lg is None:
+            einheit = getattr(akte, 'einheit', None)
+            lg = getattr(einheit, 'liegenschaft', None) if einheit else None
+        return getattr(lg, 'betreut_von', None) if lg else None
+    except Exception:
+        logging.getLogger(__name__).exception('Betreuer nicht ermittelbar')
+        return None
 
 def vorschlagen(eingang):
     """Ermittelt den Zuordnungsvorschlag für einen Eingang."""
@@ -135,7 +158,17 @@ def uebernehmen(eingang, ziel=None, fallart=None, benutzer=None,
 
     fall = None
     if fallart is not None:
-        fall = Fall(fallart=fallart, akte=ziel, zustaendig=benutzer,
+        # DIE BETREUUNG DER LIEGENSCHAFT GEHT VOR (E2.70).
+        #
+        # Bisher bekam der Fall den Benutzer, der GERADE UEBERNIMMT. Das ist
+        # bei einer Verwaltung mit mehreren Personen falsch: Wer den
+        # Posteingang leert, ist nicht, wer die Liegenschaft betreut.
+        #
+        # `betreut_von` an der Liegenschaft ist die uebliche Aufteilung («Die
+        # Bahnhofstrasse macht Lea»). Fehlt sie, bleibt es beim Uebernehmenden
+        # — besser als niemand, und der Fall laesst sich am Fall aendern.
+        fall = Fall(fallart=fallart, akte=ziel,
+                    zustaendig=_betreuer_fuer(ziel) or benutzer,
                     betreff=eingang.betreff[:200])
         fall.save()
         fall.schritte_anlegen()

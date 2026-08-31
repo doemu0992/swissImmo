@@ -552,3 +552,10 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
               color:var(--ds-faint);letter-spacing:.02em}
         .fw-wofuer{font-size:10px;font-weight:700;letter-spacing:.06em;
               text-transform:uppercase;color:var(--ds-faint)}
+        .fw-feld-schlank{border:0;background:none;padding:0;font-weight:700;
+              color:var(--ds-ink);font-size:13px;max-width:150px;
+              text-overflow:ellipsis;cursor:pointer}
+        .fw-feld-schlank:hover{color:var(--ds-brand)}
+        .fw-vertretungssatz{padding:11px 15px;font-size:13px;line-height:1.5;
+              color:var(--ds-muted);border-bottom:1px solid var(--ds-line)}
+        .fw-vertretungssatz b{color:var(--ds-ink);font-weight:700}

@@ -28,7 +28,7 @@ from django.views.decorators.http import require_POST
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
 
-from ._basis import _global_filter, _num
+from ._basis import _global_filter, _num, team_der_organisation
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +139,75 @@ def fw_zeit_erfassen(request, pk):
     return redirect(f'/neu/faelle/{pk}/')
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_fall_zustaendig(request, pk):
+    """Die Zuständigkeit eines Falls wechseln.
+
+    WARUM DAS NOETIG IST
+
+    `Fall.zustaendig` wurde bis E2.70 an GENAU EINER Stelle gesetzt: beim
+    Uebernehmen aus dem Posteingang, auf den gerade Anwesenden. Aendern konnte
+    man es NIRGENDS — der Filter «Zustaendigkeit» auf «Heute» und das Kuerzel
+    in der Zeile zeigten einen Wert, den niemand pflegen konnte.
+
+    Seit E2.70 erbt ein neuer Fall die Betreuung der Liegenschaft. Das deckt
+    den Normalfall; dieser Weg deckt den Rest: Ferien, Wechsel,
+    Fehlzuordnung.
+
+    JEDER WECHSEL STEHT IM LOGBUCH. Wer spaeter fragt, warum ein Fall bei
+    jemand anderem liegt, findet die Antwort — mit altem und neuem Namen.
+    """
+    from django.contrib import messages
+
+    from core.auth import log_aktion
+    # `Fall` wird in dieser Datei sonst nirgends auf Modulebene gebraucht —
+    # der Isolationswaechter hat den fehlenden Import beim ersten POST auf
+    # eine fremde ID gemeldet, bevor er jemandem im Betrieb begegnet ist.
+    from faelle.models import Fall
+
+    fall = get_object_or_404(Fall.objects, pk=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/faelle/{pk}/')
+
+    roh = (request.POST.get('zustaendig') or '').strip()
+    neu_person = None
+    if roh.isdigit():
+        # UEBER `Mitgliedschaft`, NICHT UEBER `Benutzer.objects`.
+        #
+        # Ein erster Entwurf schrieb hier «laeuft durch den `TenantManager`».
+        # DAS STIMMT NICHT: `Benutzer` erbt von `AbstractUser` und hat keinen
+        # Mandantenfilter — die Zugehoerigkeit laeuft ueber `Mitgliedschaft`,
+        # weil ein Mensch in mehreren Verwaltungen arbeiten kann.
+        #
+        # Der Test dazu hat einen Fall einer FREMDEN Verwaltung zugewiesen.
+        # Die Begruendung war aus Etappe 6.2 uebernommen, wo sie richtig ist —
+        # eine Begruendung ist nicht uebertragbar, nur weil sie ueberzeugt.
+        neu_person = team_der_organisation(
+            getattr(request, 'organisation', None)).filter(pk=roh).first()
+        if neu_person is None:
+            messages.error(request, 'Diese Person gehört nicht zu Ihrer Verwaltung.')
+            return redirect(f'/neu/faelle/{pk}/')
+
+    def _name(b):
+        return (b.get_full_name() or b.get_username()) if b else 'niemand'
+
+    alt = fall.zustaendig
+    if alt == neu_person:
+        return redirect(f'/neu/faelle/{pk}/')
+
+    fall.zustaendig = neu_person
+    fall.save(update_fields=['zustaendig'])
+    # `ziel=fall` — SONST STEHT DER EINTRAG NUR IM LOGBUCH.
+    #
+    # Mit `ziel` wird er anklickbar und erscheint im Verlauf DES FALLS. Wer
+    # fragt, warum ein Fall bei jemand anderem liegt, sucht die Antwort dort
+    # und nicht in einer Gesamtliste. Derselbe Fund wie in E2.53.
+    log_aktion(request, 'Zuständigkeit geändert', objekt=f'Fall {fall.nummer}',
+               details=f'{_name(alt)} → {_name(neu_person)}', ziel=fall)
+    messages.success(request, f'Fall liegt jetzt bei {_name(neu_person)}.')
+    return redirect(f'/neu/faelle/{pk}/')
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_fall_detail(request, pk):
     """Die Fallakte: Etappen, Schritte, Verfallsregel.
@@ -173,6 +242,11 @@ def fw_fall_detail(request, pk):
     return render(request, 'fw/fall_detail.html', {
         **_global_filter(request), 'nav': 'arbeit',
         'fall': fall,
+        # Fuer den Zustaendigkeitswechsel (E2.70). `SCHREIB_ROLLEN` — die
+        # Leserolle sieht den Namen, aendert ihn aber nicht.
+        'kann_schreiben': getattr(request, 'rolle', None) in SCHREIB_ROLLEN,
+        'benutzer_auswahl': list(team_der_organisation(
+            getattr(request, 'organisation', None))[:100]),
         'etappen': etappen,
         'naechster': fall.naechster_schritt,
         'schritte_erledigt': erledigt,

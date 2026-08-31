@@ -355,3 +355,36 @@ STATUS_PILL = {
     'storniert':   ('Storniert',   'fw-flaeche2 fw-mutet'),
     'abgeschrieben': ('Abgeschrieben', 'fw-flaeche2 fw-mutet'),
 }
+
+
+def team_der_organisation(organisation):
+    """Die Personen, die für DIESE Verwaltung arbeiten — als Queryset.
+
+    DIE EINE STELLE, AN DER DIESE GRENZE GEZOGEN WIRD.
+
+    `Benutzer` erbt von `AbstractUser` und trägt KEINEN Mandantenfilter:
+    `Benutzer.objects` ist Djangos `UserManager`. Die Zugehörigkeit hängt an
+    `Mitgliedschaft`, weil ein Mensch für zwei Verwaltungen arbeiten kann —
+    eine Treuhänderin etwa.
+
+    WARUM GEMEINSAM UND NICHT DREIMAL
+
+    E2.70 hat diese Abfrage in zwei Ansichten je einmal neu geschrieben, neben
+    der dritten Fassung in `dashboard.py`. Zwei davon trugen die Grenze, die
+    dritte — das Liegenschaftsformular — nahm die ID ungeprüft entgegen:
+    Gemessen liess sich eine Person aus einer FREMDEN Verwaltung als Betreuung
+    eintragen, und über `zulauf._betreuer_fuer` erbte sie danach jeden neuen
+    Fall an dieser Liegenschaft.
+
+    Eine Grenze, die an drei Stellen einzeln gezogen wird, ist an zweien
+    gezogen. Deshalb hier, und alle drei rufen sie auf.
+
+    `is_active`: Wer nicht mehr anmelden kann, kann auch nichts betreuen.
+    """
+    from django.contrib.auth import get_user_model
+
+    if organisation is None:
+        return get_user_model().objects.none()
+    return (get_user_model().objects
+            .filter(is_active=True, mitgliedschaften__organisation=organisation)
+            .distinct().order_by('first_name', 'username'))

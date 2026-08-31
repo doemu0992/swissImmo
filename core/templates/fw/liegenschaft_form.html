@@ -41,7 +41,24 @@
                 <input name="egid" value="{{ lg.egid|default:'' }}" placeholder="automatisch aus Adresse" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold fw-mutet mb-1">Kataster-Nr.</label>
                 <input name="kataster_nummer" value="{{ lg.kataster_nummer }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Baujahr</label>
+            {% comment %}
+WER DIESE LIEGENSCHAFT BETREUT (E2.70)
+
+In einer Verwaltung wird liegenschaftsweise aufgeteilt, nicht Fall für Fall.
+Neue Fälle an dieser Liegenschaft bekommen diese Person automatisch — bis
+hierher bekam sie, wer gerade den Posteingang leerte.
+
+«Nicht zugeteilt» ist eine Aussage, keine Lücke: Eine Liegenschaft ohne
+Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
+{% endcomment %}
+<div><label class="block text-xs font-semibold fw-mutet mb-1">Betreut von</label>
+    <select name="betreut_von" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <option value="">— nicht zugeteilt —</option>
+        {% for b in benutzer_auswahl %}
+        <option value="{{ b.pk }}" {% if lg.betreut_von_id == b.pk %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>
+        {% endfor %}
+    </select></div>
+<div><label class="block text-xs font-semibold fw-mutet mb-1">Baujahr</label>
                 <input name="baujahr" type="number" value="{{ lg.baujahr|default:'' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">

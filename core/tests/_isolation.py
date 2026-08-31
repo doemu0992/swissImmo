@@ -410,7 +410,15 @@ class MandantenFixture:
         # `test_jeder_parameter_ist_zugeordnet` hat sie beim Bauen sofort
         # gemeldet: Ohne Eintrag hier waeren sie durch den Sweep gefallen,
         # ohne dass jemand es merkt. Genau dafuer gibt es sie.
+        # E2.70 — der Zustaendigkeitswechsel am Fall. Von der Selbstpruefung
+        # gemeldet, wie die Eintraege darunter: Ohne Zeile hier waere die
+        # neue URL durch den Sweep gefallen, und ein POST auf eine FREMDE
+        # Fall-ID haette niemand geprueft. Genau dort aendert sie etwas.
+        #
+        # Die Reihenfolge ist bedeutsam: 'fallschritt' muss VOR 'fall'
+        # stehen, sonst greift das kuerzere Muster zuerst.
         ('fallschritt',     'fallschritt'),
+        ('fall',            'fall'),
         ('termin',          'termin'),
         ('abwesenheit',     'abwesenheit'),
         # Phase 4b.10 — der Fristenwaechter. Wieder von der Selbstpruefung
