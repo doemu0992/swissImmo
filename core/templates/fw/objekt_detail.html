@@ -1,5 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
+{% load betreuung %}
 {% load chf l10n %}
 {% block title %}{{ e.bezeichnung }} — swissImmo{% endblock %}
 
@@ -29,7 +30,20 @@
             <div class="fw-akte-typ">Objekt · {{ objekt_nummer }}</div>
             <h1>{{ e.bezeichnung }}</h1>
             <div class="fw-akte-pfad">
-                <div class="fw-pz"><span>Liegenschaft</span><b><a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/" class="fw-link">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.plz }} {{ e.liegenschaft.ort }}</a></b></div>
+                {% comment %}
+WER BETREUT DAS? (E2.71)
+
+Die Betreuung steht an EINER Stelle — `Liegenschaft.betreut_von`. Hier wird
+sie AUFGELÖST, nicht kopiert: Beim Wechsel müsste sonst jemand alle Kopien
+nachziehen, und wer es vergisst, hat zwei Antworten auf dieselbe Frage.
+
+«nicht zugeteilt» steht bewusst da. Eine Liegenschaft ohne Betreuung soll
+auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
+öffnet.
+{% endcomment %}
+{% betreut_von e as betreuung %}
+<div class="fw-pz"><span>Betreut von</span><b>{% if betreuung %}{{ betreuung.get_full_name|default:betreuung.username }}{% else %}<span class="fw-warnton">nicht zugeteilt</span>{% endif %}</b></div>
+<div class="fw-pz"><span>Liegenschaft</span><b><a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/" class="fw-link">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.plz }} {{ e.liegenschaft.ort }}</a></b></div>
                 <div class="fw-pz"><span>Art</span><b>{{ e.get_typ_display }}{% if e.etage %} · {{ e.etage }}{% endif %}{% if e.zimmer %} · {{ e.zimmer }} Zimmer{% endif %}</b></div>
                 {% if e.ewid %}<div class="fw-pz"><span>EWID</span><b>{{ e.ewid }}</b></div>{% endif %}
             </div>

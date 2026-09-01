@@ -1,5 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
+{% load betreuung %}
 {% load chf %}
 {% block title %}{{ m.display_name }} — swissImmo{% endblock %}
 
@@ -25,7 +26,16 @@
             <div class="fw-akte-typ">Person · {{ pe_nummer }}</div>
             <h1>{{ m.display_name }}</h1>
             <div class="fw-akte-pfad">
-                {% if m.geburtsdatum %}<div class="fw-pz"><span>Geboren</span><b>{{ m.geburtsdatum|date:"d.m.Y" }}</b></div>{% endif %}
+                {% comment %}
+WER BETREUT DIESE PERSON? (E2.71)
+
+Ueber den Vertrag: Ein Mieter hat keine Liegenschaft, aber eine Wohnung darin.
+Der AKTIVE Vertrag zaehlt zuerst — wer ausgezogen ist, wird nicht mehr von der
+alten Liegenschaft betreut.
+{% endcomment %}
+{% betreut_von m as betreuung %}
+{% if betreuung %}<div class="fw-pz"><span>Betreut von</span><b>{{ betreuung.get_full_name|default:betreuung.username }}</b></div>{% endif %}
+{% if m.geburtsdatum %}<div class="fw-pz"><span>Geboren</span><b>{{ m.geburtsdatum|date:"d.m.Y" }}</b></div>{% endif %}
                 {% if m.nationalitaet %}<div class="fw-pz"><span>Nationalität</span><b>{{ m.nationalitaet }}</b></div>{% endif %}
                 <div class="fw-pz"><span>Telefon</span><b>{{ telefon|default:"—" }}</b></div>
                 <div class="fw-pz"><span>E-Mail</span><b>{{ m.email|default:"—" }}</b></div>
