@@ -217,6 +217,8 @@ Die Projektanweisung gibt die Richtung vor: Daten bleiben erhalten, Funktionen w
 
 **Was in `docs/ANALYSE.md` bereits vorbereitet ist:** Das Entitlement-System aus P3.1 ist die zentrale Prüfstelle für diese Regeln. Ohne sie wären sie über den Code verstreut — genau das, was die Projektanweisung ausschliesst.
 
+Der technische Entwurf dazu steht in **`docs/PHASE-3-ENTITLEMENTS.md`**: wie aus diesen Tabellen Code wird, warum Funktion, Grenze und Zustand nicht dieselbe Prüfung sein dürfen, und wie man beweist, dass keine Sperre vergessen wurde.
+
 ---
 
 ## 8. Zwei Befunde ausserhalb des Auftrags

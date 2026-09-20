@@ -1,0 +1,287 @@
+# Entitlements — die zentrale Prüfstelle (P3.1)
+
+Entwurf zur Entscheidung, kein Umbau. Stand 20.09.2026, gemessen gegen `8656b24`.
+
+`docs/MARKT.md` hat den kaufmännischen Teil erledigt: vier Stufen, Preise,
+Modulzuschnitt, Verhalten bei Downgrade und Zahlungsausfall. Diese Notiz ist
+das technische Gegenstück und beantwortet genau eine Frage: **Wie wird aus
+diesen Tabellen Code, ohne dass die Regeln über 329 Ansichten verstreuen?**
+
+---
+
+## 0. Was heute gilt — nachgemessen, nicht erinnert
+
+| | Befund |
+|---|---|
+| `Organisation.abo_plan` | `CharField`, drei Stufen (`start`/`pro`/`premium`), Standard `'pro'` |
+| Stellen, die ihn abfragen | **keine** — 6 Treffer im ganzen Bestand: 4 in `profil.py`, 1 Felddefinition, 1 Test |
+| Planwechsel | POST auf `/neu/abonnement/` setzt das Feld. Keine Zahlung, keine Prüfung, kein Übergang |
+| Speicher-Buchhaltung | **existiert nicht.** Die 5/50/150/300 GB aus MARKT.md haben heute keine Messgrundlage |
+| Nutzerzählung | über `crm.Mitgliedschaft` möglich. Achtung: zählt Mitgliedschaften, nicht Menschen — eine Person kann in mehreren Verwaltungen arbeiten |
+| Einheitenzählung | `Einheit.objects.count()` ist durch den `TenantManager` bereits je Organisation |
+
+Heute hat also jede Verwaltung jede Funktion, und die Preisseite ist eine
+Absichtserklärung. Für Phase 3 heisst das: **Es gibt nichts abzulösen, nur
+etwas einzuziehen.** Das ist die angenehme Ausgangslage — kein Bestand an
+verstreuten Prüfungen, den man erst einsammeln müsste.
+
+---
+
+## 1. Was diese Notiz nicht entscheidet
+
+Der Zuschnitt der Stufen, die Preise, der Zahlungsanbieter und die Frage, was
+mit dem versprochenen «API-Zugang» geschieht. Das steht in MARKT.md zur
+Entscheidung und ist kaufmännisch, nicht technisch.
+
+Ebenfalls nicht: ob zuerst 2FA oder zuerst Entitlements gebaut wird. MARKT.md
+nennt beide als Marktvoraussetzung.
+
+---
+
+## 2. Drei Sorten Sperre, die man nicht vermischen darf
+
+Der häufigste Entwurfsfehler wäre, alles über eine Funktion `darf(...)` zu
+lösen. Die drei Sorten verhalten sich unterschiedlich, und zwar in genau dem
+Punkt, auf den es ankommt: **wann** geprüft wird.
+
+### A. Funktion — ja oder nein
+
+«Eigentümerportal ab Team», «pain.001 ab Professional». Binär, hängt allein an
+der Stufe, ändert sich nur beim Planwechsel.
+
+Geprüft wird **beim Aufruf**, und zwar wie eine Rolle.
+
+### B. Grenze — wie viele
+
+«150 Einheiten», «5 Nutzer», «50 GB». Zählbar, und der entscheidende Satz aus
+MARKT.md lautet: *Alle Daten lesbar und exportierbar, keine neuen dazu.*
+
+Geprüft wird also **beim Anlegen**, nie beim Lesen. Eine Verwaltung mit 200
+Einheiten auf einem 150er-Plan sieht weiterhin alle 200 — sie kann nur keine
+201. anlegen. Wer hier am Lesepfad prüft, baut genau den Datenverlust, den die
+Projektanweisung ausschliesst.
+
+### C. Zustand — wie weit überhaupt
+
+Zahlung offen seit 15 Tagen: nur noch Lesen und Export. Seit 31: nur noch
+Export. Das betrifft **jede** Anfrage und keine einzelne Funktion.
+
+Geprüft wird deshalb **vor allem anderen**, in einer Middleware — nicht an 329
+Ansichten.
+
+> **Die Vermischung ist der Fehler.** Eine Grenze als Funktion zu behandeln
+> sperrt das Lesen. Einen Zustand als Funktion zu behandeln heisst, ihn 329
+> Mal zu vergessen.
+
+---
+
+## 3. Der Entwurf
+
+### 3.1 Eine Datei, die alles weiss
+
+`core/entitlements.py` — die einzige Stelle, an der die Tabellen aus MARKT.md
+als Code stehen:
+
+```python
+STUFEN = ('start', 'team', 'professional', 'enterprise')   # aufsteigend
+
+#: Funktion -> ab welcher Stufe. Alles, was hier NICHT steht, ist frei.
+MERKMALE = {
+    'eigentuemerportal':  'team',
+    'mieterportal':       'team',
+    'monatslauf':         'team',
+    'mahnlauf':           'team',
+    'ki_belegerkennung':  'team',
+    'eigenes_logo':       'team',
+    'mandatsabrechnung':  'professional',
+    'konsolidierung':     'professional',
+    'pain001':            'professional',
+    'branding':           'professional',
+}
+
+#: Grenze -> Wert je Stufe.
+GRENZEN = {
+    'einheiten': {'start': 25, 'team': 150, 'professional': 500, 'enterprise': 2000},
+    'nutzer':    {'start': 2,  'team': 5,   'professional': 15,  'enterprise': None},
+    'speicher':  {'start': 5,  'team': 50,  'professional': 150, 'enterprise': 300},  # GB
+}
+```
+
+Dass diese Tabellen **wörtlich** den Tabellen in MARKT.md entsprechen, gehört
+in einen Test. Zwei Quellen für dieselbe Zahl sind die Stelle, an der Preis
+und Programm auseinanderlaufen.
+
+### 3.2 Die Funktionssperre sieht aus wie eine Rolle
+
+Der Bestand hat dafür bereits ein gutes Muster: `rolle_erforderlich` prüft
+nicht nur, sondern **merkt sich die Anforderung an der View** (`benoetigte_
+rollen`), damit die Oberfläche Einträge ausgrauen kann, statt den Benutzer in
+eine Absage laufen zu lassen. Genau das braucht eine Abo-Sperre auch — ein
+Schloss neben dem Menüeintrag verkauft, eine 403-Seite verärgert.
+
+```python
+@merkmal_erforderlich('eigentuemerportal')
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_eigentuemerportal(request):
+    ...
+```
+
+Der Dekorator setzt `view.benoetigtes_merkmal`; die Navigation liest es wie
+heute schon `benoetigte_rollen`.
+
+**Reihenfolge ist bedeutsam:** erst Rolle, dann Merkmal — oder umgekehrt? Wer
+die Rolle nicht hat, soll nicht erfahren, welche Abo-Stufe ihm fehlte.
+Vorschlag: Rolle zuerst, Merkmal danach.
+
+### 3.3 Die Grenze greift zentral, nicht in jeder Ansicht
+
+Eine Prüfung in jeder Anlege-Ansicht ist derselbe Fehler, den der Skill
+`mandantentrennung` für Queries ausschliesst: Sie funktioniert, bis jemand
+eine Ansicht vergisst.
+
+Vorschlag: ein `pre_save`-Signal für die begrenzten Modelle, das **nur bei
+neuen** Datensätzen prüft.
+
+```python
+@receiver(pre_save, sender=Einheit)
+def _grenze_einheiten(sender, instance, **kw):
+    if instance.pk or _grenzpruefung_aus.get():
+        return
+    ...
+```
+
+Und dazu — nach dem Vorbild von `alle_organisationen`, dem **benannten**
+Umgehungsweg der Mandantentrennung — ein ausdrücklicher Ausstieg für
+Datenimport, Migrationen und Fixtures:
+
+```python
+with ohne_grenzpruefung():        # Import, Migration, Testaufbau
+    ...
+```
+
+Ein benannter Ausstieg ist ehrlicher als eine stille Ausnahme und lässt sich
+im Sweep auffinden.
+
+### 3.4 Der Zustand gehört in eine Middleware
+
+```
+voll    → alles
+lesen   → GET erlaubt, POST/PUT/DELETE abgewiesen, Hintergrundläufe aus
+export  → nur die Export-Endpunkte und die Anmeldung
+```
+
+Eine Middleware, die schreibende Methoden abweist, ist eine Zeile Logik und
+329 Mal richtig. Der Export muss dabei **ausdrücklich** offen bleiben, sonst
+sperrt man Kunden von ihren eigenen Daten aus — das ist die Stelle, an der aus
+einem Zahlungsverzug ein Rechtsstreit wird.
+
+---
+
+## 4. Wie man beweist, dass keine Sperre fehlt
+
+Das ist der Teil, der über Erfolg entscheidet, und der Bestand hat die Technik
+bereits: Die Isolationstests laufen über `get_resolver().reverse_dict` und
+gehen **jede** benannte URL an; was kein Objekt zuordnen kann, muss
+ausdrücklich in `NAME_MUSTER` stehen, statt still übersprungen zu werden.
+
+Dasselbe für Entitlements:
+
+```python
+def test_jede_ansicht_ist_zugeordnet(self):
+    """Jede der 329 benannten URLs trägt entweder ein Merkmal oder steht
+    ausdrücklich auf der Freiliste. Eine neue Ansicht ohne Zuordnung macht
+    diesen Test rot — nicht das Produkt undicht."""
+```
+
+Eine Freiliste, die wachsen darf, ist wertlos. Eine, die nur mit Begründung
+wächst, ist die halbe Miete. Vorbild ist die `NOCH_HINTEN`-Ratsche aus
+`faelle/test_akten_neu.py`: eine Liste, die **nur schrumpfen** darf.
+
+---
+
+## 5. Die heiklen Stellen
+
+### 5.1 Läufe dürfen nicht mitten im Zyklus abbrechen
+
+MARKT.md sagt es deutlich, und es ist die teuerste Stelle: Wird der Mietenlauf
+am Monatsersten gesperrt, weil eine Rechnung offen ist, bekommt die Verwaltung
+keine Mieteinnahmen.
+
+Technisch heisst das: Der Zustand wird **zu Beginn eines Laufs einmal**
+ermittelt und mitgeführt — nicht je Datensatz neu geprüft. Sonst kippt ein
+Lauf in der Mitte und hinterlässt einen halb verarbeiteten Monat.
+
+Betroffen sind 31 Management-Commands, darunter `monatslauf`, `mahnlauf`,
+`taeglicher_lauf`, `jahresabschluss_lauf`.
+
+### 5.2 Fail-open oder fail-closed?
+
+Bei der Mandantentrennung ist die Antwort eindeutig: Im Zweifel sperren, ein
+Datenleck ist schlimmer als eine Fehlermeldung.
+
+**Bei Entitlements ist sie es nicht.** Wenn die Stufe wegen eines Fehlers nicht
+ermittelbar ist — sperrt man dann eine zahlende Verwaltung aus? Der Schaden
+eines Fehlalarms ist hier grösser als der eines zu viel gewährten Monats.
+
+Vorschlag: **Funktionssperren fail-open**, Zustandssperren fail-closed
+(letztere hängen an einem Zahlungsstatus, der bekannt ist oder nicht existiert).
+Das ist ein Entscheid, kein technisches Detail — er gehört ausdrücklich
+getroffen und im Code begründet.
+
+### 5.3 Drei bestehende Stufen, vier neue
+
+`abo_plan` steht heute auf `start`/`pro`/`premium`, Standard `'pro'`. Die
+neuen heissen `start`/`team`/`professional`/`enterprise`. Die Zuordnung ist
+eine kaufmännische Entscheidung mit Bestandskunden daran:
+
+| heute | naheliegend | aber |
+|---|---|---|
+| `start` | `start` | Einheitengrenze neu — wer heute 40 Einheiten auf Start führt, ist morgen über dem 25er-Limit |
+| `pro` | `team` oder `professional` | Preisunterschied CHF 119 gegen 329 |
+| `premium` | `enterprise` | |
+
+**Ohne Entscheid keine Migration.** Und: Wer nach der Umstellung über seiner
+Grenze liegt, darf nach MARKT.md weiter lesen und nichts Neues anlegen — das
+trifft mit der Umstellung möglicherweise Kunden, die nichts getan haben. Eine
+Übergangsfrist gehört mitentschieden.
+
+### 5.4 Speicher lässt sich heute nicht messen
+
+Die Grenzen 5/50/150/300 GB stehen in MARKT.md, aber es gibt keine
+Speicher-Buchhaltung. Bevor diese Grenze gilt, braucht es eine Zählung je
+Organisation — und eine Entscheidung, ob sie laufend mitgeschrieben oder
+periodisch ermittelt wird. Laufend ist genauer und teurer.
+
+Vorschlag: Die Speichergrenze in der ersten Fassung **weglassen** und als
+Zusatzposition führen, bis die Zählung steht. Eine Grenze, die man nicht messen
+kann, ist ein Versprechen ohne Deckung — dieselbe Sorte wie der «API-Zugang».
+
+---
+
+## 6. Vorgeschlagene Reihenfolge
+
+| Schritt | Inhalt | Abhängig von |
+|---|---|---|
+| 1 | `core/entitlements.py` mit Tabellen + `darf()`, noch ohne Sperren. Test: Tabellen = MARKT.md | Entscheid über Stufen |
+| 2 | Sweep-Test über alle 329 URLs, alle auf der Freiliste | 1 |
+| 3 | Funktionssperren einziehen, Freiliste schrumpfen | 2 |
+| 4 | Navigation zeigt Schloss statt Absage | 3 |
+| 5 | Grenzen (Einheiten, Nutzer) per Signal + benannter Ausstieg | 1 |
+| 6 | Zustands-Middleware | Zahlungsanbieter |
+| 7 | Migration der drei Stufen auf vier | Entscheid 5.3 |
+
+Die Schritte 1–4 sind unabhängig vom Zahlungsanbieter und können sofort
+beginnen, sobald der Zuschnitt steht. Schritt 6 nicht.
+
+---
+
+## 7. Was entschieden werden muss, bevor gebaut wird
+
+1. **Gilt der Zuschnitt aus MARKT.md?** (vier Stufen, Namen, Grenzen)
+2. **Zuordnung der Bestandskunden** und Übergangsfrist (5.3)
+3. **Fail-open oder fail-closed** bei Funktionssperren (5.2)
+4. **Speichergrenze** in der ersten Fassung — ja oder später (5.4)
+5. **«API-Zugang»** — Versprechen einlösen, umbenennen oder streichen
+
+Punkte 1, 2 und 5 sind kaufmännisch. Punkte 3 und 4 sind technisch begründet,
+aber im Ergebnis Geschäftsentscheide.

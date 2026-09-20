@@ -432,7 +432,7 @@ Die Nummerierung ist die empfohlene Reihenfolge.
 
 | Nr. | Massnahme | Bezug |
 |---|---|---|
-| P3.1 | Entitlement-System als zentrale Prüfstelle entwerfen; bestehende drei Abo-Stufen auf die vier der Projektanweisung erweitern (TS-11) | Phase 3 |
+| P3.1 | Entitlement-System als zentrale Prüfstelle entwerfen; bestehende drei Abo-Stufen auf die vier der Projektanweisung erweitern (TS-11) — **Entwurf liegt vor: `docs/PHASE-3-ENTITLEMENTS.md`** | Phase 3 |
 | P3.2 | Zahlungsanbieter evaluieren (Schweizer MWST, Abo-Verwaltung, Testphase, Up-/Downgrade); Verhalten bei Downgrade und Zahlungsausfall definieren | Phase 3 |
 | P3.3 | Modulgrenzen schneiden — Kandidaten sind bereits gut abgegrenzt: DocuSeal-Signatur, Groq-Belegerkennung, Nebenkostenabrechnung, Reporting, Schnittstellen (Portal-Feed, iCal, pain.001) | Phase 3 |
 | P3.4 | Design-Tokens aus `fw/base.html` in eine eigene Stildatei herauslösen, damit mandantenspezifisches Branding nur eine Token-Überschreibung ist | Phase 4 |
