@@ -158,10 +158,45 @@ der Subagent die Werkzeuge der Sitzung, und das gilt auch dann noch, wenn das
 Delegationswerkzeug eines Tages anders heisst. Die Begründung steht in der
 Datei selbst.
 
-**Offen:** Dass die Streichung wirkt, ist hier *nicht* mehr nachgemessen — die
-Definitionen waren zum Zeitpunkt des Versuchs bereits in ihrer alten Fassung
-geladen. Beim nächsten Sitzungsstart denselben Diagnoselauf fahren: *«Zähle
-deine Werkzeuge auf. Hast du eines zum Delegieren?»* Steht `Agent` darin, ist
-es erledigt.
+### Die Streichung genügt nicht — Subagenten können hier gar nicht delegieren
+
+Drei Diagnoseläufe, jeder eine Frage nach der eigenen Werkzeugliste:
+
+| Agent | `tools:`-Zeile | Tatsächlich bekommen |
+|---|---|---|
+| `coder` | `Read, Write, Edit, Grep, Glob, Bash` | genau diese sechs |
+| `javris` | `Read, Grep, Glob, Bash, Task, TodoWrite` | `Read, Grep, Glob, Bash` |
+| `general-purpose` | `*` (alles) | **kein `Agent`** |
+
+Die erste Zeile zeigt: Die `tools:`-Zeile wird **wörtlich** befolgt. Die
+zweite: Ungültige Namen fallen **still** weg. Die dritte ist die
+entscheidende — ein Agent mit der weitestmöglichen Freigabe hat trotzdem kein
+Werkzeug, um selbst einen Subagenten zu starten.
+
+**Subagenten starten keine Subagenten.** Das ist keine Frage des Namens und
+keine der Frontmatter: Die Streichung der `tools:`-Zeile gibt javris die
+Werkzeuge der Sitzung, und ein Delegationswerkzeug ist dort für einen
+Subagenten nicht dabei.
+
+### Was daraus für den Einsatz folgt
+
+Die Hierarchie trägt — aber javris ist **keine Ebene, sondern eine Rolle für
+die Hauptsitzung**. Wer die Fachabteilungen nutzen will:
+
+- **Richtig:** Die Hauptsitzung liest `javris.md`, schneidet den Auftrag danach
+  und ruft `coder`, `ui-ux`, `testabteilung`, `mandanten-auditor` selbst auf.
+  Alles, was javris tun soll, geschieht damit — nur eine Ebene höher.
+- **Funktioniert nicht:** javris als Subagent aufrufen und erwarten, dass er
+  verteilt. Er liest, sucht und schneidet Aufträge als Text — ausführen lassen
+  kann er sie nicht, und er meldet das auch.
+
+Die Fachagenten sind davon nicht betroffen: Sie sollen ausführen, nicht
+verteilen, und ihre Werkzeuglisten stimmen.
+
+**Grenze der Aussage:** gemessen in einer Web-/Remote-Sitzung. Ob eine lokale
+Terminal-Sitzung Subagenten das Delegieren erlaubt, ist hier nicht geprüft.
+Der Diagnoselauf dafür ist eine Zeile: *«Hast du ein Werkzeug namens
+`Agent`?»* — an `general-purpose` gestellt, nicht an javris, denn dessen
+Antwort hinge sonst zusätzlich an seiner Frontmatter.
 
 Das ist keine Nebenbemerkung: Eine Rollenbeschreibung, die niemand lädt, ist ein Dokument und kein Agent. Der Unterschied gehört gewusst, bevor jemand sich darauf verlässt.
