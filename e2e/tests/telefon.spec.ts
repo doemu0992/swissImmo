@@ -56,12 +56,47 @@ test('Die Reiterzeile bleibt eine Reihe', async ({ page }) => {
 // gedeckt, der die ausgelieferte Zeichenkette prüft (`calc(100% - 15px)`) —
 // schwächer, aber ehrlich benannt.
 //
-// EIN NEBENBEFUND AUS DERSELBEN MESSUNG: In der Karte «Aufgaben» steht
-// zwischen Marker und Text eine `.fw-chip`. Dort teilen sich Marker und Chip
-// die erste Zeile und der Titel rückt auf die zweite — die Zeile wird 157
-// Pixel hoch. Das ist eine ANDERE Zusammensetzung als die Vorratszeile, die
-// diese Etappe umgebaut hat, und ob sie auch gekürzt werden soll, ist eine
-// eigene Frage. Hier festgehalten, nicht nebenbei entschieden.
+// DER NEBENBEFUND VON E2.68 IST IN E2.73 ENTSCHIEDEN WORDEN.
+//
+// Damals hier festgehalten: In der Karte «Aufgaben» steht zwischen Marker und
+// Text eine `.fw-chip`; Marker und Chip teilen sich die erste Zeile, der Titel
+// rückt auf die zweite, die Zeile wird 157 Pixel hoch. Das war bewusst nicht
+// nebenbei entschieden. Jetzt ist es entschieden — und deshalb steht hier
+// statt der Notiz ein Test.
+//
+// Anders als die Vorratszeile HAT die Aufgaben-Karte im E2E-Bestand Zeilen
+// (nachgemessen: vier). Der Test ist also möglich, wo der andere es nicht war.
+
+test('Die Aufgabenzeile kommt mit zwei Zeilen aus', async ({ page }) => {
+  // GEMESSEN, BEIDE STÄNDE (390 × 844, `/neu/`):
+  //
+  //   mit  `order:4`   Zeile 113 px — Titel oben, darunter Betrag/Chip/Knopf
+  //   ohne `order:4`   Zeile 157 px — Marker+Chip, Titel, Betrag/Knopf
+  //
+  // Die 44 Pixel sind eine ganze Zeile, die nur ein Wort trägt («Geld»).
+  await login(page);
+  await goto(page, '/neu/');
+
+  const karte = page.locator('.fw-card').filter({
+    has: page.locator('.fw-kopf .fw-t', { hasText: /^Aufgaben$/ }) });
+  const zeile = karte.locator('.fw-zeile').first();
+  await expect(zeile, 'Die Aufgaben-Karte hat keine Zeilen — dann misst ' +
+    'dieser Test nichts.').toBeVisible();
+
+  const hoehe = (await zeile.boundingBox())!.height;
+  expect(hoehe, `Die Aufgabenzeile ist ${Math.round(hoehe)} Pixel hoch. ` +
+    'Ohne `order:4` sind es 157: Marker und Chip belegen dann eine eigene ' +
+    'erste Zeile.').toBeLessThan(130);
+
+  // Und der Grund dafür, nicht nur die Folge: Der Chip steht UNTER dem Titel.
+  // Ohne diese zweite Zusicherung bliebe der Test auch grün, wenn die Zeile
+  // aus einem ganz anderen Grund kürzer würde.
+  const chip = (await zeile.locator('> .fw-chip').boundingBox())!;
+  const mitte = (await zeile.locator('.fw-mitte').boundingBox())!;
+  expect(chip.y, 'Der Chip steht nicht unter dem Titel — dann wirkt `order` ' +
+    'nicht, und die Höhe oben stimmt aus einem anderen Grund.')
+    .toBeGreaterThan(mitte.y);
+});
 
 test('Die zwei Filter sind Kapseln und bleiben flach', async ({ page }) => {
   // GEMESSEN, BEIDE STÄNDE:

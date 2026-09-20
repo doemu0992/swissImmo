@@ -435,6 +435,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
             .fw-zeile .fw-zeit{flex:0 0 auto;text-align:left;font-size:11px;
                 display:flex;align-items:baseline;gap:6px}
             .fw-zeile .fw-zeit br{display:none}
+            .fw-zeile > .fw-chip{order:4}
             .fw-zeile .fw-kuerzel{order:5}
             .fw-zeile .fw-btn{order:6;flex:0 0 auto}
             .fw-zeile .fw-ikon{display:none}

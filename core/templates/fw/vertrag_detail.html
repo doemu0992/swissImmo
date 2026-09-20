@@ -21,6 +21,40 @@
    Sollstellung, Mieterspiegel und Auswertungen, gehoert also zur Vertragsart —
    und nicht in eine Kopfzeile, die auf dem Handy vier Reihen hoch wurde.
    ===== {% endcomment %}
+{% comment %} DIE BEFUNDE STEHEN VOR DEM AKTENKOPF (E2.73).
+
+   Konzept v7 verlangt sie vorn, die Mandatsakte zeigt sie seit E2.65 so.
+   Gemessen bei 390 Pixel: vorher begannen sie bei y=949 (Liegenschaft)
+   bzw. y=2095 (Vertrag) — unter dem Falz, auf dem Vertrag zweieinhalb
+   Bildschirme tief. Jetzt bei y=121.
+
+   DER PREIS IST BEZAHLT UND BEKANNT: Ausserhalb des Reiter-Panels steht
+   der Block auf JEDEM Reiter, nicht nur auf der Uebersicht. Das ist eine
+   Entscheidung, keine Nachlaessigkeit — Befunde, die niemand sieht, sind
+   teurer als Befunde, die zu oft dastehen.
+
+   NUR AUF DIESER AKTE, UND GEMESSEN: Die Reiterzeile rutscht damit von y=722
+   auf y=942 — knapp unter den Falz eines 844 Pixel hohen Fensters. Das kostet
+   einen Wisch. Die Ursache ist aber nicht dieser Block, sondern ein
+   Aktenkopf von 645 Pixeln, der allein schon den Bildschirm fuellt; auf der
+   Liegenschaft (Kopf 420) bleibt die Reiterzeile bei y=696 sichtbar. Der
+   ueberhohe Kopf ist eine eigene Aufgabe und war kein Grund, die Befunde
+   weiter bei y=2095 zu lassen — dort sah sie niemand. {% endcomment %}
+{% if kopf_hinweise %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
+        <span class="fw-t">Was auffällt</span>
+        <span class="fw-neben">{{ kopf_hinweise|length }}</span></div>
+    {% for h in kopf_hinweise %}
+    <div class="fw-hinweis {{ h.art }}">
+        <span class="fw-hi">{% zeichen_wert h.ikon %}</span>
+        <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
+            <div style="margin-top:9px"><a href="{{ h.url }}" class="fw-btn" style="padding:6px 12px;font-size:12px">{{ h.knopf }}</a></div></div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'vertrag' %}</div>
@@ -264,20 +298,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         {% comment %} Was die Akte von selbst bemerkt. Alles gerechnet aus
            vorhandenen Feldern — `mietzinspotenzial` stand seit Langem im Modell
            und wurde hier nie abgefragt. {% endcomment %}
-        {% if kopf_hinweise %}
-        <div class="fw-card">
-            <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
-                <span class="fw-t">Was auffällt</span>
-                <span class="fw-neben">{{ kopf_hinweise|length }}</span></div>
-            {% for h in kopf_hinweise %}
-            <div class="fw-hinweis {{ h.art }}">
-                <span class="fw-hi">{% zeichen_wert h.ikon %}</span>
-                <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
-                    <div style="margin-top:9px"><a href="{{ h.url }}" class="fw-btn" style="padding:6px 12px;font-size:12px">{{ h.knopf }}</a></div></div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+        
 
         <div class="fw-card">
             <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'person' %}</span>

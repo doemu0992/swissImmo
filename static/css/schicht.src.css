@@ -835,6 +835,18 @@
             .fw-zeile .fw-zeit{flex:0 0 auto;text-align:left;font-size:11px;
                 display:flex;align-items:baseline;gap:6px}
             .fw-zeile .fw-zeit br{display:none}
+            /* DER CHIP HINTER DIE MITTE (E2.73).
+               Im Markup steht er ZWISCHEN Marker und Mitte. `.fw-mitte` hat
+               oben `flex-basis:calc(100% - 15px)` und passt damit exakt neben
+               den 3px-Marker — der Chip dazwischen draengt sie auf eine eigene
+               Zeile, und die erste traegt dann nur noch ein Wort («Geld»).
+               Gemessen bei 390 Pixel auf `/neu/`: Zeile 157 -> 113 Pixel,
+               Karte 717 -> 541.
+               KIND-SELEKTOR, nicht Nachfahre: Chips innerhalb von `.fw-mitte`
+               sind keine Flex-Kinder der Zeile, `order` bliebe dort wirkungs-
+               los und die Regel nur Behauptung. Nachgemessen: betroffen sind
+               ausschliesslich die vier Zeilen der Aufgaben-Karte. */
+            .fw-zeile > .fw-chip{order:4}
             .fw-zeile .fw-kuerzel{order:5}
             .fw-zeile .fw-btn{order:6;flex:0 0 auto}
             /* Die Ikone entfaellt: Der Balken links sagt dasselbe in 3 statt

@@ -299,26 +299,31 @@ class WasAuffaelltEinheitlichTest(SimpleTestCase):
     MIT_BEFUNDEN = ('liegenschaft_detail.html', 'vertrag_detail.html',
                     'mandat_detail.html')
 
-    #: Akten, deren Befunde noch HINTER dem Aktenkopf stehen — gemessen, nicht
-    #: vermutet.
+    #: Akten, deren Befunde noch HINTER dem Aktenkopf stehen.
     #:
-    #: KONZEPT v7 VERLANGT SIE VORNE, und auf der Mandatsakte stehen sie das
-    #: seit E2.65. Bei diesen zweien sitzt der Block INNERHALB eines
-    #: Reiter-Panels; ihn nach vorn zu ziehen heisst, ihn aus dem Panel zu
-    #: loesen, und dann erscheint er auf JEDEM Reiter statt nur auf der
-    #: Uebersicht. Das ist eine Entscheidung ueber das Verhalten der Seite,
-    #: keine Verschiebung von Markup — und sie faellt nicht nebenbei beim
-    #: Vereinheitlichen einer dritten Akte.
+    #: LEER SEIT E2.73 — und das ist der Zweck der Ratsche gewesen.
     #:
-    #: DIESE LISTE DARF NUR SCHRUMPFEN. Wer eine Akte umstellt, streicht sie
-    #: hier; der Test wird sonst rot. Ein blosser Kommentar waere nach zwei
-    #: Etappen vergessen.
+    #: Sie stand zwei Etappen lang auf `('liegenschaft_detail.html',
+    #: 'vertrag_detail.html')`, weil der Block dort INNERHALB eines
+    #: Reiter-Panels sass: ihn nach vorn zu ziehen hiess, ihn aus dem Panel zu
+    #: loesen, und dann steht er auf JEDEM Reiter statt nur auf der Uebersicht.
+    #: Das ist eine Entscheidung ueber das Verhalten der Seite und faellt nicht
+    #: nebenbei.
     #:
-    #: Aufgefallen ist das erst, als der Reihenfolge-Test ueberhaupt etwas
-    #: geprueft hat: Er suchte die Marken `MANDAT` und `fw-akte-kopf`, beide
-    #: gibt es nicht (der Kopf heisst `fw-aktenkopf`), und uebersprang die Akte
-    #: dann mit `continue` — gruen, ohne eine einzige Zusicherung.
-    NOCH_HINTEN = ('liegenschaft_detail.html', 'vertrag_detail.html')
+    #: ENTSCHIEDEN AUF GEMESSENE ZAHLEN (390x844): Die Befunde begannen bei
+    #: y=949 (Liegenschaft) und y=2095 (Vertrag) — auf dem Vertrag
+    #: zweieinhalb Bildschirme tief, also nie gesehen. Jetzt bei y=121. Der
+    #: Preis ist bekannt und bezahlt: 121 bzw. 203 Pixel auf jedem Reiter, wie
+    #: auf der Mandatsakte seit E2.65.
+    #:
+    #: DIESE LISTE DARF NUR SCHRUMPFEN. Wer eine Akte zurueckbaut, muesste sie
+    #: hier wieder eintragen — und genau das soll auffallen.
+    #:
+    #: Aufgefallen ist der Rueckstand erst, als der Reihenfolge-Test ueberhaupt
+    #: etwas geprueft hat: Er suchte die Marken `MANDAT` und `fw-akte-kopf`,
+    #: beide gibt es nicht (der Kopf heisst `fw-aktenkopf`), und uebersprang
+    #: die Akte dann mit `continue` — gruen, ohne eine einzige Zusicherung.
+    NOCH_HINTEN = ()
 
     def _text(self, name):
         """Die Vorlage OHNE Kommentare.

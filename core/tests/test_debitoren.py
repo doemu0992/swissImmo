@@ -618,6 +618,32 @@ class MieterkontoblattTests(TestCase):
         self.assertIn('.fw-zeile .fw-mitte{flex-basis:calc(100% - 15px)',
                       ausgelieferter_stil(html))
 
+    def test_der_chip_steht_mobil_hinter_der_mitte(self):
+        """Sonst kostet ein einzelnes Wort eine ganze Zeile.
+
+        `.fw-mitte` hat oben `flex-basis:calc(100% - 15px)` und passt damit
+        EXAKT neben den 3px-Marker. Der Chip steht im Markup dazwischen und
+        drängt sie auf eine eigene Zeile — die erste trägt dann nur noch den
+        Marker und das Wort «Geld».
+
+        Gemessen bei 390x844 auf `/neu/`: Zeile 157 → 113 Pixel, Karte
+        717 → 541. Bei 1280 unverändert (der Chip führt die Zeile weiter an),
+        weil die Regel in der Telefon-Abfrage steht.
+
+        KIND-SELEKTOR, und das ist die Aussage des Tests: Chips innerhalb von
+        `.fw-mitte` sind keine Flex-Kinder der Zeile; `order` bliebe dort
+        wirkungslos. Ein Nachfahren-Selektor sähe gleich aus und wäre an den
+        meisten Stellen eine Behauptung ohne Wirkung.
+
+        Die Höhe selbst misst `e2e/tests/telefon.spec.ts` im Browser — hier
+        steht nur, dass die Regel ausgeliefert wird. Beides zusammen, weil
+        eine Regel im Stil noch keine Zeile verkürzt und eine gemessene Zeile
+        nicht sagt, warum.
+        """
+        c = Client(); c.force_login(_team_user())
+        stil = ausgelieferter_stil(c.get('/neu/').content.decode('utf-8'))
+        self.assertIn('.fw-zeile > .fw-chip{order:4}', stil)
+
     def test_truncate_wird_mobil_zentral_aufgehoben(self):
         """«truncate» schneidet auf dem Handy genau das weg, was die Zeile
         identifiziert («Selzacherstras…», «B..»). Statt in ~30 Templates einzeln

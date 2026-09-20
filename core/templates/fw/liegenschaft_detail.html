@@ -12,6 +12,31 @@
     <b>{{ lg.strasse }}</b>
 </nav>
 
+{% comment %} DIE BEFUNDE STEHEN VOR DEM AKTENKOPF (E2.73).
+
+   Konzept v7 verlangt sie vorn, die Mandatsakte zeigt sie seit E2.65 so.
+   Gemessen bei 390 Pixel: vorher begannen sie bei y=949 (Liegenschaft)
+   bzw. y=2095 (Vertrag) — unter dem Falz, auf dem Vertrag zweieinhalb
+   Bildschirme tief. Jetzt bei y=121.
+
+   DER PREIS IST BEZAHLT UND BEKANNT: Ausserhalb des Reiter-Panels steht
+   der Block auf JEDEM Reiter, nicht nur auf der Uebersicht. Das ist eine
+   Entscheidung, keine Nachlaessigkeit — Befunde, die niemand sieht, sind
+   teurer als Befunde, die zu oft dastehen. {% endcomment %}
+{% if lg_befunde %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon{% if lg_stufe != 'good' %} {{ lg_stufe }}{% endif %}">{% zeichen 'hinweis' %}</span>
+        <span class="fw-t">Was auffällt</span>
+        <span class="fw-neben">{{ lg_befunde|length }}</span></div>
+    {% for b in lg_befunde %}
+    <div class="fw-hinweis {{ b.0 }}">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht"><b>{{ b.1 }}</b>{% if b.3 %}{{ b.3 }}{% endif %}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'liegenschaft' %}</div>
@@ -141,19 +166,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
        Liegenschaftsliste (`faelle/liegenschaften.py`) — zwei getrennte
        Rechnungen waeren die Stelle, an der Liste und Akte auseinanderlaufen,
        und dann weiss niemand, welcher Seite zu trauen ist. {% endcomment %}
-    {% if lg_befunde %}
-    <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon{% if lg_stufe != 'good' %} {{ lg_stufe }}{% endif %}">{% zeichen 'hinweis' %}</span>
-            <span class="fw-t">Was auffällt</span>
-            <span class="fw-neben">{{ lg_befunde|length }}</span></div>
-        {% for b in lg_befunde %}
-        <div class="fw-hinweis {{ b.0 }}">
-            <span class="fw-hi">{% zeichen 'warnung' %}</span>
-            <div class="fw-ht"><b>{{ b.1 }}</b>{% if b.3 %}{{ b.3 }}{% endif %}</div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    
 
     <div class="fw-card">
         <div class="fw-hinweis info">
