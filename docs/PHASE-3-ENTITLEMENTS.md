@@ -228,22 +228,52 @@ Vorschlag: **Funktionssperren fail-open**, Zustandssperren fail-closed
 Das ist ein Entscheid, kein technisches Detail — er gehört ausdrücklich
 getroffen und im Code begründet.
 
-### 5.3 Drei bestehende Stufen, vier neue
+### 5.3 Drei bestehende Stufen, vier neue — kein Problem, nachgemessen
 
-`abo_plan` steht heute auf `start`/`pro`/`premium`, Standard `'pro'`. Die
-neuen heissen `start`/`team`/`professional`/`enterprise`. Die Zuordnung ist
-eine kaufmännische Entscheidung mit Bestandskunden daran:
+Diese Stelle stand hier zuerst als sorgfältig ausgearbeiteter Abschnitt über
+Bestandskunden, Zuordnungstabelle und Übergangsfrist. **Sie war
+gegenstandslos.**
 
-| heute | naheliegend | aber |
-|---|---|---|
-| `start` | `start` | Einheitengrenze neu — wer heute 40 Einheiten auf Start führt, ist morgen über dem 25er-Limit |
-| `pro` | `team` oder `professional` | Preisunterschied CHF 119 gegen 329 |
-| `premium` | `enterprise` | |
+Nachgemessen am 20.09.2026:
 
-**Ohne Entscheid keine Migration.** Und: Wer nach der Umstellung über seiner
-Grenze liegt, darf nach MARKT.md weiter lesen und nichts Neues anlegen — das
-trifft mit der Umstellung möglicherweise Kunden, die nichts getan haben. Eine
-Übergangsfrist gehört mitentschieden.
+- Es gibt **eine** Organisation. `docs/AUFTRAG-ZWEITE-ORGANISATION.md` hält
+  fest: «es gab bisher nur eine Organisation».
+- Der **einzige** Weg, eine anzulegen, ist ein Notbehelf in
+  `core/utils/market_data.py:172` — `Organisation.objects.create(firma="Meine
+  Verwaltung")`.
+- Eine `Mitgliedschaft` erzeugt ausserhalb von Tests und Fixtures **keine
+  einzige Stelle** im Bestand.
+
+Es gibt also keine Bestandskunden, die man umstufen müsste. Die Umstellung von
+drei auf vier Stufen ist ein `ALTER`-Statement und ein bewusst gesetzter Wert
+für die eine vorhandene Organisation. Keine Zuordnungstabelle, keine
+Übergangsfrist, kein kaufmännischer Entscheid.
+
+> **Warum das hier stehen bleibt statt gelöscht zu werden:** Ich hatte den
+> Abschnitt geschrieben, weil «drei Stufen werden vier» nach einem
+> Migrationsproblem klingt. Es klang nur so. Das ist dieselbe Falle, die
+> `bekannte-fallen` unter Nummer 1 führt — eine Annahme, die plausibel ist und
+> nicht nachgesehen wurde. Sobald die erste zahlende Verwaltung existiert,
+> wird der Abschnitt wieder gebraucht; dann aber mit echten Zahlen.
+
+### 5.3a Das eigentliche Hindernis: Es gibt keinen Weg, Kunde zu werden
+
+Beim Nachmessen von 5.3 aufgefallen und wichtiger als alles andere in dieser
+Notiz:
+
+**Kein View, kein Management-Command, keine Registrierung legt eine
+`Organisation` oder eine `Mitgliedschaft` an.** Der einzige Treffer ist der
+genannte Notbehelf, der aus einem Marktdaten-Update stammt.
+
+Ein Abo-System sperrt Funktionen nach Stufe. Bevor das einen Wert hat, muss
+jemand eine Stufe kaufen können — und dafür braucht es eine Anmeldung, das
+Anlegen einer Organisation, die erste Mitgliedschaft mit Inhaber-Rolle und
+eine Testphase. Nichts davon existiert.
+
+**Reihenfolge daraus:** Onboarding vor Entitlements. Ein gesperrtes
+Eigentümerportal nützt niemandem, solange niemand ein Konto eröffnen kann.
+Das ist kein Teil von P3.1, gehört aber vor P3.1 entschieden — sonst baut man
+die Kasse vor dem Laden.
 
 ### 5.4 Speicher lässt sich heute nicht messen
 
@@ -277,11 +307,70 @@ beginnen, sobald der Zuschnitt steht. Schritt 6 nicht.
 
 ## 7. Was entschieden werden muss, bevor gebaut wird
 
-1. **Gilt der Zuschnitt aus MARKT.md?** (vier Stufen, Namen, Grenzen)
-2. **Zuordnung der Bestandskunden** und Übergangsfrist (5.3)
-3. **Fail-open oder fail-closed** bei Funktionssperren (5.2)
-4. **Speichergrenze** in der ersten Fassung — ja oder später (5.4)
-5. **«API-Zugang»** — Versprechen einlösen, umbenennen oder streichen
+Fünf Punkte, jeder mit Empfehlung. Zwei davon haben sich beim Nachmessen
+erledigt.
 
-Punkte 1, 2 und 5 sind kaufmännisch. Punkte 3 und 4 sind technisch begründet,
-aber im Ergebnis Geschäftsentscheide.
+### 1. Gilt der Zuschnitt aus MARKT.md? — **Struktur ja, Preise später**
+
+Vier Stufen `start`/`team`/`professional`/`enterprise` mit den Grenzen 25 /
+150 / 500 / 2'000 Einheiten und 2 / 5 / 15 / unbegrenzt Nutzern.
+
+**Die Entkopplung, die hier Zeit spart:** Das Entitlement-System braucht die
+**Struktur**, nicht die **Preise**. Welche Funktion ab welcher Stufe gilt und
+wie die Stufen heissen, entscheidet den Code. Ob Team CHF 119 oder 139 kostet,
+berührt ihn nicht.
+
+MARKT.md sagt selbst, die Preise seien aus Wettbewerbspreisen abgeleitet und
+nicht aus Kostenrechnung. Diese Gegenrechnung kann laufen, während die
+Struktur schon gebaut wird.
+
+> **Empfehlung:** Struktur und Namen jetzt festlegen, Preise als vorläufig
+> führen.
+
+### 2. Zuordnung der Bestandskunden — **erledigt, gegenstandslos**
+
+Es gibt eine Organisation und keinen Weg, eine zweite anzulegen (5.3).
+Nichts zu entscheiden.
+
+**Dafür ein anderer Punkt, der vorher kommt:** Es gibt keinen Weg, Kunde zu
+werden (5.3a). Onboarding gehört vor Entitlements.
+
+### 3. Fail-open oder fail-closed? — **gemischt, und das ist Absicht**
+
+> **Empfehlung:** Funktionssperren **fail-open**, Zustandssperren
+> **fail-closed**.
+
+Eine Funktionssperre, die bei einem Fehler zuschlägt, sperrt eine zahlende
+Verwaltung aus ihrem Eigentümerportal — für einen Ertrag, der ohnehin schon
+gezahlt ist. Der Schaden ist einseitig.
+
+Eine Zustandssperre hängt dagegen an einem Zahlungsstatus, der entweder
+bekannt ist oder nicht existiert. «Nicht ermittelbar» heisst dort «keine
+Zahlungsdaten», und das ist kein Grund, Schreibzugriff zu gewähren.
+
+Der Unterschied gehört im Code begründet, nicht nur befolgt.
+
+### 4. Speichergrenze in der ersten Fassung? — **nein**
+
+Es gibt keine Speicher-Buchhaltung (5.4). Eine Grenze ohne Zählung ist ein
+Versprechen ohne Deckung.
+
+> **Empfehlung:** Speicher aus der ersten Fassung weglassen, als
+> Zusatzposition führen, Zählung getrennt bauen.
+
+### 5. «API-Zugang» — **aus der Merkmalsliste nehmen**
+
+`ABO_PLAENE` verspricht ihn für Premium. Unter `/api/` liegen zwei Endpunkte,
+beide `auth=None`: der DocuSeal-Webhook und das öffentliche
+Bewerbungsformular. Das ist kein Zugang im Sinne des Versprechens.
+
+> **Empfehlung:** Die Zeile streichen, bis es sie gibt. Ein Merkmal, das im
+> Verkaufsgespräch genannt und dann nicht geliefert wird, kostet mehr als
+> eines, das fehlt.
+
+---
+
+**Damit bleiben zwei echte Entscheide:** der Zuschnitt (1) und die Frage, ob
+Onboarding vor Entitlements kommt (2). Die Punkte 3 bis 5 sind technisch
+begründet und können mit der Empfehlung übernommen werden, wenn kein
+Einspruch kommt.
