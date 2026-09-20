@@ -132,3 +132,46 @@ test('Die zwei Filter sind Kapseln und bleiben flach', async ({ page }) => {
     expect(k.radius, `Kapsel ${nr + 1} ist nicht rund.`).toBeGreaterThan(20);
   }
 });
+
+// DIE KENNZAHLENLEISTE DER AKTE (E2.76)
+//
+// Bei 390 Pixel steht sie als 2x2-Raster, und der volle Innenabstand der Zelle
+// zählt ZWEIMAL — einmal je Reihe. Zusammen mit der Fusszeile, die in 129
+// Pixel Spaltenbreite ohnehin umbricht, wird die Zelle 104 Pixel hoch.
+//
+// GEMESSEN, BEIDE STÄNDE (390 × 844, Vertragsakte):
+//
+//   mit  `padding:8px 14px`   Leiste 182 px, Aktenkopf 544
+//   ohne (12px 20px)          Leiste 206 px, Aktenkopf 568
+//
+// Was das NICHT ist: eine gelöste Falzfrage. 844 ist der CSS-Viewport dieses
+// Tests; echtes Mobile-Safari zeigt mit Adressleiste weniger. Der Gewinn ist
+// kürzerer Scrollweg auf jeder Akte, und so steht es auch im Stil.
+
+test('Die Kennzahlenleiste bleibt am Telefon flach', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/vertraege/1/');
+
+  const leiste = page.locator('.fw-aktenkopf .fw-kzn');
+  await expect(leiste, 'Die Vertragsakte zeigt keine Kennzahlenleiste — ' +
+    'dann misst dieser Test nichts.').toBeVisible();
+
+  // Die drei Regeln tragen ungleich viel bei — einzeln nachgemessen, weil
+  // eine Meldung, die den falschen Stand benennt, beim nächsten Fehlschlag
+  // in die Irre führt:
+  //
+  //   alle drei aktiv                182 px
+  //   ohne `padding:8px 14px`        198 px  (die zwei Abstände tragen 8)
+  //   ohne alle drei                 206 px
+  const hoehe = (await leiste.boundingBox())!.height;
+  expect(hoehe, `Die Kennzahlenleiste ist ${Math.round(hoehe)} Pixel hoch — ` +
+    'erwartet unter 195. Gemessen: 182 mit den drei Telefon-Regeln, 198 ohne ' +
+    'den engeren Innenabstand, 206 ohne alle drei.').toBeLessThan(195);
+
+  // Der Grund, nicht nur die Folge. Ohne diese Zusicherung bliebe der Test
+  // grün, wenn die Leiste aus einem anderen Grund kürzer würde — etwa weil
+  // eine Zelle verschwunden ist.
+  const zellen = await leiste.locator('> div').count();
+  expect(zellen, 'Die Leiste führt nicht mehr vier Kennzahlen — dann ist sie ' +
+    'nicht flacher, sondern ärmer.').toBe(4);
+});
