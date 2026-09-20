@@ -261,14 +261,27 @@ für die eine vorhandene Organisation. Keine Zuordnungstabelle, keine
 Beim Nachmessen von 5.3 aufgefallen und wichtiger als alles andere in dieser
 Notiz:
 
-**Kein View, kein Management-Command, keine Registrierung legt eine
-`Organisation` oder eine `Mitgliedschaft` an.** Der einzige Treffer ist der
-genannte Notbehelf, der aus einem Marktdaten-Update stammt.
+**Korrigiert am 20.09.2026 — die erste Fassung dieses Abschnitts war zu
+scharf.** Sie behauptete, keine Stelle lege eine `Mitgliedschaft` an. Der
+Grep dahinter suchte nur `Mitgliedschaft.objects.create` und übersah
+`update_or_create`. Die genaue Lage:
+
+| | Stand |
+|---|---|
+| Kollegen zu einer **bestehenden** Organisation hinzufügen | **funktioniert** — `core/views/fw/benutzer.py:121`, `update_or_create` mit Rolle |
+| Eine **Organisation** anlegen | nur der Notbehelf in `core/utils/market_data.py:172` und die E2E-Fixture |
+| Die **erste** Mitgliedschaft einer neuen Organisation | existiert nicht |
+
+Das ist ein Henne-Ei-Problem, kein fehlendes Formular: `fw_benutzer_form`
+liest `request.organisation` und setzt damit voraus, dass der Aufrufende
+bereits Mitglied ist. Wer noch keine Organisation hat, kommt nicht hinein.
 
 Ein Abo-System sperrt Funktionen nach Stufe. Bevor das einen Wert hat, muss
 jemand eine Stufe kaufen können — und dafür braucht es eine Anmeldung, das
 Anlegen einer Organisation, die erste Mitgliedschaft mit Inhaber-Rolle und
 eine Testphase. Nichts davon existiert.
+
+**Der Entwurf dazu:** `docs/PHASE-3-ONBOARDING.md`.
 
 **Reihenfolge daraus:** Onboarding vor Entitlements. Ein gesperrtes
 Eigentümerportal nützt niemandem, solange niemand ein Konto eröffnen kann.

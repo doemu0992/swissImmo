@@ -92,6 +92,32 @@ Die Kollision ist nicht behoben — ein Umbenennen fasst acht Vorlagen und die
 Stilschicht an. Hier steht sie, damit die nächste Messung nicht wieder daneben
 greift.
 
+## 2c. `objects.create` ist nicht die einzige Art, etwas anzulegen
+
+Belegt beim Nachmessen für Phase 3, und der Befund landete bereits in einem
+Dokument, bevor er auffiel: «Keine Stelle legt eine `Mitgliedschaft` an» —
+gesucht worden war `Mitgliedschaft.objects.create`. Die echte Stelle benutzt
+`update_or_create` und stand die ganze Zeit in `core/views/fw/benutzer.py`.
+
+Ein zu enger Grep beweist nicht die Abwesenheit einer Sache, sondern die
+Abwesenheit einer Schreibweise. Beim Ergebnis «gibt es nicht» ist das der
+teuerste Irrtum: Er wird geglaubt, weil er wie eine Messung aussieht.
+
+**Alle Formen auf einmal:**
+
+```bash
+grep -rnE "Modell(\.objects)?\.(create|get_or_create|update_or_create|bulk_create)\(" \
+  --include=*.py . | grep -v "tests/\|test_\|migrations"
+```
+
+Dazu kommen Wege ohne diese Namen: ein `ModelForm` mit `.save()`, ein
+`instance.save()` auf einem frisch gebauten Objekt, `loaddata`, und
+`bulk_create` in einer Schleife.
+
+**Die Gegenprobe zur Abwesenheit** ist nicht ein zweiter Grep, sondern der
+Versuch: Wenn wirklich nichts anlegt, dann muss die Tabelle im Betrieb leer
+bleiben — und wenn sie es nicht tut, war der Grep zu eng.
+
 ## 3. Ein Dekorator bindet an die nächste Definition
 
 Zweimal passiert, in `core/views/fw/arbeit.py` und `core/views/fw/liegenschaft_crud.py`: eine Hilfsfunktion **zwischen** Dekorator und Ansicht eingefügt. Python bindet den Dekorator dann an die Hilfsfunktion.
