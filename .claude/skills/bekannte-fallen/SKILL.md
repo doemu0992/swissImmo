@@ -70,6 +70,28 @@ Ein Textstück tut es auch — aber nur eines, das wirklich drinsteht:
 grep -rln "Anliegen" --include=*.html core/templates/core/
 ```
 
+## 2b. Derselbe Klassenname für zwei verschiedene Dinge
+
+`fw-akte-pfad` heisst BEIDES: die Brotkrume über dem Aktenkopf (`<nav>`) und
+der Schlüssel-Wert-Block IM Aktenkopf (`<div>`). Auf jeder der fünf Akten
+stehen beide — acht Vorkommen je Bauform im Bestand.
+
+Folge beim Messen: `querySelector('.fw-akte-pfad')` liefert die Brotkrume.
+Wer die Höhe des Schlüssel-Wert-Blocks misst, bekommt 19 Pixel statt 190 und
+schliesst daraus, seine Änderung habe nichts bewirkt. Genau so passiert, beim
+Nachmessen des Vertrags-Aktenkopfs.
+
+**Beim Messen den Vorfahren mitnennen**, nicht den Namen allein:
+
+```javascript
+document.querySelector('.fw-aktenkopf .fw-akte-pfad')   // der Block
+document.querySelector('nav.fw-akte-pfad')              // die Brotkrume
+```
+
+Die Kollision ist nicht behoben — ein Umbenennen fasst acht Vorlagen und die
+Stilschicht an. Hier steht sie, damit die nächste Messung nicht wieder daneben
+greift.
+
 ## 3. Ein Dekorator bindet an die nächste Definition
 
 Zweimal passiert, in `core/views/fw/arbeit.py` und `core/views/fw/liegenschaft_crud.py`: eine Hilfsfunktion **zwischen** Dekorator und Ansicht eingefügt. Python bindet den Dekorator dann an die Hilfsfunktion.
