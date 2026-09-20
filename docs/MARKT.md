@@ -223,11 +223,33 @@ Der technische Entwurf dazu steht in **`docs/PHASE-3-ENTITLEMENTS.md`**: wie aus
 
 ## 8. Zwei Befunde ausserhalb des Auftrags
 
-Beim Vergleich der Leistungsmerkmale sind zwei Lücken aufgefallen, die den Verkauf unabhängig vom Preis behindern:
+Beim Vergleich der Leistungsmerkmale sind zwei Lücken aufgefallen, die den Verkauf unabhängig vom Preis behindern. **Eine davon ist seit dem Schreiben dieser Analyse geschlossen worden — nachgemessen am 20.09.2026, siehe unten.**
 
-**Zwei-Faktor-Authentifizierung fehlt.** Fairwalter führt 2FA in **allen** Stufen als Sicherheitsmerkmal auf. Im Bestand von swissImmo findet sich dazu keine Implementierung. Für ein Produkt, das Mietverträge, Lohnausweise und Betreibungsauszüge verwaltet, ist das kein Komfortmerkmal, sondern eine Ausschreibungsanforderung. Gehört in Phase 2 zum Rollen- und Zugangsthema, nicht in Phase 3.
+**~~Zwei-Faktor-Authentifizierung fehlt.~~ ERLEDIGT — die Behauptung stimmt nicht mehr.**
 
-**Hosting-Standort.** Fairwalter bewirbt „Sicheres Daten-Hosting in der Schweiz" prominent auf der Preisseite. swissImmo läuft laut Konfiguration auf PythonAnywhere. Bei Mieterdaten unter Schweizer Datenschutzrecht ist der Standort ein Verkaufsargument der Gegenseite, solange er nicht geklärt ist. Zusammen mit dem ohnehin anstehenden Wechsel auf PostgreSQL (P1.4) und der CDN-Abhängigkeit aus TS-9 ergibt das ein Paket, das vor dem Markteintritt entschieden sein muss.
+Am 14.08.2026 traf sie zu. Nachgemessen am 20.09.2026 ist 2FA vollständig vorhanden:
+
+| | |
+|---|---|
+| `core/views/zweifaktor.py` | 403 Zeilen — Anmeldung, Einrichtung, Übersicht, Abschaltung |
+| `core/middleware_zweifaktor.py` | 77 Zeilen — `ZweiFaktorPflichtMiddleware`, in `settings.py` aktiv |
+| `core/services/totp.py` | TOTP-Prüfung mit Zeitfenster |
+| Notfallcodes | `_neue_codes`, `_notfallcode_einloesen` |
+| Organisationsweite Pflicht | `Organisation.zweifaktor_pflicht`, `zweifaktor_pflicht_setzen`, `_team_ohne_faktor` |
+| Tests | `core/tests/test_zweifaktor.py`, 36 Stück |
+
+Die Einschätzung dahinter bleibt richtig: Für ein Produkt, das Mietverträge,
+Lohnausweise und Betreibungsauszüge verwaltet, ist 2FA eine
+Ausschreibungsanforderung und kein Komfortmerkmal. Genau deshalb gehört sie
+jetzt in die **Leistungsliste**, nicht mehr auf die Aufgabenliste — Fairwalter
+führt sie in allen Stufen auf, swissImmo kann das ebenso.
+
+> **Warum das hier steht statt gelöscht zu werden:** Eine Analyse, die
+> Entscheidungen trägt, altert. Wer sie im Januar liest und die Zeile «fehlt»
+> findet, plant Arbeit ein, die getan ist. Der Befund wird deshalb datiert
+> korrigiert, nicht entfernt.
+
+**Hosting-Standort.** Fairwalter bewirbt „Sicheres Daten-Hosting in der Schweiz" prominent auf der Preisseite. swissImmo läuft laut Konfiguration auf PythonAnywhere. Bei Mieterdaten unter Schweizer Datenschutzrecht ist der Standort ein Verkaufsargument der Gegenseite, solange er nicht geklärt ist. Zusammen mit der CDN-Abhängigkeit aus TS-9 ergibt das ein Paket, das vor dem Markteintritt entschieden sein muss. **Stand 20.09.2026 weiterhin zutreffend:** `swissimmo.pythonanywhere.com` steht in `ALLOWED_HOSTS` und `CSRF_TRUSTED_ORIGINS`. Zum Wechsel auf PostgreSQL (P1.4) ist der Unterbau inzwischen da — `settings.py` schaltet über `DB_ENGINE=postgres` um; offen ist der Umzug selbst, nicht die Unterstützung.
 
 ---
 
