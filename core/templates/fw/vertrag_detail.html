@@ -84,8 +84,31 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 {% if kopf_eigentuemer %}<div class="fw-pz"><span>Mandat</span><b>{{ kopf_eigentuemer }}</b></div>{% endif %}
                 <div class="fw-pz"><span>Liegenschaft</span><b>{{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.ort }}</b></div>
                 <div class="fw-pz"><span>Objekt</span><b>{{ v.einheit.bezeichnung }}</b></div>
-                <div class="fw-pz"><span>Vertrag</span><b>{{ v.beginn|date:"d.m.Y" }}{% if v.ende %} – {{ v.ende|date:"d.m.Y" }}{% endif %}</b></div>
-                <div class="fw-pz"><span>Sprache</span><b>{{ v.mieter.get_sprache_display|default:"Deutsch" }}</b></div>
+{% comment %} DREI ZEILEN, NICHT FUENF (E2.75).
+
+   «Vertrag» (Beginn/Ende) und «Sprache» standen hier und stehen weiterhin
+   unter «Stammdaten» — Vertragsbeginn und Art in «Dauer und Kuendigung»,
+   die Sprache bei den Mieterangaben. Auf dem Deckblatt kosteten sie
+   gemessene 77 Pixel: Aktenkopf 645 -> 568, Reiterzeile y=942 -> 864.
+
+   EHRLICH ZUR WIRKUNG: Das reicht NICHT ueber den Falz. Bei 390x844 liegt
+   die Reiterzeile weiterhin 20 Pixel darunter, und im Echtbetrieb eher
+   mehr — der E2E-Bestand fuehrt kein Mandat, mit «Mandat» waeren es vier
+   Zeilen statt drei. Die Empfehlung, die zu dieser Kuerzung fuehrte, sprach
+   von «ueber den Falz»; die eigene Rechnung (942 minus 76) gab das nie her.
+   Festgehalten, damit niemand die Zahl spaeter fuer belegt haelt.
+
+   Der verbleibende Hebel ist nicht dieses Deckblatt, sondern die
+   Kennzahlenleiste darunter (206 Pixel).
+
+   WAS AUF EIN DECKBLATT GEHOERT: wo das Mietverhaeltnis haengt und wer es
+   betreut. Die Sprache des Mieters gehoert zur Person, nicht zum Vertrag;
+   das Beginndatum steht zudem in den Kennzahlen direkt darunter.
+
+   Vor dem Streichen geprueft, dass beide Angaben woanders vollstaendig
+   stehen — beim Enddatum stimmte das NICHT, siehe den Kommentar bei «Dauer
+   und Kuendigung». Erst nachdem das dort ergaenzt war, durfte die Zeile
+   hier weg. {% endcomment %}
             </div>
             <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
                 {% for art, text in kopf_chips %}<span class="fw-chip fw-{{ art }}">{{ text }}</span>{% endfor %}
@@ -238,7 +261,22 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-gruppe">Dauer und Kündigung</div>
             <div class="fw-dz"><div class="fw-dl">Vertragsbeginn</div><div class="fw-dv">{{ v.beginn|date:"d.m.Y" }}</div></div>
             <div class="fw-dz"><div class="fw-dl">Art</div><div class="fw-dv">
-                {% if v.ist_befristet %}Befristet bis {{ v.ende|date:"d.m.Y" }}{% else %}Unbefristet{% endif %}
+                {% comment %} DAS ENDE STEHT AUCH BEIM UNBEFRISTETEN VERTRAG (E2.75).
+
+   `ende` wird laut Modellkommentar «auch bei einem gekündigten UNbefristeten
+   Vertrag gesetzt (per_datum)»; `ist_befristet` trennt nur die beiden
+   Rechtsgründe. Die frühere Fassung zeigte deshalb bei einem gekündigten
+   unbefristeten Vertrag «Unbefristet» OHNE Datum — das Enddatum stand dann
+   nur noch im Deckblatt.
+
+   Aufgefallen beim Kürzen des Deckblatts: Die Zeile «Vertrag» dort zu
+   streichen, haette dem gekuendigten unbefristeten Vertrag sein Enddatum
+   genommen. Die Liste der erfassten Kuendigungen darunter faengt das nicht
+   auf — sie steht unter `{% templatetag openblock %} if kuendigungen
+   {% templatetag closeblock %}` und bleibt leer, wenn niemand eine erfasst
+   hat. {% endcomment %}
+                {% if v.ist_befristet %}Befristet bis {{ v.ende|date:"d.m.Y" }}
+                {% else %}Unbefristet{% if v.ende %} · gekündigt per {{ v.ende|date:"d.m.Y" }}{% endif %}{% endif %}
                 <div style="margin-top:7px"><form method="post" action="/neu/vertraege/{{ v.id }}/status/" style="display:flex;align-items:center;background:var(--ds-surface-2);border-radius:var(--ds-radius-sm);padding:2px;gap:2px"
               onsubmit="return confirm('Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen.');">
             {% csrf_token %}

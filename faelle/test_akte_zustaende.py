@@ -328,18 +328,32 @@ class PfadTests(TestCase):
         import re
         return re.findall(r'<div class="fw-pz"><span>([^<]+)</span><b>([^<]*)', html)
 
+    #: «Vertrag» und «Sprache» standen hier bis E2.75 und sind es nicht mehr.
+    #:
+    #: NICHT WEIL DER TEST STÖRTE, sondern weil das Deckblatt gekürzt wurde:
+    #: Die beiden Zeilen kosteten gemessene 77 Pixel und schoben die
+    #: Reiterzeile am Telefon nach unten (Aktenkopf 645 -> 568). Beide
+    #: Angaben stehen weiterhin unter «Stammdaten».
+    #:
+    #: Die Zusicherung dieses Tests bleibt unverändert: Was im Kopf steht,
+    #: steht auf einer EIGENEN Zeile mit Beschriftung und Wert — das war der
+    #: Befund vom 20.08.2026 und der ist nicht erledigt, nur kürzer geworden.
+    #: Dass die beiden Angaben nicht verloren gingen, hält
+    #: `DeckblattTests.test_beides_steht_weiterhin_unter_stammdaten` fest.
+    IM_KOPF = ('Liegenschaft', 'Objekt')
+
     def test_jede_angabe_hat_eine_eigene_zeile(self):
         zeilen = dict(self._pfadzeilen(self._seite()))
         self.assertTrue(zeilen, 'Es wurde keine einzige Pfadzeile gefunden.')
         # Mandat nur, wenn ein Eigentuemer hinterlegt ist — die uebrigen immer.
-        for angabe in ('Liegenschaft', 'Objekt', 'Vertrag', 'Sprache'):
+        for angabe in self.IM_KOPF:
             with self.subTest(angabe=angabe):
                 self.assertIn(angabe, zeilen)
 
     def test_die_zeilen_tragen_auch_werte(self):
-        """Sonst bestuenden fuenf leere Beschriftungen die Pruefung oben."""
+        """Sonst bestuenden leere Beschriftungen die Pruefung oben."""
         zeilen = dict(self._pfadzeilen(self._seite()))
-        for angabe in ('Liegenschaft', 'Objekt', 'Vertrag'):
+        for angabe in self.IM_KOPF:
             with self.subTest(angabe=angabe):
                 self.assertTrue(zeilen.get(angabe, '').strip(),
                                 f'Die Zeile «{angabe}» hat keinen Wert.')
@@ -353,3 +367,90 @@ class PfadTests(TestCase):
                 self.assertNotIn(
                     zeichen, kopf,
                     f'{zeichen!r} deutet auf die alte einzeilige Kette hin.')
+
+
+class DeckblattTests(TestCase):
+    """Was auf dem Deckblatt steht — und was nur deshalb weg darf, weil es
+    woanders vollständig steht.
+
+    E2.75 hat «Vertrag» (Beginn/Ende) und «Sprache» aus dem Aktenkopf
+    genommen: gemessene 77 Pixel, die am Telefon die Reiterzeile nach unten
+    schoben.
+
+    DER GRUND FÜR DIESE KLASSE IST DER BEINAHE-FEHLER DABEI. Die Begründung
+    lautete «steht ja unter Stammdaten». Für die Sprache stimmte das. Für das
+    Enddatum NICHT: `Mietvertrag.ende` wird laut Modellkommentar «auch bei
+    einem gekündigten UNbefristeten Vertrag gesetzt», und die Stammdaten
+    zeigten dort nur «Unbefristet» — ohne Datum. Das Deckblatt war für diesen
+    Fall die einzige Stelle.
+
+    Die Zeile durfte erst weg, nachdem die Stammdaten den Fall abdeckten.
+    Diese Tests halten beide Hälften fest.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def setUp(self):
+        self.client.force_login(self.a.benutzer)
+
+    def _seite(self):
+        antwort = self.client.get(f'/neu/vertraege/{self.a.vertrag.pk}/')
+        self.assertEqual(antwort.status_code, 200)
+        return antwort.content.decode()
+
+    def _aktenkopf(self, html):
+        """Nur der Aktenkopf, nicht die ganze Seite.
+
+        Ohne diese Eingrenzung prüfte der Test die Seite als Ganzes und wäre
+        grün geblieben, weil «Sprache» weiter unten in den Stammdaten steht —
+        genau dort, wo sie hingehört.
+        """
+        start = html.index('class="fw-aktenkopf"')
+        return html[start:html.index('data-panel=', start)]
+
+    def test_das_deckblatt_fuehrt_weder_sprache_noch_vertragsdatum(self):
+        kopf = self._aktenkopf(self._seite())
+        self.assertNotIn('>Sprache<', kopf)
+        self.assertNotIn('>Vertrag<', kopf)
+
+    def test_beides_steht_weiterhin_unter_stammdaten(self):
+        """Gestrichen heisst verschoben, nicht verloren."""
+        html = self._seite()
+        self.assertIn('>Sprache<', html)
+        self.assertIn('Vertragsbeginn', html)
+
+    def test_ein_gekuendigter_unbefristeter_vertrag_zeigt_sein_ende(self):
+        """Der Fall, der die Streichung beinahe zu einem Datenverlust gemacht
+        hätte.
+
+        `ist_befristet` bleibt False — es ist kein befristeter Vertrag,
+        sondern ein gekündigter. Die Stammdaten zeigten dafür früher nur
+        «Unbefristet».
+        """
+        from datetime import date as _date
+
+        with mandant(self.a.organisation):
+            v = self.a.vertrag
+            v.ist_befristet = False
+            v.ende = _date(2026, 12, 31)
+            v.save(update_fields=['ist_befristet', 'ende'])
+        html = self._seite()
+        self.assertIn('Unbefristet', html)
+        self.assertIn('31.12.2026', html,
+                      'Das Enddatum eines gekündigten unbefristeten Vertrags '
+                      'erscheint nirgends — es stand nur im Deckblatt.')
+
+    def test_beim_befristeten_bleibt_es_bei_befristet_bis(self):
+        """Die Ergänzung darf den anderen Zweig nicht verändern."""
+        from datetime import date as _date
+
+        with mandant(self.a.organisation):
+            v = self.a.vertrag
+            v.ist_befristet = True
+            v.ende = _date(2027, 6, 30)
+            v.save(update_fields=['ist_befristet', 'ende'])
+        html = self._seite()
+        self.assertIn('Befristet bis', html)
+        self.assertNotIn('gekündigt per', html)
