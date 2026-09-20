@@ -108,6 +108,13 @@ AUSNAHMEN = {
     'rentals.AbnahmeMangel.mieteranteil':
      'BERECHNET aus der Lebensdauer (`berechne_mieteranteil`, '
      'abnahme.py:100), nicht eingegeben',
+    'crm.Organisation.abo_start':
+     'setzt `core/services/onboarding.py` beim Anlegen der Organisation — '
+     'der Beginn der Testphase ist kein Wert, den jemand eintippt',
+    'crm.Organisation.abo_bis':
+     'setzt derselbe Dienst (heute + TESTPHASE_TAGE). Ein Formular dafuer '
+     'waere gefaehrlich: Wer sein eigenes Testphasenende setzen kann, '
+     'verlaengert es',
     'finance.Buchung.zahlungseingang': 'setzt die Zuordnung im Bankabgleich (booking.py:133)',
     'finance.Buchung.ist_storno': 'setzt `finance/booking.py:156` beim Stornieren — angezeigt, nicht eingegeben',
     'faelle.Eingang.absender_email': 'kommt aus dem Postfach',

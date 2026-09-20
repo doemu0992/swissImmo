@@ -17,9 +17,15 @@ können — und dafür muss er überhaupt erst hineinkommen.
 | Zwei-Faktor beim Anmelden | **vorhanden** — TOTP, Notfallcodes, organisationsweite Pflicht |
 | Kollegen zu einer **bestehenden** Organisation hinzufügen | **vorhanden** — `core/views/fw/benutzer.py:121`, mit Rolle |
 | Vier Rollen | **vorhanden** — Inhaber, Verwalter, Sachbearbeiter, Lesezugriff |
-| Eine **Organisation** anlegen | **fehlt** — nur ein Notbehelf in `core/utils/market_data.py:172` und die E2E-Fixture |
-| Die **erste** Mitgliedschaft einer neuen Organisation | **fehlt** |
-| Registrierung, Testphase, Einladung per E-Mail | **fehlt** |
+| Eine **Organisation** anlegen | **war** nur ein Notbehelf in `core/utils/market_data.py:172` — seit E2.78 `organisation_anlegen` |
+| Die **erste** Mitgliedschaft einer neuen Organisation | **war** nicht möglich — seit E2.78 im selben Dienst |
+| Testphase | **seit E2.78** als `abo_start`/`abo_bis` am Modell |
+| Öffentliche Registrierung | fehlt — und bleibt vorerst weg, siehe Entscheid 1 |
+| Einladung per E-Mail | fehlt |
+
+*Die Befunde oben sind der Stand vom 20.09.2026 vor E2.78; die Spalte sagt,
+was daraus geworden ist. Der Abschnitt bleibt als Ausgangslage lesbar, weil
+sonst nicht mehr nachvollziehbar wäre, wogegen gebaut wurde.*
 
 **Die Lücke ist kleiner, als sie zuerst aussah, und genauer zu benennen.** Es
 fehlt kein Benutzerverwaltungs-System — das steht. Es fehlt der **Einstieg**:
@@ -36,9 +42,12 @@ Inhaber.
 Kollegen hinzufügen; wer keine Organisation hat, kommt nicht hinein.
 
 Jeder Onboarding-Entwurf muss genau diesen Knoten lösen: **ein Weg, der ohne
-bestehende Mitgliedschaft auskommt** — und der deshalb ausserhalb des
-Mandantenkontexts läuft. Das ist die heikelste Stelle der ganzen Sache, weil
-die Mandantentrennung genau darauf beruht, dass nichts ohne Kontext arbeitet.
+bestehende Mitgliedschaft auskommt.**
+
+Der erste Entwurf hielt das für die heikelste Stelle der ganzen Sache, weil
+die Mandantentrennung darauf beruht, dass nichts ohne Kontext arbeitet. Beim
+Bauen erwies sich das als falsch — siehe 3.2. Die Sorgfalt liegt woanders:
+darin, keine Organisation ohne Inhaber zurückzulassen.
 
 ---
 
@@ -69,16 +78,28 @@ Organisationen an. Eine Organisation ist in diesem System der Mandant — der
 Anker, an dem die gesamte Datentrennung hängt. Leere Mandanten sind kein
 Schönheitsfehler, sie sind Datensätze, die niemandem gehören.
 
-### 3.2 Die eine Stelle ohne Mandantenkontext
+### 3.2 Der Mandantenkontext ist gar nicht das Problem — korrigiert beim Bauen
 
-Das Anlegen läuft zwangsläufig ausserhalb `organisation_kontext`. Dafür gibt
-es im Bestand bereits den benannten Weg: `alle_organisationen`. Dieselbe
-Regel, die der Skill `mandantentrennung` für Systemläufe zulässt — **ein
-ausdrücklich benannter Ausstieg mit Begründung im Code**, nicht eine stille
-Umgehung.
+Dieser Abschnitt entwarf zuerst einen benannten Ausstieg aus dem
+Mandantenkontext (`alle_organisationen`), weil eine Organisation ja ohne
+Kontext entsteht. **Beim Bauen stellte sich heraus: den braucht es nicht.**
+Zwei Gründe, beide im Bestand nachgelesen statt angenommen:
 
-Der Abschnitt gehört eng geschnitten: Organisation anlegen, Benutzer anlegen,
-Mitgliedschaft anlegen, Kontext setzen. Danach läuft alles wieder normal.
+1. `Organisation` trägt **keinen** `TenantManager`. Sie IST der Anker, an dem
+   der Kontext hängt — ein Filter auf sich selbst wäre zirkulär.
+2. `TenantManager` filtert **Lesen**, nicht Schreiben. `core/tenancy.py` sagt
+   es wörtlich: «Schreiben braucht keinen Kontext, Lesen schon», weil ein
+   `create` nichts herausgibt.
+
+Nötig ist der Kontext an genau einer Stelle, und aus dem umgekehrten Grund:
+Die Mitgliedschaft entsteht mit `update_or_create`, und das **liest zuerst**.
+Dafür wird der Kontext auf die eben angelegte Organisation gesetzt — kein
+Ausstieg, sondern der normale Weg.
+
+> Dreimal in dieser Reihe hat sich ein aus Überlegung geschriebener Entwurf
+> beim Nachmessen als zu pessimistisch erwiesen. Der Bestand ist freundlicher
+> als die Vermutung — was kein Grund ist, weniger nachzusehen, sondern einer,
+> Entwürfe als Vermutung zu kennzeichnen.
 
 ### 3.3 Testphase
 
@@ -144,13 +165,19 @@ fällt — gebaut und getestet werden kann er vorher.
 
 ## 5. Reihenfolge
 
-| Schritt | Inhalt | Abhängig von |
+| Schritt | Inhalt | Stand |
 |---|---|---|
-| 1 | Felder `abo_start`/`abo_bis` an `Organisation` | — |
-| 2 | Dienst `organisation_anlegen(firma, benutzer)` mit benanntem Kontext-Ausstieg, samt Isolationstest | 1 |
-| 3 | `/registrieren/` mit E-Mail-Bestätigung und Drosselung | 2 |
-| 4 | Einladung per E-Mail statt Passwortvergabe | — |
-| 5 | Scharfschalten | PostgreSQL-Umzug, Wiederherstellungs-Probelauf |
+| 1 | Felder `abo_start`/`abo_bis` an `Organisation` | **erledigt** (E2.78) |
+| 2 | Dienst `organisation_anlegen(...)` samt Isolationstests | **erledigt** (E2.78, `core/services/onboarding.py`) |
+| 2a | Management-Command `organisation_anlegen` | **erledigt** (E2.78) |
+| 3 | `/registrieren/` mit E-Mail-Bestätigung und Drosselung | offen — und nach Entscheid 1 unten vorerst **nicht** vorgesehen |
+| 4 | Einladung per E-Mail statt Passwortvergabe | offen |
+| 5 | Scharfschalten | wartet auf PostgreSQL-Umzug und Wiederherstellungs-Probelauf |
+
+Der Command verweigert eine **zweite** Organisation, solange nicht `--zweite`
+mitgegeben wird, und nennt im Fehlertext die Bedingungen aus
+`docs/PHASE-2-ABSCHLUSS.md`. Damit steht die harte Grenze im Weg und nicht
+nur im Text.
 
 Die Schritte 1 bis 4 sind unabhängig von der Entitlement-Arbeit und
 unabhängig vom Zahlungsanbieter. Schritt 5 ist ein Entscheid, kein Bau.
@@ -171,6 +198,14 @@ unabhängig vom Zahlungsanbieter. Schritt 5 ist ein Entscheid, kein Bau.
 2. **Länge der Testphase.** MARKT.md nennt 30 Tage als Marktstandard und
    führt die Frage als offen.
 
-3. **Was am Ende der Testphase geschieht** — sperren wie bei Zahlungsverzug
+3. **Welche Stufe während der Testphase gilt.** Heute bekommt eine neu
+   angelegte Organisation `abo_plan='pro'` — den Vorgabewert des Modells. In
+   der bestätigten Vierer-Struktur gibt es `pro` nicht. Das ist folgenlos,
+   solange keine Prüfstelle den Plan abfragt (gemessen: keine), und wird mit
+   Schritt 7 des Entitlement-Entwurfs erledigt. Zu entscheiden ist dann, ob
+   eine Testphase auf der höchsten Stufe läuft (alles zeigen, was man kaufen
+   kann) oder auf der gebuchten.
+
+4. **Was am Ende der Testphase geschieht** — sperren wie bei Zahlungsverzug
    (Lesen und Export), oder vorher aktiv nachfassen. Das ist eine
    Vertriebsfrage mit technischer Folge.
