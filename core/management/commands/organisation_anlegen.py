@@ -50,9 +50,6 @@ class Command(BaseCommand):
                                  'über «Passwort vergessen».')
         parser.add_argument('--vorname', default='')
         parser.add_argument('--nachname', default='')
-        parser.add_argument('--tage', type=int, default=None,
-                            help='Länge der Testphase in Tagen (Vorgabe 30). '
-                                 '0 heisst: keine Testphase.')
         parser.add_argument('--zweite', action='store_true',
                             help='Bestätigt, dass eine WEITERE Organisation '
                                  'entstehen darf (siehe Modulkopf).')
@@ -63,8 +60,7 @@ class Command(BaseCommand):
         from django.db import transaction
 
         from crm.models import Organisation
-        from core.services.onboarding import (TESTPHASE_TAGE, OnboardingFehler,
-                                              organisation_anlegen)
+        from core.services.onboarding import OnboardingFehler, organisation_anlegen
 
         vorhanden = Organisation.objects.count()
         if vorhanden and not o['zweite']:
@@ -75,15 +71,10 @@ class Command(BaseCommand):
                 'PostgreSQL, einen Wiederherstellungs-Probelauf und 2FA. '
                 'Wenn das erledigt ist: noch einmal mit --zweite.')
 
-        tage = TESTPHASE_TAGE if o['tage'] is None else o['tage']
-        tage = tage or None          # 0 -> keine Testphase
-
         if o['probe']:
             self.stdout.write('Probelauf — es wird nichts angelegt.')
             self.stdout.write(f"  Organisation  {o['firma']}")
             self.stdout.write(f"  Inhaber       {o['benutzer']} <{o['email']}>")
-            self.stdout.write(f"  Testphase     {tage or 'keine'}"
-                              + (' Tage' if tage else ''))
             self.stdout.write(f"  Bestand       {vorhanden} Organisation(en)")
             return
 
@@ -95,7 +86,7 @@ class Command(BaseCommand):
                 organisation, benutzer, neu = organisation_anlegen(
                     firma=o['firma'], benutzername=o['benutzer'], email=o['email'],
                     passwort=o['passwort'], vorname=o['vorname'],
-                    nachname=o['nachname'], testphase_tage=tage)
+                    nachname=o['nachname'])
         except OnboardingFehler as fehler:
             raise CommandError(str(fehler)) from fehler
 
@@ -104,8 +95,6 @@ class Command(BaseCommand):
         self.stdout.write(
             f'  Inhaber: {benutzer.username}'
             + ('  (neu angelegt)' if neu else '  (bestehender Benutzer)'))
-        if organisation.abo_bis:
-            self.stdout.write(f'  Testphase bis {organisation.abo_bis:%d.%m.%Y}')
         if not o['passwort'] and neu:
             self.stdout.write(
                 '  Kein Passwort gesetzt — der Weg führt über «Passwort vergessen».')

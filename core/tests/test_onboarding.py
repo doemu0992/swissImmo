@@ -11,12 +11,9 @@ Test, der den Zugriff über die Grenze **aktiv versucht**. Bei einem Dienst,
 der Mandanten erzeugt, heisst das zweierlei: Die neue Organisation darf
 nichts von den bestehenden sehen, und die bestehenden nichts von ihr.
 """
-from datetime import date
-
 from django.test import TestCase
 
-from core.services.onboarding import (TESTPHASE_TAGE, OnboardingFehler,
-                                      organisation_anlegen)
+from core.services.onboarding import OnboardingFehler, organisation_anlegen
 from core.tenancy import organisation_kontext as mandant
 
 
@@ -48,18 +45,26 @@ class AnlegenTests(TestCase):
         self.assertIn(Mitgliedschaft.ROLLE_INHABER,
                       list(benutzer.groups.values_list('name', flat=True)))
 
-    def test_die_testphase_steht_als_datum(self):
-        org, _b, _n = organisation_anlegen(
-            firma='Muster AG', benutzername='lea', email='lea@muster.ch',
-            heute=date(2026, 9, 20))
-        self.assertEqual(org.abo_start, date(2026, 9, 20))
-        self.assertEqual((org.abo_bis - org.abo_start).days, TESTPHASE_TAGE)
+    def test_keine_abo_datumsfelder_an_der_organisation(self):
+        """Keine eigenen Abo-Datumsfelder — und das ist kein Versehen.
 
-    def test_ohne_testphase_bleibt_das_ende_offen(self):
-        org, _b, _n = organisation_anlegen(
-            firma='Muster AG', benutzername='lea', email='lea@muster.ch',
-            testphase_tage=None)
-        self.assertIsNone(org.abo_bis)
+        `docs/PLAN-V7.md` §4.1 gibt Beginn und Testphasenende eine eigene
+        Heimat in `abo.Abonnement` (Phase 3). Zwei Felder hier vorweg wären
+        dort die zweite Quelle für dieselbe Auskunft.
+
+        Dieser Test hält die Entscheidung fest, damit sie nicht
+        versehentlich rückgängig gemacht wird. Er prüft am MODELL, nicht am
+        Dienst: Wer die Felder wieder einführt, wird auch dann rot, wenn
+        dieser Dienst sie gar nicht setzt.
+        """
+        from crm.models import Organisation
+
+        vorhandene = {f.name for f in Organisation._meta.get_fields()}
+        for feld in ('abo_start', 'abo_bis'):
+            self.assertNotIn(
+                feld, vorhandene,
+                f'`{feld}` ist am 21.09.2026 entfernt worden — siehe '
+                'core/services/onboarding.py, Abschnitt «UND KEINE TESTPHASE».')
 
     def test_ein_bestehender_benutzer_wird_wiederverwendet(self):
         """Derselbe Mensch kann für zwei Verwaltungen arbeiten — das ist der

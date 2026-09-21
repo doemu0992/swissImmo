@@ -36,20 +36,33 @@ WAS ER NICHT TUT
 Kein Zahlungsvorgang, keine E-Mail, keine öffentliche Registrierung. Der
 Einstieg läuft über den Management-Command `organisation_anlegen`, also über
 jemanden mit Zugang zum Server. Das ist Absicht, siehe die Begründung dort.
+
+UND KEINE TESTPHASE
+-------------------
+Eine frühere Fassung dieses Dienstes setzte `abo_start`/`abo_bis` auf der
+Organisation. Beide Felder sind am 21.09.2026 wieder entfernt worden, und
+dieser Dienst deshalb mit ihnen. Der Grund ist einer, nicht zwei:
+
+`docs/PLAN-V7.md` §4.1 gibt beiden Angaben eine andere Heimat —
+`abo.Abonnement` mit den Feldern für Stufe, Status und «Testphase bis». Zwei
+Datumsfelder hier vorweg wären in Phase 3 die zweite Quelle für dieselbe
+Auskunft, und zwar die stille: Nichts im Bestand las sie (gemessen vor dem
+Entfernen), also hätte auch nichts widersprochen, wenn sie auseinanderlaufen.
+
+WAS DAMIT NICHT MEHR FESTGEHALTEN WIRD, und das ehrlich gesagt:
+`Organisation` hat **kein** Feld für ihr Entstehungsdatum. Beim Entfernen
+stand als zweite Begründung, `Organisation.erstellt_am` halte den Beginn
+ohnehin fest — das war falsch. Das Feld an `crm/models.py:183` gehört zu
+`Mitgliedschaft`. Aufgefallen ist es dem Test, nicht dem Lesen.
+
+Mittelbar steht der Zeitpunkt damit in der Mitgliedschaft des ersten
+Inhabers, die im selben `atomic`-Block entsteht. Ein eigenes Feld gehört,
+wenn es eines braucht, zu `abo.Abonnement` — nicht hierher.
 """
 from __future__ import annotations
 
-from datetime import date, timedelta
-
 from django.contrib.auth import get_user_model
 from django.db import transaction
-
-#: Länge der Testphase in Tagen.
-#:
-#: 30 ist der Marktstandard (Fairwalter), festgehalten in `docs/MARKT.md`
-#: Abschnitt 9 als offener Entscheid. Bis er fällt, ist dies eine Vorgabe und
-#: keine Festlegung — der Command nimmt `--tage` entgegen.
-TESTPHASE_TAGE = 30
 
 
 class OnboardingFehler(ValueError):
@@ -80,9 +93,7 @@ def _pruefe(firma: str, benutzername: str, email: str) -> None:
 @transaction.atomic
 def organisation_anlegen(firma: str, benutzername: str, email: str,
                          passwort: str | None = None,
-                         vorname: str = '', nachname: str = '',
-                         testphase_tage: int | None = TESTPHASE_TAGE,
-                         heute: date | None = None):
+                         vorname: str = '', nachname: str = ''):
     """Legt Organisation, Inhaber und Mitgliedschaft an. Gibt beide zurück.
 
     ALLES ODER NICHTS (`transaction.atomic`): Eine Organisation ohne Inhaber
@@ -102,25 +113,23 @@ def organisation_anlegen(firma: str, benutzername: str, email: str,
     email = (email or '').strip()
     _pruefe(firma, benutzername, email)
 
-    heute = heute or date.today()
     Benutzer = get_user_model()
 
     # `abo_plan` bleibt bewusst auf dem Vorgabewert des Modells (`'pro'`).
     #
     # OFFEN UND BEKANNT: Die bestätigte Struktur aus `docs/MARKT.md` heisst
-    # start/team/professional/enterprise — `'pro'` gibt es darin nicht. Die
-    # Umstellung von drei auf vier Stufen ist Schritt 7 des
-    # Entitlement-Entwurfs und hier absichtlich nicht vorweggenommen: Ein
-    # Wert, den `ABO_CHOICES` nicht kennt, wäre schlimmer als der falsche
-    # aus der alten Liste, weil ihn keine Auswertung je treffen würde.
+    # start/team/professional/enterprise — `'pro'` gibt es darin nicht.
+    # `docs/PLAN-V7.md` D7 entscheidet, wohin das führt: `abo_plan` entfällt
+    # zugunsten von `abo.Abonnement`, und die Marktnamen kommen als Klartext
+    # in `core/funktionen.py`. Das ist Phase 3 (E3) und hier absichtlich
+    # nicht vorweggenommen: Ein Wert, den `ABO_CHOICES` nicht kennt, wäre
+    # schlimmer als der falsche aus der alten Liste, weil ihn keine
+    # Auswertung je treffen würde.
     #
-    # Solange keine Prüfstelle den Plan abfragt (gemessen: keine), hat das
-    # keine Wirkung ausser auf der Abo-Seite.
-    organisation = Organisation.objects.create(
-        firma=firma,
-        abo_start=heute,
-        abo_bis=(heute + timedelta(days=testphase_tage)) if testphase_tage else None,
-    )
+    # Solange keine Prüfstelle den Plan abfragt (gemessen: keine — die
+    # Stufe kommt heute aus `core/funktionen.py:stufe_von`), hat das keine
+    # Wirkung ausser auf der Abo-Seite.
+    organisation = Organisation.objects.create(firma=firma)
 
     benutzer = Benutzer.objects.filter(username__iexact=benutzername).first()
     neu = benutzer is None

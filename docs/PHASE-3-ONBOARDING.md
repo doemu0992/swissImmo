@@ -9,6 +9,34 @@ können — und dafür muss er überhaupt erst hineinkommen.
 
 ---
 
+> ## Nachtrag 21.09.2026 — zwei Korrekturen, eine davon schwer
+>
+> **1. Die Testphasen-Felder sind wieder weg.** `abo_start`/`abo_bis` kamen
+> mit E2.78 an `Organisation` und sind am 21.09.2026 mit Migration
+> `crm/0043` wieder entfernt worden. `docs/PLAN-V7.md` §4.1 gibt dieselbe
+> Auskunft einem eigenen Modell: `abo.Abonnement` mit «Testphase bis». Zwei
+> Felder hier vorweg wären dort die zweite Quelle — und die stille, weil
+> nichts sie las. Betroffen: Abschnitte 3.1, 3.3 und Schritt 1 in
+> Abschnitt 5. Der Dienst und der Command bleiben, sie schliessen eine
+> echte Lücke.
+>
+> **2. Dieses Dokument hat `core/funktionen.py` übersehen.** Es beschreibt
+> Phase 3 so, als sei die Stufenlogik noch zu erfinden. Tatsächlich stand
+> sie schon vor diesem Entwurf im Bestand: 171 Zeilen mit `FUNKTIONEN`,
+> `MODULE`, den vier aufbauenden Stufen, `GRENZEN` und `stufe_von()` — in
+> Betrieb an `faelle/akten.py:170`. Und `docs/PLAN-V7.md` hatte die
+> Namensfrage bereits entschieden (**D7**: eine Quelle, `funktionen.py`
+> bekommt die Marktnamen, `Organisation.abo_plan` entfällt zugunsten von
+> `Abonnement`), samt eigenem Arbeitspaket **M8** und Etappe **E3**.
+>
+> Die Ursache war keine Fehleinschätzung, sondern eine ausgelassene
+> Lektüre: `ANALYSE.md` und `MARKT.md` gelesen, `PLAN-V7.md` nicht. Daraus
+> entstand mit E2.79 ein zweites Stufenmodul (`core/entitlements.py`), das
+> am 21.09.2026 wieder entfernt wurde. Festgehalten in
+> `.claude/skills/bekannte-fallen`.
+
+---
+
 ## 1. Was es gibt und was fehlt — nachgemessen
 
 | Schritt | Stand |
@@ -19,7 +47,7 @@ können — und dafür muss er überhaupt erst hineinkommen.
 | Vier Rollen | **vorhanden** — Inhaber, Verwalter, Sachbearbeiter, Lesezugriff |
 | Eine **Organisation** anlegen | **war** nur ein Notbehelf in `core/utils/market_data.py:172` — seit E2.78 `organisation_anlegen` |
 | Die **erste** Mitgliedschaft einer neuen Organisation | **war** nicht möglich — seit E2.78 im selben Dienst |
-| Testphase | **seit E2.78** als `abo_start`/`abo_bis` am Modell |
+| Testphase | fehlt — E2.78 legte `abo_start`/`abo_bis` an, am 21.09.2026 wieder entfernt (siehe Nachtrag). Heimat ist `abo.Abonnement`, `PLAN-V7.md` §4.1 |
 | Öffentliche Registrierung | fehlt — und bleibt vorerst weg, siehe Entscheid 1 |
 | Einladung per E-Mail | fehlt |
 
@@ -67,7 +95,7 @@ E-Mail mit Bestätigungslink (Token, begrenzt gültig)
       +-- Organisation anlegen       (firma aus dem Formular)
       +-- Benutzer anlegen           (falls noch nicht vorhanden)
       +-- Mitgliedschaft anlegen     (Rolle: Inhaber)
-      +-- Testphase setzen           (abo_bis = heute + N Tage)
+      +-- Testphase setzen           (in E3: abo.Abonnement, «Testphase bis»)
       |
       v
 Anmeldung, dann der bestehende Einrichtungsweg
@@ -101,21 +129,25 @@ Ausstieg, sondern der normale Weg.
 > als die Vermutung — was kein Grund ist, weniger nachzusehen, sondern einer,
 > Entwürfe als Vermutung zu kennzeichnen.
 
-### 3.3 Testphase
+### 3.3 Testphase — gebaut und wieder zurückgenommen
 
-`docs/MARKT.md` nennt 30 Tage als Marktstandard (Fairwalter). Technisch
-braucht es dafür zwei Felder an der Organisation:
+`docs/MARKT.md` nennt 30 Tage als Marktstandard (Fairwalter).
 
-```python
-abo_start = models.DateField(null=True, blank=True)
-abo_bis   = models.DateField(null=True, blank=True)   # Ende der Testphase
-```
+Dieser Abschnitt schlug dafür zwei Felder an `Organisation` vor, E2.78 baute
+sie, und am 21.09.2026 sind sie wieder entfernt worden (Migration
+`crm/0043`). Der Gedanke dahinter bleibt richtig und gilt weiter:
 
-Die Testphase ist damit **kein eigener Zustand**, sondern ein Datum — und das
-passt genau auf die Zustandslogik aus dem Entitlement-Entwurf (Abschnitt 2C):
-Ist `abo_bis` überschritten und keine Zahlung hinterlegt, greift derselbe
-Weg wie bei Zahlungsverzug. Eine zweite Mechanik dafür wäre die Stelle, an
-der beide auseinanderlaufen.
+> Die Testphase ist **kein eigener Zustand**, sondern ein Datum — und das
+> passt auf die Zustandslogik aus dem Entitlement-Entwurf (Abschnitt 2C):
+> Ist das Datum überschritten und keine Zahlung hinterlegt, greift derselbe
+> Weg wie bei Zahlungsverzug. Eine zweite Mechanik dafür wäre die Stelle, an
+> der beide auseinanderlaufen.
+
+Falsch war nur der **Ort**. `docs/PLAN-V7.md` §4.1 führt das Datum bereits
+als Feld «Testphase bis» an `abo.Abonnement` — zusammen mit Stufe, Intervall,
+Status, Anbieter-Referenz und Kündigung, die alle davon abhängen. Ein Datum
+an der Organisation daneben wäre genau die zweite Quelle, vor der der Absatz
+oben warnt. Dass es niemand las, machte es nicht harmlos, sondern nur leise.
 
 ### 3.4 Einladung statt Selbstregistrierung für Kollegen
 
@@ -167,7 +199,7 @@ fällt — gebaut und getestet werden kann er vorher.
 
 | Schritt | Inhalt | Stand |
 |---|---|---|
-| 1 | Felder `abo_start`/`abo_bis` an `Organisation` | **erledigt** (E2.78) |
+| 1 | ~~Felder `abo_start`/`abo_bis` an `Organisation`~~ | **zurückgenommen** (21.09.2026) — gehört nach `abo.Abonnement`, E3 |
 | 2 | Dienst `organisation_anlegen(...)` samt Isolationstests | **erledigt** (E2.78, `core/services/onboarding.py`) |
 | 2a | Management-Command `organisation_anlegen` | **erledigt** (E2.78) |
 | 3 | `/registrieren/` mit E-Mail-Bestätigung und Drosselung | offen — und nach Entscheid 1 unten vorerst **nicht** vorgesehen |
@@ -196,15 +228,23 @@ unabhängig vom Zahlungsanbieter. Schritt 5 ist ein Entscheid, kein Bau.
    > ohnehin die Grundlage, und er lässt sich nicht missbrauchen.
 
 2. **Länge der Testphase.** MARKT.md nennt 30 Tage als Marktstandard und
-   führt die Frage als offen.
+   führt die Frage als offen. Sie wird mit `abo.Abonnement` beantwortet
+   (E3), nicht vorher — E2.78 hatte sie mit `TESTPHASE_TAGE = 30`
+   vorweggenommen und das ist mit den Feldern zurückgenommen worden.
 
 3. **Welche Stufe während der Testphase gilt.** Heute bekommt eine neu
    angelegte Organisation `abo_plan='pro'` — den Vorgabewert des Modells. In
    der bestätigten Vierer-Struktur gibt es `pro` nicht. Das ist folgenlos,
-   solange keine Prüfstelle den Plan abfragt (gemessen: keine), und wird mit
-   Schritt 7 des Entitlement-Entwurfs erledigt. Zu entscheiden ist dann, ob
-   eine Testphase auf der höchsten Stufe läuft (alles zeigen, was man kaufen
-   kann) oder auf der gebuchten.
+   solange keine Prüfstelle den Plan abfragt, und gemessen fragt ihn keine:
+   Die Stufe kommt heute aus `core/funktionen.py::stufe_von()`, das
+   `VORGABE_STUFE = 'verwaltung'` zurückgibt und den Plan gar nicht ansieht.
+
+   **Wie es weitergeht, ist bereits entschieden** — `docs/PLAN-V7.md` **D7**:
+   eine Quelle, `funktionen.py` bekommt die Marktnamen als Klartext,
+   `Organisation.abo_plan` entfällt zugunsten von `Abonnement`. Das ist
+   Arbeitspaket **M8**, Etappe **E3**. Offen bleibt davon nur die
+   Vertriebsfrage: ob eine Testphase auf der höchsten Stufe läuft (alles
+   zeigen, was man kaufen kann) oder auf der gebuchten.
 
 4. **Was am Ende der Testphase geschieht** — sperren wie bei Zahlungsverzug
    (Lesen und Export), oder vorher aktiv nachfassen. Das ist eine

@@ -118,6 +118,49 @@ Dazu kommen Wege ohne diese Namen: ein `ModelForm` mit `.save()`, ein
 Versuch: Wenn wirklich nichts anlegt, dann muss die Tabelle im Betrieb leer
 bleiben — und wenn sie es nicht tut, war der Grep zu eng.
 
+## 2d. Bevor etwas Neues gebaut wird: den Plan lesen, nicht nur die Analyse
+
+Am 21.09.2026 entstand `core/entitlements.py` — eine Tabelle mit
+Abo-Stufen, Funktionen pro Stufe und Grenzwerten, dazu eine Prüfstelle und
+zwei Testdateien. Im Bestand stand seit langem `core/funktionen.py`: 171
+Zeilen mit denselben Tabellen, derselben Prüfstelle, einer benannten Naht
+zum Abo (`stufe_von`) und **in Betrieb** an `faelle/akten.py:170`. Es hatte
+sogar eine eigene Testdatei, `core/tests/test_funktionen.py` — das Neue war
+also nicht einmal besser abgesichert.
+
+Der Grep hätte es gefunden. Er lief nicht, weil die Frage gar nicht mehr
+gestellt wurde: Gelesen worden waren `docs/ANALYSE.md` (was fehlt) und
+`docs/MARKT.md` (was verkauft wird) — beide beschreiben eine Lücke.
+`docs/PLAN-V7.md` blieb ungelesen, und dort stand beides schon: **D7**
+entschied die Stufennamen (eine Quelle, `funktionen.py` bekommt die
+Marktnamen), **M8** und **E3** führen die Arbeit als eigenes, später
+eingeplantes Paket. Die Frage, die dem Benutzer gestellt wurde, war dort
+bereits beantwortet — und die Arbeit gehörte in eine Etappe, die noch gar
+nicht dran war.
+
+**Die vier Dokumente sagen Verschiedenes, und nur eines sagt, was zu tun
+ist:**
+
+| Dokument | Beantwortet |
+|---|---|
+| `docs/ANALYSE.md` | Was im Bestand fehlt oder klemmt |
+| `docs/MARKT.md` | Was verkauft wird, zu welchem Preis |
+| `docs/UX-ANALYSE-V7.md` | Wie sich der Bestand bedient |
+| **`docs/PLAN-V7.md`** | **Was gebaut wird, in welcher Etappe, und welche Entscheide schon gefallen sind (D-Nummern)** |
+
+Vor jedem Vorschlag für neue Bausteine — ein Modul, ein Modell, eine
+Prüfstelle — zwei Handgriffe:
+
+```bash
+grep -n "^| D[0-9]\|^## \|^| M[0-9]\|^| E[0-9]" docs/PLAN-V7.md   # Entscheide, Pakete, Etappen
+grep -rn "STUFEN\|GRENZEN\|hat_funktion" --include=*.py core/      # gibt es die Tabelle schon?
+```
+
+Die teuerste Sorte Irrtum in dieser Reihe ist nicht der zu enge Grep (2c),
+sondern **eine Frage an den Benutzer, die ein Dokument schon beantwortet
+hat**. Sie sieht nach Sorgfalt aus und ist das Gegenteil: Sie lädt ein,
+einen Entscheid ein zweites Mal zu fällen, womöglich anders.
+
 ## 3. Ein Dekorator bindet an die nächste Definition
 
 Zweimal passiert, in `core/views/fw/arbeit.py` und `core/views/fw/liegenschaft_crud.py`: eine Hilfsfunktion **zwischen** Dekorator und Ansicht eingefügt. Python bindet den Dekorator dann an die Hilfsfunktion.

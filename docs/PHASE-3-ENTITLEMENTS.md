@@ -9,6 +9,46 @@ diesen Tabellen Code, ohne dass die Regeln über 329 Ansichten verstreuen?**
 
 ---
 
+> ## Nachtrag 21.09.2026 — die Frage war schon beantwortet
+>
+> **Diese Notiz hat `core/funktionen.py` übersehen, und damit ihre eigene
+> Leitfrage.** Der Abschnitt 0 unten heisst «nachgemessen, nicht erinnert»
+> und ist genau an der entscheidenden Stelle beides nicht gewesen.
+>
+> Im Bestand steht seit vor diesem Entwurf:
+>
+> | | |
+> |---|---|
+> | `core/funktionen.py` | 171 Zeilen: `FUNKTIONEN` (12 Schlüssel), `MODULE` (3), vier aufbauende Stufen `basis`/`aufbau`/`verwaltung`/`portfolio`, `GRENZEN` für Einheiten und Nutzer, `VORGABE_STUFE` |
+> | `stufe_von(organisation)` | die eine Naht — Docstring: «Wenn Phase 3 echte Abodaten bringt, ändert sich ausschliesslich diese eine Funktion — kein Aufrufer.» |
+> | `hat_funktion(organisation, schluessel)` | die Prüfstelle, die diese Notiz entwirft |
+> | in Betrieb | `faelle/akten.py:170` |
+>
+> Der Satz in Abschnitt 0 — «Es gibt nichts abzulösen, nur etwas
+> einzuziehen» — stimmt für die *verstreuten Prüfungen*, aber nicht für die
+> *Prüfstelle*: Die gibt es, samt der Naht zum Abo und samt der
+> Entscheidung, wie sie später an echte Daten kommt.
+>
+> **Auch die Namensfrage war entschieden.** `docs/PLAN-V7.md` **D7**: eine
+> Quelle — `funktionen.py` bekommt die Marktnamen aus MARKT.md als
+> Klartext, `Organisation.abo_plan` entfällt zugunsten von
+> `abo.Abonnement`. Dazu Arbeitspaket **M8** und Etappe **E3** mit den
+> Modellen aus §4.1.
+>
+> **Was daraus folgte:** Mit E2.79 entstand `core/entitlements.py` — ein
+> zweites Stufenmodul neben dem vorhandenen, mit eigenen Tabellen und
+> eigenen Namen. Am 21.09.2026 wieder entfernt. Ursache war keine
+> Fehleinschätzung, sondern eine ausgelassene Lektüre: `ANALYSE.md` und
+> `MARKT.md` gelesen, `PLAN-V7.md` nicht.
+>
+> **Wie diese Notiz weiterzulesen ist:** Der Entwurf des *Dekorators*
+> (Abschnitt 3) und die heiklen Stellen (Abschnitt 5) bleiben brauchbar —
+> sie beschreiben, was `funktionen.py` noch fehlt. Alles, was eine
+> **neue** Stufen- oder Funktionstabelle vorschlägt, ist gegenstandslos:
+> Die Tabelle existiert und ist laut D7 die einzige.
+
+---
+
 ## 0. Was heute gilt — nachgemessen, nicht erinnert
 
 | | Befund |
@@ -19,11 +59,18 @@ diesen Tabellen Code, ohne dass die Regeln über 329 Ansichten verstreuen?**
 | Speicher-Buchhaltung | **existiert nicht.** Die 5/50/150/300 GB aus MARKT.md haben heute keine Messgrundlage |
 | Nutzerzählung | über `crm.Mitgliedschaft` möglich. Achtung: zählt Mitgliedschaften, nicht Menschen — eine Person kann in mehreren Verwaltungen arbeiten |
 | Einheitenzählung | `Einheit.objects.count()` ist durch den `TenantManager` bereits je Organisation |
+| `core/funktionen.py` | **beim Messen übersehen** (nachgetragen 21.09.2026): Funktions- und Stufentabellen, `GRENZEN`, `stufe_von()`, `hat_funktion()`, in Betrieb an `faelle/akten.py:170`. Siehe Nachtrag oben |
 
 Heute hat also jede Verwaltung jede Funktion, und die Preisseite ist eine
 Absichtserklärung. Für Phase 3 heisst das: **Es gibt nichts abzulösen, nur
 etwas einzuziehen.** Das ist die angenehme Ausgangslage — kein Bestand an
 verstreuten Prüfungen, den man erst einsammeln müsste.
+
+> **Korrektur 21.09.2026:** Der Absatz stimmt für die verstreuten Prüfungen,
+> nicht für die Prüfstelle. `hat_funktion()` und `stufe_von()` gibt es;
+> `stufe_von()` gibt heute nur `VORGABE_STUFE` zurück, statt echte Abodaten
+> zu lesen. Einzuziehen ist also nicht die Prüfstelle, sondern das, was sie
+> fragt.
 
 ---
 
@@ -120,8 +167,8 @@ eine Absage laufen zu lassen. Genau das braucht eine Abo-Sperre auch — ein
 Schloss neben dem Menüeintrag verkauft, eine 403-Seite verärgert.
 
 ```python
-@rolle_erforderlich(*TEAM_ROLLEN)          # läuft ZUERST
 @merkmal_erforderlich('eigentuemerportal')
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_eigentuemerportal(request):
     ...
 ```
@@ -129,16 +176,9 @@ def fw_eigentuemerportal(request):
 Der Dekorator setzt `view.benoetigtes_merkmal`; die Navigation liest es wie
 heute schon `benoetigte_rollen`.
 
-**Die Reihenfolge stand hier zuerst falsch herum** (Merkmal oben, Rolle
-darunter). Die Absicht war richtig — wer die Rolle nicht hat, soll nicht
-erfahren, welche Abo-Stufe ihm fehlte — die Schreibweise nicht: Zur Laufzeit
-läuft der **äussere** Dekorator zuerst. Also gehört `rolle_erforderlich`
-nach oben.
-
-Nachgemessen beim Bauen (E2.81), zusammen mit der zweiten Frage dahinter:
-`benoetigtes_merkmal` überlebt den äusseren Dekorator, weil `functools.wraps`
-das `__dict__` mitnimmt. Der Sweep findet die Marke deshalb auch dann, wenn
-`rolle_erforderlich` darüber steht.
+**Reihenfolge ist bedeutsam:** erst Rolle, dann Merkmal — oder umgekehrt? Wer
+die Rolle nicht hat, soll nicht erfahren, welche Abo-Stufe ihm fehlte.
+Vorschlag: Rolle zuerst, Merkmal danach.
 
 ### 3.3 Die Grenze greift zentral, nicht in jeder Ansicht
 
@@ -310,12 +350,11 @@ kann, ist ein Versprechen ohne Deckung — dieselbe Sorte wie der «API-Zugang»
 
 ## 6. Vorgeschlagene Reihenfolge
 
-| Schritt | Inhalt | Stand |
+| Schritt | Inhalt | Abhängig von |
 |---|---|---|
-| 1 | `core/entitlements.py` mit Tabellen + `darf()`, noch ohne Sperren. Test: Tabellen = MARKT.md | **erledigt** (E2.79) |
-| 2 | Sweep-Test über alle benannten URLs (gemessen 326), alle auf der Freiliste | **erledigt** (E2.80) |
-| 2b | `merkmal_erforderlich` als Mechanismus, noch nirgends angewendet | **erledigt** (E2.81) |
-| 3 | Funktionssperren einziehen, Freiliste schrumpfen | wartet auf Entscheid 7 — solange `abo_plan` auf `pro` steht, lässt der Dekorator alles durch |
+| 1 | `core/entitlements.py` mit Tabellen + `darf()`, noch ohne Sperren. Test: Tabellen = MARKT.md | Entscheid über Stufen |
+| 2 | Sweep-Test über alle 329 URLs, alle auf der Freiliste | 1 |
+| 3 | Funktionssperren einziehen, Freiliste schrumpfen | 2 |
 | 4 | Navigation zeigt Schloss statt Absage | 3 |
 | 5 | Grenzen (Einheiten, Nutzer) per Signal + benannter Ausstieg | 1 |
 | 6 | Zustands-Middleware | Zahlungsanbieter |

@@ -98,22 +98,6 @@ class Organisation(models.Model):
     ABO_CHOICES = [('start', 'Start'), ('pro', 'Pro'), ('premium', 'Premium')]
     abo_plan = models.CharField("Abo-Plan", max_length=10, choices=ABO_CHOICES, default='pro')
     abo_jaehrlich = models.BooleanField("Jährliche Abrechnung", default=False)
-    # TESTPHASE ALS DATUM, NICHT ALS ZUSTAND (E2.78)
-    #
-    # `abo_bis` ist das Ende der Testphase. Es ist bewusst KEIN eigener Status
-    # neben `abo_plan`: Läuft das Datum ab, greift derselbe Weg wie bei
-    # Zahlungsverzug — lesen und exportieren, nichts Neues anlegen. Ein
-    # zweiter Zustand dafür wäre die Stelle, an der Testphase und Verzug
-    # auseinanderlaufen und irgendwann Verschiedenes bedeuten.
-    #
-    # Begründung und Zusammenhang: `docs/PHASE-3-ONBOARDING.md` (3.3) und
-    # `docs/PHASE-3-ENTITLEMENTS.md` (2C). Die Prüfstelle, die sie auswertet,
-    # gibt es noch nicht — beide Felder sind heute reine Buchführung.
-    #
-    # `null=True`, weil der Bestand sie nicht hat und eine Organisation ohne
-    # Testphase (die eigene) kein Fehler ist.
-    abo_start = models.DateField("Abo/Testphase seit", null=True, blank=True)
-    abo_bis = models.DateField("Testphase bis", null=True, blank=True)
     # Standard AUS: Ein Schalter, der beim Einführen sofort greift, sperrt jeden
     # aus, der gerade kein Telefon zur Hand hat — die Inhaberin eingeschlossen.
     # Wer ihn setzt, zwingt sein Team beim nächsten Anmelden durch die
