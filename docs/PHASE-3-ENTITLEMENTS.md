@@ -306,7 +306,7 @@ kann, ist ein Versprechen ohne Deckung — dieselbe Sorte wie der «API-Zugang»
 | Schritt | Inhalt | Stand |
 |---|---|---|
 | 1 | `core/entitlements.py` mit Tabellen + `darf()`, noch ohne Sperren. Test: Tabellen = MARKT.md | **erledigt** (E2.79) |
-| 2 | Sweep-Test über alle 329 URLs, alle auf der Freiliste | 1 |
+| 2 | Sweep-Test über alle benannten URLs (gemessen 326), alle auf der Freiliste | **erledigt** (E2.80) |
 | 3 | Funktionssperren einziehen, Freiliste schrumpfen | 2 |
 | 4 | Navigation zeigt Schloss statt Absage | 3 |
 | 5 | Grenzen (Einheiten, Nutzer) per Signal + benannter Ausstieg | 1 |

@@ -145,6 +145,31 @@ def grenze(organisation, art: str) -> int | None:
     return GRENZEN[art][_stufe_von(organisation)]
 
 
+#: Das Attribut, das eine gesperrte Ansicht tragen wird.
+#:
+#: Vorbild ist `rolle_erforderlich`, das seine Anforderung als
+#: `benoetigte_rollen` an der View ablegt — damit die Navigation Einträge
+#: ausgrauen kann, statt den Benutzer in eine Absage laufen zu lassen. Eine
+#: Abo-Sperre braucht dasselbe: ein Schloss neben dem Menüeintrag verkauft,
+#: eine 403-Seite verärgert.
+#:
+#: Den Dekorator, der es setzt, gibt es noch nicht (Schritt 3). Der Name
+#: steht hier trotzdem, weil `core/tests/test_entitlement_abdeckung.py` ihn
+#: heute schon abfragt — und weil er damit an EINER Stelle festgelegt ist
+#: statt an zweien.
+MERKMAL_ATTRIBUT = 'benoetigtes_merkmal'
+
+
+def merkmal_der_ansicht(ansicht) -> str | None:
+    """Welches Merkmal diese Ansicht verlangt — oder `None`, wenn keines.
+
+    Heute gibt das für jede Ansicht `None` zurück: Es ist keine Sperre
+    eingezogen. Das ist kein Mangel dieser Funktion, sondern der Stand von
+    Schritt 1, und `test_entitlement_abdeckung` hält ihn fest.
+    """
+    return getattr(ansicht, MERKMAL_ATTRIBUT, None)
+
+
 def grenze_durchsetzbar(art: str) -> bool:
     """Lässt sich diese Grenze überhaupt messen?
 

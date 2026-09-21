@@ -187,7 +187,8 @@ class NochKeineSperreTests(SimpleTestCase):
             ['grep', '-rln', '--include=*.py', '--include=*.html',
              'core.entitlements\\|from core import entitlements', '.'],
             cwd=WURZEL, capture_output=True, text=True).stdout.split()
-        erlaubt = {'./core/entitlements.py', './core/tests/test_entitlements.py'}
+        erlaubt = {'./core/entitlements.py', './core/tests/test_entitlements.py',
+                   './core/tests/test_entitlement_abdeckung.py'}
         self.assertEqual(
             set(treffer) - erlaubt, set(),
             'Die Entitlements werden bereits aufgerufen — dann ist Schritt 3 '
