@@ -336,6 +336,24 @@ USE_TZ = True
 # gleichzeitig die Texte auszeichnet, fasst jede Datei zweimal an — und
 # `docs/KONZEPT-UI.md` (13.1) hat genau deshalb entschieden, beides in EINEM
 # Durchgang zu machen.
+#
+# NACHGEMESSEN AM 21.09.2026 — DER PLAN IST NICHT AUFGEGANGEN
+# Die Farbhaelfte von E2 war zu diesem Zeitpunkt praktisch fertig, die
+# Sprachhaelfte stand immer noch bei EINER Vorlage — und die eine war
+# `admin/base.html` mit Djangos eigenem `{% translate 'Home' %}`, also nicht
+# einmal eigener Text. «Beides in einem Durchgang» ist beim Durchgang selbst
+# untergegangen; die Vorlagen sind jetzt umgestellt und muessen fuer die
+# Sprache ein zweites Mal angefasst werden. Das ist der Preis, den dieser
+# Absatz vermeiden wollte.
+#
+# E2.85 beginnt die Aufholung mit der Tranche «Heute» (`dashboard`, `zulauf`,
+# `termine`, `abwesenheiten`): 100 Eintraege, DE/FR/IT/EN vollstaendig.
+# Gemessen und bewacht von `core/tests/test_uebersetzung.py` — dort steht
+# auch, warum die `.mo` im Repo liegen (`deploy.sh` ruft kein
+# `compilemessages`) und was fuer eine neue Tranche zu tun ist.
+#
+# `makemessages`/`compilemessages` brauchen `gettext` (msgfmt/xgettext) auf
+# dem Rechner. Fuer den BETRIEB genuegen die mitgelieferten `.mo`.
 LANGUAGES = [
     ('de', 'Deutsch'),
     ('fr', 'Français'),

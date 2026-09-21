@@ -1,0 +1,461 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-21 10:33+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: core/templates/admin/base.html:158
+msgid "Home"
+msgstr "Home"
+
+#: core/templates/fw/abwesenheiten.html:3
+#: core/templates/fw/abwesenheiten.html:8
+msgid "Abwesenheiten"
+msgstr "Assenze"
+
+#: core/templates/fw/abwesenheiten.html:9
+msgid ""
+"Wer wann weg ist — und wer übernimmt. Umsetzung von G8: Zuständigkeit statt "
+"Rolle, plus Vertretung."
+msgstr "Chi è assente e quando — e chi subentra. Attuazione di G8: competenza invece di ruolo, più la sostituzione."
+
+#: core/templates/fw/abwesenheiten.html:16
+msgid "Zurzeit abwesend"
+msgstr "Attualmente assente"
+
+#: core/templates/fw/abwesenheiten.html:19
+msgid "Abwesenheit erfassen"
+msgstr "Registrare un'assenza"
+
+#: core/templates/fw/abwesenheiten.html:22
+msgid "Wer"
+msgstr "Chi"
+
+#: core/templates/fw/abwesenheiten.html:26
+msgid "Von"
+msgstr "Dal"
+
+#: core/templates/fw/abwesenheiten.html:28
+msgid "Bis (einschliesslich)"
+msgstr "Al (incluso)"
+
+#: core/templates/fw/abwesenheiten.html:30
+msgid "Grund"
+msgstr "Motivo"
+
+#: core/templates/fw/abwesenheiten.html:34
+msgid "Vertretung"
+msgstr "Sostituzione"
+
+#: core/templates/fw/abwesenheiten.html:36
+msgid "— keine —"
+msgstr "— nessuno —"
+
+#: core/templates/fw/abwesenheiten.html:39 core/templates/fw/termine.html:35
+msgid "Notiz"
+msgstr "Nota"
+
+#: core/templates/fw/abwesenheiten.html:41
+msgid "Erfassen"
+msgstr "Registrare"
+
+#: core/templates/fw/abwesenheiten.html:50
+#, python-format
+msgid "%(wer)s — bis %(bis)s"
+msgstr "%(wer)s — fino al %(bis)s"
+
+#: core/templates/fw/abwesenheiten.html:52
+#, python-format
+msgid "1 offener Fall läuft weiter"
+msgid_plural "%(n)s offene Fälle laufen weiter"
+msgstr[0] "1 pratica aperta prosegue"
+msgstr[1] "%(n)s pratiche aperte proseguono"
+
+#: core/templates/fw/abwesenheiten.html:58
+#, python-format
+msgid "vertreten durch %(wer)s"
+msgstr "sostituito da %(wer)s"
+
+#: core/templates/fw/abwesenheiten.html:60
+msgid "ohne Vertretung"
+msgstr "senza sostituzione"
+
+#: core/templates/fw/abwesenheiten.html:64
+msgid "Niemand abwesend."
+msgstr "Nessuno assente."
+
+#: core/templates/fw/abwesenheiten.html:68
+msgid "Geplant"
+msgstr "Pianificato"
+
+#: core/templates/fw/abwesenheiten.html:75
+#, python-format
+msgid "Vertretung %(wer)s"
+msgstr "Sostituzione %(wer)s"
+
+#: core/templates/fw/abwesenheiten.html:75
+msgid "noch ohne Vertretung"
+msgstr "ancora senza sostituzione"
+
+#: core/templates/fw/abwesenheiten.html:80
+msgid "Nichts geplant."
+msgstr "Niente di pianificato."
+
+#: core/templates/fw/abwesenheiten.html:84 core/templates/fw/termine.html:60
+msgid "Vergangen"
+msgstr "Passato"
+
+#: core/templates/fw/abwesenheiten.html:96
+msgid "Nichts vergangen."
+msgstr "Niente di passato."
+
+#: core/templates/fw/dashboard.html:37
+#, python-format
+msgid "Vertretung für %(name)s bis %(bis)s"
+msgstr "Sostituzione di %(name)s fino al %(bis)s"
+
+#: core/templates/fw/dashboard.html:37
+#, python-format
+msgid "Gefiltert auf %(strasse)s, %(ort)s"
+msgstr "Filtrato su %(strasse)s, %(ort)s"
+
+#: core/templates/fw/dashboard.html:40 core/templates/fw/dashboard.html:89
+msgid "Filter aufheben"
+msgstr "Annullare il filtro"
+
+#: core/templates/fw/dashboard.html:41 core/templates/fw/dashboard.html:275
+#: core/templates/fw/zulauf.html:3 core/templates/fw/zulauf.html:8
+msgid "Zulauf"
+msgstr "Posta in arrivo"
+
+#: core/templates/fw/dashboard.html:70
+msgid "Zuständigkeit:"
+msgstr "Competenza:"
+
+#: core/templates/fw/dashboard.html:72 core/templates/fw/dashboard.html:82
+#: core/templates/fw/dashboard.html:183
+msgid "Alle"
+msgstr "Tutti"
+
+#: core/templates/fw/dashboard.html:79
+msgid "Mandat:"
+msgstr "Mandato:"
+
+#: core/templates/fw/dashboard.html:133
+msgid "Arbeitsvorrat"
+msgstr "Carico di lavoro"
+
+#: core/templates/fw/dashboard.html:134
+msgid "in dieser Ansicht"
+msgstr "in questa vista"
+
+#: core/templates/fw/dashboard.html:200
+#, python-format
+msgid "%(n)s Tag"
+msgid_plural "%(n)s Tage"
+msgstr[0] "%(n)s giorno"
+msgstr[1] "%(n)s giorni"
+
+#: core/templates/fw/dashboard.html:200
+msgid "ohne Bewegung"
+msgstr "senza movimento"
+
+#: core/templates/fw/dashboard.html:203
+msgid "Nichts liegengeblieben — jeder Fall ist in Bewegung."
+msgstr "Nulla in sospeso — ogni pratica è in movimento."
+
+#: core/templates/fw/dashboard.html:203
+msgid "Kein Fall wartet auf Dritte."
+msgstr "Nessuna pratica attende terzi."
+
+#: core/templates/fw/dashboard.html:210
+msgid "Verfallsregel: 14 Tage ohne Bewegung, 10 beim Warten auf Dritte."
+msgstr "Regola di scadenza: 14 giorni senza movimento, 10 in attesa di terzi."
+
+#: core/templates/fw/dashboard.html:210
+msgid "Beim Warten auf Dritte ist das Nachfassen die Arbeit."
+msgstr "Quando si attendono terzi, il sollecito è il lavoro."
+
+#: core/templates/fw/dashboard.html:255
+msgid "zuständig"
+msgstr "responsabile"
+
+#: core/templates/fw/dashboard.html:257
+#, python-format
+msgid "%(n)s Tag über"
+msgid_plural "%(n)s Tage über"
+msgstr[0] "%(n)s giorno di ritardo"
+msgstr[1] "%(n)s giorni di ritardo"
+
+#: core/templates/fw/dashboard.html:257
+msgid "heute"
+msgstr "oggi"
+
+#: core/templates/fw/dashboard.html:257
+#, python-format
+msgid "in %(n)s Tag"
+msgid_plural "in %(n)s Tagen"
+msgstr[0] "tra %(n)s giorno"
+msgstr[1] "tra %(n)s giorni"
+
+#: core/templates/fw/dashboard.html:266
+msgid "Heute ist nichts fällig."
+msgstr "Oggi non scade nulla."
+
+#: core/templates/fw/dashboard.html:266
+msgid "Diese Woche ist nichts fällig."
+msgstr "Questa settimana non scade nulla."
+
+#: core/templates/fw/dashboard.html:266
+msgid "Kein offener Vorgang."
+msgstr "Nessuna operazione aperta."
+
+#: core/templates/fw/dashboard.html:276
+msgid "nicht zugeordnet"
+msgstr "non assegnato"
+
+#: core/templates/fw/dashboard.html:281 core/templates/fw/zulauf.html:22
+#: core/templates/fw/zulauf.html:55
+msgid "Ohne Betreff"
+msgstr "Senza oggetto"
+
+#: core/templates/fw/dashboard.html:284 core/templates/fw/zulauf.html:29
+#, python-format
+msgid "Vorschlag: %(ziel)s"
+msgstr "Proposta: %(ziel)s"
+
+#: core/templates/fw/dashboard.html:284
+#, python-format
+msgid " → Fall «%(art)s»"
+msgstr " → pratica «%(art)s»"
+
+#: core/templates/fw/dashboard.html:284
+msgid "Kein sicherer Vorschlag — bitte zuordnen"
+msgstr "Nessuna proposta attendibile — si prega di assegnare"
+
+#: core/templates/fw/dashboard.html:286 core/templates/fw/zulauf.html:37
+msgid "Übernehmen"
+msgstr "Applicare"
+
+#: core/templates/fw/dashboard.html:286
+msgid "Zuordnen"
+msgstr "Assegnare"
+
+#: core/templates/fw/dashboard.html:289
+msgid "Nichts Unzugeordnetes."
+msgstr "Niente di non assegnato."
+
+#: core/templates/fw/dashboard.html:291
+msgid "Ganzer Posteingang"
+msgstr "Posta in arrivo completa"
+
+#: core/templates/fw/dashboard.html:292
+#, python-format
+msgid "%(n)s offen"
+msgstr "%(n)s aperti"
+
+#: core/templates/fw/dashboard.html:311
+msgid "Aufgaben"
+msgstr "Compiti"
+
+#: core/templates/fw/dashboard.html:312
+msgid "ohne eigene Frist"
+msgstr "senza scadenza propria"
+
+#: core/templates/fw/dashboard.html:327
+msgid "Alle Pendenzen"
+msgstr "Tutte le pendenze"
+
+#: core/templates/fw/dashboard.html:328 core/templates/fw/dashboard.html:356
+#, python-format
+msgid "%(n)s weitere"
+msgstr "%(n)s altri"
+
+#: core/templates/fw/dashboard.html:339
+msgid "Mandate"
+msgstr "Mandati"
+
+#: core/templates/fw/dashboard.html:340
+msgid "Stand heute"
+msgstr "Situazione a oggi"
+
+#: core/templates/fw/dashboard.html:346
+#, python-format
+msgid "%(n)s Objekt"
+msgid_plural "%(n)s Objekte"
+msgstr[0] "%(n)s oggetto"
+msgstr[1] "%(n)s oggetti"
+
+#: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
+#, python-format
+msgid "%(n)s leer"
+msgstr "%(n)s sfitti"
+
+#: core/templates/fw/dashboard.html:348
+#, python-format
+msgid "CHF %(betrag)s offen"
+msgstr "CHF %(betrag)s scoperti"
+
+#: core/templates/fw/dashboard.html:350
+msgid "ohne Befund"
+msgstr "senza rilievi"
+
+#: core/templates/fw/dashboard.html:351
+msgid "belegt"
+msgstr "occupato"
+
+#: core/templates/fw/dashboard.html:355
+msgid "Sortiert nach Auffälligkeit, nicht nach Grösse."
+msgstr "Ordinato per anomalia, non per dimensione."
+
+#: core/templates/fw/dashboard.html:367
+msgid "Lage des Bestands"
+msgstr "Situazione del portafoglio"
+
+#: core/templates/fw/dashboard.html:368
+#, python-format
+msgid "%(n)s Abweichung"
+msgid_plural "%(n)s Abweichungen"
+msgstr[0] "%(n)s scostamento"
+msgstr[1] "%(n)s scostamenti"
+
+#: core/templates/fw/dashboard.html:368
+msgid "keine Abweichung"
+msgstr "nessuno scostamento"
+
+#: core/templates/fw/dashboard.html:380
+msgid "Nichts weicht ab. Ruhige Kennzahlen erscheinen hier nicht."
+msgstr "Nessuno scostamento. Gli indicatori tranquilli non compaiono qui."
+
+#: core/templates/fw/dashboard.html:383
+msgid "Ruhige Kennzahlen erscheinen hier nicht."
+msgstr "Gli indicatori tranquilli non compaiono qui."
+
+#: core/templates/fw/dashboard.html:384
+msgid "Alle Übersichten →"
+msgstr "Tutte le panoramiche →"
+
+#: core/templates/fw/termine.html:3 core/templates/fw/termine.html:8
+msgid "Termine"
+msgstr "Appuntamenti"
+
+#: core/templates/fw/termine.html:9
+msgid ""
+"Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
+"zusätzlich in der Heute-Ansicht — sie kommen aus dem Vertrag und der "
+"Bewerbung und werden hier nicht doppelt geführt."
+msgstr "Appuntamenti di lavoro con ora e luogo. Le riconsegne e le visite compaiono inoltre nella vista Oggi — provengono dal contratto e dalla candidatura e qui non vengono riportate due volte."
+
+#: core/templates/fw/termine.html:17
+msgid "Kommende Termine"
+msgstr "Prossimi appuntamenti"
+
+#: core/templates/fw/termine.html:20 core/templates/fw/termine.html:37
+msgid "Termin erfassen"
+msgstr "Registrare un appuntamento"
+
+#: core/templates/fw/termine.html:23
+msgid "Titel"
+msgstr "Titolo"
+
+#: core/templates/fw/termine.html:24
+msgid "z.B. Wohnungsabnahme Blaser"
+msgstr "p.es. riconsegna Blaser"
+
+#: core/templates/fw/termine.html:25
+msgid "Art"
+msgstr "Tipo"
+
+#: core/templates/fw/termine.html:29
+msgid "Beginn"
+msgstr "Inizio"
+
+#: core/templates/fw/termine.html:31
+msgid "Dauer (Minuten)"
+msgstr "Durata (minuti)"
+
+#: core/templates/fw/termine.html:33
+msgid "Ort"
+msgstr "Luogo"
+
+#: core/templates/fw/termine.html:34
+msgid "z.B. Perdtemps 3, EG"
+msgstr "p.es. Perdtemps 3, PT"
+
+#: core/templates/fw/termine.html:48
+#, python-format
+msgid "%(min)s Min."
+msgstr "%(min)s min."
+
+#: core/templates/fw/termine.html:51
+msgid "Erledigt"
+msgstr "Completato"
+
+#: core/templates/fw/termine.html:52
+msgid "Absagen"
+msgstr "Annullare"
+
+#: core/templates/fw/termine.html:56
+msgid "Kein kommender Termin erfasst."
+msgstr "Nessun appuntamento futuro registrato."
+
+#: core/templates/fw/termine.html:73
+msgid "Noch nichts vergangen."
+msgstr "Ancora nulla nel passato."
+
+#: core/templates/fw/zulauf.html:9
+msgid ""
+"Jeder Eingang wird zu genau einem von drei Dingen: einer Akte zugeordnet, "
+"Auslöser eines Falls, oder bewusst abgelegt."
+msgstr "Ogni arrivo diventa esattamente una di tre cose: assegnato a una pratica, innesco di un caso, oppure archiviato consapevolmente."
+
+#: core/templates/fw/zulauf.html:16
+msgid "Nicht zugeordnet"
+msgstr "Non assegnato"
+
+#: core/templates/fw/zulauf.html:29
+#, python-format
+msgid " → Fall «%(art)s» eröffnen"
+msgstr " → aprire la pratica «%(art)s»"
+
+#: core/templates/fw/zulauf.html:35
+msgid "Merkt sich das Merkmal für künftige Eingänge"
+msgstr "Memorizza il criterio per gli arrivi futuri"
+
+#: core/templates/fw/zulauf.html:36
+msgid "Regel lernen"
+msgstr "Apprendere la regola"
+
+#: core/templates/fw/zulauf.html:39
+msgid "Grund der Ablage"
+msgstr "Motivo dell'archiviazione"
+
+#: core/templates/fw/zulauf.html:40
+msgid "Ablegen"
+msgstr "Archiviare"
+
+#: core/templates/fw/zulauf.html:44
+msgid "Nichts Unzugeordnetes. 🎉"
+msgstr "Niente di non assegnato. 🎉"
+
+#: core/templates/fw/zulauf.html:48
+msgid "Zuletzt erledigt"
+msgstr "Completati di recente"
+
+#: core/templates/fw/zulauf.html:61
+msgid "Noch nichts erledigt."
+msgstr "Ancora nulla di completato."

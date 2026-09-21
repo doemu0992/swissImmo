@@ -1,40 +1,40 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Termine — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Termine" %} — swissImmo{% endblock %}
 
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Termine</h1>
-        <p>Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen
+        <h1>{% trans "Termine" %}</h1>
+        <p>{% blocktrans trimmed %}Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen
            zusätzlich in der Heute-Ansicht — sie kommen aus dem Vertrag und der
-           Bewerbung und werden hier nicht doppelt geführt.</p>
+           Bewerbung und werden hier nicht doppelt geführt.{% endblocktrans %}</p>
     </div>
 </div>
 
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'termin' %}</span>
-        <span class="fw-t">Kommende Termine</span>
+        <span class="fw-t">{% trans "Kommende Termine" %}</span>
         <span class="fw-neben">{{ kommend|length }}</span></div>
     <details class="fw-aufklapp">
-        <summary>Termin erfassen</summary>
+        <summary>{% trans "Termin erfassen" %}</summary>
         <div class="fw-aufklapp-inhalt">
             <form method="post" action="/neu/termine/neu/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">{% csrf_token %}
-                <div><label class="fw-klein block mb-1">Titel *</label>
-                    <input name="titel" required placeholder="z.B. Wohnungsabnahme Blaser" class="fw-feld w-full"></div>
-                <div><label class="fw-klein block mb-1">Art</label>
+                <div><label class="fw-klein block mb-1">{% trans "Titel" %} *</label>
+                    <input name="titel" required placeholder="{% trans 'z.B. Wohnungsabnahme Blaser' %}" class="fw-feld w-full"></div>
+                <div><label class="fw-klein block mb-1">{% trans "Art" %}</label>
                     <select name="art" class="fw-feld w-full">
                         {% for wert, bezeichnung in arten %}<option value="{{ wert }}">{{ bezeichnung }}</option>{% endfor %}
                     </select></div>
-                <div><label class="fw-klein block mb-1">Beginn *</label>
+                <div><label class="fw-klein block mb-1">{% trans "Beginn" %} *</label>
                     <input type="datetime-local" name="beginn" required class="fw-feld w-full"></div>
-                <div><label class="fw-klein block mb-1">Dauer (Minuten)</label>
+                <div><label class="fw-klein block mb-1">{% trans "Dauer (Minuten)" %}</label>
                     <input type="number" name="dauer_minuten" value="60" min="5" class="fw-feld w-full"></div>
-                <div><label class="fw-klein block mb-1">Ort</label>
-                    <input name="ort" placeholder="z.B. Perdtemps 3, EG" class="fw-feld w-full"></div>
-                <div><label class="fw-klein block mb-1">Notiz</label>
+                <div><label class="fw-klein block mb-1">{% trans "Ort" %}</label>
+                    <input name="ort" placeholder="{% trans 'z.B. Perdtemps 3, EG' %}" class="fw-feld w-full"></div>
+                <div><label class="fw-klein block mb-1">{% trans "Notiz" %}</label>
                     <input name="notiz" class="fw-feld w-full"></div>
-                <div class="sm:col-span-3"><button class="fw-btn fw-primary">{% zeichen 'neu' %}Termin erfassen</button></div>
+                <div class="sm:col-span-3"><button class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Termin erfassen" %}</button></div>
             </form>
         </div>
     </details>
@@ -45,19 +45,19 @@
         <span class="fw-ikon">{% zeichen 'termin' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ t.titel }} <span class="fw-chip fw-mut">{{ t.get_art_display }}</span></div>
-            <div class="fw-s">{{ t.dauer_minuten }} Min.{% if t.ort %} · {{ t.ort }}{% endif %}{% if t.zustaendig %} · {{ t.zustaendig.get_full_name|default:t.zustaendig.username }}{% endif %}{% if t.notiz %} · {{ t.notiz }}{% endif %}</div>
+            <div class="fw-s">{% blocktrans with min=t.dauer_minuten %}{{ min }} Min.{% endblocktrans %}{% if t.ort %} · {{ t.ort }}{% endif %}{% if t.zustaendig %} · {{ t.zustaendig.get_full_name|default:t.zustaendig.username }}{% endif %}{% if t.notiz %} · {{ t.notiz }}{% endif %}</div>
         </div>
         <form method="post" action="/neu/termine/{{ t.id }}/status/" class="flex gap-1.5">{% csrf_token %}
-            <button name="status" value="erledigt" class="fw-btn">{% zeichen 'gut' %}Erledigt</button>
-            <button name="status" value="abgesagt" class="fw-btn">Absagen</button>
+            <button name="status" value="erledigt" class="fw-btn">{% zeichen 'gut' %}{% trans "Erledigt" %}</button>
+            <button name="status" value="abgesagt" class="fw-btn">{% trans "Absagen" %}</button>
         </form>
     </div>
     {% empty %}
-    <p class="fw-leer">Kein kommender Termin erfasst.</p>
+    <p class="fw-leer">{% trans "Kein kommender Termin erfasst." %}</p>
     {% endfor %}
 </div>
 
-<div class="fw-subhead">Vergangen</div>
+<div class="fw-subhead">{% trans "Vergangen" %}</div>
 <div class="fw-card">
     {% for t in vergangen %}
     <div class="fw-zeile">
@@ -70,7 +70,7 @@
         <div class="fw-zeit">{{ t.beginn|date:"d.m.Y H:i" }}</div>
     </div>
     {% empty %}
-    <p class="fw-leer">Noch nichts vergangen.</p>
+    <p class="fw-leer">{% trans "Noch nichts vergangen." %}</p>
     {% endfor %}
 </div>
 {% endblock %}

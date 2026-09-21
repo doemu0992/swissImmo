@@ -1,0 +1,462 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-21 10:33+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: core/templates/admin/base.html:158
+msgid "Home"
+msgstr "Home"
+
+#: core/templates/fw/abwesenheiten.html:3
+#: core/templates/fw/abwesenheiten.html:8
+msgid "Abwesenheiten"
+msgstr "Absences"
+
+#: core/templates/fw/abwesenheiten.html:9
+msgid ""
+"Wer wann weg ist — und wer übernimmt. Umsetzung von G8: Zuständigkeit statt "
+"Rolle, plus Vertretung."
+msgstr "Who is away when — and who takes over. Implementation of G8: responsibility instead of role, plus cover."
+
+#: core/templates/fw/abwesenheiten.html:16
+msgid "Zurzeit abwesend"
+msgstr "Currently away"
+
+#: core/templates/fw/abwesenheiten.html:19
+msgid "Abwesenheit erfassen"
+msgstr "Record absence"
+
+#: core/templates/fw/abwesenheiten.html:22
+msgid "Wer"
+msgstr "Who"
+
+#: core/templates/fw/abwesenheiten.html:26
+msgid "Von"
+msgstr "From"
+
+#: core/templates/fw/abwesenheiten.html:28
+msgid "Bis (einschliesslich)"
+msgstr "To (inclusive)"
+
+#: core/templates/fw/abwesenheiten.html:30
+msgid "Grund"
+msgstr "Reason"
+
+#: core/templates/fw/abwesenheiten.html:34
+msgid "Vertretung"
+msgstr "Cover"
+
+#: core/templates/fw/abwesenheiten.html:36
+msgid "— keine —"
+msgstr "— none —"
+
+#: core/templates/fw/abwesenheiten.html:39 core/templates/fw/termine.html:35
+msgid "Notiz"
+msgstr "Note"
+
+#: core/templates/fw/abwesenheiten.html:41
+msgid "Erfassen"
+msgstr "Record"
+
+#: core/templates/fw/abwesenheiten.html:50
+#, python-format
+msgid "%(wer)s — bis %(bis)s"
+msgstr "%(wer)s — until %(bis)s"
+
+#: core/templates/fw/abwesenheiten.html:52
+#, python-format
+msgid "1 offener Fall läuft weiter"
+msgid_plural "%(n)s offene Fälle laufen weiter"
+msgstr[0] "1 open case continues"
+msgstr[1] "%(n)s open cases continue"
+
+#: core/templates/fw/abwesenheiten.html:58
+#, python-format
+msgid "vertreten durch %(wer)s"
+msgstr "covered by %(wer)s"
+
+#: core/templates/fw/abwesenheiten.html:60
+msgid "ohne Vertretung"
+msgstr "no cover"
+
+#: core/templates/fw/abwesenheiten.html:64
+msgid "Niemand abwesend."
+msgstr "Nobody is away."
+
+#: core/templates/fw/abwesenheiten.html:68
+msgid "Geplant"
+msgstr "Planned"
+
+#: core/templates/fw/abwesenheiten.html:75
+#, python-format
+msgid "Vertretung %(wer)s"
+msgstr "Cover %(wer)s"
+
+#: core/templates/fw/abwesenheiten.html:75
+msgid "noch ohne Vertretung"
+msgstr "still without cover"
+
+#: core/templates/fw/abwesenheiten.html:80
+msgid "Nichts geplant."
+msgstr "Nothing planned."
+
+#: core/templates/fw/abwesenheiten.html:84 core/templates/fw/termine.html:60
+msgid "Vergangen"
+msgstr "Past"
+
+#: core/templates/fw/abwesenheiten.html:96
+msgid "Nichts vergangen."
+msgstr "Nothing in the past."
+
+#: core/templates/fw/dashboard.html:37
+#, python-format
+msgid "Vertretung für %(name)s bis %(bis)s"
+msgstr "Covering for %(name)s until %(bis)s"
+
+#: core/templates/fw/dashboard.html:37
+#, python-format
+msgid "Gefiltert auf %(strasse)s, %(ort)s"
+msgstr "Filtered to %(strasse)s, %(ort)s"
+
+#: core/templates/fw/dashboard.html:40 core/templates/fw/dashboard.html:89
+msgid "Filter aufheben"
+msgstr "Clear filter"
+
+#: core/templates/fw/dashboard.html:41 core/templates/fw/dashboard.html:275
+#: core/templates/fw/zulauf.html:3 core/templates/fw/zulauf.html:8
+msgid "Zulauf"
+msgstr "Inbox"
+
+#: core/templates/fw/dashboard.html:70
+msgid "Zuständigkeit:"
+msgstr "Assigned to:"
+
+#: core/templates/fw/dashboard.html:72 core/templates/fw/dashboard.html:82
+#: core/templates/fw/dashboard.html:183
+msgid "Alle"
+msgstr "All"
+
+#: core/templates/fw/dashboard.html:79
+msgid "Mandat:"
+msgstr "Mandate:"
+
+#: core/templates/fw/dashboard.html:133
+msgid "Arbeitsvorrat"
+msgstr "Work queue"
+
+#: core/templates/fw/dashboard.html:134
+msgid "in dieser Ansicht"
+msgstr "in this view"
+
+#: core/templates/fw/dashboard.html:200
+#, python-format
+msgid "%(n)s Tag"
+msgid_plural "%(n)s Tage"
+msgstr[0] "%(n)s day"
+msgstr[1] "%(n)s days"
+
+#: core/templates/fw/dashboard.html:200
+msgid "ohne Bewegung"
+msgstr "without movement"
+
+#: core/templates/fw/dashboard.html:203
+msgid "Nichts liegengeblieben — jeder Fall ist in Bewegung."
+msgstr "Nothing stalled — every case is moving."
+
+#: core/templates/fw/dashboard.html:203
+msgid "Kein Fall wartet auf Dritte."
+msgstr "No case is waiting on a third party."
+
+#: core/templates/fw/dashboard.html:210
+msgid "Verfallsregel: 14 Tage ohne Bewegung, 10 beim Warten auf Dritte."
+msgstr ""
+"Stall rule: 14 days without movement, 10 when waiting on a third party."
+
+#: core/templates/fw/dashboard.html:210
+msgid "Beim Warten auf Dritte ist das Nachfassen die Arbeit."
+msgstr "When waiting on a third party, following up is the work."
+
+#: core/templates/fw/dashboard.html:255
+msgid "zuständig"
+msgstr "assigned"
+
+#: core/templates/fw/dashboard.html:257
+#, python-format
+msgid "%(n)s Tag über"
+msgid_plural "%(n)s Tage über"
+msgstr[0] "%(n)s day overdue"
+msgstr[1] "%(n)s days overdue"
+
+#: core/templates/fw/dashboard.html:257
+msgid "heute"
+msgstr "today"
+
+#: core/templates/fw/dashboard.html:257
+#, python-format
+msgid "in %(n)s Tag"
+msgid_plural "in %(n)s Tagen"
+msgstr[0] "in %(n)s day"
+msgstr[1] "in %(n)s days"
+
+#: core/templates/fw/dashboard.html:266
+msgid "Heute ist nichts fällig."
+msgstr "Nothing is due today."
+
+#: core/templates/fw/dashboard.html:266
+msgid "Diese Woche ist nichts fällig."
+msgstr "Nothing is due this week."
+
+#: core/templates/fw/dashboard.html:266
+msgid "Kein offener Vorgang."
+msgstr "No open item."
+
+#: core/templates/fw/dashboard.html:276
+msgid "nicht zugeordnet"
+msgstr "unassigned"
+
+#: core/templates/fw/dashboard.html:281 core/templates/fw/zulauf.html:22
+#: core/templates/fw/zulauf.html:55
+msgid "Ohne Betreff"
+msgstr "No subject"
+
+#: core/templates/fw/dashboard.html:284 core/templates/fw/zulauf.html:29
+#, python-format
+msgid "Vorschlag: %(ziel)s"
+msgstr "Suggestion: %(ziel)s"
+
+#: core/templates/fw/dashboard.html:284
+#, python-format
+msgid " → Fall «%(art)s»"
+msgstr " → case “%(art)s”"
+
+#: core/templates/fw/dashboard.html:284
+msgid "Kein sicherer Vorschlag — bitte zuordnen"
+msgstr "No confident suggestion — please assign"
+
+#: core/templates/fw/dashboard.html:286 core/templates/fw/zulauf.html:37
+msgid "Übernehmen"
+msgstr "Accept"
+
+#: core/templates/fw/dashboard.html:286
+msgid "Zuordnen"
+msgstr "Assign"
+
+#: core/templates/fw/dashboard.html:289
+msgid "Nichts Unzugeordnetes."
+msgstr "Nothing unassigned."
+
+#: core/templates/fw/dashboard.html:291
+msgid "Ganzer Posteingang"
+msgstr "Full inbox"
+
+#: core/templates/fw/dashboard.html:292
+#, python-format
+msgid "%(n)s offen"
+msgstr "%(n)s open"
+
+#: core/templates/fw/dashboard.html:311
+msgid "Aufgaben"
+msgstr "Tasks"
+
+#: core/templates/fw/dashboard.html:312
+msgid "ohne eigene Frist"
+msgstr "without their own deadline"
+
+#: core/templates/fw/dashboard.html:327
+msgid "Alle Pendenzen"
+msgstr "All pending items"
+
+#: core/templates/fw/dashboard.html:328 core/templates/fw/dashboard.html:356
+#, python-format
+msgid "%(n)s weitere"
+msgstr "%(n)s more"
+
+#: core/templates/fw/dashboard.html:339
+msgid "Mandate"
+msgstr "Mandates"
+
+#: core/templates/fw/dashboard.html:340
+msgid "Stand heute"
+msgstr "As of today"
+
+#: core/templates/fw/dashboard.html:346
+#, python-format
+msgid "%(n)s Objekt"
+msgid_plural "%(n)s Objekte"
+msgstr[0] "%(n)s unit"
+msgstr[1] "%(n)s units"
+
+#: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
+#, python-format
+msgid "%(n)s leer"
+msgstr "%(n)s vacant"
+
+#: core/templates/fw/dashboard.html:348
+#, python-format
+msgid "CHF %(betrag)s offen"
+msgstr "CHF %(betrag)s outstanding"
+
+#: core/templates/fw/dashboard.html:350
+msgid "ohne Befund"
+msgstr "nothing of note"
+
+#: core/templates/fw/dashboard.html:351
+msgid "belegt"
+msgstr "occupied"
+
+#: core/templates/fw/dashboard.html:355
+msgid "Sortiert nach Auffälligkeit, nicht nach Grösse."
+msgstr "Sorted by what stands out, not by size."
+
+#: core/templates/fw/dashboard.html:367
+msgid "Lage des Bestands"
+msgstr "Portfolio status"
+
+#: core/templates/fw/dashboard.html:368
+#, python-format
+msgid "%(n)s Abweichung"
+msgid_plural "%(n)s Abweichungen"
+msgstr[0] "%(n)s deviation"
+msgstr[1] "%(n)s deviations"
+
+#: core/templates/fw/dashboard.html:368
+msgid "keine Abweichung"
+msgstr "no deviation"
+
+#: core/templates/fw/dashboard.html:380
+msgid "Nichts weicht ab. Ruhige Kennzahlen erscheinen hier nicht."
+msgstr "Nothing deviates. Quiet figures do not appear here."
+
+#: core/templates/fw/dashboard.html:383
+msgid "Ruhige Kennzahlen erscheinen hier nicht."
+msgstr "Quiet figures do not appear here."
+
+#: core/templates/fw/dashboard.html:384
+msgid "Alle Übersichten →"
+msgstr "All overviews →"
+
+#: core/templates/fw/termine.html:3 core/templates/fw/termine.html:8
+msgid "Termine"
+msgstr "Appointments"
+
+#: core/templates/fw/termine.html:9
+msgid ""
+"Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
+"zusätzlich in der Heute-Ansicht — sie kommen aus dem Vertrag und der "
+"Bewerbung und werden hier nicht doppelt geführt."
+msgstr "Work appointments with time and place. Handovers and viewings also appear in the Today view — they come from the tenancy and the application and are not listed twice here."
+
+#: core/templates/fw/termine.html:17
+msgid "Kommende Termine"
+msgstr "Upcoming appointments"
+
+#: core/templates/fw/termine.html:20 core/templates/fw/termine.html:37
+msgid "Termin erfassen"
+msgstr "Record appointment"
+
+#: core/templates/fw/termine.html:23
+msgid "Titel"
+msgstr "Title"
+
+#: core/templates/fw/termine.html:24
+msgid "z.B. Wohnungsabnahme Blaser"
+msgstr "e.g. handover inspection Blaser"
+
+#: core/templates/fw/termine.html:25
+msgid "Art"
+msgstr "Type"
+
+#: core/templates/fw/termine.html:29
+msgid "Beginn"
+msgstr "Start"
+
+#: core/templates/fw/termine.html:31
+msgid "Dauer (Minuten)"
+msgstr "Duration (minutes)"
+
+#: core/templates/fw/termine.html:33
+msgid "Ort"
+msgstr "Location"
+
+#: core/templates/fw/termine.html:34
+msgid "z.B. Perdtemps 3, EG"
+msgstr "e.g. Perdtemps 3, ground floor"
+
+#: core/templates/fw/termine.html:48
+#, python-format
+msgid "%(min)s Min."
+msgstr "%(min)s min."
+
+#: core/templates/fw/termine.html:51
+msgid "Erledigt"
+msgstr "Done"
+
+#: core/templates/fw/termine.html:52
+msgid "Absagen"
+msgstr "Cancel"
+
+#: core/templates/fw/termine.html:56
+msgid "Kein kommender Termin erfasst."
+msgstr "No upcoming appointment recorded."
+
+#: core/templates/fw/termine.html:73
+msgid "Noch nichts vergangen."
+msgstr "Nothing past yet."
+
+#: core/templates/fw/zulauf.html:9
+msgid ""
+"Jeder Eingang wird zu genau einem von drei Dingen: einer Akte zugeordnet, "
+"Auslöser eines Falls, oder bewusst abgelegt."
+msgstr "Every arrival becomes exactly one of three things: assigned to a file, the trigger for a case, or deliberately filed away."
+
+#: core/templates/fw/zulauf.html:16
+msgid "Nicht zugeordnet"
+msgstr "Unassigned"
+
+#: core/templates/fw/zulauf.html:29
+#, python-format
+msgid " → Fall «%(art)s» eröffnen"
+msgstr " → open case “%(art)s”"
+
+#: core/templates/fw/zulauf.html:35
+msgid "Merkt sich das Merkmal für künftige Eingänge"
+msgstr "Remembers the rule for future arrivals"
+
+#: core/templates/fw/zulauf.html:36
+msgid "Regel lernen"
+msgstr "Learn rule"
+
+#: core/templates/fw/zulauf.html:39
+msgid "Grund der Ablage"
+msgstr "Reason for filing"
+
+#: core/templates/fw/zulauf.html:40
+msgid "Ablegen"
+msgstr "File away"
+
+#: core/templates/fw/zulauf.html:44
+msgid "Nichts Unzugeordnetes. 🎉"
+msgstr "Nothing unassigned. 🎉"
+
+#: core/templates/fw/zulauf.html:48
+msgid "Zuletzt erledigt"
+msgstr "Recently done"
+
+#: core/templates/fw/zulauf.html:61
+msgid "Noch nichts erledigt."
+msgstr "Nothing done yet."
