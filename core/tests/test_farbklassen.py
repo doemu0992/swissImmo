@@ -34,7 +34,48 @@ E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0): 242 in 43.
 E2.83 nahm den Rest, der ueberhaupt noch zu nehmen war — `nebenkosten_detail`
 (3 → 0), `zahllauf` (2 → 1), `vertrag_neu` (2 → 1) und den zweiten
-Vorhang in `base.html` (56 → 55): **STAND 236 in 42 Vorlagen**.
+Vorhang in `base.html` (56 → 55): 236 in 42.
+E2.84 nahm das Dunkelmodus-Overlay — `base.html` (55 → 4):
+**STAND 185 in 42 Vorlagen**.
+
+E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
+---------------------------------------------------------------------
+Weiter unten steht seit E2.20 der Satz, der diesen Schritt bis jetzt
+verhindert hat: Vierzehn Klassen sahen nach totem Code aus, neun standen in
+Wahrheit im Python-Code, und ihre Overlay-Regeln zu entfernen haette den
+Dunkelmodus fuer sie lautlos abgeschaltet.
+
+Genau diese Falle wurde vor dem Ausbau abgeklopft, und sie greift nicht
+mehr — aus einem Grund, der nichts mit den Vorlagen zu tun hat:
+
+* Alle 478 Python-Farbklassen stehen in fuenf `*/admin.py`
+  (`test_farbklassen_python.py`: Views und Dienste sind auf null).
+* Die erzeugen `list_display`/`readonly_fields` fuer den **Django-Admin**.
+  Der erbt `fw/base.html` NICHT — das Overlay hat sie also ohnehin nie
+  erreicht. Nachgesehen: keine fw-Ansicht importiert aus einem `admin.py`,
+  keine fw-Vorlage bindet eine `admin/`-Vorlage ein.
+* Die uebrigen Treffer im Zaehler standen in KOMMENTAREN (`_schicht.html`,
+  `objekte.html`) und in Testdateien, die die Klassennamen als Zeichenkette
+  behaupten.
+
+Und dann gemessen statt geschlossen: 15 Seiten im Dunkelmodus, fuer jedes
+Element Hintergrund-, Schrift- und Rahmenfarbe berechnet, einmal mit und
+einmal ohne Overlay. **6915 Elemente verglichen, 0 veraendert.**
+
+DIE ERSTE MESSUNG WAR FALSCH, UND ZWAR AUF EINE LEHRREICHE ART
+Sie meldete 60 Abweichungen — Werte wie `rgb(12,23,26)` gegen
+`rgb(10,21,24)`, also ~2/255, und auf verschiedenen Seiten in ENTGEGEN-
+GESETZTE Richtungen. Eine CSS-Aenderung kann das nicht: Sie wirkt in eine
+Richtung. Es waren laufende `transition`s, abgelichtet mitten im Uebergang.
+Mit `transition:none` blieb exakt nichts uebrig. Wer diese Messung
+nachstellt, schaltet Uebergaenge ab — sonst misst er eine Animation und
+haelt sie fuer einen Unterschied.
+
+`base.html` behaelt vier Regelgruppen, die keine Farbklassen remappen:
+`body`, Scrollbalken, Formularfelder (die zeichnet der Browser selbst) und
+`.shadow-*` (Groessenklassen ohne Farbnamen, die der Zaehler nie erfasst
+hat, mit echten Nutzern in `berichte`, `kreditoren`, `logbuch`,
+`verzug_257d`).
 
 E2.83 WAR KEINE UMBENENNUNG — ES WAR EIN FEHLER, IM BROWSER GEMESSEN
 --------------------------------------------------------------------
@@ -67,15 +108,19 @@ Beim Umstellen lohnt der Blick, ob die Klasse ueberhaupt im Overlay steht.
 
 DIESE ZAHL SAGT NICHT, WIE VIEL E2 NOCH ZU TUN HAT
 --------------------------------------------------
-Gemessen am 21.09.2026 mit `_zaehle` selbst, weil «236» nach viel aussieht
-und der Eindruck falsch ist. Die Zahl zerfaellt in vier sehr ungleiche Teile:
+Gemessen am 21.09.2026 mit `_zaehle` selbst, weil «185» nach viel aussieht
+und der Eindruck falsch ist. Die Zahl zerfaellt in drei sehr ungleiche Teile:
 
 | | Stand | Was damit ist |
 |---|---|---|
 | **Ausserhalb der fw-Huelle** | **147 in 19** | Django-Admin (`unfold/layouts/base.html`), Portal- und Aussenseiten mit eigenen Huellen. Dort gibt es KEINE `fw-*`-Klasse. Nicht E2s Tranche — siehe die Warnung zu `schaden_melden.html` weiter unten, es ist derselbe Fall |
 | **`text-white`** | **32 in 21** | Ausdruecklich erlaubt, siehe «WAS `text-white` HIER NOCH DARF» |
-| **Overlay in `base.html`** | **51** | Der letzte Schritt von E2, und zwar per Entwurf |
 | **Echter Rest** | **6** | siehe unten |
+
+Die Farbhaelfte des E2-Gates ist damit fuer die fw-Tranche erledigt: Unter
+der Huelle stehen noch 38, davon 32 erlaubtes `text-white` und die sechs
+unten. Die 147 ausserhalb sind eine eigene Entscheidung (Admin-Theme und
+Aussenhuellen), nicht der Vorlagendurchgang.
 
 Die grossen Brocken sind also gerade NICHT die Arbeit: `core/mietzins_form.html`
 (73) haengt an Unfold, `admin/finance/abrechnung_vorschau.html` (30) wird per
@@ -247,7 +292,7 @@ OBERGRENZE = {
     'core/templates/fw/_schicht.html': 2,
     'core/templates/fw/anlagen.html': 3,
     'core/templates/fw/bankabgleich.html': 1,
-    'core/templates/fw/base.html': 55,
+    'core/templates/fw/base.html': 4,
     'core/templates/fw/bewerber_vergleich.html': 3,
     'core/templates/fw/bewerbung_detail.html': 1,
     'core/templates/fw/dokumente.html': 1,

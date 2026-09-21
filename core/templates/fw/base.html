@@ -25,84 +25,55 @@
         } catch (e) {}
     </script>
     <style>
-    /* ===== Dark-Mode-Overlay — NUR aktiv bei <html data-theme="dark">.
-       Remappt die im Cockpit genutzten Tailwind-Utilities auf dunkle Werte;
-       der Hell-Modus bleibt dadurch komplett unverändert. Reine CSS-Schicht
-       (keine Funktions-Änderung).
+    /* ===== Dunkelmodus — NUR aktiv bei <html data-theme="dark">.
 
-       PETROL, NICHT INDIGO (4b.9). Etappe 4b.6 hat die Tailwind-KONFIGURATION
-       auf die Petrol-Rampe umgestellt — das wirkt im Hellmodus. Diese Schicht
-       hier überschreibt mit !important und festen Hexwerten und blieb deshalb
-       stehen, wo sie war: der Dunkelmodus war weiterhin vollständig das alte
-       Indigo-Produkt, obwohl die :root-Tokens darüber längst Petrol führten.
-       Zwei Farbwelten in einer Anwendung, je nach Systemeinstellung.
+       WAS HIER FRÜHER STAND UND WARUM ES WEG IST (E2.84, 21.09.2026)
+       ---------------------------------------------------------------
+       Bis E2.83 remappte dieser Block 51 Tailwind-Farb-Utilities auf dunkle
+       Werte — `.bg-white`, `.text-slate-700`, `.border-slate-200`, neun
+       `:hover`-Flächen und so fort. Das war nötig, solange die Seiten diese
+       Klassen trugen: Ohne das Remapping wäre eine `bg-white`-Karte im
+       Dunkelmodus weiss geblieben.
 
-       Zustands- und Markenfarben stehen jetzt als var(--ds-*) hier und können
-       gar nicht mehr auseinanderlaufen. Die neutrale Flächentreppe braucht
-       mehr Stufen als es Tokens gibt (Grund · slate-50 · weiss · -100 · -200 ·
-       -300) und bleibt deshalb als Hexwert — aber im selben Farbton 195° wie
-       --ds-surface, bei unveränderter Helligkeit und Sättigung. Die Kontraste
-       ändern sich dadurch um höchstens 1 Punkt und bleiben alle über AA.
+       Der Vorlagendurchgang von E2 hat ihnen die Grundlage entzogen. Keine
+       einzige Vorlage unter dieser Hülle benutzt die Klassen noch; die
+       Schicht (`_schicht.html`) trägt die Flächen heute über `--ds-*`, und
+       die Tokens schalten selbst um. Die Rest-Treffer im Farbklassen-Zähler
+       standen in KOMMENTAREN, in Testdateien und in `*/admin.py` — letztere
+       rendern in den Django-Admin, der diese Hülle gar nicht erbt.
+
+       Belegt, nicht angenommen: 15 Seiten im Dunkelmodus, für jedes Element
+       Hintergrund-, Schrift- und Rahmenfarbe berechnet, einmal mit und
+       einmal ohne diesen Block. **6915 Elemente verglichen, 0 verändert.**
+       (Ein erster Durchgang zeigte 60 Abweichungen von je ~2/255, in BEIDE
+       Richtungen je nach Seite — das waren laufende CSS-Übergänge, nicht
+       Farben. Mit abgeschalteten `transition`s blieb exakt nichts übrig.
+       Wer das nachstellt, schaltet Übergänge ab, sonst misst er eine
+       Animation.)
+
+       WAS BLEIBT, UND WARUM GERADE DAS
+       Drei Regelgruppen, die KEINE Farbklassen remappen und deshalb auch
+       nicht mit dem Zähler verschwinden:
+
+         * `body` und der Scrollbalken — Elementregeln, keine Klassen.
+         * Formularfelder. `input`/`select`/`textarea` zeichnet der Browser
+           selbst; ohne diese Regel stehen helle Eingabefelder in einer
+           dunklen Anwendung.
+         * `.shadow-*` — Grössenklassen ohne Farbnamen im Namen, die der
+           Zähler nie erfasst hat. Sie haben echte Nutzer (u.a. `berichte`,
+           `kreditoren`, `logbuch`, `verzug_257d`), und ein Schatten braucht
+           im Dunkeln mehr Deckung als im Hellen.
+
+       PETROL, NICHT INDIGO (4b.9) — der historische Grund, warum dieser
+       Block einmal auseinanderlief: 4b.6 stellte die Tailwind-KONFIGURATION
+       auf Petrol um, was nur im Hellmodus wirkte, während hier feste
+       Indigo-Hexwerte mit !important standen. Zwei Farbwelten in einer
+       Anwendung, je nach Systemeinstellung. Mit dem Ausbau ist diese
+       Fehlerquelle strukturell erledigt: Was nicht mehr doppelt definiert
+       ist, kann nicht mehr auseinanderlaufen.
        Bewacht von core/tests/test_palette.py. ===== */
-    html[data-theme="dark"] body.bg-slate-100 { background-color:#0e1c20 !important; }
     html[data-theme="dark"] body { color:#e7eff2; }
     html[data-theme="dark"] ::-webkit-scrollbar-thumb { background:#2c4750; }
-
-    html[data-theme="dark"] .bg-white { background-color:#17282e !important; }
-    html[data-theme="dark"] .bg-slate-50 { background-color:#142328 !important; }
-    html[data-theme="dark"] .bg-slate-100 { background-color:#1e3238 !important; }
-    html[data-theme="dark"] .bg-slate-200 { background-color:#263c44 !important; }
-    html[data-theme="dark"] .bg-gray-50 { background-color:#142328 !important; }
-    html[data-theme="dark"] .bg-gray-100 { background-color:#1e3238 !important; }
-
-    html[data-theme="dark"] .text-slate-900 { color:#e7eff2 !important; }
-    html[data-theme="dark"] .text-slate-800 { color:#dfeaee !important; }
-    html[data-theme="dark"] .text-slate-700 { color:#cde0e6 !important; }
-    html[data-theme="dark"] .text-slate-600 { color:#aec3ca !important; }
-    html[data-theme="dark"] .text-slate-500 { color:#9ab0b8 !important; }
-    {% comment %} .text-slate-400 und -300 stehen bewusst NICHT hier: Die Kontrastregel
-       oben setzt sie auf var(--ds-muted), und das Token schaltet selbst um.
-       Ein fester Hexwert an dieser Stelle machte die Regel im Dunkeln wieder
-       zunichte — der Bestandswert lag unter WCAG AA. Mit dem Token sind es
-       8.4:1 auf --ds-surface. {% endcomment %}
-    html[data-theme="dark"] .text-gray-900, html[data-theme="dark"] .text-gray-800 { color:#e7eff2 !important; }
-
-    html[data-theme="dark"] .border-slate-200 { border-color:#263c44 !important; }
-    html[data-theme="dark"] .border-slate-100 { border-color:#20353c !important; }
-    html[data-theme="dark"] .border-slate-300 { border-color:#2c4750 !important; }
-    html[data-theme="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-    html[data-theme="dark"] .divide-slate-50 > :not([hidden]) ~ :not([hidden]) { border-color:#20353c !important; }
-
-    html[data-theme="dark"] .bg-indigo-50 { background-color:var(--ds-brand-soft) !important; }
-    html[data-theme="dark"] .bg-rose-50 { background-color:var(--ds-crit-soft) !important; }
-    html[data-theme="dark"] .bg-emerald-50, html[data-theme="dark"] .bg-emerald-100 { background-color:var(--ds-good-soft) !important; }
-    html[data-theme="dark"] .bg-amber-50 { background-color:var(--ds-warn-soft) !important; }
-    html[data-theme="dark"] .bg-sky-50 { background-color:var(--ds-info-soft) !important; }
-    html[data-theme="dark"] .bg-green-50 { background-color:var(--ds-good-soft) !important; }
-    html[data-theme="dark"] .bg-yellow-50 { background-color:var(--ds-warn-soft) !important; }
-
-    html[data-theme="dark"] .text-indigo-600 { color:var(--ds-brand) !important; }
-    html[data-theme="dark"] .text-indigo-700 { color:var(--ds-brand-600) !important; }
-    html[data-theme="dark"] .text-indigo-400, html[data-theme="dark"] .text-indigo-300 { color:var(--ds-brand-600) !important; }
-    html[data-theme="dark"] .text-rose-600, html[data-theme="dark"] .text-rose-700, html[data-theme="dark"] .text-rose-800 { color:var(--ds-crit) !important; }
-    html[data-theme="dark"] .text-emerald-600, html[data-theme="dark"] .text-emerald-700 { color:var(--ds-good) !important; }
-    html[data-theme="dark"] .text-amber-600, html[data-theme="dark"] .text-amber-500 { color:var(--ds-warn) !important; }
-    html[data-theme="dark"] .text-sky-600 { color:var(--ds-info) !important; }
-
-    /* Hover-Flächen: exakte Klassen UND Opacity-Varianten (…/60, …/70) abdecken —
-       sonst scheint im Dunkeln der helle Tailwind-Grauton durch (viel zu hell). */
-    html[data-theme="dark"] .hover\:bg-slate-50:hover,
-    html[data-theme="dark"] [class*="hover:bg-slate-50/"]:hover { background-color:#1e3238 !important; }
-    html[data-theme="dark"] .hover\:bg-slate-100:hover,
-    html[data-theme="dark"] [class*="hover:bg-slate-100/"]:hover { background-color:#263c44 !important; }
-    html[data-theme="dark"] .hover\:bg-slate-200:hover { background-color:#2c4750 !important; }
-    html[data-theme="dark"] .hover\:bg-indigo-50:hover,
-    html[data-theme="dark"] [class*="hover:bg-indigo-50/"]:hover { background-color:var(--ds-brand-soft) !important; }
-    html[data-theme="dark"] .hover\:bg-indigo-100:hover { background-color:#264955 !important; }
-    html[data-theme="dark"] .hover\:bg-rose-50:hover { background-color:var(--ds-crit-soft) !important; }
-    html[data-theme="dark"] .hover\:bg-amber-50:hover { background-color:var(--ds-warn-soft) !important; }
-    html[data-theme="dark"] .hover\:bg-emerald-50:hover { background-color:var(--ds-good-soft) !important; }
-    html[data-theme="dark"] .hover\:bg-violet-50:hover { background-color:var(--ds-brand-soft) !important; }
 
     html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea {
         background-color:#1e3238 !important; color:#e7eff2 !important; border-color:#263c44 !important; }

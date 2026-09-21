@@ -258,9 +258,23 @@ class EinFarbtonTests(TestCase):
                 else (hoch - tief) / (2 - hoch - tief))
 
     def test_es_gibt_ueberhaupt_farbwerte_zu_pruefen(self):
-        """Sonst pruefte der Test unten eine leere Liste."""
+        """Sonst pruefte der Test unten eine leere Liste.
+
+        DIE SCHWELLE IST VON 50 AUF 35 GESUNKEN (E2.84, 21.09.2026) — und
+        das ist kein Nachgeben, sondern die Folge einer Aufraeumung: Der
+        Dunkelmodus-Overlay in `base.html` ist ausgebaut, und mit seinen 51
+        Regeln sind rund ein Dutzend fester Hexwerte verschwunden (die
+        dunkle Flaechentreppe `#17282e`, `#142328`, `#1e3238`, `#263c44` und
+        die zugehoerigen Schrift- und Rahmenwerte). Gezaehlt danach: 43.
+
+        Die Schwelle steht bewusst darunter, nicht darauf: Sie soll eine
+        kaputte Suche fangen (dann waeren es 0), nicht jede berechtigte
+        Aenderung zu einem roten Test machen. Wer sie erneut senken muss,
+        prueft vorher, ob wirklich aufgeraeumt wurde — oder ob
+        `_hexwerte()` nur nichts mehr findet.
+        """
         self.assertGreater(
-            len(self._hexwerte()), 50,
+            len(self._hexwerte()), 35,
             'In base.html wurden kaum Hexwerte gefunden — Format geaendert?')
 
     def test_kein_indigo_und_kein_violett_mehr_in_base_html(self):
