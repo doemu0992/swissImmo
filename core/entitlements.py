@@ -179,3 +179,82 @@ def grenze_durchsetzbar(art: str) -> bool:
     if art not in GRENZEN:
         raise UnbekanntesMerkmal(f'«{art}» steht nicht in GRENZEN.')
     return art not in NICHT_DURCHGESETZT
+
+
+def merkmal_erforderlich(merkmal: str):
+    """Die Ansicht braucht diese Abo-Stufe. **Noch nirgends angewendet.**
+
+    Der Mechanismus für Schritt 3, gebaut bevor der Entscheid darüber fällt —
+    dasselbe Vorgehen wie bei den Tabellen (Schritt 1) und dem Sweep
+    (Schritt 2). Wer die Sperren einzieht, wendet ihn an und streicht den
+    Namen aus `core/tests/entitlement_freiliste.txt`.
+
+    DIE REIHENFOLGE: `rolle_erforderlich` GEHÖRT DARÜBER
+
+        @rolle_erforderlich(*TEAM_ROLLEN)     # läuft zuerst
+        @merkmal_erforderlich('eigentuemerportal')
+        def fw_eigentuemerportal(request):
+            ...
+
+    Nachgemessen, nicht überlegt: Der ÄUSSERE Dekorator läuft zur Laufzeit
+    zuerst. Wer die Rolle nicht hat, soll nicht erfahren, welche Abo-Stufe ihm
+    fehlte — also muss die Rollenprüfung oben stehen.
+
+    `docs/PHASE-3-ENTITLEMENTS.md` zeigte das zuerst umgekehrt. Der Entwurf
+    nannte die Absicht richtig und die Schreibweise falsch; beim Bauen
+    aufgefallen und dort korrigiert.
+
+    `benoetigtes_merkmal` überlebt den äusseren Dekorator, weil `@wraps` das
+    `__dict__` mitnimmt — auch das gemessen. Der Sweep in
+    `test_entitlement_abdeckung` findet die Marke deshalb in beiden Fassungen.
+
+    BEI UNBEKANNTER STUFE WIRD DURCHGELASSEN (fail-open)
+
+    Empfehlung aus `docs/PHASE-3-ENTITLEMENTS.md` Abschnitt 7, Punkt 3, ohne
+    Einspruch übernommen: Eine Funktionssperre, die bei einem Fehler
+    zuschlägt, sperrt eine zahlende Verwaltung aus einer Funktion, für die sie
+    bereits bezahlt hat. Der Schaden ist einseitig — ein zu viel gewährter
+    Monat kostet weniger als ein ausgesperrter Kunde.
+
+    Das gilt AUSDRÜCKLICH NICHT für die Zustandssperre aus Abschnitt 2C
+    (Zahlungsverzug). Die hängt an einem Status, der bekannt ist oder nicht
+    existiert, und «nicht ermittelbar» heisst dort «keine Zahlungsdaten».
+
+    Heute trifft dieser Zweig auf JEDE Organisation zu: `abo_plan` steht auf
+    `start`/`pro`/`premium`, und `pro`/`premium` gibt es in `STUFEN` nicht.
+    Solange Schritt 7 aussteht, würde dieser Dekorator also nichts sperren —
+    ein weiterer Grund, ihn noch nirgends anzuwenden.
+    """
+    from functools import wraps
+
+    def deko(ansicht):
+        @wraps(ansicht)
+        def gehuellt(request, *args, **kwargs):
+            from django.contrib import messages
+            from django.shortcuts import redirect
+
+            organisation = getattr(request, 'organisation', None)
+            try:
+                erlaubt = darf(organisation, merkmal)
+            except UnbekannteStufe:
+                import logging
+                logging.getLogger(__name__).warning(
+                    'Abo-Stufe nicht zuordenbar (%s) — durchgelassen. '
+                    'Siehe merkmal_erforderlich.',
+                    getattr(organisation, 'abo_plan', None))
+                erlaubt = True
+
+            if erlaubt:
+                return ansicht(request, *args, **kwargs)
+
+            # KEIN 403. Eine gesperrte Funktion soll verkaufen, nicht
+            # schimpfen — wer hier landet, hat sie ja gesucht.
+            _ab_stufe, bezeichnung = MERKMALE[merkmal]
+            messages.info(
+                request,
+                f'«{bezeichnung}» gehört zu einer höheren Abo-Stufe.')
+            return redirect('/neu/abonnement/')
+
+        setattr(gehuellt, MERKMAL_ATTRIBUT, merkmal)
+        return gehuellt
+    return deko

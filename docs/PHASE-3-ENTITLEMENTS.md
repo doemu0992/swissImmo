@@ -120,8 +120,8 @@ eine Absage laufen zu lassen. Genau das braucht eine Abo-Sperre auch — ein
 Schloss neben dem Menüeintrag verkauft, eine 403-Seite verärgert.
 
 ```python
+@rolle_erforderlich(*TEAM_ROLLEN)          # läuft ZUERST
 @merkmal_erforderlich('eigentuemerportal')
-@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_eigentuemerportal(request):
     ...
 ```
@@ -129,9 +129,16 @@ def fw_eigentuemerportal(request):
 Der Dekorator setzt `view.benoetigtes_merkmal`; die Navigation liest es wie
 heute schon `benoetigte_rollen`.
 
-**Reihenfolge ist bedeutsam:** erst Rolle, dann Merkmal — oder umgekehrt? Wer
-die Rolle nicht hat, soll nicht erfahren, welche Abo-Stufe ihm fehlte.
-Vorschlag: Rolle zuerst, Merkmal danach.
+**Die Reihenfolge stand hier zuerst falsch herum** (Merkmal oben, Rolle
+darunter). Die Absicht war richtig — wer die Rolle nicht hat, soll nicht
+erfahren, welche Abo-Stufe ihm fehlte — die Schreibweise nicht: Zur Laufzeit
+läuft der **äussere** Dekorator zuerst. Also gehört `rolle_erforderlich`
+nach oben.
+
+Nachgemessen beim Bauen (E2.81), zusammen mit der zweiten Frage dahinter:
+`benoetigtes_merkmal` überlebt den äusseren Dekorator, weil `functools.wraps`
+das `__dict__` mitnimmt. Der Sweep findet die Marke deshalb auch dann, wenn
+`rolle_erforderlich` darüber steht.
 
 ### 3.3 Die Grenze greift zentral, nicht in jeder Ansicht
 
@@ -307,7 +314,8 @@ kann, ist ein Versprechen ohne Deckung — dieselbe Sorte wie der «API-Zugang»
 |---|---|---|
 | 1 | `core/entitlements.py` mit Tabellen + `darf()`, noch ohne Sperren. Test: Tabellen = MARKT.md | **erledigt** (E2.79) |
 | 2 | Sweep-Test über alle benannten URLs (gemessen 326), alle auf der Freiliste | **erledigt** (E2.80) |
-| 3 | Funktionssperren einziehen, Freiliste schrumpfen | 2 |
+| 2b | `merkmal_erforderlich` als Mechanismus, noch nirgends angewendet | **erledigt** (E2.81) |
+| 3 | Funktionssperren einziehen, Freiliste schrumpfen | wartet auf Entscheid 7 — solange `abo_plan` auf `pro` steht, lässt der Dekorator alles durch |
 | 4 | Navigation zeigt Schloss statt Absage | 3 |
 | 5 | Grenzen (Einheiten, Nutzer) per Signal + benannter Ausstieg | 1 |
 | 6 | Zustands-Middleware | Zahlungsanbieter |

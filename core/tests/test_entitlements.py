@@ -193,3 +193,108 @@ class NochKeineSperreTests(SimpleTestCase):
             set(treffer) - erlaubt, set(),
             'Die Entitlements werden bereits aufgerufen — dann ist Schritt 3 '
             'begonnen und dieser Test gehört gestrichen, nicht angepasst.')
+
+
+class DekoratorTests(SimpleTestCase):
+    """Der Mechanismus für Schritt 3 — gebaut, noch nirgends angewendet.
+
+    Dass ihn keine Ansicht trägt, hält `test_entitlement_abdeckung` fest.
+    Hier steht, dass er das Richtige TÄTE, wenn jemand ihn anwendet.
+    """
+
+    def setUp(self):
+        from django.test import RequestFactory
+        self.anfrage = RequestFactory().get('/irgendwo/')
+        # `messages` braucht eine Ablage; ohne sie wirft der Dekorator beim
+        # Sperren, und der Test misst dann das Fehlen der Ablage statt die
+        # Sperre.
+        from django.contrib.messages.storage.fallback import FallbackStorage
+        from django.contrib.sessions.backends.db import SessionStore
+        self.anfrage.session = SessionStore()
+        self.anfrage._messages = FallbackStorage(self.anfrage)
+
+    def _ansicht(self, merkmal='eigentuemerportal'):
+        from django.http import HttpResponse
+
+        from core.entitlements import merkmal_erforderlich
+
+        @merkmal_erforderlich(merkmal)
+        def sicht(request):
+            return HttpResponse('durchgelassen')
+        return sicht
+
+    class _Org:
+        def __init__(self, plan):
+            self.abo_plan = plan
+
+    def test_die_marke_haengt_an_der_ansicht(self):
+        from core.entitlements import MERKMAL_ATTRIBUT, merkmal_der_ansicht
+
+        sicht = self._ansicht()
+        self.assertEqual(merkmal_der_ansicht(sicht), 'eigentuemerportal')
+        self.assertEqual(getattr(sicht, MERKMAL_ATTRIBUT), 'eigentuemerportal')
+
+    def test_die_marke_ueberlebt_einen_aeusseren_dekorator(self):
+        """Sonst fände der Sweep sie nicht, sobald `rolle_erforderlich`
+        darüber steht — und die Abdeckung wäre ein Trugschluss.
+
+        `functools.wraps` nimmt das `__dict__` mit; gemessen, nicht
+        angenommen.
+        """
+        from functools import wraps
+
+        from core.entitlements import merkmal_der_ansicht
+
+        def aussen(f):
+            @wraps(f)
+            def g(*a, **k):
+                return f(*a, **k)
+            return g
+
+        self.assertEqual(merkmal_der_ansicht(aussen(self._ansicht())),
+                         'eigentuemerportal')
+
+    def test_die_hoehere_stufe_kommt_durch(self):
+        self.anfrage.organisation = self._Org('professional')
+        antwort = self._ansicht()(self.anfrage)
+        self.assertEqual(antwort.status_code, 200)
+        self.assertEqual(antwort.content, b'durchgelassen')
+
+    def test_die_tiefere_stufe_wird_zum_abo_geschickt_statt_abgewiesen(self):
+        """Kein 403. Eine gesperrte Funktion soll verkaufen, nicht schimpfen —
+        wer hier landet, hat sie ja gesucht."""
+        self.anfrage.organisation = self._Org('start')
+        antwort = self._ansicht()(self.anfrage)
+        self.assertEqual(antwort.status_code, 302)
+        self.assertEqual(antwort['Location'], '/neu/abonnement/')
+
+    def test_die_meldung_nennt_die_funktion_beim_namen(self):
+        """«Diese Funktion» hilft niemandem — der Name aus MARKT.md schon."""
+        from django.contrib.messages import get_messages
+
+        self.anfrage.organisation = self._Org('start')
+        self._ansicht()(self.anfrage)
+        texte = [str(m) for m in get_messages(self.anfrage)]
+        self.assertTrue(any('Eigentümerportal' in t for t in texte), texte)
+
+    def test_eine_unbekannte_stufe_wird_durchgelassen(self):
+        """fail-open, und zwar bewusst.
+
+        Eine Funktionssperre, die bei einem Fehler zuschlägt, sperrt eine
+        zahlende Verwaltung aus etwas, wofür sie bezahlt hat. Der Schaden ist
+        einseitig.
+
+        Heute trifft das auf JEDE Organisation zu — `pro` und `premium` gibt
+        es in STUFEN nicht. Ein weiterer Grund, den Dekorator noch nirgends
+        anzuwenden.
+        """
+        for plan in ('pro', 'premium', None):
+            with self.subTest(plan=plan):
+                self.anfrage.organisation = self._Org(plan)
+                antwort = self._ansicht()(self.anfrage)
+                self.assertEqual(antwort.status_code, 200)
+
+    def test_ohne_organisation_wird_ebenfalls_durchgelassen(self):
+        """Dieselbe Begründung — und der Fall tritt vor dem Anmelden auf."""
+        self.anfrage.organisation = None
+        self.assertEqual(self._ansicht()(self.anfrage).status_code, 200)
