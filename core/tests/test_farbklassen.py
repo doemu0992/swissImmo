@@ -31,8 +31,76 @@ E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 4020 in 112 Vorlagen.
 E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 `anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
-(63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
-**STAND 242 in 43 Vorlagen**.
+(63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0): 242 in 43.
+E2.83 nahm den Rest, der ueberhaupt noch zu nehmen war — `nebenkosten_detail`
+(3 → 0), `zahllauf` (2 → 1), `vertrag_neu` (2 → 1) und den zweiten
+Vorhang in `base.html` (56 → 55): **STAND 236 in 42 Vorlagen**.
+
+E2.83 WAR KEINE UMBENENNUNG — ES WAR EIN FEHLER, IM BROWSER GEMESSEN
+--------------------------------------------------------------------
+Der Hinweiskasten in `nebenkosten_detail.html` trug `text-indigo-900`
+(Ueberschrift) und `text-indigo-800` (Fliesstext) auf `fw-markenflaeche`.
+Beide Klassen stehen NICHT in der Liste, die das Overlay umdefiniert (dort
+sind `text-indigo-300/400/600/700`). Sie blieben im Dunkelmodus also dunkel
+— auf einem dunklen Kasten. Gemessen mit Playwright, beide Modi:
+
+| | vorher hell | vorher dunkel | nachher hell | nachher dunkel |
+|---|---|---|---|---|
+| Ueberschrift | 10.90:1 | **1.10:1** | 13.72:1 | 12.03:1 |
+| Fliesstext | 9.14:1 | **1.31:1** | 13.72:1 | 12.03:1 |
+
+Genau der Befund, fuer den `e2e/tests/dunkelmodus.spec.ts` geschrieben wurde
+(«Beide Male stand der Text da und war nicht zu sehen») — nur eine Seite
+weiter und nach innen, wo jener Test nicht hinsieht.
+
+`border-indigo-100` (in `nebenkosten_detail` und `zahllauf`) war derselbe
+Fall von der anderen Seite: Die Palette bildet indigo-100 auf den weichen
+Markenton ab, also war die Linie im HELLEN exakt so hell wie ihr eigener
+Kasten (beide `rgb(217,239,237)`) — unsichtbar — und im DUNKLEN blieb sie
+`rgb(217,239,237)` auf dunklem Grund, also fast weiss. Jetzt `fw-linie-marke`
+in beiden Modi.
+
+Daraus die Regel fuer den Rest von E2: Eine Farbklasse, die das Overlay
+nicht kennt, ist auf einer Token-Flaeche nicht bloss Schuld, sondern mit
+einiger Wahrscheinlichkeit ein Darstellungsfehler, den niemand gemeldet hat.
+Beim Umstellen lohnt der Blick, ob die Klasse ueberhaupt im Overlay steht.
+
+DIESE ZAHL SAGT NICHT, WIE VIEL E2 NOCH ZU TUN HAT
+--------------------------------------------------
+Gemessen am 21.09.2026 mit `_zaehle` selbst, weil «236» nach viel aussieht
+und der Eindruck falsch ist. Die Zahl zerfaellt in vier sehr ungleiche Teile:
+
+| | Stand | Was damit ist |
+|---|---|---|
+| **Ausserhalb der fw-Huelle** | **147 in 19** | Django-Admin (`unfold/layouts/base.html`), Portal- und Aussenseiten mit eigenen Huellen. Dort gibt es KEINE `fw-*`-Klasse. Nicht E2s Tranche — siehe die Warnung zu `schaden_melden.html` weiter unten, es ist derselbe Fall |
+| **`text-white`** | **32 in 21** | Ausdruecklich erlaubt, siehe «WAS `text-white` HIER NOCH DARF» |
+| **Overlay in `base.html`** | **51** | Der letzte Schritt von E2, und zwar per Entwurf |
+| **Echter Rest** | **6** | siehe unten |
+
+Die grossen Brocken sind also gerade NICHT die Arbeit: `core/mietzins_form.html`
+(73) haengt an Unfold, `admin/finance/abrechnung_vorschau.html` (30) wird per
+`mark_safe` in den Admin gerendert (`finance/admin.py:113`). Beide auf `fw-*`
+umzustellen liefert sie unformatiert aus.
+
+DIE SECHS, DIE WIRKLICH NOCH DA SIND
+------------------------------------
+Und warum jede einzelne davon bleibt, bis jemand sie eigens entscheidet:
+
+* `base.html` 2x `[&>option]:text-slate-900` — faerbt die Eintraege eines
+  nativen `<select>`-Aufklappers. Das Overlay erreicht sie NICHT (die
+  kompilierte Klasse heisst `.[&>option]:text-slate-900`, nicht
+  `.text-slate-900`), und das ist richtig so: Der Aufklapper wird vom
+  Betriebssystem hell gezeichnet, auch im Dunkelmodus. Eine Tokenklasse
+  wuerde die Schrift dort aufhellen und unlesbar machen.
+* `base.html` 1x `border-indigo-600` und 1x `text-white` in `classList.toggle`
+  — die alte Reiterleiste. Der Kommentar daneben nennt die Bedingung:
+  Sie bleiben, solange Seiten die alte Leiste benutzen.
+* `_schicht.html` 2x `text-slate-400`/`-300` — das sind DEFINITIONEN, keine
+  Verwendungen: Die Schicht hebt beide auf `--ds-muted`, weil sie mit 2.56:1
+  und 1.48:1 WCAG AA verfehlen. Sie zu entfernen nimmt den Kontrastfix.
+
+Der Zaehler unterscheidet Definition nicht von Verwendung — bei
+`_schicht.html` und beim Overlay zaehlt er die Loesung als Schuld mit.
 
 DIESE ZAHL IST NICHT DIE GANZE SCHULD
 -------------------------------------
@@ -179,7 +247,7 @@ OBERGRENZE = {
     'core/templates/fw/_schicht.html': 2,
     'core/templates/fw/anlagen.html': 3,
     'core/templates/fw/bankabgleich.html': 1,
-    'core/templates/fw/base.html': 56,
+    'core/templates/fw/base.html': 55,
     'core/templates/fw/bewerber_vergleich.html': 3,
     'core/templates/fw/bewerbung_detail.html': 1,
     'core/templates/fw/dokumente.html': 1,
@@ -191,14 +259,13 @@ OBERGRENZE = {
     'core/templates/fw/mieterkonten.html': 1,
     'core/templates/fw/mieterwechsel.html': 3,
     'core/templates/fw/mietzins.html': 1,
-    'core/templates/fw/nebenkosten_detail.html': 3,
     'core/templates/fw/objekt_ausschreiben.html': 1,
     'core/templates/fw/person_form.html': 2,
     'core/templates/fw/schaden_detail.html': 2,
     'core/templates/fw/vermarktung.html': 2,
     'core/templates/fw/vertrag_detail.html': 1,
-    'core/templates/fw/vertrag_neu.html': 2,
-    'core/templates/fw/zahllauf.html': 2,
+    'core/templates/fw/vertrag_neu.html': 1,
+    'core/templates/fw/zahllauf.html': 1,
 }
 
 

@@ -121,7 +121,7 @@
 <form method="post" action="/neu/zahllauf/" class="fw-flaeche rounded-xl border fw-linie-marke overflow-hidden">
     {% csrf_token %}
     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-    <div class="px-5 py-3 border-b border-indigo-100 fw-markenflaeche flex items-center justify-between flex-wrap gap-3">
+    <div class="px-5 py-3 border-b fw-linie-marke fw-markenflaeche flex items-center justify-between flex-wrap gap-3">
         <div class="font-bold fw-strong text-sm">
             {% zeichen 'wartet' klasse='fw-marke mr-1.5' %}In Zahlung — auf Bankbestätigung wartend
         </div>

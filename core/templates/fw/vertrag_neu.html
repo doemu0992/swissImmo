@@ -877,7 +877,7 @@ function live(){
     <div class="mb-3">${vm.name}<br>${vm.strasse}<br>${vm.plz} ${vm.ort}<br><span class="text-xs fw-faint">Nachstehend «Vermieter» genannt.</span></div>
     <div class="mb-1 font-semibold text-xs fw-mutet">Mieter</div>
     <div class="mb-2">${m?m.name:'[Mieter auswählen]'}${m&&m.strasse?'<br>'+m.strasse:''}${m&&m.plz?'<br>'+m.plz+' '+(m.ort||''):''}</div>
-    ${(function(){const m2=zweiterName()?curMieter2():null; return m2?`<div class="mb-2 pt-2 border-t border-slate-50">${m2.name}${m2.strasse?'<br>'+m2.strasse:''}${m2.plz?'<br>'+m2.plz+' '+(m2.ort||''):''}</div>`:'';})()}
+    ${(function(){const m2=zweiterName()?curMieter2():null; return m2?`<div class="mb-2 pt-2 border-t fw-linie">${m2.name}${m2.strasse?'<br>'+m2.strasse:''}${m2.plz?'<br>'+m2.plz+' '+(m2.ort||''):''}</div>`:'';})()}
     <div class="mb-2"><span class="text-xs fw-faint">Nachstehend «Mieter» genannt.</span></div>
     ${document.getElementById('familienwohnung')&&document.getElementById('familienwohnung').checked?'<p class="text-xs fw-warnton fw-warn-flaeche rounded px-2 py-1 mb-2">Es handelt sich um eine <b>Familienwohnung</b> (Art. 266n / 169 OR). Eine Kündigung ist beiden Ehegatten separat zuzustellen.</p>':''}
     <p class="text-xs fw-faint mb-3">Alle aufgeführten Personen haften für sämtliche Verbindlichkeiten solidarisch.</p>
