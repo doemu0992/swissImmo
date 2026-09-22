@@ -17,6 +17,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q, Sum
 from django.shortcuts import render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
 # Die Ansichten stehen weiterhin in arbeit.py — dort liegen auch die uebrigen
@@ -360,7 +361,7 @@ def fw_dashboard(request):
         **basis, 'nav': 'dashboard',
         'heute': heute,
         'ansicht': ansicht,
-        'ansicht_titel': dict(ANSICHTEN).get(ansicht, 'Heute'),
+        'ansicht_titel': dict(ANSICHTEN).get(ansicht, _('Heute')),
         'ansichten': [(k, b, k == ansicht, zaehler.get(k))
                       for k, b in ANSICHTEN],
         'vorrat': vorrat,

@@ -459,3 +459,311 @@ msgstr "Completati di recente"
 #: core/templates/fw/zulauf.html:61
 msgid "Noch nichts erledigt."
 msgstr "Ancora nulla di completato."
+
+#: core/templates/fw/fall_detail.html
+msgid "Arbeit"
+msgstr "Lavoro"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fall"
+msgstr "Pratica"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fallart"
+msgstr "Tipo di pratica"
+
+#: core/templates/fw/fall_detail.html
+msgid "Akte"
+msgstr "Pratica"
+
+#: core/templates/fw/fall_detail.html
+msgid "Eröffnet"
+msgstr "Aperto"
+
+#: core/templates/fw/fall_detail.html
+msgid "Zuständig"
+msgstr "Responsabile"
+
+#: core/templates/fw/fall_detail.html
+msgid "niemand"
+msgstr "nessuno"
+
+#: core/templates/fw/fall_detail.html
+msgid "liegengeblieben"
+msgstr "in sospeso"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fortschritt"
+msgstr "Progresso"
+
+#: core/templates/fw/fall_detail.html
+msgid "Schritte erledigt"
+msgstr "Fasi completate"
+
+#: core/templates/fw/fall_detail.html
+msgid "Nächster Schritt"
+msgstr "Prossima fase"
+
+#: core/templates/fw/fall_detail.html
+msgid "ohne Frist"
+msgstr "senza scadenza"
+
+#: core/templates/fw/fall_detail.html
+msgid "alle Schritte erledigt"
+msgstr "tutte le fasi sono completate"
+
+#: core/templates/fw/fall_detail.html
+msgid "Letzte Bewegung"
+msgstr "Ultimo movimento"
+
+#: core/templates/fw/fall_detail.html
+msgid "Tage"
+msgstr "Giorni"
+
+#: core/templates/fw/fall_detail.html
+msgid "meldet sich nach 10 Tagen"
+msgstr "si segnala dopo 10 giorni"
+
+#: core/templates/fw/fall_detail.html
+msgid "meldet sich nach 14 Tagen"
+msgstr "si segnala dopo 14 giorni"
+
+#: core/templates/fw/fall_detail.html
+msgid "Erfasste Zeit"
+msgstr "Tempo registrato"
+
+#: core/templates/fw/fall_detail.html
+msgid "min"
+msgstr "min"
+
+#: core/templates/fw/fall_detail.html
+msgid "auf diesen Fall gebucht"
+msgstr "addebitato a questa pratica"
+
+#: core/templates/fw/fall_detail.html
+msgid "Aufwand erfassen"
+msgstr "Registrare il lavoro"
+
+#: core/templates/fw/fall_detail.html
+msgid "Minuten"
+msgstr "Minuti"
+
+#: core/templates/fw/fall_detail.html
+msgid "Tätigkeit"
+msgstr "Attività"
+
+#: core/templates/fw/fall_detail.html
+msgid "Telefonat mit Handwerker"
+msgstr "Telefonta con artigiano"
+
+#: core/templates/fw/fall_detail.html
+msgid "Satz CHF/h"
+msgstr "Tasso CHF/h"
+
+#: core/templates/fw/fall_detail.html
+msgid "separat verrechenbar"
+msgstr "fatturato separatamente"
+
+#: core/templates/fw/fall_detail.html
+msgid "Buchen"
+msgstr "Registrare"
+
+#: core/templates/fw/fall_detail.html
+msgid "Zum nächsten Schritt →"
+msgstr "Alla prossima fase →"
+
+#: core/templates/fw/fall_detail.html
+msgid "optional"
+msgstr "facoltativo"
+
+#: core/templates/fw/fall_detail.html
+msgid "Für diesen Fall sind keine Schritte angelegt."
+msgstr "Nessuna fase è definita per questa pratica."
+
+#: core/templates/fw/fall_detail.html
+msgid "fällig %(frist)s"
+msgstr "scadenza %(frist)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "Seit %(tage)s Tagen keine Bewegung"
+msgstr "Nessun movimento da %(tage)s giorni"
+
+#: core/templates/fw/fall_detail.html
+msgid "Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro mit drei Personen der teuerste Fehler."
+msgstr "La regola di scadenza è stata attivata. O la fase successiva viene completata, o la pratica deve essere messa in pausa — lasciare in sospeso è l'errore più costoso in un ufficio di tre persone."
+
+#: core/templates/fw/fall_detail.html
+msgid "Etappe %(nr)s"
+msgstr "Fase %(nr)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "erledigt %(am)s"
+msgstr "completato il %(am)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "Frist %(frist)s"
+msgstr "Scadenza %(frist)s"
+
+#: core/views/fw/arbeit.py:37
+msgid "Heute"
+msgstr "Oggi"
+
+#: core/views/fw/arbeit.py:38
+msgid "Diese Woche"
+msgstr "Questa settimana"
+
+#: core/views/fw/arbeit.py:39
+msgid "Wartet auf Dritte"
+msgstr "In attesa di terzi"
+
+#: core/views/fw/arbeit.py:40
+msgid "Liegengeblieben"
+msgstr "In sospeso"
+
+#: core/views/fw/arbeit.py:41
+msgid "Alle"
+msgstr "Tutti"
+
+#: core/views/fw/dashboard.py:363
+msgid "Heute"
+msgstr "Oggi"
+
+#: faelle/arbeitsvorrat.py:179
+msgid "Lauf"
+msgstr "Processo"
+
+#: faelle/arbeitsvorrat.py:195
+msgid "Zum Lauf"
+msgstr "Al processo"
+
+#: faelle/arbeitsvorrat.py:319
+msgid "Nächster Schritt"
+msgstr "Prossimo passo"
+
+#: faelle/arbeitsvorrat.py:328
+msgid "niemand"
+msgstr "nessuno"
+
+#: faelle/arbeitsvorrat.py:341
+msgid "Fall öffnen"
+msgstr "Aprire il caso"
+
+#: faelle/arbeitsvorrat.py:376
+msgid "Öffnen"
+msgstr "Aprire"
+
+#: faelle/arbeitsvorrat.py:403
+msgid "Zur Frist"
+msgstr "Alla scadenza"
+
+#: faelle/arbeitsvorrat.py:513
+msgid "Wohnungsabnahme"
+msgstr "Ricezione dell'alloggio"
+
+#: faelle/arbeitsvorrat.py:513
+msgid "Übergabe"
+msgstr "Consegna"
+
+#: faelle/arbeitsvorrat.py:515
+msgid "Vertrag"
+msgstr "Contratto"
+
+#: faelle/arbeitsvorrat.py:533
+msgid "Besichtigung"
+msgstr "Visita"
+
+#: faelle/arbeitsvorrat.py:537
+msgid "Bewerbung"
+msgstr "Candidatura"
+
+#: faelle/arbeitsvorrat.py:557
+msgid "Termin"
+msgstr "Appuntamento"
+
+#: faelle/arbeitsvorrat.py:643
+msgid "Freigeben"
+msgstr "Approvare"
+
+#: faelle/arbeitsvorrat.py:657
+msgid "Entscheiden"
+msgstr "Decidere"
+
+#: faelle/arbeitsvorrat.py:673
+msgid "Signatur"
+msgstr "Firma"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:37
+msgid "Läufe"
+msgstr "Processi"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:38
+#, python-format
+msgid "%(n)s fällig"
+msgstr "%(n)s dovuto"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:38
+#, python-format
+msgid "%(n)s blockiert"
+msgstr "%(n)s bloccato"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:39
+msgid "Alle Läufe"
+msgstr "Tutti i processi"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:59
+msgid "Termine"
+msgstr "Appuntamenti"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:60
+msgid "in den nächsten 7 Tagen"
+msgstr "nei prossimi 7 giorni"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:88
+msgid "Wartet auf Freigabe"
+msgstr "In attesa di approvazione"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:89
+#, python-format
+msgid "%(n)s Entscheid"
+msgid_plural "%(n)s Entscheide"
+msgstr[0] "%(n)s decisione"
+msgstr[1] "%(n)s decisioni"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:104
+msgid "Alle Freigaben"
+msgstr "Tutte le approvazioni"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:105
+#, python-format
+msgid "Ø Liegezeit %(n)s Tage"
+msgstr "Tempo medio %(n)s giorni"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:105
+msgid "ohne Datum — Liegezeit nicht berechenbar"
+msgstr "senza data — tempo medio non calcolabile"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:118
+msgid "Vertretung"
+msgstr "Sostituzione"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:119
+msgid "Abwesenheiten"
+msgstr "Assenze"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:138
+#, python-format
+msgid "<b>%(name)s</b> ist bis %(bis)s abwesent."
+msgstr "<b>%(name)s</b> è assente fino al %(bis)s."
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:147
+msgid "abwesend bis"
+msgstr "assente fino al"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:151
+msgid "ohne Vertretung"
+msgstr "senza sostituzione"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:153
+#, python-format
+msgid "vertreten durch %(wer)s"
+msgstr "sostituito da %(wer)s"

@@ -466,3 +466,311 @@ msgstr "Zuletzt erledigt"
 #: core/templates/fw/zulauf.html:61
 msgid "Noch nichts erledigt."
 msgstr "Noch nichts erledigt."
+
+#: core/templates/fw/fall_detail.html
+msgid "Arbeit"
+msgstr "Arbeit"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fall"
+msgstr "Fall"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fallart"
+msgstr "Fallart"
+
+#: core/templates/fw/fall_detail.html
+msgid "Akte"
+msgstr "Akte"
+
+#: core/templates/fw/fall_detail.html
+msgid "Eröffnet"
+msgstr "Eröffnet"
+
+#: core/templates/fw/fall_detail.html
+msgid "Zuständig"
+msgstr "Zuständig"
+
+#: core/templates/fw/fall_detail.html
+msgid "niemand"
+msgstr "niemand"
+
+#: core/templates/fw/fall_detail.html
+msgid "liegengeblieben"
+msgstr "liegengeblieben"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fortschritt"
+msgstr "Fortschritt"
+
+#: core/templates/fw/fall_detail.html
+msgid "Schritte erledigt"
+msgstr "Schritte erledigt"
+
+#: core/templates/fw/fall_detail.html
+msgid "Nächster Schritt"
+msgstr "Nächster Schritt"
+
+#: core/templates/fw/fall_detail.html
+msgid "ohne Frist"
+msgstr "ohne Frist"
+
+#: core/templates/fw/fall_detail.html
+msgid "alle Schritte erledigt"
+msgstr "alle Schritte erledigt"
+
+#: core/templates/fw/fall_detail.html
+msgid "Letzte Bewegung"
+msgstr "Letzte Bewegung"
+
+#: core/templates/fw/fall_detail.html
+msgid "Tage"
+msgstr "Tage"
+
+#: core/templates/fw/fall_detail.html
+msgid "meldet sich nach 10 Tagen"
+msgstr "meldet sich nach 10 Tagen"
+
+#: core/templates/fw/fall_detail.html
+msgid "meldet sich nach 14 Tagen"
+msgstr "meldet sich nach 14 Tagen"
+
+#: core/templates/fw/fall_detail.html
+msgid "Erfasste Zeit"
+msgstr "Erfasste Zeit"
+
+#: core/templates/fw/fall_detail.html
+msgid "min"
+msgstr "min"
+
+#: core/templates/fw/fall_detail.html
+msgid "auf diesen Fall gebucht"
+msgstr "auf diesen Fall gebucht"
+
+#: core/templates/fw/fall_detail.html
+msgid "Aufwand erfassen"
+msgstr "Aufwand erfassen"
+
+#: core/templates/fw/fall_detail.html
+msgid "Minuten"
+msgstr "Minuten"
+
+#: core/templates/fw/fall_detail.html
+msgid "Tätigkeit"
+msgstr "Tätigkeit"
+
+#: core/templates/fw/fall_detail.html
+msgid "Telefonat mit Handwerker"
+msgstr "Telefonat mit Handwerker"
+
+#: core/templates/fw/fall_detail.html
+msgid "Satz CHF/h"
+msgstr "Satz CHF/h"
+
+#: core/templates/fw/fall_detail.html
+msgid "separat verrechenbar"
+msgstr "separat verrechenbar"
+
+#: core/templates/fw/fall_detail.html
+msgid "Buchen"
+msgstr "Buchen"
+
+#: core/templates/fw/fall_detail.html
+msgid "Zum nächsten Schritt →"
+msgstr "Zum nächsten Schritt →"
+
+#: core/templates/fw/fall_detail.html
+msgid "optional"
+msgstr "optional"
+
+#: core/templates/fw/fall_detail.html
+msgid "Für diesen Fall sind keine Schritte angelegt."
+msgstr "Für diesen Fall sind keine Schritte angelegt."
+
+#: core/templates/fw/fall_detail.html
+msgid "fällig %(frist)s"
+msgstr "fällig %(frist)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "Seit %(tage)s Tagen keine Bewegung"
+msgstr "Seit %(tage)s Tagen keine Bewegung"
+
+#: core/templates/fw/fall_detail.html
+msgid "Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro mit drei Personen der teuerste Fehler."
+msgstr "Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro mit drei Personen der teuerste Fehler."
+
+#: core/templates/fw/fall_detail.html
+msgid "Etappe %(nr)s"
+msgstr "Etappe %(nr)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "erledigt %(am)s"
+msgstr "erledigt %(am)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "Frist %(frist)s"
+msgstr "Frist %(frist)s"
+
+#: core/views/fw/arbeit.py:37
+msgid "Heute"
+msgstr "Heute"
+
+#: core/views/fw/arbeit.py:38
+msgid "Diese Woche"
+msgstr "Diese Woche"
+
+#: core/views/fw/arbeit.py:39
+msgid "Wartet auf Dritte"
+msgstr "Wartet auf Dritte"
+
+#: core/views/fw/arbeit.py:40
+msgid "Liegengeblieben"
+msgstr "Liegengeblieben"
+
+#: core/views/fw/arbeit.py:41
+msgid "Alle"
+msgstr "Alle"
+
+#: core/views/fw/dashboard.py:363
+msgid "Heute"
+msgstr "Heute"
+
+#: faelle/arbeitsvorrat.py:179
+msgid "Lauf"
+msgstr "Lauf"
+
+#: faelle/arbeitsvorrat.py:195
+msgid "Zum Lauf"
+msgstr "Zum Lauf"
+
+#: faelle/arbeitsvorrat.py:319
+msgid "Nächster Schritt"
+msgstr "Nächster Schritt"
+
+#: faelle/arbeitsvorrat.py:328
+msgid "niemand"
+msgstr "niemand"
+
+#: faelle/arbeitsvorrat.py:341
+msgid "Fall öffnen"
+msgstr "Fall öffnen"
+
+#: faelle/arbeitsvorrat.py:376
+msgid "Öffnen"
+msgstr "Öffnen"
+
+#: faelle/arbeitsvorrat.py:403
+msgid "Zur Frist"
+msgstr "Zur Frist"
+
+#: faelle/arbeitsvorrat.py:513
+msgid "Wohnungsabnahme"
+msgstr "Wohnungsabnahme"
+
+#: faelle/arbeitsvorrat.py:513
+msgid "Übergabe"
+msgstr "Übergabe"
+
+#: faelle/arbeitsvorrat.py:515
+msgid "Vertrag"
+msgstr "Vertrag"
+
+#: faelle/arbeitsvorrat.py:533
+msgid "Besichtigung"
+msgstr "Besichtigung"
+
+#: faelle/arbeitsvorrat.py:537
+msgid "Bewerbung"
+msgstr "Bewerbung"
+
+#: faelle/arbeitsvorrat.py:557
+msgid "Termin"
+msgstr "Termin"
+
+#: faelle/arbeitsvorrat.py:643
+msgid "Freigeben"
+msgstr "Freigeben"
+
+#: faelle/arbeitsvorrat.py:657
+msgid "Entscheiden"
+msgstr "Entscheiden"
+
+#: faelle/arbeitsvorrat.py:673
+msgid "Signatur"
+msgstr "Signatur"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:37
+msgid "Läufe"
+msgstr "Läufe"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:38
+#, python-format
+msgid "%(n)s fällig"
+msgstr "%(n)s fällig"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:38
+#, python-format
+msgid "%(n)s blockiert"
+msgstr "%(n)s blockiert"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:39
+msgid "Alle Läufe"
+msgstr "Alle Läufe"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:59
+msgid "Termine"
+msgstr "Termine"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:60
+msgid "in den nächsten 7 Tagen"
+msgstr "in den nächsten 7 Tagen"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:88
+msgid "Wartet auf Freigabe"
+msgstr "Wartet auf Freigabe"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:89
+#, python-format
+msgid "%(n)s Entscheid"
+msgid_plural "%(n)s Entscheide"
+msgstr[0] "%(n)s Entscheid"
+msgstr[1] "%(n)s Entscheide"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:104
+msgid "Alle Freigaben"
+msgstr "Alle Freigaben"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:105
+#, python-format
+msgid "Ø Liegezeit %(n)s Tage"
+msgstr "Ø Liegezeit %(n)s Tage"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:105
+msgid "ohne Datum — Liegezeit nicht berechenbar"
+msgstr "ohne Datum — Liegezeit nicht berechenbar"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:118
+msgid "Vertretung"
+msgstr "Vertretung"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:119
+msgid "Abwesenheiten"
+msgstr "Abwesenheiten"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:138
+#, python-format
+msgid "<b>%(name)s</b> ist bis %(bis)s abwesend."
+msgstr "<b>%(name)s</b> ist bis %(bis)s abwesend."
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:147
+msgid "abwesend bis"
+msgstr "abwesend bis"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:151
+msgid "ohne Vertretung"
+msgstr "ohne Vertretung"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:153
+#, python-format
+msgid "vertreten durch %(wer)s"
+msgstr "vertreten durch %(wer)s"

@@ -23,6 +23,7 @@ import logging
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.utils.dateparse import parse_date, parse_datetime
 from django.views.decorators.http import require_POST
 
@@ -34,11 +35,11 @@ logger = logging.getLogger(__name__)
 
 #: Die fünf Ansichten aus Abschnitt 3.1, in dieser Reihenfolge.
 ANSICHTEN = (
-    ('heute', 'Heute'),
-    ('woche', 'Diese Woche'),
-    ('wartet', 'Wartet auf Dritte'),
-    ('liegen', 'Liegengeblieben'),
-    ('alle', 'Alle'),
+    ('heute', _('Heute')),
+    ('woche', _('Diese Woche')),
+    ('wartet', _('Wartet auf Dritte')),
+    ('liegen', _('Liegengeblieben')),
+    ('alle', _('Alle')),
 )
 
 
