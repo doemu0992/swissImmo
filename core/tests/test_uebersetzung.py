@@ -61,8 +61,10 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 UEBERSETZT = (
     'fw/abwesenheiten.html',
     'fw/dashboard.html',
+    'fw/fall_detail.html',
     'fw/termine.html',
     'fw/zulauf.html',
+    'fw/_arbeitsvorrat_abschnitte.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -81,6 +83,25 @@ STICHPROBE = {
                            'it': 'Prossimi appuntamenti', 'en': 'Upcoming appointments'},
     'Zuletzt erledigt':   {'de': 'Zuletzt erledigt', 'fr': 'Traité récemment',
                            'it': 'Completati di recente', 'en': 'Recently done'},
+    # Fallakte
+    'Fortschritt':        {'de': 'Fortschritt', 'fr': 'Progrès',
+                           'it': 'Progresso', 'en': 'Progress'},
+    'Aufwand erfassen':   {'de': 'Aufwand erfassen', 'fr': 'Saisir le travail',
+                           'it': 'Registrare il lavoro', 'en': 'Record effort'},
+    'Buchen':             {'de': 'Buchen', 'fr': 'Enregistrer',
+                           'it': 'Registrare', 'en': 'Book'},
+    'Erledigt':           {'de': 'Erledigt', 'fr': 'Terminé',
+                           'it': 'Completato', 'en': 'Done'},
+    'Für diesen Fall sind keine Schritte angelegt.': {
+        'de': 'Für diesen Fall sind keine Schritte angelegt.',
+        'fr': "Aucune étape n'est définie pour ce dossier.",
+        'it': 'Nessuna fase è definita per questa pratica.',
+        'en': 'No steps are defined for this case.'},
+    # Arbeitsvorrat
+    'Läufe':              {'de': 'Läufe', 'fr': 'Processus', 'it': 'Processi', 'en': 'Processes'},
+    'Termine':            {'de': 'Termine', 'fr': 'Rendez-vous', 'it': 'Appuntamenti', 'en': 'Appointments'},
+    'Vertretung':         {'de': 'Vertretung', 'fr': 'Remplacement', 'it': 'Sostituzione', 'en': 'Replacement'},
+    'Wartet auf Freigabe': {'de': 'Wartet auf Freigabe', 'fr': "En attente d'approbation", 'it': "In attesa di approvazione", 'en': 'Waiting for approval'},
 }
 
 
