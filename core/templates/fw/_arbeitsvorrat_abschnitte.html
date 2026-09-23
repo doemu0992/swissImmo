@@ -1,4 +1,4 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 {% comment %} Die beiden Abschnitte «Termine» und «Wartet auf Freigabe» aus
    dem Prototyp (mockups/konzept-struktur.html, Screen «Heute»). Einmal
    gebaut, von Startseite UND Arbeit-Seite eingebunden — nicht zweimal
@@ -34,9 +34,9 @@ Karte, die sie sichtbar macht.
 <div class="fw-card">
     <div class="fw-kopf">
         <span class="fw-ikon{% if av_laeufe_blockiert %} crit{% endif %}">{% zeichen 'lauf' %}</span>
-        <span class="fw-t">Läufe</span>
-        <span class="fw-neben">{{ av_laeufe_faellig }} fällig{% if av_laeufe_blockiert %}, {{ av_laeufe_blockiert }} blockiert{% endif %}</span>
-        <span class="fw-rechts"><a href="/neu/laeufe/" class="fw-link">Alle Läufe</a></span>
+        <span class="fw-t">{% trans "Läufe" %}</span>
+        <span class="fw-neben">{% blocktrans count n=av_laeufe_faellig %}{{ n }} fällig{% endblocktrans %}{% if av_laeufe_blockiert %}, {% blocktrans count n=av_laeufe_blockiert %}{{ n }} blockiert{% endblocktrans %}{% endif %}</span>
+        <span class="fw-rechts"><a href="/neu/laeufe/" class="fw-link">{% trans "Alle Läufe" %}</a></span>
     </div>
     {% for l in av_laeufe %}
     <div class="fw-zeile">
@@ -56,8 +56,8 @@ Karte, die sie sichtbar macht.
 <div class="fw-card">
     <div class="fw-kopf">
         <span class="fw-ikon">{% zeichen 'termin' %}</span>
-        <span class="fw-t">Termine</span>
-        <span class="fw-neben">{{ av_termine_gesamt }} in den nächsten 7 Tagen</span>
+        <span class="fw-t">{% trans "Termine" %}</span>
+        <span class="fw-neben">{{ av_termine_gesamt }} {% trans "in den nächsten 7 Tagen" %}</span>
     </div>
     {% for t in av_termine %}
     <div class="fw-zeile">
@@ -85,8 +85,8 @@ Karte, die sie sichtbar macht.
         {% comment %} Der Prototyp nennt den Abschnitt «Wartet auf mich».
            Das Datenmodell trägt das «mich» nicht: Weder KreditorenRechnung
            noch HandwerkerAuftrag führen einen Freigeber. {% endcomment %}
-        <span class="fw-t">Wartet auf Freigabe</span>
-        <span class="fw-neben">{{ av_freigaben_gesamt }} Entscheid{{ av_freigaben_gesamt|pluralize:"e" }}</span>
+        <span class="fw-t">{% trans "Wartet auf Freigabe" %}</span>
+        <span class="fw-neben">{{ av_freigaben_gesamt }} {% blocktrans count n=av_freigaben_gesamt %}{{ n }} Entscheid{% plural %}{{ n }} Entscheide{% endblocktrans %}</span>
     </div>
     {% for f in av_freigaben %}
     <div class="fw-zeile">
@@ -94,15 +94,15 @@ Karte, die sie sichtbar macht.
         <span class="fw-ikon">{% zeichen_wert f.ikon %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ f.titel }}</div>
-            <div class="fw-s">{{ f.zeile }}{% if f.tage %} · liegt seit {{ f.tage }} Tag{{ f.tage|pluralize:"en" }}{% endif %}</div>
+            <div class="fw-s">{{ f.zeile }}{% if f.tage %} · {% blocktrans count n=f.tage %}liegt seit {{ n }} Tag{% plural %}liegt seit {{ n }} Tagen{% endblocktrans %}{% endif %}</div>
         </div>
         {% if f.betrag %}<span class="fw-betrag">CHF {{ f.betrag|chf }}</span>{% endif %}
         <a href="{{ f.ziel }}" class="fw-btn fw-primary">{{ f.knopf }}</a>
     </div>
     {% endfor %}
     <div class="fw-fuss">
-        <a href="/neu/kreditoren/" class="fw-link">Alle Freigaben</a>
-        <span>{% if av_liegezeit %}Ø Liegezeit {{ av_liegezeit }} Tage{% else %}ohne Datum — Liegezeit nicht berechenbar{% endif %}</span>
+        <a href="/neu/kreditoren/" class="fw-link">{% trans "Alle Freigaben" %}</a>
+        <span>{% if av_liegezeit %}{% blocktrans with n=av_liegezeit %}Ø Liegezeit {{ n }} Tage{% endblocktrans %}{% else %}{% trans "ohne Datum — Liegezeit nicht berechenbar" %}{% endif %}</span>
     </div>
 </div>
 {% endif %}
@@ -115,11 +115,11 @@ Karte, die sie sichtbar macht.
 <div class="fw-card">
     <div class="fw-kopf">
         <span class="fw-ikon">{% zeichen 'wartet' %}</span>
-        <span class="fw-t">Vertretung</span>
-        <span class="fw-rechts"><a href="/neu/abwesenheiten/" class="fw-link">Abwesenheiten</a></span>
+        <span class="fw-t">{% trans "Vertretung" %}</span>
+        <span class="fw-rechts"><a href="/neu/abwesenheiten/" class="fw-link">{% trans "Abwesenheiten" %}</a></span>
     </div>
     {% comment %}
-    DER SATZ AUS KONZEPT v7 — ÜBER der Liste, nicht statt ihr.
+    DER SATZ AUS KONZEPT v7 — ÜBER DER LISTE, nicht statt ihr.
 
     v7 zeigt: «Lea Frey ist bis 29.08. abwesend. Du vertrittst 7 Fälle.»
     Das sagt, was auf MICH zukommt — bei einer Abwesenheit liest es sich
@@ -135,8 +135,8 @@ Karte, die sie sichtbar macht.
     {% endcomment %}
     {% if vertretung_fuer %}
     <p class="fw-vertretungssatz">
-        {% for name, bis in vertretung_fuer %}<b>{{ name }}</b> ist bis {{ bis|date:"d.m." }} abwesend.{% if not forloop.last %} {% endif %}{% endfor %}
-        {% if vertretung_faelle %}Du vertrittst <b>{{ vertretung_faelle }}</b> offene{{ vertretung_faelle|pluralize:"n" }} Fall{{ vertretung_faelle|pluralize:"ä" }}{{ vertretung_faelle|pluralize:"lle" }}.{% endif %}
+        {% for name, bis in vertretung_fuer %}{% blocktrans with name=name bis=bis|date:"d.m." %}<b>{{ name }}</b> ist bis {{ bis }} abwesend.{% endblocktrans %}{% if not forloop.last %} {% endif %}{% endfor %}
+        {% if vertretung_faelle %}{% blocktrans count n=vertretung_faelle %}Du vertrittst <b>{{ n }}</b> offene{{ n|pluralize:"n" }} Fall{{ n|pluralize:"ä" }}{{ n|pluralize:"lle" }}.{% endblocktrans %}{% endif %}
     </p>
     {% endif %}
     {% for v in av_vertretung %}
@@ -144,13 +144,13 @@ Karte, die sie sichtbar macht.
         <span class="fw-marker {% if v.ungedeckt %}warn{% else %}brand{% endif %}"></span>
         <span class="fw-avci">{{ v.wer|slice:":2"|upper }}</span>
         <div class="fw-mitte">
-            <div class="fw-t">{{ v.wer }} — abwesend bis {{ v.bis|date:"d.m.Y" }}</div>
-            <div class="fw-s">{{ v.grund }}{% if v.faelle == 1 %} · 1 offener Fall läuft weiter{% elif v.faelle %} · {{ v.faelle }} offene Fälle laufen weiter{% endif %}</div>
+            <div class="fw-t">{{ v.wer }} — {% trans "abwesend bis" %} {{ v.bis|date:"d.m.Y" }}</div>
+            <div class="fw-s">{{ v.grund }}{% if v.faelle == 1 %} · {% blocktrans count n=v.faelle %}{{ n }} offener Fall läuft weiter{% endblocktrans %}{% elif v.faelle %} · {% blocktrans count n=v.faelle %}{{ n }} offene Fälle laufen weiter{% endblocktrans %}{% endif %}</div>
         </div>
         {% if v.ungedeckt %}
-        <span class="fw-chip fw-warn">ohne Vertretung</span>
+        <span class="fw-chip fw-warn">{% trans "ohne Vertretung" %}</span>
         {% else %}
-        <span class="fw-chip fw-brand">vertreten durch {{ v.vertreter }}</span>
+        <span class="fw-chip fw-brand">{% blocktrans with wer=v.vertreter %}vertreten durch {{ wer }}{% endblocktrans %}</span>
         {% endif %}
     </div>
     {% endfor %}

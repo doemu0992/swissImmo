@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -31,7 +30,9 @@ msgstr "Absences"
 msgid ""
 "Wer wann weg ist — und wer übernimmt. Umsetzung von G8: Zuständigkeit statt "
 "Rolle, plus Vertretung."
-msgstr "Who is away when — and who takes over. Implementation of G8: responsibility instead of role, plus cover."
+msgstr ""
+"Who is away when — and who takes over. Implementation of G8: responsibility "
+"instead of role, plus cover."
 
 #: core/templates/fw/abwesenheiten.html:16
 msgid "Zurzeit abwesend"
@@ -359,7 +360,10 @@ msgid ""
 "Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
 "zusätzlich in der Heute-Ansicht — sie kommen aus dem Vertrag und der "
 "Bewerbung und werden hier nicht doppelt geführt."
-msgstr "Work appointments with time and place. Handovers and viewings also appear in the Today view — they come from the tenancy and the application and are not listed twice here."
+msgstr ""
+"Work appointments with time and place. Handovers and viewings also appear in "
+"the Today view — they come from the tenancy and the application and are not "
+"listed twice here."
 
 #: core/templates/fw/termine.html:17
 msgid "Kommende Termine"
@@ -422,7 +426,9 @@ msgstr "Nothing past yet."
 msgid ""
 "Jeder Eingang wird zu genau einem von drei Dingen: einer Akte zugeordnet, "
 "Auslöser eines Falls, oder bewusst abgelegt."
-msgstr "Every arrival becomes exactly one of three things: assigned to a file, the trigger for a case, or deliberately filed away."
+msgstr ""
+"Every arrival becomes exactly one of three things: assigned to a file, the "
+"trigger for a case, or deliberately filed away."
 
 #: core/templates/fw/zulauf.html:16
 msgid "Nicht zugeordnet"
@@ -460,3 +466,280 @@ msgstr "Recently done"
 #: core/templates/fw/zulauf.html:61
 msgid "Noch nichts erledigt."
 msgstr "Nothing done yet."
+
+#: core/templates/fw/fall_detail.html
+msgid "Arbeit"
+msgstr "Work"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fall"
+msgstr "Case"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fallart"
+msgstr "Case type"
+
+#: core/templates/fw/fall_detail.html
+msgid "Akte"
+msgstr "File"
+
+#: core/templates/fw/fall_detail.html
+msgid "Eröffnet"
+msgstr "Opened"
+
+#: core/templates/fw/fall_detail.html
+msgid "Zuständig"
+msgstr "Responsible"
+
+#: core/templates/fw/fall_detail.html
+msgid "niemand"
+msgstr "nobody"
+
+#: core/templates/fw/fall_detail.html
+msgid "liegengeblieben"
+msgstr "stalled"
+
+#: core/templates/fw/fall_detail.html
+msgid "Fortschritt"
+msgstr "Progress"
+
+#: core/templates/fw/fall_detail.html
+msgid "Schritte erledigt"
+msgstr "Steps completed"
+
+#: core/templates/fw/fall_detail.html
+msgid "Nächster Schritt"
+msgstr "Next step"
+
+#: core/templates/fw/fall_detail.html
+msgid "ohne Frist"
+msgstr "without deadline"
+
+#: core/templates/fw/fall_detail.html
+msgid "alle Schritte erledigt"
+msgstr "all steps completed"
+
+#: core/templates/fw/fall_detail.html
+msgid "Letzte Bewegung"
+msgstr "Last activity"
+
+#: core/templates/fw/fall_detail.html
+msgid "Tage"
+msgstr "Days"
+
+#: core/templates/fw/fall_detail.html
+msgid "meldet sich nach 10 Tagen"
+msgstr "reports after 10 days"
+
+#: core/templates/fw/fall_detail.html
+msgid "meldet sich nach 14 Tagen"
+msgstr "reports after 14 days"
+
+#: core/templates/fw/fall_detail.html
+msgid "Erfasste Zeit"
+msgstr "Recorded time"
+
+#: core/templates/fw/fall_detail.html
+msgid "min"
+msgstr "min"
+
+#: core/templates/fw/fall_detail.html
+msgid "auf diesen Fall gebucht"
+msgstr "booked to this case"
+
+#: core/templates/fw/fall_detail.html
+msgid "Aufwand erfassen"
+msgstr "Record effort"
+
+#: core/templates/fw/fall_detail.html
+msgid "Minuten"
+msgstr "Minutes"
+
+#: core/templates/fw/fall_detail.html
+msgid "Tätigkeit"
+msgstr "Activity"
+
+#: core/templates/fw/fall_detail.html
+msgid "Telefonat mit Handwerker"
+msgstr "Call with tradesman"
+
+#: core/templates/fw/fall_detail.html
+msgid "Satz CHF/h"
+msgstr "Rate CHF/h"
+
+#: core/templates/fw/fall_detail.html
+msgid "separat verrechenbar"
+msgstr "billed separately"
+
+#: core/templates/fw/fall_detail.html
+msgid "Buchen"
+msgstr "Book"
+
+#: core/templates/fw/fall_detail.html
+msgid "Zum nächsten Schritt →"
+msgstr "To the next step →"
+
+#: core/templates/fw/fall_detail.html
+msgid "optional"
+msgstr "optional"
+
+#: core/templates/fw/fall_detail.html
+msgid "Für diesen Fall sind keine Schritte angelegt."
+msgstr "No steps are defined for this case."
+
+#: core/templates/fw/fall_detail.html
+msgid "fällig %(frist)s"
+msgstr "due %(frist)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "Seit %(tage)s Tagen keine Bewegung"
+msgstr "No activity for %(tage)s days"
+
+#: core/templates/fw/fall_detail.html
+msgid ""
+"Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird "
+"erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro "
+"mit drei Personen der teuerste Fehler."
+msgstr ""
+"The expiry rule has been triggered. Either the next step is completed, or "
+"the case should be put on hold — letting it stall is the most expensive "
+"error in a three-person office."
+
+#: core/templates/fw/fall_detail.html
+msgid "Etappe %(nr)s"
+msgstr "Stage %(nr)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "erledigt %(am)s"
+msgstr "completed %(am)s"
+
+#: core/templates/fw/fall_detail.html
+msgid "Frist %(frist)s"
+msgstr "Deadline %(frist)s"
+
+#: core/views/fw/arbeit.py:37
+msgid "Heute"
+msgstr "Today"
+
+#: core/views/fw/arbeit.py:38
+msgid "Diese Woche"
+msgstr "This week"
+
+#: core/views/fw/arbeit.py:39
+msgid "Wartet auf Dritte"
+msgstr "Waiting for third party"
+
+#: core/views/fw/arbeit.py:40
+msgid "Liegengeblieben"
+msgstr "Stalled"
+
+#: faelle/arbeitsvorrat.py:179
+msgid "Lauf"
+msgstr "Process"
+
+#: faelle/arbeitsvorrat.py:195
+msgid "Zum Lauf"
+msgstr "To process"
+
+#: faelle/arbeitsvorrat.py:341
+msgid "Fall öffnen"
+msgstr "Open case"
+
+#: faelle/arbeitsvorrat.py:376
+msgid "Öffnen"
+msgstr "Open"
+
+#: faelle/arbeitsvorrat.py:403
+msgid "Zur Frist"
+msgstr "To deadline"
+
+#: faelle/arbeitsvorrat.py:513
+msgid "Wohnungsabnahme"
+msgstr "Apartment handover"
+
+#: faelle/arbeitsvorrat.py:513
+msgid "Übergabe"
+msgstr "Handover"
+
+#: faelle/arbeitsvorrat.py:515
+msgid "Vertrag"
+msgstr "Contract"
+
+#: faelle/arbeitsvorrat.py:533
+msgid "Besichtigung"
+msgstr "Viewing"
+
+#: faelle/arbeitsvorrat.py:537
+msgid "Bewerbung"
+msgstr "Application"
+
+#: faelle/arbeitsvorrat.py:557
+msgid "Termin"
+msgstr "Appointment"
+
+#: faelle/arbeitsvorrat.py:643
+msgid "Freigeben"
+msgstr "Approve"
+
+#: faelle/arbeitsvorrat.py:657
+msgid "Entscheiden"
+msgstr "Decide"
+
+#: faelle/arbeitsvorrat.py:673
+msgid "Signatur"
+msgstr "Signature"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:37
+msgid "Läufe"
+msgstr "Processes"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:38
+#, python-format
+msgid "%(n)s fällig"
+msgstr "%(n)s due"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:38
+#, python-format
+msgid "%(n)s blockiert"
+msgstr "%(n)s blocked"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:39
+msgid "Alle Läufe"
+msgstr "All processes"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:60
+msgid "in den nächsten 7 Tagen"
+msgstr "in the next 7 days"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:88
+msgid "Wartet auf Freigabe"
+msgstr "Waiting for approval"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:89
+#, python-format
+msgid "%(n)s Entscheid"
+msgid_plural "%(n)s Entscheide"
+msgstr[0] "%(n)s decision"
+msgstr[1] "%(n)s decisions"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:104
+msgid "Alle Freigaben"
+msgstr "All approvals"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:105
+#, python-format
+msgid "Ø Liegezeit %(n)s Tage"
+msgstr "Avg. age %(n)s days"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:105
+msgid "ohne Datum — Liegezeit nicht berechenbar"
+msgstr "no date — avg. age not calculable"
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:138
+#, python-format
+msgid "<b>%(name)s</b> ist bis %(bis)s abwesent."
+msgstr "<b>%(name)s</b> is away until %(bis)s."
+
+#: core/templates/fw/_arbeitsvorrat_abschnitte.html:147
+msgid "abwesend bis"
+msgstr "away until"
