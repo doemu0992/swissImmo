@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -31,7 +30,9 @@ msgstr "Assenze"
 msgid ""
 "Wer wann weg ist — und wer übernimmt. Umsetzung von G8: Zuständigkeit statt "
 "Rolle, plus Vertretung."
-msgstr "Chi è assente e quando — e chi subentra. Attuazione di G8: competenza invece di ruolo, più la sostituzione."
+msgstr ""
+"Chi è assente e quando — e chi subentra. Attuazione di G8: competenza invece "
+"di ruolo, più la sostituzione."
 
 #: core/templates/fw/abwesenheiten.html:16
 msgid "Zurzeit abwesend"
@@ -358,7 +359,10 @@ msgid ""
 "Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
 "zusätzlich in der Heute-Ansicht — sie kommen aus dem Vertrag und der "
 "Bewerbung und werden hier nicht doppelt geführt."
-msgstr "Appuntamenti di lavoro con ora e luogo. Le riconsegne e le visite compaiono inoltre nella vista Oggi — provengono dal contratto e dalla candidatura e qui non vengono riportate due volte."
+msgstr ""
+"Appuntamenti di lavoro con ora e luogo. Le riconsegne e le visite compaiono "
+"inoltre nella vista Oggi — provengono dal contratto e dalla candidatura e "
+"qui non vengono riportate due volte."
 
 #: core/templates/fw/termine.html:17
 msgid "Kommende Termine"
@@ -421,7 +425,9 @@ msgstr "Ancora nulla nel passato."
 msgid ""
 "Jeder Eingang wird zu genau einem von drei Dingen: einer Akte zugeordnet, "
 "Auslöser eines Falls, oder bewusst abgelegt."
-msgstr "Ogni arrivo diventa esattamente una di tre cose: assegnato a una pratica, innesco di un caso, oppure archiviato consapevolmente."
+msgstr ""
+"Ogni arrivo diventa esattamente una di tre cose: assegnato a una pratica, "
+"innesco di un caso, oppure archiviato consapevolmente."
 
 #: core/templates/fw/zulauf.html:16
 msgid "Nicht zugeordnet"
@@ -589,8 +595,14 @@ msgid "Seit %(tage)s Tagen keine Bewegung"
 msgstr "Nessun movimento da %(tage)s giorni"
 
 #: core/templates/fw/fall_detail.html
-msgid "Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro mit drei Personen der teuerste Fehler."
-msgstr "La regola di scadenza è stata attivata. O la fase successiva viene completata, o la pratica deve essere messa in pausa — lasciare in sospeso è l'errore più costoso in un ufficio di tre persone."
+msgid ""
+"Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird "
+"erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro "
+"mit drei Personen der teuerste Fehler."
+msgstr ""
+"La regola di scadenza è stata attivata. O la fase successiva viene "
+"completata, o la pratica deve essere messa in pausa — lasciare in sospeso è "
+"l'errore più costoso in un ufficio di tre persone."
 
 #: core/templates/fw/fall_detail.html
 msgid "Etappe %(nr)s"
@@ -620,14 +632,6 @@ msgstr "In attesa di terzi"
 msgid "Liegengeblieben"
 msgstr "In sospeso"
 
-#: core/views/fw/arbeit.py:41
-msgid "Alle"
-msgstr "Tutti"
-
-#: core/views/fw/dashboard.py:363
-msgid "Heute"
-msgstr "Oggi"
-
 #: faelle/arbeitsvorrat.py:179
 msgid "Lauf"
 msgstr "Processo"
@@ -635,14 +639,6 @@ msgstr "Processo"
 #: faelle/arbeitsvorrat.py:195
 msgid "Zum Lauf"
 msgstr "Al processo"
-
-#: faelle/arbeitsvorrat.py:319
-msgid "Nächster Schritt"
-msgstr "Prossimo passo"
-
-#: faelle/arbeitsvorrat.py:328
-msgid "niemand"
-msgstr "nessuno"
 
 #: faelle/arbeitsvorrat.py:341
 msgid "Fall öffnen"
@@ -710,10 +706,6 @@ msgstr "%(n)s bloccato"
 msgid "Alle Läufe"
 msgstr "Tutti i processi"
 
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:59
-msgid "Termine"
-msgstr "Appuntamenti"
-
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:60
 msgid "in den nächsten 7 Tagen"
 msgstr "nei prossimi 7 giorni"
@@ -742,14 +734,6 @@ msgstr "Tempo medio %(n)s giorni"
 msgid "ohne Datum — Liegezeit nicht berechenbar"
 msgstr "senza data — tempo medio non calcolabile"
 
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:118
-msgid "Vertretung"
-msgstr "Sostituzione"
-
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:119
-msgid "Abwesenheiten"
-msgstr "Assenze"
-
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:138
 #, python-format
 msgid "<b>%(name)s</b> ist bis %(bis)s abwesent."
@@ -758,12 +742,3 @@ msgstr "<b>%(name)s</b> è assente fino al %(bis)s."
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:147
 msgid "abwesend bis"
 msgstr "assente fino al"
-
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:151
-msgid "ohne Vertretung"
-msgstr "senza sostituzione"
-
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:153
-#, python-format
-msgid "vertreten durch %(wer)s"
-msgstr "sostituito da %(wer)s"

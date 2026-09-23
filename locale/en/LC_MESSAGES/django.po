@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -31,7 +30,9 @@ msgstr "Absences"
 msgid ""
 "Wer wann weg ist — und wer übernimmt. Umsetzung von G8: Zuständigkeit statt "
 "Rolle, plus Vertretung."
-msgstr "Who is away when — and who takes over. Implementation of G8: responsibility instead of role, plus cover."
+msgstr ""
+"Who is away when — and who takes over. Implementation of G8: responsibility "
+"instead of role, plus cover."
 
 #: core/templates/fw/abwesenheiten.html:16
 msgid "Zurzeit abwesend"
@@ -359,7 +360,10 @@ msgid ""
 "Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
 "zusätzlich in der Heute-Ansicht — sie kommen aus dem Vertrag und der "
 "Bewerbung und werden hier nicht doppelt geführt."
-msgstr "Work appointments with time and place. Handovers and viewings also appear in the Today view — they come from the tenancy and the application and are not listed twice here."
+msgstr ""
+"Work appointments with time and place. Handovers and viewings also appear in "
+"the Today view — they come from the tenancy and the application and are not "
+"listed twice here."
 
 #: core/templates/fw/termine.html:17
 msgid "Kommende Termine"
@@ -422,7 +426,9 @@ msgstr "Nothing past yet."
 msgid ""
 "Jeder Eingang wird zu genau einem von drei Dingen: einer Akte zugeordnet, "
 "Auslöser eines Falls, oder bewusst abgelegt."
-msgstr "Every arrival becomes exactly one of three things: assigned to a file, the trigger for a case, or deliberately filed away."
+msgstr ""
+"Every arrival becomes exactly one of three things: assigned to a file, the "
+"trigger for a case, or deliberately filed away."
 
 #: core/templates/fw/zulauf.html:16
 msgid "Nicht zugeordnet"
@@ -590,8 +596,14 @@ msgid "Seit %(tage)s Tagen keine Bewegung"
 msgstr "No activity for %(tage)s days"
 
 #: core/templates/fw/fall_detail.html
-msgid "Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro mit drei Personen der teuerste Fehler."
-msgstr "The expiry rule has been triggered. Either the next step is completed, or the case should be put on hold — letting it stall is the most expensive error in a three-person office."
+msgid ""
+"Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird "
+"erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro "
+"mit drei Personen der teuerste Fehler."
+msgstr ""
+"The expiry rule has been triggered. Either the next step is completed, or "
+"the case should be put on hold — letting it stall is the most expensive "
+"error in a three-person office."
 
 #: core/templates/fw/fall_detail.html
 msgid "Etappe %(nr)s"
@@ -621,14 +633,6 @@ msgstr "Waiting for third party"
 msgid "Liegengeblieben"
 msgstr "Stalled"
 
-#: core/views/fw/arbeit.py:41
-msgid "Alle"
-msgstr "All"
-
-#: core/views/fw/dashboard.py:363
-msgid "Heute"
-msgstr "Today"
-
 #: faelle/arbeitsvorrat.py:179
 msgid "Lauf"
 msgstr "Process"
@@ -636,14 +640,6 @@ msgstr "Process"
 #: faelle/arbeitsvorrat.py:195
 msgid "Zum Lauf"
 msgstr "To process"
-
-#: faelle/arbeitsvorrat.py:319
-msgid "Nächster Schritt"
-msgstr "Next step"
-
-#: faelle/arbeitsvorrat.py:328
-msgid "niemand"
-msgstr "nobody"
 
 #: faelle/arbeitsvorrat.py:341
 msgid "Fall öffnen"
@@ -711,10 +707,6 @@ msgstr "%(n)s blocked"
 msgid "Alle Läufe"
 msgstr "All processes"
 
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:59
-msgid "Termine"
-msgstr "Appointments"
-
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:60
 msgid "in den nächsten 7 Tagen"
 msgstr "in the next 7 days"
@@ -743,14 +735,6 @@ msgstr "Avg. age %(n)s days"
 msgid "ohne Datum — Liegezeit nicht berechenbar"
 msgstr "no date — avg. age not calculable"
 
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:118
-msgid "Vertretung"
-msgstr "Replacement"
-
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:119
-msgid "Abwesenheiten"
-msgstr "Absences"
-
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:138
 #, python-format
 msgid "<b>%(name)s</b> ist bis %(bis)s abwesent."
@@ -759,12 +743,3 @@ msgstr "<b>%(name)s</b> is away until %(bis)s."
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:147
 msgid "abwesend bis"
 msgstr "away until"
-
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:151
-msgid "ohne Vertretung"
-msgstr "without replacement"
-
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:153
-#, python-format
-msgid "vertreten durch %(wer)s"
-msgstr "covered by %(wer)s"
