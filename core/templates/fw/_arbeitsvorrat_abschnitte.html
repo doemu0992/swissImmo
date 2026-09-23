@@ -35,7 +35,7 @@ Karte, die sie sichtbar macht.
     <div class="fw-kopf">
         <span class="fw-ikon{% if av_laeufe_blockiert %} crit{% endif %}">{% zeichen 'lauf' %}</span>
         <span class="fw-t">{% trans "Läufe" %}</span>
-        <span class="fw-neben">{% blocktrans count n=av_laeufe_faellig %}{{ n }} fällig{% endblocktrans %}{% if av_laeufe_blockiert %}, {% blocktrans count n=av_laeufe_blockiert %}{{ n }} blockiert{% endblocktrans %}{% endif %}</span>
+        <span class="fw-neben">{% blocktrans count n=av_laeufe_faellig %}{{ n }} fällig{% plural %}{{ n }} fällig{% endblocktrans %}{% if av_laeufe_blockiert %}, {% blocktrans count n=av_laeufe_blockiert %}{{ n }} blockiert{% plural %}{{ n }} blockiert{% endblocktrans %}{% endif %}</span>
         <span class="fw-rechts"><a href="/neu/laeufe/" class="fw-link">{% trans "Alle Läufe" %}</a></span>
     </div>
     {% for l in av_laeufe %}
@@ -86,7 +86,7 @@ Karte, die sie sichtbar macht.
            Das Datenmodell trägt das «mich» nicht: Weder KreditorenRechnung
            noch HandwerkerAuftrag führen einen Freigeber. {% endcomment %}
         <span class="fw-t">{% trans "Wartet auf Freigabe" %}</span>
-        <span class="fw-neben">{{ av_freigaben_gesamt }} {% blocktrans count n=av_freigaben_gesamt %}{{ n }} Entscheid{% plural %}{{ n }} Entscheide{% endblocktrans %}</span>
+        <span class="fw-neben">{% blocktrans count n=av_freigaben_gesamt %}{{ n }} Entscheid{% plural %}{{ n }} Entscheide{% endblocktrans %}</span>
     </div>
     {% for f in av_freigaben %}
     <div class="fw-zeile">
@@ -136,7 +136,7 @@ Karte, die sie sichtbar macht.
     {% if vertretung_fuer %}
     <p class="fw-vertretungssatz">
         {% for name, bis in vertretung_fuer %}{% blocktrans with name=name bis=bis|date:"d.m." %}<b>{{ name }}</b> ist bis {{ bis }} abwesend.{% endblocktrans %}{% if not forloop.last %} {% endif %}{% endfor %}
-        {% if vertretung_faelle %}{% blocktrans count n=vertretung_faelle %}Du vertrittst <b>{{ n }}</b> offene{{ n|pluralize:"n" }} Fall{{ n|pluralize:"ä" }}{{ n|pluralize:"lle" }}.{% endblocktrans %}{% endif %}
+        {% if vertretung_faelle %}{% blocktrans count n=vertretung_faelle %}Du vertrittst <b>{{ n }}</b> offenen Fall.{% plural %}Du vertrittst <b>{{ n }}</b> offene Fälle.{% endblocktrans %}{% endif %}
     </p>
     {% endif %}
     {% for v in av_vertretung %}
@@ -145,7 +145,7 @@ Karte, die sie sichtbar macht.
         <span class="fw-avci">{{ v.wer|slice:":2"|upper }}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ v.wer }} — {% trans "abwesend bis" %} {{ v.bis|date:"d.m.Y" }}</div>
-            <div class="fw-s">{{ v.grund }}{% if v.faelle == 1 %} · {% blocktrans count n=v.faelle %}{{ n }} offener Fall läuft weiter{% endblocktrans %}{% elif v.faelle %} · {% blocktrans count n=v.faelle %}{{ n }} offene Fälle laufen weiter{% endblocktrans %}{% endif %}</div>
+            <div class="fw-s">{{ v.grund }}{% if v.faelle %} · {% blocktrans count n=v.faelle %}{{ n }} offener Fall läuft weiter{% plural %}{{ n }} offene Fälle laufen weiter{% endblocktrans %}{% endif %}</div>
         </div>
         {% if v.ungedeckt %}
         <span class="fw-chip fw-warn">{% trans "ohne Vertretung" %}</span>

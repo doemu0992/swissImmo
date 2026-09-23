@@ -21,6 +21,19 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: 'http://127.0.0.1:8811',
+    // SPRACHE FESTNAGELN (23.09.2026)
+    //
+    // Seit die Kataloge da sind, wertet `LocaleMiddleware` den
+    // Accept-Language-Kopf aus. Playwright sendet standardmaessig `en-US` —
+    // die Seite antwortete damit teils englisch, und `telefon.spec.ts` suchte
+    // «Aufgaben», bekam «Tasks» und wurde rot. Das war kein flockiger Test,
+    // sondern ein echter Unterschied.
+    //
+    // Diese Suite prueft die deutsche Oberflaeche (die Texte stehen so in den
+    // Erwartungen). Wer eine Sprache testen will, setzt `locale` im eigenen
+    // Kontext — so macht es die Sprach-Sonde.
+    locale: 'de-CH',
+    extraHTTPHeaders: { 'Accept-Language': 'de-CH,de;q=0.9' },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     ...(useSystemChromium ? { launchOptions: { executablePath: PREINSTALLED_CHROMIUM } } : {}),

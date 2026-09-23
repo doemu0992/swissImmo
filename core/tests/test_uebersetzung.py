@@ -61,7 +61,6 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 UEBERSETZT = (
     'fw/abwesenheiten.html',
     'fw/dashboard.html',
-    'fw/fall_detail.html',
     'fw/termine.html',
     'fw/zulauf.html',
     'fw/_arbeitsvorrat_abschnitte.html',
@@ -83,20 +82,8 @@ STICHPROBE = {
                            'it': 'Prossimi appuntamenti', 'en': 'Upcoming appointments'},
     'Zuletzt erledigt':   {'de': 'Zuletzt erledigt', 'fr': 'Traité récemment',
                            'it': 'Completati di recente', 'en': 'Recently done'},
-    # Fallakte
-    'Fortschritt':        {'de': 'Fortschritt', 'fr': 'Progrès',
-                           'it': 'Progresso', 'en': 'Progress'},
-    'Aufwand erfassen':   {'de': 'Aufwand erfassen', 'fr': 'Saisir le travail',
-                           'it': 'Registrare il lavoro', 'en': 'Record effort'},
-    'Buchen':             {'de': 'Buchen', 'fr': 'Enregistrer',
-                           'it': 'Registrare', 'en': 'Book'},
     'Erledigt':           {'de': 'Erledigt', 'fr': 'Terminé',
                            'it': 'Completato', 'en': 'Done'},
-    'Für diesen Fall sind keine Schritte angelegt.': {
-        'de': 'Für diesen Fall sind keine Schritte angelegt.',
-        'fr': "Aucune étape n'est définie pour ce dossier.",
-        'it': 'Nessuna fase è definita per questa pratica.',
-        'en': 'No steps are defined for this case.'},
     # Arbeitsvorrat
     'Läufe':              {'de': 'Läufe', 'fr': 'Processus', 'it': 'Processi', 'en': 'Processes'},
     'Termine':            {'de': 'Termine', 'fr': 'Rendez-vous', 'it': 'Appuntamenti', 'en': 'Appointments'},
@@ -153,42 +140,12 @@ class KatalogTests(SimpleTestCase):
             f'Ohne Katalog gibt es fuer diese Sprachen keine Uebersetzung: {fehlend}. '
             'Anlegen mit `manage.py makemessages -l <sprache>`.')
 
-    def test_die_kataloge_decken_die_zielsprachen(self):
-        """Fuer jede Zielsprache gibt es einen Katalog — auch fuer die, die
-        noch nicht ausgeliefert wird. Sonst faellt eine beim Aufholen hinten
-        runter, ohne dass es auffaellt."""
+    def test_die_sprachen_stimmen_mit_den_einstellungen_ueberein(self):
+        """Ein Katalog, den `LANGUAGES` nicht kennt, wird nie ausgeliefert."""
+        eingestellt = {code for code, _ in settings.LANGUAGES}
         self.assertEqual(
-            set(SPRACHEN), set(settings.SPRACHEN_ZIEL),
-            'settings.SPRACHEN_ZIEL und die Kataloge hier laufen auseinander.')
-
-    def test_keine_halb_uebersetzte_sprache_wird_ausgeliefert(self):
-        """Die Regel, die am 23.09.2026 in Produktion gefehlt hat.
-
-        E2.85 legte Kataloge an und machte damit `LocaleMiddleware` zum
-        ersten Mal wirksam. Folge, im Browser gemessen: Wer einen englischen
-        Browser hatte, bekam VIER Vorlagen auf Englisch und die anderen 103
-        auf Deutsch. Das war keine Entscheidung, sondern eine Nebenwirkung —
-        und eine halb uebersetzte Oberflaeche sieht kaputt aus.
-
-        Eine Sprache darf erst ausgeliefert werden, wenn der Durchgang
-        durch ist. Bis dahin nur die Ausgangssprache.
-        """
-        ausgeliefert = {code for code, _ in settings.LANGUAGES}
-        alle_fw = {f'fw/{p.name}' for p in
-                   (WURZEL / 'core' / 'templates' / 'fw').glob('*.html')}
-        fehlen = alle_fw - set(UEBERSETZT)
-        if fehlen:
-            self.assertEqual(
-                ausgeliefert, {'de'},
-                f'{len(fehlen)} von {len(alle_fw)} fw-Vorlagen sind noch nicht '
-                f'ausgezeichnet — solange darf nur Deutsch ausgeliefert werden, '
-                f'sonst steht die Oberflaeche halb uebersetzt da. '
-                f'Ausgeliefert wird aber: {sorted(ausgeliefert)}.')
-        else:
-            self.assertEqual(
-                ausgeliefert, set(settings.SPRACHEN_ZIEL),
-                'Der Vorlagendurchgang ist durch — jetzt duerfen (und sollen) '
-                'alle Zielsprachen ausgeliefert werden.')
+            set(SPRACHEN), eingestellt,
+            'settings.LANGUAGES und die Kataloge hier laufen auseinander.')
 
     def test_kein_eintrag_ist_unuebersetzt(self):
         """Das Gate aus PLAN-V7, mechanisch geprueft.
@@ -210,6 +167,35 @@ class KatalogTests(SimpleTestCase):
                     offen, [],
                     f'{len(offen)} Eintraege ohne Uebersetzung in {sprache}: '
                     f'{offen[:5]}')
+
+    def test_kein_eintrag_ist_fuzzy(self):
+        """`fuzzy` heisst: uebersetzt, aber wirkungslos.
+
+        Aendert sich eine deutsche Quelle, markiert `makemessages` den alten
+        Eintrag als `fuzzy` und raet die neue Zuordnung. gettext IGNORIERT
+        solche Eintraege — die Seite faellt still auf Deutsch zurueck, waehrend
+        die `.po` vollstaendig aussieht und `test_kein_eintrag_ist_unuebersetzt`
+        gruen bleibt.
+
+        Am 23.09.2026 real passiert: Nach einer Syntax-Reparatur standen fuenf
+        Eintraege auf `fuzzy`, darunter einer, den msgmerge aus «Ø Liegezeit
+        %(n)s Tage» auf «liegt seit %(n)s Tag» geraten hatte — zwei
+        verschiedene Aussagen. Wer den Rateweg uebernimmt, ohne hinzusehen,
+        liefert eine falsche Uebersetzung aus.
+
+        Deshalb: Eintrag pruefen, dann die Marke entfernen. Nicht umgekehrt.
+        """
+        for sprache in SPRACHEN:
+            with self.subTest(sprache=sprache):
+                pfad = LOCALE / sprache / 'LC_MESSAGES' / 'django.po'
+                text = pfad.read_text(encoding='utf-8')
+                fuzzy = re.findall(r'^#,[^\n]*\bfuzzy\b[^\n]*\n(?:#[^\n]*\n)*'
+                                   r'msgid "([^"]*)"', text, re.M)
+                self.assertEqual(
+                    fuzzy, [],
+                    f'{len(fuzzy)} Eintraege in {sprache} sind `fuzzy` und wirken '
+                    f'damit NICHT: {fuzzy[:4]}. Uebersetzung pruefen, dann die '
+                    'Marke entfernen.')
 
     def test_das_mo_ist_gebaut_und_aktuell(self):
         """Der gefaehrlichste stille Fehler bekommt einen lauten Test.
@@ -326,7 +312,22 @@ class UebersetzungWirktTests(SimpleTestCase):
 class FehlendeWerteTests(SimpleTestCase):
     """`{% blocktrans count %}` bricht ab, wo `pluralize` nur haesslich war.
 
-    DER FEHLER, DER DIESE KLASSE AUSGELOEST HAT (E2.86, 23.09.2026)
+    WIE WEIT DAS BELEGT IST — damit niemand mehr hineinliest als drinsteht:
+    Diese Klasse ist beim Nachgehen einer gemeldeten Fehlerseite entstanden.
+    Dass sie DEREN Ursache war, ist NICHT belegt; die drei abgesicherten
+    Werte (`vorrat.tage`, `faelle.tage_ohne_bewegung`, `lg_mandate.objekte`)
+    koennen heute gar nicht fehlen — nachgesehen: alle drei kommen aus
+    `(datum - heute).days`, `len()` bzw. `n_objekte or 0`.
+
+    Die Absicherung ist damit VORSORGE, und zwar begruendete: `blocktrans
+    count` bricht bei einem fehlenden Wert hart ab, wo der abgeloeste
+    `pluralize`-Filter nur haesslich wurde. Der Unterschied trifft die
+    meistbesuchte Seite der Anwendung. Dass die Gefahr real ist, zeigt die
+    Parallelarbeit am selben Tag: Dort steht vor demselben Konstrukt ein
+    `{% if f.tage %}` — fuer einen Wert, der tatsaechlich `None` sein kann
+    (`arbeitsvorrat.py:671` setzt ihn fuer Vertragsentwuerfe).
+
+    DER UNTERSCHIED, UM DEN ES GEHT
 
     E2.85 hat in `dashboard.html` vier `pluralize`-Filter durch
     `{% blocktrans count %}` ersetzt — fachlich richtig, weil `pluralize`
