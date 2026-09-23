@@ -191,7 +191,7 @@ hier die Auswahl dort.
             <div class="fw-t">{{ f.betreff|default:f.fallart.bezeichnung }}</div>
             <div class="fw-s">{{ f.nummer }} · {{ f.get_status_display }}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</div>
         </div>
-        <div class="fw-zeit">{% blocktrans count n=f.tage_ohne_bewegung %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}<br><span class="fw-klein">{% trans "ohne Bewegung" %}</span></div>
+        <div class="fw-zeit">{% if f.tage_ohne_bewegung is not None %}{% blocktrans count n=f.tage_ohne_bewegung %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}{% endif %}<br><span class="fw-klein">{% trans "ohne Bewegung" %}</span></div>
     </a>
     {% empty %}
     <p class="fw-leer">{% if ansicht == 'liegen' %}{% trans "Nichts liegengeblieben — jeder Fall ist in Bewegung." %}{% else %}{% trans "Kein Fall wartet auf Dritte." %}{% endif %}</p>
@@ -245,7 +245,7 @@ hier die Auswahl dort.
         </div>
         {% if e.wer %}<span class="fw-kuerzel" title="{% trans 'zuständig' %}">{{ e.wer }}</span>{% endif %}
         <div class="fw-zeit">{% if e.wofuer %}<span class="fw-wofuer">{{ e.wofuer }}</span><br>{% endif %}{{ e.datum|date:"d.m.Y" }}<br>
-            <span class="fw-klein">{% if e.tage < 0 %}{% blocktrans count n=e.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}{% elif e.tage == 0 %}{% trans "heute" %}{% else %}{% blocktrans count n=e.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span></div>
+            <span class="fw-klein">{% if e.tage is None %}{% elif e.tage < 0 %}{% blocktrans count n=e.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}{% elif e.tage == 0 %}{% trans "heute" %}{% else %}{% blocktrans count n=e.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span></div>
         {% comment %} `e.modal` kommt aus der Quelle (siehe `_pendenz_ziel`):
            Die Zugangserfassung nach Art. 257d etwa gehoert ins Popup, damit
            man die Liste nicht verlaesst. Ohne dieses Attribut waere aus einer
@@ -331,7 +331,7 @@ hier die Auswahl dort.
         <span class="fw-marker {{ m.stufe }}"></span>
         <div class="fw-mitte">
             <div class="fw-t">{{ m.mandat }}</div>
-            <div class="fw-s">{% blocktrans count n=m.objekte %}{{ n }} Objekt{% plural %}{{ n }} Objekte{% endblocktrans %}{% if m.leer %} · {% blocktrans with n=m.leer %}{{ n }} leer{% endblocktrans %}{% endif %}</div>
+            <div class="fw-s">{% if m.objekte is not None %}{% blocktrans count n=m.objekte %}{{ n }} Objekt{% plural %}{{ n }} Objekte{% endblocktrans %}{% endif %}{% if m.leer %} · {% blocktrans with n=m.leer %}{{ n }} leer{% endblocktrans %}{% endif %}</div>
         </div>
         {% if m.offen %}<span class="fw-chip fw-crit">{% blocktrans with betrag=m.offen|chf %}CHF {{ betrag }} offen{% endblocktrans %}</span>
         {% elif m.leer %}<span class="fw-chip fw-warn">{% blocktrans with n=m.leer %}{{ n }} leer{% endblocktrans %}</span>

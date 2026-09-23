@@ -132,12 +132,42 @@ class KatalogTests(SimpleTestCase):
             f'Ohne Katalog gibt es fuer diese Sprachen keine Uebersetzung: {fehlend}. '
             'Anlegen mit `manage.py makemessages -l <sprache>`.')
 
-    def test_die_sprachen_stimmen_mit_den_einstellungen_ueberein(self):
-        """Ein Katalog, den `LANGUAGES` nicht kennt, wird nie ausgeliefert."""
-        eingestellt = {code for code, _ in settings.LANGUAGES}
+    def test_die_kataloge_decken_die_zielsprachen(self):
+        """Fuer jede Zielsprache gibt es einen Katalog — auch fuer die, die
+        noch nicht ausgeliefert wird. Sonst faellt eine beim Aufholen hinten
+        runter, ohne dass es auffaellt."""
         self.assertEqual(
-            set(SPRACHEN), eingestellt,
-            'settings.LANGUAGES und die Kataloge hier laufen auseinander.')
+            set(SPRACHEN), set(settings.SPRACHEN_ZIEL),
+            'settings.SPRACHEN_ZIEL und die Kataloge hier laufen auseinander.')
+
+    def test_keine_halb_uebersetzte_sprache_wird_ausgeliefert(self):
+        """Die Regel, die am 23.09.2026 in Produktion gefehlt hat.
+
+        E2.85 legte Kataloge an und machte damit `LocaleMiddleware` zum
+        ersten Mal wirksam. Folge, im Browser gemessen: Wer einen englischen
+        Browser hatte, bekam VIER Vorlagen auf Englisch und die anderen 103
+        auf Deutsch. Das war keine Entscheidung, sondern eine Nebenwirkung —
+        und eine halb uebersetzte Oberflaeche sieht kaputt aus.
+
+        Eine Sprache darf erst ausgeliefert werden, wenn der Durchgang
+        durch ist. Bis dahin nur die Ausgangssprache.
+        """
+        ausgeliefert = {code for code, _ in settings.LANGUAGES}
+        alle_fw = {f'fw/{p.name}' for p in
+                   (WURZEL / 'core' / 'templates' / 'fw').glob('*.html')}
+        fehlen = alle_fw - set(UEBERSETZT)
+        if fehlen:
+            self.assertEqual(
+                ausgeliefert, {'de'},
+                f'{len(fehlen)} von {len(alle_fw)} fw-Vorlagen sind noch nicht '
+                f'ausgezeichnet — solange darf nur Deutsch ausgeliefert werden, '
+                f'sonst steht die Oberflaeche halb uebersetzt da. '
+                f'Ausgeliefert wird aber: {sorted(ausgeliefert)}.')
+        else:
+            self.assertEqual(
+                ausgeliefert, set(settings.SPRACHEN_ZIEL),
+                'Der Vorlagendurchgang ist durch — jetzt duerfen (und sollen) '
+                'alle Zielsprachen ausgeliefert werden.')
 
     def test_kein_eintrag_ist_unuebersetzt(self):
         """Das Gate aus PLAN-V7, mechanisch geprueft.
@@ -271,3 +301,94 @@ class UebersetzungWirktTests(SimpleTestCase):
         self.assertNotEqual(
             franzoesisch, 'Abwesenheiten',
             'Franzoesisch liefert den deutschen Text — der Katalog greift nicht.')
+
+class FehlendeWerteTests(SimpleTestCase):
+    """`{% blocktrans count %}` bricht ab, wo `pluralize` nur haesslich war.
+
+    DER FEHLER, DER DIESE KLASSE AUSGELOEST HAT (E2.86, 23.09.2026)
+
+    E2.85 hat in `dashboard.html` vier `pluralize`-Filter durch
+    `{% blocktrans count %}` ersetzt — fachlich richtig, weil `pluralize`
+    eine deutsche Endung anhaengt und in keiner anderen Sprache etwas
+    bedeutet. Uebersehen wurde der Unterschied im FEHLERFALL:
+
+        {{ e.tage|pluralize:"en" }}     mit e.tage = None  ->  "in None Tag"
+        {% blocktrans count n=e.tage %} mit e.tage = None  ->  TemplateSyntaxError
+
+    Aus einer haesslichen Anzeige wurde damit eine Fehlerseite. Die
+    Testsuite hat das nicht gesehen: Die E2E-Saat kennt weder Termine noch
+    Mandate noch Abwesenheiten, also lief JEDE dieser Zeilen nur im
+    Leerzustand — und im Leerzustand wird die Schleife gar nicht betreten.
+
+    Gruen war die Suite trotzdem, und der Seitendurchlauf lieferte fuer alle
+    19 Seiten 200. Was fehlt, ist nicht mehr Abdeckung in der Breite,
+    sondern Daten in der Tiefe: dieselbe Seite mit gefuellten Listen.
+
+    WER EINEN ZAEHLER EINBAUT prueft, ob der Wert fehlen kann. Kann er es,
+    gehoert ein `{% if ... is not None %}` darum — nicht `|default:0`, denn
+    «0 Tage» ist eine Aussage und «kein Datum» ist keine.
+    """
+
+    #: Die Felder, die ein `{% blocktrans count %}` in der Tranche speist.
+    ZAEHLERFELDER = (
+        ('fw/dashboard.html', 'vorrat', 'tage'),
+        ('fw/dashboard.html', 'faelle', 'tage_ohne_bewegung'),
+        ('fw/dashboard.html', 'lg_mandate', 'objekte'),
+        ('fw/abwesenheiten.html', 'laufend', 'offene_faelle'),
+    )
+
+    def test_kein_zaehler_bricht_bei_fehlendem_wert_ab(self):
+        """Jedes Zaehlerfeld einmal auf None — die Seite muss stehen bleiben."""
+        from django.template.loader import get_template
+        from django.test import RequestFactory
+        from types import SimpleNamespace as N
+        import datetime
+
+        anfrage = RequestFactory().get('/neu/')
+        anfrage.user = N(username='pruef', get_full_name=lambda: 'Pruef',
+                         is_authenticated=True, is_superuser=False,
+                         is_staff=False, id=1, pk=1, email='p@example.ch')
+        heute = datetime.date(2026, 9, 23)
+        jetzt = datetime.datetime(2026, 9, 23, 8, 0)
+        wer = N(get_full_name=lambda: 'Lea', username='lea', id=1, pk=1)
+
+        def grund(vorlage, liste, feld):
+            eintrag = {
+                'vorrat': lambda: N(dringlichkeit='warn', ikon='wartet', marke='',
+                                    nummer='', titel='T', fortschritt='', schritt='',
+                                    zeile='', wer='', wofuer='', datum=heute,
+                                    tage=0, ziel='/', modal=False, knopf='Auf'),
+                'faelle': lambda: N(id=1, betreff='B', fallart=N(bezeichnung='F'),
+                                    nummer='F-1', get_status_display=lambda: 'Offen',
+                                    zustaendig=wer, tage_ohne_bewegung=0),
+                'lg_mandate': lambda: N(mandat='M', objekte=1, leer=0, offen=0,
+                                        stufe='warn', belegung=90),
+                'laufend': lambda: N(benutzer=wer, bis=heute, von=heute,
+                                     get_grund_display=lambda: 'Ferien', notiz='',
+                                     offene_faelle=1, vertreten_durch_id=None,
+                                     vertreten_durch=None),
+            }[liste]()
+            setattr(eintrag, feld, None)          # DER FEHLENDE WERT
+            k = {'request': anfrage, 'heute': heute, 'kw': 39,
+                 'ansicht_titel': 'Heute',
+                 'ansicht': 'liegen' if liste == 'faelle' else 'heute',
+                 'vertretung_fuer': [], 'vorrat': [], 'faelle': [],
+                 'lg_mandate': [], 'laufend': [], 'kommend': [], 'vergangen': [],
+                 'ansichten': [], 'av_band': [], 'av_eingaenge': [], 'inbox': [],
+                 'lg_streifen': [], 'lg_abweichungen': [],
+                 'leute': [], 'gruende': [], 'arten': [],
+                 'zeilen': [], 'erledigt': [], 'jetzt': jetzt}
+            k[liste] = [eintrag]
+            return k
+
+        for vorlage, liste, feld in self.ZAEHLERFELDER:
+            for sprache in SPRACHEN:
+                with self.subTest(vorlage=vorlage, feld=feld, sprache=sprache):
+                    with translation.override(sprache):
+                        try:
+                            get_template(vorlage).render(grund(vorlage, liste, feld))
+                        except Exception as fehler:
+                            self.fail(
+                                f'{vorlage} bricht ab, wenn `{liste}.{feld}` fehlt: '
+                                f'{type(fehler).__name__}: {fehler}. '
+                                'Ein Zaehler braucht ein `{% if ... is not None %}`.')

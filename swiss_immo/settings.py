@@ -354,11 +354,39 @@ USE_TZ = True
 #
 # `makemessages`/`compilemessages` brauchen `gettext` (msgfmt/xgettext) auf
 # dem Rechner. Fuer den BETRIEB genuegen die mitgelieferten `.mo`.
+#: Die Zielsprachen aus der Projektanweisung. Beschreibt, wohin es geht —
+#: NICHT, was heute ausgeliefert wird. Das steht in `LANGUAGES` darunter.
+SPRACHEN_ZIEL = ['de', 'fr', 'it', 'en']
+
+# WAS HEUTE AUSGELIEFERT WIRD — und warum das nur Deutsch ist
+#
+# E2.85 hat die ersten vier Vorlagen uebersetzt und die Kataloge angelegt.
+# Damit wurde `LocaleMiddleware` zum ersten Mal wirksam: Sie war laengst
+# eingehaengt, hatte aber ohne Kataloge nichts zu tun. Am 23.09.2026 im
+# Browser nachgemessen:
+#
+#   Accept-Language: de-CH  ->  Aufgaben · Arbeitsvorrat
+#   Accept-Language: en-US  ->  Tasks · Work queue
+#   Accept-Language: fr-CH  ->  Tâches · Charge de travail
+#
+# Das sieht nach Fortschritt aus und ist ein Rueckschritt: Uebersetzt sind
+# rund 100 von geschaetzt 3900 Zeichenketten. Ein Nutzer mit englischem
+# Browser bekommt also VIER Vorlagen auf Englisch und den ganzen Rest auf
+# Deutsch — eine Oberflaeche, die aussieht, als sei sie kaputt. Niemand hat
+# das bestellt; es ist als Nebenwirkung entstanden.
+#
+# Eine halb uebersetzte Oberflaeche ist schlechter als eine einsprachige.
+# Deshalb liefert `LANGUAGES` bis auf Weiteres nur Deutsch aus. Die Kataloge
+# fuer fr/it/en bleiben im Bestand, vollstaendig und bewacht
+# (`core/tests/test_uebersetzung.py`) — sie warten, bis der Vorlagendurchgang
+# sie einholt.
+#
+# WANN EINE SPRACHE DAZUKOMMT: Wenn alle fw-Vorlagen ausgezeichnet sind und
+# ihr Katalog vollstaendig ist. Dann diese Liste erweitern — eine Zeile.
+# `test_keine_halb_uebersetzte_sprache_wird_ausgeliefert` haelt die Regel
+# fest und wird rot, wenn jemand sie zu frueh lockert.
 LANGUAGES = [
     ('de', 'Deutsch'),
-    ('fr', 'Français'),
-    ('it', 'Italiano'),
-    ('en', 'English'),
 ]
 
 # `de-ch` faellt in Django auf `de` zurueck, wenn kein eigener `de-ch`-Ordner
