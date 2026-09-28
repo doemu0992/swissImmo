@@ -320,3 +320,39 @@ Der erste Stand entstand am selben Tag von Hand, der Task ist eingerichtet.
 
 **Eine Kopie ausser Haus** fehlt weiterhin (siehe oben) — daran ändert ein
 geglückter Probelauf nichts.
+
+## Erneut durchgespielt am 28.09.2026
+
+Seit dem 18.08. sind die Mandantenfähigkeit, neue Ablagepfade
+(`organisation/<id>/…`) und rund 1'200 Testfälle dazugekommen. Deshalb noch
+einmal, mit dem Code-Stand von `main` an diesem Tag, in einer Wegwerf-Umgebung
+(Bestand aus `manage.py seed_e2e` plus ein abgelegtes Vertragsdokument mit
+echter Datei).
+
+**SQLite** — genau nach Abschnitt «Wiederherstellen / SQLite»:
+
+| Schritt | Ergebnis |
+|---|---|
+| `manage.py sicherung` | Stand und Medien-Archiv erstellt und gegengelesen (97 Tabellen, 218 Migrationen, 1 Datei) |
+| Schaden | Vertrag, Rechnung und Datei gelöscht |
+| Zurückspielen (Schritte 2–5) | `bestand_zaehlen` **identisch** mit dem Stand vor dem Schaden, `migrate --check` ohne offene Schritte |
+| `medien_pruefen --sicherung` | Jeder Verweis zeigt auf eine vorhandene Datei |
+| Anwendung | Anmeldung, Vertragsseite und Dateiabruf über `/media/…` funktionieren |
+
+**Umzug SQLite → PostgreSQL** (`umzug_postgres.sh`, PostgreSQL 16.13):
+52 Sekunden, **Bestand identisch**, 94 Sequenzen gesetzt. Der Umzug ist mit
+dem heutigen Code also weiterhin «ein Befehl» — Schritt 1 in
+`PHASE-2-ABSCHLUSS.md` bleibt eine Frage der Ausführung auf der Produktion,
+nicht der Vorbereitung.
+
+**PostgreSQL** — nach Abschnitt «Wiederherstellen / PostgreSQL»:
+`sicherung` erzeugt `-db.dump` (1'038 Objekte gegengelesen), `pg_restore` in
+eine frische Datenbank mit Exitcode 0, `bestand_zaehlen` **identisch**,
+`medien_pruefen` ohne Befund. Der erste neu angelegte Datensatz bekam die
+nächste freie ID — die Sequenzen stimmen.
+
+Eine Beobachtung, kein Fehler: `postgres_anlegen.py` fragt die Passwörter mit
+`getpass` ab und braucht deshalb eine echte Konsole (auf PythonAnywhere
+gegeben). Aus einem Skript heraus scheitert es mit `EOFError`; dort legt man
+Rolle und Datenbank mit denselben zwei Befehlen per `psql` an
+(`CREATE ROLE … LOGIN PASSWORD …`, `CREATE DATABASE … OWNER …`).
