@@ -64,6 +64,7 @@ UEBERSETZT = (
     'fw/termine.html',
     'fw/zulauf.html',
     'fw/_arbeitsvorrat_abschnitte.html',
+    'fw/base.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -89,6 +90,12 @@ STICHPROBE = {
     'Termine':            {'de': 'Termine', 'fr': 'Rendez-vous', 'it': 'Appuntamenti', 'en': 'Appointments'},
     'Vertretung':         {'de': 'Vertretung', 'fr': 'Remplacement', 'it': 'Sostituzione', 'en': 'Replacement'},
     'Wartet auf Freigabe': {'de': 'Wartet auf Freigabe', 'fr': "En attente d'approbation", 'it': "In attesa di approvazione", 'en': 'Waiting for approval'},
+    # Rahmen (fw/base.html, core/navigation.py) — Rechtsbegriffe nach OR
+    'Abmelden':           {'de': 'Abmelden', 'fr': 'Se déconnecter', 'it': 'Esci', 'en': 'Sign out'},
+    'Mietverhältnisse':   {'de': 'Mietverhältnisse', 'fr': 'Baux', 'it': 'Locazioni', 'en': 'Tenancies'},
+    'Nebenkosten':        {'de': 'Nebenkosten', 'fr': 'Frais accessoires', 'it': 'Spese accessorie',
+                           'en': 'Service charges'},
+    'Mietzins':           {'de': 'Mietzins', 'fr': 'Loyer', 'it': 'Pigione', 'en': 'Rent'},
 }
 
 

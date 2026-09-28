@@ -54,6 +54,9 @@ geliefert und dort generisch gerendert. Jede Seite meldet weiterhin ihren
 Struktur, damit kein View angefasst werden muss.
 """
 
+from django.utils.translation import gettext as _
+
+
 #: nav-Keys von Seiten, die den Einstellungen-Link (Fuss der Leiste) aktiv
 #: schalten. `regelwerk` steht hier, weil Fristenregeln eine Einstellung sind
 #: und keine Tagesarbeit.
@@ -114,69 +117,69 @@ def nav_gruppen():
         # Arbeitsvorrat (seit 4b.13). Ein zusätzlicher Eintrag «Arbeit» wäre ein
         # zweiter Weg auf dieselbe Seite: keine Auswahl, sondern eine Frage, die
         # der Benutzer nicht beantworten kann.
-        _g('heute', 'Heute', 'wartet', '/neu/', [
-            _i('Zulauf', '/neu/zulauf/', ['zulauf']),
-            _i('Termine', '/neu/termine/', ['termine']),
-            _i('Pendenzen', '/neu/pendenzen/', ['pendenzen']),
-            _i('Fristen', '/neu/fristen/', ['fristen']),
+        _g('heute', _('Heute'), 'wartet', '/neu/', [
+            _i(_('Zulauf'), '/neu/zulauf/', ['zulauf']),
+            _i(_('Termine'), '/neu/termine/', ['termine']),
+            _i(_('Pendenzen'), '/neu/pendenzen/', ['pendenzen']),
+            _i(_('Fristen'), '/neu/fristen/', ['fristen']),
             # «Vertretung» statt «Abwesenheiten»: Die Seite wird aufgeschlagen,
             # wenn jemand wissen will, wer für wen einspringt — nicht, wenn
             # jemand Ferien einträgt.
-            _i('Vertretung', '/neu/abwesenheiten/', ['abwesenheiten']),
+            _i(_('Vertretung'), '/neu/abwesenheiten/', ['abwesenheiten']),
         ], extra_keys=['dashboard', 'faelle', 'arbeit']),
 
         # ── AKTEN ────────────────────────────────────────────────────────────
         # Die Register in der Reihenfolge, in der man sie aufschlägt: vom
         # Auftraggeber über das Haus zur einzelnen Person. Darunter die
         # laufenden Vorgänge, die an diesen Akten hängen.
-        _g('akten', 'Akten', 'dokument', '/neu/liegenschaften/', [
-            _i('Mandate', '/neu/mandate/', ['mandate']),
-            _i('Liegenschaften', '/neu/liegenschaften/', ['liegenschaften']),
-            _i('Objekte', '/neu/objekte/', ['objekte']),
-            _i('Mietverhältnisse', '/neu/vertraege/', ['vertraege']),
-            _i('Personen', '/neu/personen/', ['personen']),
-            _i('Dienstleister', '/neu/dienstleister/', ['dienstleister']),
+        _g('akten', _('Akten'), 'dokument', '/neu/liegenschaften/', [
+            _i(_('Mandate'), '/neu/mandate/', ['mandate']),
+            _i(_('Liegenschaften'), '/neu/liegenschaften/', ['liegenschaften']),
+            _i(_('Objekte'), '/neu/objekte/', ['objekte']),
+            _i(_('Mietverhältnisse'), '/neu/vertraege/', ['vertraege']),
+            _i(_('Personen'), '/neu/personen/', ['personen']),
+            _i(_('Dienstleister'), '/neu/dienstleister/', ['dienstleister']),
             # Schaden und Mieterwechsel sind fachlich Fälle, keine Aktentypen.
             # Ihre Listen bleiben, bis die Fallansicht sie ersetzt.
-            _i('Schäden', '/neu/schaeden/', ['schadensfaelle'], section='Vorgänge'),
-            _i('Mieterwechsel', '/neu/mieterwechsel/', ['mieterwechsel']),
-            _i('Vermarktung', '/neu/vermarktung/', ['vermarktung']),
-            _i('Bewerbungen', '/neu/bewerbungen/', ['bewerbungen']),
-            _i('Ersatz & Ausstattung', '/neu/ersatzplanung/', ['assets']),
+            _i(_('Schäden'), '/neu/schaeden/', ['schadensfaelle'], section=_('Vorgänge')),
+            _i(_('Mieterwechsel'), '/neu/mieterwechsel/', ['mieterwechsel']),
+            _i(_('Vermarktung'), '/neu/vermarktung/', ['vermarktung']),
+            _i(_('Bewerbungen'), '/neu/bewerbungen/', ['bewerbungen']),
+            _i(_('Ersatz & Ausstattung'), '/neu/ersatzplanung/', ['assets']),
         ], badge='schaeden'),
 
         # ── LÄUFE ────────────────────────────────────────────────────────────
         # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
         # im Einfachmodus vollständig, obwohl die Seiten seit 4b.5 stehen.
-        _g('laeufe', 'Läufe', 'lauf', '/neu/laeufe/', [
-            _i('Sollstellung', '/neu/sollstellung/', ['sollstellung'], section='Monat'),
-            _i('Bankabgleich', '/neu/bankabgleich/', ['bankabgleich']),
-            _i('Mahnwesen', '/neu/mahnwesen/', ['mahnwesen']),
-            _i('Zahllauf', '/neu/zahllauf/', ['zahllauf']),
-            _i('Nebenkosten', '/neu/nebenkosten/', ['nebenkosten'], section='Periodisch'),
-            _i('Mietzins', '/neu/mietzins/', ['mietzins']),
-            _i('MWST', '/neu/mwst/', ['mwst']),
+        _g('laeufe', _('Läufe'), 'lauf', '/neu/laeufe/', [
+            _i(_('Sollstellung'), '/neu/sollstellung/', ['sollstellung'], section=_('Monat')),
+            _i(_('Bankabgleich'), '/neu/bankabgleich/', ['bankabgleich']),
+            _i(_('Mahnwesen'), '/neu/mahnwesen/', ['mahnwesen']),
+            _i(_('Zahllauf'), '/neu/zahllauf/', ['zahllauf']),
+            _i(_('Nebenkosten'), '/neu/nebenkosten/', ['nebenkosten'], section=_('Periodisch')),
+            _i(_('Mietzins'), '/neu/mietzins/', ['mietzins']),
+            _i(_('MWST'), '/neu/mwst/', ['mwst']),
         ]),
 
         # ── FINANZEN ─────────────────────────────────────────────────────────
         # Register und Konten. Handlungen führen in den zugehörigen Lauf.
-        _g('finanzen', 'Finanzen', 'geld', '/neu/finanzen/', [
-            _i('Mieterkonten', '/neu/mieterkonten/', ['mieterkonten'], section='Forderungen'),
-            _i('Debitoren', '/neu/debitoren/', ['debitoren']),
-            _i('Kautionen', '/neu/kautionen/', ['kautionen']),
-            _i('Kreditoren', '/neu/kreditoren/', ['kreditoren'], section='Verbindlichkeiten'),
-            _i('Lieferantenkonten', '/neu/lieferantenkonten/', ['lieferantenkonten']),
-            _i('Bankkonten', '/neu/bankkonten/', ['bankkonten'], section='Konten'),
-            _i('Buchhaltung', '/neu/buchhaltung/', ['buchhaltung']),
-            _i('Kontenplan & Salden', '/neu/kontenplan/', ['kontenplan']),
-            _i('Anlagen & Abschluss', '/neu/anlagen/', ['anlagen']),
-            _i('Hypotheken', '/neu/hypotheken/', ['hypotheken']),
+        _g('finanzen', _('Finanzen'), 'geld', '/neu/finanzen/', [
+            _i(_('Mieterkonten'), '/neu/mieterkonten/', ['mieterkonten'], section=_('Forderungen')),
+            _i(_('Debitoren'), '/neu/debitoren/', ['debitoren']),
+            _i(_('Kautionen'), '/neu/kautionen/', ['kautionen']),
+            _i(_('Kreditoren'), '/neu/kreditoren/', ['kreditoren'], section=_('Verbindlichkeiten')),
+            _i(_('Lieferantenkonten'), '/neu/lieferantenkonten/', ['lieferantenkonten']),
+            _i(_('Bankkonten'), '/neu/bankkonten/', ['bankkonten'], section=_('Konten')),
+            _i(_('Buchhaltung'), '/neu/buchhaltung/', ['buchhaltung']),
+            _i(_('Kontenplan & Salden'), '/neu/kontenplan/', ['kontenplan']),
+            _i(_('Anlagen & Abschluss'), '/neu/anlagen/', ['anlagen']),
+            _i(_('Hypotheken'), '/neu/hypotheken/', ['hypotheken']),
         ]),
 
         # ── BERICHTE ─────────────────────────────────────────────────────────
-        _g('berichte', 'Berichte', 'bericht', '/neu/berichte/', [
-            _i('Übersicht', '/neu/berichte/', ['berichte']),
-            _i('Auswertung', '/neu/auswertung/', ['auswertung']),
+        _g('berichte', _('Berichte'), 'bericht', '/neu/berichte/', [
+            _i(_('Übersicht'), '/neu/berichte/', ['berichte']),
+            _i(_('Auswertung'), '/neu/auswertung/', ['auswertung']),
         ]),
     ]
 
@@ -211,11 +214,11 @@ def fw_navigation(request):
         for it in g['items']:
             palette.append({'label': it['label'], 'url': it['ziel'], 'gruppe': g['label']})
     palette += [
-        {'label': 'Dokumente', 'url': '/neu/dokumente/'},
-        {'label': 'Kommunikation', 'url': '/neu/kommunikation/'},
-        {'label': 'Regelwerk', 'url': '/neu/regelwerk/', 'gruppe': 'Einstellungen'},
-        {'label': 'Einstellungen', 'url': '/neu/einstellungen/'},
-        {'label': 'Zwei-Faktor-Anmeldung', 'url': '/konto/zwei-faktor/'},
+        {'label': _('Dokumente'), 'url': '/neu/dokumente/'},
+        {'label': _('Kommunikation'), 'url': '/neu/kommunikation/'},
+        {'label': _('Regelwerk'), 'url': '/neu/regelwerk/', 'gruppe': _('Einstellungen')},
+        {'label': _('Einstellungen'), 'url': '/neu/einstellungen/'},
+        {'label': _('Zwei-Faktor-Anmeldung'), 'url': '/konto/zwei-faktor/'},
     ]
     # Die Organisationen dieses Benutzers — fuer die Auswahl im Kopf der
     # Leiste (E1.2). `alle_organisationen` ist hier notwendig und richtig: Die
