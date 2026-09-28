@@ -1,13 +1,13 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Einstellungen — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Einstellungen" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
     <div>
-        <h1>Einstellungen</h1>
-        <p>Konto, Team, Vorlagen und Integrationen — alles an einem Ort.</p>
+        <h1>{% trans "Einstellungen" %}</h1>
+        <p>{% trans "Konto, Team, Vorlagen und Integrationen — alles an einem Ort." %}</p>
     </div>
 </div>
 

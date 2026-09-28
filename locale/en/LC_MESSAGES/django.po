@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 17:37+0200\n"
+"POT-Creation-Date: 2026-09-28 23:20+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -248,6 +248,8 @@ msgstr "Rules"
 
 #: core/navigation.py:219 core/navigation.py:220
 #: core/templates/fw/base.html:198 core/templates/fw/base.html:256
+#: core/templates/fw/einstellungen.html:3
+#: core/templates/fw/einstellungen.html:9
 msgid "Einstellungen"
 msgstr "Settings"
 
@@ -342,7 +344,7 @@ msgstr "no date — avg. age not calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:382
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:434
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -392,6 +394,172 @@ msgstr "No open items"
 #: core/templates/fw/_bezahlt_leer.html:16
 msgid "Alle Zahlungen in dieser Kategorie sind eingegangen."
 msgstr "All payments in this category have been received."
+
+#: core/templates/fw/_unterschrift_feld.html:11
+msgid "Digitale Unterschrift"
+msgstr "Digital signature"
+
+#: core/templates/fw/_unterschrift_feld.html:19
+msgid "Zeichnen"
+msgstr "Draw"
+
+#: core/templates/fw/_unterschrift_feld.html:23
+msgid "Bild hochladen"
+msgstr "Upload image"
+
+#: core/templates/fw/_unterschrift_feld.html:27
+msgid "hinterlegt"
+msgstr "on file"
+
+#: core/templates/fw/_unterschrift_feld.html:31
+msgid "nicht verwendbar"
+msgstr "not usable"
+
+#: core/templates/fw/_unterschrift_feld.html:43
+msgid "aktuell"
+msgstr "current"
+
+#: core/templates/fw/_unterschrift_feld.html:59
+msgid "Hier mit Maus oder Finger unterschreiben"
+msgstr "Sign here with mouse or finger"
+
+#: core/templates/fw/_unterschrift_feld.html:65
+msgid "Nochmals"
+msgstr "Again"
+
+#: core/templates/fw/_unterschrift_feld.html:67
+msgid "Wird beim Speichern des Formulars übernommen."
+msgstr "Applied when the form is saved."
+
+#: core/templates/fw/_unterschrift_feld.html:77
+msgid ""
+"Unterschrift auf weissem Papier abfotografieren — der weisse Hintergrund "
+"wird automatisch transparent."
+msgstr "Photograph the signature on white paper — the white background is made transparent automatically."
+
+#: core/templates/fw/_unterschrift_feld.html:83
+msgid "Unterschrift entfernen"
+msgstr "Remove signature"
+
+#: core/templates/fw/_unterschrift_feld.html:87
+msgid ""
+"Es ist zwar eine Unterschrift eingetragen, sie ist aber leer oder die "
+"Bilddatei fehlt auf dem Server. Bitte nochmals unterschreiben — bis dahin "
+"bleibt die Linie auf jedem Brief leer."
+msgstr "A signature is recorded, but it is empty or the image file is missing on the server. Please sign again — until then the line stays empty on every letter."
+
+#: core/templates/fw/_unterschrift_feld.html:91
+msgid "Ohne Unterschrift bleibt die Linie auf jedem Brief leer."
+msgstr "Without a signature the line stays empty on every letter."
+
+#: core/templates/fw/abonnement.html:3
+msgid "Abonnement · swissImmo"
+msgstr "Subscription · swissImmo"
+
+#: core/templates/fw/abonnement.html:7 core/views/fw/aktionen.py:854
+msgid "Abonnement"
+msgstr "Subscription"
+
+#: core/templates/fw/abonnement.html:8
+#, python-format
+msgid ""
+"Preis pro verwaltete Einheit / Monat — aktuell <span style=\"color:var(--ds-"
+"ink);font-weight:600\">%(n)s</span> Einheit im System."
+msgid_plural ""
+"Preis pro verwaltete Einheit / Monat — aktuell <span style=\"color:var(--ds-"
+"ink);font-weight:600\">%(n)s</span> Einheiten im System."
+msgstr[0] ""
+"Price per managed unit / month — currently <span style=\"color:var(--ds-ink);"
+"font-weight:600\">%(n)s</span> unit in the system."
+msgstr[1] ""
+"Price per managed unit / month — currently <span style=\"color:var(--ds-ink);"
+"font-weight:600\">%(n)s</span> units in the system."
+
+#: core/templates/fw/abonnement.html:13
+msgid "Den Plan kann nur der Inhaber der Verwaltung ändern."
+msgstr "Only the owner of the management company can change the plan."
+
+#: core/templates/fw/abonnement.html:19
+msgid "Monatlich"
+msgstr "Monthly"
+
+#: core/templates/fw/abonnement.html:25
+msgid "Jährlich"
+msgstr "Yearly"
+
+#: core/templates/fw/abonnement.html:34
+msgid "Empfohlen"
+msgstr "Recommended"
+
+#: core/templates/fw/abonnement.html:38 core/templates/fw/integrationen.html:61
+#: core/views/fw/_basis.py:337 core/views/fw/profil.py:911
+msgid "Aktiv"
+msgstr "Active"
+
+#: core/templates/fw/abonnement.html:44 core/templates/fw/mieterspiegel.html:42
+msgid "/ Monat"
+msgstr "/ month"
+
+#: core/templates/fw/abonnement.html:47
+#, python-format
+msgid "CHF %(preis)s/Einheit · min. CHF %(grund)s"
+msgstr "CHF %(preis)s/unit · min. CHF %(grund)s"
+
+#: core/templates/fw/abonnement.html:47
+#, python-format
+msgid "gratis bis %(n)s Einheiten"
+msgstr "free up to %(n)s units"
+
+#: core/templates/fw/abonnement.html:48
+#, python-format
+msgid "CHF %(preis)s/Jahr (−15 %%)"
+msgstr "CHF %(preis)s/year (−15 %%)"
+
+#: core/templates/fw/abonnement.html:58
+msgid "Aktueller Plan"
+msgstr "Current plan"
+
+#: core/templates/fw/abonnement.html:58
+msgid "Plan wählen"
+msgstr "Choose plan"
+
+#: core/templates/fw/abonnement.html:77
+msgid "Add-ons"
+msgstr "Add-ons"
+
+#: core/templates/fw/abonnement.html:79
+msgid "Datenmigration"
+msgstr "Data migration"
+
+#: core/templates/fw/abonnement.html:79
+msgid "Einmalig CHF 200–800, schmerzloser Umzug bestehender Mandate."
+msgstr "One-off CHF 200–800, painless move of existing mandates."
+
+#: core/templates/fw/abonnement.html:80
+msgid "E-Signaturen"
+msgstr "E-signatures"
+
+#: core/templates/fw/abonnement.html:80
+msgid "CHF 1.50/Signatur (in Premium inkl. Kontingent)."
+msgstr "CHF 1.50/signature (quota included in Premium)."
+
+#: core/templates/fw/abonnement.html:81
+msgid "SMS &amp; Speicher"
+msgstr "SMS &amp; storage"
+
+#: core/templates/fw/abonnement.html:81
+msgid "SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher."
+msgstr "SMS notifications and extra document storage."
+
+#: core/templates/fw/abonnement.html:85
+msgid ""
+"Alle Preise exkl. MWST. Die Einheiten­zahl wird automatisch aus deinen "
+"erfassten Objekten berechnet. Preise sind ein Startgerüst und können in den "
+"Einstellungen angepasst werden."
+msgstr ""
+"All prices excl. VAT. The number of units is calculated automatically from "
+"your recorded units. Prices are a starting point and can be adjusted in the "
+"settings."
 
 #: core/templates/fw/abwesenheiten.html:9
 msgid ""
@@ -480,6 +648,195 @@ msgstr "Past"
 #: core/templates/fw/abwesenheiten.html:96
 msgid "Nichts vergangen."
 msgstr "Nothing in the past."
+
+#: core/templates/fw/account.html:4 core/templates/fw/account.html:8
+#: core/views/fw/aktionen.py:850
+msgid "Account"
+msgstr "Account"
+
+#: core/templates/fw/account.html:9
+msgid ""
+"Stammdaten deiner Verwaltung und aktuelle Marktdaten für Mietzinsanpassungen."
+msgstr ""
+"Master data of your management company and current market data for rent "
+"adjustments."
+
+#: core/templates/fw/account.html:19
+msgid "Marktdaten (Referenzzinssatz &amp; LIK)"
+msgstr "Market data (reference rate &amp; CPI)"
+
+#: core/templates/fw/account.html:20
+msgid "Grundlage für «Aktuelle Werte übernehmen» im Vertragsassistenten."
+msgstr "Basis for “Use current values” in the lease wizard."
+
+#: core/templates/fw/account.html:21
+#, python-format
+msgid "Zuletzt aktualisiert: %(zeit)s."
+msgstr "Last updated: %(zeit)s."
+
+#: core/templates/fw/account.html:21
+msgid "Noch nie aus dem Internet aktualisiert."
+msgstr "Never updated from the internet."
+
+#: core/templates/fw/account.html:26
+msgid "Aus dem Internet aktualisieren"
+msgstr "Update from the internet"
+
+#: core/templates/fw/account.html:41
+#, python-format
+msgid "Referenzzinssatz (%%)"
+msgstr "Reference rate (%%)"
+
+#: core/templates/fw/account.html:43
+msgid "Landesindex LIK (Punkte)"
+msgstr "Consumer price index CPI (points)"
+
+#: core/templates/fw/account.html:45
+msgid "LIK-Basis"
+msgstr "CPI base"
+
+#: core/templates/fw/account.html:46
+msgid "Dezember 2020"
+msgstr "December 2020"
+
+#: core/templates/fw/account.html:47
+msgid "Aktuelle Basis des BFS: «Dezember 2020 = 100»."
+msgstr "Current FSO base: “December 2020 = 100”."
+
+#: core/templates/fw/account.html:48
+msgid "LIK Stand-Monat (abgelesen)"
+msgstr "CPI reference month (read)"
+
+#: core/templates/fw/account.html:50
+msgid ""
+"Monat, aus dem die Punkte stammen — erscheint auf dem amtlichen Formular."
+msgstr "Month the points come from — appears on the official form."
+
+#: core/templates/fw/account.html:51
+#, python-format
+msgid "NK-Verwaltungshonorar (%%)"
+msgstr "SC management fee (%%)"
+
+#: core/templates/fw/account.html:53
+#, python-format
+msgid "Honorar auf die Nebenkosten-Abrechnung (üblich 3 %%; 0 = kein Posten)."
+msgstr "Fee on the service charge statement (usually 3 %%; 0 = no item)."
+
+#: core/templates/fw/account.html:55
+msgid "Marktdaten manuell speichern"
+msgstr "Save market data manually"
+
+#: core/templates/fw/account.html:58
+msgid ""
+"Hinweis: Der automatische Abruf holt die Werte von BWO (Referenzzins) und "
+"HEV (LIK). Blockiert das Hosting (z. B. PythonAnywhere-Whitelist) den "
+"Zugriff, trage die Werte einfach manuell ein — sie gelten dann überall."
+msgstr ""
+"Note: the automatic fetch gets the values from the FHO (reference rate) and "
+"HEV (CPI). If the hosting blocks access (e.g. PythonAnywhere whitelist), "
+"just enter the values manually — they then apply everywhere."
+
+#: core/templates/fw/account.html:64
+msgid "Verwaltung / Vermieter-Stammdaten"
+msgstr "Management / landlord master data"
+
+#: core/templates/fw/account.html:70
+msgid "Firmenlogo"
+msgstr "Company logo"
+
+#: core/templates/fw/account.html:70
+msgid "(erscheint auf Briefen)"
+msgstr "(appears on letters)"
+
+#: core/templates/fw/account.html:79
+msgid "PNG oder JPG, weisser Hintergrund wird transparent gemacht."
+msgstr "PNG or JPG, a white background is made transparent."
+
+#: core/templates/fw/account.html:81
+msgid "Logo entfernen"
+msgstr "Remove logo"
+
+#: core/templates/fw/account.html:89
+msgid "Firmenname"
+msgstr "Company name"
+
+#: core/templates/fw/account.html:91
+msgid "Strasse &amp; Nr."
+msgstr "Street &amp; no."
+
+#: core/templates/fw/account.html:94
+msgid "PLZ"
+msgstr "Postcode"
+
+#: core/templates/fw/account.html:96 core/templates/fw/mandate.html:17
+#: core/templates/fw/termine.html:33
+msgid "Ort"
+msgstr "Location"
+
+#: core/templates/fw/account.html:100 core/templates/fw/dienstleister.html:35
+#: core/templates/fw/dienstleister.html:103
+msgid "Telefon"
+msgstr "Phone"
+
+#: core/templates/fw/account.html:102 core/templates/fw/benutzer.html:18
+#: core/templates/fw/benutzer_form.html:30
+#: core/templates/fw/dienstleister.html:33
+#: core/templates/fw/dienstleister.html:101
+msgid "E-Mail"
+msgstr "Email"
+
+#: core/templates/fw/account.html:120
+msgid "Stundensatz (CHF/h)"
+msgstr "Hourly rate (CHF/h)"
+
+#: core/templates/fw/account.html:122
+msgid "leer = nicht hinterlegt"
+msgstr "empty = not set"
+
+#: core/templates/fw/account.html:124
+msgid ""
+"Für separat verrechenbaren Aufwand. Leer lassen, wenn keiner vereinbart ist."
+msgstr "For separately billable work. Leave empty if none is agreed."
+
+#: core/templates/fw/account.html:127
+msgid "Stammdaten speichern"
+msgstr "Save master data"
+
+#: core/templates/fw/account.html:135
+msgid "Gefahrenzone"
+msgstr "Danger zone"
+
+#: core/templates/fw/account.html:136
+msgid ""
+"Löscht <span class=\"font-semibold\">alle</span> Daten (Liegenschaften, "
+"Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, "
+"Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. "
+"Benutzerkonten und Rollen bleiben erhalten."
+msgstr ""
+"Deletes <span class=\"font-semibold\">all</span> data (properties, units, "
+"leases, people, entries, invoices, damage, templates, mandates and "
+"management master data) and starts with an empty database. User accounts and "
+"roles are kept."
+
+#: core/templates/fw/account.html:136
+msgid "Dieser Schritt kann nicht rückgängig gemacht werden."
+msgstr "This step cannot be undone."
+
+#: core/templates/fw/account.html:137
+msgid "Wirklich ALLE Daten unwiderruflich löschen und von vorne beginnen?"
+msgstr "Really delete ALL data irreversibly and start over?"
+
+#: core/templates/fw/account.html:140
+msgid "Zum Bestätigen «LÖSCHEN» eingeben"
+msgstr "Type “LÖSCHEN” to confirm"
+
+#: core/templates/fw/account.html:141
+msgid "LÖSCHEN"
+msgstr "LÖSCHEN"
+
+#: core/templates/fw/account.html:144
+msgid "Alles löschen &amp; neu beginnen"
+msgstr "Delete everything &amp; start over"
 
 #: core/templates/fw/anlagen.html:4 core/templates/fw/anlagen.html:9
 msgid "Anlagen &amp; Abschluss"
@@ -633,9 +990,10 @@ msgstr "Balance (optional)"
 msgid "unverändert"
 msgstr "unchanged"
 
-#: core/templates/fw/anlagen.html:128 core/templates/fw/dienstleister.html:107
+#: core/templates/fw/anlagen.html:128 core/templates/fw/benutzer_form.html:55
+#: core/templates/fw/dienstleister.html:107
 #: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:308
-#: core/templates/fw/mwst.html:117
+#: core/templates/fw/mwst.html:117 core/templates/fw/vorlage_form.html:37
 msgid "Speichern"
 msgstr "Save"
 
@@ -675,7 +1033,9 @@ msgstr "Remove"
 msgid ""
 "Kennzahlen im Monatsverlauf und je Liegenschaft — nach Jahr, Kennzahl und "
 "Liegenschaft filterbar."
-msgstr "Key figures by month and per property — filterable by year, figure and property."
+msgstr ""
+"Key figures by month and per property — filterable by year, figure and "
+"property."
 
 #: core/templates/fw/auswertung.html:17
 msgid "Kennzahl"
@@ -1046,10 +1406,11 @@ msgid "Mieter"
 msgstr "Tenant"
 
 #: core/templates/fw/bankabgleich.html:348 core/templates/fw/debitoren.html:193
-#: core/templates/fw/kreditoren.html:162 core/templates/fw/mahnwesen.html:66
-#: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
-#: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
-#: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
+#: core/templates/fw/kreditoren.html:162 core/templates/fw/logbuch.html:98
+#: core/templates/fw/mahnwesen.html:66 core/templates/fw/mieterkonten.html:47
+#: core/templates/fw/mietzins.html:59 core/templates/fw/sollstellung.html:83
+#: core/templates/fw/vertraege.html:69 core/templates/fw/zahllauf.html:65
+#: core/templates/fw/zahllauf.html:148
 msgid "Objekt"
 msgstr "Unit"
 
@@ -1267,6 +1628,146 @@ msgstr "Nothing found — ↵ searches in depth for"
 msgid "Bereiche"
 msgstr "Areas"
 
+#: core/templates/fw/benutzer.html:3 core/templates/fw/benutzer.html:6
+#: core/templates/fw/benutzer_form.html:6 core/templates/fw/logbuch.html:49
+#: core/templates/fw/logbuch.html:96
+msgid "Benutzer"
+msgstr "Users"
+
+#: core/templates/fw/benutzer.html:8
+msgid "Benutzer erfassen"
+msgstr "Add user"
+
+#: core/templates/fw/benutzer.html:11
+#, python-format
+msgid "%(n)s Team-Mitglied mit Zugriff auf die Verwaltung."
+msgid_plural "%(n)s Team-Mitglieder mit Zugriff auf die Verwaltung."
+msgstr[0] "%(n)s team member with access to the management."
+msgstr[1] "%(n)s team members with access to the management."
+
+#: core/templates/fw/benutzer.html:17 core/templates/fw/personen.html:66
+msgid "Name"
+msgstr "Name"
+
+#: core/templates/fw/benutzer.html:17 core/templates/fw/benutzer_form.html:41
+msgid "Rolle"
+msgstr "Role"
+
+#: core/templates/fw/benutzer.html:18 core/templates/fw/mandate.html:18
+msgid "Aktionen"
+msgstr "Actions"
+
+#: core/templates/fw/benutzer.html:28
+msgid "inaktiv"
+msgstr "inactive"
+
+#: core/templates/fw/benutzer.html:35 core/templates/fw/dienstleister.html:75
+#: core/templates/fw/kreditoren.html:242 core/templates/fw/mandate.html:36
+#: core/templates/fw/vorlagen.html:37
+msgid "Bearbeiten"
+msgstr "Edit"
+
+#: core/templates/fw/benutzer.html:37
+#, python-format
+msgid "Benutzer %(name)s wirklich löschen?"
+msgstr "Really delete user %(name)s?"
+
+#: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
+#: core/templates/fw/hypotheken.html:115 core/templates/fw/kreditoren.html:245
+#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
+msgid "Löschen"
+msgstr "Delete"
+
+#: core/templates/fw/benutzer.html:45
+msgid "Keine Benutzer."
+msgstr "No users."
+
+#: core/templates/fw/benutzer.html:51
+msgid ""
+"Rollen: <b>Inhaber</b> (Vollzugriff inkl. Abo und Organisation), "
+"<b>Verwalter</b> (Vollzugriff im Tagesgeschäft), <b>Sachbearbeiter</b> "
+"(schreibend), <b>Lesezugriff</b> (nur ansehen). Reine Eigentümer-Portal-"
+"Zugänge werden hier nicht angezeigt."
+msgstr ""
+"Roles: <b>Inhaber</b> (full access incl. subscription and organisation), "
+"<b>Verwalter</b> (full access to day-to-day business), <b>Sachbearbeiter</b> "
+"(write), <b>Lesezugriff</b> (read only). Owner-portal-only accounts are not "
+"shown here."
+
+#: core/templates/fw/benutzer_form.html:3
+msgid "Neuer Benutzer"
+msgstr "New user"
+
+#: core/templates/fw/benutzer_form.html:3
+#: core/templates/fw/benutzer_form.html:13
+#: core/templates/fw/vorlage_form.html:3 core/templates/fw/vorlage_form.html:13
+#, python-format
+msgid "%(name)s bearbeiten"
+msgstr "Edit %(name)s"
+
+#: core/templates/fw/benutzer_form.html:8 core/templates/fw/vorlage_form.html:8
+msgid "Neu"
+msgstr "New"
+
+#: core/templates/fw/benutzer_form.html:13
+msgid "Neuen Benutzer erfassen"
+msgstr "Add new user"
+
+#: core/templates/fw/benutzer_form.html:14
+msgid "Team-Mitglied mit Zugriff auf die Verwaltung."
+msgstr "Team member with access to the management."
+
+#: core/templates/fw/benutzer_form.html:21
+msgid "Benutzername *"
+msgstr "Username *"
+
+#: core/templates/fw/benutzer_form.html:25
+msgid "Vorname"
+msgstr "First name"
+
+#: core/templates/fw/benutzer_form.html:27
+msgid "Nachname"
+msgstr "Last name"
+
+#: core/templates/fw/benutzer_form.html:32
+msgid "Passwort"
+msgstr "Password"
+
+#: core/templates/fw/benutzer_form.html:32
+msgid "(leer lassen = unverändert)"
+msgstr "(leave empty = unchanged)"
+
+#: core/templates/fw/benutzer_form.html:37
+msgid "Rolle &amp; Status"
+msgstr "Role &amp; status"
+
+#: core/templates/fw/benutzer_form.html:39
+msgid ""
+"Dieser Benutzer ist ein Superuser (Admin) — die Rolle wird nicht verändert."
+msgstr "This user is a superuser (admin) — the role is not changed."
+
+#: core/templates/fw/benutzer_form.html:45
+msgid ""
+"Inhaber = Vollzugriff inkl. Abo · Verwalter = Vollzugriff im Tagesgeschäft · "
+"Sachbearbeiter = schreibend · Lesezugriff = nur ansehen"
+msgstr ""
+"Inhaber = full access incl. subscription · Verwalter = full access to day-to-"
+"day business · Sachbearbeiter = write · Lesezugriff = read only"
+
+#: core/templates/fw/benutzer_form.html:48
+msgid "Konto aktiv"
+msgstr "Account active"
+
+#: core/templates/fw/benutzer_form.html:49
+msgid "(eigener Account — kann nicht deaktiviert werden)"
+msgstr "(own account — cannot be deactivated)"
+
+#: core/templates/fw/benutzer_form.html:57
+#: core/templates/fw/dienstleister.html:106
+#: core/templates/fw/kreditoren.html:307 core/templates/fw/vorlage_form.html:39
+msgid "Abbrechen"
+msgstr "Cancel"
+
 #: core/templates/fw/berichte.html:8
 msgid "Alle Reports und Exporte an einem Ort."
 msgstr "All reports and exports in one place."
@@ -1276,7 +1777,7 @@ msgid "Interaktive Auswertung"
 msgstr "Interactive analysis"
 
 #: core/templates/fw/berichte.html:13 core/templates/fw/kreditoren.html:13
-#: core/templates/fw/liegenschaften.html:16
+#: core/templates/fw/liegenschaften.html:16 core/templates/fw/vorlagen.html:10
 msgid "Mehr"
 msgstr "More"
 
@@ -1286,8 +1787,8 @@ msgid "Betriebskostenspiegel"
 msgstr "Operating cost benchmark"
 
 #: core/templates/fw/berichte.html:16
-#: core/templates/fw/leerstand_verlauf.html:2
-#: core/templates/fw/leerstand_verlauf.html:6
+#: core/templates/fw/leerstand_verlauf.html:3
+#: core/templates/fw/leerstand_verlauf.html:7
 msgid "Leerstands-Verlauf"
 msgstr "Vacancy trend"
 
@@ -1340,7 +1841,9 @@ msgstr "No properties / no expense entries in %(jahr)s."
 msgid ""
 "Basis: Buchungen auf Aufwandkonten (Soll) je Liegenschaft im gewählten Jahr, "
 "geteilt durch die Summe der erfassten Objektflächen."
-msgstr "Basis: entries on expense accounts (debit) per property in the chosen year, divided by the sum of recorded unit areas."
+msgstr ""
+"Basis: entries on expense accounts (debit) per property in the chosen year, "
+"divided by the sum of recorded unit areas."
 
 #: core/templates/fw/buchhaltung.html:10
 msgid "Buchung erfassen"
@@ -1564,7 +2067,7 @@ msgstr "Account"
 msgid "Bis"
 msgstr "To"
 
-#: core/templates/fw/buchhaltung.html:296
+#: core/templates/fw/buchhaltung.html:296 core/templates/fw/logbuch.html:83
 msgid "Filtern"
 msgstr "Filter"
 
@@ -1664,6 +2167,7 @@ msgstr[0] "Total (%(n)s entry)"
 msgstr[1] "Total (%(n)s entries)"
 
 #: core/templates/fw/buchhaltung.html:433 core/templates/fw/kreditoren.html:382
+#: core/templates/fw/logbuch.html:158
 #, python-format
 msgid "Seite %(seite)s von %(von)s"
 msgstr "Page %(seite)s of %(von)s"
@@ -2142,7 +2646,10 @@ msgid ""
 "Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 "
 "Tagen sind mahnrelevant — Mahnungen erfasst du im <a href=\"/neu/mahnwesen/"
 "%(lg_query)s\" class=\"fw-marke hover:underline\">Mahnwesen</a>."
-msgstr "Age from the due or invoice date. Items from 30 days are due for dunning — you record reminders under <a href=\"/neu/mahnwesen/%(lg_query)s\" class=\"fw-marke hover:underline\">Dunning</a>."
+msgstr ""
+"Age from the due or invoice date. Items from 30 days are due for dunning — "
+"you record reminders under <a href=\"/neu/mahnwesen/%(lg_query)s\" "
+"class=\"fw-marke hover:underline\">Dunning</a>."
 
 #: core/templates/fw/dienstleister.html:9
 msgid "Handwerker erfassen"
@@ -2225,16 +2732,6 @@ msgstr "Cleaning company"
 msgid "Kontaktperson"
 msgstr "Contact person"
 
-#: core/templates/fw/dienstleister.html:33
-#: core/templates/fw/dienstleister.html:101
-msgid "E-Mail"
-msgstr "Email"
-
-#: core/templates/fw/dienstleister.html:35
-#: core/templates/fw/dienstleister.html:103
-msgid "Telefon"
-msgstr "Phone"
-
 #: core/templates/fw/dienstleister.html:53
 msgid "Firma oder Kontakt suchen…"
 msgstr "Search company or contact…"
@@ -2243,26 +2740,10 @@ msgstr "Search company or contact…"
 msgid "Dienstleister nach Firma oder Kontakt durchsuchen"
 msgstr "Search service providers by company or contact"
 
-#: core/templates/fw/dienstleister.html:75
-#: core/templates/fw/kreditoren.html:242 core/templates/fw/mandate.html:36
-msgid "Bearbeiten"
-msgstr "Edit"
-
 #: core/templates/fw/dienstleister.html:76
 #, python-format
 msgid "Dienstleister «%(name)s» löschen?"
 msgstr "Delete service provider “%(name)s”?"
-
-#: core/templates/fw/dienstleister.html:77
-#: core/templates/fw/hypotheken.html:115 core/templates/fw/kreditoren.html:245
-#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
-msgid "Löschen"
-msgstr "Delete"
-
-#: core/templates/fw/dienstleister.html:106
-#: core/templates/fw/kreditoren.html:307
-msgid "Abbrechen"
-msgstr "Cancel"
 
 #: core/templates/fw/dienstleister.html:116
 msgid "Keine Kontaktdaten hinterlegt"
@@ -2285,6 +2766,10 @@ msgstr "No service providers yet"
 #: core/templates/fw/dienstleister.html:131
 msgid "Handwerker werden in der klassischen Ansicht erfasst."
 msgstr "Tradespeople are added in the classic view."
+
+#: core/templates/fw/einstellungen.html:10
+msgid "Konto, Team, Vorlagen und Integrationen — alles an einem Ort."
+msgstr "Account, team, templates and integrations — all in one place."
 
 #: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:758
 msgid "Finanz-Cockpit"
@@ -2512,6 +2997,98 @@ msgstr ""
 "value). “Due soon” covers tranches maturing in the next 180 days — check "
 "refinancing/extension in time."
 
+#: core/templates/fw/integrationen.html:3
+#: core/templates/fw/integrationen.html:7 core/views/fw/aktionen.py:853
+msgid "Integrationen"
+msgstr "Integrations"
+
+#: core/templates/fw/integrationen.html:8
+msgid "Verbundene Dienste und Schnittstellen von swissImmo."
+msgstr "Connected services and interfaces of swissImmo."
+
+#: core/templates/fw/integrationen.html:36
+msgid "Test-E-Mail senden"
+msgstr "Send test email"
+
+#: core/templates/fw/integrationen.html:41
+msgid "Zum Bankabgleich"
+msgstr "To bank reconciliation"
+
+#: core/templates/fw/integrationen.html:59
+msgid "Immobilien-Portale — Objekt-Feed"
+msgstr "Property portals — listing feed"
+
+#: core/templates/fw/integrationen.html:61
+msgid "Deaktiviert"
+msgstr "Deactivated"
+
+#: core/templates/fw/integrationen.html:64
+#, python-format
+msgid ""
+"Stellt alle zur Ausschreibung markierten Objekte (%(n)s) als "
+"standardisierten, token-gesicherten Feed (JSON/CSV) bereit — abrufbar von "
+"Portalen wie <span class=\"font-medium\">Homegate, ImmoScout24 (SMG), "
+"Flatfox</span> bzw. deren Import/Middleware."
+msgstr ""
+"Provides all units marked for advertising (%(n)s) as a standardised, token-"
+"secured feed (JSON/CSV) — retrievable by portals such as <span class=\"font-"
+"medium\">Homegate, ImmoScout24 (SMG), Flatfox</span> or their import/"
+"middleware."
+
+#: core/templates/fw/integrationen.html:68
+msgid "Feed-URL (JSON)"
+msgstr "Feed URL (JSON)"
+
+#: core/templates/fw/integrationen.html:73
+msgid "Kopieren"
+msgstr "Copy"
+
+#: core/templates/fw/integrationen.html:76
+msgid "JSON ansehen"
+msgstr "View JSON"
+
+#: core/templates/fw/integrationen.html:77
+msgid "CSV herunterladen"
+msgstr "Download CSV"
+
+#: core/templates/fw/integrationen.html:80
+msgid "Neuen Token erzeugen? Die alte Feed-URL wird ungültig."
+msgstr "Create a new token? The old feed URL will stop working."
+
+#: core/templates/fw/integrationen.html:82
+msgid "Token neu erzeugen"
+msgstr "Regenerate token"
+
+#: core/templates/fw/integrationen.html:84
+msgid "Feed deaktivieren?"
+msgstr "Deactivate feed?"
+
+#: core/templates/fw/integrationen.html:86
+msgid "Deaktivieren"
+msgstr "Deactivate"
+
+#: core/templates/fw/integrationen.html:93
+msgid "Feed aktivieren (Token erzeugen)"
+msgstr "Activate feed (create token)"
+
+#: core/templates/fw/integrationen.html:96
+msgid ""
+"Der Token schützt die URL — teile sie nur mit dem Portal/der Middleware. Bei "
+"Verdacht auf Missbrauch Token neu erzeugen."
+msgstr ""
+"The token protects the URL — share it only with the portal/middleware. If "
+"you suspect misuse, regenerate the token."
+
+#: core/templates/fw/integrationen.html:102
+msgid ""
+"Der Objekt-Feed ist der neutrale Standard-Ausgang; die konkrete Portal-"
+"Anbindung (Homegate/ImmoScout24 via IDX, Flatfox via Import) erfolgt über "
+"den jeweiligen Portal-Import bzw. eine Middleware, die diesen Feed liest."
+msgstr ""
+"The listing feed is the neutral standard output; the actual portal "
+"connection (Homegate/ImmoScout24 via IDX, Flatfox via import) happens "
+"through the respective portal import or a middleware that reads this feed."
+
 #: core/templates/fw/kautionen.html:8
 msgid "Mietzinsdepots"
 msgstr "Rent deposits"
@@ -2540,7 +3117,8 @@ msgstr "Still expected"
 msgid "Mieter / Objekt"
 msgstr "Tenant / unit"
 
-#: core/templates/fw/kautionen.html:27 core/templates/fw/termine.html:25
+#: core/templates/fw/kautionen.html:27 core/templates/fw/logbuch.html:59
+#: core/templates/fw/termine.html:25
 msgid "Art"
 msgstr "Type"
 
@@ -2611,6 +3189,7 @@ msgid "Nummer *"
 msgstr "Number *"
 
 #: core/templates/fw/kontenplan.html:55 core/templates/fw/nebenkosten.html:26
+#: core/templates/fw/vorlage_form.html:23
 msgid "Bezeichnung *"
 msgstr "Name *"
 
@@ -2695,7 +3274,7 @@ msgstr ""
 "Invoice received → approval → payment (expense to creditors, then creditors "
 "to bank)"
 
-#: core/templates/fw/kreditoren.html:30
+#: core/templates/fw/kreditoren.html:30 core/views/fw/profil.py:899
 msgid "KI-Rechnungsscanner"
 msgstr "AI invoice scanner"
 
@@ -2903,8 +3482,8 @@ msgstr[1] "%(n)s invoices"
 msgid "Lieferant"
 msgstr "Supplier"
 
-#: core/templates/fw/kreditoren.html:167 core/templates/fw/mahnwesen.html:70
-#: core/templates/fw/mietzins.html:64
+#: core/templates/fw/kreditoren.html:167 core/templates/fw/logbuch.html:97
+#: core/templates/fw/mahnwesen.html:70 core/templates/fw/mietzins.html:64
 msgid "Aktion"
 msgstr "Action"
 
@@ -3117,52 +3696,54 @@ msgstr "Recently completed"
 msgid "Noch kein Lauf abgeschlossen."
 msgstr "No process completed yet."
 
-#: core/templates/fw/leerstand_verlauf.html:7
+#: core/templates/fw/leerstand_verlauf.html:8
 #, python-format
 msgid "Monatliche Leerquote des letzten Monats."
 msgid_plural "Monatliche Leerquote der letzten %(n)s Monate."
 msgstr[0] "Monthly vacancy rate for the last month."
 msgstr[1] "Monthly vacancy rate for the last %(n)s months."
 
-#: core/templates/fw/leerstand_verlauf.html:7
+#: core/templates/fw/leerstand_verlauf.html:8
 msgid "ganzes Portfolio"
 msgstr "whole portfolio"
 
-#: core/templates/fw/leerstand_verlauf.html:10
+#: core/templates/fw/leerstand_verlauf.html:11
 msgid "6 Mt."
 msgstr "6 mo."
 
-#: core/templates/fw/leerstand_verlauf.html:11
+#: core/templates/fw/leerstand_verlauf.html:12
 msgid "12 Mt."
 msgstr "12 mo."
 
-#: core/templates/fw/leerstand_verlauf.html:12
+#: core/templates/fw/leerstand_verlauf.html:13
 msgid "24 Mt."
 msgstr "24 mo."
 
-#: core/templates/fw/leerstand_verlauf.html:19
+#: core/templates/fw/leerstand_verlauf.html:20
 msgid "Ø Leerquote"
 msgstr "Ø vacancy rate"
 
-#: core/templates/fw/leerstand_verlauf.html:23
+#: core/templates/fw/leerstand_verlauf.html:24
 msgid "Spitze"
 msgstr "Peak"
 
-#: core/templates/fw/leerstand_verlauf.html:27
+#: core/templates/fw/leerstand_verlauf.html:28
 msgid "Aktuell (letzter Monat)"
 msgstr "Current (last month)"
 
-#: core/templates/fw/leerstand_verlauf.html:38
+#: core/templates/fw/leerstand_verlauf.html:39
 #, python-format
 msgid "%(monat)s: %(leer)s/%(total)s leer"
 msgstr "%(monat)s: %(leer)s/%(total)s vacant"
 
-#: core/templates/fw/leerstand_verlauf.html:43
+#: core/templates/fw/leerstand_verlauf.html:44
 #, python-format
 msgid ""
 "Balkenhöhe = Leerquote (0–100%%). Grün = voll vermietet, gelb = Leerstand, "
 "rot = &gt; 5%%."
-msgstr "Bar height = vacancy rate (0–100%%). Green = fully let, yellow = vacancy, red = &gt; 5%%."
+msgstr ""
+"Bar height = vacancy rate (0–100%%). Green = fully let, yellow = vacancy, "
+"red = &gt; 5%%."
 
 #: core/templates/fw/lieferantenkonten.html:9
 msgid ""
@@ -3317,6 +3898,164 @@ msgstr ""
 msgid "Erste Liegenschaft erfassen"
 msgstr "Add first property"
 
+#: core/templates/fw/logbuch.html:3 core/templates/fw/logbuch.html:6
+#: core/views/fw/aktionen.py:859
+msgid "Logbuch"
+msgstr "Activity log"
+
+#: core/templates/fw/logbuch.html:8
+msgid "PDF-Bericht"
+msgstr "PDF report"
+
+#: core/templates/fw/logbuch.html:9
+msgid "CSV-Export"
+msgstr "CSV export"
+
+#: core/templates/fw/logbuch.html:12
+msgid "Nachvollziehbarer Verlauf: <b>wer</b> hat <b>wann</b> <b>was</b> getan."
+msgstr "Traceable history: <b>who</b> did <b>what</b> <b>when</b>."
+
+#: core/templates/fw/logbuch.html:13
+#, python-format
+msgid "%(n)s Eintrag im gewählten Zeitraum · rein lesend (Revisions-Trail)."
+msgid_plural ""
+"%(n)s Einträge im gewählten Zeitraum · rein lesend (Revisions-Trail)."
+msgstr[0] "%(n)s entry in the chosen period · read-only (audit trail)."
+msgstr[1] "%(n)s entries in the chosen period · read-only (audit trail)."
+
+#: core/templates/fw/logbuch.html:19
+msgid "Einträge (Zeitraum)"
+msgstr "Entries (period)"
+
+#: core/templates/fw/logbuch.html:23
+msgid "davon kritisch"
+msgstr "of which critical"
+
+#: core/templates/fw/logbuch.html:27 core/templates/fw/logbuch.html:68
+msgid "Sicherheit / Login"
+msgstr "Security / login"
+
+#: core/templates/fw/logbuch.html:30
+msgid "Aktivste Benutzer"
+msgstr "Most active users"
+
+#: core/templates/fw/logbuch.html:44
+msgid "Suche"
+msgstr "Search"
+
+#: core/templates/fw/logbuch.html:45
+msgid "Aktion, Objekt oder Detail …"
+msgstr "Action, object or detail …"
+
+#: core/templates/fw/logbuch.html:51
+msgid "Alle Benutzer"
+msgstr "All users"
+
+#: core/templates/fw/logbuch.html:52
+msgid "System (automatisch)"
+msgstr "System (automatic)"
+
+#: core/templates/fw/logbuch.html:61
+msgid "Alle Arten"
+msgstr "All types"
+
+#: core/templates/fw/logbuch.html:62
+msgid "⚠ Nur kritische (Löschung/Geld/Sicherheit)"
+msgstr "⚠ Critical only (deletion/money/security)"
+
+#: core/templates/fw/logbuch.html:63
+msgid "Erstellt / erfasst"
+msgstr "Created / recorded"
+
+#: core/templates/fw/logbuch.html:64
+msgid "Bearbeitet / geändert"
+msgstr "Edited / changed"
+
+#: core/templates/fw/logbuch.html:65
+msgid "Gelöscht / storniert"
+msgstr "Deleted / reversed"
+
+#: core/templates/fw/logbuch.html:66
+msgid "Finanzen / Buchung"
+msgstr "Finance / entry"
+
+#: core/templates/fw/logbuch.html:67
+msgid "Versand / Kommunikation"
+msgstr "Sending / communication"
+
+#: core/templates/fw/logbuch.html:72 core/templates/fw/nebenkosten.html:71
+msgid "Zeitraum"
+msgstr "Period"
+
+#: core/templates/fw/logbuch.html:74
+msgid "Letzte 7 Tage"
+msgstr "Last 7 days"
+
+#: core/templates/fw/logbuch.html:75
+msgid "Letzte 30 Tage"
+msgstr "Last 30 days"
+
+#: core/templates/fw/logbuch.html:76
+msgid "Letzte 90 Tage"
+msgstr "Last 90 days"
+
+#: core/templates/fw/logbuch.html:77
+msgid "Letztes Jahr"
+msgstr "Last year"
+
+#: core/templates/fw/logbuch.html:78
+msgid "Gesamter Verlauf"
+msgstr "Full history"
+
+#: core/templates/fw/logbuch.html:85
+msgid "Zurücksetzen"
+msgstr "Reset"
+
+#: core/templates/fw/logbuch.html:95
+msgid "Zeitpunkt"
+msgstr "Time"
+
+#: core/templates/fw/logbuch.html:99
+msgid "Details"
+msgstr "Details"
+
+#: core/templates/fw/logbuch.html:117
+msgid "System"
+msgstr "System"
+
+#: core/templates/fw/logbuch.html:149
+msgid "Keine Einträge im gewählten Zeitraum / Filter."
+msgstr "No entries in the chosen period / filter."
+
+#: core/templates/fw/logbuch.html:158
+#, python-format
+msgid "%(n)s Eintrag"
+msgid_plural "%(n)s Einträge"
+msgstr[0] "%(n)s entry"
+msgstr[1] "%(n)s entries"
+
+#: core/templates/fw/logbuch.html:161
+msgid "Zurück"
+msgstr "Back"
+
+#: core/templates/fw/logbuch.html:164
+msgid "Weiter"
+msgstr "Next"
+
+#: core/templates/fw/logbuch.html:171
+msgid ""
+"Das Logbuch protokolliert automatisch alle wesentlichen Aktionen (Verträge, "
+"Personen, Dokumente, Kündigungen, Buchungen, Versand, Löschungen). Einträge "
+"sind unveränderlich und dienen der Nachvollziehbarkeit. Nur Benutzer mit der "
+"Rolle <b>Verwaltung</b> sehen das Logbuch. Geschäftsbücher und Belege sind "
+"<b>10 Jahre</b> aufzubewahren (Art. 958f OR)."
+msgstr ""
+"The log automatically records all important actions (leases, people, "
+"documents, terminations, entries, sending, deletions). Entries cannot be "
+"changed and ensure traceability. Only users with the <b>Verwaltung</b> role "
+"see the log. Business records and vouchers must be kept for <b>10 years</b> "
+"(Art. 958f CO)."
+
 #: core/templates/fw/mahnwesen.html:11
 msgid ""
 "Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt "
@@ -3446,17 +4185,9 @@ msgstr "Owner"
 msgid "Kontakt"
 msgstr "Contact"
 
-#: core/templates/fw/mandate.html:17 core/templates/fw/termine.html:33
-msgid "Ort"
-msgstr "Location"
-
 #: core/templates/fw/mandate.html:17
 msgid "Liegensch."
 msgstr "Prop."
-
-#: core/templates/fw/mandate.html:18
-msgid "Aktionen"
-msgstr "Actions"
 
 #: core/templates/fw/mandate.html:33
 msgid "Abrechnung"
@@ -3570,10 +4301,6 @@ msgstr "let / month"
 #: core/templates/fw/mieterspiegel.html:40
 msgid "Ausfall Leerstand"
 msgstr "Vacancy loss"
-
-#: core/templates/fw/mieterspiegel.html:42
-msgid "/ Monat"
-msgstr "/ month"
 
 #: core/templates/fw/mieterspiegel.html:47
 #, python-format
@@ -3936,10 +4663,6 @@ msgid_plural "%(n)s Perioden"
 msgstr[0] "%(n)s period"
 msgstr[1] "%(n)s periods"
 
-#: core/templates/fw/nebenkosten.html:71
-msgid "Zeitraum"
-msgstr "Period"
-
 #: core/templates/fw/nebenkosten.html:72
 msgid "Belege"
 msgstr "Vouchers"
@@ -4092,10 +4815,6 @@ msgstr "Add tenants, applicants and other contacts."
 #: core/templates/fw/personen.html:56 core/templates/fw/personen.html:105
 msgid "Erste Person erfassen"
 msgstr "Add first person"
-
-#: core/templates/fw/personen.html:66
-msgid "Name"
-msgstr "Name"
 
 #: core/templates/fw/personen.html:68
 msgid "Adresse"
@@ -4303,6 +5022,81 @@ msgstr "Record notice of termination"
 msgid "Kündigen"
 msgstr "Terminate"
 
+#: core/templates/fw/vorlage_form.html:3 core/templates/fw/vorlage_form.html:13
+msgid "Neue Vorlage"
+msgstr "New template"
+
+#: core/templates/fw/vorlage_form.html:6 core/templates/fw/vorlagen.html:3
+#: core/templates/fw/vorlagen.html:6 core/views/fw/aktionen.py:852
+msgid "Vorlagen"
+msgstr "Templates"
+
+#: core/templates/fw/vorlage_form.html:14
+msgid "Text mit Platzhaltern, die beim Verwenden automatisch ersetzt werden."
+msgstr "Text with placeholders that are replaced automatically when used."
+
+#: core/templates/fw/vorlage_form.html:25
+msgid "Kategorie"
+msgstr "Category"
+
+#: core/templates/fw/vorlage_form.html:30 core/templates/fw/vorlagen.html:35
+msgid "Betreff"
+msgstr "Subject"
+
+#: core/templates/fw/vorlage_form.html:32
+msgid "Inhalt"
+msgstr "Content"
+
+#: core/templates/fw/vorlage_form.html:44
+msgid "Platzhalter"
+msgstr "Placeholders"
+
+#: core/templates/fw/vorlage_form.html:45
+msgid "Klicke, um einzufügen."
+msgstr "Click to insert."
+
+#: core/templates/fw/vorlagen.html:8
+msgid "Vorlage erstellen"
+msgstr "Create template"
+
+#: core/templates/fw/vorlagen.html:14
+msgid "Legt fehlende Standardvorlagen mit vorbelegtem Text an"
+msgstr "Creates missing standard templates with pre-filled text"
+
+#: core/templates/fw/vorlagen.html:14 core/templates/fw/vorlagen.html:48
+msgid "Standardvorlagen erstellen"
+msgstr "Create standard templates"
+
+#: core/templates/fw/vorlagen.html:20
+msgid ""
+"Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz. "
+"«Standardvorlagen erstellen» legt vorbelegte Texte für alle Bereiche an, die "
+"du dann anpassen kannst."
+msgstr ""
+"Reusable text/letter templates with placeholders for correspondence. “Create "
+"standard templates” creates pre-filled texts for all areas that you can then "
+"adjust."
+
+#: core/templates/fw/vorlagen.html:29
+msgid "Vorlage löschen?"
+msgstr "Delete template?"
+
+#: core/templates/fw/vorlagen.html:31
+msgid "Vorlage löschen"
+msgstr "Delete template"
+
+#: core/templates/fw/vorlagen.html:44
+msgid ""
+"Noch keine Vorlagen. Lege mit einem Klick die vorbelegten Standardvorlagen "
+"an — oder erstelle eine eigene."
+msgstr ""
+"No templates yet. Create the pre-filled standard templates with one click — "
+"or create your own."
+
+#: core/templates/fw/vorlagen.html:50
+msgid "Eigene Vorlage"
+msgstr "Own template"
+
 #: core/templates/fw/zahllauf.html:10
 msgid "Zurück zu den Kreditoren"
 msgstr "Back to creditors"
@@ -4471,10 +5265,6 @@ msgstr "Leases"
 msgid "Entwurf"
 msgstr "Draft"
 
-#: core/views/fw/_basis.py:337
-msgid "Aktiv"
-msgstr "Active"
-
 #: core/views/fw/_basis.py:338
 msgid "Gekündigt"
 msgstr "Terminated"
@@ -4498,6 +5288,66 @@ msgstr "Reversed"
 #: core/views/fw/_basis.py:357
 msgid "Abgeschrieben"
 msgstr "Written off"
+
+#: core/views/fw/aktionen.py:850
+msgid "Verwaltungs-Stammdaten, Logo, Absender"
+msgstr "Management master data, logo, sender"
+
+#: core/views/fw/aktionen.py:851
+msgid "Benutzer & Rollen"
+msgstr "Users & roles"
+
+#: core/views/fw/aktionen.py:851
+msgid "Team-Mitglieder und Berechtigungen"
+msgstr "Team members and permissions"
+
+#: core/views/fw/aktionen.py:852
+msgid "Textvorlagen mit Platzhaltern"
+msgstr "Text templates with placeholders"
+
+#: core/views/fw/aktionen.py:853
+msgid "E-Mail, DocuSeal, KI, Banken, Portal-Feed"
+msgstr "Email, DocuSeal, AI, banks, portal feed"
+
+#: core/views/fw/aktionen.py:854
+msgid "Plan und Rechnungsstellung"
+msgstr "Plan and billing"
+
+#: core/views/fw/aktionen.py:855
+msgid "Anmeldung & Sicherheit"
+msgstr "Sign-in & security"
+
+#: core/views/fw/aktionen.py:855
+msgid "Zwei-Faktor-Anmeldung für Sie und Ihr Team"
+msgstr "Two-factor sign-in for you and your team"
+
+#: core/views/fw/aktionen.py:857
+msgid "Postfächer"
+msgstr "Mailboxes"
+
+#: core/views/fw/aktionen.py:857
+msgid "E-Mail-Eingang für Ticket-Antworten und Rechnungen"
+msgstr "Email inbox for ticket replies and invoices"
+
+#: core/views/fw/aktionen.py:859
+msgid "Wer hat wann was geändert"
+msgstr "Who changed what and when"
+
+#: core/views/fw/aktionen.py:860
+msgid "Rechtsgrundlagen"
+msgstr "Legal basis"
+
+#: core/views/fw/aktionen.py:860
+msgid "OR/VMWG-Artikel mit Anwendung im Programm"
+msgstr "CO/VMWG articles with their use in the program"
+
+#: core/views/fw/aktionen.py:866
+msgid "Regelwerk (Fristen)"
+msgstr "Rules (deadlines)"
+
+#: core/views/fw/aktionen.py:866
+msgid "Kündigungstermine und Fristen je Kanton"
+msgstr "Termination dates and notice periods per canton"
 
 #: core/views/fw/arbeit.py:39
 msgid "Diese Woche"
@@ -4699,6 +5549,190 @@ msgstr "Associations"
 msgid "Alle Stufen"
 msgstr "All levels"
 
+#: core/views/fw/profil.py:889
+msgid "E-Mail-Versand"
+msgstr "Email sending"
+
+#: core/views/fw/profil.py:890 core/views/fw/profil.py:895
+#: core/views/fw/profil.py:900
+msgid "Verbunden"
+msgstr "Connected"
+
+#: core/views/fw/profil.py:890 core/views/fw/profil.py:895
+#: core/views/fw/profil.py:900
+msgid "Nicht konfiguriert"
+msgstr "Not configured"
+
+#: core/views/fw/profil.py:891
+msgid ""
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"deinen SMTP-Server."
+msgstr "Send reminders, statements and letters directly from swissImmo via your SMTP server."
+
+#: core/views/fw/profil.py:892
+msgid "E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen."
+msgstr "Add email credentials in the server settings."
+
+#: core/views/fw/profil.py:894
+msgid "DocuSeal — digitale Signatur"
+msgstr "DocuSeal — digital signature"
+
+#: core/views/fw/profil.py:896
+msgid ""
+"Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der "
+"Rücklauf wird automatisch als unterzeichnetes PDF abgelegt."
+msgstr "Send leases for legally valid electronic signature. The signed return is filed automatically as a PDF."
+
+#: core/views/fw/profil.py:897
+msgid "Nutzbar über «An DocuSeal senden» auf der Vertrags-Detailseite."
+msgstr "Available via “Send to DocuSeal” on the lease detail page."
+
+#: core/views/fw/profil.py:897
+msgid "DOCUSEAL_API_KEY hinterlegen."
+msgstr "Add the DOCUSEAL_API_KEY."
+
+#: core/views/fw/profil.py:901
+msgid ""
+"Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, "
+"IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für "
+"Handwerker-Rechnungen."
+msgstr "Read creditor vouchers automatically on upload (supplier, amount, IBAN, QR reference) — incl. photos via image AI and an email inbox for tradesperson invoices."
+
+#: core/views/fw/profil.py:902
+msgid "Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload)."
+msgstr "Available under Creditors → “Scan voucher (AI)” (multiple upload)."
+
+#: core/views/fw/profil.py:903
+#, python-format
+msgid "E-Mail-Eingang aktiv: %(postfach)s (fetch_rechnungen)."
+msgstr "Email inbox active: %(postfach)s (fetch_rechnungen)."
+
+#: core/views/fw/profil.py:905
+msgid ""
+"E-Mail-Eingang: Postfach in den Einstellungen hinterlegen + Scheduled Task "
+"«manage.py fetch_rechnungen --einmal»."
+msgstr "Email inbox: add the mailbox in the settings + scheduled task “manage.py fetch_rechnungen --einmal”."
+
+#: core/views/fw/profil.py:908
+msgid ""
+"GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung "
+"aus Text-PDFs."
+msgstr "Add the GROQ_API_KEY — without a key only rule-based recognition from text PDFs runs."
+
+#: core/views/fw/profil.py:910
+msgid "Banken-Abgleich (camt.053 / QR)"
+msgstr "Bank reconciliation (camt.053 / QR)"
+
+#: core/views/fw/profil.py:912
+msgid ""
+"Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per "
+"QR-Referenz den Debitoren zu."
+msgstr "Import camt.053 statements and assign incoming payments to debtors automatically via the QR reference."
+
+#: core/views/fw/profil.py:913
+msgid "Nutzbar im Bereich Bankabgleich."
+msgstr "Available in bank reconciliation."
+
+#: core/views/fw/profil.py:1039
+msgid "Selbstverwalter & kleine Eigentümer"
+msgstr "Self-managing & small owners"
+
+#: core/views/fw/profil.py:1040
+msgid "Objekte, Personen & Verträge"
+msgstr "Units, people & leases"
+
+#: core/views/fw/profil.py:1040
+msgid "Vertrags-PDF & Dokumentenablage"
+msgstr "Lease PDF & document filing"
+
+#: core/views/fw/profil.py:1041
+msgid "Mieterportal (Dokumente, QR-Rechnung, Schaden, Tickets)"
+msgstr "Tenant portal (documents, QR bill, damage, tickets)"
+
+#: core/views/fw/profil.py:1042
+msgid "QR-Rechnung & Kontoauszug"
+msgstr "QR bill & bank statement"
+
+#: core/views/fw/profil.py:1043
+msgid "Buchhaltung & Zahlungsverkehr"
+msgstr "Accounting & payments"
+
+#: core/views/fw/profil.py:1043
+msgid "Nebenkosten & MWST"
+msgstr "Service charges & VAT"
+
+#: core/views/fw/profil.py:1043
+msgid "Eigentümerportal"
+msgstr "Owner portal"
+
+#: core/views/fw/profil.py:1046
+msgid "Liegenschaftsverwaltungen"
+msgstr "Property management companies"
+
+#: core/views/fw/profil.py:1047
+msgid "Alles aus Start"
+msgstr "Everything in Start"
+
+#: core/views/fw/profil.py:1047
+msgid "Buchhaltung, Sollstellung & Mahnwesen"
+msgstr "Accounting, rent billing & dunning"
+
+#: core/views/fw/profil.py:1048
+msgid "camt.053-Import / pain.001-Export"
+msgstr "camt.053 import / pain.001 export"
+
+#: core/views/fw/profil.py:1048
+msgid "Nebenkostenabrechnung & MWST"
+msgstr "Service charge statement & VAT"
+
+#: core/views/fw/profil.py:1049
+msgid "Mietzinsanpassung (amtl. Formular, LIK/Referenzzins)"
+msgstr "Rent adjustment (official form, CPI/reference rate)"
+
+#: core/views/fw/profil.py:1050
+msgid "Eigentümerportal & Reports"
+msgstr "Owner portal & reports"
+
+#: core/views/fw/profil.py:1050
+msgid "Serienbriefe & Schaden-/Handwerker-Flow"
+msgstr "Mail merge & damage/tradesperson flow"
+
+#: core/views/fw/profil.py:1051
+msgid "Multi-Eigentümer (voll)"
+msgstr "Multiple owners (full)"
+
+#: core/views/fw/profil.py:1051
+msgid "KI-Analysen"
+msgstr "AI analyses"
+
+#: core/views/fw/profil.py:1051 core/views/fw/profil.py:1057
+msgid "API-Zugang"
+msgstr "API access"
+
+#: core/views/fw/profil.py:1054
+msgid "Grössere Verwaltungen & Treuhänder"
+msgstr "Larger management companies & trustees"
+
+#: core/views/fw/profil.py:1055
+msgid "Alles aus Pro"
+msgstr "Everything in Pro"
+
+#: core/views/fw/profil.py:1055
+msgid "Multi-Eigentümer & Mandatsabrechnung"
+msgstr "Multiple owners & mandate statement"
+
+#: core/views/fw/profil.py:1056
+msgid "KI-Analysen & Report-Assistent"
+msgstr "AI analyses & report assistant"
+
+#: core/views/fw/profil.py:1056
+msgid "DocuSeal-Vertragssignatur inkl."
+msgstr "DocuSeal lease signing included"
+
+#: core/views/fw/profil.py:1057
+msgid "Prioritäts-Support & Onboarding"
+msgstr "Priority support & onboarding"
+
 #~ msgid "Arbeit"
 #~ msgstr "Work"
 
@@ -4750,9 +5784,6 @@ msgstr "All levels"
 #~ msgid "Telefonat mit Handwerker"
 #~ msgstr "Call with tradesman"
 
-#~ msgid "Satz CHF/h"
-#~ msgstr "Rate CHF/h"
-
 #~ msgid "Zum nächsten Schritt →"
 #~ msgstr "To the next step →"
 
@@ -4788,6 +5819,3 @@ msgstr "All levels"
 
 #~ msgid "Entscheiden"
 #~ msgstr "Decide"
-
-#~ msgid "Signatur"
-#~ msgstr "Signature"

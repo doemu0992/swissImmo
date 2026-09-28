@@ -1,21 +1,21 @@
 {% extends 'fw/base.html' %}
-{% load zeichen rechte %}
-{% block title %}Benutzer — swissImmo{% endblock %}
+{% load zeichen rechte i18n %}
+{% block title %}{% trans "Benutzer" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
-    <h1>Benutzer</h1>
+    <h1>{% trans "Benutzer" %}</h1>
     {% if request.user|darf:"/neu/benutzer/neu/" %}
-    <a href="/neu/benutzer/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} Benutzer erfassen</a>
+    <a href="/neu/benutzer/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Benutzer erfassen" %}</a>
     {% endif %}
 </div>
-<p class="text-sm fw-mutet mb-6">{{ rows|length }} Team-Mitglied(er) mit Zugriff auf die Verwaltung.</p>
+<p class="text-sm fw-mutet mb-6">{% blocktrans count n=rows|length %}{{ n }} Team-Mitglied mit Zugriff auf die Verwaltung.{% plural %}{{ n }} Team-Mitglieder mit Zugriff auf die Verwaltung.{% endblocktrans %}</p>
 
 
 <div class="fw-card overflow-x-auto">
     <table class="w-full text-sm min-w-max">
         <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left px-5 py-3">Name</th><th class="text-left px-5 py-3">Rolle</th>
-                <th class="text-left px-5 py-3">E-Mail</th><th class="text-right px-5 py-3">Aktionen</th></tr>
+            <tr><th class="text-left px-5 py-3">{% trans "Name" %}</th><th class="text-left px-5 py-3">{% trans "Rolle" %}</th>
+                <th class="text-left px-5 py-3">{% trans "E-Mail" %}</th><th class="text-right px-5 py-3">{% trans "Aktionen" %}</th></tr>
         </thead>
         <tbody class="fw-dv">
             {% with darf_verwalten=request.user|darf:"/neu/benutzer/neu/" %}
@@ -25,28 +25,28 @@
                     <{% if darf_verwalten %}a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/"{% else %}div{% endif %} class="flex items-center gap-3">
                         <span class="w-8 h-8 rounded-full fw-btn fw-primary flex items-center justify-center text-xs font-bold">{{ row.name|slice:":2"|upper }}</span>
                         <span><span class="font-medium fw-strong">{{ row.name }}</span>
-                            <span class="text-xs fw-faint block">{{ row.u.username }}{% if not row.u.is_active %} · inaktiv{% endif %}</span></span>
+                            <span class="text-xs fw-faint block">{{ row.u.username }}{% if not row.u.is_active %} · {% trans "inaktiv" %}{% endif %}</span></span>
                     </{% if darf_verwalten %}a{% else %}div{% endif %}>
                 </td>
                 <td class="px-5 py-3.5"><span class="fw-chip fw-markenflaeche fw-marke">{{ row.rolle }}</span></td>
                 <td class="px-5 py-3.5 fw-mutet">{{ row.u.email|default:"—" }}</td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     {% if darf_verwalten %}
-                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3">{% zeichen 'bearbeiten' klasse='text-[10px] mr-0.5' %}Bearbeiten</a>
+                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3">{% zeichen 'bearbeiten' klasse='text-[10px] mr-0.5' %}{% trans "Bearbeiten" %}</a>
                     <form method="post" action="/neu/benutzer/{{ row.u.id }}/loeschen/" class="inline"
-                          onsubmit="return confirm('Benutzer {{ row.u.username|escapejs }} wirklich löschen?');">
+                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.u.username|safe %}Benutzer {{ name }} wirklich löschen?{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
-                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch">{% zeichen 'loeschen' klasse='text-[10px] mr-0.5' %}Löschen</button>
+                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch">{% zeichen 'loeschen' klasse='text-[10px] mr-0.5' %}{% trans "Löschen" %}</button>
                     </form>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="px-5 py-8 text-center fw-faint italic">Keine Benutzer.</td></tr>
+            <tr><td colspan="4" class="px-5 py-8 text-center fw-faint italic">{% trans "Keine Benutzer." %}</td></tr>
             {% endfor %}
             {% endwith %}
         </tbody>
     </table>
 </div>
-<p class="text-xs fw-faint mt-4 max-w-3xl">Rollen: <b>Inhaber</b> (Vollzugriff inkl. Abo und Organisation), <b>Verwalter</b> (Vollzugriff im Tagesgeschäft), <b>Sachbearbeiter</b> (schreibend), <b>Lesezugriff</b> (nur ansehen). Reine Eigentümer-Portal-Zugänge werden hier nicht angezeigt.</p>
+<p class="text-xs fw-faint mt-4 max-w-3xl">{% blocktrans trimmed %}Rollen: <b>Inhaber</b> (Vollzugriff inkl. Abo und Organisation), <b>Verwalter</b> (Vollzugriff im Tagesgeschäft), <b>Sachbearbeiter</b> (schreibend), <b>Lesezugriff</b> (nur ansehen). Reine Eigentümer-Portal-Zugänge werden hier nicht angezeigt.{% endblocktrans %}</p>
 {% endblock %}

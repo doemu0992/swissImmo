@@ -1,4 +1,4 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 {% comment %}
 Unterschriftsfeld: direkt zeichnen ODER Datei hochladen.
 Erwartet im Kontext: unterschrift_url (aktuell gespeichertes Bild, ggf. leer).
@@ -8,7 +8,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
 {% endcomment %}
 <div data-us-block>
     <label class="block text-xs font-semibold fw-mutet mb-1">
-        Digitale Unterschrift
+        {% trans "Digitale Unterschrift" %}
         <span class="font-normal fw-faint">{{ unterschrift_hinweis|default:"(erscheint auf allen Briefen)" }}</span>
     </label>
 
@@ -16,19 +16,19 @@ Das Formular MUSS enctype="multipart/form-data" haben.
     <div class="flex items-center gap-1.5 mb-3">
         <button type="button" data-us-tab="zeichnen"
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary transition-colors">
-            {% zeichen 'bearbeiten' klasse='mr-1' %}Zeichnen
+            {% zeichen 'bearbeiten' klasse='mr-1' %}{% trans "Zeichnen" %}
         </button>
         <button type="button" data-us-tab="datei"
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken transition-colors">
-            {% zeichen 'dokument' klasse='mr-1' %}Bild hochladen
+            {% zeichen 'dokument' klasse='mr-1' %}{% trans "Bild hochladen" %}
         </button>
         {% if unterschrift_url %}
         <span class="ml-auto inline-flex items-center gap-1.5 text-xs fw-gut font-medium">
-            {% zeichen 'gut' %}hinterlegt
+            {% zeichen 'gut' %}{% trans "hinterlegt" %}
         </span>
         {% elif unterschrift_verwaist %}
         <span class="ml-auto inline-flex items-center gap-1.5 text-xs fw-kritisch font-medium">
-            {% zeichen 'warnung' %}nicht verwendbar
+            {% zeichen 'warnung' %}{% trans "nicht verwendbar" %}
         </span>
         {% endif %}
     </div>
@@ -40,7 +40,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
                 {% if unterschrift_url %}<img src="{{ unterschrift_url }}" alt="Unterschrift" class="max-h-full max-w-full object-contain">
                 {% else %}<span class="text-xs fw-faint">{% zeichen 'vertrag' klasse='text-lg' %}</span>{% endif %}
             </div>
-            <p class="text-[11px] fw-faint mt-1 text-center">aktuell</p>
+            <p class="text-[11px] fw-faint mt-1 text-center">{% trans "aktuell" %}</p>
         </div>
 
         <div class="flex-1 min-w-0">
@@ -56,15 +56,15 @@ Das Formular MUSS enctype="multipart/form-data" haben.
                     <div class="pointer-events-none absolute left-6 right-6 border-b fw-linie" style="bottom: 34px;"></div>
                     <span data-us-platzhalter
                           class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm fw-faint">
-                        Hier mit Maus oder Finger unterschreiben
+                        {% trans "Hier mit Maus oder Finger unterschreiben" %}
                     </span>
                 </div>
                 <div class="flex items-center gap-3 mt-2 flex-wrap">
                     <button type="button" data-us-loeschen
                             class="text-xs font-semibold fw-mutet hover:fw-kritisch">
-                        {% zeichen 'bearbeiten' klasse='mr-1' %}Nochmals
+                        {% zeichen 'bearbeiten' klasse='mr-1' %}{% trans "Nochmals" %}
                     </button>
-                    <span class="text-xs fw-faint">Wird beim Speichern des Formulars übernommen.</span>
+                    <span class="text-xs fw-faint">{% trans "Wird beim Speichern des Formulars übernommen." %}</span>
                 </div>
                 {# Das gezeichnete Bild als Data-URL; bleibt leer, solange nichts gezeichnet wurde #}
                 <input type="hidden" name="unterschrift_gezeichnet" data-us-feld value="">
@@ -74,23 +74,21 @@ Das Formular MUSS enctype="multipart/form-data" haben.
             <div data-us-panel="datei" class="hidden">
                 <input type="file" name="unterschrift_bild" accept="image/png,image/jpeg"
                        class="block w-full text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-markenflaeche file:fw-marke hover:file:fw-markenflaeche">
-                <p class="text-xs fw-faint mt-1">Unterschrift auf weissem Papier abfotografieren — der weisse Hintergrund wird automatisch transparent.</p>
+                <p class="text-xs fw-faint mt-1">{% trans "Unterschrift auf weissem Papier abfotografieren — der weisse Hintergrund wird automatisch transparent." %}</p>
             </div>
 
             {% if unterschrift_url %}
             <label class="flex items-center gap-1.5 text-xs fw-kritisch mt-2.5 cursor-pointer">
                 <input type="checkbox" name="unterschrift_entfernen" value="1" class="fw-akzent-krit">
-                Unterschrift entfernen
+                {% trans "Unterschrift entfernen" %}
             </label>
             {% elif unterschrift_verwaist %}
             <p class="text-xs fw-kritisch mt-2.5">
-                {% zeichen 'warnung' klasse='mr-1' %}Es ist zwar eine Unterschrift eingetragen, sie ist aber
-                leer oder die Bilddatei fehlt auf dem Server. Bitte nochmals unterschreiben — bis dahin bleibt die Linie
-                auf jedem Brief leer.
+                {% zeichen 'warnung' klasse='mr-1' %}{% trans "Es ist zwar eine Unterschrift eingetragen, sie ist aber leer oder die Bilddatei fehlt auf dem Server. Bitte nochmals unterschreiben — bis dahin bleibt die Linie auf jedem Brief leer." %}
             </p>
             {% else %}
             <p class="text-xs fw-warnton mt-2.5">
-                {% zeichen 'warnung' klasse='mr-1' %}Ohne Unterschrift bleibt die Linie auf jedem Brief leer.
+                {% zeichen 'warnung' klasse='mr-1' %}{% trans "Ohne Unterschrift bleibt die Linie auf jedem Brief leer." %}
             </p>
             {% endif %}
         </div>

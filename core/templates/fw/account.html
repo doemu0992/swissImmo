@@ -1,12 +1,12 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load l10n %}
-{% block title %}Account — swissImmo{% endblock %}
+{% block title %}{% trans "Account" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Account</h1>
-        <p>Stammdaten deiner Verwaltung und aktuelle Marktdaten für Mietzinsanpassungen.</p>
+        <h1>{% trans "Account" %}</h1>
+        <p>{% trans "Stammdaten deiner Verwaltung und aktuelle Marktdaten für Mietzinsanpassungen." %}</p>
     </div>
 </div>
 
@@ -16,14 +16,14 @@
     <div class="fw-card p-5">
         <div class="flex items-start justify-between gap-4 mb-4">
             <div>
-                <h3 class="font-bold fw-strong text-sm">Marktdaten (Referenzzinssatz & LIK)</h3>
-                <p class="text-xs fw-faint mt-0.5">Grundlage für „Aktuelle Werte übernehmen" im Vertragsassistenten.
-                {% if vw.letztes_update_marktdaten %}Zuletzt aktualisiert: {{ vw.letztes_update_marktdaten|date:"d.m.Y H:i" }}.{% else %}Noch nie aus dem Internet aktualisiert.{% endif %}</p>
+                <h3 class="font-bold fw-strong text-sm">{% trans "Marktdaten (Referenzzinssatz &amp; LIK)" %}</h3>
+                <p class="text-xs fw-faint mt-0.5">{% trans "Grundlage für «Aktuelle Werte übernehmen» im Vertragsassistenten." %}
+                {% if vw.letztes_update_marktdaten %}{% blocktrans with zeit=vw.letztes_update_marktdaten|date:"d.m.Y H:i" %}Zuletzt aktualisiert: {{ zeit }}.{% endblocktrans %}{% else %}{% trans "Noch nie aus dem Internet aktualisiert." %}{% endif %}</p>
             </div>
             <form method="post" action="/neu/marktdaten/aktualisieren/">
                 {% csrf_token %}
                 <button class="whitespace-nowrap fw-btn fw-primary text-xs font-semibold px-3.5 py-2 rounded-lg shadow-sm">
-                    {% zeichen 'herunterladen' klasse='mr-1.5' %}Aus dem Internet aktualisieren
+                    {% zeichen 'herunterladen' klasse='mr-1.5' %}{% trans "Aus dem Internet aktualisieren" %}
                 </button>
             </form>
         </div>
@@ -38,37 +38,36 @@
             <input type="hidden" name="iban" value="{{ vw.iban }}">
             {# Sonst loescht ein Speichern hier den Stundensatz: Die Ansicht setzt bei leerer Eingabe auf `None`. #}
             <input type="hidden" name="stundensatz" value="{% localize off %}{{ vw.stundensatz|default_if_none:'' }}{% endlocalize %}">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Referenzzinssatz (%)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Referenzzinssatz (%)" %}</label>
                 <input name="aktueller_referenzzinssatz" type="number" step="0.05" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Landesindex LIK (Punkte)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Landesindex LIK (Punkte)" %}</label>
                 <input name="aktueller_lik_punkte" type="number" step="0.1" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">LIK-Basis</label>
-                <input name="lik_basis" type="text" value="{{ vw.lik_basis|default:'Dezember 2020' }}" placeholder="Dezember 2020" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] fw-faint mt-1">Aktuelle Basis des BFS: «Dezember 2020 = 100».</p></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">LIK Stand-Monat (abgelesen)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "LIK-Basis" %}</label>
+                <input name="lik_basis" type="text" value="{{ vw.lik_basis|default:'Dezember 2020' }}" placeholder="{% trans 'Dezember 2020' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <p class="text-[11px] fw-faint mt-1">{% trans "Aktuelle Basis des BFS: «Dezember 2020 = 100»." %}</p></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "LIK Stand-Monat (abgelesen)" %}</label>
                 <input name="aktueller_lik_stand" type="month" value="{{ vw.aktueller_lik_stand|date:'Y-m' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] fw-faint mt-1">Monat, aus dem die Punkte stammen — erscheint auf dem amtlichen Formular.</p></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">NK-Verwaltungshonorar (%)</label>
+                <p class="text-[11px] fw-faint mt-1">{% trans "Monat, aus dem die Punkte stammen — erscheint auf dem amtlichen Formular." %}</p></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "NK-Verwaltungshonorar (%)" %}</label>
                 <input name="nk_honorar_prozent" type="number" step="0.25" min="0" max="10" value="{% localize off %}{{ vw.nk_honorar_prozent }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] fw-faint mt-1">Honorar auf die Nebenkosten-Abrechnung (üblich 3 %; 0 = kein Posten).</p></div>
+                <p class="text-[11px] fw-faint mt-1">{% trans "Honorar auf die Nebenkosten-Abrechnung (üblich 3 %; 0 = kein Posten)." %}</p></div>
             <div class="sm:col-span-2">
-                <button class="fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg">Marktdaten manuell speichern</button>
+                <button class="fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Marktdaten manuell speichern" %}</button>
             </div>
         </form>
-        <p class="text-xs fw-faint mt-3">Hinweis: Der automatische Abruf holt die Werte von BWO (Referenzzins) und HEV (LIK).
-            Blockiert das Hosting (z. B. PythonAnywhere-Whitelist) den Zugriff, trage die Werte einfach manuell ein — sie gelten dann überall.</p>
+        <p class="text-xs fw-faint mt-3">{% trans "Hinweis: Der automatische Abruf holt die Werte von BWO (Referenzzins) und HEV (LIK). Blockiert das Hosting (z. B. PythonAnywhere-Whitelist) den Zugriff, trage die Werte einfach manuell ein — sie gelten dann überall." %}</p>
     </div>
 
     <!-- Stammdaten -->
     <form method="post" enctype="multipart/form-data" class="fw-card p-5 space-y-4">
         {% csrf_token %}
-        <h3 class="font-bold fw-strong text-sm">Verwaltung / Vermieter-Stammdaten</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Verwaltung / Vermieter-Stammdaten" %}</h3>
         <input type="hidden" name="aktueller_referenzzinssatz" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}">
         <input type="hidden" name="aktueller_lik_punkte" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}">
 
         <!-- Firmenlogo -->
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Firmenlogo <span class="font-normal fw-faint">(erscheint auf Briefen)</span></label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Firmenlogo" %} <span class="font-normal fw-faint">{% trans "(erscheint auf Briefen)" %}</span></label>
             <div class="flex items-center gap-4">
                 <div class="w-28 h-20 rounded-lg border fw-linie fw-flaeche2 flex items-center justify-center overflow-hidden shrink-0">
                     {% if logo_url %}<img src="{{ logo_url }}" alt="Logo" class="max-h-full max-w-full object-contain">
@@ -77,9 +76,9 @@
                 <div class="flex-1">
                     <input type="file" name="logo" accept="image/png,image/jpeg,image/svg+xml"
                            class="block w-full text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-markenflaeche file:fw-marke file:fw-markenflaeche">
-                    <p class="text-xs fw-faint mt-1">PNG oder JPG, weisser Hintergrund wird transparent gemacht.</p>
+                    <p class="text-xs fw-faint mt-1">{% trans "PNG oder JPG, weisser Hintergrund wird transparent gemacht." %}</p>
                     {% if logo_url %}<label class="flex items-center gap-1.5 text-xs fw-kritisch mt-1.5 cursor-pointer">
-                        <input type="checkbox" name="logo_entfernen" value="1" class="fw-akzent-krit"> Logo entfernen</label>{% endif %}
+                        <input type="checkbox" name="logo_entfernen" value="1" class="fw-akzent-krit"> {% trans "Logo entfernen" %}</label>{% endif %}
                 </div>
             </div>
         </div>
@@ -87,20 +86,20 @@
         <div class="border-t fw-linie pt-4"></div>
         {% include 'fw/_unterschrift_feld.html' %}
         <div class="border-t fw-linie pt-4"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Firmenname</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Firmenname" %}</label>
             <input name="firma" value="{{ vw.firma }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr.</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse &amp; Nr." %}</label>
             <input name="strasse" value="{{ vw.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">PLZ</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "PLZ" %}</label>
                 <input name="plz" value="{{ vw.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Ort</label>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ort" %}</label>
                 <input name="ort" value="{{ vw.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
                 <input name="telefon" value="{{ vw.telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
                 <input name="email" value="{{ vw.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div><label class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
@@ -117,14 +116,14 @@
             Absicht: «nicht hinterlegt» ist eine Aussage, «CHF 0.00» waere
             eine falsche.
             {% endcomment %}
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Stundensatz (CHF/h)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Stundensatz (CHF/h)" %}</label>
                 <input name="stundensatz" value="{% localize off %}{{ vw.stundensatz|default_if_none:'' }}{% endlocalize %}"
-                       placeholder="leer = nicht hinterlegt"
+                       placeholder="{% trans 'leer = nicht hinterlegt' %}"
                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
-                <div class="text-[11px] fw-faint mt-1">Für separat verrechenbaren Aufwand. Leer lassen, wenn keiner vereinbart ist.</div>
+                <div class="text-[11px] fw-faint mt-1">{% trans "Für separat verrechenbaren Aufwand. Leer lassen, wenn keiner vereinbart ist." %}</div>
             </div>
         <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'gut' klasse='mr-1.5' %}Stammdaten speichern
+            {% zeichen 'gut' klasse='mr-1.5' %}{% trans "Stammdaten speichern" %}
         </button>
     </form>
 </div>
@@ -132,16 +131,16 @@
 {% if kann_reset %}
 <!-- Gefahrenzone -->
 <div id="gefahrenzone" class="fw-flaeche rounded-xl border fw-linie-krit p-5 mt-6">
-    <h3 class="font-bold fw-kritisch text-sm mb-1">{% zeichen 'warnung' klasse='mr-1.5' %}Gefahrenzone</h3>
-    <p class="text-sm fw-mutet mb-4">Löscht <span class="font-semibold">alle</span> Daten (Liegenschaften, Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. Benutzerkonten und Rollen bleiben erhalten. <span class="font-semibold fw-kritisch">Dieser Schritt kann nicht rückgängig gemacht werden.</span></p>
-    <form method="post" action="/neu/datenreset/" onsubmit="return confirm('Wirklich ALLE Daten unwiderruflich löschen und von vorne beginnen?');" class="flex flex-wrap items-end gap-3">
+    <h3 class="font-bold fw-kritisch text-sm mb-1">{% zeichen 'warnung' klasse='mr-1.5' %}{% trans "Gefahrenzone" %}</h3>
+    <p class="text-sm fw-mutet mb-4">{% blocktrans trimmed %}Löscht <span class="font-semibold">alle</span> Daten (Liegenschaften, Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. Benutzerkonten und Rollen bleiben erhalten.{% endblocktrans %} <span class="font-semibold fw-kritisch">{% trans "Dieser Schritt kann nicht rückgängig gemacht werden." %}</span></p>
+    <form method="post" action="/neu/datenreset/" onsubmit="return confirm('{% filter escapejs %}{% trans "Wirklich ALLE Daten unwiderruflich löschen und von vorne beginnen?" %}{% endfilter %}');" class="flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Zum Bestätigen «LÖSCHEN» eingeben</label>
-            <input name="bestaetigung" autocomplete="off" placeholder="LÖSCHEN" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5 w-48 border fw-linie-krit">
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zum Bestätigen «LÖSCHEN» eingeben" %}</label>
+            <input name="bestaetigung" autocomplete="off" placeholder="{% trans 'LÖSCHEN' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5 w-48 border fw-linie-krit">
         </div>
         <button class="fw-btn fw-gefahr text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'loeschen' klasse='mr-1.5' %}Alles löschen &amp; neu beginnen
+            {% zeichen 'loeschen' klasse='mr-1.5' %}{% trans "Alles löschen &amp; neu beginnen" %}
         </button>
     </form>
 </div>

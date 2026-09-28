@@ -22,6 +22,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext as _, gettext_lazy
 
 from core.auth import (darf_oeffnen, INHABER_ROLLEN, rolle_erforderlich, ROLLE_VERWALTER,
                        SCHREIB_ROLLEN, TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -885,31 +886,31 @@ def fw_integrationen(request):
         zweck=Postfach.ZWECK_RECHNUNGEN, aktiv=True).first()
 
     integrationen = [
-        {'key': 'email', 'name': 'E-Mail-Versand', 'icon': 'senden', 'farbe': 'indigo',
-         'aktiv': email_ok, 'status': 'Verbunden' if email_ok else 'Nicht konfiguriert',
-         'beschreibung': 'Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über deinen SMTP-Server.',
-         'detail': (getattr(dj_settings, 'EMAIL_HOST', '') or '') if email_ok else 'E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen.',
+        {'key': 'email', 'name': _('E-Mail-Versand'), 'icon': 'senden', 'farbe': 'indigo',
+         'aktiv': email_ok, 'status': _('Verbunden') if email_ok else _('Nicht konfiguriert'),
+         'beschreibung': _('Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über deinen SMTP-Server.'),
+         'detail': (getattr(dj_settings, 'EMAIL_HOST', '') or '') if email_ok else _('E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen.'),
          'aktion': 'test_email' if email_ok else None},
-        {'key': 'docuseal', 'name': 'DocuSeal — digitale Signatur', 'icon': 'vertrag', 'farbe': 'emerald',
-         'aktiv': gesetzt('DOCUSEAL_API_KEY'), 'status': 'Verbunden' if gesetzt('DOCUSEAL_API_KEY') else 'Nicht konfiguriert',
-         'beschreibung': 'Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt.',
-         'detail': 'Nutzbar über „An DocuSeal senden" auf der Vertrags-Detailseite.' if gesetzt('DOCUSEAL_API_KEY') else 'DOCUSEAL_API_KEY hinterlegen.',
+        {'key': 'docuseal', 'name': _('DocuSeal — digitale Signatur'), 'icon': 'vertrag', 'farbe': 'emerald',
+         'aktiv': gesetzt('DOCUSEAL_API_KEY'), 'status': _('Verbunden') if gesetzt('DOCUSEAL_API_KEY') else _('Nicht konfiguriert'),
+         'beschreibung': _('Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt.'),
+         'detail': _('Nutzbar über «An DocuSeal senden» auf der Vertrags-Detailseite.') if gesetzt('DOCUSEAL_API_KEY') else _('DOCUSEAL_API_KEY hinterlegen.'),
          'aktion': None},
-        {'key': 'ki', 'name': 'KI-Rechnungsscanner', 'icon': 'einstellungen', 'farbe': 'violet',
-         'aktiv': gesetzt('GROQ_API_KEY'), 'status': 'Verbunden' if gesetzt('GROQ_API_KEY') else 'Nicht konfiguriert',
-         'beschreibung': 'Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für Handwerker-Rechnungen.',
-         'detail': (('Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload). '
-                     + (f'E-Mail-Eingang aktiv: {rechnungs_postfach.benutzer} (fetch_rechnungen).'
+        {'key': 'ki', 'name': _('KI-Rechnungsscanner'), 'icon': 'einstellungen', 'farbe': 'violet',
+         'aktiv': gesetzt('GROQ_API_KEY'), 'status': _('Verbunden') if gesetzt('GROQ_API_KEY') else _('Nicht konfiguriert'),
+         'beschreibung': _('Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für Handwerker-Rechnungen.'),
+         'detail': ((_('Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload).') + ' '
+                     + (_('E-Mail-Eingang aktiv: %(postfach)s (fetch_rechnungen).') % {'postfach': rechnungs_postfach.benutzer}
                         if rechnungs_postfach
-                        else 'E-Mail-Eingang: Postfach in den Einstellungen hinterlegen '
-                             '+ Scheduled Task «manage.py fetch_rechnungen --einmal».'))
+                        else _('E-Mail-Eingang: Postfach in den Einstellungen hinterlegen '
+                               '+ Scheduled Task «manage.py fetch_rechnungen --einmal».')))
                     if gesetzt('GROQ_API_KEY')
-                    else 'GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung aus Text-PDFs.'),
+                    else _('GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung aus Text-PDFs.')),
          'aktion': None},
-        {'key': 'bank', 'name': 'Banken-Abgleich (camt.053 / QR)', 'icon': 'bank', 'farbe': 'sky',
-         'aktiv': True, 'status': 'Aktiv',
-         'beschreibung': 'Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per QR-Referenz den Debitoren zu.',
-         'detail': 'Nutzbar im Bereich Bankabgleich.',
+        {'key': 'bank', 'name': _('Banken-Abgleich (camt.053 / QR)'), 'icon': 'bank', 'farbe': 'sky',
+         'aktiv': True, 'status': _('Aktiv'),
+         'beschreibung': _('Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per QR-Referenz den Debitoren zu.'),
+         'detail': _('Nutzbar im Bereich Bankabgleich.'),
          'aktion': 'bank_link'},
     ]
     # Vermarktungs-Portale (Objekt-Feed)
@@ -1035,25 +1036,25 @@ def fw_integration_test_email(request):
 ABO_PLAENE = [
     {'key': 'start', 'name': 'Start', 'preis_einheit': Decimal('0.90'),
      'grund': Decimal('9'), 'gratis_bis': 3, 'farbe': 'slate',
-     'zielgruppe': 'Selbstverwalter & kleine Eigentümer',
-     'features': ['Objekte, Personen & Verträge', 'Vertrags-PDF & Dokumentenablage',
-                  'Mieterportal (Dokumente, QR-Rechnung, Schaden, Tickets)',
-                  'QR-Rechnung & Kontoauszug'],
-     'nicht': ['Buchhaltung & Zahlungsverkehr', 'Nebenkosten & MWST', 'Eigentümerportal']},
+     'zielgruppe': gettext_lazy('Selbstverwalter & kleine Eigentümer'),
+     'features': [gettext_lazy('Objekte, Personen & Verträge'), gettext_lazy('Vertrags-PDF & Dokumentenablage'),
+                  gettext_lazy('Mieterportal (Dokumente, QR-Rechnung, Schaden, Tickets)'),
+                  gettext_lazy('QR-Rechnung & Kontoauszug')],
+     'nicht': [gettext_lazy('Buchhaltung & Zahlungsverkehr'), gettext_lazy('Nebenkosten & MWST'), gettext_lazy('Eigentümerportal')]},
     {'key': 'pro', 'name': 'Pro', 'preis_einheit': Decimal('1.90'),
      'grund': Decimal('49'), 'gratis_bis': 0, 'farbe': 'indigo', 'empfohlen': True,
-     'zielgruppe': 'Liegenschaftsverwaltungen',
-     'features': ['Alles aus Start', 'Buchhaltung, Sollstellung & Mahnwesen',
-                  'camt.053-Import / pain.001-Export', 'Nebenkostenabrechnung & MWST',
-                  'Mietzinsanpassung (amtl. Formular, LIK/Referenzzins)',
-                  'Eigentümerportal & Reports', 'Serienbriefe & Schaden-/Handwerker-Flow'],
-     'nicht': ['Multi-Eigentuemer (voll)', 'KI-Analysen', 'API-Zugang']},
+     'zielgruppe': gettext_lazy('Liegenschaftsverwaltungen'),
+     'features': [gettext_lazy('Alles aus Start'), gettext_lazy('Buchhaltung, Sollstellung & Mahnwesen'),
+                  gettext_lazy('camt.053-Import / pain.001-Export'), gettext_lazy('Nebenkostenabrechnung & MWST'),
+                  gettext_lazy('Mietzinsanpassung (amtl. Formular, LIK/Referenzzins)'),
+                  gettext_lazy('Eigentümerportal & Reports'), gettext_lazy('Serienbriefe & Schaden-/Handwerker-Flow')],
+     'nicht': [gettext_lazy('Multi-Eigentümer (voll)'), gettext_lazy('KI-Analysen'), gettext_lazy('API-Zugang')]},
     {'key': 'premium', 'name': 'Premium', 'preis_einheit': Decimal('2.90'),
      'grund': Decimal('149'), 'gratis_bis': 0, 'farbe': 'purple',
-     'zielgruppe': 'Grössere Verwaltungen & Treuhänder',
-     'features': ['Alles aus Pro', 'Multi-Eigentuemer & Mandatsabrechnung',
-                  'KI-Analysen & Report-Assistent', 'DocuSeal-Vertragssignatur inkl.',
-                  'API-Zugang', 'Prioritäts-Support & Onboarding'],
+     'zielgruppe': gettext_lazy('Grössere Verwaltungen & Treuhänder'),
+     'features': [gettext_lazy('Alles aus Pro'), gettext_lazy('Multi-Eigentümer & Mandatsabrechnung'),
+                  gettext_lazy('KI-Analysen & Report-Assistent'), gettext_lazy('DocuSeal-Vertragssignatur inkl.'),
+                  gettext_lazy('API-Zugang'), gettext_lazy('Prioritäts-Support & Onboarding')],
      'nicht': []},
 ]
 
