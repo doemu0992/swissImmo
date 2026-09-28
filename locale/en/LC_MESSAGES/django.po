@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 00:47+0200\n"
+"POT-Creation-Date: 2026-09-29 00:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,7 +82,8 @@ msgid "Mietverhältnisse"
 msgstr "Tenancies"
 
 #: core/navigation.py:140 core/templates/fw/bewerbung_detail.html:59
-#: core/templates/fw/kontenplan.html:64 core/templates/fw/personen.html:3
+#: core/templates/fw/kontenplan.html:64 core/templates/fw/person_detail.html:11
+#: core/templates/fw/person_form.html:7 core/templates/fw/personen.html:3
 #: core/templates/fw/personen.html:9 core/templates/fw/suche.html:21
 msgid "Personen"
 msgstr "People"
@@ -511,6 +512,7 @@ msgstr "Sign in to the management cockpit."
 
 #: core/templates/core/login.html:177 core/templates/core/portal_login.html:179
 #: core/templates/fw/mandat_form.html:98
+#: core/templates/fw/person_detail.html:303
 msgid "Benutzername"
 msgstr "Username"
 
@@ -554,11 +556,17 @@ msgstr ""
 
 #: core/templates/core/mieter_daten.html:17
 #: core/templates/fw/mieterkonto.html:18
+#: core/templates/fw/person_detail.html:28
+#: core/templates/fw/person_form.html:62
 msgid "Person"
 msgstr "Person"
 
 #: core/templates/core/mieter_daten.html:19 core/templates/fw/benutzer.html:17
-#: core/templates/fw/personen.html:66
+#: core/templates/fw/person_detail.html:156
+#: core/templates/fw/person_detail.html:209
+#: core/templates/fw/person_detail.html:220
+#: core/templates/fw/person_form.html:220
+#: core/templates/fw/person_form.html:299 core/templates/fw/personen.html:66
 msgid "Name"
 msgstr "Name"
 
@@ -577,11 +585,16 @@ msgstr ""
 #: core/templates/core/mieter_daten.html:28
 #: core/templates/fw/dienstleister_detail.html:26
 #: core/templates/fw/mandat_detail.html:116 core/templates/fw/mandate.html:16
-#: core/templates/fw/personen.html:67
+#: core/templates/fw/person_detail.html:141
+#: core/templates/fw/person_detail.html:221
+#: core/templates/fw/person_form.html:122
+#: core/templates/fw/person_form.html:237 core/templates/fw/personen.html:67
 msgid "Kontakt"
 msgstr "Contact"
 
 #: core/templates/core/mieter_daten.html:30
+#: core/templates/fw/person_detail.html:146
+#: core/templates/fw/person_form.html:128
 msgid "Mobile"
 msgstr "Mobile"
 
@@ -591,6 +604,13 @@ msgstr "Mobile"
 #: core/templates/fw/dienstleister_detail.html:83
 #: core/templates/fw/mandat_detail.html:176
 #: core/templates/fw/mandat_form.html:37
+#: core/templates/fw/person_detail.html:42
+#: core/templates/fw/person_detail.html:144
+#: core/templates/fw/person_detail.html:210
+#: core/templates/fw/person_detail.html:520
+#: core/templates/fw/person_form.html:126
+#: core/templates/fw/person_form.html:221
+#: core/templates/fw/person_form.html:268
 #: core/templates/fw/schaden_detail.html:144
 msgid "Telefon"
 msgstr "Phone"
@@ -604,6 +624,11 @@ msgstr "Phone"
 #: core/templates/fw/dienstleister_detail.html:84
 #: core/templates/fw/mandat_detail.html:175
 #: core/templates/fw/mandat_form.html:27
+#: core/templates/fw/person_detail.html:43
+#: core/templates/fw/person_detail.html:143
+#: core/templates/fw/person_detail.html:520
+#: core/templates/fw/person_form.html:124
+#: core/templates/fw/person_form.html:222
 #: core/templates/fw/schaden_detail.html:143
 msgid "E-Mail"
 msgstr "Email"
@@ -615,6 +640,8 @@ msgstr "Message to the management"
 #: core/templates/core/mieter_daten.html:40
 #: core/templates/core/mieter_schaden.html:32
 #: core/templates/fw/objekt_ausschreiben.html:24
+#: core/templates/fw/person_form.html:155
+#: core/templates/fw/person_form.html:229
 msgid "(optional)"
 msgstr "(optional)"
 
@@ -790,6 +817,7 @@ msgstr ""
 #: core/templates/core/mieter_portal.html:65
 #: core/templates/core/portal.html:299 core/templates/fw/dashboard.html:348
 #: core/views/fw/listen.py:767 core/views/fw/listen.py:770
+#: core/views/fw/person.py:892
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s outstanding"
@@ -845,8 +873,9 @@ msgstr "Open invoices with QR payment slip to download."
 #: core/templates/fw/laeufe.html:20 core/templates/fw/lieferantenkonten.html:30
 #: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
 #: core/templates/fw/nebenkosten_detail.html:34
-#: core/templates/fw/schaeden.html:73 core/templates/fw/zahllauf.html:68
-#: core/templates/fw/zahllauf.html:150 core/views/fw/_basis.py:353
+#: core/templates/fw/person_detail.html:430 core/templates/fw/schaeden.html:73
+#: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
+#: core/views/fw/_basis.py:353
 msgid "Offen"
 msgstr "Open"
 
@@ -859,6 +888,7 @@ msgstr "due %(datum)s"
 #: core/templates/core/mieter_rechnungen.html:28
 #: core/templates/fw/lieferantenkonto.html:53
 #: core/templates/fw/mieterkonto.html:58
+#: core/templates/fw/person_detail.html:608
 msgid "überfällig"
 msgstr "overdue"
 
@@ -916,6 +946,8 @@ msgstr ""
 #: core/templates/fw/mietzins.html:59
 #: core/templates/fw/nebenkosten_detail.html:114
 #: core/templates/fw/objekt_form.html:25
+#: core/templates/fw/person_detail.html:372
+#: core/templates/fw/person_detail.html:471
 #: core/templates/fw/schaden_detail.html:41
 #: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
 #: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
@@ -995,6 +1027,7 @@ msgstr "reported %(zeit)s"
 
 #: core/templates/core/mieter_ticket_detail.html:31
 #: core/templates/fw/dienstleister_detail.html:200
+#: core/templates/fw/person_detail.html:553
 msgid "Verlauf"
 msgstr "History"
 
@@ -1248,6 +1281,7 @@ msgstr "Rooms / m²"
 #: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
 #: core/templates/fw/nebenkosten_detail.html:113
 #: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
+#: core/views/fw/person.py:898
 msgid "Mieter"
 msgstr "Tenant"
 
@@ -1500,6 +1534,7 @@ msgstr "Inbox active — fetch emails from this mailbox"
 #: core/templates/fw/liegenschaft_form.html:162
 #: core/templates/fw/mandat_form.html:76 core/templates/fw/mwst.html:117
 #: core/templates/fw/objekt_form.html:135
+#: core/templates/fw/person_form.html:314
 #: core/templates/fw/regelsatz_form.html:104
 #: core/templates/fw/vorlage_form.html:37
 msgid "Speichern"
@@ -1511,6 +1546,7 @@ msgstr "Save"
 #: core/templates/fw/kreditoren.html:307
 #: core/templates/fw/liegenschaft_form.html:164
 #: core/templates/fw/mandat_form.html:78 core/templates/fw/objekt_form.html:137
+#: core/templates/fw/person_form.html:316
 #: core/templates/fw/regelsatz_form.html:105
 #: core/templates/fw/vorlage_form.html:39
 #: core/templates/fw/weiterverrechnung.html:113
@@ -1570,7 +1606,9 @@ msgstr "Not set up — no emails are fetched for this purpose."
 #: core/templates/fw/kreditoren.html:242
 #: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_detail.html:125 core/templates/fw/mandate.html:36
-#: core/templates/fw/objekt_form.html:12 core/templates/fw/regelwerk.html:56
+#: core/templates/fw/objekt_form.html:12
+#: core/templates/fw/person_detail.html:53
+#: core/templates/fw/person_form.html:11 core/templates/fw/regelwerk.html:56
 #: core/templates/fw/vorlagen.html:37
 msgid "Bearbeiten"
 msgstr "Edit"
@@ -1597,7 +1635,8 @@ msgstr ""
 #: core/templates/fw/dokumente.html:94 core/templates/fw/hypotheken.html:115
 #: core/templates/fw/kreditoren.html:245 core/templates/fw/lebensdauer.html:60
 #: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
-#: core/templates/fw/pendenzen.html:73
+#: core/templates/fw/pendenzen.html:73 core/templates/fw/person_detail.html:490
+#: core/templates/fw/person_detail.html:543
 #: core/templates/fw/schaden_detail.html:389
 msgid "Löschen"
 msgstr "Delete"
@@ -1922,7 +1961,7 @@ msgstr "no date — avg. age not calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:531
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:567
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -2061,6 +2100,7 @@ msgstr "In final statement"
 #: core/templates/fw/kreditoren.html:13
 #: core/templates/fw/liegenschaften.html:16
 #: core/templates/fw/mandat_detail.html:128
+#: core/templates/fw/person_detail.html:62
 #: core/templates/fw/schaden_detail.html:56 core/templates/fw/schaeden.html:15
 #: core/templates/fw/vorlagen.html:10
 msgid "Mehr"
@@ -2291,6 +2331,7 @@ msgstr "Who"
 
 #: core/templates/fw/abwesenheiten.html:26
 #: core/templates/fw/buchhaltung.html:288 core/templates/fw/mieterkonto.html:72
+#: core/templates/fw/person_detail.html:372
 msgid "Von"
 msgstr "From"
 
@@ -2308,7 +2349,8 @@ msgstr "— none —"
 
 #: core/templates/fw/abwesenheiten.html:39
 #: core/templates/fw/fall_detail.html:110
-#: core/templates/fw/fall_detail.html:196 core/templates/fw/termine.html:35
+#: core/templates/fw/fall_detail.html:196
+#: core/templates/fw/person_detail.html:521 core/templates/fw/termine.html:35
 msgid "Notiz"
 msgstr "Note"
 
@@ -2316,6 +2358,7 @@ msgstr "Note"
 #: core/templates/fw/dienstleister.html:37 core/templates/fw/hypotheken.html:44
 #: core/templates/fw/mahnwesen.html:101
 #: core/templates/fw/mandat_detail.html:223
+#: core/templates/fw/person_detail.html:529
 msgid "Erfassen"
 msgstr "Record"
 
@@ -2467,7 +2510,7 @@ msgstr "PNG or JPG, a white background is made transparent."
 msgid "Logo entfernen"
 msgstr "Remove logo"
 
-#: core/templates/fw/account.html:89
+#: core/templates/fw/account.html:89 core/templates/fw/person_form.html:111
 msgid "Firmenname"
 msgstr "Company name"
 
@@ -2476,11 +2519,16 @@ msgid "Strasse &amp; Nr."
 msgstr "Street &amp; no."
 
 #: core/templates/fw/account.html:94 core/templates/fw/mandat_form.html:33
+#: core/templates/fw/person_detail.html:269
+#: core/templates/fw/person_form.html:144
+#: core/templates/fw/person_form.html:162
 msgid "PLZ"
 msgstr "Postcode"
 
 #: core/templates/fw/account.html:96 core/templates/fw/mandat_form.html:35
-#: core/templates/fw/mandate.html:17 core/templates/fw/termine.html:33
+#: core/templates/fw/mandate.html:17 core/templates/fw/person_detail.html:270
+#: core/templates/fw/person_form.html:146
+#: core/templates/fw/person_form.html:164 core/templates/fw/termine.html:33
 msgid "Ort"
 msgstr "Location"
 
@@ -2816,6 +2864,7 @@ msgstr "To match (open)"
 
 #: core/templates/fw/bankabgleich.html:25 core/templates/fw/debitoren.html:108
 #: core/templates/fw/finanzen.html:61 core/templates/fw/mieterkonto.html:47
+#: core/templates/fw/person_detail.html:424
 msgid "Offene Posten"
 msgstr "Open items"
 
@@ -3092,7 +3141,8 @@ msgid "Offene Posten abgleichen"
 msgstr "Match open items"
 
 #: core/templates/fw/bankabgleich.html:346
-#: core/templates/fw/kreditoren.html:164 core/templates/fw/zahllauf.html:67
+#: core/templates/fw/kreditoren.html:164
+#: core/templates/fw/person_detail.html:430 core/templates/fw/zahllauf.html:67
 #: core/views/fw/listen.py:56
 msgid "Fällig"
 msgstr "Due"
@@ -3349,6 +3399,7 @@ msgstr "New user"
 #: core/templates/fw/liegenschaft_form.html:16
 #: core/templates/fw/mandat_form.html:3 core/templates/fw/mandat_form.html:13
 #: core/templates/fw/objekt_form.html:5 core/templates/fw/objekt_form.html:17
+#: core/templates/fw/person_form.html:3 core/templates/fw/person_form.html:16
 #: core/templates/fw/vorlage_form.html:3 core/templates/fw/vorlage_form.html:13
 #, python-format
 msgid "%(name)s bearbeiten"
@@ -3373,11 +3424,13 @@ msgstr "Team member with access to the management."
 msgid "Benutzername *"
 msgstr "Username *"
 
-#: core/templates/fw/benutzer_form.html:25 core/templates/fw/schaeden.html:44
+#: core/templates/fw/benutzer_form.html:25
+#: core/templates/fw/person_form.html:71 core/templates/fw/schaeden.html:44
 msgid "Vorname"
 msgstr "First name"
 
-#: core/templates/fw/benutzer_form.html:27 core/templates/fw/schaeden.html:45
+#: core/templates/fw/benutzer_form.html:27
+#: core/templates/fw/person_form.html:73 core/templates/fw/schaeden.html:45
 msgid "Nachname"
 msgstr "Last name"
 
@@ -3543,6 +3596,8 @@ msgid "Score"
 msgstr "Score"
 
 #: core/templates/fw/bewerber_vergleich.html:41
+#: core/templates/fw/person_detail.html:190
+#: core/templates/fw/person_form.html:244
 msgid "Haushalt"
 msgstr "Household"
 
@@ -3639,14 +3694,21 @@ msgid "Personalien & Kontakt"
 msgstr "Personal details & contact"
 
 #: core/templates/fw/bewerbung_detail.html:34
+#: core/templates/fw/person_detail.html:167
+#: core/templates/fw/person_form.html:77
 msgid "Geburtsdatum"
 msgstr "Date of birth"
 
 #: core/templates/fw/bewerbung_detail.html:35
+#: core/templates/fw/person_detail.html:168
+#: core/templates/fw/person_form.html:79
 msgid "Zivilstand"
 msgstr "Marital status"
 
 #: core/templates/fw/bewerbung_detail.html:36
+#: core/templates/fw/person_detail.html:41
+#: core/templates/fw/person_detail.html:169
+#: core/templates/fw/person_form.html:98
 msgid "Nationalität"
 msgstr "Nationality"
 
@@ -3661,7 +3723,10 @@ msgstr "Mobile"
 #: core/templates/fw/bewerbung_detail.html:40
 #: core/templates/fw/liegenschaft_form.html:24
 #: core/templates/fw/mandat_detail.html:117
-#: core/templates/fw/mandat_detail.html:174 core/templates/fw/personen.html:68
+#: core/templates/fw/mandat_detail.html:174
+#: core/templates/fw/person_detail.html:145
+#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/person_form.html:300 core/templates/fw/personen.html:68
 msgid "Adresse"
 msgstr "Address"
 
@@ -3670,14 +3735,20 @@ msgid "Beruf & Finanzen"
 msgstr "Occupation & finances"
 
 #: core/templates/fw/bewerbung_detail.html:47
+#: core/templates/fw/person_detail.html:179
+#: core/templates/fw/person_form.html:196
 msgid "Erwerbsstatus"
 msgstr "Employment status"
 
 #: core/templates/fw/bewerbung_detail.html:48
+#: core/templates/fw/person_detail.html:180
+#: core/templates/fw/person_form.html:206
 msgid "Beruf"
 msgstr "Occupation"
 
 #: core/templates/fw/bewerbung_detail.html:49
+#: core/templates/fw/person_detail.html:181
+#: core/templates/fw/person_form.html:208
 msgid "Arbeitgeber"
 msgstr "Employer"
 
@@ -3717,6 +3788,8 @@ msgid "%(n)s Kinder"
 msgstr "%(n)s child(ren)"
 
 #: core/templates/fw/bewerbung_detail.html:60
+#: core/templates/fw/person_detail.html:194
+#: core/templates/fw/person_form.html:251
 msgid "Haustiere"
 msgstr "Pets"
 
@@ -4047,6 +4120,7 @@ msgid "z.B. Hauswartung, 2024-0042"
 msgstr "e.g. caretaking, 2024-0042"
 
 #: core/templates/fw/buchhaltung.html:292 core/templates/fw/mieterkonto.html:74
+#: core/templates/fw/person_detail.html:372
 msgid "Bis"
 msgstr "To"
 
@@ -4243,6 +4317,7 @@ msgid "heute"
 msgstr "today"
 
 #: core/templates/fw/dashboard.html:257 core/templates/fw/laeufe.html:34
+#: core/templates/fw/person_detail.html:608
 #, python-format
 msgid "in %(n)s Tag"
 msgid_plural "in %(n)s Tagen"
@@ -4458,12 +4533,14 @@ msgid "Debitoren nach Mieter oder Titel durchsuchen"
 msgstr "Search debtors by tenant or title"
 
 #: core/templates/fw/debitoren.html:156 core/templates/fw/mieterwechsel.html:13
+#: core/templates/fw/person_detail.html:114
 #: core/templates/fw/schaden_detail.html:231
 msgid "offen"
 msgstr "open"
 
 #: core/templates/fw/debitoren.html:161 core/templates/fw/debitoren.html:223
-#: core/templates/fw/dokumente.html:25
+#: core/templates/fw/dokumente.html:25 core/templates/fw/person_detail.html:470
+#: core/templates/fw/person_detail.html:559
 msgid "Vertrag"
 msgstr "Lease"
 
@@ -4498,7 +4575,7 @@ msgid "Fälligkeit"
 msgstr "Due date"
 
 #: core/templates/fw/debitoren.html:194 core/templates/fw/dokumente.html:21
-#: core/templates/fw/termine.html:23
+#: core/templates/fw/person_detail.html:430 core/templates/fw/termine.html:23
 #: core/templates/fw/weiterverrechnung.html:37
 #: core/templates/fw/weiterverrechnung.html:77
 msgid "Titel"
@@ -4508,6 +4585,7 @@ msgstr "Title"
 #: core/templates/fw/ersatzplanung.html:112 core/templates/fw/kautionen.html:28
 #: core/templates/fw/kreditoren.html:166 core/templates/fw/mieterkonten.html:48
 #: core/templates/fw/nebenkosten.html:74
+#: core/templates/fw/person_detail.html:373
 #: core/templates/fw/schaden_detail.html:113 core/templates/fw/schaeden.html:96
 #: core/templates/fw/sollstellung.html:87 core/templates/fw/vertraege.html:75
 msgid "Status"
@@ -4715,6 +4793,8 @@ msgstr "Cleaning company"
 #: core/templates/fw/dienstleister_detail.html:81
 #: core/templates/fw/mandat_detail.html:173
 #: core/templates/fw/mandat_form.html:25
+#: core/templates/fw/person_detail.html:158
+#: core/templates/fw/person_form.html:115
 msgid "Kontaktperson"
 msgstr "Contact person"
 
@@ -4933,7 +5013,7 @@ msgstr "Category"
 msgid "Protokoll"
 msgstr "Log"
 
-#: core/templates/fw/dokumente.html:26
+#: core/templates/fw/dokumente.html:26 core/templates/fw/person_detail.html:280
 msgid "Korrespondenz"
 msgstr "Correspondence"
 
@@ -4974,11 +5054,12 @@ msgstr "Context"
 msgid "Ablage"
 msgstr "Filing"
 
-#: core/templates/fw/dokumente.html:89
+#: core/templates/fw/dokumente.html:89 core/templates/fw/person_detail.html:488
+#: core/templates/fw/person_form.html:37
 msgid "Öffnen"
 msgstr "Open"
 
-#: core/templates/fw/dokumente.html:91
+#: core/templates/fw/dokumente.html:91 core/templates/fw/person_detail.html:489
 #, python-format
 msgid "Dokument «%(name)s» löschen?"
 msgstr "Delete document «%(name)s»?"
@@ -5603,6 +5684,7 @@ msgid "Abschluss"
 msgstr "Closing"
 
 #: core/templates/fw/fristen.html:3 core/templates/fw/fristen.html:6
+#: core/templates/fw/person_detail.html:602
 msgid "Fristen-Center"
 msgstr "Deadline centre"
 
@@ -5924,7 +6006,9 @@ msgid "Mieter / Objekt"
 msgstr "Tenant / unit"
 
 #: core/templates/fw/kautionen.html:27 core/templates/fw/logbuch.html:59
-#: core/templates/fw/termine.html:25
+#: core/templates/fw/person_detail.html:219
+#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/person_form.html:231 core/templates/fw/termine.html:25
 msgid "Art"
 msgstr "Type"
 
@@ -6833,6 +6917,7 @@ msgstr "Owed to supplier"
 
 #: core/templates/fw/lieferantenkonto.html:33
 #: core/templates/fw/mieterkonten.html:65 core/templates/fw/mieterkonto.html:37
+#: core/templates/fw/person_detail.html:114
 msgid "ausgeglichen"
 msgstr "settled"
 
@@ -6876,7 +6961,7 @@ msgid "Verlauf — wer hat was gemacht"
 msgstr "History — who did what"
 
 #: core/templates/fw/lieferantenkonto.html:121
-#: core/templates/fw/logbuch.html:117
+#: core/templates/fw/logbuch.html:117 core/templates/fw/person_detail.html:563
 msgid "System"
 msgstr "System"
 
@@ -6930,6 +7015,7 @@ msgid "Kataster-Nr."
 msgstr "Cadastre no."
 
 #: core/templates/fw/liegenschaft_form.html:54
+#: core/templates/fw/person_detail.html:39
 #: core/templates/fw/schaden_detail.html:39
 msgid "Betreut von"
 msgstr "Managed by"
@@ -7024,7 +7110,9 @@ msgstr "Import units automatically"
 msgid ""
 "Ermittelt die EGID aus der Adresse und lädt die Wohnungen automatisch aus "
 "dem eidgenössischen Gebäude- und Wohnungsregister (GWR)."
-msgstr "Determines the EGID from the address and loads the flats automatically from the Federal Register of Buildings and Dwellings (GWR)."
+msgstr ""
+"Determines the EGID from the address and loads the flats automatically from "
+"the Federal Register of Buildings and Dwellings (GWR)."
 
 #: core/templates/fw/liegenschaft_form.html:125
 msgid "Bank, Mietzinskonto & Notfallkontakte"
@@ -7079,7 +7167,9 @@ msgstr "%% (rest = consumption, by heat meters)"
 msgid ""
 "Bei aktiver HKVO werden die Heizkosten in Grundkosten (nach m³) und "
 "Verbrauchskosten (nach Zählerständen der Wärmezähler) aufgeteilt."
-msgstr "With HKVO active, heating costs are split into base costs (by m³) and consumption costs (by heat meter readings)."
+msgstr ""
+"With HKVO active, heating costs are split into base costs (by m³) and "
+"consumption costs (by heat meter readings)."
 
 #: core/templates/fw/liegenschaften.html:11
 #, python-format
@@ -7548,6 +7638,7 @@ msgstr ""
 "very meaningful."
 
 #: core/templates/fw/mandat_detail.html:113
+#: core/templates/fw/person_detail.html:358
 msgid "Mandat"
 msgstr "Mandate"
 
@@ -7614,11 +7705,14 @@ msgid "Bank und Honorar"
 msgstr "Bank and fee"
 
 #: core/templates/fw/mandat_detail.html:186
+#: core/templates/fw/person_detail.html:231
+#: core/templates/fw/person_form.html:291
 msgid "Bank"
 msgstr "Bank"
 
 #: core/templates/fw/mandat_detail.html:189
 #: core/templates/fw/mieterkonten.html:59
+#: core/templates/fw/person_detail.html:301
 msgid "aktiv"
 msgstr "active"
 
@@ -7684,7 +7778,7 @@ msgstr "Owner master data and assignment of properties."
 msgid "Name / Firma *"
 msgstr "Name / company *"
 
-#: core/templates/fw/mandat_form.html:30
+#: core/templates/fw/mandat_form.html:30 core/templates/fw/person_form.html:139
 msgid "Strasse & Nr."
 msgstr "Street & no."
 
@@ -7837,6 +7931,7 @@ msgid "Kontoblatt %(name)s"
 msgstr "Account ledger %(name)s"
 
 #: core/templates/fw/mieterkonto.html:13
+#: core/templates/fw/person_detail.html:426
 msgid "Kontoblatt"
 msgstr "Account ledger"
 
@@ -7934,7 +8029,8 @@ msgid "Einheit"
 msgstr "Unit"
 
 #: core/templates/fw/mieterspiegel.html:67
-#: core/templates/fw/objekt_form.html:107 core/templates/fw/vertraege.html:52
+#: core/templates/fw/objekt_form.html:107
+#: core/templates/fw/person_detail.html:373 core/templates/fw/vertraege.html:52
 #: core/templates/fw/vertraege.html:74
 msgid "Brutto"
 msgstr "Gross"
@@ -8655,7 +8751,9 @@ msgstr "standalone unit"
 msgid ""
 "Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben "
 "Liegenschaft zu."
-msgstr "Assigns this unit (e.g. indoor parking space) to a main rental unit of the same property."
+msgstr ""
+"Assigns this unit (e.g. indoor parking space) to a main rental unit of the "
+"same property."
 
 #: core/templates/fw/objekt_form.html:89
 msgid "Anfangs-Nettomiete (CHF)"
@@ -8666,6 +8764,7 @@ msgid "Nebenkosten (CHF)"
 msgstr "Service charges (CHF)"
 
 #: core/templates/fw/objekt_form.html:93 core/templates/fw/objekt_form.html:104
+#: core/templates/fw/person_detail.html:276
 msgid "Gültig ab"
 msgstr "Valid from"
 
@@ -8675,14 +8774,21 @@ msgid ""
 "Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du "
 "danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, "
 "Mieterspiegel und Bilanz)."
-msgstr "Optional <b>initial rent</b> — stored as the first dated target-rent line. Later adjustments, free months or discounts are recorded afterwards in the <b>«Rent»</b> tab (the single source for billing, rent roll and balance sheet)."
+msgstr ""
+"Optional <b>initial rent</b> — stored as the first dated target-rent line. "
+"Later adjustments, free months or discounts are recorded afterwards in the "
+"<b>«Rent»</b> tab (the single source for billing, rent roll and balance "
+"sheet)."
 
 #: core/templates/fw/objekt_form.html:98
 msgid ""
 "Der Mietzins wird ausschliesslich als <b>datierter Sollmietzins</b> gepflegt "
 "(inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und "
 "Bilanz konsistent. Hier ist er nur zur Ansicht."
-msgstr "Rent is maintained exclusively as <b>dated target rent</b> (incl. free months/discount) — this keeps billing, rent roll and balance sheet consistent. Here it is view-only."
+msgstr ""
+"Rent is maintained exclusively as <b>dated target rent</b> (incl. free "
+"months/discount) — this keeps billing, rent roll and balance sheet "
+"consistent. Here it is view-only."
 
 #: core/templates/fw/objekt_form.html:124
 msgid "Noch kein Sollmietzins erfasst."
@@ -8693,6 +8799,8 @@ msgid "Mietzins verwalten (Gratismonate, Anpassungen)"
 msgstr "Manage rent (free months, adjustments)"
 
 #: core/templates/fw/objekt_form.html:129
+#: core/templates/fw/person_detail.html:241
+#: core/templates/fw/person_form.html:308
 msgid "Interne Notizen"
 msgstr "Internal notes"
 
@@ -8822,6 +8930,774 @@ msgstr "New to-do"
 #: core/templates/fw/pendenzen.html:126
 msgid "Pendenz erfassen"
 msgstr "Record to-do"
+
+#: core/templates/fw/person_detail.html:40
+msgid "Geboren"
+msgstr "Born"
+
+#: core/templates/fw/person_detail.html:44
+msgid "Sprache"
+msgstr "Language"
+
+#: core/templates/fw/person_detail.html:52
+msgid "Nachricht"
+msgstr "Message"
+
+#: core/templates/fw/person_detail.html:74
+#, python-format
+msgid ""
+"Person „%(name)s“ wirklich löschen? Achtung: es besteht ein aktiver Vertrag "
+"– die Löschung wird blockiert."
+msgstr ""
+"Really delete person “%(name)s”? Caution: an active contract exists – "
+"deletion is blocked."
+
+#: core/templates/fw/person_detail.html:74
+#, python-format
+msgid ""
+"Person „%(name)s“ wirklich löschen? Beendete/Entwurf-Verträge, Journal und "
+"Dokumente dieser Person werden mitgelöscht."
+msgstr ""
+"Really delete person “%(name)s”? Ended/draft contracts, journal and "
+"documents of this person will be deleted too."
+
+#: core/templates/fw/person_detail.html:76
+msgid "Person löschen"
+msgstr "Delete person"
+
+#: core/templates/fw/person_detail.html:98
+msgid "Die Person ist die Klammer, nicht der Arbeitsort"
+msgstr "The person is the bracket, not the workplace"
+
+#: core/templates/fw/person_detail.html:99
+msgid ""
+"Konto, Fristen, Kaution und Nebenkosten hängen am Mietverhältnis — sonst "
+"wäre bei zwei Mietverhältnissen nicht bestimmbar, welches Konto gemeint ist. "
+"Hier stehen Identität, Kontaktweg und die Verbindungen über die Zeit."
+msgstr ""
+"Account, deadlines, deposit and service charges belong to the tenancy — "
+"otherwise, with two tenancies, it would be unclear which account is meant. "
+"Here you find identity, contact channel and links over time."
+
+#: core/templates/fw/person_detail.html:107
+msgid "Über alle Mietverhältnisse"
+msgstr "Across all tenancies"
+
+#: core/templates/fw/person_detail.html:109
+#, python-format
+msgid "%(n)s Jahre Mieter"
+msgstr "Tenant for %(n)s years"
+
+#: core/templates/fw/person_detail.html:109
+msgid "Noch kein Mietverhältnis"
+msgstr "No tenancy yet"
+
+#: core/templates/fw/person_detail.html:110
+#, python-format
+msgid "%(n)s Verhältnis"
+msgid_plural "%(n)s Verhältnisse"
+msgstr[0] "%(n)s relationship"
+msgstr[1] "%(n)s relationships"
+
+#: core/templates/fw/person_detail.html:112
+#, python-format
+msgid "CHF %(b)s offen"
+msgstr "CHF %(b)s open"
+
+#: core/templates/fw/person_detail.html:113
+msgid "über alle Verhältnisse"
+msgstr "across all relationships"
+
+#: core/templates/fw/person_detail.html:115
+msgid "Kennzahlen zur Person, nicht zum Konto"
+msgstr "Key figures for the person, not the account"
+
+#: core/templates/fw/person_detail.html:116
+msgid "Zu den Mietverhältnissen"
+msgstr "To the tenancies"
+
+#: core/templates/fw/person_detail.html:147
+msgid "Telefon Privat"
+msgstr "Private phone"
+
+#: core/templates/fw/person_detail.html:148
+#: core/templates/fw/person_form.html:130
+msgid "Telefon Geschäft"
+msgstr "Business phone"
+
+#: core/templates/fw/person_detail.html:149
+#: core/templates/fw/person_form.html:89
+msgid "Korrespondenzsprache"
+msgstr "Correspondence language"
+
+#: core/templates/fw/person_detail.html:154
+#: core/templates/fw/person_form.html:109
+msgid "Firma / Organisation"
+msgstr "Company / organisation"
+
+#: core/templates/fw/person_detail.html:157
+msgid "UID / MWST-Nr."
+msgstr "UID / VAT no."
+
+#: core/templates/fw/person_detail.html:165
+msgid "Stammdaten &amp; Herkunft"
+msgstr "Master data &amp; origin"
+
+#: core/templates/fw/person_detail.html:170
+msgid "Bewilligung"
+msgstr "Permit"
+
+#: core/templates/fw/person_detail.html:170
+#, python-format
+msgid "bis %(d)s"
+msgstr "until %(d)s"
+
+#: core/templates/fw/person_detail.html:171
+msgid "AHV-Nr."
+msgstr "AHV no."
+
+#: core/templates/fw/person_detail.html:177
+msgid "Beruf &amp; Bonität"
+msgstr "Occupation &amp; creditworthiness"
+
+#: core/templates/fw/person_detail.html:182
+msgid "Jahreseinkommen"
+msgstr "Annual income"
+
+#: core/templates/fw/person_detail.html:183
+msgid "Betreibungsauszug"
+msgstr "Debt enforcement extract"
+
+#: core/templates/fw/person_detail.html:184
+msgid "Ref. Vorvermieter"
+msgstr "Prev. landlord ref."
+
+#: core/templates/fw/person_detail.html:192
+#: core/templates/fw/person_form.html:246
+msgid "Erwachsene"
+msgstr "Adults"
+
+#: core/templates/fw/person_detail.html:193
+#: core/templates/fw/person_form.html:248
+msgid "Kinder"
+msgstr "Children"
+
+#: core/templates/fw/person_detail.html:200
+msgid "Versicherung &amp; Notfall"
+msgstr "Insurance &amp; emergency"
+
+#: core/templates/fw/person_detail.html:203
+msgid "Haftpflicht"
+msgstr "Liability"
+
+#: core/templates/fw/person_detail.html:204
+msgid "Gesellschaft"
+msgstr "Company"
+
+#: core/templates/fw/person_detail.html:205
+msgid "Police-Nr."
+msgstr "Policy no."
+
+#: core/templates/fw/person_detail.html:208
+msgid "Notfallkontakt"
+msgstr "Emergency contact"
+
+#: core/templates/fw/person_detail.html:217
+#: core/templates/fw/person_form.html:229
+msgid "Vertretung / Beistand"
+msgstr "Representative / deputy"
+
+#: core/templates/fw/person_detail.html:228
+#: core/templates/fw/person_form.html:279
+msgid "Zahlungsverkehr"
+msgstr "Payments"
+
+#: core/templates/fw/person_detail.html:232
+#: core/templates/fw/person_form.html:281
+msgid "Zahlungsart"
+msgstr "Payment method"
+
+#: core/templates/fw/person_detail.html:233
+msgid "eBill / E-Rechnung"
+msgstr "eBill / e-invoice"
+
+#: core/templates/fw/person_detail.html:234
+msgid "Mahnsperre"
+msgstr "Reminder block"
+
+#: core/templates/fw/person_detail.html:234
+msgid "aktiv (Zahlungsvereinbarung)"
+msgstr "active (payment arrangement)"
+
+#: core/templates/fw/person_detail.html:235
+msgid "Abw. Zahler"
+msgstr "Alt. payer"
+
+#: core/templates/fw/person_detail.html:246
+msgid "Aktuelle Vermietung"
+msgstr "Current tenancy"
+
+#: core/templates/fw/person_detail.html:252
+msgid "Kein aktiver Vertrag."
+msgstr "No active contract."
+
+#: core/templates/fw/person_detail.html:257
+msgid "Adressverlauf"
+msgstr "Address history"
+
+#: core/templates/fw/person_detail.html:259
+msgid "Adresse hinzufügen"
+msgstr "Add address"
+
+#: core/templates/fw/person_detail.html:263
+#: core/templates/fw/person_detail.html:281
+#: core/templates/fw/person_form.html:137
+msgid "Wohnadresse"
+msgstr "Home address"
+
+#: core/templates/fw/person_detail.html:264
+#: core/templates/fw/person_form.html:155
+msgid "Korrespondenzadresse"
+msgstr "Correspondence address"
+
+#: core/templates/fw/person_detail.html:267
+msgid "Strasse &amp; Nr. / c/o"
+msgstr "Street &amp; no. / c/o"
+
+#: core/templates/fw/person_detail.html:268
+#: core/templates/fw/person_form.html:141
+#: core/templates/fw/person_form.html:159
+msgid "Adresszusatz"
+msgstr "Address addition"
+
+#: core/templates/fw/person_detail.html:271
+msgid "Adress-Zeile speichern"
+msgstr "Save address line"
+
+#: core/templates/fw/person_detail.html:276
+msgid "Quelle"
+msgstr "Source"
+
+#: core/templates/fw/person_detail.html:286
+msgid "Diese Adress-Zeile entfernen?"
+msgstr "Remove this address line?"
+
+#: core/templates/fw/person_detail.html:287
+msgid "Adresszeile löschen"
+msgstr "Delete address line"
+
+#: core/templates/fw/person_detail.html:292
+msgid "Noch keine datierten Adress-Zeilen."
+msgstr "No dated address lines yet."
+
+#: core/templates/fw/person_detail.html:296
+msgid ""
+"Datierte Adress-Zeilen («gültig ab») wie beim Sollmietzins. Die zum Stichtag "
+"gültige Zeile ergibt die effektive Zustelladresse — eine "
+"Korrespondenzadresse hat dabei Vorrang vor der Wohnadresse."
+msgstr ""
+"Dated address lines (“valid from”) as for target rent. The line valid on the "
+"reference date gives the effective delivery address — a correspondence "
+"address takes precedence over the home address."
+
+#: core/templates/fw/person_detail.html:300
+msgid "Mieterportal-Zugang"
+msgstr "Tenant portal access"
+
+#: core/templates/fw/person_detail.html:301
+msgid "deaktiviert"
+msgstr "deactivated"
+
+#: core/templates/fw/person_detail.html:305
+#, python-format
+msgid ""
+"Login unter <span class=\"font-mono\">/login/</span>. „Passwort "
+"zurücksetzen“ erzeugt ein neues Passwort und sendet es an %(email)s."
+msgstr ""
+"Login at <span class=\"font-mono\">/login/</span>. “Reset password” "
+"generates a new password and sends it to %(email)s."
+
+#: core/templates/fw/person_detail.html:306
+msgid ""
+"Login unter <span class=\"font-mono\">/login/</span>. „Passwort "
+"zurücksetzen“ erzeugt ein neues Passwort und sendet es — keine E-Mail "
+"hinterlegt, es wird angezeigt."
+msgstr ""
+"Login at <span class=\"font-mono\">/login/</span>. “Reset password” "
+"generates a new password — no email stored, it is shown."
+
+#: core/templates/fw/person_detail.html:309
+msgid ""
+"Neues Passwort erzeugen und an den Mieter senden? Das alte wird ungültig."
+msgstr ""
+"Generate a new password and send it to the tenant? The old one becomes "
+"invalid."
+
+#: core/templates/fw/person_detail.html:309
+msgid "Neues Passwort erzeugen und anzeigen? Das alte wird ungültig."
+msgstr "Generate and show a new password? The old one becomes invalid."
+
+#: core/templates/fw/person_detail.html:311
+msgid "Passwort zurücksetzen &amp; senden"
+msgstr "Reset password &amp; send"
+
+#: core/templates/fw/person_detail.html:313
+msgid "Portal-Zugang deaktivieren?"
+msgstr "Deactivate portal access?"
+
+#: core/templates/fw/person_detail.html:315
+msgid "Zugang deaktivieren"
+msgstr "Deactivate access"
+
+#: core/templates/fw/person_detail.html:320
+msgid "Kein Portal-Zugang"
+msgstr "No portal access"
+
+#: core/templates/fw/person_detail.html:321
+msgid ""
+"Erstellen Sie einen Login, damit der Mieter Vertrag, offene Rechnungen (QR), "
+"Kontoauszug, Dokumente und Schadenmeldung online nutzen kann."
+msgstr ""
+"Create a login so the tenant can use their contract, open invoices (QR), "
+"statement, documents and damage reporting online."
+
+#: core/templates/fw/person_detail.html:322
+#, python-format
+msgid "Die Zugangsdaten gehen automatisch an %(email)s."
+msgstr "The credentials are sent automatically to %(email)s."
+
+#: core/templates/fw/person_detail.html:322
+msgid ""
+"Keine E-Mail hinterlegt — die Zugangsdaten werden hier einmalig angezeigt."
+msgstr "No email stored — the credentials are shown here once."
+
+#: core/templates/fw/person_detail.html:327
+msgid "Portal-Zugang erstellen"
+msgstr "Create portal access"
+
+#: core/templates/fw/person_detail.html:327
+msgid "&amp; per E-Mail senden"
+msgstr "&amp; send by email"
+
+#: core/templates/fw/person_detail.html:345
+msgid "Rollen über die Zeit"
+msgstr "Roles over time"
+
+#: core/templates/fw/person_detail.html:346
+#, python-format
+msgid "%(n)s Verbindung"
+msgid_plural "%(n)s Verbindungen"
+msgstr[0] "%(n)s link"
+msgstr[1] "%(n)s links"
+
+#: core/templates/fw/person_detail.html:358
+#, python-format
+msgid "CHF %(b)s brutto"
+msgstr "CHF %(b)s gross"
+
+#: core/templates/fw/person_detail.html:360
+msgid "laufend"
+msgstr "ongoing"
+
+#: core/templates/fw/person_detail.html:363
+msgid "Keine Verbindungen erfasst."
+msgstr "No links recorded."
+
+#: core/templates/fw/person_detail.html:369
+msgid "Mietverhältnisse im Einzelnen"
+msgstr "Tenancies in detail"
+
+#: core/templates/fw/person_detail.html:386
+msgid "Keine Verträge."
+msgstr "No contracts."
+
+#: core/templates/fw/person_detail.html:406
+#, python-format
+msgid "Offener Betrag: CHF %(b)s"
+msgstr "Open amount: CHF %(b)s"
+
+#: core/templates/fw/person_detail.html:437
+msgid "Keine offenen Posten. 🎉"
+msgstr "No open items. 🎉"
+
+#: core/templates/fw/person_detail.html:444
+msgid "Zahlungseingänge"
+msgstr "Payments received"
+
+#: core/templates/fw/person_detail.html:452
+msgid "Noch keine Zahlungen."
+msgstr "No payments yet."
+
+#: core/templates/fw/person_detail.html:461
+msgid ""
+"Nach Mietverhältnis gruppiert. Das Auge steuert, ob der Mieter das Dokument "
+"im Portal sieht. Grün = sichtbar, grau = ausgeblendet."
+msgstr ""
+"Grouped by tenancy. The eye controls whether the tenant sees the document in "
+"the portal. Green = visible, grey = hidden."
+
+#: core/templates/fw/person_detail.html:468
+#, python-format
+msgid "%(n)s Dokument"
+msgid_plural "%(n)s Dokumente"
+msgstr[0] "%(n)s document"
+msgstr[1] "%(n)s documents"
+
+#: core/templates/fw/person_detail.html:496
+msgid "Keine Dokumente hinterlegt."
+msgstr "No documents stored."
+
+#: core/templates/fw/person_detail.html:504
+msgid "Kontaktjournal"
+msgstr "Contact journal"
+
+#: core/templates/fw/person_detail.html:513
+msgid "Notiz / Kontakt erfassen"
+msgstr "Record note / contact"
+
+#: core/templates/fw/person_detail.html:521
+msgid "Brief"
+msgstr "Letter"
+
+#: core/templates/fw/person_detail.html:521
+msgid "Persönlich"
+msgstr "In person"
+
+#: core/templates/fw/person_detail.html:524
+msgid "Eingehend"
+msgstr "Incoming"
+
+#: core/templates/fw/person_detail.html:524
+msgid "Ausgehend"
+msgstr "Outgoing"
+
+#: core/templates/fw/person_detail.html:524
+msgid "Intern"
+msgstr "Internal"
+
+#: core/templates/fw/person_detail.html:526
+msgid "Betreff (optional)"
+msgstr "Subject (optional)"
+
+#: core/templates/fw/person_detail.html:528
+msgid "Was wurde besprochen?"
+msgstr "What was discussed?"
+
+#: core/templates/fw/person_detail.html:542
+msgid "Journal-Eintrag löschen?"
+msgstr "Delete journal entry?"
+
+#: core/templates/fw/person_detail.html:547
+msgid "Noch keine Einträge im Kontaktjournal."
+msgstr "No entries in the contact journal yet."
+
+#: core/templates/fw/person_detail.html:553
+msgid "Aktionen zu dieser Person &amp; ihren Verträgen"
+msgstr "Actions on this person &amp; their contracts"
+
+#: core/templates/fw/person_detail.html:566
+msgid "Noch keine protokollierten Aktionen zu dieser Person."
+msgstr "No logged actions for this person yet."
+
+#: core/templates/fw/person_detail.html:568
+msgid ""
+"Vollständiges Logbuch aller Objekte unter <a href=\"/neu/logbuch/\" "
+"class=\"fw-link\">Profil → Logbuch</a>."
+msgstr ""
+"Full log of all units under <a href=\"/neu/logbuch/\" class=\"fw-"
+"link\">Profile → Log</a>."
+
+#: core/templates/fw/person_detail.html:577
+msgid "Fälle zu dieser Person"
+msgstr "Cases for this person"
+
+#: core/templates/fw/person_detail.html:589
+msgid "Zu dieser Person läuft kein Fall."
+msgstr "No case is running for this person."
+
+#: core/templates/fw/person_detail.html:598
+msgid "Offene Fristen aus den Mietverhältnissen"
+msgstr "Open deadlines from the tenancies"
+
+#: core/templates/fw/person_detail.html:601
+msgid "Fristen &amp; Pendenzen"
+msgstr "Deadlines &amp; to-dos"
+
+#: core/templates/fw/person_detail.html:608
+msgid "provisorisch"
+msgstr "provisional"
+
+#: core/templates/fw/person_detail.html:619
+msgid "Keine offenen Fristen."
+msgstr "No open deadlines."
+
+#: core/templates/fw/person_form.html:3 core/templates/fw/person_form.html:11
+msgid "Neue Person"
+msgstr "New person"
+
+#: core/templates/fw/person_form.html:16
+msgid "Neue Person erfassen"
+msgstr "Record new person"
+
+#: core/templates/fw/person_form.html:17
+msgid "Kontakt- und Adressdaten. Pflichtfelder sind markiert."
+msgstr "Contact and address data. Required fields are marked."
+
+#: core/templates/fw/person_form.html:29
+msgid "Mögliche Dublette gefunden"
+msgstr "Possible duplicate found"
+
+#: core/templates/fw/person_form.html:30
+msgid ""
+"Es existieren bereits ähnliche Personen. Bitte prüfen Sie, ob es sich um "
+"dieselbe Person handelt"
+msgstr ""
+"Similar people already exist. Please check whether it is the same person"
+
+#: core/templates/fw/person_form.html:42
+msgid ""
+"Ist es dennoch eine neue Person? Dann unten auf „Trotzdem speichern“ klicken."
+msgstr "Is it a new person after all? Then click “Save anyway” below."
+
+#: core/templates/fw/person_form.html:50
+msgid "Kunden-Typ"
+msgstr "Customer type"
+
+#: core/templates/fw/person_form.html:53
+msgid "Privatperson"
+msgstr "Private person"
+
+#: core/templates/fw/person_form.html:54
+msgid "Firma / Unternehmen"
+msgstr "Company / business"
+
+#: core/templates/fw/person_form.html:55
+msgid "Verein / Stiftung"
+msgstr "Association / foundation"
+
+#: core/templates/fw/person_form.html:64
+msgid "Anrede"
+msgstr "Salutation"
+
+#: core/templates/fw/person_form.html:67
+msgid "Herr"
+msgstr "Mr"
+
+#: core/templates/fw/person_form.html:68
+msgid "Frau"
+msgstr "Ms"
+
+#: core/templates/fw/person_form.html:69
+msgid "Familie"
+msgstr "Family"
+
+#: core/templates/fw/person_form.html:82
+msgid "ledig"
+msgstr "single"
+
+#: core/templates/fw/person_form.html:83
+msgid "verheiratet"
+msgstr "married"
+
+#: core/templates/fw/person_form.html:84
+msgid "eingetragene Partnerschaft"
+msgstr "registered partnership"
+
+#: core/templates/fw/person_form.html:85
+msgid "geschieden"
+msgstr "divorced"
+
+#: core/templates/fw/person_form.html:86
+msgid "verwitwet"
+msgstr "widowed"
+
+#: core/templates/fw/person_form.html:87
+msgid "getrennt"
+msgstr "separated"
+
+#: core/templates/fw/person_form.html:91
+msgid "Deutsch"
+msgstr "German"
+
+#: core/templates/fw/person_form.html:92
+msgid "Französisch"
+msgstr "French"
+
+#: core/templates/fw/person_form.html:93
+msgid "Italienisch"
+msgstr "Italian"
+
+#: core/templates/fw/person_form.html:94
+msgid "Englisch"
+msgstr "English"
+
+#: core/templates/fw/person_form.html:100
+msgid "Heimatort / Geburtsort"
+msgstr "Place of origin / birth"
+
+#: core/templates/fw/person_form.html:102
+msgid "AHV-Nummer"
+msgstr "AHV number"
+
+#: core/templates/fw/person_form.html:113
+msgid "UID / CHE-Nummer"
+msgstr "UID / CHE number"
+
+#: core/templates/fw/person_form.html:138
+msgid ""
+"Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag "
+"automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der "
+"Personenseite."
+msgstr ""
+"Current home address. A move (in/out) is recorded automatically via the "
+"contract as a dated line — the history is on the person page."
+
+#: core/templates/fw/person_form.html:148
+msgid "Land"
+msgstr "Country"
+
+#: core/templates/fw/person_form.html:156
+msgid ""
+"Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll (z.B. c/o, "
+"Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare "
+"dorthin adressiert."
+msgstr ""
+"Only fill in if mail should go to another address (e.g. c/o, PO box, "
+"representative). If set, letters & official forms are addressed there."
+
+#: core/templates/fw/person_form.html:157
+msgid "Strasse & Nr. / c/o"
+msgstr "Street & no. / c/o"
+
+#: core/templates/fw/person_form.html:173
+msgid "Aufenthalt"
+msgstr "Residence"
+
+#: core/templates/fw/person_form.html:174
+msgid "Bei Vermietung an ausländische Staatsangehörige Pflichtangabe."
+msgstr "Mandatory when renting to foreign nationals."
+
+#: core/templates/fw/person_form.html:176
+msgid "Aufenthaltsbewilligung"
+msgstr "Residence permit"
+
+#: core/templates/fw/person_form.html:181
+msgid "Bewilligung gültig bis"
+msgstr "Permit valid until"
+
+#: core/templates/fw/person_form.html:194
+msgid "Beruf & Bonität"
+msgstr "Occupation & creditworthiness"
+
+#: core/templates/fw/person_form.html:199
+msgid "angestellt"
+msgstr "employed"
+
+#: core/templates/fw/person_form.html:200
+msgid "selbständig"
+msgstr "self-employed"
+
+#: core/templates/fw/person_form.html:201
+msgid "in Ausbildung"
+msgstr "in training"
+
+#: core/templates/fw/person_form.html:202
+msgid "pensioniert"
+msgstr "retired"
+
+#: core/templates/fw/person_form.html:203
+msgid "arbeitslos"
+msgstr "unemployed"
+
+#: core/templates/fw/person_form.html:204
+msgid "andere"
+msgstr "other"
+
+#: core/templates/fw/person_form.html:210
+msgid "Jahreseinkommen (CHF)"
+msgstr "Annual income (CHF)"
+
+#: core/templates/fw/person_form.html:212
+msgid "Betreibungsauszug vom"
+msgstr "Debt enforcement extract of"
+
+#: core/templates/fw/person_form.html:214
+msgid "Betreibungsauszug-Ergebnis"
+msgstr "Debt enforcement extract result"
+
+#: core/templates/fw/person_form.html:218
+msgid "Referenz Vorvermieter (Name · Telefon · E-Mail)"
+msgstr "Previous landlord reference (name · phone · email)"
+
+#: core/templates/fw/person_form.html:235
+msgid "Name / Behörde"
+msgstr "Name / authority"
+
+#: core/templates/fw/person_form.html:238
+msgid "Telefon / E-Mail"
+msgstr "Phone / email"
+
+#: core/templates/fw/person_form.html:252
+msgid "Haustiere (Details)"
+msgstr "Pets (details)"
+
+#: core/templates/fw/person_form.html:253
+msgid "z.B. 1 Katze"
+msgstr "e.g. 1 cat"
+
+#: core/templates/fw/person_form.html:259
+msgid "Versicherung & Notfallkontakt"
+msgstr "Insurance & emergency contact"
+
+#: core/templates/fw/person_form.html:261
+msgid "Haftpflicht-Versicherung"
+msgstr "Liability insurance"
+
+#: core/templates/fw/person_form.html:263
+msgid "Policen-Nr."
+msgstr "Policy no."
+
+#: core/templates/fw/person_form.html:265
+msgid "Notfallkontakt / Bürge"
+msgstr "Emergency contact / guarantor"
+
+#: core/templates/fw/person_form.html:270
+msgid "Beziehung"
+msgstr "Relationship"
+
+#: core/templates/fw/person_form.html:271
+msgid "z.B. Elternteil"
+msgstr "e.g. parent"
+
+#: core/templates/fw/person_form.html:285
+msgid "eBill- / E-Rechnungs-Adresse"
+msgstr "eBill / e-invoice address"
+
+#: core/templates/fw/person_form.html:290
+msgid "CH…"
+msgstr "CH…"
+
+#: core/templates/fw/person_form.html:295
+msgid ""
+"Mahnsperre (laufende Zahlungsvereinbarung — kein automatischer Mahnlauf)"
+msgstr ""
+"Reminder block (payment arrangement in place — no automatic reminder run)"
+
+#: core/templates/fw/person_form.html:297
+msgid "Abweichender Zahler / Kostenträger"
+msgstr "Different payer / cost bearer"
+
+#: core/templates/fw/person_form.html:297
+msgid "(z.B. Sozialamt, Firma)"
+msgstr "(e.g. social services, company)"
+
+#: core/templates/fw/person_form.html:301
+msgid "IBAN"
+msgstr "IBAN"
+
+#: core/templates/fw/person_form.html:314
+msgid "Trotzdem speichern"
+msgstr "Save anyway"
 
 #: core/templates/fw/personen.html:10
 #, python-format
@@ -9241,7 +10117,8 @@ msgstr "open for %(n)s days"
 msgid ""
 "Schadensmeldung #%(id)s wirklich löschen? Fotos und Verlauf werden "
 "mitgelöscht."
-msgstr "Really delete damage report #%(id)s? Photos and history will be deleted too."
+msgstr ""
+"Really delete damage report #%(id)s? Photos and history will be deleted too."
 
 #: core/templates/fw/schaden_detail.html:62
 msgid "Schadensmeldung löschen"
@@ -9434,7 +10311,9 @@ msgstr "No case is running for this damage."
 msgid ""
 "Ein Schaden wird zum Fall, sobald er über mehrere Schritte läuft — "
 "Besichtigung, Offerte, Auftrag, Abnahme."
-msgstr "Damage becomes a case once it goes through several steps — inspection, quote, order, acceptance."
+msgstr ""
+"Damage becomes a case once it goes through several steps — inspection, "
+"quote, order, acceptance."
 
 #: core/templates/fw/schaden_detail.html:275
 msgid "Handwerker beauftragen"
@@ -9444,7 +10323,9 @@ msgstr "Order tradesperson"
 msgid ""
 "Vergibt den Auftrag, mailt Handwerker <span class=\"font-medium\">und</span> "
 "Melder automatisch und setzt den Status auf „In Bearbeitung“."
-msgstr "Places the order, emails the tradesperson <span class=\"font-medium\">and</span> the reporter automatically and sets the status to “In progress”."
+msgstr ""
+"Places the order, emails the tradesperson <span class=\"font-medium\">and</"
+"span> the reporter automatically and sets the status to “In progress”."
 
 #: core/templates/fw/schaden_detail.html:281
 msgid "Handwerker / Firma *"
@@ -9462,7 +10343,9 @@ msgstr "Order text (from template, editable)"
 msgid ""
 "Vorlagen bearbeitest du unter <a href=\"/neu/vorlagen/\" class=\"fw-"
 "link\">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“)."
-msgstr "You edit templates under <a href=\"/neu/vorlagen/\" class=\"fw-link\">Templates</a> (category “Schaden – Auftrag an Handwerker”)."
+msgstr ""
+"You edit templates under <a href=\"/neu/vorlagen/\" class=\"fw-"
+"link\">Templates</a> (category “Schaden – Auftrag an Handwerker”)."
 
 #: core/templates/fw/schaden_detail.html:294
 msgid "Beauftragen & Mails senden"
@@ -9472,7 +10355,9 @@ msgstr "Order & send emails"
 msgid ""
 "Noch keine Handwerker erfasst — lege zuerst unter <a href=\"/neu/"
 "dienstleister/\" class=\"fw-link\">Dienstleister</a> einen an."
-msgstr "No tradespeople recorded — first create one under <a href=\"/neu/dienstleister/\" class=\"fw-link\">Service providers</a>."
+msgstr ""
+"No tradespeople recorded — first create one under <a href=\"/neu/"
+"dienstleister/\" class=\"fw-link\">Service providers</a>."
 
 #: core/templates/fw/schaden_detail.html:313
 #, python-format
@@ -9530,7 +10415,10 @@ msgid ""
 "Beim Anhaken von „Kreditorenrechnung erstellen“ wird aus den effektiven "
 "Kosten eine Kreditorenrechnung (Status Neu) angelegt und mit diesem Auftrag "
 "verknüpft — Freigabe und Zahlung erfolgen im Kreditoren-Tab."
-msgstr "Ticking “Create supplier invoice” creates a supplier invoice (status New) from the actual costs and links it to this order — approval and payment happen in the Payables tab."
+msgstr ""
+"Ticking “Create supplier invoice” creates a supplier invoice (status New) "
+"from the actual costs and links it to this order — approval and payment "
+"happen in the Payables tab."
 
 #: core/templates/fw/schaden_detail.html:364
 msgid "Fotos hinzufügen"
@@ -10788,6 +11676,26 @@ msgstr "All levels"
 #: core/views/fw/nebenkosten.py:180
 msgid "Mieter-Abrechnung"
 msgstr "Tenant statements"
+
+#: core/views/fw/person.py:888
+msgid "Mieter, aktiv"
+msgstr "Tenant, active"
+
+#: core/views/fw/person.py:890
+msgid "Ehemaliger Mieter"
+msgstr "Former tenant"
+
+#: core/views/fw/person.py:898
+msgid "Mitmieter"
+msgstr "Co-tenant"
+
+#: core/views/fw/person.py:899
+msgid "Weiterer Mieter (WG)"
+msgstr "Further tenant (flat share)"
+
+#: core/views/fw/person.py:900
+msgid "Schadenmelder"
+msgstr "Damage reporter"
 
 #: core/views/fw/profil.py:889
 msgid "E-Mail-Versand"

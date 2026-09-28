@@ -17,6 +17,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -884,13 +885,19 @@ def _person_kopf(m, vertraege, total_offen):
 
     chips = []
     if aktive:
-        chips.append(('brand', f'Mieter, aktiv'))
+        chips.append(('brand', gettext('Mieter, aktiv')))
     if frueher:
-        chips.append(('mut', 'Ehemaliger Mieter'))
+        chips.append(('mut', gettext('Ehemaliger Mieter')))
     if total_offen:
-        chips.append(('crit', f'CHF {total_offen:,.2f}'.replace(',', "'") + ' offen'))
+        chips.append(('crit', gettext('CHF %(betrag)s offen') % {
+            'betrag': f'{total_offen:,.2f}'.replace(',', "'")}))
 
     # --- Rollen ueber die Zeit: nur echte Beziehungen, keine Namenstreffer ---
+    # `art` bleibt der deutsche SCHLUESSEL (die Vorlage vergleicht damit),
+    # angezeigt wird `art_label`.
+    art_label = {'Mieter': gettext('Mieter'), 'Mitmieter': gettext('Mitmieter'),
+                 'Weiterer Mieter (WG)': gettext('Weiterer Mieter (WG)'),
+                 'Schadenmelder': gettext('Schadenmelder')}
     rollen = []
     for v in vertraege:
         if v.mieter_id == m.id:
@@ -903,14 +910,14 @@ def _person_kopf(m, vertraege, total_offen):
         ort = f'{e.bezeichnung} — {e.liegenschaft.strasse}, {e.liegenschaft.ort}' if e else '—'
         eig = getattr(getattr(e, 'liegenschaft', None), 'eigentuemer', None)
         rollen.append({
-            'art': art, 'aktiv': v.status == 'aktiv', 'ort': ort, 'mandat': eig,
+            'art': art, 'art_label': art_label[art], 'aktiv': v.status == 'aktiv', 'ort': ort, 'mandat': eig,
             'von': v.beginn, 'bis': v.ende, 'status': v.get_status_display(),
             'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
             'url': f'/neu/vertraege/{v.id}/',
         })
     for t in m.gemeldete_schaeden.all()[:10]:
         rollen.append({
-            'art': 'Schadenmelder', 'aktiv': t.status != 'erledigt',
+            'art': 'Schadenmelder', 'art_label': art_label['Schadenmelder'], 'aktiv': t.status != 'erledigt',
             'ort': t.titel, 'mandat': None,
             'von': t.erstellt_am.date() if t.erstellt_am else None, 'bis': None,
             'status': t.get_status_display(), 'brutto': None,
