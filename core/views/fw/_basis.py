@@ -25,7 +25,7 @@ from decimal import Decimal
 
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext, gettext_lazy
 
 from core.auth import SCHREIB_ROLLEN, VERWALTUNGS_ROLLEN
 from portfolio.models import Einheit, Liegenschaft
@@ -257,10 +257,10 @@ def _pendenz_ziel(p):
     q = p.quelle or ''
     if p.vertrag_id:
         if q.startswith('auto:ruecknahme:'):
-            return (f'/neu/vertraege/{p.vertrag_id}/abnahme/neu/?typ=auszug', 'Rücknahme starten', False, True)
-        return (f'/neu/vertraege/{p.vertrag_id}/', 'Vertrag öffnen', False, False)
+            return (f'/neu/vertraege/{p.vertrag_id}/abnahme/neu/?typ=auszug', gettext('Rücknahme starten'), False, True)
+        return (f'/neu/vertraege/{p.vertrag_id}/', gettext('Vertrag öffnen'), False, False)
     if p.liegenschaft_id:
-        return (f'/neu/liegenschaften/{p.liegenschaft_id}/', 'Liegenschaft öffnen', False, False)
+        return (f'/neu/liegenschaften/{p.liegenschaft_id}/', gettext('Liegenschaft öffnen'), False, False)
     return (None, None, False, False)
 
 

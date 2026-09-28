@@ -41,6 +41,7 @@ import logging
 from datetime import timedelta
 
 from django.utils import timezone
+from django.utils.translation import gettext
 
 log = logging.getLogger(__name__)
 
@@ -176,12 +177,14 @@ def _laeufe(heute, bis):
             # `fallart` heisst der Schlüssel, weil das Band danach filtert;
             # ein Lauf ist keine Fallart, aber für das Band ist er eine
             # Auswahl wie die anderen.
-            'fallart': 'lauf', 'fallart_text': 'Lauf',
-            'marke': 'Lauf',
-            'titel': f'{lauf.laufart.bezeichnung} {lauf.periode}'
-                     + (' nicht ausgelöst' if tage < 0 else ''),
+            # `fallart` ist der Schlüssel (Filterband) und bleibt 'lauf';
+            # übersetzt wird nur, was angezeigt wird.
+            'fallart': 'lauf', 'fallart_text': gettext('Lauf'),
+            'marke': gettext('Lauf'),
+            'titel': (gettext('%(lauf)s nicht ausgelöst') if tage < 0 else '%(lauf)s') % {
+                'lauf': f'{lauf.laufart.bezeichnung} {lauf.periode}'},
             'zeile': (', '.join(b.grund for b in blockaden) if blockaden
-                      else f'Stichtag {lauf.faellig_am.strftime("%d.%m.")}'),
+                      else gettext('Stichtag %(d)s') % {'d': lauf.faellig_am.strftime('%d.%m.')}),
             'datum': lauf.faellig_am, 'tage': tage,
             'dringlichkeit': 'crit' if blockaden else _dringlichkeit(tage),
             # NUR ZUM ZAEHLEN, NICHT ZUM ANZEIGEN (E2.69).
@@ -192,7 +195,7 @@ def _laeufe(heute, bis):
             # Kopf dieser Funktion begruendet: Der Grund fuehrt zu einer
             # Handlung, das Wort «blockiert» nicht.
             'blockiert': bool(blockaden),
-            'ziel': '/neu/laeufe/', 'knopf': 'Zum Lauf', 'objekt': lauf,
+            'ziel': '/neu/laeufe/', 'knopf': gettext('Zum Lauf'), 'objekt': lauf,
         })
     return zeilen
 
@@ -315,16 +318,17 @@ def _fallschritte(heute, bis, wer=None, mandat=None):
             # die Frist gilt: «Naechster Schritt», «Blockiert seit», «Wartet
             # auf». Ein Datum ohne dieses Wort ist eine Zahl — man weiss
             # nicht, ob es der Termin, die Frist oder der Beginn ist.
-            'wofuer': 'Nächster Schritt',
+            'wofuer': gettext('Nächster Schritt'),
             'schritt': s.bezeichnung,
             'zeile': '',
             'nummer': s.fall.nummer,
-            'fortschritt': f'Schritt {s.nr} von {s._gesamt}' if s._gesamt else '',
+            'fortschritt': (gettext('Schritt %(nr)s von %(gesamt)s') % {'nr': s.nr, 'gesamt': s._gesamt}
+                            if s._gesamt else ''),
             # Das Kuerzel, nicht der ganze Name: Die Zeile ist eng, und wer im
             # Buero arbeitet, kennt die Kuerzel. «niemand» ist eine Aussage —
             # ein Fall ohne Zustaendigkeit faellt sonst niemandem auf.
             'wer': (_kuerzel(s.fall.zustaendig) if s.fall.zustaendig_id
-                    else 'niemand'),
+                    else gettext('niemand')),
             'datum': s.frist, 'tage': tage,
             'dringlichkeit': _dringlichkeit(tage),
             # DIE FALLART ALS WERT, NICHT NUR ALS TEXT (E2.61).
@@ -336,7 +340,7 @@ def _fallschritte(heute, bis, wer=None, mandat=None):
             # ihre eigenen (siehe `Fallart`-Kopf).
             'fallart': s.fall.fallart.schluessel,
             'fallart_text': s.fall.fallart.bezeichnung,
-            'ziel': f'/neu/faelle/{s.fall_id}/', 'knopf': 'Fall öffnen',
+            'ziel': f'/neu/faelle/{s.fall_id}/', 'knopf': gettext('Fall öffnen'),
             'objekt': s,
         })
     return zeilen
@@ -373,7 +377,7 @@ def _pendenzen(heute, bis, aktive_lg=None):
             'zeile': p.beschreibung[:120] or p.get_kategorie_display(),
             'datum': p.faellig_am, 'tage': tage,
             'dringlichkeit': _dringlichkeit(tage),
-            'ziel': url or '/neu/pendenzen/', 'knopf': knopf or 'Öffnen',
+            'ziel': url or '/neu/pendenzen/', 'knopf': knopf or gettext('Öffnen'),
             'modal': modal, 'objekt': p,
         })
     return zeilen
@@ -399,7 +403,7 @@ def _wartungsfristen(heute, bis, aktive_lg=None):
             'dringlichkeit': _dringlichkeit(tage),
             'ziel': (f'/neu/liegenschaften/{w.liegenschaft_id}/?tab=faelle'
                      if w.liegenschaft_id else '/neu/fristen/'),
-            'knopf': 'Zur Frist', 'objekt': w,
+            'knopf': gettext('Zur Frist'), 'objekt': w,
         })
     return zeilen
 
@@ -509,10 +513,10 @@ def termine(heute=None, tage=7):
             einheit = getattr(a.vertrag, 'einheit', None)
             zeilen.append({
                 'art': 'abnahme', 'ikon': 'gut',
-                'titel': 'Wohnungsabnahme' if a.typ == 'auszug' else 'Übergabe',
+                'titel': gettext('Wohnungsabnahme') if a.typ == 'auszug' else gettext('Übergabe'),
                 'zeile': str(einheit) if einheit else '',
                 'datum': a.datum, 'zeit': None,
-                'ziel': f'/neu/vertraege/{a.vertrag_id}/', 'knopf': 'Vertrag',
+                'ziel': f'/neu/vertraege/{a.vertrag_id}/', 'knopf': gettext('Vertrag'),
             })
     except Exception:
         log.exception('Termine: Abnahmen konnten nicht geladen werden')
@@ -529,11 +533,11 @@ def termine(heute=None, tage=7):
                   .order_by('besichtigung_am')[:20]):
             zeilen.append({
                 'art': 'besichtigung', 'ikon': 'schluessel',
-                'titel': 'Besichtigung',
+                'titel': gettext('Besichtigung'),
                 'zeile': f'{b.einheit} · {b.vorname} {b.nachname}',
                 'datum': timezone.localtime(b.besichtigung_am).date(),
                 'zeit': timezone.localtime(b.besichtigung_am).time(),
-                'ziel': '/neu/bewerbungen/', 'knopf': 'Bewerbung',
+                'ziel': '/neu/bewerbungen/', 'knopf': gettext('Bewerbung'),
             })
     except Exception:
         log.exception('Termine: Besichtigungen konnten nicht geladen werden')
@@ -553,7 +557,7 @@ def termine(heute=None, tage=7):
                     (t.zustaendig.get_full_name() or t.zustaendig.username)
                     if t.zustaendig_id else '') if x),
                 'datum': ortszeit.date(), 'zeit': ortszeit.time(),
-                'ziel': '/neu/termine/', 'knopf': 'Termin',
+                'ziel': '/neu/termine/', 'knopf': gettext('Termin'),
             })
     except Exception:
         log.exception('Termine: erfasste Termine konnten nicht geladen werden')
@@ -636,10 +640,11 @@ def wartet_auf_freigabe():
                   .select_related('liegenschaft').order_by('datum')[:10]):
             zeilen.append({
                 'art': 'rechnung', 'ikon': 'rechnung',
-                'titel': f'Rechnung {r.lieferant}' if r.lieferant else 'Eingangsrechnung',
+                'titel': (gettext('Rechnung %(lieferant)s') % {'lieferant': r.lieferant}
+                          if r.lieferant else gettext('Eingangsrechnung')),
                 'zeile': str(r.liegenschaft or ''),
                 'betrag': r.betrag, 'tage': _alter(r.datum),
-                'ziel': '/neu/kreditoren/', 'knopf': 'Freigeben',
+                'ziel': '/neu/kreditoren/', 'knopf': gettext('Freigeben'),
             })
     except Exception:
         log.exception('Freigaben: Kreditoren konnten nicht geladen werden')
@@ -650,10 +655,11 @@ def wartet_auf_freigabe():
                   .select_related('handwerker', 'ticket')[:10]):
             zeilen.append({
                 'art': 'offerte', 'ikon': 'vertrag',
-                'titel': f'Offerte {a.handwerker}' if a.handwerker_id else 'Offerte',
+                'titel': (gettext('Offerte %(hw)s') % {'hw': a.handwerker}
+                          if a.handwerker_id else gettext('Offerte')),
                 'zeile': str(getattr(a.ticket, 'titel', '') or ''),
                 'betrag': a.kosten_geschaetzt, 'tage': _alter(a.beauftragt_am),
-                'ziel': f'/neu/schaeden/{a.ticket_id}/', 'knopf': 'Entscheiden',
+                'ziel': f'/neu/schaeden/{a.ticket_id}/', 'knopf': gettext('Entscheiden'),
             })
     except Exception:
         log.exception('Freigaben: Handwerker-Offerten konnten nicht geladen werden')
@@ -665,11 +671,11 @@ def wartet_auf_freigabe():
                   .order_by('beginn')[:10]):
             zeilen.append({
                 'art': 'vertrag', 'ikon': 'bearbeiten',
-                'titel': f'Mietvertrag {v.mieter.display_name}' if v.mieter_id
-                         else 'Mietvertrag',
-                'zeile': f'{v.einheit} · zur Unterschrift',
+                'titel': (gettext('Mietvertrag %(name)s') % {'name': v.mieter.display_name}
+                          if v.mieter_id else gettext('Mietvertrag')),
+                'zeile': gettext('%(einheit)s · zur Unterschrift') % {'einheit': v.einheit},
                 'betrag': None, 'tage': None,
-                'ziel': f'/neu/vertraege/{v.id}/signieren/', 'knopf': 'Signatur',
+                'ziel': f'/neu/vertraege/{v.id}/signieren/', 'knopf': gettext('Signatur'),
             })
     except Exception:
         log.exception('Freigaben: Vertragsentwürfe konnten nicht geladen werden')

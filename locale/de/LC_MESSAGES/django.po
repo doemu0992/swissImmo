@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 01:40+0200\n"
+"POT-Creation-Date: 2026-09-29 01:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: core/navigation.py:120 core/views/fw/arbeit.py:38
+#: core/navigation.py:120 core/views/fw/arbeit.py:42
 #: core/views/fw/dashboard.py:364
 msgid "Heute"
 msgstr "Heute"
@@ -201,8 +201,8 @@ msgstr "Forderungen"
 msgid "Debitoren"
 msgstr "Debitoren"
 
-#: core/navigation.py:169 core/templates/fw/kautionen.html:4
-#: core/views/fw/dashboard.py:531
+#: core/navigation.py:169 core/services/inbox.py:136
+#: core/templates/fw/kautionen.html:4 core/views/fw/dashboard.py:531
 msgid "Kautionen"
 msgstr "Kautionen"
 
@@ -318,6 +318,179 @@ msgstr "Im Nutzungszeitraum"
 #: core/services/ersatzplanung.py:72 core/views/fw/schaeden.py:404
 msgid "Keine Datenbasis"
 msgstr "Keine Datenbasis"
+
+#: core/services/inbox.py:17
+msgid "Geld"
+msgstr "Geld"
+
+#: core/services/inbox.py:18
+msgid "Frist"
+msgstr "Frist"
+
+#: core/services/inbox.py:19 core/templates/fw/schaden_detail.html:24
+msgid "Schaden"
+msgstr "Schaden"
+
+#: core/services/inbox.py:20
+msgid "Prozess"
+msgstr "Prozess"
+
+#: core/services/inbox.py:21
+msgid "Aufgabe"
+msgstr "Aufgabe"
+
+#: core/services/inbox.py:80
+#, python-format
+msgid "%(n)s Mieter hat noch nicht bezahlt"
+msgid_plural "%(n)s Mieter haben noch nicht bezahlt"
+msgstr[0] "%(n)s Mieter hat noch nicht bezahlt"
+msgstr[1] "%(n)s Mieter haben noch nicht bezahlt"
+
+#: core/services/inbox.py:82
+#, python-format
+msgid "%(n)s überfällige Forderung mahnen"
+msgid_plural "%(n)s überfällige Forderungen mahnen"
+msgstr[0] "%(n)s überfällige Forderung mahnen"
+msgstr[1] "%(n)s überfällige Forderungen mahnen"
+
+#: core/services/inbox.py:85
+msgid "Mahnvorschläge bereit"
+msgstr "Mahnvorschläge bereit"
+
+#: core/services/inbox.py:86
+msgid "Fällige Debitoren mit Mahnung anstossen"
+msgstr "Fällige Debitoren mit Mahnung anstossen"
+
+#: core/services/inbox.py:88
+msgid "Erinnerung senden"
+msgstr "Erinnerung senden"
+
+#: core/services/inbox.py:88
+msgid "Mahnen"
+msgstr "Mahnen"
+
+#: core/services/inbox.py:92
+#, python-format
+msgid "%(n)s offene Zahlung abgleichen"
+msgid_plural "%(n)s offene Zahlungen abgleichen"
+msgstr[0] "%(n)s offene Zahlung abgleichen"
+msgstr[1] "%(n)s offene Zahlungen abgleichen"
+
+#: core/services/inbox.py:94
+#, python-format
+msgid "%(n)s offene Forderung mit der Bank abgleichen"
+msgid_plural "%(n)s offene Forderungen mit der Bank abgleichen"
+msgstr[0] "%(n)s offene Forderung mit der Bank abgleichen"
+msgstr[1] "%(n)s offene Forderungen mit der Bank abgleichen"
+
+#: core/services/inbox.py:98
+msgid "Bankgutschriften den Mietern zuordnen"
+msgstr "Bankgutschriften den Mietern zuordnen"
+
+#: core/services/inbox.py:99
+msgid "Abgleichen"
+msgstr "Abgleichen"
+
+#: core/services/inbox.py:119
+#, python-format
+msgid "%(n)s Rechnung bezahlen"
+msgid_plural "%(n)s Rechnungen bezahlen"
+msgstr[0] "%(n)s Rechnung bezahlen"
+msgstr[1] "%(n)s Rechnungen bezahlen"
+
+#: core/services/inbox.py:121
+msgid "Zahlung auslösen"
+msgstr "Zahlung auslösen"
+
+#: core/services/inbox.py:122
+msgid "Zahllauf ausführen (pain.001)"
+msgstr "Zahllauf ausführen (pain.001)"
+
+#: core/services/inbox.py:123
+msgid "Zahlen"
+msgstr "Zahlen"
+
+#: core/services/inbox.py:132
+#, python-format
+msgid "%(n)s Kaution zur Rückzahlung fällig"
+msgid_plural "%(n)s Kautionen zur Rückzahlung fällig"
+msgstr[0] "%(n)s Kaution zur Rückzahlung fällig"
+msgstr[1] "%(n)s Kautionen zur Rückzahlung fällig"
+
+#: core/services/inbox.py:135
+msgid "Rückzahlungsfrist nach Auszug (Art. 257e)"
+msgstr "Rückzahlungsfrist nach Auszug (Art. 257e)"
+
+#: core/services/inbox.py:150
+#, python-format
+msgid "Monatsmieten %(periode)s erzeugen"
+msgstr "Monatsmieten %(periode)s erzeugen"
+
+#: core/services/inbox.py:151
+#, python-format
+msgid "Sollstellung %(periode)s ausführen"
+msgstr "Sollstellung %(periode)s ausführen"
+
+#: core/services/inbox.py:153
+msgid "Mietrechnungen für diesen Monat verbuchen"
+msgstr "Mietrechnungen für diesen Monat verbuchen"
+
+#: core/services/inbox.py:154
+msgid "Starten"
+msgstr "Starten"
+
+#: core/services/inbox.py:162
+#, python-format
+msgid "%(n)s Kündigung über das Portal eingegangen"
+msgid_plural "%(n)s Kündigungen über das Portal eingegangen"
+msgstr[0] "%(n)s Kündigung über das Portal eingegangen"
+msgstr[1] "%(n)s Kündigungen über das Portal eingegangen"
+
+#: core/services/inbox.py:164
+msgid "Bestätigen und Mieterwechsel starten"
+msgstr "Bestätigen und Mieterwechsel starten"
+
+#: core/services/inbox.py:165
+msgid "Prüfen"
+msgstr "Prüfen"
+
+#: core/services/inbox.py:175
+#, python-format
+msgid "%(n)s neue Schadenmeldung"
+msgid_plural "%(n)s neue Schadenmeldungen"
+msgstr[0] "%(n)s neue Schadenmeldung"
+msgstr[1] "%(n)s neue Schadenmeldungen"
+
+#: core/services/inbox.py:176
+msgid "Prüfen und Handwerker beauftragen"
+msgstr "Prüfen und Handwerker beauftragen"
+
+#: core/services/inbox.py:177 core/services/inbox.py:188
+#: core/services/inbox.py:217 core/templates/fw/debitoren.html:223
+msgid "Ansehen"
+msgstr "Ansehen"
+
+#: core/services/inbox.py:185
+#, python-format
+msgid "%(n)s Reparatur wartet auf Eigentümer-Freigabe"
+msgid_plural "%(n)s Reparaturen warten auf Eigentümer-Freigabe"
+msgstr[0] "%(n)s Reparatur wartet auf Eigentümer-Freigabe"
+msgstr[1] "%(n)s Reparaturen warten auf Eigentümer-Freigabe"
+
+#: core/services/inbox.py:187
+msgid "Freigabe nachfassen oder selbst entscheiden"
+msgstr "Freigabe nachfassen oder selbst entscheiden"
+
+#: core/services/inbox.py:214
+#, python-format
+msgid "%(n)s Aufgabe ohne Frist"
+msgid_plural "%(n)s Aufgaben ohne Frist"
+msgstr[0] "%(n)s Aufgabe ohne Frist"
+msgstr[1] "%(n)s Aufgaben ohne Frist"
+
+#: core/services/inbox.py:216
+msgid "Liegen ohne Termin — im Pendenzen-Center datieren oder erledigen"
+msgstr "Liegen ohne Termin — im Pendenzen-Center datieren oder erledigen"
 
 #: core/services/mahnstufen.py:25
 msgid "1. Mahnung"
@@ -2187,7 +2360,7 @@ msgid "Abnahmeprotokoll"
 msgstr "Abnahmeprotokoll"
 
 #: core/templates/fw/abnahme_detail.html:14
-#: core/templates/fw/vertrag_detail.html:137
+#: core/templates/fw/vertrag_detail.html:137 faelle/arbeitsvorrat.py:516
 msgid "Wohnungsabnahme"
 msgstr "Wohnungsabnahme"
 
@@ -3198,7 +3371,7 @@ msgstr "Bitte zuerst Zahlungen auswählen."
 #: core/templates/fw/dashboard.html:82 core/templates/fw/dashboard.html:183
 #: core/templates/fw/fristen.html:8 core/templates/fw/kontoblatt.html:21
 #: core/templates/fw/liegenschaften.html:60
-#: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:42
+#: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:46
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
 #: core/views/fw/listen.py:207 core/views/fw/listen.py:1109
 #: core/views/fw/listen.py:1179 core/views/fw/listen.py:1292
@@ -3755,7 +3928,7 @@ msgstr "Zugesagt"
 msgid "Abgesagt"
 msgstr "Abgesagt"
 
-#: core/templates/fw/bewerber_vergleich.html:78
+#: core/templates/fw/bewerber_vergleich.html:78 faelle/arbeitsvorrat.py:536
 msgid "Besichtigung"
 msgstr "Besichtigung"
 
@@ -3812,7 +3985,7 @@ msgstr ""
 msgid "Noch keine Bewerbungen für dieses Objekt."
 msgstr "Noch keine Bewerbungen für dieses Objekt."
 
-#: core/templates/fw/bewerbung_detail.html:3
+#: core/templates/fw/bewerbung_detail.html:3 faelle/arbeitsvorrat.py:540
 msgid "Bewerbung"
 msgstr "Bewerbung"
 
@@ -4692,7 +4865,7 @@ msgstr "offen"
 #: core/templates/fw/dokumente.html:25 core/templates/fw/objekt_detail.html:199
 #: core/templates/fw/person_detail.html:470
 #: core/templates/fw/person_detail.html:559
-#: core/templates/fw/vertrag_detail.html:203
+#: core/templates/fw/vertrag_detail.html:203 faelle/arbeitsvorrat.py:519
 msgid "Vertrag"
 msgstr "Vertrag"
 
@@ -4761,10 +4934,6 @@ msgstr[1] "%(n)s Tage überfällig"
 #: core/templates/fw/debitoren.html:222
 msgid "QR-Rechnung als PDF"
 msgstr "QR-Rechnung als PDF"
-
-#: core/templates/fw/debitoren.html:223
-msgid "Ansehen"
-msgstr "Ansehen"
 
 #: core/templates/fw/debitoren.html:229
 msgid "Als Debitorenverlust abschreiben (uneinbringlich)"
@@ -5227,7 +5396,7 @@ msgstr "Ablage"
 #: core/templates/fw/objekt_detail.html:215
 #: core/templates/fw/person_detail.html:488
 #: core/templates/fw/person_form.html:37
-#: core/templates/fw/vertrag_detail.html:691
+#: core/templates/fw/vertrag_detail.html:691 faelle/arbeitsvorrat.py:380
 msgid "Öffnen"
 msgstr "Öffnen"
 
@@ -5645,6 +5814,7 @@ msgid "Zuständig"
 msgstr "Zuständig"
 
 #: core/templates/fw/fall_detail.html:45 core/templates/fw/fall_detail.html:51
+#: faelle/arbeitsvorrat.py:331
 msgid "niemand"
 msgstr "niemand"
 
@@ -5661,7 +5831,7 @@ msgid "Schritte erledigt"
 msgstr "Schritte erledigt"
 
 #: core/templates/fw/fall_detail.html:64
-#: core/templates/fw/mieterwechsel.html:68
+#: core/templates/fw/mieterwechsel.html:68 faelle/arbeitsvorrat.py:321
 msgid "Nächster Schritt"
 msgstr "Nächster Schritt"
 
@@ -6801,6 +6971,7 @@ msgid "Aufwandskonto…"
 msgstr "Aufwandskonto…"
 
 #: core/templates/fw/kreditoren.html:220 core/views/fw/dashboard.py:513
+#: faelle/arbeitsvorrat.py:647
 msgid "Freigeben"
 msgstr "Freigeben"
 
@@ -9091,7 +9262,7 @@ msgstr "%(n)s Bewerb."
 msgid "Neuer Vertrag"
 msgstr "Neuer Vertrag"
 
-#: core/templates/fw/mieterwechsel.html:61
+#: core/templates/fw/mieterwechsel.html:61 faelle/arbeitsvorrat.py:516
 msgid "Übergabe"
 msgstr "Übergabe"
 
@@ -9099,7 +9270,7 @@ msgstr "Übergabe"
 msgid "Wohnungsrücknahme"
 msgstr "Wohnungsrücknahme"
 
-#: core/templates/fw/mieterwechsel.html:70
+#: core/templates/fw/mieterwechsel.html:70 core/views/fw/_basis.py:260
 msgid "Rücknahme starten"
 msgstr "Rücknahme starten"
 
@@ -9778,7 +9949,7 @@ msgstr "Anfangsmietzins"
 msgid "Mietzinsanpassung"
 msgstr "Mietzinsanpassung"
 
-#: core/templates/fw/objekt_detail.html:207
+#: core/templates/fw/objekt_detail.html:207 core/views/fw/_basis.py:261
 msgid "Vertrag öffnen"
 msgstr "Vertrag öffnen"
 
@@ -11661,10 +11832,6 @@ msgstr "Schadensfälle"
 msgid "Schaden #%(id)s"
 msgstr "Schaden #%(id)s"
 
-#: core/templates/fw/schaden_detail.html:24
-msgid "Schaden"
-msgstr "Schaden"
-
 #: core/templates/fw/schaden_detail.html:43
 msgid "Gemeldet von"
 msgstr "Gemeldet von"
@@ -13478,6 +13645,10 @@ msgstr "Zuletzt erledigt"
 msgid "Noch nichts erledigt."
 msgstr "Noch nichts erledigt."
 
+#: core/views/fw/_basis.py:263
+msgid "Liegenschaft öffnen"
+msgstr "Liegenschaft öffnen"
+
 #: core/views/fw/_basis.py:343 core/views/fw/detailseiten.py:2265
 msgid "Beendet"
 msgstr "Beendet"
@@ -13685,15 +13856,15 @@ msgstr "Regelwerk (Fristen)"
 msgid "Kündigungstermine und Fristen je Kanton"
 msgstr "Kündigungstermine und Fristen je Kanton"
 
-#: core/views/fw/arbeit.py:39
+#: core/views/fw/arbeit.py:43
 msgid "Diese Woche"
 msgstr "Diese Woche"
 
-#: core/views/fw/arbeit.py:40
+#: core/views/fw/arbeit.py:44
 msgid "Wartet auf Dritte"
 msgstr "Wartet auf Dritte"
 
-#: core/views/fw/arbeit.py:41
+#: core/views/fw/arbeit.py:45
 msgid "Liegengeblieben"
 msgstr "Liegengeblieben"
 
@@ -14283,6 +14454,81 @@ msgstr "Rollen"
 msgid "Handwerker & Kosten"
 msgstr "Handwerker & Kosten"
 
+#: faelle/arbeitsvorrat.py:182 faelle/arbeitsvorrat.py:183
+msgid "Lauf"
+msgstr "Lauf"
+
+#: faelle/arbeitsvorrat.py:184
+#, python-format
+msgid "%(lauf)s nicht ausgelöst"
+msgstr "%(lauf)s nicht ausgelöst"
+
+#: faelle/arbeitsvorrat.py:187
+#, python-format
+msgid "Stichtag %(d)s"
+msgstr "Stichtag %(d)s"
+
+#: faelle/arbeitsvorrat.py:198
+msgid "Zum Lauf"
+msgstr "Zum Lauf"
+
+#: faelle/arbeitsvorrat.py:325
+#, python-format
+msgid "Schritt %(nr)s von %(gesamt)s"
+msgstr "Schritt %(nr)s von %(gesamt)s"
+
+#: faelle/arbeitsvorrat.py:343
+msgid "Fall öffnen"
+msgstr "Fall öffnen"
+
+#: faelle/arbeitsvorrat.py:406
+msgid "Zur Frist"
+msgstr "Zur Frist"
+
+#: faelle/arbeitsvorrat.py:560
+msgid "Termin"
+msgstr "Termin"
+
+#: faelle/arbeitsvorrat.py:643
+#, python-format
+msgid "Rechnung %(lieferant)s"
+msgstr "Rechnung %(lieferant)s"
+
+#: faelle/arbeitsvorrat.py:644
+msgid "Eingangsrechnung"
+msgstr "Eingangsrechnung"
+
+#: faelle/arbeitsvorrat.py:658
+#, python-format
+msgid "Offerte %(hw)s"
+msgstr "Offerte %(hw)s"
+
+#: faelle/arbeitsvorrat.py:659
+msgid "Offerte"
+msgstr "Offerte"
+
+#: faelle/arbeitsvorrat.py:662
+msgid "Entscheiden"
+msgstr "Entscheiden"
+
+#: faelle/arbeitsvorrat.py:674
+#, python-format
+msgid "Mietvertrag %(name)s"
+msgstr "Mietvertrag %(name)s"
+
+#: faelle/arbeitsvorrat.py:675
+msgid "Mietvertrag"
+msgstr "Mietvertrag"
+
+#: faelle/arbeitsvorrat.py:676
+#, python-format
+msgid "%(einheit)s · zur Unterschrift"
+msgstr "%(einheit)s · zur Unterschrift"
+
+#: faelle/arbeitsvorrat.py:678
+msgid "Signatur"
+msgstr "Signatur"
+
 #: faelle/lage.py:278
 #, python-format
 msgid "Zahlungseingang %(monat)s"
@@ -14352,8 +14598,11 @@ msgid ""
 msgid_plural ""
 "%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s "
 "Positionen."
-msgstr[0] "%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Position."
-msgstr[1] "%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Positionen."
+msgstr[0] ""
+"%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Position."
+msgstr[1] ""
+"%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s "
+"Positionen."
 
 #: faelle/lage.py:443
 #, python-format
@@ -14519,12 +14768,3 @@ msgstr "Police aufgelöst"
 
 #~ msgid "meldet sich nach 14 Tagen"
 #~ msgstr "meldet sich nach 14 Tagen"
-
-#~ msgid "Zum Lauf"
-#~ msgstr "Zum Lauf"
-
-#~ msgid "Termin"
-#~ msgstr "Termin"
-
-#~ msgid "Entscheiden"
-#~ msgstr "Entscheiden"
