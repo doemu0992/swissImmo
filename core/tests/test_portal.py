@@ -47,6 +47,54 @@ class EigentuemerPortalTests(TestCase):
         self.assertEqual(c.get(f'/portal/dokument/{d.id}/').status_code, 404)
 
 
+class PortalKontoOhneBezugTests(TestCase):
+    """Portal-Konto ohne Liegenschaft bzw. ohne Vertrag.
+
+    Die Middleware leitete die Organisation eines Portal-Kontos nur über die
+    Liegenschaft (Eigentümer) bzw. den Vertrag (Mieter) her. Fehlte beides,
+    blieb der Kontext leer und die erste Mandanten-Abfrage im View warf
+    `OrganisationsFehler` — eine 500 statt des Hinweises «noch nichts
+    zugeordnet». Beide Datensätze tragen die Organisation selbst.
+
+    Der Kontext wird vor jeder Anfrage geräumt: Die Middleware stellt den
+    vorgefundenen Kontext wieder her, und ein vom Test gesetzter würde den
+    Fehler verdecken — so wie im Betrieb vor der Anfrage keiner gesetzt ist.
+    """
+
+    def setUp(self):
+        _test_organisation()
+
+    def _ohne_kontext(self):
+        from core.tenancy import loesche_organisation
+        loesche_organisation()
+
+    def test_eigentuemer_ohne_liegenschaft_sieht_hinweis(self):
+        md = Eigentuemer.objects.create(firma_oder_name='Leer AG')
+        u = User.objects.create_user(username='eig_leer', password='x')
+        md.benutzer = u; md.save()
+        c = Client(raise_request_exception=False); c.force_login(u)
+        self._ohne_kontext()
+        r = c.get('/portal/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'noch keine Liegenschaften zugeordnet')
+
+    def test_mieter_ohne_vertrag_laedt(self):
+        m = Mieter.objects.create(vorname='Ohne', nachname='Vertrag')
+        u = User.objects.create_user(username='mieter_leer', password='x')
+        m.benutzer = u; m.save()
+        c = Client(raise_request_exception=False); c.force_login(u)
+        self._ohne_kontext()
+        self.assertNotEqual(c.get('/mieter/').status_code, 500)
+
+    def test_middleware_nimmt_organisation_des_datensatzes(self):
+        from core.middleware_tenancy import _organisation_fuer
+        md = Eigentuemer.objects.create(firma_oder_name='Leer AG')
+        u = User.objects.create_user(username='eig_leer2', password='x')
+        md.benutzer = u; md.save()
+        self._ohne_kontext()
+        self.assertEqual(_organisation_fuer(u), md.organisation)
+
+
 class MieterPortalTests(TestCase):
     def _mieter_login(self):
         lg, e, m, v = _basis_objekte()
