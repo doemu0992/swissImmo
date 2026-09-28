@@ -1,23 +1,21 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf l10n %}
-{% block title %}Weiterverrechnen — {{ k.lieferant }}{% endblock %}
+{% block title %}{% trans "Weiterverrechnen" %} — {{ k.lieferant }}{% endblock %}
 {% block content %}
 {{ vertrag_daten|json_script:"wv-vd-data" }}
 {{ absender|json_script:"wv-abs-data" }}
 <div class="fw-phead">
     <div>
-        <h1>An Mieter weiterverrechnen</h1>
-        <p>Lieferantenrechnung <b>{{ k.lieferant }}</b>{% if k.referenz %} · {{ k.referenz }}{% endif %}{% if k.liegenschaft %} · {{ k.liegenschaft.strasse }}, {{ k.liegenschaft.ort }}{% endif %}</p>
+        <h1>{% trans "An Mieter weiterverrechnen" %}</h1>
+        <p>{% trans "Lieferantenrechnung" %} <b>{{ k.lieferant }}</b>{% if k.referenz %} · {{ k.referenz }}{% endif %}{% if k.liegenschaft %} · {{ k.liegenschaft.strasse }}, {{ k.liegenschaft.ort }}{% endif %}</p>
     </div>
 </div>
 
 {% if ist_hnk %}
 <div class="rounded-xl border fw-linie-krit fw-krit-flaeche px-4 py-3 mb-5 text-[13px] fw-kritisch">
-    <div class="font-bold mb-0.5">{% zeichen 'warnung' klasse='mr-1' %}Achtung: HNK-relevante Rechnung</div>
-    Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte
-    Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn du das bewusst willst — dann unten das
-    Häkchen «Trotzdem direkt weiterverrechnen» setzen.
+    <div class="font-bold mb-0.5">{% zeichen 'warnung' klasse='mr-1' %}{% trans "Achtung: HNK-relevante Rechnung" %}</div>
+    {% blocktrans trimmed %}Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn du das bewusst willst — dann unten das Häkchen «Trotzdem direkt weiterverrechnen» setzen.{% endblocktrans %}
 </div>
 {% endif %}
 
@@ -26,24 +24,24 @@
 <form method="post" class="fw-card p-5 mb-6">
     {% csrf_token %}
     <input type="hidden" name="modus" value="verteilen">
-    <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'person' klasse='fw-marke mr-1.5' %}Auf alle Mieter verteilen</h3>
-    <p class="text-[12px] fw-mutet mb-3">Verteilt den offenen Betrag (CHF {{ offen_wv|chf }}) in einem Schritt auf die
-        <b>{{ verteil_mieter }}</b> aktiven Mietverhältnisse in {{ k.liegenschaft.strasse }} nach gewähltem Schlüssel.</p>
+    <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'person' klasse='fw-marke mr-1.5' %}{% trans "Auf alle Mieter verteilen" %}</h3>
+    <p class="text-[12px] fw-mutet mb-3">{% blocktrans trimmed with betrag=offen_wv|chf n=verteil_mieter strasse=k.liegenschaft.strasse %}Verteilt den offenen Betrag (CHF {{ betrag }}) in einem Schritt auf die
+        <b>{{ n }}</b> aktiven Mietverhältnisse in {{ strasse }} nach gewähltem Schlüssel.{% endblocktrans %}</p>
     <div class="flex flex-wrap items-end gap-3">
-        <div><label class="block text-[11px] font-semibold fw-mutet mb-1">Verteilschlüssel</label>
+        <div><label class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Verteilschlüssel" %}</label>
             <select name="schluessel" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <option value="m2">Fläche (m²)</option>
-                <option value="einheit">Pro Einheit (gleich)</option>
-                <option value="wertquote">Wertquote</option>
+                <option value="m2">{% trans "Fläche (m²)" %}</option>
+                <option value="einheit">{% trans "Pro Einheit (gleich)" %}</option>
+                <option value="wertquote">{% trans "Wertquote" %}</option>
             </select></div>
-        <div class="flex-1 min-w-[12rem]"><label class="block text-[11px] font-semibold fw-mutet mb-1">Titel</label>
+        <div class="flex-1 min-w-[12rem]"><label class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Titel" %}</label>
             <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         {% if ist_hnk %}
-        <label class="flex items-center gap-2 text-[12px] fw-kritisch pb-2.5"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">Trotzdem direkt weiterverrechnen</label>
+        <label class="flex items-center gap-2 text-[12px] fw-kritisch pb-2.5"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">{% trans "Trotzdem direkt weiterverrechnen" %}</label>
         {% endif %}
         <button class="fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg"
-                onclick="return confirm('Offenen Betrag auf alle {{ verteil_mieter }} Mieter verteilen?');">
-            {% zeichen 'extern' klasse='mr-1.5' %}Verteilen
+                onclick="return confirm('{% filter escapejs %}{% blocktrans with n=verteil_mieter %}Offenen Betrag auf alle {{ n }} Mieter verteilen?{% endblocktrans %}{% endfilter %}');">
+            {% zeichen 'extern' klasse='mr-1.5' %}{% trans "Verteilen" %}
         </button>
     </div>
 </form>
@@ -57,69 +55,68 @@
 
     <!-- Übersicht der Rechnung -->
     <div class="fw-card p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div><div class="text-xs fw-faint">Rechnungsbetrag</div>
+        <div><div class="text-xs fw-faint">{% trans "Rechnungsbetrag" %}</div>
             <div class="text-lg font-bold fw-strong">CHF {{ k.betrag|chf }}</div></div>
-        <div><div class="text-xs fw-faint">Bereits weiterverrechnet</div>
+        <div><div class="text-xs fw-faint">{% trans "Bereits weiterverrechnet" %}</div>
             <div class="text-lg font-bold fw-mutet">CHF {{ k.weiterverrechnet_betrag|chf }}</div></div>
-        <div><div class="text-xs fw-faint">Noch offen</div>
+        <div><div class="text-xs fw-faint">{% trans "Noch offen" %}</div>
             <div class="text-lg font-extrabold fw-marke">CHF {{ offen_wv|chf }}</div></div>
     </div>
 
     <div class="fw-card p-5 space-y-4">
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Mieter / Vertrag *</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mieter / Vertrag *" %}</label>
             <select name="vertrag_id" required onchange="wvPreview()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <option value="">— wählen —</option>
+                <option value="">— {% trans "wählen" %} —</option>
                 {% for v in vertraege %}
                 <option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}{% if v.einheit.liegenschaft %} ({{ v.einheit.liegenschaft.strasse }}){% endif %}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Titel</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Titel" %}</label>
             <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" oninput="wvPreview()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Weiterzuverrechnen (CHF)</label>
+                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Weiterzuverrechnen (CHF)" %}</label>
                 <input name="betrag" id="wv_betrag" oninput="wvCheck(); wvPreview()" value="{% localize off %}{{ offen_wv }}{% endlocalize %}"
                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-semibold">
-                <p class="text-[11px] fw-faint mt-1">Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht.</p>
+                <p class="text-[11px] fw-faint mt-1">{% trans "Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht." %}</p>
             </div>
             <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Zuschlag (CHF, optional)</label>
+                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zuschlag (CHF, optional)" %}</label>
                 <input name="zuschlag" id="wv_zuschlag" value="0" oninput="wvPreview()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] fw-faint mt-1">Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht.</p>
+                <p class="text-[11px] fw-faint mt-1">{% trans "Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht." %}</p>
             </div>
         </div>
 
         <div id="wv-warn" class="hidden rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
-            <div class="font-bold mb-1">{% zeichen 'hinweis' klasse='mr-1' %}Hinweis</div>
+            <div class="font-bold mb-1">{% zeichen 'hinweis' klasse='mr-1' %}{% trans "Hinweis" %}</div>
             <span id="wv-warn-text"></span>
         </div>
 
         <div class="fw-markenflaeche border fw-linie-marke rounded-lg p-3 text-xs fw-mutet">
             {% zeichen 'dokument' klasse='fw-marke mr-1' %}
-            Buchung: Grundbetrag <b>1100 Debitor an 1190 Durchlauf</b> und <b>1190 an {{ aufwand_konto }} Aufwand</b>
-            (ertragsneutral). Zuschlag <b>1100 an 3600 Ertrag</b>. Die neue Rechnung bleibt mit dieser
-            Lieferantenrechnung verknüpft.
+            {% blocktrans trimmed with konto=aufwand_konto %}Buchung: Grundbetrag <b>1100 Debitor an 1190 Durchlauf</b> und <b>1190 an {{ konto }} Aufwand</b>
+            (ertragsneutral). Zuschlag <b>1100 an 3600 Ertrag</b>. Die neue Rechnung bleibt mit dieser Lieferantenrechnung verknüpft.{% endblocktrans %}
         </div>
     </div>
 
     {% if ist_hnk %}
-    <label class="flex items-center gap-2 text-[12.5px] fw-kritisch font-medium"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)</label>
+    <label class="flex items-center gap-2 text-[12.5px] fw-kritisch font-medium"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">{% trans "Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)" %}</label>
     {% endif %}
     <div class="flex items-center gap-3">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'extern' klasse='mr-1.5' %}Weiterverrechnen &amp; Debitor erstellen
+            {% zeichen 'extern' klasse='mr-1.5' %}{% trans "Weiterverrechnen &amp; Debitor erstellen" %}
         </button>
-        <a href="/neu/kreditoren/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
+        <a href="/neu/kreditoren/" class="text-sm fw-mutet hover:fw-ink font-medium">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 
 <!-- RECHTS: Live-Vorschau der entstehenden Debitorenrechnung -->
 <div class="lg:sticky lg:top-24">
-    <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2">{% zeichen 'rechnung' %} Live-Vorschau</div>
+    <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2">{% zeichen 'rechnung' %} {% trans "Live-Vorschau" %}</div>
     <div id="wv-pv" class="fw-card p-6 text-[13px] fw-strong leading-relaxed"></div>
 </div>
 </div>
@@ -132,9 +129,8 @@ function wvCheck(){
     var b = parseFloat((document.getElementById('wv_betrag').value||'').replace(',','.'));
     var box = document.getElementById('wv-warn'), t = document.getElementById('wv-warn-text');
     if (!isNaN(b) && b > WV_OFFEN + 0.005) {
-        t.textContent = 'Der Grundbetrag übersteigt den noch offenen weiterzuverrechnenden Anteil (CHF ' +
-            WV_OFFEN.toLocaleString('de-CH') + '). Er wird beim Speichern auf diesen Betrag begrenzt — ' +
-            'für einen höheren Betrag den Zuschlag verwenden.';
+        t.textContent = '{% filter escapejs %}{% trans "Der Grundbetrag übersteigt den noch offenen weiterzuverrechnenden Anteil (CHF {betrag}). Er wird beim Speichern auf diesen Betrag begrenzt — für einen höheren Betrag den Zuschlag verwenden." %}{% endfilter %}'
+            .replace('{betrag}', WV_OFFEN.toLocaleString('de-CH'));
         box.classList.remove('hidden');
     } else { box.classList.add('hidden'); }
 }

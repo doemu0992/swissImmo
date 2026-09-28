@@ -1,23 +1,23 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Abrechnung {{ md.firma_oder_name }} {{ jahr }}{% endblock %}
+{% block title %}{% blocktrans with name=md.firma_oder_name %}Abrechnung {{ name }} {{ jahr }}{% endblocktrans %}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/mandate/" class="hover:fw-marke">Mandate</a>
+    <a href="/neu/mandate/" class="hover:fw-marke">{% trans "Mandate" %}</a>
     {% zeichen 'weiter' klasse='text-[9px]' %}
-    <span class="fw-mutet font-medium">{{ md.firma_oder_name }} · Abrechnung {{ jahr }}</span>
+    <span class="fw-mutet font-medium">{{ md.firma_oder_name }} · {% blocktrans %}Abrechnung {{ jahr }}{% endblocktrans %}</span>
 </nav>
 
 <div class="fw-phead">
     <div>
-        <h1>Eigentümerabrechnung {{ jahr }}</h1>
+        <h1>{% blocktrans %}Eigentümerabrechnung {{ jahr }}{% endblocktrans %}</h1>
         <p>{{ md.firma_oder_name }} · {{ von|date:"d.m.Y" }} – {{ bis|date:"d.m.Y" }}</p>
     </div>
     <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <a href="/neu/mandate/{{ md.id }}/kontokorrent/?jahr={{ jahr }}"
            class="fw-flaeche border fw-linie hover:fw-linie-marke fw-mutet hover:fw-marke text-sm font-semibold px-4 py-2 rounded-lg">
-            {% zeichen 'recht' klasse='mr-1.5' %}Kontokorrent
+            {% zeichen 'recht' klasse='mr-1.5' %}{% trans "Kontokorrent" %}
         </a>
         <a href="/neu/mandate/{{ md.id }}/abrechnung/?jahr={{ jahr }}&pdf=1" target="_blank" rel="noopener"
            class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg shadow-sm">
@@ -28,7 +28,7 @@
 
 <!-- Jahresfilter -->
 <div class="flex items-center gap-1.5 flex-wrap mb-5">
-    <span class="text-xs font-semibold fw-faint mr-1">Jahr:</span>
+    <span class="text-xs font-semibold fw-faint mr-1">{% trans "Jahr" %}:</span>
     {% for j in jahre %}
     <a href="?jahr={{ j }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
               {% if jahr == j %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ j }}</a>
@@ -38,26 +38,26 @@
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5">
-        <div class="text-2xl font-bold fw-gut">CHF {{ totals.ertrag|chf }}</div><div class="text-sm fw-mutet">Erträge</div>
+        <div class="text-2xl font-bold fw-gut">CHF {{ totals.ertrag|chf }}</div><div class="text-sm fw-mutet">{% trans "Erträge" %}</div>
     </div>
     <div class="fw-card p-5">
-        <div class="text-2xl font-bold fw-kritisch">CHF {{ totals.aufwand|chf }}</div><div class="text-sm fw-mutet">Aufwände</div>
+        <div class="text-2xl font-bold fw-kritisch">CHF {{ totals.aufwand|chf }}</div><div class="text-sm fw-mutet">{% trans "Aufwände" %}</div>
     </div>
     <div class="fw-card p-5">
         <div class="text-2xl font-bold {% if totals.saldo >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">CHF {{ totals.saldo|chf }}</div>
-        <div class="text-sm fw-mutet">{% if totals.saldo >= 0 %}Auszahlung an Eigentümer{% else %}Nachschuss{% endif %}</div>
+        <div class="text-sm fw-mutet">{% if totals.saldo >= 0 %}{% trans "Auszahlung an Eigentümer" %}{% else %}{% trans "Nachschuss" %}{% endif %}</div>
     </div>
 </div>
 
 <div class="fw-card overflow-hidden">
-    <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">Liegenschaften</div>
+    <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% trans "Liegenschaften" %}</div>
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">Liegenschaft</th>
-                <th class="px-5 py-3 font-semibold text-right">Ertrag</th>
-                <th class="px-5 py-3 font-semibold text-right">Aufwand</th>
-                <th class="px-5 py-3 font-semibold text-right">Saldo</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Liegenschaft" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Ertrag" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Aufwand" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Saldo" %}</th>
             </tr></thead>
             <tbody class="fw-dv">
             {% for z in zeilen %}
@@ -70,12 +70,12 @@
                 <td class="px-5 py-3 text-right font-semibold whitespace-nowrap {% if z.saldo < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">{{ z.saldo|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="px-5 py-8 text-center text-sm fw-faint italic">Keine Liegenschaften diesem Eigentümer zugeordnet.</td></tr>
+            <tr><td colspan="4" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Liegenschaften diesem Eigentümer zugeordnet." %}</td></tr>
             {% endfor %}
             </tbody>
             {% if zeilen %}
             <tfoot><tr class="border-t-2 fw-linie font-bold fw-strong">
-                <td class="px-5 py-3">Total</td>
+                <td class="px-5 py-3">{% trans "Total" %}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">{{ totals.ertrag|chf }}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">{{ totals.aufwand|chf }}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">{{ totals.saldo|chf }}</td>
@@ -85,6 +85,5 @@
     </div>
 </div>
 <p class="text-xs fw-faint mt-4">{% zeichen 'hinweis' klasse='mr-1' %}
-    Erträge und Aufwände stammen aus den verbuchten Buchungen der zugeordneten Liegenschaften. Der Saldo ist die
-    Auszahlung an den Eigentümer (bzw. ein Nachschuss bei negativem Saldo).</p>
+    {% trans "Erträge und Aufwände stammen aus den verbuchten Buchungen der zugeordneten Liegenschaften. Der Saldo ist die Auszahlung an den Eigentümer (bzw. ein Nachschuss bei negativem Saldo)." %}</p>
 {% endblock %}

@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.db import transaction
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN,
                        VERWALTUNGS_ROLLEN)
@@ -176,8 +177,8 @@ def fw_nebenkosten_detail(request, pk):
         datum__gte=p.start_datum, datum__lte=p.ende_datum).exclude(status='storniert')) if lg else []
 
     tab_liste = [
-        ('abrechnung', 'Mieter-Abrechnung', len(abrechnungen) or None),
-        ('belege', 'Belege', (len(result.get('belege_details', [])) or belege.count()) or None),
+        ('abrechnung', _('Mieter-Abrechnung'), len(abrechnungen) or None),
+        ('belege', _('Belege'), (len(result.get('belege_details', [])) or belege.count()) or None),
     ]
     return render(request, 'fw/nebenkosten_detail.html', {
         **basis, 'nav': 'nebenkosten', 'p': p,

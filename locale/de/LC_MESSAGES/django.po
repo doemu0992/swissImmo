@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 23:48+0200\n"
+"POT-Creation-Date: 2026-09-29 00:11+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,7 +51,9 @@ msgid "Akten"
 msgstr "Akten"
 
 #: core/navigation.py:136 core/templates/fw/dashboard.html:339
-#: core/templates/fw/mandate.html:3 core/templates/fw/mandate.html:6
+#: core/templates/fw/eigentuemer_kontokorrent.html:7
+#: core/templates/fw/mandat_abrechnung.html:7 core/templates/fw/mandate.html:3
+#: core/templates/fw/mandate.html:6
 msgid "Mandate"
 msgstr "Mandate"
 
@@ -59,6 +61,7 @@ msgstr "Mandate"
 #: core/templates/fw/liegenschaften.html:4
 #: core/templates/fw/liegenschaften.html:10
 #: core/templates/fw/liegenschaften.html:38
+#: core/templates/fw/mandat_abrechnung.html:53
 msgid "Liegenschaften"
 msgstr "Liegenschaften"
 
@@ -137,6 +140,7 @@ msgstr "Zahllauf"
 
 #: core/navigation.py:159 core/templates/fw/finanzen.html:139
 #: core/templates/fw/nebenkosten.html:4 core/templates/fw/nebenkosten.html:9
+#: core/templates/fw/nebenkosten_detail.html:10
 msgid "Nebenkosten"
 msgstr "Nebenkosten"
 
@@ -160,7 +164,7 @@ msgstr "Finanzen"
 
 #: core/navigation.py:167 core/templates/fw/finanzen.html:135
 #: core/templates/fw/mieterkonten.html:4 core/templates/fw/mieterkonten.html:8
-#: core/views/fw/listen.py:765
+#: core/templates/fw/mieterkonto.html:7 core/views/fw/listen.py:765
 msgid "Mieterkonten"
 msgstr "Mieterkonten"
 
@@ -180,6 +184,7 @@ msgstr "Kautionen"
 
 #: core/navigation.py:170 core/templates/fw/kreditoren.html:4
 #: core/templates/fw/kreditoren.html:9
+#: core/templates/fw/lieferantenkonto.html:16
 msgid "Kreditoren"
 msgstr "Kreditoren"
 
@@ -189,7 +194,8 @@ msgstr "Verbindlichkeiten"
 
 #: core/navigation.py:171 core/templates/fw/finanzen.html:136
 #: core/templates/fw/lieferantenkonten.html:4
-#: core/templates/fw/lieferantenkonten.html:8 core/views/fw/listen.py:768
+#: core/templates/fw/lieferantenkonten.html:8
+#: core/templates/fw/lieferantenkonto.html:7 core/views/fw/listen.py:768
 msgid "Lieferantenkonten"
 msgstr "Lieferantenkonten"
 
@@ -203,7 +209,7 @@ msgid "Konten"
 msgstr "Konten"
 
 #: core/navigation.py:173 core/templates/fw/buchhaltung.html:4
-#: core/templates/fw/buchhaltung.html:9
+#: core/templates/fw/buchhaltung.html:9 core/templates/fw/kontoblatt.html:7
 msgid "Buchhaltung"
 msgstr "Buchhaltung"
 
@@ -439,7 +445,9 @@ msgstr "Ihre Liegenschaften, sauber im Griff."
 msgid ""
 "Mieten, Nebenkosten, Buchhaltung und Kommunikation — die Schweizer "
 "Liegenschaftsverwaltung in einem Cockpit."
-msgstr "Mieten, Nebenkosten, Buchhaltung und Kommunikation — die Schweizer Liegenschaftsverwaltung in einem Cockpit."
+msgstr ""
+"Mieten, Nebenkosten, Buchhaltung und Kommunikation — die Schweizer "
+"Liegenschaftsverwaltung in einem Cockpit."
 
 #: core/templates/core/login.html:149
 msgid "QR-Rechnungen &amp; automatischer Bankabgleich"
@@ -487,7 +495,10 @@ msgid ""
 "<b>Mieterin, Mieter oder Eigentümer?</b> Nutzen Sie das <a "
 "href=\"%(portal_url)s\">Portal-Login</a> mit den Zugangsdaten, die Sie per E-"
 "Mail von Ihrer Verwaltung erhalten haben."
-msgstr "<b>Mieterin, Mieter oder Eigentümer?</b> Nutzen Sie das <a href=\"%(portal_url)s\">Portal-Login</a> mit den Zugangsdaten, die Sie per E-Mail von Ihrer Verwaltung erhalten haben."
+msgstr ""
+"<b>Mieterin, Mieter oder Eigentümer?</b> Nutzen Sie das <a "
+"href=\"%(portal_url)s\">Portal-Login</a> mit den Zugangsdaten, die Sie per E-"
+"Mail von Ihrer Verwaltung erhalten haben."
 
 #: core/templates/core/login.html:210
 msgid "Zurück zum öffentlichen Portal"
@@ -506,6 +517,7 @@ msgstr ""
 "automatisch gemeldet."
 
 #: core/templates/core/mieter_daten.html:17
+#: core/templates/fw/mieterkonto.html:18
 msgid "Person"
 msgstr "Person"
 
@@ -784,6 +796,7 @@ msgstr "Offene Rechnungen mit QR-Einzahlschein zum Herunterladen."
 #: core/templates/fw/bankabgleich.html:350 core/templates/fw/debitoren.html:196
 #: core/templates/fw/laeufe.html:20 core/templates/fw/lieferantenkonten.html:30
 #: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
+#: core/templates/fw/nebenkosten_detail.html:34
 #: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
 #: core/views/fw/_basis.py:353
 msgid "Offen"
@@ -796,6 +809,8 @@ msgid "fällig %(datum)s"
 msgstr "fällig %(datum)s"
 
 #: core/templates/core/mieter_rechnungen.html:28
+#: core/templates/fw/lieferantenkonto.html:53
+#: core/templates/fw/mieterkonto.html:58
 msgid "überfällig"
 msgstr "überfällig"
 
@@ -823,7 +838,7 @@ msgstr "bezahlt"
 #: core/templates/fw/buchhaltung.html:338
 #: core/templates/fw/buchhaltung.html:368
 #: core/templates/fw/buchhaltung.html:398
-#: core/templates/fw/buchhaltung.html:401
+#: core/templates/fw/buchhaltung.html:401 core/templates/fw/kontoblatt.html:68
 msgid "Beleg"
 msgstr "Beleg"
 
@@ -848,6 +863,7 @@ msgstr ""
 #: core/templates/fw/debitoren.html:193 core/templates/fw/kreditoren.html:162
 #: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
 #: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
+#: core/templates/fw/nebenkosten_detail.html:114
 #: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
 #: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
 msgid "Objekt"
@@ -871,6 +887,7 @@ msgstr "z.B. Badezimmer"
 
 #: core/templates/core/mieter_schaden.html:37
 #: core/templates/fw/debitoren.html:47
+#: core/templates/fw/nebenkosten_detail.html:154
 msgid "Beschreibung"
 msgstr "Beschreibung"
 
@@ -1143,7 +1160,9 @@ msgstr "Bruttorendite*"
 msgid ""
 "* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) ÷ "
 "Gebäudeversicherungswert (Näherung)."
-msgstr "* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) ÷ Gebäudeversicherungswert (Näherung)."
+msgstr ""
+"* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) ÷ "
+"Gebäudeversicherungswert (Näherung)."
 
 #: core/templates/core/portal.html:294
 #, python-format
@@ -1171,6 +1190,7 @@ msgstr "Zimmer / m²"
 #: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
 #: core/templates/fw/mieterkonten.html:46
 #: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
+#: core/templates/fw/nebenkosten_detail.html:113
 #: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
 msgid "Mieter"
 msgstr "Mieter"
@@ -1200,13 +1220,17 @@ msgstr "Keine Einheiten erfasst."
 msgid ""
 "Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich "
 "an Ihre Verwaltung."
-msgstr "Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung."
+msgstr ""
+"Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich "
+"an Ihre Verwaltung."
 
 #: core/templates/core/portal.html:341
 msgid ""
 "Ihr Login ist noch keinem Eigentümer-Dossier zugeordnet. Bitte wenden Sie "
 "sich an Ihre Verwaltung, damit der Zugang freigeschaltet wird."
-msgstr "Ihr Login ist noch keinem Eigentümer-Dossier zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung, damit der Zugang freigeschaltet wird."
+msgstr ""
+"Ihr Login ist noch keinem Eigentümer-Dossier zugeordnet. Bitte wenden Sie "
+"sich an Ihre Verwaltung, damit der Zugang freigeschaltet wird."
 
 #: core/templates/core/portal.html:344
 msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
@@ -1240,7 +1264,9 @@ msgstr "Ihr persönliches Immobilien-Portal"
 msgid ""
 "Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht "
 "zur Verwaltung — an einem Ort."
-msgstr "Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht zur Verwaltung — an einem Ort."
+msgstr ""
+"Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht "
+"zur Verwaltung — an einem Ort."
 
 #: core/templates/core/portal_login.html:151
 msgid "Mietvertrag &amp; Dokumente jederzeit abrufbar"
@@ -1278,7 +1304,9 @@ msgstr "Passwort anzeigen"
 msgid ""
 "🔑 Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung. Noch keinen "
 "Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung."
-msgstr "🔑 Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung. Noch keinen Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung."
+msgstr ""
+"🔑 Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung. Noch keinen "
+"Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung."
 
 #: core/templates/core/portal_login.html:213
 msgid "Zurück zur Startseite"
@@ -1427,6 +1455,7 @@ msgstr "Speichern"
 #: core/templates/fw/kreditoren.html:307
 #: core/templates/fw/regelsatz_form.html:105
 #: core/templates/fw/vorlage_form.html:39
+#: core/templates/fw/weiterverrechnung.html:113
 msgid "Abbrechen"
 msgstr "Abbrechen"
 
@@ -1831,7 +1860,7 @@ msgstr "ohne Datum — Liegezeit nicht berechenbar"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:474
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:495
 msgid "Abwesenheiten"
 msgstr "Abwesenheiten"
 
@@ -2069,7 +2098,7 @@ msgid "Wer"
 msgstr "Wer"
 
 #: core/templates/fw/abwesenheiten.html:26
-#: core/templates/fw/buchhaltung.html:288
+#: core/templates/fw/buchhaltung.html:288 core/templates/fw/mieterkonto.html:72
 msgid "Von"
 msgstr "Von"
 
@@ -2346,7 +2375,9 @@ msgstr "Anlage"
 #: core/templates/fw/anlagen.html:102 core/templates/fw/anlagen.html:120
 #: core/templates/fw/auswertung.html:29 core/templates/fw/bankabgleich.html:185
 #: core/templates/fw/betriebskostenspiegel.html:43
+#: core/templates/fw/eigentuemer_kontokorrent.html:59
 #: core/templates/fw/kreditoren.html:78 core/templates/fw/kreditoren.html:289
+#: core/templates/fw/mandat_abrechnung.html:57
 #: core/templates/fw/nebenkosten.html:70 core/templates/fw/objekte.html:74
 msgid "Liegenschaft"
 msgstr "Liegenschaft"
@@ -2389,7 +2420,12 @@ msgid "Wert CHF"
 msgstr "Wert CHF"
 
 #: core/templates/fw/anlagen.html:59 core/templates/fw/buchhaltung.html:41
-#: core/templates/fw/buchhaltung.html:367 core/templates/fw/mahnwesen.html:145
+#: core/templates/fw/buchhaltung.html:367
+#: core/templates/fw/eigentuemer_kontokorrent.html:161
+#: core/templates/fw/kontoblatt.html:68
+#: core/templates/fw/lieferantenkonto.html:70
+#: core/templates/fw/mahnwesen.html:145 core/templates/fw/mieterkonto.html:86
+#: core/templates/fw/nebenkosten_detail.html:154
 msgid "Datum"
 msgstr "Datum"
 
@@ -2506,7 +2542,8 @@ msgstr ""
 msgid "Kennzahl"
 msgstr "Kennzahl"
 
-#: core/templates/fw/auswertung.html:23 core/templates/fw/mwst.html:15
+#: core/templates/fw/auswertung.html:23
+#: core/templates/fw/mandat_abrechnung.html:31 core/templates/fw/mwst.html:15
 #: core/templates/fw/sollstellung.html:27
 msgid "Jahr"
 msgstr "Jahr"
@@ -2570,6 +2607,8 @@ msgid "aufheben"
 msgstr "aufheben"
 
 #: core/templates/fw/bankabgleich.html:14
+#: core/templates/fw/zahler_zuordnungen.html:3
+#: core/templates/fw/zahler_zuordnungen.html:8
 msgid "Gelernte Zahler"
 msgstr "Gelernte Zahler"
 
@@ -2578,7 +2617,7 @@ msgid "Abzugleichen (offen)"
 msgstr "Abzugleichen (offen)"
 
 #: core/templates/fw/bankabgleich.html:25 core/templates/fw/debitoren.html:108
-#: core/templates/fw/finanzen.html:61
+#: core/templates/fw/finanzen.html:61 core/templates/fw/mieterkonto.html:47
 msgid "Offene Posten"
 msgstr "Offene Posten"
 
@@ -2686,6 +2725,7 @@ msgid "Val. %(datum)s"
 msgstr "Val. %(datum)s"
 
 #: core/templates/fw/bankabgleich.html:140
+#: core/templates/fw/lieferantenkonto.html:72
 msgid "Belastung"
 msgstr "Belastung"
 
@@ -2709,6 +2749,7 @@ msgstr "Offene Lieferantenrechnung"
 
 #: core/templates/fw/bankabgleich.html:162 core/templates/fw/hypotheken.html:25
 #: core/templates/fw/nebenkosten.html:23
+#: core/templates/fw/weiterverrechnung.html:70
 msgid "wählen"
 msgstr "wählen"
 
@@ -2716,7 +2757,7 @@ msgstr "wählen"
 msgid "Als Zahlung buchen"
 msgstr "Als Zahlung buchen"
 
-#: core/templates/fw/bankabgleich.html:175
+#: core/templates/fw/bankabgleich.html:175 core/templates/fw/kontoblatt.html:69
 msgid "Gegenkonto"
 msgstr "Gegenkonto"
 
@@ -2776,6 +2817,7 @@ msgstr "Bitte zuerst Zahlungen auswählen."
 #: core/templates/fw/bankabgleich.html:236
 #: core/templates/fw/buchhaltung.html:26 core/templates/fw/dashboard.html:72
 #: core/templates/fw/dashboard.html:82 core/templates/fw/dashboard.html:183
+#: core/templates/fw/kontoblatt.html:21
 #: core/templates/fw/liegenschaften.html:60 core/views/fw/arbeit.py:42
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
 #: core/views/fw/listen.py:207 core/views/fw/listen.py:1108
@@ -2868,6 +2910,7 @@ msgid "CHF %(betrag)s von %(mieter)s als bezahlt verbuchen?"
 msgstr "CHF %(betrag)s von %(mieter)s als bezahlt verbuchen?"
 
 #: core/templates/fw/bankabgleich.html:371
+#: core/templates/fw/nebenkosten_detail.html:38
 msgid "Verbuchen"
 msgstr "Verbuchen"
 
@@ -3271,6 +3314,7 @@ msgid "Manuelle Buchung (Soll an Haben)"
 msgstr "Manuelle Buchung (Soll an Haben)"
 
 #: core/templates/fw/buchhaltung.html:44 core/templates/fw/debitoren.html:40
+#: core/templates/fw/eigentuemer_kontokorrent.html:155
 #: core/templates/fw/hypotheken.html:32
 msgid "Betrag (CHF) *"
 msgstr "Betrag (CHF) *"
@@ -3312,12 +3356,18 @@ msgid "Kontenplan verwalten"
 msgstr "Kontenplan verwalten"
 
 #: core/templates/fw/buchhaltung.html:102
-#: core/templates/fw/buchhaltung.html:122 core/views/fw/buchhaltung.py:495
+#: core/templates/fw/buchhaltung.html:122
+#: core/templates/fw/eigentuemer_kontokorrent.html:34
+#: core/templates/fw/eigentuemer_kontokorrent.html:60
+#: core/templates/fw/mandat_abrechnung.html:58 core/views/fw/buchhaltung.py:495
 msgid "Ertrag"
 msgstr "Ertrag"
 
 #: core/templates/fw/buchhaltung.html:106
-#: core/templates/fw/buchhaltung.html:146 core/views/fw/buchhaltung.py:495
+#: core/templates/fw/buchhaltung.html:146
+#: core/templates/fw/eigentuemer_kontokorrent.html:34
+#: core/templates/fw/eigentuemer_kontokorrent.html:61
+#: core/templates/fw/mandat_abrechnung.html:59 core/views/fw/buchhaltung.py:495
 msgid "Aufwand"
 msgstr "Aufwand"
 
@@ -3415,6 +3465,7 @@ msgstr ""
 "diese Buchungen fehlen dem Treuhandbüro die Abschlusssätze im Journal-Export."
 
 #: core/templates/fw/buchhaltung.html:244 core/templates/fw/nebenkosten.html:48
+#: core/templates/fw/nebenkosten_detail.html:33
 msgid "Abgeschlossen"
 msgstr "Abgeschlossen"
 
@@ -3452,11 +3503,12 @@ msgstr "Text oder Beleg-Nr"
 msgid "z.B. Hauswartung, 2024-0042"
 msgstr "z.B. Hauswartung, 2024-0042"
 
-#: core/templates/fw/buchhaltung.html:292
+#: core/templates/fw/buchhaltung.html:292 core/templates/fw/mieterkonto.html:74
 msgid "Bis"
 msgstr "Bis"
 
 #: core/templates/fw/buchhaltung.html:296 core/templates/fw/logbuch.html:83
+#: core/templates/fw/mieterkonto.html:76
 #: core/templates/fw/regelwerk_protokoll.html:47
 msgid "Filtern"
 msgstr "Filtern"
@@ -3483,6 +3535,7 @@ msgstr "%(soll)s an %(haben)s"
 
 #: core/templates/fw/buchhaltung.html:340
 #: core/templates/fw/buchhaltung.html:404
+#: core/templates/fw/lieferantenkonto.html:73
 msgid "Zahlung"
 msgstr "Zahlung"
 
@@ -3512,16 +3565,19 @@ msgid "Summe (%(n)s)"
 msgstr "Summe (%(n)s)"
 
 #: core/templates/fw/buchhaltung.html:369 core/templates/fw/kontenplan.html:87
+#: core/templates/fw/kontoblatt.html:70 core/templates/fw/mieterkonto.html:88
 msgid "Soll"
 msgstr "Soll"
 
 #: core/templates/fw/buchhaltung.html:370 core/templates/fw/kontenplan.html:88
+#: core/templates/fw/kontoblatt.html:70 core/templates/fw/mieterkonto.html:89
 msgid "Haben"
 msgstr "Haben"
 
 #: core/templates/fw/buchhaltung.html:371 core/templates/fw/debitoren.html:195
 #: core/templates/fw/hypotheken.html:86 core/templates/fw/kautionen.html:26
 #: core/templates/fw/kreditoren.html:165 core/templates/fw/kreditoren.html:350
+#: core/templates/fw/nebenkosten_detail.html:154
 msgid "Betrag"
 msgstr "Betrag"
 
@@ -3832,6 +3888,7 @@ msgstr ""
 "QR-Button in der Liste."
 
 #: core/templates/fw/debitoren.html:55
+#: core/templates/fw/weiterverrechnung.html:119
 msgid "Live-Vorschau"
 msgstr "Live-Vorschau"
 
@@ -3880,11 +3937,24 @@ msgstr ""
 "Rechnung «%(titel)s» stornieren? Sie wird revisionssicher mit Gegenbuchung "
 "aufgehoben."
 
+#: core/templates/fw/debitoren.html:181 core/templates/fw/debitoren.html:243
+#: core/templates/fw/dienstleister.html:130 core/templates/fw/personen.html:56
+#: core/templates/fw/personen.html:105 core/templates/fw/vertraege.html:58
+#: core/templates/fw/vertraege.html:106
+msgid "Keine Treffer"
+msgstr "Keine Treffer"
+
+#: core/templates/fw/debitoren.html:181 core/templates/fw/debitoren.html:243
+msgid "Für diesen Filter wurden keine Rechnungen gefunden."
+msgstr "Für diesen Filter wurden keine Rechnungen gefunden."
+
 #: core/templates/fw/debitoren.html:191
 msgid "Fälligkeit"
 msgstr "Fälligkeit"
 
 #: core/templates/fw/debitoren.html:194 core/templates/fw/termine.html:23
+#: core/templates/fw/weiterverrechnung.html:37
+#: core/templates/fw/weiterverrechnung.html:77
 msgid "Titel"
 msgstr "Titel"
 
@@ -3981,7 +4051,10 @@ msgid "&gt;90"
 msgstr "&gt;90"
 
 #: core/templates/fw/debitoren_aging.html:56
-#: core/templates/fw/kontenplan.html:150 core/templates/fw/sollstellung.html:86
+#: core/templates/fw/eigentuemer_kontokorrent.html:80
+#: core/templates/fw/kontenplan.html:150
+#: core/templates/fw/mandat_abrechnung.html:78
+#: core/templates/fw/sollstellung.html:86
 msgid "Total"
 msgstr "Total"
 
@@ -4109,12 +4182,6 @@ msgstr "Keine Kontaktdaten hinterlegt"
 msgid "Auftrag per E-Mail"
 msgstr "Auftrag per E-Mail"
 
-#: core/templates/fw/dienstleister.html:130 core/templates/fw/personen.html:56
-#: core/templates/fw/personen.html:105 core/templates/fw/vertraege.html:58
-#: core/templates/fw/vertraege.html:106
-msgid "Keine Treffer"
-msgstr "Keine Treffer"
-
 #: core/templates/fw/dienstleister.html:130
 msgid "Noch keine Dienstleister erfasst"
 msgstr "Noch keine Dienstleister erfasst"
@@ -4122,6 +4189,176 @@ msgstr "Noch keine Dienstleister erfasst"
 #: core/templates/fw/dienstleister.html:131
 msgid "Handwerker werden in der klassischen Ansicht erfasst."
 msgstr "Handwerker werden in der klassischen Ansicht erfasst."
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:4
+#, python-format
+msgid "Kontokorrent %(name)s"
+msgstr "Kontokorrent %(name)s"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:9
+#: core/templates/fw/mandat_abrechnung.html:20
+#: core/templates/fw/mandate.html:34
+msgid "Kontokorrent"
+msgstr "Kontokorrent"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:14
+msgid "Kontokorrent Eigentümer"
+msgstr "Kontokorrent Eigentümer"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:15
+msgid "Ergebnis der Liegenschaften abzüglich Auszahlungen."
+msgstr "Ergebnis der Liegenschaften abzüglich Auszahlungen."
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:19
+#: core/templates/fw/mandate.html:33
+msgid "Abrechnung"
+msgstr "Abrechnung"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:22
+msgid "Kumuliert"
+msgstr "Kumuliert"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:32
+msgid "Ergebnis Liegenschaften"
+msgstr "Ergebnis Liegenschaften"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:37
+msgid "Bereits ausbezahlt"
+msgstr "Bereits ausbezahlt"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:39
+#, python-format
+msgid "%(n)s Auszahlung"
+msgid_plural "%(n)s Auszahlungen"
+msgstr[0] "%(n)s Auszahlung"
+msgstr[1] "%(n)s Auszahlungen"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:43
+msgid "Offen an Eigentümer"
+msgstr "Offen an Eigentümer"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:43
+msgid "Überzahlung (Eigentümer schuldet)"
+msgstr "Überzahlung (Eigentümer schuldet)"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:54
+msgid "Ergebnis je Liegenschaft"
+msgstr "Ergebnis je Liegenschaft"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:62
+msgid "Ergebnis"
+msgstr "Ergebnis"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:74
+msgid "Keine verbuchten Bewegungen"
+msgstr "Keine verbuchten Bewegungen"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:93
+msgid "Auszahlungen an den Eigentümer"
+msgstr "Auszahlungen an den Eigentümer"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:99
+msgid "ab Konto"
+msgstr "ab Konto"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:104
+msgid "Noch keine Auszahlungen erfasst."
+msgstr "Noch keine Auszahlungen erfasst."
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:114
+#, python-format
+msgid "Verwaltungshonorar %(jahr)s"
+msgstr "Verwaltungshonorar %(jahr)s"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:115
+#, python-format
+msgid ""
+"%(p)s %% der Mieterträge · Soll 4500 / Haben 2850 (Kontokorrent Eigentümer) "
+"— das Honorar ist eine Verrechnung, kein Geldfluss; ausbezahlt wird es über "
+"die Auszahlung unten."
+msgstr ""
+"%(p)s %% der Mieterträge · Soll 4500 / Haben 2850 (Kontokorrent Eigentümer) "
+"— das Honorar ist eine Verrechnung, kein Geldfluss; ausbezahlt wird es über "
+"die Auszahlung unten."
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:123
+msgid "gebucht"
+msgstr "gebucht"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:126
+#, python-format
+msgid "Keine Liegenschaften mit Mietertrag in %(jahr)s."
+msgstr "Keine Liegenschaften mit Mietertrag in %(jahr)s."
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:135
+#, python-format
+msgid "Verwaltungshonorar %(jahr)s verbuchen: CHF %(total)s?"
+msgstr "Verwaltungshonorar %(jahr)s verbuchen: CHF %(total)s?"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:136
+#, python-format
+msgid "Honorar %(jahr)s buchen (CHF %(total)s)"
+msgstr "Honorar %(jahr)s buchen (CHF %(total)s)"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:140
+#, python-format
+msgid "Honorar %(jahr)s vollständig verbucht."
+msgstr "Honorar %(jahr)s vollständig verbucht."
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:145
+msgid "Verwaltungshonorar"
+msgstr "Verwaltungshonorar"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:146
+#, python-format
+msgid ""
+"Kein Honorarsatz hinterlegt. <a href=\"/neu/mandate/%(id)s/bearbeiten/\" "
+"class=\"fw-marke hover:underline\">Im Mandat setzen</a>, um es hier zu "
+"buchen."
+msgstr ""
+"Kein Honorarsatz hinterlegt. <a href=\"/neu/mandate/%(id)s/bearbeiten/\" "
+"class=\"fw-marke hover:underline\">Im Mandat setzen</a>, um es hier zu "
+"buchen."
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:150
+msgid "Auszahlung erfassen"
+msgstr "Auszahlung erfassen"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:151
+msgid "Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank."
+msgstr "Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank."
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:166
+msgid "Ab Bankkonto"
+msgstr "Ab Bankkonto"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:172
+msgid "Bemerkung"
+msgstr "Bemerkung"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:173
+msgid "z. B. Quartalsauszahlung Q2"
+msgstr "z. B. Quartalsauszahlung Q2"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:177
+msgid "Auszahlung verbuchen"
+msgstr "Auszahlung verbuchen"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:180
+msgid "Eigentümer-IBAN:"
+msgstr "Eigentümer-IBAN:"
+
+#: core/templates/fw/eigentuemer_kontokorrent.html:184
+msgid ""
+"Der offene Saldo ist eine Verwaltungssicht (Ergebnis der bewirtschafteten "
+"Liegenschaften minus Auszahlungen). Auszahlungen werden über das "
+"Kontokorrent Eigentümer (Konto 2850) gebucht und mindern die Verbindlichkeit "
+"gegenüber dem Eigentümer sowie die liquiden Mittel."
+msgstr ""
+"Der offene Saldo ist eine Verwaltungssicht (Ergebnis der bewirtschafteten "
+"Liegenschaften minus Auszahlungen). Auszahlungen werden über das "
+"Kontokorrent Eigentümer (Konto 2850) gebucht und mindern die Verbindlichkeit "
+"gegenüber dem Eigentümer sowie die liquiden Mittel."
 
 #: core/templates/fw/einstellungen.html:10
 msgid "Konto, Team, Vorlagen und Integrationen — alles an einem Ort."
@@ -4362,6 +4599,8 @@ msgid "Test-E-Mail senden"
 msgstr "Test-E-Mail senden"
 
 #: core/templates/fw/integrationen.html:41
+#: core/templates/fw/zahler_zuordnungen.html:9
+#: core/templates/fw/zahler_zuordnungen.html:79
 msgid "Zum Bankabgleich"
 msgstr "Zum Bankabgleich"
 
@@ -4550,6 +4789,7 @@ msgid "Typ *"
 msgstr "Typ *"
 
 #: core/templates/fw/kontenplan.html:61
+#: core/templates/fw/weiterverrechnung.html:31
 msgid "Verteilschlüssel"
 msgstr "Verteilschlüssel"
 
@@ -4565,7 +4805,14 @@ msgstr "HNK-relevant (fliesst in die Nebenkostenabrechnung)"
 msgid "Anlegen"
 msgstr "Anlegen"
 
-#: core/templates/fw/kontenplan.html:89 core/templates/fw/mieterkonten.html:49
+#: core/templates/fw/kontenplan.html:89 core/templates/fw/kontoblatt.html:52
+#: core/templates/fw/kontoblatt.html:71
+#: core/templates/fw/lieferantenkonto.html:31
+#: core/templates/fw/lieferantenkonto.html:74
+#: core/templates/fw/mandat_abrechnung.html:60
+#: core/templates/fw/mieterkonten.html:49 core/templates/fw/mieterkonto.html:34
+#: core/templates/fw/mieterkonto.html:90
+#: core/templates/fw/nebenkosten_detail.html:119
 msgid "Saldo"
 msgstr "Saldo"
 
@@ -4600,6 +4847,29 @@ msgstr ""
 "Konten ohne Bewegung sind ausgegraut, bleiben aber sichtbar — anders als in "
 "Bilanz und Erfolgsrechnung, die nur bebuchte Konten zeigen. Klick auf die "
 "Nummer öffnet das Kontoblatt."
+
+#: core/templates/fw/kontoblatt.html:4 core/templates/fw/kontoblatt.html:9
+#, python-format
+msgid "Kontoblatt %(nr)s"
+msgstr "Kontoblatt %(nr)s"
+
+#: core/templates/fw/kontoblatt.html:36 core/templates/fw/kontoblatt.html:76
+msgid "Eröffnungssaldo"
+msgstr "Eröffnungssaldo"
+
+#: core/templates/fw/kontoblatt.html:57 core/templates/fw/kontoblatt.html:90
+msgid "Keine Buchungen in diesem Zeitraum."
+msgstr "Keine Buchungen in diesem Zeitraum."
+
+#: core/templates/fw/kontoblatt.html:60 core/templates/fw/kontoblatt.html:93
+msgid "Endsaldo"
+msgstr "Endsaldo"
+
+#: core/templates/fw/kontoblatt.html:69
+#: core/templates/fw/lieferantenkonto.html:71
+#: core/templates/fw/mieterkonto.html:87
+msgid "Text"
+msgstr "Text"
 
 #: core/templates/fw/kreditoren.html:11
 msgid "Rechnung erfassen"
@@ -4901,7 +5171,7 @@ msgid "Letzte Zahlung stornieren"
 msgstr "Letzte Zahlung stornieren"
 
 #: core/templates/fw/kreditoren.html:235 core/templates/fw/kreditoren.html:238
-#: core/views/fw/dashboard.py:527
+#: core/templates/fw/weiterverrechnung.html:4 core/views/fw/dashboard.py:527
 msgid "Weiterverrechnen"
 msgstr "Weiterverrechnen"
 
@@ -5139,6 +5409,80 @@ msgstr "Keine Lieferantenkonten"
 msgid "mit offenem Saldo"
 msgstr "mit offenem Saldo"
 
+#: core/templates/fw/lieferantenkonto.html:4
+#, python-format
+msgid "Lieferantenkonto %(name)s"
+msgstr "Lieferantenkonto %(name)s"
+
+#: core/templates/fw/lieferantenkonto.html:13
+msgid "Lieferantenkonto"
+msgstr "Lieferantenkonto"
+
+#: core/templates/fw/lieferantenkonto.html:14
+msgid "alle Rechnungen und Zahlungen mit laufendem Saldo."
+msgstr "alle Rechnungen und Zahlungen mit laufendem Saldo."
+
+#: core/templates/fw/lieferantenkonto.html:22
+msgid "Rechnungen (Belastung)"
+msgstr "Rechnungen (Belastung)"
+
+#: core/templates/fw/lieferantenkonto.html:26
+msgid "Zahlungen"
+msgstr "Zahlungen"
+
+#: core/templates/fw/lieferantenkonto.html:31
+msgid "Offen an Lieferant"
+msgstr "Offen an Lieferant"
+
+#: core/templates/fw/lieferantenkonto.html:33
+#: core/templates/fw/mieterkonten.html:65 core/templates/fw/mieterkonto.html:37
+msgid "ausgeglichen"
+msgstr "ausgeglichen"
+
+#: core/templates/fw/lieferantenkonto.html:42
+msgid "Offene Rechnungen"
+msgstr "Offene Rechnungen"
+
+#: core/templates/fw/lieferantenkonto.html:52
+#: core/templates/fw/mieterkonto.html:57
+msgid "fällig"
+msgstr "fällig"
+
+#: core/templates/fw/lieferantenkonto.html:54
+#: core/templates/fw/mieterkonto.html:59
+msgid "teilbezahlt"
+msgstr "teilbezahlt"
+
+#: core/templates/fw/lieferantenkonto.html:54
+msgid "in Zahlung"
+msgstr "in Zahlung"
+
+#: core/templates/fw/lieferantenkonto.html:87
+msgid "Keine Bewegungen."
+msgstr "Keine Bewegungen."
+
+#: core/templates/fw/lieferantenkonto.html:93
+#: core/templates/fw/mieterkonto.html:109
+msgid "Total / Endsaldo"
+msgstr "Total / Endsaldo"
+
+#: core/templates/fw/lieferantenkonto.html:103
+msgid ""
+"Positiver Saldo = offene Verbindlichkeit gegenüber dem Lieferanten. "
+"Stornierte Rechnungen sind ausgeblendet."
+msgstr ""
+"Positiver Saldo = offene Verbindlichkeit gegenüber dem Lieferanten. "
+"Stornierte Rechnungen sind ausgeblendet."
+
+#: core/templates/fw/lieferantenkonto.html:108
+msgid "Verlauf — wer hat was gemacht"
+msgstr "Verlauf — wer hat was gemacht"
+
+#: core/templates/fw/lieferantenkonto.html:121
+#: core/templates/fw/logbuch.html:117
+msgid "System"
+msgstr "System"
+
 #: core/templates/fw/liegenschaften.html:11
 #, python-format
 msgid "%(n)s Liegenschaft im Portfolio"
@@ -5364,10 +5708,6 @@ msgstr "Zeitpunkt"
 msgid "Details"
 msgstr "Details"
 
-#: core/templates/fw/logbuch.html:117
-msgid "System"
-msgstr "System"
-
 #: core/templates/fw/logbuch.html:149
 msgid "Keine Einträge im gewählten Zeitraum / Filter."
 msgstr "Keine Einträge im gewählten Zeitraum / Filter."
@@ -5447,6 +5787,7 @@ msgid "Fällig seit"
 msgstr "Fällig seit"
 
 #: core/templates/fw/mahnwesen.html:68
+#: core/templates/fw/nebenkosten_detail.html:116
 msgid "Tage"
 msgstr "Tage"
 
@@ -5512,6 +5853,51 @@ msgstr "%(stufe)s. Mahnung"
 msgid "Noch keine Mahnungen erfasst."
 msgstr "Noch keine Mahnungen erfasst."
 
+#: core/templates/fw/mandat_abrechnung.html:4
+#, python-format
+msgid "Abrechnung %(name)s %(jahr)s"
+msgstr "Abrechnung %(name)s %(jahr)s"
+
+#: core/templates/fw/mandat_abrechnung.html:9
+#, python-format
+msgid "Abrechnung %(jahr)s"
+msgstr "Abrechnung %(jahr)s"
+
+#: core/templates/fw/mandat_abrechnung.html:14
+#, python-format
+msgid "Eigentümerabrechnung %(jahr)s"
+msgstr "Eigentümerabrechnung %(jahr)s"
+
+#: core/templates/fw/mandat_abrechnung.html:41
+msgid "Erträge"
+msgstr "Erträge"
+
+#: core/templates/fw/mandat_abrechnung.html:44
+msgid "Aufwände"
+msgstr "Aufwände"
+
+#: core/templates/fw/mandat_abrechnung.html:48
+msgid "Auszahlung an Eigentümer"
+msgstr "Auszahlung an Eigentümer"
+
+#: core/templates/fw/mandat_abrechnung.html:48
+msgid "Nachschuss"
+msgstr "Nachschuss"
+
+#: core/templates/fw/mandat_abrechnung.html:73
+msgid "Keine Liegenschaften diesem Eigentümer zugeordnet."
+msgstr "Keine Liegenschaften diesem Eigentümer zugeordnet."
+
+#: core/templates/fw/mandat_abrechnung.html:88
+msgid ""
+"Erträge und Aufwände stammen aus den verbuchten Buchungen der zugeordneten "
+"Liegenschaften. Der Saldo ist die Auszahlung an den Eigentümer (bzw. ein "
+"Nachschuss bei negativem Saldo)."
+msgstr ""
+"Erträge und Aufwände stammen aus den verbuchten Buchungen der zugeordneten "
+"Liegenschaften. Der Saldo ist die Auszahlung an den Eigentümer (bzw. ein "
+"Nachschuss bei negativem Saldo)."
+
 #: core/templates/fw/mandate.html:7
 msgid "Eigentümer erfassen"
 msgstr "Eigentümer erfassen"
@@ -5530,14 +5916,6 @@ msgstr "Eigentümer"
 #: core/templates/fw/mandate.html:17
 msgid "Liegensch."
 msgstr "Liegensch."
-
-#: core/templates/fw/mandate.html:33
-msgid "Abrechnung"
-msgstr "Abrechnung"
-
-#: core/templates/fw/mandate.html:34
-msgid "Kontokorrent"
-msgstr "Kontokorrent"
 
 #: core/templates/fw/mandate.html:35
 msgid "Mahnstufen"
@@ -5603,13 +5981,58 @@ msgstr "aktiv"
 msgid "beendet"
 msgstr "beendet"
 
-#: core/templates/fw/mieterkonten.html:65
-msgid "ausgeglichen"
-msgstr "ausgeglichen"
-
 #: core/templates/fw/mieterkonten.html:70
 msgid "Keine Mieterkonten"
 msgstr "Keine Mieterkonten"
+
+#: core/templates/fw/mieterkonto.html:4
+#, python-format
+msgid "Kontoblatt %(name)s"
+msgstr "Kontoblatt %(name)s"
+
+#: core/templates/fw/mieterkonto.html:13
+msgid "Kontoblatt"
+msgstr "Kontoblatt"
+
+#: core/templates/fw/mieterkonto.html:14
+msgid "alle Forderungen und Zahlungen mit laufendem Saldo."
+msgstr "alle Forderungen und Zahlungen mit laufendem Saldo."
+
+#: core/templates/fw/mieterkonto.html:25
+msgid "Forderungen (Soll)"
+msgstr "Forderungen (Soll)"
+
+#: core/templates/fw/mieterkonto.html:29
+msgid "Zahlungen (Haben)"
+msgstr "Zahlungen (Haben)"
+
+#: core/templates/fw/mieterkonto.html:34
+msgid "Offener Saldo"
+msgstr "Offener Saldo"
+
+#: core/templates/fw/mieterkonto.html:34
+msgid "Guthaben Mieter"
+msgstr "Guthaben Mieter"
+
+#: core/templates/fw/mieterkonto.html:77
+msgid "zurücksetzen"
+msgstr "zurücksetzen"
+
+#: core/templates/fw/mieterkonto.html:103
+msgid "Keine Bewegungen"
+msgstr "Keine Bewegungen"
+
+#: core/templates/fw/mieterkonto.html:103
+msgid "im Zeitraum"
+msgstr "im Zeitraum"
+
+#: core/templates/fw/mieterkonto.html:119
+msgid ""
+"Positiver Saldo = Mieter schuldet · negativer Saldo = Guthaben des Mieters. "
+"Stornierte Rechnungen sind ausgeblendet."
+msgstr ""
+"Positiver Saldo = Mieter schuldet · negativer Saldo = Guthaben des Mieters. "
+"Stornierte Rechnungen sind ausgeblendet."
 
 #: core/templates/fw/mieterspiegel.html:4
 #: core/templates/fw/mieterspiegel.html:7
@@ -5998,7 +6421,7 @@ msgid_plural "%(n)s Perioden"
 msgstr[0] "%(n)s Periode"
 msgstr[1] "%(n)s Perioden"
 
-#: core/templates/fw/nebenkosten.html:72
+#: core/templates/fw/nebenkosten.html:72 core/views/fw/nebenkosten.py:181
 msgid "Belege"
 msgstr "Belege"
 
@@ -6031,6 +6454,130 @@ msgstr "Noch keine Abrechnungsperioden"
 #: core/templates/fw/nebenkosten.html:107
 msgid "Perioden werden in der klassischen Ansicht angelegt."
 msgstr "Perioden werden in der klassischen Ansicht angelegt."
+
+#: core/templates/fw/nebenkosten_detail.html:26
+msgid "Verbrauchsabhängige Heizkostenabrechnung angewendet"
+msgstr "Verbrauchsabhängige Heizkostenabrechnung angewendet"
+
+#: core/templates/fw/nebenkosten_detail.html:26
+msgid "HKVO ✓"
+msgstr "HKVO ✓"
+
+#: core/templates/fw/nebenkosten_detail.html:28
+msgid ""
+"Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als "
+"Sammel-PDF"
+msgstr ""
+"Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als "
+"Sammel-PDF"
+
+#: core/templates/fw/nebenkosten_detail.html:30
+msgid "Abrechnungen erstellen &amp; ablegen"
+msgstr "Abrechnungen erstellen &amp; ablegen"
+
+#: core/templates/fw/nebenkosten_detail.html:36
+msgid ""
+"Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, "
+"Guthaben gutgeschrieben. Die Periode wird abgeschlossen."
+msgstr ""
+"Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, "
+"Guthaben gutgeschrieben. Die Periode wird abgeschlossen."
+
+#: core/templates/fw/nebenkosten_detail.html:59
+msgid "Total Kosten (HNK)"
+msgstr "Total Kosten (HNK)"
+
+#: core/templates/fw/nebenkosten_detail.html:62
+msgid "Akonto bezahlt"
+msgstr "Akonto bezahlt"
+
+#: core/templates/fw/nebenkosten_detail.html:66
+msgid "Saldo (Nachzahlung)"
+msgstr "Saldo (Nachzahlung)"
+
+#: core/templates/fw/nebenkosten_detail.html:66
+msgid "Saldo (Rückzahlung)"
+msgstr "Saldo (Rückzahlung)"
+
+#: core/templates/fw/nebenkosten_detail.html:77
+msgid "Akonto-Anpassung empfohlen"
+msgstr "Akonto-Anpassung empfohlen"
+
+#: core/templates/fw/nebenkosten_detail.html:78
+#, python-format
+msgid ""
+"Bei %(n)s Vertrag weicht der monatliche Akonto deutlich vom effektiven "
+"Bedarf ab. Neue Höhe auf CHF 5 gerundet."
+msgid_plural ""
+"Bei %(n)s Verträgen weicht der monatliche Akonto deutlich vom effektiven "
+"Bedarf ab. Neue Höhe auf CHF 5 gerundet."
+msgstr[0] ""
+"Bei %(n)s Vertrag weicht der monatliche Akonto deutlich vom effektiven "
+"Bedarf ab. Neue Höhe auf CHF 5 gerundet."
+msgstr[1] ""
+"Bei %(n)s Verträgen weicht der monatliche Akonto deutlich vom effektiven "
+"Bedarf ab. Neue Höhe auf CHF 5 gerundet."
+
+#: core/templates/fw/nebenkosten_detail.html:89
+#, python-format
+msgid "aktuell CHF %(a)s/Mt. → erhöhen um CHF %(d)s"
+msgstr "aktuell CHF %(a)s/Mt. → erhöhen um CHF %(d)s"
+
+#: core/templates/fw/nebenkosten_detail.html:89
+#, python-format
+msgid "aktuell CHF %(a)s/Mt. → senken um CHF %(d)s"
+msgstr "aktuell CHF %(a)s/Mt. → senken um CHF %(d)s"
+
+#: core/templates/fw/nebenkosten_detail.html:92
+msgid "neu CHF"
+msgstr "neu CHF"
+
+#: core/templates/fw/nebenkosten_detail.html:99
+msgid "Akonto anpassen"
+msgstr "Akonto anpassen"
+
+#: core/templates/fw/nebenkosten_detail.html:101
+msgid ""
+"Übernimmt die neue Akonto-Höhe in den Vertrag (künftige Sollstellungen). "
+"Eine formelle Mitteilung an den Mieter ist separat zu versenden."
+msgstr ""
+"Übernimmt die neue Akonto-Höhe in den Vertrag (künftige Sollstellungen). "
+"Eine formelle Mitteilung an den Mieter ist separat zu versenden."
+
+#: core/templates/fw/nebenkosten_detail.html:117
+msgid "Anteil Kosten"
+msgstr "Anteil Kosten"
+
+#: core/templates/fw/nebenkosten_detail.html:118
+msgid "Akonto"
+msgstr "Akonto"
+
+#: core/templates/fw/nebenkosten_detail.html:138
+msgid "Keine Mieter in dieser Periode."
+msgstr "Keine Mieter in dieser Periode."
+
+#: core/templates/fw/nebenkosten_detail.html:144
+msgid ""
+"Positiver Saldo = Nachzahlung durch Mieter · Verteilung nach Fläche (m²), "
+"zeitanteilig (Pro-Rata). Vorschau — verbindliche Abrechnung in der "
+"klassischen Ansicht."
+msgstr ""
+"Positiver Saldo = Nachzahlung durch Mieter · Verteilung nach Fläche (m²), "
+"zeitanteilig (Pro-Rata). Vorschau — verbindliche Abrechnung in der "
+"klassischen Ansicht."
+
+#: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/vorlage_form.html:25
+msgid "Kategorie"
+msgstr "Kategorie"
+
+#: core/templates/fw/nebenkosten_detail.html:163
+msgid ""
+"Keine Belege erfasst. HNK-relevante Kreditorenrechnungen fliessen "
+"automatisch ein."
+msgstr ""
+"Keine Belege erfasst. HNK-relevante Kreditorenrechnungen fliessen "
+"automatisch ein."
 
 #: core/templates/fw/objekte.html:25
 msgid "Nach Befund geordnet — was klemmt, steht oben."
@@ -6201,6 +6748,7 @@ msgid "Wird bei jedem Speichern auf heute gesetzt."
 msgstr "Wird bei jedem Speichern auf heute gesetzt."
 
 #: core/templates/fw/regelsatz_form.html:38
+#: core/templates/fw/weiterverrechnung.html:95
 msgid "Hinweis"
 msgstr "Hinweis"
 
@@ -6549,6 +7097,7 @@ msgid "Zu stellen (%(monat)s)"
 msgstr "Zu stellen (%(monat)s)"
 
 #: core/templates/fw/sollstellung.html:67
+#: core/templates/fw/weiterverrechnung.html:62
 msgid "Noch offen"
 msgstr "Noch offen"
 
@@ -6706,10 +7255,6 @@ msgstr "Vorlagen"
 msgid "Text mit Platzhaltern, die beim Verwenden automatisch ersetzt werden."
 msgstr "Text mit Platzhaltern, die beim Verwenden automatisch ersetzt werden."
 
-#: core/templates/fw/vorlage_form.html:25
-msgid "Kategorie"
-msgstr "Kategorie"
-
 #: core/templates/fw/vorlage_form.html:30 core/templates/fw/vorlagen.html:35
 msgid "Betreff"
 msgstr "Betreff"
@@ -6767,6 +7312,208 @@ msgstr ""
 #: core/templates/fw/vorlagen.html:50
 msgid "Eigene Vorlage"
 msgstr "Eigene Vorlage"
+
+#: core/templates/fw/weiterverrechnung.html:10
+msgid "An Mieter weiterverrechnen"
+msgstr "An Mieter weiterverrechnen"
+
+#: core/templates/fw/weiterverrechnung.html:11
+msgid "Lieferantenrechnung"
+msgstr "Lieferantenrechnung"
+
+#: core/templates/fw/weiterverrechnung.html:17
+msgid "Achtung: HNK-relevante Rechnung"
+msgstr "Achtung: HNK-relevante Rechnung"
+
+#: core/templates/fw/weiterverrechnung.html:18
+msgid ""
+"Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die "
+"Mieter. Eine zusätzliche direkte Weiterverrechnung würde <b>doppelt "
+"belasten</b>. Nur fortfahren, wenn du das bewusst willst — dann unten das "
+"Häkchen «Trotzdem direkt weiterverrechnen» setzen."
+msgstr ""
+"Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die "
+"Mieter. Eine zusätzliche direkte Weiterverrechnung würde <b>doppelt "
+"belasten</b>. Nur fortfahren, wenn du das bewusst willst — dann unten das "
+"Häkchen «Trotzdem direkt weiterverrechnen» setzen."
+
+#: core/templates/fw/weiterverrechnung.html:27
+msgid "Auf alle Mieter verteilen"
+msgstr "Auf alle Mieter verteilen"
+
+#: core/templates/fw/weiterverrechnung.html:28
+#, python-format
+msgid ""
+"Verteilt den offenen Betrag (CHF %(betrag)s) in einem Schritt auf die "
+"<b>%(n)s</b> aktiven Mietverhältnisse in %(strasse)s nach gewähltem "
+"Schlüssel."
+msgstr ""
+"Verteilt den offenen Betrag (CHF %(betrag)s) in einem Schritt auf die "
+"<b>%(n)s</b> aktiven Mietverhältnisse in %(strasse)s nach gewähltem "
+"Schlüssel."
+
+#: core/templates/fw/weiterverrechnung.html:33
+msgid "Fläche (m²)"
+msgstr "Fläche (m²)"
+
+#: core/templates/fw/weiterverrechnung.html:34
+msgid "Pro Einheit (gleich)"
+msgstr "Pro Einheit (gleich)"
+
+#: core/templates/fw/weiterverrechnung.html:35
+msgid "Wertquote"
+msgstr "Wertquote"
+
+#: core/templates/fw/weiterverrechnung.html:40
+msgid "Trotzdem direkt weiterverrechnen"
+msgstr "Trotzdem direkt weiterverrechnen"
+
+#: core/templates/fw/weiterverrechnung.html:43
+#, python-format
+msgid "Offenen Betrag auf alle %(n)s Mieter verteilen?"
+msgstr "Offenen Betrag auf alle %(n)s Mieter verteilen?"
+
+#: core/templates/fw/weiterverrechnung.html:44
+msgid "Verteilen"
+msgstr "Verteilen"
+
+#: core/templates/fw/weiterverrechnung.html:58
+msgid "Rechnungsbetrag"
+msgstr "Rechnungsbetrag"
+
+#: core/templates/fw/weiterverrechnung.html:60
+msgid "Bereits weiterverrechnet"
+msgstr "Bereits weiterverrechnet"
+
+#: core/templates/fw/weiterverrechnung.html:68
+msgid "Mieter / Vertrag *"
+msgstr "Mieter / Vertrag *"
+
+#: core/templates/fw/weiterverrechnung.html:82
+msgid "Weiterzuverrechnen (CHF)"
+msgstr "Weiterzuverrechnen (CHF)"
+
+#: core/templates/fw/weiterverrechnung.html:85
+msgid "Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht."
+msgstr "Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht."
+
+#: core/templates/fw/weiterverrechnung.html:88
+msgid "Zuschlag (CHF, optional)"
+msgstr "Zuschlag (CHF, optional)"
+
+#: core/templates/fw/weiterverrechnung.html:90
+msgid "Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht."
+msgstr "Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht."
+
+#: core/templates/fw/weiterverrechnung.html:101
+#, python-format
+msgid ""
+"Buchung: Grundbetrag <b>1100 Debitor an 1190 Durchlauf</b> und <b>1190 an "
+"%(konto)s Aufwand</b> (ertragsneutral). Zuschlag <b>1100 an 3600 Ertrag</b>. "
+"Die neue Rechnung bleibt mit dieser Lieferantenrechnung verknüpft."
+msgstr ""
+"Buchung: Grundbetrag <b>1100 Debitor an 1190 Durchlauf</b> und <b>1190 an "
+"%(konto)s Aufwand</b> (ertragsneutral). Zuschlag <b>1100 an 3600 Ertrag</b>. "
+"Die neue Rechnung bleibt mit dieser Lieferantenrechnung verknüpft."
+
+#: core/templates/fw/weiterverrechnung.html:107
+msgid ""
+"Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)"
+msgstr ""
+"Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)"
+
+#: core/templates/fw/weiterverrechnung.html:111
+msgid "Weiterverrechnen &amp; Debitor erstellen"
+msgstr "Weiterverrechnen &amp; Debitor erstellen"
+
+#: core/templates/fw/weiterverrechnung.html:132
+#, python-brace-format
+msgid ""
+"Der Grundbetrag übersteigt den noch offenen weiterzuverrechnenden Anteil "
+"(CHF {betrag}). Er wird beim Speichern auf diesen Betrag begrenzt — für "
+"einen höheren Betrag den Zuschlag verwenden."
+msgstr ""
+"Der Grundbetrag übersteigt den noch offenen weiterzuverrechnenden Anteil "
+"(CHF {betrag}). Er wird beim Speichern auf diesen Betrag begrenzt — für "
+"einen höheren Betrag den Zuschlag verwenden."
+
+#: core/templates/fw/zahler_zuordnungen.html:12
+msgid ""
+"Wer ohne QR-Referenz überweist, wird beim ersten Mal von Hand zugeordnet — "
+"danach merkt sich das Programm den Absender und trifft beim nächsten "
+"Kontoauszug selbst. Hier steht, welche Regeln dabei entstanden sind, und "
+"hier lassen sie sich korrigieren."
+msgstr ""
+"Wer ohne QR-Referenz überweist, wird beim ersten Mal von Hand zugeordnet — "
+"danach merkt sich das Programm den Absender und trifft beim nächsten "
+"Kontoauszug selbst. Hier steht, welche Regeln dabei entstanden sind, und "
+"hier lassen sie sich korrigieren."
+
+#: core/templates/fw/zahler_zuordnungen.html:13
+msgid ""
+"Änderungen wirken nur auf künftige Importe; bereits verbuchte Zahlungen "
+"bleiben, wie sie gebucht wurden."
+msgstr ""
+"Änderungen wirken nur auf künftige Importe; bereits verbuchte Zahlungen "
+"bleiben, wie sie gebucht wurden."
+
+#: core/templates/fw/zahler_zuordnungen.html:20
+msgid "Gelernte Absender"
+msgstr "Gelernte Absender"
+
+#: core/templates/fw/zahler_zuordnungen.html:24
+msgid "Zahlung automatisch zugeordnet"
+msgid_plural "Zahlungen automatisch zugeordnet"
+msgstr[0] "Zahlung automatisch zugeordnet"
+msgstr[1] "Zahlungen automatisch zugeordnet"
+
+#: core/templates/fw/zahler_zuordnungen.html:41
+#, python-format
+msgid "%(n)s× automatisch getroffen"
+msgstr "%(n)s× automatisch getroffen"
+
+#: core/templates/fw/zahler_zuordnungen.html:43
+msgid "Noch nicht angewendet"
+msgstr "Noch nicht angewendet"
+
+#: core/templates/fw/zahler_zuordnungen.html:45
+msgid "zuletzt"
+msgstr "zuletzt"
+
+#: core/templates/fw/zahler_zuordnungen.html:46
+msgid "gelernt"
+msgstr "gelernt"
+
+#: core/templates/fw/zahler_zuordnungen.html:59
+msgid "Zuordnung auf diesen Mieter umbiegen"
+msgstr "Zuordnung auf diesen Mieter umbiegen"
+
+#: core/templates/fw/zahler_zuordnungen.html:64
+#, python-format
+msgid ""
+"«%(name)s» vergessen? Künftige Zahlungen dieses Absenders landen wieder zur "
+"Prüfung im Bankabgleich."
+msgstr ""
+"«%(name)s» vergessen? Künftige Zahlungen dieses Absenders landen wieder zur "
+"Prüfung im Bankabgleich."
+
+#: core/templates/fw/zahler_zuordnungen.html:68
+msgid "Absender vergessen"
+msgstr "Absender vergessen"
+
+#: core/templates/fw/zahler_zuordnungen.html:79
+msgid "Noch keine gelernten Zahler"
+msgstr "Noch keine gelernten Zahler"
+
+#: core/templates/fw/zahler_zuordnungen.html:79
+msgid ""
+"Sobald Sie im Bankabgleich eine ungeklärte Zahlung einem Mieter zuordnen, "
+"merkt sich das Programm den Absender — die nächste Zahlung desselben "
+"Absenders trifft dann von allein."
+msgstr ""
+"Sobald Sie im Bankabgleich eine ungeklärte Zahlung einem Mieter zuordnen, "
+"merkt sich das Programm den Absender — die nächste Zahlung desselben "
+"Absenders trifft dann von allein."
 
 #: core/templates/fw/zahllauf.html:10
 msgid "Zurück zu den Kreditoren"
@@ -7213,6 +7960,10 @@ msgstr "Vereine"
 #: core/views/fw/mahnwesen.py:97
 msgid "Alle Stufen"
 msgstr "Alle Stufen"
+
+#: core/views/fw/nebenkosten.py:180
+msgid "Mieter-Abrechnung"
+msgstr "Mieter-Abrechnung"
 
 #: core/views/fw/profil.py:889
 msgid "E-Mail-Versand"

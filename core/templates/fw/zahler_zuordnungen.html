@@ -1,29 +1,27 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Gelernte Zahler — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Gelernte Zahler" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
-    <h1>Gelernte Zahler</h1>
-    <a href="/neu/bankabgleich/" class="fw-btn">{% zeichen 'zurueck' %}Zum Bankabgleich</a>
+    <h1>{% trans "Gelernte Zahler" %}</h1>
+    <a href="/neu/bankabgleich/" class="fw-btn">{% zeichen 'zurueck' %}{% trans "Zum Bankabgleich" %}</a>
 </div>
 <p class="text-sm fw-mutet mb-6 max-w-3xl">
-    Wer ohne QR-Referenz überweist, wird beim ersten Mal von Hand zugeordnet — danach merkt sich
-    das Programm den Absender und trifft beim nächsten Kontoauszug selbst.
-    Hier steht, welche Regeln dabei entstanden sind, und hier lassen sie sich korrigieren.
-    <span class="fw-faint">Änderungen wirken nur auf künftige Importe; bereits verbuchte Zahlungen bleiben, wie sie gebucht wurden.</span>
+    {% trans "Wer ohne QR-Referenz überweist, wird beim ersten Mal von Hand zugeordnet — danach merkt sich das Programm den Absender und trifft beim nächsten Kontoauszug selbst. Hier steht, welche Regeln dabei entstanden sind, und hier lassen sie sich korrigieren." %}
+    <span class="fw-faint">{% trans "Änderungen wirken nur auf künftige Importe; bereits verbuchte Zahlungen bleiben, wie sie gebucht wurden." %}</span>
 </p>
 
 {% if zuordnungen %}
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 max-w-2xl">
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'gut' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ zuordnungen|length }}</div><div class="text-sm fw-mutet">Gelernte Absender</div></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ zuordnungen|length }}</div><div class="text-sm fw-mutet">{% trans "Gelernte Absender" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'kritisch' %}</div>
-        <div><div class="text-2xl font-bold fw-gut">{{ getroffen_n }}</div><div class="text-sm fw-mutet">Zahlung(en) automatisch zugeordnet</div></div>
+        <div><div class="text-2xl font-bold fw-gut">{{ getroffen_n }}</div><div class="text-sm fw-mutet">{% blocktrans count n=getroffen_n %}Zahlung automatisch zugeordnet{% plural %}Zahlungen automatisch zugeordnet{% endblocktrans %}</div></div>
     </div>
 </div>
 
@@ -40,12 +38,12 @@
                     </div>
                     <div class="mt-1.5 flex items-center gap-2 flex-wrap">
                         {% if z.treffer %}
-                        <span class="fw-chip fw-gut-flaeche fw-gut">{{ z.treffer }}× automatisch getroffen</span>
+                        <span class="fw-chip fw-gut-flaeche fw-gut">{% blocktrans with n=z.treffer %}{{ n }}× automatisch getroffen{% endblocktrans %}</span>
                         {% else %}
-                        <span class="fw-chip fw-flaeche2 fw-mutet">Noch nicht angewendet</span>
+                        <span class="fw-chip fw-flaeche2 fw-mutet">{% trans "Noch nicht angewendet" %}</span>
                         {% endif %}
-                        {% if z.zuletzt %}<span class="text-[11px] fw-faint">zuletzt {{ z.zuletzt|date:"d.m.Y" }}</span>{% endif %}
-                        <span class="text-[11px] fw-faint">gelernt {{ z.erstellt_am|date:"d.m.Y" }}</span>
+                        {% if z.zuletzt %}<span class="text-[11px] fw-faint">{% trans "zuletzt" %} {{ z.zuletzt|date:"d.m.Y" }}</span>{% endif %}
+                        <span class="text-[11px] fw-faint">{% trans "gelernt" %} {{ z.erstellt_am|date:"d.m.Y" }}</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -58,16 +56,16 @@
                             <option value="{{ v.id }}" {% if v.id == z.vertrag_id %}selected{% endif %}>{{ v.label }}</option>
                             {% endfor %}
                         </select>
-                        <button class="fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg transition-colors" title="Zuordnung auf diesen Mieter umbiegen">
+                        <button class="fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg transition-colors" title="{% trans 'Zuordnung auf diesen Mieter umbiegen' %}">
                             {% zeichen 'gut' %}
                         </button>
                     </form>
                     <form method="post" action="/neu/bankabgleich/zahler/speichern/"
-                          onsubmit="return confirm('«{{ z.name_anzeige|default:z.name_norm|escapejs }}» vergessen? Künftige Zahlungen dieses Absenders landen wieder zur Prüfung im Bankabgleich.');">
+                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=z.name_anzeige|default:z.name_norm %}«{{ name }}» vergessen? Künftige Zahlungen dieses Absenders landen wieder zur Prüfung im Bankabgleich.{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
                         <input type="hidden" name="id" value="{{ z.id }}">
                         <input type="hidden" name="aktion" value="loeschen">
-                        <button class="fw-faint hover:fw-kritisch text-sm px-2 py-2" title="Absender vergessen">
+                        <button class="fw-faint hover:fw-kritisch text-sm px-2 py-2" title="{% trans 'Absender vergessen' %}">
                             {% zeichen 'loeschen' %}
                         </button>
                     </form>
@@ -78,7 +76,7 @@
     </div>
 </div>
 {% else %}
-{% include 'fw/_empty.html' with icon='gut' titel='Noch keine gelernten Zahler' subtext='Sobald Sie im Bankabgleich eine ungeklärte Zahlung einem Mieter zuordnen, merkt sich das Programm den Absender — die nächste Zahlung desselben Absenders trifft dann von allein.' cta_url='/neu/bankabgleich/' cta_label='Zum Bankabgleich' %}
+{% include 'fw/_empty.html' with icon='gut' titel=_('Noch keine gelernten Zahler') subtext=_('Sobald Sie im Bankabgleich eine ungeklärte Zahlung einem Mieter zuordnen, merkt sich das Programm den Absender — die nächste Zahlung desselben Absenders trifft dann von allein.') cta_url='/neu/bankabgleich/' cta_label=_('Zum Bankabgleich') %}
 {% endif %}
 
 {% endblock %}

@@ -1,12 +1,12 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Kontoblatt {{ konto.nummer }} — swissImmo{% endblock %}
+{% block title %}{% blocktrans with nr=konto.nummer %}Kontoblatt {{ nr }}{% endblocktrans %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/buchhaltung/" class="hover:fw-marke">Buchhaltung</a>
+    <a href="/neu/buchhaltung/" class="hover:fw-marke">{% trans "Buchhaltung" %}</a>
     {% zeichen 'weiter' klasse='text-[9px]' %}
-    <span class="fw-mutet font-medium">Kontoblatt {{ konto.nummer }}</span>
+    <span class="fw-mutet font-medium">{% blocktrans with nr=konto.nummer %}Kontoblatt {{ nr }}{% endblocktrans %}</span>
 </nav>
 
 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
@@ -18,7 +18,7 @@
         <form method="get" class="flex items-center gap-1">
             <select name="jahr" onchange="this.form.submit()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2">
                 {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
-                <option value="alle" {% if jahr == 'alle' %}selected{% endif %}>Alle</option>
+                <option value="alle" {% if jahr == 'alle' %}selected{% endif %}>{% trans "Alle" %}</option>
             </select>
         </form>
     </div>
@@ -32,7 +32,7 @@
     <div class="md:hidden fw-dv">
         {% if ist_bilanz %}
         <div class="px-4 py-2.5 fw-flaeche2 flex items-center justify-between">
-            <span class="fw-mutet italic text-sm">Eröffnungssaldo{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span>
+            <span class="fw-mutet italic text-sm">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span>
             <span class="font-semibold whitespace-nowrap">{{ eroeffnung|chf }}</span>
         </div>
         {% endif %}
@@ -48,15 +48,15 @@
                     <div class="whitespace-nowrap {% if z.soll %}fw-strong{% else %}fw-mutet{% endif %}">
                         {% if z.soll %}+ {{ z.soll|chf }}{% else %}− {{ z.haben|chf }}{% endif %}
                     </div>
-                    <div class="text-[11px] fw-faint whitespace-nowrap mt-0.5">Saldo {{ z.saldo|chf }}</div>
+                    <div class="text-[11px] fw-faint whitespace-nowrap mt-0.5">{% trans "Saldo" %} {{ z.saldo|chf }}</div>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="px-4 py-8 text-center fw-faint italic">Keine Buchungen in diesem Zeitraum.</div>
+        <div class="px-4 py-8 text-center fw-faint italic">{% trans "Keine Buchungen in diesem Zeitraum." %}</div>
         {% endfor %}
         <div class="px-4 py-3 fw-flaeche2 font-bold flex items-center justify-between">
-            <span>Endsaldo</span>
+            <span>{% trans "Endsaldo" %}</span>
             <span class="whitespace-nowrap {% if endsaldo < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">CHF {{ endsaldo|chf }}</span>
         </div>
     </div>
@@ -64,15 +64,15 @@
     <table class="w-full text-sm min-w-max">
         <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
             <tr>
-                <th class="text-left px-4 py-2">Beleg</th><th class="text-left px-4 py-2">Datum</th>
-                <th class="text-left px-4 py-2">Text</th><th class="text-left px-4 py-2">Gegenkonto</th>
-                <th class="text-right px-4 py-2">Soll</th><th class="text-right px-4 py-2">Haben</th>
-                <th class="text-right px-4 py-2">Saldo</th>
+                <th class="text-left px-4 py-2">{% trans "Beleg" %}</th><th class="text-left px-4 py-2">{% trans "Datum" %}</th>
+                <th class="text-left px-4 py-2">{% trans "Text" %}</th><th class="text-left px-4 py-2">{% trans "Gegenkonto" %}</th>
+                <th class="text-right px-4 py-2">{% trans "Soll" %}</th><th class="text-right px-4 py-2">{% trans "Haben" %}</th>
+                <th class="text-right px-4 py-2">{% trans "Saldo" %}</th>
             </tr>
         </thead>
         <tbody class="fw-dv">
             {% if ist_bilanz %}
-            <tr class="fw-flaeche2"><td colspan="6" class="px-4 py-2 fw-mutet italic">Eröffnungssaldo{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</td>
+            <tr class="fw-flaeche2"><td colspan="6" class="px-4 py-2 fw-mutet italic">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</td>
                 <td class="px-4 py-2 text-right font-semibold tabular-nums">{{ eroeffnung|chf }}</td></tr>
             {% endif %}
             {% for z in zeilen %}
@@ -86,10 +86,10 @@
                 <td class="px-4 py-2 text-right tabular-nums font-medium">{{ z.saldo|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-4 py-8 text-center fw-faint italic">Keine Buchungen in diesem Zeitraum.</td></tr>
+            <tr><td colspan="7" class="px-4 py-8 text-center fw-faint italic">{% trans "Keine Buchungen in diesem Zeitraum." %}</td></tr>
             {% endfor %}
             <tr class="fw-flaeche2 font-bold">
-                <td colspan="6" class="px-4 py-2 text-right">Endsaldo</td>
+                <td colspan="6" class="px-4 py-2 text-right">{% trans "Endsaldo" %}</td>
                 <td class="px-4 py-2 text-right tabular-nums {% if endsaldo < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">CHF {{ endsaldo|chf }}</td>
             </tr>
         </tbody>
