@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load betreuung %}
 {% load chf %}
 {% load rechte %}
@@ -8,7 +8,7 @@
 {% block content %}
 
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
-    <a href="/neu/personen/{{ lg_query }}">Personen</a>
+    <a href="/neu/personen/{{ lg_query }}">{% trans "Personen" %}</a>
     {% zeichen 'weiter' %}
     <b>{{ m.display_name }}</b>
 </nav>
@@ -24,7 +24,7 @@
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'person' %}</div>
         <div style="min-width:0">
-            <div class="fw-akte-typ">Person · {{ pe_nummer }}</div>
+            <div class="fw-akte-typ">{% trans "Person" %} · {{ pe_nummer }}</div>
             <h1>{{ m.display_name }}</h1>
             <div class="fw-akte-pfad">
                 {% comment %}
@@ -35,12 +35,12 @@ Der AKTIVE Vertrag zaehlt zuerst — wer ausgezogen ist, wird nicht mehr von der
 alten Liegenschaft betreut.
 {% endcomment %}
 {% betreut_von m as betreuung %}
-{% if betreuung %}<div class="fw-pz"><span>Betreut von</span><b>{{ betreuung.get_full_name|default:betreuung.username }}</b></div>{% endif %}
-{% if m.geburtsdatum %}<div class="fw-pz"><span>Geboren</span><b>{{ m.geburtsdatum|date:"d.m.Y" }}</b></div>{% endif %}
-                {% if m.nationalitaet %}<div class="fw-pz"><span>Nationalität</span><b>{{ m.nationalitaet }}</b></div>{% endif %}
-                <div class="fw-pz"><span>Telefon</span><b>{{ telefon|default:"—" }}</b></div>
-                <div class="fw-pz"><span>E-Mail</span><b>{{ m.email|default:"—" }}</b></div>
-                <div class="fw-pz"><span>Sprache</span><b>{{ m.get_sprache_display|default:"Deutsch" }}</b></div>
+{% if betreuung %}<div class="fw-pz"><span>{% trans "Betreut von" %}</span><b>{{ betreuung.get_full_name|default:betreuung.username }}</b></div>{% endif %}
+{% if m.geburtsdatum %}<div class="fw-pz"><span>{% trans "Geboren" %}</span><b>{{ m.geburtsdatum|date:"d.m.Y" }}</b></div>{% endif %}
+                {% if m.nationalitaet %}<div class="fw-pz"><span>{% trans "Nationalität" %}</span><b>{{ m.nationalitaet }}</b></div>{% endif %}
+                <div class="fw-pz"><span>{% trans "Telefon" %}</span><b>{{ telefon|default:"—" }}</b></div>
+                <div class="fw-pz"><span>{% trans "E-Mail" %}</span><b>{{ m.email|default:"—" }}</b></div>
+                <div class="fw-pz"><span>{% trans "Sprache" %}</span><b>{{ m.get_sprache_display|default:"Deutsch" }}</b></div>
             </div>
             <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
                 {% for art, text in pe_chips %}<span class="fw-chip fw-{{ art }}">{{ text }}</span>{% endfor %}
@@ -48,8 +48,8 @@ alten Liegenschaft betreut.
             </div>
         </div>
         <div class="fw-akte-rechts">
-            {% if m.email %}<a href="/neu/kommunikation/?mieter={{ m.id }}" class="fw-btn" style="padding:6px 12px;font-size:12px">{% zeichen 'senden' klasse='mr-1' %}Nachricht</a>{% endif %}
-            <a href="/neu/personen/{{ m.id }}/bearbeiten/" class="fw-btn" style="padding:6px 12px;font-size:12px">{% zeichen 'bearbeiten' klasse='mr-1' %}Bearbeiten</a>
+            {% if m.email %}<a href="/neu/kommunikation/?mieter={{ m.id }}" class="fw-btn" style="padding:6px 12px;font-size:12px">{% zeichen 'senden' klasse='mr-1' %}{% trans "Nachricht" %}</a>{% endif %}
+            <a href="/neu/personen/{{ m.id }}/bearbeiten/" class="fw-btn" style="padding:6px 12px;font-size:12px">{% zeichen 'bearbeiten' klasse='mr-1' %}{% trans "Bearbeiten" %}</a>
             {% comment %} Löschen und DSG-Löschung standen im alten Kopf und wären
                beim Umbau mit ihm verschwunden. `faelle/test_aktionen_vollstaendig.py`
                hält sie jetzt fest — der Wächter deckte bis 20.08.2026 nur den
@@ -57,7 +57,7 @@ alten Liegenschaft betreut.
             <div class="relative">
                 <button type="button" onclick="document.getElementById('pAktionen').classList.toggle('hidden'); event.stopPropagation();"
                         class="fw-btn" style="padding:6px 12px;font-size:12px">
-                    {% zeichen 'mehr' klasse='mr-1' %}Mehr
+                    {% zeichen 'mehr' klasse='mr-1' %}{% trans "Mehr" %}
                 </button>
                 <div id="pAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
                     {% if not m.anonymisiert %}
@@ -69,9 +69,9 @@ alten Liegenschaft betreut.
                     <div class="fw-menutrenner"></div>
                     {% endif %}
                     <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
-                          onsubmit="return confirm('Person „{{ m.display_name|escapejs }}“ wirklich löschen?{% if anzahl_aktive %} Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% else %} Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endif %}');">
+                          onsubmit="return confirm('{% filter escapejs %}{% if anzahl_aktive %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% endblocktrans %}{% else %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endblocktrans %}{% endif %}{% endfilter %}');">
                         {% csrf_token %}
-                        <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}Person löschen</button>
+                        <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Person löschen" %}</button>
                     </form>
                 </div>
             </div>
@@ -93,10 +93,8 @@ alten Liegenschaft betreut.
 <div class="fw-card">
     <div class="fw-hinweis info">
         <span class="fw-hi">{% zeichen 'hinweis' %}</span>
-        <div class="fw-ht"><b>Die Person ist die Klammer, nicht der Arbeitsort</b>
-            Konto, Fristen, Kaution und Nebenkosten hängen am Mietverhältnis — sonst wäre bei
-            zwei Mietverhältnissen nicht bestimmbar, welches Konto gemeint ist. Hier stehen
-            Identität, Kontaktweg und die Verbindungen über die Zeit.</div>
+        <div class="fw-ht"><b>{% trans "Die Person ist die Klammer, nicht der Arbeitsort" %}</b>
+            {% trans "Konto, Fristen, Kaution und Nebenkosten hängen am Mietverhältnis — sonst wäre bei zwei Mietverhältnissen nicht bestimmbar, welches Konto gemeint ist. Hier stehen Identität, Kontaktweg und die Verbindungen über die Zeit." %}</div>
     </div>
 </div>
 
@@ -104,16 +102,16 @@ alten Liegenschaft betreut.
   <div>
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'bericht' %}</span>
-            <span class="fw-t">Über alle Mietverhältnisse</span></div>
+            <span class="fw-t">{% trans "Über alle Mietverhältnisse" %}</span></div>
         <div class="fw-zeile"><div class="fw-mitte">
-            <div class="fw-t">{% if pe_jahre %}{{ pe_jahre }} Jahre Mieter{% else %}Noch kein Mietverhältnis{% endif %}</div>
-            <div class="fw-s">{{ pe_anzahl_verhaeltnisse }} Verhältnis{{ pe_anzahl_verhaeltnisse|pluralize:"se" }}</div></div></div>
+            <div class="fw-t">{% if pe_jahre %}{% blocktrans with n=pe_jahre %}{{ n }} Jahre Mieter{% endblocktrans %}{% else %}{% trans "Noch kein Mietverhältnis" %}{% endif %}</div>
+            <div class="fw-s">{% blocktrans count n=pe_anzahl_verhaeltnisse %}{{ n }} Verhältnis{% plural %}{{ n }} Verhältnisse{% endblocktrans %}</div></div></div>
         <div class="fw-zeile"><div class="fw-mitte">
-            <div class="fw-t">CHF {{ total_offen|chf }} offen</div>
-            <div class="fw-s">über alle Verhältnisse</div></div>
-            {% if total_offen %}<span class="fw-chip fw-crit">offen</span>{% else %}<span class="fw-chip fw-good">ausgeglichen</span>{% endif %}</div>
-        <div class="fw-fuss"><span>Kennzahlen zur Person, nicht zum Konto</span>
-            {% if anzahl_aktive %}<a href="?tab=rollen" class="fw-link">Zu den Mietverhältnissen</a>{% endif %}</div>
+            <div class="fw-t">{% blocktrans with b=total_offen|chf %}CHF {{ b }} offen{% endblocktrans %}</div>
+            <div class="fw-s">{% trans "über alle Verhältnisse" %}</div></div>
+            {% if total_offen %}<span class="fw-chip fw-crit">{% trans "offen" %}</span>{% else %}<span class="fw-chip fw-good">{% trans "ausgeglichen" %}</span>{% endif %}</div>
+        <div class="fw-fuss"><span>{% trans "Kennzahlen zur Person, nicht zum Konto" %}</span>
+            {% if anzahl_aktive %}<a href="?tab=rollen" class="fw-link">{% trans "Zu den Mietverhältnissen" %}</a>{% endif %}</div>
     </div>
   </div>
   <div>
@@ -137,196 +135,193 @@ alten Liegenschaft betreut.
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic b">{% zeichen 'person' %}</span><span class="fw-t">Kontakt</span></div>
+            <div class="fw-h"><span class="fw-ic b">{% zeichen 'person' %}</span><span class="fw-t">{% trans "Kontakt" %}</span></div>
             <div class="fw-cbody"><dl>
-                {% if m.email %}<div class="fw-kv"><dt>E-Mail</dt><dd>{{ m.email }}</dd></div>{% endif %}
-                {% if telefon %}<div class="fw-kv"><dt>Telefon</dt><dd>{{ telefon }}</dd></div>{% endif %}
-                {% if m.strasse %}<div class="fw-kv"><dt>Adresse</dt><dd>{{ m.strasse }}, {{ m.plz }} {{ m.ort }}</dd></div>{% endif %}
-                {% if m.mobile %}<div class="fw-kv"><dt>Mobile</dt><dd>{{ m.mobile }}</dd></div>{% endif %}
-                {% if m.telefon_privat %}<div class="fw-kv"><dt>Telefon Privat</dt><dd>{{ m.telefon_privat }}</dd></div>{% endif %}
-                {% if m.telefon_geschaeft %}<div class="fw-kv"><dt>Telefon Geschäft</dt><dd>{{ m.telefon_geschaeft }}</dd></div>{% endif %}
-                {% if m.sprache %}<div class="fw-kv"><dt>Korrespondenzsprache</dt><dd>{{ m.get_sprache_display|default:m.sprache }}</dd></div>{% endif %}
+                {% if m.email %}<div class="fw-kv"><dt>{% trans "E-Mail" %}</dt><dd>{{ m.email }}</dd></div>{% endif %}
+                {% if telefon %}<div class="fw-kv"><dt>{% trans "Telefon" %}</dt><dd>{{ telefon }}</dd></div>{% endif %}
+                {% if m.strasse %}<div class="fw-kv"><dt>{% trans "Adresse" %}</dt><dd>{{ m.strasse }}, {{ m.plz }} {{ m.ort }}</dd></div>{% endif %}
+                {% if m.mobile %}<div class="fw-kv"><dt>{% trans "Mobile" %}</dt><dd>{{ m.mobile }}</dd></div>{% endif %}
+                {% if m.telefon_privat %}<div class="fw-kv"><dt>{% trans "Telefon Privat" %}</dt><dd>{{ m.telefon_privat }}</dd></div>{% endif %}
+                {% if m.telefon_geschaeft %}<div class="fw-kv"><dt>{% trans "Telefon Geschäft" %}</dt><dd>{{ m.telefon_geschaeft }}</dd></div>{% endif %}
+                {% if m.sprache %}<div class="fw-kv"><dt>{% trans "Korrespondenzsprache" %}</dt><dd>{{ m.get_sprache_display|default:m.sprache }}</dd></div>{% endif %}
             </dl></div>
         </div>
         {% if m.typ != 'person' %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic i">{% zeichen 'liegenschaft' %}</span><span class="fw-t">Firma / Organisation</span></div>
+            <div class="fw-h"><span class="fw-ic i">{% zeichen 'liegenschaft' %}</span><span class="fw-t">{% trans "Firma / Organisation" %}</span></div>
             <div class="fw-cbody"><dl>
-                {% if m.firmen_name %}<div class="fw-kv"><dt>Name</dt><dd>{{ m.firmen_name }}</dd></div>{% endif %}
-                {% if m.uid_nummer %}<div class="fw-kv"><dt>UID / MWST-Nr.</dt><dd class="mono">{{ m.uid_nummer }}</dd></div>{% endif %}
-                {% if m.kontaktperson %}<div class="fw-kv"><dt>Kontaktperson</dt><dd>{{ m.kontaktperson }}</dd></div>{% endif %}
+                {% if m.firmen_name %}<div class="fw-kv"><dt>{% trans "Name" %}</dt><dd>{{ m.firmen_name }}</dd></div>{% endif %}
+                {% if m.uid_nummer %}<div class="fw-kv"><dt>{% trans "UID / MWST-Nr." %}</dt><dd class="mono">{{ m.uid_nummer }}</dd></div>{% endif %}
+                {% if m.kontaktperson %}<div class="fw-kv"><dt>{% trans "Kontaktperson" %}</dt><dd>{{ m.kontaktperson }}</dd></div>{% endif %}
             </dl></div>
         </div>
         {% endif %}
         {% if m.typ == 'person' %}
         {% if m.geburtsdatum or m.zivilstand or m.nationalitaet or m.aufenthaltsbewilligung or m.ahv_nummer %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic i">{% zeichen 'person' %}</span><span class="fw-t">Stammdaten &amp; Herkunft</span></div>
+            <div class="fw-h"><span class="fw-ic i">{% zeichen 'person' %}</span><span class="fw-t">{% trans "Stammdaten &amp; Herkunft" %}</span></div>
             <div class="fw-cbody"><dl>
-                {% if m.geburtsdatum %}<div class="fw-kv"><dt>Geburtsdatum</dt><dd>{{ m.geburtsdatum|date:"d.m.Y" }}</dd></div>{% endif %}
-                {% if m.zivilstand %}<div class="fw-kv"><dt>Zivilstand</dt><dd>{{ m.zivilstand }}</dd></div>{% endif %}
-                {% if m.nationalitaet %}<div class="fw-kv"><dt>Nationalität</dt><dd>{{ m.nationalitaet }}{% if m.heimatort %} · {{ m.heimatort }}{% endif %}</dd></div>{% endif %}
-                {% if m.aufenthaltsbewilligung %}<div class="fw-kv"><dt>Bewilligung</dt><dd>{{ m.get_aufenthaltsbewilligung_display }}{% if m.bewilligung_gueltig_bis %} (bis {{ m.bewilligung_gueltig_bis|date:"d.m.Y" }}){% endif %}</dd></div>{% endif %}
-                {% if m.ahv_nummer %}<div class="fw-kv"><dt>AHV-Nr.</dt><dd class="mono">{{ m.ahv_nummer }}</dd></div>{% endif %}
+                {% if m.geburtsdatum %}<div class="fw-kv"><dt>{% trans "Geburtsdatum" %}</dt><dd>{{ m.geburtsdatum|date:"d.m.Y" }}</dd></div>{% endif %}
+                {% if m.zivilstand %}<div class="fw-kv"><dt>{% trans "Zivilstand" %}</dt><dd>{{ m.zivilstand }}</dd></div>{% endif %}
+                {% if m.nationalitaet %}<div class="fw-kv"><dt>{% trans "Nationalität" %}</dt><dd>{{ m.nationalitaet }}{% if m.heimatort %} · {{ m.heimatort }}{% endif %}</dd></div>{% endif %}
+                {% if m.aufenthaltsbewilligung %}<div class="fw-kv"><dt>{% trans "Bewilligung" %}</dt><dd>{{ m.get_aufenthaltsbewilligung_display }}{% if m.bewilligung_gueltig_bis %} ({% blocktrans with d=m.bewilligung_gueltig_bis|date:"d.m.Y" %}bis {{ d }}{% endblocktrans %}){% endif %}</dd></div>{% endif %}
+                {% if m.ahv_nummer %}<div class="fw-kv"><dt>{% trans "AHV-Nr." %}</dt><dd class="mono">{{ m.ahv_nummer }}</dd></div>{% endif %}
             </dl></div>
         </div>
         {% endif %}
         {% if m.erwerbsstatus or m.beruf or m.arbeitgeber or m.einkommen_jahr or m.betreibung_ergebnis or m.bonitaet_datum or m.ref_vermieter_name %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic g">{% zeichen 'dokument' %}</span><span class="fw-t">Beruf &amp; Bonität</span></div>
+            <div class="fw-h"><span class="fw-ic g">{% zeichen 'dokument' %}</span><span class="fw-t">{% trans "Beruf &amp; Bonität" %}</span></div>
             <div class="fw-cbody"><dl>
-                {% if m.erwerbsstatus %}<div class="fw-kv"><dt>Erwerbsstatus</dt><dd>{{ m.erwerbsstatus }}</dd></div>{% endif %}
-                {% if m.beruf %}<div class="fw-kv"><dt>Beruf</dt><dd>{{ m.beruf }}</dd></div>{% endif %}
-                {% if m.arbeitgeber %}<div class="fw-kv"><dt>Arbeitgeber</dt><dd>{{ m.arbeitgeber }}</dd></div>{% endif %}
-                {% if m.einkommen_jahr %}<div class="fw-kv"><dt>Jahreseinkommen</dt><dd>CHF {{ m.einkommen_jahr }}</dd></div>{% endif %}
-                {% if m.bonitaet_datum or m.betreibung_ergebnis %}<div class="fw-kv"><dt>Betreibungsauszug</dt><dd>{% if m.betreibung_ergebnis %}{{ m.get_betreibung_ergebnis_display }}{% endif %}{% if m.bonitaet_datum %} · {{ m.bonitaet_datum|date:"d.m.Y" }}{% endif %}</dd></div>{% endif %}
-                {% if m.ref_vermieter_name %}<div class="fw-kv"><dt>Ref. Vorvermieter</dt><dd>{{ m.ref_vermieter_name }}{% if m.ref_vermieter_telefon %} · {{ m.ref_vermieter_telefon }}{% endif %}</dd></div>{% endif %}
+                {% if m.erwerbsstatus %}<div class="fw-kv"><dt>{% trans "Erwerbsstatus" %}</dt><dd>{{ m.erwerbsstatus }}</dd></div>{% endif %}
+                {% if m.beruf %}<div class="fw-kv"><dt>{% trans "Beruf" %}</dt><dd>{{ m.beruf }}</dd></div>{% endif %}
+                {% if m.arbeitgeber %}<div class="fw-kv"><dt>{% trans "Arbeitgeber" %}</dt><dd>{{ m.arbeitgeber }}</dd></div>{% endif %}
+                {% if m.einkommen_jahr %}<div class="fw-kv"><dt>{% trans "Jahreseinkommen" %}</dt><dd>CHF {{ m.einkommen_jahr }}</dd></div>{% endif %}
+                {% if m.bonitaet_datum or m.betreibung_ergebnis %}<div class="fw-kv"><dt>{% trans "Betreibungsauszug" %}</dt><dd>{% if m.betreibung_ergebnis %}{{ m.get_betreibung_ergebnis_display }}{% endif %}{% if m.bonitaet_datum %} · {{ m.bonitaet_datum|date:"d.m.Y" }}{% endif %}</dd></div>{% endif %}
+                {% if m.ref_vermieter_name %}<div class="fw-kv"><dt>{% trans "Ref. Vorvermieter" %}</dt><dd>{{ m.ref_vermieter_name }}{% if m.ref_vermieter_telefon %} · {{ m.ref_vermieter_telefon }}{% endif %}</dd></div>{% endif %}
             </dl></div>
         </div>
         {% endif %}
         {% if m.haushalt_erwachsene or m.haushalt_kinder or m.haustiere %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic b">{% zeichen 'person' %}</span><span class="fw-t">Haushalt</span></div>
+            <div class="fw-h"><span class="fw-ic b">{% zeichen 'person' %}</span><span class="fw-t">{% trans "Haushalt" %}</span></div>
             <div class="fw-cbody"><dl>
-                {% if m.haushalt_erwachsene %}<div class="fw-kv"><dt>Erwachsene</dt><dd>{{ m.haushalt_erwachsene }}</dd></div>{% endif %}
-                {% if m.haushalt_kinder %}<div class="fw-kv"><dt>Kinder</dt><dd>{{ m.haushalt_kinder }}</dd></div>{% endif %}
-                {% if m.haustiere %}<div class="fw-kv"><dt>Haustiere</dt><dd>🐾 {{ m.haustiere_details|default:"ja" }}</dd></div>{% endif %}
+                {% if m.haushalt_erwachsene %}<div class="fw-kv"><dt>{% trans "Erwachsene" %}</dt><dd>{{ m.haushalt_erwachsene }}</dd></div>{% endif %}
+                {% if m.haushalt_kinder %}<div class="fw-kv"><dt>{% trans "Kinder" %}</dt><dd>{{ m.haushalt_kinder }}</dd></div>{% endif %}
+                {% if m.haustiere %}<div class="fw-kv"><dt>{% trans "Haustiere" %}</dt><dd>🐾 {{ m.haustiere_details|default:"ja" }}</dd></div>{% endif %}
             </dl></div>
         </div>
         {% endif %}
         {% if m.haftpflicht_gesellschaft or m.notfall_name %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic w">{% zeichen 'gesperrt' %}</span><span class="fw-t">Versicherung &amp; Notfall</span></div>
+            <div class="fw-h"><span class="fw-ic w">{% zeichen 'gesperrt' %}</span><span class="fw-t">{% trans "Versicherung &amp; Notfall" %}</span></div>
             <div class="fw-cbody"><dl>
                 {% if m.haftpflicht_gesellschaft %}
-                <div class="fw-subhead">Haftpflicht</div>
-                <div class="fw-kv"><dt>Gesellschaft</dt><dd>{{ m.haftpflicht_gesellschaft }}</dd></div>
-                {% if m.haftpflicht_police %}<div class="fw-kv"><dt>Police-Nr.</dt><dd class="mono">{{ m.haftpflicht_police }}</dd></div>{% endif %}
+                <div class="fw-subhead">{% trans "Haftpflicht" %}</div>
+                <div class="fw-kv"><dt>{% trans "Gesellschaft" %}</dt><dd>{{ m.haftpflicht_gesellschaft }}</dd></div>
+                {% if m.haftpflicht_police %}<div class="fw-kv"><dt>{% trans "Police-Nr." %}</dt><dd class="mono">{{ m.haftpflicht_police }}</dd></div>{% endif %}
                 {% endif %}
                 {% if m.notfall_name %}
-                <div class="fw-subhead">Notfallkontakt</div>
-                <div class="fw-kv"><dt>Name</dt><dd>{{ m.notfall_name }}{% if m.notfall_beziehung %} ({{ m.notfall_beziehung }}){% endif %}</dd></div>
-                {% if m.notfall_telefon %}<div class="fw-kv"><dt>Telefon</dt><dd>{{ m.notfall_telefon }}</dd></div>{% endif %}
+                <div class="fw-subhead">{% trans "Notfallkontakt" %}</div>
+                <div class="fw-kv"><dt>{% trans "Name" %}</dt><dd>{{ m.notfall_name }}{% if m.notfall_beziehung %} ({{ m.notfall_beziehung }}){% endif %}</dd></div>
+                {% if m.notfall_telefon %}<div class="fw-kv"><dt>{% trans "Telefon" %}</dt><dd>{{ m.notfall_telefon }}</dd></div>{% endif %}
                 {% endif %}
             </dl></div>
         </div>
         {% endif %}
         {% if m.vertretung_art %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic i">{% zeichen 'recht' %}</span><span class="fw-t">Vertretung / Beistand</span></div>
+            <div class="fw-h"><span class="fw-ic i">{% zeichen 'recht' %}</span><span class="fw-t">{% trans "Vertretung / Beistand" %}</span></div>
             <div class="fw-cbody"><dl>
-                <div class="fw-kv"><dt>Art</dt><dd>{{ m.get_vertretung_art_display }}</dd></div>
-                {% if m.vertretung_name %}<div class="fw-kv"><dt>Name</dt><dd>{{ m.vertretung_name }}</dd></div>{% endif %}
-                {% if m.vertretung_kontakt %}<div class="fw-kv"><dt>Kontakt</dt><dd>{{ m.vertretung_kontakt }}</dd></div>{% endif %}
+                <div class="fw-kv"><dt>{% trans "Art" %}</dt><dd>{{ m.get_vertretung_art_display }}</dd></div>
+                {% if m.vertretung_name %}<div class="fw-kv"><dt>{% trans "Name" %}</dt><dd>{{ m.vertretung_name }}</dd></div>{% endif %}
+                {% if m.vertretung_kontakt %}<div class="fw-kv"><dt>{% trans "Kontakt" %}</dt><dd>{{ m.vertretung_kontakt }}</dd></div>{% endif %}
             </dl></div>
         </div>
         {% endif %}
         {% endif %}
         {% if m.iban or m.bank_name or m.zahlungsart or m.mahnsperre or m.zahler_name or m.ebill_email %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic g">{% zeichen 'bank' %}</span><span class="fw-t">Zahlungsverkehr</span></div>
+            <div class="fw-h"><span class="fw-ic g">{% zeichen 'bank' %}</span><span class="fw-t">{% trans "Zahlungsverkehr" %}</span></div>
             <div class="fw-cbody"><dl>
                 {% if m.iban %}<div class="fw-kv"><dt>IBAN</dt><dd class="mono">{{ m.iban }}</dd></div>{% endif %}
-                {% if m.bank_name %}<div class="fw-kv"><dt>Bank</dt><dd>{{ m.bank_name }}</dd></div>{% endif %}
-                {% if m.zahlungsart %}<div class="fw-kv"><dt>Zahlungsart</dt><dd>{{ m.get_zahlungsart_display }}</dd></div>{% endif %}
-                {% if m.ebill_email %}<div class="fw-kv"><dt>eBill / E-Rechnung</dt><dd>{{ m.ebill_email }}</dd></div>{% endif %}
-                {% if m.mahnsperre %}<div class="fw-kv"><dt>Mahnsperre</dt><dd style="color:var(--ds-warn)">aktiv (Zahlungsvereinbarung)</dd></div>{% endif %}
-                {% if m.zahler_name %}<div class="fw-kv"><dt>Abw. Zahler</dt><dd>{{ m.zahler_name }}{% if m.zahler_adresse %} · {{ m.zahler_adresse }}{% endif %}</dd></div>{% endif %}
+                {% if m.bank_name %}<div class="fw-kv"><dt>{% trans "Bank" %}</dt><dd>{{ m.bank_name }}</dd></div>{% endif %}
+                {% if m.zahlungsart %}<div class="fw-kv"><dt>{% trans "Zahlungsart" %}</dt><dd>{{ m.get_zahlungsart_display }}</dd></div>{% endif %}
+                {% if m.ebill_email %}<div class="fw-kv"><dt>{% trans "eBill / E-Rechnung" %}</dt><dd>{{ m.ebill_email }}</dd></div>{% endif %}
+                {% if m.mahnsperre %}<div class="fw-kv"><dt>{% trans "Mahnsperre" %}</dt><dd style="color:var(--ds-warn)">{% trans "aktiv (Zahlungsvereinbarung)" %}</dd></div>{% endif %}
+                {% if m.zahler_name %}<div class="fw-kv"><dt>{% trans "Abw. Zahler" %}</dt><dd>{{ m.zahler_name }}{% if m.zahler_adresse %} · {{ m.zahler_adresse }}{% endif %}</dd></div>{% endif %}
             </dl></div>
         </div>
         {% endif %}
         {% if m.notizen %}
         <div class="fw-card fw-nomb lg:col-span-2">
-            <div class="fw-h"><span class="fw-ic w">{% zeichen 'hinweis' %}</span><span class="fw-t">Interne Notizen</span></div>
+            <div class="fw-h"><span class="fw-ic w">{% zeichen 'hinweis' %}</span><span class="fw-t">{% trans "Interne Notizen" %}</span></div>
             <div class="fw-cbody"><p class="text-sm whitespace-pre-line" style="color:var(--ds-muted);padding:6px 0">{{ m.notizen }}</p></div>
         </div>
         {% endif %}
         <div class="fw-card fw-nomb">
-            <div class="fw-h"><span class="fw-ic b">{% zeichen 'vertrag' %}</span><span class="fw-t">Aktuelle Vermietung</span></div>
+            <div class="fw-h"><span class="fw-ic b">{% zeichen 'vertrag' %}</span><span class="fw-t">{% trans "Aktuelle Vermietung" %}</span></div>
             <div class="fw-cbody">
             {% if anzahl_aktive %}<dl>
             {% for row in vertrag_rows %}{% if row.v.status == 'aktiv' %}
             <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-kv" style="text-decoration:none"><dt>{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</dt><dd style="color:var(--ds-brand-600)">CHF {{ row.brutto|chf }}</dd></a>
             {% endif %}{% endfor %}
-            </dl>{% else %}<p class="text-sm italic" style="color:var(--ds-faint);padding:6px 0">Kein aktiver Vertrag.</p>{% endif %}
+            </dl>{% else %}<p class="text-sm italic" style="color:var(--ds-faint);padding:6px 0">{% trans "Kein aktiver Vertrag." %}</p>{% endif %}
             </div>
         </div>
         <div class="fw-card fw-nomb lg:col-span-2">
             <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
-                <span class="fw-t">Adressverlauf</span></div>
+                <span class="fw-t">{% trans "Adressverlauf" %}</span></div>
             <details class="fw-aufklapp">
-                <summary>Adresse hinzufügen</summary>
+                <summary>{% trans "Adresse hinzufügen" %}</summary>
                 <div class="fw-aufklapp-inhalt">
                     <form method="post" action="/neu/personen/{{ m.id }}/adresse/" class="grid grid-cols-1 sm:grid-cols-6 gap-2">{% csrf_token %}
                         <select name="art" class="fw-feld sm:col-span-2">
-                            <option value="wohn">Wohnadresse</option>
-                            <option value="korrespondenz">Korrespondenzadresse</option>
+                            <option value="wohn">{% trans "Wohnadresse" %}</option>
+                            <option value="korrespondenz">{% trans "Korrespondenzadresse" %}</option>
                         </select>
                         <input type="date" name="gueltig_ab" value="{{ heute }}" class="fw-feld sm:col-span-2" required>
-                        <input name="strasse" placeholder="Strasse &amp; Nr. / c/o" class="fw-feld sm:col-span-2">
-                        <input name="adresszusatz" placeholder="Adresszusatz" class="fw-feld sm:col-span-2">
-                        <input name="plz" placeholder="PLZ" class="fw-feld sm:col-span-1">
-                        <input name="ort" placeholder="Ort" class="fw-feld sm:col-span-3">
-                        <button class="fw-btn fw-primary sm:col-span-6">Adress-Zeile speichern</button>
+                        <input name="strasse" placeholder="{% trans 'Strasse &amp; Nr. / c/o' %}" class="fw-feld sm:col-span-2">
+                        <input name="adresszusatz" placeholder="{% trans 'Adresszusatz' %}" class="fw-feld sm:col-span-2">
+                        <input name="plz" placeholder="{% trans 'PLZ' %}" class="fw-feld sm:col-span-1">
+                        <input name="ort" placeholder="{% trans 'Ort' %}" class="fw-feld sm:col-span-3">
+                        <button class="fw-btn fw-primary sm:col-span-6">{% trans "Adress-Zeile speichern" %}</button>
                     </form>
                 </div>
             </details>
             <div class="fw-tablewrap"><table class="fw-table">
-                <thead><tr><th>Art</th><th>Gültig ab</th><th>Adresse</th><th>Quelle</th><th></th></tr></thead>
+                <thead><tr><th>{% trans "Art" %}</th><th>{% trans "Gültig ab" %}</th><th>{% trans "Adresse" %}</th><th>{% trans "Quelle" %}</th><th></th></tr></thead>
                 <tbody>
                 {% for a in adress_verlauf %}
                 <tr>
-                    <td>{% if a.art == 'korrespondenz' %}<span class="fw-chip fw-warn">Korrespondenz</span>
-                        {% else %}<span class="fw-chip fw-brand">Wohnadresse</span>{% endif %}</td>
+                    <td>{% if a.art == 'korrespondenz' %}<span class="fw-chip fw-warn">{% trans "Korrespondenz" %}</span>
+                        {% else %}<span class="fw-chip fw-brand">{% trans "Wohnadresse" %}</span>{% endif %}</td>
                     <td class="fw-num">{{ a.gueltig_ab|date:"d.m.Y" }}</td>
                     <td>{{ a.einzeiler }}{% if a.notiz %}<span class="fw-klein"> · {{ a.notiz }}</span>{% endif %}</td>
                     <td class="fw-klein">{{ a.quelle }}</td>
                     <td class="fw-right">
-                        <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" onsubmit="return confirm('Diese Adress-Zeile entfernen?');">{% csrf_token %}
-                            <button title="Adresszeile löschen" class="fw-ikon mut gefahr">{% zeichen 'loeschen' klasse='text-xs' %}</button>
+                        <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Adress-Zeile entfernen?" %}{% endfilter %}');">{% csrf_token %}
+                            <button title="{% trans 'Adresszeile löschen' %}" class="fw-ikon mut gefahr">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                         </form>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5"><p class="fw-leer">Noch keine datierten Adress-Zeilen.</p></td></tr>
+                <tr><td colspan="5"><p class="fw-leer">{% trans "Noch keine datierten Adress-Zeilen." %}</p></td></tr>
                 {% endfor %}
                 </tbody>
             </table></div>
-            <div class="fw-fuss">Datierte Adress-Zeilen («gültig ab») wie beim Sollmietzins. Die zum Stichtag
-                gültige Zeile ergibt die effektive Zustelladresse — eine Korrespondenzadresse hat dabei
-                Vorrang vor der Wohnadresse.</div>
+            <div class="fw-fuss">{% trans "Datierte Adress-Zeilen («gültig ab») wie beim Sollmietzins. Die zum Stichtag gültige Zeile ergibt die effektive Zustelladresse — eine Korrespondenzadresse hat dabei Vorrang vor der Wohnadresse." %}</div>
         </div>
         <div class="fw-card fw-nomb lg:col-span-2">
             <div class="fw-kopf"><span class="fw-ikon {% if portal_user %}good{% else %}mut{% endif %}">{% zeichen 'schluessel' %}</span>
-                <span class="fw-t">Mieterportal-Zugang</span>
-                {% if portal_user %}<span class="fw-chip {% if portal_user.is_active %}fw-good{% else %}fw-mut{% endif %}">{% if portal_user.is_active %}aktiv{% else %}deaktiviert{% endif %}</span>{% endif %}</div>
+                <span class="fw-t">{% trans "Mieterportal-Zugang" %}</span>
+                {% if portal_user %}<span class="fw-chip {% if portal_user.is_active %}fw-good{% else %}fw-mut{% endif %}">{% if portal_user.is_active %}{% trans "aktiv" %}{% else %}{% trans "deaktiviert" %}{% endif %}</span>{% endif %}</div>
             {% if portal_user %}
-                <div class="fw-dz"><div class="fw-dl">Benutzername</div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Benutzername" %}</div>
                     <div class="fw-dv"><span class="font-mono">{{ portal_user.username }}</span>
-                    <small>Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen" erzeugt ein neues
-                        Passwort und sendet es {% if m.email %}an {{ m.email }}{% else %}— keine E-Mail hinterlegt, es wird angezeigt{% endif %}.</small></div></div>
+                    <small>{% if m.email %}{% blocktrans trimmed with email=m.email %}Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen“ erzeugt ein neues
+                        Passwort und sendet es an {{ email }}.{% endblocktrans %}{% else %}{% blocktrans trimmed %}Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen“ erzeugt ein neues
+                        Passwort und sendet es — keine E-Mail hinterlegt, es wird angezeigt.{% endblocktrans %}{% endif %}</small></div></div>
                 <div class="fw-fuss">
-                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Neues Passwort erzeugen und {% if m.email %}an den Mieter senden{% else %}anzeigen{% endif %}? Das alte wird ungültig.');">{% csrf_token %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% if m.email %}{% trans "Neues Passwort erzeugen und an den Mieter senden? Das alte wird ungültig." %}{% else %}{% trans "Neues Passwort erzeugen und anzeigen? Das alte wird ungültig." %}{% endif %}{% endfilter %}');">{% csrf_token %}
                         <input type="hidden" name="aktion" value="erstellen">
-                        <button class="fw-btn">Passwort zurücksetzen &amp; senden</button>
+                        <button class="fw-btn">{% trans "Passwort zurücksetzen &amp; senden" %}</button>
                     </form>
-                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Portal-Zugang deaktivieren?');">{% csrf_token %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% trans "Portal-Zugang deaktivieren?" %}{% endfilter %}');">{% csrf_token %}
                         <input type="hidden" name="aktion" value="entfernen">
-                        <button class="fw-btn">Zugang deaktivieren</button>
+                        <button class="fw-btn">{% trans "Zugang deaktivieren" %}</button>
                     </form>
                 </div>
             {% else %}
                 <div class="fw-zeile"><div class="fw-mitte">
-                    <div class="fw-t">Kein Portal-Zugang</div>
-                    <div class="fw-s">Erstellen Sie einen Login, damit der Mieter Vertrag, offene Rechnungen (QR),
-                        Kontoauszug, Dokumente und Schadenmeldung online nutzen kann.
-                        {% if m.email %}Die Zugangsdaten gehen automatisch an {{ m.email }}.{% else %}Keine E-Mail
-                        hinterlegt — die Zugangsdaten werden hier einmalig angezeigt.{% endif %}</div>
+                    <div class="fw-t">{% trans "Kein Portal-Zugang" %}</div>
+                    <div class="fw-s">{% trans "Erstellen Sie einen Login, damit der Mieter Vertrag, offene Rechnungen (QR), Kontoauszug, Dokumente und Schadenmeldung online nutzen kann." %}
+                        {% if m.email %}{% blocktrans with email=m.email %}Die Zugangsdaten gehen automatisch an {{ email }}.{% endblocktrans %}{% else %}{% trans "Keine E-Mail hinterlegt — die Zugangsdaten werden hier einmalig angezeigt." %}{% endif %}</div>
                 </div></div>
                 <div class="fw-fuss">
                     <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/">{% csrf_token %}
                         <input type="hidden" name="aktion" value="erstellen">
-                        <button class="fw-btn fw-primary">{% zeichen 'schluessel' %}Portal-Zugang erstellen{% if m.email %} &amp; per E-Mail senden{% endif %}</button>
+                        <button class="fw-btn fw-primary">{% zeichen 'schluessel' %}{% trans "Portal-Zugang erstellen" %}{% if m.email %} {% trans "&amp; per E-Mail senden" %}{% endif %}</button>
                     </form>
                 </div>
             {% endif %}
@@ -343,8 +338,8 @@ alten Liegenschaft betreut.
    Namensgleichheit erraten (siehe `_person_kopf`). {% endcomment %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
-        <span class="fw-t">Rollen über die Zeit</span>
-        <span class="fw-neben">{{ pe_rollen|length }} Verbindung{{ pe_rollen|length|pluralize:"en" }}</span></div>
+        <span class="fw-t">{% trans "Rollen über die Zeit" %}</span>
+        <span class="fw-neben">{% blocktrans count n=pe_rollen|length %}{{ n }} Verbindung{% plural %}{{ n }} Verbindungen{% endblocktrans %}</span></div>
     {% for r in pe_rollen %}
     <a href="{{ r.url }}" class="fw-zeile klick">
         {% comment %} Vorher stand hier ein `{% if %}`, das mitten in einem
@@ -354,23 +349,23 @@ alten Liegenschaft betreut.
         <span class="fw-ikon{% if not r.aktiv %} mut{% endif %}">
             {% if r.art == 'Schadenmelder' %}{% zeichen 'warnung' %}{% else %}{% zeichen 'schluessel' %}{% endif %}</span>
         <div class="fw-mitte">
-            <div class="fw-t">{{ r.art }} — {{ r.ort }}</div>
-            <div class="fw-s">{% if r.mandat %}Mandat {{ r.mandat }} · {% endif %}{% if r.brutto %}CHF {{ r.brutto|chf }} brutto · {% endif %}{{ r.status }}</div>
+            <div class="fw-t">{{ r.art_label }} — {{ r.ort }}</div>
+            <div class="fw-s">{% if r.mandat %}{% trans "Mandat" %} {{ r.mandat }} · {% endif %}{% if r.brutto %}{% blocktrans with b=r.brutto|chf %}CHF {{ b }} brutto{% endblocktrans %} · {% endif %}{{ r.status }}</div>
         </div>
-        <div class="fw-zeit">{% if r.von %}{{ r.von|date:"d.m.Y" }}{% endif %}{% if r.bis %}<br>– {{ r.bis|date:"d.m.Y" }}{% elif r.aktiv and r.von %}<br>– laufend{% endif %}</div>
+        <div class="fw-zeit">{% if r.von %}{{ r.von|date:"d.m.Y" }}{% endif %}{% if r.bis %}<br>– {{ r.bis|date:"d.m.Y" }}{% elif r.aktiv and r.von %}<br>– {% trans "laufend" %}{% endif %}</div>
     </a>
     {% empty %}
-    <p class="fw-leer">Keine Verbindungen erfasst.</p>
+    <p class="fw-leer">{% trans "Keine Verbindungen erfasst." %}</p>
     {% endfor %}
 </div>
 
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'vertrag' %}</span>
-            <span class="fw-t">Mietverhältnisse im Einzelnen</span></div>
+            <span class="fw-t">{% trans "Mietverhältnisse im Einzelnen" %}</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>Objekt</th><th>Von</th><th>Bis</th>
-                <th class="fw-right">Brutto</th><th>Status</th><th></th>
+                <th>{% trans "Objekt" %}</th><th>{% trans "Von" %}</th><th>{% trans "Bis" %}</th>
+                <th class="fw-right">{% trans "Brutto" %}</th><th>{% trans "Status" %}</th><th></th>
             </tr></thead>
             <tbody>
             {% for row in vertrag_rows %}
@@ -383,7 +378,7 @@ alten Liegenschaft betreut.
                 <td class="fw-right">{% zeichen 'weiter' klasse='fw-klein' %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6"><p class="fw-leer">Keine Verträge.</p></td></tr>
+            <tr><td colspan="6"><p class="fw-leer">{% trans "Keine Verträge." %}</p></td></tr>
             {% endfor %}
             </tbody>
         </table></div>
@@ -402,7 +397,7 @@ alten Liegenschaft betreut.
         <div class="fw-hinweis crit">
             <span class="fw-hi">{% zeichen 'warnung' %}</span>
             <div class="fw-ht">
-                <b>Offener Betrag: CHF {{ total_offen|chf }}</b>
+                <b>{% blocktrans with b=total_offen|chf %}Offener Betrag: CHF {{ b }}{% endblocktrans %}</b>
                 Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit
                 Kündigungsandrohung, danach ausserordentliche Kündigung möglich.
                 <div class="flex gap-2 flex-wrap mt-2.5">
@@ -420,27 +415,27 @@ alten Liegenschaft betreut.
     {% endif %}
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'rechnung' %}</span>
-            <span class="fw-t">Offene Posten</span>
+            <span class="fw-t">{% trans "Offene Posten" %}</span>
             <span class="fw-rechts">
-                <a href="/neu/mieterkonten/{{ m.id }}/" class="fw-btn fw-primary">{% zeichen 'rechnung' %} Kontoblatt</a>
+                <a href="/neu/mieterkonten/{{ m.id }}/" class="fw-btn fw-primary">{% zeichen 'rechnung' %} {% trans "Kontoblatt" %}</a>
                 <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %} PDF</a>
             </span></div>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>Fällig</th><th>Titel</th><th class="fw-right">Offen</th></tr></thead>
+            <thead><tr><th>{% trans "Fällig" %}</th><th>{% trans "Titel" %}</th><th class="fw-right">{% trans "Offen" %}</th></tr></thead>
             <tbody>
             {% for r in offene %}
             <tr><td class="fw-num">{{ r.faellig_am|date:"d.m.Y"|default:"—" }}</td>
                 <td>{{ r.titel }}</td>
                 <td class="fw-right"><span class="fw-betrag crit">{{ r.offener_betrag|chf }}</span></td></tr>
             {% empty %}
-            <tr><td colspan="3"><p class="fw-leer">Keine offenen Posten. 🎉</p></td></tr>
+            <tr><td colspan="3"><p class="fw-leer">{% trans "Keine offenen Posten. 🎉" %}</p></td></tr>
             {% endfor %}
             </tbody>
         </table></div>
     </div>
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon good">{% zeichen 'zurueck' %}</span>
-            <span class="fw-t">Zahlungseingänge</span></div>
+            <span class="fw-t">{% trans "Zahlungseingänge" %}</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
             <tbody>
             {% for z in zahlungen %}
@@ -448,7 +443,7 @@ alten Liegenschaft betreut.
                 <td>{{ z.bemerkung|default:"Zahlung" }}</td>
                 <td class="fw-right"><span class="fw-betrag good">+{{ z.betrag|chf }}</span></td></tr>
             {% empty %}
-            <tr><td colspan="3"><p class="fw-leer">Noch keine Zahlungen.</p></td></tr>
+            <tr><td colspan="3"><p class="fw-leer">{% trans "Noch keine Zahlungen." %}</p></td></tr>
             {% endfor %}
             </tbody>
         </table></div>
@@ -457,17 +452,17 @@ alten Liegenschaft betreut.
 
 <!-- DOKUMENTE -->
 <div data-panel="pd" id="pd-dokumente" class="hidden">
-    <p class="fw-klein mb-2">{% zeichen 'hinweis' klasse='mr-1' %}Nach Mietverhältnis gruppiert. Das Auge steuert, ob der Mieter das Dokument im Portal sieht. Grün = sichtbar, grau = ausgeblendet.</p>
+    <p class="fw-klein mb-2">{% zeichen 'hinweis' klasse='mr-1' %}{% trans "Nach Mietverhältnis gruppiert. Das Auge steuert, ob der Mieter das Dokument im Portal sieht. Grün = sichtbar, grau = ausgeblendet." %}</p>
     {% for g in dok_gruppen %}
     <details class="fw-card group">
         <summary class="fw-kopf cursor-pointer select-none list-none">
             {% zeichen 'weiter' klasse='fw-klein transition-transform group-open:rotate-90' %}
             <span class="fw-ikon">{% if g.vertrag %}{% zeichen 'vertrag' %}{% else %}{% zeichen 'person' %}{% endif %}</span>
             <span class="fw-t">{{ g.label }}</span>
-            <span class="fw-chip fw-mut">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
+            <span class="fw-chip fw-mut">{% blocktrans count n=g.dokumente|length %}{{ n }} Dokument{% plural %}{{ n }} Dokumente{% endblocktrans %}</span>
             <span class="fw-rechts">
-            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">Vertrag {% zeichen 'weiter' klasse='text-[10px]' %}</a>
-            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">Objekt {% zeichen 'weiter' klasse='text-[10px]' %}</a>{% endif %}
+            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a>
+            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a>{% endif %}
             </span>
         </summary>
         {% for d in g.dokumente %}
@@ -484,15 +479,15 @@ alten Liegenschaft betreut.
                     {% if d.im_portal_sichtbar %}{% zeichen 'gut' klasse='text-xs' %}{% else %}{% zeichen 'gesperrt' klasse='text-xs' %}{% endif %}
                 </button>
             </form>
-            {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="fw-link shrink-0">Öffnen</a>{% endif %}
-            <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('Dokument «{{ d.bezeichnung|default:d.titel|escapejs }}» löschen?');">{% csrf_token %}
-                <button class="fw-ikon mut gefahr" title="Löschen">{% zeichen 'loeschen' klasse='text-xs' %}</button>
+            {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="fw-link shrink-0">{% trans "Öffnen" %}</a>{% endif %}
+            <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=d.bezeichnung|default:d.titel %}Dokument «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
+                <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' klasse='text-xs' %}</button>
             </form>
         </div>
         {% endfor %}
     </details>
     {% empty %}
-    <div class="fw-card"><p class="fw-leer">Keine Dokumente hinterlegt.</p></div>
+    <div class="fw-card"><p class="fw-leer">{% trans "Keine Dokumente hinterlegt." %}</p></div>
     {% endfor %}
 </div>
 
@@ -500,7 +495,7 @@ alten Liegenschaft betreut.
 <div data-panel="pd" id="pd-chronik" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'senden' %}</span>
-            <span class="fw-t">Kontaktjournal</span>
+            <span class="fw-t">{% trans "Kontaktjournal" %}</span>
             <span class="fw-neben">{{ kommunikationen|length }}</span></div>
         {% comment %} Erfassen gehoert nicht ueber die Leseansicht, sondern
            aufgeklappt hinein — dieselbe Entscheidung wie in den Stammdaten
@@ -508,23 +503,23 @@ alten Liegenschaft betreut.
            groesste Karte des Reiters; wer die Chronik LESEN wollte, musste erst
            daran vorbeiscrollen (im Bild vom 20.08. fuellte es den Schirm). {% endcomment %}
         <details class="fw-aufklapp">
-            <summary>Notiz / Kontakt erfassen</summary>
+            <summary>{% trans "Notiz / Kontakt erfassen" %}</summary>
             <div class="fw-aufklapp-inhalt">
                 <form method="post" action="/neu/kommunikation/notiz/" class="space-y-3">
                     {% csrf_token %}
                     <input type="hidden" name="mieter_id" value="{{ m.id }}">
                     <div class="flex flex-wrap gap-2">
                         <select name="typ" class="fw-feld">
-                            <option value="telefon">Telefon</option><option value="email">E-Mail</option>
-                            <option value="brief">Brief</option><option value="persoenlich">Persönlich</option><option value="notiz">Notiz</option>
+                            <option value="telefon">{% trans "Telefon" %}</option><option value="email">{% trans "E-Mail" %}</option>
+                            <option value="brief">{% trans "Brief" %}</option><option value="persoenlich">{% trans "Persönlich" %}</option><option value="notiz">{% trans "Notiz" %}</option>
                         </select>
                         <select name="richtung" class="fw-feld">
-                            <option value="eingehend">Eingehend</option><option value="ausgehend">Ausgehend</option><option value="intern">Intern</option>
+                            <option value="eingehend">{% trans "Eingehend" %}</option><option value="ausgehend">{% trans "Ausgehend" %}</option><option value="intern">{% trans "Intern" %}</option>
                         </select>
-                        <input name="betreff" placeholder="Betreff (optional)" class="fw-feld flex-1 min-w-[160px]">
+                        <input name="betreff" placeholder="{% trans 'Betreff (optional)' %}" class="fw-feld flex-1 min-w-[160px]">
                     </div>
-                    <textarea name="inhalt" rows="2" required placeholder="Was wurde besprochen?" class="fw-feld w-full"></textarea>
-                    <button class="fw-btn fw-primary">{% zeichen 'neu' %}Erfassen</button>
+                    <textarea name="inhalt" rows="2" required placeholder="{% trans 'Was wurde besprochen?' %}" class="fw-feld w-full"></textarea>
+                    <button class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Erfassen" %}</button>
                 </form>
             </div>
         </details>
@@ -537,34 +532,34 @@ alten Liegenschaft betreut.
                 <div class="fw-t">{% if k.betreff %}{{ k.betreff }} · {% endif %}{{ k.inhalt }}</div>
                 <div class="fw-s">{{ k.get_typ_display }} · {{ k.get_richtung_display }} · {{ k.zeitpunkt|date:"d.m.Y H:i" }}{% if k.erstellt_von %} · {{ k.erstellt_von.username }}{% endif %}</div>
             </div>
-            <form method="post" action="/neu/kommunikation/{{ k.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('Journal-Eintrag löschen?');">{% csrf_token %}
-                <button class="fw-ikon mut gefahr" title="Löschen">{% zeichen 'loeschen' klasse='text-xs' %}</button>
+            <form method="post" action="/neu/kommunikation/{{ k.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% trans "Journal-Eintrag löschen?" %}{% endfilter %}');">{% csrf_token %}
+                <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' klasse='text-xs' %}</button>
             </form>
         </div>
         {% empty %}
-        <p class="fw-leer">Noch keine Einträge im Kontaktjournal.</p>
+        <p class="fw-leer">{% trans "Noch keine Einträge im Kontaktjournal." %}</p>
         {% endfor %}
     </div>
 
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
-            <span class="fw-t">Verlauf <small>Aktionen zu dieser Person &amp; ihren Verträgen</small></span></div>
+            <span class="fw-t">{% trans "Verlauf" %} <small>{% trans "Aktionen zu dieser Person &amp; ihren Verträgen" %}</small></span></div>
         {% for e in verlauf %}
         <div class="fw-zeile">
             <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ e.aktion }}
-                    {% if e.ziel_typ == 'vertrag' and e.ziel_url %}<a href="{{ e.ziel_url }}" class="fw-link">→ Vertrag</a>{% endif %}</div>
+                    {% if e.ziel_typ == 'vertrag' and e.ziel_url %}<a href="{{ e.ziel_url }}" class="fw-link">→ {% trans "Vertrag" %}</a>{% endif %}</div>
                 <div class="fw-s">{% if e.details %}{{ e.details }}{% endif %}</div>
             </div>
             <div class="fw-zeit">{{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
-                <span class="fw-klein">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span></div>
+                <span class="fw-klein">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}{% trans "System" %}{% endif %}</span></div>
         </div>
         {% empty %}
-        <p class="fw-leer">Noch keine protokollierten Aktionen zu dieser Person.</p>
+        <p class="fw-leer">{% trans "Noch keine protokollierten Aktionen zu dieser Person." %}</p>
         {% endfor %}
-        <div class="fw-fuss">Vollständiges Logbuch aller Objekte unter
-            <a href="/neu/logbuch/" class="fw-link">Profil → Logbuch</a>.</div>
+        <div class="fw-fuss">{% blocktrans trimmed %}Vollständiges Logbuch aller Objekte unter
+            <a href="/neu/logbuch/" class="fw-link">Profil → Logbuch</a>.{% endblocktrans %}</div>
     </div>
 </div>
 
@@ -572,7 +567,7 @@ alten Liegenschaft betreut.
 <div data-panel="pd" id="pd-faelle" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'filtern' %}</span>
-            <span class="fw-t">Fälle zu dieser Person</span>
+            <span class="fw-t">{% trans "Fälle zu dieser Person" %}</span>
             <span class="fw-neben">{{ person_faelle|length }}</span></div>
         {% for f in person_faelle %}
         <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
@@ -584,7 +579,7 @@ alten Liegenschaft betreut.
             <div class="fw-zeit">{{ f.eroeffnet_am|date:"d.m.Y" }}</div>
         </a>
         {% empty %}
-        <p class="fw-leer">Zu dieser Person läuft kein Fall.</p>
+        <p class="fw-leer">{% trans "Zu dieser Person läuft kein Fall." %}</p>
         {% endfor %}
     </div>
 
@@ -592,17 +587,17 @@ alten Liegenschaft betreut.
        stehen hier trotzdem, weil sie am Kontakt gebraucht werden — wer anruft,
        fragt nach seiner Frist, nicht nach seinem Vertrag. Erzeugt werden sie
        weiterhin am Vertrag; das ist eine Anzeige, keine zweite Ablage. {% endcomment %}
-    <div class="fw-subhead">Offene Fristen aus den Mietverhältnissen</div>
+    <div class="fw-subhead">{% trans "Offene Fristen aus den Mietverhältnissen" %}</div>
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon warn">{% zeichen 'wartet' %}</span>
-            <span class="fw-t">Fristen &amp; Pendenzen</span>
-            <span class="fw-rechts"><a href="/neu/fristen/" class="fw-link">Fristen-Center</a></span></div>
+            <span class="fw-t">{% trans "Fristen &amp; Pendenzen" %}</span>
+            <span class="fw-rechts"><a href="/neu/fristen/" class="fw-link">{% trans "Fristen-Center" %}</a></span></div>
         {% for e in person_fristen %}
         <div class="fw-zeile">
             <span class="fw-marker {% if e.ueberfaellig %}crit{% else %}warn{% endif %}"></span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ e.p.titel }}</div>
-                <div class="fw-s">{% if e.p.vertrag %}{{ e.p.vertrag.einheit.bezeichnung }} · {% endif %}{% if e.ueberfaellig %}überfällig{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}{% if e.p.beschreibung %} · {{ e.p.beschreibung }}{% endif %}{% if e.p.sendungsnummer and not e.p.zugang_am %} · provisorisch{% endif %}</div>
+                <div class="fw-s">{% if e.p.vertrag %}{{ e.p.vertrag.einheit.bezeichnung }} · {% endif %}{% if e.ueberfaellig %}{% trans "überfällig" %}{% else %}{% blocktrans count n=e.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}{% if e.p.beschreibung %} · {{ e.p.beschreibung }}{% endif %}{% if e.p.sendungsnummer and not e.p.zugang_am %} · {% trans "provisorisch" %}{% endif %}</div>
                 {% comment %} Einschreiben-Zugang: aus dem Finanzen-Bereich hierher
                    gezogen. Er war dort die einzige Stelle, an der sich der Zugang
                    erfassen liess — waere er beim Zusammenlegen mitgegangen, haette
@@ -612,7 +607,7 @@ alten Liegenschaft betreut.
             <div class="fw-zeit">{{ e.p.faellig_am|date:"d.m.Y" }}</div>
         </div>
         {% empty %}
-        <p class="fw-leer">Keine offenen Fristen.</p>
+        <p class="fw-leer">{% trans "Keine offenen Fristen." %}</p>
         {% endfor %}
     </div>
 </div>

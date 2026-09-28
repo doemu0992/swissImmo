@@ -185,6 +185,9 @@ UEBERSETZT = (
     'fw/objekt_form.html',
     'fw/liegenschaft_form.html',
     'fw/schaden_detail.html',
+    # Tranche «Personen»
+    'fw/person_detail.html',
+    'fw/person_form.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -292,6 +295,10 @@ STICHPROBE = {
                                    'it': 'Registrare un nuovo stabile', 'en': 'Record new property'},
     'Handwerker beauftragen': {'de': 'Handwerker beauftragen', 'fr': 'Mandater un artisan',
                                'it': 'Incaricare un artigiano', 'en': 'Order tradesperson'},
+    'Kontaktjournal':     {'de': 'Kontaktjournal', 'fr': 'Journal des contacts',
+                           'it': 'Giornale dei contatti', 'en': 'Contact journal'},
+    'Neue Person erfassen': {'de': 'Neue Person erfassen', 'fr': 'Saisir une nouvelle personne',
+                             'it': 'Registrare una nuova persona', 'en': 'Record new person'},
 }
 
 
@@ -483,6 +490,27 @@ class AusgezeichneteVorlagenTests(SimpleTestCase):
         for name in UEBERSETZT:
             with self.subTest(vorlage=name):
                 get_template(name)
+
+    def test_uebersetzte_auswahl_hat_einen_festen_wert(self):
+        """Eine `<option>` mit übersetzter Beschriftung braucht ein `value`.
+
+        Ohne `value` schickt der Browser die BESCHRIFTUNG — in der
+        französischen Oberfläche also «Madame» statt «Frau». Gespeichert
+        wird dann die Übersetzung, und alles, was den Wert liest (Anrede im
+        Brief, Filter, Vergleiche wie `m.anrede == 'Frau'`), greift ins
+        Leere. So stand es in `fw/person_form.html` bei Anrede, Zivilstand
+        und Erwerbsstatus.
+
+        Gegenprobe: in `fw/person_form.html` bei einer Anrede das
+        `value="Frau"` entfernen — der Test wird rot.
+        """
+        ohne_wert = re.compile(r'<option(?![^>]*\bvalue=)[^>]*>\s*\{%\s*(?:trans|blocktrans)\b')
+        for name in UEBERSETZT:
+            with self.subTest(vorlage=name):
+                text = (WURZEL / 'core' / 'templates' / name).read_text(encoding='utf-8')
+                self.assertIsNone(
+                    ohne_wert.search(text),
+                    f'{name}: <option> mit übersetzter Beschriftung, aber ohne value=')
 
     def test_die_liste_schrumpft_nicht(self):
         """Sperrklinke: Eine einmal ausgezeichnete Vorlage bleibt es.

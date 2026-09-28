@@ -1,20 +1,20 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}{% if ist_neu %}Neue Person{% else %}{{ m.display_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% if ist_neu %}{% trans "Neue Person" %}{% else %}{% blocktrans with name=m.display_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
 
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/personen/{{ lg_query }}" class="hover:fw-marke">Personen</a>
+    <a href="/neu/personen/{{ lg_query }}" class="hover:fw-marke">{% trans "Personen" %}</a>
     {% zeichen 'weiter' klasse='text-[9px]' %}
     {% if not ist_neu %}<a href="/neu/personen/{{ m.id }}/" class="hover:fw-marke">{{ m.display_name }}</a>
     {% zeichen 'weiter' klasse='text-[9px]' %}{% endif %}
-    <span class="fw-mutet font-medium">{% if ist_neu %}Neue Person{% else %}Bearbeiten{% endif %}</span>
+    <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neue Person" %}{% else %}{% trans "Bearbeiten" %}{% endif %}</span>
 </nav>
 
 <div class="fw-phead">
     <div>
-        <h1>{% if ist_neu %}Neue Person erfassen{% else %}{{ m.display_name }} bearbeiten{% endif %}</h1>
-        <p>Kontakt- und Adressdaten. Pflichtfelder sind markiert.</p>
+        <h1>{% if ist_neu %}{% trans "Neue Person erfassen" %}{% else %}{% blocktrans with name=m.display_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %}</h1>
+        <p>{% trans "Kontakt- und Adressdaten. Pflichtfelder sind markiert." %}</p>
     </div>
 </div>
 
@@ -26,20 +26,20 @@
         <div class="flex items-start gap-3">
             <div class="fw-warnton text-xl">⚠️</div>
             <div class="flex-1">
-                <h3 class="font-bold fw-warnton text-sm mb-1">Mögliche Dublette gefunden</h3>
-                <p class="text-sm fw-warnton mb-3">Es existieren bereits ähnliche Personen. Bitte prüfen Sie, ob es sich um dieselbe Person handelt:</p>
+                <h3 class="font-bold fw-warnton text-sm mb-1">{% trans "Mögliche Dublette gefunden" %}</h3>
+                <p class="text-sm fw-warnton mb-3">{% trans "Es existieren bereits ähnliche Personen. Bitte prüfen Sie, ob es sich um dieselbe Person handelt" %}:</p>
                 <div class="space-y-1.5 mb-4">
                     {% for d in dubletten %}
                     <a href="/neu/personen/{{ d.id }}/" class="flex items-center gap-2 text-sm fw-flaeche rounded-lg px-3 py-2 border fw-linie-warn hover:fw-linie-warn">
                         <span class="font-semibold fw-strong">{{ d.name }}</span>
                         {% if d.email %}<span class="fw-faint">· {{ d.email }}</span>{% endif %}
                         {% if d.ort %}<span class="fw-faint">· {{ d.ort }}</span>{% endif %}
-                        <span class="ml-auto fw-marke text-xs font-semibold">Öffnen →</span>
+                        <span class="ml-auto fw-marke text-xs font-semibold">{% trans "Öffnen" %} →</span>
                     </a>
                     {% endfor %}
                 </div>
                 <input type="hidden" name="dublette_ok" value="1">
-                <p class="text-xs fw-warnton">Ist es dennoch eine neue Person? Dann unten auf „Trotzdem speichern" klicken.</p>
+                <p class="text-xs fw-warnton">{% trans "Ist es dennoch eine neue Person? Dann unten auf „Trotzdem speichern“ klicken." %}</p>
             </div>
         </div>
     </div>
@@ -47,123 +47,121 @@
 
     <!-- Typ -->
     <div class="fw-card p-5">
-        <label class="block text-xs font-semibold fw-mutet mb-2">Kunden-Typ</label>
+        <label class="block text-xs font-semibold fw-mutet mb-2">{% trans "Kunden-Typ" %}</label>
         <div class="flex flex-wrap gap-2" id="typWahl">
             {% for val, lbl in m.TYP_CHOICES %}{% endfor %}
-            <button type="button" data-typ="person" onclick="setTyp('person')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">Privatperson</button>
-            <button type="button" data-typ="firma" onclick="setTyp('firma')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">Firma / Unternehmen</button>
-            <button type="button" data-typ="verein" onclick="setTyp('verein')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">Verein / Stiftung</button>
+            <button type="button" data-typ="person" onclick="setTyp('person')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">{% trans "Privatperson" %}</button>
+            <button type="button" data-typ="firma" onclick="setTyp('firma')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">{% trans "Firma / Unternehmen" %}</button>
+            <button type="button" data-typ="verein" onclick="setTyp('verein')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">{% trans "Verein / Stiftung" %}</button>
         </div>
         <input type="hidden" name="typ" id="f_typ" value="{{ m.typ|default:'person' }}">
     </div>
 
     <!-- Person -->
     <div class="fw-card p-5 space-y-4" id="box-person">
-        <h3 class="font-bold fw-strong text-sm">Person</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Person" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Anrede</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Anrede" %}</label>
                 <select name="anrede" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for a in "Herr,Frau,Familie" %}{% endfor %}
-                    <option {% if m.anrede == 'Herr' %}selected{% endif %}>Herr</option>
-                    <option {% if m.anrede == 'Frau' %}selected{% endif %}>Frau</option>
-                    <option {% if m.anrede == 'Familie' %}selected{% endif %}>Familie</option>
+                    <option value="Herr" {% if m.anrede == 'Herr' %}selected{% endif %}>{% trans "Herr" %}</option>
+                    <option value="Frau" {% if m.anrede == 'Frau' %}selected{% endif %}>{% trans "Frau" %}</option>
+                    <option value="Familie" {% if m.anrede == 'Familie' %}selected{% endif %}>{% trans "Familie" %}</option>
                 </select></div>
-            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">Vorname</label>
+            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Vorname" %}</label>
                 <input name="vorname" value="{{ m.vorname }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Nachname <span class="fw-kritisch">*</span></label>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nachname" %} <span class="fw-kritisch">*</span></label>
                 <input name="nachname" value="{{ m.nachname }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Geburtsdatum</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Geburtsdatum" %}</label>
                 <input type="date" name="geburtsdatum" value="{{ m.geburtsdatum|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Zivilstand</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zivilstand" %}</label>
                 <select name="zivilstand" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="" {% if not m.zivilstand %}selected{% endif %}>—</option>
-                    <option {% if m.zivilstand == 'ledig' %}selected{% endif %}>ledig</option>
-                    <option {% if m.zivilstand == 'verheiratet' %}selected{% endif %}>verheiratet</option>
-                    <option {% if m.zivilstand == 'eingetragene Partnerschaft' %}selected{% endif %}>eingetragene Partnerschaft</option>
-                    <option {% if m.zivilstand == 'geschieden' %}selected{% endif %}>geschieden</option>
-                    <option {% if m.zivilstand == 'verwitwet' %}selected{% endif %}>verwitwet</option>
-                    <option {% if m.zivilstand == 'getrennt' %}selected{% endif %}>getrennt</option>
+                    <option value="ledig" {% if m.zivilstand == 'ledig' %}selected{% endif %}>{% trans "ledig" %}</option>
+                    <option value="verheiratet" {% if m.zivilstand == 'verheiratet' %}selected{% endif %}>{% trans "verheiratet" %}</option>
+                    <option value="eingetragene Partnerschaft" {% if m.zivilstand == 'eingetragene Partnerschaft' %}selected{% endif %}>{% trans "eingetragene Partnerschaft" %}</option>
+                    <option value="geschieden" {% if m.zivilstand == 'geschieden' %}selected{% endif %}>{% trans "geschieden" %}</option>
+                    <option value="verwitwet" {% if m.zivilstand == 'verwitwet' %}selected{% endif %}>{% trans "verwitwet" %}</option>
+                    <option value="getrennt" {% if m.zivilstand == 'getrennt' %}selected{% endif %}>{% trans "getrennt" %}</option>
                 </select></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Korrespondenzsprache</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Korrespondenzsprache" %}</label>
                 <select name="sprache" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                    <option value="de" {% if m.sprache == 'de' or not m.sprache %}selected{% endif %}>Deutsch</option>
-                    <option value="fr" {% if m.sprache == 'fr' %}selected{% endif %}>Französisch</option>
-                    <option value="it" {% if m.sprache == 'it' %}selected{% endif %}>Italienisch</option>
-                    <option value="en" {% if m.sprache == 'en' %}selected{% endif %}>Englisch</option>
+                    <option value="de" {% if m.sprache == 'de' or not m.sprache %}selected{% endif %}>{% trans "Deutsch" %}</option>
+                    <option value="fr" {% if m.sprache == 'fr' %}selected{% endif %}>{% trans "Französisch" %}</option>
+                    <option value="it" {% if m.sprache == 'it' %}selected{% endif %}>{% trans "Italienisch" %}</option>
+                    <option value="en" {% if m.sprache == 'en' %}selected{% endif %}>{% trans "Englisch" %}</option>
                 </select></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Nationalität</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nationalität" %}</label>
                 <input name="nationalitaet" value="{{ m.nationalitaet }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Heimatort / Geburtsort</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Heimatort / Geburtsort" %}</label>
                 <input name="heimatort" value="{{ m.heimatort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">AHV-Nummer</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "AHV-Nummer" %}</label>
                 <input name="ahv_nummer" value="{{ m.ahv_nummer }}" placeholder="756…" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
         </div>
     </div>
 
     <!-- Firma -->
     <div class="fw-card p-5 space-y-4 hidden" id="box-firma">
-        <h3 class="font-bold fw-strong text-sm">Firma / Organisation</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Firma / Organisation" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Firmenname <span class="fw-kritisch">*</span></label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Firmenname" %} <span class="fw-kritisch">*</span></label>
                 <input name="firmen_name" value="{{ m.firmen_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">UID / CHE-Nummer</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "UID / CHE-Nummer" %}</label>
                 <input name="uid_nummer" value="{{ m.uid_nummer }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Kontaktperson</label>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kontaktperson" %}</label>
                 <input name="kontaktperson" value="{{ m.kontaktperson }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
     <!-- Kontakt -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Kontakt</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Kontakt" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
                 <input type="email" name="email" value="{{ m.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
                 <input name="telefon_privat" value="{{ m.telefon_privat }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Mobile</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mobile" %}</label>
                 <input name="mobile" value="{{ m.mobile }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon Geschäft</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon Geschäft" %}</label>
                 <input name="telefon_geschaeft" value="{{ m.telefon_geschaeft }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
     <!-- Wohnadresse -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Wohnadresse</h3>
-        <p class="text-[11px] fw-faint -mt-2">Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den
-            Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite.</p>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr.</label>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Wohnadresse" %}</h3>
+        <p class="text-[11px] fw-faint -mt-2">{% trans "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite." %}</p>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr." %}</label>
             <input name="strasse" value="{{ m.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Adresszusatz</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Adresszusatz" %}</label>
             <input name="adresszusatz" value="{{ m.adresszusatz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">PLZ</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "PLZ" %}</label>
                 <input name="plz" value="{{ m.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Ort</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ort" %}</label>
                 <input name="ort" value="{{ m.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Land</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Land" %}</label>
                 <input name="land" value="{{ m.land|default:'Schweiz' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
     <!-- Korrespondenzadresse (optional, hat Vorrang für die Zustellung) -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Korrespondenzadresse <span class="font-normal fw-faint">(optional)</span></h3>
-        <p class="text-[11px] fw-faint -mt-2">Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll
-            (z.B. c/o, Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare dorthin adressiert.</p>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr. / c/o</label>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Korrespondenzadresse" %} <span class="font-normal fw-faint">{% trans "(optional)" %}</span></h3>
+        <p class="text-[11px] fw-faint -mt-2">{% trans "Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll (z.B. c/o, Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare dorthin adressiert." %}</p>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr. / c/o" %}</label>
             <input name="k_strasse" value="{{ korr_adr.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Adresszusatz</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Adresszusatz" %}</label>
             <input name="k_adresszusatz" value="{{ korr_adr.adresszusatz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">PLZ</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "PLZ" %}</label>
                 <input name="k_plz" value="{{ korr_adr.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Ort</label>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ort" %}</label>
                 <input name="k_ort" value="{{ korr_adr.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
@@ -172,103 +170,104 @@
     <div id="box-person-extra" class="space-y-5">
         <!-- Aufenthalt -->
         <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">Aufenthalt</h3>
-            <p class="text-[11px] fw-faint -mt-2">Bei Vermietung an ausländische Staatsangehörige Pflichtangabe.</p>
+            <h3 class="font-bold fw-strong text-sm">{% trans "Aufenthalt" %}</h3>
+            <p class="text-[11px] fw-faint -mt-2">{% trans "Bei Vermietung an ausländische Staatsangehörige Pflichtangabe." %}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Aufenthaltsbewilligung</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Aufenthaltsbewilligung" %}</label>
                     <select name="aufenthaltsbewilligung" id="f_bewilligung" onchange="bewilligungHinweis()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         {% for val, lbl in m.AUFENTHALT_CHOICES %}
                         <option value="{{ val }}" {% if m.aufenthaltsbewilligung == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Bewilligung gültig bis</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bewilligung gültig bis" %}</label>
                     <input type="date" name="bewilligung_gueltig_bis" value="{{ m.bewilligung_gueltig_bis|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             </div>
             <div id="bewilligung_hinweis" class="hidden text-xs rounded-lg px-3 py-2.5 fw-info-flaeche border fw-linie fw-info">
                 <p id="bewilligung_hinweis_txt" class="font-medium"></p>
+                {% comment %}Rechtshinweis (Art. 253 ff. OR, Meldepflicht) und die Hinweise je Aufenthaltstitel im Skript bleiben deutsch — Übersetzung erst nach juristischer Prüfung.{% endcomment %}
                 <p class="text-[11px] fw-info mt-1">Mieten ist für alle Aufenthaltstitel zulässig (Privatrecht, Art. 253 ff. OR) — der Titel ist kein Mietverbot, sondern ein Risiko-/Verfahrenshinweis. Meldepflicht: Anmeldung bei der Einwohnerkontrolle binnen 14 Tagen (in einzelnen Kantonen zusätzlich Vermieter-Meldepflicht).</p>
             </div>
         </div>
 
         <!-- Beruf & Bonität -->
         <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">Beruf & Bonität</h3>
+            <h3 class="font-bold fw-strong text-sm">{% trans "Beruf & Bonität" %}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Erwerbsstatus</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Erwerbsstatus" %}</label>
                     <select name="erwerbsstatus" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         <option value="" {% if not m.erwerbsstatus %}selected{% endif %}>—</option>
-                        <option {% if m.erwerbsstatus == 'angestellt' %}selected{% endif %}>angestellt</option>
-                        <option {% if m.erwerbsstatus == 'selbständig' %}selected{% endif %}>selbständig</option>
-                        <option {% if m.erwerbsstatus == 'in Ausbildung' %}selected{% endif %}>in Ausbildung</option>
-                        <option {% if m.erwerbsstatus == 'pensioniert' %}selected{% endif %}>pensioniert</option>
-                        <option {% if m.erwerbsstatus == 'arbeitslos' %}selected{% endif %}>arbeitslos</option>
-                        <option {% if m.erwerbsstatus == 'andere' %}selected{% endif %}>andere</option>
+                        <option value="angestellt" {% if m.erwerbsstatus == 'angestellt' %}selected{% endif %}>{% trans "angestellt" %}</option>
+                        <option value="selbständig" {% if m.erwerbsstatus == 'selbständig' %}selected{% endif %}>{% trans "selbständig" %}</option>
+                        <option value="in Ausbildung" {% if m.erwerbsstatus == 'in Ausbildung' %}selected{% endif %}>{% trans "in Ausbildung" %}</option>
+                        <option value="pensioniert" {% if m.erwerbsstatus == 'pensioniert' %}selected{% endif %}>{% trans "pensioniert" %}</option>
+                        <option value="arbeitslos" {% if m.erwerbsstatus == 'arbeitslos' %}selected{% endif %}>{% trans "arbeitslos" %}</option>
+                        <option value="andere" {% if m.erwerbsstatus == 'andere' %}selected{% endif %}>{% trans "andere" %}</option>
                     </select></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Beruf</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beruf" %}</label>
                     <input name="beruf" value="{{ m.beruf }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Arbeitgeber</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Arbeitgeber" %}</label>
                     <input name="arbeitgeber" value="{{ m.arbeitgeber }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Jahreseinkommen (CHF)</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Jahreseinkommen (CHF)" %}</label>
                     <input name="einkommen_jahr" value="{{ m.einkommen_jahr }}" placeholder="z.B. 90'000" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Betreibungsauszug vom</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betreibungsauszug vom" %}</label>
                     <input type="date" name="bonitaet_datum" value="{{ m.bonitaet_datum|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Betreibungsauszug-Ergebnis</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betreibungsauszug-Ergebnis" %}</label>
                     <select name="betreibung_ergebnis" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         {% for val, lbl in m.BETREIBUNG_CHOICES %}<option value="{{ val }}" {% if m.betreibung_ergebnis == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Referenz Vorvermieter (Name · Telefon · E-Mail)</label>
+                <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Referenz Vorvermieter (Name · Telefon · E-Mail)" %}</label>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input name="ref_vermieter_name" value="{{ m.ref_vermieter_name }}" placeholder="Name" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                        <input name="ref_vermieter_telefon" value="{{ m.ref_vermieter_telefon }}" placeholder="Telefon" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                        <input name="ref_vermieter_email" value="{{ m.ref_vermieter_email }}" placeholder="E-Mail" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                        <input name="ref_vermieter_name" value="{{ m.ref_vermieter_name }}" placeholder="{% trans 'Name' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                        <input name="ref_vermieter_telefon" value="{{ m.ref_vermieter_telefon }}" placeholder="{% trans 'Telefon' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                        <input name="ref_vermieter_email" value="{{ m.ref_vermieter_email }}" placeholder="{% trans 'E-Mail' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     </div></div>
             </div>
         </div>
 
         <!-- Vertretung / Beistand -->
         <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">Vertretung / Beistand <span class="font-normal fw-faint">(optional)</span></h3>
+            <h3 class="font-bold fw-strong text-sm">{% trans "Vertretung / Beistand" %} <span class="font-normal fw-faint">{% trans "(optional)" %}</span></h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Art</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Art" %}</label>
                     <select name="vertretung_art" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         {% for val, lbl in m.VERTRETUNG_CHOICES %}<option value="{{ val }}" {% if m.vertretung_art == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Name / Behörde</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Name / Behörde" %}</label>
                     <input name="vertretung_name" value="{{ m.vertretung_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Kontakt</label>
-                    <input name="vertretung_kontakt" value="{{ m.vertretung_kontakt }}" placeholder="Telefon / E-Mail" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kontakt" %}</label>
+                    <input name="vertretung_kontakt" value="{{ m.vertretung_kontakt }}" placeholder="{% trans 'Telefon / E-Mail' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             </div>
         </div>
 
         <!-- Haushalt -->
         <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">Haushalt</h3>
+            <h3 class="font-bold fw-strong text-sm">{% trans "Haushalt" %}</h3>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Erwachsene</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Erwachsene" %}</label>
                     <input type="number" min="0" name="haushalt_erwachsene" value="{{ m.haushalt_erwachsene }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Kinder</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kinder" %}</label>
                     <input type="number" min="0" name="haushalt_kinder" value="{{ m.haushalt_kinder }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
                 <div class="flex items-end pb-1"><label class="inline-flex items-center gap-2 text-sm fw-ink">
-                    <input type="checkbox" name="haustiere" {% if m.haustiere %}checked{% endif %} class="rounded"> Haustiere</label></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Haustiere (Details)</label>
-                    <input name="haustiere_details" value="{{ m.haustiere_details }}" placeholder="z.B. 1 Katze" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                    <input type="checkbox" name="haustiere" {% if m.haustiere %}checked{% endif %} class="rounded"> {% trans "Haustiere" %}</label></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Haustiere (Details)" %}</label>
+                    <input name="haustiere_details" value="{{ m.haustiere_details }}" placeholder="{% trans 'z.B. 1 Katze' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             </div>
         </div>
 
         <!-- Versicherung & Notfall -->
         <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">Versicherung & Notfallkontakt</h3>
+            <h3 class="font-bold fw-strong text-sm">{% trans "Versicherung & Notfallkontakt" %}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Haftpflicht-Versicherung</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Haftpflicht-Versicherung" %}</label>
                     <input name="haftpflicht_gesellschaft" value="{{ m.haftpflicht_gesellschaft }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Policen-Nr.</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Policen-Nr." %}</label>
                     <input name="haftpflicht_police" value="{{ m.haftpflicht_police }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Notfallkontakt / Bürge</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Notfallkontakt / Bürge" %}</label>
                     <input name="notfall_name" value="{{ m.notfall_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+                    <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
                         <input name="notfall_telefon" value="{{ m.notfall_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                    <div><label class="block text-xs font-semibold fw-mutet mb-1">Beziehung</label>
-                        <input name="notfall_beziehung" value="{{ m.notfall_beziehung }}" placeholder="z.B. Elternteil" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                    <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beziehung" %}</label>
+                        <input name="notfall_beziehung" value="{{ m.notfall_beziehung }}" placeholder="{% trans 'z.B. Elternteil' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                 </div>
             </div>
         </div>
@@ -276,44 +275,44 @@
 
     <!-- Zahlungsverkehr -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Zahlungsverkehr</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Zahlungsverkehr" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Zahlungsart</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zahlungsart" %}</label>
                 <select name="zahlungsart" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for val, lbl in m.ZAHLUNGSART_CHOICES %}<option value="{{ val }}" {% if m.zahlungsart == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">eBill- / E-Rechnungs-Adresse</label>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "eBill- / E-Rechnungs-Adresse" %}</label>
                 <input name="ebill_email" value="{{ m.ebill_email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
-                <input name="iban" value="{{ m.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="CH…"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Bank</label>
+                <input name="iban" value="{{ m.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="{% trans 'CH…' %}"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bank" %}</label>
                 <input name="bank_name" value="{{ m.bank_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <label class="inline-flex items-center gap-2 text-sm fw-ink">
-            <input type="checkbox" name="mahnsperre" {% if m.mahnsperre %}checked{% endif %} class="rounded"> Mahnsperre (laufende Zahlungsvereinbarung — kein automatischer Mahnlauf)</label>
+            <input type="checkbox" name="mahnsperre" {% if m.mahnsperre %}checked{% endif %} class="rounded"> {% trans "Mahnsperre (laufende Zahlungsvereinbarung — kein automatischer Mahnlauf)" %}</label>
         <div class="pt-2 border-t fw-linie">
-            <p class="text-xs font-semibold fw-mutet mb-2">Abweichender Zahler / Kostenträger <span class="font-normal fw-faint">(z.B. Sozialamt, Firma)</span></p>
+            <p class="text-xs font-semibold fw-mutet mb-2">{% trans "Abweichender Zahler / Kostenträger" %} <span class="font-normal fw-faint">{% trans "(z.B. Sozialamt, Firma)" %}</span></p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <input name="zahler_name" value="{{ m.zahler_name }}" placeholder="Name" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <input name="zahler_adresse" value="{{ m.zahler_adresse }}" placeholder="Adresse" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <input name="zahler_iban" value="{{ m.zahler_iban }}" placeholder="IBAN" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono">
+                <input name="zahler_name" value="{{ m.zahler_name }}" placeholder="{% trans 'Name' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <input name="zahler_adresse" value="{{ m.zahler_adresse }}" placeholder="{% trans 'Adresse' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <input name="zahler_iban" value="{{ m.zahler_iban }}" placeholder="{% trans 'IBAN' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono">
             </div>
         </div>
     </div>
 
     <!-- Notizen -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Interne Notizen</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Interne Notizen" %}</h3>
         <textarea name="notizen" rows="3" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ m.notizen }}</textarea>
     </div>
 
     <div class="flex items-center gap-3">
         <button type="submit" class="{% if dublette_warnung %}fw-warn-flaeche hover:fw-warn-voll{% else %}fw-balken-voll hover:fw-balken-voll{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'speichern' klasse='mr-1.5' %}{% if dublette_warnung %}Trotzdem speichern{% else %}Speichern{% endif %}
+            {% zeichen 'speichern' klasse='mr-1.5' %}{% if dublette_warnung %}{% trans "Trotzdem speichern" %}{% else %}{% trans "Speichern" %}{% endif %}
         </button>
-        <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
+        <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 
