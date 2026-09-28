@@ -1,27 +1,27 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Mieterwechsel · swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Mieterwechsel" %} · swissImmo{% endblock %}
 {% block content %}
 
 {% include 'fw/_pipeline.html' %}
 <div class="fw-phead">
     <div>
-        <h1>Mieterwechsel-Cockpit</h1>
-        <p>Gekündigte <span style="color:var(--ds-faint)">({{ gekuendigt_n }})</span> und auslaufende <span style="color:var(--ds-faint)">({{ auslaufend_n }})</span> Verträge — von Rücknahme bis Übergabe an den Nachmieter.</p>
+        <h1>{% trans "Mieterwechsel-Cockpit" %}</h1>
+        <p>{% blocktrans trimmed with g=gekuendigt_n a=auslaufend_n %}Gekündigte <span style="color:var(--ds-faint)">({{ g }})</span> und auslaufende <span style="color:var(--ds-faint)">({{ a }})</span> Verträge — von Rücknahme bis Übergabe an den Nachmieter.{% endblocktrans %}</p>
     </div>
     <div class="flex gap-2">
-        <span class="px-3 py-2 rounded-xl fw-flaeche border fw-linie text-sm"><span class="font-bold fw-strong">{{ offen }}</span> <span class="fw-faint">offen</span></span>
-        <span class="px-3 py-2 rounded-xl fw-krit-flaeche border fw-linie-krit text-sm"><span class="font-bold fw-kritisch">{{ dringend }}</span> <span class="fw-kritisch">≤ 60 Tage</span></span>
+        <span class="px-3 py-2 rounded-xl fw-flaeche border fw-linie text-sm"><span class="font-bold fw-strong">{{ offen }}</span> <span class="fw-faint">{% trans "offen" %}</span></span>
+        <span class="px-3 py-2 rounded-xl fw-krit-flaeche border fw-linie-krit text-sm"><span class="font-bold fw-kritisch">{{ dringend }}</span> <span class="fw-kritisch">{% trans "≤ 60 Tage" %}</span></span>
     </div>
 </div>
 
 <div class="flex items-center gap-2 mb-5 flex-wrap">
-    <span class="text-xs font-semibold fw-faint mr-1">Auslaufende Verträge im Horizont:</span>
-    <a href="?monate=3{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 3 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">3 Mt.</a>
-    <a href="?monate=6{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 6 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">6 Mt.</a>
-    <a href="?monate=12{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 12 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">12 Mt.</a>
-    <a href="?monate=0{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 0 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">Alle</a>
-    <span class="text-[11px] fw-faint ml-1">· gekündigte immer sichtbar</span>
+    <span class="text-xs font-semibold fw-faint mr-1">{% trans "Auslaufende Verträge im Horizont" %}:</span>
+    <a href="?monate=3{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 3 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% trans "3 Mt." %}</a>
+    <a href="?monate=6{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 6 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% trans "6 Mt." %}</a>
+    <a href="?monate=12{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 12 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% trans "12 Mt." %}</a>
+    <a href="?monate=0{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 0 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% trans "Alle" %}</a>
+    <span class="text-[11px] fw-faint ml-1">· {% trans "gekündigte immer sichtbar" %}</span>
 </div>
 
 {% if rows %}
@@ -35,52 +35,52 @@
                     <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-{{ r.farbe }}-100 text-{{ r.farbe }}-700">{{ r.stufe }}</span>
                 </div>
                 <div class="text-sm fw-mutet mt-1">
-                    Aktuell: <span class="font-medium fw-ink">{{ r.mieter }}</span>
-                    {% if r.nachmieter %}· Nachmieter: <span class="font-medium fw-ink">{{ r.nachmieter }}</span>{% endif %}
+                    {% trans "Aktuell" %}: <span class="font-medium fw-ink">{{ r.mieter }}</span>
+                    {% if r.nachmieter %}· {% trans "Nachmieter" %}: <span class="font-medium fw-ink">{{ r.nachmieter }}</span>{% endif %}
                 </div>
             </div>
             <div class="text-right shrink-0">
-                {% if r.ende %}<div class="text-sm font-bold fw-strong">frei ab {{ r.ende|date:"d.m.Y" }}</div>{% endif %}
+                {% if r.ende %}<div class="text-sm font-bold fw-strong">{% blocktrans with d=r.ende|date:"d.m.Y" %}frei ab {{ d }}{% endblocktrans %}</div>{% endif %}
                 {% if r.tage != None %}
                 <div class="text-xs {% if r.tage <= 60 %}fw-kritisch font-semibold{% else %}fw-faint{% endif %}">
-                    {% if r.tage < 0 %}{{ r.tage|stringformat:"d"|cut:"-" }} Tage überfällig{% else %}noch {{ r.tage }} Tage{% endif %}
+                    {% if r.tage < 0 %}{% blocktrans with n=r.tage|stringformat:"d"|cut:"-" %}{{ n }} Tage überfällig{% endblocktrans %}{% else %}{% blocktrans with n=r.tage %}noch {{ n }} Tage{% endblocktrans %}{% endif %}
                 </div>{% endif %}
             </div>
         </div>
 
         <!-- Pipeline -->
         <div class="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-[11px]">
-            <div class="rounded-lg py-2 fw-krit-flaeche fw-kritisch font-semibold">{% zeichen 'vertrag' %}<br>Gekündigt</div>
+            <div class="rounded-lg py-2 fw-krit-flaeche fw-kritisch font-semibold">{% zeichen 'vertrag' %}<br>{% trans "Gekündigt" %}</div>
             <div class="rounded-lg py-2 {% if r.auszug %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                {% if r.auszug %}{% zeichen 'gut' %}{% else %}{% zeichen 'dokument' %}{% endif %}<br>Rücknahme</div>
+                {% if r.auszug %}{% zeichen 'gut' %}{% else %}{% zeichen 'dokument' %}{% endif %}<br>{% trans "Rücknahme" %}</div>
             <div class="rounded-lg py-2 {% if r.bewerbungen %}fw-markenflaeche fw-marke{% else %}fw-flaeche2 fw-faint{% endif %}">
-                {% zeichen 'person' %}<br>{{ r.bewerbungen }} Bewerb.</div>
+                {% zeichen 'person' %}<br>{% blocktrans with n=r.bewerbungen %}{{ n }} Bewerb.{% endblocktrans %}</div>
             <div class="rounded-lg py-2 {% if r.nachmieter %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                {% if r.nachmieter %}{% zeichen 'gut' %}{% else %}{% zeichen 'dokument' %}{% endif %}<br>Neuer Vertrag</div>
+                {% if r.nachmieter %}{% zeichen 'gut' %}{% else %}{% zeichen 'dokument' %}{% endif %}<br>{% trans "Neuer Vertrag" %}</div>
             <div class="rounded-lg py-2 {% if r.einzug %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                {% if r.einzug %}{% zeichen 'gut' %}{% else %}{% zeichen 'schluessel' %}{% endif %}<br>Übergabe</div>
+                {% if r.einzug %}{% zeichen 'gut' %}{% else %}{% zeichen 'schluessel' %}{% endif %}<br>{% trans "Übergabe" %}</div>
             <div class="rounded-lg py-2 {% if r.schluss_offen %}fw-warn-flaeche fw-warnton font-semibold{% elif r.auszug and not r.schluss_offen %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
-                {% if r.auszug and not r.schluss_offen %}{% zeichen 'gut' %}{% else %}{% zeichen 'rechnung' %}{% endif %}<br>Abrechnung</div>
+                {% if r.auszug and not r.schluss_offen %}{% zeichen 'gut' %}{% else %}{% zeichen 'rechnung' %}{% endif %}<br>{% trans "Abrechnung" %}</div>
         </div>
 
         {% if r.aktion != '—' %}
         <div class="mt-3 flex items-center justify-between gap-3 flex-wrap">
-            <div class="text-xs fw-mutet">{% zeichen 'weiter' klasse='fw-marke' %} Nächster Schritt: <span class="font-semibold fw-ink">{{ r.aktion }}</span></div>
+            <div class="text-xs fw-mutet">{% zeichen 'weiter' klasse='fw-marke' %} {% trans "Nächster Schritt" %}: <span class="font-semibold fw-ink">{{ r.aktion }}</span></div>
             <div class="flex gap-2 flex-wrap">
-                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" onclick="return fwModalOpen(this,'Wohnungsrücknahme')" class="text-xs font-semibold fw-warnton border fw-linie-warn hover:fw-warn-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'dokument' klasse='mr-1' %}Rücknahme starten</a>{% endif %}
-                {% if r.schluss_offen %}<a href="/neu/vertraege/{{ r.v.id }}/schlussabrechnung/{% if r.auszug_prot_id %}?abnahme={{ r.auszug_prot_id }}{% endif %}" onclick="return fwModalOpen(this,'Schlussabrechnung')" class="text-xs font-semibold text-white fw-btn fw-warnknopf px-3 py-1.5 rounded-lg">{% zeichen 'rechnung' klasse='mr-1' %}Schlussabrechnung</a>{% endif %}
+                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Wohnungsrücknahme" %}{% endfilter %}')" class="text-xs font-semibold fw-warnton border fw-linie-warn hover:fw-warn-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Rücknahme starten" %}</a>{% endif %}
+                {% if r.schluss_offen %}<a href="/neu/vertraege/{{ r.v.id }}/schlussabrechnung/{% if r.auszug_prot_id %}?abnahme={{ r.auszug_prot_id }}{% endif %}" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Schlussabrechnung" %}{% endfilter %}')" class="text-xs font-semibold text-white fw-btn fw-warnknopf px-3 py-1.5 rounded-lg">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Schlussabrechnung" %}</a>{% endif %}
                 {% if not r.nachmieter and r.einheit_id %}
                     {% if r.ausgeschrieben %}
-                    <a href="/neu/vermarktung/" class="text-xs font-semibold fw-gut border fw-linie-gut hover:fw-gut-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'senden' klasse='mr-1' %}Ausgeschrieben</a>
+                    <a href="/neu/vermarktung/" class="text-xs font-semibold fw-gut border fw-linie-gut hover:fw-gut-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'senden' klasse='mr-1' %}{% trans "Ausgeschrieben" %}</a>
                     {% else %}
-                    <a href="/neu/objekte/{{ r.einheit_id }}/ausschreiben/" onclick="return fwModalOpen(this,'Objekt ausschreiben')" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">{% zeichen 'senden' klasse='mr-1' %}Objekt ausschreiben</a>
+                    <a href="/neu/objekte/{{ r.einheit_id }}/ausschreiben/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Objekt ausschreiben" %}{% endfilter %}')" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">{% zeichen 'senden' klasse='mr-1' %}{% trans "Objekt ausschreiben" %}</a>
                     {% endif %}
                 {% endif %}
-                {% if not r.nachmieter %}<a href="/neu/bewerbungen/" onclick="return fwModalOpen(this,'Bewerbungen')" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
+                {% if not r.nachmieter %}<a href="/neu/bewerbungen/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Bewerbungen" %}{% endfilter %}')" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">{% trans "Bewerbungen" %}</a>{% endif %}
                 {% if r.nachmieter_vid %}
-                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" onclick="return fwModalOpen(this,'Wohnungsübergabe')" class="text-xs font-semibold text-white fw-btn fw-gutknopf px-3 py-1.5 rounded-lg">{% zeichen 'schluessel' klasse='mr-1' %}Übergabe starten</a>{% endif %}
-                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" onclick="return fwModalOpen(this,'Neuer Vertrag',true)" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
-                {% else %}<a href="/neu/vertraege/neu/{% if r.einheit_id %}?einheit={{ r.einheit_id }}{% endif %}" onclick="return fwModalOpen(this,'Vertrag erstellen',true)" class="text-xs font-semibold text-white fw-btn fw-primary px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
+                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Wohnungsübergabe" %}{% endfilter %}')" class="text-xs font-semibold text-white fw-btn fw-gutknopf px-3 py-1.5 rounded-lg">{% zeichen 'schluessel' klasse='mr-1' %}{% trans "Übergabe starten" %}</a>{% endif %}
+                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Vertrag" %}{% endfilter %}',true)" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">{% trans "Neuer Vertrag" %}</a>
+                {% else %}<a href="/neu/vertraege/neu/{% if r.einheit_id %}?einheit={{ r.einheit_id }}{% endif %}" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Vertrag erstellen" %}{% endfilter %}',true)" class="text-xs font-semibold text-white fw-btn fw-primary px-3 py-1.5 rounded-lg">{% trans "Vertrag erstellen" %}</a>{% endif %}
             </div>
         </div>
         {% endif %}
@@ -90,8 +90,8 @@
 {% else %}
 <div class="fw-card p-10 text-center">
     <span class="w-14 h-14 rounded-xl fw-gut-flaeche fw-gut flex items-center justify-center mx-auto mb-4">{% zeichen 'gut' klasse='text-xl' %}</span>
-    <p class="font-semibold fw-ink">Kein laufender Mieterwechsel</p>
-    <p class="text-sm fw-faint mt-1">Sobald eine Kündigung erfasst ist, erscheint hier der komplette Wechselprozess.</p>
+    <p class="font-semibold fw-ink">{% trans "Kein laufender Mieterwechsel" %}</p>
+    <p class="text-sm fw-faint mt-1">{% trans "Sobald eine Kündigung erfasst ist, erscheint hier der komplette Wechselprozess." %}</p>
 </div>
 {% endif %}
 {% endblock %}

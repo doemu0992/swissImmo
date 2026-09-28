@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 00:32+0200\n"
+"POT-Creation-Date: 2026-09-29 00:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -100,7 +100,8 @@ msgstr "Danni"
 msgid "Vorgänge"
 msgstr "Casi"
 
-#: core/navigation.py:145 core/views/fw/_basis.py:283
+#: core/navigation.py:145 core/templates/fw/mieterwechsel.html:3
+#: core/views/fw/_basis.py:283
 msgid "Mieterwechsel"
 msgstr "Cambi d'inquilino"
 
@@ -112,6 +113,7 @@ msgstr "Commercializzazione"
 
 #: core/navigation.py:147 core/templates/fw/bewerbung_detail.html:6
 #: core/templates/fw/bewerbungen.html:3 core/templates/fw/bewerbungen.html:10
+#: core/templates/fw/mieterwechsel.html:79
 #: core/templates/fw/vermarktung.html:14 core/views/fw/_basis.py:277
 msgid "Bewerbungen"
 msgstr "Candidature"
@@ -265,6 +267,7 @@ msgid "Dokumente"
 msgstr "Documenti"
 
 #: core/navigation.py:218 core/templates/fw/base.html:223
+#: core/templates/fw/kommunikation.html:3
 msgid "Kommunikation"
 msgstr "Comunicazione"
 
@@ -924,6 +927,7 @@ msgid "z.B. Wasserhahn tropft"
 msgstr "p. es. il rubinetto gocciola"
 
 #: core/templates/core/mieter_schaden.html:32
+#: core/templates/fw/abnahme_detail.html:69
 msgid "Raum"
 msgstr "Locale"
 
@@ -1915,7 +1919,7 @@ msgstr "senza data — tempo medio non calcolabile"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:508
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:530
 msgid "Abwesenheiten"
 msgstr "Assenze"
 
@@ -1965,6 +1969,15 @@ msgstr "Nessuna partita aperta"
 #: core/templates/fw/_bezahlt_leer.html:16
 msgid "Alle Zahlungen in dieser Kategorie sind eingegangen."
 msgstr "Tutti i pagamenti di questa categoria sono stati ricevuti."
+
+#: core/templates/fw/_fwmodal.html:9 core/templates/fw/_fwmodal.html:12
+#: core/templates/fw/_fwmodal.html:21
+msgid "Schritt"
+msgstr "Passo"
+
+#: core/templates/fw/_fwmodal.html:10
+msgid "Schliessen"
+msgstr "Chiudere"
 
 #: core/templates/fw/_unterschrift_feld.html:11
 msgid "Digitale Unterschrift"
@@ -2026,6 +2039,124 @@ msgstr ""
 #: core/templates/fw/_unterschrift_feld.html:91
 msgid "Ohne Unterschrift bleibt die Linie auf jedem Brief leer."
 msgstr "Senza firma la riga resta vuota su ogni lettera."
+
+#: core/templates/fw/abnahme_detail.html:4
+#: core/templates/fw/abnahme_detail.html:9
+msgid "Abnahmeprotokoll"
+msgstr "Verbale di riconsegna"
+
+#: core/templates/fw/abnahme_detail.html:14
+msgid "Wohnungsabnahme"
+msgstr "Ricezione dell'alloggio"
+
+#: core/templates/fw/abnahme_detail.html:19
+msgid "In Schlussabrechnung"
+msgstr "Nel conteggio finale"
+
+#: core/templates/fw/abnahme_detail.html:24 core/templates/fw/berichte.html:13
+#: core/templates/fw/kreditoren.html:13
+#: core/templates/fw/liegenschaften.html:16
+#: core/templates/fw/mandat_detail.html:128 core/templates/fw/schaeden.html:15
+#: core/templates/fw/vorlagen.html:10
+msgid "Mehr"
+msgstr "Altro"
+
+#: core/templates/fw/abnahme_detail.html:27
+msgid "Protokoll als PDF"
+msgstr "Verbale in PDF"
+
+#: core/templates/fw/abnahme_detail.html:30
+msgid "Abnahmeprotokoll wirklich löschen?"
+msgstr "Eliminare davvero il verbale di riconsegna?"
+
+#: core/templates/fw/abnahme_detail.html:32
+msgid "Protokoll löschen"
+msgstr "Eliminare il verbale"
+
+#: core/templates/fw/abnahme_detail.html:47
+msgid "Abnahme durch"
+msgstr "Riconsegna effettuata da"
+
+#: core/templates/fw/abnahme_detail.html:48
+msgid "Mieter anwesend"
+msgstr "Inquilino presente"
+
+#: core/templates/fw/abnahme_detail.html:48
+msgid "Ja"
+msgstr "Sì"
+
+#: core/templates/fw/abnahme_detail.html:48
+msgid "Nein"
+msgstr "No"
+
+#: core/templates/fw/abnahme_detail.html:49
+msgid "Allgemeinzustand"
+msgstr "Stato generale"
+
+#: core/templates/fw/abnahme_detail.html:50
+msgid "Schlüssel zurück"
+msgstr "Chiavi restituite"
+
+#: core/templates/fw/abnahme_detail.html:53
+msgid "Zähler Strom"
+msgstr "Contatore elettricità"
+
+#: core/templates/fw/abnahme_detail.html:54
+msgid "Zähler Wasser"
+msgstr "Contatore acqua"
+
+#: core/templates/fw/abnahme_detail.html:55
+msgid "Zähler Gas/Wärme"
+msgstr "Contatore gas/calore"
+
+#: core/templates/fw/abnahme_detail.html:56
+msgid "Neue Adresse"
+msgstr "Nuovo indirizzo"
+
+#: core/templates/fw/abnahme_detail.html:59
+msgid "Kosten zulasten Mieter (Schätzung)"
+msgstr "Costi a carico dell'inquilino (stima)"
+
+#: core/templates/fw/abnahme_detail.html:65
+msgid "Mängel"
+msgstr "Difetti"
+
+#: core/templates/fw/abnahme_detail.html:69
+msgid "Mangel"
+msgstr "Difetto"
+
+#: core/templates/fw/abnahme_detail.html:70
+msgid "Verursacher"
+msgstr "Responsabile"
+
+#: core/templates/fw/abnahme_detail.html:71
+msgid "Kosten"
+msgstr "Costi"
+
+#: core/templates/fw/abnahme_detail.html:72
+msgid "Mieteranteil"
+msgstr "Quota dell'inquilino"
+
+#: core/templates/fw/abnahme_detail.html:73
+msgid "Foto"
+msgstr "Foto"
+
+#: core/templates/fw/abnahme_detail.html:80
+#, python-format
+msgid "Lebensdauer %(n)s J"
+msgstr "Durata di vita %(n)s anni"
+
+#: core/templates/fw/abnahme_detail.html:86
+msgid "Foto in voller Grösse öffnen"
+msgstr "Aprire la foto a grandezza piena"
+
+#: core/templates/fw/abnahme_detail.html:89
+msgid "Keine Mängel festgestellt."
+msgstr "Nessun difetto constatato."
+
+#: core/templates/fw/abnahme_detail.html:96
+msgid "Bemerkungen"
+msgstr "Osservazioni"
 
 #: core/templates/fw/abonnement.html:3
 msgid "Abonnement · swissImmo"
@@ -2168,7 +2299,9 @@ msgstr "Motivo"
 msgid "— keine —"
 msgstr "— nessuno —"
 
-#: core/templates/fw/abwesenheiten.html:39 core/templates/fw/termine.html:35
+#: core/templates/fw/abwesenheiten.html:39
+#: core/templates/fw/fall_detail.html:110
+#: core/templates/fw/fall_detail.html:196 core/templates/fw/termine.html:35
 msgid "Notiz"
 msgstr "Nota"
 
@@ -2882,8 +3015,9 @@ msgstr "Selezionare prima dei pagamenti."
 #: core/templates/fw/bankabgleich.html:236
 #: core/templates/fw/buchhaltung.html:26 core/templates/fw/dashboard.html:72
 #: core/templates/fw/dashboard.html:82 core/templates/fw/dashboard.html:183
-#: core/templates/fw/kontoblatt.html:21
-#: core/templates/fw/liegenschaften.html:60 core/views/fw/arbeit.py:42
+#: core/templates/fw/fristen.html:8 core/templates/fw/kontoblatt.html:21
+#: core/templates/fw/liegenschaften.html:60
+#: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:42
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
 #: core/views/fw/listen.py:207 core/views/fw/listen.py:1108
 #: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
@@ -3281,13 +3415,6 @@ msgstr "Tutti i rapporti e le esportazioni in un unico posto."
 msgid "Interaktive Auswertung"
 msgstr "Analisi interattiva"
 
-#: core/templates/fw/berichte.html:13 core/templates/fw/kreditoren.html:13
-#: core/templates/fw/liegenschaften.html:16
-#: core/templates/fw/mandat_detail.html:128 core/templates/fw/schaeden.html:15
-#: core/templates/fw/vorlagen.html:10
-msgid "Mehr"
-msgstr "Altro"
-
 #: core/templates/fw/berichte.html:15
 #: core/templates/fw/betriebskostenspiegel.html:8
 msgid "Betriebskostenspiegel"
@@ -3679,7 +3806,8 @@ msgid "Mietinteressenten prüfen, zusagen und in einen Vertrag überführen"
 msgstr "Esaminare gli interessati, accettarli e trasferirli in un contratto"
 
 #: core/templates/fw/bewerbungen.html:11 core/templates/fw/dokumente.html:10
-#: core/templates/fw/pendenzen.html:9 core/templates/fw/schaeden.html:10
+#: core/templates/fw/kommunikation.html:10 core/templates/fw/pendenzen.html:9
+#: core/templates/fw/schaeden.html:10
 #, python-format
 msgid "gefiltert auf %(s)s"
 msgstr "filtrato su %(s)s"
@@ -3753,7 +3881,7 @@ msgstr "Numero, p. es. 1020"
 msgid "Belegtext *"
 msgstr "Testo del giustificativo *"
 
-#: core/templates/fw/buchhaltung.html:68
+#: core/templates/fw/buchhaltung.html:68 core/templates/fw/fall_detail.html:123
 msgid "Buchen"
 msgstr "Registrare"
 
@@ -4104,7 +4232,8 @@ msgid_plural "%(n)s Tage über"
 msgstr[0] "%(n)s giorno di ritardo"
 msgstr[1] "%(n)s giorni di ritardo"
 
-#: core/templates/fw/dashboard.html:257 core/templates/fw/laeufe.html:34
+#: core/templates/fw/dashboard.html:257 core/templates/fw/fristen.html:52
+#: core/templates/fw/laeufe.html:34
 msgid "heute"
 msgstr "oggi"
 
@@ -4295,7 +4424,7 @@ msgstr ""
 "Registra debitore a ricavo (3000). La fattura QR la generi poi con il "
 "pulsante QR nella lista."
 
-#: core/templates/fw/debitoren.html:55
+#: core/templates/fw/debitoren.html:55 core/templates/fw/kommunikation.html:160
 #: core/templates/fw/weiterverrechnung.html:119
 msgid "Live-Vorschau"
 msgstr "Anteprima dal vivo"
@@ -4324,7 +4453,7 @@ msgstr "Cerca inquilino o titolo…"
 msgid "Debitoren nach Mieter oder Titel durchsuchen"
 msgstr "Cercare i debitori per inquilino o titolo"
 
-#: core/templates/fw/debitoren.html:156
+#: core/templates/fw/debitoren.html:156 core/templates/fw/mieterwechsel.html:13
 msgid "offen"
 msgstr "aperto"
 
@@ -4884,7 +5013,7 @@ msgid "Ergebnis der Liegenschaften abzüglich Auszahlungen."
 msgstr "Risultato degli stabili dedotti i versamenti."
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:19
-#: core/templates/fw/mandate.html:33
+#: core/templates/fw/mandate.html:33 core/templates/fw/mieterwechsel.html:63
 msgid "Abrechnung"
 msgstr "Conteggio"
 
@@ -5217,6 +5346,161 @@ msgstr[1] ""
 "peggiore di questa lacuna — finirebbe tramite il rapporto PDF nella "
 "pianificazione del fondo del proprietario."
 
+#: core/templates/fw/fall_detail.html:8
+msgid "Arbeit"
+msgstr "Lavoro"
+
+#: core/templates/fw/fall_detail.html:21
+msgid "Fall"
+msgstr "Pratica"
+
+#: core/templates/fw/fall_detail.html:24
+msgid "Fallart"
+msgstr "Tipo di pratica"
+
+#: core/templates/fw/fall_detail.html:25
+msgid "Akte"
+msgstr "Fascicolo"
+
+#: core/templates/fw/fall_detail.html:26
+msgid "Eröffnet"
+msgstr "Aperto"
+
+#: core/templates/fw/fall_detail.html:40
+msgid "Zuständig"
+msgstr "Responsabile"
+
+#: core/templates/fw/fall_detail.html:45 core/templates/fw/fall_detail.html:51
+msgid "niemand"
+msgstr "nessuno"
+
+#: core/templates/fw/fall_detail.html:56
+msgid "liegengeblieben"
+msgstr "in sospeso"
+
+#: core/templates/fw/fall_detail.html:61
+msgid "Fortschritt"
+msgstr "Avanzamento"
+
+#: core/templates/fw/fall_detail.html:63
+msgid "Schritte erledigt"
+msgstr "Passi evasi"
+
+#: core/templates/fw/fall_detail.html:64
+#: core/templates/fw/mieterwechsel.html:68
+msgid "Nächster Schritt"
+msgstr "Prossima fase"
+
+#: core/templates/fw/fall_detail.html:66
+#, python-format
+msgid "fällig %(d)s"
+msgstr "scadenza %(d)s"
+
+#: core/templates/fw/fall_detail.html:66 core/templates/fw/fall_detail.html:177
+msgid "ohne Frist"
+msgstr "senza scadenza"
+
+#: core/templates/fw/fall_detail.html:66
+msgid "alle Schritte erledigt"
+msgstr "tutte le fasi sono completate"
+
+#: core/templates/fw/fall_detail.html:67
+msgid "Letzte Bewegung"
+msgstr "Ultimo movimento"
+
+#: core/templates/fw/fall_detail.html:68
+#, python-format
+msgid "%(n)s Tage"
+msgstr "%(n)s giorni"
+
+#: core/templates/fw/fall_detail.html:73
+#, python-format
+msgid "meldet sich nach %(n)s Tagen"
+msgstr "si segnala dopo %(n)s giorni"
+
+#: core/templates/fw/fall_detail.html:74
+msgid "Erfasste Zeit"
+msgstr "Tempo registrato"
+
+#: core/templates/fw/fall_detail.html:75 core/templates/fw/fall_detail.html:132
+msgid "min"
+msgstr "min"
+
+#: core/templates/fw/fall_detail.html:76
+msgid "auf diesen Fall gebucht"
+msgstr "addebitato a questa pratica"
+
+#: core/templates/fw/fall_detail.html:95
+msgid "Aufwand erfassen"
+msgstr "Registrare il tempo"
+
+#: core/templates/fw/fall_detail.html:99
+msgid "Minuten"
+msgstr "Minuti"
+
+#: core/templates/fw/fall_detail.html:104
+msgid "Tätigkeit"
+msgstr "Attività"
+
+#: core/templates/fw/fall_detail.html:112
+msgid "Telefonat mit Handwerker"
+msgstr "Telefonta con artigiano"
+
+#: core/templates/fw/fall_detail.html:115
+msgid "Satz CHF/h"
+msgstr "Tariffa CHF/h"
+
+#: core/templates/fw/fall_detail.html:121
+msgid "separat verrechenbar"
+msgstr "fatturabile separatamente"
+
+#: core/templates/fw/fall_detail.html:156
+#, python-format
+msgid "Seit %(n)s Tagen keine Bewegung"
+msgstr "Nessun movimento da %(n)s giorni"
+
+#: core/templates/fw/fall_detail.html:157
+msgid ""
+"Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird "
+"erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro "
+"mit drei Personen der teuerste Fehler."
+msgstr ""
+"La regola di scadenza è stata attivata. O la fase successiva viene "
+"completata, o la pratica deve essere messa in pausa — lasciare in sospeso è "
+"l'errore più costoso in un ufficio di tre persone."
+
+#: core/templates/fw/fall_detail.html:158
+msgid "Zum nächsten Schritt"
+msgstr "Al passo successivo"
+
+#: core/templates/fw/fall_detail.html:165
+#, python-format
+msgid "Etappe %(nr)s"
+msgstr "Tappa %(nr)s"
+
+#: core/templates/fw/fall_detail.html:173 core/templates/fw/kreditoren.html:349
+msgid "optional"
+msgstr "facoltativo"
+
+#: core/templates/fw/fall_detail.html:175
+#, python-format
+msgid "erledigt %(d)s"
+msgstr "evaso %(d)s"
+
+#: core/templates/fw/fall_detail.html:176
+#, python-format
+msgid "Frist %(d)s"
+msgstr "Scadenza %(d)s"
+
+#: core/templates/fw/fall_detail.html:183 core/templates/fw/pendenzen.html:85
+#: core/templates/fw/termine.html:51 core/views/portal.py:754
+msgid "Erledigt"
+msgstr "Completato"
+
+#: core/templates/fw/fall_detail.html:190
+msgid "Für diesen Fall sind keine Schritte angelegt."
+msgstr "Per questa pratica non sono definiti passi."
+
 #: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:758
 msgid "Finanz-Cockpit"
 msgstr "Cockpit finanziario"
@@ -5311,6 +5595,84 @@ msgstr "Anzianità dei debitori"
 #: core/templates/fw/finanzen.html:140
 msgid "Abschluss"
 msgstr "Chiusura"
+
+#: core/templates/fw/fristen.html:3 core/templates/fw/fristen.html:6
+msgid "Fristen-Center"
+msgstr "Centro scadenze"
+
+#: core/templates/fw/fristen.html:9
+msgid "Nur gesetzliche Fristen"
+msgstr "Solo scadenze legali"
+
+#: core/templates/fw/fristen.html:12
+msgid "Kalender"
+msgstr "Calendario"
+
+#: core/templates/fw/fristen.html:21
+msgid ".ics herunterladen"
+msgstr "Scaricare il .ics"
+
+#: core/templates/fw/fristen.html:23
+msgid "einmaliger Import in Outlook / Apple / Google Calendar"
+msgstr "importazione unica in Outlook / Apple / Google Calendar"
+
+#: core/templates/fw/fristen.html:25
+msgid "Kalender abonnieren (aktualisiert sich automatisch)"
+msgstr "Abbonarsi al calendario (si aggiorna automaticamente)"
+
+#: core/templates/fw/fristen.html:30 core/templates/fw/integrationen.html:73
+msgid "Kopieren"
+msgstr "Copiare"
+
+#: core/templates/fw/fristen.html:32
+msgid ""
+"Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese "
+"Adresse einfügen. Der Token ist geheim — nicht weitergeben."
+msgstr ""
+"Nel calendario scelga «Abbonamento / aggiungi calendario tramite URL» e "
+"incolli questo indirizzo. Il token è segreto — non lo inoltri."
+
+#: core/templates/fw/fristen.html:34
+msgid ""
+"Alle datierten offenen Fristen chronologisch — Kündigungstermine, "
+"Anfechtungs-, Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden."
+msgstr ""
+"Tutte le scadenze aperte datate in ordine cronologico — termini di disdetta, "
+"scadenze di contestazione, di pagamento e di manutenzione, tasso di "
+"riferimento, fine dei contratti."
+
+#: core/templates/fw/fristen.html:35
+#, python-format
+msgid "%(n)s Frist"
+msgid_plural "%(n)s Fristen"
+msgstr[0] "%(n)s scadenza"
+msgstr[1] "%(n)s scadenze"
+
+#: core/templates/fw/fristen.html:35
+#, python-format
+msgid "%(n)s überfällig"
+msgstr "%(n)s scaduto/i"
+
+#: core/templates/fw/fristen.html:60
+msgid "Frist provisorisch"
+msgstr "Scadenza provvisoria"
+
+#: core/templates/fw/fristen.html:84
+msgid "Keine offenen Fristen im gewählten Bereich."
+msgstr "Nessuna scadenza aperta nell'intervallo scelto."
+
+#: core/templates/fw/fristen.html:88
+msgid ""
+"Fristen entstehen automatisch aus Kündigungen, Mietzinsanpassungen, "
+"Zahlungsverzug, Wartungsverträgen und dem Referenzzinssatz — sowie aus "
+"manuell erfassten Pendenzen mit Fälligkeit. Erledigen/abhaken im <a href=\"/"
+"neu/pendenzen/\" class=\"fw-marke hover:underline\">Pendenzen-Center</a>."
+msgstr ""
+"Le scadenze nascono automaticamente da disdette, adeguamenti della pigione, "
+"ritardi di pagamento, contratti di manutenzione e dal tasso di riferimento — "
+"nonché da pendenze registrate manualmente con scadenza. Le evada/spunti nel "
+"<a href=\"/neu/pendenzen/\" class=\"fw-marke hover:underline\">centro "
+"pendenze</a>."
 
 #: core/templates/fw/hypotheken.html:10
 msgid "Finanzierung je Liegenschaft — Schuld, Zinssatz und Fälligkeiten"
@@ -5484,10 +5846,6 @@ msgstr ""
 msgid "Feed-URL (JSON)"
 msgstr "URL del feed (JSON)"
 
-#: core/templates/fw/integrationen.html:73
-msgid "Kopieren"
-msgstr "Copiare"
-
 #: core/templates/fw/integrationen.html:76
 msgid "JSON ansehen"
 msgstr "Vedere il JSON"
@@ -5592,6 +5950,149 @@ msgstr "Trattenuta CHF %(betrag)s"
 #: core/templates/fw/kautionen.html:43
 msgid "Keine Kautionen erfasst."
 msgstr "Nessun deposito di garanzia registrato."
+
+#: core/templates/fw/kommunikation.html:9
+msgid "Mitteilungs-Assistent"
+msgstr "Assistente comunicazioni"
+
+#: core/templates/fw/kommunikation.html:10
+msgid "Rundschreiben und Mitteilungen an Mieter — mit Live-Vorschau"
+msgstr "Circolari e comunicazioni agli inquilini — con anteprima in diretta"
+
+#: core/templates/fw/kommunikation.html:28
+msgid "Empfänger"
+msgstr "Destinatari"
+
+#: core/templates/fw/kommunikation.html:34
+msgid "Ganze Liegenschaft wählen…"
+msgstr "Scegliere l'intero stabile…"
+
+#: core/templates/fw/kommunikation.html:39
+msgid "Empfänger suchen…"
+msgstr "Cercare un destinatario…"
+
+#: core/templates/fw/kommunikation.html:43
+msgid "Alle (sichtbar)"
+msgstr "Tutti (visibili)"
+
+#: core/templates/fw/kommunikation.html:45
+msgid "Keine"
+msgstr "Nessuno"
+
+#: core/templates/fw/kommunikation.html:57
+msgid "Keine aktiven Mieter im Filter."
+msgstr "Nessun inquilino attivo nel filtro."
+
+#: core/templates/fw/kommunikation.html:60
+msgid ""
+"Standardmässig ist niemand vorausgewählt. Ganze Liegenschaft wählen oder "
+"einzeln ankreuzen."
+msgstr ""
+"Per impostazione predefinita nessuno è preselezionato. Scelga l'intero "
+"stabile o spunti singolarmente."
+
+#: core/templates/fw/kommunikation.html:67
+msgid "Mitteilung verfassen"
+msgstr "Redigere una comunicazione"
+
+#: core/templates/fw/kommunikation.html:70
+msgid "Vorlage verwenden"
+msgstr "Usare un modello"
+
+#: core/templates/fw/kommunikation.html:72
+msgid "Freier Text (keine Vorlage)"
+msgstr "Testo libero (senza modello)"
+
+#: core/templates/fw/kommunikation.html:74
+msgid ""
+"Vorlagen verwaltest du unter <a href=\"/neu/vorlagen/\" class=\"fw-marke "
+"hover:underline\">Profil → Vorlagen</a>."
+msgstr ""
+"I modelli si gestiscono in <a href=\"/neu/vorlagen/\" class=\"fw-marke hover:"
+"underline\">Profilo → Modelli</a>."
+
+#: core/templates/fw/kommunikation.html:76
+#: core/templates/fw/vorlage_form.html:30 core/templates/fw/vorlagen.html:35
+msgid "Betreff"
+msgstr "Oggetto"
+
+#: core/templates/fw/kommunikation.html:80 core/templates/fw/kontoblatt.html:69
+#: core/templates/fw/lieferantenkonto.html:71
+#: core/templates/fw/mieterkonto.html:87
+msgid "Text"
+msgstr "Testo"
+
+#: core/templates/fw/kommunikation.html:82
+msgid "+ Name"
+msgstr "+ Nome"
+
+#: core/templates/fw/kommunikation.html:83
+msgid "+ Anrede"
+msgstr "+ Appellativo"
+
+#: core/templates/fw/kommunikation.html:84
+msgid "+ Objekt"
+msgstr "+ Oggetto"
+
+#: core/templates/fw/kommunikation.html:85
+msgid "+ Adresse"
+msgstr "+ Indirizzo"
+
+#: core/templates/fw/kommunikation.html:95
+msgid "Platzhalter werden pro Empfänger automatisch ersetzt."
+msgstr "I segnaposto vengono sostituiti automaticamente per ogni destinatario."
+
+#: core/templates/fw/kommunikation.html:102
+msgid "Versand"
+msgstr "Invio"
+
+#: core/templates/fw/kommunikation.html:106
+msgid "Als Brief drucken"
+msgstr "Stampare come lettera"
+
+#: core/templates/fw/kommunikation.html:109
+msgid "Serienbrief-PDF"
+msgstr "PDF lettera circolare"
+
+#: core/templates/fw/kommunikation.html:112
+msgid "Per E-Mail senden"
+msgstr "Inviare via e-mail"
+
+#: core/templates/fw/kommunikation.html:125
+msgid ""
+"„Serienbrief-PDF“ erzeugt einen Brief pro Empfänger (Fenstercouvert) als "
+"Sammel-PDF zum Ausdrucken. „Per E-Mail senden“ verschickt die Mitteilung an "
+"alle gewählten Mieter mit hinterlegter E-Mail-Adresse."
+msgstr ""
+"«PDF lettera circolare» genera una lettera per destinatario (busta con "
+"finestra) in un PDF cumulativo da stampare. «Inviare via e-mail» spedisce la "
+"comunicazione a tutti gli inquilini scelti con indirizzo e-mail registrato."
+
+#: core/templates/fw/kommunikation.html:129
+msgid "Bitte mindestens einen Empfänger wählen."
+msgstr "Scelga almeno un destinatario."
+
+#: core/templates/fw/kommunikation.html:133
+msgid "Bitte einen Text verfassen."
+msgstr "Scriva un testo."
+
+#: core/templates/fw/kommunikation.html:138
+#, python-brace-format
+msgid "{n} Empfänger per E-Mail anschreiben?"
+msgstr "Scrivere via e-mail a {n} destinatario/i?"
+
+#: core/templates/fw/kommunikation.html:270
+#, python-brace-format
+msgid "{n} ausgewählt"
+msgstr "{n} scelto/i"
+
+#: core/templates/fw/kommunikation.html:271
+msgid "Beispiel:"
+msgstr "Esempio:"
+
+#: core/templates/fw/kommunikation.html:281
+msgid "[Kein Empfänger ausgewählt]"
+msgstr "[Nessun destinatario scelto]"
 
 #: core/templates/fw/kontenplan.html:4 core/templates/fw/kontenplan.html:9
 msgid "Kontenplan &amp; Saldenliste"
@@ -5720,12 +6221,6 @@ msgstr "Nessuna registrazione in questo periodo."
 #: core/templates/fw/kontoblatt.html:60 core/templates/fw/kontoblatt.html:93
 msgid "Endsaldo"
 msgstr "Saldo finale"
-
-#: core/templates/fw/kontoblatt.html:69
-#: core/templates/fw/lieferantenkonto.html:71
-#: core/templates/fw/mieterkonto.html:87
-msgid "Text"
-msgstr "Testo"
 
 #: core/templates/fw/kreditoren.html:11
 msgid "Rechnung erfassen"
@@ -6105,10 +6600,6 @@ msgstr ""
 msgid "Konto …"
 msgstr "Conto …"
 
-#: core/templates/fw/kreditoren.html:349
-msgid "optional"
-msgstr "facoltativo"
-
 #: core/templates/fw/kreditoren.html:352
 msgid ""
 "In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"
@@ -6245,10 +6736,12 @@ msgid "ganzes Portfolio"
 msgstr "intero portafoglio"
 
 #: core/templates/fw/leerstand_verlauf.html:11
+#: core/templates/fw/mieterwechsel.html:21
 msgid "6 Mt."
 msgstr "6 mesi"
 
 #: core/templates/fw/leerstand_verlauf.html:12
+#: core/templates/fw/mieterwechsel.html:22
 msgid "12 Mt."
 msgstr "12 mesi"
 
@@ -7300,6 +7793,128 @@ msgstr "Locati"
 msgid "Keine Liegenschaften erfasst."
 msgstr "Nessuno stabile registrato."
 
+#: core/templates/fw/mieterwechsel.html:9
+msgid "Mieterwechsel-Cockpit"
+msgstr "Cockpit del cambio d'inquilino"
+
+#: core/templates/fw/mieterwechsel.html:10
+#, python-format
+msgid ""
+"Gekündigte <span style=\"color:var(--ds-faint)\">(%(g)s)</span> und "
+"auslaufende <span style=\"color:var(--ds-faint)\">(%(a)s)</span> Verträge — "
+"von Rücknahme bis Übergabe an den Nachmieter."
+msgstr ""
+"Contratti disdetti <span style=\"color:var(--ds-faint)\">(%(g)s)</span> e in "
+"scadenza <span style=\"color:var(--ds-faint)\">(%(a)s)</span> — dalla "
+"ripresa alla consegna all’inquilino subentrante."
+
+#: core/templates/fw/mieterwechsel.html:14
+msgid "≤ 60 Tage"
+msgstr "≤ 60 giorni"
+
+#: core/templates/fw/mieterwechsel.html:19
+msgid "Auslaufende Verträge im Horizont"
+msgstr "Contratti in scadenza nell'orizzonte"
+
+#: core/templates/fw/mieterwechsel.html:20
+msgid "3 Mt."
+msgstr "3 mesi"
+
+#: core/templates/fw/mieterwechsel.html:24
+msgid "gekündigte immer sichtbar"
+msgstr "disdetti sempre visibili"
+
+#: core/templates/fw/mieterwechsel.html:38
+msgid "Aktuell"
+msgstr "Attuale"
+
+#: core/templates/fw/mieterwechsel.html:39
+msgid "Nachmieter"
+msgstr "Inquilino subentrante"
+
+#: core/templates/fw/mieterwechsel.html:43
+#, python-format
+msgid "frei ab %(d)s"
+msgstr "libero dal %(d)s"
+
+#: core/templates/fw/mieterwechsel.html:46
+#, python-format
+msgid "%(n)s Tage überfällig"
+msgstr "%(n)s giorni di ritardo"
+
+#: core/templates/fw/mieterwechsel.html:46
+#, python-format
+msgid "noch %(n)s Tage"
+msgstr "ancora %(n)s giorni"
+
+#: core/templates/fw/mieterwechsel.html:53 core/views/fw/_basis.py:338
+msgid "Gekündigt"
+msgstr "Disdetto"
+
+#: core/templates/fw/mieterwechsel.html:55
+msgid "Rücknahme"
+msgstr "Ripresa"
+
+#: core/templates/fw/mieterwechsel.html:57
+#, python-format
+msgid "%(n)s Bewerb."
+msgstr "%(n)s cand."
+
+#: core/templates/fw/mieterwechsel.html:59
+#: core/templates/fw/mieterwechsel.html:82
+msgid "Neuer Vertrag"
+msgstr "Nuovo contratto"
+
+#: core/templates/fw/mieterwechsel.html:61
+msgid "Übergabe"
+msgstr "Consegna"
+
+#: core/templates/fw/mieterwechsel.html:70
+msgid "Wohnungsrücknahme"
+msgstr "Ripresa dell'abitazione"
+
+#: core/templates/fw/mieterwechsel.html:70
+msgid "Rücknahme starten"
+msgstr "Avviare la ripresa"
+
+#: core/templates/fw/mieterwechsel.html:71
+msgid "Schlussabrechnung"
+msgstr "Conteggio finale"
+
+#: core/templates/fw/mieterwechsel.html:74
+msgid "Ausgeschrieben"
+msgstr "Pubblicato"
+
+#: core/templates/fw/mieterwechsel.html:76
+#: core/templates/fw/objekt_ausschreiben.html:3
+#: core/templates/fw/objekt_ausschreiben.html:7
+msgid "Objekt ausschreiben"
+msgstr "Pubblicare l'oggetto"
+
+#: core/templates/fw/mieterwechsel.html:81
+msgid "Wohnungsübergabe"
+msgstr "Consegna dell'abitazione"
+
+#: core/templates/fw/mieterwechsel.html:81
+msgid "Übergabe starten"
+msgstr "Avviare la consegna"
+
+#: core/templates/fw/mieterwechsel.html:83 core/templates/fw/vertraege.html:16
+msgid "Vertrag erstellen"
+msgstr "Allestire contratto"
+
+#: core/templates/fw/mieterwechsel.html:93
+msgid "Kein laufender Mieterwechsel"
+msgstr "Nessun cambio d'inquilino in corso"
+
+#: core/templates/fw/mieterwechsel.html:94
+msgid ""
+"Sobald eine Kündigung erfasst ist, erscheint hier der komplette "
+"Wechselprozess."
+msgstr ""
+"Non appena è registrata una disdetta, qui appare il processo completo di "
+"cambio."
+
 #: core/templates/fw/mietzins.html:11
 msgid "Anpassungspotenzial nach Referenzzins &amp; LIK"
 msgstr "Potenziale di adeguamento secondo il tasso di riferimento &amp; l'IPC"
@@ -7752,11 +8367,6 @@ msgstr ""
 "Nessun giustificativo registrato. Le fatture creditori rilevanti SA "
 "confluiscono automaticamente."
 
-#: core/templates/fw/objekt_ausschreiben.html:3
-#: core/templates/fw/objekt_ausschreiben.html:7
-msgid "Objekt ausschreiben"
-msgstr "Pubblicare l'oggetto"
-
 #: core/templates/fw/objekt_ausschreiben.html:19
 msgid "Verfügbar ab"
 msgstr "Disponibile dal"
@@ -7894,11 +8504,6 @@ msgstr "Eliminare la pendenza?"
 #: core/templates/fw/pendenzen.html:80
 msgid "Keine offenen Pendenzen."
 msgstr "Nessuna pendenza aperta."
-
-#: core/templates/fw/pendenzen.html:85 core/templates/fw/termine.html:51
-#: core/views/portal.py:754
-msgid "Erledigt"
-msgstr "Completato"
 
 #: core/templates/fw/pendenzen.html:90
 msgid "Wieder öffnen"
@@ -8707,10 +9312,6 @@ msgid_plural "%(n)s aktiv"
 msgstr[0] "%(n)s attivo"
 msgstr[1] "%(n)s attivi"
 
-#: core/templates/fw/vertraege.html:16
-msgid "Vertrag erstellen"
-msgstr "Allestire contratto"
-
 #: core/templates/fw/vertraege.html:47
 #, python-format
 msgid "ab %(ab)s"
@@ -8761,10 +9362,6 @@ msgstr "Modelli"
 msgid "Text mit Platzhaltern, die beim Verwenden automatisch ersetzt werden."
 msgstr ""
 "Testo con segnaposto che vengono sostituiti automaticamente durante l'uso."
-
-#: core/templates/fw/vorlage_form.html:30 core/templates/fw/vorlagen.html:35
-msgid "Betreff"
-msgstr "Oggetto"
 
 #: core/templates/fw/vorlage_form.html:32
 msgid "Inhalt"
@@ -9185,10 +9782,6 @@ msgstr "Ancora nulla di completato."
 #: core/views/fw/_basis.py:336
 msgid "Entwurf"
 msgstr "Bozza"
-
-#: core/views/fw/_basis.py:338
-msgid "Gekündigt"
-msgstr "Disdetto"
 
 #: core/views/fw/_basis.py:343
 msgid "Beendet"
@@ -9829,80 +10422,11 @@ msgstr "Ruoli"
 msgid "Handwerker & Kosten"
 msgstr "Artigiani & costi"
 
-#~ msgid "Fall"
-#~ msgstr "Pratica"
-
-#~ msgid "Fallart"
-#~ msgstr "Tipo di pratica"
-
-#~ msgid "Eröffnet"
-#~ msgstr "Aperto"
-
-#~ msgid "niemand"
-#~ msgstr "nessuno"
-
-#~ msgid "liegengeblieben"
-#~ msgstr "in sospeso"
-
-#~ msgid "Nächster Schritt"
-#~ msgstr "Prossima fase"
-
-#~ msgid "ohne Frist"
-#~ msgstr "senza scadenza"
-
-#~ msgid "alle Schritte erledigt"
-#~ msgstr "tutte le fasi sono completate"
-
-#~ msgid "meldet sich nach 10 Tagen"
-#~ msgstr "si segnala dopo 10 giorni"
-
 #~ msgid "meldet sich nach 14 Tagen"
 #~ msgstr "si segnala dopo 14 giorni"
 
-#~ msgid "min"
-#~ msgstr "min"
-
-#~ msgid "auf diesen Fall gebucht"
-#~ msgstr "addebitato a questa pratica"
-
-#~ msgid "Minuten"
-#~ msgstr "Minuti"
-
-#~ msgid "Tätigkeit"
-#~ msgstr "Attività"
-
-#~ msgid "Telefonat mit Handwerker"
-#~ msgstr "Telefonta con artigiano"
-
-#~ msgid "Zum nächsten Schritt →"
-#~ msgstr "Alla prossima fase →"
-
-#~ msgid "Seit %(tage)s Tagen keine Bewegung"
-#~ msgstr "Nessun movimento da %(tage)s giorni"
-
-#~ msgid ""
-#~ "Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird "
-#~ "erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem "
-#~ "Büro mit drei Personen der teuerste Fehler."
-#~ msgstr ""
-#~ "La regola di scadenza è stata attivata. O la fase successiva viene "
-#~ "completata, o la pratica deve essere messa in pausa — lasciare in sospeso "
-#~ "è l'errore più costoso in un ufficio di tre persone."
-
-#~ msgid "erledigt %(am)s"
-#~ msgstr "completato il %(am)s"
-
-#~ msgid "Frist %(frist)s"
-#~ msgstr "Scadenza %(frist)s"
-
 #~ msgid "Zum Lauf"
 #~ msgstr "Al processo"
-
-#~ msgid "Wohnungsabnahme"
-#~ msgstr "Ricezione dell'alloggio"
-
-#~ msgid "Übergabe"
-#~ msgstr "Consegna"
 
 #~ msgid "Termin"
 #~ msgstr "Appuntamento"

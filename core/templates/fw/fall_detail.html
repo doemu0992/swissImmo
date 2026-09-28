@@ -1,11 +1,11 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
 {% block title %}{{ fall.nummer }} — swissImmo{% endblock %}
 
 {% block content %}
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
-    <a href="/neu/">Arbeit</a>
+    <a href="/neu/">{% trans "Arbeit" %}</a>
     {% zeichen 'weiter' %}
     <b>{{ fall.nummer }}</b>
 </nav>
@@ -17,12 +17,12 @@
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'dokument' %}</div>
         <div style="min-width:0">
-            <div class="fw-akte-typ">Fall · {{ fall.nummer }}</div>
+            <div class="fw-akte-typ">{% trans "Fall" %} · {{ fall.nummer }}</div>
             <h1>{{ fall.betreff|default:fall.fallart.bezeichnung }}</h1>
             <div class="fw-akte-pfad">
-                <div class="fw-pz"><span>Fallart</span><b>{{ fall.fallart.bezeichnung }}</b></div>
-                {% if fall.akte %}<div class="fw-pz"><span>Akte</span><b>{{ fall.akte }}</b></div>{% endif %}
-                <div class="fw-pz"><span>Eröffnet</span><b>{{ fall.eroeffnet_am|date:"d.m.Y" }}</b></div>
+                <div class="fw-pz"><span>{% trans "Fallart" %}</span><b>{{ fall.fallart.bezeichnung }}</b></div>
+                {% if fall.akte %}<div class="fw-pz"><span>{% trans "Akte" %}</span><b>{{ fall.akte }}</b></div>{% endif %}
+                <div class="fw-pz"><span>{% trans "Eröffnet" %}</span><b>{{ fall.eroeffnet_am|date:"d.m.Y" }}</b></div>
                 {% comment %}
                 DIE ZUSTÄNDIGKEIT LÄSST SICH ÄNDERN (E2.70)
 
@@ -35,42 +35,42 @@
                 das deckt den Normalfall. Dieser Weg deckt den Rest: Ferien,
                 Wechsel, Fehlzuordnung. Jeder Wechsel steht im Logbuch.
                 {% endcomment %}
-                <div class="fw-pz"><span>Zuständig</span>
+                <div class="fw-pz"><span>{% trans "Zuständig" %}</span>
                     {% if kann_schreiben %}
                     <form method="post" action="/neu/faelle/{{ fall.pk }}/zustaendig/" class="inline">
                         {% csrf_token %}
                         <select name="zustaendig" onchange="this.form.submit()" class="fw-feld-schlank">
-                            <option value="">— niemand —</option>
+                            <option value="">— {% trans "niemand" %} —</option>
                             {% for b in benutzer_auswahl %}
                             <option value="{{ b.pk }}" {% if fall.zustaendig_id == b.pk %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>
                             {% endfor %}
                         </select>
                     </form>
-                    {% else %}<b>{% if fall.zustaendig %}{{ fall.zustaendig.get_full_name|default:fall.zustaendig.username }}{% else %}niemand{% endif %}</b>{% endif %}
+                    {% else %}<b>{% if fall.zustaendig %}{{ fall.zustaendig.get_full_name|default:fall.zustaendig.username }}{% else %}{% trans "niemand" %}{% endif %}</b>{% endif %}
                 </div>
             </div>
             <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap">
                 <span class="fw-chip {% if fall.status == 'offen' %}fw-brand{% elif fall.status == 'wartet' %}fw-warn{% elif fall.status == 'abgeschlossen' %}fw-good{% else %}fw-mut{% endif %} fw-dot">{{ fall.get_status_display }}</span>
-                {% if liegengeblieben %}<span class="fw-chip fw-crit fw-dot">liegengeblieben</span>{% endif %}
+                {% if liegengeblieben %}<span class="fw-chip fw-crit fw-dot">{% trans "liegengeblieben" %}</span>{% endif %}
             </div>
         </div>
     </div>
     <div class="fw-kzn">
-        <div><div class="fw-l">Fortschritt</div>
+        <div><div class="fw-l">{% trans "Fortschritt" %}</div>
             <div class="fw-w">{{ schritte_erledigt }} / {{ schritte_gesamt }}</div>
-            <div class="fw-f">Schritte erledigt</div></div>
-        <div><div class="fw-l">Nächster Schritt</div>
+            <div class="fw-f">{% trans "Schritte erledigt" %}</div></div>
+        <div><div class="fw-l">{% trans "Nächster Schritt" %}</div>
             <div class="fw-w" style="font-size:14px">{% if naechster %}{{ naechster.bezeichnung }}{% else %}—{% endif %}</div>
-            <div class="fw-f fw-lang">{% if naechster.frist %}fällig {{ naechster.frist|date:"d.m.Y" }}{% elif naechster %}ohne Frist{% else %}alle Schritte erledigt{% endif %}</div></div>
-        <div><div class="fw-l">Letzte Bewegung</div>
-            <div class="fw-w{% if liegengeblieben %} crit{% endif %}">{{ tage_ohne_bewegung }} Tage</div>
+            <div class="fw-f fw-lang">{% if naechster.frist %}{% blocktrans with d=naechster.frist|date:"d.m.Y" %}fällig {{ d }}{% endblocktrans %}{% elif naechster %}{% trans "ohne Frist" %}{% else %}{% trans "alle Schritte erledigt" %}{% endif %}</div></div>
+        <div><div class="fw-l">{% trans "Letzte Bewegung" %}</div>
+            <div class="fw-w{% if liegengeblieben %} crit{% endif %}">{% blocktrans with n=tage_ohne_bewegung %}{{ n }} Tage{% endblocktrans %}</div>
             {% comment %} Die Verfallsregel (Konzept 5.2) steht seit 4a.1 im
                Modell und wurde nie angezeigt: 10 Tage im Wartestatus, sonst
                14. Hier ist sie zum ersten Mal sichtbar. {% endcomment %}
-            <div class="fw-f">meldet sich nach {% if fall.status == 'wartet' %}10{% else %}14{% endif %} Tagen</div></div>
-        <div><div class="fw-l">Erfasste Zeit</div>
-            <div class="fw-w">{{ fall.erfasste_minuten }} min</div>
-            <div class="fw-f">auf diesen Fall gebucht</div></div>
+            <div class="fw-f">{% if fall.status == 'wartet' %}{% blocktrans with n=10 %}meldet sich nach {{ n }} Tagen{% endblocktrans %}{% else %}{% blocktrans with n=14 %}meldet sich nach {{ n }} Tagen{% endblocktrans %}{% endif %}</div></div>
+        <div><div class="fw-l">{% trans "Erfasste Zeit" %}</div>
+            <div class="fw-w">{{ fall.erfasste_minuten }} {% trans "min" %}</div>
+            <div class="fw-f">{% trans "auf diesen Fall gebucht" %}</div></div>
     </div>
 </div>
 
@@ -89,35 +89,35 @@ Der Stundensatz bleibt LEER, solange die Vorgabe der Organisation gilt. Ein
 eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
 {% endcomment %}
 <div class="fw-card p-4 mb-6">
-    <div class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">Aufwand erfassen</div>
+    <div class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">{% trans "Aufwand erfassen" %}</div>
     <form method="post" action="/neu/faelle/{{ fall.pk }}/zeit/" class="flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <label class="block">
-            <span class="text-[11px] fw-faint block mb-1">Minuten</span>
+            <span class="text-[11px] fw-faint block mb-1">{% trans "Minuten" %}</span>
             <input type="number" name="minuten" min="1" step="1" required
                    class="fw-feld w-24 fw-num" placeholder="15">
         </label>
         <label class="block">
-            <span class="text-[11px] fw-faint block mb-1">Tätigkeit</span>
+            <span class="text-[11px] fw-faint block mb-1">{% trans "Tätigkeit" %}</span>
             <select name="taetigkeit" class="fw-feld">
                 {% for wert, text in zeit_arten %}<option value="{{ wert }}">{{ text }}</option>{% endfor %}
             </select>
         </label>
         <label class="block flex-1 min-w-[12rem]">
-            <span class="text-[11px] fw-faint block mb-1">Notiz</span>
+            <span class="text-[11px] fw-faint block mb-1">{% trans "Notiz" %}</span>
             <input type="text" name="notiz" maxlength="200" class="fw-feld w-full"
-                   placeholder="Telefonat mit Handwerker">
+                   placeholder="{% trans 'Telefonat mit Handwerker' %}">
         </label>
         <label class="block">
-            <span class="text-[11px] fw-faint block mb-1">Satz CHF/h</span>
+            <span class="text-[11px] fw-faint block mb-1">{% trans "Satz CHF/h" %}</span>
             <input type="text" name="satz" class="fw-feld w-24 fw-num"
                    placeholder="{{ fall.organisation.stundensatz|default:'—' }}">
         </label>
         <label class="flex items-center gap-2 pb-2">
             <input type="checkbox" name="verrechenbar" class="fw-akzent">
-            <span class="text-sm">separat verrechenbar</span>
+            <span class="text-sm">{% trans "separat verrechenbar" %}</span>
         </label>
-        <button type="submit" class="fw-btn fw-primary">Buchen</button>
+        <button type="submit" class="fw-btn fw-primary">{% trans "Buchen" %}</button>
     </form>
 
     {% if zeiteintraege %}
@@ -126,7 +126,7 @@ eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
         {% for z in zeiteintraege %}
             <tr>
                 <td class="py-1.5 fw-num fw-faint w-24">{{ z.datum|date:"d.m.Y" }}</td>
-                <td class="py-1.5 fw-num w-16 text-right">{{ z.minuten }} min</td>
+                <td class="py-1.5 fw-num w-16 text-right">{{ z.minuten }} {% trans "min" %}</td>
                 <td class="py-1.5 pl-3">{{ z.get_taetigkeit_display }}{% if z.notiz %}
                     <span class="fw-faint">· {{ z.notiz }}</span>{% endif %}</td>
                 <td class="py-1.5 fw-faint text-right">{{ z.benutzer.get_short_name|default:z.benutzer }}</td>
@@ -149,18 +149,16 @@ eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
 <div class="fw-card">
     <div class="fw-hinweis crit">
         <span class="fw-hi">{% zeichen 'wartet' %}</span>
-        <div class="fw-ht"><b>Seit {{ tage_ohne_bewegung }} Tagen keine Bewegung</b>
-            Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird
-            erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem
-            Büro mit drei Personen der teuerste Fehler.
-            {% if naechster %}<div class="mt-1.5"><a href="#schritt-{{ naechster.id }}" class="fw-link">Zum nächsten Schritt →</a></div>{% endif %}
+        <div class="fw-ht"><b>{% blocktrans with n=tage_ohne_bewegung %}Seit {{ n }} Tagen keine Bewegung{% endblocktrans %}</b>
+            {% trans "Die Verfallsregel hat angeschlagen. Entweder der nächste Schritt wird erledigt, oder der Fall gehört auf «Ruht» — liegenbleiben ist in einem Büro mit drei Personen der teuerste Fehler." %}
+            {% if naechster %}<div class="mt-1.5"><a href="#schritt-{{ naechster.id }}" class="fw-link">{% trans "Zum nächsten Schritt" %} →</a></div>{% endif %}
         </div>
     </div>
 </div>
 {% endif %}
 
 {% for etappe in etappen %}
-<div class="fw-subhead">Etappe {{ etappe.nr }}{% if etappe.bezeichnung %} · {{ etappe.bezeichnung }}{% endif %}</div>
+<div class="fw-subhead">{% blocktrans with nr=etappe.nr %}Etappe {{ nr }}{% endblocktrans %}{% if etappe.bezeichnung %} · {{ etappe.bezeichnung }}{% endif %}</div>
 <div class="fw-card">
     {% for s in etappe.schritte %}
     <div class="fw-zeile" id="schritt-{{ s.id }}">
@@ -168,30 +166,30 @@ eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
         <span class="fw-ikon {% if s.erledigt_am %}good{% else %}mut{% endif %}">
             {% if s.erledigt_am %}{% zeichen 'gut' %}{% else %}{% zeichen 'wartet' %}{% endif %}</span>
         <div class="fw-mitte">
-            <div class="fw-t">{{ s.bezeichnung }}{% if not s.pflicht %} <span class="fw-chip fw-mut">optional</span>{% endif %}</div>
+            <div class="fw-t">{{ s.bezeichnung }}{% if not s.pflicht %} <span class="fw-chip fw-mut">{% trans "optional" %}</span>{% endif %}</div>
             <div class="fw-s">
-                {% if s.erledigt_am %}erledigt {{ s.erledigt_am|date:"d.m.Y H:i" }}{% if s.erledigt_durch %} · {{ s.erledigt_durch.get_full_name|default:s.erledigt_durch.username }}{% endif %}
-                {% elif s.frist %}Frist {{ s.frist|date:"d.m.Y" }}
-                {% else %}ohne Frist{% endif %}
+                {% if s.erledigt_am %}{% blocktrans with d=s.erledigt_am|date:"d.m.Y H:i" %}erledigt {{ d }}{% endblocktrans %}{% if s.erledigt_durch %} · {{ s.erledigt_durch.get_full_name|default:s.erledigt_durch.username }}{% endif %}
+                {% elif s.frist %}{% blocktrans with d=s.frist|date:"d.m.Y" %}Frist {{ d }}{% endblocktrans %}
+                {% else %}{% trans "ohne Frist" %}{% endif %}
                 {% if s.bemerkung %} · {{ s.bemerkung }}{% endif %}
             </div>
         </div>
         {% if not s.erledigt_am %}
         <form method="post" action="/neu/fallschritte/{{ s.id }}/erledigen/">{% csrf_token %}
-            <button class="fw-btn fw-primary">{% zeichen 'gut' %}Erledigt</button>
+            <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Erledigt" %}</button>
         </form>
         {% endif %}
     </div>
     {% endfor %}
 </div>
 {% empty %}
-<div class="fw-card"><p class="fw-leer">Für diesen Fall sind keine Schritte angelegt.</p></div>
+<div class="fw-card"><p class="fw-leer">{% trans "Für diesen Fall sind keine Schritte angelegt." %}</p></div>
 {% endfor %}
 
 {% if fall.notiz %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
-        <span class="fw-t">Notiz</span></div>
+        <span class="fw-t">{% trans "Notiz" %}</span></div>
     <div style="padding:14px 16px;font-size:13px;color:var(--ds-muted);white-space:pre-line">{{ fall.notiz }}</div>
 </div>
 {% endif %}
