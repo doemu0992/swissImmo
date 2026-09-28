@@ -363,7 +363,7 @@ Mandatszuteilung begrenzt zusätzlich, **welche** Akten überhaupt sichtbar sind
 | Zahllauf auslösen | ✓ | ✓ | — | — |
 | Mahnlauf und Betreibung | ✓ | ✓ | — | — |
 | Zahlungsverzug: Frist ansetzen (Art. 257d OR)³ | ✓ | ✓ | — | — |
-| Nebenkostenabrechnung freigeben | ✓ | ✓ | — | — |
+| Nebenkostenabrechnung freigeben (verbuchen, an die Mieter versenden)⁴ | ✓ | ✓ | — | — |
 | Mitglieder und Rollen verwalten | ✓ | — | — | — |
 | Abonnement und Module ändern | ✓ | — | — | — |
 | Daten exportieren | ✓ | ✓ | ✓¹ | ✓¹ |
@@ -383,6 +383,10 @@ anlegen.
 ³ Seit 28.09.2026. Die Fristansetzung eröffnet den Weg zur ausserordentlichen
 Kündigung. Zugang und Sendungsnummer des Einschreibens nachtragen darf die
 Sachbearbeitung weiterhin — das hält die bereits angesetzte Frist richtig.
+
+⁴ Seit 28.09.2026 auch der Versand. Er legt die Abrechnung jedes Mieters in
+dessen Akte und damit ins Mieterportal — bis dahin konnte die Sachbearbeitung
+so auch eine nicht verbuchte Periode an alle Mieter geben.
 
 **Vertretung** ist zeitlich begrenzt, nicht dauerhafte Rechteerweiterung. Sie endet
 automatisch; offene Fristen bleiben bei beiden sichtbar.
