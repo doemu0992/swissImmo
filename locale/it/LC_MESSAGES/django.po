@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 00:24+0200\n"
+"POT-Creation-Date: 2026-09-29 00:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,9 +79,9 @@ msgstr "Oggetti"
 msgid "Mietverhältnisse"
 msgstr "Locazioni"
 
-#: core/navigation.py:140 core/templates/fw/kontenplan.html:64
-#: core/templates/fw/personen.html:3 core/templates/fw/personen.html:9
-#: core/templates/fw/suche.html:21
+#: core/navigation.py:140 core/templates/fw/bewerbung_detail.html:59
+#: core/templates/fw/kontenplan.html:64 core/templates/fw/personen.html:3
+#: core/templates/fw/personen.html:9 core/templates/fw/suche.html:21
 msgid "Personen"
 msgstr "Persone"
 
@@ -104,11 +104,15 @@ msgstr "Casi"
 msgid "Mieterwechsel"
 msgstr "Cambi d'inquilino"
 
-#: core/navigation.py:146 core/views/fw/_basis.py:274
+#: core/navigation.py:146 core/templates/fw/bewerber_vergleich.html:7
+#: core/templates/fw/vermarktung.html:3 core/templates/fw/vermarktung.html:9
+#: core/views/fw/_basis.py:274
 msgid "Vermarktung"
 msgstr "Commercializzazione"
 
-#: core/navigation.py:147 core/views/fw/_basis.py:277
+#: core/navigation.py:147 core/templates/fw/bewerbung_detail.html:6
+#: core/templates/fw/bewerbungen.html:3 core/templates/fw/bewerbungen.html:10
+#: core/templates/fw/vermarktung.html:14 core/views/fw/_basis.py:277
 msgid "Bewerbungen"
 msgstr "Candidature"
 
@@ -253,6 +257,7 @@ msgstr "Analisi"
 #: core/templates/core/mieter_dokumente.html:10
 #: core/templates/core/mieter_portal.html:73
 #: core/templates/core/portal.html:327 core/templates/fw/base.html:219
+#: core/templates/fw/bewerbung_detail.html:73
 #: core/templates/fw/dienstleister_detail.html:167
 #: core/templates/fw/dokumente.html:3 core/templates/fw/dokumente.html:9
 #: core/templates/fw/mandat_detail.html:247 faelle/akten.py:49
@@ -279,6 +284,24 @@ msgstr "Impostazioni"
 #: core/templates/core/zweifaktor_uebersicht.html:7
 msgid "Zwei-Faktor-Anmeldung"
 msgstr "Autenticazione a due fattori"
+
+#: core/services/ersatzplanung.py:69 core/templates/fw/ersatzplanung.html:20
+#: core/views/fw/schaeden.py:402
+msgid "Ersatz fällig"
+msgstr "Da sostituire"
+
+#: core/services/ersatzplanung.py:70
+msgid "Ersatz bald"
+msgstr "Sostituzione a breve"
+
+#: core/services/ersatzplanung.py:71 core/templates/fw/ersatzplanung.html:28
+#: core/views/fw/schaeden.py:403
+msgid "Im Nutzungszeitraum"
+msgstr "Nel periodo d'uso"
+
+#: core/services/ersatzplanung.py:72 core/views/fw/schaeden.py:404
+msgid "Keine Datenbasis"
+msgstr "Nessuna base di calcolo"
 
 #: core/services/mahnstufen.py:25
 msgid "1. Mahnung"
@@ -570,6 +593,7 @@ msgstr "Telefono"
 #: core/templates/core/mieter_daten.html:34
 #: core/templates/core/passwort_reset.html:7 core/templates/fw/account.html:102
 #: core/templates/fw/benutzer.html:18 core/templates/fw/benutzer_form.html:30
+#: core/templates/fw/bewerbung_detail.html:39
 #: core/templates/fw/dienstleister.html:33
 #: core/templates/fw/dienstleister.html:101
 #: core/templates/fw/dienstleister_detail.html:84
@@ -584,6 +608,7 @@ msgstr "Comunicazione all'amministrazione"
 
 #: core/templates/core/mieter_daten.html:40
 #: core/templates/core/mieter_schaden.html:32
+#: core/templates/fw/objekt_ausschreiben.html:24
 msgid "(optional)"
 msgstr "(facoltativo)"
 
@@ -877,9 +902,12 @@ msgstr ""
 
 #: core/templates/core/mieter_schaden.html:20
 #: core/templates/core/portal.html:306 core/templates/fw/bankabgleich.html:348
-#: core/templates/fw/debitoren.html:193 core/templates/fw/kreditoren.html:162
-#: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
-#: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
+#: core/templates/fw/debitoren.html:193
+#: core/templates/fw/ersatzplanung.html:110
+#: core/templates/fw/ersatzplanung.html:135
+#: core/templates/fw/kreditoren.html:162 core/templates/fw/logbuch.html:98
+#: core/templates/fw/mahnwesen.html:66 core/templates/fw/mieterkonten.html:47
+#: core/templates/fw/mietzins.html:59
 #: core/templates/fw/nebenkosten_detail.html:114
 #: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
 #: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
@@ -1217,6 +1245,7 @@ msgid "Mieter"
 msgstr "Inquilino"
 
 #: core/templates/core/portal.html:307
+#: core/templates/fw/objekt_ausschreiben.html:30
 msgid "Bruttomiete"
 msgstr "Pigione lorda"
 
@@ -1557,8 +1586,9 @@ msgstr ""
 #: core/templates/core/postfach_liste.html:91
 #: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
 #: core/templates/fw/dokumente.html:94 core/templates/fw/hypotheken.html:115
-#: core/templates/fw/kreditoren.html:245 core/templates/fw/mandate.html:42
-#: core/templates/fw/nebenkosten.html:98 core/templates/fw/pendenzen.html:73
+#: core/templates/fw/kreditoren.html:245 core/templates/fw/lebensdauer.html:60
+#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
+#: core/templates/fw/pendenzen.html:73
 msgid "Löschen"
 msgstr "Elimina"
 
@@ -2627,9 +2657,10 @@ msgid "gefiltert auf %(strasse)s"
 msgstr "filtrato su %(strasse)s"
 
 #: core/templates/fw/bankabgleich.html:11 core/templates/fw/bankkonten.html:11
-#: core/templates/fw/buchhaltung.html:14 core/templates/fw/debitoren.html:11
-#: core/templates/fw/dokumente.html:10 core/templates/fw/hypotheken.html:10
-#: core/templates/fw/kontenplan.html:20 core/templates/fw/kreditoren.html:26
+#: core/templates/fw/bewerbungen.html:11 core/templates/fw/buchhaltung.html:14
+#: core/templates/fw/debitoren.html:11 core/templates/fw/dokumente.html:10
+#: core/templates/fw/hypotheken.html:10 core/templates/fw/kontenplan.html:20
+#: core/templates/fw/kreditoren.html:26
 #: core/templates/fw/liegenschaften.html:11 core/templates/fw/mahnwesen.html:13
 #: core/templates/fw/mietzins.html:11 core/templates/fw/nebenkosten.html:14
 #: core/templates/fw/objekte.html:25 core/templates/fw/pendenzen.html:9
@@ -2856,6 +2887,7 @@ msgstr "Selezionare prima dei pagamenti."
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
 #: core/views/fw/listen.py:207 core/views/fw/listen.py:1108
 #: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
+#: core/views/fw/schaeden.py:402
 msgid "Alle"
 msgstr "Tutti"
 
@@ -3296,6 +3328,8 @@ msgid "Aufwand %(jahr)s"
 msgstr "Costi %(jahr)s"
 
 #: core/templates/fw/betriebskostenspiegel.html:45
+#: core/templates/fw/objekt_ausschreiben.html:29
+#: core/templates/fw/vermarktung.html:49
 msgid "Fläche"
 msgstr "Superficie"
 
@@ -3319,6 +3353,344 @@ msgid ""
 msgstr ""
 "Base: registrazioni sui conti costi (dare) per stabile nell'anno scelto, "
 "divise per la somma delle superfici degli oggetti registrate."
+
+#: core/templates/fw/bewerber_vergleich.html:4
+#: core/templates/fw/bewerber_vergleich.html:8
+#: core/templates/fw/bewerber_vergleich.html:13
+msgid "Bewerber-Vergleich"
+msgstr "Confronto candidati"
+
+#: core/templates/fw/bewerber_vergleich.html:14
+#, python-format
+msgid "Bruttomiete CHF %(m)s/Mt. (%(j)s/Jahr)"
+msgstr "Pigione lorda CHF %(m)s/mese (%(j)s/anno)"
+
+#: core/templates/fw/bewerber_vergleich.html:17
+#: core/templates/fw/vermarktung.html:64
+msgid "Exposé"
+msgstr "Scheda descrittiva"
+
+#: core/templates/fw/bewerber_vergleich.html:18
+msgid "Abgelehnte ausblenden"
+msgstr "Nascondere i rifiutati"
+
+#: core/templates/fw/bewerber_vergleich.html:18
+msgid "Abgelehnte einblenden"
+msgstr "Mostrare i rifiutati"
+
+#: core/templates/fw/bewerber_vergleich.html:22
+msgid ""
+"Der Eignungs-Score (0–100) gewichtet Tragbarkeit (Drittel-Regel: "
+"Jahreseinkommen ≥ 3× Jahresmiete), Betreibungen, Anstellung und "
+"Vollständigkeit der Unterlagen. Er ist eine Entscheidungshilfe — keine "
+"automatische Zu- oder Absage."
+msgstr ""
+"Il punteggio di idoneità (0–100) pondera la sostenibilità (regola del terzo: "
+"reddito annuo ≥ 3× pigione annua), le esecuzioni, l'impiego e la completezza "
+"della documentazione. È un aiuto decisionale — non un'accettazione o un "
+"rifiuto automatico."
+
+#: core/templates/fw/bewerber_vergleich.html:26
+#, python-format
+msgid "Allen %(n)s noch offenen Bewerbern eine Absage senden?"
+msgstr "Inviare un rifiuto a tutti i %(n)s candidati ancora aperti?"
+
+#: core/templates/fw/bewerber_vergleich.html:28
+#, python-format
+msgid "Übrige %(n)s absagen"
+msgstr "Rifiutare gli altri %(n)s"
+
+#: core/templates/fw/bewerber_vergleich.html:37
+msgid "Rang"
+msgstr "Rango"
+
+#: core/templates/fw/bewerber_vergleich.html:38
+msgid "Bewerber"
+msgstr "Candidati"
+
+#: core/templates/fw/bewerber_vergleich.html:39
+msgid "Score"
+msgstr "Punteggio"
+
+#: core/templates/fw/bewerber_vergleich.html:41
+msgid "Haushalt"
+msgstr "Economia domestica"
+
+#: core/templates/fw/bewerber_vergleich.html:66
+#, python-format
+msgid "%(n)s Pers."
+msgstr "%(n)s pers."
+
+#: core/templates/fw/bewerber_vergleich.html:71
+msgid "Zugesagt"
+msgstr "Accettato"
+
+#: core/templates/fw/bewerber_vergleich.html:73
+msgid "Abgesagt"
+msgstr "Rifiutato"
+
+#: core/templates/fw/bewerber_vergleich.html:78
+msgid "Besichtigung"
+msgstr "Visita"
+
+#: core/templates/fw/bewerber_vergleich.html:80
+#, python-format
+msgid "%(name)s zusagen und E-Mail senden?"
+msgstr "Accettare %(name)s e inviare un'e-mail?"
+
+#: core/templates/fw/bewerber_vergleich.html:80
+#, python-format
+msgid "%(name)s zusagen?"
+msgstr "Accettare %(name)s?"
+
+#: core/templates/fw/bewerber_vergleich.html:82
+msgid "Zusagen"
+msgstr "Accettare"
+
+#: core/templates/fw/bewerber_vergleich.html:85
+#, python-format
+msgid "%(name)s absagen und E-Mail senden?"
+msgstr "Rifiutare %(name)s e inviare un'e-mail?"
+
+#: core/templates/fw/bewerber_vergleich.html:85
+#, python-format
+msgid "%(name)s absagen?"
+msgstr "Rifiutare %(name)s?"
+
+#: core/templates/fw/bewerber_vergleich.html:87
+#: core/templates/fw/termine.html:52
+msgid "Absagen"
+msgstr "Annullare"
+
+#: core/templates/fw/bewerber_vergleich.html:92
+#, python-format
+msgid "Besichtigung %(d)s"
+msgstr "Visita %(d)s"
+
+#: core/templates/fw/bewerber_vergleich.html:102
+#, python-format
+msgid "Besichtigungstermin für %(name)s"
+msgstr "Appuntamento di visita per %(name)s"
+
+#: core/templates/fw/bewerber_vergleich.html:108
+msgid "Einladen"
+msgstr "Invitare"
+
+#: core/templates/fw/bewerber_vergleich.html:110
+msgid ""
+"Termin erscheint im Fristen-Center; Einladung per E-Mail mit Journal-Eintrag."
+msgstr ""
+"L'appuntamento appare nel centro scadenze; invito via e-mail con voce nel "
+"giornale."
+
+#: core/templates/fw/bewerber_vergleich.html:122
+msgid "Noch keine Bewerbungen für dieses Objekt."
+msgstr "Ancora nessuna candidatura per questo oggetto."
+
+#: core/templates/fw/bewerbung_detail.html:3
+msgid "Bewerbung"
+msgstr "Candidatura"
+
+#: core/templates/fw/bewerbung_detail.html:22
+msgid "Betreibungen vorhanden"
+msgstr "Esecuzioni presenti"
+
+#: core/templates/fw/bewerbung_detail.html:23
+msgid "Keine Betreibungen"
+msgstr "Nessuna esecuzione"
+
+#: core/templates/fw/bewerbung_detail.html:24
+msgid "Status:"
+msgstr "Stato:"
+
+#: core/templates/fw/bewerbung_detail.html:32
+msgid "Personalien & Kontakt"
+msgstr "Dati personali & contatto"
+
+#: core/templates/fw/bewerbung_detail.html:34
+msgid "Geburtsdatum"
+msgstr "Data di nascita"
+
+#: core/templates/fw/bewerbung_detail.html:35
+msgid "Zivilstand"
+msgstr "Stato civile"
+
+#: core/templates/fw/bewerbung_detail.html:36
+msgid "Nationalität"
+msgstr "Nazionalità"
+
+#: core/templates/fw/bewerbung_detail.html:37
+msgid "Heimatort"
+msgstr "Luogo d'origine"
+
+#: core/templates/fw/bewerbung_detail.html:38
+msgid "Mobil"
+msgstr "Cellulare"
+
+#: core/templates/fw/bewerbung_detail.html:40
+#: core/templates/fw/mandat_detail.html:117
+#: core/templates/fw/mandat_detail.html:174 core/templates/fw/personen.html:68
+msgid "Adresse"
+msgstr "Indirizzo"
+
+#: core/templates/fw/bewerbung_detail.html:45
+msgid "Beruf & Finanzen"
+msgstr "Professione & finanze"
+
+#: core/templates/fw/bewerbung_detail.html:47
+msgid "Erwerbsstatus"
+msgstr "Stato occupazionale"
+
+#: core/templates/fw/bewerbung_detail.html:48
+msgid "Beruf"
+msgstr "Professione"
+
+#: core/templates/fw/bewerbung_detail.html:49
+msgid "Arbeitgeber"
+msgstr "Datore di lavoro"
+
+#: core/templates/fw/bewerbung_detail.html:50
+msgid "Einkommen/Jahr"
+msgstr "Reddito/anno"
+
+#: core/templates/fw/bewerbung_detail.html:51
+msgid "Anstellung"
+msgstr "Impiego"
+
+#: core/templates/fw/bewerbung_detail.html:51
+#: core/templates/fw/vertraege.html:91
+msgid "unbefristet"
+msgstr "durata indeterminata"
+
+#: core/templates/fw/bewerbung_detail.html:51
+msgid "befristet"
+msgstr "a tempo determinato"
+
+#: core/templates/fw/bewerbung_detail.html:52
+msgid "Bezugstermin"
+msgstr "Data di entrata"
+
+#: core/templates/fw/bewerbung_detail.html:57
+msgid "Haushalt & Wünsche"
+msgstr "Economia domestica & desideri"
+
+#: core/templates/fw/bewerbung_detail.html:59
+#, python-format
+msgid "%(n)s Erw."
+msgstr "%(n)s adulto/i"
+
+#: core/templates/fw/bewerbung_detail.html:59
+#, python-format
+msgid "%(n)s Kinder"
+msgstr "%(n)s bambino/i"
+
+#: core/templates/fw/bewerbung_detail.html:60
+msgid "Haustiere"
+msgstr "Animali domestici"
+
+#: core/templates/fw/bewerbung_detail.html:60
+#: core/templates/fw/bewerbung_detail.html:61
+msgid "nein"
+msgstr "no"
+
+#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1109
+msgid "Parkplatz"
+msgstr "Posteggio"
+
+#: core/templates/fw/bewerbung_detail.html:61
+msgid "gewünscht"
+msgstr "desiderato"
+
+#: core/templates/fw/bewerbung_detail.html:62
+msgid "Kaution"
+msgstr "Deposito cauzionale"
+
+#: core/templates/fw/bewerbung_detail.html:63
+#: core/templates/fw/debitoren.html:26
+msgid "Briefkasten-Schild"
+msgstr "Targhetta bucalettere"
+
+#: core/templates/fw/bewerbung_detail.html:64
+msgid "Sonnerie-Schild"
+msgstr "Targhetta del campanello"
+
+#: core/templates/fw/bewerbung_detail.html:82
+msgid "Keine Dokumente hochgeladen."
+msgstr "Nessun documento caricato."
+
+#: core/templates/fw/bewerbung_detail.html:86
+msgid "Status ändern"
+msgstr "Cambiare lo stato"
+
+#: core/templates/fw/bewerbung_detail.html:97
+msgid "Unterlagen nachtragen"
+msgstr "Completare la documentazione"
+
+#: core/templates/fw/bewerbung_detail.html:98
+msgid ""
+"Ausweis und Einkommensnachweis werden erst in der engeren Auswahl verlangt — "
+"hier ablegen, sobald sie vorliegen."
+msgstr ""
+"Documento d’identità e prova di reddito sono richiesti solo nella selezione "
+"ristretta — li archivi qui non appena disponibili."
+
+#: core/templates/fw/bewerbung_detail.html:100
+msgid "Ausweiskopie"
+msgstr "Copia del documento d’identità"
+
+#: core/templates/fw/bewerbung_detail.html:102
+msgid "Einkommensnachweis"
+msgstr "Prova di reddito"
+
+#: core/templates/fw/bewerbung_detail.html:104
+msgid "Weitere Unterlagen"
+msgstr "Altri documenti"
+
+#: core/templates/fw/bewerbung_detail.html:108 core/templates/fw/zulauf.html:40
+msgid "Ablegen"
+msgstr "Archiviare"
+
+#: core/templates/fw/bewerbung_detail.html:119
+msgid "Setzen"
+msgstr "Impostare"
+
+#: core/templates/fw/bewerbung_detail.html:124
+msgid "Zusage & Vertrag"
+msgstr "Accettazione & contratto"
+
+#: core/templates/fw/bewerbung_detail.html:125
+#, python-format
+msgid ""
+"Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf "
+"auf %(e)s."
+msgstr ""
+"Crea un inquilino da questa candidatura e una bozza di contratto per %(e)s."
+
+#: core/templates/fw/bewerbung_detail.html:126
+msgid "Mieter anlegen und Vertragsentwurf erstellen?"
+msgstr "Creare l'inquilino e la bozza di contratto?"
+
+#: core/templates/fw/bewerbung_detail.html:129
+msgid "Mieter + Vertragsentwurf erstellen"
+msgstr "Creare inquilino + bozza di contratto"
+
+#: core/templates/fw/bewerbungen.html:11
+msgid "Mietinteressenten prüfen, zusagen und in einen Vertrag überführen"
+msgstr "Esaminare gli interessati, accettarli e trasferirli in un contratto"
+
+#: core/templates/fw/bewerbungen.html:11 core/templates/fw/dokumente.html:10
+#: core/templates/fw/pendenzen.html:9 core/templates/fw/schaeden.html:10
+#, python-format
+msgid "gefiltert auf %(s)s"
+msgstr "filtrato su %(s)s"
+
+#: core/templates/fw/bewerbungen.html:11
+msgid "total"
+msgstr "in totale"
+
+#: core/templates/fw/bewerbungen.html:38
+msgid "Keine Bewerbungen"
+msgstr "Nessuna candidatura"
 
 #: core/templates/fw/buchhaltung.html:10
 msgid "Buchung erfassen"
@@ -3883,10 +4255,6 @@ msgstr "Selezione rapida"
 msgid "Sonnerie-Beschriftung"
 msgstr "Targhetta campanello"
 
-#: core/templates/fw/debitoren.html:26
-msgid "Briefkasten-Schild"
-msgstr "Targhetta bucalettere"
-
 #: core/templates/fw/debitoren.html:27
 msgid "Ersatzschlüssel"
 msgstr "Chiave sostitutiva"
@@ -3980,7 +4348,8 @@ msgstr ""
 
 #: core/templates/fw/debitoren.html:181 core/templates/fw/debitoren.html:243
 #: core/templates/fw/dienstleister.html:130
-#: core/templates/fw/dokumente.html:102 core/templates/fw/personen.html:56
+#: core/templates/fw/dokumente.html:102
+#: core/templates/fw/ersatzplanung.html:140 core/templates/fw/personen.html:56
 #: core/templates/fw/personen.html:105 core/templates/fw/vertraege.html:58
 #: core/templates/fw/vertraege.html:106
 msgid "Keine Treffer"
@@ -4001,7 +4370,8 @@ msgstr "Scadenza"
 msgid "Titel"
 msgstr "Titolo"
 
-#: core/templates/fw/debitoren.html:197 core/templates/fw/kautionen.html:28
+#: core/templates/fw/debitoren.html:197
+#: core/templates/fw/ersatzplanung.html:112 core/templates/fw/kautionen.html:28
 #: core/templates/fw/kreditoren.html:166 core/templates/fw/mieterkonten.html:48
 #: core/templates/fw/nebenkosten.html:74 core/templates/fw/schaeden.html:96
 #: core/templates/fw/sollstellung.html:87 core/templates/fw/vertraege.html:75
@@ -4096,6 +4466,7 @@ msgstr "&gt;90"
 
 #: core/templates/fw/debitoren_aging.html:56
 #: core/templates/fw/eigentuemer_kontokorrent.html:80
+#: core/templates/fw/ersatzplanung.html:79
 #: core/templates/fw/kontenplan.html:150
 #: core/templates/fw/mandat_abrechnung.html:78
 #: core/templates/fw/schaden_kosten.html:54
@@ -4404,12 +4775,6 @@ msgstr "Ancora nessun incarico — quindi nessuna cronologia."
 msgid "Zentrale Ablage aus Vertrags- und Objektdokumenten"
 msgstr "Archivio centrale dei documenti di contratti e oggetti"
 
-#: core/templates/fw/dokumente.html:10 core/templates/fw/pendenzen.html:9
-#: core/templates/fw/schaeden.html:10
-#, python-format
-msgid "gefiltert auf %(s)s"
-msgstr "filtrato su %(s)s"
-
 #: core/templates/fw/dokumente.html:12 core/templates/fw/dokumente.html:17
 msgid "Dokument hochladen"
 msgstr "Caricare un documento"
@@ -4419,6 +4784,7 @@ msgid "(leer = Dateiname)"
 msgstr "(vuoto = nome del file)"
 
 #: core/templates/fw/dokumente.html:23 core/templates/fw/dokumente.html:68
+#: core/templates/fw/lebensdauer.html:48
 #: core/templates/fw/nebenkosten_detail.html:154
 #: core/templates/fw/pendenzen.html:112 core/templates/fw/vorlage_form.html:25
 msgid "Kategorie"
@@ -4642,6 +5008,7 @@ msgid "Ab Bankkonto"
 msgstr "Dal conto bancario"
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:172
+#: core/templates/fw/lebensdauer.html:34 core/templates/fw/lebensdauer.html:50
 msgid "Bemerkung"
 msgstr "Osservazione"
 
@@ -4672,6 +5039,183 @@ msgstr ""
 #: core/templates/fw/einstellungen.html:10
 msgid "Konto, Team, Vorlagen und Integrationen — alles an einem Ort."
 msgstr "Account, team, modelli e integrazioni — tutto in un unico posto."
+
+#: core/templates/fw/ersatzplanung.html:4 core/templates/fw/lebensdauer.html:7
+msgid "Ersatzplanung"
+msgstr "Pianificazione delle sostituzioni"
+
+#: core/templates/fw/ersatzplanung.html:10
+msgid "Garantie- &amp; Ersatzplanung"
+msgstr "Pianificazione garanzie &amp; sostituzioni"
+
+#: core/templates/fw/ersatzplanung.html:11
+msgid ""
+"Raumbuch-Elemente <b>und Geräte</b> nach Restnutzungsdauer "
+"(Lebensdauertabelle) mit Ersatzbudget je Jahr"
+msgstr ""
+"Elementi dell'inventario <b>e apparecchi</b> per durata d'uso residua "
+"(tabella della durata di vita) con budget di sostituzione per anno"
+
+#: core/templates/fw/ersatzplanung.html:13
+msgid "Budget-PDF"
+msgstr "PDF del budget"
+
+#: core/templates/fw/ersatzplanung.html:24
+msgid "Bald fällig (≤ 2 J)"
+msgstr "Presto in scadenza (≤ 2 anni)"
+
+#: core/templates/fw/ersatzplanung.html:32
+msgid "Ohne Datenbasis"
+msgstr "Senza base di calcolo"
+
+#: core/templates/fw/ersatzplanung.html:40
+#, python-format
+msgid "Erneuerungsfonds-Deckung (%(n)s-Jahres-Horizont)"
+msgstr "Copertura del fondo di rinnovo (orizzonte di %(n)s anni)"
+
+#: core/templates/fw/ersatzplanung.html:42
+#, python-format
+msgid "%(g)s%% gedeckt"
+msgstr "%(g)s%% coperto"
+
+#: core/templates/fw/ersatzplanung.html:47
+msgid "Fonds-Bestand"
+msgstr "Consistenza del fondo"
+
+#: core/templates/fw/ersatzplanung.html:51
+msgid "Jährliche Einlage"
+msgstr "Versamento annuo"
+
+#: core/templates/fw/ersatzplanung.html:55
+#, python-format
+msgid "Ersatzbudget (%(n)s J)"
+msgstr "Budget di sostituzione (%(n)s anni)"
+
+#: core/templates/fw/ersatzplanung.html:59
+msgid "Empf. Jahresrückstellung"
+msgstr "Accantonamento annuo racc."
+
+#: core/templates/fw/ersatzplanung.html:65
+#, python-format
+msgid ""
+"Gedeckt: Bestand + Einlagen (%(p)s) decken das Ersatzbudget über %(n)s Jahre "
+"(Reserve CHF %(r)s)."
+msgstr ""
+"Coperto: consistenza + versamenti (%(p)s) coprono il budget di sostituzione "
+"su %(n)s anni (riserva CHF %(r)s)."
+
+#: core/templates/fw/ersatzplanung.html:67
+#, python-format
+msgid "Unterdeckung von CHF %(s)s über %(n)s Jahre."
+msgstr "Scopertura di CHF %(s)s su %(n)s anni."
+
+#: core/templates/fw/ersatzplanung.html:68
+#, python-format
+msgid ""
+"Empfehlung: jährliche Einlage um <span class=\"font-semibold\">CHF %(m)s</"
+"span> auf CHF %(e)s erhöhen."
+msgstr ""
+"Raccomandazione: aumentare il versamento annuo di <span class=\"font-"
+"semibold\">CHF %(m)s</span> a CHF %(e)s."
+
+#: core/templates/fw/ersatzplanung.html:78
+#, python-format
+msgid "Ersatzbudget je Jahr (nächste %(n)s Jahre)"
+msgstr "Budget di sostituzione per anno (prossimi %(n)s anni)"
+
+#: core/templates/fw/ersatzplanung.html:93
+msgid ""
+"Grundlage für die Erneuerungsfonds-/Budgetplanung: erwartetes Ersatzjahr = "
+"Einbaujahr + Lebensdauer, Kosten = Neuwert."
+msgstr ""
+"Base per la pianificazione del fondo di rinnovo/budget: anno di sostituzione "
+"atteso = anno di installazione + durata di vita, costi = valore a nuovo."
+
+#: core/templates/fw/ersatzplanung.html:109
+msgid "Element"
+msgstr "Elemento"
+
+#: core/templates/fw/ersatzplanung.html:111
+msgid "Restdauer"
+msgstr "Durata residua"
+
+#: core/templates/fw/ersatzplanung.html:113
+msgid "Garantie"
+msgstr "Garanzia"
+
+#: core/templates/fw/ersatzplanung.html:114
+msgid "Reparaturen"
+msgstr "Riparazioni"
+
+#: core/templates/fw/ersatzplanung.html:115
+msgid "Lebenszyklus"
+msgstr "Ciclo di vita"
+
+#: core/templates/fw/ersatzplanung.html:123
+#: core/templates/fw/ersatzplanung.html:135
+msgid "Gerät"
+msgstr "Apparecchio"
+
+#: core/templates/fw/ersatzplanung.html:124
+msgid "Einbau"
+msgstr "Installazione"
+
+#: core/templates/fw/ersatzplanung.html:134
+msgid ""
+"Geräte haben kein Neuwert-Feld — ein geschätzter Preis wanderte sonst über "
+"den PDF-Report in die Fondsplanung."
+msgstr ""
+"Gli apparecchi non hanno un campo valore a nuovo — altrimenti un prezzo "
+"stimato finirebbe tramite il rapporto PDF nella pianificazione del fondo."
+
+#: core/templates/fw/ersatzplanung.html:134
+msgid "kein Neuwert"
+msgstr "nessun valore a nuovo"
+
+#: core/templates/fw/ersatzplanung.html:140
+msgid "Keine Ausstattung erfasst"
+msgstr "Nessuna dotazione registrata"
+
+#: core/templates/fw/ersatzplanung.html:141
+msgid ""
+"Erfasse Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die "
+"Restnutzungsdauer berechnet werden kann."
+msgstr ""
+"Registri sull'oggetto gli elementi dell'inventario con data di installazione "
+"e valore a nuovo, affinché si possa calcolare la durata d'uso residua."
+
+#: core/templates/fw/ersatzplanung.html:151
+msgid ""
+"Restdauer = Lebensdauer − Alter (aus der paritätischen Lebensdauertabelle). "
+"„Lebenszyklus“ = Neuwert + aufgelaufene Reparaturkosten der verknüpften "
+"Schäden."
+msgstr ""
+"Durata residua = durata di vita − età (dalla tabella paritetica della durata "
+"di vita). «Ciclo di vita» = valore a nuovo + costi di riparazione accumulati "
+"dei danni collegati."
+
+#: core/templates/fw/ersatzplanung.html:152
+#, python-format
+msgid ""
+"<b>%(n)s Gerät</b> steht in der Liste, aber nicht im Budget: Geräte haben "
+"kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als "
+"diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des "
+"Eigentümers."
+msgid_plural ""
+"<b>%(n)s Geräte</b> stehen in der Liste, aber nicht im Budget: Geräte haben "
+"kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als "
+"diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des "
+"Eigentümers."
+msgstr[0] ""
+"<b>%(n)s apparecchio</b> è nell'elenco, ma non nel budget: gli apparecchi "
+"non hanno un campo valore a nuovo. Un prezzo stimato sarebbe una risposta "
+"peggiore di questa lacuna — finirebbe tramite il rapporto PDF nella "
+"pianificazione del fondo del proprietario."
+msgstr[1] ""
+"<b>%(n)s apparecchi</b> sono nell'elenco, ma non nel budget: gli apparecchi "
+"non hanno un campo valore a nuovo. Un prezzo stimato sarebbe una risposta "
+"peggiore di questa lacuna — finirebbe tramite il rapporto PDF nella "
+"pianificazione del fondo del proprietario."
 
 #: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:758
 msgid "Finanz-Cockpit"
@@ -5639,6 +6183,56 @@ msgstr "Conclusi di recente"
 msgid "Noch kein Lauf abgeschlossen."
 msgstr "Nessun processo ancora concluso."
 
+#: core/templates/fw/lebensdauer.html:3 core/templates/fw/lebensdauer.html:9
+#: core/templates/fw/lebensdauer.html:14
+msgid "Lebensdauertabelle"
+msgstr "Tabella della durata di vita"
+
+#: core/templates/fw/lebensdauer.html:15
+msgid ""
+"Paritätische Nutzungsdauern (Mieterverband/HEV) — Grundlage für den Zeitwert "
+"bei der Wohnungsabnahme."
+msgstr ""
+"Durate d'uso paritetiche (Mieterverband/HEV) — base per il valore attuale "
+"alla riconsegna dell'abitazione."
+
+#: core/templates/fw/lebensdauer.html:20
+msgid "Standardwerte ergänzen"
+msgstr "Completare i valori standard"
+
+#: core/templates/fw/lebensdauer.html:26
+msgid "Kategorie hinzufügen"
+msgstr "Aggiungere una categoria"
+
+#: core/templates/fw/lebensdauer.html:30
+msgid "Kategorie *"
+msgstr "Categoria *"
+
+#: core/templates/fw/lebensdauer.html:32
+msgid "Jahre *"
+msgstr "Anni *"
+
+#: core/templates/fw/lebensdauer.html:36
+msgid "Hinzufügen"
+msgstr "Aggiungere"
+
+#: core/templates/fw/lebensdauer.html:49
+msgid "Lebensdauer (J)"
+msgstr "Durata di vita (anni)"
+
+#: core/templates/fw/lebensdauer.html:60
+#, python-format
+msgid "Kategorie «%(k)s» löschen?"
+msgstr "Eliminare la categoria «%(k)s»?"
+
+#: core/templates/fw/lebensdauer.html:64
+msgid "Noch keine Kategorien — «Standardwerte ergänzen» klicken."
+msgstr "Ancora nessuna categoria — cliccare su «Completare i valori standard»."
+
+#: core/templates/fw/lebensdauer.html:71
+msgid "Änderungen speichern"
+msgstr "Salvare le modifiche"
+
 #: core/templates/fw/leerstand_verlauf.html:8
 #, python-format
 msgid "Monatliche Leerquote des letzten Monats."
@@ -6275,11 +6869,6 @@ msgstr ""
 #: core/templates/fw/mandat_detail.html:113
 msgid "Mandat"
 msgstr "Mandato"
-
-#: core/templates/fw/mandat_detail.html:117
-#: core/templates/fw/mandat_detail.html:174 core/templates/fw/personen.html:68
-msgid "Adresse"
-msgstr "Indirizzo"
 
 #: core/templates/fw/mandat_detail.html:130
 #: core/templates/fw/mandat_detail.html:238
@@ -7163,6 +7752,36 @@ msgstr ""
 "Nessun giustificativo registrato. Le fatture creditori rilevanti SA "
 "confluiscono automaticamente."
 
+#: core/templates/fw/objekt_ausschreiben.html:3
+#: core/templates/fw/objekt_ausschreiben.html:7
+msgid "Objekt ausschreiben"
+msgstr "Pubblicare l'oggetto"
+
+#: core/templates/fw/objekt_ausschreiben.html:19
+msgid "Verfügbar ab"
+msgstr "Disponibile dal"
+
+#: core/templates/fw/objekt_ausschreiben.html:21
+msgid "Standard: Endtermin der laufenden Kündigung."
+msgstr "Predefinito: termine finale della disdetta in corso."
+
+#: core/templates/fw/objekt_ausschreiben.html:24
+msgid "Vermarktungsnotiz"
+msgstr "Nota di commercializzazione"
+
+#: core/templates/fw/objekt_ausschreiben.html:25
+msgid "z. B. renoviert 2024, Balkon nach Süden, ab sofort besichtigbar …"
+msgstr "p. es. ristrutturato nel 2024, balcone a sud, visitabile subito …"
+
+#: core/templates/fw/objekt_ausschreiben.html:28
+#: core/templates/fw/vermarktung.html:45
+msgid "Zimmer"
+msgstr "Locali"
+
+#: core/templates/fw/objekt_ausschreiben.html:36
+msgid "Ausschreiben"
+msgstr "Pubblicare"
+
 #: core/templates/fw/objekte.html:25
 msgid "Nach Befund geordnet — was klemmt, steht oben."
 msgstr "Ordinato per riscontro — ciò che non va sta in alto."
@@ -8017,10 +8636,6 @@ msgstr "p.es. Perdtemps 3, PT"
 msgid "%(min)s Min."
 msgstr "%(min)s min."
 
-#: core/templates/fw/termine.html:52
-msgid "Absagen"
-msgstr "Annullare"
-
 #: core/templates/fw/termine.html:56
 msgid "Kein kommender Termin erfasst."
 msgstr "Nessun appuntamento futuro registrato."
@@ -8028,6 +8643,62 @@ msgstr "Nessun appuntamento futuro registrato."
 #: core/templates/fw/termine.html:73
 msgid "Noch nichts vergangen."
 msgstr "Ancora nulla nel passato."
+
+#: core/templates/fw/vermarktung.html:10
+msgid "Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick."
+msgstr ""
+"Tutti gli oggetti pubblicati per la ricerca di un inquilino subentrante in "
+"un colpo d'occhio."
+
+#: core/templates/fw/vermarktung.html:13
+msgid "ausgeschrieben"
+msgstr "pubblicato"
+
+#: core/templates/fw/vermarktung.html:32
+#, python-format
+msgid "%(n)s Foto"
+msgid_plural "%(n)s Fotos"
+msgstr[0] "%(n)s foto"
+msgstr[1] "%(n)s foto"
+
+#: core/templates/fw/vermarktung.html:36
+msgid "frei"
+msgstr "libero"
+
+#: core/templates/fw/vermarktung.html:53
+msgid "CHF brutto"
+msgstr "CHF lordo"
+
+#: core/templates/fw/vermarktung.html:61
+#, python-format
+msgid "%(n)s Bewerbung"
+msgid_plural "%(n)s Bewerbungen"
+msgstr[0] "%(n)s candidatura"
+msgstr[1] "%(n)s candidature"
+
+#: core/templates/fw/vermarktung.html:61
+msgid "vergleichen"
+msgstr "confrontare"
+
+#: core/templates/fw/vermarktung.html:69
+msgid "Ausschreibung beenden"
+msgstr "Terminare l'annuncio"
+
+#: core/templates/fw/vermarktung.html:79
+msgid "Kein Objekt in der Vermarktung"
+msgstr "Nessun oggetto in commercializzazione"
+
+#: core/templates/fw/vermarktung.html:80
+msgid ""
+"Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur "
+"Nachmietersuche ausschreiben."
+msgstr ""
+"Nel cockpit del cambio d'inquilino gli oggetti si pubblicano con un clic per "
+"cercare un subentrante."
+
+#: core/templates/fw/vermarktung.html:81
+msgid "Zum Mieterwechsel-Cockpit"
+msgstr "Al cockpit del cambio d'inquilino"
 
 #: core/templates/fw/vertraege.html:14
 #, python-format
@@ -8068,10 +8739,6 @@ msgstr "Allestire il primo contratto"
 #: core/templates/fw/vertraege.html:73
 msgid "NK"
 msgstr "SA"
-
-#: core/templates/fw/vertraege.html:91
-msgid "unbefristet"
-msgstr "durata indeterminata"
 
 #: core/templates/fw/vertraege.html:99
 msgid "Kündigung erfassen"
@@ -8503,10 +9170,6 @@ msgstr "Apprendere la regola"
 msgid "Grund der Ablage"
 msgstr "Motivo dell'archiviazione"
 
-#: core/templates/fw/zulauf.html:40
-msgid "Ablegen"
-msgstr "Archiviare"
-
 #: core/templates/fw/zulauf.html:44
 msgid "Nichts Unzugeordnetes. 🎉"
 msgstr "Niente di non assegnato. 🎉"
@@ -8888,10 +9551,6 @@ msgid "Wohnen"
 msgstr "Abitazione"
 
 #: core/views/fw/listen.py:1109
-msgid "Parkplatz"
-msgstr "Posteggio"
-
-#: core/views/fw/listen.py:1109
 msgid "Gewerbe"
 msgstr "Commerciale"
 
@@ -9130,6 +9789,10 @@ msgstr "Firma del contratto DocuSeal inclusa"
 msgid "Prioritäts-Support & Onboarding"
 msgstr "Supporto prioritario & avvio"
 
+#: core/views/fw/schaeden.py:403
+msgid "Bald fällig"
+msgstr "Presto in scadenza"
+
 #: core/views/portal.py:751
 msgid "In Bearbeitung"
 msgstr "In elaborazione"
@@ -9165,9 +9828,6 @@ msgstr "Ruoli"
 #: faelle/akten.py:140
 msgid "Handwerker & Kosten"
 msgstr "Artigiani & costi"
-
-#~ msgid "Arbeit"
-#~ msgstr "Lavoro"
 
 #~ msgid "Fall"
 #~ msgstr "Pratica"

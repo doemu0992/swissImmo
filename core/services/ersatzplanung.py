@@ -29,6 +29,8 @@ schlechter als keine Frist.
 """
 from decimal import Decimal
 
+from django.utils.translation import gettext_noop
+
 #: Gerätekategorie → Kategorie der Lebensdauertabelle. Nur die Fälle, in denen
 #: die Namen auseinandergehen; `Lebensdauer.fuer_kategorie` trifft identische
 #: Namen (Waschmaschine, Geschirrspüler, Backofen, Rauchmelder) von selbst.
@@ -61,11 +63,13 @@ def geraet_lebensdauer(geraet):
             or Lebensdauer.fuer_kategorie(GERAET_ZU_LEBENSDAUER.get(kat.lower(), '')))
 
 
+#: Die Beschriftung bleibt deutsch (auch im PDF); `gettext_noop` nimmt sie nur
+#: in den Katalog auf. Übersetzt wird erst in der Vorlage (`{% trans %}`).
 STATUS_META = {
-    'faellig': ('Ersatz fällig', 'fw-krit-flaeche fw-kritisch'),
-    'bald': ('Ersatz bald', 'fw-warn-flaeche fw-warnton'),
-    'ok': ('Im Nutzungszeitraum', 'fw-gut-flaeche fw-gut'),
-    'unbekannt': ('Keine Datenbasis', 'fw-flaeche2 fw-faint'),
+    'faellig': (gettext_noop('Ersatz fällig'), 'fw-krit-flaeche fw-kritisch'),
+    'bald': (gettext_noop('Ersatz bald'), 'fw-warn-flaeche fw-warnton'),
+    'ok': (gettext_noop('Im Nutzungszeitraum'), 'fw-gut-flaeche fw-gut'),
+    'unbekannt': (gettext_noop('Keine Datenbasis'), 'fw-flaeche2 fw-faint'),
 }
 ORDNUNG = {'faellig': 0, 'bald': 1, 'ok': 2, 'unbekannt': 3}
 

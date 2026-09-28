@@ -1,14 +1,14 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Bewerbungen — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Bewerbungen" %} — swissImmo{% endblock %}
 {% block content %}
 
 {% include 'fw/_pipeline.html' %}
 
 <div class="fw-phead">
     <div>
-        <h1>Bewerbungen</h1>
-        <p>Mietinteressenten prüfen, zusagen und in einen Vertrag überführen{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/bewerbungen/" style="color:var(--ds-faint)">× aufheben</a>{% endif %} · <span style="color:var(--ds-ink);font-weight:600">{{ gesamt }}</span> total</p>
+        <h1>{% trans "Bewerbungen" %}</h1>
+        <p>{% trans "Mietinteressenten prüfen, zusagen und in einen Vertrag überführen" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/bewerbungen/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %} · <span style="color:var(--ds-ink);font-weight:600">{{ gesamt }}</span> {% trans "total" %}</p>
     </div>
 </div>
 
@@ -35,7 +35,7 @@
                 </div>
             </a>
             {% empty %}
-            <div class="text-center text-xs fw-faint italic py-6">Keine Bewerbungen</div>
+            <div class="text-center text-xs fw-faint italic py-6">{% trans "Keine Bewerbungen" %}</div>
             {% endfor %}
         </div>
     </div>
