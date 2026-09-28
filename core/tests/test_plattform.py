@@ -310,7 +310,7 @@ class DatenResetTests(TestCase):
                       'Testmodell nicht registriert — dieser Test prüft dann nichts.')
 
         c = Client()
-        c.force_login(_team_user())
+        c.force_login(_team_user('Inhaber'))
         antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'}, secure=True)
         self.assertIn(antwort.status_code, (302, 200))
 
@@ -388,7 +388,7 @@ class DatenResetTests(TestCase):
         _basis_objekte()
 
         c = Client()
-        c.force_login(_team_user(rolle='Verwaltung'))
+        c.force_login(_team_user(rolle='Inhaber'))
         c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
 
         self.assertTrue(
@@ -401,7 +401,7 @@ class DatenResetTests(TestCase):
         lg, e, m, v = _basis_objekte()
         Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Herd')
         self.assertTrue(Mietvertrag.objects.exists())
-        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c = Client(); c.force_login(_team_user(rolle='Inhaber'))
         r = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
         self.assertEqual(r.status_code, 302)
         from crm.models import Mieter
@@ -412,7 +412,7 @@ class DatenResetTests(TestCase):
 
     def test_reset_behaelt_benutzer(self):
         _lg, _e, _m, _v = _basis_objekte()
-        u = _team_user(rolle='Verwaltung')
+        u = _team_user(rolle='Inhaber')
         c = Client(); c.force_login(u)
         c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
         # Benutzer + Rollen bleiben → Login weiter gültig
@@ -422,7 +422,7 @@ class DatenResetTests(TestCase):
 
     def test_reset_ohne_bestaetigung_macht_nichts(self):
         _lg, _e, _m, v = _basis_objekte()
-        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c = Client(); c.force_login(_team_user(rolle='Inhaber'))
         r = c.post('/neu/datenreset/', {'bestaetigung': 'nein'})
         self.assertEqual(r.status_code, 302)
         self.assertTrue(Mietvertrag.objects.filter(id=v.id).exists())
@@ -431,18 +431,27 @@ class DatenResetTests(TestCase):
         from portfolio.models import Lebensdauer
         from finance.models import Buchungskonto
         _lg, _e, _m, _v = _basis_objekte()
-        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c = Client(); c.force_login(_team_user(rolle='Inhaber'))
         c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
         # Lebensdauertabelle + Kontenplan wieder vorhanden
         self.assertTrue(Lebensdauer.objects.exists())
         self.assertTrue(Buchungskonto.objects.exists())
 
-    def test_reset_erfordert_verwaltung(self):
+    def test_reset_erfordert_inhaber(self):
+        """Seit 28.09.2026 nur der Inhaber — vorher jeder Verwalter. Die
+        übrigen Tests dieser Klasse handeln als Inhaber und sind das
+        Gegenstück: Der Reset funktioniert für ihn weiterhin."""
         _lg, _e, _m, v = _basis_objekte()
-        c = Client(); c.force_login(_team_user(rolle='Buchhaltung'))
+        c = Client(); c.force_login(_team_user(rolle='Verwalter'))
         r = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
-        # keine Verwaltungs-Rolle → kein Reset (Redirect/403), Daten bleiben
+        self.assertEqual(r.status_code, 403)
         self.assertTrue(Mietvertrag.objects.filter(id=v.id).exists())
+
+    def test_gefahrenzone_nur_fuer_den_inhaber_sichtbar(self):
+        verwalter = Client(); verwalter.force_login(_team_user(rolle='Verwalter'))
+        self.assertNotContains(verwalter.get('/neu/account/'), '/neu/datenreset/')
+        inhaber = Client(); inhaber.force_login(_team_user(rolle='Inhaber'))
+        self.assertContains(inhaber.get('/neu/account/'), '/neu/datenreset/')
 
 
 class FwFassadeTests(TestCase):
