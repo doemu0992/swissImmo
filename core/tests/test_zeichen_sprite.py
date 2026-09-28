@@ -250,7 +250,11 @@ class SchliessenKnoepfeTest(SimpleTestCase):
             for pfad in sorted((WURZEL / ordner).rglob('*.html')):
                 for nr, zeile in enumerate(
                         pfad.read_text(encoding='utf-8').splitlines(), 1):
-                    beschr = re.findall(r'(?:title|aria-label)="([^"]*)"', zeile)
+                    # Auch übersetzte Beschriftungen: `title="{% trans "…" %}"`
+                    # endete für den einfachen Ausdruck am inneren
+                    # Anführungszeichen — der Knopf fiel still aus der Prüfung.
+                    beschr = [a or b for a, b in re.findall(
+                        r'(?:title|aria-label)="(?:\{%\s*trans\s+"([^"]*)"\s*%\}|([^"]*))"', zeile)]
                     if any('schliess' in b.lower() for b in beschr):
                         yield pfad, nr, zeile
 

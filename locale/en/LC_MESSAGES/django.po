@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-23 11:57+0200\n"
+"POT-Creation-Date: 2026-09-28 14:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,13 +17,219 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: core/navigation.py:120 core/views/fw/arbeit.py:38
+#: core/views/fw/dashboard.py:364
+msgid "Heute"
+msgstr "Today"
+
+#: core/navigation.py:121 core/templates/fw/dashboard.html:41
+#: core/templates/fw/dashboard.html:275 core/templates/fw/zulauf.html:3
+#: core/templates/fw/zulauf.html:8
+msgid "Zulauf"
+msgstr "Inbox"
+
+#: core/navigation.py:122 core/templates/fw/_arbeitsvorrat_abschnitte.html:60
+#: core/templates/fw/termine.html:3 core/templates/fw/termine.html:8
+msgid "Termine"
+msgstr "Appointments"
+
+#: core/navigation.py:123
+msgid "Pendenzen"
+msgstr "Pending items"
+
+#: core/navigation.py:124
+msgid "Fristen"
+msgstr "Deadlines"
+
+#: core/navigation.py:128 core/templates/fw/_arbeitsvorrat_abschnitte.html:122
+#: core/templates/fw/abwesenheiten.html:34
+msgid "Vertretung"
+msgstr "Replacement"
+
+#: core/navigation.py:135 core/templates/fw/base.html:397
+msgid "Akten"
+msgstr "Files"
+
+#: core/navigation.py:136 core/templates/fw/dashboard.html:339
+msgid "Mandate"
+msgstr "Mandates"
+
+#: core/navigation.py:137
+msgid "Liegenschaften"
+msgstr "Properties"
+
+#: core/navigation.py:138
+msgid "Objekte"
+msgstr "Units"
+
+#: core/navigation.py:139
+msgid "Mietverhältnisse"
+msgstr "Tenancies"
+
+#: core/navigation.py:140
+msgid "Personen"
+msgstr "People"
+
+#: core/navigation.py:141
+msgid "Dienstleister"
+msgstr "Service providers"
+
+#: core/navigation.py:144
+msgid "Schäden"
+msgstr "Damage"
+
+#: core/navigation.py:144
+msgid "Vorgänge"
+msgstr "Cases"
+
+#: core/navigation.py:145
+msgid "Mieterwechsel"
+msgstr "Tenant changes"
+
+#: core/navigation.py:146
+msgid "Vermarktung"
+msgstr "Marketing"
+
+#: core/navigation.py:147
+msgid "Bewerbungen"
+msgstr "Applications"
+
+#: core/navigation.py:148
+msgid "Ersatz & Ausstattung"
+msgstr "Replacement & fittings"
+
+#: core/navigation.py:154 core/templates/fw/_arbeitsvorrat_abschnitte.html:38
+msgid "Läufe"
+msgstr "Processes"
+
+#: core/navigation.py:155
+msgid "Sollstellung"
+msgstr "Rent billing"
+
+#: core/navigation.py:155
+msgid "Monat"
+msgstr "Month"
+
+#: core/navigation.py:156
+msgid "Bankabgleich"
+msgstr "Bank reconciliation"
+
+#: core/navigation.py:157
+msgid "Mahnwesen"
+msgstr "Dunning"
+
+#: core/navigation.py:158
+msgid "Zahllauf"
+msgstr "Payment run"
+
+#: core/navigation.py:159
+msgid "Nebenkosten"
+msgstr "Service charges"
+
+#: core/navigation.py:159
+msgid "Periodisch"
+msgstr "Periodic"
+
+#: core/navigation.py:160
+msgid "Mietzins"
+msgstr "Rent"
+
+#: core/navigation.py:161
+msgid "MWST"
+msgstr "VAT"
+
+#: core/navigation.py:166
+msgid "Finanzen"
+msgstr "Finance"
+
+#: core/navigation.py:167
+msgid "Mieterkonten"
+msgstr "Tenant accounts"
+
+#: core/navigation.py:167
+msgid "Forderungen"
+msgstr "Receivables"
+
+#: core/navigation.py:168
+msgid "Debitoren"
+msgstr "Debtors"
+
+#: core/navigation.py:169
+msgid "Kautionen"
+msgstr "Rent deposits"
+
+#: core/navigation.py:170
+msgid "Kreditoren"
+msgstr "Creditors"
+
+#: core/navigation.py:170
+msgid "Verbindlichkeiten"
+msgstr "Payables"
+
+#: core/navigation.py:171
+msgid "Lieferantenkonten"
+msgstr "Supplier accounts"
+
+#: core/navigation.py:172
+msgid "Bankkonten"
+msgstr "Bank accounts"
+
+#: core/navigation.py:172
+msgid "Konten"
+msgstr "Accounts"
+
+#: core/navigation.py:173
+msgid "Buchhaltung"
+msgstr "Accounting"
+
+#: core/navigation.py:174
+msgid "Kontenplan & Salden"
+msgstr "Chart of accounts & balances"
+
+#: core/navigation.py:175
+msgid "Anlagen & Abschluss"
+msgstr "Fixed assets & closing"
+
+#: core/navigation.py:176
+msgid "Hypotheken"
+msgstr "Mortgages"
+
+#: core/navigation.py:180
+msgid "Berichte"
+msgstr "Reports"
+
+#: core/navigation.py:181
+msgid "Übersicht"
+msgstr "Overview"
+
+#: core/navigation.py:182
+msgid "Auswertung"
+msgstr "Analysis"
+
+#: core/navigation.py:217 core/templates/fw/base.html:219
+msgid "Dokumente"
+msgstr "Documents"
+
+#: core/navigation.py:218 core/templates/fw/base.html:223
+msgid "Kommunikation"
+msgstr "Communication"
+
+#: core/navigation.py:219
+msgid "Regelwerk"
+msgstr "Rules"
+
+#: core/navigation.py:219 core/navigation.py:220
+#: core/templates/fw/base.html:198 core/templates/fw/base.html:256
+msgid "Einstellungen"
+msgstr "Settings"
+
+#: core/navigation.py:221
+msgid "Zwei-Faktor-Anmeldung"
+msgstr "Two-factor sign-in"
+
 #: core/templates/admin/base.html:158
 msgid "Home"
 msgstr "Home"
-
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:38
-msgid "Läufe"
-msgstr "Processes"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:39
 #, python-format
@@ -42,11 +248,6 @@ msgstr[1] "%(n)s blocked"
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:40
 msgid "Alle Läufe"
 msgstr "All processes"
-
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:60
-#: core/templates/fw/termine.html:3 core/templates/fw/termine.html:8
-msgid "Termine"
-msgstr "Appointments"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:61
 msgid "in den nächsten 7 Tagen"
@@ -83,14 +284,9 @@ msgstr "Avg. age %(n)s days"
 msgid "ohne Datum — Liegezeit nicht berechenbar"
 msgstr "no date — avg. age not calculable"
 
-#: core/templates/fw/_arbeitsvorrat_abschnitte.html:122
-#: core/templates/fw/abwesenheiten.html:34
-msgid "Vertretung"
-msgstr "Replacement"
-
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:291
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:314
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -213,6 +409,90 @@ msgstr "Past"
 msgid "Nichts vergangen."
 msgstr "Nothing in the past."
 
+#: core/templates/fw/base.html:113
+msgid "Mandant"
+msgstr "Organisation"
+
+#: core/templates/fw/base.html:116
+msgid "Mandant wechseln"
+msgstr "Switch organisation"
+
+#: core/templates/fw/base.html:131
+msgid "Zur Übersicht"
+msgstr "To the overview"
+
+#: core/templates/fw/base.html:135
+msgid "Menü ein-/ausklappen"
+msgstr "Expand/collapse menu"
+
+#: core/templates/fw/base.html:138
+msgid "Menü schliessen"
+msgstr "Close menu"
+
+#: core/templates/fw/base.html:145
+msgid "Globaler Filter"
+msgstr "Global filter"
+
+#: core/templates/fw/base.html:148
+msgid "Liegenschaft auswählen"
+msgstr "Select a property"
+
+#: core/templates/fw/base.html:209
+msgid "Menü öffnen"
+msgstr "Open menu"
+
+#: core/templates/fw/base.html:213
+msgid "Suche nach Person, Objekt, Vertrag …"
+msgstr "Search for a person, unit, contract …"
+
+#: core/templates/fw/base.html:229
+msgid "Hallo,"
+msgstr "Hello,"
+
+#: core/templates/fw/base.html:245
+msgid "Darstellung"
+msgstr "Appearance"
+
+#: core/templates/fw/base.html:247
+msgid "Hell"
+msgstr "Light"
+
+#: core/templates/fw/base.html:248
+msgid "Dunkel"
+msgstr "Dark"
+
+#: core/templates/fw/base.html:259
+msgid "Abmelden"
+msgstr "Sign out"
+
+#: core/templates/fw/base.html:274
+msgid "Meldung schliessen"
+msgstr "Close message"
+
+#: core/templates/fw/base.html:303
+msgid "Person, Objekt, Mietverhältnis oder Seite …"
+msgstr "Person, unit, tenancy or page …"
+
+#: core/templates/fw/base.html:309
+msgid "öffnen"
+msgstr "open"
+
+#: core/templates/fw/base.html:309
+msgid "Tippen sucht in Akten und Seiten"
+msgstr "Typing searches files and pages"
+
+#: core/templates/fw/base.html:402
+msgid "Seiten"
+msgstr "Pages"
+
+#: core/templates/fw/base.html:409
+msgid "Nichts gefunden — ↵ sucht ausführlich nach"
+msgstr "Nothing found — ↵ searches in depth for"
+
+#: core/templates/fw/base.html:671
+msgid "Bereiche"
+msgstr "Areas"
+
 #: core/templates/fw/dashboard.html:37
 #, python-format
 msgid "Vertretung für %(name)s bis %(bis)s"
@@ -226,11 +506,6 @@ msgstr "Filtered to %(strasse)s, %(ort)s"
 #: core/templates/fw/dashboard.html:40 core/templates/fw/dashboard.html:89
 msgid "Filter aufheben"
 msgstr "Clear filter"
-
-#: core/templates/fw/dashboard.html:41 core/templates/fw/dashboard.html:275
-#: core/templates/fw/zulauf.html:3 core/templates/fw/zulauf.html:8
-msgid "Zulauf"
-msgstr "Inbox"
 
 #: core/templates/fw/dashboard.html:70
 msgid "Zuständigkeit:"
@@ -375,10 +650,6 @@ msgstr "All pending items"
 #, python-format
 msgid "%(n)s weitere"
 msgstr "%(n)s more"
-
-#: core/templates/fw/dashboard.html:339
-msgid "Mandate"
-msgstr "Mandates"
 
 #: core/templates/fw/dashboard.html:340
 msgid "Stand heute"
@@ -552,10 +823,6 @@ msgstr "Recently done"
 msgid "Noch nichts erledigt."
 msgstr "Nothing done yet."
 
-#: core/views/fw/arbeit.py:38 core/views/fw/dashboard.py:364
-msgid "Heute"
-msgstr "Today"
-
 #: core/views/fw/arbeit.py:39
 msgid "Diese Woche"
 msgstr "This week"
@@ -576,9 +843,6 @@ msgstr "Stalled"
 
 #~ msgid "Fallart"
 #~ msgstr "Case type"
-
-#~ msgid "Akte"
-#~ msgstr "File"
 
 #~ msgid "Eröffnet"
 #~ msgstr "Opened"
@@ -688,15 +952,6 @@ msgstr "Stalled"
 #~ msgid "Zum Lauf"
 #~ msgstr "To process"
 
-#~ msgid "Fall öffnen"
-#~ msgstr "Open case"
-
-#~ msgid "Öffnen"
-#~ msgstr "Open"
-
-#~ msgid "Zur Frist"
-#~ msgstr "To deadline"
-
 #~ msgid "Wohnungsabnahme"
 #~ msgstr "Apartment handover"
 
@@ -705,12 +960,6 @@ msgstr "Stalled"
 
 #~ msgid "Vertrag"
 #~ msgstr "Contract"
-
-#~ msgid "Besichtigung"
-#~ msgstr "Viewing"
-
-#~ msgid "Bewerbung"
-#~ msgstr "Application"
 
 #~ msgid "Termin"
 #~ msgstr "Appointment"
