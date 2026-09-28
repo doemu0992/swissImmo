@@ -1,14 +1,14 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf l10n %}
-{% block title %}Mietzins — swissImmo{% endblock %}
+{% block title %}{% trans "Mietzins" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
     <div>
-        <h1>Mietzins</h1>
-        <p>Anpassungspotenzial nach Referenzzins &amp; LIK{% if curr_zins != None %} · Aktuell: Referenzzins <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_zins }}{% endlocalize %}%</span>, LIK <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_lik }}{% endlocalize %}</span>{% endif %}{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/mietzins/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+        <h1>{% trans "Mietzins" %}</h1>
+        <p>{% trans "Anpassungspotenzial nach Referenzzins & LIK" %}{% if curr_zins != None %} · {% trans "Aktuell: Referenzzins" %} <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_zins }}{% endlocalize %}%</span>, {% trans "LIK" %} <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_lik }}{% endlocalize %}</span>{% endif %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/mietzins/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
 </div>
 
@@ -16,15 +16,15 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'trend' %}</div>
-        <div><div class="text-2xl font-bold fw-gut">{{ n_inc }}</div><div class="text-sm fw-mutet">Erhöhung möglich</div></div>
+        <div><div class="text-2xl font-bold fw-gut">{{ n_inc }}</div><div class="text-sm fw-mutet">{% trans "Erhöhung möglich" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0">{% zeichen 'zurueck' %}</div>
-        <div><div class="text-2xl font-bold fw-kritisch">{{ n_dec }}</div><div class="text-sm fw-mutet">Senkungsanspruch</div></div>
+        <div><div class="text-2xl font-bold fw-kritisch">{{ n_dec }}</div><div class="text-sm fw-mutet">{% trans "Senkungsanspruch" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'dokument' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">Aktive Verträge</div></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">{% trans "Aktive Verträge" %}</div></div>
     </div>
 </div>
 
@@ -42,10 +42,10 @@
             {% endfor %}
         </div>
         <div class="ml-auto flex items-center gap-3">
-            <span class="text-xs fw-faint">{{ anzahl }} Vertrag/Verträge</span>
+            <span class="text-xs fw-faint">{% blocktrans count n=anzahl %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %}</span>
             <button type="submit" id="massenBtn" disabled
                     class="inline-flex items-center gap-1.5 fw-balken-voll hover:fw-balken-voll disabled:fw-balken disabled:fw-faint text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors">
-                {% zeichen 'mehr' %} Ausgewählte anpassen (Vorschau)
+                {% zeichen 'mehr' %} {% trans "Ausgewählte anpassen (Vorschau)" %}
             </button>
         </div>
     </div>
@@ -54,14 +54,14 @@
         <table class="w-full min-w-max text-sm">
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="pl-5 pr-1 py-3"><input type="checkbox" id="alleWahl" class="fw-akzent" title="Alle auswählen"></th>
-                <th class="px-5 py-3 font-semibold">Mieter</th>
-                <th class="px-5 py-3 font-semibold">Objekt</th>
-                <th class="px-5 py-3 font-semibold text-right">Netto effektiv</th>
-                <th class="px-5 py-3 font-semibold text-center">Basis Ref.-Zins (effektiv)</th>
-                <th class="px-5 py-3 font-semibold text-center">Letzte Anpassung</th>
-                <th class="px-5 py-3 font-semibold">Potenzial</th>
-                <th class="px-5 py-3 font-semibold text-right">Aktion</th>
+                <th class="pl-5 pr-1 py-3"><input type="checkbox" id="alleWahl" class="fw-akzent" title="{% trans 'Alle auswählen' %}"></th>
+                <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Netto effektiv" %}</th>
+                <th class="px-5 py-3 font-semibold text-center">{% trans "Basis Ref.-Zins (effektiv)" %}</th>
+                <th class="px-5 py-3 font-semibold text-center">{% trans "Letzte Anpassung" %}</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Potenzial" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Aktion" %}</th>
             </tr>
             </thead>
             <tbody class="fw-dv">
@@ -79,14 +79,14 @@
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/mietzins/{{ row.v.id }}/anpassung/"
                        class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                        {% zeichen 'bericht' %} Anpassen
+                        {% zeichen 'bericht' %} {% trans "Anpassen" %}
                     </a>
                 </td>
             </tr>
             {% empty %}
             <tr><td colspan="8" class="px-5 py-12 text-center">
                 <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'bericht' %}</div>
-                <p class="text-sm font-medium fw-ink">{% if pot_filter %}Keine Verträge mit diesem Potenzial{% else %}Keine aktiven Verträge{% endif %}</p>
+                <p class="text-sm font-medium fw-ink">{% if pot_filter %}{% trans "Keine Verträge mit diesem Potenzial" %}{% else %}{% trans "Keine aktiven Verträge" %}{% endif %}</p>
             </td></tr>
             {% endfor %}
             </tbody>
@@ -101,7 +101,7 @@
     function sync() {
       var n = document.querySelectorAll('input.vertragWahl:checked').length;
       btn.disabled = n === 0;
-      btn.innerHTML = '{% zeichen 'mehr' %} ' + (n ? n + ' ausgewählte anpassen (Vorschau)' : 'Ausgewählte anpassen (Vorschau)');
+      btn.innerHTML = '{% zeichen 'mehr' %} ' + (n ? n + ' {% filter escapejs %}{% trans "ausgewählte anpassen (Vorschau)" %}{% endfilter %}' : '{% filter escapejs %}{% trans "Ausgewählte anpassen (Vorschau)" %}{% endfilter %}');
     }
     if (alle) alle.addEventListener('change', function () { boxen.forEach(function (b) { b.checked = alle.checked; }); sync(); });
     boxen.forEach(function (b) { b.addEventListener('change', sync); });
@@ -110,8 +110,7 @@
 
 <p class="text-xs fw-faint mt-4">
     {% zeichen 'hinweis' klasse='mr-1' %}
-    „Anpassen" öffnet das amtliche Mietzinsanpassungs-Formular mit vorberechneten Werten (Referenzzins, LIK, Teuerung).
-    Netto und Basis sind die <b>effektiven</b> Werte (inkl. wirksamer Anpassungen und Staffelstufen) — das Potenzial
-    vergleicht diese effektive Basis mit dem aktuellen Stand.
+    {% blocktrans trimmed %}«Anpassen» öffnet das amtliche Mietzinsanpassungs-Formular mit vorberechneten Werten (Referenzzins, LIK, Teuerung).
+    Netto und Basis sind die <b>effektiven</b> Werte (inkl. wirksamer Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand.{% endblocktrans %}
 </p>
 {% endblock %}

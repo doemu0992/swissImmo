@@ -1,12 +1,12 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Läufe — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Läufe" %} — swissImmo{% endblock %}
 
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Läufe</h1>
-        <p>Wiederkehrende Verarbeitung mit Zustand — und dem, was sie blockiert.</p>
+        <h1>{% trans "Läufe" %}</h1>
+        <p>{% trans "Wiederkehrende Verarbeitung mit Zustand — und dem, was sie blockiert." %}</p>
     </div>
 </div>
 
@@ -16,7 +16,7 @@
    Rückfrage. {% endcomment %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'lauf' %}</span>
-        <span class="fw-t">Offen</span>
+        <span class="fw-t">{% trans "Offen" %}</span>
         <span class="fw-neben">{{ offen|length }}</span></div>
     {% for z in offen %}
     <div class="fw-zeile">
@@ -26,19 +26,19 @@
             <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
             <div class="fw-s">
                 {% if z.blockaden %}{% for b in z.blockaden %}{{ b.grund }}{% if not forloop.last %} · {% endif %}{% endfor %}
-                {% else %}{{ z.lauf.get_status_display }} · Stichtag {{ z.lauf.faellig_am|date:"d.m.Y" }}{% endif %}
+                {% else %}{{ z.lauf.get_status_display }} · {% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% endif %}
             </div>
         </div>
         <div class="fw-zeit">{{ z.lauf.faellig_am|date:"d.m.Y" }}<br>
-            <span class="fw-klein">{% if z.tage < 0 %}{{ z.tage|cut:"-" }} Tage über{% elif z.tage == 0 %}heute{% else %}in {{ z.tage }} Tag{{ z.tage|pluralize:"en" }}{% endif %}</span></div>
-        {% if z.blockaden %}<span class="fw-chip fw-crit">{{ z.blockaden|length }} Blockade{{ z.blockaden|length|pluralize:"n" }}</span>{% endif %}
+            <span class="fw-klein">{% if z.tage < 0 %}{% blocktrans count n=z.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}{% elif z.tage == 0 %}{% trans "heute" %}{% else %}{% blocktrans count n=z.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span></div>
+        {% if z.blockaden %}<span class="fw-chip fw-crit">{% blocktrans count n=z.blockaden|length %}{{ n }} Blockade{% plural %}{{ n }} Blockaden{% endblocktrans %}</span>{% endif %}
     </div>
     {% empty %}
-    <p class="fw-leer">Kein offener Lauf.</p>
+    <p class="fw-leer">{% trans "Kein offener Lauf." %}</p>
     {% endfor %}
 </div>
 
-<div class="fw-subhead">Zuletzt abgeschlossen</div>
+<div class="fw-subhead">{% trans "Zuletzt abgeschlossen" %}</div>
 <div class="fw-card">
     {% for z in erledigt %}
     <div class="fw-zeile">
@@ -51,7 +51,7 @@
         <div class="fw-zeit">{{ z.lauf.abgeschlossen_am|date:"d.m.Y" }}</div>
     </div>
     {% empty %}
-    <p class="fw-leer">Noch kein Lauf abgeschlossen.</p>
+    <p class="fw-leer">{% trans "Noch kein Lauf abgeschlossen." %}</p>
     {% endfor %}
 </div>
 {% endblock %}

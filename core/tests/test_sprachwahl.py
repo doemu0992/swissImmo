@@ -85,3 +85,30 @@ class SprachwahlWirktTests(TestCase):
         """`next` darf nicht auf eine fremde Adresse führen."""
         antwort = self.c.post(SETLANG, {'language': 'fr', 'next': 'https://evil.example/'})
         self.assertNotIn('evil.example', antwort.get('Location', ''))
+
+
+class MonatsnamenFolgenDerSpracheTests(TestCase):
+    """Die Sollstellung nennt den Monat in der gewählten Sprache.
+
+    Vorher kam er aus `strftime('%B')` — das folgt dem Locale des Servers
+    (dort «C», also Englisch), nicht der Sprache der Anfrage. Im deutschen
+    UI stand deshalb «March» statt «März».
+
+    Gegenprobe: `datum_format(..., 'F')` in core/views/fw/sollstellung.py
+    zurück auf `strftime('%B')` — dann schlagen beide Tests fehl.
+    """
+
+    def setUp(self):
+        self.c = Client()
+        self.c.force_login(_team_user('Verwalter'))
+
+    def test_deutsch(self):
+        seite = self.c.get('/neu/sollstellung/?jahr=2026&monat=3', HTTP_ACCEPT_LANGUAGE='de-CH')
+        self.assertContains(seite, 'März')
+        self.assertNotContains(seite, 'March')
+
+    def test_franzoesisch(self):
+        self.c.post(SETLANG, {'language': 'fr', 'next': '/neu/'})
+        seite = self.c.get('/neu/sollstellung/?jahr=2026&monat=3')
+        self.assertContains(seite, 'mars')
+        self.assertNotContains(seite, 'März')

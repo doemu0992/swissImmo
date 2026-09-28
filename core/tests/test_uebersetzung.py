@@ -72,6 +72,15 @@ UEBERSETZT = (
     'fw/vertraege.html',
     'fw/personen.html',
     'fw/dienstleister.html',
+    # Tranche «Läufe»
+    'fw/laeufe.html',
+    'fw/sollstellung.html',
+    'fw/bankabgleich.html',
+    'fw/mahnwesen.html',
+    'fw/zahllauf.html',
+    'fw/nebenkosten.html',
+    'fw/mietzins.html',
+    'fw/mwst.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -114,6 +123,17 @@ STICHPROBE = {
                            'it': 'Affitta attualmente', 'en': 'Currently renting'},
     'Handwerker erfassen': {'de': 'Handwerker erfassen', 'fr': 'Saisir un artisan',
                             'it': 'Registrare artigiano', 'en': 'Add tradesperson'},
+    # Läufe — Fachbegriffe aus OR und MWSTG
+    'Offene Posten':      {'de': 'Offene Posten', 'fr': 'Postes ouverts', 'it': 'Partite aperte',
+                           'en': 'Open items'},
+    'Mahnlauf ausführen': {'de': 'Mahnlauf ausführen', 'fr': 'Lancer les rappels',
+                           'it': 'Eseguire i solleciti', 'en': 'Run dunning'},
+    '− Vorsteuer':        {'de': '− Vorsteuer', 'fr': '− Impôt préalable', 'it': '− Imposta precedente',
+                           'en': '− Input tax'},
+    'Zahllast an ESTV':   {'de': 'Zahllast an ESTV', 'fr': "Montant dû à l'AFC",
+                           'it': "Debito fiscale verso l'AFC", 'en': 'Payable to the FTA'},
+    'Senkungsanspruch':   {'de': 'Senkungsanspruch', 'fr': 'Droit à une baisse',
+                           'it': 'Diritto a una riduzione', 'en': 'Entitled to reduction'},
 }
 
 

@@ -9,6 +9,8 @@ bisherige Verhalten Default und aendert sich fuer bestehende Eigentümer nicht.
 """
 from decimal import Decimal
 
+from django.utils.translation import gettext_lazy
+
 # Standard = bisheriges Verhalten. gebuehr als String, damit JSON-serialisierbar.
 MAHN_KONFIG_DEFAULT = [
     {'stufe': 1, 'aktiv': True, 'ab_tage': 14, 'gebuehr': '0.00',  'kuendigung': False},
@@ -18,12 +20,14 @@ MAHN_KONFIG_DEFAULT = [
 
 _STD_TAGE   = {1: 14, 2: 30, 3: 60}
 _STD_GEBUEHR = {1: '0.00', 2: '20.00', 3: '40.00'}
-_LABEL = {1: '1. Mahnung', 2: '2. Mahnung', 3: '3. Mahnung'}
+# Beschriftungen nur fuer die Oberflaeche (lazy, folgen der gewaehlten Sprache).
+# Die Mahn-PDFs an Mieter nehmen sie NICHT — die richten sich nach dem Mieter.
+_LABEL = {1: gettext_lazy('1. Mahnung'), 2: gettext_lazy('2. Mahnung'), 3: gettext_lazy('3. Mahnung')}
 _CLS   = {1: 'fw-warn-flaeche fw-warnton', 2: 'fw-krit-flaeche fw-kritisch', 3: 'fw-krit-flaeche fw-kritisch'}
 _DOT   = {1: 'fw-warn-voll', 2: 'fw-krit-voll', 3: 'fw-krit-voll'}
-_UNTER_STD = {1: 'Erste Zahlungserinnerung', 2: 'Zweite schriftliche Erinnerung',
-              3: 'Dritte Mahnung'}
-_UNTER_KUEND = 'Kündigungsandrohung (Art. 257d OR)'
+_UNTER_STD = {1: gettext_lazy('Erste Zahlungserinnerung'), 2: gettext_lazy('Zweite schriftliche Erinnerung'),
+              3: gettext_lazy('Dritte Mahnung')}
+_UNTER_KUEND = gettext_lazy('Kündigungsandrohung (Art. 257d OR)')
 
 
 def _normalize(roh):
