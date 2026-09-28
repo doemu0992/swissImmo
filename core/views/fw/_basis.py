@@ -25,6 +25,7 @@ from decimal import Decimal
 
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy
 
 from core.auth import SCHREIB_ROLLEN, VERWALTUNGS_ROLLEN
 from portfolio.models import Einheit, Liegenschaft
@@ -270,16 +271,16 @@ def _vermietung_pipeline(aktiv, lg_query=''):
     from mietprozess.models import Mietbewerbung
     from rentals.models import Kuendigung
     stufen = [
-        {'key': 'vermarktung', 'label': 'Vermarktung', 'icon': 'senden',
+        {'key': 'vermarktung', 'label': gettext_lazy('Vermarktung'), 'icon': 'senden',
          'url': '/neu/vermarktung/' + lg_query,
          'n': Einheit.objects.filter(zur_ausschreibung=True).count()},
-        {'key': 'bewerbungen', 'label': 'Bewerbungen', 'icon': 'person',
+        {'key': 'bewerbungen', 'label': gettext_lazy('Bewerbungen'), 'icon': 'person',
          'url': '/neu/bewerbungen/' + lg_query,
          'n': Mietbewerbung.objects.filter(status__in=['neu', 'geprueft']).count()},
-        {'key': 'vertraege', 'label': 'Verträge', 'icon': 'dokument',
+        {'key': 'vertraege', 'label': gettext_lazy('Verträge'), 'icon': 'dokument',
          'url': '/neu/vertraege/' + lg_query,
          'n': Mietvertrag.objects.filter(status='entwurf').count()},
-        {'key': 'mieterwechsel', 'label': 'Mieterwechsel', 'icon': 'geld',
+        {'key': 'mieterwechsel', 'label': gettext_lazy('Mieterwechsel'), 'icon': 'geld',
          'url': '/neu/mieterwechsel/' + lg_query,
          'n': Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt']).count()},
     ]
@@ -332,15 +333,15 @@ def _park_konto(nummer):
 # ein gemeinsamer Ort: Zwei Fassungen driften auseinander, und dann heisst
 # derselbe Vertragsstatus auf zwei Seiten verschieden.
 VERTRAG_PILL = {
-    'entwurf':    ('Entwurf',    'fw-flaeche2 fw-mutet'),
-    'aktiv':      ('Aktiv',      'fw-gut-flaeche fw-gut'),
-    'gekuendigt': ('Gekündigt',  'fw-krit-flaeche fw-kritisch'),
+    'entwurf':    (gettext_lazy('Entwurf'),    'fw-flaeche2 fw-mutet'),
+    'aktiv':      (gettext_lazy('Aktiv'),      'fw-gut-flaeche fw-gut'),
+    'gekuendigt': (gettext_lazy('Gekündigt'),  'fw-krit-flaeche fw-kritisch'),
     # «Beendet» ist kein gespeicherter Status, sondern der ANZEIGE-Status aus
     # `Mietvertrag.anzeige_status`: archiviert, oder gekuendigt mit
     # abgelaufenem Ende. Vorher zeigte die Liste einen solchen Vertrag
     # weiterhin als «gekuendigt» — und der Filter «Gekuendigt» lieferte ihn mit.
-    'beendet':    ('Beendet',    'fw-flaeche2 fw-mutet'),
-    'archiviert': ('Archiviert', 'fw-flaeche2 fw-mutet'),
+    'beendet':    (gettext_lazy('Beendet'),    'fw-flaeche2 fw-mutet'),
+    'archiviert': (gettext_lazy('Archiviert'), 'fw-flaeche2 fw-mutet'),
 }
 
 

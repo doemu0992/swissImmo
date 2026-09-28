@@ -1,8 +1,8 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
 {% load rechte %}
-{% load chf %}
-{% block title %}Verträge — swissImmo{% endblock %}
+{% load chf i18n %}
+{% block title %}{% trans "Mietverhältnisse" %} — swissImmo{% endblock %}
 
 {% block content %}
 
@@ -10,10 +10,10 @@
 
 <div class="fw-phead">
     <div>
-        <h1>Mietverhältnisse</h1>
-        <p>{{ rows|length }} Vertrag/Verträge · <span style="color:var(--ds-good);font-weight:600">{{ aktiv_count }} aktiv</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/vertraege/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+        <h1>{% trans "Mietverhältnisse" %}</h1>
+        <p>{% blocktrans count n=rows|length %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %} · <span style="color:var(--ds-good);font-weight:600">{% blocktrans count n=aktiv_count %}{{ n }} aktiv{% plural %}{{ n }} aktiv{% endblocktrans %}</span>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/vertraege/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
-    <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'neu' %} Vertrag erstellen</a>
+    <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Vertrag erstellen" %}</a>
 </div>
 
 <div class="fw-card">
@@ -29,7 +29,7 @@
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
-            <input type="text" name="q" value="{{ q }}" placeholder="Mieter oder Objekt suchen…"
+            <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Mieter oder Objekt suchen…' %}"
                    class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
         </form>
     </div>
@@ -44,18 +44,18 @@
                 <div class="text-xs fw-mutet break-words">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div>
                 <div class="mt-1.5 flex items-center gap-2 flex-wrap">
                     <span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span>
-                    <span class="text-[11px] fw-faint">ab {{ row.v.beginn|date:"d.m.Y" }}</span>
+                    <span class="text-[11px] fw-faint">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %}</span>
                 </div>
             </div>
             <div class="text-right shrink-0">
                 <div class="font-bold fw-strong whitespace-nowrap">{{ row.brutto|chf }}</div>
-                <div class="text-[11px] fw-faint">Brutto</div>
+                <div class="text-[11px] fw-faint">{% trans "Brutto" %}</div>
             </div>
             {% zeichen 'weiter' klasse='fw-faint text-xs shrink-0' %}
         </a>
         {% empty %}
         <div class="px-4">
-            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Verträge gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel='Noch keine Verträge' subtext='Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.' cta_url='/neu/vertraege/neu/' cta_label='Ersten Vertrag erstellen' %}{% endif %}
+            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Verträge gefunden.') %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel=_('Noch keine Verträge') subtext=_('Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.') cta_url='/neu/vertraege/neu/' cta_label=_('Ersten Vertrag erstellen') %}{% endif %}
         </div>
         {% endfor %}
     </div>
@@ -65,14 +65,14 @@
         <table class="fw-table" style="min-width:max-content">
             <thead>
             <tr>
-                <th>Mieter</th>
-                <th class="hidden md:table-cell">Objekt</th>
-                <th class="hidden lg:table-cell">Beginn</th>
-                <th class="hidden lg:table-cell">Ende</th>
-                <th class="fw-right hidden lg:table-cell">Netto</th>
-                <th class="fw-right hidden lg:table-cell">NK</th>
-                <th class="fw-right">Brutto</th>
-                <th>Status</th>
+                <th>{% trans "Mieter" %}</th>
+                <th class="hidden md:table-cell">{% trans "Objekt" %}</th>
+                <th class="hidden lg:table-cell">{% trans "Beginn" %}</th>
+                <th class="hidden lg:table-cell">{% trans "Ende" %}</th>
+                <th class="fw-right hidden lg:table-cell">{% trans "Netto" %}</th>
+                <th class="fw-right hidden lg:table-cell">{% trans "NK" %}</th>
+                <th class="fw-right">{% trans "Brutto" %}</th>
+                <th>{% trans "Status" %}</th>
                 <th></th>
             </tr>
             </thead>
@@ -88,7 +88,7 @@
                 <td class="hidden md:table-cell" style="white-space:nowrap">{{ row.v.einheit.liegenschaft.strasse }} <span class="fw-sub2">· {{ row.v.einheit.bezeichnung }}</span></td>
                 <td class="hidden lg:table-cell fw-num" style="white-space:nowrap">{{ row.v.beginn|date:"d.m.Y" }}</td>
                 <td class="hidden lg:table-cell fw-num" style="white-space:nowrap{% if row.v.status == 'gekuendigt' %};color:var(--ds-crit);font-weight:600{% endif %}">
-                    {% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}<span class="fw-sub2">unbefristet</span>{% endif %}
+                    {% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}<span class="fw-sub2">{% trans "unbefristet" %}</span>{% endif %}
                 </td>
                 <td class="fw-right fw-num hidden lg:table-cell">{{ row.v.netto_mietzins|chf }}</td>
                 <td class="fw-right fw-num hidden lg:table-cell"><span class="fw-sub2">{{ row.v.nebenkosten|chf }}</span></td>
@@ -96,14 +96,14 @@
                 <td><span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span></td>
                 <td class="fw-right" style="white-space:nowrap">
                     {% if row.v.status == 'aktiv' %}
-                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'Kündigung erfassen')" class="text-xs font-semibold fw-warnton hover:fw-warnton mr-1">{% zeichen 'kritisch' klasse='mr-0.5' %}Kündigen</a>{% endif %}
+                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'{% filter escapejs %}{% trans "Kündigung erfassen" %}{% endfilter %}')" class="text-xs font-semibold fw-warnton hover:fw-warnton mr-1">{% zeichen 'kritisch' klasse='mr-0.5' %}{% trans "Kündigen" %}</a>{% endif %}
                     {% endif %}
                     {% zeichen 'weiter' klasse='fw-faint text-xs' %}
                 </td>
             </tr>
             {% empty %}
             <tr><td colspan="9">
-                {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Verträge gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel='Noch keine Verträge' subtext='Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.' cta_url='/neu/vertraege/neu/' cta_label='Ersten Vertrag erstellen' %}{% endif %}
+                {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Verträge gefunden.') %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel=_('Noch keine Verträge') subtext=_('Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.') cta_url='/neu/vertraege/neu/' cta_label=_('Ersten Vertrag erstellen') %}{% endif %}
             </td></tr>
             {% endfor %}
             </tbody>

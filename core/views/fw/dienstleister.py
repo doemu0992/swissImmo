@@ -4,6 +4,7 @@
 
 from django.db.models import Q
 from django.shortcuts import render
+from django.utils.translation import gettext as _
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
 
@@ -56,7 +57,7 @@ def fw_dienstleister(request):
 
     # Branchen-Chips nur für vorhandene Branchen
     vorhanden = set(Handwerker.objects.values_list('branche', flat=True))
-    branche_chips = [('', 'Alle')] + [(k, v) for k, v in Handwerker.BRANCHEN_CHOICES if k in vorhanden]
+    branche_chips = [('', _('Alle'))] + [(k, v) for k, v in Handwerker.BRANCHEN_CHOICES if k in vorhanden]
 
     return render(request, 'fw/dienstleister.html', {
         **basis, 'nav': 'dienstleister', 'rows': rows,

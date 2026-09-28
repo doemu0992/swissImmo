@@ -65,6 +65,13 @@ UEBERSETZT = (
     'fw/zulauf.html',
     'fw/_arbeitsvorrat_abschnitte.html',
     'fw/base.html',
+    # Tranche «Akten»: die sechs Register
+    'fw/mandate.html',
+    'fw/liegenschaften.html',
+    'fw/objekte.html',
+    'fw/vertraege.html',
+    'fw/personen.html',
+    'fw/dienstleister.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -96,6 +103,17 @@ STICHPROBE = {
     'Nebenkosten':        {'de': 'Nebenkosten', 'fr': 'Frais accessoires', 'it': 'Spese accessorie',
                            'en': 'Service charges'},
     'Mietzins':           {'de': 'Mietzins', 'fr': 'Loyer', 'it': 'Pigione', 'en': 'Rent'},
+    # Akten
+    'Eigentümer erfassen': {'de': 'Eigentümer erfassen', 'fr': 'Saisir un propriétaire',
+                            'it': 'Registrare proprietario', 'en': 'Add owner'},
+    'Ist-Miete':          {'de': 'Ist-Miete', 'fr': 'Loyer effectif', 'it': 'Pigione effettiva',
+                           'en': 'Actual rent'},
+    'Kündigen':           {'de': 'Kündigen', 'fr': 'Résilier', 'it': 'Disdire', 'en': 'Terminate'},
+    'Gekündigt':          {'de': 'Gekündigt', 'fr': 'Résilié', 'it': 'Disdetto', 'en': 'Terminated'},
+    'Mietet aktuell':     {'de': 'Mietet aktuell', 'fr': 'Loue actuellement',
+                           'it': 'Affitta attualmente', 'en': 'Currently renting'},
+    'Handwerker erfassen': {'de': 'Handwerker erfassen', 'fr': 'Saisir un artisan',
+                            'it': 'Registrare artigiano', 'en': 'Add tradesperson'},
 }
 
 
