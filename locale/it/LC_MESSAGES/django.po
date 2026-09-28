@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 00:11+0200\n"
+"POT-Creation-Date: 2026-09-29 00:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,8 +52,9 @@ msgstr "Pratiche"
 
 #: core/navigation.py:136 core/templates/fw/dashboard.html:339
 #: core/templates/fw/eigentuemer_kontokorrent.html:7
-#: core/templates/fw/mandat_abrechnung.html:7 core/templates/fw/mandate.html:3
-#: core/templates/fw/mandate.html:6
+#: core/templates/fw/mandat_abrechnung.html:7
+#: core/templates/fw/mandat_detail.html:17 core/templates/fw/mandat_form.html:6
+#: core/templates/fw/mandate.html:3 core/templates/fw/mandate.html:6
 msgid "Mandate"
 msgstr "Mandati"
 
@@ -62,12 +63,14 @@ msgstr "Mandati"
 #: core/templates/fw/liegenschaften.html:10
 #: core/templates/fw/liegenschaften.html:38
 #: core/templates/fw/mandat_abrechnung.html:53
+#: core/templates/fw/mandat_detail.html:149 core/templates/fw/suche.html:37
+#: faelle/akten.py:85
 msgid "Liegenschaften"
 msgstr "Stabili"
 
 #: core/navigation.py:138 core/templates/fw/liegenschaften.html:43
 #: core/templates/fw/objekte.html:4 core/templates/fw/objekte.html:23
-#: core/templates/fw/objekte.html:34
+#: core/templates/fw/objekte.html:34 core/templates/fw/suche.html:53
 msgid "Objekte"
 msgstr "Oggetti"
 
@@ -78,15 +81,18 @@ msgstr "Locazioni"
 
 #: core/navigation.py:140 core/templates/fw/kontenplan.html:64
 #: core/templates/fw/personen.html:3 core/templates/fw/personen.html:9
+#: core/templates/fw/suche.html:21
 msgid "Personen"
 msgstr "Persone"
 
 #: core/navigation.py:141 core/templates/fw/dienstleister.html:3
 #: core/templates/fw/dienstleister.html:8
+#: core/templates/fw/dienstleister_detail.html:14
+#: core/templates/fw/dienstleister_detail.html:23
 msgid "Dienstleister"
 msgstr "Fornitori di servizi"
 
-#: core/navigation.py:144
+#: core/navigation.py:144 core/templates/fw/schaden_kosten.html:50
 msgid "Schäden"
 msgstr "Danni"
 
@@ -140,7 +146,7 @@ msgstr "Ordini di pagamento"
 
 #: core/navigation.py:159 core/templates/fw/finanzen.html:139
 #: core/templates/fw/nebenkosten.html:4 core/templates/fw/nebenkosten.html:9
-#: core/templates/fw/nebenkosten_detail.html:10
+#: core/templates/fw/nebenkosten_detail.html:10 faelle/akten.py:117
 msgid "Nebenkosten"
 msgstr "Spese accessorie"
 
@@ -158,7 +164,7 @@ msgid "MWST"
 msgstr "IVA"
 
 #: core/navigation.py:166 core/templates/fw/finanzen.html:4
-#: core/views/fw/listen.py:752
+#: core/views/fw/listen.py:752 faelle/akten.py:48
 msgid "Finanzen"
 msgstr "Finanze"
 
@@ -182,8 +188,8 @@ msgstr "Debitori"
 msgid "Kautionen"
 msgstr "Depositi di garanzia"
 
-#: core/navigation.py:170 core/templates/fw/kreditoren.html:4
-#: core/templates/fw/kreditoren.html:9
+#: core/navigation.py:170 core/templates/fw/dienstleister_detail.html:151
+#: core/templates/fw/kreditoren.html:4 core/templates/fw/kreditoren.html:9
 #: core/templates/fw/lieferantenkonto.html:16
 msgid "Kreditoren"
 msgstr "Creditori"
@@ -192,7 +198,8 @@ msgstr "Creditori"
 msgid "Verbindlichkeiten"
 msgstr "Debiti"
 
-#: core/navigation.py:171 core/templates/fw/finanzen.html:136
+#: core/navigation.py:171 core/templates/fw/dienstleister_detail.html:157
+#: core/templates/fw/finanzen.html:136
 #: core/templates/fw/lieferantenkonten.html:4
 #: core/templates/fw/lieferantenkonten.html:8
 #: core/templates/fw/lieferantenkonto.html:7 core/views/fw/listen.py:768
@@ -246,6 +253,9 @@ msgstr "Analisi"
 #: core/templates/core/mieter_dokumente.html:10
 #: core/templates/core/mieter_portal.html:73
 #: core/templates/core/portal.html:327 core/templates/fw/base.html:219
+#: core/templates/fw/dienstleister_detail.html:167
+#: core/templates/fw/dokumente.html:3 core/templates/fw/dokumente.html:9
+#: core/templates/fw/mandat_detail.html:247 faelle/akten.py:49
 msgid "Dokumente"
 msgstr "Documenti"
 
@@ -472,6 +482,7 @@ msgid "Melden Sie sich im Verwaltungs-Cockpit an."
 msgstr "Acceda al cockpit dell'amministrazione."
 
 #: core/templates/core/login.html:177 core/templates/core/portal_login.html:179
+#: core/templates/fw/mandat_form.html:98
 msgid "Benutzername"
 msgstr "Nome utente"
 
@@ -536,7 +547,9 @@ msgstr ""
 "Nome e indirizzo possono essere modificati solo dall'amministrazione — usi a "
 "tale scopo il campo «Comunicazione» qui sotto."
 
-#: core/templates/core/mieter_daten.html:28 core/templates/fw/mandate.html:16
+#: core/templates/core/mieter_daten.html:28
+#: core/templates/fw/dienstleister_detail.html:26
+#: core/templates/fw/mandat_detail.html:116 core/templates/fw/mandate.html:16
 #: core/templates/fw/personen.html:67
 msgid "Kontakt"
 msgstr "Contatto"
@@ -548,6 +561,9 @@ msgstr "Cellulare"
 #: core/templates/core/mieter_daten.html:32 core/templates/fw/account.html:100
 #: core/templates/fw/dienstleister.html:35
 #: core/templates/fw/dienstleister.html:103
+#: core/templates/fw/dienstleister_detail.html:83
+#: core/templates/fw/mandat_detail.html:176
+#: core/templates/fw/mandat_form.html:37
 msgid "Telefon"
 msgstr "Telefono"
 
@@ -556,6 +572,9 @@ msgstr "Telefono"
 #: core/templates/fw/benutzer.html:18 core/templates/fw/benutzer_form.html:30
 #: core/templates/fw/dienstleister.html:33
 #: core/templates/fw/dienstleister.html:101
+#: core/templates/fw/dienstleister_detail.html:84
+#: core/templates/fw/mandat_detail.html:175
+#: core/templates/fw/mandat_form.html:27
 msgid "E-Mail"
 msgstr "E-mail"
 
@@ -796,8 +815,8 @@ msgstr "Fatture aperte con polizza di versamento QR da scaricare."
 #: core/templates/fw/laeufe.html:20 core/templates/fw/lieferantenkonten.html:30
 #: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
 #: core/templates/fw/nebenkosten_detail.html:34
-#: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
-#: core/views/fw/_basis.py:353
+#: core/templates/fw/schaeden.html:73 core/templates/fw/zahllauf.html:68
+#: core/templates/fw/zahllauf.html:150 core/views/fw/_basis.py:353
 msgid "Offen"
 msgstr "Aperto"
 
@@ -872,6 +891,7 @@ msgid "Was ist betroffen?"
 msgstr "Che cosa è interessato?"
 
 #: core/templates/core/mieter_schaden.html:28
+#: core/templates/fw/schaeden.html:29
 msgid "z.B. Wasserhahn tropft"
 msgstr "p. es. il rubinetto gocciola"
 
@@ -886,6 +906,7 @@ msgstr "p. es. bagno"
 #: core/templates/core/mieter_schaden.html:37
 #: core/templates/fw/debitoren.html:47
 #: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/pendenzen.html:123 core/templates/fw/schaeden.html:40
 msgid "Beschreibung"
 msgstr "Descrizione"
 
@@ -936,6 +957,7 @@ msgid "gemeldet %(zeit)s"
 msgstr "segnalato il %(zeit)s"
 
 #: core/templates/core/mieter_ticket_detail.html:31
+#: core/templates/fw/dienstleister_detail.html:200
 msgid "Verlauf"
 msgstr "Cronologia"
 
@@ -1121,7 +1143,7 @@ msgstr "Locati"
 
 #: core/templates/core/portal.html:258 core/templates/core/portal.html:298
 #: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
-#: core/templates/fw/objekte.html:72
+#: core/templates/fw/mandat_detail.html:207 core/templates/fw/objekte.html:72
 #, python-format
 msgid "%(n)s leer"
 msgstr "%(n)s sfitti"
@@ -1442,7 +1464,8 @@ msgstr "Ricezione attiva — prelevare le e-mail da questa casella"
 #: core/templates/fw/anlagen.html:128 core/templates/fw/benutzer_form.html:55
 #: core/templates/fw/dienstleister.html:107
 #: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:308
-#: core/templates/fw/mwst.html:117 core/templates/fw/regelsatz_form.html:104
+#: core/templates/fw/mandat_form.html:76 core/templates/fw/mwst.html:117
+#: core/templates/fw/regelsatz_form.html:104
 #: core/templates/fw/vorlage_form.html:37
 msgid "Speichern"
 msgstr "Salva"
@@ -1450,7 +1473,7 @@ msgstr "Salva"
 #: core/templates/core/postfach_form.html:142
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
-#: core/templates/fw/kreditoren.html:307
+#: core/templates/fw/kreditoren.html:307 core/templates/fw/mandat_form.html:78
 #: core/templates/fw/regelsatz_form.html:105
 #: core/templates/fw/vorlage_form.html:39
 #: core/templates/fw/weiterverrechnung.html:113
@@ -1507,7 +1530,9 @@ msgstr "Non configurato — per questo scopo non vengono prelevate e-mail."
 
 #: core/templates/core/postfach_liste.html:80
 #: core/templates/fw/benutzer.html:35 core/templates/fw/dienstleister.html:75
-#: core/templates/fw/kreditoren.html:242 core/templates/fw/mandate.html:36
+#: core/templates/fw/dienstleister_detail.html:36
+#: core/templates/fw/kreditoren.html:242
+#: core/templates/fw/mandat_detail.html:125 core/templates/fw/mandate.html:36
 #: core/templates/fw/regelwerk.html:56 core/templates/fw/vorlagen.html:37
 msgid "Bearbeiten"
 msgstr "Modifica"
@@ -1531,8 +1556,9 @@ msgstr ""
 
 #: core/templates/core/postfach_liste.html:91
 #: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
-#: core/templates/fw/hypotheken.html:115 core/templates/fw/kreditoren.html:245
-#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
+#: core/templates/fw/dokumente.html:94 core/templates/fw/hypotheken.html:115
+#: core/templates/fw/kreditoren.html:245 core/templates/fw/mandate.html:42
+#: core/templates/fw/nebenkosten.html:98 core/templates/fw/pendenzen.html:73
 msgid "Löschen"
 msgstr "Elimina"
 
@@ -1695,7 +1721,8 @@ msgstr ""
 
 #: core/templates/core/zweifaktor_uebersicht.html:24
 #: core/templates/fw/abonnement.html:38 core/templates/fw/integrationen.html:61
-#: core/views/fw/_basis.py:337 core/views/fw/profil.py:911
+#: core/templates/fw/mandat_form.html:91 core/views/fw/_basis.py:337
+#: core/views/fw/profil.py:911
 msgid "Aktiv"
 msgstr "Attivo"
 
@@ -1858,7 +1885,7 @@ msgstr "senza data — tempo medio non calcolabile"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:495
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:508
 msgid "Abwesenheiten"
 msgstr "Assenze"
 
@@ -2118,6 +2145,7 @@ msgstr "Nota"
 #: core/templates/fw/abwesenheiten.html:41
 #: core/templates/fw/dienstleister.html:37 core/templates/fw/hypotheken.html:44
 #: core/templates/fw/mahnwesen.html:101
+#: core/templates/fw/mandat_detail.html:223
 msgid "Erfassen"
 msgstr "Registrare"
 
@@ -2280,12 +2308,12 @@ msgstr "Nome della ditta"
 msgid "Strasse &amp; Nr."
 msgstr "Via &amp; n."
 
-#: core/templates/fw/account.html:94
+#: core/templates/fw/account.html:94 core/templates/fw/mandat_form.html:33
 msgid "PLZ"
 msgstr "NPA"
 
-#: core/templates/fw/account.html:96 core/templates/fw/mandate.html:17
-#: core/templates/fw/termine.html:33
+#: core/templates/fw/account.html:96 core/templates/fw/mandat_form.html:35
+#: core/templates/fw/mandate.html:17 core/templates/fw/termine.html:33
 msgid "Ort"
 msgstr "Luogo"
 
@@ -2376,10 +2404,12 @@ msgstr "Cespite"
 #: core/templates/fw/anlagen.html:102 core/templates/fw/anlagen.html:120
 #: core/templates/fw/auswertung.html:29 core/templates/fw/bankabgleich.html:185
 #: core/templates/fw/betriebskostenspiegel.html:43
+#: core/templates/fw/dokumente.html:28
 #: core/templates/fw/eigentuemer_kontokorrent.html:59
 #: core/templates/fw/kreditoren.html:78 core/templates/fw/kreditoren.html:289
 #: core/templates/fw/mandat_abrechnung.html:57
 #: core/templates/fw/nebenkosten.html:70 core/templates/fw/objekte.html:74
+#: core/templates/fw/schaden_kosten.html:49
 msgid "Liegenschaft"
 msgstr "Stabile"
 
@@ -2421,7 +2451,7 @@ msgid "Wert CHF"
 msgstr "Valore CHF"
 
 #: core/templates/fw/anlagen.html:59 core/templates/fw/buchhaltung.html:41
-#: core/templates/fw/buchhaltung.html:367
+#: core/templates/fw/buchhaltung.html:367 core/templates/fw/dokumente.html:71
 #: core/templates/fw/eigentuemer_kontokorrent.html:161
 #: core/templates/fw/kontoblatt.html:68
 #: core/templates/fw/lieferantenkonto.html:70
@@ -2598,11 +2628,12 @@ msgstr "filtrato su %(strasse)s"
 
 #: core/templates/fw/bankabgleich.html:11 core/templates/fw/bankkonten.html:11
 #: core/templates/fw/buchhaltung.html:14 core/templates/fw/debitoren.html:11
-#: core/templates/fw/hypotheken.html:10 core/templates/fw/kontenplan.html:20
-#: core/templates/fw/kreditoren.html:26
+#: core/templates/fw/dokumente.html:10 core/templates/fw/hypotheken.html:10
+#: core/templates/fw/kontenplan.html:20 core/templates/fw/kreditoren.html:26
 #: core/templates/fw/liegenschaften.html:11 core/templates/fw/mahnwesen.html:13
 #: core/templates/fw/mietzins.html:11 core/templates/fw/nebenkosten.html:14
-#: core/templates/fw/objekte.html:25 core/templates/fw/personen.html:10
+#: core/templates/fw/objekte.html:25 core/templates/fw/pendenzen.html:9
+#: core/templates/fw/personen.html:10 core/templates/fw/schaeden.html:10
 #: core/templates/fw/vertraege.html:14 core/templates/fw/zahllauf.html:15
 msgid "aufheben"
 msgstr "annulla"
@@ -2706,6 +2737,7 @@ msgstr "Entrate bancarie — righe di estratto aperte"
 
 #: core/templates/fw/bankabgleich.html:128 core/templates/fw/dashboard.html:292
 #: core/templates/fw/dienstleister.html:74
+#: core/templates/fw/schaden_kosten.html:61 core/views/fw/akten_neu.py:81
 #, python-format
 msgid "%(n)s offen"
 msgstr "%(n)s aperti"
@@ -2749,7 +2781,7 @@ msgid "Offene Lieferantenrechnung"
 msgstr "Fattura fornitore aperta"
 
 #: core/templates/fw/bankabgleich.html:162 core/templates/fw/hypotheken.html:25
-#: core/templates/fw/nebenkosten.html:23
+#: core/templates/fw/nebenkosten.html:23 core/templates/fw/schaeden.html:32
 #: core/templates/fw/weiterverrechnung.html:70
 msgid "wählen"
 msgstr "scegliere"
@@ -2772,8 +2804,9 @@ msgid "Belegtext"
 msgstr "Testo del giustificativo"
 
 #: core/templates/fw/bankabgleich.html:187
-#: core/templates/fw/buchhaltung.html:48 core/templates/fw/kreditoren.html:80
-#: core/templates/fw/kreditoren.html:291
+#: core/templates/fw/buchhaltung.html:48 core/templates/fw/dokumente.html:30
+#: core/templates/fw/kreditoren.html:80 core/templates/fw/kreditoren.html:291
+#: core/templates/fw/pendenzen.html:120
 msgid "keine"
 msgstr "nessuna"
 
@@ -2995,6 +3028,7 @@ msgid "Bank nicht hinterlegt"
 msgstr "Banca non inserita"
 
 #: core/templates/fw/bankkonten.html:58
+#: core/templates/fw/mandat_detail.html:152
 msgid "Soll / Monat"
 msgstr "Dovuto / mese"
 
@@ -3145,14 +3179,15 @@ msgid "Neuer Benutzer"
 msgstr "Nuovo utente"
 
 #: core/templates/fw/benutzer_form.html:3
-#: core/templates/fw/benutzer_form.html:13
-#: core/templates/fw/vorlage_form.html:3 core/templates/fw/vorlage_form.html:13
+#: core/templates/fw/benutzer_form.html:13 core/templates/fw/mandat_form.html:3
+#: core/templates/fw/mandat_form.html:13 core/templates/fw/vorlage_form.html:3
+#: core/templates/fw/vorlage_form.html:13
 #, python-format
 msgid "%(name)s bearbeiten"
 msgstr "Modificare %(name)s"
 
-#: core/templates/fw/benutzer_form.html:8 core/templates/fw/vorlage_form.html:8
-#: core/views/portal.py:750
+#: core/templates/fw/benutzer_form.html:8 core/templates/fw/mandat_form.html:8
+#: core/templates/fw/vorlage_form.html:8 core/views/portal.py:750
 msgid "Neu"
 msgstr "Nuovo"
 
@@ -3168,11 +3203,11 @@ msgstr "Membro del team con accesso all'amministrazione."
 msgid "Benutzername *"
 msgstr "Nome utente *"
 
-#: core/templates/fw/benutzer_form.html:25
+#: core/templates/fw/benutzer_form.html:25 core/templates/fw/schaeden.html:44
 msgid "Vorname"
 msgstr "Nome"
 
-#: core/templates/fw/benutzer_form.html:27
+#: core/templates/fw/benutzer_form.html:27 core/templates/fw/schaeden.html:45
 msgid "Nachname"
 msgstr "Cognome"
 
@@ -3215,7 +3250,9 @@ msgid "Interaktive Auswertung"
 msgstr "Analisi interattiva"
 
 #: core/templates/fw/berichte.html:13 core/templates/fw/kreditoren.html:13
-#: core/templates/fw/liegenschaften.html:16 core/templates/fw/vorlagen.html:10
+#: core/templates/fw/liegenschaften.html:16
+#: core/templates/fw/mandat_detail.html:128 core/templates/fw/schaeden.html:15
+#: core/templates/fw/vorlagen.html:10
 msgid "Mehr"
 msgstr "Altro"
 
@@ -3320,6 +3357,7 @@ msgid "Betrag (CHF) *"
 msgstr "Importo (CHF) *"
 
 #: core/templates/fw/buchhaltung.html:46 core/templates/fw/kreditoren.html:52
+#: core/templates/fw/pendenzen.html:118
 msgid "Liegenschaft (optional)"
 msgstr "Stabile (facoltativo)"
 
@@ -3865,7 +3903,7 @@ msgstr "Pulizia"
 msgid "Schadenersatz"
 msgstr "Risarcimento danni"
 
-#: core/templates/fw/debitoren.html:38
+#: core/templates/fw/debitoren.html:38 core/templates/fw/pendenzen.html:110
 msgid "Titel *"
 msgstr "Titolo *"
 
@@ -3923,6 +3961,7 @@ msgid "offen"
 msgstr "aperto"
 
 #: core/templates/fw/debitoren.html:161 core/templates/fw/debitoren.html:223
+#: core/templates/fw/dokumente.html:25
 msgid "Vertrag"
 msgstr "Contratto"
 
@@ -3940,7 +3979,8 @@ msgstr ""
 "controregistrazione."
 
 #: core/templates/fw/debitoren.html:181 core/templates/fw/debitoren.html:243
-#: core/templates/fw/dienstleister.html:130 core/templates/fw/personen.html:56
+#: core/templates/fw/dienstleister.html:130
+#: core/templates/fw/dokumente.html:102 core/templates/fw/personen.html:56
 #: core/templates/fw/personen.html:105 core/templates/fw/vertraege.html:58
 #: core/templates/fw/vertraege.html:106
 msgid "Keine Treffer"
@@ -3954,7 +3994,8 @@ msgstr "Nessuna fattura trovata per questo filtro."
 msgid "Fälligkeit"
 msgstr "Scadenza"
 
-#: core/templates/fw/debitoren.html:194 core/templates/fw/termine.html:23
+#: core/templates/fw/debitoren.html:194 core/templates/fw/dokumente.html:21
+#: core/templates/fw/termine.html:23
 #: core/templates/fw/weiterverrechnung.html:37
 #: core/templates/fw/weiterverrechnung.html:77
 msgid "Titel"
@@ -3962,8 +4003,8 @@ msgstr "Titolo"
 
 #: core/templates/fw/debitoren.html:197 core/templates/fw/kautionen.html:28
 #: core/templates/fw/kreditoren.html:166 core/templates/fw/mieterkonten.html:48
-#: core/templates/fw/nebenkosten.html:74 core/templates/fw/sollstellung.html:87
-#: core/templates/fw/vertraege.html:75
+#: core/templates/fw/nebenkosten.html:74 core/templates/fw/schaeden.html:96
+#: core/templates/fw/sollstellung.html:87 core/templates/fw/vertraege.html:75
 msgid "Status"
 msgstr "Stato"
 
@@ -4057,6 +4098,8 @@ msgstr "&gt;90"
 #: core/templates/fw/eigentuemer_kontokorrent.html:80
 #: core/templates/fw/kontenplan.html:150
 #: core/templates/fw/mandat_abrechnung.html:78
+#: core/templates/fw/schaden_kosten.html:54
+#: core/templates/fw/schaden_kosten.html:74
 #: core/templates/fw/sollstellung.html:86
 msgid "Total"
 msgstr "Totale"
@@ -4111,11 +4154,14 @@ msgstr "Registrare artigiano / fornitore"
 
 #: core/templates/fw/dienstleister.html:18
 #: core/templates/fw/dienstleister.html:86
+#: core/templates/fw/dienstleister_detail.html:80
 msgid "Firma"
 msgstr "Ditta"
 
 #: core/templates/fw/dienstleister.html:20
 #: core/templates/fw/dienstleister.html:88
+#: core/templates/fw/dienstleister_detail.html:27
+#: core/templates/fw/dienstleister_detail.html:82
 msgid "Branche"
 msgstr "Settore"
 
@@ -4161,6 +4207,9 @@ msgstr "Impresa di pulizie"
 
 #: core/templates/fw/dienstleister.html:31
 #: core/templates/fw/dienstleister.html:99
+#: core/templates/fw/dienstleister_detail.html:81
+#: core/templates/fw/mandat_detail.html:173
+#: core/templates/fw/mandat_form.html:25
 msgid "Kontaktperson"
 msgstr "Persona di contatto"
 
@@ -4193,6 +4242,261 @@ msgstr "Nessun fornitore registrato"
 msgid "Handwerker werden in der klassischen Ansicht erfasst."
 msgstr "Gli artigiani si registrano nella vista classica."
 
+#: core/templates/fw/dienstleister_detail.html:28
+#: core/templates/fw/mandat_detail.html:118
+msgid "Erreichbar"
+msgstr "Raggiungibile"
+
+#: core/templates/fw/dienstleister_detail.html:35
+msgid "Anrufen"
+msgstr "Chiamare"
+
+#: core/templates/fw/dienstleister_detail.html:41
+msgid "Offene Aufträge"
+msgstr "Incarichi aperti"
+
+#: core/templates/fw/dienstleister_detail.html:43
+#, python-format
+msgid "%(n)s älter als 30 Tage"
+msgstr "%(n)s più vecchio/i di 30 giorni"
+
+#: core/templates/fw/dienstleister_detail.html:43
+msgid "alle jünger als 30 Tage"
+msgstr "tutti più recenti di 30 giorni"
+
+#: core/templates/fw/dienstleister_detail.html:43
+msgid "nichts offen"
+msgstr "nulla di aperto"
+
+#: core/templates/fw/dienstleister_detail.html:44
+msgid "Aufträge gesamt"
+msgstr "Incarichi in totale"
+
+#: core/templates/fw/dienstleister_detail.html:46
+msgid "seit Erfassung"
+msgstr "dalla registrazione"
+
+#: core/templates/fw/dienstleister_detail.html:47
+#, python-format
+msgid "Kosten %(jahr)s"
+msgstr "Costi %(jahr)s"
+
+#: core/templates/fw/dienstleister_detail.html:53
+#: core/templates/fw/dienstleister_detail.html:158
+#, python-format
+msgid "davon CHF %(b)s geschätzt"
+msgstr "di cui CHF %(b)s stimati"
+
+#: core/templates/fw/dienstleister_detail.html:53
+msgid "alle Beträge effektiv"
+msgstr "tutti gli importi effettivi"
+
+#: core/templates/fw/dienstleister_detail.html:54
+msgid "Schlüssel"
+msgstr "Chiavi"
+
+#: core/templates/fw/dienstleister_detail.html:56
+msgid "nicht zurückgegeben"
+msgstr "non restituita/e"
+
+#: core/templates/fw/dienstleister_detail.html:56
+msgid "keine ausgegeben"
+msgstr "nessuna consegnata"
+
+#: core/templates/fw/dienstleister_detail.html:77
+#: core/templates/fw/mandat_detail.html:169
+msgid "Angaben"
+msgstr "Dati"
+
+#: core/templates/fw/dienstleister_detail.html:83
+#: core/templates/fw/mandat_detail.html:187
+msgid "nicht erfasst"
+msgstr "non registrato"
+
+#: core/templates/fw/dienstleister_detail.html:85
+msgid "Erfasst"
+msgstr "Registrato"
+
+#: core/templates/fw/dienstleister_detail.html:93
+msgid "Ausgegebene Schlüssel"
+msgstr "Chiavi consegnate"
+
+#: core/templates/fw/dienstleister_detail.html:94
+#, python-format
+msgid "%(n)s nicht zurückgegeben"
+msgstr "%(n)s non restituita/e"
+
+#: core/templates/fw/dienstleister_detail.html:100
+#, python-format
+msgid "ausgegeben am %(d)s"
+msgstr "consegnata il %(d)s"
+
+#: core/templates/fw/dienstleister_detail.html:112
+#: core/templates/fw/schaden_kosten.html:36
+#: core/templates/fw/schaden_kosten.html:51 faelle/akten.py:133
+msgid "Aufträge"
+msgstr "Incarichi"
+
+#: core/templates/fw/dienstleister_detail.html:113
+#, python-format
+msgid "%(n)s offen von %(total)s"
+msgstr "%(n)s aperto/i su %(total)s"
+
+#: core/templates/fw/dienstleister_detail.html:119
+#, python-format
+msgid "Auftrag %(id)s"
+msgstr "Incarico %(id)s"
+
+#: core/templates/fw/dienstleister_detail.html:120
+#, python-format
+msgid "beauftragt %(d)s"
+msgstr "incaricato il %(d)s"
+
+#: core/templates/fw/dienstleister_detail.html:130
+msgid "Zum Schaden"
+msgstr "Al danno"
+
+#: core/templates/fw/dienstleister_detail.html:133
+msgid "Kein Auftrag an diesen Dienstleister vergeben."
+msgstr "Nessun incarico affidato a questo fornitore di servizi."
+
+#: core/templates/fw/dienstleister_detail.html:142
+msgid "Rechnungen zu Aufträgen"
+msgstr "Fatture degli incarichi"
+
+#: core/templates/fw/dienstleister_detail.html:154
+msgid "Kein Auftrag erfasst."
+msgstr "Nessun incarico registrato."
+
+#: core/templates/fw/dienstleister_detail.html:158
+#, python-format
+msgid "Kosten %(jahr)s: CHF %(b)s"
+msgstr "Costi %(jahr)s: CHF %(b)s"
+
+#: core/templates/fw/dienstleister_detail.html:172
+msgid ""
+"Zum Dienstleister selbst lassen sich heute keine Dokumente ablegen — das "
+"Datenmodell führt keine Beziehung dafür. Verträge und Offerten hängen an der "
+"jeweiligen Schadensmeldung."
+msgstr ""
+"Al fornitore di servizi stesso oggi non si possono archiviare documenti — il "
+"modello dati non prevede questa relazione. Contratti e offerte sono legati "
+"alla rispettiva segnalazione di danno."
+
+#: core/templates/fw/dienstleister_detail.html:180
+#: core/templates/fw/mandat_detail.html:266 faelle/akten.py:50
+msgid "Fälle"
+msgstr "Pratiche"
+
+#: core/templates/fw/dienstleister_detail.html:191
+msgid "Kein Fall zu diesem Dienstleister."
+msgstr "Nessuna pratica per questo fornitore di servizi."
+
+#: core/templates/fw/dienstleister_detail.html:210
+msgid "Freigabe:"
+msgstr "Approvazione:"
+
+#: core/templates/fw/dienstleister_detail.html:215
+msgid "Noch kein Auftrag — also kein Verlauf."
+msgstr "Ancora nessun incarico — quindi nessuna cronologia."
+
+#: core/templates/fw/dokumente.html:10
+msgid "Zentrale Ablage aus Vertrags- und Objektdokumenten"
+msgstr "Archivio centrale dei documenti di contratti e oggetti"
+
+#: core/templates/fw/dokumente.html:10 core/templates/fw/pendenzen.html:9
+#: core/templates/fw/schaeden.html:10
+#, python-format
+msgid "gefiltert auf %(s)s"
+msgstr "filtrato su %(s)s"
+
+#: core/templates/fw/dokumente.html:12 core/templates/fw/dokumente.html:17
+msgid "Dokument hochladen"
+msgstr "Caricare un documento"
+
+#: core/templates/fw/dokumente.html:22
+msgid "(leer = Dateiname)"
+msgstr "(vuoto = nome del file)"
+
+#: core/templates/fw/dokumente.html:23 core/templates/fw/dokumente.html:68
+#: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/pendenzen.html:112 core/templates/fw/vorlage_form.html:25
+msgid "Kategorie"
+msgstr "Categoria"
+
+#: core/templates/fw/dokumente.html:25 core/templates/fw/mandat_detail.html:290
+#: core/templates/fw/regelwerk.html:17
+msgid "Protokoll"
+msgstr "Protocollo"
+
+#: core/templates/fw/dokumente.html:26
+msgid "Korrespondenz"
+msgstr "Corrispondenza"
+
+#: core/templates/fw/dokumente.html:26
+msgid "Sonstiges"
+msgstr "Varie"
+
+#: core/templates/fw/dokumente.html:33 core/templates/fw/schaeden.html:35
+msgid "Objekt (optional)"
+msgstr "Oggetto (facoltativo)"
+
+#: core/templates/fw/dokumente.html:35
+msgid "keines"
+msgstr "nessuno"
+
+#: core/templates/fw/dokumente.html:38
+msgid "Datei *"
+msgstr "File *"
+
+#: core/templates/fw/dokumente.html:40
+msgid "Hochladen"
+msgstr "Caricare"
+
+#: core/templates/fw/dokumente.html:58
+msgid "Dokument oder Kontext suchen…"
+msgstr "Cercare un documento o un contesto…"
+
+#: core/templates/fw/dokumente.html:67
+msgid "Dokument"
+msgstr "Documento"
+
+#: core/templates/fw/dokumente.html:69
+msgid "Kontext"
+msgstr "Contesto"
+
+#: core/templates/fw/dokumente.html:70
+msgid "Ablage"
+msgstr "Archivio"
+
+#: core/templates/fw/dokumente.html:89
+msgid "Öffnen"
+msgstr "Aprire"
+
+#: core/templates/fw/dokumente.html:91
+#, python-format
+msgid "Dokument «%(name)s» löschen?"
+msgstr "Eliminare il documento «%(name)s»?"
+
+#: core/templates/fw/dokumente.html:102
+msgid "Noch keine Dokumente abgelegt"
+msgstr "Ancora nessun documento archiviato"
+
+#: core/templates/fw/dokumente.html:103
+msgid ""
+"Dokumente entstehen automatisch (unterzeichnete Verträge) oder per Upload in "
+"der klassischen Ansicht."
+msgstr ""
+"I documenti nascono automaticamente (contratti firmati) o tramite "
+"caricamento nella vista classica."
+
+#: core/templates/fw/dokumente.html:109
+#, python-format
+msgid "%(n)s Dokument aus Vertrags- und Objektablage"
+msgid_plural "%(n)s Dokumente aus Vertrags- und Objektablage"
+msgstr[0] "%(n)s documento dagli archivi contratti e oggetti"
+msgstr[1] "%(n)s documenti dagli archivi contratti e oggetti"
+
 #: core/templates/fw/eigentuemer_kontokorrent.html:4
 #, python-format
 msgid "Kontokorrent %(name)s"
@@ -4200,7 +4504,8 @@ msgstr "Conto corrente %(name)s"
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:9
 #: core/templates/fw/mandat_abrechnung.html:20
-#: core/templates/fw/mandate.html:34
+#: core/templates/fw/mandat_detail.html:131
+#: core/templates/fw/mandat_detail.html:237 core/templates/fw/mandate.html:34
 msgid "Kontokorrent"
 msgstr "Conto corrente"
 
@@ -4324,6 +4629,7 @@ msgstr ""
 "per registrarlo qui."
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:150
+#: core/templates/fw/mandat_detail.html:132
 msgid "Auszahlung erfassen"
 msgstr "Registrare un versamento"
 
@@ -4471,6 +4777,7 @@ msgid "Hypothek erfassen"
 msgstr "Registrare ipoteca"
 
 #: core/templates/fw/hypotheken.html:23 core/templates/fw/nebenkosten.html:21
+#: core/templates/fw/schaeden.html:30
 msgid "Liegenschaft *"
 msgstr "Stabile *"
 
@@ -4995,6 +5302,7 @@ msgid "Rechnungsdatum"
 msgstr "Data fattura"
 
 #: core/templates/fw/kreditoren.html:92 core/templates/fw/kreditoren.html:279
+#: core/templates/fw/pendenzen.html:116
 msgid "Fällig am"
 msgstr "Scadenza il"
 
@@ -5638,7 +5946,8 @@ msgstr "Sicurezza / accesso"
 msgid "Aktivste Benutzer"
 msgstr "Utenti più attivi"
 
-#: core/templates/fw/logbuch.html:44
+#: core/templates/fw/logbuch.html:44 core/templates/fw/schaeden.html:100
+#: core/templates/fw/suche.html:3 core/templates/fw/suche.html:5
 msgid "Suche"
 msgstr "Ricerca"
 
@@ -5909,6 +6218,280 @@ msgstr ""
 "assegnati. Il saldo è il versamento al proprietario (o un apporto "
 "supplementare se il saldo è negativo)."
 
+#: core/templates/fw/mandat_detail.html:55
+msgid "Was auffällt"
+msgstr "Da notare"
+
+#: core/templates/fw/mandat_detail.html:83
+msgid "Rentabilität"
+msgstr "Redditività"
+
+#: core/templates/fw/mandat_detail.html:85
+msgid "Honorar pro Jahr"
+msgstr "Onorario annuo"
+
+#: core/templates/fw/mandat_detail.html:91
+#, python-format
+msgid "%(p)s %% der Sollmiete"
+msgstr "%(p)s %% della pigione teorica"
+
+#: core/templates/fw/mandat_detail.html:91
+msgid "kein Satz hinterlegt"
+msgstr "nessuna aliquota registrata"
+
+#: core/templates/fw/mandat_detail.html:92
+msgid "Erfasster Aufwand"
+msgstr "Tempo registrato"
+
+#: core/templates/fw/mandat_detail.html:94
+msgid "auf Fällen dieses Mandats"
+msgstr "sulle pratiche di questo mandato"
+
+#: core/templates/fw/mandat_detail.html:95
+msgid "CHF pro Stunde"
+msgstr "CHF all’ora"
+
+#: core/templates/fw/mandat_detail.html:97
+msgid "Honorar geteilt durch Aufwand"
+msgstr "Onorario diviso per il tempo"
+
+#: core/templates/fw/mandat_detail.html:98
+msgid "Datenbasis"
+msgstr "Base di calcolo"
+
+#: core/templates/fw/mandat_detail.html:100
+msgid "Fälle mit erfasster Zeit"
+msgstr "Pratiche con tempo registrato"
+
+#: core/templates/fw/mandat_detail.html:105
+#, python-format
+msgid ""
+"Nur %(abdeckung)s %% der Fälle haben Zeit erfasst — die Zahl trägt noch "
+"nicht weit."
+msgstr ""
+"Solo il %(abdeckung)s %% delle pratiche ha tempo registrato — il dato è "
+"ancora poco significativo."
+
+#: core/templates/fw/mandat_detail.html:113
+msgid "Mandat"
+msgstr "Mandato"
+
+#: core/templates/fw/mandat_detail.html:117
+#: core/templates/fw/mandat_detail.html:174 core/templates/fw/personen.html:68
+msgid "Adresse"
+msgstr "Indirizzo"
+
+#: core/templates/fw/mandat_detail.html:130
+#: core/templates/fw/mandat_detail.html:238
+msgid "Eigentümerabrechnung"
+msgstr "Conteggio proprietario"
+
+#: core/templates/fw/mandat_detail.html:134
+msgid "Honorar"
+msgstr "Onorario"
+
+#: core/templates/fw/mandat_detail.html:135 core/templates/fw/mandate.html:35
+msgid "Mahnstufen"
+msgstr "Livelli di sollecito"
+
+#: core/templates/fw/mandat_detail.html:136
+#: core/templates/fw/mandat_detail.html:189
+msgid "Portalzugang"
+msgstr "Accesso al portale"
+
+#: core/templates/fw/mandat_detail.html:151
+msgid "verwaltet für dieses Mandat"
+msgstr "gestiti per questo mandato"
+
+#: core/templates/fw/mandat_detail.html:154
+msgid "brutto aus aktiven Verträgen"
+msgstr "lordo dei contratti attivi"
+
+#: core/templates/fw/mandat_detail.html:155
+#: core/templates/fw/mandat_detail.html:188
+msgid "Honorarsatz"
+msgstr "Aliquota onorario"
+
+#: core/templates/fw/mandat_detail.html:157
+msgid "vereinbart"
+msgstr "convenuto"
+
+#: core/templates/fw/mandat_detail.html:157
+#: core/templates/fw/mandat_detail.html:188
+msgid "Vorgabewert der Verwaltung"
+msgstr "Valore predefinito dell'amministrazione"
+
+#: core/templates/fw/mandat_detail.html:158
+#: core/templates/fw/mandat_detail.html:221
+msgid "Auszahlungen"
+msgstr "Versamenti"
+
+#: core/templates/fw/mandat_detail.html:160
+#, python-format
+msgid "%(n)s noch nicht ausgeführt"
+msgstr "%(n)s non ancora eseguito/i"
+
+#: core/templates/fw/mandat_detail.html:160
+msgid "alle ausgeführt"
+msgstr "tutti eseguiti"
+
+#: core/templates/fw/mandat_detail.html:172
+msgid "Firma / Name"
+msgstr "Ditta / nome"
+
+#: core/templates/fw/mandat_detail.html:183
+msgid "Bank und Honorar"
+msgstr "Banca e onorario"
+
+#: core/templates/fw/mandat_detail.html:186
+msgid "Bank"
+msgstr "Banca"
+
+#: core/templates/fw/mandat_detail.html:189
+#: core/templates/fw/mieterkonten.html:59
+msgid "aktiv"
+msgstr "attivo"
+
+#: core/templates/fw/mandat_detail.html:189
+msgid "nicht eingerichtet"
+msgstr "non configurato"
+
+#: core/templates/fw/mandat_detail.html:199
+msgid "Verwaltete Liegenschaften"
+msgstr "Stabili gestiti"
+
+#: core/templates/fw/mandat_detail.html:207
+#, python-format
+msgid "%(v)s von %(e)s vermietet"
+msgstr "%(v)s su %(e)s locato/i"
+
+#: core/templates/fw/mandat_detail.html:212
+msgid "Diesem Mandat ist keine Liegenschaft zugeordnet."
+msgstr "A questo mandato non è assegnato alcuno stabile."
+
+#: core/templates/fw/mandat_detail.html:229
+#, python-format
+msgid "ausgeführt am %(d)s"
+msgstr "eseguito il %(d)s"
+
+#: core/templates/fw/mandat_detail.html:229
+msgid "noch nicht ausgeführt"
+msgstr "non ancora eseguito"
+
+#: core/templates/fw/mandat_detail.html:234
+msgid "Keine Auszahlung erfasst."
+msgstr "Nessun versamento registrato."
+
+#: core/templates/fw/mandat_detail.html:257
+msgid "Kein Dokument zu diesem Mandat."
+msgstr "Nessun documento per questo mandato."
+
+#: core/templates/fw/mandat_detail.html:277
+msgid "Kein Fall zu diesem Mandat."
+msgstr "Nessuna pratica per questo mandato."
+
+#: core/templates/fw/mandat_detail.html:291
+msgid "Vorgänge an den Verträgen dieses Mandats"
+msgstr "Operazioni sui contratti di questo mandato"
+
+#: core/templates/fw/mandat_detail.html:302
+msgid "Kein Protokolleintrag."
+msgstr "Nessuna voce di protocollo."
+
+#: core/templates/fw/mandat_form.html:3
+msgid "Neuer Eigentümer"
+msgstr "Nuovo proprietario"
+
+#: core/templates/fw/mandat_form.html:13
+msgid "Neuen Eigentümer erfassen"
+msgstr "Registrare un nuovo proprietario"
+
+#: core/templates/fw/mandat_form.html:14
+msgid "Eigentümer-Stammdaten und Zuordnung der Liegenschaften."
+msgstr "Dati di base del proprietario e assegnazione degli stabili."
+
+#: core/templates/fw/mandat_form.html:21 core/templates/fw/mandate.html:16
+msgid "Eigentümer"
+msgstr "Proprietario"
+
+#: core/templates/fw/mandat_form.html:22
+msgid "Name / Firma *"
+msgstr "Nome / ditta *"
+
+#: core/templates/fw/mandat_form.html:30
+msgid "Strasse & Nr."
+msgstr "Via & n."
+
+#: core/templates/fw/mandat_form.html:41
+msgid "Bankname"
+msgstr "Nome della banca"
+
+#: core/templates/fw/mandat_form.html:45
+#, python-format
+msgid "Verwaltungshonorar (%% der Mieterträge)"
+msgstr "Onorario d'amministrazione (%% dei redditi locativi)"
+
+#: core/templates/fw/mandat_form.html:48
+msgid "Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank)."
+msgstr "Registrato nel conto corrente per esercizio (dare 4500 / avere banca)."
+
+#: core/templates/fw/mandat_form.html:57
+msgid "Zugeordnete Liegenschaften"
+msgstr "Stabili assegnati"
+
+#: core/templates/fw/mandat_form.html:58
+msgid "Wähle die Liegenschaften, die diesem Eigentümer gehören."
+msgstr "Scelga gli stabili che appartengono a questo proprietario."
+
+#: core/templates/fw/mandat_form.html:66
+msgid "aktuell:"
+msgstr "attualmente:"
+
+#: core/templates/fw/mandat_form.html:69
+msgid "Noch keine Liegenschaften erfasst."
+msgstr "Ancora nessuno stabile registrato."
+
+#: core/templates/fw/mandat_form.html:87
+msgid "Eigentümer-Portal-Zugang"
+msgstr "Accesso al portale proprietari"
+
+#: core/templates/fw/mandat_form.html:88
+msgid ""
+"Login fürs Portal unter <span class=\"font-mono\">/portal/login/</span> — "
+"Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug."
+msgstr ""
+"Accesso al portale su <span class=\"font-mono\">/portal/login/</span> — "
+"cockpit di rendimento, approvazione riparazioni, rapporto &amp; estratto "
+"fiscale."
+
+#: core/templates/fw/mandat_form.html:93
+msgid "Kein Zugang"
+msgstr "Nessun accesso"
+
+#: core/templates/fw/mandat_form.html:102
+msgid "Neues Passwort senden"
+msgstr "Inviare una nuova password"
+
+#: core/templates/fw/mandat_form.html:105
+msgid "Portal-Zugang wirklich entfernen?"
+msgstr "Rimuovere davvero l'accesso al portale?"
+
+#: core/templates/fw/mandat_form.html:108
+msgid "Zugang entfernen"
+msgstr "Rimuovere l'accesso"
+
+#: core/templates/fw/mandat_form.html:115
+msgid "Portal-Zugang erstellen &amp; senden"
+msgstr "Creare &amp; inviare l'accesso al portale"
+
+#: core/templates/fw/mandat_form.html:117
+msgid ""
+"Keine E-Mail hinterlegt — die Zugangsdaten werden nach dem Erstellen "
+"einmalig angezeigt."
+msgstr ""
+"Nessuna e-mail registrata — le credenziali vengono mostrate una sola volta "
+"dopo la creazione."
+
 #: core/templates/fw/mandate.html:7
 msgid "Eigentümer erfassen"
 msgstr "Registrare proprietario"
@@ -5920,17 +6503,9 @@ msgid_plural "%(n)s Eigentümer, für die du Liegenschaften verwaltest."
 msgstr[0] "%(n)s proprietario per cui gestisci stabili."
 msgstr[1] "%(n)s proprietari per cui gestisci stabili."
 
-#: core/templates/fw/mandate.html:16
-msgid "Eigentümer"
-msgstr "Proprietario"
-
 #: core/templates/fw/mandate.html:17
 msgid "Liegensch."
 msgstr "Stabili"
-
-#: core/templates/fw/mandate.html:35
-msgid "Mahnstufen"
-msgstr "Livelli di sollecito"
 
 #: core/templates/fw/mandate.html:38
 #, python-format
@@ -5983,10 +6558,6 @@ msgstr "%(n)s risultati per «%(q)s»"
 #: core/templates/fw/mieterkonten.html:37
 msgid "Suche aufheben"
 msgstr "Annullare la ricerca"
-
-#: core/templates/fw/mieterkonten.html:59
-msgid "aktiv"
-msgstr "attivo"
 
 #: core/templates/fw/mieterkonten.html:60
 msgid "beendet"
@@ -6584,11 +7155,6 @@ msgstr ""
 "superficie (m²), pro rata temporis. Anteprima — conteggio vincolante nella "
 "vista classica."
 
-#: core/templates/fw/nebenkosten_detail.html:154
-#: core/templates/fw/vorlage_form.html:25
-msgid "Kategorie"
-msgstr "Categoria"
-
 #: core/templates/fw/nebenkosten_detail.html:163
 msgid ""
 "Keine Belege erfasst. HNK-relevante Kreditorenrechnungen fliessen "
@@ -6617,11 +7183,11 @@ msgstr "con contratto in corso"
 msgid "ohne Mieter und ohne Nachfolge"
 msgstr "senza inquilino né subentrante"
 
-#: core/templates/fw/objekte.html:43
+#: core/templates/fw/objekte.html:43 core/templates/fw/schaeden.html:79
 msgid "Mit Befund"
 msgstr "Con riscontro"
 
-#: core/templates/fw/objekte.html:45
+#: core/templates/fw/objekte.html:45 core/templates/fw/schaeden.html:81
 msgid "brauchen eine Handlung"
 msgstr "richiedono un intervento"
 
@@ -6644,7 +7210,7 @@ msgstr "Nuovo inquilino dal %(ab)s"
 msgid "kein Zins"
 msgstr "nessuna pigione"
 
-#: core/templates/fw/objekte.html:106
+#: core/templates/fw/objekte.html:106 core/templates/fw/schaeden.html:126
 msgid "Nichts zu tun"
 msgstr "Nulla da fare"
 
@@ -6671,6 +7237,65 @@ msgid ""
 msgstr ""
 "Gli oggetti appartengono a uno stabile — create prima uno stabile o "
 "importate le abitazioni dal REA."
+
+#: core/templates/fw/pendenzen.html:3
+msgid "Pendenzen & Fristen"
+msgstr "Pendenze & scadenze"
+
+#: core/templates/fw/pendenzen.html:8
+msgid "Pendenzen &amp; Fristen"
+msgstr "Pendenze &amp; scadenze"
+
+#: core/templates/fw/pendenzen.html:9
+msgid "Automatisch erkannte Fristen und eigene Pendenzen an einem Ort"
+msgstr ""
+"Scadenze riconosciute automaticamente e pendenze proprie in un unico posto"
+
+#: core/templates/fw/pendenzen.html:19
+msgid "Automatische Fristen (nächste 90 Tage)"
+msgstr "Scadenze automatiche (prossimi 90 giorni)"
+
+#: core/templates/fw/pendenzen.html:31
+#, python-format
+msgid "in %(n)s Tg."
+msgstr "tra %(n)s g."
+
+#: core/templates/fw/pendenzen.html:35
+msgid "Keine Fristen in den nächsten 90 Tagen."
+msgstr "Nessuna scadenza nei prossimi 90 giorni."
+
+#: core/templates/fw/pendenzen.html:57
+msgid "Als erledigt markieren"
+msgstr "Segnare come evaso"
+
+#: core/templates/fw/pendenzen.html:72 core/templates/fw/pendenzen.html:94
+msgid "Pendenz löschen?"
+msgstr "Eliminare la pendenza?"
+
+#: core/templates/fw/pendenzen.html:80
+msgid "Keine offenen Pendenzen."
+msgstr "Nessuna pendenza aperta."
+
+#: core/templates/fw/pendenzen.html:85 core/templates/fw/termine.html:51
+#: core/views/portal.py:754
+msgid "Erledigt"
+msgstr "Completato"
+
+#: core/templates/fw/pendenzen.html:90
+msgid "Wieder öffnen"
+msgstr "Riaprire"
+
+#: core/templates/fw/pendenzen.html:95
+msgid "Pendenz löschen"
+msgstr "Eliminare la pendenza"
+
+#: core/templates/fw/pendenzen.html:107
+msgid "Neue Pendenz"
+msgstr "Nuova pendenza"
+
+#: core/templates/fw/pendenzen.html:126
+msgid "Pendenz erfassen"
+msgstr "Registrare una pendenza"
 
 #: core/templates/fw/personen.html:10
 #, python-format
@@ -6707,10 +7332,6 @@ msgstr "Registrate inquilini, candidati e altri contatti."
 #: core/templates/fw/personen.html:56 core/templates/fw/personen.html:105
 msgid "Erste Person erfassen"
 msgstr "Registrare la prima persona"
-
-#: core/templates/fw/personen.html:68
-msgid "Adresse"
-msgstr "Indirizzo"
 
 #: core/templates/fw/personen.html:69
 msgid "Mietet aktuell"
@@ -6855,10 +7476,6 @@ msgid ""
 msgstr ""
 "Termini e scadenze come dati, non come codice — affinché una correzione sia "
 "un'immissione e non un rilascio."
-
-#: core/templates/fw/regelwerk.html:17
-msgid "Protokoll"
-msgstr "Protocollo"
 
 #: core/templates/fw/regelwerk.html:18
 msgid "Regelsatz"
@@ -7062,6 +7679,184 @@ msgstr "Derogare"
 msgid "Keine Anwendung zu diesem Filter."
 msgstr "Nessuna applicazione per questo filtro."
 
+#: core/templates/fw/schaden_kosten.html:4
+#: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:781
+msgid "Reparaturkosten"
+msgstr "Costi di riparazione"
+
+#: core/templates/fw/schaden_kosten.html:7
+#: core/templates/fw/schaden_kosten.html:40 core/templates/fw/schaeden.html:3
+#: core/templates/fw/schaeden.html:9
+msgid "Schadensfälle"
+msgstr "Danni"
+
+#: core/templates/fw/schaden_kosten.html:8 core/templates/fw/schaeden.html:17
+msgid "Kostenübersicht"
+msgstr "Panoramica dei costi"
+
+#: core/templates/fw/schaden_kosten.html:14
+msgid ""
+"Kostenschätzungen (offen) und effektive Kosten aus den Handwerker-Aufträgen "
+"je Liegenschaft."
+msgstr ""
+"Stime dei costi (aperte) e costi effettivi degli incarichi ad artigiani per "
+"stabile."
+
+#: core/templates/fw/schaden_kosten.html:19
+msgid "Alle Jahre"
+msgstr "Tutti gli anni"
+
+#: core/templates/fw/schaden_kosten.html:28
+msgid "Effektive Kosten"
+msgstr "Costi effettivi"
+
+#: core/templates/fw/schaden_kosten.html:32
+#: core/templates/fw/schaden_kosten.html:52
+msgid "Offene Schätzung"
+msgstr "Stima aperta"
+
+#: core/templates/fw/schaden_kosten.html:53
+msgid "Effektiv"
+msgstr "Effettivo"
+
+#: core/templates/fw/schaden_kosten.html:68
+msgid "Keine Handwerker-Aufträge"
+msgstr "Nessun incarico ad artigiani"
+
+#: core/templates/fw/schaden_kosten.html:85
+msgid ""
+"„Offene Schätzung“ = beauftragte, aber noch nicht abgerechnete Kosten "
+"(Kostenschätzung). „Effektiv“ = tatsächlich erfasste Kosten. Total = "
+"Effektiv + offene Schätzung als erwarteter Gesamtaufwand."
+msgstr ""
+"«Stima aperta» = costi incaricati ma non ancora fatturati (stima). "
+"«Effettivo» = costi effettivamente registrati. Totale = effettivo + stima "
+"aperta come onere complessivo atteso."
+
+#: core/templates/fw/schaeden.html:10
+msgid ""
+"Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische "
+"Info an Melder"
+msgstr ""
+"Segnalazioni di danni e incarichi di riparazione — segnalazione → incarico → "
+"informazione automatica al segnalante"
+
+#: core/templates/fw/schaeden.html:13
+msgid "Schaden erfassen"
+msgstr "Registrare un danno"
+
+#: core/templates/fw/schaeden.html:25
+msgid "Schaden erfassen (z.B. telefonisch gemeldet)"
+msgstr "Registrare un danno (p. es. segnalato per telefono)"
+
+#: core/templates/fw/schaeden.html:28
+msgid "Titel / Schaden *"
+msgstr "Titolo / danno *"
+
+#: core/templates/fw/schaeden.html:37
+msgid "ganze Liegenschaft"
+msgstr "intero stabile"
+
+#: core/templates/fw/schaeden.html:42
+msgid "Melder Vor-/Nachname"
+msgstr "Nome/cognome del segnalante"
+
+#: core/templates/fw/schaeden.html:47
+msgid "Priorität"
+msgstr "Priorità"
+
+#: core/templates/fw/schaeden.html:49
+msgid "Tief"
+msgstr "Bassa"
+
+#: core/templates/fw/schaeden.html:49
+msgid "Mittel"
+msgstr "Media"
+
+#: core/templates/fw/schaeden.html:49 core/templates/fw/schaeden.html:119
+msgid "Hoch"
+msgstr "Alta"
+
+#: core/templates/fw/schaeden.html:51
+msgid "Melder E-Mail"
+msgstr "E-mail del segnalante"
+
+#: core/templates/fw/schaeden.html:52
+msgid "Für automatische Bestätigung"
+msgstr "Per la conferma automatica"
+
+#: core/templates/fw/schaeden.html:53
+msgid "Melder Telefon"
+msgstr "Telefono del segnalante"
+
+#: core/templates/fw/schaeden.html:55
+msgid "Fotos (mehrere möglich)"
+msgstr "Foto (più di una possibile)"
+
+#: core/templates/fw/schaeden.html:58
+msgid "Ticket erstellen"
+msgstr "Creare un ticket"
+
+#: core/templates/fw/schaeden.html:59
+msgid "Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung."
+msgstr ""
+"Con un'e-mail il segnalante riceve automaticamente una conferma di ricezione."
+
+#: core/templates/fw/schaeden.html:75
+msgid "nicht erledigt"
+msgstr "non evaso"
+
+#: core/templates/fw/schaeden.html:76
+msgid "Ungelesen"
+msgstr "Non letto"
+
+#: core/templates/fw/schaeden.html:78
+msgid "noch niemand angesehen"
+msgstr "nessuno lo ha ancora visto"
+
+#: core/templates/fw/schaeden.html:82
+msgid "Älteste offen"
+msgstr "Il più vecchio aperto"
+
+#: core/templates/fw/schaeden.html:84
+msgid "Tage seit Meldung"
+msgstr "Giorni dalla segnalazione"
+
+#: core/templates/fw/schaeden.html:110
+#, python-format
+msgid "vor %(n)s Tag"
+msgid_plural "vor %(n)s Tagen"
+msgstr[0] "%(n)s giorno fa"
+msgstr[1] "%(n)s giorni fa"
+
+#: core/templates/fw/schaeden.html:126
+msgid ""
+"Für diese Sicht gibt es keine Meldung. Das ist eine gute Nachricht — oder "
+"die Sicht ist zu eng."
+msgstr ""
+"Per questa vista non c’è alcuna segnalazione. È una buona notizia — oppure "
+"la vista è troppo ristretta."
+
+#: core/templates/fw/schaeden.html:126
+msgid "Alle Meldungen zeigen"
+msgstr "Mostrare tutte le segnalazioni"
+
+#: core/templates/fw/schaeden.html:128
+msgid "Keine Schadensfälle"
+msgstr "Nessun danno"
+
+#: core/templates/fw/schaeden.html:128
+msgid ""
+"Aktuell ist nichts gemeldet. Telefonisch eingegangene Schäden erfassen Sie "
+"oben."
+msgstr ""
+"Al momento non è segnalato nulla. I danni ricevuti per telefono li registri "
+"in alto."
+
+#: core/templates/fw/schaeden.html:133
+msgid "Sortiert nach Befund, dann Priorität, dann Alter — nicht nach Eingang."
+msgstr "Ordinato per riscontro, poi priorità, poi età — non per arrivo."
+
 #: core/templates/fw/sollstellung.html:4
 msgid "Sollstellung Miete"
 msgstr "Fatturazione delle pigioni"
@@ -7159,6 +7954,34 @@ msgstr ""
 "Si registra debitori 1100 a ricavo 3000 (netto) risp. acconti spese "
 "accessorie 3020 (spese accessorie)."
 
+#: core/templates/fw/suche.html:7
+#, python-format
+msgid ""
+"%(total)s Treffer für „<span class=\"font-semibold fw-ink\">%(q)s</span>\""
+msgstr ""
+"%(total)s risultato/i per «<span class=\"font-semibold fw-ink\">%(q)s</span>»"
+
+#: core/templates/fw/suche.html:9
+msgid ""
+"Gib oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und "
+"Verträge."
+msgstr ""
+"Inserisca un termine di ricerca in alto — persone, stabili, oggetti e "
+"contratti."
+
+#: core/templates/fw/suche.html:15
+#, python-format
+msgid "Keine Treffer für „%(q)s\"."
+msgstr "Nessun risultato per «%(q)s»."
+
+#: core/templates/fw/suche.html:69 core/views/fw/_basis.py:280
+msgid "Verträge"
+msgstr "Contratti"
+
+#: core/templates/fw/suche.html:75
+msgid "ab"
+msgstr "dal"
+
 #: core/templates/fw/termine.html:9
 msgid ""
 "Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
@@ -7193,10 +8016,6 @@ msgstr "p.es. Perdtemps 3, PT"
 #, python-format
 msgid "%(min)s Min."
 msgstr "%(min)s min."
-
-#: core/templates/fw/termine.html:51 core/views/portal.py:754
-msgid "Erledigt"
-msgstr "Completato"
 
 #: core/templates/fw/termine.html:52
 msgid "Absagen"
@@ -7700,10 +8519,6 @@ msgstr "Completati di recente"
 msgid "Noch nichts erledigt."
 msgstr "Ancora nulla di completato."
 
-#: core/views/fw/_basis.py:280
-msgid "Verträge"
-msgstr "Contratti"
-
 #: core/views/fw/_basis.py:336
 msgid "Entwurf"
 msgstr "Bozza"
@@ -7731,6 +8546,137 @@ msgstr "Stornato"
 #: core/views/fw/_basis.py:357
 msgid "Abgeschrieben"
 msgstr "Stralciato"
+
+#: core/views/fw/akten_neu.py:67
+#, python-format
+msgid "%(n)s Liegenschaft"
+msgid_plural "%(n)s Liegenschaften"
+msgstr[0] "%(n)s stabile"
+msgstr[1] "%(n)s stabili"
+
+#: core/views/fw/akten_neu.py:69
+#, python-format
+msgid "%(n)s Objekte"
+msgstr "%(n)s oggetti"
+
+#: core/views/fw/akten_neu.py:72
+msgid "keine Liegenschaft zugeordnet"
+msgstr "nessuno stabile assegnato"
+
+#: core/views/fw/akten_neu.py:74
+#, python-format
+msgid "Honorar %(p)s %%"
+msgstr "Onorario %(p)s %%"
+
+#: core/views/fw/akten_neu.py:76
+msgid "keine IBAN"
+msgstr "nessun IBAN"
+
+#: core/views/fw/akten_neu.py:78
+msgid "Portalzugang aktiv"
+msgstr "Accesso al portale attivo"
+
+#: core/views/fw/akten_neu.py:87
+msgid "Keine IBAN erfasst"
+msgstr "Nessun IBAN registrato"
+
+#: core/views/fw/akten_neu.py:88
+msgid ""
+"Ohne IBAN lässt sich keine Auszahlung ausführen — der Ertragsüberschuss "
+"bleibt auf dem Verwaltungskonto liegen."
+msgstr ""
+"Senza IBAN non è possibile alcun versamento — l'eccedenza di ricavi resta "
+"sul conto dell'amministrazione."
+
+#: core/views/fw/akten_neu.py:90
+msgid "IBAN erfassen"
+msgstr "Registrare l'IBAN"
+
+#: core/views/fw/akten_neu.py:94
+msgid "Keine Liegenschaft zugeordnet"
+msgstr "Nessuno stabile assegnato"
+
+#: core/views/fw/akten_neu.py:95
+msgid ""
+"Ein Mandat ohne Liegenschaft erzeugt keine Abrechnung und kein Honorar — "
+"vermutlich fehlt die Zuordnung."
+msgstr ""
+"Un mandato senza stabile non genera né conteggio né onorario — probabilmente "
+"manca l'assegnazione."
+
+#: core/views/fw/akten_neu.py:97
+msgid "Liegenschaft zuordnen"
+msgstr "Assegnare uno stabile"
+
+#: core/views/fw/akten_neu.py:101 core/views/fw/akten_neu.py:234
+msgid "Kein Honorarsatz hinterlegt"
+msgstr "Nessuna aliquota di onorario registrata"
+
+#: core/views/fw/akten_neu.py:102
+msgid ""
+"Die Mandatsabrechnung rechnet dann mit dem Vorgabewert der Verwaltung statt "
+"mit dem vereinbarten Satz."
+msgstr ""
+"Il conteggio del mandato usa allora il valore predefinito "
+"dell'amministrazione invece dell'aliquota convenuta."
+
+#: core/views/fw/akten_neu.py:104
+msgid "Honorar festlegen"
+msgstr "Fissare l'onorario"
+
+#: core/views/fw/akten_neu.py:235
+msgid "Noch keine Stunde erfasst"
+msgstr "Ancora nessuna ora registrata"
+
+#: core/views/fw/akten_neu.py:257
+#, python-format
+msgid "%(n)s offener Auftrag"
+msgid_plural "%(n)s offene Aufträge"
+msgstr[0] "%(n)s incarico aperto"
+msgstr[1] "%(n)s incarichi aperti"
+
+#: core/views/fw/akten_neu.py:260
+msgid "kein offener Auftrag"
+msgstr "nessun incarico aperto"
+
+#: core/views/fw/akten_neu.py:262
+msgid "keine Kontaktangabe"
+msgstr "nessun recapito"
+
+#: core/views/fw/akten_neu.py:268
+msgid "Keine Telefonnummer"
+msgstr "Nessun numero di telefono"
+
+#: core/views/fw/akten_neu.py:269
+msgid ""
+"Bei einem Wasserschaden ausserhalb der Bürozeit ist eine E-Mail-Adresse "
+"wertlos."
+msgstr ""
+"In caso di danno d'acqua fuori orario d'ufficio un indirizzo e-mail non "
+"serve a nulla."
+
+#: core/views/fw/akten_neu.py:271
+msgid "Nummer erfassen"
+msgstr "Registrare il numero"
+
+#: core/views/fw/akten_neu.py:280
+#, python-format
+msgid "%(n)s Auftrag älter als 30 Tage"
+msgid_plural "%(n)s Aufträge älter als 30 Tage"
+msgstr[0] "%(n)s incarico più vecchio di 30 giorni"
+msgstr[1] "%(n)s incarichi più vecchi di 30 giorni"
+
+#: core/views/fw/akten_neu.py:282
+msgid ""
+"Beauftragt, aber nicht als erledigt gemeldet. Entweder wurde nicht "
+"gearbeitet, oder die Rückmeldung fehlt."
+msgstr ""
+"Incaricato, ma non segnalato come evaso. O non si è lavorato, o manca il "
+"riscontro."
+
+#: core/views/fw/akten_neu.py:284
+msgid "Aufträge ansehen"
+msgstr "Vedere gli incarichi"
 
 #: core/views/fw/aktionen.py:850
 msgid "Verwaltungs-Stammdaten, Logo, Absender"
@@ -7908,10 +8854,6 @@ msgstr "Rendiconto del mandato & conto corrente per proprietario"
 #: core/views/fw/listen.py:780
 msgid "Objekte & Unterhalt"
 msgstr "Oggetti & manutenzione"
-
-#: core/views/fw/listen.py:781
-msgid "Reparaturkosten"
-msgstr "Costi di riparazione"
 
 #: core/views/fw/listen.py:782
 msgid "Kosten je Liegenschaft (offen/effektiv)"
@@ -8200,6 +9142,30 @@ msgstr "In attesa di Lei"
 msgid "Handwerker beauftragt"
 msgstr "Artigiano incaricato"
 
+#: faelle/akten.py:46
+msgid "Chronik"
+msgstr "Cronaca"
+
+#: faelle/akten.py:47
+msgid "Stammdaten"
+msgstr "Dati di base"
+
+#: faelle/akten.py:92
+msgid "Einheiten"
+msgstr "Oggetti"
+
+#: faelle/akten.py:108
+msgid "Ausstattung"
+msgstr "Dotazione"
+
+#: faelle/akten.py:126
+msgid "Rollen"
+msgstr "Ruoli"
+
+#: faelle/akten.py:140
+msgid "Handwerker & Kosten"
+msgstr "Artigiani & costi"
+
 #~ msgid "Arbeit"
 #~ msgstr "Lavoro"
 
@@ -8232,9 +9198,6 @@ msgstr "Artigiano incaricato"
 
 #~ msgid "meldet sich nach 14 Tagen"
 #~ msgstr "si segnala dopo 14 giorni"
-
-#~ msgid "Erfasste Zeit"
-#~ msgstr "Tempo registrato"
 
 #~ msgid "min"
 #~ msgstr "min"

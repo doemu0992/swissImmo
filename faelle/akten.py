@@ -31,6 +31,8 @@ stillschweigend aus der Oberfläche, und der Inhalt dahinter wäre unerreichbar.
 """
 from dataclasses import dataclass, field
 
+from django.utils.translation import gettext, gettext_noop
+
 #: Die fünf festen Reiter, in dieser Reihenfolge, für jeden Aktentyp.
 #:
 #: **Stammdaten steht vorn, nicht Chronik** (Entscheid 19.08.2026). Der erste
@@ -41,11 +43,11 @@ from dataclasses import dataclass, field
 REITER_FIX = ('stammdaten', 'chronik', 'finanzen', 'dokumente', 'faelle')
 
 BEZEICHNUNGEN = {
-    'chronik': 'Chronik',
-    'stammdaten': 'Stammdaten',
-    'finanzen': 'Finanzen',
-    'dokumente': 'Dokumente',
-    'faelle': 'Fälle',
+    'chronik': gettext_noop('Chronik'),
+    'stammdaten': gettext_noop('Stammdaten'),
+    'finanzen': gettext_noop('Finanzen'),
+    'dokumente': gettext_noop('Dokumente'),
+    'faelle': gettext_noop('Fälle'),
 }
 
 #: Welcher Reiter welchen Funktionsschlüssel braucht. Nicht genannte sind frei.
@@ -73,21 +75,21 @@ class Aktentyp:
 
     def bezeichnung_von(self, reiter):
         if self.eigener_reiter and reiter == self.eigener_reiter[0]:
-            return self.eigener_reiter[1]
-        return BEZEICHNUNGEN[reiter]
+            return gettext(self.eigener_reiter[1])
+        return gettext(BEZEICHNUNGEN[reiter])
 
 
 AKTENTYPEN = {
     'mandat': Aktentyp(
         'mandat', 'Mandat', 'crm.Eigentuemer',
-        eigener_reiter=('liegenschaften', 'Liegenschaften'),
+        eigener_reiter=('liegenschaften', gettext_noop('Liegenschaften')),
         alt={'uebersicht': 'stammdaten', 'abrechnung': 'finanzen',
              'kontokorrent': 'finanzen', 'dokumente': 'dokumente',
              'verlauf': 'chronik'}),
 
     'liegenschaft': Aktentyp(
         'liegenschaft', 'Liegenschaft', 'portfolio.Liegenschaft',
-        eigener_reiter=('einheiten', 'Einheiten'),
+        eigener_reiter=('einheiten', gettext_noop('Einheiten')),
         # `unterhalt` fiel bis 4b.3 auf `stammdaten`. Beim Bauen der Reiter
         # zeigte sich, dass das falsch ist: Unterhalt sind DATIERTE Ereignisse
         # mit Kosten — «was geschehen ist», nicht «was das Objekt ist». Genau
@@ -103,7 +105,7 @@ AKTENTYPEN = {
 
     'objekt': Aktentyp(
         'objekt', 'Objekt', 'portfolio.Einheit',
-        eigener_reiter=('ausstattung', 'Ausstattung'),
+        eigener_reiter=('ausstattung', gettext_noop('Ausstattung')),
         alt={'uebersicht': 'stammdaten', 'fotos': 'dokumente',
              'raumbuch': 'ausstattung', 'geraete': 'ausstattung',
              'zaehler': 'ausstattung', 'schluessel': 'ausstattung',
@@ -112,7 +114,7 @@ AKTENTYPEN = {
 
     'mietverhaeltnis': Aktentyp(
         'mietverhaeltnis', 'Mietverhältnis', 'rentals.Mietvertrag',
-        eigener_reiter=('nebenkosten', 'Nebenkosten'),
+        eigener_reiter=('nebenkosten', gettext_noop('Nebenkosten')),
         alt={'uebersicht': 'stammdaten', 'finanzen': 'finanzen',
              'mietzins': 'stammdaten', 'schaeden': 'faelle',
              'pendenzen': 'faelle', 'formulare': 'dokumente',
@@ -121,21 +123,21 @@ AKTENTYPEN = {
 
     'person': Aktentyp(
         'person', 'Person', 'crm.Mieter',
-        eigener_reiter=('rollen', 'Rollen'),
+        eigener_reiter=('rollen', gettext_noop('Rollen')),
         alt={'uebersicht': 'stammdaten', 'vertraege': 'rollen',
              'finanzen': 'finanzen', 'dokumente': 'dokumente',
              'aktivitaet': 'chronik', 'verlauf': 'chronik'}),
 
     'dienstleister': Aktentyp(
         'dienstleister', 'Dienstleister', 'crm.Handwerker',
-        eigener_reiter=('auftraege', 'Aufträge'),
+        eigener_reiter=('auftraege', gettext_noop('Aufträge')),
         alt={'uebersicht': 'stammdaten', 'auftraege': 'auftraege',
              'finanzen': 'finanzen', 'dokumente': 'dokumente',
              'verlauf': 'chronik'}),
 
     'schaden': Aktentyp(
         'schaden', 'Schaden', 'tickets.SchadenMeldung',
-        eigener_reiter=('handwerker', 'Handwerker & Kosten'),
+        eigener_reiter=('handwerker', gettext_noop('Handwerker & Kosten')),
         alt={'uebersicht': 'stammdaten', 'verlauf': 'chronik',
              'handwerker': 'handwerker', 'fotos': 'dokumente'}),
 }

@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
 {% block title %}{{ h.firma }} — swissImmo{% endblock %}
 
@@ -10,7 +10,7 @@
    die Schadensliste durchgehen. {% endcomment %}
 
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
-    <a href="/neu/dienstleister/">Dienstleister</a>
+    <a href="/neu/dienstleister/">{% trans "Dienstleister" %}</a>
     {% zeichen 'weiter' %}
     <b>{{ h.firma }}</b>
 </nav>
@@ -19,39 +19,39 @@
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'arbeit' %}</div>
         <div>
-            <div class="fw-akte-typ">Dienstleister · {{ dl_nummer }}</div>
+            <div class="fw-akte-typ">{% trans "Dienstleister" %} · {{ dl_nummer }}</div>
             <h1>{{ h.firma }}</h1>
             <div class="fw-akte-pfad">
-                {% if h.kontaktperson %}<div class="fw-pz"><span>Kontakt</span><b>{{ h.kontaktperson }}</b></div>{% endif %}
-                <div class="fw-pz"><span>Branche</span><b>{{ h.get_branche_display }}</b></div>
-                {% if h.telefon or h.email %}<div class="fw-pz"><span>Erreichbar</span><b>{{ h.telefon }}{% if h.telefon and h.email %} · {% endif %}{{ h.email }}</b></div>{% endif %}
+                {% if h.kontaktperson %}<div class="fw-pz"><span>{% trans "Kontakt" %}</span><b>{{ h.kontaktperson }}</b></div>{% endif %}
+                <div class="fw-pz"><span>{% trans "Branche" %}</span><b>{{ h.get_branche_display }}</b></div>
+                {% if h.telefon or h.email %}<div class="fw-pz"><span>{% trans "Erreichbar" %}</span><b>{{ h.telefon }}{% if h.telefon and h.email %} · {% endif %}{{ h.email }}</b></div>{% endif %}
             </div>
             <div class="flex flex-wrap gap-1.5 mt-2.5">
                 {% for c in dl_chips %}<span class="fw-chip {{ c.ton }} fw-dot">{{ c.text }}</span>{% endfor %}
             </div>
         </div>
         <div class="fw-akte-rechts">
-            {% if h.telefon %}<a href="tel:{{ h.telefon }}" class="fw-btn">{% zeichen 'senden' %}Anrufen</a>{% endif %}
-            <a href="/neu/dienstleister/{{ h.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}Bearbeiten</a>
+            {% if h.telefon %}<a href="tel:{{ h.telefon }}" class="fw-btn">{% zeichen 'senden' %}{% trans "Anrufen" %}</a>{% endif %}
+            <a href="/neu/dienstleister/{{ h.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
         </div>
     </div>
 
     <div class="fw-kzn">
-        <div><div class="fw-l">Offene Aufträge</div>
+        <div><div class="fw-l">{% trans "Offene Aufträge" %}</div>
             <div class="fw-w{% if dl_offen %} warn{% endif %}">{{ dl_offen }}</div>
-            <div class="fw-f fw-lang">{% if dl_liegen %}{{ dl_liegen }} älter als 30 Tage{% elif dl_offen %}alle jünger als 30 Tage{% else %}nichts offen{% endif %}</div></div>
-        <div><div class="fw-l">Aufträge gesamt</div>
+            <div class="fw-f fw-lang">{% if dl_liegen %}{% blocktrans with n=dl_liegen %}{{ n }} älter als 30 Tage{% endblocktrans %}{% elif dl_offen %}{% trans "alle jünger als 30 Tage" %}{% else %}{% trans "nichts offen" %}{% endif %}</div></div>
+        <div><div class="fw-l">{% trans "Aufträge gesamt" %}</div>
             <div class="fw-w">{{ auftraege|length }}</div>
-            <div class="fw-f">seit Erfassung</div></div>
-        <div><div class="fw-l">Kosten {{ heute|date:"Y" }}</div>
+            <div class="fw-f">{% trans "seit Erfassung" %}</div></div>
+        <div><div class="fw-l">{% blocktrans with jahr=heute|date:"Y" %}Kosten {{ jahr }}{% endblocktrans %}</div>
             <div class="fw-w">CHF {{ dl_kosten_jahr|chf }}</div>
             {% comment %} Die Trennung muss sichtbar sein: Eine Summe, die
                effektive und geschaetzte Kosten still vermischt, sieht genauer
                aus, als sie ist. {% endcomment %}
-            <div class="fw-f fw-lang">{% if kosten_geschaetzt_anteil %}davon CHF {{ kosten_geschaetzt_anteil|chf }} geschätzt{% else %}alle Beträge effektiv{% endif %}</div></div>
-        <div><div class="fw-l">Schlüssel</div>
+            <div class="fw-f fw-lang">{% if kosten_geschaetzt_anteil %}{% blocktrans with b=kosten_geschaetzt_anteil|chf %}davon CHF {{ b }} geschätzt{% endblocktrans %}{% else %}{% trans "alle Beträge effektiv" %}{% endif %}</div></div>
+        <div><div class="fw-l">{% trans "Schlüssel" %}</div>
             <div class="fw-w{% if schluessel %} warn{% endif %}">{{ schluessel|length }}</div>
-            <div class="fw-f">{% if schluessel %}nicht zurückgegeben{% else %}keine ausgegeben{% endif %}</div></div>
+            <div class="fw-f">{% if schluessel %}{% trans "nicht zurückgegeben" %}{% else %}{% trans "keine ausgegeben" %}{% endif %}</div></div>
     </div>
     {% include 'fw/_detail_tabs.html' with gruppe='dl' tabs=tab_liste %}
 </div>
@@ -72,15 +72,15 @@
 <div data-panel="dl" id="dl-stammdaten">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'person' %}</span>
-            <span class="fw-t">Angaben</span></div>
+            <span class="fw-t">{% trans "Angaben" %}</span></div>
         <table class="fw-table" data-stack>
             <tbody>
-                <tr><td data-label="Feld">Firma</td><td data-label="Wert">{{ h.firma }}</td></tr>
-                <tr><td data-label="Feld">Kontaktperson</td><td data-label="Wert">{{ h.kontaktperson|default:"—" }}</td></tr>
-                <tr><td data-label="Feld">Branche</td><td data-label="Wert">{{ h.get_branche_display }}</td></tr>
-                <tr><td data-label="Feld">Telefon</td><td data-label="Wert">{% if h.telefon %}<a href="tel:{{ h.telefon }}" class="fw-link">{{ h.telefon }}</a>{% else %}<span class="fw-warnton">nicht erfasst</span>{% endif %}</td></tr>
-                <tr><td data-label="Feld">E-Mail</td><td data-label="Wert">{% if h.email %}<a href="mailto:{{ h.email }}" class="fw-link">{{ h.email }}</a>{% else %}—{% endif %}</td></tr>
-                <tr><td data-label="Feld">Erfasst</td><td data-label="Wert">{{ h.erstellt_am|date:"d.m.Y" }}</td></tr>
+                <tr><td data-label="Feld">{% trans "Firma" %}</td><td data-label="Wert">{{ h.firma }}</td></tr>
+                <tr><td data-label="Feld">{% trans "Kontaktperson" %}</td><td data-label="Wert">{{ h.kontaktperson|default:"—" }}</td></tr>
+                <tr><td data-label="Feld">{% trans "Branche" %}</td><td data-label="Wert">{{ h.get_branche_display }}</td></tr>
+                <tr><td data-label="Feld">{% trans "Telefon" %}</td><td data-label="Wert">{% if h.telefon %}<a href="tel:{{ h.telefon }}" class="fw-link">{{ h.telefon }}</a>{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}</td></tr>
+                <tr><td data-label="Feld">{% trans "E-Mail" %}</td><td data-label="Wert">{% if h.email %}<a href="mailto:{{ h.email }}" class="fw-link">{{ h.email }}</a>{% else %}—{% endif %}</td></tr>
+                <tr><td data-label="Feld">{% trans "Erfasst" %}</td><td data-label="Wert">{{ h.erstellt_am|date:"d.m.Y" }}</td></tr>
             </tbody>
         </table>
     </div>
@@ -88,14 +88,14 @@
     {% if schluessel %}
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon warn">{% zeichen 'schluessel' %}</span>
-            <span class="fw-t">Ausgegebene Schlüssel</span>
-            <span class="fw-neben">{{ schluessel|length }} nicht zurückgegeben</span></div>
+            <span class="fw-t">{% trans "Ausgegebene Schlüssel" %}</span>
+            <span class="fw-neben">{% blocktrans with n=schluessel|length %}{{ n }} nicht zurückgegeben{% endblocktrans %}</span></div>
         {% for a in schluessel %}
         <div class="fw-zeile">
             <span class="fw-marker warn"></span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ a.schluessel.bezeichnung }}</div>
-                <div class="fw-s">ausgegeben am {{ a.ausgegeben_am|date:"d.m.Y" }}</div>
+                <div class="fw-s">{% blocktrans with d=a.ausgegeben_am|date:"d.m.Y" %}ausgegeben am {{ d }}{% endblocktrans %}</div>
             </div>
         </div>
         {% endfor %}
@@ -107,15 +107,15 @@
 <div data-panel="dl" id="dl-auftraege" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon{% if dl_offen %} warn{% endif %}">{% zeichen 'dokument' %}</span>
-            <span class="fw-t">Aufträge</span>
-            <span class="fw-neben">{{ dl_offen }} offen von {{ auftraege|length }}</span></div>
+            <span class="fw-t">{% trans "Aufträge" %}</span>
+            <span class="fw-neben">{% blocktrans with n=dl_offen total=auftraege|length %}{{ n }} offen von {{ total }}{% endblocktrans %}</span></div>
         {% for a in auftraege %}
         <div class="fw-zeile">
             <span class="fw-marker {% if a.status == 'erledigt' %}good{% elif a.liegt %}crit{% else %}warn{% endif %}"></span>
             <span class="fw-ikon">{% zeichen 'arbeit' %}</span>
             <div class="fw-mitte">
-                <div class="fw-t">{% if a.ticket %}{{ a.ticket.titel|default:a.ticket.beschreibung|truncatechars:70 }}{% else %}Auftrag {{ a.id }}{% endif %}</div>
-                <div class="fw-s">{{ a.get_status_display }}{% if a.beauftragt_am %} · beauftragt {{ a.beauftragt_am|date:"d.m.Y" }}{% endif %}{% if a.bemerkung %} · {{ a.bemerkung|truncatechars:60 }}{% endif %}</div>
+                <div class="fw-t">{% if a.ticket %}{{ a.ticket.titel|default:a.ticket.beschreibung|truncatechars:70 }}{% else %}{% blocktrans with id=a.id %}Auftrag {{ id }}{% endblocktrans %}{% endif %}</div>
+                <div class="fw-s">{{ a.get_status_display }}{% if a.beauftragt_am %} · {% blocktrans with d=a.beauftragt_am|date:"d.m.Y" %}beauftragt {{ d }}{% endblocktrans %}{% endif %}{% if a.bemerkung %} · {{ a.bemerkung|truncatechars:60 }}{% endif %}</div>
             </div>
             {% if a.kosten_effektiv %}
             <span class="fw-betrag">CHF {{ a.kosten_effektiv|chf }}</span>
@@ -124,10 +124,10 @@
                sonst liest sich eine Schaetzung wie eine Rechnung. {% endcomment %}
             <span class="fw-betrag mut">≈ CHF {{ a.kosten_geschaetzt|chf }}</span>
             {% endif %}
-            {% if a.ticket_id %}<a href="/neu/schaeden/{{ a.ticket_id }}/" class="fw-btn">Zum Schaden</a>{% endif %}
+            {% if a.ticket_id %}<a href="/neu/schaeden/{{ a.ticket_id }}/" class="fw-btn">{% trans "Zum Schaden" %}</a>{% endif %}
         </div>
         {% empty %}
-        <p class="fw-leer">Kein Auftrag an diesen Dienstleister vergeben.</p>
+        <p class="fw-leer">{% trans "Kein Auftrag an diesen Dienstleister vergeben." %}</p>
         {% endfor %}
     </div>
 </div>
@@ -136,7 +136,7 @@
 <div data-panel="dl" id="dl-finanzen" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'rechnung' %}</span>
-            <span class="fw-t">Rechnungen zu Aufträgen</span></div>
+            <span class="fw-t">{% trans "Rechnungen zu Aufträgen" %}</span></div>
         {% for a in auftraege %}{% if a.kreditoren_rechnung_id %}
         <div class="fw-zeile">
             <span class="fw-ikon">{% zeichen 'rechnung' %}</span>
@@ -145,14 +145,14 @@
                 <div class="fw-s">{{ a.kreditoren_rechnung.get_status_display }}{% if a.kreditoren_rechnung.datum %} · {{ a.kreditoren_rechnung.datum|date:"d.m.Y" }}{% endif %}</div>
             </div>
             <span class="fw-betrag">CHF {{ a.kreditoren_rechnung.betrag|chf }}</span>
-            <a href="/neu/kreditoren/" class="fw-btn">Kreditoren</a>
+            <a href="/neu/kreditoren/" class="fw-btn">{% trans "Kreditoren" %}</a>
         </div>
         {% endif %}{% empty %}
-        <p class="fw-leer">Kein Auftrag erfasst.</p>
+        <p class="fw-leer">{% trans "Kein Auftrag erfasst." %}</p>
         {% endfor %}
         <div class="fw-fuss">
-            <a href="/neu/lieferantenkonten/" class="fw-link">Lieferantenkonten</a>
-            <span>Kosten {{ heute|date:"Y" }}: CHF {{ dl_kosten_jahr|chf }}{% if kosten_geschaetzt_anteil %} (davon CHF {{ kosten_geschaetzt_anteil|chf }} geschätzt){% endif %}</span>
+            <a href="/neu/lieferantenkonten/" class="fw-link">{% trans "Lieferantenkonten" %}</a>
+            <span>{% blocktrans with jahr=heute|date:"Y" b=dl_kosten_jahr|chf %}Kosten {{ jahr }}: CHF {{ b }}{% endblocktrans %}{% if kosten_geschaetzt_anteil %} ({% blocktrans with b=kosten_geschaetzt_anteil|chf %}davon CHF {{ b }} geschätzt{% endblocktrans %}){% endif %}</span>
         </div>
     </div>
 </div>
@@ -161,13 +161,11 @@
 <div data-panel="dl" id="dl-dokumente" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
-            <span class="fw-t">Dokumente</span></div>
+            <span class="fw-t">{% trans "Dokumente" %}</span></div>
         {% comment %} `crm.Handwerker` führt keine Dokumentenbeziehung. Das ist
            eine Lücke im Datenmodell, keine leere Liste — und es steht hier so,
            statt einen Platzhalter zu zeigen, der Vollständigkeit vortäuscht. {% endcomment %}
-        <p class="fw-leer">Zum Dienstleister selbst lassen sich heute keine Dokumente
-            ablegen — das Datenmodell führt keine Beziehung dafür. Verträge und
-            Offerten hängen an der jeweiligen Schadensmeldung.</p>
+        <p class="fw-leer">{% trans "Zum Dienstleister selbst lassen sich heute keine Dokumente ablegen — das Datenmodell führt keine Beziehung dafür. Verträge und Offerten hängen an der jeweiligen Schadensmeldung." %}</p>
     </div>
 </div>
 
@@ -175,7 +173,7 @@
 <div data-panel="dl" id="dl-faelle" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
-            <span class="fw-t">Fälle</span><span class="fw-neben">{{ dl_faelle|length }}</span></div>
+            <span class="fw-t">{% trans "Fälle" %}</span><span class="fw-neben">{{ dl_faelle|length }}</span></div>
         {% for f in dl_faelle %}
         <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
             <span class="fw-marker {% if f.ist_liegengeblieben %}crit{% elif f.status == 'wartet' %}warn{% endif %}"></span>
@@ -186,7 +184,7 @@
             <div class="fw-zeit">{{ f.eroeffnet_am|date:"d.m.Y" }}</div>
         </a>
         {% empty %}
-        <p class="fw-leer">Kein Fall zu diesem Dienstleister.</p>
+        <p class="fw-leer">{% trans "Kein Fall zu diesem Dienstleister." %}</p>
         {% endfor %}
     </div>
 </div>
@@ -195,7 +193,7 @@
 <div data-panel="dl" id="dl-chronik" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
-            <span class="fw-t">Verlauf</span></div>
+            <span class="fw-t">{% trans "Verlauf" %}</span></div>
         {% comment %} Die Chronik eines Dienstleisters ist die Folge seiner
            Auftraege — `AktivitaetsLog` kennt keinen Ziel-Typ dafuer, und ein
            Abgleich ueber den Firmennamen waere geraten. {% endcomment %}
@@ -204,12 +202,12 @@
             <span class="fw-marker {% if a.status == 'erledigt' %}good{% else %}warn{% endif %}"></span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ a.get_status_display }}{% if a.ticket %} · {{ a.ticket.titel|default:a.ticket.beschreibung|truncatechars:50 }}{% endif %}</div>
-                <div class="fw-s">{% if a.freigabe_status %}Freigabe: {{ a.get_freigabe_status_display }}{% endif %}{% if a.freigabe_kommentar %} · {{ a.freigabe_kommentar }}{% endif %}</div>
+                <div class="fw-s">{% if a.freigabe_status %}{% trans "Freigabe:" %} {{ a.get_freigabe_status_display }}{% endif %}{% if a.freigabe_kommentar %} · {{ a.freigabe_kommentar }}{% endif %}</div>
             </div>
             <div class="fw-zeit">{{ a.beauftragt_am|date:"d.m.Y"|default:"—" }}</div>
         </div>
         {% empty %}
-        <p class="fw-leer">Noch kein Auftrag — also kein Verlauf.</p>
+        <p class="fw-leer">{% trans "Noch kein Auftrag — also kein Verlauf." %}</p>
         {% endfor %}
     </div>
 </div>

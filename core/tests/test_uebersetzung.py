@@ -157,6 +157,15 @@ UEBERSETZT = (
     'fw/mandat_abrechnung.html',
     'fw/nebenkosten_detail.html',
     'fw/weiterverrechnung.html',
+    # Tranche «Akten-Details A»
+    'fw/mandat_detail.html',
+    'fw/mandat_form.html',
+    'fw/dienstleister_detail.html',
+    'fw/suche.html',
+    'fw/dokumente.html',
+    'fw/pendenzen.html',
+    'fw/schaeden.html',
+    'fw/schaden_kosten.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -248,6 +257,10 @@ STICHPROBE = {
                            'it': 'Scheda conto', 'en': 'Account ledger'},
     'Offener Saldo':      {'de': 'Offener Saldo', 'fr': 'Solde ouvert',
                            'it': 'Saldo aperto', 'en': 'Open balance'},
+    'Kostenübersicht':    {'de': 'Kostenübersicht', 'fr': 'Aperçu des coûts',
+                           'it': 'Panoramica dei costi', 'en': 'Cost overview'},
+    'Neue Pendenz':       {'de': 'Neue Pendenz', 'fr': 'Nouvelle tâche en suspens',
+                           'it': 'Nuova pendenza', 'en': 'New to-do'},
 }
 
 

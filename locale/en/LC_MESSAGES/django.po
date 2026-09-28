@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 00:11+0200\n"
+"POT-Creation-Date: 2026-09-29 00:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,8 +52,9 @@ msgstr "Files"
 
 #: core/navigation.py:136 core/templates/fw/dashboard.html:339
 #: core/templates/fw/eigentuemer_kontokorrent.html:7
-#: core/templates/fw/mandat_abrechnung.html:7 core/templates/fw/mandate.html:3
-#: core/templates/fw/mandate.html:6
+#: core/templates/fw/mandat_abrechnung.html:7
+#: core/templates/fw/mandat_detail.html:17 core/templates/fw/mandat_form.html:6
+#: core/templates/fw/mandate.html:3 core/templates/fw/mandate.html:6
 msgid "Mandate"
 msgstr "Mandates"
 
@@ -62,12 +63,14 @@ msgstr "Mandates"
 #: core/templates/fw/liegenschaften.html:10
 #: core/templates/fw/liegenschaften.html:38
 #: core/templates/fw/mandat_abrechnung.html:53
+#: core/templates/fw/mandat_detail.html:149 core/templates/fw/suche.html:37
+#: faelle/akten.py:85
 msgid "Liegenschaften"
 msgstr "Properties"
 
 #: core/navigation.py:138 core/templates/fw/liegenschaften.html:43
 #: core/templates/fw/objekte.html:4 core/templates/fw/objekte.html:23
-#: core/templates/fw/objekte.html:34
+#: core/templates/fw/objekte.html:34 core/templates/fw/suche.html:53
 msgid "Objekte"
 msgstr "Units"
 
@@ -78,15 +81,18 @@ msgstr "Tenancies"
 
 #: core/navigation.py:140 core/templates/fw/kontenplan.html:64
 #: core/templates/fw/personen.html:3 core/templates/fw/personen.html:9
+#: core/templates/fw/suche.html:21
 msgid "Personen"
 msgstr "People"
 
 #: core/navigation.py:141 core/templates/fw/dienstleister.html:3
 #: core/templates/fw/dienstleister.html:8
+#: core/templates/fw/dienstleister_detail.html:14
+#: core/templates/fw/dienstleister_detail.html:23
 msgid "Dienstleister"
 msgstr "Service providers"
 
-#: core/navigation.py:144
+#: core/navigation.py:144 core/templates/fw/schaden_kosten.html:50
 msgid "Schäden"
 msgstr "Damage"
 
@@ -140,7 +146,7 @@ msgstr "Payment run"
 
 #: core/navigation.py:159 core/templates/fw/finanzen.html:139
 #: core/templates/fw/nebenkosten.html:4 core/templates/fw/nebenkosten.html:9
-#: core/templates/fw/nebenkosten_detail.html:10
+#: core/templates/fw/nebenkosten_detail.html:10 faelle/akten.py:117
 msgid "Nebenkosten"
 msgstr "Service charges"
 
@@ -158,7 +164,7 @@ msgid "MWST"
 msgstr "VAT"
 
 #: core/navigation.py:166 core/templates/fw/finanzen.html:4
-#: core/views/fw/listen.py:752
+#: core/views/fw/listen.py:752 faelle/akten.py:48
 msgid "Finanzen"
 msgstr "Finance"
 
@@ -182,8 +188,8 @@ msgstr "Debtors"
 msgid "Kautionen"
 msgstr "Rent deposits"
 
-#: core/navigation.py:170 core/templates/fw/kreditoren.html:4
-#: core/templates/fw/kreditoren.html:9
+#: core/navigation.py:170 core/templates/fw/dienstleister_detail.html:151
+#: core/templates/fw/kreditoren.html:4 core/templates/fw/kreditoren.html:9
 #: core/templates/fw/lieferantenkonto.html:16
 msgid "Kreditoren"
 msgstr "Creditors"
@@ -192,7 +198,8 @@ msgstr "Creditors"
 msgid "Verbindlichkeiten"
 msgstr "Payables"
 
-#: core/navigation.py:171 core/templates/fw/finanzen.html:136
+#: core/navigation.py:171 core/templates/fw/dienstleister_detail.html:157
+#: core/templates/fw/finanzen.html:136
 #: core/templates/fw/lieferantenkonten.html:4
 #: core/templates/fw/lieferantenkonten.html:8
 #: core/templates/fw/lieferantenkonto.html:7 core/views/fw/listen.py:768
@@ -246,6 +253,9 @@ msgstr "Analysis"
 #: core/templates/core/mieter_dokumente.html:10
 #: core/templates/core/mieter_portal.html:73
 #: core/templates/core/portal.html:327 core/templates/fw/base.html:219
+#: core/templates/fw/dienstleister_detail.html:167
+#: core/templates/fw/dokumente.html:3 core/templates/fw/dokumente.html:9
+#: core/templates/fw/mandat_detail.html:247 faelle/akten.py:49
 msgid "Dokumente"
 msgstr "Documents"
 
@@ -472,6 +482,7 @@ msgid "Melden Sie sich im Verwaltungs-Cockpit an."
 msgstr "Sign in to the management cockpit."
 
 #: core/templates/core/login.html:177 core/templates/core/portal_login.html:179
+#: core/templates/fw/mandat_form.html:98
 msgid "Benutzername"
 msgstr "Username"
 
@@ -535,7 +546,9 @@ msgstr ""
 "Name and address can only be changed by the management — please use the "
 "“Message” field below."
 
-#: core/templates/core/mieter_daten.html:28 core/templates/fw/mandate.html:16
+#: core/templates/core/mieter_daten.html:28
+#: core/templates/fw/dienstleister_detail.html:26
+#: core/templates/fw/mandat_detail.html:116 core/templates/fw/mandate.html:16
 #: core/templates/fw/personen.html:67
 msgid "Kontakt"
 msgstr "Contact"
@@ -547,6 +560,9 @@ msgstr "Mobile"
 #: core/templates/core/mieter_daten.html:32 core/templates/fw/account.html:100
 #: core/templates/fw/dienstleister.html:35
 #: core/templates/fw/dienstleister.html:103
+#: core/templates/fw/dienstleister_detail.html:83
+#: core/templates/fw/mandat_detail.html:176
+#: core/templates/fw/mandat_form.html:37
 msgid "Telefon"
 msgstr "Phone"
 
@@ -555,6 +571,9 @@ msgstr "Phone"
 #: core/templates/fw/benutzer.html:18 core/templates/fw/benutzer_form.html:30
 #: core/templates/fw/dienstleister.html:33
 #: core/templates/fw/dienstleister.html:101
+#: core/templates/fw/dienstleister_detail.html:84
+#: core/templates/fw/mandat_detail.html:175
+#: core/templates/fw/mandat_form.html:27
 msgid "E-Mail"
 msgstr "Email"
 
@@ -793,8 +812,8 @@ msgstr "Open invoices with QR payment slip to download."
 #: core/templates/fw/laeufe.html:20 core/templates/fw/lieferantenkonten.html:30
 #: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
 #: core/templates/fw/nebenkosten_detail.html:34
-#: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
-#: core/views/fw/_basis.py:353
+#: core/templates/fw/schaeden.html:73 core/templates/fw/zahllauf.html:68
+#: core/templates/fw/zahllauf.html:150 core/views/fw/_basis.py:353
 msgid "Offen"
 msgstr "Open"
 
@@ -870,6 +889,7 @@ msgid "Was ist betroffen?"
 msgstr "What is affected?"
 
 #: core/templates/core/mieter_schaden.html:28
+#: core/templates/fw/schaeden.html:29
 msgid "z.B. Wasserhahn tropft"
 msgstr "e.g. dripping tap"
 
@@ -884,6 +904,7 @@ msgstr "e.g. bathroom"
 #: core/templates/core/mieter_schaden.html:37
 #: core/templates/fw/debitoren.html:47
 #: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/pendenzen.html:123 core/templates/fw/schaeden.html:40
 msgid "Beschreibung"
 msgstr "Description"
 
@@ -933,6 +954,7 @@ msgid "gemeldet %(zeit)s"
 msgstr "reported %(zeit)s"
 
 #: core/templates/core/mieter_ticket_detail.html:31
+#: core/templates/fw/dienstleister_detail.html:200
 msgid "Verlauf"
 msgstr "History"
 
@@ -1116,7 +1138,7 @@ msgstr "Let"
 
 #: core/templates/core/portal.html:258 core/templates/core/portal.html:298
 #: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
-#: core/templates/fw/objekte.html:72
+#: core/templates/fw/mandat_detail.html:207 core/templates/fw/objekte.html:72
 #, python-format
 msgid "%(n)s leer"
 msgstr "%(n)s vacant"
@@ -1434,7 +1456,8 @@ msgstr "Inbox active — fetch emails from this mailbox"
 #: core/templates/fw/anlagen.html:128 core/templates/fw/benutzer_form.html:55
 #: core/templates/fw/dienstleister.html:107
 #: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:308
-#: core/templates/fw/mwst.html:117 core/templates/fw/regelsatz_form.html:104
+#: core/templates/fw/mandat_form.html:76 core/templates/fw/mwst.html:117
+#: core/templates/fw/regelsatz_form.html:104
 #: core/templates/fw/vorlage_form.html:37
 msgid "Speichern"
 msgstr "Save"
@@ -1442,7 +1465,7 @@ msgstr "Save"
 #: core/templates/core/postfach_form.html:142
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
-#: core/templates/fw/kreditoren.html:307
+#: core/templates/fw/kreditoren.html:307 core/templates/fw/mandat_form.html:78
 #: core/templates/fw/regelsatz_form.html:105
 #: core/templates/fw/vorlage_form.html:39
 #: core/templates/fw/weiterverrechnung.html:113
@@ -1498,7 +1521,9 @@ msgstr "Not set up — no emails are fetched for this purpose."
 
 #: core/templates/core/postfach_liste.html:80
 #: core/templates/fw/benutzer.html:35 core/templates/fw/dienstleister.html:75
-#: core/templates/fw/kreditoren.html:242 core/templates/fw/mandate.html:36
+#: core/templates/fw/dienstleister_detail.html:36
+#: core/templates/fw/kreditoren.html:242
+#: core/templates/fw/mandat_detail.html:125 core/templates/fw/mandate.html:36
 #: core/templates/fw/regelwerk.html:56 core/templates/fw/vorlagen.html:37
 msgid "Bearbeiten"
 msgstr "Edit"
@@ -1522,8 +1547,9 @@ msgstr ""
 
 #: core/templates/core/postfach_liste.html:91
 #: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
-#: core/templates/fw/hypotheken.html:115 core/templates/fw/kreditoren.html:245
-#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
+#: core/templates/fw/dokumente.html:94 core/templates/fw/hypotheken.html:115
+#: core/templates/fw/kreditoren.html:245 core/templates/fw/mandate.html:42
+#: core/templates/fw/nebenkosten.html:98 core/templates/fw/pendenzen.html:73
 msgid "Löschen"
 msgstr "Delete"
 
@@ -1686,7 +1712,8 @@ msgstr ""
 
 #: core/templates/core/zweifaktor_uebersicht.html:24
 #: core/templates/fw/abonnement.html:38 core/templates/fw/integrationen.html:61
-#: core/views/fw/_basis.py:337 core/views/fw/profil.py:911
+#: core/templates/fw/mandat_form.html:91 core/views/fw/_basis.py:337
+#: core/views/fw/profil.py:911
 msgid "Aktiv"
 msgstr "Active"
 
@@ -1846,7 +1873,7 @@ msgstr "no date — avg. age not calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:495
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:508
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -2106,6 +2133,7 @@ msgstr "Note"
 #: core/templates/fw/abwesenheiten.html:41
 #: core/templates/fw/dienstleister.html:37 core/templates/fw/hypotheken.html:44
 #: core/templates/fw/mahnwesen.html:101
+#: core/templates/fw/mandat_detail.html:223
 msgid "Erfassen"
 msgstr "Record"
 
@@ -2265,12 +2293,12 @@ msgstr "Company name"
 msgid "Strasse &amp; Nr."
 msgstr "Street &amp; no."
 
-#: core/templates/fw/account.html:94
+#: core/templates/fw/account.html:94 core/templates/fw/mandat_form.html:33
 msgid "PLZ"
 msgstr "Postcode"
 
-#: core/templates/fw/account.html:96 core/templates/fw/mandate.html:17
-#: core/templates/fw/termine.html:33
+#: core/templates/fw/account.html:96 core/templates/fw/mandat_form.html:35
+#: core/templates/fw/mandate.html:17 core/templates/fw/termine.html:33
 msgid "Ort"
 msgstr "Location"
 
@@ -2359,10 +2387,12 @@ msgstr "Asset"
 #: core/templates/fw/anlagen.html:102 core/templates/fw/anlagen.html:120
 #: core/templates/fw/auswertung.html:29 core/templates/fw/bankabgleich.html:185
 #: core/templates/fw/betriebskostenspiegel.html:43
+#: core/templates/fw/dokumente.html:28
 #: core/templates/fw/eigentuemer_kontokorrent.html:59
 #: core/templates/fw/kreditoren.html:78 core/templates/fw/kreditoren.html:289
 #: core/templates/fw/mandat_abrechnung.html:57
 #: core/templates/fw/nebenkosten.html:70 core/templates/fw/objekte.html:74
+#: core/templates/fw/schaden_kosten.html:49
 msgid "Liegenschaft"
 msgstr "Property"
 
@@ -2404,7 +2434,7 @@ msgid "Wert CHF"
 msgstr "Value CHF"
 
 #: core/templates/fw/anlagen.html:59 core/templates/fw/buchhaltung.html:41
-#: core/templates/fw/buchhaltung.html:367
+#: core/templates/fw/buchhaltung.html:367 core/templates/fw/dokumente.html:71
 #: core/templates/fw/eigentuemer_kontokorrent.html:161
 #: core/templates/fw/kontoblatt.html:68
 #: core/templates/fw/lieferantenkonto.html:70
@@ -2580,11 +2610,12 @@ msgstr "filtered to %(strasse)s"
 
 #: core/templates/fw/bankabgleich.html:11 core/templates/fw/bankkonten.html:11
 #: core/templates/fw/buchhaltung.html:14 core/templates/fw/debitoren.html:11
-#: core/templates/fw/hypotheken.html:10 core/templates/fw/kontenplan.html:20
-#: core/templates/fw/kreditoren.html:26
+#: core/templates/fw/dokumente.html:10 core/templates/fw/hypotheken.html:10
+#: core/templates/fw/kontenplan.html:20 core/templates/fw/kreditoren.html:26
 #: core/templates/fw/liegenschaften.html:11 core/templates/fw/mahnwesen.html:13
 #: core/templates/fw/mietzins.html:11 core/templates/fw/nebenkosten.html:14
-#: core/templates/fw/objekte.html:25 core/templates/fw/personen.html:10
+#: core/templates/fw/objekte.html:25 core/templates/fw/pendenzen.html:9
+#: core/templates/fw/personen.html:10 core/templates/fw/schaeden.html:10
 #: core/templates/fw/vertraege.html:14 core/templates/fw/zahllauf.html:15
 msgid "aufheben"
 msgstr "clear"
@@ -2688,6 +2719,7 @@ msgstr "Bank inbox — open statement lines"
 
 #: core/templates/fw/bankabgleich.html:128 core/templates/fw/dashboard.html:292
 #: core/templates/fw/dienstleister.html:74
+#: core/templates/fw/schaden_kosten.html:61 core/views/fw/akten_neu.py:81
 #, python-format
 msgid "%(n)s offen"
 msgstr "%(n)s open"
@@ -2731,7 +2763,7 @@ msgid "Offene Lieferantenrechnung"
 msgstr "Open supplier invoice"
 
 #: core/templates/fw/bankabgleich.html:162 core/templates/fw/hypotheken.html:25
-#: core/templates/fw/nebenkosten.html:23
+#: core/templates/fw/nebenkosten.html:23 core/templates/fw/schaeden.html:32
 #: core/templates/fw/weiterverrechnung.html:70
 msgid "wählen"
 msgstr "choose"
@@ -2754,8 +2786,9 @@ msgid "Belegtext"
 msgstr "Voucher text"
 
 #: core/templates/fw/bankabgleich.html:187
-#: core/templates/fw/buchhaltung.html:48 core/templates/fw/kreditoren.html:80
-#: core/templates/fw/kreditoren.html:291
+#: core/templates/fw/buchhaltung.html:48 core/templates/fw/dokumente.html:30
+#: core/templates/fw/kreditoren.html:80 core/templates/fw/kreditoren.html:291
+#: core/templates/fw/pendenzen.html:120
 msgid "keine"
 msgstr "none"
 
@@ -2973,6 +3006,7 @@ msgid "Bank nicht hinterlegt"
 msgstr "Bank not on file"
 
 #: core/templates/fw/bankkonten.html:58
+#: core/templates/fw/mandat_detail.html:152
 msgid "Soll / Monat"
 msgstr "Due / month"
 
@@ -3123,14 +3157,15 @@ msgid "Neuer Benutzer"
 msgstr "New user"
 
 #: core/templates/fw/benutzer_form.html:3
-#: core/templates/fw/benutzer_form.html:13
-#: core/templates/fw/vorlage_form.html:3 core/templates/fw/vorlage_form.html:13
+#: core/templates/fw/benutzer_form.html:13 core/templates/fw/mandat_form.html:3
+#: core/templates/fw/mandat_form.html:13 core/templates/fw/vorlage_form.html:3
+#: core/templates/fw/vorlage_form.html:13
 #, python-format
 msgid "%(name)s bearbeiten"
 msgstr "Edit %(name)s"
 
-#: core/templates/fw/benutzer_form.html:8 core/templates/fw/vorlage_form.html:8
-#: core/views/portal.py:750
+#: core/templates/fw/benutzer_form.html:8 core/templates/fw/mandat_form.html:8
+#: core/templates/fw/vorlage_form.html:8 core/views/portal.py:750
 msgid "Neu"
 msgstr "New"
 
@@ -3146,11 +3181,11 @@ msgstr "Team member with access to the management."
 msgid "Benutzername *"
 msgstr "Username *"
 
-#: core/templates/fw/benutzer_form.html:25
+#: core/templates/fw/benutzer_form.html:25 core/templates/fw/schaeden.html:44
 msgid "Vorname"
 msgstr "First name"
 
-#: core/templates/fw/benutzer_form.html:27
+#: core/templates/fw/benutzer_form.html:27 core/templates/fw/schaeden.html:45
 msgid "Nachname"
 msgstr "Last name"
 
@@ -3192,7 +3227,9 @@ msgid "Interaktive Auswertung"
 msgstr "Interactive analysis"
 
 #: core/templates/fw/berichte.html:13 core/templates/fw/kreditoren.html:13
-#: core/templates/fw/liegenschaften.html:16 core/templates/fw/vorlagen.html:10
+#: core/templates/fw/liegenschaften.html:16
+#: core/templates/fw/mandat_detail.html:128 core/templates/fw/schaeden.html:15
+#: core/templates/fw/vorlagen.html:10
 msgid "Mehr"
 msgstr "More"
 
@@ -3297,6 +3334,7 @@ msgid "Betrag (CHF) *"
 msgstr "Amount (CHF) *"
 
 #: core/templates/fw/buchhaltung.html:46 core/templates/fw/kreditoren.html:52
+#: core/templates/fw/pendenzen.html:118
 msgid "Liegenschaft (optional)"
 msgstr "Property (optional)"
 
@@ -3841,7 +3879,7 @@ msgstr "Cleaning"
 msgid "Schadenersatz"
 msgstr "Damages"
 
-#: core/templates/fw/debitoren.html:38
+#: core/templates/fw/debitoren.html:38 core/templates/fw/pendenzen.html:110
 msgid "Titel *"
 msgstr "Title *"
 
@@ -3899,6 +3937,7 @@ msgid "offen"
 msgstr "open"
 
 #: core/templates/fw/debitoren.html:161 core/templates/fw/debitoren.html:223
+#: core/templates/fw/dokumente.html:25
 msgid "Vertrag"
 msgstr "Lease"
 
@@ -3916,7 +3955,8 @@ msgstr ""
 "entry."
 
 #: core/templates/fw/debitoren.html:181 core/templates/fw/debitoren.html:243
-#: core/templates/fw/dienstleister.html:130 core/templates/fw/personen.html:56
+#: core/templates/fw/dienstleister.html:130
+#: core/templates/fw/dokumente.html:102 core/templates/fw/personen.html:56
 #: core/templates/fw/personen.html:105 core/templates/fw/vertraege.html:58
 #: core/templates/fw/vertraege.html:106
 msgid "Keine Treffer"
@@ -3930,7 +3970,8 @@ msgstr "No invoices found for this filter."
 msgid "Fälligkeit"
 msgstr "Due date"
 
-#: core/templates/fw/debitoren.html:194 core/templates/fw/termine.html:23
+#: core/templates/fw/debitoren.html:194 core/templates/fw/dokumente.html:21
+#: core/templates/fw/termine.html:23
 #: core/templates/fw/weiterverrechnung.html:37
 #: core/templates/fw/weiterverrechnung.html:77
 msgid "Titel"
@@ -3938,8 +3979,8 @@ msgstr "Title"
 
 #: core/templates/fw/debitoren.html:197 core/templates/fw/kautionen.html:28
 #: core/templates/fw/kreditoren.html:166 core/templates/fw/mieterkonten.html:48
-#: core/templates/fw/nebenkosten.html:74 core/templates/fw/sollstellung.html:87
-#: core/templates/fw/vertraege.html:75
+#: core/templates/fw/nebenkosten.html:74 core/templates/fw/schaeden.html:96
+#: core/templates/fw/sollstellung.html:87 core/templates/fw/vertraege.html:75
 msgid "Status"
 msgstr "Status"
 
@@ -4032,6 +4073,8 @@ msgstr "&gt;90"
 #: core/templates/fw/eigentuemer_kontokorrent.html:80
 #: core/templates/fw/kontenplan.html:150
 #: core/templates/fw/mandat_abrechnung.html:78
+#: core/templates/fw/schaden_kosten.html:54
+#: core/templates/fw/schaden_kosten.html:74
 #: core/templates/fw/sollstellung.html:86
 msgid "Total"
 msgstr "Total"
@@ -4086,11 +4129,14 @@ msgstr "Add tradesperson / service provider"
 
 #: core/templates/fw/dienstleister.html:18
 #: core/templates/fw/dienstleister.html:86
+#: core/templates/fw/dienstleister_detail.html:80
 msgid "Firma"
 msgstr "Company"
 
 #: core/templates/fw/dienstleister.html:20
 #: core/templates/fw/dienstleister.html:88
+#: core/templates/fw/dienstleister_detail.html:27
+#: core/templates/fw/dienstleister_detail.html:82
 msgid "Branche"
 msgstr "Trade"
 
@@ -4136,6 +4182,9 @@ msgstr "Cleaning company"
 
 #: core/templates/fw/dienstleister.html:31
 #: core/templates/fw/dienstleister.html:99
+#: core/templates/fw/dienstleister_detail.html:81
+#: core/templates/fw/mandat_detail.html:173
+#: core/templates/fw/mandat_form.html:25
 msgid "Kontaktperson"
 msgstr "Contact person"
 
@@ -4168,6 +4217,261 @@ msgstr "No service providers yet"
 msgid "Handwerker werden in der klassischen Ansicht erfasst."
 msgstr "Tradespeople are added in the classic view."
 
+#: core/templates/fw/dienstleister_detail.html:28
+#: core/templates/fw/mandat_detail.html:118
+msgid "Erreichbar"
+msgstr "Reachable"
+
+#: core/templates/fw/dienstleister_detail.html:35
+msgid "Anrufen"
+msgstr "Call"
+
+#: core/templates/fw/dienstleister_detail.html:41
+msgid "Offene Aufträge"
+msgstr "Open work orders"
+
+#: core/templates/fw/dienstleister_detail.html:43
+#, python-format
+msgid "%(n)s älter als 30 Tage"
+msgstr "%(n)s older than 30 days"
+
+#: core/templates/fw/dienstleister_detail.html:43
+msgid "alle jünger als 30 Tage"
+msgstr "all younger than 30 days"
+
+#: core/templates/fw/dienstleister_detail.html:43
+msgid "nichts offen"
+msgstr "nothing open"
+
+#: core/templates/fw/dienstleister_detail.html:44
+msgid "Aufträge gesamt"
+msgstr "Work orders in total"
+
+#: core/templates/fw/dienstleister_detail.html:46
+msgid "seit Erfassung"
+msgstr "since recording"
+
+#: core/templates/fw/dienstleister_detail.html:47
+#, python-format
+msgid "Kosten %(jahr)s"
+msgstr "Costs %(jahr)s"
+
+#: core/templates/fw/dienstleister_detail.html:53
+#: core/templates/fw/dienstleister_detail.html:158
+#, python-format
+msgid "davon CHF %(b)s geschätzt"
+msgstr "of which CHF %(b)s estimated"
+
+#: core/templates/fw/dienstleister_detail.html:53
+msgid "alle Beträge effektiv"
+msgstr "all amounts actual"
+
+#: core/templates/fw/dienstleister_detail.html:54
+msgid "Schlüssel"
+msgstr "Keys"
+
+#: core/templates/fw/dienstleister_detail.html:56
+msgid "nicht zurückgegeben"
+msgstr "not returned"
+
+#: core/templates/fw/dienstleister_detail.html:56
+msgid "keine ausgegeben"
+msgstr "none issued"
+
+#: core/templates/fw/dienstleister_detail.html:77
+#: core/templates/fw/mandat_detail.html:169
+msgid "Angaben"
+msgstr "Details"
+
+#: core/templates/fw/dienstleister_detail.html:83
+#: core/templates/fw/mandat_detail.html:187
+msgid "nicht erfasst"
+msgstr "not recorded"
+
+#: core/templates/fw/dienstleister_detail.html:85
+msgid "Erfasst"
+msgstr "Recorded"
+
+#: core/templates/fw/dienstleister_detail.html:93
+msgid "Ausgegebene Schlüssel"
+msgstr "Keys issued"
+
+#: core/templates/fw/dienstleister_detail.html:94
+#, python-format
+msgid "%(n)s nicht zurückgegeben"
+msgstr "%(n)s not returned"
+
+#: core/templates/fw/dienstleister_detail.html:100
+#, python-format
+msgid "ausgegeben am %(d)s"
+msgstr "issued on %(d)s"
+
+#: core/templates/fw/dienstleister_detail.html:112
+#: core/templates/fw/schaden_kosten.html:36
+#: core/templates/fw/schaden_kosten.html:51 faelle/akten.py:133
+msgid "Aufträge"
+msgstr "Work orders"
+
+#: core/templates/fw/dienstleister_detail.html:113
+#, python-format
+msgid "%(n)s offen von %(total)s"
+msgstr "%(n)s open of %(total)s"
+
+#: core/templates/fw/dienstleister_detail.html:119
+#, python-format
+msgid "Auftrag %(id)s"
+msgstr "Work order %(id)s"
+
+#: core/templates/fw/dienstleister_detail.html:120
+#, python-format
+msgid "beauftragt %(d)s"
+msgstr "ordered %(d)s"
+
+#: core/templates/fw/dienstleister_detail.html:130
+msgid "Zum Schaden"
+msgstr "To the damage"
+
+#: core/templates/fw/dienstleister_detail.html:133
+msgid "Kein Auftrag an diesen Dienstleister vergeben."
+msgstr "No work order given to this service provider."
+
+#: core/templates/fw/dienstleister_detail.html:142
+msgid "Rechnungen zu Aufträgen"
+msgstr "Invoices for work orders"
+
+#: core/templates/fw/dienstleister_detail.html:154
+msgid "Kein Auftrag erfasst."
+msgstr "No work order recorded."
+
+#: core/templates/fw/dienstleister_detail.html:158
+#, python-format
+msgid "Kosten %(jahr)s: CHF %(b)s"
+msgstr "Costs %(jahr)s: CHF %(b)s"
+
+#: core/templates/fw/dienstleister_detail.html:172
+msgid ""
+"Zum Dienstleister selbst lassen sich heute keine Dokumente ablegen — das "
+"Datenmodell führt keine Beziehung dafür. Verträge und Offerten hängen an der "
+"jeweiligen Schadensmeldung."
+msgstr ""
+"Documents cannot currently be filed on the service provider itself — the "
+"data model has no relation for it. Contracts and quotes hang on the "
+"respective damage report."
+
+#: core/templates/fw/dienstleister_detail.html:180
+#: core/templates/fw/mandat_detail.html:266 faelle/akten.py:50
+msgid "Fälle"
+msgstr "Cases"
+
+#: core/templates/fw/dienstleister_detail.html:191
+msgid "Kein Fall zu diesem Dienstleister."
+msgstr "No case for this service provider."
+
+#: core/templates/fw/dienstleister_detail.html:210
+msgid "Freigabe:"
+msgstr "Approval:"
+
+#: core/templates/fw/dienstleister_detail.html:215
+msgid "Noch kein Auftrag — also kein Verlauf."
+msgstr "No work order yet — so no history."
+
+#: core/templates/fw/dokumente.html:10
+msgid "Zentrale Ablage aus Vertrags- und Objektdokumenten"
+msgstr "Central filing of contract and unit documents"
+
+#: core/templates/fw/dokumente.html:10 core/templates/fw/pendenzen.html:9
+#: core/templates/fw/schaeden.html:10
+#, python-format
+msgid "gefiltert auf %(s)s"
+msgstr "filtered to %(s)s"
+
+#: core/templates/fw/dokumente.html:12 core/templates/fw/dokumente.html:17
+msgid "Dokument hochladen"
+msgstr "Upload document"
+
+#: core/templates/fw/dokumente.html:22
+msgid "(leer = Dateiname)"
+msgstr "(empty = file name)"
+
+#: core/templates/fw/dokumente.html:23 core/templates/fw/dokumente.html:68
+#: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/pendenzen.html:112 core/templates/fw/vorlage_form.html:25
+msgid "Kategorie"
+msgstr "Category"
+
+#: core/templates/fw/dokumente.html:25 core/templates/fw/mandat_detail.html:290
+#: core/templates/fw/regelwerk.html:17
+msgid "Protokoll"
+msgstr "Log"
+
+#: core/templates/fw/dokumente.html:26
+msgid "Korrespondenz"
+msgstr "Correspondence"
+
+#: core/templates/fw/dokumente.html:26
+msgid "Sonstiges"
+msgstr "Other"
+
+#: core/templates/fw/dokumente.html:33 core/templates/fw/schaeden.html:35
+msgid "Objekt (optional)"
+msgstr "Unit (optional)"
+
+#: core/templates/fw/dokumente.html:35
+msgid "keines"
+msgstr "none"
+
+#: core/templates/fw/dokumente.html:38
+msgid "Datei *"
+msgstr "File *"
+
+#: core/templates/fw/dokumente.html:40
+msgid "Hochladen"
+msgstr "Upload"
+
+#: core/templates/fw/dokumente.html:58
+msgid "Dokument oder Kontext suchen…"
+msgstr "Search document or context…"
+
+#: core/templates/fw/dokumente.html:67
+msgid "Dokument"
+msgstr "Document"
+
+#: core/templates/fw/dokumente.html:69
+msgid "Kontext"
+msgstr "Context"
+
+#: core/templates/fw/dokumente.html:70
+msgid "Ablage"
+msgstr "Filing"
+
+#: core/templates/fw/dokumente.html:89
+msgid "Öffnen"
+msgstr "Open"
+
+#: core/templates/fw/dokumente.html:91
+#, python-format
+msgid "Dokument «%(name)s» löschen?"
+msgstr "Delete document «%(name)s»?"
+
+#: core/templates/fw/dokumente.html:102
+msgid "Noch keine Dokumente abgelegt"
+msgstr "No documents filed yet"
+
+#: core/templates/fw/dokumente.html:103
+msgid ""
+"Dokumente entstehen automatisch (unterzeichnete Verträge) oder per Upload in "
+"der klassischen Ansicht."
+msgstr ""
+"Documents are created automatically (signed contracts) or by upload in the "
+"classic view."
+
+#: core/templates/fw/dokumente.html:109
+#, python-format
+msgid "%(n)s Dokument aus Vertrags- und Objektablage"
+msgid_plural "%(n)s Dokumente aus Vertrags- und Objektablage"
+msgstr[0] "%(n)s document from contract and unit files"
+msgstr[1] "%(n)s documents from contract and unit files"
+
 #: core/templates/fw/eigentuemer_kontokorrent.html:4
 #, python-format
 msgid "Kontokorrent %(name)s"
@@ -4175,7 +4479,8 @@ msgstr "Current account %(name)s"
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:9
 #: core/templates/fw/mandat_abrechnung.html:20
-#: core/templates/fw/mandate.html:34
+#: core/templates/fw/mandat_detail.html:131
+#: core/templates/fw/mandat_detail.html:237 core/templates/fw/mandate.html:34
 msgid "Kontokorrent"
 msgstr "Current account"
 
@@ -4297,6 +4602,7 @@ msgstr ""
 "marke hover:underline\">Set it in the mandate</a> to post it here."
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:150
+#: core/templates/fw/mandat_detail.html:132
 msgid "Auszahlung erfassen"
 msgstr "Record payout"
 
@@ -4443,6 +4749,7 @@ msgid "Hypothek erfassen"
 msgstr "Add mortgage"
 
 #: core/templates/fw/hypotheken.html:23 core/templates/fw/nebenkosten.html:21
+#: core/templates/fw/schaeden.html:30
 msgid "Liegenschaft *"
 msgstr "Property *"
 
@@ -4963,6 +5270,7 @@ msgid "Rechnungsdatum"
 msgstr "Invoice date"
 
 #: core/templates/fw/kreditoren.html:92 core/templates/fw/kreditoren.html:279
+#: core/templates/fw/pendenzen.html:116
 msgid "Fällig am"
 msgstr "Due on"
 
@@ -5594,7 +5902,8 @@ msgstr "Security / login"
 msgid "Aktivste Benutzer"
 msgstr "Most active users"
 
-#: core/templates/fw/logbuch.html:44
+#: core/templates/fw/logbuch.html:44 core/templates/fw/schaeden.html:100
+#: core/templates/fw/suche.html:3 core/templates/fw/suche.html:5
 msgid "Suche"
 msgstr "Search"
 
@@ -5863,6 +6172,278 @@ msgstr ""
 "The balance is the payout to the owner (or an additional contribution if "
 "negative)."
 
+#: core/templates/fw/mandat_detail.html:55
+msgid "Was auffällt"
+msgstr "Worth noting"
+
+#: core/templates/fw/mandat_detail.html:83
+msgid "Rentabilität"
+msgstr "Profitability"
+
+#: core/templates/fw/mandat_detail.html:85
+msgid "Honorar pro Jahr"
+msgstr "Fee per year"
+
+#: core/templates/fw/mandat_detail.html:91
+#, python-format
+msgid "%(p)s %% der Sollmiete"
+msgstr "%(p)s %% of target rent"
+
+#: core/templates/fw/mandat_detail.html:91
+msgid "kein Satz hinterlegt"
+msgstr "no rate stored"
+
+#: core/templates/fw/mandat_detail.html:92
+msgid "Erfasster Aufwand"
+msgstr "Recorded effort"
+
+#: core/templates/fw/mandat_detail.html:94
+msgid "auf Fällen dieses Mandats"
+msgstr "on cases of this mandate"
+
+#: core/templates/fw/mandat_detail.html:95
+msgid "CHF pro Stunde"
+msgstr "CHF per hour"
+
+#: core/templates/fw/mandat_detail.html:97
+msgid "Honorar geteilt durch Aufwand"
+msgstr "Fee divided by effort"
+
+#: core/templates/fw/mandat_detail.html:98
+msgid "Datenbasis"
+msgstr "Data basis"
+
+#: core/templates/fw/mandat_detail.html:100
+msgid "Fälle mit erfasster Zeit"
+msgstr "Cases with recorded time"
+
+#: core/templates/fw/mandat_detail.html:105
+#, python-format
+msgid ""
+"Nur %(abdeckung)s %% der Fälle haben Zeit erfasst — die Zahl trägt noch "
+"nicht weit."
+msgstr ""
+"Only %(abdeckung)s %% of cases have recorded time — the figure is not yet "
+"very meaningful."
+
+#: core/templates/fw/mandat_detail.html:113
+msgid "Mandat"
+msgstr "Mandate"
+
+#: core/templates/fw/mandat_detail.html:117
+#: core/templates/fw/mandat_detail.html:174 core/templates/fw/personen.html:68
+msgid "Adresse"
+msgstr "Address"
+
+#: core/templates/fw/mandat_detail.html:130
+#: core/templates/fw/mandat_detail.html:238
+msgid "Eigentümerabrechnung"
+msgstr "Owner statement"
+
+#: core/templates/fw/mandat_detail.html:134
+msgid "Honorar"
+msgstr "Fee"
+
+#: core/templates/fw/mandat_detail.html:135 core/templates/fw/mandate.html:35
+msgid "Mahnstufen"
+msgstr "Dunning levels"
+
+#: core/templates/fw/mandat_detail.html:136
+#: core/templates/fw/mandat_detail.html:189
+msgid "Portalzugang"
+msgstr "Portal access"
+
+#: core/templates/fw/mandat_detail.html:151
+msgid "verwaltet für dieses Mandat"
+msgstr "managed for this mandate"
+
+#: core/templates/fw/mandat_detail.html:154
+msgid "brutto aus aktiven Verträgen"
+msgstr "gross from active contracts"
+
+#: core/templates/fw/mandat_detail.html:155
+#: core/templates/fw/mandat_detail.html:188
+msgid "Honorarsatz"
+msgstr "Fee rate"
+
+#: core/templates/fw/mandat_detail.html:157
+msgid "vereinbart"
+msgstr "agreed"
+
+#: core/templates/fw/mandat_detail.html:157
+#: core/templates/fw/mandat_detail.html:188
+msgid "Vorgabewert der Verwaltung"
+msgstr "Management default value"
+
+#: core/templates/fw/mandat_detail.html:158
+#: core/templates/fw/mandat_detail.html:221
+msgid "Auszahlungen"
+msgstr "Payouts"
+
+#: core/templates/fw/mandat_detail.html:160
+#, python-format
+msgid "%(n)s noch nicht ausgeführt"
+msgstr "%(n)s not yet executed"
+
+#: core/templates/fw/mandat_detail.html:160
+msgid "alle ausgeführt"
+msgstr "all executed"
+
+#: core/templates/fw/mandat_detail.html:172
+msgid "Firma / Name"
+msgstr "Company / name"
+
+#: core/templates/fw/mandat_detail.html:183
+msgid "Bank und Honorar"
+msgstr "Bank and fee"
+
+#: core/templates/fw/mandat_detail.html:186
+msgid "Bank"
+msgstr "Bank"
+
+#: core/templates/fw/mandat_detail.html:189
+#: core/templates/fw/mieterkonten.html:59
+msgid "aktiv"
+msgstr "active"
+
+#: core/templates/fw/mandat_detail.html:189
+msgid "nicht eingerichtet"
+msgstr "not set up"
+
+#: core/templates/fw/mandat_detail.html:199
+msgid "Verwaltete Liegenschaften"
+msgstr "Managed properties"
+
+#: core/templates/fw/mandat_detail.html:207
+#, python-format
+msgid "%(v)s von %(e)s vermietet"
+msgstr "%(v)s of %(e)s let"
+
+#: core/templates/fw/mandat_detail.html:212
+msgid "Diesem Mandat ist keine Liegenschaft zugeordnet."
+msgstr "No property is assigned to this mandate."
+
+#: core/templates/fw/mandat_detail.html:229
+#, python-format
+msgid "ausgeführt am %(d)s"
+msgstr "executed on %(d)s"
+
+#: core/templates/fw/mandat_detail.html:229
+msgid "noch nicht ausgeführt"
+msgstr "not yet executed"
+
+#: core/templates/fw/mandat_detail.html:234
+msgid "Keine Auszahlung erfasst."
+msgstr "No payout recorded."
+
+#: core/templates/fw/mandat_detail.html:257
+msgid "Kein Dokument zu diesem Mandat."
+msgstr "No document for this mandate."
+
+#: core/templates/fw/mandat_detail.html:277
+msgid "Kein Fall zu diesem Mandat."
+msgstr "No case for this mandate."
+
+#: core/templates/fw/mandat_detail.html:291
+msgid "Vorgänge an den Verträgen dieses Mandats"
+msgstr "Activity on the contracts of this mandate"
+
+#: core/templates/fw/mandat_detail.html:302
+msgid "Kein Protokolleintrag."
+msgstr "No log entry."
+
+#: core/templates/fw/mandat_form.html:3
+msgid "Neuer Eigentümer"
+msgstr "New owner"
+
+#: core/templates/fw/mandat_form.html:13
+msgid "Neuen Eigentümer erfassen"
+msgstr "Record new owner"
+
+#: core/templates/fw/mandat_form.html:14
+msgid "Eigentümer-Stammdaten und Zuordnung der Liegenschaften."
+msgstr "Owner master data and assignment of properties."
+
+#: core/templates/fw/mandat_form.html:21 core/templates/fw/mandate.html:16
+msgid "Eigentümer"
+msgstr "Owner"
+
+#: core/templates/fw/mandat_form.html:22
+msgid "Name / Firma *"
+msgstr "Name / company *"
+
+#: core/templates/fw/mandat_form.html:30
+msgid "Strasse & Nr."
+msgstr "Street & no."
+
+#: core/templates/fw/mandat_form.html:41
+msgid "Bankname"
+msgstr "Bank name"
+
+#: core/templates/fw/mandat_form.html:45
+#, python-format
+msgid "Verwaltungshonorar (%% der Mieterträge)"
+msgstr "Management fee (%% of rental income)"
+
+#: core/templates/fw/mandat_form.html:48
+msgid "Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank)."
+msgstr ""
+"Posted in the current account per financial year (debit 4500 / credit bank)."
+
+#: core/templates/fw/mandat_form.html:57
+msgid "Zugeordnete Liegenschaften"
+msgstr "Assigned properties"
+
+#: core/templates/fw/mandat_form.html:58
+msgid "Wähle die Liegenschaften, die diesem Eigentümer gehören."
+msgstr "Choose the properties that belong to this owner."
+
+#: core/templates/fw/mandat_form.html:66
+msgid "aktuell:"
+msgstr "currently:"
+
+#: core/templates/fw/mandat_form.html:69
+msgid "Noch keine Liegenschaften erfasst."
+msgstr "No properties recorded yet."
+
+#: core/templates/fw/mandat_form.html:87
+msgid "Eigentümer-Portal-Zugang"
+msgstr "Owner portal access"
+
+#: core/templates/fw/mandat_form.html:88
+msgid ""
+"Login fürs Portal unter <span class=\"font-mono\">/portal/login/</span> — "
+"Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug."
+msgstr ""
+"Portal login at <span class=\"font-mono\">/portal/login/</span> — yield "
+"cockpit, repair approvals, report &amp; tax statement."
+
+#: core/templates/fw/mandat_form.html:93
+msgid "Kein Zugang"
+msgstr "No access"
+
+#: core/templates/fw/mandat_form.html:102
+msgid "Neues Passwort senden"
+msgstr "Send new password"
+
+#: core/templates/fw/mandat_form.html:105
+msgid "Portal-Zugang wirklich entfernen?"
+msgstr "Really remove portal access?"
+
+#: core/templates/fw/mandat_form.html:108
+msgid "Zugang entfernen"
+msgstr "Remove access"
+
+#: core/templates/fw/mandat_form.html:115
+msgid "Portal-Zugang erstellen &amp; senden"
+msgstr "Create &amp; send portal access"
+
+#: core/templates/fw/mandat_form.html:117
+msgid ""
+"Keine E-Mail hinterlegt — die Zugangsdaten werden nach dem Erstellen "
+"einmalig angezeigt."
+msgstr "No email stored — the credentials will be shown once after creation."
+
 #: core/templates/fw/mandate.html:7
 msgid "Eigentümer erfassen"
 msgstr "Add owner"
@@ -5874,17 +6455,9 @@ msgid_plural "%(n)s Eigentümer, für die du Liegenschaften verwaltest."
 msgstr[0] "%(n)s owner whose properties you manage."
 msgstr[1] "%(n)s owners whose properties you manage."
 
-#: core/templates/fw/mandate.html:16
-msgid "Eigentümer"
-msgstr "Owner"
-
 #: core/templates/fw/mandate.html:17
 msgid "Liegensch."
 msgstr "Prop."
-
-#: core/templates/fw/mandate.html:35
-msgid "Mahnstufen"
-msgstr "Dunning levels"
 
 #: core/templates/fw/mandate.html:38
 #, python-format
@@ -5937,10 +6510,6 @@ msgstr "%(n)s results for “%(q)s”"
 #: core/templates/fw/mieterkonten.html:37
 msgid "Suche aufheben"
 msgstr "Clear search"
-
-#: core/templates/fw/mieterkonten.html:59
-msgid "aktiv"
-msgstr "active"
 
 #: core/templates/fw/mieterkonten.html:60
 msgid "beendet"
@@ -6528,11 +7097,6 @@ msgstr ""
 "Positive balance = additional payment by tenant · distribution by area (m²), "
 "pro rata. Preview — binding statement in the classic view."
 
-#: core/templates/fw/nebenkosten_detail.html:154
-#: core/templates/fw/vorlage_form.html:25
-msgid "Kategorie"
-msgstr "Category"
-
 #: core/templates/fw/nebenkosten_detail.html:163
 msgid ""
 "Keine Belege erfasst. HNK-relevante Kreditorenrechnungen fliessen "
@@ -6561,11 +7125,11 @@ msgstr "with a current lease"
 msgid "ohne Mieter und ohne Nachfolge"
 msgstr "no tenant and no successor"
 
-#: core/templates/fw/objekte.html:43
+#: core/templates/fw/objekte.html:43 core/templates/fw/schaeden.html:79
 msgid "Mit Befund"
 msgstr "With findings"
 
-#: core/templates/fw/objekte.html:45
+#: core/templates/fw/objekte.html:45 core/templates/fw/schaeden.html:81
 msgid "brauchen eine Handlung"
 msgstr "need action"
 
@@ -6588,7 +7152,7 @@ msgstr "Next tenant from %(ab)s"
 msgid "kein Zins"
 msgstr "no rent"
 
-#: core/templates/fw/objekte.html:106
+#: core/templates/fw/objekte.html:106 core/templates/fw/schaeden.html:126
 msgid "Nichts zu tun"
 msgstr "Nothing to do"
 
@@ -6614,6 +7178,64 @@ msgid ""
 msgstr ""
 "Units belong to a property — create a property first or import the flats "
 "from the GWR."
+
+#: core/templates/fw/pendenzen.html:3
+msgid "Pendenzen & Fristen"
+msgstr "To-dos & deadlines"
+
+#: core/templates/fw/pendenzen.html:8
+msgid "Pendenzen &amp; Fristen"
+msgstr "To-dos &amp; deadlines"
+
+#: core/templates/fw/pendenzen.html:9
+msgid "Automatisch erkannte Fristen und eigene Pendenzen an einem Ort"
+msgstr "Automatically detected deadlines and your own to-dos in one place"
+
+#: core/templates/fw/pendenzen.html:19
+msgid "Automatische Fristen (nächste 90 Tage)"
+msgstr "Automatic deadlines (next 90 days)"
+
+#: core/templates/fw/pendenzen.html:31
+#, python-format
+msgid "in %(n)s Tg."
+msgstr "in %(n)s d."
+
+#: core/templates/fw/pendenzen.html:35
+msgid "Keine Fristen in den nächsten 90 Tagen."
+msgstr "No deadlines in the next 90 days."
+
+#: core/templates/fw/pendenzen.html:57
+msgid "Als erledigt markieren"
+msgstr "Mark as done"
+
+#: core/templates/fw/pendenzen.html:72 core/templates/fw/pendenzen.html:94
+msgid "Pendenz löschen?"
+msgstr "Delete to-do?"
+
+#: core/templates/fw/pendenzen.html:80
+msgid "Keine offenen Pendenzen."
+msgstr "No open to-dos."
+
+#: core/templates/fw/pendenzen.html:85 core/templates/fw/termine.html:51
+#: core/views/portal.py:754
+msgid "Erledigt"
+msgstr "Done"
+
+#: core/templates/fw/pendenzen.html:90
+msgid "Wieder öffnen"
+msgstr "Reopen"
+
+#: core/templates/fw/pendenzen.html:95
+msgid "Pendenz löschen"
+msgstr "Delete to-do"
+
+#: core/templates/fw/pendenzen.html:107
+msgid "Neue Pendenz"
+msgstr "New to-do"
+
+#: core/templates/fw/pendenzen.html:126
+msgid "Pendenz erfassen"
+msgstr "Record to-do"
 
 #: core/templates/fw/personen.html:10
 #, python-format
@@ -6650,10 +7272,6 @@ msgstr "Add tenants, applicants and other contacts."
 #: core/templates/fw/personen.html:56 core/templates/fw/personen.html:105
 msgid "Erste Person erfassen"
 msgstr "Add first person"
-
-#: core/templates/fw/personen.html:68
-msgid "Adresse"
-msgstr "Address"
 
 #: core/templates/fw/personen.html:69
 msgid "Mietet aktuell"
@@ -6796,10 +7414,6 @@ msgid ""
 msgstr ""
 "Deadlines and dates as data, not as program code — so a correction is an "
 "entry, not a release."
-
-#: core/templates/fw/regelwerk.html:17
-msgid "Protokoll"
-msgstr "Log"
 
 #: core/templates/fw/regelwerk.html:18
 msgid "Regelsatz"
@@ -7002,6 +7616,181 @@ msgstr "Override"
 msgid "Keine Anwendung zu diesem Filter."
 msgstr "No application for this filter."
 
+#: core/templates/fw/schaden_kosten.html:4
+#: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:781
+msgid "Reparaturkosten"
+msgstr "Repair costs"
+
+#: core/templates/fw/schaden_kosten.html:7
+#: core/templates/fw/schaden_kosten.html:40 core/templates/fw/schaeden.html:3
+#: core/templates/fw/schaeden.html:9
+msgid "Schadensfälle"
+msgstr "Damage cases"
+
+#: core/templates/fw/schaden_kosten.html:8 core/templates/fw/schaeden.html:17
+msgid "Kostenübersicht"
+msgstr "Cost overview"
+
+#: core/templates/fw/schaden_kosten.html:14
+msgid ""
+"Kostenschätzungen (offen) und effektive Kosten aus den Handwerker-Aufträgen "
+"je Liegenschaft."
+msgstr ""
+"Cost estimates (open) and actual costs from tradesperson work orders per "
+"property."
+
+#: core/templates/fw/schaden_kosten.html:19
+msgid "Alle Jahre"
+msgstr "All years"
+
+#: core/templates/fw/schaden_kosten.html:28
+msgid "Effektive Kosten"
+msgstr "Actual costs"
+
+#: core/templates/fw/schaden_kosten.html:32
+#: core/templates/fw/schaden_kosten.html:52
+msgid "Offene Schätzung"
+msgstr "Open estimate"
+
+#: core/templates/fw/schaden_kosten.html:53
+msgid "Effektiv"
+msgstr "Actual"
+
+#: core/templates/fw/schaden_kosten.html:68
+msgid "Keine Handwerker-Aufträge"
+msgstr "No tradesperson work orders"
+
+#: core/templates/fw/schaden_kosten.html:85
+msgid ""
+"„Offene Schätzung“ = beauftragte, aber noch nicht abgerechnete Kosten "
+"(Kostenschätzung). „Effektiv“ = tatsächlich erfasste Kosten. Total = "
+"Effektiv + offene Schätzung als erwarteter Gesamtaufwand."
+msgstr ""
+"“Open estimate” = ordered but not yet invoiced costs (estimate). “Actual” = "
+"costs actually recorded. Total = actual + open estimate as expected total "
+"cost."
+
+#: core/templates/fw/schaeden.html:10
+msgid ""
+"Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische "
+"Info an Melder"
+msgstr ""
+"Damage reports and repair orders — report → order → automatic info to the "
+"reporter"
+
+#: core/templates/fw/schaeden.html:13
+msgid "Schaden erfassen"
+msgstr "Record damage"
+
+#: core/templates/fw/schaeden.html:25
+msgid "Schaden erfassen (z.B. telefonisch gemeldet)"
+msgstr "Record damage (e.g. reported by phone)"
+
+#: core/templates/fw/schaeden.html:28
+msgid "Titel / Schaden *"
+msgstr "Title / damage *"
+
+#: core/templates/fw/schaeden.html:37
+msgid "ganze Liegenschaft"
+msgstr "whole property"
+
+#: core/templates/fw/schaeden.html:42
+msgid "Melder Vor-/Nachname"
+msgstr "Reporter first/last name"
+
+#: core/templates/fw/schaeden.html:47
+msgid "Priorität"
+msgstr "Priority"
+
+#: core/templates/fw/schaeden.html:49
+msgid "Tief"
+msgstr "Low"
+
+#: core/templates/fw/schaeden.html:49
+msgid "Mittel"
+msgstr "Medium"
+
+#: core/templates/fw/schaeden.html:49 core/templates/fw/schaeden.html:119
+msgid "Hoch"
+msgstr "High"
+
+#: core/templates/fw/schaeden.html:51
+msgid "Melder E-Mail"
+msgstr "Reporter email"
+
+#: core/templates/fw/schaeden.html:52
+msgid "Für automatische Bestätigung"
+msgstr "For automatic confirmation"
+
+#: core/templates/fw/schaeden.html:53
+msgid "Melder Telefon"
+msgstr "Reporter phone"
+
+#: core/templates/fw/schaeden.html:55
+msgid "Fotos (mehrere möglich)"
+msgstr "Photos (several possible)"
+
+#: core/templates/fw/schaeden.html:58
+msgid "Ticket erstellen"
+msgstr "Create ticket"
+
+#: core/templates/fw/schaeden.html:59
+msgid "Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung."
+msgstr "With an email, the reporter automatically receives an acknowledgement."
+
+#: core/templates/fw/schaeden.html:75
+msgid "nicht erledigt"
+msgstr "not done"
+
+#: core/templates/fw/schaeden.html:76
+msgid "Ungelesen"
+msgstr "Unread"
+
+#: core/templates/fw/schaeden.html:78
+msgid "noch niemand angesehen"
+msgstr "nobody has looked yet"
+
+#: core/templates/fw/schaeden.html:82
+msgid "Älteste offen"
+msgstr "Oldest open"
+
+#: core/templates/fw/schaeden.html:84
+msgid "Tage seit Meldung"
+msgstr "Days since report"
+
+#: core/templates/fw/schaeden.html:110
+#, python-format
+msgid "vor %(n)s Tag"
+msgid_plural "vor %(n)s Tagen"
+msgstr[0] "%(n)s day ago"
+msgstr[1] "%(n)s days ago"
+
+#: core/templates/fw/schaeden.html:126
+msgid ""
+"Für diese Sicht gibt es keine Meldung. Das ist eine gute Nachricht — oder "
+"die Sicht ist zu eng."
+msgstr ""
+"There is no report for this view. That is good news — or the view is too "
+"narrow."
+
+#: core/templates/fw/schaeden.html:126
+msgid "Alle Meldungen zeigen"
+msgstr "Show all reports"
+
+#: core/templates/fw/schaeden.html:128
+msgid "Keine Schadensfälle"
+msgstr "No damage cases"
+
+#: core/templates/fw/schaeden.html:128
+msgid ""
+"Aktuell ist nichts gemeldet. Telefonisch eingegangene Schäden erfassen Sie "
+"oben."
+msgstr "Nothing reported at the moment. Record damage reported by phone above."
+
+#: core/templates/fw/schaeden.html:133
+msgid "Sortiert nach Befund, dann Priorität, dann Alter — nicht nach Eingang."
+msgstr "Sorted by finding, then priority, then age — not by arrival."
+
 #: core/templates/fw/sollstellung.html:4
 msgid "Sollstellung Miete"
 msgstr "Rent billing"
@@ -7094,6 +7883,32 @@ msgstr ""
 "bills mid-month move-ins/outs to the day. Booked as debtors 1100 to income "
 "3000 (net) or service charge advance 3020 (service charges)."
 
+#: core/templates/fw/suche.html:7
+#, python-format
+msgid ""
+"%(total)s Treffer für „<span class=\"font-semibold fw-ink\">%(q)s</span>\""
+msgstr ""
+"%(total)s result(s) for “<span class=\"font-semibold fw-ink\">%(q)s</span>”"
+
+#: core/templates/fw/suche.html:9
+msgid ""
+"Gib oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und "
+"Verträge."
+msgstr "Enter a search term above — people, properties, units and contracts."
+
+#: core/templates/fw/suche.html:15
+#, python-format
+msgid "Keine Treffer für „%(q)s\"."
+msgstr "No results for “%(q)s”."
+
+#: core/templates/fw/suche.html:69 core/views/fw/_basis.py:280
+msgid "Verträge"
+msgstr "Leases"
+
+#: core/templates/fw/suche.html:75
+msgid "ab"
+msgstr "from"
+
 #: core/templates/fw/termine.html:9
 msgid ""
 "Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
@@ -7128,10 +7943,6 @@ msgstr "e.g. Perdtemps 3, ground floor"
 #, python-format
 msgid "%(min)s Min."
 msgstr "%(min)s min."
-
-#: core/templates/fw/termine.html:51 core/views/portal.py:754
-msgid "Erledigt"
-msgstr "Done"
 
 #: core/templates/fw/termine.html:52
 msgid "Absagen"
@@ -7630,10 +8441,6 @@ msgstr "Recently done"
 msgid "Noch nichts erledigt."
 msgstr "Nothing done yet."
 
-#: core/views/fw/_basis.py:280
-msgid "Verträge"
-msgstr "Leases"
-
 #: core/views/fw/_basis.py:336
 msgid "Entwurf"
 msgstr "Draft"
@@ -7661,6 +8468,135 @@ msgstr "Reversed"
 #: core/views/fw/_basis.py:357
 msgid "Abgeschrieben"
 msgstr "Written off"
+
+#: core/views/fw/akten_neu.py:67
+#, python-format
+msgid "%(n)s Liegenschaft"
+msgid_plural "%(n)s Liegenschaften"
+msgstr[0] "%(n)s property"
+msgstr[1] "%(n)s properties"
+
+#: core/views/fw/akten_neu.py:69
+#, python-format
+msgid "%(n)s Objekte"
+msgstr "%(n)s units"
+
+#: core/views/fw/akten_neu.py:72
+msgid "keine Liegenschaft zugeordnet"
+msgstr "no property assigned"
+
+#: core/views/fw/akten_neu.py:74
+#, python-format
+msgid "Honorar %(p)s %%"
+msgstr "Fee %(p)s %%"
+
+#: core/views/fw/akten_neu.py:76
+msgid "keine IBAN"
+msgstr "no IBAN"
+
+#: core/views/fw/akten_neu.py:78
+msgid "Portalzugang aktiv"
+msgstr "Portal access active"
+
+#: core/views/fw/akten_neu.py:87
+msgid "Keine IBAN erfasst"
+msgstr "No IBAN recorded"
+
+#: core/views/fw/akten_neu.py:88
+msgid ""
+"Ohne IBAN lässt sich keine Auszahlung ausführen — der Ertragsüberschuss "
+"bleibt auf dem Verwaltungskonto liegen."
+msgstr ""
+"Without an IBAN no payout can be made — the income surplus stays in the "
+"management account."
+
+#: core/views/fw/akten_neu.py:90
+msgid "IBAN erfassen"
+msgstr "Enter IBAN"
+
+#: core/views/fw/akten_neu.py:94
+msgid "Keine Liegenschaft zugeordnet"
+msgstr "No property assigned"
+
+#: core/views/fw/akten_neu.py:95
+msgid ""
+"Ein Mandat ohne Liegenschaft erzeugt keine Abrechnung und kein Honorar — "
+"vermutlich fehlt die Zuordnung."
+msgstr ""
+"A mandate without property produces no statement and no fee — the assignment "
+"is probably missing."
+
+#: core/views/fw/akten_neu.py:97
+msgid "Liegenschaft zuordnen"
+msgstr "Assign property"
+
+#: core/views/fw/akten_neu.py:101 core/views/fw/akten_neu.py:234
+msgid "Kein Honorarsatz hinterlegt"
+msgstr "No fee rate stored"
+
+#: core/views/fw/akten_neu.py:102
+msgid ""
+"Die Mandatsabrechnung rechnet dann mit dem Vorgabewert der Verwaltung statt "
+"mit dem vereinbarten Satz."
+msgstr ""
+"The mandate statement then uses the management default instead of the agreed "
+"rate."
+
+#: core/views/fw/akten_neu.py:104
+msgid "Honorar festlegen"
+msgstr "Set fee"
+
+#: core/views/fw/akten_neu.py:235
+msgid "Noch keine Stunde erfasst"
+msgstr "No hours recorded yet"
+
+#: core/views/fw/akten_neu.py:257
+#, python-format
+msgid "%(n)s offener Auftrag"
+msgid_plural "%(n)s offene Aufträge"
+msgstr[0] "%(n)s open work order"
+msgstr[1] "%(n)s open work orders"
+
+#: core/views/fw/akten_neu.py:260
+msgid "kein offener Auftrag"
+msgstr "no open work order"
+
+#: core/views/fw/akten_neu.py:262
+msgid "keine Kontaktangabe"
+msgstr "no contact details"
+
+#: core/views/fw/akten_neu.py:268
+msgid "Keine Telefonnummer"
+msgstr "No phone number"
+
+#: core/views/fw/akten_neu.py:269
+msgid ""
+"Bei einem Wasserschaden ausserhalb der Bürozeit ist eine E-Mail-Adresse "
+"wertlos."
+msgstr "For water damage outside office hours an email address is worthless."
+
+#: core/views/fw/akten_neu.py:271
+msgid "Nummer erfassen"
+msgstr "Enter number"
+
+#: core/views/fw/akten_neu.py:280
+#, python-format
+msgid "%(n)s Auftrag älter als 30 Tage"
+msgid_plural "%(n)s Aufträge älter als 30 Tage"
+msgstr[0] "%(n)s work order older than 30 days"
+msgstr[1] "%(n)s work orders older than 30 days"
+
+#: core/views/fw/akten_neu.py:282
+msgid ""
+"Beauftragt, aber nicht als erledigt gemeldet. Entweder wurde nicht "
+"gearbeitet, oder die Rückmeldung fehlt."
+msgstr ""
+"Ordered but not reported as done. Either no work was done, or the feedback "
+"is missing."
+
+#: core/views/fw/akten_neu.py:284
+msgid "Aufträge ansehen"
+msgstr "View work orders"
 
 #: core/views/fw/aktionen.py:850
 msgid "Verwaltungs-Stammdaten, Logo, Absender"
@@ -7838,10 +8774,6 @@ msgstr "Mandate statement & current account per owner"
 #: core/views/fw/listen.py:780
 msgid "Objekte & Unterhalt"
 msgstr "Units & maintenance"
-
-#: core/views/fw/listen.py:781
-msgid "Reparaturkosten"
-msgstr "Repair costs"
 
 #: core/views/fw/listen.py:782
 msgid "Kosten je Liegenschaft (offen/effektiv)"
@@ -8126,6 +9058,30 @@ msgstr "Waiting for you"
 msgid "Handwerker beauftragt"
 msgstr "Tradesperson commissioned"
 
+#: faelle/akten.py:46
+msgid "Chronik"
+msgstr "Timeline"
+
+#: faelle/akten.py:47
+msgid "Stammdaten"
+msgstr "Master data"
+
+#: faelle/akten.py:92
+msgid "Einheiten"
+msgstr "Units"
+
+#: faelle/akten.py:108
+msgid "Ausstattung"
+msgstr "Fittings"
+
+#: faelle/akten.py:126
+msgid "Rollen"
+msgstr "Roles"
+
+#: faelle/akten.py:140
+msgid "Handwerker & Kosten"
+msgstr "Tradespeople & costs"
+
 #~ msgid "Arbeit"
 #~ msgstr "Work"
 
@@ -8158,9 +9114,6 @@ msgstr "Tradesperson commissioned"
 
 #~ msgid "meldet sich nach 14 Tagen"
 #~ msgstr "reports after 14 days"
-
-#~ msgid "Erfasste Zeit"
-#~ msgstr "Recorded time"
 
 #~ msgid "min"
 #~ msgstr "min"
