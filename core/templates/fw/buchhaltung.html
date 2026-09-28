@@ -1,21 +1,21 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Buchhaltung — swissImmo{% endblock %}
+{% block title %}{% trans "Buchhaltung" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
-    <h1>Buchhaltung</h1>
-    <button type="button" onclick="document.getElementById('buchform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} Buchung erfassen</button>
+    <h1>{% trans "Buchhaltung" %}</h1>
+    <button type="button" onclick="document.getElementById('buchform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Buchung erfassen" %}</button>
 </div>
-<p class="text-sm fw-mutet mb-4">Erfolgsrechnung, Bilanz und Buchungsjournal
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/buchhaltung/" class="text-xs fw-faint hover:fw-marke">× aufheben</a>{% endif %}</p>
+<p class="text-sm fw-mutet mb-4">{% trans "Erfolgsrechnung, Bilanz und Buchungsjournal" %}
+    {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/buchhaltung/" class="text-xs fw-faint hover:fw-marke">× {% trans "aufheben" %}</a>{% endif %}</p>
 
 <!-- Jahresfilter (Jahresabschluss) -->
 <div class="flex items-center gap-1.5 flex-wrap mb-5">
-    <span class="text-xs font-semibold fw-faint mr-1">Geschäftsjahr:</span>
+    <span class="text-xs font-semibold fw-faint mr-1">{% trans "Geschäftsjahr" %}:</span>
     {% for j in jahre %}
     <a href="?jahr={{ j }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
        class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
@@ -23,29 +23,29 @@
     {% endfor %}
     <a href="?jahr=alle{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
        class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-              {% if jahr == 'alle' %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">Alle</a>
+              {% if jahr == 'alle' %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{% trans "Alle" %}</a>
     {% if jahr != 'alle' %}
     <div class="ml-auto flex items-center gap-2 flex-wrap">
         <a href="/neu/buchhaltung/pdf/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener"
-           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary fw-primary">{% zeichen 'drucken' klasse='mr-1' %}Erfolgsrechnung &amp; Bilanz (PDF)</a>
+           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary fw-primary">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Erfolgsrechnung &amp; Bilanz (PDF)" %}</a>
         <a href="/neu/buchhaltung/export/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary hover:fw-balken-voll">{% zeichen 'herunterladen' klasse='mr-1' %}Journal-Export (CSV)</a>
+           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary hover:fw-balken-voll">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Journal-Export (CSV)" %}</a>
     </div>
     {% endif %}
 </div>
 
 <div id="buchform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'bearbeiten' klasse='fw-marke mr-1.5' %}Manuelle Buchung (Soll an Haben)</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'bearbeiten' klasse='fw-marke mr-1.5' %}{% trans "Manuelle Buchung (Soll an Haben)" %}</h3>
     <form method="post" action="/neu/buchhaltung/buchung/" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {% csrf_token %}
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Datum</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Datum" %}</label>
             <input type="date" name="datum" id="bu-datum" value="{{ letztes_datum|date:'Y-m-d' }}"
                    class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Betrag (CHF) *</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betrag (CHF) *" %}</label>
             <input name="betrag" id="bu-betrag" required inputmode="decimal" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 text-right tabular-nums"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft (optional)</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft (optional)" %}</label>
             <select name="liegenschaft_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <option value="">— keine —</option>
+                <option value="">— {% trans "keine" %} —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if letzte_lg_id == lg.id or aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}</option>{% endfor %}
             </select></div>
         {% comment %}
@@ -53,24 +53,24 @@
         Ein <input list=…> nimmt die Tastatureingabe direkt an; die View akzeptiert
         sowohl die Nummer als auch die ID.
         {% endcomment %}
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Soll-Konto *</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Soll-Konto *" %}</label>
             <input name="soll_konto" id="bu-soll" list="bu-konten" required autocomplete="off"
-                   placeholder="Nummer, z.B. 4000" value="{{ letztes_soll }}"
+                   placeholder="{% trans 'Nummer, z.B. 4000' %}" value="{{ letztes_soll }}"
                    class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Haben-Konto *</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Haben-Konto *" %}</label>
             <input name="haben_konto" id="bu-haben" list="bu-konten" required autocomplete="off"
-                   placeholder="Nummer, z.B. 1020" value="{{ letztes_haben }}"
+                   placeholder="{% trans 'Nummer, z.B. 1020' %}" value="{{ letztes_haben }}"
                    class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Belegtext *</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Belegtext *" %}</label>
             <input name="beleg_text" id="bu-text" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="lg:col-span-3 flex items-center gap-3 flex-wrap">
-            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Buchen</button>
+            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Buchen" %}</button>
             <label class="flex items-center gap-2 text-xs fw-mutet">
                 <input type="checkbox" name="weiter" value="1" {% if serienerfassung %}checked{% endif %} class="fw-akzent">
-                Serienerfassung — Maske bleibt offen, Datum und Konten bleiben stehen
+                {% trans "Serienerfassung — Maske bleibt offen, Datum und Konten bleiben stehen" %}
             </label>
             <a href="/neu/kontenplan/{{ lg_query }}" class="text-xs fw-marke hover:underline">
-                {% zeichen 'verlauf' klasse='mr-1' %}Kontenplan verwalten
+                {% zeichen 'verlauf' klasse='mr-1' %}{% trans "Kontenplan verwalten" %}
             </a>
         </div>
     </form>
@@ -98,15 +98,15 @@ document.addEventListener('DOMContentLoaded', function () {
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'trend' %}</div>
-        <div><div class="text-2xl font-bold fw-gut">CHF {{ total_ertrag|chf }}</div><div class="text-sm fw-mutet">Ertrag</div></div>
+        <div><div class="text-2xl font-bold fw-gut">CHF {{ total_ertrag|chf }}</div><div class="text-sm fw-mutet">{% trans "Ertrag" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0">{% zeichen 'zurueck' %}</div>
-        <div><div class="text-2xl font-bold fw-kritisch">CHF {{ total_aufwand|chf }}</div><div class="text-sm fw-mutet">Aufwand</div></div>
+        <div><div class="text-2xl font-bold fw-kritisch">CHF {{ total_aufwand|chf }}</div><div class="text-sm fw-mutet">{% trans "Aufwand" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg {% if erfolg >= 0 %}fw-markenflaeche fw-marke{% else %}fw-krit-flaeche fw-kritisch{% endif %} flex items-center justify-center text-lg shrink-0">{% zeichen 'recht' %}</div>
-        <div><div class="text-2xl font-bold {% if erfolg >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">CHF {{ erfolg|chf }}</div><div class="text-sm fw-mutet">Erfolg (Gewinn/Verlust)</div></div>
+        <div><div class="text-2xl font-bold {% if erfolg >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">CHF {{ erfolg|chf }}</div><div class="text-sm fw-mutet">{% trans "Erfolg (Gewinn/Verlust)" %}</div></div>
     </div>
 </div>
 
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Erträge -->
         <div class="fw-card overflow-hidden">
             <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-                <span class="font-bold fw-strong text-sm">Ertrag</span>
+                <span class="font-bold fw-strong text-sm">{% trans "Ertrag" %}</span>
                 <span class="text-sm font-bold fw-gut">CHF {{ total_ertrag|chf }}</span>
             </div>
             {% comment %}
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ e.nummer }}</span><a href="/neu/buchhaltung/konto/{{ e.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ e.bezeichnung }}</a></td>
                     <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium fw-strong whitespace-nowrap">{{ e.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">Keine Ertragsbuchungen.</td></tr>
+                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Ertragsbuchungen." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Aufwände -->
         <div class="fw-card overflow-hidden">
             <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-                <span class="font-bold fw-strong text-sm">Aufwand</span>
+                <span class="font-bold fw-strong text-sm">{% trans "Aufwand" %}</span>
                 <span class="text-sm font-bold fw-kritisch">CHF {{ total_aufwand|chf }}</span>
             </div>
             <table class="w-full text-sm">
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
                     <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium fw-strong whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">Keine Aufwandbuchungen.</td></tr>
+                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Aufwandbuchungen." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -159,9 +159,9 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
     <!-- Ergebnis -->
     <div class="fw-card p-5 mt-4 flex items-center justify-between">
-        <span class="font-bold fw-strong">Unternehmenserfolg</span>
+        <span class="font-bold fw-strong">{% trans "Unternehmenserfolg" %}</span>
         <span class="text-xl font-extrabold {% if erfolg >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">
-            {% if erfolg >= 0 %}Gewinn{% else %}Verlust{% endif %} · CHF {{ erfolg|chf }}
+            {% if erfolg >= 0 %}{% trans "Gewinn" %}{% else %}{% trans "Verlust" %}{% endif %} · CHF {{ erfolg|chf }}
         </span>
     </div>
 </div>
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Aktiven -->
         <div class="fw-card overflow-hidden">
             <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-                <span class="font-bold fw-strong text-sm">Aktiven</span>
+                <span class="font-bold fw-strong text-sm">{% trans "Aktiven" %}</span>
                 <span class="text-sm font-bold fw-strong">CHF {{ total_aktiven|chf }}</span>
             </div>
             <table class="w-full text-sm">
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
                     <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium fw-strong whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">Keine Aktivkonten mit Saldo.</td></tr>
+                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Aktivkonten mit Saldo." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Passiven -->
         <div class="fw-card overflow-hidden">
             <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-                <span class="font-bold fw-strong text-sm">Passiven &amp; Eigenkapital</span>
+                <span class="font-bold fw-strong text-sm">{% trans "Passiven &amp; Eigenkapital" %}</span>
                 <span class="text-sm font-bold fw-strong">CHF {{ passiven_mit_erfolg|chf }}</span>
             </div>
             <table class="w-full text-sm">
@@ -202,12 +202,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 {% endfor %}
                 {% if erfolg_vortrag %}
                 <tr class="fw-flaeche2 align-top"><td class="hidden sm:table-cell px-5 py-2.5 fw-faint font-mono text-xs">—</td>
-                    <td class="pl-4 pr-2 sm:px-5 py-2.5 fw-ink font-medium">Ergebnisvortrag (Vorjahre)</td>
+                    <td class="pl-4 pr-2 sm:px-5 py-2.5 fw-ink font-medium">{% trans "Ergebnisvortrag (Vorjahre)" %}</td>
                     <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium {% if erfolg_vortrag >= 0 %}fw-gut{% else %}fw-kritisch{% endif %} whitespace-nowrap">{{ erfolg_vortrag|chf }}</td></tr>
                 {% endif %}
                 {% if erfolg_offen %}
                 <tr class="fw-flaeche2 align-top"><td class="hidden sm:table-cell px-5 py-2.5 fw-faint font-mono text-xs">—</td>
-                    <td class="pl-4 pr-2 sm:px-5 py-2.5 fw-ink font-medium">{% if erfolg_offen >= 0 %}Jahresgewinn{% else %}Jahresverlust{% endif %} {{ jahr }}</td>
+                    <td class="pl-4 pr-2 sm:px-5 py-2.5 fw-ink font-medium">{% if erfolg_offen >= 0 %}{% trans "Jahresgewinn" %}{% else %}{% trans "Jahresverlust" %}{% endif %} {{ jahr }}</td>
                     <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium {% if erfolg_offen >= 0 %}fw-gut{% else %}fw-kritisch{% endif %} whitespace-nowrap">{{ erfolg_offen|chf }}</td></tr>
                 {% endif %}
                 </tbody>
@@ -215,49 +215,49 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
     </div>
     <div class="fw-card p-5 mt-4 flex items-center justify-between">
-        <span class="font-bold fw-strong">Bilanzsumme</span>
+        <span class="font-bold fw-strong">{% trans "Bilanzsumme" %}</span>
         <span class="text-sm {% if bilanz_differenz == 0 %}fw-gut{% else %}fw-warnton{% endif %} font-semibold">
-            {% if bilanz_differenz == 0 %}{% zeichen 'gut' klasse='mr-1' %}Aktiven = Passiven · CHF {{ total_aktiven|chf }}
-            {% else %}{% zeichen 'warnung' klasse='mr-1' %}Differenz CHF {{ bilanz_differenz|chf }} (Buchungen ausserhalb Kontenrahmen){% endif %}
+            {% if bilanz_differenz == 0 %}{% zeichen 'gut' klasse='mr-1' %}{% blocktrans with betrag=total_aktiven|chf %}Aktiven = Passiven · CHF {{ betrag }}{% endblocktrans %}
+            {% else %}{% zeichen 'warnung' klasse='mr-1' %}{% blocktrans with betrag=bilanz_differenz|chf %}Differenz CHF {{ betrag }} (Buchungen ausserhalb Kontenrahmen){% endblocktrans %}{% endif %}
         </span>
     </div>
     <p class="text-xs fw-faint mt-3">{% zeichen 'hinweis' klasse='mr-1' %}
-        Bilanz kumulativ bis Jahresende (Bilanzkonten tragen Eröffnungssalden über). Das kumulierte Ergebnis (Vortrag + laufendes Jahr) wird dem Eigenkapital zugerechnet.</p>
+        {% trans "Bilanz kumulativ bis Jahresende (Bilanzkonten tragen Eröffnungssalden über). Das kumulierte Ergebnis (Vortrag + laufendes Jahr) wird dem Eigenkapital zugerechnet." %}</p>
 
     <!-- JAHRESABSCHLUSS: Erfolgskonten gegen 2970 saldieren -->
     {% if jahr != 'alle' %}
     <div class="fw-card p-5 mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'gesperrt' %}</span>Jahresabschluss {{ jahr }}</div>
+            <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'gesperrt' %}</span>{% blocktrans %}Jahresabschluss {{ jahr }}{% endblocktrans %}</div>
             <p class="text-xs fw-mutet mt-0.5 max-w-xl">
                 {% if jahr_abgeschlossen %}
-                Erfolgskonten sind gegen «2970 Jahresergebnis» saldiert — die Abschlussbuchungen stehen im Journal und im Treuhand-Export.
+                {% trans "Erfolgskonten sind gegen «2970 Jahresergebnis» saldiert — die Abschlussbuchungen stehen im Journal und im Treuhand-Export." %}
                 {% else %}
-                Saldiert alle Erfolgskonten des Jahres gegen «2970 Jahresergebnis». Ohne diese Buchungen fehlen dem Treuhandbüro die Abschlusssätze im Journal-Export.
+                {% trans "Saldiert alle Erfolgskonten des Jahres gegen «2970 Jahresergebnis». Ohne diese Buchungen fehlen dem Treuhandbüro die Abschlusssätze im Journal-Export." %}
                 {% endif %}
             </p>
         </div>
         {% if jahr_abgeschlossen %}
         <div class="shrink-0 flex items-center gap-2">
-            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg whitespace-nowrap">{% zeichen 'gut' klasse='mr-1' %}Abgeschlossen</span>
+            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg whitespace-nowrap">{% zeichen 'gut' klasse='mr-1' %}{% trans "Abgeschlossen" %}</span>
             {% if ist_verwaltung %}
-            <form method="post" class="shrink-0" onsubmit="return confirm('Jahresabschluss {{ jahr }} zurücknehmen? Alle Abschlussbuchungen werden storniert und das Jahr wieder geöffnet.');">
+            <form method="post" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} zurücknehmen? Alle Abschlussbuchungen werden storniert und das Jahr wieder geöffnet.{% endblocktrans %}{% endfilter %}');">
                 {% csrf_token %}
                 <input type="hidden" name="aktion" value="abschluss_zuruecknehmen">
                 <input type="hidden" name="jahr" value="{{ jahr }}">
                 <button type="submit" class="fw-mutet hover:fw-kritisch text-xs font-semibold px-3 py-1.5 rounded-lg border fw-linie hover:fw-linie-krit whitespace-nowrap transition-colors">
-                    {% zeichen 'schluessel' klasse='mr-1' %}Zurücknehmen
+                    {% zeichen 'schluessel' klasse='mr-1' %}{% trans "Zurücknehmen" %}
                 </button>
             </form>
             {% endif %}
         </div>
         {% elif ist_verwaltung %}{# Buchungslauf — nur die Verwaltung, siehe fw_buchhaltung #}
-        <form method="post" class="shrink-0" onsubmit="return confirm('Jahresabschluss {{ jahr }} buchen? Alle Erfolgskonten werden gegen 2970 saldiert.');">
+        <form method="post" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} buchen? Alle Erfolgskonten werden gegen 2970 saldiert.{% endblocktrans %}{% endfilter %}');">
             {% csrf_token %}
             <input type="hidden" name="aktion" value="jahresabschluss">
             <input type="hidden" name="jahr" value="{{ jahr }}">
             <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
-                {% zeichen 'gesperrt' klasse='mr-1.5' %}Jahr abschliessen
+                {% zeichen 'gesperrt' klasse='mr-1.5' %}{% trans "Jahr abschliessen" %}
             </button>
         </form>
         {% endif %}
@@ -273,31 +273,31 @@ document.addEventListener('DOMContentLoaded', function () {
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <input type="hidden" name="tab" value="journal">
         <label class="sm:col-span-4 block">
-            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Text oder Beleg-Nr</span>
-            <input name="q" value="{{ j_suche }}" placeholder="z.B. Hauswartung, 2024-0042"
+            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Text oder Beleg-Nr" %}</span>
+            <input name="q" value="{{ j_suche }}" placeholder="{% trans 'z.B. Hauswartung, 2024-0042' %}"
                    class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
         </label>
         <label class="sm:col-span-3 block">
-            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Konto</span>
-            <input name="konto" value="{{ j_konto }}" list="journal-konten" placeholder="Nummer"
+            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Konto" %}</span>
+            <input name="konto" value="{{ j_konto }}" list="journal-konten" placeholder="{% trans 'Nummer' %}"
                    class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2 font-mono">
         </label>
         <label class="sm:col-span-2 block">
-            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Von</span>
+            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Von" %}</span>
             <input type="date" name="von" value="{{ j_von }}" class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
         </label>
         <label class="sm:col-span-2 block">
-            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Bis</span>
+            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Bis" %}</span>
             <input type="date" name="bis" value="{{ j_bis }}" class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
         </label>
         <div class="sm:col-span-1 flex gap-2">
-            <button class="w-full fw-btn fw-primary text-sm font-semibold px-3 py-2 rounded-lg" title="Filtern">
+            <button class="w-full fw-btn fw-primary text-sm font-semibold px-3 py-2 rounded-lg" title="{% trans 'Filtern' %}">
                 {% zeichen 'suchen' %}
             </button>
         </div>
         {% if j_suche or j_konto or j_von or j_bis %}
         <div class="sm:col-span-12">
-            <a href="/neu/buchhaltung/{{ lg_query }}" class="text-xs fw-faint hover:fw-marke">× Filter aufheben</a>
+            <a href="/neu/buchhaltung/{{ lg_query }}" class="text-xs fw-faint hover:fw-marke">× {% trans "Filter aufheben" %}</a>
         </div>
         {% endif %}
     </form>
@@ -315,13 +315,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="flex items-start gap-3">
                     <div class="min-w-0 flex-1">
                         <div class="fw-strong {% if b.storniert_am %}line-through{% endif %}">
-                            {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">Storno</span>{% endif %}
-                            {% if b.storniert_am %}<span class="text-[10px] font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">storniert</span>{% endif %}
+                            {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
+                            {% if b.storniert_am %}<span class="text-[10px] font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
                             {{ b.beleg_text }}
                         </div>
                         <div class="text-[11px] fw-faint mt-0.5">{{ b.datum|date:"d.m.Y" }} · #{{ b.beleg_nr }}</div>
                         <div class="font-mono text-[11px] fw-mutet mt-1 {% if b.storniert_am %}line-through{% endif %}">
-                            {{ b.soll_konto.nummer }} an {{ b.haben_konto.nummer }}
+                            {% blocktrans with soll=b.soll_konto.nummer haben=b.haben_konto.nummer %}{{ soll }} an {{ haben }}{% endblocktrans %}
                         </div>
                     </div>
                     <div class="text-right shrink-0 font-bold whitespace-nowrap {% if b.storniert_am %}line-through fw-faint{% else %}fw-strong{% endif %}">
@@ -330,29 +330,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <div class="mt-2 flex items-center gap-3 flex-wrap">
                     {% if b.kreditoren_rechnung_id %}
-                    <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'rechnung' klasse='mr-1' %}Beleg</a>
+                    <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
                     {% elif b.debitoren_rechnung_id %}
-                    <a href="/neu/debitoren/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'rechnung' klasse='mr-1' %}Beleg</a>
+                    <a href="/neu/debitoren/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
                     {% elif b.zahlungseingang_id %}
-                    <a href="/neu/bankabgleich/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'geld' klasse='mr-1' %}Zahlung</a>
+                    <a href="/neu/bankabgleich/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'geld' klasse='mr-1' %}{% trans "Zahlung" %}</a>
                     {% endif %}
                     {% if not b.ist_storno and not b.storniert_am %}
                     <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
-                          onsubmit="return confirm('Beleg #{{ b.beleg_nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).');">
+                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
-                        <button class="text-xs font-semibold fw-kritisch hover:underline">{% zeichen 'lauf' klasse='mr-1' %}Stornieren</button>
+                        <button class="text-xs font-semibold fw-kritisch hover:underline">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
                     </form>
                     {% endif %}
                 </div>
             </div>
             {% empty %}
             <div class="px-5 py-8 text-center text-sm fw-faint italic">
-                {% if j_suche or j_konto or j_von or j_bis %}Keine Buchung passt zu diesem Filter.{% else %}Noch keine Buchungen.{% endif %}
+                {% if j_suche or j_konto or j_von or j_bis %}{% trans "Keine Buchung passt zu diesem Filter." %}{% else %}{% trans "Noch keine Buchungen." %}{% endif %}
             </div>
             {% endfor %}
             {% if journal %}
             <div class="px-4 py-3 fw-flaeche2 flex items-center justify-between font-semibold fw-strong">
-                <span class="text-xs uppercase tracking-wider fw-mutet">Summe ({{ j_total }})</span>
+                <span class="text-xs uppercase tracking-wider fw-mutet">{% blocktrans with n=j_total %}Summe ({{ n }}){% endblocktrans %}</span>
                 <span class="whitespace-nowrap">{{ j_summe|chf }}</span>
             </div>
             {% endif %}
@@ -361,12 +361,12 @@ document.addEventListener('DOMContentLoaded', function () {
             <table class="w-full min-w-max text-sm">
                 <thead>
                 <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                    <th class="px-5 py-3 font-semibold">Datum</th>
-                    <th class="px-5 py-3 font-semibold">Beleg</th>
-                    <th class="px-5 py-3 font-semibold">Soll</th>
-                    <th class="px-5 py-3 font-semibold">Haben</th>
-                    <th class="px-5 py-3 font-semibold text-right">Betrag</th>
-                    <th class="px-5 py-3 font-semibold text-right">Beleg-Nr</th>
+                    <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th>
+                    <th class="px-5 py-3 font-semibold">{% trans "Beleg" %}</th>
+                    <th class="px-5 py-3 font-semibold">{% trans "Soll" %}</th>
+                    <th class="px-5 py-3 font-semibold">{% trans "Haben" %}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{% trans "Betrag" %}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{% trans "Beleg-Nr" %}</th>
                     <th class="px-5 py-3"></th>
                 </tr>
                 </thead>
@@ -375,8 +375,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tr class="hover:fw-flaeche2 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
                     <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
                     <td class="px-5 py-3 fw-ink max-w-[280px] truncate">
-                        {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">Storno</span>{% endif %}
-                        {% if b.storniert_am %}<span class="text-[10px] font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">storniert</span>{% endif %}
+                        {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
+                        {% if b.storniert_am %}<span class="text-[10px] font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
                         {{ b.beleg_text }}
                     </td>
                     <td class="px-5 py-3 fw-mutet font-mono text-xs whitespace-nowrap {% if b.storniert_am %}line-through{% endif %}">{{ b.soll_konto.nummer }} {{ b.soll_konto.bezeichnung|truncatechars:18 }}</td>
@@ -390,34 +390,34 @@ document.addEventListener('DOMContentLoaded', function () {
                         Journal kam man nie zur Rechnung oder zum Belegscan.
                         {% endcomment %}
                         {% if b.kreditoren_rechnung_id %}
-                        <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" title="Kreditorenrechnung öffnen"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'rechnung' klasse='mr-1' %}Beleg</a>
+                        <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" title="{% trans 'Kreditorenrechnung öffnen' %}"
+                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
                         {% elif b.debitoren_rechnung_id %}
-                        <a href="/neu/debitoren/{{ lg_query }}" title="Debitorenrechnung"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'rechnung' klasse='mr-1' %}Beleg</a>
+                        <a href="/neu/debitoren/{{ lg_query }}" title="{% trans 'Debitorenrechnung' %}"
+                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
                         {% elif b.zahlungseingang_id %}
-                        <a href="/neu/bankabgleich/{{ lg_query }}" title="Zahlungseingang"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'geld' klasse='mr-1' %}Zahlung</a>
+                        <a href="/neu/bankabgleich/{{ lg_query }}" title="{% trans 'Zahlungseingang' %}"
+                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'geld' klasse='mr-1' %}{% trans "Zahlung" %}</a>
                         {% endif %}
                         {% if not b.ist_storno and not b.storniert_am %}
                         <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
-                              onsubmit="return confirm('Beleg #{{ b.beleg_nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).');">
+                              onsubmit="return confirm('{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}');">
                             {% csrf_token %}
-                            <button class="text-xs font-semibold fw-kritisch hover:fw-kritisch hover:underline">{% zeichen 'lauf' klasse='mr-1' %}Stornieren</button>
+                            <button class="text-xs font-semibold fw-kritisch hover:fw-kritisch hover:underline">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
                         </form>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="7" class="px-5 py-8 text-center text-sm fw-faint italic">
-                    {% if j_suche or j_konto or j_von or j_bis %}Keine Buchung passt zu diesem Filter.{% else %}Noch keine Buchungen.{% endif %}
+                    {% if j_suche or j_konto or j_von or j_bis %}{% trans "Keine Buchung passt zu diesem Filter." %}{% else %}{% trans "Noch keine Buchungen." %}{% endif %}
                 </td></tr>
                 {% endfor %}
                 </tbody>
                 {% if journal %}
                 <tfoot>
                 <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
-                    <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="4">Summe ({{ j_total }} Buchung(en))</td>
+                    <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="4">{% blocktrans count n=j_total %}Summe ({{ n }} Buchung){% plural %}Summe ({{ n }} Buchungen){% endblocktrans %}</td>
                     <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ j_summe|chf }}</td>
                     <td colspan="2"></td>
                 </tr>
@@ -426,16 +426,16 @@ document.addEventListener('DOMContentLoaded', function () {
             </table>
         </div>
         <div class="px-5 py-3 border-t fw-linie flex items-center justify-between gap-3 flex-wrap">
-            <span class="text-xs fw-faint">Seite {{ j_seite }} von {{ j_seiten }} · Stornieren erzeugt eine revisionssichere Gegenbuchung — die Originalbuchung bleibt erhalten (OR 958f)</span>
+            <span class="text-xs fw-faint">{% blocktrans with seite=j_seite von=j_seiten %}Seite {{ seite }} von {{ von }}{% endblocktrans %} · {% trans "Stornieren erzeugt eine revisionssichere Gegenbuchung — die Originalbuchung bleibt erhalten (OR 958f)" %}</span>
             {% if j_seiten > 1 %}
             <div class="flex items-center gap-1">
                 {% if j_seite > 1 %}
                 <a href="?{% if aktive_lg %}lg={{ aktive_lg.id }}&amp;{% endif %}tab=journal&amp;{{ j_query }}&amp;seite={{ j_seite|add:'-1' }}"
-                   class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1 rounded-lg">‹ Zurück</a>
+                   class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1 rounded-lg">{% trans "‹ Zurück" %}</a>
                 {% endif %}
                 {% if j_seite < j_seiten %}
                 <a href="?{% if aktive_lg %}lg={{ aktive_lg.id }}&amp;{% endif %}tab=journal&amp;{{ j_query }}&amp;seite={{ j_seite|add:'1' }}"
-                   class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1 rounded-lg">Weiter ›</a>
+                   class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1 rounded-lg">{% trans "Weiter ›" %}</a>
                 {% endif %}
             </div>
             {% endif %}

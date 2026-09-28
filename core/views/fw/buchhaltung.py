@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -361,9 +362,9 @@ def fw_buchhaltung(request):
         if v)
 
     tab_liste = [
-        ('erfolg', 'Erfolgsrechnung', None),
-        ('bilanz', 'Bilanz', None),
-        ('journal', 'Journal', j_total or None),
+        ('erfolg', _('Erfolgsrechnung'), None),
+        ('bilanz', _('Bilanz'), None),
+        ('journal', _('Journal'), j_total or None),
     ]
 
     # Werte des zuletzt erfassten Belegs (Serienerfassung)
@@ -490,8 +491,8 @@ def fw_kontenplan(request):
         'differenz': t_soll - t_haben,
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
         'kann_schreiben': kann_schreiben,
-        'typen': [('bilanz', 'Bilanz'), ('aktiv', 'Aktivum'), ('passiv', 'Passivum / Eigenkapital'),
-                  ('aufwand', 'Aufwand'), ('ertrag', 'Ertrag')],
+        'typen': [('bilanz', _('Bilanz')), ('aktiv', _('Aktivum')), ('passiv', _('Passivum / Eigenkapital')),
+                  ('aufwand', _('Aufwand')), ('ertrag', _('Ertrag'))],
     })
 
 

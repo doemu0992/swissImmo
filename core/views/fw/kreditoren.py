@@ -16,6 +16,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext_lazy
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -32,12 +33,12 @@ from core.tenancy import aktuelle_organisation
 # ============================================================
 
 KRED_PILL = {
-    'neu':         ('Neu / Prüfen', 'fw-warn-flaeche fw-warnton'),
-    'freigegeben': ('Freigegeben',  'fw-info-flaeche fw-info'),
-    'in_zahlung':  ('In Zahlung',   'fw-markenflaeche fw-marke'),
-    'teilbezahlt': ('Teilbezahlt',  'fw-warn-flaeche fw-warnton'),
-    'bezahlt':     ('Bezahlt',      'fw-gut-flaeche fw-gut'),
-    'storniert':   ('Storniert',    'fw-flaeche2 fw-mutet'),
+    'neu':         (gettext_lazy('Neu / Prüfen'), 'fw-warn-flaeche fw-warnton'),
+    'freigegeben': (gettext_lazy('Freigegeben'),  'fw-info-flaeche fw-info'),
+    'in_zahlung':  (gettext_lazy('In Zahlung'),   'fw-markenflaeche fw-marke'),
+    'teilbezahlt': (gettext_lazy('Teilbezahlt'),  'fw-warn-flaeche fw-warnton'),
+    'bezahlt':     (gettext_lazy('Bezahlt'),      'fw-gut-flaeche fw-gut'),
+    'storniert':   (gettext_lazy('Storniert'),    'fw-flaeche2 fw-mutet'),
 }
 
 
@@ -142,7 +143,7 @@ def fw_kreditoren(request):
             'pos_diff': k.positionen_differenz if k.status == 'neu' else Decimal('0.00'),
         })
 
-    status_chips = [('', 'Alle')] + [(k, v[0]) for k, v in KRED_PILL.items() if k != 'storniert']
+    status_chips = [('', gettext_lazy('Alle'))] + [(k, v[0]) for k, v in KRED_PILL.items() if k != 'storniert']
 
     from finance.models import Buchungskonto
     aufwand_konten = Buchungskonto.objects.filter(typ='aufwand').order_by('nummer')

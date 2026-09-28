@@ -53,7 +53,7 @@ def _mahnstufe(faellig, heute, status, eigentuemer=None):
     s = _stufe_fuer_tage(tage, eigentuemer)
     if s:
         return {'label': s['label'], 'cls': s['cls'], 'tage': tage}
-    return {'label': 'Fällig', 'cls': 'fw-warn-flaeche fw-warnton', 'tage': tage}
+    return {'label': _('Fällig'), 'cls': 'fw-warn-flaeche fw-warnton', 'tage': tage}
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -204,7 +204,7 @@ def fw_debitoren(request):
         'rows': rows,
         'status_filter': status_filter,
         'q': q,
-        'status_chips': [('', 'Alle')] + [(k, v[0]) for k, v in STATUS_PILL.items()],
+        'status_chips': [('', _('Alle'))] + [(k, v[0]) for k, v in STATUS_PILL.items()],
         'total_offen': total_offen,
         'total_betrag': total_betrag,
         'anzahl_offen': anzahl_offen,

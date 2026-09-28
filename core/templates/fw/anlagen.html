@@ -1,37 +1,37 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Anlagen & Abschluss — swissImmo{% endblock %}
+{% block title %}{% trans "Anlagen &amp; Abschluss" %} — swissImmo{% endblock %}
 {% block content %}
 
 <div class="fw-phead">
     <div>
-        <h1>Anlagen &amp; Abschluss</h1>
-        <p>Anlagenbuchhaltung mit linearer Abschreibung, Erneuerungsfonds und Periodensperre.</p>
+        <h1>{% trans "Anlagen &amp; Abschluss" %}</h1>
+        <p>{% trans "Anlagenbuchhaltung mit linearer Abschreibung, Erneuerungsfonds und Periodensperre." %}</p>
     </div>
 </div>
 
 <!-- ANLAGEN -->
 <div class="fw-card overflow-hidden mb-6">
     <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-        <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'bank' %}</span>Anlagegüter</h3>
+        <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'bank' %}</span>{% trans "Anlagegüter" %}</h3>
         <form method="post" class="flex items-center gap-2">{% csrf_token %}
             <input type="hidden" name="aktion" value="afa_lauf">
             <input type="number" name="jahr" value="{{ jahr_default }}" class="w-24 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">
-            <button onclick="return confirm('AfA-Lauf für das Jahr buchen? (idempotent)');" class="fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg">{% zeichen 'kritisch' klasse='mr-1' %}AfA-Lauf</button>
+            <button onclick="return confirm('{% filter escapejs %}{% trans "AfA-Lauf für das Jahr buchen? (idempotent)" %}{% endfilter %}');" class="fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "AfA-Lauf" %}</button>
         </form>
     </div>
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left px-5 py-2.5">Anlage</th><th class="text-left px-5 py-2.5">Liegenschaft</th>
-                <th class="text-right px-5 py-2.5">Anschaffung</th><th class="text-right px-5 py-2.5">ND</th>
-                <th class="text-right px-5 py-2.5">AfA/Jahr</th><th class="text-right px-5 py-2.5">Kum. AfA</th><th class="text-right px-5 py-2.5">Buchwert</th></tr>
+            <tr><th class="text-left px-5 py-2.5">{% trans "Anlage" %}</th><th class="text-left px-5 py-2.5">{% trans "Liegenschaft" %}</th>
+                <th class="text-right px-5 py-2.5">{% trans "Anschaffung" %}</th><th class="text-right px-5 py-2.5">{% trans "ND" %}</th>
+                <th class="text-right px-5 py-2.5">{% trans "AfA/Jahr" %}</th><th class="text-right px-5 py-2.5">{% trans "Kum. AfA" %}</th><th class="text-right px-5 py-2.5">{% trans "Buchwert" %}</th></tr>
         </thead>
         <tbody class="fw-dv">
             {% for a in anlagen %}
             <tr>
-                <td class="px-5 py-2.5 font-medium fw-strong">{{ a.bezeichnung }}<div class="text-[11px] fw-faint">seit {{ a.anschaffungsdatum|date:"d.m.Y" }}</div></td>
+                <td class="px-5 py-2.5 font-medium fw-strong">{{ a.bezeichnung }}<div class="text-[11px] fw-faint">{% blocktrans with datum=a.anschaffungsdatum|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}</div></td>
                 <td class="px-5 py-2.5 fw-mutet">{{ a.liegenschaft.strasse }}</td>
                 <td class="px-5 py-2.5 text-right tabular-nums">CHF {{ a.anschaffungswert|chf }}</td>
                 <td class="px-5 py-2.5 text-right">{{ a.nutzungsdauer_jahre }} J</td>
@@ -40,7 +40,7 @@
                 <td class="px-5 py-2.5 text-right tabular-nums font-semibold">CHF {{ a.buchwert|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-6 text-center fw-faint italic">Noch keine Anlagen erfasst.</td></tr>
+            <tr><td colspan="7" class="px-5 py-6 text-center fw-faint italic">{% trans "Noch keine Anlagen erfasst." %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -48,25 +48,25 @@
     <div class="border-t fw-linie p-4 fw-flaeche2">
         <form method="post" class="grid grid-cols-1 sm:grid-cols-6 gap-2 items-end">{% csrf_token %}
             <input type="hidden" name="aktion" value="anlage_neu">
-            <div class="sm:col-span-2"><label class="block text-xs fw-mutet mb-1">Bezeichnung</label>
-                <input name="bezeichnung" required placeholder="z. B. Heizung" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2"></div>
-            <div><label class="block text-xs fw-mutet mb-1">Liegenschaft</label>
+            <div class="sm:col-span-2"><label class="block text-xs fw-mutet mb-1">{% trans "Bezeichnung" %}</label>
+                <input name="bezeichnung" required placeholder="{% trans 'z. B. Heizung' %}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2"></div>
+            <div><label class="block text-xs fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
                 <select name="liegenschaft_id" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-2">
                     {% for l in liegenschaften %}<option value="{{ l.id }}">{{ l.strasse }}</option>{% endfor %}
                 </select></div>
-            <div><label class="block text-xs fw-mutet mb-1">Wert CHF</label>
+            <div><label class="block text-xs fw-mutet mb-1">{% trans "Wert CHF" %}</label>
                 <input name="anschaffungswert" inputmode="decimal" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2 text-right"></div>
-            <div><label class="block text-xs fw-mutet mb-1">Datum</label>
+            <div><label class="block text-xs fw-mutet mb-1">{% trans "Datum" %}</label>
                 <input type="date" name="anschaffungsdatum" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-2"></div>
-            <div><label class="block text-xs fw-mutet mb-1">Bezahlt via</label>
+            <div><label class="block text-xs fw-mutet mb-1">{% trans "Bezahlt via" %}</label>
                 <select name="gegenkonto" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-2">
-                    <option value="2000">Noch offen (Kreditor 2000)</option>
-                    <option value="1020">Bereits bezahlt (Bank 1020)</option>
+                    <option value="2000">{% trans "Noch offen (Kreditor 2000)" %}</option>
+                    <option value="1020">{% trans "Bereits bezahlt (Bank 1020)" %}</option>
                 </select></div>
             <div class="flex gap-2">
-                <div><label class="block text-xs fw-mutet mb-1">ND (J)</label>
+                <div><label class="block text-xs fw-mutet mb-1">{% trans "ND (J)" %}</label>
                     <input name="nutzungsdauer_jahre" type="number" value="10" class="w-16 fw-flaeche border fw-linie rounded-lg text-sm px-2 py-2 text-right"></div>
-                <button title="Anlage erfassen" class="fw-btn fw-primary text-sm font-semibold px-3 py-2 rounded-lg self-end">{% zeichen 'neu' %}</button>
+                <button title="{% trans 'Anlage erfassen' %}" class="fw-btn fw-primary text-sm font-semibold px-3 py-2 rounded-lg self-end">{% zeichen 'neu' %}</button>
             </div>
             <div class="sm:col-span-4">
                 {% comment %}
@@ -78,7 +78,7 @@
                 {% endcomment %}
                 <label class="inline-flex items-start gap-2 text-xs fw-mutet cursor-pointer">
                     <input type="checkbox" name="aktivieren" checked class="mt-0.5 fw-akzent">
-                    <span>Aktivierung buchen (1500 an Gegenkonto) — nötig, damit die Abschreibungen das Anlagekonto nicht ins Minus ziehen</span>
+                    <span>{% trans "Aktivierung buchen (1500 an Gegenkonto) — nötig, damit die Abschreibungen das Anlagekonto nicht ins Minus ziehen" %}</span>
                 </label>
             </div>
         </form>
@@ -88,18 +88,18 @@
 <!-- ERNEUERUNGSFONDS -->
 <div class="fw-card overflow-hidden mb-6">
     <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-        <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center shrink-0">{% zeichen 'geld' %}</span>Erneuerungsfonds (Rückstellung)</h3>
+        <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center shrink-0">{% zeichen 'geld' %}</span>{% trans "Erneuerungsfonds (Rückstellung)" %}</h3>
         <form method="post" class="flex items-center gap-2">{% csrf_token %}
             <input type="hidden" name="aktion" value="fonds_lauf">
             <input type="number" name="jahr" value="{{ jahr_default }}" class="w-24 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">
-            <button onclick="return confirm('Jährliche Einlagen für das Jahr buchen?');" class="fw-btn fw-gutknopf text-white text-xs font-semibold px-3 py-1.5 rounded-lg">{% zeichen 'kritisch' klasse='mr-1' %}Einlage buchen</button>
+            <button onclick="return confirm('{% filter escapejs %}{% trans "Jährliche Einlagen für das Jahr buchen?" %}{% endfilter %}');" class="fw-btn fw-gutknopf text-white text-xs font-semibold px-3 py-1.5 rounded-lg">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "Einlage buchen" %}</button>
         </form>
     </div>
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left px-5 py-2.5">Liegenschaft</th><th class="text-right px-5 py-2.5">Bestand</th>
-                <th class="text-right px-5 py-2.5">Einlage/Jahr</th><th class="text-right px-5 py-2.5">Letzte Einlage</th></tr>
+            <tr><th class="text-left px-5 py-2.5">{% trans "Liegenschaft" %}</th><th class="text-right px-5 py-2.5">{% trans "Bestand" %}</th>
+                <th class="text-right px-5 py-2.5">{% trans "Einlage/Jahr" %}</th><th class="text-right px-5 py-2.5">{% trans "Letzte Einlage" %}</th></tr>
         </thead>
         <tbody class="fw-dv">
             {% for f in fonds %}
@@ -108,7 +108,7 @@
                 <td class="px-5 py-2.5 text-right tabular-nums">CHF {{ f.jaehrliche_einlage|chf }}</td>
                 <td class="px-5 py-2.5 text-right fw-mutet">{{ f.letzte_einlage_jahr|default:"—" }}</td></tr>
             {% empty %}
-            <tr><td colspan="4" class="px-5 py-6 text-center fw-faint italic">Noch kein Erneuerungsfonds definiert.</td></tr>
+            <tr><td colspan="4" class="px-5 py-6 text-center fw-faint italic">{% trans "Noch kein Erneuerungsfonds definiert." %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -116,30 +116,30 @@
     <div class="border-t fw-linie p-4 fw-flaeche2">
         <form method="post" class="flex flex-wrap items-end gap-2">{% csrf_token %}
             <input type="hidden" name="aktion" value="fonds_set">
-            <div><label class="block text-xs fw-mutet mb-1">Liegenschaft</label>
+            <div><label class="block text-xs fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
                 <select name="liegenschaft_id" class="fw-flaeche border fw-linie rounded-lg text-sm px-2 py-2">
                     {% for l in liegenschaften %}<option value="{{ l.id }}">{{ l.strasse }}</option>{% endfor %}
                 </select></div>
-            <div><label class="block text-xs fw-mutet mb-1">Jährliche Einlage CHF</label>
+            <div><label class="block text-xs fw-mutet mb-1">{% trans "Jährliche Einlage CHF" %}</label>
                 <input name="jaehrliche_einlage" inputmode="decimal" class="w-36 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2 text-right"></div>
-            <div><label class="block text-xs fw-mutet mb-1">Bestand (optional)</label>
-                <input name="bestand" inputmode="decimal" placeholder="unverändert" class="w-36 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2 text-right"></div>
-            <button class="fw-btn fw-gutknopf text-white text-sm font-semibold px-4 py-2 rounded-lg">Speichern</button>
+            <div><label class="block text-xs fw-mutet mb-1">{% trans "Bestand (optional)" %}</label>
+                <input name="bestand" inputmode="decimal" placeholder="{% trans 'unverändert' %}" class="w-36 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2 text-right"></div>
+            <button class="fw-btn fw-gutknopf text-white text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Speichern" %}</button>
         </form>
     </div>
 </div>
 
 <!-- PERIODENSPERRE -->
 <div class="fw-card p-5 max-w-xl">
-    <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'gesperrt' klasse='fw-warnton mr-1.5' %}Periodensperre</h3>
-    <p class="text-xs fw-faint mb-3">Buchungen mit Datum ≤ Stichtag werden gesperrt (abgeschlossene Periode, Revisionssicherheit).
-        {% if gesperrt_bis %}<span class="fw-warnton font-semibold">Aktuell gesperrt bis {{ gesperrt_bis|date:"d.m.Y" }}.</span>{% else %}Aktuell keine Sperre.{% endif %}</p>
+    <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'gesperrt' klasse='fw-warnton mr-1.5' %}{% trans "Periodensperre" %}</h3>
+    <p class="text-xs fw-faint mb-3">{% trans "Buchungen mit Datum ≤ Stichtag werden gesperrt (abgeschlossene Periode, Revisionssicherheit)." %}
+        {% if gesperrt_bis %}<span class="fw-warnton font-semibold">{% blocktrans with datum=gesperrt_bis|date:"d.m.Y" %}Aktuell gesperrt bis {{ datum }}.{% endblocktrans %}</span>{% else %}{% trans "Aktuell keine Sperre." %}{% endif %}</p>
     <form method="post" class="flex items-end gap-2">{% csrf_token %}
         <input type="hidden" name="aktion" value="sperre_set">
-        <div><label class="block text-xs fw-mutet mb-1">Gesperrt bis</label>
+        <div><label class="block text-xs fw-mutet mb-1">{% trans "Gesperrt bis" %}</label>
             <input type="date" name="gesperrt_bis" value="{{ gesperrt_bis|date:'Y-m-d' }}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2"></div>
-        <button class="fw-btn fw-warnknopf text-white text-sm font-semibold px-4 py-2 rounded-lg">Sperre setzen</button>
-        <button name="gesperrt_bis" value="" class="text-sm fw-mutet hover:fw-ink px-3 py-2">Aufheben</button>
+        <button class="fw-btn fw-warnknopf text-white text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Sperre setzen" %}</button>
+        <button name="gesperrt_bis" value="" class="text-sm fw-mutet hover:fw-ink px-3 py-2">{% trans "Aufheben" %}</button>
     </form>
 </div>
 {% endblock %}
