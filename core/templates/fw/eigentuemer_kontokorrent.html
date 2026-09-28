@@ -1,25 +1,25 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Kontokorrent {{ md.firma_oder_name }} — swissImmo{% endblock %}
+{% block title %}{% blocktrans with name=md.firma_oder_name %}Kontokorrent {{ name }}{% endblocktrans %} — swissImmo{% endblock %}
 {% block content %}
 <div class="text-xs fw-faint mb-3">
-    <a href="/neu/mandate/" class="hover:fw-marke">Mandate</a>
+    <a href="/neu/mandate/" class="hover:fw-marke">{% trans "Mandate" %}</a>
     {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{{ md.firma_oder_name }}
-    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}Kontokorrent
+    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{% trans "Kontokorrent" %}
 </div>
 
 <div class="fw-phead">
     <div>
-        <h1>Kontokorrent Eigentümer</h1>
-        <p>{{ md.firma_oder_name }} · Ergebnis der Liegenschaften abzüglich Auszahlungen.</p>
+        <h1>{% trans "Kontokorrent Eigentümer" %}</h1>
+        <p>{{ md.firma_oder_name }} · {% trans "Ergebnis der Liegenschaften abzüglich Auszahlungen." %}</p>
     </div>
     <div class="flex items-center gap-2">
         <a href="/neu/mandate/{{ md.id }}/kontokorrent/?pdf=1{% if jahr %}&jahr={{ jahr }}{% endif %}" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}PDF</a>
-        <a href="/neu/mandate/{{ md.id }}/abrechnung/{% if jahr %}?jahr={{ jahr }}{% endif %}" class="fw-btn">{% zeichen 'rechnung' %}Abrechnung</a>
+        <a href="/neu/mandate/{{ md.id }}/abrechnung/{% if jahr %}?jahr={{ jahr }}{% endif %}" class="fw-btn">{% zeichen 'rechnung' %}{% trans "Abrechnung" %}</a>
         <form method="get" class="inline-flex items-center gap-1">
             <select name="jahr" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
-                <option value="alle" {% if not jahr %}selected{% endif %}>Kumuliert</option>
+                <option value="alle" {% if not jahr %}selected{% endif %}>{% trans "Kumuliert" %}</option>
                 {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
             </select>
         </form>
@@ -29,18 +29,18 @@
 <!-- Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Ergebnis Liegenschaften</div>
+        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Ergebnis Liegenschaften" %}</div>
         <div class="text-xl font-bold {% if kk.ergebnis < 0 %}fw-kritisch{% else %}fw-strong{% endif %} mt-0.5">CHF {{ kk.ergebnis|chf }}</div>
-        <div class="text-xs fw-faint mt-0.5">Ertrag {{ kk.ertrag|chf }} − Aufwand {{ kk.aufwand|chf }}</div>
+        <div class="text-xs fw-faint mt-0.5">{% trans "Ertrag" %} {{ kk.ertrag|chf }} − {% trans "Aufwand" %} {{ kk.aufwand|chf }}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Bereits ausbezahlt</div>
+        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Bereits ausbezahlt" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ kk.ausbezahlt|chf }}</div>
-        <div class="text-xs fw-faint mt-0.5">{{ kk.auszahlungen|length }} Auszahlung(en)</div>
+        <div class="text-xs fw-faint mt-0.5">{% blocktrans count n=kk.auszahlungen|length %}{{ n }} Auszahlung{% plural %}{{ n }} Auszahlungen{% endblocktrans %}</div>
     </div>
     <div class="fw-flaeche rounded-xl border {% if kk.offen > 0 %}fw-linie-gut{% elif kk.offen < 0 %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3">
         <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">
-            {% if kk.offen >= 0 %}Offen an Eigentümer{% else %}Überzahlung (Eigentümer schuldet){% endif %}
+            {% if kk.offen >= 0 %}{% trans "Offen an Eigentümer" %}{% else %}{% trans "Überzahlung (Eigentümer schuldet)" %}{% endif %}
         </div>
         <div class="text-xl font-bold {% if kk.offen > 0 %}fw-gut{% elif kk.offen < 0 %}fw-kritisch{% else %}fw-strong{% endif %} mt-0.5">CHF {{ kk.offen|chf }}</div>
     </div>
@@ -51,15 +51,15 @@
     <div class="lg:col-span-2 space-y-5">
         <!-- Ergebnis je Liegenschaft -->
         <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">Ergebnis je Liegenschaft</div>
+            <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% trans "Ergebnis je Liegenschaft" %}</div>
             <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
                 <thead>
                     <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                        <th class="px-5 py-2.5 font-semibold">Liegenschaft</th>
-                        <th class="px-5 py-2.5 font-semibold text-right">Ertrag</th>
-                        <th class="px-5 py-2.5 font-semibold text-right">Aufwand</th>
-                        <th class="px-5 py-2.5 font-semibold text-right">Ergebnis</th>
+                        <th class="px-5 py-2.5 font-semibold">{% trans "Liegenschaft" %}</th>
+                        <th class="px-5 py-2.5 font-semibold text-right">{% trans "Ertrag" %}</th>
+                        <th class="px-5 py-2.5 font-semibold text-right">{% trans "Aufwand" %}</th>
+                        <th class="px-5 py-2.5 font-semibold text-right">{% trans "Ergebnis" %}</th>
                     </tr>
                 </thead>
                 <tbody class="fw-dv">
@@ -71,13 +71,13 @@
                         <td class="px-5 py-2.5 text-right font-semibold {% if z.ergebnis < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">{{ z.ergebnis|chf }}</td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="4" class="px-5 py-8 text-center fw-faint text-sm">Keine verbuchten Bewegungen{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
+                    <tr><td colspan="4" class="px-5 py-8 text-center fw-faint text-sm">{% trans "Keine verbuchten Bewegungen" %}{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
                 {% endfor %}
                 </tbody>
                 {% if kk.zeilen %}
                 <tfoot>
                     <tr class="border-t-2 fw-linie font-semibold fw-strong">
-                        <td class="px-5 py-3">Total</td>
+                        <td class="px-5 py-3">{% trans "Total" %}</td>
                         <td class="px-5 py-3 text-right">{{ kk.ertrag|chf }}</td>
                         <td class="px-5 py-3 text-right">{{ kk.aufwand|chf }}</td>
                         <td class="px-5 py-3 text-right">{{ kk.ergebnis|chf }}</td>
@@ -90,18 +90,18 @@
 
         <!-- Auszahlungen -->
         <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">Auszahlungen an den Eigentümer</div>
+            <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% trans "Auszahlungen an den Eigentümer" %}</div>
             <div class="fw-dv">
             {% for a in kk.auszahlungen %}
                 <div class="px-5 py-3 flex items-center gap-3">
                     <div class="flex-1 min-w-0">
                         <div class="text-sm font-medium fw-strong">{{ a.datum|date:"d.m.Y" }}{% if a.bemerkung %} · <span class="font-normal fw-mutet">{{ a.bemerkung }}</span>{% endif %}</div>
-                        <div class="text-xs fw-faint mt-0.5">ab Konto {{ a.konto.nummer }} {{ a.konto.bezeichnung }}</div>
+                        <div class="text-xs fw-faint mt-0.5">{% trans "ab Konto" %} {{ a.konto.nummer }} {{ a.konto.bezeichnung }}</div>
                     </div>
                     <div class="text-sm font-semibold fw-strong">CHF {{ a.betrag|chf }}</div>
                 </div>
             {% empty %}
-                <div class="px-5 py-8 text-center fw-faint text-sm">Noch keine Auszahlungen erfasst.</div>
+                <div class="px-5 py-8 text-center fw-faint text-sm">{% trans "Noch keine Auszahlungen erfasst." %}</div>
             {% endfor %}
             </div>
         </div>
@@ -111,19 +111,19 @@
     <div class="space-y-5">
         {% if honorar %}
         <div class="fw-card p-5">
-            <h2 class="font-bold fw-strong text-sm mb-1">Verwaltungshonorar {{ jahr }}</h2>
-            <p class="text-xs fw-mutet mb-3">{{ honorar.prozent }} % der Mieterträge · Soll 4500 / Haben 2850
+            <h2 class="font-bold fw-strong text-sm mb-1">{% blocktrans %}Verwaltungshonorar {{ jahr }}{% endblocktrans %}</h2>
+            <p class="text-xs fw-mutet mb-3">{% blocktrans trimmed with p=honorar.prozent %}{{ p }} % der Mieterträge · Soll 4500 / Haben 2850
                 (Kontokorrent Eigentümer) — das Honorar ist eine Verrechnung, kein Geldfluss; ausbezahlt wird es
-                über die Auszahlung unten.</p>
+                über die Auszahlung unten.{% endblocktrans %}</p>
             <div class="fw-dv mb-3">
             {% for z in honorar.zeilen %}
                 <div class="py-1.5 flex items-center gap-2 text-sm">
                     <span class="flex-1 min-w-0 truncate fw-ink">{{ z.lg.strasse }}</span>
                     <span class="fw-mutet tabular-nums">CHF {{ z.honorar|chf }}</span>
-                    {% if z.gebucht %}<span class="text-[10px] font-bold uppercase fw-gut-flaeche fw-gut px-1.5 py-0.5 rounded">gebucht</span>{% endif %}
+                    {% if z.gebucht %}<span class="text-[10px] font-bold uppercase fw-gut-flaeche fw-gut px-1.5 py-0.5 rounded">{% trans "gebucht" %}</span>{% endif %}
                 </div>
             {% empty %}
-                <div class="py-2 text-xs fw-faint">Keine Liegenschaften mit Mietertrag in {{ jahr }}.</div>
+                <div class="py-2 text-xs fw-faint">{% blocktrans %}Keine Liegenschaften mit Mietertrag in {{ jahr }}.{% endblocktrans %}</div>
             {% endfor %}
             </div>
             {% if honorar.offen_n %}
@@ -132,54 +132,54 @@
                 <input type="hidden" name="jahr" value="{{ jahr }}">
                 <input type="hidden" name="konto_nummer" value="2850">
                 <button class="w-full fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg"
-                        onclick="return confirm('Verwaltungshonorar {{ jahr }} verbuchen: CHF {{ honorar.total|chf }}?');">
-                    {% zeichen 'bericht' klasse='mr-1.5' %}Honorar {{ jahr }} buchen (CHF {{ honorar.total|chf }})
+                        onclick="return confirm('{% filter escapejs %}{% blocktrans with total=honorar.total|chf %}Verwaltungshonorar {{ jahr }} verbuchen: CHF {{ total }}?{% endblocktrans %}{% endfilter %}');">
+                    {% zeichen 'bericht' klasse='mr-1.5' %}{% blocktrans with total=honorar.total|chf %}Honorar {{ jahr }} buchen (CHF {{ total }}){% endblocktrans %}
                 </button>
             </form>
             {% else %}
-            <p class="text-xs fw-gut font-medium">{% zeichen 'gut' klasse='mr-1' %}Honorar {{ jahr }} vollständig verbucht.</p>
+            <p class="text-xs fw-gut font-medium">{% zeichen 'gut' klasse='mr-1' %}{% blocktrans %}Honorar {{ jahr }} vollständig verbucht.{% endblocktrans %}</p>
             {% endif %}
         </div>
         {% elif jahr and md.honorar_prozent == 0 %}
         <div class="fw-card p-5">
-            <h2 class="font-bold fw-strong text-sm mb-1">Verwaltungshonorar</h2>
-            <p class="text-xs fw-mutet">Kein Honorarsatz hinterlegt. <a href="/neu/mandate/{{ md.id }}/bearbeiten/" class="fw-marke hover:underline">Im Mandat setzen</a>, um es hier zu buchen.</p>
+            <h2 class="font-bold fw-strong text-sm mb-1">{% trans "Verwaltungshonorar" %}</h2>
+            <p class="text-xs fw-mutet">{% blocktrans trimmed with id=md.id %}Kein Honorarsatz hinterlegt. <a href="/neu/mandate/{{ id }}/bearbeiten/" class="fw-marke hover:underline">Im Mandat setzen</a>, um es hier zu buchen.{% endblocktrans %}</p>
         </div>
         {% endif %}
         <div class="fw-card p-5 sticky top-20">
-            <h2 class="font-bold fw-strong text-sm mb-1">Auszahlung erfassen</h2>
-            <p class="text-xs fw-mutet mb-4">Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank.</p>
+            <h2 class="font-bold fw-strong text-sm mb-1">{% trans "Auszahlung erfassen" %}</h2>
+            <p class="text-xs fw-mutet mb-4">{% trans "Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank." %}</p>
             <form method="post" action="/neu/mandate/{{ md.id }}/auszahlung/" class="space-y-3">
                 {% csrf_token %}
                 <div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Betrag (CHF) *</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betrag (CHF) *" %}</label>
                     <input name="betrag" type="text" inputmode="decimal" required
                            value="{% if kk.offen > 0 %}{{ kk.offen|chf }}{% endif %}"
                            class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Datum</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Datum" %}</label>
                     <input name="datum" type="date" value="{{ heute|date:'Y-m-d' }}"
                            class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Ab Bankkonto</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ab Bankkonto" %}</label>
                     <select name="konto_nummer" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                         {% for k in bankkonten %}<option value="{{ k.nummer }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Bemerkung</label>
-                    <input name="bemerkung" type="text" placeholder="z. B. Quartalsauszahlung Q2"
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bemerkung" %}</label>
+                    <input name="bemerkung" type="text" placeholder="{% trans 'z. B. Quartalsauszahlung Q2' %}"
                            class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                 </div>
                 <button class="w-full fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
-                    {% zeichen 'geld' klasse='mr-1.5' %}Auszahlung verbuchen
+                    {% zeichen 'geld' klasse='mr-1.5' %}{% trans "Auszahlung verbuchen" %}
                 </button>
             </form>
-            {% if md.iban %}<p class="text-[11px] fw-faint mt-3">Eigentümer-IBAN: {{ md.iban }}</p>{% endif %}
+            {% if md.iban %}<p class="text-[11px] fw-faint mt-3">{% trans "Eigentümer-IBAN:" %} {{ md.iban }}</p>{% endif %}
         </div>
     </div>
 </div>
-<p class="text-xs fw-faint mt-4 max-w-3xl">Der offene Saldo ist eine Verwaltungssicht (Ergebnis der bewirtschafteten Liegenschaften minus Auszahlungen). Auszahlungen werden über das Kontokorrent Eigentümer (Konto 2850) gebucht und mindern die Verbindlichkeit gegenüber dem Eigentümer sowie die liquiden Mittel.</p>
+<p class="text-xs fw-faint mt-4 max-w-3xl">{% trans "Der offene Saldo ist eine Verwaltungssicht (Ergebnis der bewirtschafteten Liegenschaften minus Auszahlungen). Auszahlungen werden über das Kontokorrent Eigentümer (Konto 2850) gebucht und mindern die Verbindlichkeit gegenüber dem Eigentümer sowie die liquiden Mittel." %}</p>
 {% endblock %}

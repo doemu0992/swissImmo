@@ -148,6 +148,15 @@ UEBERSETZT = (
     'core/portal.html',
     'core/portal_login.html',
     'core/login.html',
+    # Tranche «Finanz-Details»
+    'fw/kontoblatt.html',
+    'fw/mieterkonto.html',
+    'fw/lieferantenkonto.html',
+    'fw/eigentuemer_kontokorrent.html',
+    'fw/zahler_zuordnungen.html',
+    'fw/mandat_abrechnung.html',
+    'fw/nebenkosten_detail.html',
+    'fw/weiterverrechnung.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -235,6 +244,10 @@ STICHPROBE = {
                            'it': 'Riparazioni da approvare', 'en': 'Repairs awaiting approval'},
     'Willkommen zurück':  {'de': 'Willkommen zurück', 'fr': 'Bon retour',
                            'it': 'Bentornato/a', 'en': 'Welcome back'},
+    'Kontoblatt':         {'de': 'Kontoblatt', 'fr': 'Extrait de compte',
+                           'it': 'Scheda conto', 'en': 'Account ledger'},
+    'Offener Saldo':      {'de': 'Offener Saldo', 'fr': 'Solde ouvert',
+                           'it': 'Saldo aperto', 'en': 'Open balance'},
 }
 
 

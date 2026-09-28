@@ -1,40 +1,40 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Kontoblatt {{ m.display_name }} — swissImmo{% endblock %}
+{% block title %}{% blocktrans with name=m.display_name %}Kontoblatt {{ name }}{% endblocktrans %} — swissImmo{% endblock %}
 {% block content %}
 <div class="text-xs fw-faint mb-3">
-    <a href="/neu/mieterkonten/{{ lg_query }}" class="hover:fw-marke">Mieterkonten</a>
+    <a href="/neu/mieterkonten/{{ lg_query }}" class="hover:fw-marke">{% trans "Mieterkonten" %}</a>
     {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{{ m.display_name }}
 </div>
 
 <div class="fw-phead">
     <div>
-        <h1>Kontoblatt</h1>
-        <p>{{ m.display_name }} · alle Forderungen und Zahlungen mit laufendem Saldo.</p>
+        <h1>{% trans "Kontoblatt" %}</h1>
+        <p>{{ m.display_name }} · {% trans "alle Forderungen und Zahlungen mit laufendem Saldo." %}</p>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
         <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}PDF</a>
-        <a href="/neu/personen/{{ m.id }}/" class="fw-btn">{% zeichen 'person' %}Person</a>
+        <a href="/neu/personen/{{ m.id }}/" class="fw-btn">{% zeichen 'person' %}{% trans "Person" %}</a>
     </div>
 </div>
 
 <!-- Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Forderungen (Soll)</div>
+        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Forderungen (Soll)" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total_soll|chf }}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Zahlungen (Haben)</div>
+        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Zahlungen (Haben)" %}</div>
         <div class="text-xl font-bold fw-gut mt-0.5">CHF {{ total_haben|chf }}</div>
     </div>
     <div class="fw-flaeche rounded-xl border {% if endsaldo > 0 %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3">
         <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">
-            {% if endsaldo > 0 %}Offener Saldo{% elif endsaldo < 0 %}Guthaben Mieter{% else %}Saldo{% endif %}
+            {% if endsaldo > 0 %}{% trans "Offener Saldo" %}{% elif endsaldo < 0 %}{% trans "Guthaben Mieter" %}{% else %}{% trans "Saldo" %}{% endif %}
         </div>
         <div class="text-xl font-bold {% if endsaldo > 0 %}fw-kritisch{% elif endsaldo < 0 %}fw-gut{% else %}fw-strong{% endif %} mt-0.5">
-            CHF {{ endsaldo|chf }}{% if endsaldo == 0 %} · ausgeglichen{% endif %}
+            CHF {{ endsaldo|chf }}{% if endsaldo == 0 %} · {% trans "ausgeglichen" %}{% endif %}
         </div>
     </div>
 </div>
@@ -44,7 +44,7 @@
 <div class="fw-flaeche rounded-xl border fw-linie-krit overflow-hidden mb-5">
     <div class="px-5 py-3 border-b fw-linie-krit fw-krit-flaeche flex items-center gap-2">
         {% zeichen 'warnung' klasse='fw-kritisch' %}
-        <h2 class="font-bold fw-strong text-sm">Offene Posten</h2>
+        <h2 class="font-bold fw-strong text-sm">{% trans "Offene Posten" %}</h2>
         <span class="text-[11px] font-bold fw-krit-flaeche fw-kritisch rounded-md px-1.5 py-0.5">{{ op_rows|length }}</span>
         <span class="ml-auto text-sm font-semibold fw-kritisch">CHF {{ op_total|chf }}</span>
     </div>
@@ -54,9 +54,9 @@
             <div class="flex-1 min-w-0">
                 <div class="text-sm font-medium fw-strong">{{ o.r.titel }}</div>
                 <div class="text-xs fw-mutet mt-0.5">
-                    fällig {{ o.faellig|date:"d.m.Y" }}
-                    {% if o.ueberfaellig %}<span class="fw-kritisch font-semibold">· überfällig</span>{% endif %}
-                    {% if o.r.status == 'teilbezahlt' %}<span class="fw-info">· teilbezahlt</span>{% endif %}
+                    {% trans "fällig" %} {{ o.faellig|date:"d.m.Y" }}
+                    {% if o.ueberfaellig %}<span class="fw-kritisch font-semibold">· {% trans "überfällig" %}</span>{% endif %}
+                    {% if o.r.status == 'teilbezahlt' %}<span class="fw-info">· {% trans "teilbezahlt" %}</span>{% endif %}
                 </div>
             </div>
             <div class="text-sm font-semibold fw-kritisch">CHF {{ o.offen|chf }}</div>
@@ -69,12 +69,12 @@
 <!-- Datumsfilter -->
 <form method="get" class="flex flex-wrap items-end gap-3 mb-4">
     {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}
-    <div><label class="block text-xs font-semibold fw-mutet mb-1">Von</label>
+    <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Von" %}</label>
         <input type="date" name="von" value="{{ von|date:'Y-m-d' }}" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2"></div>
-    <div><label class="block text-xs font-semibold fw-mutet mb-1">Bis</label>
+    <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bis" %}</label>
         <input type="date" name="bis" value="{{ bis|date:'Y-m-d' }}" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2"></div>
-    <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Filtern</button>
-    {% if von or bis %}<a href="/neu/mieterkonten/{{ m.id }}/{{ lg_query }}" class="text-sm fw-mutet hover:fw-marke px-2 py-2">zurücksetzen</a>{% endif %}
+    <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Filtern" %}</button>
+    {% if von or bis %}<a href="/neu/mieterkonten/{{ m.id }}/{{ lg_query }}" class="text-sm fw-mutet hover:fw-marke px-2 py-2">{% trans "zurücksetzen" %}</a>{% endif %}
 </form>
 
 <!-- Kontobewegungen -->
@@ -83,11 +83,11 @@
 <table class="w-full min-w-max text-sm">
         <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">Datum</th>
-                <th class="px-5 py-3 font-semibold">Text</th>
-                <th class="px-5 py-3 font-semibold text-right">Soll</th>
-                <th class="px-5 py-3 font-semibold text-right">Haben</th>
-                <th class="px-5 py-3 font-semibold text-right">Saldo</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Text" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Soll" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Haben" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Saldo" %}</th>
             </tr>
         </thead>
         <tbody class="fw-dv">
@@ -100,13 +100,13 @@
                 <td class="px-5 py-2.5 text-right font-semibold {% if z.saldo > 0 %}fw-kritisch{% elif z.saldo < 0 %}fw-gut{% else %}fw-faint{% endif %}">{{ z.saldo|chf }}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">Keine Bewegungen{% if von or bis %} im Zeitraum{% endif %}.</td></tr>
+            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">{% trans "Keine Bewegungen" %}{% if von or bis %} {% trans "im Zeitraum" %}{% endif %}.</td></tr>
         {% endfor %}
         </tbody>
         {% if zeilen %}
         <tfoot>
             <tr class="border-t-2 fw-linie font-semibold fw-strong">
-                <td class="px-5 py-3" colspan="2">Total / Endsaldo</td>
+                <td class="px-5 py-3" colspan="2">{% trans "Total / Endsaldo" %}</td>
                 <td class="px-5 py-3 text-right">{{ total_soll|chf }}</td>
                 <td class="px-5 py-3 text-right fw-gut">{{ total_haben|chf }}</td>
                 <td class="px-5 py-3 text-right {% if endsaldo > 0 %}fw-kritisch{% elif endsaldo < 0 %}fw-gut{% endif %}">{{ endsaldo|chf }}</td>
@@ -116,5 +116,5 @@
     </table>
 </div>
 </div>
-<p class="text-xs fw-faint mt-3">Positiver Saldo = Mieter schuldet · negativer Saldo = Guthaben des Mieters. Stornierte Rechnungen sind ausgeblendet.</p>
+<p class="text-xs fw-faint mt-3">{% trans "Positiver Saldo = Mieter schuldet · negativer Saldo = Guthaben des Mieters. Stornierte Rechnungen sind ausgeblendet." %}</p>
 {% endblock %}
