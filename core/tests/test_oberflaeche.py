@@ -114,7 +114,7 @@ class NachtN4UITests(TestCase):
         u = _team_user(); c = Client(); c.force_login(u)
         body = c.get('/neu/debitoren/').content.decode()
         self.assertIn('Seite 1/2', body)
-        self.assertIn('55 Position(en)', body)
+        self.assertIn('55 Positionen', body)
         # KPI-Summe bleibt Gesamtwert trotz Slicing (55 × 100)
         self.assertIn("5'500", body)
         body2 = c.get('/neu/debitoren/?seite=2').content.decode()
