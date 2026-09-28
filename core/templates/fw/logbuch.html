@@ -1,33 +1,33 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Logbuch — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Logbuch" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
-    <h1>Logbuch</h1>
+    <h1>{% trans "Logbuch" %}</h1>
     <div class="flex items-center gap-2">
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=pdf" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' klasse='fw-kritisch' %} PDF-Bericht</a>
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=csv" class="fw-btn">{% zeichen 'herunterladen' klasse='fw-gut' %} CSV-Export</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=pdf" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' klasse='fw-kritisch' %} {% trans "PDF-Bericht" %}</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=csv" class="fw-btn">{% zeichen 'herunterladen' klasse='fw-gut' %} {% trans "CSV-Export" %}</a>
     </div>
 </div>
-<p class="text-sm fw-mutet mb-5">Nachvollziehbarer Verlauf: <b>wer</b> hat <b>wann</b> <b>was</b> getan.
-    {{ total }} Einträge im gewählten Zeitraum · rein lesend (Revisions-Trail).</p>
+<p class="text-sm fw-mutet mb-5">{% blocktrans trimmed %}Nachvollziehbarer Verlauf: <b>wer</b> hat <b>wann</b> <b>was</b> getan.{% endblocktrans %}
+    {% blocktrans count n=total %}{{ n }} Eintrag im gewählten Zeitraum · rein lesend (Revisions-Trail).{% plural %}{{ n }} Einträge im gewählten Zeitraum · rein lesend (Revisions-Trail).{% endblocktrans %}</p>
 
 <!-- Statistik-Kopf -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
     <div class="fw-card p-4">
         <div class="text-2xl font-extrabold fw-strong">{{ total }}</div>
-        <div class="text-xs fw-faint">Einträge (Zeitraum)</div>
+        <div class="text-xs fw-faint">{% trans "Einträge (Zeitraum)" %}</div>
     </div>
     <div class="fw-card p-4">
         <div class="text-2xl font-extrabold fw-kritisch">{{ stat.kritisch }}</div>
-        <div class="text-xs fw-faint">davon kritisch</div>
+        <div class="text-xs fw-faint">{% trans "davon kritisch" %}</div>
     </div>
     <div class="fw-card p-4">
         <div class="text-2xl font-extrabold fw-info">{{ stat.sicherheit }}</div>
-        <div class="text-xs fw-faint">Sicherheit / Login</div>
+        <div class="text-xs fw-faint">{% trans "Sicherheit / Login" %}</div>
     </div>
     <div class="fw-card p-4">
-        <div class="text-xs font-semibold fw-mutet mb-1">Aktivste Benutzer</div>
+        <div class="text-xs font-semibold fw-mutet mb-1">{% trans "Aktivste Benutzer" %}</div>
         {% for u in top_user %}
         <div class="flex items-center justify-between text-xs">
             <span class="fw-ink truncate">{{ u.benutzer__first_name|default:u.benutzer__username }}{% if u.benutzer__last_name %} {{ u.benutzer__last_name }}{% endif %}</span>
@@ -41,48 +41,48 @@
 <form method="get" class="fw-card p-4 mb-5">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="lg:col-span-2">
-            <label class="block text-xs font-semibold fw-mutet mb-1">Suche</label>
-            <input name="q" value="{{ f_q }}" placeholder="Aktion, Objekt oder Detail …"
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Suche" %}</label>
+            <input name="q" value="{{ f_q }}" placeholder="{% trans 'Aktion, Objekt oder Detail …' %}"
                    class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
         </div>
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Benutzer</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Benutzer" %}</label>
             <select name="benutzer" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <option value="">Alle Benutzer</option>
-                <option value="system" {% if f_benutzer == 'system' %}selected{% endif %}>System (automatisch)</option>
+                <option value="">{% trans "Alle Benutzer" %}</option>
+                <option value="system" {% if f_benutzer == 'system' %}selected{% endif %}>{% trans "System (automatisch)" %}</option>
                 {% for u in benutzer %}
                 <option value="{{ u.id }}" {% if f_benutzer == u.id|stringformat:'s' %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Art</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Art" %}</label>
             <select name="art" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <option value="">Alle Arten</option>
-                <option value="kritisch"   {% if f_art == 'kritisch' %}selected{% endif %}>⚠ Nur kritische (Löschung/Geld/Sicherheit)</option>
-                <option value="erstellt"   {% if f_art == 'erstellt' %}selected{% endif %}>Erstellt / erfasst</option>
-                <option value="bearbeitet" {% if f_art == 'bearbeitet' %}selected{% endif %}>Bearbeitet / geändert</option>
-                <option value="geloescht"  {% if f_art == 'geloescht' %}selected{% endif %}>Gelöscht / storniert</option>
-                <option value="finanzen"   {% if f_art == 'finanzen' %}selected{% endif %}>Finanzen / Buchung</option>
-                <option value="versand"    {% if f_art == 'versand' %}selected{% endif %}>Versand / Kommunikation</option>
-                <option value="sicherheit" {% if f_art == 'sicherheit' %}selected{% endif %}>Sicherheit / Login</option>
+                <option value="">{% trans "Alle Arten" %}</option>
+                <option value="kritisch"   {% if f_art == 'kritisch' %}selected{% endif %}>{% trans "⚠ Nur kritische (Löschung/Geld/Sicherheit)" %}</option>
+                <option value="erstellt"   {% if f_art == 'erstellt' %}selected{% endif %}>{% trans "Erstellt / erfasst" %}</option>
+                <option value="bearbeitet" {% if f_art == 'bearbeitet' %}selected{% endif %}>{% trans "Bearbeitet / geändert" %}</option>
+                <option value="geloescht"  {% if f_art == 'geloescht' %}selected{% endif %}>{% trans "Gelöscht / storniert" %}</option>
+                <option value="finanzen"   {% if f_art == 'finanzen' %}selected{% endif %}>{% trans "Finanzen / Buchung" %}</option>
+                <option value="versand"    {% if f_art == 'versand' %}selected{% endif %}>{% trans "Versand / Kommunikation" %}</option>
+                <option value="sicherheit" {% if f_art == 'sicherheit' %}selected{% endif %}>{% trans "Sicherheit / Login" %}</option>
             </select>
         </div>
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Zeitraum</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zeitraum" %}</label>
             <select name="tage" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <option value="7"   {% if f_tage == '7' %}selected{% endif %}>Letzte 7 Tage</option>
-                <option value="30"  {% if f_tage == '30' %}selected{% endif %}>Letzte 30 Tage</option>
-                <option value="90"  {% if f_tage == '90' %}selected{% endif %}>Letzte 90 Tage</option>
-                <option value="365" {% if f_tage == '365' %}selected{% endif %}>Letztes Jahr</option>
-                <option value="0"   {% if f_tage == '0' %}selected{% endif %}>Gesamter Verlauf</option>
+                <option value="7"   {% if f_tage == '7' %}selected{% endif %}>{% trans "Letzte 7 Tage" %}</option>
+                <option value="30"  {% if f_tage == '30' %}selected{% endif %}>{% trans "Letzte 30 Tage" %}</option>
+                <option value="90"  {% if f_tage == '90' %}selected{% endif %}>{% trans "Letzte 90 Tage" %}</option>
+                <option value="365" {% if f_tage == '365' %}selected{% endif %}>{% trans "Letztes Jahr" %}</option>
+                <option value="0"   {% if f_tage == '0' %}selected{% endif %}>{% trans "Gesamter Verlauf" %}</option>
             </select>
         </div>
         <div class="flex items-end gap-2 lg:col-span-4">
             <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg shadow-sm">
-                {% zeichen 'filtern' klasse='mr-1.5' %}Filtern
+                {% zeichen 'filtern' klasse='mr-1.5' %}{% trans "Filtern" %}
             </button>
-            <a href="/neu/logbuch/" class="text-sm fw-mutet hover:fw-ink font-medium px-2 py-2.5">Zurücksetzen</a>
+            <a href="/neu/logbuch/" class="text-sm fw-mutet hover:fw-ink font-medium px-2 py-2.5">{% trans "Zurücksetzen" %}</a>
         </div>
     </div>
 </form>
@@ -92,11 +92,11 @@
     <table class="w-full text-sm min-w-max">
         <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
             <tr>
-                <th class="text-left px-5 py-3 whitespace-nowrap">Zeitpunkt</th>
-                <th class="text-left px-5 py-3">Benutzer</th>
-                <th class="text-left px-5 py-3">Aktion</th>
-                <th class="text-left px-5 py-3">Objekt</th>
-                <th class="text-left px-5 py-3">Details</th>
+                <th class="text-left px-5 py-3 whitespace-nowrap">{% trans "Zeitpunkt" %}</th>
+                <th class="text-left px-5 py-3">{% trans "Benutzer" %}</th>
+                <th class="text-left px-5 py-3">{% trans "Aktion" %}</th>
+                <th class="text-left px-5 py-3">{% trans "Objekt" %}</th>
+                <th class="text-left px-5 py-3">{% trans "Details" %}</th>
             </tr>
         </thead>
         <tbody class="fw-dv">
@@ -114,7 +114,7 @@
                     {% else %}
                     <span class="flex items-center gap-2 fw-faint">
                         <span class="w-6 h-6 rounded-full fw-balken fw-mutet flex items-center justify-center text-[10px]">{% zeichen 'einstellungen' %}</span>
-                        System
+                        {% trans "System" %}
                     </span>
                     {% endif %}
                 </td>
@@ -146,7 +146,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint italic">Keine Einträge im gewählten Zeitraum / Filter.</td></tr>
+            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint italic">{% trans "Keine Einträge im gewählten Zeitraum / Filter." %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -155,22 +155,19 @@
 <!-- Pagination -->
 {% if seite.has_other_pages %}
 <div class="flex items-center justify-between mt-4 text-sm">
-    <span class="fw-faint">Seite {{ seite.number }} von {{ seite.paginator.num_pages }} · {{ total }} Einträge</span>
+    <span class="fw-faint">{% blocktrans with seite=seite.number von=seite.paginator.num_pages %}Seite {{ seite }} von {{ von }}{% endblocktrans %} · {% blocktrans count n=total %}{{ n }} Eintrag{% plural %}{{ n }} Einträge{% endblocktrans %}</span>
     <div class="flex items-center gap-2">
         {% if seite.has_previous %}
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.previous_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">{% zeichen 'zurueck' klasse='text-[10px] mr-1' %}Zurück</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.previous_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">{% zeichen 'zurueck' klasse='text-[10px] mr-1' %}{% trans "Zurück" %}</a>
         {% endif %}
         {% if seite.has_next %}
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.next_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">Weiter{% zeichen 'weiter' klasse='text-[10px] ml-1' %}</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.next_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">{% trans "Weiter" %}{% zeichen 'weiter' klasse='text-[10px] ml-1' %}</a>
         {% endif %}
     </div>
 </div>
 {% endif %}
 
 <p class="text-xs fw-faint mt-5 max-w-3xl">
-    Das Logbuch protokolliert automatisch alle wesentlichen Aktionen (Verträge, Personen, Dokumente,
-    Kündigungen, Buchungen, Versand, Löschungen). Einträge sind unveränderlich und dienen der
-    Nachvollziehbarkeit. Nur Benutzer mit der Rolle <b>Verwaltung</b> sehen das Logbuch.
-    Geschäftsbücher und Belege sind <b>10 Jahre</b> aufzubewahren (Art. 958f OR).
+    {% blocktrans trimmed %}Das Logbuch protokolliert automatisch alle wesentlichen Aktionen (Verträge, Personen, Dokumente, Kündigungen, Buchungen, Versand, Löschungen). Einträge sind unveränderlich und dienen der Nachvollziehbarkeit. Nur Benutzer mit der Rolle <b>Verwaltung</b> sehen das Logbuch. Geschäftsbücher und Belege sind <b>10 Jahre</b> aufzubewahren (Art. 958f OR).{% endblocktrans %}
 </p>
 {% endblock %}

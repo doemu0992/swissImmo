@@ -102,6 +102,17 @@ UEBERSETZT = (
     'fw/leerstand_verlauf.html',
     'fw/betriebskostenspiegel.html',
     'fw/debitoren_aging.html',
+    # Tranche «Einstellungen» (Teil A)
+    'fw/einstellungen.html',
+    'fw/account.html',
+    'fw/abonnement.html',
+    'fw/benutzer.html',
+    'fw/benutzer_form.html',
+    'fw/integrationen.html',
+    'fw/vorlagen.html',
+    'fw/vorlage_form.html',
+    'fw/logbuch.html',
+    'fw/_unterschrift_feld.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -169,6 +180,13 @@ STICHPROBE = {
                            'it': 'Specchietto delle pigioni', 'en': 'Rent roll'},
     'Leerstands-Verlauf': {'de': 'Leerstands-Verlauf', 'fr': 'Évolution de la vacance',
                            'it': 'Andamento dello sfitto', 'en': 'Vacancy trend'},
+    # Einstellungen
+    'Gefahrenzone':       {'de': 'Gefahrenzone', 'fr': 'Zone dangereuse', 'it': 'Zona di pericolo',
+                           'en': 'Danger zone'},
+    # PRUEFWORT — darf NICHT uebersetzt werden: `fw_datenreset` vergleicht die
+    # Eingabe mit «LÖSCHEN». Eine Uebersetzung liesse den Reset in FR/IT/EN
+    # still scheitern, weil niemand das deutsche Wort tippt.
+    'LÖSCHEN':            {'de': 'LÖSCHEN', 'fr': 'LÖSCHEN', 'it': 'LÖSCHEN', 'en': 'LÖSCHEN'},
 }
 
 

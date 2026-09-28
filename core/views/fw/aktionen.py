@@ -22,6 +22,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -846,23 +847,23 @@ def fw_einstellungen(request):
     Rechtsgrundlagen) als eine Hub-Seite mit Sektionen."""
     basis = _global_filter(request)
     karten = [
-        {'titel': 'Account', 'sub': 'Verwaltungs-Stammdaten, Logo, Absender', 'url': '/neu/account/', 'icon': 'person'},
-        {'titel': 'Benutzer & Rollen', 'sub': 'Team-Mitglieder und Berechtigungen', 'url': '/neu/benutzer/', 'icon': 'person'},
-        {'titel': 'Vorlagen', 'sub': 'Textvorlagen mit Platzhaltern', 'url': '/neu/vorlagen/', 'icon': 'dokument'},
-        {'titel': 'Integrationen', 'sub': 'E-Mail, DocuSeal, KI, Banken, Portal-Feed', 'url': '/neu/integrationen/', 'icon': 'einstellungen'},
-        {'titel': 'Abonnement', 'sub': 'Plan und Rechnungsstellung', 'url': '/neu/abonnement/', 'icon': 'einstellungen'},
-        {'titel': 'Anmeldung & Sicherheit', 'sub': 'Zwei-Faktor-Anmeldung für Sie und Ihr Team',
+        {'titel': _('Account'), 'sub': _('Verwaltungs-Stammdaten, Logo, Absender'), 'url': '/neu/account/', 'icon': 'person'},
+        {'titel': _('Benutzer & Rollen'), 'sub': _('Team-Mitglieder und Berechtigungen'), 'url': '/neu/benutzer/', 'icon': 'person'},
+        {'titel': _('Vorlagen'), 'sub': _('Textvorlagen mit Platzhaltern'), 'url': '/neu/vorlagen/', 'icon': 'dokument'},
+        {'titel': _('Integrationen'), 'sub': _('E-Mail, DocuSeal, KI, Banken, Portal-Feed'), 'url': '/neu/integrationen/', 'icon': 'einstellungen'},
+        {'titel': _('Abonnement'), 'sub': _('Plan und Rechnungsstellung'), 'url': '/neu/abonnement/', 'icon': 'einstellungen'},
+        {'titel': _('Anmeldung & Sicherheit'), 'sub': _('Zwei-Faktor-Anmeldung für Sie und Ihr Team'),
          'url': '/konto/zwei-faktor/', 'icon': 'gesperrt'},
-        {'titel': 'Postfächer', 'sub': 'E-Mail-Eingang für Ticket-Antworten und Rechnungen',
+        {'titel': _('Postfächer'), 'sub': _('E-Mail-Eingang für Ticket-Antworten und Rechnungen'),
          'url': '/neu/postfaecher/', 'icon': 'wartet'},
-        {'titel': 'Logbuch', 'sub': 'Wer hat wann was geändert', 'url': '/neu/logbuch/', 'icon': 'verlauf'},
-        {'titel': 'Rechtsgrundlagen', 'sub': 'OR/VMWG-Artikel mit Anwendung im Programm', 'url': '/neu/rechtsgrundlagen/', 'icon': 'recht'},
+        {'titel': _('Logbuch'), 'sub': _('Wer hat wann was geändert'), 'url': '/neu/logbuch/', 'icon': 'verlauf'},
+        {'titel': _('Rechtsgrundlagen'), 'sub': _('OR/VMWG-Artikel mit Anwendung im Programm'), 'url': '/neu/rechtsgrundlagen/', 'icon': 'recht'},
         # E1.1: Das Regelwerk hing bis hierher unter «Erweitert» im
         # Einfachmodus. Mit den fuenf Bereichen hat es dort keinen Platz mehr —
         # Fristenregeln sind eine Einstellung, keine Tagesarbeit. Ohne diese
         # Kachel waere die Seite beim Umbau unauffindbar geworden, wie schon
         # einmal in Phase 4a (vier Etappen lang).
-        {'titel': 'Regelwerk (Fristen)', 'sub': 'Kuendigungstermine und Fristen je Kanton',
+        {'titel': _('Regelwerk (Fristen)'), 'sub': _('Kündigungstermine und Fristen je Kanton'),
          'url': '/neu/regelwerk/', 'icon': 'recht'},
     ]
     return render(request, 'fw/einstellungen.html', {

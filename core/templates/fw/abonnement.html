@@ -1,28 +1,28 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Abonnement · swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Abonnement · swissImmo" %}{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Abonnement</h1>
-        <p>Preis pro verwaltete Einheit / Monat — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ einheiten }}</span> Einheit(en) im System.</p>
+        <h1>{% trans "Abonnement" %}</h1>
+        <p>{% blocktrans count n=einheiten %}Preis pro verwaltete Einheit / Monat — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ n }}</span> Einheit im System.{% plural %}Preis pro verwaltete Einheit / Monat — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ n }}</span> Einheiten im System.{% endblocktrans %}</p>
     </div>
 </div>
 
 {% if not kann_abo_aendern %}
-<p class="text-sm fw-mutet mb-6">{% zeichen 'hinweis' klasse='fw-faint mr-1' %}Den Plan kann nur der Inhaber der Verwaltung ändern.</p>
+<p class="text-sm fw-mutet mb-6">{% zeichen 'hinweis' klasse='fw-faint mr-1' %}{% trans "Den Plan kann nur der Inhaber der Verwaltung ändern." %}</p>
 {% else %}
 <!-- Monatlich / Jährlich -->
 <div class="inline-flex items-center gap-1 fw-flaeche border fw-linie rounded-xl p-1 mb-6 shadow-sm">
     <form method="post">{% csrf_token %}
         <input type="hidden" name="plan" value="{{ aktiver_plan }}">
-        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if not jaehrlich %}fw-btn fw-primary{% else %}fw-mutet hover:fw-ink{% endif %}">Monatlich</button>
+        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if not jaehrlich %}fw-btn fw-primary{% else %}fw-mutet hover:fw-ink{% endif %}">{% trans "Monatlich" %}</button>
     </form>
     <form method="post">{% csrf_token %}
         <input type="hidden" name="plan" value="{{ aktiver_plan }}">
         <input type="hidden" name="jaehrlich" value="on">
         <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if jaehrlich %}fw-btn fw-primary{% else %}fw-mutet hover:fw-ink{% endif %}">
-            Jährlich <span class="text-[10px] font-bold {% if jaehrlich %}fw-faint{% else %}fw-gut{% endif %}">−15 %</span></button>
+            {% trans "Jährlich" %} <span class="text-[10px] font-bold {% if jaehrlich %}fw-faint{% else %}fw-gut{% endif %}">−15 %</span></button>
     </form>
 </div>
 {% endif %}
@@ -31,21 +31,21 @@
     {% for p in plaene %}
     <div class="relative fw-flaeche rounded-xl border shadow-sm overflow-hidden
         {% if p.empfohlen %}fw-linie-marke ring-2 fw-fokusring{% else %}fw-linie{% endif %}">
-        {% if p.empfohlen %}<div class="absolute top-0 right-0 fw-btn fw-primary text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl">Empfohlen</div>{% endif %}
+        {% if p.empfohlen %}<div class="absolute top-0 right-0 fw-btn fw-primary text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl">{% trans "Empfohlen" %}</div>{% endif %}
         <div class="p-6">
             <div class="flex items-center gap-2">
                 <h2 class="text-lg font-extrabold fw-strong">{{ p.name }}</h2>
-                {% if p.aktiv %}<span class="text-[10px] font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-0.5 rounded-full">Aktiv</span>{% endif %}
+                {% if p.aktiv %}<span class="text-[10px] font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-0.5 rounded-full">{% trans "Aktiv" %}</span>{% endif %}
             </div>
             <p class="text-xs fw-faint mt-0.5 mb-4">{{ p.zielgruppe }}</p>
 
             <div class="flex items-end gap-1">
                 <span class="text-2xl sm:text-3xl font-extrabold fw-strong">CHF {{ p.monatlich }}</span>
-                <span class="text-sm fw-faint mb-1">/ Monat</span>
+                <span class="text-sm fw-faint mb-1">{% trans "/ Monat" %}</span>
             </div>
             <p class="text-xs fw-faint mt-1">
-                CHF {{ p.preis_einheit }}/Einheit · min. CHF {{ p.grund }}{% if p.gratis_bis %} · gratis bis {{ p.gratis_bis }} Einheiten{% endif %}
-                {% if jaehrlich %}<br>CHF {{ p.jahr }}/Jahr (−15 %){% endif %}
+                {% blocktrans with preis=p.preis_einheit grund=p.grund %}CHF {{ preis }}/Einheit · min. CHF {{ grund }}{% endblocktrans %}{% if p.gratis_bis %} · {% blocktrans with n=p.gratis_bis %}gratis bis {{ n }} Einheiten{% endblocktrans %}{% endif %}
+                {% if jaehrlich %}<br>{% blocktrans with preis=p.jahr %}CHF {{ preis }}/Jahr (−15 %){% endblocktrans %}{% endif %}
             </p>
 
             {% if kann_abo_aendern %}
@@ -55,7 +55,7 @@
                 <button type="submit" class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors
                     {% if p.aktiv %}fw-flaeche2 fw-faint cursor-default{% elif p.empfohlen %}fw-btn fw-primary shadow-lg fw-schatten-marke{% else %}fw-balken-voll hover:fw-balken-voll{% endif %}"
                     {% if p.aktiv %}disabled{% endif %}>
-                    {% if p.aktiv %}Aktueller Plan{% else %}Plan wählen{% endif %}
+                    {% if p.aktiv %}{% trans "Aktueller Plan" %}{% else %}{% trans "Plan wählen" %}{% endif %}
                 </button>
             </form>
             {% endif %}
@@ -74,13 +74,13 @@
 </div>
 
 <div class="mt-6 fw-card p-5">
-    <h3 class="font-bold fw-strong flex items-center gap-2 mb-3">{% zeichen 'hinweis' klasse='fw-faint' %} Add-ons</h3>
+    <h3 class="font-bold fw-strong flex items-center gap-2 mb-3">{% zeichen 'hinweis' klasse='fw-faint' %} {% trans "Add-ons" %}</h3>
     <div class="grid sm:grid-cols-3 gap-3 text-sm">
-        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">Datenmigration</div><div class="fw-mutet text-xs mt-1">Einmalig CHF 200–800, schmerzloser Umzug bestehender Mandate.</div></div>
-        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">E-Signaturen</div><div class="fw-mutet text-xs mt-1">CHF 1.50/Signatur (in Premium inkl. Kontingent).</div></div>
-        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">SMS & Speicher</div><div class="fw-mutet text-xs mt-1">SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher.</div></div>
+        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">{% trans "Datenmigration" %}</div><div class="fw-mutet text-xs mt-1">{% trans "Einmalig CHF 200–800, schmerzloser Umzug bestehender Mandate." %}</div></div>
+        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">{% trans "E-Signaturen" %}</div><div class="fw-mutet text-xs mt-1">{% trans "CHF 1.50/Signatur (in Premium inkl. Kontingent)." %}</div></div>
+        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">{% trans "SMS &amp; Speicher" %}</div><div class="fw-mutet text-xs mt-1">{% trans "SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher." %}</div></div>
     </div>
 </div>
 
-<p class="text-xs fw-faint mt-4">Alle Preise exkl. MWST. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet. Preise sind ein Startgerüst und können in den Einstellungen angepasst werden.</p>
+<p class="text-xs fw-faint mt-4">{% trans "Alle Preise exkl. MWST. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet. Preise sind ein Startgerüst und können in den Einstellungen angepasst werden." %}</p>
 {% endblock %}

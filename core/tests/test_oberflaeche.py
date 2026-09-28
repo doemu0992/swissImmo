@@ -619,6 +619,12 @@ class IconKnopfBeschriftungTests(TestCase):
                 if '<button' in inner or '<a ' in inner:
                     continue                      # verschachtelt, gehört zum äusseren
                 txt = re.sub(r'<[^>]+>', '', inner)
+                # Uebersetzter Text IST sichtbarer Text: `{% trans "…" %}` und
+                # der Inhalt eines blocktrans. Ohne diese Zeile galt jeder
+                # ausgezeichnete Knopf als stumm, sobald er ein <svg> traegt.
+                txt = re.sub(r'\{%\s*(trans|translate)\s+(["\']).+?\2[^%]*%\}', 'X', txt, flags=re.S)
+                txt = re.sub(r'\{%\s*(blocktrans|blocktranslate)\b.*?%\}(.*?)\{%\s*end\1\s*%\}',
+                             lambda b: 'X' if b.group(2).strip() else '', txt, flags=re.S)
                 txt = re.sub(r'\{%.*?%\}', '', txt, flags=re.S)
                 txt = re.sub(r'\{\{.*?\}\}', 'X', txt, flags=re.S).strip()
                 if txt:
