@@ -1,15 +1,15 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Personen — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Personen" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
     <div>
-        <h1>Personen</h1>
-        <p>{{ rows|length }} Person(en) · <span style="color:var(--ds-good);font-weight:600">{{ mit_vertrag_count }} mit aktivem Vertrag</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/personen/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+        <h1>{% trans "Personen" %}</h1>
+        <p>{% blocktrans count n=rows|length %}{{ n }} Person{% plural %}{{ n }} Personen{% endblocktrans %} · <span style="color:var(--ds-good);font-weight:600">{% blocktrans with n=mit_vertrag_count %}{{ n }} mit aktivem Vertrag{% endblocktrans %}</span>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/personen/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
-    <a href="/neu/personen/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} Person erfassen</a>
+    <a href="/neu/personen/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Person erfassen" %}</a>
 </div>
 
 <div class="fw-card">
@@ -25,7 +25,7 @@
             {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
-            <input type="text" name="q" id="personSearch" value="{{ q }}" placeholder="Name, E-Mail oder Ort suchen…"
+            <input type="text" name="q" id="personSearch" value="{{ q }}" placeholder="{% trans 'Name, E-Mail oder Ort suchen…' %}"
                    autocomplete="off" oninput="livePersonFilter(this.value)"
                    class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
         </form>
@@ -53,7 +53,7 @@
         </a>
         {% empty %}
         <div class="px-4">
-            {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='suchen' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Personen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='neu' titel='Noch keine Personen' subtext='Erfassen Sie Mieter, Bewerber und weitere Kontakte.' cta_url='/neu/personen/neu/' cta_label='Erste Person erfassen' %}{% endif %}
+            {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Personen gefunden.') %}{% else %}{% include 'fw/_empty.html' with icon='neu' titel=_('Noch keine Personen') subtext=_('Erfassen Sie Mieter, Bewerber und weitere Kontakte.') cta_url='/neu/personen/neu/' cta_label=_('Erste Person erfassen') %}{% endif %}
         </div>
         {% endfor %}
     </div>
@@ -63,10 +63,10 @@
         <table class="fw-table" style="min-width:max-content">
             <thead>
             <tr>
-                <th>Name</th>
-                <th class="hidden md:table-cell">Kontakt</th>
-                <th class="hidden lg:table-cell">Adresse</th>
-                <th>Mietet aktuell</th>
+                <th>{% trans "Name" %}</th>
+                <th class="hidden md:table-cell">{% trans "Kontakt" %}</th>
+                <th class="hidden lg:table-cell">{% trans "Adresse" %}</th>
+                <th>{% trans "Mietet aktuell" %}</th>
                 <th></th>
             </tr>
             </thead>
@@ -102,12 +102,12 @@
             </tr>
             {% empty %}
             <tr><td colspan="5">
-                {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='suchen' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Personen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='neu' titel='Noch keine Personen' subtext='Erfassen Sie Mieter, Bewerber und weitere Kontakte.' cta_url='/neu/personen/neu/' cta_label='Erste Person erfassen' %}{% endif %}
+                {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Personen gefunden.') %}{% else %}{% include 'fw/_empty.html' with icon='neu' titel=_('Noch keine Personen') subtext=_('Erfassen Sie Mieter, Bewerber und weitere Kontakte.') cta_url='/neu/personen/neu/' cta_label=_('Erste Person erfassen') %}{% endif %}
             </td></tr>
             {% endfor %}
             </tbody>
         </table>
-        <div id="keinTreffer" class="hidden px-5 py-10 text-center text-sm fw-faint italic">Keine Treffer.</div>
+        <div id="keinTreffer" class="hidden px-5 py-10 text-center text-sm fw-faint italic">{% trans "Keine Treffer." %}</div>
     </div>
     <script>
       function livePersonFilter(term){

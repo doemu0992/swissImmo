@@ -1,40 +1,40 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Dienstleister — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Dienstleister" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
-    <h1>Dienstleister</h1>
-    <button type="button" onclick="document.getElementById('dlform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} Handwerker erfassen</button>
+    <h1>{% trans "Dienstleister" %}</h1>
+    <button type="button" onclick="document.getElementById('dlform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Handwerker erfassen" %}</button>
 </div>
-<p class="text-sm fw-mutet mb-5">Handwerkerstamm für Reparaturaufträge · {{ anzahl }} Firma/Firmen in {{ anzahl_branchen }} Branchen</p>
+<p class="text-sm fw-mutet mb-5">{% trans "Handwerkerstamm für Reparaturaufträge" %} · {% blocktrans count n=anzahl %}{{ n }} Firma{% plural %}{{ n }} Firmen{% endblocktrans %} · {% blocktrans count n=anzahl_branchen %}{{ n }} Branche{% plural %}{{ n }} Branchen{% endblocktrans %}</p>
 
 
 <div id="dlform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'arbeit' klasse='fw-marke mr-1.5' %}Handwerker / Dienstleister erfassen</h3>
+    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'arbeit' klasse='fw-marke mr-1.5' %}{% trans "Handwerker / Dienstleister erfassen" %}</h3>
     <form method="post" action="/neu/dienstleister/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {% csrf_token %}
-        <div><label for="dl-firma" class="block text-xs font-semibold fw-mutet mb-1">Firma *</label>
+        <div><label for="dl-firma" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Firma" %} *</label>
             <input id="dl-firma" name="firma" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="dl-branche" class="block text-xs font-semibold fw-mutet mb-1">Branche</label>
+        <div><label for="dl-branche" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Branche" %}</label>
             <select id="dl-branche" name="branche" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <option value="sanitaer">Sanitär / Heizung</option>
-                <option value="elektro">Elektroinstallation</option>
-                <option value="maler">Maler / Gipser</option>
-                <option value="schreiner">Schreiner / Zimmermann</option>
-                <option value="schloss">Schlosserei / Schlüsseldienst</option>
-                <option value="allgemein" selected>Allround-Handwerker / Baugeschäft</option>
-                <option value="garten">Gartenbau / Umgebung</option>
-                <option value="reinigung">Reinigungsinstitut</option>
+                <option value="sanitaer">{% trans "Sanitär / Heizung" %}</option>
+                <option value="elektro">{% trans "Elektroinstallation" %}</option>
+                <option value="maler">{% trans "Maler / Gipser" %}</option>
+                <option value="schreiner">{% trans "Schreiner / Zimmermann" %}</option>
+                <option value="schloss">{% trans "Schlosserei / Schlüsseldienst" %}</option>
+                <option value="allgemein" selected>{% trans "Allround-Handwerker / Baugeschäft" %}</option>
+                <option value="garten">{% trans "Gartenbau / Umgebung" %}</option>
+                <option value="reinigung">{% trans "Reinigungsinstitut" %}</option>
             </select></div>
-        <div><label for="dl-kontakt" class="block text-xs font-semibold fw-mutet mb-1">Kontaktperson</label>
+        <div><label for="dl-kontakt" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kontaktperson" %}</label>
             <input id="dl-kontakt" name="kontaktperson" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="dl-email" class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+        <div><label for="dl-email" class="block text-xs font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
             <input id="dl-email" name="email" type="email" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="dl-telefon" class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+        <div><label for="dl-telefon" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
             <input id="dl-telefon" name="telefon" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Erfassen</button></div>
+        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen" %}</button></div>
     </form>
 </div>
 
@@ -50,7 +50,7 @@
     <form method="get" class="ml-auto relative">
         {% if branche_filter %}<input type="hidden" name="branche" value="{{ branche_filter }}">{% endif %}
         {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
-        <input type="text" name="q" value="{{ q }}" placeholder="Firma oder Kontakt suchen…" aria-label="Dienstleister nach Firma oder Kontakt durchsuchen"
+        <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Firma oder Kontakt suchen…' %}" aria-label="{% trans 'Dienstleister nach Firma oder Kontakt durchsuchen' %}"
                class="fw-flaeche border fw-linie pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
     </form>
 </div>
@@ -70,10 +70,10 @@
                 </div>
             </a>
             <div class="flex items-center gap-2 shrink-0">
-                {% if row.offene %}<span class="fw-chip fw-krit-flaeche fw-kritisch whitespace-nowrap">{{ row.offene }} offen</span>{% endif %}
-                <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.toggle('hidden')" class="fw-faint hover:fw-marke text-sm" title="Bearbeiten">{% zeichen 'bearbeiten' %}</button>
-                <form method="post" action="/neu/dienstleister/{{ row.h.id }}/loeschen/" onsubmit="return confirm('Dienstleister «{{ row.h.firma|escapejs }}» löschen?');">{% csrf_token %}
-                    <button class="fw-faint hover:fw-kritisch text-sm" title="Löschen">{% zeichen 'loeschen' %}</button>
+                {% if row.offene %}<span class="fw-chip fw-krit-flaeche fw-kritisch whitespace-nowrap">{% blocktrans with n=row.offene %}{{ n }} offen{% endblocktrans %}</span>{% endif %}
+                <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.toggle('hidden')" class="fw-faint hover:fw-marke text-sm" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
+                <form method="post" action="/neu/dienstleister/{{ row.h.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.h.firma|safe %}Dienstleister «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
+                    <button class="fw-faint hover:fw-kritisch text-sm" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                 </form>
             </div>
         </div>
@@ -82,28 +82,28 @@
         <div id="dledit-{{ row.h.id }}" class="hidden mb-4 pb-4 border-b fw-linie">
             <form method="post" action="/neu/dienstleister/{{ row.h.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {% csrf_token %}
-                <div><label for="dle-firma-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Firma *</label>
+                <div><label for="dle-firma-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Firma" %} *</label>
                     <input id="dle-firma-{{ row.h.id }}" name="firma" value="{{ row.h.firma }}" required class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label for="dle-branche-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Branche</label>
+                <div><label for="dle-branche-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Branche" %}</label>
                     <select id="dle-branche-{{ row.h.id }}" name="branche" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5">
-                        <option value="sanitaer" {% if row.h.branche == 'sanitaer' %}selected{% endif %}>Sanitär / Heizung</option>
-                        <option value="elektro" {% if row.h.branche == 'elektro' %}selected{% endif %}>Elektroinstallation</option>
-                        <option value="maler" {% if row.h.branche == 'maler' %}selected{% endif %}>Maler / Gipser</option>
-                        <option value="schreiner" {% if row.h.branche == 'schreiner' %}selected{% endif %}>Schreiner / Zimmermann</option>
-                        <option value="schloss" {% if row.h.branche == 'schloss' %}selected{% endif %}>Schlosserei / Schlüsseldienst</option>
-                        <option value="allgemein" {% if row.h.branche == 'allgemein' %}selected{% endif %}>Allround-Handwerker / Baugeschäft</option>
-                        <option value="garten" {% if row.h.branche == 'garten' %}selected{% endif %}>Gartenbau / Umgebung</option>
-                        <option value="reinigung" {% if row.h.branche == 'reinigung' %}selected{% endif %}>Reinigungsinstitut</option>
+                        <option value="sanitaer" {% if row.h.branche == 'sanitaer' %}selected{% endif %}>{% trans "Sanitär / Heizung" %}</option>
+                        <option value="elektro" {% if row.h.branche == 'elektro' %}selected{% endif %}>{% trans "Elektroinstallation" %}</option>
+                        <option value="maler" {% if row.h.branche == 'maler' %}selected{% endif %}>{% trans "Maler / Gipser" %}</option>
+                        <option value="schreiner" {% if row.h.branche == 'schreiner' %}selected{% endif %}>{% trans "Schreiner / Zimmermann" %}</option>
+                        <option value="schloss" {% if row.h.branche == 'schloss' %}selected{% endif %}>{% trans "Schlosserei / Schlüsseldienst" %}</option>
+                        <option value="allgemein" {% if row.h.branche == 'allgemein' %}selected{% endif %}>{% trans "Allround-Handwerker / Baugeschäft" %}</option>
+                        <option value="garten" {% if row.h.branche == 'garten' %}selected{% endif %}>{% trans "Gartenbau / Umgebung" %}</option>
+                        <option value="reinigung" {% if row.h.branche == 'reinigung' %}selected{% endif %}>{% trans "Reinigungsinstitut" %}</option>
                     </select></div>
-                <div><label for="dle-kontakt-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Kontaktperson</label>
+                <div><label for="dle-kontakt-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Kontaktperson" %}</label>
                     <input id="dle-kontakt-{{ row.h.id }}" name="kontaktperson" value="{{ row.h.kontaktperson }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label for="dle-email-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">E-Mail</label>
+                <div><label for="dle-email-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
                     <input id="dle-email-{{ row.h.id }}" name="email" type="email" value="{{ row.h.email }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label for="dle-telefon-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Telefon</label>
+                <div><label for="dle-telefon-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
                     <input id="dle-telefon-{{ row.h.id }}" name="telefon" value="{{ row.h.telefon }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
                 <div class="sm:col-span-2 flex items-center gap-2 justify-end">
-                    <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.add('hidden')" class="text-sm fw-mutet hover:fw-ink px-3 py-1.5">Abbrechen</button>
-                    <button class="fw-btn fw-primary text-sm font-semibold px-4 py-1.5 rounded-lg">{% zeichen 'speichern' klasse='mr-1.5' %}Speichern</button>
+                    <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.add('hidden')" class="text-sm fw-mutet hover:fw-ink px-3 py-1.5">{% trans "Abbrechen" %}</button>
+                    <button class="fw-btn fw-primary text-sm font-semibold px-4 py-1.5 rounded-lg">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
                 </div>
             </form>
         </div>
@@ -112,13 +112,13 @@
             {% if row.h.kontaktperson %}<div class="flex items-center gap-2 fw-mutet">{% zeichen 'person' klasse='fw-faint w-4 text-center text-xs' %}{{ row.h.kontaktperson }}</div>{% endif %}
             {% if row.h.telefon %}<div class="flex items-center gap-2 fw-mutet">{% zeichen 'senden' klasse='fw-faint w-4 text-center text-xs' %}<a href="tel:{{ row.h.telefon }}" class="hover:fw-marke">{{ row.h.telefon }}</a></div>{% endif %}
             {% if row.h.email %}<div class="flex items-center gap-2 fw-mutet">{% zeichen 'senden' klasse='fw-faint w-4 text-center text-xs' %}<a href="mailto:{{ row.h.email }}" class="hover:fw-marke truncate">{{ row.h.email }}</a></div>{% endif %}
-            {% if not row.h.kontaktperson and not row.h.telefon and not row.h.email %}<div class="fw-faint italic text-xs">Keine Kontaktdaten hinterlegt</div>{% endif %}
+            {% if not row.h.kontaktperson and not row.h.telefon and not row.h.email %}<div class="fw-faint italic text-xs">{% trans "Keine Kontaktdaten hinterlegt" %}</div>{% endif %}
         </dl>
 
         {% if row.h.email %}
         <div class="mt-4 pt-4 border-t fw-linie">
             <a href="mailto:{{ row.h.email }}" class="inline-flex items-center gap-1.5 text-sm fw-marke font-medium hover:underline">
-                {% zeichen 'senden' klasse='text-xs' %} Auftrag per E-Mail
+                {% zeichen 'senden' klasse='text-xs' %} {% trans "Auftrag per E-Mail" %}
             </a>
         </div>
         {% endif %}
@@ -126,8 +126,8 @@
     {% empty %}
     <div class="md:col-span-2 lg:col-span-3 fw-card p-10 text-center">
         <div class="w-12 h-12 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-xl mb-3 mx-auto">{% zeichen 'arbeit' %}</div>
-        <p class="text-sm font-medium fw-ink">{% if q or branche_filter %}Keine Treffer{% else %}Noch keine Dienstleister erfasst{% endif %}</p>
-        <p class="text-xs fw-faint mt-1">Handwerker werden in der klassischen Ansicht erfasst.</p>
+        <p class="text-sm font-medium fw-ink">{% if q or branche_filter %}{% trans "Keine Treffer" %}{% else %}{% trans "Noch keine Dienstleister erfasst" %}{% endif %}</p>
+        <p class="text-xs fw-faint mt-1">{% trans "Handwerker werden in der klassischen Ansicht erfasst." %}</p>
     </div>
     {% endfor %}
 </div>

@@ -20,6 +20,7 @@ from django.db.models import F, Q, Sum
 from django.db.models.functions import ExtractMonth
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from core.services.mahnstufen import (stufe_fuer_tage as _stufe_fuer_tage,
                                       eigentuemer_von_rechnung as _eigentuemer_von_rechnung)
@@ -1104,11 +1105,11 @@ def fw_objekte(request):
         'typ_filter': typ_filter, 'zustand': zustand, 'q': q,
         'gefiltert': len(sichtbar) != len(alle),
         'sichtbar_anzahl': len(sichtbar),
-        'typ_chips': [('', 'Alle'), ('wohnen', 'Wohnen'),
-                      ('parkplatz', 'Parkplatz'), ('gewerbe', 'Gewerbe')],
-        'zustand_chips': [('', 'Alle Zustände'),
-                          ('befund', f'Mit Befund ({kopf["mit_befund"]})'),
-                          ('leer', f'Leerstand ({kopf["leer"]})')],
+        'typ_chips': [('', _('Alle')), ('wohnen', _('Wohnen')),
+                      ('parkplatz', _('Parkplatz')), ('gewerbe', _('Gewerbe'))],
+        'zustand_chips': [('', _('Alle Zustände')),
+                          ('befund', _('Mit Befund (%(n)s)') % {'n': kopf['mit_befund']}),
+                          ('leer', _('Leerstand (%(n)s)') % {'n': kopf['leer']})],
     })
 
 # Design-System-Chip-Variante je Status (fw-chip fw-<variant>)
@@ -1174,7 +1175,7 @@ def fw_vertraege(request):
     return render(request, 'fw/vertraege.html', {
         **basis, **_vermietung_pipeline('vertraege', basis['lg_query']), 'nav': 'vertraege', 'rows': rows,
         'status_filter': status_filter, 'q': q,
-        'status_chips': [('', 'Alle')] + [(k, VERTRAG_PILL[k][0])
+        'status_chips': [('', _('Alle'))] + [(k, VERTRAG_PILL[k][0])
                                           for k in VERTRAG_FILTER],
         'aktiv_count': sum(1 for r in rows if r['v'].anzeige_status == 'aktiv'),
     })
@@ -1287,6 +1288,7 @@ def fw_personen(request):
     return render(request, 'fw/personen.html', {
         **basis, 'nav': 'personen', 'rows': rows,
         'typ_filter': typ_filter, 'q': q,
-        'typ_chips': [('', 'Alle'), ('person', 'Privatpersonen'), ('firma', 'Firmen'), ('verein', 'Vereine')],
+        'typ_chips': [('', _('Alle')), ('person', _('Privatpersonen')), ('firma', _('Firmen')),
+                      ('verein', _('Vereine'))],
         'mit_vertrag_count': sum(1 for r in rows if r['aktive']),
     })

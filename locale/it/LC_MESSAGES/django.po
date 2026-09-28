@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 14:58+0200\n"
+"POT-Creation-Date: 2026-09-28 15:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,7 +37,7 @@ msgstr "Appuntamenti"
 msgid "Pendenzen"
 msgstr "Pendenze"
 
-#: core/navigation.py:124
+#: core/navigation.py:124 core/templates/fw/liegenschaften.html:62
 msgid "Fristen"
 msgstr "Scadenze"
 
@@ -51,26 +51,34 @@ msgid "Akten"
 msgstr "Pratiche"
 
 #: core/navigation.py:136 core/templates/fw/dashboard.html:339
+#: core/templates/fw/mandate.html:3 core/templates/fw/mandate.html:6
 msgid "Mandate"
 msgstr "Mandati"
 
-#: core/navigation.py:137
+#: core/navigation.py:137 core/templates/fw/liegenschaften.html:4
+#: core/templates/fw/liegenschaften.html:10
+#: core/templates/fw/liegenschaften.html:38
 msgid "Liegenschaften"
 msgstr "Stabili"
 
-#: core/navigation.py:138
+#: core/navigation.py:138 core/templates/fw/liegenschaften.html:43
+#: core/templates/fw/objekte.html:4 core/templates/fw/objekte.html:23
+#: core/templates/fw/objekte.html:34
 msgid "Objekte"
 msgstr "Oggetti"
 
-#: core/navigation.py:139
+#: core/navigation.py:139 core/templates/fw/vertraege.html:5
+#: core/templates/fw/vertraege.html:13
 msgid "Mietverhältnisse"
 msgstr "Locazioni"
 
-#: core/navigation.py:140
+#: core/navigation.py:140 core/templates/fw/personen.html:3
+#: core/templates/fw/personen.html:9
 msgid "Personen"
 msgstr "Persone"
 
-#: core/navigation.py:141
+#: core/navigation.py:141 core/templates/fw/dienstleister.html:3
+#: core/templates/fw/dienstleister.html:8
 msgid "Dienstleister"
 msgstr "Fornitori di servizi"
 
@@ -82,15 +90,15 @@ msgstr "Danni"
 msgid "Vorgänge"
 msgstr "Casi"
 
-#: core/navigation.py:145
+#: core/navigation.py:145 core/views/fw/_basis.py:283
 msgid "Mieterwechsel"
 msgstr "Cambi d'inquilino"
 
-#: core/navigation.py:146
+#: core/navigation.py:146 core/views/fw/_basis.py:274
 msgid "Vermarktung"
 msgstr "Commercializzazione"
 
-#: core/navigation.py:147
+#: core/navigation.py:147 core/views/fw/_basis.py:277
 msgid "Bewerbungen"
 msgstr "Candidature"
 
@@ -286,7 +294,7 @@ msgstr "senza data — tempo medio non calcolabile"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:314
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:332
 msgid "Abwesenheiten"
 msgstr "Assenze"
 
@@ -365,6 +373,7 @@ msgid "Notiz"
 msgstr "Nota"
 
 #: core/templates/fw/abwesenheiten.html:41
+#: core/templates/fw/dienstleister.html:37
 msgid "Erfassen"
 msgstr "Registrare"
 
@@ -504,6 +513,7 @@ msgid "Gefiltert auf %(strasse)s, %(ort)s"
 msgstr "Filtrato su %(strasse)s, %(ort)s"
 
 #: core/templates/fw/dashboard.html:40 core/templates/fw/dashboard.html:89
+#: core/templates/fw/liegenschaften.html:97
 msgid "Filter aufheben"
 msgstr "Annullare il filtro"
 
@@ -512,7 +522,10 @@ msgid "Zuständigkeit:"
 msgstr "Competenza:"
 
 #: core/templates/fw/dashboard.html:72 core/templates/fw/dashboard.html:82
-#: core/templates/fw/dashboard.html:183 core/views/fw/arbeit.py:42
+#: core/templates/fw/dashboard.html:183
+#: core/templates/fw/liegenschaften.html:60 core/views/fw/arbeit.py:42
+#: core/views/fw/dienstleister.py:60 core/views/fw/listen.py:1108
+#: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
 msgid "Alle"
 msgstr "Tutti"
 
@@ -628,7 +641,7 @@ msgstr "Niente di non assegnato."
 msgid "Ganzer Posteingang"
 msgstr "Posta in arrivo completa"
 
-#: core/templates/fw/dashboard.html:292
+#: core/templates/fw/dashboard.html:292 core/templates/fw/dienstleister.html:74
 #, python-format
 msgid "%(n)s offen"
 msgstr "%(n)s aperti"
@@ -655,6 +668,7 @@ msgid "Stand heute"
 msgstr "Situazione a oggi"
 
 #: core/templates/fw/dashboard.html:346
+#: core/templates/fw/liegenschaften.html:85
 #, python-format
 msgid "%(n)s Objekt"
 msgid_plural "%(n)s Objekte"
@@ -662,6 +676,7 @@ msgstr[0] "%(n)s oggetto"
 msgstr[1] "%(n)s oggetti"
 
 #: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
+#: core/templates/fw/objekte.html:72
 #, python-format
 msgid "%(n)s leer"
 msgstr "%(n)s sfitti"
@@ -672,6 +687,7 @@ msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s scoperti"
 
 #: core/templates/fw/dashboard.html:350
+#: core/templates/fw/liegenschaften.html:90
 msgid "ohne Befund"
 msgstr "senza rilievi"
 
@@ -710,6 +726,475 @@ msgstr "Gli indicatori tranquilli non compaiono qui."
 msgid "Alle Übersichten →"
 msgstr "Tutte le panoramiche →"
 
+#: core/templates/fw/dienstleister.html:9
+msgid "Handwerker erfassen"
+msgstr "Registrare artigiano"
+
+#: core/templates/fw/dienstleister.html:11
+msgid "Handwerkerstamm für Reparaturaufträge"
+msgstr "Elenco artigiani per le riparazioni"
+
+#: core/templates/fw/dienstleister.html:11
+#, python-format
+msgid "%(n)s Firma"
+msgid_plural "%(n)s Firmen"
+msgstr[0] "%(n)s ditta"
+msgstr[1] "%(n)s ditte"
+
+#: core/templates/fw/dienstleister.html:11
+#, python-format
+msgid "%(n)s Branche"
+msgid_plural "%(n)s Branchen"
+msgstr[0] "%(n)s settore"
+msgstr[1] "%(n)s settori"
+
+#: core/templates/fw/dienstleister.html:15
+msgid "Handwerker / Dienstleister erfassen"
+msgstr "Registrare artigiano / fornitore"
+
+#: core/templates/fw/dienstleister.html:18
+#: core/templates/fw/dienstleister.html:86
+msgid "Firma"
+msgstr "Ditta"
+
+#: core/templates/fw/dienstleister.html:20
+#: core/templates/fw/dienstleister.html:88
+msgid "Branche"
+msgstr "Settore"
+
+#: core/templates/fw/dienstleister.html:22
+#: core/templates/fw/dienstleister.html:90
+msgid "Sanitär / Heizung"
+msgstr "Sanitari / riscaldamento"
+
+#: core/templates/fw/dienstleister.html:23
+#: core/templates/fw/dienstleister.html:91
+msgid "Elektroinstallation"
+msgstr "Impianti elettrici"
+
+#: core/templates/fw/dienstleister.html:24
+#: core/templates/fw/dienstleister.html:92
+msgid "Maler / Gipser"
+msgstr "Pittore / gessatore"
+
+#: core/templates/fw/dienstleister.html:25
+#: core/templates/fw/dienstleister.html:93
+msgid "Schreiner / Zimmermann"
+msgstr "Falegname / carpentiere"
+
+#: core/templates/fw/dienstleister.html:26
+#: core/templates/fw/dienstleister.html:94
+msgid "Schlosserei / Schlüsseldienst"
+msgstr "Fabbro / servizio chiavi"
+
+#: core/templates/fw/dienstleister.html:27
+#: core/templates/fw/dienstleister.html:95
+msgid "Allround-Handwerker / Baugeschäft"
+msgstr "Tuttofare / impresa edile"
+
+#: core/templates/fw/dienstleister.html:28
+#: core/templates/fw/dienstleister.html:96
+msgid "Gartenbau / Umgebung"
+msgstr "Giardinaggio / spazi esterni"
+
+#: core/templates/fw/dienstleister.html:29
+#: core/templates/fw/dienstleister.html:97
+msgid "Reinigungsinstitut"
+msgstr "Impresa di pulizie"
+
+#: core/templates/fw/dienstleister.html:31
+#: core/templates/fw/dienstleister.html:99
+msgid "Kontaktperson"
+msgstr "Persona di contatto"
+
+#: core/templates/fw/dienstleister.html:33
+#: core/templates/fw/dienstleister.html:101
+msgid "E-Mail"
+msgstr "E-mail"
+
+#: core/templates/fw/dienstleister.html:35
+#: core/templates/fw/dienstleister.html:103
+msgid "Telefon"
+msgstr "Telefono"
+
+#: core/templates/fw/dienstleister.html:53
+msgid "Firma oder Kontakt suchen…"
+msgstr "Cerca ditta o contatto…"
+
+#: core/templates/fw/dienstleister.html:53
+msgid "Dienstleister nach Firma oder Kontakt durchsuchen"
+msgstr "Cerca fornitori per ditta o contatto"
+
+#: core/templates/fw/dienstleister.html:75 core/templates/fw/mandate.html:36
+msgid "Bearbeiten"
+msgstr "Modifica"
+
+#: core/templates/fw/dienstleister.html:76
+#, python-format
+msgid "Dienstleister «%(name)s» löschen?"
+msgstr "Eliminare il fornitore «%(name)s»?"
+
+#: core/templates/fw/dienstleister.html:77 core/templates/fw/mandate.html:42
+msgid "Löschen"
+msgstr "Elimina"
+
+#: core/templates/fw/dienstleister.html:106
+msgid "Abbrechen"
+msgstr "Annulla"
+
+#: core/templates/fw/dienstleister.html:107
+msgid "Speichern"
+msgstr "Salva"
+
+#: core/templates/fw/dienstleister.html:116
+msgid "Keine Kontaktdaten hinterlegt"
+msgstr "Nessun dato di contatto"
+
+#: core/templates/fw/dienstleister.html:122
+msgid "Auftrag per E-Mail"
+msgstr "Incarico via e-mail"
+
+#: core/templates/fw/dienstleister.html:130 core/templates/fw/personen.html:56
+#: core/templates/fw/personen.html:105 core/templates/fw/vertraege.html:58
+#: core/templates/fw/vertraege.html:106
+msgid "Keine Treffer"
+msgstr "Nessun risultato"
+
+#: core/templates/fw/dienstleister.html:130
+msgid "Noch keine Dienstleister erfasst"
+msgstr "Nessun fornitore registrato"
+
+#: core/templates/fw/dienstleister.html:131
+msgid "Handwerker werden in der klassischen Ansicht erfasst."
+msgstr "Gli artigiani si registrano nella vista classica."
+
+#: core/templates/fw/liegenschaften.html:11
+#, python-format
+msgid "%(n)s Liegenschaft im Portfolio"
+msgid_plural "%(n)s Liegenschaften im Portfolio"
+msgstr[0] "%(n)s stabile in portafoglio"
+msgstr[1] "%(n)s stabili in portafoglio"
+
+#: core/templates/fw/liegenschaften.html:11
+msgid "gefiltert"
+msgstr "filtrato"
+
+#: core/templates/fw/liegenschaften.html:11 core/templates/fw/objekte.html:25
+#: core/templates/fw/personen.html:10 core/templates/fw/vertraege.html:14
+msgid "aufheben"
+msgstr "annulla"
+
+#: core/templates/fw/liegenschaften.html:14 core/templates/fw/objekte.html:108
+msgid "Liegenschaft erfassen"
+msgstr "Registrare stabile"
+
+#: core/templates/fw/liegenschaften.html:16
+msgid "Mehr"
+msgstr "Altro"
+
+#: core/templates/fw/liegenschaften.html:18
+msgid "Mieterspiegel (Rent Roll)"
+msgstr "Specchietto delle pigioni (rent roll)"
+
+#: core/templates/fw/liegenschaften.html:40
+#, python-format
+msgid "%(n)s mit Befund"
+msgstr "%(n)s con riscontro"
+
+#: core/templates/fw/liegenschaften.html:45
+msgid "Wohnungen, Gewerbe, Nebenobjekte"
+msgstr "Abitazioni, locali commerciali, oggetti accessori"
+
+#: core/templates/fw/liegenschaften.html:48
+msgid "Leer"
+msgstr "Sfitti"
+
+#: core/templates/fw/liegenschaften.html:50
+#, python-format
+msgid "%(q)s %% des Bestands"
+msgstr "%(q)s %% del patrimonio"
+
+#: core/templates/fw/liegenschaften.html:53
+msgid "Ist-Miete"
+msgstr "Pigione effettiva"
+
+#: core/templates/fw/liegenschaften.html:55
+msgid "pro Monat, laufende Verträge"
+msgstr "al mese, contratti in corso"
+
+#: core/templates/fw/liegenschaften.html:61 core/templates/fw/objekte.html:40
+msgid "Leerstand"
+msgstr "Sfitto"
+
+#: core/templates/fw/liegenschaften.html:63
+msgid "Tickets"
+msgstr "Ticket"
+
+#: core/templates/fw/liegenschaften.html:64
+msgid "Unterhalt"
+msgstr "Manutenzione"
+
+#: core/templates/fw/liegenschaften.html:65
+msgid "Ohne Befund"
+msgstr "Senza riscontri"
+
+#: core/templates/fw/liegenschaften.html:72
+msgid "Liegenschaft suchen (Strasse, Ort, PLZ) …"
+msgstr "Cerca stabile (via, località, NPA) …"
+
+#: core/templates/fw/liegenschaften.html:92
+msgid "Ist / Mt."
+msgstr "Effettiva / mese"
+
+#: core/templates/fw/liegenschaften.html:96
+msgid "Sortiert nach Befund, nicht nach Adresse."
+msgstr "Ordinato per riscontro, non per indirizzo."
+
+#: core/templates/fw/liegenschaften.html:102
+msgid "Keine Liegenschaft mit diesem Befund"
+msgstr "Nessuno stabile con questo riscontro"
+
+#: core/templates/fw/liegenschaften.html:102
+msgid ""
+"Der Filter greift — hier gibt es nichts zu tun. Über «Alle» zurück zur "
+"ganzen Liste."
+msgstr ""
+"Il filtro è attivo — qui non c'è nulla da fare. Con «Tutti» si torna "
+"all'elenco completo."
+
+#: core/templates/fw/liegenschaften.html:102
+msgid "Alle anzeigen"
+msgstr "Mostra tutti"
+
+#: core/templates/fw/liegenschaften.html:106
+msgid "Noch keine Liegenschaften"
+msgstr "Ancora nessuno stabile"
+
+#: core/templates/fw/liegenschaften.html:106
+msgid ""
+"Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus "
+"dem Gebäude- und Wohnungsregister (GWR) importiert werden."
+msgstr ""
+"Registrate il vostro primo stabile — gli oggetti possono essere importati "
+"automaticamente dal Registro federale degli edifici e delle abitazioni (REA)."
+
+#: core/templates/fw/liegenschaften.html:106
+msgid "Erste Liegenschaft erfassen"
+msgstr "Registrare il primo stabile"
+
+#: core/templates/fw/mandate.html:7
+msgid "Eigentümer erfassen"
+msgstr "Registrare proprietario"
+
+#: core/templates/fw/mandate.html:9
+#, python-format
+msgid "%(n)s Eigentümer, für den du Liegenschaften verwaltest."
+msgid_plural "%(n)s Eigentümer, für die du Liegenschaften verwaltest."
+msgstr[0] "%(n)s proprietario per cui gestisci stabili."
+msgstr[1] "%(n)s proprietari per cui gestisci stabili."
+
+#: core/templates/fw/mandate.html:16
+msgid "Eigentümer"
+msgstr "Proprietario"
+
+#: core/templates/fw/mandate.html:16 core/templates/fw/personen.html:67
+msgid "Kontakt"
+msgstr "Contatto"
+
+#: core/templates/fw/mandate.html:17 core/templates/fw/termine.html:33
+msgid "Ort"
+msgstr "Luogo"
+
+#: core/templates/fw/mandate.html:17
+msgid "Liegensch."
+msgstr "Stabili"
+
+#: core/templates/fw/mandate.html:18
+msgid "Aktionen"
+msgstr "Azioni"
+
+#: core/templates/fw/mandate.html:33
+msgid "Abrechnung"
+msgstr "Conteggio"
+
+#: core/templates/fw/mandate.html:34
+msgid "Kontokorrent"
+msgstr "Conto corrente"
+
+#: core/templates/fw/mandate.html:35
+msgid "Mahnstufen"
+msgstr "Livelli di sollecito"
+
+#: core/templates/fw/mandate.html:38
+#, python-format
+msgid "Eigentümer «%(name)s» löschen?"
+msgstr "Eliminare il proprietario «%(name)s»?"
+
+#: core/templates/fw/mandate.html:40
+#, python-format
+msgid ""
+"Achtung: %(n)s Liegenschaft zugeordnet — Löschen wird blockiert, bitte "
+"zuerst Zuordnung entfernen."
+msgid_plural ""
+"Achtung: %(n)s Liegenschaften zugeordnet — Löschen wird blockiert, bitte "
+"zuerst Zuordnung entfernen."
+msgstr[0] ""
+"Attenzione: %(n)s stabile assegnato — l'eliminazione è bloccata, rimuovere "
+"prima l'assegnazione."
+msgstr[1] ""
+"Attenzione: %(n)s stabili assegnati — l'eliminazione è bloccata, rimuovere "
+"prima l'assegnazione."
+
+#: core/templates/fw/mandate.html:47
+msgid "Noch keine Eigentümer erfasst."
+msgstr "Nessun proprietario registrato."
+
+#: core/templates/fw/objekte.html:24 core/templates/fw/personen.html:10
+#: core/templates/fw/vertraege.html:14
+#, python-format
+msgid "gefiltert auf %(strasse)s"
+msgstr "filtrato su %(strasse)s"
+
+#: core/templates/fw/objekte.html:25
+msgid "Nach Befund geordnet — was klemmt, steht oben."
+msgstr "Ordinato per riscontro — ciò che non va sta in alto."
+
+#: core/templates/fw/objekte.html:27
+msgid "Objekt erfassen"
+msgstr "Registrare oggetto"
+
+#: core/templates/fw/objekte.html:36
+msgid "im Bestand"
+msgstr "nel patrimonio"
+
+#: core/templates/fw/objekte.html:37
+msgid "Vermietet"
+msgstr "Locati"
+
+#: core/templates/fw/objekte.html:39
+msgid "mit laufendem Vertrag"
+msgstr "con contratto in corso"
+
+#: core/templates/fw/objekte.html:42
+msgid "ohne Mieter und ohne Nachfolge"
+msgstr "senza inquilino né subentrante"
+
+#: core/templates/fw/objekte.html:43
+msgid "Mit Befund"
+msgstr "Con riscontro"
+
+#: core/templates/fw/objekte.html:45
+msgid "brauchen eine Handlung"
+msgstr "richiedono un intervento"
+
+#: core/templates/fw/objekte.html:61
+#, python-format
+msgid "Suche «%(q)s»"
+msgstr "Ricerca «%(q)s»"
+
+#: core/templates/fw/objekte.html:73
+#, python-format
+msgid "%(belegt)s / %(anzahl)s vermietet"
+msgstr "%(belegt)s / %(anzahl)s locati"
+
+#: core/templates/fw/objekte.html:74
+msgid "Liegenschaft"
+msgstr "Stabile"
+
+#: core/templates/fw/objekte.html:83
+#, python-format
+msgid "%(n)s Zi."
+msgstr "%(n)s loc."
+
+#: core/templates/fw/objekte.html:92
+#, python-format
+msgid "Nachmieter ab %(ab)s"
+msgstr "Nuovo inquilino dal %(ab)s"
+
+#: core/templates/fw/objekte.html:97
+msgid "kein Zins"
+msgstr "nessuna pigione"
+
+#: core/templates/fw/objekte.html:106
+msgid "Nichts zu tun"
+msgstr "Nulla da fare"
+
+#: core/templates/fw/objekte.html:106
+msgid ""
+"Für diesen Filter gibt es kein Objekt. Das ist eine gute Nachricht — oder "
+"der Filter ist zu eng."
+msgstr ""
+"Nessun oggetto per questo filtro. È una buona notizia — oppure il filtro è "
+"troppo stretto."
+
+#: core/templates/fw/objekte.html:106
+msgid "Alle Objekte zeigen"
+msgstr "Mostra tutti gli oggetti"
+
+#: core/templates/fw/objekte.html:108
+msgid "Noch keine Objekte"
+msgstr "Ancora nessun oggetto"
+
+#: core/templates/fw/objekte.html:108
+msgid ""
+"Objekte gehören zu einer Liegenschaft — legen Sie zuerst eine Liegenschaft "
+"an oder importieren Sie die Wohnungen aus dem GWR."
+msgstr ""
+"Gli oggetti appartengono a uno stabile — create prima uno stabile o "
+"importate le abitazioni dal REA."
+
+#: core/templates/fw/personen.html:10
+#, python-format
+msgid "%(n)s Person"
+msgid_plural "%(n)s Personen"
+msgstr[0] "%(n)s persona"
+msgstr[1] "%(n)s persone"
+
+#: core/templates/fw/personen.html:10
+#, python-format
+msgid "%(n)s mit aktivem Vertrag"
+msgstr "%(n)s con contratto attivo"
+
+#: core/templates/fw/personen.html:12
+msgid "Person erfassen"
+msgstr "Registrare persona"
+
+#: core/templates/fw/personen.html:28
+msgid "Name, E-Mail oder Ort suchen…"
+msgstr "Cerca nome, e-mail o località…"
+
+#: core/templates/fw/personen.html:56 core/templates/fw/personen.html:105
+msgid "Für diesen Filter wurden keine Personen gefunden."
+msgstr "Nessuna persona trovata per questo filtro."
+
+#: core/templates/fw/personen.html:56 core/templates/fw/personen.html:105
+msgid "Noch keine Personen"
+msgstr "Ancora nessuna persona"
+
+#: core/templates/fw/personen.html:56 core/templates/fw/personen.html:105
+msgid "Erfassen Sie Mieter, Bewerber und weitere Kontakte."
+msgstr "Registrate inquilini, candidati e altri contatti."
+
+#: core/templates/fw/personen.html:56 core/templates/fw/personen.html:105
+msgid "Erste Person erfassen"
+msgstr "Registrare la prima persona"
+
+#: core/templates/fw/personen.html:66
+msgid "Name"
+msgstr "Nome"
+
+#: core/templates/fw/personen.html:68
+msgid "Adresse"
+msgstr "Indirizzo"
+
+#: core/templates/fw/personen.html:69
+msgid "Mietet aktuell"
+msgstr "Affitta attualmente"
+
+#: core/templates/fw/personen.html:110
+msgid "Keine Treffer."
+msgstr "Nessun risultato."
+
 #: core/templates/fw/termine.html:9
 msgid ""
 "Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
@@ -740,17 +1225,13 @@ msgstr "p.es. riconsegna Blaser"
 msgid "Art"
 msgstr "Tipo"
 
-#: core/templates/fw/termine.html:29
+#: core/templates/fw/termine.html:29 core/templates/fw/vertraege.html:70
 msgid "Beginn"
 msgstr "Inizio"
 
 #: core/templates/fw/termine.html:31
 msgid "Dauer (Minuten)"
 msgstr "Durata (minuti)"
-
-#: core/templates/fw/termine.html:33
-msgid "Ort"
-msgstr "Luogo"
 
 #: core/templates/fw/termine.html:34
 msgid "z.B. Perdtemps 3, EG"
@@ -776,6 +1257,93 @@ msgstr "Nessun appuntamento futuro registrato."
 #: core/templates/fw/termine.html:73
 msgid "Noch nichts vergangen."
 msgstr "Ancora nulla nel passato."
+
+#: core/templates/fw/vertraege.html:14
+#, python-format
+msgid "%(n)s Vertrag"
+msgid_plural "%(n)s Verträge"
+msgstr[0] "%(n)s contratto"
+msgstr[1] "%(n)s contratti"
+
+#: core/templates/fw/vertraege.html:14
+#, python-format
+msgid "%(n)s aktiv"
+msgid_plural "%(n)s aktiv"
+msgstr[0] "%(n)s attivo"
+msgstr[1] "%(n)s attivi"
+
+#: core/templates/fw/vertraege.html:16
+msgid "Vertrag erstellen"
+msgstr "Allestire contratto"
+
+#: core/templates/fw/vertraege.html:32
+msgid "Mieter oder Objekt suchen…"
+msgstr "Cerca inquilino o oggetto…"
+
+#: core/templates/fw/vertraege.html:47
+#, python-format
+msgid "ab %(ab)s"
+msgstr "dal %(ab)s"
+
+#: core/templates/fw/vertraege.html:52 core/templates/fw/vertraege.html:74
+msgid "Brutto"
+msgstr "Lordo"
+
+#: core/templates/fw/vertraege.html:58 core/templates/fw/vertraege.html:106
+msgid "Für diesen Filter wurden keine Verträge gefunden."
+msgstr "Nessun contratto trovato per questo filtro."
+
+#: core/templates/fw/vertraege.html:58 core/templates/fw/vertraege.html:106
+msgid "Noch keine Verträge"
+msgstr "Ancora nessun contratto"
+
+#: core/templates/fw/vertraege.html:58 core/templates/fw/vertraege.html:106
+msgid ""
+"Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen "
+"und Vertragsdokumente."
+msgstr ""
+"L'assistente guida passo dopo passo attraverso inquilino, condizioni e "
+"documenti contrattuali."
+
+#: core/templates/fw/vertraege.html:58 core/templates/fw/vertraege.html:106
+msgid "Ersten Vertrag erstellen"
+msgstr "Allestire il primo contratto"
+
+#: core/templates/fw/vertraege.html:68
+msgid "Mieter"
+msgstr "Inquilino"
+
+#: core/templates/fw/vertraege.html:69
+msgid "Objekt"
+msgstr "Oggetto"
+
+#: core/templates/fw/vertraege.html:71
+msgid "Ende"
+msgstr "Fine"
+
+#: core/templates/fw/vertraege.html:72
+msgid "Netto"
+msgstr "Netto"
+
+#: core/templates/fw/vertraege.html:73
+msgid "NK"
+msgstr "SA"
+
+#: core/templates/fw/vertraege.html:75
+msgid "Status"
+msgstr "Stato"
+
+#: core/templates/fw/vertraege.html:91
+msgid "unbefristet"
+msgstr "durata indeterminata"
+
+#: core/templates/fw/vertraege.html:99
+msgid "Kündigung erfassen"
+msgstr "Registrare la disdetta"
+
+#: core/templates/fw/vertraege.html:99
+msgid "Kündigen"
+msgstr "Disdire"
 
 #: core/templates/fw/zulauf.html:9
 msgid ""
@@ -822,6 +1390,30 @@ msgstr "Completati di recente"
 msgid "Noch nichts erledigt."
 msgstr "Ancora nulla di completato."
 
+#: core/views/fw/_basis.py:280
+msgid "Verträge"
+msgstr "Contratti"
+
+#: core/views/fw/_basis.py:336
+msgid "Entwurf"
+msgstr "Bozza"
+
+#: core/views/fw/_basis.py:337
+msgid "Aktiv"
+msgstr "Attivo"
+
+#: core/views/fw/_basis.py:338
+msgid "Gekündigt"
+msgstr "Disdetto"
+
+#: core/views/fw/_basis.py:343
+msgid "Beendet"
+msgstr "Concluso"
+
+#: core/views/fw/_basis.py:344
+msgid "Archiviert"
+msgstr "Archiviato"
+
 #: core/views/fw/arbeit.py:39
 msgid "Diese Woche"
 msgstr "Questa settimana"
@@ -834,6 +1426,44 @@ msgstr "In attesa di terzi"
 msgid "Liegengeblieben"
 msgstr "In sospeso"
 
+#: core/views/fw/listen.py:1108
+msgid "Wohnen"
+msgstr "Abitazione"
+
+#: core/views/fw/listen.py:1109
+msgid "Parkplatz"
+msgstr "Posteggio"
+
+#: core/views/fw/listen.py:1109
+msgid "Gewerbe"
+msgstr "Commerciale"
+
+#: core/views/fw/listen.py:1110
+msgid "Alle Zustände"
+msgstr "Tutti gli stati"
+
+#: core/views/fw/listen.py:1111
+#, python-format
+msgid "Mit Befund (%(n)s)"
+msgstr "Con riscontro (%(n)s)"
+
+#: core/views/fw/listen.py:1112
+#, python-format
+msgid "Leerstand (%(n)s)"
+msgstr "Sfitto (%(n)s)"
+
+#: core/views/fw/listen.py:1291
+msgid "Privatpersonen"
+msgstr "Privati"
+
+#: core/views/fw/listen.py:1291
+msgid "Firmen"
+msgstr "Ditte"
+
+#: core/views/fw/listen.py:1292
+msgid "Vereine"
+msgstr "Associazioni"
+
 #~ msgid "Arbeit"
 #~ msgstr "Lavoro"
 
@@ -845,9 +1475,6 @@ msgstr "In sospeso"
 
 #~ msgid "Eröffnet"
 #~ msgstr "Aperto"
-
-#~ msgid "Zuständig"
-#~ msgstr "Responsabile"
 
 #~ msgid "niemand"
 #~ msgstr "nessuno"
@@ -891,9 +1518,6 @@ msgstr "In sospeso"
 #~ msgid "auf diesen Fall gebucht"
 #~ msgstr "addebitato a questa pratica"
 
-#~ msgid "Aufwand erfassen"
-#~ msgstr "Registrare il lavoro"
-
 #~ msgid "Minuten"
 #~ msgstr "Minuti"
 
@@ -917,9 +1541,6 @@ msgstr "In sospeso"
 
 #~ msgid "optional"
 #~ msgstr "facoltativo"
-
-#~ msgid "Für diesen Fall sind keine Schritte angelegt."
-#~ msgstr "Nessuna fase è definita per questa pratica."
 
 #~ msgid "fällig %(frist)s"
 #~ msgstr "scadenza %(frist)s"
@@ -956,9 +1577,6 @@ msgstr "In sospeso"
 
 #~ msgid "Übergabe"
 #~ msgstr "Consegna"
-
-#~ msgid "Vertrag"
-#~ msgstr "Contratto"
 
 #~ msgid "Termin"
 #~ msgstr "Appuntamento"
