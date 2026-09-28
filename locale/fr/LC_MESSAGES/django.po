@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 00:42+0200\n"
+"POT-Creation-Date: 2026-09-29 00:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,6 +59,7 @@ msgid "Mandate"
 msgstr "Mandats"
 
 #: core/navigation.py:137 core/templates/core/portal.html:251
+#: core/templates/fw/liegenschaft_form.html:7
 #: core/templates/fw/liegenschaften.html:4
 #: core/templates/fw/liegenschaften.html:10
 #: core/templates/fw/liegenschaften.html:38
@@ -69,8 +70,9 @@ msgid "Liegenschaften"
 msgstr "Immeubles"
 
 #: core/navigation.py:138 core/templates/fw/liegenschaften.html:43
-#: core/templates/fw/objekte.html:4 core/templates/fw/objekte.html:23
-#: core/templates/fw/objekte.html:34 core/templates/fw/suche.html:53
+#: core/templates/fw/objekt_form.html:8 core/templates/fw/objekte.html:4
+#: core/templates/fw/objekte.html:23 core/templates/fw/objekte.html:34
+#: core/templates/fw/suche.html:53
 msgid "Objekte"
 msgstr "Objets"
 
@@ -591,6 +593,7 @@ msgstr "Mobile"
 #: core/templates/fw/dienstleister_detail.html:83
 #: core/templates/fw/mandat_detail.html:176
 #: core/templates/fw/mandat_form.html:37
+#: core/templates/fw/schaden_detail.html:144
 msgid "Telefon"
 msgstr "Téléphone"
 
@@ -603,6 +606,7 @@ msgstr "Téléphone"
 #: core/templates/fw/dienstleister_detail.html:84
 #: core/templates/fw/mandat_detail.html:175
 #: core/templates/fw/mandat_form.html:27
+#: core/templates/fw/schaden_detail.html:143
 msgid "E-Mail"
 msgstr "E-mail"
 
@@ -763,6 +767,7 @@ msgstr "depuis le %(datum)s"
 
 #: core/templates/core/mieter_portal.html:31
 #: core/templates/fw/mieterspiegel.html:65
+#: core/templates/fw/objekt_form.html:105
 #: core/templates/fw/sollstellung.html:84 core/templates/fw/vertraege.html:72
 msgid "Netto"
 msgstr "Net"
@@ -915,6 +920,8 @@ msgstr ""
 #: core/templates/fw/mahnwesen.html:66 core/templates/fw/mieterkonten.html:47
 #: core/templates/fw/mietzins.html:59
 #: core/templates/fw/nebenkosten_detail.html:114
+#: core/templates/fw/objekt_form.html:25
+#: core/templates/fw/schaden_detail.html:41
 #: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
 #: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
 msgid "Objekt"
@@ -931,6 +938,7 @@ msgstr "p. ex. le robinet goutte"
 
 #: core/templates/core/mieter_schaden.html:32
 #: core/templates/fw/abnahme_detail.html:69
+#: core/templates/fw/schaden_detail.html:145
 msgid "Raum"
 msgstr "Pièce"
 
@@ -1231,7 +1239,7 @@ msgstr "CHF %(betrag)s / mois"
 
 #: core/templates/core/portal.html:306 core/templates/fw/hypotheken.html:36
 #: core/templates/fw/hypotheken.html:85 core/templates/fw/kontenplan.html:86
-#: core/templates/fw/kontenplan.html:130
+#: core/templates/fw/kontenplan.html:130 core/templates/fw/objekt_form.html:34
 msgid "Typ"
 msgstr "Type"
 
@@ -1501,7 +1509,9 @@ msgstr "Réception active — récupérer les e-mails de cette boîte"
 #: core/templates/fw/anlagen.html:128 core/templates/fw/benutzer_form.html:55
 #: core/templates/fw/dienstleister.html:107
 #: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:308
+#: core/templates/fw/liegenschaft_form.html:162
 #: core/templates/fw/mandat_form.html:76 core/templates/fw/mwst.html:117
+#: core/templates/fw/objekt_form.html:135
 #: core/templates/fw/regelsatz_form.html:104
 #: core/templates/fw/vorlage_form.html:37
 msgid "Speichern"
@@ -1510,7 +1520,9 @@ msgstr "Enregistrer"
 #: core/templates/core/postfach_form.html:142
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
-#: core/templates/fw/kreditoren.html:307 core/templates/fw/mandat_form.html:78
+#: core/templates/fw/kreditoren.html:307
+#: core/templates/fw/liegenschaft_form.html:164
+#: core/templates/fw/mandat_form.html:78 core/templates/fw/objekt_form.html:137
 #: core/templates/fw/regelsatz_form.html:105
 #: core/templates/fw/vorlage_form.html:39
 #: core/templates/fw/weiterverrechnung.html:113
@@ -1569,8 +1581,10 @@ msgstr "Non configuré — aucun e-mail n'est récupéré pour cet usage."
 #: core/templates/fw/benutzer.html:35 core/templates/fw/dienstleister.html:75
 #: core/templates/fw/dienstleister_detail.html:36
 #: core/templates/fw/kreditoren.html:242
+#: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_detail.html:125 core/templates/fw/mandate.html:36
-#: core/templates/fw/regelwerk.html:56 core/templates/fw/vorlagen.html:37
+#: core/templates/fw/objekt_form.html:12 core/templates/fw/regelwerk.html:56
+#: core/templates/fw/vorlagen.html:37
 msgid "Bearbeiten"
 msgstr "Modifier"
 
@@ -1597,6 +1611,7 @@ msgstr ""
 #: core/templates/fw/kreditoren.html:245 core/templates/fw/lebensdauer.html:60
 #: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
 #: core/templates/fw/pendenzen.html:73
+#: core/templates/fw/schaden_detail.html:389
 msgid "Löschen"
 msgstr "Supprimer"
 
@@ -1927,7 +1942,7 @@ msgstr "sans date — temps moyen non calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:530
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:531
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -2008,6 +2023,7 @@ msgid "nicht verwendbar"
 msgstr "inutilisable"
 
 #: core/templates/fw/_unterschrift_feld.html:43
+#: core/templates/fw/objekt_form.html:113
 msgid "aktuell"
 msgstr "actuelle"
 
@@ -2065,7 +2081,8 @@ msgstr "Dans le décompte final"
 #: core/templates/fw/abnahme_detail.html:24 core/templates/fw/berichte.html:13
 #: core/templates/fw/kreditoren.html:13
 #: core/templates/fw/liegenschaften.html:16
-#: core/templates/fw/mandat_detail.html:128 core/templates/fw/schaeden.html:15
+#: core/templates/fw/mandat_detail.html:128
+#: core/templates/fw/schaden_detail.html:56 core/templates/fw/schaeden.html:15
 #: core/templates/fw/vorlagen.html:10
 msgid "Mehr"
 msgstr "Plus"
@@ -2139,6 +2156,7 @@ msgid "Verursacher"
 msgstr "Responsable"
 
 #: core/templates/fw/abnahme_detail.html:71
+#: core/templates/fw/schaden_detail.html:77
 msgid "Kosten"
 msgstr "Coûts"
 
@@ -2156,6 +2174,7 @@ msgid "Lebensdauer %(n)s J"
 msgstr "Durée de vie %(n)s ans"
 
 #: core/templates/fw/abnahme_detail.html:86
+#: core/templates/fw/schaden_detail.html:383
 msgid "Foto in voller Grösse öffnen"
 msgstr "Ouvrir la photo en taille réelle"
 
@@ -2583,6 +2602,7 @@ msgstr "Immobilisation"
 #: core/templates/fw/kreditoren.html:78 core/templates/fw/kreditoren.html:289
 #: core/templates/fw/mandat_abrechnung.html:57
 #: core/templates/fw/nebenkosten.html:70 core/templates/fw/objekte.html:74
+#: core/templates/fw/schaden_detail.html:40
 #: core/templates/fw/schaden_kosten.html:49
 msgid "Liegenschaft"
 msgstr "Immeuble"
@@ -2956,7 +2976,8 @@ msgid "Offene Lieferantenrechnung"
 msgstr "Facture fournisseur ouverte"
 
 #: core/templates/fw/bankabgleich.html:162 core/templates/fw/hypotheken.html:25
-#: core/templates/fw/nebenkosten.html:23 core/templates/fw/schaeden.html:32
+#: core/templates/fw/nebenkosten.html:23 core/templates/fw/objekt_form.html:28
+#: core/templates/fw/schaden_detail.html:283 core/templates/fw/schaeden.html:32
 #: core/templates/fw/weiterverrechnung.html:70
 msgid "wählen"
 msgstr "choisir"
@@ -3356,14 +3377,19 @@ msgid "Neuer Benutzer"
 msgstr "Nouvel utilisateur"
 
 #: core/templates/fw/benutzer_form.html:3
-#: core/templates/fw/benutzer_form.html:13 core/templates/fw/mandat_form.html:3
-#: core/templates/fw/mandat_form.html:13 core/templates/fw/vorlage_form.html:3
-#: core/templates/fw/vorlage_form.html:13
+#: core/templates/fw/benutzer_form.html:13
+#: core/templates/fw/liegenschaft_form.html:4
+#: core/templates/fw/liegenschaft_form.html:16
+#: core/templates/fw/mandat_form.html:3 core/templates/fw/mandat_form.html:13
+#: core/templates/fw/objekt_form.html:5 core/templates/fw/objekt_form.html:17
+#: core/templates/fw/vorlage_form.html:3 core/templates/fw/vorlage_form.html:13
 #, python-format
 msgid "%(name)s bearbeiten"
 msgstr "Modifier %(name)s"
 
-#: core/templates/fw/benutzer_form.html:8 core/templates/fw/mandat_form.html:8
+#: core/templates/fw/benutzer_form.html:8
+#: core/templates/fw/liegenschaft_form.html:11
+#: core/templates/fw/mandat_form.html:8 core/templates/fw/objekt_form.html:12
 #: core/templates/fw/vorlage_form.html:8 core/views/portal.py:750
 msgid "Neu"
 msgstr "Nouveau"
@@ -3638,6 +3664,7 @@ msgid "Keine Betreibungen"
 msgstr "Aucune poursuite"
 
 #: core/templates/fw/bewerbung_detail.html:24
+#: core/templates/fw/schaden_detail.html:313
 msgid "Status:"
 msgstr "Statut :"
 
@@ -3666,6 +3693,7 @@ msgid "Mobil"
 msgstr "Mobile"
 
 #: core/templates/fw/bewerbung_detail.html:40
+#: core/templates/fw/liegenschaft_form.html:24
 #: core/templates/fw/mandat_detail.html:117
 #: core/templates/fw/mandat_detail.html:174 core/templates/fw/personen.html:68
 msgid "Adresse"
@@ -4208,6 +4236,7 @@ msgid "in dieser Ansicht"
 msgstr "dans cette vue"
 
 #: core/templates/fw/dashboard.html:200
+#: core/templates/fw/schaden_detail.html:89
 #, python-format
 msgid "%(n)s Tag"
 msgid_plural "%(n)s Tage"
@@ -4467,6 +4496,7 @@ msgid "Debitoren nach Mieter oder Titel durchsuchen"
 msgstr "Rechercher les débiteurs par locataire ou titre"
 
 #: core/templates/fw/debitoren.html:156 core/templates/fw/mieterwechsel.html:13
+#: core/templates/fw/schaden_detail.html:231
 msgid "offen"
 msgstr "ouvert"
 
@@ -4515,7 +4545,8 @@ msgstr "Titre"
 #: core/templates/fw/debitoren.html:197
 #: core/templates/fw/ersatzplanung.html:112 core/templates/fw/kautionen.html:28
 #: core/templates/fw/kreditoren.html:166 core/templates/fw/mieterkonten.html:48
-#: core/templates/fw/nebenkosten.html:74 core/templates/fw/schaeden.html:96
+#: core/templates/fw/nebenkosten.html:74
+#: core/templates/fw/schaden_detail.html:113 core/templates/fw/schaeden.html:96
 #: core/templates/fw/sollstellung.html:87 core/templates/fw/vertraege.html:75
 msgid "Status"
 msgstr "Statut"
@@ -4845,6 +4876,7 @@ msgid "ausgegeben am %(d)s"
 msgstr "remise le %(d)s"
 
 #: core/templates/fw/dienstleister_detail.html:112
+#: core/templates/fw/schaden_detail.html:82
 #: core/templates/fw/schaden_kosten.html:36
 #: core/templates/fw/schaden_kosten.html:51 faelle/akten.py:133
 msgid "Aufträge"
@@ -4861,6 +4893,7 @@ msgid "Auftrag %(id)s"
 msgstr "Mandat de travaux %(id)s"
 
 #: core/templates/fw/dienstleister_detail.html:120
+#: core/templates/fw/schaden_detail.html:228
 #, python-format
 msgid "beauftragt %(d)s"
 msgstr "mandaté le %(d)s"
@@ -4928,7 +4961,9 @@ msgstr "(vide = nom du fichier)"
 #: core/templates/fw/dokumente.html:23 core/templates/fw/dokumente.html:68
 #: core/templates/fw/lebensdauer.html:48
 #: core/templates/fw/nebenkosten_detail.html:154
-#: core/templates/fw/pendenzen.html:112 core/templates/fw/vorlage_form.html:25
+#: core/templates/fw/pendenzen.html:112
+#: core/templates/fw/schaden_detail.html:42
+#: core/templates/fw/vorlage_form.html:25
 msgid "Kategorie"
 msgstr "Catégorie"
 
@@ -4958,6 +4993,7 @@ msgid "Datei *"
 msgstr "Fichier *"
 
 #: core/templates/fw/dokumente.html:40
+#: core/templates/fw/schaden_detail.html:369
 msgid "Hochladen"
 msgstr "Téléverser"
 
@@ -5579,6 +5615,7 @@ msgid "dringend"
 msgstr "urgent"
 
 #: core/templates/fw/finanzen.html:79 core/templates/fw/kreditoren.html:224
+#: core/templates/fw/schaden_detail.html:89
 msgid "erledigt"
 msgstr "fait"
 
@@ -5697,7 +5734,7 @@ msgid "Hypothek erfassen"
 msgstr "Saisir une hypothèque"
 
 #: core/templates/fw/hypotheken.html:23 core/templates/fw/nebenkosten.html:21
-#: core/templates/fw/schaeden.html:30
+#: core/templates/fw/objekt_form.html:26 core/templates/fw/schaeden.html:30
 msgid "Liegenschaft *"
 msgstr "Immeuble *"
 
@@ -6152,6 +6189,7 @@ msgid "Nummer *"
 msgstr "Numéro *"
 
 #: core/templates/fw/kontenplan.html:55 core/templates/fw/nebenkosten.html:26
+#: core/templates/fw/objekt_form.html:32
 #: core/templates/fw/regelsatz_form.html:20
 #: core/templates/fw/vorlage_form.html:23
 msgid "Bezeichnung *"
@@ -6907,6 +6945,207 @@ msgstr "Historique — qui a fait quoi"
 msgid "System"
 msgstr "Système"
 
+#: core/templates/fw/liegenschaft_form.html:4
+msgid "Neue Liegenschaft"
+msgstr "Nouvel immeuble"
+
+#: core/templates/fw/liegenschaft_form.html:16
+msgid "Neue Liegenschaft erfassen"
+msgstr "Saisir un nouvel immeuble"
+
+#: core/templates/fw/liegenschaft_form.html:17
+msgid "Adresse, Eigentümer und Stammdaten der Liegenschaft."
+msgstr "Adresse, propriétaire et données de base de l'immeuble."
+
+#: core/templates/fw/liegenschaft_form.html:25
+msgid "Strasse & Nr. *"
+msgstr "Rue & n° *"
+
+#: core/templates/fw/liegenschaft_form.html:28
+msgid "PLZ *"
+msgstr "NPA *"
+
+#: core/templates/fw/liegenschaft_form.html:30
+msgid "Ort *"
+msgstr "Localité *"
+
+#: core/templates/fw/liegenschaft_form.html:32
+#: core/templates/fw/regelsatz_form.html:24
+msgid "Kanton"
+msgstr "Canton"
+
+#: core/templates/fw/liegenschaft_form.html:33
+msgid "SO"
+msgstr "SO"
+
+#: core/templates/fw/liegenschaft_form.html:38 faelle/akten.py:47
+msgid "Stammdaten"
+msgstr "Données de base"
+
+#: core/templates/fw/liegenschaft_form.html:40
+msgid "EGID"
+msgstr "EGID"
+
+#: core/templates/fw/liegenschaft_form.html:41
+msgid "automatisch aus Adresse"
+msgstr "automatiquement depuis l'adresse"
+
+#: core/templates/fw/liegenschaft_form.html:42
+msgid "Kataster-Nr."
+msgstr "N° de parcelle"
+
+#: core/templates/fw/liegenschaft_form.html:54
+#: core/templates/fw/schaden_detail.html:39
+msgid "Betreut von"
+msgstr "Suivi par"
+
+#: core/templates/fw/liegenschaft_form.html:56
+#: core/templates/fw/schaden_detail.html:39
+msgid "nicht zugeteilt"
+msgstr "non attribué"
+
+#: core/templates/fw/liegenschaft_form.html:61
+msgid "Baujahr"
+msgstr "Année de construction"
+
+#: core/templates/fw/liegenschaft_form.html:65
+msgid "Versicherungswert (CHF)"
+msgstr "Valeur d'assurance (CHF)"
+
+#: core/templates/fw/liegenschaft_form.html:67
+msgid "Grundstücksfläche (m²)"
+msgstr "Surface du terrain (m²)"
+
+#: core/templates/fw/liegenschaft_form.html:69
+msgid "Gebäudevolumen (m³)"
+msgstr "Volume du bâtiment (m³)"
+
+#: core/templates/fw/liegenschaft_form.html:72
+msgid "Bewertung (für Rendite)"
+msgstr "Évaluation (pour le rendement)"
+
+#: core/templates/fw/liegenschaft_form.html:74
+msgid "Verkehrswert (CHF)"
+msgstr "Valeur vénale (CHF)"
+
+#: core/templates/fw/liegenschaft_form.html:75
+msgid "Marktwert"
+msgstr "Valeur de marché"
+
+#: core/templates/fw/liegenschaft_form.html:76
+msgid "Anlagekosten (CHF)"
+msgstr "Coûts d'investissement (CHF)"
+
+#: core/templates/fw/liegenschaft_form.html:78
+msgid "Kaufpreis (CHF)"
+msgstr "Prix d'achat (CHF)"
+
+#: core/templates/fw/liegenschaft_form.html:81
+msgid "Energie & Gebäudetechnik (GEAK)"
+msgstr "Énergie & technique du bâtiment (CECB)"
+
+#: core/templates/fw/liegenschaft_form.html:83
+msgid "Heizsystem"
+msgstr "Système de chauffage"
+
+#: core/templates/fw/liegenschaft_form.html:88
+msgid "Warmwasser"
+msgstr "Eau chaude"
+
+#: core/templates/fw/liegenschaft_form.html:93
+msgid "GEAK Hülle"
+msgstr "CECB enveloppe"
+
+#: core/templates/fw/liegenschaft_form.html:98
+msgid "GEAK Gesamt"
+msgstr "CECB global"
+
+#: core/templates/fw/liegenschaft_form.html:103
+msgid "Energieträger (Zusatz)"
+msgstr "Agent énergétique (complément)"
+
+#: core/templates/fw/liegenschaft_form.html:105
+msgid "Energiebezugsfl. (m²)"
+msgstr "Surface de réf. énergétique (m²)"
+
+#: core/templates/fw/liegenschaft_form.html:107
+msgid "GEAK ausgestellt"
+msgstr "CECB établi"
+
+#: core/templates/fw/liegenschaft_form.html:110
+#: core/templates/fw/mandat_form.html:21 core/templates/fw/mandate.html:16
+msgid "Eigentümer"
+msgstr "Propriétaire"
+
+#: core/templates/fw/liegenschaft_form.html:112
+msgid "kein Eigentümer"
+msgstr "pas de propriétaire"
+
+#: core/templates/fw/liegenschaft_form.html:118
+msgid "Objekte automatisch importieren"
+msgstr "Importer les objets automatiquement"
+
+#: core/templates/fw/liegenschaft_form.html:119
+msgid ""
+"Ermittelt die EGID aus der Adresse und lädt die Wohnungen automatisch aus "
+"dem eidgenössischen Gebäude- und Wohnungsregister (GWR)."
+msgstr "Détermine l'EGID à partir de l'adresse et charge automatiquement les logements depuis le Registre fédéral des bâtiments et des logements (RegBL)."
+
+#: core/templates/fw/liegenschaft_form.html:125
+msgid "Bank, Mietzinskonto & Notfallkontakte"
+msgstr "Banque, compte de loyers & contacts d'urgence"
+
+#: core/templates/fw/liegenschaft_form.html:127
+msgid "Bankname (Mietzinskonto)"
+msgstr "Nom de la banque (compte de loyers)"
+
+#: core/templates/fw/liegenschaft_form.html:131
+msgid "Hauswart"
+msgstr "Concierge"
+
+#: core/templates/fw/liegenschaft_form.html:133
+msgid "Hauswart Telefon"
+msgstr "Téléphone concierge"
+
+#: core/templates/fw/liegenschaft_form.html:135
+msgid "Notfall Sanitär"
+msgstr "Urgence sanitaire"
+
+#: core/templates/fw/liegenschaft_form.html:137
+msgid "Sanitär Telefon"
+msgstr "Téléphone sanitaire"
+
+#: core/templates/fw/liegenschaft_form.html:139
+msgid "Notfall Elektriker"
+msgstr "Urgence électricien"
+
+#: core/templates/fw/liegenschaft_form.html:141
+msgid "Elektriker Telefon"
+msgstr "Téléphone électricien"
+
+#: core/templates/fw/liegenschaft_form.html:147
+msgid "Nebenkosten / Heizung"
+msgstr "Frais accessoires / chauffage"
+
+#: core/templates/fw/liegenschaft_form.html:150
+msgid "Verbrauchsabhängige Heizkostenabrechnung (HKVO)"
+msgstr "Décompte individuel des frais de chauffage (HKVO)"
+
+#: core/templates/fw/liegenschaft_form.html:153
+msgid "Grundkosten-Anteil"
+msgstr "Part des frais de base"
+
+#: core/templates/fw/liegenschaft_form.html:155
+#, python-format
+msgid "%% (Rest = Verbrauch, nach Wärmezähler)"
+msgstr "%% (reste = consommation, selon compteurs de chaleur)"
+
+#: core/templates/fw/liegenschaft_form.html:157
+msgid ""
+"Bei aktiver HKVO werden die Heizkosten in Grundkosten (nach m³) und "
+"Verbrauchskosten (nach Zählerständen der Wärmezähler) aufgeteilt."
+msgstr "Avec la HKVO active, les frais de chauffage sont répartis en frais de base (selon m³) et frais de consommation (selon les relevés des compteurs de chaleur)."
+
 #: core/templates/fw/liegenschaften.html:11
 #, python-format
 msgid "%(n)s Liegenschaft im Portfolio"
@@ -7508,10 +7747,6 @@ msgstr "Saisir un nouveau propriétaire"
 msgid "Eigentümer-Stammdaten und Zuordnung der Liegenschaften."
 msgstr "Données de base du propriétaire et attribution des immeubles."
 
-#: core/templates/fw/mandat_form.html:21 core/templates/fw/mandate.html:16
-msgid "Eigentümer"
-msgstr "Propriétaire"
-
 #: core/templates/fw/mandat_form.html:22
 msgid "Name / Firma *"
 msgstr "Nom / entreprise *"
@@ -7731,6 +7966,7 @@ msgstr ""
 "Objets avec locataire, loyer et données du bail · date de référence %(datum)s"
 
 #: core/templates/fw/mieterspiegel.html:30
+#: core/templates/fw/objekt_form.html:86
 msgid "Soll-Mietzins"
 msgstr "Loyer dû"
 
@@ -7769,7 +8005,8 @@ msgstr "%(quote)s%% de vacance"
 msgid "Einheit"
 msgstr "Objet"
 
-#: core/templates/fw/mieterspiegel.html:67 core/templates/fw/vertraege.html:52
+#: core/templates/fw/mieterspiegel.html:67
+#: core/templates/fw/objekt_form.html:107 core/templates/fw/vertraege.html:52
 #: core/templates/fw/vertraege.html:74
 msgid "Brutto"
 msgstr "Brut"
@@ -8399,13 +8636,143 @@ msgid "z. B. renoviert 2024, Balkon nach Süden, ab sofort besichtigbar …"
 msgstr "p. ex. rénové en 2024, balcon au sud, visitable immédiatement …"
 
 #: core/templates/fw/objekt_ausschreiben.html:28
-#: core/templates/fw/vermarktung.html:45
+#: core/templates/fw/objekt_form.html:46 core/templates/fw/vermarktung.html:45
 msgid "Zimmer"
 msgstr "Pièces"
 
 #: core/templates/fw/objekt_ausschreiben.html:36
 msgid "Ausschreiben"
 msgstr "Mettre en location"
+
+#: core/templates/fw/objekt_form.html:5
+msgid "Neues Objekt"
+msgstr "Nouvel objet"
+
+#: core/templates/fw/objekt_form.html:17
+msgid "Neues Mietobjekt erfassen"
+msgstr "Saisir un nouvel objet locatif"
+
+#: core/templates/fw/objekt_form.html:18
+msgid "Objektdaten, Fläche und Soll-Mietzins."
+msgstr "Données de l'objet, surface et loyer théorique."
+
+#: core/templates/fw/objekt_form.html:33
+msgid "z. B. 3.5-Zi EG"
+msgstr "p. ex. 3.5 p. rez"
+
+#: core/templates/fw/objekt_form.html:38
+msgid "Etage"
+msgstr "Étage"
+
+#: core/templates/fw/objekt_form.html:39
+msgid "EG / 1. OG"
+msgstr "rez / 1er étage"
+
+#: core/templates/fw/objekt_form.html:44
+msgid "Fläche & Details"
+msgstr "Surface & détails"
+
+#: core/templates/fw/objekt_form.html:48
+#: core/templates/fw/weiterverrechnung.html:33
+msgid "Fläche (m²)"
+msgstr "Surface (m²)"
+
+#: core/templates/fw/objekt_form.html:50
+msgid "Volumen (m³)"
+msgstr "Volume (m³)"
+
+#: core/templates/fw/objekt_form.html:52
+msgid "Wertquote (‰)"
+msgstr "Quote-part (‰)"
+
+#: core/templates/fw/objekt_form.html:53
+msgid "STWE / NK-Verteilung"
+msgstr "PPE / répartition FA"
+
+#: core/templates/fw/objekt_form.html:56
+msgid "EWID"
+msgstr "EWID"
+
+#: core/templates/fw/objekt_form.html:58
+msgid "Kellerabteil"
+msgstr "Compartiment de cave"
+
+#: core/templates/fw/objekt_form.html:60
+msgid "Estrich"
+msgstr "Galetas"
+
+#: core/templates/fw/objekt_form.html:62
+msgid "OTO-Dose (Glasfaser)"
+msgstr "Prise OTO (fibre optique)"
+
+#: core/templates/fw/objekt_form.html:66
+msgid "Bodenbelag (Wohnraum)"
+msgstr "Revêtement de sol (pièce de séjour)"
+
+#: core/templates/fw/objekt_form.html:68
+msgid "Bodenbelag (Nassraum)"
+msgstr "Revêtement de sol (pièce humide)"
+
+#: core/templates/fw/objekt_form.html:70
+msgid "Letzte Renovation (Jahr)"
+msgstr "Dernière rénovation (année)"
+
+#: core/templates/fw/objekt_form.html:72
+msgid "Standard-Kaution (Monate)"
+msgstr "Garantie de loyer standard (mois)"
+
+#: core/templates/fw/objekt_form.html:76
+msgid "Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)"
+msgstr "Objet annexe de (parking/cave → objet principal)"
+
+#: core/templates/fw/objekt_form.html:78
+msgid "eigenständiges Objekt"
+msgstr "objet autonome"
+
+#: core/templates/fw/objekt_form.html:81
+msgid ""
+"Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben "
+"Liegenschaft zu."
+msgstr "Rattache cet objet (p. ex. place de parc intérieure) à un objet locatif principal du même immeuble."
+
+#: core/templates/fw/objekt_form.html:89
+msgid "Anfangs-Nettomiete (CHF)"
+msgstr "Loyer net initial (CHF)"
+
+#: core/templates/fw/objekt_form.html:91
+msgid "Nebenkosten (CHF)"
+msgstr "Frais accessoires (CHF)"
+
+#: core/templates/fw/objekt_form.html:93 core/templates/fw/objekt_form.html:104
+msgid "Gültig ab"
+msgstr "Valable dès"
+
+#: core/templates/fw/objekt_form.html:96
+msgid ""
+"Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-"
+"Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du "
+"danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, "
+"Mieterspiegel und Bilanz)."
+msgstr "<b>Loyer initial</b> facultatif — enregistré comme première ligne datée du loyer théorique. Les adaptations, mois gratuits ou rabais ultérieurs se saisissent ensuite dans l’onglet <b>« Loyer »</b> (seule source pour la facturation, l’état locatif et le bilan)."
+
+#: core/templates/fw/objekt_form.html:98
+msgid ""
+"Der Mietzins wird ausschliesslich als <b>datierter Sollmietzins</b> gepflegt "
+"(inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und "
+"Bilanz konsistent. Hier ist er nur zur Ansicht."
+msgstr "Le loyer est géré exclusivement comme <b>loyer théorique daté</b> (y c. mois gratuits/rabais) — ainsi facturation, état locatif et bilan restent cohérents. Ici, il n'est affiché qu'à titre indicatif."
+
+#: core/templates/fw/objekt_form.html:124
+msgid "Noch kein Sollmietzins erfasst."
+msgstr "Aucun loyer théorique saisi pour le moment."
+
+#: core/templates/fw/objekt_form.html:126
+msgid "Mietzins verwalten (Gratismonate, Anpassungen)"
+msgstr "Gérer le loyer (mois gratuits, adaptations)"
+
+#: core/templates/fw/objekt_form.html:129
+msgid "Interne Notizen"
+msgstr "Notes internes"
 
 #: core/templates/fw/objekte.html:25
 msgid "Nach Befund geordnet — was klemmt, steht oben."
@@ -8604,10 +8971,6 @@ msgstr "Champ d'application"
 #: core/templates/fw/regelsatz_form.html:22
 msgid "z.B. Grundsatz Wohnräume"
 msgstr "p. ex. principe logements"
-
-#: core/templates/fw/regelsatz_form.html:24
-msgid "Kanton"
-msgstr "Canton"
 
 #: core/templates/fw/regelsatz_form.html:25
 msgid "ZH"
@@ -8917,16 +9280,360 @@ msgstr "Déroger"
 msgid "Keine Anwendung zu diesem Filter."
 msgstr "Aucune application pour ce filtre."
 
-#: core/templates/fw/schaden_kosten.html:4
-#: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:781
-msgid "Reparaturkosten"
-msgstr "Frais de réparation"
+#: core/templates/fw/schaden_detail.html:5
+#, python-format
+msgid "Ticket #%(id)s"
+msgstr "Ticket #%(id)s"
 
+#: core/templates/fw/schaden_detail.html:10
 #: core/templates/fw/schaden_kosten.html:7
 #: core/templates/fw/schaden_kosten.html:40 core/templates/fw/schaeden.html:3
 #: core/templates/fw/schaeden.html:9
 msgid "Schadensfälle"
 msgstr "Dégâts"
+
+#: core/templates/fw/schaden_detail.html:12
+#, python-format
+msgid "Schaden #%(id)s"
+msgstr "Dégât #%(id)s"
+
+#: core/templates/fw/schaden_detail.html:24
+msgid "Schaden"
+msgstr "Dégât"
+
+#: core/templates/fw/schaden_detail.html:43
+msgid "Gemeldet von"
+msgstr "Signalé par"
+
+#: core/templates/fw/schaden_detail.html:44
+msgid "Gemeldet am"
+msgstr "Signalé le"
+
+#: core/templates/fw/schaden_detail.html:48 core/templates/fw/schaeden.html:47
+msgid "Priorität"
+msgstr "Priorité"
+
+#: core/templates/fw/schaden_detail.html:49
+#, python-format
+msgid "seit %(n)s Tagen offen"
+msgstr "ouvert depuis %(n)s jours"
+
+#: core/templates/fw/schaden_detail.html:60
+#, python-format
+msgid ""
+"Schadensmeldung #%(id)s wirklich löschen? Fotos und Verlauf werden "
+"mitgelöscht."
+msgstr "Vraiment supprimer l'avis de dégât #%(id)s ? Les photos et l'historique seront aussi supprimés."
+
+#: core/templates/fw/schaden_detail.html:62
+msgid "Schadensmeldung löschen"
+msgstr "Supprimer l'avis de dégât"
+
+#: core/templates/fw/schaden_detail.html:79
+#, python-format
+msgid "geschätzt %(b)s"
+msgstr "estimé %(b)s"
+
+#: core/templates/fw/schaden_detail.html:79
+msgid "keine Schätzung"
+msgstr "pas d'estimation"
+
+#: core/templates/fw/schaden_detail.html:84
+msgid "an Handwerker vergeben"
+msgstr "confié à un artisan"
+
+#: core/templates/fw/schaden_detail.html:84
+msgid "noch keiner vergeben"
+msgstr "aucun attribué"
+
+#: core/templates/fw/schaden_detail.html:87
+msgid "Offen seit"
+msgstr "Ouvert depuis"
+
+#: core/templates/fw/schaden_detail.html:90
+#, python-format
+msgid "gemeldet %(d)s"
+msgstr "signalé %(d)s"
+
+#: core/templates/fw/schaden_detail.html:93
+msgid "Letzte Reaktion"
+msgstr "Dernière réaction"
+
+#: core/templates/fw/schaden_detail.html:95
+#, python-format
+msgid "%(n)s Nachricht"
+msgid_plural "%(n)s Nachrichten"
+msgstr[0] "%(n)s message"
+msgstr[1] "%(n)s messages"
+
+#: core/templates/fw/schaden_detail.html:95
+msgid "noch keine Antwort"
+msgstr "pas encore de réponse"
+
+#: core/templates/fw/schaden_detail.html:114
+msgid "steuert Sidebar-Zähler und Auswertungen"
+msgstr "pilote les compteurs de la barre latérale et les analyses"
+
+#: core/templates/fw/schaden_detail.html:124
+msgid "Melder per E-Mail informieren"
+msgstr "Informer le déclarant par e-mail"
+
+#: core/templates/fw/schaden_detail.html:126
+msgid "Status setzen"
+msgstr "Définir le statut"
+
+#: core/templates/fw/schaden_detail.html:133
+msgid "Schadensbeschreibung"
+msgstr "Description du dégât"
+
+#: core/templates/fw/schaden_detail.html:140
+msgid "Meldung"
+msgstr "Avis"
+
+#: core/templates/fw/schaden_detail.html:142
+msgid "Melder"
+msgstr "Déclarant"
+
+#: core/templates/fw/schaden_detail.html:146
+msgid "Zutritt"
+msgstr "Accès"
+
+#: core/templates/fw/schaden_detail.html:147
+msgid "Gemeldet"
+msgstr "Signalé"
+
+#: core/templates/fw/schaden_detail.html:151
+msgid "Betroffenes Element"
+msgstr "Élément concerné"
+
+#: core/templates/fw/schaden_detail.html:156
+msgid "kein Element"
+msgstr "pas d'élément"
+
+#: core/templates/fw/schaden_detail.html:159
+msgid "Verknüpfen"
+msgstr "Lier"
+
+#: core/templates/fw/schaden_detail.html:161
+msgid "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements."
+msgstr "Entre dans l'historique des réparations & les coûts de cycle de vie de l'élément."
+
+#: core/templates/fw/schaden_detail.html:161
+msgid "Raumbuch"
+msgstr "Inventaire des pièces"
+
+#: core/templates/fw/schaden_detail.html:162
+msgid "Noch keine Ausstattung am Objekt erfasst."
+msgstr "Aucun équipement saisi sur l'objet pour le moment."
+
+#: core/templates/fw/schaden_detail.html:164
+msgid "Kein Mietobjekt zugeordnet."
+msgstr "Aucun objet locatif attribué."
+
+#: core/templates/fw/schaden_detail.html:175
+msgid "Antwort an Melder"
+msgstr "Réponse au déclarant"
+
+#: core/templates/fw/schaden_detail.html:178
+msgid "Ihre Nachricht an den Melder…"
+msgstr "Votre message au déclarant…"
+
+#: core/templates/fw/schaden_detail.html:179
+msgid "Senden"
+msgstr "Envoyer"
+
+#: core/templates/fw/schaden_detail.html:180
+msgid "Kein E-Mail des Melders — wird nur im Verlauf gespeichert."
+msgstr "Pas d'e-mail du déclarant — enregistré uniquement dans l'historique."
+
+#: core/templates/fw/schaden_detail.html:193
+msgid "intern"
+msgstr "interne"
+
+#: core/templates/fw/schaden_detail.html:197
+msgid "Anhang"
+msgstr "Pièce jointe"
+
+#: core/templates/fw/schaden_detail.html:201
+msgid "Noch keine Nachrichten im Verlauf."
+msgstr "Pas encore de messages dans l'historique."
+
+#: core/templates/fw/schaden_detail.html:211
+msgid "Kostenschätzung"
+msgstr "Estimation des coûts"
+
+#: core/templates/fw/schaden_detail.html:213
+msgid "über alle Aufträge"
+msgstr "sur tous les mandats"
+
+#: core/templates/fw/schaden_detail.html:216
+#: core/templates/fw/schaden_kosten.html:28
+msgid "Effektive Kosten"
+msgstr "Coûts effectifs"
+
+#: core/templates/fw/schaden_detail.html:218
+msgid "über der Schätzung"
+msgstr "au-dessus de l'estimation"
+
+#: core/templates/fw/schaden_detail.html:218
+msgid "im Rahmen"
+msgstr "dans le cadre"
+
+#: core/templates/fw/schaden_detail.html:218
+msgid "noch nicht erfasst"
+msgstr "pas encore saisi"
+
+#: core/templates/fw/schaden_detail.html:223
+msgid "Kosten je Auftrag"
+msgstr "Coûts par mandat"
+
+#: core/templates/fw/schaden_detail.html:232
+#, python-format
+msgid "gesch. %(b)s"
+msgstr "est. %(b)s"
+
+#: core/templates/fw/schaden_detail.html:236
+msgid "Noch kein Auftrag vergeben — deshalb noch keine Kosten."
+msgstr "Aucun mandat attribué — donc pas encore de coûts."
+
+#: core/templates/fw/schaden_detail.html:240
+msgid "Erfasst werden die Beträge beim jeweiligen Auftrag."
+msgstr "Les montants sont saisis sur le mandat concerné."
+
+#: core/templates/fw/schaden_detail.html:241
+msgid "Zu den Aufträgen"
+msgstr "Vers les mandats"
+
+#: core/templates/fw/schaden_detail.html:251
+msgid "Fälle zu diesem Schaden"
+msgstr "Dossiers liés à ce dégât"
+
+#: core/templates/fw/schaden_detail.html:263
+msgid "Zu diesem Schaden läuft kein Fall."
+msgstr "Aucun dossier n'est ouvert pour ce dégât."
+
+#: core/templates/fw/schaden_detail.html:264
+msgid ""
+"Ein Schaden wird zum Fall, sobald er über mehrere Schritte läuft — "
+"Besichtigung, Offerte, Auftrag, Abnahme."
+msgstr "Un dégât devient un dossier dès qu’il passe par plusieurs étapes — visite, offre, mandat, réception."
+
+#: core/templates/fw/schaden_detail.html:275
+msgid "Handwerker beauftragen"
+msgstr "Mandater un artisan"
+
+#: core/templates/fw/schaden_detail.html:276
+msgid ""
+"Vergibt den Auftrag, mailt Handwerker <span class=\"font-medium\">und</span> "
+"Melder automatisch und setzt den Status auf „In Bearbeitung“."
+msgstr "Attribue le mandat, envoie automatiquement un e-mail à l’artisan <span class=\"font-medium\">et</span> au déclarant et met le statut sur « En cours »."
+
+#: core/templates/fw/schaden_detail.html:281
+msgid "Handwerker / Firma *"
+msgstr "Artisan / entreprise *"
+
+#: core/templates/fw/schaden_detail.html:285
+msgid "(keine E-Mail)"
+msgstr "(pas d'e-mail)"
+
+#: core/templates/fw/schaden_detail.html:290
+msgid "Auftragstext (aus Vorlage, editierbar)"
+msgstr "Texte du mandat (du modèle, modifiable)"
+
+#: core/templates/fw/schaden_detail.html:292
+msgid ""
+"Vorlagen bearbeitest du unter <a href=\"/neu/vorlagen/\" class=\"fw-"
+"link\">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“)."
+msgstr "Vous modifiez les modèles sous <a href=\"/neu/vorlagen/\" class=\"fw-link\">Modèles</a> (catégorie « Schaden – Auftrag an Handwerker »)."
+
+#: core/templates/fw/schaden_detail.html:294
+msgid "Beauftragen & Mails senden"
+msgstr "Mandater & envoyer les e-mails"
+
+#: core/templates/fw/schaden_detail.html:297
+msgid ""
+"Noch keine Handwerker erfasst — lege zuerst unter <a href=\"/neu/"
+"dienstleister/\" class=\"fw-link\">Dienstleister</a> einen an."
+msgstr "Aucun artisan saisi — créez-en d’abord un sous <a href=\"/neu/dienstleister/\" class=\"fw-link\">Prestataires</a>."
+
+#: core/templates/fw/schaden_detail.html:313
+#, python-format
+msgid "Beauftragt %(d)s"
+msgstr "Mandaté %(d)s"
+
+#: core/templates/fw/schaden_detail.html:315
+msgid "⏳ Eigentümer-Freigabe ausstehend"
+msgstr "⏳ Approbation du propriétaire en attente"
+
+#: core/templates/fw/schaden_detail.html:317
+#, python-format
+msgid "Freigegeben %(d)s"
+msgstr "Approuvé %(d)s"
+
+#: core/templates/fw/schaden_detail.html:319
+msgid "✗ Abgelehnt"
+msgstr "✗ Refusé"
+
+#: core/templates/fw/schaden_detail.html:325
+msgid "Auftrags-PDF"
+msgstr "PDF du mandat"
+
+#: core/templates/fw/schaden_detail.html:327
+#, python-format
+msgid "Kreditor #%(id)s"
+msgstr "Créancier #%(id)s"
+
+#: core/templates/fw/schaden_detail.html:333
+msgid "Kostenschätzung (CHF)"
+msgstr "Estimation des coûts (CHF)"
+
+#: core/templates/fw/schaden_detail.html:335
+msgid "Effektive Kosten (CHF)"
+msgstr "Coûts effectifs (CHF)"
+
+#: core/templates/fw/schaden_detail.html:340
+msgid "Kreditorenrechnung erstellen"
+msgstr "Créer une facture créancier"
+
+#: core/templates/fw/schaden_detail.html:345
+msgid "Eigentümer-Freigabe anfordern"
+msgstr "Demander l'approbation du propriétaire"
+
+#: core/templates/fw/schaden_detail.html:348
+msgid "Kosten speichern"
+msgstr "Enregistrer les coûts"
+
+#: core/templates/fw/schaden_detail.html:353
+msgid "Noch kein Handwerker beauftragt."
+msgstr "Aucun artisan mandaté pour le moment."
+
+#: core/templates/fw/schaden_detail.html:357
+msgid ""
+"Beim Anhaken von „Kreditorenrechnung erstellen“ wird aus den effektiven "
+"Kosten eine Kreditorenrechnung (Status Neu) angelegt und mit diesem Auftrag "
+"verknüpft — Freigabe und Zahlung erfolgen im Kreditoren-Tab."
+msgstr "En cochant « Créer une facture créancier », une facture créancier (statut Nouveau) est créée à partir des coûts effectifs et liée à ce mandat — approbation et paiement se font dans l'onglet Créanciers."
+
+#: core/templates/fw/schaden_detail.html:364
+msgid "Fotos hinzufügen"
+msgstr "Ajouter des photos"
+
+#: core/templates/fw/schaden_detail.html:378
+msgid "Erstmeldung"
+msgstr "Avis initial"
+
+#: core/templates/fw/schaden_detail.html:387
+msgid "Foto löschen?"
+msgstr "Supprimer la photo ?"
+
+#: core/templates/fw/schaden_detail.html:396
+msgid "Noch keine Fotos."
+msgstr "Pas encore de photos."
+
+#: core/templates/fw/schaden_kosten.html:4
+#: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:781
+msgid "Reparaturkosten"
+msgstr "Frais de réparation"
 
 #: core/templates/fw/schaden_kosten.html:8 core/templates/fw/schaeden.html:17
 msgid "Kostenübersicht"
@@ -8943,10 +9650,6 @@ msgstr ""
 #: core/templates/fw/schaden_kosten.html:19
 msgid "Alle Jahre"
 msgstr "Toutes les années"
-
-#: core/templates/fw/schaden_kosten.html:28
-msgid "Effektive Kosten"
-msgstr "Coûts effectifs"
 
 #: core/templates/fw/schaden_kosten.html:32
 #: core/templates/fw/schaden_kosten.html:52
@@ -8998,10 +9701,6 @@ msgstr "immeuble entier"
 #: core/templates/fw/schaeden.html:42
 msgid "Melder Vor-/Nachname"
 msgstr "Prénom/nom du déclarant"
-
-#: core/templates/fw/schaeden.html:47
-msgid "Priorität"
-msgstr "Priorité"
 
 #: core/templates/fw/schaeden.html:49
 msgid "Tief"
@@ -9470,10 +10169,6 @@ msgid ""
 msgstr ""
 "Répartit en une étape le montant ouvert (CHF %(betrag)s) sur les <b>%(n)s</"
 "b> baux actifs de %(strasse)s selon la clé choisie."
-
-#: core/templates/fw/weiterverrechnung.html:33
-msgid "Fläche (m²)"
-msgstr "Surface (m²)"
 
 #: core/templates/fw/weiterverrechnung.html:34
 msgid "Pro Einheit (gleich)"
@@ -10413,10 +11108,6 @@ msgstr "Artisan mandaté"
 #: faelle/akten.py:46
 msgid "Chronik"
 msgstr "Chronique"
-
-#: faelle/akten.py:47
-msgid "Stammdaten"
-msgstr "Données de base"
 
 #: faelle/akten.py:92
 msgid "Einheiten"

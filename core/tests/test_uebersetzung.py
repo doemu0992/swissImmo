@@ -181,6 +181,10 @@ UEBERSETZT = (
     'fw/abnahme_detail.html',
     'fw/fall_detail.html',
     'fw/_fwmodal.html',
+    # Tranche «Formulare»
+    'fw/objekt_form.html',
+    'fw/liegenschaft_form.html',
+    'fw/schaden_detail.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -284,6 +288,10 @@ STICHPROBE = {
                               'it': "Cockpit del cambio d'inquilino", 'en': 'Tenant-change cockpit'},
     'Mitteilungs-Assistent': {'de': 'Mitteilungs-Assistent', 'fr': 'Assistant de communication',
                               'it': 'Assistente comunicazioni', 'en': 'Notice assistant'},
+    'Neue Liegenschaft erfassen': {'de': 'Neue Liegenschaft erfassen', 'fr': 'Saisir un nouvel immeuble',
+                                   'it': 'Registrare un nuovo stabile', 'en': 'Record new property'},
+    'Handwerker beauftragen': {'de': 'Handwerker beauftragen', 'fr': 'Mandater un artisan',
+                               'it': 'Incaricare un artigiano', 'en': 'Order tradesperson'},
 }
 
 
