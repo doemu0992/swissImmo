@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 01:14+0200\n"
+"POT-Creation-Date: 2026-09-29 01:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,6 +39,7 @@ msgstr "Tâches en suspens"
 
 #: core/navigation.py:124 core/templates/fw/liegenschaft_detail.html:633
 #: core/templates/fw/liegenschaften.html:62
+#: core/templates/fw/vertrag_detail.html:592
 msgid "Fristen"
 msgstr "Délais"
 
@@ -160,7 +161,9 @@ msgstr "Ordres de paiement"
 #: core/navigation.py:159 core/templates/fw/finanzen.html:139
 #: core/templates/fw/nebenkosten.html:4 core/templates/fw/nebenkosten.html:9
 #: core/templates/fw/nebenkosten_detail.html:10
-#: core/templates/fw/objekt_detail.html:141 faelle/akten.py:117
+#: core/templates/fw/objekt_detail.html:141
+#: core/templates/fw/vertrag_detail.html:259
+#: core/templates/fw/vertrag_detail.html:790 faelle/akten.py:117
 msgid "Nebenkosten"
 msgstr "Frais accessoires"
 
@@ -170,6 +173,7 @@ msgstr "Périodique"
 
 #: core/navigation.py:160 core/templates/fw/mietzins.html:4
 #: core/templates/fw/mietzins.html:10 core/templates/fw/objekt_detail.html:310
+#: core/templates/fw/vertrag_detail.html:257
 msgid "Mietzins"
 msgstr "Loyer"
 
@@ -598,6 +602,7 @@ msgstr ""
 #: core/templates/fw/person_detail.html:221
 #: core/templates/fw/person_form.html:122
 #: core/templates/fw/person_form.html:237 core/templates/fw/personen.html:67
+#: core/templates/fw/vertrag_detail.html:357
 msgid "Kontakt"
 msgstr "Contact"
 
@@ -621,6 +626,7 @@ msgstr "Mobile"
 #: core/templates/fw/person_form.html:221
 #: core/templates/fw/person_form.html:268
 #: core/templates/fw/schaden_detail.html:144
+#: core/templates/fw/vertrag_detail.html:363
 msgid "Telefon"
 msgstr "Téléphone"
 
@@ -639,6 +645,7 @@ msgstr "Téléphone"
 #: core/templates/fw/person_form.html:124
 #: core/templates/fw/person_form.html:222
 #: core/templates/fw/schaden_detail.html:143
+#: core/templates/fw/vertrag_detail.html:365
 msgid "E-Mail"
 msgstr "E-mail"
 
@@ -829,8 +836,8 @@ msgstr ""
 
 #: core/templates/core/mieter_portal.html:65
 #: core/templates/core/portal.html:299 core/templates/fw/dashboard.html:348
-#: core/views/fw/listen.py:767 core/views/fw/listen.py:770
-#: core/views/fw/person.py:892
+#: core/views/fw/detailseiten.py:2276 core/views/fw/listen.py:767
+#: core/views/fw/listen.py:770 core/views/fw/person.py:892
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s en souffrance"
@@ -888,8 +895,8 @@ msgstr "Factures ouvertes avec bulletin de versement QR à télécharger."
 #: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
 #: core/templates/fw/nebenkosten_detail.html:34
 #: core/templates/fw/person_detail.html:430 core/templates/fw/schaeden.html:73
-#: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
-#: core/views/fw/_basis.py:353
+#: core/templates/fw/vertrag_detail.html:619 core/templates/fw/zahllauf.html:68
+#: core/templates/fw/zahllauf.html:150 core/views/fw/_basis.py:353
 msgid "Offen"
 msgstr "Ouvert"
 
@@ -968,7 +975,8 @@ msgstr ""
 #: core/templates/fw/person_detail.html:471
 #: core/templates/fw/schaden_detail.html:41
 #: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
-#: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
+#: core/templates/fw/vertrag_detail.html:90 core/templates/fw/zahllauf.html:65
+#: core/templates/fw/zahllauf.html:148
 msgid "Objekt"
 msgstr "Objet"
 
@@ -1323,6 +1331,7 @@ msgstr "Locataire"
 
 #: core/templates/core/portal.html:307
 #: core/templates/fw/objekt_ausschreiben.html:30
+#: core/templates/fw/vertrag_detail.html:168
 msgid "Bruttomiete"
 msgstr "Loyer brut"
 
@@ -1679,7 +1688,7 @@ msgstr "Non configuré — aucun e-mail n'est récupéré pour cet usage."
 #: core/templates/fw/objekt_form.html:12
 #: core/templates/fw/person_detail.html:53
 #: core/templates/fw/person_form.html:11 core/templates/fw/regelwerk.html:56
-#: core/templates/fw/vorlagen.html:37
+#: core/templates/fw/vertrag_detail.html:126 core/templates/fw/vorlagen.html:37
 msgid "Bearbeiten"
 msgstr "Modifier"
 
@@ -1719,6 +1728,8 @@ msgstr ""
 #: core/templates/fw/person_detail.html:490
 #: core/templates/fw/person_detail.html:543
 #: core/templates/fw/schaden_detail.html:389
+#: core/templates/fw/vertrag_detail.html:535
+#: core/templates/fw/vertrag_detail.html:693
 msgid "Löschen"
 msgstr "Supprimer"
 
@@ -1729,6 +1740,7 @@ msgstr ""
 
 #: core/templates/core/zweifaktor_bestaetigen.html:10
 #: core/templates/core/zweifaktor_bestaetigen.html:42
+#: core/templates/fw/vertrag_detail.html:324
 msgid "Bestätigung"
 msgstr "Confirmation"
 
@@ -1885,8 +1897,9 @@ msgstr ""
 
 #: core/templates/core/zweifaktor_uebersicht.html:24
 #: core/templates/fw/abonnement.html:38 core/templates/fw/integrationen.html:61
-#: core/templates/fw/mandat_form.html:91 core/views/fw/_basis.py:337
-#: core/views/fw/profil.py:911
+#: core/templates/fw/mandat_form.html:91
+#: core/templates/fw/vertrag_detail.html:293 core/views/fw/_basis.py:337
+#: core/views/fw/detailseiten.py:2269 core/views/fw/profil.py:911
 msgid "Aktiv"
 msgstr "Actif"
 
@@ -2049,7 +2062,7 @@ msgstr "sans date — temps moyen non calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:573
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:581
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -2179,6 +2192,7 @@ msgid "Abnahmeprotokoll"
 msgstr "Procès-verbal d'état des lieux"
 
 #: core/templates/fw/abnahme_detail.html:14
+#: core/templates/fw/vertrag_detail.html:137
 msgid "Wohnungsabnahme"
 msgstr "Réception du logement"
 
@@ -2194,7 +2208,7 @@ msgstr "Dans le décompte final"
 #: core/templates/fw/objekt_detail.html:60
 #: core/templates/fw/person_detail.html:62
 #: core/templates/fw/schaden_detail.html:56 core/templates/fw/schaeden.html:15
-#: core/templates/fw/vorlagen.html:10
+#: core/templates/fw/vertrag_detail.html:133 core/templates/fw/vorlagen.html:10
 msgid "Mehr"
 msgstr "Plus"
 
@@ -2437,6 +2451,8 @@ msgid "Bis (einschliesslich)"
 msgstr "Au (inclus)"
 
 #: core/templates/fw/abwesenheiten.html:30
+#: core/templates/fw/vertrag_detail.html:467
+#: core/templates/fw/vertrag_detail.html:525
 msgid "Grund"
 msgstr "Motif"
 
@@ -2456,6 +2472,7 @@ msgstr "— aucun —"
 #: core/templates/fw/objekt_detail.html:767
 #: core/templates/fw/objekt_detail.html:802
 #: core/templates/fw/person_detail.html:521 core/templates/fw/termine.html:35
+#: core/templates/fw/vertrag_detail.html:494
 msgid "Notiz"
 msgstr "Note"
 
@@ -2464,7 +2481,7 @@ msgstr "Note"
 #: core/templates/fw/mahnwesen.html:101
 #: core/templates/fw/mandat_detail.html:223
 #: core/templates/fw/objekt_detail.html:623
-#: core/templates/fw/person_detail.html:529
+#: core/templates/fw/person_detail.html:529 core/views/fw/detailseiten.py:2310
 msgid "Erfassen"
 msgstr "Saisir"
 
@@ -2739,6 +2756,7 @@ msgstr "Immobilisation"
 #: core/templates/fw/objekt_detail.html:48 core/templates/fw/objekte.html:74
 #: core/templates/fw/schaden_detail.html:40
 #: core/templates/fw/schaden_kosten.html:49
+#: core/templates/fw/vertrag_detail.html:89
 msgid "Liegenschaft"
 msgstr "Immeuble"
 
@@ -2788,6 +2806,8 @@ msgstr "Valeur CHF"
 #: core/templates/fw/liegenschaft_detail.html:442
 #: core/templates/fw/mahnwesen.html:145 core/templates/fw/mieterkonto.html:86
 #: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/vertrag_detail.html:463
+#: core/templates/fw/vertrag_detail.html:618
 msgid "Datum"
 msgstr "Date"
 
@@ -3141,6 +3161,8 @@ msgstr "Texte de la pièce"
 #: core/templates/fw/buchhaltung.html:48 core/templates/fw/dokumente.html:30
 #: core/templates/fw/kreditoren.html:80 core/templates/fw/kreditoren.html:291
 #: core/templates/fw/pendenzen.html:120
+#: core/templates/fw/vertrag_detail.html:341
+#: core/templates/fw/vertrag_detail.html:344 core/views/fw/detailseiten.py:2242
 msgid "keine"
 msgstr "aucune"
 
@@ -3532,6 +3554,7 @@ msgstr "Modifier %(name)s"
 #: core/templates/fw/benutzer_form.html:8
 #: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_form.html:8 core/templates/fw/objekt_form.html:12
+#: core/templates/fw/vertrag_detail.html:525
 #: core/templates/fw/vorlage_form.html:8 core/views/portal.py:750
 msgid "Neu"
 msgstr "Nouveau"
@@ -3936,6 +3959,8 @@ msgid "gewünscht"
 msgstr "souhaité"
 
 #: core/templates/fw/bewerbung_detail.html:62
+#: core/templates/fw/vertrag_detail.html:178
+#: core/templates/fw/vertrag_detail.html:337
 msgid "Kaution"
 msgstr "Garantie de loyer"
 
@@ -4330,6 +4355,9 @@ msgstr "Crédit"
 #: core/templates/fw/hypotheken.html:86 core/templates/fw/kautionen.html:26
 #: core/templates/fw/kreditoren.html:165 core/templates/fw/kreditoren.html:350
 #: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/vertrag_detail.html:385
+#: core/templates/fw/vertrag_detail.html:619
+#: core/templates/fw/vertrag_detail.html:638
 msgid "Betrag"
 msgstr "Montant"
 
@@ -4514,6 +4542,7 @@ msgid "ohne eigene Frist"
 msgstr "sans échéance propre"
 
 #: core/templates/fw/dashboard.html:327
+#: core/templates/fw/vertrag_detail.html:764
 msgid "Alle Pendenzen"
 msgstr "Toutes les tâches en suspens"
 
@@ -4677,6 +4706,7 @@ msgstr "ouvert"
 #: core/templates/fw/dokumente.html:25 core/templates/fw/objekt_detail.html:199
 #: core/templates/fw/person_detail.html:470
 #: core/templates/fw/person_detail.html:559
+#: core/templates/fw/vertrag_detail.html:203
 msgid "Vertrag"
 msgstr "Bail"
 
@@ -4712,6 +4742,7 @@ msgstr "Échéance"
 
 #: core/templates/fw/debitoren.html:194 core/templates/fw/dokumente.html:21
 #: core/templates/fw/person_detail.html:430 core/templates/fw/termine.html:23
+#: core/templates/fw/vertrag_detail.html:618
 #: core/templates/fw/weiterverrechnung.html:37
 #: core/templates/fw/weiterverrechnung.html:77
 msgid "Titel"
@@ -4725,6 +4756,8 @@ msgstr "Titre"
 #: core/templates/fw/person_detail.html:373
 #: core/templates/fw/schaden_detail.html:113 core/templates/fw/schaeden.html:96
 #: core/templates/fw/sollstellung.html:87 core/templates/fw/vertraege.html:75
+#: core/templates/fw/vertrag_detail.html:386
+#: core/templates/fw/vertrag_detail.html:619
 msgid "Status"
 msgstr "Statut"
 
@@ -5034,6 +5067,7 @@ msgstr "Informations"
 
 #: core/templates/fw/dienstleister_detail.html:83
 #: core/templates/fw/mandat_detail.html:187
+#: core/templates/fw/vertrag_detail.html:264
 msgid "nicht erfasst"
 msgstr "non saisi"
 
@@ -5207,10 +5241,12 @@ msgstr "Classement"
 #: core/templates/fw/objekt_detail.html:215
 #: core/templates/fw/person_detail.html:488
 #: core/templates/fw/person_form.html:37
+#: core/templates/fw/vertrag_detail.html:691
 msgid "Öffnen"
 msgstr "Ouvrir"
 
 #: core/templates/fw/dokumente.html:91 core/templates/fw/person_detail.html:489
+#: core/templates/fw/vertrag_detail.html:692
 #, python-format
 msgid "Dokument «%(name)s» löschen?"
 msgstr "Supprimer le document « %(name)s » ?"
@@ -5853,6 +5889,7 @@ msgstr "Clôture"
 #: core/templates/fw/fristen.html:3 core/templates/fw/fristen.html:6
 #: core/templates/fw/liegenschaft_detail.html:635
 #: core/templates/fw/person_detail.html:602
+#: core/templates/fw/vertrag_detail.html:593
 msgid "Fristen-Center"
 msgstr "Centre des délais"
 
@@ -6188,6 +6225,7 @@ msgstr "Locataire / objet"
 #: core/templates/fw/person_detail.html:219
 #: core/templates/fw/person_detail.html:276
 #: core/templates/fw/person_form.html:231 core/templates/fw/termine.html:25
+#: core/templates/fw/vertrag_detail.html:271
 msgid "Art"
 msgstr "Type"
 
@@ -6202,10 +6240,13 @@ msgstr "Depuis"
 #: core/templates/fw/kautionen.html:36
 #: core/templates/fw/liegenschaft_detail.html:644
 #: core/templates/fw/liegenschaft_detail.html:688
+#: core/templates/fw/vertrag_detail.html:416
 msgid "Versicherung"
 msgstr "Assurance"
 
 #: core/templates/fw/kautionen.html:36
+#: core/templates/fw/vertrag_detail.html:393
+#: core/templates/fw/vertrag_detail.html:415
 msgid "Sperrkonto"
 msgstr "Compte bloqué"
 
@@ -6619,6 +6660,7 @@ msgstr "Échéance le"
 
 #: core/templates/fw/kreditoren.html:94 core/templates/fw/kreditoren.html:281
 #: core/templates/fw/objekt_detail.html:272
+#: core/templates/fw/vertrag_detail.html:491
 msgid "Referenz"
 msgstr "Référence"
 
@@ -6858,6 +6900,7 @@ msgid "Position entfernen?"
 msgstr "Retirer la position ?"
 
 #: core/templates/fw/kreditoren.html:333
+#: core/templates/fw/vertrag_detail.html:237
 msgid "Entfernen"
 msgstr "Retirer"
 
@@ -7122,6 +7165,7 @@ msgstr "Dû au fournisseur"
 #: core/templates/fw/lieferantenkonto.html:33
 #: core/templates/fw/mieterkonten.html:65 core/templates/fw/mieterkonto.html:37
 #: core/templates/fw/person_detail.html:114
+#: core/templates/fw/vertrag_detail.html:175
 msgid "ausgeglichen"
 msgstr "soldé"
 
@@ -7161,17 +7205,20 @@ msgstr ""
 "sont masquées."
 
 #: core/templates/fw/lieferantenkonto.html:108
+#: core/templates/fw/vertrag_detail.html:549
 msgid "Verlauf — wer hat was gemacht"
 msgstr "Historique — qui a fait quoi"
 
 #: core/templates/fw/lieferantenkonto.html:121
 #: core/templates/fw/liegenschaft_detail.html:466
 #: core/templates/fw/logbuch.html:117 core/templates/fw/person_detail.html:563
+#: core/templates/fw/vertrag_detail.html:562
 msgid "System"
 msgstr "Système"
 
 #: core/templates/fw/liegenschaft_detail.html:30
 #: core/templates/fw/mandat_detail.html:55
+#: core/templates/fw/vertrag_detail.html:49
 msgid "Was auffällt"
 msgstr "À signaler"
 
@@ -7180,6 +7227,7 @@ msgstr "À signaler"
 #: core/templates/fw/objekt_detail.html:47
 #: core/templates/fw/person_detail.html:39
 #: core/templates/fw/schaden_detail.html:39
+#: core/templates/fw/vertrag_detail.html:87
 msgid "Betreut von"
 msgstr "Suivi par"
 
@@ -7187,12 +7235,14 @@ msgstr "Suivi par"
 #: core/templates/fw/liegenschaft_form.html:56
 #: core/templates/fw/objekt_detail.html:47
 #: core/templates/fw/schaden_detail.html:39
+#: core/templates/fw/vertrag_detail.html:87
 msgid "nicht zugeteilt"
 msgstr "non attribué"
 
 #: core/templates/fw/liegenschaft_detail.html:65
 #: core/templates/fw/mandat_detail.html:113
 #: core/templates/fw/person_detail.html:358
+#: core/templates/fw/vertrag_detail.html:88
 msgid "Mandat"
 msgstr "Mandat"
 
@@ -7292,6 +7342,7 @@ msgid "für %(j)s nicht erfasst"
 msgstr "non saisi pour %(j)s"
 
 #: core/templates/fw/liegenschaft_detail.html:133
+#: core/templates/fw/vertrag_detail.html:183
 msgid "Nächste Frist"
 msgstr "Prochain délai"
 
@@ -7474,6 +7525,8 @@ msgid "Gesellschaft"
 msgstr "Société"
 
 #: core/templates/fw/liegenschaft_detail.html:259
+#: core/templates/fw/vertrag_detail.html:389
+#: core/templates/fw/vertrag_detail.html:434
 msgid "Policennummer"
 msgstr "Numéro de police"
 
@@ -9085,6 +9138,7 @@ msgid "Rücknahme starten"
 msgstr "Démarrer la reprise"
 
 #: core/templates/fw/mieterwechsel.html:71
+#: core/templates/fw/vertrag_detail.html:136
 msgid "Schlussabrechnung"
 msgstr "Décompte final"
 
@@ -9737,7 +9791,10 @@ msgid ""
 "Jedes Mietverhältnis (aktiv und beendet) mit seinen Dokumenten — "
 "Mietvertrag, Mietzinsanpassung, Kündigung, Protokoll. Die Dokumente "
 "entstehen automatisch beim Generieren."
-msgstr "Chaque bail (actif et terminé) avec ses documents — contrat de bail, adaptation de loyer, résiliation, procès-verbal. Les documents sont créés automatiquement lors de la génération."
+msgstr ""
+"Chaque bail (actif et terminé) avec ses documents — contrat de bail, "
+"adaptation de loyer, résiliation, procès-verbal. Les documents sont créés "
+"automatiquement lors de la génération."
 
 #: core/templates/fw/objekt_detail.html:195
 #: core/templates/fw/person_detail.html:360
@@ -9773,7 +9830,9 @@ msgstr "Pas encore de bail pour cet objet."
 msgid ""
 "Kein Protokolleintrag — dieses Objekt hatte noch keinen Vertrag mit "
 "erfassten Vorgängen."
-msgstr "Aucune entrée au journal — cet objet n'a pas encore eu de contrat avec des opérations saisies."
+msgstr ""
+"Aucune entrée au journal — cet objet n'a pas encore eu de contrat avec des "
+"opérations saisies."
 
 #: core/templates/fw/objekt_detail.html:255
 msgid "Nebenkosten-Abrechnungsart"
@@ -9793,7 +9852,8 @@ msgstr "Forfait (montant fixe)"
 
 #: core/templates/fw/objekt_detail.html:265
 msgid "Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts."
-msgstr "Sert de mode de décompte par défaut pour les nouveaux contrats de cet objet."
+msgstr ""
+"Sert de mode de décompte par défaut pour les nouveaux contrats de cet objet."
 
 #: core/templates/fw/objekt_detail.html:271
 #: core/templates/fw/objekt_detail.html:308
@@ -9803,14 +9863,17 @@ msgstr "Sert de mode de décompte par défaut pour les nouveaux contrats de cet 
 #: core/templates/fw/objekt_detail.html:468
 #: core/templates/fw/objekt_form.html:93 core/templates/fw/objekt_form.html:104
 #: core/templates/fw/person_detail.html:276
+#: core/templates/fw/vertrag_detail.html:490
 msgid "Gültig ab"
 msgstr "Valable dès"
 
 #: core/templates/fw/objekt_detail.html:273
+#: core/templates/fw/vertrag_detail.html:492
 msgid "Rabatt"
 msgstr "Rabais"
 
 #: core/templates/fw/objekt_detail.html:274
+#: core/templates/fw/vertrag_detail.html:493
 msgid "zu zahlen"
 msgstr "à payer"
 
@@ -9828,6 +9891,7 @@ msgid "Gratismonat"
 msgstr "Mois gratuit"
 
 #: core/templates/fw/objekt_detail.html:289
+#: core/templates/fw/vertrag_detail.html:502
 msgid "(frei)"
 msgstr "(libre)"
 
@@ -9892,25 +9956,33 @@ msgstr "p. ex. mois gratuit"
 msgid ""
 "Mietzins vollständig erlassen (Gratismonat) — setzt den Rabatt automatisch "
 "auf den vollen Mietzins."
-msgstr "Loyer entièrement remis (mois gratuit) — met automatiquement le rabais au loyer complet."
+msgstr ""
+"Loyer entièrement remis (mois gratuit) — met automatiquement le rabais au "
+"loyer complet."
 
 #: core/templates/fw/objekt_detail.html:340
 msgid ""
 "Nettomietzins vollständig erlassen (Gratismonat) — setzt den Rabatt "
 "automatisch auf den vollen Netto-Referenzbetrag."
-msgstr "Loyer net entièrement remis (mois gratuit) — met automatiquement le rabais au montant net de référence complet."
+msgstr ""
+"Loyer net entièrement remis (mois gratuit) — met automatiquement le rabais "
+"au montant net de référence complet."
 
 #: core/templates/fw/objekt_detail.html:344
 msgid ""
 "Diese Zeile stellt den Mietzins <b>vollständig auf 0.00</b> — verrechnet "
 "wird nur noch <span id=\"smz-zuzahlen\">die Nebenkosten</span>."
-msgstr "Cette ligne met le loyer <b>entièrement à 0.00</b> — seuls <span id=\"smz-zuzahlen\">les frais accessoires</span> sont encore facturés."
+msgstr ""
+"Cette ligne met le loyer <b>entièrement à 0.00</b> — seuls <span id=\"smz-"
+"zuzahlen\">les frais accessoires</span> sont encore facturés."
 
 #: core/templates/fw/objekt_detail.html:344
 msgid ""
 "Diese Zeile stellt den Nettomietzins <b>vollständig auf 0.00</b> — "
 "verrechnet wird nur noch <span id=\"smz-zuzahlen\">die Nebenkosten</span>."
-msgstr "Cette ligne met le loyer net <b>entièrement à 0.00</b> — seuls <span id=\"smz-zuzahlen\">les frais accessoires</span> sont encore facturés."
+msgstr ""
+"Cette ligne met le loyer net <b>entièrement à 0.00</b> — seuls <span "
+"id=\"smz-zuzahlen\">les frais accessoires</span> sont encore facturés."
 
 #: core/templates/fw/objekt_detail.html:348
 msgid "Sollmietzins speichern"
@@ -9926,7 +9998,9 @@ msgstr "Supprimer cette ligne du modèle d’échelonnement ?"
 
 #: core/templates/fw/objekt_detail.html:408
 msgid "Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins."
-msgstr "Pas encore de modèle d'échelonnement — les nouveaux contrats démarrent avec un loyer fixe."
+msgstr ""
+"Pas encore de modèle d'échelonnement — les nouveaux contrats démarrent avec "
+"un loyer fixe."
 
 #: core/templates/fw/objekt_detail.html:418
 #: core/templates/fw/objekt_detail.html:470
@@ -9970,7 +10044,9 @@ msgstr "Photos de l'objet"
 msgid ""
 "Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das "
 "erste Foto ist das Titelbild."
-msgstr "Utilisées dans la fiche descriptive, le flux des portails et la liste de commercialisation. La première photo est l’image de couverture."
+msgstr ""
+"Utilisées dans la fiche descriptive, le flux des portails et la liste de "
+"commercialisation. La première photo est l’image de couverture."
 
 #: core/templates/fw/objekt_detail.html:498
 msgid "Titelbild"
@@ -10019,7 +10095,10 @@ msgstr "Créer une pièce depuis le catalogue"
 msgid ""
 "Lädt die typische Ausstattung eines Raumtyps mit Standard-Lebensdauern — "
 "danach Details je Element ergänzen. Die Räume entstehen aus den Elementen."
-msgstr "Charge l'équipement typique d'un type de pièce avec les durées de vie standard — complétez ensuite les détails par élément. Les pièces naissent des éléments."
+msgstr ""
+"Charge l'équipement typique d'un type de pièce avec les durées de vie "
+"standard — complétez ensuite les détails par élément. Les pièces naissent "
+"des éléments."
 
 #: core/templates/fw/objekt_detail.html:579
 msgid "Raumtyp"
@@ -10118,7 +10197,9 @@ msgstr "(remplace l'existant)"
 msgid ""
 "Noch keine Ausstattung erfasst. Lade einen Raum aus dem Katalog oder erfasse "
 "ein Element — die Räume entstehen aus den Assets."
-msgstr "Aucun équipement saisi. Chargez une pièce depuis le catalogue ou saisissez un élément — les pièces naissent des éléments."
+msgstr ""
+"Aucun équipement saisi. Chargez une pièce depuis le catalogue ou saisissez "
+"un élément — les pièces naissent des éléments."
 
 #: core/templates/fw/objekt_detail.html:726
 msgid "Geräte"
@@ -10199,7 +10280,9 @@ msgstr "Retirer la clé du registre ?"
 msgid ""
 "Noch keine Schlüssel im Register — z.B. Wohnungs-, Keller-, Briefkasten- und "
 "Haustürschlüssel erfassen."
-msgstr "Aucune clé dans le registre — saisissez p. ex. les clés du logement, de la cave, de la boîte aux lettres et de la porte d’entrée."
+msgstr ""
+"Aucune clé dans le registre — saisissez p. ex. les clés du logement, de la "
+"cave, de la boîte aux lettres et de la porte d’entrée."
 
 #: core/templates/fw/objekt_detail.html:928
 msgid "Schlüssel erfassen"
@@ -10472,6 +10555,7 @@ msgid "Geboren"
 msgstr "Né(e) le"
 
 #: core/templates/fw/person_detail.html:44
+#: core/templates/fw/vertrag_detail.html:367
 msgid "Sprache"
 msgstr "Langue"
 
@@ -10628,6 +10712,7 @@ msgid "Haftpflicht"
 msgstr "RC"
 
 #: core/templates/fw/person_detail.html:205
+#: core/templates/fw/vertrag_detail.html:435
 msgid "Police-Nr."
 msgstr "N° de police"
 
@@ -10840,6 +10925,7 @@ msgid "Keine Verträge."
 msgstr "Aucun contrat."
 
 #: core/templates/fw/person_detail.html:406
+#: core/templates/fw/vertrag_detail.html:579
 #, python-format
 msgid "Offener Betrag: CHF %(b)s"
 msgstr "Montant ouvert : CHF %(b)s"
@@ -10849,6 +10935,7 @@ msgid "Keine offenen Posten. 🎉"
 msgstr "Aucun poste ouvert. 🎉"
 
 #: core/templates/fw/person_detail.html:444
+#: core/templates/fw/vertrag_detail.html:635
 msgid "Zahlungseingänge"
 msgstr "Paiements reçus"
 
@@ -10917,6 +11004,7 @@ msgid "Noch keine protokollierten Aktionen zu dieser Person."
 msgstr "Aucune action journalisée pour cette personne pour le moment."
 
 #: core/templates/fw/person_detail.html:568
+#: core/templates/fw/vertrag_detail.html:570
 msgid ""
 "Vollständiges Logbuch aller Objekte unter <a href=\"/neu/logbuch/\" "
 "class=\"fw-link\">Profil → Logbuch</a>."
@@ -10941,6 +11029,8 @@ msgid "Fristen &amp; Pendenzen"
 msgstr "Délais &amp; tâches en suspens"
 
 #: core/templates/fw/person_detail.html:608
+#: core/templates/fw/vertrag_detail.html:605
+#: core/templates/fw/vertrag_detail.html:775
 msgid "provisorisch"
 msgstr "provisoire"
 
@@ -11197,6 +11287,7 @@ msgid "eBill- / E-Rechnungs-Adresse"
 msgstr "Adresse eBill / facture électronique"
 
 #: core/templates/fw/person_form.html:290
+#: core/templates/fw/vertrag_detail.html:424
 msgid "CH…"
 msgstr "CH…"
 
@@ -12233,7 +12324,8 @@ msgstr ""
 msgid "Keine Treffer für „%(q)s\"."
 msgstr "Aucun résultat pour « %(q)s »."
 
-#: core/templates/fw/suche.html:69 core/views/fw/_basis.py:280
+#: core/templates/fw/suche.html:69 core/templates/fw/vertrag_detail.html:11
+#: core/views/fw/_basis.py:280
 msgid "Verträge"
 msgstr "Baux"
 
@@ -12368,12 +12460,651 @@ msgid "NK"
 msgstr "FA"
 
 #: core/templates/fw/vertraege.html:99
+#: core/templates/fw/vertrag_detail.html:128
 msgid "Kündigung erfassen"
 msgstr "Saisir la résiliation"
 
 #: core/templates/fw/vertraege.html:99
 msgid "Kündigen"
 msgstr "Résilier"
+
+#: core/templates/fw/vertrag_detail.html:6
+#, python-format
+msgid "Vertrag %(name)s"
+msgstr "Contrat %(name)s"
+
+#: core/templates/fw/vertrag_detail.html:65
+msgid "Mietverhältnis"
+msgstr "Bail"
+
+#: core/templates/fw/vertrag_detail.html:120
+msgid "Unterzeichnet"
+msgstr "Signé"
+
+#: core/templates/fw/vertrag_detail.html:121
+msgid "Zur Unterschrift"
+msgstr "Pour signature"
+
+#: core/templates/fw/vertrag_detail.html:126
+#: core/templates/fw/vertrag_detail.html:292 core/views/fw/_basis.py:336
+#: core/views/fw/detailseiten.py:2271
+msgid "Entwurf"
+msgstr "Brouillon"
+
+#: core/templates/fw/vertrag_detail.html:139
+msgid "Mängelrüge"
+msgstr "Avis des défauts"
+
+#: core/templates/fw/vertrag_detail.html:140
+msgid "Untermiete"
+msgstr "Sous-location"
+
+#: core/templates/fw/vertrag_detail.html:142
+msgid "Vertrag als PDF"
+msgstr "Contrat en PDF"
+
+#: core/templates/fw/vertrag_detail.html:143
+msgid ""
+"Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift "
+"senden?"
+msgstr "Ce contrat est déjà signé. Vraiment le renvoyer pour signature ?"
+
+#: core/templates/fw/vertrag_detail.html:143
+#, python-format
+msgid "Vertrag an %(name)s zur digitalen Unterschrift senden?"
+msgstr "Envoyer le contrat à %(name)s pour signature électronique ?"
+
+#: core/templates/fw/vertrag_detail.html:143
+msgid "DocuSeal ist noch nicht konfiguriert (Integrationen)"
+msgstr "DocuSeal n'est pas encore configuré (intégrations)"
+
+#: core/templates/fw/vertrag_detail.html:145
+msgid "Zur Unterschrift senden"
+msgstr "Envoyer pour signature"
+
+#: core/templates/fw/vertrag_detail.html:145
+msgid "Erneut zur Unterschrift"
+msgstr "Renvoyer pour signature"
+
+#: core/templates/fw/vertrag_detail.html:148
+#, python-format
+msgid ""
+"Diesen Vertrag wirklich löschen?\n"
+"\n"
+"%(r)s verknüpfte Rechnung(en) und %(z)s Zahlung(en) bleiben erhalten (werden "
+"entkoppelt)."
+msgstr ""
+"Vraiment supprimer ce contrat ?\n"
+"\n"
+"%(r)s facture(s) liée(s) et %(z)s paiement(s) sont conservés (seront "
+"détachés)."
+
+#: core/templates/fw/vertrag_detail.html:150
+msgid "Diesen Vertrag wirklich löschen?"
+msgstr "Vraiment supprimer ce contrat ?"
+
+#: core/templates/fw/vertrag_detail.html:152
+msgid "Vertrag löschen"
+msgstr "Supprimer le contrat"
+
+#: core/templates/fw/vertrag_detail.html:170
+#, python-format
+msgid "netto %(n)s + NK %(nk)s"
+msgstr "net %(n)s + FA %(nk)s"
+
+#: core/templates/fw/vertrag_detail.html:173
+msgid "Saldo Mieterkonto"
+msgstr "Solde compte locataire"
+
+#: core/templates/fw/vertrag_detail.html:175
+#, python-format
+msgid "Mahnstufe %(m)s"
+msgstr "Niveau de rappel %(m)s"
+
+#: core/templates/fw/vertrag_detail.html:185
+msgid "keine laufende Frist"
+msgstr "aucun délai en cours"
+
+#: core/templates/fw/vertrag_detail.html:204
+#, python-format
+msgid "Stand %(d)s"
+msgstr "État au %(d)s"
+
+#: core/templates/fw/vertrag_detail.html:206
+msgid "Parteien"
+msgstr "Parties"
+
+#: core/templates/fw/vertrag_detail.html:207
+msgid "Mieterschaft"
+msgstr "Locataires"
+
+#: core/templates/fw/vertrag_detail.html:209
+#, python-format
+msgid "Solidarisch haftend mit %(n)s weiterer"
+msgid_plural "Solidarisch haftend mit %(n)s weiteren"
+msgstr[0] "Solidairement responsable avec %(n)s autre personne"
+msgstr[1] "Solidairement responsable avec %(n)s autres personnes"
+
+#: core/templates/fw/vertrag_detail.html:209
+msgid "Keine weiteren Mieter erfasst"
+msgstr "Aucun autre locataire saisi"
+
+#: core/templates/fw/vertrag_detail.html:210
+msgid "Vermieterschaft"
+msgstr "Bailleur"
+
+#: core/templates/fw/vertrag_detail.html:211
+msgid "kein Mandat hinterlegt"
+msgstr "aucun mandat enregistré"
+
+#: core/templates/fw/vertrag_detail.html:212
+msgid "vertreten durch die Verwaltung"
+msgstr "représenté par la gérance"
+
+#: core/templates/fw/vertrag_detail.html:213
+msgid "Anzahl Personen"
+msgstr "Nombre de personnes"
+
+#: core/templates/fw/vertrag_detail.html:214
+msgid "Familienwohnung"
+msgstr "Logement de famille"
+
+#: core/templates/fw/vertrag_detail.html:215
+msgid "ja"
+msgstr "oui"
+
+#: core/templates/fw/vertrag_detail.html:216
+msgid "Weitere Mieter verwalten"
+msgstr "Gérer les autres locataires"
+
+#: core/templates/fw/vertrag_detail.html:220
+msgid "Weitere Mieter (WG)"
+msgstr "Autres locataires (colocation)"
+
+#: core/templates/fw/vertrag_detail.html:226
+msgid "Solidarhaftung"
+msgstr "Responsabilité solidaire"
+
+#: core/templates/fw/vertrag_detail.html:226
+msgid "aus"
+msgstr "désactivé"
+
+#: core/templates/fw/vertrag_detail.html:241
+msgid "Keine weiteren Mieter erfasst."
+msgstr "Aucun autre locataire saisi."
+
+#: core/templates/fw/vertrag_detail.html:248
+msgid "Person wählen …"
+msgstr "Choisir une personne …"
+
+#: core/templates/fw/vertrag_detail.html:251
+msgid "Person zum Vertrag hinzufügen"
+msgstr "Ajouter une personne au contrat"
+
+#: core/templates/fw/vertrag_detail.html:258
+msgid "Nettomietzins"
+msgstr "Loyer net"
+
+#: core/templates/fw/vertrag_detail.html:261
+msgid "Bruttomietzins"
+msgstr "Loyer brut"
+
+#: core/templates/fw/vertrag_detail.html:262
+msgid "Zahlungsrhythmus"
+msgstr "Rythme de paiement"
+
+#: core/templates/fw/vertrag_detail.html:263
+msgid "Referenzzins bei Festsetzung"
+msgstr "Taux de référence à la fixation"
+
+#: core/templates/fw/vertrag_detail.html:267
+#, python-format
+msgid "%(s)s %% — optiert"
+msgstr "%(s)s %% — option exercée"
+
+#: core/templates/fw/vertrag_detail.html:269
+msgid "Dauer und Kündigung"
+msgstr "Durée et résiliation"
+
+#: core/templates/fw/vertrag_detail.html:270
+msgid "Vertragsbeginn"
+msgstr "Début du contrat"
+
+#: core/templates/fw/vertrag_detail.html:287
+#, python-format
+msgid "Befristet bis %(d)s"
+msgstr "À durée déterminée jusqu'au %(d)s"
+
+#: core/templates/fw/vertrag_detail.html:288
+msgid "Unbefristet"
+msgstr "À durée indéterminée"
+
+#: core/templates/fw/vertrag_detail.html:288
+#, python-format
+msgid "gekündigt per %(d)s"
+msgstr "résilié au %(d)s"
+
+#: core/templates/fw/vertrag_detail.html:290
+msgid ""
+"Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, "
+"Mieterspiegel und Auswertungen."
+msgstr ""
+"Vraiment changer le statut du contrat ? Le statut pilote la facturation, "
+"l'état locatif et les analyses."
+
+#: core/templates/fw/vertrag_detail.html:294
+msgid "Inaktiv"
+msgstr "Inactif"
+
+#: core/templates/fw/vertrag_detail.html:296
+msgid "Der Status steuert Sollstellung, Mieterspiegel und Auswertungen."
+msgstr "Le statut pilote la facturation, l'état locatif et les analyses."
+
+#: core/templates/fw/vertrag_detail.html:297
+msgid "Kündigungsfrist"
+msgstr "Délai de résiliation"
+
+#: core/templates/fw/vertrag_detail.html:297
+#, python-format
+msgid "%(n)s Monate"
+msgstr "%(n)s mois"
+
+#: core/templates/fw/vertrag_detail.html:298
+msgid "Erstmals kündbar auf"
+msgstr "Résiliable pour la première fois au"
+
+#: core/templates/fw/vertrag_detail.html:300
+msgid "Kündigungstermine"
+msgstr "Termes de résiliation"
+
+#: core/templates/fw/vertrag_detail.html:301
+msgid "Erfasste Kündigungen"
+msgstr "Résiliations saisies"
+
+#: core/templates/fw/vertrag_detail.html:306
+#, python-format
+msgid "Kündigung durch %(a)s"
+msgstr "Résiliation par %(a)s"
+
+#: core/templates/fw/vertrag_detail.html:307
+msgid "über Portal · eingegangen"
+msgstr "via le portail · reçu"
+
+#: core/templates/fw/vertrag_detail.html:307
+msgid "bestätigt"
+msgstr "confirmé"
+
+#: core/templates/fw/vertrag_detail.html:311
+msgid "Vertragsende"
+msgstr "Fin du contrat"
+
+#: core/templates/fw/vertrag_detail.html:312
+msgid "ausserordentlich"
+msgstr "extraordinaire"
+
+#: core/templates/fw/vertrag_detail.html:314
+msgid ""
+"Kündigung bestätigen? Der Vertrag wird auf gekündigt gesetzt und Auszugs-"
+"Pendenzen werden erstellt."
+msgstr ""
+"Confirmer la résiliation ? Le contrat passe à « résilié » et des tâches de "
+"sortie sont créées."
+
+#: core/templates/fw/vertrag_detail.html:316
+msgid "Bestätigen &amp; Vertrag beenden"
+msgstr "Confirmer &amp; terminer le contrat"
+
+#: core/templates/fw/vertrag_detail.html:319
+msgid "Wartet auf Bestätigung durch Inhaber oder Verwalter."
+msgstr "En attente de confirmation par le titulaire ou le gérant."
+
+#: core/templates/fw/vertrag_detail.html:323
+msgid "Amtliches Formular"
+msgstr "Formulaire officiel"
+
+#: core/templates/fw/vertrag_detail.html:323
+msgid "(PDF)"
+msgstr "(PDF)"
+
+#: core/templates/fw/vertrag_detail.html:326
+msgid "Kündigung zurücknehmen und Vertrag reaktivieren?"
+msgstr "Retirer la résiliation et réactiver le contrat ?"
+
+#: core/templates/fw/vertrag_detail.html:328
+msgid "zurücknehmen"
+msgstr "retirer"
+
+#: core/templates/fw/vertrag_detail.html:336
+msgid "Kaution und Sonderabreden"
+msgstr "Garantie et conventions particulières"
+
+#: core/templates/fw/vertrag_detail.html:338
+msgid "keine vereinbart"
+msgstr "aucune convenue"
+
+#: core/templates/fw/vertrag_detail.html:340
+msgid "Nebenobjekte"
+msgstr "Objets annexes"
+
+#: core/templates/fw/vertrag_detail.html:342
+msgid "Mitbenutzung"
+msgstr "Usage commun"
+
+#: core/templates/fw/vertrag_detail.html:343
+msgid "Besondere Vereinbarungen"
+msgstr "Conventions particulières"
+
+#: core/templates/fw/vertrag_detail.html:370
+msgid "Zur Personenakte"
+msgstr "Vers le dossier de la personne"
+
+#: core/templates/fw/vertrag_detail.html:371
+#, python-format
+msgid "%(n)s Mietverhältnis"
+msgid_plural "%(n)s Mietverhältnisse"
+msgstr[0] "%(n)s bail"
+msgstr[1] "%(n)s baux"
+
+#: core/templates/fw/vertrag_detail.html:381
+msgid "Mietzinsdepot"
+msgstr "Dépôt de garantie"
+
+#: core/templates/fw/vertrag_detail.html:388
+msgid "Versicherer"
+msgstr "Assureur"
+
+#: core/templates/fw/vertrag_detail.html:390
+msgid "Zertifikat"
+msgstr "Certificat"
+
+#: core/templates/fw/vertrag_detail.html:390
+msgid "Police öffnen"
+msgstr "Ouvrir la police"
+
+#: core/templates/fw/vertrag_detail.html:391
+msgid "Police aktiv ab"
+msgstr "Police active dès"
+
+#: core/templates/fw/vertrag_detail.html:394 rentals/models.py:552
+msgid "Einbezahlt"
+msgstr "Versé"
+
+#: core/templates/fw/vertrag_detail.html:397
+msgid "Aufgelöst"
+msgstr "Dissous"
+
+#: core/templates/fw/vertrag_detail.html:397 rentals/models.py:553
+msgid "Zurückbezahlt"
+msgstr "Remboursé"
+
+#: core/templates/fw/vertrag_detail.html:398
+#: core/templates/fw/vertrag_detail.html:470
+msgid "Einbehalt"
+msgstr "Retenue"
+
+#: core/templates/fw/vertrag_detail.html:403
+msgid "Bestätigung an Mieter"
+msgstr "Confirmation au locataire"
+
+#: core/templates/fw/vertrag_detail.html:405
+msgid "Freigabe an Bank"
+msgstr "Libération à la banque"
+
+#: core/templates/fw/vertrag_detail.html:412
+msgid "Einzahlung oder Zertifikat erfassen"
+msgstr "Saisir le versement ou le certificat"
+
+#: core/templates/fw/vertrag_detail.html:421
+msgid "Einbezahlt am"
+msgstr "Versé le"
+
+#: core/templates/fw/vertrag_detail.html:423
+msgid "Sperrkonto (IBAN)"
+msgstr "Compte bloqué (IBAN)"
+
+#: core/templates/fw/vertrag_detail.html:425
+msgid "Einzahlung bestätigen"
+msgstr "Confirmer le versement"
+
+#: core/templates/fw/vertrag_detail.html:431
+msgid "Versicherer / Anbieter"
+msgstr "Assureur / fournisseur"
+
+#: core/templates/fw/vertrag_detail.html:432
+msgid "z. B. SwissCaution"
+msgstr "p. ex. SwissCaution"
+
+#: core/templates/fw/vertrag_detail.html:436
+msgid "Aktiv ab"
+msgstr "Actif dès"
+
+#: core/templates/fw/vertrag_detail.html:439
+msgid "Zertifikat / Police (PDF) *"
+msgstr "Certificat / police (PDF) *"
+
+#: core/templates/fw/vertrag_detail.html:441
+msgid "Bestätigen, sobald das Zertifikat des Versicherers vorliegt."
+msgstr "Confirmer dès que le certificat de l'assureur est disponible."
+
+#: core/templates/fw/vertrag_detail.html:442
+msgid "Versicherung bestätigen"
+msgstr "Confirmer l'assurance"
+
+#: core/templates/fw/vertrag_detail.html:461
+msgid "Police auflösen bei Auszug"
+msgstr "Résilier la police à la sortie"
+
+#: core/templates/fw/vertrag_detail.html:461
+msgid "Rückzahlung bei Auszug"
+msgstr "Remboursement à la sortie"
+
+#: core/templates/fw/vertrag_detail.html:465
+msgid "Schadenforderung (CHF)"
+msgstr "Créance pour dommages (CHF)"
+
+#: core/templates/fw/vertrag_detail.html:465
+msgid "Einbehalt (CHF)"
+msgstr "Retenue (CHF)"
+
+#: core/templates/fw/vertrag_detail.html:468
+msgid "z. B. Schäden, offene Miete"
+msgstr "p. ex. dégâts, loyer ouvert"
+
+#: core/templates/fw/vertrag_detail.html:470
+msgid "Schadenforderung"
+msgstr "Créance pour dommages"
+
+#: core/templates/fw/vertrag_detail.html:470
+msgid "als Debitoren-Weiterverrechnung buchen"
+msgstr "comptabiliser comme refacturation débiteur"
+
+#: core/templates/fw/vertrag_detail.html:471
+msgid "Police auflösen"
+msgstr "Résilier la police"
+
+#: core/templates/fw/vertrag_detail.html:471
+msgid "Rückzahlung erfassen"
+msgstr "Saisir le remboursement"
+
+#: core/templates/fw/vertrag_detail.html:477
+msgid "Mietzins und Anpassungen"
+msgstr "Loyer et adaptations"
+
+#: core/templates/fw/vertrag_detail.html:483
+msgid "Gratismonate / Rabatt"
+msgstr "Mois gratuits / rabais"
+
+#: core/templates/fw/vertrag_detail.html:484
+msgid ""
+"Datierte Miete dieses Verhältnisses. <b>Referenz</b> = echte vereinbarte "
+"Miete; <b>Rabatt/Erlass</b> mindert nur die Verrechnung (Gratismonat = zu "
+"zahlen 0.00, Ertrag wird trotzdem voll gebucht → Konto 3090). Verwaltet am "
+"<b>Objekt → Mietzins</b>."
+msgstr ""
+"Loyer daté de ce bail. <b>Référence</b> = loyer réellement convenu ; "
+"<b>rabais/remise</b> ne réduit que la facturation (mois gratuit = à payer "
+"0.00, le produit est quand même entièrement comptabilisé → compte 3090). "
+"Géré sur <b>Objet → Loyer</b>."
+
+#: core/templates/fw/vertrag_detail.html:486
+msgid "Am Objekt bearbeiten"
+msgstr "Modifier sur l'objet"
+
+#: core/templates/fw/vertrag_detail.html:491
+#: core/templates/fw/vertrag_detail.html:492
+msgid "Netto / NK"
+msgstr "Net / FA"
+
+#: core/templates/fw/vertrag_detail.html:512
+msgid "Amtliche Mietzinsanpassungen"
+msgstr "Adaptations de loyer officielles"
+
+#: core/templates/fw/vertrag_detail.html:518
+msgid "Amtliche Anpassung erstellen"
+msgstr "Créer une adaptation officielle"
+
+#: core/templates/fw/vertrag_detail.html:525
+msgid "Wirksam ab"
+msgstr "Effectif dès"
+
+#: core/templates/fw/vertrag_detail.html:525
+msgid "Alt"
+msgstr "Ancien"
+
+#: core/templates/fw/vertrag_detail.html:534
+msgid ""
+"Diese Mietzinsanpassung löschen? Künftige Sollläufe verrechnen dann wieder "
+"den vorherigen Mietzins."
+msgstr ""
+"Supprimer cette adaptation de loyer ? Les futures facturations factureront à "
+"nouveau le loyer précédent."
+
+#: core/templates/fw/vertrag_detail.html:539
+msgid "Keine Mietzinsanpassungen."
+msgstr "Aucune adaptation de loyer."
+
+#: core/templates/fw/vertrag_detail.html:566
+msgid "Noch keine protokollierten Aktionen zu diesem Vertrag."
+msgstr "Aucune action journalisée pour ce contrat pour le moment."
+
+#: core/templates/fw/vertrag_detail.html:615
+msgid "Offene Posten & Rechnungen"
+msgstr "Postes ouverts & factures"
+
+#: core/templates/fw/vertrag_detail.html:629
+msgid "Keine Rechnungen."
+msgstr "Aucune facture."
+
+#: core/templates/fw/vertrag_detail.html:638
+msgid "Eingang"
+msgstr "Réception"
+
+#: core/templates/fw/vertrag_detail.html:638
+msgid "Für Monat"
+msgstr "Pour le mois"
+
+#: core/templates/fw/vertrag_detail.html:646
+msgid "Noch keine Zahlungen erfasst."
+msgstr "Aucun paiement saisi pour le moment."
+
+#: core/templates/fw/vertrag_detail.html:651
+msgid "Zur Nebenkosten-Abrechnung dieser Liegenschaft"
+msgstr "Vers le décompte des frais accessoires de cet immeuble"
+
+#: core/templates/fw/vertrag_detail.html:660
+msgid "Erstellbare Dokumente"
+msgstr "Documents disponibles"
+
+#: core/templates/fw/vertrag_detail.html:661
+msgid "Direkt aus diesem Vertrag generieren"
+msgstr "Générer directement depuis ce contrat"
+
+#: core/templates/fw/vertrag_detail.html:665
+msgid "Alle als ZIP"
+msgstr "Tout en ZIP"
+
+#: core/templates/fw/vertrag_detail.html:668
+msgid ""
+"„Alle als ZIP“ erzeugt Mietvertrag + Beilagen, legt sie einzeln in die Akte "
+"(erscheinen im Mieterportal) und lädt sie gebündelt herunter."
+msgstr ""
+"« Tout en ZIP » génère le contrat de bail + annexes, les classe "
+"individuellement dans le dossier (visibles dans le portail locataires) et "
+"les télécharge groupés."
+
+#: core/templates/fw/vertrag_detail.html:685
+msgid "Abgelegte Dokumente"
+msgstr "Documents classés"
+
+#: core/templates/fw/vertrag_detail.html:697
+msgid "Keine abgelegten Dokumente."
+msgstr "Aucun document classé."
+
+#: core/templates/fw/vertrag_detail.html:701
+msgid "Formulare und Prozesse"
+msgstr "Formulaires et processus"
+
+#: core/templates/fw/vertrag_detail.html:702
+msgid ""
+"Alle amtlichen Formulare und Prozesse für diesen Vertrag an einem Ort — "
+"kontextabhängig nach Status und Objektart. Erzeugte Dokumente landen "
+"automatisch in der Akte (Tab «Dokumente»)."
+msgstr ""
+"Tous les formulaires officiels et processus pour ce contrat au même endroit "
+"— selon le statut et le type d'objet. Les documents générés sont classés "
+"automatiquement dans le dossier (onglet « Documents »)."
+
+#: core/templates/fw/vertrag_detail.html:714
+msgid "Formularpflicht"
+msgstr "Obligation du formulaire"
+
+#: core/templates/fw/vertrag_detail.html:715
+msgid "erstellt"
+msgstr "créé"
+
+#: core/templates/fw/vertrag_detail.html:726
+msgid "nicht für Ihre Rolle"
+msgstr "pas pour votre rôle"
+
+#: core/templates/fw/vertrag_detail.html:726
+msgid "derzeit nicht verfügbar"
+msgstr "actuellement indisponible"
+
+#: core/templates/fw/vertrag_detail.html:741
+msgid "Schäden am Mietobjekt"
+msgstr "Dégâts à l'objet locatif"
+
+#: core/templates/fw/vertrag_detail.html:742
+msgid "Alle Schadensfälle"
+msgstr "Tous les dégâts"
+
+#: core/templates/fw/vertrag_detail.html:755
+msgid "Keine Schadenmeldungen zu diesem Mietobjekt."
+msgstr "Aucun avis de dégât pour cet objet locatif."
+
+#: core/templates/fw/vertrag_detail.html:760
+msgid "Pendenzen und Fristen"
+msgstr "Tâches en suspens et délais"
+
+#: core/templates/fw/vertrag_detail.html:763
+msgid "Offene Pendenzen &amp; Fristen"
+msgstr "Tâches en suspens &amp; délais ouverts"
+
+#: core/templates/fw/vertrag_detail.html:781
+msgid "Keine offenen Pendenzen zu diesem Vertrag."
+msgstr "Aucune tâche en suspens ouverte pour ce contrat."
+
+#: core/templates/fw/vertrag_detail.html:792
+msgid ""
+"Der Anteil dieses Mietverhältnisses an der Nebenkostenabrechnung erscheint "
+"hier, sobald die Periode abgeschlossen ist."
+msgstr ""
+"La part de ce bail dans le décompte des frais accessoires apparaît ici dès "
+"que la période est clôturée."
+
+#: core/templates/fw/vertrag_detail.html:793
+msgid "Zu den Abrechnungen"
+msgstr "Vers les décomptes"
 
 #: core/templates/fw/vorlage_form.html:3 core/templates/fw/vorlage_form.html:13
 msgid "Neue Vorlage"
@@ -12800,11 +13531,7 @@ msgstr "Traité récemment"
 msgid "Noch nichts erledigt."
 msgstr "Rien de traité pour l'instant."
 
-#: core/views/fw/_basis.py:336
-msgid "Entwurf"
-msgstr "Brouillon"
-
-#: core/views/fw/_basis.py:343
+#: core/views/fw/_basis.py:343 core/views/fw/detailseiten.py:2265
 msgid "Beendet"
 msgstr "Terminé"
 
@@ -13170,7 +13897,9 @@ msgstr "Vacant et pas mis en location"
 msgid ""
 "Das Objekt steht leer, ist aber nicht zur Vermarktung freigegeben — es sucht "
 "niemand einen Nachmieter."
-msgstr "L'objet est vacant mais n'est pas mis en commercialisation — personne ne cherche de locataire successeur."
+msgstr ""
+"L'objet est vacant mais n'est pas mis en commercialisation — personne ne "
+"cherche de locataire successeur."
 
 #: core/views/fw/detailseiten.py:172
 msgid "Kein Raumbuch erfasst"
@@ -13180,11 +13909,45 @@ msgstr "Aucun inventaire des pièces saisi"
 msgid ""
 "Ohne erfasste Ausstattung lässt sich bei der Rückgabe kein Lebensdaueranteil "
 "berechnen — die Mängelabrechnung wird dann Verhandlungssache."
-msgstr "Sans équipement saisi, aucune part de durée de vie ne peut être calculée à la restitution — le décompte des défauts devient alors une affaire de négociation."
+msgstr ""
+"Sans équipement saisi, aucune part de durée de vie ne peut être calculée à "
+"la restitution — le décompte des défauts devient alors une affaire de "
+"négociation."
 
 #: core/views/fw/detailseiten.py:176
 msgid "Ausstattung erfassen"
 msgstr "Saisir l'équipement"
+
+#: core/views/fw/detailseiten.py:2246
+#, python-format
+msgid "Sperrkonto %(konto)s…"
+msgstr "Compte bloqué %(konto)s…"
+
+#: core/views/fw/detailseiten.py:2250
+#, python-format
+msgid "%(n)s Monatsmieten"
+msgstr "%(n)s loyers mensuels"
+
+#: core/views/fw/detailseiten.py:2264
+#, python-format
+msgid "Beendet per %(d)s"
+msgstr "Terminé au %(d)s"
+
+#: core/views/fw/detailseiten.py:2267
+#, python-format
+msgid "Gekündigt per %(d)s"
+msgstr "Résilié au %(d)s"
+
+#: core/views/fw/detailseiten.py:2274
+#, python-format
+msgid "%(n)s Monatsmiete offen"
+msgid_plural "%(n)s Monatsmieten offen"
+msgstr[0] "%(n)s loyer mensuel ouvert"
+msgstr[1] "%(n)s loyers mensuels ouverts"
+
+#: core/views/fw/detailseiten.py:2295 core/views/fw/detailseiten.py:2302
+msgid "Berechnung öffnen"
+msgstr "Ouvrir le calcul"
 
 #: core/views/fw/kreditoren.py:36
 msgid "Neu / Prüfen"
@@ -13661,10 +14424,25 @@ msgstr "%(n)s se libère"
 msgid "ab %(d)s"
 msgstr "dès le %(d)s"
 
-#, fuzzy
-#~| msgid "Mietzins"
-#~ msgid "Nettomietzins"
-#~ msgstr "Loyer"
+#: rentals/models.py:550
+msgid "Keine Kaution"
+msgstr "Pas de garantie"
+
+#: rentals/models.py:551
+msgid "Zertifikat ausstehend"
+msgstr "Certificat en attente"
+
+#: rentals/models.py:551
+msgid "Einzahlung erwartet"
+msgstr "Versement attendu"
+
+#: rentals/models.py:552
+msgid "Police aktiv"
+msgstr "Police active"
+
+#: rentals/models.py:553
+msgid "Police aufgelöst"
+msgstr "Police résiliée"
 
 #, fuzzy
 #~| msgid "Diese Adress-Zeile entfernen?"

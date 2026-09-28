@@ -17,7 +17,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
-from django.utils import timezone
+from django.utils import dateformat, timezone
 from django.utils.translation import gettext, ngettext
 
 from core.auth import (darf_oeffnen, rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
@@ -2239,15 +2239,15 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
 
     # --- Kaution: Betrag und Herkunft in einer Zeile -------------------------
     kaution_wert = f'CHF {v.kautions_betrag:,.2f}'.replace(',', "'") \
-        if v.kautions_betrag else 'keine'
+        if v.kautions_betrag else gettext('keine')
     if v.kautions_art == 'versicherung' and v.kautions_versicherer:
         kaution_fuss = v.kautions_versicherer
     elif v.kautions_konto:
-        kaution_fuss = f'Sperrkonto {v.kautions_konto[:8]}…'
+        kaution_fuss = gettext('Sperrkonto %(konto)s…') % {'konto': v.kautions_konto[:8]}
     else:
-        kaution_fuss = v.kautions_status_label
+        kaution_fuss = gettext(v.kautions_status_label)
     if v.kautions_betrag and brutto:
-        kaution_fuss += f' · {round(v.kautions_betrag / brutto, 1)} Monatsmieten'
+        kaution_fuss += ' · ' + gettext('%(n)s Monatsmieten') % {'n': round(v.kautions_betrag / brutto, 1)}
 
     # --- Naechste Frist: die frueheste offene, datierte Pendenz --------------
     datiert = [e for e in pendenzen if e['p'].faellig_am]
@@ -2261,20 +2261,23 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
     anzeige = v.anzeige_status
     chips = []
     if anzeige == v.ANZEIGE_BEENDET:
-        _per = f' per {v.ende.strftime("%d.%m.%Y")}' if v.ende else ''
-        chips.append(('mut', f'Beendet{_per}'))
+        chips.append(('mut', gettext('Beendet per %(d)s') % {'d': v.ende.strftime('%d.%m.%Y')}
+                      if v.ende else gettext('Beendet')))
     elif anzeige == 'gekuendigt' and v.ende:
-        chips.append(('crit', f'Gekündigt per {v.ende.strftime("%d.%m.%Y")}'))
+        chips.append(('crit', gettext('Gekündigt per %(d)s') % {'d': v.ende.strftime('%d.%m.%Y')}))
     elif anzeige == 'aktiv':
-        chips.append(('good', 'Aktiv'))
+        chips.append(('good', gettext('Aktiv')))
     elif anzeige == 'entwurf':
-        chips.append(('warn', 'Entwurf'))
+        chips.append(('warn', gettext('Entwurf')))
     if monatsmieten >= 1:
         _n = int(monatsmieten)
-        chips.append(('crit', f'{_n} Monatsmiete{"n" if _n >= 2 else ""} offen'))
+        chips.append(('crit', ngettext('%(n)s Monatsmiete offen', '%(n)s Monatsmieten offen', _n) % {'n': _n}))
     elif total_offen:
-        chips.append(('warn', f'CHF {total_offen:,.2f}'.replace(',', "'") + ' offen'))
+        chips.append(('warn', gettext('CHF %(betrag)s offen') % {
+            'betrag': f'{total_offen:,.2f}'.replace(',', "'")}))
     potenzial = v.mietzinspotenzial
+    # Senkungsanspruch/Erhöhung und die Hinweise dazu sind mietrechtliche
+    # Einschätzungen — bleiben deutsch bis zur juristischen Prüfung.
     if potenzial == 'decrease':
         chips.append(('info', 'Senkungsanspruch offen'))
     elif potenzial == 'increase':
@@ -2289,14 +2292,14 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
             'text': ('Der Referenzzinssatz ist seit der Festsetzung dieses '
                      'Mietzinses gesunken. Ein Senkungsbegehren wäre begründet, '
                      'solange Teuerung und Kostensteigerung es nicht aufwiegen.'),
-            'url': f'/neu/mietzins/{v.id}/anpassung/', 'knopf': 'Berechnung öffnen'})
+            'url': f'/neu/mietzins/{v.id}/anpassung/', 'knopf': gettext('Berechnung öffnen')})
     elif potenzial == 'increase':
         hinweise.append({
             'art': 'info', 'ikon': 'trend',
             'titel': 'Erhöhung wäre begründbar',
             'text': ('Referenzzins oder Teuerung liegen über der Basis dieses '
                      'Mietzinses.'),
-            'url': f'/neu/mietzins/{v.id}/anpassung/', 'knopf': 'Berechnung öffnen'})
+            'url': f'/neu/mietzins/{v.id}/anpassung/', 'knopf': gettext('Berechnung öffnen')})
     if v.kautions_art and v.kautions_art != 'keine' and not v.kautions_einbezahlt_am:
         hinweise.append({
             'art': 'warn', 'ikon': 'gesperrt',
@@ -2304,7 +2307,7 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
             'text': ('Es ist eine Sicherheit vereinbart; Einzahlung oder '
                      'Zertifikat sind nicht erfasst. Bis dahin fehlt der '
                      'Nachweis nach Art. 257e OR.'),
-            'url': f'/neu/vertraege/{v.id}/#kaution', 'knopf': 'Erfassen'})
+            'url': f'/neu/vertraege/{v.id}/#kaution', 'knopf': gettext('Erfassen')})
     # KEIN Hinweis auf eine fehlende Referenzzins-Basis: `basis_referenzzinssatz`
     # ist NOT NULL mit Vorgabewert aus `get_current_ref_zins`. Die Bedingung
     # koennte nie zutreffen — ein Hinweis, der nie erscheint, ist toter Code.
@@ -2316,7 +2319,10 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
         'kopf_hinweise': hinweise,
         'kopf_netto': v.netto_mietzins or Decimal('0'),
         'kopf_nk': v.nebenkosten or Decimal('0'),
-        'kopf_saldo_monat': (aelteste.faellig_am.strftime('%B %Y')
+        # `dateformat` statt `strftime('%B')`: strftime nimmt die Locale des
+        # Prozesses — auf dem Server Englisch («May 2024») auch in der
+        # deutschen Oberfläche. `dateformat` folgt der aktiven Sprache.
+        'kopf_saldo_monat': (dateformat.format(aelteste.faellig_am, 'F Y')
                              if aelteste is not None else ''),
         'kopf_mahnstufe': stufe,
         'kopf_kaution_wert': kaution_wert,

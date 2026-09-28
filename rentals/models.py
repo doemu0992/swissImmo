@@ -1,5 +1,6 @@
 import logging
 # rentals/models.py
+from django.utils.translation import gettext_noop
 from django.db import models
 from core.organisation_kette import OrganisationAusKette
 from django.utils import timezone
@@ -543,11 +544,13 @@ class Mietvertrag(OrganisationAusKette):
         """Menschlicher, art-abhängiger Status-Text."""
         st = self.kautions_status
         vers = self.ist_kautionsversicherung
+        # Deutsch zurückgegeben; `gettext_noop` nimmt die Texte nur in den
+        # Katalog auf — übersetzt wird bei der Anzeige (`{% trans %}`/`gettext`).
         return {
-            'keine': 'Keine Kaution',
-            'erwartet': 'Zertifikat ausstehend' if vers else 'Einzahlung erwartet',
-            'einbezahlt': 'Police aktiv' if vers else 'Einbezahlt',
-            'zurueckbezahlt': 'Police aufgelöst' if vers else 'Zurückbezahlt',
+            'keine': gettext_noop('Keine Kaution'),
+            'erwartet': gettext_noop('Zertifikat ausstehend') if vers else gettext_noop('Einzahlung erwartet'),
+            'einbezahlt': gettext_noop('Police aktiv') if vers else gettext_noop('Einbezahlt'),
+            'zurueckbezahlt': gettext_noop('Police aufgelöst') if vers else gettext_noop('Zurückbezahlt'),
         }.get(st, st)
 
     #: Der Status, wie er in Listen und Akten ERSCHEINEN soll.
