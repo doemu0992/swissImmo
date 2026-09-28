@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 00:24+0200\n"
+"POT-Creation-Date: 2026-09-29 00:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,9 +79,9 @@ msgstr "Objets"
 msgid "Mietverhältnisse"
 msgstr "Baux"
 
-#: core/navigation.py:140 core/templates/fw/kontenplan.html:64
-#: core/templates/fw/personen.html:3 core/templates/fw/personen.html:9
-#: core/templates/fw/suche.html:21
+#: core/navigation.py:140 core/templates/fw/bewerbung_detail.html:59
+#: core/templates/fw/kontenplan.html:64 core/templates/fw/personen.html:3
+#: core/templates/fw/personen.html:9 core/templates/fw/suche.html:21
 msgid "Personen"
 msgstr "Personnes"
 
@@ -104,11 +104,15 @@ msgstr "Affaires"
 msgid "Mieterwechsel"
 msgstr "Changements de locataire"
 
-#: core/navigation.py:146 core/views/fw/_basis.py:274
+#: core/navigation.py:146 core/templates/fw/bewerber_vergleich.html:7
+#: core/templates/fw/vermarktung.html:3 core/templates/fw/vermarktung.html:9
+#: core/views/fw/_basis.py:274
 msgid "Vermarktung"
 msgstr "Mise en location"
 
-#: core/navigation.py:147 core/views/fw/_basis.py:277
+#: core/navigation.py:147 core/templates/fw/bewerbung_detail.html:6
+#: core/templates/fw/bewerbungen.html:3 core/templates/fw/bewerbungen.html:10
+#: core/templates/fw/vermarktung.html:14 core/views/fw/_basis.py:277
 msgid "Bewerbungen"
 msgstr "Candidatures"
 
@@ -253,6 +257,7 @@ msgstr "Analyse"
 #: core/templates/core/mieter_dokumente.html:10
 #: core/templates/core/mieter_portal.html:73
 #: core/templates/core/portal.html:327 core/templates/fw/base.html:219
+#: core/templates/fw/bewerbung_detail.html:73
 #: core/templates/fw/dienstleister_detail.html:167
 #: core/templates/fw/dokumente.html:3 core/templates/fw/dokumente.html:9
 #: core/templates/fw/mandat_detail.html:247 faelle/akten.py:49
@@ -279,6 +284,24 @@ msgstr "Paramètres"
 #: core/templates/core/zweifaktor_uebersicht.html:7
 msgid "Zwei-Faktor-Anmeldung"
 msgstr "Authentification à deux facteurs"
+
+#: core/services/ersatzplanung.py:69 core/templates/fw/ersatzplanung.html:20
+#: core/views/fw/schaeden.py:402
+msgid "Ersatz fällig"
+msgstr "À remplacer"
+
+#: core/services/ersatzplanung.py:70
+msgid "Ersatz bald"
+msgstr "Remplacement bientôt"
+
+#: core/services/ersatzplanung.py:71 core/templates/fw/ersatzplanung.html:28
+#: core/views/fw/schaeden.py:403
+msgid "Im Nutzungszeitraum"
+msgstr "Dans la période d'utilisation"
+
+#: core/services/ersatzplanung.py:72 core/views/fw/schaeden.py:404
+msgid "Keine Datenbasis"
+msgstr "Pas de base de calcul"
 
 #: core/services/mahnstufen.py:25
 msgid "1. Mahnung"
@@ -571,6 +594,7 @@ msgstr "Téléphone"
 #: core/templates/core/mieter_daten.html:34
 #: core/templates/core/passwort_reset.html:7 core/templates/fw/account.html:102
 #: core/templates/fw/benutzer.html:18 core/templates/fw/benutzer_form.html:30
+#: core/templates/fw/bewerbung_detail.html:39
 #: core/templates/fw/dienstleister.html:33
 #: core/templates/fw/dienstleister.html:101
 #: core/templates/fw/dienstleister_detail.html:84
@@ -585,6 +609,7 @@ msgstr "Message à la gérance"
 
 #: core/templates/core/mieter_daten.html:40
 #: core/templates/core/mieter_schaden.html:32
+#: core/templates/fw/objekt_ausschreiben.html:24
 msgid "(optional)"
 msgstr "(facultatif)"
 
@@ -880,9 +905,12 @@ msgstr ""
 
 #: core/templates/core/mieter_schaden.html:20
 #: core/templates/core/portal.html:306 core/templates/fw/bankabgleich.html:348
-#: core/templates/fw/debitoren.html:193 core/templates/fw/kreditoren.html:162
-#: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
-#: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
+#: core/templates/fw/debitoren.html:193
+#: core/templates/fw/ersatzplanung.html:110
+#: core/templates/fw/ersatzplanung.html:135
+#: core/templates/fw/kreditoren.html:162 core/templates/fw/logbuch.html:98
+#: core/templates/fw/mahnwesen.html:66 core/templates/fw/mieterkonten.html:47
+#: core/templates/fw/mietzins.html:59
 #: core/templates/fw/nebenkosten_detail.html:114
 #: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
 #: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
@@ -1219,6 +1247,7 @@ msgid "Mieter"
 msgstr "Locataire"
 
 #: core/templates/core/portal.html:307
+#: core/templates/fw/objekt_ausschreiben.html:30
 msgid "Bruttomiete"
 msgstr "Loyer brut"
 
@@ -1561,8 +1590,9 @@ msgstr ""
 #: core/templates/core/postfach_liste.html:91
 #: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
 #: core/templates/fw/dokumente.html:94 core/templates/fw/hypotheken.html:115
-#: core/templates/fw/kreditoren.html:245 core/templates/fw/mandate.html:42
-#: core/templates/fw/nebenkosten.html:98 core/templates/fw/pendenzen.html:73
+#: core/templates/fw/kreditoren.html:245 core/templates/fw/lebensdauer.html:60
+#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
+#: core/templates/fw/pendenzen.html:73
 msgid "Löschen"
 msgstr "Supprimer"
 
@@ -2638,9 +2668,10 @@ msgid "gefiltert auf %(strasse)s"
 msgstr "filtré sur %(strasse)s"
 
 #: core/templates/fw/bankabgleich.html:11 core/templates/fw/bankkonten.html:11
-#: core/templates/fw/buchhaltung.html:14 core/templates/fw/debitoren.html:11
-#: core/templates/fw/dokumente.html:10 core/templates/fw/hypotheken.html:10
-#: core/templates/fw/kontenplan.html:20 core/templates/fw/kreditoren.html:26
+#: core/templates/fw/bewerbungen.html:11 core/templates/fw/buchhaltung.html:14
+#: core/templates/fw/debitoren.html:11 core/templates/fw/dokumente.html:10
+#: core/templates/fw/hypotheken.html:10 core/templates/fw/kontenplan.html:20
+#: core/templates/fw/kreditoren.html:26
 #: core/templates/fw/liegenschaften.html:11 core/templates/fw/mahnwesen.html:13
 #: core/templates/fw/mietzins.html:11 core/templates/fw/nebenkosten.html:14
 #: core/templates/fw/objekte.html:25 core/templates/fw/pendenzen.html:9
@@ -2867,6 +2898,7 @@ msgstr "Veuillez d'abord sélectionner des paiements."
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
 #: core/views/fw/listen.py:207 core/views/fw/listen.py:1108
 #: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
+#: core/views/fw/schaeden.py:402
 msgid "Alle"
 msgstr "Tous"
 
@@ -3307,6 +3339,8 @@ msgid "Aufwand %(jahr)s"
 msgstr "Charges %(jahr)s"
 
 #: core/templates/fw/betriebskostenspiegel.html:45
+#: core/templates/fw/objekt_ausschreiben.html:29
+#: core/templates/fw/vermarktung.html:49
 msgid "Fläche"
 msgstr "Surface"
 
@@ -3330,6 +3364,345 @@ msgid ""
 msgstr ""
 "Base : écritures sur les comptes de charges (débit) par immeuble pour "
 "l'année choisie, divisées par la somme des surfaces d'objets saisies."
+
+#: core/templates/fw/bewerber_vergleich.html:4
+#: core/templates/fw/bewerber_vergleich.html:8
+#: core/templates/fw/bewerber_vergleich.html:13
+msgid "Bewerber-Vergleich"
+msgstr "Comparaison des candidats"
+
+#: core/templates/fw/bewerber_vergleich.html:14
+#, python-format
+msgid "Bruttomiete CHF %(m)s/Mt. (%(j)s/Jahr)"
+msgstr "Loyer brut CHF %(m)s/mois (%(j)s/an)"
+
+#: core/templates/fw/bewerber_vergleich.html:17
+#: core/templates/fw/vermarktung.html:64
+msgid "Exposé"
+msgstr "Fiche descriptive"
+
+#: core/templates/fw/bewerber_vergleich.html:18
+msgid "Abgelehnte ausblenden"
+msgstr "Masquer les refusés"
+
+#: core/templates/fw/bewerber_vergleich.html:18
+msgid "Abgelehnte einblenden"
+msgstr "Afficher les refusés"
+
+#: core/templates/fw/bewerber_vergleich.html:22
+msgid ""
+"Der Eignungs-Score (0–100) gewichtet Tragbarkeit (Drittel-Regel: "
+"Jahreseinkommen ≥ 3× Jahresmiete), Betreibungen, Anstellung und "
+"Vollständigkeit der Unterlagen. Er ist eine Entscheidungshilfe — keine "
+"automatische Zu- oder Absage."
+msgstr ""
+"Le score d'aptitude (0–100) pondère la capacité financière (règle du tiers : "
+"revenu annuel ≥ 3× loyer annuel), les poursuites, l'emploi et l'exhaustivité "
+"du dossier. C'est une aide à la décision — pas une acceptation ou un refus "
+"automatique."
+
+#: core/templates/fw/bewerber_vergleich.html:26
+#, python-format
+msgid "Allen %(n)s noch offenen Bewerbern eine Absage senden?"
+msgstr "Envoyer un refus aux %(n)s candidats encore ouverts ?"
+
+#: core/templates/fw/bewerber_vergleich.html:28
+#, python-format
+msgid "Übrige %(n)s absagen"
+msgstr "Refuser les %(n)s autres"
+
+#: core/templates/fw/bewerber_vergleich.html:37
+msgid "Rang"
+msgstr "Rang"
+
+#: core/templates/fw/bewerber_vergleich.html:38
+msgid "Bewerber"
+msgstr "Candidats"
+
+#: core/templates/fw/bewerber_vergleich.html:39
+msgid "Score"
+msgstr "Score"
+
+#: core/templates/fw/bewerber_vergleich.html:41
+msgid "Haushalt"
+msgstr "Ménage"
+
+#: core/templates/fw/bewerber_vergleich.html:66
+#, python-format
+msgid "%(n)s Pers."
+msgstr "%(n)s pers."
+
+#: core/templates/fw/bewerber_vergleich.html:71
+msgid "Zugesagt"
+msgstr "Accepté"
+
+#: core/templates/fw/bewerber_vergleich.html:73
+msgid "Abgesagt"
+msgstr "Refusé"
+
+#: core/templates/fw/bewerber_vergleich.html:78
+msgid "Besichtigung"
+msgstr "Visite"
+
+#: core/templates/fw/bewerber_vergleich.html:80
+#, python-format
+msgid "%(name)s zusagen und E-Mail senden?"
+msgstr "Accepter %(name)s et envoyer un e-mail ?"
+
+#: core/templates/fw/bewerber_vergleich.html:80
+#, python-format
+msgid "%(name)s zusagen?"
+msgstr "Accepter %(name)s ?"
+
+#: core/templates/fw/bewerber_vergleich.html:82
+msgid "Zusagen"
+msgstr "Accepter"
+
+#: core/templates/fw/bewerber_vergleich.html:85
+#, python-format
+msgid "%(name)s absagen und E-Mail senden?"
+msgstr "Refuser %(name)s et envoyer un e-mail ?"
+
+#: core/templates/fw/bewerber_vergleich.html:85
+#, python-format
+msgid "%(name)s absagen?"
+msgstr "Refuser %(name)s ?"
+
+#: core/templates/fw/bewerber_vergleich.html:87
+#: core/templates/fw/termine.html:52
+msgid "Absagen"
+msgstr "Annuler"
+
+#: core/templates/fw/bewerber_vergleich.html:92
+#, python-format
+msgid "Besichtigung %(d)s"
+msgstr "Visite %(d)s"
+
+#: core/templates/fw/bewerber_vergleich.html:102
+#, python-format
+msgid "Besichtigungstermin für %(name)s"
+msgstr "Rendez-vous de visite pour %(name)s"
+
+#: core/templates/fw/bewerber_vergleich.html:108
+msgid "Einladen"
+msgstr "Inviter"
+
+#: core/templates/fw/bewerber_vergleich.html:110
+msgid ""
+"Termin erscheint im Fristen-Center; Einladung per E-Mail mit Journal-Eintrag."
+msgstr ""
+"Le rendez-vous apparaît dans le centre des délais ; invitation par e-mail "
+"avec entrée au journal."
+
+#: core/templates/fw/bewerber_vergleich.html:122
+msgid "Noch keine Bewerbungen für dieses Objekt."
+msgstr "Aucune candidature pour cet objet pour le moment."
+
+#: core/templates/fw/bewerbung_detail.html:3
+msgid "Bewerbung"
+msgstr "Candidature"
+
+#: core/templates/fw/bewerbung_detail.html:22
+msgid "Betreibungen vorhanden"
+msgstr "Poursuites existantes"
+
+#: core/templates/fw/bewerbung_detail.html:23
+msgid "Keine Betreibungen"
+msgstr "Aucune poursuite"
+
+#: core/templates/fw/bewerbung_detail.html:24
+msgid "Status:"
+msgstr "Statut :"
+
+#: core/templates/fw/bewerbung_detail.html:32
+msgid "Personalien & Kontakt"
+msgstr "Données personnelles & contact"
+
+#: core/templates/fw/bewerbung_detail.html:34
+msgid "Geburtsdatum"
+msgstr "Date de naissance"
+
+#: core/templates/fw/bewerbung_detail.html:35
+msgid "Zivilstand"
+msgstr "État civil"
+
+#: core/templates/fw/bewerbung_detail.html:36
+msgid "Nationalität"
+msgstr "Nationalité"
+
+#: core/templates/fw/bewerbung_detail.html:37
+msgid "Heimatort"
+msgstr "Lieu d'origine"
+
+#: core/templates/fw/bewerbung_detail.html:38
+msgid "Mobil"
+msgstr "Mobile"
+
+#: core/templates/fw/bewerbung_detail.html:40
+#: core/templates/fw/mandat_detail.html:117
+#: core/templates/fw/mandat_detail.html:174 core/templates/fw/personen.html:68
+msgid "Adresse"
+msgstr "Adresse"
+
+#: core/templates/fw/bewerbung_detail.html:45
+msgid "Beruf & Finanzen"
+msgstr "Profession & finances"
+
+#: core/templates/fw/bewerbung_detail.html:47
+msgid "Erwerbsstatus"
+msgstr "Statut d'activité"
+
+#: core/templates/fw/bewerbung_detail.html:48
+msgid "Beruf"
+msgstr "Profession"
+
+#: core/templates/fw/bewerbung_detail.html:49
+msgid "Arbeitgeber"
+msgstr "Employeur"
+
+#: core/templates/fw/bewerbung_detail.html:50
+msgid "Einkommen/Jahr"
+msgstr "Revenu/an"
+
+#: core/templates/fw/bewerbung_detail.html:51
+msgid "Anstellung"
+msgstr "Emploi"
+
+#: core/templates/fw/bewerbung_detail.html:51
+#: core/templates/fw/vertraege.html:91
+msgid "unbefristet"
+msgstr "durée indéterminée"
+
+#: core/templates/fw/bewerbung_detail.html:51
+msgid "befristet"
+msgstr "de durée déterminée"
+
+#: core/templates/fw/bewerbung_detail.html:52
+msgid "Bezugstermin"
+msgstr "Date d'emménagement"
+
+#: core/templates/fw/bewerbung_detail.html:57
+msgid "Haushalt & Wünsche"
+msgstr "Ménage & souhaits"
+
+#: core/templates/fw/bewerbung_detail.html:59
+#, python-format
+msgid "%(n)s Erw."
+msgstr "%(n)s adulte(s)"
+
+#: core/templates/fw/bewerbung_detail.html:59
+#, python-format
+msgid "%(n)s Kinder"
+msgstr "%(n)s enfant(s)"
+
+#: core/templates/fw/bewerbung_detail.html:60
+msgid "Haustiere"
+msgstr "Animaux domestiques"
+
+#: core/templates/fw/bewerbung_detail.html:60
+#: core/templates/fw/bewerbung_detail.html:61
+msgid "nein"
+msgstr "non"
+
+#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1109
+msgid "Parkplatz"
+msgstr "Place de parc"
+
+#: core/templates/fw/bewerbung_detail.html:61
+msgid "gewünscht"
+msgstr "souhaité"
+
+#: core/templates/fw/bewerbung_detail.html:62
+msgid "Kaution"
+msgstr "Garantie de loyer"
+
+#: core/templates/fw/bewerbung_detail.html:63
+#: core/templates/fw/debitoren.html:26
+msgid "Briefkasten-Schild"
+msgstr "Plaquette de boîte aux lettres"
+
+#: core/templates/fw/bewerbung_detail.html:64
+msgid "Sonnerie-Schild"
+msgstr "Plaquette de sonnette"
+
+#: core/templates/fw/bewerbung_detail.html:82
+msgid "Keine Dokumente hochgeladen."
+msgstr "Aucun document téléversé."
+
+#: core/templates/fw/bewerbung_detail.html:86
+msgid "Status ändern"
+msgstr "Changer le statut"
+
+#: core/templates/fw/bewerbung_detail.html:97
+msgid "Unterlagen nachtragen"
+msgstr "Compléter les documents"
+
+#: core/templates/fw/bewerbung_detail.html:98
+msgid ""
+"Ausweis und Einkommensnachweis werden erst in der engeren Auswahl verlangt — "
+"hier ablegen, sobald sie vorliegen."
+msgstr ""
+"La pièce d'identité et la preuve de revenu ne sont demandées qu'en sélection "
+"restreinte — classez-les ici dès qu'elles sont disponibles."
+
+#: core/templates/fw/bewerbung_detail.html:100
+msgid "Ausweiskopie"
+msgstr "Copie de la pièce d'identité"
+
+#: core/templates/fw/bewerbung_detail.html:102
+msgid "Einkommensnachweis"
+msgstr "Preuve de revenu"
+
+#: core/templates/fw/bewerbung_detail.html:104
+msgid "Weitere Unterlagen"
+msgstr "Autres documents"
+
+#: core/templates/fw/bewerbung_detail.html:108 core/templates/fw/zulauf.html:40
+msgid "Ablegen"
+msgstr "Classer"
+
+#: core/templates/fw/bewerbung_detail.html:119
+msgid "Setzen"
+msgstr "Définir"
+
+#: core/templates/fw/bewerbung_detail.html:124
+msgid "Zusage & Vertrag"
+msgstr "Acceptation & contrat"
+
+#: core/templates/fw/bewerbung_detail.html:125
+#, python-format
+msgid ""
+"Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf "
+"auf %(e)s."
+msgstr ""
+"Crée un locataire à partir de cette candidature et un projet de contrat pour "
+"%(e)s."
+
+#: core/templates/fw/bewerbung_detail.html:126
+msgid "Mieter anlegen und Vertragsentwurf erstellen?"
+msgstr "Créer le locataire et le projet de contrat ?"
+
+#: core/templates/fw/bewerbung_detail.html:129
+msgid "Mieter + Vertragsentwurf erstellen"
+msgstr "Créer locataire + projet de contrat"
+
+#: core/templates/fw/bewerbungen.html:11
+msgid "Mietinteressenten prüfen, zusagen und in einen Vertrag überführen"
+msgstr "Examiner les candidats, les accepter et les transférer dans un contrat"
+
+#: core/templates/fw/bewerbungen.html:11 core/templates/fw/dokumente.html:10
+#: core/templates/fw/pendenzen.html:9 core/templates/fw/schaeden.html:10
+#, python-format
+msgid "gefiltert auf %(s)s"
+msgstr "filtré sur %(s)s"
+
+#: core/templates/fw/bewerbungen.html:11
+msgid "total"
+msgstr "au total"
+
+#: core/templates/fw/bewerbungen.html:38
+msgid "Keine Bewerbungen"
+msgstr "Aucune candidature"
 
 #: core/templates/fw/buchhaltung.html:10
 msgid "Buchung erfassen"
@@ -3895,10 +4268,6 @@ msgstr "Sélection rapide"
 msgid "Sonnerie-Beschriftung"
 msgstr "Étiquette de sonnette"
 
-#: core/templates/fw/debitoren.html:26
-msgid "Briefkasten-Schild"
-msgstr "Plaquette de boîte aux lettres"
-
 #: core/templates/fw/debitoren.html:27
 msgid "Ersatzschlüssel"
 msgstr "Clé de remplacement"
@@ -3992,7 +4361,8 @@ msgstr ""
 
 #: core/templates/fw/debitoren.html:181 core/templates/fw/debitoren.html:243
 #: core/templates/fw/dienstleister.html:130
-#: core/templates/fw/dokumente.html:102 core/templates/fw/personen.html:56
+#: core/templates/fw/dokumente.html:102
+#: core/templates/fw/ersatzplanung.html:140 core/templates/fw/personen.html:56
 #: core/templates/fw/personen.html:105 core/templates/fw/vertraege.html:58
 #: core/templates/fw/vertraege.html:106
 msgid "Keine Treffer"
@@ -4013,7 +4383,8 @@ msgstr "Échéance"
 msgid "Titel"
 msgstr "Titre"
 
-#: core/templates/fw/debitoren.html:197 core/templates/fw/kautionen.html:28
+#: core/templates/fw/debitoren.html:197
+#: core/templates/fw/ersatzplanung.html:112 core/templates/fw/kautionen.html:28
 #: core/templates/fw/kreditoren.html:166 core/templates/fw/mieterkonten.html:48
 #: core/templates/fw/nebenkosten.html:74 core/templates/fw/schaeden.html:96
 #: core/templates/fw/sollstellung.html:87 core/templates/fw/vertraege.html:75
@@ -4108,6 +4479,7 @@ msgstr "&gt;90"
 
 #: core/templates/fw/debitoren_aging.html:56
 #: core/templates/fw/eigentuemer_kontokorrent.html:80
+#: core/templates/fw/ersatzplanung.html:79
 #: core/templates/fw/kontenplan.html:150
 #: core/templates/fw/mandat_abrechnung.html:78
 #: core/templates/fw/schaden_kosten.html:54
@@ -4416,12 +4788,6 @@ msgstr "Pas encore de mandat de travaux — donc pas d'historique."
 msgid "Zentrale Ablage aus Vertrags- und Objektdokumenten"
 msgstr "Classement central des documents de contrats et d’objets"
 
-#: core/templates/fw/dokumente.html:10 core/templates/fw/pendenzen.html:9
-#: core/templates/fw/schaeden.html:10
-#, python-format
-msgid "gefiltert auf %(s)s"
-msgstr "filtré sur %(s)s"
-
 #: core/templates/fw/dokumente.html:12 core/templates/fw/dokumente.html:17
 msgid "Dokument hochladen"
 msgstr "Téléverser un document"
@@ -4431,6 +4797,7 @@ msgid "(leer = Dateiname)"
 msgstr "(vide = nom du fichier)"
 
 #: core/templates/fw/dokumente.html:23 core/templates/fw/dokumente.html:68
+#: core/templates/fw/lebensdauer.html:48
 #: core/templates/fw/nebenkosten_detail.html:154
 #: core/templates/fw/pendenzen.html:112 core/templates/fw/vorlage_form.html:25
 msgid "Kategorie"
@@ -4654,6 +5021,7 @@ msgid "Ab Bankkonto"
 msgstr "Depuis le compte bancaire"
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:172
+#: core/templates/fw/lebensdauer.html:34 core/templates/fw/lebensdauer.html:50
 msgid "Bemerkung"
 msgstr "Remarque"
 
@@ -4684,6 +5052,184 @@ msgstr ""
 #: core/templates/fw/einstellungen.html:10
 msgid "Konto, Team, Vorlagen und Integrationen — alles an einem Ort."
 msgstr "Compte, équipe, modèles et intégrations — tout au même endroit."
+
+#: core/templates/fw/ersatzplanung.html:4 core/templates/fw/lebensdauer.html:7
+msgid "Ersatzplanung"
+msgstr "Planification des remplacements"
+
+#: core/templates/fw/ersatzplanung.html:10
+msgid "Garantie- &amp; Ersatzplanung"
+msgstr "Planification garanties &amp; remplacements"
+
+#: core/templates/fw/ersatzplanung.html:11
+msgid ""
+"Raumbuch-Elemente <b>und Geräte</b> nach Restnutzungsdauer "
+"(Lebensdauertabelle) mit Ersatzbudget je Jahr"
+msgstr ""
+"Éléments d'inventaire <b>et appareils</b> selon la durée d'utilisation "
+"restante (tableau des durées de vie) avec budget de remplacement par an"
+
+#: core/templates/fw/ersatzplanung.html:13
+msgid "Budget-PDF"
+msgstr "PDF du budget"
+
+#: core/templates/fw/ersatzplanung.html:24
+msgid "Bald fällig (≤ 2 J)"
+msgstr "Bientôt échu (≤ 2 ans)"
+
+#: core/templates/fw/ersatzplanung.html:32
+msgid "Ohne Datenbasis"
+msgstr "Sans base de calcul"
+
+#: core/templates/fw/ersatzplanung.html:40
+#, python-format
+msgid "Erneuerungsfonds-Deckung (%(n)s-Jahres-Horizont)"
+msgstr "Couverture du fonds de rénovation (horizon de %(n)s ans)"
+
+#: core/templates/fw/ersatzplanung.html:42
+#, python-format
+msgid "%(g)s%% gedeckt"
+msgstr "%(g)s%% couvert"
+
+#: core/templates/fw/ersatzplanung.html:47
+msgid "Fonds-Bestand"
+msgstr "Avoir du fonds"
+
+#: core/templates/fw/ersatzplanung.html:51
+msgid "Jährliche Einlage"
+msgstr "Apport annuel"
+
+#: core/templates/fw/ersatzplanung.html:55
+#, python-format
+msgid "Ersatzbudget (%(n)s J)"
+msgstr "Budget de remplacement (%(n)s ans)"
+
+#: core/templates/fw/ersatzplanung.html:59
+msgid "Empf. Jahresrückstellung"
+msgstr "Provision annuelle recomm."
+
+#: core/templates/fw/ersatzplanung.html:65
+#, python-format
+msgid ""
+"Gedeckt: Bestand + Einlagen (%(p)s) decken das Ersatzbudget über %(n)s Jahre "
+"(Reserve CHF %(r)s)."
+msgstr ""
+"Couvert : avoir + apports (%(p)s) couvrent le budget de remplacement sur "
+"%(n)s ans (réserve CHF %(r)s)."
+
+#: core/templates/fw/ersatzplanung.html:67
+#, python-format
+msgid "Unterdeckung von CHF %(s)s über %(n)s Jahre."
+msgstr "Découvert de CHF %(s)s sur %(n)s ans."
+
+#: core/templates/fw/ersatzplanung.html:68
+#, python-format
+msgid ""
+"Empfehlung: jährliche Einlage um <span class=\"font-semibold\">CHF %(m)s</"
+"span> auf CHF %(e)s erhöhen."
+msgstr ""
+"Recommandation : augmenter l'apport annuel de <span class=\"font-"
+"semibold\">CHF %(m)s</span> à CHF %(e)s."
+
+#: core/templates/fw/ersatzplanung.html:78
+#, python-format
+msgid "Ersatzbudget je Jahr (nächste %(n)s Jahre)"
+msgstr "Budget de remplacement par an (%(n)s prochaines années)"
+
+#: core/templates/fw/ersatzplanung.html:93
+msgid ""
+"Grundlage für die Erneuerungsfonds-/Budgetplanung: erwartetes Ersatzjahr = "
+"Einbaujahr + Lebensdauer, Kosten = Neuwert."
+msgstr ""
+"Base de la planification du fonds de rénovation/budget : année de "
+"remplacement attendue = année d'installation + durée de vie, coûts = valeur "
+"à neuf."
+
+#: core/templates/fw/ersatzplanung.html:109
+msgid "Element"
+msgstr "Élément"
+
+#: core/templates/fw/ersatzplanung.html:111
+msgid "Restdauer"
+msgstr "Durée restante"
+
+#: core/templates/fw/ersatzplanung.html:113
+msgid "Garantie"
+msgstr "Garantie"
+
+#: core/templates/fw/ersatzplanung.html:114
+msgid "Reparaturen"
+msgstr "Réparations"
+
+#: core/templates/fw/ersatzplanung.html:115
+msgid "Lebenszyklus"
+msgstr "Cycle de vie"
+
+#: core/templates/fw/ersatzplanung.html:123
+#: core/templates/fw/ersatzplanung.html:135
+msgid "Gerät"
+msgstr "Appareil"
+
+#: core/templates/fw/ersatzplanung.html:124
+msgid "Einbau"
+msgstr "Installation"
+
+#: core/templates/fw/ersatzplanung.html:134
+msgid ""
+"Geräte haben kein Neuwert-Feld — ein geschätzter Preis wanderte sonst über "
+"den PDF-Report in die Fondsplanung."
+msgstr ""
+"Les appareils n'ont pas de champ valeur à neuf — un prix estimé passerait "
+"sinon par le rapport PDF dans la planification du fonds."
+
+#: core/templates/fw/ersatzplanung.html:134
+msgid "kein Neuwert"
+msgstr "pas de valeur à neuf"
+
+#: core/templates/fw/ersatzplanung.html:140
+msgid "Keine Ausstattung erfasst"
+msgstr "Aucun équipement saisi"
+
+#: core/templates/fw/ersatzplanung.html:141
+msgid ""
+"Erfasse Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die "
+"Restnutzungsdauer berechnet werden kann."
+msgstr ""
+"Saisissez sur l'objet les éléments d'inventaire avec date d'installation et "
+"valeur à neuf, afin que la durée d'utilisation restante puisse être calculée."
+
+#: core/templates/fw/ersatzplanung.html:151
+msgid ""
+"Restdauer = Lebensdauer − Alter (aus der paritätischen Lebensdauertabelle). "
+"„Lebenszyklus“ = Neuwert + aufgelaufene Reparaturkosten der verknüpften "
+"Schäden."
+msgstr ""
+"Durée restante = durée de vie − âge (selon le tableau paritaire des durées "
+"de vie). « Cycle de vie » = valeur à neuf + coûts de réparation cumulés des "
+"dégâts liés."
+
+#: core/templates/fw/ersatzplanung.html:152
+#, python-format
+msgid ""
+"<b>%(n)s Gerät</b> steht in der Liste, aber nicht im Budget: Geräte haben "
+"kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als "
+"diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des "
+"Eigentümers."
+msgid_plural ""
+"<b>%(n)s Geräte</b> stehen in der Liste, aber nicht im Budget: Geräte haben "
+"kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als "
+"diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des "
+"Eigentümers."
+msgstr[0] ""
+"<b>%(n)s appareil</b> figure dans la liste, mais pas dans le budget : les "
+"appareils n'ont pas de champ valeur à neuf. Un prix estimé serait une moins "
+"bonne réponse que cette lacune — il passerait par le rapport PDF dans la "
+"planification du fonds du propriétaire."
+msgstr[1] ""
+"<b>%(n)s appareils</b> figurent dans la liste, mais pas dans le budget : les "
+"appareils n'ont pas de champ valeur à neuf. Un prix estimé serait une moins "
+"bonne réponse que cette lacune — il passerait par le rapport PDF dans la "
+"planification du fonds du propriétaire."
 
 #: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:758
 msgid "Finanz-Cockpit"
@@ -5651,6 +6197,58 @@ msgstr "Terminés récemment"
 msgid "Noch kein Lauf abgeschlossen."
 msgstr "Aucun processus terminé."
 
+#: core/templates/fw/lebensdauer.html:3 core/templates/fw/lebensdauer.html:9
+#: core/templates/fw/lebensdauer.html:14
+msgid "Lebensdauertabelle"
+msgstr "Tableau des durées de vie"
+
+#: core/templates/fw/lebensdauer.html:15
+msgid ""
+"Paritätische Nutzungsdauern (Mieterverband/HEV) — Grundlage für den Zeitwert "
+"bei der Wohnungsabnahme."
+msgstr ""
+"Durées d'utilisation paritaires (Mieterverband/HEV) — base de la valeur "
+"actuelle lors de l'état des lieux de sortie."
+
+#: core/templates/fw/lebensdauer.html:20
+msgid "Standardwerte ergänzen"
+msgstr "Compléter les valeurs standard"
+
+#: core/templates/fw/lebensdauer.html:26
+msgid "Kategorie hinzufügen"
+msgstr "Ajouter une catégorie"
+
+#: core/templates/fw/lebensdauer.html:30
+msgid "Kategorie *"
+msgstr "Catégorie *"
+
+#: core/templates/fw/lebensdauer.html:32
+msgid "Jahre *"
+msgstr "Années *"
+
+#: core/templates/fw/lebensdauer.html:36
+msgid "Hinzufügen"
+msgstr "Ajouter"
+
+#: core/templates/fw/lebensdauer.html:49
+msgid "Lebensdauer (J)"
+msgstr "Durée de vie (ans)"
+
+#: core/templates/fw/lebensdauer.html:60
+#, python-format
+msgid "Kategorie «%(k)s» löschen?"
+msgstr "Supprimer la catégorie « %(k)s » ?"
+
+#: core/templates/fw/lebensdauer.html:64
+msgid "Noch keine Kategorien — «Standardwerte ergänzen» klicken."
+msgstr ""
+"Aucune catégorie pour le moment — cliquez sur « Compléter les valeurs "
+"standard »."
+
+#: core/templates/fw/lebensdauer.html:71
+msgid "Änderungen speichern"
+msgstr "Enregistrer les modifications"
+
 #: core/templates/fw/leerstand_verlauf.html:8
 #, python-format
 msgid "Monatliche Leerquote des letzten Monats."
@@ -6285,11 +6883,6 @@ msgstr ""
 #: core/templates/fw/mandat_detail.html:113
 msgid "Mandat"
 msgstr "Mandat"
-
-#: core/templates/fw/mandat_detail.html:117
-#: core/templates/fw/mandat_detail.html:174 core/templates/fw/personen.html:68
-msgid "Adresse"
-msgstr "Adresse"
 
 #: core/templates/fw/mandat_detail.html:130
 #: core/templates/fw/mandat_detail.html:238
@@ -7172,6 +7765,36 @@ msgstr ""
 "Aucune pièce saisie. Les factures créanciers pertinentes FA sont reprises "
 "automatiquement."
 
+#: core/templates/fw/objekt_ausschreiben.html:3
+#: core/templates/fw/objekt_ausschreiben.html:7
+msgid "Objekt ausschreiben"
+msgstr "Mettre l'objet en location"
+
+#: core/templates/fw/objekt_ausschreiben.html:19
+msgid "Verfügbar ab"
+msgstr "Disponible dès"
+
+#: core/templates/fw/objekt_ausschreiben.html:21
+msgid "Standard: Endtermin der laufenden Kündigung."
+msgstr "Par défaut : date de fin de la résiliation en cours."
+
+#: core/templates/fw/objekt_ausschreiben.html:24
+msgid "Vermarktungsnotiz"
+msgstr "Note de commercialisation"
+
+#: core/templates/fw/objekt_ausschreiben.html:25
+msgid "z. B. renoviert 2024, Balkon nach Süden, ab sofort besichtigbar …"
+msgstr "p. ex. rénové en 2024, balcon au sud, visitable immédiatement …"
+
+#: core/templates/fw/objekt_ausschreiben.html:28
+#: core/templates/fw/vermarktung.html:45
+msgid "Zimmer"
+msgstr "Pièces"
+
+#: core/templates/fw/objekt_ausschreiben.html:36
+msgid "Ausschreiben"
+msgstr "Mettre en location"
+
 #: core/templates/fw/objekte.html:25
 msgid "Nach Befund geordnet — was klemmt, steht oben."
 msgstr "Trié par constat — ce qui coince est en haut."
@@ -8027,10 +8650,6 @@ msgstr "p.ex. Perdtemps 3, rez"
 msgid "%(min)s Min."
 msgstr "%(min)s min."
 
-#: core/templates/fw/termine.html:52
-msgid "Absagen"
-msgstr "Annuler"
-
 #: core/templates/fw/termine.html:56
 msgid "Kein kommender Termin erfasst."
 msgstr "Aucun rendez-vous à venir."
@@ -8038,6 +8657,62 @@ msgstr "Aucun rendez-vous à venir."
 #: core/templates/fw/termine.html:73
 msgid "Noch nichts vergangen."
 msgstr "Rien de passé pour l'instant."
+
+#: core/templates/fw/vermarktung.html:10
+msgid "Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick."
+msgstr ""
+"Tous les objets mis en location pour la recherche d'un locataire successeur "
+"en un coup d'œil."
+
+#: core/templates/fw/vermarktung.html:13
+msgid "ausgeschrieben"
+msgstr "en location"
+
+#: core/templates/fw/vermarktung.html:32
+#, python-format
+msgid "%(n)s Foto"
+msgid_plural "%(n)s Fotos"
+msgstr[0] "%(n)s photo"
+msgstr[1] "%(n)s photos"
+
+#: core/templates/fw/vermarktung.html:36
+msgid "frei"
+msgstr "libre"
+
+#: core/templates/fw/vermarktung.html:53
+msgid "CHF brutto"
+msgstr "CHF brut"
+
+#: core/templates/fw/vermarktung.html:61
+#, python-format
+msgid "%(n)s Bewerbung"
+msgid_plural "%(n)s Bewerbungen"
+msgstr[0] "%(n)s candidature"
+msgstr[1] "%(n)s candidatures"
+
+#: core/templates/fw/vermarktung.html:61
+msgid "vergleichen"
+msgstr "comparer"
+
+#: core/templates/fw/vermarktung.html:69
+msgid "Ausschreibung beenden"
+msgstr "Terminer l'annonce"
+
+#: core/templates/fw/vermarktung.html:79
+msgid "Kein Objekt in der Vermarktung"
+msgstr "Aucun objet en commercialisation"
+
+#: core/templates/fw/vermarktung.html:80
+msgid ""
+"Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur "
+"Nachmietersuche ausschreiben."
+msgstr ""
+"Dans le cockpit de changement de locataire, les objets se mettent en "
+"location en un clic pour trouver un successeur."
+
+#: core/templates/fw/vermarktung.html:81
+msgid "Zum Mieterwechsel-Cockpit"
+msgstr "Vers le cockpit de changement de locataire"
 
 #: core/templates/fw/vertraege.html:14
 #, python-format
@@ -8077,10 +8752,6 @@ msgstr "Établir le premier bail"
 #: core/templates/fw/vertraege.html:73
 msgid "NK"
 msgstr "FA"
-
-#: core/templates/fw/vertraege.html:91
-msgid "unbefristet"
-msgstr "durée indéterminée"
 
 #: core/templates/fw/vertraege.html:99
 msgid "Kündigung erfassen"
@@ -8511,10 +9182,6 @@ msgstr "Apprendre la règle"
 msgid "Grund der Ablage"
 msgstr "Motif du classement"
 
-#: core/templates/fw/zulauf.html:40
-msgid "Ablegen"
-msgstr "Classer"
-
 #: core/templates/fw/zulauf.html:44
 msgid "Nichts Unzugeordnetes. 🎉"
 msgstr "Rien de non attribué. 🎉"
@@ -8896,10 +9563,6 @@ msgid "Wohnen"
 msgstr "Habitation"
 
 #: core/views/fw/listen.py:1109
-msgid "Parkplatz"
-msgstr "Place de parc"
-
-#: core/views/fw/listen.py:1109
 msgid "Gewerbe"
 msgstr "Commercial"
 
@@ -9136,6 +9799,10 @@ msgstr "Signature de bail DocuSeal incluse"
 msgid "Prioritäts-Support & Onboarding"
 msgstr "Support prioritaire & mise en route"
 
+#: core/views/fw/schaeden.py:403
+msgid "Bald fällig"
+msgstr "Bientôt échu"
+
 #: core/views/portal.py:751
 msgid "In Bearbeitung"
 msgstr "En cours de traitement"
@@ -9171,9 +9838,6 @@ msgstr "Rôles"
 #: faelle/akten.py:140
 msgid "Handwerker & Kosten"
 msgstr "Artisans & coûts"
-
-#~ msgid "Arbeit"
-#~ msgstr "Travail"
 
 #~ msgid "Fall"
 #~ msgstr "Dossier"

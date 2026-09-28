@@ -166,6 +166,14 @@ UEBERSETZT = (
     'fw/pendenzen.html',
     'fw/schaeden.html',
     'fw/schaden_kosten.html',
+    # Tranche «Vermietung & Unterhalt»
+    'fw/vermarktung.html',
+    'fw/objekt_ausschreiben.html',
+    'fw/bewerbungen.html',
+    'fw/bewerbung_detail.html',
+    'fw/bewerber_vergleich.html',
+    'fw/lebensdauer.html',
+    'fw/ersatzplanung.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -261,6 +269,10 @@ STICHPROBE = {
                            'it': 'Panoramica dei costi', 'en': 'Cost overview'},
     'Neue Pendenz':       {'de': 'Neue Pendenz', 'fr': 'Nouvelle tâche en suspens',
                            'it': 'Nuova pendenza', 'en': 'New to-do'},
+    'Bewerber-Vergleich': {'de': 'Bewerber-Vergleich', 'fr': 'Comparaison des candidats',
+                           'it': 'Confronto candidati', 'en': 'Applicant comparison'},
+    'Ersatzplanung':      {'de': 'Ersatzplanung', 'fr': 'Planification des remplacements',
+                           'it': 'Pianificazione delle sostituzioni', 'en': 'Replacement planning'},
 }
 
 

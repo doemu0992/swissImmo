@@ -1,35 +1,35 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Ersatzplanung — swissImmo{% endblock %}
+{% block title %}{% trans "Ersatzplanung" %} — swissImmo{% endblock %}
 {% block content %}
 
 
 <div class="fw-phead">
     <div>
-        <h1>Garantie- &amp; Ersatzplanung</h1>
-        <p>Raumbuch-Elemente <b>und Geräte</b> nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
+        <h1>{% trans "Garantie- &amp; Ersatzplanung" %}</h1>
+        <p>{% blocktrans trimmed %}Raumbuch-Elemente <b>und Geräte</b> nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr{% endblocktrans %}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
-    <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary">{% zeichen 'drucken' %}Budget-PDF</a>
+    <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary">{% zeichen 'drucken' %}{% trans "Budget-PDF" %}</a>
 </div>
 
 <!-- KPI -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0">{% zeichen 'warnung' %}</div>
-        <div><div class="text-2xl font-bold {% if n_faellig %}fw-kritisch{% else %}fw-strong{% endif %}">{{ n_faellig }}</div><div class="text-sm fw-mutet">Ersatz fällig</div></div>
+        <div><div class="text-2xl font-bold {% if n_faellig %}fw-kritisch{% else %}fw-strong{% endif %}">{{ n_faellig }}</div><div class="text-sm fw-mutet">{% trans "Ersatz fällig" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0">{% zeichen 'wartet' %}</div>
-        <div><div class="text-2xl font-bold {% if n_bald %}fw-warnton{% else %}fw-strong{% endif %}">{{ n_bald }}</div><div class="text-sm fw-mutet">Bald fällig (≤ 2 J)</div></div>
+        <div><div class="text-2xl font-bold {% if n_bald %}fw-warnton{% else %}fw-strong{% endif %}">{{ n_bald }}</div><div class="text-sm fw-mutet">{% trans "Bald fällig (≤ 2 J)" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'gut' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ n_ok }}</div><div class="text-sm fw-mutet">Im Nutzungszeitraum</div></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ n_ok }}</div><div class="text-sm fw-mutet">{% trans "Im Nutzungszeitraum" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-flaeche2 fw-mutet flex items-center justify-center text-lg shrink-0">{% zeichen 'hinweis' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ n_unbekannt }}</div><div class="text-sm fw-mutet">Ohne Datenbasis</div></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ n_unbekannt }}</div><div class="text-sm fw-mutet">{% trans "Ohne Datenbasis" %}</div></div>
     </div>
 </div>
 
@@ -37,35 +37,35 @@
 {% if deckung %}
 <div class="fw-card p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
-        <h2 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'geld' %}</span>Erneuerungsfonds-Deckung ({{ horizont_jahre }}-Jahres-Horizont)</h2>
+        <h2 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'geld' %}</span>{% blocktrans with n=horizont_jahre %}Erneuerungsfonds-Deckung ({{ n }}-Jahres-Horizont){% endblocktrans %}</h2>
         {% if deckung.deckungsgrad is not None %}
-        <span class="px-2.5 py-1 rounded-md text-xs font-bold {% if deckung.gedeckt %}fw-gut-flaeche fw-gut{% else %}fw-krit-flaeche fw-kritisch{% endif %}">{{ deckung.deckungsgrad }}% gedeckt</span>
+        <span class="px-2.5 py-1 rounded-md text-xs font-bold {% if deckung.gedeckt %}fw-gut-flaeche fw-gut{% else %}fw-krit-flaeche fw-kritisch{% endif %}">{% blocktrans with g=deckung.deckungsgrad %}{{ g }}% gedeckt{% endblocktrans %}</span>
         {% endif %}
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
-            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Fonds-Bestand</div>
+            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Fonds-Bestand" %}</div>
             <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ deckung.bestand|chf }}</div>
         </div>
         <div>
-            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Jährliche Einlage</div>
+            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Jährliche Einlage" %}</div>
             <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ deckung.einlage|chf }}</div>
         </div>
         <div>
-            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Ersatzbudget ({{ horizont_jahre }} J)</div>
+            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% blocktrans with n=horizont_jahre %}Ersatzbudget ({{ n }} J){% endblocktrans %}</div>
             <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ budget_total|chf }}</div>
         </div>
         <div>
-            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Empf. Jahresrückstellung</div>
+            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Empf. Jahresrückstellung" %}</div>
             <div class="text-lg font-bold {% if deckung.mehrbedarf > 0 %}fw-kritisch{% else %}fw-gut{% endif %} mt-0.5">CHF {{ deckung.empfohlen|chf }}</div>
         </div>
     </div>
     <div class="mt-4 pt-4 border-t fw-linie text-sm">
         {% if deckung.gedeckt %}
-        <span class="fw-gut">{% zeichen 'gut' klasse='mr-1' %}Gedeckt: Bestand + Einlagen ({{ deckung.projiziert|chf }}) decken das Ersatzbudget über {{ horizont_jahre }} Jahre (Reserve CHF {{ deckung.saldo|chf }}).</span>
+        <span class="fw-gut">{% zeichen 'gut' klasse='mr-1' %}{% blocktrans with p=deckung.projiziert|chf n=horizont_jahre r=deckung.saldo|chf %}Gedeckt: Bestand + Einlagen ({{ p }}) decken das Ersatzbudget über {{ n }} Jahre (Reserve CHF {{ r }}).{% endblocktrans %}</span>
         {% else %}
-        <span class="fw-kritisch">{% zeichen 'warnung' klasse='mr-1' %}Unterdeckung von CHF {{ deckung.saldo|chf }} über {{ horizont_jahre }} Jahre.</span>
-        {% if deckung.mehrbedarf > 0 %}<span class="fw-mutet"> Empfehlung: jährliche Einlage um <span class="font-semibold">CHF {{ deckung.mehrbedarf|chf }}</span> auf CHF {{ deckung.empfohlen|chf }} erhöhen.</span>{% endif %}
+        <span class="fw-kritisch">{% zeichen 'warnung' klasse='mr-1' %}{% blocktrans with s=deckung.saldo|chf n=horizont_jahre %}Unterdeckung von CHF {{ s }} über {{ n }} Jahre.{% endblocktrans %}</span>
+        {% if deckung.mehrbedarf > 0 %}<span class="fw-mutet"> {% blocktrans trimmed with m=deckung.mehrbedarf|chf e=deckung.empfohlen|chf %}Empfehlung: jährliche Einlage um <span class="font-semibold">CHF {{ m }}</span> auf CHF {{ e }} erhöhen.{% endblocktrans %}</span>{% endif %}
         {% endif %}
     </div>
 </div>
@@ -75,8 +75,8 @@
 {% if jahres_budget %}
 <div class="fw-card p-5 mb-6">
     <div class="flex items-baseline justify-between mb-4">
-        <h2 class="font-bold fw-strong text-sm">Ersatzbudget je Jahr (nächste {{ horizont_jahre }} Jahre)</h2>
-        <span class="text-sm fw-faint">Total CHF {{ budget_total|chf }}</span>
+        <h2 class="font-bold fw-strong text-sm">{% blocktrans with n=horizont_jahre %}Ersatzbudget je Jahr (nächste {{ n }} Jahre){% endblocktrans %}</h2>
+        <span class="text-sm fw-faint">{% trans "Total" %} CHF {{ budget_total|chf }}</span>
     </div>
     <div class="space-y-2.5">
         {% for b in jahres_budget %}
@@ -90,7 +90,7 @@
         </div>
         {% endfor %}
     </div>
-    <p class="text-xs fw-faint mt-4">{% zeichen 'geld' klasse='mr-1' %}Grundlage für die Erneuerungsfonds-/Budgetplanung: erwartetes Ersatzjahr = Einbaujahr + Lebensdauer, Kosten = Neuwert.</p>
+    <p class="text-xs fw-faint mt-4">{% zeichen 'geld' klasse='mr-1' %}{% trans "Grundlage für die Erneuerungsfonds-/Budgetplanung: erwartetes Ersatzjahr = Einbaujahr + Lebensdauer, Kosten = Neuwert." %}</p>
 </div>
 {% endif %}
 
@@ -106,13 +106,13 @@
         <table class="w-full min-w-max text-sm">
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">Element</th>
-                <th class="px-5 py-3 font-semibold">Objekt</th>
-                <th class="px-5 py-3 font-semibold text-right">Restdauer</th>
-                <th class="px-5 py-3 font-semibold">Status</th>
-                <th class="px-5 py-3 font-semibold">Garantie</th>
-                <th class="px-5 py-3 font-semibold text-right">Reparaturen</th>
-                <th class="px-5 py-3 font-semibold text-right">Lebenszyklus</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Element" %}</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Restdauer" %}</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Status" %}</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Garantie" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Reparaturen" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Lebenszyklus" %}</th>
                 <th class="px-5 py-3"></th>
             </tr>
             </thead>
@@ -120,25 +120,25 @@
             {% for r in rows %}
             <tr class="hover:fw-flaeche2 transition-colors">
                 <td class="px-5 py-3">
-                    <div class="font-semibold fw-strong">{{ r.bezeichnung }}{% if r.art == 'geraet' %} <span class="fw-chip fw-mut">Gerät</span>{% endif %}</div>
-                    <div class="text-xs fw-faint">{{ r.detail }}{% if r.einbau %} · Einbau {{ r.einbau|date:"m.Y" }}{% endif %}{% if r.lebensdauer %} · {{ r.lebensdauer }} J{% endif %}</div>
+                    <div class="font-semibold fw-strong">{{ r.bezeichnung }}{% if r.art == 'geraet' %} <span class="fw-chip fw-mut">{% trans "Gerät" %}</span>{% endif %}</div>
+                    <div class="text-xs fw-faint">{{ r.detail }}{% if r.einbau %} · {% trans "Einbau" %} {{ r.einbau|date:"m.Y" }}{% endif %}{% if r.lebensdauer %} · {{ r.lebensdauer }} J{% endif %}</div>
                 </td>
                 <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ r.standort }}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap {% if r.status == 'faellig' %}fw-kritisch font-semibold{% elif r.status == 'bald' %}fw-warnton font-semibold{% else %}fw-mutet{% endif %}">
                     {% if r.rest is not None %}{{ r.rest }} J{% else %}—{% endif %}</td>
-                <td class="px-5 py-3"><span class="fw-chip whitespace-nowrap {{ r.status_cls }}">● {{ r.status_label }}</span></td>
+                <td class="px-5 py-3"><span class="fw-chip whitespace-nowrap {{ r.status_cls }}">● {% trans r.status_label %}</span></td>
                 <td class="px-5 py-3 fw-mutet whitespace-nowrap">{% if r.garantie_bis %}{{ r.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if r.schaden_anzahl %}fw-strong{% else %}fw-faint{% endif %}">
                     {% if r.schaden_anzahl %}{{ r.schaden_anzahl }}× · CHF {{ r.reparaturkosten|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if r.art == 'geraet' %}fw-faint{% else %}font-semibold fw-strong{% endif %}">
-                    {% if r.art == 'geraet' %}<span title="Geräte haben kein Neuwert-Feld — ein geschätzter Preis wanderte sonst über den PDF-Report in die Fondsplanung.">kein Neuwert</span>{% else %}CHF {{ r.lebenszyklus|chf }}{% endif %}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap"><a href="{{ r.ziel_url }}" class="text-xs fw-marke font-medium hover:underline">{% if r.art == 'geraet' %}Gerät{% else %}Objekt{% endif %}</a></td>
+                    {% if r.art == 'geraet' %}<span title="{% trans 'Geräte haben kein Neuwert-Feld — ein geschätzter Preis wanderte sonst über den PDF-Report in die Fondsplanung.' %}">{% trans "kein Neuwert" %}</span>{% else %}CHF {{ r.lebenszyklus|chf }}{% endif %}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap"><a href="{{ r.ziel_url }}" class="text-xs fw-marke font-medium hover:underline">{% if r.art == 'geraet' %}{% trans "Gerät" %}{% else %}{% trans "Objekt" %}{% endif %}</a></td>
             </tr>
             {% empty %}
             <tr><td colspan="8" class="px-5 py-12 text-center">
                 <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'dokument' %}</div>
-                <p class="text-sm font-medium fw-ink">{% if status_filter %}Keine Treffer{% else %}Keine Ausstattung erfasst{% endif %}</p>
-                <p class="text-xs fw-faint mt-1">Erfasse Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die Restnutzungsdauer berechnet werden kann.</p>
+                <p class="text-sm font-medium fw-ink">{% if status_filter %}{% trans "Keine Treffer" %}{% else %}{% trans "Keine Ausstattung erfasst" %}{% endif %}</p>
+                <p class="text-xs fw-faint mt-1">{% trans "Erfasse Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die Restnutzungsdauer berechnet werden kann." %}</p>
             </td></tr>
             {% endfor %}
             </tbody>
@@ -148,7 +148,7 @@
 
 <p class="text-xs fw-faint mt-4">
     {% zeichen 'hinweis' klasse='mr-1' %}
-    Restdauer = Lebensdauer − Alter (aus der paritätischen Lebensdauertabelle). „Lebenszyklus" = Neuwert + aufgelaufene Reparaturkosten der verknüpften Schäden.
-    {% if budget_ohne_neuwert %}<br><b>{{ budget_ohne_neuwert }} Gerät{{ budget_ohne_neuwert|pluralize:"e" }}</b> stehen in der Liste, aber nicht im Budget: Geräte haben kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des Eigentümers.{% endif %}
+    {% trans "Restdauer = Lebensdauer − Alter (aus der paritätischen Lebensdauertabelle). „Lebenszyklus“ = Neuwert + aufgelaufene Reparaturkosten der verknüpften Schäden." %}
+    {% if budget_ohne_neuwert %}<br>{% blocktrans trimmed count n=budget_ohne_neuwert %}<b>{{ n }} Gerät</b> steht in der Liste, aber nicht im Budget: Geräte haben kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des Eigentümers.{% plural %}<b>{{ n }} Geräte</b> stehen in der Liste, aber nicht im Budget: Geräte haben kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des Eigentümers.{% endblocktrans %}{% endif %}
 </p>
 {% endblock %}

@@ -17,6 +17,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -398,8 +399,9 @@ def fw_ersatzplanung(request):
     f = request.GET.get('status', '')
     rows = [r for r in daten['rows'] if not f or f == r['status']]
 
-    chips = [('', 'Alle'), ('faellig', 'Ersatz fällig'), ('bald', 'Bald fällig'),
-             ('ok', 'Im Nutzungszeitraum'), ('unbekannt', 'Keine Datenbasis')]
+    chips = [('', gettext('Alle')), ('faellig', gettext('Ersatz fällig')),
+             ('bald', gettext('Bald fällig')), ('ok', gettext('Im Nutzungszeitraum')),
+             ('unbekannt', gettext('Keine Datenbasis'))]
     return render(request, 'fw/ersatzplanung.html', {
         **basis, 'nav': 'assets', 'rows': rows, 'status_filter': f, 'chips': chips,
         'n_faellig': daten['n_faellig'], 'n_bald': daten['n_bald'],

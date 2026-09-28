@@ -1,17 +1,17 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Vermarktung · swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Vermarktung" %} · swissImmo{% endblock %}
 {% block content %}
 
 {% include 'fw/_pipeline.html' %}
 <div class="fw-phead">
     <div>
-        <h1>Vermarktung</h1>
-        <p>Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick.</p>
+        <h1>{% trans "Vermarktung" %}</h1>
+        <p>{% trans "Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick." %}</p>
     </div>
     <div class="flex gap-2">
-        <span class="px-3 py-2 rounded-xl fw-flaeche border fw-linie text-sm"><span class="font-bold fw-strong">{{ anzahl }}</span> <span class="fw-faint">ausgeschrieben</span></span>
-        <span class="px-3 py-2 rounded-xl fw-markenflaeche border fw-linie-marke text-sm"><span class="font-bold fw-marke">{{ summe_bewerbungen }}</span> <span class="fw-marke">Bewerbungen</span></span>
+        <span class="px-3 py-2 rounded-xl fw-flaeche border fw-linie text-sm"><span class="font-bold fw-strong">{{ anzahl }}</span> <span class="fw-faint">{% trans "ausgeschrieben" %}</span></span>
+        <span class="px-3 py-2 rounded-xl fw-markenflaeche border fw-linie-marke text-sm"><span class="font-bold fw-marke">{{ summe_bewerbungen }}</span> <span class="fw-marke">{% trans "Bewerbungen" %}</span></span>
     </div>
 </div>
 
@@ -29,11 +29,11 @@
                 <div class="min-w-0">
                     <div class="font-bold fw-strong truncate">{{ r.objekt }}</div>
                     <div class="text-sm fw-mutet">{{ r.bezeichnung }}</div>
-                    {% if r.fotos_n %}<div class="text-[11px] fw-faint mt-0.5">{% zeichen 'dokument' klasse='mr-0.5' %}{{ r.fotos_n }} Foto{{ r.fotos_n|pluralize:",s" }}</div>{% endif %}
+                    {% if r.fotos_n %}<div class="text-[11px] fw-faint mt-0.5">{% zeichen 'dokument' klasse='mr-0.5' %}{% blocktrans count n=r.fotos_n %}{{ n }} Foto{% plural %}{{ n }} Fotos{% endblocktrans %}</div>{% endif %}
                 </div>
             </div>
             {% if r.frei %}
-            <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full fw-gut-flaeche fw-gut shrink-0">frei</span>
+            <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full fw-gut-flaeche fw-gut shrink-0">{% trans "frei" %}</span>
             {% else %}
             <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full fw-warn-flaeche fw-warnton shrink-0">ab {{ r.verfuegbar_ab|date:"d.m.y" }}</span>
             {% endif %}
@@ -42,15 +42,15 @@
         <div class="mt-3 grid grid-cols-3 gap-2 text-center">
             <div class="rounded-lg fw-flaeche2 py-2">
                 <div class="text-sm font-bold fw-strong">{% if r.zimmer %}{{ r.zimmer }}{% else %}–{% endif %}</div>
-                <div class="text-[11px] fw-faint">Zimmer</div>
+                <div class="text-[11px] fw-faint">{% trans "Zimmer" %}</div>
             </div>
             <div class="rounded-lg fw-flaeche2 py-2">
                 <div class="text-sm font-bold fw-strong">{% if r.flaeche %}{{ r.flaeche|floatformat:0 }} m²{% else %}–{% endif %}</div>
-                <div class="text-[11px] fw-faint">Fläche</div>
+                <div class="text-[11px] fw-faint">{% trans "Fläche" %}</div>
             </div>
             <div class="rounded-lg fw-flaeche2 py-2">
                 <div class="text-sm font-bold fw-strong">{{ r.miete|floatformat:0 }}</div>
-                <div class="text-[11px] fw-faint">CHF brutto</div>
+                <div class="text-[11px] fw-faint">{% trans "CHF brutto" %}</div>
             </div>
         </div>
 
@@ -58,15 +58,15 @@
 
         <div class="mt-4 flex items-center justify-between gap-3">
             <a href="/neu/vermarktung/{{ r.e.id }}/bewerber/{{ lg_query }}" class="text-sm font-semibold fw-marke hover:fw-marke">
-                {% zeichen 'person' klasse='mr-1' %}{{ r.bewerbungen }} Bewerbung{{ r.bewerbungen|pluralize:",en" }}{% if r.bewerbungen %} vergleichen{% endif %}
+                {% zeichen 'person' klasse='mr-1' %}{% blocktrans count n=r.bewerbungen %}{{ n }} Bewerbung{% plural %}{{ n }} Bewerbungen{% endblocktrans %}{% if r.bewerbungen %} {% trans "vergleichen" %}{% endif %}
             </a>
             <div class="flex items-center gap-2">
-                <a href="/neu/vermarktung/{{ r.e.id }}/expose/" target="_blank" rel="noopener" class="text-xs font-semibold text-white fw-balken-voll hover:fw-balken-voll px-3 py-1.5 rounded-lg">{% zeichen 'drucken' klasse='mr-1' %}Exposé</a>
+                <a href="/neu/vermarktung/{{ r.e.id }}/expose/" target="_blank" rel="noopener" class="text-xs font-semibold text-white fw-balken-voll hover:fw-balken-voll px-3 py-1.5 rounded-lg">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Exposé" %}</a>
                 <form method="post" action="/neu/objekte/{{ r.e.id }}/ausschreiben/">
                     {% csrf_token %}
                     <input type="hidden" name="ziel" value="aus">
                     <input type="hidden" name="weiter" value="/neu/vermarktung/">
-                    <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-3 py-1.5 rounded-lg">Ausschreibung beenden</button>
+                    <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-3 py-1.5 rounded-lg">{% trans "Ausschreibung beenden" %}</button>
                 </form>
             </div>
         </div>
@@ -76,9 +76,9 @@
 {% else %}
 <div class="fw-card p-10 text-center">
     <span class="w-14 h-14 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4">{% zeichen 'senden' klasse='text-xl' %}</span>
-    <p class="font-semibold fw-ink">Kein Objekt in der Vermarktung</p>
-    <p class="text-sm fw-faint mt-1">Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur Nachmietersuche ausschreiben.</p>
-    <a href="/neu/mieterwechsel/" class="inline-block mt-4 text-sm font-semibold text-white fw-balken-voll hover:fw-balken-voll px-4 py-2 rounded-lg">Zum Mieterwechsel-Cockpit</a>
+    <p class="font-semibold fw-ink">{% trans "Kein Objekt in der Vermarktung" %}</p>
+    <p class="text-sm fw-faint mt-1">{% trans "Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur Nachmietersuche ausschreiben." %}</p>
+    <a href="/neu/mieterwechsel/" class="inline-block mt-4 text-sm font-semibold text-white fw-balken-voll hover:fw-balken-voll px-4 py-2 rounded-lg">{% trans "Zum Mieterwechsel-Cockpit" %}</a>
 </div>
 {% endif %}
 {% endblock %}

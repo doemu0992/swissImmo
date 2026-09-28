@@ -1,10 +1,10 @@
 {% extends embed_base|default:'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Objekt ausschreiben — {{ e.bezeichnung }}{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Objekt ausschreiben" %} — {{ e.bezeichnung }}{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Objekt ausschreiben</h1>
+        <h1>{% trans "Objekt ausschreiben" %}</h1>
         <p>{{ e.bezeichnung }}, {{ e.liegenschaft.strasse }}, {{ e.liegenschaft.plz }} {{ e.liegenschaft.ort }}</p>
     </div>
 </div>
@@ -16,24 +16,24 @@
 
     <div class="fw-card p-5 space-y-4">
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Verfügbar ab</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verfügbar ab" %}</label>
             <input type="date" name="verfuegbar_ab" value="{{ verfuegbar_default }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-            <p class="text-[11px] fw-faint mt-1">Standard: Endtermin der laufenden Kündigung.</p>
+            <p class="text-[11px] fw-faint mt-1">{% trans "Standard: Endtermin der laufenden Kündigung." %}</p>
         </div>
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Vermarktungsnotiz <span class="fw-faint">(optional)</span></label>
-            <textarea name="notiz" rows="4" placeholder="z. B. renoviert 2024, Balkon nach Süden, ab sofort besichtigbar …" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ e.ausschreibung_notiz }}</textarea>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Vermarktungsnotiz" %} <span class="fw-faint">{% trans "(optional)" %}</span></label>
+            <textarea name="notiz" rows="4" placeholder="{% trans 'z. B. renoviert 2024, Balkon nach Süden, ab sofort besichtigbar …' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ e.ausschreibung_notiz }}</textarea>
         </div>
         <dl class="grid grid-cols-3 gap-2 text-center pt-1">
-            <div class="rounded-lg fw-flaeche2 py-2"><dt class="text-[11px] fw-faint">Zimmer</dt><dd class="text-sm font-bold fw-strong">{% if e.zimmer %}{{ e.zimmer }}{% else %}–{% endif %}</dd></div>
-            <div class="rounded-lg fw-flaeche2 py-2"><dt class="text-[11px] fw-faint">Fläche</dt><dd class="text-sm font-bold fw-strong">{% if e.flaeche_m2 %}{{ e.flaeche_m2|floatformat:0 }} m²{% else %}–{% endif %}</dd></div>
-            <div class="rounded-lg fw-flaeche2 py-2"><dt class="text-[11px] fw-faint">Bruttomiete</dt><dd class="text-sm font-bold fw-strong">{{ e.nettomiete_aktuell|add:e.nebenkosten_aktuell|floatformat:0 }}</dd></div>
+            <div class="rounded-lg fw-flaeche2 py-2"><dt class="text-[11px] fw-faint">{% trans "Zimmer" %}</dt><dd class="text-sm font-bold fw-strong">{% if e.zimmer %}{{ e.zimmer }}{% else %}–{% endif %}</dd></div>
+            <div class="rounded-lg fw-flaeche2 py-2"><dt class="text-[11px] fw-faint">{% trans "Fläche" %}</dt><dd class="text-sm font-bold fw-strong">{% if e.flaeche_m2 %}{{ e.flaeche_m2|floatformat:0 }} m²{% else %}–{% endif %}</dd></div>
+            <div class="rounded-lg fw-flaeche2 py-2"><dt class="text-[11px] fw-faint">{% trans "Bruttomiete" %}</dt><dd class="text-sm font-bold fw-strong">{{ e.nettomiete_aktuell|add:e.nebenkosten_aktuell|floatformat:0 }}</dd></div>
         </dl>
     </div>
 
     <div class="flex items-center justify-end gap-2">
         <button type="submit" class="text-sm font-semibold text-white fw-balken-voll hover:fw-balken-voll px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'senden' klasse='mr-1' %}Ausschreiben
+            {% zeichen 'senden' klasse='mr-1' %}{% trans "Ausschreiben" %}
         </button>
     </div>
 </form>

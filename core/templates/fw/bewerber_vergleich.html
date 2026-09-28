@@ -1,31 +1,31 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Bewerber-Vergleich — swissImmo{% endblock %}
+{% block title %}{% trans "Bewerber-Vergleich" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="text-xs fw-faint mb-3">
-    <a href="/neu/vermarktung/{{ lg_query }}" class="hover:fw-marke">Vermarktung</a>
-    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}Bewerber-Vergleich
+    <a href="/neu/vermarktung/{{ lg_query }}" class="hover:fw-marke">{% trans "Vermarktung" %}</a>
+    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{% trans "Bewerber-Vergleich" %}
 </div>
 
 <div class="fw-phead">
     <div>
-        <h1>Bewerber-Vergleich</h1>
-        <p>{{ objekt }} · {{ e.bezeichnung }} · Bruttomiete CHF {{ brutto_monat|chf }}/Mt. ({{ jahresmiete|chf }}/Jahr)</p>
+        <h1>{% trans "Bewerber-Vergleich" %}</h1>
+        <p>{{ objekt }} · {{ e.bezeichnung }} · {% blocktrans with m=brutto_monat|chf j=jahresmiete|chf %}Bruttomiete CHF {{ m }}/Mt. ({{ j }}/Jahr){% endblocktrans %}</p>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-        <a href="/neu/vermarktung/{{ e.id }}/expose/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}Exposé</a>
-        <a href="?{% if not mit_abgelehnt %}alle=1{% endif %}{% if aktive_lg %}{% if not mit_abgelehnt %}&{% endif %}lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% if mit_abgelehnt %}Abgelehnte ausblenden{% else %}Abgelehnte einblenden{% endif %}</a>
+        <a href="/neu/vermarktung/{{ e.id }}/expose/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}{% trans "Exposé" %}</a>
+        <a href="?{% if not mit_abgelehnt %}alle=1{% endif %}{% if aktive_lg %}{% if not mit_abgelehnt %}&{% endif %}lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% if mit_abgelehnt %}{% trans "Abgelehnte ausblenden" %}{% else %}{% trans "Abgelehnte einblenden" %}{% endif %}</a>
     </div>
 </div>
 
-<p class="text-xs fw-faint mb-4 max-w-3xl">Der Eignungs-Score (0–100) gewichtet Tragbarkeit (Drittel-Regel: Jahreseinkommen ≥ 3× Jahresmiete), Betreibungen, Anstellung und Vollständigkeit der Unterlagen. Er ist eine Entscheidungshilfe — keine automatische Zu- oder Absage.</p>
+<p class="text-xs fw-faint mb-4 max-w-3xl">{% trans "Der Eignungs-Score (0–100) gewichtet Tragbarkeit (Drittel-Regel: Jahreseinkommen ≥ 3× Jahresmiete), Betreibungen, Anstellung und Vollständigkeit der Unterlagen. Er ist eine Entscheidungshilfe — keine automatische Zu- oder Absage." %}</p>
 
 {% if offene_n %}
 <form method="post" action="/neu/vermarktung/{{ e.id }}/bewerber/absage-uebrige/{{ lg_query }}" class="mb-4"
-      onsubmit="return confirm('Allen {{ offene_n }} noch offenen Bewerbern eine Absage senden?');">
+      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with n=offene_n %}Allen {{ n }} noch offenen Bewerbern eine Absage senden?{% endblocktrans %}{% endfilter %}');">
     {% csrf_token %}
-    <button class="text-xs font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'senden' klasse='mr-1' %}Übrige {{ offene_n }} absagen</button>
+    <button class="text-xs font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'senden' klasse='mr-1' %}{% blocktrans with n=offene_n %}Übrige {{ n }} absagen{% endblocktrans %}</button>
 </form>
 {% endif %}
 
@@ -34,11 +34,11 @@
     <table class="w-full text-sm min-w-max">
         <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-4 py-3 font-semibold">Rang</th>
-                <th class="px-4 py-3 font-semibold">Bewerber</th>
-                <th class="px-4 py-3 font-semibold text-center">Score</th>
+                <th class="px-4 py-3 font-semibold">{% trans "Rang" %}</th>
+                <th class="px-4 py-3 font-semibold">{% trans "Bewerber" %}</th>
+                <th class="px-4 py-3 font-semibold text-center">{% trans "Score" %}</th>
                 {% for label in indikator_labels %}<th class="px-4 py-3 font-semibold">{{ label }}</th>{% endfor %}
-                <th class="px-4 py-3 font-semibold">Haushalt</th>
+                <th class="px-4 py-3 font-semibold">{% trans "Haushalt" %}</th>
                 <th class="px-4 py-3"></th>
             </tr>
         </thead>
@@ -63,33 +63,33 @@
                 </td>
                 {% endfor %}
                 <td class="px-4 py-3 fw-mutet text-[13px]">
-                    {{ k.haushalt }} Pers.{% if k.haustiere %} · {% zeichen 'arbeit' klasse='fw-faint' %}{% endif %}
+                    {% blocktrans with n=k.haushalt %}{{ n }} Pers.{% endblocktrans %}{% if k.haustiere %} · {% zeichen 'arbeit' klasse='fw-faint' %}{% endif %}
                     {% if k.bezug %}<div class="text-xs fw-faint">ab {{ k.bezug|date:"d.m.Y" }}</div>{% endif %}
                 </td>
                 <td class="px-4 py-3 text-right whitespace-nowrap">
                     {% if k.status == 'zugesagt' %}
-                        <span class="text-xs font-semibold fw-gut">{% zeichen 'gut' klasse='mr-1' %}Zugesagt</span>
+                        <span class="text-xs font-semibold fw-gut">{% zeichen 'gut' klasse='mr-1' %}{% trans "Zugesagt" %}</span>
                     {% elif k.status == 'abgelehnt' %}
-                        <span class="text-xs font-semibold fw-faint">Abgesagt</span>
+                        <span class="text-xs font-semibold fw-faint">{% trans "Abgesagt" %}</span>
                     {% else %}
                     <div class="inline-flex items-center gap-1.5">
                         <button type="button" onclick="document.getElementById('besi-{{ k.b.id }}').classList.toggle('hidden')"
                                 class="text-xs font-semibold fw-info border fw-linie hover:fw-info-flaeche px-2.5 py-1.5 rounded-lg">
-                            {% zeichen 'termin' klasse='mr-1' %}Besichtigung</button>
+                            {% zeichen 'termin' klasse='mr-1' %}{% trans "Besichtigung" %}</button>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
-                              onsubmit="return confirm('{{ k.name|escapejs }} zusagen{% if k.b.email %} und E-Mail senden{% endif %}?');">
+                              onsubmit="return confirm('{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} zusagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} zusagen?{% endblocktrans %}{% endif %}{% endfilter %}');">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="zusage">
-                            <button class="text-xs font-semibold text-white fw-btn fw-gutknopf px-2.5 py-1.5 rounded-lg">Zusagen</button>
+                            <button class="text-xs font-semibold text-white fw-btn fw-gutknopf px-2.5 py-1.5 rounded-lg">{% trans "Zusagen" %}</button>
                         </form>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
-                              onsubmit="return confirm('{{ k.name|escapejs }} absagen{% if k.b.email %} und E-Mail senden{% endif %}?');">
+                              onsubmit="return confirm('{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} absagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} absagen?{% endblocktrans %}{% endif %}{% endfilter %}');">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="absage">
-                            <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1.5 rounded-lg">Absagen</button>
+                            <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1.5 rounded-lg">{% trans "Absagen" %}</button>
                         </form>
                     </div>
                     {% endif %}
                     {% if k.b.besichtigung_am %}
-                    <div class="text-[10px] font-semibold fw-info mt-1">{% zeichen 'termin' klasse='mr-0.5' %}Besichtigung {{ k.b.besichtigung_am|date:"d.m.Y H:i" }}</div>
+                    <div class="text-[10px] font-semibold fw-info mt-1">{% zeichen 'termin' klasse='mr-0.5' %}{% blocktrans with d=k.b.besichtigung_am|date:"d.m.Y H:i" %}Besichtigung {{ d }}{% endblocktrans %}</div>
                     {% endif %}
                 </td>
             </tr>
@@ -99,15 +99,15 @@
                     <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/besichtigung/" class="flex flex-wrap items-end gap-3">
                         {% csrf_token %}
                         <div>
-                            <label class="block text-[11px] font-semibold fw-mutet mb-1">Besichtigungstermin für {{ k.name }}</label>
+                            <label class="block text-[11px] font-semibold fw-mutet mb-1">{% blocktrans with name=k.name %}Besichtigungstermin für {{ name }}{% endblocktrans %}</label>
                             <input type="datetime-local" name="termin" required
                                    value="{% if k.b.besichtigung_am %}{{ k.b.besichtigung_am|date:'Y-m-d\TH:i' }}{% endif %}"
                                    class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                         </div>
                         <button class="fw-btn fw-primary text-white text-xs font-semibold px-3.5 py-2.5 rounded-lg">
-                            {% zeichen 'senden' klasse='mr-1.5' %}Einladen{% if k.b.email %} ({{ k.b.email }}){% endif %}
+                            {% zeichen 'senden' klasse='mr-1.5' %}{% trans "Einladen" %}{% if k.b.email %} ({{ k.b.email }}){% endif %}
                         </button>
-                        <span class="text-[11px] fw-faint">Termin erscheint im Fristen-Center; Einladung per E-Mail mit Journal-Eintrag.</span>
+                        <span class="text-[11px] fw-faint">{% trans "Termin erscheint im Fristen-Center; Einladung per E-Mail mit Journal-Eintrag." %}</span>
                     </form>
                 </td>
             </tr>
@@ -119,7 +119,7 @@
 {% else %}
 <div class="fw-card p-10 text-center fw-faint">
     {% zeichen 'person' klasse='text-2xl mb-2 fw-faint' %}
-    <p class="text-sm">Noch keine Bewerbungen für dieses Objekt.</p>
+    <p class="text-sm">{% trans "Noch keine Bewerbungen für dieses Objekt." %}</p>
 </div>
 {% endif %}
 {% endblock %}
