@@ -16,7 +16,7 @@ def generate_pdf_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     try:
         pdf_bytes = generate_vertrag_pdf_bytes(vertrag)
-        _ablegen_vertragsdokument(pdf_bytes, "Mietvertrag", vertrag)
+        _ablegen_vertragsdokument(pdf_bytes, "Mietvertrag", vertrag, ueberschreiben=False)
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         filename = f"Mietvertrag_{vertrag.einheit.bezeichnung}_{vertrag.mieter.nachname}.pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -25,26 +25,32 @@ def generate_pdf_view(request, vertrag_id):
         return HttpResponse(f'Fehler beim Erstellen des PDFs: {str(e)}', status=500)
 
 
-def _ablegen_vertragsdokument(pdf_bytes, titel, vertrag):
-    """Legt ein beim Vertrag generiertes Standard-Dokument automatisch in die Akte
-    (→ Mieterportal). **Ein Beleg je (Objekt, Titel)** — wird der Vertrag neu
-    erstellt oder neu versendet, wird das bestehende Dokument in-place aktualisiert
-    statt ein Duplikat anzulegen (verhindert die Ablage-Explosion). Beilagen wie
-    Hausordnung/Allgemeine Bedingungen sind ohnehin objektweit identisch."""
+def _ablegen_vertragsdokument(pdf_bytes, titel, vertrag, *, ueberschreiben=True):
+    """Legt ein beim Vertrag generiertes Standard-Dokument in die Akte
+    (→ Mieterportal). **Ein Beleg je (Vertrag, Titel)** — kein Duplikat bei
+    erneutem Erzeugen.
+
+    JE VERTRAG, NICHT JE OBJEKT (korrigiert am 28.09.2026)
+    Bis dahin wurde das vorhandene Dokument über (Objekt, Titel) gesucht und
+    dann auf den neuen Vertrag umgehängt. Erzeugte man den Mietvertrag des
+    NACHMIETERS, überschrieb das den Mietvertrag des VORMIETERS und hängte
+    ihn dem neuen Mieter an: Der Vormieter hatte danach kein einziges
+    Vertragsdokument mehr in der Akte. `ablegen(dedup=True)` sucht je Vertrag
+    — dorthin wird jetzt weitergereicht.
+
+    ANSEHEN VERÄNDERT DIE AKTE NICHT (`ueberschreiben=False`)
+    Die Download-Views erzeugen das PDF aus den AKTUELLEN Vertragsdaten. Hätten
+    sie das abgelegte Dokument überschrieben, wäre nach jeder Änderung am
+    Vertrag die tatsächlich verschickte Fassung weg — ausgelöst schon durch
+    blosses Ansehen, auch mit Lesezugriff. Sie legen darum nur an, was fehlt.
+    Überschrieben wird nur beim ausdrücklichen Erstellen des Vertrags
+    (`fw/vertragserstellung.py`)."""
     try:
         from rentals.models import Dokument
-        from django.core.files.base import ContentFile
-        from core.services.ablage import ablegen, _slug
-        einheit = getattr(vertrag, 'einheit', None)
-        if einheit is not None:
-            vorhanden = (Dokument.objects
-                         .filter(kategorie='vertrag', bezeichnung=titel[:200], einheit=einheit)
-                         .order_by('-id').first())
-            if vorhanden is not None:
-                vorhanden.vertrag = vertrag
-                vorhanden.mieter = getattr(vertrag, 'mieter', None) or vorhanden.mieter
-                vorhanden.datei.save(f"{_slug(titel)}.pdf", ContentFile(pdf_bytes), save=True)
-                return
+        from core.services.ablage import ablegen
+        if not ueberschreiben and Dokument.alle_organisationen.filter(
+                vertrag=vertrag, bezeichnung=(titel or 'Dokument')[:200]).exists():
+            return
         ablegen(pdf_bytes, titel, kategorie='vertrag', vertrag=vertrag, dedup=True)
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
@@ -61,13 +67,14 @@ VERTRAGSPAKET_TITEL = ['Mietvertrag', 'Allgemeine Bedingungen', 'Hausordnung',
                        'Merkblatt Lüften', 'Wohnungsausweis', 'Begleitbrief Mietvertrag']
 
 
-def erzeuge_und_ablege_vertragspaket(vertrag):
+def erzeuge_und_ablege_vertragspaket(vertrag, *, ueberschreiben=True):
     """Erzeugt Mietvertrag + Standard-Beilagen, legt jedes einzeln in die Akte
-    (→ Mieterportal). Gibt eine Liste (dateiname, pdf_bytes) zurück."""
+    (→ Mieterportal). Gibt eine Liste (dateiname, pdf_bytes) zurück.
+    `ueberschreiben=False` für reine Downloads — siehe `_ablegen_vertragsdokument`."""
     dateien = []
     try:
         pdf = generate_vertrag_pdf_bytes(vertrag)
-        _ablegen_vertragsdokument(pdf, "Mietvertrag", vertrag)
+        _ablegen_vertragsdokument(pdf, "Mietvertrag", vertrag, ueberschreiben=ueberschreiben)
         dateien.append((f"01_Mietvertrag_{slugify(vertrag.mieter.nachname)}.pdf", pdf))
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
@@ -77,7 +84,7 @@ def erzeuge_und_ablege_vertragspaket(vertrag):
         try:
             pdf = generate_dokument_pdf_bytes(vertrag, doc_type)
             _tpl, titel, _extra = DOKUMENT_TYPEN[doc_type]
-            _ablegen_vertragsdokument(pdf, titel, vertrag)
+            _ablegen_vertragsdokument(pdf, titel, vertrag, ueberschreiben=ueberschreiben)
             dateien.append((f"{i:02d}_{slugify(titel)}.pdf", pdf))
         except Exception:
             continue
@@ -91,7 +98,7 @@ def generate_vertragspaket_zip(request, vertrag_id):
     import io
     import zipfile
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
-    dateien = erzeuge_und_ablege_vertragspaket(vertrag)
+    dateien = erzeuge_und_ablege_vertragspaket(vertrag, ueberschreiben=False)
     if not dateien:
         return HttpResponse("Keine Dokumente erzeugt.", status=500)
     buf = io.BytesIO()
@@ -114,7 +121,7 @@ def generate_dokument_view(request, vertrag_id, doc_type):
     try:
         pdf_bytes = generate_dokument_pdf_bytes(vertrag, doc_type)
         _tpl, titel, _extra = DOKUMENT_TYPEN[doc_type]
-        _ablegen_vertragsdokument(pdf_bytes, titel, vertrag)
+        _ablegen_vertragsdokument(pdf_bytes, titel, vertrag, ueberschreiben=False)
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         filename = f"{slugify(titel)}_{vertrag.mieter.nachname}.pdf"
         response['Content-Disposition'] = f'inline; filename="{filename}"'
