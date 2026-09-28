@@ -17,6 +17,9 @@ from datetime import date
 
 from django.test import Client, TestCase
 
+from crm.models import Mieter
+from rentals.models import Mietvertrag
+
 from core.tests._helfer import _basis_objekte, _team_user, _test_organisation
 
 
@@ -209,3 +212,53 @@ class ZahlungsverzugOhneSachbearbeitungTests(TestCase):
         vertrag = f'/neu/vertraege/{self.v.pk}/'
         self.assertNotContains(_client('Sachbearbeiter').get(vertrag), self.url)
         self.assertContains(_client('Verwalter').get(vertrag), self.url)
+
+
+class NebenkostenVersandOhneSachbearbeitungTests(TestCase):
+    """Nebenkostenabrechnung an die Mieter geben: Inhaber und Verwalter.
+
+    Der Versand legt die Abrechnung jedes Mieters in dessen Akte — und damit
+    sofort ins Mieterportal. Er ging auch für eine NICHT verbuchte Periode.
+    """
+
+    def setUp(self):
+        from decimal import Decimal
+        from finance.models import AbrechnungsPeriode, NebenkostenBeleg
+        from portfolio.models import Einheit, Liegenschaft
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='NK 1',
+                                         plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='whg',
+                                   flaeche_m2=Decimal('80'))
+        m = Mieter.objects.create(typ='person', vorname='Nina', nachname='Kosten',
+                                  strasse='Weg 2', plz='8000', ort='ZH')
+        self.v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
+                                            netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
+                                            status='aktiv', nk_abrechnungsart='akonto')
+        self.p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK 2023',
+                                                   start_datum=date(2023, 1, 1),
+                                                   ende_datum=date(2023, 12, 31))
+        NebenkostenBeleg.objects.create(periode=self.p, text='Heizung', betrag=Decimal('1200'),
+                                        datum=date(2023, 6, 1), verteilschluessel='m2')
+
+    def _im_portal(self):
+        from rentals.models import Dokument
+        return Dokument.objects.filter(vertrag=self.v, bezeichnung__icontains='Nebenkostenabrechnung')
+
+    def test_sachbearbeiter_versendet_nicht(self):
+        antwort = _client('Sachbearbeiter').post(f'/neu/nebenkosten/{self.p.pk}/versand/')
+        self.assertEqual(antwort.status_code, 403)
+        self.assertFalse(self._im_portal().exists())
+
+    def test_verwalter_versendet(self):
+        _client('Verwalter').post(f'/neu/nebenkosten/{self.p.pk}/versand/')
+        self.assertTrue(self._im_portal().exists())
+
+    def test_knoepfe_nur_fuer_berechtigte(self):
+        detail = f'/neu/nebenkosten/{self.p.pk}/'
+        sachb = _client('Sachbearbeiter').get(detail)
+        self.assertEqual(sachb.status_code, 200)
+        self.assertNotContains(sachb, f'/neu/nebenkosten/{self.p.pk}/versand/')
+        self.assertNotContains(sachb, f'/neu/nebenkosten/{self.p.pk}/verbuchen/')
+        verw = _client('Verwalter').get(detail)
+        self.assertContains(verw, f'/neu/nebenkosten/{self.p.pk}/versand/')
+        self.assertContains(verw, f'/neu/nebenkosten/{self.p.pk}/verbuchen/')

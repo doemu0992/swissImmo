@@ -1,6 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
 {% load chf %}
+{% load rechte %}
 {% block title %}{{ p.bezeichnung }} — swissImmo{% endblock %}
 
 {% block content %}
@@ -23,16 +24,20 @@
     </div>
     <div class="flex items-center gap-2 flex-wrap">
         {% if hkvo_angewendet %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-info-flaeche fw-info" title="Verbrauchsabhängige Heizkostenabrechnung angewendet">HKVO ✓</span>{% endif %}
+        {% if request.user|darf:"/neu/nebenkosten/1/versand/" %}
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/versand/" title="Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF">
             {% csrf_token %}
             <button class="text-sm font-semibold fw-flaeche border fw-linie-marke fw-marke hover:fw-markenflaeche px-4 py-1.5 rounded-lg">{% zeichen 'herunterladen' klasse='mr-1' %}Abrechnungen erstellen &amp; ablegen</button>
         </form>
+        {% endif %}
         {% if p.abgeschlossen %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-gut-flaeche fw-gut">Abgeschlossen</span>
         {% else %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-warn-flaeche fw-warnton">Offen</span>
+        {% if request.user|darf:"/neu/nebenkosten/1/verbuchen/" %}
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" onsubmit="return confirm('Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen.');">
             {% csrf_token %}
             <button class="text-sm font-semibold fw-btn fw-primary px-4 py-1.5 rounded-lg">{% zeichen 'gut' klasse='mr-1' %}Verbuchen</button>
         </form>
+        {% endif %}
         {% endif %}
     </div>
 </div>

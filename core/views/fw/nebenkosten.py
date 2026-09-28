@@ -15,7 +15,8 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN,
+                       VERWALTUNGS_ROLLEN)
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
 
@@ -271,7 +272,14 @@ def fw_nebenkosten_verbuchen(request, pk):
     return redirect(f'/neu/nebenkosten/{p.id}/')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+# Inhaber und Verwalter (seit 28.09.2026, vorher auch die Sachbearbeitung).
+# Der Versand legt die Abrechnung jedes Mieters in dessen Akte und damit sofort
+# ins Mieterportal — das ist die Freigabe an die Mieter, und «Nebenkosten-
+# abrechnung freigeben» ist nach docs/KONZEPT-UI.md §8 Inhaber und Verwaltern
+# vorbehalten. Er ging auch für eine NICHT abgeschlossene Periode (dann live
+# gerechnet): Die Sachbearbeitung konnte so eine Abrechnung, die niemand
+# verbucht hatte, allen Mietern der Liegenschaft zustellen.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_nebenkosten_versand(request, pk):
     """Erzeugt je Mieter eine Nebenkosten-Abrechnung (PDF), legt sie in dessen
     Akte (→ Mieterportal) und liefert alle zusammen als Sammel-PDF."""
