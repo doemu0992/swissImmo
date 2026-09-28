@@ -9,7 +9,7 @@ from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from django.conf import settings
-from django.utils import timezone
+from django.utils import dateformat, timezone, translation
 
 logger = logging.getLogger(__name__)
 
@@ -336,8 +336,11 @@ def generate_mahnung_pdf(vertrag, offener_betrag, verwaltung):
     }
 
     heute = timezone.now()
-    monat_text = heute.strftime("%B %Y") # Wird für die Rechnung genutzt
-    datum_text = heute.strftime("%d. %B %Y") # Datum oben rechts
+    # Monatsnamen nicht über strftime (Server-Locale, oft Englisch).
+    # Bis Dokumente der Empfängersprache folgen (D11), bleibt es Deutsch.
+    with translation.override('de'):
+        monat_text = dateformat.format(heute, 'F Y')  # Wird für die Rechnung genutzt
+        datum_text = dateformat.format(heute, 'd. F Y')  # Datum oben rechts
 
     # Grund für den QR Code
     reason = f"Mahnung Miete {vertrag.einheit.bezeichnung}"
