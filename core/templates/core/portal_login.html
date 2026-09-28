@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="de">
+{% load i18n %}<!DOCTYPE html>
+{% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal-Login | SwissImmo</title>
+    <title>{% trans "Portal-Login | SwissImmo" %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
     <style>
         :root {
@@ -145,26 +145,26 @@
             <div class="n">swissImmo</div>
         </div>
         <div class="pane-mid">
-            <h1>Ihr persönliches Immobilien-Portal</h1>
-            <p>Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht zur Verwaltung — an einem Ort.</p>
+            <h1>{% trans "Ihr persönliches Immobilien-Portal" %}</h1>
+            <p>{% trans "Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht zur Verwaltung — an einem Ort." %}</p>
             <div class="feats">
-                <div class="feat"><span class="tick">✓</span> Mietvertrag &amp; Dokumente jederzeit abrufbar</div>
-                <div class="feat"><span class="tick">✓</span> Rechnungen mit QR-Einzahlschein</div>
-                <div class="feat"><span class="tick">✓</span> Schaden melden &amp; Kündigung erfassen</div>
+                <div class="feat"><span class="tick">✓</span> {% trans "Mietvertrag &amp; Dokumente jederzeit abrufbar" %}</div>
+                <div class="feat"><span class="tick">✓</span> {% trans "Rechnungen mit QR-Einzahlschein" %}</div>
+                <div class="feat"><span class="tick">✓</span> {% trans "Schaden melden &amp; Kündigung erfassen" %}</div>
             </div>
         </div>
-        <div class="pane-foot">© swissImmo · Sicheres Login für Mietende und Eigentümer</div>
+        <div class="pane-foot">{% trans "© swissImmo · Sicheres Login für Mietende und Eigentümer" %}</div>
     </aside>
 
     <main class="formpane">
         <div class="authcard">
             <div class="mobrand">
                 <div class="mark">si</div>
-                <div class="n">swissImmo Portal</div>
+                <div class="n">{% trans "swissImmo Portal" %}</div>
             </div>
             <div class="head">
-                <h2>Willkommen zurück</h2>
-                <p>Bitte melden Sie sich in Ihrem Portal an.</p>
+                <h2>{% trans "Willkommen zurück" %}</h2>
+                <p>{% trans "Bitte melden Sie sich in Ihrem Portal an." %}</p>
             </div>
             <form class="card" method="POST" action="{% url 'portal_login' %}">
                 {% csrf_token %}
@@ -176,30 +176,30 @@
                 {% endif %}
 
                 <div class="field">
-                    <label for="id_username">Benutzername</label>
+                    <label for="id_username">{% trans "Benutzername" %}</label>
                     <div class="inwrap">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <input class="input" id="id_username" type="text" name="username" required autofocus
                             autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" inputmode="email"
-                            placeholder="Ihr Benutzername oder E-Mail">
+                            placeholder="{% trans 'Ihr Benutzername oder E-Mail' %}">
                     </div>
                 </div>
 
                 <div class="field">
-                    <label for="pw">Passwort</label>
+                    <label for="pw">{% trans "Passwort" %}</label>
                     <div class="inwrap">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <input class="input haseye" id="pw" type="password" name="password" required
                             autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="current-password"
                             placeholder="••••••••">
-                        <button class="eye" type="button" tabindex="-1" aria-label="Passwort anzeigen"
+                        <button class="eye" type="button" tabindex="-1" aria-label="{% trans 'Passwort anzeigen' %}"
                             onclick="var p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <button class="submit" type="submit">Anmelden
+                <button class="submit" type="submit">{% trans "Anmelden" %}
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </button>
 
@@ -207,10 +207,10 @@
             </form>
 
             <div class="hint">
-                🔑 Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung. Noch keinen Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung.
+                {% trans "🔑 Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung. Noch keinen Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung." %}
             </div>
             <div style="margin-top: 16px">{% include 'core/_sprachwahl.html' %}</div>
-            <div class="back"><a href="{% url 'index' %}">← Zurück zur Startseite</a></div>
+            <div class="back"><a href="{% url 'index' %}">← {% trans "Zurück zur Startseite" %}</a></div>
         </div>
     </main>
 </div>

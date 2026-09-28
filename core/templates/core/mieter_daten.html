@@ -1,48 +1,48 @@
 {% extends 'core/portal_base.html' %}
-{% load zeichen %}
-{% block title %}Meine Daten — Mieterportal{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Meine Daten — Mieterportal" %}{% endblock %}
 {% block brand_icon %}fa-id-card{% endblock %}
-{% block brand_mobile %}Meine Daten{% endblock %}
+{% block brand_mobile %}{% trans "Meine Daten" %}{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='daten' %}{% endblock %}
 
 {% block content %}
     <div class="mb-6">
-        <h1 class="text-2xl font-black tracking-tight fw-strong">Meine Daten</h1>
-        <p class="fw-mutet mt-1">Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung automatisch gemeldet.</p>
+        <h1 class="text-2xl font-black tracking-tight fw-strong">{% trans "Meine Daten" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung automatisch gemeldet." %}</p>
     </div>
 
     <form method="post" class="space-y-5">
         {% csrf_token %}
         <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4">
-            <h2 class="font-bold fw-strong">Person</h2>
+            <h2 class="font-bold fw-strong">{% trans "Person" %}</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div><div class="text-xs font-semibold fw-faint mb-1">Name</div>
+                <div><div class="text-xs font-semibold fw-faint mb-1">{% trans "Name" %}</div>
                     <div class="font-semibold fw-strong">{{ mieter.display_name }}</div></div>
-                <div><div class="text-xs font-semibold fw-faint mb-1">Aktuelle Adresse</div>
+                <div><div class="text-xs font-semibold fw-faint mb-1">{% trans "Aktuelle Adresse" %}</div>
                     <div class="font-semibold fw-strong">{{ mieter.strasse }}{% if mieter.plz or mieter.ort %}, {{ mieter.plz }} {{ mieter.ort }}{% endif %}</div></div>
             </div>
-            <p class="text-xs fw-faint">Name und Adresse können nur durch die Verwaltung geändert werden — nutzen Sie dafür das Feld «Mitteilung» unten.</p>
+            <p class="text-xs fw-faint">{% trans "Name und Adresse können nur durch die Verwaltung geändert werden — nutzen Sie dafür das Feld «Mitteilung» unten." %}</p>
         </div>
 
         <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4">
-            <h2 class="font-bold fw-strong">Kontakt</h2>
+            <h2 class="font-bold fw-strong">{% trans "Kontakt" %}</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Mobile</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mobile" %}</label>
                     <input name="mobile" value="{{ mieter.mobile }}" placeholder="079 …" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
                     <input name="telefon_privat" value="{{ mieter.telefon_privat }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
-                <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+                <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
                     <input name="email" type="email" value="{{ mieter.email }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
             </div>
         </div>
 
         <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3">
-            <h2 class="font-bold fw-strong">Mitteilung an die Verwaltung <span class="fw-faint font-normal text-sm">(optional)</span></h2>
-            <textarea name="adresse_meldung" rows="3" placeholder="z.B. Namensänderung, Korrespondenzadresse, weitere Anliegen …" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></textarea>
+            <h2 class="font-bold fw-strong">{% trans "Mitteilung an die Verwaltung" %} <span class="fw-faint font-normal text-sm">{% trans "(optional)" %}</span></h2>
+            <textarea name="adresse_meldung" rows="3" placeholder="{% trans 'z.B. Namensänderung, Korrespondenzadresse, weitere Anliegen …' %}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></textarea>
         </div>
 
         <button type="submit" class="fw-btn fw-primary text-sm font-bold px-5 py-3 rounded-xl">
-            {% zeichen 'speichern' klasse='mr-1.5' %}Speichern &amp; melden
+            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern &amp; melden" %}
         </button>
     </form>
 {% endblock %}

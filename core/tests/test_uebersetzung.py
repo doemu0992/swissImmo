@@ -126,6 +126,28 @@ UEBERSETZT = (
     '403.html',
     '404.html',
     '500.html',
+    # Tranche «Portale» (Teil A: Mieterportal)
+    'core/portal_base.html',
+    'core/_mieter_nav.html',
+    'core/mieter_portal.html',
+    'core/mieter_daten.html',
+    'core/mieter_dokumente.html',
+    'core/mieter_konto.html',
+    'core/mieter_passwort.html',
+    'core/mieter_rechnungen.html',
+    'core/mieter_schaden.html',
+    'core/mieter_ticket_detail.html',
+    'core/mieter_tickets.html',
+    'core/passwort_reset.html',
+    'core/passwort_reset_complete.html',
+    'core/passwort_reset_confirm.html',
+    'core/passwort_reset_done.html',
+    'core/_passwort_shell_top.html',
+    'core/_passwort_shell_bottom.html',
+    # Tranche «Portale» (Teil B: Eigentümerportal, Anmeldung)
+    'core/portal.html',
+    'core/portal_login.html',
+    'core/login.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -204,6 +226,15 @@ STICHPROBE = {
                              'it': 'Pagina non trovata', 'en': 'Page not found'},
     'Notfallcodes':       {'de': 'Notfallcodes', 'fr': 'Codes de secours',
                            'it': 'Codici di emergenza', 'en': 'Backup codes'},
+    # Mieterportal — Höflichkeitsform
+    'Mietkaution':        {'de': 'Mietkaution', 'fr': 'Garantie de loyer',
+                           'it': 'Deposito di garanzia', 'en': 'Rent deposit'},
+    'Schaden melden':     {'de': 'Schaden melden', 'fr': 'Signaler un dégât',
+                           'it': 'Segnalare un danno', 'en': 'Report damage'},
+    'Reparaturen zur Freigabe': {'de': 'Reparaturen zur Freigabe', 'fr': 'Réparations à approuver',
+                           'it': 'Riparazioni da approvare', 'en': 'Repairs awaiting approval'},
+    'Willkommen zurück':  {'de': 'Willkommen zurück', 'fr': 'Bon retour',
+                           'it': 'Bentornato/a', 'en': 'Welcome back'},
 }
 
 

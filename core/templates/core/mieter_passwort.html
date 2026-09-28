@@ -1,14 +1,14 @@
 {% extends 'core/portal_base.html' %}
-{% load zeichen %}
-{% block title %}Passwort ändern — Mieterportal{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Passwort ändern — Mieterportal" %}{% endblock %}
 {% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-schluessel"/></svg>{% endblock %}
-{% block brand_mobile %}Passwort{% endblock %}
+{% block brand_mobile %}{% trans "Passwort" %}{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='passwort' %}{% endblock %}
 
 {% block content %}
     <div class="mb-6">
-        <h1 class="text-2xl font-black tracking-tight fw-strong">Passwort ändern</h1>
-        <p class="fw-mutet mt-1">Wählen Sie ein sicheres Passwort (mind. 8 Zeichen).</p>
+        <h1 class="text-2xl font-black tracking-tight fw-strong">{% trans "Passwort ändern" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Wählen Sie ein sicheres Passwort (mind. 8 Zeichen)." %}</p>
     </div>
 
     <form method="post" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4 max-w-lg">
@@ -19,14 +19,14 @@
             {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
         </div>
         {% endif %}
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Aktuelles Passwort</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Aktuelles Passwort" %}</label>
             <input type="password" name="old_password" required autocomplete="current-password" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Neues Passwort</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Neues Passwort" %}</label>
             <input type="password" name="new_password1" required autocomplete="new-password" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Neues Passwort wiederholen</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Neues Passwort wiederholen" %}</label>
             <input type="password" name="new_password2" required autocomplete="new-password" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
         <button type="submit" class="fw-btn fw-primary text-sm font-bold px-5 py-3 rounded-xl">
-            {% zeichen 'speichern' klasse='mr-1.5' %}Passwort ändern
+            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Passwort ändern" %}
         </button>
     </form>
 {% endblock %}

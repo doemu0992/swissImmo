@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="de">
+{% load i18n %}<!DOCTYPE html>
+{% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | SwissImmo Portal</title>
+    <title>{% trans "Login | SwissImmo Portal" %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
     <style>
         :root {
@@ -143,15 +143,15 @@
             <div class="n">swissImmo</div>
         </div>
         <div class="pane-mid">
-            <h1>Ihre Liegenschaften, sauber im Griff.</h1>
-            <p>Mieten, Nebenkosten, Buchhaltung und Kommunikation — die Schweizer Liegenschaftsverwaltung in einem Cockpit.</p>
+            <h1>{% trans "Ihre Liegenschaften, sauber im Griff." %}</h1>
+            <p>{% trans "Mieten, Nebenkosten, Buchhaltung und Kommunikation — die Schweizer Liegenschaftsverwaltung in einem Cockpit." %}</p>
             <div class="feats">
-                <div class="feat"><span class="tick">✓</span> QR-Rechnungen &amp; automatischer Bankabgleich</div>
-                <div class="feat"><span class="tick">✓</span> Nebenkostenabrechnung nach VMWG</div>
-                <div class="feat"><span class="tick">✓</span> Eigentümer- &amp; Mieterportal inklusive</div>
+                <div class="feat"><span class="tick">✓</span> {% trans "QR-Rechnungen &amp; automatischer Bankabgleich" %}</div>
+                <div class="feat"><span class="tick">✓</span> {% trans "Nebenkostenabrechnung nach VMWG" %}</div>
+                <div class="feat"><span class="tick">✓</span> {% trans "Eigentümer- &amp; Mieterportal inklusive" %}</div>
             </div>
         </div>
-        <div class="pane-foot">© swissImmo · Alle Angaben ohne Gewähr</div>
+        <div class="pane-foot">{% trans "© swissImmo · Alle Angaben ohne Gewähr" %}</div>
     </aside>
 
     <main class="formpane">
@@ -161,8 +161,8 @@
                 <div class="n">swissImmo</div>
             </div>
             <div class="head">
-                <h2>Willkommen zurück</h2>
-                <p>Melden Sie sich im Verwaltungs-Cockpit an.</p>
+                <h2>{% trans "Willkommen zurück" %}</h2>
+                <p>{% trans "Melden Sie sich im Verwaltungs-Cockpit an." %}</p>
             </div>
             <form class="card" method="POST" action="{% url 'login' %}">
                 {% csrf_token %}
@@ -174,17 +174,17 @@
                 {% endif %}
 
                 <div class="field">
-                    <label for="id_username">Benutzername</label>
+                    <label for="id_username">{% trans "Benutzername" %}</label>
                     <div class="inwrap">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <input class="input" id="id_username" type="text" name="username" required autofocus
                             autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" inputmode="email"
-                            placeholder="Ihr Benutzername">
+                            placeholder="{% trans 'Ihr Benutzername' %}">
                     </div>
                 </div>
 
                 <div class="field">
-                    <label for="id_password">Passwort</label>
+                    <label for="id_password">{% trans "Passwort" %}</label>
                     <div class="inwrap">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <input class="input" id="id_password" type="password" name="password" required
@@ -193,9 +193,9 @@
                     </div>
                 </div>
 
-                <div class="forgot"><a href="/passwort/vergessen/">Passwort vergessen?</a></div>
+                <div class="forgot"><a href="/passwort/vergessen/">{% trans "Passwort vergessen?" %}</a></div>
 
-                <button class="submit" type="submit">Anmelden
+                <button class="submit" type="submit">{% trans "Anmelden" %}
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </button>
 
@@ -203,11 +203,11 @@
             </form>
 
             <div class="hint">
-                🔑 <b>Mieterin, Mieter oder Eigentümer?</b> Nutzen Sie das
-                <a href="{% url 'portal_login' %}">Portal-Login</a> mit den Zugangsdaten, die Sie per E-Mail von Ihrer Verwaltung erhalten haben.
+                {% url 'portal_login' as portal_url %}🔑 {% blocktrans trimmed %}<b>Mieterin, Mieter oder Eigentümer?</b> Nutzen Sie das
+                <a href="{{ portal_url }}">Portal-Login</a> mit den Zugangsdaten, die Sie per E-Mail von Ihrer Verwaltung erhalten haben.{% endblocktrans %}
             </div>
             <div style="margin-top: 16px">{% include 'core/_sprachwahl.html' %}</div>
-            <div class="back"><a href="{% url 'index' %}">← Zurück zum öffentlichen Portal</a></div>
+            <div class="back"><a href="{% url 'index' %}">← {% trans "Zurück zum öffentlichen Portal" %}</a></div>
         </div>
     </main>
 </div>

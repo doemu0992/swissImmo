@@ -1,10 +1,10 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}<!DOCTYPE html>
-<html lang="de">
+{% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Portal — SwissImmo{% endblock %}</title>
+    <title>{% block title %}{% trans "Portal — SwissImmo" %}{% endblock %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
 {% include 'core/_assets_aussen.html' %}
     <style>
@@ -26,10 +26,10 @@
                 {% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-schluessel"/></svg>{% endblock %}
             </span>
             <div class="leading-tight flex-1">
-                <div class="font-extrabold tracking-wide text-sm uppercase">{% block brand %}Mieterportal{% endblock %}</div>
+                <div class="font-extrabold tracking-wide text-sm uppercase">{% block brand %}{% trans "Mieterportal" %}{% endblock %}</div>
                 <div class="text-[11px] fw-faint">SwissImmo</div>
             </div>
-            <button type="button" onclick="pCloseNav()" aria-label="Menü schliessen" class="lg:hidden fw-faint hover:text-white">{% zeichen 'schliessen' %}</button>
+            <button type="button" onclick="pCloseNav()" aria-label="{% trans 'Menü schliessen' %}" class="lg:hidden fw-faint hover:text-white">{% zeichen 'schliessen' %}</button>
         </div>
 
         <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto text-sm">
@@ -42,7 +42,7 @@
             </div>
             <form method="post" action="/logout/">{% csrf_token %}
                 <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg fw-faint hover:fw-flaeche hover:text-white transition-colors">
-                    {% zeichen 'extern' klasse='w-5 text-center' %} Abmelden
+                    {% zeichen 'extern' klasse='w-5 text-center' %} {% trans "Abmelden" %}
                 </button>
             </form>
         </div>
@@ -52,8 +52,8 @@
     <div class="flex-1 min-w-0 flex flex-col">
         <!-- Topbar (mobil) -->
         <header class="lg:hidden h-16 px-4 flex items-center gap-3 bg-[#161926] text-white sticky top-0 z-30">
-            <button type="button" onclick="pOpenNav()" aria-label="Menü öffnen" class="fw-faint hover:text-white text-lg p-1">{% zeichen 'mehr' %}</button>
-            <span class="font-extrabold tracking-wide text-sm uppercase">{% block brand_mobile %}Mieterportal{% endblock %}</span>
+            <button type="button" onclick="pOpenNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-faint hover:text-white text-lg p-1">{% zeichen 'mehr' %}</button>
+            <span class="font-extrabold tracking-wide text-sm uppercase">{% block brand_mobile %}{% trans "Mieterportal" %}{% endblock %}</span>
         </header>
 
         <main class="p-4 sm:p-6 lg:p-10 w-full max-w-5xl mx-auto pb-24">
@@ -67,7 +67,7 @@
 
             {% block content %}{% endblock %}
 
-            <p class="text-center text-xs fw-faint mt-8">{% block footer %}SwissImmo Mieterportal · Alle Angaben ohne Gewähr{% endblock %}</p>
+            <p class="text-center text-xs fw-faint mt-8">{% block footer %}{% trans "SwissImmo Mieterportal · Alle Angaben ohne Gewähr" %}{% endblock %}</p>
         </main>
     </div>
 </div>
