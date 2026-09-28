@@ -1,17 +1,17 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Betriebskostenspiegel {{ jahr }} — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% blocktrans %}Betriebskostenspiegel {{ jahr }}{% endblocktrans %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/berichte/" class="hover:fw-marke">Berichte</a>
+    <a href="/neu/berichte/" class="hover:fw-marke">{% trans "Berichte" %}</a>
     {% zeichen 'weiter' klasse='text-[9px]' %}
-    <span class="fw-mutet font-medium">Betriebskostenspiegel</span>
+    <span class="fw-mutet font-medium">{% trans "Betriebskostenspiegel" %}</span>
 </nav>
 
 <div class="fw-phead">
     <div>
-        <h1>Betriebskostenspiegel {{ jahr }}</h1>
-        <p>Aufwand je Liegenschaft, umgelegt auf CHF/m² — quervergleichbar.</p>
+        <h1>{% blocktrans %}Betriebskostenspiegel {{ jahr }}{% endblocktrans %}</h1>
+        <p>{% trans "Aufwand je Liegenschaft, umgelegt auf CHF/m² — quervergleichbar." %}</p>
     </div>
     <form method="get" class="shrink-0">
         <select name="jahr" onchange="this.form.submit()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2">
@@ -24,15 +24,15 @@
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
     <div class="fw-card p-4">
         <div class="text-2xl font-bold fw-strong">CHF {{ total_kosten|floatformat:0 }}</div>
-        <div class="text-sm fw-mutet">Aufwand total {{ jahr }}</div>
+        <div class="text-sm fw-mutet">{% blocktrans %}Aufwand total {{ jahr }}{% endblocktrans %}</div>
     </div>
     <div class="fw-card p-4">
         <div class="text-2xl font-bold fw-strong">{{ total_m2|floatformat:0 }} m²</div>
-        <div class="text-sm fw-mutet">Fläche total</div>
+        <div class="text-sm fw-mutet">{% trans "Fläche total" %}</div>
     </div>
     <div class="fw-card p-4">
         <div class="text-2xl font-bold fw-marke">{% if schnitt %}CHF {{ schnitt|floatformat:2 }}{% else %}—{% endif %}</div>
-        <div class="text-sm fw-mutet">Ø CHF/m² (Portfolio)</div>
+        <div class="text-sm fw-mutet">{% trans "Ø CHF/m² (Portfolio)" %}</div>
     </div>
 </div>
 
@@ -40,11 +40,11 @@
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-            <th class="px-5 py-3 font-semibold">Liegenschaft</th>
-            <th class="px-5 py-3 font-semibold text-right">Aufwand {{ jahr }}</th>
-            <th class="px-5 py-3 font-semibold text-right">Fläche</th>
-            <th class="px-5 py-3 font-semibold text-right">CHF/m²</th>
-            <th class="px-5 py-3 font-semibold text-right">vs. Ø</th>
+            <th class="px-5 py-3 font-semibold">{% trans "Liegenschaft" %}</th>
+            <th class="px-5 py-3 font-semibold text-right">{% blocktrans %}Aufwand {{ jahr }}{% endblocktrans %}</th>
+            <th class="px-5 py-3 font-semibold text-right">{% trans "Fläche" %}</th>
+            <th class="px-5 py-3 font-semibold text-right">{% trans "CHF/m²" %}</th>
+            <th class="px-5 py-3 font-semibold text-right">{% trans "vs. Ø" %}</th>
         </tr></thead>
         <tbody class="fw-dv">
         {% for r in rows %}
@@ -61,11 +61,11 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="px-5 py-8 text-center text-sm fw-faint italic">Keine Liegenschaften / keine Aufwandbuchungen im {{ jahr }}.</td></tr>
+        <tr><td colspan="5" class="px-5 py-8 text-center text-sm fw-faint italic">{% blocktrans %}Keine Liegenschaften / keine Aufwandbuchungen im {{ jahr }}.{% endblocktrans %}</td></tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
 </div>
-<p class="text-xs fw-faint mt-3">Basis: Buchungen auf Aufwandkonten (Soll) je Liegenschaft im gewählten Jahr, geteilt durch die Summe der erfassten Objektflächen.</p>
+<p class="text-xs fw-faint mt-3">{% trans "Basis: Buchungen auf Aufwandkonten (Soll) je Liegenschaft im gewählten Jahr, geteilt durch die Summe der erfassten Objektflächen." %}</p>
 {% endblock %}
