@@ -172,7 +172,15 @@ def _po_eintraege(pfad):
     if schluessel is not None:
         eintraege[schluessel] = puffer
     eintraege.pop('', None)          # Dateikopf
-    return eintraege
+    # Escapes aufloesen (\" → ", \n → Zeilenumbruch), wie msgfmt es tut. Ohne
+    # das passt ein Eintrag mit Anfuehrungszeichen — etwa ein <a class="…"> in
+    # einem blocktrans — nie zu seinem Schluessel im .mo.
+    return {_po_text(k): {m: _po_text(v) for m, v in w.items()}
+            for k, w in eintraege.items()}
+
+
+def _po_text(text):
+    return re.sub(r'\\(.)', lambda m: {'n': '\n', 't': '\t'}.get(m.group(1), m.group(1)), text)
 
 
 class KatalogTests(SimpleTestCase):
