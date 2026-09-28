@@ -1,15 +1,15 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load betreuung %}
 {% load chf %}
-{% block title %}Ticket #{{ t.id }} — swissImmo{% endblock %}
+{% block title %}{% blocktrans with id=t.id %}Ticket #{{ id }}{% endblocktrans %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <nav class="fw-akte-pfad" style="margin-bottom:10px">
-    <a href="/neu/schaeden/{{ lg_query }}">Schadensfälle</a>
+    <a href="/neu/schaeden/{{ lg_query }}">{% trans "Schadensfälle" %}</a>
     {% zeichen 'weiter' %}
-    <b>Schaden #{{ t.id }}</b>
+    <b>{% blocktrans with id=t.id %}Schaden #{{ id }}{% endblocktrans %}</b>
 </nav>
 
 {% comment %} ===== AKTENKOPF nach mockups/konzept-v3 =====
@@ -20,7 +20,7 @@
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'warnung' %}</div>
         <div style="min-width:0">
-            <div class="fw-akte-typ">Schaden · SC-{{ t.id|stringformat:"05d" }}</div>
+            <div class="fw-akte-typ">{% trans "Schaden" %} · SC-{{ t.id|stringformat:"05d" }}</div>
             <h1>{{ t.titel }}</h1>
             <div class="fw-akte-pfad">
                 {% comment %}
@@ -35,30 +35,30 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 öffnet.
 {% endcomment %}
 {% betreut_von t as betreuung %}
-<div class="fw-pz"><span>Betreut von</span><b>{% if betreuung %}{{ betreuung.get_full_name|default:betreuung.username }}{% else %}<span class="fw-warnton">nicht zugeteilt</span>{% endif %}</b></div>
-{% if t.liegenschaft_id %}<div class="fw-pz"><span>Liegenschaft</span><b>{{ t.liegenschaft.strasse }}, {{ t.liegenschaft.ort }}</b></div>{% endif %}
-                {% if t.betroffene_einheit_id %}<div class="fw-pz"><span>Objekt</span><b>{{ t.betroffene_einheit.bezeichnung }}</b></div>{% endif %}
-                {% if t.kategorie %}<div class="fw-pz"><span>Kategorie</span><b>{{ t.kategorie }}</b></div>{% endif %}
-                <div class="fw-pz"><span>Gemeldet von</span><b>{{ melder }}</b></div>
-                <div class="fw-pz"><span>Gemeldet am</span><b>{{ t.erstellt_am|date:"d.m.Y H:i" }}</b></div>
+<div class="fw-pz"><span>{% trans "Betreut von" %}</span><b>{% if betreuung %}{{ betreuung.get_full_name|default:betreuung.username }}{% else %}<span class="fw-warnton">{% trans "nicht zugeteilt" %}</span>{% endif %}</b></div>
+{% if t.liegenschaft_id %}<div class="fw-pz"><span>{% trans "Liegenschaft" %}</span><b>{{ t.liegenschaft.strasse }}, {{ t.liegenschaft.ort }}</b></div>{% endif %}
+                {% if t.betroffene_einheit_id %}<div class="fw-pz"><span>{% trans "Objekt" %}</span><b>{{ t.betroffene_einheit.bezeichnung }}</b></div>{% endif %}
+                {% if t.kategorie %}<div class="fw-pz"><span>{% trans "Kategorie" %}</span><b>{{ t.kategorie }}</b></div>{% endif %}
+                <div class="fw-pz"><span>{% trans "Gemeldet von" %}</span><b>{{ melder }}</b></div>
+                <div class="fw-pz"><span>{% trans "Gemeldet am" %}</span><b>{{ t.erstellt_am|date:"d.m.Y H:i" }}</b></div>
             </div>
             <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
                 <span class="fw-chip {{ s_cls }}">{{ s_label }}</span>
-                <span class="fw-chip {{ p_cls }}">Priorität {{ p_label }}</span>
-                {% if offen_seit > 30 and t.status != 'erledigt' %}<span class="fw-chip fw-crit">seit {{ offen_seit }} Tagen offen</span>{% endif %}
+                <span class="fw-chip {{ p_cls }}">{% trans "Priorität" %} {{ p_label }}</span>
+                {% if offen_seit > 30 and t.status != 'erledigt' %}<span class="fw-chip fw-crit">{% blocktrans with n=offen_seit %}seit {{ n }} Tagen offen{% endblocktrans %}</span>{% endif %}
             </div>
         </div>
         <div class="fw-akte-rechts">
             <div class="relative">
                 <button type="button" onclick="document.getElementById('sAktionen').classList.toggle('hidden'); event.stopPropagation();"
                         class="fw-btn" style="padding:6px 12px;font-size:12px">
-                    {% zeichen 'mehr' klasse='mr-1' %}Mehr
+                    {% zeichen 'mehr' klasse='mr-1' %}{% trans "Mehr" %}
                 </button>
                 <div id="sAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
                     <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/"
-                          onsubmit="return confirm('Schadensmeldung #{{ t.id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.');">
+                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with id=t.id %}Schadensmeldung #{{ id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
-                        <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}Schadensmeldung löschen</button>
+                        <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Schadensmeldung löschen" %}</button>
                     </form>
                 </div>
             </div>
@@ -73,25 +73,25 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 
     <div class="fw-kzn">
         <div>
-            <div class="fw-l">Kosten</div>
+            <div class="fw-l">{% trans "Kosten" %}</div>
             <div class="fw-w">CHF {{ kosten_effektiv|chf }}</div>
-            <div class="fw-f">{% if kosten_geschaetzt %}geschätzt {{ kosten_geschaetzt|chf }}{% else %}keine Schätzung{% endif %}</div>
+            <div class="fw-f">{% if kosten_geschaetzt %}{% blocktrans with b=kosten_geschaetzt|chf %}geschätzt {{ b }}{% endblocktrans %}{% else %}{% trans "keine Schätzung" %}{% endif %}</div>
         </div>
         <div>
-            <div class="fw-l">Aufträge</div>
+            <div class="fw-l">{% trans "Aufträge" %}</div>
             <div class="fw-w">{{ auftraege|length }}</div>
-            <div class="fw-f">{% if auftraege %}an Handwerker vergeben{% else %}noch keiner vergeben{% endif %}</div>
+            <div class="fw-f">{% if auftraege %}{% trans "an Handwerker vergeben" %}{% else %}{% trans "noch keiner vergeben" %}{% endif %}</div>
         </div>
         <div>
-            <div class="fw-l">Offen seit</div>
+            <div class="fw-l">{% trans "Offen seit" %}</div>
             <div class="fw-w{% if offen_seit > 30 and t.status != 'erledigt' %} crit{% elif offen_seit > 14 and t.status != 'erledigt' %} warn{% endif %}" style="font-size:15px">
-                {% if t.status == 'erledigt' %}erledigt{% else %}{{ offen_seit }} Tag{{ offen_seit|pluralize:"e" }}{% endif %}</div>
-            <div class="fw-f">gemeldet {{ t.erstellt_am|date:"d.m.Y" }}</div>
+                {% if t.status == 'erledigt' %}{% trans "erledigt" %}{% else %}{% blocktrans count n=offen_seit %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}{% endif %}</div>
+            <div class="fw-f">{% blocktrans with d=t.erstellt_am|date:"d.m.Y" %}gemeldet {{ d }}{% endblocktrans %}</div>
         </div>
         <div>
-            <div class="fw-l">Letzte Reaktion</div>
+            <div class="fw-l">{% trans "Letzte Reaktion" %}</div>
             <div class="fw-w" style="font-size:15px">{% if letzte_nachricht %}{{ letzte_nachricht.erstellt_am|date:"d.m.Y" }}{% else %}—{% endif %}</div>
-            <div class="fw-f">{% if letzte_nachricht %}{{ nachrichten|length }} Nachricht{{ nachrichten|length|pluralize:"en" }}{% else %}noch keine Antwort{% endif %}</div>
+            <div class="fw-f">{% if letzte_nachricht %}{% blocktrans count n=nachrichten|length %}{{ n }} Nachricht{% plural %}{{ n }} Nachrichten{% endblocktrans %}{% else %}{% trans "noch keine Antwort" %}{% endif %}</div>
         </div>
     </div>
 
@@ -108,8 +108,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
        wird. `faelle/test_aktionen_vollstaendig.py` haelt ihn fest. {% endcomment %}
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
-            <span class="fw-t">Status</span>
-            <span class="fw-neben">steuert Sidebar-Zähler und Auswertungen</span></div>
+            <span class="fw-t">{% trans "Status" %}</span>
+            <span class="fw-neben">{% trans "steuert Sidebar-Zähler und Auswertungen" %}</span></div>
         <div style="padding:13px 15px">
             <form method="post" action="/neu/schaeden/{{ t.id }}/status/" class="flex flex-wrap items-center gap-3">
                 {% csrf_token %}
@@ -119,47 +119,47 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% endfor %}
                 </select>
                 <label class="fw-s flex items-center gap-2">
-                    <input type="checkbox" name="melder_informieren" class="fw-haken">Melder per E-Mail informieren
+                    <input type="checkbox" name="melder_informieren" class="fw-haken">{% trans "Melder per E-Mail informieren" %}
                 </label>
-                <button class="fw-btn fw-primary" style="padding:6px 12px;font-size:12px">Status setzen</button>
+                <button class="fw-btn fw-primary" style="padding:6px 12px;font-size:12px">{% trans "Status setzen" %}</button>
             </form>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="lg:col-span-2 fw-card p-5">
-            <h3 class="fw-t mb-3">Schadensbeschreibung</h3>
+            <h3 class="fw-t mb-3">{% trans "Schadensbeschreibung" %}</h3>
             <p class="text-sm fw-ink whitespace-pre-line leading-relaxed">{{ t.beschreibung|default:"—" }}</p>
             {% if t.foto %}
             <div class="mt-4"><img src="{{ t.foto.url }}" alt="Schaden" class="rounded-lg max-h-80 border fw-linie"></div>
             {% endif %}
         </div>
         <div class="fw-card" style="padding:20px">
-            <h3 class="fw-t mb-3">Meldung</h3>
+            <h3 class="fw-t mb-3">{% trans "Meldung" %}</h3>
             <dl class="text-sm space-y-2">
-                <div class="flex justify-between"><dt class="fw-s">Melder</dt><dd class="fw-t text-right">{{ melder }}</dd></div>
-                {% if t.email_melder %}<div class="flex justify-between"><dt class="fw-s">E-Mail</dt><dd class="fw-t text-right">{{ t.email_melder }}</dd></div>{% endif %}
-                {% if t.tel_melder %}<div class="flex justify-between"><dt class="fw-s">Telefon</dt><dd class="fw-t">{{ t.tel_melder }}</dd></div>{% endif %}
-                {% if t.raum %}<div class="flex justify-between"><dt class="fw-s">Raum</dt><dd class="fw-t">{{ t.raum }}</dd></div>{% endif %}
-                <div class="flex justify-between"><dt class="fw-s">Zutritt</dt><dd class="fw-t">{{ t.get_zutritt_display }}</dd></div>
-                <div class="flex justify-between"><dt class="fw-s">Gemeldet</dt><dd class="fw-t">{{ t.erstellt_am|date:"d.m.Y H:i" }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-s">{% trans "Melder" %}</dt><dd class="fw-t text-right">{{ melder }}</dd></div>
+                {% if t.email_melder %}<div class="flex justify-between"><dt class="fw-s">{% trans "E-Mail" %}</dt><dd class="fw-t text-right">{{ t.email_melder }}</dd></div>{% endif %}
+                {% if t.tel_melder %}<div class="flex justify-between"><dt class="fw-s">{% trans "Telefon" %}</dt><dd class="fw-t">{{ t.tel_melder }}</dd></div>{% endif %}
+                {% if t.raum %}<div class="flex justify-between"><dt class="fw-s">{% trans "Raum" %}</dt><dd class="fw-t">{{ t.raum }}</dd></div>{% endif %}
+                <div class="flex justify-between"><dt class="fw-s">{% trans "Zutritt" %}</dt><dd class="fw-t">{{ t.get_zutritt_display }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-s">{% trans "Gemeldet" %}</dt><dd class="fw-t">{{ t.erstellt_am|date:"d.m.Y H:i" }}</dd></div>
             </dl>
             <!-- Raumbuch-Element verknüpfen -->
             <div class="mt-4 pt-4 border-t fw-linie">
-                <h4 class="text-xs font-bold uppercase tracking-wider fw-faint mb-2">{% zeichen 'dokument' klasse='mr-1' %}Betroffenes Element</h4>
+                <h4 class="text-xs font-bold uppercase tracking-wider fw-faint mb-2">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Betroffenes Element" %}</h4>
                 {% if t.betroffene_einheit_id %}
                 <form method="post" action="/neu/schaeden/{{ t.id }}/ausstattung/" class="flex flex-col gap-2">
                     {% csrf_token %}
                     <select name="ausstattung_id" class="fw-feld">
-                        <option value="">— kein Element —</option>
+                        <option value="">— {% trans "kein Element" %} —</option>
                         {% for el in ausstattung_elemente %}<option value="{{ el.id }}" {% if t.ausstattung_id == el.id %}selected{% endif %}>{{ el.raum }} · {{ el.kategorie }}</option>{% endfor %}
                     </select>
-                    <button class="fw-flaeche border fw-linie hover:fw-linie-marke fw-ink hover:fw-marke text-xs font-semibold px-3 py-1.5 rounded-lg self-start">Verknüpfen</button>
+                    <button class="fw-flaeche border fw-linie hover:fw-linie-marke fw-ink hover:fw-marke text-xs font-semibold px-3 py-1.5 rounded-lg self-start">{% trans "Verknüpfen" %}</button>
                 </form>
-                {% if t.ausstattung_id %}<p class="text-[11px] fw-faint mt-2">Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements. <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">Raumbuch</a></p>{% endif %}
-                {% if not ausstattung_elemente %}<p class="fw-klein mt-1">Noch keine Ausstattung am Objekt erfasst.</p>{% endif %}
+                {% if t.ausstattung_id %}<p class="text-[11px] fw-faint mt-2">{% trans "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements." %} <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">{% trans "Raumbuch" %}</a></p>{% endif %}
+                {% if not ausstattung_elemente %}<p class="fw-klein mt-1">{% trans "Noch keine Ausstattung am Objekt erfasst." %}</p>{% endif %}
                 {% else %}
-                <p class="fw-klein">Kein Mietobjekt zugeordnet.</p>
+                <p class="fw-klein">{% trans "Kein Mietobjekt zugeordnet." %}</p>
                 {% endif %}
             </div>
         </div>
@@ -170,12 +170,12 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div data-panel="sc" id="sc-chronik" class="hidden">
     <!-- Antwort an Melder -->
     <div class="fw-card p-5 mb-4">
-        <h3 class="fw-t mb-3">{% zeichen 'senden' klasse='fw-marke mr-1.5' %}Antwort an Melder{% if melder_email %} <span class="text-xs font-normal fw-faint">({{ melder_email }})</span>{% endif %}</h3>
+        <h3 class="fw-t mb-3">{% zeichen 'senden' klasse='fw-marke mr-1.5' %}{% trans "Antwort an Melder" %}{% if melder_email %} <span class="text-xs font-normal fw-faint">({{ melder_email }})</span>{% endif %}</h3>
         <form method="post" action="/neu/schaeden/{{ t.id }}/antwort/">
             {% csrf_token %}
-            <textarea name="text" rows="3" required placeholder="Ihre Nachricht an den Melder…" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3"></textarea>
-            <button class="fw-btn fw-primary">{% zeichen 'senden' klasse='mr-1.5' %}Senden</button>
-            {% if not melder_email %}<span class="text-xs fw-warnton ml-2">Kein E-Mail des Melders — wird nur im Verlauf gespeichert.</span>{% endif %}
+            <textarea name="text" rows="3" required placeholder="{% trans 'Ihre Nachricht an den Melder…' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3"></textarea>
+            <button class="fw-btn fw-primary">{% zeichen 'senden' klasse='mr-1.5' %}{% trans "Senden" %}</button>
+            {% if not melder_email %}<span class="text-xs fw-warnton ml-2">{% trans "Kein E-Mail des Melders — wird nur im Verlauf gespeichert." %}</span>{% endif %}
         </form>
     </div>
     <div class="fw-card" style="padding:20px">
@@ -188,15 +188,15 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                     <span class="fw-t">{{ n.absender_name }}</span>
-                    {% if n.is_intern %}<span class="text-[10px] font-bold uppercase fw-flaeche2 fw-mutet px-1.5 py-0.5 rounded">intern</span>{% endif %}
+                    {% if n.is_intern %}<span class="text-[10px] font-bold uppercase fw-flaeche2 fw-mutet px-1.5 py-0.5 rounded">{% trans "intern" %}</span>{% endif %}
                     <span class="fw-klein">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="text-sm fw-ink mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
-                {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="text-xs fw-marke hover:underline mt-1 inline-block">{% zeichen 'hochladen' klasse='mr-1' %}Anhang</a>{% endif %}
+                {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="text-xs fw-marke hover:underline mt-1 inline-block">{% zeichen 'hochladen' klasse='mr-1' %}{% trans "Anhang" %}</a>{% endif %}
             </div>
         </div>
         {% empty %}
-        <p class="text-center text-sm fw-faint italic py-6">Noch keine Nachrichten im Verlauf.</p>
+        <p class="text-center text-sm fw-faint italic py-6">{% trans "Noch keine Nachrichten im Verlauf." %}</p>
         {% endfor %}
     </div>
 </div>
@@ -206,37 +206,37 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     {% load chf %}
     <div class="fw-kzn" style="border:1px solid var(--ds-line);border-radius:var(--ds-radius);background:var(--ds-surface);grid-template-columns:repeat(2,1fr);margin-bottom:16px">
         <div>
-            <div class="fw-l">Kostenschätzung</div>
+            <div class="fw-l">{% trans "Kostenschätzung" %}</div>
             <div class="fw-w">CHF {{ kosten_geschaetzt|chf }}</div>
-            <div class="fw-f">über alle Aufträge</div>
+            <div class="fw-f">{% trans "über alle Aufträge" %}</div>
         </div>
         <div>
-            <div class="fw-l">Effektive Kosten</div>
+            <div class="fw-l">{% trans "Effektive Kosten" %}</div>
             <div class="fw-w{% if kosten_effektiv > kosten_geschaetzt %} warn{% endif %}">CHF {{ kosten_effektiv|chf }}</div>
-            <div class="fw-f">{% if kosten_effektiv > kosten_geschaetzt %}über der Schätzung{% elif kosten_effektiv %}im Rahmen{% else %}noch nicht erfasst{% endif %}</div>
+            <div class="fw-f">{% if kosten_effektiv > kosten_geschaetzt %}{% trans "über der Schätzung" %}{% elif kosten_effektiv %}{% trans "im Rahmen" %}{% else %}{% trans "noch nicht erfasst" %}{% endif %}</div>
         </div>
     </div>
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'geld' %}</span>
-            <span class="fw-t">Kosten je Auftrag</span></div>
+            <span class="fw-t">{% trans "Kosten je Auftrag" %}</span></div>
         {% for a in auftraege %}
         <div class="fw-zeile">
             <div class="fw-mitte">
                 <div class="fw-t">{{ a.handwerker.firma }}</div>
-                <div class="fw-s">beauftragt {{ a.beauftragt_am|date:"d.m.Y" }}</div>
+                <div class="fw-s">{% blocktrans with d=a.beauftragt_am|date:"d.m.Y" %}beauftragt {{ d }}{% endblocktrans %}</div>
             </div>
             <div class="fw-zeit">
-                {% if a.kosten_effektiv %}CHF {{ a.kosten_effektiv|chf }}{% else %}<span style="color:var(--ds-faint)">offen</span>{% endif %}
-                {% if a.kosten_geschaetzt %}<br><span class="fw-klein">gesch. {{ a.kosten_geschaetzt|chf }}</span>{% endif %}
+                {% if a.kosten_effektiv %}CHF {{ a.kosten_effektiv|chf }}{% else %}<span style="color:var(--ds-faint)">{% trans "offen" %}</span>{% endif %}
+                {% if a.kosten_geschaetzt %}<br><span class="fw-klein">{% blocktrans with b=a.kosten_geschaetzt|chf %}gesch. {{ b }}{% endblocktrans %}</span>{% endif %}
             </div>
         </div>
         {% empty %}
-        <p class="fw-leer">Noch kein Auftrag vergeben — deshalb noch keine Kosten.</p>
+        <p class="fw-leer">{% trans "Noch kein Auftrag vergeben — deshalb noch keine Kosten." %}</p>
         {% endfor %}
         {% if auftraege %}
         <div class="fw-fuss">
-            <span>Erfasst werden die Beträge beim jeweiligen Auftrag.</span>
-            <a href="?tab=handwerker" class="fw-link">Zu den Aufträgen</a>
+            <span>{% trans "Erfasst werden die Beträge beim jeweiligen Auftrag." %}</span>
+            <a href="?tab=handwerker" class="fw-link">{% trans "Zu den Aufträgen" %}</a>
         </div>
         {% endif %}
     </div>
@@ -246,7 +246,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div data-panel="sc" id="sc-faelle" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'filtern' %}</span>
-            <span class="fw-t">Fälle zu diesem Schaden</span>
+            <span class="fw-t">{% trans "Fälle zu diesem Schaden" %}</span>
             <span class="fw-neben">{{ schaden_faelle|length }}</span></div>
         {% for f in schaden_faelle %}
         <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
@@ -258,8 +258,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-zeit">{{ f.eroeffnet_am|date:"d.m.Y" }}</div>
         </a>
         {% empty %}
-        <p class="fw-leer">Zu diesem Schaden läuft kein Fall.<br>
-            <span class="fw-klein">Ein Schaden wird zum Fall, sobald er über mehrere Schritte läuft — Besichtigung, Offerte, Auftrag, Abnahme.</span></p>
+        <p class="fw-leer">{% trans "Zu diesem Schaden läuft kein Fall." %}<br>
+            <span class="fw-klein">{% trans "Ein Schaden wird zum Fall, sobald er über mehrere Schritte läuft — Besichtigung, Offerte, Auftrag, Abnahme." %}</span></p>
         {% endfor %}
     </div>
 </div>
@@ -270,29 +270,29 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     {% load chf %}
     <!-- Handwerker beauftragen (automatisiert) -->
     <div class="fw-flaeche rounded-xl border fw-linie-marke p-5 mb-4">
-        <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'arbeit' klasse='fw-marke mr-1.5' %}Handwerker beauftragen</h3>
-        <p class="text-xs fw-faint mb-4">Vergibt den Auftrag, mailt Handwerker <span class="font-medium">und</span> Melder automatisch und setzt den Status auf „In Bearbeitung".</p>
+        <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'arbeit' klasse='fw-marke mr-1.5' %}{% trans "Handwerker beauftragen" %}</h3>
+        <p class="text-xs fw-faint mb-4">{% blocktrans trimmed %}Vergibt den Auftrag, mailt Handwerker <span class="font-medium">und</span> Melder automatisch und setzt den Status auf „In Bearbeitung“.{% endblocktrans %}</p>
         {% if handwerker_liste %}
         <form method="post" action="/neu/schaeden/{{ t.id }}/auftrag/" class="space-y-3">
             {% csrf_token %}
             <div>
-                <label class="fw-klein block mb-1">Handwerker / Firma *</label>
+                <label class="fw-klein block mb-1">{% trans "Handwerker / Firma *" %}</label>
                 <select name="handwerker_id" required class="fw-feld w-full">
-                    <option value="">— wählen —</option>
+                    <option value="">— {% trans "wählen" %} —</option>
                     {% for hw in handwerker_liste %}
-                    <option value="{{ hw.id }}">{{ hw.firma }}{% if hw.branche %} · {{ hw.get_branche_display }}{% endif %}{% if not hw.email %} (keine E-Mail){% endif %}</option>
+                    <option value="{{ hw.id }}">{{ hw.firma }}{% if hw.branche %} · {{ hw.get_branche_display }}{% endif %}{% if not hw.email %} {% trans "(keine E-Mail)" %}{% endif %}</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label class="fw-klein block mb-1">Auftragstext (aus Vorlage, editierbar)</label>
+                <label class="fw-klein block mb-1">{% trans "Auftragstext (aus Vorlage, editierbar)" %}</label>
                 <textarea name="auftragstext" rows="6" class="fw-feld w-full">{{ auftrag_vorschlag }}</textarea>
-                <p class="fw-klein mt-1">Vorlagen bearbeitest du unter <a href="/neu/vorlagen/" class="fw-link">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker").</p>
+                <p class="fw-klein mt-1">{% blocktrans trimmed %}Vorlagen bearbeitest du unter <a href="/neu/vorlagen/" class="fw-link">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“).{% endblocktrans %}</p>
             </div>
-            <button class="fw-btn fw-primary">{% zeichen 'senden' klasse='mr-1.5' %}Beauftragen & Mails senden</button>
+            <button class="fw-btn fw-primary">{% zeichen 'senden' klasse='mr-1.5' %}{% trans "Beauftragen & Mails senden" %}</button>
         </form>
         {% else %}
-        <p class="text-sm fw-mutet">Noch keine Handwerker erfasst — lege zuerst unter <a href="/neu/dienstleister/" class="fw-link">Dienstleister</a> einen an.</p>
+        <p class="text-sm fw-mutet">{% blocktrans trimmed %}Noch keine Handwerker erfasst — lege zuerst unter <a href="/neu/dienstleister/" class="fw-link">Dienstleister</a> einen an.{% endblocktrans %}</p>
         {% endif %}
     </div>
 
@@ -307,63 +307,63 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="flex items-start justify-between gap-3 mb-3">
                 <div>
                     <div class="font-semibold fw-strong">{{ a.handwerker }}</div>
-                    <div class="text-xs fw-mutet">Beauftragt {{ a.beauftragt_am|date:"d.m.Y" }} · Status: {{ a.status }}</div>
+                    <div class="text-xs fw-mutet">{% blocktrans with d=a.beauftragt_am|date:"d.m.Y" %}Beauftragt {{ d }}{% endblocktrans %} · {% trans "Status:" %} {{ a.status }}</div>
                     {% if a.freigabe_status == 'ausstehend' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-warn-flaeche fw-warnton">⏳ Eigentümer-Freigabe ausstehend</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-warn-flaeche fw-warnton">{% trans "⏳ Eigentümer-Freigabe ausstehend" %}</span>
                     {% elif a.freigabe_status == 'freigegeben' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-gut-flaeche fw-gut">✓ Freigegeben {{ a.freigabe_datum|date:"d.m.Y" }}</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-gut-flaeche fw-gut">✓ {% blocktrans with d=a.freigabe_datum|date:"d.m.Y" %}Freigegeben {{ d }}{% endblocktrans %}</span>
                     {% elif a.freigabe_status == 'abgelehnt' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-krit-flaeche fw-kritisch">✗ Abgelehnt</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-krit-flaeche fw-kritisch">{% trans "✗ Abgelehnt" %}</span>
                     {% endif %}
                     {% if a.freigabe_kommentar %}<div class="text-xs fw-mutet mt-1 italic">„{{ a.freigabe_kommentar }}"</div>{% endif %}
                     {% if a.bemerkung %}<div class="text-xs fw-mutet mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
-                    <a href="/neu/auftrag/{{ a.id }}/pdf/" target="_blank" rel="noopener" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'drucken' klasse='mr-1' %}Auftrags-PDF</a>
+                    <a href="/neu/auftrag/{{ a.id }}/pdf/" target="_blank" rel="noopener" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Auftrags-PDF" %}</a>
                     {% if a.kreditoren_rechnung_id %}
-                    <a href="/neu/kreditoren/" class="text-xs font-semibold fw-gut hover:underline">{% zeichen 'extern' klasse='mr-1' %}Kreditor #{{ a.kreditoren_rechnung_id }}</a>
+                    <a href="/neu/kreditoren/" class="text-xs font-semibold fw-gut hover:underline">{% zeichen 'extern' klasse='mr-1' %}{% blocktrans with id=a.kreditoren_rechnung_id %}Kreditor #{{ id }}{% endblocktrans %}</a>
                     {% endif %}
                 </div>
             </div>
             <form method="post" action="/neu/auftrag/{{ a.id }}/kosten/" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                 {% csrf_token %}
-                <div><label class="fw-klein block mb-1">Kostenschätzung (CHF)</label>
+                <div><label class="fw-klein block mb-1">{% trans "Kostenschätzung (CHF)" %}</label>
                     <input name="kosten_geschaetzt" value="{{ a.kosten_geschaetzt|default_if_none:'' }}" class="fw-feld w-full"></div>
-                <div><label class="fw-klein block mb-1">Effektive Kosten (CHF)</label>
+                <div><label class="fw-klein block mb-1">{% trans "Effektive Kosten (CHF)" %}</label>
                     <input name="kosten_effektiv" value="{{ a.kosten_effektiv|default_if_none:'' }}" class="fw-feld w-full"></div>
                 <div>
                     {% if not a.kreditoren_rechnung_id %}
                     <label class="flex items-center gap-2 text-xs fw-mutet mb-2">
-                        <input type="checkbox" name="kreditor_erstellen" class="fw-haken">Kreditorenrechnung erstellen
+                        <input type="checkbox" name="kreditor_erstellen" class="fw-haken">{% trans "Kreditorenrechnung erstellen" %}
                     </label>
                     {% endif %}
                     {% if a.freigabe_status == 'nicht_noetig' or a.freigabe_status == 'abgelehnt' %}
                     <label class="flex items-center gap-2 text-xs fw-mutet mb-2">
-                        <input type="checkbox" name="freigabe_anfordern" class="fw-akzent-warn">Eigentümer-Freigabe anfordern
+                        <input type="checkbox" name="freigabe_anfordern" class="fw-akzent-warn">{% trans "Eigentümer-Freigabe anfordern" %}
                     </label>
                     {% endif %}
-                    <button class="w-full fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg">Kosten speichern</button>
+                    <button class="w-full fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg">{% trans "Kosten speichern" %}</button>
                 </div>
             </form>
         </div>
         {% empty %}
-        <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Noch kein Handwerker beauftragt.</div>
+        <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">{% trans "Noch kein Handwerker beauftragt." %}</div>
         {% endfor %}
     </div>
     <p class="text-xs fw-faint mt-3">{% zeichen 'hinweis' klasse='mr-1' %}
-        Beim Anhaken von „Kreditorenrechnung erstellen" wird aus den effektiven Kosten eine Kreditorenrechnung (Status Neu)
-        angelegt und mit diesem Auftrag verknüpft — Freigabe und Zahlung erfolgen im Kreditoren-Tab.</p>
+        {% blocktrans trimmed %}Beim Anhaken von „Kreditorenrechnung erstellen“ wird aus den effektiven Kosten eine Kreditorenrechnung (Status Neu)
+        angelegt und mit diesem Auftrag verknüpft — Freigabe und Zahlung erfolgen im Kreditoren-Tab.{% endblocktrans %}</p>
 </div>
 
 <!-- FOTOS -->
 <div data-panel="sc" id="sc-dokumente" class="hidden">
     <div class="fw-card p-5 mb-4">
-        <h3 class="fw-t mb-3">Fotos hinzufügen</h3>
+        <h3 class="fw-t mb-3">{% trans "Fotos hinzufügen" %}</h3>
         <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
             {% csrf_token %}
             <input name="fotos" type="file" accept="image/*" multiple required
                    class="text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold">
-            <button class="fw-btn fw-primary">{% zeichen 'hochladen' klasse='mr-1.5' %}Hochladen</button>
+            <button class="fw-btn fw-primary">{% zeichen 'hochladen' klasse='mr-1.5' %}{% trans "Hochladen" %}</button>
         </form>
     </div>
 
@@ -372,25 +372,25 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         {% if t.foto %}
         <a href="{{ t.foto.url }}" target="_blank" rel="noopener" class="block group relative">
             <img src="{{ t.foto.url }}" alt="Schaden" class="fw-bild">
-            <span class="absolute bottom-1 left-1 text-[10px] fw-vorhang text-white px-1.5 py-0.5 rounded">Erstmeldung</span>
+            <span class="absolute bottom-1 left-1 text-[10px] fw-vorhang text-white px-1.5 py-0.5 rounded">{% trans "Erstmeldung" %}</span>
         </a>
         {% endif %}
         {% for f in fotos %}
         <div class="relative group">
-            <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="Foto in voller Grösse öffnen" class="block">
+            <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}" class="block">
                 <img src="{{ f.bild.url }}" alt="Foto" class="fw-bild">
             </a>
             <form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
-                  onsubmit="return confirm('Foto löschen?');">
+                  onsubmit="return confirm('{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}');">
                 {% csrf_token %}
-                <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="Löschen">{% zeichen 'loeschen' %}</button>
+                <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
             </form>
             {% if f.hochgeladen_am %}<span class="absolute bottom-1 left-1 text-[10px] fw-vorhang text-white px-1.5 py-0.5 rounded">{{ f.hochgeladen_am|date:"d.m.Y" }}</span>{% endif %}
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Noch keine Fotos.</div>
+    <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">{% trans "Noch keine Fotos." %}</div>
     {% endif %}
 </div>
 {% endblock %}
