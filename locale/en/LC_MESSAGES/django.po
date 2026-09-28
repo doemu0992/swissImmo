@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 17:04+0200\n"
+"POT-Creation-Date: 2026-09-28 17:12+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -208,8 +208,7 @@ msgstr "Accounting"
 msgid "Kontenplan & Salden"
 msgstr "Chart of accounts & balances"
 
-#: core/navigation.py:175 core/templates/fw/anlagen.html:4
-#: core/templates/fw/anlagen.html:9
+#: core/navigation.py:175
 msgid "Anlagen & Abschluss"
 msgstr "Fixed assets & closing"
 
@@ -476,6 +475,10 @@ msgstr "Past"
 #: core/templates/fw/abwesenheiten.html:96
 msgid "Nichts vergangen."
 msgstr "Nothing in the past."
+
+#: core/templates/fw/anlagen.html:4 core/templates/fw/anlagen.html:9
+msgid "Anlagen &amp; Abschluss"
+msgstr "Fixed assets &amp; closing"
 
 #: core/templates/fw/anlagen.html:10
 msgid ""
@@ -876,8 +879,8 @@ msgid "Nicht buchungsrelevant (z.B. Umbuchung eigenes Konto)"
 msgstr "Not relevant for posting (e.g. transfer between own accounts)"
 
 #: core/templates/fw/bankabgleich.html:215
-msgid "Ungeklärte Zahlungen & Guthaben"
-msgstr "Unresolved payments & credits"
+msgid "Ungeklärte Zahlungen &amp; Guthaben"
+msgstr "Unresolved payments &amp; credits"
 
 #: core/templates/fw/bankabgleich.html:216 core/templates/fw/debitoren.html:265
 #: core/templates/fw/mahnwesen.html:57
@@ -1233,8 +1236,8 @@ msgid "Geschäftsjahr"
 msgstr "Financial year"
 
 #: core/templates/fw/buchhaltung.html:30
-msgid "Erfolgsrechnung & Bilanz (PDF)"
-msgstr "Income statement & balance sheet (PDF)"
+msgid "Erfolgsrechnung &amp; Bilanz (PDF)"
+msgstr "Income statement &amp; balance sheet (PDF)"
 
 #: core/templates/fw/buchhaltung.html:32
 msgid "Journal-Export (CSV)"
@@ -1328,8 +1331,8 @@ msgid "Keine Aktivkonten mit Saldo."
 msgstr "No asset accounts with a balance."
 
 #: core/templates/fw/buchhaltung.html:195
-msgid "Passiven & Eigenkapital"
-msgstr "Liabilities & equity"
+msgid "Passiven &amp; Eigenkapital"
+msgstr "Liabilities &amp; equity"
 
 #: core/templates/fw/buchhaltung.html:207
 msgid "Ergebnisvortrag (Vorjahre)"
@@ -2373,8 +2376,8 @@ msgid "Keine Kautionen erfasst."
 msgstr "No deposits recorded."
 
 #: core/templates/fw/kontenplan.html:4 core/templates/fw/kontenplan.html:9
-msgid "Kontenplan & Saldenliste"
-msgstr "Chart of accounts & trial balance"
+msgid "Kontenplan &amp; Saldenliste"
+msgstr "Chart of accounts &amp; trial balance"
 
 #: core/templates/fw/kontenplan.html:18
 #, python-format
@@ -2562,8 +2565,8 @@ msgid "später zuordnen"
 msgstr "assign later"
 
 #: core/templates/fw/kreditoren.html:58
-msgid "Hochladen & scannen"
-msgstr "Upload & scan"
+msgid "Hochladen &amp; scannen"
+msgstr "Upload &amp; scan"
 
 #: core/templates/fw/kreditoren.html:70
 msgid "Kreditorenrechnung erfassen"
@@ -3300,8 +3303,8 @@ msgid "Keine Mieterkonten"
 msgstr "No tenant accounts"
 
 #: core/templates/fw/mietzins.html:11
-msgid "Anpassungspotenzial nach Referenzzins & LIK"
-msgstr "Adjustment potential by reference rate & CPI"
+msgid "Anpassungspotenzial nach Referenzzins &amp; LIK"
+msgstr "Adjustment potential by reference rate &amp; CPI"
 
 #: core/templates/fw/mietzins.html:11
 msgid "Aktuell: Referenzzins"

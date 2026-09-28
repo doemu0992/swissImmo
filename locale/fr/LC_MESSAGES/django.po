@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 17:04+0200\n"
+"POT-Creation-Date: 2026-09-28 17:12+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -208,8 +208,7 @@ msgstr "Comptabilité"
 msgid "Kontenplan & Salden"
 msgstr "Plan comptable & soldes"
 
-#: core/navigation.py:175 core/templates/fw/anlagen.html:4
-#: core/templates/fw/anlagen.html:9
+#: core/navigation.py:175
 msgid "Anlagen & Abschluss"
 msgstr "Immobilisations & clôture"
 
@@ -476,6 +475,10 @@ msgstr "Passé"
 #: core/templates/fw/abwesenheiten.html:96
 msgid "Nichts vergangen."
 msgstr "Rien de passé."
+
+#: core/templates/fw/anlagen.html:4 core/templates/fw/anlagen.html:9
+msgid "Anlagen &amp; Abschluss"
+msgstr "Immobilisations &amp; clôture"
 
 #: core/templates/fw/anlagen.html:10
 msgid ""
@@ -877,8 +880,8 @@ msgid "Nicht buchungsrelevant (z.B. Umbuchung eigenes Konto)"
 msgstr "Non comptable (p. ex. virement entre propres comptes)"
 
 #: core/templates/fw/bankabgleich.html:215
-msgid "Ungeklärte Zahlungen & Guthaben"
-msgstr "Paiements non éclaircis & avoirs"
+msgid "Ungeklärte Zahlungen &amp; Guthaben"
+msgstr "Paiements non éclaircis &amp; avoirs"
 
 #: core/templates/fw/bankabgleich.html:216 core/templates/fw/debitoren.html:265
 #: core/templates/fw/mahnwesen.html:57
@@ -1238,8 +1241,8 @@ msgid "Geschäftsjahr"
 msgstr "Exercice"
 
 #: core/templates/fw/buchhaltung.html:30
-msgid "Erfolgsrechnung & Bilanz (PDF)"
-msgstr "Compte de résultat & bilan (PDF)"
+msgid "Erfolgsrechnung &amp; Bilanz (PDF)"
+msgstr "Compte de résultat &amp; bilan (PDF)"
 
 #: core/templates/fw/buchhaltung.html:32
 msgid "Journal-Export (CSV)"
@@ -1334,8 +1337,8 @@ msgid "Keine Aktivkonten mit Saldo."
 msgstr "Aucun compte d'actif avec solde."
 
 #: core/templates/fw/buchhaltung.html:195
-msgid "Passiven & Eigenkapital"
-msgstr "Passifs & fonds propres"
+msgid "Passiven &amp; Eigenkapital"
+msgstr "Passifs &amp; fonds propres"
 
 #: core/templates/fw/buchhaltung.html:207
 msgid "Ergebnisvortrag (Vorjahre)"
@@ -2381,8 +2384,8 @@ msgid "Keine Kautionen erfasst."
 msgstr "Aucune garantie de loyer saisie."
 
 #: core/templates/fw/kontenplan.html:4 core/templates/fw/kontenplan.html:9
-msgid "Kontenplan & Saldenliste"
-msgstr "Plan comptable & balance des soldes"
+msgid "Kontenplan &amp; Saldenliste"
+msgstr "Plan comptable &amp; balance des soldes"
 
 #: core/templates/fw/kontenplan.html:18
 #, python-format
@@ -2571,8 +2574,8 @@ msgid "später zuordnen"
 msgstr "attribuer plus tard"
 
 #: core/templates/fw/kreditoren.html:58
-msgid "Hochladen & scannen"
-msgstr "Téléverser & scanner"
+msgid "Hochladen &amp; scannen"
+msgstr "Téléverser &amp; scanner"
 
 #: core/templates/fw/kreditoren.html:70
 msgid "Kreditorenrechnung erfassen"
@@ -3319,8 +3322,8 @@ msgid "Keine Mieterkonten"
 msgstr "Aucun compte locataire"
 
 #: core/templates/fw/mietzins.html:11
-msgid "Anpassungspotenzial nach Referenzzins & LIK"
-msgstr "Potentiel d'adaptation selon le taux de référence & l'IPC"
+msgid "Anpassungspotenzial nach Referenzzins &amp; LIK"
+msgstr "Potentiel d'adaptation selon le taux de référence &amp; l'IPC"
 
 #: core/templates/fw/mietzins.html:11
 msgid "Aktuell: Referenzzins"

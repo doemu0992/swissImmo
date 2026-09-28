@@ -212,7 +212,7 @@
 <!-- Geparkte / ungeklärte Zahlungen (1190 + Mieterguthaben 2030) -->
 <div class="fw-flaeche rounded-xl border fw-linie-warn overflow-hidden mb-6">
     <div class="px-5 py-3 border-b fw-linie-warn fw-warn-flaeche flex items-center justify-between flex-wrap gap-2">
-        <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center shrink-0">{% zeichen 'hinweis' %}</span>{% trans "Ungeklärte Zahlungen & Guthaben" %}</div>
+        <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center shrink-0">{% zeichen 'hinweis' %}</span>{% trans "Ungeklärte Zahlungen &amp; Guthaben" %}</div>
         <div class="text-xs fw-mutet">{% blocktrans count n=geparkt|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
             {% if geparkt_unklar %}· {% blocktrans with betrag=geparkt_unklar|chf %}CHF {{ betrag }} ungeklärt (1190){% endblocktrans %}{% endif %}
             {% if geparkt_guthaben %}· {% blocktrans with betrag=geparkt_guthaben|chf %}CHF {{ betrag }} Mieterguthaben (2030){% endblocktrans %}{% endif %}</div>

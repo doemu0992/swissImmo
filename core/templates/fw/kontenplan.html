@@ -1,12 +1,12 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
 {% load chf %}
-{% block title %}{% trans "Kontenplan & Saldenliste" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Kontenplan &amp; Saldenliste" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
-    <h1>{% trans "Kontenplan & Saldenliste" %}</h1>
+    <h1>{% trans "Kontenplan &amp; Saldenliste" %}</h1>
     <form method="get" class="flex items-center gap-2">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <select name="jahr" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">

@@ -8,7 +8,7 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Mietzins" %}</h1>
-        <p>{% trans "Anpassungspotenzial nach Referenzzins & LIK" %}{% if curr_zins != None %} · {% trans "Aktuell: Referenzzins" %} <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_zins }}{% endlocalize %}%</span>, {% trans "LIK" %} <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_lik }}{% endlocalize %}</span>{% endif %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/mietzins/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% trans "Anpassungspotenzial nach Referenzzins &amp; LIK" %}{% if curr_zins != None %} · {% trans "Aktuell: Referenzzins" %} <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_zins }}{% endlocalize %}%</span>, {% trans "LIK" %} <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_lik }}{% endlocalize %}</span>{% endif %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/mietzins/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
 </div>
 

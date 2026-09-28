@@ -55,7 +55,7 @@
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
         <button id="scan-btn" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
-            {% zeichen 'einstellungen' klasse='mr-1.5' %}{% trans "Hochladen & scannen" %}
+            {% zeichen 'einstellungen' klasse='mr-1.5' %}{% trans "Hochladen &amp; scannen" %}
         </button>
     </form>
     <script>
