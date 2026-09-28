@@ -1,58 +1,54 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}{% if satz %}{{ satz.bezeichnung }}{% else %}Neuer Regelsatz{% endif %} — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% if satz %}{{ satz.bezeichnung }}{% else %}{% trans "Neuer Regelsatz" %}{% endif %} — swissImmo{% endblock %}
 
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>{% if satz %}Regelsatz bearbeiten{% else %}Neuer Regelsatz{% endif %}</h1>
-        <p>Ein Satz je Kanton. Fehlt der Kanton, gilt der Satz für alle
-           Liegenschaften dieser Verwaltung.</p>
+        <h1>{% if satz %}{% trans "Regelsatz bearbeiten" %}{% else %}{% trans "Neuer Regelsatz" %}{% endif %}</h1>
+        <p>{% trans "Ein Satz je Kanton. Fehlt der Kanton, gilt der Satz für alle Liegenschaften dieser Verwaltung." %}</p>
     </div>
-    <a href="/neu/regelwerk/" class="fw-btn">Zurück</a>
+    <a href="/neu/regelwerk/" class="fw-btn">{% trans "Zurück" %}</a>
 </div>
 
 <form method="post">{% csrf_token %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'recht' %}</span>
-        <span class="fw-t">Geltungsbereich</span></div>
+        <span class="fw-t">{% trans "Geltungsbereich" %}</span></div>
     <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="fw-klein block mb-1">Bezeichnung *</label>
+            <div><label class="fw-klein block mb-1">{% trans "Bezeichnung *" %}</label>
                 <input name="bezeichnung" required class="fw-feld w-full"
-                       placeholder="z.B. Grundsatz Wohnräume"
+                       placeholder="{% trans 'z.B. Grundsatz Wohnräume' %}"
                        value="{{ satz.bezeichnung|default:'' }}"></div>
-            <div><label class="fw-klein block mb-1">Kanton</label>
-                <input name="kanton" maxlength="2" class="fw-feld w-full" placeholder="ZH"
+            <div><label class="fw-klein block mb-1">{% trans "Kanton" %}</label>
+                <input name="kanton" maxlength="2" class="fw-feld w-full" placeholder="{% trans 'ZH' %}"
                        value="{{ satz.kanton|default:'' }}">
-                <span class="fw-klein">Leer = gilt für alle Kantone.</span></div>
-            <div><label class="fw-klein block mb-1">Stand</label>
+                <span class="fw-klein">{% trans "Leer = gilt für alle Kantone." %}</span></div>
+            <div><label class="fw-klein block mb-1">{% trans "Stand" %}</label>
                 <input class="fw-feld w-full" disabled
                        value="{% if satz %}{{ satz.stand|date:'d.m.Y' }}{% else %}wird beim Speichern gesetzt{% endif %}">
                 {% comment %} Nicht änderbar: Der Stand ist der Schlüssel, über den
                    sich später die unter der alten Fassung geprüften Fälle finden
                    lassen. Von Hand gesetzt wäre er wertlos. {% endcomment %}
-                <span class="fw-klein">Wird bei jedem Speichern auf heute gesetzt.</span></div>
+                <span class="fw-klein">{% trans "Wird bei jedem Speichern auf heute gesetzt." %}</span></div>
         </div>
         <div class="mt-3">
-            <label class="fw-klein block mb-1">Hinweis</label>
+            <label class="fw-klein block mb-1">{% trans "Hinweis" %}</label>
             <textarea name="hinweis" rows="2" class="fw-feld w-full"
-                      placeholder="Woher die Regeln stammen, wer sie geprüft hat, Vorbehalte.">{{ satz.hinweis|default:'' }}</textarea>
+                      placeholder="{% trans 'Woher die Regeln stammen, wer sie geprüft hat, Vorbehalte.' %}">{{ satz.hinweis|default:'' }}</textarea>
         </div>
         <div class="mt-3 flex flex-col gap-2">
             <label class="flex items-center gap-2 fw-s">
                 <input type="checkbox" name="aktiv" {% if not satz or satz.aktiv %}checked{% endif %}>
-                Aktiv — wird bei der Prüfung herangezogen</label>
+                {% trans "Aktiv — wird bei der Prüfung herangezogen" %}</label>
             <label class="flex items-center gap-2 fw-s">
                 <input type="checkbox" name="geprueft" {% if satz.geprueft %}checked{% endif %}>
-                <b>Juristisch geprüft</b></label>
+                <b>{% trans "Juristisch geprüft" %}</b></label>
         </div>
         <div class="fw-hinweis warn mt-3" style="border:1px solid var(--ds-line);border-radius:var(--ds-radius)">
             <span class="fw-hi">{% zeichen 'warnung' %}</span>
-            <div class="fw-ht">Das Kennzeichen «geprüft» ist die einzige Stelle, an der
-                aus einer Warnung eine <b>Sperre</b> wird. Setze es erst, wenn jemand die
-                Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb
-                an, eine falsche Warnung nicht.</div>
+            <div class="fw-ht">{% blocktrans trimmed %}Das Kennzeichen «geprüft» ist die einzige Stelle, an der aus einer Warnung eine <b>Sperre</b> wird. Setze es erst, wenn jemand die Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche Warnung nicht.{% endblocktrans %}</div>
         </div>
     </div>
 </div>
@@ -62,18 +58,16 @@
     <div class="fw-kopf">
         <span class="fw-ikon {% if not z.rechnet %}mut{% endif %}">{% zeichen 'zaehler' %}</span>
         <span class="fw-t">{{ z.bezeichnung }}</span>
-        {% if not z.rechnet %}<span class="fw-chip fw-warn">prüft noch nichts</span>{% endif %}
+        {% if not z.rechnet %}<span class="fw-chip fw-warn">{% trans "prüft noch nichts" %}</span>{% endif %}
     </div>
     <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
         <label class="flex items-center gap-2 fw-s mb-3">
             <input type="checkbox" name="aktiv_{{ z.art }}" {% if z.regel %}checked{% endif %}>
-            Diese Regel führen</label>
+            {% trans "Diese Regel führen" %}</label>
 
         {% if not z.rechnet %}
-        <p class="fw-s mb-3">Diese Regelart ist als Datenmodell vorhanden, aber in
-            <code>faelle.regelwerk.pruefen</code> noch nicht gerechnet. Sie lässt sich
-            erfassen und dokumentieren, prüft aber nichts — ausdrücklich vermerkt,
-            damit niemand eine Absicherung annimmt, die es nicht gibt.</p>
+        <p class="fw-s mb-3">{% blocktrans trimmed %}Diese Regelart ist als Datenmodell vorhanden, aber in
+            <code>faelle.regelwerk.pruefen</code> noch nicht gerechnet. Sie lässt sich erfassen und dokumentieren, prüft aber nichts — ausdrücklich vermerkt, damit niemand eine Absicherung annimmt, die es nicht gibt.{% endblocktrans %}</p>
         {% endif %}
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -88,17 +82,17 @@
         </div>
 
         <div class="mt-3">
-            <label class="fw-klein block mb-1">Begründung / Fundstelle</label>
+            <label class="fw-klein block mb-1">{% trans "Begründung / Fundstelle" %}</label>
             <input name="begruendung_{{ z.art }}" class="fw-feld w-full"
-                   placeholder="z.B. Art. 266c OR, Merkblatt Kanton ZH vom 03.2025"
+                   placeholder="{% trans 'z.B. Art. 266c OR, Merkblatt Kanton ZH vom 03.2025' %}"
                    value="{{ z.regel.begruendung|default:'' }}">
         </div>
 
         <label class="flex items-center gap-2 fw-s mt-3">
             <input type="checkbox" name="sperre_{{ z.art }}"
                    {% if z.regel.verbindlichkeit == 'sperre' %}checked{% endif %}>
-            Verbindlichkeit <b>Sperre</b> statt Warnung
-            <span class="fw-klein">— wirkt erst, wenn der Regelsatz als geprüft gilt</span></label>
+            {% trans "Verbindlichkeit" %} <b>{% trans "Sperre" %}</b> {% trans "statt Warnung" %}
+            <span class="fw-klein">— {% trans "wirkt erst, wenn der Regelsatz als geprüft gilt" %}</span></label>
     </div>
 </div>
 {% endfor %}
@@ -106,8 +100,8 @@
 <div class="fw-card">
     <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
         <div class="flex gap-2 flex-wrap">
-            <button class="fw-btn fw-primary">{% zeichen 'speichern' %}Speichern</button>
-            <a href="/neu/regelwerk/" class="fw-btn">Abbrechen</a>
+            <button class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
+            <a href="/neu/regelwerk/" class="fw-btn">{% trans "Abbrechen" %}</a>
         </div>
     </div>
 </div>
@@ -115,9 +109,9 @@
 
 {% if satz %}
 <form method="post" action="/neu/regelwerk/{{ satz.id }}/loeschen/"
-      onsubmit="return confirm('Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten.')">
+      onsubmit="return confirm('{% filter escapejs %}{% trans "Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten." %}{% endfilter %}')">
     {% csrf_token %}
-    <button class="fw-btn gefahr">{% zeichen 'loeschen' %}Regelsatz löschen</button>
+    <button class="fw-btn gefahr">{% zeichen 'loeschen' %}{% trans "Regelsatz löschen" %}</button>
 </form>
 {% endif %}
 {% endblock %}

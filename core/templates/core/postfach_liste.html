@@ -1,11 +1,11 @@
 {% extends 'fw/base.html' %}
-{% block title %}Postfächer — swissImmo{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Postfächer" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Postfächer</h1>
-        <p>Der E-Mail-Eingang Ihrer Verwaltung: Antworten auf Ticket-Mails und
-           eingehende Kreditorenrechnungen werden aus diesen Postfächern abgeholt.</p>
+        <h1>{% trans "Postfächer" %}</h1>
+        <p>{% trans "Der E-Mail-Eingang Ihrer Verwaltung: Antworten auf Ticket-Mails und eingehende Kreditorenrechnungen werden aus diesen Postfächern abgeholt." %}</p>
     </div>
 </div>
 
@@ -19,9 +19,8 @@
 
     {% if schluessel_fehlt %}
     <div class="rounded-xl p-4 text-sm border fw-warn-flaeche fw-linie-warn fw-warnton">
-        <strong>Auf dem Server fehlt {{ schluessel_name }}.</strong>
-        Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen —
-        Speichern schlägt fehl. Bitte melden Sie sich bei uns.
+        <strong>{% blocktrans with name=schluessel_name %}Auf dem Server fehlt {{ name }}.{% endblocktrans %}</strong>
+        {% trans "Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen — Speichern schlägt fehl. Bitte melden Sie sich bei uns." %}
     </div>
     {% endif %}
 
@@ -47,28 +46,28 @@
                         {{ zeile.postfach.benutzer }}
                         {% if zeile.postfach.server %}· {{ zeile.postfach.server }}:{{ zeile.postfach.port }}{% endif %}
                         · {{ zeile.postfach.get_verfahren_display }}
-                        {% if not zeile.postfach.aktiv %}· <span class="fw-warnton font-semibold">abgeschaltet</span>{% endif %}
+                        {% if not zeile.postfach.aktiv %}· <span class="fw-warnton font-semibold">{% trans "abgeschaltet" %}</span>{% endif %}
                     </p>
                     <p class="text-xs fw-mutet mt-2">
                         {% if zeile.postfach.letzter_abruf %}
-                            Letzter Abruf: {{ zeile.postfach.letzter_abruf|date:"d.m.Y H:i" }}
+                            {% blocktrans with zeit=zeile.postfach.letzter_abruf|date:"d.m.Y H:i" %}Letzter Abruf: {{ zeit }}{% endblocktrans %}
                         {% else %}
-                            Noch kein Abruf gelaufen.
+                            {% trans "Noch kein Abruf gelaufen." %}
                         {% endif %}
                         {% if zeile.postfach.letzter_test %}
-                            · Zuletzt geprüft: {{ zeile.postfach.letzter_test|date:"d.m.Y H:i" }}
+                            · {% blocktrans with zeit=zeile.postfach.letzter_test|date:"d.m.Y H:i" %}Zuletzt geprüft: {{ zeit }}{% endblocktrans %}
                         {% endif %}
                     </p>
                     {% if zeile.postfach.letzter_fehler %}
                     <div class="fw-krit-flaeche border fw-linie-krit fw-kritisch rounded-lg p-3 text-xs mt-3">
-                        <strong>Letzter Fehler{% if zeile.postfach.letzter_fehler_am %}
+                        <strong>{% trans "Letzter Fehler" %}{% if zeile.postfach.letzter_fehler_am %}
                             ({{ zeile.postfach.letzter_fehler_am|date:"d.m.Y H:i" }}){% endif %}:</strong><br>
                         {{ zeile.postfach.letzter_fehler }}
                     </div>
                     {% endif %}
                 {% else %}
                     <p class="text-xs fw-mutet">
-                        Nicht eingerichtet — für diesen Zweck werden keine Mails abgeholt.
+                        {% trans "Nicht eingerichtet — für diesen Zweck werden keine Mails abgeholt." %}
                     </p>
                 {% endif %}
             </div>
@@ -78,18 +77,18 @@
                 <a href="{% url 'postfach_form' zeile.zweck %}"
                    class="text-center fw-btn fw-primary text-sm
                           font-semibold px-4 py-2 rounded-lg shadow-sm">
-                    {% if zeile.postfach %}Bearbeiten{% else %}Einrichten{% endif %}</a>
+                    {% if zeile.postfach %}{% trans "Bearbeiten" %}{% else %}{% trans "Einrichten" %}{% endif %}</a>
                 {% if zeile.postfach %}
                 <form method="post" action="{% url 'postfach_test' zeile.zweck %}">
                     {% csrf_token %}
                     <button class="w-full fw-flaeche border fw-linie fw-ink text-sm
-                                   font-semibold px-4 py-2 rounded-lg">Verbindung prüfen</button>
+                                   font-semibold px-4 py-2 rounded-lg">{% trans "Verbindung prüfen" %}</button>
                 </form>
                 <form method="post" action="{% url 'postfach_loeschen' zeile.zweck %}"
-                      onsubmit="return confirm('Postfach «{{ zeile.bezeichnung }}» wirklich löschen? Der Abruf für diesen Zweck ist danach abgeschaltet.');">
+                      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=zeile.bezeichnung|safe %}Postfach «{{ name }}» wirklich löschen? Der Abruf für diesen Zweck ist danach abgeschaltet.{% endblocktrans %}{% endfilter %}');">
                     {% csrf_token %}
                     <button class="w-full fw-flaeche border fw-linie-krit fw-kritisch text-sm
-                                   font-semibold px-4 py-2 rounded-lg">Löschen</button>
+                                   font-semibold px-4 py-2 rounded-lg">{% trans "Löschen" %}</button>
                 </form>
                 {% endif %}
             </div>
@@ -100,7 +99,7 @@
 
     {% if not darf_aendern %}
     <p class="text-xs fw-mutet">
-        Postfächer ändern dürfen Inhaber und Verwalter.
+        {% trans "Postfächer ändern dürfen Inhaber und Verwalter." %}
     </p>
     {% endif %}
 </div>

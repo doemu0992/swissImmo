@@ -113,6 +113,19 @@ UEBERSETZT = (
     'fw/vorlage_form.html',
     'fw/logbuch.html',
     'fw/_unterschrift_feld.html',
+    # Tranche «Einstellungen» (Teil B)
+    'fw/regelwerk.html',
+    'fw/regelsatz_form.html',
+    'fw/regelwerk_protokoll.html',
+    'core/postfach_liste.html',
+    'core/postfach_form.html',
+    'core/zweifaktor_uebersicht.html',
+    'core/zweifaktor_einrichten.html',
+    'core/zweifaktor_bestaetigen.html',
+    'core/zweifaktor_codes.html',
+    '403.html',
+    '404.html',
+    '500.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -187,6 +200,10 @@ STICHPROBE = {
     # Eingabe mit «LÖSCHEN». Eine Uebersetzung liesse den Reset in FR/IT/EN
     # still scheitern, weil niemand das deutsche Wort tippt.
     'LÖSCHEN':            {'de': 'LÖSCHEN', 'fr': 'LÖSCHEN', 'it': 'LÖSCHEN', 'en': 'LÖSCHEN'},
+    'Seite nicht gefunden': {'de': 'Seite nicht gefunden', 'fr': 'Page introuvable',
+                             'it': 'Pagina non trovata', 'en': 'Page not found'},
+    'Notfallcodes':       {'de': 'Notfallcodes', 'fr': 'Codes de secours',
+                           'it': 'Codici di emergenza', 'en': 'Backup codes'},
 }
 
 
