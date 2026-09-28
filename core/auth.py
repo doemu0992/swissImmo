@@ -72,11 +72,25 @@ def hat_rolle(user, rollen):
     „alles": derselbe Grundsatz wie im `TenantManager`.
 
     Superuser bleiben ausgenommen (Notfall-Zugang), wie bisher.
+
+    DER INHABER DARF, WAS DAS TEAM DARF
+    -----------------------------------
+    Nach der Rollentabelle (`docs/KONZEPT-UI.md`, Abschnitt 8) hat der Inhaber
+    jede Befugnis der anderen Team-Rollen. Rund zwanzig Views verlangten aber
+    nur `ROLLE_VERWALTER` — der Inhaber einer frisch angelegten Organisation
+    stand dort vor einem 403, ausgerechnet auch bei «Benutzer & Rollen», die
+    nach der Tabelle ihm allein zusteht. Verlangt eine Prüfung irgendeine
+    Team-Rolle, genügt darum auch die Inhaber-Rolle. Portal-Rollen
+    (`ROLLE_EIGENTUEMER`) erweitert das bewusst nicht.
     """
     if not user or not user.is_authenticated:
         return False
     if user.is_superuser:
         return True
+
+    rollen = tuple(rollen)
+    if ROLLE_INHABER not in rollen and any(r in TEAM_ROLLEN for r in rollen):
+        rollen += (ROLLE_INHABER,)
 
     from core.tenancy import aktuelle_organisation
     from crm.models import Mitgliedschaft

@@ -89,15 +89,14 @@ class MieterKuendigungTests(TestCase):
                                       status='erfasst')
         pdf = generate_kuendigung_mieter_pdf(v, k)
         self.assertTrue(pdf.startswith(b'%PDF'))
-        # Text prüfen via pdf-Rohbytes (Namen im Content-Stream)
-        try:
-            import fitz
-            doc = fitz.open(stream=pdf, filetype='pdf')
-            txt = doc[0].get_text()
-            self.assertIn('Anna Muster', txt)
-            self.assertIn('266m', txt)
-        except ImportError:
-            pass
+        # Text prüfen. Früher über `fitz` (PyMuPDF) — das steht nicht in
+        # requirements.txt, der ImportError wurde geschluckt und der Test
+        # prüfte still nichts. `pypdf` ist Laufzeitabhängigkeit.
+        import io
+        from pypdf import PdfReader
+        txt = PdfReader(io.BytesIO(pdf)).pages[0].extract_text()
+        self.assertIn('Anna Muster', txt)
+        self.assertIn('266m', txt)
 
 
 class KautionRueckzahlungTests(TestCase):
