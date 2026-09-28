@@ -23,8 +23,8 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
-                       TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import (darf_oeffnen, INHABER_ROLLEN, rolle_erforderlich, ROLLE_VERWALTER,
+                       SCHREIB_ROLLEN, TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
@@ -141,11 +141,16 @@ def fw_account(request):
         **basis, 'nav': 'account', 'vw': vw,
         'logo_url': _url('logo'), 'unterschrift_url': sig_url,
         'unterschrift_verwaist': bool(getattr(vw, 'unterschrift_bild', None)) and not sig_url,
-        'kann_reset': hat_rolle(request.user, [ROLLE_VERWALTER]),
+        # Liest die Rolle am Dekorator von fw_datenreset ab — Anzeige und
+        # Sperre können damit nicht auseinanderlaufen.
+        'kann_reset': darf_oeffnen(request.user, '/neu/datenreset/'),
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+# Nur der Inhaber (seit 28.09.2026, vorher jeder Verwalter). Der Reset leert
+# den gesamten Bestand der Verwaltung unwiderruflich; «Organisation löschen»
+# ist nach docs/PHASE-2-PLAN.md (Etappe 4.3) Inhaber-Sache.
+@rolle_erforderlich(*INHABER_ROLLEN)
 def fw_datenreset(request):
     """GEFAHRENZONE: löscht ALLE operativen Daten (Liegenschaften, Objekte,
     Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate,
