@@ -1,51 +1,51 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}{% if ist_neu %}Neuer Eigentümer{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% if ist_neu %}{% trans "Neuer Eigentümer" %}{% else %}{% blocktrans with name=md.firma_oder_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/mandate/" class="hover:fw-marke">Mandate</a>
+    <a href="/neu/mandate/" class="hover:fw-marke">{% trans "Mandate" %}</a>
     {% zeichen 'weiter' klasse='text-[9px]' %}
-    <span class="fw-mutet font-medium">{% if ist_neu %}Neu{% else %}{{ md.firma_oder_name }}{% endif %}</span>
+    <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neu" %}{% else %}{{ md.firma_oder_name }}{% endif %}</span>
 </nav>
 
 <div class="fw-phead">
     <div>
-        <h1>{% if ist_neu %}Neuen Eigentümer erfassen{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %}</h1>
-        <p>Eigentümer-Stammdaten und Zuordnung der Liegenschaften.</p>
+        <h1>{% if ist_neu %}{% trans "Neuen Eigentümer erfassen" %}{% else %}{% blocktrans with name=md.firma_oder_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %}</h1>
+        <p>{% trans "Eigentümer-Stammdaten und Zuordnung der Liegenschaften." %}</p>
     </div>
 </div>
 
 <form method="post" enctype="multipart/form-data" class="max-w-3xl space-y-5">
     {% csrf_token %}
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Eigentümer</h3>
-        <div><label for="md-firma" class="block text-xs font-semibold fw-mutet mb-1">Name / Firma *</label>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Eigentümer" %}</h3>
+        <div><label for="md-firma" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Name / Firma *" %}</label>
             <input id="md-firma" name="firma_oder_name" required value="{{ md.firma_oder_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="md-kontakt" class="block text-xs font-semibold fw-mutet mb-1">Kontaktperson</label>
+            <div><label for="md-kontakt" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kontaktperson" %}</label>
                 <input id="md-kontakt" name="kontaktperson" value="{{ md.kontaktperson }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label for="md-email" class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+            <div><label for="md-email" class="block text-xs font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
                 <input id="md-email" type="email" name="email" value="{{ md.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <div><label for="md-strasse" class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr.</label>
+        <div><label for="md-strasse" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr." %}</label>
             <input id="md-strasse" name="strasse" value="{{ md.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label for="md-plz" class="block text-xs font-semibold fw-mutet mb-1">PLZ</label>
+            <div><label for="md-plz" class="block text-xs font-semibold fw-mutet mb-1">{% trans "PLZ" %}</label>
                 <input id="md-plz" name="plz" value="{{ md.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label for="md-ort" class="block text-xs font-semibold fw-mutet mb-1">Ort</label>
+            <div class="sm:col-span-2"><label for="md-ort" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ort" %}</label>
                 <input id="md-ort" name="ort" value="{{ md.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label for="md-telefon" class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+            <div><label for="md-telefon" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
                 <input id="md-telefon" name="telefon" value="{{ md.telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="md-bank" class="block text-xs font-semibold fw-mutet mb-1">Bankname</label>
+            <div><label for="md-bank" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bankname" %}</label>
                 <input id="md-bank" name="bank_name" value="{{ md.bank_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label for="md-iban" class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
                 <input id="md-iban" name="iban" value="{{ md.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-            <div><label for="md-honorar" class="block text-xs font-semibold fw-mutet mb-1">Verwaltungshonorar (% der Mieterträge)</label>
+            <div><label for="md-honorar" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verwaltungshonorar (% der Mieterträge)" %}</label>
                 <input id="md-honorar" name="honorar_prozent" type="text" inputmode="decimal" value="{{ md.honorar_prozent|default:'0' }}"
                        placeholder="z. B. 4.5" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] fw-faint mt-1">Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank).</p></div>
+                <p class="text-[11px] fw-faint mt-1">{% trans "Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank)." %}</p></div>
         </div>
 
         <div class="border-t fw-linie pt-4">
@@ -54,8 +54,8 @@
     </div>
 
     <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-1">Zugeordnete Liegenschaften</h3>
-        <p class="text-xs fw-faint mb-3">Wähle die Liegenschaften, die diesem Eigentümer gehören.</p>
+        <h3 class="font-bold fw-strong text-sm mb-1">{% trans "Zugeordnete Liegenschaften" %}</h3>
+        <p class="text-xs fw-faint mb-3">{% trans "Wähle die Liegenschaften, die diesem Eigentümer gehören." %}</p>
         {# Beleg, dass dieser Block wirklich mitgeschickt wurde — sonst rührt die View die Zuordnung nicht an #}
         <input type="hidden" name="lg_zuordnung" value="1">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto">
@@ -63,19 +63,19 @@
             <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border fw-linie hover:fw-flaeche2 cursor-pointer text-sm">
                 <input type="checkbox" name="liegenschaften" value="{{ lg.id }}" {% if lg.id in zugeordnet %}checked{% endif %} class="fw-akzent">
                 <span class="min-w-0"><span class="font-medium fw-strong">{{ lg.strasse }}</span>
-                    <span class="text-xs fw-faint block">{{ lg.plz }} {{ lg.ort }}{% if lg.eigentuemer and lg.eigentuemer_id != md.id %} · aktuell: {{ lg.eigentuemer.firma_oder_name }}{% endif %}</span></span>
+                    <span class="text-xs fw-faint block">{{ lg.plz }} {{ lg.ort }}{% if lg.eigentuemer and lg.eigentuemer_id != md.id %} · {% trans "aktuell:" %} {{ lg.eigentuemer.firma_oder_name }}{% endif %}</span></span>
             </label>
             {% empty %}
-            <p class="text-sm fw-faint italic col-span-2">Noch keine Liegenschaften erfasst.</p>
+            <p class="text-sm fw-faint italic col-span-2">{% trans "Noch keine Liegenschaften erfasst." %}</p>
             {% endfor %}
         </div>
     </div>
 
     <div class="flex items-center gap-3">
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'speichern' klasse='mr-1.5' %}Speichern
+            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}
         </button>
-        <a href="/neu/mandate/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
+        <a href="/neu/mandate/" class="text-sm fw-mutet hover:fw-ink font-medium">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 
@@ -84,37 +84,37 @@
 <div class="fw-card p-5 mt-5 max-w-3xl">
     <div class="flex items-start justify-between gap-3">
         <div>
-            <h3 class="font-bold fw-strong text-sm flex items-center gap-2">{% zeichen 'liegenschaft' klasse='fw-marke' %} Eigentümer-Portal-Zugang</h3>
-            <p class="text-xs fw-faint mt-1">Login fürs Portal unter <span class="font-mono">/portal/login/</span> — Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug.</p>
+            <h3 class="font-bold fw-strong text-sm flex items-center gap-2">{% zeichen 'liegenschaft' klasse='fw-marke' %} {% trans "Eigentümer-Portal-Zugang" %}</h3>
+            <p class="text-xs fw-faint mt-1">{% blocktrans trimmed %}Login fürs Portal unter <span class="font-mono">/portal/login/</span> — Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug.{% endblocktrans %}</p>
         </div>
         {% if portal_user %}
-        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-1 rounded-full">Aktiv</span>
+        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-1 rounded-full">{% trans "Aktiv" %}</span>
         {% else %}
-        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide fw-flaeche2 fw-mutet px-2 py-1 rounded-full">Kein Zugang</span>
+        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide fw-flaeche2 fw-mutet px-2 py-1 rounded-full">{% trans "Kein Zugang" %}</span>
         {% endif %}
     </div>
 
     {% if portal_user %}
-    <div class="mt-3 text-sm fw-mutet">Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span></div>
+    <div class="mt-3 text-sm fw-mutet">{% trans "Benutzername" %}: <span class="font-mono font-semibold">{{ portal_user.username }}</span></div>
     <div class="mt-3 flex flex-wrap gap-2">
         <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/">{% csrf_token %}
             <button type="submit" class="text-sm font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-4 py-2 rounded-lg">
-                {% zeichen 'lauf' klasse='mr-1' %}Neues Passwort senden
+                {% zeichen 'lauf' klasse='mr-1' %}{% trans "Neues Passwort senden" %}
             </button>
         </form>
-        <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" onsubmit="return confirm('Portal-Zugang wirklich entfernen?');">{% csrf_token %}
+        <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% trans "Portal-Zugang wirklich entfernen?" %}{% endfilter %}');">{% csrf_token %}
             <input type="hidden" name="aktion" value="entfernen">
             <button type="submit" class="text-sm font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-4 py-2 rounded-lg">
-                {% zeichen 'gesperrt' klasse='mr-1' %}Zugang entfernen
+                {% zeichen 'gesperrt' klasse='mr-1' %}{% trans "Zugang entfernen" %}
             </button>
         </form>
     </div>
     {% else %}
     <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" class="mt-3">{% csrf_token %}
         <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'schluessel' klasse='mr-1.5' %}Portal-Zugang erstellen &amp; senden
+            {% zeichen 'schluessel' klasse='mr-1.5' %}{% trans "Portal-Zugang erstellen &amp; senden" %}
         </button>
-        {% if not md.email %}<p class="text-xs fw-warnton mt-2">{% zeichen 'warnung' %} Keine E-Mail hinterlegt — die Zugangsdaten werden nach dem Erstellen einmalig angezeigt.</p>{% endif %}
+        {% if not md.email %}<p class="text-xs fw-warnton mt-2">{% zeichen 'warnung' %} {% trans "Keine E-Mail hinterlegt — die Zugangsdaten werden nach dem Erstellen einmalig angezeigt." %}</p>{% endif %}
     </form>
     {% endif %}
 </div>

@@ -1,24 +1,24 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Suche{% if q %}: {{ q }}{% endif %} — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Suche" %}{% if q %}: {{ q }}{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<div class="fw-phead"><h1>Suche</h1></div>
+<div class="fw-phead"><h1>{% trans "Suche" %}</h1></div>
 {% if q %}
-<p class="text-sm fw-mutet mb-6">{{ total }} Treffer für „<span class="font-semibold fw-ink">{{ q }}</span>"</p>
+<p class="text-sm fw-mutet mb-6">{% blocktrans trimmed %}{{ total }} Treffer für „<span class="font-semibold fw-ink">{{ q }}</span>"{% endblocktrans %}</p>
 {% else %}
-<p class="text-sm fw-mutet mb-6">Gib oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge.</p>
+<p class="text-sm fw-mutet mb-6">{% trans "Gib oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge." %}</p>
 {% endif %}
 
 {% if q and total == 0 %}
 <div class="fw-card p-8 text-center fw-faint">
     {% zeichen 'suchen' klasse='text-2xl mb-3 fw-faint' %}
-    <p class="text-sm">Keine Treffer für „{{ q }}".</p>
+    <p class="text-sm">{% blocktrans %}Keine Treffer für „{{ q }}".{% endblocktrans %}</p>
 </div>
 {% endif %}
 
 {% if personen %}
 <div class="mb-6">
-    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">Personen ({{ personen|length }})</div>
+    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">{% trans "Personen" %} ({{ personen|length }})</div>
     <div class="fw-card fw-dv">
         {% for m in personen %}
         <a href="/neu/personen/{{ m.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
@@ -34,7 +34,7 @@
 
 {% if liegenschaften %}
 <div class="mb-6">
-    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">Liegenschaften ({{ liegenschaften|length }})</div>
+    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">{% trans "Liegenschaften" %} ({{ liegenschaften|length }})</div>
     <div class="fw-card fw-dv">
         {% for lg in liegenschaften %}
         <a href="/neu/liegenschaften/{{ lg.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
@@ -50,7 +50,7 @@
 
 {% if objekte %}
 <div class="mb-6">
-    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">Objekte ({{ objekte|length }})</div>
+    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">{% trans "Objekte" %} ({{ objekte|length }})</div>
     <div class="fw-card fw-dv">
         {% for e in objekte %}
         <a href="/neu/objekte/{{ e.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
@@ -66,13 +66,13 @@
 
 {% if vertraege %}
 <div class="mb-6">
-    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">Verträge ({{ vertraege|length }})</div>
+    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">{% trans "Verträge" %} ({{ vertraege|length }})</div>
     <div class="fw-card fw-dv">
         {% for v in vertraege %}
         <a href="/neu/vertraege/{{ v.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
             <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'vertrag' klasse='text-xs' %}</span>
             <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</div>
-                <div class="text-xs fw-faint">{{ v.einheit.liegenschaft.strasse }} · ab {{ v.beginn|date:"d.m.Y" }}</div></div>
+                <div class="text-xs fw-faint">{{ v.einheit.liegenschaft.strasse }} · {% trans "ab" %} {{ v.beginn|date:"d.m.Y" }}</div></div>
             {% zeichen 'weiter' klasse='text-xs fw-faint' %}
         </a>
         {% endfor %}

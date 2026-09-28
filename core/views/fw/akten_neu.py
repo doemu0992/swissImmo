@@ -42,6 +42,7 @@ from decimal import Decimal
 
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext as _, ngettext
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
 
@@ -63,43 +64,44 @@ def _mandat_kopf(md, liegenschaften, soll_monat, offene_auszahlungen, faelle):
     chips = []
     if liegenschaften:
         einheiten = sum(l['einheiten'] for l in liegenschaften)
-        chips.append({'text': f'{len(liegenschaften)} Liegenschaft'
-                              f'{"en" if len(liegenschaften) != 1 else ""} · '
-                              f'{einheiten} Objekte', 'ton': 'fw-brand'})
+        chips.append({'text': ngettext('%(n)s Liegenschaft', '%(n)s Liegenschaften',
+                                       len(liegenschaften)) % {'n': len(liegenschaften)}
+                              + ' · ' + _('%(n)s Objekte') % {'n': einheiten},
+                      'ton': 'fw-brand'})
     else:
-        chips.append({'text': 'keine Liegenschaft zugeordnet', 'ton': 'fw-warn'})
+        chips.append({'text': _('keine Liegenschaft zugeordnet'), 'ton': 'fw-warn'})
     if md.honorar_prozent:
-        chips.append({'text': f'Honorar {md.honorar_prozent} %', 'ton': 'fw-mut'})
+        chips.append({'text': _('Honorar %(p)s %%') % {'p': md.honorar_prozent}, 'ton': 'fw-mut'})
     if not md.iban:
-        chips.append({'text': 'keine IBAN', 'ton': 'fw-warn'})
+        chips.append({'text': _('keine IBAN'), 'ton': 'fw-warn'})
     if md.benutzer_id:
-        chips.append({'text': 'Portalzugang aktiv', 'ton': 'fw-good'})
+        chips.append({'text': _('Portalzugang aktiv'), 'ton': 'fw-good'})
     offene_faelle = [f for f in faelle if f.status not in ('abgeschlossen', 'abgebrochen')]
     if offene_faelle:
-        chips.append({'text': f'{len(offene_faelle)} offen', 'ton': 'fw-warn'})
+        chips.append({'text': _('%(n)s offen') % {'n': len(offene_faelle)}, 'ton': 'fw-warn'})
 
     hinweise = []
     if not md.iban:
         hinweise.append({
             'ton': 'warn', 'symbol': 'bank',
-            'titel': 'Keine IBAN erfasst',
-            'text': 'Ohne IBAN lässt sich keine Auszahlung ausführen — der '
-                    'Ertragsüberschuss bleibt auf dem Verwaltungskonto liegen.',
-            'url': f'/neu/mandate/{md.id}/bearbeiten/', 'knopf': 'IBAN erfassen'})
+            'titel': _('Keine IBAN erfasst'),
+            'text': _('Ohne IBAN lässt sich keine Auszahlung ausführen — der '
+                      'Ertragsüberschuss bleibt auf dem Verwaltungskonto liegen.'),
+            'url': f'/neu/mandate/{md.id}/bearbeiten/', 'knopf': _('IBAN erfassen')})
     if not liegenschaften:
         hinweise.append({
             'ton': 'info', 'symbol': 'liegenschaft',
-            'titel': 'Keine Liegenschaft zugeordnet',
-            'text': 'Ein Mandat ohne Liegenschaft erzeugt keine Abrechnung und '
-                    'kein Honorar — vermutlich fehlt die Zuordnung.',
-            'url': '/neu/liegenschaften/', 'knopf': 'Liegenschaft zuordnen'})
+            'titel': _('Keine Liegenschaft zugeordnet'),
+            'text': _('Ein Mandat ohne Liegenschaft erzeugt keine Abrechnung und '
+                      'kein Honorar — vermutlich fehlt die Zuordnung.'),
+            'url': '/neu/liegenschaften/', 'knopf': _('Liegenschaft zuordnen')})
     if not md.honorar_prozent:
         hinweise.append({
             'ton': 'info', 'symbol': 'bericht',
-            'titel': 'Kein Honorarsatz hinterlegt',
-            'text': 'Die Mandatsabrechnung rechnet dann mit dem Vorgabewert der '
-                    'Verwaltung statt mit dem vereinbarten Satz.',
-            'url': f'/neu/mandate/{md.id}/honorar/', 'knopf': 'Honorar festlegen'})
+            'titel': _('Kein Honorarsatz hinterlegt'),
+            'text': _('Die Mandatsabrechnung rechnet dann mit dem Vorgabewert der '
+                      'Verwaltung statt mit dem vereinbarten Satz.'),
+            'url': f'/neu/mandate/{md.id}/honorar/', 'knopf': _('Honorar festlegen')})
 
     return {
         'mandat_nummer': f'M-{md.id:06d}',
@@ -229,8 +231,8 @@ def fw_mandat_detail(request, pk):
         'faelle_mit_zeit': mit_zeit,
         # Warum die Zahl fehlt — als Text, nicht als Leerstelle.
         'fehlt': (None if chf_pro_stunde is not None else
-                  'Kein Honorarsatz hinterlegt' if not md.honorar_prozent else
-                  'Noch keine Stunde erfasst'),
+                  _('Kein Honorarsatz hinterlegt') if not md.honorar_prozent else
+                  _('Noch keine Stunde erfasst')),
     }
 
     return render(request, 'fw/mandat_detail.html', {
@@ -252,21 +254,21 @@ def _dienstleister_kopf(h, auftraege, offen, kosten_jahr, faelle):
     """Der Aktenkopf des Dienstleisters."""
     chips = [{'text': h.get_branche_display(), 'ton': 'fw-brand'}]
     if offen:
-        chips.append({'text': f'{len(offen)} offener Auftrag' if len(offen) == 1
-                              else f'{len(offen)} offene Aufträge', 'ton': 'fw-warn'})
+        chips.append({'text': ngettext('%(n)s offener Auftrag', '%(n)s offene Aufträge',
+                                       len(offen)) % {'n': len(offen)}, 'ton': 'fw-warn'})
     else:
-        chips.append({'text': 'kein offener Auftrag', 'ton': 'fw-good'})
+        chips.append({'text': _('kein offener Auftrag'), 'ton': 'fw-good'})
     if not h.telefon and not h.email:
-        chips.append({'text': 'keine Kontaktangabe', 'ton': 'fw-crit'})
+        chips.append({'text': _('keine Kontaktangabe'), 'ton': 'fw-crit'})
 
     hinweise = []
     if not h.telefon:
         hinweise.append({
             'ton': 'warn', 'symbol': 'senden',
-            'titel': 'Keine Telefonnummer',
-            'text': 'Bei einem Wasserschaden ausserhalb der Bürozeit ist eine '
-                    'E-Mail-Adresse wertlos.',
-            'url': f'/neu/dienstleister/{h.id}/bearbeiten/', 'knopf': 'Nummer erfassen'})
+            'titel': _('Keine Telefonnummer'),
+            'text': _('Bei einem Wasserschaden ausserhalb der Bürozeit ist eine '
+                      'E-Mail-Adresse wertlos.'),
+            'url': f'/neu/dienstleister/{h.id}/bearbeiten/', 'knopf': _('Nummer erfassen')})
     # Aufträge, die seit über 30 Tagen als «ausstehend» stehen — das ist keine
     # Vermutung, sondern ein Datum im Bestand.
     heute = timezone.localdate()
@@ -275,11 +277,11 @@ def _dienstleister_kopf(h, auftraege, offen, kosten_jahr, faelle):
     if liegen:
         hinweise.append({
             'ton': 'crit', 'symbol': 'wartet',
-            'titel': f'{len(liegen)} Auftrag{"" if len(liegen) == 1 else "s"} '
-                     f'älter als 30 Tage',
-            'text': 'Beauftragt, aber nicht als erledigt gemeldet. Entweder '
-                    'wurde nicht gearbeitet, oder die Rückmeldung fehlt.',
-            'url': '?tab=auftraege', 'knopf': 'Aufträge ansehen'})
+            'titel': ngettext('%(n)s Auftrag älter als 30 Tage',
+                              '%(n)s Aufträge älter als 30 Tage', len(liegen)) % {'n': len(liegen)},
+            'text': _('Beauftragt, aber nicht als erledigt gemeldet. Entweder '
+                      'wurde nicht gearbeitet, oder die Rückmeldung fehlt.'),
+            'url': '?tab=auftraege', 'knopf': _('Aufträge ansehen')})
 
     return {
         'dl_nummer': f'H-{h.id:06d}',
