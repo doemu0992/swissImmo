@@ -429,7 +429,6 @@ ZAEHLER_TYPEN = [
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
-@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_budget_speichern(request, pk):
     """Unterhaltsbudget einer Liegenschaft fuer ein Jahr erfassen oder aendern.
 
@@ -510,6 +509,7 @@ def fw_budget_loeschen(request, pk):
     return redirect(f'/neu/liegenschaften/{lg.id}/?tab=finanzen')
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_wartungsfrist_neu(request, pk):
     """Wartungs-/Versicherungsfrist zu einer Liegenschaft erfassen."""
     from django.shortcuts import redirect
