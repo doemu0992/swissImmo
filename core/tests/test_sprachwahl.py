@@ -112,3 +112,38 @@ class MonatsnamenFolgenDerSpracheTests(TestCase):
         seite = self.c.get('/neu/sollstellung/?jahr=2026&monat=3')
         self.assertContains(seite, 'mars')
         self.assertNotContains(seite, 'März')
+
+
+class VertragsaktenMonatFolgtDerSpracheTests(TestCase):
+    """Der Aktenkopf des Vertrags nennt den ältesten offenen Monat in der
+    gewählten Sprache — derselbe Fehler wie in der Sollstellung, an zweiter
+    Stelle: `strftime('%B %Y')` in core/views/fw/detailseiten.py lieferte
+    «May 2024» auch in der deutschen Oberfläche.
+
+    Gegenprobe: `dateformat.format(..., 'F Y')` zurück auf
+    `strftime('%B %Y')` — beide Tests werden rot.
+    """
+
+    def setUp(self):
+        from datetime import date
+        from decimal import Decimal
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, einheit=e, titel='Miete 05/2024',
+            datum=date(2024, 5, 1), faellig_am=date(2024, 5, 5),
+            betrag=Decimal('1700'), status='offen')
+        self.url = f'/neu/vertraege/{v.id}/'
+        self.c = Client()
+        self.c.force_login(_team_user('Verwalter'))
+
+    def test_deutsch(self):
+        seite = self.c.get(self.url, HTTP_ACCEPT_LANGUAGE='de-CH')
+        self.assertContains(seite, 'Mai 2024')
+        self.assertNotContains(seite, 'May 2024')
+
+    def test_franzoesisch(self):
+        self.c.post(SETLANG, {'language': 'fr', 'next': '/neu/'})
+        seite = self.c.get(self.url)
+        self.assertContains(seite, 'mai 2024')
+        self.assertNotContains(seite, 'May 2024')

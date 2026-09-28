@@ -192,6 +192,8 @@ UEBERSETZT = (
     'fw/liegenschaft_detail.html',
     # Tranche «Objektakte»
     'fw/objekt_detail.html',
+    # Tranche «Vertragsakte»
+    'fw/vertrag_detail.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -309,6 +311,8 @@ STICHPROBE = {
                                            'en': 'Maintenance and insurance deadlines'},
     'Raum aus Katalog anlegen': {'de': 'Raum aus Katalog anlegen', 'fr': 'Créer une pièce depuis le catalogue',
                                  'it': 'Creare un locale dal catalogo', 'en': 'Create room from catalogue'},
+    'Mietzins und Anpassungen': {'de': 'Mietzins und Anpassungen', 'fr': 'Loyer et adaptations',
+                                 'it': 'Pigione e adeguamenti', 'en': 'Rent and adjustments'},
 }
 
 
