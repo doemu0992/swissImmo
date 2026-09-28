@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 01:07+0200\n"
+"POT-Creation-Date: 2026-09-29 01:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,14 +73,14 @@ msgstr "Properties"
 
 #: core/navigation.py:138 core/templates/fw/liegenschaft_detail.html:739
 #: core/templates/fw/liegenschaften.html:43
-#: core/templates/fw/objekt_form.html:8 core/templates/fw/objekte.html:4
-#: core/templates/fw/objekte.html:23 core/templates/fw/objekte.html:34
-#: core/templates/fw/suche.html:53
+#: core/templates/fw/objekt_detail.html:11 core/templates/fw/objekt_form.html:8
+#: core/templates/fw/objekte.html:4 core/templates/fw/objekte.html:23
+#: core/templates/fw/objekte.html:34 core/templates/fw/suche.html:53
 msgid "Objekte"
 msgstr "Units"
 
-#: core/navigation.py:139 core/templates/fw/vertraege.html:5
-#: core/templates/fw/vertraege.html:13
+#: core/navigation.py:139 core/templates/fw/objekt_detail.html:185
+#: core/templates/fw/vertraege.html:5 core/templates/fw/vertraege.html:13
 msgid "Mietverhältnisse"
 msgstr "Tenancies"
 
@@ -98,7 +98,8 @@ msgstr "People"
 msgid "Dienstleister"
 msgstr "Service providers"
 
-#: core/navigation.py:144 core/templates/fw/schaden_kosten.html:50
+#: core/navigation.py:144 core/templates/fw/objekt_detail.html:553
+#: core/templates/fw/schaden_kosten.html:50
 msgid "Schäden"
 msgstr "Damage"
 
@@ -158,7 +159,8 @@ msgstr "Payment run"
 
 #: core/navigation.py:159 core/templates/fw/finanzen.html:139
 #: core/templates/fw/nebenkosten.html:4 core/templates/fw/nebenkosten.html:9
-#: core/templates/fw/nebenkosten_detail.html:10 faelle/akten.py:117
+#: core/templates/fw/nebenkosten_detail.html:10
+#: core/templates/fw/objekt_detail.html:141 faelle/akten.py:117
 msgid "Nebenkosten"
 msgstr "Service charges"
 
@@ -167,7 +169,7 @@ msgid "Periodisch"
 msgstr "Periodic"
 
 #: core/navigation.py:160 core/templates/fw/mietzins.html:4
-#: core/templates/fw/mietzins.html:10
+#: core/templates/fw/mietzins.html:10 core/templates/fw/objekt_detail.html:310
 msgid "Mietzins"
 msgstr "Rent"
 
@@ -296,7 +298,7 @@ msgid "Zwei-Faktor-Anmeldung"
 msgstr "Two-factor sign-in"
 
 #: core/services/ersatzplanung.py:69 core/templates/fw/ersatzplanung.html:20
-#: core/views/fw/schaeden.py:402
+#: core/templates/fw/objekt_detail.html:654 core/views/fw/schaeden.py:402
 msgid "Ersatz fällig"
 msgstr "Replacement due"
 
@@ -434,6 +436,7 @@ msgstr "Tenant account"
 
 #: core/templates/core/_mieter_nav.html:26
 #: core/templates/core/mieter_portal.html:107
+#: core/templates/fw/objekt_detail.html:205
 msgid "Kündigung"
 msgstr "Termination"
 
@@ -793,6 +796,7 @@ msgstr "since %(datum)s"
 
 #: core/templates/core/mieter_portal.html:31
 #: core/templates/fw/mieterspiegel.html:65
+#: core/templates/fw/objekt_detail.html:272
 #: core/templates/fw/objekt_form.html:105
 #: core/templates/fw/sollstellung.html:84 core/templates/fw/vertraege.html:72
 msgid "Netto"
@@ -953,6 +957,7 @@ msgstr ""
 #: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
 #: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
 #: core/templates/fw/nebenkosten_detail.html:114
+#: core/templates/fw/objekt_detail.html:32
 #: core/templates/fw/objekt_form.html:25
 #: core/templates/fw/person_detail.html:372
 #: core/templates/fw/person_detail.html:471
@@ -973,6 +978,7 @@ msgstr "e.g. dripping tap"
 
 #: core/templates/core/mieter_schaden.html:32
 #: core/templates/fw/abnahme_detail.html:69
+#: core/templates/fw/objekt_detail.html:679
 #: core/templates/fw/schaden_detail.html:145
 msgid "Raum"
 msgstr "Room"
@@ -993,6 +999,7 @@ msgid "Bitte beschreiben Sie das Problem möglichst genau."
 msgstr "Please describe the problem as precisely as possible."
 
 #: core/templates/core/mieter_schaden.html:42
+#: core/templates/fw/objekt_detail.html:480
 msgid "Fotos"
 msgstr "Photos"
 
@@ -1281,6 +1288,11 @@ msgstr "CHF %(betrag)s / mo."
 #: core/templates/fw/liegenschaft_detail.html:396
 #: core/templates/fw/liegenschaft_detail.html:413
 #: core/templates/fw/liegenschaft_detail.html:742
+#: core/templates/fw/objekt_detail.html:814
+#: core/templates/fw/objekt_detail.html:833
+#: core/templates/fw/objekt_detail.html:858
+#: core/templates/fw/objekt_detail.html:875
+#: core/templates/fw/objekt_detail.html:932
 #: core/templates/fw/objekt_form.html:34
 msgid "Typ"
 msgstr "Type"
@@ -1318,7 +1330,7 @@ msgstr "%(n)s rm."
 #: core/templates/fw/mieterspiegel.html:45
 #: core/templates/fw/mieterspiegel.html:80
 #: core/templates/fw/mieterspiegel_auswahl.html:37
-#: core/templates/fw/objekte.html:40
+#: core/templates/fw/objekte.html:40 core/views/fw/detailseiten.py:141
 msgid "Leerstand"
 msgstr "Vacancy"
 
@@ -1555,6 +1567,12 @@ msgstr "Inbox active — fetch emails from this mailbox"
 #: core/templates/fw/liegenschaft_detail.html:705
 #: core/templates/fw/liegenschaft_form.html:162
 #: core/templates/fw/mandat_form.html:76 core/templates/fw/mwst.html:117
+#: core/templates/fw/objekt_detail.html:175
+#: core/templates/fw/objekt_detail.html:263
+#: core/templates/fw/objekt_detail.html:711
+#: core/templates/fw/objekt_detail.html:771
+#: core/templates/fw/objekt_detail.html:805
+#: core/templates/fw/objekt_detail.html:843
 #: core/templates/fw/objekt_form.html:135
 #: core/templates/fw/person_form.html:314
 #: core/templates/fw/regelsatz_form.html:104
@@ -1570,7 +1588,12 @@ msgstr "Save"
 #: core/templates/fw/liegenschaft_detail.html:422
 #: core/templates/fw/liegenschaft_detail.html:704
 #: core/templates/fw/liegenschaft_form.html:164
-#: core/templates/fw/mandat_form.html:78 core/templates/fw/objekt_form.html:137
+#: core/templates/fw/mandat_form.html:78
+#: core/templates/fw/objekt_detail.html:174
+#: core/templates/fw/objekt_detail.html:710
+#: core/templates/fw/objekt_detail.html:770
+#: core/templates/fw/objekt_detail.html:842
+#: core/templates/fw/objekt_form.html:137
 #: core/templates/fw/person_form.html:316
 #: core/templates/fw/regelsatz_form.html:105
 #: core/templates/fw/vorlage_form.html:39
@@ -1635,6 +1658,11 @@ msgstr "Not set up — no emails are fetched for this purpose."
 #: core/templates/fw/liegenschaft_detail.html:675
 #: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_detail.html:125 core/templates/fw/mandate.html:36
+#: core/templates/fw/objekt_detail.html:57
+#: core/templates/fw/objekt_detail.html:151
+#: core/templates/fw/objekt_detail.html:667
+#: core/templates/fw/objekt_detail.html:742
+#: core/templates/fw/objekt_detail.html:824
 #: core/templates/fw/objekt_form.html:12
 #: core/templates/fw/person_detail.html:53
 #: core/templates/fw/person_form.html:11 core/templates/fw/regelwerk.html:56
@@ -1667,7 +1695,15 @@ msgstr ""
 #: core/templates/fw/liegenschaft_detail.html:406
 #: core/templates/fw/liegenschaft_detail.html:599
 #: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
-#: core/templates/fw/pendenzen.html:73 core/templates/fw/person_detail.html:490
+#: core/templates/fw/objekt_detail.html:294
+#: core/templates/fw/objekt_detail.html:403
+#: core/templates/fw/objekt_detail.html:455
+#: core/templates/fw/objekt_detail.html:501
+#: core/templates/fw/objekt_detail.html:670
+#: core/templates/fw/objekt_detail.html:744
+#: core/templates/fw/objekt_detail.html:826
+#: core/templates/fw/objekt_detail.html:917 core/templates/fw/pendenzen.html:73
+#: core/templates/fw/person_detail.html:490
 #: core/templates/fw/person_detail.html:543
 #: core/templates/fw/schaden_detail.html:389
 msgid "Löschen"
@@ -2074,6 +2110,7 @@ msgid "nicht verwendbar"
 msgstr "not usable"
 
 #: core/templates/fw/_unterschrift_feld.html:43
+#: core/templates/fw/objekt_detail.html:283
 #: core/templates/fw/objekt_form.html:113
 msgid "aktuell"
 msgstr "current"
@@ -2133,6 +2170,7 @@ msgstr "In final statement"
 #: core/templates/fw/liegenschaft_detail.html:78
 #: core/templates/fw/liegenschaften.html:16
 #: core/templates/fw/mandat_detail.html:128
+#: core/templates/fw/objekt_detail.html:60
 #: core/templates/fw/person_detail.html:62
 #: core/templates/fw/schaden_detail.html:56 core/templates/fw/schaeden.html:15
 #: core/templates/fw/vorlagen.html:10
@@ -2218,6 +2256,9 @@ msgid "Mieteranteil"
 msgstr "Tenant share"
 
 #: core/templates/fw/abnahme_detail.html:73
+#: core/templates/fw/objekt_detail.html:621
+#: core/templates/fw/objekt_detail.html:657
+#: core/templates/fw/objekt_detail.html:707
 msgid "Foto"
 msgstr "Photo"
 
@@ -2227,6 +2268,7 @@ msgid "Lebensdauer %(n)s J"
 msgstr "Lifespan %(n)s yrs"
 
 #: core/templates/fw/abnahme_detail.html:86
+#: core/templates/fw/objekt_detail.html:495
 #: core/templates/fw/schaden_detail.html:383
 msgid "Foto in voller Grösse öffnen"
 msgstr "Open photo at full size"
@@ -2388,6 +2430,10 @@ msgstr "— none —"
 #: core/templates/fw/liegenschaft_detail.html:358
 #: core/templates/fw/liegenschaft_detail.html:656
 #: core/templates/fw/liegenschaft_detail.html:701
+#: core/templates/fw/objekt_detail.html:619
+#: core/templates/fw/objekt_detail.html:705
+#: core/templates/fw/objekt_detail.html:767
+#: core/templates/fw/objekt_detail.html:802
 #: core/templates/fw/person_detail.html:521 core/templates/fw/termine.html:35
 msgid "Notiz"
 msgstr "Note"
@@ -2396,6 +2442,7 @@ msgstr "Note"
 #: core/templates/fw/dienstleister.html:37 core/templates/fw/hypotheken.html:44
 #: core/templates/fw/mahnwesen.html:101
 #: core/templates/fw/mandat_detail.html:223
+#: core/templates/fw/objekt_detail.html:623
 #: core/templates/fw/person_detail.html:529
 msgid "Erfassen"
 msgstr "Record"
@@ -2660,7 +2707,8 @@ msgstr "Asset"
 #: core/templates/fw/kreditoren.html:78 core/templates/fw/kreditoren.html:289
 #: core/templates/fw/liegenschaft_detail.html:45
 #: core/templates/fw/mandat_abrechnung.html:57
-#: core/templates/fw/nebenkosten.html:70 core/templates/fw/objekte.html:74
+#: core/templates/fw/nebenkosten.html:70
+#: core/templates/fw/objekt_detail.html:48 core/templates/fw/objekte.html:74
 #: core/templates/fw/schaden_detail.html:40
 #: core/templates/fw/schaden_kosten.html:49
 msgid "Liegenschaft"
@@ -2755,7 +2803,7 @@ msgstr "Post the annual contributions for the year?"
 msgid "Einlage buchen"
 msgstr "Post contribution"
 
-#: core/templates/fw/anlagen.html:102
+#: core/templates/fw/anlagen.html:102 core/templates/fw/objekt_detail.html:876
 msgid "Bestand"
 msgstr "Balance"
 
@@ -3286,6 +3334,7 @@ msgstr "Bank not on file"
 #: core/templates/fw/bankkonten.html:58
 #: core/templates/fw/liegenschaft_detail.html:114
 #: core/templates/fw/mandat_detail.html:152
+#: core/templates/fw/objekt_detail.html:86
 msgid "Soll / Monat"
 msgstr "Due / month"
 
@@ -3556,6 +3605,7 @@ msgstr "Expenses %(jahr)s"
 #: core/templates/fw/betriebskostenspiegel.html:45
 #: core/templates/fw/liegenschaft_detail.html:742
 #: core/templates/fw/objekt_ausschreiben.html:29
+#: core/templates/fw/objekt_detail.html:89
 #: core/templates/fw/vermarktung.html:49
 msgid "Fläche"
 msgstr "Area"
@@ -4586,7 +4636,8 @@ msgid "offen"
 msgstr "open"
 
 #: core/templates/fw/debitoren.html:161 core/templates/fw/debitoren.html:223
-#: core/templates/fw/dokumente.html:25 core/templates/fw/person_detail.html:470
+#: core/templates/fw/dokumente.html:25 core/templates/fw/objekt_detail.html:199
+#: core/templates/fw/person_detail.html:470
 #: core/templates/fw/person_detail.html:559
 msgid "Vertrag"
 msgstr "Lease"
@@ -4925,6 +4976,7 @@ msgid "alle Beträge effektiv"
 msgstr "all amounts actual"
 
 #: core/templates/fw/dienstleister_detail.html:54
+#: core/templates/fw/objekt_detail.html:871
 msgid "Schlüssel"
 msgstr "Keys"
 
@@ -4972,6 +5024,7 @@ msgid "Aufträge"
 msgstr "Work orders"
 
 #: core/templates/fw/dienstleister_detail.html:113
+#: core/templates/fw/objekt_detail.html:554
 #, python-format
 msgid "%(n)s offen von %(total)s"
 msgstr "%(n)s open of %(total)s"
@@ -5019,7 +5072,8 @@ msgstr ""
 "respective damage report."
 
 #: core/templates/fw/dienstleister_detail.html:180
-#: core/templates/fw/mandat_detail.html:266 faelle/akten.py:50
+#: core/templates/fw/mandat_detail.html:266
+#: core/templates/fw/objekt_detail.html:536 faelle/akten.py:50
 msgid "Fälle"
 msgstr "Cases"
 
@@ -5051,6 +5105,10 @@ msgstr "(empty = file name)"
 #: core/templates/fw/lebensdauer.html:48
 #: core/templates/fw/liegenschaft_detail.html:346
 #: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/objekt_detail.html:641
+#: core/templates/fw/objekt_detail.html:681
+#: core/templates/fw/objekt_detail.html:751
+#: core/templates/fw/objekt_detail.html:786
 #: core/templates/fw/pendenzen.html:112
 #: core/templates/fw/schaden_detail.html:42
 #: core/templates/fw/vorlage_form.html:25
@@ -5058,7 +5116,7 @@ msgid "Kategorie"
 msgstr "Category"
 
 #: core/templates/fw/dokumente.html:25 core/templates/fw/mandat_detail.html:290
-#: core/templates/fw/regelwerk.html:17
+#: core/templates/fw/objekt_detail.html:229 core/templates/fw/regelwerk.html:17
 msgid "Protokoll"
 msgstr "Log"
 
@@ -5084,7 +5142,7 @@ msgstr "none"
 msgid "Datei *"
 msgstr "File *"
 
-#: core/templates/fw/dokumente.html:40
+#: core/templates/fw/dokumente.html:40 core/templates/fw/objekt_detail.html:488
 #: core/templates/fw/schaden_detail.html:369
 msgid "Hochladen"
 msgstr "Upload"
@@ -5107,6 +5165,7 @@ msgstr "Filing"
 
 #: core/templates/fw/dokumente.html:89
 #: core/templates/fw/liegenschaft_detail.html:596
+#: core/templates/fw/objekt_detail.html:215
 #: core/templates/fw/person_detail.html:488
 #: core/templates/fw/person_form.html:37
 msgid "Öffnen"
@@ -5282,6 +5341,10 @@ msgstr "From bank account"
 #: core/templates/fw/eigentuemer_kontokorrent.html:172
 #: core/templates/fw/lebensdauer.html:34 core/templates/fw/lebensdauer.html:50
 #: core/templates/fw/liegenschaft_detail.html:527
+#: core/templates/fw/objekt_detail.html:276
+#: core/templates/fw/objekt_detail.html:325
+#: core/templates/fw/objekt_detail.html:392
+#: core/templates/fw/objekt_detail.html:420
 msgid "Bemerkung"
 msgstr "Note"
 
@@ -5313,6 +5376,7 @@ msgid "Konto, Team, Vorlagen und Integrationen — alles an einem Ort."
 msgstr "Account, team, templates and integrations — all in one place."
 
 #: core/templates/fw/ersatzplanung.html:4 core/templates/fw/lebensdauer.html:7
+#: core/views/fw/detailseiten.py:186
 msgid "Ersatzplanung"
 msgstr "Replacement planning"
 
@@ -5426,10 +5490,12 @@ msgstr "Life cycle"
 #: core/templates/fw/ersatzplanung.html:123
 #: core/templates/fw/ersatzplanung.html:135
 #: core/templates/fw/liegenschaft_detail.html:328
+#: core/templates/fw/objekt_detail.html:731
 msgid "Gerät"
 msgstr "Appliance"
 
 #: core/templates/fw/ersatzplanung.html:124
+#: core/templates/fw/objekt_detail.html:643
 msgid "Einbau"
 msgstr "Installed"
 
@@ -5912,6 +5978,7 @@ msgid "Ablauf"
 msgstr "Maturity"
 
 #: core/templates/fw/hypotheken.html:107
+#: core/templates/fw/objekt_detail.html:654
 msgid "bald fällig"
 msgstr "due soon"
 
@@ -6068,7 +6135,8 @@ msgstr "Tenant / unit"
 #: core/templates/fw/liegenschaft_detail.html:641
 #: core/templates/fw/liegenschaft_detail.html:662
 #: core/templates/fw/liegenschaft_detail.html:685
-#: core/templates/fw/logbuch.html:59 core/templates/fw/person_detail.html:219
+#: core/templates/fw/logbuch.html:59 core/templates/fw/objekt_detail.html:49
+#: core/templates/fw/person_detail.html:219
 #: core/templates/fw/person_detail.html:276
 #: core/templates/fw/person_form.html:231 core/templates/fw/termine.html:25
 msgid "Art"
@@ -6498,6 +6566,7 @@ msgid "Fällig am"
 msgstr "Due on"
 
 #: core/templates/fw/kreditoren.html:94 core/templates/fw/kreditoren.html:281
+#: core/templates/fw/objekt_detail.html:272
 msgid "Referenz"
 msgstr "Reference"
 
@@ -6839,6 +6908,7 @@ msgstr "Add category"
 
 #: core/templates/fw/lebensdauer.html:30
 #: core/templates/fw/liegenschaft_detail.html:309
+#: core/templates/fw/objekt_detail.html:595
 msgid "Kategorie *"
 msgstr "Category *"
 
@@ -6851,6 +6921,7 @@ msgid "Hinzufügen"
 msgstr "Add"
 
 #: core/templates/fw/lebensdauer.html:49
+#: core/templates/fw/objekt_detail.html:695
 msgid "Lebensdauer (J)"
 msgstr "Lifespan (yrs)"
 
@@ -7041,6 +7112,7 @@ msgstr "Worth noting"
 
 #: core/templates/fw/liegenschaft_detail.html:64
 #: core/templates/fw/liegenschaft_form.html:54
+#: core/templates/fw/objekt_detail.html:47
 #: core/templates/fw/person_detail.html:39
 #: core/templates/fw/schaden_detail.html:39
 msgid "Betreut von"
@@ -7048,6 +7120,7 @@ msgstr "Managed by"
 
 #: core/templates/fw/liegenschaft_detail.html:64
 #: core/templates/fw/liegenschaft_form.html:56
+#: core/templates/fw/objekt_detail.html:47
 #: core/templates/fw/schaden_detail.html:39
 msgid "nicht zugeteilt"
 msgstr "not assigned"
@@ -7105,6 +7178,7 @@ msgid "Liegenschaft löschen"
 msgstr "Delete property"
 
 #: core/templates/fw/liegenschaft_detail.html:111
+#: core/templates/fw/objekt_detail.html:83
 msgid "Vermietung"
 msgstr "Letting"
 
@@ -7386,6 +7460,7 @@ msgstr "Heating, boiler, ventilation, lift …"
 
 #: core/templates/fw/liegenschaft_detail.html:304
 #: core/templates/fw/liegenschaft_detail.html:323
+#: core/templates/fw/objekt_detail.html:782
 msgid "Gerät erfassen"
 msgstr "Record appliance"
 
@@ -7395,25 +7470,38 @@ msgstr "e.g. heating, boiler"
 
 #: core/templates/fw/liegenschaft_detail.html:311
 #: core/templates/fw/liegenschaft_detail.html:348
+#: core/templates/fw/objekt_detail.html:599
+#: core/templates/fw/objekt_detail.html:683
+#: core/templates/fw/objekt_detail.html:753
+#: core/templates/fw/objekt_detail.html:788
 msgid "Marke"
 msgstr "Brand"
 
 #: core/templates/fw/liegenschaft_detail.html:312
 #: core/templates/fw/liegenschaft_detail.html:349
+#: core/templates/fw/objekt_detail.html:601
+#: core/templates/fw/objekt_detail.html:685
+#: core/templates/fw/objekt_detail.html:755
+#: core/templates/fw/objekt_detail.html:790
 msgid "Modell"
 msgstr "Model"
 
 #: core/templates/fw/liegenschaft_detail.html:313
 #: core/templates/fw/liegenschaft_detail.html:350
+#: core/templates/fw/objekt_detail.html:757
+#: core/templates/fw/objekt_detail.html:792
 msgid "Seriennummer"
 msgstr "Serial number"
 
 #: core/templates/fw/liegenschaft_detail.html:314
 #: core/templates/fw/liegenschaft_detail.html:351
+#: core/templates/fw/objekt_detail.html:759
+#: core/templates/fw/objekt_detail.html:794
 msgid "Kapazität / Leistung"
 msgstr "Capacity / output"
 
 #: core/templates/fw/liegenschaft_detail.html:315
+#: core/templates/fw/objekt_detail.html:795
 msgid "z.B. 300 L, 24 kW"
 msgstr "e.g. 300 L, 24 kW"
 
@@ -7422,6 +7510,11 @@ msgstr "e.g. 300 L, 24 kW"
 #: core/templates/fw/liegenschaft_detail.html:387
 #: core/templates/fw/liegenschaft_detail.html:396
 #: core/templates/fw/liegenschaft_detail.html:417
+#: core/templates/fw/objekt_detail.html:761
+#: core/templates/fw/objekt_detail.html:796
+#: core/templates/fw/objekt_detail.html:815
+#: core/templates/fw/objekt_detail.html:837
+#: core/templates/fw/objekt_detail.html:862
 msgid "Standort"
 msgstr "Location"
 
@@ -7432,28 +7525,40 @@ msgstr "e.g. plant room"
 
 #: core/templates/fw/liegenschaft_detail.html:318
 #: core/templates/fw/liegenschaft_detail.html:354
+#: core/templates/fw/objekt_detail.html:763
+#: core/templates/fw/objekt_detail.html:798
 msgid "Installations-Datum"
 msgstr "Installation date"
 
 #: core/templates/fw/liegenschaft_detail.html:320
 #: core/templates/fw/liegenschaft_detail.html:328
 #: core/templates/fw/liegenschaft_detail.html:356
+#: core/templates/fw/objekt_detail.html:615
+#: core/templates/fw/objekt_detail.html:701
+#: core/templates/fw/objekt_detail.html:732
+#: core/templates/fw/objekt_detail.html:765
+#: core/templates/fw/objekt_detail.html:800
 msgid "Garantie bis"
 msgstr "Warranty until"
 
 #: core/templates/fw/liegenschaft_detail.html:328
+#: core/templates/fw/objekt_detail.html:642
+#: core/templates/fw/objekt_detail.html:731
 msgid "Marke / Modell"
 msgstr "Brand / model"
 
 #: core/templates/fw/liegenschaft_detail.html:328
+#: core/templates/fw/objekt_detail.html:732
 msgid "Installation"
 msgstr "Installation"
 
 #: core/templates/fw/liegenschaft_detail.html:332
+#: core/templates/fw/objekt_detail.html:737
 msgid "SN:"
 msgstr "SN:"
 
 #: core/templates/fw/liegenschaft_detail.html:338
+#: core/templates/fw/objekt_detail.html:743
 msgid "Gerät löschen?"
 msgstr "Delete appliance?"
 
@@ -7471,6 +7576,7 @@ msgstr "Common electricity, main water …"
 
 #: core/templates/fw/liegenschaft_detail.html:378
 #: core/templates/fw/liegenschaft_detail.html:391
+#: core/templates/fw/objekt_detail.html:854
 msgid "Zähler erfassen"
 msgstr "Record meter"
 
@@ -7484,20 +7590,27 @@ msgstr "Meter no. *"
 
 #: core/templates/fw/liegenschaft_detail.html:389
 #: core/templates/fw/liegenschaft_detail.html:419
+#: core/templates/fw/objekt_detail.html:839
+#: core/templates/fw/objekt_detail.html:864
 msgid "Aktueller Stand"
 msgstr "Current reading"
 
 #: core/templates/fw/liegenschaft_detail.html:396
 #: core/templates/fw/liegenschaft_detail.html:415
+#: core/templates/fw/objekt_detail.html:814
+#: core/templates/fw/objekt_detail.html:835
+#: core/templates/fw/objekt_detail.html:860
 msgid "Zähler-Nr."
 msgstr "Meter no."
 
 #: core/templates/fw/liegenschaft_detail.html:396
+#: core/templates/fw/objekt_detail.html:815
 #: core/templates/fw/regelsatz_form.html:28
 msgid "Stand"
 msgstr "As of"
 
 #: core/templates/fw/liegenschaft_detail.html:405
+#: core/templates/fw/objekt_detail.html:825
 msgid "Zähler löschen?"
 msgstr "Delete meter?"
 
@@ -8864,6 +8977,7 @@ msgid "Gekündigt"
 msgstr "Terminated"
 
 #: core/templates/fw/mieterwechsel.html:55
+#: core/templates/fw/objekt_detail.html:894
 msgid "Rücknahme"
 msgstr "Move-out"
 
@@ -8911,7 +9025,8 @@ msgstr "Move-in handover"
 msgid "Übergabe starten"
 msgstr "Start handover"
 
-#: core/templates/fw/mieterwechsel.html:83 core/templates/fw/vertraege.html:16
+#: core/templates/fw/mieterwechsel.html:83
+#: core/templates/fw/objekt_detail.html:129 core/templates/fw/vertraege.html:16
 msgid "Vertrag erstellen"
 msgstr "Create lease"
 
@@ -9395,8 +9510,626 @@ msgid "Zimmer"
 msgstr "Rooms"
 
 #: core/templates/fw/objekt_ausschreiben.html:36
+#: core/views/fw/detailseiten.py:168
 msgid "Ausschreiben"
 msgstr "Advertise"
+
+#: core/templates/fw/objekt_detail.html:49
+#, python-format
+msgid "%(z)s Zimmer"
+msgstr "%(z)s rooms"
+
+#: core/templates/fw/objekt_detail.html:50
+#: core/templates/fw/objekt_form.html:56
+msgid "EWID"
+msgstr "EWID"
+
+#: core/templates/fw/objekt_detail.html:66
+#: core/templates/fw/vermarktung.html:69
+msgid "Ausschreibung beenden"
+msgstr "End listing"
+
+#: core/templates/fw/objekt_detail.html:66
+msgid "Zur Vermarktung ausschreiben"
+msgstr "Advertise for marketing"
+
+#: core/templates/fw/objekt_detail.html:68
+msgid "Bewerber vergleichen"
+msgstr "Compare applicants"
+
+#: core/templates/fw/objekt_detail.html:70
+msgid "Zur Liegenschaft"
+msgstr "To the property"
+
+#: core/templates/fw/objekt_detail.html:84
+msgid "vermietet"
+msgstr "let"
+
+#: core/templates/fw/objekt_detail.html:84
+msgid "leer"
+msgstr "vacant"
+
+#: core/templates/fw/objekt_detail.html:85
+#: core/templates/fw/objekt_detail.html:124
+#: core/templates/fw/objekt_detail.html:892
+#, python-format
+msgid "seit %(d)s"
+msgstr "since %(d)s"
+
+#: core/templates/fw/objekt_detail.html:85
+#: core/templates/fw/vermarktung.html:13 core/views/fw/detailseiten.py:143
+msgid "ausgeschrieben"
+msgstr "advertised"
+
+#: core/templates/fw/objekt_detail.html:85
+msgid "nicht ausgeschrieben"
+msgstr "not advertised"
+
+#: core/templates/fw/objekt_detail.html:88
+msgid "brutto aus laufendem Vertrag"
+msgstr "gross from current contract"
+
+#: core/templates/fw/objekt_detail.html:88
+msgid "Sollmietzins, kein Vertrag"
+msgstr "Target rent, no contract"
+
+#: core/templates/fw/objekt_detail.html:91
+#, python-format
+msgid "Wertquote %(w)s‰"
+msgstr "Value quota %(w)s‰"
+
+#: core/templates/fw/objekt_detail.html:91
+msgid "keine Wertquote"
+msgstr "no value quota"
+
+#: core/templates/fw/objekt_detail.html:92
+#: core/templates/fw/objekt_detail.html:135 faelle/akten.py:108
+msgid "Ausstattung"
+msgstr "Fittings"
+
+#: core/templates/fw/objekt_detail.html:94
+#, python-format
+msgid "%(n)s am Ende der Lebensdauer"
+msgstr "%(n)s at end of life"
+
+#: core/templates/fw/objekt_detail.html:94
+msgid "Elemente erfasst"
+msgstr "elements recorded"
+
+#: core/templates/fw/objekt_detail.html:94
+msgid "kein Raumbuch"
+msgstr "no room inventory"
+
+#: core/templates/fw/objekt_detail.html:116
+#: core/templates/fw/person_detail.html:246
+msgid "Aktuelle Vermietung"
+msgstr "Current tenancy"
+
+#: core/templates/fw/objekt_detail.html:126
+msgid "Vertrag ansehen"
+msgstr "View contract"
+
+#: core/templates/fw/objekt_detail.html:128
+msgid "Dieses Objekt steht aktuell leer."
+msgstr "This unit is currently vacant."
+
+#: core/templates/fw/objekt_detail.html:137
+msgid "Bodenbelag"
+msgstr "Flooring"
+
+#: core/templates/fw/objekt_detail.html:138
+#: core/templates/fw/objekt_form.html:58
+msgid "Kellerabteil"
+msgstr "Cellar compartment"
+
+#: core/templates/fw/objekt_detail.html:139
+msgid "Letzte Renovation"
+msgstr "Last renovation"
+
+#: core/templates/fw/objekt_detail.html:140
+msgid "OTO-Dose"
+msgstr "OTO socket"
+
+#: core/templates/fw/objekt_detail.html:150
+msgid "Merkmale"
+msgstr "Features"
+
+#: core/templates/fw/objekt_detail.html:160
+msgid "Noch keine Merkmale erfasst — auf „Bearbeiten“ klicken."
+msgstr "No features recorded yet — click “Edit”."
+
+#: core/templates/fw/objekt_detail.html:171
+msgid "Eigene Merkmale (mit Komma trennen)"
+msgstr "Own features (comma-separated)"
+
+#: core/templates/fw/objekt_detail.html:172
+msgid "z.B. Weinkeller, Sauna, Cheminée-Ofen"
+msgstr "e.g. wine cellar, sauna, fireplace stove"
+
+#: core/templates/fw/objekt_detail.html:186
+msgid ""
+"Jedes Mietverhältnis (aktiv und beendet) mit seinen Dokumenten — "
+"Mietvertrag, Mietzinsanpassung, Kündigung, Protokoll. Die Dokumente "
+"entstehen automatisch beim Generieren."
+msgstr "Every tenancy (active and ended) with its documents — lease, rent adjustment, termination, report. Documents are created automatically when generated."
+
+#: core/templates/fw/objekt_detail.html:195
+#: core/templates/fw/person_detail.html:360
+msgid "laufend"
+msgstr "ongoing"
+
+#: core/templates/fw/objekt_detail.html:198
+#, python-format
+msgid "%(n)s Dok."
+msgstr "%(n)s doc."
+
+#: core/templates/fw/objekt_detail.html:202
+msgid "Anfangsmietzins"
+msgstr "Initial rent"
+
+#: core/templates/fw/objekt_detail.html:204
+msgid "Mietzinsanpassung"
+msgstr "Rent adjustment"
+
+#: core/templates/fw/objekt_detail.html:207
+msgid "Vertrag öffnen"
+msgstr "Open contract"
+
+#: core/templates/fw/objekt_detail.html:218
+msgid "Noch keine Dokumente zu diesem Verhältnis."
+msgstr "No documents for this tenancy yet."
+
+#: core/templates/fw/objekt_detail.html:225
+msgid "Noch kein Mietverhältnis an diesem Objekt."
+msgstr "No tenancy on this unit yet."
+
+#: core/templates/fw/objekt_detail.html:241
+msgid ""
+"Kein Protokolleintrag — dieses Objekt hatte noch keinen Vertrag mit "
+"erfassten Vorgängen."
+msgstr "No log entry — this unit has not had a contract with recorded activity yet."
+
+#: core/templates/fw/objekt_detail.html:255
+msgid "Nebenkosten-Abrechnungsart"
+msgstr "Service charge billing method"
+
+#: core/templates/fw/objekt_detail.html:258
+msgid "Abrechnungsart"
+msgstr "Billing method"
+
+#: core/templates/fw/objekt_detail.html:260
+msgid "Akonto (Vorschuss mit Abrechnung)"
+msgstr "Advance (with statement)"
+
+#: core/templates/fw/objekt_detail.html:261
+msgid "Pauschal (fixer Betrag)"
+msgstr "Flat rate (fixed amount)"
+
+#: core/templates/fw/objekt_detail.html:265
+msgid "Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts."
+msgstr "Used as the default billing method for new contracts on this unit."
+
+#: core/templates/fw/objekt_detail.html:271
+#: core/templates/fw/objekt_detail.html:308
+#: core/templates/fw/objekt_detail.html:390
+#: core/templates/fw/objekt_detail.html:416
+#: core/templates/fw/objekt_detail.html:439
+#: core/templates/fw/objekt_detail.html:468
+#: core/templates/fw/objekt_form.html:93 core/templates/fw/objekt_form.html:104
+#: core/templates/fw/person_detail.html:276
+msgid "Gültig ab"
+msgstr "Valid from"
+
+#: core/templates/fw/objekt_detail.html:273
+msgid "Rabatt"
+msgstr "Discount"
+
+#: core/templates/fw/objekt_detail.html:274
+msgid "zu zahlen"
+msgstr "to pay"
+
+#: core/templates/fw/objekt_detail.html:275
+msgid "Basis"
+msgstr "Basis"
+
+#: core/templates/fw/objekt_detail.html:287
+msgid ""
+"Der Nettomietzins wurde für diese Periode vollständig erlassen (Gratismonat)"
+msgstr "The net rent was fully waived for this period (free month)"
+
+#: core/templates/fw/objekt_detail.html:287
+msgid "Gratismonat"
+msgstr "Free month"
+
+#: core/templates/fw/objekt_detail.html:289
+msgid "(frei)"
+msgstr "(vacant)"
+
+#: core/templates/fw/objekt_detail.html:293
+msgid "Diese Sollmietzins-Zeile löschen?"
+msgstr "Delete this target-rent line?"
+
+#: core/templates/fw/objekt_detail.html:298
+#: core/templates/fw/objekt_form.html:124
+msgid "Noch kein Sollmietzins erfasst."
+msgstr "No target rent recorded yet."
+
+#: core/templates/fw/objekt_detail.html:304
+msgid "Sollmietzins / Gratismonat erfassen"
+msgstr "Record target rent / free month"
+
+#: core/templates/fw/objekt_detail.html:310
+#: core/templates/fw/objekt_detail.html:391
+#: core/templates/fw/objekt_detail.html:440
+msgid "Netto-Mietzins"
+msgstr "Net rent"
+
+#: core/templates/fw/objekt_detail.html:310
+msgid "Referenz (CHF)"
+msgstr "Reference (CHF)"
+
+#: core/templates/fw/objekt_detail.html:313
+#: core/templates/fw/objekt_form.html:91
+msgid "Nebenkosten (CHF)"
+msgstr "Service charges (CHF)"
+
+#: core/templates/fw/objekt_detail.html:316
+msgid "Rabatt Netto (CHF)"
+msgstr "Net discount (CHF)"
+
+#: core/templates/fw/objekt_detail.html:318
+msgid "Erlass dieser Periode"
+msgstr "Waiver for this period"
+
+#: core/templates/fw/objekt_detail.html:319
+#, python-format
+msgid "Basis Ref.-Zinssatz (%%)"
+msgstr "Reference rate basis (%%)"
+
+#: core/templates/fw/objekt_detail.html:321
+msgid "Indexbasis dieses Mietzinses"
+msgstr "Index basis of this rent"
+
+#: core/templates/fw/objekt_detail.html:322
+msgid "Basis LIK (Punkte)"
+msgstr "CPI basis (points)"
+
+#: core/templates/fw/objekt_detail.html:324
+msgid "Neue Verträge übernehmen die Basis"
+msgstr "New contracts take over the basis"
+
+#: core/templates/fw/objekt_detail.html:326
+msgid "z.B. Gratismonat"
+msgstr "e.g. free month"
+
+#: core/templates/fw/objekt_detail.html:340
+msgid ""
+"Mietzins vollständig erlassen (Gratismonat) — setzt den Rabatt automatisch "
+"auf den vollen Mietzins."
+msgstr "Rent fully waived (free month) — automatically sets the discount to the full rent."
+
+#: core/templates/fw/objekt_detail.html:340
+msgid ""
+"Nettomietzins vollständig erlassen (Gratismonat) — setzt den Rabatt "
+"automatisch auf den vollen Netto-Referenzbetrag."
+msgstr "Net rent fully waived (free month) — automatically sets the discount to the full net reference amount."
+
+#: core/templates/fw/objekt_detail.html:344
+msgid ""
+"Diese Zeile stellt den Mietzins <b>vollständig auf 0.00</b> — verrechnet "
+"wird nur noch <span id=\"smz-zuzahlen\">die Nebenkosten</span>."
+msgstr "This line sets the rent <b>fully to 0.00</b> — only <span id=\"smz-zuzahlen\">the service charges</span> are still billed."
+
+#: core/templates/fw/objekt_detail.html:344
+msgid ""
+"Diese Zeile stellt den Nettomietzins <b>vollständig auf 0.00</b> — "
+"verrechnet wird nur noch <span id=\"smz-zuzahlen\">die Nebenkosten</span>."
+msgstr "This line sets the net rent <b>fully to 0.00</b> — only <span id=\"smz-zuzahlen\">the service charges</span> are still billed."
+
+#: core/templates/fw/objekt_detail.html:348
+msgid "Sollmietzins speichern"
+msgstr "Save target rent"
+
+#: core/templates/fw/objekt_detail.html:384
+msgid "Staffelmiete-Vorlage (Objekt)"
+msgstr "Tiered-rent template (unit)"
+
+#: core/templates/fw/objekt_detail.html:402
+msgid "Diese Staffel-Vorlage-Zeile löschen?"
+msgstr "Delete this step-template line?"
+
+#: core/templates/fw/objekt_detail.html:408
+msgid "Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins."
+msgstr "No step template yet — new contracts start with a fixed rent."
+
+#: core/templates/fw/objekt_detail.html:418
+#: core/templates/fw/objekt_detail.html:470
+msgid "Netto-Mietzins ab Stichtag (CHF)"
+msgstr "Net rent from effective date (CHF)"
+
+#: core/templates/fw/objekt_detail.html:421
+msgid "z.B. Jahresstaffel"
+msgstr "e.g. annual step"
+
+#: core/templates/fw/objekt_detail.html:422
+#: core/templates/fw/objekt_detail.html:472
+msgid "Stufe hinzufügen"
+msgstr "Add step"
+
+#: core/templates/fw/objekt_detail.html:431
+msgid "Staffelstufen des aktiven Vertrags"
+msgstr "Steps of the active contract"
+
+#: core/templates/fw/objekt_detail.html:432
+msgid "Aktiver Vertrag"
+msgstr "Active contract"
+
+#: core/templates/fw/objekt_detail.html:445
+msgid "(Start)"
+msgstr "(start)"
+
+#: core/templates/fw/objekt_detail.html:454
+msgid "Staffelstufe löschen?"
+msgstr "Delete step?"
+
+#: core/templates/fw/objekt_detail.html:460
+msgid "Noch keine Staffelstufen — Vertrag läuft mit festem Mietzins."
+msgstr "No steps yet — contract runs with a fixed rent."
+
+#: core/templates/fw/objekt_detail.html:482
+msgid "Objekt-Fotos"
+msgstr "Unit photos"
+
+#: core/templates/fw/objekt_detail.html:483
+msgid ""
+"Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das "
+"erste Foto ist das Titelbild."
+msgstr "Used in the listing sheet, the portal feed and the marketing list. The first photo is the cover image."
+
+#: core/templates/fw/objekt_detail.html:498
+msgid "Titelbild"
+msgstr "Cover image"
+
+#: core/templates/fw/objekt_detail.html:499
+#: core/templates/fw/schaden_detail.html:387
+msgid "Foto löschen?"
+msgstr "Delete photo?"
+
+#: core/templates/fw/objekt_detail.html:507
+#: core/templates/fw/schaden_detail.html:396
+msgid "Noch keine Fotos."
+msgstr "No photos yet."
+
+#: core/templates/fw/objekt_detail.html:511
+msgid "Dokumente der Mietverhältnisse"
+msgstr "Tenancy documents"
+
+#: core/templates/fw/objekt_detail.html:520
+msgid "Zum Vertrag"
+msgstr "To the contract"
+
+#: core/templates/fw/objekt_detail.html:523
+msgid "Kein Vertragsdokument an diesem Objekt."
+msgstr "No contract document on this unit."
+
+#: core/templates/fw/objekt_detail.html:547
+msgid "Kein Fall an diesem Objekt."
+msgstr "No case on this unit."
+
+#: core/templates/fw/objekt_detail.html:565
+msgid "Kein Schaden erfasst."
+msgstr "No damage recorded."
+
+#: core/templates/fw/objekt_detail.html:572
+#: core/templates/fw/schaden_detail.html:161
+msgid "Raumbuch"
+msgstr "Room inventory"
+
+#: core/templates/fw/objekt_detail.html:575
+msgid "Raum aus Katalog anlegen"
+msgstr "Create room from catalogue"
+
+#: core/templates/fw/objekt_detail.html:576
+msgid ""
+"Lädt die typische Ausstattung eines Raumtyps mit Standard-Lebensdauern — "
+"danach Details je Element ergänzen. Die Räume entstehen aus den Elementen."
+msgstr "Loads the typical fittings of a room type with standard lifespans — then add details per element. Rooms arise from the elements."
+
+#: core/templates/fw/objekt_detail.html:579
+msgid "Raumtyp"
+msgstr "Room type"
+
+#: core/templates/fw/objekt_detail.html:583
+msgid "Katalog laden"
+msgstr "Load catalogue"
+
+#: core/templates/fw/objekt_detail.html:589
+msgid "Ausstattungselement erfassen"
+msgstr "Record fitting element"
+
+#: core/templates/fw/objekt_detail.html:592
+msgid "Raum *"
+msgstr "Room *"
+
+#: core/templates/fw/objekt_detail.html:593
+msgid "z.B. Küche"
+msgstr "e.g. kitchen"
+
+#: core/templates/fw/objekt_detail.html:596
+msgid "z.B. Kochherd / Glaskeramik"
+msgstr "e.g. cooker / ceramic hob"
+
+#: core/templates/fw/objekt_detail.html:597
+#: core/templates/fw/objekt_detail.html:689
+msgid "Bezeichnung / Detail"
+msgstr "Name / detail"
+
+#: core/templates/fw/objekt_detail.html:603
+#: core/templates/fw/objekt_detail.html:687
+msgid "Material"
+msgstr "Material"
+
+#: core/templates/fw/objekt_detail.html:605
+#: core/templates/fw/objekt_detail.html:691
+msgid "Einbau / Anschaffung"
+msgstr "Installation / purchase"
+
+#: core/templates/fw/objekt_detail.html:607
+#: core/templates/fw/objekt_detail.html:693
+msgid "Neuwert (CHF)"
+msgstr "Replacement value (CHF)"
+
+#: core/templates/fw/objekt_detail.html:609
+msgid "Lebensdauer (Jahre)"
+msgstr "Lifespan (years)"
+
+#: core/templates/fw/objekt_detail.html:610
+msgid "aus Tabelle"
+msgstr "from table"
+
+#: core/templates/fw/objekt_detail.html:611
+#: core/templates/fw/objekt_detail.html:646
+#: core/templates/fw/objekt_detail.html:697
+msgid "Zustand"
+msgstr "Condition"
+
+#: core/templates/fw/objekt_detail.html:617
+#: core/templates/fw/objekt_detail.html:703
+msgid "Menge"
+msgstr "Quantity"
+
+#: core/templates/fw/objekt_detail.html:636
+#, python-format
+msgid "%(n)s Element"
+msgid_plural "%(n)s Elemente"
+msgstr[0] "%(n)s element"
+msgstr[1] "%(n)s elements"
+
+#: core/templates/fw/objekt_detail.html:644
+msgid "Neuwert"
+msgstr "Replacement value"
+
+#: core/templates/fw/objekt_detail.html:645
+msgid "Zeitwert"
+msgstr "Current value"
+
+#: core/templates/fw/objekt_detail.html:658
+#, python-format
+msgid "%(n)s Reparatur"
+msgid_plural "%(n)s Reparaturen"
+msgstr[0] "%(n)s repair"
+msgstr[1] "%(n)s repairs"
+
+#: core/templates/fw/objekt_detail.html:668
+msgid "Element löschen?"
+msgstr "Delete element?"
+
+#: core/templates/fw/objekt_detail.html:707
+msgid "(ersetzt bestehendes)"
+msgstr "(replaces existing)"
+
+#: core/templates/fw/objekt_detail.html:724
+msgid ""
+"Noch keine Ausstattung erfasst. Lade einen Raum aus dem Katalog oder erfasse "
+"ein Element — die Räume entstehen aus den Assets."
+msgstr "No fittings recorded yet. Load a room from the catalogue or record an element — rooms arise from the assets."
+
+#: core/templates/fw/objekt_detail.html:726
+msgid "Geräte"
+msgstr "Appliances"
+
+#: core/templates/fw/objekt_detail.html:776
+msgid "Keine Geräte erfasst."
+msgstr "No appliances recorded."
+
+#: core/templates/fw/objekt_detail.html:787
+msgid "z.B. Waschmaschine, Boiler"
+msgstr "e.g. washing machine, boiler"
+
+#: core/templates/fw/objekt_detail.html:797
+#: core/templates/fw/objekt_detail.html:863
+msgid "z.B. Keller"
+msgstr "e.g. cellar"
+
+#: core/templates/fw/objekt_detail.html:809
+msgid "Zähler"
+msgstr "Meters"
+
+#: core/templates/fw/objekt_detail.html:848
+msgid "Keine Zähler erfasst."
+msgstr "No meters recorded."
+
+#: core/templates/fw/objekt_detail.html:859
+msgid "z.B. Strom, Wasser kalt"
+msgstr "e.g. electricity, cold water"
+
+#: core/templates/fw/objekt_detail.html:867
+msgid "Zähler speichern"
+msgstr "Save meter"
+
+#: core/templates/fw/objekt_detail.html:875
+#: core/templates/fw/objekt_detail.html:935
+msgid "Schlüssel-Nr."
+msgstr "Key no."
+
+#: core/templates/fw/objekt_detail.html:877
+msgid "Ausgegeben an"
+msgstr "Issued to"
+
+#: core/templates/fw/objekt_detail.html:878
+msgid "Ausgabe"
+msgstr "Issue"
+
+#: core/templates/fw/objekt_detail.html:886
+#, python-format
+msgid "%(v)s/%(n)s verfügbar"
+msgstr "%(v)s/%(n)s available"
+
+#: core/templates/fw/objekt_detail.html:891
+msgid "(Handwerker)"
+msgstr "(tradesperson)"
+
+#: core/templates/fw/objekt_detail.html:894
+msgid "Rücknahme erfassen"
+msgstr "Record move-out"
+
+#: core/templates/fw/objekt_detail.html:903
+msgid "Empfänger …"
+msgstr "Recipient …"
+
+#: core/templates/fw/objekt_detail.html:911
+msgid "Schlüssel ausgeben"
+msgstr "Issue key"
+
+#: core/templates/fw/objekt_detail.html:913
+msgid "Alle ausgegeben"
+msgstr "All issued"
+
+#: core/templates/fw/objekt_detail.html:916
+msgid "Schlüssel aus dem Register entfernen?"
+msgstr "Remove key from the register?"
+
+#: core/templates/fw/objekt_detail.html:922
+msgid ""
+"Noch keine Schlüssel im Register — z.B. Wohnungs-, Keller-, Briefkasten- und "
+"Haustürschlüssel erfassen."
+msgstr "No keys in the register yet — record e.g. flat, cellar, letterbox and front-door keys."
+
+#: core/templates/fw/objekt_detail.html:928
+msgid "Schlüssel erfassen"
+msgstr "Record key"
+
+#: core/templates/fw/objekt_detail.html:933
+msgid "z.B. Wohnung, Keller, Briefkasten"
+msgstr "e.g. flat, cellar, letterbox"
+
+#: core/templates/fw/objekt_detail.html:937
+msgid "Anzahl Exemplare"
+msgstr "Number of copies"
+
+#: core/templates/fw/objekt_detail.html:940
+msgid "Schlüssel speichern"
+msgstr "Save key"
 
 #: core/templates/fw/objekt_form.html:5
 msgid "Neues Objekt"
@@ -9443,14 +10176,6 @@ msgstr "Value quota (‰)"
 msgid "STWE / NK-Verteilung"
 msgstr "Condominium / service-charge distribution"
 
-#: core/templates/fw/objekt_form.html:56
-msgid "EWID"
-msgstr "EWID"
-
-#: core/templates/fw/objekt_form.html:58
-msgid "Kellerabteil"
-msgstr "Cellar compartment"
-
 #: core/templates/fw/objekt_form.html:60
 msgid "Estrich"
 msgstr "Attic"
@@ -9495,15 +10220,6 @@ msgstr ""
 msgid "Anfangs-Nettomiete (CHF)"
 msgstr "Initial net rent (CHF)"
 
-#: core/templates/fw/objekt_form.html:91
-msgid "Nebenkosten (CHF)"
-msgstr "Service charges (CHF)"
-
-#: core/templates/fw/objekt_form.html:93 core/templates/fw/objekt_form.html:104
-#: core/templates/fw/person_detail.html:276
-msgid "Gültig ab"
-msgstr "Valid from"
-
 #: core/templates/fw/objekt_form.html:96
 msgid ""
 "Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-"
@@ -9525,10 +10241,6 @@ msgstr ""
 "Rent is maintained exclusively as <b>dated target rent</b> (incl. free "
 "months/discount) — this keeps billing, rent roll and balance sheet "
 "consistent. Here it is view-only."
-
-#: core/templates/fw/objekt_form.html:124
-msgid "Noch kein Sollmietzins erfasst."
-msgstr "No target rent recorded yet."
 
 #: core/templates/fw/objekt_form.html:126
 msgid "Mietzins verwalten (Gratismonate, Anpassungen)"
@@ -9865,10 +10577,6 @@ msgstr "active (payment arrangement)"
 msgid "Abw. Zahler"
 msgstr "Alt. payer"
 
-#: core/templates/fw/person_detail.html:246
-msgid "Aktuelle Vermietung"
-msgstr "Current tenancy"
-
 #: core/templates/fw/person_detail.html:252
 msgid "Kein aktiver Vertrag."
 msgstr "No active contract."
@@ -10026,10 +10734,6 @@ msgstr[1] "%(n)s links"
 #, python-format
 msgid "CHF %(b)s brutto"
 msgstr "CHF %(b)s gross"
-
-#: core/templates/fw/person_detail.html:360
-msgid "laufend"
-msgstr "ongoing"
 
 #: core/templates/fw/person_detail.html:363
 msgid "Keine Verbindungen erfasst."
@@ -10930,10 +11634,6 @@ msgstr "Link"
 msgid "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements."
 msgstr "Feeds into the element's repair history & life-cycle costs."
 
-#: core/templates/fw/schaden_detail.html:161
-msgid "Raumbuch"
-msgstr "Room inventory"
-
 #: core/templates/fw/schaden_detail.html:162
 msgid "Noch keine Ausstattung am Objekt erfasst."
 msgstr "No fittings recorded on the unit yet."
@@ -11144,14 +11844,6 @@ msgstr "Add photos"
 #: core/templates/fw/schaden_detail.html:378
 msgid "Erstmeldung"
 msgstr "Initial report"
-
-#: core/templates/fw/schaden_detail.html:387
-msgid "Foto löschen?"
-msgstr "Delete photo?"
-
-#: core/templates/fw/schaden_detail.html:396
-msgid "Noch keine Fotos."
-msgstr "No photos yet."
 
 #: core/templates/fw/schaden_kosten.html:4
 #: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:781
@@ -11479,10 +12171,6 @@ msgstr "Nothing past yet."
 msgid "Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick."
 msgstr "All units advertised for finding a new tenant at a glance."
 
-#: core/templates/fw/vermarktung.html:13
-msgid "ausgeschrieben"
-msgstr "advertised"
-
 #: core/templates/fw/vermarktung.html:32
 #, python-format
 msgid "%(n)s Foto"
@@ -11508,10 +12196,6 @@ msgstr[1] "%(n)s applications"
 #: core/templates/fw/vermarktung.html:61
 msgid "vergleichen"
 msgstr "compare"
-
-#: core/templates/fw/vermarktung.html:69
-msgid "Ausschreibung beenden"
-msgstr "End listing"
 
 #: core/templates/fw/vermarktung.html:79
 msgid "Kein Objekt in der Vermarktung"
@@ -12330,6 +13014,54 @@ msgstr ""
 msgid "Kontakte erfassen"
 msgstr "Record contacts"
 
+#: core/views/fw/detailseiten.py:138
+#, python-format
+msgid "vermietet an %(name)s"
+msgstr "let to %(name)s"
+
+#: core/views/fw/detailseiten.py:145
+#, python-format
+msgid "%(n)s Schlüssel ausgegeben"
+msgstr "%(n)s key(s) issued"
+
+#: core/views/fw/detailseiten.py:152 core/views/fw/detailseiten.py:180
+#, python-format
+msgid "%(n)s Element am Ende der Lebensdauer"
+msgid_plural "%(n)s Elemente am Ende der Lebensdauer"
+msgstr[0] "%(n)s element at end of life"
+msgstr[1] "%(n)s elements at end of life"
+
+#: core/views/fw/detailseiten.py:157
+#, python-format
+msgid "%(n)s offener Fall"
+msgid_plural "%(n)s offene Fälle"
+msgstr[0] "%(n)s open case"
+msgstr[1] "%(n)s open cases"
+
+#: core/views/fw/detailseiten.py:165
+msgid "Leer und nicht ausgeschrieben"
+msgstr "Vacant and not advertised"
+
+#: core/views/fw/detailseiten.py:166
+msgid ""
+"Das Objekt steht leer, ist aber nicht zur Vermarktung freigegeben — es sucht "
+"niemand einen Nachmieter."
+msgstr "The unit is vacant but not released for marketing — nobody is looking for a new tenant."
+
+#: core/views/fw/detailseiten.py:172
+msgid "Kein Raumbuch erfasst"
+msgstr "No room inventory recorded"
+
+#: core/views/fw/detailseiten.py:173
+msgid ""
+"Ohne erfasste Ausstattung lässt sich bei der Rückgabe kein Lebensdaueranteil "
+"berechnen — die Mängelabrechnung wird dann Verhandlungssache."
+msgstr "Without recorded fittings no lifespan share can be calculated at handover — the defect statement then becomes a matter of negotiation."
+
+#: core/views/fw/detailseiten.py:176
+msgid "Ausstattung erfassen"
+msgstr "Record fittings"
+
 #: core/views/fw/kreditoren.py:36
 msgid "Neu / Prüfen"
 msgstr "New / check"
@@ -12710,10 +13442,6 @@ msgstr "Timeline"
 msgid "Einheiten"
 msgstr "Units"
 
-#: faelle/akten.py:108
-msgid "Ausstattung"
-msgstr "Fittings"
-
 #: faelle/akten.py:126
 msgid "Rollen"
 msgstr "Roles"
@@ -12806,6 +13534,26 @@ msgstr "%(n)s becoming vacant"
 #, python-format
 msgid "ab %(d)s"
 msgstr "from %(d)s"
+
+#, fuzzy
+#~| msgid "Mietzins"
+#~ msgid "Nettomietzins"
+#~ msgstr "Rent"
+
+#, fuzzy
+#~| msgid "Diese Adress-Zeile entfernen?"
+#~ msgid "Diese Zeile stellt den"
+#~ msgstr "Remove this address line?"
+
+#, fuzzy
+#~| msgid "Vollständiges Logbuch"
+#~ msgid "vollständig auf 0.00"
+#~ msgstr "Full log"
+
+#, fuzzy
+#~| msgid "Nebenkosten"
+#~ msgid "die Nebenkosten"
+#~ msgstr "Service charges"
 
 #~ msgid "meldet sich nach 14 Tagen"
 #~ msgstr "reports after 14 days"

@@ -135,52 +135,55 @@ def _objekt_kopf(e, aktiver_vertrag, verhaeltnisse, raeume, ausst_rows,
     """
     chips = []
     if aktiver_vertrag:
-        chips.append({'text': f'vermietet an {aktiver_vertrag.mieter.display_name}',
+        chips.append({'text': gettext('vermietet an %(name)s') % {'name': aktiver_vertrag.mieter.display_name},
                       'ton': 'fw-good'})
     else:
-        chips.append({'text': 'Leerstand', 'ton': 'fw-warn'})
+        chips.append({'text': gettext('Leerstand'), 'ton': 'fw-warn'})
     if e.zur_ausschreibung:
-        chips.append({'text': 'ausgeschrieben', 'ton': 'fw-info'})
+        chips.append({'text': gettext('ausgeschrieben'), 'ton': 'fw-info'})
     if schluessel_offen:
-        chips.append({'text': f'{schluessel_offen} Schlüssel ausgegeben', 'ton': 'fw-mut'})
+        chips.append({'text': gettext('%(n)s Schlüssel ausgegeben') % {'n': schluessel_offen}, 'ton': 'fw-mut'})
 
     # Ueberfaellige Ausstattung: gezaehlt aus `ersatz_status()`, nicht aus
     # einem Mittelwert. `ersatz_status` liefert je Element eine Einstufung;
     # 'faellig' heisst, die Lebensdauer ist ueberschritten.
     faellig = [r for r in ausst_rows if r.get('ersatz_status') == 'faellig']
     if faellig:
-        chips.append({'text': f'{len(faellig)} Element{"e" if len(faellig) > 1 else ""} '
-                              f'am Ende der Lebensdauer', 'ton': 'fw-warn'})
+        chips.append({'text': ngettext('%(n)s Element am Ende der Lebensdauer',
+                                       '%(n)s Elemente am Ende der Lebensdauer',
+                                       len(faellig)) % {'n': len(faellig)}, 'ton': 'fw-warn'})
     offene_faelle = [f for f in faelle if f.status not in ('abgeschlossen', 'abgebrochen')]
     if offene_faelle:
-        chips.append({'text': f'{len(offene_faelle)} offene{"r" if len(offene_faelle) == 1 else ""} '
-                              f'Fall{"" if len(offene_faelle) == 1 else "Fälle"}'.replace('FallFälle', 'Fälle'),
+        chips.append({'text': ngettext('%(n)s offener Fall', '%(n)s offene Fälle',
+                                       len(offene_faelle)) % {'n': len(offene_faelle)},
                       'ton': 'fw-warn'})
 
     hinweise = []
     if not aktiver_vertrag and not e.zur_ausschreibung:
         hinweise.append({
             'ton': 'warn', 'symbol': 'senden',
-            'titel': 'Leer und nicht ausgeschrieben',
-            'text': 'Das Objekt steht leer, ist aber nicht zur Vermarktung '
-                    'freigegeben — es sucht niemand einen Nachmieter.',
-            'url': f'/neu/objekte/{e.id}/', 'knopf': 'Ausschreiben'})
+            'titel': gettext('Leer und nicht ausgeschrieben'),
+            'text': gettext('Das Objekt steht leer, ist aber nicht zur Vermarktung '
+                            'freigegeben — es sucht niemand einen Nachmieter.'),
+            'url': f'/neu/objekte/{e.id}/', 'knopf': gettext('Ausschreiben')})
     if not raeume:
         hinweise.append({
             'ton': 'info', 'symbol': 'dokument',
-            'titel': 'Kein Raumbuch erfasst',
-            'text': 'Ohne erfasste Ausstattung lässt sich bei der Rückgabe kein '
-                    'Lebensdaueranteil berechnen — die Mängelabrechnung wird '
-                    'dann Verhandlungssache.',
-            'url': '?tab=ausstattung', 'knopf': 'Ausstattung erfassen'})
+            'titel': gettext('Kein Raumbuch erfasst'),
+            'text': gettext('Ohne erfasste Ausstattung lässt sich bei der Rückgabe kein '
+                            'Lebensdaueranteil berechnen — die Mängelabrechnung wird '
+                            'dann Verhandlungssache.'),
+            'url': '?tab=ausstattung', 'knopf': gettext('Ausstattung erfassen')})
     if faellig:
         hinweise.append({
             'ton': 'warn', 'symbol': 'wartet',
-            'titel': f'{len(faellig)} Element{"e" if len(faellig) > 1 else ""} am '
-                     f'Ende der Lebensdauer',
+            'titel': ngettext('%(n)s Element am Ende der Lebensdauer',
+                              '%(n)s Elemente am Ende der Lebensdauer',
+                              len(faellig)) % {'n': len(faellig)},
+            # Haftungsaussage (Zeitwert) — bleibt deutsch bis zur juristischen Prüfung.
             'text': 'Bei einem Mieterwechsel trägt der Vermieter die Kosten '
                     'vollständig — der Zeitwert ist aufgebraucht.',
-            'url': '?tab=ausstattung', 'knopf': 'Ersatzplanung'})
+            'url': '?tab=ausstattung', 'knopf': gettext('Ersatzplanung')})
 
     return {
         'objekt_nummer': f'O-{e.id:06d}',
