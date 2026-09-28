@@ -233,7 +233,14 @@ def fw_kuendigung_erfassen(request, vertrag_id):
     })
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+# Die Fristansetzung nach Art. 257d OR ist Inhabern und Verwaltern vorbehalten
+# (seit 28.09.2026, vorher auch der Sachbearbeitung): Sie setzt die Frist in
+# Gang, nach deren Ablauf ausserordentlich gekündigt werden kann — dieselbe
+# Stufe wie «Mahnlauf und Betreibung» und «Kündigung» in docs/KONZEPT-UI.md §8.
+# `fw_verzug_zugang` und `fw_verzug_sendung` bleiben bei SCHREIB_ROLLEN: Sie
+# tragen Tatsachen aus der Post nach (Zugang, Sendungsnummer), damit die
+# bereits angesetzte Frist richtig berechnet ist — keine Entscheidung.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_verzug_257d(request, vertrag_id):
     """Zahlungsverzug (Art. 257d OR): fällige Miete offen → Zahlungsaufforderung mit
     Fristansetzung (Dokument + Fristen-Pendenz). Nach fruchtlosem Ablauf kann

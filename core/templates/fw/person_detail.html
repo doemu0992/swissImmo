@@ -2,6 +2,7 @@
 {% load zeichen %}
 {% load betreuung %}
 {% load chf %}
+{% load rechte %}
 {% block title %}{{ m.display_name }} — swissImmo{% endblock %}
 
 {% block content %}
@@ -406,9 +407,11 @@ alten Liegenschaft betreut.
                 Kündigungsandrohung, danach ausserordentliche Kündigung möglich.
                 <div class="flex gap-2 flex-wrap mt-2.5">
                     {% for vt in offene_vertraege %}
+                    {% if request.user|darf:"/neu/vertraege/1/verzug/" %}
                     <a href="/neu/vertraege/{{ vt.id }}/verzug/" class="fw-btn fw-primary">
                         {% zeichen 'recht' %} Zahlungsverzug 257d{% if offene_vertraege|length > 1 %} · {{ vt.einheit.bezeichnung }}{% endif %}
                     </a>
+                    {% endif %}
                     {% endfor %}
                 </div>
             </div>

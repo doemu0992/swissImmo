@@ -569,9 +569,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="text-sm font-bold fw-kritisch">Offener Betrag: CHF {{ total_offen|chf }}</div>
             <p class="text-xs fw-kritisch mt-0.5">Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit 30-Tage-Frist, danach ausserordentliche Kündigung möglich.</p>
         </div>
+        {% if request.user|darf:"/neu/vertraege/1/verzug/" %}
         <a href="/neu/vertraege/{{ v.id }}/verzug/" class="shrink-0 inline-flex items-center gap-1.5 fw-btn fw-gefahr text-white text-xs font-semibold px-3.5 py-2 rounded-lg">
             {% zeichen 'recht' %} Zahlungsverzug 257d
         </a>
+        {% endif %}
     </div>
     {% endif %}
     {% if vertrag_fristen %}
