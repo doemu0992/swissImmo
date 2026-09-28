@@ -42,7 +42,7 @@
 
         .topbar {
             position: sticky; top: 0; z-index: 20;
-            display: flex; align-items: center; gap: 14px; padding: 12px 20px;
+            display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 12px 20px;
             background: color-mix(in srgb, var(--surface) 88%, transparent);
             backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line);
         }
@@ -175,6 +175,20 @@
             .hello h1 { font-size: 20px; }
             thead th:nth-child(2), tbody td:nth-child(2), thead th:nth-child(3), tbody td:nth-child(3) { display: none; }
         }
+        /* Sprachwahl (core/_sprachwahl.html) */
+        .sprachwahl { display: flex; gap: 4px; justify-content: center; }
+        .sprachwahl-knopf {
+            font: inherit; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 8px;
+            border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+        }
+        .sprachwahl-knopf:hover { color: var(--ink); border-color: var(--accent); }
+        .sprachwahl-knopf.ist-aktiv { background: var(--accent); border-color: var(--accent); color: #fff; }
+        /* Am Telefon eine eigene Zeile unter dem Kopf — sonst drängen die vier
+           Knöpfe Farbschema und «Abmelden» aus dem Bild (gemessen bei 390 px). */
+        @media (max-width: 560px) {
+            .topbar-sprache { order: 10; flex-basis: 100%; }
+            .topbar-sprache .sprachwahl { justify-content: flex-start; }
+        }
     </style>
 </head>
 <body>
@@ -187,6 +201,7 @@
         </div>
     </div>
     <div class="spacer"></div>
+    <div class="topbar-sprache">{% include 'core/_sprachwahl.html' %}</div>
     <button class="iconbtn" id="themeToggle" type="button" title="Hell / Dunkel" aria-label="Farbschema wechseln">◐</button>
     <form method="post" action="/logout/">{% csrf_token %}<button class="logout" type="submit">Abmelden</button></form>
 </div>

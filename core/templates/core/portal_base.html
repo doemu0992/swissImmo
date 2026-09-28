@@ -37,6 +37,9 @@
         </nav>
 
         <div class="px-3 py-4 border-t border-white/5">
+            <div class="px-3 pb-3">
+                {% include 'core/_sprachwahl.html' with rahmen='flex gap-1' knopf='flex-1 px-2 py-1.5 rounded-md text-xs font-semibold transition-colors' aktiv='fw-btn fw-primary' passiv='fw-faint hover:fw-flaeche' %}
+            </div>
             <form method="post" action="/logout/">{% csrf_token %}
                 <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg fw-faint hover:fw-flaeche hover:text-white transition-colors">
                     {% zeichen 'extern' klasse='w-5 text-center' %} Abmelden

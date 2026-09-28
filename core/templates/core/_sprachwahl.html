@@ -1,0 +1,28 @@
+{% load i18n %}{% comment %}
+Sprachwahl DE · FR · IT · EN — ein Formular, vier Knöpfe, kein JavaScript.
+
+Schickt die Wahl an Djangos `set_language` (swiss_immo/urls.py, `i18n/`). Das
+setzt das Sprach-Cookie, `LocaleMiddleware` liest es bei jeder Anfrage — vor
+der Browser-Einstellung. Bis 28.09.2026 gab es nur die Browser-Einstellung:
+Wer einen deutschen Browser hatte, kam an die Übersetzungen nicht heran.
+
+Die Sprachnamen stehen in ihrer eigenen Sprache («Français», nicht
+«Französisch») — so findet sie auch, wer die aktuelle Sprache nicht liest.
+
+Parameter (alle optional), damit der Baustein in jede Umgebung passt:
+  rahmen   Klassen des Knopf-Rahmens
+  knopf    Klassen jedes Knopfs
+  aktiv    zusätzlich für die aktuelle Sprache
+  passiv   zusätzlich für die übrigen
+{% endcomment %}{% get_current_language as aktuelle_sprache %}{% get_available_languages as sprachen %}
+<form method="post" action="{% url 'set_language' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <div class="{{ rahmen|default:'sprachwahl' }}" role="group" aria-label="Sprache · Langue · Lingua · Language">
+        {% for code, name in sprachen %}
+        <button type="submit" name="language" value="{{ code }}" title="{{ name }}" lang="{{ code }}"
+                aria-pressed="{% if aktuelle_sprache|slice:':2' == code %}true{% else %}false{% endif %}"
+                class="{{ knopf|default:'sprachwahl-knopf' }} {% if aktuelle_sprache|slice:':2' == code %}{{ aktiv|default:'ist-aktiv' }}{% else %}{{ passiv }}{% endif %}">{{ code|upper }}</button>
+        {% endfor %}
+    </div>
+</form>
