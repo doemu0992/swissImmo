@@ -23,7 +23,7 @@ class AbonnementTests(TestCase):
 
     def test_plan_waehlen_speichert(self):
         _test_organisation(firma='V AG')
-        team = _team_user()
+        team = _team_user('Inhaber')  # den Plan wählt seit 28.09.2026 nur der Inhaber
         c = Client(); c.force_login(team)
         r = c.post('/neu/abonnement/', {'plan': 'premium'})
         self.assertEqual(r.status_code, 302)
@@ -35,7 +35,7 @@ class AbonnementTests(TestCase):
         for i in range(100):
             Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i}', typ='whg')
         _test_organisation(firma='V AG')
-        team = _team_user()
+        team = _team_user('Inhaber')  # den Plan wählt seit 28.09.2026 nur der Inhaber
         c = Client(); c.force_login(team)
         body = c.get('/neu/abonnement/').content.decode()
         self.assertIn('CHF 190', body)                 # Pro monatlich (1.90 * 100)

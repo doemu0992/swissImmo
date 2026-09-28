@@ -1059,11 +1059,18 @@ def fw_abonnemente(request):
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Organisation
-    from core.auth import log_aktion, hat_rolle
+    from core.auth import INHABER_ROLLEN, log_aktion, hat_rolle
     vw = aktuelle_organisation()
     basis = _global_filter(request)
 
-    if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):
+    # Den Plan wählt der Inhaber (docs/KONZEPT-UI.md §8) — er bestimmt die
+    # Rechnung. Bis 28.09.2026 genügte SCHREIB_ROLLEN, also auch die
+    # Sachbearbeitung. Ansehen dürfen weiterhin alle Team-Rollen.
+    kann_abo_aendern = hat_rolle(request.user, INHABER_ROLLEN)
+    if request.method == 'POST' and not kann_abo_aendern:
+        messages.error(request, "Den Abo-Plan kann nur der Inhaber ändern.")
+        return redirect('/neu/abonnement/')
+    if request.method == 'POST':
         plan = request.POST.get('plan')
         if plan in dict(Organisation.ABO_CHOICES):
             vw.abo_plan = plan
@@ -1090,4 +1097,5 @@ def fw_abonnemente(request):
     return render(request, 'fw/abonnement.html', {
         **basis, 'nav': 'abonnement', 'plaene': plaene, 'einheiten': einheiten,
         'jaehrlich': jaehrlich, 'aktiver_plan': vw.abo_plan,
+        'kann_abo_aendern': kann_abo_aendern,
     })

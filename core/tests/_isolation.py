@@ -363,8 +363,15 @@ class MandantenFixture:
         u = User.objects.create_user(username=f'team_{self.kuerzel.lower()}',
                                      password='geheim-egal', email=f'{self.kuerzel}@example.ch')
         u.groups.add(grp)
+        # INHABER, die höchste Team-Rolle (seit 28.09.2026, vorher Verwalter).
+        # Isolationstests sollen jede View bis zur Mandantenprüfung erreichen.
+        # Mit einer niedrigeren Rolle endet ein Aufruf schon am Dekorator mit
+        # 403 — der Registrylauf wäre dort grün, ohne die Grenze je geprüft zu
+        # haben. Anlass: Mitglieder verwaltet seither nur der Inhaber, und
+        # genau an `fw_benutzer_loeschen` fand dieser Lauf am 17.08.2026 seinen
+        # wichtigsten Befund.
         Mitgliedschaft.objects.create(benutzer=u, organisation=self.organisation,
-                                      rolle=Mitgliedschaft.ROLLE_VERWALTER)
+                                      rolle=Mitgliedschaft.ROLLE_INHABER)
         return u
 
     def _alle_objekte(self):

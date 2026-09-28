@@ -901,7 +901,8 @@ class AdminNurLesendTests(TestCase):
     def test_benutzerverwaltung_bleibt_in_neu_moeglich(self):
         # Der Admin ist zu; die Rechteverwaltung darf deshalb nicht mit ihm
         # zugehen. /neu/benutzer/ ist ab E2 der einzige Schreibpfad.
-        c = Client(); c.force_login(_team_user())
+        # Mitglieder verwaltet seit 28.09.2026 nur der Inhaber (KONZEPT-UI §8).
+        c = Client(); c.force_login(_team_user('Inhaber'))
         self.assertEqual(c.get('/neu/benutzer/').status_code, 200)
         c.post('/neu/benutzer/neu/', {'username': 'neuer_e2', 'passwort': 'Geheim!2345',
                                       'rolle': 'Lesend', 'vorname': 'Neu', 'nachname': 'Benutzer'})

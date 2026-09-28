@@ -79,7 +79,12 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
     return n
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+# Erfassen, Bestätigen und Zurücknehmen einer Kündigung sind nach
+# docs/KONZEPT-UI.md §8 Inhaber und Verwaltern vorbehalten (bis 28.09.2026 auch
+# der Sachbearbeitung). Alle drei gehören zusammen: Schon das Erfassen setzt den
+# Vertrag auf «gekündigt» und kann die Kündigung direkt als bestätigt anlegen —
+# nur die Bestätigung zu sperren, wäre wirkungslos.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_kuendigung_erfassen(request, vertrag_id):
     """Erfasst eine Kündigung, berechnet den Termin und setzt den Vertrag auf 'gekuendigt'."""
     from django.shortcuts import redirect
@@ -464,7 +469,8 @@ def fw_verzug_sendung(request, pk):
     return redirect('fw_fristen')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+# Siehe fw_kuendigung_erfassen: Kündigen ist Inhaber und Verwaltern vorbehalten.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_kuendigung_zuruecknehmen(request, pk):
     """Nimmt eine Kündigung zurück und reaktiviert den Vertrag."""
     from django.shortcuts import redirect
@@ -499,7 +505,7 @@ def fw_kuendigung_zuruecknehmen(request, pk):
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_kuendigung_bestaetigen(request, pk):
     """Bestätigt eine (i.d.R. über das Mieterportal eingegangene) Kündigung:
     setzt den Vertrag auf 'gekuendigt' und legt die Auszugs-Pendenzen an."""

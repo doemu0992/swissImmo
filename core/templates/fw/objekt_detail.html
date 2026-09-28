@@ -1,5 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
+{% load rechte %}
 {% load betreuung %}
 {% load chf l10n %}
 {% block title %}{{ e.bezeichnung }} — swissImmo{% endblock %}
@@ -199,7 +200,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <a href="/neu/mietzins/{{ r.v.id }}/anfangsmietzins/" class="fw-btn">{% zeichen 'rechnung' klasse='mr-1' %}Anfangsmietzins</a>
                 {% if r.v.status == 'aktiv' %}
                 <a href="/neu/mietzins/{{ r.v.id }}/anpassung/" class="fw-btn">{% zeichen 'trend' klasse='mr-1' %}Mietzinsanpassung</a>
-                <a href="/neu/vertraege/{{ r.v.id }}/kuendigen/" class="text-[11px] font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche rounded-lg px-2.5 py-1.5">{% zeichen 'kritisch' klasse='mr-1' %}Kündigung</a>
+                {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ r.v.id }}/kuendigen/" class="text-[11px] font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche rounded-lg px-2.5 py-1.5">{% zeichen 'kritisch' klasse='mr-1' %}Kündigung</a>{% endif %}
                 {% endif %}
                 <a href="/neu/vertraege/{{ r.v.id }}/" class="text-[11px] font-semibold fw-mutet border fw-linie hover:fw-flaeche2 rounded-lg px-2.5 py-1.5">{% zeichen 'weiter' klasse='mr-1' %}Vertrag öffnen</a>
             </div>

@@ -358,14 +358,26 @@ Mandatszuteilung begrenzt zusätzlich, **welche** Akten überhaupt sichtbar sind
 |---|---|---|---|---|
 | Akten und Fälle lesen | ✓ | ✓ | ✓ | ✓ |
 | Akten bearbeiten, Fälle führen | ✓ | ✓ | ✓ | — |
-| Kündigung erfassen und bestätigen | ✓ | ✓ | — | — |
+| Kündigung erfassen, bestätigen oder zurücknehmen | ✓ | ✓ | — | — |
 | Rechnungen freigeben | ✓ | bis Limit | bis Limit | — |
 | Zahllauf auslösen | ✓ | ✓ | — | — |
 | Mahnlauf und Betreibung | ✓ | ✓ | — | — |
 | Nebenkostenabrechnung freigeben | ✓ | ✓ | — | — |
 | Mitglieder und Rollen verwalten | ✓ | — | — | — |
 | Abonnement und Module ändern | ✓ | — | — | — |
-| Daten exportieren | ✓ | ✓ | — | — |
+| Daten exportieren | ✓ | ✓ | ✓¹ | ✓¹ |
+
+¹ Korrigiert am 28.09.2026: Lesezugriff ist die Rolle für Treuhand und
+Revision; der Buchhaltungsexport (`fw_buchhaltung_export`, im Code
+«Treuhänder-Handover») und der ESTV-Export der MWST sind genau ihr Zweck. Der
+Bestand erlaubte es von Anfang an (allen Team-Rollen); die Tabelle war hier
+falsch, nicht der Code.
+Am selben Tag an die Tabelle angeglichen wurden dagegen: Abo ändern (bisher
+auch Sachbearbeitung), Mitglieder verwalten (bisher Verwalter) und Kündigung
+erfassen, bestätigen, zurücknehmen (bisher auch Sachbearbeitung). Beim
+Kündigen genügt es nicht, nur die Bestätigung zu sperren: Schon das Erfassen
+setzt den Vertrag auf «gekündigt» und kann die Kündigung direkt als bestätigt
+anlegen.
 
 **Vertretung** ist zeitlich begrenzt, nicht dauerhafte Rechteerweiterung. Sie endet
 automatisch; offene Fristen bleiben bei beiden sichtbar.

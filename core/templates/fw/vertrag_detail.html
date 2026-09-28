@@ -1,6 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
 {% load betreuung %}
+{% load rechte %}
 {% load chf %}
 {% block title %}Vertrag {{ v.mieter.display_name }} — swissImmo{% endblock %}
 
@@ -120,7 +121,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div class="flex flex-wrap items-center gap-2">
             <a href="/neu/vertraege/{{ v.id }}/bearbeiten/" class="fw-btn" style="padding:6px 12px;font-size:12px">{% zeichen 'bearbeiten' klasse='mr-1' %}Bearbeiten{% if v.status == 'entwurf' %} <span class="fw-chip fw-brand ml-1">Entwurf</span>{% endif %}</a>
             {% if v.status != 'gekuendigt' %}
-            <a href="/neu/vertraege/{{ v.id }}/kuendigen/" class="fw-btn" style="padding:6px 12px;font-size:12px;border-color:var(--ds-warn-soft);color:var(--ds-warn)">{% zeichen 'kritisch' klasse='mr-1' %}Kündigung erfassen</a>
+            {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ v.id }}/kuendigen/" class="fw-btn" style="padding:6px 12px;font-size:12px;border-color:var(--ds-warn-soft);color:var(--ds-warn)">{% zeichen 'kritisch' klasse='mr-1' %}Kündigung erfassen</a>{% endif %}
             {% endif %}
             <div class="relative">
                 <button type="button" onclick="document.getElementById('vAktionen').classList.toggle('hidden'); event.stopPropagation();"
@@ -301,20 +302,24 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </div>
                 <div class="text-sm mt-1">Vertragsende: <b class="fw-t">{{ k.per_datum|date:"d.m.Y" }}</b>
                     {% if k.ausserordentlich %}<span class="ml-1 text-xs fw-kritisch">ausserordentlich</span>{% endif %}</div>
-                {% if k.status == 'erfasst' %}
+                {% if k.status == 'erfasst' and request.user|darf:"/neu/kuendigung/1/bestaetigen/" %}
                 <form method="post" action="/neu/kuendigung/{{ k.id }}/bestaetigen/" onsubmit="return confirm('Kündigung bestätigen? Der Vertrag wird auf gekündigt gesetzt und Auszugs-Pendenzen werden erstellt.');" class="mt-2">
                     {% csrf_token %}
                     <button class="fw-btn fw-primary" style="background:var(--ds-good);border-color:var(--ds-good);padding:6px 12px;font-size:12px">{% zeichen 'gut' klasse='mr-1' %}Bestätigen &amp; Vertrag beenden</button>
                 </form>
+                {% elif k.status == 'erfasst' %}
+                <p class="fw-klein mt-2">Wartet auf Bestätigung durch Inhaber oder Verwalter.</p>
                 {% endif %}
                 {% if k.status != 'zurueckgezogen' %}
                 <div class="flex items-center gap-3 mt-1.5">
                     <a href="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" rel="noopener" class="fw-link">{% zeichen 'vertrag' klasse='mr-0.5' %}Amtliches Formular{% if formular_kanton %} {{ formular_kanton }}{% endif %} (PDF)</a>
                     <a href="/vertrag/{{ v.id }}/dokument/kuendigungsbestaetigung/" target="_blank" rel="noopener" class="text-xs font-medium fw-mutet hover:underline">Bestätigung</a>
+                    {% if request.user|darf:"/neu/kuendigung/1/zuruecknehmen/" %}
                     <form method="post" action="/neu/kuendigung/{{ k.id }}/zuruecknehmen/" onsubmit="return confirm('Kündigung zurücknehmen und Vertrag reaktivieren?');" class="inline">
                         {% csrf_token %}
                         <button class="text-xs font-medium fw-faint hover:fw-kritisch">zurücknehmen</button>
                     </form>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
