@@ -9,6 +9,9 @@
     </div>
 </div>
 
+{% if not kann_abo_aendern %}
+<p class="text-sm fw-mutet mb-6">{% zeichen 'hinweis' klasse='fw-faint mr-1' %}Den Plan kann nur der Inhaber der Verwaltung ändern.</p>
+{% else %}
 <!-- Monatlich / Jährlich -->
 <div class="inline-flex items-center gap-1 fw-flaeche border fw-linie rounded-xl p-1 mb-6 shadow-sm">
     <form method="post">{% csrf_token %}
@@ -22,6 +25,7 @@
             Jährlich <span class="text-[10px] font-bold {% if jaehrlich %}fw-faint{% else %}fw-gut{% endif %}">−15 %</span></button>
     </form>
 </div>
+{% endif %}
 
 <div class="grid md:grid-cols-3 gap-5 items-start">
     {% for p in plaene %}
@@ -44,6 +48,7 @@
                 {% if jaehrlich %}<br>CHF {{ p.jahr }}/Jahr (−15 %){% endif %}
             </p>
 
+            {% if kann_abo_aendern %}
             <form method="post" class="mt-4">{% csrf_token %}
                 <input type="hidden" name="plan" value="{{ p.key }}">
                 {% if jaehrlich %}<input type="hidden" name="jaehrlich" value="on">{% endif %}
@@ -53,6 +58,7 @@
                     {% if p.aktiv %}Aktueller Plan{% else %}Plan wählen{% endif %}
                 </button>
             </form>
+            {% endif %}
 
             <ul class="mt-5 space-y-2">
                 {% for f in p.features %}

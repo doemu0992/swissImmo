@@ -1,5 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
+{% load rechte %}
 {% load chf %}
 {% block title %}Verträge — swissImmo{% endblock %}
 
@@ -95,7 +96,7 @@
                 <td><span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span></td>
                 <td class="fw-right" style="white-space:nowrap">
                     {% if row.v.status == 'aktiv' %}
-                    <a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'Kündigung erfassen')" class="text-xs font-semibold fw-warnton hover:fw-warnton mr-1">{% zeichen 'kritisch' klasse='mr-0.5' %}Kündigen</a>
+                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'Kündigung erfassen')" class="text-xs font-semibold fw-warnton hover:fw-warnton mr-1">{% zeichen 'kritisch' klasse='mr-0.5' %}Kündigen</a>{% endif %}
                     {% endif %}
                     {% zeichen 'weiter' klasse='fw-faint text-xs' %}
                 </td>

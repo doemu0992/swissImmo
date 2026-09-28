@@ -310,6 +310,12 @@ class GeteiltesKontoTests(OhneKontext):
         Mitgliedschaft.alle_organisationen.create(
             benutzer=self.b.benutzer, organisation=self.a.organisation,
             rolle=Mitgliedschaft.ROLLE_VERWALTER)
+        # Mitglieder löscht seit 28.09.2026 nur der Inhaber (KONZEPT-UI §8);
+        # das Fixture legt Verwalter an. Geprüft wird hier die Mandantengrenze
+        # beim Löschen, nicht die Rolle — also handelt der Inhaber von A.
+        Mitgliedschaft.alle_organisationen.filter(
+            benutzer=self.a.benutzer, organisation=self.a.organisation,
+        ).update(rolle=Mitgliedschaft.ROLLE_INHABER)
         self.client.force_login(self.a.benutzer)
 
     def test_loeschen_entfernt_nur_die_eigene_mitgliedschaft(self):

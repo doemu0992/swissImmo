@@ -10,7 +10,7 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 
-from core.auth import (ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_SACHBEARBEITER,
+from core.auth import (INHABER_ROLLEN, ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_SACHBEARBEITER,
                        ROLLE_VERWALTER, rolle_erforderlich)
 
 from ._basis import _global_filter
@@ -59,7 +59,11 @@ def _team_benutzer_oder_404(request, pk):
     return ziel
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+# Mitglieder und Rollen verwalten ist Inhaber-Sache (docs/KONZEPT-UI.md §8).
+# Bis 28.09.2026 stand hier ROLLE_VERWALTER — ein Verwalter konnte sich damit
+# selbst zum Inhaber machen (`_ROLLEN_WAHL` enthält die Rolle, das eigene Konto
+# ist nicht ausgenommen) und das Passwort jedes Kontos setzen, auch des Inhabers.
+@rolle_erforderlich(*INHABER_ROLLEN)
 def fw_benutzer_form(request, pk=None):
     """Team-Benutzer erfassen/bearbeiten (Name, E-Mail, Rolle, Passwort, aktiv)."""
     from django.shortcuts import redirect
@@ -139,7 +143,7 @@ def fw_benutzer_form(request, pk=None):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*INHABER_ROLLEN)
 def fw_benutzer_loeschen(request, pk):
     """Benutzer löschen — nicht sich selbst, nicht den letzten Verwaltungs-Account."""
     from django.shortcuts import redirect
