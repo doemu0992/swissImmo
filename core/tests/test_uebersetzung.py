@@ -188,6 +188,8 @@ UEBERSETZT = (
     # Tranche «Personen»
     'fw/person_detail.html',
     'fw/person_form.html',
+    # Tranche «Liegenschaftsakte»
+    'fw/liegenschaft_detail.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -299,6 +301,10 @@ STICHPROBE = {
                            'it': 'Giornale dei contatti', 'en': 'Contact journal'},
     'Neue Person erfassen': {'de': 'Neue Person erfassen', 'fr': 'Saisir une nouvelle personne',
                              'it': 'Registrare una nuova persona', 'en': 'Record new person'},
+    'Wartungs- und Versicherungsfristen': {'de': 'Wartungs- und Versicherungsfristen',
+                                           'fr': "Délais de maintenance et d'assurance",
+                                           'it': 'Scadenze di manutenzione e assicurazione',
+                                           'en': 'Maintenance and insurance deadlines'},
 }
 
 

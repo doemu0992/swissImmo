@@ -68,6 +68,7 @@ from decimal import Decimal
 
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext, ngettext
 
 log = logging.getLogger(__name__)
 
@@ -207,11 +208,11 @@ def _weitere_befunde(lg_ids, stichtag):
             ablauf_datum__isnull=False, ablauf_datum__lte=grenze
             ).values_list('liegenschaft_id', 'ablauf_datum'):
         if ablauf < stichtag:
-            befunde[lg_id].append(('crit', 'Gebäudepolice abgelaufen', 'frist',
-                               f'abgelaufen am {ablauf.strftime("%d.%m.%Y")}'))
+            befunde[lg_id].append(('crit', gettext('Gebäudepolice abgelaufen'), 'frist',
+                               gettext('abgelaufen am %(d)s') % {'d': ablauf.strftime('%d.%m.%Y')}))
         else:
-            befunde[lg_id].append(('warn', 'Police läuft ab', 'frist',
-                               f'läuft ab am {ablauf.strftime("%d.%m.%Y")}'))
+            befunde[lg_id].append(('warn', gettext('Police läuft ab'), 'frist',
+                               gettext('läuft ab am %(d)s') % {'d': ablauf.strftime('%d.%m.%Y')}))
 
     faellig = defaultdict(int)
     ueberfaellig = defaultdict(int)
@@ -224,13 +225,13 @@ def _weitere_befunde(lg_ids, stichtag):
         else:
             faellig[lg_id] += 1
     for lg_id, anzahl in ueberfaellig.items():
-        befunde[lg_id].append(('crit', f'{anzahl} Wartung überfällig'
-                               if anzahl == 1 else f'{anzahl} Wartungen überfällig',
+        befunde[lg_id].append(('crit', ngettext('%(n)s Wartung überfällig',
+                                                '%(n)s Wartungen überfällig', anzahl) % {'n': anzahl},
                                'frist', ''))
     for lg_id, anzahl in faellig.items():
-        befunde[lg_id].append(('warn', f'{anzahl} Wartung fällig'
-                               if anzahl == 1 else f'{anzahl} Wartungen fällig',
-                               'frist', f'innert {VORSCHAU_TAGE} Tagen'))
+        befunde[lg_id].append(('warn', ngettext('%(n)s Wartung fällig',
+                                                '%(n)s Wartungen fällig', anzahl) % {'n': anzahl},
+                               'frist', gettext('innert %(n)s Tagen') % {'n': VORSCHAU_TAGE}))
 
     tickets = defaultdict(int)
     for lg_id in SchadenMeldung.objects.filter(
@@ -238,8 +239,8 @@ def _weitere_befunde(lg_ids, stichtag):
             ).values_list('liegenschaft_id', flat=True):
         tickets[lg_id] += 1
     for lg_id, anzahl in tickets.items():
-        befunde[lg_id].append(('warn', f'{anzahl} offenes Ticket' if anzahl == 1
-                               else f'{anzahl} offene Tickets', 'ticket', ''))
+        befunde[lg_id].append(('warn', ngettext('%(n)s offenes Ticket', '%(n)s offene Tickets',
+                                                anzahl) % {'n': anzahl}, 'ticket', ''))
 
     for lg_id, eintrag in _budget(lg_ids, stichtag).items():
         befunde[lg_id].append(eintrag)
@@ -298,16 +299,19 @@ def _budget(lg_ids, stichtag):
         if not b.unterhalt:
             continue
         if ist > b.unterhalt:
-            stufe, wie = 'crit', 'überschritten'
+            stufe, titel = 'crit', gettext('Unterhalt überschritten')
         elif ist / b.unterhalt > anteil + Decimal('0.15'):
-            stufe, wie = 'warn', 'über Plan'
+            stufe, titel = 'warn', gettext('Unterhalt über Plan')
         else:
             continue
-        rest = (f' bei {restmonate} Monat{"en" if restmonate != 1 else ""} Restjahr'
-                if restmonate else ' — Jahr fast vorbei')
+        rest = (ngettext(' bei %(n)s Monat Restjahr', ' bei %(n)s Monaten Restjahr',
+                         restmonate) % {'n': restmonate}
+                if restmonate else gettext(' — Jahr fast vorbei'))
         ergebnis[lg_id] = (
-            stufe, f'Unterhalt {wie}', 'budget',
-            f'CHF {ist:,.0f} von {b.unterhalt:,.0f}{rest}'.replace(',', "'"))
+            stufe, titel, 'budget',
+            gettext('CHF %(ist)s von %(plan)s') % {
+                'ist': f'{ist:,.0f}'.replace(',', "'"),
+                'plan': f'{b.unterhalt:,.0f}'.replace(',', "'")} + rest)
     return ergebnis
 
 
@@ -336,11 +340,12 @@ def zeilen(lg_liste, stichtag=None):
         gesamt_vorab = zahlen['gesamt']
         leer = zahlen['leer']
         if leer >= SCHWELLE_LEER:
-            chips.append(('crit', f'{leer} leer', 'leer',
-                          f'von {gesamt_vorab} Objekt(en)' if gesamt_vorab else ''))
+            chips.append(('crit', gettext('%(n)s leer') % {'n': leer}, 'leer',
+                          ngettext('von %(n)s Objekt', 'von %(n)s Objekten', gesamt_vorab)
+                          % {'n': gesamt_vorab} if gesamt_vorab else ''))
         if zahlen['wird_leer']:
-            chips.append(('warn', f"{zahlen['wird_leer']} wird frei", 'leer',
-                          f"ab {zahlen['wird_leer_am'].strftime('%d.%m.%Y')}"
+            chips.append(('warn', gettext('%(n)s wird frei') % {'n': zahlen['wird_leer']}, 'leer',
+                          gettext('ab %(d)s') % {'d': zahlen['wird_leer_am'].strftime('%d.%m.%Y')}
                           if zahlen['wird_leer_am'] else ''))
         chips.extend(weitere.get(lg.id, []))
 
