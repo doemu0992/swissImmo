@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 01:32+0200\n"
+"POT-Creation-Date: 2026-09-29 01:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -115,7 +115,7 @@ msgstr "Mieterwechsel"
 
 #: core/navigation.py:146 core/templates/fw/bewerber_vergleich.html:7
 #: core/templates/fw/vermarktung.html:3 core/templates/fw/vermarktung.html:9
-#: core/views/fw/_basis.py:274
+#: core/views/fw/_basis.py:274 faelle/lage.py:470
 msgid "Vermarktung"
 msgstr "Vermarktung"
 
@@ -197,7 +197,7 @@ msgid "Forderungen"
 msgstr "Forderungen"
 
 #: core/navigation.py:168 core/templates/fw/debitoren.html:4
-#: core/templates/fw/debitoren.html:10
+#: core/templates/fw/debitoren.html:10 faelle/lage.py:450
 msgid "Debitoren"
 msgstr "Debitoren"
 
@@ -1346,6 +1346,7 @@ msgstr "%(n)s Zi."
 #: core/templates/fw/mieterspiegel.html:80
 #: core/templates/fw/mieterspiegel_auswahl.html:37
 #: core/templates/fw/objekte.html:40 core/views/fw/detailseiten.py:141
+#: faelle/lage.py:325
 msgid "Leerstand"
 msgstr "Leerstand"
 
@@ -3171,7 +3172,7 @@ msgid "Ungeklärte Zahlungen &amp; Guthaben"
 msgstr "Ungeklärte Zahlungen &amp; Guthaben"
 
 #: core/templates/fw/bankabgleich.html:216 core/templates/fw/debitoren.html:265
-#: core/templates/fw/mahnwesen.html:57
+#: core/templates/fw/mahnwesen.html:57 faelle/lage.py:323
 #, python-format
 msgid "%(n)s Position"
 msgid_plural "%(n)s Positionen"
@@ -3199,8 +3200,8 @@ msgstr "Bitte zuerst Zahlungen auswählen."
 #: core/templates/fw/liegenschaften.html:60
 #: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:42
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
-#: core/views/fw/listen.py:207 core/views/fw/listen.py:1108
-#: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:207 core/views/fw/listen.py:1109
+#: core/views/fw/listen.py:1179 core/views/fw/listen.py:1292
 #: core/views/fw/schaeden.py:402
 msgid "Alle"
 msgstr "Alle"
@@ -3938,7 +3939,7 @@ msgstr "Haustiere"
 msgid "nein"
 msgstr "nein"
 
-#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1109
+#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1110
 msgid "Parkplatz"
 msgstr "Parkplatz"
 
@@ -4541,7 +4542,7 @@ msgid "Stand heute"
 msgstr "Stand heute"
 
 #: core/templates/fw/dashboard.html:346
-#: core/templates/fw/liegenschaften.html:85
+#: core/templates/fw/liegenschaften.html:85 faelle/lage.py:335
 #, python-format
 msgid "%(n)s Objekt"
 msgid_plural "%(n)s Objekte"
@@ -4549,7 +4550,7 @@ msgstr[0] "%(n)s Objekt"
 msgstr[1] "%(n)s Objekte"
 
 #: core/templates/fw/dashboard.html:350
-#: core/templates/fw/liegenschaften.html:90
+#: core/templates/fw/liegenschaften.html:90 faelle/lage.py:397
 msgid "ohne Befund"
 msgstr "ohne Befund"
 
@@ -5131,6 +5132,7 @@ msgstr ""
 #: core/templates/fw/dienstleister_detail.html:180
 #: core/templates/fw/mandat_detail.html:266
 #: core/templates/fw/objekt_detail.html:536 faelle/akten.py:50
+#: faelle/lage.py:349
 msgid "Fälle"
 msgstr "Fälle"
 
@@ -5622,7 +5624,7 @@ msgstr[1] ""
 msgid "Arbeit"
 msgstr "Arbeit"
 
-#: core/templates/fw/fall_detail.html:21
+#: core/templates/fw/fall_detail.html:21 faelle/lage.py:349
 msgid "Fall"
 msgstr "Fall"
 
@@ -13990,37 +13992,37 @@ msgstr "Reparaturen (Unterhalt)"
 msgid "Nettoergebnis"
 msgstr "Nettoergebnis"
 
-#: core/views/fw/listen.py:1108
+#: core/views/fw/listen.py:1109
 msgid "Wohnen"
 msgstr "Wohnen"
 
-#: core/views/fw/listen.py:1109
+#: core/views/fw/listen.py:1110
 msgid "Gewerbe"
 msgstr "Gewerbe"
 
-#: core/views/fw/listen.py:1110
+#: core/views/fw/listen.py:1111
 msgid "Alle Zustände"
 msgstr "Alle Zustände"
 
-#: core/views/fw/listen.py:1111
+#: core/views/fw/listen.py:1112
 #, python-format
 msgid "Mit Befund (%(n)s)"
 msgstr "Mit Befund (%(n)s)"
 
-#: core/views/fw/listen.py:1112
+#: core/views/fw/listen.py:1113
 #, python-format
 msgid "Leerstand (%(n)s)"
 msgstr "Leerstand (%(n)s)"
 
-#: core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:1292
 msgid "Privatpersonen"
 msgstr "Privatpersonen"
 
-#: core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:1292
 msgid "Firmen"
 msgstr "Firmen"
 
-#: core/views/fw/listen.py:1292
+#: core/views/fw/listen.py:1293
 msgid "Vereine"
 msgstr "Vereine"
 
@@ -14280,6 +14282,110 @@ msgstr "Rollen"
 #: faelle/akten.py:140
 msgid "Handwerker & Kosten"
 msgstr "Handwerker & Kosten"
+
+#: faelle/lage.py:278
+#, python-format
+msgid "Zahlungseingang %(monat)s"
+msgstr "Zahlungseingang %(monat)s"
+
+#: faelle/lage.py:286
+msgid "Prozentpunkt"
+msgstr "Prozentpunkt"
+
+#: faelle/lage.py:286
+msgid "Prozentpunkte"
+msgstr "Prozentpunkte"
+
+#: faelle/lage.py:290
+#, python-format
+msgid "%(q)s %% des Solls"
+msgstr "%(q)s %% des Solls"
+
+#: faelle/lage.py:291
+#, python-format
+msgid "Vormonat %(q)s %%"
+msgstr "Vormonat %(q)s %%"
+
+#: faelle/lage.py:292
+msgid "kein Vormonatswert"
+msgstr "kein Vormonatswert"
+
+#: faelle/lage.py:311
+msgid "Ausstände"
+msgstr "Ausstände"
+
+#: faelle/lage.py:316
+msgid "Position"
+msgstr "Position"
+
+#: faelle/lage.py:316
+msgid "Positionen"
+msgstr "Positionen"
+
+#: faelle/lage.py:324
+#, python-format
+msgid "%(n)s in Mahnstufe 2"
+msgstr "%(n)s in Mahnstufe 2"
+
+#: faelle/lage.py:336
+#, python-format
+msgid "%(n)s ohne Ausschreibung"
+msgstr "%(n)s ohne Ausschreibung"
+
+#: faelle/lage.py:344
+msgid "Offene Fälle"
+msgstr "Offene Fälle"
+
+#: faelle/lage.py:350
+#, python-format
+msgid "%(n)s liegengeblieben"
+msgstr "%(n)s liegengeblieben"
+
+#: faelle/lage.py:351
+msgid "alle in Bewegung"
+msgstr "alle in Bewegung"
+
+#: faelle/lage.py:438
+#, python-format
+msgid ""
+"%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Position."
+msgid_plural ""
+"%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s "
+"Positionen."
+msgstr[0] "%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Position."
+msgstr[1] "%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Positionen."
+
+#: faelle/lage.py:443
+#, python-format
+msgid "%(q)s %%. Offen sind CHF %(b)s in %(n)s Position."
+msgid_plural "%(q)s %%. Offen sind CHF %(b)s in %(n)s Positionen."
+msgstr[0] "%(q)s %%. Offen sind CHF %(b)s in %(n)s Position."
+msgstr[1] "%(q)s %%. Offen sind CHF %(b)s in %(n)s Positionen."
+
+#: faelle/lage.py:448
+#, python-format
+msgid "Zahlungseingang unter %(s)s %%"
+msgstr "Zahlungseingang unter %(s)s %%"
+
+#: faelle/lage.py:465
+msgid "Leerstand steigt den dritten Monat in Folge"
+msgstr "Leerstand steigt den dritten Monat in Folge"
+
+#: faelle/lage.py:466
+#, python-format
+msgid "Leerstand über %(s)s %%"
+msgstr "Leerstand über %(s)s %%"
+
+#: faelle/lage.py:467
+#, python-format
+msgid "%(reihe)s. Betroffen ist %(n)s Objekt."
+msgid_plural "%(reihe)s. Betroffen sind %(n)s Objekte."
+msgstr[0] "%(reihe)s. Betroffen ist %(n)s Objekt."
+msgstr[1] "%(reihe)s. Betroffen sind %(n)s Objekte."
+
+#: faelle/lage.py:484
+msgid "Liste öffnen"
+msgstr "Liste öffnen"
 
 #: faelle/liegenschaften.py:211
 msgid "Gebäudepolice abgelaufen"

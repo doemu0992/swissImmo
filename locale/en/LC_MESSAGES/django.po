@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 01:32+0200\n"
+"POT-Creation-Date: 2026-09-29 01:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -115,7 +115,7 @@ msgstr "Tenant changes"
 
 #: core/navigation.py:146 core/templates/fw/bewerber_vergleich.html:7
 #: core/templates/fw/vermarktung.html:3 core/templates/fw/vermarktung.html:9
-#: core/views/fw/_basis.py:274
+#: core/views/fw/_basis.py:274 faelle/lage.py:470
 msgid "Vermarktung"
 msgstr "Marketing"
 
@@ -197,7 +197,7 @@ msgid "Forderungen"
 msgstr "Receivables"
 
 #: core/navigation.py:168 core/templates/fw/debitoren.html:4
-#: core/templates/fw/debitoren.html:10
+#: core/templates/fw/debitoren.html:10 faelle/lage.py:450
 msgid "Debitoren"
 msgstr "Debtors"
 
@@ -1340,6 +1340,7 @@ msgstr "%(n)s rm."
 #: core/templates/fw/mieterspiegel.html:80
 #: core/templates/fw/mieterspiegel_auswahl.html:37
 #: core/templates/fw/objekte.html:40 core/views/fw/detailseiten.py:141
+#: faelle/lage.py:325
 msgid "Leerstand"
 msgstr "Vacancy"
 
@@ -3154,7 +3155,7 @@ msgid "Ungeklärte Zahlungen &amp; Guthaben"
 msgstr "Unresolved payments &amp; credits"
 
 #: core/templates/fw/bankabgleich.html:216 core/templates/fw/debitoren.html:265
-#: core/templates/fw/mahnwesen.html:57
+#: core/templates/fw/mahnwesen.html:57 faelle/lage.py:323
 #, python-format
 msgid "%(n)s Position"
 msgid_plural "%(n)s Positionen"
@@ -3182,8 +3183,8 @@ msgstr "Please select payments first."
 #: core/templates/fw/liegenschaften.html:60
 #: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:42
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
-#: core/views/fw/listen.py:207 core/views/fw/listen.py:1108
-#: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:207 core/views/fw/listen.py:1109
+#: core/views/fw/listen.py:1179 core/views/fw/listen.py:1292
 #: core/views/fw/schaeden.py:402
 msgid "Alle"
 msgstr "All"
@@ -3916,7 +3917,7 @@ msgstr "Pets"
 msgid "nein"
 msgstr "no"
 
-#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1109
+#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1110
 msgid "Parkplatz"
 msgstr "Parking"
 
@@ -4519,7 +4520,7 @@ msgid "Stand heute"
 msgstr "As of today"
 
 #: core/templates/fw/dashboard.html:346
-#: core/templates/fw/liegenschaften.html:85
+#: core/templates/fw/liegenschaften.html:85 faelle/lage.py:335
 #, python-format
 msgid "%(n)s Objekt"
 msgid_plural "%(n)s Objekte"
@@ -4527,7 +4528,7 @@ msgstr[0] "%(n)s unit"
 msgstr[1] "%(n)s units"
 
 #: core/templates/fw/dashboard.html:350
-#: core/templates/fw/liegenschaften.html:90
+#: core/templates/fw/liegenschaften.html:90 faelle/lage.py:397
 msgid "ohne Befund"
 msgstr "nothing of note"
 
@@ -5108,6 +5109,7 @@ msgstr ""
 #: core/templates/fw/dienstleister_detail.html:180
 #: core/templates/fw/mandat_detail.html:266
 #: core/templates/fw/objekt_detail.html:536 faelle/akten.py:50
+#: faelle/lage.py:349
 msgid "Fälle"
 msgstr "Cases"
 
@@ -5594,7 +5596,7 @@ msgstr[1] ""
 msgid "Arbeit"
 msgstr "Work"
 
-#: core/templates/fw/fall_detail.html:21
+#: core/templates/fw/fall_detail.html:21 faelle/lage.py:349
 msgid "Fall"
 msgstr "Case"
 
@@ -13914,37 +13916,37 @@ msgstr "Repairs (maintenance)"
 msgid "Nettoergebnis"
 msgstr "Net result"
 
-#: core/views/fw/listen.py:1108
+#: core/views/fw/listen.py:1109
 msgid "Wohnen"
 msgstr "Residential"
 
-#: core/views/fw/listen.py:1109
+#: core/views/fw/listen.py:1110
 msgid "Gewerbe"
 msgstr "Commercial"
 
-#: core/views/fw/listen.py:1110
+#: core/views/fw/listen.py:1111
 msgid "Alle Zustände"
 msgstr "All states"
 
-#: core/views/fw/listen.py:1111
+#: core/views/fw/listen.py:1112
 #, python-format
 msgid "Mit Befund (%(n)s)"
 msgstr "With findings (%(n)s)"
 
-#: core/views/fw/listen.py:1112
+#: core/views/fw/listen.py:1113
 #, python-format
 msgid "Leerstand (%(n)s)"
 msgstr "Vacancy (%(n)s)"
 
-#: core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:1292
 msgid "Privatpersonen"
 msgstr "Individuals"
 
-#: core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:1292
 msgid "Firmen"
 msgstr "Companies"
 
-#: core/views/fw/listen.py:1292
+#: core/views/fw/listen.py:1293
 msgid "Vereine"
 msgstr "Associations"
 
@@ -14204,6 +14206,110 @@ msgstr "Roles"
 #: faelle/akten.py:140
 msgid "Handwerker & Kosten"
 msgstr "Tradespeople & costs"
+
+#: faelle/lage.py:278
+#, python-format
+msgid "Zahlungseingang %(monat)s"
+msgstr "Payments received %(monat)s"
+
+#: faelle/lage.py:286
+msgid "Prozentpunkt"
+msgstr "percentage point"
+
+#: faelle/lage.py:286
+msgid "Prozentpunkte"
+msgstr "percentage points"
+
+#: faelle/lage.py:290
+#, python-format
+msgid "%(q)s %% des Solls"
+msgstr "%(q)s %% of target"
+
+#: faelle/lage.py:291
+#, python-format
+msgid "Vormonat %(q)s %%"
+msgstr "last month %(q)s %%"
+
+#: faelle/lage.py:292
+msgid "kein Vormonatswert"
+msgstr "no previous month value"
+
+#: faelle/lage.py:311
+msgid "Ausstände"
+msgstr "Arrears"
+
+#: faelle/lage.py:316
+msgid "Position"
+msgstr "item"
+
+#: faelle/lage.py:316
+msgid "Positionen"
+msgstr "items"
+
+#: faelle/lage.py:324
+#, python-format
+msgid "%(n)s in Mahnstufe 2"
+msgstr "%(n)s at reminder level 2"
+
+#: faelle/lage.py:336
+#, python-format
+msgid "%(n)s ohne Ausschreibung"
+msgstr "%(n)s not advertised"
+
+#: faelle/lage.py:344
+msgid "Offene Fälle"
+msgstr "Open cases"
+
+#: faelle/lage.py:350
+#, python-format
+msgid "%(n)s liegengeblieben"
+msgstr "%(n)s stalled"
+
+#: faelle/lage.py:351
+msgid "alle in Bewegung"
+msgstr "all moving"
+
+#: faelle/lage.py:438
+#, python-format
+msgid ""
+"%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Position."
+msgid_plural ""
+"%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s "
+"Positionen."
+msgstr[0] "%(q)s %% instead of %(v)s %% last month. CHF %(b)s open in %(n)s item."
+msgstr[1] "%(q)s %% instead of %(v)s %% last month. CHF %(b)s open in %(n)s items."
+
+#: faelle/lage.py:443
+#, python-format
+msgid "%(q)s %%. Offen sind CHF %(b)s in %(n)s Position."
+msgid_plural "%(q)s %%. Offen sind CHF %(b)s in %(n)s Positionen."
+msgstr[0] "%(q)s %%. CHF %(b)s open in %(n)s item."
+msgstr[1] "%(q)s %%. CHF %(b)s open in %(n)s items."
+
+#: faelle/lage.py:448
+#, python-format
+msgid "Zahlungseingang unter %(s)s %%"
+msgstr "Payments received below %(s)s %%"
+
+#: faelle/lage.py:465
+msgid "Leerstand steigt den dritten Monat in Folge"
+msgstr "Vacancy rising for the third month in a row"
+
+#: faelle/lage.py:466
+#, python-format
+msgid "Leerstand über %(s)s %%"
+msgstr "Vacancy above %(s)s %%"
+
+#: faelle/lage.py:467
+#, python-format
+msgid "%(reihe)s. Betroffen ist %(n)s Objekt."
+msgid_plural "%(reihe)s. Betroffen sind %(n)s Objekte."
+msgstr[0] "%(reihe)s. %(n)s unit affected."
+msgstr[1] "%(reihe)s. %(n)s units affected."
+
+#: faelle/lage.py:484
+msgid "Liste öffnen"
+msgstr "Open list"
 
 #: faelle/liegenschaften.py:211
 msgid "Gebäudepolice abgelaufen"

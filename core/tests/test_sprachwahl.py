@@ -147,3 +147,51 @@ class VertragsaktenMonatFolgtDerSpracheTests(TestCase):
         seite = self.c.get(self.url)
         self.assertContains(seite, 'mai 2024')
         self.assertNotContains(seite, 'May 2024')
+
+
+class AuswertungMonatskuerzelFolgenDerSpracheTests(TestCase):
+    """Die Monatsleiste der Auswertung kürzt in der gewählten Sprache.
+
+    Vorher `strftime('%b')` in core/views/fw/listen.py — Server-Locale, also
+    «Mar», «May», «Oct» auch in der deutschen Oberfläche.
+
+    Gegenprobe: `dateformat.format(..., 'M')` zurück auf `strftime('%b')` —
+    beide Tests werden rot.
+    """
+
+    def setUp(self):
+        self.c = Client()
+        self.c.force_login(_team_user('Verwalter'))
+
+    def test_deutsch(self):
+        seite = self.c.get('/neu/auswertung/', HTTP_ACCEPT_LANGUAGE='de-CH')
+        self.assertContains(seite, '>Okt<')
+        self.assertNotContains(seite, '>Oct<')
+
+    def test_italienisch(self):
+        # Italienisch statt Französisch: Dort heisst der Oktober «Oct» wie im
+        # Englischen, und der Test könnte den Fehler nicht sehen.
+        self.c.post(SETLANG, {'language': 'it', 'next': '/neu/'})
+        seite = self.c.get('/neu/auswertung/')
+        self.assertContains(seite, '>Ott<')
+        self.assertNotContains(seite, '>Oct<')
+
+
+class ArbeitsvorratReiterFolgenDerSpracheTests(TestCase):
+    """Die Reiter des Arbeitsvorrats (Heute · Diese Woche · …) stehen in der
+    gewählten Sprache.
+
+    Vorher `gettext` auf Modulebene in core/views/fw/arbeit.py: einmal beim
+    Import ausgewertet, also immer deutsch.
+
+    Gegenprobe: `gettext_lazy` in ANSICHTEN zurück auf `_` (gettext) — der
+    Test wird rot.
+    """
+
+    def test_franzoesisch(self):
+        c = Client()
+        c.force_login(_team_user('Verwalter'))
+        c.post(SETLANG, {'language': 'fr', 'next': '/neu/'})
+        seite = c.get('/neu/')
+        self.assertContains(seite, 'Cette semaine')
+        self.assertNotContains(seite, 'Diese Woche')
