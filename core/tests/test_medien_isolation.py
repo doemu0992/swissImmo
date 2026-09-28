@@ -21,9 +21,10 @@ Datei, deren Besitzer niemand kennt, ist das die einzige vertretbare Antwort.
 """
 import os
 import shutil
+import tempfile
 
 from django.conf import settings
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 
 from crm.models import Organisation
 
@@ -39,6 +40,34 @@ def _datei_anlegen(rel, inhalt=b'\xff\xd8\xff\xe0JFIF-Testbild'):
 
 
 class MedienBasis(TestCase):
+    """Jede Testklasse bekommt ihren EIGENEN, temporären `MEDIA_ROOT`.
+
+    Bis 28.09.2026 schrieben diese Tests in den echten `media/`-Ordner des
+    Projekts, und `tearDown` löschte dort `organisation/` und `schaden_fotos/`
+    per `rmtree` — auf einem Rechner mit echten Uploads also die Dateien der
+    Verwaltungen. Unter `manage.py test --parallel` kollidierten ausserdem die
+    Prozesse: Jeder hat eine eigene Datenbank, in der die zweite Organisation
+    `pk=2` bekommt, die Pfade `media/organisation/2/…` waren aber geteilt.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls._medien_wurzel = tempfile.mkdtemp(prefix='swissimmo-medientest-')
+        cls._medien_override = override_settings(MEDIA_ROOT=cls._medien_wurzel)
+        cls._medien_override.enable()
+        # Aufräumen läuft rückwärts: erst das Override lösen, dann löschen.
+        cls.addClassCleanup(shutil.rmtree, cls._medien_wurzel, ignore_errors=True)
+        cls.addClassCleanup(cls._medien_override.disable)
+        super().setUpClass()
+
+    def setUp(self):
+        super().setUp()
+        # Wächter: Ohne ihn fiele ein Rückfall auf den echten Ordner erst auf,
+        # wenn dort Dateien fehlen.
+        self.assertTrue(
+            settings.MEDIA_ROOT.startswith(self._medien_wurzel),
+            'Medientest läuft gegen den echten MEDIA_ROOT — tearDown löscht dort.')
+
     @classmethod
     def setUpTestData(cls):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
@@ -46,6 +75,7 @@ class MedienBasis(TestCase):
         assert Organisation.objects.order_by('pk').first().pk == cls.a.organisation.pk
 
     def tearDown(self):
+        # Räumt nur im temporären Ordner dieser Klasse (siehe Wächter in setUp).
         shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'organisation'), ignore_errors=True)
         shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'schaden_fotos'), ignore_errors=True)
 
