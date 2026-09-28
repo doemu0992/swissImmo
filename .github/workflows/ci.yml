@@ -36,6 +36,11 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
+      - name: Systembibliotheken für pycairo
+        # pycairo hat keine fertigen Linux-Pakete und wird beim Installieren
+        # gebaut — ohne Cairo-Entwicklungsdateien bricht `pip install` mit
+        # «Dependency "cairo" not found» ab (seit dem Runner-Wechsel rot).
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
       - name: Django system check
@@ -54,6 +59,11 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
+      - name: Systembibliotheken für pycairo
+        # pycairo hat keine fertigen Linux-Pakete und wird beim Installieren
+        # gebaut — ohne Cairo-Entwicklungsdateien bricht `pip install` mit
+        # «Dependency "cairo" not found» ab (seit dem Runner-Wechsel rot).
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Python-Abhängigkeiten
         run: pip install -r requirements.txt
       - name: Node einrichten
