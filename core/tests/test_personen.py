@@ -66,7 +66,7 @@ class PersonLoeschenTests(TestCase):
 
 class BenutzerListeTests(TestCase):
     def test_portalkonten_ausgeblendet_teamkonten_sichtbar(self):
-        team = _team_user()  # Gruppe 'Verwaltung'
+        team = _team_user('Inhaber')  # «Löschen» sieht seit 28.09.2026 nur der Inhaber
         # Mieter-Portal-Konto
         mu = User.objects.create_user(username='miet_portal@x.ch')
         m = Mieter.objects.create(typ='person', nachname='PL'); m.benutzer = mu; m.save()
