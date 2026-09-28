@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 15:59+0200\n"
+"POT-Creation-Date: 2026-09-28 17:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,8 +72,8 @@ msgstr "Oggetti"
 msgid "Mietverhältnisse"
 msgstr "Locazioni"
 
-#: core/navigation.py:140 core/templates/fw/personen.html:3
-#: core/templates/fw/personen.html:9
+#: core/navigation.py:140 core/templates/fw/kontenplan.html:64
+#: core/templates/fw/personen.html:3 core/templates/fw/personen.html:9
 msgid "Personen"
 msgstr "Persone"
 
@@ -134,8 +134,8 @@ msgstr "Solleciti"
 msgid "Zahllauf"
 msgstr "Ordini di pagamento"
 
-#: core/navigation.py:159 core/templates/fw/nebenkosten.html:4
-#: core/templates/fw/nebenkosten.html:9
+#: core/navigation.py:159 core/templates/fw/finanzen.html:139
+#: core/templates/fw/nebenkosten.html:4 core/templates/fw/nebenkosten.html:9
 msgid "Nebenkosten"
 msgstr "Spese accessorie"
 
@@ -152,11 +152,12 @@ msgstr "Pigione"
 msgid "MWST"
 msgstr "IVA"
 
-#: core/navigation.py:166
+#: core/navigation.py:166 core/templates/fw/finanzen.html:4
 msgid "Finanzen"
 msgstr "Finanze"
 
-#: core/navigation.py:167
+#: core/navigation.py:167 core/templates/fw/finanzen.html:135
+#: core/templates/fw/mieterkonten.html:4 core/templates/fw/mieterkonten.html:8
 msgid "Mieterkonten"
 msgstr "Conti inquilini"
 
@@ -164,15 +165,18 @@ msgstr "Conti inquilini"
 msgid "Forderungen"
 msgstr "Crediti"
 
-#: core/navigation.py:168
+#: core/navigation.py:168 core/templates/fw/debitoren.html:4
+#: core/templates/fw/debitoren.html:10
 msgid "Debitoren"
 msgstr "Debitori"
 
-#: core/navigation.py:169
+#: core/navigation.py:169 core/templates/fw/kautionen.html:4
+#: core/views/fw/dashboard.py:531
 msgid "Kautionen"
 msgstr "Depositi di garanzia"
 
-#: core/navigation.py:170
+#: core/navigation.py:170 core/templates/fw/kreditoren.html:4
+#: core/templates/fw/kreditoren.html:9
 msgid "Kreditoren"
 msgstr "Creditori"
 
@@ -180,11 +184,14 @@ msgstr "Creditori"
 msgid "Verbindlichkeiten"
 msgstr "Debiti"
 
-#: core/navigation.py:171
+#: core/navigation.py:171 core/templates/fw/finanzen.html:136
+#: core/templates/fw/lieferantenkonten.html:4
+#: core/templates/fw/lieferantenkonten.html:8
 msgid "Lieferantenkonten"
 msgstr "Conti fornitori"
 
-#: core/navigation.py:172
+#: core/navigation.py:172 core/templates/fw/bankkonten.html:4
+#: core/templates/fw/bankkonten.html:10
 msgid "Bankkonten"
 msgstr "Conti bancari"
 
@@ -192,7 +199,8 @@ msgstr "Conti bancari"
 msgid "Konten"
 msgstr "Conti"
 
-#: core/navigation.py:173
+#: core/navigation.py:173 core/templates/fw/buchhaltung.html:4
+#: core/templates/fw/buchhaltung.html:9
 msgid "Buchhaltung"
 msgstr "Contabilità"
 
@@ -200,11 +208,13 @@ msgstr "Contabilità"
 msgid "Kontenplan & Salden"
 msgstr "Piano dei conti & saldi"
 
-#: core/navigation.py:175
+#: core/navigation.py:175 core/templates/fw/anlagen.html:4
+#: core/templates/fw/anlagen.html:9
 msgid "Anlagen & Abschluss"
 msgstr "Immobilizzazioni & chiusura"
 
-#: core/navigation.py:176
+#: core/navigation.py:176 core/templates/fw/hypotheken.html:4
+#: core/templates/fw/hypotheken.html:9
 msgid "Hypotheken"
 msgstr "Ipoteche"
 
@@ -328,7 +338,7 @@ msgstr "senza data — tempo medio non calcolabile"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:352
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:382
 msgid "Abwesenheiten"
 msgstr "Assenze"
 
@@ -366,6 +376,19 @@ msgstr "senza sostituzione"
 msgid "vertreten durch %(wer)s"
 msgstr "sostituito da %(wer)s"
 
+#: core/templates/fw/_bezahlt_leer.html:9 core/views/fw/_basis.py:355
+#: core/views/fw/kreditoren.py:40
+msgid "Bezahlt"
+msgstr "Pagato"
+
+#: core/templates/fw/_bezahlt_leer.html:15
+msgid "Keine offenen Posten"
+msgstr "Nessuna partita aperta"
+
+#: core/templates/fw/_bezahlt_leer.html:16
+msgid "Alle Zahlungen in dieser Kategorie sind eingegangen."
+msgstr "Tutti i pagamenti di questa categoria sono stati ricevuti."
+
 #: core/templates/fw/abwesenheiten.html:9
 msgid ""
 "Wer wann weg ist — und wer übernimmt. Umsetzung von G8: Zuständigkeit statt "
@@ -387,6 +410,7 @@ msgid "Wer"
 msgstr "Chi"
 
 #: core/templates/fw/abwesenheiten.html:26
+#: core/templates/fw/buchhaltung.html:288
 msgid "Von"
 msgstr "Dal"
 
@@ -407,7 +431,8 @@ msgid "Notiz"
 msgstr "Nota"
 
 #: core/templates/fw/abwesenheiten.html:41
-#: core/templates/fw/dienstleister.html:37 core/templates/fw/mahnwesen.html:101
+#: core/templates/fw/dienstleister.html:37 core/templates/fw/hypotheken.html:44
+#: core/templates/fw/mahnwesen.html:101
 msgid "Erfassen"
 msgstr "Registrare"
 
@@ -452,6 +477,192 @@ msgstr "Passato"
 msgid "Nichts vergangen."
 msgstr "Niente di passato."
 
+#: core/templates/fw/anlagen.html:10
+msgid ""
+"Anlagenbuchhaltung mit linearer Abschreibung, Erneuerungsfonds und "
+"Periodensperre."
+msgstr ""
+"Contabilità dei cespiti con ammortamento lineare, fondo di rinnovamento e "
+"blocco del periodo."
+
+#: core/templates/fw/anlagen.html:17
+msgid "Anlagegüter"
+msgstr "Cespiti"
+
+#: core/templates/fw/anlagen.html:21
+msgid "AfA-Lauf für das Jahr buchen? (idempotent)"
+msgstr "Registrare gli ammortamenti dell'anno? (idempotente)"
+
+#: core/templates/fw/anlagen.html:21
+msgid "AfA-Lauf"
+msgstr "Ammortamenti"
+
+#: core/templates/fw/anlagen.html:27
+msgid "Anlage"
+msgstr "Cespite"
+
+#: core/templates/fw/anlagen.html:27 core/templates/fw/anlagen.html:53
+#: core/templates/fw/anlagen.html:102 core/templates/fw/anlagen.html:120
+#: core/templates/fw/bankabgleich.html:185 core/templates/fw/kreditoren.html:78
+#: core/templates/fw/kreditoren.html:289 core/templates/fw/nebenkosten.html:70
+#: core/templates/fw/objekte.html:74
+msgid "Liegenschaft"
+msgstr "Stabile"
+
+#: core/templates/fw/anlagen.html:28
+msgid "Anschaffung"
+msgstr "Acquisto"
+
+#: core/templates/fw/anlagen.html:28
+msgid "ND"
+msgstr "DU"
+
+#: core/templates/fw/anlagen.html:29
+msgid "AfA/Jahr"
+msgstr "Amm./anno"
+
+#: core/templates/fw/anlagen.html:29
+msgid "Kum. AfA"
+msgstr "Amm. cumulati"
+
+#: core/templates/fw/anlagen.html:29
+msgid "Buchwert"
+msgstr "Valore contabile"
+
+#: core/templates/fw/anlagen.html:34
+#, python-format
+msgid "seit %(datum)s"
+msgstr "dal %(datum)s"
+
+#: core/templates/fw/anlagen.html:43
+msgid "Noch keine Anlagen erfasst."
+msgstr "Nessun cespite registrato."
+
+#: core/templates/fw/anlagen.html:51 core/templates/fw/kontenplan.html:85
+#: core/templates/fw/kontenplan.html:126 core/templates/fw/kreditoren.html:348
+msgid "Bezeichnung"
+msgstr "Designazione"
+
+#: core/templates/fw/anlagen.html:52
+msgid "z. B. Heizung"
+msgstr "p. es. riscaldamento"
+
+#: core/templates/fw/anlagen.html:57
+msgid "Wert CHF"
+msgstr "Valore CHF"
+
+#: core/templates/fw/anlagen.html:59 core/templates/fw/buchhaltung.html:41
+#: core/templates/fw/buchhaltung.html:367 core/templates/fw/mahnwesen.html:145
+msgid "Datum"
+msgstr "Data"
+
+#: core/templates/fw/anlagen.html:61
+msgid "Bezahlt via"
+msgstr "Pagato tramite"
+
+#: core/templates/fw/anlagen.html:63
+msgid "Noch offen (Kreditor 2000)"
+msgstr "Ancora aperto (creditore 2000)"
+
+#: core/templates/fw/anlagen.html:64
+msgid "Bereits bezahlt (Bank 1020)"
+msgstr "Già pagato (banca 1020)"
+
+#: core/templates/fw/anlagen.html:67
+msgid "ND (J)"
+msgstr "DU (a)"
+
+#: core/templates/fw/anlagen.html:69
+msgid "Anlage erfassen"
+msgstr "Registrare cespite"
+
+#: core/templates/fw/anlagen.html:82
+msgid ""
+"Aktivierung buchen (1500 an Gegenkonto) — nötig, damit die Abschreibungen "
+"das Anlagekonto nicht ins Minus ziehen"
+msgstr ""
+"Registrare l'attivazione (1500 a contropartita) — necessaria affinché gli "
+"ammortamenti non portino in negativo il conto del cespite"
+
+#: core/templates/fw/anlagen.html:92
+msgid "Erneuerungsfonds (Rückstellung)"
+msgstr "Fondo di rinnovamento (accantonamento)"
+
+#: core/templates/fw/anlagen.html:96
+msgid "Jährliche Einlagen für das Jahr buchen?"
+msgstr "Registrare i versamenti annuali dell'anno?"
+
+#: core/templates/fw/anlagen.html:96
+msgid "Einlage buchen"
+msgstr "Registrare versamento"
+
+#: core/templates/fw/anlagen.html:102
+msgid "Bestand"
+msgstr "Consistenza"
+
+#: core/templates/fw/anlagen.html:103
+msgid "Einlage/Jahr"
+msgstr "Versamento/anno"
+
+#: core/templates/fw/anlagen.html:103
+msgid "Letzte Einlage"
+msgstr "Ultimo versamento"
+
+#: core/templates/fw/anlagen.html:112
+msgid "Noch kein Erneuerungsfonds definiert."
+msgstr "Nessun fondo di rinnovamento definito."
+
+#: core/templates/fw/anlagen.html:124
+msgid "Jährliche Einlage CHF"
+msgstr "Versamento annuo CHF"
+
+#: core/templates/fw/anlagen.html:126
+msgid "Bestand (optional)"
+msgstr "Consistenza (facoltativa)"
+
+#: core/templates/fw/anlagen.html:127
+msgid "unverändert"
+msgstr "invariato"
+
+#: core/templates/fw/anlagen.html:128 core/templates/fw/dienstleister.html:107
+#: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:308
+#: core/templates/fw/mwst.html:117
+msgid "Speichern"
+msgstr "Salva"
+
+#: core/templates/fw/anlagen.html:135
+msgid "Periodensperre"
+msgstr "Blocco del periodo"
+
+#: core/templates/fw/anlagen.html:136
+msgid ""
+"Buchungen mit Datum ≤ Stichtag werden gesperrt (abgeschlossene Periode, "
+"Revisionssicherheit)."
+msgstr ""
+"Le registrazioni con data ≤ data di riferimento vengono bloccate (periodo "
+"chiuso, tracciabilità)."
+
+#: core/templates/fw/anlagen.html:137
+#, python-format
+msgid "Aktuell gesperrt bis %(datum)s."
+msgstr "Attualmente bloccato fino al %(datum)s."
+
+#: core/templates/fw/anlagen.html:137
+msgid "Aktuell keine Sperre."
+msgstr "Attualmente nessun blocco."
+
+#: core/templates/fw/anlagen.html:140
+msgid "Gesperrt bis"
+msgstr "Bloccato fino al"
+
+#: core/templates/fw/anlagen.html:142
+msgid "Sperre setzen"
+msgstr "Impostare blocco"
+
+#: core/templates/fw/anlagen.html:143
+msgid "Aufheben"
+msgstr "Rimuovere"
+
 #: core/templates/fw/bankabgleich.html:11
 msgid ""
 "Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen "
@@ -460,7 +671,11 @@ msgstr ""
 "Riconciliare le partite aperte con gli incassi e registrarle con un clic "
 "(banca a debitori)"
 
-#: core/templates/fw/bankabgleich.html:11 core/templates/fw/mietzins.html:11
+#: core/templates/fw/bankabgleich.html:11 core/templates/fw/bankkonten.html:11
+#: core/templates/fw/debitoren.html:11 core/templates/fw/finanzen.html:26
+#: core/templates/fw/hypotheken.html:10 core/templates/fw/kautionen.html:9
+#: core/templates/fw/lieferantenkonten.html:9
+#: core/templates/fw/mieterkonten.html:9 core/templates/fw/mietzins.html:11
 #: core/templates/fw/mwst.html:9 core/templates/fw/objekte.html:24
 #: core/templates/fw/personen.html:10 core/templates/fw/sollstellung.html:11
 #: core/templates/fw/vertraege.html:14
@@ -468,7 +683,10 @@ msgstr ""
 msgid "gefiltert auf %(strasse)s"
 msgstr "filtrato su %(strasse)s"
 
-#: core/templates/fw/bankabgleich.html:11
+#: core/templates/fw/bankabgleich.html:11 core/templates/fw/bankkonten.html:11
+#: core/templates/fw/buchhaltung.html:14 core/templates/fw/debitoren.html:11
+#: core/templates/fw/hypotheken.html:10 core/templates/fw/kontenplan.html:20
+#: core/templates/fw/kreditoren.html:26
 #: core/templates/fw/liegenschaften.html:11 core/templates/fw/mahnwesen.html:13
 #: core/templates/fw/mietzins.html:11 core/templates/fw/nebenkosten.html:14
 #: core/templates/fw/objekte.html:25 core/templates/fw/personen.html:10
@@ -484,7 +702,8 @@ msgstr "Pagatori memorizzati"
 msgid "Abzugleichen (offen)"
 msgstr "Da riconciliare (aperte)"
 
-#: core/templates/fw/bankabgleich.html:25
+#: core/templates/fw/bankabgleich.html:25 core/templates/fw/debitoren.html:108
+#: core/templates/fw/finanzen.html:61
 msgid "Offene Posten"
 msgstr "Partite aperte"
 
@@ -617,7 +836,7 @@ msgstr "Assegnare"
 msgid "Offene Lieferantenrechnung"
 msgstr "Fattura fornitore aperta"
 
-#: core/templates/fw/bankabgleich.html:162
+#: core/templates/fw/bankabgleich.html:162 core/templates/fw/hypotheken.html:25
 #: core/templates/fw/nebenkosten.html:23
 msgid "wählen"
 msgstr "scegliere"
@@ -631,6 +850,7 @@ msgid "Gegenkonto"
 msgstr "Contropartita"
 
 #: core/templates/fw/bankabgleich.html:176
+#: core/templates/fw/buchhaltung.html:284
 msgid "Nummer"
 msgstr "Numero"
 
@@ -638,12 +858,9 @@ msgstr "Numero"
 msgid "Belegtext"
 msgstr "Testo del giustificativo"
 
-#: core/templates/fw/bankabgleich.html:185
-#: core/templates/fw/nebenkosten.html:70 core/templates/fw/objekte.html:74
-msgid "Liegenschaft"
-msgstr "Stabile"
-
 #: core/templates/fw/bankabgleich.html:187
+#: core/templates/fw/buchhaltung.html:48 core/templates/fw/kreditoren.html:80
+#: core/templates/fw/kreditoren.html:291
 msgid "keine"
 msgstr "nessuna"
 
@@ -663,7 +880,8 @@ msgstr "Non rilevante (p. es. giroconto tra propri conti)"
 msgid "Ungeklärte Zahlungen & Guthaben"
 msgstr "Pagamenti non chiariti & crediti"
 
-#: core/templates/fw/bankabgleich.html:216 core/templates/fw/mahnwesen.html:57
+#: core/templates/fw/bankabgleich.html:216 core/templates/fw/debitoren.html:265
+#: core/templates/fw/mahnwesen.html:57
 #, python-format
 msgid "%(n)s Position"
 msgid_plural "%(n)s Positionen"
@@ -684,10 +902,12 @@ msgstr "CHF %(betrag)s crediti degli inquilini (2030)"
 msgid "Bitte zuerst Zahlungen auswählen."
 msgstr "Selezionare prima dei pagamenti."
 
-#: core/templates/fw/bankabgleich.html:236 core/templates/fw/dashboard.html:72
+#: core/templates/fw/bankabgleich.html:236
+#: core/templates/fw/buchhaltung.html:26 core/templates/fw/dashboard.html:72
 #: core/templates/fw/dashboard.html:82 core/templates/fw/dashboard.html:183
 #: core/templates/fw/liegenschaften.html:60 core/views/fw/arbeit.py:42
-#: core/views/fw/dienstleister.py:60 core/views/fw/listen.py:1108
+#: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
+#: core/views/fw/listen.py:207 core/views/fw/listen.py:1108
 #: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
 msgid "Alle"
 msgstr "Tutti"
@@ -716,7 +936,8 @@ msgstr ""
 msgid "Für die Sammelzuordnung auswählen"
 msgstr "Selezionare per l'attribuzione cumulativa"
 
-#: core/templates/fw/bankabgleich.html:262 core/templates/fw/mwst.html:96
+#: core/templates/fw/bankabgleich.html:262
+#: core/templates/fw/mieterkonten.html:64 core/templates/fw/mwst.html:96
 msgid "Guthaben"
 msgstr "Credito"
 
@@ -761,20 +982,24 @@ msgstr "Scegliere una fattura aperta…"
 msgid "Offene Posten abgleichen"
 msgstr "Riconciliare le partite aperte"
 
-#: core/templates/fw/bankabgleich.html:346 core/templates/fw/zahllauf.html:67
+#: core/templates/fw/bankabgleich.html:346
+#: core/templates/fw/kreditoren.html:164 core/templates/fw/zahllauf.html:67
+#: core/views/fw/listen.py:56
 msgid "Fällig"
 msgstr "Scadenza"
 
-#: core/templates/fw/bankabgleich.html:347 core/templates/fw/mahnwesen.html:65
-#: core/templates/fw/mahnwesen.html:147 core/templates/fw/mietzins.html:58
+#: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
+#: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
+#: core/templates/fw/mieterkonten.html:46 core/templates/fw/mietzins.html:58
 #: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
 msgid "Mieter"
 msgstr "Inquilino"
 
-#: core/templates/fw/bankabgleich.html:348 core/templates/fw/mahnwesen.html:66
-#: core/templates/fw/mietzins.html:59 core/templates/fw/sollstellung.html:83
-#: core/templates/fw/vertraege.html:69 core/templates/fw/zahllauf.html:65
-#: core/templates/fw/zahllauf.html:148
+#: core/templates/fw/bankabgleich.html:348 core/templates/fw/debitoren.html:193
+#: core/templates/fw/kreditoren.html:162 core/templates/fw/mahnwesen.html:66
+#: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
+#: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
+#: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
 msgid "Objekt"
 msgstr "Oggetto"
 
@@ -782,9 +1007,11 @@ msgstr "Oggetto"
 msgid "QRR-Referenz"
 msgstr "Riferimento QRR"
 
-#: core/templates/fw/bankabgleich.html:350 core/templates/fw/laeufe.html:20
+#: core/templates/fw/bankabgleich.html:350 core/templates/fw/debitoren.html:196
+#: core/templates/fw/laeufe.html:20 core/templates/fw/lieferantenkonten.html:30
 #: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
 #: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
+#: core/views/fw/_basis.py:353
 msgid "Offen"
 msgstr "Aperto"
 
@@ -830,6 +1057,8 @@ msgid "Zahlung stornieren"
 msgstr "Stornare il pagamento"
 
 #: core/templates/fw/bankabgleich.html:417
+#: core/templates/fw/buchhaltung.html:346
+#: core/templates/fw/buchhaltung.html:410 core/templates/fw/debitoren.html:174
 msgid "Stornieren"
 msgstr "Stornare"
 
@@ -844,6 +1073,67 @@ msgstr ""
 "debitori 1100) e aggiorna lo stato della partita (aperta → parzialmente "
 "pagata → pagata). L'importazione degli estratti camt.053 attribuisce ora gli "
 "incassi automaticamente tramite il riferimento QRR."
+
+#: core/templates/fw/bankkonten.html:11
+msgid "Miet-, Verwaltungs- und Eigentümerkonten mit QR-IBAN-Erkennung"
+msgstr ""
+"Conti pigioni, amministrazione e proprietari con riconoscimento QR-IBAN"
+
+#: core/templates/fw/bankkonten.html:13
+msgid "IBAN wird bei der Liegenschaft erfasst"
+msgstr "L'IBAN si registra nello stabile"
+
+#: core/templates/fw/bankkonten.html:13
+msgid "Konto hinterlegen"
+msgstr "Inserire il conto"
+
+#: core/templates/fw/bankkonten.html:20
+msgid "Konten hinterlegt"
+msgstr "Conti inseriti"
+
+#: core/templates/fw/bankkonten.html:24
+msgid "QR-IBAN aktiv"
+msgstr "QR-IBAN attivo"
+
+#: core/templates/fw/bankkonten.html:28
+msgid "Liegenschaft ohne IBAN"
+msgstr "Stabile senza IBAN"
+
+#: core/templates/fw/bankkonten.html:45
+msgid "QR-IBAN"
+msgstr "QR-IBAN"
+
+#: core/templates/fw/bankkonten.html:56
+msgid "Bank nicht hinterlegt"
+msgstr "Banca non inserita"
+
+#: core/templates/fw/bankkonten.html:58
+msgid "Soll / Monat"
+msgstr "Dovuto / mese"
+
+#: core/templates/fw/bankkonten.html:65
+msgid "Liegenschaft ansehen"
+msgstr "Vedere lo stabile"
+
+#: core/templates/fw/bankkonten.html:72
+msgid "Noch keine Bankverbindung hinterlegt"
+msgstr "Ancora nessuna relazione bancaria inserita"
+
+#: core/templates/fw/bankkonten.html:73
+msgid ""
+"Erfasse die IBAN bei der Liegenschaft, damit QR-Rechnungen erzeugt werden "
+"können."
+msgstr "Inserisci l'IBAN nello stabile per poter generare fatture QR."
+
+#: core/templates/fw/bankkonten.html:80
+msgid ""
+"QR-IBAN wird an der Institut-ID (Stellen 5–9 im Bereich 30000–31999) erkannt "
+"— nur damit lassen sich QR-Rechnungen mit strukturierter Referenz (QRR) "
+"erzeugen. Der Bankabgleich baut auf diesen Konten auf."
+msgstr ""
+"Il QR-IBAN è riconosciuto dall'IID (posizioni 5–9 nell'intervallo 30000–"
+"31999) — solo con esso si possono generare fatture QR con riferimento "
+"strutturato (QRR). La riconciliazione bancaria si basa su questi conti."
 
 #: core/templates/fw/base.html:113
 msgid "Mandant"
@@ -929,6 +1219,351 @@ msgstr "Nessun risultato — ↵ cerca in dettaglio"
 msgid "Bereiche"
 msgstr "Aree"
 
+#: core/templates/fw/buchhaltung.html:10
+msgid "Buchung erfassen"
+msgstr "Registrare scrittura"
+
+#: core/templates/fw/buchhaltung.html:12
+msgid "Erfolgsrechnung, Bilanz und Buchungsjournal"
+msgstr "Conto economico, bilancio e giornale"
+
+#: core/templates/fw/buchhaltung.html:13 core/templates/fw/kontenplan.html:19
+#: core/templates/fw/kreditoren.html:25 core/templates/fw/mahnwesen.html:12
+#: core/templates/fw/nebenkosten.html:13 core/templates/fw/zahllauf.html:14
+msgid "gefiltert auf"
+msgstr "filtrato su"
+
+#: core/templates/fw/buchhaltung.html:18
+msgid "Geschäftsjahr"
+msgstr "Esercizio"
+
+#: core/templates/fw/buchhaltung.html:30
+msgid "Erfolgsrechnung & Bilanz (PDF)"
+msgstr "Conto economico & bilancio (PDF)"
+
+#: core/templates/fw/buchhaltung.html:32
+msgid "Journal-Export (CSV)"
+msgstr "Esportazione del giornale (CSV)"
+
+#: core/templates/fw/buchhaltung.html:38
+msgid "Manuelle Buchung (Soll an Haben)"
+msgstr "Registrazione manuale (dare a avere)"
+
+#: core/templates/fw/buchhaltung.html:44 core/templates/fw/debitoren.html:40
+#: core/templates/fw/hypotheken.html:32
+msgid "Betrag (CHF) *"
+msgstr "Importo (CHF) *"
+
+#: core/templates/fw/buchhaltung.html:46 core/templates/fw/kreditoren.html:52
+msgid "Liegenschaft (optional)"
+msgstr "Stabile (facoltativo)"
+
+#: core/templates/fw/buchhaltung.html:57
+msgid "Soll-Konto *"
+msgstr "Conto dare *"
+
+#: core/templates/fw/buchhaltung.html:59
+msgid "Nummer, z.B. 4000"
+msgstr "Numero, p. es. 4000"
+
+#: core/templates/fw/buchhaltung.html:61
+msgid "Haben-Konto *"
+msgstr "Conto avere *"
+
+#: core/templates/fw/buchhaltung.html:63
+msgid "Nummer, z.B. 1020"
+msgstr "Numero, p. es. 1020"
+
+#: core/templates/fw/buchhaltung.html:65
+msgid "Belegtext *"
+msgstr "Testo del giustificativo *"
+
+#: core/templates/fw/buchhaltung.html:68
+msgid "Buchen"
+msgstr "Registrare"
+
+#: core/templates/fw/buchhaltung.html:71
+msgid "Serienerfassung — Maske bleibt offen, Datum und Konten bleiben stehen"
+msgstr "Registrazione in serie — il modulo resta aperto, data e conti restano"
+
+#: core/templates/fw/buchhaltung.html:74
+msgid "Kontenplan verwalten"
+msgstr "Gestire il piano dei conti"
+
+#: core/templates/fw/buchhaltung.html:102
+#: core/templates/fw/buchhaltung.html:122 core/views/fw/buchhaltung.py:495
+msgid "Ertrag"
+msgstr "Ricavi"
+
+#: core/templates/fw/buchhaltung.html:106
+#: core/templates/fw/buchhaltung.html:146 core/views/fw/buchhaltung.py:495
+msgid "Aufwand"
+msgstr "Costi"
+
+#: core/templates/fw/buchhaltung.html:110
+msgid "Erfolg (Gewinn/Verlust)"
+msgstr "Risultato (utile/perdita)"
+
+#: core/templates/fw/buchhaltung.html:138
+msgid "Keine Ertragsbuchungen."
+msgstr "Nessuna registrazione di ricavi."
+
+#: core/templates/fw/buchhaltung.html:156
+msgid "Keine Aufwandbuchungen."
+msgstr "Nessuna registrazione di costi."
+
+#: core/templates/fw/buchhaltung.html:164
+msgid "Unternehmenserfolg"
+msgstr "Risultato d'esercizio"
+
+#: core/templates/fw/buchhaltung.html:166
+msgid "Gewinn"
+msgstr "Utile"
+
+#: core/templates/fw/buchhaltung.html:166
+msgid "Verlust"
+msgstr "Perdita"
+
+#: core/templates/fw/buchhaltung.html:177
+msgid "Aktiven"
+msgstr "Attivi"
+
+#: core/templates/fw/buchhaltung.html:187
+msgid "Keine Aktivkonten mit Saldo."
+msgstr "Nessun conto dell'attivo con saldo."
+
+#: core/templates/fw/buchhaltung.html:195
+msgid "Passiven & Eigenkapital"
+msgstr "Passivi & capitale proprio"
+
+#: core/templates/fw/buchhaltung.html:207
+msgid "Ergebnisvortrag (Vorjahre)"
+msgstr "Riporto utili/perdite (anni precedenti)"
+
+#: core/templates/fw/buchhaltung.html:212
+msgid "Jahresgewinn"
+msgstr "Utile d'esercizio"
+
+#: core/templates/fw/buchhaltung.html:212
+msgid "Jahresverlust"
+msgstr "Perdita d'esercizio"
+
+#: core/templates/fw/buchhaltung.html:220
+msgid "Bilanzsumme"
+msgstr "Totale di bilancio"
+
+#: core/templates/fw/buchhaltung.html:222
+#, python-format
+msgid "Aktiven = Passiven · CHF %(betrag)s"
+msgstr "Attivi = passivi · CHF %(betrag)s"
+
+#: core/templates/fw/buchhaltung.html:223
+#, python-format
+msgid "Differenz CHF %(betrag)s (Buchungen ausserhalb Kontenrahmen)"
+msgstr "Differenza CHF %(betrag)s (registrazioni fuori piano dei conti)"
+
+#: core/templates/fw/buchhaltung.html:227
+msgid ""
+"Bilanz kumulativ bis Jahresende (Bilanzkonten tragen Eröffnungssalden über). "
+"Das kumulierte Ergebnis (Vortrag + laufendes Jahr) wird dem Eigenkapital "
+"zugerechnet."
+msgstr ""
+"Bilancio cumulato fino a fine anno (i conti di bilancio riprendono i saldi "
+"d'apertura). Il risultato cumulato (riporto + anno in corso) è attribuito al "
+"capitale proprio."
+
+#: core/templates/fw/buchhaltung.html:233
+#, python-format
+msgid "Jahresabschluss %(jahr)s"
+msgstr "Chiusura annuale %(jahr)s"
+
+#: core/templates/fw/buchhaltung.html:236
+msgid ""
+"Erfolgskonten sind gegen «2970 Jahresergebnis» saldiert — die "
+"Abschlussbuchungen stehen im Journal und im Treuhand-Export."
+msgstr ""
+"I conti economici sono saldati contro «2970 Risultato d'esercizio» — le "
+"registrazioni di chiusura sono nel giornale e nell'esportazione per il "
+"fiduciario."
+
+#: core/templates/fw/buchhaltung.html:238
+msgid ""
+"Saldiert alle Erfolgskonten des Jahres gegen «2970 Jahresergebnis». Ohne "
+"diese Buchungen fehlen dem Treuhandbüro die Abschlusssätze im Journal-Export."
+msgstr ""
+"Salda tutti i conti economici dell'anno contro «2970 Risultato d'esercizio». "
+"Senza queste registrazioni il fiduciario non trova le scritture di chiusura "
+"nell'esportazione del giornale."
+
+#: core/templates/fw/buchhaltung.html:244 core/templates/fw/nebenkosten.html:48
+msgid "Abgeschlossen"
+msgstr "Chiusi"
+
+#: core/templates/fw/buchhaltung.html:246
+#, python-format
+msgid ""
+"Jahresabschluss %(jahr)s zurücknehmen? Alle Abschlussbuchungen werden "
+"storniert und das Jahr wieder geöffnet."
+msgstr ""
+"Annullare la chiusura annuale %(jahr)s? Tutte le registrazioni di chiusura "
+"vengono stornate e l'anno viene riaperto."
+
+#: core/templates/fw/buchhaltung.html:251
+msgid "Zurücknehmen"
+msgstr "Annullare"
+
+#: core/templates/fw/buchhaltung.html:257
+#, python-format
+msgid ""
+"Jahresabschluss %(jahr)s buchen? Alle Erfolgskonten werden gegen 2970 "
+"saldiert."
+msgstr ""
+"Registrare la chiusura annuale %(jahr)s? Tutti i conti economici vengono "
+"saldati contro 2970."
+
+#: core/templates/fw/buchhaltung.html:262
+msgid "Jahr abschliessen"
+msgstr "Chiudere l'anno"
+
+#: core/templates/fw/buchhaltung.html:278
+msgid "Text oder Beleg-Nr"
+msgstr "Testo o n. giustificativo"
+
+#: core/templates/fw/buchhaltung.html:279
+msgid "z.B. Hauswartung, 2024-0042"
+msgstr "p. es. custodia, 2024-0042"
+
+#: core/templates/fw/buchhaltung.html:283 core/templates/fw/kontenplan.html:84
+#: core/templates/fw/kreditoren.html:163 core/templates/fw/kreditoren.html:343
+msgid "Konto"
+msgstr "Conto"
+
+#: core/templates/fw/buchhaltung.html:292
+msgid "Bis"
+msgstr "Al"
+
+#: core/templates/fw/buchhaltung.html:296
+msgid "Filtern"
+msgstr "Filtrare"
+
+#: core/templates/fw/buchhaltung.html:302 core/templates/fw/dashboard.html:40
+#: core/templates/fw/dashboard.html:89 core/templates/fw/liegenschaften.html:97
+msgid "Filter aufheben"
+msgstr "Annullare il filtro"
+
+#: core/templates/fw/buchhaltung.html:321
+#: core/templates/fw/buchhaltung.html:381
+msgid "Storno"
+msgstr "Storno"
+
+#: core/templates/fw/buchhaltung.html:322
+#: core/templates/fw/buchhaltung.html:382
+msgid "storniert"
+msgstr "stornato"
+
+#: core/templates/fw/buchhaltung.html:327
+#, python-format
+msgid "%(soll)s an %(haben)s"
+msgstr "%(soll)s a %(haben)s"
+
+#: core/templates/fw/buchhaltung.html:336
+#: core/templates/fw/buchhaltung.html:338
+#: core/templates/fw/buchhaltung.html:368
+#: core/templates/fw/buchhaltung.html:398
+#: core/templates/fw/buchhaltung.html:401
+msgid "Beleg"
+msgstr "Giustificativo"
+
+#: core/templates/fw/buchhaltung.html:340
+#: core/templates/fw/buchhaltung.html:404
+msgid "Zahlung"
+msgstr "Pagamento"
+
+#: core/templates/fw/buchhaltung.html:344
+#: core/templates/fw/buchhaltung.html:408
+#, python-format
+msgid ""
+"Beleg #%(nr)s stornieren? Es wird eine Gegenbuchung erstellt (die "
+"Originalbuchung bleibt erhalten)."
+msgstr ""
+"Stornare il giustificativo n. %(nr)s? Viene creata una controregistrazione "
+"(la registrazione originale resta)."
+
+#: core/templates/fw/buchhaltung.html:353
+#: core/templates/fw/buchhaltung.html:417
+msgid "Keine Buchung passt zu diesem Filter."
+msgstr "Nessuna registrazione corrisponde a questo filtro."
+
+#: core/templates/fw/buchhaltung.html:353
+#: core/templates/fw/buchhaltung.html:417
+msgid "Noch keine Buchungen."
+msgstr "Ancora nessuna registrazione."
+
+#: core/templates/fw/buchhaltung.html:358
+#, python-format
+msgid "Summe (%(n)s)"
+msgstr "Totale (%(n)s)"
+
+#: core/templates/fw/buchhaltung.html:369 core/templates/fw/kontenplan.html:87
+msgid "Soll"
+msgstr "Dare"
+
+#: core/templates/fw/buchhaltung.html:370 core/templates/fw/kontenplan.html:88
+msgid "Haben"
+msgstr "Avere"
+
+#: core/templates/fw/buchhaltung.html:371 core/templates/fw/debitoren.html:195
+#: core/templates/fw/hypotheken.html:86 core/templates/fw/kautionen.html:26
+#: core/templates/fw/kreditoren.html:165 core/templates/fw/kreditoren.html:350
+msgid "Betrag"
+msgstr "Importo"
+
+#: core/templates/fw/buchhaltung.html:372
+msgid "Beleg-Nr"
+msgstr "N. giustificativo"
+
+#: core/templates/fw/buchhaltung.html:397
+msgid "Kreditorenrechnung öffnen"
+msgstr "Aprire la fattura creditore"
+
+#: core/templates/fw/buchhaltung.html:400
+msgid "Debitorenrechnung"
+msgstr "Fattura debitore"
+
+#: core/templates/fw/buchhaltung.html:403
+msgid "Zahlungseingang"
+msgstr "Incasso"
+
+#: core/templates/fw/buchhaltung.html:424
+#, python-format
+msgid "Summe (%(n)s Buchung)"
+msgid_plural "Summe (%(n)s Buchungen)"
+msgstr[0] "Totale (%(n)s registrazione)"
+msgstr[1] "Totale (%(n)s registrazioni)"
+
+#: core/templates/fw/buchhaltung.html:433 core/templates/fw/kreditoren.html:382
+#, python-format
+msgid "Seite %(seite)s von %(von)s"
+msgstr "Pagina %(seite)s di %(von)s"
+
+#: core/templates/fw/buchhaltung.html:433
+msgid ""
+"Stornieren erzeugt eine revisionssichere Gegenbuchung — die Originalbuchung "
+"bleibt erhalten (OR 958f)"
+msgstr ""
+"Lo storno crea una controregistrazione tracciabile — la registrazione "
+"originale resta (CO 958f)"
+
+#: core/templates/fw/buchhaltung.html:438 core/templates/fw/debitoren.html:268
+#: core/templates/fw/kreditoren.html:386
+msgid "‹ Zurück"
+msgstr "‹ Indietro"
+
+#: core/templates/fw/buchhaltung.html:442 core/templates/fw/debitoren.html:269
+#: core/templates/fw/kreditoren.html:390
+msgid "Weiter ›"
+msgstr "Avanti ›"
+
 #: core/templates/fw/dashboard.html:37
 #, python-format
 msgid "Vertretung für %(name)s bis %(bis)s"
@@ -938,11 +1573,6 @@ msgstr "Sostituzione di %(name)s fino al %(bis)s"
 #, python-format
 msgid "Gefiltert auf %(strasse)s, %(ort)s"
 msgstr "Filtrato su %(strasse)s, %(ort)s"
-
-#: core/templates/fw/dashboard.html:40 core/templates/fw/dashboard.html:89
-#: core/templates/fw/liegenschaften.html:97
-msgid "Filter aufheben"
-msgstr "Annullare il filtro"
 
 #: core/templates/fw/dashboard.html:70
 msgid "Zuständigkeit:"
@@ -1021,7 +1651,7 @@ msgstr "Questa settimana non scade nulla."
 msgid "Kein offener Vorgang."
 msgstr "Nessuna operazione aperta."
 
-#: core/templates/fw/dashboard.html:276
+#: core/templates/fw/dashboard.html:276 core/templates/fw/kreditoren.html:179
 msgid "nicht zugeordnet"
 msgstr "non assegnato"
 
@@ -1136,6 +1766,193 @@ msgstr "Gli indicatori tranquilli non compaiono qui."
 msgid "Alle Übersichten →"
 msgstr "Tutte le panoramiche →"
 
+#: core/templates/fw/debitoren.html:11
+msgid ""
+"Offene Posten aus Sollstellung und Weiterverrechnung (Sonnerie, Schlüssel, "
+"Ersatz …)"
+msgstr ""
+"Partite aperte da fatturazione delle pigioni e riaddebito (campanello, "
+"chiavi, sostituzione …)"
+
+#: core/templates/fw/debitoren.html:13 core/templates/fw/debitoren.html:49
+msgid "Rechnung erstellen"
+msgstr "Allestire fattura"
+
+#: core/templates/fw/debitoren.html:21
+msgid "Rechnung / Weiterverrechnung erstellen"
+msgstr "Allestire fattura / riaddebito"
+
+#: core/templates/fw/debitoren.html:24
+msgid "Schnellauswahl"
+msgstr "Selezione rapida"
+
+#: core/templates/fw/debitoren.html:25
+msgid "Sonnerie-Beschriftung"
+msgstr "Targhetta campanello"
+
+#: core/templates/fw/debitoren.html:26
+msgid "Briefkasten-Schild"
+msgstr "Targhetta bucalettere"
+
+#: core/templates/fw/debitoren.html:27
+msgid "Ersatzschlüssel"
+msgstr "Chiave sostitutiva"
+
+#: core/templates/fw/debitoren.html:28
+msgid "Zylinderwechsel"
+msgstr "Sostituzione del cilindro"
+
+#: core/templates/fw/debitoren.html:29
+msgid "Reinigung"
+msgstr "Pulizia"
+
+#: core/templates/fw/debitoren.html:30
+msgid "Schadenersatz"
+msgstr "Risarcimento danni"
+
+#: core/templates/fw/debitoren.html:38
+msgid "Titel *"
+msgstr "Titolo *"
+
+#: core/templates/fw/debitoren.html:39
+msgid "z.B. Sonnerie-Beschriftung"
+msgstr "p. es. targhetta campanello"
+
+#: core/templates/fw/debitoren.html:42
+msgid "Mieter / Vertrag"
+msgstr "Inquilino / contratto"
+
+#: core/templates/fw/debitoren.html:44
+msgid "ohne Vertrag"
+msgstr "senza contratto"
+
+#: core/templates/fw/debitoren.html:47
+msgid "Beschreibung"
+msgstr "Descrizione"
+
+#: core/templates/fw/debitoren.html:50
+msgid ""
+"Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugst du danach über den "
+"QR-Button in der Liste."
+msgstr ""
+"Registra debitore a ricavo (3000). La fattura QR la generi poi con il "
+"pulsante QR nella lista."
+
+#: core/templates/fw/debitoren.html:55
+msgid "Live-Vorschau"
+msgstr "Anteprima dal vivo"
+
+#: core/templates/fw/debitoren.html:103
+msgid "Total offen"
+msgstr "Totale aperto"
+
+#: core/templates/fw/debitoren.html:105
+msgid "aus Sollstellung + Weiterverrechnung"
+msgstr "da fatturazione pigioni + riaddebito"
+
+#: core/templates/fw/debitoren.html:110
+#: core/templates/fw/lieferantenkonten.html:28
+msgid "Rechnungen"
+msgstr "Fatture"
+
+#: core/templates/fw/debitoren.html:113
+msgid "Überfällig"
+msgstr "Scaduto"
+
+#: core/templates/fw/debitoren.html:115
+msgid "Mahnstufe aus Fälligkeit"
+msgstr "Livello di sollecito dalla scadenza"
+
+#: core/templates/fw/debitoren.html:133
+msgid "Mieter oder Titel suchen…"
+msgstr "Cerca inquilino o titolo…"
+
+#: core/templates/fw/debitoren.html:133
+msgid "Debitoren nach Mieter oder Titel durchsuchen"
+msgstr "Cercare i debitori per inquilino o titolo"
+
+#: core/templates/fw/debitoren.html:149
+#, python-format
+msgid "fällig %(datum)s"
+msgstr "scadenza %(datum)s"
+
+#: core/templates/fw/debitoren.html:156
+msgid "offen"
+msgstr "aperto"
+
+#: core/templates/fw/debitoren.html:161 core/templates/fw/debitoren.html:223
+msgid "Vertrag"
+msgstr "Contratto"
+
+#: core/templates/fw/debitoren.html:167 core/templates/fw/debitoren.html:229
+msgid "Abschreiben"
+msgstr "Stralciare"
+
+#: core/templates/fw/debitoren.html:171 core/templates/fw/debitoren.html:233
+#, python-format
+msgid ""
+"Rechnung «%(titel)s» stornieren? Sie wird revisionssicher mit Gegenbuchung "
+"aufgehoben."
+msgstr ""
+"Stornare la fattura «%(titel)s»? Viene annullata in modo tracciabile con "
+"controregistrazione."
+
+#: core/templates/fw/debitoren.html:191
+msgid "Fälligkeit"
+msgstr "Scadenza"
+
+#: core/templates/fw/debitoren.html:194 core/templates/fw/termine.html:23
+msgid "Titel"
+msgstr "Titolo"
+
+#: core/templates/fw/debitoren.html:197 core/templates/fw/kautionen.html:28
+#: core/templates/fw/kreditoren.html:166 core/templates/fw/mieterkonten.html:48
+#: core/templates/fw/nebenkosten.html:74 core/templates/fw/sollstellung.html:87
+#: core/templates/fw/vertraege.html:75
+msgid "Status"
+msgstr "Stato"
+
+#: core/templates/fw/debitoren.html:198
+msgid "Mahnstufe"
+msgstr "Livello di sollecito"
+
+#: core/templates/fw/debitoren.html:218
+#, python-format
+msgid "%(n)s Tag überfällig"
+msgid_plural "%(n)s Tage überfällig"
+msgstr[0] "%(n)s giorno di ritardo"
+msgstr[1] "%(n)s giorni di ritardo"
+
+#: core/templates/fw/debitoren.html:222
+msgid "QR-Rechnung als PDF"
+msgstr "Fattura QR in PDF"
+
+#: core/templates/fw/debitoren.html:223
+msgid "Ansehen"
+msgstr "Vedere"
+
+#: core/templates/fw/debitoren.html:229
+msgid "Als Debitorenverlust abschreiben (uneinbringlich)"
+msgstr "Stralciare come perdita su debitori (inesigibile)"
+
+#: core/templates/fw/debitoren.html:236
+msgid "Stornieren / löschen"
+msgstr "Stornare / eliminare"
+
+#: core/templates/fw/debitoren.html:251
+#, python-format
+msgid "Total (alle %(n)s)"
+msgstr "Totale (tutti i %(n)s)"
+
+#: core/templates/fw/debitoren.html:265
+#, python-format
+msgid "Seite %(seite)s/%(von)s"
+msgstr "Pagina %(seite)s/%(von)s"
+
+#: core/templates/fw/debitoren.html:265
+msgid "Mahnstufen werden aus der Fälligkeit berechnet"
+msgstr "I livelli di sollecito sono calcolati dalla scadenza"
+
 #: core/templates/fw/dienstleister.html:9
 msgid "Handwerker erfassen"
 msgstr "Registrare artigiano"
@@ -1235,7 +2052,8 @@ msgstr "Cerca ditta o contatto…"
 msgid "Dienstleister nach Firma oder Kontakt durchsuchen"
 msgstr "Cerca fornitori per ditta o contatto"
 
-#: core/templates/fw/dienstleister.html:75 core/templates/fw/mandate.html:36
+#: core/templates/fw/dienstleister.html:75
+#: core/templates/fw/kreditoren.html:242 core/templates/fw/mandate.html:36
 msgid "Bearbeiten"
 msgstr "Modifica"
 
@@ -1244,18 +2062,16 @@ msgstr "Modifica"
 msgid "Dienstleister «%(name)s» löschen?"
 msgstr "Eliminare il fornitore «%(name)s»?"
 
-#: core/templates/fw/dienstleister.html:77 core/templates/fw/mandate.html:42
-#: core/templates/fw/nebenkosten.html:98
+#: core/templates/fw/dienstleister.html:77
+#: core/templates/fw/hypotheken.html:115 core/templates/fw/kreditoren.html:245
+#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
 msgid "Löschen"
 msgstr "Elimina"
 
 #: core/templates/fw/dienstleister.html:106
+#: core/templates/fw/kreditoren.html:307
 msgid "Abbrechen"
 msgstr "Annulla"
-
-#: core/templates/fw/dienstleister.html:107 core/templates/fw/mwst.html:117
-msgid "Speichern"
-msgstr "Salva"
 
 #: core/templates/fw/dienstleister.html:116
 msgid "Keine Kontaktdaten hinterlegt"
@@ -1278,6 +2094,831 @@ msgstr "Nessun fornitore registrato"
 #: core/templates/fw/dienstleister.html:131
 msgid "Handwerker werden in der klassischen Ansicht erfasst."
 msgstr "Gli artigiani si registrano nella vista classica."
+
+#: core/templates/fw/finanzen.html:8
+msgid "Finanz-Cockpit"
+msgstr "Cockpit finanziario"
+
+#: core/templates/fw/finanzen.html:26
+msgid ""
+"Die Zahlen hinter den Finanzaufgaben — der Arbeitsvorrat steht auf <a "
+"href=\"/neu/\" class=\"fw-link\">Heute</a>."
+msgstr ""
+"I numeri dietro i compiti finanziari — il carico di lavoro si trova in <a "
+"href=\"/neu/\" class=\"fw-link\">Oggi</a>."
+
+#: core/templates/fw/finanzen.html:30
+msgid "offene Aufgaben"
+msgstr "compiti aperti"
+
+#: core/templates/fw/finanzen.html:30
+#, python-format
+msgid "%(n)s dringend"
+msgstr "%(n)s urgenti"
+
+#: core/templates/fw/finanzen.html:37
+msgid "Offene Forderungen"
+msgstr "Crediti aperti"
+
+#: core/templates/fw/finanzen.html:39
+#, python-format
+msgid "davon CHF %(betrag)s überfällig"
+msgstr "di cui CHF %(betrag)s scaduti"
+
+#: core/templates/fw/finanzen.html:42
+msgid "Zur Zahlung frei"
+msgstr "Pronto per il pagamento"
+
+#: core/templates/fw/finanzen.html:44
+#, python-format
+msgid "%(n)s in Zahlung (unbestätigt)"
+msgstr "%(n)s in pagamento (non confermato)"
+
+#: core/templates/fw/finanzen.html:47
+msgid "Durchlaufkonto 1190"
+msgstr "Conto transitorio 1190"
+
+#: core/templates/fw/finanzen.html:49
+msgid "geparkte Positionen klären"
+msgstr "chiarire le posizioni sospese"
+
+#: core/templates/fw/finanzen.html:49
+msgid "alles abgestimmt"
+msgstr "tutto riconciliato"
+
+#: core/templates/fw/finanzen.html:52 core/templates/fw/finanzen.html:93
+msgid "Periodenabschluss"
+msgstr "Chiusura del periodo"
+
+#: core/templates/fw/finanzen.html:54
+msgid "Pflichtschritte erledigt"
+msgstr "Passi obbligatori sbrigati"
+
+#: core/templates/fw/finanzen.html:72
+msgid "dringend"
+msgstr "urgente"
+
+#: core/templates/fw/finanzen.html:79 core/templates/fw/kreditoren.html:224
+msgid "erledigt"
+msgstr "sbrigato"
+
+#: core/templates/fw/finanzen.html:86
+msgid "Alle Finanzaufgaben erledigt — nichts offen."
+msgstr "Tutti i compiti finanziari sono sbrigati — nulla di aperto."
+
+#: core/templates/fw/finanzen.html:127
+msgid ""
+"Reihenfolge = empfohlener Ablauf. Grün = erledigt, gelb = offen, grau = "
+"manuell prüfen."
+msgstr ""
+"Ordine = sequenza consigliata. Verde = fatto, giallo = aperto, grigio = da "
+"verificare manualmente."
+
+#: core/templates/fw/finanzen.html:132
+msgid "Direkt zu"
+msgstr "Accesso diretto"
+
+#: core/templates/fw/finanzen.html:134 core/views/fw/buchhaltung.py:367
+msgid "Journal"
+msgstr "Giornale"
+
+#: core/templates/fw/finanzen.html:137
+msgid "Debitoren-Aging"
+msgstr "Anzianità dei debitori"
+
+#: core/templates/fw/finanzen.html:140
+msgid "Abschluss"
+msgstr "Chiusura"
+
+#: core/templates/fw/hypotheken.html:10
+msgid "Finanzierung je Liegenschaft — Schuld, Zinssatz und Fälligkeiten"
+msgstr "Finanziamento per stabile — debito, tasso d'interesse e scadenze"
+
+#: core/templates/fw/hypotheken.html:13 core/templates/fw/hypotheken.html:19
+msgid "Hypothek erfassen"
+msgstr "Registrare ipoteca"
+
+#: core/templates/fw/hypotheken.html:23 core/templates/fw/nebenkosten.html:21
+msgid "Liegenschaft *"
+msgstr "Stabile *"
+
+#: core/templates/fw/hypotheken.html:28
+msgid "Bank / Gläubiger"
+msgstr "Banca / creditore"
+
+#: core/templates/fw/hypotheken.html:30
+msgid "Bezeichnung / Tranche"
+msgstr "Designazione / tranche"
+
+#: core/templates/fw/hypotheken.html:34
+#, python-format
+msgid "Zinssatz (%%)"
+msgstr "Tasso d'interesse (%%)"
+
+#: core/templates/fw/hypotheken.html:36 core/templates/fw/hypotheken.html:85
+#: core/templates/fw/kontenplan.html:86 core/templates/fw/kontenplan.html:130
+msgid "Typ"
+msgstr "Tipo"
+
+#: core/templates/fw/hypotheken.html:38
+msgid "Festhypothek"
+msgstr "Ipoteca a tasso fisso"
+
+#: core/templates/fw/hypotheken.html:38
+msgid "SARON"
+msgstr "SARON"
+
+#: core/templates/fw/hypotheken.html:38
+msgid "Variabel"
+msgstr "Variabile"
+
+#: core/templates/fw/hypotheken.html:40 core/templates/fw/termine.html:29
+#: core/templates/fw/vertraege.html:70
+msgid "Beginn"
+msgstr "Inizio"
+
+#: core/templates/fw/hypotheken.html:42
+msgid "Ablauf / Fälligkeit"
+msgstr "Scadenza"
+
+#: core/templates/fw/hypotheken.html:52
+msgid "Hypothekarschuld"
+msgstr "Debito ipotecario"
+
+#: core/templates/fw/hypotheken.html:56
+msgid "Zinskosten / Jahr"
+msgstr "Costi per interessi / anno"
+
+#: core/templates/fw/hypotheken.html:60
+msgid "Ø Zinssatz"
+msgstr "Ø tasso d'interesse"
+
+#: core/templates/fw/hypotheken.html:64
+msgid "Bald fällig (180 T)"
+msgstr "In scadenza (180 g)"
+
+#: core/templates/fw/hypotheken.html:77
+#, python-format
+msgid "Zins %(betrag)s/J"
+msgstr "Interessi %(betrag)s/anno"
+
+#: core/templates/fw/hypotheken.html:78
+msgid "gegenüber Versicherungswert"
+msgstr "rispetto al valore assicurativo"
+
+#: core/templates/fw/hypotheken.html:78
+#, python-format
+msgid "Belehnung ~%(wert)s%%"
+msgstr "Grado di anticipo ~%(wert)s%%"
+
+#: core/templates/fw/hypotheken.html:84
+msgid "Bank / Tranche"
+msgstr "Banca / tranche"
+
+#: core/templates/fw/hypotheken.html:87
+msgid "Zinssatz"
+msgstr "Tasso d'interesse"
+
+#: core/templates/fw/hypotheken.html:88
+msgid "Zins / Jahr"
+msgstr "Interessi / anno"
+
+#: core/templates/fw/hypotheken.html:89
+msgid "Ablauf"
+msgstr "Scadenza"
+
+#: core/templates/fw/hypotheken.html:107
+msgid "bald fällig"
+msgstr "in scadenza"
+
+#: core/templates/fw/hypotheken.html:107
+msgid "abgelaufen"
+msgstr "scaduto"
+
+#: core/templates/fw/hypotheken.html:112
+msgid "Hypothek löschen?"
+msgstr "Eliminare l'ipoteca?"
+
+#: core/templates/fw/hypotheken.html:128
+msgid "Keine Hypotheken erfasst"
+msgstr "Nessuna ipoteca registrata"
+
+#: core/templates/fw/hypotheken.html:129
+msgid ""
+"Erfasse die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im "
+"Blick zu behalten."
+msgstr ""
+"Registra il finanziamento per stabile per tenere d'occhio costi per "
+"interessi e scadenze."
+
+#: core/templates/fw/hypotheken.html:134
+msgid ""
+"«Belehnung» ist eine grobe Kennzahl gegenüber dem Versicherungswert (nicht "
+"dem Verkehrswert). «Bald fällig» umfasst Tranchen mit Ablauf in den nächsten "
+"180 Tagen — rechtzeitig Refinanzierung/Verlängerung prüfen."
+msgstr ""
+"Il «grado di anticipo» è un indicatore approssimativo rispetto al valore "
+"assicurativo (non al valore venale). «In scadenza» comprende le tranche che "
+"scadono nei prossimi 180 giorni — verificare per tempo rifinanziamento/"
+"proroga."
+
+#: core/templates/fw/kautionen.html:8
+msgid "Mietzinsdepots"
+msgstr "Depositi di garanzia"
+
+#: core/templates/fw/kautionen.html:9
+msgid ""
+"Register aller Kautionen — separat geführt nach <b>Art. 257e OR</b> "
+"(Sperrkonto auf den Namen des Mieters)."
+msgstr ""
+"Registro di tutti i depositi di garanzia — tenuti separatamente secondo "
+"l'<b>art. 257e CO</b> (conto bloccato a nome dell'inquilino)."
+
+#: core/templates/fw/kautionen.html:15
+msgid "Depots"
+msgstr "Depositi"
+
+#: core/templates/fw/kautionen.html:17
+msgid "Einbezahlt / gehalten"
+msgstr "Versato / detenuto"
+
+#: core/templates/fw/kautionen.html:19
+msgid "Noch erwartet"
+msgstr "Ancora atteso"
+
+#: core/templates/fw/kautionen.html:26
+msgid "Mieter / Objekt"
+msgstr "Inquilino / oggetto"
+
+#: core/templates/fw/kautionen.html:27 core/templates/fw/termine.html:25
+msgid "Art"
+msgstr "Tipo"
+
+#: core/templates/fw/kautionen.html:27
+msgid "Sperrkonto / Police"
+msgstr "Conto bloccato / polizza"
+
+#: core/templates/fw/kautionen.html:27
+msgid "Seit"
+msgstr "Dal"
+
+#: core/templates/fw/kautionen.html:36
+msgid "Versicherung"
+msgstr "Assicurazione"
+
+#: core/templates/fw/kautionen.html:36
+msgid "Sperrkonto"
+msgstr "Conto bloccato"
+
+#: core/templates/fw/kautionen.html:40
+#, python-format
+msgid "Abzug CHF %(betrag)s"
+msgstr "Trattenuta CHF %(betrag)s"
+
+#: core/templates/fw/kautionen.html:43
+msgid "Keine Kautionen erfasst."
+msgstr "Nessun deposito di garanzia registrato."
+
+#: core/templates/fw/kontenplan.html:4 core/templates/fw/kontenplan.html:9
+msgid "Kontenplan & Saldenliste"
+msgstr "Piano dei conti & bilancio di verifica"
+
+#: core/templates/fw/kontenplan.html:18
+#, python-format
+msgid ""
+"Alle Konten mit Soll, Haben und Saldo für %(jahr)s — die Grundlage jedes "
+"Abschlusses."
+msgstr ""
+"Tutti i conti con dare, avere e saldo per %(jahr)s — la base di ogni "
+"chiusura."
+
+#: core/templates/fw/kontenplan.html:27
+msgid "Summe Soll"
+msgstr "Totale dare"
+
+#: core/templates/fw/kontenplan.html:31
+msgid "Summe Haben"
+msgstr "Totale avere"
+
+#: core/templates/fw/kontenplan.html:36
+msgid "Differenz — das Journal ist nicht ausgeglichen"
+msgstr "Differenza — il giornale non è in pareggio"
+
+#: core/templates/fw/kontenplan.html:36
+msgid "Soll = Haben"
+msgstr "Dare = avere"
+
+#: core/templates/fw/kontenplan.html:45
+msgid "Neues Konto"
+msgstr "Nuovo conto"
+
+#: core/templates/fw/kontenplan.html:49
+msgid "Konto anlegen"
+msgstr "Creare conto"
+
+#: core/templates/fw/kontenplan.html:53
+msgid "Nummer *"
+msgstr "Numero *"
+
+#: core/templates/fw/kontenplan.html:55 core/templates/fw/nebenkosten.html:26
+msgid "Bezeichnung *"
+msgstr "Designazione *"
+
+#: core/templates/fw/kontenplan.html:57
+msgid "Typ *"
+msgstr "Tipo *"
+
+#: core/templates/fw/kontenplan.html:61
+msgid "Verteilschlüssel"
+msgstr "Chiave di ripartizione"
+
+#: core/templates/fw/kontenplan.html:64
+msgid "pro Einheit"
+msgstr "per unità"
+
+#: core/templates/fw/kontenplan.html:69
+msgid "HNK-relevant (fliesst in die Nebenkostenabrechnung)"
+msgstr "Rilevante SA (confluisce nel conteggio delle spese accessorie)"
+
+#: core/templates/fw/kontenplan.html:72
+msgid "Anlegen"
+msgstr "Creare"
+
+#: core/templates/fw/kontenplan.html:89 core/templates/fw/mieterkonten.html:49
+msgid "Saldo"
+msgstr "Saldo"
+
+#: core/templates/fw/kontenplan.html:100 core/templates/fw/kontenplan.html:136
+#: core/templates/fw/kreditoren.html:184 core/templates/fw/kreditoren.html:330
+#: core/templates/fw/kreditoren.html:352
+msgid "HNK"
+msgstr "SA"
+
+#: core/templates/fw/kontenplan.html:111
+msgid "Konto bearbeiten"
+msgstr "Modificare il conto"
+
+#: core/templates/fw/kontenplan.html:139
+msgid ""
+"Die Kontonummer bleibt unveränderlich — sie steckt in Belegtexten und "
+"Exporten."
+msgstr ""
+"Il numero di conto resta immutabile — è contenuto nei testi dei "
+"giustificativi e nelle esportazioni."
+
+#: core/templates/fw/kontenplan.html:145
+msgid "Noch keine Konten."
+msgstr "Ancora nessun conto."
+
+#: core/templates/fw/kontenplan.html:150 core/templates/fw/sollstellung.html:86
+msgid "Total"
+msgstr "Totale"
+
+#: core/templates/fw/kontenplan.html:163
+msgid ""
+"Konten ohne Bewegung sind ausgegraut, bleiben aber sichtbar — anders als in "
+"Bilanz und Erfolgsrechnung, die nur bebuchte Konten zeigen. Klick auf die "
+"Nummer öffnet das Kontoblatt."
+msgstr ""
+"I conti senza movimenti sono in grigio ma restano visibili — diversamente da "
+"bilancio e conto economico, che mostrano solo i conti movimentati. Un clic "
+"sul numero apre la scheda del conto."
+
+#: core/templates/fw/kreditoren.html:11
+msgid "Rechnung erfassen"
+msgstr "Registrare fattura"
+
+#: core/templates/fw/kreditoren.html:13
+#: core/templates/fw/liegenschaften.html:16
+msgid "Mehr"
+msgstr "Altro"
+
+#: core/templates/fw/kreditoren.html:15
+msgid "Beleg scannen (KI)"
+msgstr "Scansionare giustificativo (IA)"
+
+#: core/templates/fw/kreditoren.html:18
+msgid "Auswählen, pain.001 erzeugen, Lauf sammelverbuchen"
+msgstr "Selezionare, generare pain.001, registrare il lotto"
+
+#: core/templates/fw/kreditoren.html:18
+#, python-format
+msgid "Zahllauf öffnen · %(n)s zahlbar"
+msgstr "Aprire gli ordini di pagamento · %(n)s pagabili"
+
+#: core/templates/fw/kreditoren.html:24
+msgid ""
+"Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann "
+"Kreditoren an Bank)"
+msgstr ""
+"Ricezione fattura → approvazione → pagamento (costi a creditori, poi "
+"creditori a banca)"
+
+#: core/templates/fw/kreditoren.html:30
+msgid "KI-Rechnungsscanner"
+msgstr "Scanner di fatture IA"
+
+#: core/templates/fw/kreditoren.html:31
+msgid ""
+"Belege (PDF oder Foto, <b>auch mehrere gleichzeitig</b>) hochladen — "
+"Lieferant, Betrag, Datum, IBAN und QR-Referenz werden automatisch ausgelesen "
+"und je Beleg eine Rechnung mit Status «Neu» angelegt. Zeile anklicken, um "
+"die Werte neben der Beleg-Vorschau zu prüfen/korrigieren, dann freigeben."
+msgstr ""
+"Caricare giustificativi (PDF o foto, <b>anche più insieme</b>) — fornitore, "
+"importo, data, IBAN e riferimento QR vengono letti automaticamente e per "
+"ogni giustificativo viene creata una fattura con stato «Nuovo». Cliccare "
+"sulla riga per verificare/correggere i valori accanto all'anteprima, poi "
+"approvare."
+
+#: core/templates/fw/kreditoren.html:36
+msgid "Rechnungen per E-Mail"
+msgstr "Fatture via e-mail"
+
+#: core/templates/fw/kreditoren.html:36
+#, python-format
+msgid ""
+"Handwerker/Lieferanten können ihre Rechnung direkt an <b>%(mail)s</b> senden "
+"— PDF-/Foto-Anhänge werden automatisch gescannt und erscheinen hier als "
+"Status «Neu»."
+msgstr ""
+"Artigiani/fornitori possono inviare la fattura direttamente a <b>%(mail)s</"
+"b> — gli allegati PDF/foto vengono scansionati automaticamente e compaiono "
+"qui con stato «Nuovo»."
+
+#: core/templates/fw/kreditoren.html:42
+msgid "KI nicht konfiguriert"
+msgstr "IA non configurata"
+
+#: core/templates/fw/kreditoren.html:42
+msgid ""
+"es läuft nur die regelbasierte Erkennung (IBAN/Betrag/Datum aus Text-PDFs; "
+"Foto-Belege werden nicht ausgelesen). Für die volle KI-Erkennung den "
+"<code>GROQ_API_KEY</code> unter <a href=\"/neu/integrationen/\" "
+"class=\"underline\">Integrationen</a> hinterlegen."
+msgstr ""
+"funziona solo il riconoscimento a regole (IBAN/importo/data da PDF di testo; "
+"le foto non vengono lette). Per il riconoscimento IA completo inserire la "
+"<code>GROQ_API_KEY</code> in <a href=\"/neu/integrationen/\" "
+"class=\"underline\">Integrazioni</a>."
+
+#: core/templates/fw/kreditoren.html:49
+msgid "Belege (PDF, JPG, PNG — Mehrfachauswahl möglich) *"
+msgstr "Giustificativi (PDF, JPG, PNG — selezione multipla possibile) *"
+
+#: core/templates/fw/kreditoren.html:54
+msgid "später zuordnen"
+msgstr "attribuire più tardi"
+
+#: core/templates/fw/kreditoren.html:58
+msgid "Hochladen & scannen"
+msgstr "Caricare & scansionare"
+
+#: core/templates/fw/kreditoren.html:70
+msgid "Kreditorenrechnung erfassen"
+msgstr "Registrare fattura creditore"
+
+#: core/templates/fw/kreditoren.html:74
+msgid "Lieferant *"
+msgstr "Fornitore *"
+
+#: core/templates/fw/kreditoren.html:76
+msgid "Betrag brutto (CHF) *"
+msgstr "Importo lordo (CHF) *"
+
+#: core/templates/fw/kreditoren.html:83 core/templates/fw/kreditoren.html:294
+msgid "Aufwandskonto"
+msgstr "Conto costi"
+
+#: core/templates/fw/kreditoren.html:85 core/templates/fw/kreditoren.html:296
+msgid "bei Freigabe wählen"
+msgstr "scegliere all'approvazione"
+
+#: core/templates/fw/kreditoren.html:88
+#, python-format
+msgid "MWST-Satz (%%)"
+msgstr "Aliquota IVA (%%)"
+
+#: core/templates/fw/kreditoren.html:89
+msgid "z.B. 8.1 (0 = keine)"
+msgstr "p. es. 8.1 (0 = nessuna)"
+
+#: core/templates/fw/kreditoren.html:90 core/templates/fw/kreditoren.html:277
+msgid "Rechnungsdatum"
+msgstr "Data fattura"
+
+#: core/templates/fw/kreditoren.html:92 core/templates/fw/kreditoren.html:279
+msgid "Fällig am"
+msgstr "Scadenza il"
+
+#: core/templates/fw/kreditoren.html:94 core/templates/fw/kreditoren.html:281
+msgid "Referenz"
+msgstr "Riferimento"
+
+#: core/templates/fw/kreditoren.html:96
+msgid "IBAN des Lieferanten"
+msgstr "IBAN del fornitore"
+
+#: core/templates/fw/kreditoren.html:97
+msgid "CH.."
+msgstr "CH.."
+
+#: core/templates/fw/kreditoren.html:98
+msgid "Ohne IBAN kann die Rechnung nicht in den Zahllauf."
+msgstr "Senza IBAN la fattura non può entrare negli ordini di pagamento."
+
+#: core/templates/fw/kreditoren.html:99 core/templates/fw/kreditoren.html:283
+msgid "Leistung von"
+msgstr "Prestazione dal"
+
+#: core/templates/fw/kreditoren.html:99
+msgid "(HNK-Periode)"
+msgstr "(periodo SA)"
+
+#: core/templates/fw/kreditoren.html:101 core/templates/fw/kreditoren.html:285
+msgid "Leistung bis"
+msgstr "Prestazione al"
+
+#: core/templates/fw/kreditoren.html:103
+msgid "Beleg (PDF/Bild)"
+msgstr "Giustificativo (PDF/immagine)"
+
+#: core/templates/fw/kreditoren.html:106 core/templates/fw/kreditoren.html:302
+msgid "In Nebenkostenabrechnung einbeziehen (HNK)"
+msgstr "Includere nel conteggio delle spese accessorie (SA)"
+
+#: core/templates/fw/kreditoren.html:107
+msgid ""
+"wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, "
+"Kehricht, Versicherung) automatisch gesetzt"
+msgstr ""
+"viene impostato automaticamente per un conto rilevante SA (riscaldamento, "
+"acqua, custodia, elettricità comune, rifiuti, assicurazione)"
+
+#: core/templates/fw/kreditoren.html:108
+msgid "Erfassen (Status: Neu)"
+msgstr "Registrare (stato: nuovo)"
+
+#: core/templates/fw/kreditoren.html:116
+msgid "Freigegeben, offen"
+msgstr "Approvato, aperto"
+
+#: core/templates/fw/kreditoren.html:120
+msgid "Neu / zu prüfen"
+msgstr "Nuovo / da verificare"
+
+#: core/templates/fw/kreditoren.html:124
+msgid "Rechnungen total"
+msgstr "Totale fatture"
+
+#: core/templates/fw/kreditoren.html:141
+msgid "Lieferant, Referenz, IBAN, Betrag …"
+msgstr "Fornitore, riferimento, IBAN, importo …"
+
+#: core/templates/fw/kreditoren.html:141
+msgid "Kreditoren durchsuchen (Lieferant, Referenz, IBAN, Betrag)"
+msgstr "Cercare i creditori (fornitore, riferimento, IBAN, importo)"
+
+#: core/templates/fw/kreditoren.html:143
+msgid "Sortierung"
+msgstr "Ordinamento"
+
+#: core/templates/fw/kreditoren.html:144
+msgid "Fällig ↑"
+msgstr "Scadenza ↑"
+
+#: core/templates/fw/kreditoren.html:145
+msgid "Fällig ↓"
+msgstr "Scadenza ↓"
+
+#: core/templates/fw/kreditoren.html:146
+msgid "Betrag ↓"
+msgstr "Importo ↓"
+
+#: core/templates/fw/kreditoren.html:147
+msgid "Betrag ↑"
+msgstr "Importo ↑"
+
+#: core/templates/fw/kreditoren.html:148
+msgid "Lieferant A–Z"
+msgstr "Fornitore A–Z"
+
+#: core/templates/fw/kreditoren.html:149
+msgid "Zuletzt erfasst"
+msgstr "Registrati di recente"
+
+#: core/templates/fw/kreditoren.html:151
+msgid "Suchen"
+msgstr "Cerca"
+
+#: core/templates/fw/kreditoren.html:153 core/templates/fw/kreditoren.html:382
+#, python-format
+msgid "%(n)s Rechnung"
+msgid_plural "%(n)s Rechnungen"
+msgstr[0] "%(n)s fattura"
+msgstr[1] "%(n)s fatture"
+
+#: core/templates/fw/kreditoren.html:161 core/templates/fw/kreditoren.html:273
+#: core/templates/fw/lieferantenkonten.html:27
+#: core/templates/fw/zahllauf.html:64 core/templates/fw/zahllauf.html:147
+msgid "Lieferant"
+msgstr "Fornitore"
+
+#: core/templates/fw/kreditoren.html:167 core/templates/fw/mahnwesen.html:70
+#: core/templates/fw/mietzins.html:64
+msgid "Aktion"
+msgstr "Azione"
+
+#: core/templates/fw/kreditoren.html:173
+msgid "Klicken zum Bearbeiten (mit Beleg-Vorschau)"
+msgstr "Cliccare per modificare (con anteprima del giustificativo)"
+
+#: core/templates/fw/kreditoren.html:184
+msgid ""
+"Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet"
+msgstr ""
+"Viene incluso nel conteggio delle spese accessorie e riaddebitato agli "
+"inquilini"
+
+#: core/templates/fw/kreditoren.html:190
+msgid "Beleg ansehen"
+msgstr "Vedere il giustificativo"
+
+#: core/templates/fw/kreditoren.html:192
+#, python-format
+msgid "Zahlung an %(name)s verbuchen?"
+msgstr "Registrare il pagamento a %(name)s?"
+
+#: core/templates/fw/kreditoren.html:197
+msgid "Betrag (Teilzahlung möglich)"
+msgstr "Importo (pagamento parziale possibile)"
+
+#: core/templates/fw/kreditoren.html:199
+msgid "Bestätigen"
+msgstr "Confermare"
+
+#: core/templates/fw/kreditoren.html:199
+msgid "Bezahlen"
+msgstr "Pagare"
+
+#: core/templates/fw/kreditoren.html:203
+msgid "Zahlung zurücksetzen — Rechnung kommt im nächsten Zahllauf wieder mit?"
+msgstr ""
+"Reimpostare il pagamento — la fattura rientra nel prossimo ordine di "
+"pagamento?"
+
+#: core/templates/fw/kreditoren.html:206
+msgid "Zahllauf zurücksetzen"
+msgstr "Reimpostare il pagamento"
+
+#: core/templates/fw/kreditoren.html:210
+msgid "Rechnung freigeben und als Aufwand verbuchen?"
+msgstr "Approvare la fattura e registrarla come costo?"
+
+#: core/templates/fw/kreditoren.html:215
+msgid "Aufwandskonto…"
+msgstr "Conto costi…"
+
+#: core/templates/fw/kreditoren.html:220 core/views/fw/dashboard.py:513
+msgid "Freigeben"
+msgstr "Approvare"
+
+#: core/templates/fw/kreditoren.html:227
+#, python-format
+msgid ""
+"Letzte Zahlung (CHF %(betrag)s) an %(name)s stornieren? Der offene Posten "
+"öffnet sich wieder."
+msgstr ""
+"Stornare l'ultimo pagamento (CHF %(betrag)s) a %(name)s? La partita aperta "
+"viene riaperta."
+
+#: core/templates/fw/kreditoren.html:230
+msgid "Letzte Zahlung stornieren"
+msgstr "Stornare l'ultimo pagamento"
+
+#: core/templates/fw/kreditoren.html:235 core/templates/fw/kreditoren.html:238
+#: core/views/fw/dashboard.py:527
+msgid "Weiterverrechnen"
+msgstr "Riaddebitare"
+
+#: core/templates/fw/kreditoren.html:237
+#, python-format
+msgid "Offen: CHF %(betrag)s"
+msgstr "Aperto: CHF %(betrag)s"
+
+#: core/templates/fw/kreditoren.html:243
+#, python-format
+msgid "Kreditorenrechnung «%(name)s» löschen? (nur solange nicht verbucht)"
+msgstr ""
+"Eliminare la fattura creditore «%(name)s»? (solo finché non registrata)"
+
+#: core/templates/fw/kreditoren.html:261
+msgid "Beleg-Vorschau"
+msgstr "Anteprima del giustificativo"
+
+#: core/templates/fw/kreditoren.html:267
+msgid "In neuem Tab öffnen"
+msgstr "Aprire in una nuova scheda"
+
+#: core/templates/fw/kreditoren.html:275
+msgid "Betrag brutto (CHF)"
+msgstr "Importo lordo (CHF)"
+
+#: core/templates/fw/kreditoren.html:283
+msgid "(HNK)"
+msgstr "(SA)"
+
+#: core/templates/fw/kreditoren.html:304
+msgid "bei NK-relevantem Konto automatisch aktiv"
+msgstr "attivo automaticamente per un conto rilevante SA"
+
+#: core/templates/fw/kreditoren.html:316
+msgid "Kostenaufteilung (optional)"
+msgstr "Ripartizione dei costi (facoltativa)"
+
+#: core/templates/fw/kreditoren.html:319
+#, python-format
+msgid "Summe CHF %(summe)s / %(betrag)s"
+msgstr "Totale CHF %(summe)s / %(betrag)s"
+
+#: core/templates/fw/kreditoren.html:320
+#, python-format
+msgid "Differenz CHF %(diff)s"
+msgstr "Differenza CHF %(diff)s"
+
+#: core/templates/fw/kreditoren.html:320
+msgid "✓ stimmt"
+msgstr "✓ concorda"
+
+#: core/templates/fw/kreditoren.html:332
+msgid "Position entfernen?"
+msgstr "Rimuovere la posizione?"
+
+#: core/templates/fw/kreditoren.html:333
+msgid "Entfernen"
+msgstr "Rimuovere"
+
+#: core/templates/fw/kreditoren.html:339
+msgid ""
+"Rechnung auf mehrere Konten/Objekte aufteilen (z.B. Sammelrechnung oder "
+"Unterhalt + HNK). Ohne Positionen wird das Aufwandskonto oben gebucht."
+msgstr ""
+"Ripartire la fattura su più conti/oggetti (p. es. fattura cumulativa o "
+"manutenzione + SA). Senza posizioni viene registrato il conto costi sopra."
+
+#: core/templates/fw/kreditoren.html:345
+msgid "Konto …"
+msgstr "Conto …"
+
+#: core/templates/fw/kreditoren.html:349
+msgid "optional"
+msgstr "facoltativo"
+
+#: core/templates/fw/kreditoren.html:352
+msgid ""
+"In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"
+msgstr ""
+"Includere nel conteggio delle spese accessorie — riaddebitato agli inquilini"
+
+#: core/templates/fw/kreditoren.html:353
+msgid "Position hinzufügen"
+msgstr "Aggiungere posizione"
+
+#: core/templates/fw/kreditoren.html:362
+msgid "Keine Kreditorenrechnungen"
+msgstr "Nessuna fattura creditore"
+
+#: core/templates/fw/kreditoren.html:363
+#, python-format
+msgid "Kein Treffer für «%(suche)s»."
+msgstr "Nessun risultato per «%(suche)s»."
+
+#: core/templates/fw/kreditoren.html:363
+msgid "Keine Rechnung in diesem Status."
+msgstr "Nessuna fattura in questo stato."
+
+#: core/templates/fw/kreditoren.html:363
+msgid ""
+"Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung "
+"manuell."
+msgstr ""
+"Carica sopra un giustificativo («Scansionare giustificativo») o registra la "
+"fattura manualmente."
+
+#: core/templates/fw/kreditoren.html:371
+msgid "Offen (freigegeben/in Zahlung, diese Seite)"
+msgstr "Aperto (approvato/in pagamento, questa pagina)"
+
+#: core/templates/fw/kreditoren.html:399
+msgid ""
+"«Bezahlen» bucht die Zahlung (Kreditoren 2000 an Bank 1020) und setzt den "
+"Status auf bezahlt. Der KI-Scanner liest hochgeladene Belege automatisch aus "
+"(Lieferant, Betrag, IBAN, QR-Referenz) — Werte vor der Freigabe prüfen."
+msgstr ""
+"«Pagare» registra il pagamento (creditori 2000 a banca 1020) e imposta lo "
+"stato su pagato. Lo scanner IA legge automaticamente i giustificativi "
+"caricati (fornitore, importo, IBAN, riferimento QR) — verificare i valori "
+"prima dell'approvazione."
 
 #: core/templates/fw/laeufe.html:9
 msgid "Wiederkehrende Verarbeitung mit Zustand — und dem, was sie blockiert."
@@ -1307,6 +2948,50 @@ msgstr "Conclusi di recente"
 msgid "Noch kein Lauf abgeschlossen."
 msgstr "Nessun processo ancora concluso."
 
+#: core/templates/fw/lieferantenkonten.html:9
+msgid ""
+"Pro Lieferant der offene Betrag aus allen Rechnungen und Zahlungen. Klick "
+"öffnet das Kontoblatt."
+msgstr ""
+"Per fornitore, l'importo aperto da tutte le fatture e i pagamenti. Un clic "
+"apre la scheda del conto."
+
+#: core/templates/fw/lieferantenkonten.html:13
+#, python-format
+msgid "offene Verbindlichkeiten · %(n)s Lieferant"
+msgid_plural "offene Verbindlichkeiten · %(n)s Lieferanten"
+msgstr[0] "debiti aperti · %(n)s fornitore"
+msgstr[1] "debiti aperti · %(n)s fornitori"
+
+#: core/templates/fw/lieferantenkonten.html:18
+#: core/templates/fw/mieterkonten.html:18
+#, python-format
+msgid "Alle (%(n)s)"
+msgstr "Tutti (%(n)s)"
+
+#: core/templates/fw/lieferantenkonten.html:19
+#: core/templates/fw/mieterkonten.html:19
+#, python-format
+msgid "Nur mit offenem Saldo (%(n)s)"
+msgstr "Solo con saldo aperto (%(n)s)"
+
+#: core/templates/fw/lieferantenkonten.html:29
+msgid "Volumen"
+msgstr "Volume"
+
+#: core/templates/fw/lieferantenkonten.html:41
+msgid "bezahlt"
+msgstr "pagato"
+
+#: core/templates/fw/lieferantenkonten.html:46
+msgid "Keine Lieferantenkonten"
+msgstr "Nessun conto fornitore"
+
+#: core/templates/fw/lieferantenkonten.html:46
+#: core/templates/fw/mieterkonten.html:70
+msgid "mit offenem Saldo"
+msgstr "con saldo aperto"
+
 #: core/templates/fw/liegenschaften.html:11
 #, python-format
 msgid "%(n)s Liegenschaft im Portfolio"
@@ -1321,10 +3006,6 @@ msgstr "filtrato"
 #: core/templates/fw/liegenschaften.html:14 core/templates/fw/objekte.html:108
 msgid "Liegenschaft erfassen"
 msgstr "Registrare stabile"
-
-#: core/templates/fw/liegenschaften.html:16
-msgid "Mehr"
-msgstr "Altro"
 
 #: core/templates/fw/liegenschaften.html:18
 msgid "Mieterspiegel (Rent Roll)"
@@ -1424,11 +3105,6 @@ msgstr ""
 "Crediti scaduti per livello di sollecito · generare il sollecito con fattura "
 "QR"
 
-#: core/templates/fw/mahnwesen.html:12 core/templates/fw/nebenkosten.html:13
-#: core/templates/fw/zahllauf.html:14
-msgid "gefiltert auf"
-msgstr "filtrato su"
-
 #: core/templates/fw/mahnwesen.html:14
 msgid "Altersstruktur (OP-Aging) ansehen"
 msgstr "Vedere l'anzianità delle partite (aging)"
@@ -1469,10 +3145,6 @@ msgstr "Scaduto dal"
 #: core/templates/fw/mahnwesen.html:68
 msgid "Tage"
 msgstr "Giorni"
-
-#: core/templates/fw/mahnwesen.html:70 core/templates/fw/mietzins.html:64
-msgid "Aktion"
-msgstr "Azione"
 
 #: core/templates/fw/mahnwesen.html:87
 #, python-format
@@ -1518,10 +3190,6 @@ msgstr ""
 #: core/templates/fw/mahnwesen.html:140
 msgid "Mahn-Historie"
 msgstr "Storico dei solleciti"
-
-#: core/templates/fw/mahnwesen.html:145
-msgid "Datum"
-msgstr "Data"
 
 #: core/templates/fw/mahnwesen.html:148
 msgid "Rechnung"
@@ -1606,6 +3274,50 @@ msgstr[1] ""
 #: core/templates/fw/mandate.html:47
 msgid "Noch keine Eigentümer erfasst."
 msgstr "Nessun proprietario registrato."
+
+#: core/templates/fw/mieterkonten.html:9
+msgid ""
+"Pro Mieter der aktuelle Saldo aus allen Forderungen und Zahlungen. Klick "
+"öffnet das Kontoblatt."
+msgstr ""
+"Per inquilino, il saldo attuale di tutti i crediti e pagamenti. Un clic apre "
+"la scheda del conto."
+
+#: core/templates/fw/mieterkonten.html:13
+#, python-format
+msgid "offene Forderungen · %(n)s Mieter"
+msgid_plural "offene Forderungen · %(n)s Mieter"
+msgstr[0] "crediti aperti · %(n)s inquilino"
+msgstr[1] "crediti aperti · %(n)s inquilini"
+
+#: core/templates/fw/mieterkonten.html:29 core/templates/fw/vertraege.html:32
+msgid "Mieter oder Objekt suchen…"
+msgstr "Cerca inquilino o oggetto…"
+
+#: core/templates/fw/mieterkonten.html:35
+#, python-format
+msgid "%(n)s Treffer für «%(q)s»"
+msgstr "%(n)s risultati per «%(q)s»"
+
+#: core/templates/fw/mieterkonten.html:37
+msgid "Suche aufheben"
+msgstr "Annullare la ricerca"
+
+#: core/templates/fw/mieterkonten.html:59
+msgid "aktiv"
+msgstr "attivo"
+
+#: core/templates/fw/mieterkonten.html:60
+msgid "beendet"
+msgstr "concluso"
+
+#: core/templates/fw/mieterkonten.html:65
+msgid "ausgeglichen"
+msgstr "saldato"
+
+#: core/templates/fw/mieterkonten.html:70
+msgid "Keine Mieterkonten"
+msgstr "Nessun conto inquilino"
 
 #: core/templates/fw/mietzins.html:11
 msgid "Anpassungspotenzial nach Referenzzins & LIK"
@@ -1886,14 +3598,6 @@ msgstr "Periodi di conteggio riscaldamento e spese accessorie"
 msgid "Neue Abrechnungsperiode"
 msgstr "Nuovo periodo di conteggio"
 
-#: core/templates/fw/nebenkosten.html:21
-msgid "Liegenschaft *"
-msgstr "Stabile *"
-
-#: core/templates/fw/nebenkosten.html:26
-msgid "Bezeichnung *"
-msgstr "Designazione *"
-
 #: core/templates/fw/nebenkosten.html:27
 msgid "z.B. Heizperiode 2025/2026"
 msgstr "p. es. periodo di riscaldamento 2025/2026"
@@ -1914,10 +3618,6 @@ msgstr "Costi dei periodi aperti"
 msgid "Offene Perioden"
 msgstr "Periodi aperti"
 
-#: core/templates/fw/nebenkosten.html:48
-msgid "Abgeschlossen"
-msgstr "Chiusi"
-
 #: core/templates/fw/nebenkosten.html:62
 #, python-format
 msgid "%(n)s Periode"
@@ -1936,11 +3636,6 @@ msgstr "Giustificativi"
 #: core/templates/fw/nebenkosten.html:73
 msgid "Total Kosten"
 msgstr "Totale costi"
-
-#: core/templates/fw/nebenkosten.html:74 core/templates/fw/sollstellung.html:87
-#: core/templates/fw/vertraege.html:75
-msgid "Status"
-msgstr "Stato"
 
 #: core/templates/fw/nebenkosten.html:92
 msgid "● Abgeschlossen"
@@ -2175,10 +3870,6 @@ msgstr "Anteprima — %(monat)s %(jahr)s"
 msgid "Netto"
 msgstr "Netto"
 
-#: core/templates/fw/sollstellung.html:86
-msgid "Total"
-msgstr "Totale"
-
 #: core/templates/fw/sollstellung.html:97
 #, python-format
 msgid "Teilmonat: %(tage)s von %(monat)s Tagen"
@@ -2226,21 +3917,9 @@ msgstr "Prossimi appuntamenti"
 msgid "Termin erfassen"
 msgstr "Registrare un appuntamento"
 
-#: core/templates/fw/termine.html:23
-msgid "Titel"
-msgstr "Titolo"
-
 #: core/templates/fw/termine.html:24
 msgid "z.B. Wohnungsabnahme Blaser"
 msgstr "p.es. riconsegna Blaser"
-
-#: core/templates/fw/termine.html:25
-msgid "Art"
-msgstr "Tipo"
-
-#: core/templates/fw/termine.html:29 core/templates/fw/vertraege.html:70
-msgid "Beginn"
-msgstr "Inizio"
 
 #: core/templates/fw/termine.html:31
 msgid "Dauer (Minuten)"
@@ -2281,10 +3960,6 @@ msgstr[1] "%(n)s attivi"
 #: core/templates/fw/vertraege.html:16
 msgid "Vertrag erstellen"
 msgstr "Allestire contratto"
-
-#: core/templates/fw/vertraege.html:32
-msgid "Mieter oder Objekt suchen…"
-msgstr "Cerca inquilino o oggetto…"
 
 #: core/templates/fw/vertraege.html:47
 #, python-format
@@ -2384,10 +4059,6 @@ msgstr "Proposta di pagamento (approvata)"
 #: core/templates/fw/zahllauf.html:54
 msgid "Ausführungsdatum"
 msgstr "Data di esecuzione"
-
-#: core/templates/fw/zahllauf.html:64 core/templates/fw/zahllauf.html:147
-msgid "Lieferant"
-msgstr "Fornitore"
 
 #: core/templates/fw/zahllauf.html:76
 msgid "Ohne IBAN nicht zahlbar"
@@ -2525,6 +4196,18 @@ msgstr "Concluso"
 msgid "Archiviert"
 msgstr "Archiviato"
 
+#: core/views/fw/_basis.py:354 core/views/fw/kreditoren.py:39
+msgid "Teilbezahlt"
+msgstr "Parzialmente pagato"
+
+#: core/views/fw/_basis.py:356 core/views/fw/kreditoren.py:41
+msgid "Storniert"
+msgstr "Stornato"
+
+#: core/views/fw/_basis.py:357
+msgid "Abgeschrieben"
+msgstr "Stralciato"
+
 #: core/views/fw/arbeit.py:39
 msgid "Diese Woche"
 msgstr "Questa settimana"
@@ -2536,6 +4219,58 @@ msgstr "In attesa di terzi"
 #: core/views/fw/arbeit.py:41
 msgid "Liegengeblieben"
 msgstr "In sospeso"
+
+#: core/views/fw/buchhaltung.py:365
+msgid "Erfolgsrechnung"
+msgstr "Conto economico"
+
+#: core/views/fw/buchhaltung.py:366 core/views/fw/buchhaltung.py:494
+msgid "Bilanz"
+msgstr "Bilancio"
+
+#: core/views/fw/buchhaltung.py:494
+msgid "Aktivum"
+msgstr "Attivo"
+
+#: core/views/fw/buchhaltung.py:494
+msgid "Passivum / Eigenkapital"
+msgstr "Passivo / capitale proprio"
+
+#: core/views/fw/dashboard.py:511
+msgid "Eingangsrechnungen freigeben"
+msgstr "Approvare le fatture in entrata"
+
+#: core/views/fw/dashboard.py:512
+msgid "Neu erfasste Kreditoren prüfen & freigeben"
+msgstr "Verificare & approvare i nuovi creditori"
+
+#: core/views/fw/dashboard.py:525
+msgid "Weiterverrechnungen abschliessen"
+msgstr "Completare i riaddebiti"
+
+#: core/views/fw/dashboard.py:526
+msgid "Angefangene Weiterverrechnungen an Mieter fertigstellen"
+msgstr "Completare i riaddebiti agli inquilini iniziati"
+
+#: core/views/fw/dashboard.py:529
+msgid "Kautionen freigeben"
+msgstr "Liberare i depositi di garanzia"
+
+#: core/views/fw/dashboard.py:530
+msgid "Rückzahlungsfristen nach Auszug (Art. 257e)"
+msgstr "Termini di restituzione dopo la partenza (art. 257e CO)"
+
+#: core/views/fw/kreditoren.py:36
+msgid "Neu / Prüfen"
+msgstr "Nuovo / verificare"
+
+#: core/views/fw/kreditoren.py:37
+msgid "Freigegeben"
+msgstr "Approvato"
+
+#: core/views/fw/kreditoren.py:38
+msgid "In Zahlung"
+msgstr "In pagamento"
 
 #: core/views/fw/listen.py:1108
 msgid "Wohnen"
@@ -2597,9 +4332,6 @@ msgstr "Tutti i livelli"
 #~ msgid "liegengeblieben"
 #~ msgstr "in sospeso"
 
-#~ msgid "Schritte erledigt"
-#~ msgstr "Fasi completate"
-
 #~ msgid "Nächster Schritt"
 #~ msgstr "Prossima fase"
 
@@ -2636,14 +4368,8 @@ msgstr "Tutti i livelli"
 #~ msgid "Satz CHF/h"
 #~ msgstr "Tasso CHF/h"
 
-#~ msgid "separat verrechenbar"
-#~ msgstr "fatturato separatamente"
-
 #~ msgid "Zum nächsten Schritt →"
 #~ msgstr "Alla prossima fase →"
-
-#~ msgid "optional"
-#~ msgstr "facoltativo"
 
 #~ msgid "Seit %(tage)s Tagen keine Bewegung"
 #~ msgstr "Nessun movimento da %(tage)s giorni"
@@ -2663,9 +4389,6 @@ msgstr "Tutti i livelli"
 #~ msgid "Frist %(frist)s"
 #~ msgstr "Scadenza %(frist)s"
 
-#~ msgid "Lauf"
-#~ msgstr "Processo"
-
 #~ msgid "Zum Lauf"
 #~ msgstr "Al processo"
 
@@ -2677,9 +4400,6 @@ msgstr "Tutti i livelli"
 
 #~ msgid "Termin"
 #~ msgstr "Appuntamento"
-
-#~ msgid "Freigeben"
-#~ msgstr "Approvare"
 
 #~ msgid "Entscheiden"
 #~ msgstr "Decidere"

@@ -1,22 +1,22 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Lieferantenkonten — swissImmo{% endblock %}
+{% block title %}{% trans "Lieferantenkonten" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Lieferantenkonten</h1>
-        <p>Pro Lieferant der offene Betrag aus allen Rechnungen und Zahlungen. Klick öffnet das Kontoblatt.{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
+        <h1>{% trans "Lieferantenkonten" %}</h1>
+        <p>{% trans "Pro Lieferant der offene Betrag aus allen Rechnungen und Zahlungen. Klick öffnet das Kontoblatt." %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
     <div style="text-align:right">
         <div class="fw-num" style="font-size:28px;font-weight:800;letter-spacing:-.02em;color:{% if total_offen %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">CHF {{ total_offen|chf }}</div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600">offene Verbindlichkeiten · {{ offen_n }} Lieferanten</div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600">{% blocktrans count n=offen_n %}offene Verbindlichkeiten · {{ n }} Lieferant{% plural %}offene Verbindlichkeiten · {{ n }} Lieferanten{% endblocktrans %}</div>
     </div>
 </div>
 
 <div class="flex items-center gap-2 my-4">
-    <a href="/neu/lieferantenkonten/{{ lg_query }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if not filter_op %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">Alle ({{ anzahl }})</a>
-    <a href="/neu/lieferantenkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if filter_op %}fw-krit-voll text-white{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-krit{% endif %}">Nur mit offenem Saldo ({{ offen_n }})</a>
+    <a href="/neu/lieferantenkonten/{{ lg_query }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if not filter_op %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% blocktrans with n=anzahl %}Alle ({{ n }}){% endblocktrans %}</a>
+    <a href="/neu/lieferantenkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if filter_op %}fw-krit-voll text-white{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-krit{% endif %}">{% blocktrans with n=offen_n %}Nur mit offenem Saldo ({{ n }}){% endblocktrans %}</a>
 </div>
 
 <div class="fw-card overflow-hidden">
@@ -24,10 +24,10 @@
 <table class="w-full min-w-max text-sm">
         <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">Lieferant</th>
-                <th class="px-5 py-3 font-semibold text-center">Rechnungen</th>
-                <th class="px-5 py-3 font-semibold text-right">Volumen</th>
-                <th class="px-5 py-3 font-semibold text-right">Offen</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Lieferant" %}</th>
+                <th class="px-5 py-3 font-semibold text-center">{% trans "Rechnungen" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Volumen" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Offen" %}</th>
                 <th class="px-5 py-3"></th>
             </tr>
         </thead>
@@ -38,12 +38,12 @@
                 <td class="px-5 py-3 text-center fw-mutet">{{ g.anzahl }}</td>
                 <td class="px-5 py-3 text-right tabular-nums fw-mutet">CHF {{ g.volumen|chf }}</td>
                 <td class="px-5 py-3 text-right tabular-nums font-semibold {% if g.offen > 0 %}fw-kritisch{% else %}fw-faint{% endif %}">
-                    {% if g.offen > 0 %}CHF {{ g.offen|chf }}{% else %}bezahlt{% endif %}
+                    {% if g.offen > 0 %}CHF {{ g.offen|chf }}{% else %}{% trans "bezahlt" %}{% endif %}
                 </td>
                 <td class="px-5 py-3 text-right">{% zeichen 'weiter' klasse='text-[10px] fw-faint' %}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">Keine Lieferantenkonten{% if filter_op %} mit offenem Saldo{% endif %}.</td></tr>
+            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">{% trans "Keine Lieferantenkonten" %}{% if filter_op %} {% trans "mit offenem Saldo" %}{% endif %}.</td></tr>
         {% endfor %}
         </tbody>
     </table>

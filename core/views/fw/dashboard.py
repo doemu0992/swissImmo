@@ -508,9 +508,9 @@ def fw_finanzen(request):
     }
     _korb = [
         # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)
-        ('freigabe', 'freigeben', 'amber', 'Eingangsrechnungen freigeben',
-         'Neu erfasste Kreditoren prüfen & freigeben',
-         len(zur_freigabe), _chf(zur_freigabe, 'betrag'), '/neu/kreditoren/', 'Freigeben', False),
+        ('freigabe', 'freigeben', 'amber', _('Eingangsrechnungen freigeben'),
+         _('Neu erfasste Kreditoren prüfen & freigeben'),
+         len(zur_freigabe), _chf(zur_freigabe, 'betrag'), '/neu/kreditoren/', _('Freigeben'), False),
         # DER ZAHLLAUF STEHT NICHT MEHR HIER.
         #
         # Er ist ein LAUF (`laeufe_planen` legt ihn als `zahllauf` an,
@@ -522,13 +522,13 @@ def fw_finanzen(request):
         # sie werden nicht kopiert. Der Korb behält die Handlungen, die keine
         # Läufe sind (freigeben, weiterverrechnen, Kautionen); die Läufe
         # stehen im Periodenabschluss und im Bereich «Läufe».
-        ('weiterverrechnung', 'weiterverrechnen', 'violet', 'Weiterverrechnungen abschliessen',
-         'Angefangene Weiterverrechnungen an Mieter fertigstellen',
-         len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', 'Weiterverrechnen', False),
+        ('weiterverrechnung', 'weiterverrechnen', 'violet', _('Weiterverrechnungen abschliessen'),
+         _('Angefangene Weiterverrechnungen an Mieter fertigstellen'),
+         len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', _('Weiterverrechnen'), False),
         # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)
-        ('kaution', 'gesperrt', 'teal', 'Kautionen freigeben',
-         'Rückzahlungsfristen nach Auszug (Art. 257e)',
-         kaut_offen, None, '/neu/kautionen/', 'Kautionen', kaut_faellig > 0),
+        ('kaution', 'gesperrt', 'teal', _('Kautionen freigeben'),
+         _('Rückzahlungsfristen nach Auszug (Art. 257e)'),
+         kaut_offen, None, '/neu/kautionen/', _('Kautionen'), kaut_faellig > 0),
     ]
     arbeitskorb = [{
         'key': k, 'icon': ic, 'icon_cls': P[f][0], 'btn_cls': P[f][1],

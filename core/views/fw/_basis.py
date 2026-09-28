@@ -350,11 +350,11 @@ VERTRAG_PILL = {
 # VERTRAG_PILL hatte letztere die schliessende Klammer abgeschnitten, weil
 # sie bei einem mehrzeiligen Literal selbst in Spalte 0 steht.
 STATUS_PILL = {
-    'offen':       ('Offen',       'fw-warn-flaeche fw-warnton'),
-    'teilbezahlt': ('Teilbezahlt', 'fw-info-flaeche fw-info'),
-    'bezahlt':     ('Bezahlt',     'fw-gut-flaeche fw-gut'),
-    'storniert':   ('Storniert',   'fw-flaeche2 fw-mutet'),
-    'abgeschrieben': ('Abgeschrieben', 'fw-flaeche2 fw-mutet'),
+    'offen':       (gettext_lazy('Offen'),       'fw-warn-flaeche fw-warnton'),
+    'teilbezahlt': (gettext_lazy('Teilbezahlt'), 'fw-info-flaeche fw-info'),
+    'bezahlt':     (gettext_lazy('Bezahlt'),     'fw-gut-flaeche fw-gut'),
+    'storniert':   (gettext_lazy('Storniert'),   'fw-flaeche2 fw-mutet'),
+    'abgeschrieben': (gettext_lazy('Abgeschrieben'), 'fw-flaeche2 fw-mutet'),
 }
 
 

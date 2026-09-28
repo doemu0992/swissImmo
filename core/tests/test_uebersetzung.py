@@ -81,6 +81,19 @@ UEBERSETZT = (
     'fw/nebenkosten.html',
     'fw/mietzins.html',
     'fw/mwst.html',
+    # Tranche «Finanzen»
+    'fw/finanzen.html',
+    'fw/mieterkonten.html',
+    'fw/debitoren.html',
+    'fw/kautionen.html',
+    'fw/kreditoren.html',
+    'fw/lieferantenkonten.html',
+    'fw/bankkonten.html',
+    'fw/buchhaltung.html',
+    'fw/kontenplan.html',
+    'fw/anlagen.html',
+    'fw/hypotheken.html',
+    'fw/_bezahlt_leer.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -134,6 +147,15 @@ STICHPROBE = {
                            'it': "Debito fiscale verso l'AFC", 'en': 'Payable to the FTA'},
     'Senkungsanspruch':   {'de': 'Senkungsanspruch', 'fr': 'Droit à une baisse',
                            'it': 'Diritto a una riduzione', 'en': 'Entitled to reduction'},
+    # Finanzen — Buchhaltungsbegriffe CH
+    'Soll':               {'de': 'Soll', 'fr': 'Débit', 'it': 'Dare', 'en': 'Debit'},
+    'Haben':              {'de': 'Haben', 'fr': 'Crédit', 'it': 'Avere', 'en': 'Credit'},
+    'Buchwert':           {'de': 'Buchwert', 'fr': 'Valeur comptable', 'it': 'Valore contabile',
+                           'en': 'Book value'},
+    'Mietzinsdepots':     {'de': 'Mietzinsdepots', 'fr': 'Garanties de loyer',
+                           'it': 'Depositi di garanzia', 'en': 'Rent deposits'},
+    'Festhypothek':       {'de': 'Festhypothek', 'fr': 'Hypothèque à taux fixe',
+                           'it': 'Ipoteca a tasso fisso', 'en': 'Fixed-rate mortgage'},
 }
 
 
