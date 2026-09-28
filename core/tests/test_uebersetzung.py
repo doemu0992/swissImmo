@@ -144,6 +144,10 @@ UEBERSETZT = (
     'core/passwort_reset_done.html',
     'core/_passwort_shell_top.html',
     'core/_passwort_shell_bottom.html',
+    # Tranche «Portale» (Teil B: Eigentümerportal, Anmeldung)
+    'core/portal.html',
+    'core/portal_login.html',
+    'core/login.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -227,6 +231,10 @@ STICHPROBE = {
                            'it': 'Deposito di garanzia', 'en': 'Rent deposit'},
     'Schaden melden':     {'de': 'Schaden melden', 'fr': 'Signaler un dégât',
                            'it': 'Segnalare un danno', 'en': 'Report damage'},
+    'Reparaturen zur Freigabe': {'de': 'Reparaturen zur Freigabe', 'fr': 'Réparations à approuver',
+                           'it': 'Riparazioni da approvare', 'en': 'Repairs awaiting approval'},
+    'Willkommen zurück':  {'de': 'Willkommen zurück', 'fr': 'Bon retour',
+                           'it': 'Bentornato/a', 'en': 'Welcome back'},
 }
 
 

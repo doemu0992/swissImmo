@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 23:40+0200\n"
+"POT-Creation-Date: 2026-09-28 23:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,7 +55,8 @@ msgstr "Files"
 msgid "Mandate"
 msgstr "Mandates"
 
-#: core/navigation.py:137 core/templates/fw/liegenschaften.html:4
+#: core/navigation.py:137 core/templates/core/portal.html:251
+#: core/templates/fw/liegenschaften.html:4
 #: core/templates/fw/liegenschaften.html:10
 #: core/templates/fw/liegenschaften.html:38
 msgid "Liegenschaften"
@@ -237,7 +238,8 @@ msgstr "Analysis"
 #: core/navigation.py:217 core/templates/core/_mieter_nav.html:12
 #: core/templates/core/mieter_dokumente.html:5
 #: core/templates/core/mieter_dokumente.html:10
-#: core/templates/core/mieter_portal.html:73 core/templates/fw/base.html:219
+#: core/templates/core/mieter_portal.html:73
+#: core/templates/core/portal.html:327 core/templates/fw/base.html:219
 msgid "Dokumente"
 msgstr "Documents"
 
@@ -414,12 +416,80 @@ msgid "Passwort | SwissImmo Portal"
 msgstr "Password | SwissImmo portal"
 
 #: core/templates/core/_passwort_shell_top.html:18
+#: core/templates/core/login.html:187
 #: core/templates/core/mieter_passwort.html:5
+#: core/templates/core/portal_login.html:189
 #: core/templates/core/postfach_form.html:85
 #: core/templates/core/zweifaktor_uebersicht.html:72
 #: core/templates/fw/benutzer_form.html:32
 msgid "Passwort"
 msgstr "Password"
+
+#: core/templates/core/login.html:6
+msgid "Login | SwissImmo Portal"
+msgstr "Login | SwissImmo portal"
+
+#: core/templates/core/login.html:146
+msgid "Ihre Liegenschaften, sauber im Griff."
+msgstr "Your properties, neatly in hand."
+
+#: core/templates/core/login.html:147
+msgid ""
+"Mieten, Nebenkosten, Buchhaltung und Kommunikation — die Schweizer "
+"Liegenschaftsverwaltung in einem Cockpit."
+msgstr "Rents, service charges, accounting and communication — Swiss property management in one cockpit."
+
+#: core/templates/core/login.html:149
+msgid "QR-Rechnungen &amp; automatischer Bankabgleich"
+msgstr "QR bills &amp; automatic bank reconciliation"
+
+#: core/templates/core/login.html:150
+msgid "Nebenkostenabrechnung nach VMWG"
+msgstr "Service charge statement under the VMWG"
+
+#: core/templates/core/login.html:151
+msgid "Eigentümer- &amp; Mieterportal inklusive"
+msgstr "Owner &amp; tenant portals included"
+
+#: core/templates/core/login.html:154
+msgid "© swissImmo · Alle Angaben ohne Gewähr"
+msgstr "© swissImmo · All information without guarantee"
+
+#: core/templates/core/login.html:164 core/templates/core/portal_login.html:166
+msgid "Willkommen zurück"
+msgstr "Welcome back"
+
+#: core/templates/core/login.html:165
+msgid "Melden Sie sich im Verwaltungs-Cockpit an."
+msgstr "Sign in to the management cockpit."
+
+#: core/templates/core/login.html:177 core/templates/core/portal_login.html:179
+msgid "Benutzername"
+msgstr "Username"
+
+#: core/templates/core/login.html:182
+msgid "Ihr Benutzername"
+msgstr "Your username"
+
+#: core/templates/core/login.html:196 core/templates/core/passwort_reset.html:2
+msgid "Passwort vergessen?"
+msgstr "Forgot password?"
+
+#: core/templates/core/login.html:198 core/templates/core/portal_login.html:202
+msgid "Anmelden"
+msgstr "Sign in"
+
+#: core/templates/core/login.html:206
+#, python-format
+msgid ""
+"<b>Mieterin, Mieter oder Eigentümer?</b> Nutzen Sie das <a "
+"href=\"%(portal_url)s\">Portal-Login</a> mit den Zugangsdaten, die Sie per E-"
+"Mail von Ihrer Verwaltung erhalten haben."
+msgstr "<b>Tenant or owner?</b> Use the <a href=\"%(portal_url)s\">portal login</a> with the credentials your management sent you by email."
+
+#: core/templates/core/login.html:210
+msgid "Zurück zum öffentlichen Portal"
+msgstr "Back to the public portal"
 
 #: core/templates/core/mieter_daten.html:3
 msgid "Meine Daten — Mieterportal"
@@ -429,7 +499,9 @@ msgstr "My details — Tenant portal"
 msgid ""
 "Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung "
 "automatisch gemeldet."
-msgstr "Check and update your contact details — changes are reported to the management automatically."
+msgstr ""
+"Check and update your contact details — changes are reported to the "
+"management automatically."
 
 #: core/templates/core/mieter_daten.html:17
 msgid "Person"
@@ -448,7 +520,9 @@ msgstr "Current address"
 msgid ""
 "Name und Adresse können nur durch die Verwaltung geändert werden — nutzen "
 "Sie dafür das Feld «Mitteilung» unten."
-msgstr "Name and address can only be changed by the management — please use the “Message” field below."
+msgstr ""
+"Name and address can only be changed by the management — please use the "
+"“Message” field below."
 
 #: core/templates/core/mieter_daten.html:28 core/templates/fw/mandate.html:16
 #: core/templates/fw/personen.html:67
@@ -526,7 +600,9 @@ msgstr "Open amount"
 msgid ""
 "Bitte begleichen Sie den offenen Betrag — den QR-Einzahlschein finden Sie "
 "unter «Rechnungen»."
-msgstr "Please settle the open amount — you will find the QR payment slip under “Invoices”."
+msgstr ""
+"Please settle the open amount — you will find the QR payment slip under "
+"“Invoices”."
 
 #: core/templates/core/mieter_konto.html:27
 #: core/templates/fw/bankabgleich.html:262
@@ -538,7 +614,8 @@ msgstr "Credit"
 msgid ""
 "Sie haben ein Guthaben — es wird mit der nächsten Miete verrechnet oder "
 "zurückerstattet."
-msgstr "You have a credit — it will be offset against the next rent or refunded."
+msgstr ""
+"You have a credit — it will be offset against the next rent or refunded."
 
 #: core/templates/core/mieter_konto.html:31
 msgid "Alles bezahlt"
@@ -615,7 +692,8 @@ msgstr "Welcome to your personal tenant portal."
 msgid "Ihr Mietobjekt"
 msgstr "Your rental unit"
 
-#: core/templates/core/mieter_portal.html:27 core/templates/fw/anlagen.html:34
+#: core/templates/core/mieter_portal.html:27
+#: core/templates/core/portal.html:316 core/templates/fw/anlagen.html:34
 #, python-format
 msgid "seit %(datum)s"
 msgstr "since %(datum)s"
@@ -642,11 +720,13 @@ msgstr "Rent deposit"
 msgid ""
 "Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie "
 "sich an Ihre Verwaltung."
-msgstr "No active rental unit is currently assigned to your account. Please contact your management."
+msgstr ""
+"No active rental unit is currently assigned to your account. Please contact "
+"your management."
 
 #: core/templates/core/mieter_portal.html:65
-#: core/templates/fw/dashboard.html:348 core/views/fw/listen.py:767
-#: core/views/fw/listen.py:770
+#: core/templates/core/portal.html:299 core/templates/fw/dashboard.html:348
+#: core/views/fw/listen.py:767 core/views/fw/listen.py:770
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s outstanding"
@@ -685,7 +765,9 @@ msgstr "record &amp; download letter"
 msgid ""
 "Ihr Login ist noch keinem Mieter-Dossier zugeordnet. Bitte wenden Sie sich "
 "an Ihre Verwaltung."
-msgstr "Your login is not yet assigned to a tenant file. Please contact your management."
+msgstr ""
+"Your login is not yet assigned to a tenant file. Please contact your "
+"management."
 
 #: core/templates/core/mieter_rechnungen.html:4
 msgid "Rechnungen — Mieterportal"
@@ -717,7 +799,8 @@ msgstr "overdue"
 #: core/templates/core/mieter_rechnungen.html:46
 msgid ""
 "Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug."
-msgstr "Everything is currently paid. For a breakdown, use the account statement."
+msgstr ""
+"Everything is currently paid. For a breakdown, use the account statement."
 
 #: core/templates/core/mieter_rechnungen.html:53
 msgid "Bezahlte Rechnungen"
@@ -753,15 +836,17 @@ msgstr "Report damage / repair"
 msgid ""
 "Ihre Meldung geht direkt an die Verwaltung — Sie erhalten eine Bestätigung "
 "per E-Mail."
-msgstr "Your report goes straight to the management — you will receive a confirmation by email."
+msgstr ""
+"Your report goes straight to the management — you will receive a "
+"confirmation by email."
 
 #: core/templates/core/mieter_schaden.html:20
-#: core/templates/fw/bankabgleich.html:348 core/templates/fw/debitoren.html:193
-#: core/templates/fw/kreditoren.html:162 core/templates/fw/logbuch.html:98
-#: core/templates/fw/mahnwesen.html:66 core/templates/fw/mieterkonten.html:47
-#: core/templates/fw/mietzins.html:59 core/templates/fw/sollstellung.html:83
-#: core/templates/fw/vertraege.html:69 core/templates/fw/zahllauf.html:65
-#: core/templates/fw/zahllauf.html:148
+#: core/templates/core/portal.html:306 core/templates/fw/bankabgleich.html:348
+#: core/templates/fw/debitoren.html:193 core/templates/fw/kreditoren.html:162
+#: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
+#: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
+#: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
+#: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
 msgid "Objekt"
 msgstr "Unit"
 
@@ -810,7 +895,9 @@ msgstr "Send report"
 msgid ""
 "Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie "
 "sich an Ihre Verwaltung."
-msgstr "No active rental unit is currently assigned to your account. Please contact your management."
+msgstr ""
+"No active rental unit is currently assigned to your account. Please contact "
+"your management."
 
 #: core/templates/core/mieter_ticket_detail.html:3
 #: core/templates/core/mieter_ticket_detail.html:5
@@ -878,15 +965,12 @@ msgstr "No reports yet"
 msgid "Sie haben bisher keinen Schaden gemeldet."
 msgstr "You have not reported any damage so far."
 
-#: core/templates/core/passwort_reset.html:2
-msgid "Passwort vergessen?"
-msgstr "Forgot password?"
-
 #: core/templates/core/passwort_reset.html:3
 msgid ""
 "Geben Sie Ihre E-Mail-Adresse ein — Sie erhalten einen Link, um ein neues "
 "Passwort zu setzen."
-msgstr "Enter your email address — you will receive a link to set a new password."
+msgstr ""
+"Enter your email address — you will receive a link to set a new password."
 
 #: core/templates/core/passwort_reset.html:10
 msgid "ihre@email.ch"
@@ -940,7 +1024,188 @@ msgstr "Email on its way"
 msgid ""
 "Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir Ihnen einen "
 "Link zum Zurücksetzen gesendet. Bitte prüfen Sie auch den Spam-Ordner."
-msgstr "If an account exists with this email address, we have sent you a reset link. Please also check your spam folder."
+msgstr ""
+"If an account exists with this email address, we have sent you a reset link. "
+"Please also check your spam folder."
+
+#: core/templates/core/portal.html:6
+msgid "Eigentümer-Portal — SwissImmo"
+msgstr "Owner portal — SwissImmo"
+
+#: core/templates/core/portal.html:199
+msgid "Eigentümer-Portal"
+msgstr "Owner portal"
+
+#: core/templates/core/portal.html:205
+msgid "Hell / Dunkel"
+msgstr "Light / dark"
+
+#: core/templates/core/portal.html:205
+msgid "Farbschema wechseln"
+msgstr "Switch colour scheme"
+
+#: core/templates/core/portal.html:206 core/templates/core/portal_base.html:45
+#: core/templates/fw/base.html:259
+msgid "Abmelden"
+msgstr "Sign out"
+
+#: core/templates/core/portal.html:212
+#, python-format
+msgid "Guten Tag, %(name)s"
+msgstr "Hello, %(name)s"
+
+#: core/templates/core/portal.html:213
+msgid "Hier finden Sie den aktuellen Stand Ihrer Liegenschaften."
+msgstr "Here you find the current state of your properties."
+
+#: core/templates/core/portal.html:216
+msgid "📄 Portfolio-Report"
+msgstr "📄 Portfolio report"
+
+#: core/templates/core/portal.html:217
+#, python-format
+msgid "Steuerauszug %(jahr)s"
+msgstr "Tax statement %(jahr)s"
+
+#: core/templates/core/portal.html:218
+msgid "📒 Kontokorrent"
+msgstr "📒 Current account"
+
+#: core/templates/core/portal.html:223 core/templates/core/portal.html:226
+msgid "Reparaturen zur Freigabe"
+msgstr "Repairs awaiting approval"
+
+#: core/templates/core/portal.html:240
+msgid "Kommentar (optional)"
+msgstr "Comment (optional)"
+
+#: core/templates/core/portal.html:241
+msgid "✓ Freigeben"
+msgstr "✓ Approve"
+
+#: core/templates/core/portal.html:242
+msgid "✗ Ablehnen"
+msgstr "✗ Reject"
+
+#: core/templates/core/portal.html:253
+#, python-format
+msgid "%(n)s Einheit gesamt"
+msgid_plural "%(n)s Einheiten gesamt"
+msgstr[0] "%(n)s unit in total"
+msgstr[1] "%(n)s units in total"
+
+#: core/templates/core/portal.html:256 core/templates/fw/objekte.html:37
+msgid "Vermietet"
+msgstr "Let"
+
+#: core/templates/core/portal.html:258 core/templates/core/portal.html:298
+#: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
+#: core/templates/fw/objekte.html:72
+#, python-format
+msgid "%(n)s leer"
+msgstr "%(n)s vacant"
+
+#: core/templates/core/portal.html:261
+msgid "Leerstandsquote"
+msgstr "Vacancy rate"
+
+#: core/templates/core/portal.html:265
+msgid "Ist-Miete / Monat"
+msgstr "Actual rent / month"
+
+#: core/templates/core/portal.html:267
+msgid "brutto, ohne Leerstand"
+msgstr "gross, excluding vacancy"
+
+#: core/templates/core/portal.html:270
+msgid "Ist-Miete / Jahr"
+msgstr "Actual rent / year"
+
+#: core/templates/core/portal.html:275
+msgid "Ausstände offen"
+msgstr "Open arrears"
+
+#: core/templates/core/portal.html:277 core/views/fw/listen.py:764
+#, python-format
+msgid "CHF %(betrag)s überfällig"
+msgstr "CHF %(betrag)s overdue"
+
+#: core/templates/core/portal.html:282
+msgid "Bruttorendite*"
+msgstr "Gross yield*"
+
+#: core/templates/core/portal.html:288
+msgid ""
+"* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) ÷ "
+"Gebäudeversicherungswert (Näherung)."
+msgstr "* Gross yield = current annual rental income (actual, excluding vacancy) ÷ building insurance value (approximation)."
+
+#: core/templates/core/portal.html:294
+#, python-format
+msgid "Bj. %(jahr)s"
+msgstr "built %(jahr)s"
+
+#: core/templates/core/portal.html:296
+#, python-format
+msgid "CHF %(betrag)s / Mt."
+msgstr "CHF %(betrag)s / mo."
+
+#: core/templates/core/portal.html:306 core/templates/fw/hypotheken.html:36
+#: core/templates/fw/hypotheken.html:85 core/templates/fw/kontenplan.html:86
+#: core/templates/fw/kontenplan.html:130
+msgid "Typ"
+msgstr "Type"
+
+#: core/templates/core/portal.html:306
+msgid "Zimmer / m²"
+msgstr "Rooms / m²"
+
+#: core/templates/core/portal.html:307 core/templates/fw/bankabgleich.html:347
+#: core/templates/fw/debitoren.html:192
+#: core/templates/fw/debitoren_aging.html:50
+#: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
+#: core/templates/fw/mieterkonten.html:46
+#: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
+#: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
+msgid "Mieter"
+msgstr "Tenant"
+
+#: core/templates/core/portal.html:307
+msgid "Bruttomiete"
+msgstr "Gross rent"
+
+#: core/templates/core/portal.html:315 core/templates/fw/objekte.html:83
+#, python-format
+msgid "%(n)s Zi."
+msgstr "%(n)s rm."
+
+#: core/templates/core/portal.html:316 core/templates/fw/liegenschaften.html:61
+#: core/templates/fw/mieterspiegel.html:45
+#: core/templates/fw/mieterspiegel.html:80
+#: core/templates/fw/mieterspiegel_auswahl.html:37
+#: core/templates/fw/objekte.html:40
+msgid "Leerstand"
+msgstr "Vacancy"
+
+#: core/templates/core/portal.html:320 core/templates/fw/mieterspiegel.html:89
+msgid "Keine Einheiten erfasst."
+msgstr "No units recorded."
+
+#: core/templates/core/portal.html:337
+msgid ""
+"Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich "
+"an Ihre Verwaltung."
+msgstr "No properties are assigned to your account yet. Please contact your management."
+
+#: core/templates/core/portal.html:341
+msgid ""
+"Ihr Login ist noch keinem Eigentümer-Dossier zugeordnet. Bitte wenden Sie "
+"sich an Ihre Verwaltung, damit der Zugang freigeschaltet wird."
+msgstr "Your login is not yet assigned to an owner file. Please contact your management to have access enabled."
+
+#: core/templates/core/portal.html:344
+msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgstr "SwissImmo owner portal · All information without guarantee"
 
 #: core/templates/core/portal_base.html:7
 msgid "Portal — SwissImmo"
@@ -950,10 +1215,6 @@ msgstr "Portal — SwissImmo"
 msgid "Menü schliessen"
 msgstr "Close menu"
 
-#: core/templates/core/portal_base.html:45 core/templates/fw/base.html:259
-msgid "Abmelden"
-msgstr "Sign out"
-
 #: core/templates/core/portal_base.html:55 core/templates/fw/base.html:209
 msgid "Menü öffnen"
 msgstr "Open menu"
@@ -961,6 +1222,62 @@ msgstr "Open menu"
 #: core/templates/core/portal_base.html:70
 msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
 msgstr "SwissImmo tenant portal · All information without guarantee"
+
+#: core/templates/core/portal_login.html:6
+msgid "Portal-Login | SwissImmo"
+msgstr "Portal login | SwissImmo"
+
+#: core/templates/core/portal_login.html:148
+msgid "Ihr persönliches Immobilien-Portal"
+msgstr "Your personal property portal"
+
+#: core/templates/core/portal_login.html:149
+msgid ""
+"Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht "
+"zur Verwaltung — an einem Ort."
+msgstr "All documents for your flat, open invoices and your direct line to the management — in one place."
+
+#: core/templates/core/portal_login.html:151
+msgid "Mietvertrag &amp; Dokumente jederzeit abrufbar"
+msgstr "Lease &amp; documents available any time"
+
+#: core/templates/core/portal_login.html:152
+msgid "Rechnungen mit QR-Einzahlschein"
+msgstr "Invoices with QR payment slip"
+
+#: core/templates/core/portal_login.html:153
+msgid "Schaden melden &amp; Kündigung erfassen"
+msgstr "Report damage &amp; record termination"
+
+#: core/templates/core/portal_login.html:156
+msgid "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+msgstr "© swissImmo · Secure login for tenants and owners"
+
+#: core/templates/core/portal_login.html:163
+msgid "swissImmo Portal"
+msgstr "swissImmo portal"
+
+#: core/templates/core/portal_login.html:167
+msgid "Bitte melden Sie sich in Ihrem Portal an."
+msgstr "Please sign in to your portal."
+
+#: core/templates/core/portal_login.html:184
+msgid "Ihr Benutzername oder E-Mail"
+msgstr "Your username or email"
+
+#: core/templates/core/portal_login.html:195
+msgid "Passwort anzeigen"
+msgstr "Show password"
+
+#: core/templates/core/portal_login.html:210
+msgid ""
+"🔑 Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung. Noch keinen "
+"Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung."
+msgstr "🔑 You receive your credentials by email from your management. No access yet? Please contact your property management."
+
+#: core/templates/core/portal_login.html:213
+msgid "Zurück zur Startseite"
+msgstr "Back to the home page"
 
 #: core/templates/core/postfach_form.html:3
 msgid "Postfach"
@@ -1501,7 +1818,7 @@ msgstr "no date — avg. age not calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:451
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:474
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -2519,15 +2836,6 @@ msgstr "Match open items"
 msgid "Fällig"
 msgstr "Due"
 
-#: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
-#: core/templates/fw/debitoren_aging.html:50
-#: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
-#: core/templates/fw/mieterkonten.html:46
-#: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
-#: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
-msgid "Mieter"
-msgstr "Tenant"
-
 #: core/templates/fw/bankabgleich.html:349
 msgid "QRR-Referenz"
 msgstr "QRR reference"
@@ -3395,12 +3703,6 @@ msgid_plural "%(n)s Objekte"
 msgstr[0] "%(n)s unit"
 msgstr[1] "%(n)s units"
 
-#: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
-#: core/templates/fw/objekte.html:72
-#, python-format
-msgid "%(n)s leer"
-msgstr "%(n)s vacant"
-
 #: core/templates/fw/dashboard.html:350
 #: core/templates/fw/liegenschaften.html:90
 msgid "ohne Befund"
@@ -3923,11 +4225,6 @@ msgstr "Name / tranche"
 #, python-format
 msgid "Zinssatz (%%)"
 msgstr "Interest rate (%%)"
-
-#: core/templates/fw/hypotheken.html:36 core/templates/fw/hypotheken.html:85
-#: core/templates/fw/kontenplan.html:86 core/templates/fw/kontenplan.html:130
-msgid "Typ"
-msgstr "Type"
 
 #: core/templates/fw/hypotheken.html:38
 msgid "Festhypothek"
@@ -4860,14 +5157,6 @@ msgstr "Actual rent"
 msgid "pro Monat, laufende Verträge"
 msgstr "per month, current leases"
 
-#: core/templates/fw/liegenschaften.html:61
-#: core/templates/fw/mieterspiegel.html:45
-#: core/templates/fw/mieterspiegel.html:80
-#: core/templates/fw/mieterspiegel_auswahl.html:37
-#: core/templates/fw/objekte.html:40
-msgid "Leerstand"
-msgstr "Vacancy"
-
 #: core/templates/fw/liegenschaften.html:63
 msgid "Tickets"
 msgstr "Tickets"
@@ -5352,10 +5641,6 @@ msgstr "Gross"
 msgid "Ende"
 msgstr "End"
 
-#: core/templates/fw/mieterspiegel.html:89
-msgid "Keine Einheiten erfasst."
-msgstr "No units recorded."
-
 #: core/templates/fw/mieterspiegel.html:95
 msgid "Soll-Total"
 msgstr "Target total"
@@ -5726,10 +6011,6 @@ msgstr "Add unit"
 msgid "im Bestand"
 msgstr "in the portfolio"
 
-#: core/templates/fw/objekte.html:37
-msgid "Vermietet"
-msgstr "Let"
-
 #: core/templates/fw/objekte.html:39
 msgid "mit laufendem Vertrag"
 msgstr "with a current lease"
@@ -5755,11 +6036,6 @@ msgstr "Search “%(q)s”"
 #, python-format
 msgid "%(belegt)s / %(anzahl)s vermietet"
 msgstr "%(belegt)s / %(anzahl)s let"
-
-#: core/templates/fw/objekte.html:83
-#, python-format
-msgid "%(n)s Zi."
-msgstr "%(n)s rm."
 
 #: core/templates/fw/objekte.html:92
 #, python-format
@@ -6787,11 +7063,6 @@ msgstr "Receivables & payments"
 #: core/views/fw/listen.py:763
 msgid "Offene Forderungen nach Fälligkeitsalter"
 msgstr "Open receivables by age"
-
-#: core/views/fw/listen.py:764
-#, python-format
-msgid "CHF %(betrag)s überfällig"
-msgstr "CHF %(betrag)s overdue"
 
 #: core/views/fw/listen.py:766
 msgid "Kontoblatt je Mieter (Forderungen/Zahlungen)"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 23:40+0200\n"
+"POT-Creation-Date: 2026-09-28 23:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,7 +55,8 @@ msgstr "Dossiers"
 msgid "Mandate"
 msgstr "Mandats"
 
-#: core/navigation.py:137 core/templates/fw/liegenschaften.html:4
+#: core/navigation.py:137 core/templates/core/portal.html:251
+#: core/templates/fw/liegenschaften.html:4
 #: core/templates/fw/liegenschaften.html:10
 #: core/templates/fw/liegenschaften.html:38
 msgid "Liegenschaften"
@@ -237,7 +238,8 @@ msgstr "Analyse"
 #: core/navigation.py:217 core/templates/core/_mieter_nav.html:12
 #: core/templates/core/mieter_dokumente.html:5
 #: core/templates/core/mieter_dokumente.html:10
-#: core/templates/core/mieter_portal.html:73 core/templates/fw/base.html:219
+#: core/templates/core/mieter_portal.html:73
+#: core/templates/core/portal.html:327 core/templates/fw/base.html:219
 msgid "Dokumente"
 msgstr "Documents"
 
@@ -415,12 +417,80 @@ msgid "Passwort | SwissImmo Portal"
 msgstr "Mot de passe | Portail SwissImmo"
 
 #: core/templates/core/_passwort_shell_top.html:18
+#: core/templates/core/login.html:187
 #: core/templates/core/mieter_passwort.html:5
+#: core/templates/core/portal_login.html:189
 #: core/templates/core/postfach_form.html:85
 #: core/templates/core/zweifaktor_uebersicht.html:72
 #: core/templates/fw/benutzer_form.html:32
 msgid "Passwort"
 msgstr "Mot de passe"
+
+#: core/templates/core/login.html:6
+msgid "Login | SwissImmo Portal"
+msgstr "Connexion | Portail SwissImmo"
+
+#: core/templates/core/login.html:146
+msgid "Ihre Liegenschaften, sauber im Griff."
+msgstr "Vos immeubles, bien en main."
+
+#: core/templates/core/login.html:147
+msgid ""
+"Mieten, Nebenkosten, Buchhaltung und Kommunikation — die Schweizer "
+"Liegenschaftsverwaltung in einem Cockpit."
+msgstr "Loyers, frais accessoires, comptabilité et communication — la gérance immobilière suisse dans un seul cockpit."
+
+#: core/templates/core/login.html:149
+msgid "QR-Rechnungen &amp; automatischer Bankabgleich"
+msgstr "Factures QR &amp; rapprochement bancaire automatique"
+
+#: core/templates/core/login.html:150
+msgid "Nebenkostenabrechnung nach VMWG"
+msgstr "Décompte des frais accessoires selon l'OBLF"
+
+#: core/templates/core/login.html:151
+msgid "Eigentümer- &amp; Mieterportal inklusive"
+msgstr "Portails propriétaires &amp; locataires inclus"
+
+#: core/templates/core/login.html:154
+msgid "© swissImmo · Alle Angaben ohne Gewähr"
+msgstr "© swissImmo · Toutes les indications sans garantie"
+
+#: core/templates/core/login.html:164 core/templates/core/portal_login.html:166
+msgid "Willkommen zurück"
+msgstr "Bon retour"
+
+#: core/templates/core/login.html:165
+msgid "Melden Sie sich im Verwaltungs-Cockpit an."
+msgstr "Connectez-vous au cockpit de gérance."
+
+#: core/templates/core/login.html:177 core/templates/core/portal_login.html:179
+msgid "Benutzername"
+msgstr "Nom d'utilisateur"
+
+#: core/templates/core/login.html:182
+msgid "Ihr Benutzername"
+msgstr "Votre nom d'utilisateur"
+
+#: core/templates/core/login.html:196 core/templates/core/passwort_reset.html:2
+msgid "Passwort vergessen?"
+msgstr "Mot de passe oublié ?"
+
+#: core/templates/core/login.html:198 core/templates/core/portal_login.html:202
+msgid "Anmelden"
+msgstr "Se connecter"
+
+#: core/templates/core/login.html:206
+#, python-format
+msgid ""
+"<b>Mieterin, Mieter oder Eigentümer?</b> Nutzen Sie das <a "
+"href=\"%(portal_url)s\">Portal-Login</a> mit den Zugangsdaten, die Sie per E-"
+"Mail von Ihrer Verwaltung erhalten haben."
+msgstr "<b>Locataire ou propriétaire ?</b> Utilisez la <a href=\"%(portal_url)s\">connexion au portail</a> avec les accès reçus par e-mail de votre gérance."
+
+#: core/templates/core/login.html:210
+msgid "Zurück zum öffentlichen Portal"
+msgstr "Retour au portail public"
 
 #: core/templates/core/mieter_daten.html:3
 msgid "Meine Daten — Mieterportal"
@@ -430,7 +500,9 @@ msgstr "Mes données — Portail locataires"
 msgid ""
 "Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung "
 "automatisch gemeldet."
-msgstr "Vérifier et mettre à jour les coordonnées — les modifications sont communiquées automatiquement à la gérance."
+msgstr ""
+"Vérifier et mettre à jour les coordonnées — les modifications sont "
+"communiquées automatiquement à la gérance."
 
 #: core/templates/core/mieter_daten.html:17
 msgid "Person"
@@ -449,7 +521,9 @@ msgstr "Adresse actuelle"
 msgid ""
 "Name und Adresse können nur durch die Verwaltung geändert werden — nutzen "
 "Sie dafür das Feld «Mitteilung» unten."
-msgstr "Le nom et l'adresse ne peuvent être modifiés que par la gérance — utilisez pour cela le champ «Message» ci-dessous."
+msgstr ""
+"Le nom et l'adresse ne peuvent être modifiés que par la gérance — utilisez "
+"pour cela le champ «Message» ci-dessous."
 
 #: core/templates/core/mieter_daten.html:28 core/templates/fw/mandate.html:16
 #: core/templates/fw/personen.html:67
@@ -505,7 +579,8 @@ msgstr "Aucun document pour le moment"
 
 #: core/templates/core/mieter_dokumente.html:39
 msgid "Sobald Ihre Verwaltung Unterlagen freigibt, erscheinen sie hier."
-msgstr "Dès que votre gérance met des documents à disposition, ils apparaissent ici."
+msgstr ""
+"Dès que votre gérance met des documents à disposition, ils apparaissent ici."
 
 #: core/templates/core/mieter_konto.html:4
 msgid "Mieterkonto — Mieterportal"
@@ -527,7 +602,9 @@ msgstr "Montant ouvert"
 msgid ""
 "Bitte begleichen Sie den offenen Betrag — den QR-Einzahlschein finden Sie "
 "unter «Rechnungen»."
-msgstr "Veuillez régler le montant ouvert — vous trouverez le bulletin de versement QR sous «Factures»."
+msgstr ""
+"Veuillez régler le montant ouvert — vous trouverez le bulletin de versement "
+"QR sous «Factures»."
 
 #: core/templates/core/mieter_konto.html:27
 #: core/templates/fw/bankabgleich.html:262
@@ -539,7 +616,8 @@ msgstr "Avoir"
 msgid ""
 "Sie haben ein Guthaben — es wird mit der nächsten Miete verrechnet oder "
 "zurückerstattet."
-msgstr "Vous avez un avoir — il sera compensé avec le prochain loyer ou remboursé."
+msgstr ""
+"Vous avez un avoir — il sera compensé avec le prochain loyer ou remboursé."
 
 #: core/templates/core/mieter_konto.html:31
 msgid "Alles bezahlt"
@@ -568,7 +646,9 @@ msgstr "Aucun mouvement pour le moment"
 
 #: core/templates/core/mieter_konto.html:65
 msgid "Sobald Rechnungen oder Zahlungen verbucht sind, erscheinen sie hier."
-msgstr "Dès que des factures ou des paiements sont comptabilisés, ils apparaissent ici."
+msgstr ""
+"Dès que des factures ou des paiements sont comptabilisés, ils apparaissent "
+"ici."
 
 #: core/templates/core/mieter_passwort.html:3
 msgid "Passwort ändern — Mieterportal"
@@ -616,7 +696,8 @@ msgstr "Bienvenue dans votre portail locataires personnel."
 msgid "Ihr Mietobjekt"
 msgstr "Votre objet loué"
 
-#: core/templates/core/mieter_portal.html:27 core/templates/fw/anlagen.html:34
+#: core/templates/core/mieter_portal.html:27
+#: core/templates/core/portal.html:316 core/templates/fw/anlagen.html:34
 #, python-format
 msgid "seit %(datum)s"
 msgstr "depuis le %(datum)s"
@@ -643,11 +724,13 @@ msgstr "Garantie de loyer"
 msgid ""
 "Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie "
 "sich an Ihre Verwaltung."
-msgstr "Actuellement, aucun objet loué actif n'est attribué à votre compte. Veuillez vous adresser à votre gérance."
+msgstr ""
+"Actuellement, aucun objet loué actif n'est attribué à votre compte. Veuillez "
+"vous adresser à votre gérance."
 
 #: core/templates/core/mieter_portal.html:65
-#: core/templates/fw/dashboard.html:348 core/views/fw/listen.py:767
-#: core/views/fw/listen.py:770
+#: core/templates/core/portal.html:299 core/templates/fw/dashboard.html:348
+#: core/views/fw/listen.py:767 core/views/fw/listen.py:770
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s en souffrance"
@@ -686,7 +769,9 @@ msgstr "saisir &amp; télécharger la lettre"
 msgid ""
 "Ihr Login ist noch keinem Mieter-Dossier zugeordnet. Bitte wenden Sie sich "
 "an Ihre Verwaltung."
-msgstr "Votre accès n'est encore attribué à aucun dossier de locataire. Veuillez vous adresser à votre gérance."
+msgstr ""
+"Votre accès n'est encore attribué à aucun dossier de locataire. Veuillez "
+"vous adresser à votre gérance."
 
 #: core/templates/core/mieter_rechnungen.html:4
 msgid "Rechnungen — Mieterportal"
@@ -718,7 +803,8 @@ msgstr "échu"
 #: core/templates/core/mieter_rechnungen.html:46
 msgid ""
 "Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug."
-msgstr "Actuellement, tout est payé. Pour un relevé, utilisez l'extrait de compte."
+msgstr ""
+"Actuellement, tout est payé. Pour un relevé, utilisez l'extrait de compte."
 
 #: core/templates/core/mieter_rechnungen.html:53
 msgid "Bezahlte Rechnungen"
@@ -754,15 +840,17 @@ msgstr "Signaler un dégât / une réparation"
 msgid ""
 "Ihre Meldung geht direkt an die Verwaltung — Sie erhalten eine Bestätigung "
 "per E-Mail."
-msgstr "Votre signalement est transmis directement à la gérance — vous recevez une confirmation par e-mail."
+msgstr ""
+"Votre signalement est transmis directement à la gérance — vous recevez une "
+"confirmation par e-mail."
 
 #: core/templates/core/mieter_schaden.html:20
-#: core/templates/fw/bankabgleich.html:348 core/templates/fw/debitoren.html:193
-#: core/templates/fw/kreditoren.html:162 core/templates/fw/logbuch.html:98
-#: core/templates/fw/mahnwesen.html:66 core/templates/fw/mieterkonten.html:47
-#: core/templates/fw/mietzins.html:59 core/templates/fw/sollstellung.html:83
-#: core/templates/fw/vertraege.html:69 core/templates/fw/zahllauf.html:65
-#: core/templates/fw/zahllauf.html:148
+#: core/templates/core/portal.html:306 core/templates/fw/bankabgleich.html:348
+#: core/templates/fw/debitoren.html:193 core/templates/fw/kreditoren.html:162
+#: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
+#: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
+#: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
+#: core/templates/fw/zahllauf.html:65 core/templates/fw/zahllauf.html:148
 msgid "Objekt"
 msgstr "Objet"
 
@@ -811,7 +899,9 @@ msgstr "Envoyer le signalement"
 msgid ""
 "Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie "
 "sich an Ihre Verwaltung."
-msgstr "Aucun objet loué actif n'est actuellement attribué à votre compte. Veuillez vous adresser à votre gérance."
+msgstr ""
+"Aucun objet loué actif n'est actuellement attribué à votre compte. Veuillez "
+"vous adresser à votre gérance."
 
 #: core/templates/core/mieter_ticket_detail.html:3
 #: core/templates/core/mieter_ticket_detail.html:5
@@ -879,15 +969,13 @@ msgstr "Aucun signalement pour le moment"
 msgid "Sie haben bisher keinen Schaden gemeldet."
 msgstr "Vous n'avez signalé aucun dégât jusqu'ici."
 
-#: core/templates/core/passwort_reset.html:2
-msgid "Passwort vergessen?"
-msgstr "Mot de passe oublié ?"
-
 #: core/templates/core/passwort_reset.html:3
 msgid ""
 "Geben Sie Ihre E-Mail-Adresse ein — Sie erhalten einen Link, um ein neues "
 "Passwort zu setzen."
-msgstr "Saisissez votre adresse e-mail — vous recevrez un lien pour définir un nouveau mot de passe."
+msgstr ""
+"Saisissez votre adresse e-mail — vous recevrez un lien pour définir un "
+"nouveau mot de passe."
 
 #: core/templates/core/passwort_reset.html:10
 msgid "ihre@email.ch"
@@ -903,7 +991,8 @@ msgstr "Mot de passe modifié"
 
 #: core/templates/core/passwort_reset_complete.html:6
 msgid "Ihr neues Passwort ist aktiv. Sie können sich jetzt anmelden."
-msgstr "Votre nouveau mot de passe est actif. Vous pouvez maintenant vous connecter."
+msgstr ""
+"Votre nouveau mot de passe est actif. Vous pouvez maintenant vous connecter."
 
 #: core/templates/core/passwort_reset_complete.html:7
 msgid "Zur Anmeldung"
@@ -941,7 +1030,188 @@ msgstr "E-mail en route"
 msgid ""
 "Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir Ihnen einen "
 "Link zum Zurücksetzen gesendet. Bitte prüfen Sie auch den Spam-Ordner."
-msgstr "Si un compte existe avec cette adresse e-mail, nous vous avons envoyé un lien de réinitialisation. Vérifiez aussi le dossier des spams."
+msgstr ""
+"Si un compte existe avec cette adresse e-mail, nous vous avons envoyé un "
+"lien de réinitialisation. Vérifiez aussi le dossier des spams."
+
+#: core/templates/core/portal.html:6
+msgid "Eigentümer-Portal — SwissImmo"
+msgstr "Portail propriétaires — SwissImmo"
+
+#: core/templates/core/portal.html:199
+msgid "Eigentümer-Portal"
+msgstr "Portail propriétaires"
+
+#: core/templates/core/portal.html:205
+msgid "Hell / Dunkel"
+msgstr "Clair / sombre"
+
+#: core/templates/core/portal.html:205
+msgid "Farbschema wechseln"
+msgstr "Changer le thème de couleurs"
+
+#: core/templates/core/portal.html:206 core/templates/core/portal_base.html:45
+#: core/templates/fw/base.html:259
+msgid "Abmelden"
+msgstr "Se déconnecter"
+
+#: core/templates/core/portal.html:212
+#, python-format
+msgid "Guten Tag, %(name)s"
+msgstr "Bonjour, %(name)s"
+
+#: core/templates/core/portal.html:213
+msgid "Hier finden Sie den aktuellen Stand Ihrer Liegenschaften."
+msgstr "Vous trouvez ici l'état actuel de vos immeubles."
+
+#: core/templates/core/portal.html:216
+msgid "📄 Portfolio-Report"
+msgstr "📄 Rapport de portefeuille"
+
+#: core/templates/core/portal.html:217
+#, python-format
+msgid "Steuerauszug %(jahr)s"
+msgstr "Relevé fiscal %(jahr)s"
+
+#: core/templates/core/portal.html:218
+msgid "📒 Kontokorrent"
+msgstr "📒 Compte courant"
+
+#: core/templates/core/portal.html:223 core/templates/core/portal.html:226
+msgid "Reparaturen zur Freigabe"
+msgstr "Réparations à approuver"
+
+#: core/templates/core/portal.html:240
+msgid "Kommentar (optional)"
+msgstr "Commentaire (facultatif)"
+
+#: core/templates/core/portal.html:241
+msgid "✓ Freigeben"
+msgstr "✓ Approuver"
+
+#: core/templates/core/portal.html:242
+msgid "✗ Ablehnen"
+msgstr "✗ Refuser"
+
+#: core/templates/core/portal.html:253
+#, python-format
+msgid "%(n)s Einheit gesamt"
+msgid_plural "%(n)s Einheiten gesamt"
+msgstr[0] "%(n)s objet au total"
+msgstr[1] "%(n)s objets au total"
+
+#: core/templates/core/portal.html:256 core/templates/fw/objekte.html:37
+msgid "Vermietet"
+msgstr "Loués"
+
+#: core/templates/core/portal.html:258 core/templates/core/portal.html:298
+#: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
+#: core/templates/fw/objekte.html:72
+#, python-format
+msgid "%(n)s leer"
+msgstr "%(n)s vacant"
+
+#: core/templates/core/portal.html:261
+msgid "Leerstandsquote"
+msgstr "Taux de vacance"
+
+#: core/templates/core/portal.html:265
+msgid "Ist-Miete / Monat"
+msgstr "Loyer effectif / mois"
+
+#: core/templates/core/portal.html:267
+msgid "brutto, ohne Leerstand"
+msgstr "brut, sans vacance"
+
+#: core/templates/core/portal.html:270
+msgid "Ist-Miete / Jahr"
+msgstr "Loyer effectif / an"
+
+#: core/templates/core/portal.html:275
+msgid "Ausstände offen"
+msgstr "Arriérés ouverts"
+
+#: core/templates/core/portal.html:277 core/views/fw/listen.py:764
+#, python-format
+msgid "CHF %(betrag)s überfällig"
+msgstr "CHF %(betrag)s échus"
+
+#: core/templates/core/portal.html:282
+msgid "Bruttorendite*"
+msgstr "Rendement brut*"
+
+#: core/templates/core/portal.html:288
+msgid ""
+"* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) ÷ "
+"Gebäudeversicherungswert (Näherung)."
+msgstr "* Rendement brut = revenu locatif annuel actuel (effectif, sans vacance) ÷ valeur d'assurance du bâtiment (approximation)."
+
+#: core/templates/core/portal.html:294
+#, python-format
+msgid "Bj. %(jahr)s"
+msgstr "constr. %(jahr)s"
+
+#: core/templates/core/portal.html:296
+#, python-format
+msgid "CHF %(betrag)s / Mt."
+msgstr "CHF %(betrag)s / mois"
+
+#: core/templates/core/portal.html:306 core/templates/fw/hypotheken.html:36
+#: core/templates/fw/hypotheken.html:85 core/templates/fw/kontenplan.html:86
+#: core/templates/fw/kontenplan.html:130
+msgid "Typ"
+msgstr "Type"
+
+#: core/templates/core/portal.html:306
+msgid "Zimmer / m²"
+msgstr "Pièces / m²"
+
+#: core/templates/core/portal.html:307 core/templates/fw/bankabgleich.html:347
+#: core/templates/fw/debitoren.html:192
+#: core/templates/fw/debitoren_aging.html:50
+#: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
+#: core/templates/fw/mieterkonten.html:46
+#: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
+#: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
+msgid "Mieter"
+msgstr "Locataire"
+
+#: core/templates/core/portal.html:307
+msgid "Bruttomiete"
+msgstr "Loyer brut"
+
+#: core/templates/core/portal.html:315 core/templates/fw/objekte.html:83
+#, python-format
+msgid "%(n)s Zi."
+msgstr "%(n)s p."
+
+#: core/templates/core/portal.html:316 core/templates/fw/liegenschaften.html:61
+#: core/templates/fw/mieterspiegel.html:45
+#: core/templates/fw/mieterspiegel.html:80
+#: core/templates/fw/mieterspiegel_auswahl.html:37
+#: core/templates/fw/objekte.html:40
+msgid "Leerstand"
+msgstr "Vacance"
+
+#: core/templates/core/portal.html:320 core/templates/fw/mieterspiegel.html:89
+msgid "Keine Einheiten erfasst."
+msgstr "Aucun objet saisi."
+
+#: core/templates/core/portal.html:337
+msgid ""
+"Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich "
+"an Ihre Verwaltung."
+msgstr "Aucun immeuble n'est encore attribué à votre compte. Veuillez vous adresser à votre gérance."
+
+#: core/templates/core/portal.html:341
+msgid ""
+"Ihr Login ist noch keinem Eigentümer-Dossier zugeordnet. Bitte wenden Sie "
+"sich an Ihre Verwaltung, damit der Zugang freigeschaltet wird."
+msgstr "Votre accès n'est encore attribué à aucun dossier de propriétaire. Veuillez vous adresser à votre gérance pour que l'accès soit activé."
+
+#: core/templates/core/portal.html:344
+msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgstr "Portail propriétaires SwissImmo · Toutes les indications sans garantie"
 
 #: core/templates/core/portal_base.html:7
 msgid "Portal — SwissImmo"
@@ -951,10 +1221,6 @@ msgstr "Portail — SwissImmo"
 msgid "Menü schliessen"
 msgstr "Fermer le menu"
 
-#: core/templates/core/portal_base.html:45 core/templates/fw/base.html:259
-msgid "Abmelden"
-msgstr "Se déconnecter"
-
 #: core/templates/core/portal_base.html:55 core/templates/fw/base.html:209
 msgid "Menü öffnen"
 msgstr "Ouvrir le menu"
@@ -962,6 +1228,62 @@ msgstr "Ouvrir le menu"
 #: core/templates/core/portal_base.html:70
 msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
 msgstr "Portail locataires SwissImmo · Toutes les indications sans garantie"
+
+#: core/templates/core/portal_login.html:6
+msgid "Portal-Login | SwissImmo"
+msgstr "Connexion au portail | SwissImmo"
+
+#: core/templates/core/portal_login.html:148
+msgid "Ihr persönliches Immobilien-Portal"
+msgstr "Votre portail immobilier personnel"
+
+#: core/templates/core/portal_login.html:149
+msgid ""
+"Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht "
+"zur Verwaltung — an einem Ort."
+msgstr "Tous les documents de votre logement, les factures ouvertes et votre ligne directe avec la gérance — au même endroit."
+
+#: core/templates/core/portal_login.html:151
+msgid "Mietvertrag &amp; Dokumente jederzeit abrufbar"
+msgstr "Bail &amp; documents consultables à tout moment"
+
+#: core/templates/core/portal_login.html:152
+msgid "Rechnungen mit QR-Einzahlschein"
+msgstr "Factures avec bulletin de versement QR"
+
+#: core/templates/core/portal_login.html:153
+msgid "Schaden melden &amp; Kündigung erfassen"
+msgstr "Signaler un dégât &amp; saisir une résiliation"
+
+#: core/templates/core/portal_login.html:156
+msgid "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+msgstr "© swissImmo · Connexion sécurisée pour locataires et propriétaires"
+
+#: core/templates/core/portal_login.html:163
+msgid "swissImmo Portal"
+msgstr "Portail swissImmo"
+
+#: core/templates/core/portal_login.html:167
+msgid "Bitte melden Sie sich in Ihrem Portal an."
+msgstr "Veuillez vous connecter à votre portail."
+
+#: core/templates/core/portal_login.html:184
+msgid "Ihr Benutzername oder E-Mail"
+msgstr "Votre nom d'utilisateur ou e-mail"
+
+#: core/templates/core/portal_login.html:195
+msgid "Passwort anzeigen"
+msgstr "Afficher le mot de passe"
+
+#: core/templates/core/portal_login.html:210
+msgid ""
+"🔑 Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung. Noch keinen "
+"Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung."
+msgstr "🔑 Vous recevez vos accès par e-mail de votre gérance. Pas encore d'accès ? Veuillez vous adresser à votre gérance immobilière."
+
+#: core/templates/core/portal_login.html:213
+msgid "Zurück zur Startseite"
+msgstr "Retour à la page d'accueil"
 
 #: core/templates/core/postfach_form.html:3
 msgid "Postfach"
@@ -1515,7 +1837,7 @@ msgstr "sans date — temps moyen non calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:451
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:474
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -2544,15 +2866,6 @@ msgstr "Rapprocher les postes ouverts"
 msgid "Fällig"
 msgstr "Échéance"
 
-#: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
-#: core/templates/fw/debitoren_aging.html:50
-#: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
-#: core/templates/fw/mieterkonten.html:46
-#: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
-#: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
-msgid "Mieter"
-msgstr "Locataire"
-
 #: core/templates/fw/bankabgleich.html:349
 msgid "QRR-Referenz"
 msgstr "Référence QRR"
@@ -3424,12 +3737,6 @@ msgid_plural "%(n)s Objekte"
 msgstr[0] "%(n)s objet"
 msgstr[1] "%(n)s objets"
 
-#: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
-#: core/templates/fw/objekte.html:72
-#, python-format
-msgid "%(n)s leer"
-msgstr "%(n)s vacant"
-
 #: core/templates/fw/dashboard.html:350
 #: core/templates/fw/liegenschaften.html:90
 msgid "ohne Befund"
@@ -3954,11 +4261,6 @@ msgstr "Désignation / tranche"
 #, python-format
 msgid "Zinssatz (%%)"
 msgstr "Taux d'intérêt (%%)"
-
-#: core/templates/fw/hypotheken.html:36 core/templates/fw/hypotheken.html:85
-#: core/templates/fw/kontenplan.html:86 core/templates/fw/kontenplan.html:130
-msgid "Typ"
-msgstr "Type"
 
 #: core/templates/fw/hypotheken.html:38
 msgid "Festhypothek"
@@ -4905,14 +5207,6 @@ msgstr "Loyer effectif"
 msgid "pro Monat, laufende Verträge"
 msgstr "par mois, baux en cours"
 
-#: core/templates/fw/liegenschaften.html:61
-#: core/templates/fw/mieterspiegel.html:45
-#: core/templates/fw/mieterspiegel.html:80
-#: core/templates/fw/mieterspiegel_auswahl.html:37
-#: core/templates/fw/objekte.html:40
-msgid "Leerstand"
-msgstr "Vacance"
-
 #: core/templates/fw/liegenschaften.html:63
 msgid "Tickets"
 msgstr "Tickets"
@@ -5400,10 +5694,6 @@ msgstr "Brut"
 msgid "Ende"
 msgstr "Fin"
 
-#: core/templates/fw/mieterspiegel.html:89
-msgid "Keine Einheiten erfasst."
-msgstr "Aucun objet saisi."
-
 #: core/templates/fw/mieterspiegel.html:95
 msgid "Soll-Total"
 msgstr "Total dû"
@@ -5779,10 +6069,6 @@ msgstr "Saisir un objet"
 msgid "im Bestand"
 msgstr "dans le parc"
 
-#: core/templates/fw/objekte.html:37
-msgid "Vermietet"
-msgstr "Loués"
-
 #: core/templates/fw/objekte.html:39
 msgid "mit laufendem Vertrag"
 msgstr "avec bail en cours"
@@ -5808,11 +6094,6 @@ msgstr "Recherche «%(q)s»"
 #, python-format
 msgid "%(belegt)s / %(anzahl)s vermietet"
 msgstr "%(belegt)s / %(anzahl)s loués"
-
-#: core/templates/fw/objekte.html:83
-#, python-format
-msgid "%(n)s Zi."
-msgstr "%(n)s p."
 
 #: core/templates/fw/objekte.html:92
 #, python-format
@@ -6851,11 +7132,6 @@ msgstr "Créances & paiements"
 #: core/views/fw/listen.py:763
 msgid "Offene Forderungen nach Fälligkeitsalter"
 msgstr "Créances ouvertes par ancienneté d'échéance"
-
-#: core/views/fw/listen.py:764
-#, python-format
-msgid "CHF %(betrag)s überfällig"
-msgstr "CHF %(betrag)s échus"
 
 #: core/views/fw/listen.py:766
 msgid "Kontoblatt je Mieter (Forderungen/Zahlungen)"
