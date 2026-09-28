@@ -671,6 +671,11 @@ und einen Stilblock enthaelt.
         /* Verlauf in der Markenfarbe — Kopfzeile des Mieterportals.
            Ueber Tokens, damit er dem Dunkelmodus und spaeterem Branding folgt. */
         .fw-marke-verlauf{background:linear-gradient(135deg,var(--ds-brand),var(--ds-brand-600))}
+        /* Glasflaeche AUF dem Markenverlauf: halbdurchsichtiges Weiss, damit
+           weisse Schrift darauf lesbar bleibt. `fw-flaeche` ist dort falsch —
+           sie ist im hellen Modus weiss, und weiss auf weiss ist unsichtbar. */
+        .fw-glas{background:rgba(255,255,255,.15)}
+        .fw-marke-verlauf .fw-faint{color:rgba(255,255,255,.78)}
         /* Gesaettigtes Gruen als Flaeche — fuer Absendeknoepfe mit
            eigenen Massen, die `fw-btn` nicht mitnehmen koennen. */
         .fw-gut-voll{background:var(--ds-good);color:var(--ds-auf-satt)}

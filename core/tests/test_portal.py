@@ -1001,3 +1001,18 @@ class PortalFremdzugriffTests(TestCase):
             fremd = anfrage('b')
             self.assertIn(fremd, (403, 404),
                           f'{name}: fremde ID lieferte {fremd} statt 403/404')
+
+
+class MieterKarteKontrastTests(TestCase):
+    """Die Objektkarte im Mieterportal liegt auf dem Markenverlauf mit weisser
+    Schrift. Innen darf keine `fw-flaeche` stehen: Sie ist im hellen Modus
+    weiss — Netto, NK und Brutto waren damit unsichtbar (seit E2.38)."""
+
+    def test_keine_weisse_flaeche_auf_dem_verlauf(self):
+        from pathlib import Path
+        from django.conf import settings
+        text = (Path(settings.BASE_DIR) / 'core/templates/core/mieter_portal.html').read_text(encoding='utf-8')
+        start = text.index('fw-marke-verlauf')
+        karte = text[start:text.index('{% endfor %}', start)]
+        self.assertNotIn('fw-flaeche', karte)
+        self.assertIn('fw-glas', karte)

@@ -16,7 +16,7 @@
 
         {% for o in objekte %}
         <div class="rounded-2xl fw-marke-verlauf text-white p-6 shadow-lg fw-schatten-marke mb-5 relative overflow-hidden">
-            <div class="absolute -top-16 -right-10 w-56 h-56 rounded-full fw-flaeche blur-2xl"></div>
+            <div class="absolute -top-16 -right-10 w-56 h-56 rounded-full fw-glas blur-2xl"></div>
             <div class="relative">
                 <div class="flex items-start justify-between gap-3">
                     <div>
@@ -24,18 +24,18 @@
                         <div class="text-xl font-bold mt-1">{{ o.adresse }}</div>
                         <div class="fw-faint text-sm">{{ o.einheit.bezeichnung }}</div>
                     </div>
-                    <span class="shrink-0 fw-flaeche text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">{% blocktrans with datum=o.beginn|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}</span>
+                    <span class="shrink-0 fw-glas text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">{% blocktrans with datum=o.beginn|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}</span>
                 </div>
                 <div class="grid grid-cols-3 gap-3 mt-6">
-                    <div class="fw-flaeche rounded-xl px-3 py-3">
+                    <div class="fw-glas rounded-xl px-3 py-3">
                         <div class="text-[10px] font-bold uppercase tracking-wide fw-faint">{% trans "Netto" %}</div>
                         <div class="text-base font-bold mt-0.5">{{ o.netto|chf }}</div>
                     </div>
-                    <div class="fw-flaeche rounded-xl px-3 py-3">
+                    <div class="fw-glas rounded-xl px-3 py-3">
                         <div class="text-[10px] font-bold uppercase tracking-wide fw-faint">{% trans "NK Akonto" %}</div>
                         <div class="text-base font-bold mt-0.5">{{ o.nk|chf }}</div>
                     </div>
-                    <div class="fw-flaeche rounded-xl px-3 py-3">
+                    <div class="fw-glas rounded-xl px-3 py-3">
                         <div class="text-[10px] font-bold uppercase tracking-wide fw-faint">{% trans "Brutto / Mt." %}</div>
                         <div class="text-base font-black mt-0.5">{{ o.brutto|chf }}</div>
                     </div>
