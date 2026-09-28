@@ -1,10 +1,10 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 <!DOCTYPE html>
-<html lang="de">
+{% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passwort | SwissImmo Portal</title>
+    <title>{% trans "Passwort | SwissImmo Portal" %}</title>
 {% include 'core/_assets_aussen.html' %}
     <style>body { font-family: 'IBM Plex Sans', sans-serif; }</style>
 </head>
@@ -15,6 +15,6 @@
                 {% zeichen 'schluessel' klasse='text-white text-2xl' %}
             </div>
             <h2 class="text-3xl font-black fw-strong tracking-tight">SwissImmo</h2>
-            <p class="fw-mutet mt-2 font-medium">Passwort</p>
+            <p class="fw-mutet mt-2 font-medium">{% trans "Passwort" %}</p>
         </div>
         <div class="fw-flaeche rounded-3xl shadow-xl border fw-linie p-8">

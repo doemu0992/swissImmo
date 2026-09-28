@@ -1,22 +1,22 @@
 {% extends 'core/portal_base.html' %}
-{% load zeichen %}
-{% block title %}Ticket #{{ t.id }} — Mieterportal{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% blocktrans with nr=t.id %}Ticket #{{ nr }}{% endblocktrans %} — {% trans "Mieterportal" %}{% endblock %}
 {% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-arbeit"/></svg>{% endblock %}
-{% block brand_mobile %}Ticket #{{ t.id }}{% endblock %}
+{% block brand_mobile %}{% blocktrans with nr=t.id %}Ticket #{{ nr }}{% endblocktrans %}{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='meldungen' %}{% endblock %}
 
 {% block content %}
     <a href="/mieter/tickets/" class="inline-flex items-center gap-2 text-sm font-medium fw-faint hover:fw-mutet mb-4">
-        {% zeichen 'zurueck' %} Alle Meldungen
+        {% zeichen 'zurueck' %} {% trans "Alle Meldungen" %}
     </a>
 
     <!-- Kopf / Status -->
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-6 mb-5">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-                <div class="text-[11px] font-bold uppercase tracking-widest fw-faint">Ticket #{{ t.id }}</div>
+                <div class="text-[11px] font-bold uppercase tracking-widest fw-faint">{% blocktrans with nr=t.id %}Ticket #{{ nr }}{% endblocktrans %}</div>
                 <h1 class="text-xl font-black fw-strong mt-1">{{ t.titel }}</h1>
-                <div class="text-xs fw-faint mt-1">{{ objekt }}{% if t.raum %} · {{ t.raum }}{% endif %} · gemeldet {{ t.erstellt_am|date:"d.m.Y H:i" }}</div>
+                <div class="text-xs fw-faint mt-1">{{ objekt }}{% if t.raum %} · {{ t.raum }}{% endif %} · {% blocktrans with zeit=t.erstellt_am|date:"d.m.Y H:i" %}gemeldet {{ zeit }}{% endblocktrans %}</div>
             </div>
             <span class="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full {{ status_cls }}">{{ status_label }}</span>
         </div>
@@ -28,7 +28,7 @@
     <!-- Verlauf -->
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-5">
         <div class="px-5 py-4 border-b fw-linie">
-            <h2 class="font-bold fw-strong flex items-center gap-2">{% zeichen 'senden' klasse='fw-faint' %} Verlauf</h2>
+            <h2 class="font-bold fw-strong flex items-center gap-2">{% zeichen 'senden' klasse='fw-faint' %} {% trans "Verlauf" %}</h2>
         </div>
         <div class="p-5 space-y-3">
             {% for n in verlauf %}
@@ -41,7 +41,7 @@
                 </div>
             </div>
             {% empty %}
-            <p class="text-sm fw-faint text-center py-4">Noch keine Nachrichten. Schreiben Sie der Verwaltung unten eine Nachricht.</p>
+            <p class="text-sm fw-faint text-center py-4">{% trans "Noch keine Nachrichten. Schreiben Sie der Verwaltung unten eine Nachricht." %}</p>
             {% endfor %}
         </div>
 
@@ -49,11 +49,11 @@
         {% if t.status != 'erledigt' or verlauf %}
         <form method="post" action="/mieter/ticket/{{ t.id }}/nachricht/" class="border-t fw-linie p-5 space-y-3">
             {% csrf_token %}
-            <label class="block text-xs font-semibold fw-mutet">Nachricht an die Verwaltung</label>
-            <textarea name="text" rows="3" required placeholder="Ihre Nachricht oder Rückfrage…"
+            <label class="block text-xs font-semibold fw-mutet">{% trans "Nachricht an die Verwaltung" %}</label>
+            <textarea name="text" rows="3" required placeholder="{% trans 'Ihre Nachricht oder Rückfrage…' %}"
                       class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint"></textarea>
             <button type="submit" class="w-full sm:w-auto fw-balken-voll hover:fw-balken-voll transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg fw-schatten-marke flex items-center justify-center gap-2">
-                {% zeichen 'senden' %} Nachricht senden
+                {% zeichen 'senden' %} {% trans "Nachricht senden" %}
             </button>
         </form>
         {% endif %}

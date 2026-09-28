@@ -1,21 +1,21 @@
 {% extends 'core/portal_base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Rechnungen — Mieterportal{% endblock %}
+{% block title %}{% trans "Rechnungen — Mieterportal" %}{% endblock %}
 {% block brand_icon %}fa-file-invoice{% endblock %}
-{% block brand_mobile %}Rechnungen{% endblock %}
+{% block brand_mobile %}{% trans "Rechnungen" %}{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='rechnungen' %}{% endblock %}
 
 {% block content %}
     <div class="mb-6">
-        <h1 class="text-2xl font-black tracking-tight fw-strong">Rechnungen</h1>
-        <p class="fw-mutet mt-1">Offene Rechnungen mit QR-Einzahlschein zum Herunterladen.</p>
+        <h1 class="text-2xl font-black tracking-tight fw-strong">{% trans "Rechnungen" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Offene Rechnungen mit QR-Einzahlschein zum Herunterladen." %}</p>
     </div>
 
     {% if offene %}
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b fw-linie">
-            <h2 class="font-bold fw-strong">Offen</h2>
+            <h2 class="font-bold fw-strong">{% trans "Offen" %}</h2>
             <span class="text-sm font-bold fw-kritisch">CHF {{ total_offen|chf }}</span>
         </div>
         <div class="fw-dv">
@@ -24,8 +24,8 @@
                 <div class="min-w-0">
                     <div class="font-semibold text-sm fw-strong truncate">{{ r.titel }}</div>
                     <div class="text-xs fw-faint mt-0.5">
-                        {% if r.faellig %}fällig {{ r.faellig|date:"d.m.Y" }}{% endif %}
-                        {% if r.ueberfaellig %}<span class="fw-kritisch font-semibold">· überfällig</span>{% endif %}
+                        {% if r.faellig %}{% blocktrans with datum=r.faellig|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %}{% endif %}
+                        {% if r.ueberfaellig %}<span class="fw-kritisch font-semibold">· {% trans "überfällig" %}</span>{% endif %}
                     </div>
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
@@ -42,15 +42,15 @@
     {% else %}
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
         <span class="w-14 h-14 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mx-auto mb-4">{% zeichen 'gut' klasse='text-xl' %}</span>
-        <p class="font-semibold fw-ink">Keine offenen Rechnungen</p>
-        <p class="text-sm fw-faint mt-1">Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug.</p>
+        <p class="font-semibold fw-ink">{% trans "Keine offenen Rechnungen" %}</p>
+        <p class="text-sm fw-faint mt-1">{% trans "Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug." %}</p>
     </div>
     {% endif %}
 
     {% if bezahlte %}
     <details class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mt-6">
         <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
-            <span class="font-bold fw-strong">Bezahlte Rechnungen <span class="fw-faint font-normal text-sm">(letzte 24 Monate)</span></span>
+            <span class="font-bold fw-strong">{% trans "Bezahlte Rechnungen" %} <span class="fw-faint font-normal text-sm">{% trans "(letzte 24 Monate)" %}</span></span>
             {% zeichen 'aufklappen' klasse='fw-faint text-xs' %}
         </summary>
         <div class="fw-dv border-t fw-linie">
@@ -58,13 +58,13 @@
             <div class="flex items-center justify-between gap-3 px-5 py-3">
                 <div class="min-w-0">
                     <div class="font-semibold text-sm fw-ink truncate">{{ r.titel }}</div>
-                    <div class="text-xs fw-faint mt-0.5">{{ r.datum|date:"d.m.Y" }} · <span class="fw-gut font-semibold">bezahlt</span></div>
+                    <div class="text-xs fw-faint mt-0.5">{{ r.datum|date:"d.m.Y" }} · <span class="fw-gut font-semibold">{% trans "bezahlt" %}</span></div>
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
                     <span class="text-sm font-semibold fw-mutet whitespace-nowrap">CHF {{ r.betrag|chf }}</span>
                     <a href="/mieter/rechnung/{{ r.id }}/" target="_blank" rel="noopener"
                        class="border fw-linie hover:fw-linie-marke fw-mutet hover:fw-marke text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap">
-                        {% zeichen 'drucken' %} Beleg
+                        {% zeichen 'drucken' %} {% trans "Beleg" %}
                     </a>
                 </div>
             </div>

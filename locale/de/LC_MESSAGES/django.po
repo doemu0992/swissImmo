@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 23:30+0200\n"
+"POT-Creation-Date: 2026-09-28 23:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -225,7 +225,7 @@ msgstr "Hypotheken"
 msgid "Berichte"
 msgstr "Berichte"
 
-#: core/navigation.py:181
+#: core/navigation.py:181 core/templates/core/_mieter_nav.html:6
 msgid "Übersicht"
 msgstr "Übersicht"
 
@@ -234,7 +234,10 @@ msgstr "Übersicht"
 msgid "Auswertung"
 msgstr "Auswertung"
 
-#: core/navigation.py:217 core/templates/fw/base.html:219
+#: core/navigation.py:217 core/templates/core/_mieter_nav.html:12
+#: core/templates/core/mieter_dokumente.html:5
+#: core/templates/core/mieter_dokumente.html:10
+#: core/templates/core/mieter_portal.html:73 core/templates/fw/base.html:219
 msgid "Dokumente"
 msgstr "Dokumente"
 
@@ -300,7 +303,10 @@ msgid ""
 "Sie sind angemeldet — dieser Bereich ist jedoch einer anderen Rolle "
 "vorbehalten. Wenn Sie damit arbeiten müssen, kann Ihnen die Verwaltung die "
 "passende Rolle zuteilen."
-msgstr "Sie sind angemeldet — dieser Bereich ist jedoch einer anderen Rolle vorbehalten. Wenn Sie damit arbeiten müssen, kann Ihnen die Verwaltung die passende Rolle zuteilen."
+msgstr ""
+"Sie sind angemeldet — dieser Bereich ist jedoch einer anderen Rolle "
+"vorbehalten. Wenn Sie damit arbeiten müssen, kann Ihnen die Verwaltung die "
+"passende Rolle zuteilen."
 
 #: core/templates/403.html:29 core/templates/404.html:27
 #: core/templates/500.html:28 core/templates/fw/base.html:131
@@ -319,7 +325,9 @@ msgstr "Seite nicht gefunden"
 msgid ""
 "Diese Adresse gibt es nicht (mehr). Möglicherweise wurde der Eintrag "
 "entfernt oder der Link ist veraltet."
-msgstr "Diese Adresse gibt es nicht (mehr). Möglicherweise wurde der Eintrag entfernt oder der Link ist veraltet."
+msgstr ""
+"Diese Adresse gibt es nicht (mehr). Möglicherweise wurde der Eintrag "
+"entfernt oder der Link ist veraltet."
 
 #: core/templates/500.html:6
 msgid "Ein Fehler ist aufgetreten – swissImmo"
@@ -334,11 +342,627 @@ msgid ""
 "Etwas ist schiefgelaufen — der Fehler wurde protokolliert. Bitte versuchen "
 "Sie es in einem Moment erneut. Bleibt das Problem bestehen, melden Sie sich "
 "bitte bei Ihrer Verwaltung."
-msgstr "Etwas ist schiefgelaufen — der Fehler wurde protokolliert. Bitte versuchen Sie es in einem Moment erneut. Bleibt das Problem bestehen, melden Sie sich bitte bei Ihrer Verwaltung."
+msgstr ""
+"Etwas ist schiefgelaufen — der Fehler wurde protokolliert. Bitte versuchen "
+"Sie es in einem Moment erneut. Bleibt das Problem bestehen, melden Sie sich "
+"bitte bei Ihrer Verwaltung."
 
 #: core/templates/admin/base.html:158
 msgid "Home"
 msgstr "Home"
+
+#: core/templates/core/_mieter_nav.html:9
+#: core/templates/core/mieter_portal.html:64
+#: core/templates/core/mieter_rechnungen.html:6
+#: core/templates/core/mieter_rechnungen.html:11
+#: core/templates/fw/debitoren.html:110
+#: core/templates/fw/lieferantenkonten.html:28
+msgid "Rechnungen"
+msgstr "Rechnungen"
+
+#: core/templates/core/_mieter_nav.html:15
+#: core/templates/core/mieter_portal.html:82
+#: core/templates/core/mieter_tickets.html:11
+msgid "Meine Meldungen"
+msgstr "Meine Meldungen"
+
+#: core/templates/core/_mieter_nav.html:18
+msgid "Service"
+msgstr "Service"
+
+#: core/templates/core/_mieter_nav.html:20
+#: core/templates/core/mieter_portal.html:90
+#: core/templates/core/mieter_schaden.html:5
+#: core/templates/core/mieter_tickets.html:48
+msgid "Schaden melden"
+msgstr "Schaden melden"
+
+#: core/templates/core/_mieter_nav.html:23
+#: core/templates/core/mieter_konto.html:6
+#: core/templates/core/mieter_konto.html:12
+msgid "Mieterkonto"
+msgstr "Mieterkonto"
+
+#: core/templates/core/_mieter_nav.html:26
+#: core/templates/core/mieter_portal.html:107
+msgid "Kündigung"
+msgstr "Kündigung"
+
+#: core/templates/core/_mieter_nav.html:29
+#: core/templates/fw/buchhaltung.html:283 core/templates/fw/kontenplan.html:84
+#: core/templates/fw/kreditoren.html:163 core/templates/fw/kreditoren.html:343
+msgid "Konto"
+msgstr "Konto"
+
+#: core/templates/core/_mieter_nav.html:31
+#: core/templates/core/mieter_daten.html:5
+#: core/templates/core/mieter_daten.html:10
+msgid "Meine Daten"
+msgstr "Meine Daten"
+
+#: core/templates/core/_mieter_nav.html:34
+#: core/templates/core/mieter_passwort.html:10
+#: core/templates/core/mieter_passwort.html:29
+msgid "Passwort ändern"
+msgstr "Passwort ändern"
+
+#: core/templates/core/_passwort_shell_bottom.html:3
+#: core/templates/core/zweifaktor_bestaetigen.html:47
+msgid "Zurück zur Anmeldung"
+msgstr "Zurück zur Anmeldung"
+
+#: core/templates/core/_passwort_shell_top.html:7
+msgid "Passwort | SwissImmo Portal"
+msgstr "Passwort | SwissImmo Portal"
+
+#: core/templates/core/_passwort_shell_top.html:18
+#: core/templates/core/mieter_passwort.html:5
+#: core/templates/core/postfach_form.html:85
+#: core/templates/core/zweifaktor_uebersicht.html:72
+#: core/templates/fw/benutzer_form.html:32
+msgid "Passwort"
+msgstr "Passwort"
+
+#: core/templates/core/mieter_daten.html:3
+msgid "Meine Daten — Mieterportal"
+msgstr "Meine Daten — Mieterportal"
+
+#: core/templates/core/mieter_daten.html:11
+msgid ""
+"Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung "
+"automatisch gemeldet."
+msgstr "Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung automatisch gemeldet."
+
+#: core/templates/core/mieter_daten.html:17
+msgid "Person"
+msgstr "Person"
+
+#: core/templates/core/mieter_daten.html:19 core/templates/fw/benutzer.html:17
+#: core/templates/fw/personen.html:66
+msgid "Name"
+msgstr "Name"
+
+#: core/templates/core/mieter_daten.html:21
+msgid "Aktuelle Adresse"
+msgstr "Aktuelle Adresse"
+
+#: core/templates/core/mieter_daten.html:24
+msgid ""
+"Name und Adresse können nur durch die Verwaltung geändert werden — nutzen "
+"Sie dafür das Feld «Mitteilung» unten."
+msgstr "Name und Adresse können nur durch die Verwaltung geändert werden — nutzen Sie dafür das Feld «Mitteilung» unten."
+
+#: core/templates/core/mieter_daten.html:28 core/templates/fw/mandate.html:16
+#: core/templates/fw/personen.html:67
+msgid "Kontakt"
+msgstr "Kontakt"
+
+#: core/templates/core/mieter_daten.html:30
+msgid "Mobile"
+msgstr "Mobile"
+
+#: core/templates/core/mieter_daten.html:32 core/templates/fw/account.html:100
+#: core/templates/fw/dienstleister.html:35
+#: core/templates/fw/dienstleister.html:103
+msgid "Telefon"
+msgstr "Telefon"
+
+#: core/templates/core/mieter_daten.html:34
+#: core/templates/core/passwort_reset.html:7 core/templates/fw/account.html:102
+#: core/templates/fw/benutzer.html:18 core/templates/fw/benutzer_form.html:30
+#: core/templates/fw/dienstleister.html:33
+#: core/templates/fw/dienstleister.html:101
+msgid "E-Mail"
+msgstr "E-Mail"
+
+#: core/templates/core/mieter_daten.html:40
+msgid "Mitteilung an die Verwaltung"
+msgstr "Mitteilung an die Verwaltung"
+
+#: core/templates/core/mieter_daten.html:40
+#: core/templates/core/mieter_schaden.html:32
+msgid "(optional)"
+msgstr "(optional)"
+
+#: core/templates/core/mieter_daten.html:41
+msgid "z.B. Namensänderung, Korrespondenzadresse, weitere Anliegen …"
+msgstr "z.B. Namensänderung, Korrespondenzadresse, weitere Anliegen …"
+
+#: core/templates/core/mieter_daten.html:45
+msgid "Speichern &amp; melden"
+msgstr "Speichern &amp; melden"
+
+#: core/templates/core/mieter_dokumente.html:3
+msgid "Dokumente — Mieterportal"
+msgstr "Dokumente — Mieterportal"
+
+#: core/templates/core/mieter_dokumente.html:11
+msgid "Vertrag, Korrespondenz und weitere Unterlagen."
+msgstr "Vertrag, Korrespondenz und weitere Unterlagen."
+
+#: core/templates/core/mieter_dokumente.html:38
+msgid "Noch keine Dokumente"
+msgstr "Noch keine Dokumente"
+
+#: core/templates/core/mieter_dokumente.html:39
+msgid "Sobald Ihre Verwaltung Unterlagen freigibt, erscheinen sie hier."
+msgstr "Sobald Ihre Verwaltung Unterlagen freigibt, erscheinen sie hier."
+
+#: core/templates/core/mieter_konto.html:4
+msgid "Mieterkonto — Mieterportal"
+msgstr "Mieterkonto — Mieterportal"
+
+#: core/templates/core/mieter_konto.html:13
+msgid "Alle Rechnungen und Ihre Zahlungen im Überblick."
+msgstr "Alle Rechnungen und Ihre Zahlungen im Überblick."
+
+#: core/templates/core/mieter_konto.html:16
+msgid "Kontoauszug (PDF)"
+msgstr "Kontoauszug (PDF)"
+
+#: core/templates/core/mieter_konto.html:23
+msgid "Offener Betrag"
+msgstr "Offener Betrag"
+
+#: core/templates/core/mieter_konto.html:25
+msgid ""
+"Bitte begleichen Sie den offenen Betrag — den QR-Einzahlschein finden Sie "
+"unter «Rechnungen»."
+msgstr "Bitte begleichen Sie den offenen Betrag — den QR-Einzahlschein finden Sie unter «Rechnungen»."
+
+#: core/templates/core/mieter_konto.html:27
+#: core/templates/fw/bankabgleich.html:262
+#: core/templates/fw/mieterkonten.html:64 core/templates/fw/mwst.html:96
+msgid "Guthaben"
+msgstr "Guthaben"
+
+#: core/templates/core/mieter_konto.html:29
+msgid ""
+"Sie haben ein Guthaben — es wird mit der nächsten Miete verrechnet oder "
+"zurückerstattet."
+msgstr "Sie haben ein Guthaben — es wird mit der nächsten Miete verrechnet oder zurückerstattet."
+
+#: core/templates/core/mieter_konto.html:31
+msgid "Alles bezahlt"
+msgstr "Alles bezahlt"
+
+#: core/templates/core/mieter_konto.html:33
+msgid "Ihr Konto ist ausgeglichen — vielen Dank."
+msgstr "Ihr Konto ist ausgeglichen — vielen Dank."
+
+#: core/templates/core/mieter_konto.html:39
+msgid "Bewegungen"
+msgstr "Bewegungen"
+
+#: core/templates/core/mieter_konto.html:48
+msgid "Ihre Zahlung"
+msgstr "Ihre Zahlung"
+
+#: core/templates/core/mieter_konto.html:56
+#, python-format
+msgid "Saldo CHF %(betrag)s"
+msgstr "Saldo CHF %(betrag)s"
+
+#: core/templates/core/mieter_konto.html:64
+msgid "Noch keine Bewegungen"
+msgstr "Noch keine Bewegungen"
+
+#: core/templates/core/mieter_konto.html:65
+msgid "Sobald Rechnungen oder Zahlungen verbucht sind, erscheinen sie hier."
+msgstr "Sobald Rechnungen oder Zahlungen verbucht sind, erscheinen sie hier."
+
+#: core/templates/core/mieter_passwort.html:3
+msgid "Passwort ändern — Mieterportal"
+msgstr "Passwort ändern — Mieterportal"
+
+#: core/templates/core/mieter_passwort.html:11
+msgid "Wählen Sie ein sicheres Passwort (mind. 8 Zeichen)."
+msgstr "Wählen Sie ein sicheres Passwort (mind. 8 Zeichen)."
+
+#: core/templates/core/mieter_passwort.html:22
+msgid "Aktuelles Passwort"
+msgstr "Aktuelles Passwort"
+
+#: core/templates/core/mieter_passwort.html:24
+#: core/templates/core/passwort_reset_confirm.html:12
+msgid "Neues Passwort"
+msgstr "Neues Passwort"
+
+#: core/templates/core/mieter_passwort.html:26
+msgid "Neues Passwort wiederholen"
+msgstr "Neues Passwort wiederholen"
+
+#: core/templates/core/mieter_portal.html:4
+msgid "Mieterportal — SwissImmo"
+msgstr "Mieterportal — SwissImmo"
+
+#: core/templates/core/mieter_portal.html:6
+#: core/templates/core/mieter_portal.html:7
+#: core/templates/core/mieter_ticket_detail.html:3
+#: core/templates/core/portal_base.html:29
+#: core/templates/core/portal_base.html:56
+msgid "Mieterportal"
+msgstr "Mieterportal"
+
+#: core/templates/core/mieter_portal.html:13
+#, python-format
+msgid "Guten Tag %(name)s"
+msgstr "Guten Tag %(name)s"
+
+#: core/templates/core/mieter_portal.html:14
+msgid "Willkommen in Ihrem persönlichen Mieterportal."
+msgstr "Willkommen in Ihrem persönlichen Mieterportal."
+
+#: core/templates/core/mieter_portal.html:23
+msgid "Ihr Mietobjekt"
+msgstr "Ihr Mietobjekt"
+
+#: core/templates/core/mieter_portal.html:27 core/templates/fw/anlagen.html:34
+#, python-format
+msgid "seit %(datum)s"
+msgstr "seit %(datum)s"
+
+#: core/templates/core/mieter_portal.html:31
+#: core/templates/fw/mieterspiegel.html:65
+#: core/templates/fw/sollstellung.html:84 core/templates/fw/vertraege.html:72
+msgid "Netto"
+msgstr "Netto"
+
+#: core/templates/core/mieter_portal.html:35
+msgid "NK Akonto"
+msgstr "NK Akonto"
+
+#: core/templates/core/mieter_portal.html:39
+msgid "Brutto / Mt."
+msgstr "Brutto / Mt."
+
+#: core/templates/core/mieter_portal.html:45
+msgid "Mietkaution"
+msgstr "Mietkaution"
+
+#: core/templates/core/mieter_portal.html:53
+msgid ""
+"Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie "
+"sich an Ihre Verwaltung."
+msgstr "Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung."
+
+#: core/templates/core/mieter_portal.html:65
+#: core/templates/fw/dashboard.html:348 core/views/fw/listen.py:767
+#: core/views/fw/listen.py:770
+#, python-format
+msgid "CHF %(betrag)s offen"
+msgstr "CHF %(betrag)s offen"
+
+#: core/templates/core/mieter_portal.html:65
+#: core/templates/core/mieter_rechnungen.html:45
+msgid "Keine offenen Rechnungen"
+msgstr "Keine offenen Rechnungen"
+
+#: core/templates/core/mieter_portal.html:74
+msgid "Vertrag, Korrespondenz &amp; mehr"
+msgstr "Vertrag, Korrespondenz &amp; mehr"
+
+#: core/templates/core/mieter_portal.html:83
+msgid "Status &amp; Verlauf"
+msgstr "Status &amp; Verlauf"
+
+#: core/templates/core/mieter_portal.html:91
+msgid "Reparatur beantragen"
+msgstr "Reparatur beantragen"
+
+#: core/templates/core/mieter_portal.html:99
+#: core/templates/fw/bankabgleich.html:69
+msgid "Kontoauszug"
+msgstr "Kontoauszug"
+
+#: core/templates/core/mieter_portal.html:100
+msgid "als PDF öffnen"
+msgstr "als PDF öffnen"
+
+#: core/templates/core/mieter_portal.html:108
+msgid "erfassen &amp; Brief laden"
+msgstr "erfassen &amp; Brief laden"
+
+#: core/templates/core/mieter_portal.html:114
+msgid ""
+"Ihr Login ist noch keinem Mieter-Dossier zugeordnet. Bitte wenden Sie sich "
+"an Ihre Verwaltung."
+msgstr "Ihr Login ist noch keinem Mieter-Dossier zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung."
+
+#: core/templates/core/mieter_rechnungen.html:4
+msgid "Rechnungen — Mieterportal"
+msgstr "Rechnungen — Mieterportal"
+
+#: core/templates/core/mieter_rechnungen.html:12
+msgid "Offene Rechnungen mit QR-Einzahlschein zum Herunterladen."
+msgstr "Offene Rechnungen mit QR-Einzahlschein zum Herunterladen."
+
+#: core/templates/core/mieter_rechnungen.html:18
+#: core/templates/fw/bankabgleich.html:350 core/templates/fw/debitoren.html:196
+#: core/templates/fw/laeufe.html:20 core/templates/fw/lieferantenkonten.html:30
+#: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
+#: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
+#: core/views/fw/_basis.py:353
+msgid "Offen"
+msgstr "Offen"
+
+#: core/templates/core/mieter_rechnungen.html:27
+#: core/templates/fw/debitoren.html:149
+#, python-format
+msgid "fällig %(datum)s"
+msgstr "fällig %(datum)s"
+
+#: core/templates/core/mieter_rechnungen.html:28
+msgid "überfällig"
+msgstr "überfällig"
+
+#: core/templates/core/mieter_rechnungen.html:46
+msgid ""
+"Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug."
+msgstr "Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug."
+
+#: core/templates/core/mieter_rechnungen.html:53
+msgid "Bezahlte Rechnungen"
+msgstr "Bezahlte Rechnungen"
+
+#: core/templates/core/mieter_rechnungen.html:53
+msgid "(letzte 24 Monate)"
+msgstr "(letzte 24 Monate)"
+
+#: core/templates/core/mieter_rechnungen.html:61
+#: core/templates/fw/lieferantenkonten.html:41
+msgid "bezahlt"
+msgstr "bezahlt"
+
+#: core/templates/core/mieter_rechnungen.html:67
+#: core/templates/fw/buchhaltung.html:336
+#: core/templates/fw/buchhaltung.html:338
+#: core/templates/fw/buchhaltung.html:368
+#: core/templates/fw/buchhaltung.html:398
+#: core/templates/fw/buchhaltung.html:401
+msgid "Beleg"
+msgstr "Beleg"
+
+#: core/templates/core/mieter_schaden.html:3
+msgid "Schaden melden — Mieterportal"
+msgstr "Schaden melden — Mieterportal"
+
+#: core/templates/core/mieter_schaden.html:10
+msgid "Schaden / Reparatur melden"
+msgstr "Schaden / Reparatur melden"
+
+#: core/templates/core/mieter_schaden.html:11
+msgid ""
+"Ihre Meldung geht direkt an die Verwaltung — Sie erhalten eine Bestätigung "
+"per E-Mail."
+msgstr "Ihre Meldung geht direkt an die Verwaltung — Sie erhalten eine Bestätigung per E-Mail."
+
+#: core/templates/core/mieter_schaden.html:20
+#: core/templates/fw/bankabgleich.html:348 core/templates/fw/debitoren.html:193
+#: core/templates/fw/kreditoren.html:162 core/templates/fw/logbuch.html:98
+#: core/templates/fw/mahnwesen.html:66 core/templates/fw/mieterkonten.html:47
+#: core/templates/fw/mietzins.html:59 core/templates/fw/sollstellung.html:83
+#: core/templates/fw/vertraege.html:69 core/templates/fw/zahllauf.html:65
+#: core/templates/fw/zahllauf.html:148
+msgid "Objekt"
+msgstr "Objekt"
+
+#: core/templates/core/mieter_schaden.html:27
+msgid "Was ist betroffen?"
+msgstr "Was ist betroffen?"
+
+#: core/templates/core/mieter_schaden.html:28
+msgid "z.B. Wasserhahn tropft"
+msgstr "z.B. Wasserhahn tropft"
+
+#: core/templates/core/mieter_schaden.html:32
+msgid "Raum"
+msgstr "Raum"
+
+#: core/templates/core/mieter_schaden.html:33
+msgid "z.B. Badezimmer"
+msgstr "z.B. Badezimmer"
+
+#: core/templates/core/mieter_schaden.html:37
+#: core/templates/fw/debitoren.html:47
+msgid "Beschreibung"
+msgstr "Beschreibung"
+
+#: core/templates/core/mieter_schaden.html:38
+msgid "Bitte beschreiben Sie das Problem möglichst genau."
+msgstr "Bitte beschreiben Sie das Problem möglichst genau."
+
+#: core/templates/core/mieter_schaden.html:42
+msgid "Fotos"
+msgstr "Fotos"
+
+#: core/templates/core/mieter_schaden.html:42
+msgid "(optional, mehrere möglich)"
+msgstr "(optional, mehrere möglich)"
+
+#: core/templates/core/mieter_schaden.html:45
+msgid "Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen."
+msgstr "Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen."
+
+#: core/templates/core/mieter_schaden.html:48
+msgid "Meldung senden"
+msgstr "Meldung senden"
+
+#: core/templates/core/mieter_schaden.html:55
+msgid ""
+"Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie "
+"sich an Ihre Verwaltung."
+msgstr "Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung."
+
+#: core/templates/core/mieter_ticket_detail.html:3
+#: core/templates/core/mieter_ticket_detail.html:5
+#: core/templates/core/mieter_ticket_detail.html:17
+#: core/templates/core/mieter_tickets.html:28
+#, python-format
+msgid "Ticket #%(nr)s"
+msgstr "Ticket #%(nr)s"
+
+#: core/templates/core/mieter_ticket_detail.html:10
+msgid "Alle Meldungen"
+msgstr "Alle Meldungen"
+
+#: core/templates/core/mieter_ticket_detail.html:19
+#, python-format
+msgid "gemeldet %(zeit)s"
+msgstr "gemeldet %(zeit)s"
+
+#: core/templates/core/mieter_ticket_detail.html:31
+msgid "Verlauf"
+msgstr "Verlauf"
+
+#: core/templates/core/mieter_ticket_detail.html:44
+msgid ""
+"Noch keine Nachrichten. Schreiben Sie der Verwaltung unten eine Nachricht."
+msgstr "Noch keine Nachrichten. Schreiben Sie der Verwaltung unten eine Nachricht."
+
+#: core/templates/core/mieter_ticket_detail.html:52
+msgid "Nachricht an die Verwaltung"
+msgstr "Nachricht an die Verwaltung"
+
+#: core/templates/core/mieter_ticket_detail.html:53
+msgid "Ihre Nachricht oder Rückfrage…"
+msgstr "Ihre Nachricht oder Rückfrage…"
+
+#: core/templates/core/mieter_ticket_detail.html:56
+msgid "Nachricht senden"
+msgstr "Nachricht senden"
+
+#: core/templates/core/mieter_tickets.html:3
+msgid "Meine Meldungen — Mieterportal"
+msgstr "Meine Meldungen — Mieterportal"
+
+#: core/templates/core/mieter_tickets.html:5
+msgid "Meldungen"
+msgstr "Meldungen"
+
+#: core/templates/core/mieter_tickets.html:12
+msgid "Status und Verlauf Ihrer gemeldeten Schäden."
+msgstr "Status und Verlauf Ihrer gemeldeten Schäden."
+
+#: core/templates/core/mieter_tickets.html:15
+msgid "Neue Meldung"
+msgstr "Neue Meldung"
+
+#: core/templates/core/mieter_tickets.html:37
+msgid "Öffnen &amp; antworten"
+msgstr "Öffnen &amp; antworten"
+
+#: core/templates/core/mieter_tickets.html:45
+msgid "Noch keine Meldungen"
+msgstr "Noch keine Meldungen"
+
+#: core/templates/core/mieter_tickets.html:46
+msgid "Sie haben bisher keinen Schaden gemeldet."
+msgstr "Sie haben bisher keinen Schaden gemeldet."
+
+#: core/templates/core/passwort_reset.html:2
+msgid "Passwort vergessen?"
+msgstr "Passwort vergessen?"
+
+#: core/templates/core/passwort_reset.html:3
+msgid ""
+"Geben Sie Ihre E-Mail-Adresse ein — Sie erhalten einen Link, um ein neues "
+"Passwort zu setzen."
+msgstr "Geben Sie Ihre E-Mail-Adresse ein — Sie erhalten einen Link, um ein neues Passwort zu setzen."
+
+#: core/templates/core/passwort_reset.html:10
+msgid "ihre@email.ch"
+msgstr "ihre@email.ch"
+
+#: core/templates/core/passwort_reset.html:12
+msgid "Link anfordern"
+msgstr "Link anfordern"
+
+#: core/templates/core/passwort_reset_complete.html:5
+msgid "Passwort geändert"
+msgstr "Passwort geändert"
+
+#: core/templates/core/passwort_reset_complete.html:6
+msgid "Ihr neues Passwort ist aktiv. Sie können sich jetzt anmelden."
+msgstr "Ihr neues Passwort ist aktiv. Sie können sich jetzt anmelden."
+
+#: core/templates/core/passwort_reset_complete.html:7
+msgid "Zur Anmeldung"
+msgstr "Zur Anmeldung"
+
+#: core/templates/core/passwort_reset_confirm.html:4
+msgid "Neues Passwort setzen"
+msgstr "Neues Passwort setzen"
+
+#: core/templates/core/passwort_reset_confirm.html:17
+msgid "Passwort wiederholen"
+msgstr "Passwort wiederholen"
+
+#: core/templates/core/passwort_reset_confirm.html:21
+msgid "Passwort speichern"
+msgstr "Passwort speichern"
+
+#: core/templates/core/passwort_reset_confirm.html:26
+msgid "Link ungültig"
+msgstr "Link ungültig"
+
+#: core/templates/core/passwort_reset_confirm.html:27
+msgid "Der Link wurde bereits verwendet oder ist abgelaufen."
+msgstr "Der Link wurde bereits verwendet oder ist abgelaufen."
+
+#: core/templates/core/passwort_reset_confirm.html:27
+msgid "Neuen Link anfordern"
+msgstr "Neuen Link anfordern"
+
+#: core/templates/core/passwort_reset_done.html:5
+msgid "E-Mail unterwegs"
+msgstr "E-Mail unterwegs"
+
+#: core/templates/core/passwort_reset_done.html:6
+msgid ""
+"Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir Ihnen einen "
+"Link zum Zurücksetzen gesendet. Bitte prüfen Sie auch den Spam-Ordner."
+msgstr "Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir Ihnen einen Link zum Zurücksetzen gesendet. Bitte prüfen Sie auch den Spam-Ordner."
+
+#: core/templates/core/portal_base.html:7
+msgid "Portal — SwissImmo"
+msgstr "Portal — SwissImmo"
+
+#: core/templates/core/portal_base.html:32 core/templates/fw/base.html:138
+msgid "Menü schliessen"
+msgstr "Menü schliessen"
+
+#: core/templates/core/portal_base.html:45 core/templates/fw/base.html:259
+msgid "Abmelden"
+msgstr "Abmelden"
+
+#: core/templates/core/portal_base.html:55 core/templates/fw/base.html:209
+msgid "Menü öffnen"
+msgstr "Menü öffnen"
+
+#: core/templates/core/portal_base.html:70
+msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
+msgstr "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
 
 #: core/templates/core/postfach_form.html:3
 msgid "Postfach"
@@ -352,7 +976,9 @@ msgstr "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
 msgid ""
 "<strong>Klassischer Hoster</strong> (Hoststar, cyon, Infomaniak, eigener "
 "Server): Benutzername und Passwort."
-msgstr "<strong>Klassischer Hoster</strong> (Hoststar, cyon, Infomaniak, eigener Server): Benutzername und Passwort."
+msgstr ""
+"<strong>Klassischer Hoster</strong> (Hoststar, cyon, Infomaniak, eigener "
+"Server): Benutzername und Passwort."
 
 #: core/templates/core/postfach_form.html:24
 msgid ""
@@ -360,7 +986,11 @@ msgid ""
 "nicht das Kontopasswort. Setzt die Zwei-Faktor-Anmeldung im Google-Konto "
 "voraus. Bei Google Workspace kann der Administrator App-Passwörter gesperrt "
 "haben; dann bitte bei ihm nachfragen."
-msgstr "<strong>Gmail:</strong> Benutzername und <strong>App-Passwort</strong> — nicht das Kontopasswort. Setzt die Zwei-Faktor-Anmeldung im Google-Konto voraus. Bei Google Workspace kann der Administrator App-Passwörter gesperrt haben; dann bitte bei ihm nachfragen."
+msgstr ""
+"<strong>Gmail:</strong> Benutzername und <strong>App-Passwort</strong> — "
+"nicht das Kontopasswort. Setzt die Zwei-Faktor-Anmeldung im Google-Konto "
+"voraus. Bei Google Workspace kann der Administrator App-Passwörter gesperrt "
+"haben; dann bitte bei ihm nachfragen."
 
 #: core/templates/core/postfach_form.html:25
 msgid "Microsoft 365 / Exchange Online"
@@ -375,7 +1005,10 @@ msgid ""
 "Microsoft hat den Zugang mit Benutzername und Passwort abgeschaltet. Diese "
 "Anbindung ist neu und noch nicht mit einem Kundenverzeichnis erprobt; bitte "
 "melden Sie sich bei uns, wenn etwas nicht funktioniert."
-msgstr "Microsoft hat den Zugang mit Benutzername und Passwort abgeschaltet. Diese Anbindung ist neu und noch nicht mit einem Kundenverzeichnis erprobt; bitte melden Sie sich bei uns, wenn etwas nicht funktioniert."
+msgstr ""
+"Microsoft hat den Zugang mit Benutzername und Passwort abgeschaltet. Diese "
+"Anbindung ist neu und noch nicht mit einem Kundenverzeichnis erprobt; bitte "
+"melden Sie sich bei uns, wenn etwas nicht funktioniert."
 
 #: core/templates/core/postfach_form.html:31
 #: core/templates/core/postfach_liste.html:22
@@ -387,7 +1020,9 @@ msgstr "Auf dem Server fehlt %(name)s."
 msgid ""
 "Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich "
 "bei uns."
-msgstr "Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich bei uns."
+msgstr ""
+"Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich "
+"bei uns."
 
 #: core/templates/core/postfach_form.html:40
 msgid "Verfahren"
@@ -413,17 +1048,13 @@ msgstr "Port"
 msgid "Ordner"
 msgstr "Ordner"
 
-#: core/templates/core/postfach_form.html:85
-#: core/templates/core/zweifaktor_uebersicht.html:72
-#: core/templates/fw/benutzer_form.html:32
-msgid "Passwort"
-msgstr "Passwort"
-
 #: core/templates/core/postfach_form.html:91
 msgid ""
 "Ein Passwort ist hinterlegt. Aus Sicherheitsgründen wird es hier nicht "
 "angezeigt."
-msgstr "Ein Passwort ist hinterlegt. Aus Sicherheitsgründen wird es hier nicht angezeigt."
+msgstr ""
+"Ein Passwort ist hinterlegt. Aus Sicherheitsgründen wird es hier nicht "
+"angezeigt."
 
 #: core/templates/core/postfach_form.html:91
 msgid "Leer lassen heisst: unverändert."
@@ -453,7 +1084,9 @@ msgstr "Refresh-Token"
 msgid ""
 "Der geführte Zustimmungsablauf für Microsoft 365 ist noch nicht "
 "freigeschaltet. Bitte melden Sie sich bei uns."
-msgstr "Der geführte Zustimmungsablauf für Microsoft 365 ist noch nicht freigeschaltet. Bitte melden Sie sich bei uns."
+msgstr ""
+"Der geführte Zustimmungsablauf für Microsoft 365 ist noch nicht "
+"freigeschaltet. Bitte melden Sie sich bei uns."
 
 #: core/templates/core/postfach_form.html:134
 msgid "Eingang aktiv — Mails aus diesem Postfach abholen"
@@ -486,13 +1119,17 @@ msgstr "Postfächer"
 msgid ""
 "Der E-Mail-Eingang Ihrer Verwaltung: Antworten auf Ticket-Mails und "
 "eingehende Kreditorenrechnungen werden aus diesen Postfächern abgeholt."
-msgstr "Der E-Mail-Eingang Ihrer Verwaltung: Antworten auf Ticket-Mails und eingehende Kreditorenrechnungen werden aus diesen Postfächern abgeholt."
+msgstr ""
+"Der E-Mail-Eingang Ihrer Verwaltung: Antworten auf Ticket-Mails und "
+"eingehende Kreditorenrechnungen werden aus diesen Postfächern abgeholt."
 
 #: core/templates/core/postfach_liste.html:23
 msgid ""
 "Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen — "
 "Speichern schlägt fehl. Bitte melden Sie sich bei uns."
-msgstr "Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen — Speichern schlägt fehl. Bitte melden Sie sich bei uns."
+msgstr ""
+"Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen — "
+"Speichern schlägt fehl. Bitte melden Sie sich bei uns."
 
 #: core/templates/core/postfach_liste.html:49
 msgid "abgeschaltet"
@@ -540,7 +1177,9 @@ msgstr "Verbindung prüfen"
 msgid ""
 "Postfach «%(name)s» wirklich löschen? Der Abruf für diesen Zweck ist danach "
 "abgeschaltet."
-msgstr "Postfach «%(name)s» wirklich löschen? Der Abruf für diesen Zweck ist danach abgeschaltet."
+msgstr ""
+"Postfach «%(name)s» wirklich löschen? Der Abruf für diesen Zweck ist danach "
+"abgeschaltet."
 
 #: core/templates/core/postfach_liste.html:91
 #: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
@@ -562,15 +1201,13 @@ msgstr "Bestätigung"
 msgid "Aus Sicherheitsgründen wurde der Vorgang abgebrochen."
 msgstr "Aus Sicherheitsgründen wurde der Vorgang abgebrochen."
 
-#: core/templates/core/zweifaktor_bestaetigen.html:47
-msgid "Zurück zur Anmeldung"
-msgstr "Zurück zur Anmeldung"
-
 #: core/templates/core/zweifaktor_bestaetigen.html:49
 msgid ""
 "Öffnen Sie Ihre Authenticator-App und geben Sie den angezeigten "
 "sechsstelligen Code ein. Er wechselt alle 30 Sekunden."
-msgstr "Öffnen Sie Ihre Authenticator-App und geben Sie den angezeigten sechsstelligen Code ein. Er wechselt alle 30 Sekunden."
+msgstr ""
+"Öffnen Sie Ihre Authenticator-App und geben Sie den angezeigten "
+"sechsstelligen Code ein. Er wechselt alle 30 Sekunden."
 
 #: core/templates/core/zweifaktor_bestaetigen.html:55
 msgid "Code"
@@ -585,7 +1222,9 @@ msgstr "Bestätigen"
 msgid ""
 "Telefon nicht zur Hand? Geben Sie stattdessen einen Ihrer "
 "<strong>Notfallcodes</strong> ein — jeder gilt genau einmal."
-msgstr "Telefon nicht zur Hand? Geben Sie stattdessen einen Ihrer <strong>Notfallcodes</strong> ein — jeder gilt genau einmal."
+msgstr ""
+"Telefon nicht zur Hand? Geben Sie stattdessen einen Ihrer "
+"<strong>Notfallcodes</strong> ein — jeder gilt genau einmal."
 
 #: core/templates/core/zweifaktor_bestaetigen.html:64
 msgid "Abbrechen und neu anmelden"
@@ -614,13 +1253,18 @@ msgid ""
 "Gespeichert wird nur ein Hash — wir können sie Ihnen später nicht noch "
 "einmal zeigen, nur neu erzeugen. Ohne Codes und ohne Telefon kommt niemand "
 "mehr an Ihren Zugang."
-msgstr "Gespeichert wird nur ein Hash — wir können sie Ihnen später nicht noch einmal zeigen, nur neu erzeugen. Ohne Codes und ohne Telefon kommt niemand mehr an Ihren Zugang."
+msgstr ""
+"Gespeichert wird nur ein Hash — wir können sie Ihnen später nicht noch "
+"einmal zeigen, nur neu erzeugen. Ohne Codes und ohne Telefon kommt niemand "
+"mehr an Ihren Zugang."
 
 #: core/templates/core/zweifaktor_codes.html:25
 msgid ""
 "Jeder Code gilt genau einmal und ersetzt bei der Anmeldung den Code aus der "
 "App."
-msgstr "Jeder Code gilt genau einmal und ersetzt bei der Anmeldung den Code aus der App."
+msgstr ""
+"Jeder Code gilt genau einmal und ersetzt bei der Anmeldung den Code aus der "
+"App."
 
 #: core/templates/core/zweifaktor_codes.html:32
 msgid "Drucken"
@@ -642,13 +1286,17 @@ msgstr "Zwei-Faktor-Anmeldung einrichten"
 msgid ""
 "Ein zweiter Faktor schützt den Zugang auch dann, wenn das Passwort in fremde "
 "Hände gerät."
-msgstr "Ein zweiter Faktor schützt den Zugang auch dann, wenn das Passwort in fremde Hände gerät."
+msgstr ""
+"Ein zweiter Faktor schützt den Zugang auch dann, wenn das Passwort in fremde "
+"Hände gerät."
 
 #: core/templates/core/zweifaktor_einrichten.html:15
 msgid ""
 "Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung. Ohne Einrichtung ist die "
 "Oberfläche gesperrt."
-msgstr "Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung. Ohne Einrichtung ist die Oberfläche gesperrt."
+msgstr ""
+"Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung. Ohne Einrichtung ist die "
+"Oberfläche gesperrt."
 
 #: core/templates/core/zweifaktor_einrichten.html:20
 msgid "Schritt 1 — Code scannen"
@@ -658,7 +1306,9 @@ msgstr "Schritt 1 — Code scannen"
 msgid ""
 "Scannen Sie den QR-Code mit einer Authenticator-App (Google Authenticator, "
 "1Password, Aegis, Microsoft Authenticator — alle funktionieren)."
-msgstr "Scannen Sie den QR-Code mit einer Authenticator-App (Google Authenticator, 1Password, Aegis, Microsoft Authenticator — alle funktionieren)."
+msgstr ""
+"Scannen Sie den QR-Code mit einer Authenticator-App (Google Authenticator, "
+"1Password, Aegis, Microsoft Authenticator — alle funktionieren)."
 
 #: core/templates/core/zweifaktor_einrichten.html:29
 msgid "Kein Scanner zur Hand?"
@@ -680,7 +1330,9 @@ msgstr "Schritt 2 — Code bestätigen"
 msgid ""
 "Damit ist belegt, dass die App richtig eingerichtet ist. Erst danach gilt "
 "der zweite Faktor — wer hier abbricht, sperrt sich nicht aus."
-msgstr "Damit ist belegt, dass die App richtig eingerichtet ist. Erst danach gilt der zweite Faktor — wer hier abbricht, sperrt sich nicht aus."
+msgstr ""
+"Damit ist belegt, dass die App richtig eingerichtet ist. Erst danach gilt "
+"der zweite Faktor — wer hier abbricht, sperrt sich nicht aus."
 
 #: core/templates/core/zweifaktor_einrichten.html:53
 msgid "Aktivieren"
@@ -690,7 +1342,9 @@ msgstr "Aktivieren"
 msgid ""
 "Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
 "Code aus Ihrer Authenticator-App."
-msgstr "Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen Code aus Ihrer Authenticator-App."
+msgstr ""
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Code aus Ihrer Authenticator-App."
 
 #: core/templates/core/zweifaktor_uebersicht.html:24
 #: core/templates/fw/abonnement.html:38 core/templates/fw/integrationen.html:61
@@ -746,7 +1400,9 @@ msgstr "Abschalten"
 msgid ""
 "Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung — sie lässt sich nicht "
 "abschalten."
-msgstr "Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung — sie lässt sich nicht abschalten."
+msgstr ""
+"Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung — sie lässt sich nicht "
+"abschalten."
 
 #: core/templates/core/zweifaktor_uebersicht.html:68
 msgid "Zur Sicherheit ist dafür Ihr Passwort nötig."
@@ -762,7 +1418,10 @@ msgid ""
 "Alle Konten von <strong>%(firma)s</strong> müssen den zweiten Faktor "
 "einrichten. Wer ihn noch nicht hat, landet beim nächsten Aufruf auf der "
 "Einrichtungsseite."
-msgstr "Alle Konten von <strong>%(firma)s</strong> müssen den zweiten Faktor einrichten. Wer ihn noch nicht hat, landet beim nächsten Aufruf auf der Einrichtungsseite."
+msgstr ""
+"Alle Konten von <strong>%(firma)s</strong> müssen den zweiten Faktor "
+"einrichten. Wer ihn noch nicht hat, landet beim nächsten Aufruf auf der "
+"Einrichtungsseite."
 
 #: core/templates/core/zweifaktor_uebersicht.html:94
 msgid "Pflicht aufheben"
@@ -773,7 +1432,10 @@ msgid ""
 "Verlangt die Einrichtung von allen Konten dieser Verwaltung. Bereits "
 "angemeldete Sitzungen sind ab sofort betroffen — nicht erst beim nächsten "
 "Login."
-msgstr "Verlangt die Einrichtung von allen Konten dieser Verwaltung. Bereits angemeldete Sitzungen sind ab sofort betroffen — nicht erst beim nächsten Login."
+msgstr ""
+"Verlangt die Einrichtung von allen Konten dieser Verwaltung. Bereits "
+"angemeldete Sitzungen sind ab sofort betroffen — nicht erst beim nächsten "
+"Login."
 
 #: core/templates/core/zweifaktor_uebersicht.html:102
 #, python-format
@@ -786,7 +1448,9 @@ msgstr[1] "%(n)s Konten ohne zweiten Faktor:"
 msgid ""
 "Sie können ab dem Einschalten nur noch die Einrichtungsseite aufrufen. Wer "
 "gerade kein Telefon zur Hand hat, kommt bis dahin nicht weiter."
-msgstr "Sie können ab dem Einschalten nur noch die Einrichtungsseite aufrufen. Wer gerade kein Telefon zur Hand hat, kommt bis dahin nicht weiter."
+msgstr ""
+"Sie können ab dem Einschalten nur noch die Einrichtungsseite aufrufen. Wer "
+"gerade kein Telefon zur Hand hat, kommt bis dahin nicht weiter."
 
 #: core/templates/core/zweifaktor_uebersicht.html:112
 msgid "Für alle verlangen"
@@ -847,7 +1511,7 @@ msgstr "ohne Datum — Liegezeit nicht berechenbar"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:434
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:451
 msgid "Abwesenheiten"
 msgstr "Abwesenheiten"
 
@@ -1276,18 +1940,6 @@ msgstr "PLZ"
 msgid "Ort"
 msgstr "Ort"
 
-#: core/templates/fw/account.html:100 core/templates/fw/dienstleister.html:35
-#: core/templates/fw/dienstleister.html:103
-msgid "Telefon"
-msgstr "Telefon"
-
-#: core/templates/fw/account.html:102 core/templates/fw/benutzer.html:18
-#: core/templates/fw/benutzer_form.html:30
-#: core/templates/fw/dienstleister.html:33
-#: core/templates/fw/dienstleister.html:101
-msgid "E-Mail"
-msgstr "E-Mail"
-
 #: core/templates/fw/account.html:120
 msgid "Stundensatz (CHF/h)"
 msgstr "Stundensatz (CHF/h)"
@@ -1398,11 +2050,6 @@ msgstr "Kum. AfA"
 #: core/templates/fw/anlagen.html:29
 msgid "Buchwert"
 msgstr "Buchwert"
-
-#: core/templates/fw/anlagen.html:34
-#, python-format
-msgid "seit %(datum)s"
-msgstr "seit %(datum)s"
 
 #: core/templates/fw/anlagen.html:43
 msgid "Noch keine Anlagen erfasst."
@@ -1649,10 +2296,6 @@ msgid "importiert %(zeit)s"
 msgstr "importiert %(zeit)s"
 
 #: core/templates/fw/bankabgleich.html:69
-msgid "Kontoauszug"
-msgstr "Kontoauszug"
-
-#: core/templates/fw/bankabgleich.html:69
 #, python-format
 msgid "Import «%(name)s» wirklich rückgängig machen?"
 msgstr "Import «%(name)s» wirklich rückgängig machen?"
@@ -1845,11 +2488,6 @@ msgid "Für die Sammelzuordnung auswählen"
 msgstr "Für die Sammelzuordnung auswählen"
 
 #: core/templates/fw/bankabgleich.html:262
-#: core/templates/fw/mieterkonten.html:64 core/templates/fw/mwst.html:96
-msgid "Guthaben"
-msgstr "Guthaben"
-
-#: core/templates/fw/bankabgleich.html:262
 msgid "Ungeklärt"
 msgstr "Ungeklärt"
 
@@ -1905,26 +2543,9 @@ msgstr "Fällig"
 msgid "Mieter"
 msgstr "Mieter"
 
-#: core/templates/fw/bankabgleich.html:348 core/templates/fw/debitoren.html:193
-#: core/templates/fw/kreditoren.html:162 core/templates/fw/logbuch.html:98
-#: core/templates/fw/mahnwesen.html:66 core/templates/fw/mieterkonten.html:47
-#: core/templates/fw/mietzins.html:59 core/templates/fw/sollstellung.html:83
-#: core/templates/fw/vertraege.html:69 core/templates/fw/zahllauf.html:65
-#: core/templates/fw/zahllauf.html:148
-msgid "Objekt"
-msgstr "Objekt"
-
 #: core/templates/fw/bankabgleich.html:349
 msgid "QRR-Referenz"
 msgstr "QRR-Referenz"
-
-#: core/templates/fw/bankabgleich.html:350 core/templates/fw/debitoren.html:196
-#: core/templates/fw/laeufe.html:20 core/templates/fw/lieferantenkonten.html:30
-#: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
-#: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
-#: core/views/fw/_basis.py:353
-msgid "Offen"
-msgstr "Offen"
 
 #: core/templates/fw/bankabgleich.html:351
 msgid "Abgleich"
@@ -2059,10 +2680,6 @@ msgstr "Mandant wechseln"
 msgid "Menü ein-/ausklappen"
 msgstr "Menü ein-/ausklappen"
 
-#: core/templates/fw/base.html:138
-msgid "Menü schliessen"
-msgstr "Menü schliessen"
-
 #: core/templates/fw/base.html:145
 msgid "Globaler Filter"
 msgstr "Globaler Filter"
@@ -2070,10 +2687,6 @@ msgstr "Globaler Filter"
 #: core/templates/fw/base.html:148
 msgid "Liegenschaft auswählen"
 msgstr "Liegenschaft auswählen"
-
-#: core/templates/fw/base.html:209
-msgid "Menü öffnen"
-msgstr "Menü öffnen"
 
 #: core/templates/fw/base.html:213
 msgid "Suche nach Person, Objekt, Vertrag …"
@@ -2094,10 +2707,6 @@ msgstr "Hell"
 #: core/templates/fw/base.html:248
 msgid "Dunkel"
 msgstr "Dunkel"
-
-#: core/templates/fw/base.html:259
-msgid "Abmelden"
-msgstr "Abmelden"
 
 #: core/templates/fw/base.html:274
 msgid "Meldung schliessen"
@@ -2144,10 +2753,6 @@ msgid_plural "%(n)s Team-Mitglieder mit Zugriff auf die Verwaltung."
 msgstr[0] "%(n)s Team-Mitglied mit Zugriff auf die Verwaltung."
 msgstr[1] "%(n)s Team-Mitglieder mit Zugriff auf die Verwaltung."
 
-#: core/templates/fw/benutzer.html:17 core/templates/fw/personen.html:66
-msgid "Name"
-msgstr "Name"
-
 #: core/templates/fw/benutzer.html:17 core/templates/fw/benutzer_form.html:41
 msgid "Rolle"
 msgstr "Rolle"
@@ -2193,6 +2798,7 @@ msgid "%(name)s bearbeiten"
 msgstr "%(name)s bearbeiten"
 
 #: core/templates/fw/benutzer_form.html:8 core/templates/fw/vorlage_form.html:8
+#: core/views/portal.py:750
 msgid "Neu"
 msgstr "Neu"
 
@@ -2535,11 +3141,6 @@ msgstr "Text oder Beleg-Nr"
 msgid "z.B. Hauswartung, 2024-0042"
 msgstr "z.B. Hauswartung, 2024-0042"
 
-#: core/templates/fw/buchhaltung.html:283 core/templates/fw/kontenplan.html:84
-#: core/templates/fw/kreditoren.html:163 core/templates/fw/kreditoren.html:343
-msgid "Konto"
-msgstr "Konto"
-
 #: core/templates/fw/buchhaltung.html:292
 msgid "Bis"
 msgstr "Bis"
@@ -2568,14 +3169,6 @@ msgstr "storniert"
 #, python-format
 msgid "%(soll)s an %(haben)s"
 msgstr "%(soll)s an %(haben)s"
-
-#: core/templates/fw/buchhaltung.html:336
-#: core/templates/fw/buchhaltung.html:338
-#: core/templates/fw/buchhaltung.html:368
-#: core/templates/fw/buchhaltung.html:398
-#: core/templates/fw/buchhaltung.html:401
-msgid "Beleg"
-msgstr "Beleg"
 
 #: core/templates/fw/buchhaltung.html:340
 #: core/templates/fw/buchhaltung.html:404
@@ -2825,12 +3418,6 @@ msgstr[1] "%(n)s Objekte"
 msgid "%(n)s leer"
 msgstr "%(n)s leer"
 
-#: core/templates/fw/dashboard.html:348 core/views/fw/listen.py:767
-#: core/views/fw/listen.py:770
-#, python-format
-msgid "CHF %(betrag)s offen"
-msgstr "CHF %(betrag)s offen"
-
 #: core/templates/fw/dashboard.html:350
 #: core/templates/fw/liegenschaften.html:90
 msgid "ohne Befund"
@@ -2931,10 +3518,6 @@ msgstr "Mieter / Vertrag"
 msgid "ohne Vertrag"
 msgstr "ohne Vertrag"
 
-#: core/templates/fw/debitoren.html:47
-msgid "Beschreibung"
-msgstr "Beschreibung"
-
 #: core/templates/fw/debitoren.html:50
 msgid ""
 "Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugst du danach über den "
@@ -2955,11 +3538,6 @@ msgstr "Total offen"
 msgid "aus Sollstellung + Weiterverrechnung"
 msgstr "aus Sollstellung + Weiterverrechnung"
 
-#: core/templates/fw/debitoren.html:110
-#: core/templates/fw/lieferantenkonten.html:28
-msgid "Rechnungen"
-msgstr "Rechnungen"
-
 #: core/templates/fw/debitoren.html:113
 msgid "Überfällig"
 msgstr "Überfällig"
@@ -2975,11 +3553,6 @@ msgstr "Mieter oder Titel suchen…"
 #: core/templates/fw/debitoren.html:133
 msgid "Debitoren nach Mieter oder Titel durchsuchen"
 msgstr "Debitoren nach Mieter oder Titel durchsuchen"
-
-#: core/templates/fw/debitoren.html:149
-#, python-format
-msgid "fällig %(datum)s"
-msgstr "fällig %(datum)s"
 
 #: core/templates/fw/debitoren.html:156
 msgid "offen"
@@ -4257,10 +4830,6 @@ msgstr "Nur mit offenem Saldo (%(n)s)"
 msgid "Volumen"
 msgstr "Volumen"
 
-#: core/templates/fw/lieferantenkonten.html:41
-msgid "bezahlt"
-msgstr "bezahlt"
-
 #: core/templates/fw/lieferantenkonten.html:46
 msgid "Keine Lieferantenkonten"
 msgstr "Keine Lieferantenkonten"
@@ -4666,10 +5235,6 @@ msgstr[1] "%(n)s Eigentümer, für die du Liegenschaften verwaltest."
 msgid "Eigentümer"
 msgstr "Eigentümer"
 
-#: core/templates/fw/mandate.html:16 core/templates/fw/personen.html:67
-msgid "Kontakt"
-msgstr "Kontakt"
-
 #: core/templates/fw/mandate.html:17
 msgid "Liegensch."
 msgstr "Liegensch."
@@ -4805,11 +5370,6 @@ msgstr "%(quote)s%% Leerstand"
 #: core/templates/fw/mieterspiegel.html:63
 msgid "Einheit"
 msgstr "Einheit"
-
-#: core/templates/fw/mieterspiegel.html:65
-#: core/templates/fw/sollstellung.html:84 core/templates/fw/vertraege.html:72
-msgid "Netto"
-msgstr "Netto"
 
 #: core/templates/fw/mieterspiegel.html:67 core/templates/fw/vertraege.html:52
 #: core/templates/fw/vertraege.html:74
@@ -5329,7 +5889,9 @@ msgstr "Regelsatz bearbeiten"
 msgid ""
 "Ein Satz je Kanton. Fehlt der Kanton, gilt der Satz für alle Liegenschaften "
 "dieser Verwaltung."
-msgstr "Ein Satz je Kanton. Fehlt der Kanton, gilt der Satz für alle Liegenschaften dieser Verwaltung."
+msgstr ""
+"Ein Satz je Kanton. Fehlt der Kanton, gilt der Satz für alle Liegenschaften "
+"dieser Verwaltung."
 
 #: core/templates/fw/regelsatz_form.html:17
 msgid "Geltungsbereich"
@@ -5381,7 +5943,11 @@ msgid ""
 "eine <b>Sperre</b> wird. Setze es erst, wenn jemand die Regeln fachlich "
 "gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche "
 "Warnung nicht."
-msgstr "Das Kennzeichen «geprüft» ist die einzige Stelle, an der aus einer Warnung eine <b>Sperre</b> wird. Setze es erst, wenn jemand die Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche Warnung nicht."
+msgstr ""
+"Das Kennzeichen «geprüft» ist die einzige Stelle, an der aus einer Warnung "
+"eine <b>Sperre</b> wird. Setze es erst, wenn jemand die Regeln fachlich "
+"gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche "
+"Warnung nicht."
 
 #: core/templates/fw/regelsatz_form.html:62 core/templates/fw/regelwerk.html:80
 msgid "prüft noch nichts"
@@ -5397,7 +5963,11 @@ msgid ""
 "pruefen</code> noch nicht gerechnet. Sie lässt sich erfassen und "
 "dokumentieren, prüft aber nichts — ausdrücklich vermerkt, damit niemand eine "
 "Absicherung annimmt, die es nicht gibt."
-msgstr "Diese Regelart ist als Datenmodell vorhanden, aber in <code>faelle.regelwerk.pruefen</code> noch nicht gerechnet. Sie lässt sich erfassen und dokumentieren, prüft aber nichts — ausdrücklich vermerkt, damit niemand eine Absicherung annimmt, die es nicht gibt."
+msgstr ""
+"Diese Regelart ist als Datenmodell vorhanden, aber in <code>faelle.regelwerk."
+"pruefen</code> noch nicht gerechnet. Sie lässt sich erfassen und "
+"dokumentieren, prüft aber nichts — ausdrücklich vermerkt, damit niemand eine "
+"Absicherung annimmt, die es nicht gibt."
 
 #: core/templates/fw/regelsatz_form.html:86
 msgid "Begründung / Fundstelle"
@@ -5426,7 +5996,8 @@ msgstr "wirkt erst, wenn der Regelsatz als geprüft gilt"
 #: core/templates/fw/regelsatz_form.html:113
 msgid ""
 "Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten."
-msgstr "Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten."
+msgstr ""
+"Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten."
 
 #: core/templates/fw/regelsatz_form.html:115
 msgid "Regelsatz löschen"
@@ -5436,7 +6007,9 @@ msgstr "Regelsatz löschen"
 msgid ""
 "Fristen und Termine als Daten, nicht als Programmcode — damit eine "
 "Berichtigung eine Eingabe ist und keine Auslieferung."
-msgstr "Fristen und Termine als Daten, nicht als Programmcode — damit eine Berichtigung eine Eingabe ist und keine Auslieferung."
+msgstr ""
+"Fristen und Termine als Daten, nicht als Programmcode — damit eine "
+"Berichtigung eine Eingabe ist und keine Auslieferung."
 
 #: core/templates/fw/regelwerk.html:17
 msgid "Protokoll"
@@ -5458,7 +6031,13 @@ msgid ""
 "Kündigungen weichen ab. Solange ein Regelsatz nicht als geprüft "
 "gekennzeichnet ist, <b>warnt</b> er nur und hält nichts an. Erst das "
 "Kennzeichen «juristisch geprüft» schaltet eine Sperre scharf."
-msgstr "Sie geben die gesetzliche Grundregel wieder — drei Monate auf einen ortsüblichen Termin (Art. 266c OR). Ortsübliche Termine sind kantonal verschieden, Geschäftsräume, befristete Verhältnisse und ausserordentliche Kündigungen weichen ab. Solange ein Regelsatz nicht als geprüft gekennzeichnet ist, <b>warnt</b> er nur und hält nichts an. Erst das Kennzeichen «juristisch geprüft» schaltet eine Sperre scharf."
+msgstr ""
+"Sie geben die gesetzliche Grundregel wieder — drei Monate auf einen "
+"ortsüblichen Termin (Art. 266c OR). Ortsübliche Termine sind kantonal "
+"verschieden, Geschäftsräume, befristete Verhältnisse und ausserordentliche "
+"Kündigungen weichen ab. Solange ein Regelsatz nicht als geprüft "
+"gekennzeichnet ist, <b>warnt</b> er nur und hält nichts an. Erst das "
+"Kennzeichen «juristisch geprüft» schaltet eine Sperre scharf."
 
 #: core/templates/fw/regelwerk.html:37
 #, python-format
@@ -5471,7 +6050,9 @@ msgstr[1] "%(n)s Beanstandungen ohne Übersteuerung"
 msgid ""
 "Ein Befund wurde beanstandet und weder korrigiert noch mit Begründung "
 "überstimmt."
-msgstr "Ein Befund wurde beanstandet und weder korrigiert noch mit Begründung überstimmt."
+msgstr ""
+"Ein Befund wurde beanstandet und weder korrigiert noch mit Begründung "
+"überstimmt."
 
 #: core/templates/fw/regelwerk.html:39
 msgid "Im Protokoll ansehen"
@@ -5514,7 +6095,10 @@ msgid ""
 "Ohne Regelsatz prüft die Kündigungserfassung nur gegen die Angaben im "
 "einzelnen Vertrag — Frist und Termine, wie sie dort stehen. Das ist keine "
 "Fehlfunktion, aber es gibt weder eine kantonale Fassung noch eine Sperre."
-msgstr "Ohne Regelsatz prüft die Kündigungserfassung nur gegen die Angaben im einzelnen Vertrag — Frist und Termine, wie sie dort stehen. Das ist keine Fehlfunktion, aber es gibt weder eine kantonale Fassung noch eine Sperre."
+msgstr ""
+"Ohne Regelsatz prüft die Kündigungserfassung nur gegen die Angaben im "
+"einzelnen Vertrag — Frist und Termine, wie sie dort stehen. Das ist keine "
+"Fehlfunktion, aber es gibt weder eine kantonale Fassung noch eine Sperre."
 
 #: core/templates/fw/regelwerk.html:93
 msgid "Ersten Regelsatz anlegen"
@@ -5556,7 +6140,9 @@ msgstr "Regelprotokoll"
 msgid ""
 "Welche Regel hat wann was zu welcher Eingabe gesagt — auch dann, wenn nichts "
 "zu beanstanden war."
-msgstr "Welche Regel hat wann was zu welcher Eingabe gesagt — auch dann, wenn nichts zu beanstanden war."
+msgstr ""
+"Welche Regel hat wann was zu welcher Eingabe gesagt — auch dann, wenn nichts "
+"zu beanstanden war."
 
 #: core/templates/fw/regelwerk_protokoll.html:17
 msgid "Zum Regelwerk"
@@ -5760,7 +6346,7 @@ msgstr "z.B. Perdtemps 3, EG"
 msgid "%(min)s Min."
 msgstr "%(min)s Min."
 
-#: core/templates/fw/termine.html:51
+#: core/templates/fw/termine.html:51 core/views/portal.py:754
 msgid "Erledigt"
 msgstr "Erledigt"
 
@@ -6550,6 +7136,18 @@ msgstr "DocuSeal-Vertragssignatur inkl."
 #: core/views/fw/profil.py:1057
 msgid "Prioritäts-Support & Onboarding"
 msgstr "Prioritäts-Support & Onboarding"
+
+#: core/views/portal.py:751
+msgid "In Bearbeitung"
+msgstr "In Bearbeitung"
+
+#: core/views/portal.py:752
+msgid "Warte auf Sie"
+msgstr "Warte auf Sie"
+
+#: core/views/portal.py:753
+msgid "Handwerker beauftragt"
+msgstr "Handwerker beauftragt"
 
 #~ msgid "Arbeit"
 #~ msgstr "Arbeit"

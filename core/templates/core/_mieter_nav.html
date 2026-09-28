@@ -1,34 +1,34 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 {% comment %}Gemeinsame Mieterportal-Sidebar. Parameter: aktiv
 (uebersicht|rechnungen|dokumente|meldungen|schaden|kuendigung){% endcomment %}
 <a href="/mieter/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'uebersicht' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'liegenschaft' klasse='w-5 text-center' %} Übersicht
+    {% zeichen 'liegenschaft' klasse='w-5 text-center' %} {% trans "Übersicht" %}
 </a>
 <a href="/mieter/rechnungen/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'rechnungen' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'rechnung' klasse='w-5 text-center' %} Rechnungen
+    {% zeichen 'rechnung' klasse='w-5 text-center' %} {% trans "Rechnungen" %}
 </a>
 <a href="/mieter/dokumente/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'dokumente' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'dokument' klasse='w-5 text-center' %} Dokumente
+    {% zeichen 'dokument' klasse='w-5 text-center' %} {% trans "Dokumente" %}
 </a>
 <a href="/mieter/tickets/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'meldungen' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'arbeit' klasse='w-5 text-center' %} Meine Meldungen
+    {% zeichen 'arbeit' klasse='w-5 text-center' %} {% trans "Meine Meldungen" %}
 </a>
 
-<div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] fw-mutet">Service</div>
+<div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] fw-mutet">{% trans "Service" %}</div>
 <a href="/mieter/schaden/neu/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'schaden' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'warnung' klasse='w-5 text-center' %} Schaden melden
+    {% zeichen 'warnung' klasse='w-5 text-center' %} {% trans "Schaden melden" %}
 </a>
 <a href="/mieter/konto/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'konto' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'recht' klasse='w-5 text-center' %} Mieterkonto
+    {% zeichen 'recht' klasse='w-5 text-center' %} {% trans "Mieterkonto" %}
 </a>
 <a href="/mieter/kuendigung/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'kuendigung' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'senden' klasse='w-5 text-center' %} Kündigung
+    {% zeichen 'senden' klasse='w-5 text-center' %} {% trans "Kündigung" %}
 </a>
 
-<div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] fw-mutet">Konto</div>
+<div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] fw-mutet">{% trans "Konto" %}</div>
 <a href="/mieter/daten/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'daten' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'person' klasse='w-5 text-center' %} Meine Daten
+    {% zeichen 'person' klasse='w-5 text-center' %} {% trans "Meine Daten" %}
 </a>
 <a href="/mieter/passwort/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'passwort' %}fw-btn fw-primary{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
-    {% zeichen 'schluessel' klasse='w-5 text-center' %} Passwort ändern
+    {% zeichen 'schluessel' klasse='w-5 text-center' %} {% trans "Passwort ändern" %}
 </a>

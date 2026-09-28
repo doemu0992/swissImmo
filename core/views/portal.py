@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.translation import gettext_lazy
 from django.views.decorators.cache import never_cache
 
 from core.auth import hat_rolle, ist_eigentuemer, TEAM_ROLLEN
@@ -746,11 +747,11 @@ def _verwaltung_empfaenger(lg):
 
 # Status → (Label, Tailwind-Klassen) fürs Mieterportal
 TICKET_STATUS_PILL = {
-    'neu':                  ('Neu',                 'fw-krit-flaeche fw-kritisch'),
-    'in_bearbeitung':       ('In Bearbeitung',      'fw-info-flaeche fw-info'),
-    'warte_auf_mieter':     ('Warte auf Sie',       'fw-warn-flaeche fw-warnton'),
-    'warte_auf_handwerker': ('Handwerker beauftragt','fw-markenflaeche fw-marke'),
-    'erledigt':             ('Erledigt',            'fw-gut-flaeche fw-gut'),
+    'neu':                  (gettext_lazy('Neu'),                 'fw-krit-flaeche fw-kritisch'),
+    'in_bearbeitung':       (gettext_lazy('In Bearbeitung'),      'fw-info-flaeche fw-info'),
+    'warte_auf_mieter':     (gettext_lazy('Warte auf Sie'),       'fw-warn-flaeche fw-warnton'),
+    'warte_auf_handwerker': (gettext_lazy('Handwerker beauftragt'), 'fw-markenflaeche fw-marke'),
+    'erledigt':             (gettext_lazy('Erledigt'),            'fw-gut-flaeche fw-gut'),
 }
 
 

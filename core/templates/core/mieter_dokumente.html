@@ -1,14 +1,14 @@
 {% extends 'core/portal_base.html' %}
-{% load zeichen %}
-{% block title %}Dokumente — Mieterportal{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Dokumente — Mieterportal" %}{% endblock %}
 {% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-dokument"/></svg>{% endblock %}
-{% block brand_mobile %}Dokumente{% endblock %}
+{% block brand_mobile %}{% trans "Dokumente" %}{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='dokumente' %}{% endblock %}
 
 {% block content %}
     <div class="mb-6">
-        <h1 class="text-2xl font-black tracking-tight fw-strong">Dokumente</h1>
-        <p class="fw-mutet mt-1">Vertrag, Korrespondenz und weitere Unterlagen.</p>
+        <h1 class="text-2xl font-black tracking-tight fw-strong">{% trans "Dokumente" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Vertrag, Korrespondenz und weitere Unterlagen." %}</p>
     </div>
 
     {% if dok_gruppen %}
@@ -35,8 +35,8 @@
     {% else %}
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
         <span class="w-14 h-14 rounded-2xl fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-4">{% zeichen 'dokument' klasse='text-xl' %}</span>
-        <p class="font-semibold fw-ink">Noch keine Dokumente</p>
-        <p class="text-sm fw-faint mt-1">Sobald Ihre Verwaltung Unterlagen freigibt, erscheinen sie hier.</p>
+        <p class="font-semibold fw-ink">{% trans "Noch keine Dokumente" %}</p>
+        <p class="text-sm fw-faint mt-1">{% trans "Sobald Ihre Verwaltung Unterlagen freigibt, erscheinen sie hier." %}</p>
     </div>
     {% endif %}
 {% endblock %}

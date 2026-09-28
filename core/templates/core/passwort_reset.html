@@ -1,14 +1,14 @@
-{% include 'core/_passwort_shell_top.html' %}
-<h3 class="text-lg font-bold fw-strong mb-2">Passwort vergessen?</h3>
-<p class="text-sm fw-mutet mb-6">Geben Sie Ihre E-Mail-Adresse ein — Sie erhalten einen Link, um ein neues Passwort zu setzen.</p>
+{% load i18n %}{% include 'core/_passwort_shell_top.html' %}
+<h3 class="text-lg font-bold fw-strong mb-2">{% trans "Passwort vergessen?" %}</h3>
+<p class="text-sm fw-mutet mb-6">{% trans "Geben Sie Ihre E-Mail-Adresse ein — Sie erhalten einen Link, um ein neues Passwort zu setzen." %}</p>
 <form method="post" class="space-y-5">
     {% csrf_token %}
     <div>
-        <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">E-Mail</label>
+        <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "E-Mail" %}</label>
         <input type="email" name="email" required autofocus autocomplete="email"
                class="w-full fw-flaeche2 border fw-linie px-4 py-3 rounded-xl text-sm font-bold fw-ink focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke"
-               placeholder="ihre@email.ch">
+               placeholder="{% trans 'ihre@email.ch' %}">
     </div>
-    <button type="submit" class="w-full fw-btn fw-primary py-3.5 px-4 rounded-xl text-sm font-bold shadow-lg fw-schatten-marke hover:fw-balken-voll">Link anfordern</button>
+    <button type="submit" class="w-full fw-btn fw-primary py-3.5 px-4 rounded-xl text-sm font-bold shadow-lg fw-schatten-marke hover:fw-balken-voll">{% trans "Link anfordern" %}</button>
 </form>
 {% include 'core/_passwort_shell_bottom.html' %}
