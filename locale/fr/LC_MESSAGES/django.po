@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 23:20+0200\n"
+"POT-Creation-Date: 2026-09-28 23:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -242,7 +242,8 @@ msgstr "Documents"
 msgid "Kommunikation"
 msgstr "Communication"
 
-#: core/navigation.py:219
+#: core/navigation.py:219 core/templates/fw/regelwerk.html:3
+#: core/templates/fw/regelwerk.html:13
 msgid "Regelwerk"
 msgstr "Règles"
 
@@ -253,7 +254,8 @@ msgstr "Règles"
 msgid "Einstellungen"
 msgstr "Paramètres"
 
-#: core/navigation.py:221
+#: core/navigation.py:221 core/templates/core/zweifaktor_uebersicht.html:3
+#: core/templates/core/zweifaktor_uebersicht.html:7
 msgid "Zwei-Faktor-Anmeldung"
 msgstr "Authentification à deux facteurs"
 
@@ -285,9 +287,510 @@ msgstr "Troisième rappel"
 msgid "Kündigungsandrohung (Art. 257d OR)"
 msgstr "Menace de résiliation (art. 257d CO)"
 
+#: core/templates/403.html:6
+msgid "Keine Berechtigung – swissImmo"
+msgstr "Accès refusé – swissImmo"
+
+#: core/templates/403.html:24
+msgid "Dafür fehlt Ihrer Rolle die Berechtigung"
+msgstr "Votre rôle n'a pas l'autorisation nécessaire"
+
+#: core/templates/403.html:26
+msgid ""
+"Sie sind angemeldet — dieser Bereich ist jedoch einer anderen Rolle "
+"vorbehalten. Wenn Sie damit arbeiten müssen, kann Ihnen die Verwaltung die "
+"passende Rolle zuteilen."
+msgstr "Vous êtes connecté — ce domaine est toutefois réservé à un autre rôle. Si vous devez y travailler, la gérance peut vous attribuer le rôle adéquat."
+
+#: core/templates/403.html:29 core/templates/404.html:27
+#: core/templates/500.html:28 core/templates/fw/base.html:131
+msgid "Zur Übersicht"
+msgstr "Vers la vue d'ensemble"
+
+#: core/templates/404.html:6
+msgid "Seite nicht gefunden – swissImmo"
+msgstr "Page introuvable – swissImmo"
+
+#: core/templates/404.html:22
+msgid "Seite nicht gefunden"
+msgstr "Page introuvable"
+
+#: core/templates/404.html:24
+msgid ""
+"Diese Adresse gibt es nicht (mehr). Möglicherweise wurde der Eintrag "
+"entfernt oder der Link ist veraltet."
+msgstr "Cette adresse n'existe pas (ou plus). L'entrée a peut-être été supprimée ou le lien est obsolète."
+
+#: core/templates/500.html:6
+msgid "Ein Fehler ist aufgetreten – swissImmo"
+msgstr "Une erreur est survenue – swissImmo"
+
+#: core/templates/500.html:23
+msgid "Ein Fehler ist aufgetreten"
+msgstr "Une erreur est survenue"
+
+#: core/templates/500.html:25
+msgid ""
+"Etwas ist schiefgelaufen — der Fehler wurde protokolliert. Bitte versuchen "
+"Sie es in einem Moment erneut. Bleibt das Problem bestehen, melden Sie sich "
+"bitte bei Ihrer Verwaltung."
+msgstr "Quelque chose s'est mal passé — l'erreur a été enregistrée. Veuillez réessayer dans un instant. Si le problème persiste, adressez-vous à votre gérance."
+
 #: core/templates/admin/base.html:158
 msgid "Home"
 msgstr "Accueil"
+
+#: core/templates/core/postfach_form.html:3
+msgid "Postfach"
+msgstr "Boîte aux lettres"
+
+#: core/templates/core/postfach_form.html:8
+msgid "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
+msgstr "Accès de la boîte aux lettres dont swissImmo récupère ces e-mails."
+
+#: core/templates/core/postfach_form.html:23
+msgid ""
+"<strong>Klassischer Hoster</strong> (Hoststar, cyon, Infomaniak, eigener "
+"Server): Benutzername und Passwort."
+msgstr "<strong>Hébergeur classique</strong> (Hoststar, cyon, Infomaniak, propre serveur) : nom d'utilisateur et mot de passe."
+
+#: core/templates/core/postfach_form.html:24
+msgid ""
+"<strong>Gmail:</strong> Benutzername und <strong>App-Passwort</strong> — "
+"nicht das Kontopasswort. Setzt die Zwei-Faktor-Anmeldung im Google-Konto "
+"voraus. Bei Google Workspace kann der Administrator App-Passwörter gesperrt "
+"haben; dann bitte bei ihm nachfragen."
+msgstr "<strong>Gmail :</strong> nom d'utilisateur et <strong>mot de passe d'application</strong> — pas le mot de passe du compte. Nécessite l'authentification à deux facteurs dans le compte Google. Avec Google Workspace, l'administrateur peut avoir bloqué les mots de passe d'application ; dans ce cas, merci de le lui demander."
+
+#: core/templates/core/postfach_form.html:25
+msgid "Microsoft 365 / Exchange Online"
+msgstr "Microsoft 365 / Exchange Online"
+
+#: core/templates/core/postfach_form.html:25
+msgid "nur OAuth2"
+msgstr "OAuth2 seulement"
+
+#: core/templates/core/postfach_form.html:26
+msgid ""
+"Microsoft hat den Zugang mit Benutzername und Passwort abgeschaltet. Diese "
+"Anbindung ist neu und noch nicht mit einem Kundenverzeichnis erprobt; bitte "
+"melden Sie sich bei uns, wenn etwas nicht funktioniert."
+msgstr "Microsoft a désactivé l'accès par nom d'utilisateur et mot de passe. Ce raccordement est nouveau et n'a pas encore été éprouvé avec un annuaire client ; merci de nous contacter si quelque chose ne fonctionne pas."
+
+#: core/templates/core/postfach_form.html:31
+#: core/templates/core/postfach_liste.html:22
+#, python-format
+msgid "Auf dem Server fehlt %(name)s."
+msgstr "%(name)s manque sur le serveur."
+
+#: core/templates/core/postfach_form.html:32
+msgid ""
+"Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich "
+"bei uns."
+msgstr "Tant qu'elle manque, aucun mot de passe ne peut être enregistré. Merci de nous contacter."
+
+#: core/templates/core/postfach_form.html:40
+msgid "Verfahren"
+msgstr "Procédé"
+
+#: core/templates/core/postfach_form.html:54
+msgid "Benutzername / E-Mail-Adresse"
+msgstr "Nom d'utilisateur / adresse e-mail"
+
+#: core/templates/core/postfach_form.html:63
+msgid "IMAP-Server"
+msgstr "Serveur IMAP"
+
+#: core/templates/core/postfach_form.html:64
+msgid "imap.example.ch"
+msgstr "imap.example.ch"
+
+#: core/templates/core/postfach_form.html:69
+msgid "Port"
+msgstr "Port"
+
+#: core/templates/core/postfach_form.html:77
+msgid "Ordner"
+msgstr "Dossier"
+
+#: core/templates/core/postfach_form.html:85
+#: core/templates/core/zweifaktor_uebersicht.html:72
+#: core/templates/fw/benutzer_form.html:32
+msgid "Passwort"
+msgstr "Mot de passe"
+
+#: core/templates/core/postfach_form.html:91
+msgid ""
+"Ein Passwort ist hinterlegt. Aus Sicherheitsgründen wird es hier nicht "
+"angezeigt."
+msgstr "Un mot de passe est enregistré. Pour des raisons de sécurité, il n'est pas affiché ici."
+
+#: core/templates/core/postfach_form.html:91
+msgid "Leer lassen heisst: unverändert."
+msgstr "Laisser vide signifie : inchangé."
+
+#: core/templates/core/postfach_form.html:93
+msgid "Wird verschlüsselt gespeichert und nie im Klartext angezeigt."
+msgstr "Enregistré de manière chiffrée et jamais affiché en clair."
+
+#: core/templates/core/postfach_form.html:100
+msgid "Nur für OAuth2 (Microsoft 365)"
+msgstr "Seulement pour OAuth2 (Microsoft 365)"
+
+#: core/templates/core/postfach_form.html:104
+msgid "Verzeichnis-ID (Tenant)"
+msgstr "ID d'annuaire (tenant)"
+
+#: core/templates/core/postfach_form.html:111
+msgid "Anwendungs-ID (Client)"
+msgstr "ID d'application (client)"
+
+#: core/templates/core/postfach_form.html:118
+msgid "Refresh-Token"
+msgstr "Jeton de rafraîchissement"
+
+#: core/templates/core/postfach_form.html:124
+msgid ""
+"Der geführte Zustimmungsablauf für Microsoft 365 ist noch nicht "
+"freigeschaltet. Bitte melden Sie sich bei uns."
+msgstr "Le processus guidé de consentement pour Microsoft 365 n'est pas encore activé. Merci de nous contacter."
+
+#: core/templates/core/postfach_form.html:134
+msgid "Eingang aktiv — Mails aus diesem Postfach abholen"
+msgstr "Réception active — récupérer les e-mails de cette boîte"
+
+#: core/templates/core/postfach_form.html:139
+#: core/templates/fw/anlagen.html:128 core/templates/fw/benutzer_form.html:55
+#: core/templates/fw/dienstleister.html:107
+#: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:308
+#: core/templates/fw/mwst.html:117 core/templates/fw/regelsatz_form.html:104
+#: core/templates/fw/vorlage_form.html:37
+msgid "Speichern"
+msgstr "Enregistrer"
+
+#: core/templates/core/postfach_form.html:142
+#: core/templates/fw/benutzer_form.html:57
+#: core/templates/fw/dienstleister.html:106
+#: core/templates/fw/kreditoren.html:307
+#: core/templates/fw/regelsatz_form.html:105
+#: core/templates/fw/vorlage_form.html:39
+msgid "Abbrechen"
+msgstr "Annuler"
+
+#: core/templates/core/postfach_liste.html:3
+#: core/templates/core/postfach_liste.html:7 core/views/fw/aktionen.py:857
+msgid "Postfächer"
+msgstr "Boîtes aux lettres"
+
+#: core/templates/core/postfach_liste.html:8
+msgid ""
+"Der E-Mail-Eingang Ihrer Verwaltung: Antworten auf Ticket-Mails und "
+"eingehende Kreditorenrechnungen werden aus diesen Postfächern abgeholt."
+msgstr "La réception e-mail de votre gérance : les réponses aux e-mails de tickets et les factures créanciers entrantes sont récupérées de ces boîtes aux lettres."
+
+#: core/templates/core/postfach_liste.html:23
+msgid ""
+"Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen — "
+"Speichern schlägt fehl. Bitte melden Sie sich bei uns."
+msgstr "Sans cette clé, les accès ne peuvent pas être enregistrés de manière chiffrée — l'enregistrement échoue. Merci de nous contacter."
+
+#: core/templates/core/postfach_liste.html:49
+msgid "abgeschaltet"
+msgstr "désactivé"
+
+#: core/templates/core/postfach_liste.html:53
+#, python-format
+msgid "Letzter Abruf: %(zeit)s"
+msgstr "Dernière récupération : %(zeit)s"
+
+#: core/templates/core/postfach_liste.html:55
+msgid "Noch kein Abruf gelaufen."
+msgstr "Aucune récupération n'a encore eu lieu."
+
+#: core/templates/core/postfach_liste.html:58
+#, python-format
+msgid "Zuletzt geprüft: %(zeit)s"
+msgstr "Dernière vérification : %(zeit)s"
+
+#: core/templates/core/postfach_liste.html:63
+msgid "Letzter Fehler"
+msgstr "Dernière erreur"
+
+#: core/templates/core/postfach_liste.html:70
+msgid "Nicht eingerichtet — für diesen Zweck werden keine Mails abgeholt."
+msgstr "Non configuré — aucun e-mail n'est récupéré pour cet usage."
+
+#: core/templates/core/postfach_liste.html:80
+#: core/templates/fw/benutzer.html:35 core/templates/fw/dienstleister.html:75
+#: core/templates/fw/kreditoren.html:242 core/templates/fw/mandate.html:36
+#: core/templates/fw/regelwerk.html:56 core/templates/fw/vorlagen.html:37
+msgid "Bearbeiten"
+msgstr "Modifier"
+
+#: core/templates/core/postfach_liste.html:80
+msgid "Einrichten"
+msgstr "Configurer"
+
+#: core/templates/core/postfach_liste.html:85
+msgid "Verbindung prüfen"
+msgstr "Tester la connexion"
+
+#: core/templates/core/postfach_liste.html:88
+#, python-format
+msgid ""
+"Postfach «%(name)s» wirklich löschen? Der Abruf für diesen Zweck ist danach "
+"abgeschaltet."
+msgstr "Vraiment supprimer la boîte aux lettres «%(name)s» ? La récupération pour cet usage sera ensuite désactivée."
+
+#: core/templates/core/postfach_liste.html:91
+#: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
+#: core/templates/fw/hypotheken.html:115 core/templates/fw/kreditoren.html:245
+#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
+msgid "Löschen"
+msgstr "Supprimer"
+
+#: core/templates/core/postfach_liste.html:102
+msgid "Postfächer ändern dürfen Inhaber und Verwalter."
+msgstr "Seuls les rôles Inhaber et Verwalter peuvent modifier les boîtes aux lettres."
+
+#: core/templates/core/zweifaktor_bestaetigen.html:10
+#: core/templates/core/zweifaktor_bestaetigen.html:42
+msgid "Bestätigung"
+msgstr "Confirmation"
+
+#: core/templates/core/zweifaktor_bestaetigen.html:46
+msgid "Aus Sicherheitsgründen wurde der Vorgang abgebrochen."
+msgstr "L'opération a été interrompue pour des raisons de sécurité."
+
+#: core/templates/core/zweifaktor_bestaetigen.html:47
+msgid "Zurück zur Anmeldung"
+msgstr "Retour à la connexion"
+
+#: core/templates/core/zweifaktor_bestaetigen.html:49
+msgid ""
+"Öffnen Sie Ihre Authenticator-App und geben Sie den angezeigten "
+"sechsstelligen Code ein. Er wechselt alle 30 Sekunden."
+msgstr "Ouvrez votre application d'authentification et saisissez le code à six chiffres affiché. Il change toutes les 30 secondes."
+
+#: core/templates/core/zweifaktor_bestaetigen.html:55
+msgid "Code"
+msgstr "Code"
+
+#: core/templates/core/zweifaktor_bestaetigen.html:58
+#: core/templates/fw/kreditoren.html:199
+msgid "Bestätigen"
+msgstr "Confirmer"
+
+#: core/templates/core/zweifaktor_bestaetigen.html:62
+msgid ""
+"Telefon nicht zur Hand? Geben Sie stattdessen einen Ihrer "
+"<strong>Notfallcodes</strong> ein — jeder gilt genau einmal."
+msgstr "Pas de téléphone sous la main ? Saisissez plutôt l'un de vos <strong>codes de secours</strong> — chacun n'est valable qu'une fois."
+
+#: core/templates/core/zweifaktor_bestaetigen.html:64
+msgid "Abbrechen und neu anmelden"
+msgstr "Annuler et se reconnecter"
+
+#: core/templates/core/zweifaktor_codes.html:3
+#: core/templates/core/zweifaktor_codes.html:7
+#: core/templates/core/zweifaktor_uebersicht.html:49
+msgid "Notfallcodes"
+msgstr "Codes de secours"
+
+#: core/templates/core/zweifaktor_codes.html:8
+msgid "Die Zwei-Faktor-Anmeldung ist aktiv."
+msgstr "L'authentification à deux facteurs est active."
+
+#: core/templates/core/zweifaktor_codes.html:9
+msgid "Bewahren Sie diese Codes ausserhalb des Telefons auf."
+msgstr "Conservez ces codes ailleurs que sur le téléphone."
+
+#: core/templates/core/zweifaktor_codes.html:15
+msgid "Diese Liste erscheint genau einmal."
+msgstr "Cette liste n'apparaît qu'une seule fois."
+
+#: core/templates/core/zweifaktor_codes.html:15
+msgid ""
+"Gespeichert wird nur ein Hash — wir können sie Ihnen später nicht noch "
+"einmal zeigen, nur neu erzeugen. Ohne Codes und ohne Telefon kommt niemand "
+"mehr an Ihren Zugang."
+msgstr "Seul un hachage est enregistré — nous ne pourrons pas vous les montrer à nouveau, seulement en générer de nouveaux. Sans codes ni téléphone, plus personne n'accède à votre compte."
+
+#: core/templates/core/zweifaktor_codes.html:25
+msgid ""
+"Jeder Code gilt genau einmal und ersetzt bei der Anmeldung den Code aus der "
+"App."
+msgstr "Chaque code n'est valable qu'une fois et remplace à la connexion le code de l'application."
+
+#: core/templates/core/zweifaktor_codes.html:32
+msgid "Drucken"
+msgstr "Imprimer"
+
+#: core/templates/core/zweifaktor_codes.html:35
+msgid "Ich habe sie gesichert"
+msgstr "Je les ai sauvegardés"
+
+#: core/templates/core/zweifaktor_einrichten.html:3
+msgid "Zwei-Faktor einrichten"
+msgstr "Configurer le deuxième facteur"
+
+#: core/templates/core/zweifaktor_einrichten.html:7
+msgid "Zwei-Faktor-Anmeldung einrichten"
+msgstr "Configurer l'authentification à deux facteurs"
+
+#: core/templates/core/zweifaktor_einrichten.html:8
+msgid ""
+"Ein zweiter Faktor schützt den Zugang auch dann, wenn das Passwort in fremde "
+"Hände gerät."
+msgstr "Un deuxième facteur protège l'accès même si le mot de passe tombe entre de mauvaises mains."
+
+#: core/templates/core/zweifaktor_einrichten.html:15
+msgid ""
+"Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung. Ohne Einrichtung ist die "
+"Oberfläche gesperrt."
+msgstr "Votre gérance exige l'authentification à deux facteurs. Sans configuration, l'interface est bloquée."
+
+#: core/templates/core/zweifaktor_einrichten.html:20
+msgid "Schritt 1 — Code scannen"
+msgstr "Étape 1 — scanner le code"
+
+#: core/templates/core/zweifaktor_einrichten.html:22
+msgid ""
+"Scannen Sie den QR-Code mit einer Authenticator-App (Google Authenticator, "
+"1Password, Aegis, Microsoft Authenticator — alle funktionieren)."
+msgstr "Scannez le code QR avec une application d'authentification (Google Authenticator, 1Password, Aegis, Microsoft Authenticator — toutes fonctionnent)."
+
+#: core/templates/core/zweifaktor_einrichten.html:29
+msgid "Kein Scanner zur Hand?"
+msgstr "Pas de scanner sous la main ?"
+
+#: core/templates/core/zweifaktor_einrichten.html:30
+msgid "Geben Sie diesen Schlüssel von Hand in der App ein"
+msgstr "Saisissez cette clé à la main dans l'application"
+
+#: core/templates/core/zweifaktor_einrichten.html:33
+msgid "Typ: zeitbasiert (TOTP) · 6 Stellen · 30 Sekunden"
+msgstr "Type : basé sur le temps (TOTP) · 6 chiffres · 30 secondes"
+
+#: core/templates/core/zweifaktor_einrichten.html:39
+msgid "Schritt 2 — Code bestätigen"
+msgstr "Étape 2 — confirmer le code"
+
+#: core/templates/core/zweifaktor_einrichten.html:41
+msgid ""
+"Damit ist belegt, dass die App richtig eingerichtet ist. Erst danach gilt "
+"der zweite Faktor — wer hier abbricht, sperrt sich nicht aus."
+msgstr "Cela prouve que l'application est correctement configurée. Ce n'est qu'ensuite que le deuxième facteur s'applique — qui interrompt ici ne se bloque pas."
+
+#: core/templates/core/zweifaktor_einrichten.html:53
+msgid "Aktivieren"
+msgstr "Activer"
+
+#: core/templates/core/zweifaktor_uebersicht.html:8
+msgid ""
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Code aus Ihrer Authenticator-App."
+msgstr "Protection supplémentaire pour votre compte : après le mot de passe, swissImmo demande un code de votre application d'authentification."
+
+#: core/templates/core/zweifaktor_uebersicht.html:24
+#: core/templates/fw/abonnement.html:38 core/templates/fw/integrationen.html:61
+#: core/views/fw/_basis.py:337 core/views/fw/profil.py:911
+msgid "Aktiv"
+msgstr "Actif"
+
+#: core/templates/core/zweifaktor_uebersicht.html:27
+#, python-format
+msgid "Eingerichtet am %(datum)s."
+msgstr "Configuré le %(datum)s."
+
+#: core/templates/core/zweifaktor_uebersicht.html:28
+#, python-format
+msgid "Zuletzt verwendet am %(zeit)s."
+msgstr "Dernière utilisation le %(zeit)s."
+
+#: core/templates/core/zweifaktor_uebersicht.html:31
+#, python-format
+msgid "Offene Notfallcodes: %(n)s"
+msgstr "Codes de secours restants : %(n)s"
+
+#: core/templates/core/zweifaktor_uebersicht.html:31
+msgid "neue erzeugen"
+msgstr "en générer de nouveaux"
+
+#: core/templates/core/zweifaktor_uebersicht.html:36
+msgid "Nicht eingerichtet"
+msgstr "Non configuré"
+
+#: core/templates/core/zweifaktor_uebersicht.html:39
+msgid "Ihr Konto ist derzeit nur durch das Passwort geschützt."
+msgstr "Votre compte n'est actuellement protégé que par le mot de passe."
+
+#: core/templates/core/zweifaktor_uebersicht.html:43
+msgid "Jetzt einrichten"
+msgstr "Configurer maintenant"
+
+#: core/templates/core/zweifaktor_uebersicht.html:51
+msgid "Neue Codes erzeugen macht alle bisherigen ungültig."
+msgstr "Générer de nouveaux codes invalide tous les précédents."
+
+#: core/templates/core/zweifaktor_uebersicht.html:56
+msgid "Neue Codes erzeugen"
+msgstr "Générer de nouveaux codes"
+
+#: core/templates/core/zweifaktor_uebersicht.html:61
+#: core/templates/core/zweifaktor_uebersicht.html:76
+msgid "Abschalten"
+msgstr "Désactiver"
+
+#: core/templates/core/zweifaktor_uebersicht.html:64
+msgid ""
+"Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung — sie lässt sich nicht "
+"abschalten."
+msgstr "Votre gérance exige l'authentification à deux facteurs — elle ne peut pas être désactivée."
+
+#: core/templates/core/zweifaktor_uebersicht.html:68
+msgid "Zur Sicherheit ist dafür Ihr Passwort nötig."
+msgstr "Par sécurité, votre mot de passe est nécessaire."
+
+#: core/templates/core/zweifaktor_uebersicht.html:84
+msgid "Für die ganze Verwaltung"
+msgstr "Pour toute la gérance"
+
+#: core/templates/core/zweifaktor_uebersicht.html:88
+#, python-format
+msgid ""
+"Alle Konten von <strong>%(firma)s</strong> müssen den zweiten Faktor "
+"einrichten. Wer ihn noch nicht hat, landet beim nächsten Aufruf auf der "
+"Einrichtungsseite."
+msgstr "Tous les comptes de <strong>%(firma)s</strong> doivent configurer le deuxième facteur. Qui ne l'a pas encore arrive à la page de configuration lors de la prochaine visite."
+
+#: core/templates/core/zweifaktor_uebersicht.html:94
+msgid "Pflicht aufheben"
+msgstr "Lever l'obligation"
+
+#: core/templates/core/zweifaktor_uebersicht.html:98
+msgid ""
+"Verlangt die Einrichtung von allen Konten dieser Verwaltung. Bereits "
+"angemeldete Sitzungen sind ab sofort betroffen — nicht erst beim nächsten "
+"Login."
+msgstr "Exige la configuration pour tous les comptes de cette gérance. Les sessions déjà ouvertes sont concernées immédiatement — pas seulement à la prochaine connexion."
+
+#: core/templates/core/zweifaktor_uebersicht.html:102
+#, python-format
+msgid "%(n)s Konto ohne zweiten Faktor:"
+msgid_plural "%(n)s Konten ohne zweiten Faktor:"
+msgstr[0] "%(n)s compte sans deuxième facteur :"
+msgstr[1] "%(n)s comptes sans deuxième facteur :"
+
+#: core/templates/core/zweifaktor_uebersicht.html:104
+msgid ""
+"Sie können ab dem Einschalten nur noch die Einrichtungsseite aufrufen. Wer "
+"gerade kein Telefon zur Hand hat, kommt bis dahin nicht weiter."
+msgstr "Dès l'activation, ils ne peuvent plus accéder qu'à la page de configuration. Qui n'a pas de téléphone sous la main ne peut pas aller plus loin d'ici là."
+
+#: core/templates/core/zweifaktor_uebersicht.html:112
+msgid "Für alle verlangen"
+msgstr "Exiger pour tous"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:39
 #, python-format
@@ -435,7 +938,9 @@ msgstr "Sera reprise à l'enregistrement du formulaire."
 msgid ""
 "Unterschrift auf weissem Papier abfotografieren — der weisse Hintergrund "
 "wird automatisch transparent."
-msgstr "Photographier la signature sur du papier blanc — le fond blanc est rendu automatiquement transparent."
+msgstr ""
+"Photographier la signature sur du papier blanc — le fond blanc est rendu "
+"automatiquement transparent."
 
 #: core/templates/fw/_unterschrift_feld.html:83
 msgid "Unterschrift entfernen"
@@ -446,7 +951,10 @@ msgid ""
 "Es ist zwar eine Unterschrift eingetragen, sie ist aber leer oder die "
 "Bilddatei fehlt auf dem Server. Bitte nochmals unterschreiben — bis dahin "
 "bleibt die Linie auf jedem Brief leer."
-msgstr "Une signature est bien enregistrée, mais elle est vide ou le fichier image manque sur le serveur. Merci de signer à nouveau — d'ici là, la ligne reste vide sur chaque lettre."
+msgstr ""
+"Une signature est bien enregistrée, mais elle est vide ou le fichier image "
+"manque sur le serveur. Merci de signer à nouveau — d'ici là, la ligne reste "
+"vide sur chaque lettre."
 
 #: core/templates/fw/_unterschrift_feld.html:91
 msgid "Ohne Unterschrift bleibt die Linie auf jedem Brief leer."
@@ -490,11 +998,6 @@ msgstr "Annuel"
 #: core/templates/fw/abonnement.html:34
 msgid "Empfohlen"
 msgstr "Recommandé"
-
-#: core/templates/fw/abonnement.html:38 core/templates/fw/integrationen.html:61
-#: core/views/fw/_basis.py:337 core/views/fw/profil.py:911
-msgid "Aktiv"
-msgstr "Actif"
 
 #: core/templates/fw/abonnement.html:44 core/templates/fw/mieterspiegel.html:42
 msgid "/ Monat"
@@ -996,13 +1499,6 @@ msgstr "Solde (facultatif)"
 #: core/templates/fw/anlagen.html:127
 msgid "unverändert"
 msgstr "inchangé"
-
-#: core/templates/fw/anlagen.html:128 core/templates/fw/benutzer_form.html:55
-#: core/templates/fw/dienstleister.html:107
-#: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:308
-#: core/templates/fw/mwst.html:117 core/templates/fw/vorlage_form.html:37
-msgid "Speichern"
-msgstr "Enregistrer"
 
 #: core/templates/fw/anlagen.html:135
 msgid "Periodensperre"
@@ -1564,10 +2060,6 @@ msgstr "Gérance"
 msgid "Mandant wechseln"
 msgstr "Changer de gérance"
 
-#: core/templates/fw/base.html:131
-msgid "Zur Übersicht"
-msgstr "Vers la vue d'ensemble"
-
 #: core/templates/fw/base.html:135
 msgid "Menü ein-/ausklappen"
 msgstr "Afficher/masquer le menu"
@@ -1669,26 +2161,14 @@ msgstr "Rôle"
 msgid "Aktionen"
 msgstr "Actions"
 
-#: core/templates/fw/benutzer.html:28
+#: core/templates/fw/benutzer.html:28 core/templates/fw/regelwerk.html:54
 msgid "inaktiv"
 msgstr "inactif"
-
-#: core/templates/fw/benutzer.html:35 core/templates/fw/dienstleister.html:75
-#: core/templates/fw/kreditoren.html:242 core/templates/fw/mandate.html:36
-#: core/templates/fw/vorlagen.html:37
-msgid "Bearbeiten"
-msgstr "Modifier"
 
 #: core/templates/fw/benutzer.html:37
 #, python-format
 msgid "Benutzer %(name)s wirklich löschen?"
 msgstr "Vraiment supprimer l'utilisateur %(name)s ?"
-
-#: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
-#: core/templates/fw/hypotheken.html:115 core/templates/fw/kreditoren.html:245
-#: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
-msgid "Löschen"
-msgstr "Supprimer"
 
 #: core/templates/fw/benutzer.html:45
 msgid "Keine Benutzer."
@@ -1742,10 +2222,6 @@ msgid "Nachname"
 msgstr "Nom"
 
 #: core/templates/fw/benutzer_form.html:32
-msgid "Passwort"
-msgstr "Mot de passe"
-
-#: core/templates/fw/benutzer_form.html:32
 msgid "(leer lassen = unverändert)"
 msgstr "(laisser vide = inchangé)"
 
@@ -1774,12 +2250,6 @@ msgstr "Compte actif"
 #: core/templates/fw/benutzer_form.html:49
 msgid "(eigener Account — kann nicht deaktiviert werden)"
 msgstr "(propre compte — ne peut pas être désactivé)"
-
-#: core/templates/fw/benutzer_form.html:57
-#: core/templates/fw/dienstleister.html:106
-#: core/templates/fw/kreditoren.html:307 core/templates/fw/vorlage_form.html:39
-msgid "Abbrechen"
-msgstr "Annuler"
 
 #: core/templates/fw/berichte.html:8
 msgid "Alle Reports und Exporte an einem Ort."
@@ -2083,6 +2553,7 @@ msgid "Bis"
 msgstr "Au"
 
 #: core/templates/fw/buchhaltung.html:296 core/templates/fw/logbuch.html:83
+#: core/templates/fw/regelwerk_protokoll.html:47
 msgid "Filtern"
 msgstr "Filtrer"
 
@@ -3207,6 +3678,7 @@ msgid "Nummer *"
 msgstr "Numéro *"
 
 #: core/templates/fw/kontenplan.html:55 core/templates/fw/nebenkosten.html:26
+#: core/templates/fw/regelsatz_form.html:20
 #: core/templates/fw/vorlage_form.html:23
 msgid "Bezeichnung *"
 msgstr "Désignation *"
@@ -3528,10 +4000,6 @@ msgstr "Comptabiliser le paiement à %(name)s ?"
 #: core/templates/fw/kreditoren.html:197
 msgid "Betrag (Teilzahlung möglich)"
 msgstr "Montant (paiement partiel possible)"
-
-#: core/templates/fw/kreditoren.html:199
-msgid "Bestätigen"
-msgstr "Confirmer"
 
 #: core/templates/fw/kreditoren.html:199
 msgid "Bezahlen"
@@ -4065,7 +4533,7 @@ msgid_plural "%(n)s Einträge"
 msgstr[0] "%(n)s entrée"
 msgstr[1] "%(n)s entrées"
 
-#: core/templates/fw/logbuch.html:161
+#: core/templates/fw/logbuch.html:161 core/templates/fw/regelsatz_form.html:11
 msgid "Zurück"
 msgstr "Retour"
 
@@ -4867,6 +5335,322 @@ msgstr "Loue actuellement"
 msgid "Keine Treffer."
 msgstr "Aucun résultat."
 
+#: core/templates/fw/regelsatz_form.html:3
+#: core/templates/fw/regelsatz_form.html:8
+msgid "Neuer Regelsatz"
+msgstr "Nouveau jeu de règles"
+
+#: core/templates/fw/regelsatz_form.html:8
+msgid "Regelsatz bearbeiten"
+msgstr "Modifier le jeu de règles"
+
+#: core/templates/fw/regelsatz_form.html:9
+msgid ""
+"Ein Satz je Kanton. Fehlt der Kanton, gilt der Satz für alle Liegenschaften "
+"dieser Verwaltung."
+msgstr "Un jeu par canton. Sans canton, le jeu s'applique à tous les immeubles de cette gérance."
+
+#: core/templates/fw/regelsatz_form.html:17
+msgid "Geltungsbereich"
+msgstr "Champ d'application"
+
+#: core/templates/fw/regelsatz_form.html:22
+msgid "z.B. Grundsatz Wohnräume"
+msgstr "p. ex. principe logements"
+
+#: core/templates/fw/regelsatz_form.html:24
+msgid "Kanton"
+msgstr "Canton"
+
+#: core/templates/fw/regelsatz_form.html:25
+msgid "ZH"
+msgstr "ZH"
+
+#: core/templates/fw/regelsatz_form.html:27
+msgid "Leer = gilt für alle Kantone."
+msgstr "Vide = s'applique à tous les cantons."
+
+#: core/templates/fw/regelsatz_form.html:28
+msgid "Stand"
+msgstr "État"
+
+#: core/templates/fw/regelsatz_form.html:35
+msgid "Wird bei jedem Speichern auf heute gesetzt."
+msgstr "Est mis à la date du jour à chaque enregistrement."
+
+#: core/templates/fw/regelsatz_form.html:38
+msgid "Hinweis"
+msgstr "Remarque"
+
+#: core/templates/fw/regelsatz_form.html:40
+msgid "Woher die Regeln stammen, wer sie geprüft hat, Vorbehalte."
+msgstr "D'où viennent les règles, qui les a vérifiées, réserves."
+
+#: core/templates/fw/regelsatz_form.html:45
+msgid "Aktiv — wird bei der Prüfung herangezogen"
+msgstr "Actif — utilisé lors de la vérification"
+
+#: core/templates/fw/regelsatz_form.html:48
+msgid "Juristisch geprüft"
+msgstr "Vérifié juridiquement"
+
+#: core/templates/fw/regelsatz_form.html:52
+msgid ""
+"Das Kennzeichen «geprüft» ist die einzige Stelle, an der aus einer Warnung "
+"eine <b>Sperre</b> wird. Setze es erst, wenn jemand die Regeln fachlich "
+"gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche "
+"Warnung nicht."
+msgstr "La marque «vérifié» est le seul endroit où un avertissement devient un <b>blocage</b>. Ne la pose que lorsque quelqu'un a relu les règles sur le fond — un faux blocage arrête l'exploitation, un faux avertissement non."
+
+#: core/templates/fw/regelsatz_form.html:62 core/templates/fw/regelwerk.html:80
+msgid "prüft noch nichts"
+msgstr "ne vérifie encore rien"
+
+#: core/templates/fw/regelsatz_form.html:67
+msgid "Diese Regel führen"
+msgstr "Tenir cette règle"
+
+#: core/templates/fw/regelsatz_form.html:70
+msgid ""
+"Diese Regelart ist als Datenmodell vorhanden, aber in <code>faelle.regelwerk."
+"pruefen</code> noch nicht gerechnet. Sie lässt sich erfassen und "
+"dokumentieren, prüft aber nichts — ausdrücklich vermerkt, damit niemand eine "
+"Absicherung annimmt, die es nicht gibt."
+msgstr "Ce type de règle existe comme modèle de données, mais n'est pas encore calculé dans <code>faelle.regelwerk.pruefen</code>. Il peut être saisi et documenté, mais ne vérifie rien — mentionné expressément pour que personne ne suppose une protection qui n'existe pas."
+
+#: core/templates/fw/regelsatz_form.html:86
+msgid "Begründung / Fundstelle"
+msgstr "Motif / source"
+
+#: core/templates/fw/regelsatz_form.html:88
+msgid "z.B. Art. 266c OR, Merkblatt Kanton ZH vom 03.2025"
+msgstr "p. ex. art. 266c CO, fiche du canton de ZH du 03.2025"
+
+#: core/templates/fw/regelsatz_form.html:95
+msgid "Verbindlichkeit"
+msgstr "Caractère contraignant"
+
+#: core/templates/fw/regelsatz_form.html:95
+msgid "Sperre"
+msgstr "Blocage"
+
+#: core/templates/fw/regelsatz_form.html:95
+msgid "statt Warnung"
+msgstr "au lieu d'un avertissement"
+
+#: core/templates/fw/regelsatz_form.html:96
+msgid "wirkt erst, wenn der Regelsatz als geprüft gilt"
+msgstr "n'agit que lorsque le jeu de règles est considéré comme vérifié"
+
+#: core/templates/fw/regelsatz_form.html:113
+msgid ""
+"Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten."
+msgstr "Supprimer le jeu de règles ? Le journal des applications passées est conservé."
+
+#: core/templates/fw/regelsatz_form.html:115
+msgid "Regelsatz löschen"
+msgstr "Supprimer le jeu de règles"
+
+#: core/templates/fw/regelwerk.html:14
+msgid ""
+"Fristen und Termine als Daten, nicht als Programmcode — damit eine "
+"Berichtigung eine Eingabe ist und keine Auslieferung."
+msgstr "Délais et termes comme données, pas comme code — pour qu'une correction soit une saisie et non une livraison."
+
+#: core/templates/fw/regelwerk.html:17
+msgid "Protokoll"
+msgstr "Journal"
+
+#: core/templates/fw/regelwerk.html:18
+msgid "Regelsatz"
+msgstr "Jeu de règles"
+
+#: core/templates/fw/regelwerk.html:28
+msgid "Die mitgelieferten Regeln sind nicht juristisch geprüft."
+msgstr "Les règles livrées ne sont pas vérifiées juridiquement."
+
+#: core/templates/fw/regelwerk.html:29
+msgid ""
+"Sie geben die gesetzliche Grundregel wieder — drei Monate auf einen "
+"ortsüblichen Termin (Art. 266c OR). Ortsübliche Termine sind kantonal "
+"verschieden, Geschäftsräume, befristete Verhältnisse und ausserordentliche "
+"Kündigungen weichen ab. Solange ein Regelsatz nicht als geprüft "
+"gekennzeichnet ist, <b>warnt</b> er nur und hält nichts an. Erst das "
+"Kennzeichen «juristisch geprüft» schaltet eine Sperre scharf."
+msgstr "Elles reprennent la règle légale de base — trois mois pour un terme usuel local (art. 266c CO). Les termes usuels locaux varient selon les cantons ; les locaux commerciaux, les baux de durée déterminée et les résiliations extraordinaires diffèrent. Tant qu'un jeu de règles n'est pas marqué comme vérifié, il ne fait qu'<b>avertir</b> et n'arrête rien. Seule la marque «vérifié juridiquement» active un blocage."
+
+#: core/templates/fw/regelwerk.html:37
+#, python-format
+msgid "%(n)s Beanstandung ohne Übersteuerung"
+msgid_plural "%(n)s Beanstandungen ohne Übersteuerung"
+msgstr[0] "%(n)s objection sans dérogation"
+msgstr[1] "%(n)s objections sans dérogation"
+
+#: core/templates/fw/regelwerk.html:38
+msgid ""
+"Ein Befund wurde beanstandet und weder korrigiert noch mit Begründung "
+"überstimmt."
+msgstr "Un constat a été signalé et ni corrigé ni écarté avec motif."
+
+#: core/templates/fw/regelwerk.html:39
+msgid "Im Protokoll ansehen"
+msgstr "Voir dans le journal"
+
+#: core/templates/fw/regelwerk.html:51
+msgid "alle Kantone"
+msgstr "tous les cantons"
+
+#: core/templates/fw/regelwerk.html:52
+msgid "geprüft"
+msgstr "vérifié"
+
+#: core/templates/fw/regelwerk.html:53
+msgid "ungeprüft — warnt nur"
+msgstr "non vérifié — ne fait qu'avertir"
+
+#: core/templates/fw/regelwerk.html:71
+msgid "ohne eigene Parameter — es gilt, was im Vertrag steht"
+msgstr "sans paramètres propres — ce qui figure dans le bail fait foi"
+
+#: core/templates/fw/regelwerk.html:81
+msgid "sperrt"
+msgstr "bloque"
+
+#: core/templates/fw/regelwerk.html:82
+msgid "warnt"
+msgstr "avertit"
+
+#: core/templates/fw/regelwerk.html:85
+msgid "Dieser Regelsatz enthält keine Regel — er tut nichts."
+msgstr "Ce jeu de règles ne contient aucune règle — il ne fait rien."
+
+#: core/templates/fw/regelwerk.html:91
+msgid "Kein Regelsatz hinterlegt"
+msgstr "Aucun jeu de règles enregistré"
+
+#: core/templates/fw/regelwerk.html:92
+msgid ""
+"Ohne Regelsatz prüft die Kündigungserfassung nur gegen die Angaben im "
+"einzelnen Vertrag — Frist und Termine, wie sie dort stehen. Das ist keine "
+"Fehlfunktion, aber es gibt weder eine kantonale Fassung noch eine Sperre."
+msgstr "Sans jeu de règles, la saisie de résiliation ne vérifie que les indications du bail concerné — délai et termes tels qu'ils y figurent. Ce n'est pas un dysfonctionnement, mais il n'y a ni version cantonale ni blocage."
+
+#: core/templates/fw/regelwerk.html:93
+msgid "Ersten Regelsatz anlegen"
+msgstr "Créer le premier jeu de règles"
+
+#: core/templates/fw/regelwerk.html:97
+msgid "Zuletzt angewendet"
+msgstr "Dernières applications"
+
+#: core/templates/fw/regelwerk.html:103
+#: core/templates/fw/regelwerk_protokoll.html:63
+msgid "übersteuert"
+msgstr "dérogé"
+
+#: core/templates/fw/regelwerk.html:107
+#: core/templates/fw/regelwerk_protokoll.html:74
+#, python-format
+msgid "Stand %(datum)s"
+msgstr "État au %(datum)s"
+
+#: core/templates/fw/regelwerk.html:110
+msgid "Noch keine Regel angewendet."
+msgstr "Aucune règle n'a encore été appliquée."
+
+#: core/templates/fw/regelwerk.html:113
+msgid "Ganzes Protokoll"
+msgstr "Journal complet"
+
+#: core/templates/fw/regelwerk.html:114
+msgid "Jede Anwendung wird festgehalten — auch die ohne Beanstandung."
+msgstr "Chaque application est consignée — aussi celles sans objection."
+
+#: core/templates/fw/regelwerk_protokoll.html:3
+#: core/templates/fw/regelwerk_protokoll.html:14
+msgid "Regelprotokoll"
+msgstr "Journal des règles"
+
+#: core/templates/fw/regelwerk_protokoll.html:15
+msgid ""
+"Welche Regel hat wann was zu welcher Eingabe gesagt — auch dann, wenn nichts "
+"zu beanstanden war."
+msgstr "Quelle règle a dit quoi et quand sur quelle saisie — même lorsqu'il n'y avait rien à redire."
+
+#: core/templates/fw/regelwerk_protokoll.html:17
+msgid "Zum Regelwerk"
+msgstr "Vers les règles"
+
+#: core/templates/fw/regelwerk_protokoll.html:23
+msgid "Regelart"
+msgstr "Type de règle"
+
+#: core/templates/fw/regelwerk_protokoll.html:25
+#: core/templates/fw/regelwerk_protokoll.html:32
+msgid "alle"
+msgstr "tous"
+
+#: core/templates/fw/regelwerk_protokoll.html:30
+msgid "Befund"
+msgstr "Constat"
+
+#: core/templates/fw/regelwerk_protokoll.html:33
+msgid "ohne Beanstandung"
+msgstr "sans objection"
+
+#: core/templates/fw/regelwerk_protokoll.html:34
+msgid "beanstandet"
+msgstr "signalé"
+
+#: core/templates/fw/regelwerk_protokoll.html:36
+msgid "Stand der Regel"
+msgstr "État de la règle"
+
+#: core/templates/fw/regelwerk_protokoll.html:38
+msgid "alle Stände"
+msgstr "tous les états"
+
+#: core/templates/fw/regelwerk_protokoll.html:46
+msgid "nur ungeprüfte Regeln"
+msgstr "seulement règles non vérifiées"
+
+#: core/templates/fw/regelwerk_protokoll.html:55
+msgid "Anwendungen"
+msgstr "Applications"
+
+#: core/templates/fw/regelwerk_protokoll.html:56
+msgid "die neuesten 200 angezeigt"
+msgstr "les 200 plus récentes affichées"
+
+#: core/templates/fw/regelwerk_protokoll.html:62
+msgid "Regel ungeprüft"
+msgstr "Règle non vérifiée"
+
+#: core/templates/fw/regelwerk_protokoll.html:68
+#, python-format
+msgid "Übersteuert von %(wer)s:"
+msgstr "Dérogé par %(wer)s :"
+
+#: core/templates/fw/regelwerk_protokoll.html:78
+msgid "Mit Begründung übersteuern"
+msgstr "Déroger avec motif"
+
+#: core/templates/fw/regelwerk_protokoll.html:88
+msgid "Begründung *"
+msgstr "Motif *"
+
+#: core/templates/fw/regelwerk_protokoll.html:90
+msgid "Warum der Befund hier nicht zutrifft."
+msgstr "Pourquoi le constat ne s'applique pas ici."
+
+#: core/templates/fw/regelwerk_protokoll.html:91
+msgid "Übersteuern"
+msgstr "Déroger"
+
+#: core/templates/fw/regelwerk_protokoll.html:97
+msgid "Keine Anwendung zu diesem Filter."
+msgstr "Aucune application pour ce filtre."
+
 #: core/templates/fw/sollstellung.html:4
 msgid "Sollstellung Miete"
 msgstr "Facturation des loyers"
@@ -5369,10 +6153,6 @@ msgid "Zwei-Faktor-Anmeldung für Sie und Ihr Team"
 msgstr "Authentification à deux facteurs pour vous et votre équipe"
 
 #: core/views/fw/aktionen.py:857
-msgid "Postfächer"
-msgstr "Boîtes aux lettres"
-
-#: core/views/fw/aktionen.py:857
 msgid "E-Mail-Eingang für Ticket-Antworten und Rechnungen"
 msgstr "Réception e-mail pour les réponses aux tickets et les factures"
 
@@ -5614,7 +6394,9 @@ msgstr "Non configuré"
 msgid ""
 "Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
 "deinen SMTP-Server."
-msgstr "Envoie rappels, décomptes et courriers directement depuis swissImmo via ton serveur SMTP."
+msgstr ""
+"Envoie rappels, décomptes et courriers directement depuis swissImmo via ton "
+"serveur SMTP."
 
 #: core/views/fw/profil.py:892
 msgid "E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen."
@@ -5628,7 +6410,9 @@ msgstr "DocuSeal — signature numérique"
 msgid ""
 "Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der "
 "Rücklauf wird automatisch als unterzeichnetes PDF abgelegt."
-msgstr "Envoie les baux pour une signature électronique juridiquement valable. Le retour est automatiquement classé comme PDF signé."
+msgstr ""
+"Envoie les baux pour une signature électronique juridiquement valable. Le "
+"retour est automatiquement classé comme PDF signé."
 
 #: core/views/fw/profil.py:897
 msgid "Nutzbar über «An DocuSeal senden» auf der Vertrags-Detailseite."
@@ -5643,11 +6427,16 @@ msgid ""
 "Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, "
 "IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für "
 "Handwerker-Rechnungen."
-msgstr "Lire automatiquement les pièces créanciers au téléversement (fournisseur, montant, IBAN, référence QR) — y c. photos via IA image et réception e-mail des factures d'artisans."
+msgstr ""
+"Lire automatiquement les pièces créanciers au téléversement (fournisseur, "
+"montant, IBAN, référence QR) — y c. photos via IA image et réception e-mail "
+"des factures d'artisans."
 
 #: core/views/fw/profil.py:902
 msgid "Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload)."
-msgstr "Utilisable sous Créanciers → «Scanner une pièce (IA)» (téléversement multiple)."
+msgstr ""
+"Utilisable sous Créanciers → «Scanner une pièce (IA)» (téléversement "
+"multiple)."
 
 #: core/views/fw/profil.py:903
 #, python-format
@@ -5658,13 +6447,17 @@ msgstr "Réception e-mail active : %(postfach)s (fetch_rechnungen)."
 msgid ""
 "E-Mail-Eingang: Postfach in den Einstellungen hinterlegen + Scheduled Task "
 "«manage.py fetch_rechnungen --einmal»."
-msgstr "Réception e-mail : saisir la boîte aux lettres dans les paramètres + tâche planifiée «manage.py fetch_rechnungen --einmal»."
+msgstr ""
+"Réception e-mail : saisir la boîte aux lettres dans les paramètres + tâche "
+"planifiée «manage.py fetch_rechnungen --einmal»."
 
 #: core/views/fw/profil.py:908
 msgid ""
 "GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung "
 "aus Text-PDFs."
-msgstr "Saisir la GROQ_API_KEY — sans clé, seule la reconnaissance par règles des PDF texte fonctionne."
+msgstr ""
+"Saisir la GROQ_API_KEY — sans clé, seule la reconnaissance par règles des "
+"PDF texte fonctionne."
 
 #: core/views/fw/profil.py:910
 msgid "Banken-Abgleich (camt.053 / QR)"
@@ -5674,7 +6467,9 @@ msgstr "Rapprochement bancaire (camt.053 / QR)"
 msgid ""
 "Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per "
 "QR-Referenz den Debitoren zu."
-msgstr "Importe des relevés camt.053 et attribue automatiquement les paiements reçus aux débiteurs via la référence QR."
+msgstr ""
+"Importe des relevés camt.053 et attribue automatiquement les paiements reçus "
+"aux débiteurs via la référence QR."
 
 #: core/views/fw/profil.py:913
 msgid "Nutzbar im Bereich Bankabgleich."

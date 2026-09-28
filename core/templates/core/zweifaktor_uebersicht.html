@@ -1,11 +1,11 @@
 {% extends 'fw/base.html' %}
-{% block title %}Zwei-Faktor-Anmeldung — swissImmo{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Zwei-Faktor-Anmeldung" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Zwei-Faktor-Anmeldung</h1>
-        <p>Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen
-           Code aus Ihrer Authenticator-App.</p>
+        <h1>{% trans "Zwei-Faktor-Anmeldung" %}</h1>
+        <p>{% trans "Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen Code aus Ihrer Authenticator-App." %}</p>
     </div>
 </div>
 
@@ -21,60 +21,59 @@
         {% if faktor %}
             <div class="flex items-center gap-2 mb-1">
                 <span class="inline-block w-2 h-2 rounded-full fw-gut-voll"></span>
-                <h3 class="font-bold fw-strong text-sm">Aktiv</h3>
+                <h3 class="font-bold fw-strong text-sm">{% trans "Aktiv" %}</h3>
             </div>
             <p class="text-xs fw-mutet">
-                Eingerichtet am {{ faktor.bestaetigt_am|date:"d.m.Y" }}.
-                {% if faktor.letzte_verwendung %}Zuletzt verwendet am
-                {{ faktor.letzte_verwendung|date:"d.m.Y H:i" }}.{% endif %}
+                {% blocktrans with datum=faktor.bestaetigt_am|date:"d.m.Y" %}Eingerichtet am {{ datum }}.{% endblocktrans %}
+                {% if faktor.letzte_verwendung %}{% blocktrans with zeit=faktor.letzte_verwendung|date:"d.m.Y H:i" %}Zuletzt verwendet am {{ zeit }}.{% endblocktrans %}{% endif %}
             </p>
             <p class="text-xs mt-3 {% if offene_codes < 3 %}fw-warnton font-semibold{% else %}fw-mutet{% endif %}">
-                Offene Notfallcodes: {{ offene_codes }}{% if offene_codes < 3 %} — neue erzeugen{% endif %}
+                {% blocktrans with n=offene_codes %}Offene Notfallcodes: {{ n }}{% endblocktrans %}{% if offene_codes < 3 %} — {% trans "neue erzeugen" %}{% endif %}
             </p>
         {% else %}
             <div class="flex items-center gap-2 mb-1">
                 <span class="inline-block w-2 h-2 rounded-full fw-balken"></span>
-                <h3 class="font-bold fw-strong text-sm">Nicht eingerichtet</h3>
+                <h3 class="font-bold fw-strong text-sm">{% trans "Nicht eingerichtet" %}</h3>
             </div>
             <p class="text-xs fw-mutet">
-                Ihr Konto ist derzeit nur durch das Passwort geschützt.
+                {% trans "Ihr Konto ist derzeit nur durch das Passwort geschützt." %}
             </p>
             <a href="{% url 'zweifaktor_einrichten' %}"
                class="inline-block mt-4 fw-btn fw-primary text-sm
-                      font-semibold px-5 py-2.5 rounded-lg shadow-sm">Jetzt einrichten</a>
+                      font-semibold px-5 py-2.5 rounded-lg shadow-sm">{% trans "Jetzt einrichten" %}</a>
         {% endif %}
     </div>
 
     {% if faktor %}
     <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-1">Notfallcodes</h3>
+        <h3 class="font-bold fw-strong text-sm mb-1">{% trans "Notfallcodes" %}</h3>
         <p class="text-xs fw-mutet mb-4">
-            Neue Codes erzeugen macht alle bisherigen ungültig.
+            {% trans "Neue Codes erzeugen macht alle bisherigen ungültig." %}
         </p>
         <form method="post" action="{% url 'zweifaktor_codes_neu' %}">
             {% csrf_token %}
             <button class="fw-flaeche border fw-linie fw-ink text-sm font-semibold
-                           px-4 py-2.5 rounded-lg">Neue Codes erzeugen</button>
+                           px-4 py-2.5 rounded-lg">{% trans "Neue Codes erzeugen" %}</button>
         </form>
     </div>
 
     <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-1">Abschalten</h3>
+        <h3 class="font-bold fw-strong text-sm mb-1">{% trans "Abschalten" %}</h3>
         {% if pflicht %}
         <p class="text-xs fw-mutet">
-            Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung — sie lässt sich nicht abschalten.
+            {% trans "Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung — sie lässt sich nicht abschalten." %}
         </p>
         {% else %}
         <p class="text-xs fw-mutet mb-4">
-            Zur Sicherheit ist dafür Ihr Passwort nötig.
+            {% trans "Zur Sicherheit ist dafür Ihr Passwort nötig." %}
         </p>
         <form method="post" action="{% url 'zweifaktor_aus' %}" class="flex flex-wrap gap-3 items-center">
             {% csrf_token %}
-            <input type="password" name="password" required placeholder="Passwort"
+            <input type="password" name="password" required placeholder="{% trans 'Passwort' %}"
                    autocomplete="current-password"
                    class="border fw-linie rounded-lg px-4 py-2.5 text-sm w-56">
             <button class="fw-btn fw-gefahr text-sm font-semibold
-                           px-5 py-2.5 rounded-lg">Abschalten</button>
+                           px-5 py-2.5 rounded-lg">{% trans "Abschalten" %}</button>
         </form>
         {% endif %}
     </div>
@@ -82,31 +81,27 @@
 
     {% if darf_verwalten %}
     <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-1">Für die ganze Verwaltung</h3>
+        <h3 class="font-bold fw-strong text-sm mb-1">{% trans "Für die ganze Verwaltung" %}</h3>
         {% if organisation.zweifaktor_pflicht %}
             <p class="text-xs fw-mutet mb-4">
                 <span class="inline-block w-2 h-2 rounded-full fw-gut-voll align-middle"></span>
-                Alle Konten von <strong>{{ organisation.firma }}</strong> müssen den zweiten
-                Faktor einrichten. Wer ihn noch nicht hat, landet beim nächsten Aufruf
-                auf der Einrichtungsseite.
+                {% blocktrans trimmed with firma=organisation.firma %}Alle Konten von <strong>{{ firma }}</strong> müssen den zweiten Faktor einrichten. Wer ihn noch nicht hat, landet beim nächsten Aufruf auf der Einrichtungsseite.{% endblocktrans %}
             </p>
             <form method="post" action="{% url 'zweifaktor_pflicht_setzen' %}">
                 {% csrf_token %}
                 <input type="hidden" name="pflicht" value="aus">
                 <button class="fw-flaeche border fw-linie fw-ink text-sm
-                               font-semibold px-4 py-2.5 rounded-lg">Pflicht aufheben</button>
+                               font-semibold px-4 py-2.5 rounded-lg">{% trans "Pflicht aufheben" %}</button>
             </form>
         {% else %}
             <p class="text-xs fw-mutet mb-3">
-                Verlangt die Einrichtung von allen Konten dieser Verwaltung. Bereits
-                angemeldete Sitzungen sind ab sofort betroffen — nicht erst beim nächsten Login.
+                {% trans "Verlangt die Einrichtung von allen Konten dieser Verwaltung. Bereits angemeldete Sitzungen sind ab sofort betroffen — nicht erst beim nächsten Login." %}
             </p>
             {% if ohne_faktor %}
             <div class="fw-warn-flaeche border fw-linie-warn fw-warnton rounded-lg p-3 text-xs mb-4">
-                <strong>{{ ohne_faktor|length }} Konto/Konten ohne zweiten Faktor:</strong>
+                <strong>{% blocktrans count n=ohne_faktor|length %}{{ n }} Konto ohne zweiten Faktor:{% plural %}{{ n }} Konten ohne zweiten Faktor:{% endblocktrans %}</strong>
                 {% for b in ohne_faktor %}{{ b.get_username }}{% if not forloop.last %}, {% endif %}{% endfor %}.<br>
-                Sie können ab dem Einschalten nur noch die Einrichtungsseite aufrufen.
-                Wer gerade kein Telefon zur Hand hat, kommt bis dahin nicht weiter.
+                {% trans "Sie können ab dem Einschalten nur noch die Einrichtungsseite aufrufen. Wer gerade kein Telefon zur Hand hat, kommt bis dahin nicht weiter." %}
             </div>
             {% endif %}
             <form method="post" action="{% url 'zweifaktor_pflicht_setzen' %}">
@@ -114,7 +109,7 @@
                 <input type="hidden" name="pflicht" value="an">
                 <button class="fw-btn fw-primary text-sm
                                font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-                    Für alle verlangen</button>
+                    {% trans "Für alle verlangen" %}</button>
             </form>
         {% endif %}
     </div>

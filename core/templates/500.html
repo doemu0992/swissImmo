@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="de">
+{% load i18n %}{% get_current_language as sprache %}<!DOCTYPE html>
+<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ein Fehler ist aufgetreten – swissImmo</title>
+    <title>{% trans "Ein Fehler ist aufgetreten – swissImmo" %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
 {% include 'core/_assets_aussen.html' %}
     <style>
@@ -19,14 +19,12 @@
     {% endcomment %}
     <div class="w-full max-w-md fw-flaeche rounded-2xl border fw-linie p-8 text-center">
         <div class="w-14 h-14 rounded-full fw-krit-flaeche fw-kritisch flex items-center justify-center mx-auto mb-5 text-2xl">⚠️</div>
-        <h1 class="text-xl font-extrabold mb-3">Ein Fehler ist aufgetreten</h1>
+        <h1 class="text-xl font-extrabold mb-3">{% trans "Ein Fehler ist aufgetreten" %}</h1>
         <p class="text-sm fw-mutet leading-relaxed">
-            Etwas ist schiefgelaufen — der Fehler wurde protokolliert. Bitte
-            versuchen Sie es in einem Moment erneut. Bleibt das Problem bestehen,
-            melden Sie sich bitte bei Ihrer Verwaltung.
+            {% trans "Etwas ist schiefgelaufen — der Fehler wurde protokolliert. Bitte versuchen Sie es in einem Moment erneut. Bleibt das Problem bestehen, melden Sie sich bitte bei Ihrer Verwaltung." %}
         </p>
         <a href="/neu/" class="inline-block mt-6 fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
-            Zur Übersicht
+            {% trans "Zur Übersicht" %}
         </a>
     </div>
 </body>

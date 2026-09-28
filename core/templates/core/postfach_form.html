@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
-{% block title %}{{ zweck_text }} — Postfach — swissImmo{% endblock %}
+{% load i18n %}
+{% block title %}{{ zweck_text }} — {% trans "Postfach" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
         <h1>{{ zweck_text }}</h1>
-        <p>Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt.</p>
+        <p>{% trans "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt." %}</p>
     </div>
 </div>
 
@@ -19,22 +20,16 @@
     {# Der Hinweis steht bewusst HIER und nicht im Handbuch: Wer Gmail mit dem #}
     {# Kontopasswort probiert, sucht den Fehler sonst bei sich.               #}
     <div class="fw-flaeche2 border fw-linie rounded-xl p-4 text-xs fw-mutet space-y-2">
-        <p><strong>Klassischer Hoster</strong> (Hoststar, cyon, Infomaniak, eigener Server):
-           Benutzername und Passwort.</p>
-        <p><strong>Gmail:</strong> Benutzername und <strong>App-Passwort</strong> — nicht das
-           Kontopasswort. Setzt die Zwei-Faktor-Anmeldung im Google-Konto voraus. Bei Google
-           Workspace kann der Administrator App-Passwörter gesperrt haben; dann bitte bei ihm
-           nachfragen.</p>
-        <p><strong>Microsoft 365 / Exchange Online:</strong> <strong>nur OAuth2</strong> —
-           Microsoft hat den Zugang mit Benutzername und Passwort abgeschaltet. Diese Anbindung
-           ist neu und noch nicht mit einem Kundenverzeichnis erprobt; bitte melden Sie sich bei
-           uns, wenn etwas nicht funktioniert.</p>
+        <p>{% blocktrans trimmed %}<strong>Klassischer Hoster</strong> (Hoststar, cyon, Infomaniak, eigener Server): Benutzername und Passwort.{% endblocktrans %}</p>
+        <p>{% blocktrans trimmed %}<strong>Gmail:</strong> Benutzername und <strong>App-Passwort</strong> — nicht das Kontopasswort. Setzt die Zwei-Faktor-Anmeldung im Google-Konto voraus. Bei Google Workspace kann der Administrator App-Passwörter gesperrt haben; dann bitte bei ihm nachfragen.{% endblocktrans %}</p>
+        <p><strong>{% trans "Microsoft 365 / Exchange Online" %}:</strong> <strong>{% trans "nur OAuth2" %}</strong> —
+           {% trans "Microsoft hat den Zugang mit Benutzername und Passwort abgeschaltet. Diese Anbindung ist neu und noch nicht mit einem Kundenverzeichnis erprobt; bitte melden Sie sich bei uns, wenn etwas nicht funktioniert." %}</p>
     </div>
 
     {% if schluessel_fehlt %}
     <div class="rounded-xl p-4 text-sm border fw-warn-flaeche fw-linie-warn fw-warnton">
-        <strong>Auf dem Server fehlt {{ schluessel_name }}.</strong>
-        Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich bei uns.
+        <strong>{% blocktrans with name=schluessel_name %}Auf dem Server fehlt {{ name }}.{% endblocktrans %}</strong>
+        {% trans "Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich bei uns." %}
     </div>
     {% endif %}
 
@@ -42,7 +37,7 @@
         {% csrf_token %}
 
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Verfahren</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verfahren" %}</label>
             <select name="verfahren"
                     class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
                 {% for wert, text in verfahren_wahl %}
@@ -56,7 +51,7 @@
 
         <div>
             <label class="block text-xs font-semibold fw-mutet mb-1">
-                Benutzername / E-Mail-Adresse</label>
+                {% trans "Benutzername / E-Mail-Adresse" %}</label>
             <input type="text" name="benutzer" required
                    value="{% if eingabe %}{{ eingabe.benutzer }}{% elif postfach %}{{ postfach.benutzer }}{% endif %}"
                    autocomplete="off"
@@ -65,13 +60,13 @@
 
         <div class="grid grid-cols-3 gap-3">
             <div class="col-span-2">
-                <label class="block text-xs font-semibold fw-mutet mb-1">IMAP-Server</label>
-                <input type="text" name="server" placeholder="imap.example.ch"
+                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "IMAP-Server" %}</label>
+                <input type="text" name="server" placeholder="{% trans 'imap.example.ch' %}"
                        value="{% if eingabe %}{{ eingabe.server }}{% elif postfach %}{{ postfach.server }}{% endif %}"
                        class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
             </div>
             <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Port</label>
+                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Port" %}</label>
                 <input type="number" name="port" min="1" max="65535"
                        value="{% if eingabe %}{{ eingabe.port }}{% elif postfach %}{{ postfach.port }}{% else %}993{% endif %}"
                        class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
@@ -79,7 +74,7 @@
         </div>
 
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Ordner</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ordner" %}</label>
             <input type="text" name="ordner"
                    value="{% if eingabe %}{{ eingabe.ordner }}{% elif postfach %}{{ postfach.ordner }}{% else %}INBOX{% endif %}"
                    class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
@@ -87,48 +82,46 @@
 
         {# KEIN `value` — das gespeicherte Geheimnis geht nie zurück ins Formular. #}
         <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">Passwort</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Passwort" %}</label>
             <input type="password" name="passwort" autocomplete="new-password"
                    placeholder="{% if postfach and postfach.passwort_geheim %}gespeichert — leer lassen, um es nicht zu ändern{% else %}Passwort oder App-Passwort{% endif %}"
                    class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
             <p class="text-xs fw-mutet mt-1">
                 {% if postfach and postfach.passwort_geheim %}
-                    Ein Passwort ist hinterlegt. Aus Sicherheitsgründen wird es hier nicht
-                    angezeigt. <strong>Leer lassen heisst: unverändert.</strong>
+                    {% trans "Ein Passwort ist hinterlegt. Aus Sicherheitsgründen wird es hier nicht angezeigt." %} <strong>{% trans "Leer lassen heisst: unverändert." %}</strong>
                 {% else %}
-                    Wird verschlüsselt gespeichert und nie im Klartext angezeigt.
+                    {% trans "Wird verschlüsselt gespeichert und nie im Klartext angezeigt." %}
                 {% endif %}
             </p>
         </div>
 
         <details class="border-t fw-linie pt-4">
             <summary class="text-xs font-semibold fw-mutet cursor-pointer">
-                Nur für OAuth2 (Microsoft 365)</summary>
+                {% trans "Nur für OAuth2 (Microsoft 365)" %}</summary>
             <div class="space-y-3 mt-3">
                 <div>
                     <label class="block text-xs font-semibold fw-mutet mb-1">
-                        Verzeichnis-ID (Tenant)</label>
+                        {% trans "Verzeichnis-ID (Tenant)" %}</label>
                     <input type="text" name="mandant_id"
                            value="{% if eingabe %}{{ eingabe.mandant_id }}{% elif postfach %}{{ postfach.mandant_id }}{% endif %}"
                            class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold fw-mutet mb-1">
-                        Anwendungs-ID (Client)</label>
+                        {% trans "Anwendungs-ID (Client)" %}</label>
                     <input type="text" name="anwendung_id"
                            value="{% if eingabe %}{{ eingabe.anwendung_id }}{% elif postfach %}{{ postfach.anwendung_id }}{% endif %}"
                            class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold fw-mutet mb-1">
-                        Refresh-Token</label>
+                        {% trans "Refresh-Token" %}</label>
                     <input type="password" name="refresh_token" autocomplete="new-password"
                            placeholder="{% if postfach and postfach.refresh_token_geheim %}gespeichert — leer lassen, um es nicht zu ändern{% endif %}"
                            class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
                 </div>
                 <p class="text-xs fw-mutet">
-                    Der geführte Zustimmungsablauf für Microsoft 365 ist noch nicht
-                    freigeschaltet. Bitte melden Sie sich bei uns.
+                    {% trans "Der geführte Zustimmungsablauf für Microsoft 365 ist noch nicht freigeschaltet. Bitte melden Sie sich bei uns." %}
                 </p>
             </div>
         </details>
@@ -138,15 +131,15 @@
                    {% if eingabe %}{% if eingabe.aktiv %}checked{% endif %}
                    {% elif not postfach or postfach.aktiv %}checked{% endif %}
                    class="rounded fw-linie">
-            Eingang aktiv — Mails aus diesem Postfach abholen
+            {% trans "Eingang aktiv — Mails aus diesem Postfach abholen" %}
         </label>
 
         <div class="flex gap-3 pt-2">
             <button class="fw-btn fw-primary text-sm font-semibold
-                           px-5 py-2.5 rounded-lg shadow-sm">Speichern</button>
+                           px-5 py-2.5 rounded-lg shadow-sm">{% trans "Speichern" %}</button>
             <a href="{% url 'postfach_liste' %}"
                class="fw-flaeche border fw-linie fw-ink text-sm font-semibold
-                      px-5 py-2.5 rounded-lg">Abbrechen</a>
+                      px-5 py-2.5 rounded-lg">{% trans "Abbrechen" %}</a>
         </div>
     </form>
 </div>
