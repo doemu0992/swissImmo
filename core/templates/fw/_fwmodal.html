@@ -1,4 +1,4 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 <!-- Wiederverwendbares Cockpit-Modal: lädt fw-Seiten inline (iframe), Chrome wird
      im Embed-/iframe-Kontext (base.html) automatisch ausgeblendet. -->
 <div id="fwModal" class="fixed inset-0 z-[60] hidden">
@@ -6,10 +6,10 @@
     <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-6 pointer-events-none">
         <div id="fwModalBox" class="fw-flaeche rounded-2xl shadow-2xl w-full max-w-3xl h-[88vh] flex flex-col overflow-hidden pointer-events-auto">
             <div class="flex items-center justify-between px-5 py-3 border-b fw-linie shrink-0">
-                <h2 id="fwModalTitle" class="font-bold fw-strong">Schritt</h2>
-                <button onclick="fwModalClose()" title="Schliessen" class="w-8 h-8 rounded-lg fw-faint hover:fw-flaeche2 hover:fw-ink">{% zeichen 'schliessen' %}</button>
+                <h2 id="fwModalTitle" class="font-bold fw-strong">{% trans "Schritt" %}</h2>
+                <button onclick="fwModalClose()" title="{% trans 'Schliessen' %}" class="w-8 h-8 rounded-lg fw-faint hover:fw-flaeche2 hover:fw-ink">{% zeichen 'schliessen' %}</button>
             </div>
-            <iframe id="fwModalFrame" class="flex-1 w-full border-0" src="about:blank" title="Schritt"></iframe>
+            <iframe id="fwModalFrame" class="flex-1 w-full border-0" src="about:blank" title="{% trans 'Schritt' %}"></iframe>
         </div>
     </div>
 </div>
@@ -18,7 +18,7 @@ var fwModalWasOpen = false;
 // wide=true → breites Modal (z.B. Vertrag mit Vorschau nebeneinander statt darunter)
 function fwModalOpenUrl(url, title, wide) {
     url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
-    document.getElementById('fwModalTitle').textContent = title || 'Schritt';
+    document.getElementById('fwModalTitle').textContent = title || '{% filter escapejs %}{% trans "Schritt" %}{% endfilter %}';
     var box = document.getElementById('fwModalBox');
     box.style.maxWidth = wide ? 'min(96vw, 1240px)' : '48rem';
     document.getElementById('fwModalFrame').src = url;

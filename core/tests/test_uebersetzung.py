@@ -174,6 +174,13 @@ UEBERSETZT = (
     'fw/bewerber_vergleich.html',
     'fw/lebensdauer.html',
     'fw/ersatzplanung.html',
+    # Tranche «Kommunikation & Abläufe»
+    'fw/kommunikation.html',
+    'fw/fristen.html',
+    'fw/mieterwechsel.html',
+    'fw/abnahme_detail.html',
+    'fw/fall_detail.html',
+    'fw/_fwmodal.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -273,6 +280,10 @@ STICHPROBE = {
                            'it': 'Confronto candidati', 'en': 'Applicant comparison'},
     'Ersatzplanung':      {'de': 'Ersatzplanung', 'fr': 'Planification des remplacements',
                            'it': 'Pianificazione delle sostituzioni', 'en': 'Replacement planning'},
+    'Mieterwechsel-Cockpit': {'de': 'Mieterwechsel-Cockpit', 'fr': 'Cockpit de changement de locataire',
+                              'it': "Cockpit del cambio d'inquilino", 'en': 'Tenant-change cockpit'},
+    'Mitteilungs-Assistent': {'de': 'Mitteilungs-Assistent', 'fr': 'Assistant de communication',
+                              'it': 'Assistente comunicazioni', 'en': 'Notice assistant'},
 }
 
 
