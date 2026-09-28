@@ -18,6 +18,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext, ngettext
 
 from core.auth import (darf_oeffnen, rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -58,18 +59,20 @@ def _liegenschaft_kopf(lg, gesamt, vermietet, soll_monat, wartungsfristen,
     if gesamt:
         quote = round(vermietet * 100 / gesamt)
         if leerstand:
-            chips.append({'text': f'{leerstand} von {gesamt} leer', 'ton': 'fw-warn'})
+            chips.append({'text': gettext('%(leer)s von %(gesamt)s leer') % {'leer': leerstand, 'gesamt': gesamt},
+                          'ton': 'fw-warn'})
         else:
-            chips.append({'text': f'voll vermietet ({quote} %)', 'ton': 'fw-good'})
+            chips.append({'text': gettext('voll vermietet (%(q)s %%)') % {'q': quote}, 'ton': 'fw-good'})
     ueberfaellig = [f for f in wartungsfristen if f['ueberfaellig']]
     if ueberfaellig:
-        chips.append({'text': f'{len(ueberfaellig)} Frist{"en" if len(ueberfaellig) > 1 else ""} überfällig',
+        chips.append({'text': ngettext('%(n)s Frist überfällig', '%(n)s Fristen überfällig',
+                                       len(ueberfaellig)) % {'n': len(ueberfaellig)},
                       'ton': 'fw-crit'})
     if tickets:
-        chips.append({'text': f'{len(tickets)} offene{"r" if len(tickets) == 1 else ""} Schaden'
-                              f'{"" if len(tickets) == 1 else "sfälle"}', 'ton': 'fw-warn'})
+        chips.append({'text': ngettext('%(n)s offener Schaden', '%(n)s offene Schadensfälle',
+                                       len(tickets)) % {'n': len(tickets)}, 'ton': 'fw-warn'})
     if lg.hkvo_aktiv:
-        chips.append({'text': 'HKVO verbrauchsabhängig', 'ton': 'fw-info'})
+        chips.append({'text': gettext('HKVO verbrauchsabhängig'), 'ton': 'fw-info'})
 
     # Hinweise. Regel aus 16.3: Jeder Hinweis fuehrt zu einer Handlung —
     # sonst ist er eine Beschwerde. Deshalb traegt jeder ein Ziel.
@@ -77,27 +80,28 @@ def _liegenschaft_kopf(lg, gesamt, vermietet, soll_monat, wartungsfristen,
     if rendite.get('bruttorendite') is None:
         hinweise.append({
             'ton': 'info', 'symbol': 'bericht',
-            'titel': 'Rendite nicht berechenbar',
-            'text': 'Ohne Verkehrswert (ersatzweise Anlagekosten) fehlt der Nenner. '
-                    'Der Versicherungswert taugt dafür nicht — er bemisst den '
-                    'Wiederaufbau, nicht den Marktwert.',
-            'url': f'/neu/liegenschaften/{lg.id}/bearbeiten/', 'knopf': 'Wert erfassen'})
+            'titel': gettext('Rendite nicht berechenbar'),
+            'text': gettext('Ohne Verkehrswert (ersatzweise Anlagekosten) fehlt der Nenner. '
+                            'Der Versicherungswert taugt dafür nicht — er bemisst den '
+                            'Wiederaufbau, nicht den Marktwert.'),
+            'url': f'/neu/liegenschaften/{lg.id}/bearbeiten/', 'knopf': gettext('Wert erfassen')})
     if ueberfaellig:
         aelteste = min(ueberfaellig, key=lambda f: f['wf'].naechste_faelligkeit)
         hinweise.append({
             'ton': 'crit', 'symbol': 'warnung',
-            'titel': 'Wartungsfrist überfällig',
-            'text': f'«{aelteste["wf"].bezeichnung}» war am '
-                    f'{aelteste["wf"].naechste_faelligkeit.strftime("%d.%m.%Y")} fällig '
-                    f'({abs(aelteste["tage"])} Tage).',
-            'url': '?tab=faelle', 'knopf': 'Zu den Fristen'})
+            'titel': gettext('Wartungsfrist überfällig'),
+            'text': gettext('«%(name)s» war am %(datum)s fällig (%(tage)s Tage).') % {
+                'name': aelteste['wf'].bezeichnung,
+                'datum': aelteste['wf'].naechste_faelligkeit.strftime('%d.%m.%Y'),
+                'tage': abs(aelteste['tage'])},
+            'url': '?tab=faelle', 'knopf': gettext('Zu den Fristen')})
     if not lg.hauswart_name and not lg.sanitaer_name and not lg.elektriker_name:
         hinweise.append({
             'ton': 'warn', 'symbol': 'arbeit',
-            'titel': 'Keine Notfallkontakte',
-            'text': 'Ohne Hauswart, Sanitär oder Elektriker steht bei einem '
-                    'Wasserschaden ausserhalb der Bürozeit niemand bereit.',
-            'url': f'/neu/liegenschaften/{lg.id}/bearbeiten/', 'knopf': 'Kontakte erfassen'})
+            'titel': gettext('Keine Notfallkontakte'),
+            'text': gettext('Ohne Hauswart, Sanitär oder Elektriker steht bei einem '
+                            'Wasserschaden ausserhalb der Bürozeit niemand bereit.'),
+            'url': f'/neu/liegenschaften/{lg.id}/bearbeiten/', 'knopf': gettext('Kontakte erfassen')})
 
     # Naechste Frist als vierte Kennzahl. `wartungsfristen` ist bereits nach
     # Faelligkeit sortiert; die erste ist die naechste.
