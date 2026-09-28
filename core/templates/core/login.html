@@ -124,6 +124,14 @@
 
         a:focus-visible, button:focus-visible, .input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+        /* Sprachwahl (core/_sprachwahl.html) */
+        .sprachwahl { display: flex; gap: 4px; justify-content: center; }
+        .sprachwahl-knopf {
+            font: inherit; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 8px;
+            border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+        }
+        .sprachwahl-knopf:hover { color: var(--ink); border-color: var(--accent); }
+        .sprachwahl-knopf.ist-aktiv { background: var(--accent); border-color: var(--accent); color: #fff; }
     </style>
     {% include 'core/_assets_schrift.html' %}
 </head>
@@ -198,6 +206,7 @@
                 🔑 <b>Mieterin, Mieter oder Eigentümer?</b> Nutzen Sie das
                 <a href="{% url 'portal_login' %}">Portal-Login</a> mit den Zugangsdaten, die Sie per E-Mail von Ihrer Verwaltung erhalten haben.
             </div>
+            <div style="margin-top: 16px">{% include 'core/_sprachwahl.html' %}</div>
             <div class="back"><a href="{% url 'index' %}">← Zurück zum öffentlichen Portal</a></div>
         </div>
     </main>

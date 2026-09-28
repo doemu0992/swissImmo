@@ -182,6 +182,11 @@ urlpatterns = [
     # wenn ein ausstehender zweiter Faktor bestaetigt ist. Ein Faktor, der
     # NACH `login()` abgefragt wird, ist keiner — siehe core/views/zweifaktor.py.
     path('login/', zweifaktor_login, name='login'),
+    # Sprachwahl (Baustein `core/_sprachwahl.html`): Djangos `set_language`,
+    # nur POST, setzt das Sprach-Cookie. Offen ohne Anmeldung, damit auch die
+    # Anmeldeseite umgestellt werden kann; `next` prüft Django selbst auf
+    # eigene Adressen (kein offener Redirect).
+    path('i18n/', include('django.conf.urls.i18n')),
     # Passwort vergessen (Self-Service für Mieter/Eigentümer-Logins): Djangos
     # eingebaute Reset-Kette mit eigenen, schlanken Templates.
     path('passwort/vergessen/', auth_views.PasswordResetView.as_view(

@@ -247,6 +247,10 @@
                             <button type="button" data-theme-btn="dark" onclick="fwSetTheme('dark')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors fw-mutet hover:fw-ink">Dunkel</button>
                         </div>
                     </div>
+                    <div class="px-4 py-2">
+                        <div class="text-[11px] font-semibold fw-faint uppercase tracking-wider mb-1.5">Sprache · Langue · Lingua</div>
+                        {% include 'core/_sprachwahl.html' with rahmen='flex fw-flaeche2 rounded-lg p-0.5 gap-0.5' knopf='flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors' aktiv='fw-balken-voll shadow-sm' passiv='fw-mutet hover:fw-ink' %}
+                    </div>
                     <div class="border-t fw-linie my-1.5"></div>
                     {% include 'fw/_menu_item.html' with ziel='/neu/einstellungen/' icon='einstellungen' label='Einstellungen' %}
                     <div class="border-t fw-linie my-1.5"></div>
