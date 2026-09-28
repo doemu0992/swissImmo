@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 15:14+0200\n"
+"POT-Creation-Date: 2026-09-28 15:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,30 +107,35 @@ msgid "Ersatz & Ausstattung"
 msgstr "Renouvellement & équipements"
 
 #: core/navigation.py:154 core/templates/fw/_arbeitsvorrat_abschnitte.html:38
+#: core/templates/fw/laeufe.html:3 core/templates/fw/laeufe.html:8
 msgid "Läufe"
 msgstr "Processus"
 
-#: core/navigation.py:155
+#: core/navigation.py:155 core/templates/fw/sollstellung.html:10
 msgid "Sollstellung"
 msgstr "Facturation des loyers"
 
-#: core/navigation.py:155
+#: core/navigation.py:155 core/templates/fw/sollstellung.html:21
 msgid "Monat"
 msgstr "Mois"
 
-#: core/navigation.py:156
+#: core/navigation.py:156 core/templates/fw/bankabgleich.html:4
+#: core/templates/fw/bankabgleich.html:10
 msgid "Bankabgleich"
 msgstr "Rapprochement bancaire"
 
-#: core/navigation.py:157
+#: core/navigation.py:157 core/templates/fw/mahnwesen.html:4
+#: core/templates/fw/mahnwesen.html:10
 msgid "Mahnwesen"
 msgstr "Rappels"
 
-#: core/navigation.py:158
+#: core/navigation.py:158 core/templates/fw/zahllauf.html:4
+#: core/templates/fw/zahllauf.html:9
 msgid "Zahllauf"
 msgstr "Ordres de paiement"
 
-#: core/navigation.py:159
+#: core/navigation.py:159 core/templates/fw/nebenkosten.html:4
+#: core/templates/fw/nebenkosten.html:9
 msgid "Nebenkosten"
 msgstr "Frais accessoires"
 
@@ -138,7 +143,8 @@ msgstr "Frais accessoires"
 msgid "Periodisch"
 msgstr "Périodique"
 
-#: core/navigation.py:160
+#: core/navigation.py:160 core/templates/fw/mietzins.html:4
+#: core/templates/fw/mietzins.html:10
 msgid "Mietzins"
 msgstr "Loyer"
 
@@ -235,6 +241,34 @@ msgstr "Paramètres"
 msgid "Zwei-Faktor-Anmeldung"
 msgstr "Authentification à deux facteurs"
 
+#: core/services/mahnstufen.py:25
+msgid "1. Mahnung"
+msgstr "1er rappel"
+
+#: core/services/mahnstufen.py:25
+msgid "2. Mahnung"
+msgstr "2e rappel"
+
+#: core/services/mahnstufen.py:25
+msgid "3. Mahnung"
+msgstr "3e rappel"
+
+#: core/services/mahnstufen.py:28
+msgid "Erste Zahlungserinnerung"
+msgstr "Premier rappel de paiement"
+
+#: core/services/mahnstufen.py:28
+msgid "Zweite schriftliche Erinnerung"
+msgstr "Deuxième rappel écrit"
+
+#: core/services/mahnstufen.py:29
+msgid "Dritte Mahnung"
+msgstr "Troisième rappel"
+
+#: core/services/mahnstufen.py:30
+msgid "Kündigungsandrohung (Art. 257d OR)"
+msgstr "Menace de résiliation (art. 257d CO)"
+
 #: core/templates/admin/base.html:158
 msgid "Home"
 msgstr "Accueil"
@@ -294,7 +328,7 @@ msgstr "sans date — temps moyen non calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:332
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:352
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -373,7 +407,7 @@ msgid "Notiz"
 msgstr "Note"
 
 #: core/templates/fw/abwesenheiten.html:41
-#: core/templates/fw/dienstleister.html:37
+#: core/templates/fw/dienstleister.html:37 core/templates/fw/mahnwesen.html:101
 msgid "Erfassen"
 msgstr "Saisir"
 
@@ -417,6 +451,399 @@ msgstr "Passé"
 #: core/templates/fw/abwesenheiten.html:96
 msgid "Nichts vergangen."
 msgstr "Rien de passé."
+
+#: core/templates/fw/bankabgleich.html:11
+msgid ""
+"Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen "
+"(Bank an Debitoren)"
+msgstr ""
+"Rapprocher les postes ouverts des paiements reçus et les comptabiliser en un "
+"clic (banque à débiteurs)"
+
+#: core/templates/fw/bankabgleich.html:11 core/templates/fw/mietzins.html:11
+#: core/templates/fw/mwst.html:9 core/templates/fw/objekte.html:24
+#: core/templates/fw/personen.html:10 core/templates/fw/sollstellung.html:11
+#: core/templates/fw/vertraege.html:14
+#, python-format
+msgid "gefiltert auf %(strasse)s"
+msgstr "filtré sur %(strasse)s"
+
+#: core/templates/fw/bankabgleich.html:11
+#: core/templates/fw/liegenschaften.html:11 core/templates/fw/mahnwesen.html:13
+#: core/templates/fw/mietzins.html:11 core/templates/fw/nebenkosten.html:14
+#: core/templates/fw/objekte.html:25 core/templates/fw/personen.html:10
+#: core/templates/fw/vertraege.html:14 core/templates/fw/zahllauf.html:15
+msgid "aufheben"
+msgstr "annuler"
+
+#: core/templates/fw/bankabgleich.html:14
+msgid "Gelernte Zahler"
+msgstr "Payeurs appris"
+
+#: core/templates/fw/bankabgleich.html:21
+msgid "Abzugleichen (offen)"
+msgstr "À rapprocher (ouverts)"
+
+#: core/templates/fw/bankabgleich.html:25
+msgid "Offene Posten"
+msgstr "Postes ouverts"
+
+#: core/templates/fw/bankabgleich.html:33
+msgid "Kontoauszug importieren"
+msgstr "Importer un relevé de compte"
+
+#: core/templates/fw/bankabgleich.html:33
+msgid "(camt.053-XML oder Bank-CSV)"
+msgstr "(XML camt.053 ou CSV bancaire)"
+
+#: core/templates/fw/bankabgleich.html:44
+#: core/templates/fw/bankabgleich.html:63
+msgid "Import"
+msgstr "Import"
+
+#: core/templates/fw/bankabgleich.html:55
+msgid "Letzte Importe"
+msgstr "Derniers imports"
+
+#: core/templates/fw/bankabgleich.html:63
+#, python-format
+msgid "Konto %(nr)s"
+msgstr "Compte %(nr)s"
+
+#: core/templates/fw/bankabgleich.html:64
+#: core/templates/fw/bankabgleich.html:96
+#, python-format
+msgid "per %(datum)s"
+msgstr "au %(datum)s"
+
+#: core/templates/fw/bankabgleich.html:65
+#, python-format
+msgid "importiert %(zeit)s"
+msgstr "importé le %(zeit)s"
+
+#: core/templates/fw/bankabgleich.html:69
+msgid "Kontoauszug"
+msgstr "Relevé de compte"
+
+#: core/templates/fw/bankabgleich.html:69
+#, python-format
+msgid "Import «%(name)s» wirklich rückgängig machen?"
+msgstr "Vraiment annuler l'import «%(name)s» ?"
+
+#: core/templates/fw/bankabgleich.html:71
+msgid ""
+"Alle aus diesem Auszug gebuchten Zahlungen werden revisionssicher storniert "
+"(Gegenbuchung), die betroffenen Rechnungen gelten wieder als offen, und der "
+"Auszug wird entfernt."
+msgstr ""
+"Tous les paiements comptabilisés à partir de ce relevé sont extournés de "
+"manière traçable (contre-écriture), les factures concernées redeviennent "
+"ouvertes et le relevé est supprimé."
+
+#: core/templates/fw/bankabgleich.html:75
+msgid "Import rückgängig"
+msgstr "Annuler l'import"
+
+#: core/templates/fw/bankabgleich.html:93
+#, python-format
+msgid "Saldoabgleich %(nr)s"
+msgstr "Rapprochement du solde %(nr)s"
+
+#: core/templates/fw/bankabgleich.html:96
+#, python-format
+msgid "Auszug %(name)s"
+msgstr "Relevé %(name)s"
+
+#: core/templates/fw/bankabgleich.html:102
+msgid "laut Auszug"
+msgstr "selon relevé"
+
+#: core/templates/fw/bankabgleich.html:106
+msgid "laut Buchhaltung"
+msgstr "selon comptabilité"
+
+#: core/templates/fw/bankabgleich.html:111
+msgid "Differenz — offene Bewegungen zuordnen"
+msgstr "Différence — attribuer les mouvements ouverts"
+
+#: core/templates/fw/bankabgleich.html:111
+msgid "stimmt überein"
+msgstr "concorde"
+
+#: core/templates/fw/bankabgleich.html:125
+msgid "Bank-Eingang — offene Auszugszeilen"
+msgstr "Entrées bancaires — lignes de relevé ouvertes"
+
+#: core/templates/fw/bankabgleich.html:128 core/templates/fw/dashboard.html:292
+#: core/templates/fw/dienstleister.html:74
+#, python-format
+msgid "%(n)s offen"
+msgstr "%(n)s en cours"
+
+#: core/templates/fw/bankabgleich.html:129
+#, python-format
+msgid "Eingänge CHF %(betrag)s"
+msgstr "Entrées CHF %(betrag)s"
+
+#: core/templates/fw/bankabgleich.html:130
+#, python-format
+msgid "Ausgänge CHF %(betrag)s"
+msgstr "Sorties CHF %(betrag)s"
+
+#: core/templates/fw/bankabgleich.html:138
+#, python-format
+msgid "Val. %(datum)s"
+msgstr "Val. %(datum)s"
+
+#: core/templates/fw/bankabgleich.html:140
+msgid "Belastung"
+msgstr "Débit"
+
+#: core/templates/fw/bankabgleich.html:140
+msgid "Gutschrift"
+msgstr "Crédit"
+
+#: core/templates/fw/bankabgleich.html:146
+#: core/templates/fw/bankabgleich.html:279
+msgid "Ref."
+msgstr "Réf."
+
+#: core/templates/fw/bankabgleich.html:150
+#: core/templates/fw/bankabgleich.html:300 core/templates/fw/dashboard.html:286
+msgid "Zuordnen"
+msgstr "Attribuer"
+
+#: core/templates/fw/bankabgleich.html:160
+msgid "Offene Lieferantenrechnung"
+msgstr "Facture fournisseur ouverte"
+
+#: core/templates/fw/bankabgleich.html:162
+#: core/templates/fw/nebenkosten.html:23
+msgid "wählen"
+msgstr "choisir"
+
+#: core/templates/fw/bankabgleich.html:166
+msgid "Als Zahlung buchen"
+msgstr "Comptabiliser comme paiement"
+
+#: core/templates/fw/bankabgleich.html:175
+msgid "Gegenkonto"
+msgstr "Contrepartie"
+
+#: core/templates/fw/bankabgleich.html:176
+msgid "Nummer"
+msgstr "Numéro"
+
+#: core/templates/fw/bankabgleich.html:180
+msgid "Belegtext"
+msgstr "Texte de la pièce"
+
+#: core/templates/fw/bankabgleich.html:185
+#: core/templates/fw/nebenkosten.html:70 core/templates/fw/objekte.html:74
+msgid "Liegenschaft"
+msgstr "Immeuble"
+
+#: core/templates/fw/bankabgleich.html:187
+msgid "keine"
+msgstr "aucune"
+
+#: core/templates/fw/bankabgleich.html:191
+msgid "Auf Konto buchen"
+msgstr "Comptabiliser sur compte"
+
+#: core/templates/fw/bankabgleich.html:194
+msgid "Diese Bewegung als nicht buchungsrelevant markieren?"
+msgstr "Marquer ce mouvement comme non comptable ?"
+
+#: core/templates/fw/bankabgleich.html:199
+msgid "Nicht buchungsrelevant (z.B. Umbuchung eigenes Konto)"
+msgstr "Non comptable (p. ex. virement entre propres comptes)"
+
+#: core/templates/fw/bankabgleich.html:215
+msgid "Ungeklärte Zahlungen & Guthaben"
+msgstr "Paiements non éclaircis & avoirs"
+
+#: core/templates/fw/bankabgleich.html:216 core/templates/fw/mahnwesen.html:57
+#, python-format
+msgid "%(n)s Position"
+msgid_plural "%(n)s Positionen"
+msgstr[0] "%(n)s position"
+msgstr[1] "%(n)s positions"
+
+#: core/templates/fw/bankabgleich.html:217
+#, python-format
+msgid "CHF %(betrag)s ungeklärt (1190)"
+msgstr "CHF %(betrag)s non éclaircis (1190)"
+
+#: core/templates/fw/bankabgleich.html:218
+#, python-format
+msgid "CHF %(betrag)s Mieterguthaben (2030)"
+msgstr "CHF %(betrag)s avoirs des locataires (2030)"
+
+#: core/templates/fw/bankabgleich.html:232
+msgid "Bitte zuerst Zahlungen auswählen."
+msgstr "Veuillez d'abord sélectionner des paiements."
+
+#: core/templates/fw/bankabgleich.html:236 core/templates/fw/dashboard.html:72
+#: core/templates/fw/dashboard.html:82 core/templates/fw/dashboard.html:183
+#: core/templates/fw/liegenschaften.html:60 core/views/fw/arbeit.py:42
+#: core/views/fw/dienstleister.py:60 core/views/fw/listen.py:1108
+#: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
+msgid "Alle"
+msgstr "Tous"
+
+#: core/templates/fw/bankabgleich.html:238
+msgid "0 ausgewählt"
+msgstr "0 sélectionné"
+
+#: core/templates/fw/bankabgleich.html:241
+msgid "Mieter wählen…"
+msgstr "Choisir un locataire…"
+
+#: core/templates/fw/bankabgleich.html:245
+msgid "Ausgewählte zuordnen"
+msgstr "Attribuer la sélection"
+
+#: core/templates/fw/bankabgleich.html:247
+msgid ""
+"Getilgt wird jeweils die älteste offene Forderung; ein Überschuss bleibt als "
+"Guthaben stehen."
+msgstr ""
+"C'est toujours la créance ouverte la plus ancienne qui est soldée ; un "
+"excédent reste en avoir."
+
+#: core/templates/fw/bankabgleich.html:259
+msgid "Für die Sammelzuordnung auswählen"
+msgstr "Sélectionner pour l'attribution groupée"
+
+#: core/templates/fw/bankabgleich.html:262 core/templates/fw/mwst.html:96
+msgid "Guthaben"
+msgstr "Avoir"
+
+#: core/templates/fw/bankabgleich.html:262
+msgid "Ungeklärt"
+msgstr "Non éclairci"
+
+#: core/templates/fw/bankabgleich.html:274
+msgid ""
+"Die Bank liefert keine eigene Auftraggeber-Spalte — aus dem Buchungstext "
+"gelesen"
+msgstr ""
+"La banque ne fournit pas de colonne donneur d'ordre — lu dans le texte de "
+"l'écriture"
+
+#: core/templates/fw/bankabgleich.html:274
+msgid "aus Buchungstext"
+msgstr "du texte d'écriture"
+
+#: core/templates/fw/bankabgleich.html:277
+msgid "Auftraggeber von der Bank nicht geliefert"
+msgstr "Donneur d'ordre non fourni par la banque"
+
+#: core/templates/fw/bankabgleich.html:283
+msgid ""
+"Nach dem Zuordnen wird dieser Absender gemerkt — die nächste Zahlung von ihm "
+"ordnet sich selbst zu."
+msgstr ""
+"Après l'attribution, cet expéditeur est mémorisé — son prochain paiement "
+"s'attribuera tout seul."
+
+#: core/templates/fw/bankabgleich.html:286
+#, python-format
+msgid "alle von «%(zahler)s» auswählen"
+msgstr "tout sélectionner de «%(zahler)s»"
+
+#: core/templates/fw/bankabgleich.html:294
+msgid "Offene Rechnung wählen…"
+msgstr "Choisir une facture ouverte…"
+
+#: core/templates/fw/bankabgleich.html:341
+msgid "Offene Posten abgleichen"
+msgstr "Rapprocher les postes ouverts"
+
+#: core/templates/fw/bankabgleich.html:346 core/templates/fw/zahllauf.html:67
+msgid "Fällig"
+msgstr "Échéance"
+
+#: core/templates/fw/bankabgleich.html:347 core/templates/fw/mahnwesen.html:65
+#: core/templates/fw/mahnwesen.html:147 core/templates/fw/mietzins.html:58
+#: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
+msgid "Mieter"
+msgstr "Locataire"
+
+#: core/templates/fw/bankabgleich.html:348 core/templates/fw/mahnwesen.html:66
+#: core/templates/fw/mietzins.html:59 core/templates/fw/sollstellung.html:83
+#: core/templates/fw/vertraege.html:69 core/templates/fw/zahllauf.html:65
+#: core/templates/fw/zahllauf.html:148
+msgid "Objekt"
+msgstr "Objet"
+
+#: core/templates/fw/bankabgleich.html:349
+msgid "QRR-Referenz"
+msgstr "Référence QRR"
+
+#: core/templates/fw/bankabgleich.html:350 core/templates/fw/laeufe.html:20
+#: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
+#: core/templates/fw/zahllauf.html:68 core/templates/fw/zahllauf.html:150
+msgid "Offen"
+msgstr "Ouvert"
+
+#: core/templates/fw/bankabgleich.html:351
+msgid "Abgleich"
+msgstr "Rapprochement"
+
+#: core/templates/fw/bankabgleich.html:366
+#, python-format
+msgid "CHF %(betrag)s von %(mieter)s als bezahlt verbuchen?"
+msgstr "Comptabiliser CHF %(betrag)s de %(mieter)s comme payé ?"
+
+#: core/templates/fw/bankabgleich.html:371
+msgid "Verbuchen"
+msgstr "Comptabiliser"
+
+#: core/templates/fw/bankabgleich.html:374 core/templates/fw/mahnwesen.html:104
+msgid "kein Vertrag"
+msgstr "aucun bail"
+
+#: core/templates/fw/bankabgleich.html:380
+msgid "Alles abgeglichen"
+msgstr "Tout est rapproché"
+
+#: core/templates/fw/bankabgleich.html:381
+msgid "Keine offenen Posten — jede Forderung ist verbucht."
+msgstr "Aucun poste ouvert — chaque créance est comptabilisée."
+
+#: core/templates/fw/bankabgleich.html:392
+msgid "Kürzlich abgeglichen"
+msgstr "Rapprochés récemment"
+
+#: core/templates/fw/bankabgleich.html:412
+msgid ""
+"Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben "
+"und der offene Posten wieder geöffnet."
+msgstr ""
+"Extourner ce paiement ? Les écritures sont annulées par contre-écriture et "
+"le poste ouvert est rouvert."
+
+#: core/templates/fw/bankabgleich.html:415
+msgid "Zahlung stornieren"
+msgstr "Extourner le paiement"
+
+#: core/templates/fw/bankabgleich.html:417
+msgid "Stornieren"
+msgstr "Extourner"
+
+#: core/templates/fw/bankabgleich.html:429
+msgid ""
+"«Verbuchen» bucht den offenen Betrag als Zahlungseingang (Bank 1020 an "
+"Debitoren 1100) und schreibt den OP-Status fort (offen → teilbezahlt → "
+"bezahlt). Der camt.053-Kontoauszug-Import ordnet Eingänge künftig "
+"automatisch über die QRR-Referenz zu."
+msgstr ""
+"«Comptabiliser» enregistre le montant ouvert comme paiement reçu (banque "
+"1020 à débiteurs 1100) et met à jour le statut du poste (ouvert → "
+"partiellement payé → payé). L'import de relevés camt.053 attribue désormais "
+"les entrées automatiquement via la référence QRR."
 
 #: core/templates/fw/base.html:113
 msgid "Mandant"
@@ -521,14 +948,6 @@ msgstr "Réinitialiser le filtre"
 msgid "Zuständigkeit:"
 msgstr "Responsabilité :"
 
-#: core/templates/fw/dashboard.html:72 core/templates/fw/dashboard.html:82
-#: core/templates/fw/dashboard.html:183
-#: core/templates/fw/liegenschaften.html:60 core/views/fw/arbeit.py:42
-#: core/views/fw/dienstleister.py:60 core/views/fw/listen.py:1108
-#: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
-msgid "Alle"
-msgstr "Tous"
-
 #: core/templates/fw/dashboard.html:79
 msgid "Mandat:"
 msgstr "Mandat :"
@@ -572,18 +991,18 @@ msgstr "Quand on attend un tiers, le suivi est le travail."
 msgid "zuständig"
 msgstr "responsable"
 
-#: core/templates/fw/dashboard.html:257
+#: core/templates/fw/dashboard.html:257 core/templates/fw/laeufe.html:34
 #, python-format
 msgid "%(n)s Tag über"
 msgid_plural "%(n)s Tage über"
 msgstr[0] "%(n)s jour de retard"
 msgstr[1] "%(n)s jours de retard"
 
-#: core/templates/fw/dashboard.html:257
+#: core/templates/fw/dashboard.html:257 core/templates/fw/laeufe.html:34
 msgid "heute"
 msgstr "aujourd'hui"
 
-#: core/templates/fw/dashboard.html:257
+#: core/templates/fw/dashboard.html:257 core/templates/fw/laeufe.html:34
 #, python-format
 msgid "in %(n)s Tag"
 msgid_plural "in %(n)s Tagen"
@@ -629,10 +1048,6 @@ msgstr "Pas de proposition fiable — veuillez attribuer"
 msgid "Übernehmen"
 msgstr "Appliquer"
 
-#: core/templates/fw/dashboard.html:286
-msgid "Zuordnen"
-msgstr "Attribuer"
-
 #: core/templates/fw/dashboard.html:289
 msgid "Nichts Unzugeordnetes."
 msgstr "Rien de non attribué."
@@ -640,11 +1055,6 @@ msgstr "Rien de non attribué."
 #: core/templates/fw/dashboard.html:291
 msgid "Ganzer Posteingang"
 msgstr "Boîte de réception complète"
-
-#: core/templates/fw/dashboard.html:292 core/templates/fw/dienstleister.html:74
-#, python-format
-msgid "%(n)s offen"
-msgstr "%(n)s en cours"
 
 #: core/templates/fw/dashboard.html:311
 msgid "Aufgaben"
@@ -835,6 +1245,7 @@ msgid "Dienstleister «%(name)s» löschen?"
 msgstr "Supprimer le prestataire «%(name)s» ?"
 
 #: core/templates/fw/dienstleister.html:77 core/templates/fw/mandate.html:42
+#: core/templates/fw/nebenkosten.html:98
 msgid "Löschen"
 msgstr "Supprimer"
 
@@ -842,7 +1253,7 @@ msgstr "Supprimer"
 msgid "Abbrechen"
 msgstr "Annuler"
 
-#: core/templates/fw/dienstleister.html:107
+#: core/templates/fw/dienstleister.html:107 core/templates/fw/mwst.html:117
 msgid "Speichern"
 msgstr "Enregistrer"
 
@@ -868,6 +1279,34 @@ msgstr "Aucun prestataire saisi"
 msgid "Handwerker werden in der klassischen Ansicht erfasst."
 msgstr "Les artisans sont saisis dans la vue classique."
 
+#: core/templates/fw/laeufe.html:9
+msgid "Wiederkehrende Verarbeitung mit Zustand — und dem, was sie blockiert."
+msgstr "Traitements récurrents avec leur état — et ce qui les bloque."
+
+#: core/templates/fw/laeufe.html:30
+#, python-format
+msgid "Stichtag %(datum)s"
+msgstr "Date de référence %(datum)s"
+
+#: core/templates/fw/laeufe.html:35
+#, python-format
+msgid "%(n)s Blockade"
+msgid_plural "%(n)s Blockaden"
+msgstr[0] "%(n)s blocage"
+msgstr[1] "%(n)s blocages"
+
+#: core/templates/fw/laeufe.html:38
+msgid "Kein offener Lauf."
+msgstr "Aucun processus ouvert."
+
+#: core/templates/fw/laeufe.html:42
+msgid "Zuletzt abgeschlossen"
+msgstr "Terminés récemment"
+
+#: core/templates/fw/laeufe.html:55
+msgid "Noch kein Lauf abgeschlossen."
+msgstr "Aucun processus terminé."
+
 #: core/templates/fw/liegenschaften.html:11
 #, python-format
 msgid "%(n)s Liegenschaft im Portfolio"
@@ -878,11 +1317,6 @@ msgstr[1] "%(n)s immeubles en portefeuille"
 #: core/templates/fw/liegenschaften.html:11
 msgid "gefiltert"
 msgstr "filtré"
-
-#: core/templates/fw/liegenschaften.html:11 core/templates/fw/objekte.html:25
-#: core/templates/fw/personen.html:10 core/templates/fw/vertraege.html:14
-msgid "aufheben"
-msgstr "annuler"
 
 #: core/templates/fw/liegenschaften.html:14 core/templates/fw/objekte.html:108
 msgid "Liegenschaft erfassen"
@@ -981,6 +1415,129 @@ msgstr ""
 msgid "Erste Liegenschaft erfassen"
 msgstr "Saisir le premier immeuble"
 
+#: core/templates/fw/mahnwesen.html:11
+msgid ""
+"Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt "
+"erzeugen"
+msgstr ""
+"Créances échues par niveau de rappel · générer le rappel avec facture QR"
+
+#: core/templates/fw/mahnwesen.html:12 core/templates/fw/nebenkosten.html:13
+#: core/templates/fw/zahllauf.html:14
+msgid "gefiltert auf"
+msgstr "filtré sur"
+
+#: core/templates/fw/mahnwesen.html:14
+msgid "Altersstruktur (OP-Aging) ansehen"
+msgstr "Voir l'ancienneté des postes (aging)"
+
+#: core/templates/fw/mahnwesen.html:17
+msgid ""
+"Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen "
+"erstellt und Zahlungserinnerungen per E-Mail versandt."
+msgstr ""
+"Lancer les rappels pour toutes les créances échues ? Des rappels seront "
+"établis et des relances envoyées par e-mail."
+
+#: core/templates/fw/mahnwesen.html:20
+msgid "Mahnlauf ausführen"
+msgstr "Lancer les rappels"
+
+#: core/templates/fw/mahnwesen.html:21
+#, python-format
+msgid "Verzugszins (5%%) berechnen"
+msgstr "Calculer l'intérêt moratoire (5%%)"
+
+#: core/templates/fw/mahnwesen.html:22
+msgid "Testlauf: nur erstellen, keine E-Mails versenden"
+msgstr "Essai : seulement établir, sans envoyer d'e-mails"
+
+#: core/templates/fw/mahnwesen.html:31
+msgid "Total überfällig"
+msgstr "Total échu"
+
+#: core/templates/fw/mahnwesen.html:64 core/templates/fw/mahnwesen.html:146
+msgid "Stufe"
+msgstr "Niveau"
+
+#: core/templates/fw/mahnwesen.html:67
+msgid "Fällig seit"
+msgstr "Échu depuis"
+
+#: core/templates/fw/mahnwesen.html:68
+msgid "Tage"
+msgstr "Jours"
+
+#: core/templates/fw/mahnwesen.html:70 core/templates/fw/mietzins.html:64
+msgid "Aktion"
+msgstr "Action"
+
+#: core/templates/fw/mahnwesen.html:87
+#, python-format
+msgid "zuletzt: %(stufe)s. Mahnung %(datum)s"
+msgstr "dernier : %(stufe)se rappel %(datum)s"
+
+#: core/templates/fw/mahnwesen.html:99
+#, python-format
+msgid "%(stufe)s in Historie erfassen (inkl. Gebühr)"
+msgstr "Inscrire %(stufe)s dans l'historique (frais inclus)"
+
+#: core/templates/fw/mahnwesen.html:111
+msgid "Keine offenen Mahnfälle"
+msgstr "Aucun cas de rappel ouvert"
+
+#: core/templates/fw/mahnwesen.html:112
+msgid "Keine Position in dieser Stufe."
+msgstr "Aucune position à ce niveau."
+
+#: core/templates/fw/mahnwesen.html:112
+msgid "Alle Forderungen sind aktuell oder noch nicht mahnfällig."
+msgstr "Toutes les créances sont à jour ou pas encore à rappeler."
+
+#: core/templates/fw/mahnwesen.html:124
+#, python-format
+msgid "ab %(n)s Tagen"
+msgstr "dès %(n)s jours"
+
+#: core/templates/fw/mahnwesen.html:132
+msgid ""
+"Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet "
+"die fertige Mahnung (inkl. QR-Rechnung und — ab Stufe 3 — "
+"Kündigungsandrohung nach Art. 257d OR). «Erfassen» schreibt den Mahnschritt "
+"revisionssicher in die Historie und stellt die Mahngebühr (Stufe 2: CHF 20, "
+"Stufe 3: CHF 40)."
+msgstr ""
+"Le niveau de rappel est déterminé par le nombre de jours de retard. «PDF» "
+"ouvre le rappel prêt (avec facture QR et — dès le niveau 3 — menace de "
+"résiliation selon l'art. 257d CO). «Saisir» inscrit l'étape de rappel de "
+"manière traçable dans l'historique et facture les frais de rappel (niveau "
+"2 : CHF 20, niveau 3 : CHF 40)."
+
+#: core/templates/fw/mahnwesen.html:140
+msgid "Mahn-Historie"
+msgstr "Historique des rappels"
+
+#: core/templates/fw/mahnwesen.html:145
+msgid "Datum"
+msgstr "Date"
+
+#: core/templates/fw/mahnwesen.html:148
+msgid "Rechnung"
+msgstr "Facture"
+
+#: core/templates/fw/mahnwesen.html:150
+msgid "Gebühr"
+msgstr "Frais"
+
+#: core/templates/fw/mahnwesen.html:156
+#, python-format
+msgid "%(stufe)s. Mahnung"
+msgstr "%(stufe)se rappel"
+
+#: core/templates/fw/mahnwesen.html:163
+msgid "Noch keine Mahnungen erfasst."
+msgstr "Aucun rappel saisi."
+
 #: core/templates/fw/mandate.html:7
 msgid "Eigentümer erfassen"
 msgstr "Saisir un propriétaire"
@@ -1048,11 +1605,365 @@ msgstr[1] ""
 msgid "Noch keine Eigentümer erfasst."
 msgstr "Aucun propriétaire saisi."
 
-#: core/templates/fw/objekte.html:24 core/templates/fw/personen.html:10
-#: core/templates/fw/vertraege.html:14
+#: core/templates/fw/mietzins.html:11
+msgid "Anpassungspotenzial nach Referenzzins & LIK"
+msgstr "Potentiel d'adaptation selon le taux de référence & l'IPC"
+
+#: core/templates/fw/mietzins.html:11
+msgid "Aktuell: Referenzzins"
+msgstr "Actuel : taux de référence"
+
+#: core/templates/fw/mietzins.html:11
+msgid "LIK"
+msgstr "IPC"
+
+#: core/templates/fw/mietzins.html:19
+msgid "Erhöhung möglich"
+msgstr "Hausse possible"
+
+#: core/templates/fw/mietzins.html:23
+msgid "Senkungsanspruch"
+msgstr "Droit à une baisse"
+
+#: core/templates/fw/mietzins.html:27
+msgid "Aktive Verträge"
+msgstr "Baux actifs"
+
+#: core/templates/fw/mietzins.html:45 core/templates/fw/vertraege.html:14
 #, python-format
-msgid "gefiltert auf %(strasse)s"
-msgstr "filtré sur %(strasse)s"
+msgid "%(n)s Vertrag"
+msgid_plural "%(n)s Verträge"
+msgstr[0] "%(n)s bail"
+msgstr[1] "%(n)s baux"
+
+#: core/templates/fw/mietzins.html:48 core/templates/fw/mietzins.html:104
+msgid "Ausgewählte anpassen (Vorschau)"
+msgstr "Adapter la sélection (aperçu)"
+
+#: core/templates/fw/mietzins.html:57
+msgid "Alle auswählen"
+msgstr "Tout sélectionner"
+
+#: core/templates/fw/mietzins.html:60
+msgid "Netto effektiv"
+msgstr "Net effectif"
+
+#: core/templates/fw/mietzins.html:61
+msgid "Basis Ref.-Zins (effektiv)"
+msgstr "Base taux de réf. (effectif)"
+
+#: core/templates/fw/mietzins.html:62
+msgid "Letzte Anpassung"
+msgstr "Dernière adaptation"
+
+#: core/templates/fw/mietzins.html:63
+msgid "Potenzial"
+msgstr "Potentiel"
+
+#: core/templates/fw/mietzins.html:82
+msgid "Anpassen"
+msgstr "Adapter"
+
+#: core/templates/fw/mietzins.html:89
+msgid "Keine Verträge mit diesem Potenzial"
+msgstr "Aucun bail avec ce potentiel"
+
+#: core/templates/fw/mietzins.html:89
+msgid "Keine aktiven Verträge"
+msgstr "Aucun bail actif"
+
+#: core/templates/fw/mietzins.html:104
+msgid "ausgewählte anpassen (Vorschau)"
+msgstr "sélectionnés à adapter (aperçu)"
+
+#: core/templates/fw/mietzins.html:113
+msgid ""
+"«Anpassen» öffnet das amtliche Mietzinsanpassungs-Formular mit "
+"vorberechneten Werten (Referenzzins, LIK, Teuerung). Netto und Basis sind "
+"die <b>effektiven</b> Werte (inkl. wirksamer Anpassungen und Staffelstufen) "
+"— das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand."
+msgstr ""
+"«Adapter» ouvre la formule officielle de modification du loyer avec des "
+"valeurs précalculées (taux de référence, IPC, renchérissement). Net et base "
+"sont les valeurs <b>effectives</b> (y c. adaptations en vigueur et paliers "
+"d'échelonnement) — le potentiel compare cette base effective à l'état actuel."
+
+#: core/templates/fw/mwst.html:4 core/templates/fw/mwst.html:8
+msgid "MWST-Abrechnung"
+msgstr "Décompte TVA"
+
+#: core/templates/fw/mwst.html:9
+msgid "Geschuldete Umsatzsteuer minus Vorsteuer = Zahllast gegenüber der ESTV."
+msgstr ""
+"Impôt dû sur le chiffre d'affaires moins impôt préalable = montant dû à "
+"l'AFC."
+
+#: core/templates/fw/mwst.html:15 core/templates/fw/sollstellung.html:27
+msgid "Jahr"
+msgstr "Année"
+
+#: core/templates/fw/mwst.html:19 core/templates/fw/nebenkosten.html:69
+msgid "Periode"
+msgstr "Période"
+
+#: core/templates/fw/mwst.html:21
+msgid "Ganzes Jahr"
+msgstr "Année entière"
+
+#: core/templates/fw/mwst.html:22
+#, python-format
+msgid "%(q)s. Quartal"
+msgstr "%(q)se trimestre"
+
+#: core/templates/fw/mwst.html:24
+msgid "Anzeigen"
+msgstr "Afficher"
+
+#: core/templates/fw/mwst.html:26
+msgid "ESTV-Export (CSV)"
+msgstr "Export AFC (CSV)"
+
+#: core/templates/fw/mwst.html:32
+#, python-format
+msgid "Periode %(von)s – %(bis)s"
+msgstr "Période %(von)s – %(bis)s"
+
+#: core/templates/fw/mwst.html:35
+msgid "Geschuldete Umsatzsteuer"
+msgstr "Impôt dû sur le chiffre d'affaires"
+
+#: core/templates/fw/mwst.html:36
+msgid "Konto 2200 · Ausgangs-MWST auf optierte Mieten"
+msgstr "Compte 2200 · TVA due sur loyers optés"
+
+#: core/templates/fw/mwst.html:40
+msgid "− Vorsteuer"
+msgstr "− Impôt préalable"
+
+#: core/templates/fw/mwst.html:41
+msgid "Konto 1170 · abziehbare MWST auf Kreditoren"
+msgstr "Compte 1170 · TVA déductible sur créanciers"
+
+#: core/templates/fw/mwst.html:46
+msgid "Saldosteuersatz-Vorteil"
+msgstr "Avantage du taux de la dette fiscale nette"
+
+#: core/templates/fw/mwst.html:47
+msgid "Differenz Normalsatz ./. Saldosatz → Ertrag 3600"
+msgstr "Différence taux normal ./. taux net → produit 3600"
+
+#: core/templates/fw/mwst.html:52
+msgid "Zahllast an ESTV"
+msgstr "Montant dû à l'AFC"
+
+#: core/templates/fw/mwst.html:53
+msgid "Brutto-Entgelt × Saldosatz"
+msgstr "Contre-prestation brute × taux net"
+
+#: core/templates/fw/mwst.html:53
+msgid "Umsatzsteuer − Vorsteuer"
+msgstr "Impôt sur le chiffre d'affaires − impôt préalable"
+
+#: core/templates/fw/mwst.html:59
+msgid "Periode verbucht"
+msgstr "Période comptabilisée"
+
+#: core/templates/fw/mwst.html:60
+msgid ""
+"Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 "
+"(ESTV) bis zur Zahlung."
+msgstr ""
+"Le compte 2200 est soldé pour cette période. La dette figure sur 2201 (AFC) "
+"jusqu'au paiement."
+
+#: core/templates/fw/mwst.html:62
+msgid ""
+"Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 "
+"(ESTV), Saldosatz-Vorteil als Ertrag. Die Zahlung selbst wird später über "
+"den Bankabgleich gebucht."
+msgstr ""
+"Solde le compte 2200 : compenser l'impôt préalable et porter le montant dû "
+"comme dette sur 2201 (AFC), l'avantage du taux net comme produit. Le "
+"paiement lui-même sera comptabilisé plus tard via le rapprochement bancaire."
+
+#: core/templates/fw/mwst.html:62
+msgid ""
+"Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 "
+"(ESTV). Die Zahlung selbst wird später über den Bankabgleich gebucht."
+msgstr ""
+"Solde le compte 2200 : compenser l'impôt préalable et porter le montant dû "
+"comme dette sur 2201 (AFC). Le paiement lui-même sera comptabilisé plus tard "
+"via le rapprochement bancaire."
+
+#: core/templates/fw/mwst.html:63
+msgid "MWST-Abrechnung dieser Periode verbuchen?"
+msgstr "Comptabiliser le décompte TVA de cette période ?"
+
+#: core/templates/fw/mwst.html:74
+msgid "Abrechnung verbuchen"
+msgstr "Comptabiliser le décompte"
+
+#: core/templates/fw/mwst.html:84
+#, python-format
+msgid "ESTV-Abrechnung (Saldosteuersatz %(satz)s %%)"
+msgstr "Décompte AFC (taux de la dette fiscale nette %(satz)s %%)"
+
+#: core/templates/fw/mwst.html:84
+msgid "ESTV-Abrechnung (effektiv)"
+msgstr "Décompte AFC (effectif)"
+
+#: core/templates/fw/mwst.html:90
+msgid "Total vereinbarte Entgelte (Umsatz)"
+msgstr "Total des contre-prestations convenues (chiffre d'affaires)"
+
+#: core/templates/fw/mwst.html:91
+msgid "Total geschuldete Steuer"
+msgstr "Total de l'impôt dû"
+
+#: core/templates/fw/mwst.html:93
+msgid "Total Vorsteuer"
+msgstr "Total de l'impôt préalable"
+
+#: core/templates/fw/mwst.html:95
+msgid "An die ESTV zu bezahlen"
+msgstr "À payer à l'AFC"
+
+#: core/templates/fw/mwst.html:104
+msgid "MWST-Einstellungen (Methode / Satz / Nummer)"
+msgstr "Paramètres TVA (méthode / taux / numéro)"
+
+#: core/templates/fw/mwst.html:108
+msgid "MWST-Methode"
+msgstr "Méthode TVA"
+
+#: core/templates/fw/mwst.html:110
+msgid "Effektive Methode (Umsatzsteuer − Vorsteuer)"
+msgstr "Méthode effective (impôt sur le chiffre d'affaires − impôt préalable)"
+
+#: core/templates/fw/mwst.html:111
+msgid "Saldosteuersatz"
+msgstr "Taux de la dette fiscale nette"
+
+#: core/templates/fw/mwst.html:113
+#, python-format
+msgid "Saldosteuersatz (%%) — nur bei Saldo-Methode"
+msgstr "Taux de la dette fiscale nette (%%) — seulement pour cette méthode"
+
+#: core/templates/fw/mwst.html:115
+msgid "MWST-Nummer (CHE-…)"
+msgstr "Numéro TVA (CHE-…)"
+
+#: core/templates/fw/mwst.html:116
+msgid "CHE-123.456.789 MWST"
+msgstr "CHE-123.456.789 TVA"
+
+#: core/templates/fw/mwst.html:121
+msgid ""
+"Hinweis: Die Vermietung ist grundsätzlich von der MWST ausgenommen — MWST "
+"fällt nur bei <b>optierten</b> Objekten an (Option nach Art. 22 MWSTG, i. d. "
+"R. Gewerbe). Diese Auswertung dient der Vorbereitung; die effektive MWST-"
+"Deklaration erfolgt über das ESTV-Portal. Werte bitte mit dem Treuhänder "
+"prüfen."
+msgstr ""
+"Remarque : la location est en principe exclue de la TVA — la TVA n'est due "
+"que sur les objets <b>optés</b> (option selon l'art. 22 LTVA, en règle "
+"générale commerciaux). Cette évaluation sert de préparation ; le décompte "
+"TVA effectif se fait sur le portail de l'AFC. Veuillez faire vérifier les "
+"valeurs par la fiduciaire."
+
+#: core/templates/fw/nebenkosten.html:10 core/templates/fw/nebenkosten.html:32
+msgid "Periode anlegen"
+msgstr "Créer une période"
+
+#: core/templates/fw/nebenkosten.html:12
+msgid "Heiz- und Nebenkosten-Abrechnungsperioden"
+msgstr "Périodes de décompte chauffage et frais accessoires"
+
+#: core/templates/fw/nebenkosten.html:18
+msgid "Neue Abrechnungsperiode"
+msgstr "Nouvelle période de décompte"
+
+#: core/templates/fw/nebenkosten.html:21
+msgid "Liegenschaft *"
+msgstr "Immeuble *"
+
+#: core/templates/fw/nebenkosten.html:26
+msgid "Bezeichnung *"
+msgstr "Désignation *"
+
+#: core/templates/fw/nebenkosten.html:27
+msgid "z.B. Heizperiode 2025/2026"
+msgstr "p. ex. période de chauffage 2025/2026"
+
+#: core/templates/fw/nebenkosten.html:28
+msgid "Von *"
+msgstr "Du *"
+
+#: core/templates/fw/nebenkosten.html:30
+msgid "Bis *"
+msgstr "Au *"
+
+#: core/templates/fw/nebenkosten.html:40
+msgid "Kosten offene Perioden"
+msgstr "Coûts des périodes ouvertes"
+
+#: core/templates/fw/nebenkosten.html:44
+msgid "Offene Perioden"
+msgstr "Périodes ouvertes"
+
+#: core/templates/fw/nebenkosten.html:48
+msgid "Abgeschlossen"
+msgstr "Clôturées"
+
+#: core/templates/fw/nebenkosten.html:62
+#, python-format
+msgid "%(n)s Periode"
+msgid_plural "%(n)s Perioden"
+msgstr[0] "%(n)s période"
+msgstr[1] "%(n)s périodes"
+
+#: core/templates/fw/nebenkosten.html:71
+msgid "Zeitraum"
+msgstr "Période"
+
+#: core/templates/fw/nebenkosten.html:72
+msgid "Belege"
+msgstr "Pièces"
+
+#: core/templates/fw/nebenkosten.html:73
+msgid "Total Kosten"
+msgstr "Total des coûts"
+
+#: core/templates/fw/nebenkosten.html:74 core/templates/fw/sollstellung.html:87
+#: core/templates/fw/vertraege.html:75
+msgid "Status"
+msgstr "Statut"
+
+#: core/templates/fw/nebenkosten.html:92
+msgid "● Abgeschlossen"
+msgstr "● Clôturée"
+
+#: core/templates/fw/nebenkosten.html:93
+#: core/templates/fw/sollstellung.html:104
+msgid "● Offen"
+msgstr "● Ouverte"
+
+#: core/templates/fw/nebenkosten.html:97
+#, python-format
+msgid "Abrechnungsperiode «%(name)s» löschen?"
+msgstr "Supprimer la période de décompte «%(name)s» ?"
+
+#: core/templates/fw/nebenkosten.html:106
+msgid "Keine Perioden in diesem Status"
+msgstr "Aucune période dans ce statut"
+
+#: core/templates/fw/nebenkosten.html:106
+msgid "Noch keine Abrechnungsperioden"
+msgstr "Aucune période de décompte"
+
+#: core/templates/fw/nebenkosten.html:107
+msgid "Perioden werden in der klassischen Ansicht angelegt."
+msgstr "Les périodes sont créées dans la vue classique."
 
 #: core/templates/fw/objekte.html:25
 msgid "Nach Befund geordnet — was klemmt, steht oben."
@@ -1095,10 +2006,6 @@ msgstr "Recherche «%(q)s»"
 #, python-format
 msgid "%(belegt)s / %(anzahl)s vermietet"
 msgstr "%(belegt)s / %(anzahl)s loués"
-
-#: core/templates/fw/objekte.html:74
-msgid "Liegenschaft"
-msgstr "Immeuble"
 
 #: core/templates/fw/objekte.html:83
 #, python-format
@@ -1194,6 +2101,110 @@ msgstr "Loue actuellement"
 msgid "Keine Treffer."
 msgstr "Aucun résultat."
 
+#: core/templates/fw/sollstellung.html:4
+msgid "Sollstellung Miete"
+msgstr "Facturation des loyers"
+
+#: core/templates/fw/sollstellung.html:11
+msgid ""
+"Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/"
+"Auszug mitten im Monat)"
+msgstr ""
+"Facturation mensuelle des loyers — génère les factures débiteurs (prorata en "
+"cas d'entrée/sortie en cours de mois)"
+
+#: core/templates/fw/sollstellung.html:37
+#, python-format
+msgid ""
+"Sollstellung %(monat)s %(jahr)s für %(n)s Vertrag starten — nur %(strasse)s?"
+msgid_plural ""
+"Sollstellung %(monat)s %(jahr)s für %(n)s Verträge starten — nur %(strasse)s?"
+msgstr[0] ""
+"Lancer la facturation %(monat)s %(jahr)s pour %(n)s bail — seulement "
+"%(strasse)s ?"
+msgstr[1] ""
+"Lancer la facturation %(monat)s %(jahr)s pour %(n)s baux — seulement "
+"%(strasse)s ?"
+
+#: core/templates/fw/sollstellung.html:37
+#, python-format
+msgid ""
+"Sollstellung %(monat)s %(jahr)s für %(n)s Vertrag starten — ganzes Portfolio?"
+msgid_plural ""
+"Sollstellung %(monat)s %(jahr)s für %(n)s Verträge starten — ganzes "
+"Portfolio?"
+msgstr[0] ""
+"Lancer la facturation %(monat)s %(jahr)s pour %(n)s bail — tout le "
+"portefeuille ?"
+msgstr[1] ""
+"Lancer la facturation %(monat)s %(jahr)s pour %(n)s baux — tout le "
+"portefeuille ?"
+
+#: core/templates/fw/sollstellung.html:48
+#, python-format
+msgid "Sollstellung starten (%(n)s)"
+msgstr "Lancer la facturation (%(n)s)"
+
+#: core/templates/fw/sollstellung.html:53
+#, python-format
+msgid "%(monat)s %(jahr)s vollständig gestellt"
+msgstr "%(monat)s %(jahr)s entièrement facturé"
+
+#: core/templates/fw/sollstellung.html:63
+#, python-format
+msgid "Zu stellen (%(monat)s)"
+msgstr "À facturer (%(monat)s)"
+
+#: core/templates/fw/sollstellung.html:67
+msgid "Noch offen"
+msgstr "Encore ouvert"
+
+#: core/templates/fw/sollstellung.html:71
+msgid "Bereits gestellt"
+msgstr "Déjà facturé"
+
+#: core/templates/fw/sollstellung.html:77
+#, python-format
+msgid "Vorschau — %(monat)s %(jahr)s"
+msgstr "Aperçu — %(monat)s %(jahr)s"
+
+#: core/templates/fw/sollstellung.html:84 core/templates/fw/vertraege.html:72
+msgid "Netto"
+msgstr "Net"
+
+#: core/templates/fw/sollstellung.html:86
+msgid "Total"
+msgstr "Total"
+
+#: core/templates/fw/sollstellung.html:97
+#, python-format
+msgid "Teilmonat: %(tage)s von %(monat)s Tagen"
+msgstr "Mois partiel : %(tage)s jours sur %(monat)s"
+
+#: core/templates/fw/sollstellung.html:97
+msgid "Pro-Rata"
+msgstr "Prorata"
+
+#: core/templates/fw/sollstellung.html:103
+msgid "● Gestellt"
+msgstr "● Facturé"
+
+#: core/templates/fw/sollstellung.html:108
+msgid "Keine aktiven Verträge für diesen Monat."
+msgstr "Aucun bail actif pour ce mois."
+
+#: core/templates/fw/sollstellung.html:117
+msgid ""
+"Der Mietenlauf ist idempotent — bereits gestellte Verträge werden "
+"übersprungen. Pro-Rata rechnet Ein-/Auszüge mitten im Monat tagegenau ab. "
+"Gebucht wird Debitoren 1100 an Ertrag 3000 (Netto) bzw. NK-Akonto 3020 "
+"(Nebenkosten)."
+msgstr ""
+"La facturation des loyers est idempotente — les baux déjà facturés sont "
+"ignorés. Le prorata décompte au jour près les entrées/sorties en cours de "
+"mois. L'écriture est débiteurs 1100 à produit 3000 (net) resp. acomptes de "
+"frais accessoires 3020 (frais accessoires)."
+
 #: core/templates/fw/termine.html:9
 msgid ""
 "Arbeitsanlässe mit Uhrzeit und Ort. Abnahmen und Besichtigungen stehen "
@@ -1259,13 +2270,6 @@ msgstr "Rien de passé pour l'instant."
 
 #: core/templates/fw/vertraege.html:14
 #, python-format
-msgid "%(n)s Vertrag"
-msgid_plural "%(n)s Verträge"
-msgstr[0] "%(n)s bail"
-msgstr[1] "%(n)s baux"
-
-#: core/templates/fw/vertraege.html:14
-#, python-format
 msgid "%(n)s aktiv"
 msgid_plural "%(n)s aktiv"
 msgstr[0] "%(n)s actif"
@@ -1307,29 +2311,13 @@ msgstr ""
 msgid "Ersten Vertrag erstellen"
 msgstr "Établir le premier bail"
 
-#: core/templates/fw/vertraege.html:68
-msgid "Mieter"
-msgstr "Locataire"
-
-#: core/templates/fw/vertraege.html:69
-msgid "Objekt"
-msgstr "Objet"
-
 #: core/templates/fw/vertraege.html:71
 msgid "Ende"
 msgstr "Fin"
 
-#: core/templates/fw/vertraege.html:72
-msgid "Netto"
-msgstr "Net"
-
 #: core/templates/fw/vertraege.html:73
 msgid "NK"
 msgstr "FA"
-
-#: core/templates/fw/vertraege.html:75
-msgid "Status"
-msgstr "Statut"
 
 #: core/templates/fw/vertraege.html:91
 msgid "unbefristet"
@@ -1342,6 +2330,127 @@ msgstr "Saisir la résiliation"
 #: core/templates/fw/vertraege.html:99
 msgid "Kündigen"
 msgstr "Résilier"
+
+#: core/templates/fw/zahllauf.html:10
+msgid "Zurück zu den Kreditoren"
+msgstr "Retour aux créanciers"
+
+#: core/templates/fw/zahllauf.html:13
+msgid ""
+"Rechnungen auswählen → Zahlungsdatei (pain.001) erzeugen → nach der "
+"Bankbestätigung den ganzen Lauf auf einmal verbuchen"
+msgstr ""
+"Sélectionner les factures → générer le fichier de paiement (pain.001) → "
+"après confirmation de la banque, comptabiliser tout le lot en une fois"
+
+#: core/templates/fw/zahllauf.html:21
+msgid ""
+"Für die Zahlungsdatei fehlt die <b>IBAN der Verwaltung</b> — unter <a "
+"href=\"/neu/account/\" class=\"underline font-semibold\">Profil → Account</"
+"a> hinterlegen."
+msgstr ""
+"Il manque l'<b>IBAN de la gérance</b> pour le fichier de paiement — à saisir "
+"sous <a href=\"/neu/account/\" class=\"underline font-semibold\">Profil → "
+"Compte</a>."
+
+#: core/templates/fw/zahllauf.html:29
+#, python-format
+msgid "Vorschlag (%(n)s Rechnung)"
+msgid_plural "Vorschlag (%(n)s Rechnungen)"
+msgstr[0] "Proposition (%(n)s facture)"
+msgstr[1] "Proposition (%(n)s factures)"
+
+#: core/templates/fw/zahllauf.html:33
+#, python-format
+msgid "In Zahlung (%(n)s)"
+msgstr "En paiement (%(n)s)"
+
+#: core/templates/fw/zahllauf.html:38
+msgid "ohne IBAN — nicht zahlbar"
+msgstr "sans IBAN — non payable"
+
+#: core/templates/fw/zahllauf.html:38
+msgid "alle Rechnungen haben eine IBAN"
+msgstr "toutes les factures ont un IBAN"
+
+#: core/templates/fw/zahllauf.html:49
+msgid "Zahlungsvorschlag (freigegeben)"
+msgstr "Proposition de paiement (validée)"
+
+#: core/templates/fw/zahllauf.html:54
+msgid "Ausführungsdatum"
+msgstr "Date d'exécution"
+
+#: core/templates/fw/zahllauf.html:64 core/templates/fw/zahllauf.html:147
+msgid "Lieferant"
+msgstr "Fournisseur"
+
+#: core/templates/fw/zahllauf.html:76
+msgid "Ohne IBAN nicht zahlbar"
+msgstr "Sans IBAN, non payable"
+
+#: core/templates/fw/zahllauf.html:96
+msgid "Total Vorschlag"
+msgstr "Total proposition"
+
+#: core/templates/fw/zahllauf.html:105
+msgid "Zahlungsdatei erzeugen (pain.001)"
+msgstr "Générer le fichier de paiement (pain.001)"
+
+#: core/templates/fw/zahllauf.html:108
+msgid ""
+"Die enthaltenen Rechnungen wechseln auf «In Zahlung» und erscheinen unten — "
+"dort werden sie nach der Bankbestätigung als bezahlt verbucht."
+msgstr ""
+"Les factures incluses passent à «En paiement» et apparaissent en bas — elles "
+"y sont comptabilisées comme payées après confirmation de la banque."
+
+#: core/templates/fw/zahllauf.html:113
+msgid ""
+"Keine freigegebenen Rechnungen. Rechnungen werden im Kreditoren-Tab "
+"freigegeben."
+msgstr ""
+"Aucune facture validée. Les factures sont validées dans l'onglet Créanciers."
+
+#: core/templates/fw/zahllauf.html:124
+msgid "In Zahlung — auf Bankbestätigung wartend"
+msgstr "En paiement — en attente de confirmation bancaire"
+
+#: core/templates/fw/zahllauf.html:130
+msgid "Valuta"
+msgstr "Valeur"
+
+#: core/templates/fw/zahllauf.html:136
+msgid "Bankkonto"
+msgstr "Compte bancaire"
+
+#: core/templates/fw/zahllauf.html:149
+msgid "Ausführung"
+msgstr "Exécution"
+
+#: core/templates/fw/zahllauf.html:171
+msgid "Total in Zahlung"
+msgstr "Total en paiement"
+
+#: core/templates/fw/zahllauf.html:180
+msgid "Ausgewählte Zahlungen verbuchen (2000 an Bank)?"
+msgstr "Comptabiliser les paiements sélectionnés (2000 à banque) ?"
+
+#: core/templates/fw/zahllauf.html:182
+msgid "Als bezahlt verbuchen"
+msgstr "Comptabiliser comme payé"
+
+#: core/templates/fw/zahllauf.html:185
+msgid "Auswahl wieder auf «freigegeben» setzen? (Lauf wurde nicht ausgeführt)"
+msgstr "Remettre la sélection sur «validé» ? (le lot n'a pas été exécuté)"
+
+#: core/templates/fw/zahllauf.html:187
+msgid "Lauf nicht ausgeführt — zurücksetzen"
+msgstr "Lot non exécuté — réinitialiser"
+
+#: core/templates/fw/zahllauf.html:192
+msgid "Keine Rechnung in Zahlung. Oben eine Zahlungsdatei erzeugen."
+msgstr "Aucune facture en paiement. Générez un fichier de paiement ci-dessus."
 
 #: core/templates/fw/zulauf.html:9
 msgid ""
@@ -1462,6 +2571,10 @@ msgstr "Entreprises"
 msgid "Vereine"
 msgstr "Associations"
 
+#: core/views/fw/mahnwesen.py:97
+msgid "Alle Stufen"
+msgstr "Tous les niveaux"
+
 #~ msgid "Arbeit"
 #~ msgstr "Travail"
 
@@ -1480,9 +2593,6 @@ msgstr "Associations"
 #~ msgid "liegengeblieben"
 #~ msgstr "en souffrance"
 
-#~ msgid "Fortschritt"
-#~ msgstr "Progrès"
-
 #~ msgid "Schritte erledigt"
 #~ msgstr "Étapes terminées"
 
@@ -1494,12 +2604,6 @@ msgstr "Associations"
 
 #~ msgid "alle Schritte erledigt"
 #~ msgstr "toutes les étapes sont terminées"
-
-#~ msgid "Letzte Bewegung"
-#~ msgstr "Dernier mouvement"
-
-#~ msgid "Tage"
-#~ msgstr "Jours"
 
 #~ msgid "meldet sich nach 10 Tagen"
 #~ msgstr "se signale après 10 jours"
@@ -1531,17 +2635,11 @@ msgstr "Associations"
 #~ msgid "separat verrechenbar"
 #~ msgstr "facturé séparément"
 
-#~ msgid "Buchen"
-#~ msgstr "Enregistrer"
-
 #~ msgid "Zum nächsten Schritt →"
 #~ msgstr "Vers la prochaine étape →"
 
 #~ msgid "optional"
 #~ msgstr "facultatif"
-
-#~ msgid "fällig %(frist)s"
-#~ msgstr "échéance %(frist)s"
 
 #~ msgid "Seit %(tage)s Tagen keine Bewegung"
 #~ msgstr "Aucun mouvement depuis %(tage)s jours"
@@ -1554,9 +2652,6 @@ msgstr "Associations"
 #~ "La règle d'échéance a été déclenchée. Soit l'étape suivante est terminée, "
 #~ "soit le dossier doit être mis en pause — laisser traiter est l'erreur la "
 #~ "plus coûteuse dans un bureau de trois personnes."
-
-#~ msgid "Etappe %(nr)s"
-#~ msgstr "Phase %(nr)s"
 
 #~ msgid "erledigt %(am)s"
 #~ msgstr "terminé le %(am)s"

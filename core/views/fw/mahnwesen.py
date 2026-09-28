@@ -18,6 +18,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
 from crm.models import Mieter
@@ -93,7 +94,7 @@ def fw_mahnwesen(request):
         })
     rows.sort(key=lambda x: (-x['stufe']['stufe'], -x['tage']))
 
-    stufe_chips = [('', 'Alle Stufen')] + [(str(s['stufe']), s['label']) for s in legende]
+    stufe_chips = [('', _('Alle Stufen'))] + [(str(s['stufe']), s['label']) for s in legende]
 
     # Letzte erfasste Mahnung je Rechnung + Historie
     from finance.models import Mahnung

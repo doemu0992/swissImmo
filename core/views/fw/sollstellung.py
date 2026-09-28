@@ -14,6 +14,7 @@ from decimal import Decimal
 
 from django.shortcuts import render
 from django.utils import timezone
+from django.utils.dateformat import format as datum_format
 
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
 from finance.models import DebitorenRechnung
@@ -95,14 +96,17 @@ def _sollstellung_kontext(request):
             'gestellt': gestellt,
         })
 
-    monate = [(m, date(2000, m, 1).strftime('%B')) for m in range(1, 13)]
+    # Monatsnamen ueber Djangos Datumsformat, nicht `strftime('%B')`: Das
+    # folgt dem Locale des Servers (dort C → «September» auf Englisch), nicht
+    # der gewaehlten Sprache.
+    monate = [(m, datum_format(date(2000, m, 1), 'F')) for m in range(1, 13)]
     jahre = list(range(heute.year - 2, heute.year + 2))
     return {
         **basis, 'nav': 'sollstellung', 'rows': rows,
         'jahr': jahr, 'monat': monat, 'titel': titel,
         'total_soll': total_soll, 'n_offen': n_offen, 'n_gestellt': n_gestellt,
         'monate': monate, 'jahre': jahre,
-        'monat_name': date(2000, monat, 1).strftime('%B'),
+        'monat_name': datum_format(date(2000, monat, 1), 'F'),
     }
 
 

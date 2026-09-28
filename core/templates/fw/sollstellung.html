@@ -1,14 +1,14 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Sollstellung Miete — swissImmo{% endblock %}
+{% block title %}{% trans "Sollstellung Miete" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
     <div>
-        <h1>Sollstellung</h1>
-        <p>Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat){% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
+        <h1>{% trans "Sollstellung" %}</h1>
+        <p>{% trans "Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
 </div>
 
@@ -18,13 +18,13 @@
         <form method="get" class="flex items-end gap-3">
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Monat</label>
+                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Monat" %}</label>
                 <select name="monat" onchange="this.form.submit()" class="fw-flaeche2 border-0 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 fw-fokusring">
                     {% for m, name in monate %}<option value="{{ m }}" {% if m == monat %}selected{% endif %}>{{ name }}</option>{% endfor %}
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Jahr</label>
+                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Jahr" %}</label>
                 <select name="jahr" onchange="this.form.submit()" class="fw-flaeche2 border-0 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 fw-fokusring">
                     {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
                 </select>
@@ -34,7 +34,7 @@
         <div class="flex-1"></div>
 
         {% if n_offen %}
-        <form method="post" action="/neu/sollstellung/starten/" onsubmit="return confirm('Sollstellung {{ monat_name }} {{ jahr }} für {{ n_offen }} Vertrag/Verträge starten{% if aktive_lg %} — nur {{ aktive_lg.strasse|escapejs }}{% else %} — ganzes Portfolio{% endif %}?');">
+        <form method="post" action="/neu/sollstellung/starten/" onsubmit="return confirm('{% filter escapejs %}{% if aktive_lg %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr strasse=aktive_lg.strasse|safe %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — nur {{ strasse }}?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — nur {{ strasse }}?{% endblocktrans %}{% else %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — ganzes Portfolio?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — ganzes Portfolio?{% endblocktrans %}{% endif %}{% endfilter %}');">
             {% csrf_token %}
             <input type="hidden" name="jahr" value="{{ jahr }}">
             <input type="hidden" name="monat" value="{{ monat }}">
@@ -44,12 +44,12 @@
             {% endcomment %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors">
-                {% zeichen 'lauf' klasse='mr-1.5' %} Sollstellung starten ({{ n_offen }})
+                {% zeichen 'lauf' klasse='mr-1.5' %} {% blocktrans with n=n_offen %}Sollstellung starten ({{ n }}){% endblocktrans %}
             </button>
         </form>
         {% else %}
         <span class="inline-flex items-center gap-1.5 text-sm fw-gut font-medium fw-gut-flaeche px-4 py-2 rounded-lg">
-            {% zeichen 'gut' %} {{ monat_name }} {{ jahr }} vollständig gestellt
+            {% zeichen 'gut' %} {% blocktrans with monat=monat_name jahr=jahr %}{{ monat }} {{ jahr }} vollständig gestellt{% endblocktrans %}
         </span>
         {% endif %}
     </div>
@@ -59,31 +59,31 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'geld' %}</div>
-        <div><div class="text-2xl font-bold fw-marke">CHF {{ total_soll|chf }}</div><div class="text-sm fw-mutet">Zu stellen ({{ monat_name }})</div></div>
+        <div><div class="text-2xl font-bold fw-marke">CHF {{ total_soll|chf }}</div><div class="text-sm fw-mutet">{% blocktrans with monat=monat_name %}Zu stellen ({{ monat }}){% endblocktrans %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0">{% zeichen 'wartet' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ n_offen }}</div><div class="text-sm fw-mutet">Noch offen</div></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ n_offen }}</div><div class="text-sm fw-mutet">{% trans "Noch offen" %}</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'gut' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ n_gestellt }}</div><div class="text-sm fw-mutet">Bereits gestellt</div></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ n_gestellt }}</div><div class="text-sm fw-mutet">{% trans "Bereits gestellt" %}</div></div>
     </div>
 </div>
 
 <!-- Vorschau-Tabelle -->
 <div class="fw-card overflow-hidden">
-    <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">Vorschau — {{ monat_name }} {{ jahr }}</div>
+    <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% blocktrans with monat=monat_name jahr=jahr %}Vorschau — {{ monat }} {{ jahr }}{% endblocktrans %}</div>
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">Mieter</th>
-                <th class="px-5 py-3 font-semibold">Objekt</th>
-                <th class="px-5 py-3 font-semibold text-right">Netto</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Netto" %}</th>
                 <th class="px-5 py-3 font-semibold text-right">NK</th>
-                <th class="px-5 py-3 font-semibold text-right">Total</th>
-                <th class="px-5 py-3 font-semibold">Status</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Total" %}</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Status" %}</th>
             </tr>
             </thead>
             <tbody class="fw-dv">
@@ -93,18 +93,18 @@
                     <a href="/neu/vertraege/{{ row.v.id }}/" class="hover:fw-marke">{{ row.mieter }}</a>
                 </td>
                 <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.objekt }}
-                    {% if row.prorata %}<span class="ml-1 text-[10px] font-bold uppercase fw-warn-flaeche fw-warnton px-1.5 py-0.5 rounded" title="Teilmonat: {{ row.tage }} von {{ row.tage_monat }} Tagen">Pro-Rata</span>{% endif %}
+                    {% if row.prorata %}<span class="ml-1 text-[10px] font-bold uppercase fw-warn-flaeche fw-warnton px-1.5 py-0.5 rounded" title="{% blocktrans with tage=row.tage monat=row.tage_monat %}Teilmonat: {{ tage }} von {{ monat }} Tagen{% endblocktrans %}">{% trans "Pro-Rata" %}</span>{% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right fw-ink whitespace-nowrap">{{ row.netto|chf }}</td>
                 <td class="px-5 py-3.5 text-right fw-mutet whitespace-nowrap">{{ row.nk|chf }}</td>
                 <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">{{ row.total|chf }}</td>
                 <td class="px-5 py-3.5">
-                    {% if row.gestellt %}<span class="fw-chip fw-gut-flaeche fw-gut">● Gestellt</span>
-                    {% else %}<span class="fw-chip fw-warn-flaeche fw-warnton">● Offen</span>{% endif %}
+                    {% if row.gestellt %}<span class="fw-chip fw-gut-flaeche fw-gut">{% trans "● Gestellt" %}</span>
+                    {% else %}<span class="fw-chip fw-warn-flaeche fw-warnton">{% trans "● Offen" %}</span>{% endif %}
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="px-5 py-10 text-center text-sm fw-faint italic">Keine aktiven Verträge für diesen Monat.</td></tr>
+            <tr><td colspan="6" class="px-5 py-10 text-center text-sm fw-faint italic">{% trans "Keine aktiven Verträge für diesen Monat." %}</td></tr>
             {% endfor %}
             </tbody>
         </table>
@@ -113,7 +113,6 @@
 
 <p class="text-xs fw-faint mt-4">
     {% zeichen 'hinweis' klasse='mr-1' %}
-    Der Mietenlauf ist idempotent — bereits gestellte Verträge werden übersprungen. Pro-Rata rechnet Ein-/Auszüge
-    mitten im Monat tagegenau ab. Gebucht wird Debitoren 1100 an Ertrag 3000 (Netto) bzw. NK-Akonto 3020 (Nebenkosten).
+    {% trans "Der Mietenlauf ist idempotent — bereits gestellte Verträge werden übersprungen. Pro-Rata rechnet Ein-/Auszüge mitten im Monat tagegenau ab. Gebucht wird Debitoren 1100 an Ertrag 3000 (Netto) bzw. NK-Akonto 3020 (Nebenkosten)." %}
 </p>
 {% endblock %}
