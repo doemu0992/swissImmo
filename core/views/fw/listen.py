@@ -20,7 +20,7 @@ from django.db.models import F, Q, Sum
 from django.db.models.functions import ExtractMonth
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, gettext_lazy
 
 from core.services.mahnstufen import (stufe_fuer_tage as _stufe_fuer_tage,
                                       eigentuemer_von_rechnung as _eigentuemer_von_rechnung)
@@ -749,40 +749,40 @@ def fw_berichte(request):
 
     lgq = basis['lg_query']
     berichte = [
-        {'gruppe': 'Finanzen', 'items': [
-            {'icon': 'bericht', 'farbe': 'indigo', 'titel': 'Erfolgsrechnung & Bilanz',
-             'sub': 'Ertrag/Aufwand, Aktiven/Passiven, Journal', 'url': '/neu/buchhaltung/' + lgq,
+        {'gruppe': _('Finanzen'), 'items': [
+            {'icon': 'bericht', 'farbe': 'indigo', 'titel': _('Erfolgsrechnung & Bilanz'),
+             'sub': _('Ertrag/Aufwand, Aktiven/Passiven, Journal'), 'url': '/neu/buchhaltung/' + lgq,
              'kennzahl': None, 'pdf': True},
-            {'icon': 'bericht', 'farbe': 'violet', 'titel': 'MWST-Abrechnung',
-             'sub': 'Umsatz-/Vorsteuer, ESTV-Export', 'url': '/neu/mwst/', 'kennzahl': None, 'pdf': False},
-            {'icon': 'zaehler', 'farbe': 'sky', 'titel': 'Finanz-Cockpit',
-             'sub': 'Offene Posten + Monatsabschluss', 'url': '/neu/finanzen/' + lgq, 'kennzahl': None, 'pdf': False},
+            {'icon': 'bericht', 'farbe': 'violet', 'titel': _('MWST-Abrechnung'),
+             'sub': _('Umsatz-/Vorsteuer, ESTV-Export'), 'url': '/neu/mwst/', 'kennzahl': None, 'pdf': False},
+            {'icon': 'zaehler', 'farbe': 'sky', 'titel': _('Finanz-Cockpit'),
+             'sub': _('Offene Posten + Monatsabschluss'), 'url': '/neu/finanzen/' + lgq, 'kennzahl': None, 'pdf': False},
         ]},
-        {'gruppe': 'Forderungen & Zahlungen', 'items': [
-            {'icon': 'bericht', 'farbe': 'rose', 'titel': 'Debitoren-Altersstruktur',
-             'sub': 'Offene Forderungen nach Fälligkeitsalter', 'url': '/neu/mahnwesen/aging/' + lgq,
-             'kennzahl': f"CHF {deb_ueberf:,.0f} überfällig".replace(',', "'"), 'pdf': False},
-            {'icon': 'rechnung', 'farbe': 'indigo', 'titel': 'Mieterkonten',
-             'sub': 'Kontoblatt je Mieter (Forderungen/Zahlungen)', 'url': '/neu/mieterkonten/' + lgq,
-             'kennzahl': f"CHF {deb_offen:,.0f} offen".replace(',', "'"), 'pdf': True},
-            {'icon': 'rechnung', 'farbe': 'amber', 'titel': 'Lieferantenkonten',
-             'sub': 'Kontoblatt je Lieferant (Kreditoren)', 'url': '/neu/lieferantenkonten/' + lgq,
-             'kennzahl': f"CHF {kred_offen:,.0f} offen".replace(',', "'"), 'pdf': False},
+        {'gruppe': _('Forderungen & Zahlungen'), 'items': [
+            {'icon': 'bericht', 'farbe': 'rose', 'titel': _('Debitoren-Altersstruktur'),
+             'sub': _('Offene Forderungen nach Fälligkeitsalter'), 'url': '/neu/mahnwesen/aging/' + lgq,
+             'kennzahl': _('CHF %(betrag)s überfällig') % {'betrag': f"{deb_ueberf:,.0f}".replace(',', "'")}, 'pdf': False},
+            {'icon': 'rechnung', 'farbe': 'indigo', 'titel': _('Mieterkonten'),
+             'sub': _('Kontoblatt je Mieter (Forderungen/Zahlungen)'), 'url': '/neu/mieterkonten/' + lgq,
+             'kennzahl': _('CHF %(betrag)s offen') % {'betrag': f"{deb_offen:,.0f}".replace(',', "'")}, 'pdf': True},
+            {'icon': 'rechnung', 'farbe': 'amber', 'titel': _('Lieferantenkonten'),
+             'sub': _('Kontoblatt je Lieferant (Kreditoren)'), 'url': '/neu/lieferantenkonten/' + lgq,
+             'kennzahl': _('CHF %(betrag)s offen') % {'betrag': f"{kred_offen:,.0f}".replace(',', "'")}, 'pdf': False},
         ]},
-        {'gruppe': 'Portfolio', 'items': [
-            {'icon': 'filtern', 'farbe': 'emerald', 'titel': 'Mieterspiegel',
-             'sub': 'Rent Roll je Liegenschaft (Soll/Ist/Leerstand)', 'url': '/neu/mieterspiegel/' + lgq,
-             'kennzahl': f"CHF {soll_mietzins:,.0f} Soll · {leerstandsquote}% leer".replace(',', "'"), 'pdf': True},
-            {'icon': 'recht', 'farbe': 'teal', 'titel': 'Eigentümer-Abrechnungen',
-             'sub': 'Mandatsabrechnung & Kontokorrent je Eigentümer', 'url': '/neu/mandate/',
+        {'gruppe': _('Portfolio'), 'items': [
+            {'icon': 'filtern', 'farbe': 'emerald', 'titel': _('Mieterspiegel'),
+             'sub': _('Rent Roll je Liegenschaft (Soll/Ist/Leerstand)'), 'url': '/neu/mieterspiegel/' + lgq,
+             'kennzahl': _('CHF %(betrag)s Soll · %(quote)s%% leer') % {'betrag': f"{soll_mietzins:,.0f}".replace(',', "'"), 'quote': leerstandsquote}, 'pdf': True},
+            {'icon': 'recht', 'farbe': 'teal', 'titel': _('Eigentümer-Abrechnungen'),
+             'sub': _('Mandatsabrechnung & Kontokorrent je Eigentümer'), 'url': '/neu/mandate/',
              'kennzahl': None, 'pdf': True},
         ]},
-        {'gruppe': 'Objekte & Unterhalt', 'items': [
-            {'icon': 'geld', 'farbe': 'orange', 'titel': 'Reparaturkosten',
-             'sub': 'Kosten je Liegenschaft (offen/effektiv)', 'url': '/neu/schaeden/kosten/' + lgq,
+        {'gruppe': _('Objekte & Unterhalt'), 'items': [
+            {'icon': 'geld', 'farbe': 'orange', 'titel': _('Reparaturkosten'),
+             'sub': _('Kosten je Liegenschaft (offen/effektiv)'), 'url': '/neu/schaeden/kosten/' + lgq,
              'kennzahl': f"CHF {reparatur_eff:,.0f} {heute.year}".replace(',', "'"), 'pdf': False},
-            {'icon': 'senden', 'farbe': 'sky', 'titel': 'Objekt-Feed (Portale)',
-             'sub': 'Vermarktungs-Feed für Homegate/Flatfox', 'url': '/neu/integrationen/',
+            {'icon': 'senden', 'farbe': 'sky', 'titel': _('Objekt-Feed (Portale)'),
+             'sub': _('Vermarktungs-Feed für Homegate/Flatfox'), 'url': '/neu/integrationen/',
              'kennzahl': None, 'pdf': False},
         ]},
     ]
@@ -790,10 +790,10 @@ def fw_berichte(request):
 
 
 AUSWERTUNG_TYPEN = [
-    ('mietertrag', 'Mietertrag', 'ertrag'),
-    ('aufwand', 'Aufwand (total)', 'aufwand'),
-    ('reparatur', 'Reparaturen (Unterhalt)', 'aufwand'),
-    ('ergebnis', 'Nettoergebnis', 'ergebnis'),
+    ('mietertrag', gettext_lazy('Mietertrag'), 'ertrag'),
+    ('aufwand', gettext_lazy('Aufwand (total)'), 'aufwand'),
+    ('reparatur', gettext_lazy('Reparaturen (Unterhalt)'), 'aufwand'),
+    ('ergebnis', gettext_lazy('Nettoergebnis'), 'ergebnis'),
 ]
 
 

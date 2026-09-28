@@ -1,19 +1,19 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Berichte — swissImmo{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Berichte" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Berichte</h1>
-        <p>Alle Reports und Exporte an einem Ort.{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
+        <h1>{% trans "Berichte" %}</h1>
+        <p>{% trans "Alle Reports und Exporte an einem Ort." %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-        <a href="/neu/auswertung/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'bericht' %}Interaktive Auswertung</a>
+        <a href="/neu/auswertung/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'bericht' %}{% trans "Interaktive Auswertung" %}</a>
         <div class="relative" data-menu>
-            <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}Mehr</button>
+            <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
-                <a href="/neu/berichte/betriebskostenspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'zaehler' klasse='w-4' %}Betriebskostenspiegel</a>
-                <a href="/neu/berichte/leerstand-verlauf/" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'bericht' klasse='w-4' %}Leerstands-Verlauf</a>
+                <a href="/neu/berichte/betriebskostenspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'zaehler' klasse='w-4' %}{% trans "Betriebskostenspiegel" %}</a>
+                <a href="/neu/berichte/leerstand-verlauf/" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'bericht' klasse='w-4' %}{% trans "Leerstands-Verlauf" %}</a>
             </div>
         </div>
     </div>

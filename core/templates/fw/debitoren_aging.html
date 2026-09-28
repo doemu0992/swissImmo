@@ -1,44 +1,44 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Debitoren-Altersstruktur — swissImmo{% endblock %}
+{% block title %}{% trans "Debitoren-Altersstruktur" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="text-xs fw-faint mb-3">
-    <a href="/neu/mahnwesen/{{ lg_query }}" class="hover:fw-marke">Mahnwesen</a>
-    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}Altersstruktur
+    <a href="/neu/mahnwesen/{{ lg_query }}" class="hover:fw-marke">{% trans "Mahnwesen" %}</a>
+    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{% trans "Altersstruktur" %}
 </div>
 
 <div class="fw-phead">
     <div>
-        <h1>Debitoren-Altersstruktur</h1>
-        <p>Offene Forderungen nach Fälligkeitsalter · Stichtag {{ heute|date:"d.m.Y" }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
+        <h1>{% trans "Debitoren-Altersstruktur" %}</h1>
+        <p>{% blocktrans with datum=heute|date:"d.m.Y" %}Offene Forderungen nach Fälligkeitsalter · Stichtag {{ datum }}{% endblocktrans %}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
     <div style="text-align:right">
         <div class="fw-num" style="font-size:28px;font-weight:800;letter-spacing:-.02em;color:{% if ueberfaellig_summe %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">CHF {{ ueberfaellig_summe|chf }}</div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600">überfällig · Total offen CHF {{ total.summe|chf }}</div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600">{% blocktrans with betrag=total.summe|chf %}überfällig · Total offen CHF {{ betrag }}{% endblocktrans %}</div>
     </div>
 </div>
 
 <!-- Bucket-Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 my-5">
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Nicht fällig</div>
+        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Nicht fällig" %}</div>
         <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ total.nicht_faellig|chf }}</div>
     </div>
     <div class="fw-flaeche rounded-xl border fw-linie-warn px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-warnton font-semibold">1–30 Tage</div>
+        <div class="text-[11px] uppercase tracking-wide fw-warnton font-semibold">{% trans "1–30 Tage" %}</div>
         <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ total.d30|chf }}</div>
     </div>
     <div class="fw-flaeche rounded-xl border fw-linie-warn px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-warnton font-semibold">31–60 Tage</div>
+        <div class="text-[11px] uppercase tracking-wide fw-warnton font-semibold">{% trans "31–60 Tage" %}</div>
         <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ total.d60|chf }}</div>
     </div>
     <div class="fw-flaeche rounded-xl border fw-linie-krit px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-kritisch font-semibold">61–90 Tage</div>
+        <div class="text-[11px] uppercase tracking-wide fw-kritisch font-semibold">{% trans "61–90 Tage" %}</div>
         <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ total.d90|chf }}</div>
     </div>
     <div class="fw-flaeche rounded-xl border fw-linie-krit px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-kritisch font-semibold">&gt; 90 Tage</div>
+        <div class="text-[11px] uppercase tracking-wide fw-kritisch font-semibold">{% trans "&gt; 90 Tage" %}</div>
         <div class="text-lg font-bold fw-kritisch mt-0.5">CHF {{ total.d90plus|chf }}</div>
     </div>
 </div>
@@ -47,13 +47,13 @@
     <table class="w-full text-sm min-w-max">
         <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">Mieter</th>
-                <th class="px-5 py-3 font-semibold text-right">Nicht fällig</th>
+                <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Nicht fällig" %}</th>
                 <th class="px-5 py-3 font-semibold text-right">1–30</th>
                 <th class="px-5 py-3 font-semibold text-right">31–60</th>
                 <th class="px-5 py-3 font-semibold text-right">61–90</th>
-                <th class="px-5 py-3 font-semibold text-right">&gt;90</th>
-                <th class="px-5 py-3 font-semibold text-right">Total</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "&gt;90" %}</th>
+                <th class="px-5 py-3 font-semibold text-right">{% trans "Total" %}</th>
             </tr>
         </thead>
         <tbody class="fw-dv">
@@ -71,13 +71,13 @@
                 <td class="px-5 py-2.5 text-right font-semibold fw-strong">{{ g.summe|chf }}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="7" class="px-5 py-10 text-center fw-faint text-sm">Keine offenen Forderungen — alles bezahlt. 🎉</td></tr>
+            <tr><td colspan="7" class="px-5 py-10 text-center fw-faint text-sm">{% trans "Keine offenen Forderungen — alles bezahlt. 🎉" %}</td></tr>
         {% endfor %}
         </tbody>
         {% if rows %}
         <tfoot>
             <tr class="border-t-2 fw-linie font-semibold fw-strong">
-                <td class="px-5 py-3">Total ({{ anzahl }} Mieter)</td>
+                <td class="px-5 py-3">{% blocktrans count n=anzahl %}Total ({{ n }} Mieter){% plural %}Total ({{ n }} Mieter){% endblocktrans %}</td>
                 <td class="px-5 py-3 text-right">{{ total.nicht_faellig|chf }}</td>
                 <td class="px-5 py-3 text-right fw-warnton">{{ total.d30|chf }}</td>
                 <td class="px-5 py-3 text-right fw-warnton">{{ total.d60|chf }}</td>
@@ -89,5 +89,5 @@
         {% endif %}
     </table>
 </div>
-<p class="text-xs fw-faint mt-3">Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 Tagen sind mahnrelevant — Mahnungen erfasst du im <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-marke hover:underline">Mahnwesen</a>.</p>
+<p class="text-xs fw-faint mt-3">{% blocktrans trimmed %}Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 Tagen sind mahnrelevant — Mahnungen erfasst du im <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-marke hover:underline">Mahnwesen</a>.{% endblocktrans %}</p>
 {% endblock %}

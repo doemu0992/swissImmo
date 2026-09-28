@@ -1,12 +1,12 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Mieterspiegel — swissImmo{% endblock %}
+{% block title %}{% trans "Mieterspiegel" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>Mieterspiegel</h1>
-        <p>Rent Roll pro Liegenschaft — Liegenschaft wählen · Stichtag {{ stichtag|date:"d.m.Y" }}</p>
+        <h1>{% trans "Mieterspiegel" %}</h1>
+        <p>{% blocktrans with datum=stichtag|date:"d.m.Y" %}Rent Roll pro Liegenschaft — Liegenschaft wählen · Stichtag {{ datum }}{% endblocktrans %}</p>
     </div>
 </div>
 
@@ -26,15 +26,15 @@
         </div>
         <div class="grid grid-cols-3 gap-2 mt-4 pt-4 border-t fw-linie">
             <div>
-                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">Soll / Mt.</div>
+                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">{% trans "Soll / Mt." %}</div>
                 <div class="text-sm font-bold fw-strong">CHF {{ b.totals.soll_brutto|chf }}</div>
             </div>
             <div>
-                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">Belegt</div>
+                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">{% trans "Belegt" %}</div>
                 <div class="text-sm font-bold fw-strong">{{ b.totals.belegt }}/{{ b.totals.anzahl }}</div>
             </div>
             <div>
-                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">Leerstand</div>
+                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">{% trans "Leerstand" %}</div>
                 <div class="text-sm font-bold {% if b.totals.leer %}fw-warnton{% else %}fw-strong{% endif %}">{{ b.totals.leerstandsquote }}%</div>
             </div>
         </div>
@@ -42,6 +42,6 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="fw-card p-10 text-center fw-faint">Keine Liegenschaften erfasst.</div>
+<div class="fw-card p-10 text-center fw-faint">{% trans "Keine Liegenschaften erfasst." %}</div>
 {% endif %}
 {% endblock %}

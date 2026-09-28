@@ -94,6 +94,14 @@ UEBERSETZT = (
     'fw/anlagen.html',
     'fw/hypotheken.html',
     'fw/_bezahlt_leer.html',
+    # Tranche «Berichte»
+    'fw/berichte.html',
+    'fw/auswertung.html',
+    'fw/mieterspiegel.html',
+    'fw/mieterspiegel_auswahl.html',
+    'fw/leerstand_verlauf.html',
+    'fw/betriebskostenspiegel.html',
+    'fw/debitoren_aging.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -156,6 +164,11 @@ STICHPROBE = {
                            'it': 'Depositi di garanzia', 'en': 'Rent deposits'},
     'Festhypothek':       {'de': 'Festhypothek', 'fr': 'Hypothèque à taux fixe',
                            'it': 'Ipoteca a tasso fisso', 'en': 'Fixed-rate mortgage'},
+    # Berichte
+    'Mieterspiegel':      {'de': 'Mieterspiegel', 'fr': 'État locatif',
+                           'it': 'Specchietto delle pigioni', 'en': 'Rent roll'},
+    'Leerstands-Verlauf': {'de': 'Leerstands-Verlauf', 'fr': 'Évolution de la vacance',
+                           'it': 'Andamento dello sfitto', 'en': 'Vacancy trend'},
 }
 
 
@@ -326,6 +339,27 @@ class AusgezeichneteVorlagenTests(SimpleTestCase):
                 self.assertRegex(
                     text, r'{%\s*(trans|translate|blocktrans|blocktranslate)\b',
                     f'{name} steht in UEBERSETZT, traegt aber keine Auszeichnung.')
+
+    def test_jede_vorlage_der_liste_laesst_sich_kompilieren(self):
+        """Jede ausgezeichnete Vorlage laesst sich laden — nicht nur lesen.
+
+        Der Regex-Test oben sieht `{% load i18n %}` auch dann, wenn es VOR
+        `{% extends %}` steht. Django verweigert das («extends must be the
+        first tag»), die Seite antwortet mit 500. So geschehen mit
+        `leerstand_verlauf.html` in der Tranche «Berichte»: Die Datei trug
+        vorher gar kein `{% load %}`, das Hilfsskript setzte es an den
+        Anfang. Kein anderer Test rendert diese Seite.
+
+        `get_template` kompiliert — Syntaxfehler, unbekannte Tags und falsch
+        geschachtelte blocktrans fallen hier auf, ohne dass es Daten braucht.
+
+        Gegenprobe: `{% load i18n %}` in einer Vorlage der Liste vor
+        `{% extends %}` setzen — der Test wird rot.
+        """
+        from django.template.loader import get_template
+        for name in UEBERSETZT:
+            with self.subTest(vorlage=name):
+                get_template(name)
 
     def test_die_liste_schrumpft_nicht(self):
         """Sperrklinke: Eine einmal ausgezeichnete Vorlage bleibt es.

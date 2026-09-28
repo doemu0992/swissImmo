@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 17:12+0200\n"
+"POT-Creation-Date: 2026-09-28 17:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -124,8 +124,8 @@ msgstr "Month"
 msgid "Bankabgleich"
 msgstr "Bank reconciliation"
 
-#: core/navigation.py:157 core/templates/fw/mahnwesen.html:4
-#: core/templates/fw/mahnwesen.html:10
+#: core/navigation.py:157 core/templates/fw/debitoren_aging.html:7
+#: core/templates/fw/mahnwesen.html:4 core/templates/fw/mahnwesen.html:10
 msgid "Mahnwesen"
 msgstr "Dunning"
 
@@ -153,11 +153,13 @@ msgid "MWST"
 msgstr "VAT"
 
 #: core/navigation.py:166 core/templates/fw/finanzen.html:4
+#: core/views/fw/listen.py:752
 msgid "Finanzen"
 msgstr "Finance"
 
 #: core/navigation.py:167 core/templates/fw/finanzen.html:135
 #: core/templates/fw/mieterkonten.html:4 core/templates/fw/mieterkonten.html:8
+#: core/views/fw/listen.py:765
 msgid "Mieterkonten"
 msgstr "Tenant accounts"
 
@@ -186,7 +188,7 @@ msgstr "Payables"
 
 #: core/navigation.py:171 core/templates/fw/finanzen.html:136
 #: core/templates/fw/lieferantenkonten.html:4
-#: core/templates/fw/lieferantenkonten.html:8
+#: core/templates/fw/lieferantenkonten.html:8 core/views/fw/listen.py:768
 msgid "Lieferantenkonten"
 msgstr "Supplier accounts"
 
@@ -217,7 +219,9 @@ msgstr "Fixed assets & closing"
 msgid "Hypotheken"
 msgstr "Mortgages"
 
-#: core/navigation.py:180
+#: core/navigation.py:180 core/templates/fw/berichte.html:3
+#: core/templates/fw/berichte.html:7
+#: core/templates/fw/betriebskostenspiegel.html:6
 msgid "Berichte"
 msgstr "Reports"
 
@@ -225,7 +229,8 @@ msgstr "Reports"
 msgid "Übersicht"
 msgstr "Overview"
 
-#: core/navigation.py:182
+#: core/navigation.py:182 core/templates/fw/auswertung.html:4
+#: core/templates/fw/auswertung.html:8
 msgid "Auswertung"
 msgstr "Analysis"
 
@@ -506,9 +511,10 @@ msgstr "Asset"
 
 #: core/templates/fw/anlagen.html:27 core/templates/fw/anlagen.html:53
 #: core/templates/fw/anlagen.html:102 core/templates/fw/anlagen.html:120
-#: core/templates/fw/bankabgleich.html:185 core/templates/fw/kreditoren.html:78
-#: core/templates/fw/kreditoren.html:289 core/templates/fw/nebenkosten.html:70
-#: core/templates/fw/objekte.html:74
+#: core/templates/fw/auswertung.html:29 core/templates/fw/bankabgleich.html:185
+#: core/templates/fw/betriebskostenspiegel.html:43
+#: core/templates/fw/kreditoren.html:78 core/templates/fw/kreditoren.html:289
+#: core/templates/fw/nebenkosten.html:70 core/templates/fw/objekte.html:74
 msgid "Liegenschaft"
 msgstr "Property"
 
@@ -665,6 +671,47 @@ msgstr "Set lock"
 msgid "Aufheben"
 msgstr "Remove"
 
+#: core/templates/fw/auswertung.html:9
+msgid ""
+"Kennzahlen im Monatsverlauf und je Liegenschaft — nach Jahr, Kennzahl und "
+"Liegenschaft filterbar."
+msgstr "Key figures by month and per property — filterable by year, figure and property."
+
+#: core/templates/fw/auswertung.html:17
+msgid "Kennzahl"
+msgstr "Key figure"
+
+#: core/templates/fw/auswertung.html:23 core/templates/fw/mwst.html:15
+#: core/templates/fw/sollstellung.html:27
+msgid "Jahr"
+msgstr "Year"
+
+#: core/templates/fw/auswertung.html:31
+msgid "Alle Liegenschaften"
+msgstr "All properties"
+
+#: core/templates/fw/auswertung.html:35 core/templates/fw/mwst.html:24
+msgid "Anzeigen"
+msgstr "Show"
+
+#: core/templates/fw/auswertung.html:44
+msgid "/ 12 Monate"
+msgstr "/ 12 months"
+
+#: core/templates/fw/auswertung.html:49
+msgid "Monatsverlauf"
+msgstr "Monthly trend"
+
+#: core/templates/fw/auswertung.html:66
+#, python-format
+msgid "Je Liegenschaft (%(jahr)s)"
+msgstr "Per property (%(jahr)s)"
+
+#: core/templates/fw/auswertung.html:80
+#, python-format
+msgid "Keine verbuchten Werte für %(jahr)s."
+msgstr "No posted values for %(jahr)s."
+
 #: core/templates/fw/bankabgleich.html:11
 msgid ""
 "Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen "
@@ -674,8 +721,9 @@ msgstr ""
 "debtors)"
 
 #: core/templates/fw/bankabgleich.html:11 core/templates/fw/bankkonten.html:11
-#: core/templates/fw/debitoren.html:11 core/templates/fw/finanzen.html:26
-#: core/templates/fw/hypotheken.html:10 core/templates/fw/kautionen.html:9
+#: core/templates/fw/berichte.html:8 core/templates/fw/debitoren.html:11
+#: core/templates/fw/finanzen.html:26 core/templates/fw/hypotheken.html:10
+#: core/templates/fw/kautionen.html:9
 #: core/templates/fw/lieferantenkonten.html:9
 #: core/templates/fw/mieterkonten.html:9 core/templates/fw/mietzins.html:11
 #: core/templates/fw/mwst.html:9 core/templates/fw/objekte.html:24
@@ -989,8 +1037,10 @@ msgid "Fällig"
 msgstr "Due"
 
 #: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
+#: core/templates/fw/debitoren_aging.html:50
 #: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
-#: core/templates/fw/mieterkonten.html:46 core/templates/fw/mietzins.html:58
+#: core/templates/fw/mieterkonten.html:46
+#: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
 #: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
 msgid "Mieter"
 msgstr "Tenant"
@@ -1216,6 +1266,81 @@ msgstr "Nothing found — ↵ searches in depth for"
 #: core/templates/fw/base.html:671
 msgid "Bereiche"
 msgstr "Areas"
+
+#: core/templates/fw/berichte.html:8
+msgid "Alle Reports und Exporte an einem Ort."
+msgstr "All reports and exports in one place."
+
+#: core/templates/fw/berichte.html:11
+msgid "Interaktive Auswertung"
+msgstr "Interactive analysis"
+
+#: core/templates/fw/berichte.html:13 core/templates/fw/kreditoren.html:13
+#: core/templates/fw/liegenschaften.html:16
+msgid "Mehr"
+msgstr "More"
+
+#: core/templates/fw/berichte.html:15
+#: core/templates/fw/betriebskostenspiegel.html:8
+msgid "Betriebskostenspiegel"
+msgstr "Operating cost benchmark"
+
+#: core/templates/fw/berichte.html:16
+#: core/templates/fw/leerstand_verlauf.html:2
+#: core/templates/fw/leerstand_verlauf.html:6
+msgid "Leerstands-Verlauf"
+msgstr "Vacancy trend"
+
+#: core/templates/fw/betriebskostenspiegel.html:3
+#: core/templates/fw/betriebskostenspiegel.html:13
+#, python-format
+msgid "Betriebskostenspiegel %(jahr)s"
+msgstr "Operating cost benchmark %(jahr)s"
+
+#: core/templates/fw/betriebskostenspiegel.html:14
+msgid "Aufwand je Liegenschaft, umgelegt auf CHF/m² — quervergleichbar."
+msgstr "Expenses per property, per CHF/m² — comparable across properties."
+
+#: core/templates/fw/betriebskostenspiegel.html:27
+#, python-format
+msgid "Aufwand total %(jahr)s"
+msgstr "Total expenses %(jahr)s"
+
+#: core/templates/fw/betriebskostenspiegel.html:31
+msgid "Fläche total"
+msgstr "Total area"
+
+#: core/templates/fw/betriebskostenspiegel.html:35
+msgid "Ø CHF/m² (Portfolio)"
+msgstr "Ø CHF/m² (portfolio)"
+
+#: core/templates/fw/betriebskostenspiegel.html:44
+#, python-format
+msgid "Aufwand %(jahr)s"
+msgstr "Expenses %(jahr)s"
+
+#: core/templates/fw/betriebskostenspiegel.html:45
+msgid "Fläche"
+msgstr "Area"
+
+#: core/templates/fw/betriebskostenspiegel.html:46
+msgid "CHF/m²"
+msgstr "CHF/m²"
+
+#: core/templates/fw/betriebskostenspiegel.html:47
+msgid "vs. Ø"
+msgstr "vs. Ø"
+
+#: core/templates/fw/betriebskostenspiegel.html:64
+#, python-format
+msgid "Keine Liegenschaften / keine Aufwandbuchungen im %(jahr)s."
+msgstr "No properties / no expense entries in %(jahr)s."
+
+#: core/templates/fw/betriebskostenspiegel.html:70
+msgid ""
+"Basis: Buchungen auf Aufwandkonten (Soll) je Liegenschaft im gewählten Jahr, "
+"geteilt durch die Summe der erfassten Objektflächen."
+msgstr "Basis: entries on expense accounts (debit) per property in the chosen year, divided by the sum of recorded unit areas."
 
 #: core/templates/fw/buchhaltung.html:10
 msgid "Buchung erfassen"
@@ -1719,7 +1844,8 @@ msgstr[1] "%(n)s units"
 msgid "%(n)s leer"
 msgstr "%(n)s vacant"
 
-#: core/templates/fw/dashboard.html:348
+#: core/templates/fw/dashboard.html:348 core/views/fw/listen.py:767
+#: core/views/fw/listen.py:770
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s outstanding"
@@ -1950,6 +2076,74 @@ msgstr "Page %(seite)s/%(von)s"
 msgid "Mahnstufen werden aus der Fälligkeit berechnet"
 msgstr "Dunning levels are calculated from the due date"
 
+#: core/templates/fw/debitoren_aging.html:4
+#: core/templates/fw/debitoren_aging.html:13 core/views/fw/listen.py:762
+msgid "Debitoren-Altersstruktur"
+msgstr "Debtor ageing"
+
+#: core/templates/fw/debitoren_aging.html:8
+msgid "Altersstruktur"
+msgstr "Ageing"
+
+#: core/templates/fw/debitoren_aging.html:14
+#, python-format
+msgid "Offene Forderungen nach Fälligkeitsalter · Stichtag %(datum)s"
+msgstr "Open receivables by age · as of %(datum)s"
+
+#: core/templates/fw/debitoren_aging.html:18
+#, python-format
+msgid "überfällig · Total offen CHF %(betrag)s"
+msgstr "overdue · total open CHF %(betrag)s"
+
+#: core/templates/fw/debitoren_aging.html:25
+#: core/templates/fw/debitoren_aging.html:51
+msgid "Nicht fällig"
+msgstr "Not due"
+
+#: core/templates/fw/debitoren_aging.html:29
+msgid "1–30 Tage"
+msgstr "1–30 days"
+
+#: core/templates/fw/debitoren_aging.html:33
+msgid "31–60 Tage"
+msgstr "31–60 days"
+
+#: core/templates/fw/debitoren_aging.html:37
+msgid "61–90 Tage"
+msgstr "61–90 days"
+
+#: core/templates/fw/debitoren_aging.html:41
+msgid "&gt; 90 Tage"
+msgstr "&gt; 90 days"
+
+#: core/templates/fw/debitoren_aging.html:55
+msgid "&gt;90"
+msgstr "&gt;90"
+
+#: core/templates/fw/debitoren_aging.html:56
+#: core/templates/fw/kontenplan.html:150 core/templates/fw/sollstellung.html:86
+msgid "Total"
+msgstr "Total"
+
+#: core/templates/fw/debitoren_aging.html:74
+msgid "Keine offenen Forderungen — alles bezahlt. 🎉"
+msgstr "No open receivables — everything is paid. 🎉"
+
+#: core/templates/fw/debitoren_aging.html:80
+#, python-format
+msgid "Total (%(n)s Mieter)"
+msgid_plural "Total (%(n)s Mieter)"
+msgstr[0] "Total (%(n)s tenant)"
+msgstr[1] "Total (%(n)s tenants)"
+
+#: core/templates/fw/debitoren_aging.html:92
+#, python-format
+msgid ""
+"Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 "
+"Tagen sind mahnrelevant — Mahnungen erfasst du im <a href=\"/neu/mahnwesen/"
+"%(lg_query)s\" class=\"fw-marke hover:underline\">Mahnwesen</a>."
+msgstr "Age from the due or invoice date. Items from 30 days are due for dunning — you record reminders under <a href=\"/neu/mahnwesen/%(lg_query)s\" class=\"fw-marke hover:underline\">Dunning</a>."
+
 #: core/templates/fw/dienstleister.html:9
 msgid "Handwerker erfassen"
 msgstr "Add tradesperson"
@@ -2092,7 +2286,7 @@ msgstr "No service providers yet"
 msgid "Handwerker werden in der klassischen Ansicht erfasst."
 msgstr "Tradespeople are added in the classic view."
 
-#: core/templates/fw/finanzen.html:8
+#: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:758
 msgid "Finanz-Cockpit"
 msgstr "Finance cockpit"
 
@@ -2229,8 +2423,8 @@ msgstr "SARON"
 msgid "Variabel"
 msgstr "Variable"
 
-#: core/templates/fw/hypotheken.html:40 core/templates/fw/termine.html:29
-#: core/templates/fw/vertraege.html:70
+#: core/templates/fw/hypotheken.html:40 core/templates/fw/mieterspiegel.html:68
+#: core/templates/fw/termine.html:29 core/templates/fw/vertraege.html:70
 msgid "Beginn"
 msgstr "Start"
 
@@ -2466,10 +2660,6 @@ msgstr ""
 msgid "Noch keine Konten."
 msgstr "No accounts yet."
 
-#: core/templates/fw/kontenplan.html:150 core/templates/fw/sollstellung.html:86
-msgid "Total"
-msgstr "Total"
-
 #: core/templates/fw/kontenplan.html:163
 msgid ""
 "Konten ohne Bewegung sind ausgegraut, bleiben aber sichtbar — anders als in "
@@ -2483,11 +2673,6 @@ msgstr ""
 #: core/templates/fw/kreditoren.html:11
 msgid "Rechnung erfassen"
 msgstr "Record invoice"
-
-#: core/templates/fw/kreditoren.html:13
-#: core/templates/fw/liegenschaften.html:16
-msgid "Mehr"
-msgstr "More"
 
 #: core/templates/fw/kreditoren.html:15
 msgid "Beleg scannen (KI)"
@@ -2932,6 +3117,53 @@ msgstr "Recently completed"
 msgid "Noch kein Lauf abgeschlossen."
 msgstr "No process completed yet."
 
+#: core/templates/fw/leerstand_verlauf.html:7
+#, python-format
+msgid "Monatliche Leerquote des letzten Monats."
+msgid_plural "Monatliche Leerquote der letzten %(n)s Monate."
+msgstr[0] "Monthly vacancy rate for the last month."
+msgstr[1] "Monthly vacancy rate for the last %(n)s months."
+
+#: core/templates/fw/leerstand_verlauf.html:7
+msgid "ganzes Portfolio"
+msgstr "whole portfolio"
+
+#: core/templates/fw/leerstand_verlauf.html:10
+msgid "6 Mt."
+msgstr "6 mo."
+
+#: core/templates/fw/leerstand_verlauf.html:11
+msgid "12 Mt."
+msgstr "12 mo."
+
+#: core/templates/fw/leerstand_verlauf.html:12
+msgid "24 Mt."
+msgstr "24 mo."
+
+#: core/templates/fw/leerstand_verlauf.html:19
+msgid "Ø Leerquote"
+msgstr "Ø vacancy rate"
+
+#: core/templates/fw/leerstand_verlauf.html:23
+msgid "Spitze"
+msgstr "Peak"
+
+#: core/templates/fw/leerstand_verlauf.html:27
+msgid "Aktuell (letzter Monat)"
+msgstr "Current (last month)"
+
+#: core/templates/fw/leerstand_verlauf.html:38
+#, python-format
+msgid "%(monat)s: %(leer)s/%(total)s leer"
+msgstr "%(monat)s: %(leer)s/%(total)s vacant"
+
+#: core/templates/fw/leerstand_verlauf.html:43
+#, python-format
+msgid ""
+"Balkenhöhe = Leerquote (0–100%%). Grün = voll vermietet, gelb = Leerstand, "
+"rot = &gt; 5%%."
+msgstr "Bar height = vacancy rate (0–100%%). Green = fully let, yellow = vacancy, red = &gt; 5%%."
+
 #: core/templates/fw/lieferantenkonten.html:9
 msgid ""
 "Pro Lieferant der offene Betrag aus allen Rechnungen und Zahlungen. Klick "
@@ -3021,7 +3253,11 @@ msgstr "Actual rent"
 msgid "pro Monat, laufende Verträge"
 msgstr "per month, current leases"
 
-#: core/templates/fw/liegenschaften.html:61 core/templates/fw/objekte.html:40
+#: core/templates/fw/liegenschaften.html:61
+#: core/templates/fw/mieterspiegel.html:45
+#: core/templates/fw/mieterspiegel.html:80
+#: core/templates/fw/mieterspiegel_auswahl.html:37
+#: core/templates/fw/objekte.html:40
 msgid "Leerstand"
 msgstr "Vacancy"
 
@@ -3302,6 +3538,110 @@ msgstr "settled"
 msgid "Keine Mieterkonten"
 msgstr "No tenant accounts"
 
+#: core/templates/fw/mieterspiegel.html:4
+#: core/templates/fw/mieterspiegel.html:7
+#: core/templates/fw/mieterspiegel.html:14
+#: core/templates/fw/mieterspiegel_auswahl.html:4
+#: core/templates/fw/mieterspiegel_auswahl.html:8 core/views/fw/listen.py:773
+msgid "Mieterspiegel"
+msgstr "Rent roll"
+
+#: core/templates/fw/mieterspiegel.html:15
+#, python-format
+msgid "Einheiten mit Mieter, Mietzins und Vertragsdaten · Stichtag %(datum)s"
+msgstr "Units with tenant, rent and lease data · as of %(datum)s"
+
+#: core/templates/fw/mieterspiegel.html:30
+msgid "Soll-Mietzins"
+msgstr "Target rent"
+
+#: core/templates/fw/mieterspiegel.html:32
+msgid "brutto / Monat"
+msgstr "gross / month"
+
+#: core/templates/fw/mieterspiegel.html:35
+msgid "Ist-Mietzins"
+msgstr "Actual rent"
+
+#: core/templates/fw/mieterspiegel.html:37
+msgid "belegt / Monat"
+msgstr "let / month"
+
+#: core/templates/fw/mieterspiegel.html:40
+msgid "Ausfall Leerstand"
+msgstr "Vacancy loss"
+
+#: core/templates/fw/mieterspiegel.html:42
+msgid "/ Monat"
+msgstr "/ month"
+
+#: core/templates/fw/mieterspiegel.html:47
+#, python-format
+msgid "%(leer)s von %(anzahl)s"
+msgstr "%(leer)s of %(anzahl)s"
+
+#: core/templates/fw/mieterspiegel.html:56
+#, python-format
+msgid "%(belegt)s/%(anzahl)s belegt"
+msgstr "%(belegt)s/%(anzahl)s let"
+
+#: core/templates/fw/mieterspiegel.html:57
+#, python-format
+msgid "%(quote)s%% Leerstand"
+msgstr "%(quote)s%% vacancy"
+
+#: core/templates/fw/mieterspiegel.html:63
+msgid "Einheit"
+msgstr "Unit"
+
+#: core/templates/fw/mieterspiegel.html:65
+#: core/templates/fw/sollstellung.html:84 core/templates/fw/vertraege.html:72
+msgid "Netto"
+msgstr "Net"
+
+#: core/templates/fw/mieterspiegel.html:67 core/templates/fw/vertraege.html:52
+#: core/templates/fw/vertraege.html:74
+msgid "Brutto"
+msgstr "Gross"
+
+#: core/templates/fw/mieterspiegel.html:69 core/templates/fw/vertraege.html:71
+msgid "Ende"
+msgstr "End"
+
+#: core/templates/fw/mieterspiegel.html:89
+msgid "Keine Einheiten erfasst."
+msgstr "No units recorded."
+
+#: core/templates/fw/mieterspiegel.html:95
+msgid "Soll-Total"
+msgstr "Target total"
+
+#: core/templates/fw/mieterspiegel.html:99
+#, python-format
+msgid "Ist belegt: CHF %(betrag)s"
+msgstr "Actual let: CHF %(betrag)s"
+
+#: core/templates/fw/mieterspiegel.html:107
+msgid "Keine Liegenschaften."
+msgstr "No properties."
+
+#: core/templates/fw/mieterspiegel_auswahl.html:9
+#, python-format
+msgid "Rent Roll pro Liegenschaft — Liegenschaft wählen · Stichtag %(datum)s"
+msgstr "Rent roll per property — choose a property · as of %(datum)s"
+
+#: core/templates/fw/mieterspiegel_auswahl.html:29
+msgid "Soll / Mt."
+msgstr "Target / mo."
+
+#: core/templates/fw/mieterspiegel_auswahl.html:33
+msgid "Belegt"
+msgstr "Let"
+
+#: core/templates/fw/mieterspiegel_auswahl.html:45
+msgid "Keine Liegenschaften erfasst."
+msgstr "No properties recorded."
+
 #: core/templates/fw/mietzins.html:11
 msgid "Anpassungspotenzial nach Referenzzins &amp; LIK"
 msgstr "Adjustment potential by reference rate &amp; CPI"
@@ -3386,16 +3726,13 @@ msgstr ""
 "compares this effective base with the current state."
 
 #: core/templates/fw/mwst.html:4 core/templates/fw/mwst.html:8
+#: core/views/fw/listen.py:756
 msgid "MWST-Abrechnung"
 msgstr "VAT return"
 
 #: core/templates/fw/mwst.html:9
 msgid "Geschuldete Umsatzsteuer minus Vorsteuer = Zahllast gegenüber der ESTV."
 msgstr "Output tax owed minus input tax = amount payable to the FTA."
-
-#: core/templates/fw/mwst.html:15 core/templates/fw/sollstellung.html:27
-msgid "Jahr"
-msgstr "Year"
 
 #: core/templates/fw/mwst.html:19 core/templates/fw/nebenkosten.html:69
 msgid "Periode"
@@ -3409,10 +3746,6 @@ msgstr "Full year"
 #, python-format
 msgid "%(q)s. Quartal"
 msgstr "Q%(q)s"
-
-#: core/templates/fw/mwst.html:24
-msgid "Anzeigen"
-msgstr "Show"
 
 #: core/templates/fw/mwst.html:26
 msgid "ESTV-Export (CSV)"
@@ -3839,10 +4172,6 @@ msgstr "Already billed"
 msgid "Vorschau — %(monat)s %(jahr)s"
 msgstr "Preview — %(monat)s %(jahr)s"
 
-#: core/templates/fw/sollstellung.html:84 core/templates/fw/vertraege.html:72
-msgid "Netto"
-msgstr "Net"
-
 #: core/templates/fw/sollstellung.html:97
 #, python-format
 msgid "Teilmonat: %(tage)s von %(monat)s Tagen"
@@ -3938,10 +4267,6 @@ msgstr "Create lease"
 msgid "ab %(ab)s"
 msgstr "from %(ab)s"
 
-#: core/templates/fw/vertraege.html:52 core/templates/fw/vertraege.html:74
-msgid "Brutto"
-msgstr "Gross"
-
 #: core/templates/fw/vertraege.html:58 core/templates/fw/vertraege.html:106
 msgid "Für diesen Filter wurden keine Verträge gefunden."
 msgstr "No leases found for this filter."
@@ -3961,10 +4286,6 @@ msgstr ""
 #: core/templates/fw/vertraege.html:58 core/templates/fw/vertraege.html:106
 msgid "Ersten Vertrag erstellen"
 msgstr "Create first lease"
-
-#: core/templates/fw/vertraege.html:71
-msgid "Ende"
-msgstr "End"
 
 #: core/templates/fw/vertraege.html:73
 msgid "NK"
@@ -4241,6 +4562,100 @@ msgstr "Approved"
 #: core/views/fw/kreditoren.py:38
 msgid "In Zahlung"
 msgstr "In payment"
+
+#: core/views/fw/listen.py:753
+msgid "Erfolgsrechnung & Bilanz"
+msgstr "Income statement & balance sheet"
+
+#: core/views/fw/listen.py:754
+msgid "Ertrag/Aufwand, Aktiven/Passiven, Journal"
+msgstr "Income/expenses, assets/liabilities, journal"
+
+#: core/views/fw/listen.py:757
+msgid "Umsatz-/Vorsteuer, ESTV-Export"
+msgstr "Output/input tax, FTA export"
+
+#: core/views/fw/listen.py:759
+msgid "Offene Posten + Monatsabschluss"
+msgstr "Open items + month-end closing"
+
+#: core/views/fw/listen.py:761
+msgid "Forderungen & Zahlungen"
+msgstr "Receivables & payments"
+
+#: core/views/fw/listen.py:763
+msgid "Offene Forderungen nach Fälligkeitsalter"
+msgstr "Open receivables by age"
+
+#: core/views/fw/listen.py:764
+#, python-format
+msgid "CHF %(betrag)s überfällig"
+msgstr "CHF %(betrag)s overdue"
+
+#: core/views/fw/listen.py:766
+msgid "Kontoblatt je Mieter (Forderungen/Zahlungen)"
+msgstr "Ledger per tenant (receivables/payments)"
+
+#: core/views/fw/listen.py:769
+msgid "Kontoblatt je Lieferant (Kreditoren)"
+msgstr "Ledger per supplier (creditors)"
+
+#: core/views/fw/listen.py:772
+msgid "Portfolio"
+msgstr "Portfolio"
+
+#: core/views/fw/listen.py:774
+msgid "Rent Roll je Liegenschaft (Soll/Ist/Leerstand)"
+msgstr "Rent roll per property (target/actual/vacancy)"
+
+#: core/views/fw/listen.py:775
+#, python-format
+msgid "CHF %(betrag)s Soll · %(quote)s%% leer"
+msgstr "CHF %(betrag)s target · %(quote)s%% vacant"
+
+#: core/views/fw/listen.py:776
+msgid "Eigentümer-Abrechnungen"
+msgstr "Owner statements"
+
+#: core/views/fw/listen.py:777
+msgid "Mandatsabrechnung & Kontokorrent je Eigentümer"
+msgstr "Mandate statement & current account per owner"
+
+#: core/views/fw/listen.py:780
+msgid "Objekte & Unterhalt"
+msgstr "Units & maintenance"
+
+#: core/views/fw/listen.py:781
+msgid "Reparaturkosten"
+msgstr "Repair costs"
+
+#: core/views/fw/listen.py:782
+msgid "Kosten je Liegenschaft (offen/effektiv)"
+msgstr "Costs per property (open/actual)"
+
+#: core/views/fw/listen.py:784
+msgid "Objekt-Feed (Portale)"
+msgstr "Listing feed (portals)"
+
+#: core/views/fw/listen.py:785
+msgid "Vermarktungs-Feed für Homegate/Flatfox"
+msgstr "Marketing feed for Homegate/Flatfox"
+
+#: core/views/fw/listen.py:793
+msgid "Mietertrag"
+msgstr "Rental income"
+
+#: core/views/fw/listen.py:794
+msgid "Aufwand (total)"
+msgstr "Expenses (total)"
+
+#: core/views/fw/listen.py:795
+msgid "Reparaturen (Unterhalt)"
+msgstr "Repairs (maintenance)"
+
+#: core/views/fw/listen.py:796
+msgid "Nettoergebnis"
+msgstr "Net result"
 
 #: core/views/fw/listen.py:1108
 msgid "Wohnen"
