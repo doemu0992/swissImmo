@@ -362,6 +362,7 @@ Mandatszuteilung begrenzt zusätzlich, **welche** Akten überhaupt sichtbar sind
 | Rechnungen freigeben | ✓ | bis Limit | bis Limit | — |
 | Zahllauf auslösen | ✓ | ✓ | — | — |
 | Mahnlauf und Betreibung | ✓ | ✓ | — | — |
+| Zahlungsverzug: Frist ansetzen (Art. 257d OR)³ | ✓ | ✓ | — | — |
 | Nebenkostenabrechnung freigeben | ✓ | ✓ | — | — |
 | Mitglieder und Rollen verwalten | ✓ | — | — | — |
 | Abonnement und Module ändern | ✓ | — | — | — |
@@ -378,6 +379,10 @@ erfassen, bestätigen, zurücknehmen (bisher auch Sachbearbeitung). Beim
 Kündigen genügt es nicht, nur die Bestätigung zu sperren: Schon das Erfassen
 setzt den Vertrag auf «gekündigt» und kann die Kündigung direkt als bestätigt
 anlegen.
+
+³ Seit 28.09.2026. Die Fristansetzung eröffnet den Weg zur ausserordentlichen
+Kündigung. Zugang und Sendungsnummer des Einschreibens nachtragen darf die
+Sachbearbeitung weiterhin — das hält die bereits angesetzte Frist richtig.
 
 **Vertretung** ist zeitlich begrenzt, nicht dauerhafte Rechteerweiterung. Sie endet
 automatisch; offene Fristen bleiben bei beiden sichtbar.

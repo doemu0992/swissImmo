@@ -160,3 +160,52 @@ class KuendigungOhneSachbearbeitungTests(TestCase):
         antwort = _client('Verwalter').get(f'/neu/vertraege/{self.v.pk}/')
         self.assertContains(antwort, f'/neu/kuendigung/{k.pk}/bestaetigen/')
         self.assertContains(antwort, f'/neu/vertraege/{self.v.pk}/kuendigen/')
+
+
+class ZahlungsverzugOhneSachbearbeitungTests(TestCase):
+    """Fristansetzung nach Art. 257d OR: Inhaber und Verwalter (seit 28.09.2026).
+
+    Zugang und Sendungsnummer des Einschreibens nachtragen darf die
+    Sachbearbeitung weiterhin — das ist Erfassen von Tatsachen, keine
+    Entscheidung, und hält die bereits angesetzte Frist richtig.
+    """
+
+    def setUp(self):
+        from datetime import timedelta
+        from decimal import Decimal
+        from finance.models import DebitorenRechnung
+        self.lg, self.e, self.m, self.v = _basis_objekte()
+        heute = date.today()
+        DebitorenRechnung.objects.create(
+            vertrag=self.v, titel='Miete', datum=heute - timedelta(days=40),
+            faellig_am=heute - timedelta(days=35), betrag=Decimal('1700'), status='offen')
+        self.url = f'/neu/vertraege/{self.v.pk}/verzug/'
+        self.frist = {'frist_bis': (heute + timedelta(days=30)).isoformat()}
+
+    def _fristen(self):
+        from core.models import Pendenz
+        return Pendenz.objects.filter(vertrag=self.v, titel__icontains='257d')
+
+    def test_sachbearbeiter_setzt_keine_frist_an(self):
+        antwort = _client('Sachbearbeiter').post(self.url, self.frist)
+        self.assertEqual(antwort.status_code, 403)
+        self.assertFalse(self._fristen().exists())
+
+    def test_verwalter_setzt_frist_an(self):
+        _client('Verwalter').post(self.url, self.frist)
+        self.assertTrue(self._fristen().exists())
+
+    def test_sachbearbeiter_traegt_den_zugang_nach(self):
+        from datetime import timedelta
+        _client('Verwalter').post(self.url, self.frist)
+        frist = self._fristen().latest('id')
+        zugang = date.today() - timedelta(days=2)
+        _client('Sachbearbeiter').post(f'/neu/fristen/verzug/{frist.pk}/zugang/',
+                                       {'zugang_am': zugang.isoformat()})
+        frist.refresh_from_db()
+        self.assertEqual(frist.zugang_am, zugang)
+
+    def test_knopf_nur_fuer_berechtigte(self):
+        vertrag = f'/neu/vertraege/{self.v.pk}/'
+        self.assertNotContains(_client('Sachbearbeiter').get(vertrag), self.url)
+        self.assertContains(_client('Verwalter').get(vertrag), self.url)
