@@ -8,8 +8,10 @@ Stand 29.09.2026, erster Schnitt:
 
 - Empfänger Mieter: `Mieter.sprache` («Korrespondenzsprache», gepflegt im
   Personenformular).
-- Eigentümer und Verwaltung haben noch kein Sprachfeld; für sie gilt Deutsch,
-  bis die Felder kommen.
+- Empfänger Eigentümer: `Eigentuemer.sprache` (Mandatsformular) — Portal-
+  Zugangsmail und Eigentümerabrechnung.
+- Die Verwaltung selbst hat bewusst kein Sprachfeld: Wer bei ihr arbeitet,
+  wählt die Sprache der Oberfläche persönlich; interne Auswertungen folgen ihr.
 - Dokumente mit Rechtstext (Mietvertrag, Allgemeine Bedingungen, Hausordnung,
   Kündigungsbestätigung, Mahnung, amtliche Formulare) bleiben DEUTSCH, bis ihr
   Wortlaut juristisch geprüft übersetzt ist. Eine sinngemässe Übertragung
@@ -28,7 +30,7 @@ from django.utils import translation
 STANDARD = 'de'
 
 
-def _gueltig(code):
+def gueltige_sprache(code):
     code = (code or '').strip().lower()[:2]
     verfuegbar = {c for c, _name in settings.LANGUAGES}
     return code if code in verfuegbar else STANDARD
@@ -36,11 +38,11 @@ def _gueltig(code):
 
 def sprache_von(empfaenger):
     """Korrespondenzsprache eines Empfängers; Deutsch, wenn keine hinterlegt ist."""
-    return _gueltig(getattr(empfaenger, 'sprache', None))
+    return gueltige_sprache(getattr(empfaenger, 'sprache', None))
 
 
 @contextmanager
 def in_sprache(code):
     """Rendert alles im Block in `code` (unbekannte Werte → Deutsch)."""
-    with translation.override(_gueltig(code)):
+    with translation.override(gueltige_sprache(code)):
         yield
