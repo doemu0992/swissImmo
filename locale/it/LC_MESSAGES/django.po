@@ -20242,3 +20242,41 @@ msgstr "L'aliquota IVA ha al massimo un decimale (p. es. 8.1)."
 #: finance/forms.py
 msgid "«Leistung bis» liegt vor «Leistung von»."
 msgstr "«Prestazione al» precede «Prestazione dal»."
+
+#: rentals/forms.py
+msgid "Die Weitergabe muss über 0 % liegen."
+msgstr "La ripercussione deve essere superiore allo 0 %."
+
+#: rentals/forms.py
+msgid "Das Mietende liegt vor dem Mietbeginn."
+msgstr "La fine della locazione precede l'inizio della locazione."
+
+#: core/views/fw/vertragserstellung.py
+msgid "MWST-Satz"
+msgstr "Aliquota IVA"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Referenzzinssatz"
+msgstr "Tasso d'interesse di riferimento"
+
+#: core/views/fw/vertragserstellung.py
+msgid "LIK-Stand (Punkte)"
+msgstr "Livello dell'IPC (punti)"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Index-Weitergabe (%)"
+msgstr "Ripercussione dell'indice (%)"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Kostensteigerung per"
+msgstr "Aumento dei costi al"
+
+#: core/views/fw/vertragserstellung.py
+#, python-format
+msgid "«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert."
+msgstr "«%(eingabe)s» non è leggibile per «%(feld)s» — nulla è stato salvato."
+
+#: core/views/fw/vertragserstellung.py
+#, python-format
+msgid "«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert."
+msgstr "«%(eingabe)s» non è leggibile come pigione scalare — nulla è stato salvato."

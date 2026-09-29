@@ -255,7 +255,23 @@ auf PostgreSQL ein Serverfehler gewesen. Jetzt: Status 400, Hinweis am Feld,
 Zusammenfassung oben, Eingaben bleiben stehen. Schweizer PLZ vierstellig,
 ausländische frei. Dabei gefunden: Die Feldmeldungen der Etappe-2-Formulare
 waren nie übersetzt, weil der Übersetzungswächter `_t('…')` nicht erkannte;
-beides nachgeholt. Offen: Mietverhältnis.*
+beides nachgeholt.*
+
+*Nachtrag Mietverhältnis (`rentals/forms.py`):
+- «Vertrag bearbeiten»: Ein unlesbares Vertragsende wurde still leer — bei
+  einem aktiven Vertrag folgt die Befristung dem Ende, aus befristet wurde
+  so unbefristet. Unlesbare Frist oder Personenzahl blieben still beim alten
+  Wert, im Entwurf wurde ein unlesbarer Nettomietzins CHF 0. Jetzt Status
+  400 mit Hinweis am Feld; Ende vor Beginn wird abgelehnt; Beträge mit der
+  Stellenzahl des Modells. Die Kürzung einer Index-Weitergabe über 100 %
+  bleibt (Entscheid E2.53).
+- Assistent: Unlesbare Eingaben wurden still ersetzt — Referenzzinssatz
+  1.25 %, LIK-Stand 107.1, Mietbeginn heute, Nettomiete 0; eine unlesbare
+  Personenzahl war ein Serverfehler. Jetzt wird vor jeder Änderung
+  abgelehnt; leere Felder behalten ihre Vorgabe.
+Offen: Der Assistent meldet Fehler weiterhin oben und lädt leer neu (Umbau
+seiner Oberfläche ist ein eigener Schritt; im Browser verhindern die
+Zahlen- und Datumsfelder die meisten Fehleingaben schon vorher).*
 
 ### Etappe 3 — Komponentenschicht & Typo-Skala («der 10k-Look»)
 

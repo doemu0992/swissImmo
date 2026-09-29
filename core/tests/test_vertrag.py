@@ -1423,13 +1423,29 @@ class IndexparameterErfassbarTests(TestCase):
         self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
 
     def test_unsinn_faellt_auf_den_vorgabewert_zurueck(self):
-        """Leer, null, negativ oder Buchstaben dürfen nichts kaputtmachen."""
-        for roh in ('', '0', '-20', 'abc'):
+        """Leer, null oder negativ dürfen nichts kaputtmachen.
+
+        Buchstaben fielen hier früher ebenfalls still auf 100 % zurück. Seit
+        Audit Etappe 2 lehnt der Assistent unlesbare Eingaben ab — siehe
+        `test_buchstaben_werden_abgelehnt_statt_ersetzt`."""
+        for roh in ('', '0', '-20'):
             with self.subTest(eingabe=roh):
                 v = self._speichern(index_weitergabe_prozent=roh,
                                     index_intervall_monate=roh)
                 self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
                 self.assertEqual(v.index_intervall_monate, 12)
+
+    def test_buchstaben_werden_abgelehnt_statt_ersetzt(self):
+        """Ein vertipptes «8o» statt 80 wurde still zu 100 % Weitergabe — dann
+        rechnet jede Indexanpassung zu hoch, und eine zu hohe Erhöhung ist
+        anfechtbar. Jetzt: nichts gespeichert, Meldung."""
+        e, m = self._objekte()
+        r = self.c.post('/neu/vertraege/neu/speichern/', {
+            'einheit_id': str(e.id), 'mieter_id': str(m.id), 'netto_mietzins': '1500',
+            'nebenkosten': '200', 'beginn': '2025-01-01', 'index_weitergabe_prozent': '8o'},
+            follow=True)
+        self.assertFalse(Mietvertrag.objects.filter(einheit=e).exists())
+        self.assertContains(r, '«8o»')
 
     def test_die_felder_stehen_auch_wirklich_im_formular(self):
         """Ein Speicherweg ohne Eingabefeld ist die halbe Miete.
