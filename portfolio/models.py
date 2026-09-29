@@ -1,5 +1,6 @@
 # portfolio/models.py
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from django.utils import timezone
@@ -151,13 +152,14 @@ class Versicherung(OrganisationAusKette):
 
 class Einheit(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
+    # Beschriftung übersetzbar, gespeichert wird der Code (whg, gew …).
     TYP_CHOICES = [
-        ('whg', 'Wohnung'),
-        ('gew', 'Gewerbe'),
-        ('stwe', 'STWEG-Einheit'),
-        ('pp', 'Parkplatz'),
-        ('gar', 'Garage'),
-        ('bas', 'Bastelraum')
+        ('whg', _('Wohnung')),
+        ('gew', _('Gewerbe')),
+        ('stwe', _('STWEG-Einheit')),
+        ('pp', _('Parkplatz')),
+        ('gar', _('Garage')),
+        ('bas', _('Bastelraum'))
     ]
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='einheiten')
     bezeichnung = models.CharField("Objektbezeichnung", max_length=50)
