@@ -281,6 +281,22 @@ Radius und Inline-Stile).*
 Seiten, Sortierung und CSV-Export für Liegenschaften, Objekte,
 Mietverhältnisse und Personen; die fehlenden leeren Zustände nachrüsten.
 
+*Stand 29.09.2026, Pilot Liegenschaften umgesetzt:
+- Baustein `core/views/fw/_liste.py` (Suche, Sortierung, Seiten, CSV) und
+  Blätterleiste `fw/_seiten.html`. Die Reihenfolge ist fest: alle Zeilen →
+  Suche → Befundfilter → Sortierung → CSV oder Seite.
+- Liegenschaften: Suche auf dem Server (Strasse, PLZ, Ort, Kanton,
+  Eigentümer; mehrere Wörter grenzen ein), Sortierung nach Befund, Adresse,
+  Ort, Anzahl Objekte und Ist-Miete (Hausnummern als Zahlen), Seiten zu 50,
+  CSV im Menü «Mehr» mit denselben Filtern, aber allen Zeilen. Die CSV-Datei
+  ist für Excel aufbereitet (Semikolon, BOM, Beträge mit Punkt) und
+  entschärft Zellen, die mit `=`, `+`, `-` oder `@` beginnen (Formeln).
+- Chips, Blättern und Suche behalten die übrigen Parameter; ein Wechsel
+  beginnt wieder auf Seite 1. Die Chip-Zahlen folgen der Suche.
+- Nebenbefund behoben: Die Zeile las den Eigentümer mit einer Abfrage je
+  Liegenschaft (`select_related` fehlte).
+Offen: Objekte, Mietverhältnisse, Personen.*
+
 ---
 
 ### Empfehlung: womit beginnen

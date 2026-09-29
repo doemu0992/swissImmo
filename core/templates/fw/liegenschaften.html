@@ -16,6 +16,7 @@
             <button type="button" onclick="document.getElementById('lgListMenu').classList.toggle('hidden'); event.stopPropagation();" class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
             <div id="lgListMenu" class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
                 <a href="/neu/mieterspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'filtern' klasse='w-4' %}{% trans "Mieterspiegel (Rent Roll)" %}</a>
+                <a href="{{ csv_url }}" download class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'herunterladen' klasse='w-4' %}{% trans "Liste als CSV (Excel)" %}</a>
             </div>
         </div>
         <script>
@@ -56,22 +57,33 @@
 </div>
 
 <div class="fw-filters">
-    <a href="/neu/liegenschaften/{{ lg_query }}" class="fw-chip {% if not befund %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Alle" %} {{ alle_rows }}</a>
-    <a href="?befund=leer{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'leer' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Leerstand" %} {{ filter_zaehler.leer }}</a>
-    <a href="?befund=frist{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'frist' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Fristen" %} {{ filter_zaehler.frist }}</a>
-    <a href="?befund=ticket{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'ticket' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Tickets" %} {{ filter_zaehler.ticket }}</a>
-    <a href="?befund=budget{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'budget' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Unterhalt" %} {{ filter_zaehler.budget }}</a>
-    <a href="?befund=ohne{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'ohne' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Ohne Befund" %} {{ filter_zaehler.ohne }}</a>
+    <a href="{{ filter_urls.alle }}" class="fw-chip {% if not befund %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Alle" %} {{ gesucht_rows }}</a>
+    <a href="{{ filter_urls.leer }}" class="fw-chip {% if befund == 'leer' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Leerstand" %} {{ filter_zaehler.leer }}</a>
+    <a href="{{ filter_urls.frist }}" class="fw-chip {% if befund == 'frist' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Fristen" %} {{ filter_zaehler.frist }}</a>
+    <a href="{{ filter_urls.ticket }}" class="fw-chip {% if befund == 'ticket' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Tickets" %} {{ filter_zaehler.ticket }}</a>
+    <a href="{{ filter_urls.budget }}" class="fw-chip {% if befund == 'budget' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Unterhalt" %} {{ filter_zaehler.budget }}</a>
+    <a href="{{ filter_urls.ohne }}" class="fw-chip {% if befund == 'ohne' %}fw-brand{% else %}fw-mut{% endif %}">{% trans "Ohne Befund" %} {{ filter_zaehler.ohne }}</a>
 </div>
 {% endif %}
 
-<div class="mb-4">
-    <div class="relative max-w-sm">
+{% comment %} Gesucht wird auf dem Server (Enter): Mit Seiten fände ein Filter
+   im Browser nur, was auf der aktuellen Seite steht. Passt alles auf eine
+   Seite, filtert der Browser zusätzlich schon beim Tippen (`data-suche`). {% endcomment %}
+<form method="get" class="fw-listwerkzeug" role="search">
+    {% for name, wert in verdeckt %}<input type="hidden" name="{{ name }}" value="{{ wert }}">{% endfor %}
+    <div class="fw-suchfeld relative">
         {% zeichen 'suchen' klasse='absolute left-3.5 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
-        <input data-suche="#lgListe" placeholder="{% trans 'Liegenschaft suchen (Strasse, Ort, PLZ) …' %}"
-               class="w-full fw-flaeche border fw-linie rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 fw-fokusring focus:fw-linie-marke">
+        <input type="search" name="suche" value="{{ suche }}"{% if seite.paginator.num_pages == 1 %} data-suche="#lgListe"{% endif %} aria-label="{% trans 'Liegenschaften durchsuchen' %}"
+               placeholder="{% trans 'Liegenschaft suchen (Strasse, Ort, PLZ) …' %}" class="fw-feld" style="padding-left:2.5rem">
     </div>
-</div>
+    <label>{% trans "Sortieren" %}
+        <select name="sort" class="fw-feld" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">
+            {% for key, label in sorten %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </label>
+    <button type="submit" class="fw-btn">{% trans "Anwenden" %}</button>
+    {% if suche %}<a href="{{ suche_aufheben_url }}" class="fw-klein" style="color:var(--ds-brand)">{% trans "Suche aufheben" %}</a>{% endif %}
+</form>
 
 <div id="lgListe">
     {% if rows %}
@@ -91,14 +103,19 @@
             <div class="fw-zeit">CHF {{ row.ertrag|chf }}<br><span class="fw-klein">{% trans "Ist / Mt." %}</span></div>
         </a>
         {% endfor %}
+        {% include 'fw/_seiten.html' %}
         <div class="fw-fuss">
-            <span>{% trans "Sortiert nach Befund, nicht nach Adresse." %}</span>
-            {% if befund %}<span><a href="/neu/liegenschaften/{{ lg_query }}" style="color:var(--ds-brand)">{% trans "Filter aufheben" %}</a></span>{% endif %}
+            <span>{% if sort == 'befund' %}{% trans "Sortiert nach Befund, nicht nach Adresse." %}{% else %}{% blocktrans count n=treffer %}{{ n }} Liegenschaft{% plural %}{{ n }} Liegenschaften{% endblocktrans %}{% endif %}</span>
+            {% if befund %}<span><a href="{{ filter_urls.alle }}" style="color:var(--ds-brand)">{% trans "Filter aufheben" %}</a></span>{% endif %}
         </div>
+    </div>
+    {% elif suche and not gesucht_rows %}
+    <div class="fw-card overflow-hidden px-4">
+        {% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Liegenschaft gefunden') subtext=_('Die Suche findet Strasse, PLZ, Ort, Kanton und Eigentümer. Mehrere Wörter müssen alle vorkommen.') cta_url=suche_aufheben_url cta_label=_('Suche aufheben') %}
     </div>
     {% elif alle_rows %}
     <div class="fw-card overflow-hidden px-4">
-        {% include 'fw/_empty.html' with icon='gut' titel=_('Keine Liegenschaft mit diesem Befund') subtext=_('Der Filter greift — hier gibt es nichts zu tun. Über «Alle» zurück zur ganzen Liste.') cta_url='/neu/liegenschaften/' cta_label=_('Alle anzeigen') %}
+        {% include 'fw/_empty.html' with icon='gut' titel=_('Keine Liegenschaft mit diesem Befund') subtext=_('Der Filter greift — hier gibt es nichts zu tun. Über «Alle» zurück zur ganzen Liste.') cta_url=filter_urls.alle cta_label=_('Alle anzeigen') %}
     </div>
     {% else %}
     <div class="fw-card overflow-hidden px-4">
