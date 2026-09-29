@@ -300,8 +300,15 @@ Rund 2–3 Wochen, seitenweise.
   49 Stellen ausserhalb von `fw/` (Portal, PDF, E-Mail) bewusst noch nicht.
 - Nebenbefund behoben: `fw/base_embed.html` (Modals) lud weder Stilschicht noch
   Icon-Sprite — ungestaltet und 570 px breit am Telefon.
-Offen: Teile 2–4 (Komponenten, Bestätigungsdialog/Modal/Toasts, Wächter für
-Radius und Inline-Stile).*
+Teil 3 umgesetzt mit #44 und #49: gestalteter Bestätigungsdialog für alle
+`return confirm('…')`, Modal mit `role="dialog"` und ohne Neuladen beim
+Abbrechen, Toasts als Live-Region und ohne Emoji.
+Teil 4 umgesetzt (`core/tests/test_stilschuld.py`): Sperrklinke je Vorlage
+für freie Pixelgrössen ausserhalb `fw/` (47 in 15), Inline-Stile (451 in 70)
+und Rundungen ohne Token (112 in 20). Die Button-Varianten sind nicht
+gezählt: Ein Muster, das «selbstgebauter Knopf» zuverlässig erkennt, gibt
+es ohne die Komponente aus Teil 2 nicht — es fände sonst Links und Chips.
+Offen: Teil 2 (Komponenten als Include-Partials).*
 
 ### Etappe 4 — Listen-Werkzeugkasten
 
