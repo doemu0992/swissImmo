@@ -48,6 +48,9 @@ def fw_eigentuemer_form(request, pk=None):
         obj.ort = P.get('ort', '').strip()
         obj.telefon = P.get('telefon', '').strip()
         obj.email = P.get('email', '').strip()
+        # Nur bekannte Codes: Ein beliebiger Wert fiele später still auf Deutsch zurück.
+        from core.services.dokumentsprache import gueltige_sprache
+        obj.sprache = gueltige_sprache(P.get('sprache'))
         obj.bank_name = P.get('bank_name', '').strip()
         obj.iban = P.get('iban', '').strip()
         try:
@@ -150,7 +153,7 @@ def fw_eigentuemer_portal_zugang(request, pk):
         login_url = _settings.PORTAL_BASE_URL.rstrip('/') + '/portal/login/'
         mail_ok = send_eigentuemer_portal_zugang(
             md.email, md.firma_oder_name, u.username, passwort, login_url,
-            absender_firma=(vw.firma if vw else ''))
+            absender_firma=(vw.firma if vw else ''), sprache=md.sprache)
 
     if mail_ok:
         messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': md.email, 'username': u.username})

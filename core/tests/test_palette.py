@@ -323,3 +323,52 @@ class EinFarbtonTests(TestCase):
         self.assertRegex(
             quelle, r'<aside id="fwSidebar"[^>]*fw-flaeche',
             'Die Seitenleiste steht nicht mehr auf der Token-Flaeche.')
+
+
+def _deckend(vorne, alpha, hinten):
+    """Halbdurchsichtiges `vorne` auf `hinten`, als deckender Hexwert."""
+    v = [int(vorne.lstrip('#')[i:i + 2], 16) for i in (0, 2, 4)]
+    h = [int(hinten.lstrip('#')[i:i + 2], 16) for i in (0, 2, 4)]
+    return '#' + ''.join(f'{round(alpha * a + (1 - alpha) * b):02x}' for a, b in zip(v, h))
+
+
+class MarkenverlaufTests(TestCase):
+    """Weisse Schrift auf dem Markenverlauf (Kopf des Mieterportals).
+
+    Der Verlauf hing an --ds-brand; im Dunkelmodus ist die Marke hell
+    (#4fb3aa/#6fcac2), Weiss darauf erreichte 2.5 bzw. 1.9:1. Und auch hell
+    lag die blasse Schrift (`fw-faint`, 78 % Weiss) mit 4.3:1 unter AA.
+
+    Gegenprobe: in fw/_schicht.html den Verlauf wieder auf
+    `var(--ds-brand),var(--ds-brand-600)` stellen — der erste Test wird rot;
+    die Deckkraft von `.fw-marke-verlauf .fw-faint` auf .78 zuruecksetzen —
+    der zweite wird rot.
+    """
+
+    def _quelle(self):
+        return ohne_kommentare(BASE.read_text(encoding='utf-8'))
+
+    def test_verlauf_haengt_nicht_an_der_marke(self):
+        m = re.search(r'\.fw-marke-verlauf\{background:([^}]*)\}', self._quelle())
+        self.assertIsNotNone(m, 'Regel .fw-marke-verlauf nicht gefunden')
+        self.assertNotIn('--ds-brand', m.group(1))
+        self.assertIn('--ds-verlauf-von', m.group(1))
+        # Der Dunkelmodus fuehrt dieselben Werte: Der Grund bleibt dunkel.
+        hell, dunkel = _block('hell'), _block('dunkel')
+        for token in ('--ds-verlauf-von', '--ds-verlauf-bis'):
+            self.assertEqual(dunkel[token].strip(), hell[token].strip(), token)
+
+    def test_weisse_schrift_erreicht_aa_auf_beiden_enden(self):
+        quelle = self._quelle()
+        faint = float(re.search(r'\.fw-marke-verlauf \.fw-faint\{color:rgba\(255,255,255,([.\d]+)\)\}', quelle).group(1))
+        glas = float(re.search(r'\.fw-glas\{background:rgba\(255,255,255,([.\d]+)\)\}', quelle).group(1))
+        hell = _block('hell')
+        for token in ('--ds-verlauf-von', '--ds-verlauf-bis'):
+            grund = hell[token].strip()
+            kachel = _deckend('#ffffff', glas, grund)
+            for name, vorne, hinten in (
+                    ('weiss', '#ffffff', grund),
+                    ('fw-faint', _deckend('#ffffff', faint, grund), grund),
+                    ('fw-faint auf fw-glas', _deckend('#ffffff', faint, kachel), kachel)):
+                with self.subTest(grund=token, schrift=name):
+                    self.assertGreaterEqual(kontrast(vorne, hinten), MINDESTKONTRAST)
