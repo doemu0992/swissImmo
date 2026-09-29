@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { login, goto, warteAufURL } from './helpers';
+import { login, goto, warteAufURL, bestaetigen } from './helpers';
 
 // Money-Flow H5/H6: Jahresabschluss im echten Klick-Flow — buchen → «Abgeschlossen»
 // → zurücknehmen → wieder abschliessbar. Validiert die kanonische Erfolg/Bilanz-
@@ -17,7 +17,8 @@ async function gotoBilanz(page: Page) {
 }
 
 test('Jahresabschluss: buchen, Abgeschlossen-Status, zurücknehmen, wieder offen', async ({ page }) => {
-  page.on('dialog', (d) => d.accept());   // confirm()-Dialoge automatisch bestätigen
+  // Rückfragen erscheinen im Bestätigungsdialog der App (fw/_bestaetigen.html),
+  // nicht mehr als Browser-confirm() — bestätigt wird per Klick, siehe bestaetigen().
   await login(page);
   await gotoBilanz(page);
 
@@ -28,6 +29,7 @@ test('Jahresabschluss: buchen, Abgeschlossen-Status, zurücknehmen, wieder offen
   // zuerst zurücknehmen, damit wir vom offenen Zustand starten.
   if (await zuruecknehmen().isVisible().catch(() => false)) {
     await zuruecknehmen().click();
+    await bestaetigen(page);
     await warteAufURL(page, '**/buchhaltung/**');
     await gotoBilanz(page);
   }
@@ -35,6 +37,7 @@ test('Jahresabschluss: buchen, Abgeschlossen-Status, zurücknehmen, wieder offen
   // --- Abschliessen ---
   await expect(abschliessen()).toBeVisible();
   await abschliessen().click();
+  await bestaetigen(page);
   await warteAufURL(page, '**/buchhaltung/**');
   await gotoBilanz(page);
 
@@ -45,6 +48,7 @@ test('Jahresabschluss: buchen, Abgeschlossen-Status, zurücknehmen, wieder offen
 
   // --- Zurücknehmen ---
   await zuruecknehmen().click();
+  await bestaetigen(page);
   await warteAufURL(page, '**/buchhaltung/**');
   await gotoBilanz(page);
 

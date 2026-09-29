@@ -495,6 +495,13 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         .fw-fs-klein{font-size:11px}   
         .fw-fs-fein{font-size:13px}    
         .fw-fs-text{font-size:14px}    
+        .fw-bestaetigen{border:0;border-radius:var(--ds-radius);padding:20px 22px;
+            width:calc(100% - 32px);max-width:420px;background:var(--ds-surface);
+            color:var(--ds-ink);box-shadow:var(--ds-shadow)}
+        .fw-bestaetigen::backdrop{background:rgba(14,34,39,.45)}
+        .fw-bestaetigen-titel{font-size:16px;font-weight:700;margin:0 0 8px}
+        .fw-bestaetigen-text{font-size:14px;line-height:1.5;color:var(--ds-muted);margin:0 0 18px;white-space:pre-line}
+        .fw-bestaetigen-knoepfe{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
         .fw-mutet{color:var(--ds-faint)}
         .fw-kopfzeile{text-align:left;font-size:11px;text-transform:uppercase;
             letter-spacing:.04em;color:var(--ds-faint);
