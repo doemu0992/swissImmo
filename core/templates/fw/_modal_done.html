@@ -1,4 +1,4 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -10,7 +10,7 @@
 <div class="min-h-[40vh] flex flex-col items-center justify-center text-center p-8">
     <span class="w-16 h-16 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mb-4">{% zeichen 'gut' klasse='text-2xl' %}</span>
     <p class="font-bold fw-strong text-lg">{{ msg|default:"Erledigt" }}</p>
-    <p class="text-sm fw-faint mt-1">Fenster wird geschlossen …</p>
+    <p class="text-sm fw-faint mt-1">{% trans "Fenster wird geschlossen …" %}</p>
 </div>
 <script>
     // Elternfenster (Cockpit) informieren: Schritt erledigt → Modal schliessen + neu laden

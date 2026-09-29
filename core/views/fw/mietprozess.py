@@ -12,7 +12,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db.models import Q
-from django.utils.translation import gettext, gettext_noop
+from django.utils.translation import gettext, gettext_lazy, gettext_noop
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -31,11 +31,11 @@ from core.tenancy import aktuelle_organisation
 # ============================================================
 
 BEWERBUNG_SPALTEN = [
-    ('neu', 'Neu eingegangen', 'fw-info-flaeche fw-info'),
-    ('geprueft', 'Bonität geprüft', 'fw-warn-flaeche fw-warnton'),
-    ('besichtigung', 'Besichtigung', 'fw-info-flaeche fw-info'),
-    ('zugesagt', 'Zusage erteilt', 'fw-gut-flaeche fw-gut'),
-    ('abgelehnt', 'Abgelehnt', 'fw-krit-flaeche fw-kritisch'),
+    ('neu', gettext_lazy('Neu eingegangen'), 'fw-info-flaeche fw-info'),
+    ('geprueft', gettext_lazy('Bonität geprüft'), 'fw-warn-flaeche fw-warnton'),
+    ('besichtigung', gettext_lazy('Besichtigung'), 'fw-info-flaeche fw-info'),
+    ('zugesagt', gettext_lazy('Zusage erteilt'), 'fw-gut-flaeche fw-gut'),
+    ('abgelehnt', gettext_lazy('Abgelehnt'), 'fw-krit-flaeche fw-kritisch'),
 ]
 
 
