@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 10:39+0200\n"
+"POT-Creation-Date: 2026-09-29 11:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -92,8 +92,8 @@ msgid "Sicherheit / Login"
 msgstr "Sicherheit / Login"
 
 #: core/models.py:347 core/models.py:397 core/templates/fw/dokumente.html:26
-#: core/templates/fw/liegenschaft_detail.html:647
-#: core/templates/fw/liegenschaft_detail.html:691 core/views/fw/dokumente.py:96
+#: core/templates/fw/liegenschaft_detail.html:650
+#: core/templates/fw/liegenschaft_detail.html:694 core/views/fw/dokumente.py:96
 #: crm/models.py:628 faelle/termin_models.py:80 faelle/termin_models.py:193
 #: portfolio/models.py:802 rentals/models.py:821
 msgid "Sonstiges"
@@ -110,8 +110,8 @@ msgstr "Aufgabe"
 #: core/models.py:394 core/templates/fw/debitoren.html:161
 #: core/templates/fw/debitoren.html:223 core/templates/fw/dokumente.html:25
 #: core/templates/fw/objekt_detail.html:199
-#: core/templates/fw/person_detail.html:470
-#: core/templates/fw/person_detail.html:559
+#: core/templates/fw/person_detail.html:479
+#: core/templates/fw/person_detail.html:568
 #: core/templates/fw/vertrag_detail.html:203 faelle/arbeitsvorrat.py:519
 #: rentals/models.py:821
 msgid "Vertrag"
@@ -122,13 +122,13 @@ msgstr "Vertrag"
 msgid "Finanzen"
 msgstr "Finanzen"
 
-#: core/models.py:396 core/templates/fw/liegenschaft_detail.html:439
+#: core/models.py:396 core/templates/fw/liegenschaft_detail.html:442
 #: core/templates/fw/liegenschaften.html:64
 msgid "Unterhalt"
 msgstr "Unterhalt"
 
-#: core/navigation.py:120 core/views/fw/arbeit.py:43
-#: core/views/fw/dashboard.py:364
+#: core/navigation.py:120 core/templates/fw/fall_detail.html:8
+#: core/views/fw/arbeit.py:43 core/views/fw/dashboard.py:364
 msgid "Heute"
 msgstr "Heute"
 
@@ -147,7 +147,7 @@ msgstr "Termine"
 msgid "Pendenzen"
 msgstr "Pendenzen"
 
-#: core/navigation.py:124 core/templates/fw/liegenschaft_detail.html:633
+#: core/navigation.py:124 core/templates/fw/liegenschaft_detail.html:636
 #: core/templates/fw/liegenschaften.html:62
 #: core/templates/fw/vertrag_detail.html:592
 msgid "Fristen"
@@ -158,7 +158,7 @@ msgstr "Fristen"
 msgid "Vertretung"
 msgstr "Vertretung"
 
-#: core/navigation.py:135 core/templates/fw/base.html:397
+#: core/navigation.py:135 core/templates/fw/base.html:402
 msgid "Akten"
 msgstr "Akten"
 
@@ -183,7 +183,7 @@ msgstr "Mandate"
 msgid "Liegenschaften"
 msgstr "Liegenschaften"
 
-#: core/navigation.py:138 core/templates/fw/liegenschaft_detail.html:739
+#: core/navigation.py:138 core/templates/fw/liegenschaft_detail.html:742
 #: core/templates/fw/liegenschaften.html:43
 #: core/templates/fw/objekt_detail.html:11 core/templates/fw/objekt_form.html:8
 #: core/templates/fw/objekte.html:4 core/templates/fw/objekte.html:23
@@ -412,7 +412,7 @@ msgstr "Einstellungen"
 msgid "Zwei-Faktor-Anmeldung"
 msgstr "Zwei-Faktor-Anmeldung"
 
-#: core/services/ersatzplanung.py:69 core/templates/fw/ersatzplanung.html:20
+#: core/services/ersatzplanung.py:69 core/templates/fw/ersatzplanung.html:26
 #: core/templates/fw/objekt_detail.html:654 core/views/fw/schaeden.py:408
 msgid "Ersatz fällig"
 msgstr "Ersatz fällig"
@@ -421,7 +421,7 @@ msgstr "Ersatz fällig"
 msgid "Ersatz bald"
 msgstr "Ersatz bald"
 
-#: core/services/ersatzplanung.py:71 core/templates/fw/ersatzplanung.html:28
+#: core/services/ersatzplanung.py:71 core/templates/fw/ersatzplanung.html:34
 #: core/views/fw/schaeden.py:409
 msgid "Im Nutzungszeitraum"
 msgstr "Im Nutzungszeitraum"
@@ -646,11 +646,12 @@ msgstr "Abrechnungsperiode: %(von)s – %(bis)s"
 #: core/templates/fw/betriebskostenspiegel.html:43
 #: core/templates/fw/dokumente.html:28
 #: core/templates/fw/eigentuemer_kontokorrent.html:59
-#: core/templates/fw/kreditoren.html:78 core/templates/fw/kreditoren.html:289
+#: core/templates/fw/kreditoren.html:83 core/templates/fw/kreditoren.html:298
 #: core/templates/fw/liegenschaft_detail.html:45
 #: core/templates/fw/mandat_abrechnung.html:57
 #: core/templates/fw/nebenkosten.html:70
-#: core/templates/fw/objekt_detail.html:48 core/templates/fw/objekte.html:74
+#: core/templates/fw/objekt_detail.html:48
+#: core/templates/fw/objekt_form.html:35 core/templates/fw/objekte.html:74
 #: core/templates/fw/schaden_detail.html:40
 #: core/templates/fw/schaden_kosten.html:49
 #: core/templates/fw/vertrag_detail.html:89
@@ -695,7 +696,7 @@ msgstr "Keine Liegenschaften diesem Eigentümer zugeordnet."
 #: core/services/mandat_abrechnung.py:109
 #: core/templates/fw/debitoren_aging.html:56
 #: core/templates/fw/eigentuemer_kontokorrent.html:80
-#: core/templates/fw/ersatzplanung.html:79
+#: core/templates/fw/ersatzplanung.html:85
 #: core/templates/fw/kontenplan.html:150
 #: core/templates/fw/mandat_abrechnung.html:78
 #: core/templates/fw/schaden_kosten.html:54
@@ -740,13 +741,13 @@ msgid "Einheiten"
 msgstr "Einheiten"
 
 #: core/services/portfolio_report.py:59 core/templates/core/portal.html:256
-#: core/templates/fw/liegenschaft_detail.html:749
+#: core/templates/fw/liegenschaft_detail.html:752
 #: core/templates/fw/objekte.html:37
 msgid "Vermietet"
 msgstr "Vermietet"
 
 #: core/services/portfolio_report.py:60 core/templates/core/portal.html:316
-#: core/templates/fw/liegenschaft_detail.html:750
+#: core/templates/fw/liegenschaft_detail.html:753
 #: core/templates/fw/liegenschaften.html:61
 #: core/templates/fw/mieterspiegel.html:45
 #: core/templates/fw/mieterspiegel.html:80
@@ -765,7 +766,7 @@ msgid "Jahres-Ist"
 msgstr "Jahres-Ist"
 
 #: core/services/portfolio_report.py:65
-#: core/templates/fw/liegenschaft_detail.html:487
+#: core/templates/fw/liegenschaft_detail.html:490
 msgid "Bruttorendite"
 msgstr "Bruttorendite"
 
@@ -816,11 +817,11 @@ msgstr "Objekt / Einheit"
 msgid "Liegenschaft (Strasse, Ort)"
 msgstr "Liegenschaft (Strasse, Ort)"
 
-#: core/services/ticket_workflow.py:56 core/views/fw/profil.py:767
+#: core/services/ticket_workflow.py:56 core/views/fw/profil.py:779
 msgid "Titel des Schadens"
 msgstr "Titel des Schadens"
 
-#: core/services/ticket_workflow.py:57 core/views/fw/profil.py:768
+#: core/services/ticket_workflow.py:57 core/views/fw/profil.py:780
 msgid "Ticket-Nummer"
 msgstr "Ticket-Nummer"
 
@@ -858,8 +859,8 @@ msgstr ""
 "vorbehalten. Wenn Sie damit arbeiten müssen, kann Ihnen die Verwaltung die "
 "passende Rolle zuteilen."
 
-#: core/templates/403.html:29 core/templates/404.html:27
-#: core/templates/500.html:28 core/templates/fw/base.html:131
+#: core/templates/403.html:32 core/templates/404.html:30
+#: core/templates/500.html:31 core/templates/fw/base.html:131
 msgid "Zur Übersicht"
 msgstr "Zur Übersicht"
 
@@ -943,7 +944,7 @@ msgstr "Kündigung"
 
 #: core/templates/core/_mieter_nav.html:29
 #: core/templates/fw/buchhaltung.html:283 core/templates/fw/kontenplan.html:84
-#: core/templates/fw/kreditoren.html:163 core/templates/fw/kreditoren.html:343
+#: core/templates/fw/kreditoren.html:168 core/templates/fw/kreditoren.html:352
 msgid "Konto"
 msgstr "Konto"
 
@@ -1222,18 +1223,18 @@ msgstr "Mietobjekt"
 #: core/templates/core/mieter_schaden.html:20
 #: core/templates/core/portal.html:306 core/templates/fw/bankabgleich.html:348
 #: core/templates/fw/debitoren.html:193
-#: core/templates/fw/ersatzplanung.html:110
-#: core/templates/fw/ersatzplanung.html:135
-#: core/templates/fw/kreditoren.html:162
-#: core/templates/fw/liegenschaft_detail.html:584
-#: core/templates/fw/liegenschaft_detail.html:742
+#: core/templates/fw/ersatzplanung.html:116
+#: core/templates/fw/ersatzplanung.html:141
+#: core/templates/fw/kreditoren.html:167
+#: core/templates/fw/liegenschaft_detail.html:587
+#: core/templates/fw/liegenschaft_detail.html:745
 #: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
 #: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
 #: core/templates/fw/nebenkosten_detail.html:114
 #: core/templates/fw/objekt_detail.html:32
-#: core/templates/fw/objekt_form.html:25
-#: core/templates/fw/person_detail.html:372
-#: core/templates/fw/person_detail.html:471
+#: core/templates/fw/objekt_form.html:34
+#: core/templates/fw/person_detail.html:381
+#: core/templates/fw/person_detail.html:480
 #: core/templates/fw/schaden_detail.html:41
 #: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
 #: core/templates/fw/vertrag_bearbeiten.html:49
@@ -1250,11 +1251,11 @@ msgstr "Stockwerk"
 #: core/templates/core/dok_wohnungsausweis.html:11
 #: core/templates/fw/bewerbung_detail.html:40
 #: core/templates/fw/liegenschaft_detail.html:66
-#: core/templates/fw/liegenschaft_form.html:24
+#: core/templates/fw/liegenschaft_form.html:35
 #: core/templates/fw/mandat_detail.html:117
 #: core/templates/fw/mandat_detail.html:174
-#: core/templates/fw/person_detail.html:145
-#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/person_detail.html:154
+#: core/templates/fw/person_detail.html:285
 #: core/templates/fw/person_form.html:300 core/templates/fw/personen.html:68
 msgid "Adresse"
 msgstr "Adresse"
@@ -1265,7 +1266,7 @@ msgid "Mietbeginn"
 msgstr "Mietbeginn"
 
 #: core/templates/core/dok_wohnungsausweis.html:14
-#: core/templates/fw/vertrag_detail.html:261 core/views/fw/profil.py:762
+#: core/templates/fw/vertrag_detail.html:261 core/views/fw/profil.py:774
 msgid "Bruttomietzins"
 msgstr "Bruttomietzins"
 
@@ -1274,7 +1275,7 @@ msgstr "Bruttomietzins"
 #: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
 #: core/templates/fw/debitoren_aging.html:50
 #: core/templates/fw/kuendigung_form.html:29
-#: core/templates/fw/liegenschaft_detail.html:742
+#: core/templates/fw/liegenschaft_detail.html:745
 #: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
 #: core/templates/fw/mieterkonten.html:46
 #: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
@@ -1306,9 +1307,9 @@ msgstr "Bisherige Adresse"
 #: core/templates/fw/mandat_detail.html:176
 #: core/templates/fw/mandat_form.html:44
 #: core/templates/fw/person_detail.html:42
-#: core/templates/fw/person_detail.html:144
-#: core/templates/fw/person_detail.html:210
-#: core/templates/fw/person_detail.html:520
+#: core/templates/fw/person_detail.html:153
+#: core/templates/fw/person_detail.html:219
+#: core/templates/fw/person_detail.html:529
 #: core/templates/fw/person_form.html:126
 #: core/templates/fw/person_form.html:221
 #: core/templates/fw/person_form.html:268
@@ -1331,8 +1332,8 @@ msgstr "Telefon"
 #: core/templates/fw/mandat_detail.html:175
 #: core/templates/fw/mandat_form.html:27
 #: core/templates/fw/person_detail.html:43
-#: core/templates/fw/person_detail.html:143
-#: core/templates/fw/person_detail.html:520
+#: core/templates/fw/person_detail.html:152
+#: core/templates/fw/person_detail.html:529
 #: core/templates/fw/person_form.html:124
 #: core/templates/fw/person_form.html:222
 #: core/templates/fw/schaden_detail.html:143
@@ -1344,7 +1345,7 @@ msgstr "E-Mail"
 
 #: core/templates/core/dok_wohnungsausweis.html:23
 #: core/templates/fw/bewerbung_detail.html:34
-#: core/templates/fw/person_detail.html:167
+#: core/templates/fw/person_detail.html:176
 #: core/templates/fw/person_form.html:77
 msgid "Geburtsdatum"
 msgstr "Geburtsdatum"
@@ -1371,7 +1372,7 @@ msgstr "Kinder (Anzahl / Jahrgänge)"
 
 #: core/templates/core/dok_wohnungsausweis.html:41
 #: core/templates/fw/bewerbung_detail.html:60
-#: core/templates/fw/person_detail.html:194
+#: core/templates/fw/person_detail.html:203
 #: core/templates/fw/person_form.html:251
 msgid "Haustiere"
 msgstr "Haustiere"
@@ -1426,7 +1427,7 @@ msgstr "Melden Sie sich im Verwaltungs-Cockpit an."
 
 #: core/templates/core/login.html:177 core/templates/core/portal_login.html:179
 #: core/templates/fw/mandat_form.html:105
-#: core/templates/fw/person_detail.html:303 core/utils/email_service.py:229
+#: core/templates/fw/person_detail.html:312 core/utils/email_service.py:229
 #: core/utils/email_service.py:298
 msgid "Benutzername"
 msgstr "Benutzername"
@@ -1478,9 +1479,9 @@ msgid "Person"
 msgstr "Person"
 
 #: core/templates/core/mieter_daten.html:19 core/templates/fw/benutzer.html:17
-#: core/templates/fw/person_detail.html:156
-#: core/templates/fw/person_detail.html:209
-#: core/templates/fw/person_detail.html:220
+#: core/templates/fw/person_detail.html:165
+#: core/templates/fw/person_detail.html:218
+#: core/templates/fw/person_detail.html:229
 #: core/templates/fw/person_form.html:220
 #: core/templates/fw/person_form.html:299 core/templates/fw/personen.html:66
 msgid "Name"
@@ -1501,8 +1502,8 @@ msgstr ""
 #: core/templates/core/mieter_daten.html:28
 #: core/templates/fw/dienstleister_detail.html:26
 #: core/templates/fw/mandat_detail.html:116 core/templates/fw/mandate.html:16
-#: core/templates/fw/person_detail.html:141
-#: core/templates/fw/person_detail.html:221
+#: core/templates/fw/person_detail.html:150
+#: core/templates/fw/person_detail.html:230
 #: core/templates/fw/person_form.html:122
 #: core/templates/fw/person_form.html:237 core/templates/fw/personen.html:67
 #: core/templates/fw/vertrag_detail.html:357
@@ -1510,7 +1511,7 @@ msgid "Kontakt"
 msgstr "Kontakt"
 
 #: core/templates/core/mieter_daten.html:30
-#: core/templates/fw/person_detail.html:146
+#: core/templates/fw/person_detail.html:155
 #: core/templates/fw/person_form.html:128
 msgid "Mobile"
 msgstr "Mobile"
@@ -1670,7 +1671,7 @@ msgstr "seit %(datum)s"
 #: core/templates/core/mieter_portal.html:31
 #: core/templates/fw/mieterspiegel.html:65
 #: core/templates/fw/objekt_detail.html:272
-#: core/templates/fw/objekt_form.html:105
+#: core/templates/fw/objekt_form.html:102
 #: core/templates/fw/sollstellung.html:84 core/templates/fw/vertraege.html:72
 msgid "Netto"
 msgstr "Netto"
@@ -1753,10 +1754,10 @@ msgstr "Offene Rechnungen mit QR-Einzahlschein zum Herunterladen."
 #: core/templates/core/mieter_rechnungen.html:18
 #: core/templates/fw/bankabgleich.html:350 core/templates/fw/debitoren.html:196
 #: core/templates/fw/laeufe.html:20 core/templates/fw/lieferantenkonten.html:30
-#: core/templates/fw/liegenschaft_detail.html:566
+#: core/templates/fw/liegenschaft_detail.html:569
 #: core/templates/fw/mahnwesen.html:69 core/templates/fw/mahnwesen.html:149
 #: core/templates/fw/nebenkosten_detail.html:34
-#: core/templates/fw/person_detail.html:430 core/templates/fw/schaeden.html:73
+#: core/templates/fw/person_detail.html:439 core/templates/fw/schaeden.html:73
 #: core/templates/fw/vertrag_detail.html:619 core/templates/fw/zahllauf.html:68
 #: core/templates/fw/zahllauf.html:150 core/views/fw/_basis.py:353
 #: faelle/lauf_models.py:117 faelle/models.py:161 faelle/zulauf_models.py:75
@@ -1772,9 +1773,9 @@ msgstr "fällig %(datum)s"
 
 #: core/templates/core/mieter_rechnungen.html:28
 #: core/templates/fw/lieferantenkonto.html:53
-#: core/templates/fw/liegenschaft_detail.html:671
+#: core/templates/fw/liegenschaft_detail.html:674
 #: core/templates/fw/mieterkonto.html:58
-#: core/templates/fw/person_detail.html:608
+#: core/templates/fw/person_detail.html:617
 msgid "überfällig"
 msgstr "überfällig"
 
@@ -1833,7 +1834,7 @@ msgid "z.B. Wasserhahn tropft"
 msgstr "z.B. Wasserhahn tropft"
 
 #: core/templates/core/mieter_schaden.html:32
-#: core/templates/fw/abnahme_detail.html:69
+#: core/templates/fw/abnahme_detail.html:80
 #: core/templates/fw/objekt_detail.html:679
 #: core/templates/fw/schaden_detail.html:145
 msgid "Raum"
@@ -1899,8 +1900,8 @@ msgstr "gemeldet %(zeit)s"
 
 #: core/templates/core/mieter_ticket_detail.html:31
 #: core/templates/fw/dienstleister_detail.html:200
-#: core/templates/fw/liegenschaft_detail.html:457
-#: core/templates/fw/person_detail.html:553
+#: core/templates/fw/liegenschaft_detail.html:460
+#: core/templates/fw/person_detail.html:562
 msgid "Verlauf"
 msgstr "Verlauf"
 
@@ -2138,15 +2139,15 @@ msgstr "CHF %(betrag)s / Mt."
 #: core/templates/core/portal.html:306 core/templates/fw/hypotheken.html:36
 #: core/templates/fw/hypotheken.html:85 core/templates/fw/kontenplan.html:86
 #: core/templates/fw/kontenplan.html:130
-#: core/templates/fw/liegenschaft_detail.html:396
-#: core/templates/fw/liegenschaft_detail.html:413
-#: core/templates/fw/liegenschaft_detail.html:742
+#: core/templates/fw/liegenschaft_detail.html:399
+#: core/templates/fw/liegenschaft_detail.html:416
+#: core/templates/fw/liegenschaft_detail.html:745
 #: core/templates/fw/objekt_detail.html:814
 #: core/templates/fw/objekt_detail.html:833
 #: core/templates/fw/objekt_detail.html:858
 #: core/templates/fw/objekt_detail.html:875
 #: core/templates/fw/objekt_detail.html:932
-#: core/templates/fw/objekt_form.html:34
+#: core/templates/fw/objekt_form.html:43
 msgid "Typ"
 msgstr "Typ"
 
@@ -2397,11 +2398,11 @@ msgstr "Eingang aktiv — Mails aus diesem Postfach abholen"
 #: core/templates/core/postfach_form.html:139
 #: core/templates/fw/anlagen.html:128 core/templates/fw/benutzer_form.html:55
 #: core/templates/fw/dienstleister.html:107
-#: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:308
-#: core/templates/fw/liegenschaft_detail.html:362
-#: core/templates/fw/liegenschaft_detail.html:423
-#: core/templates/fw/liegenschaft_detail.html:705
-#: core/templates/fw/liegenschaft_form.html:162
+#: core/templates/fw/kontenplan.html:138 core/templates/fw/kreditoren.html:317
+#: core/templates/fw/liegenschaft_detail.html:365
+#: core/templates/fw/liegenschaft_detail.html:426
+#: core/templates/fw/liegenschaft_detail.html:708
+#: core/templates/fw/liegenschaft_form.html:163
 #: core/templates/fw/mandat_form.html:83 core/templates/fw/mwst.html:117
 #: core/templates/fw/objekt_detail.html:175
 #: core/templates/fw/objekt_detail.html:263
@@ -2409,7 +2410,7 @@ msgstr "Eingang aktiv — Mails aus diesem Postfach abholen"
 #: core/templates/fw/objekt_detail.html:771
 #: core/templates/fw/objekt_detail.html:805
 #: core/templates/fw/objekt_detail.html:843
-#: core/templates/fw/objekt_form.html:135
+#: core/templates/fw/objekt_form.html:133
 #: core/templates/fw/person_form.html:314
 #: core/templates/fw/regelsatz_form.html:104
 #: core/templates/fw/vorlage_form.html:37
@@ -2420,18 +2421,18 @@ msgstr "Speichern"
 #: core/templates/fw/abnahme_neu.html:84
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
-#: core/templates/fw/kreditoren.html:307
+#: core/templates/fw/kreditoren.html:316
 #: core/templates/fw/kuendigung_form.html:111
-#: core/templates/fw/liegenschaft_detail.html:361
-#: core/templates/fw/liegenschaft_detail.html:422
-#: core/templates/fw/liegenschaft_detail.html:704
-#: core/templates/fw/liegenschaft_form.html:164
+#: core/templates/fw/liegenschaft_detail.html:364
+#: core/templates/fw/liegenschaft_detail.html:425
+#: core/templates/fw/liegenschaft_detail.html:707
+#: core/templates/fw/liegenschaft_form.html:165
 #: core/templates/fw/maengelruege.html:36 core/templates/fw/mandat_form.html:85
 #: core/templates/fw/objekt_detail.html:174
 #: core/templates/fw/objekt_detail.html:710
 #: core/templates/fw/objekt_detail.html:770
 #: core/templates/fw/objekt_detail.html:842
-#: core/templates/fw/objekt_form.html:137
+#: core/templates/fw/objekt_form.html:135
 #: core/templates/fw/person_form.html:316
 #: core/templates/fw/regelsatz_form.html:105
 #: core/templates/fw/schlussabrechnung.html:120
@@ -2443,7 +2444,7 @@ msgid "Abbrechen"
 msgstr "Abbrechen"
 
 #: core/templates/core/postfach_liste.html:3
-#: core/templates/core/postfach_liste.html:7 core/views/fw/aktionen.py:855
+#: core/templates/core/postfach_liste.html:7 core/views/fw/aktionen.py:868
 msgid "Postfächer"
 msgstr "Postfächer"
 
@@ -2492,11 +2493,11 @@ msgstr "Nicht eingerichtet — für diesen Zweck werden keine Mails abgeholt."
 #: core/templates/core/postfach_liste.html:80
 #: core/templates/fw/benutzer.html:35 core/templates/fw/dienstleister.html:75
 #: core/templates/fw/dienstleister_detail.html:36
-#: core/templates/fw/kreditoren.html:242
+#: core/templates/fw/kreditoren.html:247
 #: core/templates/fw/liegenschaft_detail.html:75
-#: core/templates/fw/liegenschaft_detail.html:337
-#: core/templates/fw/liegenschaft_detail.html:404
-#: core/templates/fw/liegenschaft_detail.html:675
+#: core/templates/fw/liegenschaft_detail.html:340
+#: core/templates/fw/liegenschaft_detail.html:407
+#: core/templates/fw/liegenschaft_detail.html:678
 #: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_detail.html:125 core/templates/fw/mandate.html:36
 #: core/templates/fw/objekt_detail.html:57
@@ -2532,10 +2533,10 @@ msgstr ""
 #: core/templates/core/postfach_liste.html:91
 #: core/templates/fw/benutzer.html:39 core/templates/fw/dienstleister.html:77
 #: core/templates/fw/dokumente.html:94 core/templates/fw/hypotheken.html:115
-#: core/templates/fw/kreditoren.html:245 core/templates/fw/lebensdauer.html:60
-#: core/templates/fw/liegenschaft_detail.html:339
-#: core/templates/fw/liegenschaft_detail.html:406
-#: core/templates/fw/liegenschaft_detail.html:599
+#: core/templates/fw/kreditoren.html:250 core/templates/fw/lebensdauer.html:60
+#: core/templates/fw/liegenschaft_detail.html:342
+#: core/templates/fw/liegenschaft_detail.html:409
+#: core/templates/fw/liegenschaft_detail.html:602
 #: core/templates/fw/mandate.html:42 core/templates/fw/nebenkosten.html:98
 #: core/templates/fw/objekt_detail.html:294
 #: core/templates/fw/objekt_detail.html:403
@@ -2545,8 +2546,8 @@ msgstr ""
 #: core/templates/fw/objekt_detail.html:744
 #: core/templates/fw/objekt_detail.html:826
 #: core/templates/fw/objekt_detail.html:917 core/templates/fw/pendenzen.html:73
-#: core/templates/fw/person_detail.html:490
-#: core/templates/fw/person_detail.html:543
+#: core/templates/fw/person_detail.html:499
+#: core/templates/fw/person_detail.html:552
 #: core/templates/fw/schaden_detail.html:389
 #: core/templates/fw/vertrag_detail.html:535
 #: core/templates/fw/vertrag_detail.html:693
@@ -2678,8 +2679,8 @@ msgid "Marke / Hersteller"
 msgstr "Marke / Hersteller"
 
 #: core/templates/core/public_ticket_form.html:327
-#: core/templates/fw/liegenschaft_detail.html:313
-#: core/templates/fw/liegenschaft_detail.html:350
+#: core/templates/fw/liegenschaft_detail.html:316
+#: core/templates/fw/liegenschaft_detail.html:353
 #: core/templates/fw/objekt_detail.html:757
 #: core/templates/fw/objekt_detail.html:792
 msgid "Seriennummer"
@@ -2828,7 +2829,7 @@ msgid "Code"
 msgstr "Code"
 
 #: core/templates/core/zweifaktor_bestaetigen.html:58
-#: core/templates/fw/kreditoren.html:199
+#: core/templates/fw/kreditoren.html:204
 msgid "Bestätigen"
 msgstr "Bestätigen"
 
@@ -2964,7 +2965,7 @@ msgstr ""
 #: core/templates/fw/abonnement.html:38 core/templates/fw/integrationen.html:61
 #: core/templates/fw/mandat_form.html:98
 #: core/templates/fw/vertrag_detail.html:293 core/views/fw/_basis.py:337
-#: core/views/fw/detailseiten.py:2265 core/views/fw/profil.py:910
+#: core/views/fw/detailseiten.py:2265 core/views/fw/profil.py:922
 #: rentals/models.py:20
 msgid "Aktiv"
 msgstr "Aktiv"
@@ -3128,7 +3129,7 @@ msgstr "ohne Datum — Liegezeit nicht berechenbar"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:609
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:610
 msgid "Abwesenheiten"
 msgstr "Abwesenheiten"
 
@@ -3179,14 +3180,22 @@ msgstr "Keine offenen Posten"
 msgid "Alle Zahlungen in dieser Kategorie sind eingegangen."
 msgstr "Alle Zahlungen in dieser Kategorie sind eingegangen."
 
-#: core/templates/fw/_fwmodal.html:9 core/templates/fw/_fwmodal.html:12
-#: core/templates/fw/_fwmodal.html:21
+#: core/templates/fw/_fwmodal.html:24 core/templates/fw/_fwmodal.html:29
+#: core/templates/fw/_fwmodal.html:54
 msgid "Schritt"
 msgstr "Schritt"
 
-#: core/templates/fw/_fwmodal.html:10
+#: core/templates/fw/_fwmodal.html:25
 msgid "Schliessen"
 msgstr "Schliessen"
+
+#: core/templates/fw/_fwmodal.html:28
+msgid "Wird geladen …"
+msgstr "Wird geladen …"
+
+#: core/templates/fw/_fwmodal.html:75
+msgid "Eingaben verwerfen und schliessen?"
+msgstr "Eingaben verwerfen und schliessen?"
 
 #: core/templates/fw/_modal_done.html:13
 msgid "Fenster wird geschlossen …"
@@ -3214,7 +3223,7 @@ msgstr "nicht verwendbar"
 
 #: core/templates/fw/_unterschrift_feld.html:43
 #: core/templates/fw/objekt_detail.html:283
-#: core/templates/fw/objekt_form.html:113
+#: core/templates/fw/objekt_form.html:110
 msgid "aktuell"
 msgstr "aktuell"
 
@@ -3269,11 +3278,27 @@ msgstr "Abnahmeprotokoll"
 msgid "Wohnungsabnahme"
 msgstr "Wohnungsabnahme"
 
-#: core/templates/fw/abnahme_detail.html:19
+#: core/templates/fw/abnahme_detail.html:24
+msgid ""
+"Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel "
+"erstellen und in der Vertragsakte ablegen?"
+msgstr "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?"
+
+#: core/templates/fw/abnahme_detail.html:26
+msgid ""
+"Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche "
+"(Art. 267a OR)."
+msgstr "Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche (Art. 267a OR)."
+
+#: core/templates/fw/abnahme_detail.html:26
+msgid "Mängelrüge 267a"
+msgstr "Mängelrüge 267a"
+
+#: core/templates/fw/abnahme_detail.html:30
 msgid "In Schlussabrechnung"
 msgstr "In Schlussabrechnung"
 
-#: core/templates/fw/abnahme_detail.html:24 core/templates/fw/berichte.html:13
+#: core/templates/fw/abnahme_detail.html:35 core/templates/fw/berichte.html:13
 #: core/templates/fw/kreditoren.html:13
 #: core/templates/fw/liegenschaft_detail.html:78
 #: core/templates/fw/liegenschaften.html:16
@@ -3285,90 +3310,90 @@ msgstr "In Schlussabrechnung"
 msgid "Mehr"
 msgstr "Mehr"
 
-#: core/templates/fw/abnahme_detail.html:27
+#: core/templates/fw/abnahme_detail.html:38
 msgid "Protokoll als PDF"
 msgstr "Protokoll als PDF"
 
-#: core/templates/fw/abnahme_detail.html:30
+#: core/templates/fw/abnahme_detail.html:41
 msgid "Abnahmeprotokoll wirklich löschen?"
 msgstr "Abnahmeprotokoll wirklich löschen?"
 
-#: core/templates/fw/abnahme_detail.html:32
+#: core/templates/fw/abnahme_detail.html:43
 msgid "Protokoll löschen"
 msgstr "Protokoll löschen"
 
-#: core/templates/fw/abnahme_detail.html:47
+#: core/templates/fw/abnahme_detail.html:58
 #: core/templates/fw/abnahme_neu.html:33
 msgid "Abnahme durch"
 msgstr "Abnahme durch"
 
-#: core/templates/fw/abnahme_detail.html:48
+#: core/templates/fw/abnahme_detail.html:59
 #: core/templates/fw/abnahme_neu.html:42
 msgid "Mieter anwesend"
 msgstr "Mieter anwesend"
 
-#: core/templates/fw/abnahme_detail.html:48
+#: core/templates/fw/abnahme_detail.html:59
 msgid "Ja"
 msgstr "Ja"
 
-#: core/templates/fw/abnahme_detail.html:48
+#: core/templates/fw/abnahme_detail.html:59
 msgid "Nein"
 msgstr "Nein"
 
-#: core/templates/fw/abnahme_detail.html:49
+#: core/templates/fw/abnahme_detail.html:60
 #: core/templates/fw/abnahme_neu.html:35
 msgid "Allgemeinzustand"
 msgstr "Allgemeinzustand"
 
-#: core/templates/fw/abnahme_detail.html:50
+#: core/templates/fw/abnahme_detail.html:61
 #: core/templates/fw/abnahme_neu.html:40
 msgid "Schlüssel zurück"
 msgstr "Schlüssel zurück"
 
-#: core/templates/fw/abnahme_detail.html:53
+#: core/templates/fw/abnahme_detail.html:64
 msgid "Zähler Strom"
 msgstr "Zähler Strom"
 
-#: core/templates/fw/abnahme_detail.html:54
+#: core/templates/fw/abnahme_detail.html:65
 msgid "Zähler Wasser"
 msgstr "Zähler Wasser"
 
-#: core/templates/fw/abnahme_detail.html:55
+#: core/templates/fw/abnahme_detail.html:66
 msgid "Zähler Gas/Wärme"
 msgstr "Zähler Gas/Wärme"
 
-#: core/templates/fw/abnahme_detail.html:56
+#: core/templates/fw/abnahme_detail.html:67
 msgid "Neue Adresse"
 msgstr "Neue Adresse"
 
-#: core/templates/fw/abnahme_detail.html:59
+#: core/templates/fw/abnahme_detail.html:70
 msgid "Kosten zulasten Mieter (Schätzung)"
 msgstr "Kosten zulasten Mieter (Schätzung)"
 
-#: core/templates/fw/abnahme_detail.html:65
+#: core/templates/fw/abnahme_detail.html:76
 msgid "Mängel"
 msgstr "Mängel"
 
-#: core/templates/fw/abnahme_detail.html:69
+#: core/templates/fw/abnahme_detail.html:80
 #: core/templates/fw/abnahme_neu.html:59
 msgid "Mangel"
 msgstr "Mangel"
 
-#: core/templates/fw/abnahme_detail.html:70
+#: core/templates/fw/abnahme_detail.html:81
 msgid "Verursacher"
 msgstr "Verursacher"
 
-#: core/templates/fw/abnahme_detail.html:71
-#: core/templates/fw/liegenschaft_detail.html:442
+#: core/templates/fw/abnahme_detail.html:82
+#: core/templates/fw/liegenschaft_detail.html:445
 #: core/templates/fw/schaden_detail.html:77
 msgid "Kosten"
 msgstr "Kosten"
 
-#: core/templates/fw/abnahme_detail.html:72
+#: core/templates/fw/abnahme_detail.html:83
 msgid "Mieteranteil"
 msgstr "Mieteranteil"
 
-#: core/templates/fw/abnahme_detail.html:73
+#: core/templates/fw/abnahme_detail.html:84
 #: core/templates/fw/abnahme_neu.html:99
 #: core/templates/fw/objekt_detail.html:621
 #: core/templates/fw/objekt_detail.html:657
@@ -3376,34 +3401,34 @@ msgstr "Mieteranteil"
 msgid "Foto"
 msgstr "Foto"
 
-#: core/templates/fw/abnahme_detail.html:80
+#: core/templates/fw/abnahme_detail.html:91
 #, python-format
 msgid "Lebensdauer %(n)s J"
 msgstr "Lebensdauer %(n)s J"
 
-#: core/templates/fw/abnahme_detail.html:86
+#: core/templates/fw/abnahme_detail.html:97
 #: core/templates/fw/objekt_detail.html:495
 #: core/templates/fw/schaden_detail.html:383
 msgid "Foto in voller Grösse öffnen"
 msgstr "Foto in voller Grösse öffnen"
 
-#: core/templates/fw/abnahme_detail.html:89
+#: core/templates/fw/abnahme_detail.html:100
 msgid "Keine Mängel festgestellt."
 msgstr "Keine Mängel festgestellt."
 
-#: core/templates/fw/abnahme_detail.html:96
+#: core/templates/fw/abnahme_detail.html:107
 #: core/templates/fw/abnahme_neu.html:71
 msgid "Bemerkungen"
 msgstr "Bemerkungen"
 
 #: core/templates/fw/abnahme_neu.html:26 core/templates/fw/kautionen.html:27
-#: core/templates/fw/liegenschaft_detail.html:268
-#: core/templates/fw/liegenschaft_detail.html:641
-#: core/templates/fw/liegenschaft_detail.html:662
-#: core/templates/fw/liegenschaft_detail.html:685
+#: core/templates/fw/liegenschaft_detail.html:271
+#: core/templates/fw/liegenschaft_detail.html:644
+#: core/templates/fw/liegenschaft_detail.html:665
+#: core/templates/fw/liegenschaft_detail.html:688
 #: core/templates/fw/logbuch.html:59 core/templates/fw/objekt_detail.html:49
-#: core/templates/fw/person_detail.html:219
-#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/person_detail.html:228
+#: core/templates/fw/person_detail.html:285
 #: core/templates/fw/person_form.html:231 core/templates/fw/termine.html:25
 #: core/templates/fw/vertrag_detail.html:271
 msgid "Art"
@@ -3423,7 +3448,7 @@ msgstr "Einzug / Übergabe"
 #: core/templates/fw/eigentuemer_kontokorrent.html:161
 #: core/templates/fw/kontoblatt.html:68
 #: core/templates/fw/lieferantenkonto.html:70
-#: core/templates/fw/liegenschaft_detail.html:442
+#: core/templates/fw/liegenschaft_detail.html:445
 #: core/templates/fw/mahnwesen.html:145 core/templates/fw/mieterkonto.html:86
 #: core/templates/fw/nebenkosten_detail.html:154
 #: core/templates/fw/vertrag_detail.html:463
@@ -3541,7 +3566,7 @@ msgstr "Neuwert (optional, sonst vom Element)"
 msgid "Abonnement · swissImmo"
 msgstr "Abonnement · swissImmo"
 
-#: core/templates/fw/abonnement.html:7 core/views/fw/aktionen.py:852
+#: core/templates/fw/abonnement.html:7 core/views/fw/aktionen.py:865
 msgid "Abonnement"
 msgstr "Abonnement"
 
@@ -3665,7 +3690,7 @@ msgstr "Wer"
 
 #: core/templates/fw/abwesenheiten.html:26
 #: core/templates/fw/buchhaltung.html:288 core/templates/fw/mieterkonto.html:72
-#: core/templates/fw/person_detail.html:372
+#: core/templates/fw/person_detail.html:381
 msgid "Von"
 msgstr "Von"
 
@@ -3687,15 +3712,15 @@ msgstr "— keine —"
 #: core/templates/fw/abwesenheiten.html:39
 #: core/templates/fw/fall_detail.html:110
 #: core/templates/fw/fall_detail.html:196
-#: core/templates/fw/liegenschaft_detail.html:322
-#: core/templates/fw/liegenschaft_detail.html:358
-#: core/templates/fw/liegenschaft_detail.html:656
-#: core/templates/fw/liegenschaft_detail.html:701
+#: core/templates/fw/liegenschaft_detail.html:325
+#: core/templates/fw/liegenschaft_detail.html:361
+#: core/templates/fw/liegenschaft_detail.html:659
+#: core/templates/fw/liegenschaft_detail.html:704
 #: core/templates/fw/objekt_detail.html:619
 #: core/templates/fw/objekt_detail.html:705
 #: core/templates/fw/objekt_detail.html:767
 #: core/templates/fw/objekt_detail.html:802
-#: core/templates/fw/person_detail.html:521 core/templates/fw/termine.html:35
+#: core/templates/fw/person_detail.html:530 core/templates/fw/termine.html:35
 #: core/templates/fw/vertrag_detail.html:494 crm/models.py:664
 msgid "Notiz"
 msgstr "Notiz"
@@ -3705,7 +3730,7 @@ msgstr "Notiz"
 #: core/templates/fw/mahnwesen.html:101
 #: core/templates/fw/mandat_detail.html:223
 #: core/templates/fw/objekt_detail.html:623
-#: core/templates/fw/person_detail.html:529 core/views/fw/detailseiten.py:2306
+#: core/templates/fw/person_detail.html:538 core/views/fw/detailseiten.py:2306
 msgid "Erfassen"
 msgstr "Erfassen"
 
@@ -3751,7 +3776,7 @@ msgid "Nichts vergangen."
 msgstr "Nichts vergangen."
 
 #: core/templates/fw/account.html:4 core/templates/fw/account.html:8
-#: core/views/fw/aktionen.py:848
+#: core/views/fw/aktionen.py:861
 msgid "Account"
 msgstr "Account"
 
@@ -3865,16 +3890,20 @@ msgstr "Firmenname"
 msgid "Strasse &amp; Nr."
 msgstr "Strasse &amp; Nr."
 
-#: core/templates/fw/account.html:94 core/templates/fw/mandat_form.html:40
-#: core/templates/fw/person_detail.html:269
+#: core/templates/fw/account.html:94
+#: core/templates/fw/liegenschaft_form.html:38
+#: core/templates/fw/mandat_form.html:40
+#: core/templates/fw/person_detail.html:278
 #: core/templates/fw/person_form.html:144
 #: core/templates/fw/person_form.html:162 core/templates/fw/vertrag_neu.html:91
 #: core/templates/fw/vertrag_neu.html:121
 msgid "PLZ"
 msgstr "PLZ"
 
-#: core/templates/fw/account.html:96 core/templates/fw/mandat_form.html:42
-#: core/templates/fw/mandate.html:17 core/templates/fw/person_detail.html:270
+#: core/templates/fw/account.html:96
+#: core/templates/fw/liegenschaft_form.html:39
+#: core/templates/fw/mandat_form.html:42 core/templates/fw/mandate.html:17
+#: core/templates/fw/person_detail.html:279
 #: core/templates/fw/person_form.html:146
 #: core/templates/fw/person_form.html:164 core/templates/fw/termine.html:33
 #: core/templates/fw/vertrag_neu.html:92 core/templates/fw/vertrag_neu.html:122
@@ -3988,8 +4017,9 @@ msgid "Noch keine Anlagen erfasst."
 msgstr "Noch keine Anlagen erfasst."
 
 #: core/templates/fw/anlagen.html:51 core/templates/fw/kontenplan.html:85
-#: core/templates/fw/kontenplan.html:126 core/templates/fw/kreditoren.html:348
-#: core/templates/fw/liegenschaft_detail.html:662
+#: core/templates/fw/kontenplan.html:126 core/templates/fw/kreditoren.html:357
+#: core/templates/fw/liegenschaft_detail.html:665
+#: core/templates/fw/objekt_form.html:42
 #: core/templates/fw/schlussabrechnung.html:62
 #: core/templates/fw/schlussabrechnung.html:79
 msgid "Bezeichnung"
@@ -4194,7 +4224,7 @@ msgstr "Abzugleichen (offen)"
 
 #: core/templates/fw/bankabgleich.html:25 core/templates/fw/debitoren.html:108
 #: core/templates/fw/finanzen.html:61 core/templates/fw/mieterkonto.html:47
-#: core/templates/fw/person_detail.html:424
+#: core/templates/fw/person_detail.html:433
 msgid "Offene Posten"
 msgstr "Offene Posten"
 
@@ -4326,7 +4356,7 @@ msgid "Offene Lieferantenrechnung"
 msgstr "Offene Lieferantenrechnung"
 
 #: core/templates/fw/bankabgleich.html:162 core/templates/fw/hypotheken.html:25
-#: core/templates/fw/nebenkosten.html:23 core/templates/fw/objekt_form.html:28
+#: core/templates/fw/nebenkosten.html:23 core/templates/fw/objekt_form.html:37
 #: core/templates/fw/schaden_detail.html:283 core/templates/fw/schaeden.html:32
 #: core/templates/fw/weiterverrechnung.html:70
 msgid "wählen"
@@ -4351,7 +4381,7 @@ msgstr "Belegtext"
 
 #: core/templates/fw/bankabgleich.html:187
 #: core/templates/fw/buchhaltung.html:48 core/templates/fw/dokumente.html:30
-#: core/templates/fw/kreditoren.html:80 core/templates/fw/kreditoren.html:291
+#: core/templates/fw/kreditoren.html:85 core/templates/fw/kreditoren.html:300
 #: core/templates/fw/pendenzen.html:120
 #: core/templates/fw/vertrag_detail.html:341
 #: core/templates/fw/vertrag_detail.html:344 core/views/fw/detailseiten.py:2238
@@ -4403,7 +4433,7 @@ msgstr "Bitte zuerst Zahlungen auswählen."
 #: core/templates/fw/liegenschaften.html:60
 #: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:47
 #: core/views/fw/dienstleister.py:60 core/views/fw/dokumente.py:98
-#: core/views/fw/kreditoren.py:147 core/views/fw/listen.py:208
+#: core/views/fw/kreditoren.py:198 core/views/fw/listen.py:208
 #: core/views/fw/listen.py:1112 core/views/fw/listen.py:1182
 #: core/views/fw/listen.py:1295 core/views/fw/schaeden.py:129
 #: core/views/fw/schaeden.py:408
@@ -4476,8 +4506,8 @@ msgid "Offene Posten abgleichen"
 msgstr "Offene Posten abgleichen"
 
 #: core/templates/fw/bankabgleich.html:346
-#: core/templates/fw/kreditoren.html:164
-#: core/templates/fw/person_detail.html:430 core/templates/fw/zahllauf.html:67
+#: core/templates/fw/kreditoren.html:169
+#: core/templates/fw/person_detail.html:439 core/templates/fw/zahllauf.html:67
 #: core/views/fw/listen.py:57
 msgid "Fällig"
 msgstr "Fällig"
@@ -4579,7 +4609,7 @@ msgid "Bank nicht hinterlegt"
 msgstr "Bank nicht hinterlegt"
 
 #: core/templates/fw/bankkonten.html:58
-#: core/templates/fw/liegenschaft_detail.html:114
+#: core/templates/fw/liegenschaft_detail.html:117
 #: core/templates/fw/mandat_detail.html:152
 #: core/templates/fw/objekt_detail.html:86
 msgid "Soll / Monat"
@@ -4651,31 +4681,31 @@ msgstr "Hell"
 msgid "Dunkel"
 msgstr "Dunkel"
 
-#: core/templates/fw/base.html:274
+#: core/templates/fw/base.html:279
 msgid "Meldung schliessen"
 msgstr "Meldung schliessen"
 
-#: core/templates/fw/base.html:303
+#: core/templates/fw/base.html:308
 msgid "Person, Objekt, Mietverhältnis oder Seite …"
 msgstr "Person, Objekt, Mietverhältnis oder Seite …"
 
-#: core/templates/fw/base.html:309
+#: core/templates/fw/base.html:314
 msgid "öffnen"
 msgstr "öffnen"
 
-#: core/templates/fw/base.html:309
+#: core/templates/fw/base.html:314
 msgid "Tippen sucht in Akten und Seiten"
 msgstr "Tippen sucht in Akten und Seiten"
 
-#: core/templates/fw/base.html:402
+#: core/templates/fw/base.html:407
 msgid "Seiten"
 msgstr "Seiten"
 
-#: core/templates/fw/base.html:409
+#: core/templates/fw/base.html:414
 msgid "Nichts gefunden — ↵ sucht ausführlich nach"
 msgstr "Nichts gefunden — ↵ sucht ausführlich nach"
 
-#: core/templates/fw/base.html:671
+#: core/templates/fw/base.html:676
 msgid "Bereiche"
 msgstr "Bereiche"
 
@@ -4812,7 +4842,7 @@ msgstr "Betriebskostenspiegel"
 #: core/templates/fw/berichte.html:16
 #: core/templates/fw/leerstand_verlauf.html:3
 #: core/templates/fw/leerstand_verlauf.html:7
-#: core/templates/fw/liegenschaft_detail.html:500
+#: core/templates/fw/liegenschaft_detail.html:503
 msgid "Leerstands-Verlauf"
 msgstr "Leerstands-Verlauf"
 
@@ -4845,7 +4875,7 @@ msgid "Aufwand %(jahr)s"
 msgstr "Aufwand %(jahr)s"
 
 #: core/templates/fw/betriebskostenspiegel.html:45
-#: core/templates/fw/liegenschaft_detail.html:742
+#: core/templates/fw/liegenschaft_detail.html:745
 #: core/templates/fw/objekt_ausschreiben.html:29
 #: core/templates/fw/objekt_detail.html:89
 #: core/templates/fw/vermarktung.html:49
@@ -4885,7 +4915,7 @@ msgid "Bruttomiete CHF %(m)s/Mt. (%(j)s/Jahr)"
 msgstr "Bruttomiete CHF %(m)s/Mt. (%(j)s/Jahr)"
 
 #: core/templates/fw/bewerber_vergleich.html:17
-#: core/templates/fw/vermarktung.html:64
+#: core/templates/fw/vermarktung.html:83
 msgid "Exposé"
 msgstr "Exposé"
 
@@ -4932,7 +4962,7 @@ msgid "Score"
 msgstr "Score"
 
 #: core/templates/fw/bewerber_vergleich.html:41
-#: core/templates/fw/person_detail.html:190
+#: core/templates/fw/person_detail.html:199
 #: core/templates/fw/person_form.html:244
 msgid "Haushalt"
 msgstr "Haushalt"
@@ -5030,14 +5060,14 @@ msgid "Personalien & Kontakt"
 msgstr "Personalien & Kontakt"
 
 #: core/templates/fw/bewerbung_detail.html:35
-#: core/templates/fw/person_detail.html:168
+#: core/templates/fw/person_detail.html:177
 #: core/templates/fw/person_form.html:79
 msgid "Zivilstand"
 msgstr "Zivilstand"
 
 #: core/templates/fw/bewerbung_detail.html:36
 #: core/templates/fw/person_detail.html:41
-#: core/templates/fw/person_detail.html:169
+#: core/templates/fw/person_detail.html:178
 #: core/templates/fw/person_form.html:98
 msgid "Nationalität"
 msgstr "Nationalität"
@@ -5055,19 +5085,19 @@ msgid "Beruf & Finanzen"
 msgstr "Beruf & Finanzen"
 
 #: core/templates/fw/bewerbung_detail.html:47
-#: core/templates/fw/person_detail.html:179
+#: core/templates/fw/person_detail.html:188
 #: core/templates/fw/person_form.html:196
 msgid "Erwerbsstatus"
 msgstr "Erwerbsstatus"
 
 #: core/templates/fw/bewerbung_detail.html:48
-#: core/templates/fw/person_detail.html:180
+#: core/templates/fw/person_detail.html:189
 #: core/templates/fw/person_form.html:206
 msgid "Beruf"
 msgstr "Beruf"
 
 #: core/templates/fw/bewerbung_detail.html:49
-#: core/templates/fw/person_detail.html:181
+#: core/templates/fw/person_detail.html:190
 #: core/templates/fw/person_form.html:208
 msgid "Arbeitgeber"
 msgstr "Arbeitgeber"
@@ -5384,7 +5414,7 @@ msgstr ""
 "diese Buchungen fehlen dem Treuhandbüro die Abschlusssätze im Journal-Export."
 
 #: core/templates/fw/buchhaltung.html:244
-#: core/templates/fw/liegenschaft_detail.html:566
+#: core/templates/fw/liegenschaft_detail.html:569
 #: core/templates/fw/nebenkosten.html:48
 #: core/templates/fw/nebenkosten_detail.html:33
 msgid "Abgeschlossen"
@@ -5425,7 +5455,7 @@ msgid "z.B. Hauswartung, 2024-0042"
 msgstr "z.B. Hauswartung, 2024-0042"
 
 #: core/templates/fw/buchhaltung.html:292 core/templates/fw/mieterkonto.html:74
-#: core/templates/fw/person_detail.html:372
+#: core/templates/fw/person_detail.html:381
 msgid "Bis"
 msgstr "Bis"
 
@@ -5498,7 +5528,7 @@ msgstr "Haben"
 
 #: core/templates/fw/buchhaltung.html:371 core/templates/fw/debitoren.html:195
 #: core/templates/fw/hypotheken.html:86 core/templates/fw/kautionen.html:26
-#: core/templates/fw/kreditoren.html:165 core/templates/fw/kreditoren.html:350
+#: core/templates/fw/kreditoren.html:170 core/templates/fw/kreditoren.html:359
 #: core/templates/fw/nebenkosten_detail.html:154
 #: core/templates/fw/vertrag_detail.html:385
 #: core/templates/fw/vertrag_detail.html:619
@@ -5529,7 +5559,7 @@ msgid_plural "Summe (%(n)s Buchungen)"
 msgstr[0] "Summe (%(n)s Buchung)"
 msgstr[1] "Summe (%(n)s Buchungen)"
 
-#: core/templates/fw/buchhaltung.html:433 core/templates/fw/kreditoren.html:382
+#: core/templates/fw/buchhaltung.html:433 core/templates/fw/kreditoren.html:391
 #: core/templates/fw/logbuch.html:158
 #, python-format
 msgid "Seite %(seite)s von %(von)s"
@@ -5544,12 +5574,12 @@ msgstr ""
 "bleibt erhalten (OR 958f)"
 
 #: core/templates/fw/buchhaltung.html:438 core/templates/fw/debitoren.html:268
-#: core/templates/fw/kreditoren.html:386
+#: core/templates/fw/kreditoren.html:395
 msgid "‹ Zurück"
 msgstr "‹ Zurück"
 
 #: core/templates/fw/buchhaltung.html:442 core/templates/fw/debitoren.html:269
-#: core/templates/fw/kreditoren.html:390
+#: core/templates/fw/kreditoren.html:399
 msgid "Weiter ›"
 msgstr "Weiter ›"
 
@@ -5624,7 +5654,7 @@ msgid "heute"
 msgstr "heute"
 
 #: core/templates/fw/dashboard.html:257 core/templates/fw/laeufe.html:34
-#: core/templates/fw/person_detail.html:608
+#: core/templates/fw/person_detail.html:617
 #, python-format
 msgid "in %(n)s Tag"
 msgid_plural "in %(n)s Tagen"
@@ -5643,7 +5673,7 @@ msgstr "Diese Woche ist nichts fällig."
 msgid "Kein offener Vorgang."
 msgstr "Kein offener Vorgang."
 
-#: core/templates/fw/dashboard.html:276 core/templates/fw/kreditoren.html:179
+#: core/templates/fw/dashboard.html:276 core/templates/fw/kreditoren.html:184
 msgid "nicht zugeordnet"
 msgstr "nicht zugeordnet"
 
@@ -5864,7 +5894,7 @@ msgstr ""
 #: core/templates/fw/debitoren.html:181 core/templates/fw/debitoren.html:243
 #: core/templates/fw/dienstleister.html:130
 #: core/templates/fw/dokumente.html:102
-#: core/templates/fw/ersatzplanung.html:140 core/templates/fw/personen.html:56
+#: core/templates/fw/ersatzplanung.html:146 core/templates/fw/personen.html:56
 #: core/templates/fw/personen.html:105 core/templates/fw/vertraege.html:58
 #: core/templates/fw/vertraege.html:106
 msgid "Keine Treffer"
@@ -5879,7 +5909,7 @@ msgid "Fälligkeit"
 msgstr "Fälligkeit"
 
 #: core/templates/fw/debitoren.html:194 core/templates/fw/dokumente.html:21
-#: core/templates/fw/person_detail.html:430 core/templates/fw/termine.html:23
+#: core/templates/fw/person_detail.html:439 core/templates/fw/termine.html:23
 #: core/templates/fw/vertrag_detail.html:618
 #: core/templates/fw/weiterverrechnung.html:37
 #: core/templates/fw/weiterverrechnung.html:77
@@ -5887,11 +5917,11 @@ msgid "Titel"
 msgstr "Titel"
 
 #: core/templates/fw/debitoren.html:197
-#: core/templates/fw/ersatzplanung.html:112 core/templates/fw/kautionen.html:28
-#: core/templates/fw/kreditoren.html:166
-#: core/templates/fw/liegenschaft_detail.html:742
+#: core/templates/fw/ersatzplanung.html:118 core/templates/fw/kautionen.html:28
+#: core/templates/fw/kreditoren.html:171
+#: core/templates/fw/liegenschaft_detail.html:745
 #: core/templates/fw/mieterkonten.html:48 core/templates/fw/nebenkosten.html:74
-#: core/templates/fw/person_detail.html:373
+#: core/templates/fw/person_detail.html:382
 #: core/templates/fw/schaden_detail.html:113 core/templates/fw/schaeden.html:96
 #: core/templates/fw/sollstellung.html:87 core/templates/fw/vertraege.html:75
 #: core/templates/fw/vertrag_detail.html:386
@@ -6080,7 +6110,7 @@ msgstr "Reinigungsinstitut"
 #: core/templates/fw/dienstleister_detail.html:81
 #: core/templates/fw/mandat_detail.html:173
 #: core/templates/fw/mandat_form.html:25
-#: core/templates/fw/person_detail.html:158
+#: core/templates/fw/person_detail.html:167
 #: core/templates/fw/person_form.html:115 core/templates/fw/vertrag_neu.html:85
 msgid "Kontaktperson"
 msgstr "Kontaktperson"
@@ -6293,7 +6323,7 @@ msgstr "(leer = Dateiname)"
 
 #: core/templates/fw/dokumente.html:23 core/templates/fw/dokumente.html:68
 #: core/templates/fw/lebensdauer.html:48
-#: core/templates/fw/liegenschaft_detail.html:346
+#: core/templates/fw/liegenschaft_detail.html:349
 #: core/templates/fw/nebenkosten_detail.html:154
 #: core/templates/fw/objekt_detail.html:641
 #: core/templates/fw/objekt_detail.html:681
@@ -6310,7 +6340,7 @@ msgstr "Kategorie"
 msgid "Protokoll"
 msgstr "Protokoll"
 
-#: core/templates/fw/dokumente.html:26 core/templates/fw/person_detail.html:280
+#: core/templates/fw/dokumente.html:26 core/templates/fw/person_detail.html:289
 #: core/views/fw/dokumente.py:96 faelle/models.py:370 rentals/models.py:821
 msgid "Korrespondenz"
 msgstr "Korrespondenz"
@@ -6349,15 +6379,15 @@ msgid "Ablage"
 msgstr "Ablage"
 
 #: core/templates/fw/dokumente.html:89
-#: core/templates/fw/liegenschaft_detail.html:596
+#: core/templates/fw/liegenschaft_detail.html:599
 #: core/templates/fw/objekt_detail.html:215
-#: core/templates/fw/person_detail.html:488
+#: core/templates/fw/person_detail.html:497
 #: core/templates/fw/person_form.html:37
 #: core/templates/fw/vertrag_detail.html:691 faelle/arbeitsvorrat.py:380
 msgid "Öffnen"
 msgstr "Öffnen"
 
-#: core/templates/fw/dokumente.html:91 core/templates/fw/person_detail.html:489
+#: core/templates/fw/dokumente.html:91 core/templates/fw/person_detail.html:498
 #: core/templates/fw/vertrag_detail.html:692
 #, python-format
 msgid "Dokument «%(name)s» löschen?"
@@ -6531,7 +6561,7 @@ msgstr "Ab Bankkonto"
 #: core/templates/fw/eigentuemer_kontokorrent.html:172
 #: core/templates/fw/kuendigung_form.html:92
 #: core/templates/fw/lebensdauer.html:34 core/templates/fw/lebensdauer.html:50
-#: core/templates/fw/liegenschaft_detail.html:527
+#: core/templates/fw/liegenschaft_detail.html:530
 #: core/templates/fw/objekt_detail.html:276
 #: core/templates/fw/objekt_detail.html:325
 #: core/templates/fw/objekt_detail.html:392
@@ -6584,46 +6614,52 @@ msgstr ""
 "Raumbuch-Elemente <b>und Geräte</b> nach Restnutzungsdauer "
 "(Lebensdauertabelle) mit Ersatzbudget je Jahr"
 
-#: core/templates/fw/ersatzplanung.html:13
+#: core/templates/fw/ersatzplanung.html:17 core/templates/fw/lebensdauer.html:3
+#: core/templates/fw/lebensdauer.html:9 core/templates/fw/lebensdauer.html:14
+#: core/views/fw/aktionen.py:882
+msgid "Lebensdauertabelle"
+msgstr "Lebensdauertabelle"
+
+#: core/templates/fw/ersatzplanung.html:18
 msgid "Budget-PDF"
 msgstr "Budget-PDF"
 
-#: core/templates/fw/ersatzplanung.html:24
+#: core/templates/fw/ersatzplanung.html:30
 msgid "Bald fällig (≤ 2 J)"
 msgstr "Bald fällig (≤ 2 J)"
 
-#: core/templates/fw/ersatzplanung.html:32
+#: core/templates/fw/ersatzplanung.html:38
 msgid "Ohne Datenbasis"
 msgstr "Ohne Datenbasis"
 
-#: core/templates/fw/ersatzplanung.html:40
+#: core/templates/fw/ersatzplanung.html:46
 #, python-format
 msgid "Erneuerungsfonds-Deckung (%(n)s-Jahres-Horizont)"
 msgstr "Erneuerungsfonds-Deckung (%(n)s-Jahres-Horizont)"
 
-#: core/templates/fw/ersatzplanung.html:42
+#: core/templates/fw/ersatzplanung.html:48
 #, python-format
 msgid "%(g)s%% gedeckt"
 msgstr "%(g)s%% gedeckt"
 
-#: core/templates/fw/ersatzplanung.html:47
+#: core/templates/fw/ersatzplanung.html:53
 msgid "Fonds-Bestand"
 msgstr "Fonds-Bestand"
 
-#: core/templates/fw/ersatzplanung.html:51
+#: core/templates/fw/ersatzplanung.html:57
 msgid "Jährliche Einlage"
 msgstr "Jährliche Einlage"
 
-#: core/templates/fw/ersatzplanung.html:55
+#: core/templates/fw/ersatzplanung.html:61
 #, python-format
 msgid "Ersatzbudget (%(n)s J)"
 msgstr "Ersatzbudget (%(n)s J)"
 
-#: core/templates/fw/ersatzplanung.html:59
+#: core/templates/fw/ersatzplanung.html:65
 msgid "Empf. Jahresrückstellung"
 msgstr "Empf. Jahresrückstellung"
 
-#: core/templates/fw/ersatzplanung.html:65
+#: core/templates/fw/ersatzplanung.html:71
 #, python-format
 msgid ""
 "Gedeckt: Bestand + Einlagen (%(p)s) decken das Ersatzbudget über %(n)s Jahre "
@@ -6632,12 +6668,12 @@ msgstr ""
 "Gedeckt: Bestand + Einlagen (%(p)s) decken das Ersatzbudget über %(n)s Jahre "
 "(Reserve CHF %(r)s)."
 
-#: core/templates/fw/ersatzplanung.html:67
+#: core/templates/fw/ersatzplanung.html:73
 #, python-format
 msgid "Unterdeckung von CHF %(s)s über %(n)s Jahre."
 msgstr "Unterdeckung von CHF %(s)s über %(n)s Jahre."
 
-#: core/templates/fw/ersatzplanung.html:68
+#: core/templates/fw/ersatzplanung.html:74
 #, python-format
 msgid ""
 "Empfehlung: jährliche Einlage um <span class=\"font-semibold\">CHF %(m)s</"
@@ -6646,12 +6682,12 @@ msgstr ""
 "Empfehlung: jährliche Einlage um <span class=\"font-semibold\">CHF %(m)s</"
 "span> auf CHF %(e)s erhöhen."
 
-#: core/templates/fw/ersatzplanung.html:78
+#: core/templates/fw/ersatzplanung.html:84
 #, python-format
 msgid "Ersatzbudget je Jahr (nächste %(n)s Jahre)"
 msgstr "Ersatzbudget je Jahr (nächste %(n)s Jahre)"
 
-#: core/templates/fw/ersatzplanung.html:93
+#: core/templates/fw/ersatzplanung.html:99
 msgid ""
 "Grundlage für die Erneuerungsfonds-/Budgetplanung: erwartetes Ersatzjahr = "
 "Einbaujahr + Lebensdauer, Kosten = Neuwert."
@@ -6659,39 +6695,39 @@ msgstr ""
 "Grundlage für die Erneuerungsfonds-/Budgetplanung: erwartetes Ersatzjahr = "
 "Einbaujahr + Lebensdauer, Kosten = Neuwert."
 
-#: core/templates/fw/ersatzplanung.html:109
+#: core/templates/fw/ersatzplanung.html:115
 msgid "Element"
 msgstr "Element"
 
-#: core/templates/fw/ersatzplanung.html:111
+#: core/templates/fw/ersatzplanung.html:117
 msgid "Restdauer"
 msgstr "Restdauer"
 
-#: core/templates/fw/ersatzplanung.html:113
+#: core/templates/fw/ersatzplanung.html:119
 msgid "Garantie"
 msgstr "Garantie"
 
-#: core/templates/fw/ersatzplanung.html:114
+#: core/templates/fw/ersatzplanung.html:120
 msgid "Reparaturen"
 msgstr "Reparaturen"
 
-#: core/templates/fw/ersatzplanung.html:115
+#: core/templates/fw/ersatzplanung.html:121
 msgid "Lebenszyklus"
 msgstr "Lebenszyklus"
 
-#: core/templates/fw/ersatzplanung.html:123
-#: core/templates/fw/ersatzplanung.html:135
-#: core/templates/fw/liegenschaft_detail.html:328
+#: core/templates/fw/ersatzplanung.html:129
+#: core/templates/fw/ersatzplanung.html:141
+#: core/templates/fw/liegenschaft_detail.html:331
 #: core/templates/fw/objekt_detail.html:731
 msgid "Gerät"
 msgstr "Gerät"
 
-#: core/templates/fw/ersatzplanung.html:124
+#: core/templates/fw/ersatzplanung.html:130
 #: core/templates/fw/objekt_detail.html:643
 msgid "Einbau"
 msgstr "Einbau"
 
-#: core/templates/fw/ersatzplanung.html:134
+#: core/templates/fw/ersatzplanung.html:140
 msgid ""
 "Geräte haben kein Neuwert-Feld — ein geschätzter Preis wanderte sonst über "
 "den PDF-Report in die Fondsplanung."
@@ -6699,15 +6735,15 @@ msgstr ""
 "Geräte haben kein Neuwert-Feld — ein geschätzter Preis wanderte sonst über "
 "den PDF-Report in die Fondsplanung."
 
-#: core/templates/fw/ersatzplanung.html:134
+#: core/templates/fw/ersatzplanung.html:140
 msgid "kein Neuwert"
 msgstr "kein Neuwert"
 
-#: core/templates/fw/ersatzplanung.html:140
+#: core/templates/fw/ersatzplanung.html:146
 msgid "Keine Ausstattung erfasst"
 msgstr "Keine Ausstattung erfasst"
 
-#: core/templates/fw/ersatzplanung.html:141
+#: core/templates/fw/ersatzplanung.html:147
 msgid ""
 "Erfasse Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die "
 "Restnutzungsdauer berechnet werden kann."
@@ -6715,7 +6751,7 @@ msgstr ""
 "Erfasse Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die "
 "Restnutzungsdauer berechnet werden kann."
 
-#: core/templates/fw/ersatzplanung.html:151
+#: core/templates/fw/ersatzplanung.html:157
 msgid ""
 "Restdauer = Lebensdauer − Alter (aus der paritätischen Lebensdauertabelle). "
 "„Lebenszyklus“ = Neuwert + aufgelaufene Reparaturkosten der verknüpften "
@@ -6725,7 +6761,7 @@ msgstr ""
 "„Lebenszyklus“ = Neuwert + aufgelaufene Reparaturkosten der verknüpften "
 "Schäden."
 
-#: core/templates/fw/ersatzplanung.html:152
+#: core/templates/fw/ersatzplanung.html:158
 #, python-format
 msgid ""
 "<b>%(n)s Gerät</b> steht in der Liste, aber nicht im Budget: Geräte haben "
@@ -6747,10 +6783,6 @@ msgstr[1] ""
 "kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als "
 "diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des "
 "Eigentümers."
-
-#: core/templates/fw/fall_detail.html:8
-msgid "Arbeit"
-msgstr "Arbeit"
 
 #: core/templates/fw/fall_detail.html:21 faelle/lage.py:349
 msgid "Fall"
@@ -6881,7 +6913,7 @@ msgstr "Zum nächsten Schritt"
 msgid "Etappe %(nr)s"
 msgstr "Etappe %(nr)s"
 
-#: core/templates/fw/fall_detail.html:173 core/templates/fw/kreditoren.html:349
+#: core/templates/fw/fall_detail.html:173 core/templates/fw/kreditoren.html:358
 msgid "optional"
 msgstr "optional"
 
@@ -6969,7 +7001,7 @@ msgstr "Pflichtschritte erledigt"
 msgid "dringend"
 msgstr "dringend"
 
-#: core/templates/fw/finanzen.html:79 core/templates/fw/kreditoren.html:224
+#: core/templates/fw/finanzen.html:79 core/templates/fw/kreditoren.html:229
 #: core/templates/fw/schaden_detail.html:89
 msgid "erledigt"
 msgstr "erledigt"
@@ -7003,8 +7035,8 @@ msgid "Abschluss"
 msgstr "Abschluss"
 
 #: core/templates/fw/fristen.html:3 core/templates/fw/fristen.html:6
-#: core/templates/fw/liegenschaft_detail.html:635
-#: core/templates/fw/person_detail.html:602
+#: core/templates/fw/liegenschaft_detail.html:638
+#: core/templates/fw/person_detail.html:611
 #: core/templates/fw/vertrag_detail.html:593
 msgid "Fristen-Center"
 msgstr "Fristen-Center"
@@ -7030,6 +7062,7 @@ msgid "Kalender abonnieren (aktualisiert sich automatisch)"
 msgstr "Kalender abonnieren (aktualisiert sich automatisch)"
 
 #: core/templates/fw/fristen.html:30 core/templates/fw/integrationen.html:73
+#: core/templates/fw/vermarktung.html:70
 msgid "Kopieren"
 msgstr "Kopieren"
 
@@ -7090,8 +7123,7 @@ msgid "Hypothek erfassen"
 msgstr "Hypothek erfassen"
 
 #: core/templates/fw/hypotheken.html:23 core/templates/fw/nebenkosten.html:21
-#: core/templates/fw/objekt_form.html:26 core/templates/fw/schaeden.html:30
-#: core/templates/fw/vertrag_neu.html:45
+#: core/templates/fw/schaeden.html:30 core/templates/fw/vertrag_neu.html:45
 msgid "Liegenschaft *"
 msgstr "Liegenschaft *"
 
@@ -7172,7 +7204,7 @@ msgid "Zins / Jahr"
 msgstr "Zins / Jahr"
 
 #: core/templates/fw/hypotheken.html:89
-#: core/templates/fw/liegenschaft_detail.html:269
+#: core/templates/fw/liegenschaft_detail.html:272
 msgid "Ablauf"
 msgstr "Ablauf"
 
@@ -7212,7 +7244,7 @@ msgstr ""
 "180 Tagen — rechtzeitig Refinanzierung/Verlängerung prüfen."
 
 #: core/templates/fw/integrationen.html:3
-#: core/templates/fw/integrationen.html:7 core/views/fw/aktionen.py:851
+#: core/templates/fw/integrationen.html:7 core/views/fw/aktionen.py:864
 msgid "Integrationen"
 msgstr "Integrationen"
 
@@ -7338,8 +7370,8 @@ msgid "Seit"
 msgstr "Seit"
 
 #: core/templates/fw/kautionen.html:36
-#: core/templates/fw/liegenschaft_detail.html:644
-#: core/templates/fw/liegenschaft_detail.html:688
+#: core/templates/fw/liegenschaft_detail.html:647
+#: core/templates/fw/liegenschaft_detail.html:691
 #: core/templates/fw/schlussabrechnung.html:42
 #: core/templates/fw/vertrag_detail.html:416 portfolio/models.py:799
 msgid "Versicherung"
@@ -7547,16 +7579,16 @@ msgid "Nummer *"
 msgstr "Nummer *"
 
 #: core/templates/fw/kontenplan.html:55
-#: core/templates/fw/liegenschaft_detail.html:649
-#: core/templates/fw/liegenschaft_detail.html:693
-#: core/templates/fw/nebenkosten.html:26 core/templates/fw/objekt_form.html:32
+#: core/templates/fw/liegenschaft_detail.html:652
+#: core/templates/fw/liegenschaft_detail.html:696
+#: core/templates/fw/nebenkosten.html:26
 #: core/templates/fw/regelsatz_form.html:20
 #: core/templates/fw/vorlage_form.html:23
 msgid "Bezeichnung *"
 msgstr "Bezeichnung *"
 
 #: core/templates/fw/kontenplan.html:57
-#: core/templates/fw/liegenschaft_detail.html:383
+#: core/templates/fw/liegenschaft_detail.html:386
 msgid "Typ *"
 msgstr "Typ *"
 
@@ -7580,8 +7612,8 @@ msgid "Anlegen"
 msgstr "Anlegen"
 
 #: core/templates/fw/kontenplan.html:100 core/templates/fw/kontenplan.html:136
-#: core/templates/fw/kreditoren.html:184 core/templates/fw/kreditoren.html:330
-#: core/templates/fw/kreditoren.html:352
+#: core/templates/fw/kreditoren.html:189 core/templates/fw/kreditoren.html:339
+#: core/templates/fw/kreditoren.html:361
 msgid "HNK"
 msgstr "HNK"
 
@@ -7653,7 +7685,7 @@ msgstr ""
 "Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann "
 "Kreditoren an Bank)"
 
-#: core/templates/fw/kreditoren.html:30 core/views/fw/profil.py:898
+#: core/templates/fw/kreditoren.html:30 core/views/fw/profil.py:910
 msgid "KI-Rechnungsscanner"
 msgstr "KI-Rechnungsscanner"
 
@@ -7716,79 +7748,94 @@ msgstr "Hochladen &amp; scannen"
 msgid "Kreditorenrechnung erfassen"
 msgstr "Kreditorenrechnung erfassen"
 
-#: core/templates/fw/kreditoren.html:74
+#: core/templates/fw/kreditoren.html:77 core/templates/fw/kreditoren.html:280
+#: core/templates/fw/liegenschaft_form.html:29
+#: core/templates/fw/objekt_form.html:29
+#, python-format
+msgid "%(n)s Angabe prüfen"
+msgid_plural "%(n)s Angaben prüfen"
+msgstr[0] "%(n)s Angabe prüfen"
+msgstr[1] "%(n)s Angaben prüfen"
+
+#: core/templates/fw/kreditoren.html:77 core/templates/fw/kreditoren.html:280
+#: core/templates/fw/liegenschaft_form.html:30
+#: core/templates/fw/objekt_form.html:30
+msgid "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern."
+msgstr "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern."
+
+#: core/templates/fw/kreditoren.html:79
 msgid "Lieferant *"
 msgstr "Lieferant *"
 
-#: core/templates/fw/kreditoren.html:76
+#: core/templates/fw/kreditoren.html:81
 msgid "Betrag brutto (CHF) *"
 msgstr "Betrag brutto (CHF) *"
 
-#: core/templates/fw/kreditoren.html:83 core/templates/fw/kreditoren.html:294
+#: core/templates/fw/kreditoren.html:88 core/templates/fw/kreditoren.html:303
 msgid "Aufwandskonto"
 msgstr "Aufwandskonto"
 
-#: core/templates/fw/kreditoren.html:85 core/templates/fw/kreditoren.html:296
+#: core/templates/fw/kreditoren.html:90 core/templates/fw/kreditoren.html:305
 msgid "bei Freigabe wählen"
 msgstr "bei Freigabe wählen"
 
-#: core/templates/fw/kreditoren.html:88
+#: core/templates/fw/kreditoren.html:93
 #, python-format
 msgid "MWST-Satz (%%)"
 msgstr "MWST-Satz (%%)"
 
-#: core/templates/fw/kreditoren.html:89
+#: core/templates/fw/kreditoren.html:94
 msgid "z.B. 8.1 (0 = keine)"
 msgstr "z.B. 8.1 (0 = keine)"
 
-#: core/templates/fw/kreditoren.html:90 core/templates/fw/kreditoren.html:277
+#: core/templates/fw/kreditoren.html:95 core/templates/fw/kreditoren.html:286
 msgid "Rechnungsdatum"
 msgstr "Rechnungsdatum"
 
-#: core/templates/fw/kreditoren.html:92 core/templates/fw/kreditoren.html:279
+#: core/templates/fw/kreditoren.html:97 core/templates/fw/kreditoren.html:288
 #: core/templates/fw/pendenzen.html:116
 msgid "Fällig am"
 msgstr "Fällig am"
 
-#: core/templates/fw/kreditoren.html:94 core/templates/fw/kreditoren.html:281
+#: core/templates/fw/kreditoren.html:99 core/templates/fw/kreditoren.html:290
 #: core/templates/fw/objekt_detail.html:272
 #: core/templates/fw/vertrag_detail.html:491 faelle/zulauf_models.py:162
 msgid "Referenz"
 msgstr "Referenz"
 
-#: core/templates/fw/kreditoren.html:96
+#: core/templates/fw/kreditoren.html:101
 msgid "IBAN des Lieferanten"
 msgstr "IBAN des Lieferanten"
 
-#: core/templates/fw/kreditoren.html:97
+#: core/templates/fw/kreditoren.html:102
 msgid "CH.."
 msgstr "CH.."
 
-#: core/templates/fw/kreditoren.html:98
+#: core/templates/fw/kreditoren.html:103
 msgid "Ohne IBAN kann die Rechnung nicht in den Zahllauf."
 msgstr "Ohne IBAN kann die Rechnung nicht in den Zahllauf."
 
-#: core/templates/fw/kreditoren.html:99 core/templates/fw/kreditoren.html:283
+#: core/templates/fw/kreditoren.html:104 core/templates/fw/kreditoren.html:292
 msgid "Leistung von"
 msgstr "Leistung von"
 
-#: core/templates/fw/kreditoren.html:99
+#: core/templates/fw/kreditoren.html:104
 msgid "(HNK-Periode)"
 msgstr "(HNK-Periode)"
 
-#: core/templates/fw/kreditoren.html:101 core/templates/fw/kreditoren.html:285
+#: core/templates/fw/kreditoren.html:106 core/templates/fw/kreditoren.html:294
 msgid "Leistung bis"
 msgstr "Leistung bis"
 
-#: core/templates/fw/kreditoren.html:103
+#: core/templates/fw/kreditoren.html:108
 msgid "Beleg (PDF/Bild)"
 msgstr "Beleg (PDF/Bild)"
 
-#: core/templates/fw/kreditoren.html:106 core/templates/fw/kreditoren.html:302
+#: core/templates/fw/kreditoren.html:111 core/templates/fw/kreditoren.html:311
 msgid "In Nebenkostenabrechnung einbeziehen (HNK)"
 msgstr "In Nebenkostenabrechnung einbeziehen (HNK)"
 
-#: core/templates/fw/kreditoren.html:107
+#: core/templates/fw/kreditoren.html:112
 msgid ""
 "wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, "
 "Kehricht, Versicherung) automatisch gesetzt"
@@ -7796,130 +7843,130 @@ msgstr ""
 "wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, "
 "Kehricht, Versicherung) automatisch gesetzt"
 
-#: core/templates/fw/kreditoren.html:108
+#: core/templates/fw/kreditoren.html:113
 msgid "Erfassen (Status: Neu)"
 msgstr "Erfassen (Status: Neu)"
 
-#: core/templates/fw/kreditoren.html:116
+#: core/templates/fw/kreditoren.html:121
 msgid "Freigegeben, offen"
 msgstr "Freigegeben, offen"
 
-#: core/templates/fw/kreditoren.html:120
+#: core/templates/fw/kreditoren.html:125
 msgid "Neu / zu prüfen"
 msgstr "Neu / zu prüfen"
 
-#: core/templates/fw/kreditoren.html:124
+#: core/templates/fw/kreditoren.html:129
 msgid "Rechnungen total"
 msgstr "Rechnungen total"
 
-#: core/templates/fw/kreditoren.html:141
+#: core/templates/fw/kreditoren.html:146
 msgid "Lieferant, Referenz, IBAN, Betrag …"
 msgstr "Lieferant, Referenz, IBAN, Betrag …"
 
-#: core/templates/fw/kreditoren.html:141
+#: core/templates/fw/kreditoren.html:146
 msgid "Kreditoren durchsuchen (Lieferant, Referenz, IBAN, Betrag)"
 msgstr "Kreditoren durchsuchen (Lieferant, Referenz, IBAN, Betrag)"
 
-#: core/templates/fw/kreditoren.html:143
+#: core/templates/fw/kreditoren.html:148
 msgid "Sortierung"
 msgstr "Sortierung"
 
-#: core/templates/fw/kreditoren.html:144
+#: core/templates/fw/kreditoren.html:149
 msgid "Fällig ↑"
 msgstr "Fällig ↑"
 
-#: core/templates/fw/kreditoren.html:145
+#: core/templates/fw/kreditoren.html:150
 msgid "Fällig ↓"
 msgstr "Fällig ↓"
 
-#: core/templates/fw/kreditoren.html:146
+#: core/templates/fw/kreditoren.html:151
 msgid "Betrag ↓"
 msgstr "Betrag ↓"
 
-#: core/templates/fw/kreditoren.html:147
+#: core/templates/fw/kreditoren.html:152
 msgid "Betrag ↑"
 msgstr "Betrag ↑"
 
-#: core/templates/fw/kreditoren.html:148
+#: core/templates/fw/kreditoren.html:153
 msgid "Lieferant A–Z"
 msgstr "Lieferant A–Z"
 
-#: core/templates/fw/kreditoren.html:149
+#: core/templates/fw/kreditoren.html:154
 msgid "Zuletzt erfasst"
 msgstr "Zuletzt erfasst"
 
-#: core/templates/fw/kreditoren.html:151
+#: core/templates/fw/kreditoren.html:156
 msgid "Suchen"
 msgstr "Suchen"
 
-#: core/templates/fw/kreditoren.html:153 core/templates/fw/kreditoren.html:382
+#: core/templates/fw/kreditoren.html:158 core/templates/fw/kreditoren.html:391
 #, python-format
 msgid "%(n)s Rechnung"
 msgid_plural "%(n)s Rechnungen"
 msgstr[0] "%(n)s Rechnung"
 msgstr[1] "%(n)s Rechnungen"
 
-#: core/templates/fw/kreditoren.html:161 core/templates/fw/kreditoren.html:273
+#: core/templates/fw/kreditoren.html:166 core/templates/fw/kreditoren.html:282
 #: core/templates/fw/lieferantenkonten.html:27
 #: core/templates/fw/zahllauf.html:64 core/templates/fw/zahllauf.html:147
-#: core/views/fw/kreditoren.py:272
+#: core/views/fw/kreditoren.py:326
 msgid "Lieferant"
 msgstr "Lieferant"
 
-#: core/templates/fw/kreditoren.html:167 core/templates/fw/logbuch.html:97
+#: core/templates/fw/kreditoren.html:172 core/templates/fw/logbuch.html:97
 #: core/templates/fw/mahnwesen.html:70 core/templates/fw/mietzins.html:64
 msgid "Aktion"
 msgstr "Aktion"
 
-#: core/templates/fw/kreditoren.html:173
+#: core/templates/fw/kreditoren.html:178
 msgid "Klicken zum Bearbeiten (mit Beleg-Vorschau)"
 msgstr "Klicken zum Bearbeiten (mit Beleg-Vorschau)"
 
-#: core/templates/fw/kreditoren.html:184
+#: core/templates/fw/kreditoren.html:189
 msgid ""
 "Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet"
 msgstr ""
 "Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet"
 
-#: core/templates/fw/kreditoren.html:190
+#: core/templates/fw/kreditoren.html:195
 msgid "Beleg ansehen"
 msgstr "Beleg ansehen"
 
-#: core/templates/fw/kreditoren.html:192
+#: core/templates/fw/kreditoren.html:197
 #, python-format
 msgid "Zahlung an %(name)s verbuchen?"
 msgstr "Zahlung an %(name)s verbuchen?"
 
-#: core/templates/fw/kreditoren.html:197
+#: core/templates/fw/kreditoren.html:202
 msgid "Betrag (Teilzahlung möglich)"
 msgstr "Betrag (Teilzahlung möglich)"
 
-#: core/templates/fw/kreditoren.html:199
+#: core/templates/fw/kreditoren.html:204
 msgid "Bezahlen"
 msgstr "Bezahlen"
 
-#: core/templates/fw/kreditoren.html:203
+#: core/templates/fw/kreditoren.html:208
 msgid "Zahlung zurücksetzen — Rechnung kommt im nächsten Zahllauf wieder mit?"
 msgstr "Zahlung zurücksetzen — Rechnung kommt im nächsten Zahllauf wieder mit?"
 
-#: core/templates/fw/kreditoren.html:206
+#: core/templates/fw/kreditoren.html:211
 msgid "Zahllauf zurücksetzen"
 msgstr "Zahllauf zurücksetzen"
 
-#: core/templates/fw/kreditoren.html:210
+#: core/templates/fw/kreditoren.html:215
 msgid "Rechnung freigeben und als Aufwand verbuchen?"
 msgstr "Rechnung freigeben und als Aufwand verbuchen?"
 
-#: core/templates/fw/kreditoren.html:215
+#: core/templates/fw/kreditoren.html:220
 msgid "Aufwandskonto…"
 msgstr "Aufwandskonto…"
 
-#: core/templates/fw/kreditoren.html:220 core/views/fw/dashboard.py:513
+#: core/templates/fw/kreditoren.html:225 core/views/fw/dashboard.py:513
 #: faelle/arbeitsvorrat.py:647
 msgid "Freigeben"
 msgstr "Freigeben"
 
-#: core/templates/fw/kreditoren.html:227
+#: core/templates/fw/kreditoren.html:232
 #, python-format
 msgid ""
 "Letzte Zahlung (CHF %(betrag)s) an %(name)s stornieren? Der offene Posten "
@@ -7928,73 +7975,73 @@ msgstr ""
 "Letzte Zahlung (CHF %(betrag)s) an %(name)s stornieren? Der offene Posten "
 "öffnet sich wieder."
 
-#: core/templates/fw/kreditoren.html:230
+#: core/templates/fw/kreditoren.html:235
 msgid "Letzte Zahlung stornieren"
 msgstr "Letzte Zahlung stornieren"
 
-#: core/templates/fw/kreditoren.html:235 core/templates/fw/kreditoren.html:238
+#: core/templates/fw/kreditoren.html:240 core/templates/fw/kreditoren.html:243
 #: core/templates/fw/weiterverrechnung.html:4 core/views/fw/dashboard.py:527
 msgid "Weiterverrechnen"
 msgstr "Weiterverrechnen"
 
-#: core/templates/fw/kreditoren.html:237
+#: core/templates/fw/kreditoren.html:242
 #, python-format
 msgid "Offen: CHF %(betrag)s"
 msgstr "Offen: CHF %(betrag)s"
 
-#: core/templates/fw/kreditoren.html:243
+#: core/templates/fw/kreditoren.html:248
 #, python-format
 msgid "Kreditorenrechnung «%(name)s» löschen? (nur solange nicht verbucht)"
 msgstr "Kreditorenrechnung «%(name)s» löschen? (nur solange nicht verbucht)"
 
-#: core/templates/fw/kreditoren.html:261
+#: core/templates/fw/kreditoren.html:266
 msgid "Beleg-Vorschau"
 msgstr "Beleg-Vorschau"
 
-#: core/templates/fw/kreditoren.html:267
+#: core/templates/fw/kreditoren.html:272
 msgid "In neuem Tab öffnen"
 msgstr "In neuem Tab öffnen"
 
-#: core/templates/fw/kreditoren.html:275
+#: core/templates/fw/kreditoren.html:284
 msgid "Betrag brutto (CHF)"
 msgstr "Betrag brutto (CHF)"
 
-#: core/templates/fw/kreditoren.html:283
+#: core/templates/fw/kreditoren.html:292
 msgid "(HNK)"
 msgstr "(HNK)"
 
-#: core/templates/fw/kreditoren.html:304
+#: core/templates/fw/kreditoren.html:313
 msgid "bei NK-relevantem Konto automatisch aktiv"
 msgstr "bei NK-relevantem Konto automatisch aktiv"
 
-#: core/templates/fw/kreditoren.html:316
+#: core/templates/fw/kreditoren.html:325
 msgid "Kostenaufteilung (optional)"
 msgstr "Kostenaufteilung (optional)"
 
-#: core/templates/fw/kreditoren.html:319
+#: core/templates/fw/kreditoren.html:328
 #, python-format
 msgid "Summe CHF %(summe)s / %(betrag)s"
 msgstr "Summe CHF %(summe)s / %(betrag)s"
 
-#: core/templates/fw/kreditoren.html:320
+#: core/templates/fw/kreditoren.html:329
 #, python-format
 msgid "Differenz CHF %(diff)s"
 msgstr "Differenz CHF %(diff)s"
 
-#: core/templates/fw/kreditoren.html:320
+#: core/templates/fw/kreditoren.html:329
 msgid "✓ stimmt"
 msgstr "✓ stimmt"
 
-#: core/templates/fw/kreditoren.html:332
+#: core/templates/fw/kreditoren.html:341
 msgid "Position entfernen?"
 msgstr "Position entfernen?"
 
-#: core/templates/fw/kreditoren.html:333
+#: core/templates/fw/kreditoren.html:342
 #: core/templates/fw/vertrag_detail.html:237
 msgid "Entfernen"
 msgstr "Entfernen"
 
-#: core/templates/fw/kreditoren.html:339
+#: core/templates/fw/kreditoren.html:348
 msgid ""
 "Rechnung auf mehrere Konten/Objekte aufteilen (z.B. Sammelrechnung oder "
 "Unterhalt + HNK). Ohne Positionen wird das Aufwandskonto oben gebucht."
@@ -8002,34 +8049,34 @@ msgstr ""
 "Rechnung auf mehrere Konten/Objekte aufteilen (z.B. Sammelrechnung oder "
 "Unterhalt + HNK). Ohne Positionen wird das Aufwandskonto oben gebucht."
 
-#: core/templates/fw/kreditoren.html:345
+#: core/templates/fw/kreditoren.html:354
 msgid "Konto …"
 msgstr "Konto …"
 
-#: core/templates/fw/kreditoren.html:352
+#: core/templates/fw/kreditoren.html:361
 msgid ""
 "In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"
 msgstr ""
 "In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"
 
-#: core/templates/fw/kreditoren.html:353
+#: core/templates/fw/kreditoren.html:362
 msgid "Position hinzufügen"
 msgstr "Position hinzufügen"
 
-#: core/templates/fw/kreditoren.html:362
+#: core/templates/fw/kreditoren.html:371
 msgid "Keine Kreditorenrechnungen"
 msgstr "Keine Kreditorenrechnungen"
 
-#: core/templates/fw/kreditoren.html:363
+#: core/templates/fw/kreditoren.html:372
 #, python-format
 msgid "Kein Treffer für «%(suche)s»."
 msgstr "Kein Treffer für «%(suche)s»."
 
-#: core/templates/fw/kreditoren.html:363
+#: core/templates/fw/kreditoren.html:372
 msgid "Keine Rechnung in diesem Status."
 msgstr "Keine Rechnung in diesem Status."
 
-#: core/templates/fw/kreditoren.html:363
+#: core/templates/fw/kreditoren.html:372
 msgid ""
 "Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung "
 "manuell."
@@ -8037,11 +8084,11 @@ msgstr ""
 "Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung "
 "manuell."
 
-#: core/templates/fw/kreditoren.html:371
+#: core/templates/fw/kreditoren.html:380
 msgid "Offen (freigegeben/in Zahlung, diese Seite)"
 msgstr "Offen (freigegeben/in Zahlung, diese Seite)"
 
-#: core/templates/fw/kreditoren.html:399
+#: core/templates/fw/kreditoren.html:408
 msgid ""
 "«Bezahlen» bucht die Zahlung (Kreditoren 2000 an Bank 1020) und setzt den "
 "Status auf bezahlt. Der KI-Scanner liest hochgeladene Belege automatisch aus "
@@ -8186,11 +8233,6 @@ msgstr "Zuletzt abgeschlossen"
 msgid "Noch kein Lauf abgeschlossen."
 msgstr "Noch kein Lauf abgeschlossen."
 
-#: core/templates/fw/lebensdauer.html:3 core/templates/fw/lebensdauer.html:9
-#: core/templates/fw/lebensdauer.html:14
-msgid "Lebensdauertabelle"
-msgstr "Lebensdauertabelle"
-
 #: core/templates/fw/lebensdauer.html:15
 msgid ""
 "Paritätische Nutzungsdauern (Mieterverband/HEV) — Grundlage für den Zeitwert "
@@ -8208,7 +8250,7 @@ msgid "Kategorie hinzufügen"
 msgstr "Kategorie hinzufügen"
 
 #: core/templates/fw/lebensdauer.html:30
-#: core/templates/fw/liegenschaft_detail.html:309
+#: core/templates/fw/liegenschaft_detail.html:312
 #: core/templates/fw/objekt_detail.html:595
 msgid "Kategorie *"
 msgstr "Kategorie *"
@@ -8404,8 +8446,8 @@ msgid "Verlauf — wer hat was gemacht"
 msgstr "Verlauf — wer hat was gemacht"
 
 #: core/templates/fw/lieferantenkonto.html:121
-#: core/templates/fw/liegenschaft_detail.html:466
-#: core/templates/fw/logbuch.html:117 core/templates/fw/person_detail.html:563
+#: core/templates/fw/liegenschaft_detail.html:469
+#: core/templates/fw/logbuch.html:117 core/templates/fw/person_detail.html:572
 #: core/templates/fw/vertrag_detail.html:562 tickets/models.py:129
 msgid "System"
 msgstr "System"
@@ -8417,7 +8459,7 @@ msgid "Was auffällt"
 msgstr "Was auffällt"
 
 #: core/templates/fw/liegenschaft_detail.html:64
-#: core/templates/fw/liegenschaft_form.html:54
+#: core/templates/fw/liegenschaft_form.html:59
 #: core/templates/fw/objekt_detail.html:47
 #: core/templates/fw/person_detail.html:39
 #: core/templates/fw/schaden_detail.html:39
@@ -8426,7 +8468,7 @@ msgid "Betreut von"
 msgstr "Betreut von"
 
 #: core/templates/fw/liegenschaft_detail.html:64
-#: core/templates/fw/liegenschaft_form.html:56
+#: core/templates/fw/liegenschaft_form.html:61
 #: core/templates/fw/objekt_detail.html:47
 #: core/templates/fw/schaden_detail.html:39
 #: core/templates/fw/vertrag_detail.html:87
@@ -8435,19 +8477,19 @@ msgstr "nicht zugeteilt"
 
 #: core/templates/fw/liegenschaft_detail.html:65
 #: core/templates/fw/mandat_detail.html:113
-#: core/templates/fw/person_detail.html:358
+#: core/templates/fw/person_detail.html:367
 #: core/templates/fw/vertrag_detail.html:88
 msgid "Mandat"
 msgstr "Mandat"
 
 #: core/templates/fw/liegenschaft_detail.html:67
-#: core/templates/fw/liegenschaft_form.html:61
+#: core/templates/fw/liegenschaft_form.html:67
 msgid "Baujahr"
 msgstr "Baujahr"
 
 #: core/templates/fw/liegenschaft_detail.html:68
-#: core/templates/fw/liegenschaft_detail.html:192
-#: core/templates/fw/liegenschaft_form.html:40
+#: core/templates/fw/liegenschaft_detail.html:195
+#: core/templates/fw/liegenschaft_form.html:47
 msgid "EGID"
 msgstr "EGID"
 
@@ -8466,15 +8508,19 @@ msgstr "Mieterspiegel"
 msgid "Eigentümerabrechnung"
 msgstr "Eigentümerabrechnung"
 
-#: core/templates/fw/liegenschaft_detail.html:89
+#: core/templates/fw/liegenschaft_detail.html:88
+msgid "Hausaushang (QR Schadenmeldung)"
+msgstr "Hausaushang (QR Schadenmeldung)"
+
+#: core/templates/fw/liegenschaft_detail.html:92
 msgid "EGID ermitteln & Objekte aus dem GWR importieren"
 msgstr "EGID ermitteln & Objekte aus dem GWR importieren"
 
-#: core/templates/fw/liegenschaft_detail.html:89
+#: core/templates/fw/liegenschaft_detail.html:92
 msgid "GWR-Import (Objekte)"
 msgstr "GWR-Import (Objekte)"
 
-#: core/templates/fw/liegenschaft_detail.html:93
+#: core/templates/fw/liegenschaft_detail.html:96
 #, python-format
 msgid ""
 "Liegenschaft %(s)s inkl. aller Objekte wirklich löschen? Dies kann nicht "
@@ -8483,72 +8529,72 @@ msgstr ""
 "Liegenschaft %(s)s inkl. aller Objekte wirklich löschen? Dies kann nicht "
 "rückgängig gemacht werden."
 
-#: core/templates/fw/liegenschaft_detail.html:95
+#: core/templates/fw/liegenschaft_detail.html:98
 msgid "Liegenschaft löschen"
 msgstr "Liegenschaft löschen"
 
-#: core/templates/fw/liegenschaft_detail.html:111
+#: core/templates/fw/liegenschaft_detail.html:114
 #: core/templates/fw/objekt_detail.html:83
 msgid "Vermietung"
 msgstr "Vermietung"
 
-#: core/templates/fw/liegenschaft_detail.html:113
+#: core/templates/fw/liegenschaft_detail.html:116
 #, python-format
 msgid "%(q)s %% belegt"
 msgstr "%(q)s %% belegt"
 
-#: core/templates/fw/liegenschaft_detail.html:113
+#: core/templates/fw/liegenschaft_detail.html:116
 msgid "keine Objekte erfasst"
 msgstr "keine Objekte erfasst"
 
-#: core/templates/fw/liegenschaft_detail.html:116
+#: core/templates/fw/liegenschaft_detail.html:119
 #: core/templates/fw/mandat_detail.html:154
 msgid "brutto aus aktiven Verträgen"
 msgstr "brutto aus aktiven Verträgen"
 
-#: core/templates/fw/liegenschaft_detail.html:124
+#: core/templates/fw/liegenschaft_detail.html:127
 #, python-format
 msgid "Unterhalt %(j)s"
 msgstr "Unterhalt %(j)s"
 
-#: core/templates/fw/liegenschaft_detail.html:127
+#: core/templates/fw/liegenschaft_detail.html:130
 #, python-format
 msgid "von %(b)s Budget"
 msgstr "von %(b)s Budget"
 
-#: core/templates/fw/liegenschaft_detail.html:127
+#: core/templates/fw/liegenschaft_detail.html:130
 msgid "überschritten"
 msgstr "überschritten"
 
-#: core/templates/fw/liegenschaft_detail.html:127
+#: core/templates/fw/liegenschaft_detail.html:130
 #, python-format
 msgid "CHF %(r)s offen"
 msgstr "CHF %(r)s offen"
 
-#: core/templates/fw/liegenschaft_detail.html:129
+#: core/templates/fw/liegenschaft_detail.html:132
 msgid "kein Budget"
 msgstr "kein Budget"
 
-#: core/templates/fw/liegenschaft_detail.html:130
-#: core/templates/fw/liegenschaft_detail.html:513
+#: core/templates/fw/liegenschaft_detail.html:133
+#: core/templates/fw/liegenschaft_detail.html:516
 #, python-format
 msgid "für %(j)s nicht erfasst"
 msgstr "für %(j)s nicht erfasst"
 
-#: core/templates/fw/liegenschaft_detail.html:133
+#: core/templates/fw/liegenschaft_detail.html:136
 #: core/templates/fw/vertrag_detail.html:183
 msgid "Nächste Frist"
 msgstr "Nächste Frist"
 
-#: core/templates/fw/liegenschaft_detail.html:139
+#: core/templates/fw/liegenschaft_detail.html:142
 msgid "keine Frist erfasst"
 msgstr "keine Frist erfasst"
 
-#: core/templates/fw/liegenschaft_detail.html:181
+#: core/templates/fw/liegenschaft_detail.html:184
 msgid "Die Liegenschaft ist das Gebäude, nicht das Mietverhältnis"
 msgstr "Die Liegenschaft ist das Gebäude, nicht das Mietverhältnis"
 
-#: core/templates/fw/liegenschaft_detail.html:182
+#: core/templates/fw/liegenschaft_detail.html:185
 msgid ""
 "Mietzins, Kaution und Nebenkostenabrechnung hängen am einzelnen Vertrag. "
 "Hier steht, was für das ganze Haus gilt: Register, Bausubstanz, Werte, "
@@ -8558,232 +8604,232 @@ msgstr ""
 "Hier steht, was für das ganze Haus gilt: Register, Bausubstanz, Werte, "
 "Anlagen und wer im Notfall kommt."
 
-#: core/templates/fw/liegenschaft_detail.html:189
+#: core/templates/fw/liegenschaft_detail.html:192
 msgid "Eigentum &amp; Register"
 msgstr "Eigentum &amp; Register"
 
-#: core/templates/fw/liegenschaft_detail.html:191
-#: core/templates/fw/liegenschaft_form.html:110
+#: core/templates/fw/liegenschaft_detail.html:194
+#: core/templates/fw/liegenschaft_form.html:115
 #: core/templates/fw/mandat_form.html:21 core/templates/fw/mandate.html:16
 msgid "Eigentümer"
 msgstr "Eigentümer"
 
-#: core/templates/fw/liegenschaft_detail.html:193
-#: core/templates/fw/liegenschaft_form.html:42
+#: core/templates/fw/liegenschaft_detail.html:196
+#: core/templates/fw/liegenschaft_form.html:48
 msgid "Kataster-Nr."
 msgstr "Kataster-Nr."
 
-#: core/templates/fw/liegenschaft_detail.html:199
+#: core/templates/fw/liegenschaft_detail.html:202
 msgid "Gebäude &amp; Energie"
 msgstr "Gebäude &amp; Energie"
 
-#: core/templates/fw/liegenschaft_detail.html:201
+#: core/templates/fw/liegenschaft_detail.html:204
 msgid "Grundstücksfläche"
 msgstr "Grundstücksfläche"
 
-#: core/templates/fw/liegenschaft_detail.html:202
+#: core/templates/fw/liegenschaft_detail.html:205
 msgid "Gebäudevolumen"
 msgstr "Gebäudevolumen"
 
-#: core/templates/fw/liegenschaft_detail.html:203
-#: core/templates/fw/liegenschaft_form.html:83
+#: core/templates/fw/liegenschaft_detail.html:206
+#: core/templates/fw/liegenschaft_form.html:82
 msgid "Heizsystem"
 msgstr "Heizsystem"
 
-#: core/templates/fw/liegenschaft_detail.html:204
+#: core/templates/fw/liegenschaft_detail.html:207
 #: core/templates/fw/liegenschaft_form.html:88
 msgid "Warmwasser"
 msgstr "Warmwasser"
 
-#: core/templates/fw/liegenschaft_detail.html:205
+#: core/templates/fw/liegenschaft_detail.html:208
 msgid "GEAK"
 msgstr "GEAK"
 
-#: core/templates/fw/liegenschaft_detail.html:205
+#: core/templates/fw/liegenschaft_detail.html:208
 msgid "Hülle"
 msgstr "Hülle"
 
-#: core/templates/fw/liegenschaft_detail.html:205
+#: core/templates/fw/liegenschaft_detail.html:208
 msgid "Gesamt"
 msgstr "Gesamt"
 
-#: core/templates/fw/liegenschaft_detail.html:206 portfolio/models.py:385
+#: core/templates/fw/liegenschaft_detail.html:209 portfolio/models.py:385
 msgid "Heizkosten"
 msgstr "Heizkosten"
 
-#: core/templates/fw/liegenschaft_detail.html:206
+#: core/templates/fw/liegenschaft_detail.html:209
 msgid "verbrauchsabhängig (HKVO)"
 msgstr "verbrauchsabhängig (HKVO)"
 
-#: core/templates/fw/liegenschaft_detail.html:206
+#: core/templates/fw/liegenschaft_detail.html:209
 #, python-format
 msgid "Grundkosten-Anteil %(p)s %%"
 msgstr "Grundkosten-Anteil %(p)s %%"
 
-#: core/templates/fw/liegenschaft_detail.html:212
+#: core/templates/fw/liegenschaft_detail.html:215
 msgid "Werte"
 msgstr "Werte"
 
-#: core/templates/fw/liegenschaft_detail.html:214
-#: core/templates/fw/liegenschaft_detail.html:493
+#: core/templates/fw/liegenschaft_detail.html:217
+#: core/templates/fw/liegenschaft_detail.html:496
 msgid "Verkehrswert"
 msgstr "Verkehrswert"
 
-#: core/templates/fw/liegenschaft_detail.html:215
-#: core/templates/fw/liegenschaft_detail.html:493
+#: core/templates/fw/liegenschaft_detail.html:218
+#: core/templates/fw/liegenschaft_detail.html:496
 msgid "Anlagekosten"
 msgstr "Anlagekosten"
 
-#: core/templates/fw/liegenschaft_detail.html:216
+#: core/templates/fw/liegenschaft_detail.html:219
 msgid "Versicherungswert"
 msgstr "Versicherungswert"
 
-#: core/templates/fw/liegenschaft_detail.html:216
+#: core/templates/fw/liegenschaft_detail.html:219
 msgid "bemisst den Wiederaufbau — nicht als Renditenenner geeignet"
 msgstr "bemisst den Wiederaufbau — nicht als Renditenenner geeignet"
 
-#: core/templates/fw/liegenschaft_detail.html:222
+#: core/templates/fw/liegenschaft_detail.html:225
 msgid "Bankverbindung"
 msgstr "Bankverbindung"
 
-#: core/templates/fw/liegenschaft_detail.html:224
+#: core/templates/fw/liegenschaft_detail.html:227
 msgid "Mietzinskonto"
 msgstr "Mietzinskonto"
 
-#: core/templates/fw/liegenschaft_detail.html:230
+#: core/templates/fw/liegenschaft_detail.html:233
 msgid "Handwerker &amp; Notfall"
 msgstr "Handwerker &amp; Notfall"
 
-#: core/templates/fw/liegenschaft_detail.html:232
-#: core/templates/fw/liegenschaft_form.html:131
+#: core/templates/fw/liegenschaft_detail.html:235
+#: core/templates/fw/liegenschaft_form.html:135
 msgid "Hauswart"
 msgstr "Hauswart"
 
-#: core/templates/fw/liegenschaft_detail.html:233
+#: core/templates/fw/liegenschaft_detail.html:236
 msgid "Sanitär"
 msgstr "Sanitär"
 
-#: core/templates/fw/liegenschaft_detail.html:234
+#: core/templates/fw/liegenschaft_detail.html:237
 msgid "Elektriker"
 msgstr "Elektriker"
 
-#: core/templates/fw/liegenschaft_detail.html:235
+#: core/templates/fw/liegenschaft_detail.html:238
 msgid "Noch keine Kontakte hinterlegt."
 msgstr "Noch keine Kontakte hinterlegt."
 
-#: core/templates/fw/liegenschaft_detail.html:240 portfolio/models.py:393
+#: core/templates/fw/liegenschaft_detail.html:243 portfolio/models.py:393
 msgid "Versicherungen"
 msgstr "Versicherungen"
 
-#: core/templates/fw/liegenschaft_detail.html:243
+#: core/templates/fw/liegenschaft_detail.html:246
 msgid "Policen"
 msgstr "Policen"
 
-#: core/templates/fw/liegenschaft_detail.html:246
+#: core/templates/fw/liegenschaft_detail.html:249
 msgid "Police hinzufügen"
 msgstr "Police hinzufügen"
 
-#: core/templates/fw/liegenschaft_detail.html:250 portfolio/models.py:125
+#: core/templates/fw/liegenschaft_detail.html:253 portfolio/models.py:125
 msgid "Gebäudeversicherung"
 msgstr "Gebäudeversicherung"
 
-#: core/templates/fw/liegenschaft_detail.html:251 portfolio/models.py:126
+#: core/templates/fw/liegenschaft_detail.html:254 portfolio/models.py:126
 msgid "Gebäude-Haftpflicht"
 msgstr "Gebäude-Haftpflicht"
 
-#: core/templates/fw/liegenschaft_detail.html:252 portfolio/models.py:127
+#: core/templates/fw/liegenschaft_detail.html:255 portfolio/models.py:127
 msgid "Wasser / Elementar"
 msgstr "Wasser / Elementar"
 
-#: core/templates/fw/liegenschaft_detail.html:253 portfolio/models.py:128
+#: core/templates/fw/liegenschaft_detail.html:256 portfolio/models.py:128
 msgid "Glasbruch"
 msgstr "Glasbruch"
 
-#: core/templates/fw/liegenschaft_detail.html:254 portfolio/models.py:129
+#: core/templates/fw/liegenschaft_detail.html:257 portfolio/models.py:129
 msgid "Bauherren / Bau"
 msgstr "Bauherren / Bau"
 
-#: core/templates/fw/liegenschaft_detail.html:255 portfolio/models.py:130
+#: core/templates/fw/liegenschaft_detail.html:258 portfolio/models.py:130
 msgid "Rechtsschutz"
 msgstr "Rechtsschutz"
 
-#: core/templates/fw/liegenschaft_detail.html:256 portfolio/models.py:66
+#: core/templates/fw/liegenschaft_detail.html:259 portfolio/models.py:66
 #: portfolio/models.py:70 portfolio/models.py:131
 msgid "Andere"
 msgstr "Andere"
 
-#: core/templates/fw/liegenschaft_detail.html:258
-#: core/templates/fw/liegenschaft_detail.html:268
-#: core/templates/fw/person_detail.html:204
+#: core/templates/fw/liegenschaft_detail.html:261
+#: core/templates/fw/liegenschaft_detail.html:271
+#: core/templates/fw/person_detail.html:213
 msgid "Gesellschaft"
 msgstr "Gesellschaft"
 
-#: core/templates/fw/liegenschaft_detail.html:259
+#: core/templates/fw/liegenschaft_detail.html:262
 #: core/templates/fw/vertrag_detail.html:389
 #: core/templates/fw/vertrag_detail.html:434
 msgid "Policennummer"
 msgstr "Policennummer"
 
-#: core/templates/fw/liegenschaft_detail.html:260
+#: core/templates/fw/liegenschaft_detail.html:263
 msgid "Summe CHF"
 msgstr "Summe CHF"
 
-#: core/templates/fw/liegenschaft_detail.html:261
+#: core/templates/fw/liegenschaft_detail.html:264
 msgid "Prämie/Jahr CHF"
 msgstr "Prämie/Jahr CHF"
 
-#: core/templates/fw/liegenschaft_detail.html:263
+#: core/templates/fw/liegenschaft_detail.html:266
 msgid "Police speichern"
 msgstr "Police speichern"
 
-#: core/templates/fw/liegenschaft_detail.html:268
+#: core/templates/fw/liegenschaft_detail.html:271
 msgid "Police"
 msgstr "Police"
 
-#: core/templates/fw/liegenschaft_detail.html:269
+#: core/templates/fw/liegenschaft_detail.html:272
 msgid "Summe"
 msgstr "Summe"
 
-#: core/templates/fw/liegenschaft_detail.html:269
+#: core/templates/fw/liegenschaft_detail.html:272
 msgid "Prämie"
 msgstr "Prämie"
 
-#: core/templates/fw/liegenschaft_detail.html:280
+#: core/templates/fw/liegenschaft_detail.html:283
 msgid "Police entfernen?"
 msgstr "Police entfernen?"
 
-#: core/templates/fw/liegenschaft_detail.html:281
+#: core/templates/fw/liegenschaft_detail.html:284
 msgid "Police löschen"
 msgstr "Police löschen"
 
-#: core/templates/fw/liegenschaft_detail.html:286
+#: core/templates/fw/liegenschaft_detail.html:289
 msgid "Noch keine Versicherungen erfasst."
 msgstr "Noch keine Versicherungen erfasst."
 
-#: core/templates/fw/liegenschaft_detail.html:295
+#: core/templates/fw/liegenschaft_detail.html:298
 msgid "Technik"
 msgstr "Technik"
 
-#: core/templates/fw/liegenschaft_detail.html:301
+#: core/templates/fw/liegenschaft_detail.html:304
 msgid "Allgemeine Geräte"
 msgstr "Allgemeine Geräte"
 
-#: core/templates/fw/liegenschaft_detail.html:301
+#: core/templates/fw/liegenschaft_detail.html:304
 msgid "Heizung, Boiler, Lüftung, Aufzug …"
 msgstr "Heizung, Boiler, Lüftung, Aufzug …"
 
-#: core/templates/fw/liegenschaft_detail.html:304
-#: core/templates/fw/liegenschaft_detail.html:323
+#: core/templates/fw/liegenschaft_detail.html:307
+#: core/templates/fw/liegenschaft_detail.html:326
 #: core/templates/fw/objekt_detail.html:782
 msgid "Gerät erfassen"
 msgstr "Gerät erfassen"
 
-#: core/templates/fw/liegenschaft_detail.html:310
+#: core/templates/fw/liegenschaft_detail.html:313
 msgid "z.B. Heizung, Boiler"
 msgstr "z.B. Heizung, Boiler"
 
-#: core/templates/fw/liegenschaft_detail.html:311
-#: core/templates/fw/liegenschaft_detail.html:348
+#: core/templates/fw/liegenschaft_detail.html:314
+#: core/templates/fw/liegenschaft_detail.html:351
 #: core/templates/fw/objekt_detail.html:599
 #: core/templates/fw/objekt_detail.html:683
 #: core/templates/fw/objekt_detail.html:753
@@ -8791,8 +8837,8 @@ msgstr "z.B. Heizung, Boiler"
 msgid "Marke"
 msgstr "Marke"
 
-#: core/templates/fw/liegenschaft_detail.html:312
-#: core/templates/fw/liegenschaft_detail.html:349
+#: core/templates/fw/liegenschaft_detail.html:315
+#: core/templates/fw/liegenschaft_detail.html:352
 #: core/templates/fw/objekt_detail.html:601
 #: core/templates/fw/objekt_detail.html:685
 #: core/templates/fw/objekt_detail.html:755
@@ -8800,23 +8846,23 @@ msgstr "Marke"
 msgid "Modell"
 msgstr "Modell"
 
-#: core/templates/fw/liegenschaft_detail.html:314
-#: core/templates/fw/liegenschaft_detail.html:351
+#: core/templates/fw/liegenschaft_detail.html:317
+#: core/templates/fw/liegenschaft_detail.html:354
 #: core/templates/fw/objekt_detail.html:759
 #: core/templates/fw/objekt_detail.html:794
 msgid "Kapazität / Leistung"
 msgstr "Kapazität / Leistung"
 
-#: core/templates/fw/liegenschaft_detail.html:315
+#: core/templates/fw/liegenschaft_detail.html:318
 #: core/templates/fw/objekt_detail.html:795
 msgid "z.B. 300 L, 24 kW"
 msgstr "z.B. 300 L, 24 kW"
 
-#: core/templates/fw/liegenschaft_detail.html:316
-#: core/templates/fw/liegenschaft_detail.html:353
-#: core/templates/fw/liegenschaft_detail.html:387
-#: core/templates/fw/liegenschaft_detail.html:396
-#: core/templates/fw/liegenschaft_detail.html:417
+#: core/templates/fw/liegenschaft_detail.html:319
+#: core/templates/fw/liegenschaft_detail.html:356
+#: core/templates/fw/liegenschaft_detail.html:390
+#: core/templates/fw/liegenschaft_detail.html:399
+#: core/templates/fw/liegenschaft_detail.html:420
 #: core/templates/fw/objekt_detail.html:761
 #: core/templates/fw/objekt_detail.html:796
 #: core/templates/fw/objekt_detail.html:815
@@ -8825,21 +8871,21 @@ msgstr "z.B. 300 L, 24 kW"
 msgid "Standort"
 msgstr "Standort"
 
-#: core/templates/fw/liegenschaft_detail.html:317
-#: core/templates/fw/liegenschaft_detail.html:388
+#: core/templates/fw/liegenschaft_detail.html:320
+#: core/templates/fw/liegenschaft_detail.html:391
 msgid "z.B. Technikraum"
 msgstr "z.B. Technikraum"
 
-#: core/templates/fw/liegenschaft_detail.html:318
-#: core/templates/fw/liegenschaft_detail.html:354
+#: core/templates/fw/liegenschaft_detail.html:321
+#: core/templates/fw/liegenschaft_detail.html:357
 #: core/templates/fw/objekt_detail.html:763
 #: core/templates/fw/objekt_detail.html:798
 msgid "Installations-Datum"
 msgstr "Installations-Datum"
 
-#: core/templates/fw/liegenschaft_detail.html:320
-#: core/templates/fw/liegenschaft_detail.html:328
-#: core/templates/fw/liegenschaft_detail.html:356
+#: core/templates/fw/liegenschaft_detail.html:323
+#: core/templates/fw/liegenschaft_detail.html:331
+#: core/templates/fw/liegenschaft_detail.html:359
 #: core/templates/fw/objekt_detail.html:615
 #: core/templates/fw/objekt_detail.html:701
 #: core/templates/fw/objekt_detail.html:732
@@ -8848,104 +8894,104 @@ msgstr "Installations-Datum"
 msgid "Garantie bis"
 msgstr "Garantie bis"
 
-#: core/templates/fw/liegenschaft_detail.html:328
+#: core/templates/fw/liegenschaft_detail.html:331
 #: core/templates/fw/objekt_detail.html:642
 #: core/templates/fw/objekt_detail.html:731
 msgid "Marke / Modell"
 msgstr "Marke / Modell"
 
-#: core/templates/fw/liegenschaft_detail.html:328
+#: core/templates/fw/liegenschaft_detail.html:331
 #: core/templates/fw/objekt_detail.html:732
 msgid "Installation"
 msgstr "Installation"
 
-#: core/templates/fw/liegenschaft_detail.html:332
+#: core/templates/fw/liegenschaft_detail.html:335
 #: core/templates/fw/objekt_detail.html:737
 msgid "SN:"
 msgstr "SN:"
 
-#: core/templates/fw/liegenschaft_detail.html:338
+#: core/templates/fw/liegenschaft_detail.html:341
 #: core/templates/fw/objekt_detail.html:743
 msgid "Gerät löschen?"
 msgstr "Gerät löschen?"
 
-#: core/templates/fw/liegenschaft_detail.html:367
+#: core/templates/fw/liegenschaft_detail.html:370
 msgid "Keine allgemeinen Geräte erfasst."
 msgstr "Keine allgemeinen Geräte erfasst."
 
-#: core/templates/fw/liegenschaft_detail.html:375
+#: core/templates/fw/liegenschaft_detail.html:378
 msgid "Allgemeine Zähler"
 msgstr "Allgemeine Zähler"
 
-#: core/templates/fw/liegenschaft_detail.html:375
+#: core/templates/fw/liegenschaft_detail.html:378
 msgid "Allgemeinstrom, Hauptwasser …"
 msgstr "Allgemeinstrom, Hauptwasser …"
 
-#: core/templates/fw/liegenschaft_detail.html:378
-#: core/templates/fw/liegenschaft_detail.html:391
+#: core/templates/fw/liegenschaft_detail.html:381
+#: core/templates/fw/liegenschaft_detail.html:394
 #: core/templates/fw/objekt_detail.html:854
 msgid "Zähler erfassen"
 msgstr "Zähler erfassen"
 
-#: core/templates/fw/liegenschaft_detail.html:384
+#: core/templates/fw/liegenschaft_detail.html:387
 msgid "z.B. Allgemeinstrom"
 msgstr "z.B. Allgemeinstrom"
 
-#: core/templates/fw/liegenschaft_detail.html:385
+#: core/templates/fw/liegenschaft_detail.html:388
 msgid "Zähler-Nr. *"
 msgstr "Zähler-Nr. *"
 
-#: core/templates/fw/liegenschaft_detail.html:389
-#: core/templates/fw/liegenschaft_detail.html:419
+#: core/templates/fw/liegenschaft_detail.html:392
+#: core/templates/fw/liegenschaft_detail.html:422
 #: core/templates/fw/objekt_detail.html:839
 #: core/templates/fw/objekt_detail.html:864
 msgid "Aktueller Stand"
 msgstr "Aktueller Stand"
 
-#: core/templates/fw/liegenschaft_detail.html:396
-#: core/templates/fw/liegenschaft_detail.html:415
+#: core/templates/fw/liegenschaft_detail.html:399
+#: core/templates/fw/liegenschaft_detail.html:418
 #: core/templates/fw/objekt_detail.html:814
 #: core/templates/fw/objekt_detail.html:835
 #: core/templates/fw/objekt_detail.html:860
 msgid "Zähler-Nr."
 msgstr "Zähler-Nr."
 
-#: core/templates/fw/liegenschaft_detail.html:396
+#: core/templates/fw/liegenschaft_detail.html:399
 #: core/templates/fw/objekt_detail.html:815
 #: core/templates/fw/regelsatz_form.html:28
 msgid "Stand"
 msgstr "Stand"
 
-#: core/templates/fw/liegenschaft_detail.html:405
+#: core/templates/fw/liegenschaft_detail.html:408
 #: core/templates/fw/objekt_detail.html:825
 msgid "Zähler löschen?"
 msgstr "Zähler löschen?"
 
-#: core/templates/fw/liegenschaft_detail.html:428
+#: core/templates/fw/liegenschaft_detail.html:431
 msgid "Keine allgemeinen Zähler erfasst."
 msgstr "Keine allgemeinen Zähler erfasst."
 
-#: core/templates/fw/liegenschaft_detail.html:439
+#: core/templates/fw/liegenschaft_detail.html:442
 msgid "ausgeführte Massnahmen"
 msgstr "ausgeführte Massnahmen"
 
-#: core/templates/fw/liegenschaft_detail.html:442
+#: core/templates/fw/liegenschaft_detail.html:445
 msgid "Massnahme"
 msgstr "Massnahme"
 
-#: core/templates/fw/liegenschaft_detail.html:449
+#: core/templates/fw/liegenschaft_detail.html:452
 msgid "Keine Unterhaltsarbeiten erfasst."
 msgstr "Keine Unterhaltsarbeiten erfasst."
 
-#: core/templates/fw/liegenschaft_detail.html:457
+#: core/templates/fw/liegenschaft_detail.html:460
 msgid "Aktionen an den Mietverhältnissen dieser Liegenschaft"
 msgstr "Aktionen an den Mietverhältnissen dieser Liegenschaft"
 
-#: core/templates/fw/liegenschaft_detail.html:469
+#: core/templates/fw/liegenschaft_detail.html:472
 msgid "Noch keine protokollierten Aktionen."
 msgstr "Noch keine protokollierten Aktionen."
 
-#: core/templates/fw/liegenschaft_detail.html:476
+#: core/templates/fw/liegenschaft_detail.html:479
 msgid ""
 "Nur Vertrags-Aktionen — Ereignisse am Gebäude werden heute nicht "
 "protokolliert."
@@ -8953,107 +8999,107 @@ msgstr ""
 "Nur Vertrags-Aktionen — Ereignisse am Gebäude werden heute nicht "
 "protokolliert."
 
-#: core/templates/fw/liegenschaft_detail.html:477
+#: core/templates/fw/liegenschaft_detail.html:480
 msgid "Vollständiges Logbuch"
 msgstr "Vollständiges Logbuch"
 
-#: core/templates/fw/liegenschaft_detail.html:484
+#: core/templates/fw/liegenschaft_detail.html:487
 msgid "Soll-Nettomiete / Jahr"
 msgstr "Soll-Nettomiete / Jahr"
 
-#: core/templates/fw/liegenschaft_detail.html:486
+#: core/templates/fw/liegenschaft_detail.html:489
 msgid "aus den aktiven Verträgen hochgerechnet"
 msgstr "aus den aktiven Verträgen hochgerechnet"
 
-#: core/templates/fw/liegenschaft_detail.html:489
+#: core/templates/fw/liegenschaft_detail.html:492
 msgid "Sollmiete ÷ Wert"
 msgstr "Sollmiete ÷ Wert"
 
-#: core/templates/fw/liegenschaft_detail.html:490
+#: core/templates/fw/liegenschaft_detail.html:493
 msgid "Nettorendite"
 msgstr "Nettorendite"
 
-#: core/templates/fw/liegenschaft_detail.html:492
+#: core/templates/fw/liegenschaft_detail.html:495
 msgid "letzte 12 Monate, nach Aufwand"
 msgstr "letzte 12 Monate, nach Aufwand"
 
-#: core/templates/fw/liegenschaft_detail.html:493
+#: core/templates/fw/liegenschaft_detail.html:496
 msgid "Wert"
 msgstr "Wert"
 
-#: core/templates/fw/liegenschaft_detail.html:494
+#: core/templates/fw/liegenschaft_detail.html:497
 msgid "fehlt"
 msgstr "fehlt"
 
-#: core/templates/fw/liegenschaft_detail.html:495
+#: core/templates/fw/liegenschaft_detail.html:498
 msgid "Nenner der Rendite"
 msgstr "Nenner der Rendite"
 
-#: core/templates/fw/liegenschaft_detail.html:499
+#: core/templates/fw/liegenschaft_detail.html:502
 msgid "Betriebsrechnung (PDF)"
 msgstr "Betriebsrechnung (PDF)"
 
-#: core/templates/fw/liegenschaft_detail.html:512
+#: core/templates/fw/liegenschaft_detail.html:515
 msgid "Unterhaltsbudget"
 msgstr "Unterhaltsbudget"
 
-#: core/templates/fw/liegenschaft_detail.html:513
+#: core/templates/fw/liegenschaft_detail.html:516
 #, python-format
 msgid "%(j)s: CHF %(i)s von %(b)s verbraucht"
 msgstr "%(j)s: CHF %(i)s von %(b)s verbraucht"
 
-#: core/templates/fw/liegenschaft_detail.html:516
+#: core/templates/fw/liegenschaft_detail.html:519
 msgid "Budget erfassen oder ändern"
 msgstr "Budget erfassen oder ändern"
 
-#: core/templates/fw/liegenschaft_detail.html:521
+#: core/templates/fw/liegenschaft_detail.html:524
 msgid "Jahr *"
 msgstr "Jahr *"
 
-#: core/templates/fw/liegenschaft_detail.html:524
+#: core/templates/fw/liegenschaft_detail.html:527
 msgid "Unterhaltsbudget CHF *"
 msgstr "Unterhaltsbudget CHF *"
 
-#: core/templates/fw/liegenschaft_detail.html:528
+#: core/templates/fw/liegenschaft_detail.html:531
 msgid "z.B. ohne Dachsanierung"
 msgstr "z.B. ohne Dachsanierung"
 
-#: core/templates/fw/liegenschaft_detail.html:530
+#: core/templates/fw/liegenschaft_detail.html:533
 msgid "Budget speichern"
 msgstr "Budget speichern"
 
-#: core/templates/fw/liegenschaft_detail.html:531
+#: core/templates/fw/liegenschaft_detail.html:534
 msgid "Ein bestehendes Budget desselben Jahres wird überschrieben."
 msgstr "Ein bestehendes Budget desselben Jahres wird überschrieben."
 
-#: core/templates/fw/liegenschaft_detail.html:545
+#: core/templates/fw/liegenschaft_detail.html:548
 #, python-format
 msgid "Budget %(j)s entfernen? Der Unterhaltsbefund verschwindet damit."
 msgstr "Budget %(j)s entfernen? Der Unterhaltsbefund verschwindet damit."
 
-#: core/templates/fw/liegenschaft_detail.html:547
+#: core/templates/fw/liegenschaft_detail.html:550
 msgid "Budget entfernen"
 msgstr "Budget entfernen"
 
-#: core/templates/fw/liegenschaft_detail.html:551
+#: core/templates/fw/liegenschaft_detail.html:554
 msgid ""
 "Kein Budget erfasst. Ohne Budget meldet die Akte keinen Unterhaltsbefund."
 msgstr ""
 "Kein Budget erfasst. Ohne Budget meldet die Akte keinen Unterhaltsbefund."
 
-#: core/templates/fw/liegenschaft_detail.html:557
+#: core/templates/fw/liegenschaft_detail.html:560
 msgid "Nebenkosten-Perioden"
 msgstr "Nebenkosten-Perioden"
 
-#: core/templates/fw/liegenschaft_detail.html:558
+#: core/templates/fw/liegenschaft_detail.html:561
 msgid "Zur Abrechnung"
 msgstr "Zur Abrechnung"
 
-#: core/templates/fw/liegenschaft_detail.html:569
+#: core/templates/fw/liegenschaft_detail.html:572
 msgid "Noch keine Abrechnungsperioden."
 msgstr "Noch keine Abrechnungsperioden."
 
-#: core/templates/fw/liegenschaft_detail.html:576
+#: core/templates/fw/liegenschaft_detail.html:579
 msgid ""
 "Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). "
 "Vertragsdokumente findest du beim jeweiligen Objekt unter «Chronik» und bei "
@@ -9063,109 +9109,109 @@ msgstr ""
 "Vertragsdokumente findest du beim jeweiligen Objekt unter «Chronik» und bei "
 "der Person."
 
-#: core/templates/fw/liegenschaft_detail.html:583
-#: core/templates/fw/person_detail.html:468
+#: core/templates/fw/liegenschaft_detail.html:586
+#: core/templates/fw/person_detail.html:477
 #, python-format
 msgid "%(n)s Dokument"
 msgid_plural "%(n)s Dokumente"
 msgstr[0] "%(n)s Dokument"
 msgstr[1] "%(n)s Dokumente"
 
-#: core/templates/fw/liegenschaft_detail.html:598
+#: core/templates/fw/liegenschaft_detail.html:601
 #, python-format
 msgid "Dokument «%(t)s» löschen?"
 msgstr "Dokument «%(t)s» löschen?"
 
-#: core/templates/fw/liegenschaft_detail.html:606
-#: core/templates/fw/person_detail.html:496
+#: core/templates/fw/liegenschaft_detail.html:609
+#: core/templates/fw/person_detail.html:505
 msgid "Keine Dokumente hinterlegt."
 msgstr "Keine Dokumente hinterlegt."
 
-#: core/templates/fw/liegenschaft_detail.html:614
+#: core/templates/fw/liegenschaft_detail.html:617
 msgid "Fälle zu dieser Liegenschaft"
 msgstr "Fälle zu dieser Liegenschaft"
 
-#: core/templates/fw/liegenschaft_detail.html:626
+#: core/templates/fw/liegenschaft_detail.html:629
 msgid "Zu dieser Liegenschaft läuft kein Fall."
 msgstr "Zu dieser Liegenschaft läuft kein Fall."
 
-#: core/templates/fw/liegenschaft_detail.html:630
+#: core/templates/fw/liegenschaft_detail.html:633
 msgid "Wartungs- und Versicherungsfristen"
 msgstr "Wartungs- und Versicherungsfristen"
 
-#: core/templates/fw/liegenschaft_detail.html:637
+#: core/templates/fw/liegenschaft_detail.html:640
 msgid "Neue Frist erfassen"
 msgstr "Neue Frist erfassen"
 
-#: core/templates/fw/liegenschaft_detail.html:643
-#: core/templates/fw/liegenschaft_detail.html:687 portfolio/models.py:798
+#: core/templates/fw/liegenschaft_detail.html:646
+#: core/templates/fw/liegenschaft_detail.html:690 portfolio/models.py:798
 msgid "Wartung / Service"
 msgstr "Wartung / Service"
 
-#: core/templates/fw/liegenschaft_detail.html:645
-#: core/templates/fw/liegenschaft_detail.html:689 portfolio/models.py:800
+#: core/templates/fw/liegenschaft_detail.html:648
+#: core/templates/fw/liegenschaft_detail.html:692 portfolio/models.py:800
 msgid "Kontrolle / Prüfung"
 msgstr "Kontrolle / Prüfung"
 
-#: core/templates/fw/liegenschaft_detail.html:646
-#: core/templates/fw/liegenschaft_detail.html:690 portfolio/models.py:801
+#: core/templates/fw/liegenschaft_detail.html:649
+#: core/templates/fw/liegenschaft_detail.html:693 portfolio/models.py:801
 msgid "Abonnement / Vertrag"
 msgstr "Abonnement / Vertrag"
 
-#: core/templates/fw/liegenschaft_detail.html:650
+#: core/templates/fw/liegenschaft_detail.html:653
 msgid "z.B. Heizungswartung, Gebäudeversicherung"
 msgstr "z.B. Heizungswartung, Gebäudeversicherung"
 
-#: core/templates/fw/liegenschaft_detail.html:651
-#: core/templates/fw/liegenschaft_detail.html:662
-#: core/templates/fw/liegenschaft_detail.html:695
+#: core/templates/fw/liegenschaft_detail.html:654
+#: core/templates/fw/liegenschaft_detail.html:665
+#: core/templates/fw/liegenschaft_detail.html:698
 msgid "Anbieter"
 msgstr "Anbieter"
 
-#: core/templates/fw/liegenschaft_detail.html:652
-#: core/templates/fw/liegenschaft_detail.html:697
+#: core/templates/fw/liegenschaft_detail.html:655
+#: core/templates/fw/liegenschaft_detail.html:700
 msgid "Nächste Fälligkeit *"
 msgstr "Nächste Fälligkeit *"
 
-#: core/templates/fw/liegenschaft_detail.html:654
-#: core/templates/fw/liegenschaft_detail.html:699
+#: core/templates/fw/liegenschaft_detail.html:657
+#: core/templates/fw/liegenschaft_detail.html:702
 msgid "Intervall (Monate, 0 = einmalig)"
 msgstr "Intervall (Monate, 0 = einmalig)"
 
-#: core/templates/fw/liegenschaft_detail.html:657
+#: core/templates/fw/liegenschaft_detail.html:660
 msgid "Frist speichern"
 msgstr "Frist speichern"
 
-#: core/templates/fw/liegenschaft_detail.html:662
+#: core/templates/fw/liegenschaft_detail.html:665
 msgid "Nächste Fälligkeit"
 msgstr "Nächste Fälligkeit"
 
-#: core/templates/fw/liegenschaft_detail.html:663
+#: core/templates/fw/liegenschaft_detail.html:666
 msgid "Intervall"
 msgstr "Intervall"
 
-#: core/templates/fw/liegenschaft_detail.html:673
+#: core/templates/fw/liegenschaft_detail.html:676
 #, python-format
 msgid "%(n)s Mt."
 msgstr "%(n)s Mt."
 
-#: core/templates/fw/liegenschaft_detail.html:673
+#: core/templates/fw/liegenschaft_detail.html:676
 msgid "einmalig"
 msgstr "einmalig"
 
-#: core/templates/fw/liegenschaft_detail.html:676
+#: core/templates/fw/liegenschaft_detail.html:679
 msgid "Frist löschen?"
 msgstr "Frist löschen?"
 
-#: core/templates/fw/liegenschaft_detail.html:677
+#: core/templates/fw/liegenschaft_detail.html:680
 msgid "Frist löschen"
 msgstr "Frist löschen"
 
-#: core/templates/fw/liegenschaft_detail.html:711
+#: core/templates/fw/liegenschaft_detail.html:714
 msgid "Keine Wartungs-/Versicherungsfristen erfasst."
 msgstr "Keine Wartungs-/Versicherungsfristen erfasst."
 
-#: core/templates/fw/liegenschaft_detail.html:715
+#: core/templates/fw/liegenschaft_detail.html:718
 msgid ""
 "Fällige Fristen erscheinen automatisch als Pendenz und rollen nach dem "
 "Intervall weiter."
@@ -9173,21 +9219,21 @@ msgstr ""
 "Fällige Fristen erscheinen automatisch als Pendenz und rollen nach dem "
 "Intervall weiter."
 
-#: core/templates/fw/liegenschaft_detail.html:718
+#: core/templates/fw/liegenschaft_detail.html:721
 msgid "Offene Schadensfälle"
 msgstr "Offene Schadensfälle"
 
-#: core/templates/fw/liegenschaft_detail.html:730
+#: core/templates/fw/liegenschaft_detail.html:733
 msgid "Keine offenen Schadensfälle. 🎉"
 msgstr "Keine offenen Schadensfälle. 🎉"
 
-#: core/templates/fw/liegenschaft_detail.html:740
+#: core/templates/fw/liegenschaft_detail.html:743
 #: core/templates/fw/mandat_detail.html:207
 #, python-format
 msgid "%(v)s von %(e)s vermietet"
 msgstr "%(v)s von %(e)s vermietet"
 
-#: core/templates/fw/liegenschaft_detail.html:755
+#: core/templates/fw/liegenschaft_detail.html:758
 msgid "Keine Objekte erfasst."
 msgstr "Keine Objekte erfasst."
 
@@ -9203,60 +9249,54 @@ msgstr "Neue Liegenschaft erfassen"
 msgid "Adresse, Eigentümer und Stammdaten der Liegenschaft."
 msgstr "Adresse, Eigentümer und Stammdaten der Liegenschaft."
 
-#: core/templates/fw/liegenschaft_form.html:25
-msgid "Strasse & Nr. *"
-msgstr "Strasse & Nr. *"
+#: core/templates/fw/liegenschaft_form.html:36
+#: core/templates/fw/mandat_form.html:37 core/templates/fw/person_form.html:139
+#: core/templates/fw/vertrag_neu.html:89 core/templates/fw/vertrag_neu.html:119
+msgid "Strasse & Nr."
+msgstr "Strasse & Nr."
 
-#: core/templates/fw/liegenschaft_form.html:28
-msgid "PLZ *"
-msgstr "PLZ *"
-
-#: core/templates/fw/liegenschaft_form.html:30
-msgid "Ort *"
-msgstr "Ort *"
-
-#: core/templates/fw/liegenschaft_form.html:32
+#: core/templates/fw/liegenschaft_form.html:40
 #: core/templates/fw/regelsatz_form.html:24
 msgid "Kanton"
 msgstr "Kanton"
 
-#: core/templates/fw/liegenschaft_form.html:33
+#: core/templates/fw/liegenschaft_form.html:40
 msgid "SO"
 msgstr "SO"
 
-#: core/templates/fw/liegenschaft_form.html:38 faelle/akten.py:47
+#: core/templates/fw/liegenschaft_form.html:45 faelle/akten.py:47
 msgid "Stammdaten"
 msgstr "Stammdaten"
 
-#: core/templates/fw/liegenschaft_form.html:41
+#: core/templates/fw/liegenschaft_form.html:47
 msgid "automatisch aus Adresse"
 msgstr "automatisch aus Adresse"
 
-#: core/templates/fw/liegenschaft_form.html:65
+#: core/templates/fw/liegenschaft_form.html:70
 msgid "Versicherungswert (CHF)"
 msgstr "Versicherungswert (CHF)"
 
-#: core/templates/fw/liegenschaft_form.html:67
+#: core/templates/fw/liegenschaft_form.html:71
 msgid "Grundstücksfläche (m²)"
 msgstr "Grundstücksfläche (m²)"
 
-#: core/templates/fw/liegenschaft_form.html:69
+#: core/templates/fw/liegenschaft_form.html:72
 msgid "Gebäudevolumen (m³)"
 msgstr "Gebäudevolumen (m³)"
 
-#: core/templates/fw/liegenschaft_form.html:72
+#: core/templates/fw/liegenschaft_form.html:74
 msgid "Bewertung (für Rendite)"
 msgstr "Bewertung (für Rendite)"
 
-#: core/templates/fw/liegenschaft_form.html:74
+#: core/templates/fw/liegenschaft_form.html:76
 msgid "Verkehrswert (CHF)"
 msgstr "Verkehrswert (CHF)"
 
-#: core/templates/fw/liegenschaft_form.html:75
+#: core/templates/fw/liegenschaft_form.html:76
 msgid "Marktwert"
 msgstr "Marktwert"
 
-#: core/templates/fw/liegenschaft_form.html:76
+#: core/templates/fw/liegenschaft_form.html:77
 msgid "Anlagekosten (CHF)"
 msgstr "Anlagekosten (CHF)"
 
@@ -9264,39 +9304,39 @@ msgstr "Anlagekosten (CHF)"
 msgid "Kaufpreis (CHF)"
 msgstr "Kaufpreis (CHF)"
 
-#: core/templates/fw/liegenschaft_form.html:81
+#: core/templates/fw/liegenschaft_form.html:80
 msgid "Energie & Gebäudetechnik (GEAK)"
 msgstr "Energie & Gebäudetechnik (GEAK)"
 
-#: core/templates/fw/liegenschaft_form.html:93
+#: core/templates/fw/liegenschaft_form.html:94
 msgid "GEAK Hülle"
 msgstr "GEAK Hülle"
 
-#: core/templates/fw/liegenschaft_form.html:98
+#: core/templates/fw/liegenschaft_form.html:100
 msgid "GEAK Gesamt"
 msgstr "GEAK Gesamt"
 
-#: core/templates/fw/liegenschaft_form.html:103
+#: core/templates/fw/liegenschaft_form.html:106
 msgid "Energieträger (Zusatz)"
 msgstr "Energieträger (Zusatz)"
 
-#: core/templates/fw/liegenschaft_form.html:105
+#: core/templates/fw/liegenschaft_form.html:107
 msgid "Energiebezugsfl. (m²)"
 msgstr "Energiebezugsfl. (m²)"
 
-#: core/templates/fw/liegenschaft_form.html:107
+#: core/templates/fw/liegenschaft_form.html:108
 msgid "GEAK ausgestellt"
 msgstr "GEAK ausgestellt"
 
-#: core/templates/fw/liegenschaft_form.html:112
+#: core/templates/fw/liegenschaft_form.html:117
 msgid "kein Eigentümer"
 msgstr "kein Eigentümer"
 
-#: core/templates/fw/liegenschaft_form.html:118
+#: core/templates/fw/liegenschaft_form.html:124
 msgid "Objekte automatisch importieren"
 msgstr "Objekte automatisch importieren"
 
-#: core/templates/fw/liegenschaft_form.html:119
+#: core/templates/fw/liegenschaft_form.html:125
 msgid ""
 "Ermittelt die EGID aus der Adresse und lädt die Wohnungen automatisch aus "
 "dem eidgenössischen Gebäude- und Wohnungsregister (GWR)."
@@ -9304,23 +9344,23 @@ msgstr ""
 "Ermittelt die EGID aus der Adresse und lädt die Wohnungen automatisch aus "
 "dem eidgenössischen Gebäude- und Wohnungsregister (GWR)."
 
-#: core/templates/fw/liegenschaft_form.html:125
+#: core/templates/fw/liegenschaft_form.html:131
 msgid "Bank, Mietzinskonto & Notfallkontakte"
 msgstr "Bank, Mietzinskonto & Notfallkontakte"
 
-#: core/templates/fw/liegenschaft_form.html:127
+#: core/templates/fw/liegenschaft_form.html:133
 msgid "Bankname (Mietzinskonto)"
 msgstr "Bankname (Mietzinskonto)"
 
-#: core/templates/fw/liegenschaft_form.html:133
+#: core/templates/fw/liegenschaft_form.html:136
 msgid "Hauswart Telefon"
 msgstr "Hauswart Telefon"
 
-#: core/templates/fw/liegenschaft_form.html:135
+#: core/templates/fw/liegenschaft_form.html:137
 msgid "Notfall Sanitär"
 msgstr "Notfall Sanitär"
 
-#: core/templates/fw/liegenschaft_form.html:137
+#: core/templates/fw/liegenschaft_form.html:138
 msgid "Sanitär Telefon"
 msgstr "Sanitär Telefon"
 
@@ -9328,28 +9368,28 @@ msgstr "Sanitär Telefon"
 msgid "Notfall Elektriker"
 msgstr "Notfall Elektriker"
 
-#: core/templates/fw/liegenschaft_form.html:141
+#: core/templates/fw/liegenschaft_form.html:140
 msgid "Elektriker Telefon"
 msgstr "Elektriker Telefon"
 
-#: core/templates/fw/liegenschaft_form.html:147
+#: core/templates/fw/liegenschaft_form.html:145
 msgid "Nebenkosten / Heizung"
 msgstr "Nebenkosten / Heizung"
 
-#: core/templates/fw/liegenschaft_form.html:150
+#: core/templates/fw/liegenschaft_form.html:148
 msgid "Verbrauchsabhängige Heizkostenabrechnung (HKVO)"
 msgstr "Verbrauchsabhängige Heizkostenabrechnung (HKVO)"
 
-#: core/templates/fw/liegenschaft_form.html:153
+#: core/templates/fw/liegenschaft_form.html:152
 msgid "Grundkosten-Anteil"
 msgstr "Grundkosten-Anteil"
 
-#: core/templates/fw/liegenschaft_form.html:155
+#: core/templates/fw/liegenschaft_form.html:154
 #, python-format
 msgid "%% (Rest = Verbrauch, nach Wärmezähler)"
 msgstr "%% (Rest = Verbrauch, nach Wärmezähler)"
 
-#: core/templates/fw/liegenschaft_form.html:157
+#: core/templates/fw/liegenschaft_form.html:158
 msgid ""
 "Bei aktiver HKVO werden die Heizkosten in Grundkosten (nach m³) und "
 "Verbrauchskosten (nach Zählerständen der Wärmezähler) aufgeteilt."
@@ -9455,7 +9495,7 @@ msgid "Erste Liegenschaft erfassen"
 msgstr "Erste Liegenschaft erfassen"
 
 #: core/templates/fw/logbuch.html:3 core/templates/fw/logbuch.html:6
-#: core/views/fw/aktionen.py:857
+#: core/views/fw/aktionen.py:870
 msgid "Logbuch"
 msgstr "Logbuch"
 
@@ -9872,14 +9912,14 @@ msgid "Bank und Honorar"
 msgstr "Bank und Honorar"
 
 #: core/templates/fw/mandat_detail.html:186
-#: core/templates/fw/person_detail.html:231
+#: core/templates/fw/person_detail.html:240
 #: core/templates/fw/person_form.html:291
 msgid "Bank"
 msgstr "Bank"
 
 #: core/templates/fw/mandat_detail.html:189
 #: core/templates/fw/mieterkonten.html:59
-#: core/templates/fw/person_detail.html:301
+#: core/templates/fw/person_detail.html:310
 msgid "aktiv"
 msgstr "aktiv"
 
@@ -9941,7 +9981,7 @@ msgid "Name / Firma *"
 msgstr "Name / Firma *"
 
 #: core/templates/fw/mandat_form.html:29
-#: core/templates/fw/person_detail.html:149
+#: core/templates/fw/person_detail.html:158
 #: core/templates/fw/person_form.html:89
 msgid "Korrespondenzsprache"
 msgstr "Korrespondenzsprache"
@@ -9965,11 +10005,6 @@ msgstr "Italienisch"
 #: crm/models.py:229 crm/models.py:348
 msgid "Englisch"
 msgstr "Englisch"
-
-#: core/templates/fw/mandat_form.html:37 core/templates/fw/person_form.html:139
-#: core/templates/fw/vertrag_neu.html:89 core/templates/fw/vertrag_neu.html:119
-msgid "Strasse & Nr."
-msgstr "Strasse & Nr."
 
 #: core/templates/fw/mandat_form.html:48
 msgid "Bankname"
@@ -10122,7 +10157,7 @@ msgid "Kontoblatt %(name)s"
 msgstr "Kontoblatt %(name)s"
 
 #: core/templates/fw/mieterkonto.html:13
-#: core/templates/fw/person_detail.html:426
+#: core/templates/fw/person_detail.html:435
 msgid "Kontoblatt"
 msgstr "Kontoblatt"
 
@@ -10172,7 +10207,7 @@ msgid "Einheiten mit Mieter, Mietzins und Vertragsdaten · Stichtag %(datum)s"
 msgstr "Einheiten mit Mieter, Mietzins und Vertragsdaten · Stichtag %(datum)s"
 
 #: core/templates/fw/mieterspiegel.html:30
-#: core/templates/fw/objekt_form.html:86
+#: core/templates/fw/objekt_form.html:84
 msgid "Soll-Mietzins"
 msgstr "Soll-Mietzins"
 
@@ -10212,8 +10247,8 @@ msgid "Einheit"
 msgstr "Einheit"
 
 #: core/templates/fw/mieterspiegel.html:67
-#: core/templates/fw/objekt_form.html:107
-#: core/templates/fw/person_detail.html:373 core/templates/fw/vertraege.html:52
+#: core/templates/fw/objekt_form.html:104
+#: core/templates/fw/person_detail.html:382 core/templates/fw/vertraege.html:52
 #: core/templates/fw/vertraege.html:74
 msgid "Brutto"
 msgstr "Brutto"
@@ -10846,7 +10881,7 @@ msgid "z. B. renoviert 2024, Balkon nach Süden, ab sofort besichtigbar …"
 msgstr "z. B. renoviert 2024, Balkon nach Süden, ab sofort besichtigbar …"
 
 #: core/templates/fw/objekt_ausschreiben.html:28
-#: core/templates/fw/objekt_form.html:46 core/templates/fw/vermarktung.html:45
+#: core/templates/fw/objekt_form.html:55 core/templates/fw/vermarktung.html:45
 #: core/tests/test_raumkatalog.py:56 portfolio/models.py:403
 msgid "Zimmer"
 msgstr "Zimmer"
@@ -10862,12 +10897,12 @@ msgid "%(z)s Zimmer"
 msgstr "%(z)s Zimmer"
 
 #: core/templates/fw/objekt_detail.html:50
-#: core/templates/fw/objekt_form.html:56
+#: core/templates/fw/objekt_form.html:61
 msgid "EWID"
 msgstr "EWID"
 
 #: core/templates/fw/objekt_detail.html:66
-#: core/templates/fw/vermarktung.html:69
+#: core/templates/fw/vermarktung.html:88
 msgid "Ausschreibung beenden"
 msgstr "Ausschreibung beenden"
 
@@ -10939,7 +10974,7 @@ msgid "kein Raumbuch"
 msgstr "kein Raumbuch"
 
 #: core/templates/fw/objekt_detail.html:116
-#: core/templates/fw/person_detail.html:246
+#: core/templates/fw/person_detail.html:255
 msgid "Aktuelle Vermietung"
 msgstr "Aktuelle Vermietung"
 
@@ -10956,7 +10991,7 @@ msgid "Bodenbelag"
 msgstr "Bodenbelag"
 
 #: core/templates/fw/objekt_detail.html:138
-#: core/templates/fw/objekt_form.html:58
+#: core/templates/fw/objekt_form.html:62
 msgid "Kellerabteil"
 msgstr "Kellerabteil"
 
@@ -10995,7 +11030,7 @@ msgstr ""
 "entstehen automatisch beim Generieren."
 
 #: core/templates/fw/objekt_detail.html:195
-#: core/templates/fw/person_detail.html:360
+#: core/templates/fw/person_detail.html:369
 msgid "laufend"
 msgstr "laufend"
 
@@ -11061,8 +11096,8 @@ msgstr "Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts."
 #: core/templates/fw/objekt_detail.html:416
 #: core/templates/fw/objekt_detail.html:439
 #: core/templates/fw/objekt_detail.html:468
-#: core/templates/fw/objekt_form.html:93 core/templates/fw/objekt_form.html:104
-#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/objekt_form.html:89 core/templates/fw/objekt_form.html:101
+#: core/templates/fw/person_detail.html:285
 #: core/templates/fw/vertrag_detail.html:490
 msgid "Gültig ab"
 msgstr "Gültig ab"
@@ -11101,7 +11136,7 @@ msgid "Diese Sollmietzins-Zeile löschen?"
 msgstr "Diese Sollmietzins-Zeile löschen?"
 
 #: core/templates/fw/objekt_detail.html:298
-#: core/templates/fw/objekt_form.html:124
+#: core/templates/fw/objekt_form.html:121
 msgid "Noch kein Sollmietzins erfasst."
 msgstr "Noch kein Sollmietzins erfasst."
 
@@ -11120,7 +11155,7 @@ msgid "Referenz (CHF)"
 msgstr "Referenz (CHF)"
 
 #: core/templates/fw/objekt_detail.html:313
-#: core/templates/fw/objekt_form.html:91
+#: core/templates/fw/objekt_form.html:88
 #: core/templates/fw/vertrag_bearbeiten.html:120
 msgid "Nebenkosten (CHF)"
 msgstr "Nebenkosten (CHF)"
@@ -11512,50 +11547,50 @@ msgstr "Neues Mietobjekt erfassen"
 msgid "Objektdaten, Fläche und Soll-Mietzins."
 msgstr "Objektdaten, Fläche und Soll-Mietzins."
 
-#: core/templates/fw/objekt_form.html:33
+#: core/templates/fw/objekt_form.html:42
 msgid "z. B. 3.5-Zi EG"
 msgstr "z. B. 3.5-Zi EG"
 
-#: core/templates/fw/objekt_form.html:38
+#: core/templates/fw/objekt_form.html:48
 msgid "Etage"
 msgstr "Etage"
 
-#: core/templates/fw/objekt_form.html:39
+#: core/templates/fw/objekt_form.html:48
 msgid "EG / 1. OG"
 msgstr "EG / 1. OG"
 
-#: core/templates/fw/objekt_form.html:44
+#: core/templates/fw/objekt_form.html:53
 msgid "Fläche & Details"
 msgstr "Fläche & Details"
 
-#: core/templates/fw/objekt_form.html:48 core/templates/fw/vertrag_neu.html:320
+#: core/templates/fw/objekt_form.html:56 core/templates/fw/vertrag_neu.html:320
 #: core/templates/fw/weiterverrechnung.html:33 finance/models.py:78
 #: portfolio/models.py:398 rentals/models.py:33
 msgid "Fläche (m²)"
 msgstr "Fläche (m²)"
 
-#: core/templates/fw/objekt_form.html:50 core/templates/fw/vertrag_neu.html:320
+#: core/templates/fw/objekt_form.html:57 core/templates/fw/vertrag_neu.html:320
 #: finance/models.py:78 portfolio/models.py:399 rentals/models.py:34
 msgid "Volumen (m³)"
 msgstr "Volumen (m³)"
 
-#: core/templates/fw/objekt_form.html:52
+#: core/templates/fw/objekt_form.html:58
 msgid "Wertquote (‰)"
 msgstr "Wertquote (‰)"
 
-#: core/templates/fw/objekt_form.html:53
+#: core/templates/fw/objekt_form.html:58
 msgid "STWE / NK-Verteilung"
 msgstr "STWE / NK-Verteilung"
 
-#: core/templates/fw/objekt_form.html:60
+#: core/templates/fw/objekt_form.html:63
 msgid "Estrich"
 msgstr "Estrich"
 
-#: core/templates/fw/objekt_form.html:62
+#: core/templates/fw/objekt_form.html:64
 msgid "OTO-Dose (Glasfaser)"
 msgstr "OTO-Dose (Glasfaser)"
 
-#: core/templates/fw/objekt_form.html:66
+#: core/templates/fw/objekt_form.html:67
 msgid "Bodenbelag (Wohnraum)"
 msgstr "Bodenbelag (Wohnraum)"
 
@@ -11563,23 +11598,23 @@ msgstr "Bodenbelag (Wohnraum)"
 msgid "Bodenbelag (Nassraum)"
 msgstr "Bodenbelag (Nassraum)"
 
-#: core/templates/fw/objekt_form.html:70
+#: core/templates/fw/objekt_form.html:69
 msgid "Letzte Renovation (Jahr)"
 msgstr "Letzte Renovation (Jahr)"
 
-#: core/templates/fw/objekt_form.html:72
+#: core/templates/fw/objekt_form.html:70
 msgid "Standard-Kaution (Monate)"
 msgstr "Standard-Kaution (Monate)"
 
-#: core/templates/fw/objekt_form.html:76
+#: core/templates/fw/objekt_form.html:73
 msgid "Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)"
 msgstr "Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)"
 
-#: core/templates/fw/objekt_form.html:78
+#: core/templates/fw/objekt_form.html:75
 msgid "eigenständiges Objekt"
 msgstr "eigenständiges Objekt"
 
-#: core/templates/fw/objekt_form.html:81
+#: core/templates/fw/objekt_form.html:79
 msgid ""
 "Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben "
 "Liegenschaft zu."
@@ -11587,11 +11622,11 @@ msgstr ""
 "Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben "
 "Liegenschaft zu."
 
-#: core/templates/fw/objekt_form.html:89
+#: core/templates/fw/objekt_form.html:87
 msgid "Anfangs-Nettomiete (CHF)"
 msgstr "Anfangs-Nettomiete (CHF)"
 
-#: core/templates/fw/objekt_form.html:96
+#: core/templates/fw/objekt_form.html:93
 msgid ""
 "Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-"
 "Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du "
@@ -11603,7 +11638,7 @@ msgstr ""
 "danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, "
 "Mieterspiegel und Bilanz)."
 
-#: core/templates/fw/objekt_form.html:98
+#: core/templates/fw/objekt_form.html:95
 msgid ""
 "Der Mietzins wird ausschliesslich als <b>datierter Sollmietzins</b> gepflegt "
 "(inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und "
@@ -11613,12 +11648,12 @@ msgstr ""
 "(inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und "
 "Bilanz konsistent. Hier ist er nur zur Ansicht."
 
-#: core/templates/fw/objekt_form.html:126
+#: core/templates/fw/objekt_form.html:123
 msgid "Mietzins verwalten (Gratismonate, Anpassungen)"
 msgstr "Mietzins verwalten (Gratismonate, Anpassungen)"
 
-#: core/templates/fw/objekt_form.html:129
-#: core/templates/fw/person_detail.html:241
+#: core/templates/fw/objekt_form.html:126
+#: core/templates/fw/person_detail.html:250
 #: core/templates/fw/person_form.html:308
 msgid "Interne Notizen"
 msgstr "Interne Notizen"
@@ -11837,169 +11872,177 @@ msgstr "Kennzahlen zur Person, nicht zum Konto"
 msgid "Zu den Mietverhältnissen"
 msgstr "Zu den Mietverhältnissen"
 
-#: core/templates/fw/person_detail.html:147
+#: core/templates/fw/person_detail.html:138
+msgid "anonymisiert"
+msgstr "anonymisiert"
+
+#: core/templates/fw/person_detail.html:142
+msgid "Löschbegehren"
+msgstr "Löschbegehren"
+
+#: core/templates/fw/person_detail.html:156
 msgid "Telefon Privat"
 msgstr "Telefon Privat"
 
-#: core/templates/fw/person_detail.html:148
+#: core/templates/fw/person_detail.html:157
 #: core/templates/fw/person_form.html:130
 msgid "Telefon Geschäft"
 msgstr "Telefon Geschäft"
 
-#: core/templates/fw/person_detail.html:154
+#: core/templates/fw/person_detail.html:163
 #: core/templates/fw/person_form.html:109
 msgid "Firma / Organisation"
 msgstr "Firma / Organisation"
 
-#: core/templates/fw/person_detail.html:157
+#: core/templates/fw/person_detail.html:166
 msgid "UID / MWST-Nr."
 msgstr "UID / MWST-Nr."
 
-#: core/templates/fw/person_detail.html:165
+#: core/templates/fw/person_detail.html:174
 msgid "Stammdaten &amp; Herkunft"
 msgstr "Stammdaten &amp; Herkunft"
 
-#: core/templates/fw/person_detail.html:170
+#: core/templates/fw/person_detail.html:179
 msgid "Bewilligung"
 msgstr "Bewilligung"
 
-#: core/templates/fw/person_detail.html:170
+#: core/templates/fw/person_detail.html:179
 #, python-format
 msgid "bis %(d)s"
 msgstr "bis %(d)s"
 
-#: core/templates/fw/person_detail.html:171
+#: core/templates/fw/person_detail.html:180
 msgid "AHV-Nr."
 msgstr "AHV-Nr."
 
-#: core/templates/fw/person_detail.html:177
+#: core/templates/fw/person_detail.html:186
 msgid "Beruf &amp; Bonität"
 msgstr "Beruf &amp; Bonität"
 
-#: core/templates/fw/person_detail.html:182
+#: core/templates/fw/person_detail.html:191
 msgid "Jahreseinkommen"
 msgstr "Jahreseinkommen"
 
-#: core/templates/fw/person_detail.html:183
+#: core/templates/fw/person_detail.html:192
 msgid "Betreibungsauszug"
 msgstr "Betreibungsauszug"
 
-#: core/templates/fw/person_detail.html:184
+#: core/templates/fw/person_detail.html:193
 msgid "Ref. Vorvermieter"
 msgstr "Ref. Vorvermieter"
 
-#: core/templates/fw/person_detail.html:192
+#: core/templates/fw/person_detail.html:201
 #: core/templates/fw/person_form.html:246
 msgid "Erwachsene"
 msgstr "Erwachsene"
 
-#: core/templates/fw/person_detail.html:193
+#: core/templates/fw/person_detail.html:202
 #: core/templates/fw/person_form.html:248
 msgid "Kinder"
 msgstr "Kinder"
 
-#: core/templates/fw/person_detail.html:200
+#: core/templates/fw/person_detail.html:209
 msgid "Versicherung &amp; Notfall"
 msgstr "Versicherung &amp; Notfall"
 
-#: core/templates/fw/person_detail.html:203
+#: core/templates/fw/person_detail.html:212
 msgid "Haftpflicht"
 msgstr "Haftpflicht"
 
-#: core/templates/fw/person_detail.html:205
+#: core/templates/fw/person_detail.html:214
 #: core/templates/fw/vertrag_detail.html:435
 msgid "Police-Nr."
 msgstr "Police-Nr."
 
-#: core/templates/fw/person_detail.html:208
+#: core/templates/fw/person_detail.html:217
 msgid "Notfallkontakt"
 msgstr "Notfallkontakt"
 
-#: core/templates/fw/person_detail.html:217
+#: core/templates/fw/person_detail.html:226
 #: core/templates/fw/person_form.html:229
 msgid "Vertretung / Beistand"
 msgstr "Vertretung / Beistand"
 
-#: core/templates/fw/person_detail.html:228
+#: core/templates/fw/person_detail.html:237
 #: core/templates/fw/person_form.html:279
 msgid "Zahlungsverkehr"
 msgstr "Zahlungsverkehr"
 
-#: core/templates/fw/person_detail.html:232
+#: core/templates/fw/person_detail.html:241
 #: core/templates/fw/person_form.html:281
 msgid "Zahlungsart"
 msgstr "Zahlungsart"
 
-#: core/templates/fw/person_detail.html:233
+#: core/templates/fw/person_detail.html:242
 msgid "eBill / E-Rechnung"
 msgstr "eBill / E-Rechnung"
 
-#: core/templates/fw/person_detail.html:234
+#: core/templates/fw/person_detail.html:243
 msgid "Mahnsperre"
 msgstr "Mahnsperre"
 
-#: core/templates/fw/person_detail.html:234
+#: core/templates/fw/person_detail.html:243
 msgid "aktiv (Zahlungsvereinbarung)"
 msgstr "aktiv (Zahlungsvereinbarung)"
 
-#: core/templates/fw/person_detail.html:235
+#: core/templates/fw/person_detail.html:244
 msgid "Abw. Zahler"
 msgstr "Abw. Zahler"
 
-#: core/templates/fw/person_detail.html:252
+#: core/templates/fw/person_detail.html:261
 msgid "Kein aktiver Vertrag."
 msgstr "Kein aktiver Vertrag."
 
-#: core/templates/fw/person_detail.html:257
+#: core/templates/fw/person_detail.html:266
 msgid "Adressverlauf"
 msgstr "Adressverlauf"
 
-#: core/templates/fw/person_detail.html:259
+#: core/templates/fw/person_detail.html:268
 msgid "Adresse hinzufügen"
 msgstr "Adresse hinzufügen"
 
-#: core/templates/fw/person_detail.html:263
-#: core/templates/fw/person_detail.html:281
+#: core/templates/fw/person_detail.html:272
+#: core/templates/fw/person_detail.html:290
 #: core/templates/fw/person_form.html:137 crm/models.py:481
 msgid "Wohnadresse"
 msgstr "Wohnadresse"
 
-#: core/templates/fw/person_detail.html:264
+#: core/templates/fw/person_detail.html:273
 #: core/templates/fw/person_form.html:155 crm/models.py:481
 msgid "Korrespondenzadresse"
 msgstr "Korrespondenzadresse"
 
-#: core/templates/fw/person_detail.html:267
+#: core/templates/fw/person_detail.html:276
 msgid "Strasse &amp; Nr. / c/o"
 msgstr "Strasse &amp; Nr. / c/o"
 
-#: core/templates/fw/person_detail.html:268
+#: core/templates/fw/person_detail.html:277
 #: core/templates/fw/person_form.html:141
 #: core/templates/fw/person_form.html:159
 msgid "Adresszusatz"
 msgstr "Adresszusatz"
 
-#: core/templates/fw/person_detail.html:271
+#: core/templates/fw/person_detail.html:280
 msgid "Adress-Zeile speichern"
 msgstr "Adress-Zeile speichern"
 
-#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/person_detail.html:285
 msgid "Quelle"
 msgstr "Quelle"
 
-#: core/templates/fw/person_detail.html:286
+#: core/templates/fw/person_detail.html:295
 msgid "Diese Adress-Zeile entfernen?"
 msgstr "Diese Adress-Zeile entfernen?"
 
-#: core/templates/fw/person_detail.html:287
+#: core/templates/fw/person_detail.html:296
 msgid "Adresszeile löschen"
 msgstr "Adresszeile löschen"
 
-#: core/templates/fw/person_detail.html:292
+#: core/templates/fw/person_detail.html:301
 msgid "Noch keine datierten Adress-Zeilen."
 msgstr "Noch keine datierten Adress-Zeilen."
 
-#: core/templates/fw/person_detail.html:296
+#: core/templates/fw/person_detail.html:305
 msgid ""
 "Datierte Adress-Zeilen («gültig ab») wie beim Sollmietzins. Die zum Stichtag "
 "gültige Zeile ergibt die effektive Zustelladresse — eine "
@@ -12009,15 +12052,15 @@ msgstr ""
 "gültige Zeile ergibt die effektive Zustelladresse — eine "
 "Korrespondenzadresse hat dabei Vorrang vor der Wohnadresse."
 
-#: core/templates/fw/person_detail.html:300
+#: core/templates/fw/person_detail.html:309
 msgid "Mieterportal-Zugang"
 msgstr "Mieterportal-Zugang"
 
-#: core/templates/fw/person_detail.html:301
+#: core/templates/fw/person_detail.html:310
 msgid "deaktiviert"
 msgstr "deaktiviert"
 
-#: core/templates/fw/person_detail.html:305
+#: core/templates/fw/person_detail.html:314
 #, python-format
 msgid ""
 "Login unter <span class=\"font-mono\">/login/</span>. „Passwort "
@@ -12026,7 +12069,7 @@ msgstr ""
 "Login unter <span class=\"font-mono\">/login/</span>. „Passwort "
 "zurücksetzen“ erzeugt ein neues Passwort und sendet es an %(email)s."
 
-#: core/templates/fw/person_detail.html:306
+#: core/templates/fw/person_detail.html:315
 msgid ""
 "Login unter <span class=\"font-mono\">/login/</span>. „Passwort "
 "zurücksetzen“ erzeugt ein neues Passwort und sendet es — keine E-Mail "
@@ -12036,33 +12079,33 @@ msgstr ""
 "zurücksetzen“ erzeugt ein neues Passwort und sendet es — keine E-Mail "
 "hinterlegt, es wird angezeigt."
 
-#: core/templates/fw/person_detail.html:309
+#: core/templates/fw/person_detail.html:318
 msgid ""
 "Neues Passwort erzeugen und an den Mieter senden? Das alte wird ungültig."
 msgstr ""
 "Neues Passwort erzeugen und an den Mieter senden? Das alte wird ungültig."
 
-#: core/templates/fw/person_detail.html:309
+#: core/templates/fw/person_detail.html:318
 msgid "Neues Passwort erzeugen und anzeigen? Das alte wird ungültig."
 msgstr "Neues Passwort erzeugen und anzeigen? Das alte wird ungültig."
 
-#: core/templates/fw/person_detail.html:311
+#: core/templates/fw/person_detail.html:320
 msgid "Passwort zurücksetzen &amp; senden"
 msgstr "Passwort zurücksetzen &amp; senden"
 
-#: core/templates/fw/person_detail.html:313
+#: core/templates/fw/person_detail.html:322
 msgid "Portal-Zugang deaktivieren?"
 msgstr "Portal-Zugang deaktivieren?"
 
-#: core/templates/fw/person_detail.html:315
+#: core/templates/fw/person_detail.html:324
 msgid "Zugang deaktivieren"
 msgstr "Zugang deaktivieren"
 
-#: core/templates/fw/person_detail.html:320
+#: core/templates/fw/person_detail.html:329
 msgid "Kein Portal-Zugang"
 msgstr "Kein Portal-Zugang"
 
-#: core/templates/fw/person_detail.html:321
+#: core/templates/fw/person_detail.html:330
 msgid ""
 "Erstellen Sie einen Login, damit der Mieter Vertrag, offene Rechnungen (QR), "
 "Kontoauszug, Dokumente und Schadenmeldung online nutzen kann."
@@ -12070,73 +12113,73 @@ msgstr ""
 "Erstellen Sie einen Login, damit der Mieter Vertrag, offene Rechnungen (QR), "
 "Kontoauszug, Dokumente und Schadenmeldung online nutzen kann."
 
-#: core/templates/fw/person_detail.html:322
+#: core/templates/fw/person_detail.html:331
 #, python-format
 msgid "Die Zugangsdaten gehen automatisch an %(email)s."
 msgstr "Die Zugangsdaten gehen automatisch an %(email)s."
 
-#: core/templates/fw/person_detail.html:322
+#: core/templates/fw/person_detail.html:331
 msgid ""
 "Keine E-Mail hinterlegt — die Zugangsdaten werden hier einmalig angezeigt."
 msgstr ""
 "Keine E-Mail hinterlegt — die Zugangsdaten werden hier einmalig angezeigt."
 
-#: core/templates/fw/person_detail.html:327
+#: core/templates/fw/person_detail.html:336
 msgid "Portal-Zugang erstellen"
 msgstr "Portal-Zugang erstellen"
 
-#: core/templates/fw/person_detail.html:327
+#: core/templates/fw/person_detail.html:336
 msgid "&amp; per E-Mail senden"
 msgstr "&amp; per E-Mail senden"
 
-#: core/templates/fw/person_detail.html:345
+#: core/templates/fw/person_detail.html:354
 msgid "Rollen über die Zeit"
 msgstr "Rollen über die Zeit"
 
-#: core/templates/fw/person_detail.html:346
+#: core/templates/fw/person_detail.html:355
 #, python-format
 msgid "%(n)s Verbindung"
 msgid_plural "%(n)s Verbindungen"
 msgstr[0] "%(n)s Verbindung"
 msgstr[1] "%(n)s Verbindungen"
 
-#: core/templates/fw/person_detail.html:358
+#: core/templates/fw/person_detail.html:367
 #, python-format
 msgid "CHF %(b)s brutto"
 msgstr "CHF %(b)s brutto"
 
-#: core/templates/fw/person_detail.html:363
+#: core/templates/fw/person_detail.html:372
 msgid "Keine Verbindungen erfasst."
 msgstr "Keine Verbindungen erfasst."
 
-#: core/templates/fw/person_detail.html:369
+#: core/templates/fw/person_detail.html:378
 msgid "Mietverhältnisse im Einzelnen"
 msgstr "Mietverhältnisse im Einzelnen"
 
-#: core/templates/fw/person_detail.html:386
+#: core/templates/fw/person_detail.html:395
 msgid "Keine Verträge."
 msgstr "Keine Verträge."
 
-#: core/templates/fw/person_detail.html:406
+#: core/templates/fw/person_detail.html:415
 #: core/templates/fw/vertrag_detail.html:579
 #, python-format
 msgid "Offener Betrag: CHF %(b)s"
 msgstr "Offener Betrag: CHF %(b)s"
 
-#: core/templates/fw/person_detail.html:437
+#: core/templates/fw/person_detail.html:446
 msgid "Keine offenen Posten. 🎉"
 msgstr "Keine offenen Posten. 🎉"
 
-#: core/templates/fw/person_detail.html:444
+#: core/templates/fw/person_detail.html:453
 #: core/templates/fw/vertrag_detail.html:635
 msgid "Zahlungseingänge"
 msgstr "Zahlungseingänge"
 
-#: core/templates/fw/person_detail.html:452
+#: core/templates/fw/person_detail.html:461
 msgid "Noch keine Zahlungen."
 msgstr "Noch keine Zahlungen."
 
-#: core/templates/fw/person_detail.html:461
+#: core/templates/fw/person_detail.html:470
 msgid ""
 "Nach Mietverhältnis gruppiert. Das Auge steuert, ob der Mieter das Dokument "
 "im Portal sieht. Grün = sichtbar, grau = ausgeblendet."
@@ -12144,60 +12187,60 @@ msgstr ""
 "Nach Mietverhältnis gruppiert. Das Auge steuert, ob der Mieter das Dokument "
 "im Portal sieht. Grün = sichtbar, grau = ausgeblendet."
 
-#: core/templates/fw/person_detail.html:504
+#: core/templates/fw/person_detail.html:513
 msgid "Kontaktjournal"
 msgstr "Kontaktjournal"
 
-#: core/templates/fw/person_detail.html:513
+#: core/templates/fw/person_detail.html:522
 msgid "Notiz / Kontakt erfassen"
 msgstr "Notiz / Kontakt erfassen"
 
-#: core/templates/fw/person_detail.html:521 crm/models.py:663
+#: core/templates/fw/person_detail.html:530 crm/models.py:663
 #: finance/models.py:451
 msgid "Brief"
 msgstr "Brief"
 
-#: core/templates/fw/person_detail.html:521 crm/models.py:664
+#: core/templates/fw/person_detail.html:530 crm/models.py:664
 msgid "Persönlich"
 msgstr "Persönlich"
 
-#: core/templates/fw/person_detail.html:524 crm/models.py:665
+#: core/templates/fw/person_detail.html:533 crm/models.py:665
 msgid "Eingehend"
 msgstr "Eingehend"
 
-#: core/templates/fw/person_detail.html:524 crm/models.py:665
+#: core/templates/fw/person_detail.html:533 crm/models.py:665
 msgid "Ausgehend"
 msgstr "Ausgehend"
 
-#: core/templates/fw/person_detail.html:524 crm/models.py:665
+#: core/templates/fw/person_detail.html:533 crm/models.py:665
 msgid "Intern"
 msgstr "Intern"
 
-#: core/templates/fw/person_detail.html:526
+#: core/templates/fw/person_detail.html:535
 msgid "Betreff (optional)"
 msgstr "Betreff (optional)"
 
-#: core/templates/fw/person_detail.html:528
+#: core/templates/fw/person_detail.html:537
 msgid "Was wurde besprochen?"
 msgstr "Was wurde besprochen?"
 
-#: core/templates/fw/person_detail.html:542
+#: core/templates/fw/person_detail.html:551
 msgid "Journal-Eintrag löschen?"
 msgstr "Journal-Eintrag löschen?"
 
-#: core/templates/fw/person_detail.html:547
+#: core/templates/fw/person_detail.html:556
 msgid "Noch keine Einträge im Kontaktjournal."
 msgstr "Noch keine Einträge im Kontaktjournal."
 
-#: core/templates/fw/person_detail.html:553
+#: core/templates/fw/person_detail.html:562
 msgid "Aktionen zu dieser Person &amp; ihren Verträgen"
 msgstr "Aktionen zu dieser Person &amp; ihren Verträgen"
 
-#: core/templates/fw/person_detail.html:566
+#: core/templates/fw/person_detail.html:575
 msgid "Noch keine protokollierten Aktionen zu dieser Person."
 msgstr "Noch keine protokollierten Aktionen zu dieser Person."
 
-#: core/templates/fw/person_detail.html:568
+#: core/templates/fw/person_detail.html:577
 #: core/templates/fw/vertrag_detail.html:570
 msgid ""
 "Vollständiges Logbuch aller Objekte unter <a href=\"/neu/logbuch/\" "
@@ -12206,29 +12249,29 @@ msgstr ""
 "Vollständiges Logbuch aller Objekte unter <a href=\"/neu/logbuch/\" "
 "class=\"fw-link\">Profil → Logbuch</a>."
 
-#: core/templates/fw/person_detail.html:577
+#: core/templates/fw/person_detail.html:586
 msgid "Fälle zu dieser Person"
 msgstr "Fälle zu dieser Person"
 
-#: core/templates/fw/person_detail.html:589
+#: core/templates/fw/person_detail.html:598
 msgid "Zu dieser Person läuft kein Fall."
 msgstr "Zu dieser Person läuft kein Fall."
 
-#: core/templates/fw/person_detail.html:598
+#: core/templates/fw/person_detail.html:607
 msgid "Offene Fristen aus den Mietverhältnissen"
 msgstr "Offene Fristen aus den Mietverhältnissen"
 
-#: core/templates/fw/person_detail.html:601
+#: core/templates/fw/person_detail.html:610
 msgid "Fristen &amp; Pendenzen"
 msgstr "Fristen &amp; Pendenzen"
 
-#: core/templates/fw/person_detail.html:608
+#: core/templates/fw/person_detail.html:617
 #: core/templates/fw/vertrag_detail.html:605
 #: core/templates/fw/vertrag_detail.html:775
 msgid "provisorisch"
 msgstr "provisorisch"
 
-#: core/templates/fw/person_detail.html:619
+#: core/templates/fw/person_detail.html:628
 msgid "Keine offenen Fristen."
 msgstr "Keine offenen Fristen."
 
@@ -13696,22 +13739,38 @@ msgstr "frei"
 msgid "CHF brutto"
 msgstr "CHF brutto"
 
-#: core/templates/fw/vermarktung.html:61
+#: core/templates/fw/vermarktung.html:64
+msgid "Bewerbungslink"
+msgstr "Bewerbungslink"
+
+#: core/templates/fw/vermarktung.html:69
+msgid "Kopiert"
+msgstr "Kopiert"
+
+#: core/templates/fw/vermarktung.html:73
+msgid "QR-Code anzeigen"
+msgstr "QR-Code anzeigen"
+
+#: core/templates/fw/vermarktung.html:74
+msgid "QR-Code zum Bewerbungsformular"
+msgstr "QR-Code zum Bewerbungsformular"
+
+#: core/templates/fw/vermarktung.html:80
 #, python-format
 msgid "%(n)s Bewerbung"
 msgid_plural "%(n)s Bewerbungen"
 msgstr[0] "%(n)s Bewerbung"
 msgstr[1] "%(n)s Bewerbungen"
 
-#: core/templates/fw/vermarktung.html:61
+#: core/templates/fw/vermarktung.html:80
 msgid "vergleichen"
 msgstr "vergleichen"
 
-#: core/templates/fw/vermarktung.html:79
+#: core/templates/fw/vermarktung.html:98
 msgid "Kein Objekt in der Vermarktung"
 msgstr "Kein Objekt in der Vermarktung"
 
-#: core/templates/fw/vermarktung.html:80
+#: core/templates/fw/vermarktung.html:99
 msgid ""
 "Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur "
 "Nachmietersuche ausschreiben."
@@ -13719,7 +13778,7 @@ msgstr ""
 "Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur "
 "Nachmietersuche ausschreiben."
 
-#: core/templates/fw/vermarktung.html:81
+#: core/templates/fw/vermarktung.html:100
 msgid "Zum Mieterwechsel-Cockpit"
 msgstr "Zum Mieterwechsel-Cockpit"
 
@@ -14531,7 +14590,9 @@ msgstr "Erfassung schliessen"
 msgid ""
 "Wählen Sie Liegenschaft und Objekt. Es werden nur verfügbare (leerstehende) "
 "Objekte angezeigt."
-msgstr "Wählen Sie Liegenschaft und Objekt. Es werden nur verfügbare (leerstehende) Objekte angezeigt."
+msgstr ""
+"Wählen Sie Liegenschaft und Objekt. Es werden nur verfügbare (leerstehende) "
+"Objekte angezeigt."
 
 #: core/templates/fw/vertrag_neu.html:47 core/templates/fw/vertrag_neu.html:381
 msgid "Liegenschaft auswählen…"
@@ -14703,7 +14764,8 @@ msgstr "+ Stufe"
 #: core/templates/fw/vertrag_neu.html:232
 msgid ""
 "Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf."
-msgstr "Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf."
+msgstr ""
+"Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf."
 
 #: core/templates/fw/vertrag_neu.html:241
 msgid "Indexwerte"
@@ -14716,7 +14778,8 @@ msgstr "Aktuelle Werte übernehmen"
 #: core/templates/fw/vertrag_neu.html:244
 msgid ""
 "Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen."
-msgstr "Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen."
+msgstr ""
+"Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen."
 
 #: core/templates/fw/vertrag_neu.html:246
 msgid "Basis Konsumentenpreisindex (LIK)"
@@ -14777,7 +14840,9 @@ msgstr "3 Monate"
 msgid ""
 "Abrechnungsart und Verteilschlüssel. Der Akonto-Betrag wurde im Schritt "
 "Mietzins erfasst."
-msgstr "Abrechnungsart und Verteilschlüssel. Der Akonto-Betrag wurde im Schritt Mietzins erfasst."
+msgstr ""
+"Abrechnungsart und Verteilschlüssel. Der Akonto-Betrag wurde im Schritt "
+"Mietzins erfasst."
 
 #: core/templates/fw/vertrag_neu.html:309
 msgid "Nebenkosten / Monat"
@@ -14812,7 +14877,9 @@ msgstr "Zusammenfassung prüfen und Vertrag erstellen."
 msgid ""
 "Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; "
 "Debitoren)"
-msgstr "Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; Debitoren)"
+msgstr ""
+"Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; "
+"Debitoren)"
 
 #: core/templates/fw/vertrag_neu.html:336
 msgid "Nach dem Erstellen <b>digital zur Unterschrift senden</b> (DocuSeal)"
@@ -14823,14 +14890,20 @@ msgid ""
 "Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. "
 "Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, "
 "Person, Objekt)."
-msgstr "Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, Person, Objekt)."
+msgstr ""
+"Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. "
+"Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, "
+"Person, Objekt)."
 
 #: core/templates/fw/vertrag_neu.html:341
 msgid ""
 "DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. "
 "API-Key unter <a href=\"/neu/integrationen/\" "
 "class=\"underline\">Integrationen</a> hinterlegen."
-msgstr "DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. API-Key unter <a href=\"/neu/integrationen/\" class=\"underline\">Integrationen</a> hinterlegen."
+msgstr ""
+"DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. "
+"API-Key unter <a href=\"/neu/integrationen/\" "
+"class=\"underline\">Integrationen</a> hinterlegen."
 
 #: core/templates/fw/vertrag_neu.html:370
 msgid "Vertrags-Vorschau"
@@ -14859,7 +14932,8 @@ msgstr "Staffelstufe entfernen"
 #: core/templates/fw/vertrag_neu.html:389
 msgid ""
 "Bitte wähle im Schritt 1 ein Objekt aus, bevor du den Vertrag erstellst."
-msgstr "Bitte wähle im Schritt 1 ein Objekt aus, bevor du den Vertrag erstellst."
+msgstr ""
+"Bitte wähle im Schritt 1 ein Objekt aus, bevor du den Vertrag erstellst."
 
 #: core/templates/fw/vertrag_neu.html:390
 msgid "Bitte wähle im Schritt 2 eine Person aus oder erfasse eine neue."
@@ -14870,7 +14944,7 @@ msgid "Neue Vorlage"
 msgstr "Neue Vorlage"
 
 #: core/templates/fw/vorlage_form.html:6 core/templates/fw/vorlagen.html:3
-#: core/templates/fw/vorlagen.html:6 core/views/fw/aktionen.py:850
+#: core/templates/fw/vorlagen.html:6 core/views/fw/aktionen.py:863
 msgid "Vorlagen"
 msgstr "Vorlagen"
 
@@ -15744,34 +15818,34 @@ msgstr ""
 msgid "Freundliche Grüsse,"
 msgstr "Freundliche Grüsse,"
 
-#: core/views/docuseal.py:73
+#: core/views/docuseal.py:77
 msgid "API-Key fehlt in settings.py"
 msgstr "API-Key fehlt in settings.py"
 
-#: core/views/docuseal.py:77
+#: core/views/docuseal.py:81
 msgid "Abbruch: Mieter hat keine E-Mail."
 msgstr "Abbruch: Mieter hat keine E-Mail."
 
-#: core/views/docuseal.py:140
+#: core/views/docuseal.py:144
 #, python-format
 msgid "PDF Fehler: %(str)s"
 msgstr "PDF Fehler: %(str)s"
 
-#: core/views/docuseal.py:179
+#: core/views/docuseal.py:183
 #, python-format
 msgid "Vertrag an %(email)s gesendet"
 msgstr "Vertrag an %(email)s gesendet"
 
-#: core/views/docuseal.py:185
+#: core/views/docuseal.py:189
 #, python-format
 msgid "Fehler beim Senden: %(str)s"
 msgstr "Fehler beim Senden: %(str)s"
 
-#: core/views/email_views.py:235
+#: core/views/email_views.py:238
 msgid "Mieter hat keine E-Mail."
 msgstr "Mieter hat keine E-Mail."
 
-#: core/views/email_views.py:268
+#: core/views/email_views.py:271
 #, python-format
 msgid "Mahnung inkl. QR-Rechnung an %(email)s gesendet."
 msgstr "Mahnung inkl. QR-Rechnung an %(email)s gesendet."
@@ -15808,24 +15882,24 @@ msgstr "Abgeschrieben"
 msgid "Abnahmeprotokoll erfasst (%(count)s Mängel)."
 msgstr "Abnahmeprotokoll erfasst (%(count)s Mängel)."
 
-#: core/views/fw/abnahme.py:188
+#: core/views/fw/abnahme.py:192
 msgid "Keine dem Mieter zugeordneten Mängel im Protokoll — keine Rüge nötig."
 msgstr "Keine dem Mieter zugeordneten Mängel im Protokoll — keine Rüge nötig."
 
-#: core/views/fw/abnahme.py:215
+#: core/views/fw/abnahme.py:219
 msgid "Abnahmeprotokoll gelöscht."
 msgstr "Abnahmeprotokoll gelöscht."
 
-#: core/views/fw/abnahme.py:256
+#: core/views/fw/abnahme.py:260
 #, python-format
 msgid "Vertrag ist jetzt: %(wert)s."
 msgstr "Vertrag ist jetzt: %(wert)s."
 
-#: core/views/fw/abnahme.py:258 core/views/fw/arbeit.py:423
+#: core/views/fw/abnahme.py:262 core/views/fw/arbeit.py:445
 msgid "Unbekannter Status."
 msgstr "Unbekannter Status."
 
-#: core/views/fw/abnahme.py:277
+#: core/views/fw/abnahme.py:281
 #, python-format
 msgid "Vertrag (%(name)s · %(einheit)s) wurde gelöscht."
 msgstr "Vertrag (%(name)s · %(einheit)s) wurde gelöscht."
@@ -15961,11 +16035,15 @@ msgstr ""
 msgid "Aufträge ansehen"
 msgstr "Aufträge ansehen"
 
-#: core/views/fw/aktionen.py:66
-msgid "Lieferant und Betrag (> 0) sind erforderlich."
-msgstr "Lieferant und Betrag (> 0) sind erforderlich."
+#: core/views/fw/aktionen.py:67 core/views/fw/aktionen.py:196
+msgid "Diese Liegenschaft ist nicht (mehr) erfasst."
+msgstr "Diese Liegenschaft ist nicht (mehr) erfasst."
 
-#: core/views/fw/aktionen.py:108
+#: core/views/fw/aktionen.py:73 core/views/fw/aktionen.py:201
+msgid "Dieses Konto ist nicht (mehr) erfasst."
+msgstr "Dieses Konto ist nicht (mehr) erfasst."
+
+#: core/views/fw/aktionen.py:115
 #, python-format
 msgid ""
 "Kreditorenrechnung '%(lieferant)s' über CHF %(betrag)s erfasst (Status: Neu "
@@ -15974,11 +16052,11 @@ msgstr ""
 "Kreditorenrechnung '%(lieferant)s' über CHF %(betrag)s erfasst (Status: Neu "
 "— bitte freigeben)."
 
-#: core/views/fw/aktionen.py:131
+#: core/views/fw/aktionen.py:138
 msgid "Bitte mindestens einen Beleg (PDF oder Foto) auswählen."
 msgstr "Bitte mindestens einen Beleg (PDF oder Foto) auswählen."
 
-#: core/views/fw/aktionen.py:156
+#: core/views/fw/aktionen.py:163
 #, python-format
 msgid ""
 "Beleg gescannt (%(get)s): %(zusammenfassung)s%(konto_hint)s — bitte prüfen "
@@ -15987,7 +16065,7 @@ msgstr ""
 "Beleg gescannt (%(get)s): %(zusammenfassung)s%(konto_hint)s — bitte prüfen "
 "und freigeben."
 
-#: core/views/fw/aktionen.py:158
+#: core/views/fw/aktionen.py:165
 #, python-format
 msgid ""
 "Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): "
@@ -15996,7 +16074,7 @@ msgstr ""
 "Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): "
 "%(zusammenfassung)s — bitte Werte prüfen."
 
-#: core/views/fw/aktionen.py:160
+#: core/views/fw/aktionen.py:167
 #, python-format
 msgid ""
 "Beleg «%(dateiname)s» gespeichert, aber nicht auslesbar: %(get)s Werte bitte "
@@ -16005,20 +16083,20 @@ msgstr ""
 "Beleg «%(dateiname)s» gespeichert, aber nicht auslesbar: %(get)s Werte bitte "
 "manuell ergänzen."
 
-#: core/views/fw/aktionen.py:175
+#: core/views/fw/aktionen.py:182
 msgid "Nur unverbuchte Rechnungen (Status Neu) können bearbeitet werden."
 msgstr "Nur unverbuchte Rechnungen (Status Neu) können bearbeitet werden."
 
-#: core/views/fw/aktionen.py:210
+#: core/views/fw/aktionen.py:223
 #, python-format
 msgid "Rechnung «%(lieferant)s» aktualisiert."
 msgstr "Rechnung «%(lieferant)s» aktualisiert."
 
-#: core/views/fw/aktionen.py:229 core/views/fw/aktionen.py:251
+#: core/views/fw/aktionen.py:242 core/views/fw/aktionen.py:264
 msgid "Rechnung ist bereits freigegeben oder bezahlt."
 msgstr "Rechnung ist bereits freigegeben oder bezahlt."
 
-#: core/views/fw/aktionen.py:240
+#: core/views/fw/aktionen.py:253
 #, python-format
 msgid ""
 "Die Kostenaufteilung stimmt nicht: Summe der Positionen weicht um CHF "
@@ -16027,24 +16105,24 @@ msgstr ""
 "Die Kostenaufteilung stimmt nicht: Summe der Positionen weicht um CHF "
 "%(positionen_differenz)s vom Rechnungsbetrag ab."
 
-#: core/views/fw/aktionen.py:243
+#: core/views/fw/aktionen.py:256
 msgid "Bitte zuerst ein Aufwandskonto zuweisen (oder die Rechnung aufteilen)."
 msgstr "Bitte zuerst ein Aufwandskonto zuweisen (oder die Rechnung aufteilen)."
 
-#: core/views/fw/aktionen.py:296
+#: core/views/fw/aktionen.py:309
 #, python-format
 msgid "'%(lieferant)s' freigegeben und verbucht."
 msgstr "'%(lieferant)s' freigegeben und verbucht."
 
-#: core/views/fw/aktionen.py:331
+#: core/views/fw/aktionen.py:344
 msgid "Gültig-ab-Datum, Netto und NK (≥ 0) sind erforderlich."
 msgstr "Gültig-ab-Datum, Netto und NK (≥ 0) sind erforderlich."
 
-#: core/views/fw/aktionen.py:341
+#: core/views/fw/aktionen.py:354
 msgid "Rabatt-Werte dürfen nicht negativ sein."
 msgstr "Rabatt-Werte dürfen nicht negativ sein."
 
-#: core/views/fw/aktionen.py:354
+#: core/views/fw/aktionen.py:367
 #, python-format
 msgid ""
 "Komponente ab %(gab)s gespeichert (Referenz CHF %(wert)s, zu zahlen CHF "
@@ -16053,72 +16131,72 @@ msgstr ""
 "Komponente ab %(gab)s gespeichert (Referenz CHF %(wert)s, zu zahlen CHF "
 "%(zu_zahlen)s)."
 
-#: core/views/fw/aktionen.py:370
+#: core/views/fw/aktionen.py:383
 msgid "Komponente entfernt."
 msgstr "Komponente entfernt."
 
-#: core/views/fw/aktionen.py:387
+#: core/views/fw/aktionen.py:400
 msgid "Nur unverbuchte Rechnungen (Status Neu) können aufgeteilt werden."
 msgstr "Nur unverbuchte Rechnungen (Status Neu) können aufgeteilt werden."
 
-#: core/views/fw/aktionen.py:395
+#: core/views/fw/aktionen.py:408
 msgid "Konto und Betrag (> 0) sind für eine Position erforderlich."
 msgstr "Konto und Betrag (> 0) sind für eine Position erforderlich."
 
-#: core/views/fw/aktionen.py:405
+#: core/views/fw/aktionen.py:418
 #, python-format
 msgid "Position %(nummer)s über CHF %(betrag)s hinzugefügt."
 msgstr "Position %(nummer)s über CHF %(betrag)s hinzugefügt."
 
-#: core/views/fw/aktionen.py:418
+#: core/views/fw/aktionen.py:431
 msgid "Nur unverbuchte Rechnungen können geändert werden."
 msgstr "Nur unverbuchte Rechnungen können geändert werden."
 
-#: core/views/fw/aktionen.py:421
+#: core/views/fw/aktionen.py:434
 msgid "Position entfernt."
 msgstr "Position entfernt."
 
-#: core/views/fw/aktionen.py:436 core/views/fw/aktionen.py:533
+#: core/views/fw/aktionen.py:449 core/views/fw/aktionen.py:546
 msgid "Firma ist erforderlich."
 msgstr "Firma ist erforderlich."
 
-#: core/views/fw/aktionen.py:445
+#: core/views/fw/aktionen.py:458
 #, python-format
 msgid "Dienstleister '%(firma)s' erfasst."
 msgstr "Dienstleister '%(firma)s' erfasst."
 
-#: core/views/fw/aktionen.py:459
+#: core/views/fw/aktionen.py:472
 msgid "Bitte eine Datei auswählen."
 msgstr "Bitte eine Datei auswählen."
 
-#: core/views/fw/aktionen.py:470
+#: core/views/fw/aktionen.py:483
 msgid "Dokument hochgeladen."
 msgstr "Dokument hochgeladen."
 
-#: core/views/fw/aktionen.py:489 core/views/fw/person.py:536
+#: core/views/fw/aktionen.py:502 core/views/fw/person.py:536
 msgid "Dokument gelöscht."
 msgstr "Dokument gelöscht."
 
-#: core/views/fw/aktionen.py:513
+#: core/views/fw/aktionen.py:526
 msgid "Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich."
 msgstr "Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich."
 
-#: core/views/fw/aktionen.py:517
+#: core/views/fw/aktionen.py:530
 #, python-format
 msgid "Abrechnungsperiode '%(bez)s' erstellt."
 msgstr "Abrechnungsperiode '%(bez)s' erstellt."
 
-#: core/views/fw/aktionen.py:542
+#: core/views/fw/aktionen.py:555
 #, python-format
 msgid "Dienstleister '%(firma)s' aktualisiert."
 msgstr "Dienstleister '%(firma)s' aktualisiert."
 
-#: core/views/fw/aktionen.py:558
+#: core/views/fw/aktionen.py:571
 #, python-format
 msgid "Dienstleister '%(firma)s' gelöscht."
 msgstr "Dienstleister '%(firma)s' gelöscht."
 
-#: core/views/fw/aktionen.py:574
+#: core/views/fw/aktionen.py:587
 msgid ""
 "Bereits verbuchte Rechnung kann nicht gelöscht werden — bitte die zugehörige "
 "Buchung stornieren."
@@ -16126,21 +16204,21 @@ msgstr ""
 "Bereits verbuchte Rechnung kann nicht gelöscht werden — bitte die zugehörige "
 "Buchung stornieren."
 
-#: core/views/fw/aktionen.py:579
+#: core/views/fw/aktionen.py:592
 #, python-format
 msgid "Kreditorenrechnung '%(lief)s' gelöscht."
 msgstr "Kreditorenrechnung '%(lief)s' gelöscht."
 
-#: core/views/fw/aktionen.py:596
+#: core/views/fw/aktionen.py:609
 msgid "Abgeschlossene Periode kann nicht gelöscht werden."
 msgstr "Abgeschlossene Periode kann nicht gelöscht werden."
 
-#: core/views/fw/aktionen.py:601
+#: core/views/fw/aktionen.py:614
 #, python-format
 msgid "Abrechnungsperiode '%(bez)s' gelöscht."
 msgstr "Abrechnungsperiode '%(bez)s' gelöscht."
 
-#: core/views/fw/aktionen.py:647
+#: core/views/fw/aktionen.py:660
 msgid ""
 "Soll-, Haben-Konto (gültige Nummer), Betrag (> 0) und Belegtext sind "
 "erforderlich."
@@ -16148,16 +16226,16 @@ msgstr ""
 "Soll-, Haben-Konto (gültige Nummer), Betrag (> 0) und Belegtext sind "
 "erforderlich."
 
-#: core/views/fw/aktionen.py:650
+#: core/views/fw/aktionen.py:663
 msgid "Soll- und Haben-Konto müssen unterschiedlich sein."
 msgstr "Soll- und Haben-Konto müssen unterschiedlich sein."
 
-#: core/views/fw/aktionen.py:664
+#: core/views/fw/aktionen.py:677
 #, python-format
 msgid "Buchung erfasst: %(nummer)s an %(nummer2)s · CHF %(betrag)s."
 msgstr "Buchung erfasst: %(nummer)s an %(nummer2)s · CHF %(betrag)s."
 
-#: core/views/fw/aktionen.py:693
+#: core/views/fw/aktionen.py:706
 msgid ""
 "Abschlussbuchungen lassen sich nicht einzeln stornieren. Bitte den "
 "Jahresabschluss gesamthaft über «Abschluss zurücknehmen» aufheben."
@@ -16165,123 +16243,127 @@ msgstr ""
 "Abschlussbuchungen lassen sich nicht einzeln stornieren. Bitte den "
 "Jahresabschluss gesamthaft über «Abschluss zurücknehmen» aufheben."
 
-#: core/views/fw/aktionen.py:705
+#: core/views/fw/aktionen.py:718
 #, python-format
 msgid "Beleg #%(beleg_nr)s storniert (Gegenbuchung #%(beleg_nr2)s)."
 msgstr "Beleg #%(beleg_nr)s storniert (Gegenbuchung #%(beleg_nr2)s)."
 
-#: core/views/fw/aktionen.py:722 core/views/fw/aktionen.py:755
+#: core/views/fw/aktionen.py:735 core/views/fw/aktionen.py:768
 msgid "Text und mindestens ein Empfänger erforderlich."
 msgstr "Text und mindestens ein Empfänger erforderlich."
 
-#: core/views/fw/aktionen.py:733
+#: core/views/fw/aktionen.py:746
 #, python-format
 msgid "%(gesendet)s E-Mail(s) versendet."
 msgstr "%(gesendet)s E-Mail(s) versendet."
 
-#: core/views/fw/aktionen.py:734
+#: core/views/fw/aktionen.py:747
 msgid "Keine E-Mail versendet (fehlende Adressen)."
 msgstr "Keine E-Mail versendet (fehlende Adressen)."
 
-#: core/views/fw/aktionen.py:802
+#: core/views/fw/aktionen.py:815
 msgid "Keine gültigen Empfänger gefunden."
 msgstr "Keine gültigen Empfänger gefunden."
 
-#: core/views/fw/aktionen.py:848
+#: core/views/fw/aktionen.py:861
 msgid "Verwaltungs-Stammdaten, Logo, Absender"
 msgstr "Verwaltungs-Stammdaten, Logo, Absender"
 
-#: core/views/fw/aktionen.py:849
+#: core/views/fw/aktionen.py:862
 msgid "Benutzer & Rollen"
 msgstr "Benutzer & Rollen"
 
-#: core/views/fw/aktionen.py:849
+#: core/views/fw/aktionen.py:862
 msgid "Team-Mitglieder und Berechtigungen"
 msgstr "Team-Mitglieder und Berechtigungen"
 
-#: core/views/fw/aktionen.py:850
+#: core/views/fw/aktionen.py:863
 msgid "Textvorlagen mit Platzhaltern"
 msgstr "Textvorlagen mit Platzhaltern"
 
-#: core/views/fw/aktionen.py:851
+#: core/views/fw/aktionen.py:864
 msgid "E-Mail, DocuSeal, KI, Banken, Portal-Feed"
 msgstr "E-Mail, DocuSeal, KI, Banken, Portal-Feed"
 
-#: core/views/fw/aktionen.py:852
+#: core/views/fw/aktionen.py:865
 msgid "Plan und Rechnungsstellung"
 msgstr "Plan und Rechnungsstellung"
 
-#: core/views/fw/aktionen.py:853
+#: core/views/fw/aktionen.py:866
 msgid "Anmeldung & Sicherheit"
 msgstr "Anmeldung & Sicherheit"
 
-#: core/views/fw/aktionen.py:853
+#: core/views/fw/aktionen.py:866
 msgid "Zwei-Faktor-Anmeldung für Sie und Ihr Team"
 msgstr "Zwei-Faktor-Anmeldung für Sie und Ihr Team"
 
-#: core/views/fw/aktionen.py:855
+#: core/views/fw/aktionen.py:868
 msgid "E-Mail-Eingang für Ticket-Antworten und Rechnungen"
 msgstr "E-Mail-Eingang für Ticket-Antworten und Rechnungen"
 
-#: core/views/fw/aktionen.py:857
+#: core/views/fw/aktionen.py:870
 msgid "Wer hat wann was geändert"
 msgstr "Wer hat wann was geändert"
 
-#: core/views/fw/aktionen.py:858
+#: core/views/fw/aktionen.py:871
 msgid "Rechtsgrundlagen"
 msgstr "Rechtsgrundlagen"
 
-#: core/views/fw/aktionen.py:858
+#: core/views/fw/aktionen.py:871
 msgid "OR/VMWG-Artikel mit Anwendung im Programm"
 msgstr "OR/VMWG-Artikel mit Anwendung im Programm"
 
-#: core/views/fw/aktionen.py:864
+#: core/views/fw/aktionen.py:877
 msgid "Regelwerk (Fristen)"
 msgstr "Regelwerk (Fristen)"
 
-#: core/views/fw/aktionen.py:864
+#: core/views/fw/aktionen.py:877
 msgid "Kündigungstermine und Fristen je Kanton"
 msgstr "Kündigungstermine und Fristen je Kanton"
 
-#: core/views/fw/aktionen.py:906
+#: core/views/fw/aktionen.py:882
+msgid "Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung"
+msgstr "Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung"
+
+#: core/views/fw/aktionen.py:924
 #, python-format
 msgid "Periodensperre: %(e)s"
 msgstr "Periodensperre: %(e)s"
 
-#: core/views/fw/aktionen.py:912
+#: core/views/fw/aktionen.py:930
 #, python-format
 msgid "CHF %(betrag)s zugeordnet — %(display_name)s (%(titel)s)%(wert)s."
 msgstr "CHF %(betrag)s zugeordnet — %(display_name)s (%(titel)s)%(wert)s."
 
-#: core/views/fw/aktionen.py:945
+#: core/views/fw/aktionen.py:963
 msgid "Keine Zahlung ausgewählt."
 msgstr "Keine Zahlung ausgewählt."
 
-#: core/views/fw/aktionen.py:948
+#: core/views/fw/aktionen.py:966
 msgid "Kein Mieter gewählt — die Zahlungen bleiben ungeklärt."
 msgstr "Kein Mieter gewählt — die Zahlungen bleiben ungeklärt."
 
-#: core/views/fw/aktionen.py:977
+#: core/views/fw/aktionen.py:995
 #, python-format
 msgid "%(anzahl)s Zahlung(en) zugeordnet (CHF %(summe)s) — %(name)s"
 msgstr "%(anzahl)s Zahlung(en) zugeordnet (CHF %(summe)s) — %(name)s"
 
-#: core/views/fw/aktionen.py:980
+#: core/views/fw/aktionen.py:998
 #, python-format
 msgid "CHF %(rest)s bleiben als Guthaben"
 msgstr "CHF %(rest)s bleiben als Guthaben"
 
-#: core/views/fw/aktionen.py:982
+#: core/views/fw/aktionen.py:1000
 #, python-format
 msgid "Absender «%(gelernt)s» gemerkt, künftige Zahlungen treffen selbst"
 msgstr "Absender «%(gelernt)s» gemerkt, künftige Zahlungen treffen selbst"
 
-#: core/views/fw/aktionen.py:986
+#: core/views/fw/aktionen.py:1004
 #, python-format
 msgid "Nicht zugeordnet — %(f)s"
 msgstr "Nicht zugeordnet — %(f)s"
 
-#: core/views/fw/aktionen.py:988
+#: core/views/fw/aktionen.py:1006
 msgid ""
 "Nichts zugeordnet — die gewählten Zahlungen liegen nicht mehr auf einem "
 "Parkkonto."
@@ -16289,11 +16371,11 @@ msgstr ""
 "Nichts zugeordnet — die gewählten Zahlungen liegen nicht mehr auf einem "
 "Parkkonto."
 
-#: core/views/fw/aktionen.py:1054
+#: core/views/fw/aktionen.py:1072
 msgid "Diese Zuordnung gibt es nicht mehr."
 msgstr "Diese Zuordnung gibt es nicht mehr."
 
-#: core/views/fw/aktionen.py:1062
+#: core/views/fw/aktionen.py:1080
 #, python-format
 msgid ""
 "«%(name)s» wird nicht mehr automatisch zugeordnet — künftige Zahlungen "
@@ -16302,11 +16384,11 @@ msgstr ""
 "«%(name)s» wird nicht mehr automatisch zugeordnet — künftige Zahlungen "
 "landen wieder zur Prüfung im Bankabgleich."
 
-#: core/views/fw/aktionen.py:1068
+#: core/views/fw/aktionen.py:1086
 msgid "Kein Mieter gewählt — die Zuordnung bleibt unverändert."
 msgstr "Kein Mieter gewählt — die Zuordnung bleibt unverändert."
 
-#: core/views/fw/aktionen.py:1083
+#: core/views/fw/aktionen.py:1101
 #, python-format
 msgid ""
 "«%(name)s» zahlt neu für %(display_name)s. Bereits verbuchte Zahlungen "
@@ -16315,64 +16397,64 @@ msgstr ""
 "«%(name)s» zahlt neu für %(display_name)s. Bereits verbuchte Zahlungen "
 "bleiben unverändert."
 
-#: core/views/fw/aktionen.py:1116
+#: core/views/fw/aktionen.py:1134
 msgid "Diese Bankbewegung ist bereits erledigt."
 msgstr "Diese Bankbewegung ist bereits erledigt."
 
-#: core/views/fw/aktionen.py:1131
+#: core/views/fw/aktionen.py:1149
 msgid "Bewegung als nicht buchungsrelevant markiert."
 msgstr "Bewegung als nicht buchungsrelevant markiert."
 
-#: core/views/fw/aktionen.py:1141
+#: core/views/fw/aktionen.py:1159
 msgid "Eine Gutschrift kann keine Lieferantenrechnung tilgen."
 msgstr "Eine Gutschrift kann keine Lieferantenrechnung tilgen."
 
-#: core/views/fw/aktionen.py:1145
+#: core/views/fw/aktionen.py:1163
 msgid "Diese Lieferantenrechnung ist bereits bezahlt."
 msgstr "Diese Lieferantenrechnung ist bereits bezahlt."
 
-#: core/views/fw/aktionen.py:1167
+#: core/views/fw/aktionen.py:1185
 msgid "Bitte ein gültiges Gegenkonto angeben."
 msgstr "Bitte ein gültiges Gegenkonto angeben."
 
-#: core/views/fw/aktionen.py:1189
+#: core/views/fw/aktionen.py:1207
 #, python-format
 msgid "Bewegung konnte nicht gebucht werden: %(exc)s"
 msgstr "Bewegung konnte nicht gebucht werden: %(exc)s"
 
-#: core/views/fw/aktionen.py:1193
+#: core/views/fw/aktionen.py:1211
 #, python-format
 msgid "CHF %(betrag)s verbucht (%(text)s) — Valuta %(dat)s."
 msgstr "CHF %(betrag)s verbucht (%(text)s) — Valuta %(dat)s."
 
-#: core/views/fw/aktionen.py:1236
+#: core/views/fw/aktionen.py:1254
 msgid "Diese MWST-Periode wurde bereits verbucht."
 msgstr "Diese MWST-Periode wurde bereits verbucht."
 
-#: core/views/fw/aktionen.py:1245
+#: core/views/fw/aktionen.py:1263
 msgid "Für diese Periode gibt es keine MWST zu verbuchen."
 msgstr "Für diese Periode gibt es keine MWST zu verbuchen."
 
-#: core/views/fw/aktionen.py:1295
+#: core/views/fw/aktionen.py:1313
 #, python-format
 msgid "MWST-Abrechnung konnte nicht verbucht werden: %(exc)s"
 msgstr "MWST-Abrechnung konnte nicht verbucht werden: %(exc)s"
 
-#: core/views/fw/aktionen.py:1299
+#: core/views/fw/aktionen.py:1317
 #, python-format
 msgid "%(beleg)s verbucht — Zahllast CHF %(zahllast)s (%(wert)s)."
 msgstr "%(beleg)s verbucht — Zahllast CHF %(zahllast)s (%(wert)s)."
 
-#: core/views/fw/aktionen.py:1326 core/views/fw/kreditoren.py:516
+#: core/views/fw/aktionen.py:1344 core/views/fw/kreditoren.py:570
 msgid "Diese Zahlung ist bereits storniert."
 msgstr "Diese Zahlung ist bereits storniert."
 
-#: core/views/fw/aktionen.py:1353 core/views/fw/kreditoren.py:544
+#: core/views/fw/aktionen.py:1371 core/views/fw/kreditoren.py:598
 #, python-format
 msgid "Zahlung konnte nicht storniert werden: %(exc)s"
 msgstr "Zahlung konnte nicht storniert werden: %(exc)s"
 
-#: core/views/fw/aktionen.py:1358
+#: core/views/fw/aktionen.py:1376
 #, python-format
 msgid "Zahlung über CHF %(betrag)s storniert — offener Posten wieder offen."
 msgstr "Zahlung über CHF %(betrag)s storniert — offener Posten wieder offen."
@@ -16447,7 +16529,7 @@ msgstr "«%(satz_roh)s» ist kein Betrag."
 msgid "%(minuten)s Minuten erfasst."
 msgstr "%(minuten)s Minuten erfasst."
 
-#: core/views/fw/arbeit.py:194 core/views/fw/liegenschaft_crud.py:69
+#: core/views/fw/arbeit.py:194 core/views/fw/liegenschaft_crud.py:77
 msgid "Diese Person gehört nicht zu Ihrer Verwaltung."
 msgstr "Diese Person gehört nicht zu Ihrer Verwaltung."
 
@@ -16456,39 +16538,39 @@ msgstr "Diese Person gehört nicht zu Ihrer Verwaltung."
 msgid "Fall liegt jetzt bei %(name)s."
 msgstr "Fall liegt jetzt bei %(name)s."
 
-#: core/views/fw/arbeit.py:282
+#: core/views/fw/arbeit.py:304
 #, python-format
 msgid "«%(bezeichnung)s» ist erledigt."
 msgstr "«%(bezeichnung)s» ist erledigt."
 
-#: core/views/fw/arbeit.py:347
+#: core/views/fw/arbeit.py:369
 #, python-format
 msgid "Abgelegt: %(grund)s"
 msgstr "Abgelegt: %(grund)s"
 
-#: core/views/fw/arbeit.py:358
+#: core/views/fw/arbeit.py:380
 msgid "Eingang zugeordnet."
 msgstr "Eingang zugeordnet."
 
-#: core/views/fw/arbeit.py:398
+#: core/views/fw/arbeit.py:420
 msgid "Titel und Beginn sind nötig."
 msgstr "Titel und Beginn sind nötig."
 
-#: core/views/fw/arbeit.py:408
+#: core/views/fw/arbeit.py:430
 #, python-format
 msgid "Termin «%(titel)s» erfasst."
 msgstr "Termin «%(titel)s» erfasst."
 
-#: core/views/fw/arbeit.py:427
+#: core/views/fw/arbeit.py:449
 #, python-format
 msgid "«%(titel)s» ist %(status)s."
 msgstr "«%(titel)s» ist %(status)s."
 
-#: core/views/fw/arbeit.py:471
+#: core/views/fw/arbeit.py:493
 msgid "Von und Bis sind nötig."
 msgstr "Von und Bis sind nötig."
 
-#: core/views/fw/arbeit.py:483
+#: core/views/fw/arbeit.py:505
 msgid "Abwesenheit erfasst."
 msgstr "Abwesenheit erfasst."
 
@@ -17492,43 +17574,43 @@ msgstr "Freigegeben"
 msgid "In Zahlung"
 msgstr "In Zahlung"
 
-#: core/views/fw/kreditoren.py:224
+#: core/views/fw/kreditoren.py:278
 msgid "Diese Rechnung kann nicht (mehr) bezahlt werden."
 msgstr "Diese Rechnung kann nicht (mehr) bezahlt werden."
 
-#: core/views/fw/kreditoren.py:240
+#: core/views/fw/kreditoren.py:294
 #, python-format
 msgid "Ungültiger Betrag «%(raw)s» — Zahlung nicht ausgeführt."
 msgstr "Ungültiger Betrag «%(raw)s» — Zahlung nicht ausgeführt."
 
-#: core/views/fw/kreditoren.py:244
+#: core/views/fw/kreditoren.py:298
 msgid "Kein offener Betrag zu bezahlen."
 msgstr "Kein offener Betrag zu bezahlen."
 
-#: core/views/fw/kreditoren.py:274
+#: core/views/fw/kreditoren.py:328
 #, python-format
 msgid "CHF %(betrag)s an %(lieferant)s bezahlt — noch offen CHF %(offen)s."
 msgstr "CHF %(betrag)s an %(lieferant)s bezahlt — noch offen CHF %(offen)s."
 
-#: core/views/fw/kreditoren.py:277
+#: core/views/fw/kreditoren.py:331
 #, python-format
 msgid "CHF %(betrag)s an %(lieferant)s bezahlt."
 msgstr "CHF %(betrag)s an %(lieferant)s bezahlt."
 
-#: core/views/fw/kreditoren.py:333 core/views/fw/kreditoren.py:372
+#: core/views/fw/kreditoren.py:387 core/views/fw/kreditoren.py:426
 msgid "Keine Rechnung ausgewählt."
 msgstr "Keine Rechnung ausgewählt."
 
-#: core/views/fw/kreditoren.py:338
+#: core/views/fw/kreditoren.py:392
 msgid "Für die Zahlungsdatei fehlt die IBAN der Verwaltung (Profil → Account)."
 msgstr ""
 "Für die Zahlungsdatei fehlt die IBAN der Verwaltung (Profil → Account)."
 
-#: core/views/fw/kreditoren.py:351
+#: core/views/fw/kreditoren.py:405
 msgid "Keine zahlbare Rechnung in der Auswahl (IBAN oder Betrag fehlt)."
 msgstr "Keine zahlbare Rechnung in der Auswahl (IBAN oder Betrag fehlt)."
 
-#: core/views/fw/kreditoren.py:405
+#: core/views/fw/kreditoren.py:459
 #, python-format
 msgid ""
 "%(n)s Zahlung(en) über CHF %(summe)s verbucht (2000 an %(bank_nr)s, Valuta "
@@ -17537,24 +17619,24 @@ msgstr ""
 "%(n)s Zahlung(en) über CHF %(summe)s verbucht (2000 an %(bank_nr)s, Valuta "
 "%(valuta)s)."
 
-#: core/views/fw/kreditoren.py:407
+#: core/views/fw/kreditoren.py:461
 #, python-format
 msgid ""
 "%(gesperrt)s Zahlung(en) nicht verbucht: die Buchungsperiode ist gesperrt."
 msgstr ""
 "%(gesperrt)s Zahlung(en) nicht verbucht: die Buchungsperiode ist gesperrt."
 
-#: core/views/fw/kreditoren.py:417
+#: core/views/fw/kreditoren.py:471
 #, python-format
 msgid "%(len)s Rechnung(en) wieder freigegeben."
 msgstr "%(len)s Rechnung(en) wieder freigegeben."
 
-#: core/views/fw/kreditoren.py:484
+#: core/views/fw/kreditoren.py:538
 #, python-format
 msgid "'%(lieferant)s' wieder freigegeben (nicht mehr in Zahlung)."
 msgstr "'%(lieferant)s' wieder freigegeben (nicht mehr in Zahlung)."
 
-#: core/views/fw/kreditoren.py:548
+#: core/views/fw/kreditoren.py:602
 #, python-format
 msgid ""
 "Zahlung über CHF %(betrag)s an %(wert)s storniert — offener Posten wieder "
@@ -17606,17 +17688,21 @@ msgstr ""
 "Kündigung bestätigt — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-"
 "Pendenzen erstellt."
 
-#: core/views/fw/liegenschaft_crud.py:130
+#: core/views/fw/liegenschaft_crud.py:86
+msgid "Dieser Eigentümer ist nicht (mehr) erfasst."
+msgstr "Dieser Eigentümer ist nicht (mehr) erfasst."
+
+#: core/views/fw/liegenschaft_crud.py:97
 #, python-format
 msgid "Liegenschaft %(strasse)s gespeichert."
 msgstr "Liegenschaft %(strasse)s gespeichert."
 
-#: core/views/fw/liegenschaft_crud.py:139
+#: core/views/fw/liegenschaft_crud.py:106
 #, python-format
 msgid "EGID %(wert)s automatisch ermittelt."
 msgstr "EGID %(wert)s automatisch ermittelt."
 
-#: core/views/fw/liegenschaft_crud.py:141
+#: core/views/fw/liegenschaft_crud.py:108
 #, python-format
 msgid ""
 "%(wert)s Objekt(e) automatisch aus dem Gebäude- und Wohnungsregister "
@@ -17625,7 +17711,7 @@ msgstr ""
 "%(wert)s Objekt(e) automatisch aus dem Gebäude- und Wohnungsregister "
 "importiert."
 
-#: core/views/fw/liegenschaft_crud.py:143
+#: core/views/fw/liegenschaft_crud.py:110
 msgid ""
 "EGID konnte nicht automatisch ermittelt werden — bitte Adresse prüfen oder "
 "EGID manuell erfassen."
@@ -17633,49 +17719,49 @@ msgstr ""
 "EGID konnte nicht automatisch ermittelt werden — bitte Adresse prüfen oder "
 "EGID manuell erfassen."
 
-#: core/views/fw/liegenschaft_crud.py:145
+#: core/views/fw/liegenschaft_crud.py:112
 #, python-format
 msgid "GWR-Import teilweise fehlgeschlagen: %(wert)s"
 msgstr "GWR-Import teilweise fehlgeschlagen: %(wert)s"
 
-#: core/views/fw/liegenschaft_crud.py:147
+#: core/views/fw/liegenschaft_crud.py:114
 #, python-format
 msgid "Automatischer GWR-Import nicht möglich: %(e)s"
 msgstr "Automatischer GWR-Import nicht möglich: %(e)s"
 
-#: core/views/fw/liegenschaft_crud.py:175
+#: core/views/fw/liegenschaft_crud.py:148
 #, python-format
 msgid "EGID %(wert)s ermittelt."
 msgstr "EGID %(wert)s ermittelt."
 
-#: core/views/fw/liegenschaft_crud.py:177
+#: core/views/fw/liegenschaft_crud.py:150
 #, python-format
 msgid "%(wert)s Objekt(e) aus dem GWR importiert."
 msgstr "%(wert)s Objekt(e) aus dem GWR importiert."
 
-#: core/views/fw/liegenschaft_crud.py:180
+#: core/views/fw/liegenschaft_crud.py:153
 msgid "Objekte bereits erfasst — kein weiterer Import nötig."
 msgstr "Objekte bereits erfasst — kein weiterer Import nötig."
 
-#: core/views/fw/liegenschaft_crud.py:182
+#: core/views/fw/liegenschaft_crud.py:155
 msgid "EGID konnte nicht ermittelt werden — Adresse prüfen."
 msgstr "EGID konnte nicht ermittelt werden — Adresse prüfen."
 
-#: core/views/fw/liegenschaft_crud.py:184
+#: core/views/fw/liegenschaft_crud.py:157
 msgid "Keine neuen Objekte im GWR gefunden."
 msgstr "Keine neuen Objekte im GWR gefunden."
 
-#: core/views/fw/liegenschaft_crud.py:186
+#: core/views/fw/liegenschaft_crud.py:159
 #, python-format
 msgid "Hinweis: %(wert)s"
 msgstr "Hinweis: %(wert)s"
 
-#: core/views/fw/liegenschaft_crud.py:188
+#: core/views/fw/liegenschaft_crud.py:161
 #, python-format
 msgid "GWR-Import nicht möglich: %(e)s"
 msgstr "GWR-Import nicht möglich: %(e)s"
 
-#: core/views/fw/liegenschaft_crud.py:205
+#: core/views/fw/liegenschaft_crud.py:178
 #, python-format
 msgid ""
 "Liegenschaft kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/"
@@ -17684,20 +17770,28 @@ msgstr ""
 "Liegenschaft kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/"
 "Verträge. Bitte zuerst kündigen/beenden."
 
-#: core/views/fw/liegenschaft_crud.py:212
+#: core/views/fw/liegenschaft_crud.py:185
 #, python-format
 msgid "Liegenschaft „%(name)s\" inkl. %(anz_obj)s Objekt(e) gelöscht."
 msgstr "Liegenschaft „%(name)s\" inkl. %(anz_obj)s Objekt(e) gelöscht."
 
-#: core/views/fw/liegenschaft_crud.py:247
+#: core/views/fw/liegenschaft_crud.py:220
 msgid "Versicherung erfasst."
 msgstr "Versicherung erfasst."
 
-#: core/views/fw/liegenschaft_crud.py:261
+#: core/views/fw/liegenschaft_crud.py:234
 msgid "Versicherung entfernt."
 msgstr "Versicherung entfernt."
 
-#: core/views/fw/liegenschaft_crud.py:345
+#: core/views/fw/liegenschaft_crud.py:262
+msgid "Bitte eine Liegenschaft wählen."
+msgstr "Bitte eine Liegenschaft wählen."
+
+#: core/views/fw/liegenschaft_crud.py:272
+msgid "Das Hauptobjekt muss zur selben Liegenschaft gehören."
+msgstr "Das Hauptobjekt muss zur selben Liegenschaft gehören."
+
+#: core/views/fw/liegenschaft_crud.py:302
 #, python-format
 msgid "Objekt %(bezeichnung)s gespeichert."
 msgstr "Objekt %(bezeichnung)s gespeichert."
@@ -18262,62 +18356,62 @@ msgstr ""
 "Objekt zur Nachmietersuche ausgeschrieben — erscheint jetzt in der "
 "Vermarktung."
 
-#: core/views/fw/profil.py:756
+#: core/views/fw/profil.py:768
 msgid "Name des Mieters"
 msgstr "Name des Mieters"
 
-#: core/views/fw/profil.py:757
+#: core/views/fw/profil.py:769
 msgid "Adresse des Mieters"
 msgstr "Adresse des Mieters"
 
-#: core/views/fw/profil.py:758
+#: core/views/fw/profil.py:770
 msgid "Objektbezeichnung"
 msgstr "Objektbezeichnung"
 
-#: core/views/fw/profil.py:759
+#: core/views/fw/profil.py:771
 msgid "Strasse der Liegenschaft"
 msgstr "Strasse der Liegenschaft"
 
-#: core/views/fw/profil.py:760
+#: core/views/fw/profil.py:772
 msgid "Name der Verwaltung / des Vermieters"
 msgstr "Name der Verwaltung / des Vermieters"
 
-#: core/views/fw/profil.py:761
+#: core/views/fw/profil.py:773
 msgid "Heutiges Datum"
 msgstr "Heutiges Datum"
 
-#: core/views/fw/profil.py:764
+#: core/views/fw/profil.py:776
 msgid "Beauftragte Handwerkerfirma (Schaden)"
 msgstr "Beauftragte Handwerkerfirma (Schaden)"
 
-#: core/views/fw/profil.py:765
+#: core/views/fw/profil.py:777
 msgid "Name des Melders (Schaden)"
 msgstr "Name des Melders (Schaden)"
 
-#: core/views/fw/profil.py:766
+#: core/views/fw/profil.py:778
 msgid "Telefon des Melders (Schaden)"
 msgstr "Telefon des Melders (Schaden)"
 
-#: core/views/fw/profil.py:769
+#: core/views/fw/profil.py:781
 msgid "Aktueller Ticket-Status"
 msgstr "Aktueller Ticket-Status"
 
-#: core/views/fw/profil.py:792
+#: core/views/fw/profil.py:804
 #, python-format
 msgid ""
 "%(n)s Standardvorlage(n) erstellt — jederzeit unter 'Bearbeiten' anpassbar."
 msgstr ""
 "%(n)s Standardvorlage(n) erstellt — jederzeit unter 'Bearbeiten' anpassbar."
 
-#: core/views/fw/profil.py:794
+#: core/views/fw/profil.py:806
 msgid "Alle Standardvorlagen sind bereits vorhanden."
 msgstr "Alle Standardvorlagen sind bereits vorhanden."
 
-#: core/views/fw/profil.py:830
+#: core/views/fw/profil.py:842
 msgid "Bezeichnung ist erforderlich."
 msgstr "Bezeichnung ist erforderlich."
 
-#: core/views/fw/profil.py:839
+#: core/views/fw/profil.py:851
 #, python-format
 msgid ""
 "Eigene Fassung von '%(name)s' angelegt. Die mitgelieferte Vorlage bleibt "
@@ -18326,12 +18420,12 @@ msgstr ""
 "Eigene Fassung von '%(name)s' angelegt. Die mitgelieferte Vorlage bleibt "
 "unverändert."
 
-#: core/views/fw/profil.py:841
+#: core/views/fw/profil.py:853
 #, python-format
 msgid "Vorlage '%(name)s' gespeichert."
 msgstr "Vorlage '%(name)s' gespeichert."
 
-#: core/views/fw/profil.py:859
+#: core/views/fw/profil.py:871
 msgid ""
 "Mitgelieferte Vorlagen lassen sich nicht löschen. Sie können sie bearbeiten "
 "— dabei entsteht eine eigene Fassung."
@@ -18339,26 +18433,26 @@ msgstr ""
 "Mitgelieferte Vorlagen lassen sich nicht löschen. Sie können sie bearbeiten "
 "— dabei entsteht eine eigene Fassung."
 
-#: core/views/fw/profil.py:865
+#: core/views/fw/profil.py:877
 #, python-format
 msgid "Vorlage '%(name)s' gelöscht."
 msgstr "Vorlage '%(name)s' gelöscht."
 
-#: core/views/fw/profil.py:888
+#: core/views/fw/profil.py:900
 msgid "E-Mail-Versand"
 msgstr "E-Mail-Versand"
 
-#: core/views/fw/profil.py:889 core/views/fw/profil.py:894
-#: core/views/fw/profil.py:899
+#: core/views/fw/profil.py:901 core/views/fw/profil.py:906
+#: core/views/fw/profil.py:911
 msgid "Verbunden"
 msgstr "Verbunden"
 
-#: core/views/fw/profil.py:889 core/views/fw/profil.py:894
-#: core/views/fw/profil.py:899
+#: core/views/fw/profil.py:901 core/views/fw/profil.py:906
+#: core/views/fw/profil.py:911
 msgid "Nicht konfiguriert"
 msgstr "Nicht konfiguriert"
 
-#: core/views/fw/profil.py:890
+#: core/views/fw/profil.py:902
 msgid ""
 "Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
 "deinen SMTP-Server."
@@ -18366,15 +18460,15 @@ msgstr ""
 "Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
 "deinen SMTP-Server."
 
-#: core/views/fw/profil.py:891
+#: core/views/fw/profil.py:903
 msgid "E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen."
 msgstr "E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen."
 
-#: core/views/fw/profil.py:893
+#: core/views/fw/profil.py:905
 msgid "DocuSeal — digitale Signatur"
 msgstr "DocuSeal — digitale Signatur"
 
-#: core/views/fw/profil.py:895
+#: core/views/fw/profil.py:907
 msgid ""
 "Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der "
 "Rücklauf wird automatisch als unterzeichnetes PDF abgelegt."
@@ -18382,15 +18476,15 @@ msgstr ""
 "Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der "
 "Rücklauf wird automatisch als unterzeichnetes PDF abgelegt."
 
-#: core/views/fw/profil.py:896
+#: core/views/fw/profil.py:908
 msgid "Nutzbar über «An DocuSeal senden» auf der Vertrags-Detailseite."
 msgstr "Nutzbar über «An DocuSeal senden» auf der Vertrags-Detailseite."
 
-#: core/views/fw/profil.py:896
+#: core/views/fw/profil.py:908
 msgid "DOCUSEAL_API_KEY hinterlegen."
 msgstr "DOCUSEAL_API_KEY hinterlegen."
 
-#: core/views/fw/profil.py:900
+#: core/views/fw/profil.py:912
 msgid ""
 "Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, "
 "IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für "
@@ -18400,16 +18494,16 @@ msgstr ""
 "IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für "
 "Handwerker-Rechnungen."
 
-#: core/views/fw/profil.py:901
+#: core/views/fw/profil.py:913
 msgid "Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload)."
 msgstr "Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload)."
 
-#: core/views/fw/profil.py:902
+#: core/views/fw/profil.py:914
 #, python-format
 msgid "E-Mail-Eingang aktiv: %(postfach)s (fetch_rechnungen)."
 msgstr "E-Mail-Eingang aktiv: %(postfach)s (fetch_rechnungen)."
 
-#: core/views/fw/profil.py:904
+#: core/views/fw/profil.py:916
 msgid ""
 "E-Mail-Eingang: Postfach in den Einstellungen hinterlegen + Scheduled Task "
 "«manage.py fetch_rechnungen --einmal»."
@@ -18417,7 +18511,7 @@ msgstr ""
 "E-Mail-Eingang: Postfach in den Einstellungen hinterlegen + Scheduled Task "
 "«manage.py fetch_rechnungen --einmal»."
 
-#: core/views/fw/profil.py:907
+#: core/views/fw/profil.py:919
 msgid ""
 "GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung "
 "aus Text-PDFs."
@@ -18425,11 +18519,11 @@ msgstr ""
 "GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung "
 "aus Text-PDFs."
 
-#: core/views/fw/profil.py:909
+#: core/views/fw/profil.py:921
 msgid "Banken-Abgleich (camt.053 / QR)"
 msgstr "Banken-Abgleich (camt.053 / QR)"
 
-#: core/views/fw/profil.py:911
+#: core/views/fw/profil.py:923
 msgid ""
 "Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per "
 "QR-Referenz den Debitoren zu."
@@ -18437,139 +18531,139 @@ msgstr ""
 "Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per "
 "QR-Referenz den Debitoren zu."
 
-#: core/views/fw/profil.py:912
+#: core/views/fw/profil.py:924
 msgid "Nutzbar im Bereich Bankabgleich."
 msgstr "Nutzbar im Bereich Bankabgleich."
 
-#: core/views/fw/profil.py:999
+#: core/views/fw/profil.py:1011
 msgid "Portal-Feed deaktiviert (Token entfernt)."
 msgstr "Portal-Feed deaktiviert (Token entfernt)."
 
-#: core/views/fw/profil.py:1004
+#: core/views/fw/profil.py:1016
 msgid "Neuer Portal-Feed-Token erzeugt."
 msgstr "Neuer Portal-Feed-Token erzeugt."
 
-#: core/views/fw/profil.py:1018
+#: core/views/fw/profil.py:1030
 msgid ""
 "Keine Ziel-E-Mail hinterlegt. Bitte im Benutzerprofil eine E-Mail eintragen."
 msgstr ""
 "Keine Ziel-E-Mail hinterlegt. Bitte im Benutzerprofil eine E-Mail eintragen."
 
-#: core/views/fw/profil.py:1029
+#: core/views/fw/profil.py:1041
 #, python-format
 msgid "Test-E-Mail an %(ziel)s gesendet."
 msgstr "Test-E-Mail an %(ziel)s gesendet."
 
-#: core/views/fw/profil.py:1031
+#: core/views/fw/profil.py:1043
 #, python-format
 msgid "E-Mail-Versand fehlgeschlagen: %(e)s"
 msgstr "E-Mail-Versand fehlgeschlagen: %(e)s"
 
-#: core/views/fw/profil.py:1038
+#: core/views/fw/profil.py:1050
 msgid "Selbstverwalter & kleine Eigentümer"
 msgstr "Selbstverwalter & kleine Eigentümer"
 
-#: core/views/fw/profil.py:1039
+#: core/views/fw/profil.py:1051
 msgid "Objekte, Personen & Verträge"
 msgstr "Objekte, Personen & Verträge"
 
-#: core/views/fw/profil.py:1039
+#: core/views/fw/profil.py:1051
 msgid "Vertrags-PDF & Dokumentenablage"
 msgstr "Vertrags-PDF & Dokumentenablage"
 
-#: core/views/fw/profil.py:1040
+#: core/views/fw/profil.py:1052
 msgid "Mieterportal (Dokumente, QR-Rechnung, Schaden, Tickets)"
 msgstr "Mieterportal (Dokumente, QR-Rechnung, Schaden, Tickets)"
 
-#: core/views/fw/profil.py:1041
+#: core/views/fw/profil.py:1053
 msgid "QR-Rechnung & Kontoauszug"
 msgstr "QR-Rechnung & Kontoauszug"
 
-#: core/views/fw/profil.py:1042
+#: core/views/fw/profil.py:1054
 msgid "Buchhaltung & Zahlungsverkehr"
 msgstr "Buchhaltung & Zahlungsverkehr"
 
-#: core/views/fw/profil.py:1042
+#: core/views/fw/profil.py:1054
 msgid "Nebenkosten & MWST"
 msgstr "Nebenkosten & MWST"
 
-#: core/views/fw/profil.py:1042
+#: core/views/fw/profil.py:1054
 msgid "Eigentümerportal"
 msgstr "Eigentümerportal"
 
-#: core/views/fw/profil.py:1045
+#: core/views/fw/profil.py:1057
 msgid "Liegenschaftsverwaltungen"
 msgstr "Liegenschaftsverwaltungen"
 
-#: core/views/fw/profil.py:1046
+#: core/views/fw/profil.py:1058
 msgid "Alles aus Start"
 msgstr "Alles aus Start"
 
-#: core/views/fw/profil.py:1046
+#: core/views/fw/profil.py:1058
 msgid "Buchhaltung, Sollstellung & Mahnwesen"
 msgstr "Buchhaltung, Sollstellung & Mahnwesen"
 
-#: core/views/fw/profil.py:1047
+#: core/views/fw/profil.py:1059
 msgid "camt.053-Import / pain.001-Export"
 msgstr "camt.053-Import / pain.001-Export"
 
-#: core/views/fw/profil.py:1047
+#: core/views/fw/profil.py:1059
 msgid "Nebenkostenabrechnung & MWST"
 msgstr "Nebenkostenabrechnung & MWST"
 
-#: core/views/fw/profil.py:1048
+#: core/views/fw/profil.py:1060
 msgid "Mietzinsanpassung (amtl. Formular, LIK/Referenzzins)"
 msgstr "Mietzinsanpassung (amtl. Formular, LIK/Referenzzins)"
 
-#: core/views/fw/profil.py:1049
+#: core/views/fw/profil.py:1061
 msgid "Eigentümerportal & Reports"
 msgstr "Eigentümerportal & Reports"
 
-#: core/views/fw/profil.py:1049
+#: core/views/fw/profil.py:1061
 msgid "Serienbriefe & Schaden-/Handwerker-Flow"
 msgstr "Serienbriefe & Schaden-/Handwerker-Flow"
 
-#: core/views/fw/profil.py:1050
+#: core/views/fw/profil.py:1062
 msgid "Multi-Eigentümer (voll)"
 msgstr "Multi-Eigentümer (voll)"
 
-#: core/views/fw/profil.py:1050
+#: core/views/fw/profil.py:1062
 msgid "KI-Analysen"
 msgstr "KI-Analysen"
 
-#: core/views/fw/profil.py:1050 core/views/fw/profil.py:1056
+#: core/views/fw/profil.py:1062 core/views/fw/profil.py:1068
 msgid "API-Zugang"
 msgstr "API-Zugang"
 
-#: core/views/fw/profil.py:1053
+#: core/views/fw/profil.py:1065
 msgid "Grössere Verwaltungen & Treuhänder"
 msgstr "Grössere Verwaltungen & Treuhänder"
 
-#: core/views/fw/profil.py:1054
+#: core/views/fw/profil.py:1066
 msgid "Alles aus Pro"
 msgstr "Alles aus Pro"
 
-#: core/views/fw/profil.py:1054
+#: core/views/fw/profil.py:1066
 msgid "Multi-Eigentümer & Mandatsabrechnung"
 msgstr "Multi-Eigentümer & Mandatsabrechnung"
 
-#: core/views/fw/profil.py:1055
+#: core/views/fw/profil.py:1067
 msgid "KI-Analysen & Report-Assistent"
 msgstr "KI-Analysen & Report-Assistent"
 
-#: core/views/fw/profil.py:1055
+#: core/views/fw/profil.py:1067
 msgid "DocuSeal-Vertragssignatur inkl."
 msgstr "DocuSeal-Vertragssignatur inkl."
 
-#: core/views/fw/profil.py:1056
+#: core/views/fw/profil.py:1068
 msgid "Prioritäts-Support & Onboarding"
 msgstr "Prioritäts-Support & Onboarding"
 
-#: core/views/fw/profil.py:1076
+#: core/views/fw/profil.py:1088
 msgid "Den Abo-Plan kann nur der Inhaber ändern."
 msgstr "Den Abo-Plan kann nur der Inhaber ändern."
 
-#: core/views/fw/profil.py:1085
+#: core/views/fw/profil.py:1097
 #, python-format
 msgid "Plan «%(wert)s» aktiviert."
 msgstr "Plan «%(wert)s» aktiviert."
@@ -19701,7 +19795,12 @@ msgstr "Pauschal (CHF)"
 msgid "Defekt"
 msgstr "Defekt"
 
-#: rentals/admin.py:254
+#: rentals/admin.py:126
+msgid ""
+"Versand zur digitalen Unterschrift: in der Vertragsakte über «Mehr» auslösen."
+msgstr "Versand zur digitalen Unterschrift: in der Vertragsakte über «Mehr» auslösen."
+
+#: rentals/admin.py:257
 msgid "Vertrag archiviert."
 msgstr "Vertrag archiviert."
 
@@ -19828,6 +19927,21 @@ msgstr "Handwerker Mail"
 #: tickets/models.py:133
 msgid "Ausgehende E-Mail"
 msgstr "Ausgehende E-Mail"
+
+#~ msgid "Arbeit"
+#~ msgstr "Arbeit"
+
+#~ msgid "Strasse & Nr. *"
+#~ msgstr "Strasse & Nr. *"
+
+#~ msgid "PLZ *"
+#~ msgstr "PLZ *"
+
+#~ msgid "Ort *"
+#~ msgstr "Ort *"
+
+#~ msgid "Lieferant und Betrag (> 0) sind erforderlich."
+#~ msgstr "Lieferant und Betrag (> 0) sind erforderlich."
 
 #, fuzzy
 #~| msgid "Ist-Mietzins"
