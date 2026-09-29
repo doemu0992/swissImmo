@@ -14,7 +14,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.db.models import Q
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -35,9 +35,9 @@ from core.tenancy import aktuelle_organisation
 # ============================================================
 
 POTENZIAL_PILL = {
-    'increase': ('Erhöhung möglich', 'fw-gut-flaeche fw-gut', 'trend'),
-    'decrease': ('Senkungsanspruch', 'fw-krit-flaeche fw-kritisch', 'zurueck'),
-    'neutral':  ('Aktuell', 'fw-flaeche2 fw-mutet', 'bericht'),
+    'increase': (gettext_lazy('Erhöhung möglich'), 'fw-gut-flaeche fw-gut', 'trend'),
+    'decrease': (gettext_lazy('Senkungsanspruch'), 'fw-krit-flaeche fw-kritisch', 'zurueck'),
+    'neutral':  (gettext_lazy('Aktuell'), 'fw-flaeche2 fw-mutet', 'bericht'),
 }
 
 

@@ -1,24 +1,24 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
-{% block title %}Untervermietung — {{ v.mieter.display_name }}{% endblock %}
+{% load zeichen i18n %}
+{% block title %}{% blocktrans with name=v.mieter.display_name %}Untervermietung — {{ name }}{% endblocktrans %}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/" class="hover:fw-marke">Verträge</a>
+    <a href="/neu/vertraege/" class="hover:fw-marke">{% trans "Verträge" %}</a>
     {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
     {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">Untervermietung</span>
+    <span class="fw-mutet font-medium">{% trans "Untervermietung" %}</span>
 </nav>
 
 <div class="fw-phead">
     <div>
-        <h1>Untervermietung — Zustimmung / Ablehnung</h1>
+        <h1>{% trans "Untervermietung — Zustimmung / Ablehnung" %}</h1>
         <p>Art. 262 OR · {{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.plz }} {{ v.einheit.liegenschaft.ort }}</p>
     </div>
 </div>
 
 <div class="max-w-3xl mb-5 text-xs fw-markenflaeche border fw-linie-marke fw-marke rounded-lg px-3 py-2.5">
-    {% zeichen 'hinweis' klasse='mr-1' %}Die Vermieterschaft darf die Zustimmung nur verweigern, wenn die
+    {% comment %}Paraphrase von Art. 262 Abs. 2 OR: bleibt deutsch bis zur juristisch geprüften Übersetzung (wie fw/rechtsgrundlagen.html).{% endcomment %}{% zeichen 'hinweis' klasse='mr-1' %}Die Vermieterschaft darf die Zustimmung nur verweigern, wenn die
     Mieterschaft die Bedingungen nicht bekanntgibt, der Untermietzins missbräuchlich ist oder wesentliche
     Nachteile entstehen (Art. 262 Abs. 2 OR).
 </div>
@@ -26,21 +26,21 @@
 <form method="post" class="max-w-3xl space-y-5">
     {% csrf_token %}
     <div class="fw-card p-5 space-y-4">
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Untermietende Person *</label>
-            <input name="untermieter" required placeholder="Name der untermietenden Person" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Entscheid</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Untermietende Person *" %}</label>
+            <input name="untermieter" required placeholder="{% trans 'Name der untermietenden Person' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Entscheid" %}</label>
             <select name="entscheid" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <option value="zustimmung">Zustimmung erteilen</option>
-                <option value="ablehnung">Ablehnung</option>
+                <option value="zustimmung">{% trans "Zustimmung erteilen" %}</option>
+                <option value="ablehnung">{% trans "Ablehnung" %}</option>
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Bedingungen / Begründung (optional)</label>
-            <textarea name="bedingungen" rows="3" placeholder="z. B. befristet bis …, Untermietzins max. CHF …" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bedingungen / Begründung (optional)" %}</label>
+            <textarea name="bedingungen" rows="3" placeholder="{% trans 'z. B. befristet bis …, Untermietzins max. CHF …' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
     </div>
     <div class="flex items-center gap-3">
         <button type="submit" class="inline-flex items-center gap-2 fw-btn fw-primary text-sm font-semibold rounded-lg px-5 py-2.5">
-            {% zeichen 'drucken' %}Schreiben als PDF erstellen
+            {% zeichen 'drucken' %}{% trans "Schreiben als PDF erstellen" %}
         </button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink">Abbrechen</a>
+        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

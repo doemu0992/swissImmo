@@ -765,20 +765,20 @@ def fw_expose_pdf(request, pk):
 
 
 PLATZHALTER_HILFE = [
-    ('{mieter_name}', 'Name des Mieters'),
-    ('{mieter_adresse}', 'Adresse des Mieters'),
-    ('{objekt}', 'Objektbezeichnung'),
-    ('{liegenschaft}', 'Strasse der Liegenschaft'),
-    ('{vermieter}', 'Name der Verwaltung / des Vermieters'),
-    ('{datum}', 'Heutiges Datum'),
-    ('{miete}', 'Bruttomietzins'),
+    ('{mieter_name}', gettext_lazy('Name des Mieters')),
+    ('{mieter_adresse}', gettext_lazy('Adresse des Mieters')),
+    ('{objekt}', gettext_lazy('Objektbezeichnung')),
+    ('{liegenschaft}', gettext_lazy('Strasse der Liegenschaft')),
+    ('{vermieter}', gettext_lazy('Name der Verwaltung / des Vermieters')),
+    ('{datum}', gettext_lazy('Heutiges Datum')),
+    ('{miete}', gettext_lazy('Bruttomietzins')),
     # Schadensfall-/Ticket-Vorlagen
-    ('{handwerker}', 'Beauftragte Handwerkerfirma (Schaden)'),
-    ('{melder_name}', 'Name des Melders (Schaden)'),
-    ('{melder_tel}', 'Telefon des Melders (Schaden)'),
-    ('{schaden}', 'Titel des Schadens'),
-    ('{ticket_id}', 'Ticket-Nummer'),
-    ('{status}', 'Aktueller Ticket-Status'),
+    ('{handwerker}', gettext_lazy('Beauftragte Handwerkerfirma (Schaden)')),
+    ('{melder_name}', gettext_lazy('Name des Melders (Schaden)')),
+    ('{melder_tel}', gettext_lazy('Telefon des Melders (Schaden)')),
+    ('{schaden}', gettext_lazy('Titel des Schadens')),
+    ('{ticket_id}', gettext_lazy('Ticket-Nummer')),
+    ('{status}', gettext_lazy('Aktueller Ticket-Status')),
 ]
 
 @rolle_erforderlich(*TEAM_ROLLEN)

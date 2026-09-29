@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 09:50+0200\n"
+"POT-Creation-Date: 2026-09-29 10:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -93,8 +93,8 @@ msgstr "Sicurezza / accesso"
 
 #: core/models.py:347 core/models.py:397 core/templates/fw/dokumente.html:26
 #: core/templates/fw/liegenschaft_detail.html:647
-#: core/templates/fw/liegenschaft_detail.html:691 crm/models.py:628
-#: faelle/termin_models.py:80 faelle/termin_models.py:193
+#: core/templates/fw/liegenschaft_detail.html:691 core/views/fw/dokumente.py:96
+#: crm/models.py:628 faelle/termin_models.py:80 faelle/termin_models.py:193
 #: portfolio/models.py:802 rentals/models.py:821
 msgid "Sonstiges"
 msgstr "Varie"
@@ -680,6 +680,7 @@ msgstr "Costi"
 #: core/templates/fw/mieterkonten.html:49 core/templates/fw/mieterkonto.html:34
 #: core/templates/fw/mieterkonto.html:90
 #: core/templates/fw/nebenkosten_detail.html:119
+#: core/templates/fw/schlussabrechnung.html:107
 msgid "Saldo"
 msgstr "Saldo"
 
@@ -797,6 +798,38 @@ msgstr ""
 "sfitti) / valore d'assicurazione dello stabile (approssimazione, non "
 "sostituisce una stima del valore venale)."
 
+#: core/services/ticket_workflow.py:52
+msgid "Name des Melders"
+msgstr "Nome del segnalante"
+
+#: core/services/ticket_workflow.py:53
+msgid "Telefon des Melders"
+msgstr "Telefono del segnalante"
+
+#: core/services/ticket_workflow.py:54
+msgid "Objekt / Einheit"
+msgstr "Oggetto / unità"
+
+#: core/services/ticket_workflow.py:55
+msgid "Liegenschaft (Strasse, Ort)"
+msgstr "Stabile (via, località)"
+
+#: core/services/ticket_workflow.py:56 core/views/fw/profil.py:767
+msgid "Titel des Schadens"
+msgstr "Titolo del danno"
+
+#: core/services/ticket_workflow.py:57 core/views/fw/profil.py:768
+msgid "Ticket-Nummer"
+msgstr "Numero del ticket"
+
+#: core/services/ticket_workflow.py:58
+msgid "Beauftragte Handwerkerfirma"
+msgstr "Ditta artigiana incaricata"
+
+#: core/services/ticket_workflow.py:59
+msgid "Aktueller Status"
+msgstr "Stato attuale"
+
 #: core/services/unterschrift.py:145
 msgid ""
 "Die Unterschrift war leer und wurde nicht gespeichert — bitte nochmals "
@@ -897,6 +930,7 @@ msgstr "Conto inquilino"
 
 #: core/templates/core/_mieter_nav.html:26
 #: core/templates/core/mieter_portal.html:107
+#: core/templates/fw/kuendigung_form.html:10
 #: core/templates/fw/objekt_detail.html:205 crm/models.py:618
 msgid "Kündigung"
 msgstr "Disdetta"
@@ -1225,7 +1259,7 @@ msgid "Mietbeginn"
 msgstr "Inizio della locazione"
 
 #: core/templates/core/dok_wohnungsausweis.html:14
-#: core/templates/fw/vertrag_detail.html:261
+#: core/templates/fw/vertrag_detail.html:261 core/views/fw/profil.py:762
 msgid "Bruttomietzins"
 msgstr "Pigione lorda"
 
@@ -1233,6 +1267,7 @@ msgstr "Pigione lorda"
 #: core/templates/core/portal.html:307 core/templates/fw/abnahme_neu.html:96
 #: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
 #: core/templates/fw/debitoren_aging.html:50
+#: core/templates/fw/kuendigung_form.html:29
 #: core/templates/fw/liegenschaft_detail.html:742
 #: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
 #: core/templates/fw/mieterkonten.html:46
@@ -1478,6 +1513,8 @@ msgstr "Comunicazione all'amministrazione"
 
 #: core/templates/core/mieter_daten.html:40
 #: core/templates/core/mieter_schaden.html:32
+#: core/templates/fw/kuendigung_form.html:43
+#: core/templates/fw/kuendigung_form.html:90
 #: core/templates/fw/objekt_ausschreiben.html:24
 #: core/templates/fw/person_form.html:155
 #: core/templates/fw/person_form.html:229
@@ -1640,6 +1677,7 @@ msgid "Brutto / Mt."
 msgstr "Lordo / mese"
 
 #: core/templates/core/mieter_portal.html:45
+#: core/templates/fw/schlussabrechnung.html:42
 msgid "Mietkaution"
 msgstr "Deposito di garanzia"
 
@@ -2375,11 +2413,12 @@ msgstr "Salva"
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
 #: core/templates/fw/kreditoren.html:307
+#: core/templates/fw/kuendigung_form.html:111
 #: core/templates/fw/liegenschaft_detail.html:361
 #: core/templates/fw/liegenschaft_detail.html:422
 #: core/templates/fw/liegenschaft_detail.html:704
 #: core/templates/fw/liegenschaft_form.html:164
-#: core/templates/fw/mandat_form.html:85
+#: core/templates/fw/maengelruege.html:36 core/templates/fw/mandat_form.html:85
 #: core/templates/fw/objekt_detail.html:174
 #: core/templates/fw/objekt_detail.html:710
 #: core/templates/fw/objekt_detail.html:770
@@ -2387,6 +2426,8 @@ msgstr "Salva"
 #: core/templates/fw/objekt_form.html:137
 #: core/templates/fw/person_form.html:316
 #: core/templates/fw/regelsatz_form.html:105
+#: core/templates/fw/schlussabrechnung.html:120
+#: core/templates/fw/untermiete.html:44
 #: core/templates/fw/vertrag_bearbeiten.html:181
 #: core/templates/fw/vorlage_form.html:39
 #: core/templates/fw/weiterverrechnung.html:113
@@ -3076,7 +3117,7 @@ msgstr "senza data — tempo medio non calcolabile"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:603
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:609
 msgid "Abwesenheiten"
 msgstr "Assenze"
 
@@ -3135,6 +3176,10 @@ msgstr "Passo"
 #: core/templates/fw/_fwmodal.html:10
 msgid "Schliessen"
 msgstr "Chiudere"
+
+#: core/templates/fw/_modal_done.html:13
+msgid "Fenster wird geschlossen …"
+msgstr "Chiusura della finestra …"
 
 #: core/templates/fw/_unterschrift_feld.html:11
 msgid "Digitale Unterschrift"
@@ -3452,7 +3497,8 @@ msgstr "Descrivere il difetto"
 msgid "Abnutzung"
 msgstr "Usura normale"
 
-#: core/templates/fw/abnahme_neu.html:96 rentals/models.py:843
+#: core/templates/fw/abnahme_neu.html:96
+#: core/templates/fw/kuendigung_form.html:30 rentals/models.py:843
 msgid "Vermieter"
 msgstr "Locatore"
 
@@ -3615,6 +3661,7 @@ msgid "Bis (einschliesslich)"
 msgstr "Al (incluso)"
 
 #: core/templates/fw/abwesenheiten.html:30
+#: core/templates/fw/kuendigung_form.html:86
 #: core/templates/fw/vertrag_detail.html:467
 #: core/templates/fw/vertrag_detail.html:525
 msgid "Grund"
@@ -3932,6 +3979,8 @@ msgstr "Nessun cespite registrato."
 #: core/templates/fw/anlagen.html:51 core/templates/fw/kontenplan.html:85
 #: core/templates/fw/kontenplan.html:126 core/templates/fw/kreditoren.html:348
 #: core/templates/fw/liegenschaft_detail.html:662
+#: core/templates/fw/schlussabrechnung.html:62
+#: core/templates/fw/schlussabrechnung.html:79
 msgid "Bezeichnung"
 msgstr "Designazione"
 
@@ -4342,9 +4391,10 @@ msgstr "Selezionare prima dei pagamenti."
 #: core/templates/fw/fristen.html:8 core/templates/fw/kontoblatt.html:21
 #: core/templates/fw/liegenschaften.html:60
 #: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:47
-#: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:147
-#: core/views/fw/listen.py:208 core/views/fw/listen.py:1112
-#: core/views/fw/listen.py:1182 core/views/fw/listen.py:1295
+#: core/views/fw/dienstleister.py:60 core/views/fw/dokumente.py:98
+#: core/views/fw/kreditoren.py:147 core/views/fw/listen.py:208
+#: core/views/fw/listen.py:1112 core/views/fw/listen.py:1182
+#: core/views/fw/listen.py:1295 core/views/fw/schaeden.py:129
 #: core/views/fw/schaeden.py:408
 msgid "Alle"
 msgstr "Tutti"
@@ -4687,8 +4737,8 @@ msgstr "Modificare %(name)s"
 #: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_form.html:8 core/templates/fw/objekt_form.html:12
 #: core/templates/fw/vertrag_detail.html:525
-#: core/templates/fw/vorlage_form.html:8 core/views/portal.py:748
-#: tickets/models.py:12
+#: core/templates/fw/vorlage_form.html:8 core/views/fw/schaeden.py:39
+#: core/views/portal.py:748 tickets/models.py:12
 msgid "Neu"
 msgstr "Nuovo"
 
@@ -4888,8 +4938,8 @@ msgstr "Accettato"
 msgid "Abgesagt"
 msgstr "Rifiutato"
 
-#: core/templates/fw/bewerber_vergleich.html:78 faelle/arbeitsvorrat.py:536
-#: faelle/termin_models.py:77
+#: core/templates/fw/bewerber_vergleich.html:78 core/views/fw/mietprozess.py:36
+#: faelle/arbeitsvorrat.py:536 faelle/termin_models.py:77
 msgid "Besichtigung"
 msgstr "Visita"
 
@@ -6250,7 +6300,7 @@ msgid "Protokoll"
 msgstr "Protocollo"
 
 #: core/templates/fw/dokumente.html:26 core/templates/fw/person_detail.html:280
-#: faelle/models.py:370 rentals/models.py:821
+#: core/views/fw/dokumente.py:96 faelle/models.py:370 rentals/models.py:821
 msgid "Korrespondenz"
 msgstr "Corrispondenza"
 
@@ -6468,6 +6518,7 @@ msgid "Ab Bankkonto"
 msgstr "Dal conto bancario"
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:172
+#: core/templates/fw/kuendigung_form.html:92
 #: core/templates/fw/lebensdauer.html:34 core/templates/fw/lebensdauer.html:50
 #: core/templates/fw/liegenschaft_detail.html:527
 #: core/templates/fw/objekt_detail.html:276
@@ -6834,7 +6885,8 @@ msgid "Frist %(d)s"
 msgstr "Scadenza %(d)s"
 
 #: core/templates/fw/fall_detail.html:183 core/templates/fw/pendenzen.html:85
-#: core/templates/fw/termine.html:51 core/views/portal.py:752
+#: core/templates/fw/termine.html:51 core/views/fw/schaeden.py:43
+#: core/views/fw/schaeden.py:129 core/views/portal.py:752
 #: faelle/termin_models.py:84 tickets/models.py:16
 msgid "Erledigt"
 msgstr "Completato"
@@ -7280,11 +7332,13 @@ msgstr "Dal"
 #: core/templates/fw/kautionen.html:36
 #: core/templates/fw/liegenschaft_detail.html:644
 #: core/templates/fw/liegenschaft_detail.html:688
+#: core/templates/fw/schlussabrechnung.html:42
 #: core/templates/fw/vertrag_detail.html:416 portfolio/models.py:799
 msgid "Versicherung"
 msgstr "Assicurazione"
 
 #: core/templates/fw/kautionen.html:36
+#: core/templates/fw/schlussabrechnung.html:42
 #: core/templates/fw/vertrag_detail.html:393
 #: core/templates/fw/vertrag_detail.html:415
 msgid "Sperrkonto"
@@ -7992,6 +8046,103 @@ msgstr ""
 "stato su pagato. Lo scanner IA legge automaticamente i giustificativi "
 "caricati (fornitore, importo, IBAN, riferimento QR) — verificare i valori "
 "prima dell'approvazione."
+
+#: core/templates/fw/kuendigung_form.html:3
+#, python-format
+msgid "Kündigung erfassen — %(name)s"
+msgstr "Registrare la disdetta — %(name)s"
+
+#: core/templates/fw/kuendigung_form.html:6
+#: core/templates/fw/maengelruege.html:6
+#: core/templates/fw/schlussabrechnung.html:8 core/templates/fw/suche.html:69
+#: core/templates/fw/untermiete.html:6
+#: core/templates/fw/vertrag_bearbeiten.html:8
+#: core/templates/fw/vertrag_detail.html:11 core/views/fw/_basis.py:280
+#: core/views/fw/dokumente.py:95
+msgid "Verträge"
+msgstr "Contratti"
+
+#: core/templates/fw/kuendigung_form.html:15
+#: core/templates/fw/vertraege.html:99
+#: core/templates/fw/vertrag_detail.html:128
+msgid "Kündigung erfassen"
+msgstr "Registrare la disdetta"
+
+#: core/templates/fw/kuendigung_form.html:16
+#, python-format
+msgid "Frist %(monate)s Mt. · Termine: %(termine)s"
+msgstr "Termine %(monate)s mesi · scadenze: %(termine)s"
+
+#: core/templates/fw/kuendigung_form.html:27
+msgid "Gekündigt durch *"
+msgstr "Disdetto da *"
+
+#: core/templates/fw/kuendigung_form.html:32
+msgid "Zustellung"
+msgstr "Notifica"
+
+#: core/templates/fw/kuendigung_form.html:41
+msgid "Eingang / Poststempel *"
+msgstr "Ricezione / timbro postale *"
+
+#: core/templates/fw/kuendigung_form.html:43
+msgid "Gewünschtes Ende"
+msgstr "Fine desiderata"
+
+#: core/templates/fw/kuendigung_form.html:49
+msgid "Mietrechtlicher Hinweis"
+msgstr "Avvertenza di diritto locativo"
+
+#: core/templates/fw/kuendigung_form.html:55
+msgid "Nächster ordentlicher Kündigungstermin"
+msgstr "Prossimo termine di disdetta ordinario"
+
+#: core/templates/fw/kuendigung_form.html:57
+#, python-format
+msgid ""
+"Berechnet aus Eingang + %(monate)s Monaten, auf den nächsten erlaubten "
+"Termin."
+msgstr "Calcolato dalla ricezione + %(monate)s mesi, al prossimo termine consentito."
+
+#: core/templates/fw/kuendigung_form.html:75
+msgid "Ausserordentlich wegen Zahlungsverzug"
+msgstr "Straordinaria per mora del conduttore"
+
+#: core/templates/fw/kuendigung_form.html:76
+#, python-format
+msgid "frühestens %(datum)s"
+msgstr "al più presto il %(datum)s"
+
+#: core/templates/fw/kuendigung_form.html:83
+msgid "Ausserordentliche Kündigung"
+msgstr "Disdetta straordinaria"
+
+#: core/templates/fw/kuendigung_form.html:90
+msgid "Erstreckung bis"
+msgstr "Protrazione fino al"
+
+#: core/templates/fw/kuendigung_form.html:96
+msgid ""
+"Kündigung als bestätigt markieren (Vertrag wird auf „Gekündigt“ gesetzt)"
+msgstr "Segnare la disdetta come confermata (il contratto passa a «Disdetto»)"
+
+#: core/templates/fw/kuendigung_form.html:99
+msgid ""
+"Objekt wird frei — Leerstand ab Vertragsende anlegen &amp; Nachmieter-"
+"Pendenz erstellen"
+msgstr "L'oggetto si libera — registrare lo sfitto dalla fine del contratto &amp; creare una pendenza per il nuovo inquilino"
+
+#: core/templates/fw/kuendigung_form.html:103
+msgid ""
+"Beim Speichern wird automatisch eine <b>Auszugscheckliste</b> als Pendenzen "
+"angelegt (Abnahmetermin, Wohnungsabnahme, Zählerstände, Schlüssel, "
+"Schlussabrechnung, Kaution abrechnen …) — mit Fälligkeiten rund um das "
+"Vertragsende."
+msgstr "Al salvataggio viene creata automaticamente una <b>lista di controllo per il trasloco</b> sotto forma di pendenze (appuntamento di riconsegna, ricezione dell'alloggio, letture dei contatori, chiavi, conteggio finale, conteggio della cauzione …) — con scadenze attorno alla fine del contratto."
+
+#: core/templates/fw/kuendigung_form.html:109
+msgid "Kündigung speichern"
+msgstr "Salvare la disdetta"
 
 #: core/templates/fw/laeufe.html:9
 msgid "Wiederkehrende Verarbeitung mit Zustand — und dem, was sie blockiert."
@@ -9420,6 +9571,43 @@ msgstr ""
 "contabili e i giustificativi vanno conservati per <b>10 anni</b> (art. 958f "
 "CO)."
 
+#: core/templates/fw/maengelruege.html:3
+#, python-format
+msgid "Mängelrüge — %(name)s"
+msgstr "Notifica di difetti — %(name)s"
+
+#: core/templates/fw/maengelruege.html:10
+#: core/templates/fw/vertrag_detail.html:139
+msgid "Mängelrüge"
+msgstr "Notifica dei difetti"
+
+#: core/templates/fw/maengelruege.html:15
+msgid "Mängelrüge / Fristansetzung"
+msgstr "Notifica di difetti / fissazione di un termine"
+
+#: core/templates/fw/maengelruege.html:21
+msgid ""
+"Setzt der Mieterschaft eine Frist zur Behebung eines Mangels. Es wird "
+"automatisch eine Frist-Pendenz zur Nachkontrolle erstellt und der Brief in "
+"der Akte abgelegt."
+msgstr "Fissa all'inquilino un termine per eliminare un difetto. Viene creata automaticamente una pendenza di controllo e la lettera viene archiviata nel dossier."
+
+#: core/templates/fw/maengelruege.html:27
+msgid "Beschreibung des Mangels *"
+msgstr "Descrizione del difetto *"
+
+#: core/templates/fw/maengelruege.html:28
+msgid "z. B. Undichte Armatur im Bad, tropfender Wasserhahn…"
+msgstr "p. es. rubinetteria non stagna in bagno, rubinetto che gocciola…"
+
+#: core/templates/fw/maengelruege.html:29
+msgid "Frist (Tage)"
+msgstr "Termine (giorni)"
+
+#: core/templates/fw/maengelruege.html:34
+msgid "Mängelrüge als PDF erstellen"
+msgstr "Creare la notifica di difetti in PDF"
+
 #: core/templates/fw/mahnwesen.html:11
 msgid ""
 "Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt "
@@ -10082,7 +10270,7 @@ msgstr "3 mesi"
 msgid "gekündigte immer sichtbar"
 msgstr "disdetti sempre visibili"
 
-#: core/templates/fw/mieterwechsel.html:38
+#: core/templates/fw/mieterwechsel.html:38 core/views/fw/mietzins.py:40
 msgid "Aktuell"
 msgstr "Attuale"
 
@@ -10138,6 +10326,7 @@ msgid "Rücknahme starten"
 msgstr "Avviare la ripresa"
 
 #: core/templates/fw/mieterwechsel.html:71
+#: core/templates/fw/schlussabrechnung.html:12
 #: core/templates/fw/vertrag_detail.html:136
 msgid "Schlussabrechnung"
 msgstr "Conteggio finale"
@@ -10189,11 +10378,11 @@ msgstr "Attuale: tasso di riferimento"
 msgid "LIK"
 msgstr "IPC"
 
-#: core/templates/fw/mietzins.html:19
+#: core/templates/fw/mietzins.html:19 core/views/fw/mietzins.py:38
 msgid "Erhöhung möglich"
 msgstr "Aumento possibile"
 
-#: core/templates/fw/mietzins.html:23
+#: core/templates/fw/mietzins.html:23 core/views/fw/mietzins.py:39
 msgid "Senkungsanspruch"
 msgstr "Diritto a una riduzione"
 
@@ -13079,15 +13268,17 @@ msgstr "intero stabile"
 msgid "Melder Vor-/Nachname"
 msgstr "Nome/cognome del segnalante"
 
-#: core/templates/fw/schaeden.html:49
+#: core/templates/fw/schaeden.html:49 core/views/fw/schaeden.py:48
+#: core/views/fw/schaeden.py:49
 msgid "Tief"
 msgstr "Bassa"
 
-#: core/templates/fw/schaeden.html:49
+#: core/templates/fw/schaeden.html:49 core/views/fw/schaeden.py:47
 msgid "Mittel"
 msgstr "Media"
 
 #: core/templates/fw/schaeden.html:49 core/templates/fw/schaeden.html:119
+#: core/views/fw/schaeden.py:46
 msgid "Hoch"
 msgstr "Alta"
 
@@ -13170,6 +13361,103 @@ msgstr ""
 #: core/templates/fw/schaeden.html:133
 msgid "Sortiert nach Befund, dann Priorität, dann Alter — nicht nach Eingang."
 msgstr "Ordinato per riscontro, poi priorità, poi età — non per arrivo."
+
+#: core/templates/fw/schlussabrechnung.html:4
+#, python-format
+msgid "Schlussabrechnung — %(name)s"
+msgstr "Conteggio finale — %(name)s"
+
+#: core/templates/fw/schlussabrechnung.html:18
+msgid "Schlussabrechnung beim Auszug"
+msgstr "Conteggio finale al trasloco"
+
+#: core/templates/fw/schlussabrechnung.html:33
+msgid "Auszug per"
+msgstr "Trasloco al"
+
+#: core/templates/fw/schlussabrechnung.html:37
+#: core/templates/fw/schlussabrechnung.html:101
+msgid "Offene Mietforderungen"
+msgstr "Pigioni scoperte"
+
+#: core/templates/fw/schlussabrechnung.html:39
+msgid "automatisch aus offenen Debitoren"
+msgstr "automaticamente dai debitori aperti"
+
+#: core/templates/fw/schlussabrechnung.html:45
+msgid ""
+"Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position "
+"„zulasten“ erfassen."
+msgstr "Garanzia della cauzione — nessun credito dell'inquilino. Registrare i danni come posizione «a carico»."
+
+#: core/templates/fw/schlussabrechnung.html:49
+msgid "verrechnen / zurückzahlen"
+msgstr "compensare / rimborsare"
+
+#: core/templates/fw/schlussabrechnung.html:57
+msgid "Weitere Positionen"
+msgstr "Altre posizioni"
+
+#: core/templates/fw/schlussabrechnung.html:58
+msgid ""
+"z.B. Nebenkosten-Nachzahlung/-Guthaben, Schäden, Endreinigung, Ersatz. "
+"„zulasten“ = Mieter schuldet, „zugunsten“ = Gutschrift an Mieter."
+msgstr "p. es. conguaglio/credito spese accessorie, danni, pulizia finale, sostituzione. «a carico» = l'inquilino deve, «a favore» = accredito all'inquilino."
+
+#: core/templates/fw/schlussabrechnung.html:63
+#: core/templates/fw/schlussabrechnung.html:80
+msgid "Betrag CHF"
+msgstr "Importo CHF"
+
+#: core/templates/fw/schlussabrechnung.html:65
+#: core/templates/fw/schlussabrechnung.html:82
+msgid "zulasten Mieter"
+msgstr "a carico dell'inquilino"
+
+#: core/templates/fw/schlussabrechnung.html:66
+#: core/templates/fw/schlussabrechnung.html:83
+msgid "zugunsten Mieter"
+msgstr "a favore dell'inquilino"
+
+#: core/templates/fw/schlussabrechnung.html:71
+#: core/templates/fw/schlussabrechnung.html:88
+msgid "ohne MWST"
+msgstr "senza IVA"
+
+#: core/templates/fw/schlussabrechnung.html:72
+#: core/templates/fw/schlussabrechnung.html:89
+msgid "mit MWST"
+msgstr "con IVA"
+
+#: core/templates/fw/schlussabrechnung.html:99
+msgid "Abrechnung (live)"
+msgstr "Conteggio (in tempo reale)"
+
+#: core/templates/fw/schlussabrechnung.html:102
+msgid "Positionen zulasten Mieter"
+msgstr "Posizioni a carico dell'inquilino"
+
+#: core/templates/fw/schlussabrechnung.html:103
+msgid "Positionen zugunsten Mieter"
+msgstr "Posizioni a favore dell'inquilino"
+
+#: core/templates/fw/schlussabrechnung.html:104
+msgid "Mietkaution (Guthaben Mieter)"
+msgstr "Cauzione (credito dell'inquilino)"
+
+#: core/templates/fw/schlussabrechnung.html:115
+msgid "Schlussabrechnung als PDF"
+msgstr "Conteggio finale in PDF"
+
+#: core/templates/fw/schlussabrechnung.html:117
+msgid ""
+"Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige "
+"Nachzahlung als Debitor gestellt."
+msgstr "Contabilizzare il conteggio finale? La cauzione viene conteggiata e un eventuale saldo viene fatturato come debitore."
+
+#: core/templates/fw/schlussabrechnung.html:118
+msgid "Verbuchen (Kaution + Nachzahlung)"
+msgstr "Contabilizzare (cauzione + saldo)"
 
 #: core/templates/fw/sollstellung.html:4
 msgid "Sollstellung Miete"
@@ -13288,11 +13576,6 @@ msgstr ""
 msgid "Keine Treffer für „%(q)s\"."
 msgstr "Nessun risultato per «%(q)s»."
 
-#: core/templates/fw/suche.html:69 core/templates/fw/vertrag_bearbeiten.html:8
-#: core/templates/fw/vertrag_detail.html:11 core/views/fw/_basis.py:280
-msgid "Verträge"
-msgstr "Contratti"
-
 #: core/templates/fw/suche.html:75
 msgid "ab"
 msgstr "dal"
@@ -13339,6 +13622,51 @@ msgstr "Nessun appuntamento futuro registrato."
 #: core/templates/fw/termine.html:73
 msgid "Noch nichts vergangen."
 msgstr "Ancora nulla nel passato."
+
+#: core/templates/fw/untermiete.html:3
+#, python-format
+msgid "Untervermietung — %(name)s"
+msgstr "Sublocazione — %(name)s"
+
+#: core/templates/fw/untermiete.html:10
+msgid "Untervermietung"
+msgstr "Sublocazione"
+
+#: core/templates/fw/untermiete.html:15
+msgid "Untervermietung — Zustimmung / Ablehnung"
+msgstr "Sublocazione — consenso / rifiuto"
+
+#: core/templates/fw/untermiete.html:30
+msgid "Untermietende Person *"
+msgstr "Subconduttore *"
+
+#: core/templates/fw/untermiete.html:31
+msgid "Name der untermietenden Person"
+msgstr "Nome del subconduttore"
+
+#: core/templates/fw/untermiete.html:32
+msgid "Entscheid"
+msgstr "Decisione"
+
+#: core/templates/fw/untermiete.html:34
+msgid "Zustimmung erteilen"
+msgstr "Dare il consenso"
+
+#: core/templates/fw/untermiete.html:35
+msgid "Ablehnung"
+msgstr "Rifiuto"
+
+#: core/templates/fw/untermiete.html:37
+msgid "Bedingungen / Begründung (optional)"
+msgstr "Condizioni / motivazione (facoltativo)"
+
+#: core/templates/fw/untermiete.html:38
+msgid "z. B. befristet bis …, Untermietzins max. CHF …"
+msgstr "p. es. a termine fino al …, pigione di sublocazione max. CHF …"
+
+#: core/templates/fw/untermiete.html:42
+msgid "Schreiben als PDF erstellen"
+msgstr "Creare la lettera in PDF"
 
 #: core/templates/fw/vermarktung.html:10
 msgid "Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick."
@@ -13423,11 +13751,6 @@ msgstr "Allestire il primo contratto"
 #: core/templates/fw/vertraege.html:73
 msgid "NK"
 msgstr "SA"
-
-#: core/templates/fw/vertraege.html:99
-#: core/templates/fw/vertrag_detail.html:128
-msgid "Kündigung erfassen"
-msgstr "Registrare la disdetta"
 
 #: core/templates/fw/vertraege.html:99
 msgid "Kündigen"
@@ -13586,10 +13909,6 @@ msgstr "Firmato"
 #: core/templates/fw/vertrag_detail.html:121
 msgid "Zur Unterschrift"
 msgstr "Per la firma"
-
-#: core/templates/fw/vertrag_detail.html:139
-msgid "Mängelrüge"
-msgstr "Notifica dei difetti"
 
 #: core/templates/fw/vertrag_detail.html:140
 msgid "Untermiete"
@@ -16626,6 +16945,14 @@ msgstr[1] "%(n)s pigioni mensili aperte"
 msgid "Berechnung öffnen"
 msgstr "Aprire il calcolo"
 
+#: core/views/fw/dokumente.py:95
+msgid "Protokolle"
+msgstr "Verbali"
+
+#: core/views/fw/dokumente.py:97
+msgid "Allgemein"
+msgstr "Generale"
+
 #: core/views/fw/eigentuemer.py:61
 msgid "Name / Firma ist erforderlich."
 msgstr "Il nome / la ditta è obbligatorio."
@@ -17240,7 +17567,7 @@ msgstr "Commerciale"
 msgid "Alle Zustände"
 msgstr "Tutti gli stati"
 
-#: core/views/fw/listen.py:1115
+#: core/views/fw/listen.py:1115 core/views/fw/schaeden.py:127
 #, python-format
 msgid "Mit Befund (%(n)s)"
 msgstr "Con riscontro (%(n)s)"
@@ -17331,6 +17658,23 @@ msgstr "Processo di sollecito: %(teile)s."
 msgid "Mahnlauf: keine neuen Mahnungen fällig — alles aktuell."
 msgstr ""
 "Processo di sollecito: nessun nuovo sollecito dovuto — tutto aggiornato."
+
+#: core/views/fw/mietprozess.py:34 mietprozess/models.py:48
+msgid "Neu eingegangen"
+msgstr "Appena ricevuta"
+
+#: core/views/fw/mietprozess.py:35 mietprozess/models.py:49
+msgid "Bonität geprüft"
+msgstr "Solvibilità verificata"
+
+#: core/views/fw/mietprozess.py:37 mietprozess/models.py:51
+msgid "Zusage erteilt"
+msgstr "Conferma data"
+
+#: core/views/fw/mietprozess.py:38 mietprozess/models.py:52
+#: tickets/models.py:108
+msgid "Abgelehnt"
+msgstr "Respinto"
 
 #: core/views/fw/mietprozess.py:178
 msgid "Bitte einen gültigen Besichtigungstermin wählen."
@@ -17589,6 +17933,46 @@ msgid ""
 msgstr ""
 "Oggetto pubblicato per la ricerca di un nuovo inquilino — ora appare nella "
 "commercializzazione."
+
+#: core/views/fw/profil.py:756
+msgid "Name des Mieters"
+msgstr "Nome dell'inquilino"
+
+#: core/views/fw/profil.py:757
+msgid "Adresse des Mieters"
+msgstr "Indirizzo dell'inquilino"
+
+#: core/views/fw/profil.py:758
+msgid "Objektbezeichnung"
+msgstr "Designazione dell'oggetto"
+
+#: core/views/fw/profil.py:759
+msgid "Strasse der Liegenschaft"
+msgstr "Via dello stabile"
+
+#: core/views/fw/profil.py:760
+msgid "Name der Verwaltung / des Vermieters"
+msgstr "Nome dell'amministrazione / del locatore"
+
+#: core/views/fw/profil.py:761
+msgid "Heutiges Datum"
+msgstr "Data odierna"
+
+#: core/views/fw/profil.py:764
+msgid "Beauftragte Handwerkerfirma (Schaden)"
+msgstr "Ditta artigiana incaricata (danno)"
+
+#: core/views/fw/profil.py:765
+msgid "Name des Melders (Schaden)"
+msgstr "Nome del segnalante (danno)"
+
+#: core/views/fw/profil.py:766
+msgid "Telefon des Melders (Schaden)"
+msgstr "Telefono del segnalante (danno)"
+
+#: core/views/fw/profil.py:769
+msgid "Aktueller Ticket-Status"
+msgstr "Stato attuale del ticket"
 
 #: core/views/fw/profil.py:792
 #, python-format
@@ -17907,6 +18291,28 @@ msgstr ""
 msgid "Übersteuerung mit Begründung protokolliert."
 msgstr "Deroga registrata con motivazione."
 
+#: core/views/fw/schaeden.py:40 core/views/portal.py:749 tickets/models.py:13
+msgid "In Bearbeitung"
+msgstr "In elaborazione"
+
+#: core/views/fw/schaeden.py:41 tickets/models.py:14
+msgid "Warte auf Mieter"
+msgstr "In attesa dell'inquilino"
+
+#: core/views/fw/schaeden.py:42 tickets/models.py:15
+msgid "Warte auf Handwerker"
+msgstr "In attesa dell'artigiano"
+
+#: core/views/fw/schaeden.py:126
+#, python-format
+msgid "Offen (%(n)s)"
+msgstr "Aperti (%(n)s)"
+
+#: core/views/fw/schaeden.py:128
+#, python-format
+msgid "Wartet auf Dritte (%(n)s)"
+msgstr "In attesa di terzi (%(n)s)"
+
 #: core/views/fw/schaeden.py:225
 msgid "Titel und Liegenschaft sind erforderlich."
 msgstr "Il titolo e lo stabile sono obbligatori."
@@ -18132,10 +18538,6 @@ msgid ""
 msgstr ""
 "La vostra segnalazione di danno è stata trasmessa. Riceverete una conferma "
 "per e-mail; l'amministrazione se ne occupa."
-
-#: core/views/portal.py:749 tickets/models.py:13
-msgid "In Bearbeitung"
-msgstr "In elaborazione"
 
 #: core/views/portal.py:750
 msgid "Warte auf Sie"
@@ -18787,25 +19189,9 @@ msgstr "Secondo il numero di persone"
 msgid "Ignoriert"
 msgstr "Ignorato"
 
-#: mietprozess/models.py:48
-msgid "Neu eingegangen"
-msgstr "Appena ricevuta"
-
-#: mietprozess/models.py:49
-msgid "Bonität geprüft"
-msgstr "Solvibilità verificata"
-
 #: mietprozess/models.py:50
 msgid "Zur Besichtigung eingeladen"
 msgstr "Invitato alla visita"
-
-#: mietprozess/models.py:51
-msgid "Zusage erteilt"
-msgstr "Conferma data"
-
-#: mietprozess/models.py:52 tickets/models.py:108
-msgid "Abgelehnt"
-msgstr "Respinto"
 
 #: mietprozess/models.py:56
 msgid "Bankdepot (3 Monatsmieten)"
@@ -19097,14 +19483,6 @@ msgstr "Locatore / manutenzione"
 #: tickets/admin.py:141
 msgid "Ticket wurde erfolgreich geschlossen."
 msgstr "Il ticket è stato chiuso."
-
-#: tickets/models.py:14
-msgid "Warte auf Mieter"
-msgstr "In attesa dell'inquilino"
-
-#: tickets/models.py:15
-msgid "Warte auf Handwerker"
-msgstr "In attesa dell'artigiano"
 
 #: tickets/models.py:19
 msgid "Termin via Telefon"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 09:50+0200\n"
+"POT-Creation-Date: 2026-09-29 10:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -93,8 +93,8 @@ msgstr "Security / login"
 
 #: core/models.py:347 core/models.py:397 core/templates/fw/dokumente.html:26
 #: core/templates/fw/liegenschaft_detail.html:647
-#: core/templates/fw/liegenschaft_detail.html:691 crm/models.py:628
-#: faelle/termin_models.py:80 faelle/termin_models.py:193
+#: core/templates/fw/liegenschaft_detail.html:691 core/views/fw/dokumente.py:96
+#: crm/models.py:628 faelle/termin_models.py:80 faelle/termin_models.py:193
 #: portfolio/models.py:802 rentals/models.py:821
 msgid "Sonstiges"
 msgstr "Other"
@@ -680,6 +680,7 @@ msgstr "Expenses"
 #: core/templates/fw/mieterkonten.html:49 core/templates/fw/mieterkonto.html:34
 #: core/templates/fw/mieterkonto.html:90
 #: core/templates/fw/nebenkosten_detail.html:119
+#: core/templates/fw/schlussabrechnung.html:107
 msgid "Saldo"
 msgstr "Balance"
 
@@ -797,6 +798,38 @@ msgstr ""
 "building insurance value (approximation, not a substitute for a market "
 "valuation)."
 
+#: core/services/ticket_workflow.py:52
+msgid "Name des Melders"
+msgstr "Reporter's name"
+
+#: core/services/ticket_workflow.py:53
+msgid "Telefon des Melders"
+msgstr "Reporter's phone"
+
+#: core/services/ticket_workflow.py:54
+msgid "Objekt / Einheit"
+msgstr "Property / unit"
+
+#: core/services/ticket_workflow.py:55
+msgid "Liegenschaft (Strasse, Ort)"
+msgstr "Property (street, town)"
+
+#: core/services/ticket_workflow.py:56 core/views/fw/profil.py:767
+msgid "Titel des Schadens"
+msgstr "Damage title"
+
+#: core/services/ticket_workflow.py:57 core/views/fw/profil.py:768
+msgid "Ticket-Nummer"
+msgstr "Ticket number"
+
+#: core/services/ticket_workflow.py:58
+msgid "Beauftragte Handwerkerfirma"
+msgstr "Commissioned tradesperson"
+
+#: core/services/ticket_workflow.py:59
+msgid "Aktueller Status"
+msgstr "Current status"
+
 #: core/services/unterschrift.py:145
 msgid ""
 "Die Unterschrift war leer und wurde nicht gespeichert — bitte nochmals "
@@ -897,6 +930,7 @@ msgstr "Tenant account"
 
 #: core/templates/core/_mieter_nav.html:26
 #: core/templates/core/mieter_portal.html:107
+#: core/templates/fw/kuendigung_form.html:10
 #: core/templates/fw/objekt_detail.html:205 crm/models.py:618
 msgid "Kündigung"
 msgstr "Termination"
@@ -1217,7 +1251,7 @@ msgid "Mietbeginn"
 msgstr "Lease start"
 
 #: core/templates/core/dok_wohnungsausweis.html:14
-#: core/templates/fw/vertrag_detail.html:261
+#: core/templates/fw/vertrag_detail.html:261 core/views/fw/profil.py:762
 msgid "Bruttomietzins"
 msgstr "Gross rent"
 
@@ -1225,6 +1259,7 @@ msgstr "Gross rent"
 #: core/templates/core/portal.html:307 core/templates/fw/abnahme_neu.html:96
 #: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
 #: core/templates/fw/debitoren_aging.html:50
+#: core/templates/fw/kuendigung_form.html:29
 #: core/templates/fw/liegenschaft_detail.html:742
 #: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
 #: core/templates/fw/mieterkonten.html:46
@@ -1469,6 +1504,8 @@ msgstr "Message to the management"
 
 #: core/templates/core/mieter_daten.html:40
 #: core/templates/core/mieter_schaden.html:32
+#: core/templates/fw/kuendigung_form.html:43
+#: core/templates/fw/kuendigung_form.html:90
 #: core/templates/fw/objekt_ausschreiben.html:24
 #: core/templates/fw/person_form.html:155
 #: core/templates/fw/person_form.html:229
@@ -1629,6 +1666,7 @@ msgid "Brutto / Mt."
 msgstr "Gross / mo."
 
 #: core/templates/core/mieter_portal.html:45
+#: core/templates/fw/schlussabrechnung.html:42
 msgid "Mietkaution"
 msgstr "Rent deposit"
 
@@ -2359,11 +2397,12 @@ msgstr "Save"
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
 #: core/templates/fw/kreditoren.html:307
+#: core/templates/fw/kuendigung_form.html:111
 #: core/templates/fw/liegenschaft_detail.html:361
 #: core/templates/fw/liegenschaft_detail.html:422
 #: core/templates/fw/liegenschaft_detail.html:704
 #: core/templates/fw/liegenschaft_form.html:164
-#: core/templates/fw/mandat_form.html:85
+#: core/templates/fw/maengelruege.html:36 core/templates/fw/mandat_form.html:85
 #: core/templates/fw/objekt_detail.html:174
 #: core/templates/fw/objekt_detail.html:710
 #: core/templates/fw/objekt_detail.html:770
@@ -2371,6 +2410,8 @@ msgstr "Save"
 #: core/templates/fw/objekt_form.html:137
 #: core/templates/fw/person_form.html:316
 #: core/templates/fw/regelsatz_form.html:105
+#: core/templates/fw/schlussabrechnung.html:120
+#: core/templates/fw/untermiete.html:44
 #: core/templates/fw/vertrag_bearbeiten.html:181
 #: core/templates/fw/vorlage_form.html:39
 #: core/templates/fw/weiterverrechnung.html:113
@@ -3051,7 +3092,7 @@ msgstr "no date — avg. age not calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:603
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:609
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -3110,6 +3151,10 @@ msgstr "Step"
 #: core/templates/fw/_fwmodal.html:10
 msgid "Schliessen"
 msgstr "Close"
+
+#: core/templates/fw/_modal_done.html:13
+msgid "Fenster wird geschlossen …"
+msgstr "Closing window …"
 
 #: core/templates/fw/_unterschrift_feld.html:11
 msgid "Digitale Unterschrift"
@@ -3427,7 +3472,8 @@ msgstr "Describe the defect"
 msgid "Abnutzung"
 msgstr "Normal wear"
 
-#: core/templates/fw/abnahme_neu.html:96 rentals/models.py:843
+#: core/templates/fw/abnahme_neu.html:96
+#: core/templates/fw/kuendigung_form.html:30 rentals/models.py:843
 msgid "Vermieter"
 msgstr "Landlord"
 
@@ -3590,6 +3636,7 @@ msgid "Bis (einschliesslich)"
 msgstr "To (inclusive)"
 
 #: core/templates/fw/abwesenheiten.html:30
+#: core/templates/fw/kuendigung_form.html:86
 #: core/templates/fw/vertrag_detail.html:467
 #: core/templates/fw/vertrag_detail.html:525
 msgid "Grund"
@@ -3902,6 +3949,8 @@ msgstr "No assets recorded yet."
 #: core/templates/fw/anlagen.html:51 core/templates/fw/kontenplan.html:85
 #: core/templates/fw/kontenplan.html:126 core/templates/fw/kreditoren.html:348
 #: core/templates/fw/liegenschaft_detail.html:662
+#: core/templates/fw/schlussabrechnung.html:62
+#: core/templates/fw/schlussabrechnung.html:79
 msgid "Bezeichnung"
 msgstr "Name"
 
@@ -4311,9 +4360,10 @@ msgstr "Please select payments first."
 #: core/templates/fw/fristen.html:8 core/templates/fw/kontoblatt.html:21
 #: core/templates/fw/liegenschaften.html:60
 #: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:47
-#: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:147
-#: core/views/fw/listen.py:208 core/views/fw/listen.py:1112
-#: core/views/fw/listen.py:1182 core/views/fw/listen.py:1295
+#: core/views/fw/dienstleister.py:60 core/views/fw/dokumente.py:98
+#: core/views/fw/kreditoren.py:147 core/views/fw/listen.py:208
+#: core/views/fw/listen.py:1112 core/views/fw/listen.py:1182
+#: core/views/fw/listen.py:1295 core/views/fw/schaeden.py:129
 #: core/views/fw/schaeden.py:408
 msgid "Alle"
 msgstr "All"
@@ -4652,8 +4702,8 @@ msgstr "Edit %(name)s"
 #: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_form.html:8 core/templates/fw/objekt_form.html:12
 #: core/templates/fw/vertrag_detail.html:525
-#: core/templates/fw/vorlage_form.html:8 core/views/portal.py:748
-#: tickets/models.py:12
+#: core/templates/fw/vorlage_form.html:8 core/views/fw/schaeden.py:39
+#: core/views/portal.py:748 tickets/models.py:12
 msgid "Neu"
 msgstr "New"
 
@@ -4852,8 +4902,8 @@ msgstr "Accepted"
 msgid "Abgesagt"
 msgstr "Rejected"
 
-#: core/templates/fw/bewerber_vergleich.html:78 faelle/arbeitsvorrat.py:536
-#: faelle/termin_models.py:77
+#: core/templates/fw/bewerber_vergleich.html:78 core/views/fw/mietprozess.py:36
+#: faelle/arbeitsvorrat.py:536 faelle/termin_models.py:77
 msgid "Besichtigung"
 msgstr "Viewing"
 
@@ -6211,7 +6261,7 @@ msgid "Protokoll"
 msgstr "Log"
 
 #: core/templates/fw/dokumente.html:26 core/templates/fw/person_detail.html:280
-#: faelle/models.py:370 rentals/models.py:821
+#: core/views/fw/dokumente.py:96 faelle/models.py:370 rentals/models.py:821
 msgid "Korrespondenz"
 msgstr "Correspondence"
 
@@ -6427,6 +6477,7 @@ msgid "Ab Bankkonto"
 msgstr "From bank account"
 
 #: core/templates/fw/eigentuemer_kontokorrent.html:172
+#: core/templates/fw/kuendigung_form.html:92
 #: core/templates/fw/lebensdauer.html:34 core/templates/fw/lebensdauer.html:50
 #: core/templates/fw/liegenschaft_detail.html:527
 #: core/templates/fw/objekt_detail.html:276
@@ -6790,7 +6841,8 @@ msgid "Frist %(d)s"
 msgstr "Deadline %(d)s"
 
 #: core/templates/fw/fall_detail.html:183 core/templates/fw/pendenzen.html:85
-#: core/templates/fw/termine.html:51 core/views/portal.py:752
+#: core/templates/fw/termine.html:51 core/views/fw/schaeden.py:43
+#: core/views/fw/schaeden.py:129 core/views/portal.py:752
 #: faelle/termin_models.py:84 tickets/models.py:16
 msgid "Erledigt"
 msgstr "Done"
@@ -7232,11 +7284,13 @@ msgstr "Since"
 #: core/templates/fw/kautionen.html:36
 #: core/templates/fw/liegenschaft_detail.html:644
 #: core/templates/fw/liegenschaft_detail.html:688
+#: core/templates/fw/schlussabrechnung.html:42
 #: core/templates/fw/vertrag_detail.html:416 portfolio/models.py:799
 msgid "Versicherung"
 msgstr "Insurance"
 
 #: core/templates/fw/kautionen.html:36
+#: core/templates/fw/schlussabrechnung.html:42
 #: core/templates/fw/vertrag_detail.html:393
 #: core/templates/fw/vertrag_detail.html:415
 msgid "Sperrkonto"
@@ -7932,6 +7986,103 @@ msgstr ""
 "“Pay” books the payment (creditors 2000 to bank 1020) and sets the status to "
 "paid. The AI scanner reads uploaded vouchers automatically (supplier, "
 "amount, IBAN, QR reference) — check the values before approval."
+
+#: core/templates/fw/kuendigung_form.html:3
+#, python-format
+msgid "Kündigung erfassen — %(name)s"
+msgstr "Record termination — %(name)s"
+
+#: core/templates/fw/kuendigung_form.html:6
+#: core/templates/fw/maengelruege.html:6
+#: core/templates/fw/schlussabrechnung.html:8 core/templates/fw/suche.html:69
+#: core/templates/fw/untermiete.html:6
+#: core/templates/fw/vertrag_bearbeiten.html:8
+#: core/templates/fw/vertrag_detail.html:11 core/views/fw/_basis.py:280
+#: core/views/fw/dokumente.py:95
+msgid "Verträge"
+msgstr "Leases"
+
+#: core/templates/fw/kuendigung_form.html:15
+#: core/templates/fw/vertraege.html:99
+#: core/templates/fw/vertrag_detail.html:128
+msgid "Kündigung erfassen"
+msgstr "Record notice of termination"
+
+#: core/templates/fw/kuendigung_form.html:16
+#, python-format
+msgid "Frist %(monate)s Mt. · Termine: %(termine)s"
+msgstr "Notice %(monate)s mo. · dates: %(termine)s"
+
+#: core/templates/fw/kuendigung_form.html:27
+msgid "Gekündigt durch *"
+msgstr "Terminated by *"
+
+#: core/templates/fw/kuendigung_form.html:32
+msgid "Zustellung"
+msgstr "Delivery"
+
+#: core/templates/fw/kuendigung_form.html:41
+msgid "Eingang / Poststempel *"
+msgstr "Receipt / postmark *"
+
+#: core/templates/fw/kuendigung_form.html:43
+msgid "Gewünschtes Ende"
+msgstr "Requested end"
+
+#: core/templates/fw/kuendigung_form.html:49
+msgid "Mietrechtlicher Hinweis"
+msgstr "Tenancy-law note"
+
+#: core/templates/fw/kuendigung_form.html:55
+msgid "Nächster ordentlicher Kündigungstermin"
+msgstr "Next ordinary termination date"
+
+#: core/templates/fw/kuendigung_form.html:57
+#, python-format
+msgid ""
+"Berechnet aus Eingang + %(monate)s Monaten, auf den nächsten erlaubten "
+"Termin."
+msgstr "Calculated from receipt + %(monate)s months, to the next permitted date."
+
+#: core/templates/fw/kuendigung_form.html:75
+msgid "Ausserordentlich wegen Zahlungsverzug"
+msgstr "Extraordinary due to payment default"
+
+#: core/templates/fw/kuendigung_form.html:76
+#, python-format
+msgid "frühestens %(datum)s"
+msgstr "at the earliest %(datum)s"
+
+#: core/templates/fw/kuendigung_form.html:83
+msgid "Ausserordentliche Kündigung"
+msgstr "Extraordinary termination"
+
+#: core/templates/fw/kuendigung_form.html:90
+msgid "Erstreckung bis"
+msgstr "Extension until"
+
+#: core/templates/fw/kuendigung_form.html:96
+msgid ""
+"Kündigung als bestätigt markieren (Vertrag wird auf „Gekündigt“ gesetzt)"
+msgstr "Mark termination as confirmed (lease is set to “Terminated”)"
+
+#: core/templates/fw/kuendigung_form.html:99
+msgid ""
+"Objekt wird frei — Leerstand ab Vertragsende anlegen &amp; Nachmieter-"
+"Pendenz erstellen"
+msgstr "Unit becomes free — record vacancy from end of lease &amp; create follow-up tenant task"
+
+#: core/templates/fw/kuendigung_form.html:103
+msgid ""
+"Beim Speichern wird automatisch eine <b>Auszugscheckliste</b> als Pendenzen "
+"angelegt (Abnahmetermin, Wohnungsabnahme, Zählerstände, Schlüssel, "
+"Schlussabrechnung, Kaution abrechnen …) — mit Fälligkeiten rund um das "
+"Vertragsende."
+msgstr "When saving, a <b>move-out checklist</b> is created automatically as tasks (handover appointment, apartment handover, meter readings, keys, final statement, deposit settlement …) — with due dates around the end of the lease."
+
+#: core/templates/fw/kuendigung_form.html:109
+msgid "Kündigung speichern"
+msgstr "Save termination"
 
 #: core/templates/fw/laeufe.html:9
 msgid "Wiederkehrende Verarbeitung mit Zustand — und dem, was sie blockiert."
@@ -9351,6 +9502,43 @@ msgstr ""
 "see the log. Business records and vouchers must be kept for <b>10 years</b> "
 "(Art. 958f CO)."
 
+#: core/templates/fw/maengelruege.html:3
+#, python-format
+msgid "Mängelrüge — %(name)s"
+msgstr "Notice of defect — %(name)s"
+
+#: core/templates/fw/maengelruege.html:10
+#: core/templates/fw/vertrag_detail.html:139
+msgid "Mängelrüge"
+msgstr "Defect notice"
+
+#: core/templates/fw/maengelruege.html:15
+msgid "Mängelrüge / Fristansetzung"
+msgstr "Notice of defect / deadline"
+
+#: core/templates/fw/maengelruege.html:21
+msgid ""
+"Setzt der Mieterschaft eine Frist zur Behebung eines Mangels. Es wird "
+"automatisch eine Frist-Pendenz zur Nachkontrolle erstellt und der Brief in "
+"der Akte abgelegt."
+msgstr "Sets the tenant a deadline to remedy a defect. A follow-up task is created automatically and the letter is filed."
+
+#: core/templates/fw/maengelruege.html:27
+msgid "Beschreibung des Mangels *"
+msgstr "Description of the defect *"
+
+#: core/templates/fw/maengelruege.html:28
+msgid "z. B. Undichte Armatur im Bad, tropfender Wasserhahn…"
+msgstr "e.g. leaking fitting in the bathroom, dripping tap…"
+
+#: core/templates/fw/maengelruege.html:29
+msgid "Frist (Tage)"
+msgstr "Deadline (days)"
+
+#: core/templates/fw/maengelruege.html:34
+msgid "Mängelrüge als PDF erstellen"
+msgstr "Create notice of defect as PDF"
+
 #: core/templates/fw/mahnwesen.html:11
 msgid ""
 "Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt "
@@ -10006,7 +10194,7 @@ msgstr "3 mo."
 msgid "gekündigte immer sichtbar"
 msgstr "terminated always visible"
 
-#: core/templates/fw/mieterwechsel.html:38
+#: core/templates/fw/mieterwechsel.html:38 core/views/fw/mietzins.py:40
 msgid "Aktuell"
 msgstr "Current"
 
@@ -10062,6 +10250,7 @@ msgid "Rücknahme starten"
 msgstr "Start move-out"
 
 #: core/templates/fw/mieterwechsel.html:71
+#: core/templates/fw/schlussabrechnung.html:12
 #: core/templates/fw/vertrag_detail.html:136
 msgid "Schlussabrechnung"
 msgstr "Final statement"
@@ -10113,11 +10302,11 @@ msgstr "Current: reference rate"
 msgid "LIK"
 msgstr "CPI"
 
-#: core/templates/fw/mietzins.html:19
+#: core/templates/fw/mietzins.html:19 core/views/fw/mietzins.py:38
 msgid "Erhöhung möglich"
 msgstr "Increase possible"
 
-#: core/templates/fw/mietzins.html:23
+#: core/templates/fw/mietzins.html:23 core/views/fw/mietzins.py:39
 msgid "Senkungsanspruch"
 msgstr "Entitled to reduction"
 
@@ -12972,15 +13161,17 @@ msgstr "whole property"
 msgid "Melder Vor-/Nachname"
 msgstr "Reporter first/last name"
 
-#: core/templates/fw/schaeden.html:49
+#: core/templates/fw/schaeden.html:49 core/views/fw/schaeden.py:48
+#: core/views/fw/schaeden.py:49
 msgid "Tief"
 msgstr "Low"
 
-#: core/templates/fw/schaeden.html:49
+#: core/templates/fw/schaeden.html:49 core/views/fw/schaeden.py:47
 msgid "Mittel"
 msgstr "Medium"
 
 #: core/templates/fw/schaeden.html:49 core/templates/fw/schaeden.html:119
+#: core/views/fw/schaeden.py:46
 msgid "Hoch"
 msgstr "High"
 
@@ -13060,6 +13251,103 @@ msgstr "Nothing reported at the moment. Record damage reported by phone above."
 #: core/templates/fw/schaeden.html:133
 msgid "Sortiert nach Befund, dann Priorität, dann Alter — nicht nach Eingang."
 msgstr "Sorted by finding, then priority, then age — not by arrival."
+
+#: core/templates/fw/schlussabrechnung.html:4
+#, python-format
+msgid "Schlussabrechnung — %(name)s"
+msgstr "Final statement — %(name)s"
+
+#: core/templates/fw/schlussabrechnung.html:18
+msgid "Schlussabrechnung beim Auszug"
+msgstr "Final statement on move-out"
+
+#: core/templates/fw/schlussabrechnung.html:33
+msgid "Auszug per"
+msgstr "Move-out on"
+
+#: core/templates/fw/schlussabrechnung.html:37
+#: core/templates/fw/schlussabrechnung.html:101
+msgid "Offene Mietforderungen"
+msgstr "Outstanding rent claims"
+
+#: core/templates/fw/schlussabrechnung.html:39
+msgid "automatisch aus offenen Debitoren"
+msgstr "automatically from open receivables"
+
+#: core/templates/fw/schlussabrechnung.html:45
+msgid ""
+"Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position "
+"„zulasten“ erfassen."
+msgstr "Deposit guarantee — no tenant credit. Please enter damages as a “charged to” item."
+
+#: core/templates/fw/schlussabrechnung.html:49
+msgid "verrechnen / zurückzahlen"
+msgstr "offset / refund"
+
+#: core/templates/fw/schlussabrechnung.html:57
+msgid "Weitere Positionen"
+msgstr "Further items"
+
+#: core/templates/fw/schlussabrechnung.html:58
+msgid ""
+"z.B. Nebenkosten-Nachzahlung/-Guthaben, Schäden, Endreinigung, Ersatz. "
+"„zulasten“ = Mieter schuldet, „zugunsten“ = Gutschrift an Mieter."
+msgstr "e.g. ancillary cost balance/credit, damages, final cleaning, replacement. “charged to” = tenant owes, “in favour of” = credit to tenant."
+
+#: core/templates/fw/schlussabrechnung.html:63
+#: core/templates/fw/schlussabrechnung.html:80
+msgid "Betrag CHF"
+msgstr "Amount CHF"
+
+#: core/templates/fw/schlussabrechnung.html:65
+#: core/templates/fw/schlussabrechnung.html:82
+msgid "zulasten Mieter"
+msgstr "charged to tenant"
+
+#: core/templates/fw/schlussabrechnung.html:66
+#: core/templates/fw/schlussabrechnung.html:83
+msgid "zugunsten Mieter"
+msgstr "in favour of tenant"
+
+#: core/templates/fw/schlussabrechnung.html:71
+#: core/templates/fw/schlussabrechnung.html:88
+msgid "ohne MWST"
+msgstr "excl. VAT"
+
+#: core/templates/fw/schlussabrechnung.html:72
+#: core/templates/fw/schlussabrechnung.html:89
+msgid "mit MWST"
+msgstr "incl. VAT"
+
+#: core/templates/fw/schlussabrechnung.html:99
+msgid "Abrechnung (live)"
+msgstr "Statement (live)"
+
+#: core/templates/fw/schlussabrechnung.html:102
+msgid "Positionen zulasten Mieter"
+msgstr "Items charged to the tenant"
+
+#: core/templates/fw/schlussabrechnung.html:103
+msgid "Positionen zugunsten Mieter"
+msgstr "Items in favour of the tenant"
+
+#: core/templates/fw/schlussabrechnung.html:104
+msgid "Mietkaution (Guthaben Mieter)"
+msgstr "Rent deposit (tenant credit)"
+
+#: core/templates/fw/schlussabrechnung.html:115
+msgid "Schlussabrechnung als PDF"
+msgstr "Final statement as PDF"
+
+#: core/templates/fw/schlussabrechnung.html:117
+msgid ""
+"Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige "
+"Nachzahlung als Debitor gestellt."
+msgstr "Book the final statement? The deposit is settled and any additional payment is invoiced as a receivable."
+
+#: core/templates/fw/schlussabrechnung.html:118
+msgid "Verbuchen (Kaution + Nachzahlung)"
+msgstr "Book (deposit + additional payment)"
 
 #: core/templates/fw/sollstellung.html:4
 msgid "Sollstellung Miete"
@@ -13171,11 +13459,6 @@ msgstr "Enter a search term above — people, properties, units and contracts."
 msgid "Keine Treffer für „%(q)s\"."
 msgstr "No results for “%(q)s”."
 
-#: core/templates/fw/suche.html:69 core/templates/fw/vertrag_bearbeiten.html:8
-#: core/templates/fw/vertrag_detail.html:11 core/views/fw/_basis.py:280
-msgid "Verträge"
-msgstr "Leases"
-
 #: core/templates/fw/suche.html:75
 msgid "ab"
 msgstr "from"
@@ -13222,6 +13505,51 @@ msgstr "No upcoming appointment recorded."
 #: core/templates/fw/termine.html:73
 msgid "Noch nichts vergangen."
 msgstr "Nothing past yet."
+
+#: core/templates/fw/untermiete.html:3
+#, python-format
+msgid "Untervermietung — %(name)s"
+msgstr "Subletting — %(name)s"
+
+#: core/templates/fw/untermiete.html:10
+msgid "Untervermietung"
+msgstr "Subletting"
+
+#: core/templates/fw/untermiete.html:15
+msgid "Untervermietung — Zustimmung / Ablehnung"
+msgstr "Subletting — consent / refusal"
+
+#: core/templates/fw/untermiete.html:30
+msgid "Untermietende Person *"
+msgstr "Subtenant *"
+
+#: core/templates/fw/untermiete.html:31
+msgid "Name der untermietenden Person"
+msgstr "Name of the subtenant"
+
+#: core/templates/fw/untermiete.html:32
+msgid "Entscheid"
+msgstr "Decision"
+
+#: core/templates/fw/untermiete.html:34
+msgid "Zustimmung erteilen"
+msgstr "Grant consent"
+
+#: core/templates/fw/untermiete.html:35
+msgid "Ablehnung"
+msgstr "Refusal"
+
+#: core/templates/fw/untermiete.html:37
+msgid "Bedingungen / Begründung (optional)"
+msgstr "Conditions / reason (optional)"
+
+#: core/templates/fw/untermiete.html:38
+msgid "z. B. befristet bis …, Untermietzins max. CHF …"
+msgstr "e.g. limited until …, sublet rent max. CHF …"
+
+#: core/templates/fw/untermiete.html:42
+msgid "Schreiben als PDF erstellen"
+msgstr "Create letter as PDF"
 
 #: core/templates/fw/vermarktung.html:10
 msgid "Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick."
@@ -13304,11 +13632,6 @@ msgstr "Create first lease"
 #: core/templates/fw/vertraege.html:73
 msgid "NK"
 msgstr "SC"
-
-#: core/templates/fw/vertraege.html:99
-#: core/templates/fw/vertrag_detail.html:128
-msgid "Kündigung erfassen"
-msgstr "Record notice of termination"
 
 #: core/templates/fw/vertraege.html:99
 msgid "Kündigen"
@@ -13467,10 +13790,6 @@ msgstr "Signed"
 #: core/templates/fw/vertrag_detail.html:121
 msgid "Zur Unterschrift"
 msgstr "For signature"
-
-#: core/templates/fw/vertrag_detail.html:139
-msgid "Mängelrüge"
-msgstr "Defect notice"
 
 #: core/templates/fw/vertrag_detail.html:140
 msgid "Untermiete"
@@ -16478,6 +16797,14 @@ msgstr[1] "%(n)s monthly rents open"
 msgid "Berechnung öffnen"
 msgstr "Open calculation"
 
+#: core/views/fw/dokumente.py:95
+msgid "Protokolle"
+msgstr "Reports"
+
+#: core/views/fw/dokumente.py:97
+msgid "Allgemein"
+msgstr "General"
+
 #: core/views/fw/eigentuemer.py:61
 msgid "Name / Firma ist erforderlich."
 msgstr "Name / company is required."
@@ -17078,7 +17405,7 @@ msgstr "Commercial"
 msgid "Alle Zustände"
 msgstr "All states"
 
-#: core/views/fw/listen.py:1115
+#: core/views/fw/listen.py:1115 core/views/fw/schaeden.py:127
 #, python-format
 msgid "Mit Befund (%(n)s)"
 msgstr "With findings (%(n)s)"
@@ -17166,6 +17493,23 @@ msgstr "Reminder run: %(teile)s."
 #: core/views/fw/mahnwesen.py:356
 msgid "Mahnlauf: keine neuen Mahnungen fällig — alles aktuell."
 msgstr "Reminder run: no new reminders due — everything is up to date."
+
+#: core/views/fw/mietprozess.py:34 mietprozess/models.py:48
+msgid "Neu eingegangen"
+msgstr "Newly received"
+
+#: core/views/fw/mietprozess.py:35 mietprozess/models.py:49
+msgid "Bonität geprüft"
+msgstr "Creditworthiness checked"
+
+#: core/views/fw/mietprozess.py:37 mietprozess/models.py:51
+msgid "Zusage erteilt"
+msgstr "Approved"
+
+#: core/views/fw/mietprozess.py:38 mietprozess/models.py:52
+#: tickets/models.py:108
+msgid "Abgelehnt"
+msgstr "Rejected"
 
 #: core/views/fw/mietprozess.py:178
 msgid "Bitte einen gültigen Besichtigungstermin wählen."
@@ -17417,6 +17761,46 @@ msgid ""
 "Objekt zur Nachmietersuche ausgeschrieben — erscheint jetzt in der "
 "Vermarktung."
 msgstr "Unit listed to find a successor tenant — now appears in Marketing."
+
+#: core/views/fw/profil.py:756
+msgid "Name des Mieters"
+msgstr "Tenant's name"
+
+#: core/views/fw/profil.py:757
+msgid "Adresse des Mieters"
+msgstr "Tenant's address"
+
+#: core/views/fw/profil.py:758
+msgid "Objektbezeichnung"
+msgstr "Unit designation"
+
+#: core/views/fw/profil.py:759
+msgid "Strasse der Liegenschaft"
+msgstr "Street of the property"
+
+#: core/views/fw/profil.py:760
+msgid "Name der Verwaltung / des Vermieters"
+msgstr "Name of the management / landlord"
+
+#: core/views/fw/profil.py:761
+msgid "Heutiges Datum"
+msgstr "Today's date"
+
+#: core/views/fw/profil.py:764
+msgid "Beauftragte Handwerkerfirma (Schaden)"
+msgstr "Commissioned tradesperson (damage)"
+
+#: core/views/fw/profil.py:765
+msgid "Name des Melders (Schaden)"
+msgstr "Reporter's name (damage)"
+
+#: core/views/fw/profil.py:766
+msgid "Telefon des Melders (Schaden)"
+msgstr "Reporter's phone (damage)"
+
+#: core/views/fw/profil.py:769
+msgid "Aktueller Ticket-Status"
+msgstr "Current ticket status"
 
 #: core/views/fw/profil.py:792
 #, python-format
@@ -17727,6 +18111,28 @@ msgstr ""
 msgid "Übersteuerung mit Begründung protokolliert."
 msgstr "Override logged with reason."
 
+#: core/views/fw/schaeden.py:40 core/views/portal.py:749 tickets/models.py:13
+msgid "In Bearbeitung"
+msgstr "In progress"
+
+#: core/views/fw/schaeden.py:41 tickets/models.py:14
+msgid "Warte auf Mieter"
+msgstr "Waiting for tenant"
+
+#: core/views/fw/schaeden.py:42 tickets/models.py:15
+msgid "Warte auf Handwerker"
+msgstr "Waiting for tradesperson"
+
+#: core/views/fw/schaeden.py:126
+#, python-format
+msgid "Offen (%(n)s)"
+msgstr "Open (%(n)s)"
+
+#: core/views/fw/schaeden.py:128
+#, python-format
+msgid "Wartet auf Dritte (%(n)s)"
+msgstr "Waiting for third parties (%(n)s)"
+
 #: core/views/fw/schaeden.py:225
 msgid "Titel und Liegenschaft sind erforderlich."
 msgstr "Title and property are required."
@@ -17947,10 +18353,6 @@ msgid ""
 msgstr ""
 "Your damage report has been sent. You will receive a confirmation by e-mail; "
 "the management will take care of it."
-
-#: core/views/portal.py:749 tickets/models.py:13
-msgid "In Bearbeitung"
-msgstr "In progress"
 
 #: core/views/portal.py:750
 msgid "Warte auf Sie"
@@ -18597,25 +18999,9 @@ msgstr "By number of persons"
 msgid "Ignoriert"
 msgstr "Ignored"
 
-#: mietprozess/models.py:48
-msgid "Neu eingegangen"
-msgstr "Newly received"
-
-#: mietprozess/models.py:49
-msgid "Bonität geprüft"
-msgstr "Creditworthiness checked"
-
 #: mietprozess/models.py:50
 msgid "Zur Besichtigung eingeladen"
 msgstr "Invited to viewing"
-
-#: mietprozess/models.py:51
-msgid "Zusage erteilt"
-msgstr "Approved"
-
-#: mietprozess/models.py:52 tickets/models.py:108
-msgid "Abgelehnt"
-msgstr "Rejected"
 
 #: mietprozess/models.py:56
 msgid "Bankdepot (3 Monatsmieten)"
@@ -18907,14 +19293,6 @@ msgstr "Landlord / maintenance"
 #: tickets/admin.py:141
 msgid "Ticket wurde erfolgreich geschlossen."
 msgstr "Ticket closed successfully."
-
-#: tickets/models.py:14
-msgid "Warte auf Mieter"
-msgstr "Waiting for tenant"
-
-#: tickets/models.py:15
-msgid "Warte auf Handwerker"
-msgstr "Waiting for tradesperson"
 
 #: tickets/models.py:19
 msgid "Termin via Telefon"
