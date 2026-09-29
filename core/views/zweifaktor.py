@@ -249,7 +249,10 @@ def zweifaktor_einrichten(request):
     konto = request.user.email or request.user.get_username()
     url = totp.einrichtungs_url(faktor.geheimnis, konto)
     return render(request, 'core/zweifaktor_einrichten.html', {
-        'qr': totp.qr_svg(url),
+        # Weisser Grund im SVG selbst: Der Rahmen um den Code ist `fw-flaeche`
+        # und wird im Dunkelmodus dunkel — schwarzer Code auf dunkler Fläche
+        # lässt sich kaum scannen (dasselbe wie beim Bewerbungs-QR).
+        'qr': totp.qr_svg(url, hell='#fff'),
         'geheimnis': faktor.geheimnis,
         'fehler': fehler,
         'pflicht_hinweis': _pflicht_fuer(request.user),

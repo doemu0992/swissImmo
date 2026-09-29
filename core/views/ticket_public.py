@@ -174,7 +174,14 @@ def _qr_formular(request, liegenschaft):
 @rolle_erforderlich(*TEAM_ROLLEN)
 def generate_hallway_poster(request, liegenschaft_id):
     liegenschaft = get_object_or_404(Liegenschaft, pk=liegenschaft_id)
-    domain = request.get_host()
+    # Die Adresse auf dem Aushang kommt aus `PORTAL_BASE_URL`, nicht aus dem
+    # Host der Anfrage: Das Plakat hängt monatelang im Treppenhaus. Hinter
+    # einem Proxy oder bei einem Aufruf über eine interne Adresse stünde sonst
+    # ein Host darauf, den kein Mieter erreicht — wie bei den Bewerbungslinks
+    # (`fw/profil.py::bewerbungslink`).
+    from urllib.parse import urlparse
+    from django.conf import settings
+    domain = urlparse(settings.PORTAL_BASE_URL).netloc or request.get_host()
     buffer = generate_qr_poster(liegenschaft, domain)
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="Aushang_{liegenschaft.strasse}.pdf"'
