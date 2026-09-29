@@ -19996,3 +19996,60 @@ msgstr "Handwerker Mail"
 #: tickets/models.py:133
 msgid "Ausgehende E-Mail"
 msgstr "Ausgehende E-Mail"
+
+#: core/templates/fw/vertraege.html
+msgid "CSV"
+msgstr "CSV"
+
+#: core/templates/fw/vertraege.html
+msgid "Mietverhältnisse durchsuchen"
+msgstr "Mietverhältnisse durchsuchen"
+
+#: core/templates/fw/personen.html
+msgid "Personen durchsuchen"
+msgstr "Personen durchsuchen"
+
+#: core/templates/fw/personen.html
+msgid "Name, E-Mail, Ort oder Telefon …"
+msgstr "Name, E-Mail, Ort oder Telefon …"
+
+#: core/views/fw/listen.py
+msgid "Neueste zuerst"
+msgstr "Neueste zuerst"
+
+#: core/views/fw/listen.py
+msgid "Nächstes Ende"
+msgstr "Nächstes Ende"
+
+#: core/views/fw/listen.py
+msgid "Höchste Miete"
+msgstr "Höchste Miete"
+
+#: core/views/fw/listen.py
+msgid "Netto (CHF)"
+msgstr "Netto (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Brutto (CHF)"
+msgstr "Brutto (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Nettomiete (CHF)"
+msgstr "Nettomiete (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Fläche m²"
+msgstr "Fläche m²"
+
+#: core/views/fw/listen.py
+msgid "Aktives Mietverhältnis"
+msgstr "Aktives Mietverhältnis"
+
+#: core/views/fw/listen.py
+msgid "Personenliste exportiert (CSV)"
+msgstr "Personenliste exportiert (CSV)"
+
+#: core/views/fw/listen.py
+#, python-format
+msgid "%(n)s Personen"
+msgstr "%(n)s Personen"
