@@ -79,6 +79,7 @@ UEBERSETZT = (
     'fw/mahnwesen.html',
     'fw/zahllauf.html',
     # Tranche «Rest-Oberfläche» (29.09.2026)
+    'fw/vertrag_neu.html',
     'fw/schlussabrechnung.html',
     'fw/kuendigung_form.html',
     'fw/untermiete.html',
