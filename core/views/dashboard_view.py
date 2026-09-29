@@ -10,12 +10,16 @@ from finance.models import DebitorenRechnung
 from django.shortcuts import redirect
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 import datetime
 
 # Import für den Marktdaten-Sync
 from core.tenancy import aktuelle_organisation, organisation_der_anfrage
 from core.utils.market_data import update_verwaltung_rates
 
+# Nur POST: startet einen Import aus dem Internet und schreibt die Marktdaten
+# der Organisation. Die Oberfläche nutzt /neu/marktdaten/aktualisieren/.
+@require_POST
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
 def update_market_data_view(request):
     """

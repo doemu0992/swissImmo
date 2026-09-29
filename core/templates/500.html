@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Ein Fehler ist aufgetreten – swissImmo" %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230f6f6a%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
 {% include 'core/_assets_aussen.html' %}
     <style>
         body { font-family: 'IBM Plex Sans', sans-serif; }
@@ -23,9 +23,13 @@
         <p class="text-sm fw-mutet leading-relaxed">
             {% trans "Etwas ist schiefgelaufen — der Fehler wurde protokolliert. Bitte versuchen Sie es in einem Moment erneut. Bleibt das Problem bestehen, melden Sie sich bitte bei Ihrer Verwaltung." %}
         </p>
-        <a href="/neu/" class="inline-block mt-6 fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
+{% comment %} 500 rendert ohne Kontext — das Ziel setzt das Skript darunter
+   nach Herkunft (Mieter-/Eigentümerportal oder Team). {% endcomment %}
+        <a id="fehlerZiel" href="/neu/" class="inline-block mt-6 fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
             {% trans "Zur Übersicht" %}
         </a>
     </div>
+    <script>(function(){var p=location.pathname,a=document.getElementById('fehlerZiel');
+        if(p.indexOf('/mieter/')===0)a.href='/mieter/';else if(p.indexOf('/portal/')===0)a.href='/portal/';})();</script>
 </body>
 </html>

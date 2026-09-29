@@ -746,12 +746,6 @@ def fw_expose_pdf(request, pk):
     return resp
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
-def fw_stub(request, titel, icon, text, nav=''):
-    basis = _global_filter(request)
-    return render(request, 'fw/stub.html', {**basis, 'nav': nav, 'titel': titel, 'icon': icon, 'text': text})
-
-
 PLATZHALTER_HILFE = [
     ('{mieter_name}', 'Name des Mieters'),
     ('{mieter_adresse}', 'Adresse des Mieters'),

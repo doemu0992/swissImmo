@@ -13,6 +13,7 @@ from django.contrib import messages
 from core.auth import rolle_erforderlich, log_aktion, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER
 from django.conf import settings
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
 
 # ReportLab (PDF)
 from reportlab.lib.pagesizes import A4
@@ -211,15 +212,17 @@ def send_abrechnung_email_view(request, periode_id):
     Isolations-Registrylauf sah das aus wie ein Fehlschlag der
     Mandantentrennung und war in Wahrheit eine tote Route.
 
-    Sie bleibt eingetragen, weil `finance/admin.py:86` einen Knopf darauf
-    verlinkt — der Knopf ist damit ebenfalls tot und gehört entfernt oder die
-    Funktion gebaut. Beides ist eine eigene Aufgabe; hier wird nur der
-    Serverfehler zum ehrlichen 404.
+    Der Admin-Knopf, der hierher zeigte (`finance/admin.py`), ist entfernt.
+    Die Route bleibt eingetragen, damit alte Lesezeichen ein ehrliches 404
+    statt eines Serverfehlers erhalten, bis der Versand gebaut ist.
     """
     from django.http import Http404
     raise Http404('Abrechnungsversand ist nicht implementiert.')
 
 
+# Nur POST: Die Ansicht verschickt eine Mahnung mit Kündigungsandrohung und legt
+# sie in der Akte ab. Als GET genügte ein Link-Prefetch oder ein Crawler dafür.
+@require_POST
 @rolle_erforderlich(ROLLE_VERWALTER)
 def send_mahnung_email_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)

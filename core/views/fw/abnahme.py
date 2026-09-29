@@ -179,6 +179,10 @@ def fw_abnahme_ruege_267a(request, pk):
     from core.auth import log_aktion
     prot = get_object_or_404(Abnahmeprotokoll.objects.select_related(
         'vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    # Nur POST: Die Rüge ist eine Erklärung, sie hakt die Checklisten-Pendenz ab
+    # und wird protokolliert. Ein blosser Seitenaufruf darf das nicht auslösen.
+    if request.method != 'POST':
+        return redirect(f'/neu/abnahme/{prot.id}/')
     v = prot.vertrag
     maengel = [{'raum': m.raum, 'beschreibung': m.beschreibung,
                 'betrag': (m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung)}

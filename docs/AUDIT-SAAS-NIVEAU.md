@@ -124,7 +124,7 @@ Akten und Formulare haben einen Brotkrumenpfad. Befund B1 aus
 | Grundlage | Stand | Beleg |
 |---|---|---|
 | **Formularfehler** | ❌ **grösste Lücke** | Die `fw`-Formulare sind handgeschrieben und werten `request.POST` von Hand aus. **0 Vorlagen** zeigen Feldfehler an. In **176 Codepfaden** folgt auf `messages.error` ein `redirect`: Die Eingaben sind weg. Ungültige Zahlen und Daten werden **stillschweigend als leer gespeichert** (`liegenschaft_crud.py:74-110`: `intval` und `decval` geben bei Fehlern `None` zurück). |
-| **GET mit Nebenwirkung** | ❌ | `send_mahnung_email_view` verschickt eine E-Mail, `send_via_docuseal` ruft die DocuSeal-API auf, `update_market_data_view` startet einen Import. Dazu legen `fw_kaution_beleg` und `fw_abnahme_ruege_267a` bei **jedem** Download erneut ab, was Dubletten in der Akte erzeugt. |
+| **GET mit Nebenwirkung** | ❌ | `send_mahnung_email_view` verschickt eine E-Mail, `send_via_docuseal` ruft die DocuSeal-API auf, `update_market_data_view` startet einen Import. Dazu hakt `fw_abnahme_ruege_267a` schon bei GET die Checklisten-Pendenz ab. *(Korrigiert in Etappe 0: Die Annahme, Kautionsbeleg und Rüge erzeugten Dubletten, stimmte nicht — beide legen mit `dedup=True` ab.)* |
 | **Ladezustände** | ⚠️ minimal | 0 Skeletons, 0 `aria-busy`. Es gibt nur einen globalen Schutz vor doppeltem Absenden (`base.html:497`), und der sperrt immer den *ersten* Knopf eines Formulars statt des geklickten. Iframe-Modals zeigen beim Laden nichts an. Der GWR-Import läuft synchron im Request. |
 | **Modals** | ⚠️ | Die Iframe-Modals (`_fwmodal.html`, 22×) haben kein `role="dialog"`, verwerfen ungespeicherte Eingaben bei Esc ohne Rückfrage und laden die Seite **bei jedem Schliessen neu**, auch beim Abbrechen. |
 | **Rückmeldungen** | ✓ solide, ⚠️ Details | Die Toasts oben rechts funktionieren (Erfolg verschwindet nach 6 s, Fehler bleiben). Es fehlt `aria-live`. 196 Meldungen beginnen mit einem Emoji (✅ ❌ 📍), das nicht zum Icon-Satz passt. |
@@ -193,13 +193,17 @@ Nutzung der Komponenten prüft niemand, deshalb driftet es.
 
 Das sind Fehler, keine Gestaltungsfragen. Rund 1–2 Tage, ein PR.
 
-1. **GET-Nebenwirkungen beseitigen:** `send_mahnung_mail` entfernen (A1);
-   DocuSeal-Versand und Marktdaten-Import auf POST umstellen; die
-   PDF-Endpunkte für Kautionsbeleg und Rüge-267a nur einmal ablegen.
+1. **GET-Nebenwirkungen beseitigen:** Mahnungsversand per Mail, DocuSeal-Versand,
+   Marktdaten-Import und Rüge 267a verlangen POST. *(Umgesetzt: `send_mahnung_mail`
+   bleibt als Route, aber nur per POST — gelöscht wird eine funktionierende
+   Versandstelle erst auf Entscheid.)*
 2. Den toten Link «Löschbegehren» und den Brotkrumen «Arbeit» korrigieren;
    Fehlerseiten nach Kontext (Portal oder Team) verlinken lassen und das
    Favicon tauschen.
-3. Tote Endpunkte entfernen: A2, A3 (Admin-Knopf), A4.
+3. Tote Endpunkte entfernen: A3 (Admin-Knopf), A4. *(A2 bleibt bewusst stehen:
+   Die Endpunkte sind getestet und schreiben `VertragMietzins`, das die
+   Sollstellung liest — ob der Weg stirbt oder wieder eine Oberfläche bekommt,
+   ist ein fachlicher Entscheid.)*
 
 ### Etappe 1 — Verwaiste Funktionen anschliessen (Quick Wins)
 

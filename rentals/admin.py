@@ -121,7 +121,10 @@ class MietvertragAdmin(NurLesenModelAdmin):
 
     @action(description="✍️ Per DocuSeal senden", url_path="send-docuseal")
     def action_send_docuseal(self, request, object_id):
-        return redirect(reverse('send_docuseal', args=[object_id]))
+        # Kopfknöpfe im Admin sind GET-Links. Der Versand selbst verlangt POST;
+        # deshalb in die Vertragsakte, wo «Zur Unterschrift senden» nachfragt.
+        messages.info(request, gettext('Versand zur digitalen Unterschrift: in der Vertragsakte über «Mehr» auslösen.'))
+        return redirect(f'/neu/vertraege/{object_id}/')
 
     @action(description="📈 Zinsrechner öffnen", url_path="calc-rent")
     def action_mietzins_rechner(self, request, object_id):
