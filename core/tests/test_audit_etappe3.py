@@ -175,3 +175,38 @@ class Bestaetigungsdialog(SimpleTestCase):
     def test_entschluesselt_ohne_eval(self):
         self.assertNotIn('eval(', self._baustein())
         self.assertNotIn('new Function', self._baustein())
+
+
+class Nachtraege(TestCase):
+    """Offene Punkte aus Etappe 3, die ausserhalb von `fw/` lagen."""
+
+    def test_anmeldeseiten_ohne_gewichte_ueber_700(self):
+        """IBM Plex kommt nur bis 700; 800 wurde künstlich nachgezeichnet.
+        E-Mail-Vorlagen ausgenommen: Mailprogramme nehmen Systemschriften."""
+        vorlagen = Path(settings.BASE_DIR) / 'core' / 'templates' / 'core'
+        zu_schwer = [f'{p.name}: {m}' for p in sorted(vorlagen.rglob('*.html'))
+                     for m in re.findall(r'font-weight:\s*[89]00', p.read_text(encoding='utf-8'))]
+        self.assertEqual(zu_schwer, [])
+
+    def test_zweifaktor_qr_hat_hellen_grund(self):
+        """Der Rahmen wird im Dunkelmodus dunkel; ohne eigenen Grund stünde der
+        schwarze Code auf dunkler Fläche."""
+        c = Client()
+        c.force_login(_team_user())
+        r = c.get('/konto/zwei-faktor/einrichten/')
+        qr = r.context['qr']
+        self.assertIn('#fff', qr)
+        self.assertIn(qr, r.content.decode())
+
+    def test_hausaushang_nimmt_die_oeffentliche_adresse(self):
+        """Das Plakat hängt monatelang; der Host der Anfrage kann ein interner
+        sein, den kein Mieter erreicht."""
+        from unittest.mock import patch
+        from django.test import override_settings
+        lg, _e, _m, _v = _basis_objekte()
+        c = Client()
+        c.force_login(_team_user())
+        with override_settings(PORTAL_BASE_URL='https://app.beispiel.ch/', ALLOWED_HOSTS=['*']), \
+                patch('core.views.ticket_public.generate_qr_poster', return_value=b'%PDF-') as poster:
+            c.get(f'/liegenschaft/{lg.id}/poster/', HTTP_HOST='intern.local:8000')
+        self.assertEqual(poster.call_args[0][1], 'app.beispiel.ch')

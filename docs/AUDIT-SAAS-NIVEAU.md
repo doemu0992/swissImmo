@@ -327,7 +327,17 @@ setzte `fw-table` ihre Köpfe linksbündig. Stehen geblieben: die
 Schlüssel-Wert-Blöcke der Vertragsvorschau und von `fall_detail`, zwei
 kleine Summentabellen und 30 Tabellen in PDF- und Dokumentvorlagen
 (gehören nicht zur Oberfläche).
-Offen: Karte mit Kopf, Badge.*
+Karte und Badge: Die Bausteine gibt es (`fw-card` 422×, `fw-chip` 107×);
+selbst gebaut sind noch 4 Badges und 47 «Kästen». Nachgesehen sind Letztere
+keine vergessenen Karten, sondern Karten mit farbigem Rand (aufklappbare
+Erfassungsformulare), Kästen mit bedingter Farbe, Toasts und ein Modal —
+alle schon auf den Farb-Tokens. Eine Umstellung brächte keinen sichtbaren
+Gewinn; sie bleiben.
+Nachträge: Anmelde- und Portalseiten ohne Gewicht 800 (Plex kommt nur bis
+700); 2FA-QR mit eigenem hellem Grund (im Dunkelmodus sonst schwarz auf
+dunkel); Hausaushang-QR mit der Adresse aus `PORTAL_BASE_URL` statt dem
+Host der Anfrage.
+**Etappe 3 abgeschlossen.***
 
 ### Etappe 4 — Listen-Werkzeugkasten
 
