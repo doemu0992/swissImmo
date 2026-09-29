@@ -1,5 +1,6 @@
 # crm/admin.py
 from django.contrib import admin
+from django.utils.translation import gettext
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.shortcuts import redirect
@@ -446,13 +447,13 @@ class OrganisationAdmin(NurLesenModelAdmin):
     @action(description="🔄 Marktdaten prüfen (BfS)", url_path="check-rates")
     def action_check_rates(self, request, object_id=None):
         if not update_verwaltung_rates:
-            messages.error(request, "Das Modul 'update_verwaltung_rates' wurde nicht gefunden.")
+            messages.error(request, gettext("Das Modul 'update_verwaltung_rates' wurde nicht gefunden."))
             return redirect(request.META.get('HTTP_REFERER', '/admin/'))
         # Auf der Detailseite einer Verwaltung gilt die Aktion ihr; von der
         # Liste aus allen (dort ist keine gemeint).
         ziel = self.model.objects.filter(pk=object_id).first() if object_id else None
         msg, err = update_verwaltung_rates(ziel)
-        if err: messages.error(request, f"Fehler: {err}")
+        if err: messages.error(request, gettext('Fehler: %(err)s') % {'err': err})
         else: messages.success(request, msg)
         return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 

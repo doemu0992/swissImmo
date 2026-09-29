@@ -313,8 +313,12 @@ def fw_mahnung_erfassen(request):
     log_aktion(request, f"{stufe}. Mahnung erfasst",
                rechnung.vertrag.mieter.display_name if rechnung.vertrag_id else rechnung.titel,
                f"offen CHF {rechnung.offener_betrag}, Gebühr CHF {gebuehr}")
-    messages.success(request,
-        f"✅ {stufe}. Mahnung erfasst" + (f" · Mahngebühr CHF {gebuehr} gestellt." if gebuehr > 0 else "."))
+    if gebuehr > 0:
+        meldung = gettext('%(stufe)s. Mahnung erfasst · Mahngebühr CHF %(gebuehr)s gestellt.') % {
+            'stufe': stufe, 'gebuehr': gebuehr}
+    else:
+        meldung = gettext('%(stufe)s. Mahnung erfasst.') % {'stufe': stufe}
+    messages.success(request, '✅ ' + meldung)
     ziel = '/neu/mahnwesen/'
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'
@@ -340,14 +344,14 @@ def fw_mahnlauf(request):
     log_aktion(request, "Mahnlauf ausgeführt", "Sammellauf",
                f"{res['gemahnt']} gemahnt, {res['emails']} E-Mails, Gebühren CHF {res['gebuehren']}, Zins CHF {res['zins']}")
     if res['gemahnt']:
-        teile = [f"{res['gemahnt']} Mahnung(en) erstellt"]
+        teile = [gettext('%(n)s Mahnung(en) erstellt') % {'n': res['gemahnt']}]
         if send_email:
-            teile.append(f"{res['emails']} E-Mail(s) versandt")
+            teile.append(gettext('%(n)s E-Mail(s) versandt') % {'n': res['emails']})
         if res['gebuehren'] > 0:
-            teile.append(f"Gebühren CHF {res['gebuehren']}")
+            teile.append(gettext('Gebühren CHF %(betrag)s') % {'betrag': res['gebuehren']})
         if res['zins'] > 0:
-            teile.append(f"Verzugszins CHF {res['zins']}")
-        messages.success(request, "✅ Mahnlauf: " + ", ".join(teile) + ".")
+            teile.append(gettext('Verzugszins CHF %(betrag)s') % {'betrag': res['zins']})
+        messages.success(request, '✅ ' + gettext('Mahnlauf: %(teile)s.') % {'teile': ', '.join(teile)})
     else:
         messages.success(request, gettext('Mahnlauf: keine neuen Mahnungen fällig — alles aktuell.'))
     ziel = '/neu/mahnwesen/'

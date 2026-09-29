@@ -62,6 +62,14 @@ AUSGEZEICHNET = (
     'core/views/fw/regelwerk.py',
     'core/views/fw/sollstellung.py',
     'core/views/postfach.py',
+    # Teil D: Admin-Aktionen (die zusammengesetzten Meldungen liegen in
+    # Dateien, die schon oben stehen)
+    'crm/admin.py',
+    'finance/admin.py',
+    'portfolio/admin.py',
+    'rentals/admin.py',
+    'tickets/admin.py',
+    'core/services/unterschrift.py',
 )
 
 RECHT = ('Art.', ' OR', 'ZGB', 'DSG', 'SchKG')
@@ -131,3 +139,13 @@ class MeldungFolgtDerSpracheTests(TestCase):
         seite = self.c.post('/neu/pendenzen/neu/', {'titel': ''}, follow=True)
         self.assertContains(seite, 'Title missing.')
         self.assertNotContains(seite, 'Titel fehlt.')
+
+    def test_zusammengesetzte_meldung_franzoesisch(self):
+        # Teil D: vorher `f"✅ {n} Wert(e) aktualisiert." if n else "Keine Änderung."`
+        # — eine Bedingung im Ausdruck, am Konverter vorbei deutsch geblieben.
+        # Gegenprobe: den `else`-Zweig in detailseiten.py zurück auf das
+        # Literal — der Test wird rot.
+        self.c.post('/i18n/setlang/', {'language': 'fr', 'next': '/neu/'})
+        seite = self.c.post('/neu/lebensdauer/', {'aktion': 'speichern'}, follow=True)
+        self.assertContains(seite, 'Aucune modification.')
+        self.assertNotContains(seite, 'Keine Änderung.')

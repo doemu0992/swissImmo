@@ -12,7 +12,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db.models import Q
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_noop
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -212,8 +212,13 @@ def fw_bewerber_besichtigung(request, pk):
         })
     log_aktion(request, "Besichtigung eingeladen", f"{b.vorname} {b.nachname}",
                timezone.localtime(termin).strftime('%d.%m.%Y %H:%M'))
-    messages.success(request, f"✅ Besichtigung {timezone.localtime(termin).strftime('%d.%m.%Y %H:%M')} erfasst"
-                              + (f" · Einladung an {b.email} gesendet." if ok else "."))
+    wann = timezone.localtime(termin).strftime('%d.%m.%Y %H:%M')
+    if ok:
+        meldung = gettext('Besichtigung %(wann)s erfasst · Einladung an %(email)s gesendet.') % {
+            'wann': wann, 'email': b.email}
+    else:
+        meldung = gettext('Besichtigung %(wann)s erfasst.') % {'wann': wann}
+    messages.success(request, '✅ ' + meldung)
     return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
 
 
@@ -250,8 +255,10 @@ def fw_bewerber_entscheid(request, pk):
                           empfaenger=f"{b.vorname} {b.nachname} <{b.email}> (Bewerbung)")
     log_aktion(request, f"Bewerber-{entscheid.capitalize()}", f"{b.vorname} {b.nachname}",
                b.einheit.bezeichnung if b.einheit_id else '')
-    wort = "Zusage" if entscheid == 'zusage' else "Absage"
-    messages.success(request, f"✅ {wort} gesetzt" + (f" · E-Mail an {b.email} gesendet." if ok else "."))
+    meldung = gettext('Zusage gesetzt.') if entscheid == 'zusage' else gettext('Absage gesetzt.')
+    if ok:
+        meldung += ' ' + gettext('E-Mail an %(email)s gesendet.') % {'email': b.email}
+    messages.success(request, '✅ ' + meldung)
     return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
 
 
@@ -288,7 +295,10 @@ def fw_bewerber_absage_uebrige(request, einheit_id):
                 journal_email(betreff, body, user=request.user,
                               empfaenger=f"{b.vorname} {b.nachname} <{b.email}> (Bewerbung)")
     log_aktion(request, "Bewerber-Sammelabsage", f"Objekt #{einheit_id}", f"{n} abgesagt")
-    messages.success(request, f"✅ {n} offene Bewerbung(en) abgesagt" + (f" · {mails} E-Mail(s) versendet." if mails else "."))
+    meldung = gettext('%(n)s offene Bewerbung(en) abgesagt.') % {'n': n}
+    if mails:
+        meldung += ' ' + gettext('%(mails)s E-Mail(s) versendet.') % {'mails': mails}
+    messages.success(request, '✅ ' + meldung)
     return redirect(f'/neu/vermarktung/{einheit_id}/bewerber/')
 
 
@@ -332,8 +342,9 @@ def fw_bewerbung_unterlagen(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/bewerbungen/{b.id}/')
     abgelegt = []
-    for feld, label in (('ausweiskopie', 'Ausweiskopie'), ('lohnausweis', 'Einkommensnachweis'),
-                        ('weitere_dokumente', 'Weitere Unterlagen')):
+    for feld, label in (('ausweiskopie', gettext_noop('Ausweiskopie')),
+                        ('lohnausweis', gettext_noop('Einkommensnachweis')),
+                        ('weitere_dokumente', gettext_noop('Weitere Unterlagen'))):
         datei = request.FILES.get(feld)
         if datei:
             getattr(b, feld).save(datei.name, datei, save=False)
@@ -342,7 +353,8 @@ def fw_bewerbung_unterlagen(request, pk):
         b.save()
         log_aktion(request, "Bewerbungsunterlagen nachgetragen",
                    f"{b.vorname} {b.nachname}", ", ".join(abgelegt))
-        messages.success(request, "✅ " + " und ".join(abgelegt) + " abgelegt.")
+        messages.success(request, '✅ ' + gettext('Abgelegt: %(unterlagen)s.')
+                         % {'unterlagen': ', '.join(gettext(label) for label in abgelegt)})
     else:
         messages.info(request, gettext('Keine Datei gewählt.'))
     return redirect(f'/neu/bewerbungen/{b.id}/')

@@ -730,7 +730,8 @@ def fw_kommunikation_senden(request):
                 gesendet += 1
                 journal_email(betreff, text, mieter=m, user=request.user, empfaenger=m.email)
     log_aktion(request, "Rundschreiben per E-Mail", betreff, f"{gesendet} Empfänger")
-    messages.success(request, f"✅ {gesendet} E-Mail(s) versendet." if gesendet else "Keine E-Mail versendet (fehlende Adressen).")
+    messages.success(request, ('✅ ' + gettext('%(gesendet)s E-Mail(s) versendet.') % {'gesendet': gesendet}) if gesendet
+                     else gettext('Keine E-Mail versendet (fehlende Adressen).'))
     return redirect('fw_kommunikation')
 
 
@@ -973,13 +974,14 @@ def fw_zahlungen_sammel_zuordnen(request):
                    f"{anzahl} Zahlung(en), CHF {summe}"
                    + (f", Rest CHF {rest} als Guthaben" if rest else "")
                    + (f" · Absender «{gelernt}» gemerkt" if gelernt else ""))
-        messages.success(
-            request,
-            f"✅ {anzahl} Zahlung(en) zugeordnet (CHF {summe}) — "
-            f"{vertrag.mieter.display_name}"
-            + (f" · CHF {rest} bleiben als Guthaben" if rest else "")
-            + (f" · Absender «{gelernt}» gemerkt, künftige Zahlungen treffen selbst"
-               if gelernt else "") + ".")
+        teile = [gettext('%(anzahl)s Zahlung(en) zugeordnet (CHF %(summe)s) — %(name)s')
+                 % {'anzahl': anzahl, 'summe': summe, 'name': vertrag.mieter.display_name}]
+        if rest:
+            teile.append(gettext('CHF %(rest)s bleiben als Guthaben') % {'rest': rest})
+        if gelernt:
+            teile.append(gettext('Absender «%(gelernt)s» gemerkt, künftige Zahlungen treffen selbst')
+                         % {'gelernt': gelernt})
+        messages.success(request, '✅ ' + ' · '.join(teile) + '.')
     for f in fehler:
         messages.warning(request, gettext('Nicht zugeordnet — %(f)s') % {'f': f})
     if not anzahl and not fehler:

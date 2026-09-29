@@ -266,9 +266,9 @@ def fw_marktdaten_aktualisieren(request):
             msg, errors = update_verwaltung_rates(organisation_der_anfrage(request))
             messages.success(request, f"📡 {msg}")
             if errors:
-                messages.warning(request, "Hinweis: " + " | ".join(errors[:2]) +
-                                 " — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage blockiert, "
-                                 "kannst du die Werte oben manuell eintragen.")
+                messages.warning(request, gettext(
+                    'Hinweis: %(fehler)s — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage '
+                    'blockiert, kannst du die Werte oben manuell eintragen.') % {'fehler': ' | '.join(errors[:2])})
         except Exception as e:
             messages.error(request, gettext('Marktdaten konnten nicht geladen werden: %(e)s. Werte bitte manuell eintragen.') % {'e': e})
     return redirect('/neu/account/')

@@ -261,7 +261,12 @@ def fw_schaden_neu(request):
         ok = send_ticket_email(t.email_melder, betreff, body)
 
     log_aktion(request, "Schaden intern erfasst", f"Ticket #{t.id}", titel)
-    messages.success(request, f"✅ Ticket #{t.id} erstellt" + (f" · Eingangsbestätigung an {t.email_melder} gesendet." if ok else "."))
+    if ok:
+        meldung = gettext('Ticket #%(id)s erstellt · Eingangsbestätigung an %(email)s gesendet.') % {
+            'id': t.id, 'email': t.email_melder}
+    else:
+        meldung = gettext('Ticket #%(id)s erstellt.') % {'id': t.id}
+    messages.success(request, '✅ ' + meldung)
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
@@ -523,9 +528,12 @@ def fw_schaden_auftrag(request, pk):
 
     log_aktion(request, "Handwerker beauftragt", f"Ticket #{t.id}", f"{hw.firma}")
     hinweise = []
-    hinweise.append("Mail an Handwerker gesendet" if hw_ok else ("Handwerker ohne E-Mail" if not hw.email else "Mail an Handwerker fehlgeschlagen"))
-    hinweise.append("Melder informiert" if melder_ok else ("Melder ohne E-Mail" if not melder_email else "Melder-Mail fehlgeschlagen"))
-    messages.success(request, f"✅ {hw.firma} beauftragt · Status: In Bearbeitung · " + " · ".join(hinweise) + ".")
+    hinweise.append(gettext('Mail an Handwerker gesendet') if hw_ok else (
+        gettext('Handwerker ohne E-Mail') if not hw.email else gettext('Mail an Handwerker fehlgeschlagen')))
+    hinweise.append(gettext('Melder informiert') if melder_ok else (
+        gettext('Melder ohne E-Mail') if not melder_email else gettext('Melder-Mail fehlgeschlagen')))
+    messages.success(request, '✅ ' + gettext('%(firma)s beauftragt · Status: In Bearbeitung · %(hinweise)s.')
+                     % {'firma': hw.firma, 'hinweise': ' · '.join(hinweise)})
     return redirect(f'/neu/schaeden/{t.id}/')
 
 

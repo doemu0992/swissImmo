@@ -797,8 +797,8 @@ def fw_vertrag_bearbeiten(request, pk):
         log_aktion(request, "Vertrag bearbeitet", str(v.mieter),
                    f"{v.einheit.bezeichnung} · {'Entwurf' if not gesperrt else 'nur Detailfelder'}"
                    + (f" · {_diff}" if _diff else ''), ziel=v)
-        messages.success(request, "✅ Vertrag aktualisiert."
-                         + ("" if not gesperrt else " (aktiver Vertrag — nur Detailfelder geändert)"))
+        messages.success(request, '✅ ' + (gettext('Vertrag aktualisiert.') if not gesperrt
+                                          else gettext('Vertrag aktualisiert (aktiver Vertrag — nur Detailfelder geändert).')))
         return redirect(f'/neu/vertraege/{v.id}/')
 
     verwaltung = v.einheit.liegenschaft.organisation

@@ -1006,18 +1006,20 @@ def fw_camt_import(request):
                f"{geklaert} auf 1190, {guthaben} Guthaben auf 2030, {duplikate} Duplikate, "
                f"{gesperrt} Periodensperre")
     if verbucht or geklaert or guthaben or belastungen:
-        teile = [f"{verbucht} Zahlung(en) zugeordnet (CHF {zugeordnet_summe})"]
+        teile = [gettext('%(verbucht)s Zahlung(en) zugeordnet (CHF %(summe)s)')
+                 % {'verbucht': verbucht, 'summe': zugeordnet_summe}]
         if fuzzy:
-            teile.append(f"davon {fuzzy} über Name/Betrag")
+            teile.append(gettext('davon %(fuzzy)s über Name/Betrag') % {'fuzzy': fuzzy})
         if gelernt_treffer:
-            teile.append(f"{gelernt_treffer} über einen früher zugeordneten Absender")
+            teile.append(gettext('%(n)s über einen früher zugeordneten Absender') % {'n': gelernt_treffer})
         if guthaben:
-            teile.append(f"{guthaben} Überzahlung(en) als Mieterguthaben (2030)")
+            teile.append(gettext('%(n)s Überzahlung(en) als Mieterguthaben (2030)') % {'n': guthaben})
         if geklaert:
-            teile.append(f"{geklaert} ungeklärt auf Durchlaufkonto 1190 geparkt")
+            teile.append(gettext('%(n)s ungeklärt auf Durchlaufkonto 1190 geparkt') % {'n': geklaert})
         if duplikate:
-            teile.append(f"{duplikate} Duplikat(e) übersprungen")
-        messages.success(request, f"✅ {quelle}-Import: " + ", ".join(teile) + ".")
+            teile.append(gettext('%(n)s Duplikat(e) übersprungen') % {'n': duplikate})
+        messages.success(request, '✅ ' + gettext('%(quelle)s-Import: %(teile)s.')
+                         % {'quelle': quelle, 'teile': ', '.join(teile)})
     else:
         messages.warning(request,
             gettext('Keine neuen Gutschriften verbucht (%(duplikate)s Duplikat(e) übersprungen).') % {'duplikate': duplikate})
@@ -1107,9 +1109,11 @@ def fw_kontoauszug_rueckgaengig(request, pk):
     log_aktion(request, "Bank-Import rückgängig gemacht", dateiname,
                f"{storniert} Zahlung(en) storniert" + (f", {uebersprungen} bereits storniert"
                                                        if uebersprungen else ""))
-    messages.success(request, f"✅ Import '{dateiname}' rückgängig gemacht — {storniert} "
-                              f"Zahlung(en) revisionssicher storniert, Auszug entfernt."
-                              + (f" {uebersprungen} bereits zuvor storniert." if uebersprungen else ""))
+    meldung = gettext("Import '%(dateiname)s' rückgängig gemacht — %(storniert)s Zahlung(en) revisionssicher "
+                      "storniert, Auszug entfernt.") % {'dateiname': dateiname, 'storniert': storniert}
+    if uebersprungen:
+        meldung += ' ' + gettext('%(uebersprungen)s bereits zuvor storniert.') % {'uebersprungen': uebersprungen}
+    messages.success(request, '✅ ' + meldung)
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
         ziel += f'?lg={aktive}'

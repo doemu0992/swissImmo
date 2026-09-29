@@ -1,3 +1,4 @@
+from django.utils.translation import gettext
 """Digitale Unterschrift auf reportlab-Briefen.
 
 Die Unterschrift lag bisher nur auf den Vertrags- und Formular-PDFs
@@ -141,8 +142,7 @@ def uebernehme_aus_formular(obj, request, feld='unterschrift_bild'):
 
     def _leer_melden():
         try:
-            messages.warning(request, "⚠️ Die Unterschrift war leer und wurde nicht "
-                                      "gespeichert — bitte nochmals unterschreiben.")
+            messages.warning(request, '⚠️ ' + gettext('Die Unterschrift war leer und wurde nicht gespeichert — bitte nochmals unterschreiben.'))
         except Exception:
             pass                       # ohne Message-Framework (Tests) einfach still
         return False

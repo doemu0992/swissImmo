@@ -269,8 +269,13 @@ def fw_kreditor_bezahlen(request):
 
     log_aktion(request, "Kreditorenrechnung bezahlt", k.lieferant or f"Rechnung #{k.id}",
                f"CHF {betrag}" + (f" (offen CHF {k.offener_betrag})" if k.status == 'teilbezahlt' else ""))
-    messages.success(request, f"✅ CHF {betrag} an {k.lieferant or 'Lieferant'} bezahlt"
-                              + (f" — noch offen CHF {k.offener_betrag}." if k.status == 'teilbezahlt' else "."))
+    empfaenger = k.lieferant or gettext('Lieferant')
+    if k.status == 'teilbezahlt':
+        meldung = gettext('CHF %(betrag)s an %(lieferant)s bezahlt — noch offen CHF %(offen)s.') % {
+            'betrag': betrag, 'lieferant': empfaenger, 'offen': k.offener_betrag}
+    else:
+        meldung = gettext('CHF %(betrag)s an %(lieferant)s bezahlt.') % {'betrag': betrag, 'lieferant': empfaenger}
+    messages.success(request, '✅ ' + meldung)
     ziel = '/neu/kreditoren/'
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'

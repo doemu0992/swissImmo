@@ -1,5 +1,6 @@
 from decimal import Decimal
 from django.contrib import admin
+from django.utils.translation import gettext
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.db.models import Sum
@@ -274,7 +275,7 @@ class BuchungskontoAdmin(NurLesenModelAdmin):
         for nr, bez, typ, hnk in standard_konten:
             obj, created = Buchungskonto.objects.get_or_create(nummer=nr, defaults={'bezeichnung': bez, 'typ': typ, 'is_hnk_relevant': hnk})
             if created: cnt += 1
-        messages.success(request, f"✅ {cnt} Konten angelegt/aktualisiert!")
+        messages.success(request, '✅ ' + gettext('%(cnt)s Konten angelegt/aktualisiert!') % {'cnt': cnt})
         return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 @admin.register(Jahresabschluss)

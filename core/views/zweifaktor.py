@@ -323,9 +323,8 @@ def zweifaktor_pflicht_setzen(request):
     log_aktion(request, 'Zwei-Faktor-Pflicht ' + ('aktiviert' if an else 'aufgehoben'),
                objekt=str(organisation), kategorie='sicherheit')
     messages.success(request,
-                     'Zwei-Faktor-Anmeldung ist ab sofort für alle Konten dieser '
-                     'Verwaltung Pflicht.' if an else
-                     'Die Pflicht ist aufgehoben — eingerichtete Faktoren bleiben aktiv.')
+                     gettext('Zwei-Faktor-Anmeldung ist ab sofort für alle Konten dieser Verwaltung Pflicht.')
+                     if an else gettext('Die Pflicht ist aufgehoben — eingerichtete Faktoren bleiben aktiv.'))
     return redirect('zweifaktor_uebersicht')
 
 

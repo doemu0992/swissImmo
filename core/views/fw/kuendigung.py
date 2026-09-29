@@ -467,8 +467,8 @@ def fw_verzug_sendung(request, pk):
     log_aktion(request, "257d-Sendungsnummer korrigiert",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
                p.sendungsnummer or '—', ziel=p.vertrag if p.vertrag_id else None)
-    messages.success(request, "✅ Sendungsnummer aktualisiert." if p.sendungsnummer
-                     else "✅ Sendungsnummer entfernt.")
+    messages.success(request, '✅ ' + (gettext('Sendungsnummer aktualisiert.') if p.sendungsnummer
+                                       else gettext('Sendungsnummer entfernt.')))
     nxt = request.POST.get('next') or ''
     if nxt.startswith('/neu/') and '//' not in nxt[1:]:
         return redirect(nxt)

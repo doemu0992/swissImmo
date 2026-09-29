@@ -1,6 +1,7 @@
 # rentals/admin.py
 import urllib.parse
 from django.contrib import admin
+from django.utils.translation import gettext
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.shortcuts import redirect
@@ -250,7 +251,7 @@ class MietvertragAdmin(NurLesenModelAdmin):
             exists = Dokument.objects.filter(vertrag=obj, kategorie='vertrag').exists()
             if not exists:
                 Dokument.objects.create(titel=f"Mietvertrag {obj.mieter}", kategorie='vertrag', vertrag=obj, mieter=obj.mieter, einheit=obj.einheit, datei=obj.pdf_datei)
-                messages.success(request, "✅ Vertrag archiviert.")
+                messages.success(request, '✅ ' + gettext('Vertrag archiviert.'))
 
 # ... Die anderen Klassen (LeerstandAdmin, MietzinsAnpassungAdmin, DokumentAdmin) bleiben unverändert ...
 
