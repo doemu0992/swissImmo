@@ -10,6 +10,7 @@ from decimal import Decimal
 from reportlab.pdfgen import canvas as _canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _chf(v):
@@ -136,6 +137,7 @@ def _draw_page(c, k):
                      "Ein allfälliges Guthaben wird Ihnen gutgeschrieben. Beanstandungen sind innert 30 Tagen schriftlich mitzuteilen.")
 
 
+@nur_deutsch
 def generate_nk_pdf_einzeln(kontext):
     """Ein Mieter → einseitige Abrechnung (Bytes)."""
     buf = io.BytesIO()
@@ -147,6 +149,7 @@ def generate_nk_pdf_einzeln(kontext):
     return buf.getvalue()
 
 
+@nur_deutsch
 def generate_nk_pdf_sammel(kontext_liste):
     """Mehrere Mieter → ein Sammel-PDF (eine Seite pro Mieter)."""
     buf = io.BytesIO()

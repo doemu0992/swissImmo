@@ -6,6 +6,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _fmt(d):
@@ -18,6 +19,7 @@ def _fmt(d):
 VERURS_LABEL = {'abnutzung': 'normale Abnutzung', 'mieter': 'Mieter (Schaden)', 'vermieter': 'Vermieter'}
 
 
+@nur_deutsch
 def generate_abnahme_pdf(prot, verwaltung=None):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)

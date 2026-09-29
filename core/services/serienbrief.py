@@ -7,9 +7,9 @@ import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
-
 
 
 def _wrap(text, breite):
@@ -44,6 +44,7 @@ def _ersetze(text, e):
     return out
 
 
+@nur_deutsch
 def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None,
                              signatur=()):
     """absender: dict firma/strasse/plz/ort. empfaenger: Liste dicts.

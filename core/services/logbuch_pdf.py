@@ -8,6 +8,7 @@ import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _wrap(text, breite):
@@ -41,6 +42,7 @@ def _kopfzeile(gezeigt, gesamt):
     return f"{gezeigt} Eintraege · unveraenderlicher Revisions-Trail"
 
 
+@nur_deutsch
 def logbuch_pdf(eintraege, erstellt_von='', heute=None, gesamt=None):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)

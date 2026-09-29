@@ -10,6 +10,7 @@ wertlos.
 """
 import io
 from decimal import Decimal
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _fmt(d):
@@ -19,6 +20,7 @@ def _fmt(d):
         return str(d)
 
 
+@nur_deutsch
 def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=None):
     """Zweiseitiger Abschluss: Erfolgsrechnung, dann Bilanz.
 

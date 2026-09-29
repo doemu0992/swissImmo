@@ -11,6 +11,7 @@ import logging
 from django.conf import settings
 from django.template.loader import get_template
 from django.utils import timezone
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ def docuseal_konfiguriert():
     return bool(getattr(settings, 'DOCUSEAL_API_KEY', None))
 
 
+@nur_deutsch
 def docuseal_senden(vertrag):
     """Sendet den Vertrag zur Unterschrift. Returns (ok: bool, meldung: str)."""
     api_key = getattr(settings, 'DOCUSEAL_API_KEY', None)

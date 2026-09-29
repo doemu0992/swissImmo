@@ -19,6 +19,7 @@ from portfolio.models import Dokument as PortfolioDokument
 from rentals.models import Mietvertrag, Dokument as RentalsDokument
 from finance.models import DebitorenRechnung, Zahlungseingang
 from tickets.models import SchadenMeldung
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _rollen_flags(user):
@@ -29,6 +30,7 @@ def _rollen_flags(user):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+@nur_deutsch
 def mieter_dossier(request, mieter_id):
     mieter = get_object_or_404(Mieter, id=mieter_id)
 
@@ -71,6 +73,7 @@ def mieter_dossier(request, mieter_id):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+@nur_deutsch
 def liegenschaft_dossier(request, liegenschaft_id):
     lg = get_object_or_404(
         Liegenschaft.objects.select_related('eigentuemer', 'organisation'),
@@ -129,6 +132,7 @@ def liegenschaft_dossier(request, liegenschaft_id):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+@nur_deutsch
 def vertrag_dossier(request, vertrag_id):
     vertrag = get_object_or_404(
         Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'),

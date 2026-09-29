@@ -128,8 +128,11 @@ def send_via_docuseal(request, vertrag_id):
             'unterschrift_path': unterschrift_path,
         }
 
-        template = get_template(template_path)
-        html = template.render(context)
+        # Der Vertrag ist deutsch formuliert: fest deutsch rendern, sonst
+        # kämen Monatsnamen und Auswahlwerte in der Sprache der Sachbearbeitung.
+        from core.services.dokumentsprache import STANDARD, in_sprache
+        with in_sprache(STANDARD):
+            html = get_template(template_path).render(context)
         pdf_file = io.BytesIO()
         pisa_status = pisa.CreatePDF(html, dest=pdf_file, link_callback=link_callback)
 
