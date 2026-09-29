@@ -15,33 +15,33 @@
 
 <div class="fw-card overflow-hidden mb-5">
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">Mieter / Objekt</th>
-                <th class="px-5 py-3 font-semibold text-right">Netto aktuell</th>
-                <th class="px-5 py-3 font-semibold text-right">Netto neu</th>
-                <th class="px-5 py-3 font-semibold text-right">Δ</th>
-                <th class="px-5 py-3 font-semibold">Wirksam ab</th>
-                <th class="px-5 py-3 font-semibold">Status</th>
+            <tr>
+                <th class="font-semibold">Mieter / Objekt</th>
+                <th class="font-semibold text-right fw-right">Netto aktuell</th>
+                <th class="font-semibold text-right fw-right">Netto neu</th>
+                <th class="font-semibold text-right fw-right">Δ</th>
+                <th class="font-semibold">Wirksam ab</th>
+                <th class="font-semibold">Status</th>
             </tr>
             </thead>
             <tbody class="fw-dv">
             {% for r in rows %}
             <tr>
-                <td class="px-5 py-3.5">
+                <td>
                     <div class="font-semibold fw-strong">{{ r.v.mieter.display_name }}</div>
                     <div class="text-xs fw-faint">{{ r.v.einheit.liegenschaft.strasse }} · {{ r.v.einheit.bezeichnung }}</div>
                 </td>
-                <td class="px-5 py-3.5 text-right fw-ink whitespace-nowrap">{{ r.v.netto_mietzins|chf }}</td>
+                <td class="text-right fw-ink whitespace-nowrap fw-right">{{ r.v.netto_mietzins|chf }}</td>
                 <td class="px-5 py-3.5 text-right font-semibold whitespace-nowrap {% if r.delta and r.delta > 0 %}fw-gut{% elif r.delta and r.delta < 0 %}fw-kritisch{% else %}fw-mutet{% endif %}">
                     {% if r.neu_netto is not None %}{{ r.neu_netto|chf }}{% else %}—{% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap text-xs {% if r.delta and r.delta > 0 %}fw-gut{% elif r.delta and r.delta < 0 %}fw-kritisch{% else %}fw-faint{% endif %}">
                     {% if r.delta is not None %}{% if r.delta > 0 %}+{% endif %}{{ r.delta|chf }}{% endif %}
                 </td>
-                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{% if r.termin %}{{ r.termin|date:"d.m.Y" }}{% endif %}</td>
-                <td class="px-5 py-3.5 whitespace-nowrap">
+                <td class="fw-mutet whitespace-nowrap">{% if r.termin %}{{ r.termin|date:"d.m.Y" }}{% endif %}</td>
+                <td class="whitespace-nowrap">
                     {% if r.basis_fehlt %}
                     <span class="fw-chip fw-warn-flaeche fw-warnton">● Basis fehlt — einzeln erfassen</span>
                     {% elif r.unveraendert %}

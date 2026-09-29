@@ -318,7 +318,16 @@ Die Sperrklinke zählt sie jetzt mit (53 in 22 Vorlagen, inkl. Portal).
 Kein Include-Partial: Ein Knopf ist ein `<a>` oder `<button>` mit eigenen
 Attributen (`onclick`, `formaction`, `download`) — eine Klasse trägt das,
 ein `{% include %}` müsste jedes Attribut durchreichen.
-Offen: Tabellen (16 von 107 auf `fw-table`), Karte mit Kopf, Badge.*
+Teil 2, Tabellen: 55 Datentabellen in `fw/` auf `fw-table` umgestellt
+(vorher 16 von 107). Neu in der Schicht: `fw-dicht` für enge Tabellen,
+`fw-zentriert`, `fw-leerzeile` und Regeln für die Fusszeile — ohne sie
+verlor die Summenzeile mit den Tailwind-Abständen jeden Innenabstand
+(im Browser gemessen). Rechtsbündige Spalten tragen `fw-right`, sonst
+setzte `fw-table` ihre Köpfe linksbündig. Stehen geblieben: die
+Schlüssel-Wert-Blöcke der Vertragsvorschau und von `fall_detail`, zwei
+kleine Summentabellen und 30 Tabellen in PDF- und Dokumentvorlagen
+(gehören nicht zur Oberfläche).
+Offen: Karte mit Kopf, Badge.*
 
 ### Etappe 4 — Listen-Werkzeugkasten
 

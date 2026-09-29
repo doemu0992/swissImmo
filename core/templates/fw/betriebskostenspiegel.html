@@ -38,22 +38,22 @@
 
 <div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
-        <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-            <th class="px-5 py-3 font-semibold">{% trans "Liegenschaft" %}</th>
-            <th class="px-5 py-3 font-semibold text-right">{% blocktrans %}Aufwand {{ jahr }}{% endblocktrans %}</th>
-            <th class="px-5 py-3 font-semibold text-right">{% trans "Fläche" %}</th>
-            <th class="px-5 py-3 font-semibold text-right">{% trans "CHF/m²" %}</th>
-            <th class="px-5 py-3 font-semibold text-right">{% trans "vs. Ø" %}</th>
+<table class="fw-table min-w-max">
+        <thead><tr>
+            <th class="font-semibold">{% trans "Liegenschaft" %}</th>
+            <th class="font-semibold text-right fw-right">{% blocktrans %}Aufwand {{ jahr }}{% endblocktrans %}</th>
+            <th class="font-semibold text-right fw-right">{% trans "Fläche" %}</th>
+            <th class="font-semibold text-right fw-right">{% trans "CHF/m²" %}</th>
+            <th class="font-semibold text-right fw-right">{% trans "vs. Ø" %}</th>
         </tr></thead>
         <tbody class="fw-dv">
         {% for r in rows %}
         <tr>
-            <td class="px-5 py-3"><a href="/neu/liegenschaften/{{ r.lg.id }}/?tab=finanzen" class="font-medium fw-strong hover:fw-marke">{{ r.lg.strasse }}</a><div class="text-xs fw-faint">{{ r.lg.plz }} {{ r.lg.ort }}</div></td>
-            <td class="px-5 py-3 text-right fw-ink">CHF {{ r.kosten|floatformat:0 }}</td>
-            <td class="px-5 py-3 text-right fw-mutet">{{ r.m2|floatformat:0 }} m²</td>
-            <td class="px-5 py-3 text-right font-semibold fw-strong">{% if r.pro_m2 is not None %}CHF {{ r.pro_m2|floatformat:2 }}{% else %}—{% endif %}</td>
-            <td class="px-5 py-3 text-right">
+            <td><a href="/neu/liegenschaften/{{ r.lg.id }}/?tab=finanzen" class="font-medium fw-strong hover:fw-marke">{{ r.lg.strasse }}</a><div class="text-xs fw-faint">{{ r.lg.plz }} {{ r.lg.ort }}</div></td>
+            <td class="text-right fw-ink fw-right">CHF {{ r.kosten|floatformat:0 }}</td>
+            <td class="text-right fw-mutet fw-right">{{ r.m2|floatformat:0 }} m²</td>
+            <td class="text-right font-semibold fw-strong fw-right">{% if r.pro_m2 is not None %}CHF {{ r.pro_m2|floatformat:2 }}{% else %}—{% endif %}</td>
+            <td class="text-right fw-right">
                 {% if r.abweichung is not None %}
                     {% if r.abweichung > 0 %}<span class="fw-kritisch font-medium">+{{ r.abweichung|floatformat:2 }}</span>
                     {% else %}<span class="fw-gut font-medium">{{ r.abweichung|floatformat:2 }}</span>{% endif %}
@@ -61,7 +61,7 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="px-5 py-8 text-center text-sm fw-faint italic">{% blocktrans %}Keine Liegenschaften / keine Aufwandbuchungen im {{ jahr }}.{% endblocktrans %}</td></tr>
+        <tr><td colspan="5" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% blocktrans %}Keine Liegenschaften / keine Aufwandbuchungen im {{ jahr }}.{% endblocktrans %}</td></tr>
         {% endfor %}
         </tbody>
     </table>

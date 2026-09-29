@@ -78,34 +78,34 @@
 
 <div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">{% trans "Konto" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Bezeichnung" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Typ" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Soll" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Haben" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Saldo" %}</th>
-                <th class="px-5 py-3"></th>
+            <tr>
+                <th class="font-semibold">{% trans "Konto" %}</th>
+                <th class="font-semibold">{% trans "Bezeichnung" %}</th>
+                <th class="font-semibold">{% trans "Typ" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Soll" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Haben" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Saldo" %}</th>
+                <th></th>
             </tr>
             </thead>
             <tbody class="fw-dv">
             {% for z in zeilen %}
             <tr class="hover:fw-flaeche2 {% if not z.bewegt %}fw-faint{% endif %}">
-                <td class="px-5 py-3 font-mono whitespace-nowrap">
+                <td class="font-mono whitespace-nowrap">
                     <a href="/neu/buchhaltung/konto/{{ z.k.nummer }}/{{ lg_query }}" class="font-semibold fw-marke hover:underline">{{ z.k.nummer }}</a>
                 </td>
-                <td class="px-5 py-3">{{ z.k.bezeichnung }}
+                <td>{{ z.k.bezeichnung }}
                     {% if z.k.is_hnk_relevant %}<span class="ml-1.5 fw-fs-mikro font-bold uppercase fw-warn-flaeche fw-warnton px-1.5 py-0.5 rounded">{% trans "HNK" %}</span>{% endif %}
                 </td>
-                <td class="px-5 py-3 text-xs fw-mutet">{{ z.k.get_typ_display }}</td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{% if z.soll %}{{ z.soll|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{% if z.haben %}{{ z.haben|chf }}{% else %}—{% endif %}</td>
+                <td class="text-xs fw-mutet">{{ z.k.get_typ_display }}</td>
+                <td class="text-right tabular-nums whitespace-nowrap fw-right">{% if z.soll %}{{ z.soll|chf }}{% else %}—{% endif %}</td>
+                <td class="text-right tabular-nums whitespace-nowrap fw-right">{% if z.haben %}{{ z.haben|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap font-semibold {% if z.saldo < 0 %}fw-kritisch{% elif z.saldo > 0 %}fw-strong{% endif %}">
                     {% if z.bewegt %}{{ z.saldo|chf }}{% else %}—{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">
+                <td class="text-right whitespace-nowrap fw-right">
                     {% if kann_schreiben %}
                     <button onclick="document.getElementById('edit-{{ z.k.id }}').classList.toggle('hidden')"
                             title="{% trans 'Konto bearbeiten' %}"
@@ -117,7 +117,7 @@
             </tr>
             {% if kann_schreiben %}
             <tr id="edit-{{ z.k.id }}" class="hidden fw-markenflaeche">
-                <td colspan="7" class="px-5 py-3">
+                <td colspan="7">
                     <form method="post" class="flex items-end gap-3 flex-wrap">
                         {% csrf_token %}
                         <input type="hidden" name="aktion" value="bearbeiten">
@@ -142,14 +142,14 @@
             </tr>
             {% endif %}
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-12 text-center text-sm fw-faint italic">{% trans "Noch keine Konten." %}</td></tr>
+            <tr><td colspan="7" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch keine Konten." %}</td></tr>
             {% endfor %}
             </tbody>
             <tfoot>
             <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
-                <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="3">{% trans "Total" %}</td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ total_soll|chf }}</td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ total_haben|chf }}</td>
+                <td class="text-xs uppercase tracking-wider fw-mutet" colspan="3">{% trans "Total" %}</td>
+                <td class="text-right tabular-nums whitespace-nowrap fw-right">{{ total_soll|chf }}</td>
+                <td class="text-right tabular-nums whitespace-nowrap fw-right">{{ total_haben|chf }}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if differenz %}fw-kritisch{% endif %}">{{ differenz|chf }}</td>
                 <td></td>
             </tr>

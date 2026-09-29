@@ -195,6 +195,20 @@
         table.fw-table tbody tr:last-child td{border-bottom:0}
         table.fw-table tbody tr:hover{background:var(--ds-brand-soft)}
         table.fw-table td.fw-right,table.fw-table th.fw-right{text-align:right;white-space:nowrap}
+        /* Ergänzungen für die umgestellten Datentabellen (Audit Etappe 3, Teil 2).
+           `thead th` steht oben auf `text-align:left` — ohne diese Klassen
+           rutschten zentrierte Spalten und Leerzeilen nach links. */
+        table.fw-table td.fw-zentriert,table.fw-table th.fw-zentriert{text-align:center}
+        table.fw-table td.fw-leerzeile{padding:32px 18px;text-align:center}
+        table.fw-table tbody tr:has(td.fw-leerzeile):hover{background:transparent}
+        /* Enge Tabellen (Konten-, Objekt-Unterlisten): gleiche Gestalt, weniger Luft. */
+        table.fw-table.fw-dicht thead th{padding:8px 14px}
+        table.fw-table.fw-dicht tbody td{padding:8px 14px}
+        /* Fusszeile (Summen). Ohne diese Regel verlor sie mit den Tailwind-
+           Abständen jeden Innenabstand — «TOTAL» klebte am Rand (gemessen). */
+        table.fw-table tfoot td,table.fw-table tfoot th{padding:12px 18px;border-top:1px solid var(--ds-line)}
+        table.fw-table.fw-dicht tfoot td,table.fw-table.fw-dicht tfoot th{padding:8px 14px}
+        table.fw-table tfoot .fw-right{text-align:right;white-space:nowrap}
         /* Mockup-Optik: Marken-Ton als Zeilen-Hover fuer alle Tabellen in Karten (global) */
         .fw-card tbody tr:hover{background:var(--ds-brand-soft)}
         .fw-strong{font-weight:600;color:var(--ds-ink)}.fw-sub2{color:var(--ds-faint);font-size:12px}

@@ -53,34 +53,34 @@
         <div class="fw-card overflow-hidden">
             <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% trans "Ergebnis je Liegenschaft" %}</div>
             <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
+<table class="fw-table min-w-max">
                 <thead>
-                    <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                        <th class="px-5 py-2.5 font-semibold">{% trans "Liegenschaft" %}</th>
-                        <th class="px-5 py-2.5 font-semibold text-right">{% trans "Ertrag" %}</th>
-                        <th class="px-5 py-2.5 font-semibold text-right">{% trans "Aufwand" %}</th>
-                        <th class="px-5 py-2.5 font-semibold text-right">{% trans "Ergebnis" %}</th>
+                    <tr>
+                        <th class="font-semibold">{% trans "Liegenschaft" %}</th>
+                        <th class="font-semibold text-right fw-right">{% trans "Ertrag" %}</th>
+                        <th class="font-semibold text-right fw-right">{% trans "Aufwand" %}</th>
+                        <th class="font-semibold text-right fw-right">{% trans "Ergebnis" %}</th>
                     </tr>
                 </thead>
                 <tbody class="fw-dv">
                 {% for z in kk.zeilen %}
                     <tr>
-                        <td class="px-5 py-2.5 fw-strong">{{ z.lg.strasse }}, {{ z.lg.ort }}</td>
-                        <td class="px-5 py-2.5 text-right fw-mutet">{{ z.ertrag|chf }}</td>
-                        <td class="px-5 py-2.5 text-right fw-mutet">{{ z.aufwand|chf }}</td>
+                        <td class="fw-strong">{{ z.lg.strasse }}, {{ z.lg.ort }}</td>
+                        <td class="text-right fw-mutet fw-right">{{ z.ertrag|chf }}</td>
+                        <td class="text-right fw-mutet fw-right">{{ z.aufwand|chf }}</td>
                         <td class="px-5 py-2.5 text-right font-semibold {% if z.ergebnis < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">{{ z.ergebnis|chf }}</td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="4" class="px-5 py-8 text-center fw-faint text-sm">{% trans "Keine verbuchten Bewegungen" %}{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
+                    <tr><td colspan="4" class="text-center fw-faint text-sm fw-zentriert fw-leerzeile">{% trans "Keine verbuchten Bewegungen" %}{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
                 {% endfor %}
                 </tbody>
                 {% if kk.zeilen %}
                 <tfoot>
                     <tr class="border-t-2 fw-linie font-semibold fw-strong">
-                        <td class="px-5 py-3">{% trans "Total" %}</td>
-                        <td class="px-5 py-3 text-right">{{ kk.ertrag|chf }}</td>
-                        <td class="px-5 py-3 text-right">{{ kk.aufwand|chf }}</td>
-                        <td class="px-5 py-3 text-right">{{ kk.ergebnis|chf }}</td>
+                        <td>{% trans "Total" %}</td>
+                        <td class="text-right fw-right">{{ kk.ertrag|chf }}</td>
+                        <td class="text-right fw-right">{{ kk.aufwand|chf }}</td>
+                        <td class="text-right fw-right">{{ kk.ergebnis|chf }}</td>
                     </tr>
                 </tfoot>
                 {% endif %}

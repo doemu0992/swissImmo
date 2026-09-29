@@ -78,36 +78,36 @@
             {% if g.belehnung is not None %}<span class="fw-fs-klein font-semibold fw-markenflaeche fw-marke rounded-md px-1.5 py-0.5" title="{% trans 'gegenüber Versicherungswert' %}">{% blocktrans with wert=g.belehnung %}Belehnung ~{{ wert }}%{% endblocktrans %}</span>{% endif %}
         </summary>
         <div class="overflow-x-auto border-t fw-linie">
-            <table class="w-full min-w-max text-sm">
+            <table class="fw-table min-w-max">
                 <thead>
-                <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
-                    <th class="px-5 py-2.5 font-semibold">{% trans "Bank / Tranche" %}</th>
-                    <th class="px-5 py-2.5 font-semibold">{% trans "Typ" %}</th>
-                    <th class="px-5 py-2.5 font-semibold text-right">{% trans "Betrag" %}</th>
-                    <th class="px-5 py-2.5 font-semibold text-right">{% trans "Zinssatz" %}</th>
-                    <th class="px-5 py-2.5 font-semibold text-right">{% trans "Zins / Jahr" %}</th>
-                    <th class="px-5 py-2.5 font-semibold">{% trans "Ablauf" %}</th>
-                    <th class="px-5 py-2.5"></th>
+                <tr>
+                    <th class="font-semibold">{% trans "Bank / Tranche" %}</th>
+                    <th class="font-semibold">{% trans "Typ" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Zinssatz" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Zins / Jahr" %}</th>
+                    <th class="font-semibold">{% trans "Ablauf" %}</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody class="fw-dv">
                 {% for r in g.rows %}
-                <tr class="hover:fw-flaeche2">
-                    <td class="px-5 py-3">
+                <tr>
+                    <td>
                         <div class="font-medium fw-strong">{{ r.hy.bank|default:"Hypothek" }}</div>
                         {% if r.hy.bezeichnung %}<div class="text-xs fw-faint">{{ r.hy.bezeichnung }}</div>{% endif %}
                     </td>
-                    <td class="px-5 py-3 fw-mutet">{{ r.hy.get_typ_display }}</td>
-                    <td class="px-5 py-3 text-right font-medium fw-strong whitespace-nowrap">{{ r.hy.betrag|chf }}</td>
-                    <td class="px-5 py-3 text-right fw-mutet whitespace-nowrap">{{ r.hy.zinssatz }}%</td>
-                    <td class="px-5 py-3 text-right fw-ink whitespace-nowrap">{{ r.zins|chf }}</td>
-                    <td class="px-5 py-3 whitespace-nowrap">
+                    <td class="fw-mutet">{{ r.hy.get_typ_display }}</td>
+                    <td class="text-right font-medium fw-strong whitespace-nowrap fw-right">{{ r.hy.betrag|chf }}</td>
+                    <td class="text-right fw-mutet whitespace-nowrap fw-right">{{ r.hy.zinssatz }}%</td>
+                    <td class="text-right fw-ink whitespace-nowrap fw-right">{{ r.zins|chf }}</td>
+                    <td class="whitespace-nowrap">
                         {% if r.hy.ablauf %}
                         <span class="{% if r.ablauf_status == 'abgelaufen' %}fw-kritisch font-semibold{% elif r.ablauf_status == 'bald' %}fw-warnton font-semibold{% else %}fw-mutet{% endif %}">{{ r.hy.ablauf|date:"d.m.Y" }}</span>
                         {% if r.ablauf_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton">{% trans "bald fällig" %}</span>{% elif r.ablauf_status == 'abgelaufen' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-krit-flaeche fw-kritisch">{% trans "abgelaufen" %}</span>{% endif %}
                         {% else %}<span class="fw-faint">—</span>{% endif %}
                     </td>
-                    <td class="px-5 py-3 text-right">
+                    <td class="text-right fw-right">
                         {% if kann_schreiben %}
                         <form method="post" action="/neu/hypotheken/" onsubmit="return confirm('{% filter escapejs %}{% trans "Hypothek löschen?" %}{% endfilter %}');">
                             {% csrf_token %}

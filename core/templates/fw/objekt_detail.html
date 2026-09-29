@@ -262,30 +262,30 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
     {% endif %}
     <div class="fw-card">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+        <div class="overflow-x-auto"><table class="fw-table min-w-max">
             <thead><tr class="fw-kopfzeile">
-                <th class="px-4 py-3 font-semibold">{% trans "Gültig ab" %}</th>
-                <th class="px-4 py-3 font-semibold text-right">{% trans "Netto" %}{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="fw-fs-mikro normal-case fw-faint">{% trans "Referenz" %}</span></th>
-                <th class="px-4 py-3 font-semibold text-right">{% trans "Rabatt" %}</th>
-                <th class="px-4 py-3 font-semibold text-right">{% trans "zu zahlen" %}</th>
-                <th class="px-4 py-3 font-semibold text-center">{% trans "Basis" %}</th>
-                <th class="px-4 py-3 font-semibold">{% trans "Bemerkung" %}</th>
-                <th class="px-4 py-3"></th>
+                <th class="font-semibold">{% trans "Gültig ab" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Netto" %}{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="fw-fs-mikro normal-case fw-faint">{% trans "Referenz" %}</span></th>
+                <th class="font-semibold text-right fw-right">{% trans "Rabatt" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "zu zahlen" %}</th>
+                <th class="font-semibold text-center fw-zentriert">{% trans "Basis" %}</th>
+                <th class="font-semibold">{% trans "Bemerkung" %}</th>
+                <th></th>
             </tr></thead>
             <tbody class="">
             {% for s in sollmietzinse %}
             <tr class="fw-hover">
-                <td class="px-4 py-3 font-medium fw-strong whitespace-nowrap">{{ s.gueltig_ab|date:"d.m.Y" }}
+                <td class="font-medium fw-strong whitespace-nowrap">{{ s.gueltig_ab|date:"d.m.Y" }}
                     {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full fw-fs-mikro font-semibold fw-gut-flaeche fw-gut">{% trans "aktuell" %}</span>{% endif %}</td>
-                <td class="px-4 py-3 text-right fw-ink whitespace-nowrap">{{ s.netto_mietzins|chf }}{% if not e.ist_einstellplatz %} / {{ s.nebenkosten|chf }}{% endif %}</td>
+                <td class="text-right fw-ink whitespace-nowrap fw-right">{{ s.netto_mietzins|chf }}{% if not e.ist_einstellplatz %} / {{ s.nebenkosten|chf }}{% endif %}</td>
                 <td class="px-4 py-3 text-right whitespace-nowrap {% if s.hat_rabatt %}fw-warnton font-semibold{% else %}fw-faint{% endif %}">
                     {% if s.hat_rabatt %}−{{ s.rabatt_gesamt|chf }}
                     {% if s.ist_voller_erlass %}<span class="ml-1 px-1.5 py-0.5 rounded-full fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton align-middle" title="{% trans 'Der Nettomietzins wurde für diese Periode vollständig erlassen (Gratismonat)' %}">{% trans "Gratismonat" %}</span>{% endif %}
                     {% else %}—{% endif %}</td>
                 <td class="px-4 py-3 text-right font-semibold whitespace-nowrap {% if s.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ s.verrechnet_brutto|chf }}{% if s.verrechnet_brutto == 0 %} <span class="fw-fs-mikro font-normal">{% trans "(frei)" %}</span>{% endif %}</td>
-                <td class="px-4 py-3 text-center fw-mutet whitespace-nowrap fw-fs-klein">{% localize off %}{% if s.basis_referenzzinssatz %}{{ s.basis_referenzzinssatz }}%{% else %}—{% endif %} / {% if s.basis_lik_punkte %}{{ s.basis_lik_punkte }}{% else %}—{% endif %}{% endlocalize %}</td>
-                <td class="px-4 py-3 fw-mutet truncate max-w-[120px]">{{ s.notiz|default:"—" }}</td>
-                <td class="px-4 py-3 text-right whitespace-nowrap">
+                <td class="text-center fw-mutet whitespace-nowrap fw-fs-klein fw-zentriert">{% localize off %}{% if s.basis_referenzzinssatz %}{{ s.basis_referenzzinssatz }}%{% else %}—{% endif %} / {% if s.basis_lik_punkte %}{{ s.basis_lik_punkte }}{% else %}—{% endif %}{% endlocalize %}</td>
+                <td class="fw-mutet truncate max-w-[120px]">{{ s.notiz|default:"—" }}</td>
+                <td class="text-right whitespace-nowrap fw-right">
                     <form method="post" action="/neu/sollmietzins/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Sollmietzins-Zeile löschen?" %}{% endfilter %}');">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
@@ -379,27 +379,27 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'mehr' klasse='fw-marke mr-1.5' %}{% trans "Staffelmiete-Vorlage (Objekt)" %}</h3>
         {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}<p class="fw-fs-klein fw-faint mb-3">Geplante, datierte Netto-Stufen für dieses Objekt. Ein <b>neuer Gewerbe-Vertrag</b> übernimmt sie automatisch als Staffelmiete (Art. 269c). Diese Vorlage wird selbst nicht verrechnet — die verrechnungswirksamen Stufen entstehen am konkreten Vertrag.</p>
         <div class="border fw-linie rounded-lg overflow-hidden mb-3">
-            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
-                    <th class="px-4 py-2 font-semibold">{% trans "Gültig ab" %}</th>
-                    <th class="px-4 py-2 font-semibold text-right">{% trans "Netto-Mietzins" %}</th>
-                    <th class="px-4 py-2 font-semibold">{% trans "Bemerkung" %}</th>
-                    <th class="px-4 py-2"></th>
+            <div class="overflow-x-auto"><table class="fw-table fw-dicht min-w-max">
+                <thead><tr>
+                    <th class="font-semibold">{% trans "Gültig ab" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Netto-Mietzins" %}</th>
+                    <th class="font-semibold">{% trans "Bemerkung" %}</th>
+                    <th></th>
                 </tr></thead>
                 <tbody class="">
                 {% for s in staffelvorlagen %}
                 <tr>
-                    <td class="px-4 py-2 font-medium fw-strong">{{ s.gueltig_ab|date:"d.m.Y" }}</td>
-                    <td class="px-4 py-2 text-right font-semibold fw-strong">CHF {{ s.netto_mietzins|chf }}</td>
-                    <td class="px-4 py-2 fw-mutet">{{ s.notiz|default:"—" }}</td>
-                    <td class="px-4 py-2 text-right">
+                    <td class="font-medium fw-strong">{{ s.gueltig_ab|date:"d.m.Y" }}</td>
+                    <td class="text-right font-semibold fw-strong fw-right">CHF {{ s.netto_mietzins|chf }}</td>
+                    <td class="fw-mutet">{{ s.notiz|default:"—" }}</td>
+                    <td class="text-right fw-right">
                         <form method="post" action="/neu/staffelvorlage/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Staffel-Vorlage-Zeile löschen?" %}{% endfilter %}');">{% csrf_token %}
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                         </form>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="px-4 py-4 text-center text-xs fw-faint italic">{% trans "Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins." %}</td></tr>
+                <tr><td colspan="4" class="text-center text-xs fw-faint italic fw-zentriert">{% trans "Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table></div>
@@ -427,30 +427,30 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </div>
         {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}<p class="fw-fs-klein fw-faint mb-3">Vorab vereinbarte Stufen des <b>aktiven Vertrags</b>. Ab dem Stichtag gilt der neue Netto-Mietzins automatisch im Mietenlauf (keine erneute Ankündigung). Zulässig bei fester Vertragsdauer ≥ 3 Jahren, max. 1 Erhöhung pro Jahr.</p>
         <div class="border fw-linie rounded-lg overflow-hidden mb-3">
-            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
-                    <th class="px-4 py-2 font-semibold">{% trans "Gültig ab" %}</th>
-                    <th class="px-4 py-2 font-semibold text-right">{% trans "Netto-Mietzins" %}</th>
-                    <th class="px-4 py-2"></th>
+            <div class="overflow-x-auto"><table class="fw-table fw-dicht min-w-max">
+                <thead><tr>
+                    <th class="font-semibold">{% trans "Gültig ab" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Netto-Mietzins" %}</th>
+                    <th></th>
                 </tr></thead>
                 <tbody class="">
                 <tr class="fw-mutet">
-                    <td class="px-4 py-2">{{ aktiver_vertrag.beginn|date:"d.m.Y" }} <span class="fw-fs-mikro fw-faint">{% trans "(Start)" %}</span></td>
-                    <td class="px-4 py-2 text-right">CHF {{ aktiver_vertrag.netto_mietzins|chf }}</td>
-                    <td class="px-4 py-2"></td>
+                    <td>{{ aktiver_vertrag.beginn|date:"d.m.Y" }} <span class="fw-fs-mikro fw-faint">{% trans "(Start)" %}</span></td>
+                    <td class="text-right fw-right">CHF {{ aktiver_vertrag.netto_mietzins|chf }}</td>
+                    <td></td>
                 </tr>
                 {% for s in staffelstufen %}
                 <tr>
-                    <td class="px-4 py-2 font-medium fw-strong">{{ s.ab_datum|date:"d.m.Y" }}</td>
-                    <td class="px-4 py-2 text-right font-semibold fw-strong">CHF {{ s.netto_mietzins|chf }}</td>
-                    <td class="px-4 py-2 text-right">
+                    <td class="font-medium fw-strong">{{ s.ab_datum|date:"d.m.Y" }}</td>
+                    <td class="text-right font-semibold fw-strong fw-right">CHF {{ s.netto_mietzins|chf }}</td>
+                    <td class="text-right fw-right">
                         <form method="post" action="/neu/staffel/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Staffelstufe löschen?" %}{% endfilter %}');">{% csrf_token %}
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                         </form>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="3" class="px-4 py-4 text-center text-xs fw-faint italic">{% trans "Noch keine Staffelstufen — Vertrag läuft mit festem Mietzins." %}</td></tr>
+                <tr><td colspan="3" class="text-center text-xs fw-faint italic fw-zentriert">{% trans "Noch keine Staffelstufen — Vertrag läuft mit festem Mietzins." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table></div>
@@ -627,20 +627,20 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <span class="fw-klein">· {% blocktrans count n=r.elemente|length %}{{ n }} Element{% plural %}{{ n }} Elemente{% endblocktrans %}</span>
             </summary>
             <div class="border-t fw-linie overflow-x-auto">
-            <table class="w-full min-w-max text-sm">
+            <table class="fw-table min-w-max">
                 <thead><tr class="fw-kopfzeile">
-                    <th class="px-5 py-2.5 font-semibold">{% trans "Kategorie" %}</th>
-                    <th class="px-5 py-2.5 font-semibold">{% trans "Marke / Modell" %}</th>
-                    <th class="px-5 py-2.5 font-semibold">{% trans "Einbau" %}</th>
-                    <th class="px-5 py-2.5 font-semibold text-right">{% trans "Neuwert" %}</th>
-                    <th class="px-5 py-2.5 font-semibold text-right">{% trans "Zeitwert" %}</th>
-                    <th class="px-5 py-2.5 font-semibold">{% trans "Zustand" %}</th>
-                    <th class="px-5 py-2.5"></th>
+                    <th class="font-semibold">{% trans "Kategorie" %}</th>
+                    <th class="font-semibold">{% trans "Marke / Modell" %}</th>
+                    <th class="font-semibold">{% trans "Einbau" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Neuwert" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Zeitwert" %}</th>
+                    <th class="font-semibold">{% trans "Zustand" %}</th>
+                    <th></th>
                 </tr></thead>
                 <tbody class="">
                 {% for row in r.elemente %}
                 <tr class="fw-hover">
-                    <td class="px-5 py-2.5">
+                    <td>
                         <div class="font-medium fw-strong">{{ row.a.kategorie }}
                             {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-krit-flaeche fw-kritisch">{% trans "Ersatz fällig" %}</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton">{% trans "bald fällig" %}</span>{% endif %}</div>
                         {% if row.a.bezeichnung %}<div class="fw-klein">{{ row.a.bezeichnung }}</div>{% endif %}
@@ -649,12 +649,12 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                             {% if row.schaden_anzahl %}<span class="fw-fs-klein fw-mutet">{% zeichen 'arbeit' klasse='mr-0.5 fw-faint' %}{% blocktrans count n=row.schaden_anzahl %}{{ n }} Reparatur{% plural %}{{ n }} Reparaturen{% endblocktrans %} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
                         </div>
                     </td>
-                    <td class="px-5 py-2.5 fw-mutet">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-2.5 fw-mutet whitespace-nowrap">{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="fw-klein">· {{ row.lebensdauer }}J</span>{% endif %}</td>
-                    <td class="px-5 py-2.5 text-right fw-ink whitespace-nowrap">{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
+                    <td class="fw-mutet">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
+                    <td class="fw-mutet whitespace-nowrap">{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="fw-klein">· {{ row.lebensdauer }}J</span>{% endif %}</td>
+                    <td class="text-right fw-ink whitespace-nowrap fw-right">{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
                     <td class="px-5 py-2.5 text-right whitespace-nowrap {% if row.zeitwert %}fw-strong font-semibold{% else %}fw-faint{% endif %}">{% if row.zeitwert %}{{ row.zeitwert|chf }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}fw-krit-flaeche fw-kritisch{% elif row.a.zustand == 'gebraucht' %}fw-warn-flaeche fw-warnton{% else %}fw-gut-flaeche fw-gut{% endif %}">{{ row.a.get_zustand_display }}</span></td>
-                    <td class="px-5 py-2.5 text-right whitespace-nowrap">
+                    <td><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}fw-krit-flaeche fw-kritisch{% elif row.a.zustand == 'gebraucht' %}fw-warn-flaeche fw-warnton{% else %}fw-gut-flaeche fw-gut{% endif %}">{{ row.a.get_zustand_display }}</span></td>
+                    <td class="text-right whitespace-nowrap fw-right">
                         <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
                         <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Element löschen?" %}{% endfilter %}');">
                             {% csrf_token %}
@@ -664,7 +664,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </tr>
                 <!-- Inline-Bearbeitung -->
                 <tr id="edit-{{ row.a.id }}" class="hidden fw-markiert">
-                    <td colspan="7" class="px-5 py-4">
+                    <td colspan="7">
                         <form method="post" action="/neu/ausstattung/{{ row.a.id }}/bearbeiten/" enctype="multipart/form-data" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             {% csrf_token %}
                             <div><label class="fw-klein block mb-1">{% trans "Raum" %}</label>
@@ -717,26 +717,26 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div class="fw-subhead">{% trans "Geräte" %}</div>
     <datalist id="geraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}"></option>{% endfor %}</datalist>
     <div class="fw-card">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+        <div class="overflow-x-auto"><table class="fw-table min-w-max">
             <thead><tr class="fw-kopfzeile">
-                <th class="px-5 py-3 font-semibold">{% trans "Gerät" %}</th><th class="px-5 py-3 font-semibold">{% trans "Marke / Modell" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Installation" %}</th><th class="px-5 py-3 font-semibold">{% trans "Garantie bis" %}</th><th class="px-5 py-3"></th>
+                <th class="font-semibold">{% trans "Gerät" %}</th><th class="font-semibold">{% trans "Marke / Modell" %}</th>
+                <th class="font-semibold">{% trans "Installation" %}</th><th class="font-semibold">{% trans "Garantie bis" %}</th><th></th>
             </tr></thead>
             <tbody class="">
             {% for g in geraete %}
-            <tr class="fw-hover"><td class="fw-t px-5 py-3">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="text-xs fw-faint font-normal">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
+            <tr class="fw-hover"><td class="fw-t">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="text-xs fw-faint font-normal">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
                     {% if g.kapazitaet or g.seriennummer or g.standort %}<div class="text-xs fw-faint font-normal">{% if g.kapazitaet %}{{ g.kapazitaet }}{% endif %}{% if g.seriennummer %}{% if g.kapazitaet %} · {% endif %}{% trans "SN:" %} {{ g.seriennummer }}{% endif %}{% if g.standort %} · {{ g.standort }}{% endif %}</div>{% endif %}</td>
-                <td class="fw-s px-5 py-3">{% if g.marke or g.modell %}{{ g.marke }} {{ g.modell }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">
+                <td class="fw-s">{% if g.marke or g.modell %}{{ g.marke }} {{ g.modell }}{% else %}—{% endif %}</td>
+                <td class="fw-mutet whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
+                <td class="fw-mutet whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="text-right whitespace-nowrap fw-right">
                     <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
                     <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Gerät löschen?" %}{% endfilter %}');">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                 </td></tr>
             <tr id="gedit-{{ g.id }}" class="hidden fw-markiert">
-                <td colspan="5" class="px-5 py-4">
+                <td colspan="5">
                     <form method="post" action="/neu/geraet/{{ g.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {% csrf_token %}
                         <div><label class="fw-klein block mb-1">{% trans "Kategorie" %}</label>
@@ -800,25 +800,25 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div class="fw-subhead">{% trans "Zähler" %}</div>
     <datalist id="zaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}"></option>{% endfor %}</datalist>
     <div class="fw-card">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+        <div class="overflow-x-auto"><table class="fw-table min-w-max">
             <thead><tr class="fw-kopfzeile">
-                <th class="px-5 py-3 font-semibold">{% trans "Typ" %}</th><th class="px-5 py-3 font-semibold">{% trans "Zähler-Nr." %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Standort" %}</th><th class="px-5 py-3 font-semibold text-right">{% trans "Stand" %}</th><th class="px-5 py-3"></th>
+                <th class="font-semibold">{% trans "Typ" %}</th><th class="font-semibold">{% trans "Zähler-Nr." %}</th>
+                <th class="font-semibold">{% trans "Standort" %}</th><th class="font-semibold text-right fw-right">{% trans "Stand" %}</th><th></th>
             </tr></thead>
             <tbody class="">
             {% for z in zaehler %}
-            <tr class="fw-hover"><td class="fw-t px-5 py-3">{{ z.typ }}</td>
-                <td class="fw-s px-5 py-3">{{ z.zaehler_nummer }}</td>
-                <td class="fw-s px-5 py-3">{{ z.standort|default:"—" }}</td>
-                <td class="px-5 py-3 text-right fw-ink">{{ z.aktueller_stand|floatformat:2 }}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">
+            <tr class="fw-hover"><td class="fw-t">{{ z.typ }}</td>
+                <td class="fw-s">{{ z.zaehler_nummer }}</td>
+                <td class="fw-s">{{ z.standort|default:"—" }}</td>
+                <td class="text-right fw-ink fw-right">{{ z.aktueller_stand|floatformat:2 }}</td>
+                <td class="text-right whitespace-nowrap fw-right">
                     <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
                     <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Zähler löschen?" %}{% endfilter %}');">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                 </td></tr>
             <tr id="zedit-{{ z.id }}" class="hidden fw-markiert">
-                <td colspan="5" class="px-5 py-4">
+                <td colspan="5">
                     <form method="post" action="/neu/zaehler/{{ z.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {% csrf_token %}
                         <div><label class="fw-klein block mb-1">{% trans "Typ" %}</label>
@@ -861,22 +861,22 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
 <div class="fw-subhead">{% trans "Schlüssel" %}</div>
     <div class="fw-card">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+        <div class="overflow-x-auto"><table class="fw-table min-w-max">
             <thead><tr class="fw-kopfzeile">
-                <th class="px-5 py-3 font-semibold">{% trans "Typ" %}</th><th class="px-5 py-3 font-semibold">{% trans "Schlüssel-Nr." %}</th>
-                <th class="px-5 py-3 font-semibold text-center">{% trans "Bestand" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Ausgegeben an" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Ausgabe" %}</th><th class="px-5 py-3"></th>
+                <th class="font-semibold">{% trans "Typ" %}</th><th class="font-semibold">{% trans "Schlüssel-Nr." %}</th>
+                <th class="font-semibold text-center fw-zentriert">{% trans "Bestand" %}</th>
+                <th class="font-semibold">{% trans "Ausgegeben an" %}</th>
+                <th class="font-semibold">{% trans "Ausgabe" %}</th><th></th>
             </tr></thead>
             <tbody class="">
             {% for row in schluessel_rows %}
             <tr class="fw-hover">
-                <td class="fw-t px-5 py-3">{{ row.s.typ }}</td>
-                <td class="fw-s px-5 py-3">{{ row.s.schluessel_nummer }}</td>
-                <td class="px-5 py-3 text-center">
+                <td class="fw-t">{{ row.s.typ }}</td>
+                <td class="fw-s">{{ row.s.schluessel_nummer }}</td>
+                <td class="text-center fw-zentriert">
                     <span class="px-2 py-0.5 rounded-md text-xs font-semibold {% if row.verfuegbar %}fw-gut-flaeche fw-gut{% else %}fw-warn-flaeche fw-warnton{% endif %}">{% blocktrans with v=row.verfuegbar n=row.s.anzahl %}{{ v }}/{{ n }} verfügbar{% endblocktrans %}</span>
                 </td>
-                <td class="fw-s px-5 py-3">
+                <td class="fw-s">
                     {% for a in row.offene %}
                     <div class="flex items-center gap-2 whitespace-nowrap text-xs {% if not forloop.first %}mt-1{% endif %}">
                         <span>{% if a.mieter %}{{ a.mieter.display_name }}{% elif a.handwerker %}{{ a.handwerker.firma }} <span class="fw-mutet">{% trans "(Handwerker)" %}</span>{% endif %}
@@ -887,7 +887,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     </div>
                     {% empty %}<span class="fw-faint">—</span>{% endfor %}
                 </td>
-                <td class="px-5 py-3 whitespace-nowrap">
+                <td class="whitespace-nowrap">
                     {% if row.verfuegbar %}
                     <form method="post" action="/neu/schluessel/{{ row.s.id }}/ausgabe/" class="flex items-center gap-1.5">{% csrf_token %}
                         <select name="empfaenger" required class="fw-feld max-w-[160px]">
@@ -903,7 +903,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     </form>
                     {% else %}<span class="fw-klein">{% trans "Alle ausgegeben" %}</span>{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right">
+                <td class="text-right fw-right">
                     <form method="post" action="/neu/schluessel/{{ row.s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Schlüssel aus dem Register entfernen?" %}{% endfilter %}');">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
