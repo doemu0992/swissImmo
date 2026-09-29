@@ -18,7 +18,7 @@ class DatenqualitaetTests(TestCase):
         u = _team_user()
         c = Client(); c.force_login(u)
         r = c.post('/neu/personen/neu/', {'typ': 'person', 'vorname': 'Nur Vorname'})
-        self.assertContains(r, 'erforderlich')
+        self.assertContains(r, 'Der Nachname fehlt.', status_code=400)
         self.assertFalse(Mieter.objects.filter(vorname='Nur Vorname').exists())
 
     def test_dublette_und_override(self):
@@ -100,15 +100,17 @@ class PersonFirmaVereinTests(TestCase):
     def test_verein_ohne_firmenname_fehler(self):
         c = Client(); c.force_login(_team_user())
         r = c.post('/neu/personen/neu/', {'typ': 'verein', 'firmen_name': '', 'nachname': '', 'dublette_ok': '1'})
-        self.assertEqual(r.status_code, 200)  # Fehler, kein Redirect
-        self.assertContains(r, 'Organisationsname ist erforderlich')
+        self.assertEqual(r.status_code, 400)  # Fehler, kein Redirect
+        self.assertContains(r, 'Der Firmen- oder Organisationsname fehlt.', status_code=400)
+        self.assertContains(r, 'id="p-firmen_name_fehler"', status_code=400)
         self.assertFalse(Mieter.objects.filter(typ='verein').exists())
 
     def test_privatperson_braucht_nachname(self):
         c = Client(); c.force_login(_team_user())
         r = c.post('/neu/personen/neu/', {'typ': 'person', 'vorname': 'Hans', 'nachname': '', 'dublette_ok': '1'})
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Nachname ist erforderlich')
+        self.assertEqual(r.status_code, 400)
+        self.assertContains(r, 'Der Nachname fehlt.', status_code=400)
+        self.assertContains(r, 'id="p-nachname_fehler"', status_code=400)
 
     def test_wizard_neuer_mieter_firma(self):
         from portfolio.models import Einheit

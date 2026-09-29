@@ -662,6 +662,10 @@ def fw_person_form(request, pk=None):
 
     if request.method == 'POST':
         P = request.POST
+        from crm.forms import PersonForm
+        form = PersonForm(P)
+        gueltig = form.is_valid()
+        cd = form.cleaned_data
         # Alt-Zustand für Vorher→Nachher (nur beim Bearbeiten, frisch aus der DB).
         alt_snap = snapshot_model(Mieter.objects.get(pk=m.pk)) if m is not None else {}
         obj = m or Mieter()
@@ -680,11 +684,10 @@ def fw_person_form(request, pk=None):
         obj.plz = P.get('plz', '').strip()
         obj.ort = P.get('ort', '').strip()
         obj.land = P.get('land', '').strip() or 'Schweiz'
-        gd = P.get('geburtsdatum', '').strip()
-        try:
-            obj.geburtsdatum = date.fromisoformat(gd) if gd else None
-        except ValueError:
-            obj.geburtsdatum = None
+        # Datum, Zahl und IBAN kommen aus dem geprüften Formular. Ist es
+        # ungültig, wird unten nicht gespeichert — ein unlesbares Datum wird
+        # also nie mehr still zu «leer».
+        obj.geburtsdatum = cd.get('geburtsdatum')
         # --- Identität / Vermietungsprüfung ---
         obj.zivilstand = P.get('zivilstand', '').strip()
         obj.nationalitaet = P.get('nationalitaet', '').strip()
@@ -695,21 +698,13 @@ def fw_person_form(request, pk=None):
         obj.telefon_geschaeft = P.get('telefon_geschaeft', '').strip()
         # --- Aufenthalt ---
         obj.aufenthaltsbewilligung = P.get('aufenthaltsbewilligung', '').strip()
-        bgb = P.get('bewilligung_gueltig_bis', '').strip()
-        try:
-            obj.bewilligung_gueltig_bis = date.fromisoformat(bgb) if bgb else None
-        except ValueError:
-            obj.bewilligung_gueltig_bis = None
+        obj.bewilligung_gueltig_bis = cd.get('bewilligung_gueltig_bis')
         # --- Beruf & Bonität ---
         obj.erwerbsstatus = P.get('erwerbsstatus', '').strip()
         obj.beruf = P.get('beruf', '').strip()
         obj.arbeitgeber = P.get('arbeitgeber', '').strip()
         obj.einkommen_jahr = P.get('einkommen_jahr', '').strip()
-        bd = P.get('bonitaet_datum', '').strip()
-        try:
-            obj.bonitaet_datum = date.fromisoformat(bd) if bd else None
-        except ValueError:
-            obj.bonitaet_datum = None
+        obj.bonitaet_datum = cd.get('bonitaet_datum')
         # --- Versicherung & Notfall ---
         obj.haftpflicht_gesellschaft = P.get('haftpflicht_gesellschaft', '').strip()
         obj.haftpflicht_police = P.get('haftpflicht_police', '').strip()
@@ -717,18 +712,13 @@ def fw_person_form(request, pk=None):
         obj.notfall_telefon = P.get('notfall_telefon', '').strip()
         obj.notfall_beziehung = P.get('notfall_beziehung', '').strip()
         # --- Haushalt ---
-        def _pint(key):
-            try:
-                return max(0, int(P.get(key, '') or 0))
-            except ValueError:
-                return 0
-        obj.haushalt_erwachsene = _pint('haushalt_erwachsene')
-        obj.haushalt_kinder = _pint('haushalt_kinder')
+        obj.haushalt_erwachsene = cd.get('haushalt_erwachsene') or 0
+        obj.haushalt_kinder = cd.get('haushalt_kinder') or 0
         obj.haustiere = P.get('haustiere') == 'on'
         obj.haustiere_details = P.get('haustiere_details', '').strip()
         # --- Finanzen ---
         obj.bank_name = P.get('bank_name', '').strip()
-        obj.iban = P.get('iban', '').strip()
+        obj.iban = cd.get('iban', P.get('iban', '').strip())
         obj.betreibung_ergebnis = P.get('betreibung_ergebnis', '').strip()
         # --- Zahlungsverkehr ---
         obj.zahlungsart = P.get('zahlungsart', '').strip()
@@ -736,7 +726,7 @@ def fw_person_form(request, pk=None):
         obj.mahnsperre = P.get('mahnsperre') == 'on'
         obj.zahler_name = P.get('zahler_name', '').strip()
         obj.zahler_adresse = P.get('zahler_adresse', '').strip()
-        obj.zahler_iban = P.get('zahler_iban', '').strip()
+        obj.zahler_iban = cd.get('zahler_iban', P.get('zahler_iban', '').strip())
         # --- Vorvermieter-Referenz ---
         obj.ref_vermieter_name = P.get('ref_vermieter_name', '').strip()
         obj.ref_vermieter_telefon = P.get('ref_vermieter_telefon', '').strip()
@@ -747,27 +737,7 @@ def fw_person_form(request, pk=None):
         obj.vertretung_kontakt = P.get('vertretung_kontakt', '').strip()
         obj.notizen = P.get('notizen', '').strip()
 
-        # --- Pflichtfeld-Validierung ---
-        # Nachname nur bei Privatpersonen Pflicht; Firma UND Verein/Stiftung
-        # brauchen stattdessen den Firmen-/Organisationsnamen.
-        fehler = []
-        if obj.typ in ('firma', 'verein'):
-            if not obj.firmen_name:
-                fehler.append("Firmen-/Organisationsname ist erforderlich.")
-        else:
-            if not obj.nachname:
-                fehler.append("Nachname ist erforderlich.")
-        if obj.email and '@' not in obj.email:
-            fehler.append("E-Mail-Adresse ist ungültig.")
-        if obj.iban:
-            from core.services.iban import ist_gueltige_iban, formatiere_iban
-            if not ist_gueltige_iban(obj.iban):
-                fehler.append("IBAN ist ungültig (Prüfsumme stimmt nicht).")
-            else:
-                obj.iban = formatiere_iban(obj.iban)
-        if fehler:
-            for f in fehler:
-                messages.error(request, f"❌ {f}")
+        if not gueltig:
             # Die eingegebene Korrespondenzadresse zurückgeben, sonst rendert das
             # Formular die k_*-Felder leer (sie kommen sonst aus `korr_adr`) — und
             # beim nächsten Speichern löscht der leere-Felder-Zweig unten die
@@ -779,8 +749,8 @@ def fw_person_form(request, pk=None):
                 plz=P.get('k_plz', ''), ort=P.get('k_ort', ''))
             return render(request, 'fw/person_form.html', {
                 **basis, 'nav': 'personen', 'm': obj, 'ist_neu': pk is None,
-                'korr_adr': korr_eingabe,
-            })
+                'korr_adr': korr_eingabe, **_person_formular(form),
+            }, status=400)
 
         # --- Dublettenprüfung (nur neue Person, überspringbar) ---
         if not pk and P.get('dublette_ok') != '1':
@@ -790,6 +760,7 @@ def fw_person_form(request, pk=None):
                 return render(request, 'fw/person_form.html', {
                     **basis, 'nav': 'personen', 'm': obj, 'ist_neu': True,
                     'dubletten': dubletten, 'dublette_warnung': True,
+                    **_person_formular(form),
                 })
 
         obj.save()
@@ -836,7 +807,30 @@ def fw_person_form(request, pk=None):
         **basis, 'nav': 'personen', 'm': m,
         'ist_neu': m is None,
         'korr_adr': m.aktuelle_korrespondenzadresse() if m else None,
+        **_person_formular(None, m),
     })
+
+
+#: Felder, deren Wert die Vorlage aus `wert` liest statt aus der Person:
+#: Nach einem Fehler steht dort die Eingabe — ein unlesbares Datum hätte an
+#: der Person gar keinen Platz (es wäre `None`, das Feld also leer).
+ROHWERT_FELDER = ('geburtsdatum', 'bewilligung_gueltig_bis', 'bonitaet_datum',
+                  'haushalt_erwachsene', 'haushalt_kinder')
+
+
+def _person_formular(form, m=None):
+    """Feldfehler, Eingaben und Fehlerzahl für `fw/person_form.html`."""
+    if form is None:
+        wert = {}
+        for name in ROHWERT_FELDER:
+            v = getattr(m, name, None) if m else None
+            wert[name] = v.isoformat() if isinstance(v, date) else ('' if v is None else v)
+        return {'wert': wert, 'feld_fehler': {}, 'anzahl_fehler': 0}
+    return {
+        'wert': {name: form.data.get(name, '') for name in ROHWERT_FELDER},
+        'feld_fehler': {name: fehler[0] for name, fehler in form.errors.items()},
+        'anzahl_fehler': len(form.errors),
+    }
 
 
 def _finde_dubletten(typ, vorname, nachname, firmen_name, email, plz, exclude_id=None):

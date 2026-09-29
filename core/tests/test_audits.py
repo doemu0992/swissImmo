@@ -400,7 +400,7 @@ class Paket3ZahlungBonitaetTests(TestCase):
         r = c.post('/neu/personen/neu/', {
             'typ': 'person', 'vorname': 'Zora', 'nachname': 'Zahler',
             'zahlungsart': 'lsv', 'ebill_email': 'zora@ebill.ch', 'mahnsperre': 'on',
-            'zahler_name': 'Sozialamt Bern', 'zahler_iban': 'CH..',
+            'zahler_name': 'Sozialamt Bern', 'zahler_iban': 'CH9300762011623852957',
             'betreibung_ergebnis': 'keine',
             'ref_vermieter_name': 'Alt AG', 'ref_vermieter_telefon': '0310001122',
             'vertretung_art': 'beistand', 'vertretung_name': 'KESB Bern'})
@@ -409,6 +409,8 @@ class Paket3ZahlungBonitaetTests(TestCase):
         self.assertEqual(m.zahlungsart, 'lsv')
         self.assertTrue(m.mahnsperre)
         self.assertEqual(m.zahler_name, 'Sozialamt Bern')
+        # Bis Audit Etappe 2 stand hier 'CH..' — und wurde ungeprüft gespeichert.
+        self.assertEqual(m.zahler_iban, 'CH93 0076 2011 6238 5295 7')
         self.assertEqual(m.betreibung_ergebnis, 'keine')
         self.assertEqual(m.ref_vermieter_name, 'Alt AG')
         self.assertEqual(m.vertretung_art, 'beistand')
@@ -1055,7 +1057,7 @@ class StilleDatenverlusteTests(TestCase):
         # Jetzt mit ungültiger IBAN — Fehler. Das gerenderte Formular muss die
         # k_*-Felder zurückgeben, sonst kommen sie beim nächsten Speichern leer.
         r = c.post(f'/neu/personen/{m.id}/bearbeiten/', {**basis, 'iban': 'CH00 0000'})
-        self.assertContains(r, 'Postfach 4711',
+        self.assertContains(r, 'Postfach 4711', status_code=400,
                             msg_prefix='Fehlerseite gibt die Korrespondenzadresse nicht zurück')
         # Zweiter Speichern mit korrekter IBAN + zurückgegebenen k_*-Feldern
         c.post(f'/neu/personen/{m.id}/bearbeiten/',

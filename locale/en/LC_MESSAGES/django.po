@@ -19984,3 +19984,59 @@ msgstr "Tradesperson email"
 #: tickets/models.py:133
 msgid "Ausgehende E-Mail"
 msgstr "Outgoing email"
+
+#: crm/forms.py
+msgid "Dieses Geburtsdatum ist nicht möglich."
+msgstr "This date of birth is not possible."
+
+#: crm/forms.py
+msgid "Eine Bonitätsprüfung kann nicht in der Zukunft liegen."
+msgstr "A credit check cannot be in the future."
+
+#: crm/forms.py
+msgid "Diese IBAN ist ungültig — bitte Länge und Prüfziffer kontrollieren."
+msgstr "This IBAN is invalid — please check its length and check digits."
+
+#: crm/forms.py
+msgid "Der Firmen- oder Organisationsname fehlt."
+msgstr "The company or organisation name is missing."
+
+#: crm/forms.py
+msgid "Der Nachname fehlt."
+msgstr "The last name is missing."
+
+#: crm/forms.py
+msgid "Eine Schweizer Postleitzahl hat vier Ziffern."
+msgstr "A Swiss postcode has four digits."
+
+#: portfolio/forms.py
+msgid "Bitte eine vierstellige Postleitzahl angeben."
+msgstr "Please enter a four-digit postcode."
+
+#: portfolio/forms.py
+msgid "Unbekanntes Kantonskürzel (z. B. ZH, BE, SO)."
+msgstr "Unknown canton code (e.g. ZH, BE, SO)."
+
+#: portfolio/forms.py
+msgid "Bitte ein Baujahr als vierstellige Jahreszahl angeben."
+msgstr "Please enter the year of construction as a four-digit year."
+
+#: portfolio/forms.py
+msgid "Der Anteil muss zwischen 0 und 100 % liegen."
+msgstr "The share must be between 0 and 100 %."
+
+#: portfolio/forms.py
+msgid "Bitte eine Anzahl Monate ab 0 angeben."
+msgstr "Please enter a number of months from 0."
+
+#: portfolio/forms.py
+msgid "Bitte eine vierstellige Jahreszahl angeben."
+msgstr "Please enter a four-digit year."
+
+#: finance/forms.py
+msgid "Der MWST-Satz hat höchstens eine Nachkommastelle (z. B. 8.1)."
+msgstr "The VAT rate has at most one decimal place (e.g. 8.1)."
+
+#: finance/forms.py
+msgid "«Leistung bis» liegt vor «Leistung von»."
+msgstr "«Service to» is before «Service from»."

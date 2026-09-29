@@ -246,6 +246,17 @@ Beim Bau gemessen: `type="number"` verwirft Fehleingaben im Browser, deshalb
 `inputmode`; `core/forms.py` baut beim Import eine mandantenabhängige Queryset
 (`SchadenForm`) und wird deshalb nicht importiert.*
 
+*Nachtrag Person (`crm/forms.py`): Ein unlesbares Geburtsdatum,
+Bewilligungsende oder Bonitätsdatum wurde still leer gespeichert — eine
+ablaufende Aufenthaltsbewilligung fiel so aus jeder Frist heraus. Eine
+unlesbare Personenzahl wurde still 0, die IBAN des abweichenden Zahlers blieb
+ungeprüft (ein bestehender Test speicherte `CH..`), ein zu langer Text wäre
+auf PostgreSQL ein Serverfehler gewesen. Jetzt: Status 400, Hinweis am Feld,
+Zusammenfassung oben, Eingaben bleiben stehen. Schweizer PLZ vierstellig,
+ausländische frei. Dabei gefunden: Die Feldmeldungen der Etappe-2-Formulare
+waren nie übersetzt, weil der Übersetzungswächter `_t('…')` nicht erkannte;
+beides nachgeholt. Offen: Mietverhältnis.*
+
 ### Etappe 3 — Komponentenschicht & Typo-Skala («der 10k-Look»)
 
 Rund 2–3 Wochen, seitenweise.
