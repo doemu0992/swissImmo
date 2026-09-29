@@ -18,6 +18,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.conf import settings
+from django.utils.translation import gettext
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
@@ -62,7 +63,7 @@ def fw_kreditor_neu(request):
     lieferant = (request.POST.get('lieferant') or '').strip()
     betrag = _dec('betrag')
     if not lieferant or not betrag or betrag <= 0:
-        messages.error(request, "Lieferant und Betrag (> 0) sind erforderlich.")
+        messages.error(request, gettext('Lieferant und Betrag (> 0) sind erforderlich.'))
         return redirect('fw_kreditoren')
 
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
@@ -104,7 +105,7 @@ def fw_kreditor_neu(request):
         kr.beleg_scan = request.FILES['beleg_scan']
         kr.save()
     log_aktion(request, "Kreditorenrechnung erfasst", lieferant, f"CHF {betrag}")
-    messages.success(request, f"✅ Kreditorenrechnung '{lieferant}' über CHF {betrag} erfasst (Status: Neu — bitte freigeben).")
+    messages.success(request, '✅ ' + gettext("Kreditorenrechnung '%(lieferant)s' über CHF %(betrag)s erfasst (Status: Neu — bitte freigeben).") % {'lieferant': lieferant, 'betrag': betrag})
     ziel = '/neu/kreditoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -127,7 +128,7 @@ def fw_kreditor_scan(request):
 
     dateien = request.FILES.getlist('beleg_scan')[:20]
     if not dateien:
-        messages.error(request, "Bitte mindestens einen Beleg (PDF oder Foto) auswählen.")
+        messages.error(request, gettext('Bitte mindestens einen Beleg (PDF oder Foto) auswählen.'))
         return redirect('fw_kreditoren')
 
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
@@ -152,11 +153,11 @@ def _kreditor_scan_meldung(request, kr, daten, dateiname):
                        f"{f' · {kr.datum.strftime(chr(37)+chr(100)+chr(46)+chr(37)+chr(109)+chr(46)+chr(37)+chr(89))}' if kr.datum else ''}")
     konto_hint = f" · Konto {daten['konto_auto']} automatisch zugeteilt" if daten.get('konto_auto') else ''
     if methode in ('ki', 'vision', 'qr'):
-        messages.success(request, f"🤖 Beleg gescannt ({daten.get('hinweis')}): {zusammenfassung}{konto_hint} — bitte prüfen und freigeben.")
+        messages.success(request, '🤖 ' + gettext('Beleg gescannt (%(get)s): %(zusammenfassung)s%(konto_hint)s — bitte prüfen und freigeben.') % {'get': daten.get('hinweis'), 'zusammenfassung': zusammenfassung, 'konto_hint': konto_hint})
     elif methode == 'regex':
-        messages.warning(request, f"Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): {zusammenfassung} — bitte Werte prüfen.")
+        messages.warning(request, gettext('Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): %(zusammenfassung)s — bitte Werte prüfen.') % {'zusammenfassung': zusammenfassung})
     else:
-        messages.warning(request, f"Beleg «{dateiname}» gespeichert, aber nicht auslesbar: {daten.get('hinweis')} Werte bitte manuell ergänzen.")
+        messages.warning(request, gettext('Beleg «%(dateiname)s» gespeichert, aber nicht auslesbar: %(get)s Werte bitte manuell ergänzen.') % {'dateiname': dateiname, 'get': daten.get('hinweis')})
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -171,7 +172,7 @@ def fw_kreditor_bearbeiten(request, pk):
     if request.method != 'POST':
         return redirect('fw_kreditoren')
     if k.status != 'neu':
-        messages.error(request, "Nur unverbuchte Rechnungen (Status Neu) können bearbeitet werden.")
+        messages.error(request, gettext('Nur unverbuchte Rechnungen (Status Neu) können bearbeitet werden.'))
         return redirect('fw_kreditoren')
 
     def _dec(name):
@@ -206,7 +207,7 @@ def fw_kreditor_bearbeiten(request, pk):
     k.fehlermeldung = ''
     k.save()
     log_aktion(request, "Kreditorenrechnung bearbeitet", k.lieferant, f"CHF {k.betrag or 0}")
-    messages.success(request, f"✅ Rechnung «{k.lieferant}» aktualisiert.")
+    messages.success(request, '✅ ' + gettext('Rechnung «%(lieferant)s» aktualisiert.') % {'lieferant': k.lieferant})
     ziel = '/neu/kreditoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -225,7 +226,7 @@ def fw_kreditor_freigeben(request, pk):
         return redirect('fw_kreditoren')
     k = get_object_or_404(KreditorenRechnung, id=pk)
     if k.status != 'neu':
-        messages.info(request, "Rechnung ist bereits freigegeben oder bezahlt.")
+        messages.info(request, gettext('Rechnung ist bereits freigegeben oder bezahlt.'))
         return redirect('fw_kreditoren')
 
     # Aufwandskonto zuweisen (aus Formular oder bestehendes). Mit Kostenaufteilung
@@ -236,11 +237,10 @@ def fw_kreditor_freigeben(request, pk):
     if positionen:
         # Aufteilung muss aufgehen (Summe der Positionen == Rechnungsbetrag).
         if abs(k.positionen_differenz) > Decimal('0.01'):
-            messages.error(request, f"Die Kostenaufteilung stimmt nicht: Summe der Positionen "
-                                    f"weicht um CHF {k.positionen_differenz} vom Rechnungsbetrag ab.")
+            messages.error(request, gettext('Die Kostenaufteilung stimmt nicht: Summe der Positionen weicht um CHF %(positionen_differenz)s vom Rechnungsbetrag ab.') % {'positionen_differenz': k.positionen_differenz})
             return redirect('fw_kreditoren')
     elif not k.konto:
-        messages.error(request, "Bitte zuerst ein Aufwandskonto zuweisen (oder die Rechnung aufteilen).")
+        messages.error(request, gettext('Bitte zuerst ein Aufwandskonto zuweisen (oder die Rechnung aufteilen).'))
         return redirect('fw_kreditoren')
 
     with transaction.atomic():
@@ -248,7 +248,7 @@ def fw_kreditor_freigeben(request, pk):
         # ohne Lock — zwei parallele Requests würden sonst doppelten Aufwand buchen.
         gesperrt = KreditorenRechnung.objects.select_for_update().filter(id=k.id).first()
         if not gesperrt or gesperrt.status != 'neu':
-            messages.info(request, "Rechnung ist bereits freigegeben oder bezahlt.")
+            messages.info(request, gettext('Rechnung ist bereits freigegeben oder bezahlt.'))
             return redirect('fw_kreditoren')
         # NK-Relevanz automatisch vom Konto ableiten: HNK-Konto (4100–4140/4400)
         # ⇒ Rechnung fliesst in die Nebenkostenabrechnung — kein vergessenes
@@ -293,7 +293,7 @@ def fw_kreditor_freigeben(request, pk):
         from finance.lieferanten import lerne_lieferant
         lerne_lieferant(k.lieferant, konto=k.konto, iban=k.iban)
     log_aktion(request, "Kreditorenrechnung freigegeben", k.lieferant, f"CHF {k.betrag}")
-    messages.success(request, f"✅ '{k.lieferant}' freigegeben und verbucht.")
+    messages.success(request, '✅ ' + gettext("'%(lieferant)s' freigegeben und verbucht.") % {'lieferant': k.lieferant})
     ziel = '/neu/kreditoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -328,7 +328,7 @@ def fw_vertrag_mietzins_add(request, pk):
     netto = _dec('netto_mietzins')
     nk = _dec('nebenkosten')
     if not gab or netto is None or nk is None or netto < 0 or nk < 0:
-        messages.error(request, "Gültig-ab-Datum, Netto und NK (≥ 0) sind erforderlich.")
+        messages.error(request, gettext('Gültig-ab-Datum, Netto und NK (≥ 0) sind erforderlich.'))
         return redirect(ziel)
     # Rabatt/Erlass (Option B): mindert nur die Verrechnung, nicht die Referenz.
     # "mietzinsfrei" = Nettomietzins voll erlassen → Rabatt = Netto-Referenz.
@@ -338,7 +338,7 @@ def fw_vertrag_mietzins_add(request, pk):
         rabatt_netto = _dec('rabatt_netto') or Decimal('0.00')
     rabatt_nk = _dec('rabatt_nk') or Decimal('0.00')
     if rabatt_netto < 0 or rabatt_nk < 0:
-        messages.error(request, "Rabatt-Werte dürfen nicht negativ sein.")
+        messages.error(request, gettext('Rabatt-Werte dürfen nicht negativ sein.'))
         return redirect(ziel)
     rabatt_netto = min(rabatt_netto, netto)   # Rabatt nie grösser als Referenz
     rabatt_nk = min(rabatt_nk, nk)
@@ -351,8 +351,7 @@ def fw_vertrag_mietzins_add(request, pk):
     log_aktion(request, "Mietzins-Komponente erfasst", str(v),
                f"ab {gab:%d.%m.%Y}: Referenz Netto {netto} / NK {nk}, "
                f"Rabatt {rabatt_netto}/{rabatt_nk}, zu zahlen {zu_zahlen}", ziel=v)
-    messages.success(request, f"✅ Komponente ab {gab:%d.%m.%Y} gespeichert "
-                     f"(Referenz CHF {netto + nk}, zu zahlen CHF {zu_zahlen}).")
+    messages.success(request, '✅ ' + gettext('Komponente ab %(gab)s gespeichert (Referenz CHF %(wert)s, zu zahlen CHF %(zu_zahlen)s).') % {'gab': format(gab, '%d.%m.%Y'), 'wert': netto + nk, 'zu_zahlen': zu_zahlen})
     return redirect(ziel)
 
 
@@ -368,7 +367,7 @@ def fw_vertrag_mietzins_del(request, pk):
     ziel = _nxt if _nxt.startswith('/neu/') else f'/neu/vertraege/{vid}/?tab=mietzins'
     if request.method == 'POST':
         k.delete()
-        messages.success(request, "Komponente entfernt.")
+        messages.success(request, gettext('Komponente entfernt.'))
     return redirect(ziel)
 
 
@@ -385,7 +384,7 @@ def fw_kreditor_position_add(request, pk):
     if request.method != 'POST':
         return redirect('fw_kreditoren')
     if k.status != 'neu':
-        messages.error(request, "Nur unverbuchte Rechnungen (Status Neu) können aufgeteilt werden.")
+        messages.error(request, gettext('Nur unverbuchte Rechnungen (Status Neu) können aufgeteilt werden.'))
         return redirect('fw_kreditoren')
     konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first()
     try:
@@ -393,7 +392,7 @@ def fw_kreditor_position_add(request, pk):
     except Exception:
         betrag = None
     if not konto or not betrag or betrag <= 0:
-        messages.error(request, "Konto und Betrag (> 0) sind für eine Position erforderlich.")
+        messages.error(request, gettext('Konto und Betrag (> 0) sind für eine Position erforderlich.'))
         return redirect('fw_kreditoren')
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first() or k.liegenschaft
     einheit = Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first()
@@ -403,7 +402,7 @@ def fw_kreditor_position_add(request, pk):
         liegenschaft=lg, einheit=einheit,
         is_hnk_relevant=(request.POST.get('is_hnk_relevant') == 'on' or bool(konto.is_hnk_relevant)))
     log_aktion(request, "Kreditor-Position hinzugefügt", k.lieferant, f"{konto.nummer} · CHF {betrag}")
-    messages.success(request, f"✅ Position {konto.nummer} über CHF {betrag} hinzugefügt.")
+    messages.success(request, '✅ ' + gettext('Position %(nummer)s über CHF %(betrag)s hinzugefügt.') % {'nummer': konto.nummer, 'betrag': betrag})
     return redirect('/neu/kreditoren/')
 
 
@@ -416,10 +415,10 @@ def fw_kreditor_position_del(request, pk):
     p = get_object_or_404(KreditorPosition.objects.select_related('rechnung'), id=pk)
     if request.method == 'POST':
         if p.rechnung.status != 'neu':
-            messages.error(request, "Nur unverbuchte Rechnungen können geändert werden.")
+            messages.error(request, gettext('Nur unverbuchte Rechnungen können geändert werden.'))
         else:
             p.delete()
-            messages.success(request, "Position entfernt.")
+            messages.success(request, gettext('Position entfernt.'))
     return redirect('/neu/kreditoren/')
 
 
@@ -434,7 +433,7 @@ def fw_dienstleister_neu(request):
         return redirect('fw_dienstleister')
     firma = (request.POST.get('firma') or '').strip()
     if not firma:
-        messages.error(request, "Firma ist erforderlich.")
+        messages.error(request, gettext('Firma ist erforderlich.'))
         return redirect('fw_dienstleister')
     Handwerker.objects.create(
         firma=firma, branche=request.POST.get('branche', 'allgemein'),
@@ -443,7 +442,7 @@ def fw_dienstleister_neu(request):
         telefon=(request.POST.get('telefon') or '').strip(),
     )
     log_aktion(request, "Dienstleister erfasst", firma, '')
-    messages.success(request, f"✅ Dienstleister '{firma}' erfasst.")
+    messages.success(request, '✅ ' + gettext("Dienstleister '%(firma)s' erfasst.") % {'firma': firma})
     return redirect('fw_dienstleister')
 
 
@@ -457,7 +456,7 @@ def fw_dokument_neu(request):
     if request.method != 'POST':
         return redirect('fw_dokumente')
     if not request.FILES.get('datei'):
-        messages.error(request, "Bitte eine Datei auswählen.")
+        messages.error(request, gettext('Bitte eine Datei auswählen.'))
         return redirect('fw_dokumente')
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     PDokument.objects.create(
@@ -468,7 +467,7 @@ def fw_dokument_neu(request):
         datei=request.FILES['datei'],
     )
     log_aktion(request, "Dokument hochgeladen", request.POST.get('titel', ''), '')
-    messages.success(request, "✅ Dokument hochgeladen.")
+    messages.success(request, '✅ ' + gettext('Dokument hochgeladen.'))
     ziel = '/neu/dokumente/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -487,7 +486,7 @@ def fw_dokument_loeschen(request, pk):
         titel = d.titel
         d.delete()
         log_aktion(request, "Dokument gelöscht", titel, '')
-        messages.success(request, "🗑️ Dokument gelöscht.")
+        messages.success(request, '🗑️ ' + gettext('Dokument gelöscht.'))
     ziel = '/neu/dokumente/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -511,11 +510,11 @@ def fw_nebenkosten_neu(request):
     except Exception:
         start = ende = None
     if not lg or not bez or not start or not ende:
-        messages.error(request, "Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich.")
+        messages.error(request, gettext('Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich.'))
         return redirect('fw_nebenkosten')
     p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung=bez, start_datum=start, ende_datum=ende)
     log_aktion(request, "Abrechnungsperiode erstellt", bez, str(lg))
-    messages.success(request, f"✅ Abrechnungsperiode '{bez}' erstellt.")
+    messages.success(request, '✅ ' + gettext("Abrechnungsperiode '%(bez)s' erstellt.") % {'bez': bez})
     return redirect(f'/neu/nebenkosten/{p.id}/')
 
 
@@ -531,7 +530,7 @@ def fw_dienstleister_bearbeiten(request, pk):
         return redirect('fw_dienstleister')
     firma = (request.POST.get('firma') or '').strip()
     if not firma:
-        messages.error(request, "Firma ist erforderlich.")
+        messages.error(request, gettext('Firma ist erforderlich.'))
         return redirect('fw_dienstleister')
     h.firma = firma
     h.branche = request.POST.get('branche', h.branche) or h.branche
@@ -540,7 +539,7 @@ def fw_dienstleister_bearbeiten(request, pk):
     h.telefon = (request.POST.get('telefon') or '').strip()
     h.save()
     log_aktion(request, "Dienstleister bearbeitet", firma, '')
-    messages.success(request, f"✅ Dienstleister '{firma}' aktualisiert.")
+    messages.success(request, '✅ ' + gettext("Dienstleister '%(firma)s' aktualisiert.") % {'firma': firma})
     return redirect('fw_dienstleister')
 
 
@@ -556,7 +555,7 @@ def fw_dienstleister_loeschen(request, pk):
         firma = h.firma
         h.delete()
         log_aktion(request, "Dienstleister gelöscht", firma, '')
-        messages.success(request, f"🗑️ Dienstleister '{firma}' gelöscht.")
+        messages.success(request, '🗑️ ' + gettext("Dienstleister '%(firma)s' gelöscht.") % {'firma': firma})
     return redirect('fw_dienstleister')
 
 
@@ -572,13 +571,12 @@ def fw_kreditor_loeschen(request, pk):
     k = get_object_or_404(KreditorenRechnung, id=pk)
     if request.method == 'POST':
         if k.status != 'neu':
-            messages.error(request, "Bereits verbuchte Rechnung kann nicht gelöscht werden — "
-                                    "bitte die zugehörige Buchung stornieren.")
+            messages.error(request, gettext('Bereits verbuchte Rechnung kann nicht gelöscht werden — bitte die zugehörige Buchung stornieren.'))
         else:
             lief = k.lieferant
             k.delete()
             log_aktion(request, "Kreditorenrechnung gelöscht", lief, '')
-            messages.success(request, f"🗑️ Kreditorenrechnung '{lief}' gelöscht.")
+            messages.success(request, '🗑️ ' + gettext("Kreditorenrechnung '%(lief)s' gelöscht.") % {'lief': lief})
     ziel = '/neu/kreditoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -595,12 +593,12 @@ def fw_nebenkosten_loeschen(request, pk):
     p = get_object_or_404(AbrechnungsPeriode, id=pk)
     if request.method == 'POST':
         if getattr(p, 'abgeschlossen', False):
-            messages.error(request, "Abgeschlossene Periode kann nicht gelöscht werden.")
+            messages.error(request, gettext('Abgeschlossene Periode kann nicht gelöscht werden.'))
             return redirect(f'/neu/nebenkosten/{p.id}/')
         bez = p.bezeichnung
         p.delete()
         log_aktion(request, "Abrechnungsperiode gelöscht", bez, '')
-        messages.success(request, f"🗑️ Abrechnungsperiode '{bez}' gelöscht.")
+        messages.success(request, '🗑️ ' + gettext("Abrechnungsperiode '%(bez)s' gelöscht.") % {'bez': bez})
     return redirect('fw_nebenkosten')
 
 
@@ -646,10 +644,10 @@ def fw_buchung_neu(request):
         betrag = Decimal('0')
     text = (request.POST.get('beleg_text') or '').strip()
     if not soll or not haben or betrag <= 0 or not text:
-        messages.error(request, "Soll-, Haben-Konto (gültige Nummer), Betrag (> 0) und Belegtext sind erforderlich.")
+        messages.error(request, gettext('Soll-, Haben-Konto (gültige Nummer), Betrag (> 0) und Belegtext sind erforderlich.'))
         return _zurueck(fehler=True)
     if soll.id == haben.id:
-        messages.error(request, "Soll- und Haben-Konto müssen unterschiedlich sein.")
+        messages.error(request, gettext('Soll- und Haben-Konto müssen unterschiedlich sein.'))
         return _zurueck(fehler=True)
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first() if request.POST.get('liegenschaft_id') else None
     bu_datum = (date.fromisoformat(request.POST['datum']) if request.POST.get('datum')
@@ -663,7 +661,7 @@ def fw_buchung_neu(request):
         messages.error(request, f"❌ {exc}")
         return _zurueck(fehler=True)
     log_aktion(request, "Manuelle Buchung", text, f"{soll.nummer}/{haben.nummer} CHF {betrag}")
-    messages.success(request, f"✅ Buchung erfasst: {soll.nummer} an {haben.nummer} · CHF {betrag}.")
+    messages.success(request, '✅ ' + gettext('Buchung erfasst: %(nummer)s an %(nummer2)s · CHF %(betrag)s.') % {'nummer': soll.nummer, 'nummer2': haben.nummer, 'betrag': betrag})
     # Datum, Konten und Liegenschaft für den nächsten Beleg vorhalten.
     request.session['bu_letzt'] = {
         'datum': bu_datum.isoformat(), 'soll': soll.nummer, 'haben': haben.nummer,
@@ -692,8 +690,7 @@ def fw_buchung_stornieren(request, pk):
     # gelöst (Audit-Befund H6).
     from core.services.jahresabschluss import BELEG_PREFIX as _ABSCHLUSS_PREFIX
     if b.beleg_text.startswith(_ABSCHLUSS_PREFIX):
-        messages.error(request, "Abschlussbuchungen lassen sich nicht einzeln stornieren. "
-                                "Bitte den Jahresabschluss gesamthaft über «Abschluss zurücknehmen» aufheben.")
+        messages.error(request, gettext('Abschlussbuchungen lassen sich nicht einzeln stornieren. Bitte den Jahresabschluss gesamthaft über «Abschluss zurücknehmen» aufheben.'))
         return redirect('fw_buchhaltung')
     try:
         gegen = storniere_buchung(b, user=request.user)
@@ -705,7 +702,7 @@ def fw_buchung_stornieren(request, pk):
         return redirect('fw_buchhaltung')
     log_aktion(request, "Buchung storniert", b.beleg_text,
                f"Beleg #{b.beleg_nr} → Storno #{gegen.beleg_nr} · CHF {b.betrag}")
-    messages.success(request, f"✅ Beleg #{b.beleg_nr} storniert (Gegenbuchung #{gegen.beleg_nr}).")
+    messages.success(request, '✅ ' + gettext('Beleg #%(beleg_nr)s storniert (Gegenbuchung #%(beleg_nr2)s).') % {'beleg_nr': b.beleg_nr, 'beleg_nr2': gegen.beleg_nr})
     return redirect('fw_buchhaltung')
 
 
@@ -722,7 +719,7 @@ def fw_kommunikation_senden(request):
     text = (request.POST.get('text') or '').strip()
     ids = request.POST.getlist('empfaenger_id')
     if not text or not ids:
-        messages.error(request, "Text und mindestens ein Empfänger erforderlich.")
+        messages.error(request, gettext('Text und mindestens ein Empfänger erforderlich.'))
         return redirect('fw_kommunikation')
     from core.utils.email_service import journal_email
     gesendet = 0
@@ -754,7 +751,7 @@ def fw_serienbrief_pdf(request):
     text = (request.POST.get('text') or '').strip()
     ids = request.POST.getlist('empfaenger_id')
     if not text or not ids:
-        messages.error(request, "Text und mindestens ein Empfänger erforderlich.")
+        messages.error(request, gettext('Text und mindestens ein Empfänger erforderlich.'))
         return redirect('fw_kommunikation')
 
     vw = aktuelle_organisation()
@@ -801,7 +798,7 @@ def fw_serienbrief_pdf(request):
                 'objekt': '', 'liegenschaft': '',
             })
     if not empfaenger:
-        messages.error(request, "Keine gültigen Empfänger gefunden.")
+        messages.error(request, gettext('Keine gültigen Empfänger gefunden.'))
         return redirect('fw_kommunikation')
 
     logo_path = None
@@ -905,14 +902,13 @@ def fw_zahlung_zuordnen(request):
             messages.error(request, str(e))
             return redirect('fw_bankabgleich')
         except PermissionError as e:
-            messages.error(request, f"Periodensperre: {e}")
+            messages.error(request, gettext('Periodensperre: %(e)s') % {'e': e})
             return redirect('fw_bankabgleich')
 
     log_aktion(request, "Geparkte Zahlung zugeordnet", str(vertrag),
                f"CHF {betrag} von {park_nr} auf {rechnung.titel}"
                + (f" · Absender «{gelernt}» gemerkt" if gelernt else ""))
-    messages.success(request, f"✅ CHF {betrag} zugeordnet — {vertrag.mieter.display_name} "
-                              f"({rechnung.titel}){f' · Rest CHF {rest} bleibt als Guthaben' if rest > 0 else ''}.")
+    messages.success(request, '✅ ' + gettext('CHF %(betrag)s zugeordnet — %(display_name)s (%(titel)s)%(wert)s.') % {'betrag': betrag, 'display_name': vertrag.mieter.display_name, 'titel': rechnung.titel, 'wert': f' · Rest CHF {rest} bleibt als Guthaben' if rest > 0 else ''})
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
         ziel += f'?lg={aktive}'
@@ -945,10 +941,10 @@ def fw_zahlungen_sammel_zuordnen(request):
     vertrag = Mietvertrag.objects.filter(id=request.POST.get('vertrag_id') or 0) \
         .select_related('mieter', 'einheit__liegenschaft').first()
     if not ids:
-        messages.warning(request, "Keine Zahlung ausgewählt.")
+        messages.warning(request, gettext('Keine Zahlung ausgewählt.'))
         return redirect(ziel)
     if vertrag is None:
-        messages.error(request, "Kein Mieter gewählt — die Zahlungen bleiben ungeklärt.")
+        messages.error(request, gettext('Kein Mieter gewählt — die Zahlungen bleiben ungeklärt.'))
         return redirect(ziel)
 
     with transaction.atomic():
@@ -985,10 +981,9 @@ def fw_zahlungen_sammel_zuordnen(request):
             + (f" · Absender «{gelernt}» gemerkt, künftige Zahlungen treffen selbst"
                if gelernt else "") + ".")
     for f in fehler:
-        messages.warning(request, f"Nicht zugeordnet — {f}")
+        messages.warning(request, gettext('Nicht zugeordnet — %(f)s') % {'f': f})
     if not anzahl and not fehler:
-        messages.warning(request, "Nichts zugeordnet — die gewählten Zahlungen liegen "
-                                  "nicht mehr auf einem Parkkonto.")
+        messages.warning(request, gettext('Nichts zugeordnet — die gewählten Zahlungen liegen nicht mehr auf einem Parkkonto.'))
     return redirect(ziel)
 
 
@@ -1054,7 +1049,7 @@ def fw_zahler_zuordnung_speichern(request):
                .filter(id=request.POST.get('id') or 0)
                .select_related('vertrag__mieter').first())
     if eintrag is None:
-        messages.error(request, "Diese Zuordnung gibt es nicht mehr.")
+        messages.error(request, gettext('Diese Zuordnung gibt es nicht mehr.'))
         return redirect('fw_zahler_zuordnungen')
 
     name = eintrag.name_anzeige or eintrag.name_norm
@@ -1062,15 +1057,13 @@ def fw_zahler_zuordnung_speichern(request):
     if request.POST.get('aktion') == 'loeschen':
         eintrag.delete()
         log_aktion(request, "Zahler-Zuordnung gelöscht", name, '')
-        messages.success(request, f"✅ «{name}» wird nicht mehr automatisch zugeordnet — "
-                                  f"künftige Zahlungen landen wieder zur Prüfung "
-                                  f"im Bankabgleich.")
+        messages.success(request, '✅ ' + gettext('«%(name)s» wird nicht mehr automatisch zugeordnet — künftige Zahlungen landen wieder zur Prüfung im Bankabgleich.') % {'name': name})
         return redirect('fw_zahler_zuordnungen')
 
     ziel = (Mietvertrag.objects.filter(id=request.POST.get('vertrag_id') or 0)
             .select_related('mieter').first())
     if ziel is None:
-        messages.error(request, "Kein Mieter gewählt — die Zuordnung bleibt unverändert.")
+        messages.error(request, gettext('Kein Mieter gewählt — die Zuordnung bleibt unverändert.'))
         return redirect('fw_zahler_zuordnungen')
     if ziel.id == eintrag.vertrag_id:
         return redirect('fw_zahler_zuordnungen')
@@ -1085,8 +1078,7 @@ def fw_zahler_zuordnung_speichern(request):
     eintrag.save(update_fields=['vertrag', 'treffer', 'zuletzt'])
     log_aktion(request, "Zahler-Zuordnung geändert", name,
                f"{alt} → {ziel.mieter.display_name}")
-    messages.success(request, f"✅ «{name}» zahlt neu für {ziel.mieter.display_name}. "
-                              f"Bereits verbuchte Zahlungen bleiben unverändert.")
+    messages.success(request, '✅ ' + gettext('«%(name)s» zahlt neu für %(display_name)s. Bereits verbuchte Zahlungen bleiben unverändert.') % {'name': name, 'display_name': ziel.mieter.display_name})
     return redirect('fw_zahler_zuordnungen')
 
 
@@ -1119,7 +1111,7 @@ def fw_bankbewegung_zuordnen(request):
 
     bew = get_object_or_404(Bankbewegung, id=request.POST.get('bewegung_id'))
     if bew.status != 'offen':
-        messages.info(request, "Diese Bankbewegung ist bereits erledigt.")
+        messages.info(request, gettext('Diese Bankbewegung ist bereits erledigt.'))
         return redirect(ziel)
 
     art = request.POST.get('art')
@@ -1134,7 +1126,7 @@ def fw_bankbewegung_zuordnen(request):
         bew.bemerkung = (request.POST.get('bemerkung') or 'Nicht buchungsrelevant')[:255]
         bew.save(update_fields=['status', 'bemerkung'])
         log_aktion(request, "Bankbewegung ignoriert", str(bew), bew.bemerkung)
-        messages.success(request, "Bewegung als nicht buchungsrelevant markiert.")
+        messages.success(request, gettext('Bewegung als nicht buchungsrelevant markiert.'))
         return redirect(ziel)
 
     try:
@@ -1144,11 +1136,11 @@ def fw_bankbewegung_zuordnen(request):
                 kr = get_object_or_404(KreditorenRechnung,
                                        id=request.POST.get('kreditor_id'))
                 if bew.betrag >= 0:
-                    messages.error(request, "Eine Gutschrift kann keine Lieferantenrechnung tilgen.")
+                    messages.error(request, gettext('Eine Gutschrift kann keine Lieferantenrechnung tilgen.'))
                     return redirect(ziel)
                 offen_kr = kr.offener_betrag
                 if offen_kr <= 0:
-                    messages.error(request, "Diese Lieferantenrechnung ist bereits bezahlt.")
+                    messages.error(request, gettext('Diese Lieferantenrechnung ist bereits bezahlt.'))
                     return redirect(ziel)
                 # Nie mehr tilgen als offen ist — der Rest bleibt im Eingang.
                 betrag = min(betrag, offen_kr)
@@ -1170,7 +1162,7 @@ def fw_bankbewegung_zuordnen(request):
                 gegen_nr = (request.POST.get('gegenkonto') or '').strip().split()[0] if request.POST.get('gegenkonto') else ''
                 gegen = Buchungskonto.objects.filter(nummer=gegen_nr).first()
                 if not gegen:
-                    messages.error(request, "Bitte ein gültiges Gegenkonto angeben.")
+                    messages.error(request, gettext('Bitte ein gültiges Gegenkonto angeben.'))
                     return redirect(ziel)
                 lg_b = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
                 bez = (request.POST.get('beleg_text') or bew.text or 'Bankbewegung')[:255]
@@ -1192,11 +1184,11 @@ def fw_bankbewegung_zuordnen(request):
         messages.error(request, f"❌ {exc}")
         return redirect(ziel)
     except Exception as exc:
-        messages.error(request, f"❌ Bewegung konnte nicht gebucht werden: {exc}")
+        messages.error(request, '❌ ' + gettext('Bewegung konnte nicht gebucht werden: %(exc)s') % {'exc': exc})
         return redirect(ziel)
 
     log_aktion(request, "Bankbewegung verbucht", str(bew), text)
-    messages.success(request, f"✅ CHF {betrag} verbucht ({text}) — Valuta {dat:%d.%m.%Y}.")
+    messages.success(request, '✅ ' + gettext('CHF %(betrag)s verbucht (%(text)s) — Valuta %(dat)s.') % {'betrag': betrag, 'text': text, 'dat': format(dat, '%d.%m.%Y')})
     return redirect(ziel)
 
 
@@ -1239,7 +1231,7 @@ def fw_mwst_verbuchen(request):
         ziel += f'&lg={aktive_lg.id}'
 
     if _mwst_bereits_verbucht(jahr, quartal, aktive_lg):
-        messages.info(request, "Diese MWST-Periode wurde bereits verbucht.")
+        messages.info(request, gettext('Diese MWST-Periode wurde bereits verbucht.'))
         return redirect(ziel)
 
     # Beträge NEU aus dem Hauptbuch rechnen statt aus dem POST übernehmen — sonst
@@ -1248,7 +1240,7 @@ def fw_mwst_verbuchen(request):
     umsatzsteuer, vorsteuer = p['umsatzsteuer'], p['vorsteuer']
     zahllast, methode = p['zahllast'], p['methode']
     if umsatzsteuer <= 0 and vorsteuer <= 0:
-        messages.info(request, "Für diese Periode gibt es keine MWST zu verbuchen.")
+        messages.info(request, gettext('Für diese Periode gibt es keine MWST zu verbuchen.'))
         return redirect(ziel)
 
     beleg = _mwst_beleg(jahr, quartal)
@@ -1298,12 +1290,11 @@ def fw_mwst_verbuchen(request):
         messages.error(request, f"❌ {exc}")
         return redirect(ziel)
     except Exception as exc:
-        messages.error(request, f"❌ MWST-Abrechnung konnte nicht verbucht werden: {exc}")
+        messages.error(request, '❌ ' + gettext('MWST-Abrechnung konnte nicht verbucht werden: %(exc)s') % {'exc': exc})
         return redirect(ziel)
 
     log_aktion(request, "MWST-Abrechnung verbucht", beleg, f"Zahllast CHF {zahllast}")
-    messages.success(request, f"✅ {beleg} verbucht — Zahllast CHF {zahllast} "
-                              f"({'Saldosteuersatz' if methode == 'saldo' else 'effektive Methode'}).")
+    messages.success(request, '✅ ' + gettext('%(beleg)s verbucht — Zahllast CHF %(zahllast)s (%(wert)s).') % {'beleg': beleg, 'zahllast': zahllast, 'wert': 'Saldosteuersatz' if methode == 'saldo' else 'effektive Methode'})
     return redirect(ziel)
 
 
@@ -1330,7 +1321,7 @@ def fw_zahlung_stornieren(request, pk):
                 Zahlungseingang.objects.select_for_update(of=('self',))
                 .select_related('debitoren_rechnung', 'vertrag__mieter'), id=pk)
             if z.status == 'storniert':
-                messages.info(request, "Diese Zahlung ist bereits storniert.")
+                messages.info(request, gettext('Diese Zahlung ist bereits storniert.'))
                 return redirect(request.POST.get('next') or '/neu/bankabgleich/')
 
             # Eine Bankgutschrift kann sich auf mehrere Zahlungseingänge verteilt
@@ -1357,12 +1348,12 @@ def fw_zahlung_stornieren(request, pk):
         messages.error(request, f"❌ {exc}")
         return redirect(request.POST.get('next') or '/neu/bankabgleich/')
     except Exception as exc:
-        messages.error(request, f"❌ Zahlung konnte nicht storniert werden: {exc}")
+        messages.error(request, '❌ ' + gettext('Zahlung konnte nicht storniert werden: %(exc)s') % {'exc': exc})
         return redirect(request.POST.get('next') or '/neu/bankabgleich/')
 
     log_aktion(request, "Zahlungseingang storniert", f"Zahlung #{z.id}",
                f"CHF {z.betrag} · {z.vertrag.mieter if z.vertrag_id else 'ohne Vertrag'}")
-    messages.success(request, f"✅ Zahlung über CHF {z.betrag} storniert — offener Posten wieder offen.")
+    messages.success(request, '✅ ' + gettext('Zahlung über CHF %(betrag)s storniert — offener Posten wieder offen.') % {'betrag': z.betrag})
     return redirect(request.POST.get('next') or '/neu/bankabgleich/')
 
 

@@ -6,6 +6,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.shortcuts import render
+from django.utils.translation import gettext
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
@@ -59,12 +60,12 @@ def fw_hypotheken(request):
                     ablauf=_date(request.POST.get('ablauf')),
                     notiz=(request.POST.get('notiz') or '').strip())
                 log_aktion(request, "Hypothek erfasst", lg.strasse, f"CHF {request.POST.get('betrag')}")
-                messages.success(request, "✅ Hypothek erfasst.")
+                messages.success(request, '✅ ' + gettext('Hypothek erfasst.'))
             else:
-                messages.error(request, "Liegenschaft ist Pflicht.")
+                messages.error(request, gettext('Liegenschaft ist Pflicht.'))
         elif aktion == 'loeschen':
             Hypothek.objects.filter(id=request.POST.get('id') or None).delete()
-            messages.success(request, "Hypothek gelöscht.")
+            messages.success(request, gettext('Hypothek gelöscht.'))
         return redirect('/neu/hypotheken/' + (f'?lg={aktive_lg.id}' if aktive_lg else ''))
 
     qs = Hypothek.objects.select_related('liegenschaft').order_by(

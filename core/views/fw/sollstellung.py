@@ -13,6 +13,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.shortcuts import render
+from django.utils.translation import gettext
 from django.utils import timezone
 from django.utils.dateformat import format as datum_format
 
@@ -139,7 +140,7 @@ def fw_sollstellung_run(request):
     # Bereichs-Validierung: Monat 13 / Jahr 20260 crashte sonst mit HTTP 500
     # tief in run_sollstellung (date(jahr, 13, 1)).
     if not (1 <= monat <= 12) or not (2000 <= jahr <= 2100):
-        messages.error(request, f"Ungültiger Monat {monat:02d}/{jahr} — bitte Monat 1–12 wählen.")
+        messages.error(request, gettext('Ungültiger Monat %(monat)s/%(jahr)s — bitte Monat 1–12 wählen.') % {'monat': format(monat, '02d'), 'jahr': jahr})
         return redirect('fw_sollstellung')
 
     titel = f"Miete & NK {monat:02d}/{jahr}"
@@ -160,10 +161,9 @@ def fw_sollstellung_run(request):
                + (f" · nur {lauf_lg.strasse}" if lauf_lg else " · ganzes Portfolio"))
     umfang = f" ({lauf_lg.strasse})" if lauf_lg else ""
     if erstellt:
-        messages.success(request, f"✅ Sollstellung {titel}{umfang}: {erstellt} Rechnung(en) erstellt.")
+        messages.success(request, '✅ ' + gettext('Sollstellung %(titel)s%(umfang)s: %(erstellt)s Rechnung(en) erstellt.') % {'titel': titel, 'umfang': umfang, 'erstellt': erstellt})
     else:
-        messages.success(request, f"Sollstellung {titel}{umfang}: alles bereits gestellt — "
-                                  f"nichts Neues erzeugt.")
+        messages.success(request, gettext('Sollstellung %(titel)s%(umfang)s: alles bereits gestellt — nichts Neues erzeugt.') % {'titel': titel, 'umfang': umfang})
     ziel = f'/neu/sollstellung/?jahr={jahr}&monat={monat}'
     if lauf_lg:
         ziel += f'&lg={lauf_lg.id}'

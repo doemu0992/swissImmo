@@ -14,6 +14,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.db.models import Q
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -214,8 +215,7 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         if P.get('embed'):
             return render(request, 'fw/_modal_done.html', {
                 'msg': f"Kündigung erfasst · {n_pendenzen} Auszugs-Pendenzen"})
-        messages.success(request, f"✅ Kündigung erfasst — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'} · "
-                         f"{n_pendenzen} Auszugs-Pendenzen erstellt{hinweis}.")
+        messages.success(request, '✅ ' + gettext('Kündigung erfasst — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-Pendenzen erstellt%(hinweis)s.') % {'wert': per.strftime('%d.%m.%Y') if per else '—', 'n_pendenzen': n_pendenzen, 'hinweis': hinweis})
         return redirect(f'/neu/vertraege/{v.id}/')
 
     # Vorschau des nächsten Termins für heute
@@ -378,8 +378,7 @@ def fw_verzug_257d(request, vertrag_id):
             resp = HttpResponse(pdf, content_type='application/pdf')
             resp['Content-Disposition'] = f'inline; filename="Zahlungsaufforderung_{v.mieter.nachname}.pdf"'
             return resp
-        messages.success(request, f"✅ Zahlungsaufforderung erstellt – Frist bis {frist:%d.%m.%Y}. "
-                                  "Fristen-Pendenz angelegt.")
+        messages.success(request, '✅ ' + gettext('Zahlungsaufforderung erstellt – Frist bis %(frist)s. Fristen-Pendenz angelegt.') % {'frist': format(frist, '%d.%m.%Y')})
         return redirect(f'/neu/vertraege/{v.id}/')
 
     return render(request, 'fw/verzug_257d.html', {
@@ -508,7 +507,7 @@ def fw_kuendigung_zuruecknehmen(request, pk):
             #  nicht auf None, der Vertrag ist befristet.)
             v.save(update_fields=['status', 'aktiv', 'ende'])
         log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '', ziel=v)
-        messages.success(request, "✅ Kündigung zurückgezogen, Vertrag reaktiviert.")
+        messages.success(request, '✅ ' + gettext('Kündigung zurückgezogen, Vertrag reaktiviert.'))
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
@@ -525,7 +524,7 @@ def fw_kuendigung_bestaetigen(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/vertraege/{v.id}/')
     if k.status == 'zurueckgezogen':
-        messages.error(request, "Zurückgezogene Kündigung kann nicht bestätigt werden.")
+        messages.error(request, gettext('Zurückgezogene Kündigung kann nicht bestätigt werden.'))
         return redirect(f'/neu/vertraege/{v.id}/')
 
     per = k.per_datum or k.berechneter_termin
@@ -542,8 +541,7 @@ def fw_kuendigung_bestaetigen(request, pk):
     erledige_pendenzen_fuer(v, ['schriftlich', 'Kündigungsformular'], user=request.user)
     log_aktion(request, "Kündigung bestätigt", str(v.mieter),
                f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen", ziel=v)
-    messages.success(request, f"✅ Kündigung bestätigt — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'} · "
-                     f"{n_pendenzen} Auszugs-Pendenzen erstellt.")
+    messages.success(request, '✅ ' + gettext('Kündigung bestätigt — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-Pendenzen erstellt.') % {'wert': per.strftime('%d.%m.%Y') if per else '—', 'n_pendenzen': n_pendenzen})
     return redirect(f'/neu/vertraege/{v.id}/')
 
 

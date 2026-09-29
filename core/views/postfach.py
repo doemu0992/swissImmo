@@ -23,6 +23,7 @@ Sachbearbeitung sehen den Zustand — dass der Abruf klemmt, sollen sie merken �
 Geschäftskorrespondenz einer Verwaltung.
 """
 from django.contrib import messages
+from django.utils.translation import gettext
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -159,8 +160,7 @@ def _speichern(request, postfach, zweck):
     log_aktion(request, 'Postfach gespeichert' if not neu else 'Postfach angelegt',
                postfach.get_zweck_display(),
                f'{postfach.benutzer} auf {postfach.server or "(OAuth2)"}')
-    messages.success(request, f'Postfach «{postfach.get_zweck_display()}» gespeichert. '
-                              'Prüfen Sie die Verbindung.')
+    messages.success(request, gettext('Postfach «%(get_zweck_display)s» gespeichert. Prüfen Sie die Verbindung.') % {'get_zweck_display': postfach.get_zweck_display()})
     return []
 
 
@@ -187,8 +187,7 @@ def postfach_test(request, zweck):
         postfach.letzter_fehler = ''
         postfach.letzter_fehler_am = None
         postfach.save(update_fields=['letzter_test', 'letzter_fehler', 'letzter_fehler_am'])
-        messages.success(request, f'Verbindung zu {postfach.server} steht — '
-                                  f'Anmeldung als {postfach.benutzer} hat geklappt.')
+        messages.success(request, gettext('Verbindung zu %(server)s steht — Anmeldung als %(benutzer)s hat geklappt.') % {'server': postfach.server, 'benutzer': postfach.benutzer})
     log_aktion(request, 'Postfach-Verbindung geprüft', postfach.get_zweck_display(),
                postfach.letzter_fehler or 'erfolgreich')
     return redirect('postfach_liste')
@@ -207,6 +206,5 @@ def postfach_loeschen(request, zweck):
     bezeichnung, adresse = postfach.get_zweck_display(), postfach.benutzer
     postfach.delete()
     log_aktion(request, 'Postfach gelöscht', bezeichnung, adresse)
-    messages.success(request, f'Postfach «{bezeichnung}» gelöscht. Der Abruf für diesen '
-                              'Zweck ist damit abgeschaltet.')
+    messages.success(request, gettext('Postfach «%(bezeichnung)s» gelöscht. Der Abruf für diesen Zweck ist damit abgeschaltet.') % {'bezeichnung': bezeichnung})
     return redirect('postfach_liste')

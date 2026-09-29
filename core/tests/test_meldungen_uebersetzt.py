@@ -49,6 +49,19 @@ AUSGEZEICHNET = (
     'core/views/zweifaktor.py',
     'core/views/docuseal.py',
     'core/views/fw/vertragserstellung.py',
+    # Teil C
+    'core/views/email_views.py',
+    'core/views/fw/aktionen.py',
+    'core/views/fw/detailseiten.py',
+    'core/views/fw/hypotheken.py',
+    'core/views/fw/kuendigung.py',
+    'core/views/fw/mahnwesen.py',
+    'core/views/fw/mietzins.py',
+    'core/views/fw/mwst.py',
+    'core/views/fw/pendenzen.py',
+    'core/views/fw/regelwerk.py',
+    'core/views/fw/sollstellung.py',
+    'core/views/postfach.py',
 )
 
 RECHT = ('Art.', ' OR', 'ZGB', 'DSG', 'SchKG')
@@ -111,3 +124,10 @@ class MeldungFolgtDerSpracheTests(TestCase):
         seite = self.c.post('/neu/termine/neu/', {'titel': '', 'beginn': ''}, follow=True)
         self.assertContains(seite, "Il titolo e l&#x27;inizio sono necessari.")
         self.assertNotContains(seite, 'Titel und Beginn sind nötig.')
+
+    def test_pendenz_ohne_titel_englisch(self):
+        # Teil C: Meldung aus core/views/fw/pendenzen.py.
+        self.c.post('/i18n/setlang/', {'language': 'en', 'next': '/neu/'})
+        seite = self.c.post('/neu/pendenzen/neu/', {'titel': ''}, follow=True)
+        self.assertContains(seite, 'Title missing.')
+        self.assertNotContains(seite, 'Titel fehlt.')
