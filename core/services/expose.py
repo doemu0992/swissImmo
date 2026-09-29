@@ -27,9 +27,19 @@ def objekt_titel(einheit):
 
 
 def generate_expose_pdf(einheit, verwaltung=None, bewerbung_url=None):
-    """`bewerbung_url`: absolute Adresse des öffentlichen Bewerbungsformulars.
+    """Das Exposé ist (noch) nur deutsch formuliert. Fest deutsch erzeugt,
+    damit der übersetzbare Objekttyp nicht in der Sprache der Sachbearbeitung
+    mitten im deutschen Text steht (siehe core.services.dokumentsprache).
+
+    `bewerbung_url`: absolute Adresse des öffentlichen Bewerbungsformulars.
     Ist sie gesetzt, trägt die Kontaktbox einen QR-Code darauf — so führt ein
     ausgedrucktes oder weitergeleitetes Exposé direkt zur Bewerbung."""
+    from core.services.dokumentsprache import STANDARD, in_sprache
+    with in_sprache(STANDARD):
+        return _expose_pdf(einheit, verwaltung, bewerbung_url)
+
+
+def _expose_pdf(einheit, verwaltung, bewerbung_url=None):
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm

@@ -41,9 +41,11 @@ class Command(BaseCommand):
                                f"{', '.join(str(o) for o, _ in fehler)}.")
 
     def _senden(self, organisation, jahr, opts):
+        from django.utils import translation
+        from django.utils.translation import gettext
         from crm.models import Eigentuemer
-        from core.views.portal import _portfolio_daten
-        from core.services.portfolio_report import generate_portfolio_report
+        from core.services.dokumentsprache import in_sprache, sprache_von
+        from core.services.portfolio_report import generate_portfolio_report_fuer
         from core.services.steuerauszug import generate_steuerauszug_pdf
         from core.utils.email_service import send_report_mail
 
@@ -56,8 +58,12 @@ class Command(BaseCommand):
             if not md.email:
                 continue
             try:
-                report = generate_portfolio_report(md, _portfolio_daten(md))
-                steuer = generate_steuerauszug_pdf(md, jahr)
+                report = generate_portfolio_report_fuer(md)
+                # Der Steuerauszug bleibt deutsch: Seine Begriffe (AfA,
+                # Liegenschaftsrechnung) haben kantonal festgelegte
+                # Entsprechungen, die nicht geraten werden.
+                with translation.override('de'):
+                    steuer = generate_steuerauszug_pdf(md, jahr)
             except Exception as e:
                 self.stderr.write(f"  ✗ {md.firma_oder_name}: Report-Fehler {e}")
                 continue
@@ -65,16 +71,20 @@ class Command(BaseCommand):
                 (f"Portfolio-Report_{md.firma_oder_name}.pdf", report),
                 (f"Steuerauszug_{jahr}.pdf", steuer),
             ]
-            html = (
-                f"<p>Guten Tag {md.firma_oder_name}</p>"
-                f"<p>Im Anhang finden Sie den aktuellen Portfolio-Report sowie den "
-                f"Steuerauszug {jahr} zu Ihren Liegenschaften. Alle Details jederzeit "
-                f"in Ihrem Eigentümer-Portal.</p>"
-                f"<p>Freundliche Grüsse<br>Ihre Liegenschaftsverwaltung</p>")
+            # Begleitmail in der Sprache des Eigentümers (D11).
+            with in_sprache(sprache_von(md)):
+                gruss = gettext('Guten Tag %(name)s') % {'name': md.firma_oder_name}
+                text = gettext('Im Anhang finden Sie den aktuellen Portfolio-Report sowie den '
+                               'Steuerauszug %(jahr)s zu Ihren Liegenschaften. Alle Details '
+                               'jederzeit in Ihrem Eigentümer-Portal.') % {'jahr': jahr}
+                schluss = gettext('Freundliche Grüsse')
+                absender = gettext('Ihre Liegenschaftsverwaltung')
+                betreff = gettext('Ihr Liegenschafts-Report %(jahr)s') % {'jahr': jahr}
+            html = f"<p>{gruss}</p><p>{text}</p><p>{schluss}<br>{absender}</p>"
             if opts['dry_run']:
                 self.stdout.write(f"  (dry-run) → {md.firma_oder_name} <{md.email}>")
                 continue
-            if send_report_mail(md.email, f"Ihr Liegenschafts-Report {jahr}", html, anhaenge):
+            if send_report_mail(md.email, betreff, html, anhaenge):
                 gesendet += 1
                 self.stdout.write(self.style.SUCCESS(f"  ✓ {md.firma_oder_name} <{md.email}>"))
 

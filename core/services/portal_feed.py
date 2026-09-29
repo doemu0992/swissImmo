@@ -6,6 +6,12 @@ Der Feed ist read-only und token-gesichert (Verwaltung.portal_feed_token)."""
 from decimal import Decimal
 
 
+def _typ_de(einheit):
+    from django.utils import translation
+    with translation.override('de'):
+        return str(einheit.get_typ_display())
+
+
 def _num(d):
     if d is None:
         return None
@@ -51,7 +57,9 @@ def feed_objekte(base_url='', organisation=None):
             'referenz': f"OBJ-{e.id}",
             'bezeichnung': e.bezeichnung,
             'typ': TYP.get(e.typ, 'other'),
-            'typ_label': e.get_typ_display(),
+            # Fest deutsch: Den Feed ruft ein fremder Server ab; dessen
+            # Accept-Language darf die Beschriftung nicht umschalten.
+            'typ_label': _typ_de(e),
             'adresse': {
                 'strasse': lg.strasse if lg else '',
                 'plz': lg.plz if lg else '',

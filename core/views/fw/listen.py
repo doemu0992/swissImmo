@@ -1033,7 +1033,13 @@ def fw_mieterspiegel(request):
     if request.GET.get('pdf') == '1':
         from crm.models import Organisation
         from django.http import HttpResponse
-        pdf = generate_mieterspiegel_pdf(spiegel, aktuelle_organisation(), stichtag=timezone.localdate())
+        # Das PDF ist (noch) nur deutsch formuliert: fest deutsch berechnen und
+        # erzeugen, sonst stünde der übersetzte Objekttyp im deutschen Text.
+        # Wer bei internen Berichten der Empfänger ist, ist offen (D11).
+        from core.services.dokumentsprache import STANDARD, in_sprache
+        with in_sprache(STANDARD):
+            spiegel = berechne_mieterspiegel([aktive_lg])
+            pdf = generate_mieterspiegel_pdf(spiegel, aktuelle_organisation(), stichtag=timezone.localdate())
         resp = HttpResponse(pdf, content_type='application/pdf')
         fname = (aktive_lg.strasse or 'Mieterspiegel').replace(' ', '_')
         resp['Content-Disposition'] = f'inline; filename="Mieterspiegel_{fname}.pdf"'
