@@ -2,7 +2,7 @@
 
 **Abteilung:** Marketing & Docs
 **Stand:** 29.09.2026 (alle Preisseiten an diesem Tag abgerufen)
-**Ticket:** `mkt-001` Wettbewerbsanalyse & Pricing-Strategie (`agent_ops/tasks.json`)
+**Ticket:** `mkt-001` Wettbewerbsanalyse & Pricing-Strategie (ehemals `agent_ops/tasks.json`, der Ordner ist entfernt)
 **Baut auf:** `docs/MARKT.md` (Stand 14.08.2026). Dieses Audit ergänzt es und korrigiert es an drei Stellen (siehe Abschnitt 1).
 
 Alle Preise verstehen sich **ohne MWST**, sofern nicht anders vermerkt.
