@@ -132,3 +132,46 @@ class Modal(SimpleTestCase):
     def test_fragt_vor_dem_verwerfen_von_eingaben(self):
         self.assertIn('fwModalGetippt', self._quelle())
         self.assertIn('confirm(', self._quelle())
+
+
+class Bestaetigungsdialog(SimpleTestCase):
+    """Gestalteter Dialog statt der Browser-Rückfrage (fw/_bestaetigen.html).
+
+    Das Verhalten wurde in Chromium an gerenderten Seiten geprüft (Personenakte:
+    Formular-Rückfrage mit Löschung; Anlagen: Knopf-Rückfrage): Dialog statt
+    Browser-Rückfrage, «Abbrechen» schickt nicht ab, «Bestätigen» genau einmal,
+    rote Taste und Fokus auf «Abbrechen» bei Löschungen. Diese Tests halten die
+    Voraussetzungen fest, die sich ohne Browser prüfen lassen.
+    """
+
+    #: Dasselbe Muster wie im Skript — was hier nicht passt, fällt still auf die
+    #: Browser-Rückfrage zurück.
+    MUSTER = re.compile(r"""^\s*return\s+confirm\(\s*(['"])([\s\S]*)\1\s*\)\s*;?\s*$""")
+
+    def _baustein(self):
+        return (VORLAGEN / 'fw' / '_bestaetigen.html').read_text(encoding='utf-8')
+
+    def test_beide_huellen_binden_den_dialog_ein(self):
+        for name in ('base.html', 'base_embed.html'):
+            self.assertIn("{% include 'fw/_bestaetigen.html' %}",
+                          (VORLAGEN / 'fw' / name).read_text(encoding='utf-8'), name)
+
+    def test_muster_im_skript_und_im_test_sind_gleich(self):
+        self.assertIn('/' + self.MUSTER.pattern + '/', self._baustein())
+
+    def test_jede_rueckfrage_wird_erkannt(self):
+        nicht_erkannt = []
+        for datei in VORLAGEN.rglob('*.html'):
+            text = datei.read_text(encoding='utf-8')
+            for m in re.finditer(r'\b(?:onsubmit|onclick)="((?:[^"{]|\{[{%][\s\S]*?[}%]\})*)"', text):
+                if 'confirm(' in m.group(1) and not self.MUSTER.match(m.group(1)):
+                    nicht_erkannt.append(f'{datei.relative_to(VORLAGEN)}: {m.group(1)[:80]}')
+        self.assertEqual(nicht_erkannt, [])
+
+    def test_dialogformular_ist_vom_doppelklickschutz_ausgenommen(self):
+        """Sonst sperrt der Schutz «Abbrechen» nach dem ersten Mal (gemessen)."""
+        self.assertIn('<form method="dialog" data-no-guard>', self._baustein())
+
+    def test_entschluesselt_ohne_eval(self):
+        self.assertNotIn('eval(', self._baustein())
+        self.assertNotIn('new Function', self._baustein())

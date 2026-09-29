@@ -1,0 +1,111 @@
+{% load i18n %}{% comment %}
+GESTALTETER BESTÄTIGUNGSDIALOG (Audit Etappe 3)
+
+WARUM SO UND NICHT ANDERS
+
+83 Rückfragen stehen als `onsubmit="return confirm('…')"` (Formulare) bzw.
+`onclick="return confirm('…')"` (Knöpfe) in den Vorlagen — mit übersetzten,
+per `escapejs` gesicherten Texten. Sie alle umzuschreiben hiesse, dieselben
+Vorlagen anzufassen, die parallel übersetzt werden (Konflikte), und die Texte
+aus ihren `.po`-Einträgen zu reissen.
+
+Stattdessen fängt dieses Skript Absenden und Klick in der CAPTURE-Phase ab —
+also bevor der eingebettete Handler läuft —, liest den Text aus dem
+vorhandenen `confirm('…')` und zeigt ihn in einem `<dialog>`. Nach
+«Bestätigen» läuft die Aktion mit vorübergehend ausgeschaltetem Handler
+weiter, damit der Browser-Dialog nicht ein zweites Mal fragt.
+
+Fällt das Skript aus, bleibt alles wie vorher: Dann fragt der Browser.
+
+Gefährliche Aktionen (Löschen, Stornieren, Zurücksetzen, Rückgängig,
+Abschreiben) bekommen den roten Knopf, und der Fokus steht auf «Abbrechen» —
+Enter bestätigt dort nicht aus Versehen.
+{% endcomment %}
+<dialog id="fwBestaetigen" class="fw-bestaetigen" aria-labelledby="fwBestaetigenTitel" aria-describedby="fwBestaetigenText">
+    {% comment %} `data-no-guard`: Der Doppelklick-Schutz in fw/base.html sperrt nach
+       jedem Absenden den ersten Knopf des Formulars. Ein Dialog-Formular lädt
+       keine neue Seite — «Abbrechen» blieb sonst bis zu 15 s gesperrt, und beim
+       nächsten Öffnen war nur noch «Bestätigen» bedienbar (gemessen). {% endcomment %}
+    <form method="dialog" data-no-guard>
+        <h2 id="fwBestaetigenTitel" class="fw-bestaetigen-titel">{% trans "Bitte bestätigen" %}</h2>
+        <p id="fwBestaetigenText" class="fw-bestaetigen-text"></p>
+        <div class="fw-bestaetigen-knoepfe">
+            <button type="submit" value="nein" class="fw-btn" id="fwBestaetigenNein">{% trans "Abbrechen" %}</button>
+            <button type="submit" value="ja" class="fw-btn fw-primary" id="fwBestaetigenJa">{% trans "Bestätigen" %}</button>
+        </div>
+    </form>
+</dialog>
+<script>
+(function () {
+    var dlg = document.getElementById('fwBestaetigen');
+    if (!dlg || typeof dlg.showModal !== 'function') return;   // alter Browser: native Rückfrage bleibt
+
+    var MUSTER = /^\s*return\s+confirm\(\s*(['"])([\s\S]*)\1\s*\)\s*;?\s*$/;
+    var GEFAHR = /(loeschen|stornieren|zuruecksetzen|rueckgaengig|abschreiben)/;
+
+    // Einen JS-Zeichenkettenliteral-Inhalt entschlüsseln — ohne eval.
+    function entschluesseln(s) {
+        return s.replace(/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/g, function (_, c) {
+            if (c[0] === 'u' || c[0] === 'x') return String.fromCharCode(parseInt(c.slice(1), 16));
+            return {n: '\n', t: '\t', r: '\r'}[c] || c;
+        });
+    }
+    function textAus(attr) {
+        var m = MUSTER.exec(attr || '');
+        return m ? entschluesseln(m[2]) : null;
+    }
+    function fragen(text, gefahr, weiter) {
+        document.getElementById('fwBestaetigenText').textContent = text;
+        var ja = document.getElementById('fwBestaetigenJa');
+        var nein = document.getElementById('fwBestaetigenNein');
+        ja.className = 'fw-btn ' + (gefahr ? 'fw-gefahr' : 'fw-primary');
+        // `autofocus` statt nur .focus(): Beim zweiten Öffnen übernahm Chrome
+        // sonst den zuletzt gedrückten Knopf (gemessen). Der Dialog wertet
+        // autofocus beim Öffnen selbst aus.
+        nein.autofocus = gefahr;
+        ja.autofocus = !gefahr;
+        dlg.returnValue = '';
+        dlg.onclose = function () { if (dlg.returnValue === 'ja') weiter(); };
+        dlg.showModal();
+        (gefahr ? nein : ja).focus();
+    }
+    // Handler kurz ausschalten, Aktion auslösen, danach wieder herstellen
+    // (für Formulare mit target=_blank, bei denen die Seite stehen bleibt).
+    function ohneHandler(el, name, tun) {
+        var alt = el.getAttribute(name);
+        el.removeAttribute(name);
+        try { tun(); } finally { setTimeout(function () { el.setAttribute(name, alt); }, 0); }
+    }
+
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (!(form instanceof HTMLFormElement) || form.method === 'dialog') return;
+        var text = textAus(form.getAttribute('onsubmit'));
+        if (text === null) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();          // auch der Doppelklick-Schutz wartet
+        var knopf = e.submitter || null;
+        var gefahr = GEFAHR.test(form.getAttribute('action') || '') ||
+                     !!(knopf && /crit|kritisch|gefahr/.test(knopf.className));
+        fragen(text, gefahr, function () {
+            ohneHandler(form, 'onsubmit', function () {
+                if (form.requestSubmit) form.requestSubmit(knopf); else form.submit();
+            });
+        });
+    }, true);
+
+    document.addEventListener('click', function (e) {
+        var el = e.target.closest ? e.target.closest('[onclick]') : null;
+        if (!el) return;
+        var text = textAus(el.getAttribute('onclick'));
+        if (text === null) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var ziel = el.getAttribute('formaction') || (el.form && el.form.getAttribute('action')) || el.getAttribute('href') || '';
+        var gefahr = GEFAHR.test(ziel) || /crit|kritisch|gefahr/.test(el.className);
+        fragen(text, gefahr, function () {
+            ohneHandler(el, 'onclick', function () { el.click(); });
+        });
+    }, true);
+})();
+</script>
