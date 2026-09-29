@@ -81,6 +81,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="fw-menuzeile">{% zeichen 'recht' klasse='w-4' %}{% trans "Kontokorrent" %}</a>
                     {% endif %}
                     <a href="/neu/hypotheken/" class="fw-menuzeile">{% zeichen 'liegenschaft' klasse='w-4' %}{% trans "Hypotheken" %}</a>
+                    {% comment %} Aushang mit QR-Code zur Schadenmeldung — war nur im Django-Admin verlinkt. {% endcomment %}
+                    <a href="/liegenschaft/{{ lg.id }}/poster/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Hausaushang (QR Schadenmeldung)" %}</a>
                     <div class="fw-menutrenner"></div>
                     <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
                         {% csrf_token %}

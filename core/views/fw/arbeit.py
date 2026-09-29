@@ -214,6 +214,27 @@ def fw_fall_zustaendig(request, pk):
     return redirect(f'/neu/faelle/{pk}/')
 
 
+#: Wohin die Akte eines Falls führt — je zulässigem Aktentyp aus
+#: `Fall.AKTENTYPEN`. Die Fallakte nannte ihre Akte bis zum Audit vom
+#: 29.09.2026 nur als Text; wer vom Fall zur Wohnung wollte, musste suchen.
+AKTE_PFADE = {
+    'rentals.mietvertrag': '/neu/vertraege/{}/',
+    'portfolio.einheit': '/neu/objekte/{}/',
+    'portfolio.liegenschaft': '/neu/liegenschaften/{}/',
+    'crm.eigentuemer': '/neu/mandate/{}/',
+    'crm.mieter': '/neu/personen/{}/',
+    'tickets.schadenmeldung': '/neu/schaeden/{}/',
+}
+
+
+def akte_url(fall):
+    """Adresse der Akte, an der `fall` hängt — oder None ohne Akte."""
+    if not (fall.akte_typ_id and fall.akte_id):
+        return None
+    muster = AKTE_PFADE.get(f'{fall.akte_typ.app_label}.{fall.akte_typ.model}')
+    return muster.format(fall.akte_id) if muster else None
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_fall_detail(request, pk):
     """Die Fallakte: Etappen, Schritte, Verfallsregel.
@@ -248,6 +269,7 @@ def fw_fall_detail(request, pk):
     return render(request, 'fw/fall_detail.html', {
         **_global_filter(request), 'nav': 'arbeit',
         'fall': fall,
+        'akte_url': akte_url(fall),
         # Fuer den Zustaendigkeitswechsel (E2.70). `SCHREIB_ROLLEN` — die
         # Leserolle sieht den Namen, aendert ihn aber nicht.
         'kann_schreiben': getattr(request, 'rolle', None) in SCHREIB_ROLLEN,

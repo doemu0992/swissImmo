@@ -863,6 +863,11 @@ def fw_einstellungen(request):
         # einmal in Phase 4a (vier Etappen lang).
         {'titel': _('Regelwerk (Fristen)'), 'sub': _('Kündigungstermine und Fristen je Kanton'),
          'url': '/neu/regelwerk/', 'icon': 'recht'},
+        # Audit F3: Die Tabelle war gebaut und speist Abnahme und Ersatzplanung,
+        # hatte aber keinen einzigen Link. Sie ist eine Einstellung — Werte,
+        # die man einmal festlegt und selten ändert.
+        {'titel': _('Lebensdauertabelle'), 'sub': _('Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung'),
+         'url': '/neu/lebensdauer/', 'icon': 'verlauf'},
     ]
     return render(request, 'fw/einstellungen.html', {
         **basis, 'nav': 'einstellungen', 'karten': karten,

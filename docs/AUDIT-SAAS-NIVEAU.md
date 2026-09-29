@@ -45,8 +45,8 @@ Handwerk, keine Architekturfrage, und damit gut planbar.
 | F2 | **Mängelrüge Art. 267a OR aus dem Abnahmeprotokoll** | `/neu/abnahme/<pk>/ruege-267a/` · `abnahme.py:167` | Die View ist fertig (PDF, Ablage, Pendenz abhaken). `abnahme_detail.html` hat aber keinen Knopf dafür. `abnahme_neu.html:64` erklärt dem Nutzer sogar, dass die Rüge *sofort* erfolgen muss, bietet sie aber nicht an. | **hoch** — ohne rechtzeitige Rüge verwirken die Ersatzansprüche |
 | F3 | **Lebensdauertabelle** (paritätisch, pflegbar) | `/neu/lebensdauer/` · `detailseiten.py` | Es gibt keinen Link, keinen Nav-Eintrag und keine Kachel in den Einstellungen (`aktionen.py:830ff`). Die Seite verlinkt nur auf sich selbst. Sie speist Abnahme und Ersatzplanung. | mittel |
 | F4 | **Hausflur-Aushang mit QR** (Schadenmeldung) | `/liegenschaft/<id>/poster/` | Nur im Django-Admin (`/admin/`) verlinkt, nicht in der Liegenschaftsakte. | mittel |
-| F5 | **Fall-Übersicht** | nur `/neu/faelle/<pk>/` | Die Fallmaschine hat Detailseiten, aber keine Liste. Fälle sind nur über «Heute» oder aus Akten erreichbar. Der Mieterwechsel verlinkt nicht auf seinen Fall. | mittel |
-| F6 | **Suche in der Objektliste** | `listen.py:1079` liest `q` | Die View kann suchen, `objekte.html` hat aber kein Suchfeld. | niedrig |
+| F5 | ~~Fall-Übersicht~~ | `/neu/?ansicht=alle` | **Korrigiert in Etappe 1: kein Befund.** «Heute» mit der Ansicht «Alle» und Fallart-Filter *ist* die Fall-Liste — so entschieden in KONZEPT-UI G2 («Ein Arbeitsvorrat, nicht zwei Listen»). Eine zweite Liste hätte den Entscheid gebrochen. Echt war nur: Die Fallakte nannte ihre Akte ohne Link (behoben). Ein Link Mieterwechsel → Fall hat kein Ziel, weil der Mieterwechsel heute keinen Fall eröffnet; das ist die geplante Einbindung in die Fallmaschine (`ZUORDNUNG-VIEWS.md` Abschnitt 2), kein Quick Win. | – |
+| F6 | ~~Suche in der Objektliste~~ | `listen.py:1079` liest `q` | **Korrigiert in Etappe 1: kein Befund.** Das zweite Suchfeld wurde bewusst entfernt; das Suchfeld der Kopfzeile filtert die Liste (`faelle/test_objektliste.py::test_es_gibt_kein_zweites_suchfeld_mehr`). Ein zweites Feld wurde gebaut, vom Wächter abgelehnt und zurückgenommen. | – |
 
 ### 1.2 Altlasten: Endpunkte, die weg oder umgebaut gehören
 
@@ -106,7 +106,7 @@ Akten und Formulare haben einen Brotkrumenpfad. Befund B1 aus
 | Akte | Liste | Detail | Neu | Bearbeiten | Löschen | Suche / Filter / Sortierung / Seiten |
 |---|---|---|---|---|---|---|
 | Liegenschaft | ✓ | ✓ | ✓ | ✓ | ✓ | nur Suche im Browser; keine Seiten, keine Sortierung |
-| Objekt | ✓ | ✓ | ✓ | ✓ | **fehlt** | **kein Suchfeld** (F6); Filter nach Typ und Status |
+| Objekt | ✓ | ✓ | ✓ | ✓ | **fehlt** | Suche über die Kopfzeile; Filter nach Typ und Status |
 | Mietverhältnis | ✓ | ✓ | ✓ (Assistent) | ✓ | ✓ | Suche + Status; keine Seiten, keine Sortierung |
 | Person | ✓ | ✓ | ✓ | ✓ | ✓ + DSG | Suche + Typ |
 | Mandat, Dienstleister | ✓ | ✓ | ✓ | ✓ | ✓ | – |
@@ -215,8 +215,12 @@ Rund 2–3 Tage. Grosser Nutzen, weil die Logik schon fertig ist.
    zugeordnete Mängel erfasst sind, mit deutlichem Hinweis auf die Frist.
 3. **Lebensdauertabelle** (F3) als Kachel in den Einstellungen,
    **Hausaushang** (F4) als Aktion in der Liegenschaftsakte.
-4. **Suchfeld Objekte** (F6), **Fall-Liste** (F5), Mieterwechsel ↔ Fall
-   verlinken.
+4. Fallakte → Akte verlinken (Rest von F5). F6 entfällt (siehe Tabelle).
+
+*Umgesetzt auf Branch `audit-fixes-ui`. Zusätzlich geschärft:
+`core/tests/test_erreichbarkeit.py` lässt Verweise aus der eigenen Vorlage und
+der eigenen Ansicht nicht mehr als «Weg» gelten — genau diese Lücke hatte die
+Lebensdauertabelle unsichtbar gemacht.*
 
 ### Etappe 2 — Formulare, die Fehler zeigen (grösster UX-Hebel)
 

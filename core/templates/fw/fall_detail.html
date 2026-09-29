@@ -21,7 +21,7 @@
             <h1>{{ fall.betreff|default:fall.fallart.bezeichnung }}</h1>
             <div class="fw-akte-pfad">
                 <div class="fw-pz"><span>{% trans "Fallart" %}</span><b>{{ fall.fallart.bezeichnung }}</b></div>
-                {% if fall.akte %}<div class="fw-pz"><span>{% trans "Akte" %}</span><b>{{ fall.akte }}</b></div>{% endif %}
+                {% if fall.akte %}<div class="fw-pz"><span>{% trans "Akte" %}</span><b>{% if akte_url %}<a href="{{ akte_url }}" class="fw-link">{{ fall.akte }}</a>{% else %}{{ fall.akte }}{% endif %}</b></div>{% endif %}
                 <div class="fw-pz"><span>{% trans "Eröffnet" %}</span><b>{{ fall.eroeffnet_am|date:"d.m.Y" }}</b></div>
                 {% comment %}
                 DIE ZUSTÄNDIGKEIT LÄSST SICH ÄNDERN (E2.70)

@@ -15,6 +15,16 @@
         <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}</p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
+        {% comment %} Mängelrüge Art. 267a OR: Die Ansicht war fertig, hatte aber keinen
+           Knopf. Unterbleibt die Rüge nach der Rückgabe, gilt die Sache als
+           ordnungsgemäss zurückgegeben — deshalb sichtbar im Kopf, nicht im Menü. {% endcomment %}
+        {% if p.typ == 'auszug' and hat_mieter_maengel %}
+        <form method="post" action="/neu/abnahme/{{ p.id }}/ruege-267a/" target="_blank"
+              onsubmit="return confirm('{% filter escapejs %}{% trans "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?" %}{% endfilter %}');">
+            {% csrf_token %}
+            <button type="submit" class="fw-btn text-sm" title="{% trans 'Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche (Art. 267a OR).' %}">{% zeichen 'recht' klasse='mr-1.5 fw-warnton' %}{% trans "Mängelrüge 267a" %}</button>
+        </form>
+        {% endif %}
         {% if p.kosten_mieter_total %}
         <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="fw-btn fw-primary text-sm">{% zeichen 'rechnung' klasse='mr-1.5' %}{% trans "In Schlussabrechnung" %}</a>
         {% endif %}

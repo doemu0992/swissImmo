@@ -1,7 +1,7 @@
 # core/views/ticket_public.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from django.contrib.admin.views.decorators import staff_member_required
+from core.auth import rolle_erforderlich, TEAM_ROLLEN
 
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
@@ -165,9 +165,13 @@ def _qr_formular(request, liegenschaft):
     return render(request, 'core/public_ticket_form.html', {'liegenschaft': liegenschaft, 'einheiten': einheiten})
 
 # ==========================================
-# 4. AUSHANG GENERIEREN (ADMIN)
+# 4. AUSHANG GENERIEREN
 # ==========================================
-@staff_member_required
+# Bis zum Audit vom 29.09.2026 `staff_member_required` und nur aus dem Django-
+# Admin verlinkt: Ein Verwalter ohne Staff-Flag landete auf der Admin-Anmeldung.
+# Jetzt aus der Liegenschaftsakte erreichbar, für das ganze Team. Die Liegenschaft
+# kommt über den TenantManager — eine fremde ID ergibt 404.
+@rolle_erforderlich(*TEAM_ROLLEN)
 def generate_hallway_poster(request, liegenschaft_id):
     liegenschaft = get_object_or_404(Liegenschaft, pk=liegenschaft_id)
     domain = request.get_host()

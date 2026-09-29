@@ -56,6 +56,24 @@
 
         {% if r.notiz %}<p class="mt-3 text-xs fw-mutet line-clamp-2">{{ r.notiz }}</p>{% endif %}
 
+        {% comment %} Bewerbungslink: Das öffentliche Formular (/bewerben/<id>/) existierte,
+           war aber nirgends zu finden — Bewerbungen kamen nur, wenn jemand die
+           Adresse von Hand baute. Kopieren für Inserate, QR für Aushang/Exposé. {% endcomment %}
+        <div class="mt-3">
+            <label for="bwlink{{ r.e.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Bewerbungslink" %}</label>
+            <div class="flex items-center gap-2">
+                <input id="bwlink{{ r.e.id }}" readonly value="{{ r.bewerbungslink }}" onclick="this.select()"
+                       class="flex-1 min-w-0 fw-flaeche2 rounded-lg text-xs px-3 py-2 font-mono fw-ink">
+                <button type="button" class="fw-btn shrink-0" style="padding:6px 10px;font-size:12px"
+                        data-kopiert="{% trans 'Kopiert' %}"
+                        onclick="var b=this;navigator.clipboard.writeText(document.getElementById('bwlink{{ r.e.id }}').value).then(function(){var t=b.innerHTML;b.textContent=b.dataset.kopiert;setTimeout(function(){b.innerHTML=t;},1500);});">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Kopieren" %}</button>
+            </div>
+            <details class="mt-2">
+                <summary class="text-xs font-semibold fw-marke cursor-pointer">{% trans "QR-Code anzeigen" %}</summary>
+                <div class="mt-2 w-32 rounded-lg overflow-hidden" role="img" aria-label="{% trans 'QR-Code zum Bewerbungsformular' %}">{{ r.bewerbungs_qr|safe }}</div>
+            </details>
+        </div>
+
         <div class="mt-4 flex items-center justify-between gap-3">
             <a href="/neu/vermarktung/{{ r.e.id }}/bewerber/{{ lg_query }}" class="text-sm font-semibold fw-marke hover:fw-marke">
                 {% zeichen 'person' klasse='mr-1' %}{% blocktrans count n=r.bewerbungen %}{{ n }} Bewerbung{% plural %}{{ n }} Bewerbungen{% endblocktrans %}{% if r.bewerbungen %} {% trans "vergleichen" %}{% endif %}

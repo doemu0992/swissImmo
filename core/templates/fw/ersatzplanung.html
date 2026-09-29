@@ -10,7 +10,12 @@
         <h1>{% trans "Garantie- &amp; Ersatzplanung" %}</h1>
         <p>{% blocktrans trimmed %}Raumbuch-Elemente <b>und Geräte</b> nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr{% endblocktrans %}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
-    <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary">{% zeichen 'drucken' %}{% trans "Budget-PDF" %}</a>
+    <div class="flex flex-wrap items-center gap-2">
+        {% comment %} Die Tabelle, aus der diese Seite rechnet — vorher nur per
+           Adresszeile erreichbar (Audit F3). {% endcomment %}
+        <a href="/neu/lebensdauer/" class="fw-btn">{% zeichen 'einstellungen' %}{% trans "Lebensdauertabelle" %}</a>
+        <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary">{% zeichen 'drucken' %}{% trans "Budget-PDF" %}</a>
+    </div>
 </div>
 
 <!-- KPI -->
