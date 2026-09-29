@@ -98,7 +98,10 @@ def fw_liegenschaft_form(request, pk=None):
 
             # Automatischer GWR/EGID-Import (nur wenn gewünscht) — ermittelt die EGID
             # aus der Adresse und importiert die Objekte (Wohnungen) vom Bundesamt.
-            if P.get('gwr_import', 'on') == 'on' and (not obj.egid or obj.einheiten.count() == 0):
+            # Ein abgewähltes Kontrollkästchen schickt der Browser gar nicht
+            # mit. Mit `P.get('gwr_import', 'on')` griff dann der Vorgabewert,
+            # und der Import lief trotz abgewähltem Häkchen (Audit).
+            if P.get('gwr_import') == 'on' and (not obj.egid or obj.einheiten.count() == 0):
                 try:
                     from portfolio.services import sync_liegenschaft_with_gwr
                     res = sync_liegenschaft_with_gwr(obj)

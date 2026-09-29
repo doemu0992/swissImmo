@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n rechte %}
 {% load chf %}
 {% block title %}{% trans "Mahnwesen" %} — swissImmo{% endblock %}
 
@@ -101,6 +101,22 @@
                             {% zeichen 'verlauf' %} {% trans "Erfassen" %}
                         </button>
                     </form>
+                    {% comment %} Kopie per E-Mail (Entscheid 29.09.2026): nur ZUSÄTZLICH.
+                       Die Mahnung mit Kündigungsandrohung nach Art. 257d OR verlangt
+                       Schriftform; rechtsgültig ist der Brief, die Mail informiert.
+                       Die Rückfrage sagt das, bevor etwas versandt wird. {% endcomment %}
+                    {% if row.hat_email and request.user|darf:"/vertrag/1/mahnung/mail/" %}
+                    <form method="post" action="/vertrag/{{ row.vertrag_id }}/mahnung/mail/" class="inline"
+                          onsubmit="return confirm('{% filter escapejs %}{% trans "Eine Kopie dieser Mahnung per E-Mail an den Mieter senden? Rechtsgültig ist nur die schriftliche Zustellung per Post (Art. 257d OR) — die E-Mail ersetzt den Brief nicht." %}{% endfilter %}')">
+                        {% csrf_token %}
+                        <input type="hidden" name="monat" value="{{ row.monat }}">
+                        <input type="hidden" name="betrag" value="{{ row.offen|stringformat:'.2f' }}">
+                        <button type="submit" class="fw-btn fw-knapp"
+                                title="{% trans 'Kopie per E-Mail — ersetzt den eingeschriebenen Brief nicht' %}">
+                            {% zeichen 'senden' %} {% trans "Kopie per E-Mail" %}
+                        </button>
+                    </form>
+                    {% endif %}
                     {% else %}<span class="fw-faint text-xs">{% trans "kein Vertrag" %}</span>{% endif %}
                     </div>
                 </td>

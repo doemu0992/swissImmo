@@ -90,6 +90,7 @@ def fw_mahnwesen(request):
             'faellig': faellig,
             'vertrag_id': r.vertrag_id,
             'hat_email': bool(r.vertrag and r.vertrag.mieter.email),
+            'monat': monat,
             'mahn_url': (f"/vertrag/{r.vertrag_id}/mahnung/?betrag={offen}&monat={monat}"
                          if r.vertrag_id else None),
         })

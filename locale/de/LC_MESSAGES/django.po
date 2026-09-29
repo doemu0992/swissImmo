@@ -20192,3 +20192,19 @@ msgstr "«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gesp
 #, python-format
 msgid "«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert."
 msgstr "«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert."
+
+#: core/templates/fw/mahnwesen.html
+msgid "Eine Kopie dieser Mahnung per E-Mail an den Mieter senden? Rechtsgültig ist nur die schriftliche Zustellung per Post (Art. 257d OR) — die E-Mail ersetzt den Brief nicht."
+msgstr "Eine Kopie dieser Mahnung per E-Mail an den Mieter senden? Rechtsgültig ist nur die schriftliche Zustellung per Post (Art. 257d OR) — die E-Mail ersetzt den Brief nicht."
+
+#: core/templates/fw/mahnwesen.html
+msgid "Kopie per E-Mail — ersetzt den eingeschriebenen Brief nicht"
+msgstr "Kopie per E-Mail — ersetzt den eingeschriebenen Brief nicht"
+
+#: core/templates/fw/mahnwesen.html
+msgid "Kopie per E-Mail"
+msgstr "Kopie per E-Mail"
+
+#: portfolio/forms.py
+msgid "Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR)."
+msgstr "Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR)."

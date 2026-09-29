@@ -196,7 +196,11 @@ Das sind Fehler, keine Gestaltungsfragen. Rund 1–2 Tage, ein PR.
 1. **GET-Nebenwirkungen beseitigen:** Mahnungsversand per Mail, DocuSeal-Versand,
    Marktdaten-Import und Rüge 267a verlangen POST. *(Umgesetzt: `send_mahnung_mail`
    bleibt als Route, aber nur per POST — gelöscht wird eine funktionierende
-   Versandstelle erst auf Entscheid.)*
+   Versandstelle erst auf Entscheid.)* *(Entschieden 29.09.2026: Die Route
+   bleibt und ist im Mahnwesen als «Kopie per E-Mail» neben «Erfassen»
+   verlinkt — nur für Verwalter und nur, wenn der Mieter eine E-Mail hat.
+   Knopf und Rückfrage sagen, dass die E-Mail die schriftliche Zustellung
+   per Post nach Art. 257d OR nicht ersetzt.)*
 2. Den toten Link «Löschbegehren» und den Brotkrumen «Arbeit» korrigieren;
    Fehlerseiten nach Kontext (Portal oder Team) verlinken lassen und das
    Favicon tauschen.
@@ -374,6 +378,18 @@ Danach die übrigen drei Listen:
 - Objekte: Gruppierung nach Liegenschaft und kein zweites Suchfeld bleiben
   (Entscheid G9). Geblättert wird in ganzen Liegenschaften (20 je Seite),
   damit eine Gruppe nie auf zwei Seiten zerfällt; CSV aller Objekte.*
+
+### Offene Entscheide (entschieden 29.09.2026)
+
+- **Mahnung per E-Mail:** als Zusatz verlinkt, siehe Etappe 0, Punkt 1.
+- **Standard-Kaution beim Objekt:** Wohnräume (Wohnung, Stockwerkeigentum)
+  höchstens drei Monatsmieten (Art. 257e OR), abgelehnt am Feld. Vorher nahm
+  das Formular jede Zahl, und der Vertrag kürzte still auf drei. Gewerbe und
+  Nebenobjekte bleiben frei; die Zuordnung ist dieselbe wie am Vertrag
+  (`Einheit.MIETRECHT_KATEGORIE`).
+- **Nebenbefund behoben:** Das Häkchen «GWR-Import» wirkte nicht. Ein
+  abgewähltes Kontrollkästchen schickt der Browser nicht mit, und die Ansicht
+  setzte dann «an» als Vorgabe — der Import lief immer.
 
 ---
 

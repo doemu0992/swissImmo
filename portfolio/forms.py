@@ -136,16 +136,38 @@ class EinheitForm(forms.ModelForm):
         return self.instance.wertquote if wert is None else wert
 
     def clean_standard_kautionsmonate(self):
-        # Nur «ganze Zahl, nicht negativ». Die Höchstgrenze von drei
-        # Monatsmieten (Art. 257e OR) gilt für Wohnräume und wird am Vertrag
-        # durchgesetzt (`Mietvertrag.save()`); sie hier zu wiederholen hiesse,
-        # sie für Gewerbe falsch zu verallgemeinern.
+        # «Ganze Zahl, nicht negativ» hier; die Höchstgrenze für Wohnräume
+        # prüft `clean()`, weil sie vom Typ des Objekts abhängt.
         wert = self.cleaned_data.get('standard_kautionsmonate')
         if wert is None:
             return self.instance.standard_kautionsmonate
         if wert < 0:
             raise forms.ValidationError(_t('Bitte eine Anzahl Monate ab 0 angeben.'))
         return wert
+
+    #: Art. 257e OR: bei Wohnräumen höchstens drei Monatsmieten.
+    KAUTION_MAX_WOHNEN = 3
+
+    def clean(self):
+        """Kaution: Bei Wohnräumen höchstens drei Monatsmieten (Art. 257e OR).
+
+        Vorher nahm das Formular jede Zahl; der Vertrag kürzte dann still auf
+        drei (`Mietvertrag.save()`). Wer beim Objekt «4» hinterlegte, sah im
+        Vertragsassistenten eine Kaution, die sich beim Speichern verkleinerte.
+
+        Welche Objekte Wohnräume sind, sagt `Einheit.MIETRECHT_KATEGORIE` —
+        dieselbe Zuordnung, nach der der Vertrag klemmt. Gewerbe und
+        Nebenobjekte (Parkplatz, Garage, Bastelraum) haben keine gesetzliche
+        Grenze und bleiben frei.
+        """
+        daten = super().clean()
+        monate = daten.get('standard_kautionsmonate')
+        typ = daten.get('typ') or getattr(self.instance, 'typ', None)
+        if monate is not None and Einheit.MIETRECHT_KATEGORIE.get(typ, 'wohnen') == 'wohnen' \
+                and monate > self.KAUTION_MAX_WOHNEN:
+            self.add_error('standard_kautionsmonate', _t(
+                'Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR).'))
+        return daten
 
     def clean_letzte_renovation(self):
         jahr = self.cleaned_data.get('letzte_renovation')
