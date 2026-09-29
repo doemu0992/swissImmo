@@ -35,6 +35,7 @@
 # wer den Regelsatz als geprüft kennzeichnet, schaltet die Sperre scharf.
 
 from django.contrib import messages
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -210,7 +211,7 @@ def fw_regelsatz_form(request, pk=None):
         P = request.POST
         bezeichnung = P.get('bezeichnung', '').strip()
         if not bezeichnung:
-            messages.error(request, 'Der Regelsatz braucht eine Bezeichnung.')
+            messages.error(request, gettext('Der Regelsatz braucht eine Bezeichnung.'))
             return redirect(request.path)
 
         kanton = P.get('kanton', '').strip().upper()[:2]
@@ -227,9 +228,7 @@ def fw_regelsatz_form(request, pk=None):
         if kollision.exists():
             bereich = f'den Kanton {kanton}' if kanton else 'alle Kantone'
             messages.error(
-                request, f'Für {bereich} besteht bereits der Regelsatz '
-                         f'«{kollision.first()}». Es gilt ein Satz je Kanton — '
-                         f'bearbeite den bestehenden, statt einen zweiten anzulegen.')
+                request, gettext('Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz je Kanton — bearbeite den bestehenden, statt einen zweiten anzulegen.') % {'bereich': bereich, 'first': kollision.first()})
             return redirect(request.path)
 
         war_geprueft = satz.geprueft if satz else False
@@ -262,13 +261,11 @@ def fw_regelsatz_form(request, pk=None):
 
         if satz.geprueft and not war_geprueft:
             messages.warning(
-                request, 'Der Regelsatz gilt jetzt als juristisch geprüft. '
-                         'Regeln mit Verbindlichkeit «Sperre» verhindern ab '
-                         'sofort das Speichern.')
+                request, gettext('Der Regelsatz gilt jetzt als juristisch geprüft. Regeln mit Verbindlichkeit «Sperre» verhindern ab sofort das Speichern.'))
         log_aktion(request, 'Regelsatz gespeichert', str(satz),
                    f'Stand {satz.stand:%d.%m.%Y}, '
                    f'{"geprüft" if satz.geprueft else "ungeprüft"}', ziel=satz)
-        messages.success(request, f'Regelsatz «{satz}» gespeichert.')
+        messages.success(request, gettext('Regelsatz «%(satz)s» gespeichert.') % {'satz': satz})
         return redirect('/neu/regelwerk/')
 
     regeln = {r.art: r for r in satz.regeln.all()} if satz else {}
@@ -346,8 +343,7 @@ def fw_regelsatz_loeschen(request, pk):
     name = str(satz)
     satz.delete()
     log_aktion(request, 'Regelsatz gelöscht', name, '')
-    messages.success(request, f'Regelsatz «{name}» gelöscht. Das Protokoll der '
-                              f'bisherigen Anwendungen bleibt erhalten.')
+    messages.success(request, gettext('Regelsatz «%(name)s» gelöscht. Das Protokoll der bisherigen Anwendungen bleibt erhalten.') % {'name': name})
     return redirect('/neu/regelwerk/')
 
 
@@ -404,7 +400,7 @@ def fw_regelanwendung_uebersteuern(request, pk):
         return redirect(request.POST.get('zurueck') or '/neu/regelwerk/protokoll/')
     log_aktion(request, 'Regelbefund übersteuert', anwendung.art,
                anwendung.uebersteuert_begruendung, ziel=anwendung)
-    messages.success(request, 'Übersteuerung mit Begründung protokolliert.')
+    messages.success(request, gettext('Übersteuerung mit Begründung protokolliert.'))
     return redirect(request.POST.get('zurueck') or '/neu/regelwerk/protokoll/')
 
 

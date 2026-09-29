@@ -11,6 +11,7 @@ import re
 from datetime import date, timedelta as _timedelta
 
 from django.db.models import Q
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -275,7 +276,7 @@ def fw_pendenz_neu(request):
         return redirect('fw_pendenzen')
     titel = (request.POST.get('titel') or '').strip()
     if not titel:
-        messages.error(request, "Titel fehlt.")
+        messages.error(request, gettext('Titel fehlt.'))
         return redirect('fw_pendenzen')
     faellig = None
     if request.POST.get('faellig_am'):
@@ -293,7 +294,7 @@ def fw_pendenz_neu(request):
         erstellt_von=request.user,
     )
     log_aktion(request, "Pendenz erstellt", titel, '')
-    messages.success(request, f"✅ Pendenz „{titel}“ erfasst.")
+    messages.success(request, '✅ ' + gettext('Pendenz „%(titel)s“ erfasst.') % {'titel': titel})
     return redirect('fw_pendenzen')
 
 
@@ -322,5 +323,5 @@ def fw_pendenz_loeschen(request, pk):
     titel = p.titel
     p.delete()
     log_aktion(request, "Pendenz gelöscht", titel, '')
-    messages.success(request, "Pendenz gelöscht.")
+    messages.success(request, gettext('Pendenz gelöscht.'))
     return redirect('fw_pendenzen')

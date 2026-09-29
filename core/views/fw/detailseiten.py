@@ -404,7 +404,7 @@ def fw_merkmale_speichern(request, pk):
     e.merkmale = clean
     e.save(update_fields=['merkmale'])
     log_aktion(request, "Ausstattungsmerkmale gespeichert", e.bezeichnung, f"{len(clean)} Merkmale")
-    messages.success(request, "✅ Ausstattungsmerkmale gespeichert.")
+    messages.success(request, '✅ ' + gettext('Ausstattungsmerkmale gespeichert.'))
     return redirect(f'/neu/objekte/{e.id}/')
 
 
@@ -466,7 +466,7 @@ def fw_budget_speichern(request, pk):
     except ValueError:
         jahr = 0
     if not 2000 <= jahr <= 2100:
-        messages.error(request, 'Bitte ein Jahr zwischen 2000 und 2100 angeben.')
+        messages.error(request, gettext('Bitte ein Jahr zwischen 2000 und 2100 angeben.'))
         return redirect(ziel)
 
     # Schweizer Schreibweise: «31'000.00» ist die Form, die auf derselben
@@ -476,10 +476,10 @@ def fw_budget_speichern(request, pk):
     try:
         betrag = Decimal(roh)
     except (InvalidOperation, ValueError):
-        messages.error(request, 'Der Betrag ist keine gültige Zahl.')
+        messages.error(request, gettext('Der Betrag ist keine gültige Zahl.'))
         return redirect(ziel)
     if betrag < 0:
-        messages.error(request, 'Ein negatives Budget ergibt keinen Sinn.')
+        messages.error(request, gettext('Ein negatives Budget ergibt keinen Sinn.'))
         return redirect(ziel)
 
     Liegenschaftsbudget.objects.update_or_create(
@@ -512,7 +512,7 @@ def fw_budget_loeschen(request, pk):
         jahr = b.jahr
         b.delete()
         log_aktion(request, 'Unterhaltsbudget entfernt', str(lg), str(jahr))
-        messages.success(request, f'Budget {jahr} entfernt.')
+        messages.success(request, gettext('Budget %(jahr)s entfernt.') % {'jahr': jahr})
     return redirect(f'/neu/liegenschaften/{lg.id}/?tab=finanzen')
 
 
@@ -529,12 +529,12 @@ def fw_wartungsfrist_neu(request, pk):
     bez = (request.POST.get('bezeichnung') or '').strip()
     faellig = (request.POST.get('naechste_faelligkeit') or '').strip()
     if not bez or not faellig:
-        messages.error(request, "Bezeichnung und Fälligkeitsdatum sind erforderlich.")
+        messages.error(request, gettext('Bezeichnung und Fälligkeitsdatum sind erforderlich.'))
         return redirect(f'/neu/liegenschaften/{lg.id}/')
     try:
         faellig_d = date.fromisoformat(faellig)
     except ValueError:
-        messages.error(request, "Ungültiges Datum.")
+        messages.error(request, gettext('Ungültiges Datum.'))
         return redirect(f'/neu/liegenschaften/{lg.id}/')
     try:
         intervall = int(request.POST.get('intervall_monate') or 12)
@@ -546,7 +546,7 @@ def fw_wartungsfrist_neu(request, pk):
         naechste_faelligkeit=faellig_d, intervall_monate=max(0, intervall),
         notiz=(request.POST.get('notiz') or '').strip())
     log_aktion(request, "Wartungsfrist erfasst", str(lg), bez)
-    messages.success(request, f'✅ Frist „{bez}" gespeichert.')
+    messages.success(request, '✅ ' + gettext('Frist „%(bez)s" gespeichert.') % {'bez': bez})
     return redirect(f'/neu/liegenschaften/{lg.id}/?tab=fristen')
 
 
@@ -567,7 +567,7 @@ def fw_wartungsfrist_loeschen(request, pk):
         Pendenz.objects.filter(quelle__startswith=f"auto:wartung:{wf.id}:").delete()
         wf.delete()
         log_aktion(request, "Wartungsfrist gelöscht", bez, '')
-        messages.success(request, "🗑️ Frist gelöscht.")
+        messages.success(request, '🗑️ ' + gettext('Frist gelöscht.'))
     return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
 
 
@@ -585,12 +585,12 @@ def fw_wartungsfrist_bearbeiten(request, pk):
     bez = (request.POST.get('bezeichnung') or '').strip()
     faellig = (request.POST.get('naechste_faelligkeit') or '').strip()
     if not bez or not faellig:
-        messages.error(request, "Bezeichnung und Fälligkeitsdatum sind erforderlich.")
+        messages.error(request, gettext('Bezeichnung und Fälligkeitsdatum sind erforderlich.'))
         return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
     try:
         wf.naechste_faelligkeit = date.fromisoformat(faellig)
     except ValueError:
-        messages.error(request, "Ungültiges Datum.")
+        messages.error(request, gettext('Ungültiges Datum.'))
         return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
     wf.art = request.POST.get('art', wf.art) or wf.art
     wf.bezeichnung = bez
@@ -602,7 +602,7 @@ def fw_wartungsfrist_bearbeiten(request, pk):
     wf.notiz = (request.POST.get('notiz') or '').strip()
     wf.save()
     log_aktion(request, "Wartungsfrist bearbeitet", bez, '')
-    messages.success(request, f'✅ Frist „{bez}" aktualisiert.')
+    messages.success(request, '✅ ' + gettext('Frist „%(bez)s" aktualisiert.') % {'bez': bez})
     return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
 
 
@@ -812,7 +812,7 @@ def fw_ausstattung_add(request, pk):
     raum = (request.POST.get('raum') or '').strip()
     kategorie = (request.POST.get('kategorie') or '').strip()
     if not raum or not kategorie:
-        messages.error(request, "Raum und Kategorie sind Pflichtfelder.")
+        messages.error(request, gettext('Raum und Kategorie sind Pflichtfelder.'))
         return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
 
     def _dec(x):
@@ -858,7 +858,7 @@ def fw_ausstattung_add(request, pk):
         a.foto = request.FILES['foto']
         a.save(update_fields=['foto'])
     log_aktion(request, "Ausstattung erfasst", e.bezeichnung, f"{raum} · {kategorie}")
-    messages.success(request, f"✅ «{kategorie}» im Raum «{raum}» erfasst.")
+    messages.success(request, '✅ ' + gettext('«%(kategorie)s» im Raum «%(raum)s» erfasst.') % {'kategorie': kategorie, 'raum': raum})
     return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
 
 
@@ -899,7 +899,7 @@ def fw_ausstattung_edit(request, pk):
     raum = (P.get('raum') or '').strip()
     kategorie = (P.get('kategorie') or '').strip()
     if not raum or not kategorie:
-        messages.error(request, "Raum und Kategorie sind Pflichtfelder.")
+        messages.error(request, gettext('Raum und Kategorie sind Pflichtfelder.'))
         return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
     a.raum = raum
     a.kategorie = kategorie
@@ -918,7 +918,7 @@ def fw_ausstattung_edit(request, pk):
         a.foto = request.FILES['foto']
     a.save()
     log_aktion(request, "Ausstattung bearbeitet", a.einheit.bezeichnung, f"{raum} · {kategorie}")
-    messages.success(request, f"✅ «{kategorie}» aktualisiert.")
+    messages.success(request, '✅ ' + gettext('«%(kategorie)s» aktualisiert.') % {'kategorie': kategorie})
     return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
 
 
@@ -938,7 +938,7 @@ def fw_ausstattung_katalog(request, pk):
     raumtyp = (request.POST.get('raumtyp') or '').strip()
     elemente = RAUM_KATALOG.get(raumtyp)
     if not elemente:
-        messages.error(request, "Unbekannter Raumtyp.")
+        messages.error(request, gettext('Unbekannter Raumtyp.'))
         return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
 
     vorhanden = set(Ausstattung.objects.filter(einheit=e, raum=raumtyp)
@@ -953,9 +953,9 @@ def fw_ausstattung_katalog(request, pk):
         n += 1
     if n:
         log_aktion(request, "Raumkatalog geladen", e.bezeichnung, f"{raumtyp}: {n} Elemente")
-        messages.success(request, f"✅ {n} Element(e) für «{raumtyp}» angelegt — jetzt Details ergänzen.")
+        messages.success(request, '✅ ' + gettext('%(n)s Element(e) für «%(raumtyp)s» angelegt — jetzt Details ergänzen.') % {'n': n, 'raumtyp': raumtyp})
     else:
-        messages.info(request, f"«{raumtyp}» ist bereits vollständig erfasst.")
+        messages.info(request, gettext('«%(raumtyp)s» ist bereits vollständig erfasst.') % {'raumtyp': raumtyp})
     return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
 
 
@@ -969,7 +969,7 @@ def fw_ausstattung_del(request, pk):
     eid = a.einheit_id
     if request.method == 'POST':
         a.delete()
-        messages.success(request, "Ausstattungselement entfernt.")
+        messages.success(request, gettext('Ausstattungselement entfernt.'))
     return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
 
 
@@ -1014,15 +1014,15 @@ def fw_geraet_add(request):
         e = get_object_or_404(Einheit, id=eid)
         Geraet.objects.create(einheit=e, **kwargs)
         log_aktion(request, "Gerät erfasst", e.bezeichnung, kategorie)
-        messages.success(request, f"✅ Gerät «{kategorie}» erfasst.")
+        messages.success(request, '✅ ' + gettext('Gerät «%(kategorie)s» erfasst.') % {'kategorie': kategorie})
         return redirect(f'/neu/objekte/{e.id}/?tab=geraete')
     if lid:
         lg = get_object_or_404(Liegenschaft, id=lid)
         Geraet.objects.create(liegenschaft=lg, **kwargs)
         log_aktion(request, "Gerät erfasst", str(lg), kategorie)
-        messages.success(request, f"✅ Gerät «{kategorie}» erfasst.")
+        messages.success(request, '✅ ' + gettext('Gerät «%(kategorie)s» erfasst.') % {'kategorie': kategorie})
         return redirect(f'/neu/liegenschaften/{lg.id}/?tab=technik')
-    messages.error(request, "Kein Ziel angegeben.")
+    messages.error(request, gettext('Kein Ziel angegeben.'))
     return redirect('/neu/liegenschaften/')
 
 
@@ -1039,7 +1039,7 @@ def fw_geraet_del(request, pk):
         # Verwaiste Auto-Garantie-Pendenz mitlöschen (hängt nur über `quelle`).
         Pendenz.objects.filter(quelle=f"auto:garantie:{g.id}").delete()
         g.delete()
-        messages.success(request, "Gerät entfernt.")
+        messages.success(request, gettext('Gerät entfernt.'))
     if eid:
         return redirect(f'/neu/objekte/{eid}/?tab=geraete')
     return redirect(f'/neu/liegenschaften/{lid}/?tab=technik')
@@ -1068,7 +1068,7 @@ def fw_zaehler_add(request):
     typ = (request.POST.get('typ') or '').strip()
     nummer = (request.POST.get('zaehler_nummer') or '').strip()
     if not typ or not nummer:
-        messages.error(request, "Typ und Zähler-Nr. sind Pflichtfelder.")
+        messages.error(request, gettext('Typ und Zähler-Nr. sind Pflichtfelder.'))
         ref = request.META.get('HTTP_REFERER') or '/neu/liegenschaften/'
         return redirect(ref)
 
@@ -1083,15 +1083,15 @@ def fw_zaehler_add(request):
         e = get_object_or_404(Einheit, id=eid)
         Zaehler.objects.create(einheit=e, **kwargs)
         log_aktion(request, "Zähler erfasst", e.bezeichnung, f"{typ} · {nummer}")
-        messages.success(request, f"✅ Zähler «{typ}» erfasst.")
+        messages.success(request, '✅ ' + gettext('Zähler «%(typ)s» erfasst.') % {'typ': typ})
         return redirect(f'/neu/objekte/{e.id}/?tab=zaehler')
     if lid:
         lg = get_object_or_404(Liegenschaft, id=lid)
         Zaehler.objects.create(liegenschaft=lg, **kwargs)
         log_aktion(request, "Zähler erfasst", str(lg), f"{typ} · {nummer}")
-        messages.success(request, f"✅ Zähler «{typ}» erfasst.")
+        messages.success(request, '✅ ' + gettext('Zähler «%(typ)s» erfasst.') % {'typ': typ})
         return redirect(f'/neu/liegenschaften/{lg.id}/?tab=technik')
-    messages.error(request, "Kein Ziel angegeben.")
+    messages.error(request, gettext('Kein Ziel angegeben.'))
     return redirect('/neu/liegenschaften/')
 
 
@@ -1119,7 +1119,7 @@ def fw_zaehler_edit(request, pk):
     typ = (request.POST.get('typ') or '').strip()
     nummer = (request.POST.get('zaehler_nummer') or '').strip()
     if not typ or not nummer:
-        messages.error(request, "Typ und Zähler-Nr. sind Pflichtfelder.")
+        messages.error(request, gettext('Typ und Zähler-Nr. sind Pflichtfelder.'))
         return redirect(ziel)
     z.typ = typ
     z.zaehler_nummer = nummer
@@ -1127,7 +1127,7 @@ def fw_zaehler_edit(request, pk):
     z.aktueller_stand = _dec(request.POST.get('aktueller_stand'))
     z.save()
     log_aktion(request, "Zähler bearbeitet", f"{typ} · {nummer}", '')
-    messages.success(request, f"✅ Zähler «{typ}» aktualisiert.")
+    messages.success(request, '✅ ' + gettext('Zähler «%(typ)s» aktualisiert.') % {'typ': typ})
     return redirect(ziel)
 
 
@@ -1141,7 +1141,7 @@ def fw_zaehler_del(request, pk):
     eid, lid = z.einheit_id, z.liegenschaft_id
     if request.method == 'POST':
         z.delete()
-        messages.success(request, "Zähler entfernt.")
+        messages.success(request, gettext('Zähler entfernt.'))
     if eid:
         return redirect(f'/neu/objekte/{eid}/?tab=zaehler')
     return redirect(f'/neu/liegenschaften/{lid}/?tab=technik')
@@ -1167,12 +1167,12 @@ def fw_schluessel_add(request):
     except (TypeError, ValueError):
         anzahl = 1
     if not nummer:
-        messages.error(request, "Schlüssel-Nr. ist ein Pflichtfeld.")
+        messages.error(request, gettext('Schlüssel-Nr. ist ein Pflichtfeld.'))
         return redirect(f'/neu/objekte/{e.id}/?tab=schluessel')
     Schluessel.objects.create(liegenschaft=e.liegenschaft, einheit=e,
                               typ=typ, schluessel_nummer=nummer, anzahl=anzahl)
     log_aktion(request, "Schlüssel erfasst", f"{e.bezeichnung}", f"{typ} {nummer} × {anzahl}")
-    messages.success(request, f"✅ Schlüssel {nummer} ({typ}, {anzahl}×) erfasst.")
+    messages.success(request, '✅ ' + gettext('Schlüssel %(nummer)s (%(typ)s, %(anzahl)s×) erfasst.') % {'nummer': nummer, 'typ': typ, 'anzahl': anzahl})
     return redirect(f'/neu/objekte/{e.id}/?tab=schluessel')
 
 
@@ -1186,10 +1186,10 @@ def fw_schluessel_del(request, pk):
     eid = sch.einheit_id
     if request.method == 'POST':
         if sch.ausgaben.filter(rueckgabe_am__isnull=True).exists():
-            messages.error(request, "Schlüssel ist noch ausgegeben — zuerst Rücknahme erfassen.")
+            messages.error(request, gettext('Schlüssel ist noch ausgegeben — zuerst Rücknahme erfassen.'))
         else:
             sch.delete()
-            messages.success(request, "Schlüssel entfernt.")
+            messages.success(request, gettext('Schlüssel entfernt.'))
     return redirect(f'/neu/objekte/{eid}/?tab=schluessel' if eid else '/neu/objekte/')
 
 
@@ -1206,7 +1206,7 @@ def fw_schluessel_ausgabe(request, pk):
         return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
     offen = sch.ausgaben.filter(rueckgabe_am__isnull=True).count()
     if offen >= sch.anzahl:
-        messages.error(request, f"Alle {sch.anzahl} Exemplare von {sch.schluessel_nummer} sind bereits ausgegeben.")
+        messages.error(request, gettext('Alle %(anzahl)s Exemplare von %(schluessel_nummer)s sind bereits ausgegeben.') % {'anzahl': sch.anzahl, 'schluessel_nummer': sch.schluessel_nummer})
         return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
     empf = (request.POST.get('empfaenger') or '')
     mieter = handwerker = None
@@ -1218,12 +1218,12 @@ def fw_schluessel_ausgabe(request, pk):
         handwerker = Handwerker.objects.filter(id=empf.split(':', 1)[1]).first()
         name = handwerker.firma if handwerker else ''
     if not (mieter or handwerker):
-        messages.error(request, "Bitte Empfänger (Mieter oder Handwerker) wählen.")
+        messages.error(request, gettext('Bitte Empfänger (Mieter oder Handwerker) wählen.'))
         return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
     SchluesselAusgabe.objects.create(schluessel=sch, mieter=mieter, handwerker=handwerker,
                                      ausgegeben_am=timezone.localdate())
     log_aktion(request, "Schlüssel ausgegeben", sch.schluessel_nummer, name)
-    messages.success(request, f"✅ Schlüssel {sch.schluessel_nummer} an {name} ausgegeben.")
+    messages.success(request, '✅ ' + gettext('Schlüssel %(schluessel_nummer)s an %(name)s ausgegeben.') % {'schluessel_nummer': sch.schluessel_nummer, 'name': name})
     return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
 
 
@@ -1240,7 +1240,7 @@ def fw_schluessel_rueckgabe(request, pk):
         a.save(update_fields=['rueckgabe_am'])
         wer = a.mieter.display_name if a.mieter_id else (a.handwerker.firma if a.handwerker_id else '')
         log_aktion(request, "Schlüssel zurückgenommen", a.schluessel.schluessel_nummer, wer)
-        messages.success(request, f"✅ Schlüssel {a.schluessel.schluessel_nummer} zurückgenommen.")
+        messages.success(request, '✅ ' + gettext('Schlüssel %(schluessel_nummer)s zurückgenommen.') % {'schluessel_nummer': a.schluessel.schluessel_nummer})
     return redirect(f'/neu/objekte/{a.schluessel.einheit_id}/?tab=schluessel')
 
 
@@ -1271,7 +1271,7 @@ def fw_sollmietzins_add(request):
     try:
         ab = date.fromisoformat(ab_raw)
     except ValueError:
-        messages.error(request, "Bitte ein gültiges «gültig ab»-Datum angeben.")
+        messages.error(request, gettext('Bitte ein gültiges «gültig ab»-Datum angeben.'))
         return redirect(ziel)
     netto = _dec(request.POST.get('netto_mietzins'))
     # Einstellplatz → keine Nebenkosten
@@ -1309,19 +1309,13 @@ def fw_sollmietzins_add(request):
     if rabatt_netto >= netto > 0:
         messages.warning(
             request,
-            f"⚠️ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst — "
-            f"Nettomietzins CHF {netto} VOLLSTÄNDIG ERLASSEN (Gratismonat). "
-            f"Verrechnet wird nur CHF {zu_zahlen}. War das nicht beabsichtigt, "
-            f"Zeile löschen und ohne Rabatt neu erfassen.")
+            '⚠️ ' + gettext('Sollmietzins ab %(strftime)s erfasst — Nettomietzins CHF %(netto)s VOLLSTÄNDIG ERLASSEN (Gratismonat). Verrechnet wird nur CHF %(zu_zahlen)s. War das nicht beabsichtigt, Zeile löschen und ohne Rabatt neu erfassen.') % {'strftime': ab.strftime('%d.%m.%Y'), 'netto': netto, 'zu_zahlen': zu_zahlen})
     elif rabatt_netto > 0 or rabatt_nk > 0:
         messages.success(
             request,
-            f"✅ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst — Referenz "
-            f"CHF {netto + nk}, davon CHF {rabatt_netto + rabatt_nk} Rabatt, "
-            f"zu zahlen CHF {zu_zahlen}.")
+            '✅ ' + gettext('Sollmietzins ab %(strftime)s erfasst — Referenz CHF %(wert)s, davon CHF %(wert2)s Rabatt, zu zahlen CHF %(zu_zahlen)s.') % {'strftime': ab.strftime('%d.%m.%Y'), 'wert': netto + nk, 'wert2': rabatt_netto + rabatt_nk, 'zu_zahlen': zu_zahlen})
     else:
-        messages.success(request, f"✅ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst "
-                         f"(CHF {zu_zahlen}).")
+        messages.success(request, '✅ ' + gettext('Sollmietzins ab %(strftime)s erfasst (CHF %(zu_zahlen)s).') % {'strftime': ab.strftime('%d.%m.%Y'), 'zu_zahlen': zu_zahlen})
     return redirect(ziel)
 
 
@@ -1336,7 +1330,7 @@ def fw_sollmietzins_del(request, pk):
     if request.method == 'POST':
         s.delete()
         e.sync_aktuelle_miete()
-        messages.success(request, "Sollmietzins-Zeile entfernt.")
+        messages.success(request, gettext('Sollmietzins-Zeile entfernt.'))
     return redirect(f'/neu/objekte/{e.id}/?tab=mietzins')
 
 
@@ -1355,7 +1349,7 @@ def fw_staffelvorlage_add(request):
     try:
         ab = date.fromisoformat((request.POST.get('gueltig_ab') or '').strip())
     except ValueError:
-        messages.error(request, "Bitte ein gültiges «gültig ab»-Datum angeben.")
+        messages.error(request, gettext('Bitte ein gültiges «gültig ab»-Datum angeben.'))
         return redirect(ziel)
 
     def _dec(x):
@@ -1366,13 +1360,13 @@ def fw_staffelvorlage_add(request):
 
     netto = _dec(request.POST.get('netto_mietzins'))
     if netto is None or netto <= 0:
-        messages.error(request, "Bitte einen gültigen Netto-Mietzins angeben.")
+        messages.error(request, gettext('Bitte einen gültigen Netto-Mietzins angeben.'))
         return redirect(ziel)
     StaffelVorlage.objects.create(
         einheit=e, gueltig_ab=ab, netto_mietzins=netto,
         notiz=(request.POST.get('notiz') or '').strip()[:200])
     log_aktion(request, "Staffel-Vorlage erfasst", e.bezeichnung, f"ab {ab}: {netto}")
-    messages.success(request, f"✅ Staffel-Vorlage ab {ab.strftime('%d.%m.%Y')} erfasst.")
+    messages.success(request, '✅ ' + gettext('Staffel-Vorlage ab %(strftime)s erfasst.') % {'strftime': ab.strftime('%d.%m.%Y')})
     return redirect(ziel)
 
 
@@ -1386,7 +1380,7 @@ def fw_staffelvorlage_del(request, pk):
     eid = s.einheit_id
     if request.method == 'POST':
         s.delete()
-        messages.success(request, "Staffel-Vorlage-Zeile entfernt.")
+        messages.success(request, gettext('Staffel-Vorlage-Zeile entfernt.'))
     return redirect(f'/neu/objekte/{eid}/?tab=mietzins')
 
 
@@ -1405,7 +1399,7 @@ def fw_staffel_add(request):
     try:
         ab = date.fromisoformat((request.POST.get('ab_datum') or '').strip())
     except ValueError:
-        messages.error(request, "Bitte ein gültiges Stichtag-Datum angeben.")
+        messages.error(request, gettext('Bitte ein gültiges Stichtag-Datum angeben.'))
         return redirect(ziel)
 
     def _dec(x):
@@ -1416,14 +1410,14 @@ def fw_staffel_add(request):
 
     netto = _dec(request.POST.get('netto_mietzins'))
     if netto is None or netto <= 0:
-        messages.error(request, "Bitte einen gültigen Netto-Mietzins angeben.")
+        messages.error(request, gettext('Bitte einen gültigen Netto-Mietzins angeben.'))
         return redirect(ziel)
     Staffelstufe.objects.create(vertrag=v, ab_datum=ab, netto_mietzins=netto)
     # Damit die Stufe im Mietenlauf greift, muss das Vertragsmodell 'staffel' sein.
     if v.mietzins_modell != 'staffel':
         v.mietzins_modell = 'staffel'
         v.save(update_fields=['mietzins_modell'])
-    messages.success(request, f"✅ Staffelstufe ab {ab.strftime('%d.%m.%Y')} erfasst.")
+    messages.success(request, '✅ ' + gettext('Staffelstufe ab %(strftime)s erfasst.') % {'strftime': ab.strftime('%d.%m.%Y')})
     return redirect(ziel)
 
 
@@ -1437,7 +1431,7 @@ def fw_staffel_del(request, pk):
     eid = s.vertrag.einheit_id
     if request.method == 'POST':
         s.delete()
-        messages.success(request, "Staffelstufe entfernt.")
+        messages.success(request, gettext('Staffelstufe entfernt.'))
     return redirect(f'/neu/objekte/{eid}/?tab=mietzins')
 
 
@@ -1464,7 +1458,7 @@ def fw_anpassung_del(request, pk):
         for e in einheiten:
             if e:
                 e.sync_aktuelle_miete()
-        messages.success(request, "Mietzinsanpassung entfernt.")
+        messages.success(request, gettext('Mietzinsanpassung entfernt.'))
     return redirect(f'/neu/vertraege/{vid}/?tab=mietzins')
 
 
@@ -1479,7 +1473,7 @@ def fw_objekt_nkart(request, pk):
         if art in ('akonto', 'pauschal'):
             e.nk_abrechnungsart = art
             e.save(update_fields=['nk_abrechnungsart'])
-            messages.success(request, "Nebenkosten-Abrechnungsart aktualisiert.")
+            messages.success(request, gettext('Nebenkosten-Abrechnungsart aktualisiert.'))
     return redirect(f'/neu/objekte/{e.id}/?tab=mietzins')
 
 
@@ -1505,7 +1499,7 @@ def fw_geraet_edit(request, pk):
 
     kategorie = (request.POST.get('kategorie') or '').strip()
     if not kategorie:
-        messages.error(request, "Kategorie ist ein Pflichtfeld.")
+        messages.error(request, gettext('Kategorie ist ein Pflichtfeld.'))
         return redirect(ziel)
     g.kategorie = kategorie
     g.sonstiges_bezeichnung = (request.POST.get('sonstiges_bezeichnung') or '').strip()
@@ -1519,7 +1513,7 @@ def fw_geraet_edit(request, pk):
     g.notiz = (request.POST.get('notiz') or '').strip()
     g.save()
     log_aktion(request, "Gerät bearbeitet", kategorie, '')
-    messages.success(request, f"✅ Gerät «{kategorie}» aktualisiert.")
+    messages.success(request, '✅ ' + gettext('Gerät «%(kategorie)s» aktualisiert.') % {'kategorie': kategorie})
     return redirect(ziel)
 
 
@@ -1563,7 +1557,7 @@ def fw_lebensdauer(request):
 
     if request.method == 'POST':
         if not hat_rolle(request.user, SCHREIB_ROLLEN):
-            messages.error(request, "Keine Berechtigung zum Bearbeiten.")
+            messages.error(request, gettext('Keine Berechtigung zum Bearbeiten.'))
             return redirect('/neu/lebensdauer/')
         aktion = request.POST.get('aktion')
         if aktion == 'speichern':
@@ -1590,12 +1584,12 @@ def fw_lebensdauer(request):
                               'bemerkung': (request.POST.get('bemerkung') or '').strip()})
                 messages.success(request, f"✅ «{kat}» hinzugefügt." if created else "Kategorie existiert bereits.")
             else:
-                messages.error(request, "Kategorie und Jahre (> 0) sind Pflicht.")
+                messages.error(request, gettext('Kategorie und Jahre (> 0) sind Pflicht.'))
         elif aktion == 'loeschen':
             # Ueber `eigene`, nicht ueber `objects`: Eine ID aus dem Formular
             # ist eine Nutzereingabe, und eine fremde ID darf nichts loeschen.
             eigene.filter(id=request.POST.get('id') or None).delete()
-            messages.success(request, "Kategorie entfernt.")
+            messages.success(request, gettext('Kategorie entfernt.'))
         elif aktion == 'seed':
             from core.services.raumkatalog import seed_lebensdauer
             n = seed_lebensdauer(organisation)
@@ -1633,11 +1627,11 @@ def fw_objekt_foto_upload(request, pk):
         n += 1
     if n:
         log_aktion(request, "Objekt-Fotos hochgeladen", e.bezeichnung, f"{n} Foto(s)")
-        messages.success(request, f"✅ {n} Foto(s) hinzugefügt.")
+        messages.success(request, '✅ ' + gettext('%(n)s Foto(s) hinzugefügt.') % {'n': n})
     if abgelehnt:
-        messages.error(request, f"{abgelehnt} Datei(en) abgelehnt (kein gültiges Bild oder zu gross).")
+        messages.error(request, gettext('%(abgelehnt)s Datei(en) abgelehnt (kein gültiges Bild oder zu gross).') % {'abgelehnt': abgelehnt})
     elif not n:
-        messages.error(request, "Keine Datei ausgewählt.")
+        messages.error(request, gettext('Keine Datei ausgewählt.'))
     return redirect(f'/neu/objekte/{e.id}/#obj-fotos')
 
 
@@ -1651,7 +1645,7 @@ def fw_objekt_foto_loeschen(request, pk):
     eid = foto.einheit_id
     if request.method == 'POST':
         foto.delete()
-        messages.success(request, "Foto entfernt.")
+        messages.success(request, gettext('Foto entfernt.'))
     return redirect(f'/neu/objekte/{eid}/#obj-fotos')
 
 
@@ -1996,7 +1990,7 @@ def fw_schlussabrechnung(request, vertrag_id):
             if schon_verbucht:
                 if request.POST.get('embed'):
                     return render(request, 'fw/_modal_done.html', {'msg': 'Schlussabrechnung bereits verbucht'})
-                messages.info(request, "Diese Schlussabrechnung wurde bereits verbucht.")
+                messages.info(request, gettext('Diese Schlussabrechnung wurde bereits verbucht.'))
                 return redirect(f'/neu/vertraege/{v.id}/')
             try:
                 with transaction.atomic():
@@ -2075,9 +2069,7 @@ def fw_schlussabrechnung(request, vertrag_id):
                                               'kautions_rueckzahlung_betrag',
                                               'kautions_abzug_betrag'])
                         messages.warning(request,
-                            f"Hinweis: Für diesen Vertrag ist keine Kaution bilanziert "
-                            f"(vereinbart CHF {v.kautions_betrag}). Es wurde weder ein "
-                            f"Sperrkonto freigegeben noch eine Rückzahlung gebucht.")
+                            gettext('Hinweis: Für diesen Vertrag ist keine Kaution bilanziert (vereinbart CHF %(kautions_betrag)s). Es wurde weder ein Sperrkonto freigegeben noch eine Rückzahlung gebucht.') % {'kautions_betrag': v.kautions_betrag})
                     if kaution_verrechnen and (v.kautions_betrag or 0) > 0 \
                             and (kaution_bil > 0 or v.ist_kautionsversicherung):
                         kaution = min(v.kautions_betrag or Decimal('0.00'), kaution_bil)
@@ -2164,7 +2156,7 @@ def fw_schlussabrechnung(request, vertrag_id):
         try:
             pdf = generate_schlussabrechnung_pdf(v, daten, verwaltung=v.organisation)
         except Exception as e:
-            messages.error(request, f"❌ PDF konnte nicht erstellt werden: {e}")
+            messages.error(request, '❌ ' + gettext('PDF konnte nicht erstellt werden: %(e)s') % {'e': e})
             return redirect(f'/neu/vertraege/{v.id}/schlussabrechnung/')
         from core.services.ablage import ablegen
         ablegen(pdf, "Schlussabrechnung", kategorie='korrespondenz', vertrag=v, dedup=True)

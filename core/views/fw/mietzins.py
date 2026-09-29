@@ -14,6 +14,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.db.models import Q
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -249,7 +250,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
             )
 
         if aktion == 'speichern':
-            messages.success(request, f"✅ Mietzinsanpassung erfasst — neu CHF {neu_netto} ab {wirksam_ab.strftime('%d.%m.%Y')}.")
+            messages.success(request, '✅ ' + gettext('Mietzinsanpassung erfasst — neu CHF %(neu_netto)s ab %(strftime)s.') % {'neu_netto': neu_netto, 'strftime': wirksam_ab.strftime('%d.%m.%Y')})
             return redirect(f'/neu/vertraege/{v.id}/')
 
         # Kanton mit eingebautem Original (SO/ZH/BE/…) → Original ausfüllen;
@@ -336,7 +337,7 @@ def fw_mietzins_massenanpassung(request):
     vertraege = list(Mietvertrag.objects.filter(id__in=ids, status='aktiv')
                      .select_related('mieter', 'einheit__liegenschaft'))
     if not vertraege:
-        messages.error(request, "Keine Verträge ausgewählt.")
+        messages.error(request, gettext('Keine Verträge ausgewählt.'))
         return redirect('fw_mietzins')
 
     heute = timezone.localdate()
@@ -427,7 +428,7 @@ def fw_mietzins_massenanpassung(request):
         erfasst += 1
 
     if not erfasst:
-        messages.error(request, "Keine Anpassung möglich (Basisdaten fehlen oder kein Potenzial).")
+        messages.error(request, gettext('Keine Anpassung möglich (Basisdaten fehlen oder kein Potenzial).'))
         return redirect('fw_mietzins')
 
     log_aktion(request, "Mietzins-Massenanpassung", f"{erfasst} Verträge",

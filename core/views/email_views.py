@@ -6,6 +6,7 @@ from finance.models import AbrechnungsPeriode
 import io
 import datetime
 from django.core.mail import EmailMultiAlternatives
+from django.utils.translation import gettext
 from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
@@ -231,7 +232,7 @@ def send_mahnung_email_view(request, vertrag_id):
     betrag_str = request.POST.get('betrag', '0.00')
 
     if not vertrag.mieter.email:
-        messages.error(request, "Mieter hat keine E-Mail."); return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+        messages.error(request, gettext('Mieter hat keine E-Mail.')); return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
     heute = datetime.date.today()
     pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute)
@@ -264,7 +265,7 @@ def send_mahnung_email_view(request, vertrag_id):
 
     log_aktion(request, "Mahnung versendet (Art. 257d OR)", str(vertrag),
                f"an {vertrag.mieter.email}, Monat {monat_str}, CHF {betrag_str}")
-    messages.success(request, f"✅ Mahnung inkl. QR-Rechnung an {vertrag.mieter.email} gesendet.")
+    messages.success(request, '✅ ' + gettext('Mahnung inkl. QR-Rechnung an %(email)s gesendet.') % {'email': vertrag.mieter.email})
     return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 

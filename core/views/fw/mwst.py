@@ -11,6 +11,7 @@
 from decimal import Decimal
 
 from django.shortcuts import render
+from django.utils.translation import gettext
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
@@ -69,7 +70,7 @@ def fw_mwst_einstellungen(request):
         return redirect('fw_mwst')
     vw = aktuelle_organisation()
     if not vw:
-        messages.error(request, "Keine Verwaltung erfasst.")
+        messages.error(request, gettext('Keine Verwaltung erfasst.'))
         return redirect('fw_mwst')
     vw.mwst_methode = request.POST.get('mwst_methode', 'effektiv')
     vw.mwst_uid = (request.POST.get('mwst_uid') or '').strip()
@@ -78,7 +79,7 @@ def fw_mwst_einstellungen(request):
     except Exception:
         vw.saldosteuersatz = Decimal('0')
     vw.save(update_fields=['mwst_methode', 'mwst_uid', 'saldosteuersatz'])
-    messages.success(request, "✅ MWST-Einstellungen gespeichert.")
+    messages.success(request, '✅ ' + gettext('MWST-Einstellungen gespeichert.'))
     ziel = request.POST.get('zurueck') or '/neu/mwst/'
     return redirect(ziel)
 

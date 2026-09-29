@@ -15,6 +15,7 @@ from datetime import timedelta as _timedelta
 from decimal import Decimal
 
 from django.db import transaction
+from django.utils.translation import gettext
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -235,7 +236,7 @@ def fw_mahnung_erfassen(request):
     # gar nicht mehr offen ist (Live-Test E). offener_betrag deckt den
     # (teil-)bezahlten Fall mit ab.
     if rechnung.status in ('bezahlt', 'storniert', 'abgeschrieben') or rechnung.offener_betrag <= 0:
-        messages.error(request, "Diese Forderung ist nicht (mehr) offen und kann nicht gemahnt werden.")
+        messages.error(request, gettext('Diese Forderung ist nicht (mehr) offen und kann nicht gemahnt werden.'))
         return redirect('fw_mahnwesen')
 
     # Doppelerfassung UND Mahnstufen-Rückschritt verhindern: existiert bereits eine
@@ -244,8 +245,7 @@ def fw_mahnung_erfassen(request):
     # 2. Mahnung wieder eine 1. erfassen (Live-Test E).
     hoechste = Mahnung.objects.filter(debitoren_rechnung=rechnung).order_by('-stufe').first()
     if hoechste and hoechste.stufe >= stufe:
-        messages.info(request, f"Für diese Rechnung ist bereits die {hoechste.stufe}. Mahnung erfasst — "
-                               f"eine {stufe}. Mahnung wäre ein Rückschritt.")
+        messages.info(request, gettext('Für diese Rechnung ist bereits die %(stufe)s. Mahnung erfasst — eine %(stufe2)s. Mahnung wäre ein Rückschritt.') % {'stufe': hoechste.stufe, 'stufe2': stufe})
         return redirect('fw_mahnwesen')
 
     # Mahngebühr aus der Eigentümer-Konfig (crm.Eigentuemer.mahn_konfig) — NICHT mehr
@@ -293,13 +293,13 @@ def fw_mahnung_erfassen(request):
                 buche("1100", "3600", gebuehr, f"Mahngebühr {stufe}. Mahnung {rechnung.vertrag.mieter}",
                       datum=heute, liegenschaft=lg_geb, debitor=geb_rechnung, user=request.user)
     except IntegrityError:
-        messages.info(request, f"Die {stufe}. Mahnung wurde für diese Rechnung bereits erfasst.")
+        messages.info(request, gettext('Die %(stufe)s. Mahnung wurde für diese Rechnung bereits erfasst.') % {'stufe': stufe})
         return redirect('fw_mahnwesen')
     except PermissionError as exc:
         messages.error(request, f"❌ {exc}")
         return redirect('fw_mahnwesen')
     except Exception as exc:
-        messages.error(request, f"❌ Mahnung konnte nicht gebucht werden: {exc}")
+        messages.error(request, '❌ ' + gettext('Mahnung konnte nicht gebucht werden: %(exc)s') % {'exc': exc})
         return redirect('fw_mahnwesen')
 
     # Beleg in die Vertrags-Akte. Ausserhalb der Transaktion und bewusst
@@ -349,7 +349,7 @@ def fw_mahnlauf(request):
             teile.append(f"Verzugszins CHF {res['zins']}")
         messages.success(request, "✅ Mahnlauf: " + ", ".join(teile) + ".")
     else:
-        messages.success(request, "Mahnlauf: keine neuen Mahnungen fällig — alles aktuell.")
+        messages.success(request, gettext('Mahnlauf: keine neuen Mahnungen fällig — alles aktuell.'))
     ziel = '/neu/mahnwesen/'
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'
