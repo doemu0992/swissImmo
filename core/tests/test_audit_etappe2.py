@@ -217,3 +217,85 @@ class ObjektFormular(TestCase):
         r = self.c.post(self.pfad, self._daten(standard_kautionsmonate='-1'))
         self.assertEqual(r.status_code, 400)
         self.assertIn('id="id_standard_kautionsmonate_fehler"', r.content.decode())
+
+
+class KreditorFormular(TestCase):
+    """Erfassen und Bearbeiten in der Kreditorenliste."""
+
+    def setUp(self):
+        self.lg, _e, _m, _v = _basis_objekte()
+        self.c = Client()
+        self.c.force_login(_team_user())
+
+    def _daten(self, **ueber):
+        daten = {'lieferant': 'Muster Sanitär AG', 'betrag': "1'234.50", 'mwst_satz': '8.1',
+                 'datum': '2026-09-01', 'liegenschaft_id': str(self.lg.id)}
+        daten.update(ueber)
+        return daten
+
+    def _anzahl(self):
+        from finance.models import KreditorenRechnung
+        return KreditorenRechnung.objects.count()
+
+    def test_unlesbares_datum_ist_kein_serverfehler_mehr(self):
+        """Vorher: `date.fromisoformat` ungeschützt → 500."""
+        vorher = self._anzahl()
+        r = self.c.post('/neu/kreditoren/neu/', self._daten(datum='31.02.2026'))
+        self.assertEqual(r.status_code, 400)
+        body = r.content.decode()
+        self.assertIn('id="kr-datum_fehler"', body)
+        self.assertIn('value="Muster Sanitär AG"', body)
+        self.assertEqual(self._anzahl(), vorher)
+
+    def test_unlesbarer_mwst_satz_wird_nicht_null(self):
+        """Vorher still 0 % — und damit kein Vorsteuerabzug bei der Freigabe."""
+        vorher = self._anzahl()
+        r = self.c.post('/neu/kreditoren/neu/', self._daten(mwst_satz='acht'))
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('id="kr-mwst_fehler"', r.content.decode())
+        self.assertEqual(self._anzahl(), vorher)
+
+    def test_mwst_mit_zwei_nachkommastellen_wird_gekuerzt_nicht_abgelehnt(self):
+        from finance.models import KreditorenRechnung
+        r = self.c.post('/neu/kreditoren/neu/', self._daten(mwst_satz='8.10', iban='CH93 0076 2011 6238 5295 7'))
+        self.assertEqual(r.status_code, 302)
+        k = KreditorenRechnung.objects.latest('pk')
+        self.assertEqual((k.mwst_satz, k.betrag, k.iban),
+                         (Decimal('8.1'), Decimal('1234.50'), 'CH9300762011623852957'))
+
+    def test_ungueltige_iban_und_leistungszeitraum(self):
+        r = self.c.post('/neu/kreditoren/neu/', self._daten(
+            iban='CH93 0076 2011 6238 5295 8', leistungs_von='2026-06-30', leistungs_bis='2026-01-01'))
+        self.assertEqual(r.status_code, 400)
+        body = r.content.decode()
+        self.assertIn('id="kr-iban_fehler"', body)
+        self.assertIn('id="kr-leist-bis_fehler"', body)
+
+    def test_bearbeiten_zeigt_fehler_an_der_zeile_auch_ausserhalb_der_seite(self):
+        """Die Liste zeigt 50 je Seite; nach einem POST gibt es keinen
+        Seitenparameter. Die Zeile mit dem Fehler muss trotzdem sichtbar sein."""
+        from finance.models import KreditorenRechnung
+        for i in range(55):
+            KreditorenRechnung.objects.create(lieferant=f'Füller {i}', betrag=Decimal('10'), status='neu')
+        k = KreditorenRechnung.objects.order_by('pk').first()
+        k.lieferant, k.betrag = 'Alter Lieferant', Decimal('50.00')
+        k.save()
+        r = self.c.post(f'/neu/kreditoren/{k.id}/bearbeiten/', {
+            'lieferant': 'Neuer Lieferant', 'betrag': 'fünfzig'})
+        self.assertEqual(r.status_code, 400)
+        body = r.content.decode()
+        self.assertIn(f'id="kc-betrag-{k.id}_fehler"', body)
+        self.assertIn('value="Neuer Lieferant"', body)
+        self.assertIn(f'<tr id="kedit-{k.id}" class="fw-markenflaeche">', body)
+        k.refresh_from_db()
+        self.assertEqual((k.lieferant, k.betrag), ('Alter Lieferant', Decimal('50.00')))
+
+    def test_bearbeiten_ohne_betrag_bleibt_erlaubt(self):
+        """Gescannte Belege kommen oft ohne erkannten Betrag — leer ist beim
+        Bearbeiten kein Fehler, nur UNLESBAR ist einer."""
+        from finance.models import KreditorenRechnung
+        k = KreditorenRechnung.objects.create(lieferant='Scan', betrag=None, status='neu')
+        r = self.c.post(f'/neu/kreditoren/{k.id}/bearbeiten/', {'lieferant': 'Scan AG', 'betrag': ''})
+        self.assertEqual(r.status_code, 302)
+        k.refresh_from_db()
+        self.assertEqual(k.lieferant, 'Scan AG')

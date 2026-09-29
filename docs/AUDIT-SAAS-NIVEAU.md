@@ -235,10 +235,13 @@ Mietverhältnis und Kreditor.
   Fehler, `aria-invalid`). **Das ist zugleich der Einstieg in Etappe 3**:
   Jedes umgebaute Formular wandert damit auf `fw-feld`.
 
-*Stand 29.09.2026 (Branch `audit-fixes-ui`): Liegenschaft und Objekt umgestellt
-(`portfolio/forms.py`, Bausteine `fw/_feld.html` und `fw/_feldfehler.html`).
-Offen: Person (`core/views/fw/person.py` wird parallel für die
-Korrespondenzsprache umgebaut — erst danach), Mietverhältnis, Kreditor.
+*Stand 29.09.2026 (Branch `audit-fixes-ui`): Liegenschaft, Objekt und Kreditor
+umgestellt (`portfolio/forms.py`, `finance/forms.py`, gemeinsames Feld
+`core/formfelder.py`, Bausteine `fw/_feld.html` und `fw/_feldfehler.html`).
+Beim Kreditor behoben: ein unlesbares Rechnungsdatum war ein Serverfehler, ein
+unlesbarer MWST-Satz wurde still 0 %. Offen: Person (`core/views/fw/person.py`
+wird parallel für die Korrespondenzsprache umgebaut — erst danach) und
+Mietverhältnis (Vertragsassistent, eigener Schritt).
 Beim Bau gemessen: `type="number"` verwirft Fehleingaben im Browser, deshalb
 `inputmode`; `core/forms.py` baut beim Import eine mandantenabhängige Queryset
 (`SchadenForm`) und wird deshalb nicht importiert.*

@@ -10,20 +10,8 @@ from django import forms
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _t
 
+from core.formfelder import SchweizerZahl
 from portfolio.models import Einheit, Liegenschaft
-
-
-class SchweizerZahl(forms.DecimalField):
-    """Nimmt Beträge so an, wie die Oberfläche sie zeigt: «CHF 1'250'000.50»,
-    «4,5». Normalisiert wird erst beim Umwandeln (`_num`) — die ROHEINGABE
-    bleibt im Formular, damit sie nach einem Fehler unverändert im Feld steht
-    («etwa 80», nicht «etwa80»)."""
-
-    def to_python(self, value):
-        from core.views.fw._basis import _num
-        if value not in self.empty_values:
-            value = _num(value)
-        return super().to_python(value)
 
 
 class LiegenschaftForm(forms.ModelForm):
