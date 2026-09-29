@@ -1,7 +1,13 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load l10n %}
-{% block title %}Vertragserfassung — swissImmo{% endblock %}
+{% comment %}
+Übersetzt ist die Oberfläche des Assistenten. Deutsch bleiben (bis zur juristisch
+geprüften Übersetzung): Rechtssätze mit Artikelverweis, die Mietzinsmodelle mit
+Art. 269b/c und die Vertragsvorschau im Skript — sie zeigt, was so im deutschen
+Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert wird.
+{% endcomment %}
+{% block title %}{% trans "Vertragserfassung" %} — swissImmo{% endblock %}
 
 {% block content %}
 {{ liegenschaften|json_script:"lg-data" }}
@@ -10,8 +16,8 @@
 {{ edit_json|json_script:"edit-data" }}
 
 <div class="fw-phead">
-    <h1>{% if edit_vertrag %}Vertrag (Entwurf) bearbeiten{% else %}Vertragserfassung{% endif %}</h1>
-    <a href="{% if edit_vertrag %}/neu/vertraege/{{ edit_vertrag.id }}/{% else %}/neu/vertraege/{{ lg_query }}{% endif %}" title="Erfassung schliessen" class="fw-faint hover:fw-mutet">{% zeichen 'schliessen' klasse='text-xl' %}</a>
+    <h1>{% if edit_vertrag %}{% trans "Vertrag (Entwurf) bearbeiten" %}{% else %}{% trans "Vertragserfassung" %}{% endif %}</h1>
+    <a href="{% if edit_vertrag %}/neu/vertraege/{{ edit_vertrag.id }}/{% else %}/neu/vertraege/{{ lg_query }}{% endif %}" title="{% trans 'Erfassung schliessen' %}" class="fw-faint hover:fw-mutet">{% zeichen 'schliessen' klasse='text-xl' %}</a>
 </div>
 
 <form method="post" action="/neu/vertraege/neu/speichern/" id="vform" onsubmit="return vorSubmit()">
@@ -34,184 +40,184 @@
             <div class="flex-1 p-4 sm:p-6 min-h-[440px]">
                 <!-- S1 OBJEKT -->
                 <div class="vstep" data-step="0">
-                    <h3 class="text-lg font-bold fw-strong mb-1">Objekt</h3>
-                    <p class="text-sm fw-mutet mb-4">Wählen Sie Liegenschaft und Objekt. Es werden nur verfügbare (leerstehende) Objekte angezeigt.</p>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft *</label>
+                    <h3 class="text-lg font-bold fw-strong mb-1">{% trans "Objekt" %}</h3>
+                    <p class="text-sm fw-mutet mb-4">{% trans "Wählen Sie Liegenschaft und Objekt. Es werden nur verfügbare (leerstehende) Objekte angezeigt." %}</p>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft *" %}</label>
                     <select id="s_lg" onchange="lgChange()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-4 focus:outline-none focus:ring-2 fw-fokusring">
-                        <option value="">Liegenschaft auswählen…</option>
+                        <option value="">{% trans "Liegenschaft auswählen…" %}</option>
                     </select>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Objekt *</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Objekt *" %}</label>
                     <select id="s_obj" onchange="objChange()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 fw-fokusring">
-                        <option value="">Zuerst Liegenschaft wählen…</option>
+                        <option value="">{% trans "Zuerst Liegenschaft wählen…" %}</option>
                     </select>
                     <div id="obj-info" class="mt-4 text-sm fw-mutet hidden fw-markenflaeche rounded-lg p-3"></div>
                 </div>
 
                 <!-- S2 PERSONEN -->
                 <div class="vstep hidden" data-step="1">
-                    <h3 class="text-lg font-bold fw-strong mb-1">Personen</h3>
-                    <p class="text-sm fw-mutet mb-4">Mieter auswählen oder neu erfassen.</p>
+                    <h3 class="text-lg font-bold fw-strong mb-1">{% trans "Personen" %}</h3>
+                    <p class="text-sm fw-mutet mb-4">{% trans "Mieter auswählen oder neu erfassen." %}</p>
                     <div class="flex gap-2 mb-4">
-                        <button type="button" id="tab-best" onclick="mieterTab('best')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">Bestehende Person</button>
-                        <button type="button" id="tab-neu" onclick="mieterTab('neu')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet">Neue Person</button>
+                        <button type="button" id="tab-best" onclick="mieterTab('best')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">{% trans "Bestehende Person" %}</button>
+                        <button type="button" id="tab-neu" onclick="mieterTab('neu')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet">{% trans "Neue Person" %}</button>
                     </div>
                     <div id="mieter-best">
-                        <label class="block text-xs font-semibold fw-mutet mb-1">Mieter</label>
+                        <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mieter" %}</label>
                         <select id="s_mieter" onchange="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 fw-fokusring">
-                            <option value="">Person auswählen…</option>
+                            <option value="">{% trans "Person auswählen…" %}</option>
                         </select>
                     </div>
                     <div id="mieter-neu" class="hidden space-y-3">
                         <input type="hidden" name="mieter_typ" id="f_mieter_typ" value="person">
                         <div class="flex flex-wrap gap-2">
-                            <button type="button" data-ntyp="person" onclick="setNeuTyp('person')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">Privatperson</button>
-                            <button type="button" data-ntyp="firma" onclick="setNeuTyp('firma')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">Firma</button>
-                            <button type="button" data-ntyp="verein" onclick="setNeuTyp('verein')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">Verein / Stiftung</button>
+                            <button type="button" data-ntyp="person" onclick="setNeuTyp('person')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">{% trans "Privatperson" %}</button>
+                            <button type="button" data-ntyp="firma" onclick="setNeuTyp('firma')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">{% trans "Firma" %}</button>
+                            <button type="button" data-ntyp="verein" onclick="setNeuTyp('verein')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">{% trans "Verein / Stiftung" %}</button>
                         </div>
                         <div id="neu-namen" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <select name="anrede" oninput="live()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5"><option>Herr</option><option>Frau</option><option value="">—</option></select>
-                            <input name="vorname" oninput="live()" placeholder="Vorname" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                            <input name="nachname" oninput="live()" placeholder="Nachname" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                            <select name="anrede" oninput="live()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5"><option value="Herr">{% trans "Herr" %}</option><option value="Frau">{% trans "Frau" %}</option><option value="">—</option></select>
+                            <input name="vorname" oninput="live()" placeholder="{% trans 'Vorname' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                            <input name="nachname" oninput="live()" placeholder="{% trans 'Nachname' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         </div>
                         <div id="neu-firma" class="hidden space-y-3">
-                            <input name="firmen_name" oninput="live()" placeholder="Firmen- / Organisationsname" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                            <input name="firmen_name" oninput="live()" placeholder="{% trans 'Firmen- / Organisationsname' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <input name="kontaktperson" placeholder="Kontaktperson" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                                <input name="uid_nummer" placeholder="UID / CHE-Nummer" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                <input name="kontaktperson" placeholder="{% trans 'Kontaktperson' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                <input name="uid_nummer" placeholder="{% trans 'UID / CHE-Nummer' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                             </div>
                         </div>
-                        <input name="m_strasse" oninput="live()" placeholder="Strasse & Nr." class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                        <input name="m_strasse" oninput="live()" placeholder="{% trans 'Strasse & Nr.' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <input name="m_plz" oninput="live()" placeholder="PLZ" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                            <input name="m_ort" oninput="live()" placeholder="Ort" class="col-span-2 fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                            <input name="m_plz" oninput="live()" placeholder="{% trans 'PLZ' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                            <input name="m_ort" oninput="live()" placeholder="{% trans 'Ort' %}" class="col-span-2 fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         </div>
-                        <input name="m_email" oninput="live()" placeholder="E-Mail" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                        <input name="m_email" oninput="live()" placeholder="{% trans 'E-Mail' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     </div>
                     <!-- Zweiter Mieter (Ehepartner / solidarisch) — gleiche Erfassung wie 1. Person -->
                     <div class="mt-4 border-t fw-linie pt-4">
                         <label class="flex items-center gap-2 text-sm font-semibold fw-ink mb-1">
-                            <input type="checkbox" id="zweiter_aktiv" onchange="toggleZweiter()" class="fw-akzent"> Zweiten Mieter hinzufügen
+                            <input type="checkbox" id="zweiter_aktiv" onchange="toggleZweiter()" class="fw-akzent"> {% trans "Zweiten Mieter hinzufügen" %}
                         </label>
-                        <p class="text-xs fw-faint mb-3">z. B. Ehepartner — beide haften solidarisch und stehen im Vertrag.</p>
+                        <p class="text-xs fw-faint mb-3">{% trans "z. B. Ehepartner — beide haften solidarisch und stehen im Vertrag." %}</p>
                         <div id="zweiter-felder" class="hidden">
                             <div class="flex gap-2 mb-3">
-                                <button type="button" id="tab2-best" onclick="mieter2Tab('best')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">Bestehende Person</button>
-                                <button type="button" id="tab2-neu" onclick="mieter2Tab('neu')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet">Neue Person</button>
+                                <button type="button" id="tab2-best" onclick="mieter2Tab('best')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">{% trans "Bestehende Person" %}</button>
+                                <button type="button" id="tab2-neu" onclick="mieter2Tab('neu')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet">{% trans "Neue Person" %}</button>
                             </div>
                             <div id="mieter2-best">
-                                <label class="block text-xs font-semibold fw-mutet mb-1">Mieter</label>
+                                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mieter" %}</label>
                                 <select id="s_mieter2" onchange="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 fw-fokusring">
-                                    <option value="">Person auswählen…</option>
+                                    <option value="">{% trans "Person auswählen…" %}</option>
                                 </select>
                             </div>
                             <div id="mieter2-neu" class="hidden space-y-3">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    <select name="mit_anrede" oninput="live()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5"><option>Frau</option><option>Herr</option><option value="">—</option></select>
-                                    <input name="mit_vorname" oninput="live()" placeholder="Vorname" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                                    <input name="mit_nachname" oninput="live()" placeholder="Nachname" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                    <select name="mit_anrede" oninput="live()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5"><option value="Frau">{% trans "Frau" %}</option><option value="Herr">{% trans "Herr" %}</option><option value="">—</option></select>
+                                    <input name="mit_vorname" oninput="live()" placeholder="{% trans 'Vorname' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                    <input name="mit_nachname" oninput="live()" placeholder="{% trans 'Nachname' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                                 </div>
-                                <input name="mit_strasse" oninput="live()" placeholder="Strasse & Nr." class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                <input name="mit_strasse" oninput="live()" placeholder="{% trans 'Strasse & Nr.' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    <input name="mit_plz" oninput="live()" placeholder="PLZ" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                                    <input name="mit_ort" oninput="live()" placeholder="Ort" class="col-span-2 fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                    <input name="mit_plz" oninput="live()" placeholder="{% trans 'PLZ' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                    <input name="mit_ort" oninput="live()" placeholder="{% trans 'Ort' %}" class="col-span-2 fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                                 </div>
-                                <input name="mit_email" oninput="live()" placeholder="E-Mail" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                <input name="mit_email" oninput="live()" placeholder="{% trans 'E-Mail' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                             </div>
                             <label class="flex items-center gap-2 text-sm fw-ink fw-warn-flaeche rounded-lg px-3 py-2.5 mt-3">
                                 <input type="checkbox" name="familienwohnung" id="familienwohnung" onchange="live()" class="fw-akzent">
-                                <span><b>Familienwohnung</b> (gemeinsame eheliche/eingetragene Wohnung)</span>
+                                <span><b>{% trans "Familienwohnung" %}</b> {% trans "(gemeinsame eheliche/eingetragene Wohnung)" %}</span>
                             </label>
                             <p class="text-xs fw-faint mt-1">Bei einer Familienwohnung muss eine Kündigung <b>beiden</b> Ehegatten separat mit amtlichem Formular zugestellt werden (Art. 266n OR).</p>
                         </div>
                     </div>
                     <input type="hidden" name="mit_mieter_id" id="f_mit_mieter_id">
                     <div class="mt-4">
-                        <label class="block text-xs font-semibold fw-mutet mb-1">Anzahl Personen im Haushalt</label>
+                        <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Anzahl Personen im Haushalt" %}</label>
                         <input name="anzahl_personen" id="s_personen" type="number" min="1" value="1" oninput="live()" class="w-40 fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     </div>
                 </div>
 
                 <!-- S3 KONDITIONEN -->
                 <div class="vstep hidden" data-step="2">
-                    <h3 class="text-lg font-bold fw-strong mb-1">Konditionen</h3>
-                    <p class="text-sm fw-mutet mb-4">Mietdauer, Kündigungsmodalitäten und weitere Angaben zur Mietsache.</p>
+                    <h3 class="text-lg font-bold fw-strong mb-1">{% trans "Konditionen" %}</h3>
+                    <p class="text-sm fw-mutet mb-4">{% trans "Mietdauer, Kündigungsmodalitäten und weitere Angaben zur Mietsache." %}</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label class="block text-xs font-semibold fw-mutet mb-1">Mietbeginn *</label>
+                        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietbeginn *" %}</label>
                             <input name="beginn" id="s_beginn" type="date" oninput="applySollplan(); live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                        <div><label class="block text-xs font-semibold fw-mutet mb-1">Mietende</label>
+                        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietende" %}</label>
                             <input name="ende" id="s_ende" type="date" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                             <input type="hidden" name="ist_befristet" id="ist_befristet_hidden" value="0">
-                            <label class="text-xs fw-faint flex items-center gap-1 mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> unbefristet</label></div>
+                            <label class="text-xs fw-faint flex items-center gap-1 mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> {% trans "unbefristet" %}</label></div>
                     </div>
 
                     <div class="flex items-center justify-between mt-4 mb-2">
-                        <label class="block text-xs font-semibold fw-mutet">Kündigungsmonate *</label>
-                        <div class="text-xs"><button type="button" onclick="monateAusserDez()" class="fw-marke font-semibold hover:underline">alle ausser Dezember</button>
-                            <span class="fw-faint mx-1">/</span><button type="button" onclick="monateStandard()" class="fw-faint hover:underline">Standard</button></div>
+                        <label class="block text-xs font-semibold fw-mutet">{% trans "Kündigungsmonate *" %}</label>
+                        <div class="text-xs"><button type="button" onclick="monateAusserDez()" class="fw-marke font-semibold hover:underline">{% trans "alle ausser Dezember" %}</button>
+                            <span class="fw-faint mx-1">/</span><button type="button" onclick="monateStandard()" class="fw-faint hover:underline">{% trans "Standard" %}</button></div>
                     </div>
                     <div id="monate-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5"></div>
                     <input type="hidden" name="kuendigungstermine" id="f_kuendigungstermine">
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                        <div id="frist-box"><label id="frist-label" class="block text-xs font-semibold fw-mutet mb-1">Kündigungsfrist (Monate) *</label>
+                        <div id="frist-box"><label id="frist-label" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kündigungsfrist (Monate) *" %}</label>
                             <div class="flex items-center fw-flaeche2 rounded-lg w-40">
                                 <button type="button" onclick="fristStep(-1)" class="px-3 py-2.5 fw-marke font-bold">−</button>
                                 <input name="kuendigungsfrist" id="s_frist" type="number" value="3" min="1" oninput="live()" class="w-14 bg-transparent text-center text-sm py-2.5 focus:outline-none">
                                 <button type="button" onclick="fristStep(1)" class="px-3 py-2.5 fw-marke font-bold">+</button>
                             </div></div>
-                        <div><label class="block text-xs font-semibold fw-mutet mb-1">Erstmögliche Kündigung *</label>
+                        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Erstmögliche Kündigung *" %}</label>
                             <input name="erstmals_kuendbar" type="date" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                     </div>
                     <p id="frist-ep-note" class="hidden text-xs fw-marke fw-markenflaeche border fw-linie-marke rounded-lg px-3 py-2 mt-2">
                         {% zeichen 'hinweis' klasse='mr-1' %}Einstellplatz: gesetzliche Mindestfrist <b>2 Wochen auf Ende einer Monatsperiode</b> (Art. 266e OR) — kein amtliches Formular, keine Erstreckung. <b>0 = 2 Wochen</b>; eine <b>längere</b> Frist auf Monatsende (z.B. 1 oder 3 Monate) kann vereinbart werden.
                     </p>
 
-                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-4">Zur Mitbenützung</label>
-                    <textarea name="mitbenutzung" rows="2" oninput="live()" placeholder="z. B. Waschküche, Trockenraum, Veloraum" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea>
-                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Nebenräume</label>
-                    <textarea name="nebenraeume" rows="2" oninput="live()" placeholder="z. B. Kellerabteil Nr. 3, Estrich" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea>
-                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Besondere Bestimmungen</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-4">{% trans "Zur Mitbenützung" %}</label>
+                    <textarea name="mitbenutzung" rows="2" oninput="live()" placeholder="{% trans 'z. B. Waschküche, Trockenraum, Veloraum' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea>
+                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">{% trans "Nebenräume" %}</label>
+                    <textarea name="nebenraeume" rows="2" oninput="live()" placeholder="{% trans 'z. B. Kellerabteil Nr. 3, Estrich' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea>
+                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">{% trans "Besondere Bestimmungen" %}</label>
                     <textarea name="besondere_vereinbarungen" rows="2" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea>
                 </div>
 
                 <!-- S4 MIETZINS -->
                 <div class="vstep hidden" data-step="3">
-                    <h3 class="text-lg font-bold fw-strong mb-1">Mietzins</h3>
-                    <p class="text-sm fw-mutet mb-4">Mietzins, Indexwerte und Zahlungsmodalitäten.</p>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Zahlungsmodus *</label>
+                    <h3 class="text-lg font-bold fw-strong mb-1">{% trans "Mietzins" %}</h3>
+                    <p class="text-sm fw-mutet mb-4">{% trans "Mietzins, Indexwerte und Zahlungsmodalitäten." %}</p>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zahlungsmodus *" %}</label>
                     <select name="zahlungsrhythmus" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3">
-                        <option value="monatlich">Monatlich</option><option value="vierteljahr">Vierteljährlich</option>
-                        <option value="halbjahr">Halbjährlich</option><option value="jahr">Jährlich</option>
+                        <option value="monatlich">{% trans "Monatlich" %}</option><option value="vierteljahr">{% trans "Vierteljährlich" %}</option>
+                        <option value="halbjahr">{% trans "Halbjährlich" %}</option><option value="jahr">{% trans "Jährlich" %}</option>
                     </select>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label class="block text-xs font-semibold fw-mutet mb-1"><span id="netto-label">Mietzins netto (CHF) *</span></label>
+                        <div><label class="block text-xs font-semibold fw-mutet mb-1"><span id="netto-label">{% trans "Mietzins netto (CHF) *" %}</span></label>
                             <input name="netto_mietzins" id="s_netto" type="number" step="0.01" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                        <div id="nk-field-box"><label class="block text-xs font-semibold fw-mutet mb-1"><span id="nk-label">Nebenkosten (CHF) *</span></label>
+                        <div id="nk-field-box"><label class="block text-xs font-semibold fw-mutet mb-1"><span id="nk-label">{% trans "Nebenkosten (CHF) *" %}</span></label>
                             <input name="nebenkosten" id="s_nk" type="number" step="0.01" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                     </div>
                     <div id="brutto-box">
-                        <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Mietzins brutto (CHF)</label>
+                        <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">{% trans "Mietzins brutto (CHF)" %}</label>
                         <input id="s_brutto" type="text" readonly class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 mb-3 fw-mutet">
                     </div>
                     <div class="flex items-center gap-3 mb-3 flex-wrap">
                         <label class="flex items-center gap-2 text-sm fw-ink">
-                            <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="fw-akzent"> MWST-pflichtig <span class="text-xs fw-faint">(optiert, v. a. Gewerbe)</span>
+                            <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="fw-akzent"> {% trans "MWST-pflichtig" %} <span class="text-xs fw-faint">{% trans "(optiert, v. a. Gewerbe)" %}</span>
                         </label>
                         <div id="mwst-satz-box" class="hidden flex items-center gap-1.5">
                             <input type="number" step="0.1" name="mwst_satz" value="8.1" oninput="live()" class="w-20 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">
-                            <span class="text-xs fw-faint">% Satz</span>
+                            <span class="text-xs fw-faint">{% trans "% Satz" %}</span>
                         </div>
                     </div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Mietzinsvorbehalte</label>
-                    <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-4"></textarea>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietzinsvorbehalte" %}</label>
+                    <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="{% trans 'z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-4"></textarea>
 
                     <!-- Geschäftsraum: Zweck + Mietzinsmodell (nur bei Gewerbe sichtbar) -->
                     <div id="gewerbe-box" class="hidden border fw-linie-marke fw-markenflaeche rounded-xl p-4 mb-4">
-                        <h4 class="font-bold fw-strong text-sm mb-1">{% zeichen 'dokument' klasse='fw-marke mr-1' %}Geschäftsraum</h4>
-                        <p class="text-xs fw-faint mb-3">Zweckbestimmung und Mietzinsmodell für Geschäftsräume.</p>
-                        <label class="block text-xs font-semibold fw-mutet mb-1">Nutzungszweck</label>
-                        <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="z. B. Betrieb eines Coiffeursalons" class="w-full fw-flaeche rounded-lg text-sm px-3 py-2.5 mb-3">
-                        <label class="block text-xs font-semibold fw-mutet mb-1">Mietzinsmodell</label>
+                        <h4 class="font-bold fw-strong text-sm mb-1">{% zeichen 'dokument' klasse='fw-marke mr-1' %}{% trans "Geschäftsraum" %}</h4>
+                        <p class="text-xs fw-faint mb-3">{% trans "Zweckbestimmung und Mietzinsmodell für Geschäftsräume." %}</p>
+                        <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nutzungszweck" %}</label>
+                        <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="{% trans 'z. B. Betrieb eines Coiffeursalons' %}" class="w-full fw-flaeche rounded-lg text-sm px-3 py-2.5 mb-3">
+                        <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietzinsmodell" %}</label>
                         <select name="mietzins_modell" id="s_modell" onchange="modellChange(); live()" class="w-full fw-flaeche rounded-lg text-sm px-3 py-2.5">
                             <option value="fest">Fester Mietzins</option>
                             <option value="index">Indexmiete (LIK, Art. 269b — Vertrag ≥ 5 Jahre)</option>
@@ -220,10 +226,10 @@
                         <!-- Staffelstufen -->
                         <div id="staffel-box" class="hidden mt-3">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-                                <label class="block text-xs font-semibold fw-mutet">Staffelstufen</label>
-                                <button type="button" onclick="staffelAdd()" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-2.5 py-1 rounded-lg">+ Stufe</button>
+                                <label class="block text-xs font-semibold fw-mutet">{% trans "Staffelstufen" %}</label>
+                                <button type="button" onclick="staffelAdd()" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-2.5 py-1 rounded-lg">{% trans "+ Stufe" %}</button>
                             </div>
-                            <p class="fw-fs-klein fw-faint mb-2">Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf.</p>
+                            <p class="fw-fs-klein fw-faint mb-2">{% trans "Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf." %}</p>
                             <div id="staffel-rows" class="space-y-2"></div>
                         </div>
                         <p id="index-hint" class="hidden fw-fs-klein fw-warnton fw-warn-flaeche rounded px-2 py-1 mt-3">Indexanpassungen werden mit amtlichem Formular (Art. 269d) angekündigt — das System erinnert automatisch, wenn der LIK gestiegen ist.</p>
@@ -232,14 +238,14 @@
                     <!-- Indexwerte -->
                     <div class="border fw-linie rounded-xl p-4">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-                            <h4 class="font-bold fw-strong text-sm">Indexwerte</h4>
-                            <button type="button" onclick="indexUebernehmen(this)" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">Aktuelle Werte übernehmen</button>
+                            <h4 class="font-bold fw-strong text-sm">{% trans "Indexwerte" %}</h4>
+                            <button type="button" onclick="indexUebernehmen(this)" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">{% trans "Aktuelle Werte übernehmen" %}</button>
                         </div>
-                        <p class="text-xs fw-faint mb-3">Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen.</p>
+                        <p class="text-xs fw-faint mb-3">{% trans "Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen." %}</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div><label class="block text-xs font-semibold fw-mutet mb-1">Basis Konsumentenpreisindex (LIK)</label>
+                            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Basis Konsumentenpreisindex (LIK)" %}</label>
                                 <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                                <p class="fw-fs-klein fw-faint mt-1">Basis {{ lik_basis }}</p></div>
+                                <p class="fw-fs-klein fw-faint mt-1">{% blocktrans with basis=lik_basis %}Basis {{ basis }}{% endblocktrans %}</p></div>
                             {% comment %}
                             WEITERGABE UND MINDESTINTERVALL (E2.52)
 
@@ -254,84 +260,84 @@
                             rechnet die Anpassung zu hoch — und eine zu hohe
                             Erhoehung ist anfechtbar.
                             {% endcomment %}
-                            <div><label class="block text-xs font-semibold fw-mutet mb-1">Weitergabe (%)</label>
+                            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Weitergabe (%)" %}</label>
                                 <input name="index_weitergabe_prozent" type="number" step="0.1" min="0" max="100"
                                        value="{{ v.index_weitergabe_prozent|default:'100' }}"
                                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
                                 <p class="fw-fs-klein fw-faint mt-1">Anteil der Teuerung, der weitergegeben wird (Art.&nbsp;269b). Leer = 100&nbsp;%.</p></div>
-                            <div><label class="block text-xs font-semibold fw-mutet mb-1">Mindestintervall (Monate)</label>
+                            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mindestintervall (Monate)" %}</label>
                                 <input name="index_intervall_monate" type="number" step="1" min="1"
                                        value="{{ v.index_intervall_monate|default:'12' }}"
                                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
-                                <p class="fw-fs-klein fw-faint mt-1">Frühestens so viele Monate nach der letzten Anpassung.</p></div>
-                            <div><label class="block text-xs font-semibold fw-mutet mb-1">LIK Stand-Monat</label>
+                                <p class="fw-fs-klein fw-faint mt-1">{% trans "Frühestens so viele Monate nach der letzten Anpassung." %}</p></div>
+                            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "LIK Stand-Monat" %}</label>
                                 <input name="basis_lik_stand" id="s_lik_stand" type="month" value="{{ aktueller_lik_stand_iso }}" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                                <p class="fw-fs-klein fw-faint mt-1">Monat, aus dem der LIK-Wert stammt</p></div>
+                                <p class="fw-fs-klein fw-faint mt-1">{% trans "Monat, aus dem der LIK-Wert stammt" %}</p></div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                            <div><label class="block text-xs font-semibold fw-mutet mb-1">Stand Referenzzinssatz (%)</label>
+                            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Stand Referenzzinssatz (%)" %}</label>
                                 <input name="basis_referenzzinssatz" id="s_ref" type="number" step="0.05" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                         </div>
-                        <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Kostensteigerung ausgeglichen bis / Letzte Kostenaufrechnung</label>
+                        <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">{% trans "Kostensteigerung ausgeglichen bis / Letzte Kostenaufrechnung" %}</label>
                         <input name="kostensteigerung_datum" type="date" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     </div>
                 </div>
 
                 <!-- S5 KAUTION -->
                 <div class="vstep hidden" data-step="4">
-                    <h3 class="text-lg font-bold fw-strong mb-1">Kaution</h3>
+                    <h3 class="text-lg font-bold fw-strong mb-1">{% trans "Kaution" %}</h3>
                     <p class="text-sm fw-mutet mb-4">Höhe der Sicherheitsleistung (Mietzinsdepot nach OR 257e).</p>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Höhe der Sicherheitsleistung (CHF) *</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Höhe der Sicherheitsleistung (CHF) *" %}</label>
                     <input name="kautions_betrag" id="s_kaution" type="number" step="0.01" value="0" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-2">
                     <div class="flex flex-wrap gap-2 mb-4">
-                        <button type="button" onclick="kautionSet(0)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">Keine</button>
-                        <button type="button" onclick="kautionSet(1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">1 Monat</button>
-                        <button type="button" onclick="kautionSet(2)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">2 Monate</button>
-                        <button type="button" onclick="kautionSet(3)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">3 Monate</button>
+                        <button type="button" onclick="kautionSet(0)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">{% trans "Keine" %}</button>
+                        <button type="button" onclick="kautionSet(1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">{% trans "1 Monat" %}</button>
+                        <button type="button" onclick="kautionSet(2)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">{% trans "2 Monate" %}</button>
+                        <button type="button" onclick="kautionSet(3)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">{% trans "3 Monate" %}</button>
                     </div>
                     <p id="kaution-hint" class="text-xs fw-faint mb-3"></p>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Kautionskonto (IBAN)</label>
-                    <input name="kautions_konto" oninput="live()" placeholder="CH…" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono">
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kautionskonto (IBAN)" %}</label>
+                    <input name="kautions_konto" oninput="live()" placeholder="{% trans 'CH…' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono">
                 </div>
 
                 <!-- S6 NEBENKOSTEN -->
                 <div class="vstep hidden" data-step="5">
-                    <h3 class="text-lg font-bold fw-strong mb-1">Nebenkosten</h3>
-                    <p class="text-sm fw-mutet mb-4">Abrechnungsart und Verteilschlüssel. Der Akonto-Betrag wurde im Schritt Mietzins erfasst.</p>
+                    <h3 class="text-lg font-bold fw-strong mb-1">{% trans "Nebenkosten" %}</h3>
+                    <p class="text-sm fw-mutet mb-4">{% trans "Abrechnungsart und Verteilschlüssel. Der Akonto-Betrag wurde im Schritt Mietzins erfasst." %}</p>
                     <div class="fw-flaeche2 rounded-lg px-4 py-3 mb-4 text-sm flex items-center justify-between">
-                        <span class="fw-mutet">Nebenkosten / Monat</span><span id="nk-echo" class="font-semibold fw-strong">CHF 0.00</span>
+                        <span class="fw-mutet">{% trans "Nebenkosten / Monat" %}</span><span id="nk-echo" class="font-semibold fw-strong">CHF 0.00</span>
                     </div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Abrechnungsart</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Abrechnungsart" %}</label>
                     <select name="nk_abrechnungsart" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3">
-                        <option value="akonto">Akonto (Vorschuss mit Abrechnung)</option>
-                        <option value="pauschal">Pauschal (fixer Betrag)</option>
-                        <option value="inbegriffen">Inbegriffen im Nettomietzins</option>
-                        <option value="direkt">Direkt an Werke</option>
+                        <option value="akonto">{% trans "Akonto (Vorschuss mit Abrechnung)" %}</option>
+                        <option value="pauschal">{% trans "Pauschal (fixer Betrag)" %}</option>
+                        <option value="inbegriffen">{% trans "Inbegriffen im Nettomietzins" %}</option>
+                        <option value="direkt">{% trans "Direkt an Werke" %}</option>
                     </select>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">Verteilschlüssel</label>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verteilschlüssel" %}</label>
                     <select name="verteilschluessel" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                        <option value="m2">Fläche (m²)</option><option value="m3">Volumen (m³)</option>
-                        <option value="quote">Wertquote</option><option value="einheit">Pro Einheit / Pauschal</option>
-                        <option value="individuell">Individuelle Zähler (VHKA)</option>
+                        <option value="m2">{% trans "Fläche (m²)" %}</option><option value="m3">{% trans "Volumen (m³)" %}</option>
+                        <option value="quote">{% trans "Wertquote" %}</option><option value="einheit">{% trans "Pro Einheit / Pauschal" %}</option>
+                        <option value="individuell">{% trans "Individuelle Zähler (VHKA)" %}</option>
                     </select>
                 </div>
 
                 <!-- S7 ABSCHLUSS -->
                 <div class="vstep hidden" data-step="6">
-                    <h3 class="text-lg font-bold fw-strong mb-1">Abschluss</h3>
-                    <p class="text-sm fw-mutet mb-4">Zusammenfassung prüfen und Vertrag erstellen.</p>
+                    <h3 class="text-lg font-bold fw-strong mb-1">{% trans "Abschluss" %}</h3>
+                    <p class="text-sm fw-mutet mb-4">{% trans "Zusammenfassung prüfen und Vertrag erstellen." %}</p>
                     <div id="summary" class="fw-flaeche2 rounded-lg p-4 text-sm space-y-1.5 mb-4"></div>
                     <label class="flex items-center gap-2 text-sm fw-ink">
-                        <input type="checkbox" name="aktiv_setzen" checked class="fw-akzent"> Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; Debitoren)
+                        <input type="checkbox" name="aktiv_setzen" checked class="fw-akzent"> {% blocktrans trimmed %}Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; Debitoren){% endblocktrans %}
                     </label>
                     <div class="mt-4 pt-4 border-t fw-linie">
                         <label class="flex items-center gap-2 text-sm fw-ink">
-                            <input type="checkbox" name="abschluss" value="senden" class="fw-akzent"> Nach dem Erstellen <b>digital zur Unterschrift senden</b> (DocuSeal)
+                            <input type="checkbox" name="abschluss" value="senden" class="fw-akzent"> {% blocktrans trimmed %}Nach dem Erstellen <b>digital zur Unterschrift senden</b> (DocuSeal){% endblocktrans %}
                         </label>
                         {% if docuseal_konfiguriert %}
-                        <p class="text-xs fw-faint mt-1 ml-6">Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, Person, Objekt).</p>
+                        <p class="text-xs fw-faint mt-1 ml-6">{% trans "Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, Person, Objekt)." %}</p>
                         {% else %}
-                        <p class="text-xs fw-warnton mt-1 ml-6">{% zeichen 'hinweis' klasse='mr-1' %}DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. API-Key unter <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.</p>
+                        <p class="text-xs fw-warnton mt-1 ml-6">{% zeichen 'hinweis' klasse='mr-1' %}{% blocktrans trimmed %}DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. API-Key unter <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.{% endblocktrans %}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -341,33 +347,47 @@
         <!-- Navigation -->
         <div class="border-t fw-linie px-6 py-4 flex items-center justify-between fw-flaeche2">
             <button type="button" id="btn-back" onclick="stepMove(-1)" class="text-sm font-semibold fw-mutet hover:fw-ink px-3 py-2 rounded-lg invisible">
-                {% zeichen 'zurueck' klasse='mr-1' %} Zurück
+                {% zeichen 'zurueck' klasse='mr-1' %} {% trans "Zurück" %}
             </button>
             <button type="button" id="btn-next" onclick="stepMove(1)" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
-                Weiter {% zeichen 'weiter' klasse='ml-1' %}
+                {% trans "Weiter" %} {% zeichen 'weiter' klasse='ml-1' %}
             </button>
             <button type="submit" id="btn-save" class="hidden fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
-                {% zeichen 'speichern' klasse='mr-1' %} Vertrag erstellen
+                {% zeichen 'speichern' klasse='mr-1' %} {% trans "Vertrag erstellen" %}
             </button>
         </div>
     </div>
 
     <!-- ========== RECHTS: LIVE-VERTRAGSVORSCHAU ========== -->
     <div class="lg:sticky lg:top-24">
-        <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2">{% zeichen 'vertrag' %} Live-Vorschau</div>
+        <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2">{% zeichen 'vertrag' %} {% trans "Live-Vorschau" %}</div>
         <div id="mietrecht-warn" class="hidden mb-2 rounded-xl border fw-linie-warn fw-warn-flaeche px-4 py-3 fw-fs-fein fw-warnton">
-            <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} Mietrechtlicher Hinweis</div>
+            <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} {% trans "Mietrechtlicher Hinweis" %}</div>
             <ul id="mietrecht-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
         <div class="fw-card overflow-hidden">
-            <iframe id="pvFrame" title="Vertrags-Vorschau" class="block fw-flaeche w-full" style="height:75vh; border:0;"></iframe>
+            <iframe id="pvFrame" title="{% trans 'Vertrags-Vorschau' %}" class="block fw-flaeche w-full" style="height:75vh; border:0;"></iframe>
         </div>
-        <p class="fw-fs-klein fw-faint mt-1.5 text-center">{% zeichen 'gut' klasse='fw-gut mr-1' %}Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF.</p>
+        <p class="fw-fs-klein fw-faint mt-1.5 text-center">{% zeichen 'gut' klasse='fw-gut mr-1' %}{% trans "Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF." %}</p>
     </div>
 </div>
 </form>
 
 <script>
+// Texte der Oberfläche in der Sprache der Sitzung. Die Vertragsvorschau und die
+// mietrechtlichen Warnungen weiter unten bleiben bewusst deutsch.
+const UI = {
+  lg_waehlen: '{% filter escapejs %}{% trans 'Liegenschaft auswählen…' %}{% endfilter %}',
+  person_waehlen: '{% filter escapejs %}{% trans 'Person auswählen…' %}{% endfilter %}',
+  objekt_waehlen: '{% filter escapejs %}{% trans 'Objekt auswählen…' %}{% endfilter %}',
+  zuerst_lg: '{% filter escapejs %}{% trans 'Zuerst Liegenschaft wählen…' %}{% endfilter %}',
+  mietzins: '{% filter escapejs %}{% trans 'Mietzins (CHF) *' %}{% endfilter %}',
+  mietzins_netto: '{% filter escapejs %}{% trans 'Mietzins netto (CHF) *' %}{% endfilter %}',
+  netto_chf: '{% filter escapejs %}{% trans 'Netto CHF' %}{% endfilter %}',
+  stufe_weg: '{% filter escapejs %}{% trans 'Staffelstufe entfernen' %}{% endfilter %}',
+  objekt_fehlt: '{% filter escapejs %}{% trans 'Bitte wähle im Schritt 1 ein Objekt aus, bevor du den Vertrag erstellst.' %}{% endfilter %}',
+  person_fehlt: '{% filter escapejs %}{% trans 'Bitte wähle im Schritt 2 eine Person aus oder erfasse eine neue.' %}{% endfilter %}',
+};
 const LG = JSON.parse(document.getElementById('lg-data').textContent);
 const MIETER = JSON.parse(document.getElementById('mieter-data').textContent);
 const STEPS = ['Objekt','Personen','Konditionen','Mietzins','Kaution','Nebenkosten','Abschluss'];
@@ -386,10 +406,16 @@ let cur = 0, mieterMode = 'best';
 
 // Kündigungsmonate-Checkboxen rendern (Standard: März, Juni, September)
 document.getElementById('monate-grid').innerHTML = MONATE.map((m,i)=>
-  `<label class="flex items-center gap-2 text-sm fw-ink"><input type="checkbox" class="monat-cb fw-akzent" value="${m}" onchange="live()"> ${m}</label>`).join('');
+  `<label class="flex items-center gap-2 text-sm fw-ink"><input type="checkbox" class="monat-cb fw-akzent" value="${m}" onchange="live()"> ${monatAnzeige(m)}</label>`).join('');
 function monateAusserDez(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = c.value!=='Dezember'); live(); }
 function monateStandard(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = ['März','Juni','September'].includes(c.value)); live(); }
 function setMonateAlle(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = true); live(); }
+// Der Wert bleibt deutsch (er wird als Kündigungstermin im Vertrag gespeichert),
+// angezeigt wird der Monatsname in der Sprache der Seite.
+function monatAnzeige(m){
+  try { return new Intl.DateTimeFormat(document.documentElement.lang || 'de', {month: 'long'})
+                  .format(new Date(2000, MONATE.indexOf(m), 1)); } catch (e) { return m; }
+}
 function gewaehlteMonate(){ return Array.from(document.querySelectorAll('.monat-cb:checked')).map(c=>c.value); }
 function fristStep(d){ const el=document.getElementById('s_frist'); const min=parseInt(el.min)||1; el.value=Math.max(min,(parseInt(el.value)|| (min||3))+d); live(); }
 function indexUebernehmen(btn){
@@ -415,11 +441,11 @@ document.querySelector('.step-nav').innerHTML = STEPS.map((s,i)=>
      <span class="lbl text-sm">${s}</span></div>`).join('');
 
 // Liegenschaften/Mieter-Dropdowns füllen
-document.getElementById('s_lg').innerHTML = '<option value="">Liegenschaft auswählen…</option>' +
+document.getElementById('s_lg').innerHTML = '<option value="">' + UI.lg_waehlen + '</option>' +
   LG.map(l=>`<option value="${l.id}">${l.strasse}, ${l.ort}</option>`).join('');
-document.getElementById('s_mieter').innerHTML = '<option value="">Person auswählen…</option>' +
+document.getElementById('s_mieter').innerHTML = '<option value="">' + UI.person_waehlen + '</option>' +
   MIETER.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-document.getElementById('s_mieter2').innerHTML = '<option value="">Person auswählen…</option>' +
+document.getElementById('s_mieter2').innerHTML = '<option value="">' + UI.person_waehlen + '</option>' +
   MIETER.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
 let mieter2Mode = 'best';
 
@@ -514,8 +540,8 @@ function curMieter(){
 function lgChange(){
   const l=curLg();
   document.getElementById('s_obj').innerHTML = l
-    ? '<option value="">Objekt auswählen…</option>'+l.objekte.map(o=>`<option value="${o.id}">${o.bezeichnung} (${o.typ})</option>`).join('')
-    : '<option value="">Zuerst Liegenschaft wählen…</option>';
+    ? '<option value="">' + UI.objekt_waehlen + '</option>'+l.objekte.map(o=>`<option value="${o.id}">${o.bezeichnung} (${o.typ})</option>`).join('')
+    : '<option value="">' + UI.zuerst_lg + '</option>';
   document.getElementById('f_einheit_id').value=''; document.getElementById('obj-info').classList.add('hidden'); live();
 }
 function objChange(){
@@ -545,7 +571,7 @@ function objChange(){
     // NK komplett entfernen: Feld, Brutto-Anzeige und Schritt 6 (Nebenkosten)
     document.getElementById('nk-field-box').classList.toggle('hidden', istEP);
     document.getElementById('brutto-box').classList.toggle('hidden', istEP);
-    document.getElementById('netto-label').textContent = istEP ? 'Mietzins (CHF) *' : 'Mietzins netto (CHF) *';
+    document.getElementById('netto-label').textContent = istEP ? UI.mietzins : UI.mietzins_netto;
     if (istEP) document.getElementById('s_nk').value = '0';
     updateStepNav();
     const fristLabel = document.getElementById('frist-label');
@@ -624,8 +650,8 @@ function staffelAdd(){
   row.className = 'staffel-row flex items-center gap-2';
   row.innerHTML = `
     <input type="date" name="staffel_ab" oninput="live()" class="flex-1 fw-flaeche rounded-lg text-sm px-2 py-1.5">
-    <input type="number" step="0.01" name="staffel_netto" oninput="live()" placeholder="Netto CHF" class="w-28 fw-flaeche rounded-lg text-sm px-2 py-1.5">
-    <button type="button" onclick="this.closest('.staffel-row').remove(); live()" title="Staffelstufe entfernen" class="fw-faint hover:fw-kritisch text-sm px-1">{% zeichen 'loeschen' %}</button>`;
+    <input type="number" step="0.01" name="staffel_netto" oninput="live()" placeholder="${UI.netto_chf}" class="w-28 fw-flaeche rounded-lg text-sm px-2 py-1.5">
+    <button type="button" onclick="this.closest('.staffel-row').remove(); live()" title="${UI.stufe_weg}" class="fw-faint hover:fw-kritisch text-sm px-1">{% zeichen 'loeschen' %}</button>`;
   wrap.appendChild(row);
 }
 function mieterTab(m){
@@ -682,7 +708,7 @@ function vorSubmit(){
     (zw && zw.checked && mieter2Mode==='best') ? (document.getElementById('s_mieter2')?.value||'') : '';
 
   if(!document.getElementById('f_einheit_id').value){
-    alert('Bitte wähle im Schritt 1 ein Objekt aus, bevor du den Vertrag erstellst.');
+    alert(UI.objekt_fehlt);
     goStep(0); return false;
   }
   // Mieter: entweder bestehende Person gewählt oder Name eingegeben
@@ -692,7 +718,7 @@ function vorSubmit(){
     || (document.querySelector('[name=nachname]')?.value || '').trim()
     || (document.querySelector('[name=firmen_name]')?.value || '').trim();
   if(!hatMieter){
-    alert('Bitte wähle im Schritt 2 eine Person aus oder erfasse eine neue.');
+    alert(UI.person_fehlt);
     goStep(1); return false;
   }
   return true;
