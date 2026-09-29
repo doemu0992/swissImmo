@@ -47,8 +47,10 @@ class KatalogTests(TestCase):
                     f'{hoeher} kann weniger als {tiefer} — die Reihenfolge stimmt nicht.')
 
     def test_grenzen_wachsen_mit_der_stufe(self):
+        # `None` heisst unbegrenzt und ist damit grösser als jede Zahl.
         for was in ('einheiten', 'nutzer'):
-            werte = [GRENZEN[s][was] for s in STUFEN_REIHENFOLGE]
+            werte = [float('inf') if GRENZEN[s][was] is None else GRENZEN[s][was]
+                     for s in STUFEN_REIHENFOLGE]
             with self.subTest(was=was):
                 self.assertEqual(werte, sorted(werte),
                                  f'Die Grenze {was} wird bei einer höheren Stufe kleiner.')
@@ -86,32 +88,38 @@ class FreigabeTests(TestCase):
         with self.assertRaises(UnbekannteFunktion):
             hat_funktion(None, 'gibtsnicht')
 
-    @override_settings(SWISSIMMO_VORGABE_STUFE='basis')
-    def test_basis_hat_keine_faelle(self):
+    @override_settings(SWISSIMMO_VORGABE_STUFE='start')
+    def test_start_hat_pflicht_aber_keine_faelle(self):
+        """Pflicht steht in jeder Stufe: Läufe, Nebenkosten, Abnahme, Mieterportal."""
         self.assertTrue(hat_funktion(self.org, 'akten'))
+        self.assertTrue(hat_funktion(self.org, 'monatslauf'))
+        self.assertTrue(hat_funktion(self.org, 'nebenkostenlauf'))
+        self.assertTrue(hat_funktion(self.org, 'vor_ort'))
+        self.assertTrue(hat_funktion(self.org, 'mieterportal'))
         self.assertFalse(hat_funktion(self.org, 'faelle'))
-        self.assertFalse(hat_funktion(self.org, 'nebenkostenlauf'))
-
-    @override_settings(SWISSIMMO_VORGABE_STUFE='aufbau')
-    def test_aufbau_hat_faelle_aber_kein_portal(self):
-        self.assertTrue(hat_funktion(self.org, 'faelle'))
-        self.assertTrue(hat_funktion(self.org, 'fristenwaechter'))
         self.assertFalse(hat_funktion(self.org, 'eigentuemerportal'))
 
-    @override_settings(SWISSIMMO_VORGABE_STUFE='verwaltung')
-    def test_verwaltung_hat_portale_aber_keine_rentabilitaet(self):
+    @override_settings(SWISSIMMO_VORGABE_STUFE='team')
+    def test_team_hat_portale_aber_keine_rentabilitaet(self):
+        self.assertTrue(hat_funktion(self.org, 'faelle'))
         self.assertTrue(hat_funktion(self.org, 'eigentuemerportal'))
         self.assertTrue(hat_funktion(self.org, 'vor_ort'))
         self.assertFalse(hat_funktion(self.org, 'mandatsrentabilitaet'))
 
-    @override_settings(SWISSIMMO_VORGABE_STUFE='portfolio')
-    def test_portfolio_hat_alles(self):
+    @override_settings(SWISSIMMO_VORGABE_STUFE='professional')
+    def test_professional_hat_alles(self):
+        for schluessel in FUNKTIONEN:
+            with self.subTest(schluessel=schluessel):
+                self.assertTrue(hat_funktion(self.org, schluessel))
+
+    @override_settings(SWISSIMMO_VORGABE_STUFE='enterprise')
+    def test_enterprise_hat_alles(self):
         for schluessel in FUNKTIONEN:
             with self.subTest(schluessel=schluessel):
                 self.assertTrue(hat_funktion(self.org, schluessel))
 
     def test_module_haengen_nicht_an_der_stufe(self):
-        with override_settings(SWISSIMMO_VORGABE_STUFE='basis'):
+        with override_settings(SWISSIMMO_VORGABE_STUFE='start'):
             self.assertTrue(hat_funktion(self.org, 'signatur'))
         self.assertFalse(hat_funktion(None, 'signatur'))
 
@@ -120,10 +128,15 @@ class GrenzenTests(TestCase):
     def setUp(self):
         self.org = _Org()
 
-    @override_settings(SWISSIMMO_VORGABE_STUFE='verwaltung')
+    @override_settings(SWISSIMMO_VORGABE_STUFE='team')
     def test_grenzen_der_aktuellen_stufe(self):
-        self.assertEqual(grenze(self.org, 'einheiten'), 250)
+        self.assertEqual(grenze(self.org, 'einheiten'), 150)
         self.assertEqual(grenze(self.org, 'nutzer'), 5)
+
+    @override_settings(SWISSIMMO_VORGABE_STUFE='enterprise')
+    def test_unbegrenzt_ist_none_nicht_null(self):
+        """`None` heisst unbegrenzt; 0 hiesse: niemand darf sich anmelden."""
+        self.assertIsNone(grenze(self.org, 'nutzer'))
 
     def test_unbekannte_grenze_wirft(self):
         with self.assertRaises(UnbekannteFunktion):
@@ -168,9 +181,9 @@ class NahtTests(TestCase):
             'Die Vorgabestufe wird an mehr als einer Stelle gelesen. '
             'Phase 3 müsste dann mehrere Stellen ersetzen statt einer.')
 
-    @override_settings(SWISSIMMO_VORGABE_STUFE='aufbau')
+    @override_settings(SWISSIMMO_VORGABE_STUFE='professional')
     def test_stufe_ist_ueber_einstellungen_uebersteuerbar(self):
-        self.assertEqual(stufe_von(_Org()), 'aufbau')
+        self.assertEqual(stufe_von(_Org()), 'professional')
 
     @override_settings(SWISSIMMO_VORGABE_STUFE='premium')
     def test_unbekannte_stufe_meldet_sich_verstaendlich(self):
@@ -186,7 +199,7 @@ class NahtTests(TestCase):
         with self.assertRaises(ImproperlyConfigured) as fehler:
             stufe_von(_Org())
         self.assertIn('premium', str(fehler.exception))
-        self.assertIn('basis', str(fehler.exception))
+        self.assertIn('start', str(fehler.exception))
 
     @override_settings(SWISSIMMO_VORGABE_STUFE='premium')
     def test_unbekannte_stufe_schlaegt_auch_bei_den_aufrufern_durch(self):

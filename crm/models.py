@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.db import models
 
+from core.funktionen import STUFEN_NAMEN, STUFEN_REIHENFOLGE
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 from django.utils.translation import gettext_lazy as _, pgettext_lazy
@@ -95,9 +96,10 @@ class Organisation(models.Model):
     # Vermarktungs-Portale: Token für den öffentlichen Objekt-Feed (Homegate,
     # ImmoScout24/SMG, Flatfox etc. via Feed-URL/Middleware). Leer = Feed deaktiviert.
     portal_feed_token = models.CharField("Portal-Feed-Token", max_length=64, blank=True, default='')
-    # Abonnement / Preisplan
-    ABO_CHOICES = [('start', 'Start'), ('pro', 'Pro'), ('premium', 'Premium')]
-    abo_plan = models.CharField("Abo-Plan", max_length=10, choices=ABO_CHOICES, default='pro')
+    # Abonnement / Preisplan. Die Stufen stehen in core/funktionen.py (D7);
+    # hier wird nur abgeleitet, nicht ein zweites Mal geschrieben.
+    ABO_CHOICES = [(s, STUFEN_NAMEN[s]) for s in STUFEN_REIHENFOLGE]
+    abo_plan = models.CharField("Abo-Plan", max_length=20, choices=ABO_CHOICES, default='team')
     abo_jaehrlich = models.BooleanField("Jährliche Abrechnung", default=False)
     # Standard AUS: Ein Schalter, der beim Einführen sofort greift, sperrt jeden
     # aus, der gerade kein Telefon zur Hand hat — die Inhaberin eingeschlossen.

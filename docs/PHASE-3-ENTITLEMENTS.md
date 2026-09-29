@@ -126,6 +126,13 @@ Ansichten.
 
 ### 3.1 Eine Datei, die alles weiss
 
+> **Überholt am 29.09.2026.** Ein eigenes `core/entitlements.py` entsteht nicht.
+> D7 (`docs/PLAN-V7.md`) legt `core/funktionen.py` als die eine Quelle fest, und
+> dort stehen die Tabellen jetzt: vier Stufen mit Marktnamen, `GRENZEN`, `PREISE`,
+> `SUPPORT`. Abweichend vom Entwurf unten stehen `monatslauf`, `mieterportal` und
+> die Abnahme (`vor_ort`) in «start», weil `monatslauf` die Pflichtläufe trägt
+> (docs/AUFTRAG-ABOSTUFEN.md). Die Speichergrenze fehlt, wie in §7.4 empfohlen.
+
 `core/entitlements.py` — die einzige Stelle, an der die Tabellen aus MARKT.md
 als Code stehen:
 
@@ -352,13 +359,13 @@ kann, ist ein Versprechen ohne Deckung — dieselbe Sorte wie der «API-Zugang»
 
 | Schritt | Inhalt | Abhängig von |
 |---|---|---|
-| 1 | `core/entitlements.py` mit Tabellen + `darf()`, noch ohne Sperren. Test: Tabellen = MARKT.md | Entscheid über Stufen |
+| 1 | ~~`core/entitlements.py`~~ Tabellen in `core/funktionen.py`, noch ohne Sperren — **Tabellen erledigt 29.09.2026**, `darf()` offen | Entscheid über Stufen |
 | 2 | Sweep-Test über alle 329 URLs, alle auf der Freiliste | 1 |
 | 3 | Funktionssperren einziehen, Freiliste schrumpfen | 2 |
 | 4 | Navigation zeigt Schloss statt Absage | 3 |
 | 5 | Grenzen (Einheiten, Nutzer) per Signal + benannter Ausstieg | 1 |
 | 6 | Zustands-Middleware | Zahlungsanbieter |
-| 7 | Migration der drei Stufen auf vier | Entscheid 5.3 |
+| 7 | Migration der drei Stufen auf vier | Entscheid 5.3 — **erledigt 29.09.2026** (`crm/migrations/0045_abostufen_marktnamen.py`) |
 
 Die Schritte 1–4 sind unabhängig vom Zahlungsanbieter und können sofort
 beginnen, sobald der Zuschnitt steht. Schritt 6 nicht.
