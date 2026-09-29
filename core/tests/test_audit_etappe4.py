@@ -30,13 +30,14 @@ def _csv(antwort):
 
 class LiegenschaftslisteSeiten(TestCase):
 
-    @classmethod
-    def setUpTestData(cls):
-        # 60 Liegenschaften: zwei Seiten zu 50 und 10.
+    def setUp(self):
+        # 60 Liegenschaften: zwei Seiten zu 50 und 10. In `setUp`, nicht in
+        # `setUpTestData`: `_test_organisation` setzt den Mandantenkontext, und
+        # nur `setUp` läuft in der Kontextkopie des Test-Runners — auf
+        # Klassenebene blieb er für die folgenden Module stehen (gemessen:
+        # 14 rote Isolationstests).
         for i in range(60):
             _lg(f'Musterweg {i:02d}')
-
-    def setUp(self):
         self.c = Client()
         self.c.force_login(_team_user())
 

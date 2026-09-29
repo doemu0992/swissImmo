@@ -189,6 +189,7 @@ UEBERSETZT = (
     'fw/fall_detail.html',
     'fw/_fwmodal.html',
     'fw/_bestaetigen.html',      # Audit Etappe 3: Bestätigungsdialog
+    'fw/_seiten.html',           # Audit Etappe 4: Blätterleiste
     # Tranche «Formulare»
     'fw/objekt_form.html',
     'fw/liegenschaft_form.html',
