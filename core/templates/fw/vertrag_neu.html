@@ -223,10 +223,10 @@
                                 <label class="block text-xs font-semibold fw-mutet">Staffelstufen</label>
                                 <button type="button" onclick="staffelAdd()" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-2.5 py-1 rounded-lg">+ Stufe</button>
                             </div>
-                            <p class="text-[11px] fw-faint mb-2">Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf.</p>
+                            <p class="fw-fs-klein fw-faint mb-2">Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf.</p>
                             <div id="staffel-rows" class="space-y-2"></div>
                         </div>
-                        <p id="index-hint" class="hidden text-[11px] fw-warnton fw-warn-flaeche rounded px-2 py-1 mt-3">Indexanpassungen werden mit amtlichem Formular (Art. 269d) angekündigt — das System erinnert automatisch, wenn der LIK gestiegen ist.</p>
+                        <p id="index-hint" class="hidden fw-fs-klein fw-warnton fw-warn-flaeche rounded px-2 py-1 mt-3">Indexanpassungen werden mit amtlichem Formular (Art. 269d) angekündigt — das System erinnert automatisch, wenn der LIK gestiegen ist.</p>
                     </div>
 
                     <!-- Indexwerte -->
@@ -239,7 +239,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div><label class="block text-xs font-semibold fw-mutet mb-1">Basis Konsumentenpreisindex (LIK)</label>
                                 <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                                <p class="text-[11px] fw-faint mt-1">Basis {{ lik_basis }}</p></div>
+                                <p class="fw-fs-klein fw-faint mt-1">Basis {{ lik_basis }}</p></div>
                             {% comment %}
                             WEITERGABE UND MINDESTINTERVALL (E2.52)
 
@@ -258,15 +258,15 @@
                                 <input name="index_weitergabe_prozent" type="number" step="0.1" min="0" max="100"
                                        value="{{ v.index_weitergabe_prozent|default:'100' }}"
                                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
-                                <p class="text-[11px] fw-faint mt-1">Anteil der Teuerung, der weitergegeben wird (Art.&nbsp;269b). Leer = 100&nbsp;%.</p></div>
+                                <p class="fw-fs-klein fw-faint mt-1">Anteil der Teuerung, der weitergegeben wird (Art.&nbsp;269b). Leer = 100&nbsp;%.</p></div>
                             <div><label class="block text-xs font-semibold fw-mutet mb-1">Mindestintervall (Monate)</label>
                                 <input name="index_intervall_monate" type="number" step="1" min="1"
                                        value="{{ v.index_intervall_monate|default:'12' }}"
                                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
-                                <p class="text-[11px] fw-faint mt-1">Frühestens so viele Monate nach der letzten Anpassung.</p></div>
+                                <p class="fw-fs-klein fw-faint mt-1">Frühestens so viele Monate nach der letzten Anpassung.</p></div>
                             <div><label class="block text-xs font-semibold fw-mutet mb-1">LIK Stand-Monat</label>
                                 <input name="basis_lik_stand" id="s_lik_stand" type="month" value="{{ aktueller_lik_stand_iso }}" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                                <p class="text-[11px] fw-faint mt-1">Monat, aus dem der LIK-Wert stammt</p></div>
+                                <p class="fw-fs-klein fw-faint mt-1">Monat, aus dem der LIK-Wert stammt</p></div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                             <div><label class="block text-xs font-semibold fw-mutet mb-1">Stand Referenzzinssatz (%)</label>
@@ -355,14 +355,14 @@
     <!-- ========== RECHTS: LIVE-VERTRAGSVORSCHAU ========== -->
     <div class="lg:sticky lg:top-24">
         <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2">{% zeichen 'vertrag' %} Live-Vorschau</div>
-        <div id="mietrecht-warn" class="hidden mb-2 rounded-xl border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
+        <div id="mietrecht-warn" class="hidden mb-2 rounded-xl border fw-linie-warn fw-warn-flaeche px-4 py-3 fw-fs-fein fw-warnton">
             <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} Mietrechtlicher Hinweis</div>
             <ul id="mietrecht-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
         <div class="fw-card overflow-hidden">
             <iframe id="pvFrame" title="Vertrags-Vorschau" class="block fw-flaeche w-full" style="height:75vh; border:0;"></iframe>
         </div>
-        <p class="text-[11px] fw-faint mt-1.5 text-center">{% zeichen 'gut' klasse='fw-gut mr-1' %}Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF.</p>
+        <p class="fw-fs-klein fw-faint mt-1.5 text-center">{% zeichen 'gut' klasse='fw-gut mr-1' %}Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF.</p>
     </div>
 </div>
 </form>
@@ -868,7 +868,7 @@ function live(){
   const secN = (function(){ let n=3; return function(t){ return `<div class="pvsec">${++n}. ${t}</div>`; }; })();
 
   document.getElementById('pv').innerHTML = `
-    <div class="text-[11px] fw-faint border-b fw-linie pb-2 mb-4">${vm.name} | ${vm.strasse} | ${vm.plz} ${vm.ort}</div>
+    <div class="fw-fs-klein fw-faint border-b fw-linie pb-2 mb-4">${vm.name} | ${vm.strasse} | ${vm.plz} ${vm.ort}</div>
     <div class="font-bold text-base mb-3">${o?o.vertrag_titel:'Mietvertrag für Wohnräume'}</div>
     <p class="text-xs fw-mutet mb-4">Einfachheitshalber wird auf die weiblichen Formen verzichtet und «Mieter, Vermieter» als Oberbegriff verwendet.</p>
 
@@ -883,7 +883,7 @@ function live(){
     <p class="text-xs fw-faint mb-3">Alle aufgeführten Personen haften für sämtliche Verbindlichkeiten solidarisch.</p>
 
     <div class="pvsec">2. Mietsache</div>
-    <table class="w-full my-2 text-[13px]"><tbody>
+    <table class="w-full my-2 fw-fs-fein"><tbody>
       <tr><td class="fw-mutet py-0.5 w-2/5">Mietobjekt</td><td>${o?o.bezeichnung:'—'}</td></tr>
       <tr><td class="fw-mutet py-0.5">Stockwerk</td><td>${o&&o.etage?o.etage:'—'}</td></tr>
       <tr><td class="fw-mutet py-0.5">Adresse</td><td>${adr||'—'}</td></tr>
@@ -891,7 +891,7 @@ function live(){
     </tbody></table>
 
     <div class="pvsec">3. Mietdauer und Kündigung</div>
-    <table class="w-full my-2 text-[13px]"><tbody>
+    <table class="w-full my-2 fw-fs-fein"><tbody>
       <tr><td class="fw-mutet py-0.5 w-2/5">Mietbeginn</td><td>${dstr(val('beginn'))||'—'}</td></tr>
       <tr><td class="fw-mutet py-0.5">Mietende</td><td>${unbef?'unbefristet':(dstr(val('ende'))||'—')}</td></tr>
       <tr><td class="fw-mutet py-0.5">Kündigungsfrist</td><td>${(o&&o.ist_einstellplatz)?((parseInt(val('kuendigungsfrist'))>0)?(val('kuendigungsfrist')+' Monate auf Monatsende'):'2 Wochen auf Ende einer Monatsperiode (Art. 266e OR)'):((val('kuendigungsfrist')||3)+' Monate')}</td></tr>
@@ -899,13 +899,13 @@ function live(){
     </tbody></table>
     ${val('erstmals_kuendbar')?`<p class="text-xs fw-mutet mb-2">Der Vertrag ist erstmals kündbar auf ${dstr(val('erstmals_kuendbar'))}.</p>`:''}
 
-    ${(val('mitbenutzung')||val('nebenraeume'))?`<table class="w-full my-2 text-[13px]"><tbody>
+    ${(val('mitbenutzung')||val('nebenraeume'))?`<table class="w-full my-2 fw-fs-fein"><tbody>
       ${val('mitbenutzung')?`<tr><td class="fw-mutet py-0.5 w-2/5">Zur Mitbenützung</td><td>${val('mitbenutzung')}</td></tr>`:''}
       ${val('nebenraeume')?`<tr><td class="fw-mutet py-0.5">Nebenräume</td><td>${val('nebenraeume')}</td></tr>`:''}
     </tbody></table>`:''}
 
     ${secN('Mietzins')}
-    <table class="w-full my-2 text-[13px]"><tbody>
+    <table class="w-full my-2 fw-fs-fein"><tbody>
       ${eps
         ? `<tr><td class="fw-mutet py-0.5 w-2/5 font-semibold">Mietzins</td><td class="font-semibold">CHF ${fmt(netto)}${mwstIncl}</td></tr>`
         : `<tr><td class="fw-mutet py-0.5 w-2/5">Nettomietzins</td><td>CHF ${fmt(netto)}</td></tr>

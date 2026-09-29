@@ -25,7 +25,7 @@
     {% for v in vorlagen %}
     <div class="fw-card p-5 flex flex-col">
         <div class="flex items-start justify-between mb-2">
-            <span class="px-2.5 py-1 rounded-md text-[11px] font-semibold fw-markenflaeche fw-marke">{{ v.get_kategorie_display }}</span>
+            <span class="px-2.5 py-1 rounded-md fw-fs-klein font-semibold fw-markenflaeche fw-marke">{{ v.get_kategorie_display }}</span>
             <form method="post" action="/neu/vorlagen/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Vorlage löschen?" %}{% endfilter %}');">
                 {% csrf_token %}
                 <button title="{% trans 'Vorlage löschen' %}" class="fw-faint hover:fw-kritisch text-xs">{% zeichen 'loeschen' %}</button>
@@ -34,7 +34,7 @@
         <h3 class="font-bold fw-strong text-sm mb-1">{{ v.name }}</h3>
         {% if v.betreff %}<p class="text-xs fw-mutet mb-1">{% trans "Betreff" %}: {{ v.betreff }}</p>{% endif %}
         <p class="text-xs fw-faint line-clamp-3 flex-1">{{ v.inhalt|truncatechars:120 }}</p>
-        <a href="/neu/vorlagen/{{ v.id }}/bearbeiten/" class="mt-3 text-xs font-semibold fw-marke hover:underline">{% zeichen 'bearbeiten' klasse='text-[10px] mr-1' %}{% trans "Bearbeiten" %}</a>
+        <a href="/neu/vorlagen/{{ v.id }}/bearbeiten/" class="mt-3 text-xs font-semibold fw-marke hover:underline">{% zeichen 'bearbeiten' klasse='fw-fs-mikro mr-1' %}{% trans "Bearbeiten" %}</a>
     </div>
     {% endfor %}
 </div>

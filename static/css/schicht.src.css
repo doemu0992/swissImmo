@@ -123,7 +123,7 @@
             .fw-kopffilter label{padding:4px 9px;font-size:12px}
             .fw-kopffilter .fw-feld{max-width:78px}
         }
-        .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:800;color:var(--ds-ink)}
+        .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:700;color:var(--ds-ink)}
         .fw-phead p{font-size:13px;color:var(--ds-muted);margin-top:2px}
         /* Buttons */
         .fw-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;text-decoration:none;padding:9px 14px;border-radius:var(--ds-radius-sm);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
@@ -157,7 +157,7 @@
         .fw-kpi{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:14px;padding:15px 16px;box-shadow:var(--ds-shadow);display:flex;flex-direction:column;gap:2px}
         .fw-kpi.fw-accent{background:linear-gradient(150deg,color-mix(in srgb,var(--ds-brand) 12%,var(--ds-surface)),var(--ds-surface))}
         .fw-kpi .fw-l{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--ds-faint);font-weight:600}
-        .fw-kpi .fw-v{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-kpi .fw-v{font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
         .fw-kpi .fw-v.fw-crit{color:var(--ds-crit)}.fw-kpi .fw-v.fw-warn{color:var(--ds-warn)}.fw-kpi .fw-v.fw-good{color:var(--ds-good)}
         .fw-kpi .fw-f{font-size:11.5px;color:var(--ds-muted)}
         /* Karte */
@@ -222,7 +222,7 @@
         .fw-kv dt{color:var(--ds-muted)}
         .fw-kv dd{color:var(--ds-ink);font-weight:600;text-align:right}
         .fw-kv dd.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
-        .fw-subhead{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ds-faint);font-weight:800;padding:10px 0 1px}
+        .fw-subhead{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ds-faint);font-weight:700;padding:10px 0 1px}
         /* Zahlenspalten immer mit gleich breiten Ziffern — sonst «tanzen» die
            Beträge untereinander und Spaltensummen lassen sich nicht mit dem Auge
            prüfen. Zentral statt in jedem Template, damit keine Tabelle vergessen
@@ -705,7 +705,7 @@
         button.fw-ikon{border:0;cursor:pointer;padding:0}
         button.fw-ikon.gefahr:hover{background:var(--ds-crit-soft);color:var(--ds-crit)}
 
-        .fw-gruppe{padding:12px 16px 5px;font-size:10px;font-weight:800;letter-spacing:.14em;
+        .fw-gruppe{padding:12px 16px 5px;font-size:10px;font-weight:700;letter-spacing:.14em;
             text-transform:uppercase;color:var(--ds-brand);background:var(--ds-surface-2);
             border-top:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line)}
         .fw-dz{display:flex;gap:16px;padding:9px 16px;border-bottom:1px solid var(--ds-line);
@@ -740,7 +740,7 @@
         .fw-akte-bild{width:48px;height:48px;border-radius:var(--ds-radius-sm);
             background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
             align-items:center;justify-content:center;flex:0 0 48px;font-size:20px}
-        .fw-akte-typ{font-size:10px;font-weight:800;letter-spacing:.14em;
+        .fw-akte-typ{font-size:10px;font-weight:700;letter-spacing:.14em;
             text-transform:uppercase;color:var(--ds-faint);margin-bottom:4px}
         .fw-akte-oben h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
         .fw-akte-pfad{font-size:12px;color:var(--ds-faint);margin-top:4px;line-height:1.55}
@@ -827,7 +827,7 @@
             display:flex;align-items:center;gap:7px}
         .fw-reiter button:hover{color:var(--ds-ink)}
         .fw-reiter button.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
-        .fw-reiter .fw-z{font-size:10px;font-weight:800;background:var(--ds-surface);
+        .fw-reiter .fw-z{font-size:10px;font-weight:700;background:var(--ds-surface);
             border:1px solid var(--ds-line);border-radius:var(--ds-pill);padding:1px 6px}
 
         .fw-kopf{padding:11px 15px;border-bottom:1px solid var(--ds-line);
@@ -948,6 +948,17 @@
            Tailwind-Utilities wurden. Sie standen dort als je vier bis sechs
            Klassen nebeneinander — an 170 Stellen. */
         .fw-pflicht{color:var(--ds-crit)}                 /* das * hinter «Feld *» */
+        /* KLEINE SCHRIFTGRADE (Audit Etappe 3). Vorher standen in den fw-Vorlagen
+           acht frei gewählte Pixelwerte (8, 9, 10, 11, 12, 12.5, 13, 15 px, zusammen
+           471 Stellen) — 8 und 9 px sind am Telefon kaum lesbar, und niemand wusste,
+           welcher Wert wofür gilt. Jetzt vier Stufen unterhalb von Tailwinds
+           `text-sm`. Wie die alten `text-[Npx]` setzen sie NUR die Grösse, nicht die
+           Zeilenhöhe — sonst verschöbe sich jede dichte Zeile.
+           Neue Pixelwerte in fw-Vorlagen hält test_audit_etappe3 fern. */
+        .fw-fs-mikro{font-size:10px}   /* Kürzel, Zähler, kleine Symbole */
+        .fw-fs-klein{font-size:11px}   /* Beschriftungen, Nebenzeilen */
+        .fw-fs-fein{font-size:13px}    /* dichter Fliesstext in Karten */
+        .fw-fs-text{font-size:14px}    /* wie text-sm, aber ohne Zeilenhöhe */
         .fw-mutet{color:var(--ds-faint)}
         .fw-kopfzeile{text-align:left;font-size:11px;text-transform:uppercase;
             letter-spacing:.04em;color:var(--ds-faint);

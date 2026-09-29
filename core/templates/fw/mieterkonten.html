@@ -9,7 +9,7 @@
         <p>{% trans "Pro Mieter der aktuelle Saldo aus allen Forderungen und Zahlungen. Klick öffnet das Kontoblatt." %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
     <div style="text-align:right">
-        <div class="fw-num" style="font-size:28px;font-weight:800;letter-spacing:-.02em;color:{% if total_offen %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">CHF {{ total_offen|chf }}</div>
+        <div class="fw-num" style="font-size:28px;font-weight:700;letter-spacing:-.02em;color:{% if total_offen %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">CHF {{ total_offen|chf }}</div>
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600">{% blocktrans count n=offen_n %}offene Forderungen · {{ n }} Mieter{% plural %}offene Forderungen · {{ n }} Mieter{% endblocktrans %}</div>
     </div>
 </div>
@@ -41,7 +41,7 @@
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
                 <th class="px-5 py-3 font-semibold text-center">{% trans "Status" %}</th>
@@ -55,15 +55,15 @@
                 <td class="px-5 py-3 font-semibold fw-strong">{{ r.m.display_name }}</td>
                 <td class="px-5 py-3 fw-mutet">{{ r.objekt }}{% if r.objekte_n > 1 %} <span class="fw-faint">+{{ r.objekte_n|add:"-1" }}</span>{% endif %}</td>
                 <td class="px-5 py-3 text-center">
-                    {% if r.aktiv %}<span class="text-[11px] font-semibold fw-gut-flaeche fw-gut rounded-md px-2 py-0.5">{% trans "aktiv" %}</span>
-                    {% else %}<span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-2 py-0.5">{% trans "beendet" %}</span>{% endif %}
+                    {% if r.aktiv %}<span class="fw-fs-klein font-semibold fw-gut-flaeche fw-gut rounded-md px-2 py-0.5">{% trans "aktiv" %}</span>
+                    {% else %}<span class="fw-fs-klein font-semibold fw-flaeche2 fw-mutet rounded-md px-2 py-0.5">{% trans "beendet" %}</span>{% endif %}
                 </td>
                 <td class="px-5 py-3 text-right font-semibold {% if r.saldo > 0 %}fw-kritisch{% elif r.saldo < 0 %}fw-gut{% else %}fw-faint{% endif %}">
                     {% if r.saldo > 0 %}CHF {{ r.saldo|chf }}
-                    {% elif r.saldo < 0 %}CHF {{ r.saldo|chf }}<div class="text-[10px] font-normal fw-faint">{% trans "Guthaben" %}</div>
+                    {% elif r.saldo < 0 %}CHF {{ r.saldo|chf }}<div class="fw-fs-mikro font-normal fw-faint">{% trans "Guthaben" %}</div>
                     {% else %}{% trans "ausgeglichen" %}{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right">{% zeichen 'weiter' klasse='text-[10px] fw-faint' %}</td>
+                <td class="px-5 py-3 text-right">{% zeichen 'weiter' klasse='fw-fs-mikro fw-faint' %}</td>
             </tr>
         {% empty %}
             <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">{% trans "Keine Mieterkonten" %}{% if filter_op %} {% trans "mit offenem Saldo" %}{% endif %}.</td></tr>

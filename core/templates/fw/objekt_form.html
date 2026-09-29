@@ -6,9 +6,9 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/objekte/{{ lg_query }}" class="hover:fw-marke">{% trans "Objekte" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     {% if not ist_neu %}<a href="/neu/objekte/{{ e.id }}/" class="hover:fw-marke">{{ e.bezeichnung }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}{% endif %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}{% endif %}
     <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neu" %}{% else %}{% trans "Bearbeiten" %}{% endif %}</span>
 </nav>
 
@@ -75,7 +75,7 @@
                 {% for h in hauptobjekte %}<option value="{{ h.id }}" {% if gz_wert == h.id|stringformat:'s' %}selected{% endif %}>{{ h.bezeichnung }}{% if h.etage %} · {{ h.etage }}{% endif %}</option>{% endfor %}
             </select>
             {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.gehoert_zu_id feld_id="id_gehoert_zu_id" %}
-            <p class="text-[11px] fw-faint mt-1">{% trans "Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben Liegenschaft zu." %}</p></div>
+            <p class="fw-fs-klein fw-faint mt-1">{% trans "Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben Liegenschaft zu." %}</p></div>
         {% endif %}
     </div>
 
@@ -89,14 +89,14 @@
                 <input id="id_soll_gueltig_ab" name="soll_gueltig_ab" type="date" value="{{ form.soll_gueltig_ab.value|date:'Y-m-d'|default:form.soll_gueltig_ab.value|default_if_none:'' }}" class="fw-feld w-full"{% if form.soll_gueltig_ab.errors %} aria-invalid="true" aria-describedby="id_soll_gueltig_ab_fehler"{% endif %}>
                 {% include 'fw/_feldfehler.html' with f=form.soll_gueltig_ab %}</div>
         </div>
-        <p class="text-[11px] fw-faint">{% blocktrans trimmed %}Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz).{% endblocktrans %}</p>
+        <p class="fw-fs-klein fw-faint">{% blocktrans trimmed %}Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz).{% endblocktrans %}</p>
         {% else %}
-        <p class="text-[12.5px] fw-mutet">{% blocktrans trimmed %}Der Mietzins wird ausschliesslich als <b>datierter Sollmietzins</b> gepflegt (inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und Bilanz konsistent. Hier ist er nur zur Ansicht.{% endblocktrans %}</p>
+        <p class="fw-fs-fein fw-mutet">{% blocktrans trimmed %}Der Mietzins wird ausschliesslich als <b>datierter Sollmietzins</b> gepflegt (inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und Bilanz konsistent. Hier ist er nur zur Ansicht.{% endblocktrans %}</p>
         {% if sollmietzinse %}
         <div class="border fw-linie rounded-lg overflow-hidden">
             <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
+                <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
                     <th class="px-4 py-2 font-semibold">{% trans "Gültig ab" %}</th>
                     <th class="px-4 py-2 font-semibold text-right">{% trans "Netto" %}</th>
                     {% if not e.ist_einstellplatz %}<th class="px-4 py-2 font-semibold text-right">NK</th>
@@ -106,7 +106,7 @@
                 {% for s in sollmietzinse %}
                 <tr>
                     <td class="px-4 py-2 font-medium fw-strong">{{ s.gueltig_ab|date:"d.m.Y" }}
-                        {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold fw-gut-flaeche fw-gut">{% trans "aktuell" %}</span>{% endif %}</td>
+                        {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-md fw-fs-mikro font-semibold fw-gut-flaeche fw-gut">{% trans "aktuell" %}</span>{% endif %}</td>
                     <td class="px-4 py-2 text-right fw-ink">CHF {{ s.netto_mietzins|chf }}</td>
                     {% if not e.ist_einstellplatz %}<td class="px-4 py-2 text-right fw-ink">CHF {{ s.nebenkosten|chf }}</td>
                     <td class="px-4 py-2 text-right font-semibold fw-strong">CHF {{ s.brutto|chf }}</td>{% endif %}
@@ -117,7 +117,7 @@
 </div>
         </div>
         {% else %}
-        <div class="fw-flaeche2 border fw-linie rounded-lg px-4 py-3 text-[12.5px] fw-mutet">{% zeichen 'hinweis' klasse='fw-marke mr-1' %}{% trans "Noch kein Sollmietzins erfasst." %}</div>
+        <div class="fw-flaeche2 border fw-linie rounded-lg px-4 py-3 fw-fs-fein fw-mutet">{% zeichen 'hinweis' klasse='fw-marke mr-1' %}{% trans "Noch kein Sollmietzins erfasst." %}</div>
         {% endif %}
         <a href="/neu/objekte/{{ e.id }}/?tab=mietzins" class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg">{% zeichen 'mehr' %}{% trans "Mietzins verwalten (Gratismonate, Anpassungen)" %}</a>
         {% endif %}

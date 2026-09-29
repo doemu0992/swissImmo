@@ -33,11 +33,11 @@
     <div class="flex items-end gap-1.5 h-56">
         {% for r in reihe %}
         <div class="flex-1 flex flex-col items-center justify-end h-full group">
-            <div class="text-[9px] fw-faint mb-1">{% if r.quote %}{{ r.quote }}%{% endif %}</div>
+            <div class="fw-fs-mikro fw-faint mb-1">{% if r.quote %}{{ r.quote }}%{% endif %}</div>
             <div class="w-full rounded-t {% if r.quote > 5 %}fw-krit-voll{% elif r.quote > 0 %}fw-warn-voll{% else %}fw-gut-voll{% endif %}"
                  style="height: {% widthratio r.quote 100 100 %}%; min-height: 2px;"
                  title="{% blocktrans with monat=r.monat|date:'M Y' leer=r.leer total=r.total %}{{ monat }}: {{ leer }}/{{ total }} leer{% endblocktrans %}"></div>
-            <div class="text-[9px] fw-faint mt-1 rotate-0">{{ r.monat|date:'M' }}</div>
+            <div class="fw-fs-mikro fw-faint mt-1 rotate-0">{{ r.monat|date:'M' }}</div>
         </div>
         {% endfor %}
     </div>

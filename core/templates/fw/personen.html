@@ -86,7 +86,7 @@
                 </td>
                 <td class="hidden md:table-cell">
                     {% if row.m.email %}<div style="white-space:nowrap">{% zeichen 'senden' klasse='fw-faint mr-1.5 text-xs' %}{{ row.m.email }}</div>{% endif %}
-                    {% if row.telefon %}<div class="fw-sub2" style="white-space:nowrap;margin-top:2px">{% zeichen 'senden' klasse='fw-faint mr-1.5 text-[10px]' %}{{ row.telefon }}</div>{% endif %}
+                    {% if row.telefon %}<div class="fw-sub2" style="white-space:nowrap;margin-top:2px">{% zeichen 'senden' klasse='fw-faint mr-1.5 fw-fs-mikro' %}{{ row.telefon }}</div>{% endif %}
                     {% if not row.m.email and not row.telefon %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
                 <td class="hidden lg:table-cell" style="white-space:nowrap">

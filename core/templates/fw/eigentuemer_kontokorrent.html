@@ -5,8 +5,8 @@
 {% block content %}
 <div class="text-xs fw-faint mb-3">
     <a href="/neu/mandate/" class="hover:fw-marke">{% trans "Mandate" %}</a>
-    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{{ md.firma_oder_name }}
-    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{% trans "Kontokorrent" %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro mx-1' %}{{ md.firma_oder_name }}
+    {% zeichen 'weiter' klasse='fw-fs-mikro mx-1' %}{% trans "Kontokorrent" %}
 </div>
 
 <div class="fw-phead">
@@ -29,17 +29,17 @@
 <!-- Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Ergebnis Liegenschaften" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Ergebnis Liegenschaften" %}</div>
         <div class="text-xl font-bold {% if kk.ergebnis < 0 %}fw-kritisch{% else %}fw-strong{% endif %} mt-0.5">CHF {{ kk.ergebnis|chf }}</div>
         <div class="text-xs fw-faint mt-0.5">{% trans "Ertrag" %} {{ kk.ertrag|chf }} − {% trans "Aufwand" %} {{ kk.aufwand|chf }}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Bereits ausbezahlt" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Bereits ausbezahlt" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ kk.ausbezahlt|chf }}</div>
         <div class="text-xs fw-faint mt-0.5">{% blocktrans count n=kk.auszahlungen|length %}{{ n }} Auszahlung{% plural %}{{ n }} Auszahlungen{% endblocktrans %}</div>
     </div>
     <div class="fw-flaeche rounded-xl border {% if kk.offen > 0 %}fw-linie-gut{% elif kk.offen < 0 %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">
+        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">
             {% if kk.offen >= 0 %}{% trans "Offen an Eigentümer" %}{% else %}{% trans "Überzahlung (Eigentümer schuldet)" %}{% endif %}
         </div>
         <div class="text-xl font-bold {% if kk.offen > 0 %}fw-gut{% elif kk.offen < 0 %}fw-kritisch{% else %}fw-strong{% endif %} mt-0.5">CHF {{ kk.offen|chf }}</div>
@@ -55,7 +55,7 @@
             <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
                 <thead>
-                    <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+                    <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                         <th class="px-5 py-2.5 font-semibold">{% trans "Liegenschaft" %}</th>
                         <th class="px-5 py-2.5 font-semibold text-right">{% trans "Ertrag" %}</th>
                         <th class="px-5 py-2.5 font-semibold text-right">{% trans "Aufwand" %}</th>
@@ -120,7 +120,7 @@
                 <div class="py-1.5 flex items-center gap-2 text-sm">
                     <span class="flex-1 min-w-0 truncate fw-ink">{{ z.lg.strasse }}</span>
                     <span class="fw-mutet tabular-nums">CHF {{ z.honorar|chf }}</span>
-                    {% if z.gebucht %}<span class="text-[10px] font-bold uppercase fw-gut-flaeche fw-gut px-1.5 py-0.5 rounded">{% trans "gebucht" %}</span>{% endif %}
+                    {% if z.gebucht %}<span class="fw-fs-mikro font-bold uppercase fw-gut-flaeche fw-gut px-1.5 py-0.5 rounded">{% trans "gebucht" %}</span>{% endif %}
                 </div>
             {% empty %}
                 <div class="py-2 text-xs fw-faint">{% blocktrans %}Keine Liegenschaften mit Mietertrag in {{ jahr }}.{% endblocktrans %}</div>
@@ -177,7 +177,7 @@
                     {% zeichen 'geld' klasse='mr-1.5' %}{% trans "Auszahlung verbuchen" %}
                 </button>
             </form>
-            {% if md.iban %}<p class="text-[11px] fw-faint mt-3">{% trans "Eigentümer-IBAN:" %} {{ md.iban }}</p>{% endif %}
+            {% if md.iban %}<p class="fw-fs-klein fw-faint mt-3">{% trans "Eigentümer-IBAN:" %} {{ md.iban }}</p>{% endif %}
         </div>
     </div>
 </div>

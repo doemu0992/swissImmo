@@ -15,15 +15,15 @@
 <!-- Statistik-Kopf -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
     <div class="fw-card p-4">
-        <div class="text-2xl font-extrabold fw-strong">{{ total }}</div>
+        <div class="text-2xl font-bold fw-strong">{{ total }}</div>
         <div class="text-xs fw-faint">{% trans "Einträge (Zeitraum)" %}</div>
     </div>
     <div class="fw-card p-4">
-        <div class="text-2xl font-extrabold fw-kritisch">{{ stat.kritisch }}</div>
+        <div class="text-2xl font-bold fw-kritisch">{{ stat.kritisch }}</div>
         <div class="text-xs fw-faint">{% trans "davon kritisch" %}</div>
     </div>
     <div class="fw-card p-4">
-        <div class="text-2xl font-extrabold fw-info">{{ stat.sicherheit }}</div>
+        <div class="text-2xl font-bold fw-info">{{ stat.sicherheit }}</div>
         <div class="text-xs fw-faint">{% trans "Sicherheit / Login" %}</div>
     </div>
     <div class="fw-card p-4">
@@ -90,7 +90,7 @@
 <!-- Tabelle -->
 <div class="fw-card overflow-x-auto">
     <table class="w-full text-sm min-w-max">
-        <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
             <tr>
                 <th class="text-left px-5 py-3 whitespace-nowrap">{% trans "Zeitpunkt" %}</th>
                 <th class="text-left px-5 py-3">{% trans "Benutzer" %}</th>
@@ -108,12 +108,12 @@
                 <td class="px-5 py-3.5">
                     {% if e.benutzer %}
                     <span class="flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full fw-btn fw-primary flex items-center justify-center text-[10px] font-bold">{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}</span>
+                        <span class="w-6 h-6 rounded-full fw-btn fw-primary flex items-center justify-center fw-fs-mikro font-bold">{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}</span>
                         <span class="font-medium fw-strong">{{ e.benutzer.get_full_name|default:e.benutzer.username }}</span>
                     </span>
                     {% else %}
                     <span class="flex items-center gap-2 fw-faint">
-                        <span class="w-6 h-6 rounded-full fw-balken fw-mutet flex items-center justify-center text-[10px]">{% zeichen 'einstellungen' %}</span>
+                        <span class="w-6 h-6 rounded-full fw-balken fw-mutet flex items-center justify-center fw-fs-mikro">{% zeichen 'einstellungen' %}</span>
                         {% trans "System" %}
                     </span>
                     {% endif %}
@@ -128,7 +128,7 @@
                     {% elif e.kategorie == 'finanzen' %}
                     <span class="fw-chip fw-info-flaeche fw-info whitespace-nowrap">{{ e.aktion }}</span>
                     {% elif e.kategorie == 'sicherheit' %}
-                    <span class="fw-chip fw-merk-flaeche fw-merk whitespace-nowrap">{% zeichen 'gesperrt' klasse='text-[9px] mr-1' %}{{ e.aktion }}</span>
+                    <span class="fw-chip fw-merk-flaeche fw-merk whitespace-nowrap">{% zeichen 'gesperrt' klasse='fw-fs-mikro mr-1' %}{{ e.aktion }}</span>
                     {% elif e.kategorie == 'versand' %}
                     <span class="fw-chip fw-markenflaeche fw-marke whitespace-nowrap">{{ e.aktion }}</span>
                     {% else %}
@@ -137,12 +137,12 @@
                 </td>
                 <td class="px-5 py-3.5 fw-ink">
                     {% if e.ziel_url %}
-                    <a href="{{ e.ziel_url }}" class="fw-marke hover:underline font-medium">{{ e.objekt|default:"öffnen" }}{% zeichen 'extern' klasse='text-[9px] ml-1 fw-faint' %}</a>
+                    <a href="{{ e.ziel_url }}" class="fw-marke hover:underline font-medium">{{ e.objekt|default:"öffnen" }}{% zeichen 'extern' klasse='fw-fs-mikro ml-1 fw-faint' %}</a>
                     {% else %}{{ e.objekt|default:"—" }}{% endif %}
                 </td>
                 <td class="px-5 py-3.5 fw-faint text-xs">
                     {{ e.details|default:"" }}
-                    {% if e.ip_adresse %}<span class="fw-faint whitespace-nowrap">{% zeichen 'liegenschaft' klasse='text-[9px] ml-1 mr-0.5' %}{{ e.ip_adresse }}</span>{% endif %}
+                    {% if e.ip_adresse %}<span class="fw-faint whitespace-nowrap">{% zeichen 'liegenschaft' klasse='fw-fs-mikro ml-1 mr-0.5' %}{{ e.ip_adresse }}</span>{% endif %}
                 </td>
             </tr>
             {% empty %}
@@ -158,10 +158,10 @@
     <span class="fw-faint">{% blocktrans with seite=seite.number von=seite.paginator.num_pages %}Seite {{ seite }} von {{ von }}{% endblocktrans %} · {% blocktrans count n=total %}{{ n }} Eintrag{% plural %}{{ n }} Einträge{% endblocktrans %}</span>
     <div class="flex items-center gap-2">
         {% if seite.has_previous %}
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.previous_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">{% zeichen 'zurueck' klasse='text-[10px] mr-1' %}{% trans "Zurück" %}</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.previous_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">{% zeichen 'zurueck' klasse='fw-fs-mikro mr-1' %}{% trans "Zurück" %}</a>
         {% endif %}
         {% if seite.has_next %}
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.next_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">{% trans "Weiter" %}{% zeichen 'weiter' klasse='text-[10px] ml-1' %}</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.next_page_number }}" class="px-3 py-1.5 rounded-lg border fw-linie fw-flaeche hover:fw-flaeche2 fw-mutet">{% trans "Weiter" %}{% zeichen 'weiter' klasse='fw-fs-mikro ml-1' %}</a>
         {% endif %}
     </div>
 </div>

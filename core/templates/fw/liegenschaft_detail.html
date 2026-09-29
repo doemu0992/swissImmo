@@ -573,7 +573,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{% blocktrans count n=g.dokumente|length %}{{ n }} Dokument{% plural %}{{ n }} Dokumente{% endblocktrans %}</span>
-            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a></span>{% endif %}
+            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a></span>{% endif %}
         </summary>
         {% for d in g.dokumente %}
         <div class="fw-zeile">

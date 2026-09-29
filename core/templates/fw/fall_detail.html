@@ -93,23 +93,23 @@ eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
     <form method="post" action="/neu/faelle/{{ fall.pk }}/zeit/" class="flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <label class="block">
-            <span class="text-[11px] fw-faint block mb-1">{% trans "Minuten" %}</span>
+            <span class="fw-fs-klein fw-faint block mb-1">{% trans "Minuten" %}</span>
             <input type="number" name="minuten" min="1" step="1" required
                    class="fw-feld w-24 fw-num" placeholder="15">
         </label>
         <label class="block">
-            <span class="text-[11px] fw-faint block mb-1">{% trans "Tätigkeit" %}</span>
+            <span class="fw-fs-klein fw-faint block mb-1">{% trans "Tätigkeit" %}</span>
             <select name="taetigkeit" class="fw-feld">
                 {% for wert, text in zeit_arten %}<option value="{{ wert }}">{{ text }}</option>{% endfor %}
             </select>
         </label>
         <label class="block flex-1 min-w-[12rem]">
-            <span class="text-[11px] fw-faint block mb-1">{% trans "Notiz" %}</span>
+            <span class="fw-fs-klein fw-faint block mb-1">{% trans "Notiz" %}</span>
             <input type="text" name="notiz" maxlength="200" class="fw-feld w-full"
                    placeholder="{% trans 'Telefonat mit Handwerker' %}">
         </label>
         <label class="block">
-            <span class="text-[11px] fw-faint block mb-1">{% trans "Satz CHF/h" %}</span>
+            <span class="fw-fs-klein fw-faint block mb-1">{% trans "Satz CHF/h" %}</span>
             <input type="text" name="satz" class="fw-feld w-24 fw-num"
                    placeholder="{{ fall.organisation.stundensatz|default:'—' }}">
         </label>

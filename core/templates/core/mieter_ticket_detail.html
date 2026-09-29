@@ -15,7 +15,7 @@
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
                 <div class="text-[11px] font-bold uppercase tracking-widest fw-faint">{% blocktrans with nr=t.id %}Ticket #{{ nr }}{% endblocktrans %}</div>
-                <h1 class="text-xl font-black fw-strong mt-1">{{ t.titel }}</h1>
+                <h1 class="text-xl font-bold fw-strong mt-1">{{ t.titel }}</h1>
                 <div class="text-xs fw-faint mt-1">{{ objekt }}{% if t.raum %} · {{ t.raum }}{% endif %} · {% blocktrans with zeit=t.erstellt_am|date:"d.m.Y H:i" %}gemeldet {{ zeit }}{% endblocktrans %}</div>
             </div>
             <span class="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full {{ status_cls }}">{{ status_label }}</span>

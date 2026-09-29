@@ -9,7 +9,7 @@ Parameter (per {% include ... with %}):
   zugang_next  – seiten-relatives /neu/-Ziel für den Rücksprung nach Bestätigung
 {% endcomment %}
 {% if p.sendungsnummer %}
-<div class="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
+<div class="mt-2 flex items-center gap-2 flex-wrap fw-fs-klein">
     <a href="https://www.post.ch/swisspost-tracking?formattedParcelCodes={{ p.sendungsnummer|urlencode }}&p_language=de"
        target="_blank" rel="noopener"
        class="fw-link inline-flex items-center gap-1">
@@ -34,7 +34,7 @@ Parameter (per {% include ... with %}):
         </button>
     </form>
     {% endif %}
-    <details class="text-[11px]">
+    <details class="fw-fs-klein">
         <summary class="fw-link cursor-pointer select-none">{% zeichen 'bearbeiten' klasse='mr-0.5' %}Nummer korrigieren</summary>
         <form method="post" action="/neu/fristen/verzug/{{ p.id }}/sendung/" class="mt-1.5 flex items-center gap-1.5 flex-wrap">
             {% csrf_token %}

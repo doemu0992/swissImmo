@@ -28,19 +28,19 @@
     <div class="px-5 py-3 border-b fw-linie flex items-center gap-2">
         {% zeichen 'recht' klasse='fw-marke' %}
         <h2 class="font-bold fw-strong text-sm">{{ g.label }}</h2>
-        <span class="text-[11px] font-bold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ g.artikel|length }}</span>
+        <span class="fw-fs-klein font-bold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ g.artikel|length }}</span>
     </div>
     <div class="fw-dv">
         {% for a in g.artikel %}
         <div class="px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
             <div class="sm:w-32 shrink-0">
                 <a href="{{ a.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold fw-markenflaeche fw-marke hover:fw-markenflaeche whitespace-nowrap">
-                    Art. {{ a.art }} {{ a.gesetz }}{% zeichen 'extern' klasse='text-[8px]' %}
+                    Art. {{ a.art }} {{ a.gesetz }}{% zeichen 'extern' klasse='fw-fs-mikro' %}
                 </a>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="text-sm font-semibold fw-strong">{{ a.titel }}</div>
-                <div class="text-[13px] fw-mutet mt-0.5">{{ a.kurz }}</div>
+                <div class="fw-fs-fein fw-mutet mt-0.5">{{ a.kurz }}</div>
                 {% if a.anwendung %}
                 <div class="text-xs fw-gut fw-gut-flaeche rounded px-2 py-1 mt-1.5 inline-block">
                     {% zeichen 'einstellungen' klasse='mr-1' %}In swissImmo: {{ a.anwendung }}
@@ -48,7 +48,7 @@
                 {% endif %}
                 {% if a.stichworte %}
                 <div class="mt-1.5 flex flex-wrap gap-1">
-                    {% for s in a.stichworte %}<span class="text-[10px] fw-faint fw-flaeche2 rounded px-1.5 py-0.5">{{ s }}</span>{% endfor %}
+                    {% for s in a.stichworte %}<span class="fw-fs-mikro fw-faint fw-flaeche2 rounded px-1.5 py-0.5">{{ s }}</span>{% endfor %}
                 </div>
                 {% endif %}
             </div>

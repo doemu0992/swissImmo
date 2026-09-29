@@ -469,8 +469,8 @@ alten Liegenschaft betreut.
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{% blocktrans count n=g.dokumente|length %}{{ n }} Dokument{% plural %}{{ n }} Dokumente{% endblocktrans %}</span>
             <span class="fw-rechts">
-            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a>
-            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a>{% endif %}
+            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
+            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>{% endif %}
             </span>
         </summary>
         {% for d in g.dokumente %}

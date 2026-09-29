@@ -217,7 +217,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         {% csrf_token %}
                         <input type="hidden" name="aktion" value="solidarhaftung">
                         <input type="hidden" name="wert" value="{% if v.solidarhaftung %}off{% else %}on{% endif %}">
-                        <button type="submit" class="text-[11px] {% if v.solidarhaftung %}fw-gut{% else %}fw-faint{% endif %} hover:underline">
+                        <button type="submit" class="fw-fs-klein {% if v.solidarhaftung %}fw-gut{% else %}fw-faint{% endif %} hover:underline">
                             {% if v.solidarhaftung %}{% zeichen 'gut' klasse='mr-0.5' %}{% else %}{% zeichen 'offen' klasse='mr-0.5' %}{% endif %}{% trans "Solidarhaftung" %} {% if v.solidarhaftung %}an{% else %}{% trans "aus" %}{% endif %}
                         </button>
                     </form>
@@ -475,10 +475,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <h3 class="fw-t flex items-center gap-2.5"><span class="fw-ikon">{% zeichen 'mehr' %}</span>{% trans "Gratismonate / Rabatt" %}</h3>
                 <p class="fw-klein mt-0.5">{% blocktrans trimmed %}Datierte Miete dieses Verhältnisses. <b>Referenz</b> = echte vereinbarte Miete; <b>Rabatt/Erlass</b> mindert nur die Verrechnung (Gratismonat = zu zahlen 0.00, Ertrag wird trotzdem voll gebucht → Konto 3090). Verwaltet am <b>Objekt → Mietzins</b>.{% endblocktrans %}</p>
             </div>
-            {% if v.einheit_id %}<a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="text-xs fw-link whitespace-nowrap mt-0.5">{% trans "Am Objekt bearbeiten" %} {% zeichen 'weiter' klasse='ml-0.5 text-[10px]' %}</a>{% endif %}
+            {% if v.einheit_id %}<a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="text-xs fw-link whitespace-nowrap mt-0.5">{% trans "Am Objekt bearbeiten" %} {% zeichen 'weiter' klasse='ml-0.5 fw-fs-mikro' %}</a>{% endif %}
         </div>
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-y fw-linie">
+            <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-y fw-linie">
                 <th class="px-4 py-2 font-semibold">{% trans "Gültig ab" %}</th>
                 <th class="px-4 py-2 font-semibold text-right">{% trans "Referenz" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
                 <th class="px-4 py-2 font-semibold text-right">{% trans "Rabatt" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
@@ -491,7 +491,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <td class="px-4 py-2 fw-ink whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
                 <td class="px-4 py-2 text-right fw-ink whitespace-nowrap">{{ k.netto_mietzins|chf }} / {{ k.nebenkosten|chf }}</td>
                 <td class="px-4 py-2 text-right whitespace-nowrap {% if k.hat_rabatt %}fw-warnton font-semibold{% else %}fw-faint{% endif %}">{% if k.hat_rabatt %}−{{ k.rabatt_netto|chf }} / −{{ k.rabatt_nk|chf }}{% else %}—{% endif %}</td>
-                <td class="px-4 py-2 text-right font-semibold whitespace-nowrap {% if k.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ k.verrechnet_brutto|chf }}{% if k.verrechnet_brutto == 0 %} <span class="text-[10px] font-normal">{% trans "(frei)" %}</span>{% endif %}</td>
+                <td class="px-4 py-2 text-right font-semibold whitespace-nowrap {% if k.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ k.verrechnet_brutto|chf }}{% if k.verrechnet_brutto == 0 %} <span class="fw-fs-mikro font-normal">{% trans "(frei)" %}</span>{% endif %}</td>
                 <td class="px-4 py-2 fw-mutet truncate max-w-[140px]">{{ k.notiz|default:"—" }}</td>
             </tr>
             {% endfor %}
@@ -703,7 +703,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <div class="fw-ikon" style="width:34px;height:34px;flex:0 0 34px">{% zeichen_wert it.icon %}</div>
                     <div class="flex-1 min-w-0">
                         <div class="fw-t">{{ it.titel }}
-                            {% if it.pflicht %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold fw-warn-flaeche fw-warnton">{% trans "Formularpflicht" %}</span>{% endif %}
+                            {% if it.pflicht %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-bold fw-warn-flaeche fw-warnton">{% trans "Formularpflicht" %}</span>{% endif %}
                             {% if it.erledigt %}<span class="fw-chip fw-good ml-1">{% trans "erstellt" %}</span>{% endif %}
                         </div>
                         <div class="fw-klein truncate">{{ it.sub }}</div>

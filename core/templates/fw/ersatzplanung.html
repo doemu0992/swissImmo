@@ -49,19 +49,19 @@
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
-            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Fonds-Bestand" %}</div>
+            <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Fonds-Bestand" %}</div>
             <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ deckung.bestand|chf }}</div>
         </div>
         <div>
-            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Jährliche Einlage" %}</div>
+            <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Jährliche Einlage" %}</div>
             <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ deckung.einlage|chf }}</div>
         </div>
         <div>
-            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% blocktrans with n=horizont_jahre %}Ersatzbudget ({{ n }} J){% endblocktrans %}</div>
+            <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% blocktrans with n=horizont_jahre %}Ersatzbudget ({{ n }} J){% endblocktrans %}</div>
             <div class="text-lg font-bold fw-strong mt-0.5">CHF {{ budget_total|chf }}</div>
         </div>
         <div>
-            <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Empf. Jahresrückstellung" %}</div>
+            <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Empf. Jahresrückstellung" %}</div>
             <div class="text-lg font-bold {% if deckung.mehrbedarf > 0 %}fw-kritisch{% else %}fw-gut{% endif %} mt-0.5">CHF {{ deckung.empfohlen|chf }}</div>
         </div>
     </div>
@@ -110,7 +110,7 @@
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Element" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
                 <th class="px-5 py-3 font-semibold text-right">{% trans "Restdauer" %}</th>

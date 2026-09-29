@@ -79,10 +79,10 @@
 
             <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Text" %}</label>
             <div class="flex flex-wrap gap-1.5 mb-2">
-                <button type="button" onclick="einfuegen('{name}')" class="text-[11px] font-semibold fw-markenflaeche fw-marke px-2 py-1 rounded hover:fw-markenflaeche">{% trans "+ Name" %}</button>
-                <button type="button" onclick="einfuegen('{anrede}')" class="text-[11px] font-semibold fw-markenflaeche fw-marke px-2 py-1 rounded hover:fw-markenflaeche">{% trans "+ Anrede" %}</button>
-                <button type="button" onclick="einfuegen('{objekt}')" class="text-[11px] font-semibold fw-markenflaeche fw-marke px-2 py-1 rounded hover:fw-markenflaeche">{% trans "+ Objekt" %}</button>
-                <button type="button" onclick="einfuegen('{adresse}')" class="text-[11px] font-semibold fw-markenflaeche fw-marke px-2 py-1 rounded hover:fw-markenflaeche">{% trans "+ Adresse" %}</button>
+                <button type="button" onclick="einfuegen('{name}')" class="fw-fs-klein font-semibold fw-markenflaeche fw-marke px-2 py-1 rounded hover:fw-markenflaeche">{% trans "+ Name" %}</button>
+                <button type="button" onclick="einfuegen('{anrede}')" class="fw-fs-klein font-semibold fw-markenflaeche fw-marke px-2 py-1 rounded hover:fw-markenflaeche">{% trans "+ Anrede" %}</button>
+                <button type="button" onclick="einfuegen('{objekt}')" class="fw-fs-klein font-semibold fw-markenflaeche fw-marke px-2 py-1 rounded hover:fw-markenflaeche">{% trans "+ Objekt" %}</button>
+                <button type="button" onclick="einfuegen('{adresse}')" class="fw-fs-klein font-semibold fw-markenflaeche fw-marke px-2 py-1 rounded hover:fw-markenflaeche">{% trans "+ Adresse" %}</button>
             </div>
             {% comment %}Vorbelegter Brieftext bleibt deutsch — Dokumentinhalt, Entscheid D11.{% endcomment %}
             <textarea id="nachricht" rows="9" oninput="aktualisiere()"
@@ -163,7 +163,7 @@ Freundliche Grüsse</textarea>
             <!-- Logo -->
             <div id="pv-logo" class="mb-6"></div>
             <!-- Absender -->
-            <div id="pv-absender" class="text-[11px] fw-mutet mb-10"></div>
+            <div id="pv-absender" class="fw-fs-klein fw-mutet mb-10"></div>
             <!-- Empfänger-Adresse -->
             <div id="pv-empfaenger" class="mb-8 whitespace-pre-line"></div>
             <!-- Ort/Datum -->

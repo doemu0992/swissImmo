@@ -12,7 +12,7 @@
 <div class="fw-card overflow-hidden max-w-4xl">
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
             <tr><th class="text-left px-5 py-3">{% trans "Eigentümer" %}</th><th class="text-left px-5 py-3">{% trans "Kontakt" %}</th>
                 <th class="text-left px-5 py-3">{% trans "Ort" %}</th><th class="text-center px-5 py-3">{% trans "Liegensch." %}</th>
                 <th class="text-right px-5 py-3">{% trans "Aktionen" %}</th></tr>
@@ -30,16 +30,16 @@
                 <td class="px-5 py-3.5 fw-mutet">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3.5 text-center"><span class="fw-chip fw-flaeche2 fw-ink">{{ row.anzahl_lg }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium fw-gut hover:underline mr-3">{% zeichen 'rechnung' klasse='text-[10px] mr-0.5' %}{% trans "Abrechnung" %}</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium fw-info hover:underline mr-3">{% zeichen 'recht' klasse='text-[10px] mr-0.5' %}{% trans "Kontokorrent" %}</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="text-xs font-medium fw-kritisch hover:underline mr-3">{% zeichen 'recht' klasse='text-[10px] mr-0.5' %}{% trans "Mahnstufen" %}</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3">{% zeichen 'bearbeiten' klasse='text-[10px] mr-0.5' %}{% trans "Bearbeiten" %}</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium fw-gut hover:underline mr-3">{% zeichen 'rechnung' klasse='fw-fs-mikro mr-0.5' %}{% trans "Abrechnung" %}</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium fw-info hover:underline mr-3">{% zeichen 'recht' klasse='fw-fs-mikro mr-0.5' %}{% trans "Kontokorrent" %}</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="text-xs font-medium fw-kritisch hover:underline mr-3">{% zeichen 'recht' klasse='fw-fs-mikro mr-0.5' %}{% trans "Mahnstufen" %}</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3">{% zeichen 'bearbeiten' klasse='fw-fs-mikro mr-0.5' %}{% trans "Bearbeiten" %}</a>
                     <form method="post" action="/neu/mandate/{{ row.md.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.md.firma_oder_name|safe %}Eigentümer «{{ name }}» löschen?{% endblocktrans %}{% if row.anzahl_lg %}
 
 {% blocktrans count n=row.anzahl_lg %}Achtung: {{ n }} Liegenschaft zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% plural %}Achtung: {{ n }} Liegenschaften zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% endblocktrans %}{% endif %}{% endfilter %}');">
                         {% csrf_token %}
-                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch">{% zeichen 'loeschen' klasse='text-[10px] mr-0.5' %}{% trans "Löschen" %}</button>
+                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch">{% zeichen 'loeschen' klasse='fw-fs-mikro mr-0.5' %}{% trans "Löschen" %}</button>
                     </form>
                 </td>
             </tr>

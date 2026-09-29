@@ -5,7 +5,7 @@
 {% if not embed_base %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{% trans "Wohnungsabnahme" %}</span>
 </nav>
 {% endif %}
@@ -61,7 +61,7 @@
         <div id="maengel" class="space-y-3"></div>
         <p class="text-xs fw-faint mt-2">{% blocktrans trimmed %}Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").{% endblocktrans %}</p>
         {# Rechtshinweis Art. 267a OR: bleibt bis zur juristischen Durchsicht Deutsch. #}
-        <p class="text-[11px] fw-faint mt-2 border-t fw-linie pt-2">{% zeichen 'recht' klasse='mr-1 fw-faint' %}Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
+        <p class="fw-fs-klein fw-faint mt-2 border-t fw-linie pt-2">{% zeichen 'recht' klasse='mr-1 fw-faint' %}Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
     </div>
 
     <!-- Abschluss -->
@@ -100,7 +100,7 @@
             <button type="button" onclick="this.closest('.mangel-row').remove()" title="{% trans 'Diesen Mangel entfernen' %}" class="col-span-1 fw-faint hover:fw-kritisch">{% zeichen 'loeschen' %}</button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <span class="col-span-3 text-[11px] fw-faint text-right pr-1">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Raumbuch-Element" %}</span>
+            <span class="col-span-3 fw-fs-klein fw-faint text-right pr-1">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Raumbuch-Element" %}</span>
             <select name="m_ausstattung" class="col-span-6 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 fw-mutet">
                 <option value="">— {% trans "kein Element (voller Betrag)" %} —</option>
                 {% for el in elemente %}<option value="{{ el.id }}">{{ el.raum }} · {{ el.kategorie }}{% if el.einbau_datum %} ({{ el.einbau_datum|date:"Y" }}){% endif %}</option>{% endfor %}

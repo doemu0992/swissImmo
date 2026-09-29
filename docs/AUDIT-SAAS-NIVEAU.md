@@ -264,6 +264,18 @@ Rund 2–3 Wochen, seitenweise.
 4. **Guard-Tests erweitern** (wie bei den Farben): Anzahl der
    `text-[..px]`, der Inline-Stile und der Button-Varianten darf nur sinken.
 
+*Stand 29.09.2026 (Branch `audit-fixes-ui`), Teil 1 umgesetzt:
+- Schriftgewichte: `font-black`/`font-extrabold` und `font-weight:800` → 700 in
+  allen Vorlagen und der Schicht. Ausgenommen die zwei Font-Awesome-Glyphen der
+  Schicht (Solid IST 900). Offen: eigene `<style>`-Blöcke der Anmeldeseiten.
+- Kleine Schriftgrade: 422 frei gewählte `text-[Npx]` in `fw/` auf vier Stufen
+  (`fw-fs-mikro` 10 · `fw-fs-klein` 11 · `fw-fs-fein` 13 · `fw-fs-text` 14 px);
+  49 Stellen ausserhalb von `fw/` (Portal, PDF, E-Mail) bewusst noch nicht.
+- Nebenbefund behoben: `fw/base_embed.html` (Modals) lud weder Stilschicht noch
+  Icon-Sprite — ungestaltet und 570 px breit am Telefon.
+Offen: Teile 2–4 (Komponenten, Bestätigungsdialog/Modal/Toasts, Wächter für
+Radius und Inline-Stile).*
+
 ### Etappe 4 — Listen-Werkzeugkasten
 
 Seiten, Sortierung und CSV-Export für Liegenschaften, Objekte,

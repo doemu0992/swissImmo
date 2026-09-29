@@ -5,7 +5,7 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{% trans "Abnahmeprotokoll" %}</span>
 </nav>
 
@@ -75,7 +75,7 @@
     <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% trans "Mängel" %} ({{ maengel|length }})</div>
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
             <tr><th class="text-left px-5 py-2.5">{% trans "Raum" %}</th><th class="text-left px-5 py-2.5">{% trans "Mangel" %}</th>
                 <th class="text-left px-5 py-2.5">{% trans "Verursacher" %}</th>
                 <th class="text-right px-5 py-2.5">{% trans "Kosten" %}</th>
@@ -87,7 +87,7 @@
             <tr>
                 <td class="px-5 py-2.5 fw-ink">{{ m.raum|default:"—" }}</td>
                 <td class="px-5 py-2.5 fw-strong">{{ m.beschreibung }}
-                    {% if m.ausstattung %}<div class="text-[11px] fw-faint">{% zeichen 'dokument' klasse='mr-0.5' %}{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · {% blocktrans with n=m.ausstattung.effektive_lebensdauer %}Lebensdauer {{ n }} J{% endblocktrans %}{% endif %}</div>{% endif %}</td>
+                    {% if m.ausstattung %}<div class="fw-fs-klein fw-faint">{% zeichen 'dokument' klasse='mr-0.5' %}{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · {% blocktrans with n=m.ausstattung.effektive_lebensdauer %}Lebensdauer {{ n }} J{% endblocktrans %}{% endif %}</div>{% endif %}</td>
                 <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold
                     {% if m.verursacher == 'mieter' %}fw-krit-flaeche fw-kritisch{% elif m.verursacher == 'vermieter' %}fw-info-flaeche fw-info{% else %}fw-flaeche2 fw-mutet{% endif %}">{{ m.get_verursacher_display }}</span></td>
                 <td class="px-5 py-2.5 text-right tabular-nums fw-mutet">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>

@@ -9,7 +9,7 @@
 {% block content %}
     <div class="mb-6 flex items-start justify-between flex-wrap gap-3">
         <div>
-            <h1 class="text-2xl font-black tracking-tight fw-strong">{% trans "Mieterkonto" %}</h1>
+            <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Mieterkonto" %}</h1>
             <p class="fw-mutet mt-1">{% trans "Alle Rechnungen und Ihre Zahlungen im Überblick." %}</p>
         </div>
         <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="fw-flaeche border fw-linie hover:fw-linie-marke fw-ink text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2">
@@ -21,15 +21,15 @@
     <div class="rounded-2xl p-5 mb-6 border {% if endsaldo > 0 %}fw-krit-flaeche fw-linie-krit{% elif endsaldo < 0 %}fw-gut-flaeche fw-linie-gut{% else %}fw-gut-flaeche fw-linie-gut{% endif %}">
         {% if endsaldo > 0 %}
             <div class="text-sm font-bold fw-kritisch">{% zeichen 'kritisch' klasse='mr-1.5' %}{% trans "Offener Betrag" %}</div>
-            <div class="text-3xl font-black fw-kritisch mt-1">CHF {{ saldo_abs|chf }}</div>
+            <div class="text-3xl font-bold fw-kritisch mt-1">CHF {{ saldo_abs|chf }}</div>
             <p class="text-sm fw-kritisch mt-1">{% trans "Bitte begleichen Sie den offenen Betrag — den QR-Einzahlschein finden Sie unter «Rechnungen»." %}</p>
         {% elif endsaldo < 0 %}
             <div class="text-sm font-bold fw-gut">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Guthaben" %}</div>
-            <div class="text-3xl font-black fw-gut mt-1">CHF {{ saldo_abs|chf }}</div>
+            <div class="text-3xl font-bold fw-gut mt-1">CHF {{ saldo_abs|chf }}</div>
             <p class="text-sm fw-gut mt-1">{% trans "Sie haben ein Guthaben — es wird mit der nächsten Miete verrechnet oder zurückerstattet." %}</p>
         {% else %}
             <div class="text-sm font-bold fw-gut">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Alles bezahlt" %}</div>
-            <div class="text-3xl font-black fw-gut mt-1">CHF 0.00</div>
+            <div class="text-3xl font-bold fw-gut mt-1">CHF 0.00</div>
             <p class="text-sm fw-gut mt-1">{% trans "Ihr Konto ist ausgeglichen — vielen Dank." %}</p>
         {% endif %}
     </div>

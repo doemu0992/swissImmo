@@ -4,7 +4,7 @@
 <form method="post" class="space-y-5">
     {% csrf_token %}
     <div>
-        <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "E-Mail" %}</label>
+        <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "E-Mail" %}</label>
         <input type="email" name="email" required autofocus autocomplete="email"
                class="w-full fw-flaeche2 border fw-linie px-4 py-3 rounded-xl text-sm font-bold fw-ink focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke"
                placeholder="{% trans 'ihre@email.ch' %}">

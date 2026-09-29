@@ -4,7 +4,7 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mandate/" class="hover:fw-marke">{% trans "Mandate" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neu" %}{% else %}{{ md.firma_oder_name }}{% endif %}</span>
 </nav>
 
@@ -52,7 +52,7 @@
             <div><label for="md-honorar" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verwaltungshonorar (% der Mieterträge)" %}</label>
                 <input id="md-honorar" name="honorar_prozent" type="text" inputmode="decimal" value="{{ md.honorar_prozent|default:'0' }}"
                        placeholder="z. B. 4.5" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] fw-faint mt-1">{% trans "Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank)." %}</p></div>
+                <p class="fw-fs-klein fw-faint mt-1">{% trans "Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank)." %}</p></div>
         </div>
 
         <div class="border-t fw-linie pt-4">
@@ -95,9 +95,9 @@
             <p class="text-xs fw-faint mt-1">{% blocktrans trimmed %}Login fürs Portal unter <span class="font-mono">/portal/login/</span> — Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug.{% endblocktrans %}</p>
         </div>
         {% if portal_user %}
-        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-1 rounded-full">{% trans "Aktiv" %}</span>
+        <span class="shrink-0 fw-fs-mikro font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-1 rounded-full">{% trans "Aktiv" %}</span>
         {% else %}
-        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide fw-flaeche2 fw-mutet px-2 py-1 rounded-full">{% trans "Kein Zugang" %}</span>
+        <span class="shrink-0 fw-fs-mikro font-bold uppercase tracking-wide fw-flaeche2 fw-mutet px-2 py-1 rounded-full">{% trans "Kein Zugang" %}</span>
         {% endif %}
     </div>
 

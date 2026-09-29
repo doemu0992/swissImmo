@@ -5,7 +5,7 @@
 {% block content %}
 <div class="text-xs fw-faint mb-3">
     <a href="/neu/mieterkonten/{{ lg_query }}" class="hover:fw-marke">{% trans "Mieterkonten" %}</a>
-    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{{ m.display_name }}
+    {% zeichen 'weiter' klasse='fw-fs-mikro mx-1' %}{{ m.display_name }}
 </div>
 
 <div class="fw-phead">
@@ -22,15 +22,15 @@
 <!-- Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Forderungen (Soll)" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Forderungen (Soll)" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total_soll|chf }}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Zahlungen (Haben)" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Zahlungen (Haben)" %}</div>
         <div class="text-xl font-bold fw-gut mt-0.5">CHF {{ total_haben|chf }}</div>
     </div>
     <div class="fw-flaeche rounded-xl border {% if endsaldo > 0 %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wider fw-faint font-semibold">
+        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">
             {% if endsaldo > 0 %}{% trans "Offener Saldo" %}{% elif endsaldo < 0 %}{% trans "Guthaben Mieter" %}{% else %}{% trans "Saldo" %}{% endif %}
         </div>
         <div class="text-xl font-bold {% if endsaldo > 0 %}fw-kritisch{% elif endsaldo < 0 %}fw-gut{% else %}fw-strong{% endif %} mt-0.5">
@@ -45,7 +45,7 @@
     <div class="px-5 py-3 border-b fw-linie-krit fw-krit-flaeche flex items-center gap-2">
         {% zeichen 'warnung' klasse='fw-kritisch' %}
         <h2 class="font-bold fw-strong text-sm">{% trans "Offene Posten" %}</h2>
-        <span class="text-[11px] font-bold fw-krit-flaeche fw-kritisch rounded-md px-1.5 py-0.5">{{ op_rows|length }}</span>
+        <span class="fw-fs-klein font-bold fw-krit-flaeche fw-kritisch rounded-md px-1.5 py-0.5">{{ op_rows|length }}</span>
         <span class="ml-auto text-sm font-semibold fw-kritisch">CHF {{ op_total|chf }}</span>
     </div>
     <div class="fw-dv">
@@ -82,7 +82,7 @@
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Text" %}</th>
                 <th class="px-5 py-3 font-semibold text-right">{% trans "Soll" %}</th>

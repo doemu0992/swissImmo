@@ -26,7 +26,7 @@
                 {% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-schluessel"/></svg>{% endblock %}
             </span>
             <div class="leading-tight flex-1">
-                <div class="font-extrabold tracking-wide text-sm uppercase">{% block brand %}{% trans "Mieterportal" %}{% endblock %}</div>
+                <div class="font-bold tracking-wide text-sm uppercase">{% block brand %}{% trans "Mieterportal" %}{% endblock %}</div>
                 <div class="text-[11px] fw-faint">SwissImmo</div>
             </div>
             <button type="button" onclick="pCloseNav()" aria-label="{% trans 'Menü schliessen' %}" class="lg:hidden fw-faint hover:text-white">{% zeichen 'schliessen' %}</button>
@@ -53,7 +53,7 @@
         <!-- Topbar (mobil) -->
         <header class="lg:hidden h-16 px-4 flex items-center gap-3 bg-[#161926] text-white sticky top-0 z-30">
             <button type="button" onclick="pOpenNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-faint hover:text-white text-lg p-1">{% zeichen 'mehr' %}</button>
-            <span class="font-extrabold tracking-wide text-sm uppercase">{% block brand_mobile %}{% trans "Mieterportal" %}{% endblock %}</span>
+            <span class="font-bold tracking-wide text-sm uppercase">{% block brand_mobile %}{% trans "Mieterportal" %}{% endblock %}</span>
         </header>
 
         <main class="p-4 sm:p-6 lg:p-10 w-full max-w-5xl mx-auto pb-24">

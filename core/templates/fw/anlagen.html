@@ -23,7 +23,7 @@
     </div>
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
             <tr><th class="text-left px-5 py-2.5">{% trans "Anlage" %}</th><th class="text-left px-5 py-2.5">{% trans "Liegenschaft" %}</th>
                 <th class="text-right px-5 py-2.5">{% trans "Anschaffung" %}</th><th class="text-right px-5 py-2.5">{% trans "ND" %}</th>
                 <th class="text-right px-5 py-2.5">{% trans "AfA/Jahr" %}</th><th class="text-right px-5 py-2.5">{% trans "Kum. AfA" %}</th><th class="text-right px-5 py-2.5">{% trans "Buchwert" %}</th></tr>
@@ -31,7 +31,7 @@
         <tbody class="fw-dv">
             {% for a in anlagen %}
             <tr>
-                <td class="px-5 py-2.5 font-medium fw-strong">{{ a.bezeichnung }}<div class="text-[11px] fw-faint">{% blocktrans with datum=a.anschaffungsdatum|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}</div></td>
+                <td class="px-5 py-2.5 font-medium fw-strong">{{ a.bezeichnung }}<div class="fw-fs-klein fw-faint">{% blocktrans with datum=a.anschaffungsdatum|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}</div></td>
                 <td class="px-5 py-2.5 fw-mutet">{{ a.liegenschaft.strasse }}</td>
                 <td class="px-5 py-2.5 text-right tabular-nums">CHF {{ a.anschaffungswert|chf }}</td>
                 <td class="px-5 py-2.5 text-right">{{ a.nutzungsdauer_jahre }} J</td>
@@ -97,7 +97,7 @@
     </div>
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
             <tr><th class="text-left px-5 py-2.5">{% trans "Liegenschaft" %}</th><th class="text-right px-5 py-2.5">{% trans "Bestand" %}</th>
                 <th class="text-right px-5 py-2.5">{% trans "Einlage/Jahr" %}</th><th class="text-right px-5 py-2.5">{% trans "Letzte Einlage" %}</th></tr>
         </thead>

@@ -51,7 +51,7 @@
         <div class="flex items-center justify-between px-5 py-4 fw-markenflaeche">
             <div><div class="text-sm font-bold fw-strong">{% trans "Zahllast an ESTV" %}</div>
                 <div class="text-xs fw-faint">{% if mwst_methode == 'saldo' %}{% trans "Brutto-Entgelt × Saldosatz" %}{% else %}{% trans "Umsatzsteuer − Vorsteuer" %}{% endif %}</div></div>
-            <div class="text-2xl font-extrabold {% if zahllast >= 0 %}fw-marke{% else %}fw-gut{% endif %} tabular-nums">CHF {{ zahllast|chf }}</div>
+            <div class="text-2xl font-bold {% if zahllast >= 0 %}fw-marke{% else %}fw-gut{% endif %} tabular-nums">CHF {{ zahllast|chf }}</div>
         </div>
         <!-- Abrechnung verbuchen: 2200 ausbuchen (sonst wächst das Konto endlos) -->
         <div class="px-5 py-3 border-t fw-linie flex items-center justify-between gap-3 flex-wrap">
@@ -91,8 +91,8 @@
             {% if mwst_methode != 'saldo' %}
             <tr><td class="px-5 py-2.5 fw-faint tabular-nums">479</td><td class="px-2 py-2.5 fw-ink">{% trans "Total Vorsteuer" %}</td><td class="px-5 py-2.5 text-right tabular-nums fw-gut">{{ estv.z479|chf }}</td></tr>
             {% endif %}
-            <tr class="fw-markenflaeche"><td class="px-5 py-2.5 fw-faint tabular-nums font-bold">500</td><td class="px-2 py-2.5 font-bold fw-strong">{% trans "An die ESTV zu bezahlen" %}</td><td class="px-5 py-2.5 text-right tabular-nums font-extrabold fw-marke">{{ estv.z500|chf }}</td></tr>
-            {% if estv.z510 %}<tr class="fw-gut-flaeche"><td class="px-5 py-2.5 fw-faint tabular-nums font-bold">510</td><td class="px-2 py-2.5 font-bold fw-strong">{% trans "Guthaben" %}</td><td class="px-5 py-2.5 text-right tabular-nums font-extrabold fw-gut">{{ estv.z510|chf }}</td></tr>{% endif %}
+            <tr class="fw-markenflaeche"><td class="px-5 py-2.5 fw-faint tabular-nums font-bold">500</td><td class="px-2 py-2.5 font-bold fw-strong">{% trans "An die ESTV zu bezahlen" %}</td><td class="px-5 py-2.5 text-right tabular-nums font-bold fw-marke">{{ estv.z500|chf }}</td></tr>
+            {% if estv.z510 %}<tr class="fw-gut-flaeche"><td class="px-5 py-2.5 fw-faint tabular-nums font-bold">510</td><td class="px-2 py-2.5 font-bold fw-strong">{% trans "Guthaben" %}</td><td class="px-5 py-2.5 text-right tabular-nums font-bold fw-gut">{{ estv.z510|chf }}</td></tr>{% endif %}
         </tbody>
     </table>
 </div>

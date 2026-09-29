@@ -5,9 +5,9 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/liegenschaften/{{ lg_query }}" class="hover:fw-marke">{% trans "Liegenschaften" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     {% if not ist_neu %}<a href="/neu/liegenschaften/{{ lg.id }}/" class="hover:fw-marke">{{ lg.strasse }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}{% endif %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}{% endif %}
     <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neu" %}{% else %}{% trans "Bearbeiten" %}{% endif %}</span>
 </nav>
 

@@ -5,9 +5,9 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mietzins/" class="hover:fw-marke">Mietzins</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">Anfangsmietzins</span>
 </nav>
 
@@ -70,17 +70,17 @@
                 <input name="vormiete_nk" value="{% localize off %}{{ vormiete_nk }}{% endlocalize %}" placeholder="0.00" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums">
             </div>
         </div>
-        <p class="text-[11px] fw-faint mt-2">Leer lassen, wenn die Vormiete nicht bekannt ist (wird als «unbekannt» ausgewiesen).</p>
+        <p class="fw-fs-klein fw-faint mt-2">Leer lassen, wenn die Vormiete nicht bekannt ist (wird als «unbekannt» ausgewiesen).</p>
     </div>
 
     <!-- Anfangsmietzins -->
     <div class="fw-card p-5">
         <h3 class="font-bold fw-strong text-sm mb-1">Neuer Anfangsmietzins</h3>
         {% if soll %}
-        <p class="text-[11px] fw-gut mb-3">{% zeichen 'gut' klasse='mr-1' %}Automatisch aus
+        <p class="fw-fs-klein fw-gut mb-3">{% zeichen 'gut' klasse='mr-1' %}Automatisch aus
             dem Sollmietzins «gültig ab {{ soll.gueltig_ab|date:"d.m.Y" }}» übernommen — bei Bedarf anpassbar.</p>
         {% else %}
-        <p class="text-[11px] fw-faint mb-3">Aus dem Vertrag übernommen (keine datierte Sollmietzins-Zeile hinterlegt).</p>
+        <p class="fw-fs-klein fw-faint mb-3">Aus dem Vertrag übernommen (keine datierte Sollmietzins-Zeile hinterlegt).</p>
         {% endif %}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -97,7 +97,7 @@
     <!-- Berechnungsgrundlagen -->
     <div class="fw-card p-5">
         <h3 class="font-bold fw-strong text-sm mb-1">Berechnungsgrundlagen</h3>
-        <p class="text-[11px] fw-faint mb-3">Referenzzinssatz & Landesindex (LIK), auf denen der Mietzins beruht —
+        <p class="fw-fs-klein fw-faint mb-3">Referenzzinssatz & Landesindex (LIK), auf denen der Mietzins beruht —
             aus dem Vertrag übernommen, bei Bedarf anpassbar.</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
