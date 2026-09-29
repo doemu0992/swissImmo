@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load zeichen %}<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -23,9 +23,9 @@
 <body class="fw-flaeche2 fw-strong">
 <div class="p-5 sm:p-6 max-w-3xl mx-auto">
     {% if messages %}
-    <div class="space-y-2 mb-4">
+    <div class="space-y-2 mb-4" role="status" aria-live="polite">
         {% for m in messages %}
-        <div class="text-sm px-4 py-2 rounded-xl {% if 'error' in m.tags %}fw-krit-flaeche fw-kritisch border fw-linie-krit{% else %}fw-gut-flaeche fw-gut border fw-linie-gut{% endif %}">{{ m }}</div>
+        <div {% if 'error' in m.tags %}role="alert" {% endif %}class="text-sm px-4 py-2 rounded-xl {% if 'error' in m.tags %}fw-krit-flaeche fw-kritisch border fw-linie-krit{% else %}fw-gut-flaeche fw-gut border fw-linie-gut{% endif %}">{{ m|ohne_emoji }}</div>
         {% endfor %}
     </div>
     {% endif %}

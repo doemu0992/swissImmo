@@ -75,3 +75,60 @@ class Schriftgrade(SimpleTestCase):
         definiert = set(re.findall(r'\.(fw-fs-[a-z]+)\{', schicht))
         self.assertTrue(benutzt)
         self.assertEqual(benutzt - definiert, set())
+
+
+class Meldungen(TestCase):
+    """Toasts: für Screenreader angesagt, ohne doppeltes Emoji."""
+
+    def test_ohne_emoji(self):
+        from core.templatetags.zeichen import ohne_emoji
+        faelle = {
+            '✅ Liegenschaft gespeichert.': 'Liegenschaft gespeichert.',
+            '⚠️ EGID konnte nicht ermittelt werden': 'EGID konnte nicht ermittelt werden',
+            '🗑️ Abnahmeprotokoll gelöscht.': 'Abnahmeprotokoll gelöscht.',
+            '📍 EGID 123 ermittelt.': 'EGID 123 ermittelt.',
+            'Ohne Emoji bleibt alles.': 'Ohne Emoji bleibt alles.',
+            'CHF 1’250 überwiesen': 'CHF 1’250 überwiesen',
+        }
+        for vorher, nachher in faelle.items():
+            self.assertEqual(ohne_emoji(vorher), nachher)
+
+    def test_toast_ist_live_region_und_ohne_emoji(self):
+        from unittest.mock import patch
+        lg, _e, _m, _v = _basis_objekte()
+        c = Client()
+        c.force_login(_team_user())
+        with patch('portfolio.services.sync_liegenschaft_with_gwr', return_value={}):
+            r = c.post(f'/neu/liegenschaften/{lg.id}/bearbeiten/', {
+                'strasse': 'Toastweg 1', 'plz': '8000', 'ort': 'Zürich', 'egid': '1',
+                'hkvo_grundkosten_prozent': '40'}, follow=True)
+        body = r.content.decode()
+        self.assertIn('id="fw-toasts"', body)
+        stapel = body[body.index('id="fw-toasts"'):]
+        stapel = stapel[:stapel.index('</script>')]
+        self.assertIn('aria-live="polite"', stapel)
+        self.assertIn('Toastweg 1', stapel)
+        self.assertNotIn('✅', stapel)
+
+
+class Modal(SimpleTestCase):
+
+    def _quelle(self):
+        return (VORLAGEN / 'fw' / '_fwmodal.html').read_text(encoding='utf-8')
+
+    def test_ist_ein_dialog(self):
+        q = self._quelle()
+        self.assertIn('role="dialog"', q)
+        self.assertIn('aria-modal="true"', q)
+        self.assertIn('aria-labelledby="fwModalTitle"', q)
+
+    def test_laedt_nur_neu_wenn_etwas_geschah(self):
+        """Vorher lud jedes Schliessen die Seite neu — auch «Abbrechen»."""
+        skript = self._quelle().split('<script>', 1)[1]
+        schliessen = skript[skript.index('function fwModalClose'):skript.index("window.addEventListener('message'")]
+        self.assertIn('if (neuLaden) { window.location.reload()', schliessen)
+        self.assertEqual(schliessen.count('window.location.reload()'), 1)
+
+    def test_fragt_vor_dem_verwerfen_von_eingaben(self):
+        self.assertIn('fwModalGetippt', self._quelle())
+        self.assertIn('confirm(', self._quelle())

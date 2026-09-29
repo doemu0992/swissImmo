@@ -263,13 +263,17 @@
         </header>
 
         {% if messages %}
-        <div id="fw-toasts" class="fixed top-4 right-4 z-[100] w-[min(92vw,380px)] space-y-2">
+        {% comment %} Audit Etappe 3: Screenreader erfuhren von keiner Meldung. Der Stapel
+           ist jetzt eine höfliche Live-Region; Fehler melden sich als `alert` sofort.
+           Das führende Emoji der Texte entfällt bei der Anzeige (`ohne_emoji`) — das
+           Symbol je Meldungsart steht schon davor. {% endcomment %}
+        <div id="fw-toasts" class="fixed top-4 right-4 z-[100] w-[min(92vw,380px)] space-y-2" role="status" aria-live="polite">
             {% for m in messages %}
-            <div class="fw-toast flex items-start gap-2 text-sm px-4 py-3 rounded-xl shadow-lg border
+            <div {% if 'error' in m.tags %}role="alert" {% endif %}class="fw-toast flex items-start gap-2 text-sm px-4 py-3 rounded-xl shadow-lg border
                 {% if 'error' in m.tags %}fw-krit-flaeche fw-linie-krit fw-kritisch{% elif 'warning' in m.tags %}fw-warn-flaeche fw-linie-warn fw-warnton{% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}"
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
-                {% if 'error' in m.tags %}{% zeichen 'kritisch' klasse='mt-0.5' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' klasse='mt-0.5' %}{% else %}{% zeichen 'gut' klasse='mt-0.5' %}{% endif %}
-                <div class="flex-1">{{ m }}</div>
+                {% if 'error' in m.tags %}{% zeichen 'kritisch' klasse='mt-0.5' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' klasse='mt-0.5' %}{% elif 'info' in m.tags %}{% zeichen 'hinweis' klasse='mt-0.5' %}{% else %}{% zeichen 'gut' klasse='mt-0.5' %}{% endif %}
+                <div class="flex-1">{{ m|ohne_emoji }}</div>
                 <button type="button" onclick="this.closest('.fw-toast').remove()" title="{% trans 'Meldung schliessen' %}" class="fw-faint hover:fw-mutet">{% zeichen 'schliessen' %}</button>
             </div>
             {% endfor %}
