@@ -51,3 +51,21 @@ class MahnbriefMonatTests(SimpleTestCase):
         texte = [str(a.args[2]) for a in leinwand.return_value.drawString.call_args_list]
         self.assertIn('Bern 03. Mai 2024', texte)
         self.assertFalse([t for t in texte if 'May' in t])
+
+
+class BesichtigungsEinladungWochentagTests(SimpleTestCase):
+    """Die Besichtigungseinladung nennt den Wochentag Deutsch.
+
+    Vorher `strftime('%A, …')` in core/views/fw/mietprozess.py: auf dem
+    Server «Tuesday, 29.09.2026 um 14:00 Uhr» in einer deutschen E-Mail.
+
+    Gegenprobe: `_termin_text` zurück auf `strftime('%A, %d.%m.%Y um %H:%M Uhr')`
+    — der Test wird rot.
+    """
+
+    def test_wochentag_deutsch_auch_bei_englischer_oberflaeche(self):
+        from django.utils import timezone
+        from core.views.fw.mietprozess import _termin_text
+        termin = timezone.make_aware(datetime.datetime(2026, 9, 29, 14, 0))
+        with translation.override('en'):
+            self.assertEqual(_termin_text(termin), 'Dienstag, 29.09.2026 um 14:00 Uhr')
