@@ -13,6 +13,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,7 @@ def _schlichtung_seite(c, titel, kanton_name="Solothurn", behoerden=None, exakt=
 # ============================================================
 # 1) MIETZINSANPASSUNG (Art. 269d OR)
 # ============================================================
+@nur_deutsch
 def mietzins_so_pdf(vertrag, daten, verwaltung=None):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
@@ -244,6 +246,7 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
 # ============================================================
 # 2) KÜNDIGUNG (Art. 266l / 298 OR, Art. 9 VMWG)
 # ============================================================
+@nur_deutsch
 def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
@@ -374,6 +377,7 @@ def _wrap(text, breite=100):
 #    Mitteilung des Anfangsmietzinses an den neuen Mieter mit Angabe der
 #    Vormiete und Hinweis auf das Anfechtungsrecht innert 30 Tagen.
 # ============================================================
+@nur_deutsch
 def anfangsmietzins_so_pdf(vertrag, daten, verwaltung=None):
     """Amtliches Formular zur Mitteilung des Anfangsmietzinses bei Neuabschluss.
 

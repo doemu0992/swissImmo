@@ -7,6 +7,7 @@ from django.template.loader import get_template
 from django.utils import timezone
 from xhtml2pdf import pisa
 from crm.models import Organisation
+from core.services.dokumentsprache import nur_deutsch
 
 def make_image_transparent(image_path):
     """ Öffnet das Bild, entfernt den weissen Hintergrund und speichert es als transparentes PNG """
@@ -117,12 +118,14 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
     return template_name, context
 
 
+@nur_deutsch
 def render_vertrag_html(vertrag, *, mit_unterschrift=True):
     """Rendert das Vertragsdokument als HTML (für die Live-Vorschau)."""
     template_name, context = build_vertrag_context(vertrag, mit_unterschrift=mit_unterschrift)
     return get_template(template_name).render(context)
 
 
+@nur_deutsch
 def generate_vertrag_pdf_bytes(vertrag):
     template_name, context = build_vertrag_context(vertrag)
     html = get_template(template_name).render(context)

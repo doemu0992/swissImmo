@@ -7,12 +7,14 @@ from datetime import date
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _chf(x):
     return f"{(x or Decimal('0')):,.2f}".replace(',', "'")
 
 
+@nur_deutsch
 def betriebsrechnung_pdf(lg, jahr=None, verwaltung=None):
     """Betriebsrechnung eines Kalenderjahres als PDF (A4)."""
     from core.services.rendite import betriebsrechnung, liegenschaft_rendite

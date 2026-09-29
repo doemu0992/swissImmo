@@ -2,6 +2,7 @@
 Zahlungseingänge als Haben) mit laufendem Saldo — für Team + Mieterportal."""
 import io
 from decimal import Decimal
+from core.services.dokumentsprache import nur_deutsch
 
 
 def berechne_mieterkonto(mieter, von=None, bis=None):
@@ -88,6 +89,7 @@ def saldi_fuer_mieter(mieter_liste):
     return saldi
 
 
+@nur_deutsch
 def generate_mieterkonto_pdf(mieter, verwaltung=None, von=None, bis=None):
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas

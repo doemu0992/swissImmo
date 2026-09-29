@@ -2,9 +2,9 @@
 Wiederverwendet von der Team-Ansicht und vom Mieterportal."""
 import logging
 import io
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
-
 
 
 def schuldner_name(vertrag):
@@ -22,6 +22,7 @@ def schuldner_name(vertrag):
     return name
 
 
+@nur_deutsch
 def generate_debitor_qr_pdf(rechnung):
     """Gibt die PDF-Bytes zurück oder None, wenn keine IBAN hinterlegt ist."""
     from reportlab.pdfgen import canvas as _canvas

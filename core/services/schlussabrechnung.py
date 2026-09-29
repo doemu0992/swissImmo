@@ -12,9 +12,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
-
 
 
 def _fmt(d):
@@ -118,6 +118,7 @@ def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrec
     }
 
 
+@nur_deutsch
 def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)

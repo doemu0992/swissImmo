@@ -2,6 +2,7 @@
 Mietzins (netto/NK/brutto) und Vertragsdaten sowie Soll-/Ist-/Leerstand-Summen.
 Das zentrale Bewirtschaftungs-Dokument für Eigentümer und Verwaltung."""
 from decimal import Decimal
+from core.services.dokumentsprache import nur_deutsch
 
 
 def berechne_mieterspiegel(liegenschaften, stichtag=None):
@@ -120,6 +121,7 @@ def _fmt(d):
         return str(d)
 
 
+@nur_deutsch
 def generate_mieterspiegel_pdf(spiegel, verwaltung=None, stichtag=None):
     import io
     from reportlab.lib.pagesizes import A4, landscape

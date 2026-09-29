@@ -6,6 +6,7 @@ Read-only aus den bestehenden Finanzdaten. Ersetzt keine Steuerberatung.
 """
 import io
 from decimal import Decimal
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _chf(v):
@@ -82,6 +83,7 @@ def steuerauszug_daten(eigentuemer, jahr):
             'eigentuemer': eigentuemer.firma_oder_name if eigentuemer else ''}
 
 
+@nur_deutsch
 def generate_steuerauszug_pdf(eigentuemer, jahr):
     """Erzeugt den Steuerauszug als PDF (Bytes)."""
     from reportlab.pdfgen import canvas as _canvas
