@@ -137,6 +137,24 @@
   .dlg-props select { appearance: none; background: var(--raised); border: 1px solid var(--line-strong); color: var(--text); border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 12px; cursor: pointer; }
   .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); }
 
+  /* Jetzt in Arbeit */
+  .streams { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+  .stream { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .stream:last-child { border-bottom: 0; }
+  .stream .sdot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; background: var(--faint); --c: var(--green); }
+  .stream.active .sdot { background: var(--green); animation: pulse 1.6s infinite; }
+  .stream-title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stream-meta { color: var(--muted); font-size: 12px; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+  .stream-meta code { font-family: var(--mono); font-size: 11px; color: var(--text); background: var(--raised); padding: 1px 6px; border-radius: 4px; overflow-wrap: anywhere; }
+  .stream-side { color: var(--faint); font-size: 12px; text-align: right; white-space: nowrap; }
+  .kind { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--faint); }
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--text); }
+  .chip i { width: 6px; height: 6px; border-radius: 50%; background: var(--c); animation: pulse 1.6s infinite; }
+  .pr { color: var(--green); text-decoration: none; border: 1px solid color-mix(in srgb, var(--green) 40%, transparent); padding: 0 6px; border-radius: 4px; font-size: 11.5px; }
+  .pr.draft { color: var(--muted); border-color: var(--line-strong); }
+  .streams .empty { padding: 20px 16px; text-align: left; line-height: 1.5; }
+  .live.warn i { background: var(--amber); box-shadow: 0 0 0 3px rgba(242,201,76,.2); }
+  .agent .status.task i { background: var(--c); }
   .error { background: rgba(235,87,87,.1); border: 1px solid rgba(235,87,87,.4); color: #f5a3a3; border-radius: var(--radius); padding: 10px 14px; display: none; }
 
   /* ---------- Responsive ---------- */
@@ -197,8 +215,13 @@
       <section class="kpis">
         <div class="kpi"><span>Offen</span><b id="k-todo">0</b></div>
         <div class="kpi"><span>In Arbeit</span><b id="k-progress">0</b></div>
-        <div class="kpi"><span>Erledigt</span><b id="k-done">0</b></div>
-        <div class="kpi"><span>Aktive Agenten</span><b id="k-agents">0 / 4</b></div>
+        <div class="kpi"><span>Agenten live</span><b id="k-live">0</b></div>
+        <div class="kpi"><span>Aktive Branches</span><b id="k-branches">0</b></div>
+      </section>
+
+      <section>
+        <h2>Jetzt in Arbeit <small id="live-sub">Sitzungen und Branches</small></h2>
+        <div class="streams" id="streams"></div>
       </section>
 
       <section>
@@ -316,8 +339,8 @@ function renderKpis() {
   const n = s => tasks.filter(t => t.status === s).length;
   $('#k-todo').textContent = n('To Do');
   $('#k-progress').textContent = n('In Progress');
-  $('#k-done').textContent = n('Done');
-  $('#k-agents').textContent = `${system.agents.filter(a => a.is_active).length} / ${system.agents.length || 4}`;
+  $('#k-live').textContent = (system.sessions || []).reduce((sum, s) => sum + s.running.length, 0);
+  $('#k-branches').textContent = (system.branches || []).filter(b => b.active).length;
 }
 
 function renderAgents() {
@@ -328,12 +351,23 @@ function renderAgents() {
     const head = el('div', 'agent-head');
     const info = el('div'); info.append(el('div', 'agent-name', a.name), el('div', 'agent-dept', a.department));
     head.append(el('div', 'avatar', s.initials), info);
-    const st = el('div', 'status'); st.append(el('i'), a.is_active ? 'Aktiv' : 'Idle');
+    const st = el('div', 'status' + (!a.live && a.is_active ? ' task' : ''));
+    st.append(el('i'), a.live ? 'Live' : a.is_active ? 'Aufgabe in Arbeit' : 'Idle');
+    if (!a.live) st.querySelector('i').style.animation = 'none';
     const current = tasks.find(t => t.department === a.department && t.status === 'In Progress');
-    const task = el('div', 'agent-task', current ? `${a.status}: ${current.title}` : 'Wartet auf Aufgabe');
+    let text = 'Wartet auf Aufgabe';
+    if (a.live) text = a.status;
+    else if (current) text = `${a.status}: ${current.title}`;
+    const task = el('div', 'agent-task', text);
+    task.title = text;
     const open = tasks.filter(t => t.department === a.department && t.status !== 'Done').length;
     const foot = el('div', 'agent-foot');
-    foot.append(el('span', null, `${open} offen`), el('span', null, a.is_active ? `${a.recently_modified} Dateien live` : '—'));
+    let right = '—';
+    if (a.live) right = a.live_branch || 'lokal';
+    else if (a.last_used) right = 'zuletzt ' + ago(a.last_used);
+    const r = el('span', null, right); r.title = right;
+    r.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;text-align:right';
+    foot.append(el('span', null, `${open} offen`), r);
     card.append(head, st, task, foot);
     return card;
   }));
@@ -416,7 +450,68 @@ function renderRail() {
   $('#rail-inline').replaceChildren(s1, s2);
 }
 
-function render() { renderNav(); renderKpis(); renderAgents(); renderBoard(); renderRail(); }
+function renderStreams() {
+  const rows = [];
+  (system.sessions || []).filter(s => s.active || Date.now() / 1000 - s.last_ts < 3 * 3600).forEach(s => {
+    const row = el('div', 'stream' + (s.active ? ' active' : ''));
+    const body = el('div');
+    const title = el('div', 'stream-title', s.prompt || 'Claude-Code-Sitzung'); title.title = s.prompt || '';
+    const meta = el('div', 'stream-meta');
+    meta.append(el('span', 'kind', 'Lokale Sitzung'));
+    if (s.branch) meta.append(el('code', null, s.branch));
+    s.running.forEach(r => {
+      const chip = el('span', 'chip'); chip.style.setProperty('--c', style(deptOf(r.type)).color);
+      chip.append(el('i'), r.type + (r.desc ? ': ' + r.desc : '')); meta.append(chip);
+    });
+    if (s.last_action && !s.running.length) meta.append(el('span', null, s.last_action));
+    body.append(title, meta);
+    row.append(el('span', 'sdot'), body, el('div', 'stream-side', s.active ? 'aktiv' : ago(s.last_ts)));
+    rows.push([s.active ? 2 : 0, s.last_ts, row]);
+  });
+  (system.branches || []).filter(b => b.active || b.pr || Date.now() / 1000 - b.ts < 86400).forEach(b => {
+    const row = el('div', 'stream' + (b.active ? ' active' : ''));
+    const body = el('div');
+    const title = el('div', 'stream-title', b.subject || b.name); title.title = b.subject || '';
+    const meta = el('div', 'stream-meta');
+    meta.append(el('span', 'kind', b.is_agent ? 'Cloud-Agent' : 'Branch'), el('code', null, b.name));
+    if (b.ahead != null) meta.append(el('span', null, `${b.ahead} Commit${b.ahead === 1 ? '' : 's'} vor main`));
+    if (b.pr) {
+      const a = el('a', 'pr' + (b.pr.isDraft ? ' draft' : ''), `PR #${b.pr.number}${b.pr.isDraft ? ' (Entwurf)' : ''}`);
+      a.href = b.pr.url; a.target = '_blank'; a.rel = 'noopener'; meta.append(a);
+    }
+    body.append(title, meta);
+    row.append(el('span', 'sdot'), body, el('div', 'stream-side', ago(b.ts)));
+    rows.push([b.active ? 1 : 0, b.ts, row]);
+  });
+  rows.sort((x, y) => y[0] - x[0] || y[1] - x[1]);
+  const box = $('#streams');
+  if (!rows.length) {
+    const hint = system.sessions_found ? '' : ' Lokale Claude-Code-Sitzungen erscheinen, sobald du Claude Code in diesem Projektordner startest.';
+    box.replaceChildren(el('div', 'empty', 'Gerade läuft nichts. Cloud-Sitzungen erscheinen hier, sobald sie einen Branch pushen.' + hint));
+  } else {
+    box.replaceChildren(...rows.slice(0, 8).map(r => r[2]));
+  }
+  const n = rows.filter(r => r[0] > 0).length;
+  $('#live-sub').textContent = n ? `${n} aktiv` : 'Sitzungen und Branches';
+}
+
+function deptOf(agentType) {
+  const a = (system.agents || []).find(x => (x.live_agents || []).includes(agentType));
+  return a ? a.department : 'Engineering';
+}
+
+function renderSync() {
+  const sync = system.sync || {};
+  const live = document.querySelector('.live');
+  live.classList.toggle('warn', !!sync.error);
+  let text = 'Live';
+  if (sync.error) text = 'GitHub nicht erreichbar';
+  else if (sync.last_fetch) text = `GitHub-Sync vor ${Math.max(0, Math.round(Date.now() / 1000 - sync.last_fetch))} s`;
+  $('#updated').textContent = text;
+  live.title = sync.error || 'Branches werden jede Minute von GitHub geholt';
+}
+
+function render() { renderNav(); renderKpis(); renderStreams(); renderAgents(); renderBoard(); renderRail(); renderSync(); }
 
 /* ---------- Data ---------- */
 async function load() {
@@ -426,7 +521,6 @@ async function load() {
     tasks = await tRes.json();
     system = await sRes.json();
     showError('');
-    $('#updated').textContent = 'Live · ' + new Date().toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch (e) {
     showError('Daten konnten nicht geladen werden: ' + e.message);
   }
