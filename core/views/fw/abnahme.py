@@ -19,6 +19,7 @@ from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_
 from rentals.models import Mietvertrag
 
 from ._basis import _global_filter, _num, _parse_adresse
+from core.services.dokumentsprache import auf_deutsch
 
 
 # ============================================================
@@ -130,7 +131,7 @@ def fw_abnahme_neu(request, vertrag_id):
                                       quelle=f'auszug:{prot.id}',
                                       notiz='Wegzug gemäss Abnahmeprotokoll'))
                     person.sync_effektive_adresse()
-        log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter), f"{prot.get_typ_display()} {datum}", ziel=v)
+        log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter), f"{auf_deutsch(prot.get_typ_display)} {datum}", ziel=v)
         if P.get('embed'):
             typ_txt = prot.get_typ_display()
             return render(request, 'fw/_modal_done.html', {'msg': f"{typ_txt} erfasst ({prot.maengel.count()} Mängel)"})
@@ -230,7 +231,7 @@ def fw_abnahme_pdf(request, pk):
     # Auto-Ablage in die Vertrags-Akte (abgeschlossene Protokolle)
     if getattr(prot, 'abgeschlossen', False):
         from core.services.ablage import ablegen
-        ablegen(pdf, f"Abnahmeprotokoll ({prot.get_typ_display()}) {prot.datum:%d.%m.%Y}",
+        ablegen(pdf, f"Abnahmeprotokoll ({auf_deutsch(prot.get_typ_display)}) {prot.datum:%d.%m.%Y}",
                 kategorie='protokoll', vertrag=prot.vertrag, dedup=True)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Abnahmeprotokoll_{prot.vertrag.mieter.nachname}.pdf"'

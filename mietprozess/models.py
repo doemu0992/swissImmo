@@ -2,6 +2,7 @@ import pdfplumber
 from django.db import models
 from core.organisation_kette import OrganisationAusKette
 from portfolio.models import Einheit
+from django.utils.translation import gettext_lazy as _
 
 # ==========================================
 # 🔥 SMART SCANNER LOGIK
@@ -44,35 +45,35 @@ def scan_pdf_for_betreibungen(file_obj):
 class Mietbewerbung(OrganisationAusKette):
     ORGANISATION_PFAD = 'einheit'
     STATUS_CHOICES = [
-        ('neu', 'Neu eingegangen'),
-        ('geprueft', 'Bonität geprüft'),
-        ('besichtigung', 'Zur Besichtigung eingeladen'),
-        ('zugesagt', 'Zusage erteilt'),
-        ('abgelehnt', 'Abgelehnt'),
+        ('neu', _('Neu eingegangen')),
+        ('geprueft', _('Bonität geprüft')),
+        ('besichtigung', _('Zur Besichtigung eingeladen')),
+        ('zugesagt', _('Zusage erteilt')),
+        ('abgelehnt', _('Abgelehnt')),
     ]
 
     KAUTIONS_TYP_CHOICES = [
-        ('bank', 'Bankdepot (3 Monatsmieten)'),
-        ('swisskaution', 'Swisskaution (Kautionsversicherung)'),
+        ('bank', _('Bankdepot (3 Monatsmieten)')),
+        ('swisskaution', _('Swisskaution (Kautionsversicherung)')),
     ]
 
     ZIVILSTAND_CHOICES = [
-        ('ledig', 'Ledig'),
-        ('verheiratet', 'Verheiratet'),
-        ('eingetragene_partnerschaft', 'Eingetragene Partnerschaft'),
-        ('geschieden', 'Geschieden'),
-        ('verwitwet', 'Verwitwet'),
-        ('getrennt', 'Getrennt'),
+        ('ledig', _('Ledig')),
+        ('verheiratet', _('Verheiratet')),
+        ('eingetragene_partnerschaft', _('Eingetragene Partnerschaft')),
+        ('geschieden', _('Geschieden')),
+        ('verwitwet', _('Verwitwet')),
+        ('getrennt', _('Getrennt')),
     ]
 
     ERWERBSSTATUS_CHOICES = [
-        ('angestellt', 'Angestellt'),
-        ('selbstaendig', 'Selbständig'),
-        ('student', 'Student'),
-        ('keine_erwerbstaetigkeit', 'Keine Erwerbstätigkeit'),
-        ('arbeitslos', 'Arbeitslos'),
-        ('pensioniert', 'Pensioniert'),
-        ('iv_bezueger', 'IV Bezüger'),
+        ('angestellt', _('Angestellt')),
+        ('selbstaendig', _('Selbständig')),
+        ('student', _('Student')),
+        ('keine_erwerbstaetigkeit', _('Keine Erwerbstätigkeit')),
+        ('arbeitslos', _('Arbeitslos')),
+        ('pensioniert', _('Pensioniert')),
+        ('iv_bezueger', _('IV Bezüger')),
     ]
 
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name="bewerbungen")
@@ -88,7 +89,7 @@ class Mietbewerbung(OrganisationAusKette):
     zivilstand = models.CharField(max_length=50, choices=ZIVILSTAND_CHOICES,
                                   blank=True, default='')
     geburtsdatum = models.DateField()
-    geschlecht = models.CharField(max_length=20, choices=[('weiblich', 'Weiblich'), ('maennlich', 'Männlich')], default='weiblich')
+    geschlecht = models.CharField(max_length=20, choices=[('weiblich', _('Weiblich')), ('maennlich', _('Männlich'))], default='weiblich')
     nationalitaet = models.CharField(max_length=100, default='Schweiz')
     heimatort = models.CharField(max_length=150, blank=True, null=True) # Für Schweizer relevant
 

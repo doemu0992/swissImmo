@@ -6,41 +6,42 @@ from core.organisation_kette import OrganisationAusKette
 from django.utils import timezone
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
+from django.utils.translation import gettext_lazy as _, pgettext_lazy
 
 logger = logging.getLogger(__name__)
 
 
 class Mietvertrag(OrganisationAusKette):
     ORGANISATION_PFAD = 'einheit'
-    STATUS_CHOICES = [('offen', 'Offen'), ('gesendet', 'Versendet'), ('unterzeichnet', 'Unterzeichnet')]
+    STATUS_CHOICES = [('offen', _('Offen')), ('gesendet', _('Versendet')), ('unterzeichnet', _('Unterzeichnet'))]
 
     VERTRAG_STATUS = [
-        ('entwurf', 'Entwurf'),
-        ('aktiv', 'Aktiv'),
-        ('gekuendigt', 'Gekündigt'),
-        ('archiviert', 'Archiviert')
+        ('entwurf', _('Entwurf')),
+        ('aktiv', _('Aktiv')),
+        ('gekuendigt', _('Gekündigt')),
+        ('archiviert', _('Archiviert'))
     ]
 
     NK_TYP_CHOICES = [
-        ('akonto', 'Akonto (Vorschuss mit Abrechnung)'),
-        ('pauschal', 'Pauschal (fixer Betrag ohne Abrechnung)'),
-        ('inbegriffen', 'Inbegriffen (im Nettomietzins enthalten)'),
-        ('direkt', 'Direkt (Mieter zahlt direkt an Werke)'),
+        ('akonto', _('Akonto (Vorschuss mit Abrechnung)')),
+        ('pauschal', _('Pauschal (fixer Betrag ohne Abrechnung)')),
+        ('inbegriffen', _('Inbegriffen (im Nettomietzins enthalten)')),
+        ('direkt', _('Direkt (Mieter zahlt direkt an Werke)')),
     ]
 
     VERTEIL_CHOICES = [
-        ('m2', 'Fläche (m²)'),
-        ('m3', 'Volumen (m³)'),
-        ('quote', 'Wertquote'),
-        ('einheit', 'Pro Einheit / Pauschal'),
-        ('individuell', 'Individuelle Zähler (VHKA)'),
+        ('m2', _('Fläche (m²)')),
+        ('m3', _('Volumen (m³)')),
+        ('quote', _('Wertquote')),
+        ('einheit', _('Pro Einheit / Pauschal')),
+        ('individuell', _('Individuelle Zähler (VHKA)')),
     ]
 
     ZAHLUNGSRHYTHMUS_CHOICES = [
-        ('monatlich', 'monatlich'),
-        ('vierteljahr', 'vierteljährlich'),
-        ('halbjahr', 'halbjährlich'),
-        ('jahr', 'jährlich'),
+        ('monatlich', _('monatlich')),
+        ('vierteljahr', _('vierteljährlich')),
+        ('halbjahr', _('halbjährlich')),
+        ('jahr', _('jährlich')),
     ]
 
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, related_name='vertraege')
@@ -113,8 +114,8 @@ class Mietvertrag(OrganisationAusKette):
 
     # --- KAUTION (Art. 257e OR: Sperrkonto auf Mietername ODER Kautionsversicherung) ---
     KAUTIONSART_CHOICES = [
-        ('sperrkonto', 'Sperrkonto (Bankdepot)'),
-        ('versicherung', 'Kautionsversicherung'),
+        ('sperrkonto', _('Sperrkonto (Bankdepot)')),
+        ('versicherung', _('Kautionsversicherung')),
     ]
     kautions_art = models.CharField("Kautionsart", max_length=20, choices=KAUTIONSART_CHOICES,
                                     default='sperrkonto', blank=True)
@@ -817,7 +818,7 @@ class Dokument(OrganisationAusKette):
     bezeichnung = models.CharField(max_length=200, default="Dokument")
     titel = models.CharField(max_length=200, blank=True)
     datei = models.FileField(upload_to=get_smart_upload_path)
-    kategorie = models.CharField(max_length=50, choices=[('vertrag', 'Vertrag'), ('protokoll', 'Protokoll'), ('korrespondenz', 'Korrespondenz'), ('sonstiges', 'Sonstiges')])
+    kategorie = models.CharField(max_length=50, choices=[('vertrag', _('Vertrag')), ('protokoll', pgettext_lazy('Auswahl', 'Protokoll')), ('korrespondenz', _('Korrespondenz')), ('sonstiges', _('Sonstiges'))])
     # Sichtbarkeit im Mieterportal (Datenschutz): Standard sichtbar, Verwalter
     # kann sensible Dokumente (z.B. interne Vermerke) ausblenden.
     im_portal_sichtbar = models.BooleanField("Im Mieterportal sichtbar", default=True)
@@ -839,17 +840,17 @@ class Dokument(OrganisationAusKette):
 class Kuendigung(OrganisationAusKette):
     ORGANISATION_PFAD = 'vertrag'
     """Kündigung eines Mietvertrags (ordentlich/ausserordentlich) inkl. Fristenberechnung."""
-    ABSENDER_CHOICES = [('mieter', 'Mieter'), ('vermieter', 'Vermieter')]
+    ABSENDER_CHOICES = [('mieter', _('Mieter')), ('vermieter', _('Vermieter'))]
     ZUSTELLUNG_CHOICES = [
         ('einschreiben', 'Einschreiben (Mieter)'),
         ('amtliches_formular', 'Amtliches Formular (Vermieter)'),
         ('normal', 'Normal / persönlich'),
     ]
     STATUS_CHOICES = [
-        ('erfasst', 'Erfasst'),
-        ('bestaetigt', 'Bestätigt'),
-        ('vollzogen', 'Vollzogen'),
-        ('zurueckgezogen', 'Zurückgezogen'),
+        ('erfasst', _('Erfasst')),
+        ('bestaetigt', _('Bestätigt')),
+        ('vollzogen', _('Vollzogen')),
+        ('zurueckgezogen', _('Zurückgezogen')),
     ]
 
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='kuendigungen')
@@ -886,14 +887,14 @@ class Abnahmeprotokoll(OrganisationAusKette):
     ORGANISATION_PFAD = 'vertrag'
     """Wohnungsabnahme-Protokoll (Einzug/Auszug): Zustand Raum-für-Raum mit
     Mängeln, Verursacher-Zuordnung, Fotos, Zählerständen und Unterschriften."""
-    TYP_CHOICES = [('einzug', 'Einzug / Übergabe'), ('auszug', 'Auszug / Rücknahme')]
+    TYP_CHOICES = [('einzug', _('Einzug / Übergabe')), ('auszug', _('Auszug / Rücknahme'))]
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE, related_name='abnahmen')
     typ = models.CharField("Art", max_length=10, choices=TYP_CHOICES, default='auszug')
     datum = models.DateField("Datum", default=timezone.now)
     mieter_anwesend = models.BooleanField("Mieter anwesend", default=True)
     verwalter_name = models.CharField("Abnahme durch", max_length=120, blank=True, default='')
     allgemein_zustand = models.CharField("Allgemeinzustand", max_length=25, blank=True, default='gut',
-        choices=[('neuwertig', 'Neuwertig'), ('gut', 'Gut'), ('gebraucht', 'Gebraucht'), ('renovationsbeduerftig', 'Renovationsbedürftig')])
+        choices=[('neuwertig', _('Neuwertig')), ('gut', _('Gut')), ('gebraucht', _('Gebraucht')), ('renovationsbeduerftig', _('Renovationsbedürftig'))])
     schluessel_anzahl = models.PositiveSmallIntegerField("Schlüssel zurück", null=True, blank=True)
     zaehler_strom = models.CharField("Zählerstand Strom", max_length=40, blank=True, default='')
     zaehler_wasser = models.CharField("Zählerstand Wasser", max_length=40, blank=True, default='')
@@ -935,7 +936,7 @@ class AbnahmeMangel(OrganisationAusKette):
     Kann mit einem Ausstattungselement (Raumbuch) verknüpft werden — dann fliesst
     die paritätische Lebensdauertabelle ein: der Mieter zahlt nur den Zeitwert-
     anteil ('neu für alt'-Abzug), nicht den vollen Neuwert."""
-    VERURSACHER = [('abnutzung', 'Normale Abnutzung'), ('mieter', 'Mieter (Schaden)'), ('vermieter', 'Vermieter/Unterhalt')]
+    VERURSACHER = [('abnutzung', _('Normale Abnutzung')), ('mieter', _('Mieter (Schaden)')), ('vermieter', _('Vermieter/Unterhalt'))]
     protokoll = models.ForeignKey(Abnahmeprotokoll, on_delete=models.CASCADE, related_name='maengel')
     raum = models.CharField("Raum", max_length=60, blank=True, default='')
     beschreibung = models.CharField("Mangel", max_length=255)

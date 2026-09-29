@@ -7,6 +7,7 @@ from django.db.models import Sum, Q
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
 from finance.models import AbrechnungsPeriode, KreditorenRechnung, Zahlungseingang
+from core.services.dokumentsprache import nur_deutsch
 
 def get_heizgradtage_fuer_zeitraum(start_datum, ende_datum):
     """
@@ -134,6 +135,10 @@ def hole_abrechnung(periode):
     return berechne_abrechnung(periode.id)
 
 
+# Fest deutsch: Das Ergebnis landet eingefroren im Snapshot der Periode und
+# im deutsch formulierten Abrechnungs-PDF. Mit der Sprache der Sachbearbeitung
+# stünden dort übersetzte Kategorien (`get_kategorie_display`).
+@nur_deutsch
 def berechne_abrechnung(periode_id):
     """
     Professionelle Schweizer HNK-Abrechnung (Expert-Version).

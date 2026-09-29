@@ -32,6 +32,7 @@ from django.utils import timezone
 
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
+from django.utils.translation import gettext_lazy as _, pgettext_lazy
 
 
 class Laufart(models.Model):
@@ -44,9 +45,9 @@ class Laufart(models.Model):
 
     MONATLICH, QUARTALSWEISE, JAEHRLICH = 'monatlich', 'quartalsweise', 'jaehrlich'
     RHYTHMEN = [
-        (MONATLICH, 'Monatlich'),
-        (QUARTALSWEISE, 'Quartalsweise'),
-        (JAEHRLICH, 'Jährlich'),
+        (MONATLICH, _('Monatlich')),
+        (QUARTALSWEISE, _('Quartalsweise')),
+        (JAEHRLICH, _('Jährlich')),
     ]
 
     organisation = models.ForeignKey(
@@ -113,10 +114,10 @@ class Lauf(OrganisationAusKette):
     OFFEN, LAEUFT, ABGESCHLOSSEN, UEBERSPRUNGEN = (
         'offen', 'laeuft', 'abgeschlossen', 'uebersprungen')
     STATUS = [
-        (OFFEN, 'Offen'),
-        (LAEUFT, 'Läuft'),
-        (ABGESCHLOSSEN, 'Abgeschlossen'),
-        (UEBERSPRUNGEN, 'Bewusst übersprungen'),
+        (OFFEN, _('Offen')),
+        (LAEUFT, _('Läuft')),
+        (ABGESCHLOSSEN, pgettext_lazy('Auswahl', 'Abgeschlossen')),
+        (UEBERSPRUNGEN, _('Bewusst übersprungen')),
     ]
 
     laufart = models.ForeignKey(Laufart, on_delete=models.PROTECT,

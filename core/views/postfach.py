@@ -33,6 +33,7 @@ from core.auth import TEAM_ROLLEN, VERWALTUNGS_ROLLEN, hat_rolle, log_aktion, ro
 from core.models import Postfach
 from core.services.geheimnis import UMGEBUNGSNAME, schluessel_vorhanden
 from core.views.fw._basis import _global_filter
+from core.services.dokumentsprache import auf_deutsch
 
 
 def _darf_aendern(request):
@@ -158,7 +159,7 @@ def _speichern(request, postfach, zweck):
 
     postfach.save()
     log_aktion(request, 'Postfach gespeichert' if not neu else 'Postfach angelegt',
-               postfach.get_zweck_display(),
+               auf_deutsch(postfach.get_zweck_display),
                f'{postfach.benutzer} auf {postfach.server or "(OAuth2)"}')
     messages.success(request, gettext('Postfach «%(get_zweck_display)s» gespeichert. Prüfen Sie die Verbindung.') % {'get_zweck_display': postfach.get_zweck_display()})
     return []
@@ -188,7 +189,7 @@ def postfach_test(request, zweck):
         postfach.letzter_fehler_am = None
         postfach.save(update_fields=['letzter_test', 'letzter_fehler', 'letzter_fehler_am'])
         messages.success(request, gettext('Verbindung zu %(server)s steht — Anmeldung als %(benutzer)s hat geklappt.') % {'server': postfach.server, 'benutzer': postfach.benutzer})
-    log_aktion(request, 'Postfach-Verbindung geprüft', postfach.get_zweck_display(),
+    log_aktion(request, 'Postfach-Verbindung geprüft', auf_deutsch(postfach.get_zweck_display),
                postfach.letzter_fehler or 'erfolgreich')
     return redirect('postfach_liste')
 
@@ -204,7 +205,8 @@ def postfach_loeschen(request, zweck):
     """
     postfach = get_object_or_404(Postfach.objects.filter(zweck=zweck))
     bezeichnung, adresse = postfach.get_zweck_display(), postfach.benutzer
+    bezeichnung_de = auf_deutsch(postfach.get_zweck_display)
     postfach.delete()
-    log_aktion(request, 'Postfach gelöscht', bezeichnung, adresse)
+    log_aktion(request, 'Postfach gelöscht', bezeichnung_de, adresse)
     messages.success(request, gettext('Postfach «%(bezeichnung)s» gelöscht. Der Abruf für diesen Zweck ist damit abgeschaltet.') % {'bezeichnung': bezeichnung})
     return redirect('postfach_liste')

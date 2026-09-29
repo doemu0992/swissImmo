@@ -25,6 +25,7 @@ from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
+from core.services.dokumentsprache import auf_deutsch
 
 
 # ============================================================
@@ -209,7 +210,7 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         if regel_anwendung is not None:
             regel_spur = (f", Regel {regel_anwendung.art} Stand "
                           f"{regel_anwendung.regel_stand:%d.%m.%Y} → "
-                          f"{regel_anwendung.get_befund_display().lower()}")
+                          f"{auf_deutsch(regel_anwendung.get_befund_display).lower()}")
         log_aktion(request, "Kündigung erfasst", str(v.mieter),
                    f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen{hinweis}{regel_spur}", ziel=v)
         if P.get('embed'):
@@ -563,7 +564,7 @@ def fw_kuendigung_formular(request, pk):
 
     for empf_name, pdf in kopien:
         suffix = f" — Zustellung an {empf_name}" if empf_name else ""
-        ablegen(pdf, f"Kündigung {k.get_absender_display()} {k.eingang_datum:%d.%m.%Y}{suffix}",
+        ablegen(pdf, f"Kündigung {auf_deutsch(k.get_absender_display)} {k.eingang_datum:%d.%m.%Y}{suffix}",
                 kategorie='vertrag', vertrag=k.vertrag, dedup=True)
 
     # Amtliches Formular erstellt → 'schriftlich bestätigen / Formular versenden' abhaken

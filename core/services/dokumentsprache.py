@@ -67,3 +67,14 @@ def nur_deutsch(erzeuger):
             return erzeuger(*args, **kwargs)
     fest_deutsch.dokumentsprache = STANDARD
     return fest_deutsch
+
+
+def auf_deutsch(anzeige):
+    """Eine Anzeige für GESPEICHERTEN Text fest auf Deutsch lesen.
+
+    Protokoll (`log_aktion`), Ablagetitel, interne Notizen und Pendenzen
+    bleiben deutsch, egal wer sie auslöst — sonst stünde im selben Protokoll
+    einmal «Aktiv» und einmal «Actif». `anzeige` ist ein Aufrufbares wie
+    `vertrag.get_status_display` (ohne Klammern) oder ein lazy Text."""
+    with in_sprache(STANDARD):
+        return str(anzeige() if callable(anzeige) else anzeige)

@@ -42,6 +42,7 @@ from django.utils import timezone
 
 from core.organisation_kette import organisation_aus_kontext
 from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
+from django.utils.translation import gettext_lazy as _, pgettext_lazy
 
 
 class TerminQuerySet(TenantQuerySet):
@@ -72,15 +73,15 @@ class Termin(models.Model):
     ABNAHME, BESICHTIGUNG, GESPRAECH, BEGEHUNG, SONSTIGES = (
         'abnahme', 'besichtigung', 'gespraech', 'begehung', 'sonstiges')
     ARTEN = [
-        (ABNAHME, 'Wohnungsabnahme'),
-        (BESICHTIGUNG, 'Besichtigung'),
-        (GESPRAECH, 'Eigentümergespräch'),
-        (BEGEHUNG, 'Begehung'),
-        (SONSTIGES, 'Sonstiges'),
+        (ABNAHME, _('Wohnungsabnahme')),
+        (BESICHTIGUNG, _('Besichtigung')),
+        (GESPRAECH, _('Eigentümergespräch')),
+        (BEGEHUNG, _('Begehung')),
+        (SONSTIGES, _('Sonstiges')),
     ]
 
     GEPLANT, ERLEDIGT, ABGESAGT = 'geplant', 'erledigt', 'abgesagt'
-    STATUS = [(GEPLANT, 'Geplant'), (ERLEDIGT, 'Erledigt'), (ABGESAGT, 'Abgesagt')]
+    STATUS = [(GEPLANT, _('Geplant')), (ERLEDIGT, _('Erledigt')), (ABGESAGT, pgettext_lazy('Auswahl', 'Abgesagt'))]
 
     #: Welche Modelle ein Termin betreffen darf. Dieselbe Liste wie beim Fall,
     #: aus demselben Grund: ein generischer Bezug erzwingt genau eine Akte,
@@ -188,8 +189,8 @@ class Abwesenheit(models.Model):
     """
 
     FERIEN, KRANK, SCHULUNG, SONSTIGES = 'ferien', 'krank', 'schulung', 'sonstiges'
-    GRUENDE = [(FERIEN, 'Ferien'), (KRANK, 'Krank'),
-               (SCHULUNG, 'Schulung'), (SONSTIGES, 'Sonstiges')]
+    GRUENDE = [(FERIEN, _('Ferien')), (KRANK, _('Krank')),
+               (SCHULUNG, _('Schulung')), (SONSTIGES, _('Sonstiges'))]
 
     organisation = models.ForeignKey(
         'crm.Organisation', on_delete=models.CASCADE, editable=False,

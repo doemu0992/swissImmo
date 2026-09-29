@@ -29,6 +29,7 @@ from rentals.models import Mietvertrag
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num, VERTRAG_PILL
+from core.services.dokumentsprache import auf_deutsch
 
 
 # ============================================================
@@ -642,7 +643,7 @@ def fw_person_adresse_loeschen(request, pk):
     adr = get_object_or_404(MieterAdresse, id=pk)
     m = adr.mieter
     if request.method == 'POST':
-        info = f"{adr.get_art_display()} ab {adr.gueltig_ab:%d.%m.%Y}"
+        info = f"{auf_deutsch(adr.get_art_display)} ab {adr.gueltig_ab:%d.%m.%Y}"
         adr.delete()
         m.sync_effektive_adresse()
         log_aktion(request, "Adresse entfernt", m.display_name, info, ziel=m)
