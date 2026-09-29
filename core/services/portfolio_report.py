@@ -1,10 +1,17 @@
-"""Portfolio-Report (PDF) für das Eigentümer-Portal: Kennzahlen + Objektliste."""
+"""Portfolio-Report (PDF) für das Eigentümer-Portal: Kennzahlen + Objektliste.
+
+In der Korrespondenzsprache des Eigentümers (D11) — eine Zahlenaufstellung
+ohne Rechtstext. Auch die Objekttypen folgen ihr: Die Daten werden deshalb im
+selben Sprachblock gelesen (`generate_portfolio_report_fuer`)."""
 import io
 import datetime
 
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+from django.utils.translation import gettext
+
+from core.services.dokumentsprache import in_sprache, sprache_von
 
 
 def _chf(v):
@@ -14,7 +21,19 @@ def _chf(v):
         return '0'
 
 
+def generate_portfolio_report_fuer(eigentuemer):
+    """Daten lesen und Report erzeugen, beides in der Sprache des Eigentümers."""
+    from core.views.portal import _portfolio_daten
+    with in_sprache(sprache_von(eigentuemer)):
+        return _report(eigentuemer, _portfolio_daten(eigentuemer))
+
+
 def generate_portfolio_report(eigentuemer, daten):
+    with in_sprache(sprache_von(eigentuemer)):
+        return _report(eigentuemer, daten)
+
+
+def _report(eigentuemer, daten):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
@@ -27,23 +46,23 @@ def generate_portfolio_report(eigentuemer, daten):
         c.setFont("Helvetica-Bold", 16)
         c.drawString(20 * mm, h - 18 * mm, titel)
         c.setFont("Helvetica", 9)
-        c.drawString(20 * mm, h - 24 * mm, f"{eigentuemer.firma_oder_name} · Stand {heute}")
+        c.drawString(20 * mm, h - 24 * mm, gettext('%(name)s · Stand %(datum)s') % {'name': eigentuemer.firma_oder_name, 'datum': heute})
         c.setFillColorRGB(0, 0, 0)
 
-    kopf("Portfolio-Report")
+    kopf(gettext('Portfolio-Report'))
     y = h - 42 * mm
 
     # KPI-Block
     kpis = [
-        ("Liegenschaften", str(len(daten['liegenschaften']))),
-        ("Einheiten", str(daten['total_einheiten'])),
-        ("Vermietet", f"{daten['total_vermietet']}/{daten['total_einheiten']}"),
-        ("Leerstand", f"{daten['leerquote']:.1f}%"),
-        ("Ist-Miete/Mt.", f"CHF {_chf(daten['total_soll'])}"),
-        ("Jahres-Ist", f"CHF {_chf(daten['jahres_soll'])}"),
+        (gettext("Liegenschaften"), str(len(daten['liegenschaften']))),
+        (gettext("Einheiten"), str(daten['total_einheiten'])),
+        (gettext("Vermietet"), f"{daten['total_vermietet']}/{daten['total_einheiten']}"),
+        (gettext("Leerstand"), f"{daten['leerquote']:.1f}%"),
+        (gettext("Ist-Miete/Mt."), f"CHF {_chf(daten['total_soll'])}"),
+        (gettext("Jahres-Ist"), f"CHF {_chf(daten['jahres_soll'])}"),
     ]
     if daten.get('bruttorendite') is not None:
-        kpis.append(("Bruttorendite*", f"{daten['bruttorendite']:.2f}%"))
+        kpis.append((gettext("Bruttorendite") + "*", f"{daten['bruttorendite']:.2f}%"))
     col_w = (w - 40 * mm) / 3
     for i, (label, wert) in enumerate(kpis):
         cx = 20 * mm + (i % 3) * col_w
@@ -61,20 +80,20 @@ def generate_portfolio_report(eigentuemer, daten):
     c.setFillColorRGB(0, 0, 0)
     for lg in daten['liegenschaften']:
         if y < 45 * mm:
-            c.showPage(); kopf("Portfolio-Report (Forts.)"); y = h - 42 * mm
+            c.showPage(); kopf(gettext('Portfolio-Report (Forts.)')); y = h - 42 * mm
         c.setFont("Helvetica-Bold", 11)
         c.drawString(20 * mm, y, lg['adresse'])
         c.setFont("Helvetica", 9); c.setFillColorRGB(0.3, 0.5, 0.3)
-        rendite = f" · Rendite {lg['rendite']:.2f}%" if lg.get('rendite') is not None else ""
-        c.drawRightString(w - 20 * mm, y, f"CHF {_chf(lg['soll_monat'])}/Mt.{rendite}")
+        rendite = (' · ' + gettext('Rendite %(prozent)s%%') % {'prozent': f"{lg['rendite']:.2f}"}) if lg.get('rendite') is not None else ""
+        c.drawRightString(w - 20 * mm, y, gettext('CHF %(betrag)s/Mt.') % {'betrag': _chf(lg['soll_monat'])} + rendite)
         c.setFillColorRGB(0, 0, 0)
         y -= 6 * mm
         c.setFont("Helvetica", 8.5)
         for e in lg['einheiten']:
             if y < 25 * mm:
-                c.showPage(); kopf("Portfolio-Report (Forts.)"); y = h - 42 * mm
+                c.showPage(); kopf(gettext('Portfolio-Report (Forts.)')); y = h - 42 * mm
                 c.setFont("Helvetica", 8.5)
-            mieter = e['mieter'] or 'LEERSTAND'
+            mieter = e['mieter'] or gettext('LEERSTAND')
             zeile = f"  {e['bezeichnung']} · {e['typ']}"
             c.drawString(22 * mm, y, zeile[:60])
             c.drawString(105 * mm, y, mieter[:32])
@@ -82,7 +101,7 @@ def generate_portfolio_report(eigentuemer, daten):
                 c.drawRightString(w - 20 * mm, y, f"CHF {_chf(e['brutto'])}")
             else:
                 c.setFillColorRGB(0.8, 0.15, 0.15)
-                c.drawRightString(w - 20 * mm, y, "leer")
+                c.drawRightString(w - 20 * mm, y, gettext('leer'))
                 c.setFillColorRGB(0, 0, 0)
             y -= 5 * mm
         y -= 4 * mm
@@ -91,7 +110,7 @@ def generate_portfolio_report(eigentuemer, daten):
     if daten.get('bruttorendite') is not None:
         c.setFont("Helvetica-Oblique", 7); c.setFillColorRGB(0.5, 0.5, 0.5)
         c.drawString(20 * mm, 15 * mm,
-                     "* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) / Gebäudeversicherungswert (Näherung, ersetzt keine Verkehrswertschätzung).")
+                     "* " + gettext("Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) / Gebäudeversicherungswert (Näherung, ersetzt keine Verkehrswertschätzung)."))
 
     c.save(); buf.seek(0)
     return buf.read()

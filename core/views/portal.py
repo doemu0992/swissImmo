@@ -254,9 +254,8 @@ def portal_report_pdf(request):
     eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
     if eigentuemer is None:
         raise Http404
-    daten = _portfolio_daten(eigentuemer)
-    from core.services.portfolio_report import generate_portfolio_report
-    pdf = generate_portfolio_report(eigentuemer, daten)
+    from core.services.portfolio_report import generate_portfolio_report_fuer
+    pdf = generate_portfolio_report_fuer(eigentuemer)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Portfolio-Report.pdf"'
     return resp

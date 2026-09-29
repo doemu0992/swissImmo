@@ -27,6 +27,15 @@ def objekt_titel(einheit):
 
 
 def generate_expose_pdf(einheit, verwaltung=None):
+    """Das Exposé ist (noch) nur deutsch formuliert. Fest deutsch erzeugt,
+    damit der übersetzbare Objekttyp nicht in der Sprache der Sachbearbeitung
+    mitten im deutschen Text steht (siehe core.services.dokumentsprache)."""
+    from core.services.dokumentsprache import STANDARD, in_sprache
+    with in_sprache(STANDARD):
+        return _expose_pdf(einheit, verwaltung)
+
+
+def _expose_pdf(einheit, verwaltung):
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm

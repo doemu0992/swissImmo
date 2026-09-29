@@ -9,9 +9,13 @@ Stand 29.09.2026, erster Schnitt:
 - Empfänger Mieter: `Mieter.sprache` («Korrespondenzsprache», gepflegt im
   Personenformular).
 - Empfänger Eigentümer: `Eigentuemer.sprache` (Mandatsformular) — Portal-
-  Zugangsmail und Eigentümerabrechnung.
+  Zugangsmail, Eigentümerabrechnung, Portfolio-Report und die Begleitmail des
+  Report-Versands. Der Steuerauszug bleibt deutsch: Seine Begriffe (AfA,
+  Liegenschaftsrechnung) haben kantonal festgelegte Entsprechungen.
 - Die Verwaltung selbst hat bewusst kein Sprachfeld: Wer bei ihr arbeitet,
-  wählt die Sprache der Oberfläche persönlich; interne Auswertungen folgen ihr.
+  wählt die Sprache der Oberfläche persönlich; interne Auswertungen am
+  Bildschirm folgen ihr. Deren PDFs (Mieterspiegel) entstehen deutsch, solange
+  offen ist, wer bei internen Berichten der Empfänger ist.
 - Dokumente mit Rechtstext (Mietvertrag, Allgemeine Bedingungen, Hausordnung,
   Kündigungsbestätigung, Mahnung, amtliche Formulare) bleiben DEUTSCH, bis ihr
   Wortlaut juristisch geprüft übersetzt ist. Eine sinngemässe Übertragung

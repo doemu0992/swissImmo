@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 08:17+0200\n"
+"POT-Creation-Date: 2026-09-29 09:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,36 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: core/management/commands/send_eigentuemer_reports.py:76
+#: core/templates/core/mieter_portal.html:13 core/utils/email_service.py:227
+#: core/utils/email_service.py:296
+#, python-format
+msgid "Guten Tag %(name)s"
+msgstr "Bonjour %(name)s"
+
+#: core/management/commands/send_eigentuemer_reports.py:77
+#, python-format
+msgid ""
+"Im Anhang finden Sie den aktuellen Portfolio-Report sowie den Steuerauszug "
+"%(jahr)s zu Ihren Liegenschaften. Alle Details jederzeit in Ihrem Eigentümer-"
+"Portal."
+msgstr "Vous trouverez en annexe le rapport de portefeuille actuel ainsi que le relevé fiscal %(jahr)s de vos immeubles. Tous les détails sont disponibles à tout moment dans votre portail propriétaire."
+
+#: core/management/commands/send_eigentuemer_reports.py:80
+#: core/templates/core/dok_begleitbrief.html:33 core/utils/email_service.py:61
+msgid "Freundliche Grüsse"
+msgstr "Avec nos meilleures salutations"
+
+#: core/management/commands/send_eigentuemer_reports.py:81
+#: core/utils/email_service.py:353
+msgid "Ihre Liegenschaftsverwaltung"
+msgstr "Votre gérance immobilière"
+
+#: core/management/commands/send_eigentuemer_reports.py:82
+#, python-format
+msgid "Ihr Liegenschafts-Report %(jahr)s"
+msgstr "Votre rapport immobilier %(jahr)s"
 
 #: core/navigation.py:120 core/views/fw/arbeit.py:43
 #: core/views/fw/dashboard.py:364
@@ -60,7 +90,8 @@ msgstr "Dossiers"
 msgid "Mandate"
 msgstr "Mandats"
 
-#: core/navigation.py:137 core/templates/core/portal.html:251
+#: core/navigation.py:137 core/services/portfolio_report.py:57
+#: core/templates/core/portal.html:251
 #: core/templates/fw/liegenschaft_detail.html:10
 #: core/templates/fw/liegenschaft_form.html:7
 #: core/templates/fw/liegenschaften.html:4
@@ -612,12 +643,86 @@ msgstr "Versement complémentaire du propriétaire"
 msgid ""
 "Diese Abrechnung basiert auf den verbuchten Erträgen und Aufwänden der "
 "zugeordneten Liegenschaften."
-msgstr "Ce décompte repose sur les produits et charges comptabilisés des immeubles attribués."
+msgstr ""
+"Ce décompte repose sur les produits et charges comptabilisés des immeubles "
+"attribués."
 
 #: core/services/mandat_abrechnung.py:130
 #, python-format
 msgid "Auszahlung auf: %(iban)s"
 msgstr "Versement sur : %(iban)s"
+
+#: core/services/portfolio_report.py:49
+#, python-format
+msgid "%(name)s · Stand %(datum)s"
+msgstr "%(name)s · état au %(datum)s"
+
+#: core/services/portfolio_report.py:52
+msgid "Portfolio-Report"
+msgstr "Rapport de portefeuille"
+
+#: core/services/portfolio_report.py:58 faelle/akten.py:92
+msgid "Einheiten"
+msgstr "Objets"
+
+#: core/services/portfolio_report.py:59 core/templates/core/portal.html:256
+#: core/templates/fw/liegenschaft_detail.html:749
+#: core/templates/fw/objekte.html:37
+msgid "Vermietet"
+msgstr "Loués"
+
+#: core/services/portfolio_report.py:60 core/templates/core/portal.html:316
+#: core/templates/fw/liegenschaft_detail.html:750
+#: core/templates/fw/liegenschaften.html:61
+#: core/templates/fw/mieterspiegel.html:45
+#: core/templates/fw/mieterspiegel.html:80
+#: core/templates/fw/mieterspiegel_auswahl.html:37
+#: core/templates/fw/objekte.html:40 core/views/fw/detailseiten.py:141
+#: faelle/lage.py:325
+msgid "Leerstand"
+msgstr "Vacance"
+
+#: core/services/portfolio_report.py:61
+msgid "Ist-Miete/Mt."
+msgstr "Loyer effectif/mois"
+
+#: core/services/portfolio_report.py:62
+msgid "Jahres-Ist"
+msgstr "Effectif annuel"
+
+#: core/services/portfolio_report.py:65
+#: core/templates/fw/liegenschaft_detail.html:487
+msgid "Bruttorendite"
+msgstr "Rendement brut"
+
+#: core/services/portfolio_report.py:83 core/services/portfolio_report.py:94
+msgid "Portfolio-Report (Forts.)"
+msgstr "Rapport de portefeuille (suite)"
+
+#: core/services/portfolio_report.py:87
+#, python-format
+msgid "Rendite %(prozent)s%%"
+msgstr "Rendement %(prozent)s%%"
+
+#: core/services/portfolio_report.py:88
+#, python-format
+msgid "CHF %(betrag)s/Mt."
+msgstr "CHF %(betrag)s/mois"
+
+#: core/services/portfolio_report.py:96
+msgid "LEERSTAND"
+msgstr "VACANT"
+
+#: core/services/portfolio_report.py:104
+#: core/templates/fw/objekt_detail.html:84
+msgid "leer"
+msgstr "vacant"
+
+#: core/services/portfolio_report.py:113
+msgid ""
+"Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) / "
+"Gebäudeversicherungswert (Näherung, ersetzt keine Verkehrswertschätzung)."
+msgstr "Rendement brut = revenu locatif annuel actuel (effectif, sans vacance) / valeur d'assurance du bâtiment (approximation, ne remplace pas une estimation de la valeur vénale)."
 
 #: core/services/unterschrift.py:145
 msgid ""
@@ -858,10 +963,6 @@ msgstr ""
 "Sont joints au contrat les conditions générales, le règlement de maison "
 "ainsi que la notice « Aérer et entretenir correctement ». Nous restons "
 "volontiers à votre disposition pour toute question."
-
-#: core/templates/core/dok_begleitbrief.html:33 core/utils/email_service.py:61
-msgid "Freundliche Grüsse"
-msgstr "Avec nos meilleures salutations"
 
 #: core/templates/core/dok_begleitbrief.html:37
 msgid "Beilagen:"
@@ -1439,12 +1540,6 @@ msgstr "Portail locataires — SwissImmo"
 msgid "Mieterportal"
 msgstr "Portail locataires"
 
-#: core/templates/core/mieter_portal.html:13 core/utils/email_service.py:227
-#: core/utils/email_service.py:296
-#, python-format
-msgid "Guten Tag %(name)s"
-msgstr "Bonjour %(name)s"
-
 #: core/templates/core/mieter_portal.html:14
 msgid "Willkommen in Ihrem persönlichen Mieterportal."
 msgstr "Bienvenue dans votre portail locataires personnel."
@@ -1869,12 +1964,6 @@ msgid_plural "%(n)s Einheiten gesamt"
 msgstr[0] "%(n)s objet au total"
 msgstr[1] "%(n)s objets au total"
 
-#: core/templates/core/portal.html:256
-#: core/templates/fw/liegenschaft_detail.html:749
-#: core/templates/fw/objekte.html:37
-msgid "Vermietet"
-msgstr "Loués"
-
 #: core/templates/core/portal.html:258 core/templates/core/portal.html:298
 #: core/templates/fw/dashboard.html:346 core/templates/fw/dashboard.html:349
 #: core/templates/fw/mandat_detail.html:207 core/templates/fw/objekte.html:72
@@ -1959,17 +2048,6 @@ msgstr "Loyer brut"
 #, python-format
 msgid "%(n)s Zi."
 msgstr "%(n)s p."
-
-#: core/templates/core/portal.html:316
-#: core/templates/fw/liegenschaft_detail.html:750
-#: core/templates/fw/liegenschaften.html:61
-#: core/templates/fw/mieterspiegel.html:45
-#: core/templates/fw/mieterspiegel.html:80
-#: core/templates/fw/mieterspiegel_auswahl.html:37
-#: core/templates/fw/objekte.html:40 core/views/fw/detailseiten.py:141
-#: faelle/lage.py:325
-msgid "Leerstand"
-msgstr "Vacance"
 
 #: core/templates/core/portal.html:320 core/templates/fw/mieterspiegel.html:89
 msgid "Keine Einheiten erfasst."
@@ -4196,8 +4274,8 @@ msgstr "Veuillez d'abord sélectionner des paiements."
 #: core/templates/fw/liegenschaften.html:60
 #: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:47
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:147
-#: core/views/fw/listen.py:208 core/views/fw/listen.py:1106
-#: core/views/fw/listen.py:1176 core/views/fw/listen.py:1289
+#: core/views/fw/listen.py:208 core/views/fw/listen.py:1112
+#: core/views/fw/listen.py:1182 core/views/fw/listen.py:1295
 #: core/views/fw/schaeden.py:407
 msgid "Alle"
 msgstr "Tous"
@@ -4540,7 +4618,7 @@ msgstr "Modifier %(name)s"
 #: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_form.html:8 core/templates/fw/objekt_form.html:12
 #: core/templates/fw/vertrag_detail.html:525
-#: core/templates/fw/vorlage_form.html:8 core/views/portal.py:749
+#: core/templates/fw/vorlage_form.html:8 core/views/portal.py:748
 msgid "Neu"
 msgstr "Nouveau"
 
@@ -4902,7 +4980,8 @@ msgstr "%(n)s enfant(s)"
 msgid "nein"
 msgstr "non"
 
-#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1107
+#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1113
+#: portfolio/models.py:160
 msgid "Parkplatz"
 msgstr "Place de parc"
 
@@ -6699,7 +6778,7 @@ msgid "Frist %(d)s"
 msgstr "Délai %(d)s"
 
 #: core/templates/fw/fall_detail.html:183 core/templates/fw/pendenzen.html:85
-#: core/templates/fw/termine.html:51 core/views/portal.py:753
+#: core/templates/fw/termine.html:51 core/views/portal.py:752
 msgid "Erledigt"
 msgstr "Terminé"
 
@@ -8673,10 +8752,6 @@ msgstr "Loyer net théorique / an"
 msgid "aus den aktiven Verträgen hochgerechnet"
 msgstr "extrapolé à partir des contrats actifs"
 
-#: core/templates/fw/liegenschaft_detail.html:487
-msgid "Bruttorendite"
-msgstr "Rendement brut"
-
 #: core/templates/fw/liegenschaft_detail.html:489
 msgid "Sollmiete ÷ Wert"
 msgstr "Loyer théorique ÷ valeur"
@@ -10580,10 +10655,6 @@ msgstr "Vers l'immeuble"
 #: core/templates/fw/objekt_detail.html:84
 msgid "vermietet"
 msgstr "loué"
-
-#: core/templates/fw/objekt_detail.html:84
-msgid "leer"
-msgstr "vacant"
 
 #: core/templates/fw/objekt_detail.html:85
 #: core/templates/fw/objekt_detail.html:124
@@ -14913,7 +14984,11 @@ msgid ""
 "Für Sie wurde ein persönlicher Zugang zum Eigentümer-Portal eingerichtet. "
 "Dort sehen Sie jederzeit den Stand Ihrer Liegenschaften: Rendite-Cockpit, "
 "offene Reparatur-Freigaben, Portfolio-Report und Steuerauszug."
-msgstr "Un accès personnel au portail propriétaire a été créé pour vous. Vous y voyez à tout moment l'état de vos immeubles : cockpit de rendement, validations de réparations en attente, rapport de portefeuille et relevé fiscal."
+msgstr ""
+"Un accès personnel au portail propriétaire a été créé pour vous. Vous y "
+"voyez à tout moment l'état de vos immeubles : cockpit de rendement, "
+"validations de réparations en attente, rapport de portefeuille et relevé "
+"fiscal."
 
 #: core/utils/email_service.py:346
 #, python-format
@@ -14958,10 +15033,6 @@ msgstr ""
 #: core/utils/email_service.py:352
 msgid "Freundliche Grüsse,"
 msgstr "Avec nos meilleures salutations,"
-
-#: core/utils/email_service.py:353
-msgid "Ihre Liegenschaftsverwaltung"
-msgstr "Votre gérance immobilière"
 
 #: core/views/docuseal.py:73
 msgid "API-Key fehlt in settings.py"
@@ -17122,37 +17193,37 @@ msgstr "Réparations (entretien)"
 msgid "Nettoergebnis"
 msgstr "Résultat net"
 
-#: core/views/fw/listen.py:1106
+#: core/views/fw/listen.py:1112
 msgid "Wohnen"
 msgstr "Habitation"
 
-#: core/views/fw/listen.py:1107
+#: core/views/fw/listen.py:1113 portfolio/models.py:158
 msgid "Gewerbe"
 msgstr "Commercial"
 
-#: core/views/fw/listen.py:1108
+#: core/views/fw/listen.py:1114
 msgid "Alle Zustände"
 msgstr "Tous les états"
 
-#: core/views/fw/listen.py:1109
+#: core/views/fw/listen.py:1115
 #, python-format
 msgid "Mit Befund (%(n)s)"
 msgstr "Avec constat (%(n)s)"
 
-#: core/views/fw/listen.py:1110
+#: core/views/fw/listen.py:1116
 #, python-format
 msgid "Leerstand (%(n)s)"
 msgstr "Vacance (%(n)s)"
 
-#: core/views/fw/listen.py:1289
+#: core/views/fw/listen.py:1295
 msgid "Privatpersonen"
 msgstr "Particuliers"
 
-#: core/views/fw/listen.py:1289
+#: core/views/fw/listen.py:1295
 msgid "Firmen"
 msgstr "Entreprises"
 
-#: core/views/fw/listen.py:1290
+#: core/views/fw/listen.py:1296
 msgid "Vereine"
 msgstr "Associations"
 
@@ -17997,11 +18068,11 @@ msgstr ""
 "Contrat mis à jour (contrat actif — seuls les champs de détail ont été "
 "modifiés)."
 
-#: core/views/portal.py:511
+#: core/views/portal.py:510
 msgid "Kein gültiges Mietobjekt gewählt."
 msgstr "Aucun objet loué valable choisi."
 
-#: core/views/portal.py:531
+#: core/views/portal.py:530
 #, python-format
 msgid ""
 "Ihre Kündigung wurde erfasst (Termin: %(strftime)s). Laden Sie den "
@@ -18012,15 +18083,15 @@ msgstr ""
 "lettre de résiliation et envoyez-la par courrier recommandé. La gérance a "
 "été informée et confirmera la réception."
 
-#: core/views/portal.py:674
+#: core/views/portal.py:673
 msgid "Bitte Titel und Beschreibung angeben."
 msgstr "Merci d’indiquer un titre et une description."
 
-#: core/views/portal.py:682
+#: core/views/portal.py:681
 msgid "Kein aktives Mietobjekt gefunden."
 msgstr "Aucun objet loué actif trouvé."
 
-#: core/views/portal.py:709
+#: core/views/portal.py:708
 msgid ""
 "Ihre Schadenmeldung wurde übermittelt. Sie erhalten eine Bestätigung per E-"
 "Mail; die Verwaltung kümmert sich darum."
@@ -18028,31 +18099,31 @@ msgstr ""
 "Votre avis de dommage a été transmis. Vous recevrez une confirmation par e-"
 "mail ; la gérance s'en occupe."
 
-#: core/views/portal.py:750
+#: core/views/portal.py:749
 msgid "In Bearbeitung"
 msgstr "En cours de traitement"
 
-#: core/views/portal.py:751
+#: core/views/portal.py:750
 msgid "Warte auf Sie"
 msgstr "En attente de votre part"
 
-#: core/views/portal.py:752
+#: core/views/portal.py:751
 msgid "Handwerker beauftragt"
 msgstr "Artisan mandaté"
 
-#: core/views/portal.py:824
+#: core/views/portal.py:823
 msgid "Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich."
 msgstr "Votre message a été transmis. La gérance vous répondra."
 
-#: core/views/portal.py:905
+#: core/views/portal.py:904
 msgid "Ihre Angaben wurden aktualisiert und der Verwaltung gemeldet."
 msgstr "Vos données ont été mises à jour et communiquées à la gérance."
 
-#: core/views/portal.py:907
+#: core/views/portal.py:906
 msgid "Keine Änderungen erkannt."
 msgstr "Aucune modification détectée."
 
-#: core/views/portal.py:928
+#: core/views/portal.py:927
 msgid "Passwort geändert."
 msgstr "Mot de passe modifié."
 
@@ -18138,10 +18209,6 @@ msgstr "Erreur : %(err)s"
 #: faelle/akten.py:46
 msgid "Chronik"
 msgstr "Chronique"
-
-#: faelle/akten.py:92
-msgid "Einheiten"
-msgstr "Objets"
 
 #: faelle/akten.py:126
 msgid "Rollen"
@@ -18438,6 +18505,22 @@ msgstr "RegBL : %(cnt)s unités créées."
 #, python-format
 msgid "GWR Fehler: %(e)s"
 msgstr "Erreur RegBL : %(e)s"
+
+#: portfolio/models.py:157
+msgid "Wohnung"
+msgstr "Appartement"
+
+#: portfolio/models.py:159
+msgid "STWEG-Einheit"
+msgstr "Lot PPE"
+
+#: portfolio/models.py:161
+msgid "Garage"
+msgstr "Garage"
+
+#: portfolio/models.py:162
+msgid "Bastelraum"
+msgstr "Local de bricolage"
 
 #: rentals/admin.py:254
 msgid "Vertrag archiviert."
