@@ -460,6 +460,51 @@ class KatalogTests(SimpleTestCase):
                     f'damit NICHT: {fuzzy[:4]}. Uebersetzung pruefen, dann die '
                     'Marke entfernen.')
 
+    def test_jeder_ausgezeichnete_text_steht_im_katalog(self):
+        """Die vierte stille Lücke: ausgezeichnet, aber nie extrahiert.
+
+        `test_kein_eintrag_ist_unuebersetzt` prüft nur, was IN der `.po`
+        steht. Wer ein neues `{% trans %}` oder `_('…')` schreibt und
+        `makemessages` nicht laufen lässt, hat einen Text, den kein Katalog
+        kennt — er bleibt in jeder Sprache deutsch, und alle Tests hier sind
+        grün. So geschehen mit der Liegenschaftsliste (Audit Etappe 4, #52):
+        Suche, Sortierung, Blätterleiste und CSV-Spalten, zwölf Texte.
+
+        Geprüft werden die einfachen Formen mit einem Literal — `{% trans "…" %}`
+        ohne `context` in den Vorlagen, `_('…')`/`gettext(_lazy)('…')` im Code.
+        Nachgeschlagen wird im gebauten französischen `.mo`. Ein `%` in einer
+        Vorlage legt makemessages als `%%` ab.
+
+        Gegenprobe: in `core/templates/fw/liegenschaften.html` den Text
+        `{% trans "Sortieren" %}` in `{% trans "Sortieren nach" %}` ändern —
+        der Test wird rot.
+        """
+        with (LOCALE / 'fr' / 'LC_MESSAGES' / 'django.mo').open('rb') as f:
+            katalog = gettext_modul.GNUTranslations(f)._catalog
+        vorlage = re.compile(r"""{%\s*(?:trans|translate)\s+(?:"([^"]*)"|'([^']*)')(?![^%]*\bcontext\b)[^%]*%}""")
+        code = re.compile(r"""\b(?:_|gettext|gettext_lazy)\(\s*(?:'([^'\\\n]*)'|"([^"\\\n]*)")\s*\)""")
+        fehlend = []
+        for pfad in sorted((WURZEL / 'core' / 'templates').rglob('*.html')):
+            text = pfad.read_text(encoding='utf-8')
+            for m in vorlage.finditer(text):
+                s = m.group(1) if m.group(1) is not None else m.group(2)
+                if s and s not in katalog and s.replace('%', '%%') not in katalog:
+                    fehlend.append(f'{pfad.relative_to(WURZEL)}: {s}')
+        for app in ('core', 'crm', 'portfolio', 'rentals', 'finance', 'tickets',
+                    'faelle', 'mietprozess', 'benutzer'):
+            for pfad in sorted((WURZEL / app).rglob('*.py')):
+                if {'tests', 'migrations'} & set(pfad.parts):
+                    continue
+                for m in code.finditer(pfad.read_text(encoding='utf-8')):
+                    s = m.group(1) if m.group(1) is not None else m.group(2)
+                    if s and s not in katalog:
+                        fehlend.append(f'{pfad.relative_to(WURZEL)}: {s}')
+        self.assertEqual(
+            fehlend, [],
+            f'{len(fehlend)} ausgezeichnete Texte stehen in keinem Katalog: '
+            f'{fehlend[:5]}. `makemessages` laufen lassen (siehe Kopf dieser '
+            'Datei), übersetzen, `compilemessages`.')
+
     def test_das_mo_ist_gebaut_und_aktuell(self):
         """Der gefaehrlichste stille Fehler bekommt einen lauten Test.
 

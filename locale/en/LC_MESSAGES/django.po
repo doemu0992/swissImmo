@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 13:03+0200\n"
+"POT-Creation-Date: 2026-09-29 14:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -118,12 +118,12 @@ msgid "Vertrag"
 msgstr "Lease"
 
 #: core/models.py:395 core/navigation.py:166 core/templates/fw/finanzen.html:4
-#: core/views/fw/listen.py:749 faelle/akten.py:48
+#: core/views/fw/listen.py:808 faelle/akten.py:48
 msgid "Finanzen"
 msgstr "Finance"
 
 #: core/models.py:396 core/templates/fw/liegenschaft_detail.html:442
-#: core/templates/fw/liegenschaften.html:64
+#: core/templates/fw/liegenschaften.html:65
 msgid "Unterhalt"
 msgstr "Maintenance"
 
@@ -148,7 +148,7 @@ msgid "Pendenzen"
 msgstr "Pending items"
 
 #: core/navigation.py:124 core/templates/fw/liegenschaft_detail.html:636
-#: core/templates/fw/liegenschaften.html:62
+#: core/templates/fw/liegenschaften.html:63
 #: core/templates/fw/vertrag_detail.html:592
 msgid "Fristen"
 msgstr "Deadlines"
@@ -176,7 +176,7 @@ msgstr "Mandates"
 #: core/templates/fw/liegenschaft_form.html:7
 #: core/templates/fw/liegenschaften.html:4
 #: core/templates/fw/liegenschaften.html:10
-#: core/templates/fw/liegenschaften.html:38
+#: core/templates/fw/liegenschaften.html:39
 #: core/templates/fw/mandat_abrechnung.html:53
 #: core/templates/fw/mandat_detail.html:149 core/templates/fw/suche.html:37
 #: faelle/akten.py:85
@@ -184,10 +184,11 @@ msgid "Liegenschaften"
 msgstr "Properties"
 
 #: core/navigation.py:138 core/templates/fw/liegenschaft_detail.html:742
-#: core/templates/fw/liegenschaften.html:43
+#: core/templates/fw/liegenschaften.html:44
 #: core/templates/fw/objekt_detail.html:11 core/templates/fw/objekt_form.html:8
 #: core/templates/fw/objekte.html:4 core/templates/fw/objekte.html:23
 #: core/templates/fw/objekte.html:34 core/templates/fw/suche.html:53
+#: core/views/fw/listen.py:754
 msgid "Objekte"
 msgstr "Units"
 
@@ -298,7 +299,7 @@ msgstr "VAT"
 
 #: core/navigation.py:167 core/templates/fw/finanzen.html:135
 #: core/templates/fw/mieterkonten.html:4 core/templates/fw/mieterkonten.html:8
-#: core/templates/fw/mieterkonto.html:7 core/views/fw/listen.py:762
+#: core/templates/fw/mieterkonto.html:7 core/views/fw/listen.py:821
 msgid "Mieterkonten"
 msgstr "Tenant accounts"
 
@@ -330,7 +331,7 @@ msgstr "Payables"
 #: core/templates/fw/finanzen.html:136
 #: core/templates/fw/lieferantenkonten.html:4
 #: core/templates/fw/lieferantenkonten.html:8
-#: core/templates/fw/lieferantenkonto.html:7 core/views/fw/listen.py:765
+#: core/templates/fw/lieferantenkonto.html:7 core/views/fw/listen.py:824
 msgid "Lieferantenkonten"
 msgstr "Supplier accounts"
 
@@ -748,7 +749,7 @@ msgstr "Let"
 
 #: core/services/portfolio_report.py:60 core/templates/core/portal.html:316
 #: core/templates/fw/liegenschaft_detail.html:753
-#: core/templates/fw/liegenschaften.html:61
+#: core/templates/fw/liegenschaften.html:62
 #: core/templates/fw/mieterspiegel.html:45
 #: core/templates/fw/mieterspiegel.html:80
 #: core/templates/fw/mieterspiegel_auswahl.html:37
@@ -1247,6 +1248,7 @@ msgstr "Floor"
 #: core/templates/fw/person_detail.html:154
 #: core/templates/fw/person_detail.html:285
 #: core/templates/fw/person_form.html:300 core/templates/fw/personen.html:68
+#: core/views/fw/listen.py:738
 msgid "Adresse"
 msgstr "Address"
 
@@ -1687,8 +1689,8 @@ msgstr ""
 
 #: core/templates/core/mieter_portal.html:65
 #: core/templates/core/portal.html:299 core/templates/fw/dashboard.html:348
-#: core/views/fw/detailseiten.py:2272 core/views/fw/listen.py:764
-#: core/views/fw/listen.py:767 core/views/fw/person.py:899
+#: core/views/fw/detailseiten.py:2272 core/views/fw/listen.py:823
+#: core/views/fw/listen.py:826 core/views/fw/person.py:899
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s outstanding"
@@ -2095,7 +2097,7 @@ msgstr "Actual rent / year"
 msgid "Ausstände offen"
 msgstr "Open arrears"
 
-#: core/templates/core/portal.html:277 core/views/fw/listen.py:761
+#: core/templates/core/portal.html:277 core/views/fw/listen.py:820
 #, python-format
 msgid "CHF %(betrag)s überfällig"
 msgstr "CHF %(betrag)s overdue"
@@ -3105,7 +3107,7 @@ msgstr "no date — avg. age not calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:611
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:612
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -3180,6 +3182,30 @@ msgstr "Discard entries and close?"
 #: core/templates/fw/_modal_done.html:13
 msgid "Fenster wird geschlossen …"
 msgstr "Closing window …"
+
+#: core/templates/fw/_seiten.html:11 core/templates/fw/base.html:407
+msgid "Seiten"
+msgstr "Pages"
+
+#: core/templates/fw/_seiten.html:12
+#, python-format
+msgid "%(von)s–%(bis)s von %(n)s"
+msgstr "%(von)s–%(bis)s of %(n)s"
+
+#: core/templates/fw/_seiten.html:14 core/templates/fw/buchhaltung.html:438
+#: core/templates/fw/debitoren.html:268 core/templates/fw/kreditoren.html:395
+msgid "‹ Zurück"
+msgstr "‹ Back"
+
+#: core/templates/fw/_seiten.html:15
+#, python-format
+msgid "Seite %(s)s von %(n)s"
+msgstr "Page %(s)s of %(n)s"
+
+#: core/templates/fw/_seiten.html:16 core/templates/fw/buchhaltung.html:442
+#: core/templates/fw/debitoren.html:269 core/templates/fw/kreditoren.html:399
+msgid "Weiter ›"
+msgstr "Next ›"
 
 #: core/templates/fw/_unterschrift_feld.html:11
 msgid "Digitale Unterschrift"
@@ -3880,7 +3906,7 @@ msgstr "Street &amp; no."
 #: core/templates/fw/person_detail.html:278
 #: core/templates/fw/person_form.html:144
 #: core/templates/fw/person_form.html:162 core/templates/fw/vertrag_neu.html:91
-#: core/templates/fw/vertrag_neu.html:121
+#: core/templates/fw/vertrag_neu.html:121 core/views/fw/listen.py:753
 msgid "PLZ"
 msgstr "Postcode"
 
@@ -3891,6 +3917,7 @@ msgstr "Postcode"
 #: core/templates/fw/person_form.html:146
 #: core/templates/fw/person_form.html:164 core/templates/fw/termine.html:33
 #: core/templates/fw/vertrag_neu.html:92 core/templates/fw/vertrag_neu.html:122
+#: core/views/fw/listen.py:740 core/views/fw/listen.py:753
 msgid "Ort"
 msgstr "Location"
 
@@ -4412,12 +4439,12 @@ msgstr "Please select payments first."
 #: core/templates/fw/buchhaltung.html:26 core/templates/fw/dashboard.html:72
 #: core/templates/fw/dashboard.html:82 core/templates/fw/dashboard.html:183
 #: core/templates/fw/fristen.html:8 core/templates/fw/kontoblatt.html:21
-#: core/templates/fw/liegenschaften.html:60
+#: core/templates/fw/liegenschaften.html:61
 #: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:47
 #: core/views/fw/dienstleister.py:60 core/views/fw/dokumente.py:98
-#: core/views/fw/kreditoren.py:198 core/views/fw/listen.py:208
-#: core/views/fw/listen.py:1112 core/views/fw/listen.py:1182
-#: core/views/fw/listen.py:1295 core/views/fw/schaeden.py:129
+#: core/views/fw/kreditoren.py:198 core/views/fw/listen.py:211
+#: core/views/fw/listen.py:1171 core/views/fw/listen.py:1241
+#: core/views/fw/listen.py:1354 core/views/fw/schaeden.py:129
 #: core/views/fw/schaeden.py:408
 msgid "Alle"
 msgstr "All"
@@ -4488,7 +4515,7 @@ msgstr "Match open items"
 #: core/templates/fw/bankabgleich.html:346
 #: core/templates/fw/kreditoren.html:169
 #: core/templates/fw/person_detail.html:439 core/templates/fw/zahllauf.html:67
-#: core/views/fw/listen.py:57
+#: core/views/fw/listen.py:60
 msgid "Fällig"
 msgstr "Due"
 
@@ -4673,10 +4700,6 @@ msgstr "open"
 #: core/templates/fw/base.html:314
 msgid "Tippen sucht in Akten und Seiten"
 msgstr "Typing searches files and pages"
-
-#: core/templates/fw/base.html:407
-msgid "Seiten"
-msgstr "Pages"
 
 #: core/templates/fw/base.html:414
 msgid "Nichts gefunden — ↵ sucht ausführlich nach"
@@ -5119,7 +5142,7 @@ msgstr "%(n)s child(ren)"
 msgid "nein"
 msgstr "no"
 
-#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1113
+#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1172
 #: portfolio/models.py:160
 msgid "Parkplatz"
 msgstr "Parking"
@@ -5442,7 +5465,8 @@ msgid "Filtern"
 msgstr "Filter"
 
 #: core/templates/fw/buchhaltung.html:302 core/templates/fw/dashboard.html:40
-#: core/templates/fw/dashboard.html:89 core/templates/fw/liegenschaften.html:97
+#: core/templates/fw/dashboard.html:89
+#: core/templates/fw/liegenschaften.html:111
 msgid "Filter aufheben"
 msgstr "Clear filter"
 
@@ -5548,16 +5572,6 @@ msgid ""
 msgstr ""
 "Reversing creates an auditable reversing entry — the original entry is kept "
 "(CO 958f)"
-
-#: core/templates/fw/buchhaltung.html:438 core/templates/fw/debitoren.html:268
-#: core/templates/fw/kreditoren.html:395
-msgid "‹ Zurück"
-msgstr "‹ Back"
-
-#: core/templates/fw/buchhaltung.html:442 core/templates/fw/debitoren.html:269
-#: core/templates/fw/kreditoren.html:399
-msgid "Weiter ›"
-msgstr "Next ›"
 
 #: core/templates/fw/dashboard.html:37
 #, python-format
@@ -5708,7 +5722,7 @@ msgid "Stand heute"
 msgstr "As of today"
 
 #: core/templates/fw/dashboard.html:346
-#: core/templates/fw/liegenschaften.html:85 faelle/lage.py:335
+#: core/templates/fw/liegenschaften.html:98 faelle/lage.py:335
 #, python-format
 msgid "%(n)s Objekt"
 msgid_plural "%(n)s Objekte"
@@ -5716,7 +5730,7 @@ msgstr[0] "%(n)s unit"
 msgstr[1] "%(n)s units"
 
 #: core/templates/fw/dashboard.html:350
-#: core/templates/fw/liegenschaften.html:90 faelle/lage.py:397
+#: core/templates/fw/liegenschaften.html:103 faelle/lage.py:397
 msgid "ohne Befund"
 msgstr "nothing of note"
 
@@ -5943,7 +5957,7 @@ msgid "Mahnstufen werden aus der Fälligkeit berechnet"
 msgstr "Dunning levels are calculated from the due date"
 
 #: core/templates/fw/debitoren_aging.html:4
-#: core/templates/fw/debitoren_aging.html:13 core/views/fw/listen.py:759
+#: core/templates/fw/debitoren_aging.html:13 core/views/fw/listen.py:818
 msgid "Debitoren-Altersstruktur"
 msgstr "Debtor ageing"
 
@@ -6909,7 +6923,7 @@ msgstr "Done"
 msgid "Für diesen Fall sind keine Schritte angelegt."
 msgstr "No steps are set up for this case."
 
-#: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:755
+#: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:814
 msgid "Finanz-Cockpit"
 msgstr "Finance cockpit"
 
@@ -8461,7 +8475,7 @@ msgstr "EGID"
 #: core/templates/fw/mieterspiegel.html:7
 #: core/templates/fw/mieterspiegel.html:14
 #: core/templates/fw/mieterspiegel_auswahl.html:4
-#: core/templates/fw/mieterspiegel_auswahl.html:8 core/views/fw/listen.py:770
+#: core/templates/fw/mieterspiegel_auswahl.html:8 core/views/fw/listen.py:829
 msgid "Mieterspiegel"
 msgstr "Rent roll"
 
@@ -8573,6 +8587,7 @@ msgstr "Ownership &amp; registers"
 #: core/templates/fw/liegenschaft_detail.html:194
 #: core/templates/fw/liegenschaft_form.html:115
 #: core/templates/fw/mandat_form.html:21 core/templates/fw/mandate.html:16
+#: core/views/fw/listen.py:753
 msgid "Eigentümer"
 msgstr "Owner"
 
@@ -9214,7 +9229,7 @@ msgid "Strasse & Nr."
 msgstr "Street & no."
 
 #: core/templates/fw/liegenschaft_form.html:40
-#: core/templates/fw/regelsatz_form.html:24
+#: core/templates/fw/regelsatz_form.html:24 core/views/fw/listen.py:753
 msgid "Kanton"
 msgstr "Canton"
 
@@ -9374,57 +9389,96 @@ msgstr "Add property"
 msgid "Mieterspiegel (Rent Roll)"
 msgstr "Rent roll"
 
-#: core/templates/fw/liegenschaften.html:40
+#: core/templates/fw/liegenschaften.html:19
+msgid "Liste als CSV (Excel)"
+msgstr "List as CSV (Excel)"
+
+#: core/templates/fw/liegenschaften.html:41
 #, python-format
 msgid "%(n)s mit Befund"
 msgstr "%(n)s with findings"
 
-#: core/templates/fw/liegenschaften.html:45
+#: core/templates/fw/liegenschaften.html:46
 msgid "Wohnungen, Gewerbe, Nebenobjekte"
 msgstr "Flats, commercial, ancillary units"
 
-#: core/templates/fw/liegenschaften.html:48
+#: core/templates/fw/liegenschaften.html:49 core/views/fw/listen.py:754
 msgid "Leer"
 msgstr "Vacant"
 
-#: core/templates/fw/liegenschaften.html:50
+#: core/templates/fw/liegenschaften.html:51
 #, python-format
 msgid "%(q)s %% des Bestands"
 msgstr "%(q)s %% of the portfolio"
 
-#: core/templates/fw/liegenschaften.html:53
+#: core/templates/fw/liegenschaften.html:54 core/views/fw/listen.py:744
 msgid "Ist-Miete"
 msgstr "Actual rent"
 
-#: core/templates/fw/liegenschaften.html:55
+#: core/templates/fw/liegenschaften.html:56
 msgid "pro Monat, laufende Verträge"
 msgstr "per month, current leases"
 
-#: core/templates/fw/liegenschaften.html:63
+#: core/templates/fw/liegenschaften.html:64
 msgid "Tickets"
 msgstr "Tickets"
 
-#: core/templates/fw/liegenschaften.html:65
+#: core/templates/fw/liegenschaften.html:66
 msgid "Ohne Befund"
 msgstr "No findings"
 
-#: core/templates/fw/liegenschaften.html:72
+#: core/templates/fw/liegenschaften.html:78
+msgid "Liegenschaften durchsuchen"
+msgstr "Search properties"
+
+#: core/templates/fw/liegenschaften.html:79
 msgid "Liegenschaft suchen (Strasse, Ort, PLZ) …"
 msgstr "Search property (street, town, postcode) …"
 
-#: core/templates/fw/liegenschaften.html:92
+#: core/templates/fw/liegenschaften.html:81
+msgid "Sortieren"
+msgstr "Sort"
+
+#: core/templates/fw/liegenschaften.html:86
+msgid "Anwenden"
+msgstr "Apply"
+
+#: core/templates/fw/liegenschaften.html:87
+#: core/templates/fw/liegenschaften.html:116
+#: core/templates/fw/mieterkonten.html:37
+msgid "Suche aufheben"
+msgstr "Clear search"
+
+#: core/templates/fw/liegenschaften.html:105
 msgid "Ist / Mt."
 msgstr "Actual / mo."
 
-#: core/templates/fw/liegenschaften.html:96
+#: core/templates/fw/liegenschaften.html:110
 msgid "Sortiert nach Befund, nicht nach Adresse."
 msgstr "Sorted by findings, not by address."
 
-#: core/templates/fw/liegenschaften.html:102
+#: core/templates/fw/liegenschaften.html:110 core/views/fw/akten_neu.py:67
+#, python-format
+msgid "%(n)s Liegenschaft"
+msgid_plural "%(n)s Liegenschaften"
+msgstr[0] "%(n)s property"
+msgstr[1] "%(n)s properties"
+
+#: core/templates/fw/liegenschaften.html:116
+msgid "Keine Liegenschaft gefunden"
+msgstr "No property found"
+
+#: core/templates/fw/liegenschaften.html:116
+msgid ""
+"Die Suche findet Strasse, PLZ, Ort, Kanton und Eigentümer. Mehrere Wörter "
+"müssen alle vorkommen."
+msgstr "The search covers street, postcode, town, canton and owner. Multiple words must all appear."
+
+#: core/templates/fw/liegenschaften.html:120
 msgid "Keine Liegenschaft mit diesem Befund"
 msgstr "No property with this finding"
 
-#: core/templates/fw/liegenschaften.html:102
+#: core/templates/fw/liegenschaften.html:120
 msgid ""
 "Der Filter greift — hier gibt es nichts zu tun. Über «Alle» zurück zur "
 "ganzen Liste."
@@ -9432,15 +9486,15 @@ msgstr ""
 "The filter applies — nothing to do here. “All” takes you back to the full "
 "list."
 
-#: core/templates/fw/liegenschaften.html:102
+#: core/templates/fw/liegenschaften.html:120
 msgid "Alle anzeigen"
 msgstr "Show all"
 
-#: core/templates/fw/liegenschaften.html:106
+#: core/templates/fw/liegenschaften.html:124
 msgid "Noch keine Liegenschaften"
 msgstr "No properties yet"
 
-#: core/templates/fw/liegenschaften.html:106
+#: core/templates/fw/liegenschaften.html:124
 msgid ""
 "Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus "
 "dem Gebäude- und Wohnungsregister (GWR) importiert werden."
@@ -9448,7 +9502,7 @@ msgstr ""
 "Add your first property — units can be imported automatically from the "
 "Federal Register of Buildings and Dwellings (GWR)."
 
-#: core/templates/fw/liegenschaften.html:106
+#: core/templates/fw/liegenschaften.html:124
 msgid "Erste Liegenschaft erfassen"
 msgstr "Add first property"
 
@@ -10090,10 +10144,6 @@ msgstr "Search tenant or unit…"
 msgid "%(n)s Treffer für «%(q)s»"
 msgstr "%(n)s results for “%(q)s”"
 
-#: core/templates/fw/mieterkonten.html:37
-msgid "Suche aufheben"
-msgstr "Clear search"
-
 #: core/templates/fw/mieterkonten.html:60
 msgid "beendet"
 msgstr "ended"
@@ -10230,7 +10280,7 @@ msgstr "Rent roll per property — choose a property · as of %(datum)s"
 msgid "Soll / Mt."
 msgstr "Target / mo."
 
-#: core/templates/fw/mieterspiegel_auswahl.html:33
+#: core/templates/fw/mieterspiegel_auswahl.html:33 core/views/fw/listen.py:754
 msgid "Belegt"
 msgstr "Let"
 
@@ -10450,7 +10500,7 @@ msgstr ""
 "compares this effective base with the current state."
 
 #: core/templates/fw/mwst.html:4 core/templates/fw/mwst.html:8
-#: core/views/fw/listen.py:753
+#: core/views/fw/listen.py:812
 msgid "MWST-Abrechnung"
 msgstr "VAT return"
 
@@ -12773,7 +12823,8 @@ msgstr "Rule type"
 msgid "alle"
 msgstr "all"
 
-#: core/templates/fw/regelwerk_protokoll.html:30
+#: core/templates/fw/regelwerk_protokoll.html:30 core/views/fw/listen.py:737
+#: core/views/fw/listen.py:755
 msgid "Befund"
 msgstr "Finding"
 
@@ -13181,7 +13232,7 @@ msgid "Erstmeldung"
 msgstr "Initial report"
 
 #: core/templates/fw/schaden_kosten.html:4
-#: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:778
+#: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:837
 msgid "Reparaturkosten"
 msgstr "Repair costs"
 
@@ -15824,13 +15875,6 @@ msgstr "Unknown status."
 msgid "Vertrag (%(name)s · %(einheit)s) wurde gelöscht."
 msgstr "Lease (%(name)s · %(einheit)s) has been deleted."
 
-#: core/views/fw/akten_neu.py:67
-#, python-format
-msgid "%(n)s Liegenschaft"
-msgid_plural "%(n)s Liegenschaften"
-msgstr[0] "%(n)s property"
-msgstr[1] "%(n)s properties"
-
 #: core/views/fw/akten_neu.py:69
 #, python-format
 msgid "%(n)s Objekte"
@@ -16511,7 +16555,7 @@ msgid "Ungültiger Betrag «%(raw)s»."
 msgstr "Invalid amount \"%(raw)s\"."
 
 #: core/views/fw/bankabgleich.py:283
-#: core/views/fw/eigentuemer_abrechnung.py:239 core/views/fw/listen.py:414
+#: core/views/fw/eigentuemer_abrechnung.py:239 core/views/fw/listen.py:417
 msgid "Betrag muss grösser als 0 sein."
 msgstr "Amount must be greater than 0."
 
@@ -17705,11 +17749,11 @@ msgstr "The main unit must belong to the same property."
 msgid "Objekt %(bezeichnung)s gespeichert."
 msgstr "Unit %(bezeichnung)s saved."
 
-#: core/views/fw/listen.py:242
+#: core/views/fw/listen.py:245
 msgid "Titel und ein Betrag > 0 sind erforderlich."
 msgstr "A title and an amount > 0 are required."
 
-#: core/views/fw/listen.py:271
+#: core/views/fw/listen.py:274
 #, python-format
 msgid ""
 "Rechnung '%(titel)s' über CHF %(betrag)s erstellt — QR-Rechnung via QR-"
@@ -17718,7 +17762,7 @@ msgstr ""
 "Invoice '%(titel)s' for CHF %(betrag)s created — QR invoice via the QR "
 "button."
 
-#: core/views/fw/listen.py:357
+#: core/views/fw/listen.py:360
 msgid ""
 "Diese Rechnung ist HNK-relevant und wird bereits über die "
 "Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn du das "
@@ -17728,26 +17772,26 @@ msgstr ""
 "service charge statement. Direct recharge only if you tick 'Recharge "
 "directly anyway' (otherwise double charge)."
 
-#: core/views/fw/listen.py:365
+#: core/views/fw/listen.py:368
 msgid ""
 "Für die Verteilung muss die Rechnung einer Liegenschaft zugeordnet sein."
 msgstr "For allocation, the invoice must be assigned to a property."
 
-#: core/views/fw/listen.py:370
+#: core/views/fw/listen.py:373
 msgid "Nichts mehr offen zum Weiterverrechnen."
 msgstr "Nothing left open to recharge."
 
-#: core/views/fw/listen.py:375
+#: core/views/fw/listen.py:378
 msgid "Keine aktiven Mietverhältnisse in dieser Liegenschaft."
 msgstr "No active tenancies in this property."
 
-#: core/views/fw/listen.py:388
+#: core/views/fw/listen.py:391
 msgid ""
 "Für diesen Verteilschlüssel fehlen die Werte (m²/Wertquote) an den Objekten."
 msgstr ""
 "The values (m²/value quota) are missing on the units for this allocation key."
 
-#: core/views/fw/listen.py:402
+#: core/views/fw/listen.py:405
 #, python-format
 msgid ""
 "CHF %(grund_total)s nach %(schluessel)s auf %(anzahl)s Mieter verteilt — QR-"
@@ -17756,11 +17800,11 @@ msgstr ""
 "CHF %(grund_total)s allocated by %(schluessel)s to %(anzahl)s tenants — QR "
 "invoices via the QR button in Debtors."
 
-#: core/views/fw/listen.py:409
+#: core/views/fw/listen.py:412
 msgid "Bitte einen Mieter/Vertrag wählen."
 msgstr "Please select a tenant/lease."
 
-#: core/views/fw/listen.py:422
+#: core/views/fw/listen.py:425
 #, python-format
 msgid ""
 "CHF %(total)s an %(mieter)s weiterverrechnet — QR-Rechnung über den QR-"
@@ -17769,15 +17813,15 @@ msgstr ""
 "CHF %(total)s recharged to %(mieter)s — QR invoice via the QR button in "
 "Debtors."
 
-#: core/views/fw/listen.py:493
+#: core/views/fw/listen.py:496
 msgid "Nur offene oder teilbezahlte Forderungen können abgeschrieben werden."
 msgstr "Only open or partially paid receivables can be written off."
 
-#: core/views/fw/listen.py:497
+#: core/views/fw/listen.py:500
 msgid "Kein offener Betrag — nichts abzuschreiben."
 msgstr "No open amount — nothing to write off."
 
-#: core/views/fw/listen.py:540
+#: core/views/fw/listen.py:543
 #, python-format
 msgid ""
 "Forderung '%(titel)s' als Debitorenverlust abgeschrieben (CHF %(offen)s, "
@@ -17785,18 +17829,18 @@ msgid ""
 msgstr ""
 "Receivable '%(titel)s' written off as bad debt (CHF %(offen)s, account 3805)."
 
-#: core/views/fw/listen.py:586
+#: core/views/fw/listen.py:589
 msgid "Rechnung ist bereits storniert."
 msgstr "Invoice has already been cancelled."
 
-#: core/views/fw/listen.py:592
+#: core/views/fw/listen.py:595
 msgid ""
 "Diese Rechnung hat verbuchte Zahlungen — bitte zuerst die Zahlung(en) "
 "stornieren."
 msgstr ""
 "This invoice has posted payments — please reverse the payment(s) first."
 
-#: core/views/fw/listen.py:631
+#: core/views/fw/listen.py:634
 #, python-format
 msgid ""
 "Rechnung '%(titel)s' storniert (revisionssicher, mit Gegenbuchung)."
@@ -17804,122 +17848,138 @@ msgid ""
 msgstr ""
 "Invoice '%(titel)s' cancelled (audit-proof, with reversing entry).%(hinweis)s"
 
-#: core/views/fw/listen.py:750
+#: core/views/fw/listen.py:742
+msgid "Anzahl Objekte"
+msgstr "Number of units"
+
+#: core/views/fw/listen.py:753
+msgid "Strasse"
+msgstr "Street"
+
+#: core/views/fw/listen.py:754
+msgid "Belegung %"
+msgstr "Occupancy %"
+
+#: core/views/fw/listen.py:755
+msgid "Ist-Miete pro Monat (CHF)"
+msgstr "Actual rent per month (CHF)"
+
+#: core/views/fw/listen.py:809
 msgid "Erfolgsrechnung & Bilanz"
 msgstr "Income statement & balance sheet"
 
-#: core/views/fw/listen.py:751
+#: core/views/fw/listen.py:810
 msgid "Ertrag/Aufwand, Aktiven/Passiven, Journal"
 msgstr "Income/expenses, assets/liabilities, journal"
 
-#: core/views/fw/listen.py:754
+#: core/views/fw/listen.py:813
 msgid "Umsatz-/Vorsteuer, ESTV-Export"
 msgstr "Output/input tax, FTA export"
 
-#: core/views/fw/listen.py:756
+#: core/views/fw/listen.py:815
 msgid "Offene Posten + Monatsabschluss"
 msgstr "Open items + month-end closing"
 
-#: core/views/fw/listen.py:758
+#: core/views/fw/listen.py:817
 msgid "Forderungen & Zahlungen"
 msgstr "Receivables & payments"
 
-#: core/views/fw/listen.py:760
+#: core/views/fw/listen.py:819
 msgid "Offene Forderungen nach Fälligkeitsalter"
 msgstr "Open receivables by age"
 
-#: core/views/fw/listen.py:763
+#: core/views/fw/listen.py:822
 msgid "Kontoblatt je Mieter (Forderungen/Zahlungen)"
 msgstr "Ledger per tenant (receivables/payments)"
 
-#: core/views/fw/listen.py:766
+#: core/views/fw/listen.py:825
 msgid "Kontoblatt je Lieferant (Kreditoren)"
 msgstr "Ledger per supplier (creditors)"
 
-#: core/views/fw/listen.py:769
+#: core/views/fw/listen.py:828
 msgid "Portfolio"
 msgstr "Portfolio"
 
-#: core/views/fw/listen.py:771
+#: core/views/fw/listen.py:830
 msgid "Rent Roll je Liegenschaft (Soll/Ist/Leerstand)"
 msgstr "Rent roll per property (target/actual/vacancy)"
 
-#: core/views/fw/listen.py:772
+#: core/views/fw/listen.py:831
 #, python-format
 msgid "CHF %(betrag)s Soll · %(quote)s%% leer"
 msgstr "CHF %(betrag)s target · %(quote)s%% vacant"
 
-#: core/views/fw/listen.py:773
+#: core/views/fw/listen.py:832
 msgid "Eigentümer-Abrechnungen"
 msgstr "Owner statements"
 
-#: core/views/fw/listen.py:774
+#: core/views/fw/listen.py:833
 msgid "Mandatsabrechnung & Kontokorrent je Eigentümer"
 msgstr "Mandate statement & current account per owner"
 
-#: core/views/fw/listen.py:777
+#: core/views/fw/listen.py:836
 msgid "Objekte & Unterhalt"
 msgstr "Units & maintenance"
 
-#: core/views/fw/listen.py:779
+#: core/views/fw/listen.py:838
 msgid "Kosten je Liegenschaft (offen/effektiv)"
 msgstr "Costs per property (open/actual)"
 
-#: core/views/fw/listen.py:781
+#: core/views/fw/listen.py:840
 msgid "Objekt-Feed (Portale)"
 msgstr "Listing feed (portals)"
 
-#: core/views/fw/listen.py:782
+#: core/views/fw/listen.py:841
 msgid "Vermarktungs-Feed für Homegate/Flatfox"
 msgstr "Marketing feed for Homegate/Flatfox"
 
-#: core/views/fw/listen.py:790
+#: core/views/fw/listen.py:849
 msgid "Mietertrag"
 msgstr "Rental income"
 
-#: core/views/fw/listen.py:791
+#: core/views/fw/listen.py:850
 msgid "Aufwand (total)"
 msgstr "Expenses (total)"
 
-#: core/views/fw/listen.py:792
+#: core/views/fw/listen.py:851
 msgid "Reparaturen (Unterhalt)"
 msgstr "Repairs (maintenance)"
 
-#: core/views/fw/listen.py:793
+#: core/views/fw/listen.py:852
 msgid "Nettoergebnis"
 msgstr "Net result"
 
-#: core/views/fw/listen.py:1112
+#: core/views/fw/listen.py:1171
 msgid "Wohnen"
 msgstr "Residential"
 
-#: core/views/fw/listen.py:1113 portfolio/models.py:158
+#: core/views/fw/listen.py:1172 portfolio/models.py:158
 msgid "Gewerbe"
 msgstr "Commercial"
 
-#: core/views/fw/listen.py:1114
+#: core/views/fw/listen.py:1173
 msgid "Alle Zustände"
 msgstr "All states"
 
-#: core/views/fw/listen.py:1115 core/views/fw/schaeden.py:127
+#: core/views/fw/listen.py:1174 core/views/fw/schaeden.py:127
 #, python-format
 msgid "Mit Befund (%(n)s)"
 msgstr "With findings (%(n)s)"
 
-#: core/views/fw/listen.py:1116
+#: core/views/fw/listen.py:1175
 #, python-format
 msgid "Leerstand (%(n)s)"
 msgstr "Vacancy (%(n)s)"
 
-#: core/views/fw/listen.py:1295
+#: core/views/fw/listen.py:1354
 msgid "Privatpersonen"
 msgstr "Individuals"
 
-#: core/views/fw/listen.py:1295
+#: core/views/fw/listen.py:1354
 msgid "Firmen"
 msgstr "Companies"
 
-#: core/views/fw/listen.py:1296
+#: core/views/fw/listen.py:1355
 msgid "Vereine"
 msgstr "Associations"
 
@@ -19822,38 +19882,3 @@ msgstr "Tradesperson email"
 #: tickets/models.py:133
 msgid "Ausgehende E-Mail"
 msgstr "Outgoing email"
-
-#~ msgid "Arbeit"
-#~ msgstr "Work"
-
-#~ msgid "Strasse & Nr. *"
-#~ msgstr "Street & no. *"
-
-#~ msgid "PLZ *"
-#~ msgstr "Postcode *"
-
-#~ msgid "Ort *"
-#~ msgstr "Town *"
-
-#~ msgid "Lieferant und Betrag (> 0) sind erforderlich."
-#~ msgstr "Supplier and amount (> 0) are required."
-
-#, fuzzy
-#~| msgid "Ist-Mietzins"
-#~ msgid "Fester Mietzins"
-#~ msgstr "Actual rent"
-
-#, fuzzy
-#~| msgid "Vertrag als PDF"
-#~ msgid "Vertrag direkt als"
-#~ msgstr "Contract as PDF"
-
-#, fuzzy
-#~| msgid "Rechnung erstellen"
-#~ msgid "Nach dem Erstellen"
-#~ msgstr "Create invoice"
-
-#, fuzzy
-#~| msgid "hinterlegt"
-#~ msgid "hinterlegen."
-#~ msgstr "on file"
