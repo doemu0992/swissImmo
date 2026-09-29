@@ -225,3 +225,31 @@ class WohnungsabnahmeFolgtDerSpracheTests(TestCase):
     def test_deutsch(self):
         seite = self.c.get(self.url, HTTP_ACCEPT_LANGUAGE='de-CH')
         self.assertContains(seite, '>Zählerstände<')
+
+
+class VertragBearbeitenFolgtDerSpracheTests(TestCase):
+    """Die Maske «Vertrag bearbeiten» steht in der gewählten Sprache. Der
+    Sperrhinweis zum amtlichen Formular (Art. 269d OR) bleibt bis zur
+    juristischen Durchsicht Deutsch.
+
+    Gegenprobe: `{% load i18n %}` und die Auszeichnung in
+    fw/vertrag_bearbeiten.html entfernen — der französische Test wird rot.
+    """
+
+    def setUp(self):
+        _lg, _e, _m, v = _basis_objekte()  # aktiver Vertrag: gesperrt
+        self.url = f'/neu/vertraege/{v.id}/bearbeiten/'
+        self.c = Client()
+        self.c.force_login(_team_user('Verwalter'))
+
+    def test_franzoesisch(self):
+        self.c.post(SETLANG, {'language': 'fr', 'next': '/neu/'})
+        seite = self.c.get(self.url)
+        self.assertContains(seite, 'Modifier le contrat')
+        self.assertContains(seite, 'Durée et résiliation')
+        self.assertNotContains(seite, '>Mietdauer &amp; Kündigung<')
+        self.assertContains(seite, 'amtliche Formular (Art. 269d)')
+
+    def test_deutsch(self):
+        seite = self.c.get(self.url, HTTP_ACCEPT_LANGUAGE='de-CH')
+        self.assertContains(seite, 'Vertrag bearbeiten')

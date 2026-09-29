@@ -196,6 +196,8 @@ UEBERSETZT = (
     'fw/vertrag_detail.html',
     # Tranche «Wohnungsabnahme»
     'fw/abnahme_neu.html',
+    # Tranche «Vertrag bearbeiten»
+    'fw/vertrag_bearbeiten.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.

@@ -1,32 +1,33 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load l10n %}
 {% load chf %}
-{% block title %}Vertrag bearbeiten — {{ v.mieter.display_name }}{% endblock %}
+{% block title %}{% trans "Vertrag bearbeiten" %} — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/" class="hover:fw-marke">Verträge</a>
+    <a href="/neu/vertraege/" class="hover:fw-marke">{% trans "Verträge" %}</a>
     {% zeichen 'weiter' klasse='text-[9px]' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
     {% zeichen 'weiter' klasse='text-[9px]' %}
-    <span class="fw-mutet font-medium">Bearbeiten</span>
+    <span class="fw-mutet font-medium">{% trans "Bearbeiten" %}</span>
 </nav>
 
 <div class="fw-phead">
     <div>
-        <h1>Vertrag bearbeiten</h1>
+        <h1>{% trans "Vertrag bearbeiten" %}</h1>
         <p>{{ v.einheit.bezeichnung }} · {{ v.einheit.liegenschaft.strasse }}</p>
     </div>
 </div>
 
 {% if gesperrt %}
+{# Hinweis zu Art. 269d OR: bleibt bis zur juristischen Durchsicht Deutsch. #}
 <div class="max-w-3xl fw-warn-flaeche border fw-linie-warn rounded-xl px-4 py-3 mb-5 text-[13px] fw-warnton">
     <div class="font-bold mb-0.5">{% zeichen 'gesperrt' klasse='mr-1.5' %}Aktiver Vertrag — eingeschränkte Bearbeitung</div>
     Miete, Objekt, Mieter, Mietbeginn und MWST sind gesperrt (nur zur Ansicht). Eine <b>Mietzinsänderung</b> läuft über das <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="underline font-semibold">amtliche Formular (Art. 269d)</a>. Hier änderst du nur Detailfelder wie Fristen, Nebenräume und Vereinbarungen.
 </div>
 {% else %}
 <div class="max-w-3xl fw-markenflaeche border fw-linie-marke rounded-xl px-4 py-3 mb-5 text-[13px] fw-marke">
-    {% zeichen 'bearbeiten' klasse='mr-1.5' %}<b>Entwurf</b> — alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="underline font-semibold">Objekt → Mietzins</a> gepflegt.
+    {% zeichen 'bearbeiten' klasse='mr-1.5' %}<b>{% trans "Entwurf" %}</b> — {% blocktrans trimmed with id=v.einheit_id %}alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a href="/neu/objekte/{{ id }}/?tab=mietzins" class="underline font-semibold">Objekt → Mietzins</a> gepflegt.{% endblocktrans %}
 </div>
 {% endif %}
 
@@ -35,9 +36,9 @@
 
     <!-- Parteien & Objekt -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Parteien & Objekt</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Parteien & Objekt" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Mieter</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mieter" %}</label>
                 {% if gesperrt %}
                 <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.mieter.display_name }} <span class="text-[10px] fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
                 {% else %}
@@ -45,7 +46,7 @@
                     {% for m in mieter_liste %}<option value="{{ m.id }}" {% if m.id == v.mieter_id %}selected{% endif %}>{{ m.display_name }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Objekt</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Objekt" %}</label>
                 {% if gesperrt %}
                 <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.einheit.bezeichnung }} — {{ v.einheit.liegenschaft.strasse }} <span class="text-[10px] fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
                 {% else %}
@@ -53,9 +54,9 @@
                     {% for o in objekte %}<option value="{{ o.id }}" {% if o.id == v.einheit_id %}selected{% endif %}>{{ o.bezeichnung }} — {{ o.liegenschaft.strasse }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Zweiter Mieter / Ehegatte (Name)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zweiter Mieter / Ehegatte (Name)" %}</label>
                 <input name="mitmieter_name" value="{{ v.mitmieter_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Anzahl Personen</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Anzahl Personen" %}</label>
                 <input name="anzahl_personen" type="number" min="1" value="{{ v.anzahl_personen|default:1 }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <label class="flex items-center gap-2 text-sm fw-mutet">
@@ -66,19 +67,19 @@
 
     <!-- Mietdauer & Kündigung -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Mietdauer & Kündigung</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Mietdauer & Kündigung" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Mietbeginn{% if gesperrt %} {% zeichen 'gesperrt' klasse='text-[10px] fw-faint' %}{% endif %}</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietbeginn" %}{% if gesperrt %} {% zeichen 'gesperrt' klasse='text-[10px] fw-faint' %}{% endif %}</label>
                 {% if gesperrt %}
                 <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.beginn|date:"d.m.Y" }}</div>
                 {% else %}
                 <input name="beginn" type="date" value="{{ v.beginn|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{% endif %}
             </div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Mietende (leer = unbefristet)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietende (leer = unbefristet)" %}</label>
                 <input name="ende" type="date" value="{{ v.ende|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Kündigungsfrist (Monate)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kündigungsfrist (Monate)" %}</label>
                 <input name="kuendigungsfrist" type="number" min="1" value="{{ v.kuendigungsfrist_monate }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Erstmals kündbar auf</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Erstmals kündbar auf" %}</label>
                 <input name="erstmals_kuendbar" type="date" value="{{ v.erstmals_kuendbar_auf|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             {% comment %}
             INDEXPARAMETER — EDITIERBAR AUCH BEI AKTIVEN VERTRÄGEN (E2.53)
@@ -92,48 +93,48 @@
             Die Erhöhung selbst läuft weiter über das amtliche Formular nach
             Art. 269d. Jede Änderung steht mit altem und neuem Wert im Logbuch.
             {% endcomment %}
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Index-Weitergabe (%)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Index-Weitergabe (%)" %}</label>
                 <input name="index_weitergabe_prozent" type="number" step="0.1" min="0" max="100"
                        value="{{ v.index_weitergabe_prozent }}"
                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
-                <p class="text-[11px] fw-faint mt-1">Anteil der Teuerung, der weitergegeben wird. Änderung wird protokolliert.</p></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Index-Mindestintervall (Monate)</label>
+                <p class="text-[11px] fw-faint mt-1">{% trans "Anteil der Teuerung, der weitergegeben wird. Änderung wird protokolliert." %}</p></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Index-Mindestintervall (Monate)" %}</label>
                 <input name="index_intervall_monate" type="number" step="1" min="1"
                        value="{{ v.index_intervall_monate }}"
                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Kündigungstermine</label>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kündigungstermine" %}</label>
                 <input name="kuendigungstermine" value="{{ v.kuendigungstermine }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
     <!-- Mietzins -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Mietzins{% if gesperrt %} <span class="text-[11px] font-normal fw-faint ml-1">{% zeichen 'gesperrt' %} gesperrt (amtliches Formular für Änderungen)</span>{% endif %}</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Mietzins" %}{% if gesperrt %} <span class="text-[11px] font-normal fw-faint ml-1">{% zeichen 'gesperrt' %} {% trans "gesperrt (amtliches Formular für Änderungen)" %}</span>{% endif %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Nettomietzins (CHF)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nettomietzins (CHF)" %}</label>
                 {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">CHF {{ v.netto_mietzins|chf }}</div>
                 {% else %}<input name="netto_mietzins" type="number" step="0.01" value="{% localize off %}{{ v.netto_mietzins|default:'0' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{% endif %}
             </div>
             {% if not v.einheit.ist_einstellplatz %}
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Nebenkosten (CHF)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nebenkosten (CHF)" %}</label>
                 {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">CHF {{ v.nebenkosten|chf }}</div>
                 {% else %}<input name="nebenkosten" type="number" step="0.01" value="{% localize off %}{{ v.nebenkosten|default:'0' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{% endif %}
             </div>
             {% endif %}
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Zahlungsrhythmus</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zahlungsrhythmus" %}</label>
                 {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.get_zahlungsrhythmus_display }}</div>
                 {% else %}<select name="zahlungsrhythmus" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for val, lbl in rhythmus_choices %}<option value="{{ val }}" {% if val == v.zahlungsrhythmus %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
             {% if not v.einheit.ist_einstellplatz %}
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">NK-Abrechnungsart</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "NK-Abrechnungsart" %}</label>
                 {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.get_nk_abrechnungsart_display }}</div>
                 {% else %}<select name="nk_abrechnungsart" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for val, lbl in nk_arten %}<option value="{{ val }}" {% if val == v.nk_abrechnungsart %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Verteilschlüssel</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verteilschlüssel" %}</label>
                 {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.get_verteilschluessel_display }}</div>
                 {% else %}<select name="verteilschluessel" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for val, lbl in verteil_choices %}<option value="{{ val }}" {% if val == v.verteilschluessel %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
@@ -148,35 +149,35 @@
             <input name="mwst_satz" type="number" step="0.1" value="{% localize off %}{{ v.mwst_satz|default:'8.1' }}{% endlocalize %}" class="w-20 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">%
         </label>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Kaution (CHF)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kaution (CHF)" %}</label>
                 <input name="kautions_betrag" type="number" step="0.01" value="{% localize off %}{{ v.kautions_betrag|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Kautionskonto (IBAN)</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kautionskonto (IBAN)" %}</label>
                 <input name="kautions_konto" value="{{ v.kautions_konto }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         {% endif %}
-        <p class="text-[11px] fw-faint">Gratismonate/Rabatt und datierte Anpassungen: <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="fw-marke hover:underline">Objekt → Mietzins</a>.</p>
+        <p class="text-[11px] fw-faint">{% trans "Gratismonate/Rabatt und datierte Anpassungen" %}: <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="fw-marke hover:underline">{% trans "Objekt → Mietzins" %}</a>.</p>
     </div>
 
     <!-- Nutzung & Vereinbarungen -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">Nutzung & Vereinbarungen</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Nutzung & Vereinbarungen" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Zur Mitbenützung</label>
-                <input name="mitbenutzung" value="{{ v.mitbenutzung }}" placeholder="z. B. Waschküche, Veloraum" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">Nebenräume</label>
-                <input name="nebenraeume" value="{{ v.nebenraeume }}" placeholder="z. B. Kellerabteil Nr. 3" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zur Mitbenützung" %}</label>
+                <input name="mitbenutzung" value="{{ v.mitbenutzung }}" placeholder="{% trans 'z. B. Waschküche, Veloraum' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nebenräume" %}</label>
+                <input name="nebenraeume" value="{{ v.nebenraeume }}" placeholder="{% trans 'z. B. Kellerabteil Nr. 3' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Zweckbestimmung (v.a. Gewerbe)</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zweckbestimmung (v.a. Gewerbe)" %}</label>
             <input name="zweckbestimmung" value="{{ v.zweckbestimmung }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Besondere Bestimmungen</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Besondere Bestimmungen" %}</label>
             <textarea name="besondere_vereinbarungen" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ v.besondere_vereinbarungen }}</textarea></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">Weitere Vorbehalte</label>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Weitere Vorbehalte" %}</label>
             <textarea name="weitere_vorbehalte" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ v.weitere_vorbehalte }}</textarea></div>
     </div>
 
     <div class="flex items-center gap-3">
-        <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}Änderungen speichern</button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm font-medium fw-mutet hover:fw-ink">Abbrechen</a>
+        <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Änderungen speichern" %}</button>
+        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm font-medium fw-mutet hover:fw-ink">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}
