@@ -14,6 +14,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.db import transaction
+from django.utils.translation import gettext
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -106,10 +107,10 @@ def fw_kaution_aktion(request, vertrag_id):
             messages.error(request, f"❌ {exc}")
             return redirect(f'/neu/vertraege/{v.id}/')
         except Exception as exc:
-            messages.error(request, f"❌ Kautions-Einzahlung konnte nicht gebucht werden: {exc}")
+            messages.error(request, '❌ ' + gettext('Kautions-Einzahlung konnte nicht gebucht werden: %(exc)s') % {'exc': exc})
             return redirect(f'/neu/vertraege/{v.id}/')
         log_aktion(request, "Kaution einbezahlt (Sperrkonto)", str(v.mieter), f"CHF {v.kautions_betrag}", ziel=v)
-        messages.success(request, "✅ Kautions-Einzahlung auf Sperrkonto erfasst (bilanziert).")
+        messages.success(request, '✅ ' + gettext('Kautions-Einzahlung auf Sperrkonto erfasst (bilanziert).'))
 
     elif aktion == 'versicherung':
         # Kautionsversicherung: bestätigen, sobald das Zertifikat/die Police vorliegt
@@ -117,10 +118,10 @@ def fw_kaution_aktion(request, vertrag_id):
         police = P.get('kautions_policennummer', '').strip()
         zertifikat = request.FILES.get('kautions_zertifikat')
         if not versicherer:
-            messages.error(request, "❌ Bitte den Versicherer/Anbieter angeben.")
+            messages.error(request, '❌ ' + gettext('Bitte den Versicherer/Anbieter angeben.'))
             return redirect(f'/neu/vertraege/{v.id}/')
         if not zertifikat and not v.kautions_zertifikat:
-            messages.error(request, "❌ Bitte das Zertifikat / die Police hochladen — erst dann kann bestätigt werden.")
+            messages.error(request, '❌ ' + gettext('Bitte das Zertifikat / die Police hochladen — erst dann kann bestätigt werden.'))
             return redirect(f'/neu/vertraege/{v.id}/')
         v.kautions_art = 'versicherung'
         v.kautions_versicherer = versicherer
@@ -133,7 +134,7 @@ def fw_kaution_aktion(request, vertrag_id):
                               'kautions_zertifikat', 'kautions_einbezahlt_am', 'kautions_konto'])
         log_aktion(request, "Kautionsversicherung bestätigt", str(v.mieter),
                    f"{versicherer} · Police {police} · CHF {v.kautions_betrag}", ziel=v)
-        messages.success(request, f"✅ Kautionsversicherung bestätigt ({versicherer}) — Zertifikat hinterlegt.")
+        messages.success(request, '✅ ' + gettext('Kautionsversicherung bestätigt (%(versicherer)s) — Zertifikat hinterlegt.') % {'versicherer': versicherer})
 
     elif aktion == 'rueckzahlung':
         abzug = dec('abzug_betrag')
@@ -145,8 +146,7 @@ def fw_kaution_aktion(request, vertrag_id):
         if not v.ist_kautionsversicherung:
             bilanziert = _kaution_bilanziert(v)
             if bilanziert <= 0:
-                messages.error(request, "❌ Für diesen Vertrag ist keine Kaution bilanziert "
-                                        "(nicht einbezahlt oder bereits aufgelöst).")
+                messages.error(request, '❌ ' + gettext('Für diesen Vertrag ist keine Kaution bilanziert (nicht einbezahlt oder bereits aufgelöst).'))
                 return redirect(f'/neu/vertraege/{v.id}/')
             total = min(total, bilanziert)
         # Bei Versicherung wird die Police aufgelöst — es gibt keine Rückzahlung an
@@ -159,7 +159,7 @@ def fw_kaution_aktion(request, vertrag_id):
         # dürfen die Kaution nicht übersteigen (sonst 2010/1015 mit falschem Saldo).
         if not v.ist_kautionsversicherung:
             if rueck < 0 or abzug < 0:
-                messages.error(request, "❌ Rückzahlung und Einbehalt dürfen nicht negativ sein.")
+                messages.error(request, '❌ ' + gettext('Rückzahlung und Einbehalt dürfen nicht negativ sein.'))
                 return redirect(f'/neu/vertraege/{v.id}/')
             # VOLLABDECKUNG: Rückzahlung + Einbehalt müssen die einbezahlte Kaution
             # exakt abdecken. Bei einer Unter-Allokation (rueck+abzug < total) würde
@@ -168,9 +168,7 @@ def fw_kaution_aktion(request, vertrag_id):
             # dem Bankkonto (1020), während der Mieter buchhalterisch weiter Geld zugut
             # hätte. Die Auflösung ist ein einmaliger Vorgang, kein Tranchen-Modell.
             if abs((rueck + abzug) - total) > Decimal('0.01'):
-                messages.error(request, f"❌ Rückzahlung (CHF {rueck}) + Einbehalt (CHF {abzug}) "
-                                        f"müssen die einbezahlte Kaution (CHF {total}) vollständig "
-                                        f"abdecken.")
+                messages.error(request, '❌ ' + gettext('Rückzahlung (CHF %(rueck)s) + Einbehalt (CHF %(abzug)s) müssen die einbezahlte Kaution (CHF %(total)s) vollständig abdecken.') % {'rueck': rueck, 'abzug': abzug, 'total': total})
                 return redirect(f'/neu/vertraege/{v.id}/')
         v.kautions_zurueckbezahlt_am = d('zurueckbezahlt_am') or timezone.localdate()
         v.kautions_rueckzahlung_betrag = rueck
@@ -220,13 +218,13 @@ def fw_kaution_aktion(request, vertrag_id):
             messages.error(request, f"❌ {exc}")
             return redirect(f'/neu/vertraege/{v.id}/')
         except Exception as exc:
-            messages.error(request, f"❌ Kautions-Rückzahlung konnte nicht gebucht werden: {exc}")
+            messages.error(request, '❌ ' + gettext('Kautions-Rückzahlung konnte nicht gebucht werden: %(exc)s') % {'exc': exc})
             return redirect(f'/neu/vertraege/{v.id}/')
         from core.services.automation import erledige_pendenzen_fuer
         erledige_pendenzen_fuer(v, ['Kaution'], user=request.user)
         log_aktion(request, "Kaution zurückbezahlt", str(v.mieter),
                    f"Rückzahlung CHF {rueck}, Abzug CHF {abzug}", ziel=v)
-        messages.success(request, f"✅ Rückzahlung erfasst: CHF {rueck} an Mieter, CHF {abzug} einbehalten.")
+        messages.success(request, '✅ ' + gettext('Rückzahlung erfasst: CHF %(rueck)s an Mieter, CHF %(abzug)s einbehalten.') % {'rueck': rueck, 'abzug': abzug})
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
@@ -281,7 +279,7 @@ def fw_maengelruege(request, vertrag_id):
         except ValueError:
             frist = 14
         if not mangel:
-            messages.error(request, "❌ Bitte den Mangel beschreiben.")
+            messages.error(request, '❌ ' + gettext('Bitte den Mangel beschreiben.'))
             return redirect(f'/neu/vertraege/{v.id}/maengelruege/')
         vw = v.organisation
         pdf = maengelruege_pdf(v, mangel, frist_tage=frist, verwaltung=vw)
@@ -321,9 +319,9 @@ def fw_vertrag_wg(request, vertrag_id):
         person = Mieter.objects.filter(id=pid).first() if (pid or '').isdigit() else None
         ausgeschlossen = {v.mieter_id, v.mitmieter_id}
         if not person:
-            messages.error(request, "❌ Bitte eine bestehende Person auswählen.")
+            messages.error(request, '❌ ' + gettext('Bitte eine bestehende Person auswählen.'))
         elif person.id in ausgeschlossen:
-            messages.warning(request, "Diese Person ist bereits Vertragspartei.")
+            messages.warning(request, gettext('Diese Person ist bereits Vertragspartei.'))
         else:
             v.weitere_mieter.add(person)
             # Wohnadresse ab Mietbeginn auch für den WG-Mieter setzen.
@@ -339,18 +337,18 @@ def fw_vertrag_wg(request, vertrag_id):
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
             log_aktion(request, "WG-Mieter hinzugefügt", str(person), str(v), ziel=v)
-            messages.success(request, f"✅ {person.display_name} als WG-Mieter erfasst.")
+            messages.success(request, '✅ ' + gettext('%(display_name)s als WG-Mieter erfasst.') % {'display_name': person.display_name})
     elif aktion == 'entfernen':
         pid = request.POST.get('mieter_id')
         person = Mieter.objects.filter(id=pid).first() if (pid or '').isdigit() else None
         if person:
             v.weitere_mieter.remove(person)
             log_aktion(request, "WG-Mieter entfernt", str(person), str(v), ziel=v)
-            messages.info(request, f"{person.display_name} als WG-Mieter entfernt.")
+            messages.info(request, gettext('%(display_name)s als WG-Mieter entfernt.') % {'display_name': person.display_name})
     elif aktion == 'solidarhaftung':
         v.solidarhaftung = request.POST.get('wert') == 'on'
         v.save(update_fields=['solidarhaftung'])
-        messages.success(request, "Solidarhaftung aktualisiert.")
+        messages.success(request, gettext('Solidarhaftung aktualisiert.'))
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
@@ -375,7 +373,7 @@ def fw_untermiete(request, vertrag_id):
         entscheid = request.POST.get('entscheid') if request.POST.get('entscheid') in ('zustimmung', 'ablehnung') else 'zustimmung'
         bedingungen = (request.POST.get('bedingungen') or '').strip()
         if not untermieter:
-            messages.error(request, "❌ Bitte die untermietende Person angeben.")
+            messages.error(request, '❌ ' + gettext('Bitte die untermietende Person angeben.'))
             return redirect(f'/neu/vertraege/{v.id}/untermiete/')
         vw = v.organisation
         pdf = untermiete_zustimmung_pdf(v, untermieter, entscheid=entscheid, bedingungen=bedingungen, verwaltung=vw)

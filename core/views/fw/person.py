@@ -186,7 +186,7 @@ def fw_mieter_portal_zugang(request, pk):
             # Konto vollständig entfernen (kein verwaistes .1/.2-Konto zurücklassen)
             from core.auth import konto_freigeben
             konto_freigeben(u, getattr(request, 'organisation', None))
-        messages.success(request, "Portal-Zugang entfernt.")
+        messages.success(request, gettext('Portal-Zugang entfernt.'))
         return redirect(f'/neu/personen/{m.id}/')
 
     # Benutzername: E-Mail bevorzugt, sonst mieter<id>
@@ -224,11 +224,11 @@ def fw_mieter_portal_zugang(request, pk):
             absender_firma=(vw.firma if vw else ''))
 
     if mail_ok:
-        messages.success(request, f"✅ Portal-Zugang aktiv. Zugangsdaten wurden an {m.email} gesendet. (Benutzername: {u.username})")
+        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': m.email, 'username': u.username})
     elif m.email:
-        messages.warning(request, f"⚠️ Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: {u.username} · Passwort: {passwort} — bitte manuell mitteilen.")
+        messages.warning(request, '⚠️ ' + gettext('Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Passwort: %(passwort)s — bitte manuell mitteilen.') % {'username': u.username, 'passwort': passwort})
     else:
-        messages.success(request, f"✅ Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: {u.username} · Passwort: {passwort} (bitte dem Mieter sicher mitteilen, wird nur einmal angezeigt).")
+        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Passwort: %(passwort)s (bitte dem Mieter sicher mitteilen, wird nur einmal angezeigt).') % {'username': u.username, 'passwort': passwort})
     return redirect(f'/neu/personen/{m.id}/')
 
 
@@ -466,7 +466,7 @@ def fw_kommunikation_neu(request):
     m = get_object_or_404(Mieter, id=P.get('mieter_id'))
     inhalt = (P.get('inhalt') or '').strip()
     if not inhalt:
-        messages.error(request, "Bitte einen Inhalt/Notiztext erfassen.")
+        messages.error(request, gettext('Bitte einen Inhalt/Notiztext erfassen.'))
         return redirect(f'/neu/personen/{m.id}/')
     vertrag = m.vertraege.order_by('-beginn').first()
     Kommunikation.objects.create(
@@ -477,7 +477,7 @@ def fw_kommunikation_neu(request):
         erstellt_von=request.user,
     )
     log_aktion(request, "Kommunikation erfasst", str(m), P.get('typ', 'telefon'))
-    messages.success(request, "✅ Notiz im Kontaktjournal erfasst.")
+    messages.success(request, '✅ ' + gettext('Notiz im Kontaktjournal erfasst.'))
     return redirect(f'/neu/personen/{m.id}/#p-aktivitaet')
 
 
@@ -493,7 +493,7 @@ def fw_kommunikation_loeschen(request, pk):
     if request.method == 'POST':
         log_aktion(request, "Journal-Eintrag gelöscht", str(k.mieter) if k.mieter_id else '', k.typ)
         k.delete()
-        messages.success(request, "🗑️ Journal-Eintrag gelöscht.")
+        messages.success(request, '🗑️ ' + gettext('Journal-Eintrag gelöscht.'))
     return redirect(f'/neu/personen/{mid}/?tab=aktivitaet')
 
 
@@ -527,7 +527,7 @@ def fw_rentals_dokument_loeschen(request, pk):
         titel = d.bezeichnung or d.titel or 'Dokument'
         d.delete()
         log_aktion(request, "Dokument gelöscht", titel, '')
-        messages.success(request, "🗑️ Dokument gelöscht.")
+        messages.success(request, '🗑️ ' + gettext('Dokument gelöscht.'))
     return redirect(ziel)
 
 
@@ -545,7 +545,7 @@ def fw_person_loeschen(request, pk):
 
     aktive = m.vertraege.filter(status='aktiv').count()
     if aktive:
-        messages.error(request, f"❌ Person kann nicht gelöscht werden: {aktive} aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.")
+        messages.error(request, '❌ ' + gettext('Person kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.') % {'aktive': aktive})
         return redirect(f'/neu/personen/{m.id}/')
 
     name = m.display_name
@@ -561,7 +561,7 @@ def fw_person_loeschen(request, pk):
                f"inkl. {anz_vertraege} Vertrag/Verträge + zugehörige Daten" if anz_vertraege else "")
     m.delete()   # cascade: Verträge (beendet/Entwurf), Kommunikation, Dokumente etc.
     zusatz = f" inkl. {anz_vertraege} beendete(r)/Entwurf-Vertrag/Verträge" if anz_vertraege else ""
-    messages.success(request, f'🗑️ „{name}" gelöscht{zusatz}.')
+    messages.success(request, '🗑️ ' + gettext('„%(name)s" gelöscht%(zusatz)s.') % {'name': name, 'zusatz': zusatz})
     return redirect('/neu/personen/')
 
 
@@ -607,13 +607,13 @@ def fw_person_adresse_neu(request, pk):
     try:
         gab = date.fromisoformat((P.get('gueltig_ab') or '').strip())
     except ValueError:
-        messages.error(request, "❌ Ungültiges «gültig ab»-Datum.")
+        messages.error(request, '❌ ' + gettext('Ungültiges «gültig ab»-Datum.'))
         return redirect(f'/neu/personen/{m.id}/')
     strasse = P.get('strasse', '').strip()
     plz = P.get('plz', '').strip()
     ort = P.get('ort', '').strip()
     if not (strasse or plz or ort):
-        messages.error(request, "❌ Bitte mindestens Strasse oder PLZ/Ort erfassen.")
+        messages.error(request, '❌ ' + gettext('Bitte mindestens Strasse oder PLZ/Ort erfassen.'))
         return redirect(f'/neu/personen/{m.id}/')
     MieterAdresse.objects.update_or_create(
         mieter=m, art=art, gueltig_ab=gab,
@@ -623,7 +623,7 @@ def fw_person_adresse_neu(request, pk):
     m.sync_effektive_adresse()
     log_aktion(request, "Adresse hinterlegt", m.display_name,
                f"{art} ab {gab:%d.%m.%Y}: {strasse}, {plz} {ort}", ziel=m)
-    messages.success(request, "✅ Adresse gespeichert.")
+    messages.success(request, '✅ ' + gettext('Adresse gespeichert.'))
     return redirect(f'/neu/personen/{m.id}/')
 
 
@@ -641,7 +641,7 @@ def fw_person_adresse_loeschen(request, pk):
         adr.delete()
         m.sync_effektive_adresse()
         log_aktion(request, "Adresse entfernt", m.display_name, info, ziel=m)
-        messages.success(request, "✅ Adress-Zeile entfernt.")
+        messages.success(request, '✅ ' + gettext('Adress-Zeile entfernt.'))
     return redirect(f'/neu/personen/{m.id}/')
 
 
@@ -822,7 +822,7 @@ def fw_person_form(request, pk=None):
         aenderungen = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Person bearbeitet" if pk else "Person erstellt",
                    obj.display_name, aenderungen, ziel=obj)
-        messages.success(request, f"✅ {obj.display_name} gespeichert.")
+        messages.success(request, '✅ ' + gettext('%(display_name)s gespeichert.') % {'display_name': obj.display_name})
         return redirect(f'/neu/personen/{obj.id}/')
 
     return render(request, 'fw/person_form.html', {

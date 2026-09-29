@@ -12,6 +12,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.shortcuts import get_object_or_404, render
+from django.utils.translation import gettext
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
@@ -133,7 +134,7 @@ def fw_abnahme_neu(request, vertrag_id):
         if P.get('embed'):
             typ_txt = prot.get_typ_display()
             return render(request, 'fw/_modal_done.html', {'msg': f"{typ_txt} erfasst ({prot.maengel.count()} Mängel)"})
-        messages.success(request, f"✅ Abnahmeprotokoll erfasst ({prot.maengel.count()} Mängel).")
+        messages.success(request, '✅ ' + gettext('Abnahmeprotokoll erfasst (%(count)s Mängel).') % {'count': prot.maengel.count()})
         return redirect(f'/neu/abnahme/{prot.id}/')
 
     embed = request.GET.get('embed') == '1'
@@ -183,7 +184,7 @@ def fw_abnahme_ruege_267a(request, pk):
                 'betrag': (m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung)}
                for m in prot.maengel.all() if m.verursacher == 'mieter']
     if not maengel:
-        messages.info(request, "Keine dem Mieter zugeordneten Mängel im Protokoll — keine Rüge nötig.")
+        messages.info(request, gettext('Keine dem Mieter zugeordneten Mängel im Protokoll — keine Rüge nötig.'))
         return redirect(f'/neu/abnahme/{prot.id}/')
     pdf = rueckgabe_maengelruege_pdf(v, maengel, verwaltung=v.organisation,
                                      abnahme_datum=prot.datum)
@@ -210,7 +211,7 @@ def fw_abnahme_loeschen(request, pk):
     if request.method == 'POST':
         log_aktion(request, "Abnahmeprotokoll gelöscht", str(prot.vertrag) if vid else '', '')
         prot.delete()
-        messages.success(request, "🗑️ Abnahmeprotokoll gelöscht.")
+        messages.success(request, '🗑️ ' + gettext('Abnahmeprotokoll gelöscht.'))
     return redirect(f'/neu/vertraege/{vid}/' if vid else '/neu/vertraege/')
 
 
@@ -251,9 +252,9 @@ def fw_vertrag_status(request, pk):
                 v.einheit.zur_ausschreibung = False
                 v.einheit.save(update_fields=['zur_ausschreibung'])
             log_aktion(request, "Vertragsstatus geändert", str(v.mieter), erlaubt[neu], ziel=v)
-            messages.success(request, f"✅ Vertrag ist jetzt: {erlaubt[neu]}.")
+            messages.success(request, '✅ ' + gettext('Vertrag ist jetzt: %(wert)s.') % {'wert': erlaubt[neu]})
         else:
-            messages.error(request, "Unbekannter Status.")
+            messages.error(request, gettext('Unbekannter Status.'))
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
@@ -272,6 +273,6 @@ def fw_vertrag_loeschen(request, pk):
         # Bereinigung der verwaisten Vertragspaket-Dokumente passiert zentral in
         # Mietvertrag.delete() (greift auch auf dem API-Löschpfad).
         v.delete()
-        messages.success(request, f"🗑️ Vertrag ({name} · {einheit}) wurde gelöscht.")
+        messages.success(request, '🗑️ ' + gettext('Vertrag (%(name)s · %(einheit)s) wurde gelöscht.') % {'name': name, 'einheit': einheit})
         return redirect('/neu/vertraege/')
     return redirect(f'/neu/vertraege/{v.id}/')

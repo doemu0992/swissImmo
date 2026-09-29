@@ -18,6 +18,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.conf import settings
+from django.utils.translation import gettext
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
@@ -97,7 +98,7 @@ def fw_account(request):
                 except Exception:
                     messages.error(
                         request,
-                        f'«{roh}» ist kein Betrag — Stundensatz unverändert.')
+                        gettext('«%(roh)s» ist kein Betrag — Stundensatz unverändert.') % {'roh': roh})
             else:
                 vw.stundensatz = None
 
@@ -127,7 +128,7 @@ def fw_account(request):
         vw.save()
         log_aktion(request, "Account/Stammdaten bearbeitet", vw.firma,
                    diff_model(alt_snap, snapshot_model(vw), vw))
-        messages.success(request, "✅ Stammdaten gespeichert.")
+        messages.success(request, '✅ ' + gettext('Stammdaten gespeichert.'))
         return redirect('/neu/account/')
 
     def _url(feld):
@@ -167,7 +168,7 @@ def fw_datenreset(request):
     if request.method != 'POST':
         return redirect('/neu/account/')
     if (request.POST.get('bestaetigung') or '').strip().upper() != 'LÖSCHEN':
-        messages.error(request, "Zum Zurücksetzen bitte «LÖSCHEN» eingeben.")
+        messages.error(request, gettext('Zum Zurücksetzen bitte «LÖSCHEN» eingeben.'))
         return redirect('/neu/account/#gefahrenzone')
 
     # Eigene App-Daten (Framework/Benutzer bleiben erhalten)
@@ -248,7 +249,7 @@ def fw_datenreset(request):
         logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     log_aktion(request, "Datenbank zurückgesetzt", f"{len(modelle)} Modelle geleert")
-    messages.success(request, "✅ Alle Daten wurden gelöscht — du startest mit einer leeren Datenbank.")
+    messages.success(request, '✅ ' + gettext('Alle Daten wurden gelöscht — du startest mit einer leeren Datenbank.'))
     return redirect('/neu/')
 
 
@@ -269,7 +270,7 @@ def fw_marktdaten_aktualisieren(request):
                                  " — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage blockiert, "
                                  "kannst du die Werte oben manuell eintragen.")
         except Exception as e:
-            messages.error(request, f"Marktdaten konnten nicht geladen werden: {e}. Werte bitte manuell eintragen.")
+            messages.error(request, gettext('Marktdaten konnten nicht geladen werden: %(e)s. Werte bitte manuell eintragen.') % {'e': e})
     return redirect('/neu/account/')
 
 
@@ -663,7 +664,7 @@ def fw_objekt_ausschreiben(request, einheit_id):
         e.zur_ausschreibung = False
         e.save(update_fields=['zur_ausschreibung'])
         log_aktion(request, "Ausschreibung beendet", str(e), '')
-        messages.success(request, "Ausschreibung beendet.")
+        messages.success(request, gettext('Ausschreibung beendet.'))
         return redirect(weiter)
 
     # Verfügbarkeitsdatum: aus Formular, sonst aus der Kündigung
@@ -687,7 +688,7 @@ def fw_objekt_ausschreiben(request, einheit_id):
                f"verfügbar ab {e.verfuegbar_ab or '—'}")
     if request.POST.get('embed'):
         return render(request, 'fw/_modal_done.html', {'msg': 'Objekt ausgeschrieben'})
-    messages.success(request, "✅ Objekt zur Nachmietersuche ausgeschrieben — erscheint jetzt in der Vermarktung.")
+    messages.success(request, '✅ ' + gettext('Objekt zur Nachmietersuche ausgeschrieben — erscheint jetzt in der Vermarktung.'))
     return redirect(weiter)
 
 
@@ -788,9 +789,9 @@ def fw_vorlagen_standard(request):
     n = seed_standard_vorlagen()
     log_aktion(request, "Standardvorlagen erstellt", f"{n} neu", '')
     if n:
-        messages.success(request, f"✅ {n} Standardvorlage(n) erstellt — jederzeit unter 'Bearbeiten' anpassbar.")
+        messages.success(request, '✅ ' + gettext("%(n)s Standardvorlage(n) erstellt — jederzeit unter 'Bearbeiten' anpassbar.") % {'n': n})
     else:
-        messages.success(request, "Alle Standardvorlagen sind bereits vorhanden.")
+        messages.success(request, gettext('Alle Standardvorlagen sind bereits vorhanden.'))
     return redirect('fw_vorlagen')
 
 
@@ -826,7 +827,7 @@ def fw_vorlage_form(request, pk=None):
         obj.betreff = request.POST.get('betreff', '').strip()
         obj.inhalt = request.POST.get('inhalt', '')
         if not obj.name:
-            messages.error(request, "Bezeichnung ist erforderlich.")
+            messages.error(request, gettext('Bezeichnung ist erforderlich.'))
             return redirect(request.path)
         obj.save()
         kopiert = pk and (vl is not None and vl.organisation_id is None)
@@ -835,10 +836,9 @@ def fw_vorlage_form(request, pk=None):
                    obj.name, _diff)
         if kopiert:
             messages.success(
-                request, f"✅ Eigene Fassung von '{obj.name}' angelegt. "
-                         f"Die mitgelieferte Vorlage bleibt unverändert.")
+                request, '✅ ' + gettext("Eigene Fassung von '%(name)s' angelegt. Die mitgelieferte Vorlage bleibt unverändert.") % {'name': obj.name})
         else:
-            messages.success(request, f"✅ Vorlage '{obj.name}' gespeichert.")
+            messages.success(request, '✅ ' + gettext("Vorlage '%(name)s' gespeichert.") % {'name': obj.name})
         return redirect('/neu/vorlagen/')
     return render(request, 'fw/vorlage_form.html', {
         **basis, 'nav': 'vorlagen', 'vl': vl, 'ist_neu': vl is None,
@@ -856,14 +856,13 @@ def fw_vorlage_loeschen(request, pk):
     if vl.organisation_id is None:
         # Eine mitgelieferte Vorlage gehoert keiner Verwaltung — sie zu loeschen
         # naehme sie allen weg. Wer sie nicht mag, legt eine eigene Fassung an.
-        messages.error(request, "Mitgelieferte Vorlagen lassen sich nicht löschen. "
-                                "Sie können sie bearbeiten — dabei entsteht eine eigene Fassung.")
+        messages.error(request, gettext('Mitgelieferte Vorlagen lassen sich nicht löschen. Sie können sie bearbeiten — dabei entsteht eine eigene Fassung.'))
         return redirect('/neu/vorlagen/')
     if request.method == 'POST':
         name = vl.name
         log_aktion(request, "Vorlage gelöscht", name, '')
         vl.delete()
-        messages.success(request, f"🗑️ Vorlage '{name}' gelöscht.")
+        messages.success(request, '🗑️ ' + gettext("Vorlage '%(name)s' gelöscht.") % {'name': name})
     return redirect('/neu/vorlagen/')
 
 
@@ -997,12 +996,12 @@ def fw_integration_portal_token(request):
         vw.portal_feed_token = ''
         vw.save(update_fields=['portal_feed_token'])
         log_aktion(request, "Portal-Feed deaktiviert", vw.firma, '')
-        messages.success(request, "Portal-Feed deaktiviert (Token entfernt).")
+        messages.success(request, gettext('Portal-Feed deaktiviert (Token entfernt).'))
     else:
         vw.portal_feed_token = secrets.token_urlsafe(24)
         vw.save(update_fields=['portal_feed_token'])
         log_aktion(request, "Portal-Feed-Token erzeugt", vw.firma, '')
-        messages.success(request, "✅ Neuer Portal-Feed-Token erzeugt.")
+        messages.success(request, '✅ ' + gettext('Neuer Portal-Feed-Token erzeugt.'))
     return redirect('/neu/integrationen/')
 
 
@@ -1016,7 +1015,7 @@ def fw_integration_test_email(request):
     if request.method == 'POST':
         ziel = (request.user.email or getattr(dj_settings, 'EMAIL_HOST_USER', '') or '').strip()
         if not ziel:
-            messages.error(request, "Keine Ziel-E-Mail hinterlegt. Bitte im Benutzerprofil eine E-Mail eintragen.")
+            messages.error(request, gettext('Keine Ziel-E-Mail hinterlegt. Bitte im Benutzerprofil eine E-Mail eintragen.'))
             return redirect('/neu/integrationen/')
         try:
             # Timeout, damit ein langsamer/nicht erreichbarer SMTP den Request nie blockiert.
@@ -1027,9 +1026,9 @@ def fw_integration_test_email(request):
                 getattr(dj_settings, 'DEFAULT_FROM_EMAIL', None),
                 [ziel], connection=conn,
             ).send(fail_silently=False)
-            messages.success(request, f"✅ Test-E-Mail an {ziel} gesendet.")
+            messages.success(request, '✅ ' + gettext('Test-E-Mail an %(ziel)s gesendet.') % {'ziel': ziel})
         except Exception as e:
-            messages.error(request, f"E-Mail-Versand fehlgeschlagen: {e}")
+            messages.error(request, gettext('E-Mail-Versand fehlgeschlagen: %(e)s') % {'e': e})
     return redirect('/neu/integrationen/')
 
 # Preisplan-Definition (Single Source of Truth). Preis = pro Einheit/Monat.
@@ -1074,7 +1073,7 @@ def fw_abonnemente(request):
     # Sachbearbeitung. Ansehen dürfen weiterhin alle Team-Rollen.
     kann_abo_aendern = hat_rolle(request.user, INHABER_ROLLEN)
     if request.method == 'POST' and not kann_abo_aendern:
-        messages.error(request, "Den Abo-Plan kann nur der Inhaber ändern.")
+        messages.error(request, gettext('Den Abo-Plan kann nur der Inhaber ändern.'))
         return redirect('/neu/abonnement/')
     if request.method == 'POST':
         plan = request.POST.get('plan')
@@ -1083,7 +1082,7 @@ def fw_abonnemente(request):
             vw.abo_jaehrlich = request.POST.get('jaehrlich') == 'on'
             vw.save(update_fields=['abo_plan', 'abo_jaehrlich'])
             log_aktion(request, "Abo-Plan gewählt", plan, 'jährlich' if vw.abo_jaehrlich else 'monatlich')
-            messages.success(request, f"✅ Plan «{dict(Organisation.ABO_CHOICES)[plan]}» aktiviert.")
+            messages.success(request, '✅ ' + gettext('Plan «%(wert)s» aktiviert.') % {'wert': dict(Organisation.ABO_CHOICES)[plan]})
         return redirect('/neu/abonnement/')
 
     einheiten = Einheit.objects.count()

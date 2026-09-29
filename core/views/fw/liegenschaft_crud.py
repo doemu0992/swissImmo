@@ -8,6 +8,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db.models import Q
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -65,7 +66,7 @@ def fw_liegenschaft_form(request, pk=None):
                     getattr(request, 'organisation', None)).filter(pk=wert).first()
                 if person is None:
                     messages.error(
-                        request, 'Diese Person gehört nicht zu Ihrer Verwaltung.')
+                        request, gettext('Diese Person gehört nicht zu Ihrer Verwaltung.'))
                     return redirect(request.path)
             obj.betreut_von = person
         obj.egid = P.get('egid', '').strip()
@@ -126,7 +127,7 @@ def fw_liegenschaft_form(request, pk=None):
         _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Liegenschaft bearbeitet" if pk else "Liegenschaft erstellt",
                    f"{obj.strasse}, {obj.ort}", _diff, ziel=obj)
-        messages.success(request, f"✅ Liegenschaft {obj.strasse} gespeichert.")
+        messages.success(request, '✅ ' + gettext('Liegenschaft %(strasse)s gespeichert.') % {'strasse': obj.strasse})
 
         # Automatischer GWR/EGID-Import (nur wenn gewünscht) — ermittelt die EGID
         # aus der Adresse und importiert die Objekte (Wohnungen) vom Bundesamt.
@@ -135,15 +136,15 @@ def fw_liegenschaft_form(request, pk=None):
                 from portfolio.services import sync_liegenschaft_with_gwr
                 res = sync_liegenschaft_with_gwr(obj)
                 if res.get('egid_found'):
-                    messages.success(request, f"📍 EGID {res['egid_found']} automatisch ermittelt.")
+                    messages.success(request, '📍 ' + gettext('EGID %(wert)s automatisch ermittelt.') % {'wert': res['egid_found']})
                 if res.get('units_created'):
-                    messages.success(request, f"🏠 {res['units_created']} Objekt(e) automatisch aus dem Gebäude- und Wohnungsregister importiert.")
+                    messages.success(request, '🏠 ' + gettext('%(wert)s Objekt(e) automatisch aus dem Gebäude- und Wohnungsregister importiert.') % {'wert': res['units_created']})
                 if not obj.egid and not res.get('egid_found'):
-                    messages.warning(request, "⚠️ EGID konnte nicht automatisch ermittelt werden — bitte Adresse prüfen oder EGID manuell erfassen.")
+                    messages.warning(request, '⚠️ ' + gettext('EGID konnte nicht automatisch ermittelt werden — bitte Adresse prüfen oder EGID manuell erfassen.'))
                 elif res.get('error'):
-                    messages.warning(request, f"⚠️ GWR-Import teilweise fehlgeschlagen: {res['error']}")
+                    messages.warning(request, '⚠️ ' + gettext('GWR-Import teilweise fehlgeschlagen: %(wert)s') % {'wert': res['error']})
             except Exception as e:
-                messages.warning(request, f"⚠️ Automatischer GWR-Import nicht möglich: {e}")
+                messages.warning(request, '⚠️ ' + gettext('Automatischer GWR-Import nicht möglich: %(e)s') % {'e': e})
         return redirect(f'/neu/liegenschaften/{obj.id}/')
 
     return render(request, 'fw/liegenschaft_form.html', {
@@ -171,20 +172,20 @@ def fw_liegenschaft_gwr(request, pk):
         from portfolio.services import sync_liegenschaft_with_gwr
         res = sync_liegenschaft_with_gwr(lg)
         if res.get('egid_found'):
-            messages.success(request, f"📍 EGID {res['egid_found']} ermittelt.")
+            messages.success(request, '📍 ' + gettext('EGID %(wert)s ermittelt.') % {'wert': res['egid_found']})
         if res.get('units_created'):
-            messages.success(request, f"🏠 {res['units_created']} Objekt(e) aus dem GWR importiert.")
+            messages.success(request, '🏠 ' + gettext('%(wert)s Objekt(e) aus dem GWR importiert.') % {'wert': res['units_created']})
         if not res.get('egid_found') and not res.get('units_created'):
             if lg.egid and lg.einheiten.count() > 0:
-                messages.info(request, "Objekte bereits erfasst — kein weiterer Import nötig.")
+                messages.info(request, gettext('Objekte bereits erfasst — kein weiterer Import nötig.'))
             elif not lg.egid:
-                messages.warning(request, "⚠️ EGID konnte nicht ermittelt werden — Adresse prüfen.")
+                messages.warning(request, '⚠️ ' + gettext('EGID konnte nicht ermittelt werden — Adresse prüfen.'))
             else:
-                messages.info(request, "Keine neuen Objekte im GWR gefunden.")
+                messages.info(request, gettext('Keine neuen Objekte im GWR gefunden.'))
         if res.get('error'):
-            messages.warning(request, f"⚠️ Hinweis: {res['error']}")
+            messages.warning(request, '⚠️ ' + gettext('Hinweis: %(wert)s') % {'wert': res['error']})
     except Exception as e:
-        messages.warning(request, f"⚠️ GWR-Import nicht möglich: {e}")
+        messages.warning(request, '⚠️ ' + gettext('GWR-Import nicht möglich: %(e)s') % {'e': e})
     return redirect(f'/neu/liegenschaften/{lg.id}/')
 
 
@@ -201,14 +202,14 @@ def fw_liegenschaft_loeschen(request, pk):
 
     aktive = Mietvertrag.objects.filter(einheit__liegenschaft=lg, status='aktiv').count()
     if aktive:
-        messages.error(request, f"❌ Liegenschaft kann nicht gelöscht werden: {aktive} aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.")
+        messages.error(request, '❌ ' + gettext('Liegenschaft kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.') % {'aktive': aktive})
         return redirect(f'/neu/liegenschaften/{lg.id}/')
 
     name = f"{lg.strasse}, {lg.plz} {lg.ort}"
     anz_obj = lg.einheiten.count()
     log_aktion(request, "Liegenschaft gelöscht", name, f"inkl. {anz_obj} Objekt(e)")
     lg.delete()   # cascade: Objekte, Zähler, Geräte, beendete Verträge etc.
-    messages.success(request, f'🗑️ Liegenschaft „{name}" inkl. {anz_obj} Objekt(e) gelöscht.')
+    messages.success(request, '🗑️ ' + gettext('Liegenschaft „%(name)s" inkl. %(anz_obj)s Objekt(e) gelöscht.') % {'name': name, 'anz_obj': anz_obj})
     return redirect('/neu/liegenschaften/')
 
 
@@ -243,7 +244,7 @@ def fw_versicherung_add(request, lg_id):
         versicherungssumme=dec('versicherungssumme'), jahrespraemie=dec('jahrespraemie'),
         ablauf_datum=ablauf, notiz=P.get('notiz', '').strip())
     log_aktion(request, "Versicherung erfasst", f"{lg.strasse}", P.get('gesellschaft', ''), ziel=lg)
-    messages.success(request, "✅ Versicherung erfasst.")
+    messages.success(request, '✅ ' + gettext('Versicherung erfasst.'))
     return redirect(f'/neu/liegenschaften/{lg.id}/?tab=finanzen')
 
 
@@ -257,7 +258,7 @@ def fw_versicherung_loeschen(request, pk):
     lg_id = vs.liegenschaft_id
     if request.method == 'POST':
         vs.delete()
-        messages.success(request, "✅ Versicherung entfernt.")
+        messages.success(request, '✅ ' + gettext('Versicherung entfernt.'))
     return redirect(f'/neu/liegenschaften/{lg_id}/?tab=finanzen')
 
 
@@ -341,7 +342,7 @@ def fw_objekt_form(request, pk=None):
         _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Objekt bearbeitet" if pk else "Objekt erstellt",
                    f"{obj.bezeichnung} ({obj.liegenschaft.strasse})", _diff, ziel=obj)
-        messages.success(request, f"✅ Objekt {obj.bezeichnung} gespeichert.")
+        messages.success(request, '✅ ' + gettext('Objekt %(bezeichnung)s gespeichert.') % {'bezeichnung': obj.bezeichnung})
         return redirect(f'/neu/objekte/{obj.id}/')
 
     vorwahl_lg = request.GET.get('lg') or (e.liegenschaft_id if e else None)

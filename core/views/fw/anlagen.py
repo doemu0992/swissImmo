@@ -9,6 +9,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.shortcuts import render
+from django.utils.translation import gettext
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
@@ -75,12 +76,11 @@ def fw_anlagen(request):
                     _buche_a('1500', gegen_nr, wert,
                              f"Aktivierung Anlage: {anl.bezeichnung}",
                              datum=adatum, liegenschaft=lg, user=request.user)
-                    messages.success(request, f"✅ Anlage erfasst und aktiviert "
-                                              f"(1500 an {gegen_nr}, CHF {wert}).")
+                    messages.success(request, '✅ ' + gettext('Anlage erfasst und aktiviert (1500 an %(gegen_nr)s, CHF %(wert)s).') % {'gegen_nr': gegen_nr, 'wert': wert})
                 else:
-                    messages.success(request, "✅ Anlage erfasst (ohne Aktivierungsbuchung).")
+                    messages.success(request, '✅ ' + gettext('Anlage erfasst (ohne Aktivierungsbuchung).'))
             else:
-                messages.error(request, "Bezeichnung und Liegenschaft sind Pflicht.")
+                messages.error(request, gettext('Bezeichnung und Liegenschaft sind Pflicht.'))
         elif aktion == 'afa_lauf':
             jahr = int(request.POST.get('jahr') or heute.year)
             n, summe = run_abschreibungen(jahr, user=request.user)
@@ -95,7 +95,7 @@ def fw_anlagen(request):
                 if request.POST.get('bestand') not in (None, ''):
                     f.bestand = _dec(request.POST.get('bestand'))
                 f.save()
-                messages.success(request, f"✅ Erneuerungsfonds {lg.strasse} gespeichert.")
+                messages.success(request, '✅ ' + gettext('Erneuerungsfonds %(strasse)s gespeichert.') % {'strasse': lg.strasse})
         elif aktion == 'fonds_lauf':
             jahr = int(request.POST.get('jahr') or heute.year)
             n, summe = run_erneuerungsfonds_einlage(jahr, user=request.user)
@@ -111,7 +111,7 @@ def fw_anlagen(request):
                     vw.buchung_gesperrt_bis = None
                 vw.save(update_fields=['buchung_gesperrt_bis'])
                 log_aktion(request, "Periodensperre gesetzt", str(vw.buchung_gesperrt_bis or '—'), '')
-                messages.success(request, "✅ Periodensperre aktualisiert.")
+                messages.success(request, '✅ ' + gettext('Periodensperre aktualisiert.'))
         return redirect('/neu/anlagen/')
 
     anlagen = list(Anlage.objects.select_related('liegenschaft').all())

@@ -12,6 +12,7 @@ import logging
 from decimal import Decimal
 
 from django.db import transaction
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -209,7 +210,7 @@ def fw_nebenkosten_verbuchen(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/nebenkosten/{p.id}/')
     if p.abgeschlossen:
-        messages.error(request, "Diese Periode ist bereits abgeschlossen und verbucht.")
+        messages.error(request, gettext('Diese Periode ist bereits abgeschlossen und verbucht.'))
         return redirect(f'/neu/nebenkosten/{p.id}/')
 
     result = berechne_abrechnung(p.id)
@@ -224,7 +225,7 @@ def fw_nebenkosten_verbuchen(request, pk):
         # (doppelte NK-Nachzahlungsdebitoren + Buchungen).
         p = AbrechnungsPeriode.objects.select_for_update().get(id=p.id)
         if p.abgeschlossen:
-            messages.error(request, "Diese Periode ist bereits abgeschlossen und verbucht.")
+            messages.error(request, gettext('Diese Periode ist bereits abgeschlossen und verbucht.'))
             return redirect(f'/neu/nebenkosten/{p.id}/')
         for a in result.get('abrechnungen', []):
             vid = a.get('vertrag_id')
@@ -267,7 +268,7 @@ def fw_nebenkosten_verbuchen(request, pk):
         p.snapshot_json = _nk_json.dumps(_nk_jsonable(result))
         p.save(update_fields=['abgeschlossen', 'snapshot_json'])
     log_aktion(request, "NK-Abrechnung verbucht", p.bezeichnung, f"{n_nach} Nachzahlungen, {n_gut} Gutschriften")
-    messages.success(request, f"✅ Abrechnung verbucht: {n_nach} Nachzahlung(en), {n_gut} Gutschrift(en).")
+    messages.success(request, '✅ ' + gettext('Abrechnung verbucht: %(n_nach)s Nachzahlung(en), %(n_gut)s Gutschrift(en).') % {'n_nach': n_nach, 'n_gut': n_gut})
     for _w in result.get('warnungen', []):
         messages.warning(request, f"⚠️ {_w}")
     return redirect(f'/neu/nebenkosten/{p.id}/')
@@ -347,7 +348,7 @@ def fw_nebenkosten_versand(request, pk):
             logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     if not kontexte:
-        messages.error(request, "Keine abzurechnenden Mieter in dieser Periode gefunden.")
+        messages.error(request, gettext('Keine abzurechnenden Mieter in dieser Periode gefunden.'))
         return redirect(f'/neu/nebenkosten/{p.id}/')
 
     log_aktion(request, "NK-Abrechnungen versendet", p.bezeichnung, f"{abgelegt} abgelegt")
