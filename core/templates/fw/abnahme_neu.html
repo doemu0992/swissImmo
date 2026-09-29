@@ -56,7 +56,7 @@
     <div class="fw-card p-5">
         <div class="flex items-center justify-between mb-3">
             <h3 class="font-bold fw-strong text-sm">{% trans "Mängel / Zustand je Raum" %}</h3>
-            <button type="button" onclick="addMangel()" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">{% zeichen 'neu' klasse='mr-1' %}{% trans "Mangel" %}</button>
+            <button type="button" onclick="addMangel()" class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'neu' klasse='mr-1' %}{% trans "Mangel" %}</button>
         </div>
         <div id="maengel" class="space-y-3"></div>
         <p class="text-xs fw-faint mt-2">{% blocktrans trimmed %}Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").{% endblocktrans %}</p>

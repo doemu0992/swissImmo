@@ -8,7 +8,7 @@
         <a href="/neu/fristen/" class="px-3 py-2 rounded-lg font-semibold {% if not nur_frist %}fw-btn fw-primary{% else %}fw-btn fw-linie fw-mutet hover:fw-flaeche2{% endif %}">{% trans "Alle" %}</a>
         <a href="/neu/fristen/?nur=frist" class="px-3 py-2 rounded-lg font-semibold {% if nur_frist %}fw-btn fw-primary{% else %}fw-btn border fw-linie fw-mutet hover:fw-flaeche2{% endif %}">{% trans "Nur gesetzliche Fristen" %}</a>
         <button type="button" onclick="document.getElementById('kalender-box').classList.toggle('hidden')"
-                class="px-3 py-2 rounded-lg font-semibold fw-flaeche border fw-linie fw-mutet hover:fw-flaeche2">
+                class="fw-btn">
             {% zeichen 'neu' klasse='mr-1' %}{% trans "Kalender" %}
         </button>
     </div>
@@ -27,7 +27,7 @@
         <input id="feed-url" readonly value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
                class="flex-1 fw-flaeche2 rounded-lg text-xs px-3 py-2 font-mono fw-mutet">
         <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
-                class="fw-flaeche border fw-linie hover:fw-flaeche2 fw-ink text-xs font-semibold px-3 py-2 rounded-lg whitespace-nowrap">{% trans "Kopieren" %}</button>
+                class="fw-btn fw-knapp whitespace-nowrap">{% trans "Kopieren" %}</button>
     </div>
     <p class="fw-fs-klein fw-faint mt-1.5">{% trans "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben." %}</p>
 </div>

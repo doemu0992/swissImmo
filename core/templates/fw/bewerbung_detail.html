@@ -115,7 +115,7 @@
                     <option value="{{ key }}" {% if b.status == key %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                <button class="fw-balken-voll hover:fw-balken-voll text-xs font-semibold px-3 py-2 rounded-lg">{% trans "Setzen" %}</button>
+                <button class="fw-btn fw-primary fw-knapp">{% trans "Setzen" %}</button>
             </form>
         </div>
 
@@ -124,7 +124,7 @@
             <p class="text-xs fw-faint mb-3">{% blocktrans with e=b.einheit.bezeichnung %}Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ e }}.{% endblocktrans %}</p>
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mieter anlegen und Vertragsentwurf erstellen?" %}{% endfilter %}');">
                 {% csrf_token %}
-                <button class="w-full fw-flaeche fw-marke text-sm font-bold px-3 py-2.5 rounded-lg hover:fw-markenflaeche">
+                <button class="fw-btn fw-weich w-full">
                     {% trans "Mieter + Vertragsentwurf erstellen" %}
                 </button>
             </form>

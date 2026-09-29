@@ -131,7 +131,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="jahr" value="{{ jahr }}">
                 <input type="hidden" name="konto_nummer" value="2850">
-                <button class="w-full fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg"
+                <button class="fw-btn fw-primary w-full"
                         onclick="return confirm('{% filter escapejs %}{% blocktrans with total=honorar.total|chf %}Verwaltungshonorar {{ jahr }} verbuchen: CHF {{ total }}?{% endblocktrans %}{% endfilter %}');">
                     {% zeichen 'bericht' klasse='mr-1.5' %}{% blocktrans with total=honorar.total|chf %}Honorar {{ jahr }} buchen (CHF {{ total }}){% endblocktrans %}
                 </button>

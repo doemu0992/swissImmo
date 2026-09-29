@@ -308,7 +308,17 @@ für freie Pixelgrössen ausserhalb `fw/` (47 in 15), Inline-Stile (451 in 70)
 und Rundungen ohne Token (112 in 20). Die Button-Varianten sind nicht
 gezählt: Ein Muster, das «selbstgebauter Knopf» zuverlässig erkennt, gibt
 es ohne die Komponente aus Teil 2 nicht — es fände sonst Links und Chips.
-Offen: Teil 2 (Komponenten als Include-Partials).*
+Teil 2, Knöpfe: `fw-btn` bekommt eine Grösse (`fw-knapp`) und die Farben, die
+es vorher nur als Einzelklassen gab (`fw-leise`, `fw-geist`, `fw-weich`,
+`fw-rand-marke`, `fw-rand-krit`, `fw-rand-warn`, `fw-rand-gut`), dazu ein
+gemeinsamer Zustand für `disabled`. 66 selbstgebaute Knöpfe in 29 Vorlagen
+umgestellt; stehen geblieben sind 24, deren Klassen ein Skript umschaltet
+(Reiter im Vertragsassistenten, Typwahl), und einer mit Klassen aus Python.
+Die Sperrklinke zählt sie jetzt mit (53 in 22 Vorlagen, inkl. Portal).
+Kein Include-Partial: Ein Knopf ist ein `<a>` oder `<button>` mit eigenen
+Attributen (`onclick`, `formaction`, `download`) — eine Klasse trägt das,
+ein `{% include %}` müsste jedes Attribut durchreichen.
+Offen: Tabellen (16 von 107 auf `fw-table`), Karte mit Kopf, Badge.*
 
 ### Etappe 4 — Listen-Werkzeugkasten
 

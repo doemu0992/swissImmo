@@ -52,7 +52,7 @@
                 <input name="nk_honorar_prozent" type="number" step="0.25" min="0" max="10" value="{% localize off %}{{ vw.nk_honorar_prozent }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <p class="fw-fs-klein fw-faint mt-1">{% trans "Honorar auf die Nebenkosten-Abrechnung (üblich 3 %; 0 = kein Posten)." %}</p></div>
             <div class="sm:col-span-2">
-                <button class="fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Marktdaten manuell speichern" %}</button>
+                <button class="fw-btn fw-primary">{% trans "Marktdaten manuell speichern" %}</button>
             </div>
         </form>
         <p class="text-xs fw-faint mt-3">{% trans "Hinweis: Der automatische Abruf holt die Werte von BWO (Referenzzins) und HEV (LIK). Blockiert das Hosting (z. B. PythonAnywhere-Whitelist) den Zugriff, trage die Werte einfach manuell ein — sie gelten dann überall." %}</p>

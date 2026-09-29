@@ -198,7 +198,7 @@
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <input type="number" step="0.05" min="0" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
                                    class="w-20 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 text-right" title="{% trans 'Betrag (Teilzahlung möglich)' %}">
-                            <button type="submit" class="inline-flex items-center gap-1.5 fw-balken-voll fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                            <button type="submit" class="fw-btn fw-primary fw-knapp">
                                 {% zeichen 'speichern' %} {% if row.in_zahlung %}{% trans "Bestätigen" %}{% else %}{% trans "Bezahlen" %}{% endif %}
                             </button>
                         </form>
@@ -219,7 +219,7 @@
                                 {% for k in aufwand_konten %}<option value="{{ k.id }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
                             </select>
                             {% endif %}
-                            <button type="submit" class="inline-flex items-center gap-1.5 fw-warn-flaeche hover:fw-warn-voll text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                            <button type="submit" class="fw-btn fw-warnknopf fw-knapp">
                                 {% zeichen 'speichern' %} {% trans "Freigeben" %}
                             </button>
                         </form>
@@ -236,7 +236,7 @@
                         {% if row.kann_weiterverrechnen %}
                         <a href="/neu/kreditoren/{{ row.k.id }}/weiterverrechnen/"
                            onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Weiterverrechnen" %}{% endfilter %}',false)"
-                           class="inline-flex items-center gap-1.5 border fw-linie-marke fw-marke hover:fw-markenflaeche text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                           class="fw-btn fw-rand-marke fw-knapp"
                            title="{% blocktrans with betrag=row.offen_wv|chf %}Offen: CHF {{ betrag }}{% endblocktrans %}">
                             {% zeichen 'extern' %} {% trans "Weiterverrechnen" %}
                         </a>
@@ -356,7 +356,7 @@
                             <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block fw-fs-mikro font-semibold fw-mutet mb-1">{% trans "Betrag" %}</label>
                                 <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5 text-right tabular-nums"></div>
                             <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 fw-fs-klein fw-mutet cursor-pointer" title="{% trans 'In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet' %}"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">{% trans "HNK" %}</label></div>
-                            <div class="sm:col-span-1"><button class="w-full fw-balken-voll fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="{% trans 'Position hinzufügen' %}">{% zeichen 'neu' %}</button></div>
+                            <div class="sm:col-span-1"><button class="fw-btn fw-primary fw-knapp w-full" title="{% trans 'Position hinzufügen' %}">{% zeichen 'neu' %}</button></div>
                         </form>
                     </div>
                 </td>
@@ -389,11 +389,11 @@
         <div class="flex items-center gap-2">
             {% if seite.has_previous %}
             <a href="?{{ query_ohne_seite }}{% if query_ohne_seite %}&{% endif %}seite={{ seite.previous_page_number }}"
-               class="px-3 py-1.5 rounded-lg fw-flaeche2 hover:fw-balken font-semibold">{% trans "‹ Zurück" %}</a>
+               class="fw-btn fw-leise fw-knapp">{% trans "‹ Zurück" %}</a>
             {% endif %}
             {% if seite.has_next %}
             <a href="?{{ query_ohne_seite }}{% if query_ohne_seite %}&{% endif %}seite={{ seite.next_page_number }}"
-               class="px-3 py-1.5 rounded-lg fw-flaeche2 hover:fw-balken font-semibold">{% trans "Weiter ›" %}</a>
+               class="fw-btn fw-leise fw-knapp">{% trans "Weiter ›" %}</a>
             {% endif %}
         </div>
     </div>

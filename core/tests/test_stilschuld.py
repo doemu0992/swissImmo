@@ -11,11 +11,16 @@ PIXELGROESSE   `text-[13px]` statt einer Stufe der Skala (`fw-fs-*`).
 INLINE_STIL    `style="…"` am Element statt einer Klasse der Schicht.
 FREIE_RUNDUNG  `rounded-[…]` oder `border-radius:` ohne Token
                (`var(--ds-radius…)`).
+SELBSTGEBAUTER_KNOPF  `<button|a class="… px-3 py-1.5 rounded-lg font-semibold …">`
+               ohne `fw-btn`. Seit Etappe 3 Teil 2 gibt es die Varianten
+               (`fw-knapp`, `fw-leise`, `fw-rand-marke` …); übrig sind Knöpfe,
+               deren Klassen ein Skript umschaltet.
 
 Stand beim Einführen, 29.09.2026:
   PIXELGROESSE   47 in 15 Vorlagen
   INLINE_STIL    451 in 70 Vorlagen
   FREIE_RUNDUNG  112 in 20 Vorlagen
+  SELBSTGEBAUTER_KNOPF  53 in 22 Vorlagen (nach Teil 2; vorher 90 allein in fw/)
 
 NICHT GEZÄHLT: Kommentare. Ein Erklärtext, der `style="…"` nennt, ist keine
 Verwendung (dieselbe Falle wie beim Farbwächter).
@@ -37,6 +42,7 @@ VORLAGEN = WURZEL / 'core' / 'templates'
 MUSTER = {
     'PIXELGROESSE': re.compile('(?<![\\w:-])text-\\[[0-9.]+px\\]'),
     'INLINE_STIL': re.compile('\\sstyle=\\"'),
+    'SELBSTGEBAUTER_KNOPF': re.compile('<(?:button|a)\\b[^>]*\\bclass="(?![^"]*\\bfw-btn\\b)(?=[^"]*\\bpx-\\d)(?=[^"]*\\bpy-\\d)(?=[^"]*\\brounded)(?=[^"]*\\bfont-(?:semibold|bold)\\b)[^"]*"'),
     'FREIE_RUNDUNG': re.compile('\\brounded(?:-[a-z]+)?-\\[[^\\]]+\\]|border-radius\\s*:\\s*(?!var\\(--ds-)'),
 }
 
@@ -130,6 +136,30 @@ OBERGRENZE = {
     'fw/vertrag_neu.html': 1,
     'fw/zulauf.html': 3,
 },
+    'SELBSTGEBAUTER_KNOPF': {
+    'core/dossier/base.html': 7,
+    'core/dossier/vertrag.html': 4,
+    'core/mieter_konto.html': 1,
+    'core/mieter_kuendigung.html': 2,
+    'core/mieter_rechnungen.html': 2,
+    'core/mieter_schaden.html': 1,
+    'core/mieter_ticket_detail.html': 1,
+    'core/mieter_tickets.html': 2,
+    'core/mietzins_form.html': 1,
+    'core/postfach_form.html': 1,
+    'core/postfach_liste.html': 2,
+    'core/public_bewerbung_form.html': 1,
+    'core/zweifaktor_codes.html': 1,
+    'core/zweifaktor_uebersicht.html': 2,
+    'fw/_unterschrift_feld.html': 1,
+    'fw/base.html': 4,
+    'fw/finanzen.html': 1,
+    'fw/lieferantenkonten.html': 1,
+    'fw/mieterkonten.html': 1,
+    'fw/objekt_detail.html': 2,
+    'fw/person_form.html': 4,
+    'fw/vertrag_neu.html': 11,
+},
     'FREIE_RUNDUNG': {
     'admin/base.html': 3,
     'admin/crm/eigentuemer_header.html': 6,
@@ -212,9 +242,12 @@ class StilschuldTest(SimpleTestCase):
             'PIXELGROESSE': '<p class="text-[13px]">',
             'INLINE_STIL': '<p style="color:red">',
             'FREIE_RUNDUNG': '<p class="rounded-[5px]">',
+            'SELBSTGEBAUTER_KNOPF': '<button class="px-3 py-1.5 rounded-lg font-semibold">',
         }
         for art, text in probe.items():
             with self.subTest(art=art):
                 self.assertEqual(len(MUSTER[art].findall(text)), 1)
         self.assertEqual(MUSTER['FREIE_RUNDUNG'].findall('border-radius:var(--ds-radius)'), [])
+        self.assertEqual(MUSTER['SELBSTGEBAUTER_KNOPF'].findall(
+            '<button class="fw-btn px-3 py-1.5 rounded-lg font-semibold">'), [])
         self.assertEqual(MUSTER['INLINE_STIL'].findall(_ohne_kommentare('{# style="x" #}')), [])

@@ -22,7 +22,7 @@
             {% for q in "1234" %}<option value="{{ q }}" {% if quartal == q|stringformat:'s' %}selected{% endif %}>{% blocktrans %}{{ q }}. Quartal{% endblocktrans %}</option>{% endfor %}
         </select></div>
     <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Anzeigen" %}</button>
-    <a href="/neu/mwst/estv-export/?jahr={{ jahr }}&quartal={{ quartal }}" class="fw-flaeche border fw-linie hover:fw-linie-marke fw-mutet hover:fw-marke text-sm font-semibold px-4 py-2 rounded-lg">
+    <a href="/neu/mwst/estv-export/?jahr={{ jahr }}&quartal={{ quartal }}" class="fw-btn">
         {% zeichen 'herunterladen' klasse='mr-1.5' %}{% trans "ESTV-Export (CSV)" %}
     </a>
 </form>

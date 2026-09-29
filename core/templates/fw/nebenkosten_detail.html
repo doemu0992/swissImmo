@@ -27,7 +27,7 @@
         {% if request.user|darf:"/neu/nebenkosten/1/versand/" %}
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/versand/" title="{% trans 'Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF' %}">
             {% csrf_token %}
-            <button class="text-sm font-semibold fw-flaeche border fw-linie-marke fw-marke hover:fw-markenflaeche px-4 py-1.5 rounded-lg">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Abrechnungen erstellen &amp; ablegen" %}</button>
+            <button class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Abrechnungen erstellen &amp; ablegen" %}</button>
         </form>
         {% endif %}
         {% if p.abgeschlossen %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-gut-flaeche fw-gut">{% trans "Abgeschlossen" %}</span>

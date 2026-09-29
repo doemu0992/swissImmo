@@ -22,12 +22,12 @@
     <!-- Schnellauswahl wiederkehrender Positionen -->
     <div class="flex flex-wrap gap-2 mb-4">
         <span class="text-xs font-semibold fw-faint self-center mr-1">{% trans "Schnellauswahl" %}:</span>
-        <button type="button" onclick="fwPos('Sonnerie-Beschriftung','20')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Sonnerie-Beschriftung" %}</button>
-        <button type="button" onclick="fwPos('Namensschild Briefkasten','15')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'senden' klasse='mr-1' %}{% trans "Briefkasten-Schild" %}</button>
-        <button type="button" onclick="fwPos('Ersatzschlüssel','80')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'schluessel' klasse='mr-1' %}{% trans "Ersatzschlüssel" %}</button>
-        <button type="button" onclick="fwPos('Zylinderwechsel','150')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'gesperrt' klasse='mr-1' %}{% trans "Zylinderwechsel" %}</button>
-        <button type="button" onclick="fwPos('Reinigung / Endreinigung','')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Reinigung" %}</button>
-        <button type="button" onclick="fwPos('Schadenersatz','')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-markenflaeche hover:fw-marke">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Schadenersatz" %}</button>
+        <button type="button" onclick="fwPos('Sonnerie-Beschriftung','20')" class="fw-btn fw-leise fw-knapp">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Sonnerie-Beschriftung" %}</button>
+        <button type="button" onclick="fwPos('Namensschild Briefkasten','15')" class="fw-btn fw-leise fw-knapp">{% zeichen 'senden' klasse='mr-1' %}{% trans "Briefkasten-Schild" %}</button>
+        <button type="button" onclick="fwPos('Ersatzschlüssel','80')" class="fw-btn fw-leise fw-knapp">{% zeichen 'schluessel' klasse='mr-1' %}{% trans "Ersatzschlüssel" %}</button>
+        <button type="button" onclick="fwPos('Zylinderwechsel','150')" class="fw-btn fw-leise fw-knapp">{% zeichen 'gesperrt' klasse='mr-1' %}{% trans "Zylinderwechsel" %}</button>
+        <button type="button" onclick="fwPos('Reinigung / Endreinigung','')" class="fw-btn fw-leise fw-knapp">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Reinigung" %}</button>
+        <button type="button" onclick="fwPos('Schadenersatz','')" class="fw-btn fw-leise fw-knapp">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Schadenersatz" %}</button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -265,8 +265,8 @@
         <span>{% blocktrans count n=rows_gesamt %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}{% if page.paginator.num_pages > 1 %} · {% blocktrans with seite=page.number von=page.paginator.num_pages %}Seite {{ seite }}/{{ von }}{% endblocktrans %}{% endif %} · {% trans "Mahnstufen werden aus der Fälligkeit berechnet" %}</span>
         {% if page.paginator.num_pages > 1 %}
         <span class="flex items-center gap-1.5">
-            {% if page.has_previous %}<a href="?seite={{ page.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="px-2.5 py-1.5 rounded-lg border fw-linie hover:fw-linie-marke hover:fw-marke font-semibold">{% trans "‹ Zurück" %}</a>{% endif %}
-            {% if page.has_next %}<a href="?seite={{ page.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="px-2.5 py-1.5 rounded-lg border fw-linie hover:fw-linie-marke hover:fw-marke font-semibold">{% trans "Weiter ›" %}</a>{% endif %}
+            {% if page.has_previous %}<a href="?seite={{ page.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-btn fw-knapp">{% trans "‹ Zurück" %}</a>{% endif %}
+            {% if page.has_next %}<a href="?seite={{ page.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-btn fw-knapp">{% trans "Weiter ›" %}</a>{% endif %}
         </span>
         {% endif %}
     </div>

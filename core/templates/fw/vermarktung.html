@@ -79,12 +79,12 @@
                 {% zeichen 'person' klasse='mr-1' %}{% blocktrans count n=r.bewerbungen %}{{ n }} Bewerbung{% plural %}{{ n }} Bewerbungen{% endblocktrans %}{% if r.bewerbungen %} {% trans "vergleichen" %}{% endif %}
             </a>
             <div class="flex items-center gap-2">
-                <a href="/neu/vermarktung/{{ r.e.id }}/expose/" target="_blank" rel="noopener" class="text-xs font-semibold text-white fw-balken-voll hover:fw-balken-voll px-3 py-1.5 rounded-lg">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Exposé" %}</a>
+                <a href="/neu/vermarktung/{{ r.e.id }}/expose/" target="_blank" rel="noopener" class="fw-btn fw-primary fw-knapp">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Exposé" %}</a>
                 <form method="post" action="/neu/objekte/{{ r.e.id }}/ausschreiben/">
                     {% csrf_token %}
                     <input type="hidden" name="ziel" value="aus">
                     <input type="hidden" name="weiter" value="/neu/vermarktung/">
-                    <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-3 py-1.5 rounded-lg">{% trans "Ausschreibung beenden" %}</button>
+                    <button class="fw-btn fw-knapp">{% trans "Ausschreibung beenden" %}</button>
                 </form>
             </div>
         </div>
@@ -96,7 +96,7 @@
     <span class="w-14 h-14 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4">{% zeichen 'senden' klasse='text-xl' %}</span>
     <p class="font-semibold fw-ink">{% trans "Kein Objekt in der Vermarktung" %}</p>
     <p class="text-sm fw-faint mt-1">{% trans "Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur Nachmietersuche ausschreiben." %}</p>
-    <a href="/neu/mieterwechsel/" class="inline-block mt-4 text-sm font-semibold text-white fw-balken-voll hover:fw-balken-voll px-4 py-2 rounded-lg">{% trans "Zum Mieterwechsel-Cockpit" %}</a>
+    <a href="/neu/mieterwechsel/" class="fw-btn fw-primary mt-4">{% trans "Zum Mieterwechsel-Cockpit" %}</a>
 </div>
 {% endif %}
 {% endblock %}
