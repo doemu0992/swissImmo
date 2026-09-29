@@ -1,11 +1,11 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load chf zeichen i18n %}
 {% block title %}{% trans "Abonnement · swissImmo" %}{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
         <h1>{% trans "Abonnement" %}</h1>
-        <p>{% blocktrans count n=einheiten %}Preis pro verwaltete Einheit / Monat — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ n }}</span> Einheit im System.{% plural %}Preis pro verwaltete Einheit / Monat — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ n }}</span> Einheiten im System.{% endblocktrans %}</p>
+        <p>{% blocktrans count n=einheiten %}Monatspreis nach Stufe — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ n }}</span> Einheit im System.{% plural %}Monatspreis nach Stufe — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ n }}</span> Einheiten im System.{% endblocktrans %}</p>
     </div>
 </div>
 
@@ -22,12 +22,12 @@
         <input type="hidden" name="plan" value="{{ aktiver_plan }}">
         <input type="hidden" name="jaehrlich" value="on">
         <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if jaehrlich %}fw-btn fw-primary{% else %}fw-mutet hover:fw-ink{% endif %}">
-            {% trans "Jährlich" %} <span class="fw-fs-mikro font-bold {% if jaehrlich %}fw-faint{% else %}fw-gut{% endif %}">−15 %</span></button>
+            {% trans "Jährlich" %} <span class="fw-fs-mikro font-bold {% if jaehrlich %}fw-faint{% else %}fw-gut{% endif %}">−{{ rabatt_prozent }} %</span></button>
     </form>
 </div>
 {% endif %}
 
-<div class="grid md:grid-cols-3 gap-5 items-start">
+<div class="grid md:grid-cols-2 xl:grid-cols-4 gap-5 items-start">
     {% for p in plaene %}
     <div class="relative fw-flaeche rounded-xl border shadow-sm overflow-hidden
         {% if p.empfohlen %}fw-linie-marke ring-2 fw-fokusring{% else %}fw-linie{% endif %}">
@@ -40,12 +40,17 @@
             <p class="text-xs fw-faint mt-0.5 mb-4">{{ p.zielgruppe }}</p>
 
             <div class="flex items-end gap-1">
-                <span class="text-2xl sm:text-3xl font-bold fw-strong">CHF {{ p.monatlich }}</span>
+                <span class="text-2xl sm:text-3xl font-bold fw-strong">CHF {{ p.monatlich|chf:0 }}</span>
                 <span class="text-sm fw-faint mb-1">{% trans "/ Monat" %}</span>
             </div>
             <p class="text-xs fw-faint mt-1">
-                {% blocktrans with preis=p.preis_einheit grund=p.grund %}CHF {{ preis }}/Einheit · min. CHF {{ grund }}{% endblocktrans %}{% if p.gratis_bis %} · {% blocktrans with n=p.gratis_bis %}gratis bis {{ n }} Einheiten{% endblocktrans %}{% endif %}
-                {% if jaehrlich %}<br>{% blocktrans with preis=p.jahr %}CHF {{ preis }}/Jahr (−15 %){% endblocktrans %}{% endif %}
+                {% blocktrans with n=p.einheiten|chf:0 %}{{ n }} Einheiten inklusive{% endblocktrans %}
+                · {% if p.nutzer %}{% blocktrans with n=p.nutzer %}{{ n }} Nutzer{% endblocktrans %}{% else %}{% trans "Nutzer unbegrenzt" %}{% endif %}
+                {% if p.zusatz_100 %}<br>{% if p.deckel %}{% blocktrans with preis=p.zusatz_100|chf:0 deckel=p.deckel|chf:0 %}+100 Einheiten: CHF {{ preis }}/Monat, bis {{ deckel }}{% endblocktrans %}{% else %}{% blocktrans with preis=p.zusatz_100|chf:0 %}+100 Einheiten: CHF {{ preis }}/Monat{% endblocktrans %}{% endif %}{% endif %}
+            </p>
+            <p class="text-xs mt-2 {% if p.bestand is None %}fw-faint{% else %}fw-mutet{% endif %}">
+                {% if p.bestand is None %}{% trans "Reicht für deinen heutigen Bestand nicht." %}
+                {% else %}{% blocktrans with preis=p.bestand|chf:0 %}Für deinen Bestand: CHF {{ preis }}/Monat{% endblocktrans %}{% if jaehrlich %}<br>{% blocktrans with preis=p.jahr|chf:0 prozent=rabatt_prozent %}CHF {{ preis }}/Jahr (−{{ prozent }} %){% endblocktrans %}{% endif %}{% endif %}
             </p>
 
             {% if kann_abo_aendern %}
@@ -61,12 +66,11 @@
             {% endif %}
 
             <ul class="mt-5 space-y-2">
+                {% if p.alles_aus %}<li class="flex items-start gap-2 text-sm fw-mutet">{% zeichen 'gut' klasse='fw-gut mt-0.5' %} {% blocktrans with name=p.alles_aus %}Alles aus {{ name }}{% endblocktrans %}</li>{% endif %}
                 {% for f in p.features %}
                 <li class="flex items-start gap-2 text-sm fw-mutet">{% zeichen 'gut' klasse='fw-gut mt-0.5' %} {{ f }}</li>
                 {% endfor %}
-                {% for f in p.nicht %}
-                <li class="flex items-start gap-2 text-sm fw-faint">{% zeichen 'mehr' klasse='mt-0.5' %} {{ f }}</li>
-                {% endfor %}
+                <li class="flex items-start gap-2 text-sm fw-mutet">{% zeichen 'gut' klasse='fw-gut mt-0.5' %} {{ p.support }}</li>
             </ul>
         </div>
     </div>
@@ -77,10 +81,10 @@
     <h3 class="font-bold fw-strong flex items-center gap-2 mb-3">{% zeichen 'hinweis' klasse='fw-faint' %} {% trans "Add-ons" %}</h3>
     <div class="grid sm:grid-cols-3 gap-3 text-sm">
         <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">{% trans "Datenmigration" %}</div><div class="fw-mutet text-xs mt-1">{% trans "Einmalig CHF 200–800, schmerzloser Umzug bestehender Mandate." %}</div></div>
-        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">{% trans "E-Signaturen" %}</div><div class="fw-mutet text-xs mt-1">{% trans "CHF 1.50/Signatur (in Premium inkl. Kontingent)." %}</div></div>
+        <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">{% trans "E-Signaturen" %}</div><div class="fw-mutet text-xs mt-1">{% trans "CHF 1.50 pro Signatur, in jeder Stufe gleich." %}</div></div>
         <div class="rounded-xl fw-flaeche2 border fw-linie p-4"><div class="font-semibold fw-strong">{% trans "SMS &amp; Speicher" %}</div><div class="fw-mutet text-xs mt-1">{% trans "SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher." %}</div></div>
     </div>
 </div>
 
-<p class="text-xs fw-faint mt-4">{% trans "Alle Preise exkl. MWST. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet. Preise sind ein Startgerüst und können in den Einstellungen angepasst werden." %}</p>
+<p class="text-xs fw-faint mt-4">{% blocktrans with stand=preisstand %}Alle Preise exkl. MWST. Einführungspreise, Stand {{ stand }}. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet.{% endblocktrans %}</p>
 {% endblock %}

@@ -20103,6 +20103,141 @@ msgstr "Envoi de réponse"
 #: tickets/models.py:132
 msgid "Handwerker Mail"
 msgstr "E-mail artisan"
+#: core/funktionen.py
+msgid "Akten lesen und bearbeiten"
+msgstr "Consulter et modifier les dossiers"
+
+#: core/funktionen.py
+msgid "Dokumentenablage je Akte"
+msgstr "Classement des documents par dossier"
+
+#: core/funktionen.py
+msgid "Sollstellung, Bankabgleich, Mahnlauf"
+msgstr "Facturation des loyers, rapprochement bancaire, rappels"
+
+#: core/funktionen.py
+msgid "Prüfung von Terminen und Fristen gegen das Regelwerk"
+msgstr "Contrôle des échéances et délais selon les règles"
+
+#: core/funktionen.py
+msgid "Nebenkostenabrechnung als geführter Lauf"
+msgstr "Décompte des frais accessoires en déroulement guidé"
+
+#: core/funktionen.py
+msgid "Vor-Ort-Modus für Abnahme und Besichtigung"
+msgstr "Mode sur place pour états des lieux et visites"
+
+#: core/funktionen.py
+msgid "Portalzugang für die Mieterschaft"
+msgstr "Accès au portail pour les locataires"
+
+#: core/funktionen.py
+msgid "Fallmaschine: Vorgänge mit Schritten und Fristen"
+msgstr "Gestion des dossiers : opérations avec étapes et délais"
+
+#: core/funktionen.py
+msgid "Posteingang mit Zuordnungsvorschlag"
+msgstr "Courrier entrant avec proposition d’attribution"
+
+#: core/funktionen.py
+msgid "Portalzugang für die Eigentümerschaft"
+msgstr "Accès au portail pour les propriétaires"
+
+#: core/funktionen.py
+msgid "Honorarertrag gegen erfassten Aufwand"
+msgstr "Honoraires face au temps saisi"
+
+#: core/funktionen.py
+msgid "Buchhaltungsexport, Portale, Kalender"
+msgstr "Export comptable, portails, calendrier"
+
+#: core/funktionen.py
+msgid "Support per E-Mail"
+msgstr "Support par e-mail"
+
+#: core/funktionen.py
+msgid "Support per E-Mail und Telefon"
+msgstr "Support par e-mail et téléphone"
+
+#: core/funktionen.py
+msgid "Support mit SLA, Onboarding und Datenimport inklusive"
+msgstr "Support avec SLA, mise en route et import des données inclus"
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "%(n)s Einheiten inklusive"
+msgstr "%(n)s objets inclus"
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "%(n)s Nutzer"
+msgstr "%(n)s utilisateurs"
+
+#: core/templates/fw/abonnement.html
+msgid "Nutzer unbegrenzt"
+msgstr "Utilisateurs illimités"
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "+100 Einheiten: CHF %(preis)s/Monat, bis %(deckel)s"
+msgstr "+100 objets : CHF %(preis)s/mois, jusqu’à %(deckel)s"
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "+100 Einheiten: CHF %(preis)s/Monat"
+msgstr "+100 objets : CHF %(preis)s/mois"
+
+#: core/templates/fw/abonnement.html
+msgid "Reicht für deinen heutigen Bestand nicht."
+msgstr "Ne suffit pas pour ton parc actuel."
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "Für deinen Bestand: CHF %(preis)s/Monat"
+msgstr "Pour ton parc : CHF %(preis)s/mois"
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "CHF %(preis)s/Jahr (−%(prozent)s %%)"
+msgstr "CHF %(preis)s/an (−%(prozent)s %%)"
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "Alles aus %(name)s"
+msgstr "Tout de %(name)s"
+
+#: core/templates/fw/abonnement.html
+msgid "CHF 1.50 pro Signatur, in jeder Stufe gleich."
+msgstr "CHF 1.50 par signature, identique dans chaque formule."
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "Alle Preise exkl. MWST. Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet."
+msgstr "Tous les prix hors TVA. Prix de lancement, état au %(stand)s. Le nombre d’objets est calculé automatiquement à partir de tes objets saisis."
+
+#: core/views/fw/profil.py
+msgid "Private und Kleinstverwaltungen"
+msgstr "Particuliers et micro-gérances"
+
+#: core/views/fw/profil.py
+msgid "Kleine Verwaltungen"
+msgstr "Petites gérances"
+
+#: core/views/fw/profil.py
+msgid "Mittlere Verwaltungen und Treuhänder"
+msgstr "Gérances moyennes et fiduciaires"
+
+#: core/views/fw/profil.py
+msgid "Grössere Verwaltungen"
+msgstr "Grandes gérances"
+
+#: core/templates/fw/abonnement.html
+#, python-format
+msgid "Monatspreis nach Stufe — aktuell <span style=\"color:var(--ds-ink);font-weight:600\">%(n)s</span> Einheit im System."
+msgid_plural "Monatspreis nach Stufe — aktuell <span style=\"color:var(--ds-ink);font-weight:600\">%(n)s</span> Einheiten im System."
+msgstr[0] "Prix mensuel selon la formule — actuellement <span style=\"color:var(--ds-ink);font-weight:600\">%(n)s</span> objet dans le système."
+msgstr[1] "Prix mensuel selon la formule — actuellement <span style=\"color:var(--ds-ink);font-weight:600\">%(n)s</span> objets dans le système."
+
 
 #: tickets/models.py:133
 msgid "Ausgehende E-Mail"

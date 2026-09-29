@@ -1043,36 +1043,60 @@ def fw_integration_test_email(request):
             messages.error(request, gettext('E-Mail-Versand fehlgeschlagen: %(e)s') % {'e': e})
     return redirect('/neu/integrationen/')
 
-# Preisplan-Definition (Single Source of Truth). Preis = pro Einheit/Monat.
-ABO_PLAENE = [
-    {'key': 'start', 'name': 'Start', 'preis_einheit': Decimal('0.90'),
-     'grund': Decimal('9'), 'gratis_bis': 3, 'farbe': 'slate',
-     'zielgruppe': gettext_lazy('Selbstverwalter & kleine Eigentümer'),
-     'features': [gettext_lazy('Objekte, Personen & Verträge'), gettext_lazy('Vertrags-PDF & Dokumentenablage'),
-                  gettext_lazy('Mieterportal (Dokumente, QR-Rechnung, Schaden, Tickets)'),
-                  gettext_lazy('QR-Rechnung & Kontoauszug')],
-     'nicht': [gettext_lazy('Buchhaltung & Zahlungsverkehr'), gettext_lazy('Nebenkosten & MWST'), gettext_lazy('Eigentümerportal')]},
-    {'key': 'pro', 'name': 'Pro', 'preis_einheit': Decimal('1.90'),
-     'grund': Decimal('49'), 'gratis_bis': 0, 'farbe': 'indigo', 'empfohlen': True,
-     'zielgruppe': gettext_lazy('Liegenschaftsverwaltungen'),
-     'features': [gettext_lazy('Alles aus Start'), gettext_lazy('Buchhaltung, Sollstellung & Mahnwesen'),
-                  gettext_lazy('camt.053-Import / pain.001-Export'), gettext_lazy('Nebenkostenabrechnung & MWST'),
-                  gettext_lazy('Mietzinsanpassung (amtl. Formular, LIK/Referenzzins)'),
-                  gettext_lazy('Eigentümerportal & Reports'), gettext_lazy('Serienbriefe & Schaden-/Handwerker-Flow')],
-     'nicht': [gettext_lazy('Multi-Eigentümer (voll)'), gettext_lazy('KI-Analysen'), gettext_lazy('API-Zugang')]},
-    {'key': 'premium', 'name': 'Premium', 'preis_einheit': Decimal('2.90'),
-     'grund': Decimal('149'), 'gratis_bis': 0, 'farbe': 'purple',
-     'zielgruppe': gettext_lazy('Grössere Verwaltungen & Treuhänder'),
-     'features': [gettext_lazy('Alles aus Pro'), gettext_lazy('Multi-Eigentümer & Mandatsabrechnung'),
-                  gettext_lazy('KI-Analysen & Report-Assistent'), gettext_lazy('DocuSeal-Vertragssignatur inkl.'),
-                  gettext_lazy('API-Zugang'), gettext_lazy('Prioritäts-Support & Onboarding')],
-     'nicht': []},
-]
+# Zielgruppe je Stufe — reiner Anzeigetext. Stufen, Grenzen, Preise und
+# Funktionen kommen aus core/funktionen.py (D7, docs/AUFTRAG-ABOSTUFEN.md);
+# bis 29.09.2026 stand hier eine eigene Preisliste pro Einheit.
+ABO_ZIELGRUPPE = {
+    'start':        gettext_lazy('Private und Kleinstverwaltungen'),
+    'team':         gettext_lazy('Kleine Verwaltungen'),
+    'professional': gettext_lazy('Mittlere Verwaltungen und Treuhänder'),
+    'enterprise':   gettext_lazy('Grössere Verwaltungen'),
+}
+
+
+def _abo_plaene(einheiten, jaehrlich, aktiver_plan):
+    """Die vier Stufen für die Abo-Seite, ausschliesslich aus core.funktionen.
+
+    `bestand` ist der Monatspreis für die heutige Einheitenzahl, oder `None`,
+    wenn die Stufe sie nicht fasst. Die Merkmale sind die Funktionen, die
+    eine Stufe gegenüber der vorherigen neu freigibt.
+    """
+    from core import funktionen as f
+
+    faktor = (1 - f.JAHRESRABATT) if jaehrlich else Decimal('1')
+    reihenfolge = list(f.FUNKTIONEN)
+    empfohlen = f.passende_stufe(einheiten)
+    plaene = []
+    vorher = None
+    for stufe in f.STUFEN_REIHENFOLGE:
+        preis = f.PREISE[stufe]
+        grenzen = f.GRENZEN[stufe]
+        bestand = f.monatspreis(stufe, einheiten)
+        neu = f.STUFEN[stufe] - (f.STUFEN[vorher] if vorher else frozenset())
+        plaene.append({
+            'key': stufe,
+            'name': f.STUFEN_NAMEN[stufe],
+            'zielgruppe': ABO_ZIELGRUPPE[stufe],
+            'monatlich': (preis['monat'] * faktor).quantize(Decimal('1')),
+            'bestand': None if bestand is None else (bestand * faktor).quantize(Decimal('1')),
+            'jahr': None if bestand is None else (bestand * faktor * 12).quantize(Decimal('1')),
+            'einheiten': grenzen['einheiten'],
+            'nutzer': grenzen['nutzer'],
+            'zusatz_100': preis['zusatz_100'],
+            'deckel': preis['deckel'],
+            'support': f.SUPPORT[stufe],
+            'alles_aus': f.STUFEN_NAMEN[vorher] if vorher else None,
+            'features': [f.FUNKTIONEN[k] for k in sorted(neu, key=reihenfolge.index)],
+            'empfohlen': stufe == empfohlen,
+            'aktiv': stufe == aktiver_plan,
+        })
+        vorher = stufe
+    return plaene
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_abonnemente(request):
-    """Abo-/Preisseite: 3 Stufen, Preis pro Einheit, aktueller Plan wählbar."""
+    """Abo-/Preisseite: vier Stufen aus core.funktionen, aktueller Plan wählbar."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Organisation
@@ -1097,22 +1121,15 @@ def fw_abonnemente(request):
             messages.success(request, '✅ ' + gettext('Plan «%(wert)s» aktiviert.') % {'wert': dict(Organisation.ABO_CHOICES)[plan]})
         return redirect('/neu/abonnement/')
 
+    from core.funktionen import JAHRESRABATT, PREISSTAND
+
     einheiten = Einheit.objects.count()
     jaehrlich = vw.abo_jaehrlich
-    plaene = []
-    for p in ABO_PLAENE:
-        verrechenbar = max(0, einheiten - p['gratis_bis'])
-        monatlich = max(p['grund'], p['preis_einheit'] * verrechenbar)
-        if jaehrlich:
-            monatlich = (monatlich * Decimal('12') * Decimal('0.85') / Decimal('12'))
-        plaene.append({
-            **p, 'aktiv': vw.abo_plan == p['key'],
-            'monatlich': monatlich.quantize(Decimal('1')),
-            'jahr': (monatlich * 12).quantize(Decimal('1')),
-        })
+    plaene = _abo_plaene(einheiten, jaehrlich, vw.abo_plan)
 
     return render(request, 'fw/abonnement.html', {
         **basis, 'nav': 'abonnement', 'plaene': plaene, 'einheiten': einheiten,
         'jaehrlich': jaehrlich, 'aktiver_plan': vw.abo_plan,
         'kann_abo_aendern': kann_abo_aendern,
+        'rabatt_prozent': int(JAHRESRABATT * 100), 'preisstand': PREISSTAND,
     })
