@@ -306,5 +306,6 @@ def system_status():
     })
 
 if __name__ == '__main__':
-    print("🚀 CEO Mission Control läuft auf http://localhost:8080")
-    app.run(port=8080, debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    print(f"🚀 CEO Mission Control läuft auf http://localhost:{port}")
+    app.run(port=port, debug=True)
