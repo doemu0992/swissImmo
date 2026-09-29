@@ -14,6 +14,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
             --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
             --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;   
             --ds-auf-satt:#0a1518;
             --ds-line-stark:#33474d;   
             --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
@@ -22,6 +23,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         :root[data-theme="dark"]{
             --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
             --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;   
             --ds-auf-satt:#0a1518;
             --ds-line-stark:#33474d;   
             --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;

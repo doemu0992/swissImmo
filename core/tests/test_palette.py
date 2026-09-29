@@ -353,8 +353,10 @@ class MarkenverlaufTests(TestCase):
         self.assertIsNotNone(m, 'Regel .fw-marke-verlauf nicht gefunden')
         self.assertNotIn('--ds-brand', m.group(1))
         self.assertIn('--ds-verlauf-von', m.group(1))
-        # In keinem Dunkelblock umdefiniert: Der Grund bleibt dunkel.
-        self.assertNotIn('--ds-verlauf-von', _block('dunkel'))
+        # Der Dunkelmodus fuehrt dieselben Werte: Der Grund bleibt dunkel.
+        hell, dunkel = _block('hell'), _block('dunkel')
+        for token in ('--ds-verlauf-von', '--ds-verlauf-bis'):
+            self.assertEqual(dunkel[token].strip(), hell[token].strip(), token)
 
     def test_weisse_schrift_erreicht_aa_auf_beiden_enden(self):
         quelle = self._quelle()
