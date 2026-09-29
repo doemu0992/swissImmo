@@ -61,13 +61,13 @@ class Liegenschaft(models.Model):
     # --- ENERGIE / GEBÄUDETECHNIK (GEAK) ---
     GEAK_KLASSEN = [(c, c) for c in ('A', 'B', 'C', 'D', 'E', 'F', 'G')]
     HEIZ_CHOICES = [
-        ('waermepumpe', 'Wärmepumpe'), ('gas', 'Gasheizung'), ('oel', 'Ölheizung'),
-        ('fernwaerme', 'Fernwärme'), ('holz', 'Holz / Pellets'), ('elektro', 'Elektro'),
-        ('solar', 'Solar / thermisch'), ('andere', 'Andere'),
+        ('waermepumpe', _('Wärmepumpe')), ('gas', _('Gasheizung')), ('oel', _('Ölheizung')),
+        ('fernwaerme', _('Fernwärme')), ('holz', _('Holz / Pellets')), ('elektro', _('Elektro')),
+        ('solar', _('Solar / thermisch')), ('andere', _('Andere')),
     ]
     WARMWASSER_CHOICES = [
-        ('zentral', 'Zentral (Heizung)'), ('boiler', 'Elektroboiler'),
-        ('waermepumpe', 'Wärmepumpenboiler'), ('solar', 'Solar'), ('andere', 'Andere'),
+        ('zentral', _('Zentral (Heizung)')), ('boiler', _('Elektroboiler')),
+        ('waermepumpe', _('Wärmepumpenboiler')), ('solar', _('Solar')), ('andere', _('Andere')),
     ]
     energiebezugsflaeche_m2 = models.DecimalField("Energiebezugsfläche (m²)", max_digits=10, decimal_places=2, null=True, blank=True)
     geak_klasse = models.CharField("GEAK-Klasse (Gebäudehülle)", max_length=1, choices=GEAK_KLASSEN, blank=True, default='')
@@ -122,13 +122,13 @@ class Versicherung(OrganisationAusKette):
     «Versicherung als Frist-Art» ab."""
     ORGANISATION_PFAD = 'liegenschaft'
     ART_CHOICES = [
-        ('gebaeude', 'Gebäudeversicherung'),
-        ('haftpflicht', 'Gebäude-Haftpflicht'),
-        ('wasser', 'Wasser / Elementar'),
-        ('glas', 'Glasbruch'),
-        ('bauherren', 'Bauherren / Bau'),
-        ('rechtsschutz', 'Rechtsschutz'),
-        ('andere', 'Andere'),
+        ('gebaeude', _('Gebäudeversicherung')),
+        ('haftpflicht', _('Gebäude-Haftpflicht')),
+        ('wasser', _('Wasser / Elementar')),
+        ('glas', _('Glasbruch')),
+        ('bauherren', _('Bauherren / Bau')),
+        ('rechtsschutz', _('Rechtsschutz')),
+        ('andere', _('Andere')),
     ]
     liegenschaft = models.ForeignKey('Liegenschaft', on_delete=models.CASCADE, related_name='versicherungen')
     art = models.CharField("Art", max_length=20, choices=ART_CHOICES, default='gebaeude')
@@ -187,7 +187,7 @@ class Einheit(OrganisationAusKette):
     wertquote = models.DecimalField("Wertquote", max_digits=7, decimal_places=2, default=10.00)
 
     # Veraltet durch neues Modell Verteilschluessel
-    heizkosten_verteilschluessel = models.CharField("HK-Schlüssel", max_length=50, choices=[('m2', 'Fläche (m2)'), ('m3', 'Volumen (m3)'), ('pauschal', 'Pauschal')], default='m2')
+    heizkosten_verteilschluessel = models.CharField("HK-Schlüssel", max_length=50, choices=[('m2', _('Fläche (m2)')), ('m3', _('Volumen (m3)')), ('pauschal', _('Pauschal'))], default='m2')
 
     notizen = models.TextField("Interne Notizen", blank=True, default='')
 
@@ -196,7 +196,7 @@ class Einheit(OrganisationAusKette):
 
     nettomiete_aktuell = models.DecimalField("Soll-Miete", max_digits=8, decimal_places=2, default=0.00)
     nebenkosten_aktuell = models.DecimalField("Soll-Nebenkosten", max_digits=6, decimal_places=2, default=0.00)
-    nk_abrechnungsart = models.CharField("NK-Art", max_length=20, default='akonto', choices=[('akonto', 'Akonto'), ('pauschal', 'Pauschal')])
+    nk_abrechnungsart = models.CharField("NK-Art", max_length=20, default='akonto', choices=[('akonto', _('Akonto')), ('pauschal', _('Pauschal'))])
     ref_zinssatz = models.DecimalField("Basis Ref.Zins", max_digits=4, decimal_places=2, default=get_current_ref_zins)
     lik_punkte = models.DecimalField("Basis LIK", max_digits=6, decimal_places=1, default=get_current_lik)
 
@@ -382,26 +382,26 @@ class Verteilschluessel(OrganisationAusKette):
     """Individuelle Verteilschlüssel pro Einheit."""
     ORGANISATION_PFAD = 'einheit__liegenschaft'
     KOSTENART_CHOICES = [
-        ('heizung', 'Heizkosten'),
-        ('wasser', 'Wasser / Abwasser'),
-        ('lift', 'Liftkosten'),
-        ('allgemeinstrom', 'Allgemeinstrom'),
-        ('hauswartung', 'Hauswartung / Reinigung'),
-        ('kabel_tv', 'Kabel-TV / Antenne'),
-        ('garten', 'Gartenpflege'),
-        ('verwaltung', 'Verwaltungshonorar'),
-        ('versicherung', 'Versicherungen'),
-        ('sonstiges', 'Sonstige Nebenkosten'),
+        ('heizung', _('Heizkosten')),
+        ('wasser', _('Wasser / Abwasser')),
+        ('lift', _('Liftkosten')),
+        ('allgemeinstrom', _('Allgemeinstrom')),
+        ('hauswartung', _('Hauswartung / Reinigung')),
+        ('kabel_tv', _('Kabel-TV / Antenne')),
+        ('garten', _('Gartenpflege')),
+        ('verwaltung', _('Verwaltungshonorar')),
+        ('versicherung', _('Versicherungen')),
+        ('sonstiges', _('Sonstige Nebenkosten')),
     ]
 
     TYP_CHOICES = [
-        ('m2', 'Fläche (m²)'),
-        ('m3', 'Volumen (m³)'),
-        ('prozent', 'Prozent (%)'),
-        ('anteil', 'Anteile (z.B. Wertquote)'),
-        ('pauschal', 'Pauschal (CHF)'),
-        ('zimmer', 'Zimmer'),
-        ('einheit', 'Pro Einheit')
+        ('m2', _('Fläche (m²)')),
+        ('m3', _('Volumen (m³)')),
+        ('prozent', _('Prozent (%)')),
+        ('anteil', _('Anteile (z.B. Wertquote)')),
+        ('pauschal', _('Pauschal (CHF)')),
+        ('zimmer', _('Zimmer')),
+        ('einheit', _('Pro Einheit'))
     ]
 
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='verteilschluessel')
@@ -618,8 +618,8 @@ class Ausstattung(OrganisationAusKette):
     Assets heraus — `raum` ist ein Attribut, das Raumbuch ist die Gruppierung.
     Grundlage für Abnahme (Zeitwert nach Lebensdauertabelle) und Reparaturhistorie."""
     ORGANISATION_PFAD = 'einheit__liegenschaft'
-    ZUSTAND = [('neuwertig', 'Neuwertig'), ('gut', 'Gut'),
-               ('gebraucht', 'Gebraucht'), ('defekt', 'Defekt')]
+    ZUSTAND = [('neuwertig', _('Neuwertig')), ('gut', _('Gut')),
+               ('gebraucht', _('Gebraucht')), ('defekt', _('Defekt'))]
 
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='ausstattung')
     raum = models.CharField("Raum", max_length=60)
@@ -795,11 +795,11 @@ class Wartungsfrist(OrganisationAusKette):
     Speist automatisch Pendenzen (generate_auto_pendenzen)."""
     ORGANISATION_PFAD = 'liegenschaft'
     ART_CHOICES = [
-        ('wartung', 'Wartung / Service'),
-        ('versicherung', 'Versicherung'),
-        ('kontrolle', 'Kontrolle / Prüfung'),
-        ('abo', 'Abonnement / Vertrag'),
-        ('sonstiges', 'Sonstiges'),
+        ('wartung', _('Wartung / Service')),
+        ('versicherung', _('Versicherung')),
+        ('kontrolle', _('Kontrolle / Prüfung')),
+        ('abo', _('Abonnement / Vertrag')),
+        ('sonstiges', _('Sonstiges')),
     ]
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='wartungsfristen')
     art = models.CharField("Art", max_length=20, choices=ART_CHOICES, default='wartung')

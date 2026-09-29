@@ -6,6 +6,7 @@ import logging
 from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
@@ -61,8 +62,8 @@ class Buchungskonto(models.Model):
     #   erzwingen die Seite — nötig für Eigenkapital-/Kontokorrent-Konten, deren
     #   Soll-Saldo (z.B. Ausschüttung) das Eigenkapital MINDERT statt ein Aktivum zu sein.
     typ = models.CharField("Typ", max_length=20, choices=[
-        ('aufwand', 'Aufwand'), ('ertrag', 'Ertrag'), ('bilanz', 'Bilanz'),
-        ('aktiv', 'Aktivum'), ('passiv', 'Passivum / Eigenkapital')])
+        ('aufwand', gettext_lazy('Aufwand')), ('ertrag', gettext_lazy('Ertrag')), ('bilanz', gettext_lazy('Bilanz')),
+        ('aktiv', gettext_lazy('Aktivum')), ('passiv', gettext_lazy('Passivum / Eigenkapital'))])
 
     # 🔥 HNK-Relevanz gemäss Experten-Feedback
     is_hnk_relevant = models.BooleanField(
@@ -74,7 +75,7 @@ class Buchungskonto(models.Model):
     standard_verteilschluessel = models.CharField(
         "Standard-Verteilschlüssel",
         max_length=20,
-        choices=[('m2', 'Fläche (m²)'), ('m3', 'Volumen (m³)'), ('einheit', 'Pro Einheit')],
+        choices=[('m2', gettext_lazy('Fläche (m²)')), ('m3', gettext_lazy('Volumen (m³)')), ('einheit', gettext_lazy('Pro Einheit'))],
         default='m2',
         blank=True
     )
@@ -299,11 +300,11 @@ class Buchung(OrganisationAusKette):
 class DebitorenRechnung(OrganisationAusKette):
     ORGANISATION_PFAD = ('vertrag', 'einheit', 'liegenschaft', 'konto_haben')
     STATUS_CHOICES = [
-        ('offen', 'Offen'),
-        ('teilbezahlt', 'Teilbezahlt'), # 🔥 NEU für saubere OP-Verwaltung
-        ('bezahlt', 'Bezahlt'),
-        ('storniert', 'Storniert'),     # 🔥 NEU statt Löschen
-        ('abgeschrieben', 'Abgeschrieben'),   # Forderungsverlust (Konto 3805)
+        ('offen', gettext_lazy('Offen')),
+        ('teilbezahlt', gettext_lazy('Teilbezahlt')), # 🔥 NEU für saubere OP-Verwaltung
+        ('bezahlt', gettext_lazy('Bezahlt')),
+        ('storniert', gettext_lazy('Storniert')),     # 🔥 NEU statt Löschen
+        ('abgeschrieben', gettext_lazy('Abgeschrieben')),   # Forderungsverlust (Konto 3805)
     ]
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='debitoren_rechnungen')
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
@@ -423,7 +424,7 @@ class Zahlungseingang(OrganisationAusKette):
     erstellt_am = models.DateTimeField(default=timezone.now)
 
     # 🔥 NEU: Status für Stornos
-    status = models.CharField(max_length=20, choices=[('verbucht', 'Verbucht'), ('storniert', 'Storniert')], default='verbucht')
+    status = models.CharField(max_length=20, choices=[('verbucht', gettext_lazy('Verbucht')), ('storniert', gettext_lazy('Storniert'))], default='verbucht')
 
     # Audit-Trail: wer hat die Zahlung erfasst (None = System/Import)
     erstellt_von = models.ForeignKey(
@@ -447,7 +448,7 @@ class Mahnung(OrganisationAusKette):
     # Mit DIESER Mahnung fakturierter Verzugszins (nur das Delta zur Vorstufe) —
     # verhindert, dass derselbe Verzugszeitraum bei jeder Stufe erneut verzinst wird.
     zins = models.DecimalField("Verzugszins (fakturiert)", max_digits=8, decimal_places=2, default=Decimal('0.00'))
-    versandart = models.CharField("Versand", max_length=20, choices=[('email', 'E-Mail'), ('brief', 'Brief'), ('manuell', 'Manuell erfasst')], default='manuell')
+    versandart = models.CharField("Versand", max_length=20, choices=[('email', gettext_lazy('E-Mail')), ('brief', gettext_lazy('Brief')), ('manuell', gettext_lazy('Manuell erfasst'))], default='manuell')
     bemerkung = models.CharField(max_length=255, blank=True, default='')
     erstellt_am = models.DateTimeField(auto_now_add=True)
     erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
@@ -475,12 +476,12 @@ class Mahnung(OrganisationAusKette):
 class KreditorenRechnung(OrganisationAusKette):
     ORGANISATION_PFAD = ('einheit', 'liegenschaft', 'konto')
     STATUS_CHOICES = [
-        ('neu', 'Neu / Scan'),
-        ('freigegeben', 'Freigegeben'),
-        ('in_zahlung', 'In Zahlung'),   # in pain.001-Datei enthalten, noch nicht bestätigt
-        ('teilbezahlt', 'Teilbezahlt'), # 🔥 OP: teilweise bezahlt
-        ('bezahlt', 'Bezahlt'),
-        ('storniert', 'Storniert'), # 🔥 NEU für Revisionssicherheit
+        ('neu', gettext_lazy('Neu / Scan')),
+        ('freigegeben', gettext_lazy('Freigegeben')),
+        ('in_zahlung', gettext_lazy('In Zahlung')),   # in pain.001-Datei enthalten, noch nicht bestätigt
+        ('teilbezahlt', gettext_lazy('Teilbezahlt')), # 🔥 OP: teilweise bezahlt
+        ('bezahlt', gettext_lazy('Bezahlt')),
+        ('storniert', gettext_lazy('Storniert')), # 🔥 NEU für Revisionssicherheit
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='neu')
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
@@ -618,7 +619,7 @@ class KreditorenZahlung(OrganisationAusKette):
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
     bank_referenz = models.CharField("Bank-Referenz", max_length=140, blank=True, default='', db_index=True)
     bemerkung = models.CharField(max_length=255, blank=True, default='')
-    status = models.CharField(max_length=20, choices=[('verbucht', 'Verbucht'), ('storniert', 'Storniert')], default='verbucht')
+    status = models.CharField(max_length=20, choices=[('verbucht', gettext_lazy('Verbucht')), ('storniert', gettext_lazy('Storniert'))], default='verbucht')
     erstellt_am = models.DateTimeField(default=timezone.now)
     erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
@@ -752,18 +753,18 @@ class NebenkostenLernRegel(models.Model):
 class NebenkostenBeleg(OrganisationAusKette):
     ORGANISATION_PFAD = 'periode'
     NK_KATEGORIE_CHOICES = [
-        ('heizung', 'Heizung & Warmwasser'),
-        ('wasser', 'Wasser / Abwasser'),
-        ('hauswart', 'Hauswartung & Reinigung'),
-        ('strom', 'Allgemeinstrom'),
-        ('lift', 'Serviceabo Lift'),
-        ('verwaltung', 'Verwaltungshonorar'),
-        ('tv', 'TV / Kabelgebühren'),
-        ('kehricht', 'Kehricht / Entsorgung'),
-        ('diverse', 'Diverse Betriebskosten'),
+        ('heizung', gettext_lazy('Heizung & Warmwasser')),
+        ('wasser', gettext_lazy('Wasser / Abwasser')),
+        ('hauswart', gettext_lazy('Hauswartung & Reinigung')),
+        ('strom', gettext_lazy('Allgemeinstrom')),
+        ('lift', gettext_lazy('Serviceabo Lift')),
+        ('verwaltung', gettext_lazy('Verwaltungshonorar')),
+        ('tv', gettext_lazy('TV / Kabelgebühren')),
+        ('kehricht', gettext_lazy('Kehricht / Entsorgung')),
+        ('diverse', gettext_lazy('Diverse Betriebskosten')),
     ]
-    VERTEIL_CHOICES = [('m2', 'Nach Fläche (m²)'), ('m3', 'Nach Volumen (m³)'),
-                       ('einheit', 'Pro Wohnung'), ('personen', 'Nach Personenzahl')]
+    VERTEIL_CHOICES = [('m2', gettext_lazy('Nach Fläche (m²)')), ('m3', gettext_lazy('Nach Volumen (m³)')),
+                       ('einheit', gettext_lazy('Pro Wohnung')), ('personen', gettext_lazy('Nach Personenzahl'))]
 
     periode = models.ForeignKey(AbrechnungsPeriode, on_delete=models.CASCADE, related_name='belege')
     datum = models.DateField(default=timezone.now, blank=True, null=True)
@@ -962,7 +963,7 @@ class EigentuemerAuszahlung(models.Model):
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True,
                               help_text="Bankkonto der Auszahlung (Haben)")
     bemerkung = models.CharField(max_length=255, blank=True, default='')
-    status = models.CharField(max_length=20, choices=[('verbucht', 'Verbucht'), ('storniert', 'Storniert')],
+    status = models.CharField(max_length=20, choices=[('verbucht', gettext_lazy('Verbucht')), ('storniert', gettext_lazy('Storniert'))],
                               default='verbucht')
     erstellt_am = models.DateTimeField(default=timezone.now)
     erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
@@ -984,7 +985,7 @@ class Hypothek(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     """Hypothekartranche auf einer Liegenschaft (Fest/SARON/variabel).
     Grundlage für Zinskosten und Ablauf-/Refinanzierungsplanung."""
-    TYP = [('fest', 'Festhypothek'), ('saron', 'SARON'), ('variabel', 'Variabel')]
+    TYP = [('fest', gettext_lazy('Festhypothek')), ('saron', gettext_lazy('SARON')), ('variabel', gettext_lazy('Variabel'))]
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='hypotheken')
     bank = models.CharField("Bank / Gläubiger", max_length=120, blank=True, default='')
     bezeichnung = models.CharField("Bezeichnung / Tranche", max_length=120, blank=True, default='')
@@ -1057,9 +1058,9 @@ class Bankbewegung(OrganisationAusKette):
     wie auf dem Kontoauszug.
     """
     STATUS = [
-        ('offen', 'Offen'),
-        ('verbucht', 'Verbucht'),
-        ('ignoriert', 'Ignoriert'),
+        ('offen', gettext_lazy('Offen')),
+        ('verbucht', gettext_lazy('Verbucht')),
+        ('ignoriert', gettext_lazy('Ignoriert')),
     ]
     auszug = models.ForeignKey(Kontoauszug, on_delete=models.CASCADE, related_name='bewegungen',
                                null=True, blank=True)
@@ -1150,6 +1151,7 @@ class ZahlerZuordnung(OrganisationAusKette):
 # Stelle ab, statt in einem Dutzend save()-Methoden. Für Modelle ohne
 # DecimalField ist die Prüfung ein no-op (leere Schleife).
 from django.db.models.signals import pre_save as _pre_save
+from django.utils.translation import gettext_lazy
 
 
 def _dezimalfeld_guard(sender, instance, **kwargs):

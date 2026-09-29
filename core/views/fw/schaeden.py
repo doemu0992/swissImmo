@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
 from core.tenancy import aktuelle_organisation
+from core.services.dokumentsprache import auf_deutsch
 
 
 # ============================================================
@@ -558,19 +559,19 @@ def fw_schaden_status(request, pk):
     t.status = neu
     t.save()
     TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
-                                   nachricht=f"Status geändert: {t.get_status_display()}.", is_intern=True)
+                                   nachricht=f"Status geändert: {auf_deutsch(t.get_status_display)}.", is_intern=True)
 
     info = ""
     if request.POST.get('melder_informieren') == 'on':
         melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
         kat = 'ticket_erledigt' if neu == 'erledigt' else 'ticket_melder_status'
-        betreff, text = vorlage_text(kat, t, status=t.get_status_display())
+        betreff, text = vorlage_text(kat, t, status=auf_deutsch(t.get_status_display))
         if melder_email and send_ticket_email(melder_email, betreff, text):
             info = f" · Melder informiert ({melder_email})"
             TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
-                                           nachricht=f"Melder über Status '{t.get_status_display()}' informiert.", is_intern=True)
+                                           nachricht=f"Melder über Status '{auf_deutsch(t.get_status_display)}' informiert.", is_intern=True)
 
-    log_aktion(request, "Ticket-Status geändert", f"Ticket #{t.id}", t.get_status_display())
+    log_aktion(request, "Ticket-Status geändert", f"Ticket #{t.id}", auf_deutsch(t.get_status_display))
     messages.success(request, '✅ ' + gettext('Status: %(get_status_display)s%(info)s.') % {'get_status_display': t.get_status_display(), 'info': info})
     return redirect(f'/neu/schaeden/{t.id}/')
 

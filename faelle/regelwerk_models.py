@@ -33,6 +33,7 @@ from django.utils import timezone
 
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 from core.tenancy import AlleOrganisationenManager, TenantManager
+from django.utils.translation import gettext_lazy as _
 
 
 class Regelsatz(models.Model):
@@ -101,8 +102,8 @@ class Regel(OrganisationAusKette):
 
     WARNUNG, SPERRE = 'warnung', 'sperre'
     VERBINDLICHKEIT = [
-        (WARNUNG, 'Warnt, lässt aber weiterarbeiten'),
-        (SPERRE, 'Verhindert das Speichern'),
+        (WARNUNG, _('Warnt, lässt aber weiterarbeiten')),
+        (SPERRE, _('Verhindert das Speichern')),
     ]
 
     regelsatz = models.ForeignKey(
@@ -142,7 +143,7 @@ class Regelanwendung(models.Model):
     """
 
     OK, BEANSTANDET = 'ok', 'beanstandet'
-    BEFUNDE = [(OK, 'Ohne Beanstandung'), (BEANSTANDET, 'Beanstandet')]
+    BEFUNDE = [(OK, _('Ohne Beanstandung')), (BEANSTANDET, _('Beanstandet'))]
 
     organisation = models.ForeignKey(
         'crm.Organisation', on_delete=models.CASCADE,

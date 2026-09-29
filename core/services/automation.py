@@ -11,6 +11,7 @@ from decimal import Decimal
 
 from django.db import transaction
 from django.utils import timezone
+from core.services.dokumentsprache import auf_deutsch
 
 logger = logging.getLogger(__name__)
 
@@ -407,7 +408,7 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
     # c) Geräte-Garantien / Serviceabläufe
     for g in Geraet.objects.filter(garantie_bis__range=[heute, grenze]).select_related('liegenschaft', 'einheit__liegenschaft'):
         lg = g.liegenschaft or (g.einheit.liegenschaft if getattr(g, 'einheit_id', None) else None)
-        bez = getattr(g, 'sonstiges_bezeichnung', '') or getattr(g, 'get_kategorie_display', lambda: 'Gerät')()
+        bez = getattr(g, 'sonstiges_bezeichnung', '') or auf_deutsch(getattr(g, 'get_kategorie_display', lambda: 'Gerät'))
         _ensure(f"auto:garantie:{g.id}",
                 f"Garantie läuft ab: {bez}",
                 g.garantie_bis, 'unterhalt',
@@ -427,9 +428,9 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             continue
         anbieter = f" ({wf.anbieter})" if wf.anbieter else ""
         _ensure(f"auto:wartung:{wf.id}:{wf.naechste_faelligkeit.isoformat()}",
-                f"{wf.get_art_display()}: {wf.bezeichnung}{anbieter}",
+                f"{auf_deutsch(wf.get_art_display)}: {wf.bezeichnung}{anbieter}",
                 wf.naechste_faelligkeit, 'unterhalt',
-                wf.notiz or f"Wiederkehrende Frist ({wf.get_art_display()}) — Termin planen/erneuern.",
+                wf.notiz or f"Wiederkehrende Frist ({auf_deutsch(wf.get_art_display)}) — Termin planen/erneuern.",
                 liegenschaft=wf.liegenschaft)
 
     # e) Indexmieten: fällige Indexanpassung erkennen (Art. 269b). Nicht still
