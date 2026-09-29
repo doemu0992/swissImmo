@@ -26,6 +26,13 @@
                 <input id="md-kontakt" name="kontaktperson" value="{{ md.kontaktperson }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label for="md-email" class="block text-xs font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
                 <input id="md-email" type="email" name="email" value="{{ md.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="md-sprache" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Korrespondenzsprache" %}</label>
+                <select id="md-sprache" name="sprache" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                    <option value="de" {% if md.sprache == 'de' or not md.sprache %}selected{% endif %}>{% trans "Deutsch" %}</option>
+                    <option value="fr" {% if md.sprache == 'fr' %}selected{% endif %}>{% trans "Französisch" %}</option>
+                    <option value="it" {% if md.sprache == 'it' %}selected{% endif %}>{% trans "Italienisch" %}</option>
+                    <option value="en" {% if md.sprache == 'en' %}selected{% endif %}>{% trans "Englisch" %}</option>
+                </select></div>
         </div>
         <div><label for="md-strasse" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr." %}</label>
             <input id="md-strasse" name="strasse" value="{{ md.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>

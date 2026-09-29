@@ -279,32 +279,46 @@ def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None):
         return False
 
 
-def send_eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma=''):
-    """Sendet dem Eigentümer seine Portal-Zugangsdaten. True/False."""
+def send_eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma='',
+                                   sprache='de'):
+    """Sendet dem Eigentümer seine Portal-Zugangsdaten. True/False.
+
+    `sprache`: Korrespondenzsprache des Eigentümers (D11)."""
     if not to_email:
         return False
-    betreff = "Ihr Zugang zum Eigentümer-Portal"
+    with in_sprache(sprache):
+        return _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma)
+
+
+def _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma):
+    betreff = gettext('Ihr Zugang zum Eigentümer-Portal')
+    _kopf = gettext('Ihr Eigentümer-Portal')
+    _gruss = gettext('Guten Tag %(name)s') % {'name': anrede_name}
+    _einleitung = gettext('Für Sie wurde ein persönlicher Zugang zum Eigentümer-Portal eingerichtet. Dort sehen Sie jederzeit den Stand Ihrer Liegenschaften: Rendite-Cockpit, offene Reparatur-Freigaben, Portfolio-Report und Steuerauszug.')
+    _benutzer = gettext('Benutzername')
+    _passwort = gettext('Passwort')
+    _login = gettext('Jetzt einloggen')
+    _adresse = gettext('Oder öffnen Sie diese Adresse im Browser:')
+    _hinweis = gettext('Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.')
     firma_zeile = f"<p style='margin:24px 0 0;color:#94a3b8;font-size:13px;'>{absender_firma}</p>" if absender_firma else ""
     html = f"""<html><body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;background:#f1f5f9;padding:24px;">
       <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">
-        <div style="background:#1e3a8a;color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🏠 Ihr Eigentümer-Portal</div>
+        <div style="background:#1e3a8a;color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🏠 {_kopf}</div>
         <div style="padding:28px;">
-          <p>Guten Tag {anrede_name}</p>
-          <p>Für Sie wurde ein persönlicher Zugang zum Eigentümer-Portal eingerichtet. Dort sehen Sie
-             jederzeit den Stand Ihrer Liegenschaften: Rendite-Cockpit, offene Reparatur-Freigaben,
-             Portfolio-Report und Steuerauszug.</p>
+          <p>{_gruss}</p>
+          <p>{_einleitung}</p>
           <table style="margin:20px 0;border-collapse:collapse;">
-            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">Benutzername</td>
+            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{_benutzer}</td>
                 <td style="padding:6px 0;font-weight:700;font-family:monospace;">{username}</td></tr>
-            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">Passwort</td>
+            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{_passwort}</td>
                 <td style="padding:6px 0;font-weight:700;font-family:monospace;">{passwort}</td></tr>
           </table>
           <p style="margin:24px 0;">
-            <a href="{login_url}" style="background:#1e3a8a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">Jetzt einloggen</a>
+            <a href="{login_url}" style="background:#1e3a8a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{_login}</a>
           </p>
-          <p style="color:#64748b;font-size:13px;">Oder öffnen Sie diese Adresse im Browser:<br>
+          <p style="color:#64748b;font-size:13px;">{_adresse}<br>
             <a href="{login_url}" style="color:#1e3a8a;">{login_url}</a></p>
-          <p style="color:#94a3b8;font-size:12px;margin-top:20px;">Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.</p>
+          <p style="color:#94a3b8;font-size:12px;margin-top:20px;">{_hinweis}</p>
           {firma_zeile}
         </div>
       </div>

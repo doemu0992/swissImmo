@@ -689,7 +689,8 @@ def fw_person_form(request, pk=None):
         obj.nationalitaet = P.get('nationalitaet', '').strip()
         obj.heimatort = P.get('heimatort', '').strip()
         obj.ahv_nummer = P.get('ahv_nummer', '').strip()
-        obj.sprache = P.get('sprache', 'de').strip() or 'de'
+        from core.services.dokumentsprache import gueltige_sprache
+        obj.sprache = gueltige_sprache(P.get('sprache'))
         obj.telefon_geschaeft = P.get('telefon_geschaeft', '').strip()
         # --- Aufenthalt ---
         obj.aufenthaltsbewilligung = P.get('aufenthaltsbewilligung', '').strip()

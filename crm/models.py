@@ -219,6 +219,10 @@ class Eigentuemer(models.Model):
     ort = models.CharField("Ort", max_length=100, blank=True)
     telefon = models.CharField("Telefon", max_length=30, blank=True)
     email = models.EmailField("E-Mail", blank=True)
+    # Korrespondenzsprache (D11): Portal-Zugangsmail und Abrechnungen an den
+    # Eigentümer folgen ihr. Dieselbe Auswahl wie `Mieter.sprache`.
+    sprache = models.CharField("Korrespondenzsprache", max_length=2, default='de',
+                               choices=[('de', 'Deutsch'), ('fr', 'Französisch'), ('it', 'Italienisch'), ('en', 'Englisch')])
     bank_name = models.CharField("Bankname (Eigentümer)", max_length=100, blank=True)
     iban = models.CharField("IBAN", max_length=34, blank=True)
     # Verwaltungshonorar in % der Mieterträge (netto). 0 = kein Honorar.

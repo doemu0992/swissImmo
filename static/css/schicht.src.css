@@ -27,6 +27,13 @@
         :root{
             --ds-bg:#eff2f3;--ds-surface:#fff;--ds-surface-2:#f4f7f7;--ds-ink:#0e2227;--ds-muted:#4c6169;--ds-faint:#5c757c;--ds-line:#dde6e8;
             --ds-brand:#0f6f6a;--ds-brand-600:#0b5450;--ds-brand-soft:#d9efed;
+            /* Markenverlauf mit weisser Schrift (Kopf des Mieterportals).
+               BEWUSST in beiden Modi gleich und nicht an --ds-brand gehaengt:
+               Im Dunkelmodus ist die Marke hell (#4fb3aa/#6fcac2), weisse
+               Schrift darauf erreichte nur 2.5 bzw. 1.9:1. Nachgemessen mit
+               diesen Werten: Weiss 8.8:1, `fw-faint` (85 % Weiss) 6.8:1 und
+               auf einer `fw-glas`-Kachel 4.8:1 — ueberall WCAG AA. */
+            --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;
             /* Schrift auf einer GESAETTIGTEN Flaeche — Marke, kritisch,
                gut, Warnung. Nachgemessen fuer alle vier: Im Hellmodus
                gewinnt Weiss (5.2-7.1:1), im Dunkelmodus die dunkle Tinte
@@ -631,13 +638,14 @@
         .fw-balken{background:var(--ds-line)}
         .fw-balken-voll{background:var(--ds-brand);color:var(--ds-auf-satt)}
         /* Verlauf in der Markenfarbe — Kopfzeile des Mieterportals.
-           Ueber Tokens, damit er dem Dunkelmodus und spaeterem Branding folgt. */
-        .fw-marke-verlauf{background:linear-gradient(135deg,var(--ds-brand),var(--ds-brand-600))}
+           Eigene Tokens (siehe --ds-verlauf-von): Die Schrift darauf ist
+           immer weiss, also muss der Grund in beiden Modi dunkel bleiben. */
+        .fw-marke-verlauf{background:linear-gradient(135deg,var(--ds-verlauf-von),var(--ds-verlauf-bis))}
         /* Glasflaeche AUF dem Markenverlauf: halbdurchsichtiges Weiss, damit
            weisse Schrift darauf lesbar bleibt. `fw-flaeche` ist dort falsch —
            sie ist im hellen Modus weiss, und weiss auf weiss ist unsichtbar. */
         .fw-glas{background:rgba(255,255,255,.15)}
-        .fw-marke-verlauf .fw-faint{color:rgba(255,255,255,.78)}
+        .fw-marke-verlauf .fw-faint{color:rgba(255,255,255,.85)}
         /* Gesaettigtes Gruen als Flaeche — fuer Absendeknoepfe mit
            eigenen Massen, die `fw-btn` nicht mitnehmen koennen. */
         .fw-gut-voll{background:var(--ds-good);color:var(--ds-auf-satt)}
