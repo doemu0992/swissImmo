@@ -13,6 +13,7 @@ import logging
 from decimal import Decimal
 
 from django.shortcuts import get_object_or_404, render
+from django.utils.translation import gettext
 
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN
 from portfolio.models import Liegenschaft
@@ -54,7 +55,7 @@ def fw_eigentuemer_form(request, pk=None):
         except Exception:
             obj.honorar_prozent = Decimal('0.00')
         if not obj.firma_oder_name:
-            messages.error(request, "Name / Firma ist erforderlich.")
+            messages.error(request, gettext('Name / Firma ist erforderlich.'))
             return redirect(request.path)
         # Digitale Unterschrift des Eigentümers — Briefe, die in seinem Namen
         # rausgehen (Schlussabrechnung, Kautionsbelege), tragen sie.
@@ -78,7 +79,7 @@ def fw_eigentuemer_form(request, pk=None):
                     lg.save(update_fields=['eigentuemer'])
         _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Eigentuemer bearbeitet" if pk else "Eigentuemer erstellt", obj.firma_oder_name, _diff)
-        messages.success(request, f"✅ Eigentuemer {obj.firma_oder_name} gespeichert.")
+        messages.success(request, '✅ ' + gettext('Eigentuemer %(firma_oder_name)s gespeichert.') % {'firma_oder_name': obj.firma_oder_name})
         return redirect('/neu/mandate/')
 
     alle_lg = Liegenschaft.objects.all().order_by('strasse')
@@ -118,7 +119,7 @@ def fw_eigentuemer_portal_zugang(request, pk):
             # Nur loslassen, nicht ueberall loeschen (siehe konto_freigeben).
             from core.auth import konto_freigeben
             konto_freigeben(u, getattr(request, 'organisation', None))
-        messages.success(request, "Portal-Zugang entfernt.")
+        messages.success(request, gettext('Portal-Zugang entfernt.'))
         return redirect(ziel)
 
     basis_name = (md.email or f"eigentuemer{md.id}").strip().lower()
@@ -152,11 +153,11 @@ def fw_eigentuemer_portal_zugang(request, pk):
             absender_firma=(vw.firma if vw else ''))
 
     if mail_ok:
-        messages.success(request, f"✅ Portal-Zugang aktiv. Zugangsdaten wurden an {md.email} gesendet. (Benutzername: {u.username})")
+        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': md.email, 'username': u.username})
     elif md.email:
-        messages.warning(request, f"⚠️ Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: {u.username} · Passwort: {passwort} — bitte manuell mitteilen.")
+        messages.warning(request, '⚠️ ' + gettext('Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Passwort: %(passwort)s — bitte manuell mitteilen.') % {'username': u.username, 'passwort': passwort})
     else:
-        messages.success(request, f"✅ Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: {u.username} · Passwort: {passwort} (bitte dem Eigentümer sicher mitteilen, wird nur einmal angezeigt).")
+        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Passwort: %(passwort)s (bitte dem Eigentümer sicher mitteilen, wird nur einmal angezeigt).') % {'username': u.username, 'passwort': passwort})
     return redirect(ziel)
 
 
@@ -172,8 +173,7 @@ def fw_eigentuemer_loeschen(request, pk):
     if request.method == 'POST':
         anzahl = Liegenschaft.objects.filter(eigentuemer=md).count()
         if anzahl > 0:
-            messages.error(request, f"❌ '{md.firma_oder_name}' hat noch {anzahl} zugeordnete Liegenschaft(en). "
-                                    "Bitte zuerst die Zuordnung im Bearbeiten-Dialog entfernen, dann löschen.")
+            messages.error(request, '❌ ' + gettext("'%(firma_oder_name)s' hat noch %(anzahl)s zugeordnete Liegenschaft(en). Bitte zuerst die Zuordnung im Bearbeiten-Dialog entfernen, dann löschen.") % {'firma_oder_name': md.firma_oder_name, 'anzahl': anzahl})
             return redirect('/neu/mandate/')
         name = md.firma_oder_name
         # Verknüpften Eigentümer-Portal-Login mitentfernen — sonst bleibt ein
@@ -186,5 +186,5 @@ def fw_eigentuemer_loeschen(request, pk):
             konto_freigeben(_konto, getattr(request, 'organisation', None))
         log_aktion(request, "Eigentuemer gelöscht", name, '')
         md.delete()
-        messages.success(request, f"🗑️ Eigentuemer {name} gelöscht.")
+        messages.success(request, '🗑️ ' + gettext('Eigentuemer %(name)s gelöscht.') % {'name': name})
     return redirect('/neu/mandate/')

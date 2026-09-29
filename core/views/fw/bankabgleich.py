@@ -21,6 +21,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.conf import settings
+from django.utils.translation import gettext
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
@@ -257,14 +258,13 @@ def fw_bankabgleich_verbuchen(request):
 
     rechnung = get_object_or_404(DebitorenRechnung, id=request.POST.get('rechnung_id'))
     if not rechnung.vertrag_id:
-        messages.error(request, "Position ohne Vertrag kann nicht automatisch verbucht werden.")
+        messages.error(request, gettext('Position ohne Vertrag kann nicht automatisch verbucht werden.'))
         return redirect('fw_bankabgleich')
     # Status-Guard: auf stornierte/bezahlte Rechnungen darf keine Zahlung gebucht
     # werden — sonst springt eine STORNIERTE Rechnung auf «bezahlt» und das
     # Mieterkonto zeigt ein Haben ohne Soll (real im Audit passiert).
     if rechnung.status not in ('offen', 'teilbezahlt'):
-        messages.error(request, f"«{rechnung.titel}» ist {rechnung.get_status_display()} — "
-                                "darauf kann keine Zahlung verbucht werden.")
+        messages.error(request, gettext('«%(titel)s» ist %(get_status_display)s — darauf kann keine Zahlung verbucht werden.') % {'titel': rechnung.titel, 'get_status_display': rechnung.get_status_display()})
         return redirect('fw_bankabgleich')
 
     offen = rechnung.offener_betrag
@@ -273,14 +273,14 @@ def fw_bankabgleich_verbuchen(request):
         try:
             betrag = Decimal(_num(raw))
         except Exception:
-            messages.error(request, f"Ungültiger Betrag «{raw}».")
+            messages.error(request, gettext('Ungültiger Betrag «%(raw)s».') % {'raw': raw})
             return redirect('fw_bankabgleich')
     else:
         betrag = offen
     # Explizite 0/Negativ-Eingabe ist ein Tippfehler — abbrechen statt still
     # auf 0.01 zu klemmen (verwirrende Mini-Teilzahlung).
     if betrag <= 0:
-        messages.error(request, "Betrag muss grösser als 0 sein.")
+        messages.error(request, gettext('Betrag muss grösser als 0 sein.'))
         return redirect('fw_bankabgleich')
     betrag = min(betrag, offen)
 
@@ -303,7 +303,7 @@ def fw_bankabgleich_verbuchen(request):
 
     log_aktion(request, "Zahlung via Bankabgleich verbucht", str(vertrag),
                f"CHF {betrag} auf {rechnung.titel}")
-    messages.success(request, f"✅ CHF {betrag} verbucht — {vertrag.mieter.display_name} ({rechnung.titel}).")
+    messages.success(request, '✅ ' + gettext('CHF %(betrag)s verbucht — %(display_name)s (%(titel)s).') % {'betrag': betrag, 'display_name': vertrag.mieter.display_name, 'titel': rechnung.titel})
     from django.shortcuts import redirect as _r
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
@@ -674,7 +674,7 @@ def fw_camt_import(request):
 
     datei = request.FILES.get('camt_datei')
     if not datei:
-        messages.error(request, "Keine Datei ausgewählt.")
+        messages.error(request, gettext('Keine Datei ausgewählt.'))
         return redirect('fw_bankabgleich')
 
     roh = datei.read()
@@ -692,13 +692,12 @@ def fw_camt_import(request):
             eintraege = _bank_csv_parse(roh)
             auszug_kopf = {}
     except Exception as e:
-        messages.error(request, f"Datei konnte nicht gelesen werden "
-                                f"({'kein gültiges camt.053' if ist_xml else 'CSV-Format nicht erkannt'}): {e}")
+        messages.error(request, gettext('Datei konnte nicht gelesen werden (%(wert)s): %(e)s') % {'wert': 'kein gültiges camt.053' if ist_xml else 'CSV-Format nicht erkannt', 'e': e})
         return redirect('fw_bankabgleich')
 
     quelle = 'camt.053' if ist_xml else 'Bank-CSV'
     if not eintraege:
-        messages.warning(request, "Keine Bewegungen im Kontoauszug gefunden.")
+        messages.warning(request, gettext('Keine Bewegungen im Kontoauszug gefunden.'))
         return redirect('fw_bankabgleich')
 
     # Zielkonto der Bank: wählbar, damit mehrere Bankkonten buchbar sind.
@@ -1021,11 +1020,9 @@ def fw_camt_import(request):
         messages.success(request, f"✅ {quelle}-Import: " + ", ".join(teile) + ".")
     else:
         messages.warning(request,
-            f"Keine neuen Gutschriften verbucht ({duplikate} Duplikat(e) übersprungen).")
+            gettext('Keine neuen Gutschriften verbucht (%(duplikate)s Duplikat(e) übersprungen).') % {'duplikate': duplikate})
     if belastungen:
-        messages.info(request, f"ℹ️ {belastungen} Belastung(en) übernommen — sie liegen im "
-                               f"Bank-Eingang zur Zuordnung. Das Gegenkonto (Lieferant, "
-                               f"Gebühr, Zins) steht nicht im Auszug und wird bewusst nicht geraten.")
+        messages.info(request, 'ℹ️ ' + gettext('%(belastungen)s Belastung(en) übernommen — sie liegen im Bank-Eingang zur Zuordnung. Das Gegenkonto (Lieferant, Gebühr, Zins) steht nicht im Auszug und wird bewusst nicht geraten.') % {'belastungen': belastungen})
     # Saldoabgleich: der Nachweis, dass Buchhaltung und Bankkonto übereinstimmen.
     if auszug.schlusssaldo is not None:
         from django.db.models import Sum as _SumB
@@ -1037,19 +1034,12 @@ def fw_camt_import(request):
         buch_saldo = (_s - _h).quantize(Decimal('0.01'))
         diff = (auszug.schlusssaldo - buch_saldo).quantize(Decimal('0.01'))
         if diff == 0:
-            messages.success(request, f"✅ Saldoabgleich {bank_nr}: Buchhaltung und Auszug "
-                                      f"stimmen überein (CHF {buch_saldo}).")
+            messages.success(request, '✅ ' + gettext('Saldoabgleich %(bank_nr)s: Buchhaltung und Auszug stimmen überein (CHF %(buch_saldo)s).') % {'bank_nr': bank_nr, 'buch_saldo': buch_saldo})
         else:
-            messages.warning(request, f"⚠️ Saldoabgleich {bank_nr}: Auszug CHF "
-                                      f"{auszug.schlusssaldo}, Buchhaltung CHF {buch_saldo} — "
-                                      f"Differenz CHF {diff}. Offene Bewegungen im Bank-Eingang "
-                                      f"zuordnen, dann stimmt es.")
+            messages.warning(request, '⚠️ ' + gettext('Saldoabgleich %(bank_nr)s: Auszug CHF %(schlusssaldo)s, Buchhaltung CHF %(buch_saldo)s — Differenz CHF %(diff)s. Offene Bewegungen im Bank-Eingang zuordnen, dann stimmt es.') % {'bank_nr': bank_nr, 'schlusssaldo': auszug.schlusssaldo, 'buch_saldo': buch_saldo, 'diff': diff})
     if gesperrt:
         # Nie stillschweigend überspringen — der Import gälte sonst als vollständig.
-        messages.error(request, f"⚠️ {gesperrt} Zahlung(en) konnten nicht verbucht werden: "
-                                f"die Buchungsperiode ist gesperrt. Periode öffnen und die "
-                                f"Datei erneut importieren — bereits verbuchte Zahlungen "
-                                f"werden dabei als Duplikat übersprungen.")
+        messages.error(request, '⚠️ ' + gettext('%(gesperrt)s Zahlung(en) konnten nicht verbucht werden: die Buchungsperiode ist gesperrt. Periode öffnen und die Datei erneut importieren — bereits verbuchte Zahlungen werden dabei als Duplikat übersprungen.') % {'gesperrt': gesperrt})
 
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
@@ -1108,11 +1098,10 @@ def fw_kontoauszug_rueckgaengig(request, pk):
             # Auszug + Auszugszeilen (Rohdaten, keine Buchungen) entfernen.
             auszug.delete()
     except PermissionError as exc:
-        messages.error(request, f"❌ Rückgängig nicht möglich — die Buchungsperiode ist "
-                                f"gesperrt: {exc}. Periode öffnen und erneut versuchen.")
+        messages.error(request, '❌ ' + gettext('Rückgängig nicht möglich — die Buchungsperiode ist gesperrt: %(exc)s. Periode öffnen und erneut versuchen.') % {'exc': exc})
         return redirect('fw_bankabgleich')
     except Exception as exc:
-        messages.error(request, f"❌ Import konnte nicht rückgängig gemacht werden: {exc}")
+        messages.error(request, '❌ ' + gettext('Import konnte nicht rückgängig gemacht werden: %(exc)s') % {'exc': exc})
         return redirect('fw_bankabgleich')
 
     log_aktion(request, "Bank-Import rückgängig gemacht", dateiname,

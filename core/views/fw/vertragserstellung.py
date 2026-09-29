@@ -12,6 +12,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.db import transaction
+from django.utils.translation import gettext
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -206,7 +207,7 @@ def fw_vertrag_neu_speichern(request):
     P = request.POST
     einheit = Einheit.objects.filter(id=P.get('einheit_id') or 0).first()
     if not einheit:
-        messages.error(request, "Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.")
+        messages.error(request, gettext('Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.'))
         return redirect('/neu/vertraege/neu/')
 
     # --- Serverseitige Validierung VOR jeder DB-Änderung (Live-Test F) ---
@@ -505,16 +506,14 @@ def fw_vertrag_neu_speichern(request):
         try:
             erzeugt, _grund = anfangsmietzins_auto_ablegen(vertrag, verwaltung=_vw)
             if erzeugt:
-                messages.info(request, "📄 Amtliches Anfangsmietzins-Formular wurde automatisch erstellt "
-                                       "(Formularpflicht) — bei Schlüsselübergabe aushändigen.")
+                messages.info(request, '📄 ' + gettext('Amtliches Anfangsmietzins-Formular wurde automatisch erstellt (Formularpflicht) — bei Schlüsselübergabe aushändigen.'))
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # Nettomietzins 0 ist fast immer ein vergessenes Feld — warnen (nicht blockieren),
     # da ohne Mietzins die Sollstellung 0 verrechnet.
     if (vertrag.netto_mietzins or Decimal('0')) <= 0:
-        messages.warning(request, "⚠️ Nettomietzins ist CHF 0 — bitte prüfen. Ohne Mietzins "
-                                  "erzeugt der Mietenlauf keine Forderung.")
+        messages.warning(request, '⚠️ ' + gettext('Nettomietzins ist CHF 0 — bitte prüfen. Ohne Mietzins erzeugt der Mietenlauf keine Forderung.'))
 
     # Mietrechtliche Plausibilitätsprüfung (Index ≥ 5 J / Staffel ≥ 3 J,
     # max. 1 Staffelerhöhung/Jahr) — als Warnung, nicht blockierend.
@@ -530,17 +529,14 @@ def fw_vertrag_neu_speichern(request):
 
     log_aktion(request, "Mietvertrag bearbeitet (Assistent)" if editing else "Mietvertrag erstellt (Assistent)",
                str(mieter), f"{einheit.bezeichnung}, ab {beginn}", ziel=vertrag)
-    _verb = "aktualisiert" if editing else "erstellt"
     if anzahl_dok:
         messages.success(
             request,
-            f"✅ Mietvertrag für {mieter.display_name} {_verb} & aktiv gesetzt — "
-            f"{anzahl_dok} Dokumente automatisch abgelegt (im Portal sichtbar).")
+            '✅ ' + (gettext('Mietvertrag für %(display_name)s aktualisiert & aktiv gesetzt — %(anzahl_dok)s Dokumente automatisch abgelegt (im Portal sichtbar).') if editing else gettext('Mietvertrag für %(display_name)s erstellt & aktiv gesetzt — %(anzahl_dok)s Dokumente automatisch abgelegt (im Portal sichtbar).')) % {'display_name': mieter.display_name, 'anzahl_dok': anzahl_dok})
     elif editing:
-        messages.success(request, f"✅ Vertrag (Entwurf) für {mieter.display_name} aktualisiert.")
+        messages.success(request, '✅ ' + gettext('Vertrag (Entwurf) für %(display_name)s aktualisiert.') % {'display_name': mieter.display_name})
     else:
-        messages.success(request, f"✅ Mietvertrag (Entwurf) für {mieter.display_name} erstellt — "
-                         "PDFs werden erst beim Aktivieren erzeugt.")
+        messages.success(request, '✅ ' + gettext('Mietvertrag (Entwurf) für %(display_name)s erstellt — PDFs werden erst beim Aktivieren erzeugt.') % {'display_name': mieter.display_name})
 
     # Optionaler Abschluss: direkt zur digitalen Unterschrift senden (DocuSeal).
     if P.get('abschluss') == 'senden':
@@ -550,7 +546,7 @@ def fw_vertrag_neu_speichern(request):
             log_aktion(request, "Vertrag zur Unterschrift gesendet", str(mieter), msg, ziel=vertrag)
             messages.success(request, f"✍️ {msg}")
         else:
-            messages.warning(request, f"Vertrag erstellt, aber Signaturversand nicht möglich: {msg}")
+            messages.warning(request, gettext('Vertrag erstellt, aber Signaturversand nicht möglich: %(msg)s') % {'msg': msg})
     return redirect(f'/neu/vertraege/{vertrag.id}/')
 
 
@@ -728,7 +724,7 @@ def fw_vertrag_bearbeiten(request, pk):
             try:
                 wert = Decimal(roh)
             except Exception:
-                messages.error(request, f'«{roh}» ist keine Zahl — {name} unverändert.')
+                messages.error(request, gettext('«%(roh)s» ist keine Zahl — %(name)s unverändert.') % {'roh': roh, 'name': name})
                 return None
             if wert <= 0:
                 return None

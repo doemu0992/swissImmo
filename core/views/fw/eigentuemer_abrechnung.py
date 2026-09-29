@@ -13,6 +13,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db.models import Sum
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -153,7 +154,7 @@ def fw_eigentuemer_honorar(request, pk):
     except ValueError:
         jahr = 0
     if not jahr:
-        messages.error(request, "Kein Geschäftsjahr gewählt.")
+        messages.error(request, gettext('Kein Geschäftsjahr gewählt.'))
         return redirect(f'/neu/mandate/{md.id}/kontokorrent/')
     # Gegenkonto: Eigentümer-Kontokorrent (kein Geldfluss am 31.12.) — siehe W3.
     # Whitelist, sonst liesse sich per POST ein beliebiges Konto ansteuern.
@@ -168,10 +169,9 @@ def fw_eigentuemer_honorar(request, pk):
     if anzahl:
         log_aktion(request, "Verwaltungshonorar gebucht", md.firma_oder_name,
                    f"{jahr} · {anzahl} Liegenschaft(en) · CHF {summe}")
-        messages.success(request, f"✅ Verwaltungshonorar {jahr} verbucht: CHF {summe} "
-                                  f"über {anzahl} Liegenschaft(en) (Soll 4500 / Haben {gegen}).")
+        messages.success(request, '✅ ' + gettext('Verwaltungshonorar %(jahr)s verbucht: CHF %(summe)s über %(anzahl)s Liegenschaft(en) (Soll 4500 / Haben %(gegen)s).') % {'jahr': jahr, 'summe': summe, 'anzahl': anzahl, 'gegen': gegen})
     else:
-        messages.warning(request, "Kein Honorar zu buchen (bereits gebucht oder kein Mietertrag).")
+        messages.warning(request, gettext('Kein Honorar zu buchen (bereits gebucht oder kein Mietertrag).'))
     return redirect(f'/neu/mandate/{md.id}/kontokorrent/?jahr={jahr}')
 
 
@@ -211,7 +211,7 @@ def fw_eigentuemer_mahnstufen(request, pk):
         log_aktion(request, "Mahnstufen-Konfiguration geändert", md.firma_oder_name,
                    " · ".join(f"St{c['stufe']}:{'an' if c['aktiv'] else 'aus'}/{c['ab_tage']}T"
                               for c in konfig))
-        messages.success(request, "✅ Mahnstufen gespeichert.")
+        messages.success(request, '✅ ' + gettext('Mahnstufen gespeichert.'))
         return redirect(f'/neu/mandate/{md.id}/mahnstufen/')
     return render(request, 'fw/eigentuemer_mahnstufen.html', {
         **_global_filter(request), 'nav': 'mandate', 'md': md, 'stufen': roh_konfig(md),
@@ -236,7 +236,7 @@ def fw_eigentuemer_auszahlung(request, pk):
     except Exception:
         betrag = Decimal('0')
     if betrag <= 0:
-        messages.error(request, "Betrag muss grösser als 0 sein.")
+        messages.error(request, gettext('Betrag muss grösser als 0 sein.'))
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
     try:
         datum = date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.localdate()
@@ -258,5 +258,5 @@ def fw_eigentuemer_auszahlung(request, pk):
         bemerkung=bemerkung, erstellt_von=request.user)
     log_aktion(request, "Eigentümer-Auszahlung", md.firma_oder_name,
                f"CHF {betrag} ab {bank.nummer} · Beleg #{buchung.beleg_nr if buchung else '—'}")
-    messages.success(request, f"✅ Auszahlung CHF {betrag} an {md.firma_oder_name} verbucht (Soll 2850 / Haben {bank.nummer}).")
+    messages.success(request, '✅ ' + gettext('Auszahlung CHF %(betrag)s an %(firma_oder_name)s verbucht (Soll 2850 / Haben %(nummer)s).') % {'betrag': betrag, 'firma_oder_name': md.firma_oder_name, 'nummer': bank.nummer})
     return redirect('fw_eigentuemer_kontokorrent', pk=md.id)

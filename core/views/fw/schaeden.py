@@ -221,7 +221,7 @@ def fw_schaden_neu(request):
     titel = (request.POST.get('titel') or '').strip()
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     if not titel or not lg:
-        messages.error(request, "Titel und Liegenschaft sind erforderlich.")
+        messages.error(request, gettext('Titel und Liegenschaft sind erforderlich.'))
         return redirect('fw_schaeden')
 
     einheit = Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first() if request.POST.get('einheit_id') else None
@@ -363,11 +363,11 @@ def fw_schaden_ausstattung(request, pk):
         t.save(update_fields=['ausstattung'])
         if el:
             log_aktion(request, "Schaden mit Element verknüpft", f"Ticket #{t.id}", f"{el.raum} · {el.kategorie}")
-            messages.success(request, f"✅ Mit «{el.kategorie}» ({el.raum}) verknüpft.")
+            messages.success(request, '✅ ' + gettext('Mit «%(kategorie)s» (%(raum)s) verknüpft.') % {'kategorie': el.kategorie, 'raum': el.raum})
     else:
         t.ausstattung = None
         t.save(update_fields=['ausstattung'])
-        messages.success(request, "Verknüpfung aufgehoben.")
+        messages.success(request, gettext('Verknüpfung aufgehoben.'))
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
@@ -440,11 +440,11 @@ def fw_schaden_foto_upload(request, pk):
         n += 1
     if n:
         log_aktion(request, "Schaden-Fotos hochgeladen", f"Ticket #{t.id}", f"{n} Foto(s)")
-        messages.success(request, f"✅ {n} Foto(s) hinzugefügt.")
+        messages.success(request, '✅ ' + gettext('%(n)s Foto(s) hinzugefügt.') % {'n': n})
     if abgelehnt:
-        messages.error(request, f"{abgelehnt} Datei(en) abgelehnt (kein gültiges Bild oder zu gross).")
+        messages.error(request, gettext('%(abgelehnt)s Datei(en) abgelehnt (kein gültiges Bild oder zu gross).') % {'abgelehnt': abgelehnt})
     elif not n:
-        messages.error(request, "Keine Datei ausgewählt.")
+        messages.error(request, gettext('Keine Datei ausgewählt.'))
     return redirect(f'/neu/schaeden/{t.id}/#sc-fotos')
 
 
@@ -460,7 +460,7 @@ def fw_schaden_foto_loeschen(request, pk):
     if request.method == 'POST':
         foto.delete()
         log_aktion(request, "Schaden-Foto gelöscht", f"Ticket #{tid}", '')
-        messages.success(request, "Foto entfernt.")
+        messages.success(request, gettext('Foto entfernt.'))
     return redirect(f'/neu/schaeden/{tid}/#sc-fotos')
 
 
@@ -476,7 +476,7 @@ def fw_schaden_loeschen(request, pk):
         titel = t.titel or (t.beschreibung or '')[:40]
         t.delete()
         log_aktion(request, "Schadensmeldung gelöscht", titel, '')
-        messages.success(request, "🗑️ Schadensmeldung gelöscht.")
+        messages.success(request, '🗑️ ' + gettext('Schadensmeldung gelöscht.'))
     return redirect('/neu/schaeden/')
 
 
@@ -545,7 +545,7 @@ def fw_schaden_status(request, pk):
     t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von'), id=pk)
     neu = request.POST.get('status')
     if neu not in dict(SchadenMeldung.STATUS_CHOICES):
-        messages.error(request, "Ungültiger Status.")
+        messages.error(request, gettext('Ungültiger Status.'))
         return redirect(f'/neu/schaeden/{t.id}/')
     t.status = neu
     t.save()
@@ -563,7 +563,7 @@ def fw_schaden_status(request, pk):
                                            nachricht=f"Melder über Status '{t.get_status_display()}' informiert.", is_intern=True)
 
     log_aktion(request, "Ticket-Status geändert", f"Ticket #{t.id}", t.get_status_display())
-    messages.success(request, f"✅ Status: {t.get_status_display()}{info}.")
+    messages.success(request, '✅ ' + gettext('Status: %(get_status_display)s%(info)s.') % {'get_status_display': t.get_status_display(), 'info': info})
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
@@ -594,11 +594,11 @@ def fw_schaden_antwort(request, pk):
     ok = send_ticket_email(melder_email, f"Ihre Meldung (Ticket #{t.id})", text) if melder_email else False
     log_aktion(request, "Ticket-Antwort gesendet", f"Ticket #{t.id}", '')
     if ok:
-        messages.success(request, f"✅ Antwort an {melder_email} gesendet.")
+        messages.success(request, '✅ ' + gettext('Antwort an %(melder_email)s gesendet.') % {'melder_email': melder_email})
     elif melder_email:
-        messages.error(request, "Antwort gespeichert, aber E-Mail-Versand fehlgeschlagen.")
+        messages.error(request, gettext('Antwort gespeichert, aber E-Mail-Versand fehlgeschlagen.'))
     else:
-        messages.success(request, "Antwort im Verlauf gespeichert (Melder ohne E-Mail).")
+        messages.success(request, gettext('Antwort im Verlauf gespeichert (Melder ohne E-Mail).'))
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
@@ -669,7 +669,7 @@ def fw_auftrag_kosten(request, pk):
                     f"freizugeben oder abzulehnen.\n\nFreundliche Grüsse\nIhre Verwaltung")
             if send_ticket_email(eigentuemer.email, f"Reparaturfreigabe angefragt — {lg.strasse}", text):
                 mail_info = f" E-Mail an {eigentuemer.email} gesendet."
-        messages.info(request, f"ℹ️ Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal).{mail_info}")
+        messages.info(request, 'ℹ️ ' + gettext('Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal).%(mail_info)s') % {'mail_info': mail_info})
 
     # Optional Kreditorenrechnung erstellen
     if request.POST.get('kreditor_erstellen') == 'on' and a.kosten_effektiv and not a.kreditoren_rechnung_id:
@@ -680,9 +680,9 @@ def fw_auftrag_kosten(request, pk):
             status='neu',
         )
         a.kreditoren_rechnung = kr
-        messages.success(request, f"✅ Kosten erfasst und Kreditorenrechnung über CHF {a.kosten_effektiv} erstellt (Status: Neu — im Kreditoren-Tab freigeben).")
+        messages.success(request, '✅ ' + gettext('Kosten erfasst und Kreditorenrechnung über CHF %(kosten_effektiv)s erstellt (Status: Neu — im Kreditoren-Tab freigeben).') % {'kosten_effektiv': a.kosten_effektiv})
     else:
-        messages.success(request, "✅ Kosten erfasst.")
+        messages.success(request, '✅ ' + gettext('Kosten erfasst.'))
     a.save()
     log_aktion(request, "Reparaturkosten erfasst", f"Ticket #{a.ticket_id}",
                f"geschätzt {a.kosten_geschaetzt}, effektiv {a.kosten_effektiv}")

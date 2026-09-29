@@ -30,6 +30,7 @@ import secrets
 from functools import wraps
 
 from django.contrib import messages
+from django.utils.translation import gettext
 from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
@@ -174,8 +175,7 @@ def zweifaktor_bestaetigen(request):
         offen = Wiederherstellungscode.objects.filter(
             benutzer=benutzer, eingeloest_am__isnull=True).count()
         messages.warning(request,
-                         f'Mit Notfallcode angemeldet. Noch {offen} Code(s) übrig — '
-                         'bei wenigen übrigen neue erzeugen.')
+                         gettext('Mit Notfallcode angemeldet. Noch %(offen)s Code(s) übrig — bei wenigen übrigen neue erzeugen.') % {'offen': offen})
         return redirect(weiter or 'nach_login')
 
     versuche = int(request.session.get('zf_versuche', 0)) + 1
@@ -306,7 +306,7 @@ def zweifaktor_pflicht_setzen(request):
         return redirect('zweifaktor_uebersicht')
     organisation = aktuelle_organisation()
     if organisation is None or not hat_rolle(request.user, SCHREIB_ROLLEN):
-        messages.error(request, 'Dafür fehlt Ihnen die Berechtigung.')
+        messages.error(request, gettext('Dafür fehlt Ihnen die Berechtigung.'))
         return redirect('zweifaktor_uebersicht')
 
     an = request.POST.get('pflicht') == 'an'
@@ -315,8 +315,7 @@ def zweifaktor_pflicht_setzen(request):
         # Pflicht für sein Team fest und steht als Einziger daneben.
         eigener = ZweiterFaktor.objects.filter(benutzer=request.user).first()
         if eigener is None or not eigener.ist_aktiv:
-            messages.error(request, 'Richten Sie den zweiten Faktor zuerst für sich '
-                                    'selbst ein — dann lässt er sich für alle verlangen.')
+            messages.error(request, gettext('Richten Sie den zweiten Faktor zuerst für sich selbst ein — dann lässt er sich für alle verlangen.'))
             return redirect('zweifaktor_einrichten')
 
     organisation.zweifaktor_pflicht = an
@@ -356,16 +355,15 @@ def zweifaktor_aus(request):
     if request.method != 'POST':
         return redirect('zweifaktor_uebersicht')
     if _pflicht_fuer(request.user):
-        messages.error(request, 'Ihre Verwaltung verlangt den zweiten Faktor — '
-                                'er lässt sich nicht abschalten.')
+        messages.error(request, gettext('Ihre Verwaltung verlangt den zweiten Faktor — er lässt sich nicht abschalten.'))
         return redirect('zweifaktor_uebersicht')
     if not request.user.check_password(request.POST.get('password', '')):
-        messages.error(request, 'Das Passwort stimmt nicht — nichts geändert.')
+        messages.error(request, gettext('Das Passwort stimmt nicht — nichts geändert.'))
         return redirect('zweifaktor_uebersicht')
     ZweiterFaktor.objects.filter(benutzer=request.user).delete()
     Wiederherstellungscode.objects.filter(benutzer=request.user).delete()
     _sicherheit('Zweiter Faktor abgeschaltet', request.user.get_username(), request=request)
-    messages.success(request, 'Zwei-Faktor-Anmeldung abgeschaltet.')
+    messages.success(request, gettext('Zwei-Faktor-Anmeldung abgeschaltet.'))
     return redirect('zweifaktor_uebersicht')
 
 

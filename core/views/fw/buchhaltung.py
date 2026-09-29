@@ -12,6 +12,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db.models import Q, Sum
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -187,17 +188,17 @@ def fw_buchhaltung(request):
         # anderes: ein Buchungslauf, der die Periode versiegelt. Laut
         # Rollenkonzept gehört er allein der Verwaltung.
         if not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
-            messages.error(request, "❌ Den Jahresabschluss darf nur die Verwaltung buchen.")
+            messages.error(request, '❌ ' + gettext('Den Jahresabschluss darf nur die Verwaltung buchen.'))
             return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
         try:
             j_ab = int(request.POST.get('jahr') or heute.year)
         except ValueError:
             j_ab = heute.year
         if not (2000 <= j_ab <= 2100):
-            messages.error(request, "Ungültiges Geschäftsjahr.")
+            messages.error(request, gettext('Ungültiges Geschäftsjahr.'))
             return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
         if ist_abgeschlossen(j_ab, aktive_lg):
-            messages.info(request, f"Das Geschäftsjahr {j_ab} ist bereits abgeschlossen.")
+            messages.info(request, gettext('Das Geschäftsjahr %(j_ab)s ist bereits abgeschlossen.') % {'j_ab': j_ab})
             return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
         try:
             n_ab, erg = buche_jahresabschluss(j_ab, liegenschaft=aktive_lg, user=request.user)
@@ -205,7 +206,7 @@ def fw_buchhaltung(request):
             messages.error(request, f"❌ {exc}")
             return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
         except Exception as exc:
-            messages.error(request, f"❌ Jahresabschluss fehlgeschlagen: {exc}")
+            messages.error(request, '❌ ' + gettext('Jahresabschluss fehlgeschlagen: %(exc)s') % {'exc': exc})
             return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
         log_aktion(request, "Jahresabschluss gebucht", str(j_ab),
                    f"{n_ab} Konten, Ergebnis CHF {erg}")
@@ -230,10 +231,9 @@ def fw_buchhaltung(request):
                                         f"Buchungen gesperrt.")
         if n_ab:
             art = "Gewinn" if erg >= 0 else "Verlust"
-            messages.success(request, f"✅ Jahresabschluss {j_ab} gebucht: {n_ab} Erfolgskonto/-konten "
-                                      f"gegen 2970 saldiert · {art} CHF {abs(erg)}.{gesperrt_hinweis}")
+            messages.success(request, '✅ ' + gettext('Jahresabschluss %(j_ab)s gebucht: %(n_ab)s Erfolgskonto/-konten gegen 2970 saldiert · %(art)s CHF %(abs)s.%(gesperrt_hinweis)s') % {'j_ab': j_ab, 'n_ab': n_ab, 'art': art, 'abs': abs(erg), 'gesperrt_hinweis': gesperrt_hinweis})
         else:
-            messages.info(request, f"Jahr {j_ab}: keine Erfolgsbuchungen zum Abschliessen.")
+            messages.info(request, gettext('Jahr %(j_ab)s: keine Erfolgsbuchungen zum Abschliessen.') % {'j_ab': j_ab})
         return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
 
     # --- Jahresabschluss ZURÜCKNEHMEN (alle Abschlussbuchungen stornieren) — H6 ---
@@ -243,17 +243,17 @@ def fw_buchhaltung(request):
         from core.services.jahresabschluss import nimm_zurueck, ist_abgeschlossen
         from core.auth import log_aktion, hat_rolle
         if not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
-            messages.error(request, "❌ Den Jahresabschluss darf nur die Verwaltung zurücknehmen.")
+            messages.error(request, '❌ ' + gettext('Den Jahresabschluss darf nur die Verwaltung zurücknehmen.'))
             return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
         try:
             j_zr = int(request.POST.get('jahr') or heute.year)
         except ValueError:
             j_zr = heute.year
         if not (2000 <= j_zr <= 2100):
-            messages.error(request, "Ungültiges Geschäftsjahr.")
+            messages.error(request, gettext('Ungültiges Geschäftsjahr.'))
             return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
         if not ist_abgeschlossen(j_zr, aktive_lg):
-            messages.info(request, f"Das Geschäftsjahr {j_zr} ist nicht abgeschlossen.")
+            messages.info(request, gettext('Das Geschäftsjahr %(j_zr)s ist nicht abgeschlossen.') % {'j_zr': j_zr})
             return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
         # Periodensperre ZUERST lösen, sofern sie genau auf diesem Abschluss-Stichtag
         # sass (portfolioweiter Abschluss). Die Rücknahme bucht die Storni auf den
@@ -271,14 +271,13 @@ def fw_buchhaltung(request):
         try:
             n_zr = nimm_zurueck(j_zr, liegenschaft=aktive_lg, user=request.user)
         except Exception as exc:
-            messages.error(request, f"❌ Rücknahme fehlgeschlagen: {exc}")
+            messages.error(request, '❌ ' + gettext('Rücknahme fehlgeschlagen: %(exc)s') % {'exc': exc})
             return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
         log_aktion(request, "Jahresabschluss zurückgenommen", str(j_zr), f"{n_zr} Buchungen storniert")
         if n_zr:
-            messages.success(request, f"✅ Jahresabschluss {j_zr} zurückgenommen: "
-                                      f"{n_zr} Abschlussbuchung(en) storniert.{entsperrt}")
+            messages.success(request, '✅ ' + gettext('Jahresabschluss %(j_zr)s zurückgenommen: %(n_zr)s Abschlussbuchung(en) storniert.%(entsperrt)s') % {'j_zr': j_zr, 'n_zr': n_zr, 'entsperrt': entsperrt})
         else:
-            messages.info(request, f"Jahr {j_zr}: keine Abschlussbuchungen zum Zurücknehmen.")
+            messages.info(request, gettext('Jahr %(j_zr)s: keine Abschlussbuchungen zum Zurücknehmen.') % {'j_zr': j_zr})
         return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
 
     # --- Jahresfilter (Jahresabschluss) ---
@@ -432,22 +431,22 @@ def fw_kontenplan(request):
         typ = request.POST.get('typ') or 'bilanz'
         if aktion == 'neu':
             if not nr or not bez:
-                messages.error(request, "Nummer und Bezeichnung sind Pflicht.")
+                messages.error(request, gettext('Nummer und Bezeichnung sind Pflicht.'))
             elif Buchungskonto.objects.filter(nummer=nr).exists():
-                messages.error(request, f"Konto {nr} existiert bereits.")
+                messages.error(request, gettext('Konto %(nr)s existiert bereits.') % {'nr': nr})
             elif typ not in ('aufwand', 'ertrag', 'bilanz', 'aktiv', 'passiv'):
-                messages.error(request, "Ungültiger Kontotyp.")
+                messages.error(request, gettext('Ungültiger Kontotyp.'))
             else:
                 Buchungskonto.objects.create(
                     nummer=nr, bezeichnung=bez, typ=typ,
                     is_hnk_relevant=(request.POST.get('hnk') == 'on'),
                     standard_verteilschluessel=(request.POST.get('schluessel') or 'm2'))
                 log_aktion(request, "Konto angelegt", f"{nr} {bez}", typ)
-                messages.success(request, f"✅ Konto {nr} «{bez}» angelegt.")
+                messages.success(request, '✅ ' + gettext('Konto %(nr)s «%(bez)s» angelegt.') % {'nr': nr, 'bez': bez})
         elif aktion == 'bearbeiten':
             k = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first()
             if not k:
-                messages.error(request, "Konto nicht gefunden.")
+                messages.error(request, gettext('Konto nicht gefunden.'))
             else:
                 # Die NUMMER bleibt unveränderlich: sie steckt in Belegtexten,
                 # Exporten und im Buchungscode. Umbenennen ja, umnummerieren nein.
@@ -459,7 +458,7 @@ def fw_kontenplan(request):
                     k.standard_verteilschluessel = request.POST['schluessel']
                 k.save()
                 log_aktion(request, "Konto geändert", f"{k.nummer} {k.bezeichnung}", k.typ)
-                messages.success(request, f"✅ Konto {k.nummer} aktualisiert.")
+                messages.success(request, '✅ ' + gettext('Konto %(nummer)s aktualisiert.') % {'nummer': k.nummer})
         return redirect(f'/neu/kontenplan/{basis["lg_query"]}')
 
     # --- Saldenliste ---

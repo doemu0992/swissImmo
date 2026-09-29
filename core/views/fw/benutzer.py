@@ -8,6 +8,7 @@
 # haengt hier mehr dran, als die 93 Zeilen vermuten lassen.
 
 from django.db.models import Q
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 
 from core.auth import (INHABER_ROLLEN, ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_SACHBEARBEITER,
@@ -88,10 +89,10 @@ def fw_benutzer_form(request, pk=None):
             rolle = ROLLE_LESEZUGRIFF
         if ziel is None:
             if not username:
-                messages.error(request, "Benutzername ist erforderlich.")
+                messages.error(request, gettext('Benutzername ist erforderlich.'))
                 return redirect(request.path)
             if User.objects.filter(username__iexact=username).exists():
-                messages.error(request, f"Benutzername '{username}' ist bereits vergeben.")
+                messages.error(request, gettext("Benutzername '%(username)s' ist bereits vergeben.") % {'username': username})
                 return redirect(request.path)
             ziel = User(username=username)
         pw = P.get('passwort', '').strip()
@@ -130,7 +131,7 @@ def fw_benutzer_form(request, pk=None):
             _diff = f"Rolle: {alt_rolle} → {rolle}" + (' · ' + _diff if _diff else '')
         log_aktion(request, "Benutzer bearbeitet" if pk else "Benutzer erstellt",
                    ziel.username, _diff or rolle)
-        messages.success(request, f"✅ Benutzer {ziel.username} gespeichert.")
+        messages.success(request, '✅ ' + gettext('Benutzer %(username)s gespeichert.') % {'username': ziel.username})
         return redirect('/neu/benutzer/')
 
     aktuelle_rolle = ''
@@ -155,7 +156,7 @@ def fw_benutzer_loeschen(request, pk):
     ziel = _team_benutzer_oder_404(request, pk)
     if request.method == 'POST':
         if ziel == request.user:
-            messages.error(request, "Du kannst deinen eigenen Account nicht löschen.")
+            messages.error(request, gettext('Du kannst deinen eigenen Account nicht löschen.'))
             return redirect('/neu/benutzer/')
         # Lockout-Schutz: den letzten aktiven Verwaltungs-/Superuser DIESER
         # Organisation nicht löschen.
@@ -177,7 +178,7 @@ def fw_benutzer_loeschen(request, pk):
                     mitgliedschaften__rolle__in=leitend)
             ).exclude(id=ziel.id).distinct().count()
             if andere_admins == 0:
-                messages.error(request, "Das ist der letzte Verwaltungs-Account — er kann nicht gelöscht werden.")
+                messages.error(request, gettext('Das ist der letzte Verwaltungs-Account — er kann nicht gelöscht werden.'))
                 return redirect('/neu/benutzer/')
         name = ziel.username
         # GETEILTE KONTEN NICHT GANZ LOESCHEN. Ein Mensch kann in mehreren
@@ -195,12 +196,10 @@ def fw_benutzer_loeschen(request, pk):
         if rest == 0:
             log_aktion(request, "Benutzer gelöscht", name, '')
             ziel.delete()
-            messages.success(request, f"🗑️ Benutzer {name} gelöscht.")
+            messages.success(request, '🗑️ ' + gettext('Benutzer %(name)s gelöscht.') % {'name': name})
         else:
             log_aktion(request, "Benutzer aus Team entfernt", name,
                        f"noch in {rest} weiteren Verwaltung(en)")
             messages.success(
-                request, f"🗑️ {name} wurde aus deinem Team entfernt. "
-                         f"Das Konto bleibt bestehen — es wird in einer anderen "
-                         f"Verwaltung genutzt.")
+                request, '🗑️ ' + gettext('%(name)s wurde aus deinem Team entfernt. Das Konto bleibt bestehen — es wird in einer anderen Verwaltung genutzt.') % {'name': name})
     return redirect('/neu/benutzer/')

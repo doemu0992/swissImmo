@@ -21,6 +21,7 @@
 import logging
 
 from django.contrib import messages
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy
@@ -118,7 +119,7 @@ def fw_zeit_erfassen(request, pk):
     except ValueError:
         minuten = 0
     if minuten <= 0:
-        messages.error(request, 'Bitte eine Dauer in Minuten angeben.')
+        messages.error(request, gettext('Bitte eine Dauer in Minuten angeben.'))
         return redirect(f'/neu/faelle/{pk}/')
 
     satz_roh = (request.POST.get('satz') or '').strip().replace("'", '')
@@ -128,7 +129,7 @@ def fw_zeit_erfassen(request, pk):
         try:
             satz = Decimal(satz_roh.replace(',', '.'))
         except InvalidOperation:
-            messages.error(request, f'«{satz_roh}» ist kein Betrag.')
+            messages.error(request, gettext('«%(satz_roh)s» ist kein Betrag.') % {'satz_roh': satz_roh})
             return redirect(f'/neu/faelle/{pk}/')
 
     Zeiteintrag.objects.create(
@@ -140,7 +141,7 @@ def fw_zeit_erfassen(request, pk):
     from core.auth import log_aktion
     log_aktion(request, 'Aufwand erfasst', objekt=f'Fall {fall.pk}',
                details=f'{minuten} Min.')
-    messages.success(request, f'{minuten} Minuten erfasst.')
+    messages.success(request, gettext('%(minuten)s Minuten erfasst.') % {'minuten': minuten})
     return redirect(f'/neu/faelle/{pk}/')
 
 
@@ -190,7 +191,7 @@ def fw_fall_zustaendig(request, pk):
         neu_person = team_der_organisation(
             getattr(request, 'organisation', None)).filter(pk=roh).first()
         if neu_person is None:
-            messages.error(request, 'Diese Person gehört nicht zu Ihrer Verwaltung.')
+            messages.error(request, gettext('Diese Person gehört nicht zu Ihrer Verwaltung.'))
             return redirect(f'/neu/faelle/{pk}/')
 
     def _name(b):
@@ -209,7 +210,7 @@ def fw_fall_zustaendig(request, pk):
     # und nicht in einer Gesamtliste. Derselbe Fund wie in E2.53.
     log_aktion(request, 'Zuständigkeit geändert', objekt=f'Fall {fall.nummer}',
                details=f'{_name(alt)} → {_name(neu_person)}', ziel=fall)
-    messages.success(request, f'Fall liegt jetzt bei {_name(neu_person)}.')
+    messages.success(request, gettext('Fall liegt jetzt bei %(name)s.') % {'name': _name(neu_person)})
     return redirect(f'/neu/faelle/{pk}/')
 
 
@@ -278,7 +279,7 @@ def fw_fallschritt_erledigen(request, pk):
 
     schritt = get_object_or_404(Fallschritt.objects.select_related('fall'), pk=pk)
     schritt.erledigen(benutzer=request.user)
-    messages.success(request, f'«{schritt.bezeichnung}» ist erledigt.')
+    messages.success(request, gettext('«%(bezeichnung)s» ist erledigt.') % {'bezeichnung': schritt.bezeichnung})
     return redirect(f'/neu/faelle/{schritt.fall_id}/')
 
 
@@ -343,7 +344,7 @@ def fw_zulauf_uebernehmen(request, pk):
     grund = (request.POST.get('ablegen') or '').strip()
     if grund:
         eingang.ablegen(grund, benutzer=request.user)
-        messages.success(request, f'Abgelegt: {grund}')
+        messages.success(request, gettext('Abgelegt: %(grund)s') % {'grund': grund})
         return redirect('/neu/zulauf/')
     try:
         uebernehmen(eingang, benutzer=request.user,
@@ -354,7 +355,7 @@ def fw_zulauf_uebernehmen(request, pk):
         # Meldung gehört dem Benutzer, nicht dem Log allein.
         messages.error(request, str(fehler))
         return redirect('/neu/zulauf/')
-    messages.success(request, 'Eingang zugeordnet.')
+    messages.success(request, gettext('Eingang zugeordnet.'))
     return redirect('/neu/zulauf/')
 
 
@@ -394,7 +395,7 @@ def fw_termin_neu(request):
     if not beginn or not titel:
         # Kein stiller Abbruch: Wer ein Formular abschickt und nichts
         # passieren sieht, schickt es nochmal.
-        messages.error(request, 'Titel und Beginn sind nötig.')
+        messages.error(request, gettext('Titel und Beginn sind nötig.'))
         return redirect('/neu/termine/')
     if timezone.is_naive(beginn):
         beginn = timezone.make_aware(beginn)
@@ -404,7 +405,7 @@ def fw_termin_neu(request):
            ort=(request.POST.get('ort') or '').strip(),
            notiz=(request.POST.get('notiz') or '').strip(),
            zustaendig=request.user).save()
-    messages.success(request, f'Termin «{titel}» erfasst.')
+    messages.success(request, gettext('Termin «%(titel)s» erfasst.') % {'titel': titel})
     return redirect('/neu/termine/')
 
 
@@ -419,11 +420,11 @@ def fw_termin_status(request, pk):
     termin = get_object_or_404(Termin.objects, pk=pk)
     neu = request.POST.get('status')
     if neu not in dict(Termin.STATUS):
-        messages.error(request, 'Unbekannter Status.')
+        messages.error(request, gettext('Unbekannter Status.'))
         return redirect('/neu/termine/')
     termin.status = neu
     termin.save(update_fields=['status'])
-    messages.success(request, f'«{termin.titel}» ist {termin.get_status_display().lower()}.')
+    messages.success(request, gettext('«%(titel)s» ist %(status)s.') % {'titel': termin.titel, 'status': termin.get_status_display().lower()})
     return redirect('/neu/termine/')
 
 
@@ -467,7 +468,7 @@ def fw_abwesenheit_neu(request):
         vertreten_durch_id=_num(request.POST.get('vertreten_durch')) or None,
         notiz=(request.POST.get('notiz') or '').strip())
     if not a.von or not a.bis:
-        messages.error(request, 'Von und Bis sind nötig.')
+        messages.error(request, gettext('Von und Bis sind nötig.'))
         return redirect('/neu/abwesenheiten/')
     try:
         # `clean()` prueft Ende-vor-Beginn und Selbstvertretung. Ohne
@@ -479,5 +480,5 @@ def fw_abwesenheit_neu(request):
             m for liste in fehler.message_dict.values() for m in liste))
         return redirect('/neu/abwesenheiten/')
     a.save()
-    messages.success(request, 'Abwesenheit erfasst.')
+    messages.success(request, gettext('Abwesenheit erfasst.'))
     return redirect('/neu/abwesenheiten/')

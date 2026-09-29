@@ -12,6 +12,7 @@ import unicodedata
 import re
 
 from django.shortcuts import get_object_or_404, redirect
+from django.utils.translation import gettext
 from django.http import HttpResponse
 from django.utils import timezone
 from django.template.loader import get_template
@@ -69,11 +70,11 @@ def send_via_docuseal(request, vertrag_id):
     # 1. Validierung
     api_key = getattr(settings, 'DOCUSEAL_API_KEY', None)
     if not api_key:
-        messages.error(request, "❌ API-Key fehlt in settings.py")
+        messages.error(request, '❌ ' + gettext('API-Key fehlt in settings.py'))
         return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
 
     if not vertrag.mieter.email:
-        messages.error(request, "❌ Abbruch: Mieter hat keine E-Mail.")
+        messages.error(request, '❌ ' + gettext('Abbruch: Mieter hat keine E-Mail.'))
         return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
 
     # 2. PDF Generieren
@@ -133,7 +134,7 @@ def send_via_docuseal(request, vertrag_id):
 
     except Exception as e:
         logger.error(f"PDF Gen Error: {e}")
-        messages.error(request, f"❌ PDF Fehler: {str(e)}")
+        messages.error(request, '❌ ' + gettext('PDF Fehler: %(str)s') % {'str': str(e)})
         return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
 
     # 3. API Request an DocuSeal
@@ -172,13 +173,13 @@ def send_via_docuseal(request, vertrag_id):
             vertrag.sign_status = 'gesendet'
             vertrag.unterzeichnet_am = None
             vertrag.save()
-            messages.success(request, f"✅ Vertrag an {vertrag.mieter.email} gesendet")
+            messages.success(request, '✅ ' + gettext('Vertrag an %(email)s gesendet') % {'email': vertrag.mieter.email})
         else:
             raise Exception(f"API Fehler {response.status_code}: {response.text}")
 
     except Exception as e:
         logger.error(f"DocuSeal Exception: {e}")
-        messages.error(request, f"❌ Fehler beim Senden: {str(e)}")
+        messages.error(request, '❌ ' + gettext('Fehler beim Senden: %(str)s') % {'str': str(e)})
 
     return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
 

@@ -12,6 +12,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db.models import Q
+from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -161,7 +162,7 @@ def fw_bewerber_besichtigung(request, pk):
         except Exception:
             termin = None
     if termin is None:
-        messages.error(request, "Bitte einen gültigen Besichtigungstermin wählen.")
+        messages.error(request, gettext('Bitte einen gültigen Besichtigungstermin wählen.'))
         return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
     b.besichtigung_am = termin
     if b.status in ('neu', 'geprueft'):
@@ -222,7 +223,7 @@ def fw_bewerber_entscheid(request, pk):
     # Idempotenz: dieselbe Entscheidung nicht doppelt setzen (sonst geht bei jedem
     # Klick erneut eine Zu-/Absage-Mail an den Bewerber raus).
     if b.status == ziel_status:
-        messages.info(request, f"Diese Bewerbung wurde bereits {'zugesagt' if entscheid == 'zusage' else 'abgesagt'}.")
+        messages.info(request, gettext('Diese Bewerbung wurde bereits zugesagt.') if entscheid == 'zusage' else gettext('Diese Bewerbung wurde bereits abgesagt.'))
         return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
     b.status = ziel_status
     b.save(update_fields=['status'])
@@ -330,7 +331,7 @@ def fw_bewerbung_unterlagen(request, pk):
                    f"{b.vorname} {b.nachname}", ", ".join(abgelegt))
         messages.success(request, "✅ " + " und ".join(abgelegt) + " abgelegt.")
     else:
-        messages.info(request, "Keine Datei gewählt.")
+        messages.info(request, gettext('Keine Datei gewählt.'))
     return redirect(f'/neu/bewerbungen/{b.id}/')
 
 
@@ -349,7 +350,7 @@ def fw_bewerbung_status(request, pk):
         b.status = neu
         b.save()
         log_aktion(request, "Bewerbungsstatus geändert", f"{b.vorname} {b.nachname}", neu)
-        messages.success(request, f"Status auf „{dict((k,l) for k,l,_ in BEWERBUNG_SPALTEN)[neu]}“ gesetzt.")
+        messages.success(request, gettext('Status auf „%(wert)s“ gesetzt.') % {'wert': dict((k,l) for k,l,_ in BEWERBUNG_SPALTEN)[neu]})
     return redirect(f'/neu/bewerbungen/{pk}/')
 
 
@@ -387,7 +388,7 @@ def fw_bewerbung_zu_vertrag(request, pk):
                                 mieter__nachname__iexact=b.nachname or '')
                         .order_by('-id').first())
     if _bestehender:
-        messages.info(request, "Für diese Bewerbung existiert bereits ein Vertragsentwurf.")
+        messages.info(request, gettext('Für diese Bewerbung existiert bereits ein Vertragsentwurf.'))
         return redirect(f'/neu/vertraege/{_bestehender.id}/')
 
     # 1. Mieter finden oder anlegen (Duplikat-Schutz über E-Mail + Name)
@@ -444,6 +445,5 @@ def fw_bewerbung_zu_vertrag(request, pk):
     log_aktion(request, "Bewerbung → Vertragsentwurf", f"{mieter.display_name}",
                f"{einheit.bezeichnung}, Entwurf #{vertrag.id}", ziel=vertrag)
     messages.success(request,
-        f"✅ Mieter angelegt und Vertragsentwurf für {einheit.bezeichnung} erstellt — "
-        f"bitte Konditionen prüfen und aktivieren.")
+        '✅ ' + gettext('Mieter angelegt und Vertragsentwurf für %(bezeichnung)s erstellt — bitte Konditionen prüfen und aktivieren.') % {'bezeichnung': einheit.bezeichnung})
     return redirect(f'/neu/vertraege/{vertrag.id}/')
