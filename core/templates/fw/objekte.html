@@ -13,6 +13,8 @@
       Tokens, liefen also an der Petrol-Palette vorbei.
     - SORTIERT NACH BEFUND, nicht nach Alphabet — Gruppen und Zeilen.
     - KEIN ZWEITES SUCHFELD. Die Topbar hat eines.
+    - Seiten zu 20 LIEGENSCHAFTEN, nicht zu 50 Zeilen (Audit Etappe 4):
+      Eine Gruppe wird nie über zwei Seiten zerrissen.
     - Der Kennzahlenstreifen ersetzt die Fliesstextzeile im Kopf.
 {% endcomment %}
 
@@ -24,7 +26,10 @@
         <p>{% if aktive_lg %}{% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}
             <a href="/neu/objekte/" class="fw-link">× {% trans "aufheben" %}</a>{% else %}{% trans "Nach Befund geordnet — was klemmt, steht oben." %}{% endif %}</p>
     </div>
-    <a href="/neu/objekte/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Objekt erfassen" %}</a>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <a href="{{ csv_url }}" download class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV" %}</a>
+        <a href="/neu/objekte/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Objekt erfassen" %}</a>
+    </div>
 </div>
 
 {% comment %} Die Zahlen zeigen IMMER das ganze Portfolio, auch bei aktivem
@@ -108,6 +113,7 @@
 {% endif %}
 </div>
 {% endfor %}
+{% if seite.paginator.num_pages > 1 %}<div class="fw-card">{% include 'fw/_seiten.html' %}</div>{% endif %}
 
 <style>
     /* Der Pfeil dreht sich beim Aufklappen. `details[open]` statt einer

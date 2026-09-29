@@ -20017,3 +20017,60 @@ msgstr[1] "Monthly price by plan — currently <span style=\"color:var(--ds-ink)
 #: tickets/models.py:133
 msgid "Ausgehende E-Mail"
 msgstr "Outgoing email"
+
+#: core/templates/fw/vertraege.html
+msgid "CSV"
+msgstr "CSV"
+
+#: core/templates/fw/vertraege.html
+msgid "Mietverhältnisse durchsuchen"
+msgstr "Search tenancies"
+
+#: core/templates/fw/personen.html
+msgid "Personen durchsuchen"
+msgstr "Search people"
+
+#: core/templates/fw/personen.html
+msgid "Name, E-Mail, Ort oder Telefon …"
+msgstr "Name, email, town or phone …"
+
+#: core/views/fw/listen.py
+msgid "Neueste zuerst"
+msgstr "Newest first"
+
+#: core/views/fw/listen.py
+msgid "Nächstes Ende"
+msgstr "Next end date"
+
+#: core/views/fw/listen.py
+msgid "Höchste Miete"
+msgstr "Highest rent"
+
+#: core/views/fw/listen.py
+msgid "Netto (CHF)"
+msgstr "Net (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Brutto (CHF)"
+msgstr "Gross (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Nettomiete (CHF)"
+msgstr "Net rent (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Fläche m²"
+msgstr "Area m²"
+
+#: core/views/fw/listen.py
+msgid "Aktives Mietverhältnis"
+msgstr "Current tenancy"
+
+#: core/views/fw/listen.py
+msgid "Personenliste exportiert (CSV)"
+msgstr "People list exported (CSV)"
+
+#: core/views/fw/listen.py
+#, python-format
+msgid "%(n)s Personen"
+msgstr "%(n)s people"

@@ -295,7 +295,22 @@ Mietverhältnisse und Personen; die fehlenden leeren Zustände nachrüsten.
   beginnt wieder auf Seite 1. Die Chip-Zahlen folgen der Suche.
 - Nebenbefund behoben: Die Zeile las den Eigentümer mit einer Abfrage je
   Liegenschaft (`select_related` fehlte).
-Offen: Objekte, Mietverhältnisse, Personen.*
+Danach die übrigen drei Listen:
+- Gemeinsame Werkzeugleiste `fw/_listwerkzeug.html` (Suche, Sortierung,
+  «Anwenden»). Der Baustein sortiert und blättert jetzt auch Abfragen in der
+  Datenbank (`Sortierung.felder`), jede Sortierung endet mit `id`, damit
+  Seiten stabil bleiben.
+- Mietverhältnisse: Sortierung nach Beginn, nächstem Ende, Mieter, Objekt,
+  höchster Miete; Seiten zu 50; die Kopfzahlen zählen über die Abfrage,
+  nicht über die Seite; CSV mit Netto, Nebenkosten, Brutto und Status.
+- Personen: Sortierung nach Name, Ort, zuletzt erfasst; Seiten zu 50; CSV
+  bewusst nur mit Kontaktdaten (keine AHV-Nummer, kein Einkommen, keine
+  Bankverbindung) und mit Eintrag im Logbuch. Der eigene Sofortfilter im
+  Browser ist durch den gemeinsamen ersetzt und greift nur, solange alles
+  auf einer Seite steht.
+- Objekte: Gruppierung nach Liegenschaft und kein zweites Suchfeld bleiben
+  (Entscheid G9). Geblättert wird in ganzen Liegenschaften (20 je Seite),
+  damit eine Gruppe nie auf zwei Seiten zerfällt; CSV aller Objekte.*
 
 ---
 

@@ -7,36 +7,35 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Personen" %}</h1>
-        <p>{% blocktrans count n=rows|length %}{{ n }} Person{% plural %}{{ n }} Personen{% endblocktrans %} · <span style="color:var(--ds-good);font-weight:600">{% blocktrans with n=mit_vertrag_count %}{{ n }} mit aktivem Vertrag{% endblocktrans %}</span>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/personen/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% blocktrans count n=treffer %}{{ n }} Person{% plural %}{{ n }} Personen{% endblocktrans %} · <span style="color:var(--ds-good);font-weight:600">{% blocktrans with n=mit_vertrag_count %}{{ n }} mit aktivem Vertrag{% endblocktrans %}</span>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/personen/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
-    <a href="/neu/personen/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Person erfassen" %}</a>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <a href="{{ csv_url }}" download class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV" %}</a>
+        <a href="/neu/personen/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Person erfassen" %}</a>
+    </div>
 </div>
 
 <div class="fw-card">
 
     <div class="fw-h" style="flex-wrap:wrap">
         <div class="fw-filters" style="margin-bottom:0">
-            {% for wert, label in typ_chips %}
-            <a href="?typ={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="fw-fchip{% if typ_filter == wert %} fw-on{% endif %}">{{ label }}</a>
+            {% for wert, label, url in typ_chips %}
+            <a href="{{ url }}" class="fw-fchip{% if typ_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <form method="get" class="relative" style="margin-left:auto" onsubmit="return true;">
-            {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
-            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
-            <input type="text" name="q" id="personSearch" value="{{ q }}" placeholder="{% trans 'Name, E-Mail oder Ort suchen…' %}"
-                   autocomplete="off" oninput="livePersonFilter(this.value)"
-                   class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
-        </form>
+        {% if seite.paginator.num_pages == 1 %}
+        {% include 'fw/_listwerkzeug.html' with suchname='q' suchwert=q suchtext=_('Name, E-Mail, Ort oder Telefon …') suchlabel=_('Personen durchsuchen') livesuche='#personenListe' imkopf=True %}
+        {% else %}
+        {% include 'fw/_listwerkzeug.html' with suchname='q' suchwert=q suchtext=_('Name, E-Mail, Ort oder Telefon …') suchlabel=_('Personen durchsuchen') imkopf=True %}
+        {% endif %}
     </div>
 
+    <div id="personenListe">
     <!-- Mobile: Karten -->
     <div class="md:hidden fw-dv">
         {% for row in rows %}
         <a href="/neu/personen/{{ row.m.id }}/"
-           class="person-row flex items-center gap-3 px-4 py-3.5 hover:fw-flaeche2 transition-colors"
-           data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}">
+           class="flex items-center gap-3 px-4 py-3.5 hover:fw-flaeche2 transition-colors" data-zeile>
             <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">
                 {% zeichen 'person' %}
             </div>
@@ -72,7 +71,7 @@
             </thead>
             <tbody>
             {% for row in rows %}
-            <tr class="person-row cursor-pointer" data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}" onclick="window.location='/neu/personen/{{ row.m.id }}/'">
+            <tr class="cursor-pointer" data-zeile onclick="window.location='/neu/personen/{{ row.m.id }}/'">
                 <td>
                     <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
                         <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">
@@ -107,20 +106,8 @@
             {% endfor %}
             </tbody>
         </table>
-        <div id="keinTreffer" class="hidden px-5 py-10 text-center text-sm fw-faint italic">{% trans "Keine Treffer." %}</div>
     </div>
-    <script>
-      function livePersonFilter(term){
-        term=(term||'').trim().toLowerCase();
-        var rows=document.querySelectorAll('.person-row'), sichtbar=0;
-        rows.forEach(function(r){
-          var hit = !term || (r.getAttribute('data-suche')||'').indexOf(term)!==-1;
-          r.style.display = hit ? '' : 'none';
-          if(hit) sichtbar++;
-        });
-        var kt=document.getElementById('keinTreffer');
-        if(kt) kt.classList.toggle('hidden', sichtbar>0 || rows.length===0);
-      }
-    </script>
+    </div>
+    {% include 'fw/_seiten.html' %}
 </div>
 {% endblock %}

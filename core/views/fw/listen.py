@@ -18,6 +18,7 @@ from django.conf import settings
 from django.utils.translation import gettext
 from django.db import transaction
 from django.db.models import F, Q, Sum
+from django.db.models.functions import Coalesce
 from django.db.models.functions import ExtractMonth
 from django.shortcuts import get_object_or_404, render
 from django.utils import dateformat, timezone
@@ -1162,9 +1163,20 @@ def fw_objekte(request):
         zustand = ''
         sichtbar = alle
 
+    alle_gruppen = gruppen(sichtbar)
+    if request.GET.get('export') == 'csv':
+        return _objekte_csv(alle_gruppen)
+
+    # Geblättert wird in GANZEN Gruppen (Liegenschaften), nicht in Zeilen:
+    # Eine Liegenschaft, deren Objekte auf zwei Seiten verteilt sind, zeigte
+    # oben auf der zweiten Seite eine zweite Kopfzeile mit halben Zahlen.
+    seite, query_ohne_seite = blaettern(request, alle_gruppen, pro_seite=OBJEKT_GRUPPEN_JE_SEITE)
+
     return render(request, 'fw/objekte.html', {
         **basis, 'nav': 'objekte',
-        'gruppen': gruppen(sichtbar), 'kopf': kopf,
+        'gruppen': seite.object_list, 'kopf': kopf,
+        'seite': seite, 'query_ohne_seite': query_ohne_seite,
+        'csv_url': query_mit(request, export='csv'),
         'typ_filter': typ_filter, 'zustand': zustand, 'q': q,
         'gefiltert': len(sichtbar) != len(alle),
         'sichtbar_anzahl': len(sichtbar),
@@ -1174,6 +1186,26 @@ def fw_objekte(request):
                           ('befund', _('Mit Befund (%(n)s)') % {'n': kopf['mit_befund']}),
                           ('leer', _('Leerstand (%(n)s)') % {'n': kopf['leer']})],
     })
+
+#: Liegenschaften je Seite in der Objektliste — eine Gruppe hat oft zehn und
+#: mehr Objekte, 50 Gruppen wären eine Seite mit tausend Zeilen.
+OBJEKT_GRUPPEN_JE_SEITE = 20
+
+
+def _objekte_csv(gruppenliste):
+    heute = timezone.localdate()
+    return csv_antwort(
+        f'Objekte_{heute:%Y-%m-%d}.csv',
+        [_('Liegenschaft'), _('PLZ'), _('Ort'), _('Objekt'), _('Typ'), _('Zimmer'),
+         _('Fläche m²'), _('Mieter'), _('Nettomiete (CHF)'), _('Vermietet'), _('Befund')],
+        ([g['lg'].strasse, g['lg'].plz, g['lg'].ort, z['e'].bezeichnung,
+          z['e'].get_typ_display(),
+          # «3.5», nicht «3.50» — Zimmer sind kein Betrag.
+          f"{z['e'].zimmer:g}" if z['e'].zimmer is not None else '', z['e'].flaeche_m2, z['mieter'] or '',
+          z['e'].nettomiete_aktuell, _('ja') if z['belegt'] else _('nein'),
+          ', '.join(str(b['text']) for b in z['befunde'])]
+         for g in gruppenliste for z in g['zeilen']))
+
 
 # Design-System-Chip-Variante je Status (fw-chip fw-<variant>)
 VERTRAG_CHIP = {'aktiv': 'good', 'gekuendigt': 'crit',
@@ -1222,26 +1254,73 @@ def fw_vertraege(request):
                        | Q(einheit__bezeichnung__icontains=q)
                        | Q(einheit__liegenschaft__strasse__icontains=q))
 
-    rows = []
-    for v in qs:
-        anzeige = v.anzeige_status
-        label, pill_cls = VERTRAG_PILL.get(
-            anzeige, (anzeige, 'fw-flaeche2 fw-mutet'))
-        rows.append({
-            'v': v,
-            'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
-            'status_label': label,
-            'pill_cls': pill_cls,
-            'chip': VERTRAG_CHIP.get(anzeige, 'mut'),
-        })
+    sort = sortierung_waehlen(request, VERTRAG_SORTEN, 'beginn')
+    qs = sortieren(qs, VERTRAG_SORTEN, sort)
+
+    if request.GET.get('export') == 'csv':
+        return _vertraege_csv(qs.iterator(chunk_size=500))
+
+    seite, query_ohne_seite = blaettern(request, qs)
+    rows = [_vertrag_zeile(v) for v in seite.object_list]
 
     return render(request, 'fw/vertraege.html', {
         **basis, **_vermietung_pipeline('vertraege', basis['lg_query']), 'nav': 'vertraege', 'rows': rows,
+        'seite': seite, 'query_ohne_seite': query_ohne_seite, 'treffer': seite.paginator.count,
         'status_filter': status_filter, 'q': q,
-        'status_chips': [('', _('Alle'))] + [(k, VERTRAG_PILL[k][0])
-                                          for k in VERTRAG_FILTER],
-        'aktiv_count': sum(1 for r in rows if r['v'].anzeige_status == 'aktiv'),
+        'status_chips': [(k, label, query_mit(request, status=k))
+                         for k, label in [('', _('Alle'))] + [(k, VERTRAG_PILL[k][0])
+                                                              for k in VERTRAG_FILTER]],
+        # «Aktiv» nach der Anzeige-Regel (`Mietvertrag.anzeige_status`): aktiv
+        # und Ende nicht vorbei. Gezählt über die Abfrage, nicht die Seite.
+        'aktiv_count': qs.filter(status='aktiv').exclude(ende__lt=heute).count(),
+        'sort': sort, 'sorten': [(k, x.label) for k, x in VERTRAG_SORTEN.items()],
+        'verdeckt': verdeckte_felder(request, 'q', 'sort'),
+        'csv_url': query_mit(request, export='csv'),
+        'suche_aufheben_url': query_mit(request, q=None),
     })
+
+
+def _vertrag_zeile(v):
+    anzeige = v.anzeige_status
+    label, pill_cls = VERTRAG_PILL.get(anzeige, (anzeige, 'fw-flaeche2 fw-mutet'))
+    return {
+        'v': v,
+        'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
+        'status_label': label,
+        'pill_cls': pill_cls,
+        'chip': VERTRAG_CHIP.get(anzeige, 'mut'),
+    }
+
+
+#: Wählbare Sortierungen der Vertragsliste. Die Datenbank sortiert; `id` als
+#: letzter Schlüssel, damit die Reihenfolge über Seiten hinweg stabil bleibt —
+#: sonst kann ein Vertrag mit gleichem Beginn auf zwei Seiten stehen.
+VERTRAG_SORTEN = {
+    'beginn': Sortierung(gettext_lazy('Neueste zuerst'), None,
+                         felder=('-beginn', '-id')),
+    'ende': Sortierung(gettext_lazy('Nächstes Ende'), None,
+                       felder=(F('ende').asc(nulls_last=True), 'id')),
+    'mieter': Sortierung(gettext_lazy('Mieter'), None,
+                         felder=('mieter__nachname', 'mieter__firmen_name', 'mieter__vorname', 'id')),
+    'objekt': Sortierung(gettext_lazy('Objekt'), None,
+                         felder=('einheit__liegenschaft__strasse', 'einheit__bezeichnung', 'id')),
+    'miete': Sortierung(gettext_lazy('Höchste Miete'), None,
+                        felder=((Coalesce('netto_mietzins', Decimal('0'))
+                                 + Coalesce('nebenkosten', Decimal('0'))).desc(), 'id')),
+}
+
+
+def _vertraege_csv(vertraege):
+    heute = timezone.localdate()
+    zeilen = (_vertrag_zeile(v) for v in vertraege)
+    return csv_antwort(
+        f'Mietverhaeltnisse_{heute:%Y-%m-%d}.csv',
+        [_('Mieter'), _('Liegenschaft'), _('Objekt'), _('Beginn'), _('Ende'),
+         _('Netto (CHF)'), _('Nebenkosten (CHF)'), _('Brutto (CHF)'), _('Status')],
+        ([z['v'].mieter.display_name, z['v'].einheit.liegenschaft.strasse,
+          z['v'].einheit.bezeichnung, z['v'].beginn, z['v'].ende,
+          z['v'].netto_mietzins, z['v'].nebenkosten, z['brutto'], z['status_label']]
+         for z in zeilen))
 
 
 def telefon_treffer_ids(kern, grundmenge):
@@ -1337,21 +1416,76 @@ def fw_personen(request):
         if v.mitmieter_id:
             vertrag_je_mieter.setdefault(v.mitmieter_id, []).append(v)
 
-    rows = []
-    for m in qs:
+    def zeile(m):
         aktive = vertrag_je_mieter.get(m.id, [])
-        rows.append({
+        return {
             'm': m,
             'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
             'aktive': aktive,
             'objekt': (f"{aktive[0].einheit.liegenschaft.strasse} · {aktive[0].einheit.bezeichnung}"
                        if aktive else None),
-        })
+        }
+
+    sort = sortierung_waehlen(request, PERSON_SORTEN, 'name')
+    qs = sortieren(qs, PERSON_SORTEN, sort)
+
+    if request.GET.get('export') == 'csv':
+        return _personen_csv(request, qs, zeile)
+
+    seite, query_ohne_seite = blaettern(request, qs)
+    rows = [zeile(m) for m in seite.object_list]
 
     return render(request, 'fw/personen.html', {
         **basis, 'nav': 'personen', 'rows': rows,
+        'seite': seite, 'query_ohne_seite': query_ohne_seite, 'treffer': seite.paginator.count,
         'typ_filter': typ_filter, 'q': q,
-        'typ_chips': [('', _('Alle')), ('person', _('Privatpersonen')), ('firma', _('Firmen')),
-                      ('verein', _('Vereine'))],
-        'mit_vertrag_count': sum(1 for r in rows if r['aktive']),
+        'typ_chips': [(k, label, query_mit(request, typ=k)) for k, label in
+                      [('', _('Alle')), ('person', _('Privatpersonen')), ('firma', _('Firmen')),
+                       ('verein', _('Vereine'))]],
+        # Über die Abfrage gezählt, nicht über die Seite.
+        'mit_vertrag_count': qs.filter(id__in=list(vertrag_je_mieter)).count(),
+        'sort': sort, 'sorten': [(k, x.label) for k, x in PERSON_SORTEN.items()],
+        'verdeckt': verdeckte_felder(request, 'q', 'sort'),
+        'csv_url': query_mit(request, export='csv'),
+        'suche_aufheben_url': query_mit(request, q=None),
     })
+
+
+#: Wählbare Sortierungen der Personenliste; `id` hält die Seiten stabil.
+PERSON_SORTEN = {
+    'name': Sortierung(gettext_lazy('Name'), None,
+                       felder=('nachname', 'firmen_name', 'vorname', 'id')),
+    'ort': Sortierung(gettext_lazy('Ort'), None,
+                      felder=('ort', 'nachname', 'firmen_name', 'id')),
+    'neueste': Sortierung(gettext_lazy('Zuletzt erfasst'), None, felder=('-id',)),
+}
+
+
+def _personen_csv(request, qs, zeile):
+    """Kontaktliste — bewusst NUR Kontaktdaten.
+
+    Das Personenmodell trägt auch AHV-Nummer, Einkommen, Betreibungsauskunft
+    und Bankverbindung. Nichts davon gehört in eine Datei, die per E-Mail
+    weitergereicht wird (DSG Art. 6: Verhältnismässigkeit). Wer es braucht,
+    sieht es in der Akte.
+
+    Der Export wird protokolliert: Eine Liste aller Mieter mit Adressen, die
+    das Haus verlässt, soll im Logbuch nachvollziehbar sein.
+    """
+    from core.models import AktivitaetsLog
+
+    heute = timezone.localdate()
+    anzahl = qs.count()
+    AktivitaetsLog.objects.create(
+        benutzer=request.user, kategorie='sonstiges',
+        aktion=gettext('Personenliste exportiert (CSV)'),
+        objekt=gettext('%(n)s Personen') % {'n': anzahl},
+        details=request.GET.urlencode()[:2000])
+    return csv_antwort(
+        f'Personen_{heute:%Y-%m-%d}.csv',
+        [_('Name'), _('Typ'), _('E-Mail'), _('Telefon'), _('Strasse'), _('PLZ'),
+         _('Ort'), _('Sprache'), _('Aktives Mietverhältnis')],
+        ([z['m'].display_name, z['m'].get_typ_display(), z['m'].email, z['telefon'],
+          z['m'].strasse, z['m'].plz, z['m'].ort, z['m'].get_sprache_display(),
+          z['objekt'] or '']
+         for z in (zeile(m) for m in qs.iterator(chunk_size=500))))

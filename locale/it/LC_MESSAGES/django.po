@@ -20219,3 +20219,60 @@ msgstr[1] "Prezzo mensile secondo il piano — attualmente <span style=\"color:v
 #: tickets/models.py:133
 msgid "Ausgehende E-Mail"
 msgstr "E-mail in uscita"
+
+#: core/templates/fw/vertraege.html
+msgid "CSV"
+msgstr "CSV"
+
+#: core/templates/fw/vertraege.html
+msgid "Mietverhältnisse durchsuchen"
+msgstr "Cerca nelle locazioni"
+
+#: core/templates/fw/personen.html
+msgid "Personen durchsuchen"
+msgstr "Cerca persone"
+
+#: core/templates/fw/personen.html
+msgid "Name, E-Mail, Ort oder Telefon …"
+msgstr "Nome, e-mail, località o telefono …"
+
+#: core/views/fw/listen.py
+msgid "Neueste zuerst"
+msgstr "Più recenti prima"
+
+#: core/views/fw/listen.py
+msgid "Nächstes Ende"
+msgstr "Fine più vicina"
+
+#: core/views/fw/listen.py
+msgid "Höchste Miete"
+msgstr "Pigione più alta"
+
+#: core/views/fw/listen.py
+msgid "Netto (CHF)"
+msgstr "Netto (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Brutto (CHF)"
+msgstr "Lordo (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Nettomiete (CHF)"
+msgstr "Pigione netta (CHF)"
+
+#: core/views/fw/listen.py
+msgid "Fläche m²"
+msgstr "Superficie m²"
+
+#: core/views/fw/listen.py
+msgid "Aktives Mietverhältnis"
+msgstr "Locazione in corso"
+
+#: core/views/fw/listen.py
+msgid "Personenliste exportiert (CSV)"
+msgstr "Elenco persone esportato (CSV)"
+
+#: core/views/fw/listen.py
+#, python-format
+msgid "%(n)s Personen"
+msgstr "%(n)s persone"
