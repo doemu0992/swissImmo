@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 11:37+0200\n"
+"POT-Creation-Date: 2026-09-29 13:03+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2400,7 +2400,7 @@ msgid "Speichern"
 msgstr "Save"
 
 #: core/templates/core/postfach_form.html:142
-#: core/templates/fw/abnahme_neu.html:84
+#: core/templates/fw/_bestaetigen.html:34 core/templates/fw/abnahme_neu.html:84
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
 #: core/templates/fw/kreditoren.html:316
@@ -2809,7 +2809,7 @@ msgid "Code"
 msgstr "Code"
 
 #: core/templates/core/zweifaktor_bestaetigen.html:58
-#: core/templates/fw/kreditoren.html:204
+#: core/templates/fw/_bestaetigen.html:35 core/templates/fw/kreditoren.html:204
 msgid "Bestätigen"
 msgstr "Confirm"
 
@@ -3105,7 +3105,7 @@ msgstr "no date — avg. age not calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:610
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:611
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -3142,6 +3142,10 @@ msgstr "no cover"
 #, python-format
 msgid "vertreten durch %(wer)s"
 msgstr "covered by %(wer)s"
+
+#: core/templates/fw/_bestaetigen.html:31
+msgid "Bitte bestätigen"
+msgstr "Please confirm"
 
 #: core/templates/fw/_bezahlt_leer.html:9 core/views/fw/_basis.py:355
 #: core/views/fw/kreditoren.py:41 finance/models.py:305 finance/models.py:483
@@ -3257,13 +3261,17 @@ msgstr "Apartment handover"
 msgid ""
 "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel "
 "erstellen und in der Vertragsakte ablegen?"
-msgstr "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?"
+msgstr ""
+"Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel "
+"erstellen und in der Vertragsakte ablegen?"
 
 #: core/templates/fw/abnahme_detail.html:26
 msgid ""
 "Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche "
 "(Art. 267a OR)."
-msgstr "Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche (Art. 267a OR)."
+msgstr ""
+"Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche "
+"(Art. 267a OR)."
 
 #: core/templates/fw/abnahme_detail.html:26
 msgid "Mängelrüge 267a"

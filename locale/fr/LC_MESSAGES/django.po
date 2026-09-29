@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 11:37+0200\n"
+"POT-Creation-Date: 2026-09-29 13:03+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2424,7 +2424,7 @@ msgid "Speichern"
 msgstr "Enregistrer"
 
 #: core/templates/core/postfach_form.html:142
-#: core/templates/fw/abnahme_neu.html:84
+#: core/templates/fw/_bestaetigen.html:34 core/templates/fw/abnahme_neu.html:84
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
 #: core/templates/fw/kreditoren.html:316
@@ -2838,7 +2838,7 @@ msgid "Code"
 msgstr "Code"
 
 #: core/templates/core/zweifaktor_bestaetigen.html:58
-#: core/templates/fw/kreditoren.html:204
+#: core/templates/fw/_bestaetigen.html:35 core/templates/fw/kreditoren.html:204
 msgid "Bestätigen"
 msgstr "Confirmer"
 
@@ -3140,7 +3140,7 @@ msgstr "sans date — temps moyen non calculable"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:610
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:611
 msgid "Abwesenheiten"
 msgstr "Absences"
 
@@ -3177,6 +3177,10 @@ msgstr "sans remplacement"
 #, python-format
 msgid "vertreten durch %(wer)s"
 msgstr "remplacé par %(wer)s"
+
+#: core/templates/fw/_bestaetigen.html:31
+msgid "Bitte bestätigen"
+msgstr "Veuillez confirmer"
 
 #: core/templates/fw/_bezahlt_leer.html:9 core/views/fw/_basis.py:355
 #: core/views/fw/kreditoren.py:41 finance/models.py:305 finance/models.py:483
@@ -3293,13 +3297,17 @@ msgstr "Réception du logement"
 msgid ""
 "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel "
 "erstellen und in der Vertragsakte ablegen?"
-msgstr "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?"
+msgstr ""
+"Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel "
+"erstellen und in der Vertragsakte ablegen?"
 
 #: core/templates/fw/abnahme_detail.html:26
 msgid ""
 "Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche "
 "(Art. 267a OR)."
-msgstr "Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche (Art. 267a OR)."
+msgstr ""
+"Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche "
+"(Art. 267a OR)."
 
 #: core/templates/fw/abnahme_detail.html:26
 msgid "Mängelrüge 267a"
@@ -16399,7 +16407,9 @@ msgstr "Termes et délais de résiliation par canton"
 
 #: core/views/fw/aktionen.py:882
 msgid "Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung"
-msgstr "Durées d'utilisation pour la valeur actuelle lors de l'état des lieux et de la planification des remplacements"
+msgstr ""
+"Durées d'utilisation pour la valeur actuelle lors de l'état des lieux et de "
+"la planification des remplacements"
 
 #: core/views/fw/aktionen.py:924
 #, python-format
@@ -19906,7 +19916,9 @@ msgstr "Défectueux"
 #: rentals/admin.py:126
 msgid ""
 "Versand zur digitalen Unterschrift: in der Vertragsakte über «Mehr» auslösen."
-msgstr "Envoi pour signature électronique : à déclencher dans le dossier du bail via « Plus »."
+msgstr ""
+"Envoi pour signature électronique : à déclencher dans le dossier du bail via "
+"« Plus »."
 
 #: rentals/admin.py:257
 msgid "Vertrag archiviert."
