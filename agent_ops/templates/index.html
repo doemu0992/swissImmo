@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CEO Mission Control</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --line:#334155; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); padding:16px; }
+  h1 { margin:0 0 16px; font-size:1.4rem; }
+  h2 { margin:0 0 8px; font-size:1rem; color:var(--accent); }
+  .grid { display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; min-width:0; }
+  ul { list-style:none; margin:0; padding:0; font-size:.85rem; }
+  li { padding:4px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+  .mono { font-family: ui-monospace, monospace; }
+  form { display:flex; gap:8px; margin-bottom:12px; }
+  input { flex:1; min-width:0; padding:8px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--text); }
+  button, select { padding:6px 10px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--text); cursor:pointer; }
+  .task { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .muted { color:var(--muted); }
+</style>
+</head>
+<body>
+<h1>🚀 CEO Mission Control — swissImmo</h1>
+
+<div class="grid">
+  <section class="card">
+    <h2>Aufgaben</h2>
+    <form id="task-form">
+      <input id="task-title" placeholder="Neue Aufgabe …" required>
+      <button type="submit">Anlegen</button>
+    </form>
+    <ul id="tasks"></ul>
+  </section>
+  <section class="card"><h2>Letzte Commits</h2><ul id="git-log" class="mono"></ul></section>
+  <section class="card"><h2>Branches</h2><ul id="git-branches" class="mono"></ul></section>
+  <section class="card"><h2>Geändert (letzte 5 Min.)</h2><ul id="recent-files" class="mono"></ul></section>
+</div>
+
+<script>
+const STATUSES = ['To Do', 'In Progress', 'Done'];
+
+function fillList(id, items) {
+  const ul = document.getElementById(id);
+  ul.replaceChildren(...items.map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
+}
+
+async function loadTasks() {
+  const tasks = await (await fetch('/api/tasks')).json();
+  const ul = document.getElementById('tasks');
+  if (!tasks.length) {
+    ul.innerHTML = '<li class="muted">Noch keine Aufgaben.</li>';
+    return;
+  }
+  ul.replaceChildren(...tasks.map(task => {
+    const li = document.createElement('li');
+    li.className = 'task';
+    const span = document.createElement('span');
+    span.textContent = `#${task.id} ${task.title || ''}`;
+    const sel = document.createElement('select');
+    STATUSES.forEach(s => sel.add(new Option(s, s, false, s === task.status)));
+    sel.onchange = () => fetch(`/api/tasks/${task.id}`, {
+      method: 'PATCH', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({status: sel.value})
+    });
+    li.append(span, sel);
+    return li;
+  }));
+}
+
+async function loadStatus() {
+  const s = await (await fetch('/api/status')).json();
+  fillList('git-log', s.git_log);
+  fillList('git-branches', s.git_branches);
+  fillList('recent-files', s.recent_files);
+}
+
+document.getElementById('task-form').onsubmit = async e => {
+  e.preventDefault();
+  const input = document.getElementById('task-title');
+  await fetch('/api/tasks', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({title: input.value})
+  });
+  input.value = '';
+  loadTasks();
+};
+
+loadTasks();
+loadStatus();
+setInterval(loadStatus, 10000);
+</script>
+</body>
+</html>
