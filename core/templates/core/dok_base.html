@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html>
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ dokumentsprache|default:'de' }}">
 <head>
 <meta charset="utf-8">
 <style>
@@ -22,6 +22,10 @@
     table.data td.k { color: #64748b; width: 42%; }
     table.form { width: 100%; border-collapse: collapse; margin: 4pt 0; }
     table.form td { border: 0.75pt solid #cbd5e1; padding: 5pt 6pt; font-size: 8.5pt; }
+    /* Beide Spalten mit Breite: Ohne sie verteilte xhtml2pdf die Breite nach
+       Inhalt — mit leeren Feldern (Telefon, Geburtsdatum) wurde die rechte
+       Spalte schmal, Namen und Adresse brachen Wort für Wort um. */
+    table.form td { width: 60%; }
     table.form td.k { background-color: #f8fafc; color: #475569; width: 40%; }
     p { margin: 6pt 0; }
     .sign { width: 100%; margin-top: 26pt; }
@@ -36,7 +40,7 @@
 {% block inhalt %}{% endblock %}
 
 <div id="footerContent" style="font-size:7pt;color:#94a3b8;text-align:center;">
-    {{ vermieter_name }} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · erstellt am {{ heute|date:"d.m.Y" }} · Seite <pdf:pagenumber> von <pdf:pagecount>
+    {{ vermieter_name }} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · {% blocktrans trimmed with datum=heute|date:"d.m.Y" %}erstellt am {{ datum }}{% endblocktrans %} · {% blocktrans trimmed %}Seite <pdf:pagenumber> von <pdf:pagecount>{% endblocktrans %}
 </div>
 
 </body>

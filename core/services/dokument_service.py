@@ -6,6 +6,7 @@ from django.utils import timezone
 from xhtml2pdf import pisa
 from crm.models import Organisation
 from core.services.pdf_service import link_callback
+from core.services.dokumentsprache import STANDARD, in_sprache, sprache_von
 
 # doc_type -> (Template, Titel, zusätzliche Kontext-Flags)
 DOKUMENT_TYPEN = {
@@ -17,6 +18,13 @@ DOKUMENT_TYPEN = {
     'begleitbrief-signiert':  ('core/dok_begleitbrief.html',           'Begleitbrief unterzeichneter Vertrag', {'signed': True}),
     'kuendigungsbestaetigung': ('core/dok_kuendigungsbestaetigung.html', 'Kündigungsbestätigung', {}),
 }
+
+#: Diese Dokumente entstehen in der Sprache des Mieters (D11). Sie enthalten
+#: keinen Rechtstext: Begleitbrief, Wohnungsausweis, Merkblatt. Alle übrigen
+#: — Allgemeine Bedingungen, Hausordnung, Kündigungsbestätigung — bleiben
+#: Deutsch, bis ihr Wortlaut juristisch geprüft übersetzt ist
+#: (core/services/dokumentsprache.py).
+IN_MIETERSPRACHE = frozenset({'wohnungsausweis', 'merkblatt-lueften', 'begleitbrief', 'begleitbrief-signiert'})
 
 
 def generate_dokument_pdf_bytes(vertrag, doc_type):
@@ -69,7 +77,9 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
         **extra,
     }
 
-    html = get_template(template_name).render(context)
+    sprache = sprache_von(vertrag.mieter) if doc_type in IN_MIETERSPRACHE else STANDARD
+    with in_sprache(sprache):
+        html = get_template(template_name).render({**context, 'dokumentsprache': sprache})
     buffer = io.BytesIO()
     status = pisa.CreatePDF(html, dest=buffer, link_callback=link_callback, encoding='utf-8')
     if status.err:

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 07:12+0200\n"
+"POT-Creation-Date: 2026-09-29 07:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -662,6 +662,370 @@ msgstr "Password | Portale SwissImmo"
 msgid "Passwort"
 msgstr "Password"
 
+#: core/templates/core/dok_base.html:39
+#, python-format
+msgid "erstellt am %(datum)s"
+msgstr "allestito il %(datum)s"
+
+#: core/templates/core/dok_base.html:39
+msgid "Seite <pdf:pagenumber> von <pdf:pagecount>"
+msgstr "Pagina <pdf:pagenumber> di <pdf:pagecount>"
+
+#: core/templates/core/dok_begleitbrief.html:19
+msgid "Ihr unterzeichneter Mietvertrag"
+msgstr "Il suo contratto di locazione firmato"
+
+#: core/templates/core/dok_begleitbrief.html:20
+#: core/templates/core/dok_begleitbrief.html:26
+msgid "Sehr geehrte Mieterschaft"
+msgstr "Gentili signore e signori"
+
+#: core/templates/core/dok_begleitbrief.html:21
+#, python-format
+msgid ""
+"Wir freuen uns, Ihnen den beidseitig unterzeichneten Mietvertrag für das "
+"Mietobjekt <b>%(objekt)s</b> an der %(strasse)s, %(plz)s %(ort)s, "
+"zuzustellen. Bitte bewahren Sie dieses Exemplar sorgfältig auf."
+msgstr "Siamo lieti di inviarle il contratto di locazione firmato da entrambe le parti per l'oggetto <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s. La preghiamo di conservare con cura questo esemplare."
+
+#: core/templates/core/dok_begleitbrief.html:22
+#, python-format
+msgid ""
+"Ihr Mietverhältnis beginnt am <b>%(beginn)s</b>. Die Übergabe der Wohnung "
+"und der Schlüssel wird separat mit Ihnen vereinbart. Bitte stellen Sie "
+"sicher, dass die vereinbarte Sicherheitsleistung (Mietzinsdepot) von <b>CHF "
+"%(kaution)s</b> bis zur Schlüsselübergabe geleistet ist."
+msgstr "La sua locazione inizia il <b>%(beginn)s</b>. La consegna dell'appartamento e delle chiavi verrà concordata separatamente con lei. La preghiamo di assicurarsi che la garanzia convenuta (deposito della pigione) di <b>CHF %(kaution)s</b> sia prestata entro la consegna delle chiavi."
+
+#: core/templates/core/dok_begleitbrief.html:23
+msgid ""
+"Wir wünschen Ihnen einen guten Start in Ihrem neuen Zuhause und stehen Ihnen "
+"bei Fragen gerne zur Verfügung."
+msgstr "Le auguriamo un buon inizio nella sua nuova casa e restiamo volentieri a disposizione per qualsiasi domanda."
+
+#: core/templates/core/dok_begleitbrief.html:25
+msgid "Ihr Mietvertrag zur Unterzeichnung"
+msgstr "Il suo contratto di locazione da firmare"
+
+#: core/templates/core/dok_begleitbrief.html:27
+#, python-format
+msgid ""
+"Wir freuen uns, Ihnen den Mietvertrag für das Mietobjekt <b>%(objekt)s</b> "
+"an der %(strasse)s, %(plz)s %(ort)s, in zweifacher Ausfertigung zuzustellen."
+msgstr "Siamo lieti di inviarle in duplice copia il contratto di locazione per l'oggetto <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s."
+
+#: core/templates/core/dok_begleitbrief.html:28
+msgid ""
+"Bitte prüfen Sie den Vertrag, unterzeichnen Sie beide Exemplare und senden "
+"Sie <b>ein</b> unterzeichnetes Exemplar innert 10 Tagen an uns zurück. Das "
+"zweite Exemplar erhalten Sie beidseitig unterzeichnet zurück und ist für "
+"Ihre Unterlagen bestimmt."
+msgstr "La preghiamo di verificare il contratto, firmare entrambi gli esemplari e rispedirci <b>un</b> esemplare firmato entro 10 giorni. Riceverà il secondo esemplare firmato da entrambe le parti, destinato ai suoi atti."
+
+#: core/templates/core/dok_begleitbrief.html:29
+#, python-format
+msgid ""
+"Ihr Mietverhältnis beginnt am <b>%(beginn)s</b>. Der Bruttomietzins beträgt "
+"<b>CHF %(brutto)s</b> pro Monat. Die Sicherheitsleistung (Mietzinsdepot) von "
+"<b>CHF %(kaution)s</b> ist bis zur Schlüsselübergabe zu leisten."
+msgstr "La sua locazione inizia il <b>%(beginn)s</b>. La pigione lorda ammonta a <b>CHF %(brutto)s</b> al mese. La garanzia (deposito della pigione) di <b>CHF %(kaution)s</b> va prestata entro la consegna delle chiavi."
+
+#: core/templates/core/dok_begleitbrief.html:30
+msgid ""
+"Dem Vertrag liegen die Allgemeinen Bedingungen, die Hausordnung sowie das "
+"Merkblatt «Richtig Lüften und Pflegen» bei. Für Fragen stehen wir Ihnen "
+"gerne zur Verfügung."
+msgstr "Al contratto sono allegati le condizioni generali, il regolamento della casa e il promemoria «Arieggiare e curare correttamente». Restiamo volentieri a disposizione per qualsiasi domanda."
+
+#: core/templates/core/dok_begleitbrief.html:33
+msgid "Freundliche Grüsse"
+msgstr "Cordiali saluti"
+
+#: core/templates/core/dok_begleitbrief.html:37
+msgid "Beilagen:"
+msgstr "Allegati:"
+
+#: core/templates/core/dok_begleitbrief.html:38
+msgid "Unterzeichneter Mietvertrag"
+msgstr "Contratto di locazione firmato"
+
+#: core/templates/core/dok_begleitbrief.html:38
+msgid ""
+"Mietvertrag (2 Exemplare), Allgemeine Bedingungen, Hausordnung, Merkblatt "
+"Lüften"
+msgstr "Contratto di locazione (2 esemplari), condizioni generali, regolamento della casa, promemoria sull'aerazione"
+
+#: core/templates/core/dok_merkblatt_lueften.html:4
+msgid "Merkblatt: Richtig Lüften und Pflegen"
+msgstr "Promemoria: arieggiare e curare correttamente"
+
+#: core/templates/core/dok_merkblatt_lueften.html:5
+msgid "Hinweise zur Vermeidung von Feuchtigkeits- und Schimmelschäden"
+msgstr "Consigli per evitare danni da umidità e muffa"
+
+#: core/templates/core/dok_merkblatt_lueften.html:7
+msgid ""
+"Jeder Haushalt gibt täglich mehrere Liter Feuchtigkeit an die Raumluft ab "
+"(Kochen, Duschen, Wäschetrocknen, Atmung, Pflanzen). Wird diese Feuchtigkeit "
+"nicht regelmässig abgeführt, entsteht Schimmel. Mit dem richtigen Lüften und "
+"Heizen beugen Sie Schäden vor."
+msgstr "Ogni economia domestica rilascia ogni giorno diversi litri di umidità nell'aria (cucina, doccia, asciugatura del bucato, respirazione, piante). Se questa umidità non viene eliminata regolarmente, si forma la muffa. Arieggiando e riscaldando correttamente si prevengono i danni."
+
+#: core/templates/core/dok_merkblatt_lueften.html:9
+msgid "Richtig Lüften"
+msgstr "Arieggiare correttamente"
+
+#: core/templates/core/dok_merkblatt_lueften.html:11
+msgid ""
+"<b>Stosslüften statt Kippen:</b> Fenster mehrmals täglich für 5–10 Minuten "
+"ganz öffnen (Durchzug), statt sie dauerhaft gekippt zu lassen."
+msgstr "<b>Arieggiare a fondo invece di socchiudere:</b> aprire completamente le finestre più volte al giorno per 5–10 minuti (corrente d'aria), invece di lasciarle sempre socchiuse."
+
+#: core/templates/core/dok_merkblatt_lueften.html:12
+msgid ""
+"<b>Querlüften:</b> Gegenüberliegende Fenster gleichzeitig öffnen — so wird "
+"die Luft am schnellsten ausgetauscht."
+msgstr "<b>Ventilazione trasversale:</b> aprire contemporaneamente finestre opposte — così l'aria si rinnova più rapidamente."
+
+#: core/templates/core/dok_merkblatt_lueften.html:13
+msgid ""
+"<b>Nach Feuchtigkeit lüften:</b> Nach dem Duschen, Baden und Kochen sofort "
+"lüften. Türen zu feuchten Räumen geschlossen halten."
+msgstr "<b>Arieggiare dopo l'umidità:</b> arieggiare subito dopo la doccia, il bagno e la cucina. Tenere chiuse le porte dei locali umidi."
+
+#: core/templates/core/dok_merkblatt_lueften.html:14
+msgid "<b>Schlafzimmer:</b> Morgens nach dem Aufstehen gründlich lüften."
+msgstr "<b>Camera da letto:</b> arieggiare bene al mattino dopo essersi alzati."
+
+#: core/templates/core/dok_merkblatt_lueften.html:17
+msgid "Richtig Heizen"
+msgstr "Riscaldare correttamente"
+
+#: core/templates/core/dok_merkblatt_lueften.html:19
+msgid ""
+"Alle Räume auf mindestens 17–18 °C temperieren, auch selten genutzte Zimmer."
+msgstr "Riscaldare tutti i locali ad almeno 17–18 °C, anche quelli poco utilizzati."
+
+#: core/templates/core/dok_merkblatt_lueften.html:20
+msgid "Heizkörper nicht mit Möbeln oder Vorhängen verdecken."
+msgstr "Non coprire i radiatori con mobili o tende."
+
+#: core/templates/core/dok_merkblatt_lueften.html:21
+msgid "Während des Lüftens die Thermostatventile herunterdrehen."
+msgstr "Abbassare le valvole termostatiche durante l'aerazione."
+
+#: core/templates/core/dok_merkblatt_lueften.html:24
+msgid "Feuchtigkeit vermeiden"
+msgstr "Evitare l'umidità"
+
+#: core/templates/core/dok_merkblatt_lueften.html:26
+msgid "Wäsche möglichst nicht in der Wohnung trocknen; falls doch, gut lüften."
+msgstr "Se possibile non asciugare il bucato in casa; altrimenti arieggiare bene."
+
+#: core/templates/core/dok_merkblatt_lueften.html:27
+msgid ""
+"Möbel mit einigen Zentimetern Abstand zur Aussenwand aufstellen, damit die "
+"Luft zirkulieren kann."
+msgstr "Collocare i mobili a qualche centimetro dalle pareti esterne affinché l'aria possa circolare."
+
+#: core/templates/core/dok_merkblatt_lueften.html:28
+msgid "Dunstabzug bzw. Ventilator in Küche und Bad nutzen."
+msgstr "Utilizzare la cappa o il ventilatore in cucina e in bagno."
+
+#: core/templates/core/dok_merkblatt_lueften.html:31
+msgid "Pflege der Wohnung"
+msgstr "Cura dell'appartamento"
+
+#: core/templates/core/dok_merkblatt_lueften.html:33
+msgid "Oberflächen, Armaturen und Silikonfugen regelmässig reinigen."
+msgstr "Pulire regolarmente superfici, rubinetteria e fughe in silicone."
+
+#: core/templates/core/dok_merkblatt_lueften.html:34
+msgid "Abläufe und Siphons frei halten."
+msgstr "Mantenere liberi gli scarichi e i sifoni."
+
+#: core/templates/core/dok_merkblatt_lueften.html:35
+msgid "Schäden und Mängel umgehend der Verwaltung melden."
+msgstr "Segnalare subito danni e difetti all'amministrazione."
+
+#: core/templates/core/dok_merkblatt_lueften.html:38
+msgid ""
+"Bei Fragen zur richtigen Pflege Ihrer Wohnung steht Ihnen die Verwaltung "
+"gerne zur Verfügung."
+msgstr "Per domande sulla corretta cura del suo appartamento, l'amministrazione è volentieri a disposizione."
+
+#: core/templates/core/dok_wohnungsausweis.html:4
+msgid "Wohnungsausweis"
+msgstr "Scheda dell'abitazione"
+
+#: core/templates/core/dok_wohnungsausweis.html:5
+msgid "Angaben zum Mietobjekt und zu den Mietern"
+msgstr "Dati sull'oggetto locato e sugli inquilini"
+
+#: core/templates/core/dok_wohnungsausweis.html:7
+msgid "Mietobjekt"
+msgstr "Oggetto locato"
+
+#: core/templates/core/dok_wohnungsausweis.html:9
+#: core/templates/core/mieter_schaden.html:20
+#: core/templates/core/portal.html:306 core/templates/fw/bankabgleich.html:348
+#: core/templates/fw/debitoren.html:193
+#: core/templates/fw/ersatzplanung.html:110
+#: core/templates/fw/ersatzplanung.html:135
+#: core/templates/fw/kreditoren.html:162
+#: core/templates/fw/liegenschaft_detail.html:584
+#: core/templates/fw/liegenschaft_detail.html:742
+#: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
+#: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
+#: core/templates/fw/nebenkosten_detail.html:114
+#: core/templates/fw/objekt_detail.html:32
+#: core/templates/fw/objekt_form.html:25
+#: core/templates/fw/person_detail.html:372
+#: core/templates/fw/person_detail.html:471
+#: core/templates/fw/schaden_detail.html:41
+#: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
+#: core/templates/fw/vertrag_bearbeiten.html:49
+#: core/templates/fw/vertrag_detail.html:90 core/templates/fw/zahllauf.html:65
+#: core/templates/fw/zahllauf.html:148
+msgid "Objekt"
+msgstr "Oggetto"
+
+#: core/templates/core/dok_wohnungsausweis.html:10
+msgid "Stockwerk"
+msgstr "Piano"
+
+#: core/templates/core/dok_wohnungsausweis.html:11
+#: core/templates/fw/bewerbung_detail.html:40
+#: core/templates/fw/liegenschaft_detail.html:66
+#: core/templates/fw/liegenschaft_form.html:24
+#: core/templates/fw/mandat_detail.html:117
+#: core/templates/fw/mandat_detail.html:174
+#: core/templates/fw/person_detail.html:145
+#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/person_form.html:300 core/templates/fw/personen.html:68
+msgid "Adresse"
+msgstr "Indirizzo"
+
+#: core/templates/core/dok_wohnungsausweis.html:13
+#: core/templates/fw/vertrag_bearbeiten.html:72
+msgid "Mietbeginn"
+msgstr "Inizio della locazione"
+
+#: core/templates/core/dok_wohnungsausweis.html:14
+#: core/templates/fw/vertrag_detail.html:261
+msgid "Bruttomietzins"
+msgstr "Pigione lorda"
+
+#: core/templates/core/dok_wohnungsausweis.html:17
+#: core/templates/core/portal.html:307 core/templates/fw/abnahme_neu.html:96
+#: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
+#: core/templates/fw/debitoren_aging.html:50
+#: core/templates/fw/liegenschaft_detail.html:742
+#: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
+#: core/templates/fw/mieterkonten.html:46
+#: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
+#: core/templates/fw/nebenkosten_detail.html:113
+#: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
+#: core/templates/fw/vertrag_bearbeiten.html:41 core/views/fw/person.py:898
+msgid "Mieter"
+msgstr "Inquilino"
+
+#: core/templates/core/dok_wohnungsausweis.html:19
+#: core/templates/core/dok_wohnungsausweis.html:30
+msgid "Name / Vorname"
+msgstr "Cognome / nome"
+
+#: core/templates/core/dok_wohnungsausweis.html:20
+#: core/templates/core/dok_wohnungsausweis.html:31
+msgid "Bisherige Adresse"
+msgstr "Indirizzo attuale"
+
+#: core/templates/core/dok_wohnungsausweis.html:21
+#: core/templates/core/dok_wohnungsausweis.html:32
+#: core/templates/core/mieter_daten.html:32
+#: core/templates/core/public_ticket_form.html:272
+#: core/templates/fw/account.html:100 core/templates/fw/dienstleister.html:35
+#: core/templates/fw/dienstleister.html:103
+#: core/templates/fw/dienstleister_detail.html:83
+#: core/templates/fw/mandat_detail.html:176
+#: core/templates/fw/mandat_form.html:37
+#: core/templates/fw/person_detail.html:42
+#: core/templates/fw/person_detail.html:144
+#: core/templates/fw/person_detail.html:210
+#: core/templates/fw/person_detail.html:520
+#: core/templates/fw/person_form.html:126
+#: core/templates/fw/person_form.html:221
+#: core/templates/fw/person_form.html:268
+#: core/templates/fw/schaden_detail.html:144
+#: core/templates/fw/vertrag_detail.html:363
+msgid "Telefon"
+msgstr "Telefono"
+
+#: core/templates/core/dok_wohnungsausweis.html:22
+#: core/templates/core/dok_wohnungsausweis.html:33
+#: core/templates/core/mieter_daten.html:34
+#: core/templates/core/passwort_reset.html:7
+#: core/templates/core/public_ticket_form.html:268
+#: core/templates/fw/account.html:102 core/templates/fw/benutzer.html:18
+#: core/templates/fw/benutzer_form.html:30
+#: core/templates/fw/bewerbung_detail.html:39
+#: core/templates/fw/dienstleister.html:33
+#: core/templates/fw/dienstleister.html:101
+#: core/templates/fw/dienstleister_detail.html:84
+#: core/templates/fw/mandat_detail.html:175
+#: core/templates/fw/mandat_form.html:27
+#: core/templates/fw/person_detail.html:43
+#: core/templates/fw/person_detail.html:143
+#: core/templates/fw/person_detail.html:520
+#: core/templates/fw/person_form.html:124
+#: core/templates/fw/person_form.html:222
+#: core/templates/fw/schaden_detail.html:143
+#: core/templates/fw/vertrag_detail.html:365
+msgid "E-Mail"
+msgstr "E-mail"
+
+#: core/templates/core/dok_wohnungsausweis.html:23
+#: core/templates/fw/bewerbung_detail.html:34
+#: core/templates/fw/person_detail.html:167
+#: core/templates/fw/person_form.html:77
+msgid "Geburtsdatum"
+msgstr "Data di nascita"
+
+#: core/templates/core/dok_wohnungsausweis.html:24
+msgid "Heimatort / Nationalität"
+msgstr "Luogo di attinenza / nazionalità"
+
+#: core/templates/core/dok_wohnungsausweis.html:28 core/views/fw/person.py:898
+msgid "Mitmieter"
+msgstr "Coinquilino"
+
+#: core/templates/core/dok_wohnungsausweis.html:37
+msgid "Weitere im Haushalt lebende Personen"
+msgstr "Altre persone che vivono nell'economia domestica"
+
+#: core/templates/core/dok_wohnungsausweis.html:39
+msgid "Anzahl erwachsene Personen"
+msgstr "Numero di adulti"
+
+#: core/templates/core/dok_wohnungsausweis.html:40
+msgid "Kinder (Anzahl / Jahrgänge)"
+msgstr "Bambini (numero / anni di nascita)"
+
+#: core/templates/core/dok_wohnungsausweis.html:41
+#: core/templates/fw/bewerbung_detail.html:60
+#: core/templates/fw/person_detail.html:194
+#: core/templates/fw/person_form.html:251
+msgid "Haustiere"
+msgstr "Animali domestici"
+
+#: core/templates/core/dok_wohnungsausweis.html:46
+msgid "Ort, Datum"
+msgstr "Luogo, data"
+
+#: core/templates/core/dok_wohnungsausweis.html:47
+msgid "Unterschrift Mieter"
+msgstr "Firma dell'inquilino"
+
 #: core/templates/core/login.html:6
 msgid "Login | SwissImmo Portal"
 msgstr "Accesso | Portale SwissImmo"
@@ -791,46 +1155,6 @@ msgstr "Contatto"
 #: core/templates/fw/person_form.html:128
 msgid "Mobile"
 msgstr "Cellulare"
-
-#: core/templates/core/mieter_daten.html:32
-#: core/templates/core/public_ticket_form.html:272
-#: core/templates/fw/account.html:100 core/templates/fw/dienstleister.html:35
-#: core/templates/fw/dienstleister.html:103
-#: core/templates/fw/dienstleister_detail.html:83
-#: core/templates/fw/mandat_detail.html:176
-#: core/templates/fw/mandat_form.html:37
-#: core/templates/fw/person_detail.html:42
-#: core/templates/fw/person_detail.html:144
-#: core/templates/fw/person_detail.html:210
-#: core/templates/fw/person_detail.html:520
-#: core/templates/fw/person_form.html:126
-#: core/templates/fw/person_form.html:221
-#: core/templates/fw/person_form.html:268
-#: core/templates/fw/schaden_detail.html:144
-#: core/templates/fw/vertrag_detail.html:363
-msgid "Telefon"
-msgstr "Telefono"
-
-#: core/templates/core/mieter_daten.html:34
-#: core/templates/core/passwort_reset.html:7
-#: core/templates/core/public_ticket_form.html:268
-#: core/templates/fw/account.html:102 core/templates/fw/benutzer.html:18
-#: core/templates/fw/benutzer_form.html:30
-#: core/templates/fw/bewerbung_detail.html:39
-#: core/templates/fw/dienstleister.html:33
-#: core/templates/fw/dienstleister.html:101
-#: core/templates/fw/dienstleister_detail.html:84
-#: core/templates/fw/mandat_detail.html:175
-#: core/templates/fw/mandat_form.html:27
-#: core/templates/fw/person_detail.html:43
-#: core/templates/fw/person_detail.html:143
-#: core/templates/fw/person_detail.html:520
-#: core/templates/fw/person_form.html:124
-#: core/templates/fw/person_form.html:222
-#: core/templates/fw/schaden_detail.html:143
-#: core/templates/fw/vertrag_detail.html:365
-msgid "E-Mail"
-msgstr "E-mail"
 
 #: core/templates/core/mieter_daten.html:40
 msgid "Mitteilung an die Verwaltung"
@@ -1138,29 +1462,6 @@ msgid ""
 msgstr ""
 "La sua segnalazione va direttamente all'amministrazione — riceverà una "
 "conferma via e-mail."
-
-#: core/templates/core/mieter_schaden.html:20
-#: core/templates/core/portal.html:306 core/templates/fw/bankabgleich.html:348
-#: core/templates/fw/debitoren.html:193
-#: core/templates/fw/ersatzplanung.html:110
-#: core/templates/fw/ersatzplanung.html:135
-#: core/templates/fw/kreditoren.html:162
-#: core/templates/fw/liegenschaft_detail.html:584
-#: core/templates/fw/liegenschaft_detail.html:742
-#: core/templates/fw/logbuch.html:98 core/templates/fw/mahnwesen.html:66
-#: core/templates/fw/mieterkonten.html:47 core/templates/fw/mietzins.html:59
-#: core/templates/fw/nebenkosten_detail.html:114
-#: core/templates/fw/objekt_detail.html:32
-#: core/templates/fw/objekt_form.html:25
-#: core/templates/fw/person_detail.html:372
-#: core/templates/fw/person_detail.html:471
-#: core/templates/fw/schaden_detail.html:41
-#: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
-#: core/templates/fw/vertrag_bearbeiten.html:49
-#: core/templates/fw/vertrag_detail.html:90 core/templates/fw/zahllauf.html:65
-#: core/templates/fw/zahllauf.html:148
-msgid "Objekt"
-msgstr "Oggetto"
 
 #: core/templates/core/mieter_schaden.html:27
 #: core/templates/core/public_ticket_form.html:222
@@ -1500,19 +1801,6 @@ msgstr "Tipo"
 #: core/templates/core/portal.html:306
 msgid "Zimmer / m²"
 msgstr "Locali / m²"
-
-#: core/templates/core/portal.html:307 core/templates/fw/abnahme_neu.html:96
-#: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
-#: core/templates/fw/debitoren_aging.html:50
-#: core/templates/fw/liegenschaft_detail.html:742
-#: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
-#: core/templates/fw/mieterkonten.html:46
-#: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
-#: core/templates/fw/nebenkosten_detail.html:113
-#: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
-#: core/templates/fw/vertrag_bearbeiten.html:41 core/views/fw/person.py:898
-msgid "Mieter"
-msgstr "Inquilino"
 
 #: core/templates/core/portal.html:307
 #: core/templates/fw/objekt_ausschreiben.html:30
@@ -4394,12 +4682,6 @@ msgstr "Stato:"
 msgid "Personalien & Kontakt"
 msgstr "Dati personali & contatto"
 
-#: core/templates/fw/bewerbung_detail.html:34
-#: core/templates/fw/person_detail.html:167
-#: core/templates/fw/person_form.html:77
-msgid "Geburtsdatum"
-msgstr "Data di nascita"
-
 #: core/templates/fw/bewerbung_detail.html:35
 #: core/templates/fw/person_detail.html:168
 #: core/templates/fw/person_form.html:79
@@ -4420,17 +4702,6 @@ msgstr "Luogo d'origine"
 #: core/templates/fw/bewerbung_detail.html:38
 msgid "Mobil"
 msgstr "Cellulare"
-
-#: core/templates/fw/bewerbung_detail.html:40
-#: core/templates/fw/liegenschaft_detail.html:66
-#: core/templates/fw/liegenschaft_form.html:24
-#: core/templates/fw/mandat_detail.html:117
-#: core/templates/fw/mandat_detail.html:174
-#: core/templates/fw/person_detail.html:145
-#: core/templates/fw/person_detail.html:276
-#: core/templates/fw/person_form.html:300 core/templates/fw/personen.html:68
-msgid "Adresse"
-msgstr "Indirizzo"
 
 #: core/templates/fw/bewerbung_detail.html:45
 msgid "Beruf & Finanzen"
@@ -4488,12 +4759,6 @@ msgstr "%(n)s adulto/i"
 #, python-format
 msgid "%(n)s Kinder"
 msgstr "%(n)s bambino/i"
-
-#: core/templates/fw/bewerbung_detail.html:60
-#: core/templates/fw/person_detail.html:194
-#: core/templates/fw/person_form.html:251
-msgid "Haustiere"
-msgstr "Animali domestici"
 
 #: core/templates/fw/bewerbung_detail.html:60
 #: core/templates/fw/bewerbung_detail.html:61
@@ -13010,10 +13275,6 @@ msgstr "Numero di persone"
 msgid "Mietdauer & Kündigung"
 msgstr "Durata e disdetta"
 
-#: core/templates/fw/vertrag_bearbeiten.html:72
-msgid "Mietbeginn"
-msgstr "Inizio della locazione"
-
 #: core/templates/fw/vertrag_bearbeiten.html:78
 msgid "Mietende (leer = unbefristet)"
 msgstr "Fine della locazione (vuoto = durata indeterminata)"
@@ -13277,10 +13538,6 @@ msgstr "Aggiungere una persona al contratto"
 #: core/templates/fw/vertrag_detail.html:258
 msgid "Nettomietzins"
 msgstr "Pigione netta"
-
-#: core/templates/fw/vertrag_detail.html:261
-msgid "Bruttomietzins"
-msgstr "Pigione lorda"
 
 #: core/templates/fw/vertrag_detail.html:263
 msgid "Referenzzins bei Festsetzung"
@@ -15028,7 +15285,9 @@ msgstr "CHF %(rest)s restano come credito"
 #: core/views/fw/aktionen.py:982
 #, python-format
 msgid "Absender «%(gelernt)s» gemerkt, künftige Zahlungen treffen selbst"
-msgstr "Mittente «%(gelernt)s» memorizzato, i pagamenti futuri verranno attribuiti automaticamente"
+msgstr ""
+"Mittente «%(gelernt)s» memorizzato, i pagamenti futuri verranno attribuiti "
+"automaticamente"
 
 #: core/views/fw/aktionen.py:986
 #, python-format
@@ -15148,13 +15407,17 @@ msgstr "La designazione e lo stabile sono obbligatori."
 #: core/views/fw/anlagen.py:88
 #, python-format
 msgid "AfA-Lauf %(jahr)s: %(n)s Abschreibung(en) gebucht (CHF %(summe)s)."
-msgstr "Processo di ammortamento %(jahr)s: %(n)s ammortamento/i contabilizzato/i (CHF %(summe)s)."
+msgstr ""
+"Processo di ammortamento %(jahr)s: %(n)s ammortamento/i contabilizzato/i "
+"(CHF %(summe)s)."
 
 #: core/views/fw/anlagen.py:90
 #, python-format
 msgid ""
 "AfA-Lauf %(jahr)s: nichts zu buchen (bereits erledigt oder keine Anlagen)."
-msgstr "Processo di ammortamento %(jahr)s: nulla da contabilizzare (già fatto o nessuna immobilizzazione)."
+msgstr ""
+"Processo di ammortamento %(jahr)s: nulla da contabilizzare (già fatto o "
+"nessuna immobilizzazione)."
 
 #: core/views/fw/anlagen.py:100
 #, python-format
@@ -15164,7 +15427,9 @@ msgstr "Fondo di rinnovamento %(strasse)s salvato."
 #: core/views/fw/anlagen.py:105
 #, python-format
 msgid "Erneuerungsfonds-Einlage %(jahr)s: %(n)s Buchung(en) (CHF %(summe)s)."
-msgstr "Versamento al fondo di rinnovamento %(jahr)s: %(n)s registrazione/i (CHF %(summe)s)."
+msgstr ""
+"Versamento al fondo di rinnovamento %(jahr)s: %(n)s registrazione/i (CHF "
+"%(summe)s)."
 
 #: core/views/fw/anlagen.py:107
 #, python-format
@@ -15392,7 +15657,9 @@ msgstr "Non è stato possibile annullare l'importazione: %(exc)s"
 msgid ""
 "Import '%(dateiname)s' rückgängig gemacht — %(storniert)s Zahlung(en) "
 "revisionssicher storniert, Auszug entfernt."
-msgstr "Importazione «%(dateiname)s» annullata — %(storniert)s pagamento/i stornato/i a prova di revisione, estratto rimosso."
+msgstr ""
+"Importazione «%(dateiname)s» annullata — %(storniert)s pagamento/i stornato/"
+"i a prova di revisione, estratto rimosso."
 
 #: core/views/fw/bankabgleich.py:1115
 #, python-format
@@ -15993,7 +16260,9 @@ msgstr "Conteggio finale contabilizzato"
 msgid ""
 "Schlussabrechnung verbucht (Kaution abgerechnet, Nachzahlung als Debitor "
 "gestellt)."
-msgstr "Conteggio finale contabilizzato (deposito conteggiato, conguaglio fatturato come debitore)."
+msgstr ""
+"Conteggio finale contabilizzato (deposito conteggiato, conguaglio fatturato "
+"come debitore)."
 
 #: core/views/fw/detailseiten.py:2157
 msgid "Schlussabrechnung verbucht (Kaution abgerechnet)."
@@ -16702,7 +16971,9 @@ msgstr "Non è stato possibile contabilizzare il sollecito: %(exc)s"
 #: core/views/fw/mahnwesen.py:317
 #, python-format
 msgid "%(stufe)s. Mahnung erfasst · Mahngebühr CHF %(gebuehr)s gestellt."
-msgstr "Sollecito di livello %(stufe)s registrato · spese di sollecito di CHF %(gebuehr)s fatturate."
+msgstr ""
+"Sollecito di livello %(stufe)s registrato · spese di sollecito di CHF "
+"%(gebuehr)s fatturate."
 
 #: core/views/fw/mahnwesen.py:320
 #, python-format
@@ -16942,10 +17213,6 @@ msgstr "Inquilino, attivo"
 msgid "Ehemaliger Mieter"
 msgstr "Ex inquilino"
 
-#: core/views/fw/person.py:898
-msgid "Mitmieter"
-msgstr "Coinquilino"
-
 #: core/views/fw/person.py:899
 msgid "Weiterer Mieter (WG)"
 msgstr "Altro inquilino (coabitazione)"
@@ -16976,7 +17243,9 @@ msgstr "Tutti i dati sono stati eliminati — riparti con una banca dati vuota."
 msgid ""
 "Hinweis: %(fehler)s — Falls das Netzwerk (PythonAnywhere-Whitelist) die "
 "Abfrage blockiert, kannst du die Werte oben manuell eintragen."
-msgstr "Nota: %(fehler)s — se la rete (whitelist PythonAnywhere) blocca la richiesta, puoi inserire i valori qui sopra manualmente."
+msgstr ""
+"Nota: %(fehler)s — se la rete (whitelist PythonAnywhere) blocca la "
+"richiesta, puoi inserire i valori qui sopra manualmente."
 
 #: core/views/fw/profil.py:273
 #, python-format
@@ -17507,7 +17776,9 @@ msgstr "Contratto aggiornato."
 
 #: core/views/fw/vertragserstellung.py:801
 msgid "Vertrag aktualisiert (aktiver Vertrag — nur Detailfelder geändert)."
-msgstr "Contratto aggiornato (contratto attivo — modificati solo i campi di dettaglio)."
+msgstr ""
+"Contratto aggiornato (contratto attivo — modificati solo i campi di "
+"dettaglio)."
 
 #: core/views/portal.py:511
 msgid "Kein gültiges Mietobjekt gewählt."
@@ -17617,7 +17888,9 @@ msgstr ""
 msgid ""
 "Zwei-Faktor-Anmeldung ist ab sofort für alle Konten dieser Verwaltung "
 "Pflicht."
-msgstr "L'accesso a due fattori è ora obbligatorio per tutti gli account di questa amministrazione."
+msgstr ""
+"L'accesso a due fattori è ora obbligatorio per tutti gli account di questa "
+"amministrazione."
 
 #: core/views/zweifaktor.py:327
 msgid "Die Pflicht ist aufgehoben — eingerichtete Faktoren bleiben aktiv."
