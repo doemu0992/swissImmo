@@ -68,6 +68,7 @@ UEBERSETZT = (
     # Tranche «Akten»: die sechs Register
     'fw/mandate.html',
     'fw/liegenschaften.html',
+    'fw/eigentuemer_mahnstufen.html',
     'fw/objekte.html',
     'fw/vertraege.html',
     'fw/personen.html',
