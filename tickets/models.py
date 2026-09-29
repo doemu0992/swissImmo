@@ -4,19 +4,20 @@ from django.conf import settings
 from django.db import models
 from core.organisation_kette import OrganisationAusKette
 from core.utils import get_smart_upload_path
+from django.utils.translation import gettext_lazy as _
 
 class SchadenMeldung(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     STATUS_CHOICES = [
-        ('neu', 'Neu'),
-        ('in_bearbeitung', 'In Bearbeitung'),
-        ('warte_auf_mieter', 'Warte auf Mieter'),
-        ('warte_auf_handwerker', 'Warte auf Handwerker'),
-        ('erledigt', 'Erledigt')
+        ('neu', _('Neu')),
+        ('in_bearbeitung', _('In Bearbeitung')),
+        ('warte_auf_mieter', _('Warte auf Mieter')),
+        ('warte_auf_handwerker', _('Warte auf Handwerker')),
+        ('erledigt', _('Erledigt'))
     ]
     ZUTRITT_CHOICES = [
-        ('telefon', 'Termin via Telefon'),
-        ('passpartout', 'Passpartout (Schlüssel vorhanden)')
+        ('telefon', _('Termin via Telefon')),
+        ('passpartout', _('Passpartout (Schlüssel vorhanden)'))
     ]
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -101,10 +102,10 @@ class HandwerkerAuftrag(OrganisationAusKette):
 
     # 🔥 Reparaturfreigabe durch den Eigentümer (Portal)
     FREIGABE_CHOICES = [
-        ('nicht_noetig', 'Keine Freigabe nötig'),
-        ('ausstehend', 'Freigabe ausstehend'),
-        ('freigegeben', 'Freigegeben'),
-        ('abgelehnt', 'Abgelehnt'),
+        ('nicht_noetig', _('Keine Freigabe nötig')),
+        ('ausstehend', _('Freigabe ausstehend')),
+        ('freigegeben', _('Freigegeben')),
+        ('abgelehnt', _('Abgelehnt')),
     ]
     freigabe_status = models.CharField("Freigabe-Status", max_length=20, choices=FREIGABE_CHOICES, default='nicht_noetig')
     freigabe_datum = models.DateTimeField("Freigabe am", null=True, blank=True)
@@ -124,12 +125,12 @@ class TicketNachricht(OrganisationAusKette):
     ticket = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='nachrichten')
     absender_name = models.CharField(max_length=100)
     TYP_CHOICES = [
-        ('chat', 'Chat'),
-        ('system', 'System'),
-        ('mail_antwort', 'Mail Antwort'),
-        ('antwort_senden', 'Antwort Senden'),
-        ('handwerker_mail', 'Handwerker Mail'),
-        ('email', 'Ausgehende E-Mail')
+        ('chat', _('Chat')),
+        ('system', _('System')),
+        ('mail_antwort', _('Mail Antwort')),
+        ('antwort_senden', _('Antwort Senden')),
+        ('handwerker_mail', _('Handwerker Mail')),
+        ('email', _('Ausgehende E-Mail'))
     ]
     typ = models.CharField(max_length=20, choices=TYP_CHOICES, default='chat')
     nachricht = models.TextField()

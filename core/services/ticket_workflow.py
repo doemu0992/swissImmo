@@ -1,6 +1,8 @@
 """Automatisierter Schadensfall-Workflow: Vorlagen-Texte + Platzhalter-Ersetzung
 für die Kommunikation rund um ein Ticket (Handwerker beauftragen, Melder informieren)."""
 
+from core.services.dokumentsprache import auf_deutsch
+
 # Standard-Vorlagen (greifen, wenn keine passende Vorlage in der DB existiert).
 DEFAULT_VORLAGEN = {
     'ticket_handwerker': {
@@ -94,7 +96,7 @@ def ticket_kontext(ticket, handwerker=None, status=None):
         'schaden': ticket.titel,
         'ticket_id': str(ticket.id),
         'handwerker': (handwerker.firma if handwerker else ''),
-        'status': status or ticket.get_status_display(),
+        'status': status or auf_deutsch(ticket.get_status_display),
         # Allgemeine Vorlagen-Platzhalter (Alias/Kompatibilität)
         'mieter_name': melder,
         'mieter_adresse': mieter_adresse,

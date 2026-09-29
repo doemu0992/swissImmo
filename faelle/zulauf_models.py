@@ -40,6 +40,7 @@ from django.utils import timezone
 
 from core.organisation_kette import organisation_aus_kontext
 from core.tenancy import AlleOrganisationenManager, TenantManager
+from django.utils.translation import gettext_lazy as _
 
 
 def normalisieren(text):
@@ -62,18 +63,18 @@ class Eingang(models.Model):
 
     MAIL, POST, SCAN, PORTAL, BANK = 'mail', 'post', 'scan', 'portal', 'bank'
     QUELLEN = [
-        (MAIL, 'E-Mail'),
-        (POST, 'Post'),
-        (SCAN, 'Scan'),
-        (PORTAL, 'Portalmeldung'),
-        (BANK, 'Bankeingang'),
+        (MAIL, _('E-Mail')),
+        (POST, _('Post')),
+        (SCAN, _('Scan')),
+        (PORTAL, _('Portalmeldung')),
+        (BANK, _('Bankeingang')),
     ]
 
     OFFEN, ZUGEORDNET, ABGELEGT = 'offen', 'zugeordnet', 'abgelegt'
     STATUS = [
-        (OFFEN, 'Offen'),
-        (ZUGEORDNET, 'Zugeordnet'),
-        (ABGELEGT, 'Abgelegt ohne Folge'),
+        (OFFEN, _('Offen')),
+        (ZUGEORDNET, _('Zugeordnet')),
+        (ABGELEGT, _('Abgelegt ohne Folge')),
     ]
 
     organisation = models.ForeignKey(
@@ -156,9 +157,9 @@ class Zuordnungsregel(models.Model):
 
     ABSENDER, EMAIL, REFERENZ = 'absender', 'email', 'referenz'
     MERKMALE = [
-        (ABSENDER, 'Absendername'),
-        (EMAIL, 'Absenderadresse'),
-        (REFERENZ, 'Referenz'),
+        (ABSENDER, _('Absendername')),
+        (EMAIL, _('Absenderadresse')),
+        (REFERENZ, _('Referenz')),
     ]
 
     organisation = models.ForeignKey(

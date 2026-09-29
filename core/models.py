@@ -4,6 +4,7 @@ from django.db import models
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
+from django.utils.translation import gettext_lazy as _
 
 
 class SicherheitsEreignis(models.Model):
@@ -89,15 +90,15 @@ class Postfach(models.Model):
     ZWECK_ANTWORTEN = 'antworten'
     ZWECK_RECHNUNGEN = 'rechnungen'
     ZWECKE = [
-        (ZWECK_ANTWORTEN, 'Antworten auf Ticket-Mails'),
-        (ZWECK_RECHNUNGEN, 'Eingehende Kreditorenrechnungen'),
+        (ZWECK_ANTWORTEN, _('Antworten auf Ticket-Mails')),
+        (ZWECK_RECHNUNGEN, _('Eingehende Kreditorenrechnungen')),
     ]
 
     VERFAHREN_PASSWORT = 'passwort'
     VERFAHREN_OAUTH2 = 'oauth2'
     VERFAHREN = [
-        (VERFAHREN_PASSWORT, 'Benutzername und Passwort'),
-        (VERFAHREN_OAUTH2, 'OAuth2 (Microsoft 365)'),
+        (VERFAHREN_PASSWORT, _('Benutzername und Passwort')),
+        (VERFAHREN_OAUTH2, _('OAuth2 (Microsoft 365)')),
     ]
 
     organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
@@ -337,13 +338,13 @@ class AktivitaetsLog(models.Model):
     ziel_id = models.PositiveIntegerField("Ziel-ID", null=True, blank=True, db_index=True)
     # Strukturierte Kategorie (aus der Aktion abgeleitet) für zuverlässige Filter.
     KATEGORIE_CHOICES = [
-        ('erstellt', 'Erstellt / erfasst'),
-        ('bearbeitet', 'Bearbeitet / geändert'),
-        ('geloescht', 'Gelöscht / storniert'),
-        ('finanzen', 'Finanzen / Buchung'),
-        ('versand', 'Versand / Kommunikation'),
-        ('sicherheit', 'Sicherheit / Login'),
-        ('sonstiges', 'Sonstiges'),
+        ('erstellt', _('Erstellt / erfasst')),
+        ('bearbeitet', _('Bearbeitet / geändert')),
+        ('geloescht', _('Gelöscht / storniert')),
+        ('finanzen', _('Finanzen / Buchung')),
+        ('versand', _('Versand / Kommunikation')),
+        ('sicherheit', _('Sicherheit / Login')),
+        ('sonstiges', _('Sonstiges')),
     ]
     kategorie = models.CharField("Kategorie", max_length=20, blank=True, default='', db_index=True)
     ip_adresse = models.GenericIPAddressField("IP-Adresse", null=True, blank=True)
@@ -388,12 +389,12 @@ class Pendenz(OrganisationAusKette):
     (befristete Vertragsenden, Kündigungsfristen) um manuell erfassbare, abhakbare
     Aufgaben mit Fälligkeitsdatum."""
     KATEGORIE_CHOICES = [
-        ('frist', 'Frist'),
-        ('aufgabe', 'Aufgabe'),
-        ('vertrag', 'Vertrag'),
-        ('finanzen', 'Finanzen'),
-        ('unterhalt', 'Unterhalt'),
-        ('sonstiges', 'Sonstiges'),
+        ('frist', _('Frist')),
+        ('aufgabe', _('Aufgabe')),
+        ('vertrag', _('Vertrag')),
+        ('finanzen', _('Finanzen')),
+        ('unterhalt', _('Unterhalt')),
+        ('sonstiges', _('Sonstiges')),
     ]
     titel = models.CharField("Titel", max_length=200)
     beschreibung = models.TextField("Beschreibung", blank=True, default='')

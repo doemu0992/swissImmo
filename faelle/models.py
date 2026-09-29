@@ -29,6 +29,7 @@ akzeptierten Nachteil, dass eine Standardänderung nachgezogen werden muss.
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext_lazy as _, pgettext_lazy
 from django.db import models
 from django.utils import timezone
 
@@ -157,11 +158,11 @@ class Fall(models.Model):
     OFFEN, WARTET, RUHT, ABGESCHLOSSEN, ABGEBROCHEN = (
         'offen', 'wartet_auf_dritte', 'ruht', 'abgeschlossen', 'abgebrochen')
     STATUS = [
-        (OFFEN, 'Offen'),
-        (WARTET, 'Wartet auf Dritte'),
-        (RUHT, 'Ruht'),
-        (ABGESCHLOSSEN, 'Abgeschlossen'),
-        (ABGEBROCHEN, 'Abgebrochen'),
+        (OFFEN, _('Offen')),
+        (WARTET, _('Wartet auf Dritte')),
+        (RUHT, _('Ruht')),
+        (ABGESCHLOSSEN, pgettext_lazy('Auswahl', 'Abgeschlossen')),
+        (ABGEBROCHEN, _('Abgebrochen')),
     ]
 
     #: Verfallsregel. Kürzer beim Warten auf Dritte: dort ist das Nachfassen
@@ -364,10 +365,10 @@ class Zeiteintrag(OrganisationAusKette):
     BEWIRTSCHAFTUNG, BUCHHALTUNG, KORRESPONDENZ, SONDER = (
         'bewirtschaftung', 'buchhaltung', 'korrespondenz', 'sonder')
     TAETIGKEITEN = [
-        (BEWIRTSCHAFTUNG, 'Bewirtschaftung'),
-        (BUCHHALTUNG, 'Buchhaltung'),
-        (KORRESPONDENZ, 'Korrespondenz'),
-        (SONDER, 'Sonderaufwand'),
+        (BEWIRTSCHAFTUNG, _('Bewirtschaftung')),
+        (BUCHHALTUNG, _('Buchhaltung')),
+        (KORRESPONDENZ, _('Korrespondenz')),
+        (SONDER, _('Sonderaufwand')),
     ]
 
     fall = models.ForeignKey(Fall, on_delete=models.CASCADE, related_name='zeiteintraege')

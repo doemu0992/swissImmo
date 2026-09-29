@@ -9,6 +9,7 @@ from django.db import models
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
+from django.utils.translation import gettext_lazy as _, pgettext_lazy
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,7 @@ class Organisation(models.Model):
     # sind gesperrt (abgeschlossene Periode). Leer = keine Sperre.
     buchung_gesperrt_bis = models.DateField("Buchungen gesperrt bis", null=True, blank=True)
     # MWST-Konfiguration (für ESTV-Abrechnung)
-    MWST_METHODE_CHOICES = [('effektiv', 'Effektive Methode'), ('saldo', 'Saldosteuersatz')]
+    MWST_METHODE_CHOICES = [('effektiv', _('Effektive Methode')), ('saldo', _('Saldosteuersatz'))]
     mwst_uid = models.CharField("MWST-Nummer (CHE)", max_length=20, blank=True, default='')
     mwst_methode = models.CharField("MWST-Methode", max_length=10, choices=MWST_METHODE_CHOICES, default='effektiv')
     saldosteuersatz = models.DecimalField("Saldosteuersatz (%)", max_digits=4, decimal_places=1, default=0)
@@ -165,6 +166,9 @@ class Mitgliedschaft(models.Model):
     ROLLE_VERWALTER = 'Verwalter'
     ROLLE_SACHBEARBEITER = 'Sachbearbeiter'
     ROLLE_LESEZUGRIFF = 'Lesezugriff'
+    # Beschriftung bewusst NICHT übersetzt: Die Rollennamen stehen auch in
+    # den übersetzten Hilfetexten deutsch («<b>Verwalter</b> (accès complet
+    # …)») — sie sind Begriffe des Produkts, keine Umgangssprache.
     ROLLEN = [
         (ROLLE_INHABER, 'Inhaber'),
         (ROLLE_VERWALTER, 'Verwalter'),
@@ -222,7 +226,7 @@ class Eigentuemer(models.Model):
     # Korrespondenzsprache (D11): Portal-Zugangsmail und Abrechnungen an den
     # Eigentümer folgen ihr. Dieselbe Auswahl wie `Mieter.sprache`.
     sprache = models.CharField("Korrespondenzsprache", max_length=2, default='de',
-                               choices=[('de', 'Deutsch'), ('fr', 'Französisch'), ('it', 'Italienisch'), ('en', 'Englisch')])
+                               choices=[('de', _('Deutsch')), ('fr', _('Französisch')), ('it', _('Italienisch')), ('en', _('Englisch'))])
     bank_name = models.CharField("Bankname (Eigentümer)", max_length=100, blank=True)
     iban = models.CharField("IBAN", max_length=34, blank=True)
     # Verwaltungshonorar in % der Mieterträge (netto). 0 = kein Honorar.
@@ -276,9 +280,9 @@ class Mieter(models.Model):
         super().save(*args, **kwargs)
 
     TYP_CHOICES = [
-        ('person', 'Privatperson'),
-        ('firma', 'Firma / Unternehmen'),
-        ('verein', 'Verein / Stiftung')
+        ('person', _('Privatperson')),
+        ('firma', _('Firma / Unternehmen')),
+        ('verein', _('Verein / Stiftung'))
     ]
     typ = models.CharField("Kunden-Typ", max_length=20, choices=TYP_CHOICES, default='person')
 
@@ -296,23 +300,23 @@ class Mieter(models.Model):
     ]
     ZAHLUNGSART_CHOICES = [
         ('', '—'),
-        ('dauerauftrag', 'Dauerauftrag'),
-        ('qr', 'QR-Einzahlung'),
-        ('lsv', 'LSV / CH-DD-Lastschrift'),
-        ('ebill', 'eBill'),
+        ('dauerauftrag', _('Dauerauftrag')),
+        ('qr', _('QR-Einzahlung')),
+        ('lsv', _('LSV / CH-DD-Lastschrift')),
+        ('ebill', _('eBill')),
     ]
     BETREIBUNG_CHOICES = [
         ('', '—'),
-        ('keine', 'Keine Betreibungen'),
-        ('offen', 'Offene Betreibungen'),
-        ('verlustscheine', 'Verlustscheine vorhanden'),
+        ('keine', _('Keine Betreibungen')),
+        ('offen', _('Offene Betreibungen')),
+        ('verlustscheine', _('Verlustscheine vorhanden')),
     ]
     VERTRETUNG_CHOICES = [
         ('', '—'),
-        ('bevollmaechtigt', 'Bevollmächtigte Person'),
-        ('beistand', 'Beistand (Erwachsenenschutz)'),
-        ('kesb', 'KESB'),
-        ('erbengemeinschaft', 'Erbengemeinschaft / Willensvollstrecker'),
+        ('bevollmaechtigt', _('Bevollmächtigte Person')),
+        ('beistand', _('Beistand (Erwachsenenschutz)')),
+        ('kesb', _('KESB')),
+        ('erbengemeinschaft', _('Erbengemeinschaft / Willensvollstrecker')),
     ]
 
     # --- FIRMA / VEREIN ---
@@ -341,7 +345,7 @@ class Mieter(models.Model):
     telefon_privat = models.CharField("Telefon Privat", max_length=50, blank=True, default='')
     telefon_geschaeft = models.CharField("Telefon Geschäft", max_length=50, blank=True, default='')
     mobile = models.CharField("Mobile", max_length=50, blank=True, default='')
-    sprache = models.CharField("Korrespondenzsprache", max_length=2, default='de', choices=[('de', 'Deutsch'), ('fr', 'Französisch'), ('it', 'Italienisch'), ('en', 'Englisch')])
+    sprache = models.CharField("Korrespondenzsprache", max_length=2, default='de', choices=[('de', _('Deutsch')), ('fr', _('Französisch')), ('it', _('Italienisch')), ('en', _('Englisch'))])
 
     # --- ADRESSE ---
     strasse = models.CharField("Strasse & Nr.", max_length=200, blank=True, default='')
@@ -474,7 +478,7 @@ class MieterAdresse(OrganisationAusKette):
     `korrespondenz` = optionale «Post an»-Zeitachse (hat Vorrang für Zustellung).
     Die zum Stichtag gültige Zeile bestimmt via Mieter.sync_effektive_adresse die
     effektiven Flat-Felder am Mieter."""
-    ART_CHOICES = [('wohn', 'Wohnadresse'), ('korrespondenz', 'Korrespondenzadresse')]
+    ART_CHOICES = [('wohn', _('Wohnadresse')), ('korrespondenz', _('Korrespondenzadresse'))]
     mieter = models.ForeignKey(Mieter, on_delete=models.CASCADE, related_name='adressen')
     art = models.CharField("Art", max_length=20, choices=ART_CHOICES, default='wohn')
     gueltig_ab = models.DateField("Gültig ab")
@@ -516,14 +520,14 @@ class Handwerker(models.Model):
         super().save(*args, **kwargs)
 
     BRANCHEN_CHOICES = [
-        ('sanitaer', 'Sanitär / Heizung'),
-        ('elektro', 'Elektroinstallation'),
-        ('maler', 'Maler / Gipser'),
-        ('schreiner', 'Schreiner / Zimmermann'),
-        ('schloss', 'Schlosserei / Schlüsseldienst'),
-        ('allgemein', 'Allround-Handwerker / Baugeschäft'),
-        ('garten', 'Gartenbau / Umgebung'),
-        ('reinigung', 'Reinigungsinstitut'),
+        ('sanitaer', _('Sanitär / Heizung')),
+        ('elektro', _('Elektroinstallation')),
+        ('maler', _('Maler / Gipser')),
+        ('schreiner', _('Schreiner / Zimmermann')),
+        ('schloss', _('Schlosserei / Schlüsseldienst')),
+        ('allgemein', _('Allround-Handwerker / Baugeschäft')),
+        ('garten', _('Gartenbau / Umgebung')),
+        ('reinigung', _('Reinigungsinstitut')),
     ]
 
     firma = models.CharField(max_length=255, verbose_name="Firmenname")
@@ -610,18 +614,18 @@ class Vorlage(models.Model):
         super().save(*args, **kwargs)
 
     KATEGORIE_CHOICES = [
-        ('brief', 'Brief / Anschreiben'),
-        ('kuendigung', 'Kündigung'),
-        ('mahnung', 'Mahnung'),
-        ('info', 'Information / Rundschreiben'),
-        ('protokoll', 'Protokoll'),
-        ('ticket_eingang', 'Schaden – Eingangsbestätigung'),
-        ('ticket_handwerker', 'Schaden – Auftrag an Handwerker'),
-        ('ticket_melder', 'Schaden – Info an Melder'),
-        ('ticket_erledigt', 'Schaden – Erledigt-Meldung'),
-        ('bewerber_zusage', 'Bewerber – Zusage'),
-        ('bewerber_absage', 'Bewerber – Absage'),
-        ('sonstiges', 'Sonstiges'),
+        ('brief', _('Brief / Anschreiben')),
+        ('kuendigung', _('Kündigung')),
+        ('mahnung', _('Mahnung')),
+        ('info', _('Information / Rundschreiben')),
+        ('protokoll', pgettext_lazy('Auswahl', 'Protokoll')),
+        ('ticket_eingang', _('Schaden – Eingangsbestätigung')),
+        ('ticket_handwerker', _('Schaden – Auftrag an Handwerker')),
+        ('ticket_melder', _('Schaden – Info an Melder')),
+        ('ticket_erledigt', _('Schaden – Erledigt-Meldung')),
+        ('bewerber_zusage', _('Bewerber – Zusage')),
+        ('bewerber_absage', _('Bewerber – Absage')),
+        ('sonstiges', _('Sonstiges')),
     ]
     name = models.CharField("Bezeichnung", max_length=150)
     kategorie = models.CharField("Kategorie", max_length=20, choices=KATEGORIE_CHOICES, default='brief')
@@ -656,9 +660,9 @@ class Kommunikation(OrganisationAusKette):
     """Kommunikations-/Kontaktjournal: dokumentiert jede Interaktion mit einem
     Kontakt (Telefon, E-Mail, Brief, Notiz) — verknüpfbar mit Person/Vertrag/Schaden."""
     from django.utils import timezone as _tz
-    TYP = [('telefon', 'Telefon'), ('email', 'E-Mail'), ('brief', 'Brief'),
-           ('notiz', 'Notiz'), ('persoenlich', 'Persönlich')]
-    RICHTUNG = [('eingehend', 'Eingehend'), ('ausgehend', 'Ausgehend'), ('intern', 'Intern')]
+    TYP = [('telefon', _('Telefon')), ('email', _('E-Mail')), ('brief', _('Brief')),
+           ('notiz', _('Notiz')), ('persoenlich', _('Persönlich'))]
+    RICHTUNG = [('eingehend', _('Eingehend')), ('ausgehend', _('Ausgehend')), ('intern', _('Intern'))]
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True, related_name='kommunikationen')
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='kommunikationen')
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)

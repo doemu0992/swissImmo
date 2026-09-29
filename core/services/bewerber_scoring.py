@@ -10,6 +10,7 @@ Kriterien (Schweizer Praxis):
 Der Score ist eine Entscheidungshilfe, keine automatische Zu-/Absage."""
 import re
 from decimal import Decimal
+from core.services.dokumentsprache import auf_deutsch
 
 
 def parse_einkommen(text):
@@ -97,7 +98,7 @@ def bewerte_bewerbung(bewerbung, brutto_monat):
     elif not anst_beleg:
         anst_pkt, anst_txt = 0, "Keine Angabe"
     else:
-        anst_pkt, anst_txt = 0, bewerbung.get_erwerbsstatus_display()
+        anst_pkt, anst_txt = 0, auf_deutsch(bewerbung.get_erwerbsstatus_display)
 
     # --- Dokumente ---
     # Gewertet wird nur, was in dieser Stufe überhaupt verlangt werden DARF.
