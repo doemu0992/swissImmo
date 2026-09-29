@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 02:43+0200\n"
+"POT-Creation-Date: 2026-09-29 06:51+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -596,6 +596,7 @@ msgid "Meine Meldungen"
 msgstr "My reports"
 
 #: core/templates/core/_mieter_nav.html:18
+#: core/templates/core/public_ticket_form.html:8
 msgid "Service"
 msgstr "Service"
 
@@ -784,8 +785,9 @@ msgstr "Contact"
 msgid "Mobile"
 msgstr "Mobile"
 
-#: core/templates/core/mieter_daten.html:32 core/templates/fw/account.html:100
-#: core/templates/fw/dienstleister.html:35
+#: core/templates/core/mieter_daten.html:32
+#: core/templates/core/public_ticket_form.html:272
+#: core/templates/fw/account.html:100 core/templates/fw/dienstleister.html:35
 #: core/templates/fw/dienstleister.html:103
 #: core/templates/fw/dienstleister_detail.html:83
 #: core/templates/fw/mandat_detail.html:176
@@ -803,8 +805,10 @@ msgid "Telefon"
 msgstr "Phone"
 
 #: core/templates/core/mieter_daten.html:34
-#: core/templates/core/passwort_reset.html:7 core/templates/fw/account.html:102
-#: core/templates/fw/benutzer.html:18 core/templates/fw/benutzer_form.html:30
+#: core/templates/core/passwort_reset.html:7
+#: core/templates/core/public_ticket_form.html:268
+#: core/templates/fw/account.html:102 core/templates/fw/benutzer.html:18
+#: core/templates/fw/benutzer_form.html:30
 #: core/templates/fw/bewerbung_detail.html:39
 #: core/templates/fw/dienstleister.html:33
 #: core/templates/fw/dienstleister.html:101
@@ -1151,6 +1155,7 @@ msgid "Objekt"
 msgstr "Unit"
 
 #: core/templates/core/mieter_schaden.html:27
+#: core/templates/core/public_ticket_form.html:222
 msgid "Was ist betroffen?"
 msgstr "What is affected?"
 
@@ -1171,6 +1176,7 @@ msgid "z.B. Badezimmer"
 msgstr "e.g. bathroom"
 
 #: core/templates/core/mieter_schaden.html:37
+#: core/templates/core/public_ticket_form.html:333
 #: core/templates/fw/debitoren.html:47
 #: core/templates/fw/nebenkosten_detail.html:154
 #: core/templates/fw/pendenzen.html:123 core/templates/fw/schaeden.html:40
@@ -1616,6 +1622,7 @@ msgstr ""
 "yet? Please contact your property management."
 
 #: core/templates/core/portal_login.html:213
+#: core/templates/core/schaden_melden.html:116
 msgid "Zurück zur Startseite"
 msgstr "Back to the home page"
 
@@ -1902,6 +1909,245 @@ msgstr "Delete"
 #: core/templates/core/postfach_liste.html:102
 msgid "Postfächer ändern dürfen Inhaber und Verwalter."
 msgstr "Mailboxes can be changed by the Inhaber and Verwalter roles."
+
+#: core/templates/core/public_ticket_form.html:100
+msgid "Service Portal wird geladen..."
+msgstr "Loading service portal..."
+
+#: core/templates/core/public_ticket_form.html:109
+msgid "Service Portal"
+msgstr "Service portal"
+
+#: core/templates/core/public_ticket_form.html:156
+#: core/templates/core/schaden_melden.html:113
+msgid "Vielen Dank!"
+msgstr "Thank you!"
+
+#: core/templates/core/public_ticket_form.html:157
+msgid ""
+"Wir haben Ihre Meldung erhalten und eine Bestätigung per E-Mail gesendet."
+msgstr "We have received your report and sent a confirmation by e-mail."
+
+#: core/templates/core/public_ticket_form.html:159
+msgid "Zurück zum Start"
+msgstr "Back to start"
+
+#: core/templates/core/public_ticket_form.html:165
+msgid "Wie können wir helfen?"
+msgstr "How can we help?"
+
+#: core/templates/core/public_ticket_form.html:192
+#: core/templates/core/schaden_melden.html:142
+msgid "Schadensmeldung"
+msgstr "Damage report"
+
+#: core/templates/core/public_ticket_form.html:196
+#: core/templates/core/schaden_melden.html:146
+msgid "Allgemeine Anfrage"
+msgstr "General enquiry"
+
+#: core/templates/core/public_ticket_form.html:200
+#: core/templates/core/schaden_melden.html:154
+msgid "Schlüsselbestellung"
+msgstr "Key order"
+
+#: core/templates/core/public_ticket_form.html:204
+#: core/templates/core/schaden_melden.html:158
+msgid "Frage zu Dokumenten"
+msgstr "Question about documents"
+
+#: core/templates/core/public_ticket_form.html:210
+msgid "Welcher Bereich?"
+msgstr "Which area?"
+
+#: core/templates/core/public_ticket_form.html:232
+msgid "Anderes"
+msgstr "Other"
+
+#: core/templates/core/public_ticket_form.html:245
+msgid "Ihre Kontaktdaten"
+msgstr "Your contact details"
+
+#: core/templates/core/public_ticket_form.html:250
+#: core/templates/fw/person_form.html:64
+msgid "Anrede"
+msgstr "Salutation"
+
+#: core/templates/core/public_ticket_form.html:252
+#: core/templates/fw/person_form.html:68
+msgid "Frau"
+msgstr "Ms"
+
+#: core/templates/core/public_ticket_form.html:253
+#: core/templates/fw/person_form.html:67
+msgid "Herr"
+msgstr "Mr"
+
+#: core/templates/core/public_ticket_form.html:254
+#: core/templates/fw/dienstleister.html:18
+#: core/templates/fw/dienstleister.html:86
+#: core/templates/fw/dienstleister_detail.html:80
+msgid "Firma"
+msgstr "Company"
+
+#: core/templates/core/public_ticket_form.html:259
+#: core/templates/core/schaden_melden.html:244
+#: core/templates/fw/benutzer_form.html:25
+#: core/templates/fw/person_form.html:71 core/templates/fw/schaeden.html:44
+msgid "Vorname"
+msgstr "First name"
+
+#: core/templates/core/public_ticket_form.html:263
+#: core/templates/core/schaden_melden.html:248
+#: core/templates/fw/benutzer_form.html:27
+#: core/templates/fw/person_form.html:73 core/templates/fw/schaeden.html:45
+msgid "Nachname"
+msgstr "Last name"
+
+#: core/templates/core/public_ticket_form.html:278
+msgid "Betroffene Einheit (Optional)"
+msgstr "Affected unit (optional)"
+
+#: core/templates/core/public_ticket_form.html:281
+msgid "Bitte wählen"
+msgstr "Please choose"
+
+#: core/templates/core/public_ticket_form.html:291
+msgid "Erreichbarkeit (für Handwerker)"
+msgstr "Availability (for tradespeople)"
+
+#: core/templates/core/public_ticket_form.html:316
+msgid "Details zur Meldung"
+msgstr "Report details"
+
+#: core/templates/core/public_ticket_form.html:323
+msgid "Marke / Hersteller"
+msgstr "Brand / manufacturer"
+
+#: core/templates/core/public_ticket_form.html:327
+#: core/templates/fw/liegenschaft_detail.html:313
+#: core/templates/fw/liegenschaft_detail.html:350
+#: core/templates/fw/objekt_detail.html:757
+#: core/templates/fw/objekt_detail.html:792
+msgid "Seriennummer"
+msgstr "Serial number"
+
+#: core/templates/core/public_ticket_form.html:334
+msgid "Bitte beschreiben Sie das Problem kurz..."
+msgstr "Please describe the problem briefly..."
+
+#: core/templates/core/public_ticket_form.html:338
+msgid "Foto (Optional)"
+msgstr "Photo (optional)"
+
+#: core/templates/core/public_ticket_form.html:344
+msgid "Foto aufnehmen oder hochladen"
+msgstr "Take or upload a photo"
+
+#: core/templates/core/public_ticket_form.html:352
+msgid "Meldung absenden"
+msgstr "Send report"
+
+#: core/templates/core/schaden_melden.html:114
+msgid ""
+"Ihre Meldung wurde erfolgreich an die Verwaltung übermittelt. Wir werden uns "
+"in Kürze darum kümmern."
+msgstr "Your report has been sent to the management. We will take care of it shortly."
+
+#: core/templates/core/schaden_melden.html:137
+msgid "Worum geht es?"
+msgstr "What is it about?"
+
+#: core/templates/core/schaden_melden.html:150
+msgid "Namensschilder-bestellung"
+msgstr "Name plate order"
+
+#: core/templates/core/schaden_melden.html:164
+#: core/templates/core/schaden_melden.html:182
+#: core/templates/core/schaden_melden.html:199
+#: core/templates/fw/logbuch.html:161 core/templates/fw/regelsatz_form.html:11
+msgid "Zurück"
+msgstr "Back"
+
+#: core/templates/core/schaden_melden.html:165
+msgid "In welchem Raum?"
+msgstr "In which room?"
+
+#: core/templates/core/schaden_melden.html:183
+msgid "Was genau ist betroffen?"
+msgstr "What exactly is affected?"
+
+#: core/templates/core/schaden_melden.html:201
+msgid "Details &amp; Kontaktdaten"
+msgstr "Details &amp; contact information"
+
+#: core/templates/core/schaden_melden.html:212
+msgid "Liegenschaft / Adresse"
+msgstr "Property / address"
+
+#: core/templates/core/schaden_melden.html:221
+msgid "Tippen Sie Ihre Strasse ein (z.B. Selzach)..."
+msgstr "Type your street (e.g. Selzach)..."
+
+#: core/templates/core/schaden_melden.html:245
+msgid "Ihr Vorname"
+msgstr "Your first name"
+
+#: core/templates/core/schaden_melden.html:249
+msgid "Ihr Nachname"
+msgstr "Your last name"
+
+#: core/templates/core/schaden_melden.html:254
+msgid "Kurze Beschreibung des Problems"
+msgstr "Short description of the problem"
+
+#: core/templates/core/schaden_melden.html:255
+msgid "Bitte beschreiben Sie das Anliegen..."
+msgstr "Please describe your request..."
+
+#: core/templates/core/schaden_melden.html:260
+msgid "E-Mail Adresse"
+msgstr "E-mail address"
+
+#: core/templates/core/schaden_melden.html:261
+msgid "Ihre E-Mail"
+msgstr "Your e-mail"
+
+#: core/templates/core/schaden_melden.html:264
+msgid "Telefonnummer"
+msgstr "Phone number"
+
+#: core/templates/core/schaden_melden.html:265
+msgid "Für Rückfragen"
+msgstr "For any questions"
+
+#: core/templates/core/schaden_melden.html:270
+msgid "Wie sind Sie am besten erreichbar? / Zutritt zur Wohnung"
+msgstr "How can we best reach you? / Access to the flat"
+
+#: core/templates/core/schaden_melden.html:272
+msgid "Bitte telefonisch kontaktieren zwecks Termin"
+msgstr "Please call me to arrange an appointment"
+
+#: core/templates/core/schaden_melden.html:273
+msgid "Bitte per E-Mail kontaktieren"
+msgstr "Please contact me by e-mail"
+
+#: core/templates/core/schaden_melden.html:274
+msgid "Handwerker darf via Schlüsselbox / Deponierung direkt rein"
+msgstr "Tradesperson may enter directly (key box / deposited key)"
+
+#: core/templates/core/schaden_melden.html:275
+msgid "Ich bin meistens Zuhause (Zutritt unkompliziert)"
+msgstr "I'm usually at home (easy access)"
+
+#: core/templates/core/schaden_melden.html:280
+msgid "Foto hochladen (Optional)"
+msgstr "Upload a photo (optional)"
+
+#: core/templates/core/schaden_melden.html:286
+msgid "Meldung jetzt absenden"
+msgstr "Send report now"
 
 #: core/templates/core/zweifaktor_bestaetigen.html:10
 #: core/templates/core/zweifaktor_bestaetigen.html:42
@@ -3851,16 +4097,6 @@ msgstr "Team member with access to the management."
 msgid "Benutzername *"
 msgstr "Username *"
 
-#: core/templates/fw/benutzer_form.html:25
-#: core/templates/fw/person_form.html:71 core/templates/fw/schaeden.html:44
-msgid "Vorname"
-msgstr "First name"
-
-#: core/templates/fw/benutzer_form.html:27
-#: core/templates/fw/person_form.html:73 core/templates/fw/schaeden.html:45
-msgid "Nachname"
-msgstr "Last name"
-
 #: core/templates/fw/benutzer_form.html:32
 msgid "(leer lassen = unverändert)"
 msgstr "(leave empty = unchanged)"
@@ -5175,12 +5411,6 @@ msgstr[1] "%(n)s trades"
 #: core/templates/fw/dienstleister.html:15
 msgid "Handwerker / Dienstleister erfassen"
 msgstr "Add tradesperson / service provider"
-
-#: core/templates/fw/dienstleister.html:18
-#: core/templates/fw/dienstleister.html:86
-#: core/templates/fw/dienstleister_detail.html:80
-msgid "Firma"
-msgstr "Company"
 
 #: core/templates/fw/dienstleister.html:20
 #: core/templates/fw/dienstleister.html:88
@@ -7840,13 +8070,6 @@ msgstr "Brand"
 msgid "Modell"
 msgstr "Model"
 
-#: core/templates/fw/liegenschaft_detail.html:313
-#: core/templates/fw/liegenschaft_detail.html:350
-#: core/templates/fw/objekt_detail.html:757
-#: core/templates/fw/objekt_detail.html:792
-msgid "Seriennummer"
-msgstr "Serial number"
-
 #: core/templates/fw/liegenschaft_detail.html:314
 #: core/templates/fw/liegenschaft_detail.html:351
 #: core/templates/fw/objekt_detail.html:759
@@ -8638,10 +8861,6 @@ msgid "%(n)s Eintrag"
 msgid_plural "%(n)s Einträge"
 msgstr[0] "%(n)s entry"
 msgstr[1] "%(n)s entries"
-
-#: core/templates/fw/logbuch.html:161 core/templates/fw/regelsatz_form.html:11
-msgid "Zurück"
-msgstr "Back"
 
 #: core/templates/fw/logbuch.html:164
 msgid "Weiter"
@@ -11287,18 +11506,6 @@ msgstr "Company / business"
 msgid "Verein / Stiftung"
 msgstr "Association / foundation"
 
-#: core/templates/fw/person_form.html:64
-msgid "Anrede"
-msgstr "Salutation"
-
-#: core/templates/fw/person_form.html:67
-msgid "Herr"
-msgstr "Mr"
-
-#: core/templates/fw/person_form.html:68
-msgid "Frau"
-msgstr "Ms"
-
 #: core/templates/fw/person_form.html:69
 msgid "Familie"
 msgstr "Family"
@@ -13819,6 +14026,346 @@ msgstr "Recently done"
 msgid "Noch nichts erledigt."
 msgstr "Nothing done yet."
 
+#: core/templatetags/raumkatalog.py:30
+msgctxt "Raumkatalog"
+msgid "Küche"
+msgstr "Kitchen"
+
+#: core/templatetags/raumkatalog.py:30
+msgctxt "Raumkatalog"
+msgid "Bad"
+msgstr "Bathroom"
+
+#: core/templatetags/raumkatalog.py:31
+msgctxt "Raumkatalog"
+msgid "Korridor"
+msgstr "Hallway"
+
+#: core/templatetags/raumkatalog.py:31
+msgctxt "Raumkatalog"
+msgid "Zimmer"
+msgstr "Room"
+
+#: core/templatetags/raumkatalog.py:32
+msgctxt "Raumkatalog"
+msgid "Reduit"
+msgstr "Storeroom"
+
+#: core/templatetags/raumkatalog.py:32
+msgctxt "Raumkatalog"
+msgid "Balkon/Terrasse"
+msgstr "Balcony/terrace"
+
+#: core/templatetags/raumkatalog.py:33
+msgctxt "Raumkatalog"
+msgid "Treppenhaus"
+msgstr "Stairwell"
+
+#: core/templatetags/raumkatalog.py:33
+msgctxt "Raumkatalog"
+msgid "Waschküche"
+msgstr "Laundry room"
+
+#: core/templatetags/raumkatalog.py:34
+msgctxt "Raumkatalog"
+msgid "Keller"
+msgstr "Cellar"
+
+#: core/templatetags/raumkatalog.py:34
+msgctxt "Raumkatalog"
+msgid "Estrich"
+msgstr "Attic"
+
+#: core/templatetags/raumkatalog.py:35
+msgctxt "Raumkatalog"
+msgid "Veloraum"
+msgstr "Bicycle room"
+
+#: core/templatetags/raumkatalog.py:35
+msgctxt "Raumkatalog"
+msgid "Briefkasten"
+msgstr "Letterbox"
+
+#: core/templatetags/raumkatalog.py:36
+msgctxt "Raumkatalog"
+msgid "Anderer Raum"
+msgstr "Other room"
+
+#: core/templatetags/raumkatalog.py:38
+msgctxt "Raumkatalog"
+msgid "Licht"
+msgstr "Light"
+
+#: core/templatetags/raumkatalog.py:38
+msgctxt "Raumkatalog"
+msgid "Steckdose"
+msgstr "Socket"
+
+#: core/templatetags/raumkatalog.py:39
+msgctxt "Raumkatalog"
+msgid "Fenster"
+msgstr "Window"
+
+#: core/templatetags/raumkatalog.py:39
+msgctxt "Raumkatalog"
+msgid "Storen/Markise"
+msgstr "Blinds/awning"
+
+#: core/templatetags/raumkatalog.py:40
+msgctxt "Raumkatalog"
+msgid "Boden"
+msgstr "Floor"
+
+#: core/templatetags/raumkatalog.py:40
+msgctxt "Raumkatalog"
+msgid "Wand"
+msgstr "Wall"
+
+#: core/templatetags/raumkatalog.py:41
+msgctxt "Raumkatalog"
+msgid "Decke"
+msgstr "Ceiling"
+
+#: core/templatetags/raumkatalog.py:43
+msgctxt "Raumkatalog"
+msgid "Kühlschrank"
+msgstr "Fridge"
+
+#: core/templatetags/raumkatalog.py:43
+msgctxt "Raumkatalog"
+msgid "Geschirrspüler"
+msgstr "Dishwasher"
+
+#: core/templatetags/raumkatalog.py:44
+msgctxt "Raumkatalog"
+msgid "Dampfabzug"
+msgstr "Extractor hood"
+
+#: core/templatetags/raumkatalog.py:44
+msgctxt "Raumkatalog"
+msgid "Kochherd"
+msgstr "Cooker"
+
+#: core/templatetags/raumkatalog.py:45
+msgctxt "Raumkatalog"
+msgid "Backofen/Steamer"
+msgstr "Oven/steamer"
+
+#: core/templatetags/raumkatalog.py:45
+msgctxt "Raumkatalog"
+msgid "Spülbecken"
+msgstr "Kitchen sink"
+
+#: core/templatetags/raumkatalog.py:46
+msgctxt "Raumkatalog"
+msgid "Lavabo"
+msgstr "Washbasin"
+
+#: core/templatetags/raumkatalog.py:46
+msgctxt "Raumkatalog"
+msgid "WC"
+msgstr "Toilet"
+
+#: core/templatetags/raumkatalog.py:47
+msgctxt "Raumkatalog"
+msgid "Dusche"
+msgstr "Shower"
+
+#: core/templatetags/raumkatalog.py:47
+msgctxt "Raumkatalog"
+msgid "Badewanne"
+msgstr "Bathtub"
+
+#: core/templatetags/raumkatalog.py:48
+msgctxt "Raumkatalog"
+msgid "Spiegelschrank"
+msgstr "Mirror cabinet"
+
+#: core/templatetags/raumkatalog.py:48
+msgctxt "Raumkatalog"
+msgid "Lüftung"
+msgstr "Ventilation"
+
+#: core/templatetags/raumkatalog.py:49
+msgctxt "Raumkatalog"
+msgid "Waschmaschine"
+msgstr "Washing machine"
+
+#: core/templatetags/raumkatalog.py:49
+msgctxt "Raumkatalog"
+msgid "Tumbler"
+msgstr "Tumble dryer"
+
+#: core/templatetags/raumkatalog.py:50
+msgctxt "Raumkatalog"
+msgid "Secomat"
+msgstr "Secomat"
+
+#: core/templatetags/raumkatalog.py:50
+msgctxt "Raumkatalog"
+msgid "Waschbecken"
+msgstr "Utility sink"
+
+#: core/templatetags/raumkatalog.py:51
+msgctxt "Raumkatalog"
+msgid "Abfluss"
+msgstr "Drain"
+
+#: core/templatetags/raumkatalog.py:51
+msgctxt "Raumkatalog"
+msgid "Wohnungstür"
+msgstr "Flat door"
+
+#: core/templatetags/raumkatalog.py:52
+msgctxt "Raumkatalog"
+msgid "Gegensprechanlage"
+msgstr "Intercom"
+
+#: core/templatetags/raumkatalog.py:52
+msgctxt "Raumkatalog"
+msgid "Einbauschrank"
+msgstr "Built-in cupboard"
+
+#: core/templatetags/raumkatalog.py:53
+msgctxt "Raumkatalog"
+msgid "Haustür"
+msgstr "Front door of the building"
+
+#: core/templatetags/raumkatalog.py:53
+msgctxt "Raumkatalog"
+msgid "Treppe/Geländer"
+msgstr "Stairs/banister"
+
+#: core/templatetags/raumkatalog.py:54
+msgctxt "Raumkatalog"
+msgid "Lift"
+msgstr "Lift"
+
+#: core/templatetags/raumkatalog.py:54
+msgctxt "Raumkatalog"
+msgid "Heizkörper"
+msgstr "Radiator"
+
+#: core/templatetags/raumkatalog.py:55
+msgctxt "Raumkatalog"
+msgid "Zimmertür"
+msgstr "Room door"
+
+#: core/templatetags/raumkatalog.py:55
+msgctxt "Raumkatalog"
+msgid "Waschturm"
+msgstr "Washer-dryer stack"
+
+#: core/templatetags/raumkatalog.py:56
+msgctxt "Raumkatalog"
+msgid "Regal"
+msgstr "Shelf"
+
+#: core/templatetags/raumkatalog.py:56
+msgctxt "Raumkatalog"
+msgid "Anschluss"
+msgstr "Connection"
+
+#: core/templatetags/raumkatalog.py:57
+msgctxt "Raumkatalog"
+msgid "Geländer"
+msgstr "Railing"
+
+#: core/templatetags/raumkatalog.py:57
+msgctxt "Raumkatalog"
+msgid "Sonnenstore"
+msgstr "Awning"
+
+#: core/templatetags/raumkatalog.py:58
+msgctxt "Raumkatalog"
+msgid "Balkontür"
+msgstr "Balcony door"
+
+#: core/templatetags/raumkatalog.py:58
+msgctxt "Raumkatalog"
+msgid "Kellerabteil"
+msgstr "Cellar compartment"
+
+#: core/templatetags/raumkatalog.py:59
+msgctxt "Raumkatalog"
+msgid "Kellertür"
+msgstr "Cellar door"
+
+#: core/templatetags/raumkatalog.py:59
+msgctxt "Raumkatalog"
+msgid "Feuchtigkeit"
+msgstr "Damp"
+
+#: core/templatetags/raumkatalog.py:60
+msgctxt "Raumkatalog"
+msgid "Estrichabteil"
+msgstr "Attic compartment"
+
+#: core/templatetags/raumkatalog.py:60
+msgctxt "Raumkatalog"
+msgid "Dachfenster"
+msgstr "Roof window"
+
+#: core/templatetags/raumkatalog.py:61
+msgctxt "Raumkatalog"
+msgid "Veloständer"
+msgstr "Bicycle stand"
+
+#: core/templatetags/raumkatalog.py:61
+msgctxt "Raumkatalog"
+msgid "Tür/Schloss"
+msgstr "Door/lock"
+
+#: core/templatetags/raumkatalog.py:62
+msgctxt "Raumkatalog"
+msgid "Schloss"
+msgstr "Lock"
+
+#: core/templatetags/raumkatalog.py:62
+msgctxt "Raumkatalog"
+msgid "Beschriftung"
+msgstr "Label"
+
+#: core/templatetags/raumkatalog.py:63
+msgctxt "Raumkatalog"
+msgid "Klappe"
+msgstr "Flap"
+
+#: core/templatetags/raumkatalog.py:63
+msgctxt "Raumkatalog"
+msgid "Anderes"
+msgstr "Other"
+
+#: core/templatetags/raumkatalog.py:64
+msgctxt "Raumkatalog"
+msgid "Sonstiges"
+msgstr "Other"
+
+#: core/templatetags/raumkatalog.py:66
+msgctxt "Raumkatalog"
+msgid "Schadensmeldung"
+msgstr "Damage report"
+
+#: core/templatetags/raumkatalog.py:66
+msgctxt "Raumkatalog"
+msgid "Allgemeine Anfrage"
+msgstr "General enquiry"
+
+#: core/templatetags/raumkatalog.py:67
+msgctxt "Raumkatalog"
+msgid "Namensschilder"
+msgstr "Name plates"
+
+#: core/templatetags/raumkatalog.py:67
+msgctxt "Raumkatalog"
+msgid "Schlüsselbestellung"
+msgstr "Key order"
+
+#: core/templatetags/raumkatalog.py:68
+msgctxt "Raumkatalog"
+msgid "Frage zu Dokumenten"
+msgstr "Question about documents"
+
 #: core/views/docuseal.py:73
 msgid "API-Key fehlt in settings.py"
 msgstr "API key missing in settings.py"
@@ -14042,7 +14589,9 @@ msgstr "Supplier and amount (> 0) are required."
 msgid ""
 "Kreditorenrechnung '%(lieferant)s' über CHF %(betrag)s erfasst (Status: Neu "
 "— bitte freigeben)."
-msgstr "Supplier invoice '%(lieferant)s' for CHF %(betrag)s recorded (status: new — please approve)."
+msgstr ""
+"Supplier invoice '%(lieferant)s' for CHF %(betrag)s recorded (status: new — "
+"please approve)."
 
 #: core/views/fw/aktionen.py:131
 msgid "Bitte mindestens einen Beleg (PDF oder Foto) auswählen."
@@ -14053,21 +14602,27 @@ msgstr "Please select at least one receipt (PDF or photo)."
 msgid ""
 "Beleg gescannt (%(get)s): %(zusammenfassung)s%(konto_hint)s — bitte prüfen "
 "und freigeben."
-msgstr "Receipt scanned (%(get)s): %(zusammenfassung)s%(konto_hint)s — please check and approve."
+msgstr ""
+"Receipt scanned (%(get)s): %(zusammenfassung)s%(konto_hint)s — please check "
+"and approve."
 
 #: core/views/fw/aktionen.py:158
 #, python-format
 msgid ""
 "Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): "
 "%(zusammenfassung)s — bitte Werte prüfen."
-msgstr "Receipt read by rules (AI not active/reachable): %(zusammenfassung)s — please check the values."
+msgstr ""
+"Receipt read by rules (AI not active/reachable): %(zusammenfassung)s — "
+"please check the values."
 
 #: core/views/fw/aktionen.py:160
 #, python-format
 msgid ""
 "Beleg «%(dateiname)s» gespeichert, aber nicht auslesbar: %(get)s Werte bitte "
 "manuell ergänzen."
-msgstr "Receipt \"%(dateiname)s\" saved, but could not be read: %(get)s Please add the values manually."
+msgstr ""
+"Receipt \"%(dateiname)s\" saved, but could not be read: %(get)s Please add "
+"the values manually."
 
 #: core/views/fw/aktionen.py:175
 msgid "Nur unverbuchte Rechnungen (Status Neu) können bearbeitet werden."
@@ -14087,7 +14642,9 @@ msgstr "Invoice has already been approved or paid."
 msgid ""
 "Die Kostenaufteilung stimmt nicht: Summe der Positionen weicht um CHF "
 "%(positionen_differenz)s vom Rechnungsbetrag ab."
-msgstr "The cost split is wrong: the sum of the items differs from the invoice amount by CHF %(positionen_differenz)s."
+msgstr ""
+"The cost split is wrong: the sum of the items differs from the invoice "
+"amount by CHF %(positionen_differenz)s."
 
 #: core/views/fw/aktionen.py:243
 msgid "Bitte zuerst ein Aufwandskonto zuweisen (oder die Rechnung aufteilen)."
@@ -14111,7 +14668,9 @@ msgstr "Discount values must not be negative."
 msgid ""
 "Komponente ab %(gab)s gespeichert (Referenz CHF %(wert)s, zu zahlen CHF "
 "%(zu_zahlen)s)."
-msgstr "Component from %(gab)s saved (reference CHF %(wert)s, payable CHF %(zu_zahlen)s)."
+msgstr ""
+"Component from %(gab)s saved (reference CHF %(wert)s, payable CHF "
+"%(zu_zahlen)s)."
 
 #: core/views/fw/aktionen.py:370
 msgid "Komponente entfernt."
@@ -14182,7 +14741,9 @@ msgstr "Service provider '%(firma)s' deleted."
 msgid ""
 "Bereits verbuchte Rechnung kann nicht gelöscht werden — bitte die zugehörige "
 "Buchung stornieren."
-msgstr "An invoice already posted cannot be deleted — please reverse the related entry."
+msgstr ""
+"An invoice already posted cannot be deleted — please reverse the related "
+"entry."
 
 #: core/views/fw/aktionen.py:579
 #, python-format
@@ -14202,7 +14763,9 @@ msgstr "Statement period '%(bez)s' deleted."
 msgid ""
 "Soll-, Haben-Konto (gültige Nummer), Betrag (> 0) und Belegtext sind "
 "erforderlich."
-msgstr "Debit and credit account (valid number), amount (> 0) and entry text are required."
+msgstr ""
+"Debit and credit account (valid number), amount (> 0) and entry text are "
+"required."
 
 #: core/views/fw/aktionen.py:650
 msgid "Soll- und Haben-Konto müssen unterschiedlich sein."
@@ -14217,7 +14780,9 @@ msgstr "Entry recorded: %(nummer)s to %(nummer2)s · CHF %(betrag)s."
 msgid ""
 "Abschlussbuchungen lassen sich nicht einzeln stornieren. Bitte den "
 "Jahresabschluss gesamthaft über «Abschluss zurücknehmen» aufheben."
-msgstr "Closing entries cannot be reversed individually. Please reverse the whole year-end closing via 'Reverse closing'."
+msgstr ""
+"Closing entries cannot be reversed individually. Please reverse the whole "
+"year-end closing via 'Reverse closing'."
 
 #: core/views/fw/aktionen.py:705
 #, python-format
@@ -14315,7 +14880,8 @@ msgstr "Not assigned — %(f)s"
 msgid ""
 "Nichts zugeordnet — die gewählten Zahlungen liegen nicht mehr auf einem "
 "Parkkonto."
-msgstr "Nothing assigned — the selected payments are no longer in a suspense account."
+msgstr ""
+"Nothing assigned — the selected payments are no longer in a suspense account."
 
 #: core/views/fw/aktionen.py:1052
 msgid "Diese Zuordnung gibt es nicht mehr."
@@ -14326,7 +14892,9 @@ msgstr "This assignment no longer exists."
 msgid ""
 "«%(name)s» wird nicht mehr automatisch zugeordnet — künftige Zahlungen "
 "landen wieder zur Prüfung im Bankabgleich."
-msgstr "\"%(name)s\" is no longer assigned automatically — future payments will again land in bank reconciliation for review."
+msgstr ""
+"\"%(name)s\" is no longer assigned automatically — future payments will "
+"again land in bank reconciliation for review."
 
 #: core/views/fw/aktionen.py:1066
 msgid "Kein Mieter gewählt — die Zuordnung bleibt unverändert."
@@ -14337,7 +14905,9 @@ msgstr "No tenant chosen — the assignment remains unchanged."
 msgid ""
 "«%(name)s» zahlt neu für %(display_name)s. Bereits verbuchte Zahlungen "
 "bleiben unverändert."
-msgstr "\"%(name)s\" now pays for %(display_name)s. Payments already posted remain unchanged."
+msgstr ""
+"\"%(name)s\" now pays for %(display_name)s. Payments already posted remain "
+"unchanged."
 
 #: core/views/fw/aktionen.py:1114
 msgid "Diese Bankbewegung ist bereits erledigt."
@@ -15014,7 +15584,8 @@ msgstr "Key removed."
 #, python-format
 msgid ""
 "Alle %(anzahl)s Exemplare von %(schluessel_nummer)s sind bereits ausgegeben."
-msgstr "All %(anzahl)s copies of %(schluessel_nummer)s have already been issued."
+msgstr ""
+"All %(anzahl)s copies of %(schluessel_nummer)s have already been issued."
 
 #: core/views/fw/detailseiten.py:1221
 msgid "Bitte Empfänger (Mieter oder Handwerker) wählen."
@@ -15040,14 +15611,19 @@ msgid ""
 "Sollmietzins ab %(strftime)s erfasst — Nettomietzins CHF %(netto)s "
 "VOLLSTÄNDIG ERLASSEN (Gratismonat). Verrechnet wird nur CHF %(zu_zahlen)s. "
 "War das nicht beabsichtigt, Zeile löschen und ohne Rabatt neu erfassen."
-msgstr "Target rent from %(strftime)s recorded — net rent CHF %(netto)s FULLY WAIVED (free month). Only CHF %(zu_zahlen)s will be charged. If this was not intended, delete the line and re-enter it without a discount."
+msgstr ""
+"Target rent from %(strftime)s recorded — net rent CHF %(netto)s FULLY WAIVED "
+"(free month). Only CHF %(zu_zahlen)s will be charged. If this was not "
+"intended, delete the line and re-enter it without a discount."
 
 #: core/views/fw/detailseiten.py:1316
 #, python-format
 msgid ""
 "Sollmietzins ab %(strftime)s erfasst — Referenz CHF %(wert)s, davon CHF "
 "%(wert2)s Rabatt, zu zahlen CHF %(zu_zahlen)s."
-msgstr "Target rent from %(strftime)s recorded — reference CHF %(wert)s, of which CHF %(wert2)s discount, payable CHF %(zu_zahlen)s."
+msgstr ""
+"Target rent from %(strftime)s recorded — reference CHF %(wert)s, of which "
+"CHF %(wert2)s discount, payable CHF %(zu_zahlen)s."
 
 #: core/views/fw/detailseiten.py:1318
 #, python-format
@@ -15137,7 +15713,10 @@ msgid ""
 "Hinweis: Für diesen Vertrag ist keine Kaution bilanziert (vereinbart CHF "
 "%(kautions_betrag)s). Es wurde weder ein Sperrkonto freigegeben noch eine "
 "Rückzahlung gebucht."
-msgstr "Note: no deposit is on the balance sheet for this lease (agreed CHF %(kautions_betrag)s). No blocked account was released and no refund was posted."
+msgstr ""
+"Note: no deposit is on the balance sheet for this lease (agreed CHF "
+"%(kautions_betrag)s). No blocked account was released and no refund was "
+"posted."
 
 #: core/views/fw/detailseiten.py:2159
 #, python-format
@@ -15437,7 +16016,9 @@ msgstr ""
 msgid ""
 "Kündigung erfasst — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-"
 "Pendenzen erstellt%(hinweis)s."
-msgstr "Termination recorded — lease ends %(wert)s · %(n_pendenzen)s move-out tasks created%(hinweis)s."
+msgstr ""
+"Termination recorded — lease ends %(wert)s · %(n_pendenzen)s move-out tasks "
+"created%(hinweis)s."
 
 #: core/views/fw/kuendigung.py:381
 #, python-format
@@ -15459,7 +16040,9 @@ msgstr "A withdrawn termination cannot be confirmed."
 msgid ""
 "Kündigung bestätigt — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-"
 "Pendenzen erstellt."
-msgstr "Termination confirmed — lease ends %(wert)s · %(n_pendenzen)s move-out tasks created."
+msgstr ""
+"Termination confirmed — lease ends %(wert)s · %(n_pendenzen)s move-out tasks "
+"created."
 
 #: core/views/fw/liegenschaft_crud.py:130
 #, python-format
@@ -15788,7 +16371,9 @@ msgstr "This receivable is not open (any more) and cannot be reminded."
 msgid ""
 "Für diese Rechnung ist bereits die %(stufe)s. Mahnung erfasst — eine "
 "%(stufe2)s. Mahnung wäre ein Rückschritt."
-msgstr "Reminder level %(stufe)s is already recorded for this invoice — reminder level %(stufe2)s would be a step backwards."
+msgstr ""
+"Reminder level %(stufe)s is already recorded for this invoice — reminder "
+"level %(stufe2)s would be a step backwards."
 
 #: core/views/fw/mahnwesen.py:296
 #, python-format
@@ -15804,32 +16389,32 @@ msgstr "Reminder could not be posted: %(exc)s"
 msgid "Mahnlauf: keine neuen Mahnungen fällig — alles aktuell."
 msgstr "Reminder run: no new reminders due — everything is up to date."
 
-#: core/views/fw/mietprozess.py:165
+#: core/views/fw/mietprozess.py:178
 msgid "Bitte einen gültigen Besichtigungstermin wählen."
 msgstr "Please choose a valid viewing date."
 
-#: core/views/fw/mietprozess.py:226
+#: core/views/fw/mietprozess.py:239
 msgid "Diese Bewerbung wurde bereits zugesagt."
 msgstr "This application has already been accepted."
 
-#: core/views/fw/mietprozess.py:226
+#: core/views/fw/mietprozess.py:239
 msgid "Diese Bewerbung wurde bereits abgesagt."
 msgstr "This application has already been declined."
 
-#: core/views/fw/mietprozess.py:334
+#: core/views/fw/mietprozess.py:347
 msgid "Keine Datei gewählt."
 msgstr "No file chosen."
 
-#: core/views/fw/mietprozess.py:353
+#: core/views/fw/mietprozess.py:366
 #, python-format
 msgid "Status auf „%(wert)s“ gesetzt."
 msgstr "Status set to \"%(wert)s\"."
 
-#: core/views/fw/mietprozess.py:391
+#: core/views/fw/mietprozess.py:404
 msgid "Für diese Bewerbung existiert bereits ein Vertragsentwurf."
 msgstr "A draft lease already exists for this application."
 
-#: core/views/fw/mietprozess.py:448
+#: core/views/fw/mietprozess.py:461
 #, python-format
 msgid ""
 "Mieter angelegt und Vertragsentwurf für %(bezeichnung)s erstellt — bitte "
@@ -16283,13 +16868,17 @@ msgstr "The rule set needs a name."
 msgid ""
 "Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz "
 "je Kanton — bearbeite den bestehenden, statt einen zweiten anzulegen."
-msgstr "The rule set \"%(first)s\" already exists for %(bereich)s. One set per canton applies — edit the existing one instead of creating a second."
+msgstr ""
+"The rule set \"%(first)s\" already exists for %(bereich)s. One set per "
+"canton applies — edit the existing one instead of creating a second."
 
 #: core/views/fw/regelwerk.py:264
 msgid ""
 "Der Regelsatz gilt jetzt als juristisch geprüft. Regeln mit Verbindlichkeit "
 "«Sperre» verhindern ab sofort das Speichern."
-msgstr "The rule set is now considered legally reviewed. Rules with the 'block' level now prevent saving."
+msgstr ""
+"The rule set is now considered legally reviewed. Rules with the 'block' "
+"level now prevent saving."
 
 #: core/views/fw/regelwerk.py:268
 #, python-format
@@ -16301,7 +16890,8 @@ msgstr "Rule set \"%(satz)s\" saved."
 msgid ""
 "Regelsatz «%(name)s» gelöscht. Das Protokoll der bisherigen Anwendungen "
 "bleibt erhalten."
-msgstr "Rule set \"%(name)s\" deleted. The log of previous applications is kept."
+msgstr ""
+"Rule set \"%(name)s\" deleted. The log of previous applications is kept."
 
 #: core/views/fw/regelwerk.py:403
 msgid "Übersteuerung mit Begründung protokolliert."
@@ -16385,7 +16975,8 @@ msgstr "Billing %(titel)s%(umfang)s: %(erstellt)s invoice(s) created."
 msgid ""
 "Sollstellung %(titel)s%(umfang)s: alles bereits gestellt — nichts Neues "
 "erzeugt."
-msgstr "Billing %(titel)s%(umfang)s: everything already billed — nothing new created."
+msgstr ""
+"Billing %(titel)s%(umfang)s: everything already billed — nothing new created."
 
 #: core/views/fw/vertragserstellung.py:210
 msgid "Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst."
@@ -16525,7 +17116,9 @@ msgstr "Connection to %(server)s is up — sign-in as %(benutzer)s worked."
 msgid ""
 "Postfach «%(bezeichnung)s» gelöscht. Der Abruf für diesen Zweck ist damit "
 "abgeschaltet."
-msgstr "Mailbox \"%(bezeichnung)s\" deleted. Fetching for this purpose is now switched off."
+msgstr ""
+"Mailbox \"%(bezeichnung)s\" deleted. Fetching for this purpose is now "
+"switched off."
 
 #: core/views/zweifaktor.py:178
 #, python-format

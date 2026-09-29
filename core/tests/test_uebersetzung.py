@@ -198,6 +198,10 @@ UEBERSETZT = (
     'fw/abnahme_neu.html',
     # Tranche «Vertrag bearbeiten»
     'fw/vertrag_bearbeiten.html',
+    # Tranche «Öffentliche Meldeformulare» (modern_base.html trägt nur die
+    # Sprachwahl, keinen eigenen Text — deshalb nicht in dieser Liste)
+    'core/public_ticket_form.html',
+    'core/schaden_melden.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.
@@ -323,6 +327,9 @@ STICHPROBE = {
 def _po_eintraege(pfad):
     """msgid -> msgstr aus einer .po, Mehrzahl als msgid -> [form0, form1].
 
+    Einträge mit Kontext (`msgctxt`, z.B. «Raumkatalog») erhalten den
+    Schlüssel `kontext\x04msgid` — genau so legt msgfmt sie im .mo ab.
+
     Ein eigener Parser und keine Bibliothek: `polib` waere eine Abhaengigkeit
     fuer dreissig Zeilen. Er kann genau so viel, wie diese Kataloge brauchen —
     mehrzeilige Zeichenketten und Mehrzahlformen.
@@ -331,29 +338,40 @@ def _po_eintraege(pfad):
     schluessel = None
     ziel = None
     puffer = {}
+    kontext = None       # Kontext des laufenden Eintrags
+    kontext_neu = None   # gelesener msgctxt, gilt für das NÄCHSTE msgid
+
+    def _ablegen():
+        schl = f'{kontext}\x04{schluessel}' if kontext else schluessel
+        eintraege[schl] = puffer
     for zeile in pfad.read_text(encoding='utf-8').split('\n'):
         zeile = zeile.strip()
         if zeile.startswith('#') or not zeile:
             continue
-        m = re.match(r'^(msgid|msgid_plural|msgstr(?:\[\d\])?) "(.*)"$', zeile)
+        m = re.match(r'^(msgctxt|msgid|msgid_plural|msgstr(?:\[\d\])?) "(.*)"$', zeile)
         if m:
             marke, text = m.group(1), m.group(2)
-            if marke == 'msgid':
+            if marke == 'msgctxt':
+                kontext_neu, ziel = text, 'msgctxt'
+            elif marke == 'msgid':
                 if schluessel is not None:
-                    eintraege[schluessel] = puffer
+                    _ablegen()
                 schluessel, puffer, ziel = text, {}, 'msgid'
+                kontext, kontext_neu = kontext_neu, None
             else:
                 ziel = marke
                 puffer[marke] = text
             continue
         f = re.match(r'^"(.*)"$', zeile)
         if f and ziel:
-            if ziel == 'msgid':
+            if ziel == 'msgctxt':
+                kontext_neu += f.group(1)
+            elif ziel == 'msgid':
                 schluessel += f.group(1)
             else:
                 puffer[ziel] = puffer.get(ziel, '') + f.group(1)
     if schluessel is not None:
-        eintraege[schluessel] = puffer
+        _ablegen()
     eintraege.pop('', None)          # Dateikopf
     # Escapes aufloesen (\" → ", \n → Zeilenumbruch), wie msgfmt es tut. Ohne
     # das passt ein Eintrag mit Anfuehrungszeichen — etwa ein <a class="…"> in

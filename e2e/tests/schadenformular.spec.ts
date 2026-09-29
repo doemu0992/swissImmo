@@ -198,3 +198,39 @@ test('Beide Formulare bieten dieselben Räume an', async ({ page }) => {
       'anderes, und beide Seiten sehen für sich richtig aus.',
   ).toEqual(je[a].map((r) => `${r.name} (${r.z})`));
 });
+
+// ANZEIGE ÜBERSETZT, WERT BLEIBT DEUTSCH (29.09.2026)
+//
+// Seit der Übersetzung der öffentlichen Formulare zeigen die Kacheln die
+// Sprache des Besuchers («Cuisine», «Réfrigérateur»), gespeichert wird aber
+// weiter das deutsche Wort: Es landet als `raum`/`objekt`/`kategorie` bzw. im
+// Titel der Meldung, und die Verwaltung filtert und wertet danach aus. Ein
+// Django-Test sieht davon nichts — was in die versteckten Felder geht, setzt
+// Alpine im Browser.
+//
+// Gegenprobe: In einer Vorlage `x-model="formData.raum"` bzw. `room` auf die
+// Anzeige umstellen (`t(...)`) — dieser Test wird rot.
+for (const f of FORMULARE) {
+test(`${f.name}: Französisch angezeigt, deutsch gespeichert`, async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: 'django_language', value: 'fr', url: baseURL! }]);
+  await formular(page, f.pfad);
+
+  await page.getByText('Annonce de dommage', { exact: true }).click();
+  await page.getByText('Cuisine', { exact: true }).click();
+  await page.getByText('Réfrigérateur', { exact: true }).click();
+  await page.waitForTimeout(300);
+
+  const werte = await page.evaluate(() => {
+    const v = (n: string) => (document.querySelector(`input[name="${n}"]`) as HTMLInputElement | null)?.value ?? null;
+    return { titel: v('titel'), kategorie: v('kategorie'), raum: v('raum'), objekt: v('objekt') };
+  });
+  if (f.pfad.startsWith('/report/')) {
+    expect(werte.titel).toBe('Schaden: Küche - Kühlschrank');
+  } else {
+    expect(werte).toMatchObject({ kategorie: 'Schadensmeldung', raum: 'Küche', objekt: 'Kühlschrank' });
+  }
+  // Und angezeigt wird die Übersetzung, nicht der gespeicherte Wert.
+  await expect(page.locator('text=Cuisine >> visible=true').first()).toBeVisible();
+  expect(await page.locator('body').innerText()).not.toContain('Kühlschrank');
+});
+}

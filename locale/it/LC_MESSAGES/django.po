@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 02:43+0200\n"
+"POT-Creation-Date: 2026-09-29 06:51+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -596,6 +596,7 @@ msgid "Meine Meldungen"
 msgstr "Le mie segnalazioni"
 
 #: core/templates/core/_mieter_nav.html:18
+#: core/templates/core/public_ticket_form.html:8
 msgid "Service"
 msgstr "Servizio"
 
@@ -785,8 +786,9 @@ msgstr "Contatto"
 msgid "Mobile"
 msgstr "Cellulare"
 
-#: core/templates/core/mieter_daten.html:32 core/templates/fw/account.html:100
-#: core/templates/fw/dienstleister.html:35
+#: core/templates/core/mieter_daten.html:32
+#: core/templates/core/public_ticket_form.html:272
+#: core/templates/fw/account.html:100 core/templates/fw/dienstleister.html:35
 #: core/templates/fw/dienstleister.html:103
 #: core/templates/fw/dienstleister_detail.html:83
 #: core/templates/fw/mandat_detail.html:176
@@ -804,8 +806,10 @@ msgid "Telefon"
 msgstr "Telefono"
 
 #: core/templates/core/mieter_daten.html:34
-#: core/templates/core/passwort_reset.html:7 core/templates/fw/account.html:102
-#: core/templates/fw/benutzer.html:18 core/templates/fw/benutzer_form.html:30
+#: core/templates/core/passwort_reset.html:7
+#: core/templates/core/public_ticket_form.html:268
+#: core/templates/fw/account.html:102 core/templates/fw/benutzer.html:18
+#: core/templates/fw/benutzer_form.html:30
 #: core/templates/fw/bewerbung_detail.html:39
 #: core/templates/fw/dienstleister.html:33
 #: core/templates/fw/dienstleister.html:101
@@ -1153,6 +1157,7 @@ msgid "Objekt"
 msgstr "Oggetto"
 
 #: core/templates/core/mieter_schaden.html:27
+#: core/templates/core/public_ticket_form.html:222
 msgid "Was ist betroffen?"
 msgstr "Che cosa è interessato?"
 
@@ -1173,6 +1178,7 @@ msgid "z.B. Badezimmer"
 msgstr "p. es. bagno"
 
 #: core/templates/core/mieter_schaden.html:37
+#: core/templates/core/public_ticket_form.html:333
 #: core/templates/fw/debitoren.html:47
 #: core/templates/fw/nebenkosten_detail.html:154
 #: core/templates/fw/pendenzen.html:123 core/templates/fw/schaeden.html:40
@@ -1621,6 +1627,7 @@ msgstr ""
 "ancora un accesso? Si rivolga alla sua amministrazione immobiliare."
 
 #: core/templates/core/portal_login.html:213
+#: core/templates/core/schaden_melden.html:116
 msgid "Zurück zur Startseite"
 msgstr "Torna alla pagina iniziale"
 
@@ -1911,6 +1918,245 @@ msgstr "Elimina"
 #: core/templates/core/postfach_liste.html:102
 msgid "Postfächer ändern dürfen Inhaber und Verwalter."
 msgstr "Le caselle possono essere modificate dai ruoli Inhaber e Verwalter."
+
+#: core/templates/core/public_ticket_form.html:100
+msgid "Service Portal wird geladen..."
+msgstr "Caricamento del portale di servizio..."
+
+#: core/templates/core/public_ticket_form.html:109
+msgid "Service Portal"
+msgstr "Portale di servizio"
+
+#: core/templates/core/public_ticket_form.html:156
+#: core/templates/core/schaden_melden.html:113
+msgid "Vielen Dank!"
+msgstr "Grazie mille!"
+
+#: core/templates/core/public_ticket_form.html:157
+msgid ""
+"Wir haben Ihre Meldung erhalten und eine Bestätigung per E-Mail gesendet."
+msgstr "Abbiamo ricevuto la sua segnalazione e le abbiamo inviato una conferma per e-mail."
+
+#: core/templates/core/public_ticket_form.html:159
+msgid "Zurück zum Start"
+msgstr "Torna all'inizio"
+
+#: core/templates/core/public_ticket_form.html:165
+msgid "Wie können wir helfen?"
+msgstr "Come possiamo aiutarla?"
+
+#: core/templates/core/public_ticket_form.html:192
+#: core/templates/core/schaden_melden.html:142
+msgid "Schadensmeldung"
+msgstr "Segnalazione di danno"
+
+#: core/templates/core/public_ticket_form.html:196
+#: core/templates/core/schaden_melden.html:146
+msgid "Allgemeine Anfrage"
+msgstr "Richiesta generale"
+
+#: core/templates/core/public_ticket_form.html:200
+#: core/templates/core/schaden_melden.html:154
+msgid "Schlüsselbestellung"
+msgstr "Ordinazione di chiavi"
+
+#: core/templates/core/public_ticket_form.html:204
+#: core/templates/core/schaden_melden.html:158
+msgid "Frage zu Dokumenten"
+msgstr "Domanda sui documenti"
+
+#: core/templates/core/public_ticket_form.html:210
+msgid "Welcher Bereich?"
+msgstr "Quale settore?"
+
+#: core/templates/core/public_ticket_form.html:232
+msgid "Anderes"
+msgstr "Altro"
+
+#: core/templates/core/public_ticket_form.html:245
+msgid "Ihre Kontaktdaten"
+msgstr "I suoi dati di contatto"
+
+#: core/templates/core/public_ticket_form.html:250
+#: core/templates/fw/person_form.html:64
+msgid "Anrede"
+msgstr "Appellativo"
+
+#: core/templates/core/public_ticket_form.html:252
+#: core/templates/fw/person_form.html:68
+msgid "Frau"
+msgstr "Signora"
+
+#: core/templates/core/public_ticket_form.html:253
+#: core/templates/fw/person_form.html:67
+msgid "Herr"
+msgstr "Signor"
+
+#: core/templates/core/public_ticket_form.html:254
+#: core/templates/fw/dienstleister.html:18
+#: core/templates/fw/dienstleister.html:86
+#: core/templates/fw/dienstleister_detail.html:80
+msgid "Firma"
+msgstr "Ditta"
+
+#: core/templates/core/public_ticket_form.html:259
+#: core/templates/core/schaden_melden.html:244
+#: core/templates/fw/benutzer_form.html:25
+#: core/templates/fw/person_form.html:71 core/templates/fw/schaeden.html:44
+msgid "Vorname"
+msgstr "Nome"
+
+#: core/templates/core/public_ticket_form.html:263
+#: core/templates/core/schaden_melden.html:248
+#: core/templates/fw/benutzer_form.html:27
+#: core/templates/fw/person_form.html:73 core/templates/fw/schaeden.html:45
+msgid "Nachname"
+msgstr "Cognome"
+
+#: core/templates/core/public_ticket_form.html:278
+msgid "Betroffene Einheit (Optional)"
+msgstr "Unità interessata (facoltativo)"
+
+#: core/templates/core/public_ticket_form.html:281
+msgid "Bitte wählen"
+msgstr "Selezionare"
+
+#: core/templates/core/public_ticket_form.html:291
+msgid "Erreichbarkeit (für Handwerker)"
+msgstr "Reperibilità (per gli artigiani)"
+
+#: core/templates/core/public_ticket_form.html:316
+msgid "Details zur Meldung"
+msgstr "Dettagli della segnalazione"
+
+#: core/templates/core/public_ticket_form.html:323
+msgid "Marke / Hersteller"
+msgstr "Marca / produttore"
+
+#: core/templates/core/public_ticket_form.html:327
+#: core/templates/fw/liegenschaft_detail.html:313
+#: core/templates/fw/liegenschaft_detail.html:350
+#: core/templates/fw/objekt_detail.html:757
+#: core/templates/fw/objekt_detail.html:792
+msgid "Seriennummer"
+msgstr "Numero di serie"
+
+#: core/templates/core/public_ticket_form.html:334
+msgid "Bitte beschreiben Sie das Problem kurz..."
+msgstr "Descriva brevemente il problema..."
+
+#: core/templates/core/public_ticket_form.html:338
+msgid "Foto (Optional)"
+msgstr "Foto (facoltativo)"
+
+#: core/templates/core/public_ticket_form.html:344
+msgid "Foto aufnehmen oder hochladen"
+msgstr "Scattare o caricare una foto"
+
+#: core/templates/core/public_ticket_form.html:352
+msgid "Meldung absenden"
+msgstr "Inviare la segnalazione"
+
+#: core/templates/core/schaden_melden.html:114
+msgid ""
+"Ihre Meldung wurde erfolgreich an die Verwaltung übermittelt. Wir werden uns "
+"in Kürze darum kümmern."
+msgstr "La sua segnalazione è stata trasmessa all'amministrazione. Ce ne occuperemo a breve."
+
+#: core/templates/core/schaden_melden.html:137
+msgid "Worum geht es?"
+msgstr "Di che cosa si tratta?"
+
+#: core/templates/core/schaden_melden.html:150
+msgid "Namensschilder-bestellung"
+msgstr "Ordinazione di targhette con il nome"
+
+#: core/templates/core/schaden_melden.html:164
+#: core/templates/core/schaden_melden.html:182
+#: core/templates/core/schaden_melden.html:199
+#: core/templates/fw/logbuch.html:161 core/templates/fw/regelsatz_form.html:11
+msgid "Zurück"
+msgstr "Indietro"
+
+#: core/templates/core/schaden_melden.html:165
+msgid "In welchem Raum?"
+msgstr "In quale locale?"
+
+#: core/templates/core/schaden_melden.html:183
+msgid "Was genau ist betroffen?"
+msgstr "Che cosa è interessato esattamente?"
+
+#: core/templates/core/schaden_melden.html:201
+msgid "Details &amp; Kontaktdaten"
+msgstr "Dettagli e dati di contatto"
+
+#: core/templates/core/schaden_melden.html:212
+msgid "Liegenschaft / Adresse"
+msgstr "Stabile / indirizzo"
+
+#: core/templates/core/schaden_melden.html:221
+msgid "Tippen Sie Ihre Strasse ein (z.B. Selzach)..."
+msgstr "Digiti la sua via (p. es. Selzach)..."
+
+#: core/templates/core/schaden_melden.html:245
+msgid "Ihr Vorname"
+msgstr "Il suo nome"
+
+#: core/templates/core/schaden_melden.html:249
+msgid "Ihr Nachname"
+msgstr "Il suo cognome"
+
+#: core/templates/core/schaden_melden.html:254
+msgid "Kurze Beschreibung des Problems"
+msgstr "Breve descrizione del problema"
+
+#: core/templates/core/schaden_melden.html:255
+msgid "Bitte beschreiben Sie das Anliegen..."
+msgstr "Descriva la sua richiesta..."
+
+#: core/templates/core/schaden_melden.html:260
+msgid "E-Mail Adresse"
+msgstr "Indirizzo e-mail"
+
+#: core/templates/core/schaden_melden.html:261
+msgid "Ihre E-Mail"
+msgstr "La sua e-mail"
+
+#: core/templates/core/schaden_melden.html:264
+msgid "Telefonnummer"
+msgstr "Numero di telefono"
+
+#: core/templates/core/schaden_melden.html:265
+msgid "Für Rückfragen"
+msgstr "Per eventuali domande"
+
+#: core/templates/core/schaden_melden.html:270
+msgid "Wie sind Sie am besten erreichbar? / Zutritt zur Wohnung"
+msgstr "Come la possiamo raggiungere al meglio? / Accesso all'appartamento"
+
+#: core/templates/core/schaden_melden.html:272
+msgid "Bitte telefonisch kontaktieren zwecks Termin"
+msgstr "Contattarmi per telefono per fissare un appuntamento"
+
+#: core/templates/core/schaden_melden.html:273
+msgid "Bitte per E-Mail kontaktieren"
+msgstr "Contattarmi per e-mail"
+
+#: core/templates/core/schaden_melden.html:274
+msgid "Handwerker darf via Schlüsselbox / Deponierung direkt rein"
+msgstr "L'artigiano può entrare direttamente (cassetta portachiavi / chiave depositata)"
+
+#: core/templates/core/schaden_melden.html:275
+msgid "Ich bin meistens Zuhause (Zutritt unkompliziert)"
+msgstr "Sono quasi sempre a casa (accesso facile)"
+
+#: core/templates/core/schaden_melden.html:280
+msgid "Foto hochladen (Optional)"
+msgstr "Caricare una foto (facoltativo)"
+
+#: core/templates/core/schaden_melden.html:286
+msgid "Meldung jetzt absenden"
+msgstr "Inviare ora la segnalazione"
 
 #: core/templates/core/zweifaktor_bestaetigen.html:10
 #: core/templates/core/zweifaktor_bestaetigen.html:42
@@ -3873,16 +4119,6 @@ msgstr "Membro del team con accesso all'amministrazione."
 msgid "Benutzername *"
 msgstr "Nome utente *"
 
-#: core/templates/fw/benutzer_form.html:25
-#: core/templates/fw/person_form.html:71 core/templates/fw/schaeden.html:44
-msgid "Vorname"
-msgstr "Nome"
-
-#: core/templates/fw/benutzer_form.html:27
-#: core/templates/fw/person_form.html:73 core/templates/fw/schaeden.html:45
-msgid "Nachname"
-msgstr "Cognome"
-
 #: core/templates/fw/benutzer_form.html:32
 msgid "(leer lassen = unverändert)"
 msgstr "(lasciare vuoto = invariato)"
@@ -5201,12 +5437,6 @@ msgstr[1] "%(n)s settori"
 #: core/templates/fw/dienstleister.html:15
 msgid "Handwerker / Dienstleister erfassen"
 msgstr "Registrare artigiano / fornitore"
-
-#: core/templates/fw/dienstleister.html:18
-#: core/templates/fw/dienstleister.html:86
-#: core/templates/fw/dienstleister_detail.html:80
-msgid "Firma"
-msgstr "Ditta"
 
 #: core/templates/fw/dienstleister.html:20
 #: core/templates/fw/dienstleister.html:88
@@ -7888,13 +8118,6 @@ msgstr "Marca"
 msgid "Modell"
 msgstr "Modello"
 
-#: core/templates/fw/liegenschaft_detail.html:313
-#: core/templates/fw/liegenschaft_detail.html:350
-#: core/templates/fw/objekt_detail.html:757
-#: core/templates/fw/objekt_detail.html:792
-msgid "Seriennummer"
-msgstr "Numero di serie"
-
 #: core/templates/fw/liegenschaft_detail.html:314
 #: core/templates/fw/liegenschaft_detail.html:351
 #: core/templates/fw/objekt_detail.html:759
@@ -8693,10 +8916,6 @@ msgid "%(n)s Eintrag"
 msgid_plural "%(n)s Einträge"
 msgstr[0] "%(n)s voce"
 msgstr[1] "%(n)s voci"
-
-#: core/templates/fw/logbuch.html:161 core/templates/fw/regelsatz_form.html:11
-msgid "Zurück"
-msgstr "Indietro"
 
 #: core/templates/fw/logbuch.html:164
 msgid "Weiter"
@@ -11371,18 +11590,6 @@ msgstr "Ditta / impresa"
 msgid "Verein / Stiftung"
 msgstr "Associazione / fondazione"
 
-#: core/templates/fw/person_form.html:64
-msgid "Anrede"
-msgstr "Appellativo"
-
-#: core/templates/fw/person_form.html:67
-msgid "Herr"
-msgstr "Signor"
-
-#: core/templates/fw/person_form.html:68
-msgid "Frau"
-msgstr "Signora"
-
 #: core/templates/fw/person_form.html:69
 msgid "Familie"
 msgstr "Famiglia"
@@ -13932,6 +14139,346 @@ msgstr "Completati di recente"
 msgid "Noch nichts erledigt."
 msgstr "Ancora nulla di completato."
 
+#: core/templatetags/raumkatalog.py:30
+msgctxt "Raumkatalog"
+msgid "Küche"
+msgstr "Cucina"
+
+#: core/templatetags/raumkatalog.py:30
+msgctxt "Raumkatalog"
+msgid "Bad"
+msgstr "Bagno"
+
+#: core/templatetags/raumkatalog.py:31
+msgctxt "Raumkatalog"
+msgid "Korridor"
+msgstr "Corridoio"
+
+#: core/templatetags/raumkatalog.py:31
+msgctxt "Raumkatalog"
+msgid "Zimmer"
+msgstr "Camera"
+
+#: core/templatetags/raumkatalog.py:32
+msgctxt "Raumkatalog"
+msgid "Reduit"
+msgstr "Ripostiglio"
+
+#: core/templatetags/raumkatalog.py:32
+msgctxt "Raumkatalog"
+msgid "Balkon/Terrasse"
+msgstr "Balcone/terrazza"
+
+#: core/templatetags/raumkatalog.py:33
+msgctxt "Raumkatalog"
+msgid "Treppenhaus"
+msgstr "Vano scala"
+
+#: core/templatetags/raumkatalog.py:33
+msgctxt "Raumkatalog"
+msgid "Waschküche"
+msgstr "Lavanderia"
+
+#: core/templatetags/raumkatalog.py:34
+msgctxt "Raumkatalog"
+msgid "Keller"
+msgstr "Cantina"
+
+#: core/templatetags/raumkatalog.py:34
+msgctxt "Raumkatalog"
+msgid "Estrich"
+msgstr "Solaio"
+
+#: core/templatetags/raumkatalog.py:35
+msgctxt "Raumkatalog"
+msgid "Veloraum"
+msgstr "Locale biciclette"
+
+#: core/templatetags/raumkatalog.py:35
+msgctxt "Raumkatalog"
+msgid "Briefkasten"
+msgstr "Bucalettere"
+
+#: core/templatetags/raumkatalog.py:36
+msgctxt "Raumkatalog"
+msgid "Anderer Raum"
+msgstr "Altro locale"
+
+#: core/templatetags/raumkatalog.py:38
+msgctxt "Raumkatalog"
+msgid "Licht"
+msgstr "Luce"
+
+#: core/templatetags/raumkatalog.py:38
+msgctxt "Raumkatalog"
+msgid "Steckdose"
+msgstr "Presa elettrica"
+
+#: core/templatetags/raumkatalog.py:39
+msgctxt "Raumkatalog"
+msgid "Fenster"
+msgstr "Finestra"
+
+#: core/templatetags/raumkatalog.py:39
+msgctxt "Raumkatalog"
+msgid "Storen/Markise"
+msgstr "Tapparelle/tenda da sole"
+
+#: core/templatetags/raumkatalog.py:40
+msgctxt "Raumkatalog"
+msgid "Boden"
+msgstr "Pavimento"
+
+#: core/templatetags/raumkatalog.py:40
+msgctxt "Raumkatalog"
+msgid "Wand"
+msgstr "Parete"
+
+#: core/templatetags/raumkatalog.py:41
+msgctxt "Raumkatalog"
+msgid "Decke"
+msgstr "Soffitto"
+
+#: core/templatetags/raumkatalog.py:43
+msgctxt "Raumkatalog"
+msgid "Kühlschrank"
+msgstr "Frigorifero"
+
+#: core/templatetags/raumkatalog.py:43
+msgctxt "Raumkatalog"
+msgid "Geschirrspüler"
+msgstr "Lavastoviglie"
+
+#: core/templatetags/raumkatalog.py:44
+msgctxt "Raumkatalog"
+msgid "Dampfabzug"
+msgstr "Cappa aspirante"
+
+#: core/templatetags/raumkatalog.py:44
+msgctxt "Raumkatalog"
+msgid "Kochherd"
+msgstr "Piano di cottura"
+
+#: core/templatetags/raumkatalog.py:45
+msgctxt "Raumkatalog"
+msgid "Backofen/Steamer"
+msgstr "Forno/steamer"
+
+#: core/templatetags/raumkatalog.py:45
+msgctxt "Raumkatalog"
+msgid "Spülbecken"
+msgstr "Lavello"
+
+#: core/templatetags/raumkatalog.py:46
+msgctxt "Raumkatalog"
+msgid "Lavabo"
+msgstr "Lavabo"
+
+#: core/templatetags/raumkatalog.py:46
+msgctxt "Raumkatalog"
+msgid "WC"
+msgstr "WC"
+
+#: core/templatetags/raumkatalog.py:47
+msgctxt "Raumkatalog"
+msgid "Dusche"
+msgstr "Doccia"
+
+#: core/templatetags/raumkatalog.py:47
+msgctxt "Raumkatalog"
+msgid "Badewanne"
+msgstr "Vasca da bagno"
+
+#: core/templatetags/raumkatalog.py:48
+msgctxt "Raumkatalog"
+msgid "Spiegelschrank"
+msgstr "Armadietto a specchio"
+
+#: core/templatetags/raumkatalog.py:48
+msgctxt "Raumkatalog"
+msgid "Lüftung"
+msgstr "Ventilazione"
+
+#: core/templatetags/raumkatalog.py:49
+msgctxt "Raumkatalog"
+msgid "Waschmaschine"
+msgstr "Lavatrice"
+
+#: core/templatetags/raumkatalog.py:49
+msgctxt "Raumkatalog"
+msgid "Tumbler"
+msgstr "Asciugatrice"
+
+#: core/templatetags/raumkatalog.py:50
+msgctxt "Raumkatalog"
+msgid "Secomat"
+msgstr "Secomat"
+
+#: core/templatetags/raumkatalog.py:50
+msgctxt "Raumkatalog"
+msgid "Waschbecken"
+msgstr "Lavatoio"
+
+#: core/templatetags/raumkatalog.py:51
+msgctxt "Raumkatalog"
+msgid "Abfluss"
+msgstr "Scarico"
+
+#: core/templatetags/raumkatalog.py:51
+msgctxt "Raumkatalog"
+msgid "Wohnungstür"
+msgstr "Porta dell'appartamento"
+
+#: core/templatetags/raumkatalog.py:52
+msgctxt "Raumkatalog"
+msgid "Gegensprechanlage"
+msgstr "Citofono"
+
+#: core/templatetags/raumkatalog.py:52
+msgctxt "Raumkatalog"
+msgid "Einbauschrank"
+msgstr "Armadio a muro"
+
+#: core/templatetags/raumkatalog.py:53
+msgctxt "Raumkatalog"
+msgid "Haustür"
+msgstr "Porta d'ingresso dello stabile"
+
+#: core/templatetags/raumkatalog.py:53
+msgctxt "Raumkatalog"
+msgid "Treppe/Geländer"
+msgstr "Scala/ringhiera"
+
+#: core/templatetags/raumkatalog.py:54
+msgctxt "Raumkatalog"
+msgid "Lift"
+msgstr "Ascensore"
+
+#: core/templatetags/raumkatalog.py:54
+msgctxt "Raumkatalog"
+msgid "Heizkörper"
+msgstr "Radiatore"
+
+#: core/templatetags/raumkatalog.py:55
+msgctxt "Raumkatalog"
+msgid "Zimmertür"
+msgstr "Porta della camera"
+
+#: core/templatetags/raumkatalog.py:55
+msgctxt "Raumkatalog"
+msgid "Waschturm"
+msgstr "Colonna lavatrice-asciugatrice"
+
+#: core/templatetags/raumkatalog.py:56
+msgctxt "Raumkatalog"
+msgid "Regal"
+msgstr "Scaffale"
+
+#: core/templatetags/raumkatalog.py:56
+msgctxt "Raumkatalog"
+msgid "Anschluss"
+msgstr "Allacciamento"
+
+#: core/templatetags/raumkatalog.py:57
+msgctxt "Raumkatalog"
+msgid "Geländer"
+msgstr "Parapetto"
+
+#: core/templatetags/raumkatalog.py:57
+msgctxt "Raumkatalog"
+msgid "Sonnenstore"
+msgstr "Tenda da sole"
+
+#: core/templatetags/raumkatalog.py:58
+msgctxt "Raumkatalog"
+msgid "Balkontür"
+msgstr "Porta del balcone"
+
+#: core/templatetags/raumkatalog.py:58
+msgctxt "Raumkatalog"
+msgid "Kellerabteil"
+msgstr "Scompartimento della cantina"
+
+#: core/templatetags/raumkatalog.py:59
+msgctxt "Raumkatalog"
+msgid "Kellertür"
+msgstr "Porta della cantina"
+
+#: core/templatetags/raumkatalog.py:59
+msgctxt "Raumkatalog"
+msgid "Feuchtigkeit"
+msgstr "Umidità"
+
+#: core/templatetags/raumkatalog.py:60
+msgctxt "Raumkatalog"
+msgid "Estrichabteil"
+msgstr "Scompartimento del solaio"
+
+#: core/templatetags/raumkatalog.py:60
+msgctxt "Raumkatalog"
+msgid "Dachfenster"
+msgstr "Lucernario"
+
+#: core/templatetags/raumkatalog.py:61
+msgctxt "Raumkatalog"
+msgid "Veloständer"
+msgstr "Portabiciclette"
+
+#: core/templatetags/raumkatalog.py:61
+msgctxt "Raumkatalog"
+msgid "Tür/Schloss"
+msgstr "Porta/serratura"
+
+#: core/templatetags/raumkatalog.py:62
+msgctxt "Raumkatalog"
+msgid "Schloss"
+msgstr "Serratura"
+
+#: core/templatetags/raumkatalog.py:62
+msgctxt "Raumkatalog"
+msgid "Beschriftung"
+msgstr "Targhetta"
+
+#: core/templatetags/raumkatalog.py:63
+msgctxt "Raumkatalog"
+msgid "Klappe"
+msgstr "Sportello"
+
+#: core/templatetags/raumkatalog.py:63
+msgctxt "Raumkatalog"
+msgid "Anderes"
+msgstr "Altro"
+
+#: core/templatetags/raumkatalog.py:64
+msgctxt "Raumkatalog"
+msgid "Sonstiges"
+msgstr "Varie"
+
+#: core/templatetags/raumkatalog.py:66
+msgctxt "Raumkatalog"
+msgid "Schadensmeldung"
+msgstr "Segnalazione di danno"
+
+#: core/templatetags/raumkatalog.py:66
+msgctxt "Raumkatalog"
+msgid "Allgemeine Anfrage"
+msgstr "Richiesta generale"
+
+#: core/templatetags/raumkatalog.py:67
+msgctxt "Raumkatalog"
+msgid "Namensschilder"
+msgstr "Targhette con il nome"
+
+#: core/templatetags/raumkatalog.py:67
+msgctxt "Raumkatalog"
+msgid "Schlüsselbestellung"
+msgstr "Ordinazione di chiavi"
+
+#: core/templatetags/raumkatalog.py:68
+msgctxt "Raumkatalog"
+msgid "Frage zu Dokumenten"
+msgstr "Domanda sui documenti"
+
 #: core/views/docuseal.py:73
 msgid "API-Key fehlt in settings.py"
 msgstr "Chiave API mancante in settings.py"
@@ -14157,7 +14704,9 @@ msgstr "Il fornitore e l'importo (> 0) sono obbligatori."
 msgid ""
 "Kreditorenrechnung '%(lieferant)s' über CHF %(betrag)s erfasst (Status: Neu "
 "— bitte freigeben)."
-msgstr "Fattura fornitore «%(lieferant)s» di CHF %(betrag)s registrata (stato: nuovo — approvare)."
+msgstr ""
+"Fattura fornitore «%(lieferant)s» di CHF %(betrag)s registrata (stato: nuovo "
+"— approvare)."
 
 #: core/views/fw/aktionen.py:131
 msgid "Bitte mindestens einen Beleg (PDF oder Foto) auswählen."
@@ -14168,25 +14717,32 @@ msgstr "Seleziona almeno un giustificativo (PDF o foto)."
 msgid ""
 "Beleg gescannt (%(get)s): %(zusammenfassung)s%(konto_hint)s — bitte prüfen "
 "und freigeben."
-msgstr "Giustificativo scansionato (%(get)s): %(zusammenfassung)s%(konto_hint)s — verificare e approvare."
+msgstr ""
+"Giustificativo scansionato (%(get)s): %(zusammenfassung)s%(konto_hint)s — "
+"verificare e approvare."
 
 #: core/views/fw/aktionen.py:158
 #, python-format
 msgid ""
 "Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): "
 "%(zusammenfassung)s — bitte Werte prüfen."
-msgstr "Giustificativo letto con regole (IA non attiva/raggiungibile): %(zusammenfassung)s — verificare i valori."
+msgstr ""
+"Giustificativo letto con regole (IA non attiva/raggiungibile): "
+"%(zusammenfassung)s — verificare i valori."
 
 #: core/views/fw/aktionen.py:160
 #, python-format
 msgid ""
 "Beleg «%(dateiname)s» gespeichert, aber nicht auslesbar: %(get)s Werte bitte "
 "manuell ergänzen."
-msgstr "Giustificativo «%(dateiname)s» salvato, ma non leggibile: %(get)s Completare i valori manualmente."
+msgstr ""
+"Giustificativo «%(dateiname)s» salvato, ma non leggibile: %(get)s Completare "
+"i valori manualmente."
 
 #: core/views/fw/aktionen.py:175
 msgid "Nur unverbuchte Rechnungen (Status Neu) können bearbeitet werden."
-msgstr "Solo le fatture non contabilizzate (stato nuovo) possono essere modificate."
+msgstr ""
+"Solo le fatture non contabilizzate (stato nuovo) possono essere modificate."
 
 #: core/views/fw/aktionen.py:210
 #, python-format
@@ -14202,7 +14758,9 @@ msgstr "La fattura è già approvata o pagata."
 msgid ""
 "Die Kostenaufteilung stimmt nicht: Summe der Positionen weicht um CHF "
 "%(positionen_differenz)s vom Rechnungsbetrag ab."
-msgstr "La ripartizione dei costi non è corretta: la somma delle posizioni si discosta di CHF %(positionen_differenz)s dall'importo della fattura."
+msgstr ""
+"La ripartizione dei costi non è corretta: la somma delle posizioni si "
+"discosta di CHF %(positionen_differenz)s dall'importo della fattura."
 
 #: core/views/fw/aktionen.py:243
 msgid "Bitte zuerst ein Aufwandskonto zuweisen (oder die Rechnung aufteilen)."
@@ -14226,7 +14784,9 @@ msgstr "I valori di sconto non possono essere negativi."
 msgid ""
 "Komponente ab %(gab)s gespeichert (Referenz CHF %(wert)s, zu zahlen CHF "
 "%(zu_zahlen)s)."
-msgstr "Componente dal %(gab)s salvata (riferimento CHF %(wert)s, da pagare CHF %(zu_zahlen)s)."
+msgstr ""
+"Componente dal %(gab)s salvata (riferimento CHF %(wert)s, da pagare CHF "
+"%(zu_zahlen)s)."
 
 #: core/views/fw/aktionen.py:370
 msgid "Komponente entfernt."
@@ -14234,7 +14794,8 @@ msgstr "Componente rimossa."
 
 #: core/views/fw/aktionen.py:387
 msgid "Nur unverbuchte Rechnungen (Status Neu) können aufgeteilt werden."
-msgstr "Solo le fatture non contabilizzate (stato nuovo) possono essere suddivise."
+msgstr ""
+"Solo le fatture non contabilizzate (stato nuovo) possono essere suddivise."
 
 #: core/views/fw/aktionen.py:395
 msgid "Konto und Betrag (> 0) sind für eine Position erforderlich."
@@ -14276,7 +14837,9 @@ msgstr "Documento eliminato."
 
 #: core/views/fw/aktionen.py:513
 msgid "Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich."
-msgstr "Lo stabile, la designazione, la data di inizio e la data di fine sono obbligatori."
+msgstr ""
+"Lo stabile, la designazione, la data di inizio e la data di fine sono "
+"obbligatori."
 
 #: core/views/fw/aktionen.py:517
 #, python-format
@@ -14297,7 +14860,9 @@ msgstr "Fornitore di servizi «%(firma)s» eliminato."
 msgid ""
 "Bereits verbuchte Rechnung kann nicht gelöscht werden — bitte die zugehörige "
 "Buchung stornieren."
-msgstr "Una fattura già contabilizzata non può essere eliminata — stornare la registrazione corrispondente."
+msgstr ""
+"Una fattura già contabilizzata non può essere eliminata — stornare la "
+"registrazione corrispondente."
 
 #: core/views/fw/aktionen.py:579
 #, python-format
@@ -14317,7 +14882,9 @@ msgstr "Periodo di conteggio «%(bez)s» eliminato."
 msgid ""
 "Soll-, Haben-Konto (gültige Nummer), Betrag (> 0) und Belegtext sind "
 "erforderlich."
-msgstr "I conti dare e avere (numero valido), l'importo (> 0) e il testo del giustificativo sono obbligatori."
+msgstr ""
+"I conti dare e avere (numero valido), l'importo (> 0) e il testo del "
+"giustificativo sono obbligatori."
 
 #: core/views/fw/aktionen.py:650
 msgid "Soll- und Haben-Konto müssen unterschiedlich sein."
@@ -14332,12 +14899,16 @@ msgstr "Registrazione inserita: %(nummer)s a %(nummer2)s · CHF %(betrag)s."
 msgid ""
 "Abschlussbuchungen lassen sich nicht einzeln stornieren. Bitte den "
 "Jahresabschluss gesamthaft über «Abschluss zurücknehmen» aufheben."
-msgstr "Le registrazioni di chiusura non possono essere stornate singolarmente. Annullare la chiusura annuale nel suo insieme tramite «Annulla chiusura»."
+msgstr ""
+"Le registrazioni di chiusura non possono essere stornate singolarmente. "
+"Annullare la chiusura annuale nel suo insieme tramite «Annulla chiusura»."
 
 #: core/views/fw/aktionen.py:705
 #, python-format
 msgid "Beleg #%(beleg_nr)s storniert (Gegenbuchung #%(beleg_nr2)s)."
-msgstr "Giustificativo n. %(beleg_nr)s stornato (controregistrazione n. %(beleg_nr2)s)."
+msgstr ""
+"Giustificativo n. %(beleg_nr)s stornato (controregistrazione n. "
+"%(beleg_nr2)s)."
 
 #: core/views/fw/aktionen.py:722 core/views/fw/aktionen.py:754
 msgid "Text und mindestens ein Empfänger erforderlich."
@@ -14430,7 +15001,9 @@ msgstr "Non attribuito — %(f)s"
 msgid ""
 "Nichts zugeordnet — die gewählten Zahlungen liegen nicht mehr auf einem "
 "Parkkonto."
-msgstr "Nulla attribuito — i pagamenti selezionati non si trovano più su un conto transitorio."
+msgstr ""
+"Nulla attribuito — i pagamenti selezionati non si trovano più su un conto "
+"transitorio."
 
 #: core/views/fw/aktionen.py:1052
 msgid "Diese Zuordnung gibt es nicht mehr."
@@ -14441,7 +15014,9 @@ msgstr "Questa attribuzione non esiste più."
 msgid ""
 "«%(name)s» wird nicht mehr automatisch zugeordnet — künftige Zahlungen "
 "landen wieder zur Prüfung im Bankabgleich."
-msgstr "«%(name)s» non viene più attribuito automaticamente — i pagamenti futuri torneranno nella riconciliazione bancaria per la verifica."
+msgstr ""
+"«%(name)s» non viene più attribuito automaticamente — i pagamenti futuri "
+"torneranno nella riconciliazione bancaria per la verifica."
 
 #: core/views/fw/aktionen.py:1066
 msgid "Kein Mieter gewählt — die Zuordnung bleibt unverändert."
@@ -14452,7 +15027,9 @@ msgstr "Nessun inquilino selezionato — l'attribuzione resta invariata."
 msgid ""
 "«%(name)s» zahlt neu für %(display_name)s. Bereits verbuchte Zahlungen "
 "bleiben unverändert."
-msgstr "«%(name)s» paga ora per %(display_name)s. I pagamenti già contabilizzati restano invariati."
+msgstr ""
+"«%(name)s» paga ora per %(display_name)s. I pagamenti già contabilizzati "
+"restano invariati."
 
 #: core/views/fw/aktionen.py:1114
 msgid "Diese Bankbewegung ist bereits erledigt."
@@ -15071,7 +15648,8 @@ msgstr "Tipo di locale sconosciuto."
 #: core/views/fw/detailseiten.py:956
 #, python-format
 msgid "%(n)s Element(e) für «%(raumtyp)s» angelegt — jetzt Details ergänzen."
-msgstr "%(n)s elemento/i creato/i per «%(raumtyp)s» — ora completare i dettagli."
+msgstr ""
+"%(n)s elemento/i creato/i per «%(raumtyp)s» — ora completare i dettagli."
 
 #: core/views/fw/detailseiten.py:958
 #, python-format
@@ -15134,7 +15712,8 @@ msgstr "Chiave rimossa."
 #, python-format
 msgid ""
 "Alle %(anzahl)s Exemplare von %(schluessel_nummer)s sind bereits ausgegeben."
-msgstr "Tutti i %(anzahl)s esemplari di %(schluessel_nummer)s sono già consegnati."
+msgstr ""
+"Tutti i %(anzahl)s esemplari di %(schluessel_nummer)s sono già consegnati."
 
 #: core/views/fw/detailseiten.py:1221
 msgid "Bitte Empfänger (Mieter oder Handwerker) wählen."
@@ -15160,14 +15739,20 @@ msgid ""
 "Sollmietzins ab %(strftime)s erfasst — Nettomietzins CHF %(netto)s "
 "VOLLSTÄNDIG ERLASSEN (Gratismonat). Verrechnet wird nur CHF %(zu_zahlen)s. "
 "War das nicht beabsichtigt, Zeile löschen und ohne Rabatt neu erfassen."
-msgstr "Pigione teorica dal %(strftime)s registrata — pigione netta CHF %(netto)s INTERAMENTE CONDONATA (mese gratuito). Vengono fatturati solo CHF %(zu_zahlen)s. Se non era voluto, eliminare la riga e registrarla di nuovo senza sconto."
+msgstr ""
+"Pigione teorica dal %(strftime)s registrata — pigione netta CHF %(netto)s "
+"INTERAMENTE CONDONATA (mese gratuito). Vengono fatturati solo CHF "
+"%(zu_zahlen)s. Se non era voluto, eliminare la riga e registrarla di nuovo "
+"senza sconto."
 
 #: core/views/fw/detailseiten.py:1316
 #, python-format
 msgid ""
 "Sollmietzins ab %(strftime)s erfasst — Referenz CHF %(wert)s, davon CHF "
 "%(wert2)s Rabatt, zu zahlen CHF %(zu_zahlen)s."
-msgstr "Pigione teorica dal %(strftime)s registrata — riferimento CHF %(wert)s, di cui CHF %(wert2)s di sconto, da pagare CHF %(zu_zahlen)s."
+msgstr ""
+"Pigione teorica dal %(strftime)s registrata — riferimento CHF %(wert)s, di "
+"cui CHF %(wert2)s di sconto, da pagare CHF %(zu_zahlen)s."
 
 #: core/views/fw/detailseiten.py:1318
 #, python-format
@@ -15257,7 +15842,10 @@ msgid ""
 "Hinweis: Für diesen Vertrag ist keine Kaution bilanziert (vereinbart CHF "
 "%(kautions_betrag)s). Es wurde weder ein Sperrkonto freigegeben noch eine "
 "Rückzahlung gebucht."
-msgstr "Nota: per questo contratto non è iscritto a bilancio alcun deposito (convenuto CHF %(kautions_betrag)s). Non è stato sbloccato alcun conto bloccato né contabilizzato alcun rimborso."
+msgstr ""
+"Nota: per questo contratto non è iscritto a bilancio alcun deposito "
+"(convenuto CHF %(kautions_betrag)s). Non è stato sbloccato alcun conto "
+"bloccato né contabilizzato alcun rimborso."
 
 #: core/views/fw/detailseiten.py:2159
 #, python-format
@@ -15566,14 +16154,18 @@ msgstr ""
 msgid ""
 "Kündigung erfasst — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-"
 "Pendenzen erstellt%(hinweis)s."
-msgstr "Disdetta registrata — fine del contratto %(wert)s · %(n_pendenzen)s pendenze di uscita create%(hinweis)s."
+msgstr ""
+"Disdetta registrata — fine del contratto %(wert)s · %(n_pendenzen)s pendenze "
+"di uscita create%(hinweis)s."
 
 #: core/views/fw/kuendigung.py:381
 #, python-format
 msgid ""
 "Zahlungsaufforderung erstellt – Frist bis %(frist)s. Fristen-Pendenz "
 "angelegt."
-msgstr "Diffida di pagamento creata – termine fino al %(frist)s. Pendenza di scadenza creata."
+msgstr ""
+"Diffida di pagamento creata – termine fino al %(frist)s. Pendenza di "
+"scadenza creata."
 
 #: core/views/fw/kuendigung.py:510
 msgid "Kündigung zurückgezogen, Vertrag reaktiviert."
@@ -15588,7 +16180,9 @@ msgstr "Una disdetta ritirata non può essere confermata."
 msgid ""
 "Kündigung bestätigt — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-"
 "Pendenzen erstellt."
-msgstr "Disdetta confermata — fine del contratto %(wert)s · %(n_pendenzen)s pendenze di uscita create."
+msgstr ""
+"Disdetta confermata — fine del contratto %(wert)s · %(n_pendenzen)s pendenze "
+"di uscita create."
 
 #: core/views/fw/liegenschaft_crud.py:130
 #, python-format
@@ -15920,12 +16514,15 @@ msgstr "Questo credito non è (più) aperto e non può essere sollecitato."
 msgid ""
 "Für diese Rechnung ist bereits die %(stufe)s. Mahnung erfasst — eine "
 "%(stufe2)s. Mahnung wäre ein Rückschritt."
-msgstr "Per questa fattura è già registrato il sollecito di livello %(stufe)s — un sollecito di livello %(stufe2)s sarebbe un passo indietro."
+msgstr ""
+"Per questa fattura è già registrato il sollecito di livello %(stufe)s — un "
+"sollecito di livello %(stufe2)s sarebbe un passo indietro."
 
 #: core/views/fw/mahnwesen.py:296
 #, python-format
 msgid "Die %(stufe)s. Mahnung wurde für diese Rechnung bereits erfasst."
-msgstr "Il sollecito di livello %(stufe)s è già stato registrato per questa fattura."
+msgstr ""
+"Il sollecito di livello %(stufe)s è già stato registrato per questa fattura."
 
 #: core/views/fw/mahnwesen.py:302
 #, python-format
@@ -15934,34 +16531,35 @@ msgstr "Non è stato possibile contabilizzare il sollecito: %(exc)s"
 
 #: core/views/fw/mahnwesen.py:352
 msgid "Mahnlauf: keine neuen Mahnungen fällig — alles aktuell."
-msgstr "Processo di sollecito: nessun nuovo sollecito dovuto — tutto aggiornato."
+msgstr ""
+"Processo di sollecito: nessun nuovo sollecito dovuto — tutto aggiornato."
 
-#: core/views/fw/mietprozess.py:165
+#: core/views/fw/mietprozess.py:178
 msgid "Bitte einen gültigen Besichtigungstermin wählen."
 msgstr "Seleziona una data di visita valida."
 
-#: core/views/fw/mietprozess.py:226
+#: core/views/fw/mietprozess.py:239
 msgid "Diese Bewerbung wurde bereits zugesagt."
 msgstr "Questa candidatura è già stata accettata."
 
-#: core/views/fw/mietprozess.py:226
+#: core/views/fw/mietprozess.py:239
 msgid "Diese Bewerbung wurde bereits abgesagt."
 msgstr "Questa candidatura è già stata rifiutata."
 
-#: core/views/fw/mietprozess.py:334
+#: core/views/fw/mietprozess.py:347
 msgid "Keine Datei gewählt."
 msgstr "Nessun file selezionato."
 
-#: core/views/fw/mietprozess.py:353
+#: core/views/fw/mietprozess.py:366
 #, python-format
 msgid "Status auf „%(wert)s“ gesetzt."
 msgstr "Stato impostato su «%(wert)s»."
 
-#: core/views/fw/mietprozess.py:391
+#: core/views/fw/mietprozess.py:404
 msgid "Für diese Bewerbung existiert bereits ein Vertragsentwurf."
 msgstr "Per questa candidatura esiste già una bozza di contratto."
 
-#: core/views/fw/mietprozess.py:448
+#: core/views/fw/mietprozess.py:461
 #, python-format
 msgid ""
 "Mieter angelegt und Vertragsentwurf für %(bezeichnung)s erstellt — bitte "
@@ -15973,7 +16571,9 @@ msgstr ""
 #: core/views/fw/mietzins.py:253
 #, python-format
 msgid "Mietzinsanpassung erfasst — neu CHF %(neu_netto)s ab %(strftime)s."
-msgstr "Adeguamento della pigione registrato — nuova CHF %(neu_netto)s dal %(strftime)s."
+msgstr ""
+"Adeguamento della pigione registrato — nuova CHF %(neu_netto)s dal "
+"%(strftime)s."
 
 #: core/views/fw/mietzins.py:340
 msgid "Keine Verträge ausgewählt."
@@ -15981,7 +16581,8 @@ msgstr "Nessun contratto selezionato."
 
 #: core/views/fw/mietzins.py:431
 msgid "Keine Anpassung möglich (Basisdaten fehlen oder kein Potenzial)."
-msgstr "Nessun adeguamento possibile (dati di base mancanti o nessun potenziale)."
+msgstr ""
+"Nessun adeguamento possibile (dati di base mancanti o nessun potenziale)."
 
 #: core/views/fw/mwst.py:73
 msgid "Keine Verwaltung erfasst."
@@ -16426,13 +17027,17 @@ msgstr "L'insieme di regole necessita di una designazione."
 msgid ""
 "Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz "
 "je Kanton — bearbeite den bestehenden, statt einen zweiten anzulegen."
-msgstr "Per %(bereich)s esiste già l'insieme di regole «%(first)s». Vale un insieme per cantone — modifica quello esistente invece di crearne un secondo."
+msgstr ""
+"Per %(bereich)s esiste già l'insieme di regole «%(first)s». Vale un insieme "
+"per cantone — modifica quello esistente invece di crearne un secondo."
 
 #: core/views/fw/regelwerk.py:264
 msgid ""
 "Der Regelsatz gilt jetzt als juristisch geprüft. Regeln mit Verbindlichkeit "
 "«Sperre» verhindern ab sofort das Speichern."
-msgstr "L'insieme di regole è ora considerato verificato giuridicamente. Le regole con vincolatività «blocco» impediscono da subito il salvataggio."
+msgstr ""
+"L'insieme di regole è ora considerato verificato giuridicamente. Le regole "
+"con vincolatività «blocco» impediscono da subito il salvataggio."
 
 #: core/views/fw/regelwerk.py:268
 #, python-format
@@ -16444,7 +17049,9 @@ msgstr "Insieme di regole «%(satz)s» salvato."
 msgid ""
 "Regelsatz «%(name)s» gelöscht. Das Protokoll der bisherigen Anwendungen "
 "bleibt erhalten."
-msgstr "Insieme di regole «%(name)s» eliminato. Il registro delle applicazioni precedenti resta conservato."
+msgstr ""
+"Insieme di regole «%(name)s» eliminato. Il registro delle applicazioni "
+"precedenti resta conservato."
 
 #: core/views/fw/regelwerk.py:403
 msgid "Übersteuerung mit Begründung protokolliert."
@@ -16530,7 +17137,9 @@ msgstr "Fatturazione %(titel)s%(umfang)s: %(erstellt)s fattura/e creata/e."
 msgid ""
 "Sollstellung %(titel)s%(umfang)s: alles bereits gestellt — nichts Neues "
 "erzeugt."
-msgstr "Fatturazione %(titel)s%(umfang)s: tutto già fatturato — nulla di nuovo creato."
+msgstr ""
+"Fatturazione %(titel)s%(umfang)s: tutto già fatturato — nulla di nuovo "
+"creato."
 
 #: core/views/fw/vertragserstellung.py:210
 msgid "Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst."
@@ -16664,14 +17273,18 @@ msgstr "Casella «%(get_zweck_display)s» salvata. Verificate la connessione."
 #, python-format
 msgid ""
 "Verbindung zu %(server)s steht — Anmeldung als %(benutzer)s hat geklappt."
-msgstr "La connessione a %(server)s è attiva — l'accesso come %(benutzer)s è riuscito."
+msgstr ""
+"La connessione a %(server)s è attiva — l'accesso come %(benutzer)s è "
+"riuscito."
 
 #: core/views/postfach.py:209
 #, python-format
 msgid ""
 "Postfach «%(bezeichnung)s» gelöscht. Der Abruf für diesen Zweck ist damit "
 "abgeschaltet."
-msgstr "Casella «%(bezeichnung)s» eliminata. Il prelievo per questo scopo è quindi disattivato."
+msgstr ""
+"Casella «%(bezeichnung)s» eliminata. Il prelievo per questo scopo è quindi "
+"disattivato."
 
 #: core/views/zweifaktor.py:178
 #, python-format
