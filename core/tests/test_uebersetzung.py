@@ -78,6 +78,12 @@ UEBERSETZT = (
     'fw/bankabgleich.html',
     'fw/mahnwesen.html',
     'fw/zahllauf.html',
+    # Tranche «Rest-Oberfläche» (29.09.2026)
+    'fw/schlussabrechnung.html',
+    'fw/kuendigung_form.html',
+    'fw/untermiete.html',
+    'fw/maengelruege.html',
+    'fw/_modal_done.html',
     'fw/nebenkosten.html',
     'fw/mietzins.html',
     'fw/mwst.html',

@@ -1,6 +1,8 @@
 """Automatisierter Schadensfall-Workflow: Vorlagen-Texte + Platzhalter-Ersetzung
 für die Kommunikation rund um ein Ticket (Handwerker beauftragen, Melder informieren)."""
 
+from django.utils.translation import gettext_lazy
+
 from core.services.dokumentsprache import auf_deutsch
 
 # Standard-Vorlagen (greifen, wenn keine passende Vorlage in der DB existiert).
@@ -47,14 +49,14 @@ DEFAULT_VORLAGEN = {
 }
 
 TICKET_PLATZHALTER = [
-    ('{melder_name}', 'Name des Melders'),
-    ('{melder_tel}', 'Telefon des Melders'),
-    ('{objekt}', 'Objekt / Einheit'),
-    ('{liegenschaft}', 'Liegenschaft (Strasse, Ort)'),
-    ('{schaden}', 'Titel des Schadens'),
-    ('{ticket_id}', 'Ticket-Nummer'),
-    ('{handwerker}', 'Beauftragte Handwerkerfirma'),
-    ('{status}', 'Aktueller Status'),
+    ('{melder_name}', gettext_lazy('Name des Melders')),
+    ('{melder_tel}', gettext_lazy('Telefon des Melders')),
+    ('{objekt}', gettext_lazy('Objekt / Einheit')),
+    ('{liegenschaft}', gettext_lazy('Liegenschaft (Strasse, Ort)')),
+    ('{schaden}', gettext_lazy('Titel des Schadens')),
+    ('{ticket_id}', gettext_lazy('Ticket-Nummer')),
+    ('{handwerker}', gettext_lazy('Beauftragte Handwerkerfirma')),
+    ('{status}', gettext_lazy('Aktueller Status')),
 ]
 
 

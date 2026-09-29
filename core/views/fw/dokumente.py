@@ -14,6 +14,7 @@ from core.auth import rolle_erforderlich, TEAM_ROLLEN
 from portfolio.models import Einheit, Liegenschaft
 
 from ._basis import _global_filter
+from django.utils.translation import gettext
 
 
 # ============================================================
@@ -91,9 +92,10 @@ def fw_dokumente(request):
         e['icon'], e['icon_cls'] = _dok_icon(e['kat'])
     eintraege.sort(key=lambda e: e['datum'] or date.min, reverse=True)
 
-    kat_labels = {'vertrag': 'Verträge', 'protokoll': 'Protokolle', 'korrespondenz': 'Korrespondenz',
-                  'sonstiges': 'Sonstiges', 'allgemein': 'Allgemein'}
-    kat_chips = [('', 'Alle')] + [(k, kat_labels.get(k, k.capitalize())) for k in vorhanden]
+    kat_labels = {'vertrag': gettext('Verträge'), 'protokoll': gettext('Protokolle'),
+                  'korrespondenz': gettext('Korrespondenz'), 'sonstiges': gettext('Sonstiges'),
+                  'allgemein': gettext('Allgemein')}
+    kat_chips = [('', gettext('Alle'))] + [(k, kat_labels.get(k, k.capitalize())) for k in vorhanden]
 
     return render(request, 'fw/dokumente.html', {
         **basis, 'nav': 'dokumente', 'eintraege': eintraege,

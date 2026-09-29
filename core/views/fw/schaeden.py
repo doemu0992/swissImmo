@@ -17,7 +17,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -36,17 +36,17 @@ from core.services.dokumentsprache import auf_deutsch
 # ============================================================
 
 TICKET_PILL = {
-    'neu':                   ('Neu',                'fw-krit-flaeche fw-kritisch'),
-    'in_bearbeitung':        ('In Bearbeitung',     'fw-info-flaeche fw-info'),
-    'warte_auf_mieter':      ('Warte auf Mieter',   'fw-warn-flaeche fw-warnton'),
-    'warte_auf_handwerker':  ('Warte auf Handwerker','fw-warn-flaeche fw-warnton'),
-    'erledigt':              ('Erledigt',           'fw-gut-flaeche fw-gut'),
+    'neu':                   (gettext_lazy('Neu'),                'fw-krit-flaeche fw-kritisch'),
+    'in_bearbeitung':        (gettext_lazy('In Bearbeitung'),     'fw-info-flaeche fw-info'),
+    'warte_auf_mieter':      (gettext_lazy('Warte auf Mieter'),   'fw-warn-flaeche fw-warnton'),
+    'warte_auf_handwerker':  (gettext_lazy('Warte auf Handwerker'),'fw-warn-flaeche fw-warnton'),
+    'erledigt':              (gettext_lazy('Erledigt'),           'fw-gut-flaeche fw-gut'),
 }
 PRIO_PILL = {
-    'hoch':   ('Hoch',   'fw-krit-flaeche fw-kritisch'),
-    'mittel': ('Mittel', 'fw-warn-flaeche fw-warnton'),
-    'tief':   ('Tief',   'fw-flaeche2 fw-mutet'),
-    'niedrig':('Tief',   'fw-flaeche2 fw-mutet'),
+    'hoch':   (gettext_lazy('Hoch'),   'fw-krit-flaeche fw-kritisch'),
+    'mittel': (gettext_lazy('Mittel'), 'fw-warn-flaeche fw-warnton'),
+    'tief':   (gettext_lazy('Tief'),   'fw-flaeche2 fw-mutet'),
+    'niedrig':(gettext_lazy('Tief'),   'fw-flaeche2 fw-mutet'),
 }
 
 
@@ -123,10 +123,10 @@ def fw_schaeden(request):
         **basis, 'nav': 'schadensfaelle', 'rows': rows, 'kopf': kopf,
         'sicht': sicht, 'status_filter': status_filter, 'q': q,
         'gefiltert': len(rows) != len(alle),
-        'sicht_chips': [('offen', f'Offen ({kopf["offen"]})'),
-                        ('befund', f'Mit Befund ({kopf["mit_befund"]})'),
-                        ('wartet', f'Wartet auf Dritte ({kopf["wartet"]})'),
-                        ('erledigt', 'Erledigt'), ('', 'Alle')],
+        'sicht_chips': [('offen', gettext('Offen (%(n)s)') % {'n': kopf["offen"]}),
+                        ('befund', gettext('Mit Befund (%(n)s)') % {'n': kopf["mit_befund"]}),
+                        ('wartet', gettext('Wartet auf Dritte (%(n)s)') % {'n': kopf["wartet"]}),
+                        ('erledigt', gettext('Erledigt')), ('', gettext('Alle'))],
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
         'einheiten': Einheit.objects.select_related('liegenschaft')
                      .order_by('liegenschaft__strasse', 'bezeichnung'),
