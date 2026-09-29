@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 01:52+0200\n"
+"POT-Creation-Date: 2026-09-29 02:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -173,6 +173,7 @@ msgstr "Periodico"
 
 #: core/navigation.py:160 core/templates/fw/mietzins.html:4
 #: core/templates/fw/mietzins.html:10 core/templates/fw/objekt_detail.html:310
+#: core/templates/fw/vertrag_bearbeiten.html:113
 #: core/templates/fw/vertrag_detail.html:257
 msgid "Mietzins"
 msgstr "Pigione"
@@ -1145,6 +1146,7 @@ msgstr ""
 #: core/templates/fw/person_detail.html:471
 #: core/templates/fw/schaden_detail.html:41
 #: core/templates/fw/sollstellung.html:83 core/templates/fw/vertraege.html:69
+#: core/templates/fw/vertrag_bearbeiten.html:49
 #: core/templates/fw/vertrag_detail.html:90 core/templates/fw/zahllauf.html:65
 #: core/templates/fw/zahllauf.html:148
 msgid "Objekt"
@@ -1487,8 +1489,8 @@ msgstr "Tipo"
 msgid "Zimmer / m²"
 msgstr "Locali / m²"
 
-#: core/templates/core/portal.html:307 core/templates/fw/bankabgleich.html:347
-#: core/templates/fw/debitoren.html:192
+#: core/templates/core/portal.html:307 core/templates/fw/abnahme_neu.html:96
+#: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
 #: core/templates/fw/debitoren_aging.html:50
 #: core/templates/fw/liegenschaft_detail.html:742
 #: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
@@ -1496,7 +1498,7 @@ msgstr "Locali / m²"
 #: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
 #: core/templates/fw/nebenkosten_detail.html:113
 #: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
-#: core/views/fw/person.py:898
+#: core/templates/fw/vertrag_bearbeiten.html:41 core/views/fw/person.py:898
 msgid "Mieter"
 msgstr "Inquilino"
 
@@ -1772,6 +1774,7 @@ msgid "Speichern"
 msgstr "Salva"
 
 #: core/templates/core/postfach_form.html:142
+#: core/templates/fw/abnahme_neu.html:84
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
 #: core/templates/fw/kreditoren.html:307
@@ -1787,6 +1790,7 @@ msgstr "Salva"
 #: core/templates/fw/objekt_form.html:137
 #: core/templates/fw/person_form.html:316
 #: core/templates/fw/regelsatz_form.html:105
+#: core/templates/fw/vertrag_bearbeiten.html:181
 #: core/templates/fw/vorlage_form.html:39
 #: core/templates/fw/weiterverrechnung.html:113
 msgid "Abbrechen"
@@ -1858,6 +1862,7 @@ msgstr "Non configurato — per questo scopo non vengono prelevate e-mail."
 #: core/templates/fw/objekt_form.html:12
 #: core/templates/fw/person_detail.html:53
 #: core/templates/fw/person_form.html:11 core/templates/fw/regelwerk.html:56
+#: core/templates/fw/vertrag_bearbeiten.html:12
 #: core/templates/fw/vertrag_detail.html:126 core/templates/fw/vorlagen.html:37
 msgid "Bearbeiten"
 msgstr "Modifica"
@@ -2228,7 +2233,7 @@ msgstr "senza data — tempo medio non calcolabile"
 
 #: core/templates/fw/_arbeitsvorrat_abschnitte.html:123
 #: core/templates/fw/abwesenheiten.html:3
-#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:581
+#: core/templates/fw/abwesenheiten.html:8 core/tests/test_uebersetzung.py:583
 msgid "Abwesenheiten"
 msgstr "Assenze"
 
@@ -2357,6 +2362,8 @@ msgid "Abnahmeprotokoll"
 msgstr "Verbale di riconsegna"
 
 #: core/templates/fw/abnahme_detail.html:14
+#: core/templates/fw/abnahme_neu.html:3 core/templates/fw/abnahme_neu.html:9
+#: core/templates/fw/abnahme_neu.html:15
 #: core/templates/fw/vertrag_detail.html:137 faelle/arbeitsvorrat.py:516
 msgid "Wohnungsabnahme"
 msgstr "Ricezione dell'alloggio"
@@ -2390,10 +2397,12 @@ msgid "Protokoll löschen"
 msgstr "Eliminare il verbale"
 
 #: core/templates/fw/abnahme_detail.html:47
+#: core/templates/fw/abnahme_neu.html:33
 msgid "Abnahme durch"
 msgstr "Riconsegna effettuata da"
 
 #: core/templates/fw/abnahme_detail.html:48
+#: core/templates/fw/abnahme_neu.html:42
 msgid "Mieter anwesend"
 msgstr "Inquilino presente"
 
@@ -2406,10 +2415,12 @@ msgid "Nein"
 msgstr "No"
 
 #: core/templates/fw/abnahme_detail.html:49
+#: core/templates/fw/abnahme_neu.html:35
 msgid "Allgemeinzustand"
 msgstr "Stato generale"
 
 #: core/templates/fw/abnahme_detail.html:50
+#: core/templates/fw/abnahme_neu.html:40
 msgid "Schlüssel zurück"
 msgstr "Chiavi restituite"
 
@@ -2438,6 +2449,7 @@ msgid "Mängel"
 msgstr "Difetti"
 
 #: core/templates/fw/abnahme_detail.html:69
+#: core/templates/fw/abnahme_neu.html:59
 msgid "Mangel"
 msgstr "Difetto"
 
@@ -2456,6 +2468,7 @@ msgid "Mieteranteil"
 msgstr "Quota dell'inquilino"
 
 #: core/templates/fw/abnahme_detail.html:73
+#: core/templates/fw/abnahme_neu.html:99
 #: core/templates/fw/objekt_detail.html:621
 #: core/templates/fw/objekt_detail.html:657
 #: core/templates/fw/objekt_detail.html:707
@@ -2478,8 +2491,147 @@ msgid "Keine Mängel festgestellt."
 msgstr "Nessun difetto constatato."
 
 #: core/templates/fw/abnahme_detail.html:96
+#: core/templates/fw/abnahme_neu.html:71
 msgid "Bemerkungen"
 msgstr "Osservazioni"
+
+#: core/templates/fw/abnahme_neu.html:26 core/templates/fw/kautionen.html:27
+#: core/templates/fw/liegenschaft_detail.html:268
+#: core/templates/fw/liegenschaft_detail.html:641
+#: core/templates/fw/liegenschaft_detail.html:662
+#: core/templates/fw/liegenschaft_detail.html:685
+#: core/templates/fw/logbuch.html:59 core/templates/fw/objekt_detail.html:49
+#: core/templates/fw/person_detail.html:219
+#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/person_form.html:231 core/templates/fw/termine.html:25
+#: core/templates/fw/vertrag_detail.html:271
+msgid "Art"
+msgstr "Tipo"
+
+#: core/templates/fw/abnahme_neu.html:28
+msgid "Auszug / Rücknahme"
+msgstr "Uscita / ripresa"
+
+#: core/templates/fw/abnahme_neu.html:29
+msgid "Einzug / Übergabe"
+msgstr "Entrata / consegna"
+
+#: core/templates/fw/abnahme_neu.html:31 core/templates/fw/anlagen.html:59
+#: core/templates/fw/buchhaltung.html:41 core/templates/fw/buchhaltung.html:367
+#: core/templates/fw/dokumente.html:71
+#: core/templates/fw/eigentuemer_kontokorrent.html:161
+#: core/templates/fw/kontoblatt.html:68
+#: core/templates/fw/lieferantenkonto.html:70
+#: core/templates/fw/liegenschaft_detail.html:442
+#: core/templates/fw/mahnwesen.html:145 core/templates/fw/mieterkonto.html:86
+#: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/vertrag_detail.html:463
+#: core/templates/fw/vertrag_detail.html:618
+msgid "Datum"
+msgstr "Data"
+
+#: core/templates/fw/abnahme_neu.html:37
+msgid "Neuwertig"
+msgstr "Come nuovo"
+
+#: core/templates/fw/abnahme_neu.html:37
+msgid "Gut"
+msgstr "Buono"
+
+#: core/templates/fw/abnahme_neu.html:38
+msgid "Gebraucht"
+msgstr "Usato"
+
+#: core/templates/fw/abnahme_neu.html:38
+msgid "Renovationsbedürftig"
+msgstr "Da rinnovare"
+
+#: core/templates/fw/abnahme_neu.html:47
+msgid "Zählerstände"
+msgstr "Letture dei contatori"
+
+#: core/templates/fw/abnahme_neu.html:49
+msgid "Strom kWh"
+msgstr "Elettricità kWh"
+
+#: core/templates/fw/abnahme_neu.html:50
+msgid "Wasser m³"
+msgstr "Acqua m³"
+
+#: core/templates/fw/abnahme_neu.html:51
+msgid "Gas/Wärme"
+msgstr "Gas/calore"
+
+#: core/templates/fw/abnahme_neu.html:58
+msgid "Mängel / Zustand je Raum"
+msgstr "Difetti / stato per locale"
+
+#: core/templates/fw/abnahme_neu.html:62
+msgid ""
+"Verursacher „Mieter (Schaden)\" fliesst in die Schlussabrechnung. Ist ein "
+"Raumbuch-Element verknüpft, wird der <span class=\"font-semibold\">Zeitwert</"
+"span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt\")."
+msgstr ""
+"Il responsabile «Inquilino (danno)» confluisce nel conteggio finale. Se è "
+"collegato un elemento dell'inventario dei locali, il <span class=\"font-"
+"semibold\">valore attuale</span> viene calcolato secondo la tabella "
+"paritetica della durata di vita (deduzione «nuovo per vecchio»)."
+
+#: core/templates/fw/abnahme_neu.html:69
+msgid "Neue Adresse des Mieters"
+msgstr "Nuovo indirizzo dell'inquilino"
+
+#: core/templates/fw/abnahme_neu.html:74
+msgid "Unterschrift Mieter (Name)"
+msgstr "Firma dell'inquilino (nome)"
+
+#: core/templates/fw/abnahme_neu.html:76
+msgid "Unterschrift Verwaltung (Name)"
+msgstr "Firma dell’amministrazione (nome)"
+
+#: core/templates/fw/abnahme_neu.html:79
+msgid "Protokoll abgeschlossen"
+msgstr "Verbale chiuso"
+
+#: core/templates/fw/abnahme_neu.html:83
+msgid "Protokoll speichern"
+msgstr "Salvare il verbale"
+
+#: core/templates/fw/abnahme_neu.html:94
+msgid "Mangel beschreiben"
+msgstr "Descrivere il difetto"
+
+#: core/templates/fw/abnahme_neu.html:96
+msgid "Abnutzung"
+msgstr "Usura normale"
+
+#: core/templates/fw/abnahme_neu.html:96
+msgid "Vermieter"
+msgstr "Locatore"
+
+#: core/templates/fw/abnahme_neu.html:98
+msgid "Reparatur-/Ersatzkosten"
+msgstr "Costi di riparazione/sostituzione"
+
+#: core/templates/fw/abnahme_neu.html:100
+msgid "Diesen Mangel entfernen"
+msgstr "Rimuovere questo difetto"
+
+#: core/templates/fw/abnahme_neu.html:103
+msgid "Raumbuch-Element"
+msgstr "Elemento dell'inventario dei locali"
+
+#: core/templates/fw/abnahme_neu.html:105
+msgid "kein Element (voller Betrag)"
+msgstr "nessun elemento (importo intero)"
+
+#: core/templates/fw/abnahme_neu.html:108
+msgid "Neuwert CHF"
+msgstr "Valore a nuovo CHF"
+
+#: core/templates/fw/abnahme_neu.html:108
+msgid "Neuwert (optional, sonst vom Element)"
+msgstr "Valore a nuovo (facoltativo, altrimenti quello dell'elemento)"
 
 #: core/templates/fw/abonnement.html:3
 msgid "Abonnement · swissImmo"
@@ -2960,19 +3112,6 @@ msgstr "p. es. riscaldamento"
 #: core/templates/fw/anlagen.html:57
 msgid "Wert CHF"
 msgstr "Valore CHF"
-
-#: core/templates/fw/anlagen.html:59 core/templates/fw/buchhaltung.html:41
-#: core/templates/fw/buchhaltung.html:367 core/templates/fw/dokumente.html:71
-#: core/templates/fw/eigentuemer_kontokorrent.html:161
-#: core/templates/fw/kontoblatt.html:68
-#: core/templates/fw/lieferantenkonto.html:70
-#: core/templates/fw/liegenschaft_detail.html:442
-#: core/templates/fw/mahnwesen.html:145 core/templates/fw/mieterkonto.html:86
-#: core/templates/fw/nebenkosten_detail.html:154
-#: core/templates/fw/vertrag_detail.html:463
-#: core/templates/fw/vertrag_detail.html:618
-msgid "Datum"
-msgstr "Data"
 
 #: core/templates/fw/anlagen.html:61
 msgid "Bezahlt via"
@@ -6375,19 +6514,6 @@ msgid "Mieter / Objekt"
 msgstr "Inquilino / oggetto"
 
 #: core/templates/fw/kautionen.html:27
-#: core/templates/fw/liegenschaft_detail.html:268
-#: core/templates/fw/liegenschaft_detail.html:641
-#: core/templates/fw/liegenschaft_detail.html:662
-#: core/templates/fw/liegenschaft_detail.html:685
-#: core/templates/fw/logbuch.html:59 core/templates/fw/objekt_detail.html:49
-#: core/templates/fw/person_detail.html:219
-#: core/templates/fw/person_detail.html:276
-#: core/templates/fw/person_form.html:231 core/templates/fw/termine.html:25
-#: core/templates/fw/vertrag_detail.html:271
-msgid "Art"
-msgstr "Tipo"
-
-#: core/templates/fw/kautionen.html:27
 msgid "Sperrkonto / Police"
 msgstr "Conto bloccato / polizza"
 
@@ -6616,6 +6742,7 @@ msgid "Typ *"
 msgstr "Tipo *"
 
 #: core/templates/fw/kontenplan.html:61
+#: core/templates/fw/vertrag_bearbeiten.html:138
 #: core/templates/fw/weiterverrechnung.html:31
 msgid "Verteilschlüssel"
 msgstr "Chiave di ripartizione"
@@ -7198,6 +7325,7 @@ msgid "Noch keine Kategorien — «Standardwerte ergänzen» klicken."
 msgstr "Ancora nessuna categoria — cliccare su «Completare i valori standard»."
 
 #: core/templates/fw/lebensdauer.html:71
+#: core/templates/fw/vertrag_bearbeiten.html:180
 msgid "Änderungen speichern"
 msgstr "Salvare le modifiche"
 
@@ -10079,6 +10207,7 @@ msgstr "Riferimento (CHF)"
 
 #: core/templates/fw/objekt_detail.html:313
 #: core/templates/fw/objekt_form.html:91
+#: core/templates/fw/vertrag_bearbeiten.html:120
 msgid "Nebenkosten (CHF)"
 msgstr "Spese accessorie (CHF)"
 
@@ -12475,8 +12604,8 @@ msgstr ""
 msgid "Keine Treffer für „%(q)s\"."
 msgstr "Nessun risultato per «%(q)s»."
 
-#: core/templates/fw/suche.html:69 core/templates/fw/vertrag_detail.html:11
-#: core/views/fw/_basis.py:280
+#: core/templates/fw/suche.html:69 core/templates/fw/vertrag_bearbeiten.html:8
+#: core/templates/fw/vertrag_detail.html:11 core/views/fw/_basis.py:280
 msgid "Verträge"
 msgstr "Contratti"
 
@@ -12620,6 +12749,144 @@ msgstr "Registrare la disdetta"
 msgid "Kündigen"
 msgstr "Disdire"
 
+#: core/templates/fw/vertrag_bearbeiten.html:5
+#: core/templates/fw/vertrag_bearbeiten.html:17
+msgid "Vertrag bearbeiten"
+msgstr "Modificare il contratto"
+
+#: core/templates/fw/vertrag_bearbeiten.html:30
+#: core/templates/fw/vertrag_detail.html:126
+#: core/templates/fw/vertrag_detail.html:292 core/views/fw/_basis.py:336
+#: core/views/fw/detailseiten.py:2271
+msgid "Entwurf"
+msgstr "Bozza"
+
+#: core/templates/fw/vertrag_bearbeiten.html:30
+#, python-format
+msgid ""
+"alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a "
+"href=\"/neu/objekte/%(id)s/?tab=mietzins\" class=\"underline font-"
+"semibold\">Objekt → Mietzins</a> gepflegt."
+msgstr "tutti i campi sono modificabili. Il calendario della pigione (mesi gratuiti) si gestisce in <a href=\"/neu/objekte/%(id)s/?tab=mietzins\" class=\"underline font-semibold\">Oggetto → Pigione</a>."
+
+#: core/templates/fw/vertrag_bearbeiten.html:39
+msgid "Parteien & Objekt"
+msgstr "Parti e oggetto"
+
+#: core/templates/fw/vertrag_bearbeiten.html:57
+msgid "Zweiter Mieter / Ehegatte (Name)"
+msgstr "Secondo inquilino / coniuge (nome)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:59
+#: core/templates/fw/vertrag_detail.html:213
+msgid "Anzahl Personen"
+msgstr "Numero di persone"
+
+#: core/templates/fw/vertrag_bearbeiten.html:70
+msgid "Mietdauer & Kündigung"
+msgstr "Durata e disdetta"
+
+#: core/templates/fw/vertrag_bearbeiten.html:72
+msgid "Mietbeginn"
+msgstr "Inizio della locazione"
+
+#: core/templates/fw/vertrag_bearbeiten.html:78
+msgid "Mietende (leer = unbefristet)"
+msgstr "Fine della locazione (vuoto = durata indeterminata)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:80
+msgid "Kündigungsfrist (Monate)"
+msgstr "Termine di disdetta (mesi)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:82
+#: core/templates/fw/vertrag_detail.html:298
+msgid "Erstmals kündbar auf"
+msgstr "Disdicibile per la prima volta al"
+
+#: core/templates/fw/vertrag_bearbeiten.html:97
+#, python-format
+msgid "Index-Weitergabe (%%)"
+msgstr "Trasferimento dell'indice (%%)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:101
+msgid ""
+"Anteil der Teuerung, der weitergegeben wird. Änderung wird protokolliert."
+msgstr "Quota del rincaro che viene trasferita. La modifica viene registrata."
+
+#: core/templates/fw/vertrag_bearbeiten.html:102
+msgid "Index-Mindestintervall (Monate)"
+msgstr "Intervallo minimo d'indicizzazione (mesi)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:106
+#: core/templates/fw/vertrag_detail.html:300
+msgid "Kündigungstermine"
+msgstr "Termini di disdetta"
+
+#: core/templates/fw/vertrag_bearbeiten.html:113
+msgid "gesperrt (amtliches Formular für Änderungen)"
+msgstr "bloccato (modulo ufficiale per le modifiche)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:115
+msgid "Nettomietzins (CHF)"
+msgstr "Pigione netta (CHF)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:125
+#: core/templates/fw/vertrag_detail.html:262
+msgid "Zahlungsrhythmus"
+msgstr "Ritmo di pagamento"
+
+#: core/templates/fw/vertrag_bearbeiten.html:132
+msgid "NK-Abrechnungsart"
+msgstr "Modalità di conteggio delle SA"
+
+#: core/templates/fw/vertrag_bearbeiten.html:153
+msgid "Kaution (CHF)"
+msgstr "Deposito cauzionale (CHF)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:155
+msgid "Kautionskonto (IBAN)"
+msgstr "Conto di deposito (IBAN)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:159
+msgid "Gratismonate/Rabatt und datierte Anpassungen"
+msgstr "Mesi gratuiti/sconto e adeguamenti datati"
+
+#: core/templates/fw/vertrag_bearbeiten.html:159
+msgid "Objekt → Mietzins"
+msgstr "Oggetto → Pigione"
+
+#: core/templates/fw/vertrag_bearbeiten.html:164
+msgid "Nutzung & Vereinbarungen"
+msgstr "Uso e accordi"
+
+#: core/templates/fw/vertrag_bearbeiten.html:166
+msgid "Zur Mitbenützung"
+msgstr "In uso comune"
+
+#: core/templates/fw/vertrag_bearbeiten.html:167
+msgid "z. B. Waschküche, Veloraum"
+msgstr "p. es. lavanderia, locale biciclette"
+
+#: core/templates/fw/vertrag_bearbeiten.html:168
+msgid "Nebenräume"
+msgstr "Locali accessori"
+
+#: core/templates/fw/vertrag_bearbeiten.html:169
+msgid "z. B. Kellerabteil Nr. 3"
+msgstr "p. es. scompartimento cantina n. 3"
+
+#: core/templates/fw/vertrag_bearbeiten.html:171
+msgid "Zweckbestimmung (v.a. Gewerbe)"
+msgstr "Destinazione (soprattutto commerciale)"
+
+#: core/templates/fw/vertrag_bearbeiten.html:173
+msgid "Besondere Bestimmungen"
+msgstr "Disposizioni particolari"
+
+#: core/templates/fw/vertrag_bearbeiten.html:175
+msgid "Weitere Vorbehalte"
+msgstr "Altre riserve"
+
 #: core/templates/fw/vertrag_detail.html:6
 #, python-format
 msgid "Vertrag %(name)s"
@@ -12636,12 +12903,6 @@ msgstr "Firmato"
 #: core/templates/fw/vertrag_detail.html:121
 msgid "Zur Unterschrift"
 msgstr "Per la firma"
-
-#: core/templates/fw/vertrag_detail.html:126
-#: core/templates/fw/vertrag_detail.html:292 core/views/fw/_basis.py:336
-#: core/views/fw/detailseiten.py:2271
-msgid "Entwurf"
-msgstr "Bozza"
 
 #: core/templates/fw/vertrag_detail.html:139
 msgid "Mängelrüge"
@@ -12753,10 +13014,6 @@ msgstr "nessun mandato registrato"
 msgid "vertreten durch die Verwaltung"
 msgstr "rappresentato dall'amministrazione"
 
-#: core/templates/fw/vertrag_detail.html:213
-msgid "Anzahl Personen"
-msgstr "Numero di persone"
-
 #: core/templates/fw/vertrag_detail.html:214
 msgid "Familienwohnung"
 msgstr "Abitazione familiare"
@@ -12800,10 +13057,6 @@ msgstr "Pigione netta"
 #: core/templates/fw/vertrag_detail.html:261
 msgid "Bruttomietzins"
 msgstr "Pigione lorda"
-
-#: core/templates/fw/vertrag_detail.html:262
-msgid "Zahlungsrhythmus"
-msgstr "Ritmo di pagamento"
 
 #: core/templates/fw/vertrag_detail.html:263
 msgid "Referenzzins bei Festsetzung"
@@ -12860,14 +13113,6 @@ msgstr "Termine di disdetta"
 #, python-format
 msgid "%(n)s Monate"
 msgstr "%(n)s mesi"
-
-#: core/templates/fw/vertrag_detail.html:298
-msgid "Erstmals kündbar auf"
-msgstr "Disdicibile per la prima volta al"
-
-#: core/templates/fw/vertrag_detail.html:300
-msgid "Kündigungstermine"
-msgstr "Termini di disdetta"
 
 #: core/templates/fw/vertrag_detail.html:301
 msgid "Erfasste Kündigungen"
@@ -14785,21 +15030,3 @@ msgstr "Polizza attiva"
 #: rentals/models.py:553
 msgid "Police aufgelöst"
 msgstr "Polizza sciolta"
-
-#, fuzzy
-#~| msgid "Diese Adress-Zeile entfernen?"
-#~ msgid "Diese Zeile stellt den"
-#~ msgstr "Rimuovere questa riga d'indirizzo?"
-
-#, fuzzy
-#~| msgid "Vollständiges Logbuch"
-#~ msgid "vollständig auf 0.00"
-#~ msgstr "Giornale completo"
-
-#, fuzzy
-#~| msgid "Nebenkosten"
-#~ msgid "die Nebenkosten"
-#~ msgstr "Spese accessorie"
-
-#~ msgid "meldet sich nach 14 Tagen"
-#~ msgstr "si segnala dopo 14 giorni"
