@@ -3,6 +3,7 @@ import threading
 import os
 from django.core.mail import EmailMessage
 from django.conf import settings
+from django.utils import dateformat, translation
 
 logger = logging.getLogger(__name__)
 
@@ -294,7 +295,10 @@ def send_payment_reminder(vertrag, monat_datum, offener_betrag):
     if not mieter or not mieter.email:
         return False
 
-    monat_str = monat_datum.strftime('%B %Y')
+    # Monatsnamen nicht über strftime (Server-Locale, oft Englisch).
+    # Bis Dokumente der Empfängersprache folgen (D11), bleibt es Deutsch.
+    with translation.override('de'):
+        monat_str = dateformat.format(monat_datum, 'F Y')
     subject = f"Zahlungserinnerung: Miete {monat_str} - {vertrag.einheit.bezeichnung}"
 
     html_msg = f"""

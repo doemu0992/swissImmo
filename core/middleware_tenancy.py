@@ -16,6 +16,8 @@ ist Absicht (siehe `crm.Mitgliedschaft`). Ihre Organisation ergibt sich aus
 dem Datensatz, an dem sie hängen: `Mieter.vertraege…liegenschaft.organisation`
 bzw. `Eigentuemer` → Liegenschaften. Solange Etappe 5 die Bezüge nicht
 nachgerüstet hat, wird der Kontext hier über die Liegenschaft aufgelöst.
+Fehlt sie (Eigentümer ohne Liegenschaft, Mieter ohne Vertrag), gilt die
+Organisation, die der Datensatz selbst trägt.
 
 **Mehrere Mitgliedschaften.** Heute hat niemand mehr als eine; sobald es
 vorkommt, braucht es eine Auswahl in der Oberfläche und einen Wert in der
@@ -77,6 +79,15 @@ def _organisation_fuer(benutzer, session=None):
                    .order_by('-id').first())
         if vertrag is not None and vertrag.einheit_id:
             return vertrag.einheit.liegenschaft.organisation
+
+    # Rückfall für Portal-Konten ohne Liegenschaft bzw. ohne Vertrag: Der
+    # Datensatz selbst trägt die Organisation (Pflichtfeld). Ohne diesen
+    # Rückfall blieb der Kontext leer und das Portal warf eine 500 statt
+    # «noch nichts zugeordnet» zu zeigen.
+    for name in ('eigentuemer_profil', 'mieter_profil'):
+        profil = getattr(benutzer, name, None)
+        if profil is not None and profil.organisation_id:
+            return profil.organisation
     return None
 
 

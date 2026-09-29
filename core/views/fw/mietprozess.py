@@ -105,6 +105,19 @@ def fw_bewerber_vergleich(request, einheit_id):
     })
 
 
+def _termin_text(termin):
+    """«Dienstag, 01.10.2026 um 14:00 Uhr» für die Einladung.
+
+    Nicht `strftime('%A')`: das richtet sich nach der Server-Locale und gab
+    «Tuesday» in einer deutschen E-Mail. Bis Dokumente der Sprache des
+    Empfängers folgen (D11), bleibt die Einladung Deutsch.
+    """
+    from django.utils import dateformat, translation
+    lokal = timezone.localtime(termin)
+    with translation.override('de'):
+        return f"{dateformat.format(lokal, 'l, d.m.Y')} um {dateformat.format(lokal, 'H:i')} Uhr"
+
+
 def _bewerber_mail(b, entscheid):
     """Baut (betreff, body) für Zusage/Absage — aus Vorlage (falls vorhanden) mit
     Platzhaltern, sonst Standardtext."""
@@ -175,7 +188,7 @@ def fw_bewerber_besichtigung(request, pk):
         body = (f"Guten Tag {b.vorname} {b.nachname}\n\n"
                 f"Gerne laden wir Sie zur Besichtigung des Objekts "
                 f"{lg.strasse}, {lg.plz} {lg.ort} ({b.einheit.bezeichnung}) ein.\n\n"
-                f"Termin: {timezone.localtime(termin).strftime('%A, %d.%m.%Y um %H:%M Uhr')}\n"
+                f"Termin: {_termin_text(termin)}\n"
                 f"Treffpunkt: Hauseingang {lg.strasse}\n\n"
                 f"Bitte bestätigen Sie uns den Termin kurz per E-Mail. Falls er Ihnen "
                 f"nicht passt, melden Sie sich für eine Alternative.\n\n"
