@@ -35,14 +35,19 @@ def fw_liegenschaft_form(request, pk=None):
     lg = get_object_or_404(Liegenschaft, id=pk) if pk else None
     basis = _global_filter(request)
 
+    from portfolio.forms import LiegenschaftForm
+    # Frische Instanz fuer das Formular: `is_valid()` schreibt die Eingaben in
+    # die Instanz. Kopf und Brotkrume zeigen weiter `lg`, also den Stand vor
+    # dem Speichern — auch wenn das Formular mit Fehlern zurueckkommt.
+    form = LiegenschaftForm(instance=lg)
+    feld_fehler = {}
+    betreut_wert = str(lg.betreut_von_id or '') if lg else ''
+    eigentuemer_wert = str(lg.eigentuemer_id or '') if lg else ''
+
     if request.method == 'POST':
         P = request.POST
         alt_snap = snapshot_model(Liegenschaft.objects.get(pk=pk)) if pk else {}
-        obj = lg or Liegenschaft()
-        obj.strasse = P.get('strasse', '').strip()
-        obj.plz = P.get('plz', '').strip()
-        obj.ort = P.get('ort', '').strip()
-        obj.kanton = P.get('kanton', '').strip()
+        form = LiegenschaftForm(P, instance=Liegenschaft.objects.get(pk=pk) if pk else Liegenschaft())
         # DIE BETREUUNG (E2.70). `'x' in P` statt `P.get()`: Ein Formular, das
         # das Feld NICHT mitschickt, darf die Zuteilung nicht loeschen —
         # derselbe Fall wie beim Stundensatz (E2.47).
@@ -58,96 +63,64 @@ def fw_liegenschaft_form(request, pk=None):
         # prueft ueber `Mitgliedschaft`, das Formular hier tat es nicht. Eine
         # Grenze, die an drei Stellen einzeln gezogen wird, ist an zweien
         # gezogen — deshalb jetzt beide ueber `team_der_organisation`.
-        if 'betreut_von' in P:
-            wert = (P.get('betreut_von') or '').strip()
-            person = None
-            if wert.isdigit():
-                person = team_der_organisation(
-                    getattr(request, 'organisation', None)).filter(pk=wert).first()
+        #
+        # Seit Audit Etappe 2 ein Feldfehler statt Umleitung: Die Umleitung
+        # warf alle uebrigen Eingaben weg.
+        betreut_setzen, person = 'betreut_von' in P, None
+        if betreut_setzen:
+            betreut_wert = (P.get('betreut_von') or '').strip()
+            if betreut_wert:
+                if betreut_wert.isdigit():
+                    person = team_der_organisation(
+                        getattr(request, 'organisation', None)).filter(pk=betreut_wert).first()
                 if person is None:
-                    messages.error(
-                        request, gettext('Diese Person gehört nicht zu Ihrer Verwaltung.'))
-                    return redirect(request.path)
-            obj.betreut_von = person
-        obj.egid = P.get('egid', '').strip()
-        obj.kataster_nummer = P.get('kataster_nummer', '').strip()
+                    feld_fehler['betreut_von'] = gettext('Diese Person gehört nicht zu Ihrer Verwaltung.')
+        # Der Eigentuemer kommt ueber den `TenantManager`: Eine fremde ID
+        # findet nichts. Bisher wurde daraus STILL «kein Eigentuemer».
+        eigentuemer_wert = (P.get('eigentuemer_id') or '').strip()
+        eigentuemer = None
+        if eigentuemer_wert:
+            if eigentuemer_wert.isdigit():
+                eigentuemer = Eigentuemer.objects.filter(id=eigentuemer_wert).first()
+            if eigentuemer is None:
+                feld_fehler['eigentuemer_id'] = gettext('Dieser Eigentümer ist nicht (mehr) erfasst.')
 
-        def intval(key):
-            v = P.get(key, '').strip()
-            try:
-                return int(v) if v else None
-            except ValueError:
-                return None
+        if form.is_valid() and not feld_fehler:
+            obj = form.save(commit=False)
+            if betreut_setzen:
+                obj.betreut_von = person
+            obj.eigentuemer = eigentuemer
+            obj.save()
+            _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
+            log_aktion(request, "Liegenschaft bearbeitet" if pk else "Liegenschaft erstellt",
+                       f"{obj.strasse}, {obj.ort}", _diff, ziel=obj)
+            messages.success(request, '✅ ' + gettext('Liegenschaft %(strasse)s gespeichert.') % {'strasse': obj.strasse})
 
-        def decval(key):
-            v = _num(P.get(key))
-            try:
-                return Decimal(v) if v else None
-            except Exception:
-                return None
-        obj.baujahr = intval('baujahr')
-        md_id = P.get('eigentuemer_id') or ''
-        obj.eigentuemer = Eigentuemer.objects.filter(id=md_id).first() if md_id else None
-        obj.versicherungswert = decval('versicherungswert')
-        obj.grundstuecksflaeche_m2 = decval('grundstuecksflaeche_m2')
-        obj.gebaeudevolumen_m3 = decval('gebaeudevolumen_m3')
-        # Bewertung (Rendite) + Energie/GEAK
-        obj.verkehrswert = decval('verkehrswert')
-        obj.anlagekosten = decval('anlagekosten')
-        obj.kaufpreis = decval('kaufpreis')
-        obj.energiebezugsflaeche_m2 = decval('energiebezugsflaeche_m2')
-        _heiz = P.get('heizsystem', '').strip()
-        obj.heizsystem = _heiz if _heiz in dict(Liegenschaft.HEIZ_CHOICES) else ''
-        _ww = P.get('warmwasser', '').strip()
-        obj.warmwasser = _ww if _ww in dict(Liegenschaft.WARMWASSER_CHOICES) else ''
-        _gk = P.get('geak_klasse', '').strip().upper()
-        obj.geak_klasse = _gk if _gk in dict(Liegenschaft.GEAK_KLASSEN) else ''
-        _gkg = P.get('geak_klasse_gesamt', '').strip().upper()
-        obj.geak_klasse_gesamt = _gkg if _gkg in dict(Liegenschaft.GEAK_KLASSEN) else ''
-        obj.energietraeger = P.get('energietraeger', '').strip()
-        try:
-            _gd = P.get('geak_datum') or ''
-            obj.geak_datum = date.fromisoformat(_gd) if _gd else None
-        except ValueError:
-            obj.geak_datum = None
-        obj.hauswart_name = P.get('hauswart_name', '').strip()
-        obj.hauswart_telefon = P.get('hauswart_telefon', '').strip()
-        obj.sanitaer_name = P.get('sanitaer_name', '').strip()
-        obj.sanitaer_telefon = P.get('sanitaer_telefon', '').strip()
-        obj.elektriker_name = P.get('elektriker_name', '').strip()
-        obj.elektriker_telefon = P.get('elektriker_telefon', '').strip()
-        obj.bank_name = P.get('bank_name', '').strip()
-        obj.iban = P.get('iban', '').strip()
-        obj.hkvo_aktiv = P.get('hkvo_aktiv') == 'on'
-        try:
-            obj.hkvo_grundkosten_prozent = int(P.get('hkvo_grundkosten_prozent') or 40)
-        except ValueError:
-            obj.hkvo_grundkosten_prozent = 40
-        obj.save()
-        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
-        log_aktion(request, "Liegenschaft bearbeitet" if pk else "Liegenschaft erstellt",
-                   f"{obj.strasse}, {obj.ort}", _diff, ziel=obj)
-        messages.success(request, '✅ ' + gettext('Liegenschaft %(strasse)s gespeichert.') % {'strasse': obj.strasse})
+            # Automatischer GWR/EGID-Import (nur wenn gewünscht) — ermittelt die EGID
+            # aus der Adresse und importiert die Objekte (Wohnungen) vom Bundesamt.
+            if P.get('gwr_import', 'on') == 'on' and (not obj.egid or obj.einheiten.count() == 0):
+                try:
+                    from portfolio.services import sync_liegenschaft_with_gwr
+                    res = sync_liegenschaft_with_gwr(obj)
+                    if res.get('egid_found'):
+                        messages.success(request, '📍 ' + gettext('EGID %(wert)s automatisch ermittelt.') % {'wert': res['egid_found']})
+                    if res.get('units_created'):
+                        messages.success(request, '🏠 ' + gettext('%(wert)s Objekt(e) automatisch aus dem Gebäude- und Wohnungsregister importiert.') % {'wert': res['units_created']})
+                    if not obj.egid and not res.get('egid_found'):
+                        messages.warning(request, '⚠️ ' + gettext('EGID konnte nicht automatisch ermittelt werden — bitte Adresse prüfen oder EGID manuell erfassen.'))
+                    elif res.get('error'):
+                        messages.warning(request, '⚠️ ' + gettext('GWR-Import teilweise fehlgeschlagen: %(wert)s') % {'wert': res['error']})
+                except Exception as e:
+                    messages.warning(request, '⚠️ ' + gettext('Automatischer GWR-Import nicht möglich: %(e)s') % {'e': e})
+            return redirect(f'/neu/liegenschaften/{obj.id}/')
 
-        # Automatischer GWR/EGID-Import (nur wenn gewünscht) — ermittelt die EGID
-        # aus der Adresse und importiert die Objekte (Wohnungen) vom Bundesamt.
-        if P.get('gwr_import', 'on') == 'on' and (not obj.egid or obj.einheiten.count() == 0):
-            try:
-                from portfolio.services import sync_liegenschaft_with_gwr
-                res = sync_liegenschaft_with_gwr(obj)
-                if res.get('egid_found'):
-                    messages.success(request, '📍 ' + gettext('EGID %(wert)s automatisch ermittelt.') % {'wert': res['egid_found']})
-                if res.get('units_created'):
-                    messages.success(request, '🏠 ' + gettext('%(wert)s Objekt(e) automatisch aus dem Gebäude- und Wohnungsregister importiert.') % {'wert': res['units_created']})
-                if not obj.egid and not res.get('egid_found'):
-                    messages.warning(request, '⚠️ ' + gettext('EGID konnte nicht automatisch ermittelt werden — bitte Adresse prüfen oder EGID manuell erfassen.'))
-                elif res.get('error'):
-                    messages.warning(request, '⚠️ ' + gettext('GWR-Import teilweise fehlgeschlagen: %(wert)s') % {'wert': res['error']})
-            except Exception as e:
-                messages.warning(request, '⚠️ ' + gettext('Automatischer GWR-Import nicht möglich: %(e)s') % {'e': e})
-        return redirect(f'/neu/liegenschaften/{obj.id}/')
-
+    # Mit Fehlern zurueck auf dieselbe Seite — Eingaben bleiben stehen, jede
+    # Meldung steht an ihrem Feld. 400, damit Tests und Werkzeuge den
+    # Fehlschlag als solchen erkennen.
+    anzahl_fehler = len(form.errors) + len(feld_fehler)
     return render(request, 'fw/liegenschaft_form.html', {
+        'form': form, 'feld_fehler': feld_fehler, 'anzahl_fehler': anzahl_fehler,
+        'betreut_wert': betreut_wert, 'eigentuemer_wert': eigentuemer_wert,
         # Wer zur Auswahl steht: die Mitglieder dieser Organisation. Der
         # `TenantManager` sorgt fuer die Grenze — eine fremde Person kann
         # keine Liegenschaft betreuen.
@@ -158,7 +131,7 @@ def fw_liegenschaft_form(request, pk=None):
         'heiz_choices': Liegenschaft.HEIZ_CHOICES,
         'warmwasser_choices': Liegenschaft.WARMWASSER_CHOICES,
         'geak_klassen': [k for k, _ in Liegenschaft.GEAK_KLASSEN],
-    })
+    }, status=400 if anzahl_fehler else 200)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

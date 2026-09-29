@@ -714,6 +714,16 @@ und einen Stilblock enthaelt.
             border-radius:var(--ds-radius-sm);padding:8px 11px;font-size:13px;
             color:var(--ds-ink);font-family:inherit;max-width:100%}
         .fw-feld:focus{outline:2px solid var(--ds-brand);outline-offset:-1px}
+        /* Feldfehler (Audit Etappe 2): Ein Formular kommt mit der Meldung AM
+           Feld zurück, nicht mit einem Toast und leeren Feldern. Die Rahmenfarbe
+           allein trägt die Aussage nicht (Farbsehschwäche) — deshalb steht der
+           Text darunter, und `aria-describedby` verknüpft ihn mit dem Feld. */
+        .fw-feld[aria-invalid="true"]{border-color:var(--ds-crit)}
+        .fw-feld[aria-invalid="true"]:focus{outline-color:var(--ds-crit)}
+        .fw-feldfehler{margin-top:4px;font-size:12px;line-height:1.35;color:var(--ds-crit)}
+        .fw-formfehler{background:var(--ds-crit-soft);color:var(--ds-ink);
+            border-radius:var(--ds-radius);padding:12px 16px;font-size:13px}
+        .fw-formfehler b{color:var(--ds-crit)}
         /* `fw-ikon` war bisher nur Zierrat im Kartenkopf. Als Knopf braucht es
            einen stummen Ruhezustand (`mut`) und, wo geloescht wird, eine
            Warnfarbe erst beim Darueberfahren (`gefahr`) — ein dauerrotes

@@ -1,0 +1,2 @@
+{% comment %} Fehlertext eines Formularfelds (Audit Etappe 2). Erwartet `f` (BoundField)
+   oder `fehler` (Liste) plus `feld_id`. Die ID ist das Ziel von `aria-describedby`. {% endcomment %}{% if f.errors %}<p id="{{ f.id_for_label }}_fehler" class="fw-feldfehler">{{ f.errors.0 }}</p>{% elif fehler %}<p id="{{ feld_id }}_fehler" class="fw-feldfehler">{{ fehler }}</p>{% endif %}

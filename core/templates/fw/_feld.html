@@ -1,0 +1,21 @@
+{% load l10n %}{% comment %}
+EIN TEXT- ODER ZAHLENFELD MIT LABEL, PFLICHTMARKE UND FEHLER (Audit Etappe 2)
+
+    {% include 'fw/_feld.html' with f=form.plz label=_("PLZ") pflicht=True %}
+
+Parameter: `f` (BoundField, Pflicht), `label`, `pflicht`, `typ` (input type),
+`inputmodus` (Tastatur am Telefon, z. B. `numeric`, `decimal`), `platzhalter`, `klasse` (Zusatz am Feld, z. B. `tabular-nums`), `spalten`
+(Klasse am Rahmen, z. B. `sm:col-span-2`).
+
+Der Wert kommt aus dem Formular, nicht aus dem Modell: Nach einem Fehler steht
+dort, was eingetippt wurde — auch wenn es sich nicht speichern liess.
+`localize off`, weil Beträge sonst mit Tausender-Apostroph im Feld stünden.
+
+ZAHLEN NIE ALS `typ="number"`: Der Browser verwirft dort jede Eingabe, die
+keine Zahl ist — nach einem Fehler stünde ein leeres Feld statt «ca. 1970».
+Gemessen beim Bau dieses Bausteins. Stattdessen `inputmodus="numeric"`.
+{% endcomment %}<div{% if spalten %} class="{{ spalten }}"{% endif %}>
+    <label for="{{ f.id_for_label }}" class="block text-xs font-semibold fw-mutet mb-1">{{ label }}{% if pflicht %} <span class="fw-pflicht" aria-hidden="true">*</span>{% endif %}</label>
+    <input id="{{ f.id_for_label }}" name="{{ f.html_name }}"{% if typ %} type="{{ typ }}"{% endif %}{% if inputmodus %} inputmode="{{ inputmodus }}"{% endif %} value="{% localize off %}{{ f.value|default_if_none:'' }}{% endlocalize %}"{% if pflicht %} required aria-required="true"{% endif %}{% if platzhalter %} placeholder="{{ platzhalter }}"{% endif %} class="fw-feld w-full{% if klasse %} {{ klasse }}{% endif %}"{% if f.errors %} aria-invalid="true" aria-describedby="{{ f.id_for_label }}_fehler"{% endif %}>
+    {% include 'fw/_feldfehler.html' %}
+</div>
