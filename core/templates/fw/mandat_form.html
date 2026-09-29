@@ -105,13 +105,13 @@
     <div class="mt-3 text-sm fw-mutet">{% trans "Benutzername" %}: <span class="font-mono font-semibold">{{ portal_user.username }}</span></div>
     <div class="mt-3 flex flex-wrap gap-2">
         <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/">{% csrf_token %}
-            <button type="submit" class="text-sm font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-4 py-2 rounded-lg">
+            <button type="submit" class="fw-btn fw-rand-marke">
                 {% zeichen 'lauf' klasse='mr-1' %}{% trans "Neues Passwort senden" %}
             </button>
         </form>
         <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% trans "Portal-Zugang wirklich entfernen?" %}{% endfilter %}');">{% csrf_token %}
             <input type="hidden" name="aktion" value="entfernen">
-            <button type="submit" class="text-sm font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-4 py-2 rounded-lg">
+            <button type="submit" class="fw-btn fw-rand-krit">
                 {% zeichen 'gesperrt' klasse='mr-1' %}{% trans "Zugang entfernen" %}
             </button>
         </form>

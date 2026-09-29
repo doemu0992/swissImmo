@@ -25,7 +25,7 @@
 <form method="post" action="/neu/vermarktung/{{ e.id }}/bewerber/absage-uebrige/{{ lg_query }}" class="mb-4"
       onsubmit="return confirm('{% filter escapejs %}{% blocktrans with n=offene_n %}Allen {{ n }} noch offenen Bewerbern eine Absage senden?{% endblocktrans %}{% endfilter %}');">
     {% csrf_token %}
-    <button class="text-xs font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'senden' klasse='mr-1' %}{% blocktrans with n=offene_n %}Übrige {{ n }} absagen{% endblocktrans %}</button>
+    <button class="fw-btn fw-rand-krit fw-knapp">{% zeichen 'senden' klasse='mr-1' %}{% blocktrans with n=offene_n %}Übrige {{ n }} absagen{% endblocktrans %}</button>
 </form>
 {% endif %}
 
@@ -74,7 +74,7 @@
                     {% else %}
                     <div class="inline-flex items-center gap-1.5">
                         <button type="button" onclick="document.getElementById('besi-{{ k.b.id }}').classList.toggle('hidden')"
-                                class="text-xs font-semibold fw-info border fw-linie hover:fw-info-flaeche px-2.5 py-1.5 rounded-lg">
+                                class="fw-btn fw-knapp">
                             {% zeichen 'termin' klasse='mr-1' %}{% trans "Besichtigung" %}</button>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
                               onsubmit="return confirm('{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} zusagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} zusagen?{% endblocktrans %}{% endif %}{% endfilter %}');">
@@ -84,7 +84,7 @@
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
                               onsubmit="return confirm('{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} absagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} absagen?{% endblocktrans %}{% endif %}{% endfilter %}');">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="absage">
-                            <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1.5 rounded-lg">{% trans "Absagen" %}</button>
+                            <button class="fw-btn fw-knapp">{% trans "Absagen" %}</button>
                         </form>
                     </div>
                     {% endif %}

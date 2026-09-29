@@ -35,8 +35,10 @@ E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 E2.83 nahm den Rest, der ueberhaupt noch zu nehmen war — `nebenkosten_detail`
 (3 → 0), `zahllauf` (2 → 1), `vertrag_neu` (2 → 1) und den zweiten
 Vorhang in `base.html` (56 → 55): 236 in 42.
-E2.84 nahm das Dunkelmodus-Overlay — `base.html` (55 → 4):
-**STAND 185 in 42 Vorlagen**.
+E2.84 nahm das Dunkelmodus-Overlay — `base.html` (55 → 4): 185 in 42.
+Audit Etappe 3 (Knopf-Varianten) nahm `text-white` von selbstgebauten
+Knöpfen — `integrationen`, `mietzins`, `objekt_ausschreiben`, `vermarktung`
+(→ 0), `kreditoren` (3 → 2): **STAND 179 in 38 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -298,16 +300,12 @@ OBERGRENZE = {
     'core/templates/fw/dokumente.html': 1,
     'core/templates/fw/einstellungen.html': 1,
     'core/templates/fw/finanzen.html': 1,
-    'core/templates/fw/integrationen.html': 1,
-    'core/templates/fw/kreditoren.html': 3,
+    'core/templates/fw/kreditoren.html': 2,
     'core/templates/fw/lieferantenkonten.html': 1,
     'core/templates/fw/mieterkonten.html': 1,
     'core/templates/fw/mieterwechsel.html': 3,
-    'core/templates/fw/mietzins.html': 1,
-    'core/templates/fw/objekt_ausschreiben.html': 1,
     'core/templates/fw/person_form.html': 2,
     'core/templates/fw/schaden_detail.html': 2,
-    'core/templates/fw/vermarktung.html': 2,
     'core/templates/fw/vertrag_detail.html': 1,
     'core/templates/fw/vertrag_neu.html': 1,
     'core/templates/fw/zahllauf.html': 1,

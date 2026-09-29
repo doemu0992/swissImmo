@@ -75,6 +75,22 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         .fw-btn.fw-warnknopf:hover{filter:brightness(.92);border-color:transparent}
         .fw-btn.fw-gutknopf{background:var(--ds-good);color:var(--ds-auf-satt);border-color:transparent}
         .fw-btn.fw-gutknopf:hover{filter:brightness(.92);border-color:transparent}
+        .fw-btn.fw-knapp{padding:6px 11px;font-size:12px;gap:5px}
+        .fw-btn.fw-leise{background:var(--ds-surface-2);border-color:transparent;color:var(--ds-muted)}
+        .fw-btn.fw-leise:hover{color:var(--ds-ink);border-color:var(--ds-line)}
+        .fw-btn.fw-geist{background:transparent;border-color:transparent;color:var(--ds-muted)}
+        .fw-btn.fw-geist:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
+        .fw-btn.fw-weich{background:var(--ds-brand-soft);border-color:transparent;color:var(--ds-brand-600)}
+        .fw-btn.fw-weich:hover{border-color:var(--ds-brand)}
+        .fw-btn.fw-rand-marke{border-color:var(--ds-brand);color:var(--ds-brand)}
+        .fw-btn.fw-rand-marke:hover{background:var(--ds-brand-soft)}
+        .fw-btn.fw-rand-krit{border-color:var(--ds-crit);color:var(--ds-crit)}
+        .fw-btn.fw-rand-krit:hover{background:var(--ds-crit-soft)}
+        .fw-btn.fw-rand-warn{border-color:var(--ds-warn);color:var(--ds-warn)}
+        .fw-btn.fw-rand-warn:hover{background:var(--ds-warn-soft)}
+        .fw-btn.fw-rand-gut{border-color:var(--ds-good);color:var(--ds-good)}
+        .fw-btn.fw-rand-gut:hover{background:var(--ds-good-soft)}
+        .fw-btn:disabled,.fw-btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
         .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:16px}
         .fw-kpi{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:14px;padding:15px 16px;box-shadow:var(--ds-shadow);display:flex;flex-direction:column;gap:2px}
         .fw-kpi.fw-accent{background:linear-gradient(150deg,color-mix(in srgb,var(--ds-brand) 12%,var(--ds-surface)),var(--ds-surface))}

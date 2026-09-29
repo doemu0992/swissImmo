@@ -97,7 +97,7 @@
                         <input type="hidden" name="stufe" value="{{ row.stufe.stufe }}">
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                         <button type="submit" title="{% blocktrans with stufe=row.stufe.label %}{{ stufe }} in Historie erfassen (inkl. Gebühr){% endblocktrans %}"
-                           class="inline-flex items-center gap-1.5 fw-balken-voll hover:fw-balken-voll text-xs font-semibold px-3 py-1.5 rounded-lg">
+                           class="fw-btn fw-primary fw-knapp">
                             {% zeichen 'verlauf' %} {% trans "Erfassen" %}
                         </button>
                     </form>

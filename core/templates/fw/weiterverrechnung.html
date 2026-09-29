@@ -39,7 +39,7 @@
         {% if ist_hnk %}
         <label class="flex items-center gap-2 fw-fs-fein fw-kritisch pb-2.5"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">{% trans "Trotzdem direkt weiterverrechnen" %}</label>
         {% endif %}
-        <button class="fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg"
+        <button class="fw-btn fw-primary"
                 onclick="return confirm('{% filter escapejs %}{% blocktrans with n=verteil_mieter %}Offenen Betrag auf alle {{ n }} Mieter verteilen?{% endblocktrans %}{% endfilter %}');">
             {% zeichen 'extern' klasse='mr-1.5' %}{% trans "Verteilen" %}
         </button>

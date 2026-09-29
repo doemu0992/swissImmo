@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 {% csrf_token %}
                 <input type="hidden" name="aktion" value="abschluss_zuruecknehmen">
                 <input type="hidden" name="jahr" value="{{ jahr }}">
-                <button type="submit" class="fw-mutet hover:fw-kritisch text-xs font-semibold px-3 py-1.5 rounded-lg border fw-linie hover:fw-linie-krit whitespace-nowrap transition-colors">
+                <button type="submit" class="fw-btn fw-knapp whitespace-nowrap">
                     {% zeichen 'schluessel' klasse='mr-1' %}{% trans "Zurücknehmen" %}
                 </button>
             </form>
@@ -431,11 +431,11 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="flex items-center gap-1">
                 {% if j_seite > 1 %}
                 <a href="?{% if aktive_lg %}lg={{ aktive_lg.id }}&amp;{% endif %}tab=journal&amp;{{ j_query }}&amp;seite={{ j_seite|add:'-1' }}"
-                   class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1 rounded-lg">{% trans "‹ Zurück" %}</a>
+                   class="fw-btn fw-knapp">{% trans "‹ Zurück" %}</a>
                 {% endif %}
                 {% if j_seite < j_seiten %}
                 <a href="?{% if aktive_lg %}lg={{ aktive_lg.id }}&amp;{% endif %}tab=journal&amp;{{ j_query }}&amp;seite={{ j_seite|add:'1' }}"
-                   class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-2.5 py-1 rounded-lg">{% trans "Weiter ›" %}</a>
+                   class="fw-btn fw-knapp">{% trans "Weiter ›" %}</a>
                 {% endif %}
             </div>
             {% endif %}

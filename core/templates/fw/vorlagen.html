@@ -47,7 +47,7 @@
             {% csrf_token %}
             <button class="inline-block fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% zeichen 'einstellungen' klasse='mr-1.5' %}{% trans "Standardvorlagen erstellen" %}</button>
         </form>
-        <a href="/neu/vorlagen/neu/" class="inline-block fw-flaeche border fw-linie fw-ink text-sm font-semibold px-4 py-2 rounded-lg hover:fw-linie-marke">{% zeichen 'neu' klasse='mr-1.5' %}{% trans "Eigene Vorlage" %}</a>
+        <a href="/neu/vorlagen/neu/" class="fw-btn">{% zeichen 'neu' klasse='mr-1.5' %}{% trans "Eigene Vorlage" %}</a>
     </div>
 </div>
 {% endif %}

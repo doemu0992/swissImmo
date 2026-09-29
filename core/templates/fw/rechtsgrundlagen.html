@@ -34,7 +34,7 @@
         {% for a in g.artikel %}
         <div class="px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
             <div class="sm:w-32 shrink-0">
-                <a href="{{ a.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold fw-markenflaeche fw-marke hover:fw-markenflaeche whitespace-nowrap">
+                <a href="{{ a.url }}" target="_blank" rel="noopener" class="fw-btn fw-weich fw-knapp whitespace-nowrap">
                     Art. {{ a.art }} {{ a.gesetz }}{% zeichen 'extern' klasse='fw-fs-mikro' %}
                 </a>
             </div>

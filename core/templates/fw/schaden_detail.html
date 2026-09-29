@@ -154,7 +154,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         <option value="">— {% trans "kein Element" %} —</option>
                         {% for el in ausstattung_elemente %}<option value="{{ el.id }}" {% if t.ausstattung_id == el.id %}selected{% endif %}>{{ el.raum }} · {{ el.kategorie }}</option>{% endfor %}
                     </select>
-                    <button class="fw-flaeche border fw-linie hover:fw-linie-marke fw-ink hover:fw-marke text-xs font-semibold px-3 py-1.5 rounded-lg self-start">{% trans "Verknüpfen" %}</button>
+                    <button class="fw-btn fw-knapp self-start">{% trans "Verknüpfen" %}</button>
                 </form>
                 {% if t.ausstattung_id %}<p class="fw-fs-klein fw-faint mt-2">{% trans "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements." %} <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">{% trans "Raumbuch" %}</a></p>{% endif %}
                 {% if not ausstattung_elemente %}<p class="fw-klein mt-1">{% trans "Noch keine Ausstattung am Objekt erfasst." %}</p>{% endif %}
