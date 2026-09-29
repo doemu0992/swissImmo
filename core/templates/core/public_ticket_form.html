@@ -1,11 +1,11 @@
-{% load zeichen %}
+{% load zeichen i18n raumkatalog %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="de">
+{% get_current_language as SPRACHE %}<!DOCTYPE html>
+<html lang="{{ SPRACHE|slice:':2' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Service | SwissImmo</title>
+    <title>{% trans "Service" %} | SwissImmo</title>
 
 {% include 'core/_assets_aussen.html' %}
     <script defer src="{% static 'js/alpine.min.js' %}"></script>
@@ -97,15 +97,16 @@
 
     <div id="loader">
         <div class="spinner"></div>
-        <span>Service Portal wird geladen...</span>
+        <span>{% trans "Service Portal wird geladen..." %}</span>
     </div>
 
+    {% raum_anzeige %}
     <div x-data="ticketWizard()" x-cloak
          @x-init="document.getElementById('loader').style.display='none'"
          class="w-full max-w-md md:max-w-4xl lg:max-w-5xl fw-flaeche rounded-2xl shadow-xl overflow-hidden min-h-[700px] flex flex-col relative transition-all duration-300">
 
         <div class="fw-balken-voll p-6 md:p-8 text-center text-white relative z-10 shadow-md">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">Service Portal</h1>
+            <h1 class="text-xl md:text-3xl font-bold mb-2">{% trans "Service Portal" %}</h1>
             {% comment %}
             `fw-faint` STAND HIER FALSCH (E2.50)
 
@@ -129,6 +130,7 @@
             Ueberschrift im Dunkelmodus rgb(10,21,24), nicht weiss.)
             {% endcomment %}
             <p class="text-xs md:text-sm uppercase tracking-wide opacity-90">{{ liegenschaft.strasse }}, {{ liegenschaft.ort }}</p>
+            <div class="mt-3 flex justify-center">{% include 'core/_sprachwahl.html' with rahmen='flex gap-1' knopf='px-2 py-1 rounded-md text-xs font-semibold transition-colors' aktiv='fw-flaeche fw-marke' passiv='opacity-80 hover:opacity-100' %}</div>
 
             <button x-show="step > 1" @click="goBack()"
                     class="absolute left-4 top-6 md:top-8 p-2 rounded-full hover:fw-markenflaeche transition">
@@ -150,16 +152,16 @@
                 <div class="w-24 h-24 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center mb-6 shadow-inner">
                     {% zeichen 'gut' klasse='text-6xl' %}
                 </div>
-                <h2 class="text-2xl md:text-3xl font-bold fw-strong mb-2">Vielen Dank!</h2>
-                <p class="fw-mutet mb-8 md:text-lg">Wir haben Ihre Meldung erhalten und eine Bestätigung per E-Mail gesendet.</p>
+                <h2 class="text-2xl md:text-3xl font-bold fw-strong mb-2">{% trans "Vielen Dank!" %}</h2>
+                <p class="fw-mutet mb-8 md:text-lg">{% trans "Wir haben Ihre Meldung erhalten und eine Bestätigung per E-Mail gesendet." %}</p>
                 <a href="" class="px-8 py-3 fw-btn fw-primary rounded-xl font-bold shadow-lg hover:fw-balken-voll hover:shadow-xl transition">
-                    Zurück zum Start
+                    {% trans "Zurück zum Start" %}
                 </a>
             </div>
             {% else %}
 
             <div x-show="step === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-10">
-                <h2 class="text-center fw-strong font-bold text-lg md:text-2xl mb-8">Wie können wir helfen?</h2>
+                <h2 class="text-center fw-strong font-bold text-lg md:text-2xl mb-8">{% trans "Wie können wir helfen?" %}</h2>
                 {% comment %}
                 VIER KACHELN STATT EINER SCHLEIFE (E2.50)
 
@@ -185,47 +187,47 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                     <div @click="selectCategory('Schaden')" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
                         {% zeichen 'arbeit' klasse='text-4xl md:text-5xl fw-marke' %}
-                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">Schadensmeldung</span>
+                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">{% trans "Schadensmeldung" %}</span>
                     </div>
                     <div @click="selectCategory('Anfrage')" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
                         {% zeichen 'hinweis' klasse='text-4xl md:text-5xl fw-marke' %}
-                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">Allgemeine Anfrage</span>
+                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">{% trans "Allgemeine Anfrage" %}</span>
                     </div>
                     <div @click="selectCategory('Schlüssel')" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
                         {% zeichen 'schluessel' klasse='text-4xl md:text-5xl fw-marke' %}
-                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">Schlüsselbestellung</span>
+                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">{% trans "Schlüsselbestellung" %}</span>
                     </div>
                     <div @click="selectCategory('Admin')" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
                         {% zeichen 'dokument' klasse='text-4xl md:text-5xl fw-marke' %}
-                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">Frage zu Dokumenten</span>
+                        <span class="text-sm md:text-base font-semibold fw-mutet text-center">{% trans "Frage zu Dokumenten" %}</span>
                     </div>
                 </div>
             </div>
 
             <div x-show="step === 2" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-10">
-                <h2 class="text-center fw-strong font-bold text-lg md:text-2xl mb-8">Welcher Bereich?</h2>
+                <h2 class="text-center fw-strong font-bold text-lg md:text-2xl mb-8">{% trans "Welcher Bereich?" %}</h2>
                 <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                     <template x-for="r in rooms">
                         <div @click="selectRoom(r.name)" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-xl p-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md h-28 md:h-32 text-center">
                             <svg class="fw-zeichen fw-marke text-2xl md:text-3xl" aria-hidden="true"><use :href="'#z-' + r.z"></use></svg>
-                            <span class="text-sm md:text-base font-medium fw-strong leading-tight" x-text="r.name"></span>
+                            <span class="text-sm md:text-base font-medium fw-strong leading-tight" x-text="t(r.name)"></span>
                         </div>
                     </template>
                 </div>
             </div>
 
             <div x-show="step === 3" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-10">
-                <h2 class="text-center fw-strong font-bold text-lg md:text-2xl mb-2">Was ist betroffen?</h2>
-                <p class="text-center text-xs md:text-sm fw-faint mb-8 uppercase tracking-widest" x-text="room"></p>
+                <h2 class="text-center fw-strong font-bold text-lg md:text-2xl mb-2">{% trans "Was ist betroffen?" %}</h2>
+                <p class="text-center text-xs md:text-sm fw-faint mb-8 uppercase tracking-widest" x-text="t(room)"></p>
                 <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                     <template x-for="obj in getCurrentObjects()">
                         <div @click="selectObject(obj)" class="icon-card cursor-pointer fw-flaeche border fw-linie rounded-xl p-2 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md h-28 md:h-32 text-center">
-                            <span class="text-sm md:text-base font-medium fw-strong leading-tight" x-text="obj.name"></span>
+                            <span class="text-sm md:text-base font-medium fw-strong leading-tight" x-text="t(obj.name)"></span>
                         </div>
                     </template>
                     <div @click="selectObject({name: 'Sonstiges', isAppliance: false})" class="icon-card cursor-pointer fw-flaeche2 border fw-linie border-dashed rounded-xl p-2 flex flex-col items-center justify-center gap-2 h-28 md:h-32 text-center">
                         {% zeichen 'mehr' klasse='text-3xl md:text-4xl fw-faint' %}
-                        <span class="text-xs md:text-sm font-medium fw-mutet">Anderes</span>
+                        <span class="text-xs md:text-sm font-medium fw-mutet">{% trans "Anderes" %}</span>
                     </div>
                 </div>
             </div>
@@ -238,43 +240,43 @@
 
                     <div class="fw-flaeche p-6 rounded-2xl shadow-sm border fw-linie">
                         <h3 class="text-lg font-bold fw-strong mb-4 flex items-center gap-2">
-                            {% zeichen 'person' klasse='fw-marke' %} Ihre Kontaktdaten
+                            {% zeichen 'person' klasse='fw-marke' %} {% trans "Ihre Kontaktdaten" %}
                         </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div class="md:col-span-2 sm:w-1/3">
-                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">Anrede *</label>
+                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">{% trans "Anrede" %} *</label>
                                 <select name="anrede" class="w-full border fw-linie rounded-lg px-3 py-2.5 fw-flaeche2 focus:fw-flaeche focus:ring-2 fw-fokusring outline-none transition">
-                                    <option value="Frau">Frau</option>
-                                    <option value="Herr">Herr</option>
-                                    <option value="Firma">Firma</option>
+                                    <option value="Frau">{% trans "Frau" %}</option>
+                                    <option value="Herr">{% trans "Herr" %}</option>
+                                    <option value="Firma">{% trans "Firma" %}</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">Vorname *</label>
+                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">{% trans "Vorname" %} *</label>
                                 <input type="text" name="vorname" required class="w-full border fw-linie rounded-lg px-3 py-2.5 fw-flaeche2 focus:fw-flaeche focus:ring-2 fw-fokusring outline-none transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">Nachname *</label>
+                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">{% trans "Nachname" %} *</label>
                                 <input type="text" name="nachname" required class="w-full border fw-linie rounded-lg px-3 py-2.5 fw-flaeche2 focus:fw-flaeche focus:ring-2 fw-fokusring outline-none transition">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">E-Mail *</label>
+                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">{% trans "E-Mail" %} *</label>
                                 <input type="email" name="email" required class="w-full border fw-linie rounded-lg px-3 py-2.5 fw-flaeche2 focus:fw-flaeche focus:ring-2 fw-fokusring outline-none transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">Telefon *</label>
+                                <label class="block text-xs font-bold fw-mutet uppercase mb-1">{% trans "Telefon" %} *</label>
                                 <input type="tel" name="telefon" required class="w-full border fw-linie rounded-lg px-3 py-2.5 fw-flaeche2 focus:fw-flaeche focus:ring-2 fw-fokusring outline-none transition">
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-xs font-bold fw-mutet uppercase mb-1">Betroffene Einheit (Optional)</label>
+                            <label class="block text-xs font-bold fw-mutet uppercase mb-1">{% trans "Betroffene Einheit (Optional)" %}</label>
                             <div class="relative">
                                 <select name="einheit_id" class="w-full border fw-linie rounded-lg px-3 py-2.5 fw-flaeche2 focus:fw-flaeche focus:ring-2 fw-fokusring outline-none appearance-none">
-                                    <option value="">-- Bitte wählen --</option>
+                                    <option value="">-- {% trans "Bitte wählen" %} --</option>
                                     {% for einheit in einheiten %}
                                         <option value="{{ einheit.id }}">{{ einheit.bezeichnung }}{% if einheit.etage %} · {{ einheit.etage }}{% endif %}</option>
                                     {% endfor %}
@@ -284,7 +286,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold fw-mutet uppercase mb-2">Erreichbarkeit (für Handwerker)</label>
+                            <label class="block text-xs font-bold fw-mutet uppercase mb-2">{% trans "Erreichbarkeit (für Handwerker)" %}</label>
                             <div class="grid grid-cols-2 gap-3">
                                 <label class="cursor-pointer">
                                     <input type="checkbox" name="erreichbarkeit" value="08:00 - 10:00" class="hidden time-checkbox">
@@ -309,35 +311,35 @@
                     <div class="fw-flaeche p-6 rounded-2xl shadow-sm border fw-linie">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-bold fw-strong flex items-center gap-2">
-                                {% zeichen 'arbeit' klasse='fw-marke' %} Details zur Meldung
+                                {% zeichen 'arbeit' klasse='fw-marke' %} {% trans "Details zur Meldung" %}
                             </h3>
                             <div class="text-sm font-medium fw-marke fw-markenflaeche px-3 py-1 rounded-full" x-text="generateTitleDisplay()"></div>
                         </div>
 
                         <div x-show="isAppliance" class="fw-warn-flaeche p-4 rounded-xl border fw-linie-warn mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold fw-warnton uppercase mb-1">Marke / Hersteller</label>
+                                <label class="block text-xs font-bold fw-warnton uppercase mb-1">{% trans "Marke / Hersteller" %}</label>
                                 <input type="text" name="hersteller" class="w-full fw-linie-warn fw-flaeche rounded-lg px-3 py-2 text-sm focus:ring-2 fw-ring-warn outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold fw-warnton uppercase mb-1">Seriennummer</label>
+                                <label class="block text-xs font-bold fw-warnton uppercase mb-1">{% trans "Seriennummer" %}</label>
                                 <input type="text" name="seriennummer" class="w-full fw-linie-warn fw-flaeche rounded-lg px-3 py-2 text-sm focus:ring-2 fw-ring-warn outline-none">
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-xs font-bold fw-mutet uppercase mb-1">Beschreibung *</label>
-                            <textarea name="beschreibung" required rows="3" placeholder="Bitte beschreiben Sie das Problem kurz..." class="w-full border fw-linie rounded-lg px-3 py-2.5 fw-flaeche2 focus:fw-flaeche focus:ring-2 fw-fokusring outline-none transition"></textarea>
+                            <label class="block text-xs font-bold fw-mutet uppercase mb-1">{% trans "Beschreibung" %} *</label>
+                            <textarea name="beschreibung" required rows="3" placeholder="{% trans 'Bitte beschreiben Sie das Problem kurz...' %}" class="w-full border fw-linie rounded-lg px-3 py-2.5 fw-flaeche2 focus:fw-flaeche focus:ring-2 fw-fokusring outline-none transition"></textarea>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold fw-mutet uppercase mb-2">Foto (Optional)</label>
+                            <label class="block text-xs font-bold fw-mutet uppercase mb-2">{% trans "Foto (Optional)" %}</label>
                             <label class="flex items-center gap-3 w-full p-3 border fw-linie rounded-xl cursor-pointer fw-flaeche2 hover:fw-flaeche transition shadow-sm">
                                 <div class="w-10 h-10 rounded-full fw-markenflaeche fw-marke flex items-center justify-center">
                                     {% zeichen 'dokument' %}
                                 </div>
                                 <div class="flex-grow">
-                                    <span class="text-sm font-medium fw-ink" x-text="fileName || 'Foto aufnehmen oder hochladen'"></span>
+                                    <span class="text-sm font-medium fw-ink" x-text="fileName || '{% filter escapejs %}{% trans "Foto aufnehmen oder hochladen" %}{% endfilter %}'"></span>
                                 </div>
                                 <input type="file" name="foto" accept="image/*" capture="environment" class="hidden" @change="fileSelected($event)">
                             </label>
@@ -345,7 +347,7 @@
                     </div>
 
                     <button type="submit" class="w-full fw-btn fw-primary font-bold py-4 rounded-xl shadow-lg hover:fw-balken-voll hover:shadow-xl transition transform active:scale-[0.99] flex justify-center items-center gap-2 text-lg">
-                        <span>Meldung absenden</span>
+                        <span>{% trans "Meldung absenden" %}</span>
                         {% zeichen 'senden' %}
                     </button>
                 </form>
@@ -361,6 +363,17 @@
         function ticketWizard() {
             return {
                 step: 1, category: '', room: '', objectName: '', isAppliance: false, fileName: '',
+
+                // ANZEIGE ≠ WERT. `room`, `objectName` und `category` bleiben
+                // die deutschen Wörter unten — sie sind der gespeicherte Titel
+                // der Meldung. Angezeigt wird `t(…)`: die Übersetzung aus
+                // `{% templatetag openblock %} raum_anzeige {% templatetag closeblock %}` (core/templatetags/raumkatalog.py).
+                anzeige: JSON.parse(document.getElementById('raum-anzeige').textContent),
+                t(wert) { return this.anzeige[wert] || wert; },
+                kategorieAnzeige() {
+                    const k = this.categories.find(c => c.id === this.category);
+                    return k ? this.t(k.name) : this.category;
+                },
 
                 // DATA
                 //
@@ -503,9 +516,10 @@
                 selectObject(obj) { this.objectName = obj.name; this.isAppliance = obj.isAppliance; this.step = 4; },
                 goBack() { if (this.step === 4 && this.category !== 'Schaden') this.step = 1; else this.step--; },
                 generateTitleDisplay() {
-                    if (this.objectName) return `${this.category} > ${this.room} > ${this.objectName}`;
-                    if (this.room) return `${this.category} > ${this.room}`;
-                    return this.category;
+                    const k = this.kategorieAnzeige();
+                    if (this.objectName) return `${k} > ${this.t(this.room)} > ${this.t(this.objectName)}`;
+                    if (this.room) return `${k} > ${this.t(this.room)}`;
+                    return k;
                 },
                 generateTitleInput() {
                     if (this.objectName) return `${this.category}: ${this.room} - ${this.objectName}`;

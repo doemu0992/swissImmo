@@ -1,7 +1,7 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="de">
+{% get_current_language as SPRACHE %}<!DOCTYPE html>
+<html lang="{{ SPRACHE|slice:':2' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -76,6 +76,7 @@ es gemeldet.
                     {% zeichen 'liegenschaft' klasse='fw-marke text-2xl mr-3' %}
                     <span class="font-black text-xl fw-strong tracking-tight">SwissImmo</span>
                 </a>
+                <div class="flex items-center">{% include 'core/_sprachwahl.html' with rahmen='flex gap-1' knopf='px-2 py-1.5 rounded-md text-xs font-semibold transition-colors' aktiv='fw-btn fw-primary' passiv='fw-faint hover:fw-flaeche2' %}</div>
             </div>
         </div>
     </nav>
