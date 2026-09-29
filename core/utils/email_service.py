@@ -4,6 +4,9 @@ import os
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.utils import dateformat, translation
+from django.utils.translation import gettext
+
+from core.services.dokumentsprache import in_sprache, sprache_von
 
 logger = logging.getLogger(__name__)
 
@@ -46,14 +49,22 @@ def send_ticket_receipt(ticket):
     if not ticket.email_melder:
         return
 
-    subject = f"Eingang Bestätigung: {ticket.titel} [Ticket #{ticket.id}]"
+    # Sprache: die der laufenden Anfrage — die Bestätigung geht unmittelbar
+    # nach dem Absenden des öffentlichen Formulars raus, in der Sprache, in der
+    # die Person es ausgefüllt hat (D11: Sprache des Empfängers).
+    subject = gettext('Eingangsbestätigung: %(titel)s [Ticket #%(id)s]') % {'titel': ticket.titel, 'id': ticket.id}
 
+    _text1 = gettext('Wir haben Ihre Meldung erhalten')
+    _text2 = gettext('Ticket-Nr.')
+    _text3 = gettext('Thema')
+    _text4 = gettext('Wir melden uns, sobald ein Handwerker beauftragt wurde.')
+    _text5 = gettext('Freundliche Grüsse')
     html_msg = f"""
     <html><body>
-    <h2>Wir haben Ihre Meldung erhalten</h2>
-    <p>Ticket ID: #{ticket.id}<br>Thema: {ticket.titel}</p>
-    <p>Wir melden uns, sobald ein Handwerker beauftragt wurde.</p>
-    <p>Freundliche Grüsse<br>ImmoSwiss Verwaltung</p>
+    <h2>{_text1}</h2>
+    <p>{_text2}: #{ticket.id}<br>{_text3}: {ticket.titel}</p>
+    <p>{_text4}</p>
+    <p>{_text5}<br>ImmoSwiss Verwaltung</p>
     </body></html>
     """
     threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, subject, html_msg)).start()
@@ -196,34 +207,48 @@ def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None):
     return send_via_hoststar(to_email, betreff, html, att_name, att_content)
 
 
-def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma=''):
+def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma='',
+                              sprache='de'):
     """Sendet dem Mieter seine Portal-Zugangsdaten (Benutzername, Passwort,
-    Erklärung, Login-Link). Gibt True/False zurück."""
+    Erklärung, Login-Link). Gibt True/False zurück.
+
+    `sprache`: Korrespondenzsprache des Mieters (D11), nicht die der
+    Sachbearbeitung, die den Zugang anlegt."""
     if not to_email:
         return False
-    betreff = "Ihr Zugang zum Mieterportal"
+    with in_sprache(sprache):
+        return _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma)
+
+
+def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma):
+    betreff = gettext('Ihr Zugang zum Mieterportal')
     firma_zeile = f"<p style='margin:24px 0 0;color:#94a3b8;font-size:13px;'>{absender_firma}</p>" if absender_firma else ""
+    _text1 = gettext('Ihr Mieterportal')
+    _text2 = gettext('Guten Tag %(name)s') % {'name': anrede_name}
+    _text3 = gettext('Für Sie wurde ein persönlicher Zugang zum Mieterportal eingerichtet. Dort sehen Sie jederzeit Ihren Mietvertrag, offene Rechnungen (inkl. QR-Einzahlschein), Ihren Kontoauszug und Ihre Dokumente — und Sie können bequem eine Reparatur oder einen Schaden melden.')
+    _text4 = gettext('Benutzername')
+    _text5 = gettext('Passwort')
+    _text6 = gettext('Jetzt einloggen')
+    _text7 = gettext('Oder öffnen Sie diese Adresse im Browser:')
+    _text8 = gettext('Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.')
     html = f"""<html><body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;background:#f1f5f9;padding:24px;">
       <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">
-        <div style="background:#4338ca;color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🔑 Ihr Mieterportal</div>
+        <div style="background:#4338ca;color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🔑 {_text1}</div>
         <div style="padding:28px;">
-          <p>Guten Tag {anrede_name}</p>
-          <p>Für Sie wurde ein persönlicher Zugang zum Mieterportal eingerichtet. Dort sehen Sie
-             jederzeit Ihren Mietvertrag, offene Rechnungen (inkl. QR-Einzahlschein), Ihren
-             Kontoauszug und Ihre Dokumente — und Sie können bequem eine Reparatur oder einen
-             Schaden melden.</p>
+          <p>{_text2}</p>
+          <p>{_text3}</p>
           <table style="margin:20px 0;border-collapse:collapse;">
-            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">Benutzername</td>
+            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{_text4}</td>
                 <td style="padding:6px 0;font-weight:700;font-family:monospace;">{username}</td></tr>
-            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">Passwort</td>
+            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{_text5}</td>
                 <td style="padding:6px 0;font-weight:700;font-family:monospace;">{passwort}</td></tr>
           </table>
           <p style="margin:24px 0;">
-            <a href="{login_url}" style="background:#4338ca;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">Jetzt einloggen</a>
+            <a href="{login_url}" style="background:#4338ca;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{_text6}</a>
           </p>
-          <p style="color:#64748b;font-size:13px;">Oder öffnen Sie diese Adresse im Browser:<br>
+          <p style="color:#64748b;font-size:13px;">{_text7}<br>
             <a href="{login_url}" style="color:#4338ca;">{login_url}</a></p>
-          <p style="color:#94a3b8;font-size:12px;margin-top:20px;">Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.</p>
+          <p style="color:#94a3b8;font-size:12px;margin-top:20px;">{_text8}</p>
           {firma_zeile}
         </div>
       </div>
@@ -295,26 +320,40 @@ def send_payment_reminder(vertrag, monat_datum, offener_betrag):
     if not mieter or not mieter.email:
         return False
 
-    # Monatsnamen nicht über strftime (Server-Locale, oft Englisch).
-    # Bis Dokumente der Empfängersprache folgen (D11), bleibt es Deutsch.
-    with translation.override('de'):
+    # Sprache des Mieters (D11). Monatsnamen über Djangos `dateformat`, nicht
+    # `strftime` — das folgt der Server-Locale und lieferte «May» auch in der
+    # deutschen Mail. Eine freundliche Zahlungserinnerung, keine Mahnung nach
+    # Art. 257d OR: kein Rechtstext, deshalb übersetzt.
+    betrag = f"{offener_betrag:,.2f}"
+    objekt = vertrag.einheit.bezeichnung
+    name = f"{mieter.vorname} {mieter.nachname}"
+    with in_sprache(sprache_von(mieter)):
         monat_str = dateformat.format(monat_datum, 'F Y')
-    subject = f"Zahlungserinnerung: Miete {monat_str} - {vertrag.einheit.bezeichnung}"
-
-    html_msg = f"""
+        subject = gettext('Zahlungserinnerung: Miete %(monat)s - %(objekt)s') % {'monat': monat_str, 'objekt': objekt}
+        _text1 = gettext('Zahlungserinnerung')
+        _text2 = gettext('Guten Tag %(name)s,') % {'name': name}
+        _text3 = gettext('Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für den Monat <strong>%(monat)s</strong> für das Objekt <strong>%(objekt)s</strong> noch nicht vollständig beglichen wurde.') % {'monat': monat_str, 'objekt': objekt}
+        _text4 = gettext('Ausstehender Betrag: CHF %(betrag)s') % {'betrag': betrag}
+        _text5 = gettext('Sollten Sie die Zahlung bereits getätigt haben, betrachten Sie dieses Schreiben bitte als gegenstandslos. Andernfalls bitten wir Sie um eine zeitnahe Überweisung.')
+        _text6 = gettext('Freundliche Grüsse,')
+        _text7 = gettext('Ihre Liegenschaftsverwaltung')
+        html_msg = f"""
     <html><body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-        <h2 style="color: #2c3e50;">Zahlungserinnerung</h2>
-        <p>Guten Tag {mieter.vorname} {mieter.nachname},</p>
-        <p>Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für den Monat <strong>{monat_str}</strong> für das Objekt <strong>{vertrag.einheit.bezeichnung}</strong> noch nicht vollständig beglichen wurde.</p>
+        <h2 style="color: #2c3e50;">{_text1}</h2>
+        <p>{_text2}</p>
+        <p>{_text3}</p>
         <div style="background: #fdf2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;">
-            <p style="margin: 0; font-weight: bold; color: #991b1b;">Ausstehender Betrag: CHF {offener_betrag:,.2f}</p>
+            <p style="margin: 0; font-weight: bold; color: #991b1b;">{_text4}</p>
         </div>
-        <p>Sollten Sie die Zahlung bereits getätigt haben, betrachten Sie dieses Schreiben bitte als gegenstandslos. Andernfalls bitten wir Sie um eine zeitnahe Überweisung.</p>
-        <p>Freundliche Grüsse,<br>Ihre Liegenschaftsverwaltung</p>
+        <p>{_text5}</p>
+        <p>{_text6}<br>{_text7}</p>
     </body></html>
     """
     threading.Thread(target=send_via_hoststar, args=(mieter.email, subject, html_msg)).start()
+    # Das Journal liest die Verwaltung: deutsch, unabhängig von der Mieter-Sprache.
+    with translation.override('de'):
+        monat_de = dateformat.format(monat_datum, 'F Y')
     journal_email(subject,
-                  f"Zahlungserinnerung Miete {monat_str} · offen CHF {offener_betrag:,.2f}",
+                  f"Zahlungserinnerung Miete {monat_de} · offen CHF {betrag}",
                   mieter=mieter, vertrag=vertrag, empfaenger=mieter.email)
     return True

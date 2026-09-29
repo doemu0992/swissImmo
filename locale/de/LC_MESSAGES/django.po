@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 07:58+0200\n"
+"POT-Creation-Date: 2026-09-29 08:08+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -662,16 +662,16 @@ msgstr "Passwort | SwissImmo Portal"
 #: core/templates/core/portal_login.html:189
 #: core/templates/core/postfach_form.html:85
 #: core/templates/core/zweifaktor_uebersicht.html:72
-#: core/templates/fw/benutzer_form.html:32
+#: core/templates/fw/benutzer_form.html:32 core/utils/email_service.py:230
 msgid "Passwort"
 msgstr "Passwort"
 
-#: core/templates/core/dok_base.html:39
+#: core/templates/core/dok_base.html:43
 #, python-format
 msgid "erstellt am %(datum)s"
 msgstr "erstellt am %(datum)s"
 
-#: core/templates/core/dok_base.html:39
+#: core/templates/core/dok_base.html:43
 msgid "Seite <pdf:pagenumber> von <pdf:pagecount>"
 msgstr "Seite <pdf:pagenumber> von <pdf:pagecount>"
 
@@ -762,7 +762,7 @@ msgstr ""
 "Merkblatt «Richtig Lüften und Pflegen» bei. Für Fragen stehen wir Ihnen "
 "gerne zur Verfügung."
 
-#: core/templates/core/dok_begleitbrief.html:33
+#: core/templates/core/dok_begleitbrief.html:33 core/utils/email_service.py:61
 msgid "Freundliche Grüsse"
 msgstr "Freundliche Grüsse"
 
@@ -969,7 +969,7 @@ msgstr "Bruttomietzins"
 #: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
 #: core/templates/fw/nebenkosten_detail.html:113
 #: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
-#: core/templates/fw/vertrag_bearbeiten.html:41 core/views/fw/person.py:898
+#: core/templates/fw/vertrag_bearbeiten.html:41 core/views/fw/person.py:903
 msgid "Mieter"
 msgstr "Mieter"
 
@@ -1038,7 +1038,7 @@ msgstr "Geburtsdatum"
 msgid "Heimatort / Nationalität"
 msgstr "Heimatort / Nationalität"
 
-#: core/templates/core/dok_wohnungsausweis.html:28 core/views/fw/person.py:898
+#: core/templates/core/dok_wohnungsausweis.html:28 core/views/fw/person.py:903
 msgid "Mitmieter"
 msgstr "Mitmieter"
 
@@ -1111,7 +1111,7 @@ msgstr "Melden Sie sich im Verwaltungs-Cockpit an."
 
 #: core/templates/core/login.html:177 core/templates/core/portal_login.html:179
 #: core/templates/fw/mandat_form.html:98
-#: core/templates/fw/person_detail.html:303
+#: core/templates/fw/person_detail.html:303 core/utils/email_service.py:229
 msgid "Benutzername"
 msgstr "Benutzername"
 
@@ -1335,7 +1335,7 @@ msgstr "Mieterportal — SwissImmo"
 msgid "Mieterportal"
 msgstr "Mieterportal"
 
-#: core/templates/core/mieter_portal.html:13
+#: core/templates/core/mieter_portal.html:13 core/utils/email_service.py:227
 #, python-format
 msgid "Guten Tag %(name)s"
 msgstr "Guten Tag %(name)s"
@@ -1385,7 +1385,7 @@ msgstr ""
 #: core/templates/core/mieter_portal.html:65
 #: core/templates/core/portal.html:299 core/templates/fw/dashboard.html:348
 #: core/views/fw/detailseiten.py:2272 core/views/fw/listen.py:764
-#: core/views/fw/listen.py:767 core/views/fw/person.py:892
+#: core/views/fw/listen.py:767 core/views/fw/person.py:897
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s offen"
@@ -14749,6 +14749,99 @@ msgctxt "Raumkatalog"
 msgid "Frage zu Dokumenten"
 msgstr "Frage zu Dokumenten"
 
+#: core/utils/email_service.py:55
+#, python-format
+msgid "Eingangsbestätigung: %(titel)s [Ticket #%(id)s]"
+msgstr "Eingangsbestätigung: %(titel)s [Ticket #%(id)s]"
+
+#: core/utils/email_service.py:57
+msgid "Wir haben Ihre Meldung erhalten"
+msgstr "Wir haben Ihre Meldung erhalten"
+
+#: core/utils/email_service.py:58
+msgid "Ticket-Nr."
+msgstr "Ticket-Nr."
+
+#: core/utils/email_service.py:59
+msgid "Thema"
+msgstr "Thema"
+
+#: core/utils/email_service.py:60
+msgid "Wir melden uns, sobald ein Handwerker beauftragt wurde."
+msgstr "Wir melden uns, sobald ein Handwerker beauftragt wurde."
+
+#: core/utils/email_service.py:224
+msgid "Ihr Zugang zum Mieterportal"
+msgstr "Ihr Zugang zum Mieterportal"
+
+#: core/utils/email_service.py:226
+msgid "Ihr Mieterportal"
+msgstr "Ihr Mieterportal"
+
+#: core/utils/email_service.py:228
+msgid ""
+"Für Sie wurde ein persönlicher Zugang zum Mieterportal eingerichtet. Dort "
+"sehen Sie jederzeit Ihren Mietvertrag, offene Rechnungen (inkl. QR-"
+"Einzahlschein), Ihren Kontoauszug und Ihre Dokumente — und Sie können bequem "
+"eine Reparatur oder einen Schaden melden."
+msgstr "Für Sie wurde ein persönlicher Zugang zum Mieterportal eingerichtet. Dort sehen Sie jederzeit Ihren Mietvertrag, offene Rechnungen (inkl. QR-Einzahlschein), Ihren Kontoauszug und Ihre Dokumente — und Sie können bequem eine Reparatur oder einen Schaden melden."
+
+#: core/utils/email_service.py:231
+msgid "Jetzt einloggen"
+msgstr "Jetzt einloggen"
+
+#: core/utils/email_service.py:232
+msgid "Oder öffnen Sie diese Adresse im Browser:"
+msgstr "Oder öffnen Sie diese Adresse im Browser:"
+
+#: core/utils/email_service.py:233
+msgid ""
+"Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese "
+"Angaben sicher auf. Diese E-Mail wurde automatisch erstellt."
+msgstr "Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt."
+
+#: core/utils/email_service.py:332
+#, python-format
+msgid "Zahlungserinnerung: Miete %(monat)s - %(objekt)s"
+msgstr "Zahlungserinnerung: Miete %(monat)s - %(objekt)s"
+
+#: core/utils/email_service.py:333
+msgid "Zahlungserinnerung"
+msgstr "Zahlungserinnerung"
+
+#: core/utils/email_service.py:334
+#, python-format
+msgid "Guten Tag %(name)s,"
+msgstr "Guten Tag %(name)s,"
+
+#: core/utils/email_service.py:335
+#, python-format
+msgid ""
+"Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für "
+"den Monat <strong>%(monat)s</strong> für das Objekt <strong>%(objekt)s</"
+"strong> noch nicht vollständig beglichen wurde."
+msgstr "Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für den Monat <strong>%(monat)s</strong> für das Objekt <strong>%(objekt)s</strong> noch nicht vollständig beglichen wurde."
+
+#: core/utils/email_service.py:336
+#, python-format
+msgid "Ausstehender Betrag: CHF %(betrag)s"
+msgstr "Ausstehender Betrag: CHF %(betrag)s"
+
+#: core/utils/email_service.py:337
+msgid ""
+"Sollten Sie die Zahlung bereits getätigt haben, betrachten Sie dieses "
+"Schreiben bitte als gegenstandslos. Andernfalls bitten wir Sie um eine "
+"zeitnahe Überweisung."
+msgstr "Sollten Sie die Zahlung bereits getätigt haben, betrachten Sie dieses Schreiben bitte als gegenstandslos. Andernfalls bitten wir Sie um eine zeitnahe Überweisung."
+
+#: core/utils/email_service.py:338
+msgid "Freundliche Grüsse,"
+msgstr "Freundliche Grüsse,"
+
+#: core/utils/email_service.py:339
+msgid "Ihre Liegenschaftsverwaltung"
+msgstr "Ihre Liegenschaftsverwaltung"
+
 #: core/views/docuseal.py:73
 msgid "API-Key fehlt in settings.py"
 msgstr "API-Key fehlt in settings.py"
@@ -15097,7 +15190,7 @@ msgstr "Bitte eine Datei auswählen."
 msgid "Dokument hochgeladen."
 msgstr "Dokument hochgeladen."
 
-#: core/views/fw/aktionen.py:489 core/views/fw/person.py:530
+#: core/views/fw/aktionen.py:489 core/views/fw/person.py:535
 msgid "Dokument gelöscht."
 msgstr "Dokument gelöscht."
 
@@ -16297,7 +16390,7 @@ msgstr "Eigentuemer %(firma_oder_name)s gespeichert."
 msgid "Portal-Zugang entfernt."
 msgstr "Portal-Zugang entfernt."
 
-#: core/views/fw/eigentuemer.py:156 core/views/fw/person.py:227
+#: core/views/fw/eigentuemer.py:156 core/views/fw/person.py:232
 #, python-format
 msgid ""
 "Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. "
@@ -16306,7 +16399,7 @@ msgstr ""
 "Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. "
 "(Benutzername: %(username)s)"
 
-#: core/views/fw/eigentuemer.py:158 core/views/fw/person.py:229
+#: core/views/fw/eigentuemer.py:158 core/views/fw/person.py:234
 #, python-format
 msgid ""
 "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: "
@@ -17117,7 +17210,7 @@ msgstr "Pendenz „%(titel)s“ erfasst."
 msgid "Pendenz gelöscht."
 msgstr "Pendenz gelöscht."
 
-#: core/views/fw/person.py:231
+#: core/views/fw/person.py:236
 #, python-format
 msgid ""
 "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · "
@@ -17128,19 +17221,19 @@ msgstr ""
 "Passwort: %(passwort)s (bitte dem Mieter sicher mitteilen, wird nur einmal "
 "angezeigt)."
 
-#: core/views/fw/person.py:469
+#: core/views/fw/person.py:474
 msgid "Bitte einen Inhalt/Notiztext erfassen."
 msgstr "Bitte einen Inhalt/Notiztext erfassen."
 
-#: core/views/fw/person.py:480
+#: core/views/fw/person.py:485
 msgid "Notiz im Kontaktjournal erfasst."
 msgstr "Notiz im Kontaktjournal erfasst."
 
-#: core/views/fw/person.py:496
+#: core/views/fw/person.py:501
 msgid "Journal-Eintrag gelöscht."
 msgstr "Journal-Eintrag gelöscht."
 
-#: core/views/fw/person.py:548
+#: core/views/fw/person.py:553
 #, python-format
 msgid ""
 "Person kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. "
@@ -17149,45 +17242,45 @@ msgstr ""
 "Person kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. "
 "Bitte zuerst kündigen/beenden."
 
-#: core/views/fw/person.py:564
+#: core/views/fw/person.py:569
 #, python-format
 msgid "„%(name)s\" gelöscht%(zusatz)s."
 msgstr "„%(name)s\" gelöscht%(zusatz)s."
 
-#: core/views/fw/person.py:610
+#: core/views/fw/person.py:615
 msgid "Ungültiges «gültig ab»-Datum."
 msgstr "Ungültiges «gültig ab»-Datum."
 
-#: core/views/fw/person.py:616
+#: core/views/fw/person.py:621
 msgid "Bitte mindestens Strasse oder PLZ/Ort erfassen."
 msgstr "Bitte mindestens Strasse oder PLZ/Ort erfassen."
 
-#: core/views/fw/person.py:626
+#: core/views/fw/person.py:631
 msgid "Adresse gespeichert."
 msgstr "Adresse gespeichert."
 
-#: core/views/fw/person.py:644
+#: core/views/fw/person.py:649
 msgid "Adress-Zeile entfernt."
 msgstr "Adress-Zeile entfernt."
 
-#: core/views/fw/person.py:825
+#: core/views/fw/person.py:830
 #, python-format
 msgid "%(display_name)s gespeichert."
 msgstr "%(display_name)s gespeichert."
 
-#: core/views/fw/person.py:888
+#: core/views/fw/person.py:893
 msgid "Mieter, aktiv"
 msgstr "Mieter, aktiv"
 
-#: core/views/fw/person.py:890
+#: core/views/fw/person.py:895
 msgid "Ehemaliger Mieter"
 msgstr "Ehemaliger Mieter"
 
-#: core/views/fw/person.py:899
+#: core/views/fw/person.py:904
 msgid "Weiterer Mieter (WG)"
 msgstr "Weiterer Mieter (WG)"
 
-#: core/views/fw/person.py:900
+#: core/views/fw/person.py:905
 msgid "Schadenmelder"
 msgstr "Schadenmelder"
 

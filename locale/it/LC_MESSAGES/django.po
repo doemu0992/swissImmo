@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 07:58+0200\n"
+"POT-Creation-Date: 2026-09-29 08:08+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -658,16 +658,16 @@ msgstr "Password | Portale SwissImmo"
 #: core/templates/core/portal_login.html:189
 #: core/templates/core/postfach_form.html:85
 #: core/templates/core/zweifaktor_uebersicht.html:72
-#: core/templates/fw/benutzer_form.html:32
+#: core/templates/fw/benutzer_form.html:32 core/utils/email_service.py:230
 msgid "Passwort"
 msgstr "Password"
 
-#: core/templates/core/dok_base.html:39
+#: core/templates/core/dok_base.html:43
 #, python-format
 msgid "erstellt am %(datum)s"
 msgstr "allestito il %(datum)s"
 
-#: core/templates/core/dok_base.html:39
+#: core/templates/core/dok_base.html:43
 msgid "Seite <pdf:pagenumber> von <pdf:pagecount>"
 msgstr "Pagina <pdf:pagenumber> di <pdf:pagecount>"
 
@@ -686,7 +686,10 @@ msgid ""
 "Wir freuen uns, Ihnen den beidseitig unterzeichneten Mietvertrag für das "
 "Mietobjekt <b>%(objekt)s</b> an der %(strasse)s, %(plz)s %(ort)s, "
 "zuzustellen. Bitte bewahren Sie dieses Exemplar sorgfältig auf."
-msgstr "Siamo lieti di inviarle il contratto di locazione firmato da entrambe le parti per l'oggetto <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s. La preghiamo di conservare con cura questo esemplare."
+msgstr ""
+"Siamo lieti di inviarle il contratto di locazione firmato da entrambe le "
+"parti per l'oggetto <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s. La "
+"preghiamo di conservare con cura questo esemplare."
 
 #: core/templates/core/dok_begleitbrief.html:22
 #, python-format
@@ -695,13 +698,19 @@ msgid ""
 "und der Schlüssel wird separat mit Ihnen vereinbart. Bitte stellen Sie "
 "sicher, dass die vereinbarte Sicherheitsleistung (Mietzinsdepot) von <b>CHF "
 "%(kaution)s</b> bis zur Schlüsselübergabe geleistet ist."
-msgstr "La sua locazione inizia il <b>%(beginn)s</b>. La consegna dell'appartamento e delle chiavi verrà concordata separatamente con lei. La preghiamo di assicurarsi che la garanzia convenuta (deposito della pigione) di <b>CHF %(kaution)s</b> sia prestata entro la consegna delle chiavi."
+msgstr ""
+"La sua locazione inizia il <b>%(beginn)s</b>. La consegna dell'appartamento "
+"e delle chiavi verrà concordata separatamente con lei. La preghiamo di "
+"assicurarsi che la garanzia convenuta (deposito della pigione) di <b>CHF "
+"%(kaution)s</b> sia prestata entro la consegna delle chiavi."
 
 #: core/templates/core/dok_begleitbrief.html:23
 msgid ""
 "Wir wünschen Ihnen einen guten Start in Ihrem neuen Zuhause und stehen Ihnen "
 "bei Fragen gerne zur Verfügung."
-msgstr "Le auguriamo un buon inizio nella sua nuova casa e restiamo volentieri a disposizione per qualsiasi domanda."
+msgstr ""
+"Le auguriamo un buon inizio nella sua nuova casa e restiamo volentieri a "
+"disposizione per qualsiasi domanda."
 
 #: core/templates/core/dok_begleitbrief.html:25
 msgid "Ihr Mietvertrag zur Unterzeichnung"
@@ -712,7 +721,9 @@ msgstr "Il suo contratto di locazione da firmare"
 msgid ""
 "Wir freuen uns, Ihnen den Mietvertrag für das Mietobjekt <b>%(objekt)s</b> "
 "an der %(strasse)s, %(plz)s %(ort)s, in zweifacher Ausfertigung zuzustellen."
-msgstr "Siamo lieti di inviarle in duplice copia il contratto di locazione per l'oggetto <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s."
+msgstr ""
+"Siamo lieti di inviarle in duplice copia il contratto di locazione per "
+"l'oggetto <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s."
 
 #: core/templates/core/dok_begleitbrief.html:28
 msgid ""
@@ -720,7 +731,10 @@ msgid ""
 "Sie <b>ein</b> unterzeichnetes Exemplar innert 10 Tagen an uns zurück. Das "
 "zweite Exemplar erhalten Sie beidseitig unterzeichnet zurück und ist für "
 "Ihre Unterlagen bestimmt."
-msgstr "La preghiamo di verificare il contratto, firmare entrambi gli esemplari e rispedirci <b>un</b> esemplare firmato entro 10 giorni. Riceverà il secondo esemplare firmato da entrambe le parti, destinato ai suoi atti."
+msgstr ""
+"La preghiamo di verificare il contratto, firmare entrambi gli esemplari e "
+"rispedirci <b>un</b> esemplare firmato entro 10 giorni. Riceverà il secondo "
+"esemplare firmato da entrambe le parti, destinato ai suoi atti."
 
 #: core/templates/core/dok_begleitbrief.html:29
 #, python-format
@@ -728,16 +742,22 @@ msgid ""
 "Ihr Mietverhältnis beginnt am <b>%(beginn)s</b>. Der Bruttomietzins beträgt "
 "<b>CHF %(brutto)s</b> pro Monat. Die Sicherheitsleistung (Mietzinsdepot) von "
 "<b>CHF %(kaution)s</b> ist bis zur Schlüsselübergabe zu leisten."
-msgstr "La sua locazione inizia il <b>%(beginn)s</b>. La pigione lorda ammonta a <b>CHF %(brutto)s</b> al mese. La garanzia (deposito della pigione) di <b>CHF %(kaution)s</b> va prestata entro la consegna delle chiavi."
+msgstr ""
+"La sua locazione inizia il <b>%(beginn)s</b>. La pigione lorda ammonta a "
+"<b>CHF %(brutto)s</b> al mese. La garanzia (deposito della pigione) di "
+"<b>CHF %(kaution)s</b> va prestata entro la consegna delle chiavi."
 
 #: core/templates/core/dok_begleitbrief.html:30
 msgid ""
 "Dem Vertrag liegen die Allgemeinen Bedingungen, die Hausordnung sowie das "
 "Merkblatt «Richtig Lüften und Pflegen» bei. Für Fragen stehen wir Ihnen "
 "gerne zur Verfügung."
-msgstr "Al contratto sono allegati le condizioni generali, il regolamento della casa e il promemoria «Arieggiare e curare correttamente». Restiamo volentieri a disposizione per qualsiasi domanda."
+msgstr ""
+"Al contratto sono allegati le condizioni generali, il regolamento della casa "
+"e il promemoria «Arieggiare e curare correttamente». Restiamo volentieri a "
+"disposizione per qualsiasi domanda."
 
-#: core/templates/core/dok_begleitbrief.html:33
+#: core/templates/core/dok_begleitbrief.html:33 core/utils/email_service.py:61
 msgid "Freundliche Grüsse"
 msgstr "Cordiali saluti"
 
@@ -753,7 +773,9 @@ msgstr "Contratto di locazione firmato"
 msgid ""
 "Mietvertrag (2 Exemplare), Allgemeine Bedingungen, Hausordnung, Merkblatt "
 "Lüften"
-msgstr "Contratto di locazione (2 esemplari), condizioni generali, regolamento della casa, promemoria sull'aerazione"
+msgstr ""
+"Contratto di locazione (2 esemplari), condizioni generali, regolamento della "
+"casa, promemoria sull'aerazione"
 
 #: core/templates/core/dok_merkblatt_lueften.html:4
 msgid "Merkblatt: Richtig Lüften und Pflegen"
@@ -769,7 +791,11 @@ msgid ""
 "(Kochen, Duschen, Wäschetrocknen, Atmung, Pflanzen). Wird diese Feuchtigkeit "
 "nicht regelmässig abgeführt, entsteht Schimmel. Mit dem richtigen Lüften und "
 "Heizen beugen Sie Schäden vor."
-msgstr "Ogni economia domestica rilascia ogni giorno diversi litri di umidità nell'aria (cucina, doccia, asciugatura del bucato, respirazione, piante). Se questa umidità non viene eliminata regolarmente, si forma la muffa. Arieggiando e riscaldando correttamente si prevengono i danni."
+msgstr ""
+"Ogni economia domestica rilascia ogni giorno diversi litri di umidità "
+"nell'aria (cucina, doccia, asciugatura del bucato, respirazione, piante). Se "
+"questa umidità non viene eliminata regolarmente, si forma la muffa. "
+"Arieggiando e riscaldando correttamente si prevengono i danni."
 
 #: core/templates/core/dok_merkblatt_lueften.html:9
 msgid "Richtig Lüften"
@@ -779,23 +805,31 @@ msgstr "Arieggiare correttamente"
 msgid ""
 "<b>Stosslüften statt Kippen:</b> Fenster mehrmals täglich für 5–10 Minuten "
 "ganz öffnen (Durchzug), statt sie dauerhaft gekippt zu lassen."
-msgstr "<b>Arieggiare a fondo invece di socchiudere:</b> aprire completamente le finestre più volte al giorno per 5–10 minuti (corrente d'aria), invece di lasciarle sempre socchiuse."
+msgstr ""
+"<b>Arieggiare a fondo invece di socchiudere:</b> aprire completamente le "
+"finestre più volte al giorno per 5–10 minuti (corrente d'aria), invece di "
+"lasciarle sempre socchiuse."
 
 #: core/templates/core/dok_merkblatt_lueften.html:12
 msgid ""
 "<b>Querlüften:</b> Gegenüberliegende Fenster gleichzeitig öffnen — so wird "
 "die Luft am schnellsten ausgetauscht."
-msgstr "<b>Ventilazione trasversale:</b> aprire contemporaneamente finestre opposte — così l'aria si rinnova più rapidamente."
+msgstr ""
+"<b>Ventilazione trasversale:</b> aprire contemporaneamente finestre opposte "
+"— così l'aria si rinnova più rapidamente."
 
 #: core/templates/core/dok_merkblatt_lueften.html:13
 msgid ""
 "<b>Nach Feuchtigkeit lüften:</b> Nach dem Duschen, Baden und Kochen sofort "
 "lüften. Türen zu feuchten Räumen geschlossen halten."
-msgstr "<b>Arieggiare dopo l'umidità:</b> arieggiare subito dopo la doccia, il bagno e la cucina. Tenere chiuse le porte dei locali umidi."
+msgstr ""
+"<b>Arieggiare dopo l'umidità:</b> arieggiare subito dopo la doccia, il bagno "
+"e la cucina. Tenere chiuse le porte dei locali umidi."
 
 #: core/templates/core/dok_merkblatt_lueften.html:14
 msgid "<b>Schlafzimmer:</b> Morgens nach dem Aufstehen gründlich lüften."
-msgstr "<b>Camera da letto:</b> arieggiare bene al mattino dopo essersi alzati."
+msgstr ""
+"<b>Camera da letto:</b> arieggiare bene al mattino dopo essersi alzati."
 
 #: core/templates/core/dok_merkblatt_lueften.html:17
 msgid "Richtig Heizen"
@@ -804,7 +838,8 @@ msgstr "Riscaldare correttamente"
 #: core/templates/core/dok_merkblatt_lueften.html:19
 msgid ""
 "Alle Räume auf mindestens 17–18 °C temperieren, auch selten genutzte Zimmer."
-msgstr "Riscaldare tutti i locali ad almeno 17–18 °C, anche quelli poco utilizzati."
+msgstr ""
+"Riscaldare tutti i locali ad almeno 17–18 °C, anche quelli poco utilizzati."
 
 #: core/templates/core/dok_merkblatt_lueften.html:20
 msgid "Heizkörper nicht mit Möbeln oder Vorhängen verdecken."
@@ -820,13 +855,16 @@ msgstr "Evitare l'umidità"
 
 #: core/templates/core/dok_merkblatt_lueften.html:26
 msgid "Wäsche möglichst nicht in der Wohnung trocknen; falls doch, gut lüften."
-msgstr "Se possibile non asciugare il bucato in casa; altrimenti arieggiare bene."
+msgstr ""
+"Se possibile non asciugare il bucato in casa; altrimenti arieggiare bene."
 
 #: core/templates/core/dok_merkblatt_lueften.html:27
 msgid ""
 "Möbel mit einigen Zentimetern Abstand zur Aussenwand aufstellen, damit die "
 "Luft zirkulieren kann."
-msgstr "Collocare i mobili a qualche centimetro dalle pareti esterne affinché l'aria possa circolare."
+msgstr ""
+"Collocare i mobili a qualche centimetro dalle pareti esterne affinché l'aria "
+"possa circolare."
 
 #: core/templates/core/dok_merkblatt_lueften.html:28
 msgid "Dunstabzug bzw. Ventilator in Küche und Bad nutzen."
@@ -852,7 +890,9 @@ msgstr "Segnalare subito danni e difetti all'amministrazione."
 msgid ""
 "Bei Fragen zur richtigen Pflege Ihrer Wohnung steht Ihnen die Verwaltung "
 "gerne zur Verfügung."
-msgstr "Per domande sulla corretta cura del suo appartamento, l'amministrazione è volentieri a disposizione."
+msgstr ""
+"Per domande sulla corretta cura del suo appartamento, l'amministrazione è "
+"volentieri a disposizione."
 
 #: core/templates/core/dok_wohnungsausweis.html:4
 msgid "Wohnungsausweis"
@@ -926,7 +966,7 @@ msgstr "Pigione lorda"
 #: core/templates/fw/mieterspiegel.html:64 core/templates/fw/mietzins.html:58
 #: core/templates/fw/nebenkosten_detail.html:113
 #: core/templates/fw/sollstellung.html:82 core/templates/fw/vertraege.html:68
-#: core/templates/fw/vertrag_bearbeiten.html:41 core/views/fw/person.py:898
+#: core/templates/fw/vertrag_bearbeiten.html:41 core/views/fw/person.py:903
 msgid "Mieter"
 msgstr "Inquilino"
 
@@ -995,7 +1035,7 @@ msgstr "Data di nascita"
 msgid "Heimatort / Nationalität"
 msgstr "Luogo di attinenza / nazionalità"
 
-#: core/templates/core/dok_wohnungsausweis.html:28 core/views/fw/person.py:898
+#: core/templates/core/dok_wohnungsausweis.html:28 core/views/fw/person.py:903
 msgid "Mitmieter"
 msgstr "Coinquilino"
 
@@ -1068,7 +1108,7 @@ msgstr "Acceda al cockpit dell'amministrazione."
 
 #: core/templates/core/login.html:177 core/templates/core/portal_login.html:179
 #: core/templates/fw/mandat_form.html:98
-#: core/templates/fw/person_detail.html:303
+#: core/templates/fw/person_detail.html:303 core/utils/email_service.py:229
 msgid "Benutzername"
 msgstr "Nome utente"
 
@@ -1293,7 +1333,7 @@ msgstr "Portale inquilini — SwissImmo"
 msgid "Mieterportal"
 msgstr "Portale inquilini"
 
-#: core/templates/core/mieter_portal.html:13
+#: core/templates/core/mieter_portal.html:13 core/utils/email_service.py:227
 #, python-format
 msgid "Guten Tag %(name)s"
 msgstr "Buongiorno %(name)s"
@@ -1343,7 +1383,7 @@ msgstr ""
 #: core/templates/core/mieter_portal.html:65
 #: core/templates/core/portal.html:299 core/templates/fw/dashboard.html:348
 #: core/views/fw/detailseiten.py:2272 core/views/fw/listen.py:764
-#: core/views/fw/listen.py:767 core/views/fw/person.py:892
+#: core/views/fw/listen.py:767 core/views/fw/person.py:897
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s scoperti"
@@ -14750,6 +14790,99 @@ msgctxt "Raumkatalog"
 msgid "Frage zu Dokumenten"
 msgstr "Domanda sui documenti"
 
+#: core/utils/email_service.py:55
+#, python-format
+msgid "Eingangsbestätigung: %(titel)s [Ticket #%(id)s]"
+msgstr "Conferma di ricezione: %(titel)s [ticket n. %(id)s]"
+
+#: core/utils/email_service.py:57
+msgid "Wir haben Ihre Meldung erhalten"
+msgstr "Abbiamo ricevuto la sua segnalazione"
+
+#: core/utils/email_service.py:58
+msgid "Ticket-Nr."
+msgstr "N. ticket"
+
+#: core/utils/email_service.py:59
+msgid "Thema"
+msgstr "Oggetto"
+
+#: core/utils/email_service.py:60
+msgid "Wir melden uns, sobald ein Handwerker beauftragt wurde."
+msgstr "La ricontatteremo non appena sarà stato incaricato un artigiano."
+
+#: core/utils/email_service.py:224
+msgid "Ihr Zugang zum Mieterportal"
+msgstr "Il suo accesso al portale degli inquilini"
+
+#: core/utils/email_service.py:226
+msgid "Ihr Mieterportal"
+msgstr "Il suo portale degli inquilini"
+
+#: core/utils/email_service.py:228
+msgid ""
+"Für Sie wurde ein persönlicher Zugang zum Mieterportal eingerichtet. Dort "
+"sehen Sie jederzeit Ihren Mietvertrag, offene Rechnungen (inkl. QR-"
+"Einzahlschein), Ihren Kontoauszug und Ihre Dokumente — und Sie können bequem "
+"eine Reparatur oder einen Schaden melden."
+msgstr "Per lei è stato creato un accesso personale al portale degli inquilini. Lì trova in qualsiasi momento il suo contratto di locazione, le fatture aperte (con polizza di versamento QR), il suo estratto conto e i suoi documenti — e può segnalare comodamente una riparazione o un danno."
+
+#: core/utils/email_service.py:231
+msgid "Jetzt einloggen"
+msgstr "Accedi ora"
+
+#: core/utils/email_service.py:232
+msgid "Oder öffnen Sie diese Adresse im Browser:"
+msgstr "Oppure apra questo indirizzo nel browser:"
+
+#: core/utils/email_service.py:233
+msgid ""
+"Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese "
+"Angaben sicher auf. Diese E-Mail wurde automatisch erstellt."
+msgstr "La preghiamo di modificare la password dopo il primo accesso e di conservare questi dati in un luogo sicuro. Questa e-mail è stata generata automaticamente."
+
+#: core/utils/email_service.py:332
+#, python-format
+msgid "Zahlungserinnerung: Miete %(monat)s - %(objekt)s"
+msgstr "Promemoria di pagamento: pigione %(monat)s - %(objekt)s"
+
+#: core/utils/email_service.py:333
+msgid "Zahlungserinnerung"
+msgstr "Promemoria di pagamento"
+
+#: core/utils/email_service.py:334
+#, python-format
+msgid "Guten Tag %(name)s,"
+msgstr "Buongiorno %(name)s,"
+
+#: core/utils/email_service.py:335
+#, python-format
+msgid ""
+"Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für "
+"den Monat <strong>%(monat)s</strong> für das Objekt <strong>%(objekt)s</"
+"strong> noch nicht vollständig beglichen wurde."
+msgstr "Controllando i nostri conti abbiamo constatato che la pigione del mese di <strong>%(monat)s</strong> per l'oggetto <strong>%(objekt)s</strong> non è ancora stata saldata completamente."
+
+#: core/utils/email_service.py:336
+#, python-format
+msgid "Ausstehender Betrag: CHF %(betrag)s"
+msgstr "Importo in sospeso: CHF %(betrag)s"
+
+#: core/utils/email_service.py:337
+msgid ""
+"Sollten Sie die Zahlung bereits getätigt haben, betrachten Sie dieses "
+"Schreiben bitte als gegenstandslos. Andernfalls bitten wir Sie um eine "
+"zeitnahe Überweisung."
+msgstr "Se ha già effettuato il pagamento, consideri questa lettera come nulla. In caso contrario la preghiamo di effettuare il versamento al più presto."
+
+#: core/utils/email_service.py:338
+msgid "Freundliche Grüsse,"
+msgstr "Cordiali saluti,"
+
+#: core/utils/email_service.py:339
+msgid "Ihre Liegenschaftsverwaltung"
+msgstr "La sua amministrazione immobiliare"
+
 #: core/views/docuseal.py:73
 msgid "API-Key fehlt in settings.py"
 msgstr "Chiave API mancante in settings.py"
@@ -15102,7 +15235,7 @@ msgstr "Seleziona un file."
 msgid "Dokument hochgeladen."
 msgstr "Documento caricato."
 
-#: core/views/fw/aktionen.py:489 core/views/fw/person.py:530
+#: core/views/fw/aktionen.py:489 core/views/fw/person.py:535
 msgid "Dokument gelöscht."
 msgstr "Documento eliminato."
 
@@ -16317,7 +16450,7 @@ msgstr "Proprietario %(firma_oder_name)s salvato."
 msgid "Portal-Zugang entfernt."
 msgstr "Accesso al portale rimosso."
 
-#: core/views/fw/eigentuemer.py:156 core/views/fw/person.py:227
+#: core/views/fw/eigentuemer.py:156 core/views/fw/person.py:232
 #, python-format
 msgid ""
 "Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. "
@@ -16326,7 +16459,7 @@ msgstr ""
 "Accesso al portale attivo. Le credenziali sono state inviate a %(email)s. "
 "(Nome utente: %(username)s)"
 
-#: core/views/fw/eigentuemer.py:158 core/views/fw/person.py:229
+#: core/views/fw/eigentuemer.py:158 core/views/fw/person.py:234
 #, python-format
 msgid ""
 "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: "
@@ -17147,7 +17280,7 @@ msgstr "Pendenza «%(titel)s» registrata."
 msgid "Pendenz gelöscht."
 msgstr "Pendenza eliminata."
 
-#: core/views/fw/person.py:231
+#: core/views/fw/person.py:236
 #, python-format
 msgid ""
 "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · "
@@ -17158,19 +17291,19 @@ msgstr ""
 "%(username)s · password: %(passwort)s (comunicarli in modo sicuro "
 "all'inquilino, vengono mostrati una sola volta)."
 
-#: core/views/fw/person.py:469
+#: core/views/fw/person.py:474
 msgid "Bitte einen Inhalt/Notiztext erfassen."
 msgstr "Inserisci un contenuto / testo della nota."
 
-#: core/views/fw/person.py:480
+#: core/views/fw/person.py:485
 msgid "Notiz im Kontaktjournal erfasst."
 msgstr "Nota registrata nel giornale dei contatti."
 
-#: core/views/fw/person.py:496
+#: core/views/fw/person.py:501
 msgid "Journal-Eintrag gelöscht."
 msgstr "Voce del giornale eliminata."
 
-#: core/views/fw/person.py:548
+#: core/views/fw/person.py:553
 #, python-format
 msgid ""
 "Person kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. "
@@ -17179,45 +17312,45 @@ msgstr ""
 "La persona non può essere eliminata: %(aktive)s contratto/i attivo/i. "
 "Disdirli/terminarli prima."
 
-#: core/views/fw/person.py:564
+#: core/views/fw/person.py:569
 #, python-format
 msgid "„%(name)s\" gelöscht%(zusatz)s."
 msgstr "«%(name)s» eliminato%(zusatz)s."
 
-#: core/views/fw/person.py:610
+#: core/views/fw/person.py:615
 msgid "Ungültiges «gültig ab»-Datum."
 msgstr "Data «valido dal» non valida."
 
-#: core/views/fw/person.py:616
+#: core/views/fw/person.py:621
 msgid "Bitte mindestens Strasse oder PLZ/Ort erfassen."
 msgstr "Inserisci almeno la via o NPA/località."
 
-#: core/views/fw/person.py:626
+#: core/views/fw/person.py:631
 msgid "Adresse gespeichert."
 msgstr "Indirizzo salvato."
 
-#: core/views/fw/person.py:644
+#: core/views/fw/person.py:649
 msgid "Adress-Zeile entfernt."
 msgstr "Riga di indirizzo rimossa."
 
-#: core/views/fw/person.py:825
+#: core/views/fw/person.py:830
 #, python-format
 msgid "%(display_name)s gespeichert."
 msgstr "%(display_name)s salvato."
 
-#: core/views/fw/person.py:888
+#: core/views/fw/person.py:893
 msgid "Mieter, aktiv"
 msgstr "Inquilino, attivo"
 
-#: core/views/fw/person.py:890
+#: core/views/fw/person.py:895
 msgid "Ehemaliger Mieter"
 msgstr "Ex inquilino"
 
-#: core/views/fw/person.py:899
+#: core/views/fw/person.py:904
 msgid "Weiterer Mieter (WG)"
 msgstr "Altro inquilino (coabitazione)"
 
-#: core/views/fw/person.py:900
+#: core/views/fw/person.py:905
 msgid "Schadenmelder"
 msgstr "Segnalante di danno"
 
