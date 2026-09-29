@@ -15,6 +15,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.conf import settings
+from django.utils.translation import gettext
 from django.db import transaction
 from django.db.models import F, Q, Sum
 from django.db.models.functions import ExtractMonth
@@ -238,7 +239,7 @@ def fw_debitor_neu(request):
     except Exception:
         betrag = Decimal('0')
     if not titel or betrag <= 0:
-        messages.error(request, "Titel und ein Betrag > 0 sind erforderlich.")
+        messages.error(request, gettext('Titel und ein Betrag > 0 sind erforderlich.'))
         return redirect('fw_debitoren')
 
     vertrag = None
@@ -267,7 +268,7 @@ def fw_debitor_neu(request):
               liegenschaft=lg, debitor=rechnung, user=request.user)
 
     log_aktion(request, "Ad-hoc-Debitorenrechnung erstellt", titel, f"CHF {betrag}")
-    messages.success(request, f"✅ Rechnung '{titel}' über CHF {betrag} erstellt — QR-Rechnung via QR-Button.")
+    messages.success(request, '✅ ' + gettext("Rechnung '%(titel)s' über CHF %(betrag)s erstellt — QR-Rechnung via QR-Button.") % {'titel': titel, 'betrag': betrag})
     ziel = '/neu/debitoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -353,9 +354,7 @@ def fw_weiterverrechnung(request, kreditor_id):
             # zusätzlich direkt weiterzuverrechnen würde doppelt belasten. Nur mit
             # bewusstem Override (Häkchen) zulassen.
             if (k.is_hnk_relevant or k.hnk_betrag > 0) and request.POST.get('hnk_override') != 'on':
-                messages.error(request, "Diese Rechnung ist HNK-relevant und wird bereits über die "
-                                        "Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn "
-                                        "du das Häkchen «Trotzdem direkt weiterverrechnen» setzt (sonst doppelte Belastung).")
+                messages.error(request, gettext('Diese Rechnung ist HNK-relevant und wird bereits über die Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn du das Häkchen «Trotzdem direkt weiterverrechnen» setzt (sonst doppelte Belastung).'))
                 return redirect(request.path)
 
             # --- Modus «verteilen»: Fremdkosten in EINEM Schritt nach Verteilschlüssel
@@ -363,17 +362,17 @@ def fw_weiterverrechnung(request, kreditor_id):
             if request.POST.get('modus') == 'verteilen':
                 lg = k.liegenschaft
                 if not lg:
-                    messages.error(request, "Für die Verteilung muss die Rechnung einer Liegenschaft zugeordnet sein.")
+                    messages.error(request, gettext('Für die Verteilung muss die Rechnung einer Liegenschaft zugeordnet sein.'))
                     return redirect(request.path)
                 schluessel = request.POST.get('schluessel') or 'm2'
                 grund_total = k.offen_weiterzuverrechnen
                 if grund_total <= 0:
-                    messages.error(request, "Nichts mehr offen zum Weiterverrechnen.")
+                    messages.error(request, gettext('Nichts mehr offen zum Weiterverrechnen.'))
                     return redirect(request.path)
                 zielvertraege = list(Mietvertrag.objects.filter(status='aktiv', einheit__liegenschaft=lg)
                                      .select_related('mieter', 'einheit'))
                 if not zielvertraege:
-                    messages.error(request, "Keine aktiven Mietverhältnisse in dieser Liegenschaft.")
+                    messages.error(request, gettext('Keine aktiven Mietverhältnisse in dieser Liegenschaft.'))
                     return redirect(request.path)
 
                 def _gewicht(e):
@@ -386,7 +385,7 @@ def fw_weiterverrechnung(request, kreditor_id):
                 gew = [(v, _gewicht(v.einheit)) for v in zielvertraege if v.einheit_id]
                 total_w = sum((w for _, w in gew), Decimal('0'))
                 if total_w <= 0:
-                    messages.error(request, "Für diesen Verteilschlüssel fehlen die Werte (m²/Wertquote) an den Objekten.")
+                    messages.error(request, gettext('Für diesen Verteilschlüssel fehlen die Werte (m²/Wertquote) an den Objekten.'))
                     return redirect(request.path)
 
                 verteilt = Decimal('0.00'); anzahl = 0
@@ -400,20 +399,19 @@ def fw_weiterverrechnung(request, kreditor_id):
                     verteilt += anteil; anzahl += 1
                 log_aktion(request, "Weiterverrechnung verteilt", str(lg),
                            f"CHF {grund_total} aus {k.lieferant} auf {anzahl} Mieter ({schluessel})")
-                messages.success(request, f"✅ CHF {grund_total} nach {schluessel} auf {anzahl} Mieter verteilt — "
-                                          "QR-Rechnungen über den QR-Button in den Debitoren.")
+                messages.success(request, '✅ ' + gettext('CHF %(grund_total)s nach %(schluessel)s auf %(anzahl)s Mieter verteilt — QR-Rechnungen über den QR-Button in den Debitoren.') % {'grund_total': grund_total, 'schluessel': schluessel, 'anzahl': anzahl})
                 return redirect('/neu/debitoren/')
 
             # --- Einzel-Weiterverrechnung an einen Mieter ---
             vertrag_id = request.POST.get('vertrag_id')
             vertrag = Mietvertrag.objects.filter(id=vertrag_id).select_related('mieter', 'einheit__liegenschaft').first()
             if not vertrag:
-                messages.error(request, "Bitte einen Mieter/Vertrag wählen.")
+                messages.error(request, gettext('Bitte einen Mieter/Vertrag wählen.'))
                 return redirect(request.path)
             grund = _dec(request.POST.get('betrag'), str(k.offen_weiterzuverrechnen))
             zuschlag = _dec(request.POST.get('zuschlag'), '0')
             if grund <= 0:
-                messages.error(request, "Betrag muss grösser als 0 sein.")
+                messages.error(request, gettext('Betrag muss grösser als 0 sein.'))
                 return redirect(request.path)
             grund = min(grund, k.offen_weiterzuverrechnen)
             titel = (request.POST.get('titel') or f"Weiterverrechnung: {k.lieferant}").strip()
@@ -421,8 +419,7 @@ def fw_weiterverrechnung(request, kreditor_id):
 
             log_aktion(request, "Weiterverrechnung erstellt", str(vertrag.mieter),
                        f"CHF {total} aus {k.lieferant} (#{k.id})", ziel=vertrag)
-            messages.success(request, f"✅ CHF {total} an {vertrag.mieter} weiterverrechnet — "
-                                      "QR-Rechnung über den QR-Button in den Debitoren.")
+            messages.success(request, '✅ ' + gettext('CHF %(total)s an %(mieter)s weiterverrechnet — QR-Rechnung über den QR-Button in den Debitoren.') % {'total': total, 'mieter': vertrag.mieter})
             if request.POST.get('embed') == '1':
                 return render(request, 'fw/_modal_done.html', {})
             return redirect('/neu/debitoren/')
@@ -493,11 +490,11 @@ def fw_debitor_abschreiben(request, pk):
             DebitorenRechnung.objects.select_for_update(of=('self',))
             .select_related('vertrag__mieter'), id=pk)
         if r.status not in ('offen', 'teilbezahlt'):
-            messages.info(request, "Nur offene oder teilbezahlte Forderungen können abgeschrieben werden.")
+            messages.info(request, gettext('Nur offene oder teilbezahlte Forderungen können abgeschrieben werden.'))
             return redirect('fw_debitoren')
         offen = r.offener_betrag
         if offen <= 0:
-            messages.info(request, "Kein offener Betrag — nichts abzuschreiben.")
+            messages.info(request, gettext('Kein offener Betrag — nichts abzuschreiben.'))
             return redirect('fw_debitoren')
         grund = (request.POST.get('grund') or '').strip()
         mieter_name = r.vertrag.mieter.display_name if r.vertrag_id and r.vertrag.mieter_id else ''
@@ -540,7 +537,7 @@ def fw_debitor_abschreiben(request, pk):
         r.save(update_fields=['status'])
     log_aktion(request, "Forderungsverlust gebucht", r.titel,
                f"CHF {offen} · {grund or 'ohne Grundangabe'}")
-    messages.success(request, f"✅ Forderung '{r.titel}' als Debitorenverlust abgeschrieben (CHF {offen}, Konto 3805).")
+    messages.success(request, '✅ ' + gettext("Forderung '%(titel)s' als Debitorenverlust abgeschrieben (CHF %(offen)s, Konto 3805).") % {'titel': r.titel, 'offen': offen})
     return redirect('fw_debitoren')
 
 
@@ -586,13 +583,13 @@ def fw_debitor_stornieren(request, pk):
 
     r = get_object_or_404(DebitorenRechnung, id=pk)
     if r.status == 'storniert':
-        messages.info(request, "Rechnung ist bereits storniert.")
+        messages.info(request, gettext('Rechnung ist bereits storniert.'))
         return redirect('fw_debitoren')
 
     bezahlt = (Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht')
                .exists())
     if bezahlt:
-        messages.error(request, "Diese Rechnung hat verbuchte Zahlungen — bitte zuerst die Zahlung(en) stornieren.")
+        messages.error(request, gettext('Diese Rechnung hat verbuchte Zahlungen — bitte zuerst die Zahlung(en) stornieren.'))
         return redirect('fw_debitoren')
 
     # Abgeleitete Mahngebühren/Zins-Forderungen mitstornieren: Wird die
@@ -631,7 +628,7 @@ def fw_debitor_stornieren(request, pk):
     if folge_bezahlt:
         hinweis += (f" {len(folge_bezahlt)} bereits bezahlte Mahngebühr(en) blieben bestehen — "
                     f"dort zuerst die Zahlung stornieren.")
-    messages.success(request, f"✅ Rechnung '{r.titel}' storniert (revisionssicher, mit Gegenbuchung).{hinweis}")
+    messages.success(request, '✅ ' + gettext("Rechnung '%(titel)s' storniert (revisionssicher, mit Gegenbuchung).%(hinweis)s") % {'titel': r.titel, 'hinweis': hinweis})
     ziel = '/neu/debitoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'

@@ -12,6 +12,7 @@ import datetime
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
+from django.utils.translation import gettext
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import gettext_lazy
@@ -507,7 +508,7 @@ def mieter_kuendigung(request):
     if request.method == 'POST':
         v = vertraege.filter(id=request.POST.get('vertrag_id') or None).first()
         if not v:
-            messages.error(request, "Kein gültiges Mietobjekt gewählt.")
+            messages.error(request, gettext('Kein gültiges Mietobjekt gewählt.'))
             return redirect('mieter_kuendigung')
         heute = timezone.localdate()
         wunsch = (request.POST.get('gewuenschtes_ende') or '').strip()
@@ -527,9 +528,7 @@ def mieter_kuendigung(request):
         # Verwaltung benachrichtigen (E-Mail) + Journal-Notiz
         _benachrichtige_verwaltung_kuendigung(v, k)
 
-        messages.success(request, f"✅ Ihre Kündigung wurde erfasst (Termin: {per.strftime('%d.%m.%Y')}). "
-                         "Laden Sie den Kündigungsbrief herunter und senden Sie ihn per Einschreiben. "
-                         "Die Verwaltung wurde informiert und bestätigt den Eingang.")
+        messages.success(request, '✅ ' + gettext('Ihre Kündigung wurde erfasst (Termin: %(strftime)s). Laden Sie den Kündigungsbrief herunter und senden Sie ihn per Einschreiben. Die Verwaltung wurde informiert und bestätigt den Eingang.') % {'strftime': per.strftime('%d.%m.%Y')})
         return redirect('mieter_kuendigung')
 
     # GET: Objekte mit berechnetem Termin + bereits erfasste Kündigungen
@@ -672,7 +671,7 @@ def mieter_schaden_melden(request):
     beschreibung = (request.POST.get('beschreibung') or '').strip()
     vertrag_id = request.POST.get('vertrag_id')
     if not titel or not beschreibung:
-        messages.error(request, "Bitte Titel und Beschreibung angeben.")
+        messages.error(request, gettext('Bitte Titel und Beschreibung angeben.'))
         return redirect('mieter_schaden_formular')
     v = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), id=vertrag_id)
          .select_related('einheit__liegenschaft').first()) if vertrag_id else None
@@ -680,7 +679,7 @@ def mieter_schaden_melden(request):
         v = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), status='aktiv')
              .select_related('einheit__liegenschaft').first())
     if not v or not v.einheit_id:
-        messages.error(request, "Kein aktives Mietobjekt gefunden.")
+        messages.error(request, gettext('Kein aktives Mietobjekt gefunden.'))
         return redirect('mieter_portal')
     t = SchadenMeldung.objects.create(
         liegenschaft=v.einheit.liegenschaft, betroffene_einheit=v.einheit,
@@ -707,7 +706,7 @@ def mieter_schaden_melden(request):
     # 1) Eingangsbestätigung an den Mieter, 2) Benachrichtigung an die Verwaltung
     _benachrichtige_neue_meldung(t, v)
 
-    messages.success(request, "✅ Ihre Schadenmeldung wurde übermittelt. Sie erhalten eine Bestätigung per E-Mail; die Verwaltung kümmert sich darum.")
+    messages.success(request, '✅ ' + gettext('Ihre Schadenmeldung wurde übermittelt. Sie erhalten eine Bestätigung per E-Mail; die Verwaltung kümmert sich darum.'))
     return redirect('mieter_portal')
 
 
@@ -822,7 +821,7 @@ def mieter_ticket_nachricht(request, pk):
             send_ticket_email(adr, f"Mieter-Nachricht zu Ticket #{t.id}: {t.titel}", body)
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
-    messages.success(request, "✅ Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich.")
+    messages.success(request, '✅ ' + gettext('Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich.'))
     return redirect(f'/mieter/ticket/{t.id}/')
 
 
@@ -903,9 +902,9 @@ def mieter_daten_view(request):
                                        + (f"\nAdressänderung gewünscht: {adress_wunsch}" if adress_wunsch else "")))
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
-            messages.success(request, "✅ Ihre Angaben wurden aktualisiert und der Verwaltung gemeldet.")
+            messages.success(request, '✅ ' + gettext('Ihre Angaben wurden aktualisiert und der Verwaltung gemeldet.'))
         else:
-            messages.info(request, "Keine Änderungen erkannt.")
+            messages.info(request, gettext('Keine Änderungen erkannt.'))
         return redirect('mieter_daten')
 
     return render(request, 'core/mieter_daten.html', {'mieter': mieter})
@@ -926,7 +925,7 @@ def mieter_passwort_view(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)   # eingeloggt bleiben
-            messages.success(request, "✅ Passwort geändert.")
+            messages.success(request, '✅ ' + gettext('Passwort geändert.'))
             return redirect('mieter_portal')
     else:
         form = PasswordChangeForm(request.user)

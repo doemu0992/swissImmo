@@ -38,6 +38,17 @@ AUSGEZEICHNET = (
     'core/views/fw/nebenkosten.py',
     'core/views/fw/eigentuemer.py',
     'core/views/fw/eigentuemer_abrechnung.py',
+    # Teil B
+    'core/views/fw/buchhaltung.py',
+    'core/views/fw/listen.py',
+    'core/views/fw/kreditoren.py',
+    'core/views/fw/bankabgleich.py',
+    'core/views/fw/arbeit.py',
+    'core/views/fw/mietprozess.py',
+    'core/views/portal.py',
+    'core/views/zweifaktor.py',
+    'core/views/docuseal.py',
+    'core/views/fw/vertragserstellung.py',
 )
 
 RECHT = ('Art.', ' OR', 'ZGB', 'DSG', 'SchKG')
@@ -93,3 +104,10 @@ class MeldungFolgtDerSpracheTests(TestCase):
     def test_deutsch(self):
         seite = self._notiz_ohne_inhalt(HTTP_ACCEPT_LANGUAGE='de-CH')
         self.assertContains(seite, 'Bitte einen Inhalt/Notiztext erfassen.')
+
+    def test_termin_ohne_titel_italienisch(self):
+        # Teil B: Meldung aus core/views/fw/arbeit.py.
+        self.c.post('/i18n/setlang/', {'language': 'it', 'next': '/neu/'})
+        seite = self.c.post('/neu/termine/neu/', {'titel': '', 'beginn': ''}, follow=True)
+        self.assertContains(seite, "Il titolo e l&#x27;inizio sono necessari.")
+        self.assertNotContains(seite, 'Titel und Beginn sind nötig.')

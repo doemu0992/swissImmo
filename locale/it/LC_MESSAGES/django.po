@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 02:22+0200\n"
+"POT-Creation-Date: 2026-09-29 02:31+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: core/navigation.py:120 core/views/fw/arbeit.py:42
+#: core/navigation.py:120 core/views/fw/arbeit.py:43
 #: core/views/fw/dashboard.py:364
 msgid "Heute"
 msgstr "Oggi"
@@ -183,13 +183,13 @@ msgid "MWST"
 msgstr "IVA"
 
 #: core/navigation.py:166 core/templates/fw/finanzen.html:4
-#: core/views/fw/listen.py:752 faelle/akten.py:48
+#: core/views/fw/listen.py:749 faelle/akten.py:48
 msgid "Finanzen"
 msgstr "Finanze"
 
 #: core/navigation.py:167 core/templates/fw/finanzen.html:135
 #: core/templates/fw/mieterkonten.html:4 core/templates/fw/mieterkonten.html:8
-#: core/templates/fw/mieterkonto.html:7 core/views/fw/listen.py:765
+#: core/templates/fw/mieterkonto.html:7 core/views/fw/listen.py:762
 msgid "Mieterkonten"
 msgstr "Conti inquilini"
 
@@ -221,7 +221,7 @@ msgstr "Debiti"
 #: core/templates/fw/finanzen.html:136
 #: core/templates/fw/lieferantenkonten.html:4
 #: core/templates/fw/lieferantenkonten.html:8
-#: core/templates/fw/lieferantenkonto.html:7 core/views/fw/listen.py:768
+#: core/templates/fw/lieferantenkonto.html:7 core/views/fw/listen.py:765
 msgid "Lieferantenkonten"
 msgstr "Conti fornitori"
 
@@ -1008,8 +1008,8 @@ msgstr ""
 
 #: core/templates/core/mieter_portal.html:65
 #: core/templates/core/portal.html:299 core/templates/fw/dashboard.html:348
-#: core/views/fw/detailseiten.py:2276 core/views/fw/listen.py:767
-#: core/views/fw/listen.py:770 core/views/fw/person.py:892
+#: core/views/fw/detailseiten.py:2276 core/views/fw/listen.py:764
+#: core/views/fw/listen.py:767 core/views/fw/person.py:892
 #, python-format
 msgid "CHF %(betrag)s offen"
 msgstr "CHF %(betrag)s scoperti"
@@ -1443,7 +1443,7 @@ msgstr "Pigione effettiva / anno"
 msgid "Ausstände offen"
 msgstr "Arretrati aperti"
 
-#: core/templates/core/portal.html:277 core/views/fw/listen.py:764
+#: core/templates/core/portal.html:277 core/views/fw/listen.py:761
 #, python-format
 msgid "CHF %(betrag)s überfällig"
 msgstr "CHF %(betrag)s scaduti"
@@ -2272,7 +2272,7 @@ msgid "vertreten durch %(wer)s"
 msgstr "sostituito da %(wer)s"
 
 #: core/templates/fw/_bezahlt_leer.html:9 core/views/fw/_basis.py:355
-#: core/views/fw/kreditoren.py:40
+#: core/views/fw/kreditoren.py:41
 msgid "Bezahlt"
 msgstr "Pagato"
 
@@ -3511,10 +3511,10 @@ msgstr "Selezionare prima dei pagamenti."
 #: core/templates/fw/dashboard.html:82 core/templates/fw/dashboard.html:183
 #: core/templates/fw/fristen.html:8 core/templates/fw/kontoblatt.html:21
 #: core/templates/fw/liegenschaften.html:60
-#: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:46
-#: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
-#: core/views/fw/listen.py:207 core/views/fw/listen.py:1109
-#: core/views/fw/listen.py:1179 core/views/fw/listen.py:1292
+#: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:47
+#: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:147
+#: core/views/fw/listen.py:208 core/views/fw/listen.py:1106
+#: core/views/fw/listen.py:1176 core/views/fw/listen.py:1289
 #: core/views/fw/schaeden.py:402
 msgid "Alle"
 msgstr "Tutti"
@@ -3587,7 +3587,7 @@ msgstr "Riconciliare le partite aperte"
 #: core/templates/fw/bankabgleich.html:346
 #: core/templates/fw/kreditoren.html:164
 #: core/templates/fw/person_detail.html:430 core/templates/fw/zahllauf.html:67
-#: core/views/fw/listen.py:56
+#: core/views/fw/listen.py:57
 msgid "Fällig"
 msgstr "Scadenza"
 
@@ -3857,7 +3857,7 @@ msgstr "Modificare %(name)s"
 #: core/templates/fw/liegenschaft_form.html:11
 #: core/templates/fw/mandat_form.html:8 core/templates/fw/objekt_form.html:12
 #: core/templates/fw/vertrag_detail.html:525
-#: core/templates/fw/vorlage_form.html:8 core/views/portal.py:750
+#: core/templates/fw/vorlage_form.html:8 core/views/portal.py:749
 msgid "Neu"
 msgstr "Nuovo"
 
@@ -4252,7 +4252,7 @@ msgstr "Animali domestici"
 msgid "nein"
 msgstr "no"
 
-#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1110
+#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1107
 msgid "Parkplatz"
 msgstr "Posteggio"
 
@@ -4431,7 +4431,7 @@ msgstr "Gestire il piano dei conti"
 #: core/templates/fw/buchhaltung.html:122
 #: core/templates/fw/eigentuemer_kontokorrent.html:34
 #: core/templates/fw/eigentuemer_kontokorrent.html:60
-#: core/templates/fw/mandat_abrechnung.html:58 core/views/fw/buchhaltung.py:495
+#: core/templates/fw/mandat_abrechnung.html:58 core/views/fw/buchhaltung.py:494
 msgid "Ertrag"
 msgstr "Ricavi"
 
@@ -4439,7 +4439,7 @@ msgstr "Ricavi"
 #: core/templates/fw/buchhaltung.html:146
 #: core/templates/fw/eigentuemer_kontokorrent.html:34
 #: core/templates/fw/eigentuemer_kontokorrent.html:61
-#: core/templates/fw/mandat_abrechnung.html:59 core/views/fw/buchhaltung.py:495
+#: core/templates/fw/mandat_abrechnung.html:59 core/views/fw/buchhaltung.py:494
 msgid "Aufwand"
 msgstr "Costi"
 
@@ -5099,7 +5099,7 @@ msgid "Mahnstufen werden aus der Fälligkeit berechnet"
 msgstr "I livelli di sollecito sono calcolati dalla scadenza"
 
 #: core/templates/fw/debitoren_aging.html:4
-#: core/templates/fw/debitoren_aging.html:13 core/views/fw/listen.py:762
+#: core/templates/fw/debitoren_aging.html:13 core/views/fw/listen.py:759
 msgid "Debitoren-Altersstruktur"
 msgstr "Anzianità dei debitori"
 
@@ -6079,7 +6079,7 @@ msgid "Frist %(d)s"
 msgstr "Scadenza %(d)s"
 
 #: core/templates/fw/fall_detail.html:183 core/templates/fw/pendenzen.html:85
-#: core/templates/fw/termine.html:51 core/views/portal.py:754
+#: core/templates/fw/termine.html:51 core/views/portal.py:753
 msgid "Erledigt"
 msgstr "Completato"
 
@@ -6087,7 +6087,7 @@ msgstr "Completato"
 msgid "Für diesen Fall sind keine Schritte angelegt."
 msgstr "Per questa pratica non sono definiti passi."
 
-#: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:758
+#: core/templates/fw/finanzen.html:8 core/views/fw/listen.py:755
 msgid "Finanz-Cockpit"
 msgstr "Cockpit finanziario"
 
@@ -6171,7 +6171,7 @@ msgstr ""
 msgid "Direkt zu"
 msgstr "Accesso diretto"
 
-#: core/templates/fw/finanzen.html:134 core/views/fw/buchhaltung.py:367
+#: core/templates/fw/finanzen.html:134 core/views/fw/buchhaltung.py:366
 msgid "Journal"
 msgstr "Giornale"
 
@@ -7545,7 +7545,7 @@ msgstr "EGID"
 #: core/templates/fw/mieterspiegel.html:7
 #: core/templates/fw/mieterspiegel.html:14
 #: core/templates/fw/mieterspiegel_auswahl.html:4
-#: core/templates/fw/mieterspiegel_auswahl.html:8 core/views/fw/listen.py:773
+#: core/templates/fw/mieterspiegel_auswahl.html:8 core/views/fw/listen.py:770
 msgid "Mieterspiegel"
 msgstr "Specchietto delle pigioni"
 
@@ -9544,7 +9544,7 @@ msgstr ""
 "potenziale confronta questa base effettiva con lo stato attuale."
 
 #: core/templates/fw/mwst.html:4 core/templates/fw/mwst.html:8
-#: core/views/fw/listen.py:756
+#: core/views/fw/listen.py:753
 msgid "MWST-Abrechnung"
 msgstr "Rendiconto IVA"
 
@@ -12324,7 +12324,7 @@ msgid "Erstmeldung"
 msgstr "Segnalazione iniziale"
 
 #: core/templates/fw/schaden_kosten.html:4
-#: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:781
+#: core/templates/fw/schaden_kosten.html:13 core/views/fw/listen.py:778
 msgid "Reparaturkosten"
 msgstr "Costi di riparazione"
 
@@ -13932,6 +13932,29 @@ msgstr "Completati di recente"
 msgid "Noch nichts erledigt."
 msgstr "Ancora nulla di completato."
 
+#: core/views/docuseal.py:73
+msgid "API-Key fehlt in settings.py"
+msgstr "Chiave API mancante in settings.py"
+
+#: core/views/docuseal.py:77
+msgid "Abbruch: Mieter hat keine E-Mail."
+msgstr "Interrotto: l'inquilino non ha un'e-mail."
+
+#: core/views/docuseal.py:137
+#, python-format
+msgid "PDF Fehler: %(str)s"
+msgstr "Errore PDF: %(str)s"
+
+#: core/views/docuseal.py:176
+#, python-format
+msgid "Vertrag an %(email)s gesendet"
+msgstr "Contratto inviato a %(email)s"
+
+#: core/views/docuseal.py:182
+#, python-format
+msgid "Fehler beim Senden: %(str)s"
+msgstr "Errore durante l'invio: %(str)s"
+
 #: core/views/fw/_basis.py:263
 msgid "Liegenschaft öffnen"
 msgstr "Aprire lo stabile"
@@ -13944,11 +13967,11 @@ msgstr "Concluso"
 msgid "Archiviert"
 msgstr "Archiviato"
 
-#: core/views/fw/_basis.py:354 core/views/fw/kreditoren.py:39
+#: core/views/fw/_basis.py:354 core/views/fw/kreditoren.py:40
 msgid "Teilbezahlt"
 msgstr "Parzialmente pagato"
 
-#: core/views/fw/_basis.py:356 core/views/fw/kreditoren.py:41
+#: core/views/fw/_basis.py:356 core/views/fw/kreditoren.py:42
 msgid "Storniert"
 msgstr "Stornato"
 
@@ -13963,7 +13986,9 @@ msgstr "Verbale di consegna registrato (%(count)s difetti)."
 
 #: core/views/fw/abnahme.py:187
 msgid "Keine dem Mieter zugeordneten Mängel im Protokoll — keine Rüge nötig."
-msgstr "Nessun difetto attribuito all'inquilino nel verbale — nessuna notifica dei difetti necessaria."
+msgstr ""
+"Nessun difetto attribuito all'inquilino nel verbale — nessuna notifica dei "
+"difetti necessaria."
 
 #: core/views/fw/abnahme.py:214
 msgid "Abnahmeprotokoll gelöscht."
@@ -13974,7 +13999,7 @@ msgstr "Verbale di consegna eliminato."
 msgid "Vertrag ist jetzt: %(wert)s."
 msgstr "Il contratto è ora: %(wert)s."
 
-#: core/views/fw/abnahme.py:257
+#: core/views/fw/abnahme.py:257 core/views/fw/arbeit.py:423
 msgid "Unbekannter Status."
 msgstr "Stato sconosciuto."
 
@@ -14173,7 +14198,8 @@ msgstr "Termini e scadenze di disdetta per cantone"
 #: core/views/fw/anlagen.py:79
 #, python-format
 msgid "Anlage erfasst und aktiviert (1500 an %(gegen_nr)s, CHF %(wert)s)."
-msgstr "Immobilizzazione registrata e attivata (1500 a %(gegen_nr)s, CHF %(wert)s)."
+msgstr ""
+"Immobilizzazione registrata e attivata (1500 a %(gegen_nr)s, CHF %(wert)s)."
 
 #: core/views/fw/anlagen.py:81
 msgid "Anlage erfasst (ohne Aktivierungsbuchung)."
@@ -14192,17 +14218,164 @@ msgstr "Fondo di rinnovamento %(strasse)s salvato."
 msgid "Periodensperre aktualisiert."
 msgstr "Blocco del periodo aggiornato."
 
-#: core/views/fw/arbeit.py:43
+#: core/views/fw/arbeit.py:44
 msgid "Diese Woche"
 msgstr "Questa settimana"
 
-#: core/views/fw/arbeit.py:44
+#: core/views/fw/arbeit.py:45
 msgid "Wartet auf Dritte"
 msgstr "In attesa di terzi"
 
-#: core/views/fw/arbeit.py:45
+#: core/views/fw/arbeit.py:46
 msgid "Liegengeblieben"
 msgstr "In sospeso"
+
+#: core/views/fw/arbeit.py:122
+msgid "Bitte eine Dauer in Minuten angeben."
+msgstr "Indica una durata in minuti."
+
+#: core/views/fw/arbeit.py:132
+#, python-format
+msgid "«%(satz_roh)s» ist kein Betrag."
+msgstr "«%(satz_roh)s» non è un importo."
+
+#: core/views/fw/arbeit.py:144
+#, python-format
+msgid "%(minuten)s Minuten erfasst."
+msgstr "%(minuten)s minuti registrati."
+
+#: core/views/fw/arbeit.py:194 core/views/fw/liegenschaft_crud.py:69
+msgid "Diese Person gehört nicht zu Ihrer Verwaltung."
+msgstr "Questa persona non appartiene alla vostra amministrazione."
+
+#: core/views/fw/arbeit.py:213
+#, python-format
+msgid "Fall liegt jetzt bei %(name)s."
+msgstr "La pratica è ora presso %(name)s."
+
+#: core/views/fw/arbeit.py:282
+#, python-format
+msgid "«%(bezeichnung)s» ist erledigt."
+msgstr "«%(bezeichnung)s» è evaso."
+
+#: core/views/fw/arbeit.py:347
+#, python-format
+msgid "Abgelegt: %(grund)s"
+msgstr "Archiviato: %(grund)s"
+
+#: core/views/fw/arbeit.py:358
+msgid "Eingang zugeordnet."
+msgstr "Entrata attribuita."
+
+#: core/views/fw/arbeit.py:398
+msgid "Titel und Beginn sind nötig."
+msgstr "Il titolo e l'inizio sono necessari."
+
+#: core/views/fw/arbeit.py:408
+#, python-format
+msgid "Termin «%(titel)s» erfasst."
+msgstr "Appuntamento «%(titel)s» registrato."
+
+#: core/views/fw/arbeit.py:427
+#, python-format
+msgid "«%(titel)s» ist %(status)s."
+msgstr "«%(titel)s» è %(status)s."
+
+#: core/views/fw/arbeit.py:471
+msgid "Von und Bis sind nötig."
+msgstr "«Dal» e «Al» sono necessari."
+
+#: core/views/fw/arbeit.py:483
+msgid "Abwesenheit erfasst."
+msgstr "Assenza registrata."
+
+#: core/views/fw/bankabgleich.py:261
+msgid "Position ohne Vertrag kann nicht automatisch verbucht werden."
+msgstr "Una posizione senza contratto non può essere contabilizzata automaticamente."
+
+#: core/views/fw/bankabgleich.py:267
+#, python-format
+msgid ""
+"«%(titel)s» ist %(get_status_display)s — darauf kann keine Zahlung verbucht "
+"werden."
+msgstr "«%(titel)s» è %(get_status_display)s — non è possibile contabilizzarvi alcun pagamento."
+
+#: core/views/fw/bankabgleich.py:276
+#, python-format
+msgid "Ungültiger Betrag «%(raw)s»."
+msgstr "Importo non valido «%(raw)s»."
+
+#: core/views/fw/bankabgleich.py:283
+#: core/views/fw/eigentuemer_abrechnung.py:239 core/views/fw/listen.py:414
+msgid "Betrag muss grösser als 0 sein."
+msgstr "L'importo deve essere superiore a 0."
+
+#: core/views/fw/bankabgleich.py:306
+#, python-format
+msgid "CHF %(betrag)s verbucht — %(display_name)s (%(titel)s)."
+msgstr "CHF %(betrag)s contabilizzati — %(display_name)s (%(titel)s)."
+
+#: core/views/fw/bankabgleich.py:677 core/views/fw/schaeden.py:447
+msgid "Keine Datei ausgewählt."
+msgstr "Nessun file selezionato."
+
+#: core/views/fw/bankabgleich.py:695
+#, python-format
+msgid "Datei konnte nicht gelesen werden (%(wert)s): %(e)s"
+msgstr "Non è stato possibile leggere il file (%(wert)s): %(e)s"
+
+#: core/views/fw/bankabgleich.py:700
+msgid "Keine Bewegungen im Kontoauszug gefunden."
+msgstr "Nessun movimento trovato nell'estratto conto."
+
+#: core/views/fw/bankabgleich.py:1023
+#, python-format
+msgid ""
+"Keine neuen Gutschriften verbucht (%(duplikate)s Duplikat(e) übersprungen)."
+msgstr "Nessun nuovo accredito contabilizzato (%(duplikate)s duplicato/i saltato/i)."
+
+#: core/views/fw/bankabgleich.py:1025
+#, python-format
+msgid ""
+"%(belastungen)s Belastung(en) übernommen — sie liegen im Bank-Eingang zur "
+"Zuordnung. Das Gegenkonto (Lieferant, Gebühr, Zins) steht nicht im Auszug "
+"und wird bewusst nicht geraten."
+msgstr "%(belastungen)s addebito/i ripreso/i — si trovano nelle entrate bancarie da attribuire. Il conto di contropartita (fornitore, spese, interessi) non figura nell'estratto e volutamente non viene indovinato."
+
+#: core/views/fw/bankabgleich.py:1037
+#, python-format
+msgid ""
+"Saldoabgleich %(bank_nr)s: Buchhaltung und Auszug stimmen überein (CHF "
+"%(buch_saldo)s)."
+msgstr "Riconciliazione del saldo %(bank_nr)s: contabilità ed estratto concordano (CHF %(buch_saldo)s)."
+
+#: core/views/fw/bankabgleich.py:1039
+#, python-format
+msgid ""
+"Saldoabgleich %(bank_nr)s: Auszug CHF %(schlusssaldo)s, Buchhaltung CHF "
+"%(buch_saldo)s — Differenz CHF %(diff)s. Offene Bewegungen im Bank-Eingang "
+"zuordnen, dann stimmt es."
+msgstr "Riconciliazione del saldo %(bank_nr)s: estratto CHF %(schlusssaldo)s, contabilità CHF %(buch_saldo)s — differenza CHF %(diff)s. Attribuire i movimenti aperti nelle entrate bancarie, poi il saldo concorda."
+
+#: core/views/fw/bankabgleich.py:1042
+#, python-format
+msgid ""
+"%(gesperrt)s Zahlung(en) konnten nicht verbucht werden: die Buchungsperiode "
+"ist gesperrt. Periode öffnen und die Datei erneut importieren — bereits "
+"verbuchte Zahlungen werden dabei als Duplikat übersprungen."
+msgstr "%(gesperrt)s pagamento/i non ha/hanno potuto essere contabilizzato/i: il periodo contabile è bloccato. Aprire il periodo e reimportare il file — i pagamenti già contabilizzati verranno saltati come duplicati."
+
+#: core/views/fw/bankabgleich.py:1101
+#, python-format
+msgid ""
+"Rückgängig nicht möglich — die Buchungsperiode ist gesperrt: %(exc)s. "
+"Periode öffnen und erneut versuchen."
+msgstr "Annullamento non possibile — il periodo contabile è bloccato: %(exc)s. Aprire il periodo e riprovare."
+
+#: core/views/fw/bankabgleich.py:1104
+#, python-format
+msgid "Import konnte nicht rückgängig gemacht werden: %(exc)s"
+msgstr "Non è stato possibile annullare l'importazione: %(exc)s"
 
 #: core/views/fw/benutzer.py:92
 msgid "Benutzername ist erforderlich."
@@ -14236,21 +14409,106 @@ msgstr "Utente %(name)s eliminato."
 msgid ""
 "%(name)s wurde aus deinem Team entfernt. Das Konto bleibt bestehen — es wird "
 "in einer anderen Verwaltung genutzt."
-msgstr "%(name)s è stato/a rimosso/a dal tuo team. L'account resta — è utilizzato in un'altra amministrazione."
+msgstr ""
+"%(name)s è stato/a rimosso/a dal tuo team. L'account resta — è utilizzato in "
+"un'altra amministrazione."
 
-#: core/views/fw/buchhaltung.py:365
+#: core/views/fw/buchhaltung.py:191
+msgid "Den Jahresabschluss darf nur die Verwaltung buchen."
+msgstr "Solo l'amministrazione può contabilizzare la chiusura annuale."
+
+#: core/views/fw/buchhaltung.py:198 core/views/fw/buchhaltung.py:253
+msgid "Ungültiges Geschäftsjahr."
+msgstr "Esercizio non valido."
+
+#: core/views/fw/buchhaltung.py:201
+#, python-format
+msgid "Das Geschäftsjahr %(j_ab)s ist bereits abgeschlossen."
+msgstr "L'esercizio %(j_ab)s è già chiuso."
+
+#: core/views/fw/buchhaltung.py:209
+#, python-format
+msgid "Jahresabschluss fehlgeschlagen: %(exc)s"
+msgstr "Chiusura annuale non riuscita: %(exc)s"
+
+#: core/views/fw/buchhaltung.py:234
+#, python-format
+msgid ""
+"Jahresabschluss %(j_ab)s gebucht: %(n_ab)s Erfolgskonto/-konten gegen 2970 "
+"saldiert · %(art)s CHF %(abs)s.%(gesperrt_hinweis)s"
+msgstr "Chiusura annuale %(j_ab)s contabilizzata: %(n_ab)s conto/i economico/i saldato/i contro 2970 · %(art)s CHF %(abs)s.%(gesperrt_hinweis)s"
+
+#: core/views/fw/buchhaltung.py:236
+#, python-format
+msgid "Jahr %(j_ab)s: keine Erfolgsbuchungen zum Abschliessen."
+msgstr "Anno %(j_ab)s: nessuna registrazione economica da chiudere."
+
+#: core/views/fw/buchhaltung.py:246
+msgid "Den Jahresabschluss darf nur die Verwaltung zurücknehmen."
+msgstr "Solo l'amministrazione può annullare la chiusura annuale."
+
+#: core/views/fw/buchhaltung.py:256
+#, python-format
+msgid "Das Geschäftsjahr %(j_zr)s ist nicht abgeschlossen."
+msgstr "L'esercizio %(j_zr)s non è chiuso."
+
+#: core/views/fw/buchhaltung.py:274
+#, python-format
+msgid "Rücknahme fehlgeschlagen: %(exc)s"
+msgstr "Annullamento non riuscito: %(exc)s"
+
+#: core/views/fw/buchhaltung.py:278
+#, python-format
+msgid ""
+"Jahresabschluss %(j_zr)s zurückgenommen: %(n_zr)s Abschlussbuchung(en) "
+"storniert.%(entsperrt)s"
+msgstr "Chiusura annuale %(j_zr)s annullata: %(n_zr)s registrazione/i di chiusura stornata/e.%(entsperrt)s"
+
+#: core/views/fw/buchhaltung.py:280
+#, python-format
+msgid "Jahr %(j_zr)s: keine Abschlussbuchungen zum Zurücknehmen."
+msgstr "Anno %(j_zr)s: nessuna registrazione di chiusura da annullare."
+
+#: core/views/fw/buchhaltung.py:364
 msgid "Erfolgsrechnung"
 msgstr "Conto economico"
 
-#: core/views/fw/buchhaltung.py:366 core/views/fw/buchhaltung.py:494
+#: core/views/fw/buchhaltung.py:365 core/views/fw/buchhaltung.py:493
 msgid "Bilanz"
 msgstr "Bilancio"
 
-#: core/views/fw/buchhaltung.py:494
+#: core/views/fw/buchhaltung.py:434
+msgid "Nummer und Bezeichnung sind Pflicht."
+msgstr "Il numero e la designazione sono obbligatori."
+
+#: core/views/fw/buchhaltung.py:436
+#, python-format
+msgid "Konto %(nr)s existiert bereits."
+msgstr "Il conto %(nr)s esiste già."
+
+#: core/views/fw/buchhaltung.py:438
+msgid "Ungültiger Kontotyp."
+msgstr "Tipo di conto non valido."
+
+#: core/views/fw/buchhaltung.py:445
+#, python-format
+msgid "Konto %(nr)s «%(bez)s» angelegt."
+msgstr "Conto %(nr)s «%(bez)s» creato."
+
+#: core/views/fw/buchhaltung.py:449
+msgid "Konto nicht gefunden."
+msgstr "Conto non trovato."
+
+#: core/views/fw/buchhaltung.py:461
+#, python-format
+msgid "Konto %(nummer)s aktualisiert."
+msgstr "Conto %(nummer)s aggiornato."
+
+#: core/views/fw/buchhaltung.py:493
 msgid "Aktivum"
 msgstr "Attivo"
 
-#: core/views/fw/buchhaltung.py:494
+#: core/views/fw/buchhaltung.py:493
 msgid "Passivum / Eigenkapital"
 msgstr "Passivo / capitale proprio"
 
@@ -14455,14 +14713,18 @@ msgstr "Accesso al portale rimosso."
 msgid ""
 "Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. "
 "(Benutzername: %(username)s)"
-msgstr "Accesso al portale attivo. Le credenziali sono state inviate a %(email)s. (Nome utente: %(username)s)"
+msgstr ""
+"Accesso al portale attivo. Le credenziali sono state inviate a %(email)s. "
+"(Nome utente: %(username)s)"
 
 #: core/views/fw/eigentuemer.py:158 core/views/fw/person.py:229
 #, python-format
 msgid ""
 "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: "
 "%(username)s · Passwort: %(passwort)s — bitte manuell mitteilen."
-msgstr "Accesso al portale attivo, ma l'invio dell'e-mail non è riuscito. Nome utente: %(username)s · Password: %(passwort)s — comunicarli manualmente."
+msgstr ""
+"Accesso al portale attivo, ma l'invio dell'e-mail non è riuscito. Nome "
+"utente: %(username)s · Password: %(passwort)s — comunicarli manualmente."
 
 #: core/views/fw/eigentuemer.py:160
 #, python-format
@@ -14470,14 +14732,19 @@ msgid ""
 "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · "
 "Passwort: %(passwort)s (bitte dem Eigentümer sicher mitteilen, wird nur "
 "einmal angezeigt)."
-msgstr "Accesso al portale attivo. Nessuna e-mail registrata — nome utente: %(username)s · password: %(passwort)s (comunicarli in modo sicuro al proprietario, vengono mostrati una sola volta)."
+msgstr ""
+"Accesso al portale attivo. Nessuna e-mail registrata — nome utente: "
+"%(username)s · password: %(passwort)s (comunicarli in modo sicuro al "
+"proprietario, vengono mostrati una sola volta)."
 
 #: core/views/fw/eigentuemer.py:176
 #, python-format
 msgid ""
 "'%(firma_oder_name)s' hat noch %(anzahl)s zugeordnete Liegenschaft(en). "
 "Bitte zuerst die Zuordnung im Bearbeiten-Dialog entfernen, dann löschen."
-msgstr "«%(firma_oder_name)s» ha ancora %(anzahl)s stabile/i assegnato/i. Rimuovi prima l'assegnazione nella finestra di modifica, poi elimina."
+msgstr ""
+"«%(firma_oder_name)s» ha ancora %(anzahl)s stabile/i assegnato/i. Rimuovi "
+"prima l'assegnazione nella finestra di modifica, poi elimina."
 
 #: core/views/fw/eigentuemer.py:189
 #, python-format
@@ -14493,35 +14760,39 @@ msgstr "Nessun esercizio selezionato."
 msgid ""
 "Verwaltungshonorar %(jahr)s verbucht: CHF %(summe)s über %(anzahl)s "
 "Liegenschaft(en) (Soll 4500 / Haben %(gegen)s)."
-msgstr "Onorario d'amministrazione %(jahr)s contabilizzato: CHF %(summe)s su %(anzahl)s stabile/i (dare 4500 / avere %(gegen)s)."
+msgstr ""
+"Onorario d'amministrazione %(jahr)s contabilizzato: CHF %(summe)s su "
+"%(anzahl)s stabile/i (dare 4500 / avere %(gegen)s)."
 
 #: core/views/fw/eigentuemer_abrechnung.py:174
 msgid "Kein Honorar zu buchen (bereits gebucht oder kein Mietertrag)."
-msgstr "Nessun onorario da contabilizzare (già contabilizzato o nessun reddito locativo)."
+msgstr ""
+"Nessun onorario da contabilizzare (già contabilizzato o nessun reddito "
+"locativo)."
 
 #: core/views/fw/eigentuemer_abrechnung.py:214
 msgid "Mahnstufen gespeichert."
 msgstr "Livelli di sollecito salvati."
-
-#: core/views/fw/eigentuemer_abrechnung.py:239
-msgid "Betrag muss grösser als 0 sein."
-msgstr "L'importo deve essere superiore a 0."
 
 #: core/views/fw/eigentuemer_abrechnung.py:261
 #, python-format
 msgid ""
 "Auszahlung CHF %(betrag)s an %(firma_oder_name)s verbucht (Soll 2850 / Haben "
 "%(nummer)s)."
-msgstr "Versamento di CHF %(betrag)s a %(firma_oder_name)s contabilizzato (dare 2850 / avere %(nummer)s)."
+msgstr ""
+"Versamento di CHF %(betrag)s a %(firma_oder_name)s contabilizzato (dare "
+"2850 / avere %(nummer)s)."
 
 #: core/views/fw/kautionen.py:110
 #, python-format
 msgid "Kautions-Einzahlung konnte nicht gebucht werden: %(exc)s"
-msgstr "Non è stato possibile contabilizzare il versamento del deposito: %(exc)s"
+msgstr ""
+"Non è stato possibile contabilizzare il versamento del deposito: %(exc)s"
 
 #: core/views/fw/kautionen.py:113
 msgid "Kautions-Einzahlung auf Sperrkonto erfasst (bilanziert)."
-msgstr "Versamento del deposito sul conto bloccato registrato (iscritto a bilancio)."
+msgstr ""
+"Versamento del deposito sul conto bloccato registrato (iscritto a bilancio)."
 
 #: core/views/fw/kautionen.py:121
 msgid "Bitte den Versicherer/Anbieter angeben."
@@ -14537,13 +14808,17 @@ msgstr "Carica il certificato / la polizza — solo dopo è possibile confermare
 #, python-format
 msgid ""
 "Kautionsversicherung bestätigt (%(versicherer)s) — Zertifikat hinterlegt."
-msgstr "Assicurazione del deposito confermata (%(versicherer)s) — certificato depositato."
+msgstr ""
+"Assicurazione del deposito confermata (%(versicherer)s) — certificato "
+"depositato."
 
 #: core/views/fw/kautionen.py:149
 msgid ""
 "Für diesen Vertrag ist keine Kaution bilanziert (nicht einbezahlt oder "
 "bereits aufgelöst)."
-msgstr "Per questo contratto non è iscritto a bilancio alcun deposito cauzionale (non versato o già sciolto)."
+msgstr ""
+"Per questo contratto non è iscritto a bilancio alcun deposito cauzionale "
+"(non versato o già sciolto)."
 
 #: core/views/fw/kautionen.py:162
 msgid "Rückzahlung und Einbehalt dürfen nicht negativ sein."
@@ -14554,7 +14829,9 @@ msgstr "Il rimborso e la trattenuta non possono essere negativi."
 msgid ""
 "Rückzahlung (CHF %(rueck)s) + Einbehalt (CHF %(abzug)s) müssen die "
 "einbezahlte Kaution (CHF %(total)s) vollständig abdecken."
-msgstr "Il rimborso (CHF %(rueck)s) + la trattenuta (CHF %(abzug)s) devono coprire interamente il deposito versato (CHF %(total)s)."
+msgstr ""
+"Il rimborso (CHF %(rueck)s) + la trattenuta (CHF %(abzug)s) devono coprire "
+"interamente il deposito versato (CHF %(total)s)."
 
 #: core/views/fw/kautionen.py:221
 #, python-format
@@ -14565,7 +14842,8 @@ msgstr "Non è stato possibile contabilizzare il rimborso del deposito: %(exc)s"
 #, python-format
 msgid ""
 "Rückzahlung erfasst: CHF %(rueck)s an Mieter, CHF %(abzug)s einbehalten."
-msgstr "Rimborso registrato: CHF %(rueck)s all'inquilino, CHF %(abzug)s trattenuti."
+msgstr ""
+"Rimborso registrato: CHF %(rueck)s all'inquilino, CHF %(abzug)s trattenuti."
 
 #: core/views/fw/kautionen.py:282
 msgid "Bitte den Mangel beschreiben."
@@ -14597,21 +14875,81 @@ msgstr "Responsabilità solidale aggiornata."
 msgid "Bitte die untermietende Person angeben."
 msgstr "Indica la persona sublocataria."
 
-#: core/views/fw/kreditoren.py:36
+#: core/views/fw/kreditoren.py:37
 msgid "Neu / Prüfen"
 msgstr "Nuovo / verificare"
 
-#: core/views/fw/kreditoren.py:37
+#: core/views/fw/kreditoren.py:38
 msgid "Freigegeben"
 msgstr "Approvato"
 
-#: core/views/fw/kreditoren.py:38
+#: core/views/fw/kreditoren.py:39
 msgid "In Zahlung"
 msgstr "In pagamento"
 
-#: core/views/fw/liegenschaft_crud.py:69
-msgid "Diese Person gehört nicht zu Ihrer Verwaltung."
-msgstr "Questa persona non appartiene alla vostra amministrazione."
+#: core/views/fw/kreditoren.py:224
+msgid "Diese Rechnung kann nicht (mehr) bezahlt werden."
+msgstr "Questa fattura non può (più) essere pagata."
+
+#: core/views/fw/kreditoren.py:240
+#, python-format
+msgid "Ungültiger Betrag «%(raw)s» — Zahlung nicht ausgeführt."
+msgstr "Importo non valido «%(raw)s» — pagamento non eseguito."
+
+#: core/views/fw/kreditoren.py:244
+msgid "Kein offener Betrag zu bezahlen."
+msgstr "Nessun importo aperto da pagare."
+
+#: core/views/fw/kreditoren.py:328 core/views/fw/kreditoren.py:367
+msgid "Keine Rechnung ausgewählt."
+msgstr "Nessuna fattura selezionata."
+
+#: core/views/fw/kreditoren.py:333
+msgid "Für die Zahlungsdatei fehlt die IBAN der Verwaltung (Profil → Account)."
+msgstr "Per il file di pagamento manca l'IBAN dell'amministrazione (Profilo → Account)."
+
+#: core/views/fw/kreditoren.py:346
+msgid "Keine zahlbare Rechnung in der Auswahl (IBAN oder Betrag fehlt)."
+msgstr "Nessuna fattura pagabile nella selezione (IBAN o importo mancante)."
+
+#: core/views/fw/kreditoren.py:400
+#, python-format
+msgid ""
+"%(n)s Zahlung(en) über CHF %(summe)s verbucht (2000 an %(bank_nr)s, Valuta "
+"%(valuta)s)."
+msgstr "%(n)s pagamento/i di CHF %(summe)s contabilizzato/i (2000 a %(bank_nr)s, valuta %(valuta)s)."
+
+#: core/views/fw/kreditoren.py:402
+#, python-format
+msgid ""
+"%(gesperrt)s Zahlung(en) nicht verbucht: die Buchungsperiode ist gesperrt."
+msgstr "%(gesperrt)s pagamento/i non contabilizzato/i: il periodo contabile è bloccato."
+
+#: core/views/fw/kreditoren.py:412
+#, python-format
+msgid "%(len)s Rechnung(en) wieder freigegeben."
+msgstr "%(len)s fattura/e nuovamente sbloccata/e."
+
+#: core/views/fw/kreditoren.py:479
+#, python-format
+msgid "'%(lieferant)s' wieder freigegeben (nicht mehr in Zahlung)."
+msgstr "«%(lieferant)s» nuovamente sbloccato (non più in pagamento)."
+
+#: core/views/fw/kreditoren.py:511
+msgid "Diese Zahlung ist bereits storniert."
+msgstr "Questo pagamento è già stornato."
+
+#: core/views/fw/kreditoren.py:539
+#, python-format
+msgid "Zahlung konnte nicht storniert werden: %(exc)s"
+msgstr "Non è stato possibile stornare il pagamento: %(exc)s"
+
+#: core/views/fw/kreditoren.py:543
+#, python-format
+msgid ""
+"Zahlung über CHF %(betrag)s an %(wert)s storniert — offener Posten wieder "
+"offen."
+msgstr "Pagamento di CHF %(betrag)s a %(wert)s stornato — la posta è di nuovo aperta."
 
 #: core/views/fw/liegenschaft_crud.py:130
 #, python-format
@@ -14628,13 +14966,17 @@ msgstr "EGID %(wert)s determinato automaticamente."
 msgid ""
 "%(wert)s Objekt(e) automatisch aus dem Gebäude- und Wohnungsregister "
 "importiert."
-msgstr "%(wert)s oggetto/i importato/i automaticamente dal Registro federale degli edifici e delle abitazioni."
+msgstr ""
+"%(wert)s oggetto/i importato/i automaticamente dal Registro federale degli "
+"edifici e delle abitazioni."
 
 #: core/views/fw/liegenschaft_crud.py:143
 msgid ""
 "EGID konnte nicht automatisch ermittelt werden — bitte Adresse prüfen oder "
 "EGID manuell erfassen."
-msgstr "Non è stato possibile determinare automaticamente l'EGID — verifica l'indirizzo o inserisci l'EGID manualmente."
+msgstr ""
+"Non è stato possibile determinare automaticamente l'EGID — verifica "
+"l'indirizzo o inserisci l'EGID manualmente."
 
 #: core/views/fw/liegenschaft_crud.py:145
 #, python-format
@@ -14683,7 +15025,9 @@ msgstr "Importazione dal REA non possibile: %(e)s"
 msgid ""
 "Liegenschaft kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/"
 "Verträge. Bitte zuerst kündigen/beenden."
-msgstr "Lo stabile non può essere eliminato: %(aktive)s contratto/i attivo/i. Disdirli/terminarli prima."
+msgstr ""
+"Lo stabile non può essere eliminato: %(aktive)s contratto/i attivo/i. "
+"Disdirli/terminarli prima."
 
 #: core/views/fw/liegenschaft_crud.py:212
 #, python-format
@@ -14703,128 +15047,246 @@ msgstr "Assicurazione rimossa."
 msgid "Objekt %(bezeichnung)s gespeichert."
 msgstr "Oggetto %(bezeichnung)s salvato."
 
-#: core/views/fw/listen.py:753
+#: core/views/fw/listen.py:242
+msgid "Titel und ein Betrag > 0 sind erforderlich."
+msgstr "Sono obbligatori un titolo e un importo > 0."
+
+#: core/views/fw/listen.py:271
+#, python-format
+msgid ""
+"Rechnung '%(titel)s' über CHF %(betrag)s erstellt — QR-Rechnung via QR-"
+"Button."
+msgstr "Fattura «%(titel)s» di CHF %(betrag)s creata — fattura QR tramite il pulsante QR."
+
+#: core/views/fw/listen.py:357
+msgid ""
+"Diese Rechnung ist HNK-relevant und wird bereits über die "
+"Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn du das "
+"Häkchen «Trotzdem direkt weiterverrechnen» setzt (sonst doppelte Belastung)."
+msgstr "Questa fattura riguarda le SA ed è già ripartita tramite il conteggio delle spese accessorie. Riaddebito diretto solo se selezioni «Riaddebitare comunque direttamente» (altrimenti doppio addebito)."
+
+#: core/views/fw/listen.py:365
+msgid ""
+"Für die Verteilung muss die Rechnung einer Liegenschaft zugeordnet sein."
+msgstr "Per la ripartizione la fattura deve essere assegnata a uno stabile."
+
+#: core/views/fw/listen.py:370
+msgid "Nichts mehr offen zum Weiterverrechnen."
+msgstr "Più nulla di aperto da riaddebitare."
+
+#: core/views/fw/listen.py:375
+msgid "Keine aktiven Mietverhältnisse in dieser Liegenschaft."
+msgstr "Nessuna locazione attiva in questo stabile."
+
+#: core/views/fw/listen.py:388
+msgid ""
+"Für diesen Verteilschlüssel fehlen die Werte (m²/Wertquote) an den Objekten."
+msgstr "Per questa chiave di ripartizione mancano i valori (m²/quota di valore) sugli oggetti."
+
+#: core/views/fw/listen.py:402
+#, python-format
+msgid ""
+"CHF %(grund_total)s nach %(schluessel)s auf %(anzahl)s Mieter verteilt — QR-"
+"Rechnungen über den QR-Button in den Debitoren."
+msgstr "CHF %(grund_total)s ripartiti secondo %(schluessel)s su %(anzahl)s inquilini — fatture QR tramite il pulsante QR nei debitori."
+
+#: core/views/fw/listen.py:409
+msgid "Bitte einen Mieter/Vertrag wählen."
+msgstr "Seleziona un inquilino / contratto."
+
+#: core/views/fw/listen.py:422
+#, python-format
+msgid ""
+"CHF %(total)s an %(mieter)s weiterverrechnet — QR-Rechnung über den QR-"
+"Button in den Debitoren."
+msgstr "CHF %(total)s riaddebitati a %(mieter)s — fattura QR tramite il pulsante QR nei debitori."
+
+#: core/views/fw/listen.py:493
+msgid "Nur offene oder teilbezahlte Forderungen können abgeschrieben werden."
+msgstr "Solo i crediti aperti o parzialmente pagati possono essere stralciati."
+
+#: core/views/fw/listen.py:497
+msgid "Kein offener Betrag — nichts abzuschreiben."
+msgstr "Nessun importo aperto — nulla da stralciare."
+
+#: core/views/fw/listen.py:540
+#, python-format
+msgid ""
+"Forderung '%(titel)s' als Debitorenverlust abgeschrieben (CHF %(offen)s, "
+"Konto 3805)."
+msgstr "Credito «%(titel)s» stralciato come perdita su debitori (CHF %(offen)s, conto 3805)."
+
+#: core/views/fw/listen.py:586
+msgid "Rechnung ist bereits storniert."
+msgstr "La fattura è già stornata."
+
+#: core/views/fw/listen.py:592
+msgid ""
+"Diese Rechnung hat verbuchte Zahlungen — bitte zuerst die Zahlung(en) "
+"stornieren."
+msgstr "Questa fattura ha pagamenti contabilizzati — stornare prima il/i pagamento/i."
+
+#: core/views/fw/listen.py:631
+#, python-format
+msgid ""
+"Rechnung '%(titel)s' storniert (revisionssicher, mit Gegenbuchung)."
+"%(hinweis)s"
+msgstr "Fattura «%(titel)s» stornata (a prova di revisione, con controregistrazione).%(hinweis)s"
+
+#: core/views/fw/listen.py:750
 msgid "Erfolgsrechnung & Bilanz"
 msgstr "Conto economico & bilancio"
 
-#: core/views/fw/listen.py:754
+#: core/views/fw/listen.py:751
 msgid "Ertrag/Aufwand, Aktiven/Passiven, Journal"
 msgstr "Ricavi/costi, attivi/passivi, giornale"
 
-#: core/views/fw/listen.py:757
+#: core/views/fw/listen.py:754
 msgid "Umsatz-/Vorsteuer, ESTV-Export"
 msgstr "Imposta sulla cifra d'affari / precedente, esportazione AFC"
 
-#: core/views/fw/listen.py:759
+#: core/views/fw/listen.py:756
 msgid "Offene Posten + Monatsabschluss"
 msgstr "Partite aperte + chiusura mensile"
 
-#: core/views/fw/listen.py:761
+#: core/views/fw/listen.py:758
 msgid "Forderungen & Zahlungen"
 msgstr "Crediti & pagamenti"
 
-#: core/views/fw/listen.py:763
+#: core/views/fw/listen.py:760
 msgid "Offene Forderungen nach Fälligkeitsalter"
 msgstr "Crediti aperti per anzianità di scadenza"
 
-#: core/views/fw/listen.py:766
+#: core/views/fw/listen.py:763
 msgid "Kontoblatt je Mieter (Forderungen/Zahlungen)"
 msgstr "Scheda conto per inquilino (crediti/pagamenti)"
 
-#: core/views/fw/listen.py:769
+#: core/views/fw/listen.py:766
 msgid "Kontoblatt je Lieferant (Kreditoren)"
 msgstr "Scheda conto per fornitore (creditori)"
 
-#: core/views/fw/listen.py:772
+#: core/views/fw/listen.py:769
 msgid "Portfolio"
 msgstr "Portafoglio"
 
-#: core/views/fw/listen.py:774
+#: core/views/fw/listen.py:771
 msgid "Rent Roll je Liegenschaft (Soll/Ist/Leerstand)"
 msgstr "Specchietto delle pigioni per stabile (dovuto/effettivo/sfitto)"
 
-#: core/views/fw/listen.py:775
+#: core/views/fw/listen.py:772
 #, python-format
 msgid "CHF %(betrag)s Soll · %(quote)s%% leer"
 msgstr "CHF %(betrag)s dovuto · %(quote)s%% sfitto"
 
-#: core/views/fw/listen.py:776
+#: core/views/fw/listen.py:773
 msgid "Eigentümer-Abrechnungen"
 msgstr "Rendiconti proprietari"
 
-#: core/views/fw/listen.py:777
+#: core/views/fw/listen.py:774
 msgid "Mandatsabrechnung & Kontokorrent je Eigentümer"
 msgstr "Rendiconto del mandato & conto corrente per proprietario"
 
-#: core/views/fw/listen.py:780
+#: core/views/fw/listen.py:777
 msgid "Objekte & Unterhalt"
 msgstr "Oggetti & manutenzione"
 
-#: core/views/fw/listen.py:782
+#: core/views/fw/listen.py:779
 msgid "Kosten je Liegenschaft (offen/effektiv)"
 msgstr "Costi per stabile (aperti/effettivi)"
 
-#: core/views/fw/listen.py:784
+#: core/views/fw/listen.py:781
 msgid "Objekt-Feed (Portale)"
 msgstr "Feed degli oggetti (portali)"
 
-#: core/views/fw/listen.py:785
+#: core/views/fw/listen.py:782
 msgid "Vermarktungs-Feed für Homegate/Flatfox"
 msgstr "Feed di commercializzazione per Homegate/Flatfox"
 
-#: core/views/fw/listen.py:793
+#: core/views/fw/listen.py:790
 msgid "Mietertrag"
 msgstr "Reddito locativo"
 
-#: core/views/fw/listen.py:794
+#: core/views/fw/listen.py:791
 msgid "Aufwand (total)"
 msgstr "Costi (totale)"
 
-#: core/views/fw/listen.py:795
+#: core/views/fw/listen.py:792
 msgid "Reparaturen (Unterhalt)"
 msgstr "Riparazioni (manutenzione)"
 
-#: core/views/fw/listen.py:796
+#: core/views/fw/listen.py:793
 msgid "Nettoergebnis"
 msgstr "Risultato netto"
 
-#: core/views/fw/listen.py:1109
+#: core/views/fw/listen.py:1106
 msgid "Wohnen"
 msgstr "Abitazione"
 
-#: core/views/fw/listen.py:1110
+#: core/views/fw/listen.py:1107
 msgid "Gewerbe"
 msgstr "Commerciale"
 
-#: core/views/fw/listen.py:1111
+#: core/views/fw/listen.py:1108
 msgid "Alle Zustände"
 msgstr "Tutti gli stati"
 
-#: core/views/fw/listen.py:1112
+#: core/views/fw/listen.py:1109
 #, python-format
 msgid "Mit Befund (%(n)s)"
 msgstr "Con riscontro (%(n)s)"
 
-#: core/views/fw/listen.py:1113
+#: core/views/fw/listen.py:1110
 #, python-format
 msgid "Leerstand (%(n)s)"
 msgstr "Sfitto (%(n)s)"
 
-#: core/views/fw/listen.py:1292
+#: core/views/fw/listen.py:1289
 msgid "Privatpersonen"
 msgstr "Privati"
 
-#: core/views/fw/listen.py:1292
+#: core/views/fw/listen.py:1289
 msgid "Firmen"
 msgstr "Ditte"
 
-#: core/views/fw/listen.py:1293
+#: core/views/fw/listen.py:1290
 msgid "Vereine"
 msgstr "Associazioni"
 
 #: core/views/fw/mahnwesen.py:97
 msgid "Alle Stufen"
 msgstr "Tutti i livelli"
+
+#: core/views/fw/mietprozess.py:165
+msgid "Bitte einen gültigen Besichtigungstermin wählen."
+msgstr "Seleziona una data di visita valida."
+
+#: core/views/fw/mietprozess.py:226
+msgid "Diese Bewerbung wurde bereits zugesagt."
+msgstr "Questa candidatura è già stata accettata."
+
+#: core/views/fw/mietprozess.py:226
+msgid "Diese Bewerbung wurde bereits abgesagt."
+msgstr "Questa candidatura è già stata rifiutata."
+
+#: core/views/fw/mietprozess.py:334
+msgid "Keine Datei gewählt."
+msgstr "Nessun file selezionato."
+
+#: core/views/fw/mietprozess.py:353
+#, python-format
+msgid "Status auf „%(wert)s“ gesetzt."
+msgstr "Stato impostato su «%(wert)s»."
+
+#: core/views/fw/mietprozess.py:391
+msgid "Für diese Bewerbung existiert bereits ein Vertragsentwurf."
+msgstr "Per questa candidatura esiste già una bozza di contratto."
+
+#: core/views/fw/mietprozess.py:448
+#, python-format
+msgid ""
+"Mieter angelegt und Vertragsentwurf für %(bezeichnung)s erstellt — bitte "
+"Konditionen prüfen und aktivieren."
+msgstr "Inquilino creato e bozza di contratto per %(bezeichnung)s allestita — verificare le condizioni e attivare."
 
 #: core/views/fw/nebenkosten.py:181
 msgid "Mieter-Abrechnung"
@@ -14838,7 +15300,8 @@ msgstr "Questo periodo è già chiuso e contabilizzato."
 #, python-format
 msgid ""
 "Abrechnung verbucht: %(n_nach)s Nachzahlung(en), %(n_gut)s Gutschrift(en)."
-msgstr "Conteggio contabilizzato: %(n_nach)s conguaglio/i, %(n_gut)s accredito/i."
+msgstr ""
+"Conteggio contabilizzato: %(n_nach)s conguaglio/i, %(n_gut)s accredito/i."
 
 #: core/views/fw/nebenkosten.py:351
 msgid "Keine abzurechnenden Mieter in dieser Periode gefunden."
@@ -14850,7 +15313,10 @@ msgid ""
 "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · "
 "Passwort: %(passwort)s (bitte dem Mieter sicher mitteilen, wird nur einmal "
 "angezeigt)."
-msgstr "Accesso al portale attivo. Nessuna e-mail registrata — nome utente: %(username)s · password: %(passwort)s (comunicarli in modo sicuro all'inquilino, vengono mostrati una sola volta)."
+msgstr ""
+"Accesso al portale attivo. Nessuna e-mail registrata — nome utente: "
+"%(username)s · password: %(passwort)s (comunicarli in modo sicuro "
+"all'inquilino, vengono mostrati una sola volta)."
 
 #: core/views/fw/person.py:469
 msgid "Bitte einen Inhalt/Notiztext erfassen."
@@ -14873,7 +15339,9 @@ msgstr "Documento eliminato."
 msgid ""
 "Person kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. "
 "Bitte zuerst kündigen/beenden."
-msgstr "La persona non può essere eliminata: %(aktive)s contratto/i attivo/i. Disdirli/terminarli prima."
+msgstr ""
+"La persona non può essere eliminata: %(aktive)s contratto/i attivo/i. "
+"Disdirli/terminarli prima."
 
 #: core/views/fw/person.py:564
 #, python-format
@@ -14943,7 +15411,9 @@ msgstr "Tutti i dati sono stati eliminati — riparti con una banca dati vuota."
 msgid ""
 "Marktdaten konnten nicht geladen werden: %(e)s. Werte bitte manuell "
 "eintragen."
-msgstr "Non è stato possibile caricare i dati di mercato: %(e)s. Inserisci i valori manualmente."
+msgstr ""
+"Non è stato possibile caricare i dati di mercato: %(e)s. Inserisci i valori "
+"manualmente."
 
 #: core/views/fw/profil.py:667
 msgid "Ausschreibung beendet."
@@ -14953,13 +15423,17 @@ msgstr "Annuncio terminato."
 msgid ""
 "Objekt zur Nachmietersuche ausgeschrieben — erscheint jetzt in der "
 "Vermarktung."
-msgstr "Oggetto pubblicato per la ricerca di un nuovo inquilino — ora appare nella commercializzazione."
+msgstr ""
+"Oggetto pubblicato per la ricerca di un nuovo inquilino — ora appare nella "
+"commercializzazione."
 
 #: core/views/fw/profil.py:792
 #, python-format
 msgid ""
 "%(n)s Standardvorlage(n) erstellt — jederzeit unter 'Bearbeiten' anpassbar."
-msgstr "%(n)s modello/i standard creato/i — modificabile/i in qualsiasi momento sotto «Modifica»."
+msgstr ""
+"%(n)s modello/i standard creato/i — modificabile/i in qualsiasi momento "
+"sotto «Modifica»."
 
 #: core/views/fw/profil.py:794
 msgid "Alle Standardvorlagen sind bereits vorhanden."
@@ -14974,7 +15448,9 @@ msgstr "La designazione è obbligatoria."
 msgid ""
 "Eigene Fassung von '%(name)s' angelegt. Die mitgelieferte Vorlage bleibt "
 "unverändert."
-msgstr "Creata una versione propria di «%(name)s». Il modello fornito resta invariato."
+msgstr ""
+"Creata una versione propria di «%(name)s». Il modello fornito resta "
+"invariato."
 
 #: core/views/fw/profil.py:841
 #, python-format
@@ -14985,7 +15461,9 @@ msgstr "Modello «%(name)s» salvato."
 msgid ""
 "Mitgelieferte Vorlagen lassen sich nicht löschen. Sie können sie bearbeiten "
 "— dabei entsteht eine eigene Fassung."
-msgstr "I modelli forniti non possono essere eliminati. Potete modificarli — ne nasce una versione propria."
+msgstr ""
+"I modelli forniti non possono essere eliminati. Potete modificarli — ne "
+"nasce una versione propria."
 
 #: core/views/fw/profil.py:865
 #, python-format
@@ -15104,7 +15582,9 @@ msgstr "Nuovo token del feed del portale generato."
 #: core/views/fw/profil.py:1018
 msgid ""
 "Keine Ziel-E-Mail hinterlegt. Bitte im Benutzerprofil eine E-Mail eintragen."
-msgstr "Nessun indirizzo e-mail di destinazione registrato. Inseriscine uno nel profilo utente."
+msgstr ""
+"Nessun indirizzo e-mail di destinazione registrato. Inseriscine uno nel "
+"profilo utente."
 
 #: core/views/fw/profil.py:1029
 #, python-format
@@ -15252,10 +15732,6 @@ msgstr "%(n)s foto aggiunta/e."
 msgid "%(abgelehnt)s Datei(en) abgelehnt (kein gültiges Bild oder zu gross)."
 msgstr "%(abgelehnt)s file rifiutato/i (immagine non valida o troppo grande)."
 
-#: core/views/fw/schaeden.py:447
-msgid "Keine Datei ausgewählt."
-msgstr "Nessun file selezionato."
-
 #: core/views/fw/schaeden.py:463
 msgid "Foto entfernt."
 msgstr "Foto rimossa."
@@ -15291,30 +15767,158 @@ msgstr "Risposta salvata nella cronologia (segnalante senza e-mail)."
 msgid ""
 "Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal)."
 "%(mail_info)s"
-msgstr "Riparazione inoltrata al proprietario per approvazione (portale).%(mail_info)s"
+msgstr ""
+"Riparazione inoltrata al proprietario per approvazione (portale)."
+"%(mail_info)s"
 
 #: core/views/fw/schaeden.py:683
 #, python-format
 msgid ""
 "Kosten erfasst und Kreditorenrechnung über CHF %(kosten_effektiv)s erstellt "
 "(Status: Neu — im Kreditoren-Tab freigeben)."
-msgstr "Costi registrati e fattura fornitore di CHF %(kosten_effektiv)s creata (stato: nuovo — da approvare nella scheda Creditori)."
+msgstr ""
+"Costi registrati e fattura fornitore di CHF %(kosten_effektiv)s creata "
+"(stato: nuovo — da approvare nella scheda Creditori)."
 
 #: core/views/fw/schaeden.py:685
 msgid "Kosten erfasst."
 msgstr "Costi registrati."
 
-#: core/views/portal.py:751
+#: core/views/fw/vertragserstellung.py:210
+msgid "Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst."
+msgstr "Seleziona un oggetto prima di creare il contratto."
+
+#: core/views/fw/vertragserstellung.py:509
+msgid ""
+"Amtliches Anfangsmietzins-Formular wurde automatisch erstellt "
+"(Formularpflicht) — bei Schlüsselübergabe aushändigen."
+msgstr "Il modulo ufficiale per la pigione iniziale è stato creato automaticamente (modulo obbligatorio) — consegnarlo alla consegna delle chiavi."
+
+#: core/views/fw/vertragserstellung.py:516
+msgid ""
+"Nettomietzins ist CHF 0 — bitte prüfen. Ohne Mietzins erzeugt der Mietenlauf "
+"keine Forderung."
+msgstr "La pigione netta è di CHF 0 — verificare. Senza pigione il processo delle pigioni non genera alcun credito."
+
+#: core/views/fw/vertragserstellung.py:535
+#, python-format
+msgid ""
+"Mietvertrag für %(display_name)s aktualisiert & aktiv gesetzt — "
+"%(anzahl_dok)s Dokumente automatisch abgelegt (im Portal sichtbar)."
+msgstr "Contratto di locazione per %(display_name)s aggiornato e attivato — %(anzahl_dok)s documenti archiviati automaticamente (visibili nel portale)."
+
+#: core/views/fw/vertragserstellung.py:535
+#, python-format
+msgid ""
+"Mietvertrag für %(display_name)s erstellt & aktiv gesetzt — %(anzahl_dok)s "
+"Dokumente automatisch abgelegt (im Portal sichtbar)."
+msgstr "Contratto di locazione per %(display_name)s creato e attivato — %(anzahl_dok)s documenti archiviati automaticamente (visibili nel portale)."
+
+#: core/views/fw/vertragserstellung.py:537
+#, python-format
+msgid "Vertrag (Entwurf) für %(display_name)s aktualisiert."
+msgstr "Contratto (bozza) per %(display_name)s aggiornato."
+
+#: core/views/fw/vertragserstellung.py:539
+#, python-format
+msgid ""
+"Mietvertrag (Entwurf) für %(display_name)s erstellt — PDFs werden erst beim "
+"Aktivieren erzeugt."
+msgstr "Contratto di locazione (bozza) per %(display_name)s creato — i PDF vengono generati solo all'attivazione."
+
+#: core/views/fw/vertragserstellung.py:549
+#, python-format
+msgid "Vertrag erstellt, aber Signaturversand nicht möglich: %(msg)s"
+msgstr "Contratto creato, ma l'invio per la firma non è possibile: %(msg)s"
+
+#: core/views/fw/vertragserstellung.py:727
+#, python-format
+msgid "«%(roh)s» ist keine Zahl — %(name)s unverändert."
+msgstr "«%(roh)s» non è un numero — %(name)s invariato."
+
+#: core/views/portal.py:511
+msgid "Kein gültiges Mietobjekt gewählt."
+msgstr "Nessun oggetto locato valido selezionato."
+
+#: core/views/portal.py:531
+#, python-format
+msgid ""
+"Ihre Kündigung wurde erfasst (Termin: %(strftime)s). Laden Sie den "
+"Kündigungsbrief herunter und senden Sie ihn per Einschreiben. Die Verwaltung "
+"wurde informiert und bestätigt den Eingang."
+msgstr "La vostra disdetta è stata registrata (termine: %(strftime)s). Scaricate la lettera di disdetta e inviatela per raccomandata. L'amministrazione è stata informata e confermerà la ricezione."
+
+#: core/views/portal.py:674
+msgid "Bitte Titel und Beschreibung angeben."
+msgstr "Indica titolo e descrizione."
+
+#: core/views/portal.py:682
+msgid "Kein aktives Mietobjekt gefunden."
+msgstr "Nessun oggetto locato attivo trovato."
+
+#: core/views/portal.py:709
+msgid ""
+"Ihre Schadenmeldung wurde übermittelt. Sie erhalten eine Bestätigung per E-"
+"Mail; die Verwaltung kümmert sich darum."
+msgstr "La vostra segnalazione di danno è stata trasmessa. Riceverete una conferma per e-mail; l'amministrazione se ne occupa."
+
+#: core/views/portal.py:750
 msgid "In Bearbeitung"
 msgstr "In elaborazione"
 
-#: core/views/portal.py:752
+#: core/views/portal.py:751
 msgid "Warte auf Sie"
 msgstr "In attesa di Lei"
 
-#: core/views/portal.py:753
+#: core/views/portal.py:752
 msgid "Handwerker beauftragt"
 msgstr "Artigiano incaricato"
+
+#: core/views/portal.py:824
+msgid "Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich."
+msgstr "Il vostro messaggio è stato trasmesso. L'amministrazione vi risponderà."
+
+#: core/views/portal.py:905
+msgid "Ihre Angaben wurden aktualisiert und der Verwaltung gemeldet."
+msgstr "I vostri dati sono stati aggiornati e comunicati all'amministrazione."
+
+#: core/views/portal.py:907
+msgid "Keine Änderungen erkannt."
+msgstr "Nessuna modifica rilevata."
+
+#: core/views/portal.py:928
+msgid "Passwort geändert."
+msgstr "Password modificata."
+
+#: core/views/zweifaktor.py:178
+#, python-format
+msgid ""
+"Mit Notfallcode angemeldet. Noch %(offen)s Code(s) übrig — bei wenigen "
+"übrigen neue erzeugen."
+msgstr "Accesso con codice di emergenza. Restano %(offen)s codice/i — generarne di nuovi se ne restano pochi."
+
+#: core/views/zweifaktor.py:309
+msgid "Dafür fehlt Ihnen die Berechtigung."
+msgstr "Non avete l'autorizzazione necessaria."
+
+#: core/views/zweifaktor.py:318
+msgid ""
+"Richten Sie den zweiten Faktor zuerst für sich selbst ein — dann lässt er "
+"sich für alle verlangen."
+msgstr "Configurate prima il secondo fattore per voi stessi — poi potrà essere richiesto a tutti."
+
+#: core/views/zweifaktor.py:358
+msgid ""
+"Ihre Verwaltung verlangt den zweiten Faktor — er lässt sich nicht abschalten."
+msgstr "La vostra amministrazione richiede il secondo fattore — non può essere disattivato."
+
+#: core/views/zweifaktor.py:361
+msgid "Das Passwort stimmt nicht — nichts geändert."
+msgstr "La password non è corretta — nulla è stato modificato."
+
+#: core/views/zweifaktor.py:366
+msgid "Zwei-Faktor-Anmeldung abgeschaltet."
+msgstr "Accesso a due fattori disattivato."
 
 #: faelle/akten.py:46
 msgid "Chronik"

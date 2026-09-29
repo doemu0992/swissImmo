@@ -12,6 +12,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.conf import settings
+from django.utils.translation import gettext
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
@@ -220,7 +221,7 @@ def fw_kreditor_bezahlen(request):
     from finance.models import KreditorenZahlung
     k = get_object_or_404(KreditorenRechnung, id=request.POST.get('rechnung_id'))
     if k.status in ('bezahlt', 'storniert', 'neu'):
-        messages.error(request, "Diese Rechnung kann nicht (mehr) bezahlt werden.")
+        messages.error(request, gettext('Diese Rechnung kann nicht (mehr) bezahlt werden.'))
         return redirect('fw_kreditoren')
 
     # Optionaler Teilbetrag; Standard = offener Betrag
@@ -236,11 +237,11 @@ def fw_kreditor_bezahlen(request):
     raw = (request.POST.get('betrag') or '').strip()
     betrag = _dec(raw) if raw else offen
     if betrag is None or betrag <= 0:
-        messages.error(request, f"Ungültiger Betrag «{raw}» — Zahlung nicht ausgeführt.")
+        messages.error(request, gettext('Ungültiger Betrag «%(raw)s» — Zahlung nicht ausgeführt.') % {'raw': raw})
         return redirect('fw_kreditoren')
     betrag = min(betrag, offen)
     if betrag <= 0:
-        messages.error(request, "Kein offener Betrag zu bezahlen.")
+        messages.error(request, gettext('Kein offener Betrag zu bezahlen.'))
         return redirect('fw_kreditoren')
 
     # Valutadatum und Bankkonto sind wählbar — «heute» und «1020» waren stille
@@ -324,13 +325,12 @@ def fw_zahllauf(request):
         if aktion == 'datei':
             rechnungen = _auswahl(['freigegeben'])
             if not rechnungen:
-                messages.error(request, "Keine Rechnung ausgewählt.")
+                messages.error(request, gettext('Keine Rechnung ausgewählt.'))
                 return redirect(_ziel())
             vw = aktuelle_organisation()
             debtor_iban = ((vw.iban if vw else '') or '').strip()
             if not debtor_iban:
-                messages.error(request, "Für die Zahlungsdatei fehlt die IBAN der "
-                                        "Verwaltung (Profil → Account).")
+                messages.error(request, gettext('Für die Zahlungsdatei fehlt die IBAN der Verwaltung (Profil → Account).'))
                 return redirect(_ziel())
             # Ausführungsdatum ist frei wählbar — die Bank führt den Lauf an
             # diesem Tag aus; «heute» war eine stille Annahme (Praxis-Audit).
@@ -343,8 +343,7 @@ def fw_zahllauf(request):
                 exec_date=exec_date.isoformat(),
                 now_iso=jetzt.strftime('%Y-%m-%dT%H:%M:%S'))
             if anzahl == 0:
-                messages.error(request, "Keine zahlbare Rechnung in der Auswahl "
-                                        "(IBAN oder Betrag fehlt).")
+                messages.error(request, gettext('Keine zahlbare Rechnung in der Auswahl (IBAN oder Betrag fehlt).'))
                 return redirect(_ziel())
             uebersprungen = {rid for rid, _ in skipped}
             n = 0
@@ -365,7 +364,7 @@ def fw_zahllauf(request):
         if aktion == 'bezahlt':
             rechnungen = _auswahl(['in_zahlung', 'freigegeben', 'teilbezahlt'])
             if not rechnungen:
-                messages.error(request, "Keine Rechnung ausgewählt.")
+                messages.error(request, gettext('Keine Rechnung ausgewählt.'))
                 return redirect(_ziel())
             bank_nr = (request.POST.get('bank_konto') or '1020').strip()
             if not Buchungskonto.objects.filter(nummer=bank_nr).exists():
@@ -398,11 +397,9 @@ def fw_zahllauf(request):
             log_aktion(request, "Zahllauf verbucht", f"{n} Zahlungen",
                        f"CHF {summe} · Valuta {valuta} · Konto {bank_nr}")
             if n:
-                messages.success(request, f"✅ {n} Zahlung(en) über CHF {summe} verbucht "
-                                          f"(2000 an {bank_nr}, Valuta {valuta:%d.%m.%Y}).")
+                messages.success(request, '✅ ' + gettext('%(n)s Zahlung(en) über CHF %(summe)s verbucht (2000 an %(bank_nr)s, Valuta %(valuta)s).') % {'n': n, 'summe': summe, 'bank_nr': bank_nr, 'valuta': format(valuta, '%d.%m.%Y')})
             if gesperrt:
-                messages.error(request, f"⚠️ {gesperrt} Zahlung(en) nicht verbucht: die "
-                                        f"Buchungsperiode ist gesperrt.")
+                messages.error(request, '⚠️ ' + gettext('%(gesperrt)s Zahlung(en) nicht verbucht: die Buchungsperiode ist gesperrt.') % {'gesperrt': gesperrt})
             return redirect(_ziel())
 
         # --- 3) Auswahl zurück auf «freigegeben» (Lauf nicht ausgeführt) ---
@@ -412,7 +409,7 @@ def fw_zahllauf(request):
                 r.status = 'freigegeben'
                 r.save(update_fields=['status'])
             log_aktion(request, "Zahllauf zurückgesetzt", f"{len(rechnungen)} Rechnungen", '')
-            messages.success(request, f"↩︎ {len(rechnungen)} Rechnung(en) wieder freigegeben.")
+            messages.success(request, '↩︎ ' + gettext('%(len)s Rechnung(en) wieder freigegeben.') % {'len': len(rechnungen)})
             return redirect(_ziel())
 
         return redirect(_ziel())
@@ -479,7 +476,7 @@ def fw_kreditor_zahlung_zuruecksetzen(request, pk):
         k.status = 'freigegeben'
         k.save(update_fields=['status'])
         log_aktion(request, "Zahllauf zurückgesetzt", k.lieferant or f"Rechnung #{k.id}", '')
-        messages.success(request, f"↩︎ '{k.lieferant}' wieder freigegeben (nicht mehr in Zahlung).")
+        messages.success(request, '↩︎ ' + gettext("'%(lieferant)s' wieder freigegeben (nicht mehr in Zahlung).") % {'lieferant': k.lieferant})
     ziel = '/neu/kreditoren/'
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'
@@ -511,7 +508,7 @@ def fw_kreditor_zahlung_stornieren(request, pk):
             z = get_object_or_404(
                 KreditorenZahlung.objects.select_for_update().select_related('kreditor'), id=pk)
             if z.status == 'storniert':
-                messages.info(request, "Diese Zahlung ist bereits storniert.")
+                messages.info(request, gettext('Diese Zahlung ist bereits storniert.'))
                 return redirect(naechstes)
             k = z.kreditor
             # Die zur Zahlung gehörende Buchung finden und gegenbuchen. Diskriminator:
@@ -539,10 +536,9 @@ def fw_kreditor_zahlung_stornieren(request, pk):
         messages.error(request, f"❌ {exc}")
         return redirect(naechstes)
     except Exception as exc:
-        messages.error(request, f"❌ Zahlung konnte nicht storniert werden: {exc}")
+        messages.error(request, '❌ ' + gettext('Zahlung konnte nicht storniert werden: %(exc)s') % {'exc': exc})
         return redirect(naechstes)
     log_aktion(request, "Lieferantenzahlung storniert", k.lieferant or f"Rechnung #{k.id}",
                f"CHF {z.betrag}")
-    messages.success(request, f"✅ Zahlung über CHF {z.betrag} an {k.lieferant or 'Lieferant'} "
-                              f"storniert — offener Posten wieder offen.")
+    messages.success(request, '✅ ' + gettext('Zahlung über CHF %(betrag)s an %(wert)s storniert — offener Posten wieder offen.') % {'betrag': z.betrag, 'wert': k.lieferant or 'Lieferant'})
     return redirect(naechstes)
