@@ -11,20 +11,21 @@ from decimal import Decimal
 
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_noop, ngettext
 
 TYP_META = {
-    'geld':    {'label': 'Geld',    'chip': 'fw-krit-flaeche fw-kritisch'},
-    'frist':   {'label': 'Frist',   'chip': 'fw-warn-flaeche fw-warnton'},
-    'schaden': {'label': 'Schaden', 'chip': 'fw-warn-flaeche fw-warnton'},
-    'prozess': {'label': 'Prozess', 'chip': 'fw-markenflaeche fw-marke'},
-    'aufgabe': {'label': 'Aufgabe', 'chip': 'fw-flaeche2 fw-mutet'},
+    'geld':    {'label': gettext_noop('Geld'),    'chip': 'fw-krit-flaeche fw-kritisch'},
+    'frist':   {'label': gettext_noop('Frist'),   'chip': 'fw-warn-flaeche fw-warnton'},
+    'schaden': {'label': gettext_noop('Schaden'), 'chip': 'fw-warn-flaeche fw-warnton'},
+    'prozess': {'label': gettext_noop('Prozess'), 'chip': 'fw-markenflaeche fw-marke'},
+    'aufgabe': {'label': gettext_noop('Aufgabe'), 'chip': 'fw-flaeche2 fw-mutet'},
 }
 
 
 def _eintrag(typ, titel, sub, url, cta, dringend=False, faellig=None,
              chf=None, modal=False, wide=False, ordnung=50):
     meta = TYP_META[typ]
-    return {'typ': typ, 'typ_label': meta['label'], 'chip_cls': meta['chip'],
+    return {'typ': typ, 'typ_label': gettext(meta['label']), 'chip_cls': meta['chip'],
             'titel': titel, 'sub': sub, 'url': url, 'cta': cta,
             'dringend': dringend, 'faellig': faellig, 'chf': chf,
             'modal': modal, 'wide': wide, 'ordnung': ordnung}
@@ -75,20 +76,27 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
         deb_ueberf = [r for r in deb_ueberf if _zu_mahnen(r)]
     if deb_ueberf:
         chf = sum((r.offener_betrag for r in deb_ueberf), Decimal('0.00'))
-        titel = (f"{len(deb_ueberf)} Mieter haben noch nicht bezahlt" if einfach
-                 else f"{len(deb_ueberf)} überfällige Forderungen mahnen")
+        n_ueberf = len(deb_ueberf)
+        titel = (ngettext('%(n)s Mieter hat noch nicht bezahlt', '%(n)s Mieter haben noch nicht bezahlt', n_ueberf)
+                 if einfach else
+                 ngettext('%(n)s überfällige Forderung mahnen', '%(n)s überfällige Forderungen mahnen', n_ueberf)
+                 ) % {'n': n_ueberf}
         eintraege.append(_eintrag('geld', titel,
-                                  'Mahnvorschläge bereit' if einfach else 'Fällige Debitoren mit Mahnung anstossen',
+                                  gettext('Mahnvorschläge bereit') if einfach
+                                  else gettext('Fällige Debitoren mit Mahnung anstossen'),
                                   '/neu/mahnwesen/' + lg_query,
-                                  'Erinnerung senden' if einfach else 'Mahnen',
+                                  gettext('Erinnerung senden') if einfach else gettext('Mahnen'),
                                   dringend=True, chf=chf, ordnung=10))
     if deb:
         chf = sum((r.offener_betrag for r in deb), Decimal('0.00'))
-        titel = (f"{len(deb)} offene Zahlungen abgleichen" if einfach
-                 else f"{len(deb)} offene Forderungen mit der Bank abgleichen")
+        titel = (ngettext('%(n)s offene Zahlung abgleichen', '%(n)s offene Zahlungen abgleichen', len(deb))
+                 if einfach else
+                 ngettext('%(n)s offene Forderung mit der Bank abgleichen',
+                          '%(n)s offene Forderungen mit der Bank abgleichen', len(deb))
+                 ) % {'n': len(deb)}
         eintraege.append(_eintrag('geld', titel,
-                                  'Bankgutschriften den Mietern zuordnen',
-                                  '/neu/bankabgleich/' + lg_query, 'Abgleichen',
+                                  gettext('Bankgutschriften den Mietern zuordnen'),
+                                  '/neu/bankabgleich/' + lg_query, gettext('Abgleichen'),
                                   chf=chf, ordnung=20))
 
     kred_qs = KreditorenRechnung.objects.exclude(status='storniert')
@@ -108,9 +116,11 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
         chf = sum((k.offener_betrag or Decimal('0.00') for k in zur_zahlung), Decimal('0.00'))
         dringend = any((k.faellig_am and k.faellig_am < heute) for k in zur_zahlung)
         eintraege.append(_eintrag('geld',
-                                  f"{len(zur_zahlung)} Rechnungen bezahlen",
-                                  'Zahlung auslösen' if einfach else 'Zahllauf ausführen (pain.001)',
-                                  '/neu/kreditoren/' + lg_query, 'Zahlen',
+                                  ngettext('%(n)s Rechnung bezahlen', '%(n)s Rechnungen bezahlen',
+                                           len(zur_zahlung)) % {'n': len(zur_zahlung)},
+                                  gettext('Zahlung auslösen') if einfach
+                                  else gettext('Zahllauf ausführen (pain.001)'),
+                                  '/neu/kreditoren/' + lg_query, gettext('Zahlen'),
                                   dringend=dringend, chf=chf, ordnung=35))
 
     kaut = Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:kautionfreigabe:')
@@ -119,9 +129,11 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     kaut_faellig = kaut.filter(faellig_am__lte=heute).count()
     if kaut_faellig:
         eintraege.append(_eintrag('geld',
-                                  f"{kaut_faellig} Kautionen zur Rückzahlung fällig",
-                                  'Rückzahlungsfrist nach Auszug (Art. 257e)',
-                                  '/neu/kautionen/' + lg_query, 'Kautionen',
+                                  ngettext('%(n)s Kaution zur Rückzahlung fällig',
+                                           '%(n)s Kautionen zur Rückzahlung fällig',
+                                           kaut_faellig) % {'n': kaut_faellig},
+                                  gettext('Rückzahlungsfrist nach Auszug (Art. 257e)'),
+                                  '/neu/kautionen/' + lg_query, gettext('Kautionen'),
                                   dringend=True, ordnung=40))
 
     # ---------- PROZESS ----------
@@ -133,11 +145,13 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     from rentals.models import Mietvertrag
     hat_aktive = Mietvertrag.objects.filter(status='aktiv').exists()
     if hat_aktive and not soll_qs.exists():
-        titel = (f"Monatsmieten {m:02d}/{j} erzeugen" if einfach
-                 else f"Sollstellung {m:02d}/{j} ausführen")
+        # `soll_titel` oben ist ein Datenbank-Schlüssel und bleibt deutsch;
+        # übersetzt wird nur die Anzeige.
+        titel = (gettext('Monatsmieten %(periode)s erzeugen') if einfach
+                 else gettext('Sollstellung %(periode)s ausführen')) % {'periode': f'{m:02d}/{j}'}
         eintraege.append(_eintrag('prozess', titel,
-                                  'Mietrechnungen für diesen Monat verbuchen',
-                                  '/neu/sollstellung/' + lg_query, 'Starten', ordnung=45))
+                                  gettext('Mietrechnungen für diesen Monat verbuchen'),
+                                  '/neu/sollstellung/' + lg_query, gettext('Starten'), ordnung=45))
 
     portal_kuend = Kuendigung.objects.filter(status='erfasst', absender='mieter')
     if aktive_lg:
@@ -145,9 +159,10 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     n = portal_kuend.count()
     if n:
         eintraege.append(_eintrag('prozess',
-                                  f"{n} Kündigung(en) über das Portal eingegangen",
-                                  'Bestätigen und Mieterwechsel starten',
-                                  '/neu/vertraege/' + lg_query, 'Prüfen',
+                                  ngettext('%(n)s Kündigung über das Portal eingegangen',
+                                           '%(n)s Kündigungen über das Portal eingegangen', n) % {'n': n},
+                                  gettext('Bestätigen und Mieterwechsel starten'),
+                                  '/neu/vertraege/' + lg_query, gettext('Prüfen'),
                                   dringend=True, ordnung=15))
 
     # ---------- SCHADEN ----------
@@ -157,9 +172,9 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     n = schaeden_neu.count()
     if n:
         eintraege.append(_eintrag('schaden',
-                                  f"{n} neue Schadenmeldung(en)",
-                                  'Prüfen und Handwerker beauftragen',
-                                  '/neu/schaeden/' + lg_query, 'Ansehen',
+                                  ngettext('%(n)s neue Schadenmeldung', '%(n)s neue Schadenmeldungen', n) % {'n': n},
+                                  gettext('Prüfen und Handwerker beauftragen'),
+                                  '/neu/schaeden/' + lg_query, gettext('Ansehen'),
                                   dringend=True, ordnung=12))
     freigaben = HandwerkerAuftrag.objects.filter(freigabe_status='ausstehend')
     if aktive_lg:
@@ -167,9 +182,10 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     n = freigaben.count()
     if n:
         eintraege.append(_eintrag('schaden',
-                                  f"{n} Reparaturen warten auf Eigentümer-Freigabe",
-                                  'Freigabe nachfassen oder selbst entscheiden',
-                                  '/neu/schaeden/' + lg_query, 'Ansehen', ordnung=42))
+                                  ngettext('%(n)s Reparatur wartet auf Eigentümer-Freigabe',
+                                           '%(n)s Reparaturen warten auf Eigentümer-Freigabe', n) % {'n': n},
+                                  gettext('Freigabe nachfassen oder selbst entscheiden'),
+                                  '/neu/schaeden/' + lg_query, gettext('Ansehen'), ordnung=42))
 
     # ---------- AUFGABEN OHNE FRIST (Sammelposten) ----------
     #
@@ -195,10 +211,10 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     anzahl_ohne_frist = ohne_frist.count()
     if anzahl_ohne_frist:
         eintraege.append(_eintrag(
-            'aufgabe', f'{anzahl_ohne_frist} Aufgabe'
-                       f'{"n" if anzahl_ohne_frist > 1 else ""} ohne Frist',
-            'Liegen ohne Termin — im Pendenzen-Center datieren oder erledigen',
-            '/neu/pendenzen/' + lg_query, 'Ansehen', ordnung=60))
+            'aufgabe', ngettext('%(n)s Aufgabe ohne Frist', '%(n)s Aufgaben ohne Frist',
+                                anzahl_ohne_frist) % {'n': anzahl_ohne_frist},
+            gettext('Liegen ohne Termin — im Pendenzen-Center datieren oder erledigen'),
+            '/neu/pendenzen/' + lg_query, gettext('Ansehen'), ordnung=60))
     mehr_pendenzen = 0
 
     # ---------- Sortierung: dringend zuerst, dann Fälligkeit, dann Prozessreihenfolge ----------

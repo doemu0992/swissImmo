@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 01:32+0200\n"
+"POT-Creation-Date: 2026-09-29 01:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: core/navigation.py:120 core/views/fw/arbeit.py:38
+#: core/navigation.py:120 core/views/fw/arbeit.py:42
 #: core/views/fw/dashboard.py:364
 msgid "Heute"
 msgstr "Today"
@@ -115,7 +115,7 @@ msgstr "Tenant changes"
 
 #: core/navigation.py:146 core/templates/fw/bewerber_vergleich.html:7
 #: core/templates/fw/vermarktung.html:3 core/templates/fw/vermarktung.html:9
-#: core/views/fw/_basis.py:274
+#: core/views/fw/_basis.py:274 faelle/lage.py:470
 msgid "Vermarktung"
 msgstr "Marketing"
 
@@ -197,12 +197,12 @@ msgid "Forderungen"
 msgstr "Receivables"
 
 #: core/navigation.py:168 core/templates/fw/debitoren.html:4
-#: core/templates/fw/debitoren.html:10
+#: core/templates/fw/debitoren.html:10 faelle/lage.py:450
 msgid "Debitoren"
 msgstr "Debtors"
 
-#: core/navigation.py:169 core/templates/fw/kautionen.html:4
-#: core/views/fw/dashboard.py:531
+#: core/navigation.py:169 core/services/inbox.py:136
+#: core/templates/fw/kautionen.html:4 core/views/fw/dashboard.py:531
 msgid "Kautionen"
 msgstr "Rent deposits"
 
@@ -318,6 +318,179 @@ msgstr "Within useful life"
 #: core/services/ersatzplanung.py:72 core/views/fw/schaeden.py:404
 msgid "Keine Datenbasis"
 msgstr "No data basis"
+
+#: core/services/inbox.py:17
+msgid "Geld"
+msgstr "Money"
+
+#: core/services/inbox.py:18
+msgid "Frist"
+msgstr "Deadline"
+
+#: core/services/inbox.py:19 core/templates/fw/schaden_detail.html:24
+msgid "Schaden"
+msgstr "Damage"
+
+#: core/services/inbox.py:20
+msgid "Prozess"
+msgstr "Process"
+
+#: core/services/inbox.py:21
+msgid "Aufgabe"
+msgstr "Task"
+
+#: core/services/inbox.py:80
+#, python-format
+msgid "%(n)s Mieter hat noch nicht bezahlt"
+msgid_plural "%(n)s Mieter haben noch nicht bezahlt"
+msgstr[0] "%(n)s tenant has not paid yet"
+msgstr[1] "%(n)s tenants have not paid yet"
+
+#: core/services/inbox.py:82
+#, python-format
+msgid "%(n)s überfällige Forderung mahnen"
+msgid_plural "%(n)s überfällige Forderungen mahnen"
+msgstr[0] "Send reminder for %(n)s overdue receivable"
+msgstr[1] "Send reminders for %(n)s overdue receivables"
+
+#: core/services/inbox.py:85
+msgid "Mahnvorschläge bereit"
+msgstr "Reminder proposals ready"
+
+#: core/services/inbox.py:86
+msgid "Fällige Debitoren mit Mahnung anstossen"
+msgstr "Prompt due receivables with a reminder"
+
+#: core/services/inbox.py:88
+msgid "Erinnerung senden"
+msgstr "Send reminder"
+
+#: core/services/inbox.py:88
+msgid "Mahnen"
+msgstr "Remind"
+
+#: core/services/inbox.py:92
+#, python-format
+msgid "%(n)s offene Zahlung abgleichen"
+msgid_plural "%(n)s offene Zahlungen abgleichen"
+msgstr[0] "Reconcile %(n)s open payment"
+msgstr[1] "Reconcile %(n)s open payments"
+
+#: core/services/inbox.py:94
+#, python-format
+msgid "%(n)s offene Forderung mit der Bank abgleichen"
+msgid_plural "%(n)s offene Forderungen mit der Bank abgleichen"
+msgstr[0] "Reconcile %(n)s open receivable with the bank"
+msgstr[1] "Reconcile %(n)s open receivables with the bank"
+
+#: core/services/inbox.py:98
+msgid "Bankgutschriften den Mietern zuordnen"
+msgstr "Assign bank credits to tenants"
+
+#: core/services/inbox.py:99
+msgid "Abgleichen"
+msgstr "Reconcile"
+
+#: core/services/inbox.py:119
+#, python-format
+msgid "%(n)s Rechnung bezahlen"
+msgid_plural "%(n)s Rechnungen bezahlen"
+msgstr[0] "Pay %(n)s invoice"
+msgstr[1] "Pay %(n)s invoices"
+
+#: core/services/inbox.py:121
+msgid "Zahlung auslösen"
+msgstr "Trigger payment"
+
+#: core/services/inbox.py:122
+msgid "Zahllauf ausführen (pain.001)"
+msgstr "Run payment batch (pain.001)"
+
+#: core/services/inbox.py:123
+msgid "Zahlen"
+msgstr "Pay"
+
+#: core/services/inbox.py:132
+#, python-format
+msgid "%(n)s Kaution zur Rückzahlung fällig"
+msgid_plural "%(n)s Kautionen zur Rückzahlung fällig"
+msgstr[0] "%(n)s deposit due for refund"
+msgstr[1] "%(n)s deposits due for refund"
+
+#: core/services/inbox.py:135
+msgid "Rückzahlungsfrist nach Auszug (Art. 257e)"
+msgstr "Refund deadline after move-out (Art. 257e CO)"
+
+#: core/services/inbox.py:150
+#, python-format
+msgid "Monatsmieten %(periode)s erzeugen"
+msgstr "Create monthly rents %(periode)s"
+
+#: core/services/inbox.py:151
+#, python-format
+msgid "Sollstellung %(periode)s ausführen"
+msgstr "Run billing %(periode)s"
+
+#: core/services/inbox.py:153
+msgid "Mietrechnungen für diesen Monat verbuchen"
+msgstr "Post this month's rent invoices"
+
+#: core/services/inbox.py:154
+msgid "Starten"
+msgstr "Start"
+
+#: core/services/inbox.py:162
+#, python-format
+msgid "%(n)s Kündigung über das Portal eingegangen"
+msgid_plural "%(n)s Kündigungen über das Portal eingegangen"
+msgstr[0] "%(n)s termination received via the portal"
+msgstr[1] "%(n)s terminations received via the portal"
+
+#: core/services/inbox.py:164
+msgid "Bestätigen und Mieterwechsel starten"
+msgstr "Confirm and start tenant change"
+
+#: core/services/inbox.py:165
+msgid "Prüfen"
+msgstr "Check"
+
+#: core/services/inbox.py:175
+#, python-format
+msgid "%(n)s neue Schadenmeldung"
+msgid_plural "%(n)s neue Schadenmeldungen"
+msgstr[0] "%(n)s new damage report"
+msgstr[1] "%(n)s new damage reports"
+
+#: core/services/inbox.py:176
+msgid "Prüfen und Handwerker beauftragen"
+msgstr "Check and order tradesperson"
+
+#: core/services/inbox.py:177 core/services/inbox.py:188
+#: core/services/inbox.py:217 core/templates/fw/debitoren.html:223
+msgid "Ansehen"
+msgstr "View"
+
+#: core/services/inbox.py:185
+#, python-format
+msgid "%(n)s Reparatur wartet auf Eigentümer-Freigabe"
+msgid_plural "%(n)s Reparaturen warten auf Eigentümer-Freigabe"
+msgstr[0] "%(n)s repair awaiting owner approval"
+msgstr[1] "%(n)s repairs awaiting owner approval"
+
+#: core/services/inbox.py:187
+msgid "Freigabe nachfassen oder selbst entscheiden"
+msgstr "Chase approval or decide yourself"
+
+#: core/services/inbox.py:214
+#, python-format
+msgid "%(n)s Aufgabe ohne Frist"
+msgid_plural "%(n)s Aufgaben ohne Frist"
+msgstr[0] "%(n)s task without deadline"
+msgstr[1] "%(n)s tasks without deadline"
+
+#: core/services/inbox.py:216
+msgid "Liegen ohne Termin — im Pendenzen-Center datieren oder erledigen"
+msgstr "Without a date — date or complete them in the to-do centre"
 
 #: core/services/mahnstufen.py:25
 msgid "1. Mahnung"
@@ -1340,6 +1513,7 @@ msgstr "%(n)s rm."
 #: core/templates/fw/mieterspiegel.html:80
 #: core/templates/fw/mieterspiegel_auswahl.html:37
 #: core/templates/fw/objekte.html:40 core/views/fw/detailseiten.py:141
+#: faelle/lage.py:325
 msgid "Leerstand"
 msgstr "Vacancy"
 
@@ -2171,7 +2345,7 @@ msgid "Abnahmeprotokoll"
 msgstr "Handover report"
 
 #: core/templates/fw/abnahme_detail.html:14
-#: core/templates/fw/vertrag_detail.html:137
+#: core/templates/fw/vertrag_detail.html:137 faelle/arbeitsvorrat.py:516
 msgid "Wohnungsabnahme"
 msgstr "Apartment handover"
 
@@ -3154,7 +3328,7 @@ msgid "Ungeklärte Zahlungen &amp; Guthaben"
 msgstr "Unresolved payments &amp; credits"
 
 #: core/templates/fw/bankabgleich.html:216 core/templates/fw/debitoren.html:265
-#: core/templates/fw/mahnwesen.html:57
+#: core/templates/fw/mahnwesen.html:57 faelle/lage.py:323
 #, python-format
 msgid "%(n)s Position"
 msgid_plural "%(n)s Positionen"
@@ -3180,10 +3354,10 @@ msgstr "Please select payments first."
 #: core/templates/fw/dashboard.html:82 core/templates/fw/dashboard.html:183
 #: core/templates/fw/fristen.html:8 core/templates/fw/kontoblatt.html:21
 #: core/templates/fw/liegenschaften.html:60
-#: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:42
+#: core/templates/fw/mieterwechsel.html:23 core/views/fw/arbeit.py:46
 #: core/views/fw/dienstleister.py:60 core/views/fw/kreditoren.py:146
-#: core/views/fw/listen.py:207 core/views/fw/listen.py:1108
-#: core/views/fw/listen.py:1178 core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:207 core/views/fw/listen.py:1109
+#: core/views/fw/listen.py:1179 core/views/fw/listen.py:1292
 #: core/views/fw/schaeden.py:402
 msgid "Alle"
 msgstr "All"
@@ -3731,7 +3905,7 @@ msgstr "Accepted"
 msgid "Abgesagt"
 msgstr "Rejected"
 
-#: core/templates/fw/bewerber_vergleich.html:78
+#: core/templates/fw/bewerber_vergleich.html:78 faelle/arbeitsvorrat.py:536
 msgid "Besichtigung"
 msgstr "Viewing"
 
@@ -3789,7 +3963,7 @@ msgstr ""
 msgid "Noch keine Bewerbungen für dieses Objekt."
 msgstr "No applications for this unit yet."
 
-#: core/templates/fw/bewerbung_detail.html:3
+#: core/templates/fw/bewerbung_detail.html:3 faelle/arbeitsvorrat.py:540
 msgid "Bewerbung"
 msgstr "Application"
 
@@ -3916,7 +4090,7 @@ msgstr "Pets"
 msgid "nein"
 msgstr "no"
 
-#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1109
+#: core/templates/fw/bewerbung_detail.html:61 core/views/fw/listen.py:1110
 msgid "Parkplatz"
 msgstr "Parking"
 
@@ -4519,7 +4693,7 @@ msgid "Stand heute"
 msgstr "As of today"
 
 #: core/templates/fw/dashboard.html:346
-#: core/templates/fw/liegenschaften.html:85
+#: core/templates/fw/liegenschaften.html:85 faelle/lage.py:335
 #, python-format
 msgid "%(n)s Objekt"
 msgid_plural "%(n)s Objekte"
@@ -4527,7 +4701,7 @@ msgstr[0] "%(n)s unit"
 msgstr[1] "%(n)s units"
 
 #: core/templates/fw/dashboard.html:350
-#: core/templates/fw/liegenschaften.html:90
+#: core/templates/fw/liegenschaften.html:90 faelle/lage.py:397
 msgid "ohne Befund"
 msgstr "nothing of note"
 
@@ -4668,7 +4842,7 @@ msgstr "open"
 #: core/templates/fw/dokumente.html:25 core/templates/fw/objekt_detail.html:199
 #: core/templates/fw/person_detail.html:470
 #: core/templates/fw/person_detail.html:559
-#: core/templates/fw/vertrag_detail.html:203
+#: core/templates/fw/vertrag_detail.html:203 faelle/arbeitsvorrat.py:519
 msgid "Vertrag"
 msgstr "Lease"
 
@@ -4737,10 +4911,6 @@ msgstr[1] "%(n)s days overdue"
 #: core/templates/fw/debitoren.html:222
 msgid "QR-Rechnung als PDF"
 msgstr "QR bill as PDF"
-
-#: core/templates/fw/debitoren.html:223
-msgid "Ansehen"
-msgstr "View"
 
 #: core/templates/fw/debitoren.html:229
 msgid "Als Debitorenverlust abschreiben (uneinbringlich)"
@@ -5108,6 +5278,7 @@ msgstr ""
 #: core/templates/fw/dienstleister_detail.html:180
 #: core/templates/fw/mandat_detail.html:266
 #: core/templates/fw/objekt_detail.html:536 faelle/akten.py:50
+#: faelle/lage.py:349
 msgid "Fälle"
 msgstr "Cases"
 
@@ -5202,7 +5373,7 @@ msgstr "Filing"
 #: core/templates/fw/objekt_detail.html:215
 #: core/templates/fw/person_detail.html:488
 #: core/templates/fw/person_form.html:37
-#: core/templates/fw/vertrag_detail.html:691
+#: core/templates/fw/vertrag_detail.html:691 faelle/arbeitsvorrat.py:380
 msgid "Öffnen"
 msgstr "Open"
 
@@ -5594,7 +5765,7 @@ msgstr[1] ""
 msgid "Arbeit"
 msgstr "Work"
 
-#: core/templates/fw/fall_detail.html:21
+#: core/templates/fw/fall_detail.html:21 faelle/lage.py:349
 msgid "Fall"
 msgstr "Case"
 
@@ -5615,6 +5786,7 @@ msgid "Zuständig"
 msgstr "Responsible"
 
 #: core/templates/fw/fall_detail.html:45 core/templates/fw/fall_detail.html:51
+#: faelle/arbeitsvorrat.py:331
 msgid "niemand"
 msgstr "nobody"
 
@@ -5631,7 +5803,7 @@ msgid "Schritte erledigt"
 msgstr "Steps done"
 
 #: core/templates/fw/fall_detail.html:64
-#: core/templates/fw/mieterwechsel.html:68
+#: core/templates/fw/mieterwechsel.html:68 faelle/arbeitsvorrat.py:321
 msgid "Nächster Schritt"
 msgstr "Next step"
 
@@ -6769,6 +6941,7 @@ msgid "Aufwandskonto…"
 msgstr "Expense account…"
 
 #: core/templates/fw/kreditoren.html:220 core/views/fw/dashboard.py:513
+#: faelle/arbeitsvorrat.py:647
 msgid "Freigeben"
 msgstr "Approve"
 
@@ -9044,7 +9217,7 @@ msgstr "%(n)s appl."
 msgid "Neuer Vertrag"
 msgstr "New contract"
 
-#: core/templates/fw/mieterwechsel.html:61
+#: core/templates/fw/mieterwechsel.html:61 faelle/arbeitsvorrat.py:516
 msgid "Übergabe"
 msgstr "Handover"
 
@@ -9052,7 +9225,7 @@ msgstr "Handover"
 msgid "Wohnungsrücknahme"
 msgstr "Move-out inspection"
 
-#: core/templates/fw/mieterwechsel.html:70
+#: core/templates/fw/mieterwechsel.html:70 core/views/fw/_basis.py:260
 msgid "Rücknahme starten"
 msgstr "Start move-out"
 
@@ -9728,7 +9901,7 @@ msgstr "Initial rent"
 msgid "Mietzinsanpassung"
 msgstr "Rent adjustment"
 
-#: core/templates/fw/objekt_detail.html:207
+#: core/templates/fw/objekt_detail.html:207 core/views/fw/_basis.py:261
 msgid "Vertrag öffnen"
 msgstr "Open contract"
 
@@ -11598,10 +11771,6 @@ msgstr "Damage cases"
 msgid "Schaden #%(id)s"
 msgstr "Damage #%(id)s"
 
-#: core/templates/fw/schaden_detail.html:24
-msgid "Schaden"
-msgstr "Damage"
-
 #: core/templates/fw/schaden_detail.html:43
 msgid "Gemeldet von"
 msgstr "Reported by"
@@ -13402,6 +13571,10 @@ msgstr "Recently done"
 msgid "Noch nichts erledigt."
 msgstr "Nothing done yet."
 
+#: core/views/fw/_basis.py:263
+msgid "Liegenschaft öffnen"
+msgstr "Open property"
+
 #: core/views/fw/_basis.py:343 core/views/fw/detailseiten.py:2265
 msgid "Beendet"
 msgstr "Ended"
@@ -13607,15 +13780,15 @@ msgstr "Rules (deadlines)"
 msgid "Kündigungstermine und Fristen je Kanton"
 msgstr "Termination dates and notice periods per canton"
 
-#: core/views/fw/arbeit.py:39
+#: core/views/fw/arbeit.py:43
 msgid "Diese Woche"
 msgstr "This week"
 
-#: core/views/fw/arbeit.py:40
+#: core/views/fw/arbeit.py:44
 msgid "Wartet auf Dritte"
 msgstr "Waiting for third party"
 
-#: core/views/fw/arbeit.py:41
+#: core/views/fw/arbeit.py:45
 msgid "Liegengeblieben"
 msgstr "Stalled"
 
@@ -13914,37 +14087,37 @@ msgstr "Repairs (maintenance)"
 msgid "Nettoergebnis"
 msgstr "Net result"
 
-#: core/views/fw/listen.py:1108
+#: core/views/fw/listen.py:1109
 msgid "Wohnen"
 msgstr "Residential"
 
-#: core/views/fw/listen.py:1109
+#: core/views/fw/listen.py:1110
 msgid "Gewerbe"
 msgstr "Commercial"
 
-#: core/views/fw/listen.py:1110
+#: core/views/fw/listen.py:1111
 msgid "Alle Zustände"
 msgstr "All states"
 
-#: core/views/fw/listen.py:1111
+#: core/views/fw/listen.py:1112
 #, python-format
 msgid "Mit Befund (%(n)s)"
 msgstr "With findings (%(n)s)"
 
-#: core/views/fw/listen.py:1112
+#: core/views/fw/listen.py:1113
 #, python-format
 msgid "Leerstand (%(n)s)"
 msgstr "Vacancy (%(n)s)"
 
-#: core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:1292
 msgid "Privatpersonen"
 msgstr "Individuals"
 
-#: core/views/fw/listen.py:1291
+#: core/views/fw/listen.py:1292
 msgid "Firmen"
 msgstr "Companies"
 
-#: core/views/fw/listen.py:1292
+#: core/views/fw/listen.py:1293
 msgid "Vereine"
 msgstr "Associations"
 
@@ -14205,6 +14378,187 @@ msgstr "Roles"
 msgid "Handwerker & Kosten"
 msgstr "Tradespeople & costs"
 
+#: faelle/arbeitsvorrat.py:182 faelle/arbeitsvorrat.py:183
+msgid "Lauf"
+msgstr "Run"
+
+#: faelle/arbeitsvorrat.py:184
+#, python-format
+msgid "%(lauf)s nicht ausgelöst"
+msgstr "%(lauf)s not triggered"
+
+#: faelle/arbeitsvorrat.py:187
+#, python-format
+msgid "Stichtag %(d)s"
+msgstr "Due date %(d)s"
+
+#: faelle/arbeitsvorrat.py:198
+msgid "Zum Lauf"
+msgstr "To process"
+
+#: faelle/arbeitsvorrat.py:325
+#, python-format
+msgid "Schritt %(nr)s von %(gesamt)s"
+msgstr "Step %(nr)s of %(gesamt)s"
+
+#: faelle/arbeitsvorrat.py:343
+msgid "Fall öffnen"
+msgstr "Open case"
+
+#: faelle/arbeitsvorrat.py:406
+msgid "Zur Frist"
+msgstr "To the deadline"
+
+#: faelle/arbeitsvorrat.py:560
+msgid "Termin"
+msgstr "Appointment"
+
+#: faelle/arbeitsvorrat.py:643
+#, python-format
+msgid "Rechnung %(lieferant)s"
+msgstr "Invoice %(lieferant)s"
+
+#: faelle/arbeitsvorrat.py:644
+msgid "Eingangsrechnung"
+msgstr "Incoming invoice"
+
+#: faelle/arbeitsvorrat.py:658
+#, python-format
+msgid "Offerte %(hw)s"
+msgstr "Quote %(hw)s"
+
+#: faelle/arbeitsvorrat.py:659
+msgid "Offerte"
+msgstr "Quote"
+
+#: faelle/arbeitsvorrat.py:662
+msgid "Entscheiden"
+msgstr "Decide"
+
+#: faelle/arbeitsvorrat.py:674
+#, python-format
+msgid "Mietvertrag %(name)s"
+msgstr "Lease %(name)s"
+
+#: faelle/arbeitsvorrat.py:675
+msgid "Mietvertrag"
+msgstr "Lease"
+
+#: faelle/arbeitsvorrat.py:676
+#, python-format
+msgid "%(einheit)s · zur Unterschrift"
+msgstr "%(einheit)s · for signature"
+
+#: faelle/arbeitsvorrat.py:678
+msgid "Signatur"
+msgstr "Signature"
+
+#: faelle/lage.py:278
+#, python-format
+msgid "Zahlungseingang %(monat)s"
+msgstr "Payments received %(monat)s"
+
+#: faelle/lage.py:286
+msgid "Prozentpunkt"
+msgstr "percentage point"
+
+#: faelle/lage.py:286
+msgid "Prozentpunkte"
+msgstr "percentage points"
+
+#: faelle/lage.py:290
+#, python-format
+msgid "%(q)s %% des Solls"
+msgstr "%(q)s %% of target"
+
+#: faelle/lage.py:291
+#, python-format
+msgid "Vormonat %(q)s %%"
+msgstr "last month %(q)s %%"
+
+#: faelle/lage.py:292
+msgid "kein Vormonatswert"
+msgstr "no previous month value"
+
+#: faelle/lage.py:311
+msgid "Ausstände"
+msgstr "Arrears"
+
+#: faelle/lage.py:316
+msgid "Position"
+msgstr "item"
+
+#: faelle/lage.py:316
+msgid "Positionen"
+msgstr "items"
+
+#: faelle/lage.py:324
+#, python-format
+msgid "%(n)s in Mahnstufe 2"
+msgstr "%(n)s at reminder level 2"
+
+#: faelle/lage.py:336
+#, python-format
+msgid "%(n)s ohne Ausschreibung"
+msgstr "%(n)s not advertised"
+
+#: faelle/lage.py:344
+msgid "Offene Fälle"
+msgstr "Open cases"
+
+#: faelle/lage.py:350
+#, python-format
+msgid "%(n)s liegengeblieben"
+msgstr "%(n)s stalled"
+
+#: faelle/lage.py:351
+msgid "alle in Bewegung"
+msgstr "all moving"
+
+#: faelle/lage.py:438
+#, python-format
+msgid ""
+"%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Position."
+msgid_plural ""
+"%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s "
+"Positionen."
+msgstr[0] ""
+"%(q)s %% instead of %(v)s %% last month. CHF %(b)s open in %(n)s item."
+msgstr[1] ""
+"%(q)s %% instead of %(v)s %% last month. CHF %(b)s open in %(n)s items."
+
+#: faelle/lage.py:443
+#, python-format
+msgid "%(q)s %%. Offen sind CHF %(b)s in %(n)s Position."
+msgid_plural "%(q)s %%. Offen sind CHF %(b)s in %(n)s Positionen."
+msgstr[0] "%(q)s %%. CHF %(b)s open in %(n)s item."
+msgstr[1] "%(q)s %%. CHF %(b)s open in %(n)s items."
+
+#: faelle/lage.py:448
+#, python-format
+msgid "Zahlungseingang unter %(s)s %%"
+msgstr "Payments received below %(s)s %%"
+
+#: faelle/lage.py:465
+msgid "Leerstand steigt den dritten Monat in Folge"
+msgstr "Vacancy rising for the third month in a row"
+
+#: faelle/lage.py:466
+#, python-format
+msgid "Leerstand über %(s)s %%"
+msgstr "Vacancy above %(s)s %%"
+
+#: faelle/lage.py:467
+#, python-format
+msgid "%(reihe)s. Betroffen ist %(n)s Objekt."
+msgid_plural "%(reihe)s. Betroffen sind %(n)s Objekte."
+msgstr[0] "%(reihe)s. %(n)s unit affected."
+msgstr[1] "%(reihe)s. %(n)s units affected."
+
+#: faelle/lage.py:484
+msgid "Liste öffnen"
+msgstr "Open list"
+
 #: faelle/liegenschaften.py:211
 msgid "Gebäudepolice abgelaufen"
 msgstr "Building policy expired"
@@ -14327,12 +14681,3 @@ msgstr "Policy released"
 
 #~ msgid "meldet sich nach 14 Tagen"
 #~ msgstr "reports after 14 days"
-
-#~ msgid "Zum Lauf"
-#~ msgstr "To process"
-
-#~ msgid "Termin"
-#~ msgstr "Appointment"
-
-#~ msgid "Entscheiden"
-#~ msgstr "Decide"

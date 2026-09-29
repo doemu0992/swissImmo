@@ -23,7 +23,7 @@ import logging
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, gettext_lazy
 from django.utils.dateparse import parse_date, parse_datetime
 from django.views.decorators.http import require_POST
 
@@ -34,12 +34,16 @@ from ._basis import _global_filter, _num, team_der_organisation
 logger = logging.getLogger(__name__)
 
 #: Die fünf Ansichten aus Abschnitt 3.1, in dieser Reihenfolge.
+#:
+#: `gettext_lazy`, nicht `gettext`: Auf Modulebene wird `gettext` EINMAL beim
+#: Import ausgewertet — in der Sprache, die dann gilt (Deutsch). Die Reiter
+#: blieben dadurch in jeder Oberflächensprache deutsch.
 ANSICHTEN = (
-    ('heute', _('Heute')),
-    ('woche', _('Diese Woche')),
-    ('wartet', _('Wartet auf Dritte')),
-    ('liegen', _('Liegengeblieben')),
-    ('alle', _('Alle')),
+    ('heute', gettext_lazy('Heute')),
+    ('woche', gettext_lazy('Diese Woche')),
+    ('wartet', gettext_lazy('Wartet auf Dritte')),
+    ('liegen', gettext_lazy('Liegengeblieben')),
+    ('alle', gettext_lazy('Alle')),
 )
 
 

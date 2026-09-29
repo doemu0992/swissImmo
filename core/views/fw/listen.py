@@ -19,7 +19,7 @@ from django.db import transaction
 from django.db.models import F, Q, Sum
 from django.db.models.functions import ExtractMonth
 from django.shortcuts import get_object_or_404, render
-from django.utils import timezone
+from django.utils import dateformat, timezone
 from django.utils.translation import gettext as _, gettext_lazy
 
 from core.services.mahnstufen import (stufe_fuer_tage as _stufe_fuer_tage,
@@ -969,7 +969,8 @@ def fw_auswertung(request):
     total = Decimal('0.00')
     for m in range(1, 13):
         w = _wert(m_soll, m_haben, m)
-        monate.append({'m': m, 'name': date(2000, m, 1).strftime('%b'), 'wert': w})
+        # 'M' über dateformat folgt der Sprache; strftime('%b') gab «Mar/May/Oct» auch auf Deutsch.
+        monate.append({'m': m, 'name': dateformat.format(date(2000, m, 1), 'M'), 'wert': w})
         total += w
         if abs(w) > max_abs:
             max_abs = abs(w)

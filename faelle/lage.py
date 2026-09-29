@@ -32,7 +32,8 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.db.models import Count, Q, Sum
-from django.utils import timezone
+from django.utils import dateformat, timezone
+from django.utils.translation import gettext, ngettext
 
 log = logging.getLogger(__name__)
 
@@ -272,7 +273,9 @@ def streifen(stichtag=None, aktive_lg=None):
         # drei Franken mehr. `_einheit` liefert dazu die richtige Zahlform —
         # «▲ 1 Prozentpunkt», nicht «1 Prozentpunkte»; dieselbe Regel wie bei
         # den drei Kacheln daneben seit E2.58.
-        {'schluessel': 'eingang', 'label': f'Zahlungseingang {stichtag.strftime("%B")}',
+        # Monatsname über `dateformat` (folgt der Sprache), nicht strftime('%B').
+        {'schluessel': 'eingang',
+         'label': gettext('Zahlungseingang %(monat)s') % {'monat': dateformat.format(stichtag, 'F')},
          'wert': (f'CHF {(soll - offen):,.0f}'.replace(',', "'")
                   if quote is not None else '—'),
          'stufe': 'crit' if quote is not None and quote < SCHWELLE_EINGANG else '',
@@ -280,13 +283,13 @@ def streifen(stichtag=None, aktive_lg=None):
          'delta_gut_wenn': 'hoch',
          'delta_einheit': _einheit((quote - vor_quote)
                                    if (quote is not None and vor_quote is not None) else 0,
-                                   'Prozentpunkt', 'Prozentpunkte'),
+                                   gettext('Prozentpunkt'), gettext('Prozentpunkte')),
          # Die Teile erst sammeln, dann verbinden — sonst beginnt die Zeile mit
          # «· kein Vormonatswert», wenn die Quote fehlt.
          'fuss': ' · '.join(t for t in (
-             f'{quote} % des Solls' if quote is not None else '',
-             f'Vormonat {vor_quote} %' if vor_quote is not None
-             else 'kein Vormonatswert') if t)},
+             gettext('%(q)s %% des Solls') % {'q': quote} if quote is not None else '',
+             gettext('Vormonat %(q)s %%') % {'q': vor_quote} if vor_quote is not None
+             else gettext('kein Vormonatswert')) if t)},
         # AUSSTAENDE: DER VERGLEICH ZAEHLT POSITIONEN, NICHT FRANKEN.
         #
         # Konzept v7 verlangt «Kennzahlen nur mit Vergleich». Bis E2.58 stand
@@ -305,21 +308,21 @@ def streifen(stichtag=None, aktive_lg=None):
         # is not None` zu pruefen waere immer wahr gewesen und haette auf einer
         # frischen Installation «▲ 3 Positionen» gezeigt: einen Anstieg gegen
         # einen Monat, den es nicht gab.
-        {'schluessel': 'ausstaende', 'label': 'Ausstände',
+        {'schluessel': 'ausstaende', 'label': gettext('Ausstände'),
          'wert': f'CHF {offen:,.0f}'.replace(',', "'"),
          'stufe': 'crit' if offen else '',
          'delta': (anzahl_offen - vor_anzahl) if vor_quote is not None else None,
          'delta_gut_wenn': 'runter',
-         'delta_einheit': _einheit(anzahl_offen - vor_anzahl, 'Position', 'Positionen'),
+         'delta_einheit': _einheit(anzahl_offen - vor_anzahl, gettext('Position'), gettext('Positionen')),
          # DIE FUSSZEILE TRAEGT ZWEI ANGABEN (v7).
          #
          # Der Prototyp zeigt «11 Positionen, 3 in Mahnstufe 2». Die zweite
          # sagt, wie ERNST der Ausstand ist: Elf offene Posten sind Alltag,
          # drei davon in der zweiten Mahnung nicht. Ohne sie ist die Zahl
          # ein Betrag ohne Dringlichkeit.
-         'fuss': (f'{anzahl_offen} Position{"en" if anzahl_offen != 1 else ""}'
-                  + (f', {gemahnt} in Mahnstufe 2' if gemahnt else '')),},
-        {'schluessel': 'leerstand', 'label': 'Leerstand',
+         'fuss': (ngettext('%(n)s Position', '%(n)s Positionen', anzahl_offen) % {'n': anzahl_offen}
+                  + (', ' + gettext('%(n)s in Mahnstufe 2') % {'n': gemahnt} if gemahnt else '')),},
+        {'schluessel': 'leerstand', 'label': gettext('Leerstand'),
          'wert': f'{leer_quote} %' if leer_quote is not None else '—',
          'stufe': ('warn' if leer_quote is not None
                    and leer_quote >= SCHWELLE_LEERSTAND else ''),
@@ -329,21 +332,23 @@ def streifen(stichtag=None, aktive_lg=None):
          # «10 Objekte, 4 ohne Ausschreibung» — die zweite Angabe sagt, was
          # man TUN kann. Leerstand allein ist eine Zahl; Leerstand ohne
          # Ausschreibung ist eine Unterlassung.
-         'fuss': (f'{leer_anzahl} Objekt{"e" if leer_anzahl != 1 else ""}'
-                  + (f', {ohne_aussch} ohne Ausschreibung' if ohne_aussch else '')),},
+         'fuss': (ngettext('%(n)s Objekt', '%(n)s Objekte', leer_anzahl) % {'n': leer_anzahl}
+                  + (', ' + gettext('%(n)s ohne Ausschreibung') % {'n': ohne_aussch}
+                     if ohne_aussch else '')),},
         # OFFENE FAELLE: gegen den Stand vor einem Monat.
         #
         # `eroeffnet_am` und `abgeschlossen_am` stehen im Modell; daraus laesst
         # sich der damalige Stand rechnen, ohne ihn zu speichern. Ein wachsender
         # Vorrat ist die Aussage, nicht die absolute Zahl — 27 offene Faelle sind
         # bei einer grossen Verwaltung wenig und bei einer kleinen viel.
-        {'schluessel': 'faelle', 'label': 'Offene Fälle',
+        {'schluessel': 'faelle', 'label': gettext('Offene Fälle'),
          'wert': str(faelle_offen), 'stufe': 'warn' if liegen else '',
          'delta': (faelle_offen - vor_faelle) if vor_faelle is not None else None,
          'delta_gut_wenn': 'runter',
          'delta_einheit': _einheit((faelle_offen - vor_faelle)
-                                   if vor_faelle is not None else 0, 'Fall', 'Fälle'),
-         'fuss': (f'{liegen} liegengeblieben' if liegen else 'alle in Bewegung')},
+                                   if vor_faelle is not None else 0, gettext('Fall'), gettext('Fälle')),
+         'fuss': (gettext('%(n)s liegengeblieben') % {'n': liegen} if liegen
+                  else gettext('alle in Bewegung'))},
     ]
 
 
@@ -389,7 +394,7 @@ def mandate(stichtag=None):
                          ).quantize(Decimal('0.1')),
             'offen': offen,
             'stufe': 'crit' if offen else ('warn' if leer else 'good'),
-            'befund': ('ohne Befund' if not offen and not leer else ''),
+            'befund': (gettext('ohne Befund') if not offen and not leer else ''),
         })
     rang = {'crit': 0, 'warn': 1, 'good': 2}
     zeilen.sort(key=lambda z: (rang[z['stufe']], -z['objekte']))
@@ -427,14 +432,22 @@ def abweichungen(stichtag=None, aktive_lg=None):
     quote, _s, offen, anzahl = _eingangsquote(erster, stichtag, aktive_lg)
     vor_quote, _s2, _o2, _a2 = _eingangsquote(vor_erster, vor_letzter, aktive_lg)
     if quote is not None and quote < SCHWELLE_EINGANG:
-        vergleich = (f' statt {vor_quote} % im Vormonat'
-                     if vor_quote is not None else '')
+        betrag = f'{offen:,.2f}'.replace(',', "'")
+        if vor_quote is not None:
+            text = ngettext(
+                '%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Position.',
+                '%(q)s %% statt %(v)s %% im Vormonat. Offen sind CHF %(b)s in %(n)s Positionen.',
+                anzahl) % {'q': quote, 'v': vor_quote, 'b': betrag, 'n': anzahl}
+        else:
+            text = ngettext(
+                '%(q)s %%. Offen sind CHF %(b)s in %(n)s Position.',
+                '%(q)s %%. Offen sind CHF %(b)s in %(n)s Positionen.',
+                anzahl) % {'q': quote, 'b': betrag, 'n': anzahl}
         befunde.append({
-            'stufe': 'crit', 'titel': f'Zahlungseingang unter {SCHWELLE_EINGANG} %',
-            'text': (f'{quote} %{vergleich}. Offen sind CHF {offen:,.2f} '
-                     f'in {anzahl} Position{"en" if anzahl != 1 else ""}.'
-                     ).replace(',', "'"),
-            'ziel': '/neu/debitoren/', 'knopf': 'Debitoren'})
+            'stufe': 'crit',
+            'titel': gettext('Zahlungseingang unter %(s)s %%') % {'s': SCHWELLE_EINGANG},
+            'text': text,
+            'ziel': '/neu/debitoren/', 'knopf': gettext('Debitoren')})
 
     leer_quote, leer_anzahl, _g = _leerstandsquote(stichtag, aktive_lg)
     if leer_quote is not None and leer_quote >= SCHWELLE_LEERSTAND:
@@ -449,14 +462,17 @@ def abweichungen(stichtag=None, aktive_lg=None):
         reihe = ' → '.join(f'{q} %' for q in reversed(verlauf) if q is not None)
         befunde.append({
             'stufe': 'crit' if steigend else 'warn',
-            'titel': ('Leerstand steigt den dritten Monat in Folge' if steigend
-                      else f'Leerstand über {SCHWELLE_LEERSTAND} %'),
-            'text': (f'{reihe}. Betroffen sind {leer_anzahl} '
-                     f'Objekt{"e" if leer_anzahl != 1 else ""}.'),
-            'ziel': '/neu/vermarktung/', 'knopf': 'Vermarktung'})
+            'titel': (gettext('Leerstand steigt den dritten Monat in Folge') if steigend
+                      else gettext('Leerstand über %(s)s %%') % {'s': SCHWELLE_LEERSTAND}),
+            'text': ngettext('%(reihe)s. Betroffen ist %(n)s Objekt.',
+                             '%(reihe)s. Betroffen sind %(n)s Objekte.',
+                             leer_anzahl) % {'reihe': reihe, 'n': leer_anzahl},
+            'ziel': '/neu/vermarktung/', 'knopf': gettext('Vermarktung')})
 
     try:
         senkung = _senkungsansprueche()
+        # Senkungsanspruch: mietrechtliche Einschätzung — bleibt deutsch bis
+        # zur juristischen Prüfung. Nur der Knopf ist Bedienung.
         if senkung:
             befunde.append({
                 'stufe': 'warn',
@@ -465,7 +481,7 @@ def abweichungen(stichtag=None, aktive_lg=None):
                 'text': ('Der Referenzzinssatz ist seit der Festsetzung gesunken. '
                          'Geltend gemacht hat ihn bisher niemand — die Ansprüche '
                          'bestehen aber.'),
-                'ziel': '/neu/mietzins/', 'knopf': 'Liste öffnen'})
+                'ziel': '/neu/mietzins/', 'knopf': gettext('Liste öffnen')})
     except Exception:
         log.exception('Lage: Senkungsansprüche nicht ermittelbar')
 
