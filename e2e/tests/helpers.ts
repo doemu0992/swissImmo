@@ -23,3 +23,13 @@ export async function login(page: Page) {
   ]);
   await expect(page).not.toHaveURL(/\/login\//);
 }
+
+// Rückfrage bestätigen. Seit dem gestalteten Bestätigungsdialog
+// (fw/_bestaetigen.html) erscheint statt `confirm()` ein <dialog> der App —
+// `page.on('dialog', d => d.accept())` greift dort nicht mehr. Wie ein Mensch:
+// im Dialog auf «Bestätigen» klicken.
+export async function bestaetigen(page: Page) {
+  const dialog = page.locator('#fwBestaetigen');
+  await dialog.waitFor({ state: 'visible' });
+  await dialog.locator('#fwBestaetigenJa').click();
+}
