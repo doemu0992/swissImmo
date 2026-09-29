@@ -50,6 +50,56 @@ jobs:
       - name: Tests
         run: python manage.py test --verbosity=2
 
+  # Dieselbe Suite gegen PostgreSQL — die Zieldatenbank des Umzugs
+  # (docs/UMZUG-POSTGRESQL.md). SQLite erzwingt weder Spaltenbreiten noch
+  # strenge Typen; was hier rot wird, bliebe im Job `test` grün und fiele erst
+  # in der Produktion auf. Probelauf vom 29.09.2026: 219 Migrationen und die
+  # ganze Suite liefen durch.
+  #
+  # `CI_DATENBANK=postgres` ist die Gegenprobe zur Konfiguration:
+  # core/tests/test_ci_datenbank.py verlangt dann eine echte
+  # PostgreSQL-Verbindung. Ohne das liefe ein vertippter DB_-Name still auf
+  # SQLite weiter — und der Job wäre grün, ohne etwas zu prüfen.
+  test-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: swissimmo
+          POSTGRES_PASSWORD: swissimmo
+          POSTGRES_DB: swissimmo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_ENGINE: postgres
+      DB_NAME: swissimmo
+      DB_USER: swissimmo
+      DB_PASSWORD: swissimmo
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      CI_DATENBANK: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Systembibliotheken für pycairo
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+      - name: Migrationen auf PostgreSQL
+        run: python manage.py migrate --noinput
+      - name: Tests auf PostgreSQL
+        run: python manage.py test --noinput --parallel 4
+
   e2e:
     runs-on: ubuntu-latest
     steps:
