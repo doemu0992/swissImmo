@@ -20299,3 +20299,59 @@ msgstr "Liste des personnes exportée (CSV)"
 #, python-format
 msgid "%(n)s Personen"
 msgstr "%(n)s personnes"
+
+#: crm/forms.py
+msgid "Dieses Geburtsdatum ist nicht möglich."
+msgstr "Cette date de naissance n'est pas possible."
+
+#: crm/forms.py
+msgid "Eine Bonitätsprüfung kann nicht in der Zukunft liegen."
+msgstr "Une vérification de solvabilité ne peut pas se situer dans le futur."
+
+#: crm/forms.py
+msgid "Diese IBAN ist ungültig — bitte Länge und Prüfziffer kontrollieren."
+msgstr "Cet IBAN n'est pas valable — veuillez contrôler la longueur et les chiffres de contrôle."
+
+#: crm/forms.py
+msgid "Der Firmen- oder Organisationsname fehlt."
+msgstr "Le nom de l'entreprise ou de l'organisation manque."
+
+#: crm/forms.py
+msgid "Der Nachname fehlt."
+msgstr "Le nom de famille manque."
+
+#: crm/forms.py
+msgid "Eine Schweizer Postleitzahl hat vier Ziffern."
+msgstr "Un NPA suisse a quatre chiffres."
+
+#: portfolio/forms.py
+msgid "Bitte eine vierstellige Postleitzahl angeben."
+msgstr "Veuillez indiquer un NPA à quatre chiffres."
+
+#: portfolio/forms.py
+msgid "Unbekanntes Kantonskürzel (z. B. ZH, BE, SO)."
+msgstr "Abréviation de canton inconnue (p. ex. ZH, BE, SO)."
+
+#: portfolio/forms.py
+msgid "Bitte ein Baujahr als vierstellige Jahreszahl angeben."
+msgstr "Veuillez indiquer l'année de construction avec quatre chiffres."
+
+#: portfolio/forms.py
+msgid "Der Anteil muss zwischen 0 und 100 % liegen."
+msgstr "La part doit être comprise entre 0 et 100 %."
+
+#: portfolio/forms.py
+msgid "Bitte eine Anzahl Monate ab 0 angeben."
+msgstr "Veuillez indiquer un nombre de mois à partir de 0."
+
+#: portfolio/forms.py
+msgid "Bitte eine vierstellige Jahreszahl angeben."
+msgstr "Veuillez indiquer une année à quatre chiffres."
+
+#: finance/forms.py
+msgid "Der MWST-Satz hat höchstens eine Nachkommastelle (z. B. 8.1)."
+msgstr "Le taux de TVA a au plus une décimale (p. ex. 8.1)."
+
+#: finance/forms.py
+msgid "«Leistung bis» liegt vor «Leistung von»."
+msgstr "«Prestation au» est antérieure à «Prestation du»."

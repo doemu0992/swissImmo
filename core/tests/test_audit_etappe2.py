@@ -299,3 +299,105 @@ class KreditorFormular(TestCase):
         self.assertEqual(r.status_code, 302)
         k.refresh_from_db()
         self.assertEqual(k.lieferant, 'Scan AG')
+
+
+class PersonFormular(TestCase):
+    """Nachtrag Person: Vorher wurden unlesbare Daten still leer, unlesbare
+    Personenzahlen still 0, und die Zahler-IBAN blieb ungeprüft."""
+
+    def setUp(self):
+        from crm.models import Mieter
+        from ._helfer import _test_organisation
+        from datetime import date
+        self.m = Mieter.objects.create(
+            typ='person', vorname='Eva', nachname='Muster', organisation=_test_organisation(),
+            bewilligung_gueltig_bis=date(2027, 3, 31), haushalt_erwachsene=2)
+        self.c = Client()
+        self.c.force_login(_team_user())
+        self.pfad = f'/neu/personen/{self.m.id}/bearbeiten/'
+
+    def _daten(self, **ueber):
+        daten = {'typ': 'person', 'vorname': 'Eva', 'nachname': 'Muster',
+                 'bewilligung_gueltig_bis': '2027-03-31', 'haushalt_erwachsene': '2'}
+        daten.update(ueber)
+        return daten
+
+    def _fehler_am_feld(self, r, feld):
+        self.assertEqual(r.status_code, 400)
+        body = r.content.decode()
+        self.assertIn(f'id="p-{feld}_fehler"', body)
+        self.assertIn(f'aria-describedby="p-{feld}_fehler"', body)
+        return body
+
+    def test_unlesbares_bewilligungsende_wird_nicht_still_leer(self):
+        """Eine ablaufende Bewilligung fiele sonst aus jeder Frist heraus."""
+        from datetime import date
+        r = self.c.post(self.pfad, self._daten(bewilligung_gueltig_bis='31.02.2027'))
+        self._fehler_am_feld(r, 'bewilligung_gueltig_bis')
+        self.m.refresh_from_db()
+        self.assertEqual(self.m.bewilligung_gueltig_bis, date(2027, 3, 31))
+
+    def test_geburtsdatum_in_der_zukunft(self):
+        r = self.c.post(self.pfad, self._daten(geburtsdatum='2090-01-01'))
+        body = self._fehler_am_feld(r, 'geburtsdatum')
+        # Die Eingabe steht noch im Feld.
+        self.assertIn('value="2090-01-01"', body)
+
+    def test_unlesbare_personenzahl_wird_nicht_null(self):
+        r = self.c.post(self.pfad, self._daten(haushalt_erwachsene='zwei'))
+        body = self._fehler_am_feld(r, 'haushalt_erwachsene')
+        self.assertIn('value="zwei"', body)
+        self.m.refresh_from_db()
+        self.assertEqual(self.m.haushalt_erwachsene, 2)
+
+    def test_keine_zahlenfelder_die_eingaben_verwerfen(self):
+        body = self.c.get(self.pfad).content.decode()
+        self.assertNotIn('type="number"', body[body.index('<form method="post" class="max-w-3xl'):])
+
+    def test_personenzahl_mit_tippfehler(self):
+        self._fehler_am_feld(self.c.post(self.pfad, self._daten(haushalt_kinder='40')), 'haushalt_kinder')
+
+    def test_zahler_iban_wird_geprueft(self):
+        r = self.c.post(self.pfad, self._daten(zahler_iban='CH00 1234'))
+        self._fehler_am_feld(r, 'zahler_iban')
+        self.m.refresh_from_db()
+        self.assertEqual(self.m.zahler_iban, '')
+
+    def test_ebill_adresse_wird_geprueft(self):
+        self._fehler_am_feld(self.c.post(self.pfad, self._daten(ebill_email='kein-at')), 'ebill_email')
+
+    def test_schweizer_plz_hat_vier_ziffern(self):
+        self._fehler_am_feld(self.c.post(self.pfad, self._daten(plz='80001')), 'plz')
+
+    def test_auslaendische_plz_bleibt_frei(self):
+        r = self.c.post(self.pfad, self._daten(plz='10115', ort='Berlin', land='Deutschland'))
+        self.assertEqual(r.status_code, 302)
+        self.m.refresh_from_db()
+        self.assertEqual(self.m.plz, '10115')
+
+    def test_zu_langer_text_ist_kein_serverfehler(self):
+        """SQLite schneidet nichts ab, PostgreSQL wirft — im Betrieb ein 500
+        mit verlorenen Eingaben."""
+        r = self.c.post(self.pfad, self._daten(vorname='E' * 101))
+        self._fehler_am_feld(r, 'vorname')
+
+    def test_zusammenfassung_zaehlt_die_fehler(self):
+        r = self.c.post(self.pfad, self._daten(plz='1', ebill_email='x'))
+        body = self._fehler_am_feld(r, 'plz')
+        self.assertIn('class="fw-formfehler"', body)
+        self.assertEqual(r.context['anzahl_fehler'], 2)
+
+    def test_gueltige_eingaben_werden_gespeichert(self):
+        from datetime import date
+        r = self.c.post(self.pfad, self._daten(geburtsdatum='1980-05-17', haushalt_kinder='3',
+                                               zahler_iban='CH9300762011623852957'))
+        self.assertEqual(r.status_code, 302)
+        self.m.refresh_from_db()
+        self.assertEqual(self.m.geburtsdatum, date(1980, 5, 17))
+        self.assertEqual(self.m.haushalt_kinder, 3)
+        self.assertEqual(self.m.zahler_iban, 'CH93 0076 2011 6238 5295 7')
+
+    def test_bearbeiten_zeigt_die_gespeicherten_werte(self):
+        body = self.c.get(self.pfad).content.decode()
+        self.assertIn('value="2027-03-31"', body)
+        self.assertIn('name="haushalt_erwachsene" value="2"', body)

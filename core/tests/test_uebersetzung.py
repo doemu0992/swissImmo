@@ -483,7 +483,7 @@ class KatalogTests(SimpleTestCase):
         with (LOCALE / 'fr' / 'LC_MESSAGES' / 'django.mo').open('rb') as f:
             katalog = gettext_modul.GNUTranslations(f)._catalog
         vorlage = re.compile(r"""{%\s*(?:trans|translate)\s+(?:"([^"]*)"|'([^']*)')(?![^%]*\bcontext\b)[^%]*%}""")
-        code = re.compile(r"""\b(?:_|gettext|gettext_lazy)\(\s*(?:'([^'\\\n]*)'|"([^"\\\n]*)")\s*\)""")
+        code = re.compile(r"""\b(?:_|_t|gettext|gettext_lazy)\(\s*(?:'([^'\\\n]*)'|"([^"\\\n]*)")\s*\)""")
         fehlend = []
         for pfad in sorted((WURZEL / 'core' / 'templates').rglob('*.html')):
             text = pfad.read_text(encoding='utf-8')

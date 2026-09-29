@@ -20276,3 +20276,59 @@ msgstr "Elenco persone esportato (CSV)"
 #, python-format
 msgid "%(n)s Personen"
 msgstr "%(n)s persone"
+
+#: crm/forms.py
+msgid "Dieses Geburtsdatum ist nicht möglich."
+msgstr "Questa data di nascita non è possibile."
+
+#: crm/forms.py
+msgid "Eine Bonitätsprüfung kann nicht in der Zukunft liegen."
+msgstr "Una verifica della solvibilità non può trovarsi nel futuro."
+
+#: crm/forms.py
+msgid "Diese IBAN ist ungültig — bitte Länge und Prüfziffer kontrollieren."
+msgstr "Questo IBAN non è valido — controllare la lunghezza e le cifre di controllo."
+
+#: crm/forms.py
+msgid "Der Firmen- oder Organisationsname fehlt."
+msgstr "Manca il nome della ditta o dell'organizzazione."
+
+#: crm/forms.py
+msgid "Der Nachname fehlt."
+msgstr "Manca il cognome."
+
+#: crm/forms.py
+msgid "Eine Schweizer Postleitzahl hat vier Ziffern."
+msgstr "Un NPA svizzero ha quattro cifre."
+
+#: portfolio/forms.py
+msgid "Bitte eine vierstellige Postleitzahl angeben."
+msgstr "Indicare un NPA di quattro cifre."
+
+#: portfolio/forms.py
+msgid "Unbekanntes Kantonskürzel (z. B. ZH, BE, SO)."
+msgstr "Sigla cantonale sconosciuta (p. es. ZH, BE, SO)."
+
+#: portfolio/forms.py
+msgid "Bitte ein Baujahr als vierstellige Jahreszahl angeben."
+msgstr "Indicare l'anno di costruzione con quattro cifre."
+
+#: portfolio/forms.py
+msgid "Der Anteil muss zwischen 0 und 100 % liegen."
+msgstr "La quota deve essere compresa tra 0 e 100 %."
+
+#: portfolio/forms.py
+msgid "Bitte eine Anzahl Monate ab 0 angeben."
+msgstr "Indicare un numero di mesi a partire da 0."
+
+#: portfolio/forms.py
+msgid "Bitte eine vierstellige Jahreszahl angeben."
+msgstr "Indicare un anno di quattro cifre."
+
+#: finance/forms.py
+msgid "Der MWST-Satz hat höchstens eine Nachkommastelle (z. B. 8.1)."
+msgstr "L'aliquota IVA ha al massimo un decimale (p. es. 8.1)."
+
+#: finance/forms.py
+msgid "«Leistung bis» liegt vor «Leistung von»."
+msgstr "«Prestazione al» precede «Prestazione dal»."

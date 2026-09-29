@@ -25,7 +25,8 @@ class IbanTests(TestCase):
         u = _team_user()
         c = Client(); c.force_login(u)
         r = c.post('/neu/personen/neu/', {'typ': 'person', 'nachname': 'IbanTest', 'iban': 'CH0000000000000000000'})
-        self.assertContains(r, 'IBAN ist ungültig')
+        self.assertContains(r, 'IBAN ist ungültig', status_code=400)
+        self.assertContains(r, 'id="p-iban_fehler"', status_code=400)
         self.assertFalse(Mieter.objects.filter(nachname='IbanTest').exists())
 
     def test_person_form_speichert_gueltige_iban_formatiert(self):
