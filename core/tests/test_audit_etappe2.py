@@ -73,6 +73,14 @@ class LiegenschaftFormular(TestCase):
         self.assertNotIn('type="number"', body[body.index('<form method="post" class="max-w-3xl'):])
         self.assertIn('inputmode="numeric"', body)
 
+    def test_unlesbarer_betrag_steht_unveraendert_im_feld(self, _gwr):
+        """Die Normalisierung («1'250'000» → 1250000) darf die Roheingabe
+        nicht umschreiben — sonst stünde nach dem Fehler «ca.2Mio» im Feld."""
+        r = self.c.post(self.pfad, self._daten(verkehrswert='ca. 2 Mio'))
+        self.assertEqual(r.status_code, 400)
+        body = self._fehler_am_feld(r, 'verkehrswert')
+        self.assertIn('value="ca. 2 Mio"', body)
+
     def test_unbekannte_heizart_ist_ein_fehler(self, _gwr):
         r = self.c.post(self.pfad, self._daten(heizsystem='kohleofen-xl'))
         self.assertEqual(r.status_code, 400)
@@ -138,3 +146,74 @@ class LiegenschaftFormular(TestCase):
         self.lg.save()
         body = self.c.get(self.pfad).content.decode()
         self.assertIn('value="1250000.00"', body)
+
+
+class ObjektFormular(TestCase):
+    """Dasselbe Muster an der Objektmaske."""
+
+    def setUp(self):
+        self.lg, self.e, _m, _v = _basis_objekte()
+        self.c = Client()
+        self.c.force_login(_team_user())
+        self.pfad = f'/neu/objekte/{self.e.id}/bearbeiten/'
+
+    def _daten(self, **ueber):
+        daten = {'liegenschaft_id': str(self.lg.id), 'bezeichnung': '4.5 Zi OG', 'typ': 'whg'}
+        daten.update(ueber)
+        return daten
+
+    def test_unbekannter_typ(self):
+        """Vorher übernahm `typ` jeden beliebigen Text."""
+        r = self.c.post(self.pfad, self._daten(typ='schloss'))
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('id="id_typ_fehler"', r.content.decode())
+        self.e.refresh_from_db()
+        self.assertEqual(self.e.typ, 'whg')
+
+    def test_unlesbare_flaeche_bleibt_stehen(self):
+        r = self.c.post(self.pfad, self._daten(flaeche_m2='etwa 80'))
+        self.assertEqual(r.status_code, 400)
+        body = r.content.decode()
+        self.assertIn('id="id_flaeche_m2_fehler"', body)
+        self.assertIn('value="etwa 80"', body)
+        self.assertIn('value="4.5 Zi OG"', body)
+
+    def test_fremde_liegenschaft_ist_ein_feldfehler_statt_404(self):
+        r = self.c.post(self.pfad, self._daten(liegenschaft_id='999999'))
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('id="id_liegenschaft_id_fehler"', r.content.decode())
+
+    def test_leere_wertquote_und_kaution_bleiben_unveraendert(self):
+        self.e.wertquote = Decimal('55.50')
+        self.e.standard_kautionsmonate = 2
+        self.e.save()
+        r = self.c.post(self.pfad, self._daten(wertquote='', standard_kautionsmonate='', zimmer="4,5"))
+        self.assertEqual(r.status_code, 302)
+        self.e.refresh_from_db()
+        self.assertEqual(self.e.wertquote, Decimal('55.50'))
+        self.assertEqual(self.e.standard_kautionsmonate, 2)
+        self.assertEqual(self.e.zimmer, Decimal('4.5'))
+        self.assertEqual(self.e.bezeichnung, '4.5 Zi OG')
+
+    def test_ungueltiges_datum_des_anfangsmietzinses_wird_nicht_heute(self):
+        """Vorher wurde ein unlesbares «Gültig ab» still durch heute ersetzt —
+        ein Datum, das in die Sollstellung eingeht."""
+        from portfolio.models import Einheit, Sollmietzins
+        vorher = Einheit.objects.count()
+        r = self.c.post('/neu/objekte/neu/', self._daten(
+            nettomiete_aktuell='1500', soll_gueltig_ab='31.02.2026'))
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('id="id_soll_gueltig_ab_fehler"', r.content.decode())
+        self.assertEqual(Einheit.objects.count(), vorher)
+        r = self.c.post('/neu/objekte/neu/', self._daten(
+            nettomiete_aktuell="1'500", nebenkosten_aktuell='200', soll_gueltig_ab='2026-04-01'))
+        self.assertEqual(r.status_code, 302)
+        neu = Einheit.objects.exclude(pk=self.e.pk).latest('pk')
+        soll = Sollmietzins.objects.get(einheit=neu)
+        self.assertEqual((soll.gueltig_ab.isoformat(), soll.netto_mietzins, soll.nebenkosten),
+                         ('2026-04-01', Decimal('1500.00'), Decimal('200.00')))
+
+    def test_negative_kautionsmonate(self):
+        r = self.c.post(self.pfad, self._daten(standard_kautionsmonate='-1'))
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('id="id_standard_kautionsmonate_fehler"', r.content.decode())

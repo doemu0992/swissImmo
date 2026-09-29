@@ -19,65 +19,62 @@
     </div>
 </div>
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" class="max-w-3xl space-y-5" novalidate>
     {% csrf_token %}
+    {% comment %} Prüfung und Meldung am Feld macht der Server (Audit Etappe 2), wie
+       beim Liegenschaftsformular — deshalb `novalidate`. {% endcomment %}
+    {% if anzahl_fehler %}
+    <div class="fw-formfehler" role="alert">
+        <b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> —
+        {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}
+    </div>
+    {% endif %}
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">{% trans "Objekt" %}</h3>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft *" %}</label>
-            <select name="liegenschaft_id" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="id_liegenschaft_id" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+            <select id="id_liegenschaft_id" name="liegenschaft_id" required aria-required="true" class="fw-feld w-full"{% if feld_fehler.liegenschaft_id %} aria-invalid="true" aria-describedby="id_liegenschaft_id_fehler"{% endif %}>
                 <option value="">— {% trans "wählen" %} —</option>
-                {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if e.liegenschaft_id == lg.id or vorwahl_lg == lg.id|stringformat:'s' %}selected{% endif %}>{{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</option>{% endfor %}
-            </select></div>
+                {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if vorwahl_lg == lg.id|stringformat:'s' %}selected{% endif %}>{{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</option>{% endfor %}
+            </select>
+            {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.liegenschaft_id feld_id="id_liegenschaft_id" %}</div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bezeichnung *" %}</label>
-                <input name="bezeichnung" required value="{{ e.bezeichnung }}" placeholder="{% trans 'z. B. 3.5-Zi EG' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Typ" %}</label>
-                <select name="typ" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                    {% for val, lbl in typ_choices %}<option value="{{ val }}" {% if e.typ == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
-                </select></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Etage" %}</label>
-                <input name="etage" value="{{ e.etage }}" placeholder="{% trans 'EG / 1. OG' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% include 'fw/_feld.html' with f=form.bezeichnung label=_("Bezeichnung") pflicht=True platzhalter=_("z. B. 3.5-Zi EG") %}
+            <div><label for="id_typ" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Typ" %}</label>
+                <select id="id_typ" name="typ" class="fw-feld w-full"{% if form.typ.errors %} aria-invalid="true" aria-describedby="id_typ_fehler"{% endif %}>
+                    {% for val, lbl in typ_choices %}<option value="{{ val }}" {% if form.typ.value == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select>
+                {% include 'fw/_feldfehler.html' with f=form.typ %}</div>
+            {% include 'fw/_feld.html' with f=form.etage label=_("Etage") platzhalter=_("EG / 1. OG") %}
         </div>
     </div>
 
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">{% trans "Fläche & Details" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zimmer" %}</label>
-                <input name="zimmer" type="number" step="0.5" value="{% localize off %}{{ e.zimmer|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Fläche (m²)" %}</label>
-                <input name="flaeche_m2" type="number" step="0.01" value="{% localize off %}{{ e.flaeche_m2|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Volumen (m³)" %}</label>
-                <input name="volumen_m3" type="number" step="0.01" value="{% localize off %}{{ e.volumen_m3|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Wertquote (‰)" %}</label>
-                <input name="wertquote" type="number" step="0.01" value="{% localize off %}{{ e.wertquote|default:'' }}{% endlocalize %}" placeholder="{% trans 'STWE / NK-Verteilung' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% include 'fw/_feld.html' with f=form.zimmer label=_("Zimmer") inputmodus="decimal" %}
+            {% include 'fw/_feld.html' with f=form.flaeche_m2 label=_("Fläche (m²)") inputmodus="decimal" %}
+            {% include 'fw/_feld.html' with f=form.volumen_m3 label=_("Volumen (m³)") inputmodus="decimal" %}
+            {% include 'fw/_feld.html' with f=form.wertquote label=_("Wertquote (‰)") inputmodus="decimal" platzhalter=_("STWE / NK-Verteilung") %}
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "EWID" %}</label>
-                <input name="ewid" value="{{ e.ewid|default:'' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kellerabteil" %}</label>
-                <input name="keller" value="{{ e.keller }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Estrich" %}</label>
-                <input name="estrich" value="{{ e.estrich }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "OTO-Dose (Glasfaser)" %}</label>
-                <input name="oto_dose" value="{{ e.oto_dose }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% include 'fw/_feld.html' with f=form.ewid label=_("EWID") %}
+            {% include 'fw/_feld.html' with f=form.keller label=_("Kellerabteil") %}
+            {% include 'fw/_feld.html' with f=form.estrich label=_("Estrich") %}
+            {% include 'fw/_feld.html' with f=form.oto_dose label=_("OTO-Dose (Glasfaser)") %}
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bodenbelag (Wohnraum)" %}</label>
-                <input name="bodenbelag" value="{{ e.bodenbelag }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bodenbelag (Nassraum)" %}</label>
-                <input name="bodenbelag_nassraum" value="{{ e.bodenbelag_nassraum }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Letzte Renovation (Jahr)" %}</label>
-                <input name="letzte_renovation" type="number" value="{{ e.letzte_renovation|default:'' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Standard-Kaution (Monate)" %}</label>
-                <input name="standard_kautionsmonate" type="number" value="{{ e.standard_kautionsmonate|default:'' }}" placeholder="3" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% include 'fw/_feld.html' with f=form.bodenbelag label=_("Bodenbelag (Wohnraum)") %}
+            {% include 'fw/_feld.html' with f=form.bodenbelag_nassraum label=_("Bodenbelag (Nassraum)") %}
+            {% include 'fw/_feld.html' with f=form.letzte_renovation label=_("Letzte Renovation (Jahr)") inputmodus="numeric" %}
+            {% include 'fw/_feld.html' with f=form.standard_kautionsmonate label=_("Standard-Kaution (Monate)") inputmodus="numeric" platzhalter="3" %}
         </div>
         {% if not ist_neu and hauptobjekte %}
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)" %}</label>
-            <select name="gehoert_zu_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="id_gehoert_zu_id" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)" %}</label>
+            <select id="id_gehoert_zu_id" name="gehoert_zu_id" class="fw-feld w-full"{% if feld_fehler.gehoert_zu_id %} aria-invalid="true" aria-describedby="id_gehoert_zu_id_fehler"{% endif %}>
                 <option value="">— {% trans "eigenständiges Objekt" %} —</option>
-                {% for h in hauptobjekte %}<option value="{{ h.id }}" {% if e.gehoert_zu_id == h.id %}selected{% endif %}>{{ h.bezeichnung }}{% if h.etage %} · {{ h.etage }}{% endif %}</option>{% endfor %}
+                {% for h in hauptobjekte %}<option value="{{ h.id }}" {% if gz_wert == h.id|stringformat:'s' %}selected{% endif %}>{{ h.bezeichnung }}{% if h.etage %} · {{ h.etage }}{% endif %}</option>{% endfor %}
             </select>
+            {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.gehoert_zu_id feld_id="id_gehoert_zu_id" %}
             <p class="text-[11px] fw-faint mt-1">{% trans "Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben Liegenschaft zu." %}</p></div>
         {% endif %}
     </div>
@@ -86,12 +83,11 @@
         <h3 class="font-bold fw-strong text-sm">{% trans "Soll-Mietzins" %}</h3>
         {% if ist_neu %}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Anfangs-Nettomiete (CHF)" %}</label>
-                <input name="nettomiete_aktuell" type="number" step="0.01" placeholder="0.00" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nebenkosten (CHF)" %}</label>
-                <input name="nebenkosten_aktuell" type="number" step="0.01" placeholder="0.00" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Gültig ab" %}</label>
-                <input name="soll_gueltig_ab" type="date" value="{{ heute_iso }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% include 'fw/_feld.html' with f=form.nettomiete_aktuell label=_("Anfangs-Nettomiete (CHF)") inputmodus="decimal" platzhalter="0.00" klasse="tabular-nums" %}
+            {% include 'fw/_feld.html' with f=form.nebenkosten_aktuell label=_("Nebenkosten (CHF)") inputmodus="decimal" platzhalter="0.00" klasse="tabular-nums" %}
+            <div><label for="id_soll_gueltig_ab" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Gültig ab" %}</label>
+                <input id="id_soll_gueltig_ab" name="soll_gueltig_ab" type="date" value="{{ form.soll_gueltig_ab.value|date:'Y-m-d'|default:form.soll_gueltig_ab.value|default_if_none:'' }}" class="fw-feld w-full"{% if form.soll_gueltig_ab.errors %} aria-invalid="true" aria-describedby="id_soll_gueltig_ab_fehler"{% endif %}>
+                {% include 'fw/_feldfehler.html' with f=form.soll_gueltig_ab %}</div>
         </div>
         <p class="text-[11px] fw-faint">{% blocktrans trimmed %}Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz).{% endblocktrans %}</p>
         {% else %}
@@ -126,8 +122,9 @@
         <a href="/neu/objekte/{{ e.id }}/?tab=mietzins" class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg">{% zeichen 'mehr' %}{% trans "Mietzins verwalten (Gratismonate, Anpassungen)" %}</a>
         {% endif %}
 
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Interne Notizen" %}</label>
-            <textarea name="notizen" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ e.notizen }}</textarea></div>
+        <div><label for="id_notizen" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Interne Notizen" %}</label>
+            <textarea id="id_notizen" name="notizen" rows="2" class="fw-feld w-full">{{ form.notizen.value|default_if_none:'' }}</textarea>
+            {% include 'fw/_feldfehler.html' with f=form.notizen %}</div>
     </div>
 
     <div class="flex items-center gap-3">

@@ -243,82 +243,66 @@ def fw_objekt_form(request, pk=None):
     from core.auth import log_aktion, snapshot_model, diff_model
     e = get_object_or_404(Einheit, id=pk) if pk else None
     basis = _global_filter(request)
+    from portfolio.forms import EinheitForm
+    form = EinheitForm(instance=e, initial={'soll_gueltig_ab': timezone.localdate()})
+    feld_fehler = {}
+    lg_wert = str(e.liegenschaft_id) if e else ''
+    gz_wert = str(e.gehoert_zu_id or '') if e else ''
 
     if request.method == 'POST':
         P = request.POST
         alt_snap = snapshot_model(Einheit.objects.get(pk=pk)) if pk else {}
-        obj = e or Einheit()
-        lg_id = P.get('liegenschaft_id') or (e.liegenschaft_id if e else None)
-        obj.liegenschaft = get_object_or_404(Liegenschaft, id=lg_id)
-        obj.bezeichnung = P.get('bezeichnung', '').strip()
-        obj.typ = P.get('typ', 'whg')
-        obj.etage = P.get('etage', '').strip()
-        obj.ewid = P.get('ewid', '').strip()
+        form = EinheitForm(P, instance=Einheit.objects.get(pk=pk) if pk else Einheit())
+        # Liegenschaft ueber den TenantManager: Eine fremde ID findet nichts.
+        # Vorher 404 — und alle Eingaben waren weg.
+        lg_wert = (P.get('liegenschaft_id') or lg_wert or '').strip()
+        liegenschaft = (Liegenschaft.objects.filter(id=lg_wert).first()
+                        if lg_wert.isdigit() else None)
+        if liegenschaft is None:
+            feld_fehler['liegenschaft_id'] = gettext('Bitte eine Liegenschaft wählen.')
+        # Nebenobjekt-Zuordnung (Parkplatz/Keller → Hauptobjekt derselben
+        # Liegenschaft). Unbekannt oder fremd war bisher STILL «eigenständig».
+        gz_wert = (P.get('gehoert_zu_id') or '').strip()
+        hauptobjekt = None
+        if gz_wert and gz_wert != str(pk or '') and liegenschaft is not None:
+            hauptobjekt = (Einheit.objects.filter(id=gz_wert, liegenschaft=liegenschaft).first()
+                           if gz_wert.isdigit() else None)
+            if hauptobjekt is None:
+                feld_fehler['gehoert_zu_id'] = gettext(
+                    'Das Hauptobjekt muss zur selben Liegenschaft gehören.')
 
-        def dec(key):
-            v = _num(P.get(key))
-            try:
-                return Decimal(v) if v else None
-            except Exception:
-                return None
-        obj.zimmer = dec('zimmer')
-        obj.flaeche_m2 = dec('flaeche_m2')
-        obj.volumen_m3 = dec('volumen_m3')
-        _wq = dec('wertquote')
-        if _wq is not None:
-            obj.wertquote = _wq
-        obj.keller = P.get('keller', '').strip()
-        obj.estrich = P.get('estrich', '').strip()
-        obj.oto_dose = P.get('oto_dose', '').strip()
-        obj.bodenbelag = P.get('bodenbelag', '').strip()
-        obj.bodenbelag_nassraum = P.get('bodenbelag_nassraum', '').strip()
+        if form.is_valid() and not feld_fehler:
+            obj = form.save(commit=False)
+            obj.liegenschaft = liegenschaft
+            obj.gehoert_zu = hauptobjekt
+            # Der Mietzins wird NICHT mehr direkt am Objekt gepflegt — einzige Quelle
+            # ist der datierte Sollmietzins (Objekt → Mietzins). nettomiete_aktuell/
+            # nebenkosten_aktuell sind rein abgeleitet (sync_aktuelle_miete beim
+            # Speichern einer Sollmietzins-Zeile) → kein Drift mehr zwischen Objekt-
+            # Maske und Mietzins-Tab.
+            obj.save()
+            # Nur bei NEUanlage: optionalen Anfangsmietzins als erste Sollmietzins-Zeile
+            # seeden (single source). Bestehende Objekte pflegen die Miete ausschliesslich
+            # über den Mietzins-Tab.
+            from portfolio.models import Sollmietzins
+            if not pk:
+                c = form.cleaned_data
+                netto0 = c.get('nettomiete_aktuell') or Decimal('0.00')
+                nk0 = Decimal('0.00') if obj.ist_einstellplatz else (c.get('nebenkosten_aktuell') or Decimal('0.00'))
+                if netto0 > 0 or nk0 > 0:
+                    # Leer heisst heute; ein UNGUELTIGES Datum ist ein Feldfehler
+                    # (EinheitForm), nicht mehr still «heute».
+                    soll_ab = c.get('soll_gueltig_ab') or timezone.localdate()
+                    Sollmietzins.objects.create(
+                        einheit=obj, gueltig_ab=soll_ab,
+                        netto_mietzins=netto0, nebenkosten=nk0, notiz='Ersterfassung')
+            _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
+            log_aktion(request, "Objekt bearbeitet" if pk else "Objekt erstellt",
+                       f"{obj.bezeichnung} ({obj.liegenschaft.strasse})", _diff, ziel=obj)
+            messages.success(request, '✅ ' + gettext('Objekt %(bezeichnung)s gespeichert.') % {'bezeichnung': obj.bezeichnung})
+            return redirect(f'/neu/objekte/{obj.id}/')
 
-        def intval(key):
-            v = str(P.get(key) or '').strip()
-            try:
-                return int(v) if v else None
-            except ValueError:
-                return None
-        obj.letzte_renovation = intval('letzte_renovation')
-        _km = intval('standard_kautionsmonate')
-        if _km is not None:
-            obj.standard_kautionsmonate = _km
-        # Nebenobjekt-Zuordnung (Parkplatz/Keller → Hauptobjekt derselben Liegenschaft)
-        gz_id = P.get('gehoert_zu_id') or ''
-        if gz_id and gz_id != str(obj.pk or ''):
-            obj.gehoert_zu = Einheit.objects.filter(id=gz_id, liegenschaft=obj.liegenschaft).first()
-        else:
-            obj.gehoert_zu = None
-        obj.notizen = P.get('notizen', '').strip()
-        # Der Mietzins wird NICHT mehr direkt am Objekt gepflegt — einzige Quelle
-        # ist der datierte Sollmietzins (Objekt → Mietzins). nettomiete_aktuell/
-        # nebenkosten_aktuell sind rein abgeleitet (sync_aktuelle_miete beim
-        # Speichern einer Sollmietzins-Zeile) → kein Drift mehr zwischen Objekt-
-        # Maske und Mietzins-Tab.
-        obj.save()
-        # Nur bei NEUanlage: optionalen Anfangsmietzins als erste Sollmietzins-Zeile
-        # seeden (single source). Bestehende Objekte pflegen die Miete ausschliesslich
-        # über den Mietzins-Tab.
-        from portfolio.models import Sollmietzins
-        if not pk:
-            netto0 = dec('nettomiete_aktuell') or Decimal('0.00')
-            nk0 = Decimal('0.00') if obj.ist_einstellplatz else (dec('nebenkosten_aktuell') or Decimal('0.00'))
-            if netto0 > 0 or nk0 > 0:
-                soll_ab_raw = (P.get('soll_gueltig_ab') or '').strip()
-                try:
-                    soll_ab = date.fromisoformat(soll_ab_raw) if soll_ab_raw else timezone.localdate()
-                except ValueError:
-                    soll_ab = timezone.localdate()
-                Sollmietzins.objects.create(
-                    einheit=obj, gueltig_ab=soll_ab,
-                    netto_mietzins=netto0, nebenkosten=nk0, notiz='Ersterfassung')
-        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
-        log_aktion(request, "Objekt bearbeitet" if pk else "Objekt erstellt",
-                   f"{obj.bezeichnung} ({obj.liegenschaft.strasse})", _diff, ziel=obj)
-        messages.success(request, '✅ ' + gettext('Objekt %(bezeichnung)s gespeichert.') % {'bezeichnung': obj.bezeichnung})
-        return redirect(f'/neu/objekte/{obj.id}/')
-
-    vorwahl_lg = request.GET.get('lg') or (e.liegenschaft_id if e else None)
+    vorwahl_lg = lg_wert or request.GET.get('lg') or ''
     sollmietzinse = list(e.sollmietzinse.all()) if e else []
     aktueller_soll = e.aktueller_sollmietzins() if e else None
     # Mögliche Hauptobjekte für die Nebenobjekt-Zuordnung (gehoert_zu): übrige
@@ -327,7 +311,10 @@ def fw_objekt_form(request, pk=None):
     if e and e.liegenschaft_id:
         hauptobjekte = list(Einheit.objects.filter(liegenschaft_id=e.liegenschaft_id)
                             .exclude(id=e.id).order_by('bezeichnung'))
+    anzahl_fehler = len(form.errors) + len(feld_fehler)
     return render(request, 'fw/objekt_form.html', {
+        'form': form, 'feld_fehler': feld_fehler, 'anzahl_fehler': anzahl_fehler,
+        'gz_wert': gz_wert,
         **basis, 'nav': 'objekte', 'e': e, 'ist_neu': e is None,
         'liegenschaften': Liegenschaft.objects.all().order_by('strasse'),
         'vorwahl_lg': str(vorwahl_lg) if vorwahl_lg else '',
@@ -336,7 +323,7 @@ def fw_objekt_form(request, pk=None):
         'aktueller_soll_id': aktueller_soll.id if aktueller_soll else None,
         'heute_iso': timezone.localdate().isoformat(),
         'hauptobjekte': hauptobjekte,
-    })
+    }, status=400 if anzahl_fehler else 200)
 
 
 def telefon_kern(text):

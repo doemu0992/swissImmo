@@ -10,7 +10,20 @@ from django import forms
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _t
 
-from portfolio.models import Liegenschaft
+from portfolio.models import Einheit, Liegenschaft
+
+
+class SchweizerZahl(forms.DecimalField):
+    """Nimmt Beträge so an, wie die Oberfläche sie zeigt: «CHF 1'250'000.50»,
+    «4,5». Normalisiert wird erst beim Umwandeln (`_num`) — die ROHEINGABE
+    bleibt im Formular, damit sie nach einem Fehler unverändert im Feld steht
+    («etwa 80», nicht «etwa80»)."""
+
+    def to_python(self, value):
+        from core.views.fw._basis import _num
+        if value not in self.empty_values:
+            value = _num(value)
+        return super().to_python(value)
 
 
 class LiegenschaftForm(forms.ModelForm):
@@ -28,11 +41,6 @@ class LiegenschaftForm(forms.ModelForm):
     über `add_error` in dieses Formular, damit alles an einer Stelle steht.
     """
 
-    #: Beträge und Flächen: kommen mit Schweizer Tausender-Apostroph zurück
-    #: («CHF 1'250'000.00»), weil der `chf`-Filter sie so anzeigt.
-    ZAHLENFELDER = ('versicherungswert', 'grundstuecksflaeche_m2', 'gebaeudevolumen_m3',
-                    'verkehrswert', 'anlagekosten', 'kaufpreis', 'energiebezugsflaeche_m2')
-
     class Meta:
         model = Liegenschaft
         fields = (
@@ -45,14 +53,13 @@ class LiegenschaftForm(forms.ModelForm):
             'elektriker_name', 'elektriker_telefon', 'bank_name', 'iban',
             'hkvo_aktiv', 'hkvo_grundkosten_prozent',
         )
+        field_classes = {name: SchweizerZahl for name in (
+            'versicherungswert', 'grundstuecksflaeche_m2', 'gebaeudevolumen_m3',
+            'verkehrswert', 'anlagekosten', 'kaufpreis', 'energiebezugsflaeche_m2')}
 
     def __init__(self, data=None, *args, **kwargs):
         if data is not None:
-            from core.views.fw._basis import _num
             data = data.copy()
-            for name in self.ZAHLENFELDER:
-                if data.get(name):
-                    data[name] = _num(data[name])
             for name in ('geak_klasse', 'geak_klasse_gesamt', 'kanton'):
                 data[name] = (data.get(name) or '').strip().upper()
             # Leeres Feld = Standard 40 %, wie bisher. Nur eine UNLESBARE
@@ -100,3 +107,60 @@ class LiegenschaftForm(forms.ModelForm):
         if iban and not ist_gueltige_iban(iban):
             raise forms.ValidationError(_t('Diese IBAN ist ungültig — bitte Länge und Prüfziffer kontrollieren.'))
         return iban
+
+
+class EinheitForm(forms.ModelForm):
+    """Prüft die Stammdaten eines Mietobjekts (Audit Etappe 2).
+
+    Vorher: `typ` übernahm jeden beliebigen Text, eine unlesbare Fläche wurde
+    still leer, ein ungültiges «Gültig ab» des Anfangsmietzinses wurde still
+    durch HEUTE ersetzt — ein Datum, das in die Sollstellung eingeht.
+
+    Liegenschaft und Hauptobjekt prüft die Ansicht selbst (Mandantengrenze,
+    «derselben Liegenschaft»).
+    """
+
+    # Nur bei Neuanlage ausgewertet: die erste datierte Sollmietzins-Zeile.
+    # Stellen und Nachkommastellen wie `Einheit.nettomiete_aktuell` /
+    # `nebenkosten_aktuell`, damit nichts durchkommt, was dort nicht passt.
+    nettomiete_aktuell = SchweizerZahl(max_digits=8, decimal_places=2, min_value=0, required=False)
+    nebenkosten_aktuell = SchweizerZahl(max_digits=6, decimal_places=2, min_value=0, required=False)
+    soll_gueltig_ab = forms.DateField(required=False)
+
+    class Meta:
+        model = Einheit
+        fields = ('bezeichnung', 'typ', 'etage', 'ewid', 'zimmer', 'flaeche_m2', 'volumen_m3',
+                  'wertquote', 'keller', 'estrich', 'oto_dose', 'bodenbelag',
+                  'bodenbelag_nassraum', 'letzte_renovation', 'standard_kautionsmonate', 'notizen')
+        field_classes = {name: SchweizerZahl for name in (
+            'zimmer', 'flaeche_m2', 'volumen_m3', 'wertquote')}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['ewid'].empty_value = ''
+        # Leer heisst hier «unverändert lassen», nicht «löschen» — so hielt es
+        # die Ansicht schon vorher. Beide Felder sind im Modell Pflicht.
+        self.fields['wertquote'].required = False
+        self.fields['standard_kautionsmonate'].required = False
+
+    def clean_wertquote(self):
+        wert = self.cleaned_data.get('wertquote')
+        return self.instance.wertquote if wert is None else wert
+
+    def clean_standard_kautionsmonate(self):
+        # Nur «ganze Zahl, nicht negativ». Die Höchstgrenze von drei
+        # Monatsmieten (Art. 257e OR) gilt für Wohnräume und wird am Vertrag
+        # durchgesetzt (`Mietvertrag.save()`); sie hier zu wiederholen hiesse,
+        # sie für Gewerbe falsch zu verallgemeinern.
+        wert = self.cleaned_data.get('standard_kautionsmonate')
+        if wert is None:
+            return self.instance.standard_kautionsmonate
+        if wert < 0:
+            raise forms.ValidationError(_t('Bitte eine Anzahl Monate ab 0 angeben.'))
+        return wert
+
+    def clean_letzte_renovation(self):
+        jahr = self.cleaned_data.get('letzte_renovation')
+        if jahr is not None and not (1000 <= jahr <= timezone.localdate().year + 10):
+            raise forms.ValidationError(_t('Bitte eine vierstellige Jahreszahl angeben.'))
+        return jahr
