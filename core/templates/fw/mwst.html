@@ -84,15 +84,15 @@
         {% if mwst_uid %}<span class="normal-case fw-mutet">{{ mwst_uid }}</span>{% endif %}
     </div>
     <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
+<table class="fw-table min-w-max">
         <tbody class="fw-dv">
-            <tr><td class="px-5 py-2.5 fw-faint w-14 tabular-nums">200</td><td class="px-2 py-2.5 fw-ink">{% trans "Total vereinbarte Entgelte (Umsatz)" %}</td><td class="px-5 py-2.5 text-right tabular-nums">{{ estv.z200|chf }}</td></tr>
-            <tr><td class="px-5 py-2.5 fw-faint tabular-nums">399</td><td class="px-2 py-2.5 fw-ink">{% trans "Total geschuldete Steuer" %}</td><td class="px-5 py-2.5 text-right tabular-nums">{{ estv.z399|chf }}</td></tr>
+            <tr><td class="fw-faint w-14 tabular-nums">200</td><td class="fw-ink">{% trans "Total vereinbarte Entgelte (Umsatz)" %}</td><td class="text-right tabular-nums fw-right">{{ estv.z200|chf }}</td></tr>
+            <tr><td class="fw-faint tabular-nums">399</td><td class="fw-ink">{% trans "Total geschuldete Steuer" %}</td><td class="text-right tabular-nums fw-right">{{ estv.z399|chf }}</td></tr>
             {% if mwst_methode != 'saldo' %}
-            <tr><td class="px-5 py-2.5 fw-faint tabular-nums">479</td><td class="px-2 py-2.5 fw-ink">{% trans "Total Vorsteuer" %}</td><td class="px-5 py-2.5 text-right tabular-nums fw-gut">{{ estv.z479|chf }}</td></tr>
+            <tr><td class="fw-faint tabular-nums">479</td><td class="fw-ink">{% trans "Total Vorsteuer" %}</td><td class="text-right tabular-nums fw-gut fw-right">{{ estv.z479|chf }}</td></tr>
             {% endif %}
-            <tr class="fw-markenflaeche"><td class="px-5 py-2.5 fw-faint tabular-nums font-bold">500</td><td class="px-2 py-2.5 font-bold fw-strong">{% trans "An die ESTV zu bezahlen" %}</td><td class="px-5 py-2.5 text-right tabular-nums font-bold fw-marke">{{ estv.z500|chf }}</td></tr>
-            {% if estv.z510 %}<tr class="fw-gut-flaeche"><td class="px-5 py-2.5 fw-faint tabular-nums font-bold">510</td><td class="px-2 py-2.5 font-bold fw-strong">{% trans "Guthaben" %}</td><td class="px-5 py-2.5 text-right tabular-nums font-bold fw-gut">{{ estv.z510|chf }}</td></tr>{% endif %}
+            <tr class="fw-markenflaeche"><td class="fw-faint tabular-nums font-bold">500</td><td class="font-bold fw-strong">{% trans "An die ESTV zu bezahlen" %}</td><td class="text-right tabular-nums font-bold fw-marke fw-right">{{ estv.z500|chf }}</td></tr>
+            {% if estv.z510 %}<tr class="fw-gut-flaeche"><td class="fw-faint tabular-nums font-bold">510</td><td class="font-bold fw-strong">{% trans "Guthaben" %}</td><td class="text-right tabular-nums font-bold fw-gut fw-right">{{ estv.z510|chf }}</td></tr>{% endif %}
         </tbody>
     </table>
 </div>

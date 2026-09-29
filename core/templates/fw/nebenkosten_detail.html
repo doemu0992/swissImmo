@@ -107,35 +107,35 @@
 <div data-panel="nk" id="nk-abrechnung">
     <div class="fw-card overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full min-w-max text-sm">
+            <table class="fw-table min-w-max">
                 <thead>
-                <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                    <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
-                    <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
-                    <th class="px-5 py-3 font-semibold text-center">m²</th>
-                    <th class="px-5 py-3 font-semibold text-center">{% trans "Tage" %}</th>
-                    <th class="px-5 py-3 font-semibold text-right">{% trans "Anteil Kosten" %}</th>
-                    <th class="px-5 py-3 font-semibold text-right">{% trans "Akonto" %}</th>
-                    <th class="px-5 py-3 font-semibold text-right">{% trans "Saldo" %}</th>
+                <tr>
+                    <th class="font-semibold">{% trans "Mieter" %}</th>
+                    <th class="font-semibold">{% trans "Objekt" %}</th>
+                    <th class="font-semibold text-center fw-zentriert">m²</th>
+                    <th class="font-semibold text-center fw-zentriert">{% trans "Tage" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Anteil Kosten" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Akonto" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Saldo" %}</th>
                 </tr>
                 </thead>
                 <tbody class="fw-dv">
                 {% for a in abrechnungen %}
-                <tr class="hover:fw-flaeche2">
-                    <td class="px-5 py-3 font-medium fw-strong whitespace-nowrap">
+                <tr>
+                    <td class="font-medium fw-strong whitespace-nowrap">
                         <a href="/neu/vertraege/{{ a.v.id }}/" class="hover:fw-marke">{{ a.mieter }}</a>
                     </td>
-                    <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ a.einheit }}</td>
-                    <td class="px-5 py-3 text-center fw-mutet">{{ a.flaeche|floatformat:0 }}</td>
-                    <td class="px-5 py-3 text-center fw-mutet">{{ a.tage }}</td>
-                    <td class="px-5 py-3 text-right fw-ink whitespace-nowrap">{{ a.kosten|chf }}</td>
-                    <td class="px-5 py-3 text-right fw-mutet whitespace-nowrap">{{ a.akonto|chf }}</td>
+                    <td class="fw-mutet whitespace-nowrap">{{ a.einheit }}</td>
+                    <td class="text-center fw-mutet fw-zentriert">{{ a.flaeche|floatformat:0 }}</td>
+                    <td class="text-center fw-mutet fw-zentriert">{{ a.tage }}</td>
+                    <td class="text-right fw-ink whitespace-nowrap fw-right">{{ a.kosten|chf }}</td>
+                    <td class="text-right fw-mutet whitespace-nowrap fw-right">{{ a.akonto|chf }}</td>
                     <td class="px-5 py-3 text-right font-semibold whitespace-nowrap {% if a.saldo > 0 %}fw-kritisch{% else %}fw-gut{% endif %}">
                         {{ a.saldo|chf }}
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Mieter in dieser Periode." %}</td></tr>
+                <tr><td colspan="7" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Mieter in dieser Periode." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -149,18 +149,18 @@
 <!-- BELEGE -->
 <div data-panel="nk" id="nk-belege" class="hidden">
     <div class="fw-card overflow-hidden">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th><th class="px-5 py-3 font-semibold">{% trans "Beschreibung" %}</th><th class="px-5 py-3 font-semibold">{% trans "Kategorie" %}</th><th class="px-5 py-3 font-semibold text-right">{% trans "Betrag" %}</th>
+        <div class="overflow-x-auto"><table class="fw-table min-w-max">
+            <thead><tr>
+                <th class="font-semibold">{% trans "Datum" %}</th><th class="font-semibold">{% trans "Beschreibung" %}</th><th class="font-semibold">{% trans "Kategorie" %}</th><th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
             </tr></thead>
             <tbody class="fw-dv">
             {% for b in belege %}
-            <tr><td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 fw-strong">{{ b.text|default:"Beleg" }}</td>
-                <td class="px-5 py-3 fw-mutet">{{ b.get_kategorie_display }}</td>
-                <td class="px-5 py-3 text-right font-medium fw-strong whitespace-nowrap">{{ b.betrag|chf }}</td></tr>
+            <tr><td class="fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+                <td class="fw-strong">{{ b.text|default:"Beleg" }}</td>
+                <td class="fw-mutet">{{ b.get_kategorie_display }}</td>
+                <td class="text-right font-medium fw-strong whitespace-nowrap fw-right">{{ b.betrag|chf }}</td></tr>
             {% empty %}
-            <tr><td colspan="4" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Belege erfasst. HNK-relevante Kreditorenrechnungen fliessen automatisch ein." %}</td></tr>
+            <tr><td colspan="4" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Belege erfasst. HNK-relevante Kreditorenrechnungen fliessen automatisch ein." %}</td></tr>
             {% endfor %}
             </tbody>
         </table></div>

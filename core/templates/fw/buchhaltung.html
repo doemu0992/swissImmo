@@ -126,14 +126,14 @@ document.addEventListener('DOMContentLoaded', function () {
             Name den Betrag aus dem Bild und man sah auf dem Handy entweder
             Nummer+Name ODER den Betrag — nie beides.
             {% endcomment %}
-            <table class="w-full text-sm">
+            <table class="fw-table">
                 <tbody class="fw-dv">
                 {% for e in ertraege %}
-                <tr class="align-top"><td class="hidden sm:table-cell px-5 py-2.5 fw-faint font-mono text-xs w-16">{{ e.nummer }}</td>
-                    <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ e.nummer }}</span><a href="/neu/buchhaltung/konto/{{ e.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ e.bezeichnung }}</a></td>
-                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium fw-strong whitespace-nowrap">{{ e.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs w-16">{{ e.nummer }}</td>
+                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ e.nummer }}</span><a href="/neu/buchhaltung/konto/{{ e.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ e.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ e.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Ertragsbuchungen." %}</td></tr>
+                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Ertragsbuchungen." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -144,14 +144,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="font-bold fw-strong text-sm">{% trans "Aufwand" %}</span>
                 <span class="text-sm font-bold fw-kritisch">CHF {{ total_aufwand|chf }}</span>
             </div>
-            <table class="w-full text-sm">
+            <table class="fw-table">
                 <tbody class="fw-dv">
                 {% for a in aufwaende %}
-                <tr class="align-top"><td class="hidden sm:table-cell px-5 py-2.5 fw-faint font-mono text-xs w-16">{{ a.nummer }}</td>
-                    <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
-                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium fw-strong whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs w-16">{{ a.nummer }}</td>
+                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Aufwandbuchungen." %}</td></tr>
+                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Aufwandbuchungen." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -175,14 +175,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="font-bold fw-strong text-sm">{% trans "Aktiven" %}</span>
                 <span class="text-sm font-bold fw-strong">CHF {{ total_aktiven|chf }}</span>
             </div>
-            <table class="w-full text-sm">
+            <table class="fw-table">
                 <tbody class="fw-dv">
                 {% for a in aktiven %}
-                <tr class="align-top"><td class="hidden sm:table-cell px-5 py-2.5 fw-faint font-mono text-xs w-16">{{ a.nummer }}</td>
-                    <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
-                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium fw-strong whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs w-16">{{ a.nummer }}</td>
+                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Aktivkonten mit Saldo." %}</td></tr>
+                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Aktivkonten mit Saldo." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -193,21 +193,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="font-bold fw-strong text-sm">{% trans "Passiven &amp; Eigenkapital" %}</span>
                 <span class="text-sm font-bold fw-strong">CHF {{ passiven_mit_erfolg|chf }}</span>
             </div>
-            <table class="w-full text-sm">
+            <table class="fw-table">
                 <tbody class="fw-dv">
                 {% for p in passiven %}
-                <tr class="align-top"><td class="hidden sm:table-cell px-5 py-2.5 fw-faint font-mono text-xs w-16">{{ p.nummer }}</td>
-                    <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ p.nummer }}</span><a href="/neu/buchhaltung/konto/{{ p.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ p.bezeichnung }}</a></td>
-                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium fw-strong whitespace-nowrap">{{ p.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs w-16">{{ p.nummer }}</td>
+                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ p.nummer }}</span><a href="/neu/buchhaltung/konto/{{ p.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ p.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ p.saldo|chf }}</td></tr>
                 {% endfor %}
                 {% if erfolg_vortrag %}
-                <tr class="fw-flaeche2 align-top"><td class="hidden sm:table-cell px-5 py-2.5 fw-faint font-mono text-xs">—</td>
-                    <td class="pl-4 pr-2 sm:px-5 py-2.5 fw-ink font-medium">{% trans "Ergebnisvortrag (Vorjahre)" %}</td>
+                <tr class="fw-flaeche2 align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs">—</td>
+                    <td class="pl-4 pr-2 sm:px-5 fw-ink font-medium">{% trans "Ergebnisvortrag (Vorjahre)" %}</td>
                     <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium {% if erfolg_vortrag >= 0 %}fw-gut{% else %}fw-kritisch{% endif %} whitespace-nowrap">{{ erfolg_vortrag|chf }}</td></tr>
                 {% endif %}
                 {% if erfolg_offen %}
-                <tr class="fw-flaeche2 align-top"><td class="hidden sm:table-cell px-5 py-2.5 fw-faint font-mono text-xs">—</td>
-                    <td class="pl-4 pr-2 sm:px-5 py-2.5 fw-ink font-medium">{% if erfolg_offen >= 0 %}{% trans "Jahresgewinn" %}{% else %}{% trans "Jahresverlust" %}{% endif %} {{ jahr }}</td>
+                <tr class="fw-flaeche2 align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs">—</td>
+                    <td class="pl-4 pr-2 sm:px-5 fw-ink font-medium">{% if erfolg_offen >= 0 %}{% trans "Jahresgewinn" %}{% else %}{% trans "Jahresverlust" %}{% endif %} {{ jahr }}</td>
                     <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium {% if erfolg_offen >= 0 %}fw-gut{% else %}fw-kritisch{% endif %} whitespace-nowrap">{{ erfolg_offen|chf }}</td></tr>
                 {% endif %}
                 </tbody>
@@ -358,23 +358,23 @@ document.addEventListener('DOMContentLoaded', function () {
             {% endif %}
         </div>
         <div class="hidden md:block overflow-x-auto">
-            <table class="w-full min-w-max text-sm">
+            <table class="fw-table min-w-max">
                 <thead>
-                <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                    <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th>
-                    <th class="px-5 py-3 font-semibold">{% trans "Beleg" %}</th>
-                    <th class="px-5 py-3 font-semibold">{% trans "Soll" %}</th>
-                    <th class="px-5 py-3 font-semibold">{% trans "Haben" %}</th>
-                    <th class="px-5 py-3 font-semibold text-right">{% trans "Betrag" %}</th>
-                    <th class="px-5 py-3 font-semibold text-right">{% trans "Beleg-Nr" %}</th>
-                    <th class="px-5 py-3"></th>
+                <tr>
+                    <th class="font-semibold">{% trans "Datum" %}</th>
+                    <th class="font-semibold">{% trans "Beleg" %}</th>
+                    <th class="font-semibold">{% trans "Soll" %}</th>
+                    <th class="font-semibold">{% trans "Haben" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Beleg-Nr" %}</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody class="fw-dv">
                 {% for b in journal %}
                 <tr class="hover:fw-flaeche2 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
-                    <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
-                    <td class="px-5 py-3 fw-ink max-w-[280px] truncate">
+                    <td class="fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+                    <td class="fw-ink max-w-[280px] truncate">
                         {% if b.ist_storno %}<span class="fw-fs-mikro font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
                         {% if b.storniert_am %}<span class="fw-fs-mikro font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
                         {{ b.beleg_text }}
@@ -382,8 +382,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td class="px-5 py-3 fw-mutet font-mono text-xs whitespace-nowrap {% if b.storniert_am %}line-through{% endif %}">{{ b.soll_konto.nummer }} {{ b.soll_konto.bezeichnung|truncatechars:18 }}</td>
                     <td class="px-5 py-3 fw-mutet font-mono text-xs whitespace-nowrap {% if b.storniert_am %}line-through{% endif %}">{{ b.haben_konto.nummer }} {{ b.haben_konto.bezeichnung|truncatechars:18 }}</td>
                     <td class="px-5 py-3 text-right font-medium fw-strong whitespace-nowrap tabular-nums {% if b.storniert_am %}line-through fw-faint{% endif %}">{{ b.betrag|chf }}</td>
-                    <td class="px-5 py-3 text-right font-mono text-xs fw-faint whitespace-nowrap">#{{ b.beleg_nr }}</td>
-                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                    <td class="text-right font-mono text-xs fw-faint whitespace-nowrap fw-right">#{{ b.beleg_nr }}</td>
+                    <td class="text-right whitespace-nowrap fw-right">
                         {% comment %}
                         Drill-down zum Beleg: die Verknüpfung steht längst in der
                         Datenbank, war aber in keinem Template verlinkt — vom
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="px-5 py-8 text-center text-sm fw-faint italic">
+                <tr><td colspan="7" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">
                     {% if j_suche or j_konto or j_von or j_bis %}{% trans "Keine Buchung passt zu diesem Filter." %}{% else %}{% trans "Noch keine Buchungen." %}{% endif %}
                 </td></tr>
                 {% endfor %}
@@ -417,8 +417,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 {% if journal %}
                 <tfoot>
                 <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
-                    <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="4">{% blocktrans count n=j_total %}Summe ({{ n }} Buchung){% plural %}Summe ({{ n }} Buchungen){% endblocktrans %}</td>
-                    <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ j_summe|chf }}</td>
+                    <td class="text-xs uppercase tracking-wider fw-mutet" colspan="4">{% blocktrans count n=j_total %}Summe ({{ n }} Buchung){% plural %}Summe ({{ n }} Buchungen){% endblocktrans %}</td>
+                    <td class="text-right tabular-nums whitespace-nowrap fw-right">{{ j_summe|chf }}</td>
                     <td colspan="2"></td>
                 </tr>
                 </tfoot>

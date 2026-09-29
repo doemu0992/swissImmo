@@ -477,22 +477,22 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             </div>
             {% if v.einheit_id %}<a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="text-xs fw-link whitespace-nowrap mt-0.5">{% trans "Am Objekt bearbeiten" %} {% zeichen 'weiter' klasse='ml-0.5 fw-fs-mikro' %}</a>{% endif %}
         </div>
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-y fw-linie">
-                <th class="px-4 py-2 font-semibold">{% trans "Gültig ab" %}</th>
-                <th class="px-4 py-2 font-semibold text-right">{% trans "Referenz" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
-                <th class="px-4 py-2 font-semibold text-right">{% trans "Rabatt" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
-                <th class="px-4 py-2 font-semibold text-right">{% trans "zu zahlen" %}</th>
-                <th class="px-4 py-2 font-semibold">{% trans "Notiz" %}</th>
+        <div class="overflow-x-auto"><table class="fw-table fw-dicht min-w-max">
+            <thead><tr class="border-y">
+                <th class="font-semibold">{% trans "Gültig ab" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Referenz" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
+                <th class="font-semibold text-right fw-right">{% trans "Rabatt" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
+                <th class="font-semibold text-right fw-right">{% trans "zu zahlen" %}</th>
+                <th class="font-semibold">{% trans "Notiz" %}</th>
             </tr></thead>
             <tbody class="">
             {% for k in v.mietzins_zeitplan %}
-            <tr class="hover:fw-flaeche2">
-                <td class="px-4 py-2 fw-ink whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
-                <td class="px-4 py-2 text-right fw-ink whitespace-nowrap">{{ k.netto_mietzins|chf }} / {{ k.nebenkosten|chf }}</td>
+            <tr>
+                <td class="fw-ink whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
+                <td class="text-right fw-ink whitespace-nowrap fw-right">{{ k.netto_mietzins|chf }} / {{ k.nebenkosten|chf }}</td>
                 <td class="px-4 py-2 text-right whitespace-nowrap {% if k.hat_rabatt %}fw-warnton font-semibold{% else %}fw-faint{% endif %}">{% if k.hat_rabatt %}−{{ k.rabatt_netto|chf }} / −{{ k.rabatt_nk|chf }}{% else %}—{% endif %}</td>
                 <td class="px-4 py-2 text-right font-semibold whitespace-nowrap {% if k.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ k.verrechnet_brutto|chf }}{% if k.verrechnet_brutto == 0 %} <span class="fw-fs-mikro font-normal">{% trans "(frei)" %}</span>{% endif %}</td>
-                <td class="px-4 py-2 fw-mutet truncate max-w-[140px]">{{ k.notiz|default:"—" }}</td>
+                <td class="fw-mutet truncate max-w-[140px]">{{ k.notiz|default:"—" }}</td>
             </tr>
             {% endfor %}
             </tbody>
@@ -512,17 +512,17 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </div>
     </div>
     <div class="fw-card">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="">
-                <th class="px-5 py-3 font-semibold">{% trans "Wirksam ab" %}</th><th class="px-5 py-3 font-semibold text-right">{% trans "Alt" %}</th><th class="px-5 py-3 font-semibold text-right">{% trans "Neu" %}</th><th class="px-5 py-3 font-semibold">{% trans "Grund" %}</th><th class="px-5 py-3"></th>
+        <div class="overflow-x-auto"><table class="fw-table min-w-max">
+            <thead><tr>
+                <th class="font-semibold">{% trans "Wirksam ab" %}</th><th class="font-semibold text-right fw-right">{% trans "Alt" %}</th><th class="font-semibold text-right fw-right">{% trans "Neu" %}</th><th class="font-semibold">{% trans "Grund" %}</th><th></th>
             </tr></thead>
             <tbody class="">
             {% for a in anpassungen %}
-            <tr><td class="fw-s px-5 py-3 whitespace-nowrap">{{ a.wirksam_ab|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 text-right fw-mutet">{% if a.alter_netto_mietzins %}{{ a.alter_netto_mietzins|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right font-semibold fw-strong">{{ a.neuer_netto_mietzins|chf }}</td>
-                <td class="px-5 py-3 fw-mutet truncate max-w-[220px]">{{ a.begruendung|default:"—" }}</td>
-                <td class="px-5 py-3 text-right">
+            <tr><td class="fw-s whitespace-nowrap">{{ a.wirksam_ab|date:"d.m.Y" }}</td>
+                <td class="text-right fw-mutet fw-right">{% if a.alter_netto_mietzins %}{{ a.alter_netto_mietzins|chf }}{% else %}—{% endif %}</td>
+                <td class="text-right font-semibold fw-strong fw-right">{{ a.neuer_netto_mietzins|chf }}</td>
+                <td class="fw-mutet truncate max-w-[220px]">{{ a.begruendung|default:"—" }}</td>
+                <td class="text-right fw-right">
                     <form method="post" action="/neu/anpassung/{{ a.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Mietzinsanpassung löschen? Künftige Sollläufe verrechnen dann wieder den vorherigen Mietzins." %}{% endfilter %}');">{% csrf_token %}
                         <button class="fw-faint hover:fw-kritisch text-xs" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
@@ -605,18 +605,18 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     {% endif %}
     <div class="fw-card mb-4">
         <div class="fw-kopf">{% trans "Offene Posten & Rechnungen" %}</div>
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="">
-                <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th><th class="px-5 py-3 font-semibold">{% trans "Titel" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Betrag" %}</th><th class="px-5 py-3 font-semibold text-right">{% trans "Offen" %}</th><th class="px-5 py-3 font-semibold">{% trans "Status" %}</th>
+        <div class="overflow-x-auto"><table class="fw-table min-w-max">
+            <thead><tr>
+                <th class="font-semibold">{% trans "Datum" %}</th><th class="font-semibold">{% trans "Titel" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th><th class="font-semibold text-right fw-right">{% trans "Offen" %}</th><th class="font-semibold">{% trans "Status" %}</th>
             </tr></thead>
             <tbody class="">
             {% for row in rechnungs_rows %}
-            <tr><td class="fw-s px-5 py-3 whitespace-nowrap">{{ row.r.datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 fw-strong">{{ row.r.titel }}</td>
-                <td class="px-5 py-3 text-right fw-ink">{{ row.r.betrag|chf }}</td>
+            <tr><td class="fw-s whitespace-nowrap">{{ row.r.datum|date:"d.m.Y" }}</td>
+                <td class="fw-strong">{{ row.r.titel }}</td>
+                <td class="text-right fw-ink fw-right">{{ row.r.betrag|chf }}</td>
                 <td class="px-5 py-3 text-right font-semibold {% if row.offen %}fw-strong{% else %}fw-faint{% endif %}">{{ row.offen|chf }}</td>
-                <td class="px-5 py-3"><span class="fw-chip {{ row.pill_cls }}">● {{ row.status_label }}</span></td></tr>
+                <td><span class="fw-chip {{ row.pill_cls }}">● {{ row.status_label }}</span></td></tr>
             {% empty %}
             <tr><td colspan="5" class="fw-leer">{% trans "Keine Rechnungen." %}</td></tr>
             {% endfor %}
@@ -625,15 +625,15 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
     <div class="fw-card">
         <div class="fw-kopf">{% trans "Zahlungseingänge" %}</div>
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="">
-                <th class="px-5 py-3 font-semibold">{% trans "Eingang" %}</th><th class="px-5 py-3 font-semibold">{% trans "Für Monat" %}</th><th class="px-5 py-3 font-semibold text-right">{% trans "Betrag" %}</th>
+        <div class="overflow-x-auto"><table class="fw-table min-w-max">
+            <thead><tr>
+                <th class="font-semibold">{% trans "Eingang" %}</th><th class="font-semibold">{% trans "Für Monat" %}</th><th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
             </tr></thead>
             <tbody class="">
             {% for z in zahlungen %}
-            <tr><td class="fw-s px-5 py-3 whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 fw-mutet">{% if z.buchungs_monat %}{{ z.buchungs_monat|date:"m/Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right font-medium fw-gut">+{{ z.betrag|chf }}</td></tr>
+            <tr><td class="fw-s whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
+                <td class="fw-mutet">{% if z.buchungs_monat %}{{ z.buchungs_monat|date:"m/Y" }}{% else %}—{% endif %}</td>
+                <td class="text-right font-medium fw-gut fw-right">+{{ z.betrag|chf }}</td></tr>
             {% empty %}
             <tr><td colspan="3" class="fw-leer">{% trans "Noch keine Zahlungen erfasst." %}</td></tr>
             {% endfor %}

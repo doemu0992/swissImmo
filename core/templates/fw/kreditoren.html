@@ -159,36 +159,36 @@
     </div>
 
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">{% trans "Lieferant" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Konto" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Fällig" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Betrag" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Status" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Aktion" %}</th>
+            <tr>
+                <th class="font-semibold">{% trans "Lieferant" %}</th>
+                <th class="font-semibold">{% trans "Objekt" %}</th>
+                <th class="font-semibold">{% trans "Konto" %}</th>
+                <th class="font-semibold">{% trans "Fällig" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
+                <th class="font-semibold">{% trans "Status" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Aktion" %}</th>
             </tr>
             </thead>
             <tbody class="fw-dv">
             {% for row in rows %}
             <tr class="hover:fw-flaeche2 transition-colors{% if row.k.status == 'neu' %} cursor-pointer{% endif %}"
                 {% if row.k.status == 'neu' %}onclick="fwKZeile(event, {{ row.k.id }})" title="{% trans 'Klicken zum Bearbeiten (mit Beleg-Vorschau)' %}"{% endif %}>
-                <td class="px-5 py-3.5 font-medium fw-strong whitespace-nowrap">
+                <td class="font-medium fw-strong whitespace-nowrap">
                     {{ row.lieferant }}
                     {% if row.k.referenz %}<div class="text-xs fw-faint font-normal">{{ row.k.referenz }}</div>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
-                <td class="px-5 py-3.5 fw-mutet text-xs whitespace-nowrap">{% if row.konto %}{{ row.konto }}{% else %}<span class="fw-warnton">{% trans "nicht zugeordnet" %}</span>{% endif %}{% comment %}
+                <td class="fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="fw-mutet text-xs whitespace-nowrap">{% if row.konto %}{{ row.konto }}{% else %}<span class="fw-warnton">{% trans "nicht zugeordnet" %}</span>{% endif %}{% comment %}
                     HNK entscheidet, ob diese Rechnung den Mietern weiterverrechnet
                     wird. Bisher stand das nur an den Teilpositionen — an der
                     Rechnung selbst war es unsichtbar, bis die NK-Abrechnung lief.
                 {% endcomment %}{% if row.k.is_hnk_relevant %} <span class="ml-1 fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton rounded px-1.5 py-0.5" title="{% trans 'Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet' %}">{% trans "HNK" %}</span>{% endif %}</td>
                 <td class="px-5 py-3.5 whitespace-nowrap {% if row.ueberfaellig %}font-semibold fw-kritisch{% else %}fw-mutet{% endif %}">{% if row.faellig %}{{ row.faellig|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">{{ row.betrag|chf }}</td>
-                <td class="px-5 py-3.5"><span class="fw-chip whitespace-nowrap {{ row.pill_cls }}">● {{ row.status_label }}</span></td>
-                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                <td class="text-right font-semibold fw-strong whitespace-nowrap fw-right">{{ row.betrag|chf }}</td>
+                <td><span class="fw-chip whitespace-nowrap {{ row.pill_cls }}">● {{ row.status_label }}</span></td>
+                <td class="text-right whitespace-nowrap fw-right">
                     <div class="inline-flex items-center gap-2">
                         {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="fw-faint hover:fw-marke" title="{% trans 'Beleg ansehen' %}">{% zeichen 'hochladen' %}</a>{% endif %}
                         {% if row.kann_bezahlen and darf_bezahlen %}
@@ -253,7 +253,7 @@
             </tr>
             {% if row.k.status == 'neu' %}
             <tr id="kedit-{{ row.k.id }}" class="{% if not row.offen %}hidden {% endif %}fw-markenflaeche">
-                <td colspan="7" class="px-5 py-4">
+                <td colspan="7">
                     {% if row.k.fehlermeldung %}
                     <div class="mb-3 rounded-lg border fw-linie-warn fw-warn-flaeche px-3 py-2 fw-fs-fein fw-warnton">{% zeichen 'warnung' klasse='mr-1' %}{{ row.k.fehlermeldung }}</div>
                     {% endif %}
@@ -363,7 +363,7 @@
             </tr>
             {% endif %}
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-12 text-center">
+            <tr><td colspan="7" class="text-center fw-zentriert fw-leerzeile">
                 <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'rechnung' %}</div>
                 <p class="text-sm font-medium fw-ink">{% trans "Keine Kreditorenrechnungen" %}</p>
                 <p class="text-xs fw-faint mt-1">{% if suche %}{% blocktrans %}Kein Treffer für «{{ suche }}».{% endblocktrans %}{% elif status_filter %}{% trans "Keine Rechnung in diesem Status." %}{% else %}{% trans "Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung manuell." %}{% endif %}</p>
@@ -373,11 +373,11 @@
             {% if rows %}
             <tfoot>
             <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
-                <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="4">
+                <td class="text-xs uppercase tracking-wider fw-mutet" colspan="4">
                     {% trans "Offen (freigegeben/in Zahlung, diese Seite)" %}
                 </td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">{{ total_offen|chf }}</td>
-                <td class="px-5 py-3" colspan="2"></td>
+                <td class="text-right whitespace-nowrap fw-right">{{ total_offen|chf }}</td>
+                <td colspan="2"></td>
             </tr>
             </tfoot>
             {% endif %}

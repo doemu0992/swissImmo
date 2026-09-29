@@ -11,25 +11,25 @@
 
 <div class="fw-card overflow-hidden max-w-4xl">
     <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
+<table class="fw-table min-w-max">
         <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left px-5 py-3">{% trans "Eigentümer" %}</th><th class="text-left px-5 py-3">{% trans "Kontakt" %}</th>
-                <th class="text-left px-5 py-3">{% trans "Ort" %}</th><th class="text-center px-5 py-3">{% trans "Liegensch." %}</th>
-                <th class="text-right px-5 py-3">{% trans "Aktionen" %}</th></tr>
+            <tr><th class="text-left">{% trans "Eigentümer" %}</th><th class="text-left">{% trans "Kontakt" %}</th>
+                <th class="text-left">{% trans "Ort" %}</th><th class="text-center fw-zentriert">{% trans "Liegensch." %}</th>
+                <th class="text-right fw-right">{% trans "Aktionen" %}</th></tr>
         </thead>
         <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:fw-flaeche2">
-                <td class="px-5 py-3.5">
+            <tr>
+                <td>
                     <a href="/neu/mandate/{{ row.md.id }}/" class="flex items-center gap-3">
                         <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'dokument' klasse='text-xs' %}</span>
                         <span class="font-medium fw-strong">{{ row.md.firma_oder_name }}</span>
                     </a>
                 </td>
-                <td class="px-5 py-3.5 fw-mutet">{{ row.md.kontaktperson|default:row.md.email|default:"—" }}</td>
-                <td class="px-5 py-3.5 fw-mutet">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3.5 text-center"><span class="fw-chip fw-flaeche2 fw-ink">{{ row.anzahl_lg }}</span></td>
-                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                <td class="fw-mutet">{{ row.md.kontaktperson|default:row.md.email|default:"—" }}</td>
+                <td class="fw-mutet">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
+                <td class="text-center fw-zentriert"><span class="fw-chip fw-flaeche2 fw-ink">{{ row.anzahl_lg }}</span></td>
+                <td class="text-right whitespace-nowrap fw-right">
                     <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium fw-gut hover:underline mr-3">{% zeichen 'rechnung' klasse='fw-fs-mikro mr-0.5' %}{% trans "Abrechnung" %}</a>
                     <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium fw-info hover:underline mr-3">{% zeichen 'recht' klasse='fw-fs-mikro mr-0.5' %}{% trans "Kontokorrent" %}</a>
                     <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="text-xs font-medium fw-kritisch hover:underline mr-3">{% zeichen 'recht' klasse='fw-fs-mikro mr-0.5' %}{% trans "Mahnstufen" %}</a>
@@ -44,7 +44,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="px-5 py-8 text-center fw-faint italic">{% trans "Noch keine Eigentümer erfasst." %}</td></tr>
+            <tr><td colspan="5" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch keine Eigentümer erfasst." %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

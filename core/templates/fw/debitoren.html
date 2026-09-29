@@ -185,40 +185,40 @@
 
     <!-- Desktop: Tabelle -->
     <div class="overflow-x-auto hidden md:block">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold hidden lg:table-cell">{% trans "Fälligkeit" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
-                <th class="px-5 py-3 font-semibold hidden lg:table-cell">{% trans "Objekt" %}</th>
-                <th class="px-5 py-3 font-semibold hidden md:table-cell">{% trans "Titel" %}</th>
-                <th class="px-5 py-3 font-semibold text-right hidden lg:table-cell">{% trans "Betrag" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Offen" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Status" %}</th>
-                <th class="px-5 py-3 font-semibold hidden md:table-cell">{% trans "Mahnstufe" %}</th>
-                <th class="px-5 py-3"></th>
+            <tr>
+                <th class="font-semibold hidden lg:table-cell">{% trans "Fälligkeit" %}</th>
+                <th class="font-semibold">{% trans "Mieter" %}</th>
+                <th class="font-semibold hidden lg:table-cell">{% trans "Objekt" %}</th>
+                <th class="font-semibold hidden md:table-cell">{% trans "Titel" %}</th>
+                <th class="font-semibold text-right hidden lg:table-cell fw-right">{% trans "Betrag" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Offen" %}</th>
+                <th class="font-semibold">{% trans "Status" %}</th>
+                <th class="font-semibold hidden md:table-cell">{% trans "Mahnstufe" %}</th>
+                <th></th>
             </tr>
             </thead>
             <tbody class="fw-dv">
             {% for row in page %}
-            <tr class="hover:fw-markenflaeche focus-within:fw-markenflaeche transition-colors">
+            <tr class="focus-within:fw-markenflaeche transition-colors">
                 <td class="px-5 py-3.5 whitespace-nowrap hidden lg:table-cell {% if row.mahn %}font-semibold fw-kritisch{% else %}fw-mutet{% endif %}">
                     {{ row.faellig|date:"d.m.Y" }}
                 </td>
-                <td class="px-5 py-3.5 font-medium fw-strong whitespace-nowrap">{{ row.mieter }}</td>
-                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap hidden lg:table-cell">{{ row.objekt }}{% if row.einheit %} <span class="fw-faint">· {{ row.einheit }}</span>{% endif %}</td>
-                <td class="px-5 py-3.5 fw-mutet max-w-[220px] truncate hidden md:table-cell">{{ row.r.titel }}</td>
-                <td class="px-5 py-3.5 text-right fw-ink whitespace-nowrap tabular-nums hidden lg:table-cell">{{ row.r.betrag|chf }}</td>
+                <td class="font-medium fw-strong whitespace-nowrap">{{ row.mieter }}</td>
+                <td class="fw-mutet whitespace-nowrap hidden lg:table-cell">{{ row.objekt }}{% if row.einheit %} <span class="fw-faint">· {{ row.einheit }}</span>{% endif %}</td>
+                <td class="fw-mutet max-w-[220px] truncate hidden md:table-cell">{{ row.r.titel }}</td>
+                <td class="text-right fw-ink whitespace-nowrap tabular-nums hidden lg:table-cell fw-right">{{ row.r.betrag|chf }}</td>
                 <td class="px-5 py-3.5 text-right font-semibold whitespace-nowrap tabular-nums {% if row.offen > 0 %}fw-strong{% else %}fw-faint{% endif %}">
                     {% if row.r.status == 'storniert' %}—{% else %}{{ row.offen|chf }}{% endif %}
                 </td>
-                <td class="px-5 py-3.5"><span class="fw-chip whitespace-nowrap {{ row.pill_cls }}">● {{ row.status_label }}</span></td>
-                <td class="px-5 py-3.5 hidden md:table-cell">
+                <td><span class="fw-chip whitespace-nowrap {{ row.pill_cls }}">● {{ row.status_label }}</span></td>
+                <td class="hidden md:table-cell">
                     {% if row.mahn %}
                     <span class="fw-chip whitespace-nowrap {{ row.mahn.cls }}" title="{% blocktrans count n=row.mahn.tage %}{{ n }} Tag überfällig{% plural %}{{ n }} Tage überfällig{% endblocktrans %}">● {{ row.mahn.label }}</span>
                     {% else %}<span class="fw-faint">—</span>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                <td class="text-right whitespace-nowrap fw-right">
                     <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" rel="noopener" class="text-xs fw-gut font-medium hover:underline mr-2" title="{% trans 'QR-Rechnung als PDF' %}">{% zeichen 'bank' %} QR</a>
                     {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Vertrag" %}{% endfilter %}',true)" class="text-xs fw-marke font-medium hover:underline mr-2">{% trans "Ansehen" %}</a>{% endif %}
                     {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
@@ -239,7 +239,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="9" class="p-0">
+            <tr><td colspan="9">
                 {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Rechnungen gefunden.') %}{% else %}{% include 'fw/_bezahlt_leer.html' %}{% endif %}
             </td></tr>
             {% endfor %}
@@ -247,14 +247,14 @@
             {% if rows %}
             <tfoot>
             <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
-                <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet hidden lg:table-cell"></td>
-                <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="2">{% blocktrans with n=rows_gesamt %}Total (alle {{ n }}){% endblocktrans %}</td>
-                <td class="px-5 py-3 hidden md:table-cell"></td>
-                <td class="px-5 py-3 text-right whitespace-nowrap tabular-nums hidden lg:table-cell">{{ total_betrag|chf }}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap tabular-nums">{{ total_offen|chf }}</td>
-                <td class="px-5 py-3"></td>
-                <td class="px-5 py-3 hidden md:table-cell"></td>
-                <td class="px-5 py-3"></td>
+                <td class="text-xs uppercase tracking-wider fw-mutet hidden lg:table-cell"></td>
+                <td class="text-xs uppercase tracking-wider fw-mutet" colspan="2">{% blocktrans with n=rows_gesamt %}Total (alle {{ n }}){% endblocktrans %}</td>
+                <td class="hidden md:table-cell"></td>
+                <td class="text-right whitespace-nowrap tabular-nums hidden lg:table-cell fw-right">{{ total_betrag|chf }}</td>
+                <td class="text-right whitespace-nowrap tabular-nums fw-right">{{ total_offen|chf }}</td>
+                <td></td>
+                <td class="hidden md:table-cell"></td>
+                <td></td>
             </tr>
             </tfoot>
             {% endif %}

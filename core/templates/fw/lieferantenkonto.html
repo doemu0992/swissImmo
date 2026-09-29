@@ -64,35 +64,35 @@
 <!-- Kontobewegungen -->
 <div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
+<table class="fw-table min-w-max">
         <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Text" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Belastung" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Zahlung" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Saldo" %}</th>
+            <tr>
+                <th class="font-semibold">{% trans "Datum" %}</th>
+                <th class="font-semibold">{% trans "Text" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Belastung" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Zahlung" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Saldo" %}</th>
             </tr>
         </thead>
         <tbody class="fw-dv">
         {% for b in bewegungen %}
-            <tr class="hover:fw-flaeche2">
-                <td class="px-5 py-2.5 fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-2.5 fw-strong">{{ b.text }}</td>
+            <tr>
+                <td class="fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+                <td class="fw-strong">{{ b.text }}</td>
                 <td class="px-5 py-2.5 text-right {% if b.belastung %}fw-strong font-medium{% else %}fw-faint{% endif %}">{% if b.belastung %}{{ b.belastung|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-2.5 text-right {% if b.zahlung %}fw-gut font-medium{% else %}fw-faint{% endif %}">{% if b.zahlung %}{{ b.zahlung|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-2.5 text-right font-semibold {% if b.saldo > 0 %}fw-kritisch{% else %}fw-faint{% endif %}">{{ b.saldo|chf }}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">{% trans "Keine Bewegungen." %}</td></tr>
+            <tr><td colspan="5" class="text-center fw-faint text-sm fw-zentriert fw-leerzeile">{% trans "Keine Bewegungen." %}</td></tr>
         {% endfor %}
         </tbody>
         {% if bewegungen %}
         <tfoot>
             <tr class="border-t-2 fw-linie font-semibold fw-strong">
-                <td class="px-5 py-3" colspan="2">{% trans "Total / Endsaldo" %}</td>
-                <td class="px-5 py-3 text-right">{{ total_belastung|chf }}</td>
-                <td class="px-5 py-3 text-right fw-gut">{{ total_zahlung|chf }}</td>
+                <td colspan="2">{% trans "Total / Endsaldo" %}</td>
+                <td class="text-right fw-right">{{ total_belastung|chf }}</td>
+                <td class="text-right fw-gut fw-right">{{ total_zahlung|chf }}</td>
                 <td class="px-5 py-3 text-right {% if endsaldo > 0 %}fw-kritisch{% endif %}">{{ endsaldo|chf }}</td>
             </tr>
         </tfoot>

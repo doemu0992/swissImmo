@@ -108,39 +108,39 @@
         {% endfor %}
     </div>
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">{% trans "Element" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Restdauer" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Status" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Garantie" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Reparaturen" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Lebenszyklus" %}</th>
-                <th class="px-5 py-3"></th>
+            <tr>
+                <th class="font-semibold">{% trans "Element" %}</th>
+                <th class="font-semibold">{% trans "Objekt" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Restdauer" %}</th>
+                <th class="font-semibold">{% trans "Status" %}</th>
+                <th class="font-semibold">{% trans "Garantie" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Reparaturen" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Lebenszyklus" %}</th>
+                <th></th>
             </tr>
             </thead>
             <tbody class="fw-dv">
             {% for r in rows %}
-            <tr class="hover:fw-flaeche2 transition-colors">
-                <td class="px-5 py-3">
+            <tr class="transition-colors">
+                <td>
                     <div class="font-semibold fw-strong">{{ r.bezeichnung }}{% if r.art == 'geraet' %} <span class="fw-chip fw-mut">{% trans "Gerät" %}</span>{% endif %}</div>
                     <div class="text-xs fw-faint">{{ r.detail }}{% if r.einbau %} · {% trans "Einbau" %} {{ r.einbau|date:"m.Y" }}{% endif %}{% if r.lebensdauer %} · {{ r.lebensdauer }} J{% endif %}</div>
                 </td>
-                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ r.standort }}</td>
+                <td class="fw-mutet whitespace-nowrap">{{ r.standort }}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap {% if r.status == 'faellig' %}fw-kritisch font-semibold{% elif r.status == 'bald' %}fw-warnton font-semibold{% else %}fw-mutet{% endif %}">
                     {% if r.rest is not None %}{{ r.rest }} J{% else %}—{% endif %}</td>
-                <td class="px-5 py-3"><span class="fw-chip whitespace-nowrap {{ r.status_cls }}">● {% trans r.status_label %}</span></td>
-                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{% if r.garantie_bis %}{{ r.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td><span class="fw-chip whitespace-nowrap {{ r.status_cls }}">● {% trans r.status_label %}</span></td>
+                <td class="fw-mutet whitespace-nowrap">{% if r.garantie_bis %}{{ r.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if r.schaden_anzahl %}fw-strong{% else %}fw-faint{% endif %}">
                     {% if r.schaden_anzahl %}{{ r.schaden_anzahl }}× · CHF {{ r.reparaturkosten|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if r.art == 'geraet' %}fw-faint{% else %}font-semibold fw-strong{% endif %}">
                     {% if r.art == 'geraet' %}<span title="{% trans 'Geräte haben kein Neuwert-Feld — ein geschätzter Preis wanderte sonst über den PDF-Report in die Fondsplanung.' %}">{% trans "kein Neuwert" %}</span>{% else %}CHF {{ r.lebenszyklus|chf }}{% endif %}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap"><a href="{{ r.ziel_url }}" class="text-xs fw-marke font-medium hover:underline">{% if r.art == 'geraet' %}{% trans "Gerät" %}{% else %}{% trans "Objekt" %}{% endif %}</a></td>
+                <td class="text-right whitespace-nowrap fw-right"><a href="{{ r.ziel_url }}" class="text-xs fw-marke font-medium hover:underline">{% if r.art == 'geraet' %}{% trans "Gerät" %}{% else %}{% trans "Objekt" %}{% endif %}</a></td>
             </tr>
             {% empty %}
-            <tr><td colspan="8" class="px-5 py-12 text-center">
+            <tr><td colspan="8" class="text-center fw-zentriert fw-leerzeile">
                 <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'dokument' %}</div>
                 <p class="text-sm font-medium fw-ink">{% if status_filter %}{% trans "Keine Treffer" %}{% else %}{% trans "Keine Ausstattung erfasst" %}{% endif %}</p>
                 <p class="text-xs fw-faint mt-1">{% trans "Erfasse Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die Restnutzungsdauer berechnet werden kann." %}</p>

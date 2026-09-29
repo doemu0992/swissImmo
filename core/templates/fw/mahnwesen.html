@@ -58,32 +58,32 @@
     </div>
 
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">{% trans "Stufe" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Fällig seit" %}</th>
-                <th class="px-5 py-3 font-semibold text-center">{% trans "Tage" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Offen" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Aktion" %}</th>
+            <tr>
+                <th class="font-semibold">{% trans "Stufe" %}</th>
+                <th class="font-semibold">{% trans "Mieter" %}</th>
+                <th class="font-semibold">{% trans "Objekt" %}</th>
+                <th class="font-semibold">{% trans "Fällig seit" %}</th>
+                <th class="font-semibold text-center fw-zentriert">{% trans "Tage" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Offen" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Aktion" %}</th>
             </tr>
             </thead>
             <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:fw-flaeche2 transition-colors">
-                <td class="px-5 py-3.5">
+            <tr class="transition-colors">
+                <td>
                     <span class="fw-chip whitespace-nowrap {{ row.stufe.cls }}">● {{ row.stufe.label }}</span>
                 </td>
-                <td class="px-5 py-3.5 font-medium fw-strong whitespace-nowrap">
+                <td class="font-medium fw-strong whitespace-nowrap">
                     {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="hover:fw-marke">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
                 </td>
-                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
-                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.faellig|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3.5 text-center font-semibold fw-kritisch">{{ row.tage }}</td>
-                <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">{{ row.offen|chf }}</td>
-                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                <td class="fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="fw-mutet whitespace-nowrap">{{ row.faellig|date:"d.m.Y" }}</td>
+                <td class="text-center font-semibold fw-kritisch fw-zentriert">{{ row.tage }}</td>
+                <td class="text-right font-semibold fw-strong whitespace-nowrap fw-right">{{ row.offen|chf }}</td>
+                <td class="text-right whitespace-nowrap fw-right">
                     {% if row.letzte_mahnung %}<div class="fw-fs-mikro fw-faint mb-1">{% blocktrans with stufe=row.letzte_mahnung.stufe datum=row.letzte_mahnung.datum|date:"d.m.Y" %}zuletzt: {{ stufe }}. Mahnung {{ datum }}{% endblocktrans %}</div>{% endif %}
                     <div class="inline-flex items-center gap-1.5">
                     {% if row.mahn_url %}
@@ -106,7 +106,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-12 text-center">
+            <tr><td colspan="7" class="text-center fw-zentriert fw-leerzeile">
                 <div class="w-10 h-10 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'gut' %}</div>
                 <p class="text-sm font-medium fw-ink">{% trans "Keine offenen Mahnfälle" %}</p>
                 <p class="text-xs fw-faint mt-1">{% if stufe_filter %}{% trans "Keine Position in dieser Stufe." %}{% else %}{% trans "Alle Forderungen sind aktuell oder noch nicht mahnfällig." %}{% endif %}</p>
@@ -140,27 +140,27 @@
         {% zeichen 'verlauf' klasse='fw-faint mr-1.5' %}{% trans "Mahn-Historie" %}
     </div>
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Stufe" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Rechnung" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Offen" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Gebühr" %}</th>
+        <table class="fw-table min-w-max">
+            <thead><tr>
+                <th class="font-semibold">{% trans "Datum" %}</th>
+                <th class="font-semibold">{% trans "Stufe" %}</th>
+                <th class="font-semibold">{% trans "Mieter" %}</th>
+                <th class="font-semibold">{% trans "Rechnung" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Offen" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Gebühr" %}</th>
             </tr></thead>
             <tbody class="fw-dv">
             {% for h in historie %}
-            <tr class="hover:fw-flaeche2">
-                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ h.datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3"><span class="px-2 py-0.5 rounded text-xs font-semibold fw-flaeche2 fw-ink">{% blocktrans with stufe=h.stufe %}{{ stufe }}. Mahnung{% endblocktrans %}</span></td>
-                <td class="px-5 py-3 fw-strong whitespace-nowrap">{% if h.vertrag_id %}{{ h.vertrag.mieter.display_name }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 fw-mutet truncate max-w-[200px]">{% if h.debitoren_rechnung %}{{ h.debitoren_rechnung.titel }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right fw-ink whitespace-nowrap">{{ h.betrag_offen|chf }}</td>
+            <tr>
+                <td class="fw-mutet whitespace-nowrap">{{ h.datum|date:"d.m.Y" }}</td>
+                <td><span class="px-2 py-0.5 rounded text-xs font-semibold fw-flaeche2 fw-ink">{% blocktrans with stufe=h.stufe %}{{ stufe }}. Mahnung{% endblocktrans %}</span></td>
+                <td class="fw-strong whitespace-nowrap">{% if h.vertrag_id %}{{ h.vertrag.mieter.display_name }}{% else %}—{% endif %}</td>
+                <td class="fw-mutet truncate max-w-[200px]">{% if h.debitoren_rechnung %}{{ h.debitoren_rechnung.titel }}{% else %}—{% endif %}</td>
+                <td class="text-right fw-ink whitespace-nowrap fw-right">{{ h.betrag_offen|chf }}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap {% if h.gebuehr > 0 %}fw-kritisch font-medium{% else %}fw-faint{% endif %}">{{ h.gebuehr|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Noch keine Mahnungen erfasst." %}</td></tr>
+            <tr><td colspan="6" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch keine Mahnungen erfasst." %}</td></tr>
             {% endfor %}
             </tbody>
         </table>

@@ -95,21 +95,21 @@
         {% if sollmietzinse %}
         <div class="border fw-linie rounded-lg overflow-hidden">
             <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
-                    <th class="px-4 py-2 font-semibold">{% trans "Gültig ab" %}</th>
-                    <th class="px-4 py-2 font-semibold text-right">{% trans "Netto" %}</th>
-                    {% if not e.ist_einstellplatz %}<th class="px-4 py-2 font-semibold text-right">NK</th>
-                    <th class="px-4 py-2 font-semibold text-right">{% trans "Brutto" %}</th>{% endif %}
+<table class="fw-table fw-dicht min-w-max">
+                <thead><tr>
+                    <th class="font-semibold">{% trans "Gültig ab" %}</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Netto" %}</th>
+                    {% if not e.ist_einstellplatz %}<th class="font-semibold text-right fw-right">NK</th>
+                    <th class="font-semibold text-right fw-right">{% trans "Brutto" %}</th>{% endif %}
                 </tr></thead>
                 <tbody class="fw-dv">
                 {% for s in sollmietzinse %}
                 <tr>
-                    <td class="px-4 py-2 font-medium fw-strong">{{ s.gueltig_ab|date:"d.m.Y" }}
+                    <td class="font-medium fw-strong">{{ s.gueltig_ab|date:"d.m.Y" }}
                         {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-md fw-fs-mikro font-semibold fw-gut-flaeche fw-gut">{% trans "aktuell" %}</span>{% endif %}</td>
-                    <td class="px-4 py-2 text-right fw-ink">CHF {{ s.netto_mietzins|chf }}</td>
-                    {% if not e.ist_einstellplatz %}<td class="px-4 py-2 text-right fw-ink">CHF {{ s.nebenkosten|chf }}</td>
-                    <td class="px-4 py-2 text-right font-semibold fw-strong">CHF {{ s.brutto|chf }}</td>{% endif %}
+                    <td class="text-right fw-ink fw-right">CHF {{ s.netto_mietzins|chf }}</td>
+                    {% if not e.ist_einstellplatz %}<td class="text-right fw-ink fw-right">CHF {{ s.nebenkosten|chf }}</td>
+                    <td class="text-right font-semibold fw-strong fw-right">CHF {{ s.brutto|chf }}</td>{% endif %}
                 </tr>
                 {% endfor %}
                 </tbody>

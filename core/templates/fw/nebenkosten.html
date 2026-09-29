@@ -63,36 +63,36 @@
     </div>
 
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3 font-semibold">{% trans "Periode" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Liegenschaft" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Zeitraum" %}</th>
-                <th class="px-5 py-3 font-semibold text-center">{% trans "Belege" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Total Kosten" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Status" %}</th>
-                <th class="px-5 py-3"></th>
+            <tr>
+                <th class="font-semibold">{% trans "Periode" %}</th>
+                <th class="font-semibold">{% trans "Liegenschaft" %}</th>
+                <th class="font-semibold">{% trans "Zeitraum" %}</th>
+                <th class="font-semibold text-center fw-zentriert">{% trans "Belege" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Total Kosten" %}</th>
+                <th class="font-semibold">{% trans "Status" %}</th>
+                <th></th>
             </tr>
             </thead>
             <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:fw-flaeche2 transition-colors cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
-                <td class="px-5 py-3.5">
+            <tr class="transition-colors cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
+                <td>
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'rechnung' %}</div>
                         <span class="font-semibold fw-strong">{{ row.p.bezeichnung }}</span>
                     </div>
                 </td>
-                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.lg }}</td>
-                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.p.start_datum|date:"d.m.Y" }} – {{ row.p.ende_datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3.5 text-center fw-mutet">{{ row.belege }}</td>
-                <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">CHF {{ row.kosten|chf }}</td>
-                <td class="px-5 py-3.5">
+                <td class="fw-mutet whitespace-nowrap">{{ row.lg }}</td>
+                <td class="fw-mutet whitespace-nowrap">{{ row.p.start_datum|date:"d.m.Y" }} – {{ row.p.ende_datum|date:"d.m.Y" }}</td>
+                <td class="text-center fw-mutet fw-zentriert">{{ row.belege }}</td>
+                <td class="text-right font-semibold fw-strong whitespace-nowrap fw-right">CHF {{ row.kosten|chf }}</td>
+                <td>
                     {% if row.p.abgeschlossen %}<span class="fw-chip fw-gut-flaeche fw-gut">{% trans "● Abgeschlossen" %}</span>
                     {% else %}<span class="fw-chip fw-warn-flaeche fw-warnton">{% trans "● Offen" %}</span>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                <td class="text-right whitespace-nowrap fw-right">
                     {% if not row.p.abgeschlossen %}
                     <form method="post" action="/neu/nebenkosten/{{ row.p.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.p.bezeichnung|safe %}Abrechnungsperiode «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
                         <button class="fw-faint hover:fw-kritisch text-xs mr-2" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
@@ -101,7 +101,7 @@
                     {% zeichen 'weiter' klasse='fw-faint text-xs' %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-12 text-center">
+            <tr><td colspan="7" class="text-center fw-zentriert fw-leerzeile">
                 <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'kritisch' %}</div>
                 <p class="text-sm font-medium fw-ink">{% if status_filter %}{% trans "Keine Perioden in diesem Status" %}{% else %}{% trans "Noch keine Abrechnungsperioden" %}{% endif %}</p>
                 <p class="text-xs fw-faint mt-1">{% trans "Perioden werden in der klassischen Ansicht angelegt." %}</p>

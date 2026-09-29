@@ -22,25 +22,25 @@
         </form>
     </div>
     <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
+<table class="fw-table min-w-max">
         <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left px-5 py-2.5">{% trans "Anlage" %}</th><th class="text-left px-5 py-2.5">{% trans "Liegenschaft" %}</th>
-                <th class="text-right px-5 py-2.5">{% trans "Anschaffung" %}</th><th class="text-right px-5 py-2.5">{% trans "ND" %}</th>
-                <th class="text-right px-5 py-2.5">{% trans "AfA/Jahr" %}</th><th class="text-right px-5 py-2.5">{% trans "Kum. AfA" %}</th><th class="text-right px-5 py-2.5">{% trans "Buchwert" %}</th></tr>
+            <tr><th class="text-left">{% trans "Anlage" %}</th><th class="text-left">{% trans "Liegenschaft" %}</th>
+                <th class="text-right fw-right">{% trans "Anschaffung" %}</th><th class="text-right fw-right">{% trans "ND" %}</th>
+                <th class="text-right fw-right">{% trans "AfA/Jahr" %}</th><th class="text-right fw-right">{% trans "Kum. AfA" %}</th><th class="text-right fw-right">{% trans "Buchwert" %}</th></tr>
         </thead>
         <tbody class="fw-dv">
             {% for a in anlagen %}
             <tr>
-                <td class="px-5 py-2.5 font-medium fw-strong">{{ a.bezeichnung }}<div class="fw-fs-klein fw-faint">{% blocktrans with datum=a.anschaffungsdatum|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}</div></td>
-                <td class="px-5 py-2.5 fw-mutet">{{ a.liegenschaft.strasse }}</td>
-                <td class="px-5 py-2.5 text-right tabular-nums">CHF {{ a.anschaffungswert|chf }}</td>
-                <td class="px-5 py-2.5 text-right">{{ a.nutzungsdauer_jahre }} J</td>
-                <td class="px-5 py-2.5 text-right tabular-nums fw-ink">CHF {{ a.jahres_afa|chf }}</td>
-                <td class="px-5 py-2.5 text-right tabular-nums fw-kritisch">CHF {{ a.kumulierte_afa|chf }}</td>
-                <td class="px-5 py-2.5 text-right tabular-nums font-semibold">CHF {{ a.buchwert|chf }}</td>
+                <td class="font-medium fw-strong">{{ a.bezeichnung }}<div class="fw-fs-klein fw-faint">{% blocktrans with datum=a.anschaffungsdatum|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}</div></td>
+                <td class="fw-mutet">{{ a.liegenschaft.strasse }}</td>
+                <td class="text-right tabular-nums fw-right">CHF {{ a.anschaffungswert|chf }}</td>
+                <td class="text-right fw-right">{{ a.nutzungsdauer_jahre }} J</td>
+                <td class="text-right tabular-nums fw-ink fw-right">CHF {{ a.jahres_afa|chf }}</td>
+                <td class="text-right tabular-nums fw-kritisch fw-right">CHF {{ a.kumulierte_afa|chf }}</td>
+                <td class="text-right tabular-nums font-semibold fw-right">CHF {{ a.buchwert|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-6 text-center fw-faint italic">{% trans "Noch keine Anlagen erfasst." %}</td></tr>
+            <tr><td colspan="7" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch keine Anlagen erfasst." %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -96,19 +96,19 @@
         </form>
     </div>
     <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
+<table class="fw-table min-w-max">
         <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left px-5 py-2.5">{% trans "Liegenschaft" %}</th><th class="text-right px-5 py-2.5">{% trans "Bestand" %}</th>
-                <th class="text-right px-5 py-2.5">{% trans "Einlage/Jahr" %}</th><th class="text-right px-5 py-2.5">{% trans "Letzte Einlage" %}</th></tr>
+            <tr><th class="text-left">{% trans "Liegenschaft" %}</th><th class="text-right fw-right">{% trans "Bestand" %}</th>
+                <th class="text-right fw-right">{% trans "Einlage/Jahr" %}</th><th class="text-right fw-right">{% trans "Letzte Einlage" %}</th></tr>
         </thead>
         <tbody class="fw-dv">
             {% for f in fonds %}
-            <tr><td class="px-5 py-2.5 font-medium">{{ f.liegenschaft.strasse }}</td>
-                <td class="px-5 py-2.5 text-right tabular-nums font-semibold fw-gut">CHF {{ f.bestand|chf }}</td>
-                <td class="px-5 py-2.5 text-right tabular-nums">CHF {{ f.jaehrliche_einlage|chf }}</td>
-                <td class="px-5 py-2.5 text-right fw-mutet">{{ f.letzte_einlage_jahr|default:"—" }}</td></tr>
+            <tr><td class="font-medium">{{ f.liegenschaft.strasse }}</td>
+                <td class="text-right tabular-nums font-semibold fw-gut fw-right">CHF {{ f.bestand|chf }}</td>
+                <td class="text-right tabular-nums fw-right">CHF {{ f.jaehrliche_einlage|chf }}</td>
+                <td class="text-right fw-mutet fw-right">{{ f.letzte_einlage_jahr|default:"—" }}</td></tr>
             {% empty %}
-            <tr><td colspan="4" class="px-5 py-6 text-center fw-faint italic">{% trans "Noch kein Erneuerungsfonds definiert." %}</td></tr>
+            <tr><td colspan="4" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch kein Erneuerungsfonds definiert." %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

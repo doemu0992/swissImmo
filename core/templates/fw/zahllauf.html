@@ -57,44 +57,44 @@
 
     {% if vorschlag %}
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3"><input type="checkbox" onclick="fwZlAlle(this, 'vorschlag')" checked class="fw-akzent"></th>
-                <th class="px-5 py-3 font-semibold">{% trans "Lieferant" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
-                <th class="px-5 py-3 font-semibold">IBAN</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Fällig" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Offen" %}</th>
+            <tr>
+                <th><input type="checkbox" onclick="fwZlAlle(this, 'vorschlag')" checked class="fw-akzent"></th>
+                <th class="font-semibold">{% trans "Lieferant" %}</th>
+                <th class="font-semibold">{% trans "Objekt" %}</th>
+                <th class="font-semibold">IBAN</th>
+                <th class="font-semibold">{% trans "Fällig" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Offen" %}</th>
             </tr>
             </thead>
             <tbody class="fw-dv" data-gruppe="vorschlag">
             {% for z in vorschlag %}
             <tr class="hover:fw-flaeche2 {% if not z.iban %}fw-warn-flaeche{% endif %}">
-                <td class="px-5 py-3">
+                <td>
                     <input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}"
                            {% if z.iban %}checked{% else %}disabled title="{% trans 'Ohne IBAN nicht zahlbar' %}"{% endif %}
                            class="fw-akzent">
                 </td>
-                <td class="px-5 py-3 font-medium fw-strong whitespace-nowrap">
+                <td class="font-medium fw-strong whitespace-nowrap">
                     {{ z.k.lieferant|default:"—" }}
                     {% if z.k.referenz %}<div class="text-xs fw-faint font-normal">{{ z.k.referenz }}</div>{% endif %}
                 </td>
-                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ z.objekt }}</td>
+                <td class="fw-mutet whitespace-nowrap">{{ z.objekt }}</td>
                 <td class="px-5 py-3 font-mono text-xs whitespace-nowrap {% if not z.iban %}fw-warnton font-semibold{% else %}fw-mutet{% endif %}">
                     {{ z.iban|default:"fehlt" }}
                 </td>
                 <td class="px-5 py-3 whitespace-nowrap {% if z.ueberfaellig %}fw-kritisch font-semibold{% else %}fw-mutet{% endif %}">
                     {% if z.faellig %}{{ z.faellig|date:"d.m.Y" }}{% else %}—{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap font-semibold">{{ z.offen|chf }}</td>
+                <td class="text-right tabular-nums whitespace-nowrap font-semibold fw-right">{{ z.offen|chf }}</td>
             </tr>
             {% endfor %}
             </tbody>
             <tfoot>
             <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
-                <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="5">{% trans "Total Vorschlag" %}</td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ summe_vorschlag|chf }}</td>
+                <td class="text-xs uppercase tracking-wider fw-mutet" colspan="5">{% trans "Total Vorschlag" %}</td>
+                <td class="text-right tabular-nums whitespace-nowrap fw-right">{{ summe_vorschlag|chf }}</td>
             </tr>
             </tfoot>
         </table>
@@ -140,36 +140,36 @@
 
     {% if laufend %}
     <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
+        <table class="fw-table min-w-max">
             <thead>
-            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-                <th class="px-5 py-3"><input type="checkbox" onclick="fwZlAlle(this, 'laufend')" checked class="fw-akzent"></th>
-                <th class="px-5 py-3 font-semibold">{% trans "Lieferant" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
-                <th class="px-5 py-3 font-semibold">{% trans "Ausführung" %}</th>
-                <th class="px-5 py-3 font-semibold text-right">{% trans "Offen" %}</th>
+            <tr>
+                <th><input type="checkbox" onclick="fwZlAlle(this, 'laufend')" checked class="fw-akzent"></th>
+                <th class="font-semibold">{% trans "Lieferant" %}</th>
+                <th class="font-semibold">{% trans "Objekt" %}</th>
+                <th class="font-semibold">{% trans "Ausführung" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Offen" %}</th>
             </tr>
             </thead>
             <tbody class="fw-dv" data-gruppe="laufend">
             {% for z in laufend %}
-            <tr class="hover:fw-flaeche2">
-                <td class="px-5 py-3"><input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}" checked class="fw-akzent"></td>
-                <td class="px-5 py-3 font-medium fw-strong whitespace-nowrap">
+            <tr>
+                <td><input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}" checked class="fw-akzent"></td>
+                <td class="font-medium fw-strong whitespace-nowrap">
                     {{ z.k.lieferant|default:"—" }}
                     {% if z.k.referenz %}<div class="text-xs fw-faint font-normal">{{ z.k.referenz }}</div>{% endif %}
                 </td>
-                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ z.objekt }}</td>
-                <td class="px-5 py-3 fw-mutet whitespace-nowrap">
+                <td class="fw-mutet whitespace-nowrap">{{ z.objekt }}</td>
+                <td class="fw-mutet whitespace-nowrap">
                     {% if z.k.zahlung_ausfuehrung %}{{ z.k.zahlung_ausfuehrung|date:"d.m.Y" }}{% else %}—{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap font-semibold">{{ z.offen|chf }}</td>
+                <td class="text-right tabular-nums whitespace-nowrap font-semibold fw-right">{{ z.offen|chf }}</td>
             </tr>
             {% endfor %}
             </tbody>
             <tfoot>
             <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
-                <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="4">{% trans "Total in Zahlung" %}</td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ summe_laufend|chf }}</td>
+                <td class="text-xs uppercase tracking-wider fw-mutet" colspan="4">{% trans "Total in Zahlung" %}</td>
+                <td class="text-right tabular-nums whitespace-nowrap fw-right">{{ summe_laufend|chf }}</td>
             </tr>
             </tfoot>
         </table>

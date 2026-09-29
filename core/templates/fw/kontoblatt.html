@@ -61,35 +61,35 @@
         </div>
     </div>
     <div class="hidden md:block overflow-x-auto">
-    <table class="w-full text-sm min-w-max">
+    <table class="fw-table fw-dicht min-w-max">
         <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
             <tr>
-                <th class="text-left px-4 py-2">{% trans "Beleg" %}</th><th class="text-left px-4 py-2">{% trans "Datum" %}</th>
-                <th class="text-left px-4 py-2">{% trans "Text" %}</th><th class="text-left px-4 py-2">{% trans "Gegenkonto" %}</th>
-                <th class="text-right px-4 py-2">{% trans "Soll" %}</th><th class="text-right px-4 py-2">{% trans "Haben" %}</th>
-                <th class="text-right px-4 py-2">{% trans "Saldo" %}</th>
+                <th class="text-left">{% trans "Beleg" %}</th><th class="text-left">{% trans "Datum" %}</th>
+                <th class="text-left">{% trans "Text" %}</th><th class="text-left">{% trans "Gegenkonto" %}</th>
+                <th class="text-right fw-right">{% trans "Soll" %}</th><th class="text-right fw-right">{% trans "Haben" %}</th>
+                <th class="text-right fw-right">{% trans "Saldo" %}</th>
             </tr>
         </thead>
         <tbody class="fw-dv">
             {% if ist_bilanz %}
-            <tr class="fw-flaeche2"><td colspan="6" class="px-4 py-2 fw-mutet italic">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</td>
-                <td class="px-4 py-2 text-right font-semibold tabular-nums">{{ eroeffnung|chf }}</td></tr>
+            <tr class="fw-flaeche2"><td colspan="6" class="fw-mutet italic">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</td>
+                <td class="text-right font-semibold tabular-nums fw-right">{{ eroeffnung|chf }}</td></tr>
             {% endif %}
             {% for z in zeilen %}
             <tr class="{% if z.b.ist_storno %}fw-kritisch line-through{% endif %}">
-                <td class="px-4 py-2 fw-faint tabular-nums">{{ z.b.beleg_nr|default:z.b.id }}</td>
-                <td class="px-4 py-2 fw-mutet">{{ z.b.datum|date:"d.m.Y" }}</td>
-                <td class="px-4 py-2 fw-strong">{{ z.b.beleg_text }}</td>
-                <td class="px-4 py-2 fw-mutet">{{ z.gegenkonto.nummer }} {{ z.gegenkonto.bezeichnung }}</td>
-                <td class="px-4 py-2 text-right tabular-nums">{% if z.soll %}{{ z.soll|chf }}{% endif %}</td>
-                <td class="px-4 py-2 text-right tabular-nums">{% if z.haben %}{{ z.haben|chf }}{% endif %}</td>
-                <td class="px-4 py-2 text-right tabular-nums font-medium">{{ z.saldo|chf }}</td>
+                <td class="fw-faint tabular-nums">{{ z.b.beleg_nr|default:z.b.id }}</td>
+                <td class="fw-mutet">{{ z.b.datum|date:"d.m.Y" }}</td>
+                <td class="fw-strong">{{ z.b.beleg_text }}</td>
+                <td class="fw-mutet">{{ z.gegenkonto.nummer }} {{ z.gegenkonto.bezeichnung }}</td>
+                <td class="text-right tabular-nums fw-right">{% if z.soll %}{{ z.soll|chf }}{% endif %}</td>
+                <td class="text-right tabular-nums fw-right">{% if z.haben %}{{ z.haben|chf }}{% endif %}</td>
+                <td class="text-right tabular-nums font-medium fw-right">{{ z.saldo|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-4 py-8 text-center fw-faint italic">{% trans "Keine Buchungen in diesem Zeitraum." %}</td></tr>
+            <tr><td colspan="7" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Buchungen in diesem Zeitraum." %}</td></tr>
             {% endfor %}
             <tr class="fw-flaeche2 font-bold">
-                <td colspan="6" class="px-4 py-2 text-right">{% trans "Endsaldo" %}</td>
+                <td colspan="6" class="text-right fw-right">{% trans "Endsaldo" %}</td>
                 <td class="px-4 py-2 text-right tabular-nums {% if endsaldo < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">CHF {{ endsaldo|chf }}</td>
             </tr>
         </tbody>

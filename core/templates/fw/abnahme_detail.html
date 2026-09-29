@@ -74,29 +74,29 @@
 <div class="fw-card overflow-hidden mt-4">
     <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% trans "Mängel" %} ({{ maengel|length }})</div>
     <div class="overflow-x-auto">
-<table class="w-full min-w-max text-sm">
+<table class="fw-table min-w-max">
         <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left px-5 py-2.5">{% trans "Raum" %}</th><th class="text-left px-5 py-2.5">{% trans "Mangel" %}</th>
-                <th class="text-left px-5 py-2.5">{% trans "Verursacher" %}</th>
-                <th class="text-right px-5 py-2.5">{% trans "Kosten" %}</th>
-                <th class="text-right px-5 py-2.5">{% trans "Mieteranteil" %}</th>
-                <th class="px-5 py-2.5">{% trans "Foto" %}</th></tr>
+            <tr><th class="text-left">{% trans "Raum" %}</th><th class="text-left">{% trans "Mangel" %}</th>
+                <th class="text-left">{% trans "Verursacher" %}</th>
+                <th class="text-right fw-right">{% trans "Kosten" %}</th>
+                <th class="text-right fw-right">{% trans "Mieteranteil" %}</th>
+                <th>{% trans "Foto" %}</th></tr>
         </thead>
         <tbody class="fw-dv">
             {% for m in maengel %}
             <tr>
-                <td class="px-5 py-2.5 fw-ink">{{ m.raum|default:"—" }}</td>
-                <td class="px-5 py-2.5 fw-strong">{{ m.beschreibung }}
+                <td class="fw-ink">{{ m.raum|default:"—" }}</td>
+                <td class="fw-strong">{{ m.beschreibung }}
                     {% if m.ausstattung %}<div class="fw-fs-klein fw-faint">{% zeichen 'dokument' klasse='mr-0.5' %}{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · {% blocktrans with n=m.ausstattung.effektive_lebensdauer %}Lebensdauer {{ n }} J{% endblocktrans %}{% endif %}</div>{% endif %}</td>
-                <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold
+                <td><span class="px-2 py-0.5 rounded text-xs font-semibold
                     {% if m.verursacher == 'mieter' %}fw-krit-flaeche fw-kritisch{% elif m.verursacher == 'vermieter' %}fw-info-flaeche fw-info{% else %}fw-flaeche2 fw-mutet{% endif %}">{{ m.get_verursacher_display }}</span></td>
-                <td class="px-5 py-2.5 text-right tabular-nums fw-mutet">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>
+                <td class="text-right tabular-nums fw-mutet fw-right">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>
                 <td class="px-5 py-2.5 text-right tabular-nums font-semibold {% if m.verursacher == 'mieter' %}fw-kritisch{% else %}fw-faint{% endif %}">
                     {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-2.5 text-center">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
+                <td class="text-center fw-zentriert">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="px-5 py-6 text-center fw-faint italic">{% trans "Keine Mängel festgestellt." %}</td></tr>
+            <tr><td colspan="6" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Mängel festgestellt." %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
