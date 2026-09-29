@@ -12,7 +12,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.db import transaction
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -194,6 +194,54 @@ def _lik_assistent_defaults(vw):
     return {'aktueller_lik': lik, 'lik_basis': basis, 'aktueller_lik_stand_iso': stand_iso}
 
 
+#: Felder des Assistenten, die gelesen werden müssen, wenn sie ausgefüllt sind.
+#: (Name, Art, Beschriftung für die Meldung)
+ASSISTENT_ZAHLEN = (
+    ('netto_mietzins', 'betrag', gettext_lazy('Nettomietzins')),
+    ('nebenkosten', 'betrag', gettext_lazy('Nebenkosten')),
+    ('kautions_betrag', 'betrag', gettext_lazy('Kaution')),
+    ('mwst_satz', 'betrag', gettext_lazy('MWST-Satz')),
+    ('basis_referenzzinssatz', 'betrag', gettext_lazy('Referenzzinssatz')),
+    ('basis_lik_punkte', 'betrag', gettext_lazy('LIK-Stand (Punkte)')),
+    ('index_weitergabe_prozent', 'betrag', gettext_lazy('Index-Weitergabe (%)')),
+    ('anzahl_personen', 'ganzzahl', gettext_lazy('Anzahl Personen')),
+    ('kuendigungsfrist', 'ganzzahl', gettext_lazy('Kündigungsfrist (Monate)')),
+    ('index_intervall_monate', 'ganzzahl', gettext_lazy('Index-Mindestintervall (Monate)')),
+    ('beginn', 'datum', gettext_lazy('Mietbeginn')),
+    ('ende', 'datum', gettext_lazy('Mietende')),
+    ('erstmals_kuendbar', 'datum', gettext_lazy('Erstmals kündbar auf')),
+    ('kostensteigerung_datum', 'datum', gettext_lazy('Kostensteigerung per')),
+)
+
+
+def _unlesbare_eingaben(P):
+    """Meldungen für ausgefüllte, aber unlesbare Felder des Assistenten."""
+    fehler = []
+    for name, art, beschriftung in ASSISTENT_ZAHLEN:
+        roh = (P.get(name) or '').strip()
+        if not roh:
+            continue
+        try:
+            if art == 'betrag':
+                Decimal(_num(roh))
+            elif art == 'ganzzahl':
+                int(roh)
+            else:
+                date.fromisoformat(roh)
+        except Exception:
+            fehler.append(gettext('«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert.')
+                          % {'eingabe': roh[:40], 'feld': beschriftung})
+    for roh in P.getlist('staffel_netto'):
+        roh = (roh or '').strip()
+        if roh:
+            try:
+                Decimal(_num(roh))
+            except Exception:
+                fehler.append(gettext('«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert.')
+                              % {'eingabe': roh[:40]})
+    return fehler
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vertrag_neu_speichern(request):
     """Erstellt den Mietvertrag (+ optional neuen Mieter) aus dem Assistenten."""
@@ -245,6 +293,16 @@ def fw_vertrag_neu_speichern(request):
             _fehler.append("Bitte den Firmen-/Vereinsnamen erfassen.")
         elif _typ_neu == 'person' and not P.get('nachname', '').strip():
             _fehler.append("Bitte den Nachnamen des Mieters erfassen.")
+    # UNLESBARES WIRD ABGELEHNT, NICHT ERSETZT (Audit Etappe 2).
+    #
+    # Weiter unten deutet der Assistent eine unlesbare Eingabe still um: der
+    # Nettomietzins wird CHF 0, der Mietbeginn heute, der Referenzzinssatz
+    # 1.25 %, der LIK-Stand 107.1 Punkte. Die letzten beiden sind die Basis
+    # jeder späteren Mietzinsanpassung — ein still eingesetzter Wert rechnet
+    # dort falsch, ohne dass es jemand bemerkt. Eine unlesbare Personenzahl
+    # war ein Serverfehler. Leer bleibt erlaubt (dann gilt die Vorgabe wie
+    # bisher); nur, was eingetippt und nicht lesbar ist, hält hier an.
+    _fehler += _unlesbare_eingaben(P)
     if _fehler:
         for _f in _fehler:
             messages.error(request, _f)
@@ -665,31 +723,24 @@ def fw_vertrag_bearbeiten(request, pk):
         P = request.POST
         alt = snapshot_model(v)
 
-        def dec(key, default=None):
-            raw = _num(P.get(key))
-            try:
-                return Decimal(raw) if raw else (Decimal(default) if default is not None else None)
-            except Exception:
-                return Decimal(default) if default is not None else None
-
-        def datum(key):
-            try:
-                return date.fromisoformat(P.get(key)) if P.get(key) else None
-            except ValueError:
-                return None
+        from rentals.forms import VertragBearbeitenForm
+        form = VertragBearbeitenForm(P, entwurf=not gesperrt, beginn=v.beginn)
+        if not form.is_valid():
+            # Nichts wird gespeichert; das Formular kommt mit den Eingaben und
+            # den Hinweisen am Feld zurück (Audit Etappe 2).
+            return _vertrag_bearbeiten_rendern(request, v, gesperrt, form, status=400)
+        cd = form.cleaned_data
 
         # --- Immer editierbar (unkritisch) ---
-        v.ende = datum('ende')
+        v.ende = cd.get('ende')
         # Befristung folgt bei einem AKTIVEN Vertrag dem Enddatum (leer = unbefristet).
         # Bei gekündigten/archivierten Verträgen stammt `ende` aus der Kündigung —
         # die Befristungs-Kennung nicht anrühren.
         if v.status == 'aktiv':
             v.ist_befristet = bool(v.ende)
-        v.erstmals_kuendbar_auf = datum('erstmals_kuendbar')
-        try:
-            v.kuendigungsfrist_monate = int(P.get('kuendigungsfrist') or v.kuendigungsfrist_monate)
-        except ValueError:
-            pass
+        v.erstmals_kuendbar_auf = cd.get('erstmals_kuendbar')
+        if cd.get('kuendigungsfrist'):
+            v.kuendigungsfrist_monate = cd['kuendigungsfrist']
         # DIE INDEXPARAMETER SIND EDITIERBAR — MIT PROTOKOLLEINTRAG (E2.53)
         #
         # Die Gegenprüfung zu E2.52 hat sie hier entfernt, mit einem guten
@@ -716,20 +767,6 @@ def fw_vertrag_bearbeiten(request, pk):
         # (`messages` und `log_aktion` sind oben in dieser Funktion bereits
         # eingebunden — ein zweiter Import an dieser Stelle war überflüssig.)
 
-        def _idx_feld(name, hoechstens=None):
-            """Einen Indexparameter übernehmen, wenn er gesetzt und gültig ist."""
-            roh = (P.get(name) or '').strip().replace("'", '').replace(',', '.')
-            if not roh:
-                return None
-            try:
-                wert = Decimal(roh)
-            except Exception:
-                messages.error(request, gettext('«%(roh)s» ist keine Zahl — %(name)s unverändert.') % {'roh': roh, 'name': name})
-                return None
-            if wert <= 0:
-                return None
-            return min(wert, hoechstens) if hoechstens is not None else wert
-
         # `ziel=v` IST DER GANZE PUNKT (Gegenprüfung E2.53).
         #
         # Die erste Fassung übergab nur `objekt=f'Vertrag {v.id}'`. Im Logbuch
@@ -745,14 +782,14 @@ def fw_vertrag_bearbeiten(request, pk):
         # Eine eigene, benannte Zeile ist trotzdem sinnvoll: Sie lässt sich
         # suchen, eine Zeile im Sammel-Diff nicht.
         if 'index_weitergabe_prozent' in P:
-            neu_w = _idx_feld('index_weitergabe_prozent', Decimal('100'))
+            neu_w = cd.get('index_weitergabe_prozent')
             if neu_w is not None and neu_w != v.index_weitergabe_prozent:
                 log_aktion(request, 'Index-Weitergabe geändert', str(v.mieter),
                            f'{v.index_weitergabe_prozent} % → {neu_w} %', ziel=v)
                 v.index_weitergabe_prozent = neu_w
         if 'index_intervall_monate' in P:
-            neu_i = _idx_feld('index_intervall_monate')
-            if neu_i is not None and int(neu_i) != v.index_intervall_monate:
+            neu_i = cd.get('index_intervall_monate')
+            if neu_i is not None and neu_i != v.index_intervall_monate:
                 log_aktion(request, 'Index-Intervall geändert', str(v.mieter),
                            f'{v.index_intervall_monate} → {int(neu_i)} Monate', ziel=v)
                 v.index_intervall_monate = int(neu_i)
@@ -760,10 +797,7 @@ def fw_vertrag_bearbeiten(request, pk):
         v.kuendigungstermine = P.get('kuendigungstermine', '').strip() or v.kuendigungstermine
         v.familienwohnung = P.get('familienwohnung') == 'on'
         v.mitmieter_name = P.get('mitmieter_name', '').strip()
-        try:
-            v.anzahl_personen = int(P.get('anzahl_personen') or v.anzahl_personen or 1)
-        except ValueError:
-            pass
+        v.anzahl_personen = cd.get('anzahl_personen') or v.anzahl_personen or 1
         v.mitbenutzung = P.get('mitbenutzung', '').strip()
         v.nebenraeume = P.get('nebenraeume', '').strip()
         v.zweckbestimmung = P.get('zweckbestimmung', '').strip()
@@ -772,25 +806,24 @@ def fw_vertrag_bearbeiten(request, pk):
 
         # --- Nur bei Entwurf editierbar (kritisch) ---
         if not gesperrt:
-            beginn = datum('beginn')
-            if beginn:
-                v.beginn = beginn
+            if cd.get('beginn'):
+                v.beginn = cd['beginn']
             neue_einheit = Einheit.objects.filter(id=P.get('einheit_id') or 0).first()
             if neue_einheit:
                 v.einheit = neue_einheit
             neuer_mieter = Mieter.objects.filter(id=P.get('mieter_id') or 0).first()
             if neuer_mieter:
                 v.mieter = neuer_mieter
-            v.netto_mietzins = dec('netto_mietzins', '0')
-            v.nebenkosten = Decimal('0.00') if v.einheit.ist_einstellplatz else dec('nebenkosten', '0')
+            v.netto_mietzins = cd.get('netto_mietzins') or Decimal('0')
+            v.nebenkosten = (Decimal('0.00') if v.einheit.ist_einstellplatz
+                             else cd.get('nebenkosten') or Decimal('0'))
             v.nk_abrechnungsart = P.get('nk_abrechnungsart', v.nk_abrechnungsart)
             v.verteilschluessel = P.get('verteilschluessel', v.verteilschluessel)
             v.zahlungsrhythmus = P.get('zahlungsrhythmus', v.zahlungsrhythmus)
             v.mwst_pflichtig = P.get('mwst_pflichtig') == 'on'
-            _ms = dec('mwst_satz')
-            if _ms is not None:
-                v.mwst_satz = _ms
-            v.kautions_betrag = dec('kautions_betrag') or None
+            if cd.get('mwst_satz') is not None:
+                v.mwst_satz = cd['mwst_satz']
+            v.kautions_betrag = cd.get('kautions_betrag') or None
             v.kautions_konto = P.get('kautions_konto', '').strip()
         v.save()
         _diff = diff_model(alt, snapshot_model(v), v)
@@ -801,7 +834,42 @@ def fw_vertrag_bearbeiten(request, pk):
                                           else gettext('Vertrag aktualisiert (aktiver Vertrag — nur Detailfelder geändert).')))
         return redirect(f'/neu/vertraege/{v.id}/')
 
-    verwaltung = v.einheit.liegenschaft.organisation
+    return _vertrag_bearbeiten_rendern(request, v, gesperrt, None)
+
+
+#: Felder, deren Wert die Vorlage aus `wert` liest statt aus dem Vertrag: Nach
+#: einem Fehler steht dort die Eingabe. Ein unlesbares Datum oder ein Betrag
+#: wie «ca. 1800» hätte am Vertrag gar keinen Platz.
+VERTRAG_ROHWERTE = ('ende', 'erstmals_kuendbar', 'kuendigungsfrist', 'anzahl_personen',
+                    'index_weitergabe_prozent', 'index_intervall_monate', 'beginn',
+                    'netto_mietzins', 'nebenkosten', 'kautions_betrag', 'mwst_satz')
+
+
+def _vertrag_bearbeiten_rendern(request, v, gesperrt, form, status=200):
+    from crm.models import Mieter
+    if form is None:
+        gespeichert = {
+            'ende': v.ende, 'erstmals_kuendbar': v.erstmals_kuendbar_auf,
+            'kuendigungsfrist': v.kuendigungsfrist_monate, 'anzahl_personen': v.anzahl_personen or 1,
+            'index_weitergabe_prozent': v.index_weitergabe_prozent,
+            'index_intervall_monate': v.index_intervall_monate, 'beginn': v.beginn,
+            'netto_mietzins': v.netto_mietzins or Decimal('0'), 'nebenkosten': v.nebenkosten or Decimal('0'),
+            'kautions_betrag': v.kautions_betrag, 'mwst_satz': v.mwst_satz or Decimal('8.1'),
+        }
+        wert = {k: ('' if x is None else x.isoformat() if isinstance(x, date) else str(x))
+                for k, x in gespeichert.items()}
+        feld_fehler = {}
+    else:
+        wert = {k: form.data.get(k, '') for k in VERTRAG_ROHWERTE}
+        feld_fehler = {name: fehler[0] for name, fehler in form.errors.items()}
+        # Die Freitexte zeigt die Vorlage aus dem Vertrag — bei einem Fehler
+        # also die Eingabe, nicht den gespeicherten Stand.
+        for name in ('mitmieter_name', 'kuendigungstermine', 'mitbenutzung', 'nebenraeume',
+                     'zweckbestimmung', 'besondere_vereinbarungen', 'weitere_vorbehalte',
+                     'kautions_konto'):
+            if name in form.data:
+                setattr(v, name, form.data.get(name, ''))
+        v.familienwohnung = form.data.get('familienwohnung') == 'on'
     return render(request, 'fw/vertrag_bearbeiten.html', {
         **_global_filter(request), 'nav': 'vertraege', 'v': v, 'gesperrt': gesperrt,
         'objekte': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),
@@ -809,7 +877,8 @@ def fw_vertrag_bearbeiten(request, pk):
         'nk_arten': Mietvertrag.NK_TYP_CHOICES,
         'verteil_choices': Mietvertrag.VERTEIL_CHOICES,
         'rhythmus_choices': Mietvertrag.ZAHLUNGSRHYTHMUS_CHOICES,
-    })
+        'wert': wert, 'feld_fehler': feld_fehler, 'anzahl_fehler': len(feld_fehler),
+    }, status=status)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

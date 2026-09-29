@@ -20040,3 +20040,41 @@ msgstr "The VAT rate has at most one decimal place (e.g. 8.1)."
 #: finance/forms.py
 msgid "«Leistung bis» liegt vor «Leistung von»."
 msgstr "«Service to» is before «Service from»."
+
+#: rentals/forms.py
+msgid "Die Weitergabe muss über 0 % liegen."
+msgstr "The pass-through must be above 0 %."
+
+#: rentals/forms.py
+msgid "Das Mietende liegt vor dem Mietbeginn."
+msgstr "The lease end is before the lease start."
+
+#: core/views/fw/vertragserstellung.py
+msgid "MWST-Satz"
+msgstr "VAT rate"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Referenzzinssatz"
+msgstr "Reference interest rate"
+
+#: core/views/fw/vertragserstellung.py
+msgid "LIK-Stand (Punkte)"
+msgstr "CPI level (points)"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Index-Weitergabe (%)"
+msgstr "Index pass-through (%)"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Kostensteigerung per"
+msgstr "Cost increase as of"
+
+#: core/views/fw/vertragserstellung.py
+#, python-format
+msgid "«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert."
+msgstr "«%(eingabe)s» cannot be read for «%(feld)s» — nothing was saved."
+
+#: core/views/fw/vertragserstellung.py
+#, python-format
+msgid "«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert."
+msgstr "«%(eingabe)s» cannot be read as a graduated rent — nothing was saved."

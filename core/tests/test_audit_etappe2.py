@@ -401,3 +401,146 @@ class PersonFormular(TestCase):
         body = self.c.get(self.pfad).content.decode()
         self.assertIn('value="2027-03-31"', body)
         self.assertIn('name="haushalt_erwachsene" value="2"', body)
+
+
+class VertragBearbeiten(TestCase):
+    """Nachtrag Mietverhältnis: Vorher wurde ein unlesbares Vertragsende still
+    leer (aus befristet wurde unbefristet), eine unlesbare Frist oder
+    Personenzahl blieb still beim alten Wert, und im Entwurf wurde ein
+    unlesbarer Nettomietzins still CHF 0."""
+
+    def setUp(self):
+        from datetime import date
+        self.lg, self.e, self.m, self.v = _basis_objekte()
+        self.v.ende = date(2030, 12, 31)
+        self.v.ist_befristet = True
+        self.v.kuendigungsfrist_monate = 3
+        self.v.anzahl_personen = 2
+        self.v.save()
+        self.c = Client()
+        self.c.force_login(_team_user())
+        self.pfad = f'/neu/vertraege/{self.v.id}/bearbeiten/'
+
+    def _daten(self, **ueber):
+        daten = {'ende': '2030-12-31', 'erstmals_kuendbar': '', 'kuendigungsfrist': '3',
+                 'anzahl_personen': '2', 'kuendigungstermine': ''}
+        daten.update(ueber)
+        return daten
+
+    def _fehler_am_feld(self, r, feld):
+        self.assertEqual(r.status_code, 400)
+        body = r.content.decode()
+        self.assertIn(f'id="v-{feld}_fehler"', body)
+        self.assertIn(f'aria-describedby="v-{feld}_fehler"', body)
+        return body
+
+    def test_unlesbares_ende_macht_den_vertrag_nicht_unbefristet(self):
+        from datetime import date
+        r = self.c.post(self.pfad, self._daten(ende='31.12.2030x'))
+        self._fehler_am_feld(r, 'ende')
+        self.v.refresh_from_db()
+        self.assertEqual(self.v.ende, date(2030, 12, 31))
+        self.assertTrue(self.v.ist_befristet)
+
+    def test_ende_vor_beginn(self):
+        self._fehler_am_feld(self.c.post(self.pfad, self._daten(ende='2020-01-01')), 'ende')
+
+    def test_unlesbare_frist_wird_gemeldet_statt_ignoriert(self):
+        r = self.c.post(self.pfad, self._daten(kuendigungsfrist='drei'))
+        body = self._fehler_am_feld(r, 'kuendigungsfrist')
+        self.assertIn('value="drei"', body)
+
+    def test_unlesbare_personenzahl_wird_gemeldet(self):
+        self._fehler_am_feld(self.c.post(self.pfad, self._daten(anzahl_personen='zwei')), 'anzahl_personen')
+        self.v.refresh_from_db()
+        self.assertEqual(self.v.anzahl_personen, 2)
+
+    def test_index_weitergabe_null_wird_gemeldet(self):
+        self._fehler_am_feld(self.c.post(self.pfad, self._daten(index_weitergabe_prozent='0')),
+                             'index_weitergabe_prozent')
+
+    def test_freitext_bleibt_nach_fehler_stehen(self):
+        body = self._fehler_am_feld(
+            self.c.post(self.pfad, self._daten(ende='x', nebenraeume='Kellerabteil 7')), 'ende')
+        self.assertIn('Kellerabteil 7', body)
+
+    def test_keine_zahlenfelder_die_eingaben_verwerfen(self):
+        body = self.c.get(self.pfad).content.decode()
+        self.assertNotIn('type="number"', body[body.index('<form method="post" class="max-w-3xl'):])
+
+    def test_gueltige_aenderung_wird_gespeichert(self):
+        r = self.c.post(self.pfad, self._daten(kuendigungsfrist='6', nebenraeume='Estrich'))
+        self.assertEqual(r.status_code, 302)
+        self.v.refresh_from_db()
+        self.assertEqual(self.v.kuendigungsfrist_monate, 6)
+        self.assertEqual(self.v.nebenraeume, 'Estrich')
+
+    def test_entwurf_unlesbarer_mietzins_wird_nicht_null(self):
+        self.v.status = 'entwurf'
+        self.v.save()
+        r = self.c.post(self.pfad, self._daten(netto_mietzins='ca. 1800', nebenkosten='200',
+                                               beginn='2024-01-01'))
+        body = self._fehler_am_feld(r, 'netto_mietzins')
+        self.assertIn('value="ca. 1800"', body)
+        self.v.refresh_from_db()
+        self.assertEqual(self.v.netto_mietzins, Decimal('1500'))
+
+    def test_entwurf_zu_grosser_betrag_ist_kein_serverfehler(self):
+        """Das Modell fasst acht Stellen; PostgreSQL würfe sonst."""
+        self.v.status = 'entwurf'
+        self.v.save()
+        self._fehler_am_feld(self.c.post(self.pfad, self._daten(netto_mietzins='12345678',
+                                                                beginn='2024-01-01')), 'netto_mietzins')
+
+    def test_gesperrter_mietzins_wird_nicht_angenommen(self):
+        """Aktiver Vertrag: Miete bleibt gesperrt, auch wenn sie mitgeschickt wird."""
+        r = self.c.post(self.pfad, self._daten(netto_mietzins='9999'))
+        self.assertEqual(r.status_code, 302)
+        self.v.refresh_from_db()
+        self.assertEqual(self.v.netto_mietzins, Decimal('1500'))
+
+
+class VertragAssistentLehntUnlesbaresAb(TestCase):
+    """Der Assistent ersetzte unlesbare Eingaben still: Referenzzinssatz 1.25 %,
+    LIK-Stand 107.1, Mietbeginn heute, Nettomiete 0. Eine unlesbare
+    Personenzahl war ein Serverfehler."""
+
+    def setUp(self):
+        self.lg, self.e, self.m, self.v = _basis_objekte()
+        from portfolio.models import Einheit
+        self.frei = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='4.5 Zi', typ='whg')
+        self.c = Client()
+        self.c.force_login(_team_user())
+
+    def _speichern(self, **ueber):
+        daten = {'einheit_id': str(self.frei.id), 'mieter_id': str(self.m.id),
+                 'netto_mietzins': '1800', 'nebenkosten': '250', 'beginn': '2025-04-01'}
+        daten.update(ueber)
+        return self.c.post('/neu/vertraege/neu/speichern/', daten, follow=True)
+
+    def _nichts_gespeichert(self):
+        from rentals.models import Mietvertrag
+        self.assertFalse(Mietvertrag.objects.filter(einheit=self.frei).exists())
+
+    def test_referenzzinssatz_wird_nicht_still_ersetzt(self):
+        r = self._speichern(basis_referenzzinssatz='1,5%%')
+        self._nichts_gespeichert()
+        self.assertContains(r, 'Referenzzinssatz')
+
+    def test_lik_stand_wird_nicht_still_ersetzt(self):
+        self._speichern(basis_lik_punkte='hundert')
+        self._nichts_gespeichert()
+
+    def test_unlesbarer_beginn_wird_nicht_heute(self):
+        self._speichern(beginn='1. April')
+        self._nichts_gespeichert()
+
+    def test_unlesbare_personenzahl_ist_kein_serverfehler(self):
+        r = self._speichern(anzahl_personen='zwei')
+        self.assertEqual(r.status_code, 200)
+        self._nichts_gespeichert()
+
+    def test_leere_felder_bleiben_erlaubt(self):
+        from rentals.models import Mietvertrag
+        self._speichern(basis_referenzzinssatz='', basis_lik_punkte='', anzahl_personen='')
+        self.assertTrue(Mietvertrag.objects.filter(einheit=self.frei).exists())

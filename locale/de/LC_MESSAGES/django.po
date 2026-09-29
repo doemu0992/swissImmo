@@ -20154,3 +20154,41 @@ msgstr "Der MWST-Satz hat höchstens eine Nachkommastelle (z. B. 8.1)."
 #: finance/forms.py
 msgid "«Leistung bis» liegt vor «Leistung von»."
 msgstr "«Leistung bis» liegt vor «Leistung von»."
+
+#: rentals/forms.py
+msgid "Die Weitergabe muss über 0 % liegen."
+msgstr "Die Weitergabe muss über 0 % liegen."
+
+#: rentals/forms.py
+msgid "Das Mietende liegt vor dem Mietbeginn."
+msgstr "Das Mietende liegt vor dem Mietbeginn."
+
+#: core/views/fw/vertragserstellung.py
+msgid "MWST-Satz"
+msgstr "MWST-Satz"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Referenzzinssatz"
+msgstr "Referenzzinssatz"
+
+#: core/views/fw/vertragserstellung.py
+msgid "LIK-Stand (Punkte)"
+msgstr "LIK-Stand (Punkte)"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Index-Weitergabe (%)"
+msgstr "Index-Weitergabe (%)"
+
+#: core/views/fw/vertragserstellung.py
+msgid "Kostensteigerung per"
+msgstr "Kostensteigerung per"
+
+#: core/views/fw/vertragserstellung.py
+#, python-format
+msgid "«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert."
+msgstr "«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert."
+
+#: core/views/fw/vertragserstellung.py
+#, python-format
+msgid "«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert."
+msgstr "«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert."
