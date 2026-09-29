@@ -389,6 +389,6 @@ def fw_akonto_anpassen(request, pk):
         angepasst += 1
     log_aktion(request, "Akonto angepasst", p.bezeichnung, f"{angepasst} Verträge")
     messages.success(request,
-                     f"✅ Akonto bei {angepasst} Vertrag/Verträgen angepasst." if angepasst
-                     else "Keine Akonto-Anpassung übernommen.")
+                     ('✅ ' + gettext('Akonto bei %(n)s Vertrag/Verträgen angepasst.') % {'n': angepasst})
+                     if angepasst else gettext('Keine Akonto-Anpassung übernommen.'))
     return redirect(f'/neu/nebenkosten/{p.id}/')

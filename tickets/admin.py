@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.shortcuts import redirect
@@ -137,7 +138,7 @@ class SchadenMeldungAdmin(NurLesenModelAdmin):
         obj = self.get_object(request, object_id)
         obj.status = 'erledigt'
         obj.save()
-        messages.success(request, "Ticket wurde erfolgreich geschlossen.")
+        messages.success(request, gettext('Ticket wurde erfolgreich geschlossen.'))
         return redirect(request.META.get('HTTP_REFERER'))
 
     @action(description="📝 Neue Notiz / Antwort", url_path="add-note")

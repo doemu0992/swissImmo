@@ -487,8 +487,8 @@ def fw_budget_speichern(request, pk):
         defaults={'unterhalt': betrag,
                   'bemerkung': (request.POST.get('bemerkung') or '').strip()})
     log_aktion(request, 'Unterhaltsbudget gesetzt', str(lg), f'{jahr}: CHF {betrag}')
-    messages.success(request, f'Unterhaltsbudget {jahr}: CHF {betrag:,.2f}'
-                     .replace(',', "'"))
+    messages.success(request, gettext('Unterhaltsbudget %(jahr)s: CHF %(betrag)s')
+                     % {'jahr': jahr, 'betrag': format(betrag, ',.2f').replace(',', "'")})
     return redirect(ziel)
 
 
@@ -1573,7 +1573,8 @@ def fw_lebensdauer(request):
                 if changed:
                     row.save(); n += 1
             log_aktion(request, "Lebensdauertabelle bearbeitet", f"{n} Werte")
-            messages.success(request, f"✅ {n} Wert(e) aktualisiert." if n else "Keine Änderung.")
+            messages.success(request, ('✅ ' + gettext('%(n)s Wert(e) aktualisiert.') % {'n': n}) if n
+                             else gettext('Keine Änderung.'))
         elif aktion == 'neu':
             kat = (request.POST.get('kategorie') or '').strip()
             jahre = request.POST.get('jahre')
@@ -1582,7 +1583,8 @@ def fw_lebensdauer(request):
                     kategorie=kat, organisation=organisation,
                     defaults={'jahre': int(jahre),
                               'bemerkung': (request.POST.get('bemerkung') or '').strip()})
-                messages.success(request, f"✅ «{kat}» hinzugefügt." if created else "Kategorie existiert bereits.")
+                messages.success(request, ('✅ ' + gettext('«%(kat)s» hinzugefügt.') % {'kat': kat}) if created
+                                 else gettext('Kategorie existiert bereits.'))
             else:
                 messages.error(request, gettext('Kategorie und Jahre (> 0) sind Pflicht.'))
         elif aktion == 'loeschen':
@@ -1593,7 +1595,8 @@ def fw_lebensdauer(request):
         elif aktion == 'seed':
             from core.services.raumkatalog import seed_lebensdauer
             n = seed_lebensdauer(organisation)
-            messages.success(request, f"✅ {n} Standardwert(e) ergänzt." if n else "Alle Standardwerte bereits vorhanden.")
+            messages.success(request, ('✅ ' + gettext('%(n)s Standardwert(e) ergänzt.') % {'n': n}) if n
+                             else gettext('Alle Standardwerte bereits vorhanden.'))
         return redirect('/neu/lebensdauer/')
 
     from django.contrib import messages as _m
@@ -2148,9 +2151,10 @@ def fw_schlussabrechnung(request, vertrag_id):
             erledige_pendenzen_fuer(v, ['Schlussabrechnung', 'Kaution'], user=request.user)
             log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}", ziel=v)
             if request.POST.get('embed'):
-                return render(request, 'fw/_modal_done.html', {'msg': 'Schlussabrechnung verbucht'})
-            messages.success(request, "✅ Schlussabrechnung verbucht (Kaution abgerechnet"
-                             + (", Nachzahlung als Debitor gestellt" if daten['nachzahlung'] else "") + ").")
+                return render(request, 'fw/_modal_done.html', {'msg': gettext('Schlussabrechnung verbucht')})
+            messages.success(request, '✅ ' + (
+                gettext('Schlussabrechnung verbucht (Kaution abgerechnet, Nachzahlung als Debitor gestellt).')
+                if daten['nachzahlung'] else gettext('Schlussabrechnung verbucht (Kaution abgerechnet).')))
             return redirect(f'/neu/vertraege/{v.id}/')
 
         try:

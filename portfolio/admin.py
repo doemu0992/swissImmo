@@ -1,5 +1,6 @@
 # portfolio/admin.py
 from django.contrib import admin
+from django.utils.translation import gettext
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.contrib import messages
@@ -428,7 +429,7 @@ class LiegenschaftAdmin(NurLesenModelAdmin):
         try:
             if not obj.egid:
                 found = get_egid_from_address(obj.strasse, obj.plz, obj.ort)
-                if found: obj.egid = found; obj.save(); messages.info(request, f"EGID: {obj.egid}")
+                if found: obj.egid = found; obj.save(); messages.info(request, gettext('EGID: %(egid)s') % {'egid': obj.egid})
             if obj.egid and obj.einheiten.count() == 0:
                 data = get_units_from_bfs(obj.egid)
                 cnt = 0
@@ -438,8 +439,8 @@ class LiegenschaftAdmin(NurLesenModelAdmin):
                         continue
                     Einheit.objects.create(liegenschaft=obj, bezeichnung=i['bezeichnung'], ewid=i['ewid'], zimmer=i['zimmer'], etage=i['etage'], flaeche_m2=i['flaeche'], typ='whg')
                     cnt += 1
-                if cnt > 0: messages.success(request, f"GWR: {cnt} Einheiten erstellt.")
-        except Exception as e: messages.error(request, f"GWR Fehler: {e}")
+                if cnt > 0: messages.success(request, gettext('GWR: %(cnt)s Einheiten erstellt.') % {'cnt': cnt})
+        except Exception as e: messages.error(request, gettext('GWR Fehler: %(e)s') % {'e': e})
 
 # ==========================================
 # 4. EINHEIT ADMIN

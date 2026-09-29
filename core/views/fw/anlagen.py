@@ -85,8 +85,10 @@ def fw_anlagen(request):
             jahr = int(request.POST.get('jahr') or heute.year)
             n, summe = run_abschreibungen(jahr, user=request.user)
             log_aktion(request, "AfA-Lauf", str(jahr), f"{n} Abschreibungen, CHF {summe}")
-            messages.success(request, f"✅ AfA-Lauf {jahr}: {n} Abschreibung(en) gebucht (CHF {summe})." if n
-                             else f"AfA-Lauf {jahr}: nichts zu buchen (bereits erledigt oder keine Anlagen).")
+            messages.success(request, ('✅ ' + gettext('AfA-Lauf %(jahr)s: %(n)s Abschreibung(en) gebucht (CHF %(summe)s).')
+                                       % {'jahr': jahr, 'n': n, 'summe': summe}) if n
+                             else gettext('AfA-Lauf %(jahr)s: nichts zu buchen (bereits erledigt oder keine Anlagen).')
+                             % {'jahr': jahr})
         elif aktion == 'fonds_set':
             lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
             if lg:
@@ -100,8 +102,9 @@ def fw_anlagen(request):
             jahr = int(request.POST.get('jahr') or heute.year)
             n, summe = run_erneuerungsfonds_einlage(jahr, user=request.user)
             log_aktion(request, "Erneuerungsfonds-Einlage", str(jahr), f"{n} Einlagen, CHF {summe}")
-            messages.success(request, f"✅ Erneuerungsfonds-Einlage {jahr}: {n} Buchung(en) (CHF {summe})." if n
-                             else f"Erneuerungsfonds {jahr}: nichts zu buchen.")
+            messages.success(request, ('✅ ' + gettext('Erneuerungsfonds-Einlage %(jahr)s: %(n)s Buchung(en) (CHF %(summe)s).')
+                                       % {'jahr': jahr, 'n': n, 'summe': summe}) if n
+                             else gettext('Erneuerungsfonds %(jahr)s: nichts zu buchen.') % {'jahr': jahr})
         elif aktion == 'sperre_set':
             vw = aktuelle_organisation()
             if vw:
