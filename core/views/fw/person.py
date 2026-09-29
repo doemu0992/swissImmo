@@ -218,10 +218,15 @@ def fw_mieter_portal_zugang(request, pk):
         # muss immer auf die öffentliche Portal-Adresse zeigen.
         from django.conf import settings as _settings
         login_url = _settings.PORTAL_BASE_URL.rstrip('/') + '/portal/login/'
-        anrede = (f"{m.anrede} " if m.anrede else "") + (m.nachname or m.display_name)
+        # Anrede in der Sprache des Mieters («Madame», nicht «Frau»): Die
+        # Mail folgt der Korrespondenzsprache (D11); gespeichert ist der
+        # deutsche Wert.
+        from core.services.dokumentsprache import in_sprache, sprache_von
+        with in_sprache(sprache_von(m)):
+            anrede = (f"{gettext(m.anrede)} " if m.anrede else "") + (m.nachname or m.display_name)
         mail_ok = send_mieter_portal_zugang(
             m.email, anrede.strip(), u.username, passwort, login_url,
-            absender_firma=(vw.firma if vw else ''))
+            absender_firma=(vw.firma if vw else ''), sprache=sprache_von(m))
 
     if mail_ok:
         messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': m.email, 'username': u.username})
