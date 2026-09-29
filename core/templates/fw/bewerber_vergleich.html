@@ -5,7 +5,7 @@
 {% block content %}
 <div class="text-xs fw-faint mb-3">
     <a href="/neu/vermarktung/{{ lg_query }}" class="hover:fw-marke">{% trans "Vermarktung" %}</a>
-    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{% trans "Bewerber-Vergleich" %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro mx-1' %}{% trans "Bewerber-Vergleich" %}
 </div>
 
 <div class="fw-phead">
@@ -33,7 +33,7 @@
 <div class="fw-card overflow-hidden overflow-x-auto">
     <table class="w-full text-sm min-w-max">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-4 py-3 font-semibold">{% trans "Rang" %}</th>
                 <th class="px-4 py-3 font-semibold">{% trans "Bewerber" %}</th>
                 <th class="px-4 py-3 font-semibold text-center">{% trans "Score" %}</th>
@@ -48,7 +48,7 @@
                 <td class="px-4 py-3 font-bold fw-faint">{{ forloop.counter }}</td>
                 <td class="px-4 py-3">
                     <a href="/neu/bewerbungen/{{ k.b.id }}/" class="font-semibold fw-strong hover:fw-marke">{{ k.name }}</a>
-                    <div class="mt-0.5"><span class="text-[10px] font-semibold px-1.5 py-0.5 rounded {{ k.s_cls }}">{{ k.s_label }}</span></div>
+                    <div class="mt-0.5"><span class="fw-fs-mikro font-semibold px-1.5 py-0.5 rounded {{ k.s_cls }}">{{ k.s_label }}</span></div>
                 </td>
                 <td class="px-4 py-3 text-center">
                     <span class="inline-flex items-center justify-center w-11 h-11 rounded-full font-bold text-white
@@ -58,11 +58,11 @@
                 <td class="px-4 py-3">
                     <span class="inline-flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full shrink-0 {% if ind.ampel == 'gut' %}fw-gut-flaeche{% elif ind.ampel == 'mittel' %}fw-warn-flaeche{% else %}fw-krit-flaeche{% endif %}"></span>
-                        <span class="fw-ink text-[13px]">{{ ind.wert }}</span>
+                        <span class="fw-ink fw-fs-fein">{{ ind.wert }}</span>
                     </span>
                 </td>
                 {% endfor %}
-                <td class="px-4 py-3 fw-mutet text-[13px]">
+                <td class="px-4 py-3 fw-mutet fw-fs-fein">
                     {% blocktrans with n=k.haushalt %}{{ n }} Pers.{% endblocktrans %}{% if k.haustiere %} · {% zeichen 'arbeit' klasse='fw-faint' %}{% endif %}
                     {% if k.bezug %}<div class="text-xs fw-faint">ab {{ k.bezug|date:"d.m.Y" }}</div>{% endif %}
                 </td>
@@ -89,7 +89,7 @@
                     </div>
                     {% endif %}
                     {% if k.b.besichtigung_am %}
-                    <div class="text-[10px] font-semibold fw-info mt-1">{% zeichen 'termin' klasse='mr-0.5' %}{% blocktrans with d=k.b.besichtigung_am|date:"d.m.Y H:i" %}Besichtigung {{ d }}{% endblocktrans %}</div>
+                    <div class="fw-fs-mikro font-semibold fw-info mt-1">{% zeichen 'termin' klasse='mr-0.5' %}{% blocktrans with d=k.b.besichtigung_am|date:"d.m.Y H:i" %}Besichtigung {{ d }}{% endblocktrans %}</div>
                     {% endif %}
                 </td>
             </tr>
@@ -99,7 +99,7 @@
                     <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/besichtigung/" class="flex flex-wrap items-end gap-3">
                         {% csrf_token %}
                         <div>
-                            <label class="block text-[11px] font-semibold fw-mutet mb-1">{% blocktrans with name=k.name %}Besichtigungstermin für {{ name }}{% endblocktrans %}</label>
+                            <label class="block fw-fs-klein font-semibold fw-mutet mb-1">{% blocktrans with name=k.name %}Besichtigungstermin für {{ name }}{% endblocktrans %}</label>
                             <input type="datetime-local" name="termin" required
                                    value="{% if k.b.besichtigung_am %}{{ k.b.besichtigung_am|date:'Y-m-d\TH:i' }}{% endif %}"
                                    class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
@@ -107,7 +107,7 @@
                         <button class="fw-btn fw-primary text-white text-xs font-semibold px-3.5 py-2.5 rounded-lg">
                             {% zeichen 'senden' klasse='mr-1.5' %}{% trans "Einladen" %}{% if k.b.email %} ({{ k.b.email }}){% endif %}
                         </button>
-                        <span class="text-[11px] fw-faint">{% trans "Termin erscheint im Fristen-Center; Einladung per E-Mail mit Journal-Eintrag." %}</span>
+                        <span class="fw-fs-klein fw-faint">{% trans "Termin erscheint im Fristen-Center; Einladung per E-Mail mit Journal-Eintrag." %}</span>
                     </form>
                 </td>
             </tr>

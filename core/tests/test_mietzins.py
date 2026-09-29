@@ -914,7 +914,10 @@ class ObjektFormMietzinsQuelleTests(TestCase):
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='OF 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         c = Client(); c.force_login(_team_user())
         c.post('/neu/objekte/neu/', {
-            'liegenschaft_id': str(lg.id), 'bezeichnung': 'Neu-1', 'typ': 'wohnung',
+            # `typ='whg'`: 'wohnung' ist keine Auswahl von `Einheit.TYP_CHOICES`.
+            # Die Maske speicherte es frueher still; seit Audit Etappe 2 kommt
+            # sie mit einem Feldfehler zurueck (siehe seed_e2e.py, gleicher Fehler).
+            'liegenschaft_id': str(lg.id), 'bezeichnung': 'Neu-1', 'typ': 'whg',
             'nettomiete_aktuell': '1400', 'nebenkosten_aktuell': '250',
             'soll_gueltig_ab': '2026-01-01'})
         e = Einheit.objects.get(bezeichnung='Neu-1')

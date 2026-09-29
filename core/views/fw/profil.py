@@ -692,6 +692,17 @@ def fw_objekt_ausschreiben(request, einheit_id):
     return redirect(weiter)
 
 
+def bewerbungslink(einheit):
+    """Öffentliche Adresse des Bewerbungsformulars (`/bewerben/<id>/`).
+
+    Über `PORTAL_BASE_URL`, nicht über den Host der Anfrage: Der Link verlässt
+    das System (Exposé, Inserat, QR-Code am Schaufenster) und muss die
+    öffentliche Adresse tragen, auch wenn die Verwaltung intern anders zugreift.
+    Das Formular selbst nimmt nur Bewerbungen an, solange das Objekt
+    ausgeschrieben ist (`core/views/application.py`)."""
+    return settings.PORTAL_BASE_URL.rstrip('/') + f'/bewerben/{einheit.id}/'
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_vermarktung(request):
     """Vermarktungsliste: alle ausgeschriebenen Objekte mit Eckdaten, Verfügbarkeit
@@ -705,10 +716,12 @@ def fw_vermarktung(request):
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
+    from core.services.totp import qr_svg
     heute = timezone.localdate()
     rows = []
     for e in qs:
         lg = e.liegenschaft
+        link = bewerbungslink(e)
         bew = list(Mietbewerbung.objects.filter(einheit=e).exclude(status='abgelehnt'))
         _fotos = list(e.fotos.all())
         rows.append({
@@ -724,6 +737,8 @@ def fw_vermarktung(request):
             'frei': (e.verfuegbar_ab is None or e.verfuegbar_ab <= heute),
             'bewerbungen': len(bew),
             'notiz': e.ausschreibung_notiz,
+            'bewerbungslink': link,
+            'bewerbungs_qr': qr_svg(link, groesse=4, hell='#fff'),
         })
     return render(request, 'fw/vermarktung.html', {
         **basis, **_vermietung_pipeline('vermarktung', basis['lg_query']), 'nav': 'vermarktung', 'rows': rows, 'anzahl': len(rows),
@@ -738,18 +753,15 @@ def fw_expose_pdf(request, pk):
     from crm.models import Organisation
     from core.services.expose import generate_expose_pdf, objekt_titel
     e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=pk)
-    pdf = generate_expose_pdf(e, e.liegenschaft.organisation)
+    # Den QR-Code zur Bewerbung trägt das Exposé nur, solange das Formular
+    # auch Bewerbungen annimmt — sonst führte der Ausdruck auf eine 410-Seite.
+    pdf = generate_expose_pdf(e, e.liegenschaft.organisation,
+                              bewerbung_url=bewerbungslink(e) if e.zur_ausschreibung else None)
     resp = HttpResponse(pdf, content_type='application/pdf')
     lg = e.liegenschaft
     fname = f"Expose_{(lg.strasse if lg else e.bezeichnung)}".replace(' ', '_').replace('/', '-')
     resp['Content-Disposition'] = f'inline; filename="{fname}.pdf"'
     return resp
-
-
-@rolle_erforderlich(*TEAM_ROLLEN)
-def fw_stub(request, titel, icon, text, nav=''):
-    basis = _global_filter(request)
-    return render(request, 'fw/stub.html', {**basis, 'nav': nav, 'titel': titel, 'icon': icon, 'text': text})
 
 
 PLATZHALTER_HILFE = [

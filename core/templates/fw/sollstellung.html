@@ -77,7 +77,7 @@
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
                 <th class="px-5 py-3 font-semibold text-right">{% trans "Netto" %}</th>
@@ -93,7 +93,7 @@
                     <a href="/neu/vertraege/{{ row.v.id }}/" class="hover:fw-marke">{{ row.mieter }}</a>
                 </td>
                 <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.objekt }}
-                    {% if row.prorata %}<span class="ml-1 text-[10px] font-bold uppercase fw-warn-flaeche fw-warnton px-1.5 py-0.5 rounded" title="{% blocktrans with tage=row.tage monat=row.tage_monat %}Teilmonat: {{ tage }} von {{ monat }} Tagen{% endblocktrans %}">{% trans "Pro-Rata" %}</span>{% endif %}
+                    {% if row.prorata %}<span class="ml-1 fw-fs-mikro font-bold uppercase fw-warn-flaeche fw-warnton px-1.5 py-0.5 rounded" title="{% blocktrans with tage=row.tage monat=row.tage_monat %}Teilmonat: {{ tage }} von {{ monat }} Tagen{% endblocktrans %}">{% trans "Pro-Rata" %}</span>{% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right fw-ink whitespace-nowrap">{{ row.netto|chf }}</td>
                 <td class="px-5 py-3.5 text-right fw-mutet whitespace-nowrap">{{ row.nk|chf }}</td>

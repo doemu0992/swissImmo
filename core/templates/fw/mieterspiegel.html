@@ -5,7 +5,7 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mieterspiegel/" class="hover:fw-marke">{% trans "Mieterspiegel" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{{ aktive_lg.strasse }}</span>
 </nav>
 
@@ -27,22 +27,22 @@
 <!-- Gesamt-Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-5">
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Soll-Mietzins" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Soll-Mietzins" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ gesamt.soll_brutto|chf }}</div>
         <div class="text-xs fw-faint">{% trans "brutto / Monat" %}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Ist-Mietzins" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Ist-Mietzins" %}</div>
         <div class="text-xl font-bold fw-gut mt-0.5">CHF {{ gesamt.ist_brutto|chf }}</div>
         <div class="text-xs fw-faint">{% trans "belegt / Monat" %}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Ausfall Leerstand" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Ausfall Leerstand" %}</div>
         <div class="text-xl font-bold {% if gesamt.leer_fr %}fw-warnton{% else %}fw-strong{% endif %} mt-0.5">CHF {{ gesamt.leer_fr|chf }}</div>
         <div class="text-xs fw-faint">{% trans "/ Monat" %}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Leerstand" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Leerstand" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">{{ gesamt.leerstandsquote }}%</div>
         <div class="text-xs fw-faint">{% blocktrans with leer=gesamt.leer anzahl=gesamt.anzahl %}{{ leer }} von {{ anzahl }}{% endblocktrans %}</div>
     </div>
@@ -53,13 +53,13 @@
     <div class="px-5 py-3 border-b fw-linie flex items-center gap-2 flex-wrap">
         {% zeichen 'liegenschaft' klasse='fw-marke' %}
         <h2 class="font-bold fw-strong text-sm">{{ b.lg.strasse }}, {{ b.lg.plz }} {{ b.lg.ort }}</h2>
-        <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{% blocktrans with belegt=b.totals.belegt anzahl=b.totals.anzahl %}{{ belegt }}/{{ anzahl }} belegt{% endblocktrans %}</span>
-        {% if b.totals.leer %}<span class="text-[11px] font-semibold fw-warn-flaeche fw-warnton rounded-md px-1.5 py-0.5">{% blocktrans with quote=b.totals.leerstandsquote %}{{ quote }}% Leerstand{% endblocktrans %}</span>{% endif %}
+        <span class="fw-fs-klein font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{% blocktrans with belegt=b.totals.belegt anzahl=b.totals.anzahl %}{{ belegt }}/{{ anzahl }} belegt{% endblocktrans %}</span>
+        {% if b.totals.leer %}<span class="fw-fs-klein font-semibold fw-warn-flaeche fw-warnton rounded-md px-1.5 py-0.5">{% blocktrans with quote=b.totals.leerstandsquote %}{{ quote }}% Leerstand{% endblocktrans %}</span>{% endif %}
     </div>
     <div class="overflow-x-auto">
     <table class="w-full text-sm min-w-max">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-2.5 font-semibold">{% trans "Einheit" %}</th>
                 <th class="px-5 py-2.5 font-semibold">{% trans "Mieter" %}</th>
                 <th class="px-5 py-2.5 font-semibold text-right">{% trans "Netto" %}</th>
@@ -74,7 +74,7 @@
             <tr class="hover:fw-flaeche2 {% if not z.belegt %}fw-warn-flaeche{% endif %}">
                 <td class="px-5 py-2.5">
                     <a href="/neu/objekte/{{ z.einheit.id }}/" class="font-medium fw-strong hover:fw-marke">{{ z.bezeichnung }}</a>
-                    <div class="text-[11px] fw-faint">{{ z.typ }}{% if z.flaeche %} · {{ z.flaeche|chf }} m²{% endif %}</div>
+                    <div class="fw-fs-klein fw-faint">{{ z.typ }}{% if z.flaeche %} · {{ z.flaeche|chf }} m²{% endif %}</div>
                 </td>
                 <td class="px-5 py-2.5">
                     {% if z.belegt %}{{ z.mieter }}{% else %}<span class="fw-warnton font-semibold">{% trans "Leerstand" %}</span>{% endif %}

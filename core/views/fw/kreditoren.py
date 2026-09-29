@@ -43,8 +43,49 @@ KRED_PILL = {
 }
 
 
+def _formularwerte(k):
+    """Die Werte des Bearbeiten-Formulars einer Zeile, als Text — so, wie sie
+    im Feld stehen. Nach einem Fehler ersetzt die Eingabe diese Werte (Audit
+    Etappe 2), deshalb stehen sie an EINER Stelle statt in der Vorlage."""
+    def _d(wert):
+        return wert.isoformat() if wert else ''
+    return {
+        'lieferant': k.lieferant or '',
+        'betrag': f'{k.betrag:.2f}' if k.betrag else '',
+        'datum': _d(k.datum), 'faellig_am': _d(k.faellig_am),
+        'leistungs_von': _d(k.leistungs_von), 'leistungs_bis': _d(k.leistungs_bis),
+        'referenz': k.referenz or '', 'iban': k.iban or '',
+        'liegenschaft_id': str(k.liegenschaft_id or ''), 'konto_id': str(k.konto_id or ''),
+        'is_hnk_relevant': bool(k.is_hnk_relevant),
+    }
+
+
+def formular_eingabe(post):
+    """Rohe Eingabe eines Kreditor-Formulars in derselben Form wie
+    `_formularwerte` — für die Anzeige nach einem Fehler."""
+    werte = {name: post.get(name, '') for name in (
+        'lieferant', 'betrag', 'mwst_satz', 'datum', 'faellig_am', 'leistungs_von',
+        'leistungs_bis', 'referenz', 'iban', 'liegenschaft_id', 'konto_id')}
+    werte['is_hnk_relevant'] = post.get('is_hnk_relevant') == 'on'
+    return werte
+
+
+def formular_fehler(form, feld_fehler):
+    """Erste Meldung je Feld — aus dem Formular und aus den Prüfungen der
+    Ansicht (Liegenschaft, Konto)."""
+    fehler = {name: liste[0] for name, liste in form.errors.items() if name != '__all__'}
+    fehler.update(feld_fehler)
+    return fehler
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
-def fw_kreditoren(request):
+def fw_kreditoren(request, *, formular=None):
+    """Kreditorenliste. `formular` (Audit Etappe 2): Kommt ein Erfassen- oder
+    Bearbeiten-Formular mit Fehlern zurück, rendert die Liste es mit der
+    Eingabe und den Meldungen am Feld, statt umzuleiten und alles zu verwerfen
+    — Status 400. Schlüssel: `neu_werte`/`neu_fehler` oder
+    `bearb_id`/`bearb_werte`/`bearb_fehler`."""
+    formular = formular or {}
     from finance.models import KreditorenRechnung
     from core.auth import hat_rolle, VERWALTUNGS_ROLLEN
     from django.contrib import messages
@@ -110,7 +151,14 @@ def fw_kreditoren(request):
 
     rows = []
     total_offen = Decimal('0.00')     # freigegeben, noch nicht bezahlt (diese Seite)
-    for k in seite.object_list:
+    zeilen = list(seite.object_list)
+    bearb_id = formular.get('bearb_id')
+    if bearb_id and not any(k.id == bearb_id for k in zeilen):
+        # Die Rechnung mit dem Fehler steht nicht auf dieser Seite (nach einem
+        # POST gibt es keinen Seitenparameter) — oben dazunehmen, sonst wäre
+        # die Meldung unsichtbar.
+        zeilen = list(qs.filter(id=bearb_id)) + zeilen
+    for k in zeilen:
         label, cls = KRED_PILL.get(k.status, (k.status, 'fw-flaeche2 fw-mutet'))
         betrag = k.betrag or Decimal('0.00')
         offen_betrag = k.offener_betrag
@@ -142,6 +190,9 @@ def fw_kreditoren(request):
             'positionen': list(k.positionen.all()) if k.status == 'neu' else [],
             'pos_summe': k.positionen_summe if k.status == 'neu' else Decimal('0.00'),
             'pos_diff': k.positionen_differenz if k.status == 'neu' else Decimal('0.00'),
+            'werte': formular['bearb_werte'] if k.id == bearb_id else _formularwerte(k),
+            'fehler': formular.get('bearb_fehler', {}) if k.id == bearb_id else {},
+            'offen': k.id == bearb_id,
         })
 
     status_chips = [('', gettext_lazy('Alle'))] + [(k, v[0]) for k, v in KRED_PILL.items() if k != 'storniert']
@@ -173,7 +224,10 @@ def fw_kreditoren(request):
         'ki_aktiv': bool(getattr(settings, 'GROQ_API_KEY', None)),
         'rechnungs_mail': os.environ.get('RECHNUNGS_IMAP_USER', ''),
         'meldung': list(messages.get_messages(request)),
-    })
+        'neu_werte': formular.get('neu_werte', {}),
+        'neu_fehler': formular.get('neu_fehler', {}),
+        'anzahl_fehler': len(formular.get('neu_fehler') or formular.get('bearb_fehler') or {}),
+    }, status=400 if formular else 200)
 
 
 # `fw_kreditoren_pain001` IST IN E2.45 ENTFERNT.

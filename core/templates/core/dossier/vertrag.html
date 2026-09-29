@@ -45,7 +45,10 @@
         {% endif %}
         {% if kann_verwalten %}
         <a href="/mietzins/{{ v.id }}/" class="border fw-linie fw-mutet hover:border-petrol-600 hover:fw-marke px-4 py-2 rounded-lg text-xs font-semibold transition-colors">{% zeichen 'bericht' klasse='mr-1.5' %}Mietzinsanpassung</a>
-        <a href="/vertrag/{{ v.id }}/senden/" onclick="return confirm('Vertrag jetzt via DocuSeal an {{ v.mieter.email|default:'den Mieter' }} senden?')" class="fw-btn fw-primary px-4 py-2 rounded-lg text-xs font-semibold transition-colors shadow-sm">{% zeichen 'senden' klasse='mr-1.5' %}Via DocuSeal senden</a>
+        {% comment %} POST statt Link: Der Versand ruft DocuSeal auf und schreibt dem Mieter. {% endcomment %}
+        <form method="post" action="/vertrag/{{ v.id }}/senden/" class="inline" onsubmit="return confirm('Vertrag jetzt via DocuSeal an {{ v.mieter.email|default:'den Mieter'|escapejs }} senden?')">{% csrf_token %}
+            <button type="submit" class="fw-btn fw-primary px-4 py-2 rounded-lg text-xs font-semibold transition-colors shadow-sm">{% zeichen 'senden' klasse='mr-1.5' %}Via DocuSeal senden</button>
+        </form>
         {% endif %}
     </div>
 </div>

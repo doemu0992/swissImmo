@@ -50,24 +50,34 @@ def fw_kreditor_neu(request):
     from django.contrib import messages
     from finance.models import KreditorenRechnung, Buchungskonto
     from core.auth import log_aktion
+    from finance.forms import KreditorForm
+    from .kreditoren import fw_kreditoren, formular_eingabe, formular_fehler
     if request.method != 'POST':
         return redirect('fw_kreditoren')
 
-    def _dec(name):
-        raw = _num(request.POST.get(name))
-        try:
-            return Decimal(raw) if raw else None
-        except Exception:
-            return None
+    # Audit Etappe 2: Prüfen statt raten. Vorher war ein unlesbares Datum ein
+    # Serverfehler, ein unlesbarer MWST-Satz still 0 %.
+    form = KreditorForm(request.POST, erfassen=True)
+    feld_fehler = {}
+    lg = None
+    if request.POST.get('liegenschaft_id'):
+        lg = Liegenschaft.objects.filter(id=request.POST['liegenschaft_id']).first() \
+            if request.POST['liegenschaft_id'].isdigit() else None
+        if lg is None:
+            feld_fehler['liegenschaft_id'] = gettext('Diese Liegenschaft ist nicht (mehr) erfasst.')
+    konto = None
+    if request.POST.get('konto_id'):
+        konto = Buchungskonto.objects.filter(id=request.POST['konto_id']).first() \
+            if request.POST['konto_id'].isdigit() else None
+        if konto is None:
+            feld_fehler['konto_id'] = gettext('Dieses Konto ist nicht (mehr) erfasst.')
+    if not form.is_valid() or feld_fehler:
+        return fw_kreditoren(request, formular={
+            'neu_werte': formular_eingabe(request.POST),
+            'neu_fehler': formular_fehler(form, feld_fehler)})
+    c = form.cleaned_data
+    lieferant, betrag = c['lieferant'].strip(), c['betrag']
 
-    lieferant = (request.POST.get('lieferant') or '').strip()
-    betrag = _dec('betrag')
-    if not lieferant or not betrag or betrag <= 0:
-        messages.error(request, gettext('Lieferant und Betrag (> 0) sind erforderlich.'))
-        return redirect('fw_kreditoren')
-
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
-    konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first() if request.POST.get('konto_id') else None
     # Kein Konto gewählt? Aus Lieferanten-Gedächtnis bzw. Schlüsselwörtern vorschlagen
     # (setzt darüber auch die HNK-Relevanz — is_hnk_relevant leitet unten aus dem Konto ab).
     if konto is None:
@@ -81,21 +91,18 @@ def fw_kreditor_neu(request):
             if _nr:
                 konto = _konto(_nr)
 
-    def _dat_iso(name):
-        try:
-            return date.fromisoformat(request.POST.get(name) or '')
-        except ValueError:
-            return None
     kr = KreditorenRechnung.objects.create(
-        lieferant=lieferant, betrag=betrag, mwst_satz=(_dec('mwst_satz') or Decimal('0.0')),
+        lieferant=lieferant, betrag=betrag,
+        # Leer heisst «ohne MWST» (0 %), wie bisher. Unlesbar ist ein Feldfehler.
+        mwst_satz=(c['mwst_satz'] if c['mwst_satz'] is not None else Decimal('0.0')),
         liegenschaft=lg, konto=konto,
-        leistungs_von=_dat_iso('leistungs_von'), leistungs_bis=_dat_iso('leistungs_bis'),
-        datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.localdate()),
-        faellig_am=(date.fromisoformat(request.POST['faellig_am']) if request.POST.get('faellig_am') else None),
-        referenz=(request.POST.get('referenz') or '').strip(),
+        leistungs_von=c['leistungs_von'], leistungs_bis=c['leistungs_bis'],
+        datum=c['datum'] or timezone.localdate(),
+        faellig_am=c['faellig_am'],
+        referenz=c['referenz'].strip(),
         # IBAN wurde bisher nur im Bearbeiten-Formular erfasst — eine manuell
         # angelegte Rechnung konnte damit NIE in einen Zahllauf (Praxis-Audit).
-        iban=(request.POST.get('iban') or '').strip().replace(' ', ''),
+        iban=c['iban'],
         # NK-relevant, wenn Checkbox gesetzt ODER das gewählte Konto HNK-relevant ist
         is_hnk_relevant=(request.POST.get('is_hnk_relevant') == 'on'
                          or bool(konto and konto.is_hnk_relevant)),
@@ -175,32 +182,38 @@ def fw_kreditor_bearbeiten(request, pk):
         messages.error(request, gettext('Nur unverbuchte Rechnungen (Status Neu) können bearbeitet werden.'))
         return redirect('fw_kreditoren')
 
-    def _dec(name):
-        raw = _num(request.POST.get(name))
-        try:
-            return Decimal(raw) if raw else None
-        except Exception:
-            return None
-
-    def _dat(name):
-        try:
-            return date.fromisoformat(request.POST.get(name) or '')
-        except ValueError:
-            return None
-
-    k.lieferant = (request.POST.get('lieferant') or '').strip()
-    betrag = _dec('betrag')
-    k.betrag = betrag if betrag and betrag > 0 else None
-    k.datum = _dat('datum') or k.datum
-    k.faellig_am = _dat('faellig_am')
-    k.leistungs_von = _dat('leistungs_von')
-    k.leistungs_bis = _dat('leistungs_bis')
-    k.referenz = (request.POST.get('referenz') or '').strip()
-    k.iban = re.sub(r'\s+', '', request.POST.get('iban') or '')[:50]
+    from finance.forms import KreditorForm
+    from .kreditoren import fw_kreditoren, formular_eingabe, formular_fehler
+    # Audit Etappe 2: Vorher wurde ein unlesbarer Betrag still leer, die IBAN
+    # ungeprüft übernommen. Jetzt kommt die Zeile mit der Meldung zurück.
+    form = KreditorForm(request.POST)
+    feld_fehler = {}
+    neue_lg, neues_konto = k.liegenschaft, k.konto
     if request.POST.get('liegenschaft_id'):
-        k.liegenschaft = Liegenschaft.objects.filter(id=request.POST['liegenschaft_id']).first()
+        neue_lg = Liegenschaft.objects.filter(id=request.POST['liegenschaft_id']).first() \
+            if request.POST['liegenschaft_id'].isdigit() else None
+        if neue_lg is None:
+            feld_fehler['liegenschaft_id'] = gettext('Diese Liegenschaft ist nicht (mehr) erfasst.')
     if request.POST.get('konto_id'):
-        k.konto = Buchungskonto.objects.filter(id=request.POST['konto_id']).first()
+        neues_konto = Buchungskonto.objects.filter(id=request.POST['konto_id']).first() \
+            if request.POST['konto_id'].isdigit() else None
+        if neues_konto is None:
+            feld_fehler['konto_id'] = gettext('Dieses Konto ist nicht (mehr) erfasst.')
+    if not form.is_valid() or feld_fehler:
+        return fw_kreditoren(request, formular={
+            'bearb_id': k.id, 'bearb_werte': formular_eingabe(request.POST),
+            'bearb_fehler': formular_fehler(form, feld_fehler)})
+    c = form.cleaned_data
+    k.lieferant = c['lieferant'].strip()
+    k.betrag = c['betrag']
+    k.datum = c['datum'] or k.datum
+    k.faellig_am = c['faellig_am']
+    k.leistungs_von = c['leistungs_von']
+    k.leistungs_bis = c['leistungs_bis']
+    k.referenz = c['referenz'].strip()
+    k.iban = c['iban']
+    k.liegenschaft = neue_lg
+    k.konto = neues_konto
     # NK-Relevanz: Checkbox ODER (neu zugewiesenes) HNK-Konto
     k.is_hnk_relevant = (request.POST.get('is_hnk_relevant') == 'on'
                          or bool(k.konto and k.konto.is_hnk_relevant))
@@ -863,6 +876,11 @@ def fw_einstellungen(request):
         # einmal in Phase 4a (vier Etappen lang).
         {'titel': _('Regelwerk (Fristen)'), 'sub': _('Kündigungstermine und Fristen je Kanton'),
          'url': '/neu/regelwerk/', 'icon': 'recht'},
+        # Audit F3: Die Tabelle war gebaut und speist Abnahme und Ersatzplanung,
+        # hatte aber keinen einzigen Link. Sie ist eine Einstellung — Werte,
+        # die man einmal festlegt und selten ändert.
+        {'titel': _('Lebensdauertabelle'), 'sub': _('Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung'),
+         'url': '/neu/lebensdauer/', 'icon': 'verlauf'},
     ]
     return render(request, 'fw/einstellungen.html', {
         **basis, 'nav': 'einstellungen', 'karten': karten,

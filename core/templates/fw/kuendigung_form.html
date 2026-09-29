@@ -4,9 +4,9 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/{{ lg_query }}" class="hover:fw-marke">{% trans "Verträge" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{% trans "Kündigung" %}</span>
 </nav>
 
@@ -44,7 +44,7 @@
         </div>
 
         <!-- Mietrechtliche Live-Prüfung -->
-        <div id="k-warn" class="hidden rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
+        <div id="k-warn" class="hidden rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 fw-fs-fein fw-warnton">
             <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} {% trans "Mietrechtlicher Hinweis" %}</div>
             <ul id="k-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>

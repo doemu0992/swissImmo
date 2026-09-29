@@ -5,9 +5,9 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/liegenschaften/{{ lg_query }}" class="hover:fw-marke">{% trans "Liegenschaften" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     {% if not ist_neu %}<a href="/neu/liegenschaften/{{ lg.id }}/" class="hover:fw-marke">{{ lg.strasse }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}{% endif %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}{% endif %}
     <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neu" %}{% else %}{% trans "Bearbeiten" %}{% endif %}</span>
 </nav>
 
@@ -18,29 +18,33 @@
     </div>
 </div>
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" class="max-w-3xl space-y-5" novalidate>
     {% csrf_token %}
+    {% comment %} `novalidate`: Die Prüfung macht der Server und meldet am Feld
+       (Audit Etappe 2). Die Browserblasen erschienen nur für «required» und
+       verschwanden beim ersten Tastendruck — ein zweites, lückenhaftes System. {% endcomment %}
+    {% if anzahl_fehler %}
+    <div class="fw-formfehler" role="alert">
+        <b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> —
+        {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}
+        {% for fehler in form.non_field_errors %}<div class="mt-1">{{ fehler }}</div>{% endfor %}
+    </div>
+    {% endif %}
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">{% trans "Adresse" %}</h3>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr. *" %}</label>
-            <input name="strasse" required value="{{ lg.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        {% include 'fw/_feld.html' with f=form.strasse label=_("Strasse & Nr.") pflicht=True %}
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "PLZ *" %}</label>
-                <input name="plz" required value="{{ lg.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ort *" %}</label>
-                <input name="ort" required value="{{ lg.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kanton" %}</label>
-                <input name="kanton" maxlength="2" value="{{ lg.kanton }}" placeholder="{% trans 'SO' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% include 'fw/_feld.html' with f=form.plz label=_("PLZ") pflicht=True %}
+            {% include 'fw/_feld.html' with f=form.ort label=_("Ort") pflicht=True spalten="sm:col-span-2" %}
+            {% include 'fw/_feld.html' with f=form.kanton label=_("Kanton") platzhalter=_("SO") %}
         </div>
     </div>
 
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">{% trans "Stammdaten" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "EGID" %}</label>
-                <input name="egid" value="{{ lg.egid|default:'' }}" placeholder="{% trans 'automatisch aus Adresse' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kataster-Nr." %}</label>
-                <input name="kataster_nummer" value="{{ lg.kataster_nummer }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% include 'fw/_feld.html' with f=form.egid label=_("EGID") platzhalter=_("automatisch aus Adresse") %}
+            {% include 'fw/_feld.html' with f=form.kataster_nummer label=_("Kataster-Nr.") %}
             {% comment %}
 WER DIESE LIEGENSCHAFT BETREUT (E2.70)
 
@@ -51,70 +55,70 @@ hierher bekam sie, wer gerade den Posteingang leerte.
 «Nicht zugeteilt» ist eine Aussage, keine Lücke: Eine Liegenschaft ohne
 Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
 {% endcomment %}
-<div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betreut von" %}</label>
-    <select name="betreut_von" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-        <option value="">— {% trans "nicht zugeteilt" %} —</option>
-        {% for b in benutzer_auswahl %}
-        <option value="{{ b.pk }}" {% if lg.betreut_von_id == b.pk %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>
-        {% endfor %}
-    </select></div>
-<div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Baujahr" %}</label>
-                <input name="baujahr" type="number" value="{{ lg.baujahr|default:'' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="id_betreut_von" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betreut von" %}</label>
+                <select id="id_betreut_von" name="betreut_von" class="fw-feld w-full"{% if feld_fehler.betreut_von %} aria-invalid="true" aria-describedby="id_betreut_von_fehler"{% endif %}>
+                    <option value="">— {% trans "nicht zugeteilt" %} —</option>
+                    {% for b in benutzer_auswahl %}
+                    <option value="{{ b.pk }}" {% if betreut_wert == b.pk|stringformat:"s" %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>
+                    {% endfor %}
+                </select>
+                {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.betreut_von feld_id="id_betreut_von" %}</div>
+            {% include 'fw/_feld.html' with f=form.baujahr label=_("Baujahr") inputmodus="numeric" %}
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Versicherungswert (CHF)" %}</label>
-                <input name="versicherungswert" value="{% localize off %}{{ lg.versicherungswert|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Grundstücksfläche (m²)" %}</label>
-                <input name="grundstuecksflaeche_m2" value="{% localize off %}{{ lg.grundstuecksflaeche_m2|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Gebäudevolumen (m³)" %}</label>
-                <input name="gebaeudevolumen_m3" value="{% localize off %}{{ lg.gebaeudevolumen_m3|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            {% include 'fw/_feld.html' with f=form.versicherungswert label=_("Versicherungswert (CHF)") klasse="tabular-nums" inputmodus="decimal" %}
+            {% include 'fw/_feld.html' with f=form.grundstuecksflaeche_m2 label=_("Grundstücksfläche (m²)") klasse="tabular-nums" inputmodus="decimal" %}
+            {% include 'fw/_feld.html' with f=form.gebaeudevolumen_m3 label=_("Gebäudevolumen (m³)") klasse="tabular-nums" inputmodus="decimal" %}
         </div>
         <p class="text-xs font-bold uppercase tracking-wider fw-faint pt-1">{% trans "Bewertung (für Rendite)" %}</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verkehrswert (CHF)" %}</label>
-                <input name="verkehrswert" value="{% localize off %}{{ lg.verkehrswert|default:'' }}{% endlocalize %}" placeholder="{% trans 'Marktwert' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Anlagekosten (CHF)" %}</label>
-                <input name="anlagekosten" value="{% localize off %}{{ lg.anlagekosten|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kaufpreis (CHF)" %}</label>
-                <input name="kaufpreis" value="{% localize off %}{{ lg.kaufpreis|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            {% include 'fw/_feld.html' with f=form.verkehrswert label=_("Verkehrswert (CHF)") platzhalter=_("Marktwert") klasse="tabular-nums" inputmodus="decimal" %}
+            {% include 'fw/_feld.html' with f=form.anlagekosten label=_("Anlagekosten (CHF)") klasse="tabular-nums" inputmodus="decimal" %}
+            {% include 'fw/_feld.html' with f=form.kaufpreis label=_("Kaufpreis (CHF)") klasse="tabular-nums" inputmodus="decimal" %}
         </div>
         <p class="text-xs font-bold uppercase tracking-wider fw-faint pt-1">{% trans "Energie & Gebäudetechnik (GEAK)" %}</p>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Heizsystem" %}</label>
-                <select name="heizsystem" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div><label for="id_heizsystem" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Heizsystem" %}</label>
+                <select id="id_heizsystem" name="heizsystem" class="fw-feld w-full"{% if form.heizsystem.errors %} aria-invalid="true" aria-describedby="id_heizsystem_fehler"{% endif %}>
                     <option value="">—</option>
-                    {% for val, lab in heiz_choices %}<option value="{{ val }}" {% if lg.heizsystem == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
-                </select></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Warmwasser" %}</label>
-                <select name="warmwasser" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                    {% for val, lab in heiz_choices %}<option value="{{ val }}" {% if form.heizsystem.value == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
+                </select>
+                {% include 'fw/_feldfehler.html' with f=form.heizsystem %}</div>
+            <div><label for="id_warmwasser" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Warmwasser" %}</label>
+                <select id="id_warmwasser" name="warmwasser" class="fw-feld w-full"{% if form.warmwasser.errors %} aria-invalid="true" aria-describedby="id_warmwasser_fehler"{% endif %}>
                     <option value="">—</option>
-                    {% for val, lab in warmwasser_choices %}<option value="{{ val }}" {% if lg.warmwasser == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
-                </select></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "GEAK Hülle" %}</label>
-                <select name="geak_klasse" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                    {% for val, lab in warmwasser_choices %}<option value="{{ val }}" {% if form.warmwasser.value == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
+                </select>
+                {% include 'fw/_feldfehler.html' with f=form.warmwasser %}</div>
+            <div><label for="id_geak_klasse" class="block text-xs font-semibold fw-mutet mb-1">{% trans "GEAK Hülle" %}</label>
+                <select id="id_geak_klasse" name="geak_klasse" class="fw-feld w-full"{% if form.geak_klasse.errors %} aria-invalid="true" aria-describedby="id_geak_klasse_fehler"{% endif %}>
                     <option value="">—</option>
-                    {% for k in geak_klassen %}<option value="{{ k }}" {% if lg.geak_klasse == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
-                </select></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "GEAK Gesamt" %}</label>
-                <select name="geak_klasse_gesamt" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                    {% for k in geak_klassen %}<option value="{{ k }}" {% if form.geak_klasse.value == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
+                </select>
+                {% include 'fw/_feldfehler.html' with f=form.geak_klasse %}</div>
+            <div><label for="id_geak_klasse_gesamt" class="block text-xs font-semibold fw-mutet mb-1">{% trans "GEAK Gesamt" %}</label>
+                <select id="id_geak_klasse_gesamt" name="geak_klasse_gesamt" class="fw-feld w-full"{% if form.geak_klasse_gesamt.errors %} aria-invalid="true" aria-describedby="id_geak_klasse_gesamt_fehler"{% endif %}>
                     <option value="">—</option>
-                    {% for k in geak_klassen %}<option value="{{ k }}" {% if lg.geak_klasse_gesamt == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
-                </select></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Energieträger (Zusatz)" %}</label>
-                <input name="energietraeger" value="{{ lg.energietraeger }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Energiebezugsfl. (m²)" %}</label>
-                <input name="energiebezugsflaeche_m2" value="{% localize off %}{{ lg.energiebezugsflaeche_m2|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "GEAK ausgestellt" %}</label>
-                <input name="geak_datum" type="date" value="{{ lg.geak_datum|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                    {% for k in geak_klassen %}<option value="{{ k }}" {% if form.geak_klasse_gesamt.value == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
+                </select>
+                {% include 'fw/_feldfehler.html' with f=form.geak_klasse_gesamt %}</div>
+            {% include 'fw/_feld.html' with f=form.energietraeger label=_("Energieträger (Zusatz)") %}
+            {% include 'fw/_feld.html' with f=form.energiebezugsflaeche_m2 label=_("Energiebezugsfl. (m²)") klasse="tabular-nums" inputmodus="decimal" %}
+            <div><label for="id_geak_datum" class="block text-xs font-semibold fw-mutet mb-1">{% trans "GEAK ausgestellt" %}</label>
+                {% comment %} Ungebunden liefert `value` ein Datum, nach einem Fehler den
+                   eingegebenen Text — `date` formatiert das eine, `default` behält das andere. {% endcomment %}
+                <input id="id_geak_datum" name="geak_datum" type="date" value="{{ form.geak_datum.value|date:'Y-m-d'|default:form.geak_datum.value|default_if_none:'' }}" class="fw-feld w-full"{% if form.geak_datum.errors %} aria-invalid="true" aria-describedby="id_geak_datum_fehler"{% endif %}>
+                {% include 'fw/_feldfehler.html' with f=form.geak_datum %}</div>
         </div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Eigentümer" %}</label>
-            <select name="eigentuemer_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="id_eigentuemer_id" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Eigentümer" %}</label>
+            <select id="id_eigentuemer_id" name="eigentuemer_id" class="fw-feld w-full"{% if feld_fehler.eigentuemer_id %} aria-invalid="true" aria-describedby="id_eigentuemer_id_fehler"{% endif %}>
                 <option value="">— {% trans "kein Eigentümer" %} —</option>
-                {% for md in eigentuemer %}<option value="{{ md.id }}" {% if lg.eigentuemer_id == md.id %}selected{% endif %}>{{ md.firma_oder_name }}</option>{% endfor %}
-            </select></div>
+                {% for md in eigentuemer %}<option value="{{ md.id }}" {% if eigentuemer_wert == md.id|stringformat:"s" %}selected{% endif %}>{{ md.firma_oder_name }}</option>{% endfor %}
+            </select>
+            {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.eigentuemer_id feld_id="id_eigentuemer_id" %}</div>
         {% if ist_neu %}
         <label class="flex items-start gap-2 text-sm fw-ink fw-markenflaeche border fw-linie-marke rounded-lg px-3 py-2.5">
-            <input type="checkbox" name="gwr_import" checked class="fw-akzent mt-0.5">
+            <input type="checkbox" name="gwr_import" {% if not form.is_bound or form.data.gwr_import %}checked{% endif %} class="fw-akzent mt-0.5">
             <span><span class="font-semibold fw-marke">{% trans "Objekte automatisch importieren" %}</span><br>
             <span class="text-xs fw-mutet">{% trans "Ermittelt die EGID aus der Adresse und lädt die Wohnungen automatisch aus dem eidgenössischen Gebäude- und Wohnungsregister (GWR)." %}</span></span>
         </label>
@@ -124,35 +128,30 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">{% trans "Bank, Mietzinskonto & Notfallkontakte" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bankname (Mietzinskonto)" %}</label>
-                <input name="bank_name" value="{{ lg.bank_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
-                <input name="iban" value="{{ lg.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Hauswart" %}</label>
-                <input name="hauswart_name" value="{{ lg.hauswart_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Hauswart Telefon" %}</label>
-                <input name="hauswart_telefon" value="{{ lg.hauswart_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Notfall Sanitär" %}</label>
-                <input name="sanitaer_name" value="{{ lg.sanitaer_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Sanitär Telefon" %}</label>
-                <input name="sanitaer_telefon" value="{{ lg.sanitaer_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Notfall Elektriker" %}</label>
-                <input name="elektriker_name" value="{{ lg.elektriker_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Elektriker Telefon" %}</label>
-                <input name="elektriker_telefon" value="{{ lg.elektriker_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            {% include 'fw/_feld.html' with f=form.bank_name label=_("Bankname (Mietzinskonto)") %}
+            {% include 'fw/_feld.html' with f=form.iban label="IBAN" klasse="font-mono" %}
+            {% include 'fw/_feld.html' with f=form.hauswart_name label=_("Hauswart") %}
+            {% include 'fw/_feld.html' with f=form.hauswart_telefon label=_("Hauswart Telefon") typ="tel" %}
+            {% include 'fw/_feld.html' with f=form.sanitaer_name label=_("Notfall Sanitär") %}
+            {% include 'fw/_feld.html' with f=form.sanitaer_telefon label=_("Sanitär Telefon") typ="tel" %}
+            {% include 'fw/_feld.html' with f=form.elektriker_name label=_("Notfall Elektriker") %}
+            {% include 'fw/_feld.html' with f=form.elektriker_telefon label=_("Elektriker Telefon") typ="tel" %}
         </div>
     </div>
 
     <div class="fw-card p-5 space-y-3">
         <h3 class="font-bold fw-strong text-sm">{% trans "Nebenkosten / Heizung" %}</h3>
         <label class="flex items-center gap-2 text-sm fw-ink">
-            <input type="checkbox" name="hkvo_aktiv" {% if lg.hkvo_aktiv %}checked{% endif %} onchange="document.getElementById('hkvo-box').classList.toggle('hidden', !this.checked)" class="fw-akzent">
+            <input type="checkbox" name="hkvo_aktiv" {% if form.hkvo_aktiv.value %}checked{% endif %} onchange="document.getElementById('hkvo-box').classList.toggle('hidden', !this.checked)" class="fw-akzent">
             {% trans "Verbrauchsabhängige Heizkostenabrechnung (HKVO)" %}
         </label>
-        <div id="hkvo-box" class="{% if not lg.hkvo_aktiv %}hidden{% endif %} flex items-center gap-2 pl-6">
-            <label class="text-xs fw-mutet">{% trans "Grundkosten-Anteil" %}</label>
-            <input type="number" name="hkvo_grundkosten_prozent" value="{{ lg.hkvo_grundkosten_prozent|default:40 }}" min="0" max="100" class="w-20 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">
-            <span class="text-xs fw-faint">{% trans "% (Rest = Verbrauch, nach Wärmezähler)" %}</span>
+        <div id="hkvo-box" class="{% if not form.hkvo_aktiv.value and not form.hkvo_grundkosten_prozent.errors %}hidden{% endif %} pl-6">
+            <div class="flex items-center gap-2">
+                <label for="id_hkvo_grundkosten_prozent" class="text-xs fw-mutet">{% trans "Grundkosten-Anteil" %}</label>
+                <input id="id_hkvo_grundkosten_prozent" inputmode="numeric" name="hkvo_grundkosten_prozent" value="{{ form.hkvo_grundkosten_prozent.value|default_if_none:40 }}" min="0" max="100" class="fw-feld w-20 text-right"{% if form.hkvo_grundkosten_prozent.errors %} aria-invalid="true" aria-describedby="id_hkvo_grundkosten_prozent_fehler"{% endif %}>
+                <span class="text-xs fw-faint">{% trans "% (Rest = Verbrauch, nach Wärmezähler)" %}</span>
+            </div>
+            {% include 'fw/_feldfehler.html' with f=form.hkvo_grundkosten_prozent %}
         </div>
         <p class="text-xs fw-faint">{% trans "Bei aktiver HKVO werden die Heizkosten in Grundkosten (nach m³) und Verbrauchskosten (nach Zählerständen der Wärmezähler) aufgeteilt." %}</p>
     </div>

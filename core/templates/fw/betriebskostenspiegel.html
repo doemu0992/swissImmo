@@ -4,7 +4,7 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/berichte/" class="hover:fw-marke">{% trans "Berichte" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{% trans "Betriebskostenspiegel" %}</span>
 </nav>
 
@@ -39,7 +39,7 @@
 <div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+        <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
             <th class="px-5 py-3 font-semibold">{% trans "Liegenschaft" %}</th>
             <th class="px-5 py-3 font-semibold text-right">{% blocktrans %}Aufwand {{ jahr }}{% endblocktrans %}</th>
             <th class="px-5 py-3 font-semibold text-right">{% trans "Fläche" %}</th>

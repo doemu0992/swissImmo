@@ -42,8 +42,8 @@
                         {% else %}
                         <span class="fw-chip fw-flaeche2 fw-mutet">{% trans "Noch nicht angewendet" %}</span>
                         {% endif %}
-                        {% if z.zuletzt %}<span class="text-[11px] fw-faint">{% trans "zuletzt" %} {{ z.zuletzt|date:"d.m.Y" }}</span>{% endif %}
-                        <span class="text-[11px] fw-faint">{% trans "gelernt" %} {{ z.erstellt_am|date:"d.m.Y" }}</span>
+                        {% if z.zuletzt %}<span class="fw-fs-klein fw-faint">{% trans "zuletzt" %} {{ z.zuletzt|date:"d.m.Y" }}</span>{% endif %}
+                        <span class="fw-fs-klein fw-faint">{% trans "gelernt" %} {{ z.erstellt_am|date:"d.m.Y" }}</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">

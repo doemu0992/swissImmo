@@ -26,16 +26,20 @@ def objekt_titel(einheit):
     return typ
 
 
-def generate_expose_pdf(einheit, verwaltung=None):
+def generate_expose_pdf(einheit, verwaltung=None, bewerbung_url=None):
     """Das Exposé ist (noch) nur deutsch formuliert. Fest deutsch erzeugt,
     damit der übersetzbare Objekttyp nicht in der Sprache der Sachbearbeitung
-    mitten im deutschen Text steht (siehe core.services.dokumentsprache)."""
+    mitten im deutschen Text steht (siehe core.services.dokumentsprache).
+
+    `bewerbung_url`: absolute Adresse des öffentlichen Bewerbungsformulars.
+    Ist sie gesetzt, trägt die Kontaktbox einen QR-Code darauf — so führt ein
+    ausgedrucktes oder weitergeleitetes Exposé direkt zur Bewerbung."""
     from core.services.dokumentsprache import STANDARD, in_sprache
     with in_sprache(STANDARD):
-        return _expose_pdf(einheit, verwaltung)
+        return _expose_pdf(einheit, verwaltung, bewerbung_url)
 
 
-def _expose_pdf(einheit, verwaltung):
+def _expose_pdf(einheit, verwaltung, bewerbung_url=None):
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm
@@ -145,6 +149,20 @@ def _expose_pdf(einheit, verwaltung):
         kontakt = " · ".join([x for x in [tel, mail] if x])
         if kontakt:
             c.drawString(20 * mm, 12 * mm, kontakt)
+    if bewerbung_url:
+        from reportlab.graphics.barcode.qr import QrCodeWidget
+        from reportlab.graphics.shapes import Drawing
+        from reportlab.graphics import renderPDF
+        seite = 26 * mm
+        qr = QrCodeWidget(bewerbung_url, barLevel='M')
+        x0, y0, x1, y1 = qr.getBounds()
+        zeichnung = Drawing(seite, seite, transform=[seite / (x1 - x0), 0, 0, seite / (y1 - y0), 0, 0])
+        zeichnung.add(qr)
+        renderPDF.draw(zeichnung, c, w - 20 * mm - seite, 5 * mm)
+        c.setFont("Helvetica-Bold", 9); c.setFillColor(colors.black)
+        c.drawRightString(w - 20 * mm - seite - 3 * mm, 18 * mm, "Online bewerben")
+        c.setFont("Helvetica", 8); c.setFillColor(colors.HexColor("#64748B"))
+        c.drawRightString(w - 20 * mm - seite - 3 * mm, 13 * mm, "QR-Code scannen")
     c.setFont("Helvetica-Oblique", 8); c.setFillColor(colors.HexColor("#94A3B8"))
     c.drawString(20 * mm, 5 * mm, "Angaben ohne Gewähr. Kein Rechtsanspruch aus diesem Exposé.")
 

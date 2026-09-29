@@ -110,7 +110,7 @@
  <div class="w-20 h-20 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
  {% zeichen 'gut' %}
  </div>
- <h2 class="text-3xl font-black fw-strong mb-4">{% trans "Vielen Dank!" %}</h2>
+ <h2 class="text-3xl font-bold fw-strong mb-4">{% trans "Vielen Dank!" %}</h2>
  <p class="fw-mutet font-medium mb-8">{% trans "Ihre Meldung wurde erfolgreich an die Verwaltung übermittelt. Wir werden uns in Kürze darum kümmern." %}</p>
  <a href="{% url 'index' %}" class="inline-block fw-btn fw-primary px-6 py-3 rounded-xl font-bold hover:fw-balken-voll transition-colors">
  {% trans "Zurück zur Startseite" %}
@@ -134,7 +134,7 @@
  <input type="hidden" name="liegenschaft_id" x-model="ausgewaehlteLiegenschaftId">
 
  <div x-show="step === 1" x-transition>
- <h2 class="text-2xl font-black fw-strong mb-8 text-center">{% trans "Worum geht es?" %}</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-8 text-center">{% trans "Worum geht es?" %}</h2>
 
  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
  <button type="button" @click="selectCategory('Schadensmeldung')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
@@ -162,7 +162,7 @@
 
  <div x-show="step === 2" x-transition style="display: none;">
  <button type="button" @click="step = 1" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
- <h2 class="text-2xl font-black fw-strong mb-8 text-center mt-10 md:mt-0">{% trans "In welchem Raum?" %}</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-8 text-center mt-10 md:mt-0">{% trans "In welchem Raum?" %}</h2>
 
  <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
  <template x-for="r in raeume" :key="r.name">
@@ -179,7 +179,7 @@
 
  <div x-show="step === 3" x-transition style="display: none;">
  <button type="button" @click="step = 2" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
- <h2 class="text-2xl font-black fw-strong mb-8 text-center mt-10 md:mt-0">{% trans "Was genau ist betroffen?" %}</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-8 text-center mt-10 md:mt-0">{% trans "Was genau ist betroffen?" %}</h2>
 
  <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
  <template x-for="o in objekteFuerRaum()" :key="o">
@@ -196,7 +196,7 @@
  <div x-show="step === 4" x-transition style="display: none;">
  <button type="button" @click="step = formData.kategorie === 'Schadensmeldung' ? 3 : 1" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
 
- <h2 class="text-2xl font-black fw-strong mb-6 text-center mt-10 md:mt-0">{% trans "Details &amp; Kontaktdaten" %}</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-6 text-center mt-10 md:mt-0">{% trans "Details &amp; Kontaktdaten" %}</h2>
 
  <div class="flex flex-wrap gap-2 justify-center mb-6">
  <span class="fw-markenflaeche fw-marke px-3 py-1 rounded-full text-xs font-bold" x-show="formData.kategorie" x-text="t(formData.kategorie)"></span>
@@ -207,7 +207,7 @@
  <div class="space-y-5">
 
  <div class="relative" @click.away="showDropdown = false">
- <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Liegenschaft / Adresse" %} *</label>
+ <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Liegenschaft / Adresse" %} *</label>
  <input
  type="text"
  name="adresse"
@@ -239,33 +239,33 @@
 
  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div>
- <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Vorname" %} *</label>
+ <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Vorname" %} *</label>
  <input type="text" name="vorname" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Ihr Vorname' %}">
  </div>
  <div>
- <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Nachname" %} *</label>
+ <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Nachname" %} *</label>
  <input type="text" name="nachname" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Ihr Nachname' %}">
  </div>
  </div>
 
  <div>
- <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Kurze Beschreibung des Problems" %} *</label>
+ <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Kurze Beschreibung des Problems" %} *</label>
  <textarea name="beschreibung" required rows="3" class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Bitte beschreiben Sie das Anliegen...' %}"></textarea>
  </div>
 
  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div>
- <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "E-Mail Adresse" %} *</label>
+ <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "E-Mail Adresse" %} *</label>
  <input type="email" name="email" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Ihre E-Mail' %}">
  </div>
  <div>
- <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Telefonnummer" %} *</label>
+ <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Telefonnummer" %} *</label>
  <input type="tel" name="telefon" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Für Rückfragen' %}">
  </div>
  </div>
 
  <div>
- <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Wie sind Sie am besten erreichbar? / Zutritt zur Wohnung" %} *</label>
+ <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Wie sind Sie am besten erreichbar? / Zutritt zur Wohnung" %} *</label>
  <select name="erreichbarkeit" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none fw-ink font-bold">
  <option value="telefon">{% trans "Bitte telefonisch kontaktieren zwecks Termin" %}</option>
  <option value="email">{% trans "Bitte per E-Mail kontaktieren" %}</option>
@@ -275,7 +275,7 @@
  </div>
 
  <div>
- <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Foto hochladen (Optional)" %}</label>
+ <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Foto hochladen (Optional)" %}</label>
  <input type="file" name="foto" accept="image/*" class="w-full fw-flaeche2 border fw-linie p-2 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:fw-markenflaeche file:fw-marke hover:file:fw-markenflaeche">
  </div>
 

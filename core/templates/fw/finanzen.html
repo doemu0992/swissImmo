@@ -26,7 +26,7 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
         <p>{% blocktrans trimmed %}Die Zahlen hinter den Finanzaufgaben — der Arbeitsvorrat steht auf <a href="/neu/" class="fw-link">Heute</a>.{% endblocktrans %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
     <div style="text-align:right">
-        <div class="fw-num" style="font-size:28px;font-weight:800;letter-spacing:-.02em;color:{% if dringend_n %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">{{ offene_posten }}</div>
+        <div class="fw-num" style="font-size:28px;font-weight:700;letter-spacing:-.02em;color:{% if dringend_n %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">{{ offene_posten }}</div>
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600">{% trans "offene Aufgaben" %}{% if dringend_n %} · {% blocktrans with n=dringend_n %}{{ n }} dringend{% endblocktrans %}{% endif %}</div>
     </div>
 </div>
@@ -68,8 +68,8 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-semibold fw-strong">{{ i.titel }}</span>
-                        {% if i.anzahl %}<span class="text-[11px] font-bold {% if i.dringend %}fw-krit-flaeche fw-kritisch{% else %}fw-flaeche2 fw-mutet{% endif %} rounded-md px-1.5 py-0.5">{{ i.anzahl }}</span>{% endif %}
-                        {% if i.dringend %}<span class="text-[10px] font-bold uppercase tracking-wide fw-kritisch">{% trans "dringend" %}</span>{% endif %}
+                        {% if i.anzahl %}<span class="fw-fs-klein font-bold {% if i.dringend %}fw-krit-flaeche fw-kritisch{% else %}fw-flaeche2 fw-mutet{% endif %} rounded-md px-1.5 py-0.5">{{ i.anzahl }}</span>{% endif %}
+                        {% if i.dringend %}<span class="fw-fs-mikro font-bold uppercase tracking-wide fw-kritisch">{% trans "dringend" %}</span>{% endif %}
                     </div>
                     <div class="text-xs fw-mutet mt-0.5 truncate">{{ i.sub }}{% if i.chf %} · <span class="font-medium fw-mutet">CHF {{ i.chf|chf }}</span>{% endif %}</div>
                 </div>
@@ -115,14 +115,14 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
                     {% if c.anzahl %}
                     <div class="text-right shrink-0">
                         <div class="text-sm fw-num font-bold {% if c.ok is True %}fw-faint{% else %}fw-strong{% endif %}">{{ c.anzahl }}</div>
-                        {% if c.chf %}<div class="text-[11px] fw-faint fw-num">CHF {{ c.chf|chf }}</div>{% endif %}
+                        {% if c.chf %}<div class="fw-fs-klein fw-faint fw-num">CHF {{ c.chf|chf }}</div>{% endif %}
                     </div>
                     {% endif %}
-                    {% zeichen 'weiter' klasse='text-[10px] fw-faint mt-1' %}
+                    {% zeichen 'weiter' klasse='fw-fs-mikro fw-faint mt-1' %}
                 </a>
             {% endfor %}
             </div>
-            <div class="px-4 py-2 fw-flaeche2 border-t fw-linie text-[11px] fw-faint">
+            <div class="px-4 py-2 fw-flaeche2 border-t fw-linie fw-fs-klein fw-faint">
                 {% trans "Reihenfolge = empfohlener Ablauf. Grün = erledigt, gelb = offen, grau = manuell prüfen." %}
             </div>
         </div>

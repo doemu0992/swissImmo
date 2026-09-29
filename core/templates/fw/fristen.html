@@ -29,7 +29,7 @@
         <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
                 class="fw-flaeche border fw-linie hover:fw-flaeche2 fw-ink text-xs font-semibold px-3 py-2 rounded-lg whitespace-nowrap">{% trans "Kopieren" %}</button>
     </div>
-    <p class="text-[11px] fw-faint mt-1.5">{% trans "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben." %}</p>
+    <p class="fw-fs-klein fw-faint mt-1.5">{% trans "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben." %}</p>
 </div>
 <p class="text-sm fw-mutet mb-6">{% blocktrans trimmed %}Alle datierten offenen Fristen chronologisch — Kündigungstermine, Anfechtungs-,
     Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden.{% endblocktrans %} {% blocktrans count n=gesamt %}{{ n }} Frist{% plural %}{{ n }} Fristen{% endblocktrans %}{% if ueberfaellig_n %} · <span class="fw-kritisch font-semibold">{% blocktrans with n=ueberfaellig_n %}{{ n }} überfällig{% endblocktrans %}</span>{% endif %}.</p>
@@ -40,7 +40,7 @@
     <div class="flex items-center gap-2 mb-2.5">
         {% zeichen_wert b.icon klasse='{{ b.cls }}' %}
         <h2 class="text-sm font-bold {{ b.cls }} uppercase tracking-wide">{{ b.titel }}</h2>
-        <span class="text-[11px] font-bold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ b.items|length }}</span>
+        <span class="fw-fs-klein font-bold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ b.items|length }}</span>
     </div>
     <div class="fw-card fw-dv overflow-hidden">
         {% for e in b.items %}
@@ -48,7 +48,7 @@
           <div class="flex items-center gap-4">
             <div class="text-center shrink-0 w-16">
                 <div class="text-sm font-bold fw-strong">{{ e.faellig|date:"d.m." }}</div>
-                <div class="text-[11px] {% if e.tage < 0 %}fw-kritisch font-semibold{% else %}fw-faint{% endif %}">
+                <div class="fw-fs-klein {% if e.tage < 0 %}fw-kritisch font-semibold{% else %}fw-faint{% endif %}">
                     {% if e.tage < 0 %}{{ e.tage }} T{% elif e.tage == 0 %}{% trans "heute" %}{% else %}in {{ e.tage }} T{% endif %}
                 </div>
             </div>

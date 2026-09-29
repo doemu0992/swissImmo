@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <!-- Ergebnis -->
     <div class="fw-card p-5 mt-4 flex items-center justify-between">
         <span class="font-bold fw-strong">{% trans "Unternehmenserfolg" %}</span>
-        <span class="text-xl font-extrabold {% if erfolg >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">
+        <span class="text-xl font-bold {% if erfolg >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">
             {% if erfolg >= 0 %}{% trans "Gewinn" %}{% else %}{% trans "Verlust" %}{% endif %} · CHF {{ erfolg|chf }}
         </span>
     </div>
@@ -273,21 +273,21 @@ document.addEventListener('DOMContentLoaded', function () {
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <input type="hidden" name="tab" value="journal">
         <label class="sm:col-span-4 block">
-            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Text oder Beleg-Nr" %}</span>
+            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Text oder Beleg-Nr" %}</span>
             <input name="q" value="{{ j_suche }}" placeholder="{% trans 'z.B. Hauswartung, 2024-0042' %}"
                    class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
         </label>
         <label class="sm:col-span-3 block">
-            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Konto" %}</span>
+            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Konto" %}</span>
             <input name="konto" value="{{ j_konto }}" list="journal-konten" placeholder="{% trans 'Nummer' %}"
                    class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2 font-mono">
         </label>
         <label class="sm:col-span-2 block">
-            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Von" %}</span>
+            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Von" %}</span>
             <input type="date" name="von" value="{{ j_von }}" class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
         </label>
         <label class="sm:col-span-2 block">
-            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Bis" %}</span>
+            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Bis" %}</span>
             <input type="date" name="bis" value="{{ j_bis }}" class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
         </label>
         <div class="sm:col-span-1 flex gap-2">
@@ -315,12 +315,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="flex items-start gap-3">
                     <div class="min-w-0 flex-1">
                         <div class="fw-strong {% if b.storniert_am %}line-through{% endif %}">
-                            {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
-                            {% if b.storniert_am %}<span class="text-[10px] font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
+                            {% if b.ist_storno %}<span class="fw-fs-mikro font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
+                            {% if b.storniert_am %}<span class="fw-fs-mikro font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
                             {{ b.beleg_text }}
                         </div>
-                        <div class="text-[11px] fw-faint mt-0.5">{{ b.datum|date:"d.m.Y" }} · #{{ b.beleg_nr }}</div>
-                        <div class="font-mono text-[11px] fw-mutet mt-1 {% if b.storniert_am %}line-through{% endif %}">
+                        <div class="fw-fs-klein fw-faint mt-0.5">{{ b.datum|date:"d.m.Y" }} · #{{ b.beleg_nr }}</div>
+                        <div class="font-mono fw-fs-klein fw-mutet mt-1 {% if b.storniert_am %}line-through{% endif %}">
                             {% blocktrans with soll=b.soll_konto.nummer haben=b.haben_konto.nummer %}{{ soll }} an {{ haben }}{% endblocktrans %}
                         </div>
                     </div>
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="hidden md:block overflow-x-auto">
             <table class="w-full min-w-max text-sm">
                 <thead>
-                <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+                <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                     <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th>
                     <th class="px-5 py-3 font-semibold">{% trans "Beleg" %}</th>
                     <th class="px-5 py-3 font-semibold">{% trans "Soll" %}</th>
@@ -375,8 +375,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tr class="hover:fw-flaeche2 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
                     <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
                     <td class="px-5 py-3 fw-ink max-w-[280px] truncate">
-                        {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
-                        {% if b.storniert_am %}<span class="text-[10px] font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
+                        {% if b.ist_storno %}<span class="fw-fs-mikro font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
+                        {% if b.storniert_am %}<span class="fw-fs-mikro font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
                         {{ b.beleg_text }}
                     </td>
                     <td class="px-5 py-3 fw-mutet font-mono text-xs whitespace-nowrap {% if b.storniert_am %}line-through{% endif %}">{{ b.soll_konto.nummer }} {{ b.soll_konto.bezeichnung|truncatechars:18 }}</td>

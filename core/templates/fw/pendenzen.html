@@ -28,7 +28,7 @@
                     </div>
                     <div class="text-right shrink-0">
                         <div class="text-sm font-semibold {% if f.tage < 14 %}fw-kritisch{% else %}fw-ink{% endif %}">{{ f.faellig|date:"d.m.Y" }}</div>
-                        <div class="text-[11px] fw-faint">{% blocktrans with n=f.tage %}in {{ n }} Tg.{% endblocktrans %}</div>
+                        <div class="fw-fs-klein fw-faint">{% blocktrans with n=f.tage %}in {{ n }} Tg.{% endblocktrans %}</div>
                     </div>
                 </a>
                 {% empty %}
@@ -54,7 +54,7 @@
                 {% for p in g.pendenzen %}
                 <div class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
-                        <button class="w-5 h-5 rounded border-2 fw-linie hover:fw-linie-gut flex items-center justify-center text-transparent hover:fw-gut" title="{% trans 'Als erledigt markieren' %}">{% zeichen 'gut' klasse='text-[10px]' %}</button>
+                        <button class="w-5 h-5 rounded border-2 fw-linie hover:fw-linie-gut flex items-center justify-center text-transparent hover:fw-gut" title="{% trans 'Als erledigt markieren' %}">{% zeichen 'gut' klasse='fw-fs-mikro' %}</button>
                     </form>
                     {% if p.ziel_url %}
                     <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 flex-1 group">
@@ -87,7 +87,7 @@
                 {% for p in erledigte %}
                 <div class="flex items-center gap-3 px-5 py-2.5">
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
-                        <button class="w-5 h-5 rounded fw-haken flex items-center justify-center" title="{% trans 'Wieder öffnen' %}">{% zeichen 'gut' klasse='text-[10px]' %}</button>
+                        <button class="w-5 h-5 rounded fw-haken flex items-center justify-center" title="{% trans 'Wieder öffnen' %}">{% zeichen 'gut' klasse='fw-fs-mikro' %}</button>
                     </form>
                     <span class="text-sm fw-faint line-through flex-1">{{ p.titel }}</span>
                     <span class="text-xs fw-faint">{{ p.erledigt_am|date:"d.m.Y" }}</span>

@@ -21,7 +21,7 @@
     <a href="?monate=6{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 6 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% trans "6 Mt." %}</a>
     <a href="?monate=12{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 12 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% trans "12 Mt." %}</a>
     <a href="?monate=0{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 0 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% trans "Alle" %}</a>
-    <span class="text-[11px] fw-faint ml-1">· {% trans "gekündigte immer sichtbar" %}</span>
+    <span class="fw-fs-klein fw-faint ml-1">· {% trans "gekündigte immer sichtbar" %}</span>
 </div>
 
 {% if rows %}
@@ -32,7 +32,7 @@
             <div class="min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
                     <a href="/neu/vertraege/{{ r.v.id }}/" class="font-bold fw-strong hover:fw-marke">{{ r.objekt }}</a>
-                    <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-{{ r.farbe }}-100 text-{{ r.farbe }}-700">{{ r.stufe }}</span>
+                    <span class="fw-fs-mikro font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-{{ r.farbe }}-100 text-{{ r.farbe }}-700">{{ r.stufe }}</span>
                 </div>
                 <div class="text-sm fw-mutet mt-1">
                     {% trans "Aktuell" %}: <span class="font-medium fw-ink">{{ r.mieter }}</span>
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Pipeline -->
-        <div class="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-[11px]">
+        <div class="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-2 text-center fw-fs-klein">
             <div class="rounded-lg py-2 fw-krit-flaeche fw-kritisch font-semibold">{% zeichen 'vertrag' %}<br>{% trans "Gekündigt" %}</div>
             <div class="rounded-lg py-2 {% if r.auszug %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
                 {% if r.auszug %}{% zeichen 'gut' %}{% else %}{% zeichen 'dokument' %}{% endif %}<br>{% trans "Rücknahme" %}</div>

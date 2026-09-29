@@ -156,7 +156,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     </select>
                     <button class="fw-flaeche border fw-linie hover:fw-linie-marke fw-ink hover:fw-marke text-xs font-semibold px-3 py-1.5 rounded-lg self-start">{% trans "Verknüpfen" %}</button>
                 </form>
-                {% if t.ausstattung_id %}<p class="text-[11px] fw-faint mt-2">{% trans "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements." %} <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">{% trans "Raumbuch" %}</a></p>{% endif %}
+                {% if t.ausstattung_id %}<p class="fw-fs-klein fw-faint mt-2">{% trans "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements." %} <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">{% trans "Raumbuch" %}</a></p>{% endif %}
                 {% if not ausstattung_elemente %}<p class="fw-klein mt-1">{% trans "Noch keine Ausstattung am Objekt erfasst." %}</p>{% endif %}
                 {% else %}
                 <p class="fw-klein">{% trans "Kein Mietobjekt zugeordnet." %}</p>
@@ -188,7 +188,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                     <span class="fw-t">{{ n.absender_name }}</span>
-                    {% if n.is_intern %}<span class="text-[10px] font-bold uppercase fw-flaeche2 fw-mutet px-1.5 py-0.5 rounded">{% trans "intern" %}</span>{% endif %}
+                    {% if n.is_intern %}<span class="fw-fs-mikro font-bold uppercase fw-flaeche2 fw-mutet px-1.5 py-0.5 rounded">{% trans "intern" %}</span>{% endif %}
                     <span class="fw-klein">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="text-sm fw-ink mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
@@ -309,11 +309,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <div class="font-semibold fw-strong">{{ a.handwerker }}</div>
                     <div class="text-xs fw-mutet">{% blocktrans with d=a.beauftragt_am|date:"d.m.Y" %}Beauftragt {{ d }}{% endblocktrans %} · {% trans "Status:" %} {{ a.status }}</div>
                     {% if a.freigabe_status == 'ausstehend' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-warn-flaeche fw-warnton">{% trans "⏳ Eigentümer-Freigabe ausstehend" %}</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded fw-fs-klein font-semibold fw-warn-flaeche fw-warnton">{% trans "⏳ Eigentümer-Freigabe ausstehend" %}</span>
                     {% elif a.freigabe_status == 'freigegeben' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-gut-flaeche fw-gut">✓ {% blocktrans with d=a.freigabe_datum|date:"d.m.Y" %}Freigegeben {{ d }}{% endblocktrans %}</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded fw-fs-klein font-semibold fw-gut-flaeche fw-gut">✓ {% blocktrans with d=a.freigabe_datum|date:"d.m.Y" %}Freigegeben {{ d }}{% endblocktrans %}</span>
                     {% elif a.freigabe_status == 'abgelehnt' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-krit-flaeche fw-kritisch">{% trans "✗ Abgelehnt" %}</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded fw-fs-klein font-semibold fw-krit-flaeche fw-kritisch">{% trans "✗ Abgelehnt" %}</span>
                     {% endif %}
                     {% if a.freigabe_kommentar %}<div class="text-xs fw-mutet mt-1 italic">„{{ a.freigabe_kommentar }}"</div>{% endif %}
                     {% if a.bemerkung %}<div class="text-xs fw-mutet mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
@@ -372,7 +372,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         {% if t.foto %}
         <a href="{{ t.foto.url }}" target="_blank" rel="noopener" class="block group relative">
             <img src="{{ t.foto.url }}" alt="Schaden" class="fw-bild">
-            <span class="absolute bottom-1 left-1 text-[10px] fw-vorhang text-white px-1.5 py-0.5 rounded">{% trans "Erstmeldung" %}</span>
+            <span class="absolute bottom-1 left-1 fw-fs-mikro fw-vorhang text-white px-1.5 py-0.5 rounded">{% trans "Erstmeldung" %}</span>
         </a>
         {% endif %}
         {% for f in fotos %}
@@ -385,7 +385,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {% csrf_token %}
                 <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
             </form>
-            {% if f.hochgeladen_am %}<span class="absolute bottom-1 left-1 text-[10px] fw-vorhang text-white px-1.5 py-0.5 rounded">{{ f.hochgeladen_am|date:"d.m.Y" }}</span>{% endif %}
+            {% if f.hochgeladen_am %}<span class="absolute bottom-1 left-1 fw-fs-mikro fw-vorhang text-white px-1.5 py-0.5 rounded">{{ f.hochgeladen_am|date:"d.m.Y" }}</span>{% endif %}
         </div>
         {% endfor %}
     </div>

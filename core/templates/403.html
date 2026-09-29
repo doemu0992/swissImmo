@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Keine Berechtigung – swissImmo" %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230f6f6a%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
 {% include 'core/_assets_aussen.html' %}
     <style>
         body { font-family: 'IBM Plex Sans', sans-serif; }
@@ -20,11 +20,13 @@
     {% endcomment %}
     <div class="w-full max-w-md fw-flaeche rounded-2xl border fw-linie p-8 text-center">
         <div class="w-14 h-14 rounded-full fw-warn-flaeche fw-warnton flex items-center justify-center mx-auto mb-5 text-2xl">🔒</div>
-        <h1 class="text-xl font-extrabold mb-3">{% trans "Dafür fehlt Ihrer Rolle die Berechtigung" %}</h1>
+        <h1 class="text-xl font-bold mb-3">{% trans "Dafür fehlt Ihrer Rolle die Berechtigung" %}</h1>
         <p class="text-sm fw-mutet leading-relaxed">
             {% trans "Sie sind angemeldet — dieser Bereich ist jedoch einer anderen Rolle vorbehalten. Wenn Sie damit arbeiten müssen, kann Ihnen die Verwaltung die passende Rolle zuteilen." %}
         </p>
-        <a href="/neu/" class="inline-block mt-6 fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
+{% comment %} Ziel nach Herkunft: Mieter- und Eigentümerportal landen in
+   ihrem Portal, nicht vor der Anmeldung des Teams. {% endcomment %}
+        <a href="{% if request.path|slice:':8' == '/mieter/' %}/mieter/{% elif request.path|slice:':8' == '/portal/' %}/portal/{% else %}/neu/{% endif %}" class="inline-block mt-6 fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
             {% trans "Zur Übersicht" %}
         </a>
     </div>

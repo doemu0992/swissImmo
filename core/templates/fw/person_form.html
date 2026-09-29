@@ -5,9 +5,9 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/personen/{{ lg_query }}" class="hover:fw-marke">{% trans "Personen" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     {% if not ist_neu %}<a href="/neu/personen/{{ m.id }}/" class="hover:fw-marke">{{ m.display_name }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}{% endif %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}{% endif %}
     <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neue Person" %}{% else %}{% trans "Bearbeiten" %}{% endif %}</span>
 </nav>
 
@@ -135,7 +135,7 @@
     <!-- Wohnadresse -->
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">{% trans "Wohnadresse" %}</h3>
-        <p class="text-[11px] fw-faint -mt-2">{% trans "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite." %}</p>
+        <p class="fw-fs-klein fw-faint -mt-2">{% trans "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite." %}</p>
         <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr." %}</label>
             <input name="strasse" value="{{ m.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Adresszusatz" %}</label>
@@ -153,7 +153,7 @@
     <!-- Korrespondenzadresse (optional, hat Vorrang für die Zustellung) -->
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">{% trans "Korrespondenzadresse" %} <span class="font-normal fw-faint">{% trans "(optional)" %}</span></h3>
-        <p class="text-[11px] fw-faint -mt-2">{% trans "Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll (z.B. c/o, Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare dorthin adressiert." %}</p>
+        <p class="fw-fs-klein fw-faint -mt-2">{% trans "Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll (z.B. c/o, Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare dorthin adressiert." %}</p>
         <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr. / c/o" %}</label>
             <input name="k_strasse" value="{{ korr_adr.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Adresszusatz" %}</label>
@@ -171,7 +171,7 @@
         <!-- Aufenthalt -->
         <div class="fw-card p-5 space-y-4">
             <h3 class="font-bold fw-strong text-sm">{% trans "Aufenthalt" %}</h3>
-            <p class="text-[11px] fw-faint -mt-2">{% trans "Bei Vermietung an ausländische Staatsangehörige Pflichtangabe." %}</p>
+            <p class="fw-fs-klein fw-faint -mt-2">{% trans "Bei Vermietung an ausländische Staatsangehörige Pflichtangabe." %}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Aufenthaltsbewilligung" %}</label>
                     <select name="aufenthaltsbewilligung" id="f_bewilligung" onchange="bewilligungHinweis()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
@@ -184,7 +184,7 @@
             <div id="bewilligung_hinweis" class="hidden text-xs rounded-lg px-3 py-2.5 fw-info-flaeche border fw-linie fw-info">
                 <p id="bewilligung_hinweis_txt" class="font-medium"></p>
                 {% comment %}Rechtshinweis (Art. 253 ff. OR, Meldepflicht) und die Hinweise je Aufenthaltstitel im Skript bleiben deutsch — Übersetzung erst nach juristischer Prüfung.{% endcomment %}
-                <p class="text-[11px] fw-info mt-1">Mieten ist für alle Aufenthaltstitel zulässig (Privatrecht, Art. 253 ff. OR) — der Titel ist kein Mietverbot, sondern ein Risiko-/Verfahrenshinweis. Meldepflicht: Anmeldung bei der Einwohnerkontrolle binnen 14 Tagen (in einzelnen Kantonen zusätzlich Vermieter-Meldepflicht).</p>
+                <p class="fw-fs-klein fw-info mt-1">Mieten ist für alle Aufenthaltstitel zulässig (Privatrecht, Art. 253 ff. OR) — der Titel ist kein Mietverbot, sondern ein Risiko-/Verfahrenshinweis. Meldepflicht: Anmeldung bei der Einwohnerkontrolle binnen 14 Tagen (in einzelnen Kantonen zusätzlich Vermieter-Meldepflicht).</p>
             </div>
         </div>
 

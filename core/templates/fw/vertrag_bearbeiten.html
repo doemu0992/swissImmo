@@ -6,9 +6,9 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/" class="hover:fw-marke">{% trans "Verträge" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{% trans "Bearbeiten" %}</span>
 </nav>
 
@@ -21,12 +21,12 @@
 
 {% if gesperrt %}
 {# Hinweis zu Art. 269d OR: bleibt bis zur juristischen Durchsicht Deutsch. #}
-<div class="max-w-3xl fw-warn-flaeche border fw-linie-warn rounded-xl px-4 py-3 mb-5 text-[13px] fw-warnton">
+<div class="max-w-3xl fw-warn-flaeche border fw-linie-warn rounded-xl px-4 py-3 mb-5 fw-fs-fein fw-warnton">
     <div class="font-bold mb-0.5">{% zeichen 'gesperrt' klasse='mr-1.5' %}Aktiver Vertrag — eingeschränkte Bearbeitung</div>
     Miete, Objekt, Mieter, Mietbeginn und MWST sind gesperrt (nur zur Ansicht). Eine <b>Mietzinsänderung</b> läuft über das <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="underline font-semibold">amtliche Formular (Art. 269d)</a>. Hier änderst du nur Detailfelder wie Fristen, Nebenräume und Vereinbarungen.
 </div>
 {% else %}
-<div class="max-w-3xl fw-markenflaeche border fw-linie-marke rounded-xl px-4 py-3 mb-5 text-[13px] fw-marke">
+<div class="max-w-3xl fw-markenflaeche border fw-linie-marke rounded-xl px-4 py-3 mb-5 fw-fs-fein fw-marke">
     {% zeichen 'bearbeiten' klasse='mr-1.5' %}<b>{% trans "Entwurf" %}</b> — {% blocktrans trimmed with id=v.einheit_id %}alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a href="/neu/objekte/{{ id }}/?tab=mietzins" class="underline font-semibold">Objekt → Mietzins</a> gepflegt.{% endblocktrans %}
 </div>
 {% endif %}
@@ -40,7 +40,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mieter" %}</label>
                 {% if gesperrt %}
-                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.mieter.display_name }} <span class="text-[10px] fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
+                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.mieter.display_name }} <span class="fw-fs-mikro fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
                 {% else %}
                 <select name="mieter_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for m in mieter_liste %}<option value="{{ m.id }}" {% if m.id == v.mieter_id %}selected{% endif %}>{{ m.display_name }}</option>{% endfor %}
@@ -48,7 +48,7 @@
             </div>
             <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Objekt" %}</label>
                 {% if gesperrt %}
-                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.einheit.bezeichnung }} — {{ v.einheit.liegenschaft.strasse }} <span class="text-[10px] fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
+                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.einheit.bezeichnung }} — {{ v.einheit.liegenschaft.strasse }} <span class="fw-fs-mikro fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
                 {% else %}
                 <select name="einheit_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for o in objekte %}<option value="{{ o.id }}" {% if o.id == v.einheit_id %}selected{% endif %}>{{ o.bezeichnung }} — {{ o.liegenschaft.strasse }}</option>{% endfor %}
@@ -69,7 +69,7 @@
     <div class="fw-card p-5 space-y-4">
         <h3 class="font-bold fw-strong text-sm">{% trans "Mietdauer & Kündigung" %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietbeginn" %}{% if gesperrt %} {% zeichen 'gesperrt' klasse='text-[10px] fw-faint' %}{% endif %}</label>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietbeginn" %}{% if gesperrt %} {% zeichen 'gesperrt' klasse='fw-fs-mikro fw-faint' %}{% endif %}</label>
                 {% if gesperrt %}
                 <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.beginn|date:"d.m.Y" }}</div>
                 {% else %}
@@ -97,7 +97,7 @@
                 <input name="index_weitergabe_prozent" type="number" step="0.1" min="0" max="100"
                        value="{{ v.index_weitergabe_prozent }}"
                        class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num">
-                <p class="text-[11px] fw-faint mt-1">{% trans "Anteil der Teuerung, der weitergegeben wird. Änderung wird protokolliert." %}</p></div>
+                <p class="fw-fs-klein fw-faint mt-1">{% trans "Anteil der Teuerung, der weitergegeben wird. Änderung wird protokolliert." %}</p></div>
             <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Index-Mindestintervall (Monate)" %}</label>
                 <input name="index_intervall_monate" type="number" step="1" min="1"
                        value="{{ v.index_intervall_monate }}"
@@ -109,7 +109,7 @@
 
     <!-- Mietzins -->
     <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Mietzins" %}{% if gesperrt %} <span class="text-[11px] font-normal fw-faint ml-1">{% zeichen 'gesperrt' %} {% trans "gesperrt (amtliches Formular für Änderungen)" %}</span>{% endif %}</h3>
+        <h3 class="font-bold fw-strong text-sm">{% trans "Mietzins" %}{% if gesperrt %} <span class="fw-fs-klein font-normal fw-faint ml-1">{% zeichen 'gesperrt' %} {% trans "gesperrt (amtliches Formular für Änderungen)" %}</span>{% endif %}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nettomietzins (CHF)" %}</label>
                 {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">CHF {{ v.netto_mietzins|chf }}</div>
@@ -155,7 +155,7 @@
                 <input name="kautions_konto" value="{{ v.kautions_konto }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         {% endif %}
-        <p class="text-[11px] fw-faint">{% trans "Gratismonate/Rabatt und datierte Anpassungen" %}: <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="fw-marke hover:underline">{% trans "Objekt → Mietzins" %}</a>.</p>
+        <p class="fw-fs-klein fw-faint">{% trans "Gratismonate/Rabatt und datierte Anpassungen" %}: <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="fw-marke hover:underline">{% trans "Objekt → Mietzins" %}</a>.</p>
     </div>
 
     <!-- Nutzung & Vereinbarungen -->

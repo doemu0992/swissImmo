@@ -22,7 +22,7 @@
         <input type="hidden" name="plan" value="{{ aktiver_plan }}">
         <input type="hidden" name="jaehrlich" value="on">
         <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold {% if jaehrlich %}fw-btn fw-primary{% else %}fw-mutet hover:fw-ink{% endif %}">
-            {% trans "Jährlich" %} <span class="text-[10px] font-bold {% if jaehrlich %}fw-faint{% else %}fw-gut{% endif %}">−15 %</span></button>
+            {% trans "Jährlich" %} <span class="fw-fs-mikro font-bold {% if jaehrlich %}fw-faint{% else %}fw-gut{% endif %}">−15 %</span></button>
     </form>
 </div>
 {% endif %}
@@ -31,16 +31,16 @@
     {% for p in plaene %}
     <div class="relative fw-flaeche rounded-xl border shadow-sm overflow-hidden
         {% if p.empfohlen %}fw-linie-marke ring-2 fw-fokusring{% else %}fw-linie{% endif %}">
-        {% if p.empfohlen %}<div class="absolute top-0 right-0 fw-btn fw-primary text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl">{% trans "Empfohlen" %}</div>{% endif %}
+        {% if p.empfohlen %}<div class="absolute top-0 right-0 fw-btn fw-primary fw-fs-mikro font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl">{% trans "Empfohlen" %}</div>{% endif %}
         <div class="p-6">
             <div class="flex items-center gap-2">
-                <h2 class="text-lg font-extrabold fw-strong">{{ p.name }}</h2>
-                {% if p.aktiv %}<span class="text-[10px] font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-0.5 rounded-full">{% trans "Aktiv" %}</span>{% endif %}
+                <h2 class="text-lg font-bold fw-strong">{{ p.name }}</h2>
+                {% if p.aktiv %}<span class="fw-fs-mikro font-bold uppercase tracking-wide fw-gut-flaeche fw-gut px-2 py-0.5 rounded-full">{% trans "Aktiv" %}</span>{% endif %}
             </div>
             <p class="text-xs fw-faint mt-0.5 mb-4">{{ p.zielgruppe }}</p>
 
             <div class="flex items-end gap-1">
-                <span class="text-2xl sm:text-3xl font-extrabold fw-strong">CHF {{ p.monatlich }}</span>
+                <span class="text-2xl sm:text-3xl font-bold fw-strong">CHF {{ p.monatlich }}</span>
                 <span class="text-sm fw-faint mb-1">{% trans "/ Monat" %}</span>
             </div>
             <p class="text-xs fw-faint mt-1">

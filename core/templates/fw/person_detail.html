@@ -127,8 +127,16 @@ alten Liegenschaft betreut.
         {% comment %} Bonitätsdaten und Auskunftsbegehren zeigt der Prototyp ebenfalls.
            Beides wird heute nirgends erfasst — eine Zeile «keine» wäre eine
            Behauptung über etwas, das gar nicht geführt wird. {% endcomment %}
+        {% comment %} Früher ein <a href> auf dsg-loeschen — die Ansicht nimmt aber
+           nur POST an und schickte jeden Klick kommentarlos zurück. Jetzt dasselbe
+           Formular wie im «Mehr»-Menü, mit derselben Rückfrage. {% endcomment %}
         <div class="fw-fuss"><span>DSG-konform</span>
-            <a href="/neu/personen/{{ m.id }}/dsg-loeschen/" class="fw-link">Löschbegehren</a></div>
+            {% if m.anonymisiert %}<span>{% trans "anonymisiert" %}</span>{% else %}
+            <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/" class="inline"
+                  onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
+                {% csrf_token %}
+                <button type="submit" class="fw-link">{% trans "Löschbegehren" %}</button>
+            </form>{% endif %}</div>
     </div>
   </div>
 </div>
@@ -461,8 +469,8 @@ alten Liegenschaft betreut.
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{% blocktrans count n=g.dokumente|length %}{{ n }} Dokument{% plural %}{{ n }} Dokumente{% endblocktrans %}</span>
             <span class="fw-rechts">
-            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a>
-            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a>{% endif %}
+            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
+            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>{% endif %}
             </span>
         </summary>
         {% for d in g.dokumente %}

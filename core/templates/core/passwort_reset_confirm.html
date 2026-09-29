@@ -9,12 +9,12 @@
 <form method="post" class="space-y-5">
     {% csrf_token %}
     <div>
-        <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Neues Passwort" %}</label>
+        <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Neues Passwort" %}</label>
         <input type="password" name="new_password1" required autofocus autocomplete="new-password"
                class="w-full fw-flaeche2 border fw-linie px-4 py-3 rounded-xl text-sm font-bold fw-ink focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
     </div>
     <div>
-        <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">{% trans "Passwort wiederholen" %}</label>
+        <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Passwort wiederholen" %}</label>
         <input type="password" name="new_password2" required autocomplete="new-password"
                class="w-full fw-flaeche2 border fw-linie px-4 py-3 rounded-xl text-sm font-bold fw-ink focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
     </div>

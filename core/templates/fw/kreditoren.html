@@ -32,13 +32,13 @@
         Datum, IBAN und QR-Referenz werden automatisch ausgelesen und je Beleg eine Rechnung mit Status «Neu» angelegt.
         Zeile anklicken, um die Werte neben der Beleg-Vorschau zu prüfen/korrigieren, dann freigeben.{% endblocktrans %}</p>
     {% if rechnungs_mail %}
-    <div class="mb-4 rounded-lg border fw-linie fw-info-flaeche px-4 py-3 text-[12.5px] fw-info">
+    <div class="mb-4 rounded-lg border fw-linie fw-info-flaeche px-4 py-3 fw-fs-fein fw-info">
         {% zeichen 'senden' klasse='mr-1' %}<b>{% trans "Rechnungen per E-Mail" %}:</b> {% blocktrans trimmed with mail=rechnungs_mail %}Handwerker/Lieferanten können ihre Rechnung direkt an
         <b>{{ mail }}</b> senden — PDF-/Foto-Anhänge werden automatisch gescannt und erscheinen hier als Status «Neu».{% endblocktrans %}
     </div>
     {% endif %}
     {% if not ki_aktiv %}
-    <div class="mb-4 rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
+    <div class="mb-4 rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 fw-fs-fein fw-warnton">
         {% zeichen 'hinweis' klasse='mr-1' %}<b>{% trans "KI nicht konfiguriert" %}</b> — {% blocktrans trimmed %}es läuft nur die regelbasierte Erkennung (IBAN/Betrag/Datum aus Text-PDFs; Foto-Belege werden nicht ausgelesen). Für die volle KI-Erkennung den <code>GROQ_API_KEY</code> unter
         <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.{% endblocktrans %}
     </div>
@@ -66,45 +66,49 @@
     </script>
 </div>
 
-<div id="kredform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
+<div id="kredform" class="{% if not neu_fehler %}hidden {% endif %}fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
     <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'rechnung' klasse='fw-marke mr-1.5' %}{% trans "Kreditorenrechnung erfassen" %}</h3>
-    <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3" novalidate>
         {% csrf_token %}
+        {% comment %} Audit Etappe 2: Mit Fehlern kommt dieses Formular offen und mit der
+           Eingabe zurück; die Meldung steht am Feld. Nur die Belegdatei muss neu
+           gewählt werden — Browser füllen Dateifelder aus Sicherheitsgründen nie vor. {% endcomment %}
+        {% if neu_fehler %}<div class="sm:col-span-3 fw-formfehler" role="alert"><b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> — {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}</div>{% endif %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <div class="sm:col-span-2"><label for="kr-lieferant" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Lieferant *" %}</label>
-            <input id="kr-lieferant" name="lieferant" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <input id="kr-lieferant" name="lieferant" aria-required="true" value="{{ neu_werte.lieferant }}" class="fw-feld w-full"{% if neu_fehler.lieferant %} aria-invalid="true" aria-describedby="kr-lieferant_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.lieferant feld_id="kr-lieferant" %}</div>
         <div><label for="kr-betrag" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betrag brutto (CHF) *" %}</label>
-            <input id="kr-betrag" name="betrag" required inputmode="decimal" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 text-right tabular-nums"></div>
+            <input id="kr-betrag" name="betrag" required inputmode="decimal" value="{{ neu_werte.betrag }}" class="fw-feld w-full text-right tabular-nums"{% if neu_fehler.betrag %} aria-invalid="true" aria-describedby="kr-betrag_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.betrag feld_id="kr-betrag" %}</div>
         <div><label for="kr-lg" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
-            <select id="kr-lg" name="liegenschaft_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <select id="kr-lg" name="liegenschaft_id" class="fw-feld w-full"{% if neu_fehler.liegenschaft_id %} aria-invalid="true" aria-describedby="kr-lg_fehler"{% endif %}>
                 <option value="">— {% trans "keine" %} —</option>
-                {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
-            </select></div>
+                {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if neu_werte %}{% if neu_werte.liegenschaft_id == lg.id|stringformat:"s" %}selected{% endif %}{% elif aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
+            </select>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.liegenschaft_id feld_id="kr-lg" %}</div>
         <div><label for="kr-konto" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Aufwandskonto" %}</label>
-            <select id="kr-konto" name="konto_id" onchange="fwHnkSync(this)" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <select id="kr-konto" name="konto_id" onchange="fwHnkSync(this)" class="fw-feld w-full"{% if neu_fehler.konto_id %} aria-invalid="true" aria-describedby="kr-konto_fehler"{% endif %}>
                 <option value="">— {% trans "bei Freigabe wählen" %} —</option>
-                {% for k in aufwand_konten %}<option value="{{ k.id }}" {% if k.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
-            </select></div>
+                {% for k in aufwand_konten %}<option value="{{ k.id }}" {% if neu_werte.konto_id == k.id|stringformat:"s" %}selected{% endif %} {% if k.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+            </select>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.konto_id feld_id="kr-konto" %}</div>
         <div><label for="kr-mwst" class="block text-xs font-semibold fw-mutet mb-1">{% trans "MWST-Satz (%)" %}</label>
-            <input id="kr-mwst" name="mwst_satz" inputmode="decimal" placeholder="{% trans 'z.B. 8.1 (0 = keine)' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <input id="kr-mwst" name="mwst_satz" inputmode="decimal" placeholder="{% trans 'z.B. 8.1 (0 = keine)' %}" value="{{ neu_werte.mwst_satz }}" class="fw-feld w-full"{% if neu_fehler.mwst_satz %} aria-invalid="true" aria-describedby="kr-mwst_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.mwst_satz feld_id="kr-mwst" %}</div>
         <div><label for="kr-datum" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Rechnungsdatum" %}</label>
-            <input id="kr-datum" type="date" name="datum" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <input id="kr-datum" type="date" name="datum" value="{{ neu_werte.datum }}" class="fw-feld w-full"{% if neu_fehler.datum %} aria-invalid="true" aria-describedby="kr-datum_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.datum feld_id="kr-datum" %}</div>
         <div><label for="kr-faellig" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Fällig am" %}</label>
-            <input id="kr-faellig" type="date" name="faellig_am" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <input id="kr-faellig" type="date" name="faellig_am" value="{{ neu_werte.faellig_am }}" class="fw-feld w-full"{% if neu_fehler.faellig_am %} aria-invalid="true" aria-describedby="kr-faellig_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.faellig_am feld_id="kr-faellig" %}</div>
         <div><label for="kr-referenz" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Referenz" %}</label>
-            <input id="kr-referenz" name="referenz" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <input id="kr-referenz" name="referenz" value="{{ neu_werte.referenz }}" class="fw-feld w-full"{% if neu_fehler.referenz %} aria-invalid="true" aria-describedby="kr-referenz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.referenz feld_id="kr-referenz" %}</div>
         <div><label for="kr-iban" class="block text-xs font-semibold fw-mutet mb-1">{% trans "IBAN des Lieferanten" %}</label>
-            <input id="kr-iban" name="iban" placeholder="{% trans 'CH..' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono">
-            <span class="text-[11px] fw-faint">{% trans "Ohne IBAN kann die Rechnung nicht in den Zahllauf." %}</span></div>
+            <input id="kr-iban" name="iban" placeholder="{% trans 'CH..' %}" value="{{ neu_werte.iban }}" class="fw-feld w-full font-mono"{% if neu_fehler.iban %} aria-invalid="true" aria-describedby="kr-iban_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.iban feld_id="kr-iban" %}
+            <span class="fw-fs-klein fw-faint">{% trans "Ohne IBAN kann die Rechnung nicht in den Zahllauf." %}</span></div>
         <div><label for="kr-leist-von" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Leistung von" %} <span class="fw-faint font-normal">{% trans "(HNK-Periode)" %}</span></label>
-            <input id="kr-leist-von" type="date" name="leistungs_von" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <input id="kr-leist-von" type="date" name="leistungs_von" value="{{ neu_werte.leistungs_von }}" class="fw-feld w-full"{% if neu_fehler.leistungs_von %} aria-invalid="true" aria-describedby="kr-leist-von_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.leistungs_von feld_id="kr-leist-von" %}</div>
         <div><label for="kr-leist-bis" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Leistung bis" %}</label>
-            <input id="kr-leist-bis" type="date" name="leistungs_bis" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <input id="kr-leist-bis" type="date" name="leistungs_bis" value="{{ neu_werte.leistungs_bis }}" class="fw-feld w-full"{% if neu_fehler.leistungs_bis %} aria-invalid="true" aria-describedby="kr-leist-bis_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.leistungs_bis feld_id="kr-leist-bis" %}</div>
         <div><label for="kr-beleg" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beleg (PDF/Bild)" %}</label>
             <input id="kr-beleg" type="file" name="beleg_scan" class="w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white"></div>
         <div class="sm:col-span-2 flex items-center">
-            <label class="inline-flex items-center gap-2 text-sm fw-mutet cursor-pointer"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">{% trans "In Nebenkostenabrechnung einbeziehen (HNK)" %}</label>
-            <span class="ml-2 text-[11px] fw-faint">— {% trans "wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt" %}</span></div>
+            <label class="inline-flex items-center gap-2 text-sm fw-mutet cursor-pointer"><input type="checkbox" name="is_hnk_relevant" {% if neu_werte.is_hnk_relevant %}checked{% endif %} class="fw-akzent">{% trans "In Nebenkostenabrechnung einbeziehen (HNK)" %}</label>
+            <span class="ml-2 fw-fs-klein fw-faint">— {% trans "wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt" %}</span></div>
         <div class="sm:col-span-3"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen (Status: Neu)" %}</button></div>
     </form>
 </div>
@@ -157,7 +161,7 @@
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Lieferant" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Konto" %}</th>
@@ -180,7 +184,7 @@
                     HNK entscheidet, ob diese Rechnung den Mietern weiterverrechnet
                     wird. Bisher stand das nur an den Teilpositionen — an der
                     Rechnung selbst war es unsichtbar, bis die NK-Abrechnung lief.
-                {% endcomment %}{% if row.k.is_hnk_relevant %} <span class="ml-1 text-[10px] font-semibold fw-warn-flaeche fw-warnton rounded px-1.5 py-0.5" title="{% trans 'Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet' %}">{% trans "HNK" %}</span>{% endif %}</td>
+                {% endcomment %}{% if row.k.is_hnk_relevant %} <span class="ml-1 fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton rounded px-1.5 py-0.5" title="{% trans 'Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet' %}">{% trans "HNK" %}</span>{% endif %}</td>
                 <td class="px-5 py-3.5 whitespace-nowrap {% if row.ueberfaellig %}font-semibold fw-kritisch{% else %}fw-mutet{% endif %}">{% if row.faellig %}{{ row.faellig|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">{{ row.betrag|chf }}</td>
                 <td class="px-5 py-3.5"><span class="fw-chip whitespace-nowrap {{ row.pill_cls }}">● {{ row.status_label }}</span></td>
@@ -248,59 +252,62 @@
                 </td>
             </tr>
             {% if row.k.status == 'neu' %}
-            <tr id="kedit-{{ row.k.id }}" class="hidden fw-markenflaeche">
+            <tr id="kedit-{{ row.k.id }}" class="{% if not row.offen %}hidden {% endif %}fw-markenflaeche">
                 <td colspan="7" class="px-5 py-4">
                     {% if row.k.fehlermeldung %}
-                    <div class="mb-3 rounded-lg border fw-linie-warn fw-warn-flaeche px-3 py-2 text-[12px] fw-warnton">{% zeichen 'warnung' klasse='mr-1' %}{{ row.k.fehlermeldung }}</div>
+                    <div class="mb-3 rounded-lg border fw-linie-warn fw-warn-flaeche px-3 py-2 fw-fs-fein fw-warnton">{% zeichen 'warnung' klasse='mr-1' %}{{ row.k.fehlermeldung }}</div>
                     {% endif %}
                     <div class="grid grid-cols-1 {% if row.beleg_url %}lg:grid-cols-2{% endif %} gap-5 items-start">
                     {% if row.beleg_url %}
                     <!-- Beleg-Vorschau: gescannte Rechnung neben den Feldern prüfen -->
                     <div>
-                        <div class="text-[11px] font-semibold uppercase tracking-wider fw-faint mb-1.5">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg-Vorschau" %}</div>
+                        <div class="fw-fs-klein font-semibold uppercase tracking-wider fw-faint mb-1.5">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg-Vorschau" %}</div>
                         {% if row.beleg_ist_pdf %}
                         <embed src="{{ row.beleg_url }}#toolbar=0" type="application/pdf" class="w-full h-[26rem] rounded-lg border fw-linie fw-flaeche">
                         {% else %}
                         <img src="{{ row.beleg_url }}" alt="Beleg" class="max-h-[26rem] w-auto rounded-lg border fw-linie fw-flaeche">
                         {% endif %}
-                        <a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="inline-block mt-1.5 text-[11px] fw-marke hover:underline">{% zeichen 'extern' klasse='mr-1' %}{% trans "In neuem Tab öffnen" %}</a>
+                        <a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="inline-block mt-1.5 fw-fs-klein fw-marke hover:underline">{% zeichen 'extern' klasse='mr-1' %}{% trans "In neuem Tab öffnen" %}</a>
                     </div>
                     {% endif %}
-                    <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3" novalidate>
                         {% csrf_token %}
+                        {% comment %} Audit Etappe 2: Werte kommen aus `row.werte` — nach einem Fehler
+                           ist das die Eingabe, sonst der gespeicherte Stand. {% endcomment %}
+                        {% if row.fehler %}<div class="col-span-2 fw-formfehler" role="alert"><b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> — {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}</div>{% endif %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                        <div class="col-span-2"><label for="kc-lieferant-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Lieferant" %}</label>
-                            <input id="kc-lieferant-{{ row.k.id }}" name="lieferant" value="{{ row.k.lieferant }}" required class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-betrag-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Betrag brutto (CHF)" %}</label>
-                            <input id="kc-betrag-{{ row.k.id }}" name="betrag" value="{% if row.k.betrag %}{{ row.k.betrag|stringformat:'.2f' }}{% endif %}" inputmode="decimal" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5 text-right tabular-nums"></div>
-                        <div><label for="kc-datum-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Rechnungsdatum" %}</label>
-                            <input id="kc-datum-{{ row.k.id }}" type="date" name="datum" value="{{ row.k.datum|date:'Y-m-d' }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-faellig-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Fällig am" %}</label>
-                            <input id="kc-faellig-{{ row.k.id }}" type="date" name="faellig_am" value="{{ row.k.faellig_am|date:'Y-m-d' }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-referenz-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Referenz" %}</label>
-                            <input id="kc-referenz-{{ row.k.id }}" name="referenz" value="{{ row.k.referenz }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-leist-von-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Leistung von" %} <span class="fw-faint font-normal">{% trans "(HNK)" %}</span></label>
-                            <input id="kc-leist-von-{{ row.k.id }}" type="date" name="leistungs_von" value="{{ row.k.leistungs_von|date:'Y-m-d' }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-leist-bis-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Leistung bis" %}</label>
-                            <input id="kc-leist-bis-{{ row.k.id }}" type="date" name="leistungs_bis" value="{{ row.k.leistungs_bis|date:'Y-m-d' }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2"><label for="kc-iban-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">IBAN</label>
-                            <input id="kc-iban-{{ row.k.id }}" name="iban" value="{{ row.k.iban }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5 font-mono"></div>
-                        <div><label for="kc-lg-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
-                            <select id="kc-lg-{{ row.k.id }}" name="liegenschaft_id" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5">
+                        <div class="col-span-2"><label for="kc-lieferant-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Lieferant" %}</label>
+                            <input id="kc-lieferant-{{ row.k.id }}" name="lieferant" required aria-required="true" value="{{ row.werte.lieferant }}" class="fw-feld w-full"{% if row.fehler.lieferant %} aria-invalid="true" aria-describedby="kc-lieferant-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.lieferant %}<p id="kc-lieferant-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.lieferant }}</p>{% endif %}</div>
+                        <div><label for="kc-betrag-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Betrag brutto (CHF)" %}</label>
+                            <input id="kc-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" value="{{ row.werte.betrag }}" class="fw-feld w-full text-right tabular-nums"{% if row.fehler.betrag %} aria-invalid="true" aria-describedby="kc-betrag-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.betrag %}<p id="kc-betrag-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.betrag }}</p>{% endif %}</div>
+                        <div><label for="kc-datum-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Rechnungsdatum" %}</label>
+                            <input id="kc-datum-{{ row.k.id }}" type="date" name="datum" value="{{ row.werte.datum }}" class="fw-feld w-full"{% if row.fehler.datum %} aria-invalid="true" aria-describedby="kc-datum-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.datum %}<p id="kc-datum-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.datum }}</p>{% endif %}</div>
+                        <div><label for="kc-faellig-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Fällig am" %}</label>
+                            <input id="kc-faellig-{{ row.k.id }}" type="date" name="faellig_am" value="{{ row.werte.faellig_am }}" class="fw-feld w-full"{% if row.fehler.faellig_am %} aria-invalid="true" aria-describedby="kc-faellig-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.faellig_am %}<p id="kc-faellig-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.faellig_am }}</p>{% endif %}</div>
+                        <div><label for="kc-referenz-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Referenz" %}</label>
+                            <input id="kc-referenz-{{ row.k.id }}" name="referenz" value="{{ row.werte.referenz }}" class="fw-feld w-full"{% if row.fehler.referenz %} aria-invalid="true" aria-describedby="kc-referenz-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.referenz %}<p id="kc-referenz-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.referenz }}</p>{% endif %}</div>
+                        <div><label for="kc-leist-von-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Leistung von" %} <span class="fw-faint font-normal">{% trans "(HNK)" %}</span></label>
+                            <input id="kc-leist-von-{{ row.k.id }}" type="date" name="leistungs_von" value="{{ row.werte.leistungs_von }}" class="fw-feld w-full"{% if row.fehler.leistungs_von %} aria-invalid="true" aria-describedby="kc-leist-von-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.leistungs_von %}<p id="kc-leist-von-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.leistungs_von }}</p>{% endif %}</div>
+                        <div><label for="kc-leist-bis-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Leistung bis" %}</label>
+                            <input id="kc-leist-bis-{{ row.k.id }}" type="date" name="leistungs_bis" value="{{ row.werte.leistungs_bis }}" class="fw-feld w-full"{% if row.fehler.leistungs_bis %} aria-invalid="true" aria-describedby="kc-leist-bis-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.leistungs_bis %}<p id="kc-leist-bis-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.leistungs_bis }}</p>{% endif %}</div>
+                        <div class="col-span-2"><label for="kc-iban-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">IBAN</label>
+                            <input id="kc-iban-{{ row.k.id }}" name="iban" value="{{ row.werte.iban }}" class="fw-feld w-full font-mono"{% if row.fehler.iban %} aria-invalid="true" aria-describedby="kc-iban-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.iban %}<p id="kc-iban-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.iban }}</p>{% endif %}</div>
+                        <div><label for="kc-lg-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
+                            <select id="kc-lg-{{ row.k.id }}" name="liegenschaft_id" class="fw-feld w-full"{% if row.fehler.liegenschaft_id %} aria-invalid="true" aria-describedby="kc-lg-{{ row.k.id }}_fehler"{% endif %}>
                                 <option value="">— {% trans "keine" %} —</option>
-                                {% for lgx in liegenschaften %}<option value="{{ lgx.id }}" {% if row.k.liegenschaft_id == lgx.id %}selected{% endif %}>{{ lgx.strasse }}, {{ lgx.ort }}</option>{% endfor %}
-                            </select></div>
-                        <div><label for="kc-konto-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Aufwandskonto" %}</label>
-                            <select id="kc-konto-{{ row.k.id }}" name="konto_id" onchange="fwHnkSync(this)" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5">
+                                {% for lgx in liegenschaften %}<option value="{{ lgx.id }}" {% if row.werte.liegenschaft_id == lgx.id|stringformat:"s" %}selected{% endif %}>{{ lgx.strasse }}, {{ lgx.ort }}</option>{% endfor %}
+                            </select>{% if row.fehler.liegenschaft_id %}<p id="kc-lg-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.liegenschaft_id }}</p>{% endif %}</div>
+                        <div><label for="kc-konto-{{ row.k.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Aufwandskonto" %}</label>
+                            <select id="kc-konto-{{ row.k.id }}" name="konto_id" onchange="fwHnkSync(this)" class="fw-feld w-full"{% if row.fehler.konto_id %} aria-invalid="true" aria-describedby="kc-konto-{{ row.k.id }}_fehler"{% endif %}>
                                 <option value="">— {% trans "bei Freigabe wählen" %} —</option>
-                                {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.k.konto_id == kx.id %}selected{% endif %} {% if kx.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
-                            </select></div>
+                                {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.werte.konto_id == kx.id|stringformat:"s" %}selected{% endif %} {% if kx.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
+                            </select>{% if row.fehler.konto_id %}<p id="kc-konto-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.konto_id }}</p>{% endif %}</div>
                         <div class="col-span-2 flex items-center">
                             <label class="inline-flex items-center gap-2 text-sm fw-mutet cursor-pointer">
-                                <input type="checkbox" name="is_hnk_relevant" {% if row.k.is_hnk_relevant %}checked{% endif %} class="fw-akzent">
+                                <input type="checkbox" name="is_hnk_relevant" {% if row.werte.is_hnk_relevant %}checked{% endif %} class="fw-akzent">
                                 {% trans "In Nebenkostenabrechnung einbeziehen (HNK)" %}
                             </label>
-                            <span class="ml-2 text-[11px] fw-faint">— {% trans "bei NK-relevantem Konto automatisch aktiv" %}</span>
+                            <span class="ml-2 fw-fs-klein fw-faint">— {% trans "bei NK-relevantem Konto automatisch aktiv" %}</span>
                         </div>
                         <div class="col-span-2 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.add('hidden')" class="text-sm fw-mutet hover:fw-ink px-3 py-1.5">{% trans "Abbrechen" %}</button>
@@ -312,9 +319,9 @@
                     <!-- ===== KOSTENAUFTEILUNG (Split) ===== -->
                     <div class="mt-4 pt-4 border-t fw-linie-marke">
                         <div class="flex items-center justify-between mb-2">
-                            <div class="text-[11px] font-semibold uppercase tracking-wider fw-faint">{% zeichen 'verlauf' klasse='mr-1' %}{% trans "Kostenaufteilung (optional)" %}</div>
+                            <div class="fw-fs-klein font-semibold uppercase tracking-wider fw-faint">{% zeichen 'verlauf' klasse='mr-1' %}{% trans "Kostenaufteilung (optional)" %}</div>
                             {% if row.positionen %}
-                            <div class="text-[11px] {% if row.pos_diff == 0 %}fw-gut{% else %}fw-kritisch font-semibold{% endif %}">
+                            <div class="fw-fs-klein {% if row.pos_diff == 0 %}fw-gut{% else %}fw-kritisch font-semibold{% endif %}">
                                 {% blocktrans with summe=row.pos_summe|chf betrag=row.k.betrag|chf %}Summe CHF {{ summe }} / {{ betrag }}{% endblocktrans %}
                                 {% if row.pos_diff != 0 %} · {% blocktrans with diff=row.pos_diff|chf %}Differenz CHF {{ diff }}{% endblocktrans %}{% else %} · {% trans "✓ stimmt" %}{% endif %}
                             </div>
@@ -326,7 +333,7 @@
                             <div class="flex items-center gap-2 px-3 py-2 text-sm">
                                 <span class="font-medium fw-ink">{{ p.konto.nummer }}</span>
                                 <span class="fw-mutet truncate">{{ p.konto.bezeichnung }}{% if p.bezeichnung %} · {{ p.bezeichnung }}{% endif %}{% if p.einheit %} · {{ p.einheit.bezeichnung }}{% endif %}</span>
-                                {% if p.is_hnk_relevant %}<span class="text-[10px] font-semibold fw-warn-flaeche fw-warnton rounded px-1.5 py-0.5">{% trans "HNK" %}</span>{% endif %}
+                                {% if p.is_hnk_relevant %}<span class="fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton rounded px-1.5 py-0.5">{% trans "HNK" %}</span>{% endif %}
                                 <span class="ml-auto font-semibold fw-strong whitespace-nowrap">CHF {{ p.betrag|chf }}</span>
                                 <form method="post" action="/neu/kreditoren/position/{{ p.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Position entfernen?" %}{% endfilter %}');">{% csrf_token %}
                                     <button class="fw-faint hover:fw-kritisch text-xs" title="{% trans 'Entfernen' %}">{% zeichen 'loeschen' %}</button>
@@ -335,20 +342,20 @@
                             {% endfor %}
                         </div>
                         {% else %}
-                        <p class="text-[11px] fw-faint mb-2">{% trans "Rechnung auf mehrere Konten/Objekte aufteilen (z.B. Sammelrechnung oder Unterhalt + HNK). Ohne Positionen wird das Aufwandskonto oben gebucht." %}</p>
+                        <p class="fw-fs-klein fw-faint mb-2">{% trans "Rechnung auf mehrere Konten/Objekte aufteilen (z.B. Sammelrechnung oder Unterhalt + HNK). Ohne Positionen wird das Aufwandskonto oben gebucht." %}</p>
                         {% endif %}
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/position/" class="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end">
                             {% csrf_token %}
-                            <div class="col-span-2 sm:col-span-4"><label for="ks-konto-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">{% trans "Konto" %}</label>
+                            <div class="col-span-2 sm:col-span-4"><label for="ks-konto-{{ row.k.id }}" class="block fw-fs-mikro font-semibold fw-mutet mb-1">{% trans "Konto" %}</label>
                                 <select id="ks-konto-{{ row.k.id }}" name="konto_id" required class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5">
                                     <option value="">{% trans "Konto …" %}</option>
                                     {% for kx in aufwand_konten %}<option value="{{ kx.id }}">{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                                 </select></div>
-                            <div class="col-span-2 sm:col-span-3"><label for="ks-bez-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">{% trans "Bezeichnung" %}</label>
+                            <div class="col-span-2 sm:col-span-3"><label for="ks-bez-{{ row.k.id }}" class="block fw-fs-mikro font-semibold fw-mutet mb-1">{% trans "Bezeichnung" %}</label>
                                 <input id="ks-bez-{{ row.k.id }}" name="bezeichnung" placeholder="{% trans 'optional' %}" class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5"></div>
-                            <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">{% trans "Betrag" %}</label>
+                            <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block fw-fs-mikro font-semibold fw-mutet mb-1">{% trans "Betrag" %}</label>
                                 <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5 text-right tabular-nums"></div>
-                            <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 text-[11px] fw-mutet cursor-pointer" title="{% trans 'In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet' %}"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">{% trans "HNK" %}</label></div>
+                            <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 fw-fs-klein fw-mutet cursor-pointer" title="{% trans 'In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet' %}"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">{% trans "HNK" %}</label></div>
                             <div class="sm:col-span-1"><button class="w-full fw-balken-voll fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="{% trans 'Position hinzufügen' %}">{% zeichen 'neu' %}</button></div>
                         </form>
                     </div>

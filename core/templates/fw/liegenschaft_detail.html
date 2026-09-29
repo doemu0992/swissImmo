@@ -81,6 +81,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="fw-menuzeile">{% zeichen 'recht' klasse='w-4' %}{% trans "Kontokorrent" %}</a>
                     {% endif %}
                     <a href="/neu/hypotheken/" class="fw-menuzeile">{% zeichen 'liegenschaft' klasse='w-4' %}{% trans "Hypotheken" %}</a>
+                    {% comment %} Aushang mit QR-Code zur Schadenmeldung — war nur im Django-Admin verlinkt. {% endcomment %}
+                    <a href="/liegenschaft/{{ lg.id }}/poster/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Hausaushang (QR Schadenmeldung)" %}</a>
                     <div class="fw-menutrenner"></div>
                     <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
                         {% csrf_token %}
@@ -571,7 +573,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{% blocktrans count n=g.dokumente|length %}{{ n }} Dokument{% plural %}{{ n }} Dokumente{% endblocktrans %}</span>
-            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a></span>{% endif %}
+            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a></span>{% endif %}
         </summary>
         {% for d in g.dokumente %}
         <div class="fw-zeile">

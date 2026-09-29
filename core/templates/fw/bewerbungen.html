@@ -28,7 +28,7 @@
                     {% else %}{% zeichen 'gut' klasse='fw-gut text-xs' %}{% endif %}
                 </div>
                 <div class="text-xs fw-mutet mt-1 truncate">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
-                <div class="flex items-center gap-2 mt-2 text-[11px] fw-faint">
+                <div class="flex items-center gap-2 mt-2 fw-fs-klein fw-faint">
                     <span>{% zeichen 'person' klasse='mr-0.5' %}{{ b.anzahl_erwachsene }}{% if b.anzahl_kinder %}+{{ b.anzahl_kinder }}K{% endif %}</span>
                     {% if b.gewuenschter_bezugstermin %}<span>{% zeichen 'termin' klasse='mr-0.5' %}{{ b.gewuenschter_bezugstermin|date:"d.m.y" }}</span>{% endif %}
                     <span class="ml-auto">{{ b.erstellt_am|date:"d.m." }}</span>

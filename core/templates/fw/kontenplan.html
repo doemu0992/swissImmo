@@ -80,7 +80,7 @@
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Konto" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Bezeichnung" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Typ" %}</th>
@@ -97,7 +97,7 @@
                     <a href="/neu/buchhaltung/konto/{{ z.k.nummer }}/{{ lg_query }}" class="font-semibold fw-marke hover:underline">{{ z.k.nummer }}</a>
                 </td>
                 <td class="px-5 py-3">{{ z.k.bezeichnung }}
-                    {% if z.k.is_hnk_relevant %}<span class="ml-1.5 text-[10px] font-bold uppercase fw-warn-flaeche fw-warnton px-1.5 py-0.5 rounded">{% trans "HNK" %}</span>{% endif %}
+                    {% if z.k.is_hnk_relevant %}<span class="ml-1.5 fw-fs-mikro font-bold uppercase fw-warn-flaeche fw-warnton px-1.5 py-0.5 rounded">{% trans "HNK" %}</span>{% endif %}
                 </td>
                 <td class="px-5 py-3 text-xs fw-mutet">{{ z.k.get_typ_display }}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{% if z.soll %}{{ z.soll|chf }}{% else %}—{% endif %}</td>
@@ -123,11 +123,11 @@
                         <input type="hidden" name="aktion" value="bearbeiten">
                         <input type="hidden" name="konto_id" value="{{ z.k.id }}">
                         <label class="block">
-                            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Bezeichnung" %}</span>
+                            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Bezeichnung" %}</span>
                             <input name="bezeichnung" value="{{ z.k.bezeichnung }}" class="mt-1 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2 w-64">
                         </label>
                         <label class="block">
-                            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Typ" %}</span>
+                            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Typ" %}</span>
                             <select name="typ" class="mt-1 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                                 {% for wert, label in typen %}<option value="{{ wert }}" {% if z.k.typ == wert %}selected{% endif %}>{{ label }}</option>{% endfor %}
                             </select>

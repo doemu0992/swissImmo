@@ -44,12 +44,12 @@
                 <div class="text-xs fw-mutet break-words">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div>
                 <div class="mt-1.5 flex items-center gap-2 flex-wrap">
                     <span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span>
-                    <span class="text-[11px] fw-faint">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %}</span>
+                    <span class="fw-fs-klein fw-faint">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %}</span>
                 </div>
             </div>
             <div class="text-right shrink-0">
                 <div class="font-bold fw-strong whitespace-nowrap">{{ row.brutto|chf }}</div>
-                <div class="text-[11px] fw-faint">{% trans "Brutto" %}</div>
+                <div class="fw-fs-klein fw-faint">{% trans "Brutto" %}</div>
             </div>
             {% zeichen 'weiter' klasse='fw-faint text-xs shrink-0' %}
         </a>

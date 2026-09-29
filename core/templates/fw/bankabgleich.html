@@ -135,15 +135,15 @@
         <div class="px-5 py-3">
             <div class="flex items-center gap-3 flex-wrap mb-2">
                 <span class="text-xs fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</span>
-                {% if b.valuta and b.valuta != b.datum %}<span class="text-[10px] fw-faint whitespace-nowrap">{% blocktrans with datum=b.valuta|date:"d.m.Y" %}Val. {{ datum }}{% endblocktrans %}</span>{% endif %}
-                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 {% if b.betrag < 0 %}fw-krit-flaeche fw-kritisch{% else %}fw-gut-flaeche fw-gut{% endif %}">
+                {% if b.valuta and b.valuta != b.datum %}<span class="fw-fs-mikro fw-faint whitespace-nowrap">{% blocktrans with datum=b.valuta|date:"d.m.Y" %}Val. {{ datum }}{% endblocktrans %}</span>{% endif %}
+                <span class="px-2 py-0.5 rounded-md fw-fs-mikro font-bold uppercase tracking-wider shrink-0 {% if b.betrag < 0 %}fw-krit-flaeche fw-kritisch{% else %}fw-gut-flaeche fw-gut{% endif %}">
                     {% if b.betrag < 0 %}{% trans "Belastung" %}{% else %}{% trans "Gutschrift" %}{% endif %}
                 </span>
                 <div class="min-w-0 flex-1">
                     {# Kein truncate — auf dem Handy war vom Auftraggeber sonst nur der Anfang zu sehen #}
                     <div class="text-sm font-medium fw-strong break-words">{{ b.gegenpartei|default:b.text|default:"Bankbewegung" }}</div>
                     {% if b.text and b.gegenpartei %}<div class="text-xs fw-faint break-words">{{ b.text }}</div>{% endif %}
-                    {% if b.referenz %}<div class="text-[11px] fw-faint font-mono break-all">{% trans "Ref." %} {{ b.referenz }}</div>{% endif %}
+                    {% if b.referenz %}<div class="fw-fs-klein fw-faint font-mono break-all">{% trans "Ref." %} {{ b.referenz }}</div>{% endif %}
                 </div>
                 <span class="text-sm font-semibold tabular-nums whitespace-nowrap {% if b.betrag < 0 %}fw-kritisch{% else %}fw-gut{% endif %}">{{ b.betrag|chf }}</span>
                 <button onclick="document.getElementById('bew-{{ b.id }}').classList.toggle('hidden')"
@@ -157,7 +157,7 @@
                     <input type="hidden" name="art" value="kreditor">
                     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                     <label class="block flex-1 min-w-[240px]">
-                        <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Offene Lieferantenrechnung" %}</span>
+                        <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Offene Lieferantenrechnung" %}</span>
                         <select name="kreditor_id" required class="mt-1 w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                             <option value="">— {% trans "wählen" %} —</option>
                             {% for k in offene_kreditoren %}<option value="{{ k.id }}">{{ k.lieferant }} · CHF {{ k.offener_betrag|chf }}{% if k.referenz %} · {{ k.referenz }}{% endif %}</option>{% endfor %}
@@ -172,17 +172,17 @@
                     <input type="hidden" name="art" value="konto">
                     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                     <label class="block">
-                        <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Gegenkonto" %}</span>
+                        <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Gegenkonto" %}</span>
                         <input name="gegenkonto" list="bew-konten" required placeholder="{% trans 'Nummer' %}"
                                class="mt-1 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2 w-36 font-mono">
                     </label>
                     <label class="block flex-1 min-w-[180px]">
-                        <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Belegtext" %}</span>
+                        <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Belegtext" %}</span>
                         <input name="beleg_text" value="{{ b.text|default:b.gegenpartei }}"
                                class="mt-1 w-full fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                     </label>
                     <label class="block">
-                        <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">{% trans "Liegenschaft" %}</span>
+                        <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Liegenschaft" %}</span>
                         <select name="liegenschaft_id" class="mt-1 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                             <option value="">— {% trans "keine" %} —</option>
                             {% for lg in alle_liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}</option>{% endfor %}
@@ -243,7 +243,7 @@
         <button type="submit" class="fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg transition-colors">
             {% trans "Ausgewählte zuordnen" %}
         </button>
-        <span class="text-[11px] fw-faint w-full sm:w-auto">{% trans "Getilgt wird jeweils die älteste offene Forderung; ein Überschuss bleibt als Guthaben stehen." %}</span>
+        <span class="fw-fs-klein fw-faint w-full sm:w-auto">{% trans "Getilgt wird jeweils die älteste offene Forderung; ein Überschuss bleibt als Guthaben stehen." %}</span>
     </form>
     {% endif %}
     <div class="fw-dv">
@@ -257,7 +257,7 @@
                    data-zahler="{{ z.zahler|lower }}" class="fw-akzent shrink-0"
                    title="{% trans 'Für die Sammelzuordnung auswählen' %}">
             {% endif %}
-            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 {% if z.konto.nummer == '2030' %}fw-gut-flaeche fw-gut{% else %}fw-warn-flaeche fw-warnton{% endif %}">
+            <span class="px-2 py-0.5 rounded-md fw-fs-mikro font-bold uppercase tracking-wider shrink-0 {% if z.konto.nummer == '2030' %}fw-gut-flaeche fw-gut{% else %}fw-warn-flaeche fw-warnton{% endif %}">
                 {% if z.konto.nummer == '2030' %}{% trans "Guthaben" %}{% else %}{% trans "Ungeklärt" %}{% endif %}
             </span>
             {% comment %}
@@ -268,7 +268,7 @@
             <div class="min-w-0 flex-1">
                 {% if z.zahler %}
                 <div class="text-sm font-semibold fw-strong break-words">{{ z.zahler }}
-                    {% if z.zahler_geraten %}<span class="ml-1 align-middle px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider fw-flaeche2 fw-mutet"
+                    {% if z.zahler_geraten %}<span class="ml-1 align-middle px-1.5 py-0.5 rounded fw-fs-mikro font-semibold uppercase tracking-wider fw-flaeche2 fw-mutet"
                           title="{% trans 'Die Bank liefert keine eigene Auftraggeber-Spalte — aus dem Buchungstext gelesen' %}">{% trans "aus Buchungstext" %}</span>{% endif %}
                 </div>
                 {% else %}
@@ -277,7 +277,7 @@
                 <div class="text-xs fw-faint">{{ z.datum_eingang|date:"d.m.Y" }}{% if z.ref %} · {% trans "Ref." %} <span class="font-mono">{{ z.ref }}</span>{% endif %}</div>
                 {% if z.mitteilung %}<div class="text-xs fw-mutet break-words mt-0.5">{{ z.mitteilung }}</div>{% endif %}
                 {% if z.zahler %}
-                <div class="text-[11px] fw-marke mt-1">
+                <div class="fw-fs-klein fw-marke mt-1">
                     {% zeichen 'einstellungen' klasse='mr-1' %}{% trans "Nach dem Zuordnen wird dieser Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu." %}
                     {% if sammel_vertraege %}
                     · <button type="button" data-alle-von="{{ z.zahler|lower }}"
@@ -340,7 +340,7 @@
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Fällig" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>

@@ -137,13 +137,18 @@ def einrichtungs_url(geheimnis: str, konto: str, herausgeber: str = 'swissImmo')
             f'&algorithm=SHA1&digits={STELLEN}&period={SCHRITT}')
 
 
-def qr_svg(daten: str, *, groesse: int = 6) -> str:
+def qr_svg(daten: str, *, groesse: int = 6, hell: str | None = None) -> str:
     """Den QR-Code als SVG-Zeichenkette — zum direkten Einbetten ins Template.
 
     Bewusst SVG und keine Bilddatei: Das Geheimnis steckt im QR-Code. Als Datei
     auf der Platte läge es unverschlüsselt herum und wäre über die
     Medienauslieferung erreichbar; im Antwortkörper lebt es nur so lange wie
     die Seite.
+
+    `hell`: Hintergrundfarbe im SVG selbst (z. B. '#fff'). Ohne sie ist der
+    Grund durchsichtig — im Dunkelmodus stünde der schwarze Code dann auf
+    dunkler Fläche und wäre kaum scannbar. Mitgezeichnet statt per
+    Farbklasse, damit keine fest verdrahtete Farbe in die Vorlage wandert.
     """
     import io
 
@@ -152,6 +157,6 @@ def qr_svg(daten: str, *, groesse: int = 6) -> str:
     # `segno` schreibt SVG als Bytes, auch in einen Textpuffer — deshalb
     # BytesIO und einmal dekodieren, statt einen TypeError zu ernten.
     puffer = io.BytesIO()
-    segno.make(daten, error='m').save(puffer, kind='svg', scale=groesse,
+    segno.make(daten, error='m').save(puffer, kind='svg', scale=groesse, light=hell,
                                       xmldecl=False, svgns=True, omitsize=True)
     return puffer.getvalue().decode('utf-8')

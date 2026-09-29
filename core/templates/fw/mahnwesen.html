@@ -18,8 +18,8 @@
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <button type="submit" class="fw-btn fw-primary" style="white-space:nowrap">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
-        <label class="flex items-center gap-1.5 text-[11px] fw-mutet mt-1.5 justify-end"><input type="checkbox" name="mit_zins" class="fw-akzent">{% trans "Verzugszins (5%) berechnen" %}</label>
-        <label class="flex items-center gap-1.5 text-[11px] fw-mutet mt-1 justify-end"><input type="checkbox" name="kein_versand" class="fw-akzent">{% trans "Testlauf: nur erstellen, keine E-Mails versenden" %}</label>
+        <label class="flex items-center gap-1.5 fw-fs-klein fw-mutet mt-1.5 justify-end"><input type="checkbox" name="mit_zins" class="fw-akzent">{% trans "Verzugszins (5%) berechnen" %}</label>
+        <label class="flex items-center gap-1.5 fw-fs-klein fw-mutet mt-1 justify-end"><input type="checkbox" name="kein_versand" class="fw-akzent">{% trans "Testlauf: nur erstellen, keine E-Mails versenden" %}</label>
     </form>
     {% endif %}
 </div>
@@ -60,7 +60,7 @@
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Stufe" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
@@ -84,7 +84,7 @@
                 <td class="px-5 py-3.5 text-center font-semibold fw-kritisch">{{ row.tage }}</td>
                 <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">{{ row.offen|chf }}</td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    {% if row.letzte_mahnung %}<div class="text-[10px] fw-faint mb-1">{% blocktrans with stufe=row.letzte_mahnung.stufe datum=row.letzte_mahnung.datum|date:"d.m.Y" %}zuletzt: {{ stufe }}. Mahnung {{ datum }}{% endblocktrans %}</div>{% endif %}
+                    {% if row.letzte_mahnung %}<div class="fw-fs-mikro fw-faint mb-1">{% blocktrans with stufe=row.letzte_mahnung.stufe datum=row.letzte_mahnung.datum|date:"d.m.Y" %}zuletzt: {{ stufe }}. Mahnung {{ datum }}{% endblocktrans %}</div>{% endif %}
                     <div class="inline-flex items-center gap-1.5">
                     {% if row.mahn_url %}
                     <a href="{{ row.mahn_url }}" target="_blank" rel="noopener"
@@ -141,7 +141,7 @@
     </div>
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Stufe" %}</th>
                 <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>

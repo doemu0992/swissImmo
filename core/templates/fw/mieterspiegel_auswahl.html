@@ -26,15 +26,15 @@
         </div>
         <div class="grid grid-cols-3 gap-2 mt-4 pt-4 border-t fw-linie">
             <div>
-                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">{% trans "Soll / Mt." %}</div>
+                <div class="fw-fs-mikro uppercase tracking-wide fw-faint font-semibold">{% trans "Soll / Mt." %}</div>
                 <div class="text-sm font-bold fw-strong">CHF {{ b.totals.soll_brutto|chf }}</div>
             </div>
             <div>
-                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">{% trans "Belegt" %}</div>
+                <div class="fw-fs-mikro uppercase tracking-wide fw-faint font-semibold">{% trans "Belegt" %}</div>
                 <div class="text-sm font-bold fw-strong">{{ b.totals.belegt }}/{{ b.totals.anzahl }}</div>
             </div>
             <div>
-                <div class="text-[10px] uppercase tracking-wide fw-faint font-semibold">{% trans "Leerstand" %}</div>
+                <div class="fw-fs-mikro uppercase tracking-wide fw-faint font-semibold">{% trans "Leerstand" %}</div>
                 <div class="text-sm font-bold {% if b.totals.leer %}fw-warnton{% else %}fw-strong{% endif %}">{{ b.totals.leerstandsquote }}%</div>
             </div>
         </div>

@@ -109,7 +109,7 @@
         ist, macht `fw_mandant_wechseln` — nicht dieses Formular.
         {% endcomment %}
         <div class="px-5 py-3 border-b fw-linie sb-filter">
-            <div class="text-[10px] uppercase tracking-wider fw-faint mb-1">{% trans "Mandant" %}</div>
+            <div class="fw-fs-mikro uppercase tracking-wider fw-faint mb-1">{% trans "Mandant" %}</div>
             {% if fw_mandanten|length > 1 %}
             <form method="post" action="/neu/mandant/">{% csrf_token %}
                 <select name="organisation" onchange="this.form.submit()" aria-label="{% trans 'Mandant wechseln' %}"
@@ -130,7 +130,7 @@
             <a href="/neu/" title="{% trans 'Zur Übersicht' %}" class="w-8 h-8 rounded-lg fw-balken-voll flex items-center justify-center text-xs shadow-lg fw-schatten-marke shrink-0">
                 {% zeichen 'liegenschaft' %}
             </a>
-            <a href="/neu/" class="font-extrabold tracking-wide text-sm uppercase sb-logotext flex-1">swissImmo</a>
+            <a href="/neu/" class="font-bold tracking-wide text-sm uppercase sb-logotext flex-1">swissImmo</a>
             <button onclick="fwToggleSidebar()" title="{% trans 'Menü ein-/ausklappen' %}" class="hidden lg:block fw-faint hover:fw-strong transition-colors">
                 {% zeichen 'zurueck' klasse='text-xs sb-collapse-icon' %}
             </button>
@@ -141,7 +141,7 @@
 
         <!-- GLOBALER FILTER -->
         <form method="get" class="px-4 py-3 fw-flaeche border-b fw-linie sb-filter">
-            <label class="block text-[11px] font-semibold fw-faint">{% trans "Globaler Filter" %}</label>
+            <label class="block fw-fs-klein font-semibold fw-faint">{% trans "Globaler Filter" %}</label>
             <select name="lg" onchange="this.form.submit()"
                     class="mt-1 w-full bg-transparent text-sm fw-faint focus:outline-none cursor-pointer [&>option]:text-slate-900">
                 <option value="">{% trans "Liegenschaft auswählen" %}</option>
@@ -158,31 +158,31 @@
                 <a href="{{ g.ziel }}{{ lg_query }}" title="{{ g.label }}"
                    class="sb-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold transition-all
                           {% if nav in g.alle_keys %}fw-btn fw-primary shadow-md{% else %}fw-faint hover:fw-flaeche hover:fw-strong{% endif %}">
-                    {% zeichen_wert g.icon klasse='w-4 text-center text-[13px]' %}
+                    {% zeichen_wert g.icon klasse='w-4 text-center fw-fs-fein' %}
                     <span class="sb-label flex-1">{{ g.label }}</span>
-                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label min-w-[18px] text-center text-[10px] font-bold fw-krit-voll fw-strong rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
+                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label min-w-[18px] text-center fw-fs-mikro font-bold fw-krit-voll fw-strong rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
                     {% if g.items %}
-                    <span class="sb-label sb-chev text-[10px] {% if nav in g.alle_keys %}fw-faint{% else %}fw-mutet{% endif %} p-1 -m-1"
+                    <span class="sb-label sb-chev fw-fs-mikro {% if nav in g.alle_keys %}fw-faint{% else %}fw-mutet{% endif %} p-1 -m-1"
                           onclick="event.preventDefault();event.stopPropagation();fwNavToggle('{{ g.key }}')">{% zeichen 'weiter' klasse='transition-transform' %}</span>
                     {% endif %}
                 </a>
                 {% else %}
                 <button type="button" onclick="fwNavToggle('{{ g.key }}')" title="{{ g.label }}"
                         class="sb-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold fw-mutet hover:fw-flaeche hover:fw-strong transition-all">
-                    {% zeichen_wert g.icon klasse='w-4 text-center text-[13px]' %}
+                    {% zeichen_wert g.icon klasse='w-4 text-center fw-fs-fein' %}
                     <span class="sb-label flex-1 text-left">{{ g.label }}</span>
-                    <span class="sb-label sb-chev text-[10px] fw-mutet p-1 -m-1">{% zeichen 'weiter' klasse='transition-transform' %}</span>
+                    <span class="sb-label sb-chev fw-fs-mikro fw-mutet p-1 -m-1">{% zeichen 'weiter' klasse='transition-transform' %}</span>
                 </button>
                 {% endif %}
                 {% if g.items %}
                 <div id="navsub-{{ g.key }}" class="sb-sub flex flex-col gap-0.5 pt-1 pb-1 pl-[26px] {% if nav not in g.alle_keys %}hidden{% endif %}">
                     {% for it in g.items %}
-                    {% if it.section %}<div class="pt-2 pb-0.5 px-3 text-[9px] font-bold uppercase tracking-[0.18em] fw-mutet">{{ it.section }}</div>{% endif %}
+                    {% if it.section %}<div class="pt-2 pb-0.5 px-3 fw-fs-mikro font-bold uppercase tracking-[0.18em] fw-mutet">{{ it.section }}</div>{% endif %}
                     <a href="{{ it.ziel }}{{ lg_query }}"
-                       class="flex items-center gap-2 px-3 py-1.5 rounded-md text-[13px] transition-colors
+                       class="flex items-center gap-2 px-3 py-1.5 rounded-md fw-fs-fein transition-colors
                               {% if nav in it.keys %}fw-flaeche fw-strong font-semibold{% else %}fw-faint hover:fw-flaeche hover:fw-strong{% endif %}">
                         <span class="flex-1">{{ it.label }}</span>
-                        {% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="min-w-[18px] text-center text-[10px] font-bold fw-krit-voll fw-strong rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
+                        {% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="min-w-[18px] text-center fw-fs-mikro font-bold fw-krit-voll fw-strong rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
                     </a>
                     {% endfor %}
                 </div>
@@ -193,8 +193,8 @@
 
         <div class="px-3 pb-4 sb-filter">
             <a href="/neu/einstellungen/{{ lg_query }}"
-               class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] {% if nav in fw_einstellungen_keys %}fw-flaeche fw-strong{% else %}fw-mutet hover:fw-flaeche hover:fw-strong{% endif %} transition-colors">
-                {% zeichen 'einstellungen' klasse='text-[12px]' %} <span class="sb-label">{% trans "Einstellungen" %}</span>
+               class="flex items-center gap-3 px-3 py-2 rounded-lg fw-fs-fein {% if nav in fw_einstellungen_keys %}fw-flaeche fw-strong{% else %}fw-mutet hover:fw-flaeche hover:fw-strong{% endif %} transition-colors">
+                {% zeichen 'einstellungen' klasse='fw-fs-fein' %} <span class="sb-label">{% trans "Einstellungen" %}</span>
             </a>
         </div>
 
@@ -217,11 +217,11 @@
             <div class="ml-auto flex items-center gap-2 md:gap-3">
             <a href="/neu/dokumente/{{ lg_query }}" title="{% trans 'Dokumente' %}"
                class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'dokumente' %}fw-markenflaeche fw-marke{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
-                {% zeichen 'dokument' klasse='text-[15px]' %}
+                {% zeichen 'dokument' klasse='fw-fs-text' %}
             </a>
             <a href="/neu/kommunikation/{{ lg_query }}" title="{% trans 'Kommunikation' %}"
                class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'kommunikation' %}fw-markenflaeche fw-marke{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
-                {% zeichen 'senden' klasse='text-[15px]' %}
+                {% zeichen 'senden' klasse='fw-fs-text' %}
             </a>
             <div class="relative">
                 <button onclick="fwProfilMenu()" class="flex items-center gap-2.5 group">
@@ -241,14 +241,14 @@
                     </div>
                     
                     <div class="px-4 py-2">
-                        <div class="text-[11px] font-semibold fw-faint uppercase tracking-wider mb-1.5">{% trans "Darstellung" %}</div>
+                        <div class="fw-fs-klein font-semibold fw-faint uppercase tracking-wider mb-1.5">{% trans "Darstellung" %}</div>
                         <div class="flex fw-flaeche2 rounded-lg p-0.5 gap-0.5">
                             <button type="button" data-theme-btn="light" onclick="fwSetTheme('light')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors fw-mutet hover:fw-ink">{% trans "Hell" %}</button>
                             <button type="button" data-theme-btn="dark" onclick="fwSetTheme('dark')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors fw-mutet hover:fw-ink">{% trans "Dunkel" %}</button>
                         </div>
                     </div>
                     <div class="px-4 py-2">
-                        <div class="text-[11px] font-semibold fw-faint uppercase tracking-wider mb-1.5">Sprache · Langue · Lingua</div>
+                        <div class="fw-fs-klein font-semibold fw-faint uppercase tracking-wider mb-1.5">Sprache · Langue · Lingua</div>
                         {% include 'core/_sprachwahl.html' with rahmen='flex fw-flaeche2 rounded-lg p-0.5 gap-0.5' knopf='flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors' aktiv='fw-balken-voll shadow-sm' passiv='fw-mutet hover:fw-ink' %}
                     </div>
                     <div class="border-t fw-linie my-1.5"></div>
@@ -263,13 +263,17 @@
         </header>
 
         {% if messages %}
-        <div id="fw-toasts" class="fixed top-4 right-4 z-[100] w-[min(92vw,380px)] space-y-2">
+        {% comment %} Audit Etappe 3: Screenreader erfuhren von keiner Meldung. Der Stapel
+           ist jetzt eine höfliche Live-Region; Fehler melden sich als `alert` sofort.
+           Das führende Emoji der Texte entfällt bei der Anzeige (`ohne_emoji`) — das
+           Symbol je Meldungsart steht schon davor. {% endcomment %}
+        <div id="fw-toasts" class="fixed top-4 right-4 z-[100] w-[min(92vw,380px)] space-y-2" role="status" aria-live="polite">
             {% for m in messages %}
-            <div class="fw-toast flex items-start gap-2 text-sm px-4 py-3 rounded-xl shadow-lg border
+            <div {% if 'error' in m.tags %}role="alert" {% endif %}class="fw-toast flex items-start gap-2 text-sm px-4 py-3 rounded-xl shadow-lg border
                 {% if 'error' in m.tags %}fw-krit-flaeche fw-linie-krit fw-kritisch{% elif 'warning' in m.tags %}fw-warn-flaeche fw-linie-warn fw-warnton{% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}"
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
-                {% if 'error' in m.tags %}{% zeichen 'kritisch' klasse='mt-0.5' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' klasse='mt-0.5' %}{% else %}{% zeichen 'gut' klasse='mt-0.5' %}{% endif %}
-                <div class="flex-1">{{ m }}</div>
+                {% if 'error' in m.tags %}{% zeichen 'kritisch' klasse='mt-0.5' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' klasse='mt-0.5' %}{% elif 'info' in m.tags %}{% zeichen 'hinweis' klasse='mt-0.5' %}{% else %}{% zeichen 'gut' klasse='mt-0.5' %}{% endif %}
+                <div class="flex-1">{{ m|ohne_emoji }}</div>
                 <button type="button" onclick="this.closest('.fw-toast').remove()" title="{% trans 'Meldung schliessen' %}" class="fw-faint hover:fw-mutet">{% zeichen 'schliessen' %}</button>
             </div>
             {% endfor %}
@@ -301,10 +305,10 @@
             {% zeichen 'suchen' klasse='fw-faint text-sm' %}
             <input id="fwPaletteInput" type="text" placeholder="{% trans 'Person, Objekt, Mietverhältnis oder Seite …' %}" autocomplete="off"
                    class="flex-1 py-3.5 text-sm focus:outline-none placeholder:fw-faint">
-            <span class="text-[10px] font-semibold fw-faint border fw-linie rounded px-1.5 py-0.5">ESC</span>
+            <span class="fw-fs-mikro font-semibold fw-faint border fw-linie rounded px-1.5 py-0.5">ESC</span>
         </div>
         <div id="fwPaletteList" class="max-h-[50vh] overflow-y-auto py-1.5"></div>
-        <div class="px-4 py-2 border-t fw-linie text-[11px] fw-faint">
+        <div class="px-4 py-2 border-t fw-linie fw-fs-klein fw-faint">
             ↵ {% trans "öffnen" %} · <span id="fwPaletteFuss">{% trans "Tippen sucht in Akten und Seiten" %}</span>
         </div>
     </div>
@@ -378,10 +382,10 @@ function fwNavToggle(key) {
     function zeile(url, label, zusatz, art, aktiv) {
         return '<a href="' + url + '" class="fw-pal-item flex items-center gap-3 px-4 py-2.5 text-sm ' +
                (aktiv ? 'fw-markenflaeche fw-marke' : 'fw-ink hover:fw-flaeche2 ') + '">' +
-               (art ? '<span class="text-[10px] font-semibold uppercase tracking-wide fw-faint w-[92px] shrink-0">' + esc(art) + '</span>'
-                    : '{% zeichen 'weiter' klasse='text-[10px] fw-faint w-[92px] shrink-0' %}') +
+               (art ? '<span class="fw-fs-mikro font-semibold uppercase tracking-wide fw-faint w-[92px] shrink-0">' + esc(art) + '</span>'
+                    : '{% zeichen 'weiter' klasse='fw-fs-mikro fw-faint w-[92px] shrink-0' %}') +
                '<span class="flex-1 truncate">' + esc(label) + '</span>' +
-               (zusatz ? '<span class="text-[11px] fw-faint truncate max-w-[45%]">' + esc(zusatz) + '</span>' : '') +
+               (zusatz ? '<span class="fw-fs-klein fw-faint truncate max-w-[45%]">' + esc(zusatz) + '</span>' : '') +
                '</a>';
     }
 
@@ -393,12 +397,12 @@ function fwNavToggle(key) {
         var nr = 0;
 
         if (meine.length) {
-            stuecke.push('<div class="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider fw-faint">{% filter escapejs %}{% trans "Akten" %}{% endfilter %}</div>');
+            stuecke.push('<div class="px-4 pt-2 pb-1 fw-fs-mikro font-semibold uppercase tracking-wider fw-faint">{% filter escapejs %}{% trans "Akten" %}{% endfilter %}</div>');
             meine.forEach(function (t) { stuecke.push(zeile(t.url, t.label, t.zusatz, t.art, nr++ === 0)); });
         }
         if (seiten.length) {
             if (meine.length) {
-                stuecke.push('<div class="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider fw-faint border-t fw-linie mt-1">{% filter escapejs %}{% trans "Seiten" %}{% endfilter %}</div>');
+                stuecke.push('<div class="px-4 pt-2 pb-1 fw-fs-mikro font-semibold uppercase tracking-wider fw-faint border-t fw-linie mt-1">{% filter escapejs %}{% trans "Seiten" %}{% endfilter %}</div>');
             }
             seiten.slice(0, meine.length ? 5 : 12).forEach(function (d) {
                 stuecke.push(zeile(d.url, d.label, d.gruppe || '', '', nr++ === 0));
@@ -672,10 +676,10 @@ fwSyncThemeButtons();
           Mindestbreite einer Rasterspalte die Breite ihres laengsten Wortes,
           `truncate` greift nie, und fuenf Spalten brauchen 690 statt 390 px.
           Erst damit darf die Spalte schmaler werden als ihr Inhalt. {% endcomment %}
-       class="flex flex-col items-center justify-center gap-1 py-2 min-h-[52px] min-w-0 text-[11px] transition-colors
+       class="flex flex-col items-center justify-center gap-1 py-2 min-h-[52px] min-w-0 fw-fs-klein transition-colors
               {% if nav in g.alle_keys %}fw-marke font-semibold{% else %}fw-mutet{% endif %}"
        {% if nav in g.alle_keys %}aria-current="page"{% endif %}>
-        {% zeichen_wert g.icon klasse='text-[15px]' %}
+        {% zeichen_wert g.icon klasse='fw-fs-text' %}
         <span class="truncate max-w-full px-0.5">{{ g.label }}</span>
     </a>
     {% endfor %}

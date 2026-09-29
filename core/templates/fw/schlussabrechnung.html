@@ -6,9 +6,9 @@
 {% if not embed_base %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/" class="hover:fw-marke">{% trans "Verträge" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{% trans "Schlussabrechnung" %}</span>
 </nav>
 {% endif %}
@@ -36,16 +36,16 @@
         <div>
             <div class="text-xs fw-mutet mb-1">{% trans "Offene Mietforderungen" %}</div>
             <div class="text-lg font-bold {% if offen_total > 0 %}fw-kritisch{% else %}fw-ink{% endif %}">CHF {{ offen_total|chf }}</div>
-            <div class="text-[11px] fw-faint">{% trans "automatisch aus offenen Debitoren" %}</div>
+            <div class="fw-fs-klein fw-faint">{% trans "automatisch aus offenen Debitoren" %}</div>
         </div>
         <div>
             <div class="text-xs fw-mutet mb-1">{% trans "Mietkaution" %} {% if ist_versicherung %}<span class="fw-marke font-semibold">· {% trans "Versicherung" %}</span>{% else %}<span class="fw-faint">· {% trans "Sperrkonto" %}</span>{% endif %}</div>
             <div class="text-lg font-bold {% if ist_versicherung %}fw-marke{% else %}fw-gut{% endif %}">CHF {{ kaution|chf }}</div>
             {% if ist_versicherung %}
-                <div class="text-[11px] fw-mutet mt-1">{% zeichen 'gesperrt' klasse='mr-0.5' %}{% trans 'Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position „zulasten“ erfassen.' %}</div>
+                <div class="fw-fs-klein fw-mutet mt-1">{% zeichen 'gesperrt' klasse='mr-0.5' %}{% trans 'Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position „zulasten“ erfassen.' %}</div>
                 <input type="hidden" name="kaution_verrechnen" value="">
             {% else %}
-                <label class="flex items-center gap-2 text-[11px] fw-mutet mt-1">
+                <label class="flex items-center gap-2 fw-fs-klein fw-mutet mt-1">
                     <input type="checkbox" name="kaution_verrechnen" id="cb-kaution" checked class="fw-akzent">{% trans "verrechnen / zurückzahlen" %}
                 </label>
             {% endif %}
@@ -105,7 +105,7 @@
         </dl>
         <div class="border-t fw-linie mt-3 pt-3 flex items-center justify-between">
             <div id="s-label" class="font-bold fw-strong">{% trans "Saldo" %}</div>
-            <div id="s-saldo" class="text-xl font-extrabold tabular-nums fw-strong">CHF 0.00</div>
+            <div id="s-saldo" class="text-xl font-bold tabular-nums fw-strong">CHF 0.00</div>
         </div>
         <p id="s-hint" class="text-xs fw-faint mt-1"></p>
     </div>
@@ -156,15 +156,15 @@
         var hint = document.getElementById('s-hint');
         if (saldo > 0.005){
             lbl.textContent = 'Nachzahlung durch Mieter';
-            out.textContent = fr(saldo); out.className = 'text-xl font-extrabold tabular-nums fw-kritisch';
+            out.textContent = fr(saldo); out.className = 'text-xl font-bold tabular-nums fw-kritisch';
             hint.textContent = 'Positiver Saldo → wird beim Verbuchen als Debitor (Rechnung) gestellt.';
         } else if (saldo < -0.005){
             lbl.textContent = 'Rückzahlung an Mieter';
-            out.textContent = fr(-saldo); out.className = 'text-xl font-extrabold tabular-nums fw-gut';
+            out.textContent = fr(-saldo); out.className = 'text-xl font-bold tabular-nums fw-gut';
             hint.textContent = istVers ? 'Bei einer Kautionsversicherung erfolgt keine Bardepot-Rückzahlung — Guthaben nur aus weiteren Gutschriften.' : 'Negativer Saldo → wird dem Mieter zurückbezahlt.';
         } else {
             lbl.textContent = 'Ausgeglichen';
-            out.textContent = fr(0); out.className = 'text-xl font-extrabold tabular-nums fw-strong';
+            out.textContent = fr(0); out.className = 'text-xl font-bold tabular-nums fw-strong';
             hint.textContent = '';
         }
     }

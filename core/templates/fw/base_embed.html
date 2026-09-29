@@ -1,10 +1,19 @@
-<!DOCTYPE html>
+{% load zeichen %}<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}swissImmo{% endblock %}</title>
+    <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 {% include 'fw/_assets.html' %}
+    {% comment %} Bis 29.09.2026 fehlten hier Stilschicht und Icon-Sprite: Die Modals
+       (Abnahme, Ausschreibung, Schlussabrechnung) liefen ohne `fw-*`-Regeln — keine
+       Karten, keine Knöpfe, keine Feldflächen, 570 px breit bei 384 px Bildschirm —
+       und jedes `{% zeichen %}` zeigte auf ein Symbol, das es in der Seite nicht gab.
+       Gemessen mit Chromium bei 390 px (Audit Etappe 3). Dieselben drei Zeilen wie
+       in `fw/base.html`; `test_embed_huelle_laedt_was_base_laedt` hält sie gleich. {% endcomment %}
+    {% include 'fw/_schicht_link.html' %}
+{% include 'fw/_zeichen.html' %}
     <style>
         body { font-family: 'IBM Plex Sans', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -14,9 +23,9 @@
 <body class="fw-flaeche2 fw-strong">
 <div class="p-5 sm:p-6 max-w-3xl mx-auto">
     {% if messages %}
-    <div class="space-y-2 mb-4">
+    <div class="space-y-2 mb-4" role="status" aria-live="polite">
         {% for m in messages %}
-        <div class="text-sm px-4 py-2 rounded-xl {% if 'error' in m.tags %}fw-krit-flaeche fw-kritisch border fw-linie-krit{% else %}fw-gut-flaeche fw-gut border fw-linie-gut{% endif %}">{{ m }}</div>
+        <div {% if 'error' in m.tags %}role="alert" {% endif %}class="text-sm px-4 py-2 rounded-xl {% if 'error' in m.tags %}fw-krit-flaeche fw-kritisch border fw-linie-krit{% else %}fw-gut-flaeche fw-gut border fw-linie-gut{% endif %}">{{ m|ohne_emoji }}</div>
         {% endfor %}
     </div>
     {% endif %}

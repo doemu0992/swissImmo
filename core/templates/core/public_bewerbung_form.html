@@ -24,7 +24,7 @@
  <div class="w-24 h-24 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-5xl mx-auto mb-6">
  {% zeichen 'gut' %}
  </div>
- <h1 class="text-4xl font-black fw-strong mb-4">Bewerbung eingereicht!</h1>
+ <h1 class="text-4xl font-bold fw-strong mb-4">Bewerbung eingereicht!</h1>
  <p class="fw-mutet text-lg mb-8">Vielen Dank für dein Interesse. Wir haben deine Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei dir.</p>
  <a href="/" class="fw-btn fw-primary px-8 py-3 rounded-xl font-bold hover:fw-balken-voll transition-colors">Zurück zur Startseite</a>
  </div>
@@ -34,10 +34,10 @@
  <div class="fw-btn fw-primary p-8">
  <div class="flex items-center gap-3 mb-6">
  <div class="w-10 h-10 rounded-xl fw-markenflaeche flex items-center justify-center text-sm shadow-lg fw-schatten-marke">{% zeichen 'liegenschaft' %}</div>
- <span class="text-xl font-black tracking-tighter">swissImmo</span>
+ <span class="text-xl font-bold tracking-tighter">swissImmo</span>
  </div>
- <p class="fw-marke font-black uppercase tracking-widest text-xs mb-1">Digitale Bewerbung</p>
- <h1 class="text-3xl font-black mb-2">{{ einheit.bezeichnung }}</h1>
+ <p class="fw-marke font-bold uppercase tracking-widest text-xs mb-1">Digitale Bewerbung</p>
+ <h1 class="text-3xl font-bold mb-2">{{ einheit.bezeichnung }}</h1>
  <p class="fw-faint flex items-center gap-2">{% zeichen 'liegenschaft' %} {{ einheit.liegenschaft.strasse }}, {{ einheit.liegenschaft.plz }} {{ einheit.liegenschaft.ort }}</p>
  </div>
 
@@ -45,7 +45,7 @@
  <div class="flex items-center gap-2 w-full">
  <div v-for="s in 5" :key="s" class="h-2 flex-1 rounded-full transition-all duration-300" :class="step >= s ? 'fw-markenflaeche' : 'fw-balken'"></div>
  </div>
- <span class="ml-4 text-xs font-black fw-faint whitespace-nowrap">Schritt {% verbatim %}{{ step }}{% endverbatim %} von 5</span>
+ <span class="ml-4 text-xs font-bold fw-faint whitespace-nowrap">Schritt {% verbatim %}{{ step }}{% endverbatim %} von 5</span>
  </div>
 
  <div class="p-8">
@@ -56,57 +56,57 @@
  </div>
 
  <div v-show="step === 1" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-black fw-strong mb-6">Wer bewirbt sich?</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-6">Wer bewirbt sich?</h2>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Vorname *</label><input v-model="form.vorname" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Nachname *</label><input v-model="form.nachname" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Vorname *</label><input v-model="form.vorname" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Nachname *</label><input v-model="form.nachname" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
  {% comment %}Zivilstand bewusst NICHT gefragt: Der EDÖB hält die Frage für die Auswahl der Mieterschaft für nicht verhältnismässig (SVIT-Branchenempfehlung DSG, Anhang E). Das Feld existiert im Modell weiter und wird beim Vertragsabschluss erhoben.{% endcomment %}
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Geburtsdatum *</label><input v-model="form.geburtsdatum" type="date" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Geburtsdatum *</label><input v-model="form.geburtsdatum" type="date" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Geschlecht</label>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Geschlecht</label>
  <select v-model="form.geschlecht" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none">
  <option value="weiblich">Weiblich</option><option value="maennlich">Männlich</option>
  </select>
  </div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Nationalität</label><input v-model="form.nationalitaet" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Nationalität</label><input v-model="form.nationalitaet" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Heimatort (für Schweizer)</label><input v-model="form.heimatort" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Heimatort (für Schweizer)</label><input v-model="form.heimatort" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
 
  <div v-show="step === 2" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-black fw-strong mb-6">Kontakt & Aktuelle Adresse</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-6">Kontakt & Aktuelle Adresse</h2>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Mobilnummer *</label><input v-model="form.mobilnummer" type="tel" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">E-Mail Adresse *</label><input v-model="form.email" type="email" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Mobilnummer *</label><input v-model="form.mobilnummer" type="tel" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">E-Mail Adresse *</label><input v-model="form.email" type="email" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Aktuelle Adresse (Strasse, Nr.) *</label><input v-model="form.adresse" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Aktuelle Adresse (Strasse, Nr.) *</label><input v-model="form.adresse" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">PLZ *</label><input v-model="form.plz" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Ort *</label><input v-model="form.ort" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">PLZ *</label><input v-model="form.plz" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Ort *</label><input v-model="form.ort" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
 
- <h3 class="font-black fw-strong mt-8 mb-4">Aktuelles Mietverhältnis</h3>
+ <h3 class="font-bold fw-strong mt-8 mb-4">Aktuelles Mietverhältnis</h3>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Aktueller Vermieter / Verwaltung *</label><input v-model="form.aktueller_vermieter" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Telefon Vermieter *</label><input v-model="form.telefon_vermieter" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Aktueller Vermieter / Verwaltung *</label><input v-model="form.aktueller_vermieter" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Telefon Vermieter *</label><input v-model="form.telefon_vermieter" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Grund für den Umzug</label><input v-model="form.grund_fuer_wechsel" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Grund für den Umzug</label><input v-model="form.grund_fuer_wechsel" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
 
  <div v-show="step === 3" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-black fw-strong mb-6">Beruf & Finanzen</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-6">Beruf & Finanzen</h2>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Erwerbsstatus *</label>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Erwerbsstatus *</label>
  <select v-model="form.erwerbsstatus" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none">
  <option value="angestellt">Angestellt</option><option value="selbstaendig">Selbständig</option><option value="student">Student</option><option value="pensioniert">Pensioniert</option><option value="iv_bezueger">IV Bezüger</option><option value="arbeitslos">Arbeitslos</option>
  </select>
  </div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Beruf *</label><input v-model="form.beruf" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Beruf *</label><input v-model="form.beruf" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Bruttoeinkommen im Jahr (CHF) *</label>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Bruttoeinkommen im Jahr (CHF) *</label>
  <select v-model="form.einkommen_jahr" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none">
  <option>weniger als 30’000</option><option>30’000 - 40’000</option><option>40’000 - 50’000</option><option>50’000 - 60’000</option>
  <option>60’000 - 70’000</option><option>70’000 - 80’000</option><option>80’000 - 90’000</option><option>90’000 - 100’000</option>
@@ -114,9 +114,9 @@
  </select>
  </div>
  <div v-if="form.erwerbsstatus === 'angestellt'" class="grid grid-cols-1 md:grid-cols-2 gap-5 p-5 fw-flaeche2 border fw-linie rounded-xl">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Arbeitgeber *</label><input v-model="form.arbeitgeber" type="text" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Angestellt seit *</label><input v-model="form.angestellt_seit" type="date" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Tel. Arbeitgeber *</label><input v-model="form.telefon_arbeitgeber" type="text" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Arbeitgeber *</label><input v-model="form.arbeitgeber" type="text" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Angestellt seit *</label><input v-model="form.angestellt_seit" type="date" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Tel. Arbeitgeber *</label><input v-model="form.telefon_arbeitgeber" type="text" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
  <div class="flex items-end">
  <label class="flex items-center gap-3 cursor-pointer">
  <input type="checkbox" v-model="form.ist_unbefristet" class="w-5 h-5 rounded fw-marke fw-fokusring">
@@ -126,17 +126,17 @@
  </div>
  <div class="mt-6 border-t fw-linie pt-6">
  <label class="flex items-center justify-between p-4 fw-krit-flaeche border fw-linie-krit rounded-xl cursor-pointer hover:fw-krit-flaeche transition-colors">
- <div><p class="font-black fw-kritisch">Betreibungen in den letzten 2 Jahren?</p><p class="text-xs fw-kritisch">Falls ja, bitte im nächsten Schritt Auszug hochladen.</p></div>
+ <div><p class="font-bold fw-kritisch">Betreibungen in den letzten 2 Jahren?</p><p class="text-xs fw-kritisch">Falls ja, bitte im nächsten Schritt Auszug hochladen.</p></div>
  <input type="checkbox" v-model="form.hat_betreibungen" class="w-6 h-6 rounded fw-kritisch focus:fw-ring-krit">
  </label>
  </div>
  </div>
 
  <div v-show="step === 4" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-black fw-strong mb-6">Wohnungsdetails & Extras</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-6">Wohnungsdetails & Extras</h2>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Anzahl Erwachsene</label><input v-model="form.anzahl_erwachsene" type="number" min="1" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold outline-none"></div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Anzahl Kinder</label><input v-model="form.anzahl_kinder" type="number" min="0" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Anzahl Erwachsene</label><input v-model="form.anzahl_erwachsene" type="number" min="1" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold outline-none"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Anzahl Kinder</label><input v-model="form.anzahl_kinder" type="number" min="0" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold outline-none"></div>
  </div>
 
  <div class="space-y-3">
@@ -158,13 +158,13 @@
  </div>
 
  <div class="pt-4 border-t fw-linie">
- <h3 class="font-black fw-strong mb-4">Schilder & Kaution</h3>
+ <h3 class="font-bold fw-strong mb-4">Schilder & Kaution</h3>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Text für Briefkasten</label><input v-model="form.schild_briefkasten" type="text" placeholder="z.B. Muster" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold"></div>
- <div><label class="block text-xs font-black uppercase fw-faint mb-2">Text für Klingel</label><input v-model="form.schild_sonnerie" type="text" placeholder="z.B. Muster" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Text für Briefkasten</label><input v-model="form.schild_briefkasten" type="text" placeholder="z.B. Muster" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold"></div>
+ <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Text für Klingel</label><input v-model="form.schild_sonnerie" type="text" placeholder="z.B. Muster" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold"></div>
  </div>
  <div>
- <label class="block text-xs font-black uppercase fw-faint mb-2">Wunsch-Kautionsart</label>
+ <label class="block text-xs font-bold uppercase fw-faint mb-2">Wunsch-Kautionsart</label>
  <select v-model="form.wunsch_kautions_typ" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold outline-none">
  <option value="bank">Klassisches Bankdepot (Mietzinskonto)</option>
  <option value="swisskaution">Kautionsversicherung (z.B. Swisskaution)</option>
@@ -174,12 +174,12 @@
  </div>
 
  <div v-show="step === 5" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-black fw-strong mb-6">Dokumente hochladen</h2>
+ <h2 class="text-2xl font-bold fw-strong mb-6">Dokumente hochladen</h2>
 
  <div class="border fw-linie rounded-xl p-5 hover:fw-linie-marke transition-colors">
  <div class="flex justify-between items-start mb-4">
  <div>
- <h4 class="font-black fw-strong">Betreibungsregisterauszug *</h4>
+ <h4 class="font-bold fw-strong">Betreibungsregisterauszug *</h4>
  <p class="text-xs fw-mutet mt-1">Nicht älter als 3 Monate.</p>
  </div>
  <div class="flex items-center gap-2">
@@ -212,20 +212,20 @@
                         werden und bleibt oben stehen.
                     {% endcomment %}
  <div class="fw-flaeche2 border fw-linie rounded-xl p-5">
- <h4 class="font-black fw-strong mb-1">Ausweis und Einkommensnachweis</h4>
+ <h4 class="font-bold fw-strong mb-1">Ausweis und Einkommensnachweis</h4>
  <p class="text-xs fw-mutet">Diese Unterlagen fragen wir erst an, wenn Sie in
  die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und
  Interessenten.</p>
  </div>
 
  <div class="border fw-linie rounded-xl p-5 hover:fw-linie-marke transition-colors">
- <h4 class="font-black fw-strong mb-1">Weitere Dokumente (Optional)</h4>
+ <h4 class="font-bold fw-strong mb-1">Weitere Dokumente (Optional)</h4>
  <p class="text-xs fw-mutet mb-3">Motivationsschreiben, Referenzen etc.</p>
  <input type="file" @change="handleFile($event, 'weitere_dokumente')" class="w-full text-sm fw-mutet file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:fw-flaeche2 file:fw-ink hover:file:fw-balken">
  </div>
 
  <div>
- <label class="block text-xs font-black uppercase fw-faint mb-2 mt-4">Gewünschter Bezugstermin *</label>
+ <label class="block text-xs font-bold uppercase fw-faint mb-2 mt-4">Gewünschter Bezugstermin *</label>
  <input v-model="form.gewuenschter_bezugstermin" type="date" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none">
  </div>
  </div>
@@ -240,7 +240,7 @@
                     Sichtbar auf jedem Schritt, nicht in einer Fusszeile versteckt.
                 {% endcomment %}
  <div v-show="step === 5" class="mt-8 fw-flaeche2 border fw-linie rounded-xl p-5 text-xs fw-mutet leading-relaxed">
- <p class="font-black fw-strong mb-2 text-sm">Was mit Ihren Angaben geschieht</p>
+ <p class="font-bold fw-strong mb-2 text-sm">Was mit Ihren Angaben geschieht</p>
  <ul class="space-y-1.5 list-disc pl-4">
  <li>Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der
  Mieterschaft für dieses Objekt und werden für nichts anderes verwendet.</li>
@@ -258,11 +258,11 @@
 
  <div class="flex justify-between items-center mt-10 pt-6 border-t fw-linie">
  <button v-if="step > 1" @click="step--" class="fw-faint font-bold hover:fw-strong transition-colors px-4 py-2">{% zeichen 'zurueck' klasse='mr-2' %} Zurück</button>
- <div v-else></div> <button v-if="step < 5" @click="nextStep" class="fw-btn fw-primary px-8 py-3.5 rounded-xl font-black fw-schatten-marke hover:fw-balken-voll transition-all flex items-center gap-2">
+ <div v-else></div> <button v-if="step < 5" @click="nextStep" class="fw-btn fw-primary px-8 py-3.5 rounded-xl font-bold fw-schatten-marke hover:fw-balken-voll transition-all flex items-center gap-2">
  Weiter {% zeichen 'weiter' %}
  </button>
 
- <button v-if="step === 5" @click="submitForm" :disabled="isSubmitting" class="fw-gut-voll text-white px-8 py-3.5 rounded-xl font-black fw-schatten-gut transition-all flex items-center gap-2 disabled:opacity-50">
+ <button v-if="step === 5" @click="submitForm" :disabled="isSubmitting" class="fw-gut-voll text-white px-8 py-3.5 rounded-xl font-bold fw-schatten-gut transition-all flex items-center gap-2 disabled:opacity-50">
  <svg v-if="isSubmitting" class="fw-zeichen fw-dreht" aria-hidden="true"><use href="#z-laedt"/></svg>
  <span v-else>{% zeichen 'senden' klasse='mr-2' %} Verbindlich einreichen</span>
  </button>

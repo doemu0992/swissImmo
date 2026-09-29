@@ -10,7 +10,7 @@
 {% block content %}
     {% if mieter %}
         <div class="mb-6">
-            <h1 class="text-2xl font-black tracking-tight fw-strong">{% blocktrans with name=mieter.display_name %}Guten Tag {{ name }}{% endblocktrans %}</h1>
+            <h1 class="text-2xl font-bold tracking-tight fw-strong">{% blocktrans with name=mieter.display_name %}Guten Tag {{ name }}{% endblocktrans %}</h1>
             <p class="fw-mutet mt-1">{% trans "Willkommen in Ihrem persönlichen Mieterportal." %}</p>
         </div>
 
@@ -37,7 +37,7 @@
                     </div>
                     <div class="fw-glas rounded-xl px-3 py-3">
                         <div class="text-[10px] font-bold uppercase tracking-wide fw-faint">{% trans "Brutto / Mt." %}</div>
-                        <div class="text-base font-black mt-0.5">{{ o.brutto|chf }}</div>
+                        <div class="text-base font-bold mt-0.5">{{ o.brutto|chf }}</div>
                     </div>
                 </div>
                 {% if o.kaution %}

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="text-xs fw-faint mb-3">
     <a href="/neu/schaeden/{{ lg_query }}" class="hover:fw-marke">{% trans "Schadensfälle" %}</a>
-    {% zeichen 'weiter' klasse='text-[8px] mx-1' %}{% trans "Kostenübersicht" %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro mx-1' %}{% trans "Kostenübersicht" %}
 </div>
 
 <div class="fw-phead">
@@ -25,19 +25,19 @@
 <!-- Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-5">
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Effektive Kosten" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Effektive Kosten" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total.effektiv|chf }}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Offene Schätzung" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Offene Schätzung" %}</div>
         <div class="text-xl font-bold fw-warnton mt-0.5">CHF {{ total.offen|chf }}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Aufträge" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Aufträge" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">{{ total.auftraege }}</div>
     </div>
     <div class="fw-card px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{% trans "Schadensfälle" %}</div>
+        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Schadensfälle" %}</div>
         <div class="text-xl font-bold fw-strong mt-0.5">{{ total.schaeden }}</div>
     </div>
 </div>
@@ -45,7 +45,7 @@
 <div class="fw-card overflow-hidden overflow-x-auto">
     <table class="w-full text-sm min-w-max">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Liegenschaft" %}</th>
                 <th class="px-5 py-3 font-semibold text-center">{% trans "Schäden" %}</th>
                 <th class="px-5 py-3 font-semibold text-center">{% trans "Aufträge" %}</th>

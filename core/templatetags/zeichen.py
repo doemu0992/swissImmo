@@ -138,3 +138,22 @@ def _melde_alt(name):
     logging.getLogger(__name__).warning(
         'Unbekannter Zeichenname «%s» — Rueckfall auf «hinweis». '
         'Erlaubte stehen in docs/ZEICHEN.md.', name)
+
+
+#: Führendes Emoji einer Meldung samt folgendem Leerzeichen: ✅ ❌ ⚠️ 📍 🗑️ …
+#: (Symbolblöcke, Variantenwähler FE0F, Verbinder 200D).
+_FUEHRENDES_EMOJI = re.compile(
+    '^[←-⇿⌀-➿⬀-⯿\U0001f000-\U0001faff️‍]+\\s*')
+
+
+@register.filter
+def ohne_emoji(text):
+    """Entfernt ein führendes Emoji aus einer Rückmeldung.
+
+    Rund 200 `messages.*`-Texte beginnen mit einem Emoji. Der Toast zeigt aber
+    schon ein Symbol je Meldungsart aus dem eigenen Satz (D5) — das Emoji stand
+    doppelt und in fremder Bildsprache daneben. Es wird hier bei der ANZEIGE
+    entfernt, nicht im Python-Text: Die Texte sind Übersetzungsschlüssel
+    (`locale/*/django.po`), ein Umschreiben risse jede Übersetzung ab.
+    """
+    return _FUEHRENDES_EMOJI.sub('', str(text), count=1)

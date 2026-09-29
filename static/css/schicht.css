@@ -60,7 +60,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
             .fw-kopffilter label{padding:4px 9px;font-size:12px}
             .fw-kopffilter .fw-feld{max-width:78px}
         }
-        .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:800;color:var(--ds-ink)}
+        .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:700;color:var(--ds-ink)}
         .fw-phead p{font-size:13px;color:var(--ds-muted);margin-top:2px}
         .fw-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;text-decoration:none;padding:9px 14px;border-radius:var(--ds-radius-sm);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
         .fw-btn:hover{border-color:var(--ds-brand)}
@@ -79,7 +79,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         .fw-kpi{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:14px;padding:15px 16px;box-shadow:var(--ds-shadow);display:flex;flex-direction:column;gap:2px}
         .fw-kpi.fw-accent{background:linear-gradient(150deg,color-mix(in srgb,var(--ds-brand) 12%,var(--ds-surface)),var(--ds-surface))}
         .fw-kpi .fw-l{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--ds-faint);font-weight:600}
-        .fw-kpi .fw-v{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-kpi .fw-v{font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
         .fw-kpi .fw-v.fw-crit{color:var(--ds-crit)}.fw-kpi .fw-v.fw-warn{color:var(--ds-warn)}.fw-kpi .fw-v.fw-good{color:var(--ds-good)}
         .fw-kpi .fw-f{font-size:11.5px;color:var(--ds-muted)}
         .fw-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);margin-bottom:16px;overflow:hidden}
@@ -128,7 +128,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         .fw-kv dt{color:var(--ds-muted)}
         .fw-kv dd{color:var(--ds-ink);font-weight:600;text-align:right}
         .fw-kv dd.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
-        .fw-subhead{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ds-faint);font-weight:800;padding:10px 0 1px}
+        .fw-subhead{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ds-faint);font-weight:700;padding:10px 0 1px}
         table td.text-right, table th.text-right { font-variant-numeric: tabular-nums; }
         .fw-wert { display: contents; }
         @media (max-width: 767px) {
@@ -326,6 +326,12 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
             border-radius:var(--ds-radius-sm);padding:8px 11px;font-size:13px;
             color:var(--ds-ink);font-family:inherit;max-width:100%}
         .fw-feld:focus{outline:2px solid var(--ds-brand);outline-offset:-1px}
+        .fw-feld[aria-invalid="true"]{border-color:var(--ds-crit)}
+        .fw-feld[aria-invalid="true"]:focus{outline-color:var(--ds-crit)}
+        .fw-feldfehler{margin-top:4px;font-size:12px;line-height:1.35;color:var(--ds-crit)}
+        .fw-formfehler{background:var(--ds-crit-soft);color:var(--ds-ink);
+            border-radius:var(--ds-radius);padding:12px 16px;font-size:13px}
+        .fw-formfehler b{color:var(--ds-crit)}
         .fw-menuzeile{width:100%;text-align:left;display:flex;align-items:center;gap:10px;
             padding:8px 16px;font-size:13px;font-weight:600;background:none;border:0;
             cursor:pointer;color:var(--ds-ink)}
@@ -338,7 +344,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         .fw-ikon.mut{background:var(--ds-surface-2);color:var(--ds-faint)}
         button.fw-ikon{border:0;cursor:pointer;padding:0}
         button.fw-ikon.gefahr:hover{background:var(--ds-crit-soft);color:var(--ds-crit)}
-        .fw-gruppe{padding:12px 16px 5px;font-size:10px;font-weight:800;letter-spacing:.14em;
+        .fw-gruppe{padding:12px 16px 5px;font-size:10px;font-weight:700;letter-spacing:.14em;
             text-transform:uppercase;color:var(--ds-brand);background:var(--ds-surface-2);
             border-top:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line)}
         .fw-dz{display:flex;gap:16px;padding:9px 16px;border-bottom:1px solid var(--ds-line);
@@ -370,7 +376,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         .fw-akte-bild{width:48px;height:48px;border-radius:var(--ds-radius-sm);
             background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
             align-items:center;justify-content:center;flex:0 0 48px;font-size:20px}
-        .fw-akte-typ{font-size:10px;font-weight:800;letter-spacing:.14em;
+        .fw-akte-typ{font-size:10px;font-weight:700;letter-spacing:.14em;
             text-transform:uppercase;color:var(--ds-faint);margin-bottom:4px}
         .fw-akte-oben h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
         .fw-akte-pfad{font-size:12px;color:var(--ds-faint);margin-top:4px;line-height:1.55}
@@ -413,7 +419,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
             display:flex;align-items:center;gap:7px}
         .fw-reiter button:hover{color:var(--ds-ink)}
         .fw-reiter button.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
-        .fw-reiter .fw-z{font-size:10px;font-weight:800;background:var(--ds-surface);
+        .fw-reiter .fw-z{font-size:10px;font-weight:700;background:var(--ds-surface);
             border:1px solid var(--ds-line);border-radius:var(--ds-pill);padding:1px 6px}
         .fw-kopf{padding:11px 15px;border-bottom:1px solid var(--ds-line);
             display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -485,6 +491,10 @@ body { font-family: 'IBM Plex Sans', sans-serif; }
         .fw-befund .fw-aufklapp{border-top:1px solid var(--ds-line);border-bottom:0}
         .fw-befund .fw-aufklapp-inhalt{background:var(--ds-surface)}
         .fw-pflicht{color:var(--ds-crit)}                 
+        .fw-fs-mikro{font-size:10px}   
+        .fw-fs-klein{font-size:11px}   
+        .fw-fs-fein{font-size:13px}    
+        .fw-fs-text{font-size:14px}    
         .fw-mutet{color:var(--ds-faint)}
         .fw-kopfzeile{text-align:left;font-size:11px;text-transform:uppercase;
             letter-spacing:.04em;color:var(--ds-faint);

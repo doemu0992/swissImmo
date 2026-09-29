@@ -8,7 +8,7 @@
 
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/nebenkosten/{{ lg_query }}" class="hover:fw-marke">{% trans "Nebenkosten" %}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">{{ p.bezeichnung }}</span>
 </nav>
 
@@ -18,7 +18,7 @@
             {% zeichen 'rechnung' %}
         </div>
         <div>
-            <h1 class="text-2xl font-extrabold fw-strong">{{ p.bezeichnung }}</h1>
+            <h1 class="text-2xl font-bold fw-strong">{{ p.bezeichnung }}</h1>
             <p class="text-sm fw-mutet">{% if p.liegenschaft_id %}{{ p.liegenschaft.strasse }}, {{ p.liegenschaft.ort }} · {% endif %}{{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}</p>
         </div>
     </div>
@@ -109,7 +109,7 @@
         <div class="overflow-x-auto">
             <table class="w-full min-w-max text-sm">
                 <thead>
-                <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+                <tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                     <th class="px-5 py-3 font-semibold">{% trans "Mieter" %}</th>
                     <th class="px-5 py-3 font-semibold">{% trans "Objekt" %}</th>
                     <th class="px-5 py-3 font-semibold text-center">m²</th>
@@ -150,7 +150,7 @@
 <div data-panel="nk" id="nk-belege" class="hidden">
     <div class="fw-card overflow-hidden">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
+            <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">{% trans "Datum" %}</th><th class="px-5 py-3 font-semibold">{% trans "Beschreibung" %}</th><th class="px-5 py-3 font-semibold">{% trans "Kategorie" %}</th><th class="px-5 py-3 font-semibold text-right">{% trans "Betrag" %}</th>
             </tr></thead>
             <tbody class="fw-dv">

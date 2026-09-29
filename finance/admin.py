@@ -84,15 +84,15 @@ class AbrechnungAdmin(NurLesenModelAdmin):
     def schnell_aktionen(self, obj):
         edit_url = reverse('admin:finance_abrechnungsperiode_change', args=[obj.id])
         pdf_url = reverse('abrechnung_pdf', args=[obj.id]) if obj.id else '#'
-        mail_url = reverse('abrechnung_send_mail', args=[obj.id]) if obj.id else '#'
+        # Der Knopf «Senden» zeigte auf `abrechnung_send_mail`, eine nie gebaute
+        # Ansicht (404). Er ist entfernt, bis der Versand gebaut ist.
 
         return format_html(
             '<div class="flex gap-1.5">'
             '<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>'
             '<a href="{}" target="_blank" class="text-gray-600 bg-gray-50 hover:bg-gray-200 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📄 PDF</a>'
-            '<a href="{}" onclick="return confirm(\'Alle senden?\')" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📩 Senden</a>'
             '</div>',
-            edit_url, pdf_url, mail_url
+            edit_url, pdf_url
         )
 
     def live_preview_tabelle(self, obj):

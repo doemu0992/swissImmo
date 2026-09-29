@@ -152,7 +152,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         {% if merkmale_gewaehlt %}
         <div class="flex flex-wrap gap-2">
             {% for m in merkmale_gewaehlt %}
-            <span class="fw-chip fw-markenflaeche fw-marke">{% zeichen 'gut' klasse='text-[10px] mr-1' %}{{ m }}</span>
+            <span class="fw-chip fw-markenflaeche fw-marke">{% zeichen 'gut' klasse='fw-fs-mikro mr-1' %}{{ m }}</span>
             {% endfor %}
         </div>
         {% else %}
@@ -192,17 +192,17 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <div class="font-bold fw-strong truncate">{{ r.namen }}</div>
                     <div class="fw-klein">{{ r.v.beginn|date:"d.m.Y" }} – {% if r.v.ende %}{{ r.v.ende|date:"d.m.Y" }}{% else %}{% trans "laufend" %}{% endif %}</div>
                 </div>
-                {% if r.pill %}<span class="text-[11px] font-semibold rounded-full px-2 py-0.5 {{ r.pill.cls }}">{{ r.pill.label }}</span>{% endif %}
-                <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{% blocktrans with n=r.dokumente|length %}{{ n }} Dok.{% endblocktrans %}</span>
-                <a href="/neu/vertraege/{{ r.v.id }}/" class="text-xs fw-marke font-medium hover:underline shrink-0" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='text-[10px]' %}</a>
+                {% if r.pill %}<span class="fw-fs-klein font-semibold rounded-full px-2 py-0.5 {{ r.pill.cls }}">{{ r.pill.label }}</span>{% endif %}
+                <span class="fw-fs-klein font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{% blocktrans with n=r.dokumente|length %}{{ n }} Dok.{% endblocktrans %}</span>
+                <a href="/neu/vertraege/{{ r.v.id }}/" class="text-xs fw-marke font-medium hover:underline shrink-0" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
             </summary>
             <div class="border-t fw-linie px-5 py-3 flex flex-wrap gap-2 fw-flaeche2">
                 <a href="/neu/mietzins/{{ r.v.id }}/anfangsmietzins/" class="fw-btn">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Anfangsmietzins" %}</a>
                 {% if r.v.status == 'aktiv' %}
                 <a href="/neu/mietzins/{{ r.v.id }}/anpassung/" class="fw-btn">{% zeichen 'trend' klasse='mr-1' %}{% trans "Mietzinsanpassung" %}</a>
-                {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ r.v.id }}/kuendigen/" class="text-[11px] font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche rounded-lg px-2.5 py-1.5">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "Kündigung" %}</a>{% endif %}
+                {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ r.v.id }}/kuendigen/" class="fw-fs-klein font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche rounded-lg px-2.5 py-1.5">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "Kündigung" %}</a>{% endif %}
                 {% endif %}
-                <a href="/neu/vertraege/{{ r.v.id }}/" class="text-[11px] font-semibold fw-mutet border fw-linie hover:fw-flaeche2 rounded-lg px-2.5 py-1.5">{% zeichen 'weiter' klasse='mr-1' %}{% trans "Vertrag öffnen" %}</a>
+                <a href="/neu/vertraege/{{ r.v.id }}/" class="fw-fs-klein font-semibold fw-mutet border fw-linie hover:fw-flaeche2 rounded-lg px-2.5 py-1.5">{% zeichen 'weiter' klasse='mr-1' %}{% trans "Vertrag öffnen" %}</a>
             </div>
             <div class="border-t fw-linie fw-dv">
                 {% for d in r.dokumente %}
@@ -242,7 +242,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 
 <!-- ===== BEREICH: FINANZEN ===== -->
 <div data-panel="obj" id="obj-finanzen" class="hidden">
-    <div class="fw-markenflaeche border fw-linie-marke rounded-xl px-4 py-3 mb-4 text-[12px] fw-marke leading-relaxed">
+    <div class="fw-markenflaeche border fw-linie-marke rounded-xl px-4 py-3 mb-4 fw-fs-fein fw-marke leading-relaxed">
 {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}        {% zeichen 'hinweis' klasse='mr-1' %}<b>Sollmietzins datiert («gültig ab»).</b> Der aktuell gültige Wert steuert die Soll-Miete; <b>neue Verträge</b> übernehmen ihn zum Mietbeginn automatisch, <b>bestehende bleiben unverändert</b> (Änderung nur via amtliches Formular, Art. 269d OR).
         <span class="block mt-1"><b>Gratismonate / Rabatt:</b> datierte Zeile mit Rabatt (oder «mietzinsfrei») erfassen — die <b>Referenz</b> bleibt die echte Sollmiete (Mieterspiegel/Bilanz korrekt), der Rabatt wird als Ertragsminderung gebucht.</span>
     </div>
@@ -258,14 +258,14 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </select></div>
             <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
         </form>
-        <p class="text-[11px] fw-faint mt-2">{% trans "Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts." %}</p>
+        <p class="fw-fs-klein fw-faint mt-2">{% trans "Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts." %}</p>
     </div>
     {% endif %}
     <div class="fw-card">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="fw-kopfzeile">
                 <th class="px-4 py-3 font-semibold">{% trans "Gültig ab" %}</th>
-                <th class="px-4 py-3 font-semibold text-right">{% trans "Netto" %}{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="text-[9px] normal-case fw-faint">{% trans "Referenz" %}</span></th>
+                <th class="px-4 py-3 font-semibold text-right">{% trans "Netto" %}{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="fw-fs-mikro normal-case fw-faint">{% trans "Referenz" %}</span></th>
                 <th class="px-4 py-3 font-semibold text-right">{% trans "Rabatt" %}</th>
                 <th class="px-4 py-3 font-semibold text-right">{% trans "zu zahlen" %}</th>
                 <th class="px-4 py-3 font-semibold text-center">{% trans "Basis" %}</th>
@@ -276,14 +276,14 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             {% for s in sollmietzinse %}
             <tr class="fw-hover">
                 <td class="px-4 py-3 font-medium fw-strong whitespace-nowrap">{{ s.gueltig_ab|date:"d.m.Y" }}
-                    {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold fw-gut-flaeche fw-gut">{% trans "aktuell" %}</span>{% endif %}</td>
+                    {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full fw-fs-mikro font-semibold fw-gut-flaeche fw-gut">{% trans "aktuell" %}</span>{% endif %}</td>
                 <td class="px-4 py-3 text-right fw-ink whitespace-nowrap">{{ s.netto_mietzins|chf }}{% if not e.ist_einstellplatz %} / {{ s.nebenkosten|chf }}{% endif %}</td>
                 <td class="px-4 py-3 text-right whitespace-nowrap {% if s.hat_rabatt %}fw-warnton font-semibold{% else %}fw-faint{% endif %}">
                     {% if s.hat_rabatt %}−{{ s.rabatt_gesamt|chf }}
-                    {% if s.ist_voller_erlass %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold fw-warn-flaeche fw-warnton align-middle" title="{% trans 'Der Nettomietzins wurde für diese Periode vollständig erlassen (Gratismonat)' %}">{% trans "Gratismonat" %}</span>{% endif %}
+                    {% if s.ist_voller_erlass %}<span class="ml-1 px-1.5 py-0.5 rounded-full fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton align-middle" title="{% trans 'Der Nettomietzins wurde für diese Periode vollständig erlassen (Gratismonat)' %}">{% trans "Gratismonat" %}</span>{% endif %}
                     {% else %}—{% endif %}</td>
-                <td class="px-4 py-3 text-right font-semibold whitespace-nowrap {% if s.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ s.verrechnet_brutto|chf }}{% if s.verrechnet_brutto == 0 %} <span class="text-[10px] font-normal">{% trans "(frei)" %}</span>{% endif %}</td>
-                <td class="px-4 py-3 text-center fw-mutet whitespace-nowrap text-[11px]">{% localize off %}{% if s.basis_referenzzinssatz %}{{ s.basis_referenzzinssatz }}%{% else %}—{% endif %} / {% if s.basis_lik_punkte %}{{ s.basis_lik_punkte }}{% else %}—{% endif %}{% endlocalize %}</td>
+                <td class="px-4 py-3 text-right font-semibold whitespace-nowrap {% if s.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ s.verrechnet_brutto|chf }}{% if s.verrechnet_brutto == 0 %} <span class="fw-fs-mikro font-normal">{% trans "(frei)" %}</span>{% endif %}</td>
+                <td class="px-4 py-3 text-center fw-mutet whitespace-nowrap fw-fs-klein">{% localize off %}{% if s.basis_referenzzinssatz %}{{ s.basis_referenzzinssatz }}%{% else %}—{% endif %} / {% if s.basis_lik_punkte %}{{ s.basis_lik_punkte }}{% else %}—{% endif %}{% endlocalize %}</td>
                 <td class="px-4 py-3 fw-mutet truncate max-w-[120px]">{{ s.notiz|default:"—" }}</td>
                 <td class="px-4 py-3 text-right whitespace-nowrap">
                     <form method="post" action="/neu/sollmietzins/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Sollmietzins-Zeile löschen?" %}{% endfilter %}');">{% csrf_token %}
@@ -377,10 +377,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <!-- Objekt-Staffelmiete-Vorlage (Plan) — belegt neue Verträge vor, wie Sollmietzins -->
     <div class="fw-card p-5 mt-6">
         <h3 class="font-bold fw-strong text-sm mb-1">{% zeichen 'mehr' klasse='fw-marke mr-1.5' %}{% trans "Staffelmiete-Vorlage (Objekt)" %}</h3>
-        {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}<p class="text-[11px] fw-faint mb-3">Geplante, datierte Netto-Stufen für dieses Objekt. Ein <b>neuer Gewerbe-Vertrag</b> übernimmt sie automatisch als Staffelmiete (Art. 269c). Diese Vorlage wird selbst nicht verrechnet — die verrechnungswirksamen Stufen entstehen am konkreten Vertrag.</p>
+        {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}<p class="fw-fs-klein fw-faint mb-3">Geplante, datierte Netto-Stufen für dieses Objekt. Ein <b>neuer Gewerbe-Vertrag</b> übernimmt sie automatisch als Staffelmiete (Art. 269c). Diese Vorlage wird selbst nicht verrechnet — die verrechnungswirksamen Stufen entstehen am konkreten Vertrag.</p>
         <div class="border fw-linie rounded-lg overflow-hidden mb-3">
             <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
+                <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
                     <th class="px-4 py-2 font-semibold">{% trans "Gültig ab" %}</th>
                     <th class="px-4 py-2 font-semibold text-right">{% trans "Netto-Mietzins" %}</th>
                     <th class="px-4 py-2 font-semibold">{% trans "Bemerkung" %}</th>
@@ -425,17 +425,17 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'liegenschaft' %}</span>{% trans "Staffelstufen des aktiven Vertrags" %}</h3>
             <a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="text-xs fw-marke hover:underline">{% trans "Aktiver Vertrag" %}</a>
         </div>
-        {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}<p class="text-[11px] fw-faint mb-3">Vorab vereinbarte Stufen des <b>aktiven Vertrags</b>. Ab dem Stichtag gilt der neue Netto-Mietzins automatisch im Mietenlauf (keine erneute Ankündigung). Zulässig bei fester Vertragsdauer ≥ 3 Jahren, max. 1 Erhöhung pro Jahr.</p>
+        {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}<p class="fw-fs-klein fw-faint mb-3">Vorab vereinbarte Stufen des <b>aktiven Vertrags</b>. Ab dem Stichtag gilt der neue Netto-Mietzins automatisch im Mietenlauf (keine erneute Ankündigung). Zulässig bei fester Vertragsdauer ≥ 3 Jahren, max. 1 Erhöhung pro Jahr.</p>
         <div class="border fw-linie rounded-lg overflow-hidden mb-3">
             <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
+                <thead><tr class="text-left fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
                     <th class="px-4 py-2 font-semibold">{% trans "Gültig ab" %}</th>
                     <th class="px-4 py-2 font-semibold text-right">{% trans "Netto-Mietzins" %}</th>
                     <th class="px-4 py-2"></th>
                 </tr></thead>
                 <tbody class="">
                 <tr class="fw-mutet">
-                    <td class="px-4 py-2">{{ aktiver_vertrag.beginn|date:"d.m.Y" }} <span class="text-[10px] fw-faint">{% trans "(Start)" %}</span></td>
+                    <td class="px-4 py-2">{{ aktiver_vertrag.beginn|date:"d.m.Y" }} <span class="fw-fs-mikro fw-faint">{% trans "(Start)" %}</span></td>
                     <td class="px-4 py-2 text-right">CHF {{ aktiver_vertrag.netto_mietzins|chf }}</td>
                     <td class="px-4 py-2"></td>
                 </tr>
@@ -488,7 +488,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}" class="block">
                 <img src="{{ f.bild.url }}" alt="Objektfoto" class="fw-bild">
             </a>
-            {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] fw-btn fw-primary px-1.5 py-0.5 rounded font-semibold">{% trans "Titelbild" %}</span>{% endif %}
+            {% if forloop.first %}<span class="absolute bottom-1 left-1 fw-fs-mikro fw-btn fw-primary px-1.5 py-0.5 rounded font-semibold">{% trans "Titelbild" %}</span>{% endif %}
             <form method="post" action="/neu/objekte/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1" onsubmit="return confirm('{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}');">
                 {% csrf_token %}
                 <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
@@ -642,11 +642,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <tr class="fw-hover">
                     <td class="px-5 py-2.5">
                         <div class="font-medium fw-strong">{{ row.a.kategorie }}
-                            {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold fw-krit-flaeche fw-kritisch">{% trans "Ersatz fällig" %}</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold fw-warn-flaeche fw-warnton">{% trans "bald fällig" %}</span>{% endif %}</div>
+                            {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-krit-flaeche fw-kritisch">{% trans "Ersatz fällig" %}</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton">{% trans "bald fällig" %}</span>{% endif %}</div>
                         {% if row.a.bezeichnung %}<div class="fw-klein">{{ row.a.bezeichnung }}</div>{% endif %}
                         <div class="flex items-center gap-2 mt-0.5">
-                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="text-[11px] fw-marke hover:underline">{% zeichen 'dokument' klasse='mr-0.5' %}{% trans "Foto" %}</a>{% endif %}
-                            {% if row.schaden_anzahl %}<span class="text-[11px] fw-mutet">{% zeichen 'arbeit' klasse='mr-0.5 fw-faint' %}{% blocktrans count n=row.schaden_anzahl %}{{ n }} Reparatur{% plural %}{{ n }} Reparaturen{% endblocktrans %} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
+                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="fw-fs-klein fw-marke hover:underline">{% zeichen 'dokument' klasse='mr-0.5' %}{% trans "Foto" %}</a>{% endif %}
+                            {% if row.schaden_anzahl %}<span class="fw-fs-klein fw-mutet">{% zeichen 'arbeit' klasse='mr-0.5 fw-faint' %}{% blocktrans count n=row.schaden_anzahl %}{{ n }} Reparatur{% plural %}{{ n }} Reparaturen{% endblocktrans %} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
                         </div>
                     </td>
                     <td class="px-5 py-2.5 fw-mutet">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>

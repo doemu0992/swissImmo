@@ -29,6 +29,7 @@ Was hier steht, ist absichtlich nicht verlinkt und trägt eine Begründung.
 Sie wächst nur mit einem Grund. Eine Adresse ohne Weg und ohne Eintrag ist
 ein Fehler.
 """
+import inspect
 import re
 from pathlib import Path
 
@@ -109,7 +110,31 @@ def _navigationsziele():
     return ziele
 
 
-def _erwaehnt_in_dateien(adresse, wurzeln, endungen):
+def _eigene_stellen(adresse):
+    """Vorlagen und Quelltext der Ansicht, die `adresse` selbst bedient.
+
+    Ein Verweis einer Seite auf sich selbst ist kein Weg dorthin: Das Formular
+    der Lebensdauertabelle schickt an `/neu/lebensdauer/`, ihre Ansicht leitet
+    nach dem Speichern dorthin zurück — und genau diese beiden Stellen liessen
+    den Wächter die Seite für erreichbar halten, obwohl kein Link hinführte
+    (Audit 29.09.2026, F3).
+    """
+    from django.urls import resolve, Resolver404
+    try:
+        ansicht = resolve(adresse).func
+    except Resolver404:
+        return set(), None
+    while hasattr(ansicht, '__wrapped__'):
+        ansicht = ansicht.__wrapped__
+    try:
+        quelle = inspect.getsource(ansicht)
+    except (OSError, TypeError):
+        return set(), None
+    vorlagen = set(re.findall(r"['\"]((?:fw|core)/[\w/.-]+\.html)['\"]", quelle))
+    return vorlagen, quelle
+
+
+def _erwaehnt_in_dateien(adresse, wurzeln, endungen, ohne_vorlagen=(), ohne_quelle=None):
     """Kommt die Adresse irgendwo als Zeichenkette vor?
 
     Bewusst grob: Ein Verweis kann als `href`, in einem `redirect()`, in einer
@@ -129,10 +154,15 @@ def _erwaehnt_in_dateien(adresse, wurzeln, endungen):
                     continue
                 if datei.name == 'urls.py':
                     continue      # das Verzeichnis selbst zählt nicht
+                if datei.relative_to(VORLAGEN).as_posix() in ohne_vorlagen \
+                        if datei.is_relative_to(VORLAGEN) else False:
+                    continue      # die Seite selbst ist kein Weg zu ihr
                 try:
                     text = datei.read_text(encoding='utf-8', errors='ignore')
                 except OSError:
                     continue
+                if ohne_quelle:
+                    text = text.replace(ohne_quelle, '')
                 if nadel in text:
                     return True
     return False
@@ -150,9 +180,12 @@ class ErreichbarkeitTests(SimpleTestCase):
         for adresse in sorted(adressen):
             if adresse in OHNE_WEG or adresse in navigation:
                 continue
-            if _erwaehnt_in_dateien(adresse, [VORLAGEN], ['.html']):
+            eigene_vorlagen, eigene_quelle = _eigene_stellen(adresse)
+            if _erwaehnt_in_dateien(adresse, [VORLAGEN], ['.html'],
+                                    ohne_vorlagen=eigene_vorlagen):
                 continue
-            if _erwaehnt_in_dateien(adresse, [PROGRAMM / 'core' / 'views'], ['.py']):
+            if _erwaehnt_in_dateien(adresse, [PROGRAMM / 'core' / 'views'], ['.py'],
+                                    ohne_quelle=eigene_quelle):
                 continue
             verwaist.append(adresse)
         self.assertEqual(

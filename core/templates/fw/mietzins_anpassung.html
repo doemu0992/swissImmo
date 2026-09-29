@@ -5,9 +5,9 @@
 {% block content %}
 <nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mietzins/" class="hover:fw-marke">Mietzins</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='text-[9px]' %}
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <span class="fw-mutet font-medium">Anpassung</span>
 </nav>
 
@@ -39,8 +39,8 @@
                 <input name="neu_zins" id="mz_neu_zins" oninput="mietzinsCheck()" value="{% localize off %}{{ aktuell_ref }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
             </div>
             <div class="sm:col-span-2 -mb-1">
-                <span class="text-[11px] font-semibold fw-marke">LIK-Basis: {{ lik_basis|default:"Dezember 2020" }} = 100</span>
-                <span class="text-[11px] fw-faint"> · alter und neuer Wert müssen dieselbe Basis haben</span>
+                <span class="fw-fs-klein font-semibold fw-marke">LIK-Basis: {{ lik_basis|default:"Dezember 2020" }} = 100</span>
+                <span class="fw-fs-klein fw-faint"> · alter und neuer Wert müssen dieselbe Basis haben</span>
             </div>
             <div>
                 <label for="mz_basis_lik" class="block text-xs font-semibold fw-mutet mb-1">LIK Vertrag (Basis, Punkte)</label>
@@ -57,7 +57,7 @@
             <div>
                 <label for="mz_neu_stand" class="block text-xs font-semibold fw-mutet mb-1">Stand-Monat (neuer LIK)</label>
                 <input id="mz_neu_stand" type="month" value="{{ aktuell_lik_stand|date:'Y-m' }}" disabled class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-faint">
-                <p class="text-[11px] fw-faint mt-1">aus Account → Marktdaten</p>
+                <p class="fw-fs-klein fw-faint mt-1">aus Account → Marktdaten</p>
             </div>
             <div>
                 <label for="mz_kosten" class="block text-xs font-semibold fw-mutet mb-1">Allg. Kostensteigerung (%)</label>
@@ -77,17 +77,17 @@
             <div>
                 <label for="mz_neu" class="block text-xs font-semibold fw-mutet mb-1">Netto neu (CHF)</label>
                 <input name="neu_netto" id="mz_neu" oninput="mietzinsCheck()" value="{% localize off %}{{ vorschlag_netto }}{% endlocalize %}" class="w-full fw-markenflaeche border fw-linie-marke rounded-lg text-sm px-3 py-2.5 font-semibold">
-                <p class="text-[11px] fw-faint mt-1">Vorschlag aus Referenzzins + Teuerung + Kosten</p>
+                <p class="fw-fs-klein fw-faint mt-1">Vorschlag aus Referenzzins + Teuerung + Kosten</p>
             </div>
             <div>
                 <label for="mz_wirksam" class="block text-xs font-semibold fw-mutet mb-1">Wirksam ab</label>
                 <input type="date" name="wirksam_ab" id="mz_wirksam" onchange="mietzinsCheck()" value="{{ naechster_termin|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] fw-faint mt-1">Nächster Termin mit gewahrter Ankündigungsfrist (+10 Tage)</p>
+                <p class="fw-fs-klein fw-faint mt-1">Nächster Termin mit gewahrter Ankündigungsfrist (+10 Tage)</p>
             </div>
         </div>
 
         <!-- Mietrechtliche Live-Prüfung -->
-        <div id="mz-warn" class="hidden mt-4 rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
+        <div id="mz-warn" class="hidden mt-4 rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 fw-fs-fein fw-warnton">
             <div class="font-bold mb-1 flex items-center gap-1.5">{% zeichen 'recht' %} Mietrechtlicher Hinweis</div>
             <ul id="mz-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>

@@ -82,9 +82,9 @@
         <div id="dledit-{{ row.h.id }}" class="hidden mb-4 pb-4 border-b fw-linie">
             <form method="post" action="/neu/dienstleister/{{ row.h.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {% csrf_token %}
-                <div><label for="dle-firma-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Firma" %} *</label>
+                <div><label for="dle-firma-{{ row.h.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Firma" %} *</label>
                     <input id="dle-firma-{{ row.h.id }}" name="firma" value="{{ row.h.firma }}" required class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label for="dle-branche-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Branche" %}</label>
+                <div><label for="dle-branche-{{ row.h.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Branche" %}</label>
                     <select id="dle-branche-{{ row.h.id }}" name="branche" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5">
                         <option value="sanitaer" {% if row.h.branche == 'sanitaer' %}selected{% endif %}>{% trans "Sanitär / Heizung" %}</option>
                         <option value="elektro" {% if row.h.branche == 'elektro' %}selected{% endif %}>{% trans "Elektroinstallation" %}</option>
@@ -95,11 +95,11 @@
                         <option value="garten" {% if row.h.branche == 'garten' %}selected{% endif %}>{% trans "Gartenbau / Umgebung" %}</option>
                         <option value="reinigung" {% if row.h.branche == 'reinigung' %}selected{% endif %}>{% trans "Reinigungsinstitut" %}</option>
                     </select></div>
-                <div><label for="dle-kontakt-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Kontaktperson" %}</label>
+                <div><label for="dle-kontakt-{{ row.h.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Kontaktperson" %}</label>
                     <input id="dle-kontakt-{{ row.h.id }}" name="kontaktperson" value="{{ row.h.kontaktperson }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label for="dle-email-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
+                <div><label for="dle-email-{{ row.h.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
                     <input id="dle-email-{{ row.h.id }}" name="email" type="email" value="{{ row.h.email }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label for="dle-telefon-{{ row.h.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
+                <div><label for="dle-telefon-{{ row.h.id }}" class="block fw-fs-klein font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
                     <input id="dle-telefon-{{ row.h.id }}" name="telefon" value="{{ row.h.telefon }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
                 <div class="sm:col-span-2 flex items-center gap-2 justify-end">
                     <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.add('hidden')" class="text-sm fw-mutet hover:fw-ink px-3 py-1.5">{% trans "Abbrechen" %}</button>
