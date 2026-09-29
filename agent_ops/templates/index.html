@@ -3,94 +3,483 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CEO Mission Control</title>
+<title>Mission Control · swissImmo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --line:#334155; }
+  :root {
+    --bg: #0b0c0e; --panel: #111215; --raised: #17181c; --hover: #1d1f24;
+    --line: #23252b; --line-strong: #2e3138;
+    --text: #e8e9ec; --muted: #8b8f98; --faint: #5c606a;
+    --accent: #5e6ad2; --accent-soft: rgba(94,106,210,.16);
+    --green: #4cb782; --amber: #f2c94c; --red: #eb5757; --blue: #4ea7fc;
+    --eng: #5e6ad2; --qa: #4cb782; --ops: #f2994a; --docs: #d36cd8;
+    --radius: 8px;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
   * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); padding:16px; }
-  h1 { margin:0 0 16px; font-size:1.4rem; }
-  h2 { margin:0 0 8px; font-size:1rem; color:var(--accent); }
-  .grid { display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; min-width:0; }
-  ul { list-style:none; margin:0; padding:0; font-size:.85rem; }
-  li { padding:4px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
-  .mono { font-family: ui-monospace, monospace; }
-  form { display:flex; gap:8px; margin-bottom:12px; }
-  input { flex:1; min-width:0; padding:8px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--text); }
-  button, select { padding:6px 10px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--text); cursor:pointer; }
-  .task { display:flex; justify-content:space-between; align-items:center; gap:8px; }
-  .muted { color:var(--muted); }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 13px/1.45 Inter, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; }
+  .app { display: grid; grid-template-columns: 232px 1fr 300px; height: 100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar { background: var(--panel); border-right: 1px solid var(--line); padding: 14px 10px; overflow-y: auto; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 16px; }
+  .logo { width: 24px; height: 24px; border-radius: 6px; background: linear-gradient(135deg, #5e6ad2, #8b5cf6); display: grid; place-items: center; font-weight: 600; font-size: 12px; }
+  .brand b { font-weight: 600; font-size: 13px; display: block; }
+  .brand span { color: var(--muted); font-size: 11px; }
+  .nav-label { color: var(--faint); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; padding: 14px 8px 6px; }
+  .nav-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 6px 8px; border: 0; border-radius: 6px; background: none; cursor: pointer; color: var(--muted); text-align: left; }
+  .nav-item:hover { background: var(--hover); color: var(--text); }
+  .nav-item.active { background: var(--raised); color: var(--text); }
+  .nav-item .count { margin-left: auto; color: var(--faint); font-size: 11px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .org-tree { margin-left: 12px; border-left: 1px solid var(--line); padding-left: 6px; }
+
+  /* ---------- Main ---------- */
+  main { overflow-y: auto; min-width: 0; }
+  .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; padding: 12px 24px; background: rgba(11,12,14,.85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .crumbs { color: var(--muted); }
+  .crumbs b { color: var(--text); font-weight: 500; }
+  .live { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; margin-left: auto; }
+  .live i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(76,183,130,.2); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--raised); cursor: pointer; white-space: nowrap; }
+  .btn:hover { background: var(--hover); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { filter: brightness(1.1); }
+  kbd { font-family: var(--mono); font-size: 10px; padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,.14); }
+  .content { padding: 24px; display: grid; gap: 28px; }
+  h2 { font-size: 13px; font-weight: 500; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  h2 small { color: var(--faint); font-weight: 400; }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .kpi span { color: var(--muted); font-size: 12px; }
+  .kpi b { display: block; font-size: 24px; font-weight: 600; margin-top: 4px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+
+  /* Org chart */
+  .org { display: grid; justify-items: center; }
+  .ceo { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 10px 16px; }
+  .ceo .avatar { background: linear-gradient(135deg, #f2c94c, #f2994a); color: #111; }
+  .connector { width: 1px; height: 18px; background: var(--line-strong); }
+  .agents { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; width: 100%; padding-top: 18px; }
+  .agents::before { content: ""; position: absolute; top: 0; left: 12.5%; right: 12.5%; height: 1px; background: var(--line-strong); }
+  .agent { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; transition: border-color .2s; }
+  .agent::before { content: ""; position: absolute; top: -19px; left: 50%; width: 1px; height: 18px; background: var(--line-strong); }
+  .agent.active { border-color: color-mix(in srgb, var(--c) 55%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent), 0 8px 24px -12px color-mix(in srgb, var(--c) 60%, transparent); }
+  .agent-head { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 600; flex: none; background: color-mix(in srgb, var(--c) 22%, transparent); color: var(--c); }
+  .agent-name { font-weight: 500; }
+  .agent-dept { color: var(--muted); font-size: 12px; }
+  .status { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 3px 8px; border-radius: 999px; font-size: 11.5px; background: var(--raised); color: var(--muted); }
+  .status i { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
+  .agent.active .status { color: var(--text); background: color-mix(in srgb, var(--c) 14%, transparent); }
+  .agent.active .status i { background: var(--c); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 70%, transparent); } 100% { box-shadow: 0 0 0 7px transparent; } }
+  .agent-task { margin-top: 8px; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 17px; }
+  .agent-foot { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--faint); }
+
+  /* Board */
+  .board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+  .column { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); min-height: 180px; }
+  .column.drop { border-color: var(--accent); background: var(--accent-soft); }
+  .col-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); font-weight: 500; }
+  .col-head .count { color: var(--faint); font-weight: 400; }
+  .ring { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--muted); flex: none; }
+  .ring.progress { border-color: var(--amber); background: conic-gradient(var(--amber) 0 50%, transparent 50%); }
+  .ring.done { border-color: var(--accent); background: var(--accent); }
+  .cards { padding: 8px; display: grid; gap: 6px; }
+  .card { background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; cursor: grab; transition: border-color .15s, transform .15s; }
+  .card:hover { border-color: var(--line-strong); }
+  .card.dragging { opacity: .4; }
+  .card-top { display: flex; align-items: center; gap: 8px; color: var(--faint); font-size: 11.5px; font-family: var(--mono); }
+  .card-top .age { margin-left: auto; font-family: Inter, sans-serif; }
+  .card-title { margin: 6px 0 10px; font-weight: 500; overflow-wrap: anywhere; }
+  .card.is-done .card-title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
+  .tag { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 11.5px; color: var(--muted); }
+  .prio { display: inline-flex; gap: 2px; align-items: flex-end; height: 11px; }
+  .prio i { width: 3px; border-radius: 1px; background: var(--line-strong); }
+  .prio i:nth-child(1) { height: 5px; } .prio i:nth-child(2) { height: 8px; } .prio i:nth-child(3) { height: 11px; }
+  .prio.on1 i:nth-child(-n+1), .prio.on2 i:nth-child(-n+2), .prio.on3 i:nth-child(-n+3) { background: var(--muted); }
+  .urgent { width: 13px; height: 13px; border-radius: 3px; background: var(--red); color: #fff; font: 700 9px/13px Inter; text-align: center; }
+  .card-move { display: none; margin-top: 8px; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); padding: 5px; }
+  .empty { color: var(--faint); text-align: center; padding: 24px 8px; font-size: 12px; }
+
+  /* Right rail */
+  .rail { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 18px 16px; display: grid; gap: 24px; align-content: start; }
+  .feed { list-style: none; margin: 0; padding: 0; position: relative; }
+  .feed li { position: relative; padding: 0 0 16px 20px; }
+  .feed li::before { content: ""; position: absolute; left: 4px; top: 6px; bottom: -6px; width: 1px; background: var(--line); }
+  .feed li:last-child::before { display: none; }
+  .feed li::after { content: ""; position: absolute; left: 0; top: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--panel); border: 1.5px solid var(--accent); }
+  .feed .msg { overflow-wrap: anywhere; }
+  .feed .meta { color: var(--faint); font-size: 11.5px; margin-top: 2px; }
+  .feed code, .file { font-family: var(--mono); font-size: 11px; }
+  .feed code { color: var(--accent); }
+  .files { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .file { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; background: var(--raised); color: var(--muted); overflow: hidden; }
+  .file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left; }
+  .file i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex: none; }
+
+  /* Modal */
+  dialog { width: min(520px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--panel); color: var(--text); box-shadow: 0 24px 64px rgba(0,0,0,.6); }
+  dialog::backdrop { background: rgba(0,0,0,.55); backdrop-filter: blur(2px); }
+  .dlg-head { padding: 14px 18px 0; color: var(--muted); font-size: 12px; }
+  .dlg-title { width: 100%; border: 0; background: none; color: var(--text); font: 500 17px Inter, sans-serif; padding: 10px 18px 4px; outline: none; }
+  .dlg-desc { width: 100%; border: 0; background: none; color: var(--text); font: inherit; padding: 4px 18px 14px; outline: none; resize: none; min-height: 64px; }
+  .dlg-props { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
+  .dlg-props select { appearance: none; background: var(--raised); border: 1px solid var(--line-strong); color: var(--text); border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+  .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); }
+
+  .error { background: rgba(235,87,87,.1); border: 1px solid rgba(235,87,87,.4); color: #f5a3a3; border-radius: var(--radius); padding: 10px 14px; display: none; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1200px) {
+    .app { grid-template-columns: 220px 1fr; }
+    .rail { display: none; }
+    .rail-inline { display: grid !important; }
+  }
+  .rail-inline { display: none !important; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rail-inline > section { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; height: auto; }
+    .sidebar { border-right: 0; border-bottom: 1px solid var(--line); padding: 12px 16px; }
+    .sidebar .nav-label, .sidebar .nav-main { display: none; }
+    .brand { padding: 0 0 10px; }
+    .org-tree { display: flex; gap: 6px; overflow-x: auto; margin: 0; border: 0; padding: 0; }
+    .org-tree .nav-item { width: auto; flex: none; border: 1px solid var(--line); }
+    .topbar { padding: 10px 16px; }
+    .content { padding: 16px; gap: 22px; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .agents { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 0; }
+    .agents::before, .agent::before, .connector { display: none; }
+    .ceo { margin-bottom: 12px; }
+    .board { grid-template-columns: 1fr; }
+    .card-move { display: block; }
+    .rail-inline { grid-template-columns: 1fr; }
+    .live span { display: none; }
+  }
+  @media (max-width: 420px) { .agents { grid-template-columns: 1fr; } .btn .lbl { display: none; } }
 </style>
 </head>
 <body>
-<h1>🚀 CEO Mission Control — swissImmo</h1>
+<div class="app">
 
-<div class="grid">
-  <section class="card">
-    <h2>Aufgaben</h2>
-    <form id="task-form">
-      <input id="task-title" placeholder="Neue Aufgabe …" required>
-      <button type="submit">Anlegen</button>
-    </form>
-    <ul id="tasks"></ul>
-  </section>
-  <section class="card"><h2>Letzte Commits</h2><ul id="git-log" class="mono"></ul></section>
-  <section class="card"><h2>Branches</h2><ul id="git-branches" class="mono"></ul></section>
-  <section class="card"><h2>Geändert (letzte 5 Min.)</h2><ul id="recent-files" class="mono"></ul></section>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div><b>swissImmo</b><span>Mission Control</span></div>
+    </div>
+    <div class="nav-main">
+      <button class="nav-item active" data-filter="all"><span>◎</span> Alle Aufgaben <span class="count" id="count-all">0</span></button>
+    </div>
+    <div class="nav-label">Firmenstruktur</div>
+    <div class="nav-item" style="cursor:default"><span class="dot" style="background:var(--amber)"></span> CEO</div>
+    <div class="org-tree" id="dept-nav"></div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="crumbs">Mission Control › <b id="crumb">Alle Abteilungen</b></div>
+      <div class="live"><i></i><span id="updated">Live</span></div>
+      <button class="btn primary" id="new-btn">＋ <span class="lbl">Neue Aufgabe</span> <kbd>C</kbd></button>
+    </div>
+
+    <div class="content">
+      <div class="error" id="error"></div>
+
+      <section class="kpis">
+        <div class="kpi"><span>Offen</span><b id="k-todo">0</b></div>
+        <div class="kpi"><span>In Arbeit</span><b id="k-progress">0</b></div>
+        <div class="kpi"><span>Erledigt</span><b id="k-done">0</b></div>
+        <div class="kpi"><span>Aktive Agenten</span><b id="k-agents">0 / 4</b></div>
+      </section>
+
+      <section>
+        <h2>Organisation <small>Status in Echtzeit</small></h2>
+        <div class="org">
+          <div class="ceo">
+            <div class="avatar">CEO</div>
+            <div><div class="agent-name">Dominik Gerber</div><div class="agent-dept">Chief Executive Officer</div></div>
+          </div>
+          <div class="connector"></div>
+          <div class="agents" id="agents"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Board <small id="board-sub">Aufgaben per Drag &amp; Drop verschieben</small></h2>
+        <div class="board" id="board"></div>
+      </section>
+
+      <div class="rail-inline" id="rail-inline"></div>
+    </div>
+  </main>
+
+  <aside class="rail" id="rail">
+    <section>
+      <h2>Aktivität <small>Git</small></h2>
+      <ul class="feed" data-role="commits"></ul>
+    </section>
+    <section>
+      <h2>Live-Dateien <small>letzte 2 Min.</small></h2>
+      <ul class="files" data-role="files"></ul>
+    </section>
+  </aside>
 </div>
 
-<script>
-const STATUSES = ['To Do', 'In Progress', 'Done'];
+<dialog id="dlg">
+  <form method="dialog" id="task-form">
+    <div class="dlg-head">SWI › Neue Aufgabe</div>
+    <input class="dlg-title" id="f-title" placeholder="Titel der Aufgabe" required autocomplete="off">
+    <textarea class="dlg-desc" id="f-desc" placeholder="Beschreibung hinzufügen …"></textarea>
+    <div class="dlg-props">
+      <select id="f-dept"></select>
+      <select id="f-prio">
+        <option value="0">Keine Priorität</option>
+        <option value="4">Dringend</option>
+        <option value="3">Hoch</option>
+        <option value="2" selected>Mittel</option>
+        <option value="1">Niedrig</option>
+      </select>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn" id="cancel">Abbrechen</button>
+      <button type="submit" class="btn primary">Aufgabe erstellen</button>
+    </div>
+  </form>
+</dialog>
 
-function fillList(id, items) {
-  const ul = document.getElementById(id);
-  ul.replaceChildren(...items.map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
+<script>
+const COLUMNS = [
+  { key: 'To Do', label: 'Offen', ring: '' },
+  { key: 'In Progress', label: 'In Arbeit', ring: 'progress' },
+  { key: 'Done', label: 'Erledigt', ring: 'done' },
+];
+const DEPT_STYLE = {
+  'Engineering':      { color: 'var(--eng)',  initials: 'EN' },
+  'QA':               { color: 'var(--qa)',   initials: 'QA' },
+  'DevOps':           { color: 'var(--ops)',  initials: 'DO' },
+  'Marketing & Docs': { color: 'var(--docs)', initials: 'MD' },
+};
+const PRIO_LABEL = { 4: 'Dringend', 3: 'Hoch', 2: 'Mittel', 1: 'Niedrig', 0: 'Keine' };
+
+let tasks = [];
+let system = { agents: [], commits: [], active_files: [], departments: Object.keys(DEPT_STYLE) };
+let filter = 'all';
+
+const $ = sel => document.querySelector(sel);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const style = dept => DEPT_STYLE[dept] || { color: 'var(--muted)', initials: '··' };
+
+function ago(ts) {
+  if (!ts) return '';
+  const s = Math.max(0, Date.now() / 1000 - ts);
+  if (s < 60) return 'gerade eben';
+  if (s < 3600) return `vor ${Math.floor(s / 60)} Min.`;
+  if (s < 86400) return `vor ${Math.floor(s / 3600)} Std.`;
+  return `vor ${Math.floor(s / 86400)} T.`;
 }
 
-async function loadTasks() {
-  const tasks = await (await fetch('/api/tasks')).json();
-  const ul = document.getElementById('tasks');
-  if (!tasks.length) {
-    ul.innerHTML = '<li class="muted">Noch keine Aufgaben.</li>';
-    return;
-  }
-  ul.replaceChildren(...tasks.map(task => {
-    const li = document.createElement('li');
-    li.className = 'task';
-    const span = document.createElement('span');
-    span.textContent = `#${task.id} ${task.title || ''}`;
-    const sel = document.createElement('select');
-    STATUSES.forEach(s => sel.add(new Option(s, s, false, s === task.status)));
-    sel.onchange = () => fetch(`/api/tasks/${task.id}`, {
-      method: 'PATCH', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({status: sel.value})
-    });
-    li.append(span, sel);
-    return li;
+function prioIcon(p) {
+  p = Number(p) || 0;
+  if (p === 4) { const u = el('span', 'urgent', '!'); u.title = 'Dringend'; return u; }
+  const w = el('span', `prio on${p}`); w.title = PRIO_LABEL[p];
+  for (let i = 0; i < 3; i++) w.append(el('i'));
+  return w;
+}
+
+function showError(msg) { const e = $('#error'); e.textContent = msg; e.style.display = msg ? 'block' : 'none'; }
+
+/* ---------- Render ---------- */
+function renderNav() {
+  const nav = $('#dept-nav');
+  nav.replaceChildren(...system.departments.map(d => {
+    const b = el('button', 'nav-item' + (filter === d ? ' active' : ''));
+    b.dataset.filter = d;
+    const dot = el('span', 'dot'); dot.style.background = style(d).color;
+    b.append(dot, d, el('span', 'count', tasks.filter(t => t.department === d && t.status !== 'Done').length));
+    return b;
+  }));
+  document.querySelectorAll('[data-filter="all"]').forEach(b => b.classList.toggle('active', filter === 'all'));
+  $('#count-all').textContent = tasks.filter(t => t.status !== 'Done').length;
+  $('#crumb').textContent = filter === 'all' ? 'Alle Abteilungen' : filter;
+}
+
+function renderKpis() {
+  const n = s => tasks.filter(t => t.status === s).length;
+  $('#k-todo').textContent = n('To Do');
+  $('#k-progress').textContent = n('In Progress');
+  $('#k-done').textContent = n('Done');
+  $('#k-agents').textContent = `${system.agents.filter(a => a.is_active).length} / ${system.agents.length || 4}`;
+}
+
+function renderAgents() {
+  $('#agents').replaceChildren(...system.agents.map(a => {
+    const s = style(a.department);
+    const card = el('div', 'agent' + (a.is_active ? ' active' : ''));
+    card.style.setProperty('--c', s.color);
+    const head = el('div', 'agent-head');
+    const info = el('div'); info.append(el('div', 'agent-name', a.name), el('div', 'agent-dept', a.department));
+    head.append(el('div', 'avatar', s.initials), info);
+    const st = el('div', 'status'); st.append(el('i'), a.is_active ? 'Aktiv' : 'Idle');
+    const current = tasks.find(t => t.department === a.department && t.status === 'In Progress');
+    const task = el('div', 'agent-task', current ? `${a.status}: ${current.title}` : 'Wartet auf Aufgabe');
+    const open = tasks.filter(t => t.department === a.department && t.status !== 'Done').length;
+    const foot = el('div', 'agent-foot');
+    foot.append(el('span', null, `${open} offen`), el('span', null, a.is_active ? `${a.recently_modified} Dateien live` : '—'));
+    card.append(head, st, task, foot);
+    return card;
   }));
 }
 
-async function loadStatus() {
-  const s = await (await fetch('/api/status')).json();
-  fillList('git-log', s.git_log);
-  fillList('git-branches', s.git_branches);
-  fillList('recent-files', s.recent_files);
+function renderBoard() {
+  const visible = tasks.filter(t => filter === 'all' || t.department === filter);
+  $('#board').replaceChildren(...COLUMNS.map(col => {
+    const items = visible.filter(t => t.status === col.key)
+      .sort((a, b) => (Number(b.priority) || 0) - (Number(a.priority) || 0) || b.id - a.id);
+    const column = el('div', 'column');
+    column.dataset.status = col.key;
+    const head = el('div', 'col-head');
+    head.append(el('span', `ring ${col.ring}`), col.label, el('span', 'count', items.length));
+    const list = el('div', 'cards');
+    if (!items.length) list.append(el('div', 'empty', 'Keine Aufgaben'));
+    items.forEach(t => list.append(renderCard(t)));
+    column.append(head, list);
+    column.addEventListener('dragover', e => { e.preventDefault(); column.classList.add('drop'); });
+    column.addEventListener('dragleave', () => column.classList.remove('drop'));
+    column.addEventListener('drop', e => {
+      e.preventDefault(); column.classList.remove('drop');
+      moveTask(Number(e.dataTransfer.getData('text/plain')), col.key);
+    });
+    return column;
+  }));
 }
 
-document.getElementById('task-form').onsubmit = async e => {
-  e.preventDefault();
-  const input = document.getElementById('task-title');
-  await fetch('/api/tasks', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({title: input.value})
-  });
-  input.value = '';
-  loadTasks();
-};
+function renderCard(t) {
+  const c = el('div', 'card' + (t.status === 'Done' ? ' is-done' : ''));
+  c.draggable = true;
+  c.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', t.id); c.classList.add('dragging'); });
+  c.addEventListener('dragend', () => c.classList.remove('dragging'));
+  const top = el('div', 'card-top');
+  top.append(prioIcon(t.priority), `SWI-${t.id}`, el('span', 'age', ago(t.created_at)));
+  const tag = el('span', 'tag');
+  const dot = el('span', 'dot'); dot.style.background = style(t.department).color;
+  tag.append(dot, t.department || 'Ohne Abteilung');
+  c.append(top, el('div', 'card-title', t.title || '(ohne Titel)'), tag);
+  if (t.description) c.title = t.description;
+  // Mobile: Status per Auswahl statt Drag & Drop
+  const sel = el('select', 'card-move');
+  COLUMNS.forEach(col => sel.add(new Option(`Status: ${col.label}`, col.key, false, col.key === t.status)));
+  sel.addEventListener('change', () => moveTask(t.id, sel.value));
+  c.append(sel);
+  return c;
+}
 
-loadTasks();
-loadStatus();
-setInterval(loadStatus, 10000);
+function renderRail() {
+  const feed = () => {
+    const ul = el('ul', 'feed');
+    if (!system.commits.length) ul.append(el('li', 'meta', 'Keine Commits gefunden'));
+    system.commits.forEach(line => {
+      const [hash, author, subject, when] = line.split('|');
+      const li = el('li');
+      const msg = el('div', 'msg'); msg.append(el('code', null, hash), ' ', subject || '');
+      li.append(msg, el('div', 'meta', `${author || ''} · ${when || ''}`));
+      ul.append(li);
+    });
+    return ul;
+  };
+  const files = () => {
+    const ul = el('ul', 'files');
+    if (!system.active_files.length) ul.append(el('li', 'empty', 'Keine Änderungen'));
+    system.active_files.forEach(f => {
+      const li = el('li', 'file');
+      li.append(el('i'), el('span', null, f.replace(/^\.\//, '')));
+      li.title = f;
+      ul.append(li);
+    });
+    return ul;
+  };
+  const f1 = feed(); f1.dataset.role = 'commits';
+  const f2 = files(); f2.dataset.role = 'files';
+  $('#rail [data-role=commits]').replaceWith(f1);
+  $('#rail [data-role=files]').replaceWith(f2);
+
+  const s1 = el('section'); s1.append(el('h2', null, 'Aktivität'), feed());
+  const s2 = el('section'); s2.append(el('h2', null, 'Live-Dateien'), files());
+  $('#rail-inline').replaceChildren(s1, s2);
+}
+
+function render() { renderNav(); renderKpis(); renderAgents(); renderBoard(); renderRail(); }
+
+/* ---------- Data ---------- */
+async function load() {
+  try {
+    const [tRes, sRes] = await Promise.all([fetch('/api/tasks'), fetch('/api/system')]);
+    if (!tRes.ok || !sRes.ok) throw new Error(`Server antwortet mit ${tRes.ok ? sRes.status : tRes.status}`);
+    tasks = await tRes.json();
+    system = await sRes.json();
+    showError('');
+    $('#updated').textContent = 'Live · ' + new Date().toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  } catch (e) {
+    showError('Daten konnten nicht geladen werden: ' + e.message);
+  }
+  render();
+}
+
+async function moveTask(id, status) {
+  const t = tasks.find(x => x.id === id);
+  if (!t || t.status === status) return;
+  t.status = status; render();
+  await fetch(`/api/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+  load();
+}
+
+/* ---------- Interaktion ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-filter]');
+  if (b) { filter = b.dataset.filter; render(); }
+});
+
+const dlg = $('#dlg');
+function openDialog() {
+  const sel = $('#f-dept');
+  sel.replaceChildren(...system.departments.map(d => new Option(d, d)));
+  $('#task-form').reset();
+  if (filter !== 'all') sel.value = filter;
+  $('#f-prio').value = '2';
+  dlg.showModal();
+  $('#f-title').focus();
+}
+$('#new-btn').addEventListener('click', openDialog);
+$('#cancel').addEventListener('click', () => dlg.close());
+document.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() === 'c' && !dlg.open && !e.metaKey && !e.ctrlKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) {
+    e.preventDefault(); openDialog();
+  }
+});
+$('#task-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const body = {
+    title: $('#f-title').value.trim(),
+    description: $('#f-desc').value.trim(),
+    department: $('#f-dept').value,
+    priority: Number($('#f-prio').value),
+  };
+  if (!body.title) return;
+  dlg.close();
+  await fetch('/api/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  load();
+});
+
+load();
+setInterval(load, 5000);
 </script>
 </body>
 </html>
