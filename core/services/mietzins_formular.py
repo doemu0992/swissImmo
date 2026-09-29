@@ -11,9 +11,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
-
 
 
 def _fmt(d):
@@ -38,6 +38,7 @@ def _wrap(text, breite=95):
     return zeilen or [""]
 
 
+@nur_deutsch
 def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer=None):
     """daten: dict mit alt_netto, neu_netto, nebenkosten, alt_zins, neu_zins,
     alt_lik, neu_lik, zins_pct, lik_pct, kosten_pct, total_pct, wirksam_ab (date),

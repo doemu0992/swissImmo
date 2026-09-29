@@ -14,9 +14,9 @@ from decimal import Decimal
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
-
 
 
 def _absender_zeilen(verwaltung, eigentuemer):
@@ -110,6 +110,7 @@ def _kontext(vertrag, verwaltung=None):
     return mieter, einheit, lg, absender, ort, empf, objekt, absender[0], (eigentuemer, vw)
 
 
+@nur_deutsch
 def kaution_hinterlegung_pdf(vertrag, verwaltung=None):
     """Bestätigung der Kautionshinterlegung an die Mieterschaft (Art. 257e OR)."""
     mieter, einheit, lg, absender, ort, empf, objekt, name, sig = _kontext(vertrag, verwaltung)
@@ -138,6 +139,7 @@ def kaution_hinterlegung_pdf(vertrag, verwaltung=None):
     return _brief(absender, empf, ort, f"Bestätigung Mietkaution — {objekt}", absaetze, name, signatur=sig)
 
 
+@nur_deutsch
 def kaution_freigabe_pdf(vertrag, verwaltung=None):
     """Freigabe-/Auszahlungsauftrag an die Bank (Sperrkonto-Freigabe)."""
     mieter, einheit, lg, absender, ort, _empf, objekt, name, sig = _kontext(vertrag, verwaltung)
@@ -166,6 +168,7 @@ def kaution_freigabe_pdf(vertrag, verwaltung=None):
     return _brief(absender, bank_empf, ort, f"Freigabe Mietzinsdepot — {mieter.display_name}", absaetze, name, signatur=sig)
 
 
+@nur_deutsch
 def maengelruege_pdf(vertrag, mangel_text, frist_tage=14, verwaltung=None):
     """Abmahnung der Mieterschaft wegen Verletzung der Sorgfalts-/Rücksichtnahme-
     pflicht (Art. 257f OR) mit Fristansetzung zur Wiederherstellung des
@@ -196,6 +199,7 @@ def maengelruege_pdf(vertrag, mangel_text, frist_tage=14, verwaltung=None):
     return _brief(absender, empf, ort, f"Abmahnung / Fristansetzung (Art. 257f OR) — {objekt}", absaetze, name, signatur=sig)
 
 
+@nur_deutsch
 def untermiete_zustimmung_pdf(vertrag, untermieter, entscheid='zustimmung',
                               bedingungen='', verwaltung=None):
     """Zustimmung oder Ablehnung zur Untervermietung (Art. 262 OR).
@@ -229,6 +233,7 @@ def untermiete_zustimmung_pdf(vertrag, untermieter, entscheid='zustimmung',
     return _brief(absender, empf, ort, betreff, absaetze, name, signatur=sig)
 
 
+@nur_deutsch
 def rueckgabe_maengelruege_pdf(vertrag, maengel, verwaltung=None, abnahme_datum=None):
     """Sofortige Mängelrüge nach Rückgabe des Mietobjekts (Art. 267a OR).
 

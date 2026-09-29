@@ -2,6 +2,7 @@
 nach Restnutzungsdauer. Basis für die Erneuerungsfonds-Planung des Eigentümers."""
 import io
 from decimal import Decimal
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _fmt(d):
@@ -14,6 +15,7 @@ def _fmt(d):
 STATUS_LABEL = {'faellig': 'fällig', 'bald': 'bald', 'ok': 'ok', 'unbekannt': '—'}
 
 
+@nur_deutsch
 def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas

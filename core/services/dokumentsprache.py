@@ -27,6 +27,7 @@ ausdrücklich auf Deutsch erzeugt. Sonst liefen Datumsformate und Bausteine mit
 Sprachen.
 """
 from contextlib import contextmanager
+from functools import wraps
 
 from django.conf import settings
 from django.utils import translation
@@ -50,3 +51,19 @@ def in_sprache(code):
     """Rendert alles im Block in `code` (unbekannte Werte → Deutsch)."""
     with translation.override(gueltige_sprache(code)):
         yield
+
+
+def nur_deutsch(erzeuger):
+    """Für Dokumente, deren Text (noch) nur deutsch formuliert ist.
+
+    Erzeugt fest auf Deutsch, unabhängig von der Sprache der Sachbearbeitung.
+    Sonst liefen übersetzte Bausteine mit — Monatsnamen aus `date:"F"`,
+    Auswahlwerte aus `get_…_display()` — und das Dokument stünde in zwei
+    Sprachen. Ein Wächtertest verlangt diesen Dekorator an jedem Erzeuger
+    in core/services, der kein gettext kennt."""
+    @wraps(erzeuger)
+    def fest_deutsch(*args, **kwargs):
+        with in_sprache(STANDARD):
+            return erzeuger(*args, **kwargs)
+    fest_deutsch.dokumentsprache = STANDARD
+    return fest_deutsch

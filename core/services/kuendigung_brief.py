@@ -9,6 +9,7 @@ import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _wrap(text, breite):
@@ -25,6 +26,7 @@ def _wrap(text, breite):
     return zeilen
 
 
+@nur_deutsch
 def generate_kuendigung_mieter_pdf(vertrag, kuendigung, verwaltung=None, eigentuemer=None):
     """vertrag: Mietvertrag, kuendigung: Kuendigung (per_datum/berechneter_termin)."""
     buf = io.BytesIO()

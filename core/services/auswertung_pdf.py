@@ -2,6 +2,7 @@
 und je Liegenschaft, mit einfachen Balken (ohne externe Chart-Library)."""
 import io
 from decimal import Decimal
+from core.services.dokumentsprache import nur_deutsch
 
 
 def _fmt(d):
@@ -11,6 +12,7 @@ def _fmt(d):
         return str(d)
 
 
+@nur_deutsch
 def generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows, verwaltung=None):
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas

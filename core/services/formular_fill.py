@@ -15,6 +15,7 @@ from decimal import Decimal
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from pypdf import PdfReader, PdfWriter
+from core.services.dokumentsprache import nur_deutsch
 
 _DIR = os.path.join(os.path.dirname(__file__), 'formulare')
 SO_MIETZINS = os.path.join(_DIR, 'SO_mietzins_original.pdf')
@@ -96,6 +97,7 @@ def _wrap(text, breite):
 # ============================================================
 # MIETZINSANPASSUNG — Original SO ausfüllen
 # ============================================================
+@nur_deutsch
 def fill_mietzins_so(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
@@ -173,6 +175,7 @@ def fill_mietzins_so(vertrag, daten, verwaltung=None):
 # ============================================================
 # KÜNDIGUNG — Original SO ausfüllen
 # ============================================================
+@nur_deutsch
 def fill_kuendigung_so(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
@@ -336,6 +339,7 @@ def _objekt_zeile(vertrag):
 
 # ---- Einzel-Empfänger (Art. 266n: getrennte Zustellung je Ehegatte) ----
 from collections import namedtuple as _nt
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
 
@@ -365,6 +369,7 @@ def _ort_datum(vertrag, verwaltung, eigentuemer):
 # ============================================================
 # ZÜRICH — amtliche Originale (AcroForm)
 # ============================================================
+@nur_deutsch
 def fill_mietzins_zh(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
@@ -414,6 +419,7 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
     return _fill_acroform(os.path.join(_DIR, 'ZH_mietzins_original.pdf'), tv, cbs)
 
 
+@nur_deutsch
 def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
@@ -447,6 +453,7 @@ def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None, empfaenger=None):
 # ============================================================
 # BERN — amtliche Originale (AcroForm)
 # ============================================================
+@nur_deutsch
 def fill_mietzins_be(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
@@ -487,6 +494,7 @@ def fill_mietzins_be(vertrag, daten, verwaltung=None):
     return _fill_acroform(os.path.join(_DIR, 'BE_mietzins_original.pdf'), tv, cbs)
 
 
+@nur_deutsch
 def fill_kuendigung_be(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
@@ -525,6 +533,7 @@ def fill_kuendigung_be(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     return _fill_acroform(os.path.join(_DIR, 'BE_kuendigung_original.pdf'), tv, ())
 
 
+@nur_deutsch
 def fill_anfangsmietzins_be(vertrag, daten, verwaltung=None):
     """Kanton Bern — «Formular zur Mitteilung des Anfangsmietzinses von Wohn-
     räumen» (Art. 270 Abs. 2 OR, Art. 135a EG ZGB). Feldnamen aus dem amtlichen
@@ -637,6 +646,7 @@ def hat_original(kanton, typ):
     return kt in reg
 
 
+@nur_deutsch
 def fill_anfangsmietzins(vertrag, daten, verwaltung=None, kanton=None):
     """Amtliches Anfangsmietzins-Formular (Art. 270 Abs. 2 OR). Nutzt das
     Original-AcroForm des Kantons, sobald `<KT>_anfangsmietzins_original.pdf`
@@ -653,6 +663,7 @@ def fill_anfangsmietzins(vertrag, daten, verwaltung=None, kanton=None):
     return anfangsmietzins_so_pdf(vertrag, daten, verwaltung=verwaltung)
 
 
+@nur_deutsch
 def fill_mietzins(vertrag, daten, verwaltung=None, kanton=None):
     """Füllt das amtliche Mietzins-Formular des passenden Kantons. Gibt None zurück,
     wenn für den Kanton (noch) kein Original hinterlegt ist."""
@@ -662,6 +673,7 @@ def fill_mietzins(vertrag, daten, verwaltung=None, kanton=None):
     return fn(vertrag, daten, verwaltung=verwaltung) if fn else None
 
 
+@nur_deutsch
 def fill_kuendigung(vertrag, kuendigung, verwaltung=None, kanton=None, empfaenger=None):
     from core.services.kantone import kanton_fuer_liegenschaft
     kt = (kanton or kanton_fuer_liegenschaft(vertrag.einheit.liegenschaft) or '').upper()

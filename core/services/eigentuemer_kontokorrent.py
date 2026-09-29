@@ -7,6 +7,7 @@ Auszahlungen werden über EigentuemerAuszahlung (Buchung Soll 2850 / Haben Bank)
 geführt und hier abgezogen."""
 from datetime import date
 from decimal import Decimal
+from core.services.dokumentsprache import nur_deutsch
 
 
 def kontokorrent(eigentuemer, jahr=None):
@@ -75,6 +76,7 @@ def _fmt(d):
         return str(d)
 
 
+@nur_deutsch
 def generate_kontokorrent_pdf(eigentuemer, jahr, verwaltung=None):
     """Kontokorrent-Auszug für den Eigentümer: Ergebnis je Liegenschaft,
     Auszahlungen und offener Saldo — das Dokument für den Eigentümer."""
