@@ -28,8 +28,20 @@ export async function login(page: Page) {
 // (fw/_bestaetigen.html) erscheint statt `confirm()` ein <dialog> der App —
 // `page.on('dialog', d => d.accept())` greift dort nicht mehr. Wie ein Mensch:
 // im Dialog auf «Bestätigen» klicken.
-export async function bestaetigen(page: Page) {
+//
+// Das Absenden beginnt erst nach dem `close`-Ereignis des Dialogs, also einen
+// Takt NACH dem Klick. Ohne zu warten liefe ein folgendes `warteAufURL` sofort
+// durch (die Adresse passt schon) und ein `goto` bräche die laufende
+// Absendung ab (net::ERR_ABORTED — so in der CI gesehen). Deshalb wartet die
+// Hilfe, bis die ausgelöste Navigation geladen ist. `navigation: false` für
+// Rückfragen, die keine Seite laden (z. B. PDF in neuem Tab).
+export async function bestaetigen(page: Page, { navigation = true } = {}) {
   const dialog = page.locator('#fwBestaetigen');
   await dialog.waitFor({ state: 'visible' });
+  const geladen = navigation
+    ? page.waitForEvent('framenavigated', (f) => f === page.mainFrame())
+    : Promise.resolve(null);
   await dialog.locator('#fwBestaetigenJa').click();
+  await geladen;
+  if (navigation) await page.waitForLoadState('domcontentloaded');
 }
