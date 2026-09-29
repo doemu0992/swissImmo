@@ -161,14 +161,14 @@ class EntitlementTests(TestCase):
         namen = [e[0] for e in reiter_fuer('mietverhaeltnis')]
         self.assertIn('faelle', namen)
 
-    @override_settings(SWISSIMMO_VORGABE_STUFE='verwaltung')
+    @override_settings(SWISSIMMO_VORGABE_STUFE='team')
     def test_mit_berechtigung_erscheint_der_faelle_reiter(self):
         with mandant(self.a.organisation):
             namen = [e[0] for e in reiter_fuer(
                 'mietverhaeltnis', organisation=self.a.organisation)]
             self.assertIn('faelle', namen)
 
-    @override_settings(SWISSIMMO_VORGABE_STUFE='basis')
+    @override_settings(SWISSIMMO_VORGABE_STUFE='start')
     def test_ohne_berechtigung_faellt_er_weg_statt_auszugrauen(self):
         with mandant(self.a.organisation):
             namen = [e[0] for e in reiter_fuer(

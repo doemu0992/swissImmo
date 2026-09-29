@@ -188,7 +188,7 @@ Laut Projektanweisung nicht ohne ausdrückliche Freigabe. Ich setze nichts davon
 | D4 | Tailwind als Build behalten (Übergang) oder sofort reine Token-CSS? | **Build behalten**, Zähler abwärts bis 0 über E2. |
 | D5 | Icon-Satz: Lucide-Sprite (Freigabe nötig) oder eigene SVGs? | **Lucide-Sprite**, ~40 Zeichen, im Repo, keine Paketabhängigkeit. |
 | D6 | Zahlungsanbieter: Payrexx, Stripe oder vorerst eigene QR-Rechnung? | **Payrexx** prüfen (TWINT, CH-Rechnung); bis dahin eigene QR-Rechnung. |
-| D7 | Stufennamen: `Start/Team/Professional/Enterprise` (MARKT) — und die Codes `basis/aufbau/verwaltung/portfolio` (funktionen.py) darauf abbilden? | **Ja**, eine Quelle: `funktionen.py` bekommt die Marktnamen als Klartext, `Organisation.abo_plan` entfällt zugunsten `Abonnement`. |
+| D7 | Stufennamen: `Start/Team/Professional/Enterprise` (MARKT) — und die Codes `basis/aufbau/verwaltung/portfolio` (funktionen.py) darauf abbilden? | **Ja**, eine Quelle: `funktionen.py` bekommt die Marktnamen als Klartext, `Organisation.abo_plan` entfällt zugunsten `Abonnement`. **Umgesetzt 29.09.2026, erster Teil** (`docs/AUFTRAG-ABOSTUFEN.md`): Die Codes sind die Marktnamen, `funktionen.py` ist die eine Quelle für Stufen, Grenzen und vorläufige Preise, `ABO_CHOICES` und die Preisseite leiten daraus ab. Offen: `abo_plan` → `Abonnement` (braucht D6). |
 | D8 | Bereichsnamen: «Heute» oder «Arbeit»? «Berichte» oder «Zahlen»? «Fall» oder «Vorgang»? | Heute · Berichte · Fall. |
 | D9 | STWE als neues zubuchbares Modul ins Zielbild aufnehmen? | **Ja, nach E7 entscheiden** — Markt ist gross, Bestand (Erneuerungsfonds, stwe-Einheit) ist ein Anfang. |
 | D10 | Mobile: Tab-Leiste + Vor-Ort-Modus in derselben Anwendung (PWA) oder getrennte App? | **Dieselbe Anwendung.** |

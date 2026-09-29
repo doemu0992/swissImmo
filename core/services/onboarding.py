@@ -115,16 +115,12 @@ def organisation_anlegen(firma: str, benutzername: str, email: str,
 
     Benutzer = get_user_model()
 
-    # `abo_plan` bleibt bewusst auf dem Vorgabewert des Modells (`'pro'`).
+    # `abo_plan` bleibt auf dem Vorgabewert des Modells (`'team'`).
     #
-    # OFFEN UND BEKANNT: Die bestätigte Struktur aus `docs/MARKT.md` heisst
-    # start/team/professional/enterprise — `'pro'` gibt es darin nicht.
-    # `docs/PLAN-V7.md` D7 entscheidet, wohin das führt: `abo_plan` entfällt
-    # zugunsten von `abo.Abonnement`, und die Marktnamen kommen als Klartext
-    # in `core/funktionen.py`. Das ist Phase 3 (E3) und hier absichtlich
-    # nicht vorweggenommen: Ein Wert, den `ABO_CHOICES` nicht kennt, wäre
-    # schlimmer als der falsche aus der alten Liste, weil ihn keine
-    # Auswertung je treffen würde.
+    # Seit 29.09.2026 kommen die Stufen start/team/professional/enterprise
+    # aus `core/funktionen.py` (D7, docs/AUFTRAG-ABOSTUFEN.md). Offen bleibt
+    # der zweite Teil von D7: `abo_plan` entfällt zugunsten von
+    # `abo.Abonnement` mit Testphase und Zahlungsanbieter (Phase 3, E3).
     #
     # Solange keine Prüfstelle den Plan abfragt (gemessen: keine — die
     # Stufe kommt heute aus `core/funktionen.py:stufe_von`), hat das keine

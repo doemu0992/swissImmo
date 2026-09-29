@@ -10,7 +10,7 @@ from ._helfer import (_test_organisation,
 
 
 class AbonnementTests(TestCase):
-    def test_abo_seite_zeigt_drei_plaene(self):
+    def test_abo_seite_zeigt_vier_plaene(self):
         Einheit.objects.create(liegenschaft=Liegenschaft.objects.create(organisation=_test_organisation(), 
             strasse='A', plz='1', ort='X', versicherungswert=Decimal('1')),
             bezeichnung='W1', typ='whg')
@@ -18,19 +18,19 @@ class AbonnementTests(TestCase):
         c = Client(); c.force_login(team)
         r = c.get('/neu/abonnement/')
         self.assertEqual(r.status_code, 200)
-        for name in ('Start', 'Pro', 'Premium'):
+        for name in ('Start', 'Team', 'Professional', 'Enterprise'):
             self.assertContains(r, name)
 
     def test_plan_waehlen_speichert(self):
         _test_organisation(firma='V AG')
         team = _team_user('Inhaber')  # den Plan wählt seit 28.09.2026 nur der Inhaber
         c = Client(); c.force_login(team)
-        r = c.post('/neu/abonnement/', {'plan': 'premium'})
+        r = c.post('/neu/abonnement/', {'plan': 'professional'})
         self.assertEqual(r.status_code, 302)
-        self.assertEqual(Organisation.objects.first().abo_plan, 'premium')
+        self.assertEqual(Organisation.objects.first().abo_plan, 'professional')
 
     def test_jaehrlich_rabatt(self):
-        # 100 Einheiten Pro: monatlich 190, jährlich -15 % -> ~161/Mt
+        # 100 Einheiten passen in Team: monatlich 119, jährlich -15 % -> 101/Mt
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='B', plz='1', ort='X', versicherungswert=Decimal('1'))
         for i in range(100):
             Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i}', typ='whg')
@@ -38,9 +38,10 @@ class AbonnementTests(TestCase):
         team = _team_user('Inhaber')  # den Plan wählt seit 28.09.2026 nur der Inhaber
         c = Client(); c.force_login(team)
         body = c.get('/neu/abonnement/').content.decode()
-        self.assertIn('CHF 190', body)                 # Pro monatlich (1.90 * 100)
-        body_j = c.post('/neu/abonnement/', {'plan': 'pro', 'jaehrlich': 'on'}, follow=True).content.decode()
-        self.assertIn('CHF 162', body_j)               # 190 * 0.85 gerundet
+        self.assertIn('Für deinen Bestand: CHF 119/Monat', body)   # Team
+        body_j = c.post('/neu/abonnement/', {'plan': 'team', 'jaehrlich': 'on'}, follow=True).content.decode()
+        self.assertIn('Für deinen Bestand: CHF 101/Monat', body_j)  # 119 * 0.85 gerundet
+        self.assertIn("CHF 1'214/Jahr", body_j)                    # 119 * 0.85 * 12
 
 
 class BackupCommandTests(TestCase):

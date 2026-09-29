@@ -237,7 +237,7 @@ unabhängig vom Zahlungsanbieter. Schritt 5 ist ein Entscheid, kein Bau.
    der bestätigten Vierer-Struktur gibt es `pro` nicht. Das ist folgenlos,
    solange keine Prüfstelle den Plan abfragt, und gemessen fragt ihn keine:
    Die Stufe kommt heute aus `core/funktionen.py::stufe_von()`, das
-   `VORGABE_STUFE = 'verwaltung'` zurückgibt und den Plan gar nicht ansieht.
+   `VORGABE_STUFE = 'verwaltung'` zurückgibt und den Plan gar nicht ansieht. *(Seit 29.09.2026 heisst die Vorgabestufe `'team'`, mit identischer Freigabe; am Befund ändert das nichts.)*
 
    **Wie es weitergeht, ist bereits entschieden** — `docs/PLAN-V7.md` **D7**:
    eine Quelle, `funktionen.py` bekommt die Marktnamen als Klartext,

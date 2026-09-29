@@ -1,6 +1,6 @@
 # Vier Abostufen: eine Quelle für Stufen, Grenzen und Preise
 
-**Stand:** 29.09.2026 · Entwurf zur Freigabe
+**Stand:** 29.09.2026 · freigegeben (A1–A4 mit Empfehlung) und umgesetzt, siehe «Umsetzung» am Ende
 **Basis:** `main` (`573abf7`)
 **Agenten:** `erweiterungen` (führend), `ui-ux` (Preisseite), `testabteilung` (Abnahme)
 **Bezug:** `docs/PLAN-V7.md` D7 · `docs/PHASE-3-ENTITLEMENTS.md` §6, Schritte 1 und 7 · `docs/MARKT.md` §4–5 · `MARKET_RESEARCH_COMPETITORS.md` §6.2
@@ -55,19 +55,28 @@ Der Funktionskatalog in `core/funktionen.py` bleibt unverändert. Neu verteilt w
 | `nebenkostenlauf` | verwaltung | **start** | Im Markt überall im Grundpreis (MARKT.md §5) |
 | `vor_ort` (Abnahme) | verwaltung | **start** | Unterscheidungsmerkmal: Fairwalter verlangt CHF 9.90 pro Abnahme |
 | `mieterportal` | verwaltung | **start** | Unterscheidungsmerkmal |
-| `monatslauf` | basis | **team** | Automatisierung spart Arbeit. Manuelle Sollstellung, Mahnung und Bankabgleich sind **nicht** gesperrt, siehe Prüfauftrag unten. |
+| `monatslauf` | basis | **start** | ~~team~~ — korrigiert nach dem Prüfauftrag unten: Der Schlüssel trägt die Pflichtläufe. |
 | `faelle`, `zulauf` | aufbau | **team** | Zusammenarbeit im Team |
 | `eigentuemerportal` | verwaltung | **team** | Wichtigster Hebel: Bei Fairwalter gibt es das erst ab CHF 299 |
 | `mandatsrentabilitaet` | portfolio | **professional** | Mandatsgeschäft |
 | `schnittstellen` | portfolio | **professional** | pain.001, Export (MARKT.md §5) |
 
-**Warum das verhaltensneutral ist, nachgerechnet:** Die neue Stufe `team` enthält genau dieselben zehn Schlüssel wie die heutige `verwaltung`: akten, dokumente, monatslauf, faelle, fristenwaechter, zulauf, nebenkostenlauf, vor_ort, eigentuemerportal, mieterportal. Die neue Stufe `professional` enthält genau dieselben wie `portfolio`. Deshalb gilt:
+**Warum das verhaltensneutral ist, nachgerechnet:** Die neue Stufe `team` enthält genau dieselben zehn Schlüssel wie die heutige `verwaltung`: akten, dokumente, monatslauf, faelle, fristenwaechter, zulauf, nebenkostenlauf, vor_ort, eigentuemerportal, mieterportal. Das gilt unabhängig davon, ob `monatslauf` in `start` oder `team` steht. Die neue Stufe `professional` enthält genau dieselben wie `portfolio`. Deshalb gilt:
 
 > `VORGABE_STUFE` wird `'team'`. Die Menge der freigegebenen Schlüssel für jede Organisation ist vor und nach dem Umbau identisch.
 
 Das ist kein Nebenbefund, sondern die Abnahmebedingung Nummer 1.
 
 **Prüfauftrag zu `monatslauf`:** Vor dem Umbau nachsehen, was dieser Schlüssel heute konkret sperrt. Belegt ist nur ein Aufrufer, die Reiter in `faelle/akten.py:165`. Deckt er die manuelle Sollstellung, den Bankabgleich oder das Mahnwesen ab, gehört er aufgeteilt, **bevor** er auf `team` wandert. Pflichtfunktionen bleiben in jeder Stufe.
+
+> **Ergebnis (29.09.2026):** `monatslauf` ist der Funktionsschlüssel aller
+> Pflichtläufe — Sollstellung, Bankabgleich, Mahnlauf, Zahllauf Kreditoren und
+> MWST-Abrechnung (`faelle/management/commands/laeufe_planen.py:22–32`). Heute
+> wertet ihn keine Stelle aus (einziger Aufrufer von `hat_funktion` sind die
+> Reiter in `faelle/akten.py`, und die fragen nur `faelle`). Eine künftige
+> Sperre darauf nähme Start-Kunden aber Pflichtarbeit weg. Er bleibt deshalb
+> in `start`. Wer später den *automatischen* Lauf ab `team` verkaufen will,
+> braucht einen eigenen Schlüssel dafür.
 
 ---
 
@@ -148,3 +157,14 @@ Der PR ist fertig, wenn:
 3. Die Preisseite bei 390 px und am Desktop als Screenshot im PR liegt, in DE und FR.
 4. Die sechs Punkte aus `swissimmo-review` belegt sind.
 5. `docs/ANALYSE.md` TS-11, `docs/PHASE-3-ENTITLEMENTS.md` §3.1/§6 und `docs/PLAN-V7.md` D7 datiert nachgeführt sind.
+
+---
+
+## Umsetzung (29.09.2026)
+
+| Schritt | Stand |
+|---|---|
+| 1 · Eine Quelle | `core/funktionen.py`: vier Stufen, `STUFEN_NAMEN`, `GRENZEN`, `PREISE` (vorläufig), `JAHRESRABATT`, `PREISSTAND`, `SUPPORT`, `monatspreis()`, `passende_stufe()`; `VORGABE_STUFE = 'team'`. Klartexte des Katalogs sind übersetzbar. |
+| 2 · Modell | `ABO_CHOICES` aus `funktionen.py` abgeleitet, Feld auf 20 Zeichen, Default `team`; `crm/migrations/0045_abostufen_marktnamen.py` schreibt `pro` → `team`, `premium` → `professional`. |
+| 3 · Preisseite | `ABO_PLAENE` entfallen, `_abo_plaene()` liest nur `funktionen.py`. Vier Karten mit Grundpreis, Preis für den heutigen Bestand, Zusatzpaketen samt Deckel, Merkmalen aus dem Katalog, Support. Kein «API», keine GB, Hinweis «Einführungspreise». DE/FR/IT/EN übersetzt, bei 390 px ohne horizontalen Überlauf. |
+| 4 · Tests | `core/tests/test_abostufen.py` neu (Freigabe-Gleichheit, eine Quelle, Preisrechnung, Preisseite), bestehende Tests nachgeführt, drei Gegenproben rot gesehen. |

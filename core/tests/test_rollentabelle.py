@@ -33,22 +33,22 @@ class AboNurInhaberTests(TestCase):
 
     def setUp(self):
         self.org = _test_organisation()
-        self.org.abo_plan = 'pro'
+        self.org.abo_plan = 'team'
         self.org.save(update_fields=['abo_plan'])
 
     def _waehlen(self, rolle):
-        _client(rolle).post('/neu/abonnement/', {'plan': 'premium'})
+        _client(rolle).post('/neu/abonnement/', {'plan': 'professional'})
         self.org.refresh_from_db()
         return self.org.abo_plan
 
     def test_sachbearbeiter_aendert_den_plan_nicht(self):
-        self.assertEqual(self._waehlen('Sachbearbeiter'), 'pro')
+        self.assertEqual(self._waehlen('Sachbearbeiter'), 'team')
 
     def test_verwalter_aendert_den_plan_nicht(self):
-        self.assertEqual(self._waehlen('Verwalter'), 'pro')
+        self.assertEqual(self._waehlen('Verwalter'), 'team')
 
     def test_inhaber_aendert_den_plan(self):
-        self.assertEqual(self._waehlen('Inhaber'), 'premium')
+        self.assertEqual(self._waehlen('Inhaber'), 'professional')
 
     def test_ansehen_bleibt_fuer_das_team_ohne_knopf(self):
         antwort = _client('Sachbearbeiter').get('/neu/abonnement/')
