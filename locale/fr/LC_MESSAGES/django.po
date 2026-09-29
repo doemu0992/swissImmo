@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 01:52+0200\n"
+"POT-Creation-Date: 2026-09-29 02:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1489,8 +1489,8 @@ msgstr "Type"
 msgid "Zimmer / m²"
 msgstr "Pièces / m²"
 
-#: core/templates/core/portal.html:307 core/templates/fw/bankabgleich.html:347
-#: core/templates/fw/debitoren.html:192
+#: core/templates/core/portal.html:307 core/templates/fw/abnahme_neu.html:96
+#: core/templates/fw/bankabgleich.html:347 core/templates/fw/debitoren.html:192
 #: core/templates/fw/debitoren_aging.html:50
 #: core/templates/fw/liegenschaft_detail.html:742
 #: core/templates/fw/mahnwesen.html:65 core/templates/fw/mahnwesen.html:147
@@ -1776,6 +1776,7 @@ msgid "Speichern"
 msgstr "Enregistrer"
 
 #: core/templates/core/postfach_form.html:142
+#: core/templates/fw/abnahme_neu.html:84
 #: core/templates/fw/benutzer_form.html:57
 #: core/templates/fw/dienstleister.html:106
 #: core/templates/fw/kreditoren.html:307
@@ -2366,6 +2367,8 @@ msgid "Abnahmeprotokoll"
 msgstr "Procès-verbal d'état des lieux"
 
 #: core/templates/fw/abnahme_detail.html:14
+#: core/templates/fw/abnahme_neu.html:3 core/templates/fw/abnahme_neu.html:9
+#: core/templates/fw/abnahme_neu.html:15
 #: core/templates/fw/vertrag_detail.html:137 faelle/arbeitsvorrat.py:516
 msgid "Wohnungsabnahme"
 msgstr "Réception du logement"
@@ -2399,10 +2402,12 @@ msgid "Protokoll löschen"
 msgstr "Supprimer le procès-verbal"
 
 #: core/templates/fw/abnahme_detail.html:47
+#: core/templates/fw/abnahme_neu.html:33
 msgid "Abnahme durch"
 msgstr "État des lieux par"
 
 #: core/templates/fw/abnahme_detail.html:48
+#: core/templates/fw/abnahme_neu.html:42
 msgid "Mieter anwesend"
 msgstr "Locataire présent"
 
@@ -2415,10 +2420,12 @@ msgid "Nein"
 msgstr "Non"
 
 #: core/templates/fw/abnahme_detail.html:49
+#: core/templates/fw/abnahme_neu.html:35
 msgid "Allgemeinzustand"
 msgstr "État général"
 
 #: core/templates/fw/abnahme_detail.html:50
+#: core/templates/fw/abnahme_neu.html:40
 msgid "Schlüssel zurück"
 msgstr "Clés rendues"
 
@@ -2447,6 +2454,7 @@ msgid "Mängel"
 msgstr "Défauts"
 
 #: core/templates/fw/abnahme_detail.html:69
+#: core/templates/fw/abnahme_neu.html:59
 msgid "Mangel"
 msgstr "Défaut"
 
@@ -2465,6 +2473,7 @@ msgid "Mieteranteil"
 msgstr "Part du locataire"
 
 #: core/templates/fw/abnahme_detail.html:73
+#: core/templates/fw/abnahme_neu.html:99
 #: core/templates/fw/objekt_detail.html:621
 #: core/templates/fw/objekt_detail.html:657
 #: core/templates/fw/objekt_detail.html:707
@@ -2487,8 +2496,143 @@ msgid "Keine Mängel festgestellt."
 msgstr "Aucun défaut constaté."
 
 #: core/templates/fw/abnahme_detail.html:96
+#: core/templates/fw/abnahme_neu.html:71
 msgid "Bemerkungen"
 msgstr "Remarques"
+
+#: core/templates/fw/abnahme_neu.html:26 core/templates/fw/kautionen.html:27
+#: core/templates/fw/liegenschaft_detail.html:268
+#: core/templates/fw/liegenschaft_detail.html:641
+#: core/templates/fw/liegenschaft_detail.html:662
+#: core/templates/fw/liegenschaft_detail.html:685
+#: core/templates/fw/logbuch.html:59 core/templates/fw/objekt_detail.html:49
+#: core/templates/fw/person_detail.html:219
+#: core/templates/fw/person_detail.html:276
+#: core/templates/fw/person_form.html:231 core/templates/fw/termine.html:25
+#: core/templates/fw/vertrag_detail.html:271
+msgid "Art"
+msgstr "Type"
+
+#: core/templates/fw/abnahme_neu.html:28
+msgid "Auszug / Rücknahme"
+msgstr "Sortie / reprise"
+
+#: core/templates/fw/abnahme_neu.html:29
+msgid "Einzug / Übergabe"
+msgstr "Entrée / remise"
+
+#: core/templates/fw/abnahme_neu.html:31 core/templates/fw/anlagen.html:59
+#: core/templates/fw/buchhaltung.html:41 core/templates/fw/buchhaltung.html:367
+#: core/templates/fw/dokumente.html:71
+#: core/templates/fw/eigentuemer_kontokorrent.html:161
+#: core/templates/fw/kontoblatt.html:68
+#: core/templates/fw/lieferantenkonto.html:70
+#: core/templates/fw/liegenschaft_detail.html:442
+#: core/templates/fw/mahnwesen.html:145 core/templates/fw/mieterkonto.html:86
+#: core/templates/fw/nebenkosten_detail.html:154
+#: core/templates/fw/vertrag_detail.html:463
+#: core/templates/fw/vertrag_detail.html:618
+msgid "Datum"
+msgstr "Date"
+
+#: core/templates/fw/abnahme_neu.html:37
+msgid "Neuwertig"
+msgstr "À l'état neuf"
+
+#: core/templates/fw/abnahme_neu.html:37
+msgid "Gut"
+msgstr "Bon"
+
+#: core/templates/fw/abnahme_neu.html:38
+msgid "Gebraucht"
+msgstr "Usagé"
+
+#: core/templates/fw/abnahme_neu.html:38
+msgid "Renovationsbedürftig"
+msgstr "À rénover"
+
+#: core/templates/fw/abnahme_neu.html:47
+msgid "Zählerstände"
+msgstr "Relevés des compteurs"
+
+#: core/templates/fw/abnahme_neu.html:49
+msgid "Strom kWh"
+msgstr "Électricité kWh"
+
+#: core/templates/fw/abnahme_neu.html:50
+msgid "Wasser m³"
+msgstr "Eau m³"
+
+#: core/templates/fw/abnahme_neu.html:51
+msgid "Gas/Wärme"
+msgstr "Gaz/chaleur"
+
+#: core/templates/fw/abnahme_neu.html:58
+msgid "Mängel / Zustand je Raum"
+msgstr "Défauts / état par pièce"
+
+#: core/templates/fw/abnahme_neu.html:62
+msgid ""
+"Verursacher „Mieter (Schaden)\" fliesst in die Schlussabrechnung. Ist ein "
+"Raumbuch-Element verknüpft, wird der <span class=\"font-semibold\">Zeitwert</"
+"span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt\")."
+msgstr "Le responsable « Locataire (dommage) » est repris dans le décompte final. Si un élément de l'inventaire des pièces est lié, la <span class=\"font-semibold\">valeur actuelle</span> est calculée selon le tableau paritaire des durées de vie (déduction « du neuf pour du vieux »)."
+
+#: core/templates/fw/abnahme_neu.html:69
+msgid "Neue Adresse des Mieters"
+msgstr "Nouvelle adresse du locataire"
+
+#: core/templates/fw/abnahme_neu.html:74
+msgid "Unterschrift Mieter (Name)"
+msgstr "Signature du locataire (nom)"
+
+#: core/templates/fw/abnahme_neu.html:76
+msgid "Unterschrift Verwaltung (Name)"
+msgstr "Signature de la gérance (nom)"
+
+#: core/templates/fw/abnahme_neu.html:79
+msgid "Protokoll abgeschlossen"
+msgstr "Procès-verbal clôturé"
+
+#: core/templates/fw/abnahme_neu.html:83
+msgid "Protokoll speichern"
+msgstr "Enregistrer le procès-verbal"
+
+#: core/templates/fw/abnahme_neu.html:94
+msgid "Mangel beschreiben"
+msgstr "Décrire le défaut"
+
+#: core/templates/fw/abnahme_neu.html:96
+msgid "Abnutzung"
+msgstr "Usure normale"
+
+#: core/templates/fw/abnahme_neu.html:96
+msgid "Vermieter"
+msgstr "Bailleur"
+
+#: core/templates/fw/abnahme_neu.html:98
+msgid "Reparatur-/Ersatzkosten"
+msgstr "Frais de réparation/remplacement"
+
+#: core/templates/fw/abnahme_neu.html:100
+msgid "Diesen Mangel entfernen"
+msgstr "Retirer ce défaut"
+
+#: core/templates/fw/abnahme_neu.html:103
+msgid "Raumbuch-Element"
+msgstr "Élément de l'inventaire des pièces"
+
+#: core/templates/fw/abnahme_neu.html:105
+msgid "kein Element (voller Betrag)"
+msgstr "aucun élément (montant intégral)"
+
+#: core/templates/fw/abnahme_neu.html:108
+msgid "Neuwert CHF"
+msgstr "Valeur à neuf CHF"
+
+#: core/templates/fw/abnahme_neu.html:108
+msgid "Neuwert (optional, sonst vom Element)"
+msgstr "Valeur à neuf (facultatif, sinon celle de l'élément)"
 
 #: core/templates/fw/abonnement.html:3
 msgid "Abonnement · swissImmo"
@@ -2971,19 +3115,6 @@ msgstr "p. ex. chauffage"
 #: core/templates/fw/anlagen.html:57
 msgid "Wert CHF"
 msgstr "Valeur CHF"
-
-#: core/templates/fw/anlagen.html:59 core/templates/fw/buchhaltung.html:41
-#: core/templates/fw/buchhaltung.html:367 core/templates/fw/dokumente.html:71
-#: core/templates/fw/eigentuemer_kontokorrent.html:161
-#: core/templates/fw/kontoblatt.html:68
-#: core/templates/fw/lieferantenkonto.html:70
-#: core/templates/fw/liegenschaft_detail.html:442
-#: core/templates/fw/mahnwesen.html:145 core/templates/fw/mieterkonto.html:86
-#: core/templates/fw/nebenkosten_detail.html:154
-#: core/templates/fw/vertrag_detail.html:463
-#: core/templates/fw/vertrag_detail.html:618
-msgid "Datum"
-msgstr "Date"
 
 #: core/templates/fw/anlagen.html:61
 msgid "Bezahlt via"
@@ -6387,19 +6518,6 @@ msgstr "Encore attendu"
 #: core/templates/fw/kautionen.html:26
 msgid "Mieter / Objekt"
 msgstr "Locataire / objet"
-
-#: core/templates/fw/kautionen.html:27
-#: core/templates/fw/liegenschaft_detail.html:268
-#: core/templates/fw/liegenschaft_detail.html:641
-#: core/templates/fw/liegenschaft_detail.html:662
-#: core/templates/fw/liegenschaft_detail.html:685
-#: core/templates/fw/logbuch.html:59 core/templates/fw/objekt_detail.html:49
-#: core/templates/fw/person_detail.html:219
-#: core/templates/fw/person_detail.html:276
-#: core/templates/fw/person_form.html:231 core/templates/fw/termine.html:25
-#: core/templates/fw/vertrag_detail.html:271
-msgid "Art"
-msgstr "Type"
 
 #: core/templates/fw/kautionen.html:27
 msgid "Sperrkonto / Police"
@@ -14799,21 +14917,3 @@ msgstr "Police active"
 #: rentals/models.py:553
 msgid "Police aufgelöst"
 msgstr "Police résiliée"
-
-#, fuzzy
-#~| msgid "Diese Adress-Zeile entfernen?"
-#~ msgid "Diese Zeile stellt den"
-#~ msgstr "Supprimer cette ligne d'adresse ?"
-
-#, fuzzy
-#~| msgid "Vollständiges Logbuch"
-#~ msgid "vollständig auf 0.00"
-#~ msgstr "Journal complet"
-
-#, fuzzy
-#~| msgid "Nebenkosten"
-#~ msgid "die Nebenkosten"
-#~ msgstr "Frais accessoires"
-
-#~ msgid "meldet sich nach 14 Tagen"
-#~ msgstr "se signale après 14 jours"

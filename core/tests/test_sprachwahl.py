@@ -195,3 +195,33 @@ class ArbeitsvorratReiterFolgenDerSpracheTests(TestCase):
         seite = c.get('/neu/')
         self.assertContains(seite, 'Cette semaine')
         self.assertNotContains(seite, 'Diese Woche')
+
+
+class WohnungsabnahmeFolgtDerSpracheTests(TestCase):
+    """Das Formular «Wohnungsabnahme» steht in der gewählten Sprache — die
+    gespeicherten Werte bleiben dabei unverändert: Raumnamen werden als Text
+    gespeichert (keine `value`) und bleiben deshalb Deutsch, die übrigen
+    Auswahlen tragen feste Schlüssel.
+
+    Gegenprobe: `{% load i18n %}` und die Auszeichnung in
+    fw/abnahme_neu.html entfernen — der französische Test wird rot.
+    """
+
+    def setUp(self):
+        _lg, _e, _m, v = _basis_objekte()
+        self.url = f'/neu/vertraege/{v.id}/abnahme/neu/'
+        self.c = Client()
+        self.c.force_login(_team_user('Verwalter'))
+
+    def test_franzoesisch(self):
+        from core.views.fw.abnahme import ABNAHME_RAEUME
+        self.c.post(SETLANG, {'language': 'fr', 'next': '/neu/'})
+        seite = self.c.get(self.url)
+        self.assertContains(seite, 'Relevés des compteurs')
+        self.assertNotContains(seite, '>Zählerstände<')  # der HTML-Kommentar bleibt
+        self.assertContains(seite, '<option value="mieter">Locataire</option>')
+        self.assertContains(seite, f'<option>{ABNAHME_RAEUME[0]}</option>')
+
+    def test_deutsch(self):
+        seite = self.c.get(self.url, HTTP_ACCEPT_LANGUAGE='de-CH')
+        self.assertContains(seite, '>Zählerstände<')
