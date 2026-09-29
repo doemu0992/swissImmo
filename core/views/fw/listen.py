@@ -32,6 +32,9 @@ from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
 from core.views.fw.liegenschaft_crud import telefon_kern
+from core.views.fw._liste import (Sortierung, blaettern, csv_antwort, natuerlich, query_mit,
+                                  sortieren, sortierung_waehlen, suche_anwenden,
+                                  suchtext, verdeckte_felder)
 
 logger = logging.getLogger(__name__)
 
@@ -674,7 +677,7 @@ def fw_liegenschaften(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    liegenschaften = Liegenschaft.objects.all().order_by('strasse')
+    liegenschaften = Liegenschaft.objects.select_related('eigentuemer').order_by('strasse')
     if aktive_lg:
         liegenschaften = liegenschaften.filter(id=aktive_lg.id)
 
@@ -684,20 +687,76 @@ def fw_liegenschaften(request):
     # von 100 % — richtig gerechnet und trotzdem irrefuehrend.
     kennzahlen = streifen(alle)
 
+    # Suche vor dem Befundfilter: Die Zahlen an den Chips gelten dann für
+    # das, was die Suche übrig lässt — ein Chip «Leerstand 3», der nach dem
+    # Klick eine leere Liste zeigt, wäre eine Sackgasse.
+    suche = suchtext(request)
+    gesucht = suche_anwenden(alle, suche, _lg_suchtext)
+
     befund = request.GET.get('befund', '')
     if befund == 'ohne':
-        rows = [r for r in alle if r['ohne_befund']]
+        rows = [r for r in gesucht if r['ohne_befund']]
     elif befund in BEFUND_FILTER:
-        rows = [r for r in alle if befund in r['kategorien']]
+        rows = [r for r in gesucht if befund in r['kategorien']]
     else:
         befund = ''
-        rows = alle
+        rows = gesucht
 
+    sort = sortierung_waehlen(request, LG_SORTEN, 'befund')
+    rows = sortieren(rows, LG_SORTEN, sort)
+
+    if request.GET.get('export') == 'csv':
+        return _lg_csv(rows)
+
+    seite, query_ohne_seite = blaettern(request, rows)
     return render(request, 'fw/liegenschaften.html', {
-        **basis, 'nav': 'liegenschaften', 'rows': rows, 'alle_rows': len(alle),
-        'kennzahlen': kennzahlen, 'befund': befund,
-        'filter_zaehler': _befund_zaehler(alle),
+        **basis, 'nav': 'liegenschaften', 'rows': seite.object_list,
+        'seite': seite, 'query_ohne_seite': query_ohne_seite,
+        'treffer': len(rows), 'alle_rows': len(alle), 'gesucht_rows': len(gesucht),
+        'kennzahlen': kennzahlen, 'befund': befund, 'suche': suche,
+        'filter_zaehler': _befund_zaehler(gesucht),
+        'filter_urls': {k or 'alle': query_mit(request, befund=k)
+                        for k in ('', *BEFUND_FILTER, 'ohne')},
+        'suche_aufheben_url': query_mit(request, suche=None),
+        'sort': sort,
+        'sorten': [(k, s.label) for k, s in LG_SORTEN.items()],
+        'csv_url': query_mit(request, export='csv'),
+        'verdeckt': verdeckte_felder(request, 'suche', 'sort'),
     })
+
+
+def _lg_suchtext(r):
+    lg = r['lg']
+    return ' '.join(str(x) for x in (lg.strasse, lg.plz, lg.ort, lg.kanton,
+                                      lg.eigentuemer or '') if x)
+
+
+#: Wählbare Sortierungen der Liegenschaftsliste. «Befund» ist die Reihenfolge,
+#: in der `faelle.liegenschaften.zeilen` liefert — dort steht, warum.
+LG_SORTEN = {
+    'befund': Sortierung(gettext_lazy('Befund'), None),
+    'adresse': Sortierung(gettext_lazy('Adresse'),
+                          lambda r: (natuerlich(r['lg'].strasse), r['lg'].id)),
+    'ort': Sortierung(gettext_lazy('Ort'),
+                      lambda r: (natuerlich(r['lg'].ort), natuerlich(r['lg'].strasse), r['lg'].id)),
+    'objekte': Sortierung(gettext_lazy('Anzahl Objekte'),
+                          lambda r: r['einheiten'], absteigend=True),
+    'ertrag': Sortierung(gettext_lazy('Ist-Miete'),
+                         lambda r: r['ertrag'], absteigend=True),
+}
+
+
+def _lg_csv(rows):
+    heute = timezone.localdate()
+    return csv_antwort(
+        f'Liegenschaften_{heute:%Y-%m-%d}.csv',
+        [_('Strasse'), _('PLZ'), _('Ort'), _('Kanton'), _('Eigentümer'),
+         _('Objekte'), _('Belegt'), _('Leer'), _('Belegung %'),
+         _('Ist-Miete pro Monat (CHF)'), _('Befund')],
+        ([r['lg'].strasse, r['lg'].plz, r['lg'].ort, r['lg'].kanton,
+          r['lg'].eigentuemer or '', r['einheiten'], r['belegt'], r['leer'],
+          r['belegung'], r['ertrag'], ', '.join(str(c[1]) for c in r['chips'])]
+         for r in rows))
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_berichte(request):

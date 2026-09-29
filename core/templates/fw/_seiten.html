@@ -1,0 +1,19 @@
+{% load i18n %}{% comment %}
+BLÄTTERN (Audit Etappe 4) — eine Leiste für alle Listen mit Seiten.
+
+Erwartet: `seite` (Django-Page) und `query_ohne_seite` (Querystring der Liste
+ohne `seite`, von `core.views.fw._liste.blaettern`). Filter, Suche und
+Sortierung bleiben beim Blättern erhalten.
+
+Bei einer einzigen Seite erscheint nichts — eine Leiste «Seite 1 von 1» ist
+nur Rauschen.
+{% endcomment %}{% if seite.paginator.num_pages > 1 %}
+<nav class="fw-seiten" aria-label="{% trans 'Seiten' %}">
+    <span>{% blocktrans with von=seite.start_index bis=seite.end_index n=seite.paginator.count %}{{ von }}–{{ bis }} von {{ n }}{% endblocktrans %}</span>
+    <span class="fw-seiten-knoepfe">
+        {% if seite.has_previous %}<a class="fw-btn" rel="prev" href="?{{ query_ohne_seite }}{% if query_ohne_seite %}&amp;{% endif %}seite={{ seite.previous_page_number }}">{% trans "‹ Zurück" %}</a>{% endif %}
+        <span aria-current="page">{% blocktrans with s=seite.number n=seite.paginator.num_pages %}Seite {{ s }} von {{ n }}{% endblocktrans %}</span>
+        {% if seite.has_next %}<a class="fw-btn" rel="next" href="?{{ query_ohne_seite }}{% if query_ohne_seite %}&amp;{% endif %}seite={{ seite.next_page_number }}">{% trans "Weiter ›" %}</a>{% endif %}
+    </span>
+</nav>
+{% endif %}

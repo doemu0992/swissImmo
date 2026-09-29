@@ -881,6 +881,17 @@ und einen Stilblock enthaelt.
         .fw-ikon.good{background:var(--ds-good-soft);color:var(--ds-good)}
         .fw-fuss{padding:8px 15px;border-top:1px solid var(--ds-line);display:flex;
             justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ds-faint)}
+        /* Listen-Werkzeugkasten (Audit Etappe 4): Suche, Sortierung, Export in
+           einer Zeile; am Telefon bricht sie um, die Suche nimmt die ganze Breite. */
+        .fw-listwerkzeug{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+        .fw-listwerkzeug .fw-suchfeld{flex:1 1 240px;max-width:384px;min-width:0}
+        .fw-listwerkzeug .fw-suchfeld .fw-feld{width:100%}
+        .fw-listwerkzeug label{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ds-muted)}
+        .fw-seiten{padding:10px 15px;border-top:1px solid var(--ds-line);display:flex;
+            justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+            font-size:12px;color:var(--ds-muted)}
+        .fw-seiten-knoepfe{display:inline-flex;align-items:center;gap:8px}
+        .fw-seiten .fw-btn{padding:6px 11px;font-size:12px}
 
         .fw-zeile{display:flex;align-items:center;gap:12px;padding:11px 15px;
             flex-wrap:nowrap;border-bottom:1px solid var(--ds-line)}
