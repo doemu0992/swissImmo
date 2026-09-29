@@ -1,0 +1,31 @@
+{% load zeichen i18n %}{% comment %}
+WERKZEUGLEISTE EINER LISTE (Audit Etappe 4): Suche, Sortierung, «Anwenden».
+
+Erwartet aus der Ansicht (`core.views.fw._liste`):
+  verdeckt            übrige Parameter (Filter, Liegenschaft) als (Name, Wert)
+  sort, sorten        gewählte Sortierung und die Auswahl [(Schlüssel, Label)]
+  suche_aufheben_url  Querystring ohne Suchbegriff
+Parameter beim Einbinden:
+  suchname, suchwert  Name und Wert des Suchfelds (`suche` oder `q`)
+  suchtext, suchlabel Platzhalter und Beschriftung für Screenreader
+  livesuche           Selektor für den Sofortfilter im Browser (optional);
+                      nur setzen, wenn alles auf EINER Seite steht
+  imkopf              true: steht im Kartenkopf (kein Abstand unten)
+
+Gesucht wird auf dem Server (Enter oder «Anwenden»): Mit Seiten fände ein
+Filter im Browser nur, was auf der aktuellen Seite steht.
+{% endcomment %}<form method="get" class="fw-listwerkzeug{% if imkopf %} fw-imkopf{% endif %}" role="search">
+    {% for name, wert in verdeckt %}<input type="hidden" name="{{ name }}" value="{{ wert }}">{% endfor %}
+    <div class="fw-suchfeld relative">
+        {% zeichen 'suchen' klasse='absolute left-3.5 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
+        <input type="search" name="{{ suchname }}" value="{{ suchwert }}"{% if livesuche %} data-suche="{{ livesuche }}"{% endif %} aria-label="{{ suchlabel }}"
+               placeholder="{{ suchtext }}" autocomplete="off" class="fw-feld" style="padding-left:2.5rem">
+    </div>
+    {% if sorten %}<label>{% trans "Sortieren" %}
+        <select name="sort" class="fw-feld" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">
+            {% for key, label in sorten %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </label>{% endif %}
+    <button type="submit" class="fw-btn">{% trans "Anwenden" %}</button>
+    {% if suchwert %}<a href="{{ suche_aufheben_url }}" class="fw-klein" style="color:var(--ds-brand)">{% trans "Suche aufheben" %}</a>{% endif %}
+</form>

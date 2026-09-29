@@ -11,27 +11,23 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Mietverhältnisse" %}</h1>
-        <p>{% blocktrans count n=rows|length %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %} · <span style="color:var(--ds-good);font-weight:600">{% blocktrans count n=aktiv_count %}{{ n }} aktiv{% plural %}{{ n }} aktiv{% endblocktrans %}</span>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/vertraege/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% blocktrans count n=treffer %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %} · <span style="color:var(--ds-good);font-weight:600">{% blocktrans count n=aktiv_count %}{{ n }} aktiv{% plural %}{{ n }} aktiv{% endblocktrans %}</span>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/vertraege/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
-    <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Vertrag erstellen" %}</a>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <a href="{{ csv_url }}" download class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV" %}</a>
+        <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Vertrag erstellen" %}</a>
+    </div>
 </div>
 
 <div class="fw-card">
 
     <div class="fw-h" style="flex-wrap:wrap">
         <div class="fw-filters" style="margin-bottom:0">
-            {% for wert, label in status_chips %}
-            <a href="?status={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="fw-fchip{% if status_filter == wert %} fw-on{% endif %}">{{ label }}</a>
+            {% for wert, label, url in status_chips %}
+            <a href="{{ url }}" class="fw-fchip{% if status_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <form method="get" class="relative" style="margin-left:auto">
-            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
-            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
-            <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Mieter oder Objekt suchen…' %}"
-                   class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
-        </form>
+        {% include 'fw/_listwerkzeug.html' with suchname='q' suchwert=q suchtext=_('Mieter oder Objekt suchen…') suchlabel=_('Mietverhältnisse durchsuchen') imkopf=True %}
     </div>
 
     <!-- Mobile: Karten -->
@@ -109,6 +105,7 @@
             </tbody>
         </table>
     </div>
+    {% include 'fw/_seiten.html' %}
 </div>
 {% endblock %}
 

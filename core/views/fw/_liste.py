@@ -2,8 +2,9 @@
 
 Die Kernlisten hatten davon je nach Seite etwas oder nichts, und wo es etwas
 gab, war es dreimal anders gebaut (Debitoren, Kreditoren, Logbuch). Hier steht
-es einmal, für Listen, deren Zeilen schon in Python vorliegen — die
-Liegenschaftsliste etwa rechnet ihre Befunde je Zeile und sortiert danach.
+es einmal — für Listen, deren Zeilen schon in Python vorliegen (die
+Liegenschaftsliste rechnet ihre Befunde je Zeile), und für Abfragen
+(Mietverhältnisse, Personen), bei denen die Datenbank sortiert und blättert.
 
 Die Reihenfolge ist immer dieselbe, und sie ist nicht beliebig:
 
@@ -16,6 +17,7 @@ exportiert, bekommt die Leerstände — und nicht die ersten 50 davon.
 import csv
 import re
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 from typing import Callable
 
@@ -32,6 +34,9 @@ class Sortierung:
     label: str
     schluessel: Callable | None      # None = Reihenfolge wie geliefert
     absteigend: bool = False
+    #: Für Abfragen: Felder für `order_by`. Dann sortiert die Datenbank, und
+    #: `blaettern` liest nur die Zeilen der Seite — nicht den ganzen Bestand.
+    felder: tuple = ()
 
 
 def suchtext(request, feld='suche'):
@@ -67,6 +72,8 @@ def sortierung_waehlen(request, sorten, standard):
 
 def sortieren(rows, sorten, wahl):
     s = sorten[wahl]
+    if s.felder:
+        return rows.order_by(*s.felder)
     if s.schluessel is None:
         return list(rows)
     return sorted(rows, key=s.schluessel, reverse=s.absteigend)
@@ -127,6 +134,8 @@ def _zelle(wert):
         return ''
     if isinstance(wert, Decimal):
         return f'{wert:.2f}'
+    if isinstance(wert, date):
+        return wert.strftime('%d.%m.%Y')
     if isinstance(wert, (int, float)):
         return str(wert)
     text = str(wert)
