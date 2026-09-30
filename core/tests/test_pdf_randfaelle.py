@@ -16,7 +16,7 @@ from unittest import mock
 
 from django.test import TestCase
 
-from core.services.pdf_text import PdfFehler, format_chf, html_zu_pdf, pdf_sicher
+from core.services.pdf_text import PdfFehler, format_chf, pdf_aus_html, pdf_sicher
 from ._helfer import (_test_organisation, Mieter, Eigentuemer, Liegenschaft,
                       Einheit, Mietvertrag)
 
@@ -71,23 +71,40 @@ class ZeichensatzTests(TestCase):
         s = "äöüÄÖÜ éèêë àâ ç ì ò ù ñ ß œ Ø € ’ – • « »"
         self.assertEqual(pdf_sicher(s), s)
 
-    def test_fremde_zeichen_werden_ersetzt_statt_salat(self):
-        self.assertEqual(pdf_sicher('Łukasz Żółć'), 'Lukasz Zólc')      # ó ist Latin-1 und bleibt
-        self.assertEqual(pdf_sicher('Şahin Őrs Čapek'), 'Sahin Ors Capek')
-        self.assertEqual(pdf_sicher('Haus ☃ 😀'), 'Haus ? ?')
-        self.assertEqual(pdf_sicher('a b'), 'a b')
+    def test_unicode_schrift_deckt_osteuropa_tuerkisch_ab(self):
+        s = 'Łukasz Żółć Şahin Őrs Čapek ✓'
+        self.assertEqual(pdf_sicher(s), s)
 
-    def test_reportlab_standardschrift_ist_geschuetzt(self):
-        """Gegenprobe: OHNE den Schutz wird daraus «nukasz» (belegt 30.09.2026)."""
+    def test_was_keine_schrift_hat_wird_sichtbar_ersetzt(self):
+        self.assertEqual(pdf_sicher('Haus 日本 😀'), 'Haus ?? ?')
+        self.assertEqual(pdf_sicher('a\u202fb'), 'a\u202fb')      # DejaVu kann das Zeichen
+
+    def test_ohne_schriftdatei_faellt_es_auf_ersatz_zurueck(self):
+        """Fehlt DejaVu im Deployment, darf nichts abstürzen: lateinischer Ersatz."""
+        from core.services import pdf_text
+        with mock.patch.object(pdf_text, '_unicode_zeichen', frozenset()):
+            self.assertEqual(pdf_sicher('Łukasz Şahin ☃'), 'Lukasz Sahin ?')
+
+    def test_reportlab_zeichnet_fremde_zeichen_korrekt(self):
+        """Gegenprobe: ohne Schutz und Ersatzschrift wurde daraus «nukasz»."""
         from reportlab.pdfgen import canvas
-        buf = io.BytesIO()
-        c = canvas.Canvas(buf)
-        c.setFont('Helvetica', 12)
-        c.drawString(50, 700, 'Łukasz Żółć Müller Genève')
-        c.save()
-        t = _text(buf.getvalue())
-        self.assertIn('Lukasz Zólc Müller Genève', t)
-        self.assertNotIn('nukasz', t)
+        for schrift in ('Helvetica', 'Helvetica-Bold'):
+            buf = io.BytesIO()
+            c = canvas.Canvas(buf)
+            c.setFont(schrift, 12)
+            c.drawString(50, 700, 'Łukasz Żółć Müller Genève Şahin')
+            c.save()
+            self.assertIn('Łukasz Żółć Müller Genève Şahin', _text(buf.getvalue()), schrift)
+
+    def test_html_dokument_wechselt_nur_bei_bedarf_die_schrift(self):
+        def schriften(html):
+            import pdfplumber
+            pdf = pdf_aus_html(html)
+            with pdfplumber.open(io.BytesIO(pdf)) as p:
+                return {z['fontname'].split('+')[-1] for z in p.pages[0].chars}
+        self.assertEqual(schriften('<html><body><p>Müller Genève</p></body></html>'), {'Helvetica'})
+        mit = schriften('<html><head></head><body><p>Łukasz <b>Żółć</b></p></body></html>')
+        self.assertTrue(any('DejaVu' in n for n in mit), mit)
 
 
 class _Basis(TestCase):
@@ -153,12 +170,12 @@ class VertragTests(_Basis):
         self.assertIn('Garage Nr. 12 Zürich', t)
         self.assertIn("CHF 1'250.50", t)
 
-    def test_fremde_zeichen_im_namen_stuerzen_nicht_ab(self):
+    def test_fremde_zeichen_im_namen_werden_korrekt_gedruckt(self):
         from core.services.pdf_service import generate_vertrag_pdf_bytes
         v = self._vertrag(name='Żółć Şahin ☃', vor='Łukasz 😀')
         t = _flach(generate_vertrag_pdf_bytes(v))
-        self.assertIn('Lukasz ?', t)
-        self.assertIn('Zólc Sahin ?', t)
+        self.assertIn('Łukasz ?', t)            # Emoji: auch DejaVu hat sie im PDF nicht
+        self.assertIn('Żółć Şahin ☃', t)
         self.assertNotIn('nukasz', t)
 
 
@@ -267,7 +284,7 @@ class FehlerfangTests(_Basis):
     def test_kaputtes_html_wirft_nur_pdffehler(self):
         for html in ('', '<html><body><table><tr><td>', '<<<>>> &&& {{'):
             try:
-                pdf = html_zu_pdf(html, quelle='Test')
+                pdf = pdf_aus_html(html, quelle='Test')
             except PdfFehler:
                 continue
             self.assertTrue(pdf.startswith(b'%PDF'), repr(html))
@@ -275,14 +292,14 @@ class FehlerfangTests(_Basis):
     def test_renderer_absturz_wird_pdffehler(self):
         with mock.patch('xhtml2pdf.pisa.CreatePDF', side_effect=RuntimeError('boom')):
             with self.assertRaises(PdfFehler) as ctx:
-                html_zu_pdf('<p>x</p>', quelle='Mietvertrag')
+                pdf_aus_html('<p>x</p>', quelle='Mietvertrag')
         self.assertIn('Mietvertrag', str(ctx.exception))
 
     def test_renderer_fehlerstatus_wird_pdffehler(self):
         status = mock.Mock(err=2)
         with mock.patch('xhtml2pdf.pisa.CreatePDF', return_value=status):
             with self.assertRaises(PdfFehler):
-                html_zu_pdf('<p>x</p>')
+                pdf_aus_html('<p>x</p>')
 
     def test_view_liefert_saubere_500_statt_absturz(self):
         from django.test import Client

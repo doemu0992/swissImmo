@@ -15,17 +15,24 @@ WARUM ES DAS GIBT (Prüfung vom 30.09.2026)
    alles Deutsche, Französische, Italienische. Nicht gedeckt: Ł ż Ş ő č ☃,
    Emoji, Kyrillisch. Die Standardschrift macht daraus STILL Buchstabensalat
    («Łukasz» → «nukasz») — auf einem Rechtsdokument, ohne Fehlermeldung.
-   `pdf_sicher()` ersetzt solche Zeichen vorab durch das nächste lateinische
-   Zeichen (Ł→L, Ş→S, ő→o) und sonst durch «?», damit sichtbar bleibt, dass
-   etwas fehlt. Eine eingebettete Unicode-Schrift wäre die vollständige
-   Lösung; sie verlangt eine mitgelieferte Schriftdatei und ist deshalb
-   freigabepflichtig (siehe PR).
+   Lösung (freigegeben 30.09.2026): DejaVu Sans liegt unter
+   `static/fonts/pdf/` (Lizenz daneben). Sie wird NUR für Zeichen verwendet,
+   die Helvetica nicht kann — reportlab: als Ersatzschrift von Helvetica /
+   Helvetica-Bold je Zeichen; HTML-Dokumente: das Dokument wechselt komplett
+   auf DejaVu, sobald ein solches Zeichen vorkommt. Alles Übliche bleibt
+   Helvetica. Was auch DejaVu nicht hat (Emoji, CJK), ersetzt `pdf_sicher()`
+   durch das nächste lateinische Zeichen oder «?», damit sichtbar bleibt,
+   dass etwas fehlt.
 
 3. FEHLER. `PdfFehler` ist der EINE Ausnahmetyp der Erzeugung; die Aufrufer
    fangen ihn und zeigen eine saubere Meldung statt eines 500ers.
 """
+import logging
 import unicodedata
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 LEERER_BETRAG = '–'
 
@@ -73,13 +80,50 @@ def _cp1252_ok(zeichen):
         return False
 
 
+SCHRIFT_ORDNER = Path(__file__).resolve().parents[2] / 'static' / 'fonts' / 'pdf'
+_SCHRIFT_DATEIEN = {'DejaVuSans': 'DejaVuSans.ttf', 'DejaVuSans-Bold': 'DejaVuSans-Bold.ttf'}
+_unicode_zeichen = None      # None = noch nicht geladen, frozenset() = Schrift fehlt
+
+
+def schrift_pfad(name):
+    return SCHRIFT_ORDNER / _SCHRIFT_DATEIEN[name]
+
+
+def _unicode_schrift_laden():
+    """Registriert DejaVu in reportlab; gibt die Zeichenmenge zurück (leer, wenn
+    die Schriftdateien fehlen — dann gilt wie bisher nur cp1252)."""
+    global _unicode_zeichen
+    if _unicode_zeichen is not None:
+        return _unicode_zeichen
+    try:
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        for name in _SCHRIFT_DATEIEN:
+            if name not in pdfmetrics.getRegisteredFontNames():
+                pdfmetrics.registerFont(TTFont(name, str(schrift_pfad(name))))
+        pdfmetrics.registerFontFamily('DejaVuSans', normal='DejaVuSans', bold='DejaVuSans-Bold',
+                                      italic='DejaVuSans', boldItalic='DejaVuSans-Bold')
+        normal = pdfmetrics.getFont('DejaVuSans')
+        # Nur die Grundebene (BMP): xhtml2pdf und reportlab-TTF zerlegen Zeichen
+        # darüber falsch (Emoji wurden zu «ὠ»).
+        _unicode_zeichen = frozenset(chr(c) for c in normal.face.charToGlyph if c <= 0xFFFF)
+    except Exception:
+        logger.error("Unicode-Schrift für PDFs nicht ladbar — nur cp1252", exc_info=True)
+        _unicode_zeichen = frozenset()
+    return _unicode_zeichen
+
+
+def _darstellbar(zeichen):
+    return _cp1252_ok(zeichen) or zeichen in _unicode_schrift_laden()
+
+
 def pdf_sicher(text):
     """Text für die Standardschriften: nur cp1252-Zeichen, sonst Ersatz."""
     if not isinstance(text, str) or text.isascii():
         return text
     aus = []
     for z in text:
-        if z in '\n\r\t' or _cp1252_ok(z):
+        if z in '\n\r\t' or _darstellbar(z):
             aus.append(z)
             continue
         if z in _ERSATZ:
@@ -87,7 +131,7 @@ def pdf_sicher(text):
             continue
         zerlegt = unicodedata.normalize('NFKD', z)
         basis = ''.join(c for c in zerlegt if not unicodedata.combining(c))
-        if basis and all(_cp1252_ok(c) for c in basis):
+        if basis and all(_darstellbar(c) for c in basis):
             aus.append(basis)
         elif unicodedata.category(z) in ('Mn', 'Me', 'Cf', 'Cc'):
             continue                      # unsichtbar: weglassen
@@ -108,6 +152,8 @@ def installiere_reportlab_schutz():
     global _installiert
     if _installiert:
         return
+    _unicode_schrift_laden()
+    from reportlab.lib.rl_accel import fp_str
     from reportlab.pdfbase.pdfmetrics import getFont
     from reportlab.pdfgen import textobject
 
@@ -118,15 +164,44 @@ def installiere_reportlab_schutz():
             schrift = getFont(self._fontname)
         except Exception:
             schrift = None
-        if schrift is not None and not schrift._dynamicFont and not schrift._multiByte:
-            text = pdf_sicher(text)
+        if schrift is None or schrift._dynamicFont or schrift._multiByte:
+            return original(self, text)
+        text = pdf_sicher(text)
+        if isinstance(text, str) and not text.isascii() and any(not _cp1252_ok(z) for z in text):
+            # Enthält Zeichen, die Helvetica nicht kann: dieses Textstück in
+            # DejaVu setzen, danach zurück auf die Ausgangsschrift. reportlab
+            # erlaubt TrueType nicht als Ersatzschrift je Zeichen.
+            ausgang = self._fontname
+            self._fontname = 'DejaVuSans-Bold' if 'Bold' in ausgang else 'DejaVuSans'
+            try:
+                code = original(self, text)
+            finally:
+                self._fontname = ausgang
+            zurueck = '%s %s Tf %s TL' % (self._canvas._doc.getInternalFontName(ausgang),
+                                          fp_str(self._fontsize), fp_str(self._leading))
+            self._curSubset = -1          # der nächste TrueType-Text muss seine Schrift neu setzen
+            return code + ' ' + zurueck
         return original(self, text)
 
     textobject.PDFTextObject._formatText = _formatText
     _installiert = True
 
 
-def html_zu_pdf(html, *, link_callback=None, quelle='Dokument'):
+def _mit_unicode_schrift(html):
+    """Das Dokument wechselt auf DejaVu Sans, weil es ein Zeichen enthält, das
+    Helvetica nicht kann. xhtml2pdf kennt keinen Ersatz je Zeichen."""
+    css = (
+        "<style>"
+        "@font-face { font-family: DejaVuSans; src: url('%s'); }"
+        "@font-face { font-family: DejaVuSans; font-weight: bold; src: url('%s'); }"
+        "body, p, div, span, td, th, li, b, strong, h1, h2, h3, h4 { font-family: DejaVuSans; }"
+        "</style>" % (schrift_pfad('DejaVuSans').as_posix(), schrift_pfad('DejaVuSans-Bold').as_posix()))
+    if '</head>' in html:
+        return html.replace('</head>', css + '</head>', 1)
+    return css + html
+
+
+def pdf_aus_html(html, *, link_callback=None, quelle='Dokument'):
     """HTML → PDF-Bytes (xhtml2pdf). Wirft ausschliesslich `PdfFehler`.
 
     Sanitiert den Zeichensatz vorab und prüft das Ergebnis: xhtml2pdf meldet
@@ -137,9 +212,13 @@ def html_zu_pdf(html, *, link_callback=None, quelle='Dokument'):
 
     from xhtml2pdf import pisa
 
+    html = pdf_sicher(html)
+    if any(not _cp1252_ok(z) for z in html) and _unicode_schrift_laden():
+        html = _mit_unicode_schrift(html)
+
     puffer = io.BytesIO()
     try:
-        status = pisa.CreatePDF(pdf_sicher(html), dest=puffer,
+        status = pisa.CreatePDF(html, dest=puffer,
                                 link_callback=link_callback, encoding='utf-8')
     except Exception as exc:
         raise PdfFehler(f"{quelle}: Renderer abgestürzt ({exc})") from exc

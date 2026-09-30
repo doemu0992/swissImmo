@@ -126,3 +126,18 @@ stiftet wie dieser hier.
 2. Datei aus `node_modules/` nach `static/` kopieren.
 3. `VENDOR` in `core/tests/test_vendor_dateien.py` und diese Tabelle nachführen.
 4. `python manage.py test core.tests.test_vendor_dateien core.tests.test_keine_fremdquellen`
+
+## Schrift für PDFs: DejaVu Sans (seit 30.09.2026)
+
+| Datei unter `static/fonts/pdf/` | Herkunft | Lizenz |
+|---|---|---|
+| `DejaVuSans.ttf`, `DejaVuSans-Bold.ttf` | Debian-Paket `fonts-dejavu-core` (DejaVu 2.37) | Bitstream Vera / DejaVu, frei weitergebbar; Text in `LICENSE-DejaVu.txt` |
+
+**Wozu:** Die PDF-Erzeuger setzen Helvetica (nur Latin-1/cp1252). Namen mit Ł, Ş, ő
+oder č wurden still zu Buchstabensalat («Łukasz» → «nukasz»). DejaVu wird
+**nur** für Zeichen verwendet, die Helvetica nicht kann; alles Übliche bleibt
+Helvetica. Emoji und CJK hat die Schrift (im PDF) nicht und werden zu «?».
+Logik und Begründung: `core/services/pdf_text.py`, Tests:
+`core/tests/test_pdf_randfaelle.py`. Fehlt die Schriftdatei im Deployment,
+fällt die Erzeugung auf lateinischen Ersatz zurück (mit Log-Eintrag), sie
+bricht nicht ab.

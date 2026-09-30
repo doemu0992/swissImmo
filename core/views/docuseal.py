@@ -24,7 +24,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.contrib.staticfiles import finders
 
-from core.services.pdf_text import format_chf, html_zu_pdf
+from core.services.pdf_text import format_chf, pdf_aus_html
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +133,7 @@ def send_via_docuseal(request, vertrag_id):
         from core.services.dokumentsprache import STANDARD, in_sprache
         with in_sprache(STANDARD):
             html = get_template(template_path).render(context)
-        pdf_value = html_zu_pdf(html, link_callback=link_callback, quelle='Vertrag (DocuSeal)')
+        pdf_value = pdf_aus_html(html, link_callback=link_callback, quelle='Vertrag (DocuSeal)')
 
     except Exception as e:
         logger.error(f"PDF Gen Error: {e}")

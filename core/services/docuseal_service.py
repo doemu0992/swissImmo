@@ -51,7 +51,7 @@ def docuseal_senden(vertrag):
 
     try:
         import requests
-        from core.services.pdf_text import PdfFehler, format_chf, html_zu_pdf
+        from core.services.pdf_text import PdfFehler, format_chf, pdf_aus_html
         from django.contrib.staticfiles import finders
         from core.views.docuseal import link_callback, sanitize_filename
 
@@ -92,7 +92,7 @@ def docuseal_senden(vertrag):
         }
         html = get_template(template_path).render(context)
         try:
-            pdf_bytes = html_zu_pdf(html, link_callback=link_callback, quelle='Vertrag (DocuSeal)')
+            pdf_bytes = pdf_aus_html(html, link_callback=link_callback, quelle='Vertrag (DocuSeal)')
         except PdfFehler:
             logger.error("Vertrags-PDF für DocuSeal fehlgeschlagen", exc_info=True)
             return (False, "Vertrags-PDF konnte nicht erzeugt werden.")

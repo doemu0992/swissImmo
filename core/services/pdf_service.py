@@ -6,7 +6,7 @@ from django.template.loader import get_template
 from django.utils import timezone
 from crm.models import Organisation
 from core.services.dokumentsprache import nur_deutsch
-from core.services.pdf_text import format_chf, html_zu_pdf
+from core.services.pdf_text import format_chf, pdf_aus_html
 
 def make_image_transparent(image_path):
     """ Öffnet das Bild, entfernt den weissen Hintergrund und speichert es als transparentes PNG """
@@ -128,4 +128,4 @@ def render_vertrag_html(vertrag, *, mit_unterschrift=True):
 def generate_vertrag_pdf_bytes(vertrag):
     template_name, context = build_vertrag_context(vertrag)
     html = get_template(template_name).render(context)
-    return html_zu_pdf(html, link_callback=link_callback, quelle='Mietvertrag')
+    return pdf_aus_html(html, link_callback=link_callback, quelle='Mietvertrag')

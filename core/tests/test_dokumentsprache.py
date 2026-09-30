@@ -30,9 +30,10 @@ def _html(vertrag, doc_type):
 
     def _create(html, dest, **_kw):
         gefangen['html'] = html
+        dest.write(b'%PDF-1.4 attrappe')      # pdf_aus_html prüft, dass ein PDF entstand
         return SimpleNamespace(err=0)
 
-    with mock.patch.object(dokument_service.pisa, 'CreatePDF', side_effect=_create):
+    with mock.patch('xhtml2pdf.pisa.CreatePDF', side_effect=_create):
         dokument_service.generate_dokument_pdf_bytes(vertrag, doc_type)
     return gefangen['html']
 
