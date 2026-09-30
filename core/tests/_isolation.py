@@ -478,6 +478,15 @@ class MandantenFixture:
         ('verzug',          'pendenz'),
         ('pendenz',         'pendenz'),
         ('portal_freigabe', 'auftrag'),
+        # `fw_auftrag_kosten` und `fw_auftrag_pdf` laden einen HANDWERKERAUFTRAG
+        # (`get_object_or_404(HandwerkerAuftrag…, id=pk)`), keinen Schaden. Sie
+        # fielen bis 30.09.2026 unter ('auftrag', 'schaden') weiter unten und
+        # bekamen B's SCHADEN-Id. Trug ein Auftrag von A zufällig dieselbe Id,
+        # bearbeitete die View zu Recht A's eigenen Auftrag, und der Sweep
+        # meldete einen Mandantenbruch, den es nicht gab — auf PostgreSQL je
+        # nach Stand der Sequenzen, also je nach Testreihenfolge.
+        ('auftrag_kosten',  'auftrag'),
+        ('auftrag_pdf',     'auftrag'),
         ('schluessel_rueckgabe', 'schluessel_ausgabe'),
         ('schluessel',      'schluessel'),
         ('sollmietzins',    'sollmietzins'),

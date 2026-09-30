@@ -1044,6 +1044,20 @@ class IsolationstestsSelbstpruefungTests(TestCase):
                     if n not in AUSNAHMEN and p not in KEINE_OBJEKT_ID]
         self.assertGreater(len(pruefbar), 100)
 
+    def test_auftragsurls_bekommen_einen_auftrag_und_keinen_schaden(self):
+        """Der Sweep adressiert, was die View lädt — nicht, was im Namen steht.
+
+        `fw_auftrag_kosten` und `fw_auftrag_pdf` lesen einen Handwerkerauftrag.
+        Bekamen sie die Id eines Schadens, war der Test von der Reihenfolge
+        abhängig (siehe `_isolation.NAME_MUSTER`). Gegenprobe: die zwei
+        Einträge `auftrag_kosten`/`auftrag_pdf` dort entfernen — rot.
+        """
+        from tickets.models import HandwerkerAuftrag
+        b = MandantenFixture('B', '3000', 'Bern')
+        for name in ('fw_auftrag_kosten', 'fw_auftrag_pdf'):
+            with self.subTest(url=name):
+                self.assertIsInstance(b.objekt_fuer('pk', name), HandwerkerAuftrag)
+
     def test_jeder_parameter_ist_zugeordnet(self):
         """Kein Parameter und kein URL-Name darf stillschweigend durchfallen.
 

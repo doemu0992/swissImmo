@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 const SEITEN: Array<{ url: string; erwartet: RegExp }> = [
-  { url: '/neu/',                 erwartet: /Dashboard|Übersicht|Portfolio/i },
+  { url: '/neu/',                 erwartet: /Arbeitsvorrat|Dashboard|Übersicht|Portfolio/i },
   { url: '/neu/buchhaltung/',     erwartet: /Erfolgsrechnung|Bilanz|Buchhaltung|Journal/i },
   { url: '/neu/kreditoren/',      erwartet: /Kreditor|Rechnung/i },
   { url: '/neu/zahllauf/',        erwartet: /Zahllauf|Zahlung/i },

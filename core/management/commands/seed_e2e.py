@@ -25,7 +25,7 @@ bestimmt die Organisation einer Anfrage aus ihr. Ohne Mitgliedschaft könnte sic
 das E2E-Konto zwar anmelden, stünde danach aber ohne Mandanten da — die
 Oberfläche wäre leer und jeder Test grün aus dem falschen Grund.
 """
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.core.management.base import BaseCommand
@@ -125,6 +125,56 @@ class Command(BaseCommand):
                 periode=periode, text="E2E Hauswartung",
                 defaults=dict(kategorie="hauswart", verteilschluessel="m2",
                               betrag=Decimal("1200"), datum=date(2024, 6, 1)))
+
+            # --- Redesign v8, zweiter Durchgang (30.09.2026) -----------------
+            # Die Seiten nach konzept-v8 zeigen Dinge, die der Seed bis hierher
+            # nicht hatte — und die Telefon-Messungen in `e2e/tests/telefon.spec.ts`
+            # brauchen sie, sonst wären sie leer und damit keine Tests:
+            #   * ein Mandat (Filter «Mandat» auf «Heute», Kennzahlen je Mandat),
+            #   * bezahlte Monatsmieten in den letzten drei Monaten (Verlauf
+            #     der Zahlungsquote auf «Berichte» und in der Kennzahl),
+            #   * eine offene Bankgutschrift (Karte «Bankabgleich» auf «Finanzen»).
+            # Die Daten liegen RELATIV zu heute, damit die Zwölf-Monats-Fenster
+            # sie immer enthalten; idempotent über get_or_create.
+            from crm.models import Eigentuemer
+            from finance.models import Buchungskonto, Kontoauszug, Bankbewegung
+            from django.utils import timezone
+
+            eig, _ = Eigentuemer.objects.get_or_create(
+                firma_oder_name="E2E Eigentümer AG",
+                defaults=dict(strasse="Mandatsweg 2", plz="8000", ort="Zürich"))
+            if lg.eigentuemer_id is None:
+                lg.eigentuemer = eig
+                lg.save(update_fields=["eigentuemer"])
+
+            heute = timezone.localdate()
+            erster = heute.replace(day=1)
+            for zurueck in range(1, 4):
+                monat = erster
+                for _i in range(zurueck):
+                    monat = (monat - timedelta(days=1)).replace(day=1)
+                DebitorenRechnung.objects.get_or_create(
+                    vertrag=v, titel=f"E2E Miete {monat:%m/%Y}",
+                    defaults=dict(liegenschaft=lg, einheit=e, datum=monat,
+                                  faellig_am=monat + timedelta(days=4),
+                                  betrag=Decimal("1700"), status="bezahlt"))
+
+            konto = Buchungskonto.objects.filter(nummer="1020").first()
+            if konto is not None:
+                auszug, _ = Kontoauszug.objects.get_or_create(
+                    konto=konto, dateiname="e2e-camt.xml",
+                    defaults=dict(iban="CH9300762011623852957", von=erster, bis=heute,
+                                  quelle="e2e"))
+                Bankbewegung.objects.get_or_create(
+                    auszug=auszug, bank_referenz="E2E-GUTSCHRIFT-1",
+                    defaults=dict(konto=konto, datum=heute, valuta=heute,
+                                  betrag=Decimal("640.00"), gegenpartei="Muster Hans, Zürich",
+                                  text="Gutschrift ohne Referenz", status="offen"))
+
+        # Läufe der laufenden Periode (Karten auf «Läufe», Zähler in der Leiste).
+        # Der Befehl setzt seinen Mandantenkontext selbst.
+        from django.core.management import call_command
+        call_command("laeufe_planen", organisation=org.pk, verbosity=0)
 
         self.stdout.write(self.style.SUCCESS(
             "E2E-Seed bereit: Login e2e / e2e-pass · Organisation, Mitgliedschaft, "
