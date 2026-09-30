@@ -236,6 +236,7 @@ def berechne_abrechnung(periode_id):
     pool_nk_personen = Decimal('0.00')  # Wird nach Personenzahl und Tagen verteilt (Live-Test G)
 
     kategorien_liste = []
+    warnungen = []
 
     # A) Manuelle Belege (NebenkostenBeleg)
     for beleg in periode.belege.all():
@@ -327,6 +328,14 @@ def berechne_abrechnung(periode_id):
         end_chf = end_l * durchschnittspreis
         effektive_oel_kosten = total_chf - end_chf
 
+        if end_l > total_l:
+            # Mehr Öl im Tank als Anfangsbestand + Zukäufe: Erfassungsfehler. Ohne
+            # Hinweis fiele der Öl-Posten still weg und die Heizkosten wären 0.
+            warnungen.append(
+                f"Endbestand Heizöl ({end_l} L) ist grösser als Anfangsbestand plus Zukäufe "
+                f"({total_l} L) — der Heizöl-Verbrauch konnte nicht berechnet werden. "
+                "Bitte Bestände und Öl-Rechnungen prüfen.")
+
         if effektive_oel_kosten > 0:
             pool_heizkosten += effektive_oel_kosten
             kategorien_liste.append({
@@ -395,6 +404,16 @@ def berechne_abrechnung(periode_id):
     verbrauch_map = _heiz_verbrauch_pro_einheit(liegenschaft, start_p, ende_p) if hkvo_aktiv else {}
     total_verbrauch = sum(verbrauch_map.values()) if verbrauch_map else Decimal('0')
     hkvo_angewendet = bool(hkvo_aktiv and total_verbrauch > 0)
+    if hkvo_aktiv and not hkvo_angewendet:
+        warnungen.append("HKVO ist aktiv, aber es liegen keine verwertbaren Zählerstände vor "
+                         "(je Zähler mindestens zwei Stände in der Periode). Die Heizkosten wurden "
+                         "ausschliesslich nach Volumen verteilt.")
+    elif hkvo_angewendet:
+        _ohne_zaehler = [e.bezeichnung for e in einheiten if verbrauch_map.get(e.id, Decimal('0')) <= 0]
+        if _ohne_zaehler:
+            warnungen.append("HKVO: Kein Verbrauch erfasst bei " + ", ".join(_ohne_zaehler) +
+                             " — der Verbrauchsanteil dieser Einheiten ist 0, die Verbrauchskosten "
+                             "fallen auf die übrigen. Bitte Zählerstände ergänzen.")
 
     # ---------------------------------------------------------
     # 3. VERTEILUNG AUF EINHEITEN & MIETER (Die Matrix)
@@ -529,7 +548,6 @@ def berechne_abrechnung(periode_id):
     # den anderen. Fehlt sie überall, greift der total_m2-Fallback (1) und die
     # ganze Verteilung ist unbrauchbar. In beiden Fällen: klar warnen statt still
     # eine falsche Abrechnung ausweisen (Live-Test G).
-    warnungen = []
     if pool_nk_m2 > 0:
         if _real_total_m2 <= 0:
             warnungen.append("Für keine Einheit ist eine Fläche (m²) erfasst — flächenabhängige "
