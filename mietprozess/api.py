@@ -9,6 +9,9 @@
 # Die vier Admin-Endpunkte (Liste, Status, Loeschen, Nachricht) sind entfallen —
 # sie wurden ausschliesslich von der in E1b geloeschten Vue-Oberflaeche
 # aufgerufen. Damit faellt auch mietprozess/schemas.py weg.
+import logging
+
+from django.http import Http404
 from ninja import Router, File, Form
 from ninja.files import UploadedFile
 from django.shortcuts import get_object_or_404
@@ -18,6 +21,8 @@ from datetime import datetime
 
 from .models import Mietbewerbung
 from portfolio.models import Einheit
+
+logger = logging.getLogger(__name__)
 
 router = Router(tags=["Mietprozess"])
 
@@ -87,6 +92,16 @@ def public_submit_bewerbung(
     if not rate_limit(f"bewerbung:{client_ip(request)}", limit=5, window_seconds=3600):
         return 429, {"success": False,
                      "error": "Zu viele Bewerbungen in kurzer Zeit. Bitte versuchen Sie es später erneut."}
+    # Anonyme Uploads: nur PDF/Bild, echter Inhalt, begrenzte Grösse. Ohne das
+    # landet jede beliebige Datei (HTML, SVG, ausführbar) in der Ablage der
+    # Verwaltung — und wird dort von Mitarbeitenden geöffnet.
+    from core.utils.uploads import validiere_dokument
+    for feld, datei in (('Betreibungsauszug', betreibungsauszug), ('Ausweiskopie', ausweiskopie),
+                        ('Lohnausweis', lohnausweis), ('Weitere Dokumente', weitere_dokumente)):
+        if datei is not None:
+            ok, fehler = validiere_dokument(datei)
+            if not ok:
+                return 400, {"success": False, "error": f"{feld}: {fehler}"}
     try:
         # `alle_organisationen`: Das Bewerbungsformular ist ÖFFENTLICH (auth=None).
         # Es gibt keine Anmeldung, aus der die Middleware eine Verwaltung
@@ -194,5 +209,11 @@ def public_submit_bewerbung(
 
         return 201, {"success": True, "id": bewerbung.id}
 
-    except Exception as e:
-        return 400, {"success": False, "error": f"Django-Backend-Fehler: {str(e)}"}
+    except Http404:
+        return 400, {"success": False, "error": "Dieses Objekt existiert nicht."}
+    except Exception:
+        # Keine Ausnahmetexte an anonyme Absender: sie nennen Tabellen,
+        # Spalten und Pfade. Die Einzelheiten stehen im Server-Log.
+        logger.error("Bewerbung: Verarbeitung fehlgeschlagen", exc_info=True)
+        return 400, {"success": False,
+                     "error": "Die Bewerbung konnte nicht gespeichert werden. Bitte Angaben prüfen."}
