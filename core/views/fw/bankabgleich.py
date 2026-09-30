@@ -282,33 +282,83 @@ def fw_bankabgleich_verbuchen(request):
     if betrag <= 0:
         messages.error(request, gettext('Betrag muss grösser als 0 sein.'))
         return redirect('fw_bankabgleich')
-    betrag = min(betrag, offen)
-
+    # VALUTA: Gezählt wird der Tag, an dem das Geld auf dem Bankkonto einging —
+    # nicht der Tag der Erfassung. Ein am 30. gutgeschriebener, am 3. erfasster
+    # Betrag gälte sonst als am 3. bezahlt: Der Verzugszins läuft zu lange, und
+    # eine am Fristende (Art. 257d OR) eingegangene Zahlung käme «zu spät».
     heute = timezone.localdate()
+    valuta = heute
+    roh_valuta = (request.POST.get('valuta') or '').strip()
+    if roh_valuta:
+        valuta = _datum_aus_eingabe(roh_valuta)
+        if valuta is None:
+            messages.error(request, gettext('Ungültiges Valutadatum «%(raw)s».') % {'raw': roh_valuta})
+            return redirect('fw_bankabgleich')
+        if valuta > heute:
+            messages.error(request, gettext('Das Valutadatum liegt in der Zukunft.'))
+            return redirect('fw_bankabgleich')
+
+    # ÜBERZAHLUNG: Der volle Eingang wird gebucht. Früher klemmte `min(betrag, offen)`
+    # den Rest still weg — auf dem Bankkonto lagen CHF 300 mehr als in der Buchhaltung,
+    # und der Mieter sah sein Guthaben nicht. Wie im camt-Import: Überschuss als
+    # Mieterguthaben auf 2030 (echte Verbindlichkeit, der Mieter ist bekannt).
+    eingang = betrag
+    betrag = min(eingang, offen)
+    ueberschuss = eingang - betrag
+
     vertrag = rechnung.vertrag
+    lg_v = vertrag.einheit.liegenschaft
     with transaction.atomic():
         zahlung = Zahlungseingang.objects.create(
-            vertrag=vertrag, betrag=betrag, datum_eingang=heute,
+            vertrag=vertrag, betrag=betrag, datum_eingang=valuta,
             buchungs_monat=(rechnung.faellig_am or rechnung.datum or heute).replace(day=1),
             bemerkung=f"Bankabgleich {rechnung.titel}",
-            liegenschaft=vertrag.einheit.liegenschaft,
+            liegenschaft=lg_v,
             debitoren_rechnung=rechnung, erstellt_von=request.user, status='verbucht',
         )
         rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
         rechnung.save()
         from finance.booking import buche
         buche("1020", "1100", betrag, f"Bankabgleich {vertrag.mieter} - {rechnung.titel}",
-              datum=heute, liegenschaft=vertrag.einheit.liegenschaft, zahlung=zahlung,
+              datum=valuta, liegenschaft=lg_v, zahlung=zahlung,
               user=request.user)
+        if ueberschuss > 0:
+            # Gemeinsame Referenz: Der Storno der Zahlung findet das Guthaben
+            # über den Präfix «<ref>:» und hebt es mit auf (fw_zahlung_stornieren).
+            zahlung.bank_referenz = f"MAN{zahlung.pk}"
+            zahlung.save(update_fields=['bank_referenz'])
+            z_ueber = Zahlungseingang.objects.create(
+                vertrag=vertrag, betrag=ueberschuss, datum_eingang=valuta,
+                buchungs_monat=valuta.replace(day=1),
+                bemerkung=f"Bankabgleich Überzahlung {rechnung.titel} (Guthaben Mieter)"[:255],
+                bank_referenz=f"MAN{zahlung.pk}:ueber", konto=_park_konto("2030"),
+                liegenschaft=lg_v, erstellt_von=request.user, status='verbucht')
+            buche("1020", "2030", ueberschuss,
+                  f"Bankabgleich Überzahlung {vertrag.mieter} - {rechnung.titel}",
+                  datum=valuta, liegenschaft=lg_v, zahlung=z_ueber, user=request.user)
 
     log_aktion(request, "Zahlung via Bankabgleich verbucht", str(vertrag),
-               f"CHF {betrag} auf {rechnung.titel}")
+               f"CHF {betrag} auf {rechnung.titel}, Valuta {valuta:%d.%m.%Y}"
+               + (f", Überzahlung CHF {ueberschuss} → 2030" if ueberschuss > 0 else ''))
     messages.success(request, '✅ ' + gettext('CHF %(betrag)s verbucht — %(display_name)s (%(titel)s).') % {'betrag': betrag, 'display_name': vertrag.mieter.display_name, 'titel': rechnung.titel})
+    if ueberschuss > 0:
+        messages.warning(request, gettext('Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht.') % {'betrag': ueberschuss})
     from django.shortcuts import redirect as _r
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
         ziel += f'?lg={aktive}'
     return _r(ziel)
+
+
+def _datum_aus_eingabe(roh):
+    """ISO (2026-03-30) oder Schweizer Schreibweise (30.03.2026) → date, sonst None."""
+    from datetime import datetime
+    for fmt in ('%Y-%m-%d', '%d.%m.%Y'):
+        try:
+            return datetime.strptime(roh.strip(), fmt).date()
+        except ValueError:
+            continue
+    return None
 
 
 def _camt_localname(tag):

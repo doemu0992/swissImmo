@@ -366,6 +366,8 @@
                         {% csrf_token %}
                         <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <input name="betrag" inputmode="decimal" placeholder="{{ row.offen|chf }}" title="{% trans 'Eingegangener Betrag (leer = offener Betrag). Ein Überschuss wird als Mieterguthaben gebucht.' %}" class="fw-feld fw-num" style="width:6.5rem">
+                        <input type="date" name="valuta" max="{% now 'Y-m-d' %}" title="{% trans 'Valuta: Tag der Gutschrift auf dem Bankkonto (leer = heute)' %}" class="fw-feld" style="width:9rem">
                         <button type="submit" class="fw-btn fw-gutknopf fw-knapp">
                             {% zeichen 'speichern' %} {% trans "Verbuchen" %}
                         </button>

@@ -12,10 +12,22 @@ URL_LIK_HEV = "https://www.hev-schweiz.ch/vermieten/statistiken/landesindex-der-
 URL_BWO_REF = "https://www.bwo.admin.ch/de/referenzzinssatz"
 URL_BWO_REF_ALT = "https://www.bwo.admin.ch/de/entwicklung-referenzzinssatz-und-durchschnittszinssatz"
 
-# Aktuelle Fallback-Werte (Stand 2026): Referenzzinssatz 1.25 % seit 09.2025,
-# LIK Basis Dez 2020 = 100 ~ 107.8. Werden genutzt, wenn kein Internet erreichbar ist.
+# Richtwerte (Stand 2026). Sie werden NIE in eine bestehende Verwaltung
+# geschrieben: Ein fehlgeschlagener Abruf darf den Satz, den jemand eingetragen
+# oder zuletzt erfolgreich geholt hat, nicht durch einen geratenen ersetzen.
+# Alle Anpassungen nach Art. 269a OR rechnen gegen diesen Satz — ein stiller
+# Rückfall auf 1.25 % (Stresstest 30.09.2026: manuell gesetzte 1.00 % sprangen
+# zurück auf 1.25 %) macht jede Mietzinsanpassung falsch, ohne dass ein Fehler
+# erscheint. Nur das Anlegen einer leeren Verwaltung darf sie als Startwert nutzen.
 FALLBACK_REF_ZINS = Decimal('1.25')
 FALLBACK_LIK = Decimal('107.8')
+
+#: Der Referenzzinssatz bewegt sich in Schritten von 0.25 Prozentpunkten
+#: (Art. 12a VMWG). Gültig sind damit auch 0.00 bis 1.00 — die Untergrenze
+#: 1.00 der früheren Prüfung hätte 0.75 % und 0.50 % nie erkannt.
+REF_ZINS_MIN = Decimal('0.00')
+REF_ZINS_MAX = Decimal('5.00')
+_REF_SCHRITT = Decimal('0.25')
 
 def clean_decimal(value_str):
     if not value_str: return None
@@ -25,6 +37,32 @@ def clean_decimal(value_str):
         return Decimal(clean)
     except:
         return None
+
+def _ist_gueltiger_ref_zins(val):
+    return (val is not None and REF_ZINS_MIN <= val <= REF_ZINS_MAX
+            and val % _REF_SCHRITT == 0)
+
+
+def ref_zins_aus_html(html):
+    """Liest den Referenzzinssatz aus der BWO-Seite — oder None.
+
+    Zwei Stufen, weil die Seite viele Prozentwerte enthält (Beispiele,
+    Verlaufstabelle): Zuerst nur, was unmittelbar hinter dem Stichwort
+    «Referenzzinssatz» steht; erst dann jeder gültige Wert der Seite.
+    Keine Treffer heisst None, nicht «Standardwert».
+    """
+    muster = r"(\d[.,]\d{2})\s*%"
+    for m in re.finditer(r"referenzzins", html, re.IGNORECASE):
+        for w in re.findall(muster, html[m.end():m.end() + 300]):
+            val = clean_decimal(w)
+            if _ist_gueltiger_ref_zins(val):
+                return val
+    for w in re.findall(muster, html):
+        val = clean_decimal(w)
+        if _ist_gueltiger_ref_zins(val) and val > 0:
+            return val
+    return None
+
 
 def fetch_market_rates():
     results = {}
@@ -42,25 +80,19 @@ def fetch_market_rates():
     for url in (URL_BWO_REF, URL_BWO_REF_ALT):
         try:
             response = requests.get(url, headers=headers, timeout=10)
-            # Sucht im HTML nach Werten wie "1,25 %" oder "1.50%"
-            matches = re.findall(r"(\d[.,]\d{2})\s*%", response.text)
-            for m in matches:
-                val = clean_decimal(m)
-                # Prüft, ob es ein gültiger Zins ist (z.B. Vielfaches von 0.25)
-                if val and Decimal('1.00') <= val <= Decimal('3.50') and (val * 100) % 25 == 0:
-                    found_zins = val
-                    break
-            if found_zins:
+            found_zins = ref_zins_aus_html(response.text)
+            if found_zins is not None:
                 break
         except Exception as e:
             errors.append(f"BWO Verbindungsfehler ({url}): {e}")
 
-    if found_zins:
+    # KEIN Fallback-Wert in `results`: Was nicht gefunden wurde, fehlt — und der
+    # Aufrufer schreibt es dann nicht (siehe `_rates_schreiben`).
+    if found_zins is not None:
         results['ref_zins'] = found_zins
     else:
-        results['ref_zins'] = FALLBACK_REF_ZINS
-        if not errors:
-            errors.append("BWO: Zins nicht gefunden, nutze Fallback 1.25 %.")
+        errors.append("BWO: Referenzzinssatz konnte nicht gelesen werden — der "
+                      "gespeicherte Satz bleibt unverändert. Bitte prüfen.")
 
     # ---------------------------------------------------------
     # 2. LIK (HEV Schweiz - Basis 2020)
@@ -106,22 +138,14 @@ def fetch_market_rates():
                     # Wir nehmen den aktuellsten/letzten Wert in dieser Jahres-Reihe
                     results['lik'] = valid_liks[-1]
                 else:
-                    results['lik'] = FALLBACK_LIK
                     errors.append(f"LIK-Werte für {current_year}/{last_year} waren ungültig.")
             else:
-                results['lik'] = FALLBACK_LIK
                 errors.append(f"Jahreszeile {current_year}/{last_year} nicht gefunden.")
         else:
-            results['lik'] = FALLBACK_LIK
             errors.append("Basis 2020 Tabelle nicht auf HEV gefunden.")
 
     except Exception as e:
-        results['lik'] = FALLBACK_LIK
         errors.append(f"HEV Verbindungsfehler: {e}")
-
-    # Absolutes Sicherheits-Netz
-    if 'lik' not in results or results['lik'] is None:
-         results['lik'] = FALLBACK_LIK
 
     return results, errors
 
@@ -176,7 +200,9 @@ def update_verwaltung_rates(organisation=None, *, alle=False):
     texte = next((m for _, m in ergebnisse if m), [])
 
     if not texte:
-        return "Keine verwertbaren Daten gefunden.", errors
+        # Nichts gelesen → nichts geschrieben, und das laut: kein «aktualisiert».
+        return ("Marktdaten NICHT aktualisiert: keine verwertbaren Daten gefunden. "
+                "Die gespeicherten Werte bleiben unverändert — bitte prüfen."), errors
     if geaendert:
         return "Erfolgreich aktualisiert: " + " | ".join(texte), errors
     return "Marktdaten geprüft, sie sind bereits aktuell: " + " | ".join(texte), errors

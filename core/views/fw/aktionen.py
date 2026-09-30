@@ -241,6 +241,12 @@ def fw_kreditor_freigeben(request, pk):
     if k.status != 'neu':
         messages.info(request, gettext('Rechnung ist bereits freigegeben oder bezahlt.'))
         return redirect('fw_kreditoren')
+    # Eigentümerfreigabe der Reparatur: eine Sperre, nicht nur eine Anzeige.
+    from finance.freigabe import freigabe_sperre
+    sperre = freigabe_sperre(k)
+    if sperre:
+        messages.error(request, f'⛔ {sperre}')
+        return redirect('fw_kreditoren')
 
     # Aufwandskonto zuweisen (aus Formular oder bestehendes). Mit Kostenaufteilung
     # ist das Kopf-Konto optional — dann bucht jede Position ihr eigenes Konto.

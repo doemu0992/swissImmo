@@ -316,6 +316,11 @@ def fw_weiterverrechnung(request, kreditor_id):
             # freigegebene Rechnung hat keinen gebuchten Aufwand. Ihre
             # Weiterverrechnung buchte eine Aufwandsminderung gegen nichts —
             # der Aufwand der Liegenschaft würde negativ.
+            from finance.freigabe import freigabe_sperre
+            _sperre = freigabe_sperre(k)
+            if _sperre:
+                messages.error(request, f'⛔ {_sperre}')
+                return redirect(request.path)
             if k.status not in ('freigegeben', 'in_zahlung', 'teilbezahlt', 'bezahlt'):
                 messages.error(request, '❌ ' + gettext(
                     'Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden.'))

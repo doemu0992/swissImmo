@@ -658,7 +658,23 @@ def fw_auftrag_kosten(request, pk):
     REPARATUR_FREIGABE_SCHWELLE = Decimal('1000')
     freigabe_anfordern = request.POST.get('freigabe_anfordern') == 'on'
     ueber_schwelle = (a.kosten_geschaetzt or Decimal('0')) >= REPARATUR_FREIGABE_SCHWELLE
-    if a.freigabe_status in ('nicht_noetig', 'abgelehnt') and (freigabe_anfordern or ueber_schwelle):
+    # KOSTENABWEICHUNG (Stresstest 30.09.2026: Schätzung 900 → effektiv 1240, +38 %,
+    # und nichts geschah): Die Freigabe gilt für die geschätzte Summe. Liegen die
+    # effektiven Kosten über der Schwelle, oder überschreiten sie die freigegebene
+    # Schätzung um mehr als 20 %, braucht es eine (Nach-)Freigabe.
+    ABWEICHUNG_NACHFREIGABE = Decimal('1.20')
+    eff = a.kosten_effektiv or Decimal('0')
+    schaetz = a.kosten_geschaetzt or Decimal('0')
+    if eff >= REPARATUR_FREIGABE_SCHWELLE:
+        ueber_schwelle = True
+    nachfreigabe = (a.freigabe_status == 'freigegeben' and schaetz > 0
+                    and eff > schaetz * ABWEICHUNG_NACHFREIGABE)
+    if nachfreigabe:
+        a.freigabe_status = 'ausstehend'
+        a.freigabe_datum = None
+        messages.warning(request, '⚠️ ' + gettext(
+            'Die effektiven Kosten (CHF %(eff)s) liegen mehr als 20 %% über der freigegebenen Schätzung (CHF %(schaetz)s) — Nachfreigabe der Eigentümerschaft nötig.') % {'eff': eff, 'schaetz': schaetz})
+    if nachfreigabe or (a.freigabe_status in ('nicht_noetig', 'abgelehnt') and (freigabe_anfordern or ueber_schwelle)):
         a.freigabe_status = 'ausstehend'
         a.freigabe_datum = None
         # Eigentümer aktiv informieren — sonst bemerkt er die Anfrage erst beim
