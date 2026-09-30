@@ -538,3 +538,65 @@ class AnsichtTests(TestCase):
         """
         self.assertIn('fw-pcard', _ohne_stil('<style>x</style><div class="fw-pcard">'))
         self.assertNotIn('kaputt', _ohne_stil('<style>kaputt</style><div>a</div>'))
+
+
+class AusstaendeTests(TestCase):
+    """`ausstaende()` — Befund «CHF … offen» der Liste und Kennzahl
+    «Ausstände > 30 Tage» der Akte (konzept-v8, 30.09.2026).
+
+    Geprueft wird die Rechnung je POSTEN: Eine Teilzahlung mindert nur ihre
+    eigene Rechnung, ein junger Posten (< 30 Tage) zaehlt nicht.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('U', '8000', 'Zürich')
+
+    def _rechnung(self, betrag, tage_alt):
+        from finance.models import DebitorenRechnung
+        heute = timezone.localdate()
+        return DebitorenRechnung.objects.create(
+            vertrag=self.a.vertrag, titel='Miete', betrag=Decimal(betrag),
+            datum=heute - timedelta(days=tage_alt), faellig_am=heute - timedelta(days=tage_alt),
+            status='offen')
+
+    def test_teilzahlung_und_junger_posten(self):
+        from faelle.liegenschaften import ausstaende
+        from finance.models import Zahlungseingang
+        with mandant(self.a.organisation):
+            alt = self._rechnung('1000', 60)
+            self._rechnung('500', 10)            # zu jung — kein Ausstand
+            Zahlungseingang.objects.create(vertrag=self.a.vertrag, debitoren_rechnung=alt,
+                                           betrag=Decimal('300'), status='verbucht',
+                                           datum_eingang=timezone.localdate())
+            erg = ausstaende([self.a.liegenschaft.id])
+        eintrag = erg[self.a.liegenschaft.id]
+        self.assertEqual(eintrag['betrag'], Decimal('700'))
+        self.assertEqual(eintrag['vertraege'], {self.a.vertrag.id: Decimal('700')})
+
+    def test_ohne_offene_posten_leer(self):
+        from faelle.liegenschaften import ausstaende
+        with mandant(self.a.organisation):
+            self.assertEqual(ausstaende([self.a.liegenschaft.id]), {})
+
+    def test_liste_zeigt_den_befund(self):
+        with mandant(self.a.organisation):
+            self._rechnung('1234', 45)
+        self.client.force_login(self.a.benutzer)
+        with mandant(self.a.organisation):
+            html = self.client.get('/neu/liegenschaften/').content.decode()
+        self.assertIn("CHF 1'234 offen", html)
+
+    def test_vertragsliste_zeigt_den_saldo(self):
+        """Spalte «Saldo» der Mietverhältnisse (`_saldo_und_mahnstufe`):
+        offener Betrag je Vertrag, abzueglich verbuchter Zahlungen."""
+        from finance.models import Zahlungseingang
+        with mandant(self.a.organisation):
+            r = self._rechnung('1234', 5)
+            Zahlungseingang.objects.create(vertrag=self.a.vertrag, debitoren_rechnung=r,
+                                           betrag=Decimal('234'), status='verbucht',
+                                           datum_eingang=timezone.localdate())
+        self.client.force_login(self.a.benutzer)
+        with mandant(self.a.organisation):
+            html = self.client.get('/neu/vertraege/').content.decode()
+        self.assertIn("fw-kritisch\">1'000.00", html)
