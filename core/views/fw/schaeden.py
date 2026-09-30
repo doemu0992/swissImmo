@@ -239,8 +239,16 @@ def fw_schaden_neu(request):
     )
     # Fotos (Mehrfach-Upload) anhängen
     from tickets.models import SchadenFoto
-    for f in request.FILES.getlist('fotos'):
+    from core.utils.uploads import validiere_bild
+    abgelehnt = 0
+    for f in request.FILES.getlist('fotos')[:20]:
+        foto_ok, _fehler = validiere_bild(f)
+        if not foto_ok:
+            abgelehnt += 1
+            continue
         SchadenFoto.objects.create(schaden=t, bild=f, hochgeladen_von=request.user)
+    if abgelehnt:
+        messages.warning(request, gettext('%(abgelehnt)s Datei(en) abgelehnt (kein gültiges Bild oder zu gross) — das Ticket wurde trotzdem erfasst.') % {'abgelehnt': abgelehnt})
     ok = False
     if t.email_melder:
         from crm.models import Vorlage

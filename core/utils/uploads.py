@@ -84,3 +84,51 @@ def validiere_dokument(f):
             return False, "Die Datei ist kein gültiges PDF."
         return True, ""
     return validiere_bild(f)
+
+
+# ---------------------------------------------------------------------------
+# Ablage (Dokumente der Verwaltung: Pläne, Verträge, Office-Dateien)
+# ---------------------------------------------------------------------------
+
+#: Max. 25 MB je Ablagedatei (Pläne und Scans dürfen grösser sein als Belege).
+MAX_ABLAGE_BYTES = 25 * 1024 * 1024
+
+#: Bewusste Positivliste. Nicht enthalten: html/htm/svg/js (Skripte im
+#: Browser des nächsten Benutzers), exe/bat/sh/php (Ausführbares).
+_ABLAGE_ENDUNGEN = {'.pdf', '.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.gif',
+                    '.doc', '.docx', '.xls', '.xlsx', '.odt', '.ods', '.txt', '.csv',
+                    '.zip', '.dwg', '.dxf'}
+
+
+def validiere_ablage(f):
+    """Prüft eine Datei für die interne Dokumentablage. `(ok, fehler)`.
+
+    PDF und Bilder werden am Inhalt geprüft (`validiere_dokument`); übrige
+    erlaubte Formate nur an Endung und Grösse.
+    """
+    import os
+    if f is None:
+        return False, "Keine Datei."
+    name = getattr(f, 'name', '') or ''
+    if '/' in name or '\\' in name or '..' in name or '\x00' in name:
+        return False, "Ungültiger Dateiname."
+    if getattr(f, 'size', 0) > MAX_ABLAGE_BYTES:
+        return False, f"Datei zu gross (max. {MAX_ABLAGE_BYTES // (1024 * 1024)} MB)."
+    endung = os.path.splitext(name)[1].lower()
+    if endung not in _ABLAGE_ENDUNGEN:
+        return False, "Dateityp nicht erlaubt."
+    if endung in _DOKUMENT_ENDUNGEN:
+        # Nicht validiere_dokument: dessen 10-MB-Grenze ist für Bewerbungsunterlagen,
+        # die Ablage darf mehr (Pläne, Scans). Hier nur der Inhalt.
+        try:
+            f.seek(0)
+            kopf = f.read(16)
+        finally:
+            try:
+                f.seek(0)
+            except Exception:
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
+        if endung == '.pdf':
+            return (True, "") if kopf.startswith(b'%PDF-') else (False, "Die Datei ist kein gültiges PDF.")
+        return validiere_bild(f)   # Bilder: eigene Grenze (15 MB) und Pillow-Prüfung
+    return True, ""

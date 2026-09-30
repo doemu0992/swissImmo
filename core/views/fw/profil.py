@@ -120,7 +120,12 @@ def fw_account(request):
             vw.logo.delete(save=False)
             vw.logo = None
         elif request.FILES.get('logo'):
-            vw.logo = request.FILES['logo']
+            from core.utils.uploads import validiere_bild
+            _logo_ok, _logo_fehler = validiere_bild(request.FILES['logo'])
+            if _logo_ok:
+                vw.logo = request.FILES['logo']
+            else:
+                messages.error(request, '❌ ' + gettext('Logo abgelehnt: %(grund)s') % {'grund': _logo_fehler})
         # Digitale Unterschrift: direkt gezeichnet ODER hochgeladen. Bisher nur
         # im Django-Admin hinterlegbar, obwohl jeder Brief sie braucht.
         # Verwaltung.save() macht den weissen Hintergrund automatisch transparent.

@@ -879,8 +879,12 @@ def fw_ausstattung_add(request, pk):
         sortierung=sort,
     )
     if request.FILES.get('foto'):
-        a.foto = request.FILES['foto']
-        a.save(update_fields=['foto'])
+        from core.utils.uploads import validiere_bild
+        if validiere_bild(request.FILES['foto'])[0]:
+            a.foto = request.FILES['foto']
+            a.save(update_fields=['foto'])
+        else:
+            messages.warning(request, '⚠️ ' + gettext('Foto abgelehnt (kein gültiges Bild oder zu gross) — Eintrag ohne Foto gespeichert.'))
     log_aktion(request, "Ausstattung erfasst", e.bezeichnung, f"{raum} · {kategorie}")
     messages.success(request, '✅ ' + gettext('«%(kategorie)s» im Raum «%(raum)s» erfasst.') % {'kategorie': kategorie, 'raum': raum})
     return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
@@ -939,7 +943,11 @@ def fw_ausstattung_edit(request, pk):
     a.garantie_bis = _date(P.get('garantie_bis'))
     a.notiz = (P.get('notiz') or '').strip()
     if request.FILES.get('foto'):
-        a.foto = request.FILES['foto']
+        from core.utils.uploads import validiere_bild
+        if validiere_bild(request.FILES['foto'])[0]:
+            a.foto = request.FILES['foto']
+        else:
+            messages.warning(request, '⚠️ ' + gettext('Foto abgelehnt (kein gültiges Bild oder zu gross) — bisheriges Foto bleibt.'))
     a.save()
     log_aktion(request, "Ausstattung bearbeitet", a.einheit.bezeichnung, f"{raum} · {kategorie}")
     messages.success(request, '✅ ' + gettext('«%(kategorie)s» aktualisiert.') % {'kategorie': kategorie})

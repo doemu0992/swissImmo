@@ -49,10 +49,12 @@ class VertragBearbeitenForm(forms.Form):
     index_weitergabe_prozent = SchweizerZahl(required=False, max_digits=5, decimal_places=1)
     index_intervall_monate = forms.IntegerField(required=False, min_value=1)
 
-    def __init__(self, *args, entwurf=False, beginn=None, **kwargs):
+    def __init__(self, *args, entwurf=False, beginn=None, einheit=None, **kwargs):
         super().__init__(*args, **kwargs)
         from rentals.models import Mietvertrag
         self.beginn_alt = beginn
+        self.einheit = einheit
+        self.entwurf = entwurf
         for name in FREITEXT:
             self.fields[name] = forms.CharField(
                 required=False, max_length=Mietvertrag._meta.get_field(name).max_length)
@@ -93,4 +95,16 @@ class VertragBearbeitenForm(forms.Form):
         ende = daten.get('ende')
         if beginn and ende and ende < beginn:
             self.add_error('ende', _t('Das Mietende liegt vor dem Mietbeginn.'))
+        # Wertebereiche wie im Assistenten (eine Stelle: rentals/validierung.py).
+        # Nur beim Entwurf: bei aktiven Verträgen sind diese Felder gesperrt und
+        # kommen gar nicht erst aus dem Formular.
+        if self.entwurf:
+            from rentals.validierung import pruefe_vertragswerte
+            einstellplatz = bool(getattr(self.einheit, 'ist_einstellplatz', False))
+            for feld, meldung in pruefe_vertragswerte(
+                    netto=daten.get('netto_mietzins'), nebenkosten=daten.get('nebenkosten'),
+                    kaution=daten.get('kautions_betrag'), beginn=daten.get('beginn'),
+                    einheit=self.einheit, einstellplatz=einstellplatz).items():
+                if feld != 'ende' and feld not in self.errors:
+                    self.add_error(feld, meldung)
         return daten

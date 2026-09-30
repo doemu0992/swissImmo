@@ -1,11 +1,9 @@
 # core/services/dokument_service.py
 """Erzeugt die Fairwalter-Begleitdokumente zum Mietvertrag als PDF."""
-import io
 from django.template.loader import get_template
 from django.utils import timezone
-from xhtml2pdf import pisa
 from crm.models import Organisation
-from core.services.pdf_service import link_callback
+from core.services.pdf_service import html_zu_pdf
 from core.services.dokumentsprache import STANDARD, in_sprache, sprache_von
 
 # doc_type -> (Template, Titel, zusätzliche Kontext-Flags)
@@ -80,8 +78,4 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     sprache = sprache_von(vertrag.mieter) if doc_type in IN_MIETERSPRACHE else STANDARD
     with in_sprache(sprache):
         html = get_template(template_name).render({**context, 'dokumentsprache': sprache})
-    buffer = io.BytesIO()
-    status = pisa.CreatePDF(html, dest=buffer, link_callback=link_callback, encoding='utf-8')
-    if status.err:
-        raise Exception(f"Fehler bei der PDF-Generierung: {status.err}")
-    return buffer.getvalue()
+    return html_zu_pdf(html)

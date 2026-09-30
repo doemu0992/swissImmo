@@ -9,6 +9,7 @@
 # dass an solcher Logik nichts "nebenbei" geaendert wird — der Nachweis dafuer
 # ist die Gleichheitspruefung gegen HEAD, nicht ein gutes Gefuehl.
 
+import logging
 from datetime import date
 from decimal import Decimal
 
@@ -23,6 +24,8 @@ from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -174,16 +177,29 @@ def fw_sollstellung_run(request):
     # `lg` kommt beim POST aus dem Formular-Feld (_global_filter liest nur GET).
     lauf_lg = Liegenschaft.objects.filter(id=request.POST.get('lg') or None).first()
     from core.services.automation import run_sollstellung
+    from django.db import DatabaseError
+    uebersprungen = []
     try:
-        erstellt = run_sollstellung(jahr, monat, user=request.user, liegenschaft=lauf_lg)
+        erstellt = run_sollstellung(jahr, monat, user=request.user, liegenschaft=lauf_lg,
+                                    fehler=uebersprungen)
     except RuntimeError as e:
         messages.error(request, f"{e}")
+        return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
+    except DatabaseError:
+        # Verbindung weg, Deadlock, Platte voll: Der Lauf ist als Ganzes
+        # zurückgerollt (eine Transaktion) — es gibt weder halbe Rechnungen
+        # noch Buchungen. Vorher: nackter Serverfehler, und der Benutzer wusste
+        # nicht, ob er den Knopf nochmals drücken darf.
+        logger.error("Sollstellung %02d/%d abgebrochen (Datenbank)", monat, jahr, exc_info=True)
+        messages.error(request, '❌ ' + gettext('Die Sollstellung %(monat)s/%(jahr)s wurde wegen eines Datenbankfehlers abgebrochen — nichts wurde gebucht. Bitte in einigen Minuten erneut starten (bereits Gestelltes wird nie doppelt erzeugt).') % {'monat': format(monat, '02d'), 'jahr': jahr})
         return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
 
     log_aktion(request, "Sollstellung ausgeführt", titel,
                f"{erstellt} Rechnungen erstellt"
                + (f" · nur {lauf_lg.strasse}" if lauf_lg else " · ganzes Portfolio"))
     umfang = f" ({lauf_lg.strasse})" if lauf_lg else ""
+    if uebersprungen:
+        messages.warning(request, '⚠️ ' + gettext('%(anzahl)s Vertrag/Verträge wurden übersprungen (Datenfehler, siehe Log): Vertrag-Nr. %(ids)s. Alle übrigen sind gestellt.') % {'anzahl': len(uebersprungen), 'ids': ', '.join(str(pk) for pk, _m in uebersprungen[:20])})
     if erstellt:
         messages.success(request, '✅ ' + gettext('Sollstellung %(titel)s%(umfang)s: %(erstellt)s Rechnung(en) erstellt.') % {'titel': titel, 'umfang': umfang, 'erstellt': erstellt})
     else:

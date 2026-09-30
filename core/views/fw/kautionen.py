@@ -141,6 +141,12 @@ def fw_kaution_aktion(request, vertrag_id):
         versicherer = P.get('kautions_versicherer', '').strip()
         police = P.get('kautions_policennummer', '').strip()
         zertifikat = request.FILES.get('kautions_zertifikat')
+        if zertifikat:
+            from core.utils.uploads import validiere_dokument
+            zert_ok, zert_fehler = validiere_dokument(zertifikat)
+            if not zert_ok:
+                messages.error(request, '❌ ' + gettext('Zertifikat abgelehnt: %(grund)s') % {'grund': zert_fehler})
+                return redirect(f'/neu/vertraege/{v.id}/')
         if not versicherer:
             messages.error(request, '❌ ' + gettext('Bitte den Versicherer/Anbieter angeben.'))
             return redirect(f'/neu/vertraege/{v.id}/')

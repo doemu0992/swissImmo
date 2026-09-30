@@ -109,8 +109,13 @@ def fw_kreditor_neu(request):
         status='neu',
     )
     if request.FILES.get('beleg_scan'):
-        kr.beleg_scan = request.FILES['beleg_scan']
-        kr.save()
+        from core.utils.uploads import validiere_dokument
+        ok, fehler = validiere_dokument(request.FILES['beleg_scan'])
+        if ok:
+            kr.beleg_scan = request.FILES['beleg_scan']
+            kr.save()
+        else:
+            messages.warning(request, '⚠️ ' + gettext('Beleg nicht gespeichert: %(grund)s') % {'grund': fehler})
     log_aktion(request, "Kreditorenrechnung erfasst", lieferant, f"CHF {betrag}")
     messages.success(request, '✅ ' + gettext("Kreditorenrechnung '%(lieferant)s' über CHF %(betrag)s erfasst (Status: Neu — bitte freigeben).") % {'lieferant': lieferant, 'betrag': betrag})
     ziel = '/neu/kreditoren/'
@@ -139,7 +144,12 @@ def fw_kreditor_scan(request):
         return redirect('fw_kreditoren')
 
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
+    from core.utils.uploads import validiere_dokument
     for datei in dateien:
+        ok, fehler = validiere_dokument(datei)
+        if not ok:
+            messages.error(request, '❌ ' + gettext('«%(name)s» abgelehnt: %(grund)s') % {'name': datei.name, 'grund': fehler})
+            continue
         kr, daten = beleg_importieren(datei, liegenschaft=lg)
         methode = daten.get('methode')
         log_aktion(request, "Beleg gescannt (KI-Rechnungsscanner)",
@@ -477,12 +487,24 @@ def fw_dokument_neu(request):
     if not request.FILES.get('datei'):
         messages.error(request, gettext('Bitte eine Datei auswählen.'))
         return redirect('fw_dokumente')
+    from core.utils.uploads import validiere_ablage
+    ok, fehler = validiere_ablage(request.FILES['datei'])
+    if not ok:
+        messages.error(request, '❌ ' + gettext('Datei abgelehnt: %(grund)s') % {'grund': fehler})
+        return redirect('fw_dokumente')
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
+    einheit = (Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first()
+               if request.POST.get('einheit_id') else None)
+    # Die Datenbank verlangt einen Bezug (CHECK hat_bezug) — ohne Prüfung hier
+    # wurde daraus ein Serverfehler (500) statt einer Meldung.
+    if lg is None and einheit is None:
+        messages.error(request, '❌ ' + gettext('Bitte eine Liegenschaft oder ein Objekt wählen, dem das Dokument gehört.'))
+        return redirect('fw_dokumente')
     PDokument.objects.create(
-        titel=(request.POST.get('titel') or request.FILES['datei'].name).strip(),
+        titel=(request.POST.get('titel') or request.FILES['datei'].name).strip()[:200],
         kategorie=request.POST.get('kategorie', 'sonstiges'),
         liegenschaft=lg,
-        einheit=Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first() if request.POST.get('einheit_id') else None,
+        einheit=einheit,
         datei=request.FILES['datei'],
     )
     log_aktion(request, "Dokument hochgeladen", request.POST.get('titel', ''), '')

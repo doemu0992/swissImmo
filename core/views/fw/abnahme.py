@@ -75,7 +75,10 @@ def fw_abnahme_neu(request, vertrag_id):
         kosten = P.getlist('m_kosten')
         assets = P.getlist('m_ausstattung')
         neuwerte = P.getlist('m_neuwert')
-        fotos = list(request.FILES.getlist('m_foto'))
+        # Mängelfotos: unechte oder übergrosse Dateien fallen weg — der Mangel
+        # selbst bleibt erfasst. Reihenfolge der gültigen bleibt erhalten.
+        from core.utils.uploads import validiere_bild
+        fotos = [f for f in request.FILES.getlist('m_foto')[:50] if validiere_bild(f)[0]]
         from portfolio.models import Ausstattung as _Ausstattung
         for i, b in enumerate(beschr):
             b = (b or '').strip()

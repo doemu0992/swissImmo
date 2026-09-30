@@ -11,7 +11,7 @@ import logging
 from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.utils.translation import gettext, gettext_lazy
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
@@ -22,6 +22,7 @@ from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
 from crm.models import Mieter, Organisation
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
+from rentals.validierung import endliche_zahl, pruefe_vertragswerte
 
 from .mietzins import anfangsmietzins_auto_ablegen
 
@@ -253,7 +254,7 @@ def _unlesbare_eingaben(P):
             continue
         try:
             if art == 'betrag':
-                Decimal(_num(roh))
+                endliche_zahl(_num(roh))
             elif art == 'ganzzahl':
                 int(roh)
             else:
@@ -265,7 +266,7 @@ def _unlesbare_eingaben(P):
         roh = (roh or '').strip()
         if roh:
             try:
-                Decimal(_num(roh))
+                endliche_zahl(_num(roh))
             except Exception:
                 fehler.append(('staffel_netto', gettext('«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert.')
                                                % {'eingabe': roh[:40]}))
@@ -295,7 +296,7 @@ def fw_vertrag_neu_speichern(request):
     # Waisen-Mieter zurück.
     def _dec_val(key):
         try:
-            return Decimal((_num(P.get(key)) or '0'))
+            return endliche_zahl(_num(P.get(key)) or '0')
         except Exception:
             return Decimal('0')
 
@@ -316,15 +317,24 @@ def fw_vertrag_neu_speichern(request):
 
     if not einheit:
         _fehler('einheit_id', gettext('Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.'))
-    if _dec_val('netto_mietzins') < 0:
-        _fehler('netto_mietzins', gettext('Der Netto-Mietzins darf nicht negativ sein.'))
-    if not (einheit and einheit.ist_einstellplatz) and _dec_val('nebenkosten') < 0:
-        _fehler('nebenkosten', gettext('Die Nebenkosten dürfen nicht negativ sein.'))
+    # Wertebereiche an EINER Stelle (rentals/validierung.py): negativ, über der
+    # Feldbreite (PostgreSQL wirft sonst einen Serverfehler), Mietbeginn vor
+    # dem Baujahr, unmögliche Personenzahl. NaN/Infinity liest `_dec_val` als 0
+    # — `_unlesbare_eingaben` weist sie unten als «nicht lesbar» ab.
+    try:
+        _personen = int(P.get('anzahl_personen') or 1)
+    except ValueError:
+        _personen = None      # meldet _unlesbare_eingaben
+    for _feld, _meldung in pruefe_vertragswerte(
+            netto=_dec_val('netto_mietzins'), nebenkosten=_dec_val('nebenkosten'),
+            kaution=_dec_val('kautions_betrag') if (P.get('kautions_betrag') or '').strip() else None,
+            beginn=_v_beginn, ende=(_v_ende if P.get('ist_befristet') == '1' else None),
+            anzahl_personen=_personen, einheit=einheit,
+            einstellplatz=bool(einheit and einheit.ist_einstellplatz)).items():
+        _fehler(_feld, _meldung)
     # Nur prüfen, wenn der Vertrag WIRKLICH befristet gespeichert wird — sonst wird
     # `ende` beim Speichern ohnehin verworfen (siehe _ist_befristet weiter unten),
     # und ein stehengebliebener Alt-Wert im Feld dürfte die Anlage nicht blockieren.
-    if P.get('ist_befristet') == '1' and _v_ende and _v_ende < _v_beginn:
-        _fehler('ende', gettext('Das Vertragsende darf nicht vor dem Vertragsbeginn liegen.'))
     if not (P.get('mieter_id') or '').strip():
         _typ_neu = P.get('mieter_typ', 'person')
         if _typ_neu in ('firma', 'verein') and not P.get('firmen_name', '').strip():
@@ -347,239 +357,251 @@ def fw_vertrag_neu_speichern(request):
         # sieben Schritte Eingaben waren weg (Audit Etappe 2, Nachtrag).
         return _assistent_mit_fehlern(request, P, feld_fehler, einheit)
 
-    # Mieter: bestehend oder neu
-    mieter_id = P.get('mieter_id') or ''
-    if mieter_id:
-        mieter = get_object_or_404(Mieter, id=mieter_id)
-    else:
-        neu_typ = P.get('mieter_typ', 'person')
-        if neu_typ not in ('person', 'firma', 'verein'):
-            neu_typ = 'person'
-        mieter = Mieter.objects.create(
-            typ=neu_typ,
-            anrede=P.get('anrede', 'Herr') if neu_typ == 'person' else '',
-            vorname=P.get('vorname', '').strip(),
-            nachname=P.get('nachname', '').strip(),
-            firmen_name=P.get('firmen_name', '').strip(),
-            kontaktperson=P.get('kontaktperson', '').strip(),
-            uid_nummer=P.get('uid_nummer', '').strip(),
-            strasse=P.get('m_strasse', '').strip(), plz=P.get('m_plz', '').strip(),
-            ort=P.get('m_ort', '').strip(), email=P.get('m_email', '').strip(),
-        )
-
-    def dec(key, default='0'):
-        try:
-            return Decimal((_num(P.get(key)) or str(default)))
-        except Exception:
-            return Decimal(default)
-
-    def datum(key):
-        v = P.get(key)
-        if not v:
-            return None
-        try:
-            return date.fromisoformat(v)
-        except ValueError:
-            return None
-
-    # Zweiter Mieter (Ehepartner) — gleiche Erfassung wie 1. Person:
-    # bestehend (mit_mieter_id) ODER neu (mit_* Felder). Name -> mitmieter_name.
-    mitmieter = ''
-    zweiter_obj = None
-    mit_id = P.get('mit_mieter_id') or ''
-    if mit_id:
-        zweiter_obj = Mieter.objects.filter(id=mit_id).first()
-        if zweiter_obj:
-            mitmieter = zweiter_obj.display_name
-    if not mitmieter:
-        mit_vorname = P.get('mit_vorname', '').strip()
-        mit_nachname = P.get('mit_nachname', '').strip()
-        # Nur einen Mitmieter bilden, wenn wirklich ein Name erfasst wurde —
-        # die Anrede allein (Default 'Frau') darf keinen Phantom-Mieter erzeugen.
-        if mit_vorname or mit_nachname:
-            mit_teile = [P.get('mit_anrede', '').strip(), mit_vorname, mit_nachname]
-            mitmieter = ' '.join(t for t in mit_teile if t).strip()
-        else:
-            mitmieter = P.get('mitmieter_name', '').strip()
-        # Neue zweite Person mit Namen -> als Mieter-Datensatz anlegen (erscheint in Personen)
-        if not zweiter_obj and (P.get('mit_vorname', '').strip() or P.get('mit_nachname', '').strip()):
-            zweiter_obj = Mieter.objects.create(
-                typ='person', anrede=P.get('mit_anrede', 'Frau'),
-                vorname=P.get('mit_vorname', '').strip(), nachname=P.get('mit_nachname', '').strip(),
-                strasse=P.get('mit_strasse', '').strip(), plz=P.get('mit_plz', '').strip(),
-                ort=P.get('mit_ort', '').strip(), email=P.get('mit_email', '').strip(),
-            )
-    familienwohnung = P.get('familienwohnung') == 'on'
-
-    beginn = datum('beginn') or timezone.localdate()
-
-    # LIK-Stand-Monat (aus dem die Basis-Punkte stammen): Formular-Override,
-    # sonst automatisch der neueste veröffentlichte Monat (BFS-Tabelle,
-    # Basis Dez. 2020), Fallback Account-Einstellung.
-    from core.services.lik import aktueller_lik_wert
-    # Kein Rueckfall mehr: `Liegenschaft.organisation` ist seit Etappe 5
-    # `null=False`, der `or`-Zweig war damit tot — und haette, waere er je
-    # erreichbar geworden, die erste Verwaltung der Installation geliefert.
-    _vw = einheit.liegenschaft.organisation
-    _auto_stand, _auto_pkt, _ = aktueller_lik_wert()
-    basis_lik_stand = _auto_stand or (_vw.aktueller_lik_stand if _vw else None)
-    _stand_raw = (P.get('basis_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
-    if _stand_raw:
-        try:
-            _jahr, _monat = _stand_raw.split('-')[:2]
-            basis_lik_stand = date(int(_jahr), int(_monat), 1)
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
-
-    # Kündigungsfrist: bei Geschäftsräumen gesetzlich min. 6 Monate (Art. 266d);
-    # wird der Wert nicht gesetzt, greift der art-abhängige Default.
-    _kfrist_default = 6 if einheit.mietrecht_kategorie == 'gewerbe' else 3
+    # EINE Transaktion von der Mieter-Anlage bis zur Wohnadresse. Vorher stand
+    # `Mieter.objects.create` ausserhalb: Scheiterte danach das Speichern des
+    # Vertrags (Platte voll, Verbindung weg), blieb ein Waisen-Mieter ohne
+    # Vertrag zurück — und beim erneuten Absenden ein zweiter.
     try:
-        _kfrist = int(P.get('kuendigungsfrist') or _kfrist_default)
-    except ValueError:
-        _kfrist = _kfrist_default
-    # Indexparameter (E2.52). Beide steuerten die Anpassung seit jeher und
-    # liessen sich nicht erfassen; es galt still 100 % und 12 Monate.
-    def _idx(name, vorgabe, hoechstens=None):
-        try:
-            wert = Decimal(_num(P.get(name)) or str(vorgabe))
-        except Exception:
-            return vorgabe
-        if wert <= 0:
-            return vorgabe
-        return min(wert, hoechstens) if hoechstens is not None else wert
+        with transaction.atomic():
+            # Mieter: bestehend oder neu
+            mieter_id = P.get('mieter_id') or ''
+            if mieter_id:
+                mieter = get_object_or_404(Mieter, id=mieter_id)
+            else:
+                neu_typ = P.get('mieter_typ', 'person')
+                if neu_typ not in ('person', 'firma', 'verein'):
+                    neu_typ = 'person'
+                mieter = Mieter.objects.create(
+                    typ=neu_typ,
+                    anrede=P.get('anrede', 'Herr') if neu_typ == 'person' else '',
+                    vorname=P.get('vorname', '').strip(),
+                    nachname=P.get('nachname', '').strip(),
+                    firmen_name=P.get('firmen_name', '').strip(),
+                    kontaktperson=P.get('kontaktperson', '').strip(),
+                    uid_nummer=P.get('uid_nummer', '').strip(),
+                    strasse=P.get('m_strasse', '').strip(), plz=P.get('m_plz', '').strip(),
+                    ort=P.get('m_ort', '').strip(), email=P.get('m_email', '').strip(),
+                )
 
-    _idx_weiter = _idx('index_weitergabe_prozent', Decimal('100'), Decimal('100'))
-    _idx_intervall = int(_idx('index_intervall_monate', 12))
-
-    _mietzins_modell = P.get('mietzins_modell', 'fest')
-    if _mietzins_modell not in ('fest', 'index', 'staffel'):
-        _mietzins_modell = 'fest'
-
-    # Einstellplätze (Parkplatz/Garage, Art. 266e) haben keine separaten
-    # Nebenkosten — serverseitig hart auf 0 setzen, egal was übermittelt wurde.
-    _nk = Decimal('0.00') if einheit.ist_einstellplatz else dec('nebenkosten')
-
-    # Bearbeiten-Modus: bestehenden ENTWURF aktualisieren statt neu anlegen.
-    edit_id = P.get('edit_id')
-    editing = (Mietvertrag.objects.filter(id=edit_id, status='entwurf').first()
-               if edit_id else None)
-
-    # Befristet = explizit angehakt (Checkbox «unbefristet» aus) UND ein Enddatum
-    # gesetzt. So bleibt `ende` bei einem unbefristeten Vertrag leer, und ein
-    # später via Kündigung gesetztes `ende` macht den Vertrag nicht «befristet».
-    _ende = datum('ende')
-    _ist_befristet = (P.get('ist_befristet') == '1') and bool(_ende)
-
-    felder = dict(
-        mieter=mieter, einheit=einheit,
-        status='aktiv' if P.get('aktiv_setzen') == 'on' else 'entwurf',
-        # `ende` NUR bei einem befristeten Vertrag speichern — sonst wird ein im
-        # Formular stehengebliebener Alt-Wert fälschlich als Enddatum eines
-        # unbefristeten Vertrags abgelegt (der Kommentar unten versprach das schon,
-        # der Code setzte es aber unbedingt; Review-Befund).
-        beginn=beginn, ende=(_ende if _ist_befristet else None), ist_befristet=_ist_befristet,
-        erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
-        kuendigungsfrist_monate=_kfrist,
-        index_weitergabe_prozent=_idx_weiter,
-        index_intervall_monate=_idx_intervall,
-        kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
-        mitmieter_name=mitmieter, mitmieter=zweiter_obj, familienwohnung=familienwohnung,
-        anzahl_personen=int(P.get('anzahl_personen') or 1),
-        besondere_vereinbarungen=P.get('besondere_vereinbarungen', '').strip(),
-        mitbenutzung=P.get('mitbenutzung', '').strip(),
-        nebenraeume=P.get('nebenraeume', '').strip(),
-        netto_mietzins=dec('netto_mietzins'), nebenkosten=_nk,
-        nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
-        verteilschluessel=P.get('verteilschluessel', 'm2'),
-        zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
-        mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
-        mwst_satz=dec('mwst_satz') or Decimal('8.1'),
-        mietzins_modell=_mietzins_modell,
-        zweckbestimmung=P.get('zweckbestimmung', '').strip(),
-        weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
-        basis_referenzzinssatz=dec('basis_referenzzinssatz') or _stand_zins(einheit),
-        basis_lik_punkte=dec('basis_lik_punkte') or _stand_lik(einheit),
-        basis_lik_stand=basis_lik_stand,
-        kostensteigerung_datum=datum('kostensteigerung_datum'),
-        kautions_betrag=dec('kautions_betrag') or None,
-        kautions_konto=P.get('kautions_konto', '').strip(),
-        solidarhaftung=P.get('solidarhaftung', 'on') != 'off',
-    )
-
-    # Weitere WG-Mieter (bestehende Personen, mehrfach) — als M2M nach dem Save.
-    _wg_ids = [i for i in P.getlist('weitere_mieter') if str(i).strip().isdigit()]
-
-    # Bringt das Formular überhaupt Staffeldaten mit? Das Bearbeiten-Formular
-    # eines Entwurfs befüllt die Staffelsektion NICHT — würde man die
-    # bestehenden Stufen trotzdem löschen und aus dem leeren Formular neu
-    # aufbauen, wären sie weg (stiller Verlust, das Modell stünde weiter auf
-    # «Staffel» ohne eine einzige Stufe → Miete stiege nie). Nur löschen, wenn
-    # echte Ersatzdaten kommen oder das Modell von «Staffel» weggewechselt wird.
-    _hat_staffel_input = any((ab or '').strip() for ab in P.getlist('staffel_ab'))
-
-    with transaction.atomic():
-        if editing:
-            for _k, _v in felder.items():
-                setattr(editing, _k, _v)
-            editing.save()
-            vertrag = editing
-            if _hat_staffel_input or _mietzins_modell != 'staffel':
-                vertrag.staffelstufen.all().delete()   # neu aus dem Formular aufbauen
-        else:
-            vertrag = Mietvertrag.objects.create(**felder)
-        # Staffelstufen (parallele Listen ab_datum/netto) — nur bei Staffelmiete
-        if _mietzins_modell == 'staffel':
-            from rentals.models import Staffelstufe
-            ab_list = P.getlist('staffel_ab')
-            netto_list = P.getlist('staffel_netto')
-            for i, ab in enumerate(ab_list):
+            def dec(key, default='0'):
                 try:
-                    ab_d = date.fromisoformat((ab or '').strip())
-                except ValueError:
-                    continue
-                betrag = dec(f'__staffel_{i}') if False else None
-                try:
-                    betrag = Decimal(_num(netto_list[i])) if i < len(netto_list) and str(netto_list[i]).strip() else None
+                    return endliche_zahl(_num(P.get(key)) or str(default))
                 except Exception:
-                    betrag = None
-                if ab_d and betrag and betrag > 0:
-                    Staffelstufe.objects.create(vertrag=vertrag, ab_datum=ab_d, netto_mietzins=betrag)
-        # WG: weitere Mieter setzen (Haupt- und 2. Mieter ausgenommen, keine Dubletten).
-        if _wg_ids:
-            aus = {mieter.id}
-            if zweiter_obj:
-                aus.add(zweiter_obj.id)
-            ids = [int(i) for i in _wg_ids if int(i) not in aus]
-            vertrag.weitere_mieter.set(Mieter.objects.filter(id__in=ids))
-        elif editing and 'wg_sektion' in P:
-            # Nur leeren, wenn die WG-Sektion im Formular tatsächlich vorhanden
-            # war (verstecktes Feld). Sonst würde das Bearbeiten eines Entwurfs,
-            # dessen Formular die WG-Sektion nicht rendert, die solidarisch
-            # haftenden Mitmieter stillschweigend entfernen.
-            vertrag.weitere_mieter.clear()
-    # Wohnadresse = Objektadresse ab Mietbeginn — als datierte Adress-Zeile
-    # (gültig ab = Vertragsbeginn). Der tägliche Lauf (run_adress_umzuege) bzw.
-    # sync_effektive_adresse führt die effektiven Flat-Felder am Stichtag nach.
-    from crm.models import MieterAdresse
-    lg = einheit.liegenschaft
-    obj_strasse = f"{lg.strasse}{(', ' + einheit.etage) if einheit.etage else ''}"
+                    return Decimal(default)
 
-    def setze_zukunftsadresse(person):
-        if not person:
-            return
-        MieterAdresse.objects.get_or_create(
-            mieter=person, art='wohn', gueltig_ab=beginn,
-            defaults=dict(strasse=obj_strasse, plz=lg.plz, ort=lg.ort,
-                          quelle=f'vertrag:{vertrag.id}',
-                          notiz='Einzug gemäss Mietvertrag'))
-        # Wenn der Einzug bereits erreicht ist, effektive Adresse sofort nachführen.
-        person.sync_effektive_adresse()
+            def datum(key):
+                v = P.get(key)
+                if not v:
+                    return None
+                try:
+                    return date.fromisoformat(v)
+                except ValueError:
+                    return None
 
-    setze_zukunftsadresse(mieter)
-    setze_zukunftsadresse(zweiter_obj)
-    for _wg in vertrag.weitere_mieter.all():
-        setze_zukunftsadresse(_wg)
+            # Zweiter Mieter (Ehepartner) — gleiche Erfassung wie 1. Person:
+            # bestehend (mit_mieter_id) ODER neu (mit_* Felder). Name -> mitmieter_name.
+            mitmieter = ''
+            zweiter_obj = None
+            mit_id = P.get('mit_mieter_id') or ''
+            if mit_id:
+                zweiter_obj = Mieter.objects.filter(id=mit_id).first()
+                if zweiter_obj:
+                    mitmieter = zweiter_obj.display_name
+            if not mitmieter:
+                mit_vorname = P.get('mit_vorname', '').strip()
+                mit_nachname = P.get('mit_nachname', '').strip()
+                # Nur einen Mitmieter bilden, wenn wirklich ein Name erfasst wurde —
+                # die Anrede allein (Default 'Frau') darf keinen Phantom-Mieter erzeugen.
+                if mit_vorname or mit_nachname:
+                    mit_teile = [P.get('mit_anrede', '').strip(), mit_vorname, mit_nachname]
+                    mitmieter = ' '.join(t for t in mit_teile if t).strip()
+                else:
+                    mitmieter = P.get('mitmieter_name', '').strip()
+                # Neue zweite Person mit Namen -> als Mieter-Datensatz anlegen (erscheint in Personen)
+                if not zweiter_obj and (P.get('mit_vorname', '').strip() or P.get('mit_nachname', '').strip()):
+                    zweiter_obj = Mieter.objects.create(
+                        typ='person', anrede=P.get('mit_anrede', 'Frau'),
+                        vorname=P.get('mit_vorname', '').strip(), nachname=P.get('mit_nachname', '').strip(),
+                        strasse=P.get('mit_strasse', '').strip(), plz=P.get('mit_plz', '').strip(),
+                        ort=P.get('mit_ort', '').strip(), email=P.get('mit_email', '').strip(),
+                    )
+            familienwohnung = P.get('familienwohnung') == 'on'
+
+            beginn = datum('beginn') or timezone.localdate()
+
+            # LIK-Stand-Monat (aus dem die Basis-Punkte stammen): Formular-Override,
+            # sonst automatisch der neueste veröffentlichte Monat (BFS-Tabelle,
+            # Basis Dez. 2020), Fallback Account-Einstellung.
+            from core.services.lik import aktueller_lik_wert
+            # Kein Rueckfall mehr: `Liegenschaft.organisation` ist seit Etappe 5
+            # `null=False`, der `or`-Zweig war damit tot — und haette, waere er je
+            # erreichbar geworden, die erste Verwaltung der Installation geliefert.
+            _vw = einheit.liegenschaft.organisation
+            _auto_stand, _auto_pkt, _ = aktueller_lik_wert()
+            basis_lik_stand = _auto_stand or (_vw.aktueller_lik_stand if _vw else None)
+            _stand_raw = (P.get('basis_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
+            if _stand_raw:
+                try:
+                    _jahr, _monat = _stand_raw.split('-')[:2]
+                    basis_lik_stand = date(int(_jahr), int(_monat), 1)
+                except Exception:
+                    logger.debug("Fehler bewusst übergangen", exc_info=True)
+
+            # Kündigungsfrist: bei Geschäftsräumen gesetzlich min. 6 Monate (Art. 266d);
+            # wird der Wert nicht gesetzt, greift der art-abhängige Default.
+            _kfrist_default = 6 if einheit.mietrecht_kategorie == 'gewerbe' else 3
+            try:
+                _kfrist = int(P.get('kuendigungsfrist') or _kfrist_default)
+            except ValueError:
+                _kfrist = _kfrist_default
+            # Indexparameter (E2.52). Beide steuerten die Anpassung seit jeher und
+            # liessen sich nicht erfassen; es galt still 100 % und 12 Monate.
+            def _idx(name, vorgabe, hoechstens=None):
+                try:
+                    wert = Decimal(_num(P.get(name)) or str(vorgabe))
+                except Exception:
+                    return vorgabe
+                if wert <= 0:
+                    return vorgabe
+                return min(wert, hoechstens) if hoechstens is not None else wert
+
+            _idx_weiter = _idx('index_weitergabe_prozent', Decimal('100'), Decimal('100'))
+            _idx_intervall = int(_idx('index_intervall_monate', 12))
+
+            _mietzins_modell = P.get('mietzins_modell', 'fest')
+            if _mietzins_modell not in ('fest', 'index', 'staffel'):
+                _mietzins_modell = 'fest'
+
+            # Einstellplätze (Parkplatz/Garage, Art. 266e) haben keine separaten
+            # Nebenkosten — serverseitig hart auf 0 setzen, egal was übermittelt wurde.
+            _nk = Decimal('0.00') if einheit.ist_einstellplatz else dec('nebenkosten')
+
+            # Bearbeiten-Modus: bestehenden ENTWURF aktualisieren statt neu anlegen.
+            edit_id = P.get('edit_id')
+            editing = (Mietvertrag.objects.filter(id=edit_id, status='entwurf').first()
+                       if edit_id else None)
+
+            # Befristet = explizit angehakt (Checkbox «unbefristet» aus) UND ein Enddatum
+            # gesetzt. So bleibt `ende` bei einem unbefristeten Vertrag leer, und ein
+            # später via Kündigung gesetztes `ende` macht den Vertrag nicht «befristet».
+            _ende = datum('ende')
+            _ist_befristet = (P.get('ist_befristet') == '1') and bool(_ende)
+
+            felder = dict(
+                mieter=mieter, einheit=einheit,
+                status='aktiv' if P.get('aktiv_setzen') == 'on' else 'entwurf',
+                # `ende` NUR bei einem befristeten Vertrag speichern — sonst wird ein im
+                # Formular stehengebliebener Alt-Wert fälschlich als Enddatum eines
+                # unbefristeten Vertrags abgelegt (der Kommentar unten versprach das schon,
+                # der Code setzte es aber unbedingt; Review-Befund).
+                beginn=beginn, ende=(_ende if _ist_befristet else None), ist_befristet=_ist_befristet,
+                erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
+                kuendigungsfrist_monate=_kfrist,
+                index_weitergabe_prozent=_idx_weiter,
+                index_intervall_monate=_idx_intervall,
+                kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
+                mitmieter_name=mitmieter, mitmieter=zweiter_obj, familienwohnung=familienwohnung,
+                anzahl_personen=int(P.get('anzahl_personen') or 1),
+                besondere_vereinbarungen=P.get('besondere_vereinbarungen', '').strip(),
+                mitbenutzung=P.get('mitbenutzung', '').strip(),
+                nebenraeume=P.get('nebenraeume', '').strip(),
+                netto_mietzins=dec('netto_mietzins'), nebenkosten=_nk,
+                nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
+                verteilschluessel=P.get('verteilschluessel', 'm2'),
+                zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
+                mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
+                mwst_satz=dec('mwst_satz') or Decimal('8.1'),
+                mietzins_modell=_mietzins_modell,
+                zweckbestimmung=P.get('zweckbestimmung', '').strip(),
+                weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
+                basis_referenzzinssatz=dec('basis_referenzzinssatz') or _stand_zins(einheit),
+                basis_lik_punkte=dec('basis_lik_punkte') or _stand_lik(einheit),
+                basis_lik_stand=basis_lik_stand,
+                kostensteigerung_datum=datum('kostensteigerung_datum'),
+                kautions_betrag=dec('kautions_betrag') or None,
+                kautions_konto=P.get('kautions_konto', '').strip(),
+                solidarhaftung=P.get('solidarhaftung', 'on') != 'off',
+            )
+
+            # Weitere WG-Mieter (bestehende Personen, mehrfach) — als M2M nach dem Save.
+            _wg_ids = [i for i in P.getlist('weitere_mieter') if str(i).strip().isdigit()]
+
+            # Bringt das Formular überhaupt Staffeldaten mit? Das Bearbeiten-Formular
+            # eines Entwurfs befüllt die Staffelsektion NICHT — würde man die
+            # bestehenden Stufen trotzdem löschen und aus dem leeren Formular neu
+            # aufbauen, wären sie weg (stiller Verlust, das Modell stünde weiter auf
+            # «Staffel» ohne eine einzige Stufe → Miete stiege nie). Nur löschen, wenn
+            # echte Ersatzdaten kommen oder das Modell von «Staffel» weggewechselt wird.
+            _hat_staffel_input = any((ab or '').strip() for ab in P.getlist('staffel_ab'))
+
+            with transaction.atomic():
+                if editing:
+                    for _k, _v in felder.items():
+                        setattr(editing, _k, _v)
+                    editing.save()
+                    vertrag = editing
+                    if _hat_staffel_input or _mietzins_modell != 'staffel':
+                        vertrag.staffelstufen.all().delete()   # neu aus dem Formular aufbauen
+                else:
+                    vertrag = Mietvertrag.objects.create(**felder)
+                # Staffelstufen (parallele Listen ab_datum/netto) — nur bei Staffelmiete
+                if _mietzins_modell == 'staffel':
+                    from rentals.models import Staffelstufe
+                    ab_list = P.getlist('staffel_ab')
+                    netto_list = P.getlist('staffel_netto')
+                    for i, ab in enumerate(ab_list):
+                        try:
+                            ab_d = date.fromisoformat((ab or '').strip())
+                        except ValueError:
+                            continue
+                        betrag = dec(f'__staffel_{i}') if False else None
+                        try:
+                            betrag = Decimal(_num(netto_list[i])) if i < len(netto_list) and str(netto_list[i]).strip() else None
+                        except Exception:
+                            betrag = None
+                        if ab_d and betrag and betrag > 0:
+                            Staffelstufe.objects.create(vertrag=vertrag, ab_datum=ab_d, netto_mietzins=betrag)
+                # WG: weitere Mieter setzen (Haupt- und 2. Mieter ausgenommen, keine Dubletten).
+                if _wg_ids:
+                    aus = {mieter.id}
+                    if zweiter_obj:
+                        aus.add(zweiter_obj.id)
+                    ids = [int(i) for i in _wg_ids if int(i) not in aus]
+                    vertrag.weitere_mieter.set(Mieter.objects.filter(id__in=ids))
+                elif editing and 'wg_sektion' in P:
+                    # Nur leeren, wenn die WG-Sektion im Formular tatsächlich vorhanden
+                    # war (verstecktes Feld). Sonst würde das Bearbeiten eines Entwurfs,
+                    # dessen Formular die WG-Sektion nicht rendert, die solidarisch
+                    # haftenden Mitmieter stillschweigend entfernen.
+                    vertrag.weitere_mieter.clear()
+            # Wohnadresse = Objektadresse ab Mietbeginn — als datierte Adress-Zeile
+            # (gültig ab = Vertragsbeginn). Der tägliche Lauf (run_adress_umzuege) bzw.
+            # sync_effektive_adresse führt die effektiven Flat-Felder am Stichtag nach.
+            from crm.models import MieterAdresse
+            lg = einheit.liegenschaft
+            obj_strasse = f"{lg.strasse}{(', ' + einheit.etage) if einheit.etage else ''}"
+
+            def setze_zukunftsadresse(person):
+                if not person:
+                    return
+                MieterAdresse.objects.get_or_create(
+                    mieter=person, art='wohn', gueltig_ab=beginn,
+                    defaults=dict(strasse=obj_strasse, plz=lg.plz, ort=lg.ort,
+                                  quelle=f'vertrag:{vertrag.id}',
+                                  notiz='Einzug gemäss Mietvertrag'))
+                # Wenn der Einzug bereits erreicht ist, effektive Adresse sofort nachführen.
+                person.sync_effektive_adresse()
+
+            setze_zukunftsadresse(mieter)
+            setze_zukunftsadresse(zweiter_obj)
+            for _wg in vertrag.weitere_mieter.all():
+                setze_zukunftsadresse(_wg)
+    except DatabaseError:
+        logger.error("Vertrag anlegen: Datenbankfehler, alles zurückgerollt", exc_info=True)
+        return _assistent_mit_fehlern(
+            request, P,
+            {'einheit_id': gettext('Der Vertrag konnte wegen eines Datenbankfehlers nicht gespeichert werden — nichts wurde gespeichert. Bitte erneut versuchen.')},
+            einheit)
 
     # Vertragsdokumente NUR erzeugen, wenn der Vertrag als AKTIV gesetzt wird
     # (→ erscheinen in der Akte + im Mieterportal). Ein Entwurf bleibt dokumentlos,
@@ -594,9 +616,16 @@ def fw_vertrag_neu_speichern(request):
             vertrag.einheit.save(update_fields=['zur_ausschreibung'])
         try:
             from core.views.pdf import erzeuge_und_ablege_vertragspaket
-            anzahl_dok = len(erzeuge_und_ablege_vertragspaket(vertrag))
+            _paket = erzeuge_und_ablege_vertragspaket(vertrag)
+            anzahl_dok = len(_paket)
+            if _paket.fehler:
+                # Der Vertrag steht; die Dokumente lassen sich nachholen. Still
+                # 0 zu melden liess den Benutzer glauben, es sei alles in Ordnung.
+                messages.warning(request, '⚠️ ' + gettext('Vertrag gespeichert, aber nicht alle Dokumente konnten erzeugt werden (%(liste)s). Bitte später über «Vertragsdokumente» erneut erzeugen.') % {'liste': ', '.join(_paket.fehler)})
         except Exception:
+            logger.error("Vertragspaket fehlgeschlagen (Vertrag %s)", vertrag.pk, exc_info=True)
             anzahl_dok = 0
+            messages.warning(request, '⚠️ ' + gettext('Vertrag gespeichert, aber die Dokumente konnten nicht erzeugt werden. Bitte später erneut versuchen.'))
         # Amtliches Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) automatisch
         # mitgenerieren, sofern Formularpflicht besteht — steht so zur
         # Schlüsselübergabe bereit (30-Tage-Anfechtungsfrist ab Erhalt).
@@ -775,7 +804,7 @@ def fw_vertrag_bearbeiten(request, pk):
         alt = snapshot_model(v)
 
         from rentals.forms import VertragBearbeitenForm
-        form = VertragBearbeitenForm(P, entwurf=not gesperrt, beginn=v.beginn)
+        form = VertragBearbeitenForm(P, entwurf=not gesperrt, beginn=v.beginn, einheit=v.einheit)
         if not form.is_valid():
             # Nichts wird gespeichert; das Formular kommt mit den Eingaben und
             # den Hinweisen am Feld zurück (Audit Etappe 2).

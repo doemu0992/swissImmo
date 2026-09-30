@@ -125,12 +125,42 @@ def render_vertrag_html(vertrag, *, mit_unterschrift=True):
     return get_template(template_name).render(context)
 
 
+class PdfFehler(Exception):
+    """Die PDF-Erzeugung ist gescheitert (Speicher, Renderer, unlesbares HTML).
+
+    EIN Fehlertyp für alle Ursachen, damit Aufrufer gezielt darauf reagieren
+    (Meldung an den Benutzer, 503 statt 500) und nicht `except Exception`
+    schreiben müssen. Die Ursache hängt als `__cause__` daran und steht im Log.
+    """
+
+
+#: Obergrenze für das HTML, das dem Renderer übergeben wird. xhtml2pdf baut das
+#: ganze Dokument im Speicher auf; 50 MB «Besondere Vereinbarungen» belegten ein
+#: Vielfaches davon und rissen den Worker mit. Ein Mietvertrag ist wenige
+#: hundert kB gross.
+MAX_HTML_ZEICHEN = 5_000_000
+
+
+def html_zu_pdf(html):
+    """HTML → PDF-Bytes. Wirft ausschliesslich `PdfFehler`."""
+    if len(html) > MAX_HTML_ZEICHEN:
+        raise PdfFehler(f"Dokument zu gross für die PDF-Erzeugung ({len(html):,} Zeichen).")
+    puffer = io.BytesIO()
+    try:
+        status = pisa.CreatePDF(html, dest=puffer, link_callback=link_callback, encoding='utf-8')
+    except MemoryError as e:
+        raise PdfFehler("Zu wenig Arbeitsspeicher für die PDF-Erzeugung.") from e
+    except Exception as e:      # Renderer-Absturz: nichts davon ist für den Benutzer lesbar
+        raise PdfFehler(f"PDF-Renderer abgestürzt: {type(e).__name__}") from e
+    if status.err:
+        raise PdfFehler(f"Fehler bei der PDF-Erzeugung ({status.err}).")
+    daten = puffer.getvalue()
+    if not daten.startswith(b'%PDF'):
+        raise PdfFehler("Der Renderer lieferte kein PDF.")
+    return daten
+
+
 @nur_deutsch
 def generate_vertrag_pdf_bytes(vertrag):
     template_name, context = build_vertrag_context(vertrag)
-    html = get_template(template_name).render(context)
-    result_buffer = io.BytesIO()
-    pisa_status = pisa.CreatePDF(html, dest=result_buffer, link_callback=link_callback, encoding='utf-8')
-
-    if pisa_status.err: raise Exception(f"Fehler bei der PDF Generierung: {pisa_status.err}")
-    return result_buffer.getvalue()
+    return html_zu_pdf(get_template(template_name).render(context))

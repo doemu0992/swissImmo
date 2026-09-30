@@ -47,13 +47,20 @@ class Command(BaseCommand):
 
     def _stellen(self, organisation, jahr, monat):
         try:
-            n = run_sollstellung(jahr, monat, user=None)
+            uebersprungen = []
+            n = run_sollstellung(jahr, monat, user=None, fehler=uebersprungen)
         except RuntimeError as e:
             # Fachlicher Abbruch (z.B. gesperrte Periode) — kein Programmfehler,
             # aber auch kein Erfolg: als Fehler weiterreichen, damit der Lauf
             # nicht still als erledigt gilt.
             raise CommandError(str(e)) from e
         msg = f"Sollstellung {monat:02d}/{jahr}: {n} Rechnung(en) erstellt."
+        if uebersprungen:
+            # Kein Abbruch (die übrigen sind gestellt), aber auch nicht still:
+            # im Aktivitätslog und auf stderr, damit der Scheduler-Mail-Bericht es zeigt.
+            msg += (f" {len(uebersprungen)} Vertrag/Verträge übersprungen (Datenfehler): "
+                    + ', '.join(str(pk) for pk, _m in uebersprungen[:20]) + '.')
+            self.stderr.write(self.style.WARNING(msg))
         AktivitaetsLog.objects.create(aktion="Sollstellung (Scheduler)",
                                       objekt=f"{monat:02d}/{jahr}", details=msg)
         self.stdout.write(self.style.SUCCESS(f"{organisation}: {msg}"))

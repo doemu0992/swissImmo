@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.utils.text import slugify
 from rentals.models import Mietvertrag
-from core.services.pdf_service import generate_vertrag_pdf_bytes
+from core.services.pdf_service import PdfFehler, generate_vertrag_pdf_bytes
 from core.services.dokument_service import generate_dokument_pdf_bytes, DOKUMENT_TYPEN
 
 logger = logging.getLogger(__name__)
@@ -21,9 +21,22 @@ def generate_pdf_view(request, vertrag_id):
         filename = f"Mietvertrag_{vertrag.einheit.bezeichnung}_{vertrag.mieter.nachname}.pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
-    except Exception as e:
+    except PdfFehler:
         logger.error("PDF-Erzeugung fehlgeschlagen (Vertrag %s)", vertrag_id, exc_info=True)
-        return HttpResponse('Fehler beim Erstellen des PDFs.', status=500)
+        return _pdf_nicht_verfuegbar()
+    except Exception:
+        logger.error("PDF-Erzeugung mit unerwartetem Fehler (Vertrag %s)", vertrag_id, exc_info=True)
+        return HttpResponse('Fehler beim Erstellen des PDFs.', status=500, content_type='text/plain; charset=utf-8')
+
+
+def _pdf_nicht_verfuegbar():
+    """503 statt 500: Der Fehler liegt an der Erzeugung, nicht an der Anfrage —
+    ein erneuter Versuch nach kurzer Zeit kann gelingen. Nichts wurde abgelegt."""
+    antwort = HttpResponse('Das PDF konnte gerade nicht erstellt werden. Es wurde nichts abgelegt — '
+                           'bitte in einigen Minuten erneut versuchen.',
+                           status=503, content_type='text/plain; charset=utf-8')
+    antwort['Retry-After'] = '120'
+    return antwort
 
 
 def _ablegen_vertragsdokument(pdf_bytes, titel, vertrag, *, ueberschreiben=True):
@@ -68,17 +81,30 @@ VERTRAGSPAKET_TITEL = ['Mietvertrag', 'Allgemeine Bedingungen', 'Hausordnung',
                        'Merkblatt Lüften', 'Wohnungsausweis', 'Begleitbrief Mietvertrag']
 
 
+class Vertragspaket(list):
+    """Liste (dateiname, pdf_bytes) der erzeugten Dokumente. `fehler` nennt,
+    was NICHT erzeugt werden konnte — vorher fehlte es im Ergebnis, ohne dass
+    jemand erfuhr, dass es fehlte."""
+
+    def __init__(self):
+        super().__init__()
+        self.fehler = []
+
+
 def erzeuge_und_ablege_vertragspaket(vertrag, *, ueberschreiben=True):
     """Erzeugt Mietvertrag + Standard-Beilagen, legt jedes einzeln in die Akte
-    (→ Mieterportal). Gibt eine Liste (dateiname, pdf_bytes) zurück.
+    (→ Mieterportal). Gibt eine Liste (dateiname, pdf_bytes) zurück; `.fehler`
+    nennt die Dokumente, die scheiterten. Ein gescheitertes Dokument bricht die
+    übrigen nicht ab.
     `ueberschreiben=False` für reine Downloads — siehe `_ablegen_vertragsdokument`."""
-    dateien = []
+    dateien = Vertragspaket()
     try:
         pdf = generate_vertrag_pdf_bytes(vertrag)
         _ablegen_vertragsdokument(pdf, "Mietvertrag", vertrag, ueberschreiben=ueberschreiben)
         dateien.append((f"01_Mietvertrag_{slugify(vertrag.mieter.nachname)}.pdf", pdf))
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        logger.error("Mietvertrag-PDF fehlgeschlagen (Vertrag %s)", vertrag.pk, exc_info=True)
+        dateien.fehler.append("Mietvertrag")
     for i, doc_type in enumerate(VERTRAGSPAKET, start=2):
         if doc_type not in DOKUMENT_TYPEN:
             continue
@@ -88,7 +114,8 @@ def erzeuge_und_ablege_vertragspaket(vertrag, *, ueberschreiben=True):
             _ablegen_vertragsdokument(pdf, titel, vertrag, ueberschreiben=ueberschreiben)
             dateien.append((f"{i:02d}_{slugify(titel)}.pdf", pdf))
         except Exception:
-            continue
+            logger.error("Beilage %s fehlgeschlagen (Vertrag %s)", doc_type, vertrag.pk, exc_info=True)
+            dateien.fehler.append(doc_type)
     return dateien
 
 
@@ -101,7 +128,7 @@ def generate_vertragspaket_zip(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     dateien = erzeuge_und_ablege_vertragspaket(vertrag, ueberschreiben=False)
     if not dateien:
-        return HttpResponse("Keine Dokumente erzeugt.", status=500)
+        return _pdf_nicht_verfuegbar()
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
         for name, pdf in dateien:
@@ -109,6 +136,10 @@ def generate_vertragspaket_zip(request, vertrag_id):
     buf.seek(0)
     resp = HttpResponse(buf.getvalue(), content_type='application/zip')
     resp['Content-Disposition'] = f'attachment; filename="Vertragsdokumente_{slugify(vertrag.mieter.nachname)}.zip"'
+    if dateien.fehler:
+        # Teilpaket: nicht als vollständig ausgeben. Der Header ist für Skripte,
+        # die Liste im Log für den Betrieb.
+        resp['X-Fehlende-Dokumente'] = ','.join(dateien.fehler)
     return resp
 
 
@@ -127,6 +158,9 @@ def generate_dokument_view(request, vertrag_id, doc_type):
         filename = f"{slugify(titel)}_{vertrag.mieter.nachname}.pdf"
         response['Content-Disposition'] = f'inline; filename="{filename}"'
         return response
-    except Exception as e:
-        logger.error("PDF-Erzeugung fehlgeschlagen (Vertrag %s)", vertrag_id, exc_info=True)
-        return HttpResponse('Fehler beim Erstellen des PDFs.', status=500)
+    except PdfFehler:
+        logger.error("PDF-Erzeugung fehlgeschlagen (Vertrag %s, %s)", vertrag_id, doc_type, exc_info=True)
+        return _pdf_nicht_verfuegbar()
+    except Exception:
+        logger.error("PDF-Erzeugung mit unerwartetem Fehler (Vertrag %s, %s)", vertrag_id, doc_type, exc_info=True)
+        return HttpResponse('Fehler beim Erstellen des PDFs.', status=500, content_type='text/plain; charset=utf-8')

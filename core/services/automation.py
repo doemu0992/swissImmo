@@ -32,7 +32,7 @@ def _konten_fuer(v):
 # ============================================================
 # 1. SOLLSTELLUNG (monatlicher Mietenlauf)
 # ============================================================
-def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
+def run_sollstellung(jahr, monat, user=None, liegenschaft=None, fehler=None):
     """Erzeugt für alle im Monat aktiven Verträge die Miet-/NK-Rechnung samt
     Buchungssätzen (idempotent — bereits gestellte Verträge werden übersprungen).
     Gibt die Anzahl neu erstellter Rechnungen zurück.
@@ -42,7 +42,15 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
     nur die gefilterten Verträge zeigte und der Bestätigungsdialog deren Anzahl
     nannte. Wer auf eine Liegenschaft gefiltert hatte, stellte damit unbeabsichtigt
     allen Mietern Rechnung (Praxis-Audit). Der Scheduler ruft weiterhin ohne
-    Parameter auf und deckt das ganze Portfolio ab."""
+    Parameter auf und deckt das ganze Portfolio ab.
+
+    FEHLERVERHALTEN (Chaos-Test, docs/CHAOS.md)
+    - Datenbank-/Verbindungsfehler oder gesperrte Periode: Ausnahme steigt auf,
+      die äussere Transaktion rollt den GANZEN Lauf zurück. Ein erneuter Lauf
+      ist gefahrlos (idempotent).
+    - Datenfehler in einem einzelnen Vertrag: nur dieser wird übersprungen
+      (Savepoint). `fehler` – falls eine Liste übergeben wird – erhält
+      `(vertrag_pk, meldung)`; ohne Liste steht es im Log."""
     from finance.models import DebitorenRechnung
     from finance.booking import buche, ensure_kontenplan
     from rentals.models import Mietvertrag
@@ -74,9 +82,10 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
         locked_ids = list(_basis.select_for_update().values_list('pk', flat=True))
         vertraege = (Mietvertrag.objects.filter(pk__in=locked_ids)
                      .select_related('mieter', 'einheit__liegenschaft'))
-        for v in vertraege:
+        def _stelle(v):
+            """Stellt EINEN Vertrag. True = Rechnung erzeugt, False = nichts zu stellen."""
             if DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists():
-                continue
+                return False
             v_start = max(start_date, v.beginn)
             v_ende = min(end_date, v.ende) if v.ende else end_date
             faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
@@ -93,8 +102,13 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             # abgeleitet, damit Debitor exakt auf den verrechneten Betrag nettoiert.
             rabatt_netto = max(Decimal('0.00'), ref_netto - verr_netto)
             rabatt_nk = max(Decimal('0.00'), ref_nk - verr_nk)
-            if ref_netto + ref_nk <= 0:
-                continue
+            if ref_netto + ref_nk < 0:
+                # Negativer Mietzins ist ein Datenfehler und keine Gutschrift.
+                # Still zu überspringen (wie bei 0) verbarg ihn — jetzt wird er
+                # gemeldet, der Vertrag bleibt ungestellt.
+                raise ValueError(f"negativer Mietzins ({ref_netto + ref_nk})")
+            if ref_netto + ref_nk == 0:
+                return False
             # MWST folgt dem effektiv verrechneten Betrag (nicht dem Referenzwert).
             mwst = Decimal('0.00')
             if v.mwst_pflichtig and (v.mwst_satz or 0) > 0:
@@ -135,7 +149,25 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
             buche("1100", "2200", mwst, f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            erstellt += 1
+            return True
+
+        for v in vertraege:
+            # Savepoint je Vertrag: Ein Vertrag mit unrechenbaren Daten (kaputter
+            # Wert, Division, Typfehler) nimmt seine eigenen halben Buchungen
+            # mit zurück, hält aber die übrigen 499 nicht auf. Datenbankfehler
+            # (Verbindung weg, Deadlock, Platte voll) und fachliche Sperren
+            # (RuntimeError: Periode gesperrt) sind bewusst NICHT hier
+            # abgefangen — sie brechen den ganzen Lauf ab, und die äussere
+            # Transaktion rollt alles zurück. Halb gestellt wird nie.
+            try:
+                with transaction.atomic():
+                    if _stelle(v):
+                        erstellt += 1
+            except (ArithmeticError, ValueError, TypeError, AttributeError) as e:
+                logger.error("Sollstellung %02d/%d: Vertrag %s übersprungen (%s: %s)",
+                             monat, jahr, v.pk, type(e).__name__, e, exc_info=True)
+                if fehler is not None:
+                    fehler.append((v.pk, f"{type(e).__name__}: {e}"))
     return erstellt
 
 

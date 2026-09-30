@@ -153,6 +153,8 @@ MIDDLEWARE = [
     'core.wartung.WartungsMiddleware',
     # Vor allem, was Eingaben liest: PostgreSQL verträgt kein NUL-Byte.
     'core.middleware_nul.NulBytesMiddleware',
+    # Übergrosse Uploads (500-MB-«PDF») abweisen, bevor der Body gelesen wird.
+    'core.middleware_upload.UploadGrenzeMiddleware',
     # Antworten komprimiert ausliefern. Die Listenseiten bestehen fast nur aus
     # sich wiederholendem Markup (Tailwind-Klassen, je Zeile eine Karte fürs
     # Handy UND eine Tabellenzeile für den PC) — das lässt sich hervorragend

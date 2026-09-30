@@ -347,6 +347,11 @@ def fw_bewerbung_unterlagen(request, pk):
                         ('weitere_dokumente', gettext_noop('Weitere Unterlagen'))):
         datei = request.FILES.get(feld)
         if datei:
+            from core.utils.uploads import validiere_dokument
+            ok, fehler = validiere_dokument(datei)
+            if not ok:
+                messages.error(request, '❌ ' + gettext('«%(name)s» abgelehnt: %(grund)s') % {'name': datei.name, 'grund': fehler})
+                continue
             getattr(b, feld).save(datei.name, datei, save=False)
             abgelegt.append(label)
     if abgelegt:
@@ -457,6 +462,14 @@ def fw_bewerbung_zu_vertrag(request, pk):
     # 2. Vertragsentwurf anlegen (mit Objekt-Defaults)
     from decimal import Decimal as _D
     beginn = b.gewuenschter_bezugstermin or timezone.localdate()
+    # Der Bezugstermin stammt aus dem ÖFFENTLICHEN Bewerbungsformular. Ein
+    # unmöglicher Wert (Jahr 0001/9999, vor dem Baujahr) käme sonst unbesehen in
+    # den Vertragsentwurf; stattdessen heute, mit Hinweis — der Entwurf lässt
+    # sich danach im Assistenten korrigieren.
+    from rentals.validierung import pruefe_vertragswerte
+    if 'beginn' in pruefe_vertragswerte(beginn=beginn, einheit=einheit):
+        messages.warning(request, '⚠️ ' + gettext('Der gewünschte Bezugstermin der Bewerbung (%(datum)s) ist nicht plausibel — der Entwurf beginnt heute. Bitte im Vertrag prüfen.') % {'datum': beginn.isoformat()})
+        beginn = timezone.localdate()
     kautionsmonate = einheit.standard_kautionsmonate or 0
     netto = einheit.nettomiete_aktuell or _D('0')
     nk = einheit.nebenkosten_aktuell or _D('0')
