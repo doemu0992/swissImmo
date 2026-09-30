@@ -2,7 +2,7 @@
 {% load zeichen i18n %}
 {% block title %}{% if ist_neu %}{% trans "Neue Vorlage" %}{% else %}{% blocktrans with name=vl.name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<nav class="fw-akte-pfad mb-3">
+<nav class="fw-brotkrume mb-3">
     <a href="/neu/vorlagen/">{% trans "Vorlagen" %}</a>
     {% zeichen 'weiter' %}
     <b>{% if ist_neu %}{% trans "Neu" %}{% else %}{{ vl.name }}{% endif %}</b>

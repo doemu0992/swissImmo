@@ -5,66 +5,102 @@
 
 {% block content %}
 
-<div class="fw-phead">
+{% comment %} Aufbau nach konzept-v8 (#lauf-soll, `pageSoll`): Pfad «Läufe / Sollstellung
+   <Monat>», Titel, Unterzeile; Kennzahlenstreifen; Blockaden (nur wenn der
+   Lauf der Periode welche hat); Positionen; unten die haftende
+   Freigabeleiste. Die Monatswahl steht rechts im Kopf. {% endcomment %}
+<div class="fw-phead fw-phead-lauf">
     <div>
-        <h1>{% trans "Sollstellung" %}</h1>
-        <p>{% trans "Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% blocktrans with monat=monat_name %}Sollstellung {{ monat }}{% endblocktrans %}</span></nav>
+        <h1>{% blocktrans with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }}{% endblocktrans %}</h1>
+        <p>{% if lauf %}{% blocktrans with datum=lauf.faellig_am|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %} · {% if lauf.gestartet_am %}{% blocktrans with datum=lauf.gestartet_am|date:"d.m.Y" %}gestartet {{ datum }}{% endblocktrans %} · {% endif %}{% endif %}{% trans "Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <form method="get" class="fw-kopffilter">
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <label>
+                <span class="fw-faint">{% trans "Monat" %}</span>
+                <select name="monat" onchange="this.form.submit()" class="fw-feld">
+                    {% for m, name in monate %}<option value="{{ m }}" {% if m == monat %}selected{% endif %}>{{ name }}</option>{% endfor %}
+                </select>
+            </label>
+            <label>
+                <span class="fw-faint">{% trans "Jahr" %}</span>
+                <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+                    {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
+                </select>
+            </label>
+        </form>
     </div>
 </div>
 
-<form method="get" class="fw-kopffilter">
-    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-    <label>
-        <span class="fw-faint">{% trans "Monat" %}</span>
-        <select name="monat" onchange="this.form.submit()" class="fw-feld">
-            {% for m, name in monate %}<option value="{{ m }}" {% if m == monat %}selected{% endif %}>{{ name }}</option>{% endfor %}
-        </select>
-    </label>
-    <label>
-        <span class="fw-faint">{% trans "Jahr" %}</span>
-        <select name="jahr" onchange="this.form.submit()" class="fw-feld">
-            {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
-        </select>
-    </label>
-</form>
-
+{% comment %} Nur Zahlen, die die Daten hergeben: Kanal = `crm.Mieter.zahlungsart`;
+   «Blockiert» nur, wenn für den Monat ein Lauf geplant ist. {% endcomment %}
 <div class="fw-kpis">
     <div class="fw-kpi">
-        <div class="fw-l">{% blocktrans with monat=monat_name %}Zu stellen ({{ monat }}){% endblocktrans %}</div>
-        <div class="fw-v">CHF {{ total_soll|chf }}</div>
+        <div class="fw-l">{% trans "Positionen" %}</div>
+        <div class="fw-v">{{ rows|length }}</div>
+        <div class="fw-f">{% trans "Noch offen" %} {{ n_offen }} · {% trans "Bereits gestellt" %} {{ n_gestellt }}</div>
     </div>
     <div class="fw-kpi">
-        <div class="fw-l">{% trans "Noch offen" %}</div>
-        <div class="fw-v">{{ n_offen }}</div>
+        <div class="fw-l">{% trans "QR-Einzahlung" %}</div>
+        <div class="fw-v">{{ n_qr }}</div>
+        <div class="fw-f">{% blocktrans with n=n_uebrige %}{{ n }} mit anderer Zahlungsart{% endblocktrans %}</div>
     </div>
     <div class="fw-kpi">
-        <div class="fw-l">{% trans "Bereits gestellt" %}</div>
-        <div class="fw-v">{{ n_gestellt }}</div>
+        <div class="fw-l">{% trans "eBill" %}</div>
+        <div class="fw-v">{{ n_ebill }}</div>
+        <div class="fw-f">{% trans "Zahlungsart" %}</div>
     </div>
+    {% if lauf %}
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Blockiert" %}</div>
+        <div class="fw-v {% if blockaden %}fw-crit{% else %}fw-good{% endif %}">{{ blockaden|length }}</div>
+        <div class="fw-f">{% if blockaden %}{% trans "vor Freigabe lösen" %}{% else %}{% trans "keine Blockade" %}{% endif %}</div>
+    </div>
+    {% endif %}
 </div>
 
+{% if blockaden %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">{% blocktrans with monat=monat_name jahr=jahr %}Vorschau — {{ monat }} {{ jahr }}{% endblocktrans %}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Blockaden" %}</span><span class="fw-neben">{% blocktrans with n=blockaden|length %}{{ n }} offen{% endblocktrans %}</span></div>
+    {% for b in blockaden %}
+    <div class="fw-zeile">
+        <span class="fw-marker crit"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ b.grund }}</div>
+            {% if b.quelle %}<div class="fw-s">{{ b.quelle }}</div>{% endif %}
+        </div>
+        <div class="fw-zeit">{% blocktrans with datum=b.seit|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Positionen" %}</span><span class="fw-neben">{% blocktrans with monat=monat_name jahr=jahr %}Vorschau — {{ monat }} {{ jahr }}{% endblocktrans %}</span></div>
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead>
             <tr>
-                <th>{% trans "Mieter" %}</th>
+                <th>{% trans "Mietverhältnis" %}</th>
                 <th>{% trans "Objekt" %}</th>
                 <th class="fw-right">{% trans "Netto" %}</th>
                 <th class="fw-right">NK</th>
                 <th class="fw-right">{% trans "Total" %}</th>
-                <th>{% trans "Status" %}</th>
+                <th>{% trans "Status" %} · {% trans "Zahlungsart" %}</th>
             </tr>
             </thead>
             <tbody>
             {% for row in rows %}
             <tr>
-                <td class="fw-strong whitespace-nowrap">
+                <td>
                     <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-link">{{ row.mieter }}</a>
+                    <div class="fw-mono fw-sub2">MV-{{ row.v.id }}</div>
                 </td>
-                <td class="fw-mutet whitespace-nowrap">{{ row.objekt }}
-                    {% if row.prorata %}<span class="fw-chip fw-warn" title="{% blocktrans with tage=row.tage monat=row.tage_monat %}Teilmonat: {{ tage }} von {{ monat }} Tagen{% endblocktrans %}">{% trans "Pro-Rata" %}</span>{% endif %}
+                <td class="fw-mutet">{{ row.v.einheit.liegenschaft.strasse }}
+                    <div class="fw-sub2">{{ row.v.einheit.bezeichnung }}
+                    {% if row.prorata %}<span class="fw-chip fw-warn" title="{% blocktrans with tage=row.tage monat=row.tage_monat %}Teilmonat: {{ tage }} von {{ monat }} Tagen{% endblocktrans %}">{% trans "Pro-Rata" %}</span>{% endif %}</div>
                 </td>
                 <td class="fw-right fw-num">{{ row.netto|chf }}</td>
                 <td class="fw-right fw-num fw-mutet">{{ row.nk|chf }}</td>
@@ -72,6 +108,7 @@
                 <td>
                     {% if row.gestellt %}<span class="fw-chip fw-good">{% trans "● Gestellt" %}</span>
                     {% else %}<span class="fw-chip fw-warn">{% trans "● Offen" %}</span>{% endif %}
+                    {% if row.kanal %}<div class="fw-sub2">{{ row.kanal }}</div>{% endif %}
                 </td>
             </tr>
             {% empty %}
@@ -80,12 +117,15 @@
             </tbody>
         </table>
     </div>
+    <div class="fw-fuss">
+        <span>{% trans "Der Mietenlauf ist idempotent — bereits gestellte Verträge werden übersprungen. Pro-Rata rechnet Ein-/Auszüge mitten im Monat tagegenau ab. Gebucht wird Debitoren 1100 an Ertrag 3000 (Netto) bzw. NK-Akonto 3020 (Nebenkosten)." %}</span>
+    </div>
 </div>
 
 {% comment %} Freigabeleiste nach konzept-v8 («Sollstellung»): klebt unten, Hinweis
    links, Knopf rechts; am Telefon über der Tab-Leiste. {% endcomment %}
 <div class="fw-freigabe">
-        <div class="fw-ht">{% trans "Der Mietenlauf ist idempotent — bereits gestellte Verträge werden übersprungen. Pro-Rata rechnet Ein-/Auszüge mitten im Monat tagegenau ab. Gebucht wird Debitoren 1100 an Ertrag 3000 (Netto) bzw. NK-Akonto 3020 (Nebenkosten)." %}</div>
+        <div class="fw-ht">{% if blockaden %}<b>{% blocktrans count n=blockaden|length %}Noch {{ n }} Blockade offen{% plural %}Noch {{ n }} Blockaden offen{% endblocktrans %}</b><br>{% elif n_offen %}<b>{% trans "Bereit zur Freigabe" %}</b><br>{% endif %}{% blocktrans with monat=monat_name %}Zu stellen ({{ monat }}){% endblocktrans %}: <b class="fw-num">CHF {{ total_soll|chf }}</b></div>
     <div>
         {% if n_offen %}
         <form method="post" action="/neu/sollstellung/starten/" onsubmit="return confirm('{% filter escapejs %}{% if aktive_lg %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr strasse=aktive_lg.strasse|safe %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — nur {{ strasse }}?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — nur {{ strasse }}?{% endblocktrans %}{% else %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — ganzes Portfolio?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — ganzes Portfolio?{% endblocktrans %}{% endif %}{% endfilter %}');">

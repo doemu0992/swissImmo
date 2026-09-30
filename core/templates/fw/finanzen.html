@@ -3,56 +3,195 @@
 {% load chf %}
 {% block title %}{% trans "Finanzen" %} — swissImmo{% endblock %}
 {% block content %}
+{% comment %}
+Aufbau nach mockups/konzept-v8-cockpit.html, #finanzen (`pageFinanzen`):
+Kopf · Kennzahlenstreifen · Karte «Bankabgleich» · Karte «Ausstände nach
+Alter». Der bisherige Inhalt (Finanz-Kennzahlen, Offene Posten,
+Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
+{% endcomment %}
 <div class="fw-phead">
     <div>
-        <h1>{% trans "Finanz-Cockpit" %}</h1>
-        {% comment %}
-DIESE SEITE IST NICHT DER ARBEITSVORRAT.
-
-Bis E2.29 stand hier «Ihr Arbeitskorb — was ist zu tun, in der richtigen
-Reihenfolge». Das behauptete eine Rolle, die nach G2 «Heute» hat: «Ein
-Arbeitsvorrat, nicht zwei Listen.»
-
-Die Arbeitsteilung steht in G2 und ist bereits umgesetzt: EINZELNE datierte
-Vorgaenge stehen im Arbeitsvorrat, SAMMELPOSTEN («12 Rechnungen pruefen») in
-der Inbox auf «Heute». Die vier Eintraege unten sind Sammelposten — sie
-stehen dort bereits. Was diese Seite leistet, ist der Blick auf die Zahlen
-dahinter und der kurze Weg in die jeweilige Liste.
-
-Der Untertitel war deshalb kein kleiner Textfehler: Wer ihn las, konnte
-glauben, seine Arbeit stehe an zwei Orten — und genau davor warnt das
-Konzept in Abschnitt 1 («Heute skaliert nicht»).
-{% endcomment %}
-        <p>{% blocktrans trimmed %}Die Zahlen hinter den Finanzaufgaben — der Arbeitsvorrat steht auf <a href="/neu/" class="fw-link">Heute</a>.{% endblocktrans %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><span>{% trans "Finanzen" %}</span></nav>
+        <h1>{% trans "Finanzen" %}</h1>
+        <p>{% blocktrans with datum=heute|date:"d.m.Y" %}Stand {{ datum }}{% endblocktrans %}{% if letzter_import %} · {% blocktrans with zeit=letzter_import|date:"d.m.Y H:i" %}letzter camt-Import {{ zeit }}{% endblocktrans %}{% endif %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <span class="fw-chip {% if dringend_n %}fw-crit{% elif offene_posten %}fw-warn{% else %}fw-good{% endif %}"><span class="fw-num">{{ offene_posten }}</span> {% trans "offene Aufgaben" %}{% if dringend_n %} · {% blocktrans with n=dringend_n %}{{ n }} dringend{% endblocktrans %}{% endif %}</span>
+        <a href="/neu/bankabgleich/{{ lg_query }}" class="fw-btn">{% zeichen 'lauf' %}{% trans "camt importieren" %}</a>
     </div>
 </div>
 
-<!-- Kennzahlenleiste -->
-<div class="fw-kpis">
+<!-- Kennzahlen nach konzept-v8 -->
+<div class="fw-kpis fw-fin-kpis">
+    {% if mietzinskonto %}
     <div class="fw-kpi">
-        <span class="fw-l">{% trans "Offene Forderungen" %}</span>
-        <span class="fw-v fw-num">CHF {{ deb_offen_chf|chf }}</span>
-        {% if deb_ueberf_chf %}<span class="fw-f"><span class="fw-kritisch">{% blocktrans with betrag=deb_ueberf_chf|chf %}davon CHF {{ betrag }} überfällig{% endblocktrans %}</span></span>{% endif %}
+        <span class="fw-l">{% trans "Mietzinskonto" %}</span>
+        <span class="fw-v fw-num">CHF {{ mietzinskonto.saldo|chf }}</span>
+        <span class="fw-f">{% if mietzinskonto.iban %}<span class="fw-mono">{{ mietzinskonto.iban }}</span>{% else %}{% blocktrans with nr=mietzinskonto.konto.nummer %}Konto {{ nr }}{% endblocktrans %} · {% trans "laut Buchhaltung" %}{% endif %}</span>
+    </div>
+    {% endif %}
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Offene Kreditoren" %}</span>
+        <span class="fw-v fw-num">CHF {{ kred_offen_chf|chf }}</span>
+        <span class="fw-f">{% blocktrans count n=kred_offen_n %}{{ n }} Rechnung{% plural %}{{ n }} Rechnungen{% endblocktrans %}</span>
     </div>
     <div class="fw-kpi">
-        <span class="fw-l">{% trans "Zur Zahlung frei" %}</span>
-        <span class="fw-v fw-num">CHF {{ kred_zahllauf_chf|chf }}</span>
-        {% if in_zahlung_n %}<span class="fw-f">{% blocktrans with n=in_zahlung_n %}{{ n }} in Zahlung (unbestätigt){% endblocktrans %}</span>{% endif %}
+        <span class="fw-l">{% trans "Ausstände > 30 Tage" %}</span>
+        <span class="fw-v fw-num {% if ueber30_chf %}fw-crit{% else %}fw-good{% endif %}">CHF {{ ueber30_chf|chf }}</span>
+        <span class="fw-f">{% blocktrans count n=ueber30_n %}{{ n }} Mietpartei{% plural %}{{ n }} Mietparteien{% endblocktrans %}</span>
     </div>
     <div class="fw-kpi">
-        <span class="fw-l">{% trans "Durchlaufkonto 1190" %}</span>
-        <span class="fw-v fw-num {% if durchlauf_saldo %}fw-warn{% endif %}">CHF {{ durchlauf_saldo|chf }}</span>
-        <span class="fw-f">{% if durchlauf_saldo %}{% trans "geparkte Positionen klären" %}{% else %}{% trans "alles abgestimmt" %}{% endif %}</span>
-    </div>
-    <div class="fw-kpi">
-        <span class="fw-l">{% trans "Periodenabschluss" %}</span>
-        <span class="fw-v fw-num">{{ erledigt_n }}/{{ pflicht_n }}</span>
-        <span class="fw-f">{% trans "Pflichtschritte erledigt" %}</span>
+        <span class="fw-l">{% trans "Kautionen" %}</span>
+        <span class="fw-v fw-num">CHF {{ kautionen_chf|chf }}</span>
+        <span class="fw-f">{% blocktrans count n=kautionen_n %}{{ n }} Vertrag · hinterlegt{% plural %}{{ n }} Verträge · hinterlegt{% endblocktrans %}</span>
     </div>
 </div>
+
+<!-- Bankabgleich: offene Gutschriften mit Vorschlag -->
+<section class="fw-card fw-gutschriften">
+    <div class="fw-kopf">
+        <h2>{% trans "Bankabgleich" %}</h2>
+        <span class="fw-neben">{% if gutschriften %}{% blocktrans count n=gutschriften|length %}{{ n }} Gutschrift offen{% plural %}{{ n }} Gutschriften offen{% endblocktrans %}{% else %}{% trans "alles zugeordnet" %}{% endif %}</span>
+    </div>
+    {% if gutschriften %}
+    <ul class="fw-gs-liste">
+        {% for g in gutschriften %}
+        <li class="fw-gs">
+            <span class="fw-quelle">{% zeichen 'geld' %}</span>
+            <div class="fw-mitte">
+                <div class="fw-gs-kopf">
+                    <span class="fw-mono fw-gs-wer">{{ g.wer|default:_("Auftraggeber von der Bank nicht geliefert") }}{% if g.ref %} · {% trans "Ref." %} {{ g.ref }}{% endif %}</span>
+                    <span class="fw-betrag good">+ {{ g.betrag|chf }}</span>
+                </div>
+                <div class="fw-s">{% if g.valuta %}{% blocktrans with datum=g.valuta|date:"d.m.Y" %}Valuta {{ datum }}{% endblocktrans %}{% endif %}{% if g.text %} · {{ g.text }}{% endif %}{% if g.guthaben %} · {% trans "Guthaben" %}{% endif %}</div>
+                <div class="fw-eingang-knoepfe">
+                    {% if g.vorschlag %}
+                    <span class="fw-vorschlag">{{ g.vorschlag.vertrag.mieter.display_name }} · {{ g.vorschlag.titel }}</span>
+                    <span class="fw-gs-grund">{% if g.grund == 'name' %}{% trans "Betrag und Name passen" %}{% else %}{% trans "Betrag passt" %}{% endif %}</span>
+                    {% elif g.art == 'bewegung' %}
+                    <span class="fw-vorschlag unsicher">{% trans "Auszugszeile noch nicht verbucht" %}</span>
+                    {% else %}
+                    <span class="fw-vorschlag unsicher">{% trans "Betrag passt zu keinem offenen Posten" %}</span>
+                    {% endif %}
+                </div>
+                <div class="fw-eingang-knoepfe">
+                    {% if g.vorschlag %}
+                    <form method="post" action="/neu/bankabgleich/zuordnen/">
+                        {% csrf_token %}
+                        <input type="hidden" name="zahlung_id" value="{{ g.id }}">
+                        <input type="hidden" name="rechnung_id" value="{{ g.vorschlag.id }}">
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <button type="submit" class="fw-btn fw-knapp fw-primary">{% zeichen 'gut' %}{% trans "Übernehmen" %}</button>
+                    </form>
+                    <a href="/neu/bankabgleich/{{ lg_query }}" class="fw-btn fw-knapp fw-geist">{% trans "Anders zuordnen" %}</a>
+                    {% else %}
+                    <a href="/neu/bankabgleich/{{ lg_query }}" class="fw-btn fw-knapp">{% trans "Zuordnen" %}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    {% include 'fw/_empty.html' with icon='gut' titel=_("Abgeglichen.") subtext=_("Alle Gutschriften sind verbucht.") %}
+    {% endif %}
+</section>
+
+<!-- Ausstände nach Alter (dieselbe Einteilung wie /neu/mahnwesen/aging/) -->
+<section class="fw-card">
+    <div class="fw-kopf">
+        <h2>{% trans "Ausstände nach Alter" %}</h2>
+        <span class="fw-neben">{% if aktive_lg %}{{ aktive_lg.strasse }}{% else %}{% trans "ganzer Bestand" %}{% endif %}</span>
+    </div>
+    <div class="fw-tablewrap">
+        <table class="fw-table fw-aging-tabelle">
+            <thead><tr>
+                <th>{% trans "Mietpartei" %}</th>
+                <th class="fw-right">1–30</th>
+                <th class="fw-right">31–60</th>
+                <th class="fw-right">61–90</th>
+                <th class="fw-right">&gt; 90</th>
+                <th class="fw-right">{% trans "Total" %}</th>
+                <th>{% trans "Mahnstufe" %}</th>
+            </tr></thead>
+            <tbody>
+            {% for a in ausstaende %}
+            <tr{% if a.url %} class="fw-klickzeile" data-href="{{ a.url }}"{% endif %}>
+                <td>{% if a.url %}<a href="{{ a.url }}" class="fw-zelle-titel">{{ a.name }}</a>{% else %}<span class="fw-zelle-titel">{{ a.name }}</span>{% endif %}{% if a.lg %}<span class="fw-zelle-sub">{{ a.lg.strasse }}, {{ a.lg.ort }}</span>{% elif a.objekt %}<span class="fw-zelle-sub">{{ a.objekt }}</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if a.d30 %}{{ a.d30|chf }}{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if a.d60 %}<span class="fw-aging-neg">{{ a.d60|chf }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if a.d90 %}<span class="fw-aging-neg">{{ a.d90|chf }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if a.d90plus %}<span class="fw-aging-neg">{{ a.d90plus|chf }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num"><b>{{ a.ueberfaellig|chf }}</b></td>
+                <td>{% if a.mahnstufe %}<span class="fw-chip {% if a.mahnstufe >= 2 %}fw-crit{% else %}fw-warn{% endif %}">{% blocktrans with stufe=a.mahnstufe %}{{ stufe }}. Mahnung{% endblocktrans %}</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='gut' titel=_("Keine überfälligen Forderungen.") %}</td></tr>
+            {% endfor %}
+            </tbody>
+            {% if ausstaende %}
+            <tfoot><tr>
+                <td>{% trans "Total" %}</td>
+                <td class="fw-right fw-num">{{ aus_total.d30|chf }}</td>
+                <td class="fw-right fw-num">{{ aus_total.d60|chf }}</td>
+                <td class="fw-right fw-num">{{ aus_total.d90|chf }}</td>
+                <td class="fw-right fw-num">{{ aus_total.d90plus|chf }}</td>
+                <td class="fw-right fw-num">{{ aus_total.ueberfaellig|chf }}</td>
+                <td></td>
+            </tr></tfoot>
+            {% endif %}
+        </table>
+    </div>
+    <div class="fw-fuss">
+        <span>{% trans "Beträge in CHF · Tage seit Fälligkeit" %}</span>
+        <span class="fw-rechts"><a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-link">{% trans "Debitoren-Aging" %}</a> <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-link">{% trans "Zum Mahnwesen" %}</a></span>
+    </div>
+</section>
+<script>
+document.querySelectorAll('.fw-aging-tabelle tr[data-href]').forEach(function (tr) {
+    tr.addEventListener('click', function (e) {
+        if (e.target.closest('a,button,input,select')) return;
+        window.location.href = tr.dataset.href;
+    });
+});
+</script>
+
+<!-- ABSCHLUSS: der bisherige Inhalt der Finanzseite -->
+{% comment %}
+DIESER TEIL IST NICHT DER ARBEITSVORRAT (G2). Der Arbeitsvorrat steht auf
+«Heute»; die Einträge unten sind Sammelposten, die dort bereits stehen. Was
+dieser Teil leistet, ist der Blick auf die Zahlen dahinter und der kurze Weg
+in die jeweilige Liste.
+{% endcomment %}
+<section class="fw-card fw-fin-abschluss">
+    <div class="fw-kopf">
+        <h2>{% trans "Abschluss" %}</h2>
+        <span class="fw-neben">{% blocktrans trimmed %}Die Zahlen hinter den Finanzaufgaben — der Arbeitsvorrat steht auf <a href="/neu/" class="fw-link">Heute</a>.{% endblocktrans %}</span>
+        <span class="fw-rechts"><span class="fw-chip {% if dringend_n %}fw-crit{% elif offene_posten %}fw-warn{% else %}fw-good{% endif %}"><span class="fw-num">{{ offene_posten }}</span> {% trans "offene Aufgaben" %}{% if dringend_n %} · {% blocktrans with n=dringend_n %}{{ n }} dringend{% endblocktrans %}{% endif %}</span></span>
+    </div>
+    <!-- Kennzahlenleiste -->
+    <div class="fw-kpis">
+        <div class="fw-kpi">
+            <span class="fw-l">{% trans "Offene Forderungen" %}</span>
+            <span class="fw-v fw-num">CHF {{ deb_offen_chf|chf }}</span>
+            {% if deb_ueberf_chf %}<span class="fw-f"><span class="fw-kritisch">{% blocktrans with betrag=deb_ueberf_chf|chf %}davon CHF {{ betrag }} überfällig{% endblocktrans %}</span></span>{% endif %}
+        </div>
+        <div class="fw-kpi">
+            <span class="fw-l">{% trans "Zur Zahlung frei" %}</span>
+            <span class="fw-v fw-num">CHF {{ kred_zahllauf_chf|chf }}</span>
+            {% if in_zahlung_n %}<span class="fw-f">{% blocktrans with n=in_zahlung_n %}{{ n }} in Zahlung (unbestätigt){% endblocktrans %}</span>{% endif %}
+        </div>
+        <div class="fw-kpi">
+            <span class="fw-l">{% trans "Durchlaufkonto 1190" %}</span>
+            <span class="fw-v fw-num {% if durchlauf_saldo %}fw-warn{% endif %}">CHF {{ durchlauf_saldo|chf }}</span>
+            <span class="fw-f">{% if durchlauf_saldo %}{% trans "geparkte Positionen klären" %}{% else %}{% trans "alles abgestimmt" %}{% endif %}</span>
+        </div>
+        <div class="fw-kpi">
+            <span class="fw-l">{% trans "Periodenabschluss" %}</span>
+            <span class="fw-v fw-num">{{ erledigt_n }}/{{ pflicht_n }}</span>
+            <span class="fw-f">{% trans "Pflichtschritte erledigt" %}</span>
+        </div>
+    </div>
+</section>
 
 <div class="fw-cockpit">
     <!-- ARBEITSKORB -->

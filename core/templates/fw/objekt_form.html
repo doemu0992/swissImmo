@@ -4,7 +4,7 @@
 {% load l10n %}
 {% block title %}{% if ist_neu %}{% trans "Neues Objekt" %}{% else %}{% blocktrans with name=e.bezeichnung %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<nav class="fw-akte-pfad mb-3">
+<nav class="fw-brotkrume mb-3">
     <a href="/neu/objekte/{{ lg_query }}">{% trans "Objekte" %}</a>
     {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     {% if not ist_neu %}<a href="/neu/objekte/{{ e.id }}/">{{ e.bezeichnung }}</a>

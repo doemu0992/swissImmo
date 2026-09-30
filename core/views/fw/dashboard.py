@@ -15,7 +15,7 @@ from decimal import Decimal
 from urllib.parse import quote
 
 from django.contrib.auth import get_user_model
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -460,6 +460,155 @@ def _lauf_url(ziel_ansicht):
         return '/neu/laeufe/'
 
 
+def _finanzen_v8(basis, heute, deb, kred):
+    """Kopf, Kennzahlen, Bankabgleich und Ausstaende nach konzept-v8 (#finanzen).
+
+    NUR LESEND. Jede Zahl stammt aus einer Quelle, die es schon gibt:
+
+      Mietzinskonto   Saldo von Konto 1020 laut Buchhaltung (dieselbe
+                      Storno-Regel wie der Saldoabgleich im Bankabgleich),
+                      IBAN aus dem juengsten Kontoauszug dieses Kontos
+      Kreditoren      dieselben Status wie «offene_kreditoren» im Bankabgleich
+      Ausstaende      `aging_gruppen` — dieselbe Einteilung wie die Aging-Seite
+      Kautionen       `kautions_status == 'einbezahlt'` als Abfrage
+      Bankabgleich    geparkte Zahlungen (1190/2030) und offene
+                      Gutschrift-Auszugszeilen — dieselben Mengen wie
+                      `fw_bankabgleich`
+
+    DER VORSCHLAG IST KEINE ERFUNDENE SICHERHEIT. Das Mockup zeigt «99 %
+    sicher»; eine solche Zahl rechnet der Bestand nirgends. Vorgeschlagen
+    wird nur, was sich belegen laesst: GENAU EINE offene Rechnung mit
+    demselben offenen Betrag (bei einem Guthaben: desselben Vertrags). Die
+    Kapsel sagt, worauf der Vorschlag beruht — Betrag, oder Betrag und Name.
+    «Uebernehmen» schickt dasselbe Formular wie «Zuordnen» im Bankabgleich
+    (`/neu/bankabgleich/zuordnen/`); die Buchung aendert sich nicht.
+
+    Abfragen: 6 (Konto, Saldo, IBAN, letzter Import, Kautionen, Mahnstufen)
+    + 3 fuer den Bankabgleich (geparkt + deren Auszugszeilen, offene
+    Gutschriften).
+    """
+    from django.db.models import Max
+    from finance.models import (Bankbewegung, Buchung, Buchungskonto,
+                                Kontoauszug, Mahnung, Zahlungseingang)
+    from rentals.models import Mietvertrag
+    from core.services import zahler as _zahler
+    from core.views.fw.mahnwesen import aging_gruppen
+
+    aktive_lg = basis['aktive_lg']
+
+    # ---------- Mietzinskonto ----------
+    mietzinskonto = None
+    konto = Buchungskonto.objects.filter(nummer='1020').first()
+    if konto:
+        bq = Buchung.objects.filter(ist_storno=False, storniert_am__isnull=True)
+        z = bq.aggregate(s=Sum('betrag', filter=Q(soll_konto=konto)),
+                         h=Sum('betrag', filter=Q(haben_konto=konto)))
+        iban = (Kontoauszug.objects.filter(konto=konto).exclude(iban='')
+                .order_by('-bis', '-id').values_list('iban', flat=True).first())
+        mietzinskonto = {'konto': konto, 'iban': iban or '',
+                         'saldo': (z['s'] or Decimal('0.00')) - (z['h'] or Decimal('0.00'))}
+    letzter_import = (Kontoauszug.objects.order_by('-importiert_am', '-id')
+                      .values_list('importiert_am', flat=True).first())
+
+    # ---------- Offene Kreditoren ----------
+    kred_offen = [k for k in kred
+                  if k.status in ('neu', 'freigegeben', 'in_zahlung', 'teilbezahlt')
+                  and k.offener_betrag > 0]
+
+    # ---------- Kautionen (hinterlegt) ----------
+    kq = Mietvertrag.objects.filter(kautions_betrag__gt=0,
+                                    kautions_einbezahlt_am__isnull=False,
+                                    kautions_zurueckbezahlt_am__isnull=True)
+    if aktive_lg:
+        kq = kq.filter(einheit__liegenschaft=aktive_lg)
+    kaut = kq.aggregate(s=Sum('kautions_betrag'), n=Count('pk'))
+
+    # ---------- Ausstaende nach Alter ----------
+    gruppen, _total = aging_gruppen(deb, heute)
+    ausstaende = []
+    for g in gruppen:
+        g['ueberfaellig'] = g['d30'] + g['d60'] + g['d90'] + g['d90plus']
+        g['ueber30'] = g['d60'] + g['d90'] + g['d90plus']
+        if g['ueberfaellig'] <= 0:
+            continue
+        if len(g['vertrag_ids']) == 1:
+            g['url'] = f"/neu/vertraege/{next(iter(g['vertrag_ids']))}/"
+        elif g['mieter_id']:
+            g['url'] = f"/neu/personen/{g['mieter_id']}/"
+        else:
+            g['url'] = ''
+        ausstaende.append(g)
+    ausstaende.sort(key=lambda g: (-g['ueber30'], -g['ueberfaellig']))
+    ids = [i for g in ausstaende for i in g['rechnung_ids']]
+    stufen = dict(Mahnung.objects.filter(debitoren_rechnung_id__in=ids)
+                  .values('debitoren_rechnung_id').annotate(s=Max('stufe'))
+                  .values_list('debitoren_rechnung_id', 's')) if ids else {}
+    for g in ausstaende:
+        g['mahnstufe'] = max((stufen.get(i) or 0 for i in g['rechnung_ids']), default=0)
+    aus_total = {b: sum((g[b] for g in ausstaende), Decimal('0.00'))
+                 for b in ('d30', 'd60', 'd90', 'd90plus', 'ueberfaellig')}
+    ueber30_summe = sum((g['ueber30'] for g in ausstaende), Decimal('0.00'))
+    ueber30_n = sum(1 for g in ausstaende if g['ueber30'] > 0)
+
+    # ---------- Bankabgleich: offene Gutschriften ----------
+    geparkt_qs = (Zahlungseingang.objects
+                  .filter(status='verbucht', konto__nummer__in=['1190', '2030'])
+                  .select_related('vertrag__mieter', 'konto'))
+    if aktive_lg:
+        geparkt_qs = geparkt_qs.filter(
+            Q(liegenschaft=aktive_lg)
+            | Q(vertrag__einheit__liegenschaft=aktive_lg)
+            | Q(liegenschaft__isnull=True, vertrag__isnull=True))
+    gutschriften = []
+    for z in geparkt_qs.order_by('-datum_eingang').prefetch_related('bankbewegungen'):
+        bew = next(iter(z.bankbewegungen.all()), None)
+        roh = (bew.text if bew else '') or ''
+        if not roh:
+            t = (z.bemerkung or '').split('UNGEKLÄRT:', 1)
+            roh = (t[1] if len(t) > 1 else t[0]).strip()
+        name, rest, _geraten = _zahler.aus_bewegung((bew.gegenpartei if bew else ''), roh)
+        if not name and z.vertrag_id and z.vertrag.mieter_id:
+            name = z.vertrag.mieter.display_name
+        kandidaten = [r for r in deb if r.vertrag_id and r.offener_betrag == z.betrag
+                      and (not z.vertrag_id or r.vertrag_id == z.vertrag_id)]
+        vorschlag, grund = None, ''
+        if len(kandidaten) == 1:
+            vorschlag = kandidaten[0]
+            wer = _zahler.normalisiere(name)
+            nachname = _zahler.normalisiere(getattr(vorschlag.vertrag.mieter, 'nachname', ''))
+            grund = 'name' if (nachname and wer and nachname in wer) else 'betrag'
+        gutschriften.append({
+            'art': 'geparkt', 'id': z.id, 'wer': name or rest or '',
+            'ref': ((bew.referenz if bew else '') or '').strip(),
+            'text': rest if name else '',
+            'valuta': (bew.valuta or bew.datum) if bew else z.datum_eingang,
+            'betrag': z.betrag, 'guthaben': bool(z.konto_id and z.konto.nummer == '2030'),
+            'vorschlag': vorschlag, 'grund': grund,
+        })
+    bew_qs = Bankbewegung.objects.filter(status='offen', betrag__gt=0).order_by('-datum', '-id')
+    if aktive_lg:
+        bew_qs = bew_qs.filter(Q(liegenschaft=aktive_lg) | Q(liegenschaft__isnull=True))
+    for b in bew_qs[:50]:
+        gutschriften.append({
+            'art': 'bewegung', 'id': b.id, 'wer': b.gegenpartei or b.text or '',
+            'ref': (b.referenz or '').strip(),
+            'text': b.text if b.gegenpartei else '',
+            'valuta': b.valuta or b.datum, 'betrag': b.betrag,
+            'guthaben': False, 'vorschlag': None, 'grund': '',
+        })
+    gutschriften.sort(key=lambda g: g['valuta'] or heute, reverse=True)
+
+    return {
+        'mietzinskonto': mietzinskonto, 'letzter_import': letzter_import,
+        'kred_offen_chf': sum((k.offener_betrag for k in kred_offen), Decimal('0.00')),
+        'kred_offen_n': len(kred_offen),
+        'ueber30_chf': ueber30_summe, 'ueber30_n': ueber30_n,
+        'kautionen_chf': kaut['s'] or Decimal('0.00'), 'kautionen_n': kaut['n'] or 0,
+        'ausstaende': ausstaende, 'aus_total': aus_total,
+        'gutschriften': gutschriften,
+    }
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_finanzen(request):
     """Finanz-Cockpit — die Zahlen hinter den Finanzaufgaben.
@@ -497,7 +646,11 @@ def fw_finanzen(request):
     deb = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
     if aktive_lg:
         deb = deb.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
-    deb = [r for r in deb.select_related('vertrag').prefetch_related('zahlungseingaenge') if r.offener_betrag > 0]
+    # select_related auf Mieter/Einheit/Liegenschaft (statt nur 'vertrag'):
+    # dieselbe Liste speist `aging_gruppen` und die Vorschlaege im
+    # Bankabgleich (konzept-v8) — ohne weitere Abfrage je Zeile.
+    deb = [r for r in deb.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
+           .prefetch_related('zahlungseingaenge') if r.offener_betrag > 0]
     deb_offen_chf = sum((r.offener_betrag for r in deb), Decimal('0.00'))
     deb_ueberf = [r for r in deb if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute]
     deb_ueberf_chf = sum((r.offener_betrag for r in deb_ueberf), Decimal('0.00'))
@@ -699,4 +852,5 @@ def fw_finanzen(request):
         'durchlauf_saldo': durchlauf_saldo,
         'checkliste': checkliste, 'erledigt_n': erledigt_n, 'pflicht_n': pflicht_n,
         'heute': heute,
+        **_finanzen_v8(basis, heute, deb, kred),
     })

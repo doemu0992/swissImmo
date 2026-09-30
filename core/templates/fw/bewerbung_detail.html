@@ -2,7 +2,7 @@
 {% load zeichen i18n %}
 {% block title %}{{ b.vorname }} {{ b.nachname }} — {% trans "Bewerbung" %}{% endblock %}
 {% block content %}
-<nav class="fw-akte-pfad mb-2.5">
+<nav class="fw-brotkrume mb-2.5">
     <a href="/neu/bewerbungen/">{% trans "Bewerbungen" %}</a>
     {% zeichen 'weiter' %}
     <b>{{ b.vorname }} {{ b.nachname }}</b>
@@ -92,11 +92,11 @@
                 <p class="fw-hilfe mb-3">{% trans "Ausweis und Einkommensnachweis werden erst in der engeren Auswahl verlangt — hier ablegen, sobald sie vorliegen." %}</p>
                 <div class="grid grid-cols-1 gap-3">
                     <label class="fw-label">{% trans "Ausweiskopie" %}
-                        <input type="file" name="ausweiskopie" class="mt-1 w-full text-xs"></label>
+                        <input type="file" name="ausweiskopie" class="fw-datei mt-1 w-full"></label>
                     <label class="fw-label">{% trans "Einkommensnachweis" %}
-                        <input type="file" name="lohnausweis" class="mt-1 w-full text-xs"></label>
+                        <input type="file" name="lohnausweis" class="fw-datei mt-1 w-full"></label>
                     <label class="fw-label">{% trans "Weitere Unterlagen" %}
-                        <input type="file" name="weitere_dokumente" class="mt-1 w-full text-xs"></label>
+                        <input type="file" name="weitere_dokumente" class="fw-datei mt-1 w-full"></label>
                 </div>
                 <button class="mt-3 fw-btn fw-knapp">
                     {% trans "Ablegen" %}

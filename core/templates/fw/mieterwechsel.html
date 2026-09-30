@@ -3,7 +3,6 @@
 {% block title %}{% trans "Mieterwechsel" %} · swissImmo{% endblock %}
 {% block content %}
 
-{% include 'fw/_pipeline.html' %}
 <div class="fw-phead">
     <div>
         <h1>{% trans "Mieterwechsel-Cockpit" %}</h1>
@@ -94,6 +93,11 @@
     <p class="mt-1">{% trans "Sobald eine Kündigung erfasst ist, erscheint hier der komplette Wechselprozess." %}</p>
 </div></div>
 {% endif %}
+
+{% comment %} Die Pipeline-Leiste stand ueber dem Seitenkopf und zeigte dieselben
+   Ziele wie die Bereichsreiter darueber (v8, zweiter Durchgang). Hier unten
+   bleibt sie als «weiter im Ablauf» mit ihren Zaehlern. {% endcomment %}
+{% include 'fw/_pipeline.html' %}
 {% endblock %}
 
 {% block scripts %}

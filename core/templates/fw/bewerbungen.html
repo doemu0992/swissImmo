@@ -3,7 +3,6 @@
 {% block title %}{% trans "Bewerbungen" %} — swissImmo{% endblock %}
 {% block content %}
 
-{% include 'fw/_pipeline.html' %}
 
 <div class="fw-phead">
     <div>
@@ -43,4 +42,9 @@
     </div>
     {% endfor %}
 </div>
+
+{% comment %} Die Pipeline-Leiste stand ueber dem Seitenkopf und zeigte dieselben
+   Ziele wie die Bereichsreiter darueber (v8, zweiter Durchgang). Hier unten
+   bleibt sie als «weiter im Ablauf» mit ihren Zaehlern. {% endcomment %}
+{% include 'fw/_pipeline.html' %}
 {% endblock %}

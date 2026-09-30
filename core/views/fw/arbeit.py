@@ -452,6 +452,61 @@ def fw_leistenzahlen(request):
     return JsonResponse({'heute': zahl_heute, 'laeufe': laeufe, 'zulauf': zulauf})
 
 
+#: Beschriftung der Stufen je Laufart — REINE ANZEIGE, nichts davon steht in
+#: der Datenbank.
+#:
+#: WARUM ABGELEITET UND NICHT GESPEICHERT: `faelle.lauf_models.Lauf` kennt
+#: genau drei Zustaende, die zaehlen (offen → laeuft → abgeschlossen), und
+#: Blockaden als eigene Datensaetze. Eigene Stufen je Lauf gibt es im Modell
+#: nicht, und keine View setzt sie. Das Stufenband aus konzept-v8 (`pipe()`)
+#: zeigt deshalb diese drei Zustaende — nur mit Namen, die zur Laufart
+#: passen: Beim Bankabgleich heisst «laeuft» eben «Zuordnung». Mehr Stufen
+#: als Zustaende waere erfunden; ein Band, das «Geprueft» meldet, obwohl
+#: niemand etwas prueft, ist schlimmer als eines mit drei Segmenten.
+#:
+#: Die dritte Stufe heisst ueberall «Abgeschlossen», weil `abschliessen()`
+#: nur das festhaelt — nicht, ob verbucht oder versandt wurde.
+LAUF_STUFEN = {
+    'sollstellung': (gettext_lazy('Vorschau'), gettext_lazy('Stellung')),
+    'bankabgleich': (gettext_lazy('Import'), gettext_lazy('Zuordnung')),
+    'mahnlauf': (gettext_lazy('Vorschlag'), gettext_lazy('Mahnungen')),
+    'zahllauf': (gettext_lazy('Zusammenstellung'), gettext_lazy('Freigabe')),
+    'mwst': (gettext_lazy('Erfassung'), gettext_lazy('Abrechnung')),
+    'nebenkosten': (gettext_lazy('Kostenerfassung'), gettext_lazy('Verteilung')),
+}
+LAUF_STUFEN_SONST = (gettext_lazy('Vorbereitung'), gettext_lazy('Ausführung'))
+
+
+def _lauf_stufen(lauf, blockiert):
+    """Das Stufenband eines Laufs: [{'name', 'zustand'}] mit
+    zustand in {'fertig', 'jetzt', 'blockiert', ''}.
+
+    offen → Stufe 1 laeuft; laeuft → Stufe 1 fertig, Stufe 2 laeuft;
+    abgeschlossen / uebersprungen → alle fertig. Eine offene Blockade faerbt
+    die LAUFENDE Stufe rot — dort steht der Lauf.
+    """
+    from faelle.lauf_models import Lauf
+
+    namen = list(LAUF_STUFEN.get(lauf.laufart.schluessel, LAUF_STUFEN_SONST))
+    namen.append(gettext_lazy('Abgeschlossen'))
+    if lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN):
+        jetzt = len(namen)
+    elif lauf.status == Lauf.LAEUFT:
+        jetzt = 1
+    else:
+        jetzt = 0
+    stufen = []
+    for i, name in enumerate(namen):
+        if i < jetzt:
+            zustand = 'fertig'
+        elif i == jetzt:
+            zustand = 'blockiert' if blockiert else 'jetzt'
+        else:
+            zustand = ''
+        stufen.append({'name': name, 'zustand': zustand})
+    return stufen, min(jetzt + 1, len(namen)), len(namen)
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_laeufe(request):
     """Läufe mit Zustand — und dem, was sie blockiert.
@@ -459,23 +514,45 @@ def fw_laeufe(request):
     Der Blockadegrund steht als Text da («Verbrauchsablesung Techem fehlt»),
     nicht das Wort «blockiert»: Der Grund führt zu einer Handlung, das Wort
     zu einer Rückfrage.
+
+    konzept-v8 (#laeufe): je offener Lauf eine Karte mit Stufenband
+    (`_lauf_stufen`) und einem Knopf, der in die Ansicht des Laufs fuehrt
+    (`_lauf_url(laufart.ziel_ansicht)`, wie der Periodenabschluss).
     """
     from faelle.lauf_models import Lauf
 
+    from .dashboard import _lauf_url
+
+    basis = _global_filter(request)
     heute = timezone.localdate()
     offen, erledigt = [], []
+    ziele = {}
     for lauf in (Lauf.objects.select_related('laufart')
                  .prefetch_related('blockaden').order_by('-faellig_am')[:100]):
-        blockaden = list(lauf.offene_blockaden)
+        # Aus dem Prefetch gefiltert statt `lauf.offene_blockaden`: Das ist
+        # ein `.filter()` und fragte je Lauf einmal nach (bis zu 100 Abfragen).
+        blockaden = [b for b in lauf.blockaden.all() if b.behoben_am is None]
+        tage = (lauf.faellig_am - heute).days
+        stufen, schritt, schritte = _lauf_stufen(lauf, bool(blockaden))
+        art = lauf.laufart.ziel_ansicht
+        if art not in ziele:
+            ziele[art] = _lauf_url(art) + basis['lg_query']
         zeile = {
-            'lauf': lauf, 'blockaden': blockaden,
-            'tage': (lauf.faellig_am - heute).days,
+            'lauf': lauf, 'blockaden': blockaden, 'tage': tage,
+            'stufen': stufen, 'schritt': schritt, 'schritte': schritte,
+            'url': ziele[art],
+            # Dieselbe Regel wie der Zaehler «Läufe» in der Leiste
+            # (`fw_zaehler`): Stichtag erreicht oder offen blockiert.
+            'braucht_dich': bool(blockaden) or tage <= 0,
         }
         (erledigt if lauf.status == Lauf.ABGESCHLOSSEN else offen).append(zeile)
     offen.sort(key=lambda z: z['lauf'].faellig_am)
+    # nav 'laeufe' (bis v8: 'arbeit'): Die Seite ist der Kopf des Bereichs
+    # «Läufe» (core/navigation.py) — mit 'arbeit' leuchtete «Heute» auf.
     return render(request, 'fw/laeufe.html', {
-        **_global_filter(request), 'nav': 'arbeit',
+        **basis, 'nav': 'laeufe',
         'heute': heute, 'offen': offen, 'erledigt': erledigt[:20],
+        'brauchen_dich': sum(1 for z in offen if z['braucht_dich']),
     })
 
 
@@ -495,7 +572,7 @@ def fw_zulauf(request):
     zeilen = [{'eingang': e, 'v': vorschlagen(e)} for e in offen]
     _z, gesamt = posteingang()
     return render(request, 'fw/zulauf.html', {
-        **basis, 'nav': 'arbeit',
+        **basis, 'nav': 'zulauf',
         'zeilen': zeilen, 'gesamt': gesamt,
         'erledigt': list(Eingang.objects.exclude(status=Eingang.OFFEN)
                          .order_by('-erledigt_am')[:20]),
@@ -548,7 +625,7 @@ def fw_termine(request):
     vergangen = list(Termin.objects.filter(beginn__lt=jetzt)
                      .select_related('zustaendig').order_by('-beginn')[:30])
     return render(request, 'fw/termine.html', {
-        **_global_filter(request), 'nav': 'arbeit',
+        **_global_filter(request), 'nav': 'termine',
         'kommend': kommend, 'vergangen': vergangen,
         'arten': Termin.ARTEN, 'heute': timezone.localdate(),
     })
@@ -605,7 +682,7 @@ def fw_abwesenheiten(request):
 
     heute = timezone.localdate()
     return render(request, 'fw/abwesenheiten.html', {
-        **_global_filter(request), 'nav': 'arbeit', 'heute': heute,
+        **_global_filter(request), 'nav': 'abwesenheiten', 'heute': heute,
         'laufend': list(Abwesenheit.objects.laufend(heute)
                         .select_related('benutzer', 'vertreten_durch')),
         'kommend': list(Abwesenheit.objects.filter(von__gt=heute)

@@ -124,28 +124,23 @@ def fw_mahnwesen(request):
     return render(request, 'fw/mahnwesen.html', context)
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
-def fw_debitoren_aging(request):
-    """Debitoren-Altersstruktur (OP-Aging): offene Forderungen nach
-    Fälligkeitsalter (nicht fällig / 1–30 / 31–60 / 61–90 / >90 Tage),
-    gruppiert je Mieter — die Risikosicht fürs Mahnwesen."""
-    heute = timezone.localdate()
-    basis = _global_filter(request)
-    aktive_lg = basis['aktive_lg']
+AGING_BUCKETS = ['nicht_faellig', 'd30', 'd60', 'd90', 'd90plus']
 
-    # `offener_betrag` summiert die verbuchten Zahlungseingänge. Ohne Prefetch
-    # ist das EINE Abfrage je offener Rechnung — gemessen 88 Posten → 93
-    # Abfragen, 176 → 181. Ausgerechnet diese Seite öffnet man dann, wenn viel
-    # offen ist. Der Prefetch-Zweig in `offener_betrag` greift nur, wenn die
-    # Zahlungen hier auch vorgeladen werden; die übrigen Debitoren-Listen tun
-    # das seit dem N+1-Hotfix, diese Seite war nicht nachgezogen worden.
-    qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
-          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
-          .prefetch_related('zahlungseingaenge'))
-    if aktive_lg:
-        qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
 
-    BUCKETS = ['nicht_faellig', 'd30', 'd60', 'd90', 'd90plus']
+def aging_gruppen(qs, heute):
+    """Offene Rechnungen je Mieter nach Faelligkeitsalter — (rows, total).
+
+    Aus `fw_debitoren_aging` herausgeloest, damit die Finanzseite
+    (konzept-v8, «Ausstaende nach Alter») DIESELBE Einteilung zeigt statt
+    einer zweiten. Erwartet ein QuerySet mit `select_related(
+    'vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')`
+    und `prefetch_related('zahlungseingaenge')`.
+
+    Zusaetzlich zur Aging-Seite traegt jede Zeile `mieter_id`,
+    `vertrag_ids`, `rechnung_ids` und `lg` (fuer den Verweis zur Akte und
+    die Mahnstufe) — rein lesend, ohne weitere Abfrage.
+    """
+    BUCKETS = AGING_BUCKETS
 
     def bucket(tage):
         if tage <= 0:
@@ -179,7 +174,17 @@ def fw_debitoren_aging(request):
             objekt = r.liegenschaft.strasse if r.liegenschaft_id else ''
         g = gruppen.setdefault(key, {'name': name, 'objekt': objekt,
                                      **{b: Decimal('0.00') for b in BUCKETS},
-                                     'summe': Decimal('0.00'), 'aeltester': 0})
+                                     'summe': Decimal('0.00'), 'aeltester': 0,
+                                     'mieter_id': key[1] if key[0] == 'm' else None,
+                                     'vertrag_ids': set(), 'rechnung_ids': [],
+                                     'lg': None})
+        if r.vertrag_id:
+            g['vertrag_ids'].add(r.vertrag_id)
+        g['rechnung_ids'].append(r.id)
+        if g['lg'] is None:
+            g['lg'] = (r.vertrag.einheit.liegenschaft
+                       if r.vertrag_id and r.vertrag.einheit_id else
+                       (r.liegenschaft if r.liegenschaft_id else None))
         g[b] += offen
         g['summe'] += offen
         g['aeltester'] = max(g['aeltester'], tage)
@@ -187,6 +192,31 @@ def fw_debitoren_aging(request):
         total['summe'] += offen
 
     rows = sorted(gruppen.values(), key=lambda g: (-g['aeltester'], -float(g['summe'])))
+    return rows, total
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_debitoren_aging(request):
+    """Debitoren-Altersstruktur (OP-Aging): offene Forderungen nach
+    Fälligkeitsalter (nicht fällig / 1–30 / 31–60 / 61–90 / >90 Tage),
+    gruppiert je Mieter — die Risikosicht fürs Mahnwesen."""
+    heute = timezone.localdate()
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    # `offener_betrag` summiert die verbuchten Zahlungseingänge. Ohne Prefetch
+    # ist das EINE Abfrage je offener Rechnung — gemessen 88 Posten → 93
+    # Abfragen, 176 → 181. Ausgerechnet diese Seite öffnet man dann, wenn viel
+    # offen ist. Der Prefetch-Zweig in `offener_betrag` greift nur, wenn die
+    # Zahlungen hier auch vorgeladen werden; die übrigen Debitoren-Listen tun
+    # das seit dem N+1-Hotfix, diese Seite war nicht nachgezogen worden.
+    qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
+          .prefetch_related('zahlungseingaenge'))
+    if aktive_lg:
+        qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+
+    rows, total = aging_gruppen(qs, heute)
     ueberfaellig_summe = total['d30'] + total['d60'] + total['d90'] + total['d90plus']
 
     return render(request, 'fw/debitoren_aging.html', {

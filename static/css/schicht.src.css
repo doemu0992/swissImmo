@@ -1777,3 +1777,133 @@
         .fw-meldung{border:0;border-radius:var(--ds-radius);margin-bottom:16px}
         .fw-marke-zeichen .fw-zeichen{width:16px!important;height:16px!important}
         @media (min-width:1024px){.fw-portal-top{display:none}}
+        /* ---- Tranche A: Akten nach konzept-v8 (#akten, #lg-…, #mv-…) ----
+           Liegenschaften/Mietverhaeltnisse als EINE Karte mit Reitern,
+           Werkzeugzeile und Tabelle; Akten mit Brotkrume im Seitenkopf,
+           Kennzahlen, Zwei-Spalten-Teil und Rueckstandszeile. Masse aus dem
+           Mockup (`.crumbs`, `.p-tools`, `.two`, `.issues`, `.callout`). */
+        .fw-krumen{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px;color:var(--ds-faint);font-weight:500}
+        .fw-krumen a{color:var(--ds-muted);text-decoration:none}
+        .fw-krumen a:hover{color:var(--ds-brand);text-decoration:underline;text-underline-offset:3px}
+        .fw-phead .fw-krumen + h1{margin-top:6px}
+        .fw-akten-karte{overflow:hidden}
+        .fw-akten-karte>.fw-reiter{border-top:0;padding-top:4px}
+        .fw-akten-karte>.fw-reiter:last-child{border-bottom:0}
+        .fw-akten-werkzeug{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--ds-line)}
+        .fw-akten-werkzeug .fw-listwerkzeug{margin:0;flex:0 1 auto;min-width:0}
+        .fw-akten-hinweis{font-size:12.5px;color:var(--ds-faint)}
+        .fw-akten-werkzeug .fw-filters{margin:0;flex-basis:100%}
+        table.fw-table tr.fw-klickzeile{cursor:pointer}
+        table.fw-table .fw-zelle-titel{font-weight:600;color:var(--ds-ink);text-decoration:none}
+        table.fw-table a.fw-zelle-titel:hover{color:var(--ds-brand)}
+        table.fw-table .fw-zelle-sub{display:block;color:var(--ds-faint);font-size:12px;font-weight:400;margin-top:1px;white-space:nowrap}
+        table.fw-table .fw-zelle-befund{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+        .fw-kpis.fw-stats .fw-kpi .fw-v{font-size:22px}
+        .fw-zwei{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;align-items:start;margin-bottom:24px}
+        .fw-zwei>.fw-card{margin-bottom:0;min-width:0}
+        @media (max-width:1100px){.fw-zwei{grid-template-columns:minmax(0,1fr)}}
+        .fw-auffaellig{list-style:none;margin:0;padding:6px 0}
+        .fw-auffaellig li{display:flex;align-items:center;gap:12px;padding:12px 20px}
+        .fw-auffaellig li + li{border-top:1px solid var(--ds-line)}
+        .fw-auffaellig .fw-mitte{flex:1;min-width:0}
+        .fw-auffaellig .fw-mitte b{display:block;font-weight:600;font-size:13.5px;color:var(--ds-ink)}
+        .fw-auffaellig .fw-mitte span{font-size:12.5px;color:var(--ds-muted)}
+        .fw-sev{width:8px;height:8px;border-radius:var(--ds-pill);flex:0 0 auto;background:var(--ds-line-stark)}
+        .fw-sev.crit{background:var(--ds-crit)}.fw-sev.warn{background:var(--ds-warn)}.fw-sev.good{background:var(--ds-good)}
+        .fw-ansage{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:16px 20px;margin-bottom:24px;
+            border-radius:var(--ds-radius);border:1px solid var(--ds-line);background:var(--ds-surface)}
+        .fw-ansage>.fw-zeichen{flex:0 0 auto}
+        .fw-ansage.crit{background:var(--ds-crit-soft);border-color:transparent}
+        .fw-ansage.crit>.fw-zeichen{color:var(--ds-crit)}
+        .fw-ansage .fw-mitte{flex:1 1 220px;min-width:0}
+        .fw-ansage .fw-mitte b{display:block;font-weight:600;color:var(--ds-ink)}
+        .fw-ansage .fw-mitte span{font-size:13px;color:var(--ds-muted)}
+        .fw-ansage-knoepfe{display:flex;gap:8px;flex-wrap:wrap}
+        @media (max-width:640px){
+            .fw-akten-werkzeug{padding:12px 16px}
+            .fw-auffaellig li{padding:12px 16px;flex-wrap:wrap}
+            .fw-auffaellig .fw-mitte{flex-basis:calc(100% - 20px)}
+            .fw-ansage{padding:14px 16px}
+        }
+        /* ---- Tranche B: Läufe und Sollstellung nach konzept-v8 (#laeufe, #lauf-soll) ----
+           Laufkarten im Raster (`.runs`, `.run`, `.run-h`, `.run-f`) mit dem
+           beschrifteten Stufenband `fw-stufen` (`.pipe`): Segment + Name
+           darunter; fertig = Marke, jetzt = Marke halbtransparent,
+           blockiert = rot. Brotkrume: `fw-krumen` aus Tranche A. */
+        .fw-laeufe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}
+        .fw-laeufe>.fw-card{margin-bottom:0}
+        .fw-lauf{padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+        .fw-lauf-kopf{display:flex;align-items:flex-start;gap:12px}
+        .fw-lauf-kopf>.fw-chip{flex:0 0 auto}
+        .fw-lauf-titel{flex:1;min-width:0}
+        .fw-lauf-titel b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.01em;color:var(--ds-ink)}
+        .fw-lauf-titel span{font-size:12.5px;color:var(--ds-muted)}
+        .fw-lauf-fuss{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;
+            padding-top:12px;border-top:1px solid var(--ds-line);font-size:12px;color:var(--ds-faint)}
+        .fw-lauf-leer{grid-column:1 / -1}
+        .fw-stufen{list-style:none;margin:0;padding:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
+        .fw-stufen li{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:11.5px;color:var(--ds-faint)}
+        .fw-stufen i{display:block;height:4px;border-radius:var(--ds-radius-xs);background:var(--ds-line-stark)}
+        .fw-stufen li.fertig i{background:var(--ds-brand)}
+        .fw-stufen li.jetzt i{background:var(--ds-brand);opacity:.45}
+        .fw-stufen li.blockiert i{background:var(--ds-crit)}
+        .fw-stufen li.fertig,.fw-stufen li.jetzt,.fw-stufen li.blockiert{color:var(--ds-ink)}
+        .fw-stufen span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-phead-knoepfe .fw-kopffilter{margin:0}
+        /* Laufseiten: Die lange Unterzeile bricht um, die Wahl bleibt rechts. */
+        .fw-phead.fw-phead-lauf>div:first-child{flex:1 1 420px;min-width:0}
+        @media (max-width:1180px){.fw-laeufe{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media (max-width:720px){
+            .fw-laeufe{grid-template-columns:minmax(0,1fr)}
+            .fw-lauf{padding:16px}
+        }
+        /* ---- Tranche D: Darstellungsreste v8, zweiter Durchgang ----------
+           Brotkrume, Dateifeld, Menue «Mehr» im Seitenkopf am Telefon,
+           Summenzeile gestapelter Tabellen, Kennzahlen mit ungerader Zahl. */
+        /* Die Brotkrume ueber dem Seiten- oder Aktenkopf. Hiess bis hierher
+           `fw-akte-pfad` — wie der Schluessel-Wert-Block IM Aktenkopf
+           (bekannte-fallen 2b). Gleiche Gestalt wie zuvor `nav.fw-akte-pfad`. */
+        .fw-brotkrume{font-size:12px;color:var(--ds-faint);margin-top:4px;line-height:1.55}
+        .fw-brotkrume b{color:var(--ds-muted);font-weight:600}
+        /* Dateifeld: Rahmen wie `fw-feld`, der Auswahlknopf wie `fw-btn`.
+           Ersetzt die Tailwind-`file:`-Utilities, die je Vorlage anders
+           aussahen (Marke gefuellt, Marke weich, grau, rund). */
+        .fw-datei{display:block;max-width:100%;min-width:0;background:var(--ds-surface);
+            border:1px solid var(--ds-line-stark);border-radius:var(--ds-radius-knopf);
+            padding:4px 10px 4px 4px;font-size:13px;line-height:1.3;color:var(--ds-muted);
+            font-family:inherit;cursor:pointer;overflow:hidden;text-overflow:ellipsis;
+            transition:border-color .12s,box-shadow .12s}
+        .fw-datei:focus-visible{outline:none;border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
+        .fw-datei::file-selector-button{margin-right:10px;min-height:30px;padding:5px 12px;
+            border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);background:var(--ds-surface-2);
+            color:var(--ds-ink);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
+            transition:border-color .12s,box-shadow .12s}
+        .fw-datei:hover::file-selector-button{border-color:var(--ds-line-stark);box-shadow:var(--ds-shadow-sm)}
+        @media (max-width:640px){
+            /* Menue «Mehr» im Seitenkopf: rechts verankert ragte es 16 px links
+               ueber den Rand, sobald die Knoepfe unter den Titel umbrechen
+               (Kreditoren, 288 px breit, Knopf endet bei x = 272). Am Telefon
+               haengt es deshalb an der linken Kante der Knopfzeile. */
+            .fw-phead-knoepfe{position:relative}
+            .fw-phead-knoepfe>[data-menu]{position:static}
+            .fw-phead-knoepfe [data-menu-list]{left:0;right:auto;max-width:100%}
+            /* Kennzahlen am Telefon: Bei ungerader Zahl fuellt die letzte die
+               Reihe, statt neben einer leeren Zelle zu stehen. */
+            .fw-kpis>.fw-kpi:last-child:nth-child(odd){grid-column:1 / -1}
+        }
+        @media (max-width:767px){
+            /* Summenzeile gestapelter Tabellen, deren erste Zelle zusammengefasst
+               ist («Soll-Total» ueber zwei Spalten): Die Beschriftung steht links
+               als Titel, die erste Zahl bleibt eine beschriftete Zeile wie die
+               folgenden — das Skript hatte sie zur fetten Ueberschrift ohne
+               Beschriftung gemacht (Mieterspiegel). */
+            table[data-stack] tfoot td[colspan]:first-child{justify-content:flex-start;
+                text-align:left !important;font-size:14px;font-weight:700;color:var(--ds-ink)}
+            table[data-stack] tfoot td[colspan]:first-child>.fw-wert{text-align:left}
+            table[data-stack] tfoot td[colspan]~td[data-stack-titel]{display:flex;
+                text-align:right !important;font-size:inherit;font-weight:600;margin-bottom:0}
+            table[data-stack] tfoot td[colspan]~td[data-stack-titel]::before{content:attr(data-label)}
+            table[data-stack] tfoot td[colspan]~td[data-stack-titel]>.fw-wert{text-align:right}
+            table[data-stack] tfoot td[colspan]:not(:first-child)>.fw-wert{text-align:left;font-weight:500}
+        }
+        /* ---- Ende Tranche D ---- */

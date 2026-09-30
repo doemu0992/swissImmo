@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<nav class="fw-akte-pfad mb-3">
+<nav class="fw-brotkrume mb-3">
     <a href="/neu/objekte/{{ lg_query }}">{% trans "Objekte" %}</a>
     {% zeichen 'weiter' %}
     <a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/">{{ e.liegenschaft.strasse }}</a>
@@ -487,7 +487,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <form method="post" action="/neu/objekte/{{ e.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
             {% csrf_token %}
             <input name="fotos" type="file" accept="image/*" multiple required
-                   class="text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold">
+                   class="fw-datei">
             <button class="fw-btn fw-primary">{% zeichen 'hochladen' klasse='mr-1.5' %}{% trans "Hochladen" %}</button>
         </form>
     </div>
@@ -624,7 +624,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                 <input name="notiz" class="fw-feld w-full"></div>
             <div><label class="fw-label mb-1">{% trans "Foto" %}</label>
-                <input type="file" name="foto" accept="image/*" class="w-full text-xs fw-mutet file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold"></div>
+                <input type="file" name="foto" accept="image/*" class="fw-datei w-full"></div>
             <div class="sm:col-span-3 flex justify-end"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen" %}</button></div>
         </form>
     </div>
@@ -711,7 +711,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                             <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                                 <input name="notiz" value="{{ row.a.notiz }}" class="fw-feld w-full"></div>
                             <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Foto" %} {% if row.a.foto %}<span class="fw-mutet">{% trans "(ersetzt bestehendes)" %}</span>{% endif %}</label>
-                                <input type="file" name="foto" accept="image/*" class="w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold"></div>
+                                <input type="file" name="foto" accept="image/*" class="fw-datei w-full"></div>
                             <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
                                 <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
                                 <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>

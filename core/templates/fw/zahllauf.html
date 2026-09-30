@@ -5,8 +5,9 @@
 
 {% block content %}
 
-<div class="fw-phead">
+<div class="fw-phead fw-phead-lauf">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Zahllauf" %}</span></nav>
         <h1>{% trans "Zahllauf" %}</h1>
         <p>
             {% trans "Rechnungen auswählen → Zahlungsdatei (pain.001) erzeugen → nach der Bankbestätigung den ganzen Lauf auf einmal verbuchen" %}
@@ -107,10 +108,12 @@
             </tfoot>
         </table>
     </div>
-    <div class="fw-fuss">
-        <span>
+    {% comment %} Freigabeleiste nach konzept-v8 (Läufe): haftet unten, solange der
+       Vorschlag im Bild ist — Hinweis links, Knopf rechts. {% endcomment %}
+    <div class="fw-freigabe">
+        <div class="fw-ht">
             {% trans "Die enthaltenen Rechnungen wechseln auf «In Zahlung» und erscheinen unten — dort werden sie nach der Bankbestätigung als bezahlt verbucht." %}
-        </span>
+        </div>
         <button name="aktion" value="datei"
                 class="fw-btn fw-primary">
             {% zeichen 'herunterladen' %}{% trans "Zahlungsdatei erzeugen (pain.001)" %}
