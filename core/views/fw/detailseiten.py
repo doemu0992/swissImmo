@@ -1879,7 +1879,13 @@ def fw_vertrag_detail(request, pk):
         ('verlauf', 'Verlauf', len(verlauf) or None),
     ], organisation=getattr(request, 'organisation', None) or _akt_org())
     from core.services.docuseal_service import docuseal_konfiguriert
+    # konzept-v8 (#mv-…): Kontoblatt dieses Mietverhaeltnisses — nur lesend,
+    # zwei Abfragen (`core.services.mieterkonto.berechne_vertragskonto`).
+    from core.services.mieterkonto import berechne_vertragskonto
+    konto_zeilen, konto_saldo = berechne_vertragskonto(v)
     return render(request, 'fw/vertrag_detail.html', {
+        'konto_zeilen': konto_zeilen,
+        'konto_saldo': konto_saldo,
         'formular_gruppen': _formulare_prozesse(v, request.user),
         **basis, 'nav': 'vertraege', 'v': v, 'verlauf': verlauf,
         'vertrag_pill': _vertrag_status_pill(v),

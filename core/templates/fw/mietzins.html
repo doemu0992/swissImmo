@@ -7,6 +7,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Mietzins" %}</span></nav>
         <h1>{% trans "Mietzins" %}</h1>
         <p>{% trans "Anpassungspotenzial nach Referenzzins &amp; LIK" %}{% if curr_zins != None %} · {% trans "Aktuell: Referenzzins" %} <span class="fw-strong">{% localize off %}{{ curr_zins }}{% endlocalize %}%</span>, {% trans "LIK" %} <span class="fw-strong">{% localize off %}{{ curr_lik }}{% endlocalize %}</span>{% endif %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/mietzins/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>

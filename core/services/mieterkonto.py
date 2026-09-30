@@ -41,6 +41,33 @@ def berechne_mieterkonto(mieter, von=None, bis=None):
     return bewegungen, saldo
 
 
+def berechne_vertragskonto(vertrag):
+    """Kontoblatt EINES Mietverhaeltnisses — (zeilen, endsaldo).
+
+    Dieselbe Rechnung wie `berechne_mieterkonto`, nur auf einen Vertrag
+    beschraenkt (Vertragsakte, Reiter «Finanzen», konzept-v8 #mv-…): Soll aus
+    den Rechnungen, Haben aus den verbuchten Zahlungen, laufender Saldo.
+    Zwei Abfragen. Positiver Saldo = Mieter schuldet.
+    """
+    from finance.models import DebitorenRechnung, Zahlungseingang
+    bewegungen = []
+    for datum, titel, betrag in (DebitorenRechnung.objects.filter(vertrag=vertrag)
+                                 .exclude(status__in=('storniert', 'abgeschrieben'))
+                                 .values_list('datum', 'titel', 'betrag')):
+        bewegungen.append({'datum': datum, 'text': titel, 'soll': betrag or Decimal('0'),
+                           'haben': Decimal('0'), 'sort': 0})
+    for datum, bemerkung, betrag in (Zahlungseingang.objects.filter(vertrag=vertrag, status='verbucht')
+                                     .values_list('datum_eingang', 'bemerkung', 'betrag')):
+        bewegungen.append({'datum': datum, 'text': bemerkung or 'Zahlungseingang',
+                           'soll': Decimal('0'), 'haben': betrag or Decimal('0'), 'sort': 1})
+    bewegungen.sort(key=lambda b: (b['datum'], b['sort']))
+    saldo = Decimal('0')
+    for b in bewegungen:
+        saldo += b['soll'] - b['haben']
+        b['saldo'] = saldo
+    return bewegungen, saldo
+
+
 def saldi_fuer_mieter(mieter_liste):
     """Endsaldo je Mieter — für die Übersichtsliste, in drei Abfragen.
 

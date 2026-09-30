@@ -117,10 +117,10 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
             {% for a in ausstaende %}
             <tr{% if a.url %} class="fw-klickzeile" data-href="{{ a.url }}"{% endif %}>
                 <td>{% if a.url %}<a href="{{ a.url }}" class="fw-zelle-titel">{{ a.name }}</a>{% else %}<span class="fw-zelle-titel">{{ a.name }}</span>{% endif %}{% if a.lg %}<span class="fw-zelle-sub">{{ a.lg.strasse }}, {{ a.lg.ort }}</span>{% elif a.objekt %}<span class="fw-zelle-sub">{{ a.objekt }}</span>{% endif %}</td>
-                <td class="fw-right fw-num">{% if a.d30 %}{{ a.d30|chf }}{% else %}<span class="fw-faint">–</span>{% endif %}</td>
-                <td class="fw-right fw-num">{% if a.d60 %}<span class="fw-aging-neg">{{ a.d60|chf }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
-                <td class="fw-right fw-num">{% if a.d90 %}<span class="fw-aging-neg">{{ a.d90|chf }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
-                <td class="fw-right fw-num">{% if a.d90plus %}<span class="fw-aging-neg">{{ a.d90plus|chf }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if a.d30 %}{{ a.d30|chf:0 }}{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if a.d60 %}<span class="fw-aging-neg">{{ a.d60|chf:0 }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if a.d90 %}<span class="fw-aging-neg">{{ a.d90|chf:0 }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if a.d90plus %}<span class="fw-aging-neg">{{ a.d90plus|chf:0 }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
                 <td class="fw-right fw-num"><b>{{ a.ueberfaellig|chf }}</b></td>
                 <td>{% if a.mahnstufe %}<span class="fw-chip {% if a.mahnstufe >= 2 %}fw-crit{% else %}fw-warn{% endif %}">{% blocktrans with stufe=a.mahnstufe %}{{ stufe }}. Mahnung{% endblocktrans %}</span>{% endif %}</td>
             </tr>
@@ -131,10 +131,10 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
             {% if ausstaende %}
             <tfoot><tr>
                 <td>{% trans "Total" %}</td>
-                <td class="fw-right fw-num">{{ aus_total.d30|chf }}</td>
-                <td class="fw-right fw-num">{{ aus_total.d60|chf }}</td>
-                <td class="fw-right fw-num">{{ aus_total.d90|chf }}</td>
-                <td class="fw-right fw-num">{{ aus_total.d90plus|chf }}</td>
+                <td class="fw-right fw-num">{{ aus_total.d30|chf:0 }}</td>
+                <td class="fw-right fw-num">{{ aus_total.d60|chf:0 }}</td>
+                <td class="fw-right fw-num">{{ aus_total.d90|chf:0 }}</td>
+                <td class="fw-right fw-num">{{ aus_total.d90plus|chf:0 }}</td>
                 <td class="fw-right fw-num">{{ aus_total.ueberfaellig|chf }}</td>
                 <td></td>
             </tr></tfoot>
@@ -143,7 +143,7 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
     </div>
     <div class="fw-fuss">
         <span>{% trans "Beträge in CHF · Tage seit Fälligkeit" %}</span>
-        <span class="fw-rechts"><a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-link">{% trans "Debitoren-Aging" %}</a> <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-link">{% trans "Zum Mahnwesen" %}</a></span>
+        <span class="fw-rechts fw-fin-links"><a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-link">{% trans "Debitoren-Aging" %}</a> <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-link">{% trans "Zum Mahnwesen" %}</a></span>
     </div>
 </section>
 <script>

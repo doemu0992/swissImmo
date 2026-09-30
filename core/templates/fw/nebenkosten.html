@@ -7,6 +7,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Nebenkosten" %}</span></nav>
         <h1>{% trans "Nebenkosten" %}</h1>
         <p>{% trans "Heiz- und Nebenkosten-Abrechnungsperioden" %}
             {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>

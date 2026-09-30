@@ -6,6 +6,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Schäden" %}</span></nav>
         <h1>{% trans "Schadensfälle" %}</h1>
         <p>{% trans "Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/schaeden/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>

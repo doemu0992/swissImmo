@@ -175,3 +175,61 @@ test('Die Kennzahlenleiste bleibt am Telefon flach', async ({ page }) => {
   expect(zellen, 'Die Leiste führt nicht mehr vier Kennzahlen — dann ist sie ' +
     'nicht flacher, sondern ärmer.').toBe(4);
 });
+
+// FINANZEN UND BERICHTE (konzept-v8, zweiter Durchgang, Tranche C)
+//
+// Zwei Zahlen, die nur der Browser kennt: Ob «CHF 579'959.50» in eine halbe
+// Kennzahlkachel passt (Mockup: nein — der Betrag lief über den Rand), und ob
+// die Monatsbeschriftung der Zahlungsquote bei 390 Pixel lesbar bleibt (im
+// Mockup schrumpft sie mit dem SVG auf rund sechs Pixel).
+
+test('Finanzen: Beträge passen in die Kacheln, Betrag neben dem Absender', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/finanzen/');
+
+  const kacheln = await page.locator('.fw-fin-kpis .fw-v').evaluateAll((els) =>
+    els.map((el) => ({ t: el.textContent, h: el.getBoundingClientRect().height,
+      ueber: el.scrollWidth - el.clientWidth })));
+  expect(kacheln.length).toBeGreaterThan(0);
+  for (const k of kacheln) {
+    expect(k.ueber, `«${k.t}» läuft über die Kachel hinaus`).toBeLessThanOrEqual(0);
+    expect(k.h, `«${k.t}» bricht auf zwei Zeilen um (${Math.round(k.h)} px)`).toBeLessThan(30);
+  }
+
+  const zeile = page.locator('.fw-gs').first();
+  await expect(zeile).toBeVisible();
+  const [wer, betrag] = await Promise.all([
+    zeile.locator('.fw-gs-wer').evaluate((el) => el.getBoundingClientRect().top),
+    zeile.locator('.fw-betrag').evaluate((el) => el.getBoundingClientRect().top)]);
+  expect(Math.abs(wer - betrag), 'Der Betrag steht nicht mehr auf der Zeile des Absenders')
+    .toBeLessThan(8);
+
+  const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  expect(quer).toBeLessThanOrEqual(0);
+});
+
+test('Berichte: Achsenbeschriftung lesbar und ohne Überlappung', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/berichte/');
+
+  const achse = page.locator('.fw-kurve-achse');
+  // Der E2E-Bestand hat Sollstellungen in mehreren Monaten — ohne Linie wäre
+  // dieser Test leer und damit keiner.
+  await expect(achse).toBeVisible();
+  const x = await page.locator('.fw-kurve-x').evaluateAll((els) => els
+    .filter((el) => getComputedStyle(el).display !== 'none')
+    .map((el) => { const r = el.getBoundingClientRect();
+      return { l: r.left, r: r.right, fs: parseFloat(getComputedStyle(el).fontSize) }; }));
+  expect(x.length).toBeGreaterThan(3);
+  for (let i = 1; i < x.length; i++) {
+    expect(x[i].l, `Monatsbeschriftung ${i} überlappt die vorige`).toBeGreaterThanOrEqual(x[i - 1].r);
+  }
+  for (const b of x) expect(b.fs).toBeGreaterThanOrEqual(10);
+
+  const karte = await page.locator('.fw-diagramm-balken').evaluate((el) => el.getBoundingClientRect().right);
+  const werte = await page.locator('.fw-hbar-v').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right));
+  for (const r of werte) expect(r).toBeLessThanOrEqual(karte);
+
+  const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  expect(quer).toBeLessThanOrEqual(0);
+});

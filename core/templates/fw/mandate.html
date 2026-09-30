@@ -4,6 +4,7 @@
 {% block content %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Mandate" %}</span></nav>
         <h1>{% trans "Mandate" %}</h1>
         <p>{% blocktrans count n=rows|length %}{{ n }} Eigentümer, für den du Liegenschaften verwaltest.{% plural %}{{ n }} Eigentümer, für die du Liegenschaften verwaltest.{% endblocktrans %}</p>
     </div>

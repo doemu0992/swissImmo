@@ -22,6 +22,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Objekte" %}</span></nav>
         <h1>{% trans "Objekte" %}</h1>
         <p>{% if aktive_lg %}{% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}
             <a href="/neu/objekte/" class="fw-link">× {% trans "aufheben" %}</a>{% else %}{% trans "Nach Befund geordnet — was klemmt, steht oben." %}{% endif %}</p>

@@ -1824,6 +1824,8 @@ und einen Stilblock enthaelt.
         .fw-krumen a{color:var(--ds-muted);text-decoration:none}
         .fw-krumen a:hover{color:var(--ds-brand);text-decoration:underline;text-underline-offset:3px}
         .fw-phead .fw-krumen + h1{margin-top:6px}
+        .fw-akten-kapseln{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px}
+        .fw-akten-kapseln:empty{display:none}
         .fw-akten-karte{overflow:hidden}
         .fw-akten-karte>.fw-reiter{border-top:0;padding-top:4px}
         .fw-akten-karte>.fw-reiter:last-child{border-bottom:0}
@@ -1926,7 +1928,7 @@ und einen Stilblock enthaelt.
                haengt es deshalb an der linken Kante der Knopfzeile. */
             .fw-phead-knoepfe{position:relative}
             .fw-phead-knoepfe>[data-menu]{position:static}
-            .fw-phead-knoepfe [data-menu-list]{left:0;right:auto;max-width:100%}
+            .fw-phead-knoepfe [data-menu-list]{left:0;right:auto;max-width:calc(100vw - 32px)}
             /* Kennzahlen am Telefon: Bei ungerader Zahl fuellt die letzte die
                Reihe, statt neben einer leeren Zelle zu stehen. */
             .fw-kpis>.fw-kpi:last-child:nth-child(odd){grid-column:1 / -1}
@@ -1953,6 +1955,7 @@ und einen Stilblock enthaelt.
            Balken (`.hbar`). Masse aus dem Mockup. Die Linie ist SVG ohne
            Schrift; Achsen und Endwert sind HTML (siehe core/templatetags/diagramm.py). */
         .fw-fin-kpis .fw-v{overflow-wrap:anywhere}
+        .fw-fin-links{display:flex;gap:16px;flex-wrap:wrap;margin-left:auto}
         .fw-gutschriften .fw-leer{padding:28px 20px}
         .fw-gs-liste{list-style:none;margin:0;padding:8px 0}
         .fw-gs{display:flex;gap:12px;padding:12px 20px}
@@ -1995,7 +1998,7 @@ und einen Stilblock enthaelt.
         .fw-kurve-wert{position:absolute;transform:translate(-100%,-150%);margin-left:-6px;font-size:12px;font-weight:600;
             color:var(--ds-ink);white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
         .fw-kurve-treffer{position:absolute;top:0;bottom:0;cursor:crosshair}
-        .fw-kurve-treffer:hover{background:var(--ds-hover)}
+        @media (hover:hover){.fw-kurve-treffer:hover{background:var(--ds-hover)}}
         .fw-kurve-achse{position:relative;height:22px}
         .fw-kurve-x{position:absolute;top:6px;transform:translateX(-50%);font-size:11px;color:var(--ds-faint);white-space:nowrap}
         .fw-hbar{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) 96px;gap:10px;align-items:center;padding:7px 0;font-size:13px}
@@ -2008,6 +2011,7 @@ und einen Stilblock enthaelt.
         .fw-hbar-v.fw-faint{font-weight:400;color:var(--ds-faint)}
         @media (max-width:640px){
             .fw-gs{padding:12px 16px}
+            .fw-fin-kpis .fw-kpi .fw-v{font-size:17px}
             .fw-diagramm{padding:12px 16px 14px}
             .fw-kurve{padding-left:38px}
             .fw-kurve-y{left:-38px;width:32px;font-size:10.5px}

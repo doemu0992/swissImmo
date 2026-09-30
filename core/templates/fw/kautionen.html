@@ -5,6 +5,7 @@
 {% block content %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/finanzen/{{ lg_query }}">{% trans "Finanzen" %}</a><span aria-hidden="true">/</span><span>{% trans "Kautionen" %}</span></nav>
         <h1>{% trans "Mietzinsdepots" %}</h1>
         <p>{% blocktrans trimmed %}Register aller Kautionen — separat geführt nach <b>Art. 257e OR</b> (Sperrkonto auf den Namen des Mieters).{% endblocktrans %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>

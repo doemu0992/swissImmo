@@ -20,6 +20,7 @@ setzt dort aus, statt eine Null zu zeichnen (`None` heisst nicht erfasst).
 import math
 
 from django import template
+from django.utils.formats import number_format
 from django.utils.html import format_html, format_html_join, mark_safe
 
 from .chf import chf
@@ -35,7 +36,8 @@ def _zahl(w):
 
 
 def _prozent(w):
-    return f'{w:.1f}'
+    # Nach Sprache formatiert («90,1» auf Deutsch) — wie die übrigen Prozente der Seite.
+    return number_format(w, 1)
 
 
 def _achse(klein, gross):
@@ -82,7 +84,7 @@ def linien_diagramm(werte, beschriftungen, titel='', einheit=' %'):
             '<line x1="0" x2="100" y1="{0}" y2="{0}" class="fw-kurve-raster" '
             'vector-effect="non-scaling-stroke"/>', f'{y(stufe):.2f}'))
         y_text.append(format_html('<span class="fw-kurve-y" style="top:{}%">{}{}</span>',
-                                  f'{y(stufe):.2f}', f'{stufe:g}', einheit))
+                                  f'{y(stufe):.2f}', number_format(stufe, 0) if float(stufe).is_integer() else number_format(stufe, 1), einheit))
         stufe += schritt
 
     # Linie und Fläche je zusammenhängendem Stück

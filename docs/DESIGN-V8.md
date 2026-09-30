@@ -59,6 +59,10 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 | Häkchen | `label.fw-haekchen` > `input[type=checkbox]` + Text | Checkbox und Beschriftung in einer Zeile, auch innerhalb `fw-feldblock`. |
 | Freigabeleiste | `div.fw-freigabe` > `div.fw-ht` + `fw-btn fw-primary` | Haftet unten (am Telefon über der Tab-Leiste). Für Sollstellung, Zahllauf, Mahnlauf. |
 | Hinweis als Fliesstext | `fw-hinweis` > `div.fw-ht.fliess` | `<b>` bleibt in der Zeile — für übersetzte Sätze mit Hervorhebung. |
+| Stufenband | `ol.fw-stufen` > `li` (`fertig`/`jetzt`/`blockiert`) > `i` + `span` | Segmente mit Beschriftung darunter (Mockup `pipe()`): fertig = Marke, jetzt = Marke halbtransparent, blockiert = rot. Die Stufen eines Laufs leitet `_lauf_stufen` (core/views/fw/arbeit.py) aus dem Zustand ab — gespeichert ist nichts. |
+| Laufkarte | `div.fw-laeufe` > `section.fw-card.fw-lauf` > `fw-lauf-kopf` (`fw-lauf-titel` > `b`, `span` + `fw-chip`), `fw-stufen`, `fw-lauf-fuss` | Raster 3 / 2 / 1 Spalten (ab 1180 / 720 px). Fuss: Kontext links, Knopf rechts. `fw-lauf-leer` für den Leerzustand über alle Spalten. |
+| Kopf einer Laufseite | `fw-phead.fw-phead-lauf` > `div` (`nav.fw-krumen`, `h1`, `p`) + `fw-phead-knoepfe` | Brotkrume «Läufe / …»; die lange Unterzeile bricht um, Knöpfe/Wahl bleiben rechts. In `fw-phead-knoepfe` sitzt `fw-kopffilter` ohne eigenen Aussenabstand. |
+| Freigabeleiste in einer Karte | `fw-card` > `div.fw-freigabe` | Wenn der Knopf zum Formular der Karte gehört (Zahllauf). 12 px Abstand zum Kartenrand. |
 
 ## Was nicht mehr vorkommen soll
 

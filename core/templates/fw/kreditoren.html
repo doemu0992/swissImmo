@@ -7,6 +7,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/finanzen/{{ lg_query }}">{% trans "Finanzen" %}</a><span aria-hidden="true">/</span><span>{% trans "Kreditoren" %}</span></nav>
     <h1>{% trans "Kreditoren" %}</h1>
     <p>{% trans "Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann Kreditoren an Bank)" %}
     {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>

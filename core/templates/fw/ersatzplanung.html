@@ -7,6 +7,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Ersatz & Ausstattung" %}</span></nav>
         <h1>{% trans "Garantie- &amp; Ersatzplanung" %}</h1>
         <p>{% blocktrans trimmed %}Raumbuch-Elemente <b>und Geräte</b> nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr{% endblocktrans %}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>

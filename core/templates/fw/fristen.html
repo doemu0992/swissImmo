@@ -4,6 +4,7 @@
 {% block content %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/{{ lg_query }}">{% trans "Heute" %}</a><span aria-hidden="true">/</span><span>{% trans "Fristen" %}</span></nav>
         <h1>{% trans "Fristen-Center" %}</h1>
         <p>{% blocktrans trimmed %}Alle datierten offenen Fristen chronologisch — Kündigungstermine, Anfechtungs-,
     Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden.{% endblocktrans %} {% blocktrans count n=gesamt %}{{ n }} Frist{% plural %}{{ n }} Fristen{% endblocktrans %}{% if ueberfaellig_n %} · <b class="fw-kritisch">{% blocktrans with n=ueberfaellig_n %}{{ n }} überfällig{% endblocktrans %}</b>{% endif %}.</p>
