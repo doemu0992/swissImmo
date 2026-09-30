@@ -89,15 +89,17 @@ class StrukturTests(TestCase):
         import tempfile
         inhalt = ('<div>{% comment %} die Klasse auf dem <label> selbst '
                   '{% endcomment %}<p>Text</p></div>')
-        with tempfile.NamedTemporaryFile('w', suffix='.html', dir=WURZEL,
-                                         delete=False, encoding='utf-8') as f:
-            f.write(inhalt)
-            name = pathlib.Path(f.name).name
-        try:
-            offen, fehler = pruefen(name)
-            self.assertEqual((offen, fehler), ([], []))
-        finally:
-            (WURZEL / name).unlink()
+        # Die Probedatei liegt AUSSERHALB von core/templates: Dort lesen
+        # parallel laufende Wächter jede Vorlage. Lag sie im Ordner, fanden
+        # sie die Datei beim Auflisten und nicht mehr beim Lesen — der
+        # FileNotFoundError liess sich nicht zurückmelden und brach den
+        # ganzen parallelen Lauf ab (CI 30.09.2026). `WURZEL / absoluter
+        # Pfad` ist der absolute Pfad selbst.
+        with tempfile.TemporaryDirectory() as ordner:
+            datei = pathlib.Path(ordner) / 'probe.html'
+            datei.write_text(inhalt, encoding='utf-8')
+            offen, fehler = pruefen(datei)
+        self.assertEqual((offen, fehler), ([], []))
 
     def test_der_pruefer_erkennt_ein_fehlendes_tag(self):
         """Gegenprobe. Ein Pruefer, der nie anschlaegt, besteht jede Datei."""
