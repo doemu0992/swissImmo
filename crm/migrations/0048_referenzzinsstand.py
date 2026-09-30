@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("crm", "0045_abostufen_marktnamen"),
+        ("crm", "0047_rolle_hauswart"),
     ]
 
     operations = [
