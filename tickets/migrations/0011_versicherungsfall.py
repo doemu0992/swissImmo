@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("crm", "0048_referenzzinsstand"),
         ("finance", "0042_kreditor_weiterverrechnung_eigentuemer"),
-        ("portfolio", "0041_versicherung_selbstbehalt"),
+        ("portfolio", "0042_versicherung_selbstbehalt"),
         ("tickets", "0010_organisation_pflicht"),
     ]
 
