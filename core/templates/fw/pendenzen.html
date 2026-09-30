@@ -31,7 +31,7 @@
                     <span class="fw-klein">{% blocktrans with n=f.tage %}in {{ n }} Tg.{% endblocktrans %}</span></div>
             </a>
             {% empty %}
-            <div class="fw-leer">{% trans "Keine Fristen in den nächsten 90 Tagen." %}</div>
+            {% include 'fw/_empty.html' with knapp=True icon='termin' titel=_('Keine Fristen in den nächsten 90 Tagen.') %}
             {% endfor %}
         </div>
 
@@ -76,7 +76,7 @@
             {% endfor %}
         </div>
         {% empty %}
-        <div class="fw-card"><div class="fw-leer"><span class="fw-leer-zeichen">{% zeichen 'gut' %}</span><b>{% trans "Keine offenen Pendenzen." %}</b></div></div>
+        <div class="fw-card">{% include 'fw/_empty.html' with icon='gut' titel=_('Keine offenen Pendenzen.') %}</div>
         {% endfor %}
 
         {% if erledigte %}

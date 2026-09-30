@@ -202,3 +202,37 @@ class StilschuldTest(SimpleTestCase):
         self.assertEqual(MUSTER['SELBSTGEBAUTER_KNOPF'].findall(
             '<button class="fw-btn px-3 py-1.5 rounded-lg font-semibold">'), [])
         self.assertEqual(MUSTER['INLINE_STIL'].findall(_ohne_kommentare('{# style="x" #}')), [])
+
+
+def _kursive_leere_zustaende(text):
+    """Stellen, an denen direkt nach `{% empty %}` ein kursiver Einzeiler steht."""
+    zeilen = _ohne_kommentare(text).split('\n')
+    return [i + 1 for i, z in enumerate(zeilen)
+            if '{% empty %}' in z and 'italic' in ' '.join(zeilen[i:i + 3])]
+
+
+class KursiveLeereZustaende(SimpleTestCase):
+    """Leere Zustände nur über `fw/_empty.html` (Audit Etappe 4).
+
+    Vorher: 33 kursive Einzeiler «Keine …» in 23 Vorlagen, jeder etwas anders
+    gebaut. Jetzt alle über den Baustein — in Tabellen und Nebenlisten die
+    knappe Form (`knapp=True`). Die Zahl steht auf null und bleibt dort.
+    """
+
+    def test_keine_kursiven_einzeiler_in_fw(self):
+        funde = []
+        for pfad in sorted((VORLAGEN / 'fw').glob('*.html')):
+            for nr in _kursive_leere_zustaende(pfad.read_text(encoding='utf-8')):
+                funde.append(f'fw/{pfad.name}:{nr}')
+        self.assertEqual(
+            funde, [],
+            'Leerer Zustand als kursiver Einzeiler:\n  ' + '\n  '.join(funde)
+            + "\n\nStattdessen {% include 'fw/_empty.html' with knapp=True icon='…' "
+              "titel=_('…') %} (in einer Tabellenzeile in <td class=\"fw-leerzeile\">).")
+
+    def test_die_erkennung_greift(self):
+        """Gegenprobe: Eine Erkennung, die nie greift, wäre immer grün."""
+        self.assertEqual(_kursive_leere_zustaende(
+            '{% for x in y %}\n{% empty %}\n<p class="fw-faint italic">Keine</p>\n{% endfor %}'), [2])
+        self.assertEqual(_kursive_leere_zustaende(
+            "{% empty %}{% include 'fw/_empty.html' with knapp=True titel='x' %}"), [])

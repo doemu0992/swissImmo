@@ -175,7 +175,7 @@
                 <td class="fw-right fw-num"><span class="{% if h.gebuehr > 0 %}fw-kritisch{% else %}fw-faint{% endif %}">{{ h.gebuehr|chf }}</span></td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="fw-leerzeile fw-leer">{% trans "Noch keine Mahnungen erfasst." %}</td></tr>
+            <tr><td colspan="6" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='gut' titel=_('Noch keine Mahnungen erfasst.') %}</td></tr>
             {% endfor %}
             </tbody>
         </table>

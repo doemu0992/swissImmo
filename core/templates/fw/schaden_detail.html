@@ -200,7 +200,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             </div>
         </div>
         {% empty %}
-        <p class="fw-leer">{% trans "Noch keine Nachrichten im Verlauf." %}</p>
+        {% include 'fw/_empty.html' with knapp=True icon='meldung' titel=_('Noch keine Nachrichten im Verlauf.') %}
         {% endfor %}
     </div>
 </div>
@@ -353,7 +353,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             </form>
         </div>
         {% empty %}
-        <div class="fw-card"><p class="fw-leer">{% trans "Noch kein Handwerker beauftragt." %}</p></div>
+        <div class="fw-card">{% include 'fw/_empty.html' with knapp=True icon='arbeit' titel=_('Noch kein Handwerker beauftragt.') %}</div>
         {% endfor %}
     </div>
     <p class="fw-hilfe">{% zeichen 'hinweis' klasse='mr-1' %}

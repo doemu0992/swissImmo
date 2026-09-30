@@ -40,7 +40,7 @@
                     {% if row.status == 'zurueckbezahlt' and row.v.kautions_abzug_betrag %}<div class="fw-klein fw-kritisch mt-0.5">{% blocktrans with betrag=row.v.kautions_abzug_betrag|chf %}Abzug CHF {{ betrag }}{% endblocktrans %}</div>{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Kautionen erfasst." %}</span></td></tr>
+            <tr><td colspan="6" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='bank' titel=_('Keine Kautionen erfasst.') %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

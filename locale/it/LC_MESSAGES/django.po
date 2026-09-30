@@ -20406,3 +20406,35 @@ msgid "%(n)s Vorgang braucht heute dich."
 msgid_plural "%(n)s Vorgänge brauchen heute dich."
 msgstr[0] "%(n)s pratica ha bisogno di te oggi."
 msgstr[1] "%(n)s pratiche hanno bisogno di te oggi."
+
+#: core/templates/fw/logbuch.html
+msgid "Noch keine Aktivität."
+msgstr "Ancora nessuna attività."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "Keine Belege erfasst."
+msgstr "Nessun giustificativo registrato."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."
+msgstr "Le fatture fornitori rilevanti per le spese accessorie vengono riprese automaticamente."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Der Netto-Mietzins darf nicht negativ sein."
+msgstr "La pigione netta non può essere negativa."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Die Nebenkosten dürfen nicht negativ sein."
+msgstr "Le spese accessorie non possono essere negative."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Das Vertragsende darf nicht vor dem Vertragsbeginn liegen."
+msgstr "La fine del contratto non può precedere il suo inizio."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Bitte den Firmen-/Vereinsnamen erfassen."
+msgstr "Inserire il nome della ditta o dell'associazione."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Bitte den Nachnamen des Mieters erfassen."
+msgstr "Inserire il cognome dell'inquilino."

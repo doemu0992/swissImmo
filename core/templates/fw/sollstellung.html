@@ -75,7 +75,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="fw-leerzeile fw-leer">{% trans "Keine aktiven Verträge für diesen Monat." %}</td></tr>
+            <tr><td colspan="6" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='vertrag' titel=_('Keine aktiven Verträge für diesen Monat.') %}</td></tr>
             {% endfor %}
             </tbody>
         </table>

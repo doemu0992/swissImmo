@@ -48,7 +48,7 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 | Feld aus Formular | `{% include 'fw/_feld.html' with f=… label=… %}` | |
 | Hinweis | `fw-hinweis` (+ `warn/crit/info/good`) > `fw-hi`, `fw-ht` | Mit Zeichen und Text. |
 | Befund | `fw-befund` (+ Zustand) | Auffälligkeit mit Kosten. |
-| Leerzustand | `fw-leer` (optional `span.fw-leer-zeichen` + `b`) | Eine Aussage + ggf. eine Handlung. |
+| Leerzustand | `{% include 'fw/_empty.html' with icon=… titel=_('…') %}`, in Tabellen und Nebenlisten `knapp=True` (in `td.fw-leerzeile`) | Baut `fw-leer` / `fw-leer-knapp` mit `fw-leer-zeichen` (`mut` = neutral). Eine Aussage + ggf. eine Handlung. Keine kursiven Einzeiler. |
 | Aktenkopf | `fw-aktenkopf` > `fw-akte-oben` (`fw-akte-bild`, `fw-akte-typ`, `h1`, `fw-akte-pfad`, `fw-akte-rechts`) + `fw-kzn` | Detailseiten. |
 | Schlüssel/Wert | `fw-dz` > `fw-dl`, `fw-dv` · oder `dl` > `fw-kv` | |
 | Abschnittstitel | `fw-subhead` | 11 px Versalien. |

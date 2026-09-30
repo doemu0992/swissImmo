@@ -14,6 +14,8 @@ Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert w
 {{ mieter|json_script:"mieter-data" }}
 {{ vorwahl_einheit|json_script:"vorwahl-einheit" }}
 {{ edit_json|json_script:"edit-data" }}
+{{ rueckgabe|json_script:"rueckgabe-data" }}
+{{ feld_fehler|json_script:"fehler-data" }}
 
 <div class="fw-phead">
     <div><h1>{% if edit_vertrag %}{% trans "Vertrag (Entwurf) bearbeiten" %}{% else %}{% trans "Vertragserfassung" %}{% endif %}</h1></div>
@@ -26,6 +28,21 @@ Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert w
 <input type="hidden" name="einheit_id" id="f_einheit_id">
 <input type="hidden" name="mieter_id" id="f_mieter_id">
 <input type="hidden" name="mitmieter_name" id="f_mitmieter_name">
+
+{% if feld_fehler %}
+{% comment %}Fehler beim Speichern (Audit Etappe 2, Nachtrag): Die Eingaben
+stehen wieder im Assistenten, die Meldungen bei den Feldern. Ein Klick auf eine
+Meldung öffnet ihren Schritt.{% endcomment %}
+<div class="fw-formfehler mb-5" role="alert">
+    <b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> —
+    {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}
+    <ul class="mt-2 space-y-1">
+        {% for feld, meldung in feld_fehler.items %}
+        <li><button type="button" class="fw-btn fw-leise fw-knapp" onclick="zeigeFehler('{{ feld|escapejs }}')">{{ meldung }}</button></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
@@ -526,6 +543,91 @@ function prefillEditFromDraft(){
  } catch (e) { if (window.console) console.warn('Vertrag-Prefill', e); }
 }
 
+// Nach einem Fehler beim Speichern: die abgeschickten Werte wieder einsetzen.
+// Vorher leitete der Server auf einen leeren Assistenten um. Zuerst der
+// Zustand, den Skripte setzen (Objekt, Mieter-Reiter, Befristung, Modell,
+// Staffeln), dann alle übrigen Felder mit Namen — objChange() hat bis dahin
+// seine Vorgaben gesetzt, die Eingaben gewinnen.
+function eingabenZurueck(){
+ try {
+  const RG = JSON.parse(document.getElementById('rueckgabe-data').textContent);
+  if (!RG) return;
+  const w = n => (RG[n] || [''])[0];
+  const eid = w('einheit_id');
+  if (eid) {
+    const l = LG.find(l => l.objekte.some(o => String(o.id) === String(eid)));
+    if (l) { document.getElementById('s_lg').value = String(l.id); lgChange();
+             document.getElementById('s_obj').value = String(eid); objChange(); }
+  }
+  if (w('mieter_id')) { mieterTab('best'); document.getElementById('s_mieter').value = w('mieter_id'); }
+  else { mieterTab('neu'); setNeuTyp(w('mieter_typ') || 'person'); }
+  if (w('mit_mieter_id') || w('mit_vorname') || w('mit_nachname')) {
+    const zw = document.getElementById('zweiter_aktiv'); zw.checked = true; toggleZweiter();
+    if (w('mit_mieter_id')) { mieter2Tab('best'); document.getElementById('s_mieter2').value = w('mit_mieter_id'); }
+    else mieter2Tab('neu');
+  }
+  document.getElementById('unbefristet').checked = w('ist_befristet') !== '1'; toggleEnde();
+  const md = document.getElementById('s_modell');
+  if (md && w('mietzins_modell')) { md.value = w('mietzins_modell'); modellChange(); }
+  const reihen = document.getElementById('staffel-rows');
+  if (reihen && (RG.staffel_ab || RG.staffel_netto)) {
+    reihen.innerHTML = '';
+    const ab = RG.staffel_ab || [], nt = RG.staffel_netto || [];
+    for (let i = 0; i < Math.max(ab.length, nt.length); i++) {
+      staffelAdd(); const z = reihen.lastElementChild;
+      z.querySelector('[name=staffel_ab]').value = ab[i] || '';
+      z.querySelector('[name=staffel_netto]').value = nt[i] || '';
+    }
+  }
+  const t = w('kuendigungstermine');
+  if (t) document.querySelectorAll('.monat-cb').forEach(cb => {
+    cb.checked = /ausser\s+Dezember/i.test(t) ? (cb.value !== 'Dezember') : t.indexOf(cb.value) !== -1; });
+  const SKRIPT = ['einheit_id','mieter_id','mit_mieter_id','mieter_typ','ist_befristet',
+                  'kuendigungstermine','mitmieter_name','edit_id','staffel_ab','staffel_netto'];
+  document.querySelectorAll('#vform [name]').forEach(el => {
+    if (SKRIPT.includes(el.name) || el.disabled) return;
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      el.checked = (RG[el.name] || []).includes(el.value || 'on');
+    } else if (el.name in RG) {
+      el.value = RG[el.name][0];
+    }
+  });
+  const mw = document.getElementById('s_mwst'), box = document.getElementById('mwst-satz-box');
+  if (mw && box) box.classList.toggle('hidden', !mw.checked);
+  live();
+ } catch (e) { if (window.console) console.warn('Eingaben zurück', e); }
+}
+// Meldungen an die Felder: aria-invalid, Text darunter, Schritt des ersten Fehlers öffnen.
+function fehlerFeld(name){
+  if (name === 'einheit_id') return document.getElementById('s_obj');
+  if (name === 'staffel_netto') return document.getElementById('staffel-rows');
+  return document.querySelector('#vform [name="' + name + '"]:not([type=hidden])');
+}
+function fehlerMarkieren(){
+ try {
+  const FE = JSON.parse(document.getElementById('fehler-data').textContent);
+  if (!FE) return;
+  let erster = null;
+  Object.keys(FE).forEach(name => {
+    const el = fehlerFeld(name); if (!el) return;
+    const p = document.createElement('p');
+    p.className = 'fw-feldfehler'; p.id = 'fe_' + name; p.textContent = FE[name];
+    el.insertAdjacentElement('afterend', p);
+    el.setAttribute('aria-invalid', 'true');
+    el.setAttribute('aria-describedby', p.id);
+    el.addEventListener('input', () => el.removeAttribute('aria-invalid'), {once: true});
+    const schritt = el.closest('.vstep');
+    if (schritt && (erster === null || +schritt.dataset.step < erster)) erster = +schritt.dataset.step;
+  });
+  if (erster !== null) goStep(erster);
+ } catch (e) { if (window.console) console.warn('Fehler markieren', e); }
+}
+function zeigeFehler(name){
+  const el = fehlerFeld(name); if (!el) return;
+  const schritt = el.closest('.vstep'); if (schritt) goStep(+schritt.dataset.step);
+  el.focus && el.focus();
+}
+
 function curLg(){ return LG.find(l=>String(l.id)===document.getElementById('s_lg').value); }
 function curObj(){ const l=curLg(); if(!l) return null; return l.objekte.find(o=>String(o.id)===document.getElementById('s_obj').value); }
 function curMieter(){
@@ -998,5 +1100,7 @@ if(AKT_LIK_STAND){ document.getElementById('s_lik_stand').value = AKT_LIK_STAND;
 setNeuTyp('person');
 goStep(0);
 prefillEditFromDraft();   // Entwurf-Werte GANZ ZULETZT setzen (nach der Init-Sequenz)
+eingabenZurueck();        // nach einem Fehler: die abgeschickten Werte (überschreiben den Entwurf)
+fehlerMarkieren();
 </script>
 {% endblock %}

@@ -20204,3 +20204,35 @@ msgid "%(n)s Vorgang braucht heute dich."
 msgid_plural "%(n)s Vorgänge brauchen heute dich."
 msgstr[0] "%(n)s item needs you today."
 msgstr[1] "%(n)s items need you today."
+
+#: core/templates/fw/logbuch.html
+msgid "Noch keine Aktivität."
+msgstr "No activity yet."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "Keine Belege erfasst."
+msgstr "No receipts recorded."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."
+msgstr "Supplier invoices relevant to ancillary costs are included automatically."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Der Netto-Mietzins darf nicht negativ sein."
+msgstr "The net rent cannot be negative."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Die Nebenkosten dürfen nicht negativ sein."
+msgstr "Ancillary costs cannot be negative."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Das Vertragsende darf nicht vor dem Vertragsbeginn liegen."
+msgstr "The lease end cannot be before the lease start."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Bitte den Firmen-/Vereinsnamen erfassen."
+msgstr "Please enter the company or association name."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Bitte den Nachnamen des Mieters erfassen."
+msgstr "Please enter the tenant's last name."

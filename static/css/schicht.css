@@ -129,6 +129,8 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         table.fw-table td.fw-zentriert,table.fw-table th.fw-zentriert{text-align:center}
         table.fw-table td.fw-leerzeile{padding:32px 18px;text-align:center}
         table.fw-table tbody tr:has(td.fw-leerzeile):hover{background:transparent}
+        .fw-leer.fw-leer-knapp{padding:24px 16px;font-size:13px}
+        table.fw-table td.fw-leerzeile .fw-leer-knapp{padding:0}
         table.fw-table.fw-dicht thead th{padding:8px 14px}
         table.fw-table.fw-dicht tbody td{padding:8px 14px}
         table.fw-table tfoot td,table.fw-table tfoot th{padding:11px 16px;border-top:1px solid var(--ds-line-stark);background:var(--ds-surface-2);font-weight:600}
@@ -901,6 +903,10 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             display:grid;place-items:center;margin:0 auto 10px;font-size:18px}
         .fw-leer .fw-leer-zeichen.mut{background:var(--ds-surface-2);color:var(--ds-faint)}
         .fw-leer b{display:block;color:var(--ds-ink);font-weight:600}
+        .fw-leer p{margin:4px auto 0;max-width:24rem;font-size:12.5px;color:var(--ds-faint)}
+        .fw-leer .fw-btn{margin-top:14px}
+        .fw-leer-knapp .fw-leer-zeichen{width:32px;height:32px;font-size:15px;margin-bottom:8px}
+        .fw-leer-knapp b{font-weight:500;color:var(--ds-muted)}
         .fw-eingang{align-items:flex-start}
         .fw-quelle{width:32px;height:32px;border-radius:var(--ds-radius-knopf);display:grid;place-items:center;flex:0 0 32px;
             background:var(--ds-surface-2);border:1px solid var(--ds-line);color:var(--ds-muted);font-size:15px}

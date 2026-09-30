@@ -35,7 +35,7 @@
             <span class="fw-ink truncate">{{ u.benutzer__first_name|default:u.benutzer__username }}{% if u.benutzer__last_name %} {{ u.benutzer__last_name }}{% endif %}</span>
             <b class="fw-num">{{ u.n }}</b>
         </div>
-        {% empty %}<div class="fw-f">—</div>{% endfor %}
+        {% empty %}{% include 'fw/_empty.html' with knapp=True icon='person' titel=_('Noch keine Aktivität.') %}{% endfor %}
     </div>
 </div>
 
@@ -148,7 +148,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="fw-leerzeile fw-faint">{% trans "Keine Einträge im gewählten Zeitraum / Filter." %}</td></tr>
+            <tr><td colspan="5" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='suchen' titel=_('Keine Einträge im gewählten Zeitraum / Filter.') %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

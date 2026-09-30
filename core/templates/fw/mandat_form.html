@@ -76,7 +76,7 @@
                     <span class="text-xs fw-faint block">{{ lg.plz }} {{ lg.ort }}{% if lg.eigentuemer and lg.eigentuemer_id != md.id %} · {% trans "aktuell:" %} {{ lg.eigentuemer.firma_oder_name }}{% endif %}</span></span>
             </label>
             {% empty %}
-            <p class="fw-leer col-span-2">{% trans "Noch keine Liegenschaften erfasst." %}</p>
+            <div class="col-span-2">{% include 'fw/_empty.html' with knapp=True icon='liegenschaft' titel=_('Noch keine Liegenschaften erfasst.') %}</div>
             {% endfor %}
         </div>
     </div>

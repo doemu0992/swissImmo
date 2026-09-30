@@ -52,7 +52,7 @@
                     </div>
                 </label>
                 {% empty %}
-                <p class="fw-leer">{% trans "Keine aktiven Mieter im Filter." %}</p>
+                {% include 'fw/_empty.html' with knapp=True icon='suchen' titel=_('Keine aktiven Mieter im Filter.') %}
                 {% endfor %}
             </div>
             <p class="fw-hilfe mt-2">{% trans "Standardmässig ist niemand vorausgewählt. Ganze Liegenschaft wählen oder einzeln ankreuzen." %}</p>

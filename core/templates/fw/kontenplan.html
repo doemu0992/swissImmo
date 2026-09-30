@@ -144,7 +144,7 @@
             </tr>
             {% endif %}
             {% empty %}
-            <tr><td colspan="7" class="fw-leerzeile"><span class="fw-mutet">{% trans "Noch keine Konten." %}</span></td></tr>
+            <tr><td colspan="7" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='geld' titel=_('Noch keine Konten.') %}</td></tr>
             {% endfor %}
             </tbody>
             <tfoot>

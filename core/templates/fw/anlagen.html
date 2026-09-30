@@ -40,7 +40,7 @@
                 <td class="text-right fw-right fw-num fw-strong">CHF {{ a.buchwert|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="fw-leerzeile"><span class="fw-mutet">{% trans "Noch keine Anlagen erfasst." %}</span></td></tr>
+            <tr><td colspan="7" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='arbeit' titel=_('Noch keine Anlagen erfasst.') %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -108,7 +108,7 @@
                 <td class="text-right fw-right fw-num">CHF {{ f.jaehrliche_einlage|chf }}</td>
                 <td class="text-right fw-right fw-num">{{ f.letzte_einlage_jahr|default:"—" }}</td></tr>
             {% empty %}
-            <tr><td colspan="4" class="fw-leerzeile"><span class="fw-mutet">{% trans "Noch kein Erneuerungsfonds definiert." %}</span></td></tr>
+            <tr><td colspan="4" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='geld' titel=_('Noch kein Erneuerungsfonds definiert.') %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

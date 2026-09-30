@@ -52,7 +52,7 @@
             </div>
         </div>
         {% empty %}
-        <div class="fw-leer">{% trans "Keine Buchungen in diesem Zeitraum." %}</div>
+        {% include 'fw/_empty.html' with knapp=True icon='termin' titel=_('Keine Buchungen in diesem Zeitraum.') %}
         {% endfor %}
         <div class="fw-fuss">
             <span class="fw-strong">{% trans "Endsaldo" %}</span>
@@ -85,7 +85,7 @@
                 <td class="text-right fw-right fw-num fw-strong">{{ z.saldo|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Buchungen in diesem Zeitraum." %}</span></td></tr>
+            <tr><td colspan="7" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='termin' titel=_('Keine Buchungen in diesem Zeitraum.') %}</td></tr>
             {% endfor %}
         </tbody>
         <tfoot>

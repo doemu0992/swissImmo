@@ -277,6 +277,17 @@ Offen: Der Assistent meldet Fehler weiterhin oben und lädt leer neu (Umbau
 seiner Oberfläche ist ein eigener Schritt; im Browser verhindern die
 Zahlen- und Datumsfelder die meisten Fehleingaben schon vorher).*
 
+*Nachtrag Vertragsassistent (30.09.2026): Ein Fehler beim Speichern — Ende vor
+Beginn, fehlender Nachname, negativer Mietzins, kein Objekt, Unlesbares —
+führte auf einen leeren Assistenten, sieben Schritte Eingaben waren weg.
+Jetzt: Status 400, derselbe Assistent mit allen Eingaben (Objekt, Mieter-Reiter,
+Befristung, Modell, Staffeln, Kündigungsmonate, Freitext), die Meldung beim
+Feld, der Schritt des ersten Fehlers offen; oben eine Zusammenfassung, deren
+Einträge zum Feld springen. Ein gewähltes, noch belegtes Objekt
+(Nachmieter-Vertrag) bleibt dabei wählbar, ein Entwurf im Bearbeiten-Modus.
+Die Meldungen sind jetzt übersetzt. Im Headless-Chromium geprüft, auch bei
+390 px.*
+
 ### Etappe 3 — Komponentenschicht & Typo-Skala («der 10k-Look»)
 
 Rund 2–3 Wochen, seitenweise.
@@ -393,8 +404,17 @@ Abrechnung, keine Liste. Echte Lücken waren:
   sobald die Liegenschaft aktive Mieter hatte. Das Skript las das erste
   Formular der Seite — «Verteilen», ohne Betragsfeld — und brach mit einem
   Fehler ab (im Browser nachgewiesen).
-Offen: 33 Listen zeigen den leeren Zustand noch als kursiven Einzeiler statt
-mit `fw/_empty.html`.*
+Die 33 kursiven Einzeiler folgten im nächsten Schritt (unten).*
+
+*Leere Zustände einheitlich (30.09.2026): Die 33 kursiven Einzeiler «Keine …»
+in 23 Vorlagen laufen jetzt über `fw/_empty.html`. Der Baustein hat dafür eine
+knappe Form (`knapp=True`) für Tabellenzeilen und Nebenlisten; die grosse Form
+bleibt für eine Liste, die die Seite trägt (Pendenzen). Neue Knöpfe gibt es
+dabei bewusst nicht — nicht jede Rolle, die eine Liste sieht, darf dort auch
+erfassen. Wächter: `test_stilschuld.KursiveLeereZustaende` hält die Zahl bei
+null. Nebenbei geschlossen: Der Übersetzungswächter prüfte in Vorlagen nur
+`{% trans %}`, nicht `_('…')` als Argument — genau die Form, mit der leere
+Zustände ihre Texte bekommen.*
 
 ### Offene Entscheide (entschieden 29.09.2026)
 
