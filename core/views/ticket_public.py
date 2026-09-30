@@ -21,6 +21,13 @@ def index_view(request):
 # ==========================================
 def public_schaden_melden_view(request):
     if request.method == 'POST':
+        # Öffentliches Formular: je IP nur wenige Meldungen pro Stunde,
+        # sonst füllt ein Skript die Ticketlisten fremder Verwaltungen.
+        from core.utils.throttle import client_ip, rate_limit
+        if not rate_limit(f"schaden:{client_ip(request)}", limit=10, window_seconds=3600):
+            return render(request, 'core/schaden_melden.html', {
+                'fehler': 'Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen.',
+                'liegenschaften_json': '[]'}, status=429)
         # 1. Daten aus dem POST-Request holen
         kategorie = request.POST.get('kategorie', 'unbekannt')
         raum = request.POST.get('raum', '')

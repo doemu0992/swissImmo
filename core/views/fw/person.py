@@ -13,8 +13,10 @@ import logging
 from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
+from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q, Sum
+from core.services.geheimnis import SchluesselFehlt
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -763,7 +765,16 @@ def fw_person_form(request, pk=None):
                     **_person_formular(form),
                 })
 
-        obj.save()
+        try:
+            obj.save()
+        except SchluesselFehlt as fehler:
+            # AHV-Nummer wird nie im Klartext abgelegt. Ohne Schlüssel lässt
+            # sie sich nicht speichern — das sagen wir, statt still zu kippen.
+            messages.error(request, str(fehler).split('\n')[0])
+            return render(request, 'fw/person_form.html', {
+                **basis, 'nav': 'personen', 'm': obj, 'ist_neu': pk is None,
+                **_person_formular(form),
+            }, status=400)
         # --- Datierte Adress-Historie pflegen (Wohn- + Korrespondenzadresse) ---
         # Die Formularfelder bearbeiten die AKTUELLE Zeile (Korrektur), nicht einen
         # Umzug — ein Umzug entsteht über Vertragsbeginn/Auszug mit eigenem «gültig ab».
