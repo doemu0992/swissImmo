@@ -26,6 +26,15 @@ class Liegenschaft(models.Model):
     betreut_von = models.ForeignKey(
         'benutzer.Benutzer', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='betreute_liegenschaften', verbose_name='Betreut von')
+    #: WELCHE HAUSWARTE DIESE LIEGENSCHAFT SEHEN DÜRFEN.
+    #
+    # Getrennt von `betreut_von` (interne Betreuung im Team): Ein Hauswart ist
+    # keine Team-Rolle und darf nur die Schadensmeldungen der Liegenschaften
+    # sehen und bearbeiten, denen er hier zugeordnet ist. Ohne Zuordnung sieht
+    # er nichts — die sichere Grundeinstellung, nicht «alles».
+    hauswarte = models.ManyToManyField(
+        'benutzer.Benutzer', blank=True, related_name='hauswart_liegenschaften',
+        verbose_name='Hauswarte')
     # Der Anker der ganzen Kette. Bis Etappe 5 war er `null=True, SET_NULL` —
     # damit war er als Anker wertlos: Eine Kette ist nur so pflichtig wie ihr
     # schwaechstes Glied, also haette kein abgeleitetes Modell `null=False`

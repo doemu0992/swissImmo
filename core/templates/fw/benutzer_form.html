@@ -45,6 +45,13 @@
                 {% for r in rollen %}<option value="{{ r }}" {% if aktuelle_rolle == r or ist_neu and r == 'Lesezugriff' %}selected{% endif %}>{{ r }}</option>{% endfor %}
             </select>
             <p class="fw-hilfe">{% trans "Inhaber = Vollzugriff inkl. Abo · Verwalter = Vollzugriff im Tagesgeschäft · Sachbearbeiter = schreibend · Lesezugriff = nur ansehen" %}</p></div>
+        <div class="fw-feldblock breit"><span class="fw-label">{% trans "Liegenschaften des Hauswarts" %}</span>
+            <div class="flex flex-col gap-1">
+                {% for lg in hauswart_liegenschaften %}
+                <label class="flex items-center gap-2"><input type="checkbox" name="hauswart_lg" value="{{ lg.pk }}" {% if lg.pk in hauswart_zugeordnet %}checked{% endif %} class="fw-akzent"> {{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</label>
+                {% endfor %}
+            </div>
+            <p class="fw-hilfe">{% trans "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts." %}</p></div>
         {% endif %}
         <div class="fw-feldblock breit">
         <label class="flex items-center gap-2 flex-wrap">

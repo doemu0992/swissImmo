@@ -115,6 +115,27 @@ def hat_rolle(user, rollen):
         benutzer=user, organisation=organisation, rolle__in=rollen).exists()
 
 
+def ist_nur_hauswart(user):
+    """True wenn der Benutzer in der aktiven Organisation Hauswart ist und
+    KEINE Team-Rolle hat (Superuser und Team gelten nie als «nur Hauswart»).
+
+    Für diese Konten ist jede Sicht auf die zugeordneten Liegenschaften
+    (`Liegenschaft.hauswarte`) beschränkt."""
+    return hat_rolle(user, HAUSWART_ROLLEN) and not hat_rolle(user, TEAM_ROLLEN)
+
+
+def hauswart_darf_liegenschaft(user, liegenschaft_id):
+    """Darf dieser Benutzer Daten der Liegenschaft sehen/ändern?
+
+    Für alle ausser dem reinen Hauswart `True` (dort greift die Rollenprüfung
+    der View). Der Hauswart braucht eine Zuordnung; die Abfrage läuft durch den
+    `TenantManager`, eine fremde Organisation findet also nichts."""
+    if not ist_nur_hauswart(user):
+        return True
+    from portfolio.models import Liegenschaft
+    return Liegenschaft.objects.filter(pk=liegenschaft_id, hauswarte=user).exists()
+
+
 def ist_eigentuemer(user):
     """True wenn der User ein Eigentümer-Login ist (Eigentümer-Verknüpfung oder Gruppe)."""
     if not user or not user.is_authenticated:

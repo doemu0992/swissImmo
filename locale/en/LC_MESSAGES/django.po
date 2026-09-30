@@ -20842,6 +20842,14 @@ msgstr "Please choose a file."
 msgid "Fall %(nummer)s angelegt."
 msgstr "Case %(nummer)s created."
 
+#: core/templates/fw/benutzer_form.html:52
+msgid "Liegenschaften des Hauswarts"
+msgstr "Caretaker's properties"
+
+#: core/templates/fw/benutzer_form.html:59
+msgid "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts."
+msgstr "Only for the Hauswart (caretaker) role: they see and handle damage reports of these properties only. With no selection they see nothing."
+
 #: core/views/fw/listen.py:315
 msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
 msgstr "Only approved supplier invoices can be recharged."

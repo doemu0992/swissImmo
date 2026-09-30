@@ -127,6 +127,16 @@ def fw_benutzer_form(request, pk=None):
                 Mitgliedschaft.objects.update_or_create(
                     benutzer=ziel, organisation=organisation,
                     defaults={'rolle': rolle})
+            # Hauswart: nur die zugeordneten Liegenschaften. Jede andere Rolle
+            # verliert eine alte Zuordnung — sonst bliebe sie unsichtbar
+            # bestehen und käme bei einem Rollenwechsel zurück.
+            from portfolio.models import Liegenschaft
+            gewaehlt = P.getlist('hauswart_lg') if rolle == ROLLE_HAUSWART else []
+            for lg in Liegenschaft.objects.all():   # TenantManager: nur diese Verwaltung
+                if str(lg.pk) in gewaehlt:
+                    lg.hauswarte.add(ziel)
+                else:
+                    lg.hauswarte.remove(ziel)
         _diff = diff_model(alt_snap, snapshot_model(ziel), ziel) if pk else ''
         if pk and alt_rolle and alt_rolle != rolle:
             _diff = f"Rolle: {alt_rolle} → {rolle}" + (' · ' + _diff if _diff else '')
@@ -142,6 +152,9 @@ def fw_benutzer_form(request, pk=None):
         **basis, 'nav': 'benutzer', 'ziel': ziel, 'ist_neu': ziel is None,
         'rollen': _ROLLEN_WAHL, 'aktuelle_rolle': aktuelle_rolle,
         'ist_selbst': ziel == request.user if ziel else False,
+        'hauswart_liegenschaften': basis['alle_liegenschaften'],
+        'hauswart_zugeordnet': (set(ziel.hauswart_liegenschaften.values_list('pk', flat=True))
+                                if ziel else set()),
     })
 
 
