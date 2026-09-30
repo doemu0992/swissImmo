@@ -16,7 +16,7 @@ from crm.models import Eigentuemer, Mieter
 from rentals.models import Mietvertrag
 from portfolio.models import Einheit, Liegenschaft
 
-from ._helfer import _team_user, _test_organisation
+from ._helfer import _basis_objekte, _team_user, _test_organisation
 
 PFAD = '/neu/liegenschaften/'
 
@@ -413,3 +413,57 @@ class Objektliste(TestCase):
     def test_kein_zweites_suchfeld(self):
         """Entscheid G9: Die Objektliste sucht über die Kopfzeile."""
         self.assertNotIn('class="fw-listwerkzeug', self.c.get(self.PFAD).content.decode())
+
+
+class LeereZustaende(TestCase):
+    """Etappe 4: Seiten, die ohne Daten ein nutzloses Formular zeigten."""
+
+    def setUp(self):
+        from finance.booking import konto
+        from finance.models import KreditorenRechnung
+        self.lg, _e, _m, self.v = _basis_objekte()
+        self.k = KreditorenRechnung.objects.create(
+            lieferant='Sanitär AG', betrag=Decimal('500'), status='bezahlt',
+            liegenschaft=self.lg, konto=konto('4000'))
+        self.c = Client()
+        self.c.force_login(_team_user())
+        self.wv = f'/neu/kreditoren/{self.k.id}/weiterverrechnen/'
+
+    def test_weiterverrechnung_mit_mieter_zeigt_formular(self):
+        body = self.c.get(self.wv).content.decode()
+        self.assertIn('id="wv-form"', body)
+        self.assertNotIn('Kein aktives Mietverhältnis', body)
+
+    def test_vorschau_liest_das_einzelformular(self):
+        """Mit aktiven Mietern steht «Verteilen» als erstes Formular auf der
+        Seite. Die Vorschau las das erste Formular, fand dort kein `betrag`
+        und blieb leer."""
+        body = self.c.get(self.wv).content.decode()
+        self.assertIn('name="modus" value="verteilen"', body)
+        self.assertIn("document.getElementById('wv-form')", body)
+        self.assertNotIn("querySelector('form[method=post]')", body)
+
+    def test_weiterverrechnung_ohne_aktiven_vertrag(self):
+        self.v.status = 'archiviert'
+        self.v.save()
+        body = self.c.get(self.wv).content.decode()
+        self.assertIn('Kein aktives Mietverhältnis', body)
+        self.assertNotIn('id="wv-form"', body)
+        self.assertNotIn('name="vertrag_id"', body)
+
+    def test_weiterverrechnung_nichts_mehr_offen(self):
+        r = self.c.post(self.wv, {'vertrag_id': self.v.id, 'betrag': '500', 'zuschlag': '0'})
+        self.assertEqual(r.status_code, 302)
+        body = self.c.get(self.wv).content.decode()
+        self.assertIn('Bereits vollständig weiterverrechnet', body)
+        self.assertNotIn('id="wv-form"', body)
+        self.assertNotIn('name="modus" value="verteilen"', body)
+
+    def test_massenanpassung_ohne_machbare_vertraege(self):
+        self.v.basis_referenzzinssatz = Decimal('0')
+        self.v.basis_lik_punkte = Decimal('0')
+        self.v.save()
+        body = self.c.post('/neu/mietzins/massenanpassung/',
+                           {'aktion': 'vorschau', 'vertrag_id': [str(self.v.id)]}).content.decode()
+        self.assertIn('Keine Anpassung möglich', body)
+        self.assertNotIn('name="aktion" value="ausfuehren"', body)

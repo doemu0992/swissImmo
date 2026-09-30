@@ -20296,3 +20296,79 @@ msgstr "Copia per e-mail"
 #: portfolio/forms.py
 msgid "Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR)."
 msgstr "Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR)."
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Massenanpassung"
+msgstr "Adeguamento collettivo"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Mietzins-Massenanpassung"
+msgstr "Adeguamento collettivo delle pigioni"
+
+#: core/templates/fw/mietzins_massen.html
+#, python-format
+msgid "Vorschau — aktueller Referenzzinssatz <span class=\"fw-ink font-semibold\">%(ref)s %%</span> · LIK <span class=\"fw-ink font-semibold\">%(lik)s</span>. Wirksamkeitstermin je Vertrag = nächster zulässiger Termin (Kündigungsfrist + 10 Tage Ankündigung, Art. 269d OR)."
+msgstr "Vorschau — aktueller Referenzzinssatz <span class=\"fw-ink font-semibold\">%(ref)s %%</span> · LIK <span class=\"fw-ink font-semibold\">%(lik)s</span>. Wirksamkeitstermin je Vertrag = nächster zulässiger Termin (Kündigungsfrist + 10 Tage Ankündigung, Art. 269d OR)."
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Netto aktuell"
+msgstr "Netto attuale"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Netto neu"
+msgstr "Netto nuovo"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Basis fehlt — einzeln erfassen"
+msgstr "Base mancante — registrare singolarmente"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Kein Potenzial"
+msgstr "Nessun potenziale"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Wird angepasst"
+msgstr "Sarà adeguato"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen."
+msgstr "Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen."
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Keine Anpassung möglich"
+msgstr "Nessun adeguamento possibile"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Bei keinem der gewählten Verträge ändert sich der Mietzins, oder es fehlen Referenzzinssatz und LIK-Stand bei Vertragsbeginn. Fehlende Basisdaten im Vertrag nachtragen und die Anpassung einzeln erfassen."
+msgstr "Per nessuno dei contratti scelti la pigione cambia, oppure mancano il tasso di riferimento e l'IPC all'inizio del contratto. Completare i dati di base nel contratto e registrare l'adeguamento singolarmente."
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Zurück zur Mietzinsübersicht"
+msgstr "Torna alla panoramica delle pigioni"
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Bereits vollständig weiterverrechnet"
+msgstr "Già interamente riaddebitato"
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Von dieser Lieferantenrechnung ist nichts mehr offen. Die erstellten Rechnungen stehen in den Debitoren."
+msgstr "Di questa fattura fornitore non resta nulla di aperto. Le fatture create si trovano nei debitori."
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Zu den Debitoren"
+msgstr "Ai debitori"
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Kein aktives Mietverhältnis"
+msgstr "Nessun rapporto di locazione attivo"
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Weiterverrechnet wird an einen Mieter mit aktivem Vertrag. Sobald ein Mietverhältnis aktiv ist, lässt sich diese Rechnung hier weiterverrechnen."
+msgstr "Il riaddebito avviene a un inquilino con contratto attivo. Non appena un rapporto di locazione è attivo, questa fattura può essere riaddebitata qui."
+
+#: core/templates/fw/mietzins_massen.html
+#, python-format
+msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
+msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
+msgstr[0] "Registrare %(n)s adeguamento + modulo ufficiale (PDF collettivo)"
+msgstr[1] "Registrare %(n)s adeguamenti + moduli ufficiali (PDF collettivo)"

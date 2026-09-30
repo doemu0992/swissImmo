@@ -12,6 +12,19 @@
     </div>
 </div>
 
+{% comment %}Leere Zustände (Audit Etappe 4): Ist nichts mehr offen oder gibt es
+kein aktives Mietverhältnis, zeigte die Seite trotzdem das ganze Formular —
+mit einer leeren Pflicht-Auswahl, die sich nicht absenden liess, und ohne
+Erklärung, warum.{% endcomment %}
+{% if offen_wv <= 0 %}
+<div class="fw-card">
+{% include 'fw/_empty.html' with icon='gut' titel=_('Bereits vollständig weiterverrechnet') subtext=_('Von dieser Lieferantenrechnung ist nichts mehr offen. Die erstellten Rechnungen stehen in den Debitoren.') cta_url='/neu/debitoren/' cta_label=_('Zu den Debitoren') %}
+</div>
+{% elif not vertraege %}
+<div class="fw-card">
+{% include 'fw/_empty.html' with icon='vertrag' titel=_('Kein aktives Mietverhältnis') subtext=_('Weiterverrechnet wird an einen Mieter mit aktivem Vertrag. Sobald ein Mietverhältnis aktiv ist, lässt sich diese Rechnung hier weiterverrechnen.') cta_url='/neu/kreditoren/' cta_label=_('Zurück zu den Kreditoren') %}
+</div>
+{% else %}
 {% if ist_hnk %}
 <div class="rounded-xl border fw-linie-krit fw-krit-flaeche px-4 py-3 mb-5 fw-fs-fein fw-kritisch">
     <div class="font-bold mb-0.5">{% zeichen 'warnung' klasse='mr-1' %}{% trans "Achtung: HNK-relevante Rechnung" %}</div>
@@ -48,7 +61,7 @@
 {% endif %}
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-<form method="post" class="space-y-5">
+<form method="post" id="wv-form" class="space-y-5">
     {% csrf_token %}
     <input type="hidden" name="embed" id="wv_embed" value="">
     <script>if (window.self !== window.top) document.getElementById('wv_embed').value = '1';</script>
@@ -138,7 +151,10 @@ function wvFmt(n){ n=parseFloat(n)||0; return n.toLocaleString('de-CH',{minimumF
 function wvDstr(v){ if(!v) return ''; var p=v.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
 function wvEsc(s){ return (s||'').replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
 function wvPreview(){
-    var f = document.querySelector('form[method=post]');
+    // Das Einzelformular — nicht das erste Formular der Seite: Hat die
+    // Liegenschaft aktive Mieter, steht «Verteilen» davor, und dort fehlt
+    // `betrag`; die Vorschau brach dann ab und blieb leer.
+    var f = document.getElementById('wv-form');
     var titel = (f.titel.value||'').trim();
     // Grundbetrag wie beim Speichern auf den offenen Anteil begrenzen (min)
     var grund = Math.min(Math.max(parseFloat((f.betrag.value||'').replace(',','.'))||0, 0), WV_OFFEN);
@@ -169,4 +185,5 @@ function wvPreview(){
 wvCheck();
 wvPreview();
 </script>
+{% endif %}
 {% endblock %}
