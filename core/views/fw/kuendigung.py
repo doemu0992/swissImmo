@@ -65,6 +65,12 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
     ]
     if mit_leerstand:
         aufgaben.append(("Nachmieter suchen / Inserat aufschalten", heute, 'aufgabe'))
+    # Sperrkonto: Die Bank gibt die Kaution nur frei, wenn beide Parteien zustimmen
+    # oder ein rechtskräftiges Urteil vorliegt (Art. 257e Abs. 3 OR). Das Freigabe-
+    # schreiben ist ein eigener Schritt — ohne ihn wartet der Mieter auf sein Geld.
+    if vertrag.kautions_betrag and getattr(vertrag, 'kautions_art', '') == 'sperrkonto':
+        aufgaben.append(("Kaution: Freigabeschreiben an die Bank (Zustimmung Mieter und Vermieter)",
+                         tage(14), 'finanzen'))
 
     n = 0
     for titel, faellig, kat in aufgaben:

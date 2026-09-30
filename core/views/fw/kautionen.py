@@ -270,6 +270,9 @@ def fw_kaution_beleg(request, vertrag_id, art):
         pdf = kaution_hinterlegung_pdf(v, verwaltung=vw)
         titel = f"Kaution-Bestätigung {v.mieter.nachname}"
     ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True)
+    if art == 'freigabe':
+        from core.services.automation import erledige_pendenzen_fuer
+        erledige_pendenzen_fuer(v, ['Freigabeschreiben'], user=request.user)
     log_aktion(request, "Kautions-Beleg erstellt", str(v.mieter), titel, ziel=v)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="{titel.replace(" ", "_")}.pdf"'

@@ -152,6 +152,9 @@ TICKET_TAGE_OHNE_BEWEGUNG = 14
 #: Mindestabstand (Tage) zwischen zwei Mahnungen derselben Forderung im Mahnlauf.
 MAHN_MIN_ABSTAND_TAGE = 7
 
+#: Richtwert (Tage nach Periodenende) für die Nebenkostenabrechnung. Keine gesetzliche Frist.
+NK_ABRECHNUNG_RICHTWERT_TAGE = 180
+
 
 def _stufe_fuer_tage(tage):
     for stufe, ab in MAHN_STUFEN_TAGE:
@@ -450,6 +453,36 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
               .select_related('vertrag')):
         v = p.vertrag
         if v is not None and v.ende and v.ende < heute and v.abnahmen.filter(typ='auszug').exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a4) Nebenkostenabrechnung überfällig: Periode vorbei, nichts verbucht. Es gibt
+    # keine gesetzliche Frist (Verjährung 5 Jahre, Art. 128 Ziff. 1 OR); die Pendenz
+    # folgt dem Richtwert NK_ABRECHNUNG_RICHTWERT_TAGE — Mieter erwarten die
+    # Abrechnung zeitnah, und Belegeinsicht (Art. 4 VMWG) ist auf Verlangen zu gewähren.
+    from finance.models import AbrechnungsPeriode
+    nk_offen = AbrechnungsPeriode.objects.filter(abgeschlossen=False, ende_datum__lt=heute) \
+        .select_related('liegenschaft')
+    for ap in nk_offen:
+        soll = ap.ende_datum + timedelta(days=NK_ABRECHNUNG_RICHTWERT_TAGE)
+        if soll > grenze:
+            continue
+        _ensure(f"auto:nkfrist:{ap.id}",
+                f"NK-Abrechnung erstellen: {ap.liegenschaft.strasse} – {ap.bezeichnung}",
+                soll, 'finanzen',
+                (f"Periode {ap.start_datum:%d.%m.%Y}–{ap.ende_datum:%d.%m.%Y} ist beendet, die "
+                 f"Abrechnung nicht verbucht. Richtwert: {NK_ABRECHNUNG_RICHTWERT_TAGE} Tage nach "
+                 "Periodenende (keine gesetzliche Frist). Auf Verlangen ist den Mietern Einsicht "
+                 "in die Belege zu gewähren."),
+                liegenschaft=ap.liegenschaft)
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:nkfrist:'):
+        try:
+            ap_id = int(p.quelle.rsplit(':', 1)[-1])
+        except ValueError:
+            continue
+        if AbrechnungsPeriode.objects.filter(pk=ap_id, abgeschlossen=True).exists() \
+                or not AbrechnungsPeriode.objects.filter(pk=ap_id).exists():
             p.erledigt = True
             p.erledigt_am = heute
             p.save(update_fields=['erledigt', 'erledigt_am'])

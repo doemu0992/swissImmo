@@ -229,3 +229,51 @@ class SchlussabrechnungVorbelegungTests(TestCase):
         c = Client(); c.force_login(_team_user('Verwalter'))
         r = c.get(f'/neu/vertraege/{v.id}/schlussabrechnung/', secure=True)
         self.assertEqual(r.context['prefill_positionen'], [])
+
+
+class NkFristUndKautionFreigabeTests(TestCase):
+
+    def test_ueberfaellige_nk_abrechnung_erzeugt_pendenz_und_erledigt_sie_beim_verbuchen(self):
+        from core.models import Pendenz
+        from core.services.automation import generate_auto_pendenzen
+        from finance.models import AbrechnungsPeriode
+        lg, e, m, v = _basis_objekte()
+        heute = date.today()
+        ap = AbrechnungsPeriode.objects.create(
+            liegenschaft=lg, bezeichnung='NK alt', start_datum=heute - timedelta(days=545),
+            ende_datum=heute - timedelta(days=180))
+        generate_auto_pendenzen(horizont_tage=30)
+        p = Pendenz.objects.get(quelle=f'auto:nkfrist:{ap.id}')
+        self.assertFalse(p.erledigt)
+        self.assertIn('keine gesetzliche Frist', p.beschreibung)
+        ap.abgeschlossen = True; ap.save()
+        generate_auto_pendenzen(horizont_tage=30)
+        p.refresh_from_db()
+        self.assertTrue(p.erledigt)
+
+    def test_junge_periode_erzeugt_keine_pendenz(self):
+        from core.models import Pendenz
+        from core.services.automation import generate_auto_pendenzen
+        from finance.models import AbrechnungsPeriode
+        lg, e, m, v = _basis_objekte()
+        heute = date.today()
+        AbrechnungsPeriode.objects.create(
+            liegenschaft=lg, bezeichnung='NK jung', start_datum=heute - timedelta(days=365),
+            ende_datum=heute - timedelta(days=10))
+        generate_auto_pendenzen(horizont_tage=30)
+        self.assertFalse(Pendenz.objects.filter(quelle__startswith='auto:nkfrist:').exists())
+
+    def test_kuendigung_mit_sperrkonto_legt_freigabeschreiben_an_und_beleg_erledigt_es(self):
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        v.kautions_art = 'sperrkonto'; v.save()
+        heute = date.today()
+        c = Client(); c.force_login(_team_user('Verwalter'))
+        c.post(f'/neu/vertraege/{v.id}/kuendigen/',
+               {'absender': 'mieter', 'eingang_datum': heute.isoformat(),
+                'gewuenschtes_ende': (heute + timedelta(days=120)).isoformat()}, secure=True)
+        p = Pendenz.objects.get(vertrag=v, titel__startswith='Kaution: Freigabeschreiben')
+        self.assertFalse(p.erledigt)
+        c.get(f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', secure=True)
+        p.refresh_from_db()
+        self.assertTrue(p.erledigt)
