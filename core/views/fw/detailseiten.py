@@ -1752,6 +1752,8 @@ def _formulare_prozesse(v, user=None):
         {'titel': 'Prozesse', 'icon': 'einstellungen', 'items': [
             {'titel': 'Zahlungsverzug (Art. 257d)', 'icon': 'recht',
              'url': f'/neu/vertraege/{v.id}/verzug/', 'sub': 'Frist + Kündigungsandrohung'},
+            {'titel': 'Zahlungsvereinbarung', 'icon': 'geld',
+             'url': f'/neu/vertraege/{v.id}/zahlungsvereinbarung/', 'sub': 'Ratenplan für einen Rückstand'},
             {'titel': 'Herabsetzungsbegehren (Art. 270a)', 'icon': 'trend',
              'url': f'/neu/vertraege/{v.id}/herabsetzung/', 'sub': 'Begehren des Mieters, 30 Tage Antwortfrist'},
             {'titel': 'Nutzungsentschädigung', 'icon': 'geld',

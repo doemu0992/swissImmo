@@ -209,6 +209,9 @@ def pruefe_nach_zahlung(vertrag):
             _fall_abschliessen(vertrag, (
                 f'Automatisch abgeschlossen am {timezone.localdate():%d.%m.%Y}: {grund}'))
             vorschlaege_erledigen(vertrag, 'Rückstand bezahlt — keine Fristansetzung nötig.')
+        # Eine laufende Zahlungsvereinbarung sieht die Zahlung sofort (erfüllt/Raten gedeckt).
+        from core.services.zahlungsvereinbarung import pruefen_vertrag
+        pruefen_vertrag(vertrag)
     return geschlossen
 
 

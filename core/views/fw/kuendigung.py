@@ -775,3 +775,61 @@ def fw_herabsetzung(request, vertrag_id):
         **basis, 'nav': 'vertraege', 'v': v, 'offene': offene, 'heute_iso': heute.isoformat(),
         'antwort_tage': HERABSETZUNG_ANTWORT_TAGE,
     })
+
+
+# Eine Zahlungsvereinbarung setzt die Mahnsperre und verschiebt die Fälligkeit im
+# Gespräch mit dem Mieter — eine Entscheidung der Verwaltung, wie die Fristansetzung.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_zahlungsvereinbarung(request, vertrag_id):
+    """Ratenplan für einen Rückstand (core/services/zahlungsvereinbarung.py)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.services import zahlungsvereinbarung as zv
+    from core.services.zahlungsverzug import aktive_fristen, faelliger_rueckstand
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'),
+                          id=vertrag_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion', 'anlegen')
+        if aktion == 'abbrechen':
+            vereinb = v.zahlungsvereinbarungen.filter(pk=request.POST.get('vereinbarung') or 0,
+                                                      status='aktiv').first()
+            if vereinb:
+                zv.abbrechen(vereinb)
+                log_aktion(request, 'Zahlungsvereinbarung abgebrochen', str(v.mieter), f'#{vereinb.pk}', ziel=v)
+                messages.success(request, gettext('Zahlungsvereinbarung abgebrochen — die Mahnsperre ist aufgehoben.'))
+            return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
+        try:
+            raten = int(request.POST.get('anzahl_raten') or 0)
+            intervall = int(request.POST.get('intervall_monate') or 1)
+            erste = date.fromisoformat(request.POST.get('erste_rate') or '')
+        except ValueError:
+            messages.error(request, gettext('Bitte Anzahl Raten, Abstand und Datum der ersten Rate angeben.'))
+            return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
+        try:
+            vereinb = zv.anlegen(v, raten, erste, intervall, user=request.user,
+                                 notiz=(request.POST.get('notiz') or '').strip())
+        except ValueError as exc:
+            messages.error(request, f'❌ {exc}')
+            return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
+        log_aktion(request, 'Zahlungsvereinbarung erfasst', str(v.mieter),
+                   f'CHF {vereinb.betrag_total:.2f} in {raten} Raten ab {erste:%d.%m.%Y}', ziel=v)
+        messages.success(request, '✅ ' + gettext('Zahlungsvereinbarung erfasst — Mahnsperre gesetzt, %(n)s Raten-Pendenzen angelegt.') % {'n': raten})
+        return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
+
+    vereinbarungen = []
+    for vb in v.zahlungsvereinbarungen.all():
+        vereinbarungen.append({
+            'v': vb, 'plan': zv.raten_plan(vb),
+            'bezahlt': zv.bezahlt(vb), 'offen': zv.rueckstand(vb)})
+    return render(request, 'fw/zahlungsvereinbarung.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'vereinbarungen': vereinbarungen,
+        'rueckstand': faelliger_rueckstand(v, stichtag=heute),
+        'frist_laeuft': aktive_fristen(v).exists(),
+        'heute_iso': heute.isoformat(),
+    })

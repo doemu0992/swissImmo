@@ -520,6 +520,10 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             p.erledigt_am = heute
             p.save(update_fields=['erledigt', 'erledigt_am'])
 
+    # a3c) Zahlungsvereinbarungen bewerten: erfüllt oder gebrochen.
+    from core.services.zahlungsvereinbarung import pruefen_alle
+    pruefen_alle()
+
     # a3a) Mieterguthaben-Pendenzen erledigen, sobald das Guthaben nicht mehr auf 2030
     # steht (verrechnet, zurückerstattet oder storniert).
     from finance.models import Zahlungseingang

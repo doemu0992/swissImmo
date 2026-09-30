@@ -630,6 +630,47 @@ class KreditorenZahlung(OrganisationAusKette):
     def __str__(self):
         return f"Zahlung CHF {self.betrag} an {self.kreditor.lieferant}"
 
+class Zahlungsvereinbarung(OrganisationAusKette):
+    """Ratenplan für einen Zahlungsrückstand (statt nur eines Häkchens `mahnsperre`).
+
+    Gedeckt sind die Mietforderungen des Vertrags, die bei Abschluss fällig waren
+    (`gedeckt_bis`). Die Raten sind gleich hoch, die letzte trägt den Rest. Erfüllt
+    ist die Vereinbarung, sobald der gedeckte Rückstand bezahlt ist; gebrochen,
+    wenn die bezahlte Summe der Soll-Summe der fälligen Raten (nach Toleranz)
+    hinterherhinkt — dann endet die Mahnsperre, und der Mahnprozess läuft weiter.
+
+    Eine laufende Fristansetzung nach Art. 257d OR wird durch eine Vereinbarung
+    NICHT gehemmt, es sei denn, der Vermieter verzichtet ausdrücklich darauf.
+    """
+    ORGANISATION_PFAD = 'vertrag'
+    STATUS = [
+        ('aktiv', gettext_lazy('Aktiv')),
+        ('erfuellt', gettext_lazy('Erfüllt')),
+        ('gebrochen', gettext_lazy('Gebrochen')),
+        ('abgebrochen', gettext_lazy('Abgebrochen')),
+    ]
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE,
+                                related_name='zahlungsvereinbarungen')
+    betrag_total = models.DecimalField("Rückstand bei Abschluss (CHF)", max_digits=10, decimal_places=2)
+    gedeckt_bis = models.DateField("Gedeckte Forderungen: fällig bis")
+    anzahl_raten = models.PositiveSmallIntegerField("Anzahl Raten")
+    erste_rate = models.DateField("Erste Rate am")
+    intervall_monate = models.PositiveSmallIntegerField("Abstand der Raten (Monate)", default=1)
+    status = models.CharField(max_length=12, choices=STATUS, default='aktiv')
+    notiz = models.CharField(max_length=255, blank=True, default='')
+    erfasst_am = models.DateTimeField(default=timezone.now)
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                                     null=True, blank=True, related_name='+')
+
+    class Meta:
+        verbose_name = "Zahlungsvereinbarung"
+        verbose_name_plural = "Zahlungsvereinbarungen"
+        ordering = ['-erfasst_am', '-id']
+
+    def __str__(self):
+        return f"Zahlungsvereinbarung {self.vertrag} · {self.anzahl_raten} Raten ({self.status})"
+
+
 # ========================================================
 # HNK ABRECHNUNG UND BELEGE
 # ========================================================
