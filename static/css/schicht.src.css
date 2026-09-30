@@ -1002,6 +1002,9 @@
         .fw-hinweis{padding:13px 16px;display:flex;gap:12px;align-items:flex-start;
             border-bottom:1px solid var(--ds-line)}
         .fw-hinweis:last-child{border-bottom:0}
+        /* Per Skript versteckt: Bausteine mit eigenem display (flex/grid)
+           kommen nach Tailwinds .hidden und würden es sonst überstimmen. */
+        .fw-btn.hidden,.fw-hinweis.hidden,.fw-formular.hidden,.fw-feldblock.hidden,.fw-kpis.hidden,.fw-zeile.hidden{display:none}
         .fw-hinweis.warn{background:var(--ds-warn-soft)}
         .fw-hinweis.crit{background:var(--ds-crit-soft)}
         .fw-hinweis.info{background:var(--ds-info-soft)}
@@ -1537,6 +1540,7 @@
         .fw-schritte i.jetzt{background:var(--ds-brand);color:var(--ds-auf-satt);opacity:.45}
         .fw-leer .fw-leer-zeichen{width:40px;height:40px;border-radius:var(--ds-pill);background:var(--ds-good-soft);color:var(--ds-good);
             display:grid;place-items:center;margin:0 auto 10px;font-size:18px}
+        .fw-leer .fw-leer-zeichen.mut{background:var(--ds-surface-2);color:var(--ds-faint)}
         .fw-leer b{display:block;color:var(--ds-ink);font-weight:600}
         .fw-eingang{align-items:flex-start}
         .fw-quelle{width:32px;height:32px;border-radius:var(--ds-radius-knopf);display:grid;place-items:center;flex:0 0 32px;
@@ -1590,6 +1594,9 @@
         @media (max-width:640px){
             .fw-zeile .fw-zeit{text-align:left}
             .fw-eingang .fw-mitte{flex-basis:calc(100% - 44px)}
+            .fw-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+            .fw-kpi{padding:14px 16px 12px}
+            .fw-kpi .fw-v{font-size:21px}
             .fw-freigabe{bottom:calc(80px + env(safe-area-inset-bottom))}
             .fw-rumpf{padding:16px}
             .fw-ablauf{padding:10px 16px 14px}
