@@ -59,6 +59,26 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 | Häkchen | `label.fw-haekchen` > `input[type=checkbox]` + Text | Checkbox und Beschriftung in einer Zeile, auch innerhalb `fw-feldblock`. |
 | Freigabeleiste | `div.fw-freigabe` > `div.fw-ht` + `fw-btn fw-primary` | Haftet unten (am Telefon über der Tab-Leiste). Für Sollstellung, Zahllauf, Mahnlauf. |
 | Hinweis als Fliesstext | `fw-hinweis` > `div.fw-ht.fliess` | `<b>` bleibt in der Zeile — für übersetzte Sätze mit Hervorhebung. |
+| Brotkrume | `fw-phead` > `div` > `nav.fw-krumen` (`a`, `span[aria-hidden]` «/», `span`) vor dem `h1` | 12.5 px, gedämpft. Letztes Glied ohne Link. |
+| Aktenliste (Karte mit Reitern) | `fw-card.fw-akten-karte` > `fw-reiter` (`a.hier` + `span.fw-z`) + `div.fw-akten-werkzeug` (`fw-listwerkzeug`, `span.fw-akten-hinweis`, `fw-filters`) + `fw-tablewrap` | Liegenschaften / Mietverhältnisse (Mockup `#akten`). Die Reiter sind Links auf die zwei Listen. Nur die Reiterleiste in der Karte: Akten-Detailseiten. |
+| Tabellenzelle mit Unterzeile | `td` > `.fw-zelle-titel` (auch `a`) + `span.fw-zelle-sub`; Zeile `tr.fw-klickzeile` | Titel fett, darunter 12 px gedämpft (`nowrap`). Befundspalte: `div.fw-zelle-befund` mit Kapseln. |
+| Kennzahlen einer Akte | `fw-kpis.fw-stats` > `fw-kpi` | Wert 22 px, am Telefon 18 px und flacher (gemessen in `telefon.spec.ts`). |
+| Zwei Spalten | `div.fw-zwei` > 2 × `fw-card` | 1.35 : 1, unter 1100 px untereinander (Mockup `.two`). |
+| Auffälligkeiten | `ul.fw-auffaellig` > `li` > `span.fw-punkt` (`crit`/`warn`/`good`) + `div.fw-mitte` (`b`, `span`) + `fw-btn fw-knapp` | «Was auffällt» der Akten (Mockup `.issues`). |
+| Ansagezeile | `div.fw-ansage` (+ `crit`) > Zeichen + `div.fw-mitte` (`b`, `span`) + `div.fw-ansage-knoepfe` | Rückstand bzw. nächste Frist über den Reitern (Mockup `.callout`). |
+| Kapseln unter dem Titel | `div.fw-akten-kapseln` > `fw-chip` | Zustände einer Akte unter der Zeile im Seitenkopf. |
+| Stufenband | `ol.fw-stufen` > `li` (`fertig`/`jetzt`/`blockiert`) > `i` + `span` | Segmente mit Beschriftung darunter (Mockup `pipe()`): fertig = Marke, jetzt = Marke halbtransparent, blockiert = rot. Die Stufen eines Laufs leitet `_lauf_stufen` (core/views/fw/arbeit.py) aus dem Zustand ab — gespeichert ist nichts. |
+| Laufkarte | `div.fw-laeufe` > `section.fw-card.fw-lauf` > `fw-lauf-kopf` (`fw-lauf-titel` > `b`, `span` + `fw-chip`), `fw-stufen`, `fw-lauf-fuss` | Raster 3 / 2 / 1 Spalten (ab 1180 / 720 px). Fuss: Kontext links, Knopf rechts. `fw-lauf-leer` für den Leerzustand über alle Spalten. |
+| Kopf einer Laufseite | `fw-phead.fw-phead-lauf` > `div` (`nav.fw-krumen`, `h1`, `p`) + `fw-phead-knoepfe` | Brotkrume «Läufe / …»; die lange Unterzeile bricht um, Knöpfe/Wahl bleiben rechts. In `fw-phead-knoepfe` sitzt `fw-kopffilter` ohne eigenen Aussenabstand. |
+| Freigabeleiste in einer Karte | `fw-card` > `div.fw-freigabe` | Wenn der Knopf zum Formular der Karte gehört (Zahllauf). 12 px Abstand zum Kartenrand. |
+| Gutschriften-Liste | `ul.fw-gs-liste` > `li.fw-gs` > `span.fw-quelle` + `fw-mitte` (`fw-gs-kopf` > `fw-mono.fw-gs-wer` + `fw-betrag good`; `fw-s`; `fw-eingang-knoepfe` > `fw-vorschlag` (`unsicher`) + `fw-gs-grund`; `fw-eingang-knoepfe` mit Knöpfen) | Bankabgleich auf «Finanzen» (Mockup `.feed` + `.sugg`). Der Grund sagt, worauf der Vorschlag beruht («Betrag passt») — keine erfundene Prozentzahl. |
+| Zwei Diagrammkarten | `div.fw-bericht-zwei` > 2 × `fw-card` | 1.35 : 1, unter 1100 px untereinander. |
+| Liniendiagramm | `{% load diagramm %}{% linien_diagramm werte beschriftungen titel as x %}` → `fw-kurve` | SVG nur für Linie/Fläche/Raster; Achsen, Endwert, Punkt als HTML (lesbar bei 390 px). `None` = Lücke in der Linie. Am Telefon jede zweite Monatsbeschriftung (`fw-kurve-x-neben` aus). |
+| Balkenliste | `{% balken_liste zeilen %}` → `div.fw-hbar` (`fw-hbar-lab`, `fw-hbar-spur` > `i`, `fw-hbar-v`) | `zeilen` = dicts `lab`, `wert`, `url`. Null zeigt «–» ohne Balken. |
+| Aging-Tabelle | `table.fw-table.fw-aging-tabelle`, Beträge über 30 Tage in `fw-aging-neg`, Zeile `tr[data-href]` | Summenzeile im `tfoot`. Klick auf die Zeile öffnet die Akte (kleines Skript in `fw/finanzen.html`). |
+| Brotkrume im Seitenkopf | `fw-phead` > `div` > `nav.fw-krumen` (`a` Bereich, `span[aria-hidden]` «/», `span` Seite) vor dem `h1` | Auf jeder Seite mit Bereichsreitern: «Bereich / Seite» (Reiterbeschriftung), 12.5 px. Der Bereich verlinkt auf seine Landeseite mit `{{ lg_query }}`. |
+| Brotkrume über einer Akte oder Unterseite | `nav.fw-brotkrume` (`a`, `{% zeichen 'weiter' %}`, `b`) | 12 px, über dem Aktenkopf. Nicht `fw-akte-pfad` — das ist der Schlüssel-Wert-Block IM Aktenkopf (bekannte-fallen 2b). |
+| Dateifeld | `input[type=file].fw-datei` (+ `w-full`) | Rahmen wie `fw-feld`, Auswahlknopf wie `fw-btn` (`::file-selector-button`). Keine `file:`-Utilities. |
 
 ## Was nicht mehr vorkommen soll
 

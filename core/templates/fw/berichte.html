@@ -1,11 +1,19 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n chf diagramm %}
 {% block title %}{% trans "Berichte" %} — swissImmo{% endblock %}
 {% block content %}
+{% comment %}
+Aufbau nach mockups/konzept-v8-cockpit.html, #berichte (`pageBerichte`):
+Kopf mit Zeitraum · zwei Diagramm-Karten nebeneinander · «Kennzahlen je
+Mandat». Der Berichtskatalog steht vollständig darunter. «PDF erstellen»
+fehlt bewusst: Es gibt keinen PDF-Export dieser Übersicht (die PDF-Berichte
+stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
+{% endcomment %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><span>{% trans "Berichte" %}</span></nav>
         <h1>{% trans "Berichte" %}</h1>
-        <p>{% trans "Alle Reports und Exporte an einem Ort." %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
+        <p>{% blocktrans with von=bericht_von|date:"F Y" bis=bericht_bis|date:"F Y" %}{{ von }} bis {{ bis }}{% endblocktrans %} · {% if aktive_lg %}{% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% else %}{% trans "ganzer Bestand" %}{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
         <a href="/neu/auswertung/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'bericht' %}{% trans "Interaktive Auswertung" %}</a>
@@ -19,6 +27,70 @@
     </div>
 </div>
 
+<div class="fw-bericht-zwei">
+    <section class="fw-card">
+        <div class="fw-kopf">
+            <h2>{% trans "Zahlungsquote je Monat" %}</h2>
+            <span class="fw-neben">{% trans "Ist in % vom Soll" %}</span>
+        </div>
+        {% trans "Zahlungsquote je Monat" as quote_titel %}
+        {% linien_diagramm quote_werte quote_monate quote_titel as linie %}
+        {% if linie %}
+        <div class="fw-diagramm">{{ linie }}</div>
+        <div class="fw-fuss"><span>{% blocktrans with tief=quote_min|floatformat:1 hoch=quote_max|floatformat:1 %}zwischen {{ tief }} % und {{ hoch }} % · Monate ohne Sollstellung bleiben leer{% endblocktrans %}</span></div>
+        {% else %}
+        {% include 'fw/_empty.html' with knapp=True icon='bericht' titel=_("Noch zu wenig Sollstellung für einen Verlauf.") subtext=_("Die Linie erscheint, sobald in zwei Monaten Mietzinse fällig waren.") %}
+        {% endif %}
+    </section>
+
+    <section class="fw-card">
+        <div class="fw-kopf">
+            <h2>{% trans "Ausstände > 30 Tage je Liegenschaft" %}</h2>
+            <span class="fw-neben">CHF</span>
+        </div>
+        {% if ausstand_balken %}
+        <div class="fw-diagramm fw-diagramm-balken">{% balken_liste ausstand_balken %}</div>
+        {% if not ausstand_summe %}<div class="fw-fuss"><span>{% trans "Keine Liegenschaft hat Ausstände älter als 30 Tage." %}</span></div>{% endif %}
+        {% else %}
+        {% include 'fw/_empty.html' with knapp=True icon='gut' titel=_("Keine Liegenschaften erfasst.") %}
+        {% endif %}
+    </section>
+</div>
+
+<section class="fw-card">
+    <div class="fw-kopf">
+        <h2>{% trans "Kennzahlen je Mandat" %}</h2>
+        <span class="fw-neben">{% blocktrans with datum=heute|date:"d.m.Y" %}Stand {{ datum }}{% endblocktrans %}</span>
+    </div>
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th>{% trans "Mandat" %}</th>
+                <th class="fw-right">{% trans "Liegenschaften" %}</th>
+                <th class="fw-right">{% trans "Objekte" %}</th>
+                <th class="fw-right">{% trans "Belegung" %}</th>
+                <th class="fw-right">{% trans "Soll / Monat CHF" %}</th>
+                <th class="fw-right">{% trans "Ausstände > 30 Tage" %}</th>
+            </tr></thead>
+            <tbody>
+            {% for m in mandat_zeilen %}
+            <tr>
+                <td><a href="/neu/mandate/{{ m.mandat.id }}/" class="fw-mandat-name">{{ m.mandat.firma_oder_name }}</a></td>
+                <td class="fw-right fw-num">{{ m.lgs }}</td>
+                <td class="fw-right fw-num">{{ m.objekte }}</td>
+                <td class="fw-right fw-num">{{ m.belegung }} %</td>
+                <td class="fw-right fw-num">{{ m.soll|chf:0 }}</td>
+                <td class="fw-right fw-num">{% if m.ueber30 %}<span class="fw-aging-neg">{{ m.ueber30|chf:0 }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='dokument' titel=_("Noch keine Mandate mit Objekten.") %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<h2 class="fw-subhead fw-bericht-katalog">{% trans "Alle Reports und Exporte an einem Ort." %}</h2>
 {% for g in berichte %}
 <div class="fw-card">
 <div class="fw-kopf"><h2 class="fw-t">{{ g.gruppe }}</h2></div>

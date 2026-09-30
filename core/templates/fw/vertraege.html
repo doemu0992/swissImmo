@@ -8,8 +8,12 @@
 
 {% include 'fw/_pipeline.html' %}
 
+{% comment %} Aufbau nach konzept-v8 (#akten, Reiter «Mietverhältnisse»):
+   Kopf mit Brotkrume, dann EINE Karte mit denselben Reitern wie die
+   Liegenschaftsliste, Werkzeugzeile und Tabelle. {% endcomment %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><span>{% trans "Akten" %}</span></nav>
         <h1>{% trans "Mietverhältnisse" %}</h1>
         <p>{% blocktrans count n=treffer %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %} · <b class="fw-gut">{% blocktrans count n=aktiv_count %}{{ n }} aktiv{% plural %}{{ n }} aktiv{% endblocktrans %}</b>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/vertraege/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
@@ -19,79 +23,56 @@
     </div>
 </div>
 
-<div class="fw-card">
+<div class="fw-card fw-akten-karte">
+    <div class="fw-reiter" role="tablist">
+        <a href="/neu/liegenschaften/{{ lg_query }}" role="tab" aria-selected="false">{% trans "Liegenschaften" %} <span class="fw-z">{{ liegenschaften_anzahl }}</span></a>
+        <a href="/neu/vertraege/{{ lg_query }}" class="hier" role="tab" aria-selected="true">{% trans "Mietverhältnisse" %} <span class="fw-z">{{ treffer }}</span></a>
+    </div>
 
-    <div class="fw-kopf">
-        <div class="fw-filters fw-nomb">
+    <div class="fw-akten-werkzeug">
+        {% include 'fw/_listwerkzeug.html' with suchname='q' suchwert=q suchtext=_('Mieter oder Objekt suchen…') suchlabel=_('Mietverhältnisse durchsuchen') %}
+        <div class="fw-filters">
             {% for wert, label, url in status_chips %}
             <a href="{{ url }}" class="fw-fchip{% if status_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        {% include 'fw/_listwerkzeug.html' with suchname='q' suchwert=q suchtext=_('Mieter oder Objekt suchen…') suchlabel=_('Mietverhältnisse durchsuchen') imkopf=True %}
     </div>
 
-    <!-- Mobile: Karten -->
-    <div class="md:hidden fw-dv">
-        {% for row in rows %}
-        <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-zeile klick">
-            <div class="fw-mitte">
-                <div class="fw-t">{{ row.v.mieter.display_name }} <span class="fw-mono">MV-{{ row.v.id }}</span></div>
-                <div class="fw-s">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div>
-                <div class="fw-s">
-                    <span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span>
-                    <span class="fw-faint">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %}</span>
-                    <span><b class="fw-strong fw-num">{{ row.brutto|chf }}</b> <span class="fw-faint">{% trans "Brutto" %}</span></span>
-                </div>
-            </div>
-        </a>
-        {% empty %}
-        <div>
-            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Verträge gefunden.') %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel=_('Noch keine Verträge') subtext=_('Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.') cta_url='/neu/vertraege/neu/' cta_label=_('Ersten Vertrag erstellen') %}{% endif %}
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Desktop: Tabelle -->
-    <div class="fw-tablewrap hidden md:block">
-        <table class="fw-table whitespace-nowrap">
+    <div class="fw-tablewrap">
+        <table class="fw-table">
             <thead>
             <tr>
-                <th>{% trans "Mieter" %}</th>
-                <th class="hidden md:table-cell">{% trans "Objekt" %}</th>
-                <th class="hidden lg:table-cell">{% trans "Beginn" %}</th>
-                <th class="hidden lg:table-cell">{% trans "Ende" %}</th>
-                <th class="fw-right hidden lg:table-cell">{% trans "Netto" %}</th>
-                <th class="fw-right hidden lg:table-cell">{% trans "NK" %}</th>
-                <th class="fw-right">{% trans "Brutto" %}</th>
+                <th>{% trans "Mietverhältnis" %}</th>
+                <th>{% trans "Objekt" %}</th>
+                <th class="fw-right">{% trans "Mietzins brutto" %}</th>
+                <th class="fw-right">{% trans "Saldo" %}</th>
+                <th>{% trans "Mahnstufe" %}</th>
                 <th>{% trans "Status" %}</th>
                 <th></th>
             </tr>
             </thead>
             <tbody>
             {% for row in rows %}
-            <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
+            <tr class="fw-klickzeile" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
                 <td>
-                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-strong" onclick="event.stopPropagation()">{{ row.v.mieter.display_name }}</a>
-                    <div class="fw-mono">MV-{{ row.v.id }}</div>
+                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-zelle-titel" onclick="event.stopPropagation()">{{ row.v.mieter.display_name }}</a>
+                    <span class="fw-zelle-sub fw-mono">MV-{{ row.v.id }}</span>
                 </td>
-                <td class="hidden md:table-cell">{{ row.v.einheit.liegenschaft.strasse }}<div class="fw-sub2">{{ row.v.einheit.bezeichnung }}</div></td>
-                <td class="hidden lg:table-cell fw-num">{{ row.v.beginn|date:"d.m.Y" }}</td>
-                <td class="hidden lg:table-cell fw-num"><span class="{% if row.v.status == 'gekuendigt' %}fw-strong fw-kritisch{% endif %}">
-                    {% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}<span class="fw-sub2">{% trans "unbefristet" %}</span>{% endif %}
-                </span></td>
-                <td class="fw-right fw-num hidden lg:table-cell">{{ row.v.netto_mietzins|chf }}</td>
-                <td class="fw-right fw-num hidden lg:table-cell"><span class="fw-sub2">{{ row.v.nebenkosten|chf }}</span></td>
-                <td class="fw-right fw-num"><span class="fw-strong">{{ row.brutto|chf }}</span></td>
-                <td><span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span></td>
+                <td>{{ row.v.einheit.liegenschaft.strasse }}{% if row.v.einheit.liegenschaft.ort %}, {{ row.v.einheit.liegenschaft.ort }}{% endif %}<span class="fw-zelle-sub">{{ row.v.einheit.bezeichnung }}</span></td>
+                <td class="fw-right fw-num"><span class="fw-strong">{{ row.brutto|chf }}</span>
+                    <span class="fw-zelle-sub">{% blocktrans with n=row.v.netto_mietzins|chf nk=row.v.nebenkosten|chf %}netto {{ n }} + NK {{ nk }}{% endblocktrans %}</span></td>
+                <td class="fw-right fw-num">{% if row.saldo %}<span class="fw-strong fw-kritisch">{{ row.saldo|chf }}</span>{% else %}<span class="fw-faint">0.00</span>{% endif %}</td>
+                <td>{% if row.mahnstufe %}<span class="fw-chip fw-crit">{% blocktrans with m=row.mahnstufe %}Mahnstufe {{ m }}{% endblocktrans %}</span>{% endif %}</td>
+                <td><span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span>
+                    <span class="fw-zelle-sub fw-num">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %} · {% if row.v.ende %}<span class="{% if row.v.status == 'gekuendigt' %}fw-strong fw-kritisch{% endif %}">{% blocktrans with bis=row.v.ende|date:"d.m.Y" %}bis {{ bis }}{% endblocktrans %}</span>{% else %}{% trans "unbefristet" %}{% endif %}</span></td>
                 <td class="fw-right">
                     {% if row.v.status == 'aktiv' %}
                     {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'{% filter escapejs %}{% trans "Kündigung erfassen" %}{% endfilter %}')" class="fw-btn fw-knapp fw-geist">{% zeichen 'kritisch' %}{% trans "Kündigen" %}</a>{% endif %}
                     {% endif %}
-                    {% zeichen 'weiter' klasse='fw-faint text-xs' %}
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="9">
+            <tr><td colspan="7">
                 {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Verträge gefunden.') %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel=_('Noch keine Verträge') subtext=_('Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.') cta_url='/neu/vertraege/neu/' cta_label=_('Ersten Vertrag erstellen') %}{% endif %}
             </td></tr>
             {% endfor %}

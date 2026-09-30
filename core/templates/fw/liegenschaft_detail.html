@@ -6,149 +6,163 @@
 
 {% block content %}
 
-<nav class="fw-akte-pfad mb-3">
-    <a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Liegenschaften" %}</a>
-    {% zeichen 'weiter' %}
-    <b>{{ lg.strasse }}</b>
-</nav>
-
-{% comment %} DIE BEFUNDE STEHEN VOR DEM AKTENKOPF (E2.73).
-
-   Konzept v7 verlangt sie vorn, die Mandatsakte zeigt sie seit E2.65 so.
-   Gemessen bei 390 Pixel: vorher begannen sie bei y=949 (Liegenschaft)
-   bzw. y=2095 (Vertrag) — unter dem Falz, auf dem Vertrag zweieinhalb
-   Bildschirme tief. Jetzt bei y=121.
-
-   DER PREIS IST BEZAHLT UND BEKANNT: Ausserhalb des Reiter-Panels steht
-   der Block auf JEDEM Reiter, nicht nur auf der Uebersicht. Das ist eine
-   Entscheidung, keine Nachlaessigkeit — Befunde, die niemand sieht, sind
-   teurer als Befunde, die zu oft dastehen. {% endcomment %}
-{% if lg_befunde %}
-<div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon{% if lg_stufe != 'good' %} {{ lg_stufe }}{% endif %}">{% zeichen 'hinweis' %}</span>
-        <span class="fw-t">{% trans "Was auffällt" %}</span>
-        <span class="fw-neben">{{ lg_befunde|length }}</span></div>
-    {% for b in lg_befunde %}
-    <div class="fw-hinweis {{ b.0 }}">
-        <span class="fw-hi">{% zeichen 'warnung' %}</span>
-        <div class="fw-ht"><b>{{ b.1 }}</b>{% if b.3 %}{{ b.3 }}{% endif %}</div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<div class="fw-aktenkopf">
-    <div class="fw-akte-oben">
-        <div class="fw-akte-bild">{% zeichen 'liegenschaft' %}</div>
-        <div>
-            <div class="fw-akte-typ">{% trans "Liegenschaft" %} · {{ lg_nummer }}</div>
-            <h1>{{ lg.strasse }}</h1>
-            {% comment %} Der Pfad fuehrt EINE Angabe je Zeile (Konzept 16.2).
-               Als Kette mit «›» brach er bei langen Strassen- und Mandatsnamen
-               an beliebiger Stelle um. {% endcomment %}
-            <div class="fw-akte-pfad">
-                {% comment %}
+{% comment %} AUFBAU NACH KONZEPT-V8 (#lg-…), zweiter Durchgang: Seitenkopf mit
+   Brotkrume und Knoepfen, Kennzahlen, dann zwei Spalten — links «Objekte»,
+   rechts «Was auffällt» —, darunter die Reiter der Akte. Der fruehere
+   Aktenkopf (Bild, Schluessel-Wert-Block, Kapseln) ist aufgeloest: Mandat,
+   Adresse, Baujahr und Betreuung stehen in der Zeile unter dem Titel,
+   Bearbeiten und die Aktionen im Menue «Mehr». {% endcomment %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">
+            <a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span>
+            <a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Liegenschaften" %}</a><span aria-hidden="true">/</span>
+            <span>{{ lg.strasse }}</span>
+        </nav>
+        <h1>{{ lg.strasse }}</h1>
+        {% comment %}
 WER BETREUT DAS? (E2.71)
 
 Die Betreuung steht an EINER Stelle — `Liegenschaft.betreut_von`. Hier wird
-sie AUFGELÖST, nicht kopiert: Beim Wechsel müsste sonst jemand alle Kopien
-nachziehen, und wer es vergisst, hat zwei Antworten auf dieselbe Frage.
-
-«nicht zugeteilt» steht bewusst da. Eine Liegenschaft ohne Betreuung soll
-auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
-öffnet.
+sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da: Eine
+Liegenschaft ohne Betreuung soll auffallen.
 {% endcomment %}
-{% betreut_von lg as betreuung %}
-<div class="fw-pz"><span>{% trans "Betreut von" %}</span><b>{% if betreuung %}{{ betreuung.get_full_name|default:betreuung.username }}{% else %}<span class="fw-warnton">{% trans "nicht zugeteilt" %}</span>{% endif %}</b></div>
-{% if lg.eigentuemer %}<div class="fw-pz"><span>{% trans "Mandat" %}</span><b><a href="/neu/mandate/{{ lg.eigentuemer_id }}/" class="fw-link">{{ lg.eigentuemer.firma_oder_name }}</a></b></div>{% endif %}
-                <div class="fw-pz"><span>{% trans "Adresse" %}</span><b>{{ lg.plz }} {{ lg.ort }}{% if lg.kanton %} · {{ lg.kanton }}{% endif %}</b></div>
-                {% if lg.baujahr %}<div class="fw-pz"><span>{% trans "Baujahr" %}</span><b>{{ lg.baujahr }}{% if lg.egid %} · EGID {{ lg.egid }}{% endif %}</b></div>
-                {% elif lg.egid %}<div class="fw-pz"><span>{% trans "EGID" %}</span><b>{{ lg.egid }}</b></div>{% endif %}
-            </div>
-            <div class="flex flex-wrap gap-1.5 mt-2.5">
-                {% for c in lg_chips %}<span class="fw-chip {{ c.ton }} fw-dot">{{ c.text }}</span>{% endfor %}
-            </div>
-        </div>
-        <div class="fw-akte-rechts">
-            <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
-            <div class="relative">
-                <button type="button" onclick="document.getElementById('lAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                        class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
-                <div id="lAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
-                    <a href="/neu/mieterspiegel/?lg={{ lg.id }}" class="fw-menuzeile">{% zeichen 'filtern' klasse='w-4' %}{% trans "Mieterspiegel" %}</a>
-                    {% if lg.eigentuemer_id %}
-                    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/abrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='w-4' %}{% trans "Eigentümerabrechnung" %}</a>
-                    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="fw-menuzeile">{% zeichen 'recht' klasse='w-4' %}{% trans "Kontokorrent" %}</a>
-                    {% endif %}
-                    <a href="/neu/hypotheken/" class="fw-menuzeile">{% zeichen 'liegenschaft' klasse='w-4' %}{% trans "Hypotheken" %}</a>
-                    {% comment %} Aushang mit QR-Code zur Schadenmeldung — war nur im Django-Admin verlinkt. {% endcomment %}
-                    <a href="/liegenschaft/{{ lg.id }}/poster/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Hausaushang (QR Schadenmeldung)" %}</a>
-                    <div class="fw-menutrenner"></div>
-                    <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
-                        {% csrf_token %}
-                        <button title="{% trans 'EGID ermitteln & Objekte aus dem GWR importieren' %}" class="fw-menuzeile">{% zeichen 'herunterladen' klasse='w-4' %}{% trans "GWR-Import (Objekte)" %}</button>
-                    </form>
-                    <div class="fw-menutrenner"></div>
-                    <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with s=lg.strasse %}Liegenschaft {{ s }} inkl. aller Objekte wirklich löschen? Dies kann nicht rückgängig gemacht werden.{% endblocktrans %}{% endfilter %}');">
-                        {% csrf_token %}
-                        <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Liegenschaft löschen" %}</button>
-                    </form>
-                </div>
-            </div>
-            <script>
-              document.addEventListener('click', function (ev) {
-                var d = document.getElementById('lAktionen');
-                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-              });
-            </script>
-        </div>
+        {% betreut_von lg as betreuung %}
+        <p>{{ lg.plz }} {{ lg.ort }}{% if lg.kanton %} {{ lg.kanton }}{% endif %}{% if lg.eigentuemer %} · <a href="/neu/mandate/{{ lg.eigentuemer_id }}/" class="fw-link">{{ lg.eigentuemer.firma_oder_name }}</a>{% endif %}{% if lg.baujahr %} · {% blocktrans with j=lg.baujahr %}Baujahr {{ j }}{% endblocktrans %}{% endif %}{% if lg.egid %} · {% trans "EGID" %} {{ lg.egid }}{% endif %}
+            · {% trans "Betreut von" %} {% if betreuung %}<b>{{ betreuung.get_full_name|default:betreuung.username }}</b>{% else %}<span class="fw-warnton">{% trans "nicht zugeteilt" %}</span>{% endif %}
+            · <span class="fw-mono" title="{% trans 'Liegenschaft' %}">{{ lg_nummer }}</span></p>
     </div>
-    {% comment %} Ende fw-akte-oben — ohne dieses schliessende div sitzt die
-       Kennzahlenleiste INNERHALB des Kopfblocks statt darunter. {% endcomment %}
-    <div class="fw-kzn">
-        <div><div class="fw-l">{% trans "Vermietung" %}</div>
-            <div class="fw-w{% if leerstand %} warn{% else %} good{% endif %}">{{ vermietet }} / {{ total_einheiten }}</div>
-            <div class="fw-f">{% if lg_quote is not None %}{% blocktrans with q=lg_quote %}{{ q }} % belegt{% endblocktrans %}{% else %}{% trans "keine Objekte erfasst" %}{% endif %}</div></div>
-        <div><div class="fw-l">{% trans "Soll / Monat" %}</div>
-            <div class="fw-w">CHF {{ soll_monat|chf }}</div>
-            <div class="fw-f">{% trans "brutto aus aktiven Verträgen" %}</div></div>
-        {% comment %} Hier stand die Bruttorendite. Sie ist in den Reiter
-           Finanzen gewichen: Eine Renditezahl, die mangels Verkehrswert «—»
-           anzeigt, kostet im Aktenkopf nur Platz — und ohne erfassten Wert ist
-           genau das der Normalfall. Im Reiter bleibt sie, dort ist sie eine
-           Auswertung. An ihrer Stelle steht die Zahl, die man beim Blick auf
-           eine Liegenschaft wirklich braucht. {% endcomment %}
-        <div><div class="fw-l">{% blocktrans with j=lg_jahr %}Unterhalt {{ j }}{% endblocktrans %}</div>
-            {% if lg_budget %}
-            <div class="fw-w{% if lg_budget_stufe %} {{ lg_budget_stufe }}{% endif %}">CHF {{ lg_budget_ist|chf:0 }}</div>
-            <div class="fw-f fw-lang">{% blocktrans with b=lg_budget|chf:0 %}von {{ b }} Budget{% endblocktrans %}{% if lg_budget_rest < 0 %} · {% trans "überschritten" %}{% else %} · {% blocktrans with r=lg_budget_rest|chf:0 %}CHF {{ r }} offen{% endblocktrans %}{% endif %}</div>
-            {% else %}
-            <div class="fw-w" style="font-size:15px">{% trans "kein Budget" %}</div>
-            <div class="fw-f fw-lang">{% blocktrans with j=lg_jahr %}für {{ j }} nicht erfasst{% endblocktrans %}</div>
-            {% endif %}
+    <div class="fw-phead-knoepfe">
+        <div class="relative">
+            <button type="button" onclick="document.getElementById('lAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                    class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
+            <div id="lAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-menuzeile">{% zeichen 'bearbeiten' klasse='w-4' %}{% trans "Bearbeiten" %}</a>
+                <div class="fw-menutrenner"></div>
+                <a href="/neu/mieterspiegel/?lg={{ lg.id }}" class="fw-menuzeile">{% zeichen 'filtern' klasse='w-4' %}{% trans "Mieterspiegel" %}</a>
+                {% if lg.eigentuemer_id %}
+                <a href="/neu/mandate/{{ lg.eigentuemer_id }}/abrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='w-4' %}{% trans "Eigentümerabrechnung" %}</a>
+                <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="fw-menuzeile">{% zeichen 'recht' klasse='w-4' %}{% trans "Kontokorrent" %}</a>
+                {% endif %}
+                <a href="/neu/hypotheken/" class="fw-menuzeile">{% zeichen 'liegenschaft' klasse='w-4' %}{% trans "Hypotheken" %}</a>
+                {% comment %} Aushang mit QR-Code zur Schadenmeldung — war nur im Django-Admin verlinkt. {% endcomment %}
+                <a href="/liegenschaft/{{ lg.id }}/poster/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Hausaushang (QR Schadenmeldung)" %}</a>
+                <div class="fw-menutrenner"></div>
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
+                    {% csrf_token %}
+                    <button title="{% trans 'EGID ermitteln & Objekte aus dem GWR importieren' %}" class="fw-menuzeile">{% zeichen 'herunterladen' klasse='w-4' %}{% trans "GWR-Import (Objekte)" %}</button>
+                </form>
+                <div class="fw-menutrenner"></div>
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/"
+                      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with s=lg.strasse %}Liegenschaft {{ s }} inkl. aller Objekte wirklich löschen? Dies kann nicht rückgängig gemacht werden.{% endblocktrans %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Liegenschaft löschen" %}</button>
+                </form>
+            </div>
         </div>
-        <div><div class="fw-l">{% trans "Nächste Frist" %}</div>
-            <div class="fw-w{% if lg_naechste_frist.ueberfaellig %} crit{% elif lg_naechste_frist.faellig_bald %} warn{% endif %}">{% if lg_naechste_frist %}{{ lg_naechste_frist.wf.naechste_faelligkeit|date:"d.m.Y" }}{% else %}—{% endif %}</div>
-            {% comment %} Titel UNGEKUERZT (Konzept 16.3). Ein `truncatechars`
-               schnitt hier frueher mitten im Namen ab; die CSS-Klasse
-               `fw-lang` bricht stattdessen auf zwei Zeilen um. {% endcomment %}
-            <div class="fw-f fw-lang" title="{% if lg_naechste_frist %}{{ lg_naechste_frist.wf.bezeichnung }}{% endif %}">{% if lg_naechste_frist %}{{ lg_naechste_frist.wf.bezeichnung }}{% else %}{% trans "keine Frist erfasst" %}{% endif %}</div></div>
+        <script>
+          document.addEventListener('click', function (ev) {
+            var d = document.getElementById('lAktionen');
+            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+          });
+        </script>
+        <a href="?tab=dokumente" class="fw-btn" onclick="fwTab('lg', 'dokumente'); document.getElementById('lg-dokumente').scrollIntoView({behavior: 'smooth', block: 'start'}); return false;">{% trans "Dokumente" %}</a>
+        <a href="/neu/faelle/neu/?akte=lg-{{ lg.id }}" class="fw-btn fw-primary" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')">{% zeichen 'neu' %}{% trans "Neuer Fall" %}</a>
     </div>
+</div>
+
+<div class="fw-kpis fw-stats">
+    <div class="fw-kpi"><div class="fw-l">{% trans "Objekte" %}</div>
+        <div class="fw-v">{{ total_einheiten }}</div>
+        <div class="fw-f">{% if not total_einheiten %}{% trans "keine Objekte erfasst" %}{% elif leerstand %}{% blocktrans count n=leerstand %}{{ n }} leer{% plural %}{{ n }} leer{% endblocktrans %}{% else %}{% trans "alle vermietet" %}{% endif %}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Belegung" %}</div>
+        <div class="fw-v{% if lg_quote is not None and not leerstand %} fw-good{% elif leerstand %} fw-warn{% endif %}">{% if lg_quote is not None %}{{ lg_quote }} %{% else %}—{% endif %}</div>
+        <div class="fw-f">{% blocktrans with vv=vermietet e=total_einheiten d=lg_heute|date:"d.m.Y" %}{{ vv }} von {{ e }} · Stand {{ d }}{% endblocktrans %}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Soll / Monat" %}</div>
+        <div class="fw-v">CHF {{ soll_monat|chf:0 }}</div>
+        <div class="fw-f">{% trans "brutto aus aktiven Verträgen" %}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% blocktrans with t=lg_ausstand_tage %}Ausstände > {{ t }} Tage{% endblocktrans %}</div>
+        <div class="fw-v{% if lg_ausstand %} fw-crit{% endif %}">CHF {{ lg_ausstand|chf:0 }}</div>
+        <div class="fw-f">{% if lg_ausstand_parteien %}{% blocktrans count n=lg_ausstand_parteien %}{{ n }} Mietpartei{% plural %}{{ n }} Mietparteien{% endblocktrans %}{% else %}{% trans "keine" %}{% endif %}</div></div>
+    {% comment %} Unterhalt gegen Budget bleibt im Kopf (Budget-Entscheid
+       21.08.2026, faelle/test_liegenschaftsbudget.py) — als fuenfte Kennzahl
+       neben den vier aus dem Mockup. {% endcomment %}
+    <div class="fw-kpi"><div class="fw-l">{% blocktrans with j=lg_jahr %}Unterhalt {{ j }}{% endblocktrans %}</div>
+        {% if lg_budget %}
+        <div class="fw-v{% if lg_budget_stufe %} fw-{{ lg_budget_stufe }}{% endif %}">CHF {{ lg_budget_ist|chf:0 }}</div>
+        <div class="fw-f">{% blocktrans with b=lg_budget|chf:0 %}von {{ b }} Budget{% endblocktrans %}{% if lg_budget_rest < 0 %} · {% trans "überschritten" %}{% else %} · {% blocktrans with r=lg_budget_rest|chf:0 %}CHF {{ r }} offen{% endblocktrans %}{% endif %}</div>
+        {% else %}
+        <div class="fw-v">{% trans "kein Budget" %}</div>
+        <div class="fw-f">{% blocktrans with j=lg_jahr %}für {{ j }} nicht erfasst{% endblocktrans %}</div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="fw-zwei">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-t">{% trans "Objekte" %}</span>
+            <span class="fw-neben">{% blocktrans count n=total_einheiten %}{{ n }} Einheit{% plural %}{{ n }} Einheiten{% endblocktrans %}</span></div>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr><th>{% trans "Objekt" %}</th><th>{% trans "Mietpartei" %}</th><th class="fw-right">{% trans "Brutto" %}</th><th>{% trans "Status" %}</th></tr></thead>
+            <tbody>
+            {% for row in einheiten_rows %}
+            <tr class="fw-klickzeile" onclick="window.location='{% if row.vertrag %}/neu/vertraege/{{ row.vertrag.id }}/{% else %}/neu/objekte/{{ row.einheit.id }}/{% endif %}{{ lg_query }}'">
+                <td><a href="/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}" class="fw-zelle-titel" onclick="event.stopPropagation()">{{ row.einheit.bezeichnung }}</a>
+                    <span class="fw-zelle-sub">{{ row.einheit.get_typ_display }}{% if row.einheit.flaeche_m2 %} · {{ row.einheit.flaeche_m2|floatformat:0 }} m²{% endif %}</span></td>
+                <td>{% if row.vertrag %}<a href="/neu/vertraege/{{ row.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{{ row.vertrag.mieter.display_name }}</a>
+                    <span class="fw-zelle-sub fw-mono">MV-{{ row.vertrag.id }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td class="fw-right fw-num">{% if row.vertrag %}{{ row.vertrag.brutto_mietzins|chf }}{% else %}<span class="fw-faint">–</span>{% endif %}</td>
+                <td>{% if not row.vertrag %}<span class="fw-chip fw-warn">{% trans "leer" %}</span>{% elif row.vertrag.id in lg_rueckstand_ids %}<span class="fw-chip fw-crit">{% trans "Rückstand" %}</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="fw-leerzeile">{% include 'fw/_empty.html' with icon='liegenschaft' titel=_('Keine Objekte erfasst.') knapp=True %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </div>
+
+    {% comment %} «Was auffällt» — alles, was die Akte von selbst bemerkt, in
+       EINER Liste: offene Faelle, Rueckstaende, die Befunde aus derselben
+       Quelle wie die Liegenschaftsliste (`faelle/liegenschaften.py`) und die
+       Hinweise aus `_liegenschaft_kopf`. Steht ausserhalb der Reiter und damit
+       auf jedem Reiter (Entscheid E2.73: Befunde, die niemand sieht, sind
+       teurer als Befunde, die zu oft dastehen). {% endcomment %}
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-t">{% trans "Was auffällt" %}</span>
+            {% if lg_auffaellig_anzahl %}<span class="fw-neben">{{ lg_auffaellig_anzahl }}</span>{% endif %}</div>
+        {% if lg_faelle_offen or lg_rueckstaende or lg_befunde or lg_hinweise %}
+        <ul class="fw-auffaellig">
+            {% for f in lg_faelle_offen %}
+            <li><span class="fw-punkt {% if f.status == 'offen' %}warn{% endif %}"></span>
+                <div class="fw-mitte"><b>{{ f.betreff|default:f.fallart.bezeichnung }}</b>
+                    <span><span class="fw-mono">{{ f.nummer }}</span> · {{ f.get_status_display }} · {% blocktrans with d=f.eroeffnet_am|date:"d.m.Y" %}eröffnet {{ d }}{% endblocktrans %}</span></div>
+                <a href="/neu/faelle/{{ f.id }}/" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a></li>
+            {% endfor %}
+            {% for r in lg_rueckstaende %}
+            <li><span class="fw-punkt crit"></span>
+                <div class="fw-mitte"><b>{% blocktrans with name=r.v.mieter.display_name b=r.betrag|chf %}Rückstand {{ name }}: CHF {{ b }}{% endblocktrans %}</b>
+                    <span>{{ r.v.einheit.bezeichnung }} · {% blocktrans with t=lg_ausstand_tage %}fällig vor mehr als {{ t }} Tagen{% endblocktrans %}</span></div>
+                <a href="/neu/vertraege/{{ r.v.id }}/" class="fw-btn fw-knapp">{% trans "Zur Akte" %}</a></li>
+            {% endfor %}
+            {% for b in lg_befunde %}
+            <li><span class="fw-punkt {{ b.0 }}"></span>
+                <div class="fw-mitte"><b>{{ b.1 }}</b>{% if b.3 %}<span>{{ b.3 }}</span>{% endif %}</div></li>
+            {% endfor %}
+            {% for h in lg_hinweise %}
+            <li><span class="fw-punkt {% if h.ton == 'crit' or h.ton == 'warn' %}{{ h.ton }}{% endif %}"></span>
+                <div class="fw-mitte"><b>{{ h.titel }}</b><span>{{ h.text }}</span></div>
+                <a href="{{ h.url }}" class="fw-btn fw-knapp">{{ h.knopf }}</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        {% include 'fw/_empty.html' with icon='gut' titel=_('Nichts fällt auf.') subtext=_('Alle Objekte vermietet, keine Rückstände, kein offener Vorgang.') %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="fw-card fw-akten-karte">
     {% include 'fw/_detail_tabs.html' with gruppe='lg' tabs=tab_liste %}
 </div>
-
-{% if lg_hinweise %}
-<div class="fw-card">
-    {% for h in lg_hinweise %}
-    <div class="fw-hinweis {{ h.ton }}">
-        <span class="fw-hi">{% zeichen_wert h.symbol %}</span>
-        <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
-            <div class="mt-1.5"><a href="{{ h.url }}" class="fw-link">{{ h.knopf }} →</a></div></div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
 
 {% comment %} Reiterinhalte nach dem Aktenregister (faelle/akten.py), Etappe
    4b.3+4b.4. Die frueheren sieben Reiter fallen auf sechs:
@@ -744,4 +758,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+{% include 'fw/_fwmodal.html' %}
 {% endblock %}

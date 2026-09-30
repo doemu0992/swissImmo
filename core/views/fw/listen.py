@@ -710,7 +710,21 @@ def fw_liegenschaften(request):
         return _lg_csv(rows)
 
     seite, query_ohne_seite = blaettern(request, rows)
+
+    # konzept-v8 (#akten): Befund «CHF … offen» und der Zaehler am Reiter
+    # «Mietverhältnisse». Beides nur lesend: Ausstaende in zwei Abfragen fuer
+    # die ANGEZEIGTE Seite (`faelle.liegenschaften.ausstaende`), die Vertraege
+    # in einer Zaehlung — dieselbe Menge wie die Vertragsliste ohne Filter.
+    from faelle.liegenschaften import ausstaende as _ausstaende
+    offen_je_lg = _ausstaende([r['lg'].id for r in seite.object_list])
+    for r in seite.object_list:
+        r['ausstand'] = (offen_je_lg.get(r['lg'].id) or {}).get('betrag')
+    vertraege_qs = Mietvertrag.objects.all()
+    if aktive_lg:
+        vertraege_qs = vertraege_qs.filter(einheit__liegenschaft=aktive_lg)
+
     return render(request, 'fw/liegenschaften.html', {
+        'vertraege_anzahl': vertraege_qs.count(),
         **basis, 'nav': 'liegenschaften', 'rows': seite.object_list,
         'seite': seite, 'query_ohne_seite': query_ohne_seite,
         'treffer': len(rows), 'alle_rows': len(alle), 'gesucht_rows': len(gesucht),
@@ -758,6 +772,82 @@ def _lg_csv(rows):
           r['lg'].eigentuemer or '', r['einheiten'], r['belegt'], r['leer'],
           r['belegung'], r['ertrag'], ', '.join(str(c[1]) for c in r['chips'])]
          for r in rows))
+
+def _berichte_v8(heute, aktive_lg):
+    """Diagramme und Mandatstabelle nach konzept-v8 (#berichte). NUR LESEND.
+
+      Zahlungsquote   `faelle.lage.verlaeufe()['eingang']` — dieselbe Reihe
+                      wie die Verlaufslinie auf «Heute» (Ist in % vom Soll
+                      je Fälligkeitsmonat, `None` = nichts fällig)
+      Ausstände > 30  offener Betrag (nach Teilzahlungen) je Liegenschaft,
+                      älter als 30 Tage seit Fälligkeit — dieselbe Grenze wie
+                      die Spalten 31–60/61–90/>90 der Aging-Seite
+      Mandate         `faelle.lage.mandate()` plus Liegenschaften, Soll/Monat
+                      (Netto + NK der Einheiten, wie «Mieterspiegel» oben)
+                      und Ausstände > 30 aus derselben Liegenschaftsrechnung
+
+    Die Mandatstabelle zeigt ganze Mandate. Ist eine Liegenschaft gewählt,
+    bleibt nur ihr Mandat stehen — aber ganz, sonst stünde «2 Liegenschaften»
+    neben den Zahlen einer einzigen.
+
+    Abfragen: verlaeufe 4, mandate 1, Liegenschaften 1, offene Rechnungen 2.
+    """
+    from faelle import lage as _lage
+
+    enden = _lage._monatsenden(heute)
+    reihe = _lage.verlaeufe(heute, aktive_lg).get('eingang') or []
+    monate = [dateformat.format(e, 'M') for e in enden]
+
+    lgs = list(Liegenschaft.objects.annotate(
+        soll=Sum(Coalesce(F('einheiten__nettomiete_aktuell'), Decimal('0'))
+                 + Coalesce(F('einheiten__nebenkosten_aktuell'), Decimal('0'))))
+        .order_by('strasse'))
+    ueber30 = defaultdict(lambda: Decimal('0.00'))
+    offen = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+             .select_related('vertrag__einheit')
+             .prefetch_related('zahlungseingaenge'))
+    for r in offen:
+        faellig = r.faellig_am or r.datum
+        if not faellig or (heute - faellig).days <= 30:
+            continue
+        betrag = r.offener_betrag
+        if betrag <= 0:
+            continue
+        lg_id = r.liegenschaft_id or (r.vertrag.einheit.liegenschaft_id
+                                      if r.vertrag_id and r.vertrag.einheit_id else None)
+        if lg_id:
+            ueber30[lg_id] += betrag
+
+    balken = sorted(
+        ({'lab': lg.strasse, 'wert': ueber30.get(lg.id, Decimal('0.00')),
+          'url': f'/neu/liegenschaften/{lg.id}/'}
+         for lg in lgs if not aktive_lg or lg.id == aktive_lg.id),
+        key=lambda z: -z['wert'])
+
+    je_mandat = defaultdict(lambda: {'lgs': 0, 'soll': Decimal('0.00'), 'ueber30': Decimal('0.00')})
+    for lg in lgs:
+        if lg.eigentuemer_id:
+            m = je_mandat[lg.eigentuemer_id]
+            m['lgs'] += 1
+            m['soll'] += lg.soll or Decimal('0.00')
+            m['ueber30'] += ueber30.get(lg.id, Decimal('0.00'))
+    mandate = []
+    for z in _lage.mandate(heute):
+        if aktive_lg and z['mandat'].id != aktive_lg.eigentuemer_id:
+            continue
+        mandate.append({**z, **je_mandat[z['mandat'].id]})
+
+    gemessen = [w for w in reihe if w is not None]
+    return {
+        'bericht_von': enden[0].replace(day=1), 'bericht_bis': enden[-1],
+        'quote_werte': reihe, 'quote_monate': monate,
+        'quote_min': min(gemessen) if gemessen else None,
+        'quote_max': max(gemessen) if gemessen else None,
+        'ausstand_balken': balken,
+        'ausstand_summe': sum((b['wert'] for b in balken), Decimal('0.00')),
+        'mandat_zeilen': mandate,
+    }
+
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_berichte(request):
@@ -843,7 +933,8 @@ def fw_berichte(request):
              'kennzahl': None, 'pdf': False},
         ]},
     ]
-    return render(request, 'fw/berichte.html', {**basis, 'nav': 'berichte', 'berichte': berichte})
+    return render(request, 'fw/berichte.html', {**basis, 'nav': 'berichte', 'berichte': berichte,
+                                                'heute': heute, **_berichte_v8(heute, aktive_lg)})
 
 
 AUSWERTUNG_TYPEN = [
@@ -1262,8 +1353,15 @@ def fw_vertraege(request):
 
     seite, query_ohne_seite = blaettern(request, qs)
     rows = [_vertrag_zeile(v) for v in seite.object_list]
+    _saldo_und_mahnstufe(rows)
+
+    # konzept-v8 (#akten): Zaehler am Reiter «Liegenschaften» — eine Zaehlung.
+    lg_qs = Liegenschaft.objects.all()
+    if aktive_lg:
+        lg_qs = lg_qs.filter(id=aktive_lg.id)
 
     return render(request, 'fw/vertraege.html', {
+        'liegenschaften_anzahl': lg_qs.count(),
         **basis, **_vermietung_pipeline('vertraege', basis['lg_query']), 'nav': 'vertraege', 'rows': rows,
         'seite': seite, 'query_ohne_seite': query_ohne_seite, 'treffer': seite.paginator.count,
         'status_filter': status_filter, 'q': q,
@@ -1278,6 +1376,42 @@ def fw_vertraege(request):
         'csv_url': query_mit(request, export='csv'),
         'suche_aufheben_url': query_mit(request, q=None),
     })
+
+
+def _saldo_und_mahnstufe(rows):
+    """Saldo (offene Posten) und hoechste Mahnstufe je Zeile — konzept-v8 #akten.
+
+    Nur lesend, drei Abfragen fuer die ganze Seite, nicht je Zeile. Der Saldo
+    ist dieselbe Zahl wie «Saldo» auf der Vertragsakte: Summe von
+    `max(0, Betrag − verbuchte Zahlungen)` ueber die offenen und teilbezahlten
+    Rechnungen. Die Mahnstufe steht nur bei offenem Saldo — eine alte Mahnung
+    zu einer laengst bezahlten Rechnung ist kein Befund.
+    """
+    from django.db.models import Max
+
+    from finance.models import Mahnung
+
+    vids = [r['v'].id for r in rows]
+    for r in rows:
+        r['saldo'] = Decimal('0.00')
+        r['mahnstufe'] = 0
+    if not vids:
+        return
+    rechnungen = list(DebitorenRechnung.objects
+                      .filter(vertrag_id__in=vids, status__in=('offen', 'teilbezahlt'))
+                      .values_list('id', 'vertrag_id', 'betrag'))
+    bezahlt = dict(Zahlungseingang.objects
+                   .filter(debitoren_rechnung_id__in=[x[0] for x in rechnungen], status='verbucht')
+                   .values('debitoren_rechnung_id').annotate(s=Sum('betrag'))
+                   .values_list('debitoren_rechnung_id', 's')) if rechnungen else {}
+    saldo = defaultdict(lambda: Decimal('0.00'))
+    for r_id, v_id, betrag in rechnungen:
+        saldo[v_id] += max(Decimal('0.00'), (betrag or Decimal('0')) - (bezahlt.get(r_id) or Decimal('0')))
+    stufen = dict(Mahnung.objects.filter(vertrag_id__in=vids).values('vertrag_id')
+                  .annotate(m=Max('stufe')).values_list('vertrag_id', 'm'))
+    for r in rows:
+        r['saldo'] = saldo.get(r['v'].id, Decimal('0.00'))
+        r['mahnstufe'] = (stufen.get(r['v'].id) or 0) if r['saldo'] else 0
 
 
 def _vertrag_zeile(v):

@@ -5,24 +5,16 @@
 
 {% block content %}
 
-<div class="fw-phead">
+<div class="fw-phead fw-phead-lauf">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Mahnwesen" %}</span></nav>
         <h1>{% trans "Mahnwesen" %}</h1>
         <p>{% trans "Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen" %}
             {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>
             <a href="/neu/mahnwesen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
-    <div class="fw-phead-knoepfe items-start">
+    <div class="fw-phead-knoepfe">
         <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-btn">{% zeichen 'bericht' %}{% trans "Altersstruktur (OP-Aging) ansehen" %}</a>
-        {% if anzahl_total %}
-        <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');" class="flex flex-col items-start gap-1.5">
-            {% csrf_token %}
-            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <button type="submit" class="fw-btn fw-primary">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
-            <label class="fw-haekchen"><input type="checkbox" name="mit_zins" class="fw-akzent">{% trans "Verzugszins (5%) berechnen" %}</label>
-            <label class="fw-haekchen"><input type="checkbox" name="kein_versand" class="fw-akzent">{% trans "Testlauf: nur erstellen, keine E-Mails versenden" %}</label>
-        </form>
-        {% endif %}
     </div>
 </div>
 
@@ -181,4 +173,17 @@
         </table>
     </div>
 </div>
+{% comment %} Freigabeleiste nach konzept-v8 (Läufe): Der Mahnlauf wandert aus dem
+   Seitenkopf nach unten — Optionen links, Knopf rechts. {% endcomment %}
+{% if anzahl_total %}
+<form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');" class="fw-freigabe">
+    {% csrf_token %}
+    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+    <div class="fw-ht">
+        <label class="fw-haekchen"><input type="checkbox" name="mit_zins" class="fw-akzent">{% trans "Verzugszins (5%) berechnen" %}</label>
+        <label class="fw-haekchen"><input type="checkbox" name="kein_versand" class="fw-akzent">{% trans "Testlauf: nur erstellen, keine E-Mails versenden" %}</label>
+    </div>
+    <button type="submit" class="fw-btn fw-primary">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
+</form>
+{% endif %}
 {% endblock %}

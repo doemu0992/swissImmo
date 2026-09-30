@@ -7,6 +7,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/finanzen/{{ lg_query }}">{% trans "Finanzen" %}</a><span aria-hidden="true">/</span><span>{% trans "Debitoren" %}</span></nav>
         <h1>{% trans "Debitoren" %}</h1>
         <p>{% trans "Offene Posten aus Sollstellung und Weiterverrechnung (Sonnerie, Schlüssel, Ersatz …)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}, {{ aktive_lg.ort }} <a href="/neu/debitoren/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>

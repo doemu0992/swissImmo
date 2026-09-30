@@ -20236,3 +20236,608 @@ msgstr "Please enter the company or association name."
 #: core/views/fw/vertragserstellung.py
 msgid "Bitte den Nachnamen des Mieters erfassen."
 msgstr "Please enter the tenant's last name."
+
+#: core/templates/fw/abwesenheiten.html:8 core/templates/fw/anlagen.html:9
+#: core/templates/fw/auswertung.html:8 core/templates/fw/bankabgleich.html:10
+#: core/templates/fw/bankkonten.html:10 core/templates/fw/berichte.html:14
+#: core/templates/fw/bewerbungen.html:9 core/templates/fw/buchhaltung.html:10
+#: core/templates/fw/debitoren.html:10 core/templates/fw/dienstleister.html:9
+#: core/templates/fw/ersatzplanung.html:10 core/templates/fw/finanzen.html:14
+#: core/templates/fw/fristen.html:7 core/templates/fw/hypotheken.html:9
+#: core/templates/fw/kautionen.html:8 core/templates/fw/kontenplan.html:10
+#: core/templates/fw/kreditoren.html:10 core/templates/fw/laeufe.html:12
+#: core/templates/fw/lieferantenkonten.html:8
+#: core/templates/fw/liegenschaft_detail.html:18
+#: core/templates/fw/liegenschaften.html:14 core/templates/fw/mahnwesen.html:10
+#: core/templates/fw/mandate.html:7 core/templates/fw/mieterkonten.html:8
+#: core/templates/fw/mieterwechsel.html:8 core/templates/fw/mietzins.html:10
+#: core/templates/fw/mwst.html:8 core/templates/fw/nebenkosten.html:10
+#: core/templates/fw/objekte.html:25 core/templates/fw/pendenzen.html:8
+#: core/templates/fw/personen.html:9 core/templates/fw/schaeden.html:9
+#: core/templates/fw/sollstellung.html:15 core/templates/fw/termine.html:8
+#: core/templates/fw/vermarktung.html:8 core/templates/fw/vertraege.html:17
+#: core/templates/fw/vertrag_detail.html:21 core/templates/fw/zahllauf.html:10
+#: core/templates/fw/zulauf.html:8
+msgid "Pfad"
+msgstr "Path"
+
+#: core/templates/fw/berichte.html:16
+#, python-format
+msgid "%(von)s bis %(bis)s"
+msgstr "%(von)s to %(bis)s"
+
+#: core/templates/fw/berichte.html:16 core/templates/fw/finanzen.html:103
+msgid "ganzer Bestand"
+msgstr "entire portfolio"
+
+#: core/templates/fw/berichte.html:33 core/templates/fw/berichte.html:36
+msgid "Zahlungsquote je Monat"
+msgstr "Payment rate per month"
+
+#: core/templates/fw/berichte.html:40
+#, python-format
+msgid ""
+"zwischen %(tief)s %% und %(hoch)s %% · Monate ohne Sollstellung bleiben leer"
+msgstr ""
+"between %(tief)s %% and %(hoch)s %% · months without billing stay empty"
+
+#: core/templates/fw/berichte.html:42
+msgid "Noch zu wenig Sollstellung für einen Verlauf."
+msgstr "Not enough billing yet for a trend."
+
+#: core/templates/fw/berichte.html:42
+msgid "Die Linie erscheint, sobald in zwei Monaten Mietzinse fällig waren."
+msgstr "The line appears once rent has been due in two months."
+
+#: core/templates/fw/berichte.html:48
+msgid "Ausstände > 30 Tage je Liegenschaft"
+msgstr "Arrears > 30 days per property"
+
+#: core/templates/fw/berichte.html:53
+msgid "Keine Liegenschaft hat Ausstände älter als 30 Tage."
+msgstr "No property has arrears older than 30 days."
+
+#: core/templates/fw/berichte.html:62
+msgid "Kennzahlen je Mandat"
+msgstr "Key figures per mandate"
+
+#: core/templates/fw/berichte.html:71
+#: core/templates/fw/liegenschaft_detail.html:80
+#: core/templates/fw/liegenschaften.html:99
+msgid "Belegung"
+msgstr "Occupancy"
+
+#: core/templates/fw/berichte.html:72
+msgid "Soll / Monat CHF"
+msgstr "Target / month CHF"
+
+#: core/templates/fw/berichte.html:73 core/templates/fw/finanzen.html:38
+msgid "Ausstände > 30 Tage"
+msgstr "Arrears > 30 days"
+
+#: core/templates/fw/berichte.html:86
+msgid "Noch keine Mandate mit Objekten."
+msgstr "No mandates with units yet."
+
+#: core/templates/fw/dashboard.html:42 core/templates/fw/sollstellung.html:15
+#, python-format
+msgid "Sollstellung %(monat)s"
+msgstr "Rent billing %(monat)s"
+
+#: core/templates/fw/finanzen.html:16
+#, python-format
+msgid "letzter camt-Import %(zeit)s"
+msgstr "last camt import %(zeit)s"
+
+#: core/templates/fw/finanzen.html:19
+msgid "camt importieren"
+msgstr "Import camt"
+
+#: core/templates/fw/finanzen.html:33
+msgid "Offene Kreditoren"
+msgstr "Open payables"
+
+#: core/templates/fw/finanzen.html:40
+#: core/templates/fw/liegenschaft_detail.html:88
+#, python-format
+msgid "%(n)s Mietpartei"
+msgid_plural "%(n)s Mietparteien"
+msgstr[0] "%(n)s tenant"
+msgstr[1] "%(n)s tenants"
+
+#: core/templates/fw/finanzen.html:45
+#, python-format
+msgid "%(n)s Vertrag · hinterlegt"
+msgid_plural "%(n)s Verträge · hinterlegt"
+msgstr[0] "%(n)s contract · deposited"
+msgstr[1] "%(n)s contracts · deposited"
+
+#: core/templates/fw/finanzen.html:53
+#, python-format
+msgid "%(n)s Gutschrift offen"
+msgid_plural "%(n)s Gutschriften offen"
+msgstr[0] "%(n)s open credit"
+msgstr[1] "%(n)s open credits"
+
+#: core/templates/fw/finanzen.html:53
+msgid "alles zugeordnet"
+msgstr "all matched"
+
+#: core/templates/fw/finanzen.html:65
+#, python-format
+msgid "Valuta %(datum)s"
+msgstr "Value date %(datum)s"
+
+#: core/templates/fw/finanzen.html:69
+msgid "Betrag und Name passen"
+msgstr "Amount and name match"
+
+#: core/templates/fw/finanzen.html:69
+msgid "Betrag passt"
+msgstr "Amount matches"
+
+#: core/templates/fw/finanzen.html:71
+msgid "Auszugszeile noch nicht verbucht"
+msgstr "Statement line not yet booked"
+
+#: core/templates/fw/finanzen.html:73
+msgid "Betrag passt zu keinem offenen Posten"
+msgstr "Amount matches no open item"
+
+#: core/templates/fw/finanzen.html:85
+msgid "Anders zuordnen"
+msgstr "Match differently"
+
+#: core/templates/fw/finanzen.html:95
+msgid "Abgeglichen."
+msgstr "Reconciled."
+
+#: core/templates/fw/finanzen.html:95
+msgid "Alle Gutschriften sind verbucht."
+msgstr "All credits are booked."
+
+#: core/templates/fw/finanzen.html:102
+msgid "Ausstände nach Alter"
+msgstr "Arrears by age"
+
+#: core/templates/fw/finanzen.html:108
+#: core/templates/fw/liegenschaft_detail.html:109
+msgid "Mietpartei"
+msgstr "Tenant"
+
+#: core/templates/fw/finanzen.html:128
+msgid "Keine überfälligen Forderungen."
+msgstr "No overdue receivables."
+
+#: core/templates/fw/finanzen.html:145
+msgid "Beträge in CHF · Tage seit Fälligkeit"
+msgstr "Amounts in CHF · days since due date"
+
+#: core/templates/fw/finanzen.html:146
+msgid "Zum Mahnwesen"
+msgstr "To dunning"
+
+#: core/templates/fw/laeufe.html:14
+msgid "Alles, was einen Zustand hat und blockieren kann"
+msgstr "Everything that has a state and can get blocked"
+
+#: core/templates/fw/laeufe.html:14
+#, python-format
+msgid "%(n)s braucht dich"
+msgid_plural "%(n)s brauchen dich"
+msgstr[0] "%(n)s needs you"
+msgstr[1] "%(n)s need you"
+
+#: core/templates/fw/laeufe.html:35
+msgid "Freigabe nötig"
+msgstr "Approval needed"
+
+#: core/templates/fw/laeufe.html:44 core/templates/fw/sollstellung.html:17
+#, python-format
+msgid "gestartet %(datum)s"
+msgstr "started %(datum)s"
+
+#: core/templates/fw/liegenschaft_detail.html:32
+#: core/templates/fw/liegenschaften.html:107
+#, python-format
+msgid "Baujahr %(j)s"
+msgstr "Built %(j)s"
+
+#: core/templates/fw/liegenschaft_detail.html:79
+msgid "alle vermietet"
+msgstr "fully let"
+
+#: core/templates/fw/liegenschaft_detail.html:82
+#, python-format
+msgid "%(vv)s von %(e)s · Stand %(d)s"
+msgstr "%(vv)s of %(e)s · as of %(d)s"
+
+#: core/templates/fw/liegenschaft_detail.html:86
+#, python-format
+msgid "Ausstände > %(t)s Tage"
+msgstr "Arrears > %(t)s days"
+
+#: core/templates/fw/liegenschaft_detail.html:107
+#, python-format
+msgid "%(n)s Einheit"
+msgid_plural "%(n)s Einheiten"
+msgstr[0] "%(n)s unit"
+msgstr[1] "%(n)s units"
+
+#: core/templates/fw/liegenschaft_detail.html:118
+msgid "Rückstand"
+msgstr "Arrears"
+
+#: core/templates/fw/liegenschaft_detail.html:142
+#, python-format
+msgid "eröffnet %(d)s"
+msgstr "opened %(d)s"
+
+#: core/templates/fw/liegenschaft_detail.html:147
+#, python-format
+msgid "Rückstand %(name)s: CHF %(b)s"
+msgstr "Arrears %(name)s: CHF %(b)s"
+
+#: core/templates/fw/liegenschaft_detail.html:148
+#, python-format
+msgid "fällig vor mehr als %(t)s Tagen"
+msgstr "due more than %(t)s days ago"
+
+#: core/templates/fw/liegenschaft_detail.html:149
+msgid "Zur Akte"
+msgstr "Open file"
+
+#: core/templates/fw/liegenschaft_detail.html:162
+msgid "Nichts fällt auf."
+msgstr "Nothing stands out."
+
+#: core/templates/fw/liegenschaft_detail.html:162
+msgid "Alle Objekte vermietet, keine Rückstände, kein offener Vorgang."
+msgstr "All units let, no arrears, no open case."
+
+#: core/templates/fw/liegenschaften.html:78
+msgid "Sortiert nach Auffälligkeit, nicht nach Alphabet."
+msgstr "Sorted by findings, not alphabetically."
+
+#: core/templates/fw/liegenschaften.html:113
+msgid "offene Posten, fällig vor mehr als 30 Tagen"
+msgstr "open items due more than 30 days ago"
+
+#: core/templates/fw/sollstellung.html:16
+#, python-format
+msgid "Sollstellung %(monat)s %(jahr)s"
+msgstr "Rent billing %(monat)s %(jahr)s"
+
+#: core/templates/fw/sollstellung.html:50
+#, python-format
+msgid "%(n)s mit anderer Zahlungsart"
+msgstr "%(n)s with another payment method"
+
+#: core/templates/fw/sollstellung.html:59
+msgid "Blockiert"
+msgstr "Blocked"
+
+#: core/templates/fw/sollstellung.html:61
+msgid "vor Freigabe lösen"
+msgstr "resolve before approval"
+
+#: core/templates/fw/sollstellung.html:61
+msgid "keine Blockade"
+msgstr "no blocker"
+
+#: core/templates/fw/sollstellung.html:68
+msgid "Blockaden"
+msgstr "Blockers"
+
+#: core/templates/fw/sollstellung.html:131
+#, python-format
+msgid "Noch %(n)s Blockade offen"
+msgid_plural "Noch %(n)s Blockaden offen"
+msgstr[0] "%(n)s blocker still open"
+msgstr[1] "%(n)s blockers still open"
+
+#: core/templates/fw/sollstellung.html:131
+msgid "Bereit zur Freigabe"
+msgstr "Ready for approval"
+
+#: core/templates/fw/vertraege.html:48 core/templates/fw/vertrag_detail.html:87
+msgid "Mietzins brutto"
+msgstr "Gross rent"
+
+#: core/templates/fw/vertraege.html:68
+#, python-format
+msgid "bis %(bis)s"
+msgstr "until %(bis)s"
+
+#: core/templates/fw/vertrag_detail.html:80
+msgid "Offene Posten dieses Mietverhältnisses im Bankabgleich verbuchen"
+msgstr "Book this tenancy's open items in bank reconciliation"
+
+#: core/templates/fw/vertrag_detail.html:80
+#: core/templates/fw/vertrag_detail.html:116
+msgid "Zahlung erfassen"
+msgstr "Record payment"
+
+#: core/templates/fw/vertrag_detail.html:104
+#, python-format
+msgid "Ende %(d)s"
+msgstr "End %(d)s"
+
+#: core/templates/fw/vertrag_detail.html:111
+#, python-format
+msgid "Rückstand CHF %(b)s"
+msgstr "Arrears CHF %(b)s"
+
+#: core/templates/fw/vertrag_detail.html:112
+msgid "Noch nicht gemahnt"
+msgstr "Not yet reminded"
+
+#: core/templates/fw/vertrag_detail.html:112
+#, python-format
+msgid "offen seit %(m)s"
+msgstr "open since %(m)s"
+
+#: core/templates/fw/vertrag_detail.html:114
+msgid "Zahlungsverzug 257d"
+msgstr "Payment default 257d"
+
+#: core/templates/fw/vertrag_detail.html:115
+msgid "Zum Konto"
+msgstr "To account"
+
+#: core/templates/fw/vertrag_detail.html:548
+#, python-format
+msgid "Saldo CHF %(b)s offen"
+msgstr "Balance CHF %(b)s open"
+
+#: core/templates/fw/vertrag_detail.html:551
+msgid "Buchung"
+msgstr "Entry"
+
+#: core/templates/fw/vertrag_detail.html:561
+msgid "Noch keine Buchungen auf diesem Konto."
+msgstr "No entries on this account yet."
+
+#: core/views/fw/arbeit.py:470
+msgid "Vorschau"
+msgstr "Preview"
+
+#: core/views/fw/arbeit.py:470
+msgid "Stellung"
+msgstr "Billing"
+
+#: core/views/fw/arbeit.py:471
+msgid "Zuordnung"
+msgstr "Matching"
+
+#: core/views/fw/arbeit.py:472
+msgid "Vorschlag"
+msgstr "Proposal"
+
+#: core/views/fw/arbeit.py:472
+msgid "Mahnungen"
+msgstr "Reminders"
+
+#: core/views/fw/arbeit.py:473
+msgid "Zusammenstellung"
+msgstr "Compilation"
+
+#: core/views/fw/arbeit.py:473
+msgid "Freigabe"
+msgstr "Approval"
+
+#: core/views/fw/arbeit.py:474
+msgid "Erfassung"
+msgstr "Entry"
+
+#: core/views/fw/arbeit.py:475
+msgid "Kostenerfassung"
+msgstr "Cost entry"
+
+#: core/views/fw/arbeit.py:475
+msgid "Verteilung"
+msgstr "Allocation"
+
+#: core/views/fw/arbeit.py:477
+msgid "Vorbereitung"
+msgstr "Preparation"
+
+#: core/templates/fw/base.html:113
+msgid "Zuletzt geöffnet"
+msgstr "Recently opened"
+
+#: core/templates/fw/base.html:152 core/templates/fw/dashboard.html:43
+#: core/templates/fw/fall_neu.html:3 core/templates/fw/fall_neu.html:14
+#: core/templates/fw/liegenschaft_detail.html:72
+#: core/templates/fw/vertrag_detail.html:81
+msgid "Neuer Fall"
+msgstr "New case"
+
+#: core/templates/fw/base.html:152
+msgid "Neuen Fall erfassen"
+msgstr "Create new case"
+
+#: core/templates/fw/base.html:154
+msgid "Mitteilungen"
+msgstr "Notifications"
+
+#: core/templates/fw/berichte.html:34
+#, python-format
+msgid "Ist in %% vom Soll"
+msgstr "Actual as %% of target"
+
+#: core/templates/fw/dashboard.html:55
+msgid "Lage im Überblick"
+msgstr "Overview"
+
+#: core/templates/fw/dashboard.html:65
+msgid "gegenüber Vormonat"
+msgstr "compared with last month"
+
+#: core/templates/fw/dashboard.html:79
+#, python-format
+msgid "%(n)s Vorgang"
+msgid_plural "%(n)s Vorgänge"
+msgstr[0] "%(n)s case"
+msgstr[1] "%(n)s cases"
+
+#: core/templates/fw/dashboard.html:89
+msgid "Zuständigkeit"
+msgstr "Responsibility"
+
+#: core/templates/fw/dashboard.html:90
+msgid "Zuständig: alle"
+msgstr "Assignee: all"
+
+#: core/templates/fw/dashboard.html:97
+msgid "Mandat: alle"
+msgstr "Mandate: all"
+
+#: core/templates/fw/dashboard.html:142
+msgid "niemand zuständig"
+msgstr "nobody assigned"
+
+#: core/templates/fw/dashboard.html:169
+msgid "Pendenz"
+msgstr "Task"
+
+#: core/templates/fw/dashboard.html:178
+#, python-format
+msgid "Frist %(datum)s"
+msgstr "Deadline %(datum)s"
+
+#: core/templates/fw/dashboard.html:187
+#, python-format
+msgid "Die Frist ist seit %(n)s Tag abgelaufen."
+msgid_plural "Die Frist ist seit %(n)s Tagen abgelaufen."
+msgstr[0] "The deadline passed %(n)s day ago."
+msgstr[1] "The deadline passed %(n)s days ago."
+
+#: core/templates/fw/dashboard.html:200
+msgid "Eckdaten"
+msgstr "Key facts"
+
+#: core/templates/fw/dashboard.html:202
+msgid "niemand, bitte übernehmen"
+msgstr "nobody, please take over"
+
+#: core/templates/fw/dashboard.html:205
+msgid "Akte öffnen"
+msgstr "Open file"
+
+#: core/templates/fw/dashboard.html:210
+msgid "Auf morgen"
+msgstr "Tomorrow"
+
+#: core/templates/fw/dashboard.html:211
+msgid "Schritt erledigt"
+msgstr "Step done"
+
+#: core/templates/fw/dashboard.html:219
+msgid "Alles erledigt."
+msgstr "All done."
+
+#: core/templates/fw/dashboard.html:223
+msgid "bewegen"
+msgstr "move"
+
+#: core/templates/fw/dashboard.html:223
+msgid "erledigen"
+msgstr "complete"
+
+#: core/templates/fw/dashboard.html:224
+msgid "Alle Vorgänge"
+msgstr "All cases"
+
+#: core/templates/fw/dashboard.html:237
+msgid "Ausserdem"
+msgstr "Also"
+
+#: core/templates/fw/dashboard.html:275
+msgid "Posteingang"
+msgstr "Inbox"
+
+#: core/templates/fw/dashboard.html:283
+msgid "Kein sicherer Vorschlag"
+msgstr "No reliable suggestion"
+
+#: core/templates/fw/dashboard.html:286
+msgid "Anders"
+msgstr "Other"
+
+#: core/templates/fw/dashboard.html:292
+msgid "Posteingang leer."
+msgstr "Inbox empty."
+
+#: core/templates/fw/dashboard.html:292
+msgid "Alles ist zugeordnet."
+msgstr "Everything is matched."
+
+#: core/templates/fw/dashboard.html:305
+msgid "nach Auffälligkeit"
+msgstr "by findings"
+
+#: core/templates/fw/dashboard.html:320
+msgid "Alle Berichte"
+msgstr "All reports"
+
+#: core/templates/fw/fall_neu.html:15
+msgid "Wird in deinem Arbeitsvorrat angelegt."
+msgstr "Will be added to your work queue."
+
+#: core/templates/fw/fall_neu.html:33
+msgid "Noch keine Fallarten angelegt."
+msgstr "No case types created yet."
+
+#: core/templates/fw/fall_neu.html:42
+msgid "z. B. Heizung ausgefallen, Wohnung 2.3"
+msgstr "e.g. heating failed, flat 2.3"
+
+#: core/templates/fw/fall_neu.html:68
+msgid "ich"
+msgstr "me"
+
+#: core/templates/fw/fall_neu.html:69
+msgid "noch offen"
+msgstr "still open"
+
+#: core/templates/fw/fall_neu.html:76
+msgid "Was ist passiert, wer hat gemeldet?"
+msgstr "What happened, who reported it?"
+
+#: core/templates/fw/fall_neu.html:81
+msgid "Fall anlegen"
+msgstr "Create case"
+
+#: core/templates/fw/mieterwechsel.html:10
+#, python-format
+msgid ""
+"Gekündigte <span class=\"fw-faint\">(%(g)s)</span> und auslaufende <span "
+"class=\"fw-faint\">(%(a)s)</span> Verträge — von Rücknahme bis Übergabe an "
+"den Nachmieter."
+msgstr ""
+"Terminated <span class=\"fw-faint\">(%(g)s)</span> and expiring <span "
+"class=\"fw-faint\">(%(a)s)</span> contracts — from move-out inspection to "
+"handover to the next tenant."
+
+#: core/views/fw/arbeit.py:342
+#, python-format
+msgid "Auf morgen verschoben: %(nummer)s"
+msgstr "Moved to tomorrow: %(nummer)s"
+
+#: core/views/fw/arbeit.py:379
+msgid "Bitte eine Art wählen."
+msgstr "Please choose a type."
+
+#: core/views/fw/arbeit.py:381
+msgid "Bitte einen Betreff mit mindestens 3 Zeichen eingeben."
+msgstr "Please enter a subject with at least 3 characters."
+
+#: core/views/fw/arbeit.py:389
+msgid "Bitte eine Akte wählen."
+msgstr "Please choose a file."
+
+#: core/views/fw/arbeit.py:410 core/views/fw/arbeit.py:411
+#, python-format
+msgid "Fall %(nummer)s angelegt."
+msgstr "Case %(nummer)s created."

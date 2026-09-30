@@ -61,6 +61,7 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 UEBERSETZT = (
     'fw/abwesenheiten.html',
     'fw/dashboard.html',
+    'fw/fall_neu.html',
     'fw/termine.html',
     'fw/zulauf.html',
     'fw/_arbeitsvorrat_abschnitte.html',

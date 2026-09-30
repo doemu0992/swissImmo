@@ -88,6 +88,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
+                           fw_fallschritt_verschieben, fw_fall_neu, fw_leistenzahlen,
                            fw_termine, fw_termin_neu, fw_termin_status,
                            fw_abwesenheiten, fw_abwesenheit_neu,
                            fw_regelwerk, fw_regelsatz_form, fw_regelsatz_loeschen,
@@ -411,6 +412,10 @@ urlpatterns = [
          name='fw_fall_zustaendig'),
     path('neu/fallschritte/<int:pk>/erledigen/', fw_fallschritt_erledigen,
          name='fw_fallschritt_erledigen'),
+    path('neu/fallschritte/<int:pk>/verschieben/', fw_fallschritt_verschieben,
+         name='fw_fallschritt_verschieben'),
+    path('neu/faelle/neu/', fw_fall_neu, name='fw_fall_neu'),
+    path('neu/leistenzahlen/', fw_leistenzahlen, name='fw_leistenzahlen'),
     path('neu/laeufe/', fw_laeufe, name='fw_laeufe'),
     path('neu/zulauf/', fw_zulauf, name='fw_zulauf'),
     path('neu/zulauf/<int:pk>/uebernehmen/', fw_zulauf_uebernehmen,

@@ -38,7 +38,7 @@
                 {% for e in einheiten %}<option value="{{ e.id }}">{{ e.liegenschaft.strasse }} · {{ e.bezeichnung }}</option>{% endfor %}
             </select></div>
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "Datei *" %}</label>
-            <input type="file" name="datei" required class="w-full text-sm fw-mutet"></div>
+            <input type="file" name="datei" required class="fw-datei w-full"></div>
         <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Hochladen" %}</button></div>
     </form>
 </div>

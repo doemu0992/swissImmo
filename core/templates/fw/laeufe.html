@@ -3,38 +3,48 @@
 {% block title %}{% trans "Läufe" %} — swissImmo{% endblock %}
 
 {% block content %}
+{% comment %} Aufbau nach konzept-v8 (#laeufe, `pageLaeufe`): Pfad, Titel, Unterzeile
+   mit der Zahl der Läufe, die dich brauchen; darunter die Laufkarten im
+   Raster (3 Spalten, am Telefon 1), dann «Zuletzt abgeschlossen». {% endcomment %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><span>{% trans "Läufe" %}</span></nav>
         <h1>{% trans "Läufe" %}</h1>
-        <p>{% trans "Wiederkehrende Verarbeitung mit Zustand — und dem, was sie blockiert." %}</p>
+        <p>{% trans "Alles, was einen Zustand hat und blockieren kann" %}{% if brauchen_dich %} · {% blocktrans count n=brauchen_dich %}{{ n }} braucht dich{% plural %}{{ n }} brauchen dich{% endblocktrans %}{% endif %}</p>
     </div>
 </div>
 
 {% comment %} Konzept 3.3: «Jeder Lauf kennt fällig / läuft / abgeschlossen und
    **was ihn blockiert**.» Der Grund steht als Text da, nicht das Wort
    «blockiert»: Der Grund führt zu einer Handlung, das Wort zu einer
-   Rückfrage. {% endcomment %}
+   Rückfrage. Das Stufenband (`fw-stufen`) leitet die View aus dem Zustand
+   ab (`_lauf_stufen` in core/views/fw/arbeit.py) — gespeichert ist nichts. {% endcomment %}
 <div class="fw-subhead">{% trans "Offen" %} · {{ offen|length }}</div>
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6">
+<div class="fw-laeufe">
     {% for z in offen %}
-    <section class="fw-card flex flex-col">
-        <div class="fw-kopf fw-kopf-offen items-start">
-            <div class="min-w-0 flex-1">
-                <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
-                <div class="fw-neben">
-                    {% if z.blockaden %}{% for b in z.blockaden %}{{ b.grund }}{% if not forloop.last %} · {% endif %}{% endfor %}
-                    {% else %}{{ z.lauf.get_status_display }} · {% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% endif %}
-                </div>
+    <section class="fw-card fw-lauf">
+        <div class="fw-lauf-kopf">
+            <div class="fw-lauf-titel">
+                <b>{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</b>
+                <span>{% if z.blockaden %}{% for b in z.blockaden %}{{ b.grund }}{% if not forloop.last %} · {% endif %}{% endfor %}
+                    {% else %}{{ z.lauf.get_status_display }}{% for schluessel, wert in z.lauf.kennzahlen.items %} · {{ schluessel }} {{ wert }}{% endfor %}{% endif %}</span>
             </div>
-            {% if z.blockaden %}<span class="fw-chip fw-crit">{% blocktrans count n=z.blockaden|length %}{{ n }} Blockade{% plural %}{{ n }} Blockaden{% endblocktrans %}</span>{% endif %}
+            {% if z.blockaden %}<span class="fw-chip fw-crit">{% blocktrans count n=z.blockaden|length %}{{ n }} blockiert{% plural %}{{ n }} blockiert{% endblocktrans %}</span>
+            {% elif z.lauf.laufart.schluessel == 'zahllauf' and z.lauf.status == 'laeuft' %}<span class="fw-chip fw-warn">{% trans "Freigabe nötig" %}</span>
+            {% elif z.tage < 0 %}<span class="fw-chip fw-crit">{% blocktrans count n=z.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}</span>
+            {% elif z.tage == 0 %}<span class="fw-chip fw-warn">{% trans "heute" %}</span>
+            {% else %}<span class="fw-chip fw-mut">{% blocktrans with nr=z.schritt gesamt=z.schritte %}Schritt {{ nr }} von {{ gesamt }}{% endblocktrans %}</span>{% endif %}
         </div>
-        <div class="fw-fuss mt-auto">
-            <span class="fw-num">{{ z.lauf.faellig_am|date:"d.m.Y" }}</span>
-            <span class="fw-chip fw-dot {% if z.blockaden %}fw-crit{% elif z.tage < 0 %}fw-crit{% elif z.tage <= 3 %}fw-warn{% else %}fw-mut{% endif %}">{% if z.tage < 0 %}{% blocktrans count n=z.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}{% elif z.tage == 0 %}{% trans "heute" %}{% else %}{% blocktrans count n=z.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span>
+        <ol class="fw-stufen" aria-label="{% blocktrans with nr=z.schritt gesamt=z.schritte %}Schritt {{ nr }} von {{ gesamt }}{% endblocktrans %}">
+            {% for s in z.stufen %}<li class="{{ s.zustand }}"><i></i><span>{{ s.name }}</span></li>{% endfor %}
+        </ol>
+        <div class="fw-lauf-fuss">
+            <span>{% if z.lauf.gestartet_am %}{% blocktrans with datum=z.lauf.gestartet_am|date:"d.m.Y" %}gestartet {{ datum }}{% endblocktrans %} · {% endif %}{% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% if z.tage > 0 %} · {% blocktrans count n=z.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span>
+            <a href="{{ z.url }}" class="fw-btn fw-knapp{% if z.braucht_dich %} fw-primary{% endif %}">{% trans "Öffnen" %}</a>
         </div>
     </section>
     {% empty %}
-    <div class="fw-card"><p class="fw-leer">{% trans "Kein offener Lauf." %}</p></div>
+    <div class="fw-card fw-lauf-leer">{% include 'fw/_empty.html' with icon='lauf' titel=_('Kein offener Lauf.') %}</div>
     {% endfor %}
 </div>
 
@@ -50,7 +60,7 @@
         <div class="fw-zeit">{{ z.lauf.abgeschlossen_am|date:"d.m.Y" }}</div>
     </div>
     {% empty %}
-    <p class="fw-leer">{% trans "Noch kein Lauf abgeschlossen." %}</p>
+    {% include 'fw/_empty.html' with knapp=True icon='lauf' titel=_('Noch kein Lauf abgeschlossen.') %}
     {% endfor %}
 </div>
 {% endblock %}

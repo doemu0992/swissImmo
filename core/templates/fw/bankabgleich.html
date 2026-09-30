@@ -5,8 +5,9 @@
 
 {% block content %}
 
-<div class="fw-phead">
+<div class="fw-phead fw-phead-lauf">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Bankabgleich" %}</span></nav>
         <h1>{% trans "Bankabgleich" %}</h1>
         <p>{% trans "Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen (Bank an Debitoren)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/bankabgleich/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>

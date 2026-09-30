@@ -508,8 +508,11 @@ def fw_zahllauf(request):
 
     vw = aktuelle_organisation()
     from django.contrib import messages as _msg
+    # nav 'zahllauf' (bis v8: 'kreditoren'): Der Zahllauf steht in der
+    # Navigation unter «Läufe» (core/navigation.py), und die Brotkrume der
+    # Seite sagt «Läufe / Zahllauf» — mit 'kreditoren' leuchtete «Finanzen».
     return render(request, 'fw/zahllauf.html', {
-        **basis, 'nav': 'kreditoren',
+        **basis, 'nav': 'zahllauf',
         'vorschlag': vorschlag, 'laufend': laufend,
         'summe_vorschlag': summe_vorschlag, 'summe_laufend': summe_laufend,
         'ohne_iban': ohne_iban, 'heute': heute,

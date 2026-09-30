@@ -40,7 +40,7 @@ Audit Etappe 3 (Knopf-Varianten) nahm `text-white` von selbstgebauten
 Knöpfen — `integrationen`, `mietzins`, `objekt_ausschreiben`, `vermarktung`
 (→ 0), `kreditoren` (3 → 2): 179 in 38.
 Redesign nach konzept-v8 (30.09.2026): Die neue Huelle traegt die Farben
-ueber die Schicht — `base.html` (4 → 1): **STAND 138 in 21 Vorlagen**.
+ueber die Schicht — `base.html` (4 → 1): **STAND 136 in 20 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -292,7 +292,6 @@ OBERGRENZE = {
     'core/templates/fw/_pipeline.html': 1,
     'core/templates/fw/_schicht.html': 2,
     'core/templates/fw/base.html': 1,
-    'core/templates/fw/kreditoren.html': 2,
     'core/templates/fw/schaden_detail.html': 2,
 }
 

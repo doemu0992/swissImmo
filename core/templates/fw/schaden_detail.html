@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<nav class="fw-akte-pfad mb-2.5">
+<nav class="fw-brotkrume mb-2.5">
     <a href="/neu/schaeden/{{ lg_query }}">{% trans "Schadensfälle" %}</a>
     {% zeichen 'weiter' %}
     <b>{% blocktrans with id=t.id %}Schaden #{{ id }}{% endblocktrans %}</b>
@@ -368,7 +368,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3 fw-rumpf">
             {% csrf_token %}
             <input name="fotos" type="file" accept="image/*" multiple required
-                   class="text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold">
+                   class="fw-datei">
             <button class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Hochladen" %}</button>
         </form>
     </div>

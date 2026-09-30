@@ -6,6 +6,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Personen" %}</span></nav>
         <h1>{% trans "Personen" %}</h1>
         <p>{% blocktrans count n=treffer %}{{ n }} Person{% plural %}{{ n }} Personen{% endblocktrans %} · {% blocktrans with n=mit_vertrag_count %}{{ n }} mit aktivem Vertrag{% endblocktrans %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/personen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>

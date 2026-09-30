@@ -332,12 +332,36 @@ def fw_liegenschaft_detail(request, pk):
     ], organisation=getattr(request, 'organisation', None) or _akt_org())
     from core.services.rendite import liegenschaft_rendite
     rendite = liegenschaft_rendite(lg)
+
+    # konzept-v8 (#lg-…): Kennzahl «Ausstände > 30 Tage» und die Rueckstaende
+    # unter «Was auffällt». Nur lesend — zwei Abfragen fuer die Posten, eine
+    # fuer die Vertraege dazu (auch beendete: ein Rueckstand ueberlebt den
+    # Auszug).
+    from faelle.liegenschaften import AUSSTAND_TAGE, ausstaende as _ausstaende
+    _aus = _ausstaende([lg.id], heute).get(lg.id) or {'betrag': Decimal('0.00'), 'vertraege': {}}
+    _rv = {v.id: v for v in Mietvertrag.objects.filter(id__in=list(_aus['vertraege']))
+           .select_related('mieter', 'einheit')} if _aus['vertraege'] else {}
+    lg_rueckstaende = sorted(
+        ({'v': _rv[vid], 'betrag': b} for vid, b in _aus['vertraege'].items() if vid in _rv),
+        key=lambda x: -x['betrag'])
+    lg_faelle_offen = [f for f in lg_faelle if f.status not in ('abgeschlossen', 'abgebrochen')]
+    _kopf = _liegenschaft_kopf(lg, len(einheiten_rows), vermietet, soll_monat,
+                               wartungsfristen, list(tickets), rendite)
+    _befunde = _lg_befunde(lg)
+    _lg_befunde_liste = _befunde['lg_befunde']
     return render(request, 'fw/liegenschaft_detail.html', {
+        'lg_ausstand': _aus['betrag'],
+        'lg_ausstand_parteien': len(_aus['vertraege']),
+        'lg_ausstand_tage': AUSSTAND_TAGE,
+        'lg_rueckstaende': lg_rueckstaende,
+        'lg_rueckstand_ids': [x['v'].id for x in lg_rueckstaende],
+        'lg_faelle_offen': lg_faelle_offen,
+        'lg_auffaellig_anzahl': (len(lg_faelle_offen) + len(lg_rueckstaende)
+                                 + len(_lg_befunde_liste) + len(_kopf['lg_hinweise'])),
+        **_kopf,
         **basis, 'nav': 'liegenschaften', 'lg': lg,
         'lg_faelle': lg_faelle,
         'verlauf': verlauf,
-        **_liegenschaft_kopf(lg, len(einheiten_rows), vermietet, soll_monat,
-                             wartungsfristen, list(tickets), rendite),
         'einheiten_rows': einheiten_rows,
         'total_einheiten': len(einheiten_rows),
         'vermietet': vermietet,
@@ -347,7 +371,7 @@ def fw_liegenschaft_detail(request, pk):
         # Zwei getrennte Rechnungen waeren die klassische Stelle, an der Liste
         # und Akte auseinanderlaufen; dann weiss niemand, welcher Seite zu
         # trauen ist (dasselbe Argument wie beim Anzeigestatus, Etappe 4b.14).
-        **_lg_befunde(lg),
+        **_befunde,
         'rendite': rendite,
         'tickets': tickets,
         'dok_gruppen': dok_gruppen,
@@ -1855,7 +1879,13 @@ def fw_vertrag_detail(request, pk):
         ('verlauf', 'Verlauf', len(verlauf) or None),
     ], organisation=getattr(request, 'organisation', None) or _akt_org())
     from core.services.docuseal_service import docuseal_konfiguriert
+    # konzept-v8 (#mv-…): Kontoblatt dieses Mietverhaeltnisses — nur lesend,
+    # zwei Abfragen (`core.services.mieterkonto.berechne_vertragskonto`).
+    from core.services.mieterkonto import berechne_vertragskonto
+    konto_zeilen, konto_saldo = berechne_vertragskonto(v)
     return render(request, 'fw/vertrag_detail.html', {
+        'konto_zeilen': konto_zeilen,
+        'konto_saldo': konto_saldo,
         'formular_gruppen': _formulare_prozesse(v, request.user),
         **basis, 'nav': 'vertraege', 'v': v, 'verlauf': verlauf,
         'vertrag_pill': _vertrag_status_pill(v),

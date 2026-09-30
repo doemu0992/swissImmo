@@ -5,6 +5,7 @@
 {% block content %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/finanzen/{{ lg_query }}">{% trans "Finanzen" %}</a><span aria-hidden="true">/</span><span>{% trans "Mieterkonten" %}</span></nav>
         <h1>{% trans "Mieterkonten" %}</h1>
         <p>{% trans "Pro Mieter der aktuelle Saldo aus allen Forderungen und Zahlungen. Klick öffnet das Kontoblatt." %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>

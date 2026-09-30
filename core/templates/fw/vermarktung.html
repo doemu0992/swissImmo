@@ -3,9 +3,9 @@
 {% block title %}{% trans "Vermarktung" %} · swissImmo{% endblock %}
 {% block content %}
 
-{% include 'fw/_pipeline.html' %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Vermarktung" %}</span></nav>
         <h1>{% trans "Vermarktung" %}</h1>
         <p>{% trans "Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick." %}</p>
     </div>
@@ -98,4 +98,9 @@
     <a href="/neu/mieterwechsel/" class="fw-btn fw-primary mt-4">{% trans "Zum Mieterwechsel-Cockpit" %}</a>
 </div></div>
 {% endif %}
+
+{% comment %} Die Pipeline-Leiste stand ueber dem Seitenkopf und zeigte dieselben
+   Ziele wie die Bereichsreiter darueber (v8, zweiter Durchgang). Hier unten
+   bleibt sie als «weiter im Ablauf» mit ihren Zaehlern. {% endcomment %}
+{% include 'fw/_pipeline.html' %}
 {% endblock %}

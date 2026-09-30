@@ -389,3 +389,63 @@ def streifen(rows):
         'ertrag': sum((r['ertrag'] for r in rows), Decimal('0.00')),
         'mit_befund': sum(1 for r in rows if not r['ohne_befund']),
     }
+
+
+#: Ab wie vielen Tagen nach Faelligkeit ein offener Posten als Ausstand in der
+#: Liste und im Kennzahlenstreifen der Akte steht (konzept-v8: «Ausstände >
+#: 30 Tage»). Juengere Posten sind Zahlungslauf, noch kein Befund.
+AUSSTAND_TAGE = 30
+
+
+def ausstaende(lg_ids, stichtag=None):
+    """Offene Forderungen je Liegenschaft, faellig vor mehr als 30 Tagen.
+
+    Nur lesend, ZWEI Abfragen fuer alle Liegenschaften zusammen: die offenen
+    Rechnungen und die verbuchten Zahlungen darauf. Der offene Betrag wird je
+    RECHNUNG gerechnet (`max(0, Betrag − Zahlungen)`, wie
+    `DebitorenRechnung.offener_betrag`) und erst dann summiert — eine
+    ueberzahlte Rechnung darf eine andere nicht verdecken.
+
+    Zugeordnet wird ueber den Vertrag (Einheit → Liegenschaft), ersatzweise
+    ueber die direkt gesetzte Liegenschaft der Rechnung.
+
+    Rueckgabe: {lg_id: {'betrag': Decimal, 'vertraege': {vertrag_id: Decimal}}}
+    — nur Liegenschaften mit Ausstand; je Vertrag der offene Betrag.
+    """
+    from django.db.models import Sum
+    from django.db.models.functions import Coalesce
+
+    from finance.models import DebitorenRechnung, Zahlungseingang
+
+    stichtag = stichtag or timezone.localdate()
+    lg_ids = list(lg_ids)
+    if not lg_ids:
+        return {}
+    grenze = stichtag - timedelta(days=AUSSTAND_TAGE)
+    rechnungen = list(
+        DebitorenRechnung.objects
+        .filter(Q(vertrag__einheit__liegenschaft_id__in=lg_ids)
+                | Q(liegenschaft_id__in=lg_ids),
+                status__in=('offen', 'teilbezahlt'))
+        .annotate(_stichtag=Coalesce('faellig_am', 'datum'))
+        .filter(_stichtag__lt=grenze)
+        .values_list('id', 'vertrag_id', 'vertrag__einheit__liegenschaft_id',
+                     'liegenschaft_id', 'betrag'))
+    if not rechnungen:
+        return {}
+    bezahlt = dict(
+        Zahlungseingang.objects
+        .filter(debitoren_rechnung_id__in=[r[0] for r in rechnungen], status='verbucht')
+        .values('debitoren_rechnung_id').annotate(s=Sum('betrag'))
+        .values_list('debitoren_rechnung_id', 's'))
+    ergebnis = {}
+    for r_id, v_id, v_lg, r_lg, betrag in rechnungen:
+        lg_id = v_lg or r_lg
+        offen = max(Decimal('0.00'), (betrag or Decimal('0')) - (bezahlt.get(r_id) or Decimal('0')))
+        if not offen or lg_id not in lg_ids:
+            continue
+        eintrag = ergebnis.setdefault(lg_id, {'betrag': Decimal('0.00'), 'vertraege': {}})
+        eintrag['betrag'] += offen
+        if v_id:
+            eintrag['vertraege'][v_id] = eintrag['vertraege'].get(v_id, Decimal('0.00')) + offen
+    return ergebnis

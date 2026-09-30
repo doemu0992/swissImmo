@@ -88,39 +88,28 @@ Detailseiten rufen sie beim Namen.
         </form>
         {% endif %}
 
-        <nav class="fw-nav">
+        {% comment %}
+        DIE LEISTE NACH KONZEPT-V8: fünf Bereiche, flach, mit Zahl — und
+        «Zuletzt geöffnet» darunter. Die Unterseiten eines Bereichs stehen
+        seit dem zweiten Durchgang (30.09.2026) nicht mehr ausgeklappt in der
+        Leiste, sondern als Reiterzeile oben auf jeder Seite des Bereichs
+        (`navsub-…`, siehe `fw-inhalt`). Kein Ziel fällt weg: Jeder Eintrag
+        aus `core/navigation.py` ist dort verlinkt.
+        {% endcomment %}
+        <nav class="fw-nav" aria-label="{% trans 'Bereiche' %}">
             {% for g in fw_nav_gruppen %}
-            <div class="{% if nav in g.alle_keys %}nav-open{% endif %}" id="navgrp-{{ g.key }}">
-                {% if g.ziel %}
+            <div id="navgrp-{{ g.key }}">
                 <a href="{{ g.ziel }}{{ lg_query }}" title="{{ g.label }}"
                    class="fw-nav-eintrag sb-item{% if nav in g.alle_keys %} hier{% endif %}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
                     {% zeichen_wert g.icon %}
                     <span class="sb-label">{{ g.label }}</span>
-                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label fw-nav-zahl" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
-                    {% if g.items %}
-                    <span class="sb-label sb-chev fw-nav-pfeil" onclick="event.preventDefault();event.stopPropagation();fwNavToggle('{{ g.key }}')">{% zeichen 'weiter' %}</span>
-                    {% endif %}
+                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label fw-nav-zahl crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>
+                    {% else %}<span class="sb-label fw-nav-zahl{% if g.key == 'heute' %} crit{% endif %}" data-zaehler="{{ g.key }}" hidden></span>{% endif %}
                 </a>
-                {% else %}
-                <button type="button" onclick="fwNavToggle('{{ g.key }}')" title="{{ g.label }}" class="fw-nav-eintrag sb-item">
-                    {% zeichen_wert g.icon %}
-                    <span class="sb-label">{{ g.label }}</span>
-                    <span class="sb-label sb-chev fw-nav-pfeil">{% zeichen 'weiter' %}</span>
-                </button>
-                {% endif %}
-                {% if g.items %}
-                <div id="navsub-{{ g.key }}" class="fw-nav-unter sb-sub{% if nav not in g.alle_keys %} hidden{% endif %}">
-                    {% for it in g.items %}
-                    {% if it.section %}<div class="fw-nav-abschnitt">{{ it.section }}</div>{% endif %}
-                    <a href="{{ it.ziel }}{{ lg_query }}" class="fw-nav-unterpunkt{% if nav in it.keys %} hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}>
-                        <span>{{ it.label }}</span>
-                        {% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-nav-zahl" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
-                    </a>
-                    {% endfor %}
-                </div>
-                {% endif %}
             </div>
             {% endfor %}
+            <div class="fw-nav-abschnitt sb-label" id="fwZuletztTitel" hidden>{% trans "Zuletzt geöffnet" %}</div>
+            <div id="fwZuletzt" class="fw-zuletzt sb-label"></div>
         </nav>
 
         <div class="fw-side-fuss">
@@ -158,10 +147,10 @@ Detailseiten rufen sie beim Namen.
             </form>
 
             <div class="fw-top-rechts">
-                <a href="/neu/dokumente/{{ lg_query }}" title="{% trans 'Dokumente' %}" aria-label="{% trans 'Dokumente' %}"
-                   class="fw-knopf-rund fw-nur-breit{% if nav == 'dokumente' %} hier{% endif %}">{% zeichen 'dokument' %}</a>
-                <a href="/neu/kommunikation/{{ lg_query }}" title="{% trans 'Kommunikation' %}" aria-label="{% trans 'Kommunikation' %}"
-                   class="fw-knopf-rund fw-nur-breit{% if nav == 'kommunikation' %} hier{% endif %}">{% zeichen 'senden' %}</a>
+                <a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
+                   class="fw-knopf-rund fw-nur-breit">{% zeichen 'neu' %}</a>
+                <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
+                   class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund">{% zeichen 'darstellung' %}</button>
                 <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-nur-mobil"><span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
@@ -223,6 +212,14 @@ Detailseiten rufen sie beim Namen.
         {% endif %}
 
         <main class="fw-inhalt">
+            {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
+            <nav id="navsub-{{ g.key }}" class="fw-bereichsreiter" aria-label="{{ g.label }}">
+                {% for it in g.items %}
+                {% if it.section and not forloop.first %}<span class="fw-bereichsreiter-trenner" aria-hidden="true"></span>{% endif %}
+                <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}>{{ it.label }}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
+                {% endfor %}
+            </nav>
+            {% endif %}{% endfor %}
             {% block content %}{% endblock %}
         </main>
     </div>
@@ -273,6 +270,61 @@ function fwNavToggle(key) {
     sub.classList.toggle('hidden');
     grp.classList.toggle('nav-open', !sub.classList.contains('hidden'));
 }
+
+// ─── Zahlen in der Leiste (konzept-v8) ───
+// Nach dem Seitenaufbau geholt, damit keine Seite auf den Arbeitsvorrat wartet.
+(function () {
+    if (document.documentElement.classList.contains('_embed')) return;
+    fetch('/neu/leistenzahlen/', {headers: {'X-Requested-With': 'fetch'}, credentials: 'same-origin'})
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (z) {
+            if (!z) return;
+            document.querySelectorAll('[data-zaehler]').forEach(function (el) {
+                var n = z[el.getAttribute('data-zaehler')];
+                if (n) { if (el.classList.contains('fw-pip')) { el.hidden = false; }
+                         else { el.textContent = n; el.hidden = false; } }
+            });
+        }).catch(function () {});
+})();
+
+// ─── Zuletzt geöffnet (konzept-v8) ───
+// Nur im Browser dieser Person, nur Akten. Drei Einträge, der neueste oben.
+(function () {
+    var MUSTER = /^\/neu\/(liegenschaften|objekte|vertraege|personen|mandate|faelle|schaeden|dienstleister)\/\d+\/$/;
+    var liste = [];
+    try { liste = JSON.parse(localStorage.getItem('fw-zuletzt') || '[]') || []; } catch (e) {}
+    if (MUSTER.test(location.pathname) && !document.documentElement.classList.contains('_embed')) {
+        var h = document.querySelector('.fw-aktenkopf h1, .fw-phead h1, main h1');
+        var titel = h ? h.textContent.replace(/\s+/g, ' ').trim() : '';
+        if (titel) {
+            liste = [{h: location.pathname, l: titel}].concat(
+                liste.filter(function (x) { return x.h !== location.pathname; })).slice(0, 3);
+            try { localStorage.setItem('fw-zuletzt', JSON.stringify(liste)); } catch (e) {}
+        }
+    }
+    var ziel = document.getElementById('fwZuletzt');
+    if (!ziel || !liste.length) return;
+    function kurz(s) { return s.split(/[\s·,-]+/).filter(function (w) { return /^[A-Za-zÀ-ÿ]/.test(w); })
+                               .slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase(); }
+    liste.forEach(function (x) {
+        var a = document.createElement('a');
+        a.href = x.h; a.className = 'fw-nav-eintrag fw-zuletzt-eintrag' + (x.h === location.pathname ? ' hier' : '');
+        var k = document.createElement('span'); k.className = 'fw-avatar fw-avatar-klein'; k.textContent = kurz(x.l);
+        var t = document.createElement('span'); t.className = 'truncate'; t.textContent = x.l;
+        a.appendChild(k); a.appendChild(t); ziel.appendChild(a);
+    });
+    document.getElementById('fwZuletztTitel').hidden = false;
+})();
+
+// Bereichsreiter: der aktive Reiter steht am Telefon im Bild, nicht rechts
+// ausserhalb der Zeile (z. B. «Vermarktung» unter Akten).
+(function () {
+    var hier = document.querySelector('.fw-bereichsreiter a.hier');
+    if (!hier) return;
+    var zeile = hier.parentNode;
+    if (zeile.scrollWidth <= zeile.clientWidth) return;
+    zeile.scrollLeft = Math.max(0, hier.offsetLeft - (zeile.clientWidth - hier.offsetWidth) / 2);
+})();
 
 // Kopfzeile: Trennlinie erst, wenn der Inhalt darunter durchläuft
 (function () {

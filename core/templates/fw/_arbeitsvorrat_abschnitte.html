@@ -9,9 +9,10 @@
    und Rolle, sonst nichts. Jetzt trägt `faelle.Abwesenheit` die Angabe,
    und «Termine» speist sich zusätzlich aus `faelle.Termin`. {% endcomment %}
 {% load chf %}
-{% comment %} `teil` (seit dem Redesign nach konzept-v8): «links» zeigt Laeufe und
-   Freigaben — das, was zu TUN ist —, «rechts» Termine und Vertretung fuer die
-   Kontextspalte. Ohne Angabe erscheinen alle vier wie bisher. {% endcomment %}
+{% comment %} `teil` (konzept-v8, zweiter Durchgang): «ausserdem» liefert Läufe und
+   Freigaben als Reiterflächen (`data-panel="ausserdem"`) für die Karte
+   «Ausserdem» auf «Heute»; «rechts» Termine und Vertretung für die
+   Kontextspalte. {% endcomment %}
 
 {% comment %}
 DIE LÄUFE ALS EIGENE KARTE (v7)
@@ -33,13 +34,8 @@ Begründung berechnet und NIRGENDS gerendert — dritter Fall dieser Art in
 dieser Reihe nach `f_query` (E2.60) und den vier Klassen (E2.66). Hier ist die
 Karte, die sie sichtbar macht.
 {% endcomment %}
-{% if av_laeufe and teil != 'rechts' %}
-<div class="fw-card">
-    <div class="fw-kopf">
-        <span class="fw-t">{% trans "Läufe" %}</span>
-        <span class="fw-neben">{% blocktrans count n=av_laeufe_faellig %}{{ n }} fällig{% plural %}{{ n }} fällig{% endblocktrans %}{% if av_laeufe_blockiert %}, {% blocktrans count n=av_laeufe_blockiert %}{{ n }} blockiert{% plural %}{{ n }} blockiert{% endblocktrans %}{% endif %}</span>
-        <span class="fw-rechts"><a href="/neu/laeufe/" class="fw-link">{% trans "Alle Läufe" %}</a></span>
-    </div>
+{% if av_laeufe and teil == 'ausserdem' %}
+<div id="ausserdem-laeufe" data-panel="ausserdem"{% if inbox or av_freigaben %} class="hidden"{% endif %}>
     {% for l in av_laeufe %}
     <div class="fw-zeile">
         <span class="fw-marker {{ l.dringlichkeit }}"></span>
@@ -51,10 +47,14 @@ Karte, die sie sichtbar macht.
         <a href="{{ l.ziel }}" class="fw-btn fw-knapp">{{ l.knopf }}</a>
     </div>
     {% endfor %}
+    <div class="fw-fuss">
+        <span>{% blocktrans count n=av_laeufe_faellig %}{{ n }} fällig{% plural %}{{ n }} fällig{% endblocktrans %}{% if av_laeufe_blockiert %}, {% blocktrans count n=av_laeufe_blockiert %}{{ n }} blockiert{% plural %}{{ n }} blockiert{% endblocktrans %}{% endif %}</span>
+        <a href="/neu/laeufe/" class="fw-link">{% trans "Alle Läufe" %}</a>
+    </div>
 </div>
 {% endif %}
 
-{% if av_termine and teil != 'links' %}
+{% if av_termine and teil == 'rechts' %}
 <div class="fw-card">
     <div class="fw-kopf">
         <span class="fw-t">{% trans "Termine" %}</span>
@@ -83,15 +83,11 @@ Karte, die sie sichtbar macht.
 </div>
 {% endif %}
 
-{% if av_freigaben and teil != 'rechts' %}
-<div class="fw-card">
-    <div class="fw-kopf">
+{% if av_freigaben and teil == 'ausserdem' %}
+<div id="ausserdem-freigaben" data-panel="ausserdem"{% if inbox %} class="hidden"{% endif %}>
         {% comment %} Der Prototyp nennt den Abschnitt «Wartet auf mich».
            Das Datenmodell trägt das «mich» nicht: Weder KreditorenRechnung
            noch HandwerkerAuftrag führen einen Freigeber. {% endcomment %}
-        <span class="fw-t">{% trans "Wartet auf Freigabe" %}</span>
-        <span class="fw-neben">{% blocktrans count n=av_freigaben_gesamt %}{{ n }} Entscheid{% plural %}{{ n }} Entscheide{% endblocktrans %}</span>
-    </div>
     {% for f in av_freigaben %}
     <div class="fw-zeile">
         <span class="fw-marker {% if f.tage and f.tage > 5 %}crit{% elif f.tage and f.tage > 2 %}warn{% endif %}"></span>
@@ -110,7 +106,7 @@ Karte, die sie sichtbar macht.
 </div>
 {% endif %}
 
-{% if av_vertretung and teil != 'links' %}
+{% if av_vertretung and teil == 'rechts' %}
 {% comment %} G8: «Zuständigkeit statt Rolle … plus Vertretung.» Eine
    Abwesenheit OHNE Vertretung ist kein Fehler, sondern eine Aussage — und
    eine, die auffallen soll. Sie steht deshalb in Warnfarbe, statt still wie

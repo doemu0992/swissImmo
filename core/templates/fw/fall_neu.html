@@ -1,0 +1,84 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Neuer Fall" %} — swissImmo{% endblock %}
+{% block content %}
+{% comment %}
+NEUER FALL NACH KONZEPT-V8 («Neuer Fall» in der Schublade)
+
+Öffnet sich über «+» in der Kopfzeile und «Neuer Fall» auf «Heute» in der
+Schublade (`fwModalOpen`). Ohne Schublade ist es eine normale Seite.
+Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
+{% endcomment %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Neuer Fall" %}</h1>
+        <p>{% trans "Wird in deinem Arbeitsvorrat angelegt." %}</p>
+    </div>
+</div>
+
+<form method="post" action="/neu/faelle/neu/" class="fw-card fw-rumpf fw-fallneu">
+    {% csrf_token %}
+    {% if request.GET.embed %}<input type="hidden" name="embed" value="1">{% endif %}
+
+    <fieldset class="fw-feldblock breit">
+        <legend class="fw-label">{% trans "Art" %}</legend>
+        <div class="fw-filters fw-auswahl">
+            {% for f in fallarten %}
+            <label class="fw-fchip{% if werte.fallart == f.pk|stringformat:'s' or not werte.fallart and forloop.first %} fw-on{% endif %}">
+                <input type="radio" name="fallart" value="{{ f.pk }}" {% if werte.fallart == f.pk|stringformat:'s' or not werte.fallart and forloop.first %}checked{% endif %}
+                       onchange="this.closest('.fw-auswahl').querySelectorAll('label').forEach(function(c){c.classList.toggle('fw-on', c.querySelector('input').checked)})">
+                {{ f.bezeichnung }}
+            </label>
+            {% empty %}
+            <p class="fw-hilfe">{% trans "Noch keine Fallarten angelegt." %}</p>
+            {% endfor %}
+        </div>
+        {% if fehler.fallart %}<p class="fw-feldfehler">{{ fehler.fallart }}</p>{% endif %}
+    </fieldset>
+
+    <div class="fw-feldblock breit">
+        <label class="fw-label" for="nfT">{% trans "Betreff" %}</label>
+        <input class="fw-feld" id="nfT" name="betreff" value="{{ werte.betreff|default:'' }}" required minlength="3" maxlength="200" autocomplete="off"
+               placeholder="{% trans 'z. B. Heizung ausgefallen, Wohnung 2.3' %}"{% if fehler.betreff %} aria-invalid="true"{% endif %} autofocus>
+        {% if fehler.betreff %}<p class="fw-feldfehler">{{ fehler.betreff }}</p>{% endif %}
+    </div>
+
+    <div class="fw-feldblock breit">
+        <label class="fw-label" for="nfA">{% trans "Akte" %}</label>
+        <select class="fw-feld" id="nfA" name="akte" required{% if fehler.akte %} aria-invalid="true"{% endif %}>
+            <option value="">— {% trans "wählen" %} —</option>
+            <optgroup label="{% trans 'Liegenschaften' %}">
+                {% for l in liegenschaften %}<option value="lg-{{ l.pk }}" {% if werte.akte == 'lg-'|add:l.pk|stringformat:'s' %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
+            </optgroup>
+            <optgroup label="{% trans 'Mietverhältnisse' %}">
+                {% for v in vertraege %}<option value="mv-{{ v.pk }}" {% if werte.akte == 'mv-'|add:v.pk|stringformat:'s' %}selected{% endif %}>{{ v.mieter }} · MV-{{ v.pk }} · {{ v.einheit.liegenschaft.strasse }}</option>{% endfor %}
+            </optgroup>
+        </select>
+        {% if fehler.akte %}<p class="fw-feldfehler">{{ fehler.akte }}</p>{% endif %}
+    </div>
+
+    <div class="fw-formular">
+        <div class="fw-feldblock">
+            <label class="fw-label" for="nfD">{% trans "Frist" %}</label>
+            <input class="fw-feld" type="date" id="nfD" name="frist" value="{{ werte.frist }}" min="{{ heute|date:'Y-m-d' }}">
+        </div>
+        <div class="fw-feldblock">
+            <label class="fw-label" for="nfW">{% trans "Zuständig" %}</label>
+            <select class="fw-feld" id="nfW" name="zustaendig">
+                {% for b in team %}<option value="{{ b.pk }}" {% if werte.zustaendig == b.pk|stringformat:'s' %}selected{% endif %}>{{ b.get_full_name|default:b.username }}{% if b.pk == request.user.pk %} ({% trans "ich" %}){% endif %}</option>{% endfor %}
+                <option value="" {% if werte.zustaendig == '' %}selected{% endif %}>{% trans "noch offen" %}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="fw-feldblock breit">
+        <label class="fw-label" for="nfB">{% trans "Notiz" %} <span class="fw-faint">({% trans "optional" %})</span></label>
+        <textarea class="fw-feld" id="nfB" name="notiz" rows="3" placeholder="{% trans 'Was ist passiert, wer hat gemeldet?' %}">{{ werte.notiz|default:'' }}</textarea>
+    </div>
+
+    <div class="fw-formular-fuss">
+        <a href="/neu/" class="fw-btn" onclick="if(window.parent!==window){window.parent.fwModalClose&&window.parent.fwModalClose();return false}">{% trans "Abbrechen" %}</a>
+        <button type="submit" class="fw-btn fw-primary">{% trans "Fall anlegen" %}</button>
+    </div>
+</form>
+{% endblock %}

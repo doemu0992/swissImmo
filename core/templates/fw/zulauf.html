@@ -5,6 +5,7 @@
 {% block content %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/{{ lg_query }}">{% trans "Heute" %}</a><span aria-hidden="true">/</span><span>{% trans "Zulauf" %}</span></nav>
         <h1>{% trans "Zulauf" %}</h1>
         <p>{% blocktrans trimmed %}Jeder Eingang wird zu genau einem von drei Dingen: einer Akte zugeordnet,
            Auslöser eines Falls, oder bewusst abgelegt.{% endblocktrans %}</p>

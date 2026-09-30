@@ -95,18 +95,42 @@ def _sollstellung_kontext(request):
             'netto': netto, 'nk': nk, 'total': total,
             'prorata': tage_aktiv < last_day, 'tage': tage_aktiv, 'tage_monat': last_day,
             'gestellt': gestellt,
+            # Kanal nach der Zahlungsart des Mieters (crm.Mieter.zahlungsart) —
+            # `mieter` ist oben mitgeladen, das kostet keine Abfrage.
+            'kanal': v.mieter.get_zahlungsart_display() if v.mieter.zahlungsart else '',
         })
 
     # Monatsnamen ueber Djangos Datumsformat, nicht `strftime('%B')`: Das
     # folgt dem Locale des Servers (dort C → «September» auf Englisch), nicht
     # der gewaehlten Sprache.
     monate = [(m, datum_format(date(2000, m, 1), 'F')) for m in range(1, 13)]
+
+    # konzept-v8 (#lauf-soll): Kennzahlen nach Kanal und die Blockaden des
+    # Laufs. Die Zahlen kommen aus den Zeilen oben (keine Abfrage); der Lauf
+    # der Periode samt offenen Blockaden aus `faelle.lauf_models` — zwei
+    # Abfragen, unabhaengig von der Zahl der Vertraege. Gibt es fuer den
+    # Monat keinen geplanten Lauf, bleibt `lauf` None und die Seite zeigt
+    # weder Stichtag noch Blockaden (nichts erfinden).
+    from django.db.models import Prefetch
+    from faelle.lauf_models import Blockade, Lauf
+    lauf = (Lauf.objects.filter(laufart__schluessel='sollstellung',
+                                periode=f'{jahr}-{monat:02d}')
+            .select_related('laufart')
+            .prefetch_related(Prefetch(
+                'blockaden', queryset=Blockade.objects.filter(behoben_am__isnull=True),
+                to_attr='offen_blockaden'))
+            .first())
+    n_qr = sum(1 for r in rows if r['v'].mieter.zahlungsart == 'qr')
+    n_ebill = sum(1 for r in rows if r['v'].mieter.zahlungsart == 'ebill')
     jahre = list(range(heute.year - 2, heute.year + 2))
     return {
         **basis, 'nav': 'sollstellung', 'rows': rows,
         'jahr': jahr, 'monat': monat, 'titel': titel,
         'total_soll': total_soll, 'n_offen': n_offen, 'n_gestellt': n_gestellt,
         'monate': monate, 'jahre': jahre,
+        'lauf': lauf, 'blockaden': lauf.offen_blockaden if lauf else [],
+        'n_qr': n_qr, 'n_ebill': n_ebill,
+        'n_uebrige': len(rows) - n_qr - n_ebill,
         'monat_name': datum_format(date(2000, monat, 1), 'F'),
     }
 

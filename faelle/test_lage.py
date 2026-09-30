@@ -834,13 +834,17 @@ class VergleichswerteTests(TestCase):
             c.force_login(self.a.benutzer)
             inhalt = c.get('/neu/').content.decode()
 
-        self.assertIn(f'▲ {erwartet} Fälle</span>', inhalt,
-                      f'Kein «▲ {erwartet} Fälle» auf der Startseite — entweder '
+        # Seit dem zweiten Durchgang v8 (30.09.2026) ist der Pfeil die
+        # Delta-Kapsel des Mockups: «+4 Fälle» statt «▲ 4 Fälle», die Klasse
+        # heisst nach der Bewertung (`crit`/`good`, aus `k.ton`). Geprüft wird
+        # dieselbe Sache: Einheit, ganze Zahl, kritische Farbe.
+        self.assertIn(f'+{erwartet} Fälle</span>', inhalt,
+                      f'Kein «+{erwartet} Fälle» auf der Startseite — entweder '
                       'fehlt die Einheit, oder `floatformat:1` macht «,0» daraus.')
         self.assertNotIn(f'{erwartet},0 Fälle', inhalt)
-        self.assertIn(f'class="fw-trend hoch">▲ {erwartet} Fälle', inhalt,
-                      'Der Pfeil trägt nicht die kritische Klasse — ein '
-                      'wachsender Fallvorrat stünde damit in Grün.')
+        self.assertRegex(inhalt, r'class="fw-trend crit"[^>]*>\+' + str(erwartet) + ' Fälle',
+                         'Die Kapsel trägt nicht die kritische Klasse — ein '
+                         'wachsender Fallvorrat stünde damit in Grün.')
         # Und der Beleg, dass «hoch» hier wirklich rot bedeutet. Ohne ihn prüft
         # die Zeile darüber nur einen Namen. Die Farbe steht nicht in der Seite,
         # sondern in der gebauten Schicht (`schicht_bauen`), die sie verlinkt.
@@ -849,9 +853,9 @@ class VergleichswerteTests(TestCase):
         from django.conf import settings
 
         schicht = Path(settings.BASE_DIR) / 'static' / 'css' / 'schicht.css'
-        self.assertIn('.fw-trend.hoch{color:var(--ds-crit)}',
+        self.assertIn('.fw-trend.crit,.fw-trend.hoch{color:var(--ds-crit)',
                       schicht.read_text(encoding='utf-8').replace('\n', '').replace(' ', ''),
-                      '`fw-trend hoch` ist nicht mehr die kritische Farbe — dann '
+                      '`fw-trend crit` ist nicht mehr die kritische Farbe — dann '
                       'sagt die Klasse oben das Gegenteil dessen, was sie malt.')
 
     def test_die_einheit_steht_in_der_richtigen_zahlform(self):
@@ -1773,7 +1777,9 @@ class ZeilenangabenTests(TestCase):
 
         self.assertIn(fall.nummer, html, 'Die Fallnummer fehlt in der Zeile.')
         self.assertIn('Schritt 1 von 2', html, 'Der Fortschritt fehlt in der Zeile.')
-        self.assertIn('class="fw-kuerzel"', html,
+        # Seit dem zweiten Durchgang v8 steht das Kürzel im Kreis (`fw-avatar`)
+        # wie im Mockup (`.r-who .avatar`), vorher als `fw-kuerzel`.
+        self.assertIn('class="fw-avatar"', html,
                       'Das Kürzel wird berechnet, aber nicht gezeigt.')
         self.assertIn('>DM</span>', html)
 

@@ -5,13 +5,16 @@
 
 {% block content %}
 
+{% comment %} Aufbau nach konzept-v8 (#akten): Kopf mit Brotkrume, Kennzahlen,
+   dann EINE Karte mit den Reitern «Liegenschaften» | «Mietverhältnisse»,
+   Werkzeugzeile (Suche, Sortierung, Hinweis, Filterkapseln) und Tabelle. {% endcomment %}
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><span>{% trans "Akten" %}</span></nav>
         <h1>{% trans "Liegenschaften" %}</h1>
         <p>{% blocktrans count n=alle_rows %}{{ n }} Liegenschaft im Portfolio{% plural %}{{ n }} Liegenschaften im Portfolio{% endblocktrans %}{% if aktive_lg %} · {% trans "gefiltert" %} <a href="/neu/liegenschaften/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <a href="/neu/liegenschaften/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Liegenschaft erfassen" %}</a>
         <div class="relative">
             <button type="button" onclick="document.getElementById('lgListMenu').classList.toggle('hidden'); event.stopPropagation();" class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
             <div id="lgListMenu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb shadow-lg py-1.5 z-30">
@@ -19,6 +22,7 @@
                 <a href="{{ csv_url }}" download class="fw-menuzeile">{% zeichen 'herunterladen' klasse='w-4' %}{% trans "Liste als CSV (Excel)" %}</a>
             </div>
         </div>
+        <a href="/neu/liegenschaften/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Liegenschaft erfassen" %}</a>
         <script>
           document.addEventListener('click', function (ev) {
             var d = document.getElementById('lgListMenu');
@@ -55,47 +59,78 @@
         <div class="fw-f">{% trans "pro Monat, laufende Verträge" %}</div>
     </div>
 </div>
-
-<div class="fw-filters">
-    <a href="{{ filter_urls.alle }}" class="fw-fchip{% if not befund %} fw-on{% endif %}">{% trans "Alle" %} {{ gesucht_rows }}</a>
-    <a href="{{ filter_urls.leer }}" class="fw-fchip{% if befund == 'leer' %} fw-on{% endif %}">{% trans "Leerstand" %} {{ filter_zaehler.leer }}</a>
-    <a href="{{ filter_urls.frist }}" class="fw-fchip{% if befund == 'frist' %} fw-on{% endif %}">{% trans "Fristen" %} {{ filter_zaehler.frist }}</a>
-    <a href="{{ filter_urls.ticket }}" class="fw-fchip{% if befund == 'ticket' %} fw-on{% endif %}">{% trans "Tickets" %} {{ filter_zaehler.ticket }}</a>
-    <a href="{{ filter_urls.budget }}" class="fw-fchip{% if befund == 'budget' %} fw-on{% endif %}">{% trans "Unterhalt" %} {{ filter_zaehler.budget }}</a>
-    <a href="{{ filter_urls.ohne }}" class="fw-fchip{% if befund == 'ohne' %} fw-on{% endif %}">{% trans "Ohne Befund" %} {{ filter_zaehler.ohne }}</a>
-</div>
 {% endif %}
 
-{% if seite.paginator.num_pages == 1 %}
-{% include 'fw/_listwerkzeug.html' with suchname='suche' suchwert=suche suchtext=_('Liegenschaft suchen (Strasse, Ort, PLZ) …') suchlabel=_('Liegenschaften durchsuchen') livesuche='#lgListe' %}
-{% else %}
-{% include 'fw/_listwerkzeug.html' with suchname='suche' suchwert=suche suchtext=_('Liegenschaft suchen (Strasse, Ort, PLZ) …') suchlabel=_('Liegenschaften durchsuchen') %}
-{% endif %}
+<div class="fw-card fw-akten-karte">
+    <div class="fw-reiter" role="tablist">
+        <a href="/neu/liegenschaften/{{ lg_query }}" class="hier" role="tab" aria-selected="true">{% trans "Liegenschaften" %} <span class="fw-z">{{ alle_rows }}</span></a>
+        <a href="/neu/vertraege/{{ lg_query }}" role="tab" aria-selected="false">{% trans "Mietverhältnisse" %} <span class="fw-z">{{ vertraege_anzahl }}</span></a>
+    </div>
 
+    <div class="fw-akten-werkzeug">
+        {% if seite.paginator.num_pages == 1 %}
+        {% include 'fw/_listwerkzeug.html' with suchname='suche' suchwert=suche suchtext=_('Liegenschaft suchen (Strasse, Ort, PLZ) …') suchlabel=_('Liegenschaften durchsuchen') livesuche='#lgListe' %}
+        {% else %}
+        {% include 'fw/_listwerkzeug.html' with suchname='suche' suchwert=suche suchtext=_('Liegenschaft suchen (Strasse, Ort, PLZ) …') suchlabel=_('Liegenschaften durchsuchen') %}
+        {% endif %}
+        {% if sort == 'befund' %}<span class="fw-akten-hinweis">{% trans "Sortiert nach Auffälligkeit, nicht nach Alphabet." %}</span>{% endif %}
+        {% if alle_rows %}
+        <div class="fw-filters">
+            <a href="{{ filter_urls.alle }}" class="fw-fchip{% if not befund %} fw-on{% endif %}">{% trans "Alle" %} {{ gesucht_rows }}</a>
+            <a href="{{ filter_urls.leer }}" class="fw-fchip{% if befund == 'leer' %} fw-on{% endif %}">{% trans "Leerstand" %} {{ filter_zaehler.leer }}</a>
+            <a href="{{ filter_urls.frist }}" class="fw-fchip{% if befund == 'frist' %} fw-on{% endif %}">{% trans "Fristen" %} {{ filter_zaehler.frist }}</a>
+            <a href="{{ filter_urls.ticket }}" class="fw-fchip{% if befund == 'ticket' %} fw-on{% endif %}">{% trans "Tickets" %} {{ filter_zaehler.ticket }}</a>
+            <a href="{{ filter_urls.budget }}" class="fw-fchip{% if befund == 'budget' %} fw-on{% endif %}">{% trans "Unterhalt" %} {{ filter_zaehler.budget }}</a>
+            <a href="{{ filter_urls.ohne }}" class="fw-fchip{% if befund == 'ohne' %} fw-on{% endif %}">{% trans "Ohne Befund" %} {{ filter_zaehler.ohne }}</a>
+        </div>
+        {% endif %}
+    </div>
 
-<div class="fw-card">
 <div id="lgListe">
     {% if rows %}
-        {% for row in rows %}
-        <a href="/neu/liegenschaften/{{ row.lg.id }}/" data-zeile class="fw-zeile klick">
-            <span class="fw-marker {{ row.stufe }}"></span>
-            <div class="fw-mitte">
-                <div class="fw-t">{{ row.lg.strasse }}</div>
-                <div class="fw-s">{{ row.lg.plz }} {{ row.lg.ort }} · {% blocktrans count n=row.einheiten %}{{ n }} Objekt{% plural %}{{ n }} Objekte{% endblocktrans %}{% if row.lg.eigentuemer %} · {{ row.lg.eigentuemer }}{% endif %}</div>
-            </div>
-            {% for chip in row.chips %}
-            <span class="fw-chip fw-{{ chip.0 }}"{% if chip.3 %} title="{{ chip.3 }}"{% endif %}>{{ chip.1 }}</span>
-            {% empty %}
-            <span class="fw-chip fw-good">{% trans "ohne Befund" %}</span>
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th>{% trans "Liegenschaft" %}</th>
+                <th>{% trans "Mandat" %}</th>
+                <th class="fw-right">{% trans "Objekte" %}</th>
+                <th class="fw-right">{% trans "Belegung" %}</th>
+                <th class="fw-right">{% trans "Soll / Monat" %}</th>
+                <th>{% trans "Befund" %}</th>
+            </tr></thead>
+            <tbody>
+            {% for row in rows %}
+            <tr data-zeile class="fw-klickzeile" onclick="window.location='/neu/liegenschaften/{{ row.lg.id }}/'">
+                <td><a href="/neu/liegenschaften/{{ row.lg.id }}/" class="fw-zelle-titel" onclick="event.stopPropagation()">{{ row.lg.strasse }}</a>
+                    <span class="fw-zelle-sub">{{ row.lg.plz }} {{ row.lg.ort }}{% if row.lg.baujahr %} · {% blocktrans with j=row.lg.baujahr %}Baujahr {{ j }}{% endblocktrans %}{% endif %}</span></td>
+                <td>{% if row.lg.eigentuemer %}{{ row.lg.eigentuemer }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
+                <td class="fw-right fw-num">{{ row.einheiten }}</td>
+                <td class="fw-right fw-num">{% if row.einheiten %}{{ row.belegung }} %{% else %}<span class="fw-faint">—</span>{% endif %}</td>
+                <td class="fw-right fw-num">CHF {{ row.ertrag|chf:0 }}</td>
+                <td><div class="fw-zelle-befund">
+                    {% if row.ausstand %}<span class="fw-chip fw-crit" title="{% trans 'offene Posten, fällig vor mehr als 30 Tagen' %}">{% blocktrans with b=row.ausstand|chf:0 %}CHF {{ b }} offen{% endblocktrans %}</span>{% endif %}
+                    {% comment %} Wie im Mockup EINE Kapsel je Zeile: der Ausstand, sonst der
+                       schwerste Befund. Die uebrigen stehen als «+n» mit ihren Texten im
+                       Titel — und vollstaendig in der Akte unter «Was auffällt». {% endcomment %}
+                    {% for chip in row.chips %}{% if forloop.first and not row.ausstand %}
+                    <span class="fw-chip fw-{{ chip.0 }}"{% if chip.3 %} title="{{ chip.3 }}"{% endif %}>{{ chip.1 }}</span>
+                    {% endif %}{% empty %}
+                    {% if not row.ausstand %}<span class="fw-chip fw-good">{% trans "ohne Befund" %}</span>{% endif %}
+                    {% endfor %}
+                    {% with n=row.chips|length %}{% if row.ausstand and n or n > 1 %}
+                    <span class="fw-chip fw-mut" title="{% for chip in row.chips %}{% if row.ausstand or not forloop.first %}{{ chip.1 }}{% if chip.3 %} ({{ chip.3 }}){% endif %}{% if not forloop.last %} · {% endif %}{% endif %}{% endfor %}">+{% if row.ausstand %}{{ n }}{% else %}{{ n|add:"-1" }}{% endif %}</span>
+                    {% endif %}{% endwith %}
+                </div></td>
+            </tr>
             {% endfor %}
-            <div class="fw-zeit">CHF {{ row.ertrag|chf }}<br><span class="fw-klein">{% trans "Ist / Mt." %}</span></div>
-        </a>
-        {% endfor %}
-        {% include 'fw/_seiten.html' %}
-        <div class="fw-fuss">
-            <span>{% if sort == 'befund' %}{% trans "Sortiert nach Befund, nicht nach Adresse." %}{% else %}{% blocktrans count n=treffer %}{{ n }} Liegenschaft{% plural %}{{ n }} Liegenschaften{% endblocktrans %}{% endif %}</span>
-            {% if befund %}<span><a href="{{ filter_urls.alle }}" class="fw-link">{% trans "Filter aufheben" %}</a></span>{% endif %}
-        </div>
+            </tbody>
+        </table>
+    </div>
+    {% include 'fw/_seiten.html' %}
+    <div class="fw-fuss">
+        <span>{% blocktrans count n=treffer %}{{ n }} Liegenschaft{% plural %}{{ n }} Liegenschaften{% endblocktrans %}</span>
+        {% if befund %}<span><a href="{{ filter_urls.alle }}" class="fw-link">{% trans "Filter aufheben" %}</a></span>{% endif %}
+    </div>
     {% elif suche and not gesucht_rows %}
     <div class="px-4">
         {% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Liegenschaft gefunden') subtext=_('Die Suche findet Strasse, PLZ, Ort, Kanton und Eigentümer. Mehrere Wörter müssen alle vorkommen.') cta_url=suche_aufheben_url cta_label=_('Suche aufheben') %}

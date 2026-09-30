@@ -72,11 +72,25 @@ grep -rln "Anliegen" --include=*.html core/templates/core/
 
 ## 2b. Derselbe Klassenname für zwei verschiedene Dinge
 
-`fw-akte-pfad` heisst BEIDES: die Brotkrume über dem Aktenkopf (`<nav>`) und
+`fw-akte-pfad` hiess BEIDES: die Brotkrume über dem Aktenkopf (`<nav>`) und
 der Schlüssel-Wert-Block IM Aktenkopf (`<div>`). Auf jeder der fünf Akten
-stehen beide — acht Vorkommen je Bauform im Bestand.
+standen beide — acht Vorkommen je Bauform im Bestand.
 
-Folge beim Messen: `querySelector('.fw-akte-pfad')` liefert die Brotkrume.
+**Seit v8 (zweiter Durchgang, 30.09.2026) heisst die Brotkrume
+`fw-brotkrume`** — 31 Vorlagen umgestellt, Regel im Abschnitt «Tranche D» der
+Stilschicht. `fw-akte-pfad` bedeutet damit nur noch den Block im Aktenkopf.
+Ausnahme bis zur Nachführung: `liegenschaft_detail.html` und
+`vertrag_detail.html` trugen die alte `<nav class="fw-akte-pfad">` noch, weil
+sie gleichzeitig in anderer Hand waren — vor dem Messen nachsehen:
+
+```bash
+grep -rn '<nav class="fw-akte-pfad' core/templates/
+```
+
+Wer eine neue Brotkrume baut, nimmt `fw-brotkrume`. Die Messregel unten gilt
+weiter, solange der Grep oben etwas findet.
+
+Folge beim Messen (vor der Umbenennung): `querySelector('.fw-akte-pfad')` liefert die Brotkrume.
 Wer die Höhe des Schlüssel-Wert-Blocks misst, bekommt 19 Pixel statt 190 und
 schliesst daraus, seine Änderung habe nichts bewirkt. Genau so passiert, beim
 Nachmessen des Vertrags-Aktenkopfs.
@@ -88,9 +102,10 @@ document.querySelector('.fw-aktenkopf .fw-akte-pfad')   // der Block
 document.querySelector('nav.fw-akte-pfad')              // die Brotkrume
 ```
 
-Die Kollision ist nicht behoben — ein Umbenennen fasst acht Vorlagen und die
-Stilschicht an. Hier steht sie, damit die nächste Messung nicht wieder daneben
-greift.
+Die Kollision ist behoben, bis auf die zwei Akten oben. Der Eintrag bleibt,
+damit die nächste Messung auf einem alten Stand nicht wieder daneben greift —
+und weil derselbe Fehler mit jedem anderen doppelt vergebenen Namen wieder
+passiert.
 
 ## 2c. `objects.create` ist nicht die einzige Art, etwas anzulegen
 

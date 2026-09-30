@@ -4,7 +4,7 @@
 {% block title %}{% blocktrans with name=v.mieter.display_name %}Schlussabrechnung — {{ name }}{% endblocktrans %}{% endblock %}
 {% block content %}
 {% if not embed_base %}
-<nav class="fw-akte-pfad mb-2.5">
+<nav class="fw-brotkrume mb-2.5">
     <a href="/neu/vertraege/">{% trans "Verträge" %}</a>
     {% zeichen 'weiter' %}
     <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>

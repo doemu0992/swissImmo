@@ -488,12 +488,126 @@ def abweichungen(stichtag=None, aktive_lg=None):
     return befunde
 
 
+#: So viele Monate zeigt die Verlaufslinie einer Kachel (konzept-v8).
+VERLAUF_MONATE = 12
+
+
+def _monatsenden(stichtag, anzahl=VERLAUF_MONATE):
+    """Die letzten `anzahl` Monatsenden, das älteste zuerst; der letzte ist `stichtag`."""
+    enden = [stichtag]
+    erster = stichtag.replace(day=1)
+    for _i in range(anzahl - 1):
+        ende = erster - timedelta(days=1)
+        enden.append(ende)
+        erster = ende.replace(day=1)
+    return list(reversed(enden))
+
+
+def verlaeufe(stichtag=None, aktive_lg=None):
+    """Zwölf Monatswerte je Kachel — für die Verlaufslinie (konzept-v8).
+
+    VIER ABFRAGEN, NICHT ACHTUNDVIERZIG. Je Monat die Rechnung von
+    `streifen()` zu wiederholen hiesse zwölfmal `_eingangsquote` und
+    `_leerstandsquote` auf der meistbesuchten Seite. Stattdessen:
+
+      Eingang/Ausstände  eine Abfrage, nach Fälligkeitsmonat gruppiert —
+                         dieselbe Menge und derselbe Status wie `_eingangsquote`
+      Leerstand          Einheiten zählen, Vertragsdauern einmal holen, je
+                         Monatsende in Python prüfen — dieselbe Definition wie
+                         `_leerstandsquote` (aktiv, beginn ≤ Tag ≤ ende)
+      Offene Fälle       Eröffnung/Abschluss einmal holen — dieselbe Rechnung
+                         wie der Vormonatsstand in `streifen()`
+
+    Fehlt eine Reihe (neue Installation, Fehler), bleibt sie leer: Eine
+    erfundene flache Linie behauptete «keine Veränderung».
+    """
+    from django.db.models.functions import TruncMonth
+
+    stichtag = stichtag or timezone.localdate()
+    enden = _monatsenden(stichtag)
+    beginn = enden[0].replace(day=1)
+    reihen = {'eingang': [], 'ausstaende': [], 'leerstand': [], 'faelle': []}
+
+    try:
+        from finance.models import DebitorenRechnung
+
+        q = DebitorenRechnung.objects.filter(faellig_am__gte=beginn, faellig_am__lte=stichtag)
+        if aktive_lg:
+            q = q.filter(Q(liegenschaft=aktive_lg)
+                         | Q(vertrag__einheit__liegenschaft=aktive_lg))
+        q = q.exclude(status__in=('storniert', 'abgeschrieben'))
+        je_monat = {z['monat'].strftime('%Y-%m') if z['monat'] else '': z for z in (
+            q.annotate(monat=TruncMonth('faellig_am')).values('monat')
+             .annotate(soll=Sum('betrag'),
+                       offen=Sum('betrag', filter=Q(status__in=('offen', 'teilbezahlt')))))}
+        for ende in enden:
+            z = je_monat.get(ende.strftime('%Y-%m'))
+            soll = (z or {}).get('soll') or Decimal('0')
+            offen = (z or {}).get('offen') or Decimal('0')
+            reihen['eingang'].append(float((soll - offen) / soll * 100) if soll else None)
+            reihen['ausstaende'].append(float(offen))
+    except Exception:
+        log.exception('Verlauf Zahlungseingang nicht ermittelbar')
+        reihen['eingang'] = reihen['ausstaende'] = []
+
+    try:
+        from portfolio.models import Einheit
+        from rentals.models import Mietvertrag
+
+        einheiten = Einheit.objects.all()
+        vertraege = Mietvertrag.objects.filter(status='aktiv')
+        if aktive_lg:
+            einheiten = einheiten.filter(liegenschaft=aktive_lg)
+            vertraege = vertraege.filter(einheit__liegenschaft=aktive_lg)
+        gesamt = einheiten.count()
+        dauern = list(vertraege.values_list('einheit_id', 'beginn', 'ende'))
+        for ende in enden:
+            if not gesamt:
+                reihen['leerstand'].append(None)
+                continue
+            belegt = {e for e, b, en in dauern
+                      if b and b <= ende and (en is None or en >= ende)}
+            reihen['leerstand'].append((gesamt - len(belegt)) / gesamt * 100)
+    except Exception:
+        log.exception('Verlauf Leerstand nicht ermittelbar')
+        reihen['leerstand'] = []
+
+    try:
+        from faelle.models import Fall
+
+        faelle = list(Fall.objects.exclude(status=Fall.ABGEBROCHEN)
+                      .values_list('eroeffnet_am', 'abgeschlossen_am'))
+        for ende in enden:
+            grenze = timezone.make_aware(datetime.combine(ende + timedelta(days=1), time.min))
+            reihen['faelle'].append(sum(1 for er, ab in faelle
+                                        if er < grenze and (ab is None or ab >= grenze)))
+    except Exception:
+        log.exception('Verlauf Fälle nicht ermittelbar')
+        reihen['faelle'] = []
+
+    return reihen
+
+
 def lage(stichtag=None, aktive_lg=None):
     """Alles für die Startseite in einem Aufruf."""
     stichtag = stichtag or timezone.localdate()
     befunde = abweichungen(stichtag, aktive_lg)
+    kacheln = streifen(stichtag, aktive_lg)
+    reihen = verlaeufe(stichtag, aktive_lg)
+    for k in kacheln:
+        # Nur Werte, die gemessen sind: Lücken (None) fallen aus der Linie.
+        k['verlauf'] = [w for w in reihen.get(k['schluessel'], []) if w is not None]
+        # Die Farbe der Linie und der Delta-Kapsel: gut oder schlecht je nach
+        # Richtung — dieselbe Regel wie der Pfeil (`delta_gut_wenn`).
+        d = k.get('delta')
+        if not d:
+            k['ton'] = ''
+        elif (d > 0) == (k.get('delta_gut_wenn') == 'hoch'):
+            k['ton'] = 'good'
+        else:
+            k['ton'] = 'crit'
     return {
-        'lg_streifen': streifen(stichtag, aktive_lg),
+        'lg_streifen': kacheln,
         'lg_mandate': mandate(stichtag),
         'lg_abweichungen': befunde,
         'lg_abweichungen_anzahl': len(befunde),

@@ -6,6 +6,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Schäden" %}</span></nav>
         <h1>{% trans "Schadensfälle" %}</h1>
         <p>{% trans "Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/schaeden/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
@@ -53,7 +54,7 @@
         <div class="fw-feldblock"><label class="fw-label">{% trans "Melder Telefon" %}</label>
             <input name="tel_melder" class="fw-feld"></div>
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "Fotos (mehrere möglich)" %}</label>
-            <input name="fotos" type="file" accept="image/*" multiple class="w-full text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold"></div>
+            <input name="fotos" type="file" accept="image/*" multiple class="fw-datei w-full"></div>
         <div class="fw-formular-fuss items-center">
             <span class="fw-hilfe">{% trans "Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung." %}</span>
             <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Ticket erstellen" %}</button>

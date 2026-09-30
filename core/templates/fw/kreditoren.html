@@ -7,6 +7,7 @@
 
 <div class="fw-phead">
     <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/finanzen/{{ lg_query }}">{% trans "Finanzen" %}</a><span aria-hidden="true">/</span><span>{% trans "Kreditoren" %}</span></nav>
     <h1>{% trans "Kreditoren" %}</h1>
     <p>{% trans "Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann Kreditoren an Bank)" %}
     {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>
@@ -51,7 +52,7 @@
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <div class="grow min-w-[220px]"><label for="up-beleg" class="fw-label mb-1">{% trans "Belege (PDF, JPG, PNG — Mehrfachauswahl möglich) *" %}</label>
             <input id="up-beleg" type="file" name="beleg_scan" required multiple accept=".pdf,.jpg,.jpeg,.png,.webp"
-                   class="w-full text-xs fw-mutet file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white"></div>
+                   class="fw-datei w-full"></div>
         <div><label for="up-lg" class="fw-label mb-1">{% trans "Liegenschaft (optional)" %}</label>
             <select id="up-lg" name="liegenschaft_id" class="fw-feld min-w-[14rem]">
                 <option value="">— {% trans "später zuordnen" %} —</option>
@@ -109,7 +110,7 @@
         <div><label for="kr-leist-bis" class="fw-label mb-1">{% trans "Leistung bis" %}</label>
             <input id="kr-leist-bis" type="date" name="leistungs_bis" value="{{ neu_werte.leistungs_bis }}" class="fw-feld w-full"{% if neu_fehler.leistungs_bis %} aria-invalid="true" aria-describedby="kr-leist-bis_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.leistungs_bis feld_id="kr-leist-bis" %}</div>
         <div><label for="kr-beleg" class="fw-label mb-1">{% trans "Beleg (PDF/Bild)" %}</label>
-            <input id="kr-beleg" type="file" name="beleg_scan" class="w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white"></div>
+            <input id="kr-beleg" type="file" name="beleg_scan" class="fw-datei w-full"></div>
         <div class="sm:col-span-2 flex items-center">
             <label class="fw-haekchen"><input type="checkbox" name="is_hnk_relevant" {% if neu_werte.is_hnk_relevant %}checked{% endif %} class="fw-akzent">{% trans "In Nebenkostenabrechnung einbeziehen (HNK)" %}</label>
             <span class="ml-2 fw-hilfe">— {% trans "wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt" %}</span></div>
