@@ -156,3 +156,59 @@ class TicketNachricht(OrganisationAusKette):
         ordering = ['-erstellt_am']
         verbose_name = "Historie / Nachricht"
         db_table = 'core_ticketnachricht'
+
+
+class Versicherungsfall(OrganisationAusKette):
+    """Ein Schaden, der bei der Gebäudeversicherung gemeldet ist.
+
+    Hält fest, was bei einem Wasserschaden bisher nirgends stand (Stresstest
+    30.09.2026): Police, Schadennummer, Meldedatum, Selbstbehalt, wer ihn trägt, und
+    was die Versicherung zahlt. Die Rechnung liegt bei den Handwerkeraufträgen des
+    Tickets; hier stehen die Beträge zwischen Eigentümer, Mieter und Versicherung.
+    """
+    ORGANISATION_PFAD = 'ticket'
+    STATUS = [
+        ('gemeldet', _('Gemeldet')),
+        ('abklaerung', _('In Abklärung')),
+        ('entschaedigt', _('Entschädigt')),
+        ('abgelehnt', _('Abgelehnt')),
+    ]
+    TRAEGER = [
+        ('eigentuemer', _('Eigentümer')),
+        ('mieter', _('Mieter (Überwälzung)')),
+    ]
+    ticket = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='versicherungsfaelle')
+    police = models.ForeignKey('portfolio.Versicherung', on_delete=models.SET_NULL,
+                               null=True, blank=True, related_name='faelle')
+    schadennummer = models.CharField("Schadennummer", max_length=60, blank=True, default='')
+    gemeldet_am = models.DateField("Gemeldet am")
+    schadensumme = models.DecimalField("Schadensumme (CHF)", max_digits=10, decimal_places=2,
+                                       null=True, blank=True)
+    selbstbehalt = models.DecimalField("Selbstbehalt (CHF)", max_digits=10, decimal_places=2,
+                                       default=0)
+    selbstbehalt_traeger = models.CharField("Selbstbehalt trägt", max_length=12, choices=TRAEGER,
+                                            default='eigentuemer')
+    selbstbehalt_rechnung = models.ForeignKey('finance.DebitorenRechnung', on_delete=models.SET_NULL,
+                                              null=True, blank=True, related_name='+')
+    entschaedigung_erhalten = models.DecimalField("Entschädigung erhalten (CHF)", max_digits=10,
+                                                  decimal_places=2, null=True, blank=True)
+    entschaedigung_am = models.DateField("Entschädigung eingegangen am", null=True, blank=True)
+    status = models.CharField(max_length=12, choices=STATUS, default='gemeldet')
+    bemerkung = models.CharField(max_length=255, blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Versicherungsfall"
+        verbose_name_plural = "Versicherungsfälle"
+        ordering = ['-gemeldet_am', '-id']
+
+    def __str__(self):
+        return f"Versicherungsfall Ticket #{self.ticket_id} ({self.get_status_display()})"
+
+    @property
+    def erwartete_entschaedigung(self):
+        """Schadensumme abzüglich Selbstbehalt — was die Versicherung voraussichtlich zahlt."""
+        from decimal import Decimal
+        if self.schadensumme is None:
+            return None
+        return max(self.schadensumme - (self.selbstbehalt or Decimal('0')), Decimal('0.00'))

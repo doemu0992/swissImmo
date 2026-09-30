@@ -545,8 +545,10 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
     from django.contrib.contenttypes.models import ContentType
     from faelle.models import Fall
     t_ct = ContentType.objects.get_for_model(SchadenMeldung)
+    from tickets.models import Versicherungsfall
     vers_faelle = set(Fall.objects.filter(akte_typ=t_ct, fallart__schluessel='versicherungsfall')
                       .values_list('akte_id', flat=True))
+    vers_faelle |= set(Versicherungsfall.objects.values_list('ticket_id', flat=True))
     q_vers = Q()
     for kw in VERSICHERUNGS_STICHWORTE:
         q_vers |= Q(titel__icontains=kw) | Q(kategorie__icontains=kw)

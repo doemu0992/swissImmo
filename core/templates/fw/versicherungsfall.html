@@ -1,0 +1,100 @@
+{% extends 'fw/base.html' %}
+{% load zeichen %}
+{% load chf %}
+{% block title %}Versicherungsfall — Ticket #{{ t.id }}{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/schaeden/{{ t.id }}/">Ticket #{{ t.id }}</a>
+    {% zeichen 'weiter' %}
+    <b>Versicherungsfall</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>Versicherungsfall</h1>
+        <p>{{ t.titel }} · {{ t.liegenschaft.strasse }}</p>
+    </div>
+</div>
+
+<div class="fw-card fw-rumpf space-y-4 max-w-2xl">
+    {% for f in faelle %}
+    <div class="fw-card fw-rumpf space-y-2">
+        <p><b>{{ f.get_status_display }}</b> · gemeldet am {{ f.gemeldet_am|date:"d.m.Y" }}
+           {% if f.police %}· {{ f.police }}{% endif %}
+           {% if f.schadennummer %}· Schadennummer {{ f.schadennummer }}{% endif %}</p>
+        <div class="fw-kpis">
+            <div class="fw-kpi"><div class="fw-l">Schadensumme</div><div class="fw-v">{% if f.schadensumme %}CHF {{ f.schadensumme|chf }}{% else %}—{% endif %}</div></div>
+            <div class="fw-kpi"><div class="fw-l">Selbstbehalt ({{ f.get_selbstbehalt_traeger_display }})</div><div class="fw-v">CHF {{ f.selbstbehalt|chf }}</div></div>
+            <div class="fw-kpi"><div class="fw-l">Erwartete Entschädigung</div><div class="fw-v">{% if f.erwartete_entschaedigung is not None %}CHF {{ f.erwartete_entschaedigung|chf }}{% else %}—{% endif %}</div></div>
+            <div class="fw-kpi"><div class="fw-l">Erhalten</div><div class="fw-v">{% if f.entschaedigung_am %}CHF {{ f.entschaedigung_erhalten|chf }} ({{ f.entschaedigung_am|date:"d.m.Y" }}){% else %}—{% endif %}</div></div>
+        </div>
+
+        {% if f.selbstbehalt_traeger == 'mieter' and f.selbstbehalt > 0 and not f.selbstbehalt_rechnung_id and f.status != 'abgelehnt' %}
+        <form method="post" class="space-y-2">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="ueberwaelzen"><input type="hidden" name="fall" value="{{ f.id }}">
+            <div class="fw-feldblock"><label class="fw-label">Selbstbehalt in Rechnung stellen an</label>
+                <select name="vertrag" class="fw-feld" required>
+                    {% for v in vertraege %}<option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</option>{% endfor %}
+                </select></div>
+            <p class="fw-hilfe">Ob der Mieter für den Schaden haftet, entscheidet die Verwaltung im Einzelfall. Gestellt wird der Selbstbehalt von CHF {{ f.selbstbehalt|chf }} als Schadenersatz (ohne MWST).</p>
+            <button type="submit" class="fw-btn fw-primary">Selbstbehalt überwälzen</button>
+        </form>
+        {% elif f.selbstbehalt_rechnung_id %}
+        <p class="fw-klein">Selbstbehalt dem Mieter in Rechnung gestellt: {{ f.selbstbehalt_rechnung.titel }} (CHF {{ f.selbstbehalt_rechnung.betrag|chf }}).</p>
+        {% endif %}
+
+        {% if not f.entschaedigung_am and f.status != 'abgelehnt' %}
+        <form method="post" class="space-y-2">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="entschaedigung"><input type="hidden" name="fall" value="{{ f.id }}">
+            <div class="fw-formular">
+                <div class="fw-feldblock"><label class="fw-label">Entschädigung erhalten (CHF)</label>
+                    <input name="betrag" inputmode="decimal" class="fw-feld" {% if f.erwartete_entschaedigung %}value="{{ f.erwartete_entschaedigung }}"{% endif %} required></div>
+                <div class="fw-feldblock"><label class="fw-label">Eingegangen am</label>
+                    <input type="date" name="datum" value="{{ heute_iso }}" max="{{ heute_iso }}" class="fw-feld"></div>
+            </div>
+            <button type="submit" class="fw-btn fw-primary">Versicherungsleistung verbuchen</button>
+        </form>
+        <form method="post" onsubmit="return confirm('Als abgelehnt vermerken?');">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="ablehnen"><input type="hidden" name="fall" value="{{ f.id }}">
+            <button type="submit" class="fw-btn">Von der Versicherung abgelehnt</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if not faelle %}
+    <h2>Schaden der Versicherung melden</h2>
+    {% if not policen %}
+    <div class="fw-hinweis warn rounded-lg"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht">Zu dieser Liegenschaft ist keine Police erfasst. Police und Selbstbehalt unter «Liegenschaft → Finanzen → Versicherungen» hinterlegen; sonst wird der Selbstbehalt mit CHF 0.00 angesetzt.</div>
+    </div>
+    {% endif %}
+    <form method="post" class="space-y-2">
+        {% csrf_token %}
+        <input type="hidden" name="aktion" value="melden">
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label class="fw-label">Police</label>
+                <select name="police" class="fw-feld">
+                    <option value="">— keine —</option>
+                    {% for p in policen %}<option value="{{ p.id }}">{{ p }}{% if p.policennummer %} · {{ p.policennummer }}{% endif %}{% if p.selbstbehalt is not None %} · Selbstbehalt CHF {{ p.selbstbehalt|chf }}{% endif %}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock"><label class="fw-label">Schadennummer</label><input name="schadennummer" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label">Gemeldet am</label>
+                <input type="date" name="gemeldet_am" value="{{ heute_iso }}" max="{{ heute_iso }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label">Schadensumme (CHF)</label>
+                <input name="schadensumme" inputmode="decimal" class="fw-feld" {% if vorschlag %}value="{{ vorschlag }}"{% endif %}></div>
+            <div class="fw-feldblock"><label class="fw-label">Selbstbehalt trägt</label>
+                <select name="traeger" class="fw-feld">
+                    <option value="eigentuemer">Eigentümer</option>
+                    <option value="mieter">Mieter (Überwälzung)</option>
+                </select></div>
+        </div>
+        <div class="fw-feldblock"><label class="fw-label">Bemerkung</label><input name="bemerkung" class="fw-feld"></div>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} Versicherungsfall erfassen</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

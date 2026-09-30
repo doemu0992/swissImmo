@@ -76,6 +76,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-l">{% trans "Kosten" %}</div>
             <div class="fw-w">CHF {{ kosten_effektiv|chf }}</div>
             <div class="fw-f">{% if kosten_geschaetzt %}{% blocktrans with b=kosten_geschaetzt|chf %}geschätzt {{ b }}{% endblocktrans %}{% else %}{% trans "keine Schätzung" %}{% endif %}</div>
+            <div class="fw-f"><a href="/neu/schaeden/{{ t.id }}/versicherung/" class="fw-link">{% trans "Versicherungsfall" %}</a></div>
         </div>
         <div>
             <div class="fw-l">{% trans "Aufträge" %}</div>

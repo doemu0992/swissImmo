@@ -218,6 +218,7 @@ def fw_versicherung_add(request, lg_id):
         gesellschaft=P.get('gesellschaft', '').strip(),
         policennummer=P.get('policennummer', '').strip(),
         versicherungssumme=dec('versicherungssumme'), jahrespraemie=dec('jahrespraemie'),
+        selbstbehalt=dec('selbstbehalt'),
         ablauf_datum=ablauf, notiz=P.get('notiz', '').strip())
     log_aktion(request, "Versicherung erfasst", f"{lg.strasse}", P.get('gesellschaft', ''), ziel=lg)
     messages.success(request, '✅ ' + gettext('Versicherung erfasst.'))

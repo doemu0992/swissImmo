@@ -137,6 +137,10 @@ class Versicherung(OrganisationAusKette):
     versicherungssumme = models.DecimalField("Versicherungssumme (CHF)", max_digits=12, decimal_places=2, null=True, blank=True)
     jahrespraemie = models.DecimalField("Jahresprämie (CHF)", max_digits=10, decimal_places=2, null=True, blank=True)
     ablauf_datum = models.DateField("Ablauf / nächste Fälligkeit", null=True, blank=True)
+    #: Selbstbehalt je Schadenfall laut Police. Leer = keiner hinterlegt (nicht «0»:
+    #: Wer ihn nicht erfasst hat, soll es im Versicherungsfall bemerken).
+    selbstbehalt = models.DecimalField("Selbstbehalt je Schaden (CHF)", max_digits=10,
+                                       decimal_places=2, null=True, blank=True)
     notiz = models.CharField("Bemerkung", max_length=200, blank=True, default='')
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
