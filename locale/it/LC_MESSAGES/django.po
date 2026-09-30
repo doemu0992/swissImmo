@@ -20438,3 +20438,610 @@ msgstr "Inserire il nome della ditta o dell'associazione."
 #: core/views/fw/vertragserstellung.py
 msgid "Bitte den Nachnamen des Mieters erfassen."
 msgstr "Inserire il cognome dell'inquilino."
+
+#: core/templates/fw/abwesenheiten.html:8 core/templates/fw/anlagen.html:9
+#: core/templates/fw/auswertung.html:8 core/templates/fw/bankabgleich.html:10
+#: core/templates/fw/bankkonten.html:10 core/templates/fw/berichte.html:14
+#: core/templates/fw/bewerbungen.html:9 core/templates/fw/buchhaltung.html:10
+#: core/templates/fw/debitoren.html:10 core/templates/fw/dienstleister.html:9
+#: core/templates/fw/ersatzplanung.html:10 core/templates/fw/finanzen.html:14
+#: core/templates/fw/fristen.html:7 core/templates/fw/hypotheken.html:9
+#: core/templates/fw/kautionen.html:8 core/templates/fw/kontenplan.html:10
+#: core/templates/fw/kreditoren.html:10 core/templates/fw/laeufe.html:12
+#: core/templates/fw/lieferantenkonten.html:8
+#: core/templates/fw/liegenschaft_detail.html:18
+#: core/templates/fw/liegenschaften.html:14 core/templates/fw/mahnwesen.html:10
+#: core/templates/fw/mandate.html:7 core/templates/fw/mieterkonten.html:8
+#: core/templates/fw/mieterwechsel.html:8 core/templates/fw/mietzins.html:10
+#: core/templates/fw/mwst.html:8 core/templates/fw/nebenkosten.html:10
+#: core/templates/fw/objekte.html:25 core/templates/fw/pendenzen.html:8
+#: core/templates/fw/personen.html:9 core/templates/fw/schaeden.html:9
+#: core/templates/fw/sollstellung.html:15 core/templates/fw/termine.html:8
+#: core/templates/fw/vermarktung.html:8 core/templates/fw/vertraege.html:17
+#: core/templates/fw/vertrag_detail.html:21 core/templates/fw/zahllauf.html:10
+#: core/templates/fw/zulauf.html:8
+msgid "Pfad"
+msgstr "Percorso"
+
+#: core/templates/fw/berichte.html:16
+#, python-format
+msgid "%(von)s bis %(bis)s"
+msgstr "da %(von)s a %(bis)s"
+
+#: core/templates/fw/berichte.html:16 core/templates/fw/finanzen.html:103
+msgid "ganzer Bestand"
+msgstr "intero portafoglio"
+
+#: core/templates/fw/berichte.html:33 core/templates/fw/berichte.html:36
+msgid "Zahlungsquote je Monat"
+msgstr "Tasso di pagamento al mese"
+
+#: core/templates/fw/berichte.html:40
+#, python-format
+msgid ""
+"zwischen %(tief)s %% und %(hoch)s %% · Monate ohne Sollstellung bleiben leer"
+msgstr ""
+"tra %(tief)s %% e %(hoch)s %% · i mesi senza fatturazione restano vuoti"
+
+#: core/templates/fw/berichte.html:42
+msgid "Noch zu wenig Sollstellung für einen Verlauf."
+msgstr "Fatturazione ancora insufficiente per un andamento."
+
+#: core/templates/fw/berichte.html:42
+msgid "Die Linie erscheint, sobald in zwei Monaten Mietzinse fällig waren."
+msgstr "La linea appare non appena gli affitti sono scaduti in due mesi."
+
+#: core/templates/fw/berichte.html:48
+msgid "Ausstände > 30 Tage je Liegenschaft"
+msgstr "Arretrati > 30 giorni per immobile"
+
+#: core/templates/fw/berichte.html:53
+msgid "Keine Liegenschaft hat Ausstände älter als 30 Tage."
+msgstr "Nessun immobile ha arretrati oltre 30 giorni."
+
+#: core/templates/fw/berichte.html:62
+msgid "Kennzahlen je Mandat"
+msgstr "Indicatori per mandato"
+
+#: core/templates/fw/berichte.html:71
+#: core/templates/fw/liegenschaft_detail.html:80
+#: core/templates/fw/liegenschaften.html:99
+msgid "Belegung"
+msgstr "Occupazione"
+
+#: core/templates/fw/berichte.html:72
+msgid "Soll / Monat CHF"
+msgstr "Dovuto / mese CHF"
+
+#: core/templates/fw/berichte.html:73 core/templates/fw/finanzen.html:38
+msgid "Ausstände > 30 Tage"
+msgstr "Arretrati > 30 giorni"
+
+#: core/templates/fw/berichte.html:86
+msgid "Noch keine Mandate mit Objekten."
+msgstr "Ancora nessun mandato con oggetti."
+
+#: core/templates/fw/dashboard.html:42 core/templates/fw/sollstellung.html:15
+#, python-format
+msgid "Sollstellung %(monat)s"
+msgstr "Fatturazione affitti %(monat)s"
+
+#: core/templates/fw/finanzen.html:16
+#, python-format
+msgid "letzter camt-Import %(zeit)s"
+msgstr "ultimo import camt %(zeit)s"
+
+#: core/templates/fw/finanzen.html:19
+msgid "camt importieren"
+msgstr "Importa camt"
+
+#: core/templates/fw/finanzen.html:33
+msgid "Offene Kreditoren"
+msgstr "Creditori aperti"
+
+#: core/templates/fw/finanzen.html:40
+#: core/templates/fw/liegenschaft_detail.html:88
+#, python-format
+msgid "%(n)s Mietpartei"
+msgid_plural "%(n)s Mietparteien"
+msgstr[0] "%(n)s parte locataria"
+msgstr[1] "%(n)s parti locatarie"
+
+#: core/templates/fw/finanzen.html:45
+#, python-format
+msgid "%(n)s Vertrag · hinterlegt"
+msgid_plural "%(n)s Verträge · hinterlegt"
+msgstr[0] "%(n)s contratto · depositato"
+msgstr[1] "%(n)s contratti · depositati"
+
+#: core/templates/fw/finanzen.html:53
+#, python-format
+msgid "%(n)s Gutschrift offen"
+msgid_plural "%(n)s Gutschriften offen"
+msgstr[0] "%(n)s accredito aperto"
+msgstr[1] "%(n)s accrediti aperti"
+
+#: core/templates/fw/finanzen.html:53
+msgid "alles zugeordnet"
+msgstr "tutto assegnato"
+
+#: core/templates/fw/finanzen.html:65
+#, python-format
+msgid "Valuta %(datum)s"
+msgstr "Valuta %(datum)s"
+
+#: core/templates/fw/finanzen.html:69
+msgid "Betrag und Name passen"
+msgstr "Importo e nome corrispondono"
+
+#: core/templates/fw/finanzen.html:69
+msgid "Betrag passt"
+msgstr "L'importo corrisponde"
+
+#: core/templates/fw/finanzen.html:71
+msgid "Auszugszeile noch nicht verbucht"
+msgstr "Riga dell'estratto non ancora registrata"
+
+#: core/templates/fw/finanzen.html:73
+msgid "Betrag passt zu keinem offenen Posten"
+msgstr "L'importo non corrisponde a nessuna voce aperta"
+
+#: core/templates/fw/finanzen.html:85
+msgid "Anders zuordnen"
+msgstr "Assegna diversamente"
+
+#: core/templates/fw/finanzen.html:95
+msgid "Abgeglichen."
+msgstr "Riconciliato."
+
+#: core/templates/fw/finanzen.html:95
+msgid "Alle Gutschriften sind verbucht."
+msgstr "Tutti gli accrediti sono registrati."
+
+#: core/templates/fw/finanzen.html:102
+msgid "Ausstände nach Alter"
+msgstr "Arretrati per anzianità"
+
+#: core/templates/fw/finanzen.html:108
+#: core/templates/fw/liegenschaft_detail.html:109
+msgid "Mietpartei"
+msgstr "Parte locataria"
+
+#: core/templates/fw/finanzen.html:128
+msgid "Keine überfälligen Forderungen."
+msgstr "Nessun credito scaduto."
+
+#: core/templates/fw/finanzen.html:145
+msgid "Beträge in CHF · Tage seit Fälligkeit"
+msgstr "Importi in CHF · giorni dalla scadenza"
+
+#: core/templates/fw/finanzen.html:146
+msgid "Zum Mahnwesen"
+msgstr "Ai solleciti"
+
+#: core/templates/fw/laeufe.html:14
+msgid "Alles, was einen Zustand hat und blockieren kann"
+msgstr "Tutto ciò che ha uno stato e può bloccarsi"
+
+#: core/templates/fw/laeufe.html:14
+#, python-format
+msgid "%(n)s braucht dich"
+msgid_plural "%(n)s brauchen dich"
+msgstr[0] "%(n)s ha bisogno di te"
+msgstr[1] "%(n)s hanno bisogno di te"
+
+#: core/templates/fw/laeufe.html:35
+msgid "Freigabe nötig"
+msgstr "Approvazione necessaria"
+
+#: core/templates/fw/laeufe.html:44 core/templates/fw/sollstellung.html:17
+#, python-format
+msgid "gestartet %(datum)s"
+msgstr "avviato il %(datum)s"
+
+#: core/templates/fw/liegenschaft_detail.html:32
+#: core/templates/fw/liegenschaften.html:107
+#, python-format
+msgid "Baujahr %(j)s"
+msgstr "Anno di costruzione %(j)s"
+
+#: core/templates/fw/liegenschaft_detail.html:79
+msgid "alle vermietet"
+msgstr "tutto affittato"
+
+#: core/templates/fw/liegenschaft_detail.html:82
+#, python-format
+msgid "%(vv)s von %(e)s · Stand %(d)s"
+msgstr "%(vv)s di %(e)s · stato al %(d)s"
+
+#: core/templates/fw/liegenschaft_detail.html:86
+#, python-format
+msgid "Ausstände > %(t)s Tage"
+msgstr "Arretrati > %(t)s giorni"
+
+#: core/templates/fw/liegenschaft_detail.html:107
+#, python-format
+msgid "%(n)s Einheit"
+msgid_plural "%(n)s Einheiten"
+msgstr[0] "%(n)s unità"
+msgstr[1] "%(n)s unità"
+
+#: core/templates/fw/liegenschaft_detail.html:118
+msgid "Rückstand"
+msgstr "Arretrato"
+
+#: core/templates/fw/liegenschaft_detail.html:142
+#, python-format
+msgid "eröffnet %(d)s"
+msgstr "aperto il %(d)s"
+
+#: core/templates/fw/liegenschaft_detail.html:147
+#, python-format
+msgid "Rückstand %(name)s: CHF %(b)s"
+msgstr "Arretrato %(name)s: CHF %(b)s"
+
+#: core/templates/fw/liegenschaft_detail.html:148
+#, python-format
+msgid "fällig vor mehr als %(t)s Tagen"
+msgstr "scaduto da oltre %(t)s giorni"
+
+#: core/templates/fw/liegenschaft_detail.html:149
+msgid "Zur Akte"
+msgstr "Al fascicolo"
+
+#: core/templates/fw/liegenschaft_detail.html:162
+msgid "Nichts fällt auf."
+msgstr "Nulla da segnalare."
+
+#: core/templates/fw/liegenschaft_detail.html:162
+msgid "Alle Objekte vermietet, keine Rückstände, kein offener Vorgang."
+msgstr "Tutti gli oggetti affittati, nessun arretrato, nessuna pratica aperta."
+
+#: core/templates/fw/liegenschaften.html:78
+msgid "Sortiert nach Auffälligkeit, nicht nach Alphabet."
+msgstr "Ordinato per anomalie, non in ordine alfabetico."
+
+#: core/templates/fw/liegenschaften.html:113
+msgid "offene Posten, fällig vor mehr als 30 Tagen"
+msgstr "partite aperte scadute da oltre 30 giorni"
+
+#: core/templates/fw/sollstellung.html:16
+#, python-format
+msgid "Sollstellung %(monat)s %(jahr)s"
+msgstr "Fatturazione affitti %(monat)s %(jahr)s"
+
+#: core/templates/fw/sollstellung.html:50
+#, python-format
+msgid "%(n)s mit anderer Zahlungsart"
+msgstr "%(n)s con altro metodo di pagamento"
+
+#: core/templates/fw/sollstellung.html:59
+msgid "Blockiert"
+msgstr "Bloccato"
+
+#: core/templates/fw/sollstellung.html:61
+msgid "vor Freigabe lösen"
+msgstr "da risolvere prima dell'approvazione"
+
+#: core/templates/fw/sollstellung.html:61
+msgid "keine Blockade"
+msgstr "nessun blocco"
+
+#: core/templates/fw/sollstellung.html:68
+msgid "Blockaden"
+msgstr "Blocchi"
+
+#: core/templates/fw/sollstellung.html:131
+#, python-format
+msgid "Noch %(n)s Blockade offen"
+msgid_plural "Noch %(n)s Blockaden offen"
+msgstr[0] "Ancora %(n)s blocco aperto"
+msgstr[1] "Ancora %(n)s blocchi aperti"
+
+#: core/templates/fw/sollstellung.html:131
+msgid "Bereit zur Freigabe"
+msgstr "Pronto per l'approvazione"
+
+#: core/templates/fw/vertraege.html:48 core/templates/fw/vertrag_detail.html:87
+msgid "Mietzins brutto"
+msgstr "Pigione lorda"
+
+#: core/templates/fw/vertraege.html:68
+#, python-format
+msgid "bis %(bis)s"
+msgstr "fino al %(bis)s"
+
+#: core/templates/fw/vertrag_detail.html:80
+msgid "Offene Posten dieses Mietverhältnisses im Bankabgleich verbuchen"
+msgstr ""
+"Registrare le partite aperte di questa locazione nella riconciliazione "
+"bancaria"
+
+#: core/templates/fw/vertrag_detail.html:80
+#: core/templates/fw/vertrag_detail.html:116
+msgid "Zahlung erfassen"
+msgstr "Registrare pagamento"
+
+#: core/templates/fw/vertrag_detail.html:104
+#, python-format
+msgid "Ende %(d)s"
+msgstr "Fine %(d)s"
+
+#: core/templates/fw/vertrag_detail.html:111
+#, python-format
+msgid "Rückstand CHF %(b)s"
+msgstr "Arretrato CHF %(b)s"
+
+#: core/templates/fw/vertrag_detail.html:112
+msgid "Noch nicht gemahnt"
+msgstr "Non ancora sollecitato"
+
+#: core/templates/fw/vertrag_detail.html:112
+#, python-format
+msgid "offen seit %(m)s"
+msgstr "aperto da %(m)s"
+
+#: core/templates/fw/vertrag_detail.html:114
+msgid "Zahlungsverzug 257d"
+msgstr "Mora 257d"
+
+#: core/templates/fw/vertrag_detail.html:115
+msgid "Zum Konto"
+msgstr "Al conto"
+
+#: core/templates/fw/vertrag_detail.html:548
+#, python-format
+msgid "Saldo CHF %(b)s offen"
+msgstr "Saldo CHF %(b)s aperto"
+
+#: core/templates/fw/vertrag_detail.html:551
+msgid "Buchung"
+msgstr "Registrazione"
+
+#: core/templates/fw/vertrag_detail.html:561
+msgid "Noch keine Buchungen auf diesem Konto."
+msgstr "Nessuna registrazione su questo conto."
+
+#: core/views/fw/arbeit.py:470
+msgid "Vorschau"
+msgstr "Anteprima"
+
+#: core/views/fw/arbeit.py:470
+msgid "Stellung"
+msgstr "Fatturazione"
+
+#: core/views/fw/arbeit.py:471
+msgid "Zuordnung"
+msgstr "Assegnazione"
+
+#: core/views/fw/arbeit.py:472
+msgid "Vorschlag"
+msgstr "Proposta"
+
+#: core/views/fw/arbeit.py:472
+msgid "Mahnungen"
+msgstr "Solleciti"
+
+#: core/views/fw/arbeit.py:473
+msgid "Zusammenstellung"
+msgstr "Composizione"
+
+#: core/views/fw/arbeit.py:473
+msgid "Freigabe"
+msgstr "Approvazione"
+
+#: core/views/fw/arbeit.py:474
+msgid "Erfassung"
+msgstr "Registrazione"
+
+#: core/views/fw/arbeit.py:475
+msgid "Kostenerfassung"
+msgstr "Registrazione costi"
+
+#: core/views/fw/arbeit.py:475
+msgid "Verteilung"
+msgstr "Ripartizione"
+
+#: core/views/fw/arbeit.py:477
+msgid "Vorbereitung"
+msgstr "Preparazione"
+
+#: core/templates/fw/base.html:113
+msgid "Zuletzt geöffnet"
+msgstr "Aperti di recente"
+
+#: core/templates/fw/base.html:152 core/templates/fw/dashboard.html:43
+#: core/templates/fw/fall_neu.html:3 core/templates/fw/fall_neu.html:14
+#: core/templates/fw/liegenschaft_detail.html:72
+#: core/templates/fw/vertrag_detail.html:81
+msgid "Neuer Fall"
+msgstr "Nuova pratica"
+
+#: core/templates/fw/base.html:152
+msgid "Neuen Fall erfassen"
+msgstr "Registrare nuova pratica"
+
+#: core/templates/fw/base.html:154
+msgid "Mitteilungen"
+msgstr "Notifiche"
+
+#: core/templates/fw/berichte.html:34
+#, python-format
+msgid "Ist in %% vom Soll"
+msgstr "Effettivo in % del dovuto"
+
+#: core/templates/fw/dashboard.html:55
+msgid "Lage im Überblick"
+msgstr "Situazione in sintesi"
+
+#: core/templates/fw/dashboard.html:65
+msgid "gegenüber Vormonat"
+msgstr "rispetto al mese precedente"
+
+#: core/templates/fw/dashboard.html:79
+#, python-format
+msgid "%(n)s Vorgang"
+msgid_plural "%(n)s Vorgänge"
+msgstr[0] "%(n)s pratica"
+msgstr[1] "%(n)s pratiche"
+
+#: core/templates/fw/dashboard.html:89
+msgid "Zuständigkeit"
+msgstr "Responsabilità"
+
+#: core/templates/fw/dashboard.html:90
+msgid "Zuständig: alle"
+msgstr "Responsabile: tutti"
+
+#: core/templates/fw/dashboard.html:97
+msgid "Mandat: alle"
+msgstr "Mandato: tutti"
+
+#: core/templates/fw/dashboard.html:142
+msgid "niemand zuständig"
+msgstr "nessun responsabile"
+
+#: core/templates/fw/dashboard.html:169
+msgid "Pendenz"
+msgstr "Pendenza"
+
+#: core/templates/fw/dashboard.html:178
+#, python-format
+msgid "Frist %(datum)s"
+msgstr "Termine %(datum)s"
+
+#: core/templates/fw/dashboard.html:187
+#, python-format
+msgid "Die Frist ist seit %(n)s Tag abgelaufen."
+msgid_plural "Die Frist ist seit %(n)s Tagen abgelaufen."
+msgstr[0] "Il termine è scaduto da %(n)s giorno."
+msgstr[1] "Il termine è scaduto da %(n)s giorni."
+
+#: core/templates/fw/dashboard.html:200
+msgid "Eckdaten"
+msgstr "Dati principali"
+
+#: core/templates/fw/dashboard.html:202
+msgid "niemand, bitte übernehmen"
+msgstr "nessuno, per favore prendere in carico"
+
+#: core/templates/fw/dashboard.html:205
+msgid "Akte öffnen"
+msgstr "Apri fascicolo"
+
+#: core/templates/fw/dashboard.html:210
+msgid "Auf morgen"
+msgstr "A domani"
+
+#: core/templates/fw/dashboard.html:211
+msgid "Schritt erledigt"
+msgstr "Passo completato"
+
+#: core/templates/fw/dashboard.html:219
+msgid "Alles erledigt."
+msgstr "Tutto fatto."
+
+#: core/templates/fw/dashboard.html:223
+msgid "bewegen"
+msgstr "spostare"
+
+#: core/templates/fw/dashboard.html:223
+msgid "erledigen"
+msgstr "completare"
+
+#: core/templates/fw/dashboard.html:224
+msgid "Alle Vorgänge"
+msgstr "Tutte le pratiche"
+
+#: core/templates/fw/dashboard.html:237
+msgid "Ausserdem"
+msgstr "Inoltre"
+
+#: core/templates/fw/dashboard.html:275
+msgid "Posteingang"
+msgstr "Posta in arrivo"
+
+#: core/templates/fw/dashboard.html:283
+msgid "Kein sicherer Vorschlag"
+msgstr "Nessuna proposta sicura"
+
+#: core/templates/fw/dashboard.html:286
+msgid "Anders"
+msgstr "Diversamente"
+
+#: core/templates/fw/dashboard.html:292
+msgid "Posteingang leer."
+msgstr "Posta in arrivo vuota."
+
+#: core/templates/fw/dashboard.html:292
+msgid "Alles ist zugeordnet."
+msgstr "Tutto è assegnato."
+
+#: core/templates/fw/dashboard.html:305
+msgid "nach Auffälligkeit"
+msgstr "per anomalia"
+
+#: core/templates/fw/dashboard.html:320
+msgid "Alle Berichte"
+msgstr "Tutti i rapporti"
+
+#: core/templates/fw/fall_neu.html:15
+msgid "Wird in deinem Arbeitsvorrat angelegt."
+msgstr "Verrà creata nel tuo carico di lavoro."
+
+#: core/templates/fw/fall_neu.html:33
+msgid "Noch keine Fallarten angelegt."
+msgstr "Nessun tipo di pratica creato."
+
+#: core/templates/fw/fall_neu.html:42
+msgid "z. B. Heizung ausgefallen, Wohnung 2.3"
+msgstr "p. es. riscaldamento guasto, appartamento 2.3"
+
+#: core/templates/fw/fall_neu.html:68
+msgid "ich"
+msgstr "io"
+
+#: core/templates/fw/fall_neu.html:69
+msgid "noch offen"
+msgstr "ancora aperto"
+
+#: core/templates/fw/fall_neu.html:76
+msgid "Was ist passiert, wer hat gemeldet?"
+msgstr "Cosa è successo, chi ha segnalato?"
+
+#: core/templates/fw/fall_neu.html:81
+msgid "Fall anlegen"
+msgstr "Crea pratica"
+
+#: core/templates/fw/mieterwechsel.html:10
+#, python-format
+msgid ""
+"Gekündigte <span class=\"fw-faint\">(%(g)s)</span> und auslaufende <span "
+"class=\"fw-faint\">(%(a)s)</span> Verträge — von Rücknahme bis Übergabe an "
+"den Nachmieter."
+msgstr ""
+"Contratti disdetti <span class=\"fw-faint\">(%(g)s)</span> e in scadenza "
+"<span class=\"fw-faint\">(%(a)s)</span> — dalla ripresa alla consegna "
+"all’inquilino subentrante."
+
+#: core/views/fw/arbeit.py:342
+#, python-format
+msgid "Auf morgen verschoben: %(nummer)s"
+msgstr "Rinviato a domani: %(nummer)s"
+
+#: core/views/fw/arbeit.py:379
+msgid "Bitte eine Art wählen."
+msgstr "Scegliere un tipo."
+
+#: core/views/fw/arbeit.py:381
+msgid "Bitte einen Betreff mit mindestens 3 Zeichen eingeben."
+msgstr "Inserire un oggetto di almeno 3 caratteri."
+
+#: core/views/fw/arbeit.py:389
+msgid "Bitte eine Akte wählen."
+msgstr "Scegliere un fascicolo."
+
+#: core/views/fw/arbeit.py:410 core/views/fw/arbeit.py:411
+#, python-format
+msgid "Fall %(nummer)s angelegt."
+msgstr "Pratica %(nummer)s creata."
