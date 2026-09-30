@@ -379,6 +379,22 @@ Danach die übrigen drei Listen:
   (Entscheid G9). Geblättert wird in ganzen Liegenschaften (20 je Seite),
   damit eine Gruppe nie auf zwei Seiten zerfällt; CSV aller Objekte.*
 
+*Leere Zustände (30.09.2026): Von den fünf Seiten ohne leeren Zustand hatten
+Zahllauf und Bewerbervergleich inzwischen einen, und MWST ist eine
+Abrechnung, keine Liste. Echte Lücken waren:
+- Weiterverrechnung: Ohne aktives Mietverhältnis stand das ganze Formular da,
+  mit einer leeren Pflicht-Auswahl, die sich nicht absenden liess; war die
+  Rechnung schon ganz weiterverrechnet, ebenso. Jetzt steht dort, warum, und
+  wohin es weitergeht.
+- Massenanpassung: Liess sich keiner der gewählten Verträge anpassen, stand
+  da ein gesperrter Knopf «0 Anpassung(en)». Jetzt ein Hinweis, was zu tun
+  ist; die Vorlage ist dabei übersetzt worden.
+- Nebenbefund behoben: Die Live-Vorschau der Weiterverrechnung blieb leer,
+  sobald die Liegenschaft aktive Mieter hatte. Das Skript las das erste
+  Formular der Seite — «Verteilen», ohne Betragsfeld — und brach mit einem
+  Fehler ab (im Browser nachgewiesen).
+Die 33 kursiven Einzeiler folgten im nächsten Schritt (unten).*
+
 *Leere Zustände einheitlich (30.09.2026): Die 33 kursiven Einzeiler «Keine …»
 in 23 Vorlagen laufen jetzt über `fw/_empty.html`. Der Baustein hat dafür eine
 knappe Form (`knapp=True`) für Tabellenzeilen und Nebenlisten; die grosse Form

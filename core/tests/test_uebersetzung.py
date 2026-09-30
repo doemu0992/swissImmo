@@ -165,6 +165,7 @@ UEBERSETZT = (
     'fw/mandat_abrechnung.html',
     'fw/nebenkosten_detail.html',
     'fw/weiterverrechnung.html',
+    'fw/mietzins_massen.html',   # Audit Etappe 4: leere Zustände
     # Tranche «Akten-Details A»
     'fw/mandat_detail.html',
     'fw/mandat_form.html',

@@ -20320,6 +20320,81 @@ msgstr "Copie par e-mail"
 msgid "Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR)."
 msgstr "Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR)."
 
+#: core/templates/fw/mietzins_massen.html
+msgid "Massenanpassung"
+msgstr "Adaptation groupée"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Mietzins-Massenanpassung"
+msgstr "Adaptation groupée des loyers"
+
+#: core/templates/fw/mietzins_massen.html
+#, python-format
+msgid "Vorschau — aktueller Referenzzinssatz <span class=\"fw-ink font-semibold\">%(ref)s %%</span> · LIK <span class=\"fw-ink font-semibold\">%(lik)s</span>. Wirksamkeitstermin je Vertrag = nächster zulässiger Termin (Kündigungsfrist + 10 Tage Ankündigung, Art. 269d OR)."
+msgstr "Vorschau — aktueller Referenzzinssatz <span class=\"fw-ink font-semibold\">%(ref)s %%</span> · LIK <span class=\"fw-ink font-semibold\">%(lik)s</span>. Wirksamkeitstermin je Vertrag = nächster zulässiger Termin (Kündigungsfrist + 10 Tage Ankündigung, Art. 269d OR)."
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Netto aktuell"
+msgstr "Net actuel"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Netto neu"
+msgstr "Net nouveau"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Basis fehlt — einzeln erfassen"
+msgstr "Base manquante — saisir individuellement"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Kein Potenzial"
+msgstr "Aucun potentiel"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Wird angepasst"
+msgstr "Sera adapté"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen."
+msgstr "Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen."
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Keine Anpassung möglich"
+msgstr "Aucune adaptation possible"
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Bei keinem der gewählten Verträge ändert sich der Mietzins, oder es fehlen Referenzzinssatz und LIK-Stand bei Vertragsbeginn. Fehlende Basisdaten im Vertrag nachtragen und die Anpassung einzeln erfassen."
+msgstr "Le loyer ne change pour aucun des contrats choisis, ou le taux de référence et l'IPC au début du contrat manquent. Complétez les données de base dans le contrat et saisissez l'adaptation individuellement."
+
+#: core/templates/fw/mietzins_massen.html
+msgid "Zurück zur Mietzinsübersicht"
+msgstr "Retour à la vue des loyers"
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Bereits vollständig weiterverrechnet"
+msgstr "Déjà entièrement refacturé"
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Von dieser Lieferantenrechnung ist nichts mehr offen. Die erstellten Rechnungen stehen in den Debitoren."
+msgstr "Plus rien n'est ouvert sur cette facture fournisseur. Les factures créées se trouvent dans les débiteurs."
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Zu den Debitoren"
+msgstr "Vers les débiteurs"
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Kein aktives Mietverhältnis"
+msgstr "Aucun bail actif"
+
+#: core/templates/fw/weiterverrechnung.html
+msgid "Weiterverrechnet wird an einen Mieter mit aktivem Vertrag. Sobald ein Mietverhältnis aktiv ist, lässt sich diese Rechnung hier weiterverrechnen."
+msgstr "La refacturation se fait à un locataire avec un contrat actif. Dès qu'un bail est actif, cette facture peut être refacturée ici."
+
+#: core/templates/fw/mietzins_massen.html
+#, python-format
+msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
+msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
+msgstr[0] "Saisir %(n)s adaptation + formule officielle (PDF groupé)"
+msgstr[1] "Saisir %(n)s adaptations + formules officielles (PDF groupé)"
 #: core/templates/fw/logbuch.html
 msgid "Noch keine Aktivität."
 msgstr "Aucune activité pour l'instant."

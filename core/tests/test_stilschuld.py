@@ -119,7 +119,6 @@ OBERGRENZE = {
     'fw/mieterkonto.html': 1,
     'fw/mieterwechsel.html': 2,
     'fw/mietzins.html': 3,
-    'fw/mietzins_massen.html': 2,
     'fw/objekt_detail.html': 8,
     'fw/objekte.html': 7,
     'fw/pendenzen.html': 1,

@@ -1,16 +1,16 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf %}
-{% block title %}Massenanpassung — swissImmo{% endblock %}
+{% block title %}{% trans "Massenanpassung" %} — swissImmo{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
     <div>
-        <h1>Mietzins-Massenanpassung</h1>
-        <p>Vorschau — aktueller Referenzzinssatz <span style="color:var(--ds-ink);font-weight:600">{{ aktuell_ref }} %</span> · LIK <span style="color:var(--ds-ink);font-weight:600">{{ aktuell_lik }}</span>. Wirksamkeitstermin je Vertrag = nächster zulässiger Termin (Kündigungsfrist + 10 Tage Ankündigung, Art. 269d OR).</p>
+        <h1>{% trans "Mietzins-Massenanpassung" %}</h1>
+        <p>{% blocktrans trimmed with ref=aktuell_ref lik=aktuell_lik %}Vorschau — aktueller Referenzzinssatz <span class="fw-ink font-semibold">{{ ref }} %</span> · LIK <span class="fw-ink font-semibold">{{ lik }}</span>. Wirksamkeitstermin je Vertrag = nächster zulässiger Termin (Kündigungsfrist + 10 Tage Ankündigung, Art. 269d OR).{% endblocktrans %}</p>
     </div>
-    <a href="/neu/mietzins/" class="fw-btn">{% zeichen 'zurueck' %}Zurück</a>
+    <a href="/neu/mietzins/" class="fw-btn">{% zeichen 'zurueck' %}{% trans "Zurück" %}</a>
 </div>
 
 <div class="fw-card overflow-hidden mb-5">
@@ -18,12 +18,12 @@
         <table class="fw-table min-w-max">
             <thead>
             <tr>
-                <th class="font-semibold">Mieter / Objekt</th>
-                <th class="font-semibold text-right fw-right">Netto aktuell</th>
-                <th class="font-semibold text-right fw-right">Netto neu</th>
+                <th class="font-semibold">{% trans "Mieter / Objekt" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Netto aktuell" %}</th>
+                <th class="font-semibold text-right fw-right">{% trans "Netto neu" %}</th>
                 <th class="font-semibold text-right fw-right">Δ</th>
-                <th class="font-semibold">Wirksam ab</th>
-                <th class="font-semibold">Status</th>
+                <th class="font-semibold">{% trans "Wirksam ab" %}</th>
+                <th class="font-semibold">{% trans "Status" %}</th>
             </tr>
             </thead>
             <tbody class="fw-dv">
@@ -43,11 +43,11 @@
                 <td class="fw-mutet whitespace-nowrap">{% if r.termin %}{{ r.termin|date:"d.m.Y" }}{% endif %}</td>
                 <td class="whitespace-nowrap">
                     {% if r.basis_fehlt %}
-                    <span class="fw-chip fw-warn-flaeche fw-warnton">● Basis fehlt — einzeln erfassen</span>
+                    <span class="fw-chip fw-warn-flaeche fw-warnton">● {% trans "Basis fehlt — einzeln erfassen" %}</span>
                     {% elif r.unveraendert %}
-                    <span class="fw-chip fw-flaeche2 fw-mutet">● Kein Potenzial</span>
+                    <span class="fw-chip fw-flaeche2 fw-mutet">● {% trans "Kein Potenzial" %}</span>
                     {% else %}
-                    <span class="fw-chip fw-gut-flaeche fw-gut">● Wird angepasst</span>
+                    <span class="fw-chip fw-gut-flaeche fw-gut">● {% trans "Wird angepasst" %}</span>
                     {% endif %}
                 </td>
             </tr>
@@ -57,14 +57,24 @@
     </div>
 </div>
 
+{% comment %}Leerer Zustand (Audit Etappe 4): Lässt sich keiner der gewählten
+Verträge anpassen, stand hier ein gesperrter Knopf «0 Anpassung(en) erfassen»
+ohne Erklärung. Warum, zeigt die Statusspalte je Vertrag; hier steht, was zu
+tun ist.{% endcomment %}
+{% if machbar %}
 <form method="post" action="/neu/mietzins/massenanpassung/" class="flex items-center gap-3">
     {% csrf_token %}
     <input type="hidden" name="aktion" value="ausfuehren">
     {% for r in rows %}<input type="hidden" name="vertrag_id" value="{{ r.v.id }}">{% endfor %}
-    <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors" {% if not machbar %}disabled{% endif %}>
-        {% zeichen 'vertrag' klasse='mr-1.5' %}{{ machbar }} Anpassung(en) erfassen + amtliche Formulare (Sammel-PDF)
+    <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors">
+        {% zeichen 'vertrag' klasse='mr-1.5' %}{% blocktrans count n=machbar %}{{ n }} Anpassung erfassen + amtliches Formular (Sammel-PDF){% plural %}{{ n }} Anpassungen erfassen + amtliche Formulare (Sammel-PDF){% endblocktrans %}
     </button>
-    <a href="/neu/mietzins/" class="text-sm fw-mutet hover:fw-ink">Abbrechen</a>
+    <a href="/neu/mietzins/" class="text-sm fw-mutet hover:fw-ink">{% trans "Abbrechen" %}</a>
 </form>
-<p class="text-xs fw-faint mt-3">Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen.</p>
+<p class="text-xs fw-faint mt-3">{% trans "Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen." %}</p>
+{% else %}
+<div class="fw-card">
+{% include 'fw/_empty.html' with icon='hinweis' titel=_('Keine Anpassung möglich') subtext=_('Bei keinem der gewählten Verträge ändert sich der Mietzins, oder es fehlen Referenzzinssatz und LIK-Stand bei Vertragsbeginn. Fehlende Basisdaten im Vertrag nachtragen und die Anpassung einzeln erfassen.') cta_url='/neu/mietzins/' cta_label=_('Zurück zur Mietzinsübersicht') %}
+</div>
+{% endif %}
 {% endblock %}
