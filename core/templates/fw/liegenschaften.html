@@ -55,14 +55,8 @@
         <div class="fw-f">{% trans "pro Monat, laufende Verträge" %}</div>
     </div>
 </div>
-{% endif %}
 
-{% comment %} REGISTERLISTE NACH KONZEPT-V8: Filter und Suche stehen im Kopf
-   der Karte, über der Liste, die sie eingrenzen. {% endcomment %}
-<div class="fw-card">
-<div class="fw-kopf">
-{% if alle_rows %}
-<div class="fw-filters fw-nomb">
+<div class="fw-filters">
     <a href="{{ filter_urls.alle }}" class="fw-fchip{% if not befund %} fw-on{% endif %}">{% trans "Alle" %} {{ gesucht_rows }}</a>
     <a href="{{ filter_urls.leer }}" class="fw-fchip{% if befund == 'leer' %} fw-on{% endif %}">{% trans "Leerstand" %} {{ filter_zaehler.leer }}</a>
     <a href="{{ filter_urls.frist }}" class="fw-fchip{% if befund == 'frist' %} fw-on{% endif %}">{% trans "Fristen" %} {{ filter_zaehler.frist }}</a>
@@ -71,13 +65,15 @@
     <a href="{{ filter_urls.ohne }}" class="fw-fchip{% if befund == 'ohne' %} fw-on{% endif %}">{% trans "Ohne Befund" %} {{ filter_zaehler.ohne }}</a>
 </div>
 {% endif %}
+
 {% if seite.paginator.num_pages == 1 %}
-{% include 'fw/_listwerkzeug.html' with suchname='suche' suchwert=suche suchtext=_('Liegenschaft suchen (Strasse, Ort, PLZ) …') suchlabel=_('Liegenschaften durchsuchen') livesuche='#lgListe' imkopf=True %}
+{% include 'fw/_listwerkzeug.html' with suchname='suche' suchwert=suche suchtext=_('Liegenschaft suchen (Strasse, Ort, PLZ) …') suchlabel=_('Liegenschaften durchsuchen') livesuche='#lgListe' %}
 {% else %}
-{% include 'fw/_listwerkzeug.html' with suchname='suche' suchwert=suche suchtext=_('Liegenschaft suchen (Strasse, Ort, PLZ) …') suchlabel=_('Liegenschaften durchsuchen') imkopf=True %}
+{% include 'fw/_listwerkzeug.html' with suchname='suche' suchwert=suche suchtext=_('Liegenschaft suchen (Strasse, Ort, PLZ) …') suchlabel=_('Liegenschaften durchsuchen') %}
 {% endif %}
 
-</div>
+
+<div class="fw-card">
 <div id="lgListe">
     {% if rows %}
         {% for row in rows %}

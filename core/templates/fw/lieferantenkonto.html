@@ -54,7 +54,7 @@
                     {% if o.k.status == 'teilbezahlt' %}<span>· {% trans "teilbezahlt" %}</span>{% elif o.k.status == 'in_zahlung' %}<span class="fw-marke">· {% trans "in Zahlung" %}</span>{% endif %}
                 </span></div>
             </div>
-            <span class="fw-betrag crit">CHF {{ o.offen|chf }}</span>
+            <span class="fw-betrag{% if o.ueberfaellig %} crit{% endif %}">CHF {{ o.offen|chf }}</span>
         </div>
     {% endfor %}
 </div>

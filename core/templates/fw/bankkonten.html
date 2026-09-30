@@ -45,8 +45,10 @@
 
         <!-- IBAN-Zeile -->
         <div class="fw-dz">
+            <div class="fw-dv flex items-center gap-2">
             {% if k.ist_qr %}{% zeichen 'bank' klasse='fw-gut shrink-0' %}{% else %}{% zeichen 'liegenschaft' klasse='fw-faint shrink-0' %}{% endif %}
             <span class="fw-mono">{{ k.iban }}</span>
+            </div>
         </div>
 
         <div class="fw-dz">

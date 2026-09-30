@@ -5,45 +5,49 @@
 {% block content %}
 
 <div class="fw-phead">
+    <div>
     <h1>{% trans "Gelernte Zahler" %}</h1>
-    <a href="/neu/bankabgleich/" class="fw-btn">{% zeichen 'zurueck' %}{% trans "Zum Bankabgleich" %}</a>
-</div>
-<p class="text-sm fw-mutet mb-6 max-w-3xl">
+<p class="max-w-3xl">
     {% trans "Wer ohne QR-Referenz überweist, wird beim ersten Mal von Hand zugeordnet — danach merkt sich das Programm den Absender und trifft beim nächsten Kontoauszug selbst. Hier steht, welche Regeln dabei entstanden sind, und hier lassen sie sich korrigieren." %}
     <span class="fw-faint">{% trans "Änderungen wirken nur auf künftige Importe; bereits verbuchte Zahlungen bleiben, wie sie gebucht wurden." %}</span>
 </p>
-
-{% if zuordnungen %}
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 max-w-2xl">
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'gut' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ zuordnungen|length }}</div><div class="text-sm fw-mutet">{% trans "Gelernte Absender" %}</div></div>
     </div>
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'kritisch' %}</div>
-        <div><div class="text-2xl font-bold fw-gut">{{ getroffen_n }}</div><div class="text-sm fw-mutet">{% blocktrans count n=getroffen_n %}Zahlung automatisch zugeordnet{% plural %}Zahlungen automatisch zugeordnet{% endblocktrans %}</div></div>
+    <div class="fw-phead-knoepfe">
+        <a href="/neu/bankabgleich/" class="fw-btn">{% zeichen 'zurueck' %}{% trans "Zum Bankabgleich" %}</a>
     </div>
 </div>
 
-<div class="fw-card overflow-hidden max-w-5xl">
-    <div class="fw-dv">
+{% if zuordnungen %}
+<div class="fw-kpis max-w-2xl">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Gelernte Absender" %}</div>
+        <div class="fw-v">{{ zuordnungen|length }}</div>
+    </div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% blocktrans count n=getroffen_n %}Zahlung automatisch zugeordnet{% plural %}Zahlungen automatisch zugeordnet{% endblocktrans %}</div>
+        <div class="fw-v">{{ getroffen_n }}</div>
+    </div>
+</div>
+
+<div class="fw-card max-w-5xl">
+    <div>
         {% for z in zuordnungen %}
-        <div class="px-4 sm:px-5 py-4">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div class="min-w-0 flex-1">
-                    <div class="font-semibold fw-strong break-words">{{ z.name_anzeige|default:z.name_norm }}</div>
-                    <div class="text-xs fw-mutet break-words mt-0.5">
-                        {% zeichen 'weiter' klasse='fw-faint mr-1' %}
+        <div class="fw-zeile">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+                <div class="fw-mitte">
+                    <div class="fw-t break-words">{{ z.name_anzeige|default:z.name_norm }}</div>
+                    <div class="fw-s break-words">
+                        {% zeichen 'weiter' klasse='fw-faint' %}
                         {% if z.vertrag_id %}{{ z.vertrag.mieter.display_name }}{% if z.vertrag.einheit_id %} · {{ z.vertrag.einheit.liegenschaft.strasse }}{% if z.vertrag.einheit.bezeichnung %} · {{ z.vertrag.einheit.bezeichnung }}{% endif %}{% endif %}{% else %}—{% endif %}
                     </div>
                     <div class="mt-1.5 flex items-center gap-2 flex-wrap">
                         {% if z.treffer %}
-                        <span class="fw-chip fw-gut-flaeche fw-gut">{% blocktrans with n=z.treffer %}{{ n }}× automatisch getroffen{% endblocktrans %}</span>
+                        <span class="fw-chip fw-good">{% blocktrans with n=z.treffer %}{{ n }}× automatisch getroffen{% endblocktrans %}</span>
                         {% else %}
-                        <span class="fw-chip fw-flaeche2 fw-mutet">{% trans "Noch nicht angewendet" %}</span>
+                        <span class="fw-chip fw-mut">{% trans "Noch nicht angewendet" %}</span>
                         {% endif %}
-                        {% if z.zuletzt %}<span class="fw-fs-klein fw-faint">{% trans "zuletzt" %} {{ z.zuletzt|date:"d.m.Y" }}</span>{% endif %}
-                        <span class="fw-fs-klein fw-faint">{% trans "gelernt" %} {{ z.erstellt_am|date:"d.m.Y" }}</span>
+                        {% if z.zuletzt %}<span class="fw-klein">{% trans "zuletzt" %} {{ z.zuletzt|date:"d.m.Y" }}</span>{% endif %}
+                        <span class="fw-klein">{% trans "gelernt" %} {{ z.erstellt_am|date:"d.m.Y" }}</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -51,12 +55,12 @@
                         {% csrf_token %}
                         <input type="hidden" name="id" value="{{ z.id }}">
                         {# Kein Auto-Submit: Wer im Fahren scrollt, soll die Regel nicht versehentlich umbiegen. #}
-                        <select name="vertrag_id" class="fw-flaeche2 rounded-lg text-xs px-2 py-2 max-w-[13rem]">
+                        <select name="vertrag_id" class="fw-feld max-w-[13rem]">
                             {% for v in vertraege %}
                             <option value="{{ v.id }}" {% if v.id == z.vertrag_id %}selected{% endif %}>{{ v.label }}</option>
                             {% endfor %}
                         </select>
-                        <button class="fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg transition-colors" title="{% trans 'Zuordnung auf diesen Mieter umbiegen' %}">
+                        <button class="fw-btn fw-primary" title="{% trans 'Zuordnung auf diesen Mieter umbiegen' %}">
                             {% zeichen 'gut' %}
                         </button>
                     </form>
@@ -65,7 +69,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="id" value="{{ z.id }}">
                         <input type="hidden" name="aktion" value="loeschen">
-                        <button class="fw-faint hover:fw-kritisch text-sm px-2 py-2" title="{% trans 'Absender vergessen' %}">
+                        <button class="fw-btn fw-geist" title="{% trans 'Absender vergessen' %}">
                             {% zeichen 'loeschen' %}
                         </button>
                     </form>
@@ -76,7 +80,9 @@
     </div>
 </div>
 {% else %}
+<div class="fw-card">
 {% include 'fw/_empty.html' with icon='gut' titel=_('Noch keine gelernten Zahler') subtext=_('Sobald Sie im Bankabgleich eine ungeklärte Zahlung einem Mieter zuordnen, merkt sich das Programm den Absender — die nächste Zahlung desselben Absenders trifft dann von allein.') cta_url='/neu/bankabgleich/' cta_label=_('Zum Bankabgleich') %}
+</div>
 {% endif %}
 
 {% endblock %}

@@ -7,9 +7,9 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Personen" %}</h1>
-        <p>{% blocktrans count n=treffer %}{{ n }} Person{% plural %}{{ n }} Personen{% endblocktrans %} · <span style="color:var(--ds-good);font-weight:600">{% blocktrans with n=mit_vertrag_count %}{{ n }} mit aktivem Vertrag{% endblocktrans %}</span>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/personen/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% blocktrans count n=treffer %}{{ n }} Person{% plural %}{{ n }} Personen{% endblocktrans %} · {% blocktrans with n=mit_vertrag_count %}{{ n }} mit aktivem Vertrag{% endblocktrans %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/personen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <div class="fw-phead-knoepfe">
         <a href="{{ csv_url }}" download class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV" %}</a>
         <a href="/neu/personen/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Person erfassen" %}</a>
     </div>
@@ -17,8 +17,8 @@
 
 <div class="fw-card">
 
-    <div class="fw-h" style="flex-wrap:wrap">
-        <div class="fw-filters" style="margin-bottom:0">
+    <div class="fw-kopf">
+        <div class="fw-filters fw-nomb">
             {% for wert, label, url in typ_chips %}
             <a href="{{ url }}" class="fw-fchip{% if typ_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
@@ -32,23 +32,20 @@
 
     <div id="personenListe">
     <!-- Mobile: Karten -->
-    <div class="md:hidden fw-dv">
+    <div class="md:hidden">
         {% for row in rows %}
         <a href="/neu/personen/{{ row.m.id }}/"
-           class="flex items-center gap-3 px-4 py-3.5 hover:fw-flaeche2 transition-colors" data-zeile>
-            <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">
-                {% zeichen 'person' %}
-            </div>
-            <div class="min-w-0 flex-1">
-                <div class="font-semibold fw-strong truncate">{{ row.m.display_name }}</div>
-                {% if row.m.email %}<div class="text-xs fw-mutet truncate">{{ row.m.email }}</div>
-                {% elif row.telefon %}<div class="text-xs fw-mutet truncate">{{ row.telefon }}</div>
-                {% else %}<div class="text-xs fw-faint">{{ row.m.get_typ_display }}</div>{% endif %}
+           class="fw-zeile klick" data-zeile>
+            <span class="fw-ikon">{% zeichen 'person' %}</span>
+            <div class="fw-mitte">
+                <div class="fw-t truncate">{{ row.m.display_name }}</div>
+                {% if row.m.email %}<div class="fw-s truncate">{{ row.m.email }}</div>
+                {% elif row.telefon %}<div class="fw-s truncate">{{ row.telefon }}</div>
+                {% else %}<div class="fw-s">{{ row.m.get_typ_display }}</div>{% endif %}
                 {% if row.objekt %}
-                <div class="mt-1"><span class="fw-chip fw-good" style="max-width:100%;overflow:hidden;text-overflow:ellipsis">{{ row.objekt }}</span></div>
+                <div class="mt-1"><span class="fw-chip fw-good truncate max-w-full">{{ row.objekt }}</span></div>
                 {% endif %}
             </div>
-            {% zeichen 'weiter' klasse='fw-faint text-xs shrink-0' %}
         </a>
         {% empty %}
         <div class="px-4">
@@ -59,7 +56,7 @@
 
     <!-- Desktop: Tabelle -->
     <div class="fw-tablewrap hidden md:block">
-        <table class="fw-table" style="min-width:max-content">
+        <table class="fw-table">
             <thead>
             <tr>
                 <th>{% trans "Name" %}</th>
@@ -74,27 +71,25 @@
             <tr class="cursor-pointer" data-zeile onclick="window.location='/neu/personen/{{ row.m.id }}/'">
                 <td>
                     <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
-                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">
-                            {% zeichen 'person' %}
-                        </div>
+                        <span class="fw-ikon">{% zeichen 'person' %}</span>
                         <div>
-                            <div class="fw-strong" style="white-space:nowrap">{{ row.m.display_name }}</div>
+                            <div class="fw-strong whitespace-nowrap">{{ row.m.display_name }}</div>
                             <div class="fw-sub2">{{ row.m.get_typ_display }}</div>
                         </div>
                     </a>
                 </td>
                 <td class="hidden md:table-cell">
-                    {% if row.m.email %}<div style="white-space:nowrap">{% zeichen 'senden' klasse='fw-faint mr-1.5 text-xs' %}{{ row.m.email }}</div>{% endif %}
-                    {% if row.telefon %}<div class="fw-sub2" style="white-space:nowrap;margin-top:2px">{% zeichen 'senden' klasse='fw-faint mr-1.5 fw-fs-mikro' %}{{ row.telefon }}</div>{% endif %}
+                    {% if row.m.email %}<div class="whitespace-nowrap">{% zeichen 'senden' klasse='fw-faint mr-1.5 text-xs' %}{{ row.m.email }}</div>{% endif %}
+                    {% if row.telefon %}<div class="fw-sub2 whitespace-nowrap">{% zeichen 'senden' klasse='fw-faint mr-1.5 fw-fs-mikro' %}{{ row.telefon }}</div>{% endif %}
                     {% if not row.m.email and not row.telefon %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
-                <td class="hidden lg:table-cell" style="white-space:nowrap">
+                <td class="hidden lg:table-cell whitespace-nowrap">
                     {% if row.m.strasse %}{{ row.m.strasse }}, {{ row.m.plz }} {{ row.m.ort }}{% else %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
-                <td style="white-space:nowrap">
+                <td class="whitespace-nowrap">
                     {% if row.objekt %}
                     <span class="fw-chip fw-good">{{ row.objekt }}</span>
-                    {% if row.aktive|length > 1 %}<span class="fw-sub2" style="margin-left:4px">+{{ row.aktive|length|add:"-1" }}</span>{% endif %}
+                    {% if row.aktive|length > 1 %}<span class="fw-sub2 ml-1">+{{ row.aktive|length|add:"-1" }}</span>{% endif %}
                     {% else %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
                 <td class="fw-right">{% zeichen 'weiter' klasse='fw-faint text-xs' %}</td>

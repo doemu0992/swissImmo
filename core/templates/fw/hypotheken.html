@@ -7,104 +7,106 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Hypotheken" %}</h1>
-        <p>{% trans "Finanzierung je Liegenschaft — Schuld, Zinssatz und Fälligkeiten" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/hypotheken/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% trans "Finanzierung je Liegenschaft — Schuld, Zinssatz und Fälligkeiten" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/hypotheken/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     {% if kann_schreiben %}
+    <div class="fw-phead-knoepfe">
     <button type="button" onclick="document.getElementById('hypoform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Hypothek erfassen" %}</button>
+    </div>
     {% endif %}
 </div>
 
 {% if kann_schreiben %}
-<div id="hypoform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'bank' klasse='fw-marke mr-1.5' %}{% trans "Hypothek erfassen" %}</h3>
-    <form method="post" action="/neu/hypotheken/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<div id="hypoform" class="hidden fw-card">
+    <div class="fw-kopf"><h2>{% zeichen 'bank' klasse='fw-marke mr-1.5' %}{% trans "Hypothek erfassen" %}</h2></div>
+    <form method="post" action="/neu/hypotheken/" class="fw-formular drei p-5">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft *" %}</label>
-            <select name="liegenschaft_id" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Liegenschaft *" %}</label>
+            <select name="liegenschaft_id" required class="fw-feld">
                 <option value="">— {% trans "wählen" %} —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bank / Gläubiger" %}</label>
-            <input name="bank" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bezeichnung / Tranche" %}</label>
-            <input name="bezeichnung" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betrag (CHF) *" %}</label>
-            <input name="betrag" inputmode="decimal" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 text-right"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zinssatz (%)" %}</label>
-            <input name="zinssatz" inputmode="decimal" placeholder="1.500" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 text-right"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Typ" %}</label>
-            <select name="typ" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Bank / Gläubiger" %}</label>
+            <input name="bank" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Bezeichnung / Tranche" %}</label>
+            <input name="bezeichnung" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Betrag (CHF) *" %}</label>
+            <input name="betrag" inputmode="decimal" required class="fw-feld text-right"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Zinssatz (%)" %}</label>
+            <input name="zinssatz" inputmode="decimal" placeholder="1.500" class="fw-feld text-right"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Typ" %}</label>
+            <select name="typ" class="fw-feld">
                 <option value="fest">{% trans "Festhypothek" %}</option><option value="saron">{% trans "SARON" %}</option><option value="variabel">{% trans "Variabel" %}</option>
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beginn" %}</label>
-            <input type="date" name="beginn" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ablauf / Fälligkeit" %}</label>
-            <input type="date" name="ablauf" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="flex items-end"><button class="w-full fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen" %}</button></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Beginn" %}</label>
+            <input type="date" name="beginn" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Ablauf / Fälligkeit" %}</label>
+            <input type="date" name="ablauf" class="fw-feld"></div>
+        <div class="fw-feldblock justify-end"><button class="w-full fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen" %}</button></div>
     </form>
 </div>
 {% endif %}
 
 <!-- KPI -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="fw-card p-5">
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Hypothekarschuld" %}</div>
-        <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total_schuld|chf }}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Hypothekarschuld" %}</div>
+        <div class="fw-v">CHF {{ total_schuld|chf }}</div>
     </div>
-    <div class="fw-card p-5">
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Zinskosten / Jahr" %}</div>
-        <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total_zins|chf }}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Zinskosten / Jahr" %}</div>
+        <div class="fw-v">CHF {{ total_zins|chf }}</div>
     </div>
-    <div class="fw-card p-5">
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Ø Zinssatz" %}</div>
-        <div class="text-xl font-bold fw-strong mt-0.5">{{ avg_zins }}%</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Ø Zinssatz" %}</div>
+        <div class="fw-v">{{ avg_zins }}%</div>
     </div>
-    <div class="fw-card p-5">
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Bald fällig (180 T)" %}</div>
-        <div class="text-xl font-bold {% if n_ablaufend %}fw-warnton{% else %}fw-strong{% endif %} mt-0.5">{{ n_ablaufend }}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Bald fällig (180 T)" %}</div>
+        <div class="fw-v{% if n_ablaufend %} fw-warn{% endif %}">{{ n_ablaufend }}</div>
     </div>
 </div>
 
-<div class="fw-card overflow-hidden">
+<div class="fw-card">
     {% for g in gruppen %}
-    <details class="group border-b fw-linie last:border-0">
-        <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer select-none hover:fw-flaeche2 list-none flex-wrap">
-            {% zeichen 'weiter' klasse='text-xs fw-faint transition-transform group-open:rotate-90' %}
+    <details class="group border-b">
+        <summary class="fw-kopf cursor-pointer select-none list-none">
+            {% zeichen 'weiter' klasse='fw-faint transition-transform group-open:rotate-90' %}
             {% zeichen 'liegenschaft' klasse='fw-marke' %}
-            <span class="font-bold fw-strong">{{ g.lg.strasse }}, {{ g.lg.plz }} {{ g.lg.ort }}</span>
-            <span class="fw-fs-klein font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">CHF {{ g.schuld|chf }}</span>
-            <span class="fw-fs-klein font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{% blocktrans with betrag=g.zins|chf %}Zins {{ betrag }}/J{% endblocktrans %}</span>
-            {% if g.belehnung is not None %}<span class="fw-fs-klein font-semibold fw-markenflaeche fw-marke rounded-md px-1.5 py-0.5" title="{% trans 'gegenüber Versicherungswert' %}">{% blocktrans with wert=g.belehnung %}Belehnung ~{{ wert }}%{% endblocktrans %}</span>{% endif %}
+            <span class="fw-t">{{ g.lg.strasse }}, {{ g.lg.plz }} {{ g.lg.ort }}</span>
+            <span class="fw-chip fw-mut">CHF {{ g.schuld|chf }}</span>
+            <span class="fw-chip fw-mut">{% blocktrans with betrag=g.zins|chf %}Zins {{ betrag }}/J{% endblocktrans %}</span>
+            {% if g.belehnung is not None %}<span class="fw-chip fw-mut" title="{% trans 'gegenüber Versicherungswert' %}">{% blocktrans with wert=g.belehnung %}Belehnung ~{{ wert }}%{% endblocktrans %}</span>{% endif %}
         </summary>
-        <div class="overflow-x-auto border-t fw-linie">
+        <div class="fw-tablewrap">
             <table class="fw-table min-w-max">
                 <thead>
                 <tr>
-                    <th class="font-semibold">{% trans "Bank / Tranche" %}</th>
-                    <th class="font-semibold">{% trans "Typ" %}</th>
-                    <th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
-                    <th class="font-semibold text-right fw-right">{% trans "Zinssatz" %}</th>
-                    <th class="font-semibold text-right fw-right">{% trans "Zins / Jahr" %}</th>
-                    <th class="font-semibold">{% trans "Ablauf" %}</th>
+                    <th>{% trans "Bank / Tranche" %}</th>
+                    <th>{% trans "Typ" %}</th>
+                    <th class="text-right fw-right">{% trans "Betrag" %}</th>
+                    <th class="text-right fw-right">{% trans "Zinssatz" %}</th>
+                    <th class="text-right fw-right">{% trans "Zins / Jahr" %}</th>
+                    <th>{% trans "Ablauf" %}</th>
                     <th></th>
                 </tr>
                 </thead>
-                <tbody class="fw-dv">
+                <tbody>
                 {% for r in g.rows %}
                 <tr>
                     <td>
-                        <div class="font-medium fw-strong">{{ r.hy.bank|default:"Hypothek" }}</div>
-                        {% if r.hy.bezeichnung %}<div class="text-xs fw-faint">{{ r.hy.bezeichnung }}</div>{% endif %}
+                        <div class="fw-strong">{{ r.hy.bank|default:"Hypothek" }}</div>
+                        {% if r.hy.bezeichnung %}<div class="fw-sub2">{{ r.hy.bezeichnung }}</div>{% endif %}
                     </td>
-                    <td class="fw-mutet">{{ r.hy.get_typ_display }}</td>
-                    <td class="text-right font-medium fw-strong whitespace-nowrap fw-right">{{ r.hy.betrag|chf }}</td>
-                    <td class="text-right fw-mutet whitespace-nowrap fw-right">{{ r.hy.zinssatz }}%</td>
-                    <td class="text-right fw-ink whitespace-nowrap fw-right">{{ r.zins|chf }}</td>
+                    <td>{{ r.hy.get_typ_display }}</td>
+                    <td class="text-right fw-right fw-num fw-strong">{{ r.hy.betrag|chf }}</td>
+                    <td class="text-right fw-right fw-num">{{ r.hy.zinssatz }}%</td>
+                    <td class="text-right fw-right fw-num">{{ r.zins|chf }}</td>
                     <td class="whitespace-nowrap">
                         {% if r.hy.ablauf %}
-                        <span class="{% if r.ablauf_status == 'abgelaufen' %}fw-kritisch font-semibold{% elif r.ablauf_status == 'bald' %}fw-warnton font-semibold{% else %}fw-mutet{% endif %}">{{ r.hy.ablauf|date:"d.m.Y" }}</span>
-                        {% if r.ablauf_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton">{% trans "bald fällig" %}</span>{% elif r.ablauf_status == 'abgelaufen' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-krit-flaeche fw-kritisch">{% trans "abgelaufen" %}</span>{% endif %}
+                        <span class="fw-num {% if r.ablauf_status == 'abgelaufen' %}fw-kritisch fw-strong{% elif r.ablauf_status == 'bald' %}fw-warnton fw-strong{% endif %}">{{ r.hy.ablauf|date:"d.m.Y" }}</span>
+                        {% if r.ablauf_status == 'bald' %}<span class="ml-1 fw-chip fw-warn">{% trans "bald fällig" %}</span>{% elif r.ablauf_status == 'abgelaufen' %}<span class="ml-1 fw-chip fw-crit">{% trans "abgelaufen" %}</span>{% endif %}
                         {% else %}<span class="fw-faint">—</span>{% endif %}
                     </td>
                     <td class="text-right fw-right">
@@ -112,7 +114,7 @@
                         <form method="post" action="/neu/hypotheken/" onsubmit="return confirm('{% filter escapejs %}{% trans "Hypothek löschen?" %}{% endfilter %}');">
                             {% csrf_token %}
                             <input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ r.hy.id }}">
-                            <button class="fw-faint hover:fw-kritisch text-xs" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
+                            <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                         </form>
                         {% endif %}
                     </td>
@@ -123,13 +125,12 @@
         </div>
     </details>
     {% empty %}
-    <div class="px-5 py-12 text-center">
-        <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'bank' %}</div>
-        <p class="text-sm font-medium fw-ink">{% trans "Keine Hypotheken erfasst" %}</p>
-        <p class="text-xs fw-faint mt-1">{% trans "Erfasse die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten." %}</p>
+    <div class="fw-leer">
+        <b>{% trans "Keine Hypotheken erfasst" %}</b>
+        <p>{% trans "Erfasse die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten." %}</p>
     </div>
     {% endfor %}
 </div>
 
-<p class="text-xs fw-faint mt-4">{% zeichen 'hinweis' klasse='mr-1' %}{% blocktrans trimmed %}«Belehnung» ist eine grobe Kennzahl gegenüber dem Versicherungswert (nicht dem Verkehrswert). «Bald fällig» umfasst Tranchen mit Ablauf in den nächsten 180 Tagen — rechtzeitig Refinanzierung/Verlängerung prüfen.{% endblocktrans %}</p>
+<p class="fw-hilfe">{% zeichen 'hinweis' klasse='mr-1' %}{% blocktrans trimmed %}«Belehnung» ist eine grobe Kennzahl gegenüber dem Versicherungswert (nicht dem Verkehrswert). «Bald fällig» umfasst Tranchen mit Ablauf in den nächsten 180 Tagen — rechtzeitig Refinanzierung/Verlängerung prüfen.{% endblocktrans %}</p>
 {% endblock %}

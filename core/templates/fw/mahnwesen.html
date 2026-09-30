@@ -15,7 +15,7 @@
     <div class="fw-phead-knoepfe items-start">
         <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-btn">{% zeichen 'bericht' %}{% trans "Altersstruktur (OP-Aging) ansehen" %}</a>
         {% if anzahl_total %}
-        <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');" class="flex flex-col items-end gap-1.5">
+        <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');" class="flex flex-col items-start gap-1.5">
             {% csrf_token %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <button type="submit" class="fw-btn fw-primary">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
@@ -80,7 +80,7 @@
                 <td class="fw-right fw-num fw-strong">{{ row.offen|chf }}</td>
                 <td class="fw-right">
                     {% if row.letzte_mahnung %}<div class="fw-klein mb-1">{% blocktrans with stufe=row.letzte_mahnung.stufe datum=row.letzte_mahnung.datum|date:"d.m.Y" %}zuletzt: {{ stufe }}. Mahnung {{ datum }}{% endblocktrans %}</div>{% endif %}
-                    <div class="inline-flex items-center gap-1.5">
+                    <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
                     {% if row.mahn_url %}
                     <a href="{{ row.mahn_url }}" target="_blank" rel="noopener"
                        class="fw-btn fw-primary fw-knapp">

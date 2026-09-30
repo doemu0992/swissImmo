@@ -11,37 +11,35 @@
 </div>
 
 {% if uebersicht %}
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
     {% for b in uebersicht %}
-    <a href="/neu/mieterspiegel/?lg={{ b.lg.id }}" class="block fw-card hover:fw-linie-marke hover:shadow-md transition p-5 group">
-        <div class="flex items-start justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0">
-                <div class="w-10 h-10 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'liegenschaft' %}</div>
-                <div class="min-w-0">
-                    <div class="font-bold fw-strong truncate group-hover:fw-marke">{{ b.lg.strasse }}</div>
-                    <div class="text-xs fw-faint">{{ b.lg.plz }} {{ b.lg.ort }}</div>
-                </div>
+    <a href="/neu/mieterspiegel/?lg={{ b.lg.id }}" class="block fw-card fw-hover">
+        <div class="fw-kopf">
+            <span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
+            <div class="min-w-0 flex-1">
+                <div class="fw-t truncate">{{ b.lg.strasse }}</div>
+                <div class="fw-neben">{{ b.lg.plz }} {{ b.lg.ort }}</div>
             </div>
-            {% zeichen 'weiter' klasse='fw-faint group-hover:fw-marke mt-1' %}
+            <span class="fw-rechts fw-faint">{% zeichen 'weiter' %}</span>
         </div>
-        <div class="grid grid-cols-3 gap-2 mt-4 pt-4 border-t fw-linie">
+        <div class="fw-kzn">
             <div>
-                <div class="fw-fs-mikro uppercase tracking-wide fw-faint font-semibold">{% trans "Soll / Mt." %}</div>
-                <div class="text-sm font-bold fw-strong">CHF {{ b.totals.soll_brutto|chf }}</div>
+                <div class="fw-l">{% trans "Soll / Mt." %}</div>
+                <div class="fw-w">CHF {{ b.totals.soll_brutto|chf }}</div>
             </div>
             <div>
-                <div class="fw-fs-mikro uppercase tracking-wide fw-faint font-semibold">{% trans "Belegt" %}</div>
-                <div class="text-sm font-bold fw-strong">{{ b.totals.belegt }}/{{ b.totals.anzahl }}</div>
+                <div class="fw-l">{% trans "Belegt" %}</div>
+                <div class="fw-w">{{ b.totals.belegt }}/{{ b.totals.anzahl }}</div>
             </div>
             <div>
-                <div class="fw-fs-mikro uppercase tracking-wide fw-faint font-semibold">{% trans "Leerstand" %}</div>
-                <div class="text-sm font-bold {% if b.totals.leer %}fw-warnton{% else %}fw-strong{% endif %}">{{ b.totals.leerstandsquote }}%</div>
+                <div class="fw-l">{% trans "Leerstand" %}</div>
+                <div class="fw-w{% if b.totals.leer %} warn{% endif %}">{{ b.totals.leerstandsquote }}%</div>
             </div>
         </div>
     </a>
     {% endfor %}
 </div>
 {% else %}
-<div class="fw-card p-10 text-center fw-faint">{% trans "Keine Liegenschaften erfasst." %}</div>
+<div class="fw-card"><div class="fw-leer">{% trans "Keine Liegenschaften erfasst." %}</div></div>
 {% endif %}
 {% endblock %}

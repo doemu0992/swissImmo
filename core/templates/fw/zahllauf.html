@@ -23,7 +23,7 @@
 <div class="fw-card">
     <div class="fw-hinweis warn">
         <span class="fw-hi">{% zeichen 'warnung' %}</span>
-        <div class="fw-ht">
+        <div class="flex-1">
     {% blocktrans trimmed %}Für die Zahlungsdatei fehlt die <b>IBAN der Verwaltung</b> —
     unter <a href="/neu/account/" class="underline font-semibold">Profil → Account</a> hinterlegen.{% endblocktrans %}
         </div>
@@ -55,7 +55,7 @@
     <div class="fw-kopf">
         <span class="fw-t">{% trans "Zahlungsvorschlag (freigegeben)" %}</span>
         <span class="fw-rechts">
-        <label class="flex items-center gap-2 fw-klein">
+        <label class="flex flex-wrap items-center gap-2 fw-klein">
             <input type="date" name="ausfuehrungsdatum" value="{{ heute|date:'Y-m-d' }}"
                    class="fw-feld">
             {% trans "Ausführungsdatum" %}
@@ -131,12 +131,12 @@
         <span class="fw-punkt warn"></span>
         <span class="fw-t">{% trans "In Zahlung — auf Bankbestätigung wartend" %}</span>
         <span class="fw-rechts">
-            <label class="flex items-center gap-2 fw-klein">
+            <label class="flex flex-wrap items-center gap-2 fw-klein">
                 <input type="date" name="valuta" value="{{ heute|date:'Y-m-d' }}"
                        class="fw-feld">
                 {% trans "Valuta" %}
             </label>
-            <label class="flex items-center gap-2 fw-klein">
+            <label class="flex flex-wrap items-center gap-2 fw-klein">
                 <select name="bank_konto" class="fw-feld">
                     {% for k in bankkonten %}<option value="{{ k.nummer }}" {% if k.nummer == '1020' %}selected{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
                 </select>

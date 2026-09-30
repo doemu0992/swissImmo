@@ -69,7 +69,7 @@
             <div class="fw-feldblock"><label for="v-anzahl_personen" class="fw-label">{% trans "Anzahl Personen" %}</label>
                 <input inputmode="numeric" name="anzahl_personen" value="{{ wert.anzahl_personen }}" class="fw-feld" id="v-anzahl_personen"{% if feld_fehler.anzahl_personen %} aria-invalid="true" aria-describedby="v-anzahl_personen_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.anzahl_personen feld_id='v-anzahl_personen' %}</div>
         </div>
-        <label class="flex items-center gap-2 fw-label">
+        <label class="flex items-center gap-2 fw-strong">
             <input type="checkbox" name="familienwohnung" {% if v.familienwohnung %}checked{% endif %} class="fw-haken">
             Familienwohnung (Art. 266n / 169 OR)
         </label>
@@ -157,7 +157,7 @@
             {% endif %}
         </div>
         {% if not gesperrt %}
-        <label class="flex items-center gap-2 fw-label">
+        <label class="flex items-center gap-2 fw-strong">
             <input type="checkbox" name="mwst_pflichtig" {% if v.mwst_pflichtig %}checked{% endif %} class="fw-haken">
             MWST-pflichtig (Option, i.d.R. nur Gewerbe) — Satz
             <input inputmode="decimal" name="mwst_satz" value="{{ wert.mwst_satz }}" class="fw-feld fw-num w-20 text-right" id="v-mwst_satz"{% if feld_fehler.mwst_satz %} aria-invalid="true" aria-describedby="v-mwst_satz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.mwst_satz feld_id='v-mwst_satz' %}%

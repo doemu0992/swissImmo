@@ -6,45 +6,47 @@
 {% block content %}
 
 <div class="fw-phead">
+    <div>
     <h1>{% trans "Buchhaltung" %}</h1>
+    <p>{% trans "Erfolgsrechnung, Bilanz und Buchungsjournal" %}
+    {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/buchhaltung/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
     <button type="button" onclick="document.getElementById('buchform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Buchung erfassen" %}</button>
+    </div>
 </div>
-<p class="text-sm fw-mutet mb-4">{% trans "Erfolgsrechnung, Bilanz und Buchungsjournal" %}
-    {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/buchhaltung/" class="text-xs fw-faint hover:fw-marke">× {% trans "aufheben" %}</a>{% endif %}</p>
 
 <!-- Jahresfilter (Jahresabschluss) -->
-<div class="flex items-center gap-1.5 flex-wrap mb-5">
-    <span class="text-xs font-semibold fw-faint mr-1">{% trans "Geschäftsjahr" %}:</span>
+<div class="fw-filters items-center">
+    <span class="fw-label mr-1">{% trans "Geschäftsjahr" %}:</span>
     {% for j in jahre %}
     <a href="?jahr={{ j }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-       class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-              {% if jahr == j %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ j }}</a>
+       class="fw-fchip{% if jahr == j %} fw-on{% endif %}">{{ j }}</a>
     {% endfor %}
     <a href="?jahr=alle{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-       class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-              {% if jahr == 'alle' %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{% trans "Alle" %}</a>
+       class="fw-fchip{% if jahr == 'alle' %} fw-on{% endif %}">{% trans "Alle" %}</a>
     {% if jahr != 'alle' %}
     <div class="ml-auto flex items-center gap-2 flex-wrap">
         <a href="/neu/buchhaltung/pdf/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener"
-           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary fw-primary">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Erfolgsrechnung &amp; Bilanz (PDF)" %}</a>
+           class="fw-btn fw-knapp">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Erfolgsrechnung &amp; Bilanz (PDF)" %}</a>
         <a href="/neu/buchhaltung/export/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary hover:fw-balken-voll">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Journal-Export (CSV)" %}</a>
+           class="fw-btn fw-knapp">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Journal-Export (CSV)" %}</a>
     </div>
     {% endif %}
 </div>
 
-<div id="buchform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'bearbeiten' klasse='fw-marke mr-1.5' %}{% trans "Manuelle Buchung (Soll an Haben)" %}</h3>
-    <form method="post" action="/neu/buchhaltung/buchung/" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+<div id="buchform" class="hidden fw-card">
+    <div class="fw-kopf"><h2>{% zeichen 'bearbeiten' klasse='fw-marke mr-1.5' %}{% trans "Manuelle Buchung (Soll an Haben)" %}</h2></div>
+    <form method="post" action="/neu/buchhaltung/buchung/" class="fw-formular drei p-5">
         {% csrf_token %}
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Datum" %}</label>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Datum" %}</label>
             <input type="date" name="datum" id="bu-datum" value="{{ letztes_datum|date:'Y-m-d' }}"
-                   class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betrag (CHF) *" %}</label>
-            <input name="betrag" id="bu-betrag" required inputmode="decimal" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 text-right tabular-nums"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft (optional)" %}</label>
-            <select name="liegenschaft_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                   class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Betrag (CHF) *" %}</label>
+            <input name="betrag" id="bu-betrag" required inputmode="decimal" class="fw-feld text-right fw-num"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Liegenschaft (optional)" %}</label>
+            <select name="liegenschaft_id" class="fw-feld">
                 <option value="">— {% trans "keine" %} —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if letzte_lg_id == lg.id or aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}</option>{% endfor %}
             </select></div>
@@ -53,26 +55,26 @@
         Ein <input list=…> nimmt die Tastatureingabe direkt an; die View akzeptiert
         sowohl die Nummer als auch die ID.
         {% endcomment %}
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Soll-Konto *" %}</label>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Soll-Konto *" %}</label>
             <input name="soll_konto" id="bu-soll" list="bu-konten" required autocomplete="off"
                    placeholder="{% trans 'Nummer, z.B. 4000' %}" value="{{ letztes_soll }}"
-                   class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Haben-Konto *" %}</label>
+                   class="fw-feld fw-mono"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Haben-Konto *" %}</label>
             <input name="haben_konto" id="bu-haben" list="bu-konten" required autocomplete="off"
                    placeholder="{% trans 'Nummer, z.B. 1020' %}" value="{{ letztes_haben }}"
-                   class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Belegtext *" %}</label>
-            <input name="beleg_text" id="bu-text" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="lg:col-span-3 flex items-center gap-3 flex-wrap">
-            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Buchen" %}</button>
-            <label class="flex items-center gap-2 text-xs fw-mutet">
+                   class="fw-feld fw-mono"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Belegtext *" %}</label>
+            <input name="beleg_text" id="bu-text" required class="fw-feld"></div>
+        <div class="fw-feldblock breit"><div class="flex items-center gap-3 flex-wrap">
+            <button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Buchen" %}</button>
+            <label class="flex items-center gap-2 fw-hilfe">
                 <input type="checkbox" name="weiter" value="1" {% if serienerfassung %}checked{% endif %} class="fw-akzent">
                 {% trans "Serienerfassung — Maske bleibt offen, Datum und Konten bleiben stehen" %}
             </label>
-            <a href="/neu/kontenplan/{{ lg_query }}" class="text-xs fw-marke hover:underline">
+            <a href="/neu/kontenplan/{{ lg_query }}" class="fw-link">
                 {% zeichen 'verlauf' klasse='mr-1' %}{% trans "Kontenplan verwalten" %}
             </a>
-        </div>
+        </div></div>
     </form>
     <datalist id="bu-konten">
         {% for k in alle_konten %}<option value="{{ k.nummer }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
@@ -95,18 +97,15 @@ document.addEventListener('DOMContentLoaded', function () {
 {% endif %}
 
 <!-- KPI -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'trend' %}</div>
-        <div><div class="text-2xl font-bold fw-gut">CHF {{ total_ertrag|chf }}</div><div class="text-sm fw-mutet">{% trans "Ertrag" %}</div></div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Ertrag" %}</div><div class="fw-v">CHF {{ total_ertrag|chf }}</div>
     </div>
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0">{% zeichen 'zurueck' %}</div>
-        <div><div class="text-2xl font-bold fw-kritisch">CHF {{ total_aufwand|chf }}</div><div class="text-sm fw-mutet">{% trans "Aufwand" %}</div></div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Aufwand" %}</div><div class="fw-v">CHF {{ total_aufwand|chf }}</div>
     </div>
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg {% if erfolg >= 0 %}fw-markenflaeche fw-marke{% else %}fw-krit-flaeche fw-kritisch{% endif %} flex items-center justify-center text-lg shrink-0">{% zeichen 'recht' %}</div>
-        <div><div class="text-2xl font-bold {% if erfolg >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">CHF {{ erfolg|chf }}</div><div class="text-sm fw-mutet">{% trans "Erfolg (Gewinn/Verlust)" %}</div></div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Erfolg (Gewinn/Verlust)" %}</div><div class="fw-v {% if erfolg >= 0 %}fw-good{% else %}fw-crit{% endif %}">CHF {{ erfolg|chf }}</div>
     </div>
 </div>
 
@@ -114,12 +113,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <!-- ERFOLGSRECHNUNG -->
 <div data-panel="bh" id="bh-erfolg">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <!-- Erträge -->
-        <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-                <span class="font-bold fw-strong text-sm">{% trans "Ertrag" %}</span>
-                <span class="text-sm font-bold fw-gut">CHF {{ total_ertrag|chf }}</span>
+        <div class="fw-card fw-nomb">
+            <div class="fw-kopf">
+                <span class="fw-t">{% trans "Ertrag" %}</span>
+                <span class="fw-rechts fw-betrag">CHF {{ total_ertrag|chf }}</span>
             </div>
             {% comment %}
             Kein min-w-max: der Kontoname darf umbrechen. Sonst schob der lange
@@ -127,109 +126,113 @@ document.addEventListener('DOMContentLoaded', function () {
             Nummer+Name ODER den Betrag — nie beides.
             {% endcomment %}
             <table class="fw-table">
-                <tbody class="fw-dv">
+                <tbody>
                 {% for e in ertraege %}
-                <tr class="align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs w-16">{{ e.nummer }}</td>
-                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ e.nummer }}</span><a href="/neu/buchhaltung/konto/{{ e.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ e.bezeichnung }}</a></td>
-                    <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ e.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell w-16"><span class="fw-mono">{{ e.nummer }}</span></td>
+                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden fw-mono mr-1.5">{{ e.nummer }}</span><a href="/neu/buchhaltung/konto/{{ e.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ e.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right fw-right fw-num fw-strong">{{ e.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Ertragsbuchungen." %}</td></tr>
+                <tr><td colspan="3" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Ertragsbuchungen." %}</span></td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
         <!-- Aufwände -->
-        <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-                <span class="font-bold fw-strong text-sm">{% trans "Aufwand" %}</span>
-                <span class="text-sm font-bold fw-kritisch">CHF {{ total_aufwand|chf }}</span>
+        <div class="fw-card fw-nomb">
+            <div class="fw-kopf">
+                <span class="fw-t">{% trans "Aufwand" %}</span>
+                <span class="fw-rechts fw-betrag">CHF {{ total_aufwand|chf }}</span>
             </div>
             <table class="fw-table">
-                <tbody class="fw-dv">
+                <tbody>
                 {% for a in aufwaende %}
-                <tr class="align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs w-16">{{ a.nummer }}</td>
-                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
-                    <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ a.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell w-16"><span class="fw-mono">{{ a.nummer }}</span></td>
+                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden fw-mono mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right fw-right fw-num fw-strong">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Aufwandbuchungen." %}</td></tr>
+                <tr><td colspan="3" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Aufwandbuchungen." %}</span></td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
     <!-- Ergebnis -->
-    <div class="fw-card p-5 mt-4 flex items-center justify-between">
-        <span class="font-bold fw-strong">{% trans "Unternehmenserfolg" %}</span>
-        <span class="text-xl font-bold {% if erfolg >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">
+    <div class="fw-card">
+        <div class="fw-kopf fw-nomb">
+        <span class="fw-t">{% trans "Unternehmenserfolg" %}</span>
+        <span class="fw-rechts fw-betrag {% if erfolg >= 0 %}good{% else %}crit{% endif %}">
             {% if erfolg >= 0 %}{% trans "Gewinn" %}{% else %}{% trans "Verlust" %}{% endif %} · CHF {{ erfolg|chf }}
         </span>
+        </div>
     </div>
 </div>
 
 <!-- BILANZ -->
 <div data-panel="bh" id="bh-bilanz" class="hidden">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <!-- Aktiven -->
-        <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-                <span class="font-bold fw-strong text-sm">{% trans "Aktiven" %}</span>
-                <span class="text-sm font-bold fw-strong">CHF {{ total_aktiven|chf }}</span>
+        <div class="fw-card fw-nomb">
+            <div class="fw-kopf">
+                <span class="fw-t">{% trans "Aktiven" %}</span>
+                <span class="fw-rechts fw-betrag">CHF {{ total_aktiven|chf }}</span>
             </div>
             <table class="fw-table">
-                <tbody class="fw-dv">
+                <tbody>
                 {% for a in aktiven %}
-                <tr class="align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs w-16">{{ a.nummer }}</td>
-                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
-                    <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ a.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell w-16"><span class="fw-mono">{{ a.nummer }}</span></td>
+                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden fw-mono mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right fw-right fw-num fw-strong">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Aktivkonten mit Saldo." %}</td></tr>
+                <tr><td colspan="3" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Aktivkonten mit Saldo." %}</span></td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
         <!-- Passiven -->
-        <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie flex items-center justify-between">
-                <span class="font-bold fw-strong text-sm">{% trans "Passiven &amp; Eigenkapital" %}</span>
-                <span class="text-sm font-bold fw-strong">CHF {{ passiven_mit_erfolg|chf }}</span>
+        <div class="fw-card fw-nomb">
+            <div class="fw-kopf">
+                <span class="fw-t">{% trans "Passiven &amp; Eigenkapital" %}</span>
+                <span class="fw-rechts fw-betrag">CHF {{ passiven_mit_erfolg|chf }}</span>
             </div>
             <table class="fw-table">
-                <tbody class="fw-dv">
+                <tbody>
                 {% for p in passiven %}
-                <tr class="align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs w-16">{{ p.nummer }}</td>
-                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ p.nummer }}</span><a href="/neu/buchhaltung/konto/{{ p.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ p.bezeichnung }}</a></td>
-                    <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ p.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell w-16"><span class="fw-mono">{{ p.nummer }}</span></td>
+                    <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden fw-mono mr-1.5">{{ p.nummer }}</span><a href="/neu/buchhaltung/konto/{{ p.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ p.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right fw-right fw-num fw-strong">{{ p.saldo|chf }}</td></tr>
                 {% endfor %}
                 {% if erfolg_vortrag %}
-                <tr class="fw-flaeche2 align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs">—</td>
-                    <td class="pl-4 pr-2 sm:px-5 fw-ink font-medium">{% trans "Ergebnisvortrag (Vorjahre)" %}</td>
-                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium {% if erfolg_vortrag >= 0 %}fw-gut{% else %}fw-kritisch{% endif %} whitespace-nowrap">{{ erfolg_vortrag|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell"><span class="fw-faint">—</span></td>
+                    <td class="pl-4 pr-2 sm:px-5 fw-strong">{% trans "Ergebnisvortrag (Vorjahre)" %}</td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right fw-right fw-num"><span class="fw-betrag {% if erfolg_vortrag >= 0 %}good{% else %}crit{% endif %}">{{ erfolg_vortrag|chf }}</span></td></tr>
                 {% endif %}
                 {% if erfolg_offen %}
-                <tr class="fw-flaeche2 align-top"><td class="hidden sm:table-cell fw-faint font-mono text-xs">—</td>
-                    <td class="pl-4 pr-2 sm:px-5 fw-ink font-medium">{% if erfolg_offen >= 0 %}{% trans "Jahresgewinn" %}{% else %}{% trans "Jahresverlust" %}{% endif %} {{ jahr }}</td>
-                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium {% if erfolg_offen >= 0 %}fw-gut{% else %}fw-kritisch{% endif %} whitespace-nowrap">{{ erfolg_offen|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell"><span class="fw-faint">—</span></td>
+                    <td class="pl-4 pr-2 sm:px-5 fw-strong">{% if erfolg_offen >= 0 %}{% trans "Jahresgewinn" %}{% else %}{% trans "Jahresverlust" %}{% endif %} {{ jahr }}</td>
+                    <td class="pr-4 pl-2 sm:px-5 text-right fw-right fw-num"><span class="fw-betrag {% if erfolg_offen >= 0 %}good{% else %}crit{% endif %}">{{ erfolg_offen|chf }}</span></td></tr>
                 {% endif %}
                 </tbody>
             </table>
         </div>
     </div>
-    <div class="fw-card p-5 mt-4 flex items-center justify-between">
-        <span class="font-bold fw-strong">{% trans "Bilanzsumme" %}</span>
-        <span class="text-sm {% if bilanz_differenz == 0 %}fw-gut{% else %}fw-warnton{% endif %} font-semibold">
+    <div class="fw-card">
+        <div class="fw-kopf">
+        <span class="fw-t">{% trans "Bilanzsumme" %}</span>
+        <span class="fw-rechts"><span class="fw-chip {% if bilanz_differenz == 0 %}fw-good{% else %}fw-warn{% endif %}">
             {% if bilanz_differenz == 0 %}{% zeichen 'gut' klasse='mr-1' %}{% blocktrans with betrag=total_aktiven|chf %}Aktiven = Passiven · CHF {{ betrag }}{% endblocktrans %}
             {% else %}{% zeichen 'warnung' klasse='mr-1' %}{% blocktrans with betrag=bilanz_differenz|chf %}Differenz CHF {{ betrag }} (Buchungen ausserhalb Kontenrahmen){% endblocktrans %}{% endif %}
-        </span>
+        </span></span>
+        </div>
+    <div class="fw-fuss"><span>{% zeichen 'hinweis' klasse='mr-1' %}
+        {% trans "Bilanz kumulativ bis Jahresende (Bilanzkonten tragen Eröffnungssalden über). Das kumulierte Ergebnis (Vortrag + laufendes Jahr) wird dem Eigenkapital zugerechnet." %}</span></div>
     </div>
-    <p class="text-xs fw-faint mt-3">{% zeichen 'hinweis' klasse='mr-1' %}
-        {% trans "Bilanz kumulativ bis Jahresende (Bilanzkonten tragen Eröffnungssalden über). Das kumulierte Ergebnis (Vortrag + laufendes Jahr) wird dem Eigenkapital zugerechnet." %}</p>
 
     <!-- JAHRESABSCHLUSS: Erfolgskonten gegen 2970 saldieren -->
     {% if jahr != 'alle' %}
-    <div class="fw-card p-5 mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="fw-card p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'gesperrt' %}</span>{% blocktrans %}Jahresabschluss {{ jahr }}{% endblocktrans %}</div>
-            <p class="text-xs fw-mutet mt-0.5 max-w-xl">
+            <div class="flex items-center gap-2.5"><span class="fw-ikon">{% zeichen 'gesperrt' %}</span><span class="fw-strong">{% blocktrans %}Jahresabschluss {{ jahr }}{% endblocktrans %}</span></div>
+            <p class="fw-hilfe mt-1 max-w-xl">
                 {% if jahr_abgeschlossen %}
                 {% trans "Erfolgskonten sind gegen «2970 Jahresergebnis» saldiert — die Abschlussbuchungen stehen im Journal und im Treuhand-Export." %}
                 {% else %}
@@ -239,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
         {% if jahr_abgeschlossen %}
         <div class="shrink-0 flex items-center gap-2">
-            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg whitespace-nowrap">{% zeichen 'gut' klasse='mr-1' %}{% trans "Abgeschlossen" %}</span>
+            <span class="fw-chip fw-good">{% zeichen 'gut' klasse='mr-1' %}{% trans "Abgeschlossen" %}</span>
             {% if ist_verwaltung %}
             <form method="post" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} zurücknehmen? Alle Abschlussbuchungen werden storniert und das Jahr wieder geöffnet.{% endblocktrans %}{% endfilter %}');">
                 {% csrf_token %}
@@ -256,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
             {% csrf_token %}
             <input type="hidden" name="aktion" value="jahresabschluss">
             <input type="hidden" name="jahr" value="{{ jahr }}">
-            <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
+            <button type="submit" class="fw-btn fw-primary">
                 {% zeichen 'gesperrt' klasse='mr-1.5' %}{% trans "Jahr abschliessen" %}
             </button>
         </form>
@@ -269,121 +272,122 @@ document.addEventListener('DOMContentLoaded', function () {
 <div data-panel="bh" id="bh-journal" class="hidden">
     <!-- Filterleiste: ohne sie war das Journal auf die letzten 60 Zeilen gedeckelt
          und ein Beleg praktisch nicht wiederzufinden. -->
-    <form method="get" class="fw-card p-4 mb-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+    <form method="get" class="fw-card p-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <input type="hidden" name="tab" value="journal">
         <label class="sm:col-span-4 block">
-            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Text oder Beleg-Nr" %}</span>
+            <span class="fw-label">{% trans "Text oder Beleg-Nr" %}</span>
             <input name="q" value="{{ j_suche }}" placeholder="{% trans 'z.B. Hauswartung, 2024-0042' %}"
-                   class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
+                   class="mt-1 w-full fw-feld">
         </label>
         <label class="sm:col-span-3 block">
-            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Konto" %}</span>
+            <span class="fw-label">{% trans "Konto" %}</span>
             <input name="konto" value="{{ j_konto }}" list="journal-konten" placeholder="{% trans 'Nummer' %}"
-                   class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2 font-mono">
+                   class="mt-1 w-full fw-feld fw-mono">
         </label>
         <label class="sm:col-span-2 block">
-            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Von" %}</span>
-            <input type="date" name="von" value="{{ j_von }}" class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
+            <span class="fw-label">{% trans "Von" %}</span>
+            <input type="date" name="von" value="{{ j_von }}" class="mt-1 w-full fw-feld">
         </label>
         <label class="sm:col-span-2 block">
-            <span class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Bis" %}</span>
-            <input type="date" name="bis" value="{{ j_bis }}" class="mt-1 w-full fw-flaeche2 rounded-lg text-sm px-3 py-2">
+            <span class="fw-label">{% trans "Bis" %}</span>
+            <input type="date" name="bis" value="{{ j_bis }}" class="mt-1 w-full fw-feld">
         </label>
         <div class="sm:col-span-1 flex gap-2">
-            <button class="w-full fw-btn fw-primary text-sm font-semibold px-3 py-2 rounded-lg" title="{% trans 'Filtern' %}">
+            <button class="w-full fw-btn fw-primary" title="{% trans 'Filtern' %}">
                 {% zeichen 'suchen' %}
             </button>
         </div>
         {% if j_suche or j_konto or j_von or j_bis %}
         <div class="sm:col-span-12">
-            <a href="/neu/buchhaltung/{{ lg_query }}" class="text-xs fw-faint hover:fw-marke">× {% trans "Filter aufheben" %}</a>
+            <a href="/neu/buchhaltung/{{ lg_query }}" class="fw-link">× {% trans "Filter aufheben" %}</a>
         </div>
         {% endif %}
     </form>
     <datalist id="journal-konten">
         {% for k in alle_konten %}<option value="{{ k.nummer }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
     </datalist>
-    <div class="fw-card overflow-hidden">
+    <div class="fw-card">
         {% comment %}
         Mobil als Karten statt als 7-spaltige Tabelle: quer scrollen hiess bisher,
         entweder Text ODER Betrag zu sehen — nie beides zusammen.
         {% endcomment %}
-        <div class="md:hidden fw-dv">
+        <div class="md:hidden">
             {% for b in journal %}
-            <div class="px-4 py-3 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
-                <div class="flex items-start gap-3">
+            <div class="fw-zeile {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
+                <div class="flex items-start gap-3 w-full">
                     <div class="min-w-0 flex-1">
                         <div class="fw-strong {% if b.storniert_am %}line-through{% endif %}">
-                            {% if b.ist_storno %}<span class="fw-fs-mikro font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
-                            {% if b.storniert_am %}<span class="fw-fs-mikro font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
+                            {% if b.ist_storno %}<span class="fw-chip fw-crit mr-1.5">{% trans "Storno" %}</span>{% endif %}
+                            {% if b.storniert_am %}<span class="fw-chip fw-mut mr-1.5">{% trans "storniert" %}</span>{% endif %}
                             {{ b.beleg_text }}
                         </div>
-                        <div class="fw-fs-klein fw-faint mt-0.5">{{ b.datum|date:"d.m.Y" }} · #{{ b.beleg_nr }}</div>
-                        <div class="font-mono fw-fs-klein fw-mutet mt-1 {% if b.storniert_am %}line-through{% endif %}">
+                        <div class="fw-klein mt-0.5">{{ b.datum|date:"d.m.Y" }} · <span class="fw-mono">#{{ b.beleg_nr }}</span></div>
+                        <div class="fw-mono mt-1 {% if b.storniert_am %}line-through{% endif %}">
                             {% blocktrans with soll=b.soll_konto.nummer haben=b.haben_konto.nummer %}{{ soll }} an {{ haben }}{% endblocktrans %}
                         </div>
                     </div>
-                    <div class="text-right shrink-0 font-bold whitespace-nowrap {% if b.storniert_am %}line-through fw-faint{% else %}fw-strong{% endif %}">
+                    <div class="text-right shrink-0 fw-betrag whitespace-nowrap {% if b.storniert_am %}line-through mut{% endif %}">
                         {{ b.betrag|chf }}
                     </div>
                 </div>
-                <div class="mt-2 flex items-center gap-3 flex-wrap">
+                <div class="flex items-center gap-3 flex-wrap w-full">
                     {% if b.kreditoren_rechnung_id %}
-                    <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
+                    <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" class="fw-link">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
                     {% elif b.debitoren_rechnung_id %}
-                    <a href="/neu/debitoren/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
+                    <a href="/neu/debitoren/{{ lg_query }}" class="fw-link">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
                     {% elif b.zahlungseingang_id %}
-                    <a href="/neu/bankabgleich/{{ lg_query }}" class="text-xs font-semibold fw-marke hover:underline">{% zeichen 'geld' klasse='mr-1' %}{% trans "Zahlung" %}</a>
+                    <a href="/neu/bankabgleich/{{ lg_query }}" class="fw-link">{% zeichen 'geld' klasse='mr-1' %}{% trans "Zahlung" %}</a>
                     {% endif %}
                     {% if not b.ist_storno and not b.storniert_am %}
                     <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
-                        <button class="text-xs font-semibold fw-kritisch hover:underline">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
+                        <button class="fw-btn fw-rand-krit fw-knapp">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
                     </form>
                     {% endif %}
                 </div>
             </div>
             {% empty %}
-            <div class="px-5 py-8 text-center text-sm fw-faint italic">
+            <div class="fw-leer">
                 {% if j_suche or j_konto or j_von or j_bis %}{% trans "Keine Buchung passt zu diesem Filter." %}{% else %}{% trans "Noch keine Buchungen." %}{% endif %}
             </div>
             {% endfor %}
             {% if journal %}
-            <div class="px-4 py-3 fw-flaeche2 flex items-center justify-between font-semibold fw-strong">
-                <span class="text-xs uppercase tracking-wider fw-mutet">{% blocktrans with n=j_total %}Summe ({{ n }}){% endblocktrans %}</span>
-                <span class="whitespace-nowrap">{{ j_summe|chf }}</span>
+            <div class="fw-fuss">
+                <span class="fw-strong">{% blocktrans with n=j_total %}Summe ({{ n }}){% endblocktrans %}</span>
+                <span class="fw-betrag whitespace-nowrap">{{ j_summe|chf }}</span>
             </div>
             {% endif %}
         </div>
-        <div class="hidden md:block overflow-x-auto">
+        <div class="fw-tablewrap hidden md:block">
             <table class="fw-table min-w-max">
                 <thead>
                 <tr>
-                    <th class="font-semibold">{% trans "Datum" %}</th>
-                    <th class="font-semibold">{% trans "Beleg" %}</th>
-                    <th class="font-semibold">{% trans "Soll" %}</th>
-                    <th class="font-semibold">{% trans "Haben" %}</th>
-                    <th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
-                    <th class="font-semibold text-right fw-right">{% trans "Beleg-Nr" %}</th>
+                    <th>{% trans "Datum" %}</th>
+                    <th>{% trans "Beleg" %}</th>
+                    <th>{% trans "Soll" %}</th>
+                    <th>{% trans "Haben" %}</th>
+                    <th class="text-right fw-right">{% trans "Betrag" %}</th>
+                    <th class="text-right fw-right">{% trans "Beleg-Nr" %}</th>
                     <th></th>
                 </tr>
                 </thead>
-                <tbody class="fw-dv">
+                <tbody>
                 {% for b in journal %}
-                <tr class="hover:fw-flaeche2 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
-                    <td class="fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
-                    <td class="fw-ink max-w-[280px] truncate">
-                        {% if b.ist_storno %}<span class="fw-fs-mikro font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">{% trans "Storno" %}</span>{% endif %}
-                        {% if b.storniert_am %}<span class="fw-fs-mikro font-bold uppercase fw-balken fw-mutet px-1.5 py-0.5 rounded mr-1.5">{% trans "storniert" %}</span>{% endif %}
+                <tr class="{% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
+                    <td class="fw-num whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+                    <td class="max-w-[280px] truncate">
+                        {% if b.ist_storno %}<span class="fw-chip fw-crit mr-1.5">{% trans "Storno" %}</span>{% endif %}
+                        {% if b.storniert_am %}<span class="fw-chip fw-mut mr-1.5">{% trans "storniert" %}</span>{% endif %}
                         {{ b.beleg_text }}
                     </td>
-                    <td class="px-5 py-3 fw-mutet font-mono text-xs whitespace-nowrap {% if b.storniert_am %}line-through{% endif %}">{{ b.soll_konto.nummer }} {{ b.soll_konto.bezeichnung|truncatechars:18 }}</td>
-                    <td class="px-5 py-3 fw-mutet font-mono text-xs whitespace-nowrap {% if b.storniert_am %}line-through{% endif %}">{{ b.haben_konto.nummer }} {{ b.haben_konto.bezeichnung|truncatechars:18 }}</td>
-                    <td class="px-5 py-3 text-right font-medium fw-strong whitespace-nowrap tabular-nums {% if b.storniert_am %}line-through fw-faint{% endif %}">{{ b.betrag|chf }}</td>
-                    <td class="text-right font-mono text-xs fw-faint whitespace-nowrap fw-right">#{{ b.beleg_nr }}</td>
+                    <td class="whitespace-nowrap {% if b.storniert_am %}line-through{% endif %}"><span class="fw-mono">{{ b.soll_konto.nummer }} {{ b.soll_konto.bezeichnung|truncatechars:18 }}</span></td>
+                    <td class="whitespace-nowrap {% if b.storniert_am %}line-through{% endif %}"><span class="fw-mono">{{ b.haben_konto.nummer }} {{ b.haben_konto.bezeichnung|truncatechars:18 }}</span></td>
+                    <td class="text-right fw-right fw-num {% if b.storniert_am %}line-through{% endif %}"><span class="fw-betrag{% if b.storniert_am %} mut{% endif %}">{{ b.betrag|chf }}</span></td>
+                    <td class="text-right fw-right"><span class="fw-mono">#{{ b.beleg_nr }}</span></td>
                     <td class="text-right whitespace-nowrap fw-right">
+                        <div class="flex items-center justify-end gap-3">
                         {% comment %}
                         Drill-down zum Beleg: die Verknüpfung steht längst in der
                         Datenbank, war aber in keinem Template verlinkt — vom
@@ -391,42 +395,43 @@ document.addEventListener('DOMContentLoaded', function () {
                         {% endcomment %}
                         {% if b.kreditoren_rechnung_id %}
                         <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" title="{% trans 'Kreditorenrechnung öffnen' %}"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
+                           class="fw-link">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
                         {% elif b.debitoren_rechnung_id %}
                         <a href="/neu/debitoren/{{ lg_query }}" title="{% trans 'Debitorenrechnung' %}"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
+                           class="fw-link">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Beleg" %}</a>
                         {% elif b.zahlungseingang_id %}
                         <a href="/neu/bankabgleich/{{ lg_query }}" title="{% trans 'Zahlungseingang' %}"
-                           class="text-xs font-semibold fw-marke hover:underline mr-3">{% zeichen 'geld' klasse='mr-1' %}{% trans "Zahlung" %}</a>
+                           class="fw-link">{% zeichen 'geld' klasse='mr-1' %}{% trans "Zahlung" %}</a>
                         {% endif %}
                         {% if not b.ist_storno and not b.storniert_am %}
                         <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
                               onsubmit="return confirm('{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}');">
                             {% csrf_token %}
-                            <button class="text-xs font-semibold fw-kritisch hover:fw-kritisch hover:underline">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
+                            <button class="fw-btn fw-geist fw-knapp">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
                         </form>
                         {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">
+                <tr><td colspan="7" class="fw-leerzeile"><span class="fw-mutet">
                     {% if j_suche or j_konto or j_von or j_bis %}{% trans "Keine Buchung passt zu diesem Filter." %}{% else %}{% trans "Noch keine Buchungen." %}{% endif %}
-                </td></tr>
+                </span></td></tr>
                 {% endfor %}
                 </tbody>
                 {% if journal %}
                 <tfoot>
-                <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
-                    <td class="text-xs uppercase tracking-wider fw-mutet" colspan="4">{% blocktrans count n=j_total %}Summe ({{ n }} Buchung){% plural %}Summe ({{ n }} Buchungen){% endblocktrans %}</td>
-                    <td class="text-right tabular-nums whitespace-nowrap fw-right">{{ j_summe|chf }}</td>
+                <tr>
+                    <td colspan="4">{% blocktrans count n=j_total %}Summe ({{ n }} Buchung){% plural %}Summe ({{ n }} Buchungen){% endblocktrans %}</td>
+                    <td class="text-right fw-right fw-num">{{ j_summe|chf }}</td>
                     <td colspan="2"></td>
                 </tr>
                 </tfoot>
                 {% endif %}
             </table>
         </div>
-        <div class="px-5 py-3 border-t fw-linie flex items-center justify-between gap-3 flex-wrap">
-            <span class="text-xs fw-faint">{% blocktrans with seite=j_seite von=j_seiten %}Seite {{ seite }} von {{ von }}{% endblocktrans %} · {% trans "Stornieren erzeugt eine revisionssichere Gegenbuchung — die Originalbuchung bleibt erhalten (OR 958f)" %}</span>
+        <div class="fw-fuss">
+            <span>{% blocktrans with seite=j_seite von=j_seiten %}Seite {{ seite }} von {{ von }}{% endblocktrans %} · {% trans "Stornieren erzeugt eine revisionssichere Gegenbuchung — die Originalbuchung bleibt erhalten (OR 958f)" %}</span>
             {% if j_seiten > 1 %}
             <div class="flex items-center gap-1">
                 {% if j_seite > 1 %}

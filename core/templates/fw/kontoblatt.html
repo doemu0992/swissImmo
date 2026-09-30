@@ -3,20 +3,19 @@
 {% load chf %}
 {% block title %}{% blocktrans with nr=konto.nummer %}Kontoblatt {{ nr }}{% endblocktrans %} — swissImmo{% endblock %}
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/buchhaltung/" class="hover:fw-marke">{% trans "Buchhaltung" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% blocktrans with nr=konto.nummer %}Kontoblatt {{ nr }}{% endblocktrans %}</span>
-</nav>
-
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl font-bold fw-strong">{{ konto.nummer }} · {{ konto.bezeichnung }}</h1>
-        <p class="text-sm fw-mutet">{{ konto.get_typ_display }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
+        <nav class="fw-eyebrow flex items-center gap-1.5 flex-wrap">
+            <a href="/neu/buchhaltung/" class="fw-link">{% trans "Buchhaltung" %}</a>
+            {% zeichen 'weiter' %}
+            <span>{% blocktrans with nr=konto.nummer %}Kontoblatt {{ nr }}{% endblocktrans %}</span>
+        </nav>
+        <h1>{{ konto.nummer }} · {{ konto.bezeichnung }}</h1>
+        <p>{{ konto.get_typ_display }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="fw-phead-knoepfe">
         <form method="get" class="flex items-center gap-1">
-            <select name="jahr" onchange="this.form.submit()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2">
+            <select name="jahr" onchange="this.form.submit()" class="fw-feld">
                 {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
                 <option value="alle" {% if jahr == 'alle' %}selected{% endif %}>{% trans "Alle" %}</option>
             </select>
@@ -24,45 +23,45 @@
     </div>
 </div>
 
-<div class="fw-card overflow-hidden">
+<div class="fw-card">
     {% comment %}
     Mobil als Karten: die 7-spaltige Tabelle liess auf dem Handy entweder den
     Buchungstext ODER den Saldo sehen — man musste quer scrollen.
     {% endcomment %}
-    <div class="md:hidden fw-dv">
+    <div class="md:hidden">
         {% if ist_bilanz %}
-        <div class="px-4 py-2.5 fw-flaeche2 flex items-center justify-between">
-            <span class="fw-mutet italic text-sm">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span>
-            <span class="font-semibold whitespace-nowrap">{{ eroeffnung|chf }}</span>
+        <div class="fw-dz">
+            <span class="fw-dl">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span>
+            <span class="fw-betrag whitespace-nowrap">{{ eroeffnung|chf }}</span>
         </div>
         {% endif %}
         {% for z in zeilen %}
-        <div class="px-4 py-3 {% if z.b.ist_storno %}fw-kritisch line-through{% endif %}">
-            <div class="flex items-start gap-3">
+        <div class="fw-zeile {% if z.b.ist_storno %}fw-kritisch line-through{% endif %}">
+            <div class="flex items-start gap-3 w-full">
                 <div class="min-w-0 flex-1">
-                    <div class="fw-strong">{{ z.b.beleg_text }}</div>
-                    <div class="fw-fs-klein fw-faint mt-0.5">{{ z.b.datum|date:"d.m.Y" }} · #{{ z.b.beleg_nr|default:z.b.id }}</div>
-                    <div class="fw-fs-klein fw-mutet mt-1">{{ z.gegenkonto.nummer }} {{ z.gegenkonto.bezeichnung }}</div>
+                    <div class="fw-t">{{ z.b.beleg_text }}</div>
+                    <div class="fw-klein mt-0.5">{{ z.b.datum|date:"d.m.Y" }} · <span class="fw-mono">#{{ z.b.beleg_nr|default:z.b.id }}</span></div>
+                    <div class="fw-s">{{ z.gegenkonto.nummer }} {{ z.gegenkonto.bezeichnung }}</div>
                 </div>
                 <div class="text-right shrink-0">
-                    <div class="whitespace-nowrap {% if z.soll %}fw-strong{% else %}fw-mutet{% endif %}">
+                    <div class="fw-betrag whitespace-nowrap{% if not z.soll %} mut{% endif %}">
                         {% if z.soll %}+ {{ z.soll|chf }}{% else %}− {{ z.haben|chf }}{% endif %}
                     </div>
-                    <div class="fw-fs-klein fw-faint whitespace-nowrap mt-0.5">{% trans "Saldo" %} {{ z.saldo|chf }}</div>
+                    <div class="fw-klein whitespace-nowrap mt-0.5">{% trans "Saldo" %} {{ z.saldo|chf }}</div>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="px-4 py-8 text-center fw-faint italic">{% trans "Keine Buchungen in diesem Zeitraum." %}</div>
+        <div class="fw-leer">{% trans "Keine Buchungen in diesem Zeitraum." %}</div>
         {% endfor %}
-        <div class="px-4 py-3 fw-flaeche2 font-bold flex items-center justify-between">
-            <span>{% trans "Endsaldo" %}</span>
-            <span class="whitespace-nowrap {% if endsaldo < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">CHF {{ endsaldo|chf }}</span>
+        <div class="fw-fuss">
+            <span class="fw-strong">{% trans "Endsaldo" %}</span>
+            <span class="fw-betrag whitespace-nowrap{% if endsaldo < 0 %} crit{% endif %}">CHF {{ endsaldo|chf }}</span>
         </div>
     </div>
-    <div class="hidden md:block overflow-x-auto">
+    <div class="fw-tablewrap hidden md:block">
     <table class="fw-table fw-dicht min-w-max">
-        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
+        <thead>
             <tr>
                 <th class="text-left">{% trans "Beleg" %}</th><th class="text-left">{% trans "Datum" %}</th>
                 <th class="text-left">{% trans "Text" %}</th><th class="text-left">{% trans "Gegenkonto" %}</th>
@@ -70,29 +69,31 @@
                 <th class="text-right fw-right">{% trans "Saldo" %}</th>
             </tr>
         </thead>
-        <tbody class="fw-dv">
+        <tbody>
             {% if ist_bilanz %}
-            <tr class="fw-flaeche2"><td colspan="6" class="fw-mutet italic">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</td>
-                <td class="text-right font-semibold tabular-nums fw-right">{{ eroeffnung|chf }}</td></tr>
+            <tr><td colspan="6"><span class="fw-mutet">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span></td>
+                <td class="text-right fw-right fw-num fw-strong">{{ eroeffnung|chf }}</td></tr>
             {% endif %}
             {% for z in zeilen %}
             <tr class="{% if z.b.ist_storno %}fw-kritisch line-through{% endif %}">
-                <td class="fw-faint tabular-nums">{{ z.b.beleg_nr|default:z.b.id }}</td>
-                <td class="fw-mutet">{{ z.b.datum|date:"d.m.Y" }}</td>
-                <td class="fw-strong">{{ z.b.beleg_text }}</td>
-                <td class="fw-mutet">{{ z.gegenkonto.nummer }} {{ z.gegenkonto.bezeichnung }}</td>
-                <td class="text-right tabular-nums fw-right">{% if z.soll %}{{ z.soll|chf }}{% endif %}</td>
-                <td class="text-right tabular-nums fw-right">{% if z.haben %}{{ z.haben|chf }}{% endif %}</td>
-                <td class="text-right tabular-nums font-medium fw-right">{{ z.saldo|chf }}</td>
+                <td><span class="fw-mono">{{ z.b.beleg_nr|default:z.b.id }}</span></td>
+                <td class="fw-num">{{ z.b.datum|date:"d.m.Y" }}</td>
+                <td>{{ z.b.beleg_text }}</td>
+                <td>{{ z.gegenkonto.nummer }} {{ z.gegenkonto.bezeichnung }}</td>
+                <td class="text-right fw-right fw-num">{% if z.soll %}{{ z.soll|chf }}{% endif %}</td>
+                <td class="text-right fw-right fw-num">{% if z.haben %}{{ z.haben|chf }}{% endif %}</td>
+                <td class="text-right fw-right fw-num fw-strong">{{ z.saldo|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Buchungen in diesem Zeitraum." %}</td></tr>
+            <tr><td colspan="7" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Buchungen in diesem Zeitraum." %}</span></td></tr>
             {% endfor %}
-            <tr class="fw-flaeche2 font-bold">
-                <td colspan="6" class="text-right fw-right">{% trans "Endsaldo" %}</td>
-                <td class="px-4 py-2 text-right tabular-nums {% if endsaldo < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">CHF {{ endsaldo|chf }}</td>
-            </tr>
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" class="text-right fw-right">{% trans "Endsaldo" %}</td>
+                <td class="text-right fw-right fw-num"><span class="{% if endsaldo < 0 %}fw-kritisch{% endif %}">CHF {{ endsaldo|chf }}</span></td>
+            </tr>
+        </tfoot>
     </table>
     </div>
 </div>

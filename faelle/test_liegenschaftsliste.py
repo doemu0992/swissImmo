@@ -484,7 +484,7 @@ class AnsichtTests(TestCase):
 
     def test_der_kennzahlenstreifen_steht_auf_der_seite(self):
         html = self.client.get('/neu/liegenschaften/').content.decode()
-        self.assertIn('fw-lage', html)
+        self.assertIn('fw-kpis', html)
         self.assertIn('Ist-Miete', html)
         self.assertIn('% des Bestands', html)
 

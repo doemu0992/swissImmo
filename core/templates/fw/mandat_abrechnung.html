@@ -3,10 +3,10 @@
 {% load chf %}
 {% block title %}{% blocktrans with name=md.firma_oder_name %}Abrechnung {{ name }} {{ jahr }}{% endblocktrans %}{% endblock %}
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/mandate/" class="hover:fw-marke">{% trans "Mandate" %}</a>
+<nav class="fw-akte-pfad mb-3">
+    <a href="/neu/mandate/">{% trans "Mandate" %}</a>
     {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{{ md.firma_oder_name }} · {% blocktrans %}Abrechnung {{ jahr }}{% endblocktrans %}</span>
+    <b>{{ md.firma_oder_name }} · {% blocktrans %}Abrechnung {{ jahr }}{% endblocktrans %}</b>
 </nav>
 
 <div class="fw-phead">
@@ -14,76 +14,75 @@
         <h1>{% blocktrans %}Eigentümerabrechnung {{ jahr }}{% endblocktrans %}</h1>
         <p>{{ md.firma_oder_name }} · {{ von|date:"d.m.Y" }} – {{ bis|date:"d.m.Y" }}</p>
     </div>
-    <div class="flex items-center gap-2 shrink-0 flex-wrap">
+    <div class="fw-phead-knoepfe">
         <a href="/neu/mandate/{{ md.id }}/kontokorrent/?jahr={{ jahr }}"
            class="fw-btn">
             {% zeichen 'recht' klasse='mr-1.5' %}{% trans "Kontokorrent" %}
         </a>
         <a href="/neu/mandate/{{ md.id }}/abrechnung/?jahr={{ jahr }}&pdf=1" target="_blank" rel="noopener"
-           class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg shadow-sm">
+           class="fw-btn fw-primary">
             {% zeichen 'drucken' klasse='mr-1.5' %}PDF
         </a>
     </div>
 </div>
 
 <!-- Jahresfilter -->
-<div class="flex items-center gap-1.5 flex-wrap mb-5">
-    <span class="text-xs font-semibold fw-faint mr-1">{% trans "Jahr" %}:</span>
+<div class="fw-filters items-center">
+    <span class="fw-label">{% trans "Jahr" %}:</span>
     {% for j in jahre %}
-    <a href="?jahr={{ j }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-              {% if jahr == j %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ j }}</a>
+    <a href="?jahr={{ j }}" class="fw-fchip{% if jahr == j %} fw-on{% endif %}">{{ j }}</a>
     {% endfor %}
 </div>
 
 <!-- KPI -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="fw-card p-5">
-        <div class="text-2xl font-bold fw-gut">CHF {{ totals.ertrag|chf }}</div><div class="text-sm fw-mutet">{% trans "Erträge" %}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Erträge" %}</div><div class="fw-v">CHF {{ totals.ertrag|chf }}</div>
     </div>
-    <div class="fw-card p-5">
-        <div class="text-2xl font-bold fw-kritisch">CHF {{ totals.aufwand|chf }}</div><div class="text-sm fw-mutet">{% trans "Aufwände" %}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Aufwände" %}</div><div class="fw-v">CHF {{ totals.aufwand|chf }}</div>
     </div>
-    <div class="fw-card p-5">
-        <div class="text-2xl font-bold {% if totals.saldo >= 0 %}fw-marke{% else %}fw-kritisch{% endif %}">CHF {{ totals.saldo|chf }}</div>
-        <div class="text-sm fw-mutet">{% if totals.saldo >= 0 %}{% trans "Auszahlung an Eigentümer" %}{% else %}{% trans "Nachschuss" %}{% endif %}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% if totals.saldo >= 0 %}{% trans "Auszahlung an Eigentümer" %}{% else %}{% trans "Nachschuss" %}{% endif %}</div>
+        <div class="fw-v{% if totals.saldo >= 0 %}{% else %} fw-crit{% endif %}">CHF {{ totals.saldo|chf }}</div>
     </div>
 </div>
 
-<div class="fw-card overflow-hidden">
-    <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% trans "Liegenschaften" %}</div>
-    <div class="overflow-x-auto">
-        <table class="fw-table min-w-max">
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Liegenschaften" %}</span></div>
+    <div class="fw-tablewrap">
+        <table class="fw-table">
             <thead><tr>
-                <th class="font-semibold">{% trans "Liegenschaft" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Ertrag" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Aufwand" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Saldo" %}</th>
+                <th>{% trans "Liegenschaft" %}</th>
+                <th class="fw-right">{% trans "Ertrag" %}</th>
+                <th class="fw-right">{% trans "Aufwand" %}</th>
+                <th class="fw-right">{% trans "Saldo" %}</th>
             </tr></thead>
-            <tbody class="fw-dv">
+            <tbody>
             {% for z in zeilen %}
             <tr>
                 <td class="font-medium fw-strong">
-                    <a href="/neu/liegenschaften/{{ z.lg.id }}/" class="hover:fw-marke">{{ z.lg.strasse }}, {{ z.lg.ort }}</a>
+                    <a href="/neu/liegenschaften/{{ z.lg.id }}/" class="fw-strong">{{ z.lg.strasse }}, {{ z.lg.ort }}</a>
                 </td>
-                <td class="text-right fw-gut whitespace-nowrap fw-right">{{ z.ertrag|chf }}</td>
-                <td class="text-right fw-kritisch whitespace-nowrap fw-right">{{ z.aufwand|chf }}</td>
-                <td class="px-5 py-3 text-right font-semibold whitespace-nowrap {% if z.saldo < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">{{ z.saldo|chf }}</td>
+                <td class="fw-right fw-num">{{ z.ertrag|chf }}</td>
+                <td class="fw-right fw-num">{{ z.aufwand|chf }}</td>
+                <td class="fw-right fw-num fw-strong{% if z.saldo < 0 %} fw-kritisch{% endif %}">{{ z.saldo|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Liegenschaften diesem Eigentümer zugeordnet." %}</td></tr>
+            <tr><td colspan="4" class="text-sm fw-faint fw-zentriert fw-leerzeile">{% trans "Keine Liegenschaften diesem Eigentümer zugeordnet." %}</td></tr>
             {% endfor %}
             </tbody>
             {% if zeilen %}
-            <tfoot><tr class="border-t-2 fw-linie font-bold fw-strong">
+            <tfoot><tr>
                 <td>{% trans "Total" %}</td>
-                <td class="text-right whitespace-nowrap fw-right">{{ totals.ertrag|chf }}</td>
-                <td class="text-right whitespace-nowrap fw-right">{{ totals.aufwand|chf }}</td>
-                <td class="text-right whitespace-nowrap fw-right">{{ totals.saldo|chf }}</td>
+                <td class="whitespace-nowrap fw-right">{{ totals.ertrag|chf }}</td>
+                <td class="whitespace-nowrap fw-right">{{ totals.aufwand|chf }}</td>
+                <td class="whitespace-nowrap fw-right">{{ totals.saldo|chf }}</td>
             </tr></tfoot>
             {% endif %}
         </table>
     </div>
 </div>
-<p class="text-xs fw-faint mt-4">{% zeichen 'hinweis' klasse='mr-1' %}
+<p class="fw-hilfe">{% zeichen 'hinweis' klasse='mr-1' %}
     {% trans "Erträge und Aufwände stammen aus den verbuchten Buchungen der zugeordneten Liegenschaften. Der Saldo ist die Auszahlung an den Eigentümer (bzw. ein Nachschuss bei negativem Saldo)." %}</p>
 {% endblock %}

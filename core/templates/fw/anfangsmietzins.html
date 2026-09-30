@@ -3,12 +3,12 @@
 {% load chf l10n %}
 {% block title %}Anfangsmietzins — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/mietzins/" class="hover:fw-marke">Mietzins</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">Anfangsmietzins</span>
+<nav class="fw-akte-pfad mb-2.5">
+    <a href="/neu/mietzins/">Mietzins</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>Anfangsmietzins</b>
 </nav>
 
 <div class="fw-phead">
@@ -18,124 +18,147 @@
     </div>
 </div>
 
-<div class="max-w-3xl mb-5 text-xs fw-markenflaeche border fw-linie-marke fw-marke rounded-lg px-3 py-2.5">
-    {% zeichen 'hinweis' klasse='mr-1' %}Bei Neuabschluss muss der Mieterschaft in Kantonen mit
+<div class="fw-card max-w-3xl">
+    <div class="fw-hinweis info">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">Bei Neuabschluss muss der Mieterschaft in Kantonen mit
     Formularpflicht der bisherige Mietzins (Vormiete) mitgeteilt werden. Sie kann den Anfangsmietzins
-    innert <b>30 Tagen</b> nach Übernahme bei der Schlichtungsbehörde anfechten.
+    innert <span class="fw-strong">30 Tagen</span> nach Übernahme bei der Schlichtungsbehörde anfechten.</div>
+    </div>
 </div>
 
 {% if pflicht == 'ja' %}
-<div class="max-w-3xl mb-5 text-xs fw-warn-flaeche border fw-linie-warn fw-warnton rounded-lg px-3 py-2.5">
-    {% zeichen 'warnung' klasse='mr-1' %}<b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
+<div class="fw-card max-w-3xl">
+    <div class="fw-hinweis warn">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht"><b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
     Die Verwendung dieses Formulars ist beim Neuabschluss obligatorisch.
-    {% if pflicht_info.gesetz %}<span class="fw-warnton">Grundlage: {{ pflicht_info.gesetz }}.</span>{% endif %}
-    {% if pflicht_info.leerziffer %}<span class="fw-warnton">Leerwohnungsziffer {{ pflicht_info.leerziffer }} (per {{ pflicht_info.stand }}).</span>{% endif %}
+    {% if pflicht_info.gesetz %}<span>Grundlage: {{ pflicht_info.gesetz }}.</span>{% endif %}
+    {% if pflicht_info.leerziffer %}<span>Leerwohnungsziffer {{ pflicht_info.leerziffer }} (per {{ pflicht_info.stand }}).</span>{% endif %}</div>
+    </div>
 </div>
 {% elif pflicht == 'teilweise' %}
-<div class="max-w-3xl mb-5 text-xs fw-warn-flaeche border fw-linie-warn fw-warnton rounded-lg px-3 py-2.5">
-    {% zeichen 'warnung' klasse='mr-1' %}<b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
-    {% if pflicht_info.gesetz %}{{ pflicht_info.gesetz }}.{% endif %} Bitte prüfen, ob dieses Objekt betroffen ist.
+<div class="fw-card max-w-3xl">
+    <div class="fw-hinweis warn">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht"><b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
+    {% if pflicht_info.gesetz %}{{ pflicht_info.gesetz }}.{% endif %} Bitte prüfen, ob dieses Objekt betroffen ist.</div>
+    </div>
 </div>
 {% elif pflicht == 'nein' %}
-<div class="max-w-3xl mb-5 text-xs fw-flaeche2 border fw-linie fw-mutet rounded-lg px-3 py-2.5">
-    {% zeichen 'hinweis' klasse='mr-1' %}Im Kanton {{ pflicht_info.kanton_name }} besteht <b>keine Formularpflicht</b> —
-    das Formular kann freiwillig verwendet werden.
+<div class="fw-card max-w-3xl">
+    <div class="fw-hinweis">
+        <span class="fw-hi fw-flaeche2 fw-mutet">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">Im Kanton {{ pflicht_info.kanton_name }} besteht <span class="fw-strong">keine Formularpflicht</span> —
+    das Formular kann freiwillig verwendet werden.</div>
+    </div>
 </div>
 {% else %}
-<div class="max-w-3xl mb-5 text-xs fw-flaeche2 border fw-linie fw-mutet rounded-lg px-3 py-2.5">
-    {% zeichen 'hinweis' klasse='mr-1' %}Formularpflicht für diesen Kanton nicht hinterlegt — bitte die aktuelle
-    kantonale Bekanntmachung (Leerwohnungsziffer) prüfen.
+<div class="fw-card max-w-3xl">
+    <div class="fw-hinweis">
+        <span class="fw-hi fw-flaeche2 fw-mutet">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">Formularpflicht für diesen Kanton nicht hinterlegt — bitte die aktuelle
+    kantonale Bekanntmachung (Leerwohnungsziffer) prüfen.</div>
+    </div>
 </div>
 {% endif %}
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" class="max-w-3xl">
     {% csrf_token %}
 
     <!-- Vormiete -->
-    <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-4">Mietzins des Vormieters (Vormiete)</h3>
+    <div class="fw-card">
+        <div class="fw-kopf"><h3 class="fw-t">Mietzins des Vormieters (Vormiete)</h3></div>
         {% if vormiete %}
-        <div class="mb-4 text-xs fw-flaeche2 border fw-linie fw-mutet rounded-lg px-3 py-2">
-            {% zeichen 'verlauf' klasse='mr-1' %}Vorschlag aus dem letzten Vertrag dieses Objekts
-            (ab {{ vormiete.beginn|date:"d.m.Y" }}) — bitte prüfen.
+        <div class="fw-hinweis">
+            <span class="fw-hi fw-flaeche2 fw-mutet">{% zeichen 'verlauf' %}</span><div class="fw-ht">Vorschlag aus dem letzten Vertrag dieses Objekts
+            (ab {{ vormiete.beginn|date:"d.m.Y" }}) — bitte prüfen.</div>
         </div>
         {% endif %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Netto Vormiete (CHF)</label>
-                <input name="vormiete_netto" value="{% localize off %}{{ vormiete_netto }}{% endlocalize %}" placeholder="0.00" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+        <div class="fw-formular p-5">
+            <div class="fw-feldblock">
+                <label class="fw-label">Netto Vormiete (CHF)</label>
+                <input name="vormiete_netto" value="{% localize off %}{{ vormiete_netto }}{% endlocalize %}" placeholder="0.00" class="fw-feld fw-num w-full">
             </div>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Nebenkosten Vormiete (CHF)</label>
-                <input name="vormiete_nk" value="{% localize off %}{{ vormiete_nk }}{% endlocalize %}" placeholder="0.00" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            <div class="fw-feldblock">
+                <label class="fw-label">Nebenkosten Vormiete (CHF)</label>
+                <input name="vormiete_nk" value="{% localize off %}{{ vormiete_nk }}{% endlocalize %}" placeholder="0.00" class="fw-feld fw-num w-full">
             </div>
         </div>
-        <p class="fw-fs-klein fw-faint mt-2">Leer lassen, wenn die Vormiete nicht bekannt ist (wird als «unbekannt» ausgewiesen).</p>
+        <p class="fw-fuss">Leer lassen, wenn die Vormiete nicht bekannt ist (wird als «unbekannt» ausgewiesen).</p>
     </div>
 
     <!-- Anfangsmietzins -->
-    <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-1">Neuer Anfangsmietzins</h3>
+    <div class="fw-card">
+        <div class="fw-kopf"><h3 class="fw-t">Neuer Anfangsmietzins</h3></div>
         {% if soll %}
-        <p class="fw-fs-klein fw-gut mb-3">{% zeichen 'gut' klasse='mr-1' %}Automatisch aus
-            dem Sollmietzins «gültig ab {{ soll.gueltig_ab|date:"d.m.Y" }}» übernommen — bei Bedarf anpassbar.</p>
+        <p class="fw-hinweis good"><span class="fw-hi">{% zeichen 'gut' %}</span><span class="fw-ht">Automatisch aus
+            dem Sollmietzins «gültig ab {{ soll.gueltig_ab|date:"d.m.Y" }}» übernommen — bei Bedarf anpassbar.</span></p>
         {% else %}
-        <p class="fw-fs-klein fw-faint mb-3">Aus dem Vertrag übernommen (keine datierte Sollmietzins-Zeile hinterlegt).</p>
+        <p class="fw-hinweis"><span class="fw-ht">Aus dem Vertrag übernommen (keine datierte Sollmietzins-Zeile hinterlegt).</span></p>
         {% endif %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Netto Anfangsmietzins (CHF)</label>
-                <input name="anfang_netto" value="{% localize off %}{{ anfang_netto }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+        <div class="fw-formular p-5">
+            <div class="fw-feldblock">
+                <label class="fw-label">Netto Anfangsmietzins (CHF)</label>
+                <input name="anfang_netto" value="{% localize off %}{{ anfang_netto }}{% endlocalize %}" class="fw-feld fw-num w-full">
             </div>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Nebenkosten (CHF)</label>
-                <input name="anfang_nk" value="{% localize off %}{{ anfang_nk }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            <div class="fw-feldblock">
+                <label class="fw-label">Nebenkosten (CHF)</label>
+                <input name="anfang_nk" value="{% localize off %}{{ anfang_nk }}{% endlocalize %}" class="fw-feld fw-num w-full">
             </div>
         </div>
     </div>
 
     <!-- Berechnungsgrundlagen -->
-    <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-1">Berechnungsgrundlagen</h3>
-        <p class="fw-fs-klein fw-faint mb-3">Referenzzinssatz & Landesindex (LIK), auf denen der Mietzins beruht —
-            aus dem Vertrag übernommen, bei Bedarf anpassbar.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Referenzzinssatz (%)</label>
-                <input name="basis_ref" value="{% localize off %}{{ basis_ref|default_if_none:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+    <div class="fw-card">
+        <div class="fw-kopf"><h3 class="fw-t">Berechnungsgrundlagen</h3></div>
+        <p class="fw-hinweis"><span class="fw-ht">Referenzzinssatz & Landesindex (LIK), auf denen der Mietzins beruht —
+            aus dem Vertrag übernommen, bei Bedarf anpassbar.</span></p>
+        <div class="fw-formular drei p-5">
+            <div class="fw-feldblock">
+                <label class="fw-label">Referenzzinssatz (%)</label>
+                <input name="basis_ref" value="{% localize off %}{{ basis_ref|default_if_none:'' }}{% endlocalize %}" class="fw-feld fw-num w-full">
             </div>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">LIK (Punkte)</label>
-                <input name="basis_lik" value="{% localize off %}{{ basis_lik|default_if_none:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            <div class="fw-feldblock">
+                <label class="fw-label">LIK (Punkte)</label>
+                <input name="basis_lik" value="{% localize off %}{{ basis_lik|default_if_none:'' }}{% endlocalize %}" class="fw-feld fw-num w-full">
             </div>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">Basis (=100)</label>
-                <input name="basis_lik_basis" value="{{ basis_lik_basis|default_if_none:'' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div class="fw-feldblock">
+                <label class="fw-label">Basis (=100)</label>
+                <input name="basis_lik_basis" value="{{ basis_lik_basis|default_if_none:'' }}" class="fw-feld w-full">
+            </div>
+            <div class="fw-feldblock breit">
+        <label class="fw-label">Vorbehalte für spätere Mietzinserhöhungen (optional)</label>
+        <textarea name="vorbehalte" rows="2" class="fw-feld w-full" placeholder="z. B. Referenzzinssatz 1.25 % vorbehalten…"></textarea>
             </div>
         </div>
-        <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Vorbehalte für spätere Mietzinserhöhungen (optional)</label>
-        <textarea name="vorbehalte" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" placeholder="z. B. Referenzzinssatz 1.25 % vorbehalten…"></textarea>
     </div>
 
     <!-- Begründung -->
-    <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-4">Grund der Festsetzung</h3>
-        <select name="grund_choice" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3">
+    <div class="fw-card">
+        <div class="fw-kopf"><h3 class="fw-t">Grund der Festsetzung</h3></div>
+        <div class="fw-formular p-5">
+        <div class="fw-feldblock breit">
+        <select name="grund_choice" class="fw-feld w-full">
             <option value="anpassung">Anpassung an Teuerung und gestiegene Kosten (Art. 269a OR)</option>
             <option value="referenz">Anpassung an den Referenzzinssatz</option>
             <option value="orts">Orts- und quartierüblich (Art. 269a lit. a OR)</option>
             <option value="keine">Keine Erhöhung gegenüber der Vormiete</option>
             <option value="unbekannt">Vormiete nicht bekannt</option>
         </select>
-        <label class="block text-xs font-semibold fw-mutet mb-1">Eigener Begründungstext (optional)</label>
-        <textarea name="begruendung" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" placeholder="Überschreibt die Auswahl oben…"></textarea>
+        </div>
+        <div class="fw-feldblock breit">
+        <label class="fw-label">Eigener Begründungstext (optional)</label>
+        <textarea name="begruendung" rows="2" class="fw-feld w-full" placeholder="Überschreibt die Auswahl oben…"></textarea>
+        </div>
+        </div>
     </div>
 
-    <div class="flex items-center gap-3">
-        <button type="submit" class="inline-flex items-center gap-2 fw-btn fw-primary text-sm font-semibold rounded-lg px-5 py-2.5">
+    <div class="flex items-center gap-3 flex-wrap">
+        <button type="submit" class="fw-btn fw-primary">
             {% zeichen 'drucken' %}Formular als PDF erstellen
         </button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink">Abbrechen</a>
+        <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">Abbrechen</a>
     </div>
 </form>
 {% endblock %}

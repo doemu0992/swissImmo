@@ -3,19 +3,20 @@
 {% load chf %}
 {% block title %}{% trans "Reparaturkosten" %} — swissImmo{% endblock %}
 {% block content %}
-<div class="text-xs fw-faint mb-3">
-    <a href="/neu/schaeden/{{ lg_query }}" class="hover:fw-marke">{% trans "Schadensfälle" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro mx-1' %}{% trans "Kostenübersicht" %}
-</div>
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/schaeden/{{ lg_query }}">{% trans "Schadensfälle" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Kostenübersicht" %}</b>
+</nav>
 
 <div class="fw-phead">
     <div>
         <h1>{% trans "Reparaturkosten" %}</h1>
         <p>{% trans "Kostenschätzungen (offen) und effektive Kosten aus den Handwerker-Aufträgen je Liegenschaft." %}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
-    <form method="get" class="inline-flex items-center gap-1">
+    <form method="get" class="fw-phead-knoepfe">
         {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}
-        <select name="jahr" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
+        <select name="jahr" onchange="this.form.submit()" class="fw-feld">
             <option value="0" {% if not jahr %}selected{% endif %}>{% trans "Alle Jahre" %}</option>
             {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
@@ -23,64 +24,66 @@
 </div>
 
 <!-- Kennzahlen -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-5">
-    <div class="fw-card px-4 py-3">
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Effektive Kosten" %}</div>
-        <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total.effektiv|chf }}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Effektive Kosten" %}</div>
+        <div class="fw-v">CHF {{ total.effektiv|chf }}</div>
     </div>
-    <div class="fw-card px-4 py-3">
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Offene Schätzung" %}</div>
-        <div class="text-xl font-bold fw-warnton mt-0.5">CHF {{ total.offen|chf }}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Offene Schätzung" %}</div>
+        <div class="fw-v fw-warn">CHF {{ total.offen|chf }}</div>
     </div>
-    <div class="fw-card px-4 py-3">
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Aufträge" %}</div>
-        <div class="text-xl font-bold fw-strong mt-0.5">{{ total.auftraege }}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Aufträge" %}</div>
+        <div class="fw-v">{{ total.auftraege }}</div>
     </div>
-    <div class="fw-card px-4 py-3">
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{% trans "Schadensfälle" %}</div>
-        <div class="text-xl font-bold fw-strong mt-0.5">{{ total.schaeden }}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Schadensfälle" %}</div>
+        <div class="fw-v">{{ total.schaeden }}</div>
     </div>
 </div>
 
-<div class="fw-card overflow-hidden overflow-x-auto">
-    <table class="fw-table min-w-max">
+<div class="fw-card">
+    <div class="fw-tablewrap">
+    <table class="fw-table">
         <thead>
             <tr>
-                <th class="font-semibold">{% trans "Liegenschaft" %}</th>
-                <th class="font-semibold text-center fw-zentriert">{% trans "Schäden" %}</th>
-                <th class="font-semibold text-center fw-zentriert">{% trans "Aufträge" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Offene Schätzung" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Effektiv" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Total" %}</th>
+                <th>{% trans "Liegenschaft" %}</th>
+                <th class="fw-zentriert">{% trans "Schäden" %}</th>
+                <th class="fw-zentriert">{% trans "Aufträge" %}</th>
+                <th class="fw-right">{% trans "Offene Schätzung" %}</th>
+                <th class="fw-right">{% trans "Effektiv" %}</th>
+                <th class="fw-right">{% trans "Total" %}</th>
             </tr>
         </thead>
-        <tbody class="fw-dv">
+        <tbody>
         {% for g in rows %}
             <tr>
-                <td class="font-semibold fw-strong">{{ g.name }}</td>
-                <td class="text-center fw-mutet fw-zentriert">{{ g.schaeden }}{% if g.schaeden_offen %} <span class="fw-warnton text-xs">({% blocktrans with n=g.schaeden_offen %}{{ n }} offen{% endblocktrans %})</span>{% endif %}</td>
-                <td class="text-center fw-mutet fw-zentriert">{{ g.auftraege }}</td>
-                <td class="px-5 py-3 text-right {% if g.offen %}fw-warnton font-medium{% else %}fw-faint{% endif %}">{% if g.offen %}{{ g.offen|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right {% if g.effektiv %}fw-strong font-medium{% else %}fw-faint{% endif %}">{% if g.effektiv %}{{ g.effektiv|chf }}{% else %}—{% endif %}</td>
-                <td class="text-right font-semibold fw-strong fw-right">CHF {{ g.gesamt|chf }}</td>
+                <td class="fw-strong">{{ g.name }}</td>
+                <td class="fw-zentriert fw-num">{{ g.schaeden }}{% if g.schaeden_offen %} <span class="fw-warnton fw-klein">({% blocktrans with n=g.schaeden_offen %}{{ n }} offen{% endblocktrans %})</span>{% endif %}</td>
+                <td class="fw-zentriert fw-num">{{ g.auftraege }}</td>
+                <td class="fw-right fw-num"><span class="{% if g.offen %}fw-warnton{% else %}fw-faint{% endif %}">{% if g.offen %}{{ g.offen|chf }}{% else %}—{% endif %}</span></td>
+                <td class="fw-right fw-num"><span class="{% if g.effektiv %}fw-strong{% else %}fw-faint{% endif %}">{% if g.effektiv %}{{ g.effektiv|chf }}{% else %}—{% endif %}</span></td>
+                <td class="fw-right fw-num fw-strong">CHF {{ g.gesamt|chf }}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="6" class="text-center fw-faint text-sm fw-zentriert fw-leerzeile">{% trans "Keine Handwerker-Aufträge" %}{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
+            <tr><td colspan="6" class="fw-leerzeile fw-leer">{% trans "Keine Handwerker-Aufträge" %}{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
         {% endfor %}
         </tbody>
         {% if rows %}
         <tfoot>
-            <tr class="border-t-2 fw-linie font-semibold fw-strong">
+            <tr>
                 <td>{% trans "Total" %}</td>
-                <td class="text-center fw-zentriert">{{ total.schaeden }}</td>
-                <td class="text-center fw-zentriert">{{ total.auftraege }}</td>
-                <td class="text-right fw-warnton fw-right">{{ total.offen|chf }}</td>
-                <td class="text-right fw-right">{{ total.effektiv|chf }}</td>
-                <td class="text-right fw-right">CHF {{ total.gesamt|chf }}</td>
+                <td class="fw-zentriert fw-num">{{ total.schaeden }}</td>
+                <td class="fw-zentriert fw-num">{{ total.auftraege }}</td>
+                <td class="fw-right fw-num"><span class="fw-warnton">{{ total.offen|chf }}</span></td>
+                <td class="fw-right fw-num">{{ total.effektiv|chf }}</td>
+                <td class="fw-right fw-num">CHF {{ total.gesamt|chf }}</td>
             </tr>
         </tfoot>
         {% endif %}
     </table>
+    </div>
 </div>
-<p class="text-xs fw-faint mt-3">{% trans "„Offene Schätzung“ = beauftragte, aber noch nicht abgerechnete Kosten (Kostenschätzung). „Effektiv“ = tatsächlich erfasste Kosten. Total = Effektiv + offene Schätzung als erwarteter Gesamtaufwand." %}</p>
+<p class="fw-hilfe">{% trans "„Offene Schätzung“ = beauftragte, aber noch nicht abgerechnete Kosten (Kostenschätzung). „Effektiv“ = tatsächlich erfasste Kosten. Total = Effektiv + offene Schätzung als erwarteter Gesamtaufwand." %}</p>
 {% endblock %}

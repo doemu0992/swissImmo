@@ -26,7 +26,7 @@
         <p>{% if aktive_lg %}{% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}
             <a href="/neu/objekte/" class="fw-link">× {% trans "aufheben" %}</a>{% else %}{% trans "Nach Befund geordnet — was klemmt, steht oben." %}{% endif %}</p>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <div class="fw-phead-knoepfe">
         <a href="{{ csv_url }}" download class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV" %}</a>
         <a href="/neu/objekte/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Objekt erfassen" %}</a>
     </div>
@@ -34,18 +34,18 @@
 
 {% comment %} Die Zahlen zeigen IMMER das ganze Portfolio, auch bei aktivem
    Zustandsfilter — sonst stuende dort «2 von 2 mit Befund». {% endcomment %}
-<div class="fw-lage">
-    <div><div class="fw-l">{% trans "Objekte" %}</div>
-        <div class="fw-w">{{ kopf.gesamt }}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi"><div class="fw-l">{% trans "Objekte" %}</div>
+        <div class="fw-v">{{ kopf.gesamt }}</div>
         <div class="fw-f">{% trans "im Bestand" %}</div></div>
-    <div><div class="fw-l">{% trans "Vermietet" %}</div>
-        <div class="fw-w">{{ kopf.belegt }}</div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Vermietet" %}</div>
+        <div class="fw-v">{{ kopf.belegt }}</div>
         <div class="fw-f">{% trans "mit laufendem Vertrag" %}</div></div>
-    <div><div class="fw-l">{% trans "Leerstand" %}</div>
-        <div class="fw-w{% if kopf.leer_stufe %} {{ kopf.leer_stufe }}{% endif %}">{{ kopf.leer }}</div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Leerstand" %}</div>
+        <div class="fw-v{% if kopf.leer_stufe %} fw-{{ kopf.leer_stufe }}{% endif %}">{{ kopf.leer }}</div>
         <div class="fw-f">{% trans "ohne Mieter und ohne Nachfolge" %}</div></div>
-    <div><div class="fw-l">{% trans "Mit Befund" %}</div>
-        <div class="fw-w{% if kopf.befund_stufe %} {{ kopf.befund_stufe }}{% endif %}">{{ kopf.mit_befund }}</div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Mit Befund" %}</div>
+        <div class="fw-v{% if kopf.befund_stufe %} fw-{{ kopf.befund_stufe }}{% endif %}">{{ kopf.mit_befund }}</div>
         <div class="fw-f">{% trans "brauchen eine Handlung" %}</div></div>
 </div>
 
@@ -71,7 +71,7 @@
     <summary class="fw-kopf" style="cursor:pointer;list-style:none">
         {% zeichen 'weiter' klasse='fw-klein' %}
         <span class="fw-ikon{% if g.stufe != 'good' %} {{ g.stufe }}{% endif %}">{% zeichen 'liegenschaft' %}</span>
-        <span class="fw-t">{{ g.lg.strasse }}<small>{{ g.lg.plz }} {{ g.lg.ort }}</small></span>
+        <span class="fw-t">{{ g.lg.strasse }}</span><span class="fw-neben">{{ g.lg.plz }} {{ g.lg.ort }}</span>
         <span class="fw-rechts">
             {% if g.leer %}<span class="fw-chip fw-warn fw-dot">{% blocktrans with n=g.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
             <span class="fw-chip fw-mut">{% blocktrans with belegt=g.belegt anzahl=g.anzahl %}{{ belegt }} / {{ anzahl }} vermietet{% endblocktrans %}</span>
@@ -80,7 +80,7 @@
     </summary>
 
     {% for z in g.zeilen %}
-    <a href="/neu/objekte/{{ z.e.id }}/" class="fw-zeile klick" style="text-decoration:none">
+    <a href="/neu/objekte/{{ z.e.id }}/" class="fw-zeile klick">
         <span class="fw-marker{% if z.stufe != 'good' %} {{ z.stufe }}{% endif %}"></span>
         <div class="fw-mitte">
             <div class="fw-t">{{ z.e.bezeichnung }}</div>
@@ -105,7 +105,7 @@
     {% endfor %}
 </details>
 {% empty %}
-<div class="fw-card" style="padding:0 16px">
+<div class="fw-card px-4">
 {% if gefiltert or q or typ_filter %}
     {% include 'fw/_empty.html' with icon='gut' titel=_('Nichts zu tun') subtext=_('Für diesen Filter gibt es kein Objekt. Das ist eine gute Nachricht — oder der Filter ist zu eng.') cta_url='/neu/objekte/' cta_label=_('Alle Objekte zeigen') %}
 {% else %}

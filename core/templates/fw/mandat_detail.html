@@ -63,46 +63,6 @@ kennt, soll den vierten nicht neu lernen müssen.
 </div>
 {% endif %}
 
-{% comment %}
-DER LAGE-STREIFEN, NICHT EIGENE KLASSEN (E2.65)
-
-Die Karte trug ein eigenes Raster (`grid-cols-2 md:grid-cols-4`) und eigene
-Schriftgroessen. Auf dem Telefon wurde daraus eine Wand aus Fliesstext: Die
-Beschriftung «Honorar pro Jahr» stand so gross wie der Wert, und «kein Satz %
-der Sollmiete» brach ueber zwei Zeilen.
-
-`fw-lage` ist derselbe Streifen wie auf «Heute» — Beschriftung klein und
-gesperrt, Wert gross, Fusszeile gedaempft. Wer die Startseite kennt, liest
-hier dasselbe Muster.
-{% endcomment %}
-{% comment %} Der Streifen auf «Heute» braucht keine Überschrift — dort ist klar, worum
-   es geht. Hier steht er zwischen Befunden und Stammdaten und muss sagen,
-   was er zeigt. {% endcomment %}
-<div class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-2">{% trans "Rentabilität" %}</div>
-<div class="fw-lage">
-    <div><div class="fw-l">{% trans "Honorar pro Jahr" %}</div>
-        <div class="fw-w">{% if rentabilitaet.honorar_jahr %}CHF {{ rentabilitaet.honorar_jahr|chf }}{% else %}—{% endif %}</div>
-        {% comment %} «kein Satz % der Sollmiete» — `default` ersetzt nur die Zahl,
-           das Prozentzeichen blieb stehen. Ein halber Satz liest sich wie
-           ein Fehler, und er ist einer. {% endcomment %}
-        <div class="fw-f">{% if md.honorar_prozent %}{% blocktrans with p=md.honorar_prozent %}{{ p }} % der Sollmiete{% endblocktrans %}{% else %}{% trans "kein Satz hinterlegt" %}{% endif %}</div></div>
-    <div><div class="fw-l">{% trans "Erfasster Aufwand" %}</div>
-        <div class="fw-w">{% if rentabilitaet.stunden %}{{ rentabilitaet.stunden }} h{% else %}—{% endif %}</div>
-        <div class="fw-f">{% trans "auf Fällen dieses Mandats" %}</div></div>
-    <div><div class="fw-l">{% trans "CHF pro Stunde" %}</div>
-        <div class="fw-w">{% if rentabilitaet.chf_pro_stunde %}CHF {{ rentabilitaet.chf_pro_stunde|chf }}{% else %}<span class="fw-faint">—</span>{% endif %}</div>
-        <div class="fw-f">{% if rentabilitaet.fehlt %}{{ rentabilitaet.fehlt }}{% else %}{% trans "Honorar geteilt durch Aufwand" %}{% endif %}</div></div>
-    <div><div class="fw-l">{% trans "Datenbasis" %}</div>
-        <div class="fw-w">{{ rentabilitaet.faelle_mit_zeit }} / {{ rentabilitaet.faelle_gesamt }}</div>
-        <div class="fw-f">{% trans "Fälle mit erfasster Zeit" %}</div></div>
-</div>
-{% if rentabilitaet.chf_pro_stunde and rentabilitaet.faelle_gesamt %}
-{% widthratio rentabilitaet.faelle_mit_zeit rentabilitaet.faelle_gesamt 100 as abdeckung %}
-{% if abdeckung|add:0 < 50 %}
-<p class="fw-fs-klein fw-warnton mb-4">{% blocktrans %}Nur {{ abdeckung }} % der Fälle haben Zeit erfasst — die Zahl trägt noch nicht weit.{% endblocktrans %}</p>
-{% endif %}
-{% endif %}
-
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'person' %}</div>
@@ -159,11 +119,51 @@ hier dasselbe Muster.
     {% include 'fw/_detail_tabs.html' with gruppe='md' tabs=tab_liste %}
 </div>
 
+{% comment %}
+DER LAGE-STREIFEN, NICHT EIGENE KLASSEN (E2.65)
+
+Die Karte trug ein eigenes Raster (`grid-cols-2 md:grid-cols-4`) und eigene
+Schriftgroessen. Auf dem Telefon wurde daraus eine Wand aus Fliesstext: Die
+Beschriftung «Honorar pro Jahr» stand so gross wie der Wert, und «kein Satz %
+der Sollmiete» brach ueber zwei Zeilen.
+
+`fw-lage` ist derselbe Streifen wie auf «Heute» — Beschriftung klein und
+gesperrt, Wert gross, Fusszeile gedaempft. Wer die Startseite kennt, liest
+hier dasselbe Muster.
+{% endcomment %}
+{% comment %} Der Streifen auf «Heute» braucht keine Überschrift — dort ist klar, worum
+   es geht. Hier steht er zwischen Befunden und Stammdaten und muss sagen,
+   was er zeigt. {% endcomment %}
+<div class="fw-subhead">{% trans "Rentabilität" %}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi"><div class="fw-l">{% trans "Honorar pro Jahr" %}</div>
+        <div class="fw-v">{% if rentabilitaet.honorar_jahr %}CHF {{ rentabilitaet.honorar_jahr|chf }}{% else %}—{% endif %}</div>
+        {% comment %} «kein Satz % der Sollmiete» — `default` ersetzt nur die Zahl,
+           das Prozentzeichen blieb stehen. Ein halber Satz liest sich wie
+           ein Fehler, und er ist einer. {% endcomment %}
+        <div class="fw-f">{% if md.honorar_prozent %}{% blocktrans with p=md.honorar_prozent %}{{ p }} % der Sollmiete{% endblocktrans %}{% else %}{% trans "kein Satz hinterlegt" %}{% endif %}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Erfasster Aufwand" %}</div>
+        <div class="fw-v">{% if rentabilitaet.stunden %}{{ rentabilitaet.stunden }} h{% else %}—{% endif %}</div>
+        <div class="fw-f">{% trans "auf Fällen dieses Mandats" %}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "CHF pro Stunde" %}</div>
+        <div class="fw-v">{% if rentabilitaet.chf_pro_stunde %}CHF {{ rentabilitaet.chf_pro_stunde|chf }}{% else %}<span class="fw-faint">—</span>{% endif %}</div>
+        <div class="fw-f">{% if rentabilitaet.fehlt %}{{ rentabilitaet.fehlt }}{% else %}{% trans "Honorar geteilt durch Aufwand" %}{% endif %}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Datenbasis" %}</div>
+        <div class="fw-v">{{ rentabilitaet.faelle_mit_zeit }} / {{ rentabilitaet.faelle_gesamt }}</div>
+        <div class="fw-f">{% trans "Fälle mit erfasster Zeit" %}</div></div>
+</div>
+{% if rentabilitaet.chf_pro_stunde and rentabilitaet.faelle_gesamt %}
+{% widthratio rentabilitaet.faelle_mit_zeit rentabilitaet.faelle_gesamt 100 as abdeckung %}
+{% if abdeckung|add:0 < 50 %}
+<p class="fw-hilfe fw-warnton mb-4">{% blocktrans %}Nur {{ abdeckung }} % der Fälle haben Zeit erfasst — die Zahl trägt noch nicht weit.{% endblocktrans %}</p>
+{% endif %}
+{% endif %}
+
+
 <!-- ===== BEREICH: STAMMDATEN ===== -->
 <div data-panel="md" id="md-stammdaten">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'person' %}</span>
-            <span class="fw-t">{% trans "Angaben" %}</span></div>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Angaben" %}</span></div>
         <table class="fw-table" data-stack>
             <tbody>
                 <tr><td data-label="Feld">{% trans "Firma / Name" %}</td><td data-label="Wert">{{ md.firma_oder_name }}</td></tr>
@@ -181,7 +181,7 @@ hier dasselbe Muster.
         <table class="fw-table" data-stack>
             <tbody>
                 <tr><td data-label="Feld">{% trans "Bank" %}</td><td data-label="Wert">{{ md.bank_name|default:"—" }}</td></tr>
-                <tr><td data-label="Feld">IBAN</td><td data-label="Wert">{% if md.iban %}<span class="font-mono">{{ md.iban }}</span>{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}</td></tr>
+                <tr><td data-label="Feld">IBAN</td><td data-label="Wert">{% if md.iban %}<span class="fw-mono">{{ md.iban }}</span>{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}</td></tr>
                 <tr><td data-label="Feld">{% trans "Honorarsatz" %}</td><td data-label="Wert">{% if md.honorar_prozent %}{{ md.honorar_prozent }} %{% else %}{% trans "Vorgabewert der Verwaltung" %}{% endif %}</td></tr>
                 <tr><td data-label="Feld">{% trans "Portalzugang" %}</td><td data-label="Wert">{% if md.benutzer_id %}{% trans "aktiv" %}{% else %}{% trans "nicht eingerichtet" %}{% endif %}</td></tr>
             </tbody>
@@ -192,13 +192,11 @@ hier dasselbe Muster.
 <!-- ===== BEREICH: LIEGENSCHAFTEN ===== -->
 <div data-panel="md" id="md-liegenschaften" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
-            <span class="fw-t">{% trans "Verwaltete Liegenschaften" %}</span>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Verwaltete Liegenschaften" %}</span>
             <span class="fw-neben">{{ liegenschaften|length }}</span></div>
         {% for l in liegenschaften %}
         <a href="/neu/liegenschaften/{{ l.lg.id }}/" class="fw-zeile klick">
             <span class="fw-marker {% if l.leer %}warn{% else %}good{% endif %}"></span>
-            <span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ l.lg.strasse }}</div>
                 <div class="fw-s">{{ l.lg.plz }} {{ l.lg.ort }} · {% blocktrans with v=l.vermietet e=l.einheiten %}{{ v }} von {{ e }} vermietet{% endblocktrans %}{% if l.leer %} · {% blocktrans with n=l.leer %}{{ n }} leer{% endblocktrans %}{% endif %}</div>
@@ -214,8 +212,7 @@ hier dasselbe Muster.
 <!-- ===== BEREICH: FINANZEN ===== -->
 <div data-panel="md" id="md-finanzen" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'geld' %}</span>
-            <span class="fw-t">{% trans "Auszahlungen" %}</span>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Auszahlungen" %}</span>
             <span class="fw-neben">{{ auszahlungen|length }}</span>
             <span class="fw-rechts"><a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Erfassen" %}</a></span></div>
         {% for a in auszahlungen %}
@@ -240,8 +237,7 @@ hier dasselbe Muster.
 <!-- ===== BEREICH: DOKUMENTE ===== -->
 <div data-panel="md" id="md-dokumente" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
-            <span class="fw-t">{% trans "Dokumente" %}</span><span class="fw-neben">{{ dokumente|length }}</span></div>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Dokumente" %}</span><span class="fw-neben">{{ dokumente|length }}</span></div>
         {% for d in dokumente %}
         <div class="fw-zeile">
             <span class="fw-ikon">{% zeichen 'dokument' %}</span>
@@ -259,8 +255,7 @@ hier dasselbe Muster.
 <!-- ===== BEREICH: FÄLLE ===== -->
 <div data-panel="md" id="md-faelle" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
-            <span class="fw-t">{% trans "Fälle" %}</span><span class="fw-neben">{{ mandat_faelle|length }}</span></div>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Fälle" %}</span><span class="fw-neben">{{ mandat_faelle|length }}</span></div>
         {% for f in mandat_faelle %}
         <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
             <span class="fw-marker {% if f.ist_liegengeblieben %}crit{% elif f.status == 'wartet' %}warn{% endif %}"></span>
@@ -282,8 +277,7 @@ hier dasselbe Muster.
        Der belastbare Bezug fuehrt ueber die Vertraege seiner Liegenschaften —
        derselbe Weg wie bei Liegenschaft und Objekt. {% endcomment %}
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
-            <span class="fw-t">{% trans "Protokoll" %}</span>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Protokoll" %}</span>
             <span class="fw-neben">{% trans "Vorgänge an den Verträgen dieses Mandats" %}</span></div>
         {% for a in verlauf %}
         <div class="fw-zeile">

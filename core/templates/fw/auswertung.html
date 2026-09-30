@@ -8,52 +8,54 @@
         <h1>{% trans "Auswertung" %}</h1>
         <p>{% trans "Kennzahlen im Monatsverlauf und je Liegenschaft — nach Jahr, Kennzahl und Liegenschaft filterbar." %}</p>
     </div>
-    <a href="/neu/auswertung/?pdf=1&typ={{ typ }}&jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary">{% zeichen 'drucken' %}PDF</a>
+    <div class="fw-phead-knoepfe">
+        <a href="/neu/auswertung/?pdf=1&typ={{ typ }}&jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary">{% zeichen 'drucken' %}PDF</a>
+    </div>
 </div>
 
 <!-- Filter -->
-<form method="get" class="flex flex-wrap items-end gap-3 mb-6">
-    <div>
-        <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kennzahl" %}</label>
-        <select name="typ" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
+<form method="get" class="fw-listwerkzeug items-end">
+    <div class="fw-feldblock">
+        <label class="fw-label">{% trans "Kennzahl" %}</label>
+        <select name="typ" onchange="this.form.submit()" class="fw-feld">
             {% for key, label, _k in typen %}<option value="{{ key }}" {% if typ == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
     </div>
-    <div>
-        <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Jahr" %}</label>
-        <select name="jahr" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
+    <div class="fw-feldblock">
+        <label class="fw-label">{% trans "Jahr" %}</label>
+        <select name="jahr" onchange="this.form.submit()" class="fw-feld">
             {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
     </div>
-    <div>
-        <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
-        <select name="lg" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
+    <div class="fw-feldblock">
+        <label class="fw-label">{% trans "Liegenschaft" %}</label>
+        <select name="lg" onchange="this.form.submit()" class="fw-feld">
             <option value="">{% trans "Alle Liegenschaften" %}</option>
             {% for l in alle_liegenschaften %}<option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
         </select>
     </div>
-    <noscript><button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Anzeigen" %}</button></noscript>
+    <noscript><button class="fw-btn fw-primary">{% trans "Anzeigen" %}</button></noscript>
 </form>
 
 <!-- Total -->
-<div class="fw-card px-5 py-4 mb-5 inline-flex items-center gap-6">
-    <div>
-        <div class="fw-fs-klein uppercase tracking-wide fw-faint font-semibold">{{ typ_label }} {{ jahr }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</div>
-        <div class="text-2xl font-bold {% if total < 0 %}fw-kritisch{% else %}fw-strong{% endif %} mt-0.5">CHF {{ total|chf }}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{{ typ_label }} {{ jahr }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</div>
+        <div class="fw-v{% if total < 0 %} fw-crit{% endif %}">CHF {{ total|chf }}</div>
+        <div class="fw-f">Ø {{ total|chf }}{% if total %} {% trans "/ 12 Monate" %}{% endif %}</div>
     </div>
-    <div class="text-xs fw-faint">Ø {{ total|chf }}{% if total %} {% trans "/ 12 Monate" %}{% endif %}</div>
 </div>
 
 <!-- Monatsverlauf -->
-<div class="fw-card p-5 mb-6">
-    <h2 class="font-bold fw-strong text-sm mb-4">{% trans "Monatsverlauf" %}</h2>
-    <div class="overflow-x-auto">
+<div class="fw-card">
+    <div class="fw-kopf"><h2 class="fw-t">{% trans "Monatsverlauf" %}</h2></div>
+    <div class="overflow-x-auto p-5">
         <div class="flex items-end gap-2 h-52 min-w-[520px]">
             {% for m in monate %}
             <div class="flex-1 flex flex-col items-center justify-end h-full group">
-                <div class="fw-fs-mikro font-semibold fw-mutet mb-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">{{ m.wert|chf }}</div>
+                <div class="fw-klein mb-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">{{ m.wert|chf }}</div>
                 <div class="w-full rounded-t {% if m.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" style="height: {{ m.pct }}%; min-height: 2px;"></div>
-                <div class="fw-fs-mikro fw-faint mt-1.5">{{ m.name }}</div>
+                <div class="fw-klein mt-1.5">{{ m.name }}</div>
             </div>
             {% endfor %}
         </div>
@@ -62,21 +64,21 @@
 
 <!-- Vergleich je Liegenschaft -->
 {% if lg_rows %}
-<div class="fw-card p-5">
-    <h2 class="font-bold fw-strong text-sm mb-4">{% blocktrans %}Je Liegenschaft ({{ jahr }}){% endblocktrans %}</h2>
-    <div class="space-y-2.5">
+<div class="fw-card">
+    <div class="fw-kopf"><h2 class="fw-t">{% blocktrans %}Je Liegenschaft ({{ jahr }}){% endblocktrans %}</h2></div>
+    <div class="space-y-2.5 p-5">
         {% for r in lg_rows %}
         <div class="flex items-center gap-3">
-            <div class="w-48 shrink-0 text-sm fw-ink truncate">{{ r.lg.strasse }}, {{ r.lg.ort }}</div>
+            <div class="w-48 shrink-0 fw-ink truncate">{{ r.lg.strasse }}, {{ r.lg.ort }}</div>
             <div class="flex-1 fw-flaeche2 rounded-full h-4 overflow-hidden">
                 <div class="h-full rounded-full {% if r.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" style="width: {{ r.pct }}%"></div>
             </div>
-            <div class="w-28 shrink-0 text-right text-sm font-semibold {% if r.neg %}fw-kritisch{% else %}fw-strong{% endif %}">CHF {{ r.wert|chf }}</div>
+            <div class="w-28 shrink-0 text-right fw-num fw-strong {% if r.neg %}fw-kritisch{% endif %}">CHF {{ r.wert|chf }}</div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% elif not aktive_lg %}
-<div class="fw-card p-8 text-center fw-faint text-sm">{% blocktrans %}Keine verbuchten Werte für {{ jahr }}.{% endblocktrans %}</div>
+<div class="fw-card"><div class="fw-leer">{% blocktrans %}Keine verbuchten Werte für {{ jahr }}.{% endblocktrans %}</div></div>
 {% endif %}
 {% endblock %}

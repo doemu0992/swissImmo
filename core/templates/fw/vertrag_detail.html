@@ -458,7 +458,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <input type="number" step="0.05" name="abzug_betrag" value="0" class="fw-feld fw-num"></div>
                 <div class="fw-feldblock breit"><label class="fw-label">{% trans "Grund" %}</label>
                     <input name="abzug_grund" placeholder="{% trans 'z. B. Schäden, offene Miete' %}" class="fw-feld"></div>
-            <div class="fw-feldblock breit"><label class="fw-label flex items-center gap-2"><input type="checkbox" name="abzug_verrechnen" class="fw-haken"> {% if v.ist_kautionsversicherung %}{% trans "Schadenforderung" %}{% else %}{% trans "Einbehalt" %}{% endif %} {% trans "als Debitoren-Weiterverrechnung buchen" %}</label></div>
+            <div class="fw-feldblock breit"><label class="flex items-center gap-2 fw-strong"><input type="checkbox" name="abzug_verrechnen" class="fw-haken"> {% if v.ist_kautionsversicherung %}{% trans "Schadenforderung" %}{% else %}{% trans "Einbehalt" %}{% endif %} {% trans "als Debitoren-Weiterverrechnung buchen" %}</label></div>
             <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% if v.ist_kautionsversicherung %}{% trans "Police auflösen" %}{% else %}{% trans "Rückzahlung erfassen" %}{% endif %}</button></div>
         </form>
         {% endif %}

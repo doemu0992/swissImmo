@@ -3,10 +3,10 @@
 {% load chf %}
 {% block title %}{% trans "Abnahmeprotokoll" %} — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% trans "Abnahmeprotokoll" %}</span>
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Abnahmeprotokoll" %}</b>
 </nav>
 
 <div class="fw-phead">
@@ -14,7 +14,7 @@
         <h1>{% trans "Wohnungsabnahme" %} — {{ p.get_typ_display }}</h1>
         <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}</p>
     </div>
-    <div class="flex flex-wrap items-center gap-2">
+    <div class="fw-phead-knoepfe">
         {% comment %} Mängelrüge Art. 267a OR: Die Ansicht war fertig, hatte aber keinen
            Knopf. Unterbleibt die Rüge nach der Rückgabe, gilt die Sache als
            ordnungsgemäss zurückgegeben — deshalb sichtbar im Kopf, nicht im Menü. {% endcomment %}
@@ -22,24 +22,24 @@
         <form method="post" action="/neu/abnahme/{{ p.id }}/ruege-267a/" target="_blank"
               onsubmit="return confirm('{% filter escapejs %}{% trans "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?" %}{% endfilter %}');">
             {% csrf_token %}
-            <button type="submit" class="fw-btn text-sm" title="{% trans 'Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche (Art. 267a OR).' %}">{% zeichen 'recht' klasse='mr-1.5 fw-warnton' %}{% trans "Mängelrüge 267a" %}</button>
+            <button type="submit" class="fw-btn" title="{% trans 'Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche (Art. 267a OR).' %}">{% zeichen 'recht' klasse='fw-warnton' %}{% trans "Mängelrüge 267a" %}</button>
         </form>
         {% endif %}
         {% if p.kosten_mieter_total %}
-        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="fw-btn fw-primary text-sm">{% zeichen 'rechnung' klasse='mr-1.5' %}{% trans "In Schlussabrechnung" %}</a>
+        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="fw-btn fw-primary">{% zeichen 'rechnung' %}{% trans "In Schlussabrechnung" %}</a>
         {% endif %}
         <div class="relative">
             <button type="button" onclick="document.getElementById('aAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                    class="fw-btn fw-knapp">
-                {% zeichen 'mehr' klasse='mr-1' %}{% trans "Mehr" %}
+                    class="fw-btn">
+                {% zeichen 'mehr' %}{% trans "Mehr" %}
             </button>
-            <div id="aAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
-                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'drucken' klasse='w-4' %}{% trans "Protokoll als PDF" %}</a>
-                <div class="my-1 border-t fw-linie"></div>
+            <div id="aAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Protokoll als PDF" %}</a>
+                <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
                       onsubmit="return confirm('{% filter escapejs %}{% trans "Abnahmeprotokoll wirklich löschen?" %}{% endfilter %}');">
                     {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-kritisch hover:fw-krit-flaeche">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Protokoll löschen" %}</button>
+                    <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Protokoll löschen" %}</button>
                 </form>
             </div>
         </div>
@@ -52,56 +52,58 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <div class="fw-card p-5 text-sm space-y-2">
-        <div class="flex justify-between"><span class="fw-mutet">{% trans "Abnahme durch" %}</span><span class="font-medium">{{ p.verwalter_name|default:"—" }}</span></div>
-        <div class="flex justify-between"><span class="fw-mutet">{% trans "Mieter anwesend" %}</span><span>{% if p.mieter_anwesend %}{% trans "Ja" %}{% else %}{% trans "Nein" %}{% endif %}</span></div>
-        <div class="flex justify-between"><span class="fw-mutet">{% trans "Allgemeinzustand" %}</span><span>{{ p.get_allgemein_zustand_display }}</span></div>
-        <div class="flex justify-between"><span class="fw-mutet">{% trans "Schlüssel zurück" %}</span><span>{{ p.schluessel_anzahl|default:"—" }}</span></div>
-    </div>
-    <div class="fw-card p-5 text-sm space-y-2">
-        <div class="flex justify-between"><span class="fw-mutet">{% trans "Zähler Strom" %}</span><span>{{ p.zaehler_strom|default:"—" }}</span></div>
-        <div class="flex justify-between"><span class="fw-mutet">{% trans "Zähler Wasser" %}</span><span>{{ p.zaehler_wasser|default:"—" }}</span></div>
-        <div class="flex justify-between"><span class="fw-mutet">{% trans "Zähler Gas/Wärme" %}</span><span>{{ p.zaehler_gas|default:"—" }}</span></div>
-        <div class="flex justify-between"><span class="fw-mutet">{% trans "Neue Adresse" %}</span><span class="text-right">{{ p.neue_adresse|default:"—" }}</span></div>
-    </div>
-    <div class="fw-markenflaeche rounded-xl border fw-linie-marke p-5">
-        <div class="text-xs fw-marke mb-1">{% trans "Kosten zulasten Mieter (Schätzung)" %}</div>
-        <div class="text-2xl font-bold fw-marke">CHF {{ p.kosten_mieter_total|chf }}</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start mb-6">
+    <div class="fw-card fw-nomb"><dl class="fw-cbody">
+        <div class="fw-kv"><dt>{% trans "Abnahme durch" %}</dt><dd>{{ p.verwalter_name|default:"—" }}</dd></div>
+        <div class="fw-kv"><dt>{% trans "Mieter anwesend" %}</dt><dd>{% if p.mieter_anwesend %}{% trans "Ja" %}{% else %}{% trans "Nein" %}{% endif %}</dd></div>
+        <div class="fw-kv"><dt>{% trans "Allgemeinzustand" %}</dt><dd>{{ p.get_allgemein_zustand_display }}</dd></div>
+        <div class="fw-kv"><dt>{% trans "Schlüssel zurück" %}</dt><dd>{{ p.schluessel_anzahl|default:"—" }}</dd></div>
+    </dl></div>
+    <div class="fw-card fw-nomb"><dl class="fw-cbody">
+        <div class="fw-kv"><dt>{% trans "Zähler Strom" %}</dt><dd>{{ p.zaehler_strom|default:"—" }}</dd></div>
+        <div class="fw-kv"><dt>{% trans "Zähler Wasser" %}</dt><dd>{{ p.zaehler_wasser|default:"—" }}</dd></div>
+        <div class="fw-kv"><dt>{% trans "Zähler Gas/Wärme" %}</dt><dd>{{ p.zaehler_gas|default:"—" }}</dd></div>
+        <div class="fw-kv"><dt>{% trans "Neue Adresse" %}</dt><dd>{{ p.neue_adresse|default:"—" }}</dd></div>
+    </dl></div>
+    <div class="fw-kpis fw-nomb">
+        <div class="fw-kpi fw-accent">
+        <div class="fw-l">{% trans "Kosten zulasten Mieter (Schätzung)" %}</div>
+        <div class="fw-v">CHF {{ p.kosten_mieter_total|chf }}</div>
+        </div>
     </div>
 </div>
 
-<div class="fw-card overflow-hidden mt-4">
-    <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">{% trans "Mängel" %} ({{ maengel|length }})</div>
-    <div class="overflow-x-auto">
-<table class="fw-table min-w-max">
-        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left">{% trans "Raum" %}</th><th class="text-left">{% trans "Mangel" %}</th>
-                <th class="text-left">{% trans "Verursacher" %}</th>
-                <th class="text-right fw-right">{% trans "Kosten" %}</th>
-                <th class="text-right fw-right">{% trans "Mieteranteil" %}</th>
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Mängel" %}</h2><span class="fw-neben">{{ maengel|length }}</span></div>
+    <div class="fw-tablewrap">
+<table class="fw-table">
+        <thead>
+            <tr><th>{% trans "Raum" %}</th><th>{% trans "Mangel" %}</th>
+                <th>{% trans "Verursacher" %}</th>
+                <th class="fw-right">{% trans "Kosten" %}</th>
+                <th class="fw-right">{% trans "Mieteranteil" %}</th>
                 <th>{% trans "Foto" %}</th></tr>
         </thead>
-        <tbody class="fw-dv">
+        <tbody>
             {% for m in maengel %}
             <tr>
-                <td class="fw-ink">{{ m.raum|default:"—" }}</td>
+                <td>{{ m.raum|default:"—" }}</td>
                 <td class="fw-strong">{{ m.beschreibung }}
-                    {% if m.ausstattung %}<div class="fw-fs-klein fw-faint">{% zeichen 'dokument' klasse='mr-0.5' %}{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · {% blocktrans with n=m.ausstattung.effektive_lebensdauer %}Lebensdauer {{ n }} J{% endblocktrans %}{% endif %}</div>{% endif %}</td>
-                <td><span class="px-2 py-0.5 rounded text-xs font-semibold
-                    {% if m.verursacher == 'mieter' %}fw-krit-flaeche fw-kritisch{% elif m.verursacher == 'vermieter' %}fw-info-flaeche fw-info{% else %}fw-flaeche2 fw-mutet{% endif %}">{{ m.get_verursacher_display }}</span></td>
-                <td class="text-right tabular-nums fw-mutet fw-right">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>
-                <td class="px-5 py-2.5 text-right tabular-nums font-semibold {% if m.verursacher == 'mieter' %}fw-kritisch{% else %}fw-faint{% endif %}">
-                    {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</td>
-                <td class="text-center fw-zentriert">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
+                    {% if m.ausstattung %}<div class="fw-sub2">{% zeichen 'dokument' klasse='mr-0.5' %}{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · {% blocktrans with n=m.ausstattung.effektive_lebensdauer %}Lebensdauer {{ n }} J{% endblocktrans %}{% endif %}</div>{% endif %}</td>
+                <td><span class="fw-chip
+                    {% if m.verursacher == 'mieter' %}fw-crit{% elif m.verursacher == 'vermieter' %}fw-info{% else %}fw-mut{% endif %}">{{ m.get_verursacher_display }}</span></td>
+                <td class="fw-right fw-num"><span class="fw-mutet">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</span></td>
+                <td class="fw-right fw-num fw-strong"><span class="{% if m.verursacher == 'mieter' %}fw-kritisch{% else %}fw-faint{% endif %}">
+                    {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</span></td>
+                <td class="fw-zentriert">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Mängel festgestellt." %}</td></tr>
+            <tr><td colspan="6" class="fw-leerzeile fw-leer">{% trans "Keine Mängel festgestellt." %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 </div>
 
-{% if p.bemerkungen %}<div class="fw-card p-5 mt-4 text-sm"><div class="text-xs fw-mutet mb-1">{% trans "Bemerkungen" %}</div>{{ p.bemerkungen|linebreaksbr }}</div>{% endif %}
+{% if p.bemerkungen %}<div class="fw-card"><div class="fw-kopf"><h2>{% trans "Bemerkungen" %}</h2></div><div class="p-5">{{ p.bemerkungen|linebreaksbr }}</div></div>{% endif %}
 {% endblock %}
