@@ -19,9 +19,9 @@ verspätete. Darum zwei Schritte:
    (`stelle_bis_heute`) — je Monat eine Forderung, idempotent, anteilig im
    ersten Monat und nur bis zur Rückgabe, falls diese inzwischen protokolliert ist.
 
-MWST: Nicht berechnet. Ob die Entschädigung bei einem MWST-pflichtig vermieteten
-Objekt der Steuer unterliegt, ist eine Einzelfallfrage; sie gehört vor dem
-Stellen geklärt und bei Bedarf von Hand ergänzt.
+MWST: Folgt dem Vertrag. Ist das Objekt steuerpflichtig vermietet (`mwst_pflichtig`),
+wird die Entschädigung wie die Miete mit dem Satz des Vertrags belastet und über
+2200 gebucht; bei Wohnraum (nicht steuerbar) entsteht keine MWST. Beides kommt vor.
 """
 import calendar
 from datetime import date, timedelta
@@ -101,6 +101,10 @@ def stelle(vertrag, jahr, monat, user=None):
     total = netto + nk
     if total <= 0:
         return None
+    # MWST wie in der Sollstellung: auf Netto + Nebenkosten, nur bei steuerpflichtigem Vertrag.
+    mwst = Decimal('0.00')
+    if vertrag.mwst_pflichtig and (vertrag.mwst_satz or 0) > 0:
+        mwst = round(total * (vertrag.mwst_satz / Decimal('100')), 2)
 
     ensure_kontenplan()
     lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
@@ -109,10 +113,12 @@ def stelle(vertrag, jahr, monat, user=None):
         vertrag=vertrag, liegenschaft=lg, einheit=vertrag.einheit, titel=titel,
         beschreibung=(f'Entschädigung für die Weiternutzung vom {von:%d.%m.%Y} bis '
                       f'{bis:%d.%m.%Y} nach Vertragsende am {vertrag.ende:%d.%m.%Y}.'),
-        betrag=total, faellig_am=von, status='offen')
+        betrag=total + mwst, faellig_am=von, status='offen')
     buche("1100", ertrag_konto, netto, f"{titel} {vertrag.mieter}",
           datum=von, liegenschaft=lg, debitor=rechnung, user=user)
     buche("1100", nk_konto, nk, f"{titel} ({nk_label}) {vertrag.mieter}",
+          datum=von, liegenschaft=lg, debitor=rechnung, user=user)
+    buche("1100", "2200", mwst, f"MWST {vertrag.mwst_satz}% {titel} {vertrag.mieter}",
           datum=von, liegenschaft=lg, debitor=rechnung, user=user)
     return rechnung
 

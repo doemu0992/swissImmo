@@ -787,6 +787,9 @@ class MoneyBugBatchTests(TestCase):
         from finance.models import KreditorenRechnung, DebitorenRechnung
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
+        # Entscheid 30.09.2026: Ausgangssteuer nur bei STEUERPFLICHTIG vermietetem Vertrag
+        # (Wohnraum: Vorsteuerkorrektur statt 2200 — siehe test_entscheide_weiterverrechnung).
+        v.mwst_pflichtig = True; v.mwst_satz = Decimal('8.1'); v.save()
         k = KreditorenRechnung.objects.create(
             lieferant='Sanitär AG', betrag=Decimal('1081.00'), mwst_satz=Decimal('8.1'),
             status='freigegeben', liegenschaft=lg, konto=konto('4000'),
@@ -797,13 +800,14 @@ class MoneyBugBatchTests(TestCase):
             'titel': 'Rohrbruch Küche'})
         self.assertIn(r.status_code, (200, 302))
         rech = DebitorenRechnung.objects.get(quell_kreditor=k)
-        self.assertEqual(rech.betrag, Decimal('1181.00'))              # grund + zuschlag
-        self.assertEqual(rech.weiterverrechnung_zuschlag, Decimal('100.00'))
-        # Aufwand (4000) nur um NETTO 1000 entlastet, 81 als 2200 Umsatzsteuer.
+        # grund + zuschlag + MWST auf den Zuschlag (8.10): der Zuschlag ist eine eigene Leistung.
+        self.assertEqual(rech.betrag, Decimal('1189.10'))
+        self.assertEqual(rech.weiterverrechnung_zuschlag, Decimal('108.10'))
+        # Aufwand (4000) nur um NETTO 1000 entlastet, 81 (+8.10 auf den Zuschlag) als 2200 Umsatzsteuer.
         s4000, h4000 = self._saldo('4000')
         self.assertEqual(h4000 - s4000, Decimal('1000.00'))
         s2200, h2200 = self._saldo('2200')
-        self.assertEqual(h2200 - s2200, Decimal('81.00'))
+        self.assertEqual(h2200 - s2200, Decimal('89.10'))
         s3600, h3600 = self._saldo('3600')
         self.assertEqual(h3600 - s3600, Decimal('100.00'))            # Zuschlag = Ertrag
         # Durchlaufkonto 1190 geht exakt auf null auf.

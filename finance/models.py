@@ -483,6 +483,11 @@ class KreditorenRechnung(OrganisationAusKette):
         ('bezahlt', gettext_lazy('Bezahlt')),
         ('storniert', gettext_lazy('Storniert')), # 🔥 NEU für Revisionssicherheit
     ]
+    # Anteil der Rechnung, der bei der Verteilung auf die Mieter dem Eigentümer bleibt
+    # (Leerstand): nicht weiterzuverrechnen, aber auch nicht «offen».
+    weiterverrechnung_eigentuemer = models.DecimalField(
+        "Bei Verteilung beim Eigentümer verbleibend (Leerstand)", max_digits=10,
+        decimal_places=2, default=Decimal('0.00'))
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='neu')
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
@@ -532,8 +537,13 @@ class KreditorenRechnung(OrganisationAusKette):
 
     @property
     def offen_weiterzuverrechnen(self):
-        """Noch nicht weiterverrechneter Anteil der Rechnung."""
-        return max(Decimal('0.00'), (self.betrag or Decimal('0.00')) - self.weiterverrechnet_betrag)
+        """Noch nicht weiterverrechneter Anteil der Rechnung.
+
+        Was als Leerstandsanteil beim Eigentümer bleibt (`weiterverrechnung_eigentuemer`),
+        gilt als erledigt: Sonst stünde die Rechnung nach jeder Verteilung mit leerem
+        Objekt dauerhaft als offene Weiterverrechnung im Arbeitskorb."""
+        return max(Decimal('0.00'), (self.betrag or Decimal('0.00')) - self.weiterverrechnet_betrag
+                   - (self.weiterverrechnung_eigentuemer or Decimal('0.00')))
 
     # --- OP-Verwaltung auf der Kreditorenseite (analog Debitoren) ---
     @property

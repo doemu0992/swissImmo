@@ -270,10 +270,17 @@ def eskalation_257d(rechnung, benutzer=None):
         quelle=quelle, erstellt_von=benutzer)
 
 
+#: Quelle der Pendenz «Original per Einschreiben versenden» nach einer 257d-Kopie per E-Mail.
+EINSCHREIBEN_PRAEFIX = '257d-einschreiben:'
+
+
 def vorschlaege_erledigen(vertrag, grund):
-    """Schliesst die Vorschlags-Pendenzen des Vertrags. Gibt die Anzahl zurück."""
+    """Schliesst die Vorschlags- und Einschreiben-Pendenzen des Vertrags (Fristansetzung
+    erfolgt oder Rückstand bezahlt). Gibt die Anzahl zurück."""
     n = 0
-    for p in vertrag.pendenzen.filter(quelle__startswith=VORSCHLAG_PRAEFIX, erledigt=False):
+    for p in vertrag.pendenzen.filter(
+            Q(quelle__startswith=VORSCHLAG_PRAEFIX) | Q(quelle__startswith=EINSCHREIBEN_PRAEFIX),
+            erledigt=False):
         frist_erledigen(p, grund)
         n += 1
     return n

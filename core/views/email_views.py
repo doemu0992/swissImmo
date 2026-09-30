@@ -313,17 +313,33 @@ def send_mahnung_email_view(request, vertrag_id):
 
     html_content = render_to_string('emails/email_mahnung.html', context)
     email = EmailMultiAlternatives(
-        subject=f"Mahnung mit Kündigungsandrohung: {context['objekt_name']}",
-        body=f"Guten Tag, im Anhang finden Sie die Mahnung für {monat_str}.",
+        subject=f"Kopie: Mahnung mit Kündigungsandrohung (Art. 257d OR) — Original folgt per Einschreiben: {context['objekt_name']}",
+        body=(f"Guten Tag, im Anhang finden Sie eine KOPIE der Mahnung für {monat_str}. "
+              f"Die massgebende Fristansetzung erhalten Sie zusätzlich per Einschreiben."),
         from_email=settings.DEFAULT_FROM_EMAIL, to=[vertrag.mieter.email],
     )
     email.attach_alternative(html_content, "text/html")
     email.attach(f"Mahnung_{monat_str.replace(' ','_')}.pdf", pdf_bytes, 'application/pdf')
     email.send()
 
-    log_aktion(request, "Mahnung versendet (Art. 257d OR)", str(vertrag),
-               f"an {vertrag.mieter.email}, Monat {monat_str}, CHF {betrag_str}")
+    # Schriftform (Art. 13 OR): Die E-Mail ist nur die Kopie. Bis die Fristansetzung per
+    # Einschreiben rausgegangen ist (`fw_verzug_257d`), steht eine Pendenz im Arbeitsvorrat.
+    from core.models import Pendenz
+    quelle = f'257d-einschreiben:{vertrag.pk}'
+    if not Pendenz.objects.filter(vertrag=vertrag, quelle=quelle, erledigt=False).exists():
+        Pendenz.objects.create(
+            titel=f'Art. 257d: Original per Einschreiben versenden – {vertrag.mieter.display_name}',
+            beschreibung=(f'Per E-Mail ging nur eine Kopie der Mahnung mit Kündigungsandrohung an '
+                          f'{vertrag.mieter.email} (Monat {monat_str}, CHF {betrag_str}). Die Frist nach '
+                          f'Art. 257d OR beginnt erst mit dem Zugang des eingeschriebenen Briefes: '
+                          f'Fristansetzung jetzt mit Sendungsnummer erfassen.'),
+            kategorie='frist', faellig_am=heute + datetime.timedelta(days=2), vertrag=vertrag,
+            liegenschaft=vertrag.einheit.liegenschaft if vertrag.einheit_id else None,
+            quelle=quelle, erstellt_von=request.user if request.user.is_authenticated else None)
+    log_aktion(request, "Mahnung (Kopie) per E-Mail versendet (Art. 257d OR)", str(vertrag),
+               f"an {vertrag.mieter.email}, Monat {monat_str}, CHF {betrag_str} — Original per Einschreiben ausstehend")
     messages.success(request, '✅ ' + gettext('Mahnung inkl. QR-Rechnung an %(email)s gesendet.') % {'email': vertrag.mieter.email})
+    messages.warning(request, gettext('Das war nur die Kopie. Rechtsgültig ist der eingeschriebene Brief — die Fristansetzung jetzt erfassen, sonst läuft keine Frist.'))
     return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 

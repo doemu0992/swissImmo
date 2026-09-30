@@ -726,3 +726,98 @@ def fw_auftrag_kosten(request, pk):
     log_aktion(request, "Reparaturkosten erfasst", f"Ticket #{a.ticket_id}",
                f"geschätzt {a.kosten_geschaetzt}, effektiv {a.kosten_effektiv}")
     return redirect(f'/neu/schaeden/{a.ticket_id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_versicherungsfall(request, pk):
+    """Versicherungsfall zu einem Schaden (core/services/versicherungsfall.py).
+
+    Melden und Ablehnen-Vermerk gehören zur Schadenbearbeitung (Schreib-Rollen); was Geld
+    bucht — Selbstbehalt überwälzen, Entschädigung verbuchen — Inhabern und Verwaltern."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import VERWALTUNGS_ROLLEN, hat_rolle, log_aktion
+    from core.services import versicherungsfall as vs
+    from portfolio.models import Versicherung
+    from tickets.models import SchadenMeldung
+
+    t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit'), id=pk)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+    ziel = f'/neu/schaeden/{t.id}/versicherung/'
+
+    def dec(key):
+        roh = _num(request.POST.get(key))
+        try:
+            return Decimal(roh) if roh else None
+        except Exception:
+            return None
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        geld = aktion in ('ueberwaelzen', 'entschaedigung')
+        if geld and not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
+            messages.error(request, gettext('Buchungen zum Versicherungsfall sind Inhabern und Verwaltern vorbehalten.'))
+            return redirect(ziel)
+        try:
+            if aktion == 'melden':
+                police = Versicherung.objects.filter(
+                    pk=request.POST.get('police') or 0, liegenschaft=t.liegenschaft).first()
+                if request.POST.get('police') and police is None:
+                    # Eine gewählte, aber nicht zur Liegenschaft gehörende Police wird nicht
+                    # still weggelassen — sonst gälte der Fall ohne Police und ohne Selbstbehalt.
+                    raise ValueError(gettext('Die gewählte Police gehört nicht zu dieser Liegenschaft.'))
+                try:
+                    gemeldet = date.fromisoformat(request.POST.get('gemeldet_am') or '') if request.POST.get('gemeldet_am') else heute
+                except ValueError:
+                    gemeldet = heute
+                vf = vs.melden(t, police=police, schadennummer=request.POST.get('schadennummer') or '',
+                               gemeldet_am=gemeldet, schadensumme=dec('schadensumme'),
+                               traeger=request.POST.get('selbstbehalt_traeger') or 'eigentuemer',
+                               benutzer=request.user, bemerkung=(request.POST.get('bemerkung') or '').strip())
+                log_aktion(request, 'Versicherungsfall gemeldet', f'Ticket #{t.id}',
+                           f'{vf.schadennummer or "ohne Schadennummer"}, Selbstbehalt CHF {vf.selbstbehalt}')
+                messages.success(request, '✅ ' + gettext('Versicherungsfall erfasst.'))
+                if police is None:
+                    messages.warning(request, gettext('Keine Police gewählt — der Selbstbehalt ist mit CHF 0.00 angesetzt.'))
+                elif police.selbstbehalt is None:
+                    messages.warning(request, gettext('Bei der Police ist kein Selbstbehalt hinterlegt — mit CHF 0.00 angesetzt.'))
+            elif aktion in ('ueberwaelzen', 'entschaedigung', 'ablehnen'):
+                from tickets.models import Versicherungsfall
+                vf = get_object_or_404(Versicherungsfall, pk=request.POST.get('fall') or 0, ticket=t)
+                if aktion == 'ueberwaelzen':
+                    vertrag = get_object_or_404(Mietvertrag, pk=request.POST.get('vertrag') or 0)
+                    r = vs.selbstbehalt_ueberwaelzen(vf, vertrag, benutzer=request.user)
+                    log_aktion(request, 'Selbstbehalt überwälzt', str(vertrag.mieter), f'CHF {r.betrag}', ziel=vertrag)
+                    messages.success(request, '✅ ' + gettext('Selbstbehalt von CHF %(betrag)s dem Mieter in Rechnung gestellt.') % {'betrag': r.betrag})
+                elif aktion == 'entschaedigung':
+                    try:
+                        datum = date.fromisoformat(request.POST.get('datum') or '') if request.POST.get('datum') else heute
+                    except ValueError:
+                        datum = heute
+                    vs.entschaedigung_verbuchen(vf, dec('betrag'), datum=datum,
+                                                bank=(request.POST.get('bank_konto') or '1020').strip(),
+                                                benutzer=request.user)
+                    log_aktion(request, 'Versicherungsleistung verbucht', f'Ticket #{t.id}', f'CHF {vf.entschaedigung_erhalten}')
+                    messages.success(request, '✅ ' + gettext('Versicherungsleistung verbucht.'))
+                else:
+                    vs.ablehnen(vf, benutzer=request.user)
+                    messages.info(request, gettext('Als abgelehnt vermerkt.'))
+        except ValueError as exc:
+            messages.error(request, f'❌ {exc}')
+        except PermissionError as exc:
+            messages.error(request, f'❌ {exc}')
+        return redirect(ziel)
+
+    faelle = list(t.versicherungsfaelle.select_related('police', 'selbstbehalt_rechnung'))
+    vertraege = []
+    if t.betroffene_einheit_id:
+        vertraege = list(Mietvertrag.objects.filter(einheit=t.betroffene_einheit, status__in=('aktiv', 'gekuendigt'))
+                         .select_related('mieter'))
+    return render(request, 'fw/versicherungsfall.html', {
+        **basis, 'nav': 'schaeden', 't': t, 'faelle': faelle,
+        'policen': Versicherung.objects.filter(liegenschaft=t.liegenschaft),
+        'vorschlag': vs.schadensumme_vorschlag(t), 'vertraege': vertraege,
+        'heute_iso': heute.isoformat(),
+    })

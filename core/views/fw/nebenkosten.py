@@ -251,14 +251,17 @@ def fw_nebenkosten_verbuchen(request, pk):
                 # im Mieterkonto als Haben und kann dort mit einer offenen
                 # Rechnung verrechnet oder ausbezahlt werden.
                 konto_2030 = _konto("2030")
-                buche("3020", "2030", abs(saldo), f"NK-Gutschrift {v.mieter} - {p.bezeichnung}",
-                      datum=heute, liegenschaft=v.einheit.liegenschaft, user=request.user)
-                Zahlungseingang.objects.create(
+                # Zahlungseingang ZUERST, dann mit `zahlung=` buchen: nur so hebt der
+                # Storno des Guthabens auch die Buchung 3020/2030 auf (sonst bleibt 2030
+                # im Hauptbuch stehen, das Nebenbuch nicht).
+                z_nk = Zahlungseingang.objects.create(
                     vertrag=v, betrag=abs(saldo), datum_eingang=heute,
                     buchungs_monat=heute.replace(day=1),
                     bemerkung=f"NK-Gutschrift {p.bezeichnung} (Guthaben Mieter)",
                     konto=konto_2030, liegenschaft=v.einheit.liegenschaft,
                     erstellt_von=request.user, status='verbucht')
+                buche("3020", "2030", abs(saldo), f"NK-Gutschrift {v.mieter} - {p.bezeichnung}",
+                      datum=heute, liegenschaft=v.einheit.liegenschaft, zahlung=z_nk, user=request.user)
                 n_gut += 1
         p.abgeschlossen = True
         # Ergebnis EINFRIEREN: ab jetzt zeigen Detailseite/PDF/Versand genau diese

@@ -359,11 +359,35 @@ def fw_weiterverrechnung(request, kreditor_id):
                 buche("1190", aufwand_konto, netto, f"Aufwandsminderung Weiterverrechnung: {k.lieferant}",
                       datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
                 if mwst > 0:
-                    buche("1190", "2200", mwst, f"MWST Weiterverrechnung {satz}% {vertrag.mieter}",
-                          datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
+                    # MWST JE VERTRAG (beides kommt vor):
+                    #  · Steuerpflichtig vermietet (Gewerbe mit Option): Die durchgereichte Leistung
+                    #    ist steuerbar → Ausgangssteuer 2200.
+                    #  · Nicht steuerpflichtig (Wohnraum, Art. 21 Abs. 2 Ziff. 21 MWSTG): Es
+                    #    entsteht keine Ausgangssteuer. Die bei der Freigabe abgezogene Vorsteuer
+                    #    ist dann zu korrigieren (1170 zurück) — nicht als Ausgangssteuer zu
+                    #    buchen, die es nicht gibt.
+                    if vertrag.mwst_pflichtig:
+                        buche("1190", "2200", mwst, f"MWST Weiterverrechnung {satz}% {vertrag.mieter}",
+                              datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
+                    else:
+                        buche("1190", "1170", mwst,
+                              f"Vorsteuerkorrektur Weiterverrechnung {satz}% {vertrag.mieter} (nicht steuerbar)",
+                              datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
                 if zuschlag > 0:
                     buche("1100", "3600", zuschlag, f"Zuschlag Weiterverrechnung {vertrag.mieter}",
                           datum=heute, liegenschaft=lg2, debitor=rechnung, user=request.user)
+                    # Ein Zuschlag ist eine eigene Leistung des Vermieters: Bei steuerpflichtiger
+                    # Vermietung mit MWST — bisher ohne, auch wenn der Mieter optiert hat.
+                    if vertrag.mwst_pflichtig and (vertrag.mwst_satz or 0) > 0:
+                        zmwst = (zuschlag * vertrag.mwst_satz / Decimal('100')).quantize(Decimal('0.01'))
+                        if zmwst > 0:
+                            buche("1100", "2200", zmwst, f"MWST auf Zuschlag {vertrag.mwst_satz}% {vertrag.mieter}",
+                                  datum=heute, liegenschaft=lg2, debitor=rechnung, user=request.user)
+                            rechnung.betrag = total + zmwst
+                            # Der Abstimmung gilt der Zuschlag samt Steuer nicht als durchgereichte Kosten.
+                            rechnung.weiterverrechnung_zuschlag = zuschlag + zmwst
+                            rechnung.save(update_fields=['betrag', 'weiterverrechnung_zuschlag'])
+                            total = total + zmwst
                 return rechnung, total
 
             # --- Doppelverrechnungs-Schutz (bindend): eine HNK-relevante Rechnung
@@ -386,9 +410,20 @@ def fw_weiterverrechnung(request, kreditor_id):
                 if grund_total <= 0:
                     messages.error(request, gettext('Nichts mehr offen zum Weiterverrechnen.'))
                     return redirect(request.path)
-                zielvertraege = list(Mietvertrag.objects.filter(status='aktiv', einheit__liegenschaft=lg)
-                                     .select_related('mieter', 'einheit'))
-                if not zielvertraege:
+                # Stichtag = Rechnungsdatum: Wer damals in der Wohnung war, trägt mit — auch
+                # ein bereits GEKÜNDIGTER Mieter (wohnt bis zum Ende dort). Leere Einheiten
+                # gehören zum Schlüssel, ihr Anteil bleibt beim Eigentümer: Vorher verteilte
+                # der Modus alles auf die aktiven Mieter, und bei 4 Einheiten mit einem
+                # Leerstand zahlten die 3 Mieter 100 % statt 75 % (Stresstest, Audit).
+                stichtag = k.datum or heute
+                einheiten = list(lg.einheiten.all())
+                vertrag_je_einheit = {}
+                for v in (Mietvertrag.objects.filter(status__in=('aktiv', 'gekuendigt'),
+                                                     einheit__liegenschaft=lg, beginn__lte=stichtag)
+                          .filter(Q(ende__isnull=True) | Q(ende__gte=stichtag))
+                          .select_related('mieter', 'einheit').order_by('beginn')):
+                    vertrag_je_einheit.setdefault(v.einheit_id, v)
+                if not vertrag_je_einheit:
                     messages.error(request, gettext('Keine aktiven Mietverhältnisse in dieser Liegenschaft.'))
                     return redirect(request.path)
 
@@ -399,24 +434,37 @@ def fw_weiterverrechnung(request, kreditor_id):
                         return Decimal(str(e.wertquote or 0))
                     return Decimal(str(e.flaeche_m2 or 0))   # Default m²
 
-                gew = [(v, _gewicht(v.einheit)) for v in zielvertraege if v.einheit_id]
-                total_w = sum((w for _, w in gew), Decimal('0'))
+                total_w = sum((_gewicht(e) for e in einheiten), Decimal('0'))
                 if total_w <= 0:
                     messages.error(request, gettext('Für diesen Verteilschlüssel fehlen die Werte (m²/Wertquote) an den Objekten.'))
                     return redirect(request.path)
+                gew = [(vertrag_je_einheit[e.pk], _gewicht(e)) for e in einheiten
+                       if e.pk in vertrag_je_einheit and _gewicht(e) > 0]
+                leerstand_w = sum((_gewicht(e) for e in einheiten if e.pk not in vertrag_je_einheit),
+                                  Decimal('0'))
+                anteile = [(v, (grund_total * w / total_w).quantize(Decimal('0.01'))) for v, w in gew]
+                if leerstand_w <= 0 and anteile:
+                    # Kein Leerstand: Der Rundungsrest geht an den letzten Mieter (Summe = Rechnung).
+                    v_l, _a = anteile[-1]
+                    anteile[-1] = (v_l, grund_total - sum((a for _, a in anteile[:-1]), Decimal('0.00')))
+                eigentuemer_anteil = grund_total - sum((a for _, a in anteile), Decimal('0.00'))
 
                 verteilt = Decimal('0.00'); anzahl = 0
                 titel = (request.POST.get('titel') or f"Weiterverrechnung: {k.lieferant}").strip()
-                for i, (v, w) in enumerate(gew):
-                    anteil = (grund_total - verteilt) if i == len(gew) - 1 \
-                        else (grund_total * w / total_w).quantize(Decimal('0.01'))
+                for v, anteil in anteile:
                     if anteil <= 0:
                         continue
                     _verrechne(v, anteil, Decimal('0'), titel)
                     verteilt += anteil; anzahl += 1
+                if eigentuemer_anteil > 0:
+                    k.weiterverrechnung_eigentuemer = (k.weiterverrechnung_eigentuemer or Decimal('0.00')) + eigentuemer_anteil
+                    k.save(update_fields=['weiterverrechnung_eigentuemer'])
+                grund_total = verteilt
                 log_aktion(request, "Weiterverrechnung verteilt", str(lg),
                            f"CHF {grund_total} aus {k.lieferant} auf {anzahl} Mieter ({schluessel})")
                 messages.success(request, '✅ ' + gettext('CHF %(grund_total)s nach %(schluessel)s auf %(anzahl)s Mieter verteilt — QR-Rechnungen über den QR-Button in den Debitoren.') % {'grund_total': grund_total, 'schluessel': schluessel, 'anzahl': anzahl})
+                if eigentuemer_anteil > 0:
+                    messages.info(request, gettext('CHF %(betrag)s (Leerstand) bleiben beim Eigentümer.') % {'betrag': eigentuemer_anteil})
                 return redirect('/neu/debitoren/')
 
             # --- Einzel-Weiterverrechnung an einen Mieter ---

@@ -21261,3 +21261,50 @@ msgstr "dossier uniquement"
 #, python-format
 msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
 msgstr "Paiement excédentaire : CHF %(betrag)s comptabilisés comme avoir du locataire (compte 2030)."
+
+msgid "Als abgelehnt vermerkt."
+msgstr "Noté comme refusé."
+
+msgid "Bei der Police ist kein Selbstbehalt hinterlegt — mit CHF 0.00 angesetzt."
+msgstr "Aucune franchise n'est enregistrée pour la police — fixée à CHF 0.00."
+
+msgid "Buchungen zum Versicherungsfall sind Inhabern und Verwaltern vorbehalten."
+msgstr "Les écritures liées à un sinistre d'assurance sont réservées aux propriétaires et aux gérants."
+
+#, python-format
+msgid "CHF %(betrag)s (Leerstand) bleiben beim Eigentümer."
+msgstr "CHF %(betrag)s (vacance) restent à la charge du propriétaire."
+
+msgid "Das war nur die Kopie. Rechtsgültig ist der eingeschriebene Brief — die Fristansetzung jetzt erfassen, sonst läuft keine Frist."
+msgstr "Ce n'était qu'une copie. Seule la lettre recommandée fait foi — enregistrez maintenant la fixation de délai, sinon aucun délai ne court."
+
+msgid "Die gewählte Police gehört nicht zu dieser Liegenschaft."
+msgstr "La police choisie n'appartient pas à cet immeuble."
+
+msgid "Entschädigt"
+msgstr "Indemnisé"
+
+msgid "In Abklärung"
+msgstr "En cours d'examen"
+
+msgid "Keine Police gewählt — der Selbstbehalt ist mit CHF 0.00 angesetzt."
+msgstr "Aucune police choisie — la franchise est fixée à CHF 0.00."
+
+msgid "Mieter (Überwälzung)"
+msgstr "Locataire (répercussion)"
+
+msgid "Selbstbehalt je Schaden CHF"
+msgstr "Franchise par sinistre CHF"
+
+#, python-format
+msgid "Selbstbehalt von CHF %(betrag)s dem Mieter in Rechnung gestellt."
+msgstr "Franchise de CHF %(betrag)s facturée au locataire."
+
+msgid "Versicherungsfall"
+msgstr "Sinistre d'assurance"
+
+msgid "Versicherungsfall erfasst."
+msgstr "Sinistre d'assurance enregistré."
+
+msgid "Versicherungsleistung verbucht."
+msgstr "Prestation d'assurance comptabilisée."
