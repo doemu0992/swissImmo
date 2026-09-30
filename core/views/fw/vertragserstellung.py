@@ -37,7 +37,19 @@ from core.tenancy import aktuelle_organisation
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vertrag_neu(request):
-    from crm.models import Organisation, Mieter
+    return render(request, 'fw/vertrag_neu.html',
+                  _assistent_kontext(request, request.GET.get('edit')))
+
+
+def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
+    """Alles, was der Vertragsassistent zum Anzeigen braucht.
+
+    `immer_zeigen`: eine Einheit, die in der Auswahl stehen muss, auch wenn
+    sie noch belegt ist — beim erneuten Anzeigen nach einem Fehler das Objekt,
+    das schon gewählt war (etwa der Nachmieter-Vertrag, dessen Vorgänger noch
+    aktiv ist).
+    """
+    from crm.models import Mieter
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -48,7 +60,6 @@ def fw_vertrag_neu(request):
     }
 
     # Bearbeiten-Modus: der Assistent editiert einen bestehenden ENTWURF (voll).
-    edit_id = request.GET.get('edit')
     edit_vertrag = (Mietvertrag.objects
                     .filter(id=edit_id, status='entwurf')
                     .select_related('einheit__liegenschaft', 'mieter', 'mitmieter').first()
@@ -75,6 +86,7 @@ def fw_vertrag_neu(request):
     # Die vorgewählte Einheit immer zeigen (Nachmieter-Vertrag beginnt nach Auszug,
     # der alte Vertrag kann noch aktiv/gekündigt sein).
     belegte.discard(vorwahl_einheit)
+    belegte.discard(immer_zeigen)
     # Im Bearbeiten-Modus das Objekt des Entwurfs immer einschliessen (sonst kann
     # der Assistent es nicht vorbelegen).
     if edit_vertrag:
@@ -169,7 +181,7 @@ def fw_vertrag_neu(request):
         }
 
     from core.services.docuseal_service import docuseal_konfiguriert
-    return render(request, 'fw/vertrag_neu.html', {
+    return {
         **basis, 'nav': 'vertraege',
         'liegenschaften': liegenschaften, 'mieter': mieter,
         'verwaltung': verwaltung,
@@ -179,7 +191,25 @@ def fw_vertrag_neu(request):
         'vorwahl_einheit': vorwahl_einheit or '',
         'edit_vertrag': edit_vertrag, 'edit_json': edit_json,
         'docuseal_konfiguriert': docuseal_konfiguriert(),
+    }
+
+
+def _assistent_mit_fehlern(request, P, feld_fehler, einheit):
+    """Den Assistenten mit den Eingaben und den Meldungen am Feld erneut zeigen.
+
+    Status 400. `rueckgabe` sind die abgeschickten Werte (Name → Liste); das
+    Skript der Vorlage setzt sie wieder ein, wie beim Bearbeiten eines
+    Entwurfs. Es sind die eigenen Eingaben dieser Anfrage, und `json_script`
+    maskiert sie.
+    """
+    kontext = _assistent_kontext(request, P.get('edit_id'),
+                                 immer_zeigen=einheit.pk if einheit else None)
+    kontext.update({
+        'rueckgabe': {k: P.getlist(k) for k in P if k != 'csrfmiddlewaretoken'},
+        'feld_fehler': feld_fehler,
+        'anzahl_fehler': len(feld_fehler),
     })
+    return render(request, 'fw/vertrag_neu.html', kontext, status=400)
 
 
 def _lik_assistent_defaults(vw):
@@ -215,7 +245,7 @@ ASSISTENT_ZAHLEN = (
 
 
 def _unlesbare_eingaben(P):
-    """Meldungen für ausgefüllte, aber unlesbare Felder des Assistenten."""
+    """(Feld, Meldung) für ausgefüllte, aber unlesbare Felder des Assistenten."""
     fehler = []
     for name, art, beschriftung in ASSISTENT_ZAHLEN:
         roh = (P.get(name) or '').strip()
@@ -229,16 +259,16 @@ def _unlesbare_eingaben(P):
             else:
                 date.fromisoformat(roh)
         except Exception:
-            fehler.append(gettext('«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert.')
-                          % {'eingabe': roh[:40], 'feld': beschriftung})
+            fehler.append((name, gettext('«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert.')
+                           % {'eingabe': roh[:40], 'feld': beschriftung}))
     for roh in P.getlist('staffel_netto'):
         roh = (roh or '').strip()
         if roh:
             try:
                 Decimal(_num(roh))
             except Exception:
-                fehler.append(gettext('«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert.')
-                              % {'eingabe': roh[:40]})
+                fehler.append(('staffel_netto', gettext('«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert.')
+                                               % {'eingabe': roh[:40]}))
     return fehler
 
 
@@ -253,10 +283,10 @@ def fw_vertrag_neu_speichern(request):
         return redirect('fw_vertrag_neu')
 
     P = request.POST
-    einheit = Einheit.objects.filter(id=P.get('einheit_id') or 0).first()
-    if not einheit:
-        messages.error(request, gettext('Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.'))
-        return redirect('/neu/vertraege/neu/')
+    try:
+        einheit = Einheit.objects.filter(id=int(P.get('einheit_id') or 0)).first()
+    except ValueError:
+        einheit = None
 
     # --- Serverseitige Validierung VOR jeder DB-Änderung (Live-Test F) ---
     # Clientseitige Prüfungen lassen sich umgehen; ein ungültiger Vertrag
@@ -277,22 +307,30 @@ def fw_vertrag_neu_speichern(request):
 
     _v_beginn = _datum_val('beginn') or timezone.localdate()
     _v_ende = _datum_val('ende')
-    _fehler = []
+    # Feld → Meldung. Die Meldung steht beim Feld; der Assistent öffnet den
+    # Schritt des ersten Fehlers, und alle Eingaben bleiben stehen.
+    feld_fehler = {}
+
+    def _fehler(feld, meldung):
+        feld_fehler.setdefault(feld, meldung)
+
+    if not einheit:
+        _fehler('einheit_id', gettext('Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.'))
     if _dec_val('netto_mietzins') < 0:
-        _fehler.append("Der Netto-Mietzins darf nicht negativ sein.")
-    if not einheit.ist_einstellplatz and _dec_val('nebenkosten') < 0:
-        _fehler.append("Die Nebenkosten dürfen nicht negativ sein.")
+        _fehler('netto_mietzins', gettext('Der Netto-Mietzins darf nicht negativ sein.'))
+    if not (einheit and einheit.ist_einstellplatz) and _dec_val('nebenkosten') < 0:
+        _fehler('nebenkosten', gettext('Die Nebenkosten dürfen nicht negativ sein.'))
     # Nur prüfen, wenn der Vertrag WIRKLICH befristet gespeichert wird — sonst wird
     # `ende` beim Speichern ohnehin verworfen (siehe _ist_befristet weiter unten),
     # und ein stehengebliebener Alt-Wert im Feld dürfte die Anlage nicht blockieren.
     if P.get('ist_befristet') == '1' and _v_ende and _v_ende < _v_beginn:
-        _fehler.append("Das Vertragsende darf nicht vor dem Vertragsbeginn liegen.")
+        _fehler('ende', gettext('Das Vertragsende darf nicht vor dem Vertragsbeginn liegen.'))
     if not (P.get('mieter_id') or '').strip():
         _typ_neu = P.get('mieter_typ', 'person')
         if _typ_neu in ('firma', 'verein') and not P.get('firmen_name', '').strip():
-            _fehler.append("Bitte den Firmen-/Vereinsnamen erfassen.")
+            _fehler('firmen_name', gettext('Bitte den Firmen-/Vereinsnamen erfassen.'))
         elif _typ_neu == 'person' and not P.get('nachname', '').strip():
-            _fehler.append("Bitte den Nachnamen des Mieters erfassen.")
+            _fehler('nachname', gettext('Bitte den Nachnamen des Mieters erfassen.'))
     # UNLESBARES WIRD ABGELEHNT, NICHT ERSETZT (Audit Etappe 2).
     #
     # Weiter unten deutet der Assistent eine unlesbare Eingabe still um: der
@@ -302,11 +340,12 @@ def fw_vertrag_neu_speichern(request):
     # dort falsch, ohne dass es jemand bemerkt. Eine unlesbare Personenzahl
     # war ein Serverfehler. Leer bleibt erlaubt (dann gilt die Vorgabe wie
     # bisher); nur, was eingetippt und nicht lesbar ist, hält hier an.
-    _fehler += _unlesbare_eingaben(P)
-    if _fehler:
-        for _f in _fehler:
-            messages.error(request, _f)
-        return redirect('/neu/vertraege/neu/')
+    for feld, meldung in _unlesbare_eingaben(P):
+        _fehler(feld, meldung)
+    if feld_fehler:
+        # Vorher: Meldungen oben, Weiterleitung auf einen LEEREN Assistenten —
+        # sieben Schritte Eingaben waren weg (Audit Etappe 2, Nachtrag).
+        return _assistent_mit_fehlern(request, P, feld_fehler, einheit)
 
     # Mieter: bestehend oder neu
     mieter_id = P.get('mieter_id') or ''
