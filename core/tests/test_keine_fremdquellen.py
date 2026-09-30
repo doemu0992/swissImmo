@@ -178,10 +178,8 @@ class StilbausteineVorhandenTest(SimpleTestCase):
     ERWARTET = (
         'static/css/tailwind.css',
         'static/css/schriften.css',
-        'static/css/fontawesome.css',
         'static/fonts/IBMPlexSans-Regular-Latin1.woff2',
         'static/fonts/IBMPlexMono-Regular-Latin1.woff2',
-        'static/webfonts/fa-solid-900.woff2',
     )
 
     def test_dateien_liegen_im_repo(self):
@@ -210,19 +208,14 @@ class StilbausteineVorhandenTest(SimpleTestCase):
             + '\n\nDer Browser lädt dann ins Leere und fällt still auf eine '
               'Systemschrift zurück — sichtbar erst, wenn jemand hinschaut.')
 
-    def test_fontawesome_css_verweist_nur_auf_vorhandene_dateien(self):
-        css = (WURZEL / 'static/css/fontawesome.css').read_text(encoding='utf-8')
-        verweise = set(re.findall(r'url\((?:"|\')?([^)"\']+\.woff2)', css))
-        self.assertTrue(verweise, 'fontawesome.css nennt keine Schriftdatei.')
-        fehlend = []
-        for verweis in verweise:
-            ziel = (WURZEL / 'static/css' / verweis).resolve()
-            if not ziel.exists():
-                fehlend.append(verweis)
-        self.assertEqual(
-            fehlend, [],
-            'fontawesome.css verweist auf Schriftdateien, die nicht ausgeliefert '
-            'werden:\n  ' + '\n  '.join(fehlend)
-            + '\n\nBrands und v4compatibility sind bewusst nicht dabei (im Bestand '
-              'kommt kein einziges Marken-Icon vor, das spart 117 KB). Wer ein '
-              'Marken-Icon braucht, legt die Datei dazu.')
+    def test_font_awesome_ist_entfernt(self):
+        """Seit dem Redesign v8 (30.09.2026) liegt Font Awesome nicht mehr im Repo.
+
+        Seit E2.43 lud es keine Vorlage mehr; nur dieser Waechter verlangte
+        noch, dass die Dateien daliegen. Jetzt verlangt er das Gegenteil: Wer
+        ein Zeichen braucht, nimmt das Sprite (`fw/_zeichen.html`).
+        """
+        for rest in ('static/css/fontawesome.css', 'static/webfonts'):
+            with self.subTest(pfad=rest):
+                self.assertFalse((WURZEL / rest).exists(),
+                                 f'{rest} ist wieder da — wer braucht es?')
