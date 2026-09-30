@@ -150,7 +150,7 @@ Detailseiten rufen sie beim Namen.
                 <a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
                    class="fw-knopf-rund fw-nur-breit">{% zeichen 'neu' %}</a>
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
-                   class="fw-knopf-rund fw-glocke{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
+                   class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund">{% zeichen 'darstellung' %}</button>
                 <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-nur-mobil"><span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>

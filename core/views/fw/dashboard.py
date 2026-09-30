@@ -9,6 +9,7 @@
 # aufgeteilte" Restdatei mehr.
 
 import logging
+from datetime import timedelta
 from decimal import Decimal
 
 from urllib.parse import quote
@@ -352,6 +353,8 @@ def fw_dashboard(request):
     # Listen»), was bleibt, sind vor allem die **undatierten** Aufgaben. Genau
     # die haben sonst keinen Ort: Der Arbeitsvorrat nimmt nur, was eine Frist
     # traegt.
+    _schublade_vorbereiten(vorrat, heute)
+
     from core.services.inbox import sammle_inbox
     inbox, inbox_mehr, _typen = sammle_inbox(
         aktive_lg=aktive_lg, lg_query=basis['lg_query'],
@@ -396,8 +399,45 @@ def fw_dashboard(request):
         # vier Zeilen, während ein Satz zum Absatz würde.
         'vertretung_fuer': vertretung_fuer,
         'vertretung_faelle': _uebernommene_faelle(vertretung_ids),
+        # Monatsname der nächsten Sollstellung für den Knopf im Kopf (Mockup:
+        # «Sollstellung Oktober»).
+        'soll_monat': (heute.replace(day=28) + timedelta(days=4)).replace(day=1),
         **lage(heute, aktive_lg),
     })
+
+
+def _schublade_vorbereiten(vorrat, heute):
+    """Was die Schublade eines Vorgangs zeigt (konzept-v8), ohne Nachladen.
+
+    Für Fallzeilen der ganze Ablauf des Falls — alle Schritte mit Zustand —,
+    der Name der zuständigen Person und die Adresse der Akte. EINE Abfrage für
+    alle Fälle der Liste, nicht eine je Zeile (bekannte-fallen, Nr. 10).
+    """
+    from core.views.fw.arbeit import akte_url
+    from faelle.models import Fallschritt
+
+    faelle = {e['objekt'].fall_id: e['objekt'].fall for e in vorrat
+              if e.get('art') == 'fall' and getattr(e.get('objekt'), 'fall_id', None)}
+    ablauf = {}
+    if faelle:
+        for s in (Fallschritt.objects.filter(fall_id__in=faelle)
+                  .order_by('fall_id', 'nr')
+                  .values('fall_id', 'nr', 'bezeichnung', 'erledigt_am')):
+            ablauf.setdefault(s['fall_id'], []).append(s)
+    for e in vorrat:
+        s = e.get('objekt')
+        if e.get('art') != 'fall' or not getattr(s, 'fall_id', None):
+            continue
+        fall = faelle[s.fall_id]
+        e['schritt_pk'] = s.pk
+        e['fall_pk'] = s.fall_id
+        e['akte_url'] = akte_url(fall)
+        e['zustaendig_name'] = (fall.zustaendig.get_full_name() or fall.zustaendig.get_username()
+                                if fall.zustaendig_id else '')
+        e['ablauf'] = [{'bezeichnung': x['bezeichnung'],
+                        'zustand': ('fertig' if x['erledigt_am'] else
+                                    'jetzt' if x['nr'] == s.nr else '')}
+                       for x in ablauf.get(s.fall_id, [])]
 
 
 def _lauf_url(ziel_ansicht):

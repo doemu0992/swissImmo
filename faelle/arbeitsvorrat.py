@@ -270,7 +270,7 @@ def _fallschritte(heute, bis, wer=None, mandat=None):
     from django.db.models import Count
 
     for s in (schritte
-              .select_related('fall', 'fall__fallart', 'fall__zustaendig')
+              .select_related('fall', 'fall__fallart', 'fall__zustaendig', 'fall__akte_typ')
               .annotate(_gesamt=Count('fall__schritte', distinct=True))[:20]):
         tage = (s.frist - heute).days
         # FALLNUMMER, FORTSCHRITT UND ZUSTAENDIGKEIT (E2.62)
