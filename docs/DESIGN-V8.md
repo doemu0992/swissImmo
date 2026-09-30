@@ -54,6 +54,9 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 | Abschnittstitel | `fw-subhead` | 11 px Versalien. |
 | Menü | `[data-menu]` > `[data-menu-btn]`, `[data-menu-list]` > `fw-menuzeile` | Kein eigenes Skript. |
 | Schublade | `fwModalOpen(this,'Titel',wide)` | Öffnet `fw/_fwmodal.html` rechts. |
+| Ablauf | `ol.fw-ablauf` > `li` (`fertig`/`jetzt`) > `span.fw-ablauf-punkt`, `b`, `span.fw-ablauf-status` | Schritte eines Falls als Zeitleiste; Punkt gefüllt = erledigt, Ring = jetzt. |
+| Kartenrumpf | `fw-rumpf` | 20 px Innenabstand (16 px am Telefon), statt `p-5` an Formkarten. |
+| Häkchen | `label.fw-haekchen` > `input[type=checkbox]` + Text | Checkbox und Beschriftung in einer Zeile, auch innerhalb `fw-feldblock`. |
 
 ## Was nicht mehr vorkommen soll
 

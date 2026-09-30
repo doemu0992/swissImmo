@@ -64,8 +64,8 @@
             {% trans "Diese Regel führen" %}</label></div>
 
         {% if not z.rechnet %}
-        <p class="fw-feldblock breit fw-hilfe">{% blocktrans trimmed %}Diese Regelart ist als Datenmodell vorhanden, aber in
-            <code>faelle.regelwerk.pruefen</code> noch nicht gerechnet. Sie lässt sich erfassen und dokumentieren, prüft aber nichts — ausdrücklich vermerkt, damit niemand eine Absicherung annimmt, die es nicht gibt.{% endblocktrans %}</p>
+        <div class="fw-feldblock breit"><p class="fw-hilfe">{% blocktrans trimmed %}Diese Regelart ist als Datenmodell vorhanden, aber in
+            <code>faelle.regelwerk.pruefen</code> noch nicht gerechnet. Sie lässt sich erfassen und dokumentieren, prüft aber nichts — ausdrücklich vermerkt, damit niemand eine Absicherung annimmt, die es nicht gibt.{% endblocktrans %}</p></div>
         {% endif %}
 
             {% for f in z.felder %}

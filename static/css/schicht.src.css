@@ -1556,8 +1556,30 @@
         .fw-belegung i{display:block;height:100%;background:var(--ds-brand)}
         .fw-belegung.warn i{background:var(--ds-warn)}
         .fw-belegung.crit i{background:var(--ds-crit)}
+        /* Ablauf: Schritte eines Falls als Zeitleiste (Mockup: Schublade «Ablauf») */
+        .fw-ablauf{list-style:none;margin:0;padding:10px 20px 14px}
+        .fw-ablauf li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;padding:7px 0;position:relative;align-items:start;font-size:13.5px}
+        .fw-ablauf li:not(:last-child)::after{content:"";position:absolute;left:10px;top:27px;bottom:-5px;width:2px;background:var(--ds-line)}
+        .fw-ablauf li.fertig:not(:last-child)::after{background:var(--ds-brand)}
+        .fw-ablauf-punkt{width:22px;height:22px;border-radius:var(--ds-pill);border:2px solid var(--ds-line-stark);display:grid;place-items:center;
+            background:var(--ds-surface);color:var(--ds-auf-satt);position:relative;z-index:1;font-size:11px}
+        .fw-ablauf li.fertig .fw-ablauf-punkt{background:var(--ds-brand);border-color:var(--ds-brand);color:var(--ds-auf-satt)}
+        .fw-ablauf li.jetzt .fw-ablauf-punkt{border-color:var(--ds-brand);box-shadow:0 0 0 4px var(--ds-brand-soft)}
+        .fw-ablauf li.jetzt .fw-ablauf-punkt::after{content:"";width:8px;height:8px;border-radius:var(--ds-pill);background:var(--ds-brand)}
+        .fw-ablauf b{font-weight:500;color:var(--ds-muted)}
+        .fw-ablauf li.fertig b,.fw-ablauf li.jetzt b{color:var(--ds-ink)}
+        .fw-ablauf li.jetzt b{font-weight:600}
+        .fw-ablauf-status{font-size:12px;color:var(--ds-faint);white-space:nowrap}
+        /* Kartenrumpf mit Innenabstand (statt p-5 an Formkarten) */
+        .fw-rumpf{padding:20px}
+        /* Häkchen: Checkbox und Beschriftung in einer Zeile, auch im fw-feldblock */
+        .fw-haekchen{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--ds-ink);cursor:pointer;line-height:1.4}
+        .fw-haekchen input[type=checkbox],.fw-haekchen input[type=radio]{margin-top:2px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--ds-brand)}
         @media (max-width:640px){
             .fw-zeile .fw-zeit{text-align:left}
+            .fw-eingang .fw-mitte{flex-basis:calc(100% - 44px)}
+            .fw-rumpf{padding:16px}
+            .fw-ablauf{padding:10px 16px 14px}
             .fw-zeile .fw-s{flex-wrap:wrap;gap:4px 10px}
             .fw-agenda{padding:10px 16px 14px}
             .fw-mandat{padding:12px 16px}

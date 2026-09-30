@@ -7,105 +7,104 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Dokumente" %}</h1>
-        <p>{% trans "Zentrale Ablage aus Vertrags- und Objektdokumenten" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/dokumente/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% trans "Zentrale Ablage aus Vertrags- und Objektdokumenten" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/dokumente/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
+    <div class="fw-phead-knoepfe">
     <button type="button" onclick="document.getElementById('dokform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'hochladen' %} {% trans "Dokument hochladen" %}</button>
+    </div>
 </div>
 
 
-<div id="dokform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'hochladen' klasse='fw-marke mr-1.5' %}{% trans "Dokument hochladen" %}</h3>
-    <form method="post" action="/neu/dokumente/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div id="dokform" class="hidden fw-card fw-linie-marke">
+    <div class="fw-kopf"><h2>{% trans "Dokument hochladen" %}</h2></div>
+    <form method="post" action="/neu/dokumente/neu/" enctype="multipart/form-data" class="fw-formular p-5">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Titel" %}</label>
-            <input name="titel" placeholder="{% trans '(leer = Dateiname)' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kategorie" %}</label>
-            <select name="kategorie" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Titel" %}</label>
+            <input name="titel" placeholder="{% trans '(leer = Dateiname)' %}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Kategorie" %}</label>
+            <select name="kategorie" class="fw-feld">
                 <option value="vertrag">{% trans "Vertrag" %}</option><option value="protokoll">{% trans "Protokoll" %}</option>
                 <option value="korrespondenz">{% trans "Korrespondenz" %}</option><option value="sonstiges" selected>{% trans "Sonstiges" %}</option>
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
-            <select name="liegenschaft_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Liegenschaft" %}</label>
+            <select name="liegenschaft_id" class="fw-feld">
                 <option value="">— {% trans "keine" %} —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Objekt (optional)" %}</label>
-            <select name="einheit_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Objekt (optional)" %}</label>
+            <select name="einheit_id" class="fw-feld">
                 <option value="">— {% trans "keines" %} —</option>
                 {% for e in einheiten %}<option value="{{ e.id }}">{{ e.liegenschaft.strasse }} · {{ e.bezeichnung }}</option>{% endfor %}
             </select></div>
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Datei *" %}</label>
-            <input type="file" name="datei" required class="w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white"></div>
-        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Hochladen" %}</button></div>
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Datei *" %}</label>
+            <input type="file" name="datei" required class="w-full text-sm fw-mutet"></div>
+        <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Hochladen" %}</button></div>
     </form>
 </div>
 
 <!-- Filterzeile -->
-<div class="fw-card overflow-hidden">
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b fw-linie">
-        <div class="flex items-center gap-1.5 flex-wrap">
-            {% for wert, label in kat_chips %}
-            <a href="?kat={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if kat_filter == wert %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ label }}</a>
-            {% endfor %}
-        </div>
-        <form method="get" class="ml-auto relative">
-            {% if kat_filter %}<input type="hidden" name="kat" value="{{ kat_filter }}">{% endif %}
-            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
-            <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Dokument oder Kontext suchen…' %}"
-                   class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
-        </form>
-    </div>
+<div class="fw-filters">
+        {% for wert, label in kat_chips %}
+        <a href="?kat={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+           class="fw-fchip{% if kat_filter == wert %} fw-on{% endif %}">{{ label }}</a>
+        {% endfor %}
+</div>
+<div class="fw-listwerkzeug">
+    <form method="get" class="fw-suchfeld">
+        {% if kat_filter %}<input type="hidden" name="kat" value="{{ kat_filter }}">{% endif %}
+        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+        <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Dokument oder Kontext suchen…' %}"
+               class="fw-feld">
+    </form>
+</div>
 
-    <div class="overflow-x-auto">
-        <table class="fw-table min-w-max">
+<div class="fw-card">
+    <div class="fw-tablewrap">
+        <table class="fw-table">
             <thead>
             <tr>
-                <th class="font-semibold">{% trans "Dokument" %}</th>
-                <th class="font-semibold">{% trans "Kategorie" %}</th>
-                <th class="font-semibold">{% trans "Kontext" %}</th>
-                <th class="font-semibold">{% trans "Ablage" %}</th>
-                <th class="font-semibold">{% trans "Datum" %}</th>
+                <th>{% trans "Dokument" %}</th>
+                <th>{% trans "Kategorie" %}</th>
+                <th>{% trans "Kontext" %}</th>
+                <th>{% trans "Ablage" %}</th>
+                <th>{% trans "Datum" %}</th>
                 <th></th>
             </tr>
             </thead>
-            <tbody class="fw-dv">
+            <tbody>
             {% for e in eintraege %}
-            <tr class="transition-colors cursor-pointer" onclick="window.open('{{ e.url }}', '_blank')">
+            <tr class="cursor-pointer" onclick="window.open('{{ e.url }}', '_blank')">
                 <td>
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg {{ e.icon_cls }} flex items-center justify-center shrink-0">{% zeichen_wert e.icon %}</div>
-                        <span class="font-medium fw-strong">{{ e.name }}</span>
+                        <span class="fw-ikon">{% zeichen_wert e.icon %}</span>
+                        <b>{{ e.name }}</b>
                     </div>
                 </td>
-                <td><span class="fw-chip fw-flaeche2 fw-mutet capitalize whitespace-nowrap">{{ e.kat }}</span></td>
+                <td><span class="fw-marke-kapsel capitalize">{{ e.kat }}</span></td>
                 <td class="fw-mutet whitespace-nowrap">{% if e.kontext %}{{ e.kontext }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
-                <td class="fw-faint text-xs whitespace-nowrap">{{ e.quelle }}</td>
-                <td class="fw-mutet whitespace-nowrap">{% if e.datum %}{{ e.datum|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="text-right whitespace-nowrap fw-right">
-                    <a href="{{ e.url }}" target="_blank" rel="noopener" onclick="event.stopPropagation();" class="text-xs fw-marke font-medium hover:underline mr-3">{% trans "Öffnen" %}</a>
+                <td class="fw-faint whitespace-nowrap">{{ e.quelle }}</td>
+                <td class="fw-num whitespace-nowrap">{% if e.datum %}{{ e.datum|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="fw-right">
+                    <a href="{{ e.url }}" target="_blank" rel="noopener" onclick="event.stopPropagation();" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>
                     {% if e.loeschbar %}
                     <form method="post" action="/neu/dokumente/{{ e.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=e.name %}Dokument «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                        <button class="fw-faint hover:fw-kritisch text-xs" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
+                        <button class="fw-btn fw-knapp fw-geist" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="text-center fw-zentriert fw-leerzeile">
-                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'dokument' %}</div>
-                <p class="text-sm font-medium fw-ink">{% if q or kat_filter %}{% trans "Keine Treffer" %}{% else %}{% trans "Noch keine Dokumente abgelegt" %}{% endif %}</p>
-                <p class="text-xs fw-faint mt-1">{% trans "Dokumente entstehen automatisch (unterzeichnete Verträge) oder per Upload in der klassischen Ansicht." %}</p>
+            <tr><td colspan="6">
+                <div class="fw-leer"><b>{% if q or kat_filter %}{% trans "Keine Treffer" %}{% else %}{% trans "Noch keine Dokumente abgelegt" %}{% endif %}</b>
+                {% trans "Dokumente entstehen automatisch (unterzeichnete Verträge) oder per Upload in der klassischen Ansicht." %}</div>
             </td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-    <div class="px-5 py-3 border-t fw-linie text-xs fw-faint">{% blocktrans count n=anzahl %}{{ n }} Dokument aus Vertrags- und Objektablage{% plural %}{{ n }} Dokumente aus Vertrags- und Objektablage{% endblocktrans %}</div>
+    <div class="fw-fuss"><span>{% blocktrans count n=anzahl %}{{ n }} Dokument aus Vertrags- und Objektablage{% plural %}{{ n }} Dokumente aus Vertrags- und Objektablage{% endblocktrans %}</span></div>
 </div>
 {% endblock %}

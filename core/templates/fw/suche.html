@@ -18,7 +18,7 @@
 
 {% if personen %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">{% trans "Personen" %}</span><span class="fw-neben">{{ personen|length }}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Personen" %} ({{ personen|length }})</span></div>
     <div>
         {% for m in personen %}
         <a href="/neu/personen/{{ m.id }}/" class="fw-zeile klick">
@@ -34,7 +34,7 @@
 
 {% if liegenschaften %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">{% trans "Liegenschaften" %}</span><span class="fw-neben">{{ liegenschaften|length }}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Liegenschaften" %} ({{ liegenschaften|length }})</span></div>
     <div>
         {% for lg in liegenschaften %}
         <a href="/neu/liegenschaften/{{ lg.id }}/" class="fw-zeile klick">
@@ -50,7 +50,7 @@
 
 {% if objekte %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">{% trans "Objekte" %}</span><span class="fw-neben">{{ objekte|length }}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Objekte" %} ({{ objekte|length }})</span></div>
     <div>
         {% for e in objekte %}
         <a href="/neu/objekte/{{ e.id }}/" class="fw-zeile klick">
@@ -66,7 +66,7 @@
 
 {% if vertraege %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">{% trans "Verträge" %}</span><span class="fw-neben">{{ vertraege|length }}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Verträge" %} ({{ vertraege|length }})</span></div>
     <div>
         {% for v in vertraege %}
         <a href="/neu/vertraege/{{ v.id }}/" class="fw-zeile klick">
