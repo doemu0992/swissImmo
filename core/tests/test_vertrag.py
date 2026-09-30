@@ -1445,7 +1445,7 @@ class IndexparameterErfassbarTests(TestCase):
             'nebenkosten': '200', 'beginn': '2025-01-01', 'index_weitergabe_prozent': '8o'},
             follow=True)
         self.assertFalse(Mietvertrag.objects.filter(einheit=e).exists())
-        self.assertContains(r, '«8o»')
+        self.assertContains(r, '«8o»', status_code=400)
 
     def test_die_felder_stehen_auch_wirklich_im_formular(self):
         """Ein Speicherweg ohne Eingabefeld ist die halbe Miete.

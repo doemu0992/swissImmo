@@ -525,7 +525,7 @@ class VertragAssistentLehntUnlesbaresAb(TestCase):
     def test_referenzzinssatz_wird_nicht_still_ersetzt(self):
         r = self._speichern(basis_referenzzinssatz='1,5%%')
         self._nichts_gespeichert()
-        self.assertContains(r, 'Referenzzinssatz')
+        self.assertContains(r, 'Referenzzinssatz', status_code=400)
 
     def test_lik_stand_wird_nicht_still_ersetzt(self):
         self._speichern(basis_lik_punkte='hundert')
@@ -537,10 +537,89 @@ class VertragAssistentLehntUnlesbaresAb(TestCase):
 
     def test_unlesbare_personenzahl_ist_kein_serverfehler(self):
         r = self._speichern(anzahl_personen='zwei')
-        self.assertEqual(r.status_code, 200)
+        # 400 mit dem Assistenten und der Meldung am Feld — kein Serverfehler.
+        self.assertEqual(r.status_code, 400)
         self._nichts_gespeichert()
 
     def test_leere_felder_bleiben_erlaubt(self):
         from rentals.models import Mietvertrag
         self._speichern(basis_referenzzinssatz='', basis_lik_punkte='', anzahl_personen='')
         self.assertTrue(Mietvertrag.objects.filter(einheit=self.frei).exists())
+
+
+class VertragAssistentBehaeltEingaben(TestCase):
+    """Ein Fehler beim Speichern leitete auf einen LEEREN Assistenten um: Die
+    Meldung stand oben, sieben Schritte Eingaben waren weg. Jetzt: Status 400,
+    derselbe Assistent mit den Eingaben, die Meldung beim Feld."""
+
+    def setUp(self):
+        from portfolio.models import Einheit
+        self.lg, self.e, self.m, self.v = _basis_objekte()
+        self.frei = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='4.5 Zi', typ='whg')
+        self.c = Client()
+        self.c.force_login(_team_user())
+
+    def _speichern(self, **ueber):
+        daten = {'einheit_id': str(self.frei.id), 'mieter_id': str(self.m.id),
+                 'netto_mietzins': '1800', 'nebenkosten': '250', 'beginn': '2025-04-01',
+                 'besondere_vereinbarungen': 'Hund erlaubt'}
+        daten.update(ueber)
+        return self.c.post('/neu/vertraege/neu/speichern/', daten)
+
+    def test_ende_vor_beginn_behaelt_die_eingaben(self):
+        from rentals.models import Mietvertrag
+        r = self._speichern(ist_befristet='1', ende='2025-01-31')
+        self.assertEqual(r.status_code, 400)
+        self.assertFalse(Mietvertrag.objects.filter(einheit=self.frei).exists())
+        self.assertEqual(list(r.context['feld_fehler']), ['ende'])
+        rg = r.context['rueckgabe']
+        self.assertEqual(rg['netto_mietzins'], ['1800'])
+        self.assertEqual(rg['besondere_vereinbarungen'], ['Hund erlaubt'])
+        self.assertNotIn('csrfmiddlewaretoken', rg)
+        body = r.content.decode()
+        self.assertIn('class="fw-formfehler', body)
+        self.assertIn('Das Vertragsende darf nicht vor dem Vertragsbeginn liegen.', body)
+        self.assertIn('id="rueckgabe-data"', body)
+
+    def test_neuer_mieter_ohne_nachname(self):
+        from crm.models import Mieter
+        vorher = Mieter.objects.count()
+        r = self._speichern(mieter_id='', mieter_typ='person', vorname='Eva', m_ort='Bern')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('nachname', r.context['feld_fehler'])
+        self.assertEqual(r.context['rueckgabe']['vorname'], ['Eva'])
+        self.assertEqual(Mieter.objects.count(), vorher)   # kein Waisen-Mieter
+
+    def test_ohne_objekt_ist_ein_feldfehler_statt_weiterleitung(self):
+        r = self._speichern(einheit_id='')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('einheit_id', r.context['feld_fehler'])
+        r = self._speichern(einheit_id='abc')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('einheit_id', r.context['feld_fehler'])
+
+    def test_gewaehltes_belegtes_objekt_bleibt_waehlbar(self):
+        """Nachmieter-Vertrag: Das Objekt ist noch belegt und stand nur dank
+        der Vorwahl in der Liste. Nach dem Fehler muss es wieder dort stehen,
+        sonst lässt sich die Eingabe nicht zurücksetzen."""
+        r = self._speichern(einheit_id=str(self.e.id), netto_mietzins='-5')
+        self.assertEqual(r.status_code, 400)
+        ids = [o['id'] for lg in r.context['liegenschaften'] for o in lg['objekte']]
+        self.assertIn(self.e.id, ids)
+        # Ohne Fehler bleibt ein belegtes Objekt ausgeblendet.
+        ids_get = [o['id'] for lg in self.c.get('/neu/vertraege/neu/').context['liegenschaften']
+                   for o in lg['objekte']]
+        self.assertNotIn(self.e.id, ids_get)
+
+    def test_entwurf_bleibt_im_bearbeiten_modus(self):
+        from datetime import date
+        from rentals.models import Mietvertrag
+        entwurf = Mietvertrag.objects.create(mieter=self.m, einheit=self.frei, beginn=date(2025, 4, 1),
+                                             netto_mietzins=Decimal('1800'), nebenkosten=Decimal('250'),
+                                             status='entwurf')
+        r = self._speichern(edit_id=str(entwurf.id), netto_mietzins='-1')
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.context['edit_vertrag'], entwurf)
+        self.assertIn(f'name="edit_id" value="{entwurf.id}"', r.content.decode())
+        entwurf.refresh_from_db()
+        self.assertEqual(entwurf.netto_mietzins, Decimal('1800'))

@@ -277,6 +277,17 @@ Offen: Der Assistent meldet Fehler weiterhin oben und lädt leer neu (Umbau
 seiner Oberfläche ist ein eigener Schritt; im Browser verhindern die
 Zahlen- und Datumsfelder die meisten Fehleingaben schon vorher).*
 
+*Nachtrag Vertragsassistent (30.09.2026): Ein Fehler beim Speichern — Ende vor
+Beginn, fehlender Nachname, negativer Mietzins, kein Objekt, Unlesbares —
+führte auf einen leeren Assistenten, sieben Schritte Eingaben waren weg.
+Jetzt: Status 400, derselbe Assistent mit allen Eingaben (Objekt, Mieter-Reiter,
+Befristung, Modell, Staffeln, Kündigungsmonate, Freitext), die Meldung beim
+Feld, der Schritt des ersten Fehlers offen; oben eine Zusammenfassung, deren
+Einträge zum Feld springen. Ein gewähltes, noch belegtes Objekt
+(Nachmieter-Vertrag) bleibt dabei wählbar, ein Entwurf im Bearbeiten-Modus.
+Die Meldungen sind jetzt übersetzt. Im Headless-Chromium geprüft, auch bei
+390 px.*
+
 ### Etappe 3 — Komponentenschicht & Typo-Skala («der 10k-Look»)
 
 Rund 2–3 Wochen, seitenweise.

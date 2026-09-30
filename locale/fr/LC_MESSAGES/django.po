@@ -20406,3 +20406,23 @@ msgstr "Aucune pièce saisie."
 #: core/templates/fw/nebenkosten_detail.html
 msgid "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."
 msgstr "Les factures fournisseurs relevant des frais accessoires sont reprises automatiquement."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Der Netto-Mietzins darf nicht negativ sein."
+msgstr "Le loyer net ne peut pas être négatif."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Die Nebenkosten dürfen nicht negativ sein."
+msgstr "Les frais accessoires ne peuvent pas être négatifs."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Das Vertragsende darf nicht vor dem Vertragsbeginn liegen."
+msgstr "La fin du contrat ne peut pas précéder son début."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Bitte den Firmen-/Vereinsnamen erfassen."
+msgstr "Veuillez saisir le nom de l'entreprise ou de l'association."
+
+#: core/views/fw/vertragserstellung.py
+msgid "Bitte den Nachnamen des Mieters erfassen."
+msgstr "Veuillez saisir le nom de famille du locataire."
