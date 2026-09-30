@@ -166,6 +166,21 @@ def pruefe_mietzinsmodell(modell, beginn, ende):
     return hinweise
 
 
+def runde_mietzins(betrag, schritt=None):
+    """Rundet einen Mietzinsvorschlag kaufmännisch auf 5 Rappen.
+
+    Stresstest 30.09.2026: Der Vorschlag lautete 1699.08 — ein Betrag, den weder
+    die Bank-Dauerauftragsmaske noch eine Mitteilung im üblichen Sinn kennt, und
+    der sich nicht auf 5 Rappen zahlen lässt. Wie im Skill schweizer-fachlogik:
+    Decimal, auf 5 Rappen, wo der Zahlungsverkehr es verlangt. Die Prozentangabe
+    bleibt die errechnete; gerundet wird nur der Franken-Betrag.
+    """
+    from decimal import ROUND_HALF_UP, Decimal
+    schritt = schritt or Decimal('0.05')
+    return ((Decimal(str(betrag)) / schritt).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+            * schritt).quantize(Decimal('0.01'))
+
+
 def index_anpassung_vorschlag(vertrag, aktuell_lik=None):
     """Berechnet die fällige Indexmiet-Anpassung (Art. 269b OR) für die amtliche
     Index-Mitteilung (Art. 269d): neuer Nettomietzins aus der LIK-Entwicklung
@@ -194,7 +209,7 @@ def index_anpassung_vorschlag(vertrag, aktuell_lik=None):
     weiter = (vertrag.index_weitergabe_prozent or Decimal('100')) / Decimal('100')
     faktor = Decimal('1') + (aktuell_lik - basis_lik) / basis_lik * weiter
     alt_netto = vertrag.netto_mietzins or Decimal('0')
-    neu_netto = (alt_netto * faktor).quantize(Decimal('0.01'))
+    neu_netto = runde_mietzins(alt_netto * faktor)
     if neu_netto <= alt_netto:
         return None
     delta_prozent = ((neu_netto - alt_netto) / alt_netto * Decimal('100')).quantize(Decimal('0.01')) \
