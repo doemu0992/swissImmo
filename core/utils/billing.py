@@ -151,8 +151,14 @@ def akonto_gestellt(vertrag, v_start, v_ende):
       · Gibt es die Sollstellungs-Forderung «Miete & NK MM/JJJJ» (nicht storniert),
         zählt ihr NK-Anteil: Haben 3020 abzüglich NK-Erlass (Soll 3091) —
         anteilig, wenn die Periode den Monat nur teilweise deckt.
-      · Gibt es sie nicht (Sollstellung nicht gelaufen, Altbestand), gilt wie
-        bisher der Vertragswert für diese Tage.
+      · Gibt es sie nicht (Sollstellung nicht gelaufen, Altbestand), gilt der
+        Vertragswert für diese Tage — ebenfalls je Monat anteilig.
+
+    Auch ohne jede Sollstellung wird monatsweise gerechnet, nicht mit der
+    Jahresformel `nk × 12 / 365 × Tage`: Akonto ist eine Monatsgrösse. Die
+    Jahresformel stimmt nur für volle Jahre; bei einem Mieterwechsel im Mai
+    schrieb sie dem Vormieter 6.92 zu wenig, dem Nachmieter 8.30 zu viel gut.
+    Volle Monate und volle Jahre ergeben unverändert genau den Vertragswert.
 
     Massgebend ist das GESTELLTE, nicht das bezahlte Akonto: Unbezahltes bleibt
     als offene Forderung im Mieterkonto und würde sonst zweimal verlangt.
@@ -160,7 +166,6 @@ def akonto_gestellt(vertrag, v_start, v_ende):
     """
     from finance.models import Buchung, DebitorenRechnung
 
-    tage_jahr = Decimal(366 if calendar.isleap(v_start.year) else 365)
     nk_monat = vertrag.nebenkosten or Decimal('0.00')
     gesamt = Decimal('0.00')
     aus_buchungen = 0
@@ -197,11 +202,6 @@ def akonto_gestellt(vertrag, v_start, v_ende):
         m += 1
         if m == 13:
             j, m = j + 1, 1
-    if aus_buchungen == 0:
-        # Keine einzige Sollstellung im Zeitraum: unverändert die bisherige
-        # Jahresformel — Altbestand und Abrechnungen ohne Mietenlauf bleiben
-        # auf den Rappen gleich.
-        gesamt = nk_monat * 12 / tage_jahr * Decimal((v_ende - v_start).days + 1)
     return gesamt, aus_buchungen
 
 
@@ -236,6 +236,7 @@ def berechne_abrechnung(periode_id):
     pool_nk_personen = Decimal('0.00')  # Wird nach Personenzahl und Tagen verteilt (Live-Test G)
 
     kategorien_liste = []
+    warnungen = []
 
     # A) Manuelle Belege (NebenkostenBeleg)
     for beleg in periode.belege.all():
@@ -327,6 +328,14 @@ def berechne_abrechnung(periode_id):
         end_chf = end_l * durchschnittspreis
         effektive_oel_kosten = total_chf - end_chf
 
+        if end_l > total_l:
+            # Mehr Öl im Tank als Anfangsbestand + Zukäufe: Erfassungsfehler. Ohne
+            # Hinweis fiele der Öl-Posten still weg und die Heizkosten wären 0.
+            warnungen.append(
+                f"Endbestand Heizöl ({end_l} L) ist grösser als Anfangsbestand plus Zukäufe "
+                f"({total_l} L) — der Heizöl-Verbrauch konnte nicht berechnet werden. "
+                "Bitte Bestände und Öl-Rechnungen prüfen.")
+
         if effektive_oel_kosten > 0:
             pool_heizkosten += effektive_oel_kosten
             kategorien_liste.append({
@@ -395,6 +404,16 @@ def berechne_abrechnung(periode_id):
     verbrauch_map = _heiz_verbrauch_pro_einheit(liegenschaft, start_p, ende_p) if hkvo_aktiv else {}
     total_verbrauch = sum(verbrauch_map.values()) if verbrauch_map else Decimal('0')
     hkvo_angewendet = bool(hkvo_aktiv and total_verbrauch > 0)
+    if hkvo_aktiv and not hkvo_angewendet:
+        warnungen.append("HKVO ist aktiv, aber es liegen keine verwertbaren Zählerstände vor "
+                         "(je Zähler mindestens zwei Stände in der Periode). Die Heizkosten wurden "
+                         "ausschliesslich nach Volumen verteilt.")
+    elif hkvo_angewendet:
+        _ohne_zaehler = [e.bezeichnung for e in einheiten if verbrauch_map.get(e.id, Decimal('0')) <= 0]
+        if _ohne_zaehler:
+            warnungen.append("HKVO: Kein Verbrauch erfasst bei " + ", ".join(_ohne_zaehler) +
+                             " — der Verbrauchsanteil dieser Einheiten ist 0, die Verbrauchskosten "
+                             "fallen auf die übrigen. Bitte Zählerstände ergänzen.")
 
     # ---------------------------------------------------------
     # 3. VERTEILUNG AUF EINHEITEN & MIETER (Die Matrix)
@@ -529,7 +548,6 @@ def berechne_abrechnung(periode_id):
     # den anderen. Fehlt sie überall, greift der total_m2-Fallback (1) und die
     # ganze Verteilung ist unbrauchbar. In beiden Fällen: klar warnen statt still
     # eine falsche Abrechnung ausweisen (Live-Test G).
-    warnungen = []
     if pool_nk_m2 > 0:
         if _real_total_m2 <= 0:
             warnungen.append("Für keine Einheit ist eine Fläche (m²) erfasst — flächenabhängige "
