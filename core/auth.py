@@ -111,8 +111,24 @@ def hat_rolle(user, rollen):
     organisation = aktuelle_organisation()
     if organisation is None:
         return False
-    return Mitgliedschaft.objects.filter(
-        benutzer=user, organisation=organisation, rolle__in=rollen).exists()
+    # EINE Abfrage je Benutzer und Organisation, nicht eine je Prüfung.
+    # Go-Live-Härtetest (Schritt 3): Vorlagen fragen `hat_rolle` je Tabellenzeile
+    # — /neu/mahnwesen/ machte bei 1000 Verträgen 2000 identische Abfragen.
+    # Das Benutzerobjekt lebt genau eine Anfrage lang; die Generationsnummer
+    # verwirft den Zwischenspeicher, sobald eine Mitgliedschaft geändert wird.
+    cache = user.__dict__.get('_rollen_cache')
+    if cache is None or cache[0] != _rollen_generation[0]:
+        cache = user.__dict__['_rollen_cache'] = (_rollen_generation[0], {})
+    vorhanden = cache[1].get(organisation.pk)
+    if vorhanden is None:
+        vorhanden = cache[1][organisation.pk] = frozenset(
+            Mitgliedschaft.objects.filter(benutzer=user, organisation=organisation)
+            .values_list('rolle', flat=True))
+    return any(r in vorhanden for r in rollen)
+
+
+#: Zählt Änderungen an Mitgliedschaften hoch (siehe `core/signals.py`).
+_rollen_generation = [0]
 
 
 def ist_nur_hauswart(user):

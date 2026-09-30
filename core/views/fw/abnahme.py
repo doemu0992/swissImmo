@@ -272,6 +272,12 @@ def fw_vertrag_loeschen(request, pk):
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag, id=pk)
     if request.method == 'POST':
+        from core.loeschschutz import LoeschSperre, sperre_pruefen
+        try:
+            sperre_pruefen(vertrag=v)
+        except LoeschSperre as sperre:
+            messages.error(request, f'❌ {sperre}')
+            return redirect(f'/neu/vertraege/{v.id}/')
         name = str(v.mieter)
         einheit = v.einheit.bezeichnung
         log_aktion(request, "Mietvertrag gelöscht", name, einheit)

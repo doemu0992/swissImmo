@@ -551,9 +551,16 @@ def fw_person_loeschen(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/personen/{m.id}/')
 
-    aktive = m.vertraege.filter(status='aktiv').count()
+    aktive = m.vertraege.filter(status__in=('aktiv', 'gekuendigt')).count()   # gekündigt läuft bis zum Auszug weiter
     if aktive:
         messages.error(request, '❌ ' + gettext('Person kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.') % {'aktive': aktive})
+        return redirect(f'/neu/personen/{m.id}/')
+
+    from core.loeschschutz import LoeschSperre, sperre_pruefen
+    try:
+        sperre_pruefen(mieter=m)      # VOR dem Portal-Login: sonst bleibt bei der Sperre ein halber Zustand
+    except LoeschSperre as sperre:
+        messages.error(request, f'❌ {sperre}')
         return redirect(f'/neu/personen/{m.id}/')
 
     name = m.display_name

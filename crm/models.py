@@ -420,6 +420,11 @@ class Mieter(models.Model):
                                     related_name='mieter_profil')
 
 
+    def delete(self, *args, **kwargs):
+        from core.loeschschutz import sperre_pruefen
+        sperre_pruefen(mieter=self)
+        return super().delete(*args, **kwargs)
+
     objects = TenantManager()
     alle_organisationen = AlleOrganisationenManager()
     class Meta:

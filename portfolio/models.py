@@ -114,6 +114,11 @@ class Liegenschaft(models.Model):
         super().save(*args, **kwargs)
 
 
+    def delete(self, *args, **kwargs):
+        from core.loeschschutz import sperre_pruefen
+        sperre_pruefen(liegenschaft=self)
+        return super().delete(*args, **kwargs)
+
     objects = TenantManager()
     alle_organisationen = AlleOrganisationenManager()
     class Meta:
@@ -235,6 +240,11 @@ class Einheit(OrganisationAusKette):
     # Einstellplätze (Art. 266e: 2 Wochen/Monatsende) vs. übrige unbewegliche
     # Sachen wie Bastelraum (Art. 266b: 3 Monate, ortsüblicher Termin).
     EINSTELLPLATZ_TYPEN = {'pp', 'gar'}
+
+    def delete(self, *args, **kwargs):
+        from core.loeschschutz import sperre_pruefen
+        sperre_pruefen(einheit=self)
+        return super().delete(*args, **kwargs)
 
     @property
     def mietrecht_kategorie(self):

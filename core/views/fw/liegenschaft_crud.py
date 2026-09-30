@@ -176,9 +176,16 @@ def fw_liegenschaft_loeschen(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/liegenschaften/{lg.id}/')
 
-    aktive = Mietvertrag.objects.filter(einheit__liegenschaft=lg, status='aktiv').count()
+    aktive = Mietvertrag.objects.filter(einheit__liegenschaft=lg, status__in=('aktiv', 'gekuendigt')).count()
     if aktive:
         messages.error(request, '❌ ' + gettext('Liegenschaft kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.') % {'aktive': aktive})
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
+
+    from core.loeschschutz import LoeschSperre, sperre_pruefen
+    try:
+        sperre_pruefen(liegenschaft=lg)
+    except LoeschSperre as sperre:
+        messages.error(request, f'❌ {sperre}')
         return redirect(f'/neu/liegenschaften/{lg.id}/')
 
     name = f"{lg.strasse}, {lg.plz} {lg.ort}"

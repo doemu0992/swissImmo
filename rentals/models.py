@@ -685,6 +685,8 @@ class Mietvertrag(OrganisationAusKette):
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     def delete(self, *args, **kwargs):
+        from core.loeschschutz import sperre_pruefen
+        sperre_pruefen(vertrag=self)      # vor jeder Änderung; wirft LoeschSperre
         # Automatisch erzeugte Vertragspaket-Dokumente (Mietvertrag + Standard-
         # Beilagen) mitlöschen. `Dokument.vertrag` ist SET_NULL — ohne diese
         # Bereinigung blieben die Kopien als verwaiste (vertrag=None) Belege in der
