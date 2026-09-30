@@ -151,6 +151,8 @@ MIDDLEWARE = [
     # scheiterten an genau derselben fehlenden Tabelle. Die Wartungsseite
     # braucht davon nichts (siehe docs/WARTUNGSSEITE.md).
     'core.wartung.WartungsMiddleware',
+    # Vor allem, was Eingaben liest: PostgreSQL verträgt kein NUL-Byte.
+    'core.middleware_nul.NulBytesMiddleware',
     # Antworten komprimiert ausliefern. Die Listenseiten bestehen fast nur aus
     # sich wiederholendem Markup (Tailwind-Klassen, je Zeile eine Karte fürs
     # Handy UND eine Tabellenzeile für den PC) — das lässt sich hervorragend
