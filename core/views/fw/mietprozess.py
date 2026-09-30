@@ -379,6 +379,18 @@ def fw_bewerbung_status(request, pk):
     return redirect(f'/neu/bewerbungen/{pk}/')
 
 
+def _aktuelle_basis(einheit):
+    """(Referenzzinssatz, LIK) der Verwaltung der Einheit — der Stand HEUTE.
+
+    Fehlt der Verwaltung ein Wert, wird der Stand der Einheit genommen, und nur
+    wenn auch der fehlt, bleibt das Feld leer statt mit einem geratenen Wert
+    gefüllt zu werden (ein leeres Basisfeld fällt auf, ein falscher Satz nicht)."""
+    org = getattr(einheit.liegenschaft, 'organisation', None) if einheit.liegenschaft_id else None
+    zins = getattr(org, 'aktueller_referenzzinssatz', None) or einheit.ref_zinssatz
+    lik = getattr(org, 'aktueller_lik_punkte', None) or einheit.lik_punkte
+    return zins, lik
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_bewerbung_zu_vertrag(request, pk):
     """Zusage: Mieter aus der Bewerbung anlegen (oder finden) und einen
@@ -456,8 +468,13 @@ def fw_bewerbung_zu_vertrag(request, pk):
         nk_abrechnungsart=einheit.nk_abrechnungsart or 'akonto',
         anzahl_personen=(b.anzahl_erwachsene or 1) + (b.anzahl_kinder or 0),
         kautions_betrag=kaution,
-        basis_referenzzinssatz=einheit.ref_zinssatz or _D('1.25'),
-        basis_lik_punkte=einheit.lik_punkte or _D('107.1'),
+        # BASIS EINES NEUEN VERTRAGS = STAND BEI ABSCHLUSS, nicht der Stand, der beim
+        # Anlegen der Einheit galt (Stresstest 30.09.2026: Der Nachmieter startete
+        # mit 1.25 %, obwohl der Satz bei 1.00 % lag — jede spätere Anpassung nach
+        # Art. 269a OR rechnet von dieser Basis aus). `Einheit.ref_zinssatz` ist nur
+        # der Wert vom Tag der Erfassung der Einheit.
+        basis_referenzzinssatz=_aktuelle_basis(einheit)[0],
+        basis_lik_punkte=_aktuelle_basis(einheit)[1],
         besondere_vereinbarungen=(f"Haustiere: {b.haustiere_details}" if b.haustiere and b.haustiere_details else ''),
     )
 

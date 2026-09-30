@@ -24,7 +24,8 @@
             </form>
         </div>
         <p class="fw-hilfe px-5 pt-4">{% trans "Grundlage für «Aktuelle Werte übernehmen» im Vertragsassistenten." %}
-        {% if vw.letztes_update_marktdaten %}{% blocktrans with zeit=vw.letztes_update_marktdaten|date:"d.m.Y H:i" %}Zuletzt aktualisiert: {{ zeit }}.{% endblocktrans %}{% else %}{% trans "Noch nie aus dem Internet aktualisiert." %}{% endif %}</p>
+        {% if vw.letztes_update_marktdaten %}{% blocktrans with zeit=vw.letztes_update_marktdaten|date:"d.m.Y H:i" %}Zuletzt aktualisiert: {{ zeit }}.{% endblocktrans %}{% else %}{% trans "Noch nie aus dem Internet aktualisiert." %}{% endif %}
+        <a href="/neu/referenzzins/">{% trans "Verlauf des Referenzzinssatzes" %}</a></p>
         <form method="post" class="fw-formular p-5">
             {% csrf_token %}
             <input type="hidden" name="firma" value="{{ vw.firma }}">

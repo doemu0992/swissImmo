@@ -192,7 +192,9 @@ class QrUndMahnungTests(ZweiBestaende):
     def test_mahnung_nutzt_die_verwaltung_des_vertrags(self):
         from core.services import ablage
 
-        with patch('core.views.email_views.generate_mahnung_combined_pdf_bytes',
+        # Die abgelegte Mahnung ist das Schreiben der Mahnstufe (core/services/mahnbrief.py),
+        # nicht mehr die 257d-Kündigungsandrohung; der Briefkopf-Grundsatz gilt für beide.
+        with patch('core.services.mahnbrief.mahnbrief_pdf',
                    return_value=b'%PDF-1.4') as erzeugen:
             ablage.ablage_mahnung(self.b.vertrag, stufe=1)
 

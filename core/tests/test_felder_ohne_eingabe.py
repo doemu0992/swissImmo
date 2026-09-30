@@ -108,6 +108,12 @@ AUSNAHMEN = {
     'portfolio.Liegenschaft.hauswarte':
      'wird in «Benutzer & Rollen» beim Hauswart zugeordnet (benutzer.py, '
      'Gegenseite der Beziehung), nicht im Liegenschaftsformular',
+
+    'crm.ReferenzzinsStand.vorher': 'schreibt `referenzzins.aenderung_festhalten` bei jeder Satzänderung',
+    'crm.ReferenzzinsStand.betroffene_senkung': 'gezählt von `referenzzins.aenderung_festhalten`',
+    'crm.ReferenzzinsStand.betroffene_erhoehung': 'gezählt von `referenzzins.aenderung_festhalten`',
+    'finance.Zahlungsvereinbarung.betrag_total': 'aus dem fälligen Rückstand bei Abschluss berechnet (`zahlungsvereinbarung.anlegen`)',
+    'finance.Zahlungsvereinbarung.gedeckt_bis': 'Abschlusstag, von `zahlungsvereinbarung.anlegen` gesetzt',
     'rentals.AbnahmeMangel.mieteranteil':
      'BERECHNET aus der Lebensdauer (`berechne_mieteranteil`, '
      'abnahme.py:100), nicht eingegeben',

@@ -1,0 +1,25 @@
+{% extends 'fw/base.html' %}
+{% load zeichen %}
+{% load i18n %}
+{% block title %}{% trans "Referenzzins — Verlauf" %}{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/account/">{% trans "Konto" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Referenzzins — Verlauf" %}</b>
+</nav>
+<div class="fw-phead"><div><h1>{% trans "Referenzzins — Verlauf" %}</h1>
+    <p>{% trans "Jede Änderung mit Stichtag, Quelle und den betroffenen Verträgen." %}</p></div></div>
+<div class="fw-card"><div class="fw-tablewrap"><table class="fw-table">
+    <thead><tr><th>{% trans "Stichtag" %}</th><th class="fw-right">{% trans "Vorher" %}</th><th class="fw-right">{% trans "Neu" %}</th>
+        <th>{% trans "Quelle" %}</th><th class="fw-right">{% trans "Senkung möglich" %}</th><th class="fw-right">{% trans "Erhöhung möglich" %}</th></tr></thead>
+    <tbody>
+    {% for s in staende %}
+    <tr><td>{{ s.stichtag|date:"d.m.Y" }}</td><td class="fw-right fw-num">{% if s.vorher %}{{ s.vorher }} %{% else %}—{% endif %}</td>
+        <td class="fw-right fw-num fw-strong">{{ s.satz }} %</td><td>{{ s.get_quelle_display }}</td>
+        <td class="fw-right fw-num">{{ s.betroffene_senkung }}</td><td class="fw-right fw-num">{{ s.betroffene_erhoehung }}</td></tr>
+    {% empty %}
+    <tr><td colspan="6" class="fw-leerzeile fw-leer"><b>{% trans "Noch keine Änderung festgehalten" %}</b></td></tr>
+    {% endfor %}
+    </tbody></table></div></div>
+{% endblock %}

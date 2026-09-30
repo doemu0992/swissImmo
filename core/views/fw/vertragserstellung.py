@@ -498,8 +498,8 @@ def fw_vertrag_neu_speichern(request):
         mietzins_modell=_mietzins_modell,
         zweckbestimmung=P.get('zweckbestimmung', '').strip(),
         weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
-        basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.25'),
-        basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
+        basis_referenzzinssatz=dec('basis_referenzzinssatz') or _stand_zins(einheit),
+        basis_lik_punkte=dec('basis_lik_punkte') or _stand_lik(einheit),
         basis_lik_stand=basis_lik_stand,
         kostensteigerung_datum=datum('kostensteigerung_datum'),
         kautions_betrag=dec('kautions_betrag') or None,
@@ -647,6 +647,18 @@ def fw_vertrag_neu_speichern(request):
     return redirect(f'/neu/vertraege/{vertrag.id}/')
 
 
+def _stand_zins(einheit):
+    """Basis-Referenzzinssatz, wenn das Formular keinen liefert: der Stand der
+    Verwaltung HEUTE (nicht ein geratenes 1.25 %). Siehe `mietprozess._aktuelle_basis`."""
+    from .mietprozess import _aktuelle_basis
+    return _aktuelle_basis(einheit)[0]
+
+
+def _stand_lik(einheit):
+    from .mietprozess import _aktuelle_basis
+    return _aktuelle_basis(einheit)[1]
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vertrag_vorschau(request):
     """Live-Vorschau des Vertragsassistenten: rendert das ECHTE Vertrags-PDF-
@@ -723,8 +735,8 @@ def fw_vertrag_vorschau(request):
         mietzins_modell=_modell,
         zweckbestimmung=P.get('zweckbestimmung', '').strip(),
         weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
-        basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.25'),
-        basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
+        basis_referenzzinssatz=dec('basis_referenzzinssatz') or _stand_zins(einheit),
+        basis_lik_punkte=dec('basis_lik_punkte') or _stand_lik(einheit),
         kautions_betrag=dec('kautions_betrag') or None,
         kautions_konto=P.get('kautions_konto', '').strip())
     try:

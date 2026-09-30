@@ -1,0 +1,41 @@
+{% extends 'fw/base.html' %}
+{% load zeichen %}
+{% block title %}Nutzungsentschädigung — {{ v.mieter.display_name }}{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>Nutzungsentschädigung</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>Nutzungsentschädigung</h1>
+        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · Vertragsende {{ v.ende|date:"d.m.Y" }}</p>
+    </div>
+</div>
+
+<div class="fw-card fw-rumpf space-y-4 max-w-2xl">
+    {% if not offen %}
+    <div class="fw-hinweis info rounded-lg"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der Vergangenheit, oder die Rücknahme ist protokolliert{% if rueckgabe %} ({{ rueckgabe|date:"d.m.Y" }}){% endif %}.</div>
+    </div>
+    {% else %}
+    <div class="fw-hinweis warn rounded-lg"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">Der Mietvertrag ist am {{ v.ende|date:"d.m.Y" }} zu Ende, eine Rücknahme ist nicht protokolliert. Zieht der Mieter nicht aus, schuldet er für die Weiternutzung eine Entschädigung in Höhe des bisherigen Bruttomietzinses. Sie ist <b>kein Mietzins</b>; MWST wird nicht berechnet — bei einem MWST-pflichtig vermieteten Objekt vorher klären.</div>
+    </div>
+    {% if vorschau %}
+    <p>Es werden <b>{{ vorschau|length }} Monat(e)</b> gestellt, anteilig im ersten Monat:</p>
+    <ul class="list-disc pl-5">
+        {% for z in vorschau %}<li>{{ z.monat|stringformat:"02d" }}/{{ z.jahr }}</li>{% endfor %}
+    </ul>
+    <form method="post" onsubmit="return confirm('Nutzungsentschädigung jetzt stellen? Bitte bestätigen Sie, dass der Mieter die Wohnung noch nutzt.');">
+        {% csrf_token %}
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} Forderungen stellen</button>
+    </form>
+    {% else %}
+    <p>Alle Monate sind bereits gestellt.</p>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

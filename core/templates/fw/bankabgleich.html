@@ -298,6 +298,12 @@
             <button type="submit" class="fw-btn fw-primary fw-knapp">
                 {% trans "Zuordnen" %}
             </button>
+            {% if z.konto.nummer == '2030' and z.vertrag_id %}
+            <button type="submit" formaction="/neu/bankabgleich/guthaben/rueckerstatten/" formnovalidate class="fw-btn fw-knapp"
+                    onclick="return confirm('{% filter escapejs %}{% trans "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank." %}{% endfilter %}');">
+                {% trans "Zurückerstatten" %}
+            </button>
+            {% endif %}
         </form>
         {% endfor %}
     </div>
@@ -366,6 +372,8 @@
                         {% csrf_token %}
                         <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <input name="betrag" inputmode="decimal" placeholder="{{ row.offen|chf }}" title="{% trans 'Eingegangener Betrag (leer = offener Betrag). Ein Überschuss wird als Mieterguthaben gebucht.' %}" class="fw-feld fw-num w-28">
+                        <input type="date" name="valuta" max="{% now 'Y-m-d' %}" title="{% trans 'Valuta: Tag der Gutschrift auf dem Bankkonto (leer = heute)' %}" class="fw-feld w-36">
                         <button type="submit" class="fw-btn fw-gutknopf fw-knapp">
                             {% zeichen 'speichern' %} {% trans "Verbuchen" %}
                         </button>

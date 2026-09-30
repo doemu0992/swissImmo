@@ -260,6 +260,8 @@ def _pendenz_ziel(p):
     (v.a. mobil) abgeschnitten und kollidieren mit dem Pendenz-Titel."""
     q = p.quelle or ''
     if p.vertrag_id:
+        if q.startswith('257d-vorschlag:'):
+            return (f'/neu/vertraege/{p.vertrag_id}/verzug/', gettext('Fristansetzung starten'), False, False)
         if q.startswith('auto:ruecknahme:'):
             return (f'/neu/vertraege/{p.vertrag_id}/abnahme/neu/?typ=auszug', gettext('Rücknahme starten'), False, True)
         return (f'/neu/vertraege/{p.vertrag_id}/', gettext('Vertrag öffnen'), False, False)

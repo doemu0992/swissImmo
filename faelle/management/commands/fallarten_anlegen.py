@@ -68,6 +68,44 @@ VORLAGEN = {
         (4, 'Wirksamkeit', 'Anfechtungsfrist überwachen', True, '', ''),
         (4, 'Wirksamkeit', 'Sollstellung anpassen', True, '', ''),
     ]),
+    # Die drei folgenden Fallarten sind Gerüste ohne Zahlen: Fristen nach SchKG und
+    # ZPO hängen an Zustellung, Kanton und Verfahren und werden im Einzelfall
+    # geprüft — eine geratene Frist ist gefährlicher als eine fehlende (Skill
+    # schweizer-fachlogik).
+    'betreibung': ('Betreibung', 'faelle', [
+        (1, 'Vorbereitung', 'Forderung, Belege und Mahnverlauf zusammenstellen', True, '',
+         'Nur Forderungen, die nicht bestritten sind und belegt werden können.'),
+        (1, 'Vorbereitung', 'Betreibungsbegehren stellen', True, '', ''),
+        (2, 'Verfahren', 'Zahlungsbefehl zugestellt, Rechtsvorschlag prüfen', True, '',
+         'Fristen nach SchKG im Einzelfall prüfen.'),
+        (2, 'Verfahren', 'Rechtsöffnung beantragen (bei Rechtsvorschlag)', False, '',
+         'Der unterzeichnete Mietvertrag ist in der Regel der Rechtsöffnungstitel.'),
+        (3, 'Fortsetzung', 'Fortsetzungsbegehren stellen', True, '', 'Frist nach SchKG beachten.'),
+        (3, 'Fortsetzung', 'Verlustschein oder Zahlung verbuchen', True, '',
+         'Bei Verlust: Forderung abschreiben (Konto 3805).'),
+    ]),
+    'ausweisung': ('Ausweisung', 'faelle', [
+        (1, 'Grundlage', 'Kündigungsgrundlage und Zustellung der Kündigung prüfen', True, '',
+         'Bei Kündigung nach Art. 257d OR: Nachweis der Fristansetzung und des Zugangs.'),
+        (1, 'Grundlage', 'Schlichtungsbehörde oder Gericht: Verfahren wählen', True, '', ''),
+        (2, 'Verfahren', 'Gesuch einreichen', True, '', ''),
+        (2, 'Verfahren', 'Entscheid abwarten, Rechtsmittel prüfen', True, '', ''),
+        (3, 'Vollzug', 'Vollstreckung beantragen', True, '', ''),
+        (3, 'Vollzug', 'Rückgabe protokollieren, Schlüssel und Zählerstände aufnehmen', True, '', ''),
+        (3, 'Vollzug', 'Nutzungsentschädigung bis zur Rückgabe stellen', True, '',
+         'Siehe Vertragsakte → Nutzungsentschädigung.'),
+    ]),
+    'versicherungsfall': ('Versicherungsfall', 'faelle', [
+        (1, 'Meldung', 'Schaden der Gebäudeversicherung melden', True, '',
+         'Police, Schadennummer und Meldedatum festhalten. Meldefristen der Police beachten.'),
+        (1, 'Meldung', 'Schadennummer und Sachbearbeiter der Versicherung erfassen', True, '', ''),
+        (2, 'Abklärung', 'Besichtigung oder Expertise der Versicherung begleiten', False, '', ''),
+        (2, 'Abklärung', 'Selbstbehalt und Kostenträger klären', True, '',
+         'Selbstbehalt laut Police; ob er auf den Mieter überwälzbar ist, hängt von der Ursache ab.'),
+        (3, 'Abwicklung', 'Reparatur beauftragen (Freigabe der Eigentümerschaft beachten)', True, '', ''),
+        (3, 'Abwicklung', 'Entschädigung der Versicherung verbuchen', True, '', ''),
+        (3, 'Abwicklung', 'Fall abschliessen', True, '', ''),
+    ]),
     'erstvermietung': ('Erstvermietung', 'faelle', [
         (1, 'Ausschreibung', 'Exposé erstellen', True, '', ''),
         (1, 'Ausschreibung', 'Auf Kanälen publizieren', True, '', ''),

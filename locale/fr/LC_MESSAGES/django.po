@@ -21075,3 +21075,189 @@ msgstr "Immeubles du concierge"
 #: core/templates/fw/benutzer_form.html:59
 msgid "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts."
 msgstr "Uniquement pour le rôle Hauswart (concierge) : il voit et traite exclusivement les déclarations de sinistre de ces immeubles. Sans sélection, il ne voit rien."
+
+#: core/views/fw/listen.py:315
+msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
+msgstr "Seules les factures fournisseurs validées peuvent être refacturées."
+
+#, python-format
+msgid "%(n)s Forderung(en) über CHF %(total)s gestellt."
+msgstr "%(n)s créance(s) d'un total de CHF %(total)s établie(s)."
+
+#, python-format
+msgid "%(n)s Rechnung(en) ausgelassen: Eigentümerfreigabe der Reparatur fehlt oder wurde abgelehnt."
+msgstr "%(n)s facture(s) ignorée(s) : l'approbation de la réparation par le propriétaire manque ou a été refusée."
+
+#, python-format
+msgid "%(was)s kann nicht in der Zukunft liegen (%(datum)s)."
+msgstr "%(was)s ne peut pas être dans le futur (%(datum)s)."
+
+#, python-format
+msgid "%(was)s liegt im Vormonat oder früher (%(datum)s): Ist der Monatsabschluss schon erstellt, weicht er nach dieser Buchung ab."
+msgstr "%(was)s est au mois précédent ou avant (%(datum)s) : si la clôture mensuelle est déjà établie, elle divergera après cette écriture."
+
+msgid "Abruf BWO"
+msgstr "Consultation OFL"
+
+#, python-format
+msgid "Antwort festgehalten: %(text)s."
+msgstr "Réponse enregistrée : %(text)s."
+
+#, python-format
+msgid "Begehren erfasst — Antwort bis %(frist)s."
+msgstr "Demande enregistrée — réponse jusqu'au %(frist)s."
+
+msgid "Bitte Anzahl Raten, Abstand und Datum der ersten Rate angeben."
+msgstr "Veuillez indiquer le nombre de versements, l'intervalle et la date du premier versement."
+
+msgid "Bitte ein offenes Begehren und das Ergebnis der Antwort wählen."
+msgstr "Veuillez choisir une demande ouverte et le résultat de la réponse."
+
+#, python-format
+msgid "CHF %(betrag)s an %(mieter)s zurückerstattet (2030 an Bank)."
+msgstr "CHF %(betrag)s remboursés à %(mieter)s (2030 à banque)."
+
+msgid "Das Eingangsdatum liegt in der Zukunft."
+msgstr "La date de réception est dans le futur."
+
+msgid "Das Einzahlungsdatum"
+msgstr "La date de versement"
+
+msgid "Das Rückzahlungsdatum"
+msgstr "La date de remboursement"
+
+msgid "Das Valutadatum liegt in der Zukunft."
+msgstr "La date de valeur est dans le futur."
+
+msgid "Das täte der Mahnlauf jetzt. Es wird nichts gebucht und nichts versandt."
+msgstr "Voici ce que ferait le processus de rappel maintenant. Rien n'est comptabilisé ni envoyé."
+
+msgid "Der Mahnlauf würde jetzt keine Mahnung erstellen."
+msgstr "Le processus de rappel ne créerait aucun rappel maintenant."
+
+msgid "Die Senkung wird über «Mietzinsanpassung» mit dem amtlichen Formular mitgeteilt."
+msgstr "La baisse est notifiée via « Adaptation du loyer » avec la formule officielle."
+
+#, python-format
+msgid "Die effektiven Kosten (CHF %(eff)s) liegen mehr als 20 %% über der freigegebenen Schätzung (CHF %(schaetz)s) — Nachfreigabe der Eigentümerschaft nötig."
+msgstr "Les coûts effectifs (CHF %(eff)s) dépassent de plus de 20 %% l'estimation approuvée (CHF %(schaetz)s) — une nouvelle approbation du propriétaire est nécessaire."
+
+msgid "Diese Forderung ist nicht mehr offen."
+msgstr "Cette créance n'est plus ouverte."
+
+msgid "Dieses Begehren ist bereits erfasst."
+msgstr "Cette demande est déjà enregistrée."
+
+msgid "E-Mails"
+msgstr "E-mails"
+
+msgid "Eine Mahngebühr bzw. Zinsrechnung wird nicht selbst gemahnt — mahnen Sie die Hauptforderung."
+msgstr "Des frais de rappel ou une facture d'intérêts ne font pas l'objet d'un rappel propre — relancez la créance principale."
+
+msgid "Eingegangener Betrag (leer = offener Betrag). Ein Überschuss wird als Mieterguthaben gebucht."
+msgstr "Montant reçu (vide = montant ouvert). Un excédent est comptabilisé comme avoir du locataire."
+
+msgid "Erfüllt"
+msgstr "Rempli"
+
+msgid "Es gibt keine offenen Monate — alles ist bereits gestellt."
+msgstr "Il n'y a aucun mois ouvert — tout est déjà établi."
+
+msgid "Forderung"
+msgstr "Créance"
+
+msgid "Fristansetzung starten"
+msgstr "Lancer la fixation de délai"
+
+msgid "Gebrochen"
+msgstr "Rompu"
+
+msgid "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank."
+msgstr "Rembourser l'avoir au locataire ? Écriture : 2030 à banque."
+
+msgid "Jede Änderung mit Stichtag, Quelle und den betroffenen Verträgen."
+msgstr "Chaque modification avec date, source et contrats concernés."
+
+msgid "Letzte Mahnung — Fristansetzung nach Art. 257d OR folgt"
+msgstr "Dernier rappel — fixation de délai selon l'art. 257d CO à suivre"
+
+msgid "Letzte Stufe: führt zur Fristansetzung nach Art. 257d OR"
+msgstr "Dernier niveau : conduit à la fixation de délai selon l'art. 257d CO"
+
+msgid "Mahngebühren"
+msgstr "Frais de rappel"
+
+msgid "Mahnlauf — Trockenlauf"
+msgstr "Processus de rappel — essai à blanc"
+
+msgid "Nichts fällig"
+msgstr "Rien d'échu"
+
+msgid "Noch keine Änderung festgehalten"
+msgstr "Aucune modification enregistrée"
+
+msgid "Nur ein verbuchtes Mieterguthaben (Konto 2030) kann zurückerstattet werden."
+msgstr "Seul un avoir de locataire comptabilisé (compte 2030) peut être remboursé."
+
+msgid "Referenzzins — Verlauf"
+msgstr "Taux de référence — historique"
+
+msgid "Senkung möglich"
+msgstr "Baisse possible"
+
+msgid "Stichtag"
+msgstr "Date de référence"
+
+msgid "Trockenlauf"
+msgstr "Essai à blanc"
+
+msgid "Trockenlauf ansehen"
+msgstr "Voir l'essai à blanc"
+
+msgid "Ungültiger oder fehlender Betrag — Mahnung nicht versendet."
+msgstr "Montant invalide ou manquant — rappel non envoyé."
+
+#, python-format
+msgid "Ungültiges Valutadatum «%(raw)s»."
+msgstr "Date de valeur invalide « %(raw)s »."
+
+msgid "Ungültiges oder zukünftiges Valutadatum."
+msgstr "Date de valeur invalide ou future."
+
+msgid "Valuta: Tag der Gutschrift auf dem Bankkonto (leer = heute)"
+msgstr "Valeur : jour du crédit sur le compte bancaire (vide = aujourd'hui)"
+
+msgid "Verlauf des Referenzzinssatzes"
+msgstr "Historique du taux d'intérêt de référence"
+
+msgid "Verzugszins"
+msgstr "Intérêts moratoires"
+
+msgid "Vorher"
+msgstr "Avant"
+
+msgid "Zahlungsvereinbarung abgebrochen — die Mahnsperre ist aufgehoben."
+msgstr "Convention de paiement annulée — le blocage des rappels est levé."
+
+#, python-format
+msgid "Zahlungsvereinbarung erfasst — Mahnsperre gesetzt, %(n)s Raten-Pendenzen angelegt."
+msgstr "Convention de paiement enregistrée — blocage des rappels activé, %(n)s tâches de versement créées."
+
+msgid "Zins"
+msgstr "Intérêt"
+
+msgid "Zurück zum Mahnwesen"
+msgstr "Retour aux rappels"
+
+msgid "Zurückerstatten"
+msgstr "Rembourser"
+
+msgid "führt zur Fristansetzung"
+msgstr "conduit à la fixation de délai"
+
+msgid "nur Akte"
+msgstr "dossier uniquement"
+
+#, python-format
+msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
+msgstr "Paiement excédentaire : CHF %(betrag)s comptabilisés comme avoir du locataire (compte 2030)."

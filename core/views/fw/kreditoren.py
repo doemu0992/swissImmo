@@ -277,6 +277,11 @@ def fw_kreditor_bezahlen(request):
     if k.status in ('bezahlt', 'storniert', 'neu'):
         messages.error(request, gettext('Diese Rechnung kann nicht (mehr) bezahlt werden.'))
         return redirect('fw_kreditoren')
+    from finance.freigabe import freigabe_sperre
+    sperre = freigabe_sperre(k)
+    if sperre:
+        messages.error(request, f'⛔ {sperre}')
+        return redirect('fw_kreditoren')
 
     # Optionaler Teilbetrag; Standard = offener Betrag
     def _dec(x):
@@ -369,7 +374,19 @@ def fw_zahllauf(request):
         qs = KreditorenRechnung.objects.filter(id__in=ids, status__in=status)
         if aktive_lg:
             qs = qs.filter(liegenschaft=aktive_lg)
-        return list(qs.select_related('liegenschaft'))
+        # Rechnungen mit ausstehender/abgelehnter Eigentümerfreigabe fallen aus
+        # der Auswahl — laut, nicht still (finance/freigabe.py).
+        from finance.freigabe import freigabe_sperre
+        frei, gesperrt_n = [], 0
+        for k in qs.select_related('liegenschaft'):
+            if freigabe_sperre(k):
+                gesperrt_n += 1
+            else:
+                frei.append(k)
+        if gesperrt_n:
+            messages.error(request, '⛔ ' + gettext(
+                '%(n)s Rechnung(en) ausgelassen: Eigentümerfreigabe der Reparatur fehlt oder wurde abgelehnt.') % {'n': gesperrt_n})
+        return frei
 
     def _datum(name, standard):
         try:

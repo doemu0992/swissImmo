@@ -20849,3 +20849,189 @@ msgstr "Caretaker's properties"
 #: core/templates/fw/benutzer_form.html:59
 msgid "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts."
 msgstr "Only for the Hauswart (caretaker) role: they see and handle damage reports of these properties only. With no selection they see nothing."
+
+#: core/views/fw/listen.py:315
+msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
+msgstr "Only approved supplier invoices can be recharged."
+
+#, python-format
+msgid "%(n)s Forderung(en) über CHF %(total)s gestellt."
+msgstr "%(n)s claim(s) totalling CHF %(total)s issued."
+
+#, python-format
+msgid "%(n)s Rechnung(en) ausgelassen: Eigentümerfreigabe der Reparatur fehlt oder wurde abgelehnt."
+msgstr "%(n)s invoice(s) skipped: the owner's approval of the repair is missing or was rejected."
+
+#, python-format
+msgid "%(was)s kann nicht in der Zukunft liegen (%(datum)s)."
+msgstr "%(was)s cannot be in the future (%(datum)s)."
+
+#, python-format
+msgid "%(was)s liegt im Vormonat oder früher (%(datum)s): Ist der Monatsabschluss schon erstellt, weicht er nach dieser Buchung ab."
+msgstr "%(was)s is in the previous month or earlier (%(datum)s): if the month-end closing has already been prepared, it will differ after this booking."
+
+msgid "Abruf BWO"
+msgstr "Retrieved from FOH"
+
+#, python-format
+msgid "Antwort festgehalten: %(text)s."
+msgstr "Reply recorded: %(text)s."
+
+#, python-format
+msgid "Begehren erfasst — Antwort bis %(frist)s."
+msgstr "Request recorded — reply by %(frist)s."
+
+msgid "Bitte Anzahl Raten, Abstand und Datum der ersten Rate angeben."
+msgstr "Please enter the number of instalments, the interval and the date of the first instalment."
+
+msgid "Bitte ein offenes Begehren und das Ergebnis der Antwort wählen."
+msgstr "Please choose an open request and the outcome of the reply."
+
+#, python-format
+msgid "CHF %(betrag)s an %(mieter)s zurückerstattet (2030 an Bank)."
+msgstr "CHF %(betrag)s refunded to %(mieter)s (2030 to bank)."
+
+msgid "Das Eingangsdatum liegt in der Zukunft."
+msgstr "The date of receipt is in the future."
+
+msgid "Das Einzahlungsdatum"
+msgstr "The payment date"
+
+msgid "Das Rückzahlungsdatum"
+msgstr "The repayment date"
+
+msgid "Das Valutadatum liegt in der Zukunft."
+msgstr "The value date is in the future."
+
+msgid "Das täte der Mahnlauf jetzt. Es wird nichts gebucht und nichts versandt."
+msgstr "This is what the dunning run would do now. Nothing is booked and nothing is sent."
+
+msgid "Der Mahnlauf würde jetzt keine Mahnung erstellen."
+msgstr "The dunning run would not create any reminder now."
+
+msgid "Die Senkung wird über «Mietzinsanpassung» mit dem amtlichen Formular mitgeteilt."
+msgstr "The reduction is communicated via «Rent adjustment» using the official form."
+
+#, python-format
+msgid "Die effektiven Kosten (CHF %(eff)s) liegen mehr als 20 %% über der freigegebenen Schätzung (CHF %(schaetz)s) — Nachfreigabe der Eigentümerschaft nötig."
+msgstr "The actual costs (CHF %(eff)s) are more than 20 %% above the approved estimate (CHF %(schaetz)s) — further approval by the owner is required."
+
+msgid "Diese Forderung ist nicht mehr offen."
+msgstr "This claim is no longer open."
+
+msgid "Dieses Begehren ist bereits erfasst."
+msgstr "This request has already been recorded."
+
+msgid "E-Mails"
+msgstr "Emails"
+
+msgid "Eine Mahngebühr bzw. Zinsrechnung wird nicht selbst gemahnt — mahnen Sie die Hauptforderung."
+msgstr "A dunning fee or interest invoice is not reminded itself — remind the principal claim."
+
+msgid "Eingegangener Betrag (leer = offener Betrag). Ein Überschuss wird als Mieterguthaben gebucht."
+msgstr "Amount received (empty = open amount). Any surplus is booked as tenant credit."
+
+msgid "Erfüllt"
+msgstr "Fulfilled"
+
+msgid "Es gibt keine offenen Monate — alles ist bereits gestellt."
+msgstr "There are no open months — everything has already been issued."
+
+msgid "Forderung"
+msgstr "Claim"
+
+msgid "Fristansetzung starten"
+msgstr "Start setting a deadline"
+
+msgid "Gebrochen"
+msgstr "Breached"
+
+msgid "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank."
+msgstr "Pay the credit back to the tenant? Booking: 2030 to bank."
+
+msgid "Jede Änderung mit Stichtag, Quelle und den betroffenen Verträgen."
+msgstr "Every change with effective date, source and the affected contracts."
+
+msgid "Letzte Mahnung — Fristansetzung nach Art. 257d OR folgt"
+msgstr "Final reminder — notice setting a deadline under Art. 257d CO follows"
+
+msgid "Letzte Stufe: führt zur Fristansetzung nach Art. 257d OR"
+msgstr "Last level: leads to the notice setting a deadline under Art. 257d CO"
+
+msgid "Mahngebühren"
+msgstr "Dunning fees"
+
+msgid "Mahnlauf — Trockenlauf"
+msgstr "Dunning run — dry run"
+
+msgid "Nichts fällig"
+msgstr "Nothing due"
+
+msgid "Noch keine Änderung festgehalten"
+msgstr "No change recorded yet"
+
+msgid "Nur ein verbuchtes Mieterguthaben (Konto 2030) kann zurückerstattet werden."
+msgstr "Only a booked tenant credit (account 2030) can be refunded."
+
+msgid "Referenzzins — Verlauf"
+msgstr "Reference interest rate — history"
+
+msgid "Senkung möglich"
+msgstr "Reduction possible"
+
+msgid "Stichtag"
+msgstr "Effective date"
+
+msgid "Trockenlauf"
+msgstr "Dry run"
+
+msgid "Trockenlauf ansehen"
+msgstr "View dry run"
+
+msgid "Ungültiger oder fehlender Betrag — Mahnung nicht versendet."
+msgstr "Invalid or missing amount — reminder not sent."
+
+#, python-format
+msgid "Ungültiges Valutadatum «%(raw)s»."
+msgstr "Invalid value date «%(raw)s»."
+
+msgid "Ungültiges oder zukünftiges Valutadatum."
+msgstr "Invalid or future value date."
+
+msgid "Valuta: Tag der Gutschrift auf dem Bankkonto (leer = heute)"
+msgstr "Value date: day of the credit on the bank account (empty = today)"
+
+msgid "Verlauf des Referenzzinssatzes"
+msgstr "History of the reference interest rate"
+
+msgid "Verzugszins"
+msgstr "Default interest"
+
+msgid "Vorher"
+msgstr "Before"
+
+msgid "Zahlungsvereinbarung abgebrochen — die Mahnsperre ist aufgehoben."
+msgstr "Payment agreement cancelled — the dunning block is lifted."
+
+#, python-format
+msgid "Zahlungsvereinbarung erfasst — Mahnsperre gesetzt, %(n)s Raten-Pendenzen angelegt."
+msgstr "Payment agreement recorded — dunning block set, %(n)s instalment tasks created."
+
+msgid "Zins"
+msgstr "Interest"
+
+msgid "Zurück zum Mahnwesen"
+msgstr "Back to dunning"
+
+msgid "Zurückerstatten"
+msgstr "Refund"
+
+msgid "führt zur Fristansetzung"
+msgstr "leads to setting a deadline"
+
+msgid "nur Akte"
+msgstr "file only"
+
+#, python-format
+msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
+msgstr "Overpayment: CHF %(betrag)s booked as tenant credit (account 2030)."

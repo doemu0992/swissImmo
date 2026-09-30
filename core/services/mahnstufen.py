@@ -27,7 +27,7 @@ _CLS   = {1: 'fw-warn-flaeche fw-warnton', 2: 'fw-krit-flaeche fw-kritisch', 3: 
 _DOT   = {1: 'fw-warn-voll', 2: 'fw-krit-voll', 3: 'fw-krit-voll'}
 _UNTER_STD = {1: gettext_lazy('Erste Zahlungserinnerung'), 2: gettext_lazy('Zweite schriftliche Erinnerung'),
               3: gettext_lazy('Dritte Mahnung')}
-_UNTER_KUEND = gettext_lazy('Kündigungsandrohung (Art. 257d OR)')
+_UNTER_KUEND = gettext_lazy('Letzte Mahnung — Fristansetzung nach Art. 257d OR folgt')
 
 
 def _normalize(roh):
