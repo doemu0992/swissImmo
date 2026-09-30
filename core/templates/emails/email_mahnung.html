@@ -3,6 +3,12 @@
 {% block content %}
 <h2 style="color: #b91c1c; margin-top: 0; font-size: 24px; font-weight: 800;">Mahnung mit Kündigungsandrohung</h2>
 
+<div class="alert-red">
+    <strong>Dies ist eine Kopie per E-Mail.</strong> Die massgebende Zahlungsaufforderung mit Fristansetzung
+    erhalten Sie zusätzlich <strong>per Einschreiben</strong>. Die Frist nach Art. 257d OR läuft erst ab dem
+    Zugang dieses eingeschriebenen Briefes.
+</div>
+
 <p>Guten Tag {{ mieter_name }},</p>
 
 <p>Trotz der Fälligkeit des Mietzinses haben wir für das Mietobjekt <strong>{{ objekt_name }}</strong> für den Monat <strong>{{ monat }}</strong> bisher keinen Zahlungseingang verzeichnen können.</p>
@@ -11,9 +17,9 @@
     <strong style="color: #b91c1c; font-size: 18px;">Ausstehender Betrag: CHF {{ betrag }}</strong>
 </div>
 
-<p><strong>WICHTIG:</strong> Im Anhang dieser E-Mail finden Sie das formelle Mahnschreiben mit Kündigungsandrohung gemäss Art. 257d OR sowie die entsprechende QR-Rechnung.</p>
+<p><strong>WICHTIG:</strong> Im Anhang dieser E-Mail finden Sie eine Kopie des Mahnschreibens mit Kündigungsandrohung gemäss Art. 257d OR sowie die entsprechende QR-Rechnung.</p>
 
-<p>Wir fordern Sie auf, den ausstehenden Betrag innert der im angehängten Schreiben erwähnten Frist von 30 Tagen zu überweisen, um eine Kündigung des Mietverhältnisses zu vermeiden. <em>(Sollte sich diese Mahnung mit Ihrer Zahlung gekreuzt haben, betrachten Sie diese als gegenstandslos.)</em></p>
+<p>Wir fordern Sie auf, den ausstehenden Betrag innert der im eingeschriebenen Schreiben gesetzten Frist (mindestens 30 Tage ab Zugang) zu überweisen, um eine Kündigung des Mietverhältnisses zu vermeiden. <em>(Sollte sich diese Mahnung mit Ihrer Zahlung gekreuzt haben, betrachten Sie diese als gegenstandslos.)</em></p>
 
 <p>Freundliche Grüsse<br><strong>{{ firma_name }}</strong></p>
 {% endblock %}

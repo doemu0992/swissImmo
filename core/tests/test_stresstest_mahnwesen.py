@@ -2,6 +2,7 @@
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.core import mail
 from django.test import Client, TestCase
 
 from ._helfer import _basis_objekte, _seed_konten, _team_user
@@ -153,3 +154,53 @@ class EskalationTests(TestCase):
             stammrechnung=self.r)
         self.assertIsNone(eskalation_257d(g))
         self.assertFalse(Pendenz.objects.filter(quelle__startswith='257d-vorschlag:').exists())
+
+
+class EinschreibenPflichtTests(TestCase):
+    """Entscheid 30.09.2026: Die 257d-E-Mail ist nur die Kopie; das Original geht per Einschreiben."""
+
+    def setUp(self):
+        self.lg, self.e, self.m, self.v = _basis_objekte()
+        self.heute = date.today()
+        self.c = Client(); self.c.force_login(_team_user('Verwalter'))
+
+    def _mail(self):
+        return self.c.post(f'/vertrag/{self.v.id}/mahnung/mail/',
+                           {'monat': '08/2026', 'betrag': '1700.00'}, secure=True)
+
+    def test_mail_ist_als_kopie_beschriftet(self):
+        self._mail()
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertIn('Kopie', m.subject)
+        self.assertIn('Einschreiben', m.subject)
+        html = m.alternatives[0][0]
+        self.assertIn('Dies ist eine Kopie per E-Mail', html)
+        self.assertIn('erst ab dem', html)
+
+    def test_pendenz_fuer_den_eingeschriebenen_brief_entsteht_einmal(self):
+        from core.models import Pendenz
+        self._mail(); self._mail()
+        p = Pendenz.objects.get(vertrag=self.v, quelle=f'257d-einschreiben:{self.v.pk}')
+        self.assertEqual(p.faellig_am, self.heute + timedelta(days=2))
+        self.assertEqual(Pendenz.objects.filter(quelle__startswith='257d-einschreiben:').count(), 1)
+
+    def test_pendenz_fuehrt_zur_fristansetzung(self):
+        from core.models import Pendenz
+        from core.views.fw._basis import _pendenz_ziel
+        self._mail()
+        p = Pendenz.objects.get(quelle__startswith='257d-einschreiben:')
+        self.assertEqual(_pendenz_ziel(p)[0], f'/neu/vertraege/{self.v.id}/verzug/')
+
+    def test_fristansetzung_erledigt_die_einschreiben_pendenz(self):
+        from core.models import Pendenz
+        from finance.models import DebitorenRechnung
+        DebitorenRechnung.objects.create(
+            vertrag=self.v, titel='Miete', datum=self.heute - timedelta(days=40),
+            faellig_am=self.heute - timedelta(days=40), betrag=Decimal('1700.00'))
+        self._mail()
+        self.c.post(f'/neu/vertraege/{self.v.id}/verzug/',
+                    {'frist_bis': (self.heute + timedelta(days=37)).isoformat(),
+                     'sendungsnummer': '98.00.123456.00000001', 'versand_am': self.heute.isoformat()},
+                    secure=True)
+        self.assertTrue(Pendenz.objects.get(quelle__startswith='257d-einschreiben:').erledigt)
