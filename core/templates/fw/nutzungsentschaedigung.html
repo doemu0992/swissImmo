@@ -22,7 +22,7 @@
     </div>
     {% else %}
     <div class="fw-hinweis warn rounded-lg"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
-        <div class="fw-ht">Der Mietvertrag ist am {{ v.ende|date:"d.m.Y" }} zu Ende, eine Rücknahme ist nicht protokolliert. Zieht der Mieter nicht aus, schuldet er für die Weiternutzung eine Entschädigung in Höhe des bisherigen Bruttomietzinses. Sie ist <b>kein Mietzins</b>; MWST wird nicht berechnet — bei einem MWST-pflichtig vermieteten Objekt vorher klären.</div>
+        <div class="fw-ht">Der Mietvertrag ist am {{ v.ende|date:"d.m.Y" }} zu Ende, eine Rücknahme ist nicht protokolliert. Zieht der Mieter nicht aus, schuldet er für die Weiternutzung eine Entschädigung in Höhe des bisherigen Bruttomietzinses. Sie ist <b>kein Mietzins</b>. Ist das Objekt steuerpflichtig vermietet, wird sie mit der MWST des Vertrags belastet; bei Wohnraum fällt keine MWST an.</div>
     </div>
     {% if vorschau %}
     <p>Es werden <b>{{ vorschau|length }} Monat(e)</b> gestellt, anteilig im ersten Monat:</p>
