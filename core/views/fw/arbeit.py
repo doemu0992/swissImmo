@@ -302,7 +302,154 @@ def fw_fallschritt_erledigen(request, pk):
     schritt = get_object_or_404(Fallschritt.objects.select_related('fall'), pk=pk)
     schritt.erledigen(benutzer=request.user)
     messages.success(request, gettext('«%(bezeichnung)s» ist erledigt.') % {'bezeichnung': schritt.bezeichnung})
-    return redirect(f'/neu/faelle/{schritt.fall_id}/')
+    return redirect(_weiter(request, f'/neu/faelle/{schritt.fall_id}/'))
+
+
+def _weiter(request, vorgabe):
+    """Rücksprung nach einer Handlung aus der Schublade auf «Heute».
+
+    Nur Pfade unter `/neu/` — ein frei wählbares Ziel wäre eine offene
+    Weiterleitung (`?weiter=https://…`).
+    """
+    ziel = (request.POST.get('weiter') or '').strip()
+    if ziel.startswith('/neu/') and '//' not in ziel and '\\' not in ziel:
+        return ziel
+    return vorgabe
+
+
+@require_POST
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_fallschritt_verschieben(request, pk):
+    """«Auf morgen» aus der Schublade (konzept-v8): die Frist um einen Tag.
+
+    Nur die Frist dieses Schritts — der Fall bewegt sich dadurch nicht, sonst
+    würde Verschieben die Verfallsregel («liegengeblieben») aushebeln.
+    """
+    from datetime import timedelta
+
+    from core.auth import log_aktion
+    from faelle.models import Fallschritt
+
+    schritt = get_object_or_404(Fallschritt.objects.select_related('fall'), pk=pk)
+    if schritt.erledigt_am is None:
+        alt = schritt.frist
+        schritt.frist = timezone.localdate() + timedelta(days=1)
+        schritt.save(update_fields=['frist'])
+        log_aktion(request, 'Frist verschoben', objekt=f'Fall {schritt.fall.nummer}',
+                   details=f'{schritt.bezeichnung}: {alt:%d.%m.%Y} → {schritt.frist:%d.%m.%Y}'
+                   if alt else f'{schritt.bezeichnung}: → {schritt.frist:%d.%m.%Y}',
+                   ziel=schritt.fall)
+        messages.success(request, gettext('Auf morgen verschoben: %(nummer)s') % {'nummer': schritt.fall.nummer})
+    return redirect(_weiter(request, f'/neu/faelle/{schritt.fall_id}/'))
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_fall_neu(request):
+    """«Neuer Fall» (konzept-v8): Art, Betreff, Akte, Frist, Zuständig, Notiz.
+
+    Legt den Fall über dieselben Modellwege an wie der Zulauf
+    (`Fall.save`, `schritte_anlegen`) — die Organisation kommt aus der Akte,
+    die Schritte aus der Fallart. Die Frist gilt für den ersten Schritt; ohne
+    sie erschiene der Fall in keinem Fenster des Arbeitsvorrats.
+    """
+    from datetime import timedelta
+
+    from core.auth import log_aktion
+    from faelle.models import Fall, Fallart
+    from portfolio.models import Liegenschaft
+    from rentals.models import Mietvertrag
+
+    organisation = getattr(request, 'organisation', None)
+    fallarten = list(Fallart.objects.filter(aktiv=True).order_by('bezeichnung'))
+    liegenschaften = list(Liegenschaft.objects.order_by('strasse')[:300])
+    vertraege = list(Mietvertrag.objects.filter(status='aktiv')
+                     .select_related('mieter', 'einheit__liegenschaft')
+                     .order_by('einheit__liegenschaft__strasse', 'einheit__bezeichnung')[:500])
+    team = list(team_der_organisation(organisation)[:100])
+    heute = timezone.localdate()
+    werte = {'frist': (heute + timedelta(days=7)).isoformat(),
+             'zustaendig': str(request.user.pk), 'akte': request.GET.get('akte', '')}
+    fehler = {}
+
+    if request.method == 'POST':
+        werte = {k: (request.POST.get(k) or '').strip()
+                 for k in ('fallart', 'betreff', 'akte', 'frist', 'zustaendig', 'notiz')}
+        fallart = next((f for f in fallarten if str(f.pk) == werte['fallart']), None)
+        if fallart is None:
+            fehler['fallart'] = gettext('Bitte eine Art wählen.')
+        if len(werte['betreff']) < 3:
+            fehler['betreff'] = gettext('Bitte einen Betreff mit mindestens 3 Zeichen eingeben.')
+        akte = None
+        art, _sep, nr = werte['akte'].partition('-')
+        if art == 'lg':
+            akte = next((l for l in liegenschaften if str(l.pk) == nr), None)
+        elif art == 'mv':
+            akte = next((v for v in vertraege if str(v.pk) == nr), None)
+        if akte is None:
+            fehler['akte'] = gettext('Bitte eine Akte wählen.')
+        frist = parse_date(werte['frist']) if werte['frist'] else None
+        # Über `team_der_organisation`, nie über `Benutzer.objects`: der
+        # Benutzer trägt keinen Mandantenfilter (bekannte-fallen, Nr. 4).
+        zustaendig = next((b for b in team if str(b.pk) == werte['zustaendig']), None)
+        if not fehler:
+            fall = Fall(fallart=fallart, akte=akte, zustaendig=zustaendig,
+                        betreff=werte['betreff'][:200], notiz=werte['notiz'])
+            fall.full_clean(exclude=['organisation', 'nummer'])
+            fall.save()
+            fall.schritte_anlegen()
+            erster = fall.naechster_schritt
+            if erster and frist:
+                erster.frist = frist
+                erster.save(update_fields=['frist'])
+            log_aktion(request, 'Fall eröffnet', objekt=f'Fall {fall.nummer}',
+                       details=fall.betreff, ziel=fall)
+            if request.POST.get('embed'):
+                # Aus der Schublade: schliessen, «Heute» neu laden — der Fall
+                # steht dann im Arbeitsvorrat (wie im Mockup).
+                return render(request, 'fw/_modal_done.html', {
+                    'msg': gettext('Fall %(nummer)s angelegt.') % {'nummer': fall.nummer}})
+            messages.success(request, gettext('Fall %(nummer)s angelegt.') % {'nummer': fall.nummer})
+            return redirect(f'/neu/faelle/{fall.pk}/')
+
+    return render(request, 'fw/fall_neu.html', {
+        **_global_filter(request), 'nav': 'dashboard',
+        'fallarten': fallarten, 'liegenschaften': liegenschaften,
+        'vertraege': vertraege, 'team': team, 'werte': werte, 'fehler': fehler,
+        'heute': heute,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_leistenzahlen(request):
+    """Die Zahlen neben «Heute» und «Läufe» in der Leiste (konzept-v8).
+
+    Als eigene Abfrage NACH dem Seitenaufbau geholt: Die Leiste steht auf
+    jeder Seite, und die Summe über vier Quellen des Arbeitsvorrats soll
+    keine Seite verlangsamen (und keinen Abfragezähler verschieben).
+    """
+    from django.db.models import Q
+    from django.http import JsonResponse
+
+    from faelle.arbeitsvorrat import was_reisst
+    from faelle.lauf_models import Lauf
+
+    heute = timezone.localdate()
+    try:
+        zahl_heute = len([e for e in was_reisst(heute, grenze=0) if e['tage'] <= 0])
+    except Exception:
+        logger.exception('Zähler «Heute» nicht ermittelbar')
+        zahl_heute = None
+    laeufe = (Lauf.objects.exclude(status=Lauf.ABGESCHLOSSEN)
+              .filter(Q(faellig_am__lte=heute) | Q(blockaden__isnull=False,
+                                                    blockaden__behoben_am__isnull=True))
+              .distinct().count())
+    try:
+        from faelle.zulauf_models import Eingang
+        zulauf = Eingang.objects.offen().count()
+    except Exception:
+        logger.exception('Zähler «Zulauf» nicht ermittelbar')
+        zulauf = None
+    return JsonResponse({'heute': zahl_heute, 'laeufe': laeufe, 'zulauf': zulauf})
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

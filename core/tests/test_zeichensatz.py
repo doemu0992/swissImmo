@@ -135,7 +135,7 @@ STAND_VORKOMMEN = 1
 #:
 #: 62 seit dem Redesign (30.09.2026): `darstellung` fuer den Hell/Dunkel-
 #: Knopf in der Kopfzeile. Begruendung in docs/ZEICHEN.md unter «Bedienung».
-ZIEL_ZEICHEN = 62
+ZIEL_ZEICHEN = 63
 
 #: Klassen, die in Gebrauch sind und bewusst noch keiner Bedeutung zugeordnet
 #: wurden. Diese Liste darf schrumpfen, nicht wachsen — sonst wird «noch offen»

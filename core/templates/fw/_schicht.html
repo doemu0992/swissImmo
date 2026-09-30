@@ -1336,9 +1336,45 @@ und einen Stilblock enthaelt.
         .fw-nav-eintrag:hover{background:var(--ds-hover);color:var(--ds-ink)}
         .fw-nav-eintrag.hier{background:var(--ds-brand-soft);color:var(--ds-brand-600);font-weight:600}
         .fw-nav-eintrag .fw-zeichen{width:18px!important;height:18px!important}
-        .fw-nav-zahl{margin-left:auto;min-width:18px;padding:0 6px;border-radius:var(--ds-pill);
-            font-size:11.5px;font-weight:600;line-height:18px;text-align:center;
+        /* Zahl neben dem Bereich (konzept-v8 `.count`): leise grau, rot nur
+           wo etwas brennt (`crit`: Heute, neue Schadenmeldungen). */
+        .fw-nav-zahl{margin-left:auto;min-width:18px;font-size:11.5px;font-weight:600;line-height:18px;
+            text-align:center;color:var(--ds-faint)}
+        .fw-nav-zahl[hidden]{display:none}
+        .fw-nav-eintrag.hier .fw-nav-zahl{color:var(--ds-brand-600)}
+        .fw-nav-zahl.crit,.fw-nav-eintrag.hier .fw-nav-zahl.crit{padding:0 7px;border-radius:var(--ds-pill);
             background:var(--ds-crit);color:var(--ds-auf-satt)}
+        .fw-zuletzt{display:flex;flex-direction:column;gap:2px}
+        .fw-zuletzt-eintrag{font-size:13.5px}
+        .fw-zuletzt-eintrag .truncate{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-avatar.fw-avatar-klein{width:18px;height:18px;flex:0 0 18px;font-size:9px}
+        html._sbc .fw-zuletzt,html._sbc #fwZuletztTitel{display:none}
+        /* Mitteilungen: Punkt, sobald etwas im Zulauf wartet */
+        .fw-pip{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:var(--ds-pill);
+            background:var(--ds-crit);box-shadow:0 0 0 2px var(--ds-bg)}
+        .fw-pip[hidden]{display:none}
+        /* Bereichsreiter: die Unterseiten des Bereichs oben auf der Seite
+           (statt ausgeklappt in der Leiste). Gestalt der Reiter aus dem
+           Mockup (`.tabs`): Unterstrich in Marke, ohne Karte. */
+        .fw-bereichsreiter{display:flex;align-items:center;gap:2px;margin:-8px 0 22px;border-bottom:1px solid var(--ds-line);
+            overflow-x:auto;scrollbar-width:none}
+        .fw-bereichsreiter::-webkit-scrollbar{display:none}
+        .fw-bereichsreiter a{position:relative;display:inline-flex;align-items:center;gap:7px;padding:8px 10px 11px;
+            font-size:13px;font-weight:500;color:var(--ds-muted);white-space:nowrap;text-decoration:none;transition:color .12s}
+        .fw-bereichsreiter a:hover{color:var(--ds-ink)}
+        .fw-bereichsreiter a.hier{color:var(--ds-ink);font-weight:600}
+        .fw-bereichsreiter a.hier::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;
+            border-radius:2px;background:var(--ds-brand)}
+        .fw-bereichsreiter .fw-z{font-size:11px;font-weight:600;padding:0 6px;border-radius:var(--ds-pill);line-height:17px}
+        .fw-bereichsreiter .fw-z.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
+        .fw-bereichsreiter-trenner{width:1px;height:16px;background:var(--ds-line);margin:0 6px 3px;flex:0 0 1px}
+        html._embed .fw-bereichsreiter{display:none}
+        /* «Neuer Fall»: Art als Kapseln, das Optionsfeld selbst unsichtbar */
+        .fw-auswahl label{cursor:pointer;position:relative}
+        .fw-auswahl input{position:absolute;opacity:0;width:1px;height:1px}
+        .fw-auswahl label:focus-within{box-shadow:0 0 0 3px var(--ds-brand-soft)}
+        .fw-fallneu{display:flex;flex-direction:column;gap:16px}
+        .fw-fallneu fieldset{border:0;margin:0;padding:0;min-width:0}
         .fw-nav-pfeil{margin-left:auto;padding:4px;margin-right:-4px;color:var(--ds-faint);display:flex}
         .fw-nav-pfeil .fw-zeichen{transition:transform .15s}
         .fw-nav-zahl + .fw-nav-pfeil{margin-left:4px}

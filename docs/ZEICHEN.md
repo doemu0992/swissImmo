@@ -104,18 +104,24 @@ Raums daneben, und das Bett trägt nichts bei.
 | `laedt` | Es läuft gerade — dreht sich | `circle-notch fa-spin`, `spinner` |
 | `code` | Rohdaten zur Fehlersuche | `code` |
 
-### Bedienung (2)
+### Bedienung (3)
 
 | Zeichen | Bedeutung | ersetzt heute |
 |---|---|---|
 | `einstellungen` | Konfiguration, Verhalten ändern | `gear`, `gears`, `plug`, `star`, `wand-magic-sparkles`, `robot`, `language`, `eye` (**nicht** als «sichtbar» — dafür `gut`/`gesperrt`), `hand` |
 | `darstellung` | Hell- oder Dunkelmodus umschalten | `moon`, `sun`, `circle-half-stroke` |
+| `glocke` | Mitteilungen: was neu hereingekommen ist | `bell` |
 
 > **Warum `darstellung` dazukam (Redesign 30.09.2026).** Das Mockup
 > `konzept-v8-cockpit.html` legt den Umschalter als eigenen Knopf in die
 > Kopfzeile. Bis dahin lag er nur im Profilmenü, als zwei beschriftete
 > Knöpfe ohne Zeichen. `einstellungen` passt nicht: Es verspricht eine
 > Seite mit Optionen, der Knopf schaltet aber sofort um.
+
+> **Warum `glocke` dazukam (zweiter Durchgang v8, 30.09.2026).** Das
+> Mockup hat in der Kopfzeile «Mitteilungen» mit einem Punkt, sobald etwas
+> Neues hereinkam. `meldung` ist das Zeichen der Schadenmeldung — eine
+> Glocke daraus zu machen, hätte zwei Bedeutungen auf ein Zeichen gelegt.
 
 > **Warum `schliessen` dazukam (E2.40, Gegenprüfung).** Die Umstellung
 > setzte `xmark` auf Schliessen-Knöpfen auf `mehr` (»Weitere Handlungen«) —
@@ -189,7 +195,7 @@ Der Konflikt ist damit nicht widerlegt, sondern **aufgelöst**: Die
 Rechnungsposition bekommt `dokument`, die Tickets bekommen `meldung`. Zwei
 Fundstellen, zwei Bedeutungen, zwei Zeichen.
 
-**Summe: 62 Zeichen** — 50 fuer die Anwendung, dazu die zwoelf
+**Summe: 63 Zeichen** — 51 fuer die Anwendung, dazu die zwoelf
 Raumzeichen des oeffentlichen Schadenformulars (E2.51, eigener
 Abschnitt weiter unten).
 
