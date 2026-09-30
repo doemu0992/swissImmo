@@ -264,13 +264,17 @@ class AkteTests(_Basis):
         alle Pruefungen darauf aus dem falschen Grund gruen."""
         with mandant(self.a.organisation):
             kzn = _kennzahlenleiste(self._akte())
-        self.assertIn('Vermietung', kzn)
+        self.assertIn('Belegung', kzn)
         self.assertGreater(len(kzn), 200)
 
 
 def _kennzahlenleiste(html):
-    """Nur die Kennzahlenleiste des Aktenkopfs, ohne den Rest der Seite."""
-    start = html.index('class="fw-kzn"')
+    """Nur die Kennzahlen im Kopf der Akte, ohne den Rest der Seite.
+
+    Seit konzept-v8 (30.09.2026) ein Streifen `fw-kpis` zwischen Seitenkopf
+    und Reitern statt der `fw-kzn` im Aktenkopf.
+    """
+    start = html.index('class="fw-kpis')
     return html[start:html.index('class="fw-reiter"', start)]
 
 

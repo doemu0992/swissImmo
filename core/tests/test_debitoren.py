@@ -235,7 +235,10 @@ class FinanzCockpitTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/finanzen/')
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Finanz-Cockpit')
+        # Seit konzept-v8 heisst die Seite «Finanzen» (Mockup #finanzen); der
+        # bisherige Inhalt steht unveraendert in der Karte «Abschluss».
+        self.assertContains(r, '<h1>Finanzen</h1>', html=True)
+        self.assertContains(r, 'Abschluss')
         self.assertContains(r, 'Offene Posten')  # hiess bis E2.29 «Arbeitskorb» (G2)
         self.assertContains(r, 'Alle Finanzaufgaben erledigt')
 

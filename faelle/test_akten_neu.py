@@ -377,12 +377,17 @@ class WasAuffaelltEinheitlichTest(SimpleTestCase):
         for name in self.MIT_BEFUNDEN:
             with self.subTest(akte=name):
                 text = self._text(name)
+                # Seit konzept-v8 (30.09.2026) fuehren Liegenschafts- und
+                # Vertragsakte keinen `fw-aktenkopf` mehr: Seitenkopf und
+                # Kennzahlen stehen frei, die Stammdaten hinter der
+                # Reiterleiste. Die Marke ist dort die Reiterleiste.
+                marke = 'fw-aktenkopf' if 'fw-aktenkopf' in text else '_detail_tabs.html'
                 self.assertIn(
-                    'fw-aktenkopf', text,
-                    f'{name} hat keinen Aktenkopf — dann misst der Test eine '
-                    f'Reihenfolge, die es nicht gibt.')
+                    marke, text,
+                    f'{name} hat weder Aktenkopf noch Reiterleiste — dann misst '
+                    f'der Test eine Reihenfolge, die es nicht gibt.')
                 self.assertIn('Was auffällt', text)
-                vorne = text.index('Was auffällt') < text.index('fw-aktenkopf')
+                vorne = text.index('Was auffällt') < text.index(marke)
                 if name in self.NOCH_HINTEN:
                     self.assertFalse(
                         vorne,

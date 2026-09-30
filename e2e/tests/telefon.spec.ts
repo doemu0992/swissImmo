@@ -77,8 +77,9 @@ test('Die Aufgabenzeile kommt mit zwei Zeilen aus', async ({ page }) => {
   await login(page);
   await goto(page, '/neu/');
 
-  const karte = page.locator('.fw-card').filter({
-    has: page.locator('.fw-kopf .fw-t', { hasText: /^Aufgaben$/ }) });
+  // Seit dem zweiten Durchgang v8 stehen die Aufgaben als Reiter in der Karte
+  // «Ausserdem» unter dem Arbeitsvorrat — die Zeilen sind dieselben.
+  const karte = page.locator('#ausserdem-aufgaben');
   const zeile = karte.locator('.fw-zeile').first();
   await expect(zeile, 'Die Aufgaben-Karte hat keine Zeilen — dann misst ' +
     'dieser Test nichts.').toBeVisible();
@@ -116,12 +117,14 @@ test('Die zwei Filter sind Kapseln und bleiben flach', async ({ page }) => {
   await login(page);
   await goto(page, '/neu/');
 
-  const zeile = page.locator('.fw-kopffilter');
+  // Seit dem zweiten Durchgang v8 stehen Zuständigkeit und Mandat im Kopf des
+  // Arbeitsvorrats (`fw-vorrat-wahl`), am Telefon als eigene Zeile darunter.
+  const zeile = page.locator('.fw-vorrat-wahl');
   const hoehe = await zeile.evaluate((el) => el.getBoundingClientRect().height);
   expect(hoehe, `Die Filterzeile ist ${Math.round(hoehe)} px hoch (gemessen: ` +
     '29 mit Kapseln, 39 ohne).').toBeLessThan(34);
 
-  const kapseln = page.locator('.fw-kopffilter label');
+  const kapseln = page.locator('.fw-vorrat-wahl select');
   await expect(kapseln).toHaveCount(2);
   const form = await kapseln.evaluateAll((els) => els.map((e) => {
     const cs = getComputedStyle(e);
@@ -232,4 +235,128 @@ test('Berichte: Achsenbeschriftung lesbar und ohne Überlappung', async ({ page 
 
   const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(quer).toBeLessThanOrEqual(0);
+});
+
+test('Läufe: eine Spalte, Stufenband in einer Reihe, Knopf neben dem Kontext', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/laeufe/');
+
+  const karten = page.locator('.fw-laeufe > .fw-lauf');
+  // Der E2E-Bestand plant Läufe (laeufe_planen) — ohne Karte wäre das keiner.
+  await expect(karten.first()).toBeVisible();
+  const m = await karten.evaluateAll((els) => els.map((k) => {
+    const r = k.getBoundingClientRect();
+    const stufen = [...k.querySelectorAll('.fw-stufen li')].map((l) => l.getBoundingClientRect());
+    return {
+      l: Math.round(r.left), r: r.right,
+      reihen: new Set(stufen.map((s) => Math.round(s.top))).size,
+      stufeHoch: Math.max(...stufen.map((s) => s.height)),
+      fuss: k.querySelector('.fw-lauf-fuss')!.getBoundingClientRect().height,
+    };
+  }));
+  // Eine Spalte: alle Karten beginnen an derselben Kante und bleiben im Bild.
+  expect(new Set(m.map((k) => k.l)).size).toBe(1);
+  for (const k of m) {
+    expect(k.r).toBeLessThanOrEqual(390);
+    // Segment + eine Zeile Beschriftung misst 27 px; bricht die Beschriftung
+    // um, wird es über 40.
+    expect(k.reihen, 'Das Stufenband bricht in mehrere Reihen').toBe(1);
+    expect(k.stufeHoch).toBeLessThan(40);
+    // Kontext und Knopf in einer Zeile: 43 px; untereinander wären es über 70.
+    expect(k.fuss).toBeLessThan(60);
+  }
+  const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  expect(quer).toBeLessThanOrEqual(0);
+});
+
+test('Sollstellung: die Freigabeleiste verdeckt am Telefon nicht die halbe Seite', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/sollstellung/');
+  const leiste = page.locator('.fw-freigabe');
+  await expect(leiste).toBeVisible();
+  // Mit der langen Erklärung waren es gemessen rund 200 px über der Tab-Leiste;
+  // sie steht jetzt im Fuss der Positionen, die Leiste misst ~120.
+  const hoch = await leiste.evaluate((el) => el.getBoundingClientRect().height);
+  expect(hoch).toBeLessThan(160);
+  const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  expect(quer).toBeLessThanOrEqual(0);
+});
+
+// ---- Tranche D (v8, zweiter Durchgang): gemessen bei 390 × 844 -------------
+
+test('Kreditoren: das Menü «Mehr» bleibt am Telefon im Bild', async ({ page }) => {
+  // VORHER GEMESSEN: rechts verankert, 288 px breit, Knopf endet bei x = 272
+  // → linke Kante bei x = -16. Jetzt hängt es an der Knopfzeile (x = 16).
+  await login(page);
+  await goto(page, '/neu/kreditoren/');
+  await page.locator('main .fw-phead [data-menu-btn]').first().click();
+  const liste = page.locator('main .fw-phead [data-menu-list]').first();
+  await expect(liste).toBeVisible();
+  const r = await liste.evaluate((el) => {
+    const b = el.getBoundingClientRect();
+    return { l: b.left, r: b.right, w: b.width };
+  });
+  expect(r.l, `Menü beginnt bei x = ${Math.round(r.l)}`).toBeGreaterThanOrEqual(0);
+  expect(r.r).toBeLessThanOrEqual(390);
+  // Nicht zusammengestaucht: die Einträge brauchen ihre 288 px.
+  expect(r.w).toBeGreaterThan(250);
+});
+
+test('Mieterspiegel: die Summenzeile steht beschriftet unter der Tabelle', async ({ page }) => {
+  // VORHER: «Soll-Total» rechtsbündig ohne Gewicht, die Netto-Summe als fette
+  // Kartenüberschrift OHNE Beschriftung links, «Ist belegt» rechts.
+  await login(page);
+  await goto(page, '/neu/mieterspiegel/');
+  await page.locator('main a[href^="/neu/mieterspiegel/?lg="]').first().click();
+  await page.waitForLoadState('networkidle');
+  const fuss = page.locator('main table tfoot tr').first();
+  await expect(fuss).toBeVisible();
+  const m = await fuss.evaluate((tr) => {
+    const zellen = Array.from(tr.querySelectorAll('td')) as HTMLElement[];
+    const titel = zellen[0];
+    const erste = zellen[1];
+    const wert = titel.querySelector('.fw-wert') as HTMLElement;
+    return {
+      titelLinks: wert.getBoundingClientRect().left - tr.getBoundingClientRect().left,
+      zweiteLabel: getComputedStyle(erste, '::before').content,
+      zweiteGewicht: getComputedStyle(erste).fontSize,
+    };
+  });
+  // Titel an der linken Kante (Innenabstand 16 px), nicht rechts gerückt.
+  expect(m.titelLinks).toBeLessThan(30);
+  // Die Netto-Summe trägt ihre Spaltenbeschriftung wie die folgenden.
+  expect(m.zweiteLabel).not.toBe('none');
+  expect(m.zweiteGewicht).not.toBe('16px');
+});
+
+test('Dateifeld: Knopf und Rahmen passen ins Telefon', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/kreditoren/');
+  await page.evaluate(() => document.getElementById('kredform')!.classList.remove('hidden'));
+  const feld = page.locator('#kr-beleg');
+  await expect(feld).toBeVisible();
+  const m = await feld.evaluate((el) => {
+    const b = el.getBoundingClientRect();
+    return { r: b.right, h: b.height, rand: getComputedStyle(el).borderTopWidth };
+  });
+  expect(m.r).toBeLessThanOrEqual(390 - 16);
+  // Eine Zeile: Knopf 30 px + Rand/Innenabstand = 40 px.
+  expect(m.h).toBeLessThan(48);
+  expect(m.rand).toBe('1px');
+});
+
+test('Seitenkopf: Brotkrume klein über dem Titel, auch auf Unterseiten', async ({ page }) => {
+  await login(page);
+  for (const pfad of ['/neu/mandate/', '/neu/kreditoren/', '/neu/nebenkosten/', '/neu/zulauf/']) {
+    await goto(page, pfad);
+    const m = await page.evaluate(() => {
+      const k = document.querySelector('main .fw-phead .fw-krumen') as HTMLElement;
+      const h = document.querySelector('main .fw-phead h1') as HTMLElement;
+      return k && h ? { krume: k.getBoundingClientRect().bottom, h1: h.getBoundingClientRect().top,
+        schrift: getComputedStyle(k).fontSize } : null;
+    });
+    expect(m, `${pfad}: keine Brotkrume im Seitenkopf`).not.toBeNull();
+    expect(m!.krume).toBeLessThanOrEqual(m!.h1);
+    expect(m!.schrift).toBe('12.5px');
+  }
 });

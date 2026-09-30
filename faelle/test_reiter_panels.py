@@ -292,6 +292,33 @@ class AktenkopfTests(TestCase):
     #: (G5). Vier Zahlen «zur Person» waeren Summen, die anderswo schon stehen.
     KOPF_OHNE_KENNZAHLEN = {'person'}
 
+    #: Aktentypen, deren Kopf nach konzept-v8 gebaut ist (zweiter Durchgang,
+    #: 30.09.2026): Seitenkopf `fw-phead` mit Brotkrume `fw-krumen`, Titel und
+    #: Knoepfen, darunter die Kennzahlen `fw-kpis` — statt `fw-aktenkopf`. Fuer
+    #: sie gilt die v8-Pruefung unten, nicht die des alten Aktenkopfs.
+    KOPF_NACH_V8 = {'liegenschaft', 'mietverhaeltnis'}
+
+    @staticmethod
+    def _v8_kopf(html):
+        """Der v8-Kopf allein — vom Seitenkopf bis zur Reiterleiste."""
+        if 'class="fw-phead"' not in html:
+            return ''
+        return html.split('class="fw-phead"', 1)[1].split('class="fw-reiter"', 1)[0]
+
+    def test_v8_akten_tragen_kopf_brotkrume_und_kennzahlen(self):
+        for typ, adresse in sorted(self._seiten().items()):
+            if typ not in self.KOPF_NACH_V8:
+                continue
+            kopf = self._v8_kopf(self._html(adresse))
+            for baustein, was in (('class="fw-krumen"', 'die Brotkrume'),
+                                  ('<h1>', 'der Titel'),
+                                  ('class="fw-phead-knoepfe"', 'die Knoepfe'),
+                                  ('class="fw-kpis', 'die Kennzahlen'),
+                                  ('/neu/faelle/neu/?akte=', '«Neuer Fall» mit Akte')):
+                with self.subTest(typ=typ, baustein=baustein):
+                    self.assertIn(baustein, kopf,
+                                  f'{was} fehlt im v8-Kopf vor der Reiterleiste.')
+
     @classmethod
     def setUpTestData(cls):
         from core.tests._isolation import MandantenFixture
@@ -344,7 +371,7 @@ class AktenkopfTests(TestCase):
 
     def test_jede_umgestellte_akte_traegt_den_aktenkopf(self):
         for typ, adresse in sorted(self._seiten().items()):
-            if typ not in UMGESTELLT:
+            if typ not in UMGESTELLT or typ in self.KOPF_NACH_V8:
                 continue
             html = self._html(adresse)
             # Auf das KLASSENATTRIBUT pruefen, nicht auf den blossen Namen:
@@ -390,6 +417,9 @@ class AktenkopfTests(TestCase):
             # nicht mehr das, was er behauptet.
             kopf = self._aktenkopf(html)
             hat = 'class="fw-kzn"' in kopf
+            if typ in self.KOPF_NACH_V8:
+                # v8: Kennzahlen als `fw-kpis` zwischen Seitenkopf und Reitern.
+                hat = 'class="fw-kpis' in self._v8_kopf(html)
             with self.subTest(typ=typ):
                 if typ in self.KOPF_OHNE_KENNZAHLEN:
                     self.assertFalse(

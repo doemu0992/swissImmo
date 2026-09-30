@@ -574,9 +574,11 @@ def _finanzen_v8(basis, heute, deb, kred):
         vorschlag, grund = None, ''
         if len(kandidaten) == 1:
             vorschlag = kandidaten[0]
-            wer = _zahler.normalisiere(name)
+            # Name aus dem Auftraggeber-Feld, sonst aus dem Buchungstext —
+            # Banken liefern das Feld oft leer («UNGEKLÄRT: MUSTER HANS Miete»).
+            wer = _zahler.normalisiere(name or rest)
             nachname = _zahler.normalisiere(getattr(vorschlag.vertrag.mieter, 'nachname', ''))
-            grund = 'name' if (nachname and wer and nachname in wer) else 'betrag'
+            grund = 'name' if (len(nachname) >= 3 and nachname in wer) else 'betrag'
         gutschriften.append({
             'art': 'geparkt', 'id': z.id, 'wer': name or rest or '',
             'ref': ((bew.referenz if bew else '') or '').strip(),

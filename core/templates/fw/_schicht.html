@@ -1700,6 +1700,8 @@ und einen Stilblock enthaelt.
                Überschrift statt daneben. Ausblenden hiesse: dort nicht filterbar. */
             .fw-vorrat .fw-kopf{flex-wrap:wrap}
             .fw-vorrat-wahl{flex-basis:100%;justify-content:flex-start;margin-left:0}
+            .fw-vorrat-wahl{flex-wrap:nowrap}
+            .fw-vorrat-wahl select{flex:1 1 0;min-width:0;max-width:none}
             .fw-tasten{display:none}
             .fw-vorrat .fw-reiter,.fw-ausserdem .fw-reiter{padding:0 6px}
         }
@@ -1848,8 +1850,6 @@ und einen Stilblock enthaelt.
         .fw-auffaellig .fw-mitte{flex:1;min-width:0}
         .fw-auffaellig .fw-mitte b{display:block;font-weight:600;font-size:13.5px;color:var(--ds-ink)}
         .fw-auffaellig .fw-mitte span{font-size:12.5px;color:var(--ds-muted)}
-        .fw-sev{width:8px;height:8px;border-radius:var(--ds-pill);flex:0 0 auto;background:var(--ds-line-stark)}
-        .fw-sev.crit{background:var(--ds-crit)}.fw-sev.warn{background:var(--ds-warn)}.fw-sev.good{background:var(--ds-good)}
         .fw-ansage{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:16px 20px;margin-bottom:24px;
             border-radius:var(--ds-radius);border:1px solid var(--ds-line);background:var(--ds-surface)}
         .fw-ansage>.fw-zeichen{flex:0 0 auto}
@@ -1993,7 +1993,7 @@ und einen Stilblock enthaelt.
         .fw-kurve-strich{fill:none;stroke:var(--ds-brand);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
         .fw-kurve-y{position:absolute;left:-44px;width:36px;text-align:right;transform:translateY(-50%);
             font-size:11px;color:var(--ds-faint);font-variant-numeric:tabular-nums;white-space:nowrap}
-        .fw-kurve-punkt{position:absolute;width:9px;height:9px;border-radius:var(--ds-pill);background:var(--ds-brand);
+        .fw-kurve-punkt{position:absolute;width:9px;height:9px;border-radius:var(--ds-pill);background:var(--ds-brand);color:var(--ds-auf-satt);
             box-shadow:0 0 0 2px var(--ds-surface);transform:translate(-50%,-50%);pointer-events:none}
         .fw-kurve-wert{position:absolute;transform:translate(-100%,-150%);margin-left:-6px;font-size:12px;font-weight:600;
             color:var(--ds-ink);white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}

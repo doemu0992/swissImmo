@@ -287,11 +287,14 @@ class FristTitelTests(TestCase):
         import pathlib
         quelle = pathlib.Path(
             'core/templates/fw/vertrag_detail.html').read_text(encoding='utf-8')
-        kopf = quelle.split('class="fw-kzn"')[1].split('_detail_tabs.html')[0]
+        # Seit konzept-v8 (30.09.2026) steht die naechste Frist nicht mehr
+        # in einer Kennzahlenleiste `fw-kzn`, sondern in der Ansagezeile
+        # zwischen Kennzahlen (`fw-kpis`) und Reitern.
+        kopf = quelle.split('class="fw-kpis')[1].split('_detail_tabs.html')[0]
         self.assertNotIn(
             'truncatechars', kopf,
-            'In der Kennzahlenleiste wird wieder per Filter gekuerzt — der '
-            'Umbruch geschieht in CSS (.fw-kzn .fw-f.fw-lang).')
+            'Im Kopf der Akte wird wieder per Filter gekuerzt — der Umbruch '
+            'geschieht in CSS.')
 
 
 class PfadTests(TestCase):
@@ -318,54 +321,44 @@ class PfadTests(TestCase):
         self.assertEqual(antwort.status_code, 200)
         return antwort.content.decode()
 
-    #: `fw-akte-pfad` steht ZWEIMAL auf der Seite: einmal als Brotkrume ganz
-    #: oben, einmal im Aktenkopf. Die erste Fassung dieser Tests nahm
-    #: `split(...)[1]` und untersuchte damit die Brotkrume — die Zeilenpruefung
-    #: fand nichts, und die Trennzeichen-Pruefung bestand auf einem leeren
-    #: Ausschnitt, war also wertlos. Deshalb wird hier ueber `fw-pz` gesucht,
-    #: das es nur im Aktenkopf gibt.
-    def _pfadzeilen(self, html):
-        import re
-        return re.findall(r'<div class="fw-pz"><span>([^<]+)</span><b>([^<]*)', html)
-
-    #: «Vertrag» und «Sprache» standen hier bis E2.75 und sind es nicht mehr.
-    #:
-    #: NICHT WEIL DER TEST STÖRTE, sondern weil das Deckblatt gekürzt wurde:
-    #: Die beiden Zeilen kosteten gemessene 77 Pixel und schoben die
-    #: Reiterzeile am Telefon nach unten (Aktenkopf 645 -> 568). Beide
-    #: Angaben stehen weiterhin unter «Stammdaten».
-    #:
-    #: Die Zusicherung dieses Tests bleibt unverändert: Was im Kopf steht,
-    #: steht auf einer EIGENEN Zeile mit Beschriftung und Wert — das war der
-    #: Befund vom 20.08.2026 und der ist nicht erledigt, nur kürzer geworden.
-    #: Dass die beiden Angaben nicht verloren gingen, hält
-    #: `DeckblattTests.test_beides_steht_weiterhin_unter_stammdaten` fest.
+    #: SEIT KONZEPT-V8 (30.09.2026) steht der Pfad als EINE Zeile unter dem
+    #: Namen — «MV-204 · Seestrasse 14, Thalwil · 4.5 Zi. EG mitte», wie im
+    #: Mockup (`pageMv`). Die Beschriftungen je Zeile (`fw-pz`) sind damit
+    #: fort; die Zusicherung bleibt, dass Liegenschaft und Objekt im Kopf
+    #: stehen, und dass die alte Kette mit «›» nicht zurueckkommt.
     IM_KOPF = ('Liegenschaft', 'Objekt')
 
+    def _kopfzeile(self, html):
+        """Die Zeile unter dem Namen — der erste Absatz im Seitenkopf."""
+        kopf = html.split('class="fw-phead"', 1)[1]
+        return kopf.split('<p>', 1)[1].split('</p>', 1)[0]
+
+    def _werte(self):
+        from portfolio.models import Einheit
+        with mandant(self.a.organisation):
+            e = Einheit.objects.select_related('liegenschaft').get(pk=self.a.vertrag.einheit_id)
+        return {'Liegenschaft': e.liegenschaft.strasse, 'Objekt': e.bezeichnung}
+
     def test_jede_angabe_hat_eine_eigene_zeile(self):
-        zeilen = dict(self._pfadzeilen(self._seite()))
-        self.assertTrue(zeilen, 'Es wurde keine einzige Pfadzeile gefunden.')
-        # Mandat nur, wenn ein Eigentuemer hinterlegt ist — die uebrigen immer.
-        for angabe in self.IM_KOPF:
+        zeile = self._kopfzeile(self._seite())
+        self.assertTrue(zeile.strip(), 'Die Zeile unter dem Namen ist leer.')
+        for angabe, wert in self._werte().items():
             with self.subTest(angabe=angabe):
-                self.assertIn(angabe, zeilen)
+                self.assertIn(wert, zeile)
 
     def test_die_zeilen_tragen_auch_werte(self):
-        """Sonst bestuenden leere Beschriftungen die Pruefung oben."""
-        zeilen = dict(self._pfadzeilen(self._seite()))
-        for angabe in self.IM_KOPF:
+        """Sonst bestuende eine leere Zeile die Pruefung oben."""
+        for angabe, wert in self._werte().items():
             with self.subTest(angabe=angabe):
-                self.assertTrue(zeilen.get(angabe, '').strip(),
-                                f'Die Zeile «{angabe}» hat keinen Wert.')
+                self.assertTrue(wert.strip(), f'Die Angabe «{angabe}» hat keinen Wert.')
 
     def test_keine_trennzeichen_mehr_in_der_kette(self):
         """Gegenprobe: Der alte Aufbau ist an seinen Trennern erkennbar."""
-        html = self._seite()
-        kopf = html.split('class="fw-aktenkopf"')[1].split('class="fw-kzn"')[0]
+        zeile = self._kopfzeile(self._seite())
         for zeichen in ('›', 'Korrespondenzsprache'):
             with self.subTest(zeichen=zeichen):
                 self.assertNotIn(
-                    zeichen, kopf,
+                    zeichen, zeile,
                     f'{zeichen!r} deutet auf die alte einzeilige Kette hin.')
 
 
@@ -407,7 +400,7 @@ class DeckblattTests(TestCase):
         grün geblieben, weil «Sprache» weiter unten in den Stammdaten steht —
         genau dort, wo sie hingehört.
         """
-        start = html.index('class="fw-aktenkopf"')
+        start = html.index('class="fw-phead"')   # konzept-v8: Seitenkopf statt Aktenkopf
         return html[start:html.index('data-panel=', start)]
 
     def test_das_deckblatt_fuehrt_weder_sprache_noch_vertragsdatum(self):

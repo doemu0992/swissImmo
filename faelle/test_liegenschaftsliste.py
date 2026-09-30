@@ -527,7 +527,9 @@ class AnsichtTests(TestCase):
         """
         html = _ohne_stil(self.client.get('/neu/liegenschaften/').content.decode())
         self.assertNotIn('fw-pcard', html)
-        self.assertIn('fw-zeile', html)
+        # konzept-v8 (30.09.2026): Eine Tabellenzeile je Liegenschaft statt
+        # einer `fw-zeile` — die Zeile ist geblieben, nur ihre Bauform nicht.
+        self.assertIn('data-zeile class="fw-klickzeile"', html)
 
     def test_der_waechter_wuerde_die_karten_auch_wirklich_finden(self):
         """Gegenprobe zur Gegenprobe: `_ohne_stil` darf nicht zu viel wegnehmen.
