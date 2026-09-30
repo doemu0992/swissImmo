@@ -75,7 +75,7 @@
             (ab {{ vormiete.beginn|date:"d.m.Y" }}) — bitte prüfen.</div>
         </div>
         {% endif %}
-        <div class="fw-formular p-5">
+        <div class="fw-formular fw-rumpf">
             <div class="fw-feldblock">
                 <label class="fw-label">Netto Vormiete (CHF)</label>
                 <input name="vormiete_netto" value="{% localize off %}{{ vormiete_netto }}{% endlocalize %}" placeholder="0.00" class="fw-feld fw-num w-full">
@@ -97,7 +97,7 @@
         {% else %}
         <p class="fw-hinweis"><span class="fw-ht">Aus dem Vertrag übernommen (keine datierte Sollmietzins-Zeile hinterlegt).</span></p>
         {% endif %}
-        <div class="fw-formular p-5">
+        <div class="fw-formular fw-rumpf">
             <div class="fw-feldblock">
                 <label class="fw-label">Netto Anfangsmietzins (CHF)</label>
                 <input name="anfang_netto" value="{% localize off %}{{ anfang_netto }}{% endlocalize %}" class="fw-feld fw-num w-full">
@@ -114,7 +114,7 @@
         <div class="fw-kopf"><h3 class="fw-t">Berechnungsgrundlagen</h3></div>
         <p class="fw-hinweis"><span class="fw-ht">Referenzzinssatz & Landesindex (LIK), auf denen der Mietzins beruht —
             aus dem Vertrag übernommen, bei Bedarf anpassbar.</span></p>
-        <div class="fw-formular drei p-5">
+        <div class="fw-formular drei fw-rumpf">
             <div class="fw-feldblock">
                 <label class="fw-label">Referenzzinssatz (%)</label>
                 <input name="basis_ref" value="{% localize off %}{{ basis_ref|default_if_none:'' }}{% endlocalize %}" class="fw-feld fw-num w-full">
@@ -137,7 +137,7 @@
     <!-- Begründung -->
     <div class="fw-card">
         <div class="fw-kopf"><h3 class="fw-t">Grund der Festsetzung</h3></div>
-        <div class="fw-formular p-5">
+        <div class="fw-formular fw-rumpf">
         <div class="fw-feldblock breit">
         <select name="grund_choice" class="fw-feld w-full">
             <option value="anpassung">Anpassung an Teuerung und gestiegene Kosten (Art. 269a OR)</option>

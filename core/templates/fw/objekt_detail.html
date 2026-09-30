@@ -113,7 +113,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <!-- Aktueller Mieter -->
         <div class="fw-card fw-nomb">
             <div class="fw-kopf"><span class="fw-t">{% trans "Aktuelle Vermietung" %}</span></div>
-            <div class="p-5">
+            <div class="fw-rumpf">
             {% if aktiver_vertrag %}
             <div class="flex items-center gap-3 mb-3">
                 <div class="fw-avci">
@@ -148,7 +148,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <h2>{% trans "Merkmale" %}</h2>
             <span class="fw-rechts"><button type="button" onclick="document.getElementById('merkmale-edit').classList.toggle('hidden')" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' klasse='mr-1' %}{% trans "Bearbeiten" %}</button></span>
         </div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         {% if merkmale_gewaehlt %}
         <div class="flex flex-wrap gap-2">
             {% for m in merkmale_gewaehlt %}
@@ -162,7 +162,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             {% csrf_token %}
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
                 {% for m in merkmale_optionen %}
-                <label class="flex items-center gap-2 text-sm fw-ink">
+                <label class="fw-haekchen">
                     <input type="checkbox" name="merkmale" value="{{ m }}" {% if m in merkmale_gewaehlt %}checked{% endif %} class="fw-akzent"> {{ m }}
                 </label>
                 {% endfor %}
@@ -250,7 +250,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     {% if not e.ist_einstellplatz %}
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Nebenkosten-Abrechnungsart" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <form method="post" action="/neu/objekte/{{ e.id }}/nkart/" class="flex flex-wrap items-end gap-3">
             {% csrf_token %}
             <div><label class="fw-label mb-1">{% trans "Abrechnungsart" %}</label>
@@ -301,7 +301,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Sollmietzins / Gratismonat erfassen" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <form method="post" action="/neu/sollmietzins/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
@@ -382,7 +382,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <!-- Objekt-Staffelmiete-Vorlage (Plan) — belegt neue Verträge vor, wie Sollmietzins -->
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Staffelmiete-Vorlage (Objekt)" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}<p class="fw-hilfe mb-3">Geplante, datierte Netto-Stufen für dieses Objekt. Ein <b>neuer Gewerbe-Vertrag</b> übernimmt sie automatisch als Staffelmiete (Art. 269c). Diese Vorlage wird selbst nicht verrechnet — die verrechnungswirksamen Stufen entstehen am konkreten Vertrag.</p>
         <div class="border fw-linie rounded-lg overflow-hidden mb-3">
             <div class="fw-tablewrap"><table class="fw-table fw-dicht">
@@ -432,7 +432,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <h2>{% trans "Staffelstufen des aktiven Vertrags" %}</h2>
             <span class="fw-rechts"><a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="fw-link">{% trans "Aktiver Vertrag" %}</a></span>
         </div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         {% comment %}Rechtshinweis (Art. 269c/269d OR) — bleibt deutsch bis zur juristischen Prüfung.{% endcomment %}<p class="fw-hilfe mb-3">Vorab vereinbarte Stufen des <b>aktiven Vertrags</b>. Ab dem Stichtag gilt der neue Netto-Mietzins automatisch im Mietenlauf (keine erneute Ankündigung). Zulässig bei fester Vertragsdauer ≥ 3 Jahren, max. 1 Erhöhung pro Jahr.</p>
         <div class="border fw-linie rounded-lg overflow-hidden mb-3">
             <div class="fw-tablewrap"><table class="fw-table fw-dicht">
@@ -482,7 +482,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div class="fw-subhead">{% trans "Fotos" %}</div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Objekt-Fotos" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <p class="fw-klein mb-3">{% trans "Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das erste Foto ist das Titelbild." %}</p>
         <form method="post" action="/neu/objekte/{{ e.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
             {% csrf_token %}
@@ -575,7 +575,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <!-- Schnellerfassung ganzer Raum aus Katalog -->
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Raum aus Katalog anlegen" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <p class="fw-klein mb-3">{% trans "Lädt die typische Ausstattung eines Raumtyps mit Standard-Lebensdauern — danach Details je Element ergänzen. Die Räume entstehen aus den Elementen." %}</p>
         <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/katalog/" class="flex flex-wrap items-end gap-3">
             {% csrf_token %}
@@ -591,7 +591,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <!-- Einzelnes Element erfassen -->
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Ausstattungselement erfassen" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {% csrf_token %}
             <div><label class="fw-label mb-1">{% trans "Raum *" %}</label>
@@ -786,7 +786,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Gerät erfassen" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <form method="post" action="/neu/geraet/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
@@ -860,7 +860,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Zähler erfassen" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <form method="post" action="/neu/zaehler/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
@@ -936,7 +936,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Schlüssel erfassen" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <form method="post" action="/neu/schluessel/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">

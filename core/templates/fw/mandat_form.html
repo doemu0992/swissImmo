@@ -19,7 +19,7 @@
     {% csrf_token %}
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Eigentümer" %}</h2></div>
-        <div class="p-5 space-y-4">
+        <div class="fw-rumpf space-y-4">
         <div><label for="md-firma" class="fw-label mb-1">{% trans "Name / Firma *" %}</label>
             <input id="md-firma" name="firma_oder_name" required value="{{ md.firma_oder_name }}" class="fw-feld w-full"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -64,7 +64,7 @@
 
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Zugeordnete Liegenschaften" %}</h2></div>
-        <div class="p-5 space-y-4">
+        <div class="fw-rumpf space-y-4">
         <p class="fw-hilfe mb-3">{% trans "Wähle die Liegenschaften, die diesem Eigentümer gehören." %}</p>
         {# Beleg, dass dieser Block wirklich mitgeschickt wurde — sonst rührt die View die Zuordnung nicht an #}
         <input type="hidden" name="lg_zuordnung" value="1">
@@ -101,7 +101,7 @@
         <span class="fw-chip fw-mut">{% trans "Kein Zugang" %}</span>
         {% endif %}</span>
     </div>
-    <div class="p-5">
+    <div class="fw-rumpf">
     <p class="fw-hilfe">{% blocktrans trimmed %}Login fürs Portal unter <span class="font-mono">/portal/login/</span> — Rendite-Cockpit, Reparatur-Freigaben, Report &amp; Steuerauszug.{% endblocktrans %}</p>
 
     {% if portal_user %}

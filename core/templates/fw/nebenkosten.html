@@ -20,7 +20,7 @@
 
 <div id="nkform" class="hidden fw-card">
     <div class="fw-kopf"><h3 class="fw-t">{% trans "Neue Abrechnungsperiode" %}</h3></div>
-    <form method="post" action="/neu/nebenkosten/neu/" class="fw-formular p-5">
+    <form method="post" action="/neu/nebenkosten/neu/" class="fw-formular fw-rumpf">
         {% csrf_token %}
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "Liegenschaft *" %}</label>
             <select name="liegenschaft_id" required class="fw-feld">

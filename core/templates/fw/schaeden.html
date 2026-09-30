@@ -23,7 +23,7 @@
 <!-- Schaden intern erfassen -->
 <div id="neuschaden" class="hidden fw-card">
     <div class="fw-kopf"><span class="fw-ikon crit">{% zeichen 'warnung' %}</span><h2>{% trans "Schaden erfassen (z.B. telefonisch gemeldet)" %}</h2></div>
-    <form method="post" action="/neu/schaeden/neu/" enctype="multipart/form-data" class="fw-formular p-5">
+    <form method="post" action="/neu/schaeden/neu/" enctype="multipart/form-data" class="fw-formular fw-rumpf">
         {% csrf_token %}
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "Titel / Schaden *" %}</label>
             <input name="titel" required placeholder="{% trans 'z.B. Wasserhahn tropft' %}" class="fw-feld"></div>

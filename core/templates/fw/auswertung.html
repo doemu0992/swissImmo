@@ -49,7 +49,7 @@
 <!-- Monatsverlauf -->
 <div class="fw-card">
     <div class="fw-kopf"><h2 class="fw-t">{% trans "Monatsverlauf" %}</h2></div>
-    <div class="overflow-x-auto p-5">
+    <div class="overflow-x-auto fw-rumpf">
         <div class="flex items-end gap-2 h-52 min-w-[520px]">
             {% for m in monate %}
             <div class="flex-1 flex flex-col items-center justify-end h-full group">
@@ -66,7 +66,7 @@
 {% if lg_rows %}
 <div class="fw-card">
     <div class="fw-kopf"><h2 class="fw-t">{% blocktrans %}Je Liegenschaft ({{ jahr }}){% endblocktrans %}</h2></div>
-    <div class="space-y-2.5 p-5">
+    <div class="space-y-2.5 fw-rumpf">
         {% for r in lg_rows %}
         <div class="flex items-center gap-3">
             <div class="w-48 shrink-0 fw-ink truncate">{{ r.lg.strasse }}, {{ r.lg.ort }}</div>

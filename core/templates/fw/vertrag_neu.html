@@ -95,7 +95,7 @@ Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert w
                     </div>
                     <!-- Zweiter Mieter (Ehepartner / solidarisch) — gleiche Erfassung wie 1. Person -->
                     <div class="mt-4 border-t fw-linie pt-4">
-                        <label class="flex items-center gap-2 text-sm font-semibold fw-ink mb-1">
+                        <label class="fw-haekchen mb-1">
                             <input type="checkbox" id="zweiter_aktiv" onchange="toggleZweiter()" class="fw-akzent"> {% trans "Zweiten Mieter hinzufügen" %}
                         </label>
                         <p class="text-xs fw-faint mb-3">{% trans "z. B. Ehepartner — beide haften solidarisch und stehen im Vertrag." %}</p>
@@ -123,7 +123,7 @@ Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert w
                                 </div>
                                 <input name="mit_email" oninput="live()" placeholder="{% trans 'E-Mail' %}" class="fw-feld w-full">
                             </div>
-                            <label class="flex items-center gap-2 text-sm fw-ink fw-warn-flaeche rounded-lg px-3 py-2.5 mt-3">
+                            <label class="fw-haekchen fw-warn-flaeche rounded-lg px-3 py-2.5 mt-3">
                                 <input type="checkbox" name="familienwohnung" id="familienwohnung" onchange="live()" class="fw-akzent">
                                 <span><b>{% trans "Familienwohnung" %}</b> {% trans "(gemeinsame eheliche/eingetragene Wohnung)" %}</span>
                             </label>
@@ -147,7 +147,7 @@ Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert w
                         <div class="fw-feldblock"><label class="fw-label">{% trans "Mietende" %}</label>
                             <input name="ende" id="s_ende" type="date" oninput="live()" class="fw-feld w-full">
                             <input type="hidden" name="ist_befristet" id="ist_befristet_hidden" value="0">
-                            <label class="text-xs fw-faint flex items-center gap-1 mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> {% trans "unbefristet" %}</label></div>
+                            <label class="fw-haekchen mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> {% trans "unbefristet" %}</label></div>
                     </div>
 
                     <div class="flex items-center justify-between mt-4 mb-2">
@@ -200,7 +200,7 @@ Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert w
                         <input id="s_brutto" type="text" readonly class="fw-feld w-full mb-3 fw-mutet">
                     </div>
                     <div class="flex items-center gap-3 mb-3 flex-wrap">
-                        <label class="flex items-center gap-2 text-sm fw-ink">
+                        <label class="fw-haekchen">
                             <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="fw-akzent"> {% trans "MWST-pflichtig" %} <span class="text-xs fw-faint">{% trans "(optiert, v. a. Gewerbe)" %}</span>
                         </label>
                         <div id="mwst-satz-box" class="hidden flex items-center gap-1.5">
@@ -327,11 +327,11 @@ Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert w
                     <h3 class="text-lg font-bold fw-strong mb-1">{% trans "Abschluss" %}</h3>
                     <p class="text-sm fw-mutet mb-4">{% trans "Zusammenfassung prüfen und Vertrag erstellen." %}</p>
                     <div id="summary" class="fw-flaeche2 rounded-lg p-4 text-sm space-y-1.5 mb-4"></div>
-                    <label class="flex items-center gap-2 text-sm fw-ink">
+                    <label class="fw-haekchen">
                         <input type="checkbox" name="aktiv_setzen" checked class="fw-akzent"> {% blocktrans trimmed %}Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; Debitoren){% endblocktrans %}
                     </label>
                     <div class="mt-4 pt-4 border-t fw-linie">
-                        <label class="flex items-center gap-2 text-sm fw-ink">
+                        <label class="fw-haekchen">
                             <input type="checkbox" name="abschluss" value="senden" class="fw-akzent"> {% blocktrans trimmed %}Nach dem Erstellen <b>digital zur Unterschrift senden</b> (DocuSeal){% endblocktrans %}
                         </label>
                         {% if docuseal_konfiguriert %}

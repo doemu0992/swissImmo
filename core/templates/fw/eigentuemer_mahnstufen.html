@@ -38,7 +38,7 @@ sie nur an und schickt sie unverändert zurück. Die Feldnamen
                 {% trans "Stufe aktiv" %}
             </label>
         </div>
-        <div class="fw-formular p-5">
+        <div class="fw-formular fw-rumpf">
             <div class="fw-feldblock"><label for="ab-{{ s.stufe }}" class="fw-label">{% trans "Fällig ab Tag (Verzug)" %}</label>
                 <input id="ab-{{ s.stufe }}" name="ab_tage_{{ s.stufe }}" type="number" min="0" step="1" inputmode="numeric"
                        value="{{ s.ab_tage }}" class="fw-feld"></div>

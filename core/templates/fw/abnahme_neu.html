@@ -22,7 +22,7 @@
     {% if embed_base %}<input type="hidden" name="embed" value="1">{% endif %}
 
     <!-- Kopf -->
-    <div class="fw-card"><div class="fw-formular drei p-5">
+    <div class="fw-card"><div class="fw-formular drei fw-rumpf">
         <div class="fw-feldblock"><label class="fw-label">{% trans "Art" %}</label>
             <select name="typ" class="fw-feld">
                 <option value="auszug" {% if typ_default == 'auszug' %}selected{% endif %}>{% trans "Auszug / Rücknahme" %}</option>
@@ -39,13 +39,13 @@
             </select></div>
         <div class="fw-feldblock"><label class="fw-label">{% trans "Schlüssel zurück" %}</label>
             <input name="schluessel_anzahl" type="number" min="0" class="fw-feld"></div>
-        <div class="fw-feldblock justify-end"><label class="flex items-center gap-2 fw-strong"><input type="checkbox" name="mieter_anwesend" checked class="fw-akzent">{% trans "Mieter anwesend" %}</label></div>
+        <div class="fw-feldblock justify-end"><label class="fw-haekchen"><input type="checkbox" name="mieter_anwesend" checked class="fw-akzent">{% trans "Mieter anwesend" %}</label></div>
     </div></div>
 
     <!-- Zählerstände -->
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Zählerstände" %}</h2></div>
-        <div class="fw-formular drei p-5">
+        <div class="fw-formular drei fw-rumpf">
             <input name="zaehler_strom" placeholder="{% trans 'Strom kWh' %}" class="fw-feld">
             <input name="zaehler_wasser" placeholder="{% trans 'Wasser m³' %}" class="fw-feld">
             <input name="zaehler_gas" placeholder="{% trans 'Gas/Wärme' %}" class="fw-feld">
@@ -58,7 +58,7 @@
             <h2>{% trans "Mängel / Zustand je Raum" %}</h2>
             <span class="fw-rechts"><button type="button" onclick="addMangel()" class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'neu' %}{% trans "Mangel" %}</button></span>
         </div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <div id="maengel" class="space-y-3"></div>
         <p class="fw-hilfe mt-3">{% blocktrans trimmed %}Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").{% endblocktrans %}</p>
         {# Rechtshinweis Art. 267a OR: bleibt bis zur juristischen Durchsicht Deutsch. #}
@@ -67,7 +67,7 @@
     </div>
 
     <!-- Abschluss -->
-    <div class="fw-card"><div class="fw-formular p-5">
+    <div class="fw-card"><div class="fw-formular fw-rumpf">
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "Neue Adresse des Mieters" %}</label>
             <input name="neue_adresse" class="fw-feld"></div>
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "Bemerkungen" %}</label>
@@ -76,7 +76,7 @@
                 <input name="unterschrift_mieter" class="fw-feld"></div>
             <div class="fw-feldblock"><label class="fw-label">{% trans "Unterschrift Verwaltung (Name)" %}</label>
                 <input name="unterschrift_verwalter" value="{{ verwalter_default }}" class="fw-feld"></div>
-        <div class="fw-feldblock breit"><label class="flex items-center gap-2 fw-strong"><input type="checkbox" name="abgeschlossen" class="fw-akzent">{% trans "Protokoll abgeschlossen" %}</label></div>
+        <div class="fw-feldblock breit"><label class="fw-haekchen"><input type="checkbox" name="abgeschlossen" class="fw-akzent">{% trans "Protokoll abgeschlossen" %}</label></div>
     </div></div>
 
     <div class="flex items-center gap-3">

@@ -118,7 +118,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <option value="{{ key }}" {% if t.status == key %}selected{% endif %}>{{ val.0 }}</option>
                     {% endfor %}
                 </select>
-                <label class="fw-s flex items-center gap-2">
+                <label class="fw-haekchen">
                     <input type="checkbox" name="melder_informieren" class="fw-haken">{% trans "Melder per E-Mail informieren" %}
                 </label>
                 <button class="fw-btn fw-primary fw-knapp">{% trans "Status setzen" %}</button>
@@ -129,7 +129,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-grid2">
         <div class="fw-card">
             <div class="fw-kopf"><h2>{% trans "Schadensbeschreibung" %}</h2></div>
-            <div class="p-5">
+            <div class="fw-rumpf">
             <p class="whitespace-pre-line leading-relaxed">{{ t.beschreibung|default:"—" }}</p>
             {% if t.foto %}
             <div class="mt-4"><img src="{{ t.foto.url }}" alt="Schaden" class="rounded-lg max-h-80 border fw-linie"></div>
@@ -175,7 +175,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <!-- Antwort an Melder -->
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'senden' %}</span><h2>{% trans "Antwort an Melder" %}</h2>{% if melder_email %} <span class="fw-neben">({{ melder_email }})</span>{% endif %}</div>
-        <form method="post" action="/neu/schaeden/{{ t.id }}/antwort/" class="p-5">
+        <form method="post" action="/neu/schaeden/{{ t.id }}/antwort/" class="fw-rumpf">
             {% csrf_token %}
             <textarea name="text" rows="3" required placeholder="{% trans 'Ihre Nachricht an den Melder…' %}" class="fw-feld w-full mb-3"></textarea>
             <button class="fw-btn fw-primary">{% zeichen 'senden' %}{% trans "Senden" %}</button>
@@ -275,7 +275,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <!-- Handwerker beauftragen (automatisiert) -->
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'arbeit' %}</span><h2>{% trans "Handwerker beauftragen" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <p class="fw-hilfe mb-4">{% blocktrans trimmed %}Vergibt den Auftrag, mailt Handwerker <span class="font-medium">und</span> Melder automatisch und setzt den Status auf „In Bearbeitung“.{% endblocktrans %}</p>
         {% if handwerker_liste %}
         <form method="post" action="/neu/schaeden/{{ t.id }}/auftrag/" class="space-y-3">
@@ -331,7 +331,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% endif %}
                 </div>
             </div>
-            <form method="post" action="/neu/auftrag/{{ a.id }}/kosten/" class="fw-formular drei items-end p-5">
+            <form method="post" action="/neu/auftrag/{{ a.id }}/kosten/" class="fw-formular drei items-end fw-rumpf">
                 {% csrf_token %}
                 <div class="fw-feldblock"><label class="fw-label">{% trans "Kostenschätzung (CHF)" %}</label>
                     <input name="kosten_geschaetzt" value="{{ a.kosten_geschaetzt|default_if_none:'' }}" class="fw-feld fw-num"></div>
@@ -339,12 +339,12 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <input name="kosten_effektiv" value="{{ a.kosten_effektiv|default_if_none:'' }}" class="fw-feld fw-num"></div>
                 <div>
                     {% if not a.kreditoren_rechnung_id %}
-                    <label class="flex items-center gap-2 text-xs fw-mutet mb-2">
+                    <label class="fw-haekchen mb-2">
                         <input type="checkbox" name="kreditor_erstellen" class="fw-haken">{% trans "Kreditorenrechnung erstellen" %}
                     </label>
                     {% endif %}
                     {% if a.freigabe_status == 'nicht_noetig' or a.freigabe_status == 'abgelehnt' %}
-                    <label class="flex items-center gap-2 text-xs fw-mutet mb-2">
+                    <label class="fw-haekchen mb-2">
                         <input type="checkbox" name="freigabe_anfordern" class="fw-akzent-warn">{% trans "Eigentümer-Freigabe anfordern" %}
                     </label>
                     {% endif %}
@@ -365,7 +365,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div data-panel="sc" id="sc-dokumente" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Fotos hinzufügen" %}</h2></div>
-        <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3 p-5">
+        <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3 fw-rumpf">
             {% csrf_token %}
             <input name="fotos" type="file" accept="image/*" multiple required
                    class="text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold">

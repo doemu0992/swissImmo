@@ -31,7 +31,7 @@
     {% endif %}
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Objekt" %}</h2></div>
-        <div class="p-5 space-y-4">
+        <div class="fw-rumpf space-y-4">
         <div><label for="id_liegenschaft_id" class="fw-label mb-1">{% trans "Liegenschaft" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
             <select id="id_liegenschaft_id" name="liegenschaft_id" required aria-required="true" class="fw-feld w-full"{% if feld_fehler.liegenschaft_id %} aria-invalid="true" aria-describedby="id_liegenschaft_id_fehler"{% endif %}>
                 <option value="">— {% trans "wählen" %} —</option>
@@ -52,7 +52,7 @@
 
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Fläche & Details" %}</h2></div>
-        <div class="p-5 space-y-4">
+        <div class="fw-rumpf space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             {% include 'fw/_feld.html' with f=form.zimmer label=_("Zimmer") inputmodus="decimal" %}
             {% include 'fw/_feld.html' with f=form.flaeche_m2 label=_("Fläche (m²)") inputmodus="decimal" %}
@@ -85,7 +85,7 @@
 
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Soll-Mietzins" %}</h2></div>
-        <div class="p-5 space-y-4">
+        <div class="fw-rumpf space-y-4">
         {% if ist_neu %}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {% include 'fw/_feld.html' with f=form.nettomiete_aktuell label=_("Anfangs-Nettomiete (CHF)") inputmodus="decimal" platzhalter="0.00" klasse="tabular-nums" %}

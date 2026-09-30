@@ -32,7 +32,7 @@
     {% endif %}
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Adresse" %}</h2></div>
-        <div class="p-5 space-y-4">
+        <div class="fw-rumpf space-y-4">
         {% include 'fw/_feld.html' with f=form.strasse label=_("Strasse & Nr.") pflicht=True %}
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             {% include 'fw/_feld.html' with f=form.plz label=_("PLZ") pflicht=True %}
@@ -44,7 +44,7 @@
 
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Stammdaten" %}</h2></div>
-        <div class="p-5 space-y-4">
+        <div class="fw-rumpf space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {% include 'fw/_feld.html' with f=form.egid label=_("EGID") platzhalter=_("automatisch aus Adresse") %}
             {% include 'fw/_feld.html' with f=form.kataster_nummer label=_("Kataster-Nr.") %}
@@ -131,7 +131,7 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
 
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Bank, Mietzinskonto & Notfallkontakte" %}</h2></div>
-        <div class="p-5 space-y-4">
+        <div class="fw-rumpf space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {% include 'fw/_feld.html' with f=form.bank_name label=_("Bankname (Mietzinskonto)") %}
             {% include 'fw/_feld.html' with f=form.iban label="IBAN" klasse="font-mono" %}
@@ -147,8 +147,8 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
 
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Nebenkosten / Heizung" %}</h2></div>
-        <div class="p-5 space-y-3">
-        <label class="flex items-center gap-2 fw-label">
+        <div class="fw-rumpf space-y-3">
+        <label class="fw-haekchen">
             <input type="checkbox" name="hkvo_aktiv" {% if form.hkvo_aktiv.value %}checked{% endif %} onchange="document.getElementById('hkvo-box').classList.toggle('hidden', !this.checked)" class="fw-akzent">
             {% trans "Verbrauchsabhängige Heizkostenabrechnung (HKVO)" %}
         </label>

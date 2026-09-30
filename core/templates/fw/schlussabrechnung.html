@@ -45,7 +45,7 @@
                 <div class="fw-f">{% zeichen 'gesperrt' klasse='mr-0.5' %}{% trans 'Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position „zulasten“ erfassen.' %}</div>
                 <input type="hidden" name="kaution_verrechnen" value="">
             {% else %}
-                <label class="fw-f flex items-center gap-2">
+                <label class="fw-haekchen fw-f">
                     <input type="checkbox" name="kaution_verrechnen" id="cb-kaution" checked class="fw-akzent">{% trans "verrechnen / zurückzahlen" %}
                 </label>
             {% endif %}
@@ -55,7 +55,7 @@
     <!-- Positionen -->
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Weitere Positionen" %}</h2></div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <p class="fw-hilfe mb-4">{% trans "z.B. Nebenkosten-Nachzahlung/-Guthaben, Schäden, Endreinigung, Ersatz. „zulasten“ = Mieter schuldet, „zugunsten“ = Gutschrift an Mieter." %}</p>
         <div class="space-y-2">
             {% for p in prefill_positionen %}

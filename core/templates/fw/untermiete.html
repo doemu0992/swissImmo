@@ -26,7 +26,7 @@
 
 <form method="post" class="max-w-3xl">
     {% csrf_token %}
-    <div class="fw-card"><div class="fw-formular p-5">
+    <div class="fw-card"><div class="fw-formular fw-rumpf">
         <div class="fw-feldblock"><label class="fw-label">{% trans "Untermietende Person *" %}</label>
             <input name="untermieter" required placeholder="{% trans 'Name der untermietenden Person' %}" class="fw-feld"></div>
         <div class="fw-feldblock"><label class="fw-label">{% trans "Entscheid" %}</label>

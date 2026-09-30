@@ -22,7 +22,7 @@
     {# Im Cockpit-Modal geladen? Dann nach dem Speichern das Popup schliessen. #}
     <input type="hidden" name="embed" id="k_embed" value="">
     <script>if (window.self !== window.top) document.getElementById('k_embed').value = '1';</script>
-    <div class="fw-card p-5 space-y-4">
+    <div class="fw-card fw-rumpf space-y-4">
         <div class="fw-formular">
             <div class="fw-feldblock"><label for="s_absender" class="fw-label">{% trans "Gekündigt durch *" %}</label>
                 <select name="absender" onchange="syncZustellung(); kuendigungCheck()" id="s_absender" class="fw-feld">
@@ -81,7 +81,7 @@
         </div>
         {% endif %}
 
-        <label class="flex items-center gap-2 text-sm fw-ink">
+        <label class="fw-haekchen">
             <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="fw-akzent"> {% trans "Ausserordentliche Kündigung" %}
         </label>
         <div id="ao-box" class="{% if not prefill_ao %}hidden {% endif %}space-y-3 pl-6">
@@ -94,10 +94,10 @@
         <div class="fw-feldblock"><label for="s_bemerkung" class="fw-label">{% trans "Bemerkung" %}</label>
             <textarea id="s_bemerkung" name="bemerkung" rows="2" class="fw-feld"></textarea></div>
 
-        <label class="flex items-center gap-2 text-sm fw-ink">
+        <label class="fw-haekchen">
             <input type="checkbox" name="bestaetigen" checked class="fw-akzent"> {% trans "Kündigung als bestätigt markieren (Vertrag wird auf „Gekündigt“ gesetzt)" %}
         </label>
-        <label class="flex items-center gap-2 text-sm fw-ink">
+        <label class="fw-haekchen">
             <input type="checkbox" name="leerstand_anlegen" class="fw-akzent"> {% trans "Objekt wird frei — Leerstand ab Vertragsende anlegen &amp; Nachmieter-Pendenz erstellen" %}
         </label>
         <div class="fw-hinweis info rounded-lg">

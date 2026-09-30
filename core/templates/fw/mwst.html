@@ -101,7 +101,7 @@
 <!-- MWST-Einstellungen -->
 <details class="fw-klapp max-w-xl">
     <summary>{% zeichen 'einstellungen' %}{% trans "MWST-Einstellungen (Methode / Satz / Nummer)" %}</summary>
-    <form method="post" action="/neu/mwst/einstellungen/" class="fw-formular p-5">
+    <form method="post" action="/neu/mwst/einstellungen/" class="fw-formular fw-rumpf">
         {% csrf_token %}
         <input type="hidden" name="zurueck" value="/neu/mwst/?jahr={{ jahr }}&quartal={{ quartal }}">
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "MWST-Methode" %}</label>

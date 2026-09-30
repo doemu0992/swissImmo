@@ -371,7 +371,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <h2>{% trans "Mietzinsdepot" %}</h2>
             <span class="fw-rechts fw-neben">Art. 257e OR · {% if v.ist_kautionsversicherung %}Kautionsversicherung{% else %}Sperrkonto auf Mietername{% endif %}</span>
         </div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <dl class="mb-3">
             <div class="fw-kv"><dt>{% trans "Betrag" %}</dt><dd>CHF {{ v.kautions_betrag|chf }}</dd></div>
             {% if v.kautions_status != 'erwartet' %}<div class="fw-kv"><dt>{% trans "Status" %}</dt><dd>{% trans v.kautions_status_label %}</dd></div>{% endif %}
@@ -458,7 +458,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <input type="number" step="0.05" name="abzug_betrag" value="0" class="fw-feld fw-num"></div>
                 <div class="fw-feldblock breit"><label class="fw-label">{% trans "Grund" %}</label>
                     <input name="abzug_grund" placeholder="{% trans 'z. B. Schäden, offene Miete' %}" class="fw-feld"></div>
-            <div class="fw-feldblock breit"><label class="flex items-center gap-2 fw-strong"><input type="checkbox" name="abzug_verrechnen" class="fw-haken"> {% if v.ist_kautionsversicherung %}{% trans "Schadenforderung" %}{% else %}{% trans "Einbehalt" %}{% endif %} {% trans "als Debitoren-Weiterverrechnung buchen" %}</label></div>
+            <div class="fw-feldblock breit"><label class="fw-haekchen"><input type="checkbox" name="abzug_verrechnen" class="fw-haken"> {% if v.ist_kautionsversicherung %}{% trans "Schadenforderung" %}{% else %}{% trans "Einbehalt" %}{% endif %} {% trans "als Debitoren-Weiterverrechnung buchen" %}</label></div>
             <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% if v.ist_kautionsversicherung %}{% trans "Police auflösen" %}{% else %}{% trans "Rückzahlung erfassen" %}{% endif %}</button></div>
         </form>
         {% endif %}
@@ -655,7 +655,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {% zeichen 'herunterladen' %} {% trans "Alle als ZIP" %}
             </a></span>
         </div>
-        <div class="p-5">
+        <div class="fw-rumpf">
         <p class="fw-hilfe mb-4">{% trans "„Alle als ZIP“ erzeugt Mietvertrag + Beilagen, legt sie einzeln in die Akte (erscheinen im Mieterportal) und lädt sie gebündelt herunter." %}</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {% for d in erstellbare_dokumente %}

@@ -43,7 +43,7 @@ Erklärung, warum.{% endcomment %}
     {% csrf_token %}
     <input type="hidden" name="modus" value="verteilen">
     <div class="fw-kopf"><h3 class="fw-t">{% trans "Auf alle Mieter verteilen" %}</h3></div>
-    <div class="p-5">
+    <div class="fw-rumpf">
     <p class="fw-hilfe mb-3">{% blocktrans trimmed with betrag=offen_wv|chf n=verteil_mieter strasse=k.liegenschaft.strasse %}Verteilt den offenen Betrag (CHF {{ betrag }}) in einem Schritt auf die
         <b>{{ n }}</b> aktiven Mietverhältnisse in {{ strasse }} nach gewähltem Schlüssel.{% endblocktrans %}</p>
     <div class="flex flex-wrap items-end gap-3">
@@ -84,7 +84,7 @@ Erklärung, warum.{% endcomment %}
     </div>
 
     <div class="fw-card">
-    <div class="fw-formular p-5">
+    <div class="fw-formular fw-rumpf">
         <div class="fw-feldblock breit">
             <label class="fw-label">{% trans "Mieter / Vertrag *" %}</label>
             <select name="vertrag_id" required onchange="wvPreview()" class="fw-feld">
@@ -142,7 +142,7 @@ Erklärung, warum.{% endcomment %}
 <div class="lg:sticky lg:top-24">
     <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{% trans "Live-Vorschau" %}</span></div>
-    <div id="wv-pv" class="p-6 fw-fs-fein fw-ink leading-relaxed"></div>
+    <div id="wv-pv" class="fw-rumpf fw-fs-fein fw-ink leading-relaxed"></div>
     </div>
 </div>
 </div>

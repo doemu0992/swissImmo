@@ -67,7 +67,7 @@
         <div class="fw-card">
             <div class="fw-kopf"><h2>{% trans "Dokumente" %}</h2></div>
             {% if dokumente %}
-            <div class="p-5 space-y-2">
+            <div class="fw-rumpf space-y-2">
                 {% for d in dokumente %}
                 <a href="{{ d.url }}" target="_blank" rel="noopener" class="fw-link flex items-center gap-2">
                     {% zeichen 'drucken' %}{{ d.label }}
@@ -103,7 +103,7 @@
                 </button>
             </form>
 
-            <form method="post" action="/neu/bewerbungen/{{ b.id }}/status/" class="flex items-center gap-2 p-5">
+            <form method="post" action="/neu/bewerbungen/{{ b.id }}/status/" class="flex items-center gap-2 fw-rumpf">
                 {% csrf_token %}
                 <select name="status" class="fw-feld flex-1">
                     {% for key, label, cls in status_wahl %}
@@ -116,7 +116,7 @@
 
         <div class="fw-card">
             <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'vertrag' %}</span><h2>{% trans "Zusage & Vertrag" %}</h2></div>
-            <div class="p-5">
+            <div class="fw-rumpf">
             <p class="fw-hilfe mb-3">{% blocktrans with e=b.einheit.bezeichnung %}Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ e }}.{% endblocktrans %}</p>
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mieter anlegen und Vertragsentwurf erstellen?" %}{% endfilter %}');">
                 {% csrf_token %}

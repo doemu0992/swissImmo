@@ -29,7 +29,7 @@
             <span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">Die Vertragsbasis (Referenzzins/LIK) war nicht erfasst — bitte die Basiswerte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert.</div>
         </div>
         {% endif %}
-        <div class="fw-formular drei p-5">
+        <div class="fw-formular drei fw-rumpf">
             <div class="fw-feldblock">
                 <label for="mz_basis_zins" class="fw-label">Referenzzins Vertrag (Basis, %)</label>
                 <input name="basis_zins" id="mz_basis_zins" oninput="mietzinsCheck()" value="{% localize off %}{{ alt_zins }}{% endlocalize %}" class="fw-feld w-full {% if basis_fehlt %}fw-ring-warn{% endif %}">
@@ -69,7 +69,7 @@
     <!-- Mietzins -->
     <div class="fw-card">
         <div class="fw-kopf"><h3 class="fw-t">Neuer Mietzins</h3></div>
-        <div class="fw-formular drei p-5">
+        <div class="fw-formular drei fw-rumpf">
             <div class="fw-feldblock">
                 <div class="fw-label">Netto bisher</div>
                 <div class="fw-betrag">CHF {{ alt_netto|chf }}</div>
@@ -107,7 +107,7 @@
             (+{{ index_vorschlag.delta_prozent }}%). Begründung und neuer Mietzins sind vorbefüllt.</div>
         </div>
         {% endif %}
-        <div class="fw-formular p-5">
+        <div class="fw-formular fw-rumpf">
         <div class="fw-feldblock breit">
             <label for="mz_begruendung" class="fw-label">Zusätzliche Begründung (optional)</label>
             <textarea id="mz_begruendung" name="begruendung" rows="2" class="fw-feld w-full" placeholder="z.B. wertvermehrende Investition (neue Küche)…">{% if index_vorschlag %}{{ index_vorschlag.begruendung }}{% endif %}</textarea>
