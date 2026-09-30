@@ -82,15 +82,11 @@
     </div>
 </div>
 
-{% comment %} Freigabeleiste nach konzept-v8 («Sollstellung»): unten, Hinweis links,
-   Knopf rechts. Im Mockup klebt sie am unteren Rand (`position:sticky`);
-   dafür fehlt noch ein Baustein, der am Telefon über der Tab-Leiste bleibt. {% endcomment %}
-<div class="fw-card">
-    <div class="fw-hinweis info">
-        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+{% comment %} Freigabeleiste nach konzept-v8 («Sollstellung»): klebt unten, Hinweis
+   links, Knopf rechts; am Telefon über der Tab-Leiste. {% endcomment %}
+<div class="fw-freigabe">
         <div class="fw-ht">{% trans "Der Mietenlauf ist idempotent — bereits gestellte Verträge werden übersprungen. Pro-Rata rechnet Ein-/Auszüge mitten im Monat tagegenau ab. Gebucht wird Debitoren 1100 an Ertrag 3000 (Netto) bzw. NK-Akonto 3020 (Nebenkosten)." %}</div>
-    </div>
-    <div class="fw-fuss justify-end">
+    <div>
         {% if n_offen %}
         <form method="post" action="/neu/sollstellung/starten/" onsubmit="return confirm('{% filter escapejs %}{% if aktive_lg %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr strasse=aktive_lg.strasse|safe %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — nur {{ strasse }}?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — nur {{ strasse }}?{% endblocktrans %}{% else %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — ganzes Portfolio?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — ganzes Portfolio?{% endblocktrans %}{% endif %}{% endfilter %}');">
             {% csrf_token %}

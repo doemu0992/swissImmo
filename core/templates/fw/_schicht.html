@@ -350,6 +350,10 @@ und einen Stilblock enthaelt.
             table[data-stack] tfoot,
             table[data-stack] tr,
             table[data-stack] td { display: block; width: auto; }
+            /* Per Skript versteckte Zeilen (Bearbeiten-Zeilen im Kontenplan,
+               bei den Kreditoren) bleiben versteckt — die Stapelregel
+               darüber setzte sonst display:block und zeigte sie. */
+            table[data-stack] tr.hidden { display: none !important; }
             /* Kräftiges Trennband statt Haarlinie: bei vier Feldern pro Zeile
                verschwimmen die Einträge sonst ineinander und man sieht nicht,
                wo ein Mieter aufhört und der nächste anfängt.
@@ -1048,6 +1052,8 @@ und einen Stilblock enthaelt.
         .fw-hinweis.good .fw-hi{background:var(--ds-good)}
         .fw-hinweis .fw-ht{flex:1;font-size:13px;line-height:1.55;color:var(--ds-muted)}
         .fw-hinweis .fw-ht b{display:block;margin-bottom:3px;color:var(--ds-ink)}
+        /* Fliesstext: <b> in übersetzten Sätzen bleibt in der Zeile */
+        .fw-hinweis .fw-ht.fliess b{display:inline;margin:0}
 
         /* Befund einer Regelpruefung (Fristenwaechter). Anders als .fw-hinweis
            traegt er eine aufklappbare Rechnung und eine Fusszeile mit dem
@@ -1594,6 +1600,12 @@ und einen Stilblock enthaelt.
         .fw-belegung i{display:block;height:100%;background:var(--ds-brand)}
         .fw-belegung.warn i{background:var(--ds-warn)}
         .fw-belegung.crit i{background:var(--ds-crit)}
+        /* Freigabeleiste: haftet unten, Hinweis links, Primärknopf rechts */
+        .fw-freigabe{position:sticky;bottom:16px;z-index:5;display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;
+            padding:14px 18px;margin-bottom:24px;background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-lg)}
+        .fw-freigabe>.fw-ht{flex:1 1 240px;min-width:0;font-size:13px;color:var(--ds-muted)}
+        .fw-freigabe>.fw-ht b{color:var(--ds-ink)}
         /* Ablauf: Schritte eines Falls als Zeitleiste (Mockup: Schublade «Ablauf») */
         .fw-ablauf{list-style:none;margin:0;padding:10px 20px 14px}
         .fw-ablauf li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;padding:7px 0;position:relative;align-items:start;font-size:13.5px}
@@ -1616,6 +1628,7 @@ und einen Stilblock enthaelt.
         @media (max-width:640px){
             .fw-zeile .fw-zeit{text-align:left}
             .fw-eingang .fw-mitte{flex-basis:calc(100% - 44px)}
+            .fw-freigabe{bottom:calc(80px + env(safe-area-inset-bottom))}
             .fw-rumpf{padding:16px}
             .fw-ablauf{padding:10px 16px 14px}
             .fw-zeile .fw-s{flex-wrap:wrap;gap:4px 10px}

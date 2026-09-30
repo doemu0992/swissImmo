@@ -179,6 +179,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             table[data-stack] tfoot,
             table[data-stack] tr,
             table[data-stack] td { display: block; width: auto; }
+            table[data-stack] tr.hidden { display: none !important; }
             table[data-stack] tr {
                 padding: 0.75rem 1rem;
                 border-top: 0 !important;
@@ -532,6 +533,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-hinweis.good .fw-hi{background:var(--ds-good)}
         .fw-hinweis .fw-ht{flex:1;font-size:13px;line-height:1.55;color:var(--ds-muted)}
         .fw-hinweis .fw-ht b{display:block;margin-bottom:3px;color:var(--ds-ink)}
+        .fw-hinweis .fw-ht.fliess b{display:inline;margin:0}
         .fw-befund{border:1px solid var(--ds-line);border-left-width:3px;
             border-radius:var(--ds-radius);overflow:hidden;background:var(--ds-surface)}
         .fw-befund.good{border-left-color:var(--ds-good);background:var(--ds-good-soft)}
@@ -919,6 +921,11 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-belegung i{display:block;height:100%;background:var(--ds-brand)}
         .fw-belegung.warn i{background:var(--ds-warn)}
         .fw-belegung.crit i{background:var(--ds-crit)}
+        .fw-freigabe{position:sticky;bottom:16px;z-index:5;display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;
+            padding:14px 18px;margin-bottom:24px;background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-lg)}
+        .fw-freigabe>.fw-ht{flex:1 1 240px;min-width:0;font-size:13px;color:var(--ds-muted)}
+        .fw-freigabe>.fw-ht b{color:var(--ds-ink)}
         .fw-ablauf{list-style:none;margin:0;padding:10px 20px 14px}
         .fw-ablauf li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;padding:7px 0;position:relative;align-items:start;font-size:13.5px}
         .fw-ablauf li:not(:last-child)::after{content:"";position:absolute;left:10px;top:27px;bottom:-5px;width:2px;background:var(--ds-line)}
@@ -938,6 +945,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         @media (max-width:640px){
             .fw-zeile .fw-zeit{text-align:left}
             .fw-eingang .fw-mitte{flex-basis:calc(100% - 44px)}
+            .fw-freigabe{bottom:calc(80px + env(safe-area-inset-bottom))}
             .fw-rumpf{padding:16px}
             .fw-ablauf{padding:10px 16px 14px}
             .fw-zeile .fw-s{flex-wrap:wrap;gap:4px 10px}

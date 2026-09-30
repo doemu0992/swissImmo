@@ -57,6 +57,8 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 | Ablauf | `ol.fw-ablauf` > `li` (`fertig`/`jetzt`) > `span.fw-ablauf-punkt`, `b`, `span.fw-ablauf-status` | Schritte eines Falls als Zeitleiste; Punkt gefüllt = erledigt, Ring = jetzt. |
 | Kartenrumpf | `fw-rumpf` | 20 px Innenabstand (16 px am Telefon), statt `p-5` an Formkarten. |
 | Häkchen | `label.fw-haekchen` > `input[type=checkbox]` + Text | Checkbox und Beschriftung in einer Zeile, auch innerhalb `fw-feldblock`. |
+| Freigabeleiste | `div.fw-freigabe` > `div.fw-ht` + `fw-btn fw-primary` | Haftet unten (am Telefon über der Tab-Leiste). Für Sollstellung, Zahllauf, Mahnlauf. |
+| Hinweis als Fliesstext | `fw-hinweis` > `div.fw-ht.fliess` | `<b>` bleibt in der Zeile — für übersetzte Sätze mit Hervorhebung. |
 
 ## Was nicht mehr vorkommen soll
 
