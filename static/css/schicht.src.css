@@ -921,6 +921,8 @@
         .fw-listwerkzeug{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
         .fw-listwerkzeug .fw-suchfeld{flex:1 1 240px;max-width:384px;min-width:0}
         .fw-listwerkzeug .fw-suchfeld .fw-feld{width:100%}
+        /* Platz für die Lupe links im Suchfeld (vorher Inline-Stil) */
+        .fw-suchfeld > .fw-zeichen ~ .fw-feld{padding-left:2.5rem}
         .fw-listwerkzeug.fw-imkopf{margin:0 0 0 auto}
         .fw-listwerkzeug label{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ds-muted)}
         .fw-seiten{padding:10px 15px;border-top:1px solid var(--ds-line);display:flex;

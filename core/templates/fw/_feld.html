@@ -15,7 +15,7 @@ ZAHLEN NIE ALS `typ="number"`: Der Browser verwirft dort jede Eingabe, die
 keine Zahl ist — nach einem Fehler stünde ein leeres Feld statt «ca. 1970».
 Gemessen beim Bau dieses Bausteins. Stattdessen `inputmodus="numeric"`.
 {% endcomment %}<div{% if spalten %} class="{{ spalten }}"{% endif %}>
-    <label for="{{ f.id_for_label }}" class="block text-xs font-semibold fw-mutet mb-1">{{ label }}{% if pflicht %} <span class="fw-pflicht" aria-hidden="true">*</span>{% endif %}</label>
+    <label for="{{ f.id_for_label }}" class="fw-label mb-1">{{ label }}{% if pflicht %} <span class="fw-pflicht" aria-hidden="true">*</span>{% endif %}</label>
     <input id="{{ f.id_for_label }}" name="{{ f.html_name }}"{% if typ %} type="{{ typ }}"{% endif %}{% if inputmodus %} inputmode="{{ inputmodus }}"{% endif %} value="{% localize off %}{{ f.value|default_if_none:'' }}{% endlocalize %}"{% if pflicht %} required aria-required="true"{% endif %}{% if platzhalter %} placeholder="{{ platzhalter }}"{% endif %} class="fw-feld w-full{% if klasse %} {{ klasse }}{% endif %}"{% if f.errors %} aria-invalid="true" aria-describedby="{{ f.id_for_label }}_fehler"{% endif %}>
     {% include 'fw/_feldfehler.html' %}
 </div>

@@ -118,7 +118,7 @@
 <style>
     /* Der Pfeil dreht sich beim Aufklappen. `details[open]` statt einer
        JS-Klasse — die Gruppe kennt ihren Zustand selbst. */
-    details[open] > summary > .fa-chevron-right { transform: rotate(90deg); }
+    details[open] > summary > svg:first-child { transform: rotate(90deg); }
     summary::-webkit-details-marker { display: none; }
 </style>
 
