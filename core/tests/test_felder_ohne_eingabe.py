@@ -105,6 +105,10 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'portfolio.Liegenschaft.hauswarte':
+     'wird in «Benutzer & Rollen» beim Hauswart zugeordnet (benutzer.py, '
+     'Gegenseite der Beziehung), nicht im Liegenschaftsformular',
+
     'crm.ReferenzzinsStand.vorher': 'schreibt `referenzzins.aenderung_festhalten` bei jeder Satzänderung',
     'crm.ReferenzzinsStand.betroffene_senkung': 'gezählt von `referenzzins.aenderung_festhalten`',
     'crm.ReferenzzinsStand.betroffene_erhoehung': 'gezählt von `referenzzins.aenderung_festhalten`',

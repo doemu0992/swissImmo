@@ -86,6 +86,10 @@ def _global_filter(request):
     Manager nicht reicht — und es hinschreiben.
     """
     eigene = Liegenschaft.objects.all()
+    # Ein Hauswart sieht nur «seine» Liegenschaften — auch im Auswahlmenü.
+    from core.auth import ist_nur_hauswart
+    if ist_nur_hauswart(request.user):
+        eigene = eigene.filter(hauswarte=request.user)
 
     lg_id = request.GET.get('lg') or None
     aktive_lg = None

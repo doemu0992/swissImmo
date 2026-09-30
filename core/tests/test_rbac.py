@@ -38,7 +38,7 @@ from core.auth import (HAUSWART_ROLLEN, TEAM_ROLLEN, TICKET_LESE_ROLLEN,
 from core.tenancy import aktuelle_organisation, loesche_organisation, setze_organisation
 from core.tests._helfer import _basis_objekte, _team_user, _test_organisation
 from crm.models import Eigentuemer, Mieter, Mitgliedschaft
-from portfolio.models import Einheit
+from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
 from tickets.models import SchadenMeldung, TicketNachricht
 
@@ -159,6 +159,12 @@ class RbacBasis(TestCase):
         Mitgliedschaft.objects.create(benutzer=cls.u_hauswart, organisation=cls.org,
                                       rolle=ROLLE_HAUSWART)
 
+        # Der Hauswart betreut nur `cls.lg`; die zweite Liegenschaft gehört ihm nicht.
+        cls.lg.hauswarte.add(cls.u_hauswart)
+        cls.lg_fremd = Liegenschaft.objects.create(
+            strasse='Fremdweg 9', plz='8001', ort='Zürich', organisation=cls.org,
+            versicherungswert=Decimal('500000'))
+
         cls.u_eigentuemer = User.objects.create_user(username='rbac_eigentuemer', password='x')
         cls.eigentuemer = Eigentuemer.objects.create(
             organisation=cls.org, firma_oder_name='Eigentümer AG', benutzer=cls.u_eigentuemer)
@@ -166,8 +172,12 @@ class RbacBasis(TestCase):
         # Das Ticket, das nicht dem angreifenden Mieter gehört
         cls.ticket = SchadenMeldung.objects.create(
             liegenschaft=cls.lg, betroffene_einheit=cls.einheit,
-            gemeldet_von=cls.mieter_fremd, titel='Wasserhahn tropft',
+            gemeldet_von=cls.mieter_fremd, titel='Heizung fällt aus',
             beschreibung='Tropft seit Tagen', status='in_bearbeitung')
+
+        cls.ticket_fremd = SchadenMeldung.objects.create(
+            liegenschaft=cls.lg_fremd, titel='Dach undicht',
+            beschreibung='Wasser im Estrich', status='in_bearbeitung')
 
     def nach_pruefen_unveraendert(self):
         self.ticket.refresh_from_db()
@@ -301,6 +311,61 @@ class HauswartAngriffTests(RbacBasis):
                 r = self.client.post(f'/neu/schaeden/{self.ticket.pk}/{suffix}')
                 self.assertEqual(r.status_code, 403)
         self.assertTrue(SchadenMeldung.objects.filter(pk=self.ticket.pk).exists())
+
+
+class HauswartLiegenschaftTests(RbacBasis):
+    """Der Hauswart sieht nur die Schäden SEINER Liegenschaften."""
+
+    def test_liste_zeigt_nur_eigene_liegenschaft(self):
+        self.client.force_login(self.u_hauswart)
+        r = self.client.get('/neu/schaeden/', {'sicht': ''})
+        self.assertContains(r, 'Heizung fällt aus')
+        self.assertNotContains(r, 'Dach undicht')
+
+    def test_liste_mit_fremdem_lg_filter_zeigt_nichts_fremdes(self):
+        self.client.force_login(self.u_hauswart)
+        r = self.client.get('/neu/schaeden/', {'sicht': '', 'lg': self.lg_fremd.pk})
+        self.assertNotContains(r, 'Dach undicht')
+
+    def test_detail_fremder_liegenschaft_ist_403(self):
+        self.client.force_login(self.u_hauswart)
+        self.assertEqual(self.client.get(f'/neu/schaeden/{self.ticket_fremd.pk}/').status_code, 403)
+        self.assertEqual(self.client.get(f'/neu/schaeden/{self.ticket.pk}/').status_code, 200)
+
+    def test_status_fremder_liegenschaft_ist_403_und_unveraendert(self):
+        self.client.force_login(self.u_hauswart)
+        r = self.client.post(f'/neu/schaeden/{self.ticket_fremd.pk}/status/', {'status': 'erledigt'})
+        self.assertEqual(r.status_code, 403)
+        self.ticket_fremd.refresh_from_db()
+        self.assertEqual(self.ticket_fremd.status, 'in_bearbeitung')
+
+    def test_ohne_zuordnung_sieht_der_hauswart_nichts(self):
+        self.lg.hauswarte.remove(self.u_hauswart)
+        self.client.force_login(self.u_hauswart)
+        r = self.client.get('/neu/schaeden/', {'sicht': ''})
+        self.assertNotContains(r, 'Heizung fällt aus')
+        self.assertNotContains(r, 'Dach undicht')
+        self.assertEqual(self.client.get(f'/neu/schaeden/{self.ticket.pk}/').status_code, 403)
+
+    def test_team_sieht_weiterhin_alles(self):
+        self.client.force_login(self.u_verwalter)
+        r = self.client.get('/neu/schaeden/', {'sicht': ''})
+        self.assertContains(r, 'Heizung fällt aus')
+        self.assertContains(r, 'Dach undicht')
+
+    def test_inhaber_ordnet_hauswart_liegenschaften_zu(self):
+        inhaber = _team_user('Inhaber')
+        self.client.force_login(inhaber)
+        self.client.post(f'/neu/benutzer/{self.u_hauswart.pk}/bearbeiten/', {
+            'rolle': 'Hauswart', 'is_active': 'on', 'hauswart_lg': [self.lg_fremd.pk]})
+        self.assertEqual(set(self.u_hauswart.hauswart_liegenschaften.all()), {self.lg_fremd})
+
+    def test_rollenwechsel_loescht_die_zuordnung(self):
+        inhaber = _team_user('Inhaber')
+        self.client.force_login(inhaber)
+        self.client.post(f'/neu/benutzer/{self.u_hauswart.pk}/bearbeiten/', {
+            'rolle': 'Lesezugriff', 'is_active': 'on', 'hauswart_lg': [self.lg.pk]})
+        self.assertFalse(self.u_hauswart.hauswart_liegenschaften.exists())
 
 
 class EigentuemerAngriffTests(RbacBasis):

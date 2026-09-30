@@ -28,6 +28,14 @@ from rentals.models import Mietvertrag
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
+from core.auth import hauswart_darf_liegenschaft, ist_nur_hauswart
+
+
+def _hauswart_pruefen(request, ticket):
+    """403, wenn ein Hauswart eine Meldung fremder Liegenschaften anfasst."""
+    from django.core.exceptions import PermissionDenied
+    if not hauswart_darf_liegenschaft(request.user, ticket.liegenschaft_id):
+        raise PermissionDenied('Diese Liegenschaft ist dem Hauswart nicht zugeordnet.')
 from core.tenancy import aktuelle_organisation
 from core.services.dokumentsprache import auf_deutsch
 
@@ -77,6 +85,9 @@ def fw_schaeden(request):
           .prefetch_related('handwerker_auftraege', 'nachrichten'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
+    # Der Hauswart sieht nur die Meldungen seiner Liegenschaften.
+    if ist_nur_hauswart(request.user):
+        qs = qs.filter(liegenschaft__hauswarte=request.user)
 
     # Der Feinfilter der Vorfassung bleibt erhalten (gespeicherte Adressen).
     status_filter = request.GET.get('status', '')
@@ -277,6 +288,7 @@ def fw_schaden_detail(request, pk):
     from tickets.models import SchadenMeldung
     t = get_object_or_404(
         SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von'), id=pk)
+    _hauswart_pruefen(request, t)
     basis = _global_filter(request)
 
     # Beim Öffnen als gelesen markieren (entfernt den Sidebar-Badge-Zähler)
@@ -553,6 +565,7 @@ def fw_schaden_status(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/schaeden/{pk}/')
     t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von'), id=pk)
+    _hauswart_pruefen(request, t)
     neu = request.POST.get('status')
     if neu not in dict(SchadenMeldung.STATUS_CHOICES):
         messages.error(request, gettext('Ungültiger Status.'))
