@@ -1,0 +1,56 @@
+{% extends 'fw/base.html' %}
+{% load zeichen %}
+{% load chf %}
+{% load i18n %}
+{% block title %}{% trans "Mahnlauf — Trockenlauf" %}{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/mahnwesen/">{% trans "Mahnwesen" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Trockenlauf" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Mahnlauf — Trockenlauf" %}</h1>
+        <p>{% trans "Das täte der Mahnlauf jetzt. Es wird nichts gebucht und nichts versandt." %}</p>
+    </div>
+</div>
+
+<div class="fw-kpis">
+    <div class="fw-kpi"><div class="fw-l">{% trans "Mahnungen" %}</div><div class="fw-v">{{ res.gemahnt }}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "E-Mails" %}</div><div class="fw-v">{{ res.emails }}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Mahngebühren" %}</div><div class="fw-v">CHF {{ res.gebuehren|chf }}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Verzugszins" %}</div><div class="fw-v">CHF {{ res.zins|chf }}</div></div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th>{% trans "Stufe" %}</th><th>{% trans "Mieter" %}</th><th>{% trans "Forderung" %}</th>
+                <th class="fw-zentriert">{% trans "Tage" %}</th>
+                <th class="fw-right">{% trans "Offen" %}</th><th class="fw-right">{% trans "Gebühr" %}</th>
+                <th class="fw-right">{% trans "Zins" %}</th><th>{% trans "Versand" %}</th>
+            </tr></thead>
+            <tbody>
+            {% for z in plan %}
+            <tr>
+                <td>{{ z.label }}{% if z.kuendigung %} <span class="fw-klein">({% trans "führt zur Fristansetzung" %})</span>{% endif %}</td>
+                <td class="fw-strong">{{ z.mieter }}</td>
+                <td>{{ z.rechnung.titel }}</td>
+                <td class="fw-zentriert fw-num">{{ z.tage }}</td>
+                <td class="fw-right fw-num">{{ z.betrag|chf }}</td>
+                <td class="fw-right fw-num">{{ z.gebuehr|chf }}</td>
+                <td class="fw-right fw-num">{{ z.zins|chf }}</td>
+                <td>{% if z.email %}{% trans "E-Mail" %}{% else %}{% trans "nur Akte" %}{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" class="fw-leerzeile fw-leer"><b>{% trans "Nichts fällig" %}</b> {% trans "Der Mahnlauf würde jetzt keine Mahnung erstellen." %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<p class="mt-3"><a href="/neu/mahnwesen/" class="fw-btn">{% trans "Zurück zum Mahnwesen" %}</a></p>
+{% endblock %}

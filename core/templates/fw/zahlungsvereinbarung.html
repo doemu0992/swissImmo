@@ -1,0 +1,65 @@
+{% extends 'fw/base.html' %}
+{% load zeichen %}
+{% load chf %}
+{% block title %}Zahlungsvereinbarung — {{ v.mieter.display_name }}{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>Zahlungsvereinbarung</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>Zahlungsvereinbarung</h1>
+        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}</p>
+    </div>
+</div>
+
+<div class="fw-card fw-rumpf space-y-4 max-w-2xl">
+    {% if frist_laeuft %}
+    <div class="fw-hinweis warn rounded-lg"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht">Es läuft eine Fristansetzung nach Art. 257d OR. Eine Zahlungsvereinbarung <b>hemmt diese Frist nicht</b> — es sei denn, der Vermieter verzichtet ausdrücklich darauf.</div>
+    </div>
+    {% endif %}
+
+    {% for e in vereinbarungen %}
+    <div class="fw-card fw-rumpf space-y-2">
+        <p><b>CHF {{ e.v.betrag_total|chf }}</b> in {{ e.v.anzahl_raten }} Raten — Status: <b>{{ e.v.get_status_display }}</b><br>
+           Bezahlt CHF {{ e.bezahlt|chf }} · offen CHF {{ e.offen|chf }}</p>
+        <ul class="list-disc pl-5">
+            {% for nr, faellig, betrag in e.plan %}<li>Rate {{ nr }}: {{ faellig|date:"d.m.Y" }} — CHF {{ betrag|chf }}</li>{% endfor %}
+        </ul>
+        {% if e.v.status == 'aktiv' %}
+        <form method="post" onsubmit="return confirm('Zahlungsvereinbarung abbrechen? Die Mahnsperre wird aufgehoben.');">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="abbrechen">
+            <input type="hidden" name="vereinbarung" value="{{ e.v.id }}">
+            <button type="submit" class="fw-btn">Abbrechen</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <h2>Neue Vereinbarung</h2>
+    {% if rueckstand > 0 %}
+    <p>Fälliger Rückstand: <b>CHF {{ rueckstand|chf }}</b>. Er wird auf gleich hohe Raten verteilt; bis zur Erfüllung gilt die Mahnsperre.</p>
+    <form method="post" class="space-y-2">
+        {% csrf_token %}
+        <input type="hidden" name="aktion" value="anlegen">
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label class="fw-label">Anzahl Raten</label>
+                <input name="anzahl_raten" type="number" min="2" max="36" value="3" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label">Abstand (Monate)</label>
+                <select name="intervall_monate" class="fw-feld"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+            <div class="fw-feldblock"><label class="fw-label">Erste Rate am</label>
+                <input type="date" name="erste_rate" min="{{ heute_iso }}" value="{{ heute_iso }}" class="fw-feld"></div>
+        </div>
+        <div class="fw-feldblock"><label class="fw-label">Notiz</label><input name="notiz" class="fw-feld"></div>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} Vereinbarung erfassen</button>
+    </form>
+    {% else %}
+    <p>Es gibt keinen fälligen Rückstand, der vereinbart werden könnte.</p>
+    {% endif %}
+</div>
+{% endblock %}

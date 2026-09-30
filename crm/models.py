@@ -689,3 +689,43 @@ class Kommunikation(OrganisationAusKette):
 
     def __str__(self):
         return f"{self.get_typ_display()} {self.zeitpunkt:%d.%m.%Y}: {self.betreff or self.inhalt[:40]}"
+
+
+class ReferenzzinsStand(models.Model):
+    """Historie des Referenzzinssatzes je Verwaltung — mit Stichtag und Quelle.
+
+    Bisher stand nur der AKTUELLE Satz in `Organisation.aktueller_referenzzinssatz`;
+    wann er sich geändert hat und woher der Wert kam, wusste niemand (Stresstest
+    30.09.2026: ein still überschriebener Satz liess sich nicht nachvollziehen).
+    Jede Änderung — aus dem Abruf oder von Hand — schreibt eine Zeile.
+    """
+    QUELLE = [('bwo', _('Abruf BWO')), ('manuell', _('Manuell erfasst'))]
+
+    organisation = models.ForeignKey(
+        'crm.Organisation', on_delete=models.CASCADE,
+        related_name='referenzzins_staende', verbose_name='Organisation')
+    stichtag = models.DateField("Stichtag (Änderung erkannt am)")
+    satz = models.DecimalField("Referenzzinssatz (%)", max_digits=4, decimal_places=2)
+    vorher = models.DecimalField("Vorheriger Satz (%)", max_digits=4, decimal_places=2,
+                                 null=True, blank=True)
+    quelle = models.CharField(max_length=10, choices=QUELLE, default='manuell')
+    betroffene_senkung = models.PositiveIntegerField("Verträge mit Senkungsanspruch", default=0)
+    betroffene_erhoehung = models.PositiveIntegerField("Verträge mit Erhöhungsmöglichkeit", default=0)
+    erfasst_am = models.DateTimeField(auto_now_add=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = "Referenzzins-Stand"
+        verbose_name_plural = "Referenzzins-Historie"
+        ordering = ('-stichtag', '-id')
+
+    def __str__(self):
+        return f"{self.satz} % ({self.stichtag:%d.%m.%Y}, {self.get_quelle_display()})"
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            from core.organisation_kette import organisation_aus_kontext
+            self.organisation_id = organisation_aus_kontext()
+        super().save(*args, **kwargs)

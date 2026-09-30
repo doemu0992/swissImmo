@@ -282,33 +282,134 @@ def fw_bankabgleich_verbuchen(request):
     if betrag <= 0:
         messages.error(request, gettext('Betrag muss grösser als 0 sein.'))
         return redirect('fw_bankabgleich')
-    betrag = min(betrag, offen)
-
+    # VALUTA: Gezählt wird der Tag, an dem das Geld auf dem Bankkonto einging —
+    # nicht der Tag der Erfassung. Ein am 30. gutgeschriebener, am 3. erfasster
+    # Betrag gälte sonst als am 3. bezahlt: Der Verzugszins läuft zu lange, und
+    # eine am Fristende (Art. 257d OR) eingegangene Zahlung käme «zu spät».
     heute = timezone.localdate()
+    valuta = heute
+    roh_valuta = (request.POST.get('valuta') or '').strip()
+    if roh_valuta:
+        valuta = _datum_aus_eingabe(roh_valuta)
+        if valuta is None:
+            messages.error(request, gettext('Ungültiges Valutadatum «%(raw)s».') % {'raw': roh_valuta})
+            return redirect('fw_bankabgleich')
+        if valuta > heute:
+            messages.error(request, gettext('Das Valutadatum liegt in der Zukunft.'))
+            return redirect('fw_bankabgleich')
+
+    # ÜBERZAHLUNG: Der volle Eingang wird gebucht. Früher klemmte `min(betrag, offen)`
+    # den Rest still weg — auf dem Bankkonto lagen CHF 300 mehr als in der Buchhaltung,
+    # und der Mieter sah sein Guthaben nicht. Wie im camt-Import: Überschuss als
+    # Mieterguthaben auf 2030 (echte Verbindlichkeit, der Mieter ist bekannt).
+    eingang = betrag
+    betrag = min(eingang, offen)
+    ueberschuss = eingang - betrag
+
     vertrag = rechnung.vertrag
+    lg_v = vertrag.einheit.liegenschaft
     with transaction.atomic():
         zahlung = Zahlungseingang.objects.create(
-            vertrag=vertrag, betrag=betrag, datum_eingang=heute,
+            vertrag=vertrag, betrag=betrag, datum_eingang=valuta,
             buchungs_monat=(rechnung.faellig_am or rechnung.datum or heute).replace(day=1),
             bemerkung=f"Bankabgleich {rechnung.titel}",
-            liegenschaft=vertrag.einheit.liegenschaft,
+            liegenschaft=lg_v,
             debitoren_rechnung=rechnung, erstellt_von=request.user, status='verbucht',
         )
         rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
         rechnung.save()
         from finance.booking import buche
         buche("1020", "1100", betrag, f"Bankabgleich {vertrag.mieter} - {rechnung.titel}",
-              datum=heute, liegenschaft=vertrag.einheit.liegenschaft, zahlung=zahlung,
+              datum=valuta, liegenschaft=lg_v, zahlung=zahlung,
               user=request.user)
+        if ueberschuss > 0:
+            # Gemeinsame Referenz: Der Storno der Zahlung findet das Guthaben
+            # über den Präfix «<ref>:» und hebt es mit auf (fw_zahlung_stornieren).
+            zahlung.bank_referenz = f"MAN{zahlung.pk}"
+            zahlung.save(update_fields=['bank_referenz'])
+            z_ueber = Zahlungseingang.objects.create(
+                vertrag=vertrag, betrag=ueberschuss, datum_eingang=valuta,
+                buchungs_monat=valuta.replace(day=1),
+                bemerkung=f"Bankabgleich Überzahlung {rechnung.titel} (Guthaben Mieter)"[:255],
+                bank_referenz=f"MAN{zahlung.pk}:ueber", konto=_park_konto("2030"),
+                liegenschaft=lg_v, erstellt_von=request.user, status='verbucht')
+            buche("1020", "2030", ueberschuss,
+                  f"Bankabgleich Überzahlung {vertrag.mieter} - {rechnung.titel}",
+                  datum=valuta, liegenschaft=lg_v, zahlung=z_ueber, user=request.user)
 
     log_aktion(request, "Zahlung via Bankabgleich verbucht", str(vertrag),
-               f"CHF {betrag} auf {rechnung.titel}")
+               f"CHF {betrag} auf {rechnung.titel}, Valuta {valuta:%d.%m.%Y}"
+               + (f", Überzahlung CHF {ueberschuss} → 2030" if ueberschuss > 0 else ''))
     messages.success(request, '✅ ' + gettext('CHF %(betrag)s verbucht — %(display_name)s (%(titel)s).') % {'betrag': betrag, 'display_name': vertrag.mieter.display_name, 'titel': rechnung.titel})
+    if ueberschuss > 0:
+        messages.warning(request, gettext('Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht.') % {'betrag': ueberschuss})
     from django.shortcuts import redirect as _r
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
         ziel += f'?lg={aktive}'
     return _r(ziel)
+
+
+@rolle_erforderlich(ROLLE_VERWALTER)
+def fw_guthaben_rueckerstatten(request):
+    """Mieterguthaben (Konto 2030) an den Mieter zurückzahlen.
+
+    Eine Überzahlung oder Doppelzahlung landet als Guthaben auf 2030 — bisher gab es
+    nur den Weg, sie mit einer offenen Forderung zu verrechnen (Zuordnen). Wer das
+    Geld zurückhaben will, hatte keinen Vorgang (Stresstest 30.09.2026). Gebucht wird
+    2030 an Bank; die Buchung hängt am Zahlungseingang, damit ein späterer Storno der
+    Zahlung sie mit aufhebt. Danach ist das Guthaben aus der Liste der geparkten
+    Zahlungen verschwunden (`konto` wird leer, wie bei der Zuordnung)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    from finance.booking import buche
+
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+    valuta = timezone.localdate()
+    roh = (request.POST.get('valuta') or '').strip()
+    if roh:
+        valuta = _datum_aus_eingabe(roh)
+        if valuta is None or valuta > timezone.localdate():
+            messages.error(request, gettext('Ungültiges oder zukünftiges Valutadatum.'))
+            return redirect('fw_bankabgleich')
+    bank_nr = (request.POST.get('bank_konto') or '1020').strip()
+    try:
+        with transaction.atomic():
+            z = get_object_or_404(
+                Zahlungseingang.objects.select_for_update(of=('self',))
+                .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'konto'),
+                id=request.POST.get('zahlung_id'))
+            if z.status != 'verbucht' or not z.konto_id or z.konto.nummer != '2030' or not z.vertrag_id:
+                messages.error(request, gettext('Nur ein verbuchtes Mieterguthaben (Konto 2030) kann zurückerstattet werden.'))
+                return redirect('fw_bankabgleich')
+            lg = z.vertrag.einheit.liegenschaft if z.vertrag.einheit_id else None
+            buche('2030', bank_nr, z.betrag,
+                  f"Rückerstattung Guthaben {z.vertrag.mieter} [Z{z.pk}]",
+                  datum=valuta, liegenschaft=lg, zahlung=z, user=request.user)
+            z.konto = None
+            z.bemerkung = (f"{z.bemerkung} → zurückerstattet {valuta:%d.%m.%Y}")[:255]
+            z.save(update_fields=['konto', 'bemerkung'])
+    except PermissionError as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect('fw_bankabgleich')
+    log_aktion(request, "Mieterguthaben zurückerstattet", str(z.vertrag),
+               f"CHF {z.betrag}, Valuta {valuta:%d.%m.%Y}", ziel=z.vertrag)
+    messages.success(request, '✅ ' + gettext('CHF %(betrag)s an %(mieter)s zurückerstattet (2030 an Bank).') % {
+        'betrag': z.betrag, 'mieter': z.vertrag.mieter.display_name})
+    return redirect('fw_bankabgleich')
+
+
+def _datum_aus_eingabe(roh):
+    """ISO (2026-03-30) oder Schweizer Schreibweise (30.03.2026) → date, sonst None."""
+    from datetime import datetime
+    for fmt in ('%Y-%m-%d', '%d.%m.%Y'):
+        try:
+            return datetime.strptime(roh.strip(), fmt).date()
+        except ValueError:
+            continue
+    return None
 
 
 def _camt_localname(tag):
@@ -1073,9 +1174,14 @@ def fw_kontoauszug_rueckgaengig(request, pk):
     arefs = {b.bank_referenz for b in auszug.bewegungen.all() if b.bank_referenz}
     zahlungen = []
     if arefs:
+        # Alle Geschwister mit Suffix («:ueber» Überschuss, «:rest» Rest aus
+        # der Zuordnung) — sonst bliebe ein Mieterguthaben aus einer Zahlung
+        # stehen, die es nach dem Rückgängig nicht mehr gibt.
+        _geschwister = _Q()
+        for a in arefs:
+            _geschwister |= _Q(bank_referenz__startswith=f"{a}:")
         zahlungen = list(Zahlungseingang.objects.filter(
-            _Q(bank_referenz__in=arefs)
-            | _Q(bank_referenz__in=[f"{a}:ueber" for a in arefs])))
+            _Q(bank_referenz__in=arefs) | _geschwister))
 
     dateiname = auszug.dateiname or f"Auszug #{auszug.id}"
     storniert = 0
@@ -1092,10 +1198,16 @@ def fw_kontoauszug_rueckgaengig(request, pk):
                 z.status = 'storniert'
                 z.save(update_fields=['status'])
                 # Rechnungsstatus zurückrollen (Gegenstück zu _verbuche()).
+                # Abgeschriebene/stornierte Rechnungen nicht wieder öffnen: die
+                # Abschreibung (3805) bleibt gebucht, der Betrag würde sonst ein
+                # zweites Mal gemahnt (gleicher Schutz wie `fw_zahlung_stornieren`).
                 if z.debitoren_rechnung_id:
                     rech = z.debitoren_rechnung
-                    rech.status = 'offen' if rech.offener_betrag >= rech.betrag else 'teilbezahlt'
-                    rech.save(update_fields=['status'])
+                    if rech.status not in ('storniert', 'abgeschrieben'):
+                        offen = rech.offener_betrag
+                        rech.status = ('bezahlt' if offen <= 0
+                                       else 'offen' if offen >= rech.betrag else 'teilbezahlt')
+                        rech.save(update_fields=['status'])
                 storniert += 1
             # Auszug + Auszugszeilen (Rohdaten, keine Buchungen) entfernen.
             auszug.delete()

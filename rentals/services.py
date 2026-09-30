@@ -48,7 +48,10 @@ def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=De
     total_prozent = zins_prozent + lik_prozent + kosten_prozent
 
     faktor = 1 + (total_prozent / Decimal('100'))
-    neue_miete = netto_miete * faktor
+    # Auf 5 Rappen gerundet (core.services.mietrecht.runde_mietzins): Der Vorschlag
+    # 1699.08 war nicht zahlbar. Die Differenz folgt dem gerundeten Betrag.
+    from core.services.mietrecht import runde_mietzins
+    neue_miete = runde_mietzins(netto_miete * faktor)
     differenz_chf = neue_miete - netto_miete
 
     action = 'OK'

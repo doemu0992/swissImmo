@@ -241,6 +241,12 @@ def fw_kreditor_freigeben(request, pk):
     if k.status != 'neu':
         messages.info(request, gettext('Rechnung ist bereits freigegeben oder bezahlt.'))
         return redirect('fw_kreditoren')
+    # Eigentümerfreigabe der Reparatur: eine Sperre, nicht nur eine Anzeige.
+    from finance.freigabe import freigabe_sperre
+    sperre = freigabe_sperre(k)
+    if sperre:
+        messages.error(request, f'⛔ {sperre}')
+        return redirect('fw_kreditoren')
 
     # Aufwandskonto zuweisen (aus Formular oder bestehendes). Mit Kostenaufteilung
     # ist das Kopf-Konto optional — dann bucht jede Position ihr eigenes Konto.
@@ -1360,9 +1366,16 @@ def fw_zahlung_stornieren(request, pk):
                     erstelle_storno_buchung(b, benutzer=request.user)
                 zz.status = 'storniert'
                 zz.save(update_fields=['status'])
-            rech = z.debitoren_rechnung
-            if rech and rech.status not in ('storniert', 'abgeschrieben'):
-                rech.status = 'offen' if rech.offener_betrag >= rech.betrag else 'teilbezahlt'
+            # Status JEDER betroffenen Rechnung zurückrollen, nicht nur der
+            # ersten: Ein Überschuss («…:ueber») kann per Zuordnung eine andere
+            # Rechnung bezahlt haben. Bliebe sie «bezahlt», fiele sie mit vollem
+            # offenem Betrag aus Mahnwesen und OP-Liste.
+            for rech in {zz.debitoren_rechnung for zz in zahlungen if zz.debitoren_rechnung_id}:
+                if rech.status in ('storniert', 'abgeschrieben'):
+                    continue
+                offen = rech.offener_betrag
+                rech.status = ('bezahlt' if offen <= 0
+                               else 'offen' if offen >= rech.betrag else 'teilbezahlt')
                 rech.save(update_fields=['status'])
     except PermissionError as exc:
         messages.error(request, f"❌ {exc}")

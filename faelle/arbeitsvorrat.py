@@ -235,8 +235,13 @@ def _fallschritte(heute, bis, wer=None, mandat=None):
     # sichtbaren Zeilen waeren weniger. Ausserdem schneidet `[:20]` VOR dem
     # Filter — die eigenen Faelle koennten aus dem Fenster fallen, waehrend
     # fremde den Platz belegen.
-    schritte = Fallschritt.objects.filter(erledigt_am__isnull=True,
-                                          frist__isnull=False, frist__lte=bis)
+    # Schritte abgeschlossener oder abgebrochener Fälle sind keine Arbeit
+    # mehr — sonst stünde etwa die Frist eines durch Zahlung erledigten
+    # Zahlungsverzugs (Art. 257d OR) weiter als «fällig» auf der Startseite.
+    schritte = (Fallschritt.objects
+                .filter(erledigt_am__isnull=True,
+                        frist__isnull=False, frist__lte=bis)
+                .exclude(fall__status__in=('abgeschlossen', 'abgebrochen')))
     if wer is not None:
         schritte = schritte.filter(fall__zustaendig=wer)
     if mandat is not None:

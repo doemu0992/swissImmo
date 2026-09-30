@@ -618,6 +618,9 @@ class NachtN1KritischeBugsTests(TestCase):
         # Fälligkeit zurückdatieren → nächste Stufe wird fällig
         r.faellig_am = date.today() - timedelta(days=65)
         r.save(update_fields=['faellig_am'])
+        # Die beiden Läufe liegen in Wirklichkeit Wochen auseinander: Die erste
+        # Mahnung ist entsprechend alt (Mindestabstand MAHN_MIN_ABSTAND_TAGE).
+        Mahnung.objects.filter(pk=m1.pk).update(datum=date.today() - timedelta(days=34))
         run_mahnlauf(send_email=False, mit_zins=True)
         m2 = r.mahnungen.order_by('-id').first()
         self.assertGreater(m2.stufe, m1.stufe)

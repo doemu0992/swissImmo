@@ -102,6 +102,7 @@ def fw_account(request):
             else:
                 vw.stundensatz = None
 
+        _zins_alt = vw.aktueller_referenzzinssatz
         vw.aktueller_referenzzinssatz = dec('aktueller_referenzzinssatz', vw.aktueller_referenzzinssatz)
         vw.aktueller_lik_punkte = dec('aktueller_lik_punkte', vw.aktueller_lik_punkte)
         vw.nk_honorar_prozent = dec('nk_honorar_prozent', vw.nk_honorar_prozent)
@@ -126,6 +127,9 @@ def fw_account(request):
         from core.services.unterschrift import uebernehme_aus_formular
         uebernehme_aus_formular(vw, request)
         vw.save()
+        if _zins_alt != vw.aktueller_referenzzinssatz:
+            from core.services.referenzzins import aenderung_festhalten
+            aenderung_festhalten(vw, _zins_alt, vw.aktueller_referenzzinssatz, quelle='manuell')
         log_aktion(request, "Account/Stammdaten bearbeitet", vw.firma,
                    diff_model(alt_snap, snapshot_model(vw), vw))
         messages.success(request, '✅ ' + gettext('Stammdaten gespeichert.'))
@@ -1133,3 +1137,14 @@ def fw_abonnemente(request):
         'kann_abo_aendern': kann_abo_aendern,
         'rabatt_prozent': int(JAHRESRABATT * 100), 'preisstand': PREISSTAND,
     })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_referenzzins_historie(request):
+    """Verlauf des Referenzzinssatzes: Stichtag, Quelle, Folgen für die Verträge."""
+    from django.shortcuts import render
+    from crm.models import ReferenzzinsStand
+    basis = _global_filter(request)
+    return render(request, 'fw/referenzzins_historie.html', {
+        **basis, 'nav': 'einstellungen',
+        'staende': ReferenzzinsStand.objects.all()[:100]})

@@ -9,12 +9,24 @@ import calendar as _calendar
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from core.services.dokumentsprache import auf_deutsch
 
 logger = logging.getLogger(__name__)
 
+
+
+def _konten_fuer(v):
+    """Ertragskonten eines Vertrags: (Miete, Nebenkosten, NK-Bezeichnung)."""
+    e = v.einheit
+    # Mietertrag: Gewerbe/Parkplätze/Nebenobjekte → 3010, Wohnen → 3000.
+    ertrag_konto = "3010" if (e and e.mietrecht_kategorie in ('gewerbe', 'nebenobjekt')) else "3000"
+    # Nebenkosten: Pauschale ist definitiver Ertrag (keine Jahresabrechnung)
+    # → eigenes Konto 3021; Akonto (Vorschuss, wird abgerechnet) → 3020.
+    if getattr(v, 'nk_abrechnungsart', 'akonto') == 'pauschal':
+        return ertrag_konto, "3021", "NK-Pauschal"
+    return ertrag_konto, "3020", "NK-Akonto"
 
 
 # ============================================================
@@ -98,18 +110,10 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             netto_schuld = verr_netto + verr_nk + mwst
             rechnung = DebitorenRechnung.objects.create(
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                titel=titel, betrag=netto_schuld, faellig_am=start_date,
+                titel=titel, betrag=netto_schuld, faellig_am=v_start,
                 status='bezahlt' if netto_schuld <= 0 else 'offen')
             lg = v.einheit.liegenschaft if v.einheit_id else None
-            e = v.einheit
-            # Mietertrag: Gewerbe/Parkplätze/Nebenobjekte → 3010, Wohnen → 3000.
-            ertrag_konto = "3010" if (e and e.mietrecht_kategorie in ('gewerbe', 'nebenobjekt')) else "3000"
-            # Nebenkosten: Pauschale ist definitiver Ertrag (keine Jahresabrechnung)
-            # → eigenes Konto 3021; Akonto (Vorschuss, wird abgerechnet) → 3020.
-            if getattr(v, 'nk_abrechnungsart', 'akonto') == 'pauschal':
-                nk_konto, nk_label = "3021", "NK-Pauschal"
-            else:
-                nk_konto, nk_label = "3020", "NK-Akonto"
+            ertrag_konto, nk_konto, nk_label = _konten_fuer(v)
             # Vollen Referenzertrag als Ertrag buchen (Bilanz/Mieterspiegel korrekt) …
             buche("1100", ertrag_konto, ref_netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
@@ -142,6 +146,19 @@ MAHN_STUFEN_TAGE = [(3, 60), (2, 30), (1, 14)]   # (Stufe, ab Tagen überfällig
 MAHN_GEBUEHR = {1: Decimal('0.00'), 2: Decimal('20.00'), 3: Decimal('40.00')}
 VERZUGSZINS_PROZENT = Decimal('5.0')   # Art. 104 OR
 
+#: Nach so vielen Tagen ohne Änderung an einem offenen Ticket entsteht eine Pendenz.
+TICKET_TAGE_OHNE_BEWEGUNG = 14
+
+#: Mindestabstand (Tage) zwischen zwei Mahnungen derselben Forderung im Mahnlauf.
+MAHN_MIN_ABSTAND_TAGE = 7
+
+#: Richtwert (Tage nach Periodenende) für die Nebenkostenabrechnung. Keine gesetzliche Frist.
+NK_ABRECHNUNG_RICHTWERT_TAGE = 180
+
+#: Stichwörter für Schäden, die die Gebäudeversicherung betreffen können.
+VERSICHERUNGS_STICHWORTE = ('wasserschaden', 'rohrbruch', 'feuerschaden', 'brandschaden',
+                            'sturmschaden', 'hagel', 'einbruch', 'glasbruch', 'überschwemmung')
+
 
 def _stufe_fuer_tage(tage):
     for stufe, ab in MAHN_STUFEN_TAGE:
@@ -157,28 +174,40 @@ def verzugszins(betrag, tage, prozent=VERZUGSZINS_PROZENT):
     return (Decimal(betrag) * prozent / Decimal('100') * Decimal(tage) / Decimal('360')).quantize(Decimal('0.01'))
 
 
-def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
+def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry_run=False):
     """Führt einen Sammel-Mahnlauf über alle überfälligen offenen Debitoren aus.
     Für jede fällige Rechnung, die noch keine Mahnung der berechneten Stufe hat,
     wird ein revisionssicherer Mahnung-Eintrag erzeugt (+ optional Mahngebühr als
     Debitor, + optional Zahlungserinnerung per E-Mail). Idempotent pro Stufe.
 
     Gibt dict zurück: {'gemahnt': n, 'emails': m, 'gebuehren': CHF, 'zins': CHF}.
+
+    `dry_run=True` (Trockenlauf): rechnet genau dieselben Entscheidungen, schreibt
+    und versendet aber NICHTS. `res['plan']` enthält je geplanter Mahnung eine Zeile
+    (Rechnung, Mieter, Stufe, offener Betrag, Gebühr, Zins, E-Mail ja/nein). Damit
+    sieht die Verwaltung vor dem Lauf, was er täte — im Stresstest gingen sonst 52
+    Mails ungesehen raus.
     """
-    from finance.models import DebitorenRechnung, Mahnung
+    from finance.models import DebitorenRechnung
     from django.db.models import Q
     from core.utils.email_service import send_payment_reminder
-    from finance.booking import buche
     # Mahnstufen + Gebuehr pro Eigentuemer (crm.Eigentuemer.mahn_konfig); Fallback Standard.
     from core.services.mahnstufen import stufe_fuer_tage as _stufe_cfg, eigentuemer_von_rechnung
 
     heute = timezone.localdate()
-    qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+    # Abgeleitete Forderungen (Mahngebühr, Verzugszins — `stammrechnung`)
+    # werden NICHT selbst gemahnt: Sonst trägt eine Mahngebühr nach dreissig
+    # Tagen ihre eigene Mahngebühr und eine Zinsrechnung ihren eigenen Zins —
+    # Zinseszins, den Art. 105 Abs. 3 OR ausschliesst. Sie bleiben im OP-Buch
+    # und werden mit der Hauptforderung eingefordert.
+    qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'],
+                                           stammrechnung__isnull=True)
           .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'))
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
 
-    res = {'gemahnt': 0, 'emails': 0, 'gebuehren': Decimal('0.00'), 'zins': Decimal('0.00'), 'geprueft': 0}
+    res = {'gemahnt': 0, 'emails': 0, 'gebuehren': Decimal('0.00'), 'zins': Decimal('0.00'), 'geprueft': 0,
+           'plan': []}
 
     for r in qs:
         faellig = r.faellig_am or r.datum
@@ -205,6 +234,11 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         hoechste = r.mahnungen.order_by('-stufe').first()
         if hoechste and hoechste.stufe >= stufe:
             continue
+        # MINDESTABSTAND zwischen zwei Mahnungen derselben Forderung: Läuft der Lauf
+        # an Tag 29 und Tag 30, gingen sonst 1. und 2. Mahnung an aufeinanderfolgenden
+        # Tagen raus (samt Gebühr), und der Mieter hätte keine Zeit zu zahlen.
+        if hoechste and (heute - hoechste.datum).days < MAHN_MIN_ABSTAND_TAGE:
+            continue
 
         gebuehr = _s['gebuehr']
         # Verzugszins nur als DELTA zur bereits fakturierten Summe (Art. 104 OR:
@@ -215,34 +249,31 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         if mit_zins:
             bereits = sum((m.zins or Decimal('0.00')) for m in r.mahnungen.all())
             zins = max(Decimal('0.00'), verzugszins(offen, tage) - bereits)
-        with transaction.atomic():
-            Mahnung.objects.create(
-                debitoren_rechnung=r, vertrag=r.vertrag, stufe=stufe, datum=heute,
-                betrag_offen=offen, gebuehr=gebuehr, zins=zins,
-                versandart='email' if (send_email and r.vertrag and r.vertrag.mieter.email) else 'manuell',
-                bemerkung=(f"Verzugszins CHF {zins} ({tage} Tage, Delta zu Vorstufen)" if zins > 0 else ''),
-                erstellt_von=user,
-            )
-            zusatz = gebuehr + zins
-            if zusatz > 0 and r.vertrag_id:
-                lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None)
-                teile = []
-                if gebuehr > 0:
-                    teile.append(f"Mahngebühr {stufe}. Mahnung")
-                if zins > 0:
-                    teile.append(f"Verzugszins {VERZUGSZINS_PROZENT}%")
-                gebuehr_rechnung = DebitorenRechnung.objects.create(
-                    vertrag=r.vertrag, liegenschaft=lg,
-                    titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
-                    datum=heute, faellig_am=heute + timedelta(days=30),
-                    betrag=zusatz, status='offen',
-                    stammrechnung=r)   # für Storno-Kaskade (Live-Test E)
-                # Ins Hauptbuch buchen (Forderung an übrigen Ertrag) — sonst driften
-                # Nebenbuch (OP/Debitoren) und Hauptbuch (1100) auseinander, der
-                # Gebühren-/Zinsertrag fehlt in der Erfolgsrechnung, und eine spätere
-                # Zahlung würde 1100 belasten, das nie bebucht wurde.
-                buche("1100", "3600", zusatz, f"{' + '.join(teile)} {r.vertrag.mieter}",
-                      datum=heute, liegenschaft=lg, debitor=gebuehr_rechnung, user=user)
+        will_mail = bool(send_email and r.vertrag and r.vertrag.mieter.email)
+        if dry_run:
+            res['plan'].append({
+                'rechnung': r, 'mieter': r.vertrag.mieter.display_name if r.vertrag_id else '—',
+                'stufe': stufe, 'label': _s['label'], 'tage': tage, 'betrag': offen,
+                'gebuehr': gebuehr, 'zins': zins, 'email': will_mail,
+                'kuendigung': _s['kuendigung']})
+            res['gemahnt'] += 1
+            res['gebuehren'] += gebuehr
+            res['zins'] += zins
+            if will_mail:
+                res['emails'] += 1
+            continue
+        try:
+            _mahnschritt_buchen(r, stufe, heute, offen, gebuehr, zins, tage,
+                                send_email, user)
+        except IntegrityError:
+            # Gleichzeitiger zweiter Lauf (Knopf + Scheduler) hat diese Stufe
+            # schon erfasst — `uniq_mahnung_rechnung_stufe`. Kein Abbruch des
+            # ganzen Laufs, wie in `fw_mahnung_erfassen`.
+            continue
+        except PermissionError:
+            # Gesperrte Buchungsperiode: diese Rechnung auslassen, Rest mahnen.
+            logger.warning('Mahnlauf: Rechnung %s übersprungen (Periode gesperrt)', r.pk)
+            continue
         res['gemahnt'] += 1
         res['gebuehren'] += gebuehr
         res['zins'] += zins
@@ -254,9 +285,19 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
             try:
                 from core.services.ablage import ablage_mahnung
                 ablage_mahnung(r.vertrag, stufe=stufe, datum=heute,
-                               betrag=f"{offen:.2f}")
+                               betrag=f"{offen:.2f}", rechnung=r, gebuehr=gebuehr,
+                               letzte_stufe=_s['kuendigung'])
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
+            # Die Stufe mit Kündigungsandrohung führt zur Fristansetzung (Pendenz +
+            # Fall) — sie ist kein Endpunkt. Fehlertolerant wie die Ablage.
+            if _s['kuendigung']:
+                try:
+                    from core.services.zahlungsverzug import eskalation_257d
+                    eskalation_257d(r, benutzer=user)
+                except Exception:
+                    logger.warning("257d-Eskalation für Rechnung %s fehlgeschlagen", r.pk,
+                                   exc_info=True)
         if send_email and r.vertrag and r.vertrag.mieter.email:
             try:
                 if send_payment_reminder(r.vertrag, faellig, offen):
@@ -264,6 +305,41 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
     return res
+
+
+
+def _mahnschritt_buchen(r, stufe, heute, offen, gebuehr, zins, tage, send_email, user):
+    """Ein Mahnschritt in einer Transaktion: Historie + Gebühr/Zins-Forderung + Buchung."""
+    from finance.models import DebitorenRechnung, Mahnung
+    from finance.booking import buche
+    with transaction.atomic():
+        Mahnung.objects.create(
+            debitoren_rechnung=r, vertrag=r.vertrag, stufe=stufe, datum=heute,
+            betrag_offen=offen, gebuehr=gebuehr, zins=zins,
+            versandart='email' if (send_email and r.vertrag and r.vertrag.mieter.email) else 'manuell',
+            bemerkung=(f"Verzugszins CHF {zins} ({tage} Tage, Delta zu Vorstufen)" if zins > 0 else ''),
+            erstellt_von=user,
+        )
+        zusatz = gebuehr + zins
+        if zusatz > 0 and r.vertrag_id:
+            lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None)
+            teile = []
+            if gebuehr > 0:
+                teile.append(f"Mahngebühr {stufe}. Mahnung")
+            if zins > 0:
+                teile.append(f"Verzugszins {VERZUGSZINS_PROZENT}%")
+            gebuehr_rechnung = DebitorenRechnung.objects.create(
+                vertrag=r.vertrag, liegenschaft=lg,
+                titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
+                datum=heute, faellig_am=heute + timedelta(days=30),
+                betrag=zusatz, status='offen',
+                stammrechnung=r)   # für Storno-Kaskade (Live-Test E)
+            # Ins Hauptbuch buchen (Forderung an übrigen Ertrag) — sonst driften
+            # Nebenbuch (OP/Debitoren) und Hauptbuch (1100) auseinander, der
+            # Gebühren-/Zinsertrag fehlt in der Erfolgsrechnung, und eine spätere
+            # Zahlung würde 1100 belasten, das nie bebucht wurde.
+            buche("1100", "3600", zusatz, f"{' + '.join(teile)} {r.vertrag.mieter}",
+                  datum=heute, liegenschaft=lg, debitor=gebuehr_rechnung, user=user)
 
 
 def run_adress_umzuege():
@@ -303,6 +379,13 @@ def erledige_pendenzen_fuer(vertrag, keywords, user=None):
         p.erledigt_am = heute
         p.save(update_fields=['erledigt', 'erledigt_am'])
         n += 1
+    # Dieselben Ereignisse haken die Schritte des Falls «Mieterwechsel» ab
+    # (core/services/mieterwechsel_fall.py) — eine Buchführung, nicht zwei.
+    try:
+        from core.services.mieterwechsel_fall import schritte_abhaken
+        schritte_abhaken(vertrag, keywords, benutzer=user)
+    except Exception:
+        logger.warning('Fall «Mieterwechsel»: Schritte zu %s nicht abgehakt', vertrag.pk, exc_info=True)
     return n
 
 
@@ -340,6 +423,7 @@ def generate_auto_pendenzen(horizont_tage=90, user=None, organisation=None):
 
 def _pendenzen_fuer_organisation(horizont_tage, user):
     """Ein Durchgang im Kontext genau einer Verwaltung."""
+    from django.db.models import Q
     from core.models import Pendenz
     from core.utils import get_current_ref_zins
     from rentals.models import Mietvertrag, Kuendigung
@@ -374,6 +458,120 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
                 v.ende, 'vertrag',
                 "Befristeter Vertrag läuft aus — Verlängerung oder Auszug prüfen.",
                 liegenschaft=v.einheit.liegenschaft if v.einheit_id else None, vertrag=v)
+
+    # a1) Auszug abgeschlossen (Ende vorbei UND Rücknahme protokolliert): die
+    # Sammel-Pendenz «Auszug …» ist erledigt. Sie wurde nie abgehakt.
+    for p in (Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:auszug:')
+              .select_related('vertrag')):
+        v = p.vertrag
+        if v is not None and v.ende and v.ende < heute and v.abnahmen.filter(typ='auszug').exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a4) Nebenkostenabrechnung überfällig: Periode vorbei, nichts verbucht. Es gibt
+    # keine gesetzliche Frist (Verjährung 5 Jahre, Art. 128 Ziff. 1 OR); die Pendenz
+    # folgt dem Richtwert NK_ABRECHNUNG_RICHTWERT_TAGE — Mieter erwarten die
+    # Abrechnung zeitnah, und Belegeinsicht (Art. 4 VMWG) ist auf Verlangen zu gewähren.
+    from finance.models import AbrechnungsPeriode
+    nk_offen = AbrechnungsPeriode.objects.filter(abgeschlossen=False, ende_datum__lt=heute) \
+        .select_related('liegenschaft')
+    for ap in nk_offen:
+        soll = ap.ende_datum + timedelta(days=NK_ABRECHNUNG_RICHTWERT_TAGE)
+        if soll > grenze:
+            continue
+        _ensure(f"auto:nkfrist:{ap.id}",
+                f"NK-Abrechnung erstellen: {ap.liegenschaft.strasse} – {ap.bezeichnung}",
+                soll, 'finanzen',
+                (f"Periode {ap.start_datum:%d.%m.%Y}–{ap.ende_datum:%d.%m.%Y} ist beendet, die "
+                 f"Abrechnung nicht verbucht. Richtwert: {NK_ABRECHNUNG_RICHTWERT_TAGE} Tage nach "
+                 "Periodenende (keine gesetzliche Frist). Auf Verlangen ist den Mietern Einsicht "
+                 "in die Belege zu gewähren."),
+                liegenschaft=ap.liegenschaft)
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:nkfrist:'):
+        try:
+            ap_id = int(p.quelle.rsplit(':', 1)[-1])
+        except ValueError:
+            continue
+        if AbrechnungsPeriode.objects.filter(pk=ap_id, abgeschlossen=True).exists() \
+                or not AbrechnungsPeriode.objects.filter(pk=ap_id).exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a3) Tickets ohne Bewegung → nachfassen. Im Stresstest lag ein Wasserschaden
+    # 83 Tage «in Bearbeitung», ohne dass irgendwo eine Warnung erschien.
+    from tickets.models import SchadenMeldung
+    ticket_grenze = heute - timedelta(days=TICKET_TAGE_OHNE_BEWEGUNG)
+    offen_t = SchadenMeldung.objects.exclude(status='erledigt').select_related('liegenschaft')
+    for t in offen_t.filter(aktualisiert_am__date__lt=ticket_grenze):
+        tage_t = (heute - timezone.localtime(t.aktualisiert_am).date()).days
+        _ensure(f"auto:ticket:{t.id}",
+                f"Ticket #{t.id} seit {tage_t} Tagen ohne Bewegung: {t.titel}"[:200],
+                heute, 'unterhalt',
+                f"Status «{t.get_status_display()}» — nachfassen, Handwerker/Melder kontaktieren "
+                f"oder Status anpassen.",
+                liegenschaft=t.liegenschaft)
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:ticket:'):
+        tid = p.quelle.rsplit(':', 1)[-1]
+        if not SchadenMeldung.objects.filter(pk=tid).exclude(status='erledigt').filter(
+                aktualisiert_am__date__lt=ticket_grenze).exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a3c) Zahlungsvereinbarungen bewerten: erfüllt oder gebrochen.
+    from core.services.zahlungsvereinbarung import pruefen_alle
+    pruefen_alle()
+
+    # a3a) Mieterguthaben-Pendenzen erledigen, sobald das Guthaben nicht mehr auf 2030
+    # steht (verrechnet, zurückerstattet oder storniert).
+    from finance.models import Zahlungseingang
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:guthaben:'):
+        try:
+            zid = int(p.quelle.rsplit(':', 1)[-1])
+        except ValueError:
+            continue
+        if not Zahlungseingang.objects.filter(pk=zid, status='verbucht', konto__nummer='2030').exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a3b) Versicherungsrelevante Schäden (Wasser, Feuer, Sturm, Hagel, Einbruch, Glas):
+    # an die Gebäudeversicherung melden — oft mit kurzer Meldefrist laut Police.
+    # Ein Wasserschaden blieb im Stresstest 83 Tage offen, ohne dass die Meldung
+    # je zur Sprache kam. Erledigt, wenn das Ticket erledigt ist oder ein Fall
+    # «Versicherungsfall» am Ticket existiert.
+    from django.contrib.contenttypes.models import ContentType
+    from faelle.models import Fall
+    t_ct = ContentType.objects.get_for_model(SchadenMeldung)
+    vers_faelle = set(Fall.objects.filter(akte_typ=t_ct, fallart__schluessel='versicherungsfall')
+                      .values_list('akte_id', flat=True))
+    q_vers = Q()
+    for kw in VERSICHERUNGS_STICHWORTE:
+        q_vers |= Q(titel__icontains=kw) | Q(kategorie__icontains=kw)
+    for t in offen_t.filter(q_vers):
+        if t.pk in vers_faelle:
+            continue
+        _ensure(f"auto:versicherung:{t.id}",
+                f"Versicherungsmeldung prüfen: Ticket #{t.id} {t.titel}"[:200],
+                heute, 'unterhalt',
+                "Schaden mit möglicher Deckung durch die Gebäudeversicherung — Police und "
+                "Meldefrist prüfen, Schaden melden, Selbstbehalt klären (Fall «Versicherungsfall»).",
+                liegenschaft=t.liegenschaft)
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:versicherung:'):
+        try:
+            tid = int(p.quelle.rsplit(':', 1)[-1])
+        except ValueError:
+            continue
+        if tid in vers_faelle or not offen_t.filter(pk=tid).exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a2) Beendet, aber nicht zurückgenommen → Nutzungsentschädigung prüfen
+    from core.services.nutzungsentschaedigung import nutzung_pendenzen
+    neu += nutzung_pendenzen(heute)
 
     # b) Gekündigte Verträge → Auszug/Abnahme/Kautionsabrechnung
     for v in (Mietvertrag.objects.filter(status='gekuendigt', ende__range=[heute, grenze])

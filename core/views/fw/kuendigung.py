@@ -65,6 +65,12 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
     ]
     if mit_leerstand:
         aufgaben.append(("Nachmieter suchen / Inserat aufschalten", heute, 'aufgabe'))
+    # Sperrkonto: Die Bank gibt die Kaution nur frei, wenn beide Parteien zustimmen
+    # oder ein rechtskräftiges Urteil vorliegt (Art. 257e Abs. 3 OR). Das Freigabe-
+    # schreiben ist ein eigener Schritt — ohne ihn wartet der Mieter auf sein Geld.
+    if vertrag.kautions_betrag and getattr(vertrag, 'kautions_art', '') == 'sperrkonto':
+        aufgaben.append(("Kaution: Freigabeschreiben an die Bank (Zustimmung Mieter und Vermieter)",
+                         tage(14), 'finanzen'))
 
     n = 0
     for titel, faellig, kat in aufgaben:
@@ -124,6 +130,18 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         # rechnet. Eine Regel auf einen Fall anzuwenden, für den sie nicht
         # gemacht ist, wäre schlechter als keine Regel.
         regel_anwendung = None
+        # ZAHLUNGSVERZUG (Art. 257d Abs. 2 OR): Kündigen darf nur, wer eine
+        # Frist angesetzt hat, die unbenützt abgelaufen ist. Läuft sie noch
+        # oder hat der Mieter innert Frist bezahlt, wäre die Kündigung
+        # unwirksam — hier hält das System an, statt sie anzulegen.
+        _ao_grund = (P.get('ausserordentlich_grund') or '').lower()
+        if ausserord and P.get('absender', 'mieter') == 'vermieter' and (
+                '257d' in _ao_grund or 'zahlungsverzug' in _ao_grund):
+            from core.services.zahlungsverzug import kuendigung_sperre
+            sperre = kuendigung_sperre(v, eingang)
+            if sperre:
+                messages.error(request, f'⛔ {sperre}')
+                return redirect(f'/neu/vertraege/{v.id}/kuendigen/?grund=verzug')
         if not ausserord:
             from core.views.fw.regelwerk import folgekosten, pruefung_zum_vertrag
             from faelle.regelwerk import sperrt
@@ -192,6 +210,16 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         # Auszugscheckliste automatisch als Pendenzen anlegen
         leerstand_gewuenscht = P.get('leerstand_anlegen') == 'on'
         n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=leerstand_gewuenscht)
+        # Der Auszug ist EIN Vorgang: Fall «Mieterwechsel» eröffnen (wenn die Fallart
+        # eingerichtet ist), bevor die Stichwort-Ereignisse unten seine Schritte abhaken.
+        from core.services.mieterwechsel_fall import eroeffnen as _mw_eroeffnen
+        _mw_eroeffnen(v, benutzer=request.user if request.user.is_authenticated else None)
+        # Wird die Kündigung schon beim Erfassen als bestätigt angelegt, ist «Kündigung
+        # schriftlich bestätigen» erledigt — gleiche Regel wie in fw_kuendigung_bestaetigen.
+        # Vorher blieb die Pendenz offen, obwohl das Häkchen gesetzt war (Stresstest, Punkt 12).
+        if k.status == 'bestaetigt':
+            from core.services.automation import erledige_pendenzen_fuer
+            erledige_pendenzen_fuer(v, ['schriftlich', 'Kündigungsformular'], user=request.user)
 
         # Leerstand ab Tag nach Vertragsende (opt-in)
         hinweis = ""
@@ -342,7 +370,12 @@ def fw_verzug_257d(request, vertrag_id):
         _betrag = f"{offen_total:.2f}"
         pdf = None
         for i, ovr in enumerate(zustellungen):
-            _p = generate_mahnung_combined_pdf_bytes(v, vw, _monat, _betrag, heute, empfaenger=ovr)
+            # Eine einzelne QRR trägt nur EINE Forderung: bei mehreren gemahnten
+            # Forderungen bleibt die Referenz leer, statt die Zahlung der ersten
+            # zuzuschlagen.
+            _ref = faellige[0].qr_referenz if len(faellige) == 1 else None
+            _p = generate_mahnung_combined_pdf_bytes(v, vw, _monat, _betrag, heute,
+                                                     empfaenger=ovr, reference=_ref)
             if i == 0:
                 pdf = _p
             _to = ovr['name'] if ovr else m.display_name
@@ -365,13 +398,21 @@ def fw_verzug_257d(request, vertrag_id):
                   f"Zahlungsfrist bis {frist:%d.%m.%Y} (Art. 257d Abs. 1 OR). ")
                + "Nach fruchtlosem Ablauf: ausserordentliche Kündigung mit 30 Tagen auf Monatsende "
                  "(Art. 257d Abs. 2 OR).")
+        from core.services.zahlungsverzug import fall_eroeffnen, quelle_fuer, vorschlaege_erledigen
+        _benutzer = request.user if request.user.is_authenticated else None
         Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
-            beschreibung=_bt,
+            beschreibung=_bt, quelle=quelle_fuer(v),
             kategorie='frist', faellig_am=frist, vertrag=v, liegenschaft=lg,
             sendungsnummer=sendungsnummer, versand_am=versand_am, frist_tage=FRIST_TAGE,
-            erstellt_von=request.user if request.user.is_authenticated else None,
+            erstellt_von=_benutzer,
         )
+        # Der Gesamtvorgang: Fall «Zahlungsverzug» an der Vertragsakte. Eine
+        # Zahlung innert Frist schliesst Frist und Fall zusammen
+        # (core/services/zahlungsverzug.py, ausgelöst in finance/signals.py).
+        vorschlaege_erledigen(v, 'Fristansetzung nach Art. 257d OR erfolgt.')
+        fall_eroeffnen(v, benutzer=_benutzer, frist=frist,
+                       betreff=f"Zahlungsverzug {v.mieter.display_name} – CHF {offen_total:.2f}")
         log_aktion(request, "Zahlungsaufforderung 257d erstellt", str(v.mieter),
                    f"Frist bis {frist:%d.%m.%Y}, offen CHF {offen_total:.2f}", ziel=v)
         if request.POST.get('als_pdf') == '1':
@@ -423,6 +464,9 @@ def fw_verzug_zugang(request, pk):
                         "(Art. 257d Abs. 1 OR, strikte Empfangstheorie). Nach fruchtlosem Ablauf: "
                         "ausserordentliche Kündigung mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR).")
     p.save(update_fields=['zugang_am', 'faellig_am', 'beschreibung'])
+    if p.vertrag_id:
+        from core.services.zahlungsverzug import fall_frist_nachfuehren
+        fall_frist_nachfuehren(p.vertrag, neu_frist)
     log_aktion(request, "257d-Zugang bestätigt",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
                f"Zugang {zugang:%d.%m.%Y}, Frist neu bis {neu_frist:%d.%m.%Y}",
@@ -465,6 +509,9 @@ def fw_verzug_sendung(request, pk):
             p.faellig_am = vs + timedelta(days=1 + (p.frist_tage or 30))
             felder += ['versand_am', 'faellig_am']
     p.save(update_fields=felder)
+    if 'faellig_am' in felder and p.vertrag_id:
+        from core.services.zahlungsverzug import fall_frist_nachfuehren
+        fall_frist_nachfuehren(p.vertrag, p.faellig_am)
     log_aktion(request, "257d-Sendungsnummer korrigiert",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
                p.sendungsnummer or '—', ziel=p.vertrag if p.vertrag_id else None)
@@ -537,6 +584,8 @@ def fw_kuendigung_bestaetigen(request, pk):
     v.save(update_fields=['status', 'aktiv', 'ende'])
 
     n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=False)
+    from core.services.mieterwechsel_fall import eroeffnen as _mw_eroeffnen
+    _mw_eroeffnen(v, benutzer=request.user if request.user.is_authenticated else None)
     # Bestätigung erfolgt → 'Kündigung schriftlich bestätigen' abhaken
     from core.services.automation import erledige_pendenzen_fuer
     erledige_pendenzen_fuer(v, ['schriftlich', 'Kündigungsformular'], user=request.user)
@@ -590,3 +639,197 @@ def fw_kuendigung_formular(request, pk):
     resp = HttpResponse(bytes(pdf_bytes), content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'
     return resp
+
+
+# Nutzungsentschädigung: eine Forderung zu stellen ist eine Entscheidung der
+# Verwaltung (Ist der Mieter wirklich noch drin?) — dieselbe Stufe wie die
+# Fristansetzung nach Art. 257d OR.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_nutzungsentschaedigung(request, vertrag_id):
+    """Nutzungsentschädigung nach Vertragsende (core/services/nutzungsentschaedigung.py).
+    GET: Vorschau der fehlenden Monate · POST: Forderungen stellen."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.services import nutzungsentschaedigung as ne
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'),
+                          id=vertrag_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+    offen = ne.ist_offen(v, heute)
+
+    if request.method == 'POST':
+        if not offen:
+            messages.error(request, gettext(
+                'Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der '
+                'Vergangenheit oder die Rücknahme ist protokolliert.'))
+            return redirect(f'/neu/vertraege/{v.id}/')
+        neu = ne.stelle_bis_heute(v, user=request.user)
+        if neu:
+            total = sum((r.betrag for r in neu), Decimal('0.00'))
+            log_aktion(request, 'Nutzungsentschädigung gestellt', str(v.mieter),
+                       f'{len(neu)} Monat(e), CHF {total:.2f}', ziel=v)
+            messages.success(request, '✅ ' + gettext(
+                '%(n)s Forderung(en) über CHF %(total)s gestellt.') % {'n': len(neu), 'total': f'{total:.2f}'})
+        else:
+            messages.info(request, gettext('Es gibt keine offenen Monate — alles ist bereits gestellt.'))
+        return redirect(f'/neu/vertraege/{v.id}/')
+
+    vorschau = []
+    for j, m in ne.monate_ohne_forderung(v, heute):
+        vorschau.append({'jahr': j, 'monat': m})
+    return render(request, 'fw/nutzungsentschaedigung.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'offen': offen,
+        'vorschau': vorschau, 'rueckgabe': ne.rueckgabe_datum(v),
+    })
+
+
+#: Art. 270a Abs. 2 OR: Der Vermieter muss das Herabsetzungsbegehren innert 30 Tagen beantworten.
+HERABSETZUNG_ANTWORT_TAGE = 30
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_herabsetzung(request, vertrag_id):
+    """Herabsetzungsbegehren des Mieters als Vorgang (Art. 270a OR).
+
+    Bisher gab es nur die Potenzialanzeige («Senkung möglich»). Verlangt der Mieter
+    eine Herabsetzung, muss der Vermieter innert 30 Tagen antworten — die Frist
+    läuft ab Eingang. POST `aktion=eingang`: Begehren erfassen (Frist-Pendenz).
+    POST `aktion=antwort`: Antwort erteilt (schliesst die Pendenz, hält das Ergebnis
+    fest und zeigt, bis wann der Mieter die Schlichtungsbehörde anrufen kann)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.models import Pendenz
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'),
+                          id=vertrag_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+    lg = v.einheit.liegenschaft if v.einheit_id else None
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        if aktion == 'eingang':
+            try:
+                eingang = date.fromisoformat(request.POST.get('eingang_datum') or '')
+            except ValueError:
+                eingang = heute
+            if eingang > heute:
+                messages.error(request, gettext('Das Eingangsdatum liegt in der Zukunft.'))
+                return redirect(f'/neu/vertraege/{v.id}/herabsetzung/')
+            quelle = f'270a:{v.pk}:{eingang.isoformat()}'
+            if Pendenz.objects.filter(vertrag=v, quelle=quelle).exists():
+                messages.info(request, gettext('Dieses Begehren ist bereits erfasst.'))
+                return redirect(f'/neu/vertraege/{v.id}/herabsetzung/')
+            frist = eingang + _timedelta(days=HERABSETZUNG_ANTWORT_TAGE)
+            Pendenz.objects.create(
+                titel=f'Art. 270a: Herabsetzungsbegehren beantworten – {v.mieter.display_name}',
+                beschreibung=(f'Begehren des Mieters eingegangen am {eingang:%d.%m.%Y}. Der Vermieter '
+                              f'muss innert {HERABSETZUNG_ANTWORT_TAGE} Tagen antworten (Art. 270a Abs. 2 OR). '
+                              + (f'Notiz: {request.POST.get("notiz").strip()[:300]}'
+                                 if (request.POST.get('notiz') or '').strip() else '')).strip(),
+                kategorie='frist', faellig_am=frist, vertrag=v, liegenschaft=lg, quelle=quelle,
+                erstellt_von=request.user if request.user.is_authenticated else None)
+            log_aktion(request, 'Herabsetzungsbegehren erfasst', str(v.mieter),
+                       f'eingegangen {eingang:%d.%m.%Y}, Antwort bis {frist:%d.%m.%Y}', ziel=v)
+            messages.success(request, '✅ ' + gettext('Begehren erfasst — Antwort bis %(frist)s.') % {'frist': frist.strftime('%d.%m.%Y')})
+        elif aktion == 'antwort':
+            p = Pendenz.objects.filter(vertrag=v, pk=request.POST.get('pendenz') or 0,
+                                       quelle__startswith='270a:', erledigt=False).first()
+            ergebnis = request.POST.get('ergebnis')
+            if p is None or ergebnis not in ('zustimmung', 'teilweise', 'ablehnung'):
+                messages.error(request, gettext('Bitte ein offenes Begehren und das Ergebnis der Antwort wählen.'))
+                return redirect(f'/neu/vertraege/{v.id}/herabsetzung/')
+            try:
+                antwort_am = date.fromisoformat(request.POST.get('antwort_datum') or '')
+            except ValueError:
+                antwort_am = heute
+            text = {'zustimmung': 'Zustimmung', 'teilweise': 'Teilweise Zustimmung',
+                    'ablehnung': 'Ablehnung'}[ergebnis]
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.beschreibung = f'Antwort am {antwort_am:%d.%m.%Y}: {text}.\n\n{p.beschreibung}'
+            p.save(update_fields=['erledigt', 'erledigt_am', 'beschreibung'])
+            if ergebnis != 'zustimmung':
+                # Information für die Verwaltung: Bis dahin kann der Mieter anrufen.
+                Pendenz.objects.create(
+                    titel=f'Art. 270a: Anrufungsfrist des Mieters läuft – {v.mieter.display_name}',
+                    beschreibung=(f'{text} am {antwort_am:%d.%m.%Y}. Der Mieter kann die '
+                                  f'Schlichtungsbehörde innert 30 Tagen anrufen (Art. 270a Abs. 3 OR). '
+                                  'Danach gilt die Antwort als akzeptiert.'),
+                    kategorie='frist', faellig_am=antwort_am + _timedelta(days=30), vertrag=v,
+                    liegenschaft=lg, quelle=f'270a-anrufung:{v.pk}:{antwort_am.isoformat()}')
+            log_aktion(request, 'Herabsetzungsbegehren beantwortet', str(v.mieter), text, ziel=v)
+            messages.success(request, '✅ ' + gettext('Antwort festgehalten: %(text)s.') % {'text': text})
+            if ergebnis != 'ablehnung':
+                messages.info(request, gettext('Die Senkung wird über «Mietzinsanpassung» mit dem amtlichen Formular mitgeteilt.'))
+        return redirect(f'/neu/vertraege/{v.id}/herabsetzung/')
+
+    offene = list(Pendenz.objects.filter(vertrag=v, quelle__startswith='270a:', erledigt=False)
+                  .order_by('faellig_am'))
+    return render(request, 'fw/herabsetzung.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'offene': offene, 'heute_iso': heute.isoformat(),
+        'antwort_tage': HERABSETZUNG_ANTWORT_TAGE,
+    })
+
+
+# Eine Zahlungsvereinbarung setzt die Mahnsperre und verschiebt die Fälligkeit im
+# Gespräch mit dem Mieter — eine Entscheidung der Verwaltung, wie die Fristansetzung.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_zahlungsvereinbarung(request, vertrag_id):
+    """Ratenplan für einen Rückstand (core/services/zahlungsvereinbarung.py)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.services import zahlungsvereinbarung as zv
+    from core.services.zahlungsverzug import aktive_fristen, faelliger_rueckstand
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'),
+                          id=vertrag_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion', 'anlegen')
+        if aktion == 'abbrechen':
+            vereinb = v.zahlungsvereinbarungen.filter(pk=request.POST.get('vereinbarung') or 0,
+                                                      status='aktiv').first()
+            if vereinb:
+                zv.abbrechen(vereinb)
+                log_aktion(request, 'Zahlungsvereinbarung abgebrochen', str(v.mieter), f'#{vereinb.pk}', ziel=v)
+                messages.success(request, gettext('Zahlungsvereinbarung abgebrochen — die Mahnsperre ist aufgehoben.'))
+            return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
+        try:
+            raten = int(request.POST.get('anzahl_raten') or 0)
+            intervall = int(request.POST.get('intervall_monate') or 1)
+            erste = date.fromisoformat(request.POST.get('erste_rate') or '')
+        except ValueError:
+            messages.error(request, gettext('Bitte Anzahl Raten, Abstand und Datum der ersten Rate angeben.'))
+            return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
+        try:
+            vereinb = zv.anlegen(v, raten, erste, intervall, user=request.user,
+                                 notiz=(request.POST.get('notiz') or '').strip())
+        except ValueError as exc:
+            messages.error(request, f'❌ {exc}')
+            return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
+        log_aktion(request, 'Zahlungsvereinbarung erfasst', str(v.mieter),
+                   f'CHF {vereinb.betrag_total:.2f} in {raten} Raten ab {erste:%d.%m.%Y}', ziel=v)
+        messages.success(request, '✅ ' + gettext('Zahlungsvereinbarung erfasst — Mahnsperre gesetzt, %(n)s Raten-Pendenzen angelegt.') % {'n': raten})
+        return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
+
+    vereinbarungen = []
+    for vb in v.zahlungsvereinbarungen.all():
+        vereinbarungen.append({
+            'v': vb, 'plan': zv.raten_plan(vb),
+            'bezahlt': zv.bezahlt(vb), 'offen': zv.rueckstand(vb)})
+    return render(request, 'fw/zahlungsvereinbarung.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'vereinbarungen': vereinbarungen,
+        'rueckstand': faelliger_rueckstand(v, stichtag=heute),
+        'frist_laeuft': aktive_fristen(v).exists(),
+        'heute_iso': heute.isoformat(),
+    })

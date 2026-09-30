@@ -89,8 +89,11 @@ class MahnungKopiePerEmail(TestCase):
         self.c.force_login(_team_user())
         body = self.c.get('/neu/mahnwesen/').content.decode()
         self.assertIn(f'action="/vertrag/{self.v.id}/mahnung/mail/"', body)
-        self.assertIn(f'name="monat" value="{self.monat}"', body)
-        self.assertIn('name="betrag" value="1700.00"', body)
+        # Die Kopie trägt Forderung und Stufe — Monat und Betrag liest der Server aus der
+        # Forderung (frei eingebbar war «0.00» möglich, Stresstest 30.09.2026).
+        self.assertRegex(body, r'name="rechnung" value="\d+"')
+        self.assertIn('name="stufe" value="', body)
+        self.assertNotIn('name="betrag" value=', body)
         self.assertIn('Kopie per E-Mail', body)
         self.assertIn('Art. 257d OR', body)
 

@@ -56,6 +56,15 @@ class SchadenMeldung(OrganisationAusKette):
     erstellt_am = models.DateTimeField(auto_now_add=True)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Ein erledigtes Ticket schliesst seine Handwerkeraufträge. Der Status
+        # des Auftrags änderte sich nie («offen» auch bei erledigtem Ticket und
+        # bezahlter Rechnung, Stresstest 30.09.2026, Punkt 15) und hielt die
+        # Liste «liegt» der Akten dauerhaft rot.
+        if self.status == 'erledigt' and self.pk:
+            self.handwerker_auftraege.exclude(status='erledigt').update(status='erledigt')
+
     class Meta:
         verbose_name = "Ticket / Schaden"
         verbose_name_plural = "Tickets / Schäden"
