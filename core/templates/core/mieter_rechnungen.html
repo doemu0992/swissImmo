@@ -2,7 +2,7 @@
 {% load zeichen i18n %}
 {% load chf %}
 {% block title %}{% trans "Rechnungen — Mieterportal" %}{% endblock %}
-{% block brand_icon %}fa-file-invoice{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-rechnung"/></svg>{% endblock %}
 {% block brand_mobile %}{% trans "Rechnungen" %}{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='rechnungen' %}{% endblock %}
 
