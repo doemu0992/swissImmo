@@ -1114,7 +1114,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-akten-karte>.fw-reiter{border-top:0;padding-top:4px}
         .fw-akten-karte>.fw-reiter:last-child{border-bottom:0}
         .fw-akten-werkzeug{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--ds-line)}
-        .fw-akten-werkzeug .fw-listwerkzeug{margin:0;flex:0 1 auto;min-width:0}
+        .fw-akten-werkzeug .fw-listwerkzeug{margin:0;flex:1 1 auto;max-width:680px;min-width:0}
         .fw-akten-hinweis{font-size:12.5px;color:var(--ds-faint)}
         .fw-akten-werkzeug .fw-filters{margin:0;flex-basis:100%}
         table.fw-table tr.fw-klickzeile{cursor:pointer}
@@ -1170,6 +1170,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-stufen span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .fw-phead-knoepfe .fw-kopffilter{margin:0}
         .fw-phead.fw-phead-lauf>div:first-child{flex:1 1 420px;min-width:0}
+        .fw-card>.fw-freigabe{margin:12px}
         @media (max-width:1180px){.fw-laeufe{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media (max-width:720px){
             .fw-laeufe{grid-template-columns:minmax(0,1fr)}
@@ -1203,4 +1204,67 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             table[data-stack] tfoot td[colspan]~td[data-stack-titel]::before{content:attr(data-label)}
             table[data-stack] tfoot td[colspan]~td[data-stack-titel]>.fw-wert{text-align:right}
             table[data-stack] tfoot td[colspan]:not(:first-child)>.fw-wert{text-align:left;font-weight:500}
+        }
+        .fw-fin-kpis .fw-v{overflow-wrap:anywhere}
+        .fw-gutschriften .fw-leer{padding:28px 20px}
+        .fw-gs-liste{list-style:none;margin:0;padding:8px 0}
+        .fw-gs{display:flex;gap:12px;padding:12px 20px}
+        .fw-gs + .fw-gs{border-top:1px solid var(--ds-line)}
+        .fw-gs .fw-mitte{flex:1;min-width:0}
+        .fw-gs .fw-s{font-size:12px;color:var(--ds-faint);margin-top:2px;overflow-wrap:anywhere}
+        .fw-gs-kopf{display:flex;gap:12px;justify-content:space-between;align-items:baseline}
+        .fw-gs-wer{font-size:12.5px;font-weight:500;color:var(--ds-ink);min-width:0;overflow-wrap:anywhere}
+        .fw-gs-kopf .fw-betrag{white-space:nowrap;flex:0 0 auto}
+        .fw-gs .fw-eingang-knoepfe{align-items:center}
+        .fw-gs .fw-eingang-knoepfe .fw-vorschlag{margin-top:0}
+        .fw-gs .fw-eingang-knoepfe form{margin:0}
+        .fw-gs-grund{font-size:11.5px;color:var(--ds-faint)}
+        .fw-aging-tabelle .fw-zelle-titel{font-weight:600;color:var(--ds-ink);text-decoration:none}
+        .fw-aging-tabelle a.fw-zelle-titel:hover{color:var(--ds-brand)}
+        .fw-aging-tabelle .fw-zelle-sub{display:block;color:var(--ds-faint);font-size:12px;font-weight:400;margin-top:1px}
+        .fw-aging-tabelle tr[data-href]{cursor:pointer}
+        .fw-aging-neg{color:var(--ds-crit);font-weight:600}
+        .fw-fin-abschluss{overflow:hidden}
+        .fw-fin-abschluss .fw-kopf{flex-wrap:wrap}
+        .fw-fin-abschluss .fw-kpis{margin:0;border:0;border-radius:0;box-shadow:none}
+        .fw-bericht-zwei{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;align-items:start;margin-bottom:24px}
+        .fw-bericht-zwei>.fw-card{margin-bottom:0;min-width:0}
+        @media (max-width:1100px){.fw-bericht-zwei{grid-template-columns:minmax(0,1fr)}}
+        .fw-bericht-katalog{margin:8px 0 10px}
+        .fw-mandat-name{font-weight:600;color:var(--ds-ink);text-decoration:none}
+        a.fw-mandat-name:hover{color:var(--ds-brand)}
+        .fw-diagramm{padding:14px 20px 16px 20px}
+        .fw-diagramm-balken{padding-top:12px}
+        .fw-kurve{padding-left:44px}
+        .fw-kurve-plot{position:relative;height:176px}
+        .fw-kurve-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+        .fw-kurve-raster{stroke:var(--ds-line);stroke-width:1}
+        .fw-kurve-flaeche{fill:var(--ds-brand);opacity:.08}
+        .fw-kurve-strich{fill:none;stroke:var(--ds-brand);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+        .fw-kurve-y{position:absolute;left:-44px;width:36px;text-align:right;transform:translateY(-50%);
+            font-size:11px;color:var(--ds-faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+        .fw-kurve-punkt{position:absolute;width:9px;height:9px;border-radius:var(--ds-pill);background:var(--ds-brand);
+            box-shadow:0 0 0 2px var(--ds-surface);transform:translate(-50%,-50%);pointer-events:none}
+        .fw-kurve-wert{position:absolute;transform:translate(-100%,-150%);margin-left:-6px;font-size:12px;font-weight:600;
+            color:var(--ds-ink);white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+        .fw-kurve-treffer{position:absolute;top:0;bottom:0;cursor:crosshair}
+        .fw-kurve-treffer:hover{background:var(--ds-hover)}
+        .fw-kurve-achse{position:relative;height:22px}
+        .fw-kurve-x{position:absolute;top:6px;transform:translateX(-50%);font-size:11px;color:var(--ds-faint);white-space:nowrap}
+        .fw-hbar{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) 96px;gap:10px;align-items:center;padding:7px 0;font-size:13px}
+        .fw-hbar-lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ds-muted);text-decoration:none}
+        a.fw-hbar-lab:hover{color:var(--ds-brand)}
+        .fw-hbar-spur{height:14px;position:relative}
+        .fw-hbar-spur::before{content:"";position:absolute;left:0;top:-4px;bottom:-4px;width:1px;background:var(--ds-line-stark)}
+        .fw-hbar-spur i{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;background:var(--ds-brand)}
+        .fw-hbar-v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ds-ink)}
+        .fw-hbar-v.fw-faint{font-weight:400;color:var(--ds-faint)}
+        @media (max-width:640px){
+            .fw-gs{padding:12px 16px}
+            .fw-diagramm{padding:12px 16px 14px}
+            .fw-kurve{padding-left:38px}
+            .fw-kurve-y{left:-38px;width:32px;font-size:10.5px}
+            .fw-kurve-plot{height:150px}
+            .fw-kurve-x-neben{display:none}
+            .fw-hbar{grid-template-columns:minmax(0,110px) minmax(0,1fr) 72px}
         }
