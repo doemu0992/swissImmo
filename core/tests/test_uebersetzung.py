@@ -79,6 +79,8 @@ UEBERSETZT = (
     'fw/sollstellung.html',
     'fw/bankabgleich.html',
     'fw/mahnwesen.html',
+    'fw/mahnlauf_trockenlauf.html',
+    'fw/referenzzins_historie.html',
     'fw/zahllauf.html',
     # Tranche «Rest-Oberfläche» (29.09.2026)
     'fw/vertrag_neu.html',

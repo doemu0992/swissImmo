@@ -18,6 +18,8 @@ angedroht, weil sie hier nicht angedroht wird.
 """
 import io
 
+from core.services.dokumentsprache import nur_deutsch
+
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
           "September", "Oktober", "November", "Dezember"]
 
@@ -40,6 +42,7 @@ _TITEL = {
 }
 
 
+@nur_deutsch
 def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                   gebuehr=None, letzte_stufe=False, rechnung=None):
     """Mahnschreiben der Stufe `stufe` als PDF-Bytes (Brief + QR-Rechnung).

@@ -20959,3 +20959,185 @@ msgstr "Vorbereitung"
 #: core/views/fw/listen.py:315
 msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
 msgstr "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
+
+#, python-format
+msgid "%(n)s Forderung(en) über CHF %(total)s gestellt."
+msgstr "%(n)s Forderung(en) über CHF %(total)s gestellt."
+
+#, python-format
+msgid "%(n)s Rechnung(en) ausgelassen: Eigentümerfreigabe der Reparatur fehlt oder wurde abgelehnt."
+msgstr "%(n)s Rechnung(en) ausgelassen: Eigentümerfreigabe der Reparatur fehlt oder wurde abgelehnt."
+
+#, python-format
+msgid "%(was)s kann nicht in der Zukunft liegen (%(datum)s)."
+msgstr "%(was)s kann nicht in der Zukunft liegen (%(datum)s)."
+
+#, python-format
+msgid "%(was)s liegt im Vormonat oder früher (%(datum)s): Ist der Monatsabschluss schon erstellt, weicht er nach dieser Buchung ab."
+msgstr "%(was)s liegt im Vormonat oder früher (%(datum)s): Ist der Monatsabschluss schon erstellt, weicht er nach dieser Buchung ab."
+
+msgid "Abruf BWO"
+msgstr "Abruf BWO"
+
+#, python-format
+msgid "Antwort festgehalten: %(text)s."
+msgstr "Antwort festgehalten: %(text)s."
+
+#, python-format
+msgid "Begehren erfasst — Antwort bis %(frist)s."
+msgstr "Begehren erfasst — Antwort bis %(frist)s."
+
+msgid "Bitte Anzahl Raten, Abstand und Datum der ersten Rate angeben."
+msgstr "Bitte Anzahl Raten, Abstand und Datum der ersten Rate angeben."
+
+msgid "Bitte ein offenes Begehren und das Ergebnis der Antwort wählen."
+msgstr "Bitte ein offenes Begehren und das Ergebnis der Antwort wählen."
+
+#, python-format
+msgid "CHF %(betrag)s an %(mieter)s zurückerstattet (2030 an Bank)."
+msgstr "CHF %(betrag)s an %(mieter)s zurückerstattet (2030 an Bank)."
+
+msgid "Das Eingangsdatum liegt in der Zukunft."
+msgstr "Das Eingangsdatum liegt in der Zukunft."
+
+msgid "Das Einzahlungsdatum"
+msgstr "Das Einzahlungsdatum"
+
+msgid "Das Rückzahlungsdatum"
+msgstr "Das Rückzahlungsdatum"
+
+msgid "Das Valutadatum liegt in der Zukunft."
+msgstr "Das Valutadatum liegt in der Zukunft."
+
+msgid "Das täte der Mahnlauf jetzt. Es wird nichts gebucht und nichts versandt."
+msgstr "Das täte der Mahnlauf jetzt. Es wird nichts gebucht und nichts versandt."
+
+msgid "Der Mahnlauf würde jetzt keine Mahnung erstellen."
+msgstr "Der Mahnlauf würde jetzt keine Mahnung erstellen."
+
+msgid "Die Senkung wird über «Mietzinsanpassung» mit dem amtlichen Formular mitgeteilt."
+msgstr "Die Senkung wird über «Mietzinsanpassung» mit dem amtlichen Formular mitgeteilt."
+
+#, python-format
+msgid "Die effektiven Kosten (CHF %(eff)s) liegen mehr als 20 %% über der freigegebenen Schätzung (CHF %(schaetz)s) — Nachfreigabe der Eigentümerschaft nötig."
+msgstr "Die effektiven Kosten (CHF %(eff)s) liegen mehr als 20 %% über der freigegebenen Schätzung (CHF %(schaetz)s) — Nachfreigabe der Eigentümerschaft nötig."
+
+msgid "Diese Forderung ist nicht mehr offen."
+msgstr "Diese Forderung ist nicht mehr offen."
+
+msgid "Dieses Begehren ist bereits erfasst."
+msgstr "Dieses Begehren ist bereits erfasst."
+
+msgid "E-Mails"
+msgstr "E-Mails"
+
+msgid "Eine Mahngebühr bzw. Zinsrechnung wird nicht selbst gemahnt — mahnen Sie die Hauptforderung."
+msgstr "Eine Mahngebühr bzw. Zinsrechnung wird nicht selbst gemahnt — mahnen Sie die Hauptforderung."
+
+msgid "Eingegangener Betrag (leer = offener Betrag). Ein Überschuss wird als Mieterguthaben gebucht."
+msgstr "Eingegangener Betrag (leer = offener Betrag). Ein Überschuss wird als Mieterguthaben gebucht."
+
+msgid "Erfüllt"
+msgstr "Erfüllt"
+
+msgid "Es gibt keine offenen Monate — alles ist bereits gestellt."
+msgstr "Es gibt keine offenen Monate — alles ist bereits gestellt."
+
+msgid "Forderung"
+msgstr "Forderung"
+
+msgid "Fristansetzung starten"
+msgstr "Fristansetzung starten"
+
+msgid "Gebrochen"
+msgstr "Gebrochen"
+
+msgid "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank."
+msgstr "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank."
+
+msgid "Jede Änderung mit Stichtag, Quelle und den betroffenen Verträgen."
+msgstr "Jede Änderung mit Stichtag, Quelle und den betroffenen Verträgen."
+
+msgid "Letzte Mahnung — Fristansetzung nach Art. 257d OR folgt"
+msgstr "Letzte Mahnung — Fristansetzung nach Art. 257d OR folgt"
+
+msgid "Letzte Stufe: führt zur Fristansetzung nach Art. 257d OR"
+msgstr "Letzte Stufe: führt zur Fristansetzung nach Art. 257d OR"
+
+msgid "Mahngebühren"
+msgstr "Mahngebühren"
+
+msgid "Mahnlauf — Trockenlauf"
+msgstr "Mahnlauf — Trockenlauf"
+
+msgid "Nichts fällig"
+msgstr "Nichts fällig"
+
+msgid "Noch keine Änderung festgehalten"
+msgstr "Noch keine Änderung festgehalten"
+
+msgid "Nur ein verbuchtes Mieterguthaben (Konto 2030) kann zurückerstattet werden."
+msgstr "Nur ein verbuchtes Mieterguthaben (Konto 2030) kann zurückerstattet werden."
+
+msgid "Referenzzins — Verlauf"
+msgstr "Referenzzins — Verlauf"
+
+msgid "Senkung möglich"
+msgstr "Senkung möglich"
+
+msgid "Stichtag"
+msgstr "Stichtag"
+
+msgid "Trockenlauf"
+msgstr "Trockenlauf"
+
+msgid "Trockenlauf ansehen"
+msgstr "Trockenlauf ansehen"
+
+msgid "Ungültiger oder fehlender Betrag — Mahnung nicht versendet."
+msgstr "Ungültiger oder fehlender Betrag — Mahnung nicht versendet."
+
+#, python-format
+msgid "Ungültiges Valutadatum «%(raw)s»."
+msgstr "Ungültiges Valutadatum «%(raw)s»."
+
+msgid "Ungültiges oder zukünftiges Valutadatum."
+msgstr "Ungültiges oder zukünftiges Valutadatum."
+
+msgid "Valuta: Tag der Gutschrift auf dem Bankkonto (leer = heute)"
+msgstr "Valuta: Tag der Gutschrift auf dem Bankkonto (leer = heute)"
+
+msgid "Verlauf des Referenzzinssatzes"
+msgstr "Verlauf des Referenzzinssatzes"
+
+msgid "Verzugszins"
+msgstr "Verzugszins"
+
+msgid "Vorher"
+msgstr "Vorher"
+
+msgid "Zahlungsvereinbarung abgebrochen — die Mahnsperre ist aufgehoben."
+msgstr "Zahlungsvereinbarung abgebrochen — die Mahnsperre ist aufgehoben."
+
+#, python-format
+msgid "Zahlungsvereinbarung erfasst — Mahnsperre gesetzt, %(n)s Raten-Pendenzen angelegt."
+msgstr "Zahlungsvereinbarung erfasst — Mahnsperre gesetzt, %(n)s Raten-Pendenzen angelegt."
+
+msgid "Zins"
+msgstr "Zins"
+
+msgid "Zurück zum Mahnwesen"
+msgstr "Zurück zum Mahnwesen"
+
+msgid "Zurückerstatten"
+msgstr "Zurückerstatten"
+
+msgid "führt zur Fristansetzung"
+msgstr "führt zur Fristansetzung"
+
+msgid "nur Akte"
+msgstr "nur Akte"
+
+#, python-format
+msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
+msgstr "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."

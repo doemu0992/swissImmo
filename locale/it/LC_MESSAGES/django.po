@@ -21049,3 +21049,185 @@ msgstr "Pratica %(nummer)s creata."
 #: core/views/fw/listen.py:315
 msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
 msgstr "Solo le fatture dei fornitori approvate possono essere rifatturate."
+
+#, python-format
+msgid "%(n)s Forderung(en) über CHF %(total)s gestellt."
+msgstr "%(n)s credito/i per un totale di CHF %(total)s emesso/i."
+
+#, python-format
+msgid "%(n)s Rechnung(en) ausgelassen: Eigentümerfreigabe der Reparatur fehlt oder wurde abgelehnt."
+msgstr "%(n)s fattura/e omessa/e: l'approvazione della riparazione da parte del proprietario manca o è stata rifiutata."
+
+#, python-format
+msgid "%(was)s kann nicht in der Zukunft liegen (%(datum)s)."
+msgstr "%(was)s non può essere nel futuro (%(datum)s)."
+
+#, python-format
+msgid "%(was)s liegt im Vormonat oder früher (%(datum)s): Ist der Monatsabschluss schon erstellt, weicht er nach dieser Buchung ab."
+msgstr "%(was)s cade nel mese precedente o prima (%(datum)s): se la chiusura mensile è già stata creata, differirà dopo questa registrazione."
+
+msgid "Abruf BWO"
+msgstr "Consultazione UFAB"
+
+#, python-format
+msgid "Antwort festgehalten: %(text)s."
+msgstr "Risposta registrata: %(text)s."
+
+#, python-format
+msgid "Begehren erfasst — Antwort bis %(frist)s."
+msgstr "Richiesta registrata — risposta entro il %(frist)s."
+
+msgid "Bitte Anzahl Raten, Abstand und Datum der ersten Rate angeben."
+msgstr "Indicare il numero di rate, l'intervallo e la data della prima rata."
+
+msgid "Bitte ein offenes Begehren und das Ergebnis der Antwort wählen."
+msgstr "Scegliere una richiesta aperta e l'esito della risposta."
+
+#, python-format
+msgid "CHF %(betrag)s an %(mieter)s zurückerstattet (2030 an Bank)."
+msgstr "CHF %(betrag)s rimborsati a %(mieter)s (2030 a banca)."
+
+msgid "Das Eingangsdatum liegt in der Zukunft."
+msgstr "La data di ricezione è nel futuro."
+
+msgid "Das Einzahlungsdatum"
+msgstr "La data di versamento"
+
+msgid "Das Rückzahlungsdatum"
+msgstr "La data di rimborso"
+
+msgid "Das Valutadatum liegt in der Zukunft."
+msgstr "La data di valuta è nel futuro."
+
+msgid "Das täte der Mahnlauf jetzt. Es wird nichts gebucht und nichts versandt."
+msgstr "Questo farebbe ora il processo di sollecito. Nulla viene registrato né inviato."
+
+msgid "Der Mahnlauf würde jetzt keine Mahnung erstellen."
+msgstr "Il processo di sollecito non creerebbe ora alcun sollecito."
+
+msgid "Die Senkung wird über «Mietzinsanpassung» mit dem amtlichen Formular mitgeteilt."
+msgstr "La riduzione viene comunicata tramite «Adeguamento della pigione» con il modulo ufficiale."
+
+#, python-format
+msgid "Die effektiven Kosten (CHF %(eff)s) liegen mehr als 20 %% über der freigegebenen Schätzung (CHF %(schaetz)s) — Nachfreigabe der Eigentümerschaft nötig."
+msgstr "I costi effettivi (CHF %(eff)s) superano di oltre il 20 %% la stima approvata (CHF %(schaetz)s) — è necessaria una nuova approvazione del proprietario."
+
+msgid "Diese Forderung ist nicht mehr offen."
+msgstr "Questo credito non è più aperto."
+
+msgid "Dieses Begehren ist bereits erfasst."
+msgstr "Questa richiesta è già stata registrata."
+
+msgid "E-Mails"
+msgstr "E-mail"
+
+msgid "Eine Mahngebühr bzw. Zinsrechnung wird nicht selbst gemahnt — mahnen Sie die Hauptforderung."
+msgstr "Una spesa di sollecito o una fattura di interessi non viene sollecitata a sé — sollecitare il credito principale."
+
+msgid "Eingegangener Betrag (leer = offener Betrag). Ein Überschuss wird als Mieterguthaben gebucht."
+msgstr "Importo ricevuto (vuoto = importo aperto). L'eccedenza viene registrata come avere del locatario."
+
+msgid "Erfüllt"
+msgstr "Adempiuto"
+
+msgid "Es gibt keine offenen Monate — alles ist bereits gestellt."
+msgstr "Non ci sono mesi aperti — tutto è già stato emesso."
+
+msgid "Forderung"
+msgstr "Credito"
+
+msgid "Fristansetzung starten"
+msgstr "Avviare la fissazione del termine"
+
+msgid "Gebrochen"
+msgstr "Violato"
+
+msgid "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank."
+msgstr "Rimborsare l'avere al locatario? Registrazione: 2030 a banca."
+
+msgid "Jede Änderung mit Stichtag, Quelle und den betroffenen Verträgen."
+msgstr "Ogni modifica con data, fonte e contratti interessati."
+
+msgid "Letzte Mahnung — Fristansetzung nach Art. 257d OR folgt"
+msgstr "Ultimo sollecito — segue la fissazione di un termine secondo l'art. 257d CO"
+
+msgid "Letzte Stufe: führt zur Fristansetzung nach Art. 257d OR"
+msgstr "Ultimo livello: porta alla fissazione di un termine secondo l'art. 257d CO"
+
+msgid "Mahngebühren"
+msgstr "Spese di sollecito"
+
+msgid "Mahnlauf — Trockenlauf"
+msgstr "Processo di sollecito — prova a secco"
+
+msgid "Nichts fällig"
+msgstr "Nulla in scadenza"
+
+msgid "Noch keine Änderung festgehalten"
+msgstr "Nessuna modifica registrata"
+
+msgid "Nur ein verbuchtes Mieterguthaben (Konto 2030) kann zurückerstattet werden."
+msgstr "Solo un avere del locatario registrato (conto 2030) può essere rimborsato."
+
+msgid "Referenzzins — Verlauf"
+msgstr "Tasso di riferimento — storico"
+
+msgid "Senkung möglich"
+msgstr "Riduzione possibile"
+
+msgid "Stichtag"
+msgstr "Data di riferimento"
+
+msgid "Trockenlauf"
+msgstr "Prova a secco"
+
+msgid "Trockenlauf ansehen"
+msgstr "Vedere la prova a secco"
+
+msgid "Ungültiger oder fehlender Betrag — Mahnung nicht versendet."
+msgstr "Importo non valido o mancante — sollecito non inviato."
+
+#, python-format
+msgid "Ungültiges Valutadatum «%(raw)s»."
+msgstr "Data di valuta non valida «%(raw)s»."
+
+msgid "Ungültiges oder zukünftiges Valutadatum."
+msgstr "Data di valuta non valida o futura."
+
+msgid "Valuta: Tag der Gutschrift auf dem Bankkonto (leer = heute)"
+msgstr "Valuta: giorno dell'accredito sul conto bancario (vuoto = oggi)"
+
+msgid "Verlauf des Referenzzinssatzes"
+msgstr "Storico del tasso d'interesse di riferimento"
+
+msgid "Verzugszins"
+msgstr "Interessi di mora"
+
+msgid "Vorher"
+msgstr "Prima"
+
+msgid "Zahlungsvereinbarung abgebrochen — die Mahnsperre ist aufgehoben."
+msgstr "Accordo di pagamento annullato — il blocco dei solleciti è revocato."
+
+#, python-format
+msgid "Zahlungsvereinbarung erfasst — Mahnsperre gesetzt, %(n)s Raten-Pendenzen angelegt."
+msgstr "Accordo di pagamento registrato — blocco dei solleciti attivato, %(n)s pendenze di rata create."
+
+msgid "Zins"
+msgstr "Interesse"
+
+msgid "Zurück zum Mahnwesen"
+msgstr "Torna ai solleciti"
+
+msgid "Zurückerstatten"
+msgstr "Rimborsare"
+
+msgid "führt zur Fristansetzung"
+msgstr "porta alla fissazione di un termine"
+
+msgid "nur Akte"
+msgstr "solo dossier"
+
+#, python-format
+msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
+msgstr "Pagamento eccedente: CHF %(betrag)s registrati come avere del locatario (conto 2030)."
