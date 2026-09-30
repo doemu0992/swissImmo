@@ -168,6 +168,7 @@ class Mitgliedschaft(models.Model):
     ROLLE_VERWALTER = 'Verwalter'
     ROLLE_SACHBEARBEITER = 'Sachbearbeiter'
     ROLLE_LESEZUGRIFF = 'Lesezugriff'
+    ROLLE_HAUSWART = 'Hauswart'
     # Beschriftung bewusst NICHT übersetzt: Die Rollennamen stehen auch in
     # den übersetzten Hilfetexten deutsch («<b>Verwalter</b> (accès complet
     # …)») — sie sind Begriffe des Produkts, keine Umgangssprache.
@@ -176,6 +177,7 @@ class Mitgliedschaft(models.Model):
         (ROLLE_VERWALTER, 'Verwalter'),
         (ROLLE_SACHBEARBEITER, 'Sachbearbeiter'),
         (ROLLE_LESEZUGRIFF, 'Lesezugriff'),
+        (ROLLE_HAUSWART, 'Hauswart'),
     ]
 
     benutzer = models.ForeignKey(

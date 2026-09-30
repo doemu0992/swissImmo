@@ -18,7 +18,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import gettext_lazy
 from django.views.decorators.cache import never_cache
 
-from core.auth import hat_rolle, ist_eigentuemer, TEAM_ROLLEN
+from core.auth import hat_rolle, ist_eigentuemer, HAUSWART_ROLLEN, TEAM_ROLLEN
 from rentals.models import Mietvertrag
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,8 @@ def nach_login_view(request):
         return redirect('portal')
     if hat_rolle(request.user, TEAM_ROLLEN):
         return redirect('fw_dashboard')
+    if hat_rolle(request.user, HAUSWART_ROLLEN):
+        return redirect('fw_schaeden')
     if ist_eigentuemer(request.user):
         return redirect('portal')
     if getattr(request.user, 'mieter_profil', None) is not None:
