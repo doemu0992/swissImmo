@@ -151,8 +151,14 @@ def akonto_gestellt(vertrag, v_start, v_ende):
       · Gibt es die Sollstellungs-Forderung «Miete & NK MM/JJJJ» (nicht storniert),
         zählt ihr NK-Anteil: Haben 3020 abzüglich NK-Erlass (Soll 3091) —
         anteilig, wenn die Periode den Monat nur teilweise deckt.
-      · Gibt es sie nicht (Sollstellung nicht gelaufen, Altbestand), gilt wie
-        bisher der Vertragswert für diese Tage.
+      · Gibt es sie nicht (Sollstellung nicht gelaufen, Altbestand), gilt der
+        Vertragswert für diese Tage — ebenfalls je Monat anteilig.
+
+    Auch ohne jede Sollstellung wird monatsweise gerechnet, nicht mit der
+    Jahresformel `nk × 12 / 365 × Tage`: Akonto ist eine Monatsgrösse. Die
+    Jahresformel stimmt nur für volle Jahre; bei einem Mieterwechsel im Mai
+    schrieb sie dem Vormieter 6.92 zu wenig, dem Nachmieter 8.30 zu viel gut.
+    Volle Monate und volle Jahre ergeben unverändert genau den Vertragswert.
 
     Massgebend ist das GESTELLTE, nicht das bezahlte Akonto: Unbezahltes bleibt
     als offene Forderung im Mieterkonto und würde sonst zweimal verlangt.
@@ -160,7 +166,6 @@ def akonto_gestellt(vertrag, v_start, v_ende):
     """
     from finance.models import Buchung, DebitorenRechnung
 
-    tage_jahr = Decimal(366 if calendar.isleap(v_start.year) else 365)
     nk_monat = vertrag.nebenkosten or Decimal('0.00')
     gesamt = Decimal('0.00')
     aus_buchungen = 0
@@ -197,11 +202,6 @@ def akonto_gestellt(vertrag, v_start, v_ende):
         m += 1
         if m == 13:
             j, m = j + 1, 1
-    if aus_buchungen == 0:
-        # Keine einzige Sollstellung im Zeitraum: unverändert die bisherige
-        # Jahresformel — Altbestand und Abrechnungen ohne Mietenlauf bleiben
-        # auf den Rappen gleich.
-        gesamt = nk_monat * 12 / tage_jahr * Decimal((v_ende - v_start).days + 1)
     return gesamt, aus_buchungen
 
 
