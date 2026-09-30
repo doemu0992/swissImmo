@@ -434,7 +434,7 @@ class SeitenTests(_Basis):
     def test_der_kennzahlenstreifen_steht_da(self):
         with mandant(self.a.organisation):
             html = self.c.get('/neu/objekte/').content.decode()
-        self.assertIn('class="fw-lage"', html)
+        self.assertIn('class="fw-kpis"', html)
         self.assertIn('Mit Befund', html)
 
     def test_es_gibt_kein_zweites_suchfeld_mehr(self):
@@ -483,7 +483,7 @@ class SeitenTests(_Basis):
         self.assertEqual(antwort.context['kopf']['gesamt'], 2)
         self.assertEqual(antwort.context['kopf']['mit_befund'], 1)
         html = antwort.content.decode()
-        streif = html[html.index('class="fw-lage"'):html.index('class="fw-filters"')]
+        streif = html[html.index('class="fw-kpis"'):html.index('class="fw-filters"')]
         self.assertIn('>2<', streif)
 
     def test_ein_unbekannter_zustand_zeigt_alles_statt_nichts(self):

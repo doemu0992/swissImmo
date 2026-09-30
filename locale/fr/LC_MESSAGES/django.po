@@ -20395,6 +20395,41 @@ msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
 msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
 msgstr[0] "Saisir %(n)s adaptation + formule officielle (PDF groupé)"
 msgstr[1] "Saisir %(n)s adaptations + formules officielles (PDF groupé)"
+
+#: core/templates/fw/base.html:57
+msgid "Hauptnavigation"
+msgstr "Navigation principale"
+
+#: core/templates/fw/base.html:148
+msgid "Ganzer Bestand"
+msgstr "Tout le portefeuille"
+
+#: core/templates/fw/base.html:166
+msgid "Hell- oder Dunkelmodus"
+msgstr "Mode clair ou sombre"
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Morgen, %(name)s."
+msgstr "Bonjour, %(name)s."
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Tag, %(name)s."
+msgstr "Bonjour, %(name)s."
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Abend, %(name)s."
+msgstr "Bonsoir, %(name)s."
+
+#: core/templates/fw/dashboard.html:48
+#, python-format
+msgid "%(n)s Vorgang braucht heute dich."
+msgid_plural "%(n)s Vorgänge brauchen heute dich."
+msgstr[0] "%(n)s dossier a besoin de vous aujourd’hui."
+msgstr[1] "%(n)s dossiers ont besoin de vous aujourd’hui."
+
 #: core/templates/fw/logbuch.html
 msgid "Noch keine Aktivität."
 msgstr "Aucune activité pour l'instant."

@@ -8,23 +8,23 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Mietzins" %}</h1>
-        <p>{% trans "Anpassungspotenzial nach Referenzzins &amp; LIK" %}{% if curr_zins != None %} · {% trans "Aktuell: Referenzzins" %} <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_zins }}{% endlocalize %}%</span>, {% trans "LIK" %} <span style="color:var(--ds-ink);font-weight:600">{% localize off %}{{ curr_lik }}{% endlocalize %}</span>{% endif %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/mietzins/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% trans "Anpassungspotenzial nach Referenzzins &amp; LIK" %}{% if curr_zins != None %} · {% trans "Aktuell: Referenzzins" %} <span class="fw-strong">{% localize off %}{{ curr_zins }}{% endlocalize %}%</span>, {% trans "LIK" %} <span class="fw-strong">{% localize off %}{{ curr_lik }}{% endlocalize %}</span>{% endif %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/mietzins/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
 </div>
 
 <!-- KPI -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'trend' %}</div>
-        <div><div class="text-2xl font-bold fw-gut">{{ n_inc }}</div><div class="text-sm fw-mutet">{% trans "Erhöhung möglich" %}</div></div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Erhöhung möglich" %}</div>
+        <div class="fw-v">{{ n_inc }}</div>
     </div>
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0">{% zeichen 'zurueck' %}</div>
-        <div><div class="text-2xl font-bold fw-kritisch">{{ n_dec }}</div><div class="text-sm fw-mutet">{% trans "Senkungsanspruch" %}</div></div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Senkungsanspruch" %}</div>
+        <div class="fw-v">{{ n_dec }}</div>
     </div>
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'dokument' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">{% trans "Aktive Verträge" %}</div></div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Aktive Verträge" %}</div>
+        <div class="fw-v">{{ anzahl }}</div>
     </div>
 </div>
 
@@ -32,61 +32,57 @@
 <form method="post" action="/neu/mietzins/massenanpassung/">
 {% csrf_token %}
 <input type="hidden" name="aktion" value="vorschau">
-<div class="fw-card overflow-hidden">
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b fw-linie">
-        <div class="flex items-center gap-1.5 flex-wrap">
+<div class="fw-card">
+    <div class="fw-band">
             {% for wert, label in pot_chips %}
             <a href="?potenzial={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if pot_filter == wert %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ label }}</a>
+               class="{% if pot_filter == wert %}hier{% endif %}">{{ label }}</a>
             {% endfor %}
-        </div>
-        <div class="ml-auto flex items-center gap-3">
-            <span class="text-xs fw-faint">{% blocktrans count n=anzahl %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %}</span>
+        <div class="ml-auto flex items-center gap-3 flex-wrap">
+            <span class="fw-klein">{% blocktrans count n=anzahl %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %}</span>
             <button type="submit" id="massenBtn" disabled
-                    class="fw-btn fw-primary fw-knapp disabled:fw-balken disabled:fw-faint">
+                    class="fw-btn fw-primary fw-knapp">
                 {% zeichen 'mehr' %} {% trans "Ausgewählte anpassen (Vorschau)" %}
             </button>
         </div>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="fw-table min-w-max">
+    <div class="fw-tablewrap">
+        <table class="fw-table">
             <thead>
             <tr>
                 <th class="pl-5 pr-1"><input type="checkbox" id="alleWahl" class="fw-akzent" title="{% trans 'Alle auswählen' %}"></th>
-                <th class="font-semibold">{% trans "Mieter" %}</th>
-                <th class="font-semibold">{% trans "Objekt" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Netto effektiv" %}</th>
-                <th class="font-semibold text-center fw-zentriert">{% trans "Basis Ref.-Zins (effektiv)" %}</th>
-                <th class="font-semibold text-center fw-zentriert">{% trans "Letzte Anpassung" %}</th>
-                <th class="font-semibold">{% trans "Potenzial" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Aktion" %}</th>
+                <th>{% trans "Mieter" %}</th>
+                <th>{% trans "Objekt" %}</th>
+                <th class="fw-right">{% trans "Netto effektiv" %}</th>
+                <th class="fw-zentriert">{% trans "Basis Ref.-Zins (effektiv)" %}</th>
+                <th class="fw-zentriert">{% trans "Letzte Anpassung" %}</th>
+                <th>{% trans "Potenzial" %}</th>
+                <th class="fw-right">{% trans "Aktion" %}</th>
             </tr>
             </thead>
-            <tbody class="fw-dv">
+            <tbody>
             {% for row in rows %}
-            <tr class="transition-colors">
+            <tr>
                 <td class="pl-5 pr-1"><input type="checkbox" name="vertrag_id" value="{{ row.v.id }}" class="vertragWahl fw-akzent"></td>
-                <td class="font-medium fw-strong whitespace-nowrap">
-                    <a href="/neu/vertraege/{{ row.v.id }}/" class="hover:fw-marke">{{ row.mieter }}</a>
+                <td class="fw-strong whitespace-nowrap">
+                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-link">{{ row.mieter }}</a>
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
-                <td class="text-right font-semibold fw-strong whitespace-nowrap fw-right">{{ row.netto|chf }}</td>
-                <td class="text-center fw-mutet whitespace-nowrap fw-zentriert">{% localize off %}{{ row.basis_zins }}{% endlocalize %}%</td>
-                <td class="text-center fw-mutet whitespace-nowrap fw-zentriert">{% if row.letzte_anpassung %}{{ row.letzte_anpassung|date:"d.m.Y" }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
-                <td><span class="inline-flex items-center gap-1.5 fw-chip whitespace-nowrap {{ row.pot_cls }}">{% zeichen_wert row.pot_icon %} {{ row.pot_label }}</span></td>
-                <td class="text-right whitespace-nowrap fw-right">
+                <td class="fw-right fw-num fw-strong">{{ row.netto|chf }}</td>
+                <td class="fw-zentriert fw-num fw-mutet whitespace-nowrap">{% localize off %}{{ row.basis_zins }}{% endlocalize %}%</td>
+                <td class="fw-zentriert fw-num fw-mutet whitespace-nowrap">{% if row.letzte_anpassung %}{{ row.letzte_anpassung|date:"d.m.Y" }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
+                <td><span class="fw-chip {{ row.pot_cls }}">{% zeichen_wert row.pot_icon %} {{ row.pot_label }}</span></td>
+                <td class="fw-right">
                     <a href="/neu/mietzins/{{ row.v.id }}/anpassung/"
-                       class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                       class="fw-btn fw-knapp">
                         {% zeichen 'bericht' %} {% trans "Anpassen" %}
                     </a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="8" class="text-center fw-zentriert fw-leerzeile">
-                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'bericht' %}</div>
-                <p class="text-sm font-medium fw-ink">{% if pot_filter %}{% trans "Keine Verträge mit diesem Potenzial" %}{% else %}{% trans "Keine aktiven Verträge" %}{% endif %}</p>
+            <tr><td colspan="8" class="fw-leerzeile fw-leer">
+                <b>{% if pot_filter %}{% trans "Keine Verträge mit diesem Potenzial" %}{% else %}{% trans "Keine aktiven Verträge" %}{% endif %}</b>
             </td></tr>
             {% endfor %}
             </tbody>
@@ -108,9 +104,13 @@
   })();
 </script>
 
-<p class="text-xs fw-faint mt-4">
-    {% zeichen 'hinweis' klasse='mr-1' %}
+<div class="fw-card">
+    <div class="fw-hinweis info">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht fliess">
     {% blocktrans trimmed %}«Anpassen» öffnet das amtliche Mietzinsanpassungs-Formular mit vorberechneten Werten (Referenzzins, LIK, Teuerung).
     Netto und Basis sind die <b>effektiven</b> Werte (inkl. wirksamer Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand.{% endblocktrans %}
-</p>
+        </div>
+    </div>
+</div>
 {% endblock %}

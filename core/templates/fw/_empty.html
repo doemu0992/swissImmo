@@ -3,29 +3,23 @@
 Parameter: icon (Zeichenname), titel, subtext, cta_url, cta_label, cta_icon (alle optional ausser titel).
 knapp=True: die kleine Form für eine Tabellenzeile (in `td.fw-leerzeile`) oder
 eine Nebenliste in einer Karte — Zeichen, Titel, Untertext und Knopf bleiben,
-nur kleiner. Ohne `knapp` die grosse Form für eine Liste, die die Seite trägt.
+nur kleiner und mit neutralem Zeichen. Ohne `knapp` die grosse Form für eine Liste, die die Seite trägt.
 Kursive Einzeiler «Keine …» ersetzt dieser Baustein (Audit Etappe 4); der
 Wächter `test_stilschuld.KursiveLeereZustaende` hält die Zahl bei null.{% endcomment %}
+{% comment %}Redesign v8: gebaut aus `fw-leer` / `fw-leer-knapp` mit `fw-leer-zeichen`
+(Kreis) statt Utility-Klassen — siehe docs/DESIGN-V8.md, «Leerzustand».{% endcomment %}
 {% if knapp %}
-<div class="fw-leer-knapp text-center">
-    <span class="fw-faint">{% zeichen_wert icon|default:'wartet' klasse='text-lg' %}</span>
-    <p class="text-sm font-medium fw-mutet mt-1">{{ titel }}</p>
-    {% if subtext %}<p class="text-xs fw-faint mt-0.5 max-w-sm mx-auto">{{ subtext }}</p>{% endif %}
-    {% if cta_url %}
-    <a href="{{ cta_url }}" class="fw-btn fw-knapp mt-3">{% zeichen_wert cta_icon|default:'neu' %}{{ cta_label|default:'Erfassen' }}</a>
-    {% endif %}
+<div class="fw-leer fw-leer-knapp">
+    <span class="fw-leer-zeichen mut">{% zeichen_wert icon|default:'wartet' %}</span>
+    <b>{{ titel }}</b>
+    {% if subtext %}<p>{{ subtext }}</p>{% endif %}
+    {% if cta_url %}<a href="{{ cta_url }}" class="fw-btn fw-knapp">{% zeichen_wert cta_icon|default:'neu' %}{{ cta_label|default:'Erfassen' }}</a>{% endif %}
 </div>
 {% else %}
-<div class="py-12 text-center">
-    <span class="w-14 h-14 rounded-2xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4">
-        {% zeichen_wert icon|default:'wartet' klasse='text-xl' %}
-    </span>
-    <p class="font-semibold fw-strong">{{ titel }}</p>
-    {% if subtext %}<p class="text-sm fw-faint mt-1 max-w-sm mx-auto">{{ subtext }}</p>{% endif %}
-    {% if cta_url %}
-    <a href="{{ cta_url }}" class="inline-flex items-center gap-2 mt-4 fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
-        {% zeichen_wert cta_icon|default:'neu' %}{{ cta_label|default:'Erfassen' }}
-    </a>
-    {% endif %}
+<div class="fw-leer">
+    <span class="fw-leer-zeichen">{% zeichen_wert icon|default:'wartet' %}</span>
+    <b>{{ titel }}</b>
+    {% if subtext %}<p>{{ subtext }}</p>{% endif %}
+    {% if cta_url %}<a href="{{ cta_url }}" class="fw-btn fw-primary">{% zeichen_wert cta_icon|default:'neu' %}{{ cta_label|default:'Erfassen' }}</a>{% endif %}
 </div>
 {% endif %}

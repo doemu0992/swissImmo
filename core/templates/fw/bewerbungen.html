@@ -8,30 +8,32 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Bewerbungen" %}</h1>
-        <p>{% trans "Mietinteressenten prüfen, zusagen und in einen Vertrag überführen" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/bewerbungen/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %} · <span style="color:var(--ds-ink);font-weight:600">{{ gesamt }}</span> {% trans "total" %}</p>
+        <p>{% trans "Mietinteressenten prüfen, zusagen und in einen Vertrag überführen" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/bewerbungen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %} · <b class="fw-strong">{{ gesamt }}</b> {% trans "total" %}</p>
     </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-x-4 items-start">
     {% for sp in spalten %}
-    <div class="fw-flaeche2 rounded-xl border fw-linie p-3">
-        <div class="flex items-center justify-between px-1 mb-3">
-            <span class="text-xs font-bold uppercase tracking-wider fw-mutet">{{ sp.label }}</span>
-            <span class="px-2 py-0.5 rounded-md text-xs font-semibold {{ sp.cls }}">{{ sp.anzahl }}</span>
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <h2>{{ sp.label }}</h2>
+            <span class="fw-rechts"><span class="fw-chip {{ sp.cls }}">{{ sp.anzahl }}</span></span>
         </div>
-        <div class="space-y-2">
+        <div>
             {% for b in sp.items %}
-            <a href="/neu/bewerbungen/{{ b.id }}/" class="block fw-card p-3 hover:fw-linie-marke hover:shadow-sm transition-all">
+            <a href="/neu/bewerbungen/{{ b.id }}/" class="fw-zeile klick">
+                <div class="fw-mitte">
                 <div class="flex items-center justify-between gap-2">
-                    <span class="font-semibold fw-strong text-sm truncate">{{ b.vorname }} {{ b.nachname }}</span>
+                    <span class="fw-t truncate">{{ b.vorname }} {{ b.nachname }}</span>
                     {% if b.hat_betreibungen %}{% zeichen 'warnung' klasse='fw-kritisch text-xs' %}
                     {% else %}{% zeichen 'gut' klasse='fw-gut text-xs' %}{% endif %}
                 </div>
-                <div class="text-xs fw-mutet mt-1 truncate">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
-                <div class="flex items-center gap-2 mt-2 fw-fs-klein fw-faint">
+                <div class="fw-s truncate">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
+                <div class="flex items-center gap-2 mt-1 fw-klein">
                     <span>{% zeichen 'person' klasse='mr-0.5' %}{{ b.anzahl_erwachsene }}{% if b.anzahl_kinder %}+{{ b.anzahl_kinder }}K{% endif %}</span>
                     {% if b.gewuenschter_bezugstermin %}<span>{% zeichen 'termin' klasse='mr-0.5' %}{{ b.gewuenschter_bezugstermin|date:"d.m.y" }}</span>{% endif %}
                     <span class="ml-auto">{{ b.erstellt_am|date:"d.m." }}</span>
+                </div>
                 </div>
             </a>
             {% empty %}

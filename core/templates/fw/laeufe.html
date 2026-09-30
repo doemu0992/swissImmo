@@ -14,36 +14,35 @@
    **was ihn blockiert**.» Der Grund steht als Text da, nicht das Wort
    «blockiert»: Der Grund führt zu einer Handlung, das Wort zu einer
    Rückfrage. {% endcomment %}
-<div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'lauf' %}</span>
-        <span class="fw-t">{% trans "Offen" %}</span>
-        <span class="fw-neben">{{ offen|length }}</span></div>
+<div class="fw-subhead">{% trans "Offen" %} · {{ offen|length }}</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6">
     {% for z in offen %}
-    <div class="fw-zeile">
-        <span class="fw-marker {% if z.blockaden %}crit{% elif z.tage < 0 %}crit{% elif z.tage <= 3 %}warn{% endif %}"></span>
-        <span class="fw-ikon{% if z.blockaden %} crit{% endif %}">{% zeichen 'lauf' %}</span>
-        <div class="fw-mitte">
-            <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
-            <div class="fw-s">
-                {% if z.blockaden %}{% for b in z.blockaden %}{{ b.grund }}{% if not forloop.last %} · {% endif %}{% endfor %}
-                {% else %}{{ z.lauf.get_status_display }} · {% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% endif %}
+    <section class="fw-card flex flex-col">
+        <div class="fw-kopf fw-kopf-offen items-start">
+            <div class="min-w-0 flex-1">
+                <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
+                <div class="fw-neben">
+                    {% if z.blockaden %}{% for b in z.blockaden %}{{ b.grund }}{% if not forloop.last %} · {% endif %}{% endfor %}
+                    {% else %}{{ z.lauf.get_status_display }} · {% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% endif %}
+                </div>
             </div>
+            {% if z.blockaden %}<span class="fw-chip fw-crit">{% blocktrans count n=z.blockaden|length %}{{ n }} Blockade{% plural %}{{ n }} Blockaden{% endblocktrans %}</span>{% endif %}
         </div>
-        <div class="fw-zeit">{{ z.lauf.faellig_am|date:"d.m.Y" }}<br>
-            <span class="fw-klein">{% if z.tage < 0 %}{% blocktrans count n=z.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}{% elif z.tage == 0 %}{% trans "heute" %}{% else %}{% blocktrans count n=z.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span></div>
-        {% if z.blockaden %}<span class="fw-chip fw-crit">{% blocktrans count n=z.blockaden|length %}{{ n }} Blockade{% plural %}{{ n }} Blockaden{% endblocktrans %}</span>{% endif %}
-    </div>
+        <div class="fw-fuss mt-auto">
+            <span class="fw-num">{{ z.lauf.faellig_am|date:"d.m.Y" }}</span>
+            <span class="fw-chip fw-dot {% if z.blockaden %}fw-crit{% elif z.tage < 0 %}fw-crit{% elif z.tage <= 3 %}fw-warn{% else %}fw-mut{% endif %}">{% if z.tage < 0 %}{% blocktrans count n=z.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}{% elif z.tage == 0 %}{% trans "heute" %}{% else %}{% blocktrans count n=z.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span>
+        </div>
+    </section>
     {% empty %}
-    <p class="fw-leer">{% trans "Kein offener Lauf." %}</p>
+    <div class="fw-card"><p class="fw-leer">{% trans "Kein offener Lauf." %}</p></div>
     {% endfor %}
 </div>
 
-<div class="fw-subhead">{% trans "Zuletzt abgeschlossen" %}</div>
 <div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Zuletzt abgeschlossen" %}</span></div>
     {% for z in erledigt %}
     <div class="fw-zeile">
         <span class="fw-marker good"></span>
-        <span class="fw-ikon good">{% zeichen 'gut' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
             <div class="fw-s">{% for schluessel, wert in z.lauf.kennzahlen.items %}{{ schluessel }} {{ wert }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>

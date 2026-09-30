@@ -4,6 +4,7 @@ Hält fest, dass Seitenaufrufe (GET) nichts mehr auslösen, was eine Erklärung,
 einen Versand oder einen Import bedeutet, und dass die korrigierten Einstiege
 wirklich wirken.
 """
+import re
 from datetime import date
 from decimal import Decimal
 
@@ -98,4 +99,11 @@ class Fehlerseiten(TestCase):
             with open(f'core/templates/{name}.html', encoding='utf-8') as f:
                 vorlage = f.read()
             self.assertNotIn('4f46e5', vorlage, name)
-            self.assertIn('0f6f6a', vorlage, name)
+            # Seit dem Redesign v8 aus dem Token gelesen, nicht fest notiert.
+            self.assertIn(_markenfarbe(), vorlage, name)
+
+
+def _markenfarbe():
+    """`--ds-brand` aus dem hellen `:root` der Stilschicht, ohne «#»."""
+    quelle = open('core/templates/fw/_schicht.html', encoding='utf-8').read()
+    return re.search(r'--ds-brand:\s*#([0-9a-fA-F]{6})', quelle).group(1).lower()

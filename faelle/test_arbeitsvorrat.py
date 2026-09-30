@@ -700,16 +700,14 @@ class ProtoypVollstaendigkeitTests(TestCase):
     """Was der Prototyp auf «Heute» zeigt, muss die Seite führen — oder der
     Grund muss dastehen.
 
-    `mockups/konzept-struktur.html` nennt fünf Abschnitte. Seit 4b.8 sind
-    **alle fünf** gebaut.
+    Quelle seit dem Redesign (30.09.2026): `mockups/konzept-v8-cockpit.html`,
+    Ansicht «Heute» — vier Karten: Arbeitsvorrat, Zulauf, Termine heute,
+    Mandate. Bis dahin las dieser Test `mockups/konzept-struktur.html` mit
+    fünf Abschnitten; «Wartet auf mich» und «Vertretung» stehen weiterhin auf
+    der Startseite, sie sind im v8-Mockup nur nicht gezeichnet.
 
-    Bis dahin fehlte «Vertretung», weil sie nicht rechenbar war:
-    `crm.Mitgliedschaft` führt Benutzer, Organisation und Rolle — kein
-    Abwesenheitsfeld. `faelle.Abwesenheit` trägt es jetzt.
-
-    `NICHT_GEBAUT` ist deshalb leer und bleibt es hoffentlich. Der Eintrag
-    stand für eine benannte Lücke; eine Lücke, die niemand mehr benennt,
-    ist eine vergessene.
+    `NICHT_GEBAUT` ist leer. Der Eintrag stand für eine benannte Lücke; eine
+    Lücke, die niemand mehr benennt, ist eine vergessene.
     """
 
     NICHT_GEBAUT = set()
@@ -721,22 +719,14 @@ class ProtoypVollstaendigkeitTests(TestCase):
     def _abschnitte_des_prototyps(self):
         import pathlib
         import re
-        q = pathlib.Path('mockups/konzept-struktur.html').read_text(encoding='utf-8')
-        # Zwischen den <h1>-ÜBERSCHRIFTEN, nicht zwischen den Navigations-
-        # eintraegen: `>Heute<` steht auch im Menue, dort aber ohne Inhalt
-        # dahinter — eine erste Fassung schnitt zwei Menuepunkte heraus und
-        # las folgerichtig NULL Abschnitte. `test_der_prototyp_fuehrt_wirklich_
-        # fuenf` hat das gemeldet.
-        def h1(text):
-            return re.search(rf'<h1[^>]*>\s*{text}', q).start()
+        q = pathlib.Path('mockups/konzept-v8-cockpit.html').read_text(encoding='utf-8')
+        # Die Karten der Ansicht «Heute» tragen `<h2 id="h-…">`. Die übrigen
+        # Seiten des Mockups entstehen im Skript und haben keine solchen Köpfe.
+        return [t.strip() for t in re.findall(r'<h2 id="h-[a-z]+">([^<]+)</h2>', q)]
 
-        heute = q[h1('Heute'):h1('Fälle')]
-        return [re.sub(r'<[^>]+>', '', m).strip()
-                for m in re.findall(r'<h2[^>]*>(.*?)</h2>', heute, re.S)]
-
-    def test_der_prototyp_fuehrt_wirklich_fuenf(self):
+    def test_der_prototyp_fuehrt_wirklich_vier(self):
         """Gegenprobe: Ohne diesen Test prüfte der nächste eine leere Liste."""
-        self.assertEqual(len(self._abschnitte_des_prototyps()), 5)
+        self.assertEqual(len(self._abschnitte_des_prototyps()), 4)
 
     def test_jeder_abschnitt_ist_gebaut_oder_benannt(self):
         import pathlib
@@ -745,11 +735,10 @@ class ProtoypVollstaendigkeitTests(TestCase):
             for d in ('dashboard.html', '_arbeitsvorrat_abschnitte.html'))
         # Der Prototyp nennt sie so, die Anwendung teils anders — die
         # Zuordnung steht hier, damit sie nachlesbar ist.
-        gebaut = {'Was reisst': 'Was reisst',
-                  'Posteingang': 'Zulauf',
-                  'Termine': 'Termine',
-                  'Wartet auf mich': 'Wartet auf Freigabe',
-                  'Vertretung': 'Vertretung'}
+        gebaut = {'Arbeitsvorrat': 'Arbeitsvorrat',
+                  'Zulauf': 'Zulauf',
+                  'Termine heute': 'Termine',
+                  'Mandate': 'Mandate'}
         for name in self._abschnitte_des_prototyps():
             with self.subTest(abschnitt=name):
                 if name in self.NICHT_GEBAUT:

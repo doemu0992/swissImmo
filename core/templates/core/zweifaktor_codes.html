@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load i18n %}
+{% load i18n zeichen %}
 {% block title %}{% trans "Notfallcodes" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -10,29 +10,31 @@
     </div>
 </div>
 
-<div class="max-w-2xl space-y-5">
-    <div class="fw-warn-flaeche border fw-linie-warn fw-warnton rounded-xl p-4 text-sm">
-        <strong>{% trans "Diese Liste erscheint genau einmal." %}</strong> {% trans "Gespeichert wird nur ein Hash — wir können sie Ihnen später nicht noch einmal zeigen, nur neu erzeugen. Ohne Codes und ohne Telefon kommt niemand mehr an Ihren Zugang." %}
-    </div>
+<div class="max-w-2xl">
+    <div class="fw-card"><div class="fw-hinweis warn">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht"><b>{% trans "Diese Liste erscheint genau einmal." %}</b> {% trans "Gespeichert wird nur ein Hash — wir können sie Ihnen später nicht noch einmal zeigen, nur neu erzeugen. Ohne Codes und ohne Telefon kommt niemand mehr an Ihren Zugang." %}</div>
+    </div></div>
 
-    <div class="fw-card p-5">
-        <div class="grid grid-cols-2 gap-2 font-mono text-sm">
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Notfallcodes" %}</h2></div>
+        <div class="p-5">
+        <div class="grid grid-cols-2 gap-2">
             {% for code in codes %}
-            <div class="fw-flaeche2 border fw-linie rounded-lg px-3 py-2 select-all">{{ code }}</div>
+            <div class="fw-feld fw-mono select-all">{{ code }}</div>
             {% endfor %}
         </div>
-        <p class="text-xs fw-mutet mt-4">
+        <p class="fw-hilfe mt-4">
             {% trans "Jeder Code gilt genau einmal und ersetzt bei der Anmeldung den Code aus der App." %}
         </p>
+        </div>
     </div>
 
     <div class="flex gap-3">
         <button onclick="window.print()"
-                class="fw-flaeche border fw-linie fw-ink text-sm font-semibold
-                       px-4 py-2.5 rounded-lg">{% trans "Drucken" %}</button>
+                class="fw-btn">{% zeichen 'drucken' %}{% trans "Drucken" %}</button>
         <a href="{% url 'zweifaktor_uebersicht' %}"
-           class="fw-btn fw-primary text-sm font-semibold
-                  px-5 py-2.5 rounded-lg shadow-sm">{% trans "Ich habe sie gesichert" %}</a>
+           class="fw-btn fw-primary">{% trans "Ich habe sie gesichert" %}</a>
     </div>
 </div>
 {% endblock %}

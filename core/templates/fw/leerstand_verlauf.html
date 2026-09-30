@@ -7,40 +7,40 @@
         <h1>{% trans "Leerstands-Verlauf" %}</h1>
         <p>{% blocktrans count n=monate %}Monatliche Leerquote des letzten Monats.{% plural %}Monatliche Leerquote der letzten {{ n }} Monate.{% endblocktrans %}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% else %} · {% trans "ganzes Portfolio" %}{% endif %}</p>
     </div>
-    <div class="flex gap-2">
-        <a href="?monate=6" class="px-3 py-2 rounded-lg text-sm font-semibold {% if monate == 6 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet{% endif %}">{% trans "6 Mt." %}</a>
-        <a href="?monate=12" class="px-3 py-2 rounded-lg text-sm font-semibold {% if monate == 12 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet{% endif %}">{% trans "12 Mt." %}</a>
-        <a href="?monate=24" class="px-3 py-2 rounded-lg text-sm font-semibold {% if monate == 24 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet{% endif %}">{% trans "24 Mt." %}</a>
+    <div class="fw-filters">
+        <a href="?monate=6" class="fw-fchip{% if monate == 6 %} fw-on{% endif %}">{% trans "6 Mt." %}</a>
+        <a href="?monate=12" class="fw-fchip{% if monate == 12 %} fw-on{% endif %}">{% trans "12 Mt." %}</a>
+        <a href="?monate=24" class="fw-fchip{% if monate == 24 %} fw-on{% endif %}">{% trans "24 Mt." %}</a>
     </div>
 </div>
 
-<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold fw-strong">{{ schnitt }}%</div>
-        <div class="text-sm fw-mutet">{% trans "Ø Leerquote" %}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Ø Leerquote" %}</div>
+        <div class="fw-v">{{ schnitt }}%</div>
     </div>
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold {% if max_quote > 5 %}fw-kritisch{% else %}fw-strong{% endif %}">{{ max_quote }}%</div>
-        <div class="text-sm fw-mutet">{% trans "Spitze" %}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Spitze" %}</div>
+        <div class="fw-v{% if max_quote > 5 %} fw-crit{% endif %}">{{ max_quote }}%</div>
     </div>
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold fw-strong">{% if reihe %}{{ aktuell_quote }}%{% else %}—{% endif %}</div>
-        <div class="text-sm fw-mutet">{% trans "Aktuell (letzter Monat)" %}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Aktuell (letzter Monat)" %}</div>
+        <div class="fw-v">{% if reihe %}{{ aktuell_quote }}%{% else %}—{% endif %}</div>
     </div>
 </div>
 
-<div class="fw-card p-5">
-    <div class="flex items-end gap-1.5 h-56">
+<div class="fw-card">
+    <div class="flex items-end gap-1.5 h-56 fw-rumpf">
         {% for r in reihe %}
         <div class="flex-1 flex flex-col items-center justify-end h-full group">
-            <div class="fw-fs-mikro fw-faint mb-1">{% if r.quote %}{{ r.quote }}%{% endif %}</div>
+            <div class="fw-klein mb-1">{% if r.quote %}{{ r.quote }}%{% endif %}</div>
             <div class="w-full rounded-t {% if r.quote > 5 %}fw-krit-voll{% elif r.quote > 0 %}fw-warn-voll{% else %}fw-gut-voll{% endif %}"
                  style="height: {% widthratio r.quote 100 100 %}%; min-height: 2px;"
                  title="{% blocktrans with monat=r.monat|date:'M Y' leer=r.leer total=r.total %}{{ monat }}: {{ leer }}/{{ total }} leer{% endblocktrans %}"></div>
-            <div class="fw-fs-mikro fw-faint mt-1 rotate-0">{{ r.monat|date:'M' }}</div>
+            <div class="fw-klein mt-1">{{ r.monat|date:'M' }}</div>
         </div>
         {% endfor %}
     </div>
-    <p class="text-xs fw-faint mt-3">{% trans "Balkenhöhe = Leerquote (0–100%). Grün = voll vermietet, gelb = Leerstand, rot = &gt; 5%." %}</p>
+    <p class="fw-fuss">{% trans "Balkenhöhe = Leerquote (0–100%). Grün = voll vermietet, gelb = Leerstand, rot = &gt; 5%." %}</p>
 </div>
 {% endblock %}

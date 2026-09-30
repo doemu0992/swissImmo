@@ -88,49 +88,50 @@ einem Telefonat zwoelf Minuten bucht, soll dafuer keine Seite wechseln.
 Der Stundensatz bleibt LEER, solange die Vorgabe der Organisation gilt. Ein
 eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
 {% endcomment %}
-<div class="fw-card p-4 mb-6">
-    <div class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">{% trans "Aufwand erfassen" %}</div>
-    <form method="post" action="/neu/faelle/{{ fall.pk }}/zeit/" class="flex flex-wrap items-end gap-3">
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Aufwand erfassen" %}</span></div>
+    <form method="post" action="/neu/faelle/{{ fall.pk }}/zeit/" class="flex flex-wrap items-end gap-3 p-5">
         {% csrf_token %}
-        <label class="block">
-            <span class="fw-fs-klein fw-faint block mb-1">{% trans "Minuten" %}</span>
+        <label class="fw-feldblock">
+            <span class="fw-label">{% trans "Minuten" %}</span>
             <input type="number" name="minuten" min="1" step="1" required
                    class="fw-feld w-24 fw-num" placeholder="15">
         </label>
-        <label class="block">
-            <span class="fw-fs-klein fw-faint block mb-1">{% trans "Tätigkeit" %}</span>
+        <label class="fw-feldblock">
+            <span class="fw-label">{% trans "Tätigkeit" %}</span>
             <select name="taetigkeit" class="fw-feld">
                 {% for wert, text in zeit_arten %}<option value="{{ wert }}">{{ text }}</option>{% endfor %}
             </select>
         </label>
-        <label class="block flex-1 min-w-[12rem]">
-            <span class="fw-fs-klein fw-faint block mb-1">{% trans "Notiz" %}</span>
-            <input type="text" name="notiz" maxlength="200" class="fw-feld w-full"
+        <label class="fw-feldblock flex-1 min-w-[12rem]">
+            <span class="fw-label">{% trans "Notiz" %}</span>
+            <input type="text" name="notiz" maxlength="200" class="fw-feld"
                    placeholder="{% trans 'Telefonat mit Handwerker' %}">
         </label>
-        <label class="block">
-            <span class="fw-fs-klein fw-faint block mb-1">{% trans "Satz CHF/h" %}</span>
+        <label class="fw-feldblock">
+            <span class="fw-label">{% trans "Satz CHF/h" %}</span>
             <input type="text" name="satz" class="fw-feld w-24 fw-num"
                    placeholder="{{ fall.organisation.stundensatz|default:'—' }}">
         </label>
         <label class="flex items-center gap-2 pb-2">
             <input type="checkbox" name="verrechenbar" class="fw-akzent">
-            <span class="text-sm">{% trans "separat verrechenbar" %}</span>
+            <span class="fw-label">{% trans "separat verrechenbar" %}</span>
         </label>
         <button type="submit" class="fw-btn fw-primary">{% trans "Buchen" %}</button>
     </form>
 
     {% if zeiteintraege %}
-    <table class="w-full text-sm mt-4">
-        <tbody class="divide-y fw-linie">
+    <div class="fw-tablewrap">
+    <table class="fw-table fw-dicht">
+        <tbody>
         {% for z in zeiteintraege %}
             <tr>
-                <td class="py-1.5 fw-num fw-faint w-24">{{ z.datum|date:"d.m.Y" }}</td>
-                <td class="py-1.5 fw-num w-16 text-right">{{ z.minuten }} {% trans "min" %}</td>
-                <td class="py-1.5 pl-3">{{ z.get_taetigkeit_display }}{% if z.notiz %}
+                <td class="fw-num fw-faint">{{ z.datum|date:"d.m.Y" }}</td>
+                <td class="fw-num fw-right">{{ z.minuten }} {% trans "min" %}</td>
+                <td>{{ z.get_taetigkeit_display }}{% if z.notiz %}
                     <span class="fw-faint">· {{ z.notiz }}</span>{% endif %}</td>
-                <td class="py-1.5 fw-faint text-right">{{ z.benutzer.get_short_name|default:z.benutzer }}</td>
-                <td class="py-1.5 fw-num text-right w-24">
+                <td class="fw-faint fw-right">{{ z.benutzer.get_short_name|default:z.benutzer }}</td>
+                <td class="fw-num fw-right">
                     {% comment %}
                     Leer statt «CHF 0.00»: `betrag` gibt `None` zurueck, wenn der
                     Aufwand nicht verrechenbar ist ODER kein Satz hinterlegt ist.
@@ -142,6 +143,7 @@ eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
         {% endfor %}
         </tbody>
     </table>
+    </div>
     {% endif %}
 </div>
 
@@ -158,8 +160,8 @@ eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
 {% endif %}
 
 {% for etappe in etappen %}
-<div class="fw-subhead">{% blocktrans with nr=etappe.nr %}Etappe {{ nr }}{% endblocktrans %}{% if etappe.bezeichnung %} · {{ etappe.bezeichnung }}{% endif %}</div>
 <div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% blocktrans with nr=etappe.nr %}Etappe {{ nr }}{% endblocktrans %}{% if etappe.bezeichnung %} · {{ etappe.bezeichnung }}{% endif %}</span></div>
     {% for s in etappe.schritte %}
     <div class="fw-zeile" id="schritt-{{ s.id }}">
         <span class="fw-marker {% if s.erledigt_am %}good{% elif s.frist and s.frist < heute %}crit{% elif s.frist %}warn{% endif %}"></span>
@@ -176,20 +178,19 @@ eigener Wert traegt den Fall, in dem der Einsatz anders kostet.
         </div>
         {% if not s.erledigt_am %}
         <form method="post" action="/neu/fallschritte/{{ s.id }}/erledigen/">{% csrf_token %}
-            <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Erledigt" %}</button>
+            <button class="fw-btn fw-knapp fw-primary">{% zeichen 'gut' %}{% trans "Erledigt" %}</button>
         </form>
         {% endif %}
     </div>
     {% endfor %}
 </div>
 {% empty %}
-<div class="fw-card"><p class="fw-leer">{% trans "Für diesen Fall sind keine Schritte angelegt." %}</p></div>
+<div class="fw-card"><div class="fw-leer">{% trans "Für diesen Fall sind keine Schritte angelegt." %}</div></div>
 {% endfor %}
 
 {% if fall.notiz %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
-        <span class="fw-t">{% trans "Notiz" %}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Notiz" %}</span></div>
     <div style="padding:14px 16px;font-size:13px;color:var(--ds-muted);white-space:pre-line">{{ fall.notiz }}</div>
 </div>
 {% endif %}

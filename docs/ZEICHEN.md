@@ -104,11 +104,18 @@ Raums daneben, und das Bett trägt nichts bei.
 | `laedt` | Es läuft gerade — dreht sich | `circle-notch fa-spin`, `spinner` |
 | `code` | Rohdaten zur Fehlersuche | `code` |
 
-### Bedienung (1)
+### Bedienung (2)
 
 | Zeichen | Bedeutung | ersetzt heute |
 |---|---|---|
 | `einstellungen` | Konfiguration, Verhalten ändern | `gear`, `gears`, `plug`, `star`, `wand-magic-sparkles`, `robot`, `language`, `eye` (**nicht** als «sichtbar» — dafür `gut`/`gesperrt`), `hand` |
+| `darstellung` | Hell- oder Dunkelmodus umschalten | `moon`, `sun`, `circle-half-stroke` |
+
+> **Warum `darstellung` dazukam (Redesign 30.09.2026).** Das Mockup
+> `konzept-v8-cockpit.html` legt den Umschalter als eigenen Knopf in die
+> Kopfzeile. Bis dahin lag er nur im Profilmenü, als zwei beschriftete
+> Knöpfe ohne Zeichen. `einstellungen` passt nicht: Es verspricht eine
+> Seite mit Optionen, der Knopf schaltet aber sofort um.
 
 > **Warum `schliessen` dazukam (E2.40, Gegenprüfung).** Die Umstellung
 > setzte `xmark` auf Schliessen-Knöpfen auf `mehr` (»Weitere Handlungen«) —
@@ -182,7 +189,7 @@ Der Konflikt ist damit nicht widerlegt, sondern **aufgelöst**: Die
 Rechnungsposition bekommt `dokument`, die Tickets bekommen `meldung`. Zwei
 Fundstellen, zwei Bedeutungen, zwei Zeichen.
 
-**Summe: 61 Zeichen** — 49 fuer die Anwendung, dazu die zwoelf
+**Summe: 62 Zeichen** — 50 fuer die Anwendung, dazu die zwoelf
 Raumzeichen des oeffentlichen Schadenformulars (E2.51, eigener
 Abschnitt weiter unten).
 

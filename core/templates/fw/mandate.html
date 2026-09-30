@@ -3,44 +3,44 @@
 {% block title %}{% trans "Mandate" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
-    <h1>{% trans "Mandate" %}</h1>
-    <a href="/neu/mandate/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Eigentümer erfassen" %}</a>
+    <div>
+        <h1>{% trans "Mandate" %}</h1>
+        <p>{% blocktrans count n=rows|length %}{{ n }} Eigentümer, für den du Liegenschaften verwaltest.{% plural %}{{ n }} Eigentümer, für die du Liegenschaften verwaltest.{% endblocktrans %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <a href="/neu/mandate/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Eigentümer erfassen" %}</a>
+    </div>
 </div>
-<p class="text-sm fw-mutet mb-6">{% blocktrans count n=rows|length %}{{ n }} Eigentümer, für den du Liegenschaften verwaltest.{% plural %}{{ n }} Eigentümer, für die du Liegenschaften verwaltest.{% endblocktrans %}</p>
 
-
-<div class="fw-card overflow-hidden max-w-4xl">
-    <div class="overflow-x-auto">
-<table class="fw-table min-w-max">
-        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left">{% trans "Eigentümer" %}</th><th class="text-left">{% trans "Kontakt" %}</th>
-                <th class="text-left">{% trans "Ort" %}</th><th class="text-center fw-zentriert">{% trans "Liegensch." %}</th>
-                <th class="text-right fw-right">{% trans "Aktionen" %}</th></tr>
+<div class="fw-card">
+    <div class="fw-tablewrap">
+<table class="fw-table">
+        <thead>
+            <tr><th>{% trans "Eigentümer" %}</th><th>{% trans "Kontakt" %}</th>
+                <th>{% trans "Ort" %}</th><th class="fw-right">{% trans "Liegensch." %}</th>
+                <th class="fw-right">{% trans "Aktionen" %}</th></tr>
         </thead>
-        <tbody class="fw-dv">
+        <tbody>
             {% for row in rows %}
             <tr>
                 <td>
-                    <a href="/neu/mandate/{{ row.md.id }}/" class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'dokument' klasse='text-xs' %}</span>
-                        <span class="font-medium fw-strong">{{ row.md.firma_oder_name }}</span>
-                    </a>
+                    <a href="/neu/mandate/{{ row.md.id }}/" class="fw-strong">{{ row.md.firma_oder_name }}</a>
                 </td>
                 <td class="fw-mutet">{{ row.md.kontaktperson|default:row.md.email|default:"—" }}</td>
                 <td class="fw-mutet">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
-                <td class="text-center fw-zentriert"><span class="fw-chip fw-flaeche2 fw-ink">{{ row.anzahl_lg }}</span></td>
-                <td class="text-right whitespace-nowrap fw-right">
-                    <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium fw-gut hover:underline mr-3">{% zeichen 'rechnung' klasse='fw-fs-mikro mr-0.5' %}{% trans "Abrechnung" %}</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium fw-info hover:underline mr-3">{% zeichen 'recht' klasse='fw-fs-mikro mr-0.5' %}{% trans "Kontokorrent" %}</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="text-xs font-medium fw-kritisch hover:underline mr-3">{% zeichen 'recht' klasse='fw-fs-mikro mr-0.5' %}{% trans "Mahnstufen" %}</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3">{% zeichen 'bearbeiten' klasse='fw-fs-mikro mr-0.5' %}{% trans "Bearbeiten" %}</a>
+                <td class="fw-right fw-num">{{ row.anzahl_lg }}</td>
+                <td class="fw-right"><span class="inline-flex flex-wrap items-center justify-end gap-3">
+                    <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="fw-link whitespace-nowrap">{% trans "Abrechnung" %}</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="fw-link whitespace-nowrap">{% trans "Kontokorrent" %}</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="fw-link whitespace-nowrap">{% trans "Mahnstufen" %}</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="fw-link whitespace-nowrap">{% trans "Bearbeiten" %}</a>
                     <form method="post" action="/neu/mandate/{{ row.md.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.md.firma_oder_name|safe %}Eigentümer «{{ name }}» löschen?{% endblocktrans %}{% if row.anzahl_lg %}
 
 {% blocktrans count n=row.anzahl_lg %}Achtung: {{ n }} Liegenschaft zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% plural %}Achtung: {{ n }} Liegenschaften zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% endblocktrans %}{% endif %}{% endfilter %}');">
                         {% csrf_token %}
-                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch">{% zeichen 'loeschen' klasse='fw-fs-mikro mr-0.5' %}{% trans "Löschen" %}</button>
-                    </form>
+                        <button class="fw-btn fw-knapp fw-rand-krit">{% zeichen 'loeschen' klasse='fw-fs-mikro' %}{% trans "Löschen" %}</button>
+                    </form></span>
                 </td>
             </tr>
             {% empty %}

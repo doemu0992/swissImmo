@@ -69,7 +69,7 @@ Django rendert auf dem Server, Alpine im Browser. `{% zeichen_wert r.z %}` ergab
 
 ## Konzept v7
 
-`mockups/konzept-v7.html` ist die Vorgabe, `docs/PLAN-V7.md` und `docs/UX-ANALYSE-V7.md` die Begründung, `docs/ENTSCHEIDE-V7.md` die getroffenen Entscheide.
+`mockups/konzept-v8-cockpit.html` ist die Vorgabe (seit dem Redesign vom 30.09.2026), `docs/DESIGN-V8.md` der Bausteinkatalog. `docs/PLAN-V7.md` und `docs/UX-ANALYSE-V7.md` bleiben die Begründung für Aufbau und Bereiche, `docs/ENTSCHEIDE-V7.md` die getroffenen Entscheide. Die früheren Konzepte v2–v7 sind entfernt (in der Git-Geschichte nachlesbar).
 
 Beim Abgleich zählt nicht die Ähnlichkeit, sondern die Reihenfolge der Information. Belegtes Beispiel: In der Vorratszeile stand bei uns der **Schrittname** oben und der Fall darunter. Wer zwanzig Zeilen überfliegt, sucht den Fall; bei „Prüfen", „Nachfassen", „Freigeben" als Überschrift findet man nichts wieder. Der Schrittname ist nicht verschwunden, sondern in die Zeile darunter gewandert.
 

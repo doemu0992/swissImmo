@@ -10,63 +10,56 @@
 </div>
 
 <!-- Suche -->
-<form method="get" class="mb-5">
-    <div class="relative max-w-xl">
-        {% zeichen 'suchen' klasse='absolute left-4 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
+<form method="get" class="fw-listwerkzeug">
+    <div class="fw-suchfeld">
         <input name="q" value="{{ q }}" autofocus placeholder="Stichwort, Artikel oder Thema … (z. B. Kaution, 257d, Kündigung, Referenzzins)"
-               class="w-full fw-flaeche border fw-linie pl-11 pr-24 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 fw-fokusring">
-        <button class="absolute right-1.5 top-1/2 -translate-y-1/2 fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-md">Suchen</button>
+               class="fw-feld">
     </div>
-    <p class="text-xs fw-faint mt-2">
-        {% if q %}{{ treffer }} Treffer für „{{ q }}" · <a href="/neu/rechtsgrundlagen/" class="fw-marke hover:underline">zurücksetzen</a>{% else %}{{ gesamt }} Artikel im Verzeichnis{% endif %}
-    </p>
+    <button class="fw-btn fw-primary">{% zeichen 'suchen' %}Suchen</button>
+    <span class="fw-klein">
+        {% if q %}{{ treffer }} Treffer für „{{ q }}" · <a href="/neu/rechtsgrundlagen/" class="fw-link">zurücksetzen</a>{% else %}{{ gesamt }} Artikel im Verzeichnis{% endif %}
+    </span>
 </form>
 
-<div class="space-y-5">
 {% for g in gruppen %}
-<div class="fw-card overflow-hidden">
-    <div class="px-5 py-3 border-b fw-linie flex items-center gap-2">
-        {% zeichen 'recht' klasse='fw-marke' %}
-        <h2 class="font-bold fw-strong text-sm">{{ g.label }}</h2>
-        <span class="fw-fs-klein font-bold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ g.artikel|length }}</span>
+<div class="fw-card">
+    <div class="fw-kopf">
+        <h2>{{ g.label }}</h2>
+        <span class="fw-neben">{{ g.artikel|length }}</span>
     </div>
-    <div class="fw-dv">
-        {% for a in g.artikel %}
-        <div class="px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-            <div class="sm:w-32 shrink-0">
-                <a href="{{ a.url }}" target="_blank" rel="noopener" class="fw-btn fw-weich fw-knapp whitespace-nowrap">
-                    Art. {{ a.art }} {{ a.gesetz }}{% zeichen 'extern' klasse='fw-fs-mikro' %}
+    {% for a in g.artikel %}
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-zkopf">
+                <a href="{{ a.url }}" target="_blank" rel="noopener" class="fw-link fw-mono">
+                    Art. {{ a.art }} {{ a.gesetz }} {% zeichen 'extern' %}
                 </a>
             </div>
-            <div class="flex-1 min-w-0">
-                <div class="text-sm font-semibold fw-strong">{{ a.titel }}</div>
-                <div class="fw-fs-fein fw-mutet mt-0.5">{{ a.kurz }}</div>
-                {% if a.anwendung %}
-                <div class="text-xs fw-gut fw-gut-flaeche rounded px-2 py-1 mt-1.5 inline-block">
-                    {% zeichen 'einstellungen' klasse='mr-1' %}In swissImmo: {{ a.anwendung }}
-                </div>
-                {% endif %}
-                {% if a.stichworte %}
-                <div class="mt-1.5 flex flex-wrap gap-1">
-                    {% for s in a.stichworte %}<span class="fw-fs-mikro fw-faint fw-flaeche2 rounded px-1.5 py-0.5">{{ s }}</span>{% endfor %}
-                </div>
-                {% endif %}
+            <div class="fw-t">{{ a.titel }}</div>
+            <div class="fw-s"><span>{{ a.kurz }}</span></div>
+            {% if a.anwendung %}
+            <div class="fw-s"><span class="fw-gut">
+                {% zeichen 'einstellungen' %} In swissImmo: {{ a.anwendung }}
+            </span></div>
+            {% endif %}
+            {% if a.stichworte %}
+            <div class="mt-1.5 flex flex-wrap gap-1">
+                {% for s in a.stichworte %}<span class="fw-marke-kapsel">{{ s }}</span>{% endfor %}
             </div>
+            {% endif %}
         </div>
-        {% endfor %}
     </div>
+    {% endfor %}
 </div>
 {% empty %}
-<div class="fw-card p-10 text-center fw-faint">
-    {% zeichen 'suchen' klasse='text-2xl mb-2 fw-faint' %}
-    <p class="text-sm">Keine Artikel zu „{{ q }}" gefunden.</p>
+<div class="fw-card">
+    <div class="fw-leer">Keine Artikel zu „{{ q }}" gefunden.</div>
 </div>
 {% endfor %}
-</div>
 
-<p class="text-xs fw-faint mt-6 max-w-3xl">
+<p class="fw-hilfe max-w-3xl">
     <b>Wichtig:</b> Die Kurzfassungen dienen der Orientierung und sind <b>nicht der amtliche Wortlaut</b>. Massgeblich
-    ist der aktuelle Gesetzestext auf <a href="https://www.fedlex.admin.ch" target="_blank" rel="noopener" class="fw-marke hover:underline">fedlex.admin.ch</a>
+    ist der aktuelle Gesetzestext auf <a href="https://www.fedlex.admin.ch" target="_blank" rel="noopener" class="fw-link">fedlex.admin.ch</a>
     (je Artikel verlinkt). Diese Übersicht ersetzt keine Rechtsberatung; im Einzelfall — insbesondere bei Kündigungen und
     Mietzinsstreitigkeiten — ist eine anwaltliche/behördliche Abklärung angezeigt.
 </p>

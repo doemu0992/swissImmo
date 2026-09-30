@@ -12,12 +12,12 @@ sie nur an und schickt sie unverändert zurück. Die Feldnamen
 {% endcomment %}
 {% block title %}{% trans "Mahnstufen" %} — {{ md.firma_oder_name }} — swissImmo{% endblock %}
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/mandate/" class="hover:fw-marke">{% trans "Mandate" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <a href="/neu/mandate/{{ md.id }}/" class="hover:fw-marke">{{ md.firma_oder_name }}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% trans "Mahnstufen" %}</span>
+<nav class="fw-akte-pfad mb-2.5">
+    <a href="/neu/mandate/">{% trans "Mandate" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/mandate/{{ md.id }}/">{{ md.firma_oder_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Mahnstufen" %}</b>
 </nav>
 
 <div class="fw-phead">
@@ -27,37 +27,39 @@ sie nur an und schickt sie unverändert zurück. Die Feldnamen
     </div>
 </div>
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" class="max-w-3xl">
     {% csrf_token %}
     {% for s in stufen %}
-    <div class="fw-card p-5 space-y-4">
-        <div class="flex items-center justify-between gap-3 flex-wrap">
-            <h3 class="font-bold fw-strong text-sm">{% blocktrans with stufe=s.stufe %}{{ stufe }}. Mahnung{% endblocktrans %}</h3>
-            <label class="flex items-center gap-2 text-sm fw-mutet cursor-pointer">
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <h3 class="fw-t">{% blocktrans with stufe=s.stufe %}{{ stufe }}. Mahnung{% endblocktrans %}</h3>
+            <label class="fw-rechts fw-haekchen">
                 <input type="checkbox" name="aktiv_{{ s.stufe }}" {% if s.aktiv %}checked{% endif %} class="fw-akzent">
                 {% trans "Stufe aktiv" %}
             </label>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="ab-{{ s.stufe }}" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Fällig ab Tag (Verzug)" %}</label>
+        <div class="fw-formular fw-rumpf">
+            <div class="fw-feldblock"><label for="ab-{{ s.stufe }}" class="fw-label">{% trans "Fällig ab Tag (Verzug)" %}</label>
                 <input id="ab-{{ s.stufe }}" name="ab_tage_{{ s.stufe }}" type="number" min="0" step="1" inputmode="numeric"
-                       value="{{ s.ab_tage }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label for="geb-{{ s.stufe }}" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mahngebühr (CHF)" %}</label>
+                       value="{{ s.ab_tage }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="geb-{{ s.stufe }}" class="fw-label">{% trans "Mahngebühr (CHF)" %}</label>
                 <input id="geb-{{ s.stufe }}" name="gebuehr_{{ s.stufe }}" type="text" inputmode="decimal"
-                       value="{{ s.gebuehr }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        </div>
-        <label class="flex items-center gap-2 text-sm fw-mutet cursor-pointer">
+                       value="{{ s.gebuehr }}" class="fw-feld"></div>
+            <div class="fw-feldblock breit">
+        <label class="fw-haekchen">
             <input type="checkbox" name="kuendigung_{{ s.stufe }}" {% if s.kuendigung %}checked{% endif %} class="fw-akzent">
             {% trans "Mit Kündigungsandrohung" %}
         </label>
+            </div>
+        </div>
     </div>
     {% endfor %}
 
-    <div class="flex items-center gap-3">
-        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}
+    <div class="flex items-center gap-3 flex-wrap">
+        <button type="submit" class="fw-btn fw-primary">
+            {% zeichen 'speichern' %}{% trans "Speichern" %}
         </button>
-        <a href="/neu/mandate/{{ md.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">{% trans "Abbrechen" %}</a>
+        <a href="/neu/mandate/{{ md.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

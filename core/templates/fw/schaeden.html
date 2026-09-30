@@ -7,56 +7,56 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Schadensfälle" %}</h1>
-        <p>{% trans "Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/schaeden/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% trans "Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/schaeden/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
+    <div class="fw-phead-knoepfe">
         <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Schaden erfassen" %}</button>
         <div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
-            <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
-                <a href="/neu/schaeden/kosten/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'geld' klasse='w-4' %}{% trans "Kostenübersicht" %}</a>
+            <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                <a href="/neu/schaeden/kosten/{{ lg_query }}" class="fw-menuzeile">{% zeichen 'geld' klasse='w-4' %}{% trans "Kostenübersicht" %}</a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Schaden intern erfassen -->
-<div id="neuschaden" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'warnung' klasse='fw-kritisch mr-1.5' %}{% trans "Schaden erfassen (z.B. telefonisch gemeldet)" %}</h3>
-    <form method="post" action="/neu/schaeden/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div id="neuschaden" class="hidden fw-card">
+    <div class="fw-kopf"><span class="fw-ikon crit">{% zeichen 'warnung' %}</span><h2>{% trans "Schaden erfassen (z.B. telefonisch gemeldet)" %}</h2></div>
+    <form method="post" action="/neu/schaeden/neu/" enctype="multipart/form-data" class="fw-formular fw-rumpf">
         {% csrf_token %}
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Titel / Schaden *" %}</label>
-            <input name="titel" required placeholder="{% trans 'z.B. Wasserhahn tropft' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft *" %}</label>
-            <select name="liegenschaft_id" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Titel / Schaden *" %}</label>
+            <input name="titel" required placeholder="{% trans 'z.B. Wasserhahn tropft' %}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Liegenschaft *" %}</label>
+            <select name="liegenschaft_id" required class="fw-feld">
                 <option value="">— {% trans "wählen" %} —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}">{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Objekt (optional)" %}</label>
-            <select name="einheit_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Objekt (optional)" %}</label>
+            <select name="einheit_id" class="fw-feld">
                 <option value="">— {% trans "ganze Liegenschaft" %} —</option>
                 {% for e in einheiten %}<option value="{{ e.id }}">{{ e.liegenschaft.strasse }} · {{ e.bezeichnung }}</option>{% endfor %}
             </select></div>
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beschreibung" %}</label>
-            <textarea name="beschreibung" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Melder Vor-/Nachname" %}</label>
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Beschreibung" %}</label>
+            <textarea name="beschreibung" rows="2" class="fw-feld"></textarea></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Melder Vor-/Nachname" %}</label>
             <div class="flex gap-2">
-                <input name="melder_vorname" placeholder="{% trans 'Vorname' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-                <input name="melder_nachname" placeholder="{% trans 'Nachname' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <input name="melder_vorname" placeholder="{% trans 'Vorname' %}" class="fw-feld">
+                <input name="melder_nachname" placeholder="{% trans 'Nachname' %}" class="fw-feld">
             </div></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Priorität" %}</label>
-            <select name="prioritaet" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Priorität" %}</label>
+            <select name="prioritaet" class="fw-feld">
                 <option value="tief">{% trans "Tief" %}</option><option value="mittel" selected>{% trans "Mittel" %}</option><option value="hoch">{% trans "Hoch" %}</option>
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Melder E-Mail" %}</label>
-            <input name="email_melder" type="email" placeholder="{% trans 'Für automatische Bestätigung' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Melder Telefon" %}</label>
-            <input name="tel_melder" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Fotos (mehrere möglich)" %}</label>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Melder E-Mail" %}</label>
+            <input name="email_melder" type="email" placeholder="{% trans 'Für automatische Bestätigung' %}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Melder Telefon" %}</label>
+            <input name="tel_melder" class="fw-feld"></div>
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Fotos (mehrere möglich)" %}</label>
             <input name="fotos" type="file" accept="image/*" multiple class="w-full text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold"></div>
-        <div class="sm:col-span-2">
-            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Ticket erstellen" %}</button>
-            <span class="text-xs fw-faint ml-2">{% trans "Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung." %}</span>
+        <div class="fw-formular-fuss items-center">
+            <span class="fw-hilfe">{% trans "Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung." %}</span>
+            <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Ticket erstellen" %}</button>
         </div>
     </form>
 </div>
@@ -68,18 +68,18 @@
    vier Zahlen, die eine Verwaltung im Streitfall erklaeren muss.
 
    Die Zahlen zeigen IMMER den ganzen Bestand, auch bei aktiver Sicht. {% endcomment %}
-<div class="fw-lage">
-    <div><div class="fw-l">{% trans "Offen" %}</div>
-        <div class="fw-w{% if kopf.offen_stufe %} {{ kopf.offen_stufe }}{% endif %}">{{ kopf.offen }}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi"><div class="fw-l">{% trans "Offen" %}</div>
+        <div class="fw-v{% if kopf.offen_stufe %} fw-{{ kopf.offen_stufe }}{% endif %}">{{ kopf.offen }}</div>
         <div class="fw-f">{% trans "nicht erledigt" %}</div></div>
-    <div><div class="fw-l">{% trans "Ungelesen" %}</div>
-        <div class="fw-w{% if kopf.ungelesen_stufe %} {{ kopf.ungelesen_stufe }}{% endif %}">{{ kopf.ungelesen }}</div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Ungelesen" %}</div>
+        <div class="fw-v{% if kopf.ungelesen_stufe %} fw-{{ kopf.ungelesen_stufe }}{% endif %}">{{ kopf.ungelesen }}</div>
         <div class="fw-f">{% trans "noch niemand angesehen" %}</div></div>
-    <div><div class="fw-l">{% trans "Mit Befund" %}</div>
-        <div class="fw-w{% if kopf.mit_befund %} warn{% endif %}">{{ kopf.mit_befund }}</div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Mit Befund" %}</div>
+        <div class="fw-v{% if kopf.mit_befund %} fw-warn{% endif %}">{{ kopf.mit_befund }}</div>
         <div class="fw-f">{% trans "brauchen eine Handlung" %}</div></div>
-    <div><div class="fw-l">{% trans "Älteste offen" %}</div>
-        <div class="fw-w{% if kopf.aeltester_stufe %} {{ kopf.aeltester_stufe }}{% endif %}">{{ kopf.aeltester }}</div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Älteste offen" %}</div>
+        <div class="fw-v{% if kopf.aeltester_stufe %} fw-{{ kopf.aeltester_stufe }}{% endif %}">{{ kopf.aeltester }}</div>
         <div class="fw-f">{% trans "Tage seit Meldung" %}</div></div>
 </div>
 
@@ -107,9 +107,9 @@
             <div class="fw-t">{{ row.t.titel|truncatechars:70 }}</div>
             <div class="fw-s">{{ row.objekt }}{% if row.t.kategorie %} · {{ row.t.kategorie }}{% endif %} · {{ row.melder }} · {% blocktrans count n=row.alter %}vor {{ n }} Tag{% plural %}vor {{ n }} Tagen{% endblocktrans %}</div>
             {% if row.befunde %}
-            <div class="fw-s" style="margin-top:4px">
+            <div class="fw-s flex-wrap">
                 {% for b in row.befunde %}
-                <span class="fw-chip fw-{{ b.stufe }} fw-dot" style="margin-right:5px">{{ b.text }}{% if b.titel %} — {{ b.titel }}{% endif %}</span>
+                <span class="fw-chip fw-{{ b.stufe }} fw-dot">{{ b.text }}{% if b.titel %} — {{ b.titel }}{% endif %}</span>
                 {% endfor %}
             </div>
             {% endif %}
@@ -119,7 +119,7 @@
         {% zeichen 'weiter' klasse='fw-klein' %}
     </div>
     {% empty %}
-    <div style="padding:0 16px">
+    <div>
     {% if gefiltert or q or status_filter %}
         {% include 'fw/_empty.html' with icon='gut' titel=_('Nichts zu tun') subtext=_('Für diese Sicht gibt es keine Meldung. Das ist eine gute Nachricht — oder die Sicht ist zu eng.') cta_url='/neu/schaeden/?sicht=' cta_label=_('Alle Meldungen zeigen') %}
     {% else %}

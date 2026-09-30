@@ -4,12 +4,12 @@
 {% load chf %}
 {% block title %}{% trans "Vertrag bearbeiten" %} — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/" class="hover:fw-marke">{% trans "Verträge" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% trans "Bearbeiten" %}</span>
+<nav class="fw-akte-pfad mb-2.5">
+    <a href="/neu/vertraege/">{% trans "Verträge" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Bearbeiten" %}</b>
 </nav>
 
 <div class="fw-phead">
@@ -21,17 +21,19 @@
 
 {% if gesperrt %}
 {# Hinweis zu Art. 269d OR: bleibt bis zur juristischen Durchsicht Deutsch. #}
-<div class="max-w-3xl fw-warn-flaeche border fw-linie-warn rounded-xl px-4 py-3 mb-5 fw-fs-fein fw-warnton">
-    <div class="font-bold mb-0.5">{% zeichen 'gesperrt' klasse='mr-1.5' %}Aktiver Vertrag — eingeschränkte Bearbeitung</div>
-    Miete, Objekt, Mieter, Mietbeginn und MWST sind gesperrt (nur zur Ansicht). Eine <b>Mietzinsänderung</b> läuft über das <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="underline font-semibold">amtliche Formular (Art. 269d)</a>. Hier änderst du nur Detailfelder wie Fristen, Nebenräume und Vereinbarungen.
-</div>
+<div class="fw-card max-w-3xl"><div class="fw-hinweis warn">
+    <span class="fw-hi">{% zeichen 'gesperrt' %}</span>
+    <div class="fw-ht"><b>Aktiver Vertrag — eingeschränkte Bearbeitung</b>
+    Miete, Objekt, Mieter, Mietbeginn und MWST sind gesperrt (nur zur Ansicht). Eine <strong>Mietzinsänderung</strong> läuft über das <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="fw-link">amtliche Formular (Art. 269d)</a>. Hier änderst du nur Detailfelder wie Fristen, Nebenräume und Vereinbarungen.</div>
+</div></div>
 {% else %}
-<div class="max-w-3xl fw-markenflaeche border fw-linie-marke rounded-xl px-4 py-3 mb-5 fw-fs-fein fw-marke">
-    {% zeichen 'bearbeiten' klasse='mr-1.5' %}<b>{% trans "Entwurf" %}</b> — {% blocktrans trimmed with id=v.einheit_id %}alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a href="/neu/objekte/{{ id }}/?tab=mietzins" class="underline font-semibold">Objekt → Mietzins</a> gepflegt.{% endblocktrans %}
-</div>
+<div class="fw-card max-w-3xl"><div class="fw-hinweis info">
+    <span class="fw-hi">{% zeichen 'bearbeiten' %}</span>
+    <div class="fw-ht"><strong>{% trans "Entwurf" %}</strong> — {% blocktrans trimmed with id=v.einheit_id %}alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a href="/neu/objekte/{{ id }}/?tab=mietzins" class="underline font-semibold">Objekt → Mietzins</a> gepflegt.{% endblocktrans %}</div>
+</div></div>
 {% endif %}
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" class="max-w-3xl">
     {% csrf_token %}
 
     {% if anzahl_fehler %}
@@ -42,52 +44,55 @@
     {% endif %}
 
     <!-- Parteien & Objekt -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Parteien & Objekt" %}</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mieter" %}</label>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Parteien & Objekt" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Mieter" %}</label>
                 {% if gesperrt %}
-                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.mieter.display_name }} <span class="fw-fs-mikro fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
+                <div class="fw-feld fw-mutet">{{ v.mieter.display_name }} <span class="fw-faint">{% zeichen 'gesperrt' %}</span></div>
                 {% else %}
-                <select name="mieter_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <select name="mieter_id" class="fw-feld">
                     {% for m in mieter_liste %}<option value="{{ m.id }}" {% if m.id == v.mieter_id %}selected{% endif %}>{{ m.display_name }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Objekt" %}</label>
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Objekt" %}</label>
                 {% if gesperrt %}
-                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.einheit.bezeichnung }} — {{ v.einheit.liegenschaft.strasse }} <span class="fw-fs-mikro fw-faint ml-1">{% zeichen 'gesperrt' %}</span></div>
+                <div class="fw-feld fw-mutet">{{ v.einheit.bezeichnung }} — {{ v.einheit.liegenschaft.strasse }} <span class="fw-faint">{% zeichen 'gesperrt' %}</span></div>
                 {% else %}
-                <select name="einheit_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <select name="einheit_id" class="fw-feld">
                     {% for o in objekte %}<option value="{{ o.id }}" {% if o.id == v.einheit_id %}selected{% endif %}>{{ o.bezeichnung }} — {{ o.liegenschaft.strasse }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
-            <div><label for="v-mitmieter_name" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zweiter Mieter / Ehegatte (Name)" %}</label>
-                <input name="mitmieter_name" value="{{ v.mitmieter_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-mitmieter_name"{% if feld_fehler.mitmieter_name %} aria-invalid="true" aria-describedby="v-mitmieter_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.mitmieter_name feld_id='v-mitmieter_name' %}</div>
-            <div><label for="v-anzahl_personen" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Anzahl Personen" %}</label>
-                <input inputmode="numeric" name="anzahl_personen" value="{{ wert.anzahl_personen }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-anzahl_personen"{% if feld_fehler.anzahl_personen %} aria-invalid="true" aria-describedby="v-anzahl_personen_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.anzahl_personen feld_id='v-anzahl_personen' %}</div>
+            <div class="fw-feldblock"><label for="v-mitmieter_name" class="fw-label">{% trans "Zweiter Mieter / Ehegatte (Name)" %}</label>
+                <input name="mitmieter_name" value="{{ v.mitmieter_name }}" class="fw-feld" id="v-mitmieter_name"{% if feld_fehler.mitmieter_name %} aria-invalid="true" aria-describedby="v-mitmieter_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.mitmieter_name feld_id='v-mitmieter_name' %}</div>
+            <div class="fw-feldblock"><label for="v-anzahl_personen" class="fw-label">{% trans "Anzahl Personen" %}</label>
+                <input inputmode="numeric" name="anzahl_personen" value="{{ wert.anzahl_personen }}" class="fw-feld" id="v-anzahl_personen"{% if feld_fehler.anzahl_personen %} aria-invalid="true" aria-describedby="v-anzahl_personen_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.anzahl_personen feld_id='v-anzahl_personen' %}</div>
         </div>
-        <label class="flex items-center gap-2 text-sm fw-mutet">
-            <input type="checkbox" name="familienwohnung" {% if v.familienwohnung %}checked{% endif %} class="rounded fw-linie fw-marke">
+        <label class="fw-haekchen">
+            <input type="checkbox" name="familienwohnung" {% if v.familienwohnung %}checked{% endif %} class="fw-haken">
             Familienwohnung (Art. 266n / 169 OR)
         </label>
+        </div>
     </div>
 
     <!-- Mietdauer & Kündigung -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Mietdauer & Kündigung" %}</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietbeginn" %}{% if gesperrt %} {% zeichen 'gesperrt' klasse='fw-fs-mikro fw-faint' %}{% endif %}</label>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Mietdauer & Kündigung" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Mietbeginn" %}{% if gesperrt %} {% zeichen 'gesperrt' klasse='fw-fs-mikro fw-faint' %}{% endif %}</label>
                 {% if gesperrt %}
-                <div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.beginn|date:"d.m.Y" }}</div>
+                <div class="fw-feld fw-mutet">{{ v.beginn|date:"d.m.Y" }}</div>
                 {% else %}
-                <input name="beginn" type="date" value="{{ wert.beginn }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-beginn"{% if feld_fehler.beginn %} aria-invalid="true" aria-describedby="v-beginn_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.beginn feld_id='v-beginn' %}{% endif %}
+                <input name="beginn" type="date" value="{{ wert.beginn }}" class="fw-feld" id="v-beginn"{% if feld_fehler.beginn %} aria-invalid="true" aria-describedby="v-beginn_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.beginn feld_id='v-beginn' %}{% endif %}
             </div>
-            <div><label for="v-ende" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mietende (leer = unbefristet)" %}</label>
-                <input name="ende" type="date" value="{{ wert.ende }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-ende"{% if feld_fehler.ende %} aria-invalid="true" aria-describedby="v-ende_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ende feld_id='v-ende' %}</div>
-            <div><label for="v-kuendigungsfrist" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kündigungsfrist (Monate)" %}</label>
-                <input inputmode="numeric" name="kuendigungsfrist" value="{{ wert.kuendigungsfrist }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-kuendigungsfrist"{% if feld_fehler.kuendigungsfrist %} aria-invalid="true" aria-describedby="v-kuendigungsfrist_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kuendigungsfrist feld_id='v-kuendigungsfrist' %}</div>
-            <div><label for="v-erstmals_kuendbar" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Erstmals kündbar auf" %}</label>
-                <input name="erstmals_kuendbar" type="date" value="{{ wert.erstmals_kuendbar }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-erstmals_kuendbar"{% if feld_fehler.erstmals_kuendbar %} aria-invalid="true" aria-describedby="v-erstmals_kuendbar_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.erstmals_kuendbar feld_id='v-erstmals_kuendbar' %}</div>
+            <div class="fw-feldblock"><label for="v-ende" class="fw-label">{% trans "Mietende (leer = unbefristet)" %}</label>
+                <input name="ende" type="date" value="{{ wert.ende }}" class="fw-feld" id="v-ende"{% if feld_fehler.ende %} aria-invalid="true" aria-describedby="v-ende_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ende feld_id='v-ende' %}</div>
+            <div class="fw-feldblock"><label for="v-kuendigungsfrist" class="fw-label">{% trans "Kündigungsfrist (Monate)" %}</label>
+                <input inputmode="numeric" name="kuendigungsfrist" value="{{ wert.kuendigungsfrist }}" class="fw-feld" id="v-kuendigungsfrist"{% if feld_fehler.kuendigungsfrist %} aria-invalid="true" aria-describedby="v-kuendigungsfrist_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kuendigungsfrist feld_id='v-kuendigungsfrist' %}</div>
+            <div class="fw-feldblock"><label for="v-erstmals_kuendbar" class="fw-label">{% trans "Erstmals kündbar auf" %}</label>
+                <input name="erstmals_kuendbar" type="date" value="{{ wert.erstmals_kuendbar }}" class="fw-feld" id="v-erstmals_kuendbar"{% if feld_fehler.erstmals_kuendbar %} aria-invalid="true" aria-describedby="v-erstmals_kuendbar_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.erstmals_kuendbar feld_id='v-erstmals_kuendbar' %}</div>
             {% comment %}
             INDEXPARAMETER — EDITIERBAR AUCH BEI AKTIVEN VERTRÄGEN (E2.53)
 
@@ -100,91 +105,96 @@
             Die Erhöhung selbst läuft weiter über das amtliche Formular nach
             Art. 269d. Jede Änderung steht mit altem und neuem Wert im Logbuch.
             {% endcomment %}
-            <div><label for="v-index_weitergabe_prozent" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Index-Weitergabe (%)" %}</label>
+            <div class="fw-feldblock"><label for="v-index_weitergabe_prozent" class="fw-label">{% trans "Index-Weitergabe (%)" %}</label>
                 <input inputmode="decimal" name="index_weitergabe_prozent"
                        value="{{ wert.index_weitergabe_prozent }}"
-                       class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num" id="v-index_weitergabe_prozent"{% if feld_fehler.index_weitergabe_prozent %} aria-invalid="true" aria-describedby="v-index_weitergabe_prozent_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.index_weitergabe_prozent feld_id='v-index_weitergabe_prozent' %}
-                <p class="fw-fs-klein fw-faint mt-1">{% trans "Anteil der Teuerung, der weitergegeben wird. Änderung wird protokolliert." %}</p></div>
-            <div><label for="v-index_intervall_monate" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Index-Mindestintervall (Monate)" %}</label>
+                       class="fw-feld fw-num" id="v-index_weitergabe_prozent"{% if feld_fehler.index_weitergabe_prozent %} aria-invalid="true" aria-describedby="v-index_weitergabe_prozent_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.index_weitergabe_prozent feld_id='v-index_weitergabe_prozent' %}
+                <p class="fw-hilfe">{% trans "Anteil der Teuerung, der weitergegeben wird. Änderung wird protokolliert." %}</p></div>
+            <div class="fw-feldblock"><label for="v-index_intervall_monate" class="fw-label">{% trans "Index-Mindestintervall (Monate)" %}</label>
                 <input inputmode="numeric" name="index_intervall_monate"
                        value="{{ wert.index_intervall_monate }}"
-                       class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 fw-num" id="v-index_intervall_monate"{% if feld_fehler.index_intervall_monate %} aria-invalid="true" aria-describedby="v-index_intervall_monate_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.index_intervall_monate feld_id='v-index_intervall_monate' %}</div>
-            <div class="sm:col-span-2"><label for="v-kuendigungstermine" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kündigungstermine" %}</label>
-                <input name="kuendigungstermine" value="{{ v.kuendigungstermine }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-kuendigungstermine"{% if feld_fehler.kuendigungstermine %} aria-invalid="true" aria-describedby="v-kuendigungstermine_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kuendigungstermine feld_id='v-kuendigungstermine' %}</div>
+                       class="fw-feld fw-num" id="v-index_intervall_monate"{% if feld_fehler.index_intervall_monate %} aria-invalid="true" aria-describedby="v-index_intervall_monate_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.index_intervall_monate feld_id='v-index_intervall_monate' %}</div>
+            <div class="fw-feldblock breit"><label for="v-kuendigungstermine" class="fw-label">{% trans "Kündigungstermine" %}</label>
+                <input name="kuendigungstermine" value="{{ v.kuendigungstermine }}" class="fw-feld" id="v-kuendigungstermine"{% if feld_fehler.kuendigungstermine %} aria-invalid="true" aria-describedby="v-kuendigungstermine_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kuendigungstermine feld_id='v-kuendigungstermine' %}</div>
+        </div>
         </div>
     </div>
 
     <!-- Mietzins -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Mietzins" %}{% if gesperrt %} <span class="fw-fs-klein font-normal fw-faint ml-1">{% zeichen 'gesperrt' %} {% trans "gesperrt (amtliches Formular für Änderungen)" %}</span>{% endif %}</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nettomietzins (CHF)" %}</label>
-                {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">CHF {{ v.netto_mietzins|chf }}</div>
-                {% else %}<input inputmode="decimal" name="netto_mietzins" value="{{ wert.netto_mietzins }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-netto_mietzins"{% if feld_fehler.netto_mietzins %} aria-invalid="true" aria-describedby="v-netto_mietzins_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.netto_mietzins feld_id='v-netto_mietzins' %}{% endif %}
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Mietzins" %}</h2>{% if gesperrt %}<span class="fw-neben">{% zeichen 'gesperrt' %} {% trans "gesperrt (amtliches Formular für Änderungen)" %}</span>{% endif %}</div>
+        <div class="fw-rumpf space-y-4">
+        <div class="fw-formular drei">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Nettomietzins (CHF)" %}</label>
+                {% if gesperrt %}<div class="fw-feld fw-mutet">CHF {{ v.netto_mietzins|chf }}</div>
+                {% else %}<input inputmode="decimal" name="netto_mietzins" value="{{ wert.netto_mietzins }}" class="fw-feld" id="v-netto_mietzins"{% if feld_fehler.netto_mietzins %} aria-invalid="true" aria-describedby="v-netto_mietzins_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.netto_mietzins feld_id='v-netto_mietzins' %}{% endif %}
             </div>
             {% if not v.einheit.ist_einstellplatz %}
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nebenkosten (CHF)" %}</label>
-                {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">CHF {{ v.nebenkosten|chf }}</div>
-                {% else %}<input inputmode="decimal" name="nebenkosten" value="{{ wert.nebenkosten }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-nebenkosten"{% if feld_fehler.nebenkosten %} aria-invalid="true" aria-describedby="v-nebenkosten_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.nebenkosten feld_id='v-nebenkosten' %}{% endif %}
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Nebenkosten (CHF)" %}</label>
+                {% if gesperrt %}<div class="fw-feld fw-mutet">CHF {{ v.nebenkosten|chf }}</div>
+                {% else %}<input inputmode="decimal" name="nebenkosten" value="{{ wert.nebenkosten }}" class="fw-feld" id="v-nebenkosten"{% if feld_fehler.nebenkosten %} aria-invalid="true" aria-describedby="v-nebenkosten_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.nebenkosten feld_id='v-nebenkosten' %}{% endif %}
             </div>
             {% endif %}
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zahlungsrhythmus" %}</label>
-                {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.get_zahlungsrhythmus_display }}</div>
-                {% else %}<select name="zahlungsrhythmus" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Zahlungsrhythmus" %}</label>
+                {% if gesperrt %}<div class="fw-feld fw-mutet">{{ v.get_zahlungsrhythmus_display }}</div>
+                {% else %}<select name="zahlungsrhythmus" class="fw-feld">
                     {% for val, lbl in rhythmus_choices %}<option value="{{ val }}" {% if val == v.zahlungsrhythmus %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
             {% if not v.einheit.ist_einstellplatz %}
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "NK-Abrechnungsart" %}</label>
-                {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.get_nk_abrechnungsart_display }}</div>
-                {% else %}<select name="nk_abrechnungsart" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "NK-Abrechnungsart" %}</label>
+                {% if gesperrt %}<div class="fw-feld fw-mutet">{{ v.get_nk_abrechnungsart_display }}</div>
+                {% else %}<select name="nk_abrechnungsart" class="fw-feld">
                     {% for val, lbl in nk_arten %}<option value="{{ val }}" {% if val == v.nk_abrechnungsart %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verteilschlüssel" %}</label>
-                {% if gesperrt %}<div class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 fw-mutet">{{ v.get_verteilschluessel_display }}</div>
-                {% else %}<select name="verteilschluessel" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Verteilschlüssel" %}</label>
+                {% if gesperrt %}<div class="fw-feld fw-mutet">{{ v.get_verteilschluessel_display }}</div>
+                {% else %}<select name="verteilschluessel" class="fw-feld">
                     {% for val, lbl in verteil_choices %}<option value="{{ val }}" {% if val == v.verteilschluessel %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select>{% endif %}
             </div>
             {% endif %}
         </div>
         {% if not gesperrt %}
-        <label class="flex items-center gap-2 text-sm fw-mutet">
-            <input type="checkbox" name="mwst_pflichtig" {% if v.mwst_pflichtig %}checked{% endif %} class="rounded fw-linie fw-marke">
+        <label class="fw-haekchen">
+            <input type="checkbox" name="mwst_pflichtig" {% if v.mwst_pflichtig %}checked{% endif %} class="fw-haken">
             MWST-pflichtig (Option, i.d.R. nur Gewerbe) — Satz
-            <input inputmode="decimal" name="mwst_satz" value="{{ wert.mwst_satz }}" class="w-20 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right" id="v-mwst_satz"{% if feld_fehler.mwst_satz %} aria-invalid="true" aria-describedby="v-mwst_satz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.mwst_satz feld_id='v-mwst_satz' %}%
+            <input inputmode="decimal" name="mwst_satz" value="{{ wert.mwst_satz }}" class="fw-feld fw-num w-20 text-right" id="v-mwst_satz"{% if feld_fehler.mwst_satz %} aria-invalid="true" aria-describedby="v-mwst_satz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.mwst_satz feld_id='v-mwst_satz' %}%
         </label>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="v-kautions_betrag" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kaution (CHF)" %}</label>
-                <input inputmode="decimal" name="kautions_betrag" value="{{ wert.kautions_betrag }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-kautions_betrag"{% if feld_fehler.kautions_betrag %} aria-invalid="true" aria-describedby="v-kautions_betrag_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kautions_betrag feld_id='v-kautions_betrag' %}</div>
-            <div><label for="v-kautions_konto" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kautionskonto (IBAN)" %}</label>
-                <input name="kautions_konto" value="{{ v.kautions_konto }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-kautions_konto"{% if feld_fehler.kautions_konto %} aria-invalid="true" aria-describedby="v-kautions_konto_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kautions_konto feld_id='v-kautions_konto' %}</div>
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label for="v-kautions_betrag" class="fw-label">{% trans "Kaution (CHF)" %}</label>
+                <input inputmode="decimal" name="kautions_betrag" value="{{ wert.kautions_betrag }}" class="fw-feld" id="v-kautions_betrag"{% if feld_fehler.kautions_betrag %} aria-invalid="true" aria-describedby="v-kautions_betrag_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kautions_betrag feld_id='v-kautions_betrag' %}</div>
+            <div class="fw-feldblock"><label for="v-kautions_konto" class="fw-label">{% trans "Kautionskonto (IBAN)" %}</label>
+                <input name="kautions_konto" value="{{ v.kautions_konto }}" class="fw-feld" id="v-kautions_konto"{% if feld_fehler.kautions_konto %} aria-invalid="true" aria-describedby="v-kautions_konto_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kautions_konto feld_id='v-kautions_konto' %}</div>
         </div>
         {% endif %}
-        <p class="fw-fs-klein fw-faint">{% trans "Gratismonate/Rabatt und datierte Anpassungen" %}: <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="fw-marke hover:underline">{% trans "Objekt → Mietzins" %}</a>.</p>
+        <p class="fw-hilfe">{% trans "Gratismonate/Rabatt und datierte Anpassungen" %}: <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="fw-link">{% trans "Objekt → Mietzins" %}</a>.</p>
+        </div>
     </div>
 
     <!-- Nutzung & Vereinbarungen -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Nutzung & Vereinbarungen" %}</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zur Mitbenützung" %}</label>
-                <input name="mitbenutzung" value="{{ v.mitbenutzung }}" placeholder="{% trans 'z. B. Waschküche, Veloraum' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nebenräume" %}</label>
-                <input name="nebenraeume" value="{{ v.nebenraeume }}" placeholder="{% trans 'z. B. Kellerabteil Nr. 3' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Nutzung & Vereinbarungen" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Zur Mitbenützung" %}</label>
+                <input name="mitbenutzung" value="{{ v.mitbenutzung }}" placeholder="{% trans 'z. B. Waschküche, Veloraum' %}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Nebenräume" %}</label>
+                <input name="nebenraeume" value="{{ v.nebenraeume }}" placeholder="{% trans 'z. B. Kellerabteil Nr. 3' %}" class="fw-feld"></div>
         </div>
-        <div><label for="v-zweckbestimmung" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zweckbestimmung (v.a. Gewerbe)" %}</label>
-            <input name="zweckbestimmung" value="{{ v.zweckbestimmung }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="v-zweckbestimmung"{% if feld_fehler.zweckbestimmung %} aria-invalid="true" aria-describedby="v-zweckbestimmung_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.zweckbestimmung feld_id='v-zweckbestimmung' %}</div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Besondere Bestimmungen" %}</label>
-            <textarea name="besondere_vereinbarungen" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ v.besondere_vereinbarungen }}</textarea></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Weitere Vorbehalte" %}</label>
-            <textarea name="weitere_vorbehalte" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ v.weitere_vorbehalte }}</textarea></div>
+        <div class="fw-feldblock"><label for="v-zweckbestimmung" class="fw-label">{% trans "Zweckbestimmung (v.a. Gewerbe)" %}</label>
+            <input name="zweckbestimmung" value="{{ v.zweckbestimmung }}" class="fw-feld" id="v-zweckbestimmung"{% if feld_fehler.zweckbestimmung %} aria-invalid="true" aria-describedby="v-zweckbestimmung_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.zweckbestimmung feld_id='v-zweckbestimmung' %}</div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Besondere Bestimmungen" %}</label>
+            <textarea name="besondere_vereinbarungen" rows="2" class="fw-feld">{{ v.besondere_vereinbarungen }}</textarea></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Weitere Vorbehalte" %}</label>
+            <textarea name="weitere_vorbehalte" rows="2" class="fw-feld">{{ v.weitere_vorbehalte }}</textarea></div>
+        </div>
     </div>
 
     <div class="flex items-center gap-3">
-        <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Änderungen speichern" %}</button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm font-medium fw-mutet hover:fw-ink">{% trans "Abbrechen" %}</a>
+        <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Änderungen speichern" %}</button>
+        <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

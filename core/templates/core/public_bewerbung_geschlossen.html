@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load zeichen %}<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -20,10 +20,11 @@
            richtig war.
 
            Ein Hexwert wechselt nicht mit dem Modus, ein Token schon. */
-        body { font-family: 'Nunito', sans-serif; background-color: var(--ds-surface-2); }
+        /* Redesign v8: Schrift und Grund kommen aus der Schicht (`fw-body`);
+           bis dahin stand hier 'Nunito' — nie geladen, also Arial. */
     </style>
 </head>
-<body class="fw-strong antialiased min-h-screen flex items-center justify-center px-4 py-10">
+<body class="fw-body min-h-screen flex items-center justify-center px-4 py-10">
     {% comment %}
         Bewusst eine eigene Seite statt eines nackten 404: Wer hier landet, ist
         einem Link gefolgt, der einmal richtig war — die Wohnung ist inzwischen
@@ -32,9 +33,9 @@
         ohne Anmeldung erreichbar, und über die Nummer in der Adresse liesse
         sich sonst der ganze Bestand durchprobieren.
     {% endcomment %}
-    <div class="w-full max-w-md fw-flaeche rounded-2xl border fw-linie p-8 text-center">
-        <div class="w-14 h-14 rounded-full fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-5 text-2xl">✓</div>
-        <h1 class="text-xl font-bold mb-3">Dieses Objekt ist nicht mehr ausgeschrieben</h1>
+    <div class="w-full max-w-md fw-flaeche rounded-2xl border fw-linie shadow-md p-8 text-center">
+        <div class="w-14 h-14 rounded-full fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-5 text-2xl">{% zeichen 'gut' %}</div>
+        <h1 class="text-2xl font-semibold tracking-tight mb-3">Dieses Objekt ist nicht mehr ausgeschrieben</h1>
         <p class="text-sm fw-mutet leading-relaxed">
             Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits
             vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden.

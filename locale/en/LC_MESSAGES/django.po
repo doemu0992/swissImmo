@@ -20170,6 +20170,41 @@ msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
 msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
 msgstr[0] "Record %(n)s adjustment + official form (combined PDF)"
 msgstr[1] "Record %(n)s adjustments + official forms (combined PDF)"
+
+#: core/templates/fw/base.html:57
+msgid "Hauptnavigation"
+msgstr "Main navigation"
+
+#: core/templates/fw/base.html:148
+msgid "Ganzer Bestand"
+msgstr "Entire portfolio"
+
+#: core/templates/fw/base.html:166
+msgid "Hell- oder Dunkelmodus"
+msgstr "Light or dark mode"
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Morgen, %(name)s."
+msgstr "Good morning, %(name)s."
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Tag, %(name)s."
+msgstr "Good afternoon, %(name)s."
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Abend, %(name)s."
+msgstr "Good evening, %(name)s."
+
+#: core/templates/fw/dashboard.html:48
+#, python-format
+msgid "%(n)s Vorgang braucht heute dich."
+msgid_plural "%(n)s Vorgänge brauchen heute dich."
+msgstr[0] "%(n)s item needs you today."
+msgstr[1] "%(n)s items need you today."
+
 #: core/templates/fw/logbuch.html
 msgid "Noch keine Aktivität."
 msgstr "No activity yet."

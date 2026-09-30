@@ -6,125 +6,128 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Pendenzen &amp; Fristen" %}</h1>
-        <p>{% trans "Automatisch erkannte Fristen und eigene Pendenzen an einem Ort" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/pendenzen/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% trans "Automatisch erkannte Fristen und eigene Pendenzen an einem Ort" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/pendenzen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+<div class="fw-cockpit">
     <!-- Linke Spalte: Fristen + Pendenzen -->
-    <div class="lg:col-span-2 space-y-5">
+    <div class="fw-cockpit-haupt">
         <!-- Automatische Fristen -->
-        <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">
-                {% zeichen 'termin' klasse='fw-marke mr-1.5' %}{% trans "Automatische Fristen (nächste 90 Tage)" %}
+        <div class="fw-card">
+            <div class="fw-kopf">
+                <span class="fw-t">{% trans "Automatische Fristen (nächste 90 Tage)" %}</span>
+                <span class="fw-neben">{{ auto|length }}</span>
             </div>
-            <div class="fw-dv">
-                {% for f in auto %}
-                <a href="{{ f.url }}" onclick="return fwModalOpen(this,'{{ f.titel|escapejs }}',true)" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-                    <div class="w-9 h-9 rounded-lg bg-{{ f.farbe }}-50 text-{{ f.farbe }}-600 flex items-center justify-center text-sm shrink-0">{% zeichen_wert f.icon %}</div>
-                    <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium fw-strong truncate">{{ f.titel }}</div>
-                        <div class="text-xs fw-mutet truncate">{{ f.kategorie }} · {{ f.sub }}</div>
-                    </div>
-                    <div class="text-right shrink-0">
-                        <div class="text-sm font-semibold {% if f.tage < 14 %}fw-kritisch{% else %}fw-ink{% endif %}">{{ f.faellig|date:"d.m.Y" }}</div>
-                        <div class="fw-fs-klein fw-faint">{% blocktrans with n=f.tage %}in {{ n }} Tg.{% endblocktrans %}</div>
-                    </div>
-                </a>
-                {% empty %}
-                {% include 'fw/_empty.html' with knapp=True icon='termin' titel=_('Keine Fristen in den nächsten 90 Tagen.') %}
-                {% endfor %}
-            </div>
+            {% for f in auto %}
+            <a href="{{ f.url }}" onclick="return fwModalOpen(this,'{{ f.titel|escapejs }}',true)" class="fw-zeile klick">
+                <span class="fw-marker{% if f.tage < 14 %} crit{% elif f.farbe == 'amber' %} warn{% endif %}"></span>
+                <span class="fw-ikon{% if f.farbe == 'rose' %} crit{% elif f.farbe == 'amber' %} warn{% endif %}">{% zeichen_wert f.icon %}</span>
+                <div class="fw-mitte">
+                    <div class="fw-t">{{ f.titel }}</div>
+                    <div class="fw-s"><span>{{ f.kategorie }} · {{ f.sub }}</span></div>
+                </div>
+                <div class="fw-zeit{% if f.tage < 14 %} crit{% endif %}">{{ f.faellig|date:"d.m.Y" }}<br>
+                    <span class="fw-klein">{% blocktrans with n=f.tage %}in {{ n }} Tg.{% endblocktrans %}</span></div>
+            </a>
+            {% empty %}
+            {% include 'fw/_empty.html' with knapp=True icon='termin' titel=_('Keine Fristen in den nächsten 90 Tagen.') %}
+            {% endfor %}
         </div>
 
         <!-- Offene Pendenzen — gruppiert nach Bezug (Auszug/Objekt) -->
         {% for g in gruppen %}
-        <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie flex items-center gap-2.5">
-                <span class="w-7 h-7 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-xs shrink-0">{% zeichen_wert g.icon %}</span>
+        <div class="fw-card">
+            <div class="fw-kopf">
+                <span class="fw-ikon">{% zeichen_wert g.icon %}</span>
                 <div class="min-w-0 flex-1">
                     {% if g.url %}
-                    <a href="{{ g.url }}" class="font-bold fw-strong text-sm hover:fw-marke truncate block">{{ g.titel }}</a>
-                    {% else %}<div class="font-bold fw-strong text-sm truncate">{{ g.titel }}</div>{% endif %}
-                    {% if g.sub %}<div class="text-xs fw-faint truncate">{{ g.sub }}</div>{% endif %}
+                    <a href="{{ g.url }}" class="fw-t truncate block">{{ g.titel }}</a>
+                    {% else %}<div class="fw-t truncate">{{ g.titel }}</div>{% endif %}
+                    {% if g.sub %}<div class="fw-neben truncate">{{ g.sub }}</div>{% endif %}
                 </div>
-                <span class="text-xs font-semibold fw-faint shrink-0">{{ g.pendenzen|length }}</span>
+                <span class="fw-neben">{{ g.pendenzen|length }}</span>
             </div>
-            <div class="fw-dv">
-                {% for p in g.pendenzen %}
-                <div class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-                    <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
-                        <button class="w-5 h-5 rounded border-2 fw-linie hover:fw-linie-gut flex items-center justify-center text-transparent hover:fw-gut" title="{% trans 'Als erledigt markieren' %}">{% zeichen 'gut' klasse='fw-fs-mikro' %}</button>
-                    </form>
-                    {% if p.ziel_url %}
-                    <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 flex-1 group">
-                        <div class="text-sm font-medium fw-strong group-hover:fw-marke">{{ p.titel }}</div>
-                        <div class="text-xs fw-mutet">{{ p.get_kategorie_display }}</div>
-                    </a>
-                    <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn text-xs px-2.5 py-1 shrink-0 whitespace-nowrap">{{ p.ziel_label }}</a>
-                    {% else %}
-                    <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium fw-strong">{{ p.titel }}</div>
-                        <div class="text-xs fw-mutet">{{ p.get_kategorie_display }}{% if p.beschreibung %} · {{ p.beschreibung|truncatechars:50 }}{% endif %}</div>
-                    </div>
-                    {% endif %}
-                    {% if p.faellig_am %}<span class="text-xs font-semibold {% if p.ueberfaellig %}fw-kritisch{% else %}fw-mutet{% endif %} shrink-0">{{ p.faellig_am|date:"d.m.Y" }}{% if p.ueberfaellig %} {% zeichen 'warnung' %}{% endif %}</span>{% endif %}
-                    <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Pendenz löschen?" %}{% endfilter %}');">{% csrf_token %}
-                        <button class="fw-faint hover:fw-kritisch text-xs" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
-                    </form>
+            {% for p in g.pendenzen %}
+            <div class="fw-zeile">
+                <span class="fw-marker{% if p.ueberfaellig %} crit{% endif %}"></span>
+                {% if p.ziel_url %}
+                <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="fw-mitte">
+                    <div class="fw-t">{{ p.titel }}</div>
+                    <div class="fw-s"><span>{{ p.get_kategorie_display }}</span></div>
+                </a>
+                {% else %}
+                <div class="fw-mitte">
+                    <div class="fw-t">{{ p.titel }}</div>
+                    <div class="fw-s"><span>{{ p.get_kategorie_display }}{% if p.beschreibung %} · {{ p.beschreibung|truncatechars:50 }}{% endif %}</span></div>
                 </div>
-                {% endfor %}
+                {% endif %}
+                {% if p.faellig_am %}<div class="fw-zeit{% if p.ueberfaellig %} crit{% endif %}">{{ p.faellig_am|date:"d.m.Y" }}{% if p.ueberfaellig %} {% zeichen 'warnung' %}{% endif %}</div>{% endif %}
+                {% if p.ziel_url %}
+                <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-knapp">{{ p.ziel_label }}</a>
+                {% endif %}
+                <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
+                    <button class="fw-btn fw-knapp fw-rand-gut" title="{% trans 'Als erledigt markieren' %}">{% zeichen 'gut' %}</button>
+                </form>
+                <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Pendenz löschen?" %}{% endfilter %}');">{% csrf_token %}
+                    <button class="fw-btn fw-knapp fw-geist" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
+                </form>
             </div>
+            {% endfor %}
         </div>
         {% empty %}
         <div class="fw-card">{% include 'fw/_empty.html' with icon='gut' titel=_('Keine offenen Pendenzen.') %}</div>
         {% endfor %}
 
         {% if erledigte %}
-        <div class="fw-card overflow-hidden">
-            <div class="px-5 py-3 border-b fw-linie font-bold fw-faint text-sm">{% trans "Erledigt" %}</div>
-            <div class="fw-dv">
-                {% for p in erledigte %}
-                <div class="flex items-center gap-3 px-5 py-2.5">
-                    <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
-                        <button class="w-5 h-5 rounded fw-haken flex items-center justify-center" title="{% trans 'Wieder öffnen' %}">{% zeichen 'gut' klasse='fw-fs-mikro' %}</button>
-                    </form>
-                    <span class="text-sm fw-faint line-through flex-1">{{ p.titel }}</span>
-                    <span class="text-xs fw-faint">{{ p.erledigt_am|date:"d.m.Y" }}</span>
-                    <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Pendenz löschen?" %}{% endfilter %}');">{% csrf_token %}
-                        <button title="{% trans 'Pendenz löschen' %}" class="fw-faint hover:fw-kritisch text-xs">{% zeichen 'loeschen' %}</button>
-                    </form>
+        <div class="fw-card">
+            <div class="fw-kopf"><span class="fw-t">{% trans "Erledigt" %}</span>
+                <span class="fw-neben">{{ erledigte|length }}</span></div>
+            {% for p in erledigte %}
+            <div class="fw-zeile">
+                <span class="fw-marker good"></span>
+                <div class="fw-mitte">
+                    <div class="fw-s line-through">{{ p.titel }}</div>
                 </div>
-                {% endfor %}
+                <div class="fw-zeit">{{ p.erledigt_am|date:"d.m.Y" }}</div>
+                <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
+                    <button class="fw-btn fw-knapp fw-weich" title="{% trans 'Wieder öffnen' %}">{% zeichen 'gut' %}</button>
+                </form>
+                <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Pendenz löschen?" %}{% endfilter %}');">{% csrf_token %}
+                    <button title="{% trans 'Pendenz löschen' %}" class="fw-btn fw-knapp fw-geist">{% zeichen 'loeschen' %}</button>
+                </form>
             </div>
+            {% endfor %}
         </div>
         {% endif %}
     </div>
 
     <!-- Rechte Spalte: Neue Pendenz -->
-    <div>
-        <div class="fw-card p-5 sticky top-4">
-            <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'neu' klasse='fw-marke mr-1.5' %}{% trans "Neue Pendenz" %}</h3>
-            <form method="post" action="/neu/pendenzen/neu/" class="space-y-3">
+    <div class="fw-cockpit-kontext">
+        <div class="fw-card">
+            <div class="fw-kopf"><span class="fw-t">{% trans "Neue Pendenz" %}</span></div>
+            <form method="post" action="/neu/pendenzen/neu/" class="fw-formular p-5">
                 {% csrf_token %}
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Titel *" %}</label>
-                    <input name="titel" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kategorie" %}</label>
-                    <select name="kategorie" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <div class="fw-feldblock breit"><label class="fw-label">{% trans "Titel *" %}</label>
+                    <input name="titel" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label">{% trans "Kategorie" %}</label>
+                    <select name="kategorie" class="fw-feld">
                         {% for key, label in kategorien %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
                     </select></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Fällig am" %}</label>
-                    <input type="date" name="faellig_am" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft (optional)" %}</label>
-                    <select name="liegenschaft_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <div class="fw-feldblock"><label class="fw-label">{% trans "Fällig am" %}</label>
+                    <input type="date" name="faellig_am" class="fw-feld"></div>
+                <div class="fw-feldblock breit"><label class="fw-label">{% trans "Liegenschaft (optional)" %}</label>
+                    <select name="liegenschaft_id" class="fw-feld">
                         <option value="">— {% trans "keine" %} —</option>
                         {% for lg in liegenschaften %}<option value="{{ lg.id }}">{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
                     </select></div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beschreibung" %}</label>
-                    <textarea name="beschreibung" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
-                <button class="fw-btn fw-primary w-full justify-center">
-                    {% zeichen 'gut' klasse='mr-1.5' %}{% trans "Pendenz erfassen" %}
-                </button>
+                <div class="fw-feldblock breit"><label class="fw-label">{% trans "Beschreibung" %}</label>
+                    <textarea name="beschreibung" rows="2" class="fw-feld"></textarea></div>
+                <div class="fw-formular-fuss">
+                    <button class="fw-btn fw-primary">
+                        {% zeichen 'gut' %}{% trans "Pendenz erfassen" %}
+                    </button>
+                </div>
             </form>
         </div>
     </div>

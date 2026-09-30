@@ -12,15 +12,11 @@ bei Dritten.
 Jetzt liegt alles unter static/. Der Tailwind-Bau erzeugt tailwind.css aus
 denselben Vorlagen, die ihn benutzen (siehe package.json, `npm run css`).
 
-ZWEI TAILWIND-DATEIEN, UND WARUM
+EINE TAILWIND-DATEI FUER ALLE SEITEN (seit dem Redesign v8, 30.09.2026)
 
-`tailwind.css` traegt die Petrol-Palette, `tailwind-aussen.css` Tailwinds
-Voreinstellung. Das ist kein Versehen: `_tailwind_palette.html` lag bewusst
-nur auf den fw-Huellen, nie auf Mieterportal, Bewerbungsformular und
-Fehlerseiten. Eine einzige Datei fuer alle wuerde diese Seiten nebenbei
-umfaerben — eine Gestaltungsentscheidung, die in E0 nichts zu suchen hat.
-Wer die Aussenseiten auf die Marke holen will, tauscht dort den Verweis;
-bis dahin sehen Mieter und Bewerber genau das, was sie vorher sahen.
+`tailwind.css` traegt die Petrol-Palette und die Tokens fuer Rundung, Schatten
+und Schrift. Die Aussenseiten (`core/_assets_aussen.html`) laden dieselbe
+Datei; die fruehere zweite Datei in Tailwinds Voreinstellung ist entfernt.
 
 Bewacht von core/tests/test_keine_fremdquellen.py.
 {% endcomment %}

@@ -2,12 +2,12 @@
 {% load zeichen i18n %}
 {% block title %}{% blocktrans with name=v.mieter.display_name %}Mängelrüge — {{ name }}{% endblocktrans %}{% endblock %}
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/" class="hover:fw-marke">{% trans "Verträge" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% trans "Mängelrüge" %}</span>
+<nav class="fw-akte-pfad mb-2.5">
+    <a href="/neu/vertraege/">{% trans "Verträge" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Mängelrüge" %}</b>
 </nav>
 
 <div class="fw-phead">
@@ -17,23 +17,24 @@
     </div>
 </div>
 
-<div class="max-w-3xl mb-5 text-xs fw-markenflaeche border fw-linie-marke fw-marke rounded-lg px-3 py-2.5">
-    {% zeichen 'hinweis' klasse='mr-1' %}{% trans "Setzt der Mieterschaft eine Frist zur Behebung eines Mangels. Es wird automatisch eine Frist-Pendenz zur Nachkontrolle erstellt und der Brief in der Akte abgelegt." %}
-</div>
+<div class="fw-card max-w-3xl"><div class="fw-hinweis info">
+    <span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+    {% trans "Setzt der Mieterschaft eine Frist zur Behebung eines Mangels. Es wird automatisch eine Frist-Pendenz zur Nachkontrolle erstellt und der Brief in der Akte abgelegt." %}</div>
+</div></div>
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" class="max-w-3xl">
     {% csrf_token %}
-    <div class="fw-card p-5 space-y-4">
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beschreibung des Mangels *" %}</label>
-            <textarea name="mangel" rows="4" required placeholder="{% trans 'z. B. Undichte Armatur im Bad, tropfender Wasserhahn…' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
-        <div class="w-40"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Frist (Tage)" %}</label>
-            <input name="frist_tage" type="number" value="14" min="1" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-    </div>
+    <div class="fw-card"><div class="fw-formular fw-rumpf">
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Beschreibung des Mangels *" %}</label>
+            <textarea name="mangel" rows="4" required placeholder="{% trans 'z. B. Undichte Armatur im Bad, tropfender Wasserhahn…' %}" class="fw-feld"></textarea></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Frist (Tage)" %}</label>
+            <input name="frist_tage" type="number" value="14" min="1" class="fw-feld fw-num"></div>
+    </div></div>
     <div class="flex items-center gap-3">
-        <button type="submit" class="inline-flex items-center gap-2 fw-btn fw-primary text-sm font-semibold rounded-lg px-5 py-2.5">
+        <button type="submit" class="fw-btn fw-primary">
             {% zeichen 'drucken' %}{% trans "Mängelrüge als PDF erstellen" %}
         </button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink">{% trans "Abbrechen" %}</a>
+        <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

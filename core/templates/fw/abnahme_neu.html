@@ -3,10 +3,10 @@
 {% block title %}{% trans "Wohnungsabnahme" %} — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 {% if not embed_base %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% trans "Wohnungsabnahme" %}</span>
+<nav class="fw-akte-pfad mb-2.5">
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Wohnungsabnahme" %}</b>
 </nav>
 {% endif %}
 
@@ -17,95 +17,95 @@
     </div>
 </div>
 
-<form method="post" enctype="multipart/form-data" class="max-w-3xl space-y-5">
+<form method="post" enctype="multipart/form-data" class="max-w-3xl">
     {% csrf_token %}
     {% if embed_base %}<input type="hidden" name="embed" value="1">{% endif %}
 
     <!-- Kopf -->
-    <div class="fw-card p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Art" %}</label>
-            <select name="typ" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+    <div class="fw-card"><div class="fw-formular drei fw-rumpf">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Art" %}</label>
+            <select name="typ" class="fw-feld">
                 <option value="auszug" {% if typ_default == 'auszug' %}selected{% endif %}>{% trans "Auszug / Rücknahme" %}</option>
                 <option value="einzug" {% if typ_default == 'einzug' %}selected{% endif %}>{% trans "Einzug / Übergabe" %}</option>
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Datum" %}</label>
-            <input type="date" name="datum" value="{{ heute }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Abnahme durch" %}</label>
-            <input name="verwalter_name" value="{{ verwalter_default }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Allgemeinzustand" %}</label>
-            <select name="allgemein_zustand" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Datum" %}</label>
+            <input type="date" name="datum" value="{{ heute }}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Abnahme durch" %}</label>
+            <input name="verwalter_name" value="{{ verwalter_default }}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Allgemeinzustand" %}</label>
+            <select name="allgemein_zustand" class="fw-feld">
                 <option value="neuwertig">{% trans "Neuwertig" %}</option><option value="gut" selected>{% trans "Gut" %}</option>
                 <option value="gebraucht">{% trans "Gebraucht" %}</option><option value="renovationsbeduerftig">{% trans "Renovationsbedürftig" %}</option>
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Schlüssel zurück" %}</label>
-            <input name="schluessel_anzahl" type="number" min="0" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <label class="flex items-center gap-2 text-sm fw-ink mt-6"><input type="checkbox" name="mieter_anwesend" checked class="fw-akzent">{% trans "Mieter anwesend" %}</label>
-    </div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Schlüssel zurück" %}</label>
+            <input name="schluessel_anzahl" type="number" min="0" class="fw-feld"></div>
+        <div class="fw-feldblock justify-end"><label class="fw-haekchen"><input type="checkbox" name="mieter_anwesend" checked class="fw-akzent">{% trans "Mieter anwesend" %}</label></div>
+    </div></div>
 
     <!-- Zählerstände -->
-    <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-3">{% trans "Zählerstände" %}</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <input name="zaehler_strom" placeholder="{% trans 'Strom kWh' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-            <input name="zaehler_wasser" placeholder="{% trans 'Wasser m³' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-            <input name="zaehler_gas" placeholder="{% trans 'Gas/Wärme' %}" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Zählerstände" %}</h2></div>
+        <div class="fw-formular drei fw-rumpf">
+            <input name="zaehler_strom" placeholder="{% trans 'Strom kWh' %}" class="fw-feld">
+            <input name="zaehler_wasser" placeholder="{% trans 'Wasser m³' %}" class="fw-feld">
+            <input name="zaehler_gas" placeholder="{% trans 'Gas/Wärme' %}" class="fw-feld">
         </div>
     </div>
 
     <!-- Mängel -->
-    <div class="fw-card p-5">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="font-bold fw-strong text-sm">{% trans "Mängel / Zustand je Raum" %}</h3>
-            <button type="button" onclick="addMangel()" class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'neu' klasse='mr-1' %}{% trans "Mangel" %}</button>
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <h2>{% trans "Mängel / Zustand je Raum" %}</h2>
+            <span class="fw-rechts"><button type="button" onclick="addMangel()" class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'neu' %}{% trans "Mangel" %}</button></span>
         </div>
+        <div class="fw-rumpf">
         <div id="maengel" class="space-y-3"></div>
-        <p class="text-xs fw-faint mt-2">{% blocktrans trimmed %}Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").{% endblocktrans %}</p>
+        <p class="fw-hilfe mt-3">{% blocktrans trimmed %}Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").{% endblocktrans %}</p>
         {# Rechtshinweis Art. 267a OR: bleibt bis zur juristischen Durchsicht Deutsch. #}
-        <p class="fw-fs-klein fw-faint mt-2 border-t fw-linie pt-2">{% zeichen 'recht' klasse='mr-1 fw-faint' %}Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
+        <p class="fw-hilfe mt-2 border-t fw-linie pt-2">{% zeichen 'recht' klasse='mr-1 fw-faint' %}Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
+        </div>
     </div>
 
     <!-- Abschluss -->
-    <div class="fw-card p-5 space-y-3">
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Neue Adresse des Mieters" %}</label>
-            <input name="neue_adresse" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bemerkungen" %}</label>
-            <textarea name="bemerkungen" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Unterschrift Mieter (Name)" %}</label>
-                <input name="unterschrift_mieter" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Unterschrift Verwaltung (Name)" %}</label>
-                <input name="unterschrift_verwalter" value="{{ verwalter_default }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        </div>
-        <label class="flex items-center gap-2 text-sm fw-ink"><input type="checkbox" name="abgeschlossen" class="fw-akzent">{% trans "Protokoll abgeschlossen" %}</label>
-    </div>
+    <div class="fw-card"><div class="fw-formular fw-rumpf">
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Neue Adresse des Mieters" %}</label>
+            <input name="neue_adresse" class="fw-feld"></div>
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Bemerkungen" %}</label>
+            <textarea name="bemerkungen" rows="2" class="fw-feld"></textarea></div>
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Unterschrift Mieter (Name)" %}</label>
+                <input name="unterschrift_mieter" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Unterschrift Verwaltung (Name)" %}</label>
+                <input name="unterschrift_verwalter" value="{{ verwalter_default }}" class="fw-feld"></div>
+        <div class="fw-feldblock breit"><label class="fw-haekchen"><input type="checkbox" name="abgeschlossen" class="fw-akzent">{% trans "Protokoll abgeschlossen" %}</label></div>
+    </div></div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Protokoll speichern" %}</button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">{% trans "Abbrechen" %}</a>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Protokoll speichern" %}</button>
+        <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 
 <template id="mangelTpl">
-    <div class="mangel-row border fw-linie rounded-lg p-2 space-y-2">
+    <div class="mangel-row border fw-linie rounded-lg p-3 space-y-2">
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <select name="m_raum" class="col-span-3 fw-flaeche2 rounded-lg text-sm px-2 py-2">
+            <select name="m_raum" class="fw-feld sm:col-span-3">
                 {# Raumname ist gespeicherter Wert: bleibt unübersetzt #}{% for r in raeume %}<option>{{ r }}</option>{% endfor %}
             </select>
-            <input name="m_beschreibung" placeholder="{% trans 'Mangel beschreiben' %}" class="col-span-4 fw-flaeche2 rounded-lg text-sm px-3 py-2">
-            <select name="m_verursacher" class="col-span-2 fw-flaeche2 rounded-lg text-sm px-2 py-2">
+            <input name="m_beschreibung" placeholder="{% trans 'Mangel beschreiben' %}" class="fw-feld sm:col-span-4">
+            <select name="m_verursacher" class="fw-feld sm:col-span-2">
                 <option value="abnutzung">{% trans "Abnutzung" %}</option><option value="mieter">{% trans "Mieter" %}</option><option value="vermieter">{% trans "Vermieter" %}</option>
             </select>
-            <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="col-span-1 fw-flaeche2 rounded-lg text-sm px-2 py-2 text-right" title="{% trans 'Reparatur-/Ersatzkosten' %}">
-            <label class="col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
-            <button type="button" onclick="this.closest('.mangel-row').remove()" title="{% trans 'Diesen Mangel entfernen' %}" class="col-span-1 fw-faint hover:fw-kritisch">{% zeichen 'loeschen' %}</button>
+            <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="fw-feld sm:col-span-1 text-right" title="{% trans 'Reparatur-/Ersatzkosten' %}">
+            <label class="sm:col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
+            <button type="button" onclick="this.closest('.mangel-row').remove()" title="{% trans 'Diesen Mangel entfernen' %}" class="sm:col-span-1 fw-ikon mut gefahr">{% zeichen 'loeschen' %}</button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <span class="col-span-3 fw-fs-klein fw-faint text-right pr-1">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Raumbuch-Element" %}</span>
-            <select name="m_ausstattung" class="col-span-6 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 fw-mutet">
+            <span class="sm:col-span-3 fw-klein">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Raumbuch-Element" %}</span>
+            <select name="m_ausstattung" class="fw-feld sm:col-span-6 fw-mutet">
                 <option value="">— {% trans "kein Element (voller Betrag)" %} —</option>
                 {% for el in elemente %}<option value="{{ el.id }}">{{ el.raum }} · {{ el.kategorie }}{% if el.einbau_datum %} ({{ el.einbau_datum|date:"Y" }}){% endif %}</option>{% endfor %}
             </select>
-            <input name="m_neuwert" inputmode="decimal" placeholder="{% trans 'Neuwert CHF' %}" class="col-span-3 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 text-right fw-mutet" title="{% trans 'Neuwert (optional, sonst vom Element)' %}">
+            <input name="m_neuwert" inputmode="decimal" placeholder="{% trans 'Neuwert CHF' %}" class="fw-feld sm:col-span-3 text-right fw-mutet" title="{% trans 'Neuwert (optional, sonst vom Element)' %}">
         </div>
     </div>
 </template>

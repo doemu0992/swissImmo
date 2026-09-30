@@ -4,12 +4,12 @@
 {% block title %}{% blocktrans with name=v.mieter.display_name %}Schlussabrechnung — {{ name }}{% endblocktrans %}{% endblock %}
 {% block content %}
 {% if not embed_base %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/" class="hover:fw-marke">{% trans "Verträge" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <a href="/neu/vertraege/{{ v.id }}/" class="hover:fw-marke">{{ v.mieter.display_name }}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% trans "Schlussabrechnung" %}</span>
+<nav class="fw-akte-pfad mb-2.5">
+    <a href="/neu/vertraege/">{% trans "Verträge" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Schlussabrechnung" %}</b>
 </nav>
 {% endif %}
 
@@ -20,7 +20,7 @@
     </div>
 </div>
 
-<form method="post" class="max-w-3xl space-y-5" id="sa-form"
+<form method="post" class="max-w-3xl" id="sa-form"
       data-offen="{{ offen_total|unlocalize }}"
       data-kaution="{{ kaution|unlocalize }}"
       data-versicherung="{% if ist_versicherung %}1{% else %}0{% endif %}">
@@ -28,24 +28,24 @@
     {% if embed_base %}<input type="hidden" name="embed" value="1">{% endif %}
 
     <!-- Rahmendaten -->
-    <div class="fw-card p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Auszug per" %}</label>
-            <input type="date" name="auszug_datum" value="{{ auszug_default }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+    <div class="fw-kpis">
+        <div class="fw-kpi">
+            <label class="fw-l">{% trans "Auszug per" %}</label>
+            <input type="date" name="auszug_datum" value="{{ auszug_default }}" class="fw-feld">
         </div>
-        <div>
-            <div class="text-xs fw-mutet mb-1">{% trans "Offene Mietforderungen" %}</div>
-            <div class="text-lg font-bold {% if offen_total > 0 %}fw-kritisch{% else %}fw-ink{% endif %}">CHF {{ offen_total|chf }}</div>
-            <div class="fw-fs-klein fw-faint">{% trans "automatisch aus offenen Debitoren" %}</div>
+        <div class="fw-kpi">
+            <div class="fw-l">{% trans "Offene Mietforderungen" %}</div>
+            <div class="fw-v {% if offen_total > 0 %}fw-crit{% else %}{% endif %}">CHF {{ offen_total|chf }}</div>
+            <div class="fw-f">{% trans "automatisch aus offenen Debitoren" %}</div>
         </div>
-        <div>
-            <div class="text-xs fw-mutet mb-1">{% trans "Mietkaution" %} {% if ist_versicherung %}<span class="fw-marke font-semibold">· {% trans "Versicherung" %}</span>{% else %}<span class="fw-faint">· {% trans "Sperrkonto" %}</span>{% endif %}</div>
-            <div class="text-lg font-bold {% if ist_versicherung %}fw-marke{% else %}fw-gut{% endif %}">CHF {{ kaution|chf }}</div>
+        <div class="fw-kpi">
+            <div class="fw-l">{% trans "Mietkaution" %} {% if ist_versicherung %}<span class="fw-marke">· {% trans "Versicherung" %}</span>{% else %}<span class="fw-faint">· {% trans "Sperrkonto" %}</span>{% endif %}</div>
+            <div class="fw-v {% if ist_versicherung %}{% else %}{% endif %}">CHF {{ kaution|chf }}</div>
             {% if ist_versicherung %}
-                <div class="fw-fs-klein fw-mutet mt-1">{% zeichen 'gesperrt' klasse='mr-0.5' %}{% trans 'Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position „zulasten“ erfassen.' %}</div>
+                <div class="fw-f">{% zeichen 'gesperrt' klasse='mr-0.5' %}{% trans 'Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position „zulasten“ erfassen.' %}</div>
                 <input type="hidden" name="kaution_verrechnen" value="">
             {% else %}
-                <label class="flex items-center gap-2 fw-fs-klein fw-mutet mt-1">
+                <label class="fw-haekchen fw-f">
                     <input type="checkbox" name="kaution_verrechnen" id="cb-kaution" checked class="fw-akzent">{% trans "verrechnen / zurückzahlen" %}
                 </label>
             {% endif %}
@@ -53,21 +53,22 @@
     </div>
 
     <!-- Positionen -->
-    <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-1">{% trans "Weitere Positionen" %}</h3>
-        <p class="text-xs fw-faint mb-4">{% trans "z.B. Nebenkosten-Nachzahlung/-Guthaben, Schäden, Endreinigung, Ersatz. „zulasten“ = Mieter schuldet, „zugunsten“ = Gutschrift an Mieter." %}</p>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Weitere Positionen" %}</h2></div>
+        <div class="fw-rumpf">
+        <p class="fw-hilfe mb-4">{% trans "z.B. Nebenkosten-Nachzahlung/-Guthaben, Schäden, Endreinigung, Ersatz. „zulasten“ = Mieter schuldet, „zugunsten“ = Gutschrift an Mieter." %}</p>
         <div class="space-y-2">
             {% for p in prefill_positionen %}
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-                <input name="pos_text" value="{{ p.text }}" placeholder="{% trans 'Bezeichnung' %}" class="col-span-6 fw-flaeche2 rounded-lg text-sm px-3 py-2">
-                <input name="pos_betrag" value="{{ p.betrag|unlocalize }}" inputmode="decimal" class="pos-betrag col-span-3 fw-flaeche2 rounded-lg text-sm px-3 py-2 text-right" placeholder="{% trans 'Betrag CHF' %}">
-                <select name="pos_richtung" class="pos-richtung {% if v.mwst_pflichtig %}col-span-2{% else %}col-span-3{% endif %} fw-flaeche2 rounded-lg text-sm px-2 py-2">
+                <input name="pos_text" value="{{ p.text }}" placeholder="{% trans 'Bezeichnung' %}" class="fw-feld sm:col-span-6">
+                <input name="pos_betrag" value="{{ p.betrag|unlocalize }}" inputmode="decimal" class="pos-betrag fw-feld sm:col-span-3 fw-num text-right" placeholder="{% trans 'Betrag CHF' %}">
+                <select name="pos_richtung" class="pos-richtung fw-feld {% if v.mwst_pflichtig %}sm:col-span-2{% else %}sm:col-span-3{% endif %}">
                     <option value="zulasten" selected>{% trans "zulasten Mieter" %}</option>
                     <option value="zugunsten">{% trans "zugunsten Mieter" %}</option>
                 </select>
                 {% if v.mwst_pflichtig %}
                 <select name="pos_mwst" title="MWST-pflichtig? Nebenkosten ja, Schadenersatz nein (Art. 18 Abs. 2 MWSTG)"
-                        class="col-span-1 fw-flaeche2 rounded-lg text-sm px-2 py-2">
+                        class="fw-feld sm:col-span-1">
                     <option value="0">{% trans "ohne MWST" %}</option>
                     <option value="1">{% trans "mit MWST" %}</option>
                 </select>
@@ -76,15 +77,15 @@
             {% endfor %}
             {% for i in "12345" %}
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-                <input name="pos_text" placeholder="{% trans 'Bezeichnung' %}" class="col-span-6 fw-flaeche2 rounded-lg text-sm px-3 py-2">
-                <input name="pos_betrag" inputmode="decimal" class="pos-betrag col-span-3 fw-flaeche2 rounded-lg text-sm px-3 py-2 text-right" placeholder="{% trans 'Betrag CHF' %}">
-                <select name="pos_richtung" class="pos-richtung {% if v.mwst_pflichtig %}col-span-2{% else %}col-span-3{% endif %} fw-flaeche2 rounded-lg text-sm px-2 py-2">
+                <input name="pos_text" placeholder="{% trans 'Bezeichnung' %}" class="fw-feld sm:col-span-6">
+                <input name="pos_betrag" inputmode="decimal" class="pos-betrag fw-feld sm:col-span-3 fw-num text-right" placeholder="{% trans 'Betrag CHF' %}">
+                <select name="pos_richtung" class="pos-richtung fw-feld {% if v.mwst_pflichtig %}sm:col-span-2{% else %}sm:col-span-3{% endif %}">
                     <option value="zulasten">{% trans "zulasten Mieter" %}</option>
                     <option value="zugunsten">{% trans "zugunsten Mieter" %}</option>
                 </select>
                 {% if v.mwst_pflichtig %}
                 <select name="pos_mwst" title="MWST-pflichtig? Nebenkosten ja, Schadenersatz nein (Art. 18 Abs. 2 MWSTG)"
-                        class="col-span-1 fw-flaeche2 rounded-lg text-sm px-2 py-2">
+                        class="fw-feld sm:col-span-1">
                     <option value="0">{% trans "ohne MWST" %}</option>
                     <option value="1">{% trans "mit MWST" %}</option>
                 </select>
@@ -92,32 +93,35 @@
             </div>
             {% endfor %}
         </div>
+        </div>
     </div>
 
     <!-- LIVE-SALDO -->
-    <div class="fw-card p-5">
-        <h3 class="font-bold fw-strong text-sm mb-3">{% trans "Abrechnung (live)" %}</h3>
-        <dl class="text-sm space-y-1.5">
-            <div class="flex justify-between"><dt class="fw-mutet">{% trans "Offene Mietforderungen" %}</dt><dd id="s-offen" class="tabular-nums fw-ink">–</dd></div>
-            <div class="flex justify-between"><dt class="fw-mutet">{% trans "Positionen zulasten Mieter" %}</dt><dd id="s-zulasten" class="tabular-nums fw-ink">–</dd></div>
-            <div class="flex justify-between"><dt class="fw-mutet">{% trans "Positionen zugunsten Mieter" %}</dt><dd id="s-zugunsten" class="tabular-nums fw-ink">–</dd></div>
-            <div id="s-kaution-row" class="flex justify-between"><dt class="fw-mutet">{% trans "Mietkaution (Guthaben Mieter)" %}</dt><dd id="s-kaution" class="tabular-nums fw-gut">–</dd></div>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Abrechnung (live)" %}</h2></div>
+        <div class="px-5 pb-5">
+        <dl>
+            <div class="fw-kv"><dt>{% trans "Offene Mietforderungen" %}</dt><dd id="s-offen" class="fw-num">–</dd></div>
+            <div class="fw-kv"><dt>{% trans "Positionen zulasten Mieter" %}</dt><dd id="s-zulasten" class="fw-num">–</dd></div>
+            <div class="fw-kv"><dt>{% trans "Positionen zugunsten Mieter" %}</dt><dd id="s-zugunsten" class="fw-num">–</dd></div>
+            <div id="s-kaution-row" class="fw-kv"><dt>{% trans "Mietkaution (Guthaben Mieter)" %}</dt><dd id="s-kaution" class="fw-num">–</dd></div>
         </dl>
-        <div class="border-t fw-linie mt-3 pt-3 flex items-center justify-between">
+        <div class="border-t fw-linie mt-1 pt-3 flex items-center justify-between">
             <div id="s-label" class="font-bold fw-strong">{% trans "Saldo" %}</div>
             <div id="s-saldo" class="text-xl font-bold tabular-nums fw-strong">CHF 0.00</div>
         </div>
-        <p id="s-hint" class="text-xs fw-faint mt-1"></p>
+        <p id="s-hint" class="fw-hilfe mt-1"></p>
+        </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
-        <button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'drucken' klasse='mr-1.5' %}{% trans "Schlussabrechnung als PDF" %}
+        <button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn fw-primary">
+            {% zeichen 'drucken' %}{% trans "Schlussabrechnung als PDF" %}
         </button>
-        <button type="submit" name="aktion" value="buchen" onclick="return confirm('{% filter escapejs %}{% trans 'Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige Nachzahlung als Debitor gestellt.' %}{% endfilter %}');" class="fw-btn fw-gutknopf text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'gut' klasse='mr-1.5' %}{% trans "Verbuchen (Kaution + Nachzahlung)" %}
+        <button type="submit" name="aktion" value="buchen" onclick="return confirm('{% filter escapejs %}{% trans 'Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige Nachzahlung als Debitor gestellt.' %}{% endfilter %}');" class="fw-btn fw-gutknopf">
+            {% zeichen 'gut' %}{% trans "Verbuchen (Kaution + Nachzahlung)" %}
         </button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm fw-mutet hover:fw-ink font-medium">{% trans "Abbrechen" %}</a>
+        <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 

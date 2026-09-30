@@ -324,6 +324,11 @@ def _fallschritte(heute, bis, wer=None, mandat=None):
             'nummer': s.fall.nummer,
             'fortschritt': (gettext('Schritt %(nr)s von %(gesamt)s') % {'nr': s.nr, 'gesamt': s._gesamt}
                             if s._gesamt else ''),
+            # Dieselbe Angabe als Segmente fuer die Zeile nach konzept-v8:
+            # erledigte, der laufende, die offenen. Nur Anzeige — die Zahlen
+            # sind dieselben wie in `fortschritt`.
+            'segmente': (['fertig'] * (s.nr - 1) + ['jetzt'] + [''] * (s._gesamt - s.nr)
+                         if s._gesamt and 0 < s.nr <= s._gesamt else []),
             # Das Kuerzel, nicht der ganze Name: Die Zeile ist eng, und wer im
             # Buero arbeitet, kennt die Kuerzel. «niemand» ist eine Aussage —
             # ein Fall ohne Zustaendigkeit faellt sonst niemandem auf.

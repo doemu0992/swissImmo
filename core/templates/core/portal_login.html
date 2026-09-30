@@ -4,36 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Portal-Login | SwissImmo" %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230e6b65%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
     <style>
+        /* REDESIGN V8 (30.09.2026): Die eigenen Namen dieser Seite zeigen auf
+           die Tokens der Stilschicht (`fw/_schicht_link.html`). Bis dahin fuhr
+           sie eine eigene Indigo-Palette; Hell/Dunkel kommen jetzt aus der
+           Schicht, die eigenen Dunkel-Bloecke sind entfallen. */
         :root {
-            --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f1f2f8;
-            --ink: #171a2b; --muted: #5b6072; --faint: #8b90a4; --line: #e6e7f0;
-            --brand-500: #4f46e5; --brand-600: #4338ca; --brand-700: #3730a3;
-            --accent: var(--brand-500); --accent-strong: var(--brand-600); --accent-soft: #eef0fe;
-            --crit: #dc2626; --crit-soft: #fdeaea;
-            --shadow: 0 1px 2px rgba(23,26,43,.05), 0 10px 34px rgba(23,26,43,.10);
-            --radius: 18px; --radius-sm: 12px;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root:not([data-theme="light"]) {
-                --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
-                --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
-                --brand-500: #6366f1; --brand-600: #818cf8; --brand-700: #a5b0ff;
-                --accent-soft: #20233d; --crit: #f87171; --crit-soft: #2b1618;
-                --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 40px rgba(0,0,0,.45);
-            }
-        }
-        :root[data-theme="dark"] {
-            --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
-            --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
-            --brand-500: #6366f1; --brand-600: #818cf8; --brand-700: #a5b0ff;
-            --accent-soft: #20233d; --crit: #f87171; --crit-soft: #2b1618;
-            --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 40px rgba(0,0,0,.45);
+            --bg: var(--ds-bg); --surface: var(--ds-surface); --surface-2: var(--ds-surface-2);
+            --ink: var(--ds-ink); --muted: var(--ds-muted); --faint: var(--ds-faint); --line: var(--ds-line);
+            --brand: var(--ds-brand); --brand-500: var(--ds-brand); --brand-600: var(--ds-brand-600); --brand-700: var(--ds-brand-600);
+            --accent: var(--ds-brand); --accent-strong: var(--ds-brand-600); --accent-soft: var(--ds-brand-soft);
+            --good: var(--ds-good); --good-soft: var(--ds-good-soft);
+            --crit: var(--ds-crit); --crit-soft: var(--ds-crit-soft);
+            --shadow: var(--ds-shadow); --radius: var(--ds-radius); --radius-sm: var(--ds-radius-knopf);
         }
         * { box-sizing: border-box; margin: 0; }
         body {
-            background: var(--bg); color: var(--ink); min-height: 100dvh; font-family: 'IBM Plex Sans', -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--ink); min-height: 100dvh; font-family: var(--ds-font);
             -webkit-font-smoothing: antialiased;
         }
         .shell { min-height: 100dvh; display: grid; grid-template-columns: 1.05fr 1fr; }
@@ -41,7 +29,7 @@
 
         .brandpane {
             position: relative; overflow: hidden; color: #fff;
-            background: linear-gradient(150deg, var(--brand-500), var(--brand-700));
+            background: linear-gradient(150deg, var(--ds-verlauf-von), var(--ds-verlauf-bis));
             padding: 44px 46px; display: flex; flex-direction: column; justify-content: space-between;
         }
         .brandpane::before {
@@ -72,7 +60,7 @@
         @media (max-width: 860px) {
             .brandpane { display: none; }
             .mobrand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 24px; }
-            .mobrand .mark { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; color:#fff; font-weight: 700; background: linear-gradient(135deg, var(--brand-500), var(--brand-600)); }
+            .mobrand .mark { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; color:var(--ds-auf-satt); font-weight: 700; background: var(--ds-brand); }
             .mobrand .n { font-weight: 700; font-size: 18px; letter-spacing: -.01em; }
         }
         .head { margin-bottom: 22px; }
@@ -90,7 +78,7 @@
             padding: 11px 13px; margin-bottom: 18px;
         }
         .field { margin-bottom: 15px; }
-        .field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; color: var(--faint); margin-bottom: 6px; }
+        .field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
         .inwrap { position: relative; }
         .inwrap > svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--faint); }
         .input {
@@ -108,14 +96,13 @@
         }
         .eye:hover { color: var(--muted); }
         .submit {
-            width: 100%; font: inherit; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
+            width: 100%; font: inherit; font-size: 14px; font-weight: 600; color: var(--ds-auf-satt); cursor: pointer;
             border: 0; border-radius: var(--radius-sm); padding: 13px 16px; margin-top: 4px;
-            background: linear-gradient(135deg, var(--brand-500), var(--brand-600));
-            box-shadow: 0 6px 16px color-mix(in srgb, var(--brand-500) 38%, transparent);
+            background: var(--ds-brand);
             display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .06s, filter .15s;
         }
-        .submit:hover { filter: brightness(1.04); transform: translateY(-1px); }
-        .submit:active { transform: translateY(0); }
+        .submit:hover { background: var(--ds-brand-600); }
+        .submit:active { transform: scale(.98); }
         .hint {
             margin-top: 18px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
             border-radius: var(--radius-sm); padding: 12px 14px; font-size: 12.5px; color: var(--muted); line-height: 1.55;
@@ -133,9 +120,10 @@
             border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
         }
         .sprachwahl-knopf:hover { color: var(--ink); border-color: var(--accent); }
-        .sprachwahl-knopf.ist-aktiv { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .sprachwahl-knopf.ist-aktiv { background: var(--ink); border-color: var(--ink); color: var(--surface); }
     </style>
     {% include 'core/_assets_schrift.html' %}
+    {% include 'fw/_schicht_link.html' %}
 </head>
 <body>
 <div class="shell">

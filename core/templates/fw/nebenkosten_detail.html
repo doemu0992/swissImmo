@@ -6,132 +6,131 @@
 
 {% block content %}
 
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/nebenkosten/{{ lg_query }}" class="hover:fw-marke">{% trans "Nebenkosten" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{{ p.bezeichnung }}</span>
+<nav class="fw-akte-pfad mb-2.5">
+    <a href="/neu/nebenkosten/{{ lg_query }}">{% trans "Nebenkosten" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{{ p.bezeichnung }}</b>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-    <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-xl fw-btn fw-primary flex items-center justify-center text-xl shadow-lg fw-schatten-marke shrink-0">
+<div class="fw-aktenkopf">
+<div class="fw-akte-oben">
+        <div class="fw-akte-bild">
             {% zeichen 'rechnung' %}
         </div>
-        <div>
-            <h1 class="text-2xl font-bold fw-strong">{{ p.bezeichnung }}</h1>
-            <p class="text-sm fw-mutet">{% if p.liegenschaft_id %}{{ p.liegenschaft.strasse }}, {{ p.liegenschaft.ort }} · {% endif %}{{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}</p>
+        <div class="min-w-0">
+            <div class="fw-akte-typ">{% trans "Nebenkosten" %}</div>
+            <h1>{{ p.bezeichnung }}</h1>
+            <div class="fw-akte-pfad">{% if p.liegenschaft_id %}{{ p.liegenschaft.strasse }}, {{ p.liegenschaft.ort }} · {% endif %}{{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}</div>
         </div>
-    </div>
-    <div class="flex items-center gap-2 flex-wrap">
-        {% if hkvo_angewendet %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-info-flaeche fw-info" title="{% trans 'Verbrauchsabhängige Heizkostenabrechnung angewendet' %}">{% trans "HKVO ✓" %}</span>{% endif %}
+    <div class="fw-akte-rechts">
+        {% if hkvo_angewendet %}<span class="fw-chip fw-info" title="{% trans 'Verbrauchsabhängige Heizkostenabrechnung angewendet' %}">{% trans "HKVO ✓" %}</span>{% endif %}
         {% if request.user|darf:"/neu/nebenkosten/1/versand/" %}
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/versand/" title="{% trans 'Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF' %}">
             {% csrf_token %}
-            <button class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Abrechnungen erstellen &amp; ablegen" %}</button>
+            <button class="fw-btn">{% zeichen 'herunterladen' %}{% trans "Abrechnungen erstellen &amp; ablegen" %}</button>
         </form>
         {% endif %}
-        {% if p.abgeschlossen %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-gut-flaeche fw-gut">{% trans "Abgeschlossen" %}</span>
-        {% else %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold fw-warn-flaeche fw-warnton">{% trans "Offen" %}</span>
+        {% if p.abgeschlossen %}<span class="fw-chip fw-good fw-dot">{% trans "Abgeschlossen" %}</span>
+        {% else %}<span class="fw-chip fw-warn fw-dot">{% trans "Offen" %}</span>
         {% if request.user|darf:"/neu/nebenkosten/1/verbuchen/" %}
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen." %}{% endfilter %}');">
             {% csrf_token %}
-            <button class="text-sm font-semibold fw-btn fw-primary px-4 py-1.5 rounded-lg">{% zeichen 'gut' klasse='mr-1' %}{% trans "Verbuchen" %}</button>
+            <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Verbuchen" %}</button>
         </form>
         {% endif %}
         {% endif %}
     </div>
 </div>
 
+<!-- KPI -->
+<div class="fw-kzn">
+    <div><div class="fw-l">{% trans "Total Kosten (HNK)" %}</div>
+        <div class="fw-w">CHF {{ total_kosten|chf }}</div></div>
+    <div><div class="fw-l">{% trans "Akonto bezahlt" %}</div>
+        <div class="fw-w">CHF {{ total_akonto|chf }}</div></div>
+    <div><div class="fw-l">{% if saldo_total > 0 %}{% trans "Saldo (Nachzahlung)" %}{% else %}{% trans "Saldo (Rückzahlung)" %}{% endif %}</div>
+        <div class="fw-w {% if saldo_total > 0 %}crit{% else %}good{% endif %}">CHF {{ saldo_total|chf }}</div></div>
+</div>
+</div>
+
 {% if warnungen %}
-<div class="mt-6 rounded-xl border fw-linie-warn fw-warn-flaeche p-4">
-    <div class="flex items-start gap-2 fw-warnton">
-        {% zeichen 'warnung' klasse='mt-0.5' %}
-        <div class="text-sm">
+<div class="fw-card">
+    <div class="fw-hinweis warn">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht">
             {% for w in warnungen %}<div>{{ w }}</div>{% endfor %}
         </div>
     </div>
 </div>
 {% endif %}
 
-<!-- KPI -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold fw-marke">CHF {{ total_kosten|chf }}</div><div class="text-sm fw-mutet">{% trans "Total Kosten (HNK)" %}</div>
-    </div>
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold fw-strong">CHF {{ total_akonto|chf }}</div><div class="text-sm fw-mutet">{% trans "Akonto bezahlt" %}</div>
-    </div>
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold {% if saldo_total > 0 %}fw-kritisch{% else %}fw-gut{% endif %}">CHF {{ saldo_total|chf }}</div>
-        <div class="text-sm fw-mutet">{% if saldo_total > 0 %}{% trans "Saldo (Nachzahlung)" %}{% else %}{% trans "Saldo (Rückzahlung)" %}{% endif %}</div>
-    </div>
-</div>
-
 {% include 'fw/_detail_tabs.html' with gruppe='nk' tabs=tab_liste %}
 
 {% if akonto_vorschlaege %}
-<div class="fw-markenflaeche border fw-linie-marke rounded-xl p-5 mb-5">
-    <div class="flex items-start gap-3 mb-3">
-        <div class="fw-marke text-xl">💡</div>
-        <div>
-            <h3 class="font-bold fw-ink text-sm">{% trans "Akonto-Anpassung empfohlen" %}</h3>
-            <p class="text-sm fw-ink">{% blocktrans trimmed count n=akonto_vorschlaege|length %}Bei {{ n }} Vertrag weicht der monatliche Akonto deutlich vom effektiven Bedarf ab. Neue Höhe auf CHF 5 gerundet.{% plural %}Bei {{ n }} Verträgen weicht der monatliche Akonto deutlich vom effektiven Bedarf ab. Neue Höhe auf CHF 5 gerundet.{% endblocktrans %}</p>
+<div class="fw-card">
+    <div class="fw-hinweis info">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">
+            <b>{% trans "Akonto-Anpassung empfohlen" %}</b>
+            <p>{% blocktrans trimmed count n=akonto_vorschlaege|length %}Bei {{ n }} Vertrag weicht der monatliche Akonto deutlich vom effektiven Bedarf ab. Neue Höhe auf CHF 5 gerundet.{% plural %}Bei {{ n }} Verträgen weicht der monatliche Akonto deutlich vom effektiven Bedarf ab. Neue Höhe auf CHF 5 gerundet.{% endblocktrans %}</p>
         </div>
     </div>
     <form method="post" action="/neu/nebenkosten/{{ p.id }}/akonto/">
         {% csrf_token %}
-        <div class="space-y-2 mb-3">
+        <div>
         {% for s in akonto_vorschlaege %}
-            <label class="flex items-center gap-3 fw-flaeche rounded-lg px-4 py-2 border fw-linie-marke cursor-pointer">
+            <label class="fw-zeile cursor-pointer">
                 <input type="checkbox" name="vertrag_id" value="{{ s.vertrag_id }}" checked class="fw-akzent">
-                <div class="flex-1 min-w-0">
-                    <div class="font-semibold fw-strong text-sm truncate">{{ s.mieter }} <span class="fw-faint font-normal">· {{ s.einheit }}</span></div>
-                    <div class="text-xs fw-mutet">{% if s.richtung == 'erhöhen' %}{% blocktrans with a=s.aktuell|chf d=s.diff|chf %}aktuell CHF {{ a }}/Mt. → erhöhen um CHF {{ d }}{% endblocktrans %}{% else %}{% blocktrans with a=s.aktuell|chf d=s.diff|chf %}aktuell CHF {{ a }}/Mt. → senken um CHF {{ d }}{% endblocktrans %}{% endif %}</div>
+                <div class="fw-mitte">
+                    <div class="fw-t truncate">{{ s.mieter }} <span class="fw-faint">· {{ s.einheit }}</span></div>
+                    <div class="fw-s">{% if s.richtung == 'erhöhen' %}{% blocktrans with a=s.aktuell|chf d=s.diff|chf %}aktuell CHF {{ a }}/Mt. → erhöhen um CHF {{ d }}{% endblocktrans %}{% else %}{% blocktrans with a=s.aktuell|chf d=s.diff|chf %}aktuell CHF {{ a }}/Mt. → senken um CHF {{ d }}{% endblocktrans %}{% endif %}</div>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
-                    <span class="text-xs fw-faint">{% trans "neu CHF" %}</span>
-                    <input type="number" step="1" name="akonto_{{ s.vertrag_id }}" value="{{ s.empfohlen }}" class="w-20 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right font-semibold">
+                    <span class="fw-klein">{% trans "neu CHF" %}</span>
+                    <input type="number" step="1" name="akonto_{{ s.vertrag_id }}" value="{{ s.empfohlen }}" class="fw-feld fw-num w-20 text-right">
                 </div>
             </label>
         {% endfor %}
         </div>
-        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
-            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Akonto anpassen" %}
+        <div class="fw-fuss">
+        <span>{% trans "Übernimmt die neue Akonto-Höhe in den Vertrag (künftige Sollstellungen). Eine formelle Mitteilung an den Mieter ist separat zu versenden." %}</span>
+        <button type="submit" class="fw-btn fw-primary">
+            {% zeichen 'speichern' %}{% trans "Akonto anpassen" %}
         </button>
-        <p class="text-xs fw-marke mt-2">{% trans "Übernimmt die neue Akonto-Höhe in den Vertrag (künftige Sollstellungen). Eine formelle Mitteilung an den Mieter ist separat zu versenden." %}</p>
+        </div>
     </form>
 </div>
 {% endif %}
 
 <!-- MIETER-ABRECHNUNG -->
 <div data-panel="nk" id="nk-abrechnung">
-    <div class="fw-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="fw-table min-w-max">
+    <div class="fw-card">
+        <div class="fw-tablewrap">
+            <table class="fw-table">
                 <thead>
                 <tr>
-                    <th class="font-semibold">{% trans "Mieter" %}</th>
-                    <th class="font-semibold">{% trans "Objekt" %}</th>
-                    <th class="font-semibold text-center fw-zentriert">m²</th>
-                    <th class="font-semibold text-center fw-zentriert">{% trans "Tage" %}</th>
-                    <th class="font-semibold text-right fw-right">{% trans "Anteil Kosten" %}</th>
-                    <th class="font-semibold text-right fw-right">{% trans "Akonto" %}</th>
-                    <th class="font-semibold text-right fw-right">{% trans "Saldo" %}</th>
+                    <th>{% trans "Mieter" %}</th>
+                    <th>{% trans "Objekt" %}</th>
+                    <th class="fw-zentriert">m²</th>
+                    <th class="fw-zentriert">{% trans "Tage" %}</th>
+                    <th class="fw-right">{% trans "Anteil Kosten" %}</th>
+                    <th class="fw-right">{% trans "Akonto" %}</th>
+                    <th class="fw-right">{% trans "Saldo" %}</th>
                 </tr>
                 </thead>
-                <tbody class="fw-dv">
+                <tbody>
                 {% for a in abrechnungen %}
                 <tr>
-                    <td class="font-medium fw-strong whitespace-nowrap">
-                        <a href="/neu/vertraege/{{ a.v.id }}/" class="hover:fw-marke">{{ a.mieter }}</a>
+                    <td class="fw-strong whitespace-nowrap">
+                        <a href="/neu/vertraege/{{ a.v.id }}/" class="fw-link">{{ a.mieter }}</a>
                     </td>
                     <td class="fw-mutet whitespace-nowrap">{{ a.einheit }}</td>
-                    <td class="text-center fw-mutet fw-zentriert">{{ a.flaeche|floatformat:0 }}</td>
-                    <td class="text-center fw-mutet fw-zentriert">{{ a.tage }}</td>
-                    <td class="text-right fw-ink whitespace-nowrap fw-right">{{ a.kosten|chf }}</td>
-                    <td class="text-right fw-mutet whitespace-nowrap fw-right">{{ a.akonto|chf }}</td>
-                    <td class="px-5 py-3 text-right font-semibold whitespace-nowrap {% if a.saldo > 0 %}fw-kritisch{% else %}fw-gut{% endif %}">
-                        {{ a.saldo|chf }}
+                    <td class="fw-zentriert fw-mutet">{{ a.flaeche|floatformat:0 }}</td>
+                    <td class="fw-zentriert fw-mutet">{{ a.tage }}</td>
+                    <td class="fw-right fw-num">{{ a.kosten|chf }}</td>
+                    <td class="fw-right fw-num fw-mutet">{{ a.akonto|chf }}</td>
+                    <td class="fw-right fw-num">
+                        <span class="fw-strong {% if a.saldo > 0 %}fw-kritisch{% else %}fw-gut{% endif %}">{{ a.saldo|chf }}</span>
                     </td>
                 </tr>
                 {% empty %}
@@ -140,7 +139,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-5 py-3 border-t fw-linie text-xs fw-faint">
+        <div class="fw-fuss">
             {% trans "Positiver Saldo = Nachzahlung durch Mieter · Verteilung nach Fläche (m²), zeitanteilig (Pro-Rata). Vorschau — verbindliche Abrechnung in der klassischen Ansicht." %}
         </div>
     </div>
@@ -148,17 +147,17 @@
 
 <!-- BELEGE -->
 <div data-panel="nk" id="nk-belege" class="hidden">
-    <div class="fw-card overflow-hidden">
-        <div class="overflow-x-auto"><table class="fw-table min-w-max">
+    <div class="fw-card">
+        <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th class="font-semibold">{% trans "Datum" %}</th><th class="font-semibold">{% trans "Beschreibung" %}</th><th class="font-semibold">{% trans "Kategorie" %}</th><th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
+                <th>{% trans "Datum" %}</th><th>{% trans "Beschreibung" %}</th><th>{% trans "Kategorie" %}</th><th class="fw-right">{% trans "Betrag" %}</th>
             </tr></thead>
-            <tbody class="fw-dv">
+            <tbody>
             {% for b in belege %}
-            <tr><td class="fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+            <tr><td class="fw-mutet fw-num whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
                 <td class="fw-strong">{{ b.text|default:"Beleg" }}</td>
                 <td class="fw-mutet">{{ b.get_kategorie_display }}</td>
-                <td class="text-right font-medium fw-strong whitespace-nowrap fw-right">{{ b.betrag|chf }}</td></tr>
+                <td class="fw-right fw-num fw-strong">{{ b.betrag|chf }}</td></tr>
             {% empty %}
             <tr><td colspan="4" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='rechnung' titel=_('Keine Belege erfasst.') subtext=_('HNK-relevante Kreditorenrechnungen fliessen automatisch ein.') %}</td></tr>
             {% endfor %}

@@ -225,7 +225,12 @@ class TailwindPaletteTests(TestCase):
         kopf = ohne_kommentare(text[:text.index('</head>')]).lower()
         self.assertNotIn('4f46e5', kopf,
                          'Das alte Indigo steht noch im Kopfbereich.')
-        self.assertIn('%230f6f6a', kopf, 'Das Favicon führt nicht die Markenfarbe.')
+        # Die Markenfarbe aus der Schicht, nicht abgeschrieben: Beim Redesign
+        # (konzept-v8) wechselte sie, und ein fester Wert haette das Favicon
+        # auf der alten Farbe festgehalten.
+        marke = re.search(r':root\{[^}]*--ds-brand:(#[0-9a-f]{6})',
+                          (WURZEL / 'core/templates/fw/_schicht.html').read_text(encoding='utf-8')).group(1)
+        self.assertIn('%23' + marke[1:], kopf, 'Das Favicon führt nicht die Markenfarbe.')
 
     def test_kommentare_zaehlen_nicht_als_farbe(self):
         """Gegenprobe zu genau dem Fehler, den dieser Test selbst hatte."""
@@ -392,36 +397,35 @@ class HuellenTests(TestCase):
             f'die Palette sagt #{marke} = rgb({r} {g} {b}). Die Palette wurde '
             f'geaendert, aber nicht neu gebaut — `npm run css` ausfuehren.')
 
-    def test_die_aussen_datei_traegt_die_palette_bewusst_NICHT(self):
-        """Gegenprobe zum Test darueber — sonst prueft er nur, dass zwei
-        gleiche Dateien gleich sind.
+    def test_die_aussenseiten_laden_dieselbe_palette(self):
+        """Seit dem Redesign v8 (30.09.2026): aussen wie innen dieselbe Datei.
 
-        Waeren beide Dateien identisch gebaut, waere die Trennung sinnlos und
-        die Aussenseiten waeren beim Umstellen nebenbei umgefaerbt worden.
+        Bis dahin luden Mieterportal, Bewerbung, oeffentliche Formulare und
+        Fehlerseiten eine zweite Tailwind-Datei OHNE die Markenpalette — eine
+        bewusste Entscheidung von E0.2. Das Redesign hat sie umgekehrt: Alle
+        Seiten sehen aus wie das Mockup. Dieser Test haelt die neue Regel fest.
         """
-        aussen = pathlib.Path('static/css/tailwind-aussen.css').read_text(encoding='utf-8')
-        gefunden = re.search(rf'\.{SONDE}\{{[^}}]*?(\d+ \d+ \d+)', aussen)
-        self.assertIsNotNone(
-            gefunden, f'tailwind-aussen.css wurde nicht gebaut. {SONDE_HINWEIS}')
-        marke = rampen()['indigo'][600].lstrip('#')
-        r, g, b = (int(marke[i:i + 2], 16) for i in (0, 2, 4))
-        self.assertNotEqual(
-            gefunden.group(1), f'{r} {g} {b}',
-            'Die Aussen-Datei traegt die Markenpalette. Damit waeren '
-            'Mieterportal, Bewerbungsformular und Fehlerseiten umgefaerbt — '
-            'eine Gestaltungsentscheidung, die E0.2 nicht treffen sollte.')
+        text = pathlib.Path('core/templates/core/_assets_aussen.html').read_text(encoding='utf-8')
+        verweise = ' '.join(re.findall(r'<link[^>]*>', text))
+        self.assertIn('css/tailwind.css', verweise)
+        self.assertNotIn('tailwind-aussen.css', verweise)
+        self.assertFalse(pathlib.Path('static/css/tailwind-aussen.css').exists(),
+                         'Die zweite Tailwind-Datei ist wieder da — wer laedt sie?')
 
-    def test_die_aussenseiten_sind_gezaehlt_statt_vergessen(self):
-        """Was Mieter und Bewerber sehen, ist NOCH nicht umgestellt.
+    def test_jede_huelle_laedt_einen_baustein_mit_palette(self):
+        """Keine Huelle mehr ohne Palette — auch nicht die Aussenseiten.
 
-        Das ist eine Entscheidung, keine Nachlaessigkeit: Die Palette dort
-        einzuziehen aendert das Erscheinungsbild gegenueber Dritten. Dieser
-        Test haelt die Zahl fest, damit die Luecke benannt bleibt und nicht
-        stillschweigend waechst.
+        Gegenprobe zur Suche: Es gibt beide Bausteine, und jeder der beiden
+        zeigt auf die gebaute Datei mit der Palette.
         """
-        offen = [p for p in self._huellen_im_dateisystem() if p not in HUELLEN]
-        self.assertGreater(len(offen), 0)
-        self.assertLessEqual(
-            len(offen), 15,
-            f'Es sind mehr Huellen ohne Palette geworden ({len(offen)}): '
-            f'{offen}. Neue Huellen der Anwendung binden `fw/_assets.html` ein.')
+        for pfad in self._huellen_im_dateisystem():
+            text = pathlib.Path(pfad).read_text(encoding='utf-8')
+            with self.subTest(huelle=pfad):
+                # Seiten mit eigenem <style>-Block (Anmeldung, Eigentuemerportal)
+                # laden nur die Schrift — dann muessen sie die Tokens der
+                # Schicht einbinden, sonst tragen sie eine eigene Palette.
+                mit_tokens = ("core/_assets_schrift.html" in text
+                              and "fw/_schicht_link.html" in text)
+                self.assertTrue(
+                    "fw/_assets.html" in text or "core/_assets_aussen.html" in text or mit_tokens,
+                    f'{pfad} laedt weder die Palette noch die Tokens der Schicht.')

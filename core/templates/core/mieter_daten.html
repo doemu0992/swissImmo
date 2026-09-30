@@ -1,7 +1,7 @@
 {% extends 'core/portal_base.html' %}
 {% load zeichen i18n %}
 {% block title %}{% trans "Meine Daten — Mieterportal" %}{% endblock %}
-{% block brand_icon %}fa-id-card{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-person"/></svg>{% endblock %}
 {% block brand_mobile %}{% trans "Meine Daten" %}{% endblock %}
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='daten' %}{% endblock %}
 

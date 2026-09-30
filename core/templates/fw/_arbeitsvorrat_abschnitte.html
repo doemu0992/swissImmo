@@ -9,6 +9,9 @@
    und Rolle, sonst nichts. Jetzt trägt `faelle.Abwesenheit` die Angabe,
    und «Termine» speist sich zusätzlich aus `faelle.Termin`. {% endcomment %}
 {% load chf %}
+{% comment %} `teil` (seit dem Redesign nach konzept-v8): «links» zeigt Laeufe und
+   Freigaben — das, was zu TUN ist —, «rechts» Termine und Vertretung fuer die
+   Kontextspalte. Ohne Angabe erscheinen alle vier wie bisher. {% endcomment %}
 
 {% comment %}
 DIE LÄUFE ALS EIGENE KARTE (v7)
@@ -30,10 +33,9 @@ Begründung berechnet und NIRGENDS gerendert — dritter Fall dieser Art in
 dieser Reihe nach `f_query` (E2.60) und den vier Klassen (E2.66). Hier ist die
 Karte, die sie sichtbar macht.
 {% endcomment %}
-{% if av_laeufe %}
+{% if av_laeufe and teil != 'rechts' %}
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-ikon{% if av_laeufe_blockiert %} crit{% endif %}">{% zeichen 'lauf' %}</span>
         <span class="fw-t">{% trans "Läufe" %}</span>
         <span class="fw-neben">{% blocktrans count n=av_laeufe_faellig %}{{ n }} fällig{% plural %}{{ n }} fällig{% endblocktrans %}{% if av_laeufe_blockiert %}, {% blocktrans count n=av_laeufe_blockiert %}{{ n }} blockiert{% plural %}{{ n }} blockiert{% endblocktrans %}{% endif %}</span>
         <span class="fw-rechts"><a href="/neu/laeufe/" class="fw-link">{% trans "Alle Läufe" %}</a></span>
@@ -46,42 +48,44 @@ Karte, die sie sichtbar macht.
             <div class="fw-s">{{ l.zeile }}</div>
         </div>
         <div class="fw-zeit">{{ l.datum|date:"d.m.Y" }}</div>
-        <a href="{{ l.ziel }}" class="fw-btn">{{ l.knopf }}</a>
+        <a href="{{ l.ziel }}" class="fw-btn fw-knapp">{{ l.knopf }}</a>
     </div>
     {% endfor %}
 </div>
 {% endif %}
 
-{% if av_termine %}
+{% if av_termine and teil != 'links' %}
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-ikon">{% zeichen 'termin' %}</span>
         <span class="fw-t">{% trans "Termine" %}</span>
         <span class="fw-neben">{{ av_termine_gesamt }} {% trans "in den nächsten 7 Tagen" %}</span>
     </div>
+    {% comment %} Die Terminleiste des Mockups: Uhrzeit, Zeichen der Terminart
+       auf der Linie, Titel. Der Knopf bleibt — er fuehrt zur Akte. {% endcomment %}
+    <div class="fw-agenda">
     {% for t in av_termine %}
-    <div class="fw-zeile">
-        <div class="fw-zeit" style="min-width:64px">
+    <div class="fw-agenda-zeile">
+        <div class="fw-agenda-zeit">
             {% if t.zeit %}{{ t.zeit|time:"H:i" }}{% else %}{{ t.datum|date:"d.m." }}{% endif %}
-            {% if t.zeit %}<br><span class="fw-klein">{{ t.datum|date:"d.m." }}</span>{% endif %}
+            {% if t.zeit %}<span class="fw-klein">{{ t.datum|date:"d.m." }}</span>{% endif %}
         </div>
-        <span class="fw-ikon">{% zeichen_wert t.ikon %}</span>
+        <span class="fw-agenda-punkt">{% zeichen_wert t.ikon %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ t.titel }}</div>
             <div class="fw-s">{{ t.zeile }}</div>
+            <a href="{{ t.ziel }}" class="fw-link">{{ t.knopf }}</a>
         </div>
-        <a href="{{ t.ziel }}" class="fw-btn">{{ t.knopf }}</a>
     </div>
     {% endfor %}
+    </div>
     {% comment %} Kein «Kalender»-Verweis wie im Prototyp: Es gibt keine
        Kalenderansicht, und ein Knopf ins Leere ist schlechter als keiner. {% endcomment %}
 </div>
 {% endif %}
 
-{% if av_freigaben %}
+{% if av_freigaben and teil != 'rechts' %}
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-ikon warn">{% zeichen 'einstellungen' %}</span>
         {% comment %} Der Prototyp nennt den Abschnitt «Wartet auf mich».
            Das Datenmodell trägt das «mich» nicht: Weder KreditorenRechnung
            noch HandwerkerAuftrag führen einen Freigeber. {% endcomment %}
@@ -91,13 +95,12 @@ Karte, die sie sichtbar macht.
     {% for f in av_freigaben %}
     <div class="fw-zeile">
         <span class="fw-marker {% if f.tage and f.tage > 5 %}crit{% elif f.tage and f.tage > 2 %}warn{% endif %}"></span>
-        <span class="fw-ikon">{% zeichen_wert f.ikon %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ f.titel }}</div>
             <div class="fw-s">{{ f.zeile }}{% if f.tage %} · {% blocktrans count n=f.tage %}liegt seit {{ n }} Tag{% plural %}liegt seit {{ n }} Tagen{% endblocktrans %}{% endif %}</div>
         </div>
         {% if f.betrag %}<span class="fw-betrag">CHF {{ f.betrag|chf }}</span>{% endif %}
-        <a href="{{ f.ziel }}" class="fw-btn fw-primary">{{ f.knopf }}</a>
+        <a href="{{ f.ziel }}" class="fw-btn fw-knapp fw-primary">{{ f.knopf }}</a>
     </div>
     {% endfor %}
     <div class="fw-fuss">
@@ -107,14 +110,13 @@ Karte, die sie sichtbar macht.
 </div>
 {% endif %}
 
-{% if av_vertretung %}
+{% if av_vertretung and teil != 'links' %}
 {% comment %} G8: «Zuständigkeit statt Rolle … plus Vertretung.» Eine
    Abwesenheit OHNE Vertretung ist kein Fehler, sondern eine Aussage — und
    eine, die auffallen soll. Sie steht deshalb in Warnfarbe, statt still wie
    eine gedeckte auszusehen. {% endcomment %}
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-ikon">{% zeichen 'wartet' %}</span>
         <span class="fw-t">{% trans "Vertretung" %}</span>
         <span class="fw-rechts"><a href="/neu/abwesenheiten/" class="fw-link">{% trans "Abwesenheiten" %}</a></span>
     </div>

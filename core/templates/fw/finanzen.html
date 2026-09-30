@@ -25,9 +25,8 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
 {% endcomment %}
         <p>{% blocktrans trimmed %}Die Zahlen hinter den Finanzaufgaben — der Arbeitsvorrat steht auf <a href="/neu/" class="fw-link">Heute</a>.{% endblocktrans %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
-    <div style="text-align:right">
-        <div class="fw-num" style="font-size:28px;font-weight:700;letter-spacing:-.02em;color:{% if dringend_n %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">{{ offene_posten }}</div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600">{% trans "offene Aufgaben" %}{% if dringend_n %} · {% blocktrans with n=dringend_n %}{{ n }} dringend{% endblocktrans %}{% endif %}</div>
+    <div class="fw-phead-knoepfe">
+        <span class="fw-chip {% if dringend_n %}fw-crit{% elif offene_posten %}fw-warn{% else %}fw-good{% endif %}"><span class="fw-num">{{ offene_posten }}</span> {% trans "offene Aufgaben" %}{% if dringend_n %} · {% blocktrans with n=dringend_n %}{{ n }} dringend{% endblocktrans %}{% endif %}</span>
     </div>
 </div>
 
@@ -36,7 +35,7 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
     <div class="fw-kpi">
         <span class="fw-l">{% trans "Offene Forderungen" %}</span>
         <span class="fw-v fw-num">CHF {{ deb_offen_chf|chf }}</span>
-        {% if deb_ueberf_chf %}<span class="fw-f" style="color:var(--ds-crit)">{% blocktrans with betrag=deb_ueberf_chf|chf %}davon CHF {{ betrag }} überfällig{% endblocktrans %}</span>{% endif %}
+        {% if deb_ueberf_chf %}<span class="fw-f"><span class="fw-kritisch">{% blocktrans with betrag=deb_ueberf_chf|chf %}davon CHF {{ betrag }} überfällig{% endblocktrans %}</span></span>{% endif %}
     </div>
     <div class="fw-kpi">
         <span class="fw-l">{% trans "Zur Zahlung frei" %}</span>
@@ -55,56 +54,45 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
     </div>
 </div>
 
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+<div class="fw-cockpit">
     <!-- ARBEITSKORB -->
-    <div class="xl:col-span-2">
-        <h2 class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">{% trans "Offene Posten" %}</h2>
-        <div class="space-y-2.5">
+    <div class="fw-cockpit-haupt">
+        <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Offene Posten" %}</h2></div>
         {% for i in arbeitskorb %}
-            <div class="fw-flaeche rounded-xl border {% if i.dringend %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3.5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {{ i.icon_cls }}">
-                    {% zeichen_wert i.icon %}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-semibold fw-strong">{{ i.titel }}</span>
-                        {% if i.anzahl %}<span class="fw-fs-klein font-bold {% if i.dringend %}fw-krit-flaeche fw-kritisch{% else %}fw-flaeche2 fw-mutet{% endif %} rounded-md px-1.5 py-0.5">{{ i.anzahl }}</span>{% endif %}
-                        {% if i.dringend %}<span class="fw-fs-mikro font-bold uppercase tracking-wide fw-kritisch">{% trans "dringend" %}</span>{% endif %}
-                    </div>
-                    <div class="text-xs fw-mutet mt-0.5 truncate">{{ i.sub }}{% if i.chf %} · <span class="font-medium fw-mutet">CHF {{ i.chf|chf }}</span>{% endif %}</div>
+            <div class="fw-zeile">
+                <span class="fw-marker{% if i.dringend %} crit{% elif i.anzahl %} warn{% else %} good{% endif %}"></span>
+                <span class="fw-ikon{% if i.dringend %} crit{% elif i.anzahl %} warn{% else %} good{% endif %}">{% zeichen_wert i.icon %}</span>
+                <div class="fw-mitte">
+                    <div class="fw-t">{{ i.titel }}{% if i.anzahl %} <span class="fw-chip {% if i.dringend %}fw-crit{% else %}fw-mut{% endif %}">{{ i.anzahl }}</span>{% endif %}{% if i.dringend %} <span class="fw-chip fw-crit">{% trans "dringend" %}</span>{% endif %}</div>
+                    <div class="fw-s"><span class="truncate">{{ i.sub }}{% if i.chf %} · <span class="fw-num">CHF {{ i.chf|chf }}</span>{% endif %}</span></div>
                 </div>
                 {% if i.anzahl %}
-                <a href="{{ i.url }}" class="shrink-0 text-white text-xs font-semibold px-3.5 py-2 rounded-lg {{ i.btn_cls }}">{{ i.cta }} ›</a>
+                <a href="{{ i.url }}" class="fw-btn fw-knapp">{{ i.cta }} ›</a>
                 {% else %}
-                <span class="shrink-0 fw-gut text-xs font-semibold px-2">{% zeichen 'gut' klasse='mr-1' %}{% trans "erledigt" %}</span>
+                <span class="fw-chip fw-good">{% zeichen 'gut' %}{% trans "erledigt" %}</span>
                 {% endif %}
             </div>
         {% endfor %}
-        </div>
         {% if offene_posten == 0 %}
-        <div class="mt-3 fw-gut-flaeche border fw-linie-gut rounded-xl px-4 py-3 text-sm fw-gut">
-            {% zeichen 'gut' klasse='mr-1.5' %}{% trans "Alle Finanzaufgaben erledigt — nichts offen." %}
+        <div class="fw-hinweis good">
+            <span class="fw-hi">{% zeichen 'gut' %}</span>
+            <div class="fw-ht">{% trans "Alle Finanzaufgaben erledigt — nichts offen." %}</div>
         </div>
         {% endif %}
+        </div>
     </div>
 
     <!-- MONATSABSCHLUSS-CHECKLISTE -->
-    <div>
-        <h2 class="text-xs uppercase tracking-[0.2em] fw-mutet font-bold mb-3">{% trans "Periodenabschluss" %}</h2>
-        <div class="fw-card overflow-hidden">
-            <div class="fw-dv">
+    <div class="fw-cockpit-kontext">
+        <div class="fw-card">
+            <div class="fw-kopf"><h2>{% trans "Periodenabschluss" %}</h2></div>
             {% for c in checkliste %}
-                <a href="{{ c.url }}" class="flex items-start gap-3 px-4 py-3 hover:fw-flaeche2">
-                    {% if c.ok is True %}
-                        {% zeichen 'gut' klasse='fw-gut mt-0.5' %}
-                    {% elif c.ok is False %}
-                        {% zeichen 'offen' klasse='fw-warnton mt-0.5' %}
-                    {% else %}
-                        {% zeichen 'hinweis' klasse='fw-faint mt-0.5' %}
-                    {% endif %}
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm {% if c.ok is True %}fw-faint line-through{% else %}fw-strong font-medium{% endif %}">{{ c.titel }}</div>
-                        <div class="text-xs fw-faint mt-0.5">{{ c.hinweis }}</div>
+                <a href="{{ c.url }}" class="fw-zeile klick">
+                    <span class="fw-marker{% if c.ok is True %} good{% elif c.ok is False %} warn{% endif %}"></span>
+                    <div class="fw-mitte">
+                        <div class="fw-t">{% if c.ok is True %}<span class="fw-faint line-through">{{ c.titel }}</span>{% else %}{{ c.titel }}{% endif %}</div>
+                        <div class="fw-s">{{ c.hinweis }}</div>
                     </div>
                     {% comment %}
                     Anzahl und Betrag standen bis E2.30 im Arbeitskorb daneben.
@@ -113,30 +101,25 @@ Konzept in Abschnitt 1 («Heute skaliert nicht»).
                     wie Status und Blockade.
                     {% endcomment %}
                     {% if c.anzahl %}
-                    <div class="text-right shrink-0">
-                        <div class="text-sm fw-num font-bold {% if c.ok is True %}fw-faint{% else %}fw-strong{% endif %}">{{ c.anzahl }}</div>
-                        {% if c.chf %}<div class="fw-fs-klein fw-faint fw-num">CHF {{ c.chf|chf }}</div>{% endif %}
-                    </div>
+                    <div class="fw-zeit"><span class="fw-num {% if c.ok is True %}fw-faint{% else %}fw-ink{% endif %}">{{ c.anzahl }}</span>{% if c.chf %}<br><span class="fw-klein fw-num">CHF {{ c.chf|chf }}</span>{% endif %}</div>
                     {% endif %}
-                    {% zeichen 'weiter' klasse='fw-fs-mikro fw-faint mt-1' %}
                 </a>
             {% endfor %}
-            </div>
-            <div class="px-4 py-2 fw-flaeche2 border-t fw-linie fw-fs-klein fw-faint">
-                {% trans "Reihenfolge = empfohlener Ablauf. Grün = erledigt, gelb = offen, grau = manuell prüfen." %}
+            <div class="fw-fuss">
+                <span>{% trans "Reihenfolge = empfohlener Ablauf. Grün = erledigt, gelb = offen, grau = manuell prüfen." %}</span>
             </div>
         </div>
 
-        <div class="mt-4 fw-card p-4">
-            <div class="text-xs uppercase tracking-wide fw-faint font-semibold mb-2">{% trans "Direkt zu" %}</div>
-            <div class="grid grid-cols-2 gap-2 text-sm">
-                <a href="/neu/buchhaltung/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'bericht' klasse='w-4 mr-1' %}{% trans "Journal" %}</a>
-                <a href="/neu/mieterkonten/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'rechnung' klasse='w-4 mr-1' %}{% trans "Mieterkonten" %}</a>
-                <a href="/neu/lieferantenkonten/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'rechnung' klasse='w-4 mr-1' %}{% trans "Lieferantenkonten" %}</a>
-                <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'bericht' klasse='w-4 mr-1' %}{% trans "Debitoren-Aging" %}</a>
-                <a href="/neu/mwst/" class="fw-mutet hover:fw-marke">{% zeichen 'bericht' klasse='w-4 mr-1' %}MWST</a>
-                <a href="/neu/nebenkosten/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'kritisch' klasse='w-4 mr-1' %}{% trans "Nebenkosten" %}</a>
-                <a href="/neu/anlagen/{{ lg_query }}" class="fw-mutet hover:fw-marke">{% zeichen 'bank' klasse='w-4 mr-1' %}{% trans "Abschluss" %}</a>
+        <div class="fw-card">
+            <div class="fw-kopf"><h2>{% trans "Direkt zu" %}</h2></div>
+            <div class="grid grid-cols-2 gap-2 fw-rumpf">
+                <a href="/neu/buchhaltung/{{ lg_query }}" class="fw-link">{% zeichen 'bericht' klasse='mr-1' %}{% trans "Journal" %}</a>
+                <a href="/neu/mieterkonten/{{ lg_query }}" class="fw-link">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Mieterkonten" %}</a>
+                <a href="/neu/lieferantenkonten/{{ lg_query }}" class="fw-link">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Lieferantenkonten" %}</a>
+                <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-link">{% zeichen 'bericht' klasse='mr-1' %}{% trans "Debitoren-Aging" %}</a>
+                <a href="/neu/mwst/" class="fw-link">{% zeichen 'bericht' klasse='mr-1' %}MWST</a>
+                <a href="/neu/nebenkosten/{{ lg_query }}" class="fw-link">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "Nebenkosten" %}</a>
+                <a href="/neu/anlagen/{{ lg_query }}" class="fw-link">{% zeichen 'bank' klasse='mr-1' %}{% trans "Abschluss" %}</a>
             </div>
         </div>
     </div>

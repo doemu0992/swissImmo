@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load i18n %}
+{% load i18n zeichen %}
 {% block title %}{{ zweck_text }} — {% trans "Postfach" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -9,37 +9,38 @@
     </div>
 </div>
 
-<div class="max-w-2xl space-y-5">
+<div class="max-w-2xl">
     {% if messages %}{% for m in messages %}
-    <div class="rounded-xl p-4 text-sm border
-                {% if m.tags == 'error' %}fw-krit-flaeche fw-linie-krit fw-kritisch
-                {% elif m.tags == 'warning' %}fw-warn-flaeche fw-linie-warn fw-warnton
-                {% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}">{{ m }}</div>
+    <div class="fw-card"><div class="fw-hinweis {% if m.tags == 'error' %}crit{% elif m.tags == 'warning' %}warn{% else %}good{% endif %}">
+        <span class="fw-hi">{% if m.tags == 'error' or m.tags == 'warning' %}{% zeichen 'warnung' %}{% else %}{% zeichen 'gut' %}{% endif %}</span>
+        <div class="fw-ht">{{ m }}</div></div></div>
     {% endfor %}{% endif %}
 
     {# Der Hinweis steht bewusst HIER und nicht im Handbuch: Wer Gmail mit dem #}
     {# Kontopasswort probiert, sucht den Fehler sonst bei sich.               #}
-    <div class="fw-flaeche2 border fw-linie rounded-xl p-4 text-xs fw-mutet space-y-2">
+    <div class="fw-card"><div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht space-y-2">
         <p>{% blocktrans trimmed %}<strong>Klassischer Hoster</strong> (Hoststar, cyon, Infomaniak, eigener Server): Benutzername und Passwort.{% endblocktrans %}</p>
         <p>{% blocktrans trimmed %}<strong>Gmail:</strong> Benutzername und <strong>App-Passwort</strong> — nicht das Kontopasswort. Setzt die Zwei-Faktor-Anmeldung im Google-Konto voraus. Bei Google Workspace kann der Administrator App-Passwörter gesperrt haben; dann bitte bei ihm nachfragen.{% endblocktrans %}</p>
         <p><strong>{% trans "Microsoft 365 / Exchange Online" %}:</strong> <strong>{% trans "nur OAuth2" %}</strong> —
            {% trans "Microsoft hat den Zugang mit Benutzername und Passwort abgeschaltet. Diese Anbindung ist neu und noch nicht mit einem Kundenverzeichnis erprobt; bitte melden Sie sich bei uns, wenn etwas nicht funktioniert." %}</p>
-    </div>
+    </div></div></div>
 
     {% if schluessel_fehlt %}
-    <div class="rounded-xl p-4 text-sm border fw-warn-flaeche fw-linie-warn fw-warnton">
-        <strong>{% blocktrans with name=schluessel_name %}Auf dem Server fehlt {{ name }}.{% endblocktrans %}</strong>
-        {% trans "Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich bei uns." %}
-    </div>
+    <div class="fw-card"><div class="fw-hinweis warn">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht"><b>{% blocktrans with name=schluessel_name %}Auf dem Server fehlt {{ name }}.{% endblocktrans %}</b>
+        {% trans "Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich bei uns." %}</div>
+    </div></div>
     {% endif %}
 
-    <form method="post" class="fw-card p-5 space-y-4">
+    <form method="post" class="fw-card">
+      <div class="fw-formular p-5">
         {% csrf_token %}
 
-        <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Verfahren" %}</label>
+        <div class="fw-feldblock breit">
+            <label class="fw-label">{% trans "Verfahren" %}</label>
             <select name="verfahren"
-                    class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
+                    class="fw-feld">
                 {% for wert, text in verfahren_wahl %}
                 <option value="{{ wert }}"
                     {% if eingabe %}{% if eingabe.verfahren == wert %}selected{% endif %}
@@ -49,44 +50,41 @@
             </select>
         </div>
 
-        <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">
-                {% trans "Benutzername / E-Mail-Adresse" %}</label>
+        <div class="fw-feldblock breit">
+            <label class="fw-label">{% trans "Benutzername / E-Mail-Adresse" %}</label>
             <input type="text" name="benutzer" required
                    value="{% if eingabe %}{{ eingabe.benutzer }}{% elif postfach %}{{ postfach.benutzer }}{% endif %}"
                    autocomplete="off"
-                   class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
+                   class="fw-feld">
         </div>
 
-        <div class="grid grid-cols-3 gap-3">
-            <div class="col-span-2">
-                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "IMAP-Server" %}</label>
+            <div class="fw-feldblock">
+                <label class="fw-label">{% trans "IMAP-Server" %}</label>
                 <input type="text" name="server" placeholder="{% trans 'imap.example.ch' %}"
                        value="{% if eingabe %}{{ eingabe.server }}{% elif postfach %}{{ postfach.server }}{% endif %}"
-                       class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
+                       class="fw-feld">
             </div>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Port" %}</label>
+            <div class="fw-feldblock">
+                <label class="fw-label">{% trans "Port" %}</label>
                 <input type="number" name="port" min="1" max="65535"
                        value="{% if eingabe %}{{ eingabe.port }}{% elif postfach %}{{ postfach.port }}{% else %}993{% endif %}"
-                       class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
+                       class="fw-feld">
             </div>
-        </div>
 
-        <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ordner" %}</label>
+        <div class="fw-feldblock">
+            <label class="fw-label">{% trans "Ordner" %}</label>
             <input type="text" name="ordner"
                    value="{% if eingabe %}{{ eingabe.ordner }}{% elif postfach %}{{ postfach.ordner }}{% else %}INBOX{% endif %}"
-                   class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
+                   class="fw-feld">
         </div>
 
         {# KEIN `value` — das gespeicherte Geheimnis geht nie zurück ins Formular. #}
-        <div>
-            <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Passwort" %}</label>
+        <div class="fw-feldblock">
+            <label class="fw-label">{% trans "Passwort" %}</label>
             <input type="password" name="passwort" autocomplete="new-password"
                    placeholder="{% if postfach and postfach.passwort_geheim %}gespeichert — leer lassen, um es nicht zu ändern{% else %}Passwort oder App-Passwort{% endif %}"
-                   class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
-            <p class="text-xs fw-mutet mt-1">
+                   class="fw-feld">
+            <p class="fw-hilfe">
                 {% if postfach and postfach.passwort_geheim %}
                     {% trans "Ein Passwort ist hinterlegt. Aus Sicherheitsgründen wird es hier nicht angezeigt." %} <strong>{% trans "Leer lassen heisst: unverändert." %}</strong>
                 {% else %}
@@ -95,52 +93,50 @@
             </p>
         </div>
 
-        <details class="border-t fw-linie pt-4">
-            <summary class="text-xs font-semibold fw-mutet cursor-pointer">
+        <details class="fw-feldblock breit border-t fw-linie pt-4">
+            <summary class="fw-label cursor-pointer">
                 {% trans "Nur für OAuth2 (Microsoft 365)" %}</summary>
-            <div class="space-y-3 mt-3">
-                <div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">
-                        {% trans "Verzeichnis-ID (Tenant)" %}</label>
+            <div class="fw-formular mt-3">
+                <div class="fw-feldblock">
+                    <label class="fw-label">{% trans "Verzeichnis-ID (Tenant)" %}</label>
                     <input type="text" name="mandant_id"
                            value="{% if eingabe %}{{ eingabe.mandant_id }}{% elif postfach %}{{ postfach.mandant_id }}{% endif %}"
-                           class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
+                           class="fw-feld">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">
-                        {% trans "Anwendungs-ID (Client)" %}</label>
+                <div class="fw-feldblock">
+                    <label class="fw-label">{% trans "Anwendungs-ID (Client)" %}</label>
                     <input type="text" name="anwendung_id"
                            value="{% if eingabe %}{{ eingabe.anwendung_id }}{% elif postfach %}{{ postfach.anwendung_id }}{% endif %}"
-                           class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
+                           class="fw-feld">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold fw-mutet mb-1">
-                        {% trans "Refresh-Token" %}</label>
+                <div class="fw-feldblock breit">
+                    <label class="fw-label">{% trans "Refresh-Token" %}</label>
                     <input type="password" name="refresh_token" autocomplete="new-password"
                            placeholder="{% if postfach and postfach.refresh_token_geheim %}gespeichert — leer lassen, um es nicht zu ändern{% endif %}"
-                           class="border fw-linie rounded-lg px-3 py-2.5 text-sm w-full">
+                           class="fw-feld">
                 </div>
-                <p class="text-xs fw-mutet">
+                <p class="fw-hilfe fw-feldblock breit">
                     {% trans "Der geführte Zustimmungsablauf für Microsoft 365 ist noch nicht freigeschaltet. Bitte melden Sie sich bei uns." %}
                 </p>
             </div>
         </details>
 
-        <label class="flex items-center gap-2 text-sm fw-ink border-t fw-linie pt-4">
+        <div class="fw-feldblock breit border-t fw-linie pt-4">
+        <label class="flex items-center gap-2 text-sm fw-ink">
             <input type="checkbox" name="aktiv" value="an"
                    {% if eingabe %}{% if eingabe.aktiv %}checked{% endif %}
                    {% elif not postfach or postfach.aktiv %}checked{% endif %}
                    class="rounded fw-linie">
             {% trans "Eingang aktiv — Mails aus diesem Postfach abholen" %}
         </label>
-
-        <div class="flex gap-3 pt-2">
-            <button class="fw-btn fw-primary text-sm font-semibold
-                           px-5 py-2.5 rounded-lg shadow-sm">{% trans "Speichern" %}</button>
-            <a href="{% url 'postfach_liste' %}"
-               class="fw-flaeche border fw-linie fw-ink text-sm font-semibold
-                      px-5 py-2.5 rounded-lg">{% trans "Abbrechen" %}</a>
         </div>
+
+        <div class="fw-formular-fuss">
+            <a href="{% url 'postfach_liste' %}"
+               class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+            <button class="fw-btn fw-primary">{% trans "Speichern" %}</button>
+        </div>
+      </div>
     </form>
 </div>
 {% endblock %}

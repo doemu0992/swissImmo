@@ -3,120 +3,119 @@
 {% load chf %}
 {% block title %}{% blocktrans %}Lieferantenkonto {{ name }}{% endblocktrans %} — swissImmo{% endblock %}
 {% block content %}
-<div class="text-xs fw-faint mb-3">
-    <a href="/neu/lieferantenkonten/{{ lg_query }}" class="hover:fw-marke">{% trans "Lieferantenkonten" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro mx-1' %}{{ name }}
-</div>
-
 <div class="fw-phead">
     <div>
+        <div class="fw-eyebrow">
+            <a href="/neu/lieferantenkonten/{{ lg_query }}" class="fw-link">{% trans "Lieferantenkonten" %}</a>
+            {% zeichen 'weiter' klasse='mx-1' %}{{ name }}
+        </div>
         <h1>{% trans "Lieferantenkonto" %}</h1>
         <p>{{ name }} · {% trans "alle Rechnungen und Zahlungen mit laufendem Saldo." %}</p>
     </div>
-    <a href="/neu/kreditoren/{{ lg_query }}" class="fw-btn">{% zeichen 'bank' %}{% trans "Kreditoren" %}</a>
+    <div class="fw-phead-knoepfe">
+        <a href="/neu/kreditoren/{{ lg_query }}" class="fw-btn">{% zeichen 'bank' %}{% trans "Kreditoren" %}</a>
+    </div>
 </div>
 
 <!-- Kennzahlen -->
-<div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
-    <div class="fw-card px-4 py-3">
-        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Rechnungen (Belastung)" %}</div>
-        <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total_belastung|chf }}</div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Rechnungen (Belastung)" %}</div>
+        <div class="fw-v">CHF {{ total_belastung|chf }}</div>
     </div>
-    <div class="fw-card px-4 py-3">
-        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">{% trans "Zahlungen" %}</div>
-        <div class="text-xl font-bold fw-gut mt-0.5">CHF {{ total_zahlung|chf }}</div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Zahlungen" %}</div>
+        <div class="fw-v">CHF {{ total_zahlung|chf }}</div>
     </div>
-    <div class="fw-flaeche rounded-xl border {% if endsaldo > 0 %}fw-linie-krit{% else %}fw-linie{% endif %} px-4 py-3">
-        <div class="fw-fs-klein uppercase tracking-wider fw-faint font-semibold">
+    <div class="fw-kpi">
+        <div class="fw-l">
             {% if endsaldo > 0 %}{% trans "Offen an Lieferant" %}{% else %}{% trans "Saldo" %}{% endif %}
         </div>
-        <div class="text-xl font-bold {% if endsaldo > 0 %}fw-kritisch{% else %}fw-strong{% endif %} mt-0.5">CHF {{ endsaldo|chf }}{% if endsaldo == 0 %} · {% trans "ausgeglichen" %}{% endif %}</div>
+        <div class="fw-v{% if endsaldo > 0 %} fw-crit{% endif %}">CHF {{ endsaldo|chf }}{% if endsaldo == 0 %} · {% trans "ausgeglichen" %}{% endif %}</div>
     </div>
 </div>
 
 <!-- Offene Posten -->
 {% if op_rows %}
-<div class="fw-flaeche rounded-xl border fw-linie-krit overflow-hidden mb-5">
-    <div class="px-5 py-3 border-b fw-linie-krit fw-krit-flaeche flex items-center gap-2">
-        {% zeichen 'warnung' klasse='fw-kritisch' %}
-        <h2 class="font-bold fw-strong text-sm">{% trans "Offene Rechnungen" %}</h2>
-        <span class="fw-fs-klein font-bold fw-krit-flaeche fw-kritisch rounded-md px-1.5 py-0.5">{{ op_rows|length }}</span>
-        <span class="ml-auto text-sm font-semibold fw-kritisch">CHF {{ op_total|chf }}</span>
+<div class="fw-card">
+    <div class="fw-kopf">
+        <h2>{% trans "Offene Rechnungen" %}</h2>
+        <span class="fw-chip fw-crit">{{ op_rows|length }}</span>
+        <span class="fw-rechts"><span class="fw-betrag crit">CHF {{ op_total|chf }}</span></span>
     </div>
-    <div class="fw-dv">
     {% for o in op_rows %}
-        <div class="px-5 py-3 flex items-center gap-3">
-            <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium fw-strong">{{ o.k.referenz|default:"Rechnung" }}{% if o.k.liegenschaft %} · {{ o.k.liegenschaft.strasse }}{% endif %}</div>
-                <div class="text-xs fw-mutet mt-0.5">
+        <div class="fw-zeile">
+            <span class="fw-marker{% if o.ueberfaellig %} crit{% else %} warn{% endif %}"></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ o.k.referenz|default:"Rechnung" }}{% if o.k.liegenschaft %} · {{ o.k.liegenschaft.strasse }}{% endif %}</div>
+                <div class="fw-s"><span>
                     {% trans "fällig" %} {{ o.faellig|date:"d.m.Y" }}
-                    {% if o.ueberfaellig %}<span class="fw-kritisch font-semibold">· {% trans "überfällig" %}</span>{% endif %}
-                    {% if o.k.status == 'teilbezahlt' %}<span class="fw-info">· {% trans "teilbezahlt" %}</span>{% elif o.k.status == 'in_zahlung' %}<span class="fw-marke">· {% trans "in Zahlung" %}</span>{% endif %}
-                </div>
+                    {% if o.ueberfaellig %}<span class="fw-kritisch fw-strong">· {% trans "überfällig" %}</span>{% endif %}
+                    {% if o.k.status == 'teilbezahlt' %}<span>· {% trans "teilbezahlt" %}</span>{% elif o.k.status == 'in_zahlung' %}<span class="fw-marke">· {% trans "in Zahlung" %}</span>{% endif %}
+                </span></div>
             </div>
-            <div class="text-sm font-semibold fw-kritisch">CHF {{ o.offen|chf }}</div>
+            <span class="fw-betrag{% if o.ueberfaellig %} crit{% endif %}">CHF {{ o.offen|chf }}</span>
         </div>
     {% endfor %}
-    </div>
 </div>
 {% endif %}
 
 <!-- Kontobewegungen -->
-<div class="fw-card overflow-hidden">
-    <div class="overflow-x-auto">
+<div class="fw-card">
+    <div class="fw-tablewrap">
 <table class="fw-table min-w-max">
         <thead>
             <tr>
-                <th class="font-semibold">{% trans "Datum" %}</th>
-                <th class="font-semibold">{% trans "Text" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Belastung" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Zahlung" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Saldo" %}</th>
+                <th>{% trans "Datum" %}</th>
+                <th>{% trans "Text" %}</th>
+                <th class="text-right fw-right">{% trans "Belastung" %}</th>
+                <th class="text-right fw-right">{% trans "Zahlung" %}</th>
+                <th class="text-right fw-right">{% trans "Saldo" %}</th>
             </tr>
         </thead>
-        <tbody class="fw-dv">
+        <tbody>
         {% for b in bewegungen %}
             <tr>
-                <td class="fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
-                <td class="fw-strong">{{ b.text }}</td>
-                <td class="px-5 py-2.5 text-right {% if b.belastung %}fw-strong font-medium{% else %}fw-faint{% endif %}">{% if b.belastung %}{{ b.belastung|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-2.5 text-right {% if b.zahlung %}fw-gut font-medium{% else %}fw-faint{% endif %}">{% if b.zahlung %}{{ b.zahlung|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-2.5 text-right font-semibold {% if b.saldo > 0 %}fw-kritisch{% else %}fw-faint{% endif %}">{{ b.saldo|chf }}</td>
+                <td class="fw-num whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+                <td>{{ b.text }}</td>
+                <td class="text-right fw-right fw-num">{% if b.belastung %}{{ b.belastung|chf }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
+                <td class="text-right fw-right fw-num">{% if b.zahlung %}{{ b.zahlung|chf }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
+                <td class="text-right fw-right fw-num"><span class="fw-betrag{% if b.saldo > 0 %} crit{% else %} mut{% endif %}">{{ b.saldo|chf }}</span></td>
             </tr>
         {% empty %}
-            <tr><td colspan="5" class="text-center fw-faint text-sm fw-zentriert fw-leerzeile">{% trans "Keine Bewegungen." %}</td></tr>
+            <tr><td colspan="5" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Bewegungen." %}</span></td></tr>
         {% endfor %}
         </tbody>
         {% if bewegungen %}
         <tfoot>
-            <tr class="border-t-2 fw-linie font-semibold fw-strong">
+            <tr>
                 <td colspan="2">{% trans "Total / Endsaldo" %}</td>
-                <td class="text-right fw-right">{{ total_belastung|chf }}</td>
-                <td class="text-right fw-gut fw-right">{{ total_zahlung|chf }}</td>
-                <td class="px-5 py-3 text-right {% if endsaldo > 0 %}fw-kritisch{% endif %}">{{ endsaldo|chf }}</td>
+                <td class="text-right fw-right fw-num">{{ total_belastung|chf }}</td>
+                <td class="text-right fw-right fw-num">{{ total_zahlung|chf }}</td>
+                <td class="text-right fw-right fw-num"><span class="{% if endsaldo > 0 %}fw-kritisch{% endif %}">{{ endsaldo|chf }}</span></td>
             </tr>
         </tfoot>
         {% endif %}
     </table>
 </div>
 </div>
-<p class="text-xs fw-faint mt-3">{% trans "Positiver Saldo = offene Verbindlichkeit gegenüber dem Lieferanten. Stornierte Rechnungen sind ausgeblendet." %}</p>
+<p class="fw-hilfe mb-6">{% trans "Positiver Saldo = offene Verbindlichkeit gegenüber dem Lieferanten. Stornierte Rechnungen sind ausgeblendet." %}</p>
 
 <!-- Verlauf: alle protokollierten Aktionen zu diesem Lieferanten (Rechnungen erstellt/gescannt/bearbeitet/freigegeben/bezahlt/gelöscht, Mail-Eingang, Stammdaten) -->
 {% if verlauf %}
-<div class="fw-card overflow-hidden mt-6">
-    <div class="px-5 py-3 font-bold fw-strong text-sm border-b fw-linie">{% zeichen 'verlauf' klasse='fw-faint mr-1.5' %}{% trans "Verlauf — wer hat was gemacht" %}</div>
-    <div class="fw-dv">
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% zeichen 'verlauf' klasse='fw-faint mr-1.5' %}{% trans "Verlauf — wer hat was gemacht" %}</h2></div>
+    <div>
         {% for e in verlauf %}
-        <div class="flex items-start gap-3 px-5 py-3.5">
-            <div class="w-8 h-8 rounded-full fw-btn fw-primary flex items-center justify-center fw-fs-mikro font-bold shrink-0">
+        <div class="fw-zeile">
+            <div class="fw-ikon mut">
                 {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}
             </div>
-            <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium fw-strong">{{ e.aktion }}</div>
-                {% if e.details %}<div class="text-xs fw-mutet">{{ e.details }}</div>{% endif %}
+            <div class="fw-mitte">
+                <div class="fw-t">{{ e.aktion }}</div>
+                {% if e.details %}<div class="fw-s">{{ e.details }}</div>{% endif %}
             </div>
-            <div class="text-xs fw-faint whitespace-nowrap text-right shrink-0">
+            <div class="fw-zeit">
                 {{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
                 <span class="fw-faint">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}{% trans "System" %}{% endif %}</span>
             </div>

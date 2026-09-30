@@ -672,10 +672,13 @@ class MieterkontoblattTests(TestCase):
         # Farbklasse `fw-strong` statt `text-slate-900`, und der Test schlug
         # an, obwohl `truncate` unverändert dastand. Ein Test, der an einer
         # wörtlichen Klassenkette hängt, meldet jede Umbenennung als Fehler.
+        #
+        # Seit dem Redesign nach konzept-v8 steht der Name unten in der Leiste
+        # (`fw-ich`), nicht mehr in der Kopfzeile.
         self.assertRegex(
-            html, r'text-sm font-semibold [\w-]+ truncate',
-            'Der Benutzername in der Topbar hat sein `truncate` verloren — '
-            'dann bricht ein langer Name die Kopfzeile um.')
+            html, r'(?s)<button[^>]*class="fw-ich"[^>]*>.*?<b class="[\w\s-]*\btruncate\b',
+            'Der Benutzername in der Leiste hat sein `truncate` verloren — '
+            'dann bricht ein langer Name die Leiste um.')
 
     def test_trennband_gilt_fuer_jede_karte_nicht_nur_die_erste(self):
         """Tailwinds «divide-y» setzt auf jeder Zeile ausser der ersten

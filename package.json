@@ -8,8 +8,7 @@
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
     "css": "tailwindcss -c tailwind.config.js -i tailwind.eingang.css -o static/css/tailwind.css --minify",
-    "css:aussen": "tailwindcss -c tailwind.aussen.config.js -i tailwind.eingang.css -o static/css/tailwind-aussen.css --minify",
-    "css:alle": "npm run css && npm run css:aussen"
+    "css:alle": "npm run css"
   },
   "devDependencies": {
     "@playwright/test": "1.56.0",

@@ -19,7 +19,7 @@ Filter im Browser nur, was auf der aktuellen Seite steht.
     <div class="fw-suchfeld relative">
         {% zeichen 'suchen' klasse='absolute left-3.5 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
         <input type="search" name="{{ suchname }}" value="{{ suchwert }}"{% if livesuche %} data-suche="{{ livesuche }}"{% endif %} aria-label="{{ suchlabel }}"
-               placeholder="{{ suchtext }}" autocomplete="off" class="fw-feld" style="padding-left:2.5rem">
+               placeholder="{{ suchtext }}" autocomplete="off" class="fw-feld">
     </div>
     {% if sorten %}<label>{% trans "Sortieren" %}
         <select name="sort" class="fw-feld" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">

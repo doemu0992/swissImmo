@@ -388,7 +388,7 @@ class SeitenTests(_Basis):
         """Es zaehlte, was der eigene Filter uebriggelassen hat."""
         with mandant(self.a.organisation):
             html = self.c.get('/neu/schaeden/').content.decode()
-        self.assertIn('class="fw-lage"', html)
+        self.assertIn('class="fw-kpis"', html)
         self.assertIn('Älteste offen', html)
         self.assertNotIn('Total angezeigt', html)
 

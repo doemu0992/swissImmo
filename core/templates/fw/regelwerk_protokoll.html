@@ -14,34 +14,34 @@
         <h1>{% trans "Regelprotokoll" %}</h1>
         <p>{% trans "Welche Regel hat wann was zu welcher Eingabe gesagt — auch dann, wenn nichts zu beanstanden war." %}</p>
     </div>
-    <a href="/neu/regelwerk/" class="fw-btn">{% trans "Zum Regelwerk" %}</a>
+    <div class="fw-phead-knoepfe"><a href="/neu/regelwerk/" class="fw-btn">{% trans "Zum Regelwerk" %}</a></div>
 </div>
 
 <div class="fw-card">
-    <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
-        <form method="get" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="fw-klein block mb-1">{% trans "Regelart" %}</label>
-                <select name="art" class="fw-feld w-full">
+    <div class="p-5">
+        <form method="get" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Regelart" %}</label>
+                <select name="art" class="fw-feld">
                     <option value="">{% trans "alle" %}</option>
                     {% for wert, bezeichnung in arten %}
                     <option value="{{ wert }}" {% if f_art == wert %}selected{% endif %}>{{ bezeichnung }}</option>
                     {% endfor %}
                 </select></div>
-            <div><label class="fw-klein block mb-1">{% trans "Befund" %}</label>
-                <select name="befund" class="fw-feld w-full">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Befund" %}</label>
+                <select name="befund" class="fw-feld">
                     <option value="">{% trans "alle" %}</option>
                     <option value="ok" {% if f_befund == 'ok' %}selected{% endif %}>{% trans "ohne Beanstandung" %}</option>
                     <option value="beanstandet" {% if f_befund == 'beanstandet' %}selected{% endif %}>{% trans "beanstandet" %}</option>
                 </select></div>
-            <div><label class="fw-klein block mb-1">{% trans "Stand der Regel" %}</label>
-                <select name="stand" class="fw-feld w-full">
+            <div class="fw-feldblock"><label class="fw-label">{% trans "Stand der Regel" %}</label>
+                <select name="stand" class="fw-feld">
                     <option value="">{% trans "alle Stände" %}</option>
                     {% for s in staende %}
                     <option value="{{ s|date:'Y-m-d' }}" {% if f_stand == s %}selected{% endif %}>{{ s|date:"d.m.Y" }}</option>
                     {% endfor %}
                 </select></div>
-            <div class="flex items-end gap-2">
-                <label class="flex items-center gap-2 fw-s">
+            <div class="flex items-end gap-2 flex-wrap">
+                <label class="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="nur_ungeprueft" value="1" {% if f_ungeprueft %}checked{% endif %}>
                     {% trans "nur ungeprüfte Regeln" %}</label>
                 <button class="fw-btn fw-primary">{% trans "Filtern" %}</button>
@@ -51,7 +51,7 @@
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
+    <div class="fw-kopf">
         <span class="fw-t">{% trans "Anwendungen" %}</span>
         <span class="fw-neben">{{ gesamt }}{% if gesamt > 200 %} — {% trans "die neuesten 200 angezeigt" %}{% endif %}</span></div>
     {% for a in zeilen %}
@@ -83,9 +83,9 @@
             <form method="post" action="/neu/regelwerk/anwendung/{{ a.id }}/uebersteuern/"
                   class="flex gap-2 flex-wrap items-end">{% csrf_token %}
                 <input type="hidden" name="zurueck" value="{{ request.get_full_path }}">
-                <div class="flex-1" style="min-width:260px">
-                    <label class="fw-klein block mb-1">{% trans "Begründung *" %}</label>
-                    <input name="begruendung" required class="fw-feld w-full"
+                <div class="fw-feldblock flex-1" style="min-width:260px">
+                    <label class="fw-label">{% trans "Begründung *" %}</label>
+                    <input name="begruendung" required class="fw-feld"
                            placeholder="{% trans 'Warum der Befund hier nicht zutrifft.' %}"></div>
                 <button class="fw-btn">{% trans "Übersteuern" %}</button>
             </form>

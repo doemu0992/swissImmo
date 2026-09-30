@@ -8,65 +8,69 @@
         <h1>{% trans "Mieterkonten" %}</h1>
         <p>{% trans "Pro Mieter der aktuelle Saldo aus allen Forderungen und Zahlungen. Klick öffnet das Kontoblatt." %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
-    <div style="text-align:right">
-        <div class="fw-num" style="font-size:28px;font-weight:700;letter-spacing:-.02em;color:{% if total_offen %}var(--ds-crit){% else %}var(--ds-ink){% endif %}">CHF {{ total_offen|chf }}</div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600">{% blocktrans count n=offen_n %}offene Forderungen · {{ n }} Mieter{% plural %}offene Forderungen · {{ n }} Mieter{% endblocktrans %}</div>
+</div>
+
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <span class="fw-l">{% blocktrans count n=offen_n %}offene Forderungen · {{ n }} Mieter{% plural %}offene Forderungen · {{ n }} Mieter{% endblocktrans %}</span>
+        <span class="fw-v fw-num{% if total_offen %} fw-crit{% endif %}">CHF {{ total_offen|chf }}</span>
     </div>
 </div>
 
-<div class="flex flex-wrap items-center gap-2 my-4">
-    <a href="/neu/mieterkonten/{{ lg_query }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if not filter_op %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">{% blocktrans with n=anzahl %}Alle ({{ n }}){% endblocktrans %}</a>
-    <a href="/neu/mieterkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if filter_op %}fw-krit-voll text-white{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-krit{% endif %}">{% blocktrans with n=offen_n %}Nur mit offenem Saldo ({{ n }}){% endblocktrans %}</a>
+<div class="fw-listwerkzeug">
+    <div class="fw-filters fw-nomb">
+    <a href="/neu/mieterkonten/{{ lg_query }}" class="fw-fchip{% if not filter_op %} fw-on{% endif %}">{% blocktrans with n=anzahl %}Alle ({{ n }}){% endblocktrans %}</a>
+    <a href="/neu/mieterkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip{% if filter_op %} fw-on{% endif %}">{% blocktrans with n=offen_n %}Nur mit offenem Saldo ({{ n }}){% endblocktrans %}</a>
+    </div>
     {% comment %}
     Suchfeld: Bei mehr als einer Handvoll Mietern ist Scrollen keine Bedienung —
     gemeldet als «lange Liste, man kann die Mieter kaum unterscheiden».
     {% endcomment %}
-    <form method="get" class="relative sm:ml-auto w-full sm:w-auto">
+    <form method="get" class="fw-suchfeld sm:ml-auto">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         {% if filter_op %}<input type="hidden" name="filter" value="offen">{% endif %}
-        {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
         <input type="search" name="q" value="{{ q }}" placeholder="{% trans 'Mieter oder Objekt suchen…' %}"
-               class="fw-flaeche border fw-linie pl-8 pr-3 py-1.5 rounded-lg text-xs w-full sm:w-64 focus:outline-none focus:ring-2 fw-fokusring">
+               class="fw-feld">
     </form>
 </div>
 {% if q %}
-<p class="text-xs fw-mutet -mt-2 mb-3">
+<p class="fw-hilfe">
     {% blocktrans with n=treffer_n %}{{ n }} Treffer für «{{ q }}»{% endblocktrans %} ·
     <a href="/neu/mieterkonten/{% if filter_op %}?filter=offen{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{% else %}{{ lg_query }}{% endif %}"
-       class="fw-marke font-semibold hover:underline">{% trans "Suche aufheben" %}</a>
+       class="fw-link">{% trans "Suche aufheben" %}</a>
 </p>
 {% endif %}
 
-<div class="fw-card overflow-hidden">
-    <div class="overflow-x-auto">
-<table class="fw-table min-w-max">
+<div class="fw-card">
+    <div class="fw-tablewrap">
+<table class="fw-table">
         <thead>
             <tr>
-                <th class="font-semibold">{% trans "Mieter" %}</th>
-                <th class="font-semibold">{% trans "Objekt" %}</th>
-                <th class="font-semibold text-center fw-zentriert">{% trans "Status" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Saldo" %}</th>
+                <th>{% trans "Mieter" %}</th>
+                <th>{% trans "Objekt" %}</th>
+                <th class="fw-zentriert">{% trans "Status" %}</th>
+                <th class="fw-right">{% trans "Saldo" %}</th>
                 <th></th>
             </tr>
         </thead>
-        <tbody class="fw-dv">
+        <tbody>
         {% for r in rows %}
             <tr class="cursor-pointer" onclick="window.location='/neu/mieterkonten/{{ r.m.id }}/{{ lg_query }}'">
-                <td class="font-semibold fw-strong">{{ r.m.display_name }}</td>
-                <td class="fw-mutet">{{ r.objekt }}{% if r.objekte_n > 1 %} <span class="fw-faint">+{{ r.objekte_n|add:"-1" }}</span>{% endif %}</td>
-                <td class="text-center fw-zentriert">
-                    {% if r.aktiv %}<span class="fw-fs-klein font-semibold fw-gut-flaeche fw-gut rounded-md px-2 py-0.5">{% trans "aktiv" %}</span>
-                    {% else %}<span class="fw-fs-klein font-semibold fw-flaeche2 fw-mutet rounded-md px-2 py-0.5">{% trans "beendet" %}</span>{% endif %}
+                <td class="fw-strong">{{ r.m.display_name }}</td>
+                <td>{{ r.objekt }}{% if r.objekte_n > 1 %} <span class="fw-faint">+{{ r.objekte_n|add:"-1" }}</span>{% endif %}</td>
+                <td class="fw-zentriert">
+                    {% if r.aktiv %}<span class="fw-chip fw-good">{% trans "aktiv" %}</span>
+                    {% else %}<span class="fw-chip fw-mut">{% trans "beendet" %}</span>{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right font-semibold {% if r.saldo > 0 %}fw-kritisch{% elif r.saldo < 0 %}fw-gut{% else %}fw-faint{% endif %}">
-                    {% if r.saldo > 0 %}CHF {{ r.saldo|chf }}
-                    {% elif r.saldo < 0 %}CHF {{ r.saldo|chf }}<div class="fw-fs-mikro font-normal fw-faint">{% trans "Guthaben" %}</div>
-                    {% else %}{% trans "ausgeglichen" %}{% endif %}
+                <td class="fw-right fw-num">
+                    {% if r.saldo > 0 %}<span class="fw-betrag crit">CHF {{ r.saldo|chf }}</span>
+                    {% elif r.saldo < 0 %}<span class="fw-betrag good">CHF {{ r.saldo|chf }}</span><div class="fw-klein">{% trans "Guthaben" %}</div>
+                    {% else %}<span class="fw-faint">{% trans "ausgeglichen" %}</span>{% endif %}
                 </td>
-                <td class="text-right fw-right">{% zeichen 'weiter' klasse='fw-fs-mikro fw-faint' %}</td>
+                <td class="fw-right">{% zeichen 'weiter' klasse='fw-faint' %}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="5" class="text-center fw-faint text-sm fw-zentriert fw-leerzeile">{% trans "Keine Mieterkonten" %}{% if filter_op %} {% trans "mit offenem Saldo" %}{% endif %}.</td></tr>
+            <tr><td colspan="5" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Mieterkonten" %}{% if filter_op %} {% trans "mit offenem Saldo" %}{% endif %}.</span></td></tr>
         {% endfor %}
         </tbody>
     </table>

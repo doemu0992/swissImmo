@@ -28,22 +28,26 @@ BASE = pathlib.Path('core/templates/fw/_schicht.html')
 #: Tailwind-Utilities und wird von `EinFarbtonTests` mitgelesen.
 HUELLE = pathlib.Path('core/templates/fw/base.html')
 
-#: Werte aus mockups/konzept-v3.html. Wer sie ändert, ändert das Konzept —
-#: und muss `docs/KONZEPT-UI.md` mitziehen.
+#: Werte aus mockups/konzept-v8-cockpit.html (Redesign 30.09.2026; vorher
+#: konzept-v3). Wer sie ändert, ändert das Konzept — und muss
+#: `docs/KONZEPT-UI.md` mitziehen.
 KONZEPT = {
-    '--ds-brand': '#0f6f6a',
-    '--ds-brand-600': '#0b5450',
-    '--ds-brand-soft': '#d9efed',
-    '--ds-ink': '#0e2227',
-    '--ds-muted': '#4c6169',
-    '--ds-surface-2': '#f4f7f7',
-    '--ds-line': '#dde6e8',
-    '--ds-radius': '10px',
-    '--ds-radius-sm': '7px',
+    '--ds-brand': '#0e6b65',
+    '--ds-brand-600': '#0a4f4b',
+    '--ds-brand-soft': '#e2f1ef',
+    '--ds-ink': '#0c1f23',
+    '--ds-muted': '#465b62',
+    '--ds-faint': '#5d7279',
+    '--ds-surface-2': '#f6f8f8',
+    '--ds-line': '#e1e8e9',
+    '--ds-radius': '12px',
+    '--ds-radius-sm': '8px',
 }
 
-#: Bewusste Abweichung: Der Prototypwert verfehlt WCAG AA.
-ABWEICHUNG = {'--ds-faint': ('#5c757c', '#7f959c', 'Prototyp nur 3.14:1 auf Weiss')}
+#: Bis konzept-v7 wich die Anwendung an einer Stelle vom Prototyp ab: Dessen
+#: `--ds-faint` #7f959c erreichte auf Weiss nur 3.14:1. Das v8-Mockup wurde mit
+#: Kontrastpruefung gebaut; sein Grau erreicht 5.06:1 und wird uebernommen.
+FRUEHERE_ABWEICHUNG = ('#7f959c', 3.14)
 
 MINDESTKONTRAST = 4.5
 
@@ -83,16 +87,17 @@ class PaletteTests(TestCase):
                     f'{token} weicht vom Konzept ab. Wenn das Absicht ist, '
                     f'gehoert die Aenderung auch in mockups/ und docs/KONZEPT-UI.md.')
 
-    def test_die_eine_abweichung_ist_dokumentiert(self):
-        hell = _block('hell')
-        for token, (gesetzt, prototyp, grund) in ABWEICHUNG.items():
-            with self.subTest(token=token):
-                self.assertEqual(hell.get(token, '').strip().lower(), gesetzt)
-                self.assertLess(
-                    kontrast(prototyp, '#ffffff'), MINDESTKONTRAST,
-                    f'Der Prototypwert {prototyp} ist inzwischen ausreichend — '
-                    f'dann kann die Abweichung weg. Grund war: {grund}')
-                self.assertGreaterEqual(kontrast(gesetzt, '#ffffff'), MINDESTKONTRAST)
+    def test_der_prototyp_braucht_keine_abweichung_mehr(self):
+        """Das v8-Grau ist lesbar — deshalb steht es unveraendert in der Schicht.
+
+        Gegenprobe: Der fruehere Prototypwert faellt durch dieselbe Rechnung.
+        """
+        grau = KONZEPT['--ds-faint']
+        self.assertGreaterEqual(kontrast(grau, '#ffffff'), MINDESTKONTRAST)
+        self.assertGreaterEqual(kontrast(grau, KONZEPT['--ds-surface-2']), MINDESTKONTRAST)
+        alt, gemessen = FRUEHERE_ABWEICHUNG
+        self.assertAlmostEqual(kontrast(alt, '#ffffff'), gemessen, places=2)
+        self.assertLess(kontrast(alt, '#ffffff'), MINDESTKONTRAST)
 
     def test_kein_indigo_mehr(self):
         """Der Bestandswert, an dem der Unterschied zum Konzept hing."""
@@ -175,14 +180,16 @@ class KonzeptTests(TestCase):
             with self.subTest(token=token, modus='dunkel'):
                 self.assertEqual(dunkel.get(token, '').strip().lower(), soll_dunkel)
 
-    def test_die_dokumentierte_abweichung_steht_auch_im_konzept(self):
-        """Die eine Stelle, an der bewusst vom Prototyp abgewichen wird."""
+    def test_das_konzept_nennt_seine_quelle(self):
+        """Die Tabelle ist aus dem v8-Mockup abgeschrieben — das muss dastehen.
+
+        Und die fruehere Abweichung bleibt als Geschichte nachvollziehbar.
+        """
         text = self.DOKUMENT.read_text(encoding='utf-8')
+        self.assertIn('konzept-v8-cockpit.html', text,
+                      'KONZEPT-UI.md nennt die Quelle der Palette nicht.')
         self.assertIn('#7f959c', text,
-                      'Der Prototypwert fehlt — dann ist nicht nachvollziehbar, '
-                      'wovon abgewichen wurde.')
-        self.assertIn('3.14', text,
-                      'Der gemessene Kontrast des Prototypwerts fehlt.')
+                      'Die fruehere Abweichung (v3) ist nicht mehr nachvollziehbar.')
 
 
 def ohne_kommentare(quelle):

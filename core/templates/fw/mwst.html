@@ -10,56 +10,56 @@
     </div>
 </div>
 
-<form method="get" class="flex flex-wrap items-end gap-3 mb-6">
+<form method="get" class="fw-listwerkzeug items-end">
     {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}
-    <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Jahr" %}</label>
-        <select name="jahr" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
+    <div class="fw-feldblock"><label class="fw-label">{% trans "Jahr" %}</label>
+        <select name="jahr" class="fw-feld">
             {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select></div>
-    <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Periode" %}</label>
-        <select name="quartal" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
+    <div class="fw-feldblock"><label class="fw-label">{% trans "Periode" %}</label>
+        <select name="quartal" class="fw-feld">
             <option value="" {% if not quartal %}selected{% endif %}>{% trans "Ganzes Jahr" %}</option>
             {% for q in "1234" %}<option value="{{ q }}" {% if quartal == q|stringformat:'s' %}selected{% endif %}>{% blocktrans %}{{ q }}. Quartal{% endblocktrans %}</option>{% endfor %}
         </select></div>
-    <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Anzeigen" %}</button>
+    <button class="fw-btn fw-primary">{% trans "Anzeigen" %}</button>
     <a href="/neu/mwst/estv-export/?jahr={{ jahr }}&quartal={{ quartal }}" class="fw-btn">
-        {% zeichen 'herunterladen' klasse='mr-1.5' %}{% trans "ESTV-Export (CSV)" %}
+        {% zeichen 'herunterladen' %}{% trans "ESTV-Export (CSV)" %}
     </a>
 </form>
 
-<div class="max-w-xl fw-card overflow-hidden">
-    <div class="px-5 py-3 fw-flaeche2 border-b fw-linie text-xs uppercase tracking-wide fw-faint font-semibold">
-        {% blocktrans with von=von|date:"d.m.Y" bis=bis|date:"d.m.Y" %}Periode {{ von }} – {{ bis }}{% endblocktrans %}</div>
-    <div class="fw-dv">
-        <div class="flex items-center justify-between px-5 py-4">
-            <div><div class="text-sm font-medium fw-strong">{% trans "Geschuldete Umsatzsteuer" %}</div>
-                <div class="text-xs fw-faint">{% trans "Konto 2200 · Ausgangs-MWST auf optierte Mieten" %}</div></div>
-            <div class="text-lg font-bold fw-strong tabular-nums">CHF {{ umsatzsteuer|chf }}</div>
+<div class="max-w-xl fw-card">
+    <div class="fw-kopf"><span class="fw-t">
+        {% blocktrans with von=von|date:"d.m.Y" bis=bis|date:"d.m.Y" %}Periode {{ von }} – {{ bis }}{% endblocktrans %}</span></div>
+    <div>
+        <div class="fw-zeile">
+            <div class="fw-mitte"><div class="fw-t">{% trans "Geschuldete Umsatzsteuer" %}</div>
+                <div class="fw-s">{% trans "Konto 2200 · Ausgangs-MWST auf optierte Mieten" %}</div></div>
+            <div class="fw-betrag">CHF {{ umsatzsteuer|chf }}</div>
         </div>
-        <div class="flex items-center justify-between px-5 py-4">
-            <div><div class="text-sm font-medium fw-strong">{% trans "− Vorsteuer" %}</div>
-                <div class="text-xs fw-faint">{% trans "Konto 1170 · abziehbare MWST auf Kreditoren" %}</div></div>
-            <div class="text-lg font-bold fw-gut tabular-nums">CHF {{ vorsteuer|chf }}</div>
+        <div class="fw-zeile">
+            <div class="fw-mitte"><div class="fw-t">{% trans "− Vorsteuer" %}</div>
+                <div class="fw-s">{% trans "Konto 1170 · abziehbare MWST auf Kreditoren" %}</div></div>
+            <div class="fw-betrag good">CHF {{ vorsteuer|chf }}</div>
         </div>
         {% if mwst_methode == 'saldo' and saldo_vorteil %}
-        <div class="flex items-center justify-between px-5 py-3 border-t fw-linie">
-            <div><div class="text-sm font-medium fw-strong">{% trans "Saldosteuersatz-Vorteil" %}</div>
-                <div class="text-xs fw-faint">{% trans "Differenz Normalsatz ./. Saldosatz → Ertrag 3600" %}</div></div>
-            <div class="text-lg font-bold fw-gut tabular-nums">CHF {{ saldo_vorteil|chf }}</div>
+        <div class="fw-zeile">
+            <div class="fw-mitte"><div class="fw-t">{% trans "Saldosteuersatz-Vorteil" %}</div>
+                <div class="fw-s">{% trans "Differenz Normalsatz ./. Saldosatz → Ertrag 3600" %}</div></div>
+            <div class="fw-betrag good">CHF {{ saldo_vorteil|chf }}</div>
         </div>
         {% endif %}
-        <div class="flex items-center justify-between px-5 py-4 fw-markenflaeche">
-            <div><div class="text-sm font-bold fw-strong">{% trans "Zahllast an ESTV" %}</div>
-                <div class="text-xs fw-faint">{% if mwst_methode == 'saldo' %}{% trans "Brutto-Entgelt × Saldosatz" %}{% else %}{% trans "Umsatzsteuer − Vorsteuer" %}{% endif %}</div></div>
-            <div class="text-2xl font-bold {% if zahllast >= 0 %}fw-marke{% else %}fw-gut{% endif %} tabular-nums">CHF {{ zahllast|chf }}</div>
+        <div class="fw-zeile fw-markenflaeche">
+            <div class="fw-mitte"><div class="fw-t">{% trans "Zahllast an ESTV" %}</div>
+                <div class="fw-s">{% if mwst_methode == 'saldo' %}{% trans "Brutto-Entgelt × Saldosatz" %}{% else %}{% trans "Umsatzsteuer − Vorsteuer" %}{% endif %}</div></div>
+            <div class="fw-betrag {% if zahllast >= 0 %}fw-marke{% else %}good{% endif %}">CHF {{ zahllast|chf }}</div>
         </div>
         <!-- Abrechnung verbuchen: 2200 ausbuchen (sonst wächst das Konto endlos) -->
-        <div class="px-5 py-3 border-t fw-linie flex items-center justify-between gap-3 flex-wrap">
+        <div class="fw-fuss">
             {% if mwst_verbucht %}
-            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg">{% zeichen 'gut' klasse='mr-1' %}{% trans "Periode verbucht" %}</span>
-            <span class="text-xs fw-faint">{% trans "Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 (ESTV) bis zur Zahlung." %}</span>
+            <span class="fw-chip fw-good">{% zeichen 'gut' %}{% trans "Periode verbucht" %}</span>
+            <span>{% trans "Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 (ESTV) bis zur Zahlung." %}</span>
             {% else %}
-            <span class="text-xs fw-mutet">{% if mwst_methode == 'saldo' %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV), Saldosatz-Vorteil als Ertrag. Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% else %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV). Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% endif %}</span>
+            <span>{% if mwst_methode == 'saldo' %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV), Saldosatz-Vorteil als Ertrag. Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% else %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV). Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% endif %}</span>
             <form method="post" action="/neu/mwst/verbuchen/" onsubmit="return confirm('{% filter escapejs %}{% trans "MWST-Abrechnung dieser Periode verbuchen?" %}{% endfilter %}');">
                 {% csrf_token %}
                 <input type="hidden" name="jahr" value="{{ jahr }}">
@@ -69,8 +69,8 @@
                 sie dürfen nicht aus dem Formular kommen.
                 {% endcomment %}
                 {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
-                    {% zeichen 'gut' klasse='mr-1.5' %}{% trans "Abrechnung verbuchen" %}
+                <button type="submit" class="fw-btn fw-primary">
+                    {% zeichen 'gut' %}{% trans "Abrechnung verbuchen" %}
                 </button>
             </form>
             {% endif %}
@@ -78,44 +78,44 @@
     </div>
 </div>
 <!-- ESTV-Abrechnungsziffern -->
-<div class="max-w-xl fw-card overflow-hidden mt-6">
-    <div class="px-5 py-3 fw-flaeche2 border-b fw-linie text-xs uppercase tracking-wide fw-faint font-semibold flex items-center justify-between">
-        <span>{% if mwst_methode == 'saldo' %}{% blocktrans with satz=saldosteuersatz %}ESTV-Abrechnung (Saldosteuersatz {{ satz }} %){% endblocktrans %}{% else %}{% trans "ESTV-Abrechnung (effektiv)" %}{% endif %}</span>
-        {% if mwst_uid %}<span class="normal-case fw-mutet">{{ mwst_uid }}</span>{% endif %}
+<div class="max-w-xl fw-card">
+    <div class="fw-kopf">
+        <span class="fw-t">{% if mwst_methode == 'saldo' %}{% blocktrans with satz=saldosteuersatz %}ESTV-Abrechnung (Saldosteuersatz {{ satz }} %){% endblocktrans %}{% else %}{% trans "ESTV-Abrechnung (effektiv)" %}{% endif %}</span>
+        {% if mwst_uid %}<span class="fw-rechts fw-mono">{{ mwst_uid }}</span>{% endif %}
     </div>
-    <div class="overflow-x-auto">
-<table class="fw-table min-w-max">
-        <tbody class="fw-dv">
-            <tr><td class="fw-faint w-14 tabular-nums">200</td><td class="fw-ink">{% trans "Total vereinbarte Entgelte (Umsatz)" %}</td><td class="text-right tabular-nums fw-right">{{ estv.z200|chf }}</td></tr>
-            <tr><td class="fw-faint tabular-nums">399</td><td class="fw-ink">{% trans "Total geschuldete Steuer" %}</td><td class="text-right tabular-nums fw-right">{{ estv.z399|chf }}</td></tr>
+    <div class="fw-tablewrap">
+<table class="fw-table">
+        <tbody>
+            <tr><td class="fw-mono w-14">200</td><td>{% trans "Total vereinbarte Entgelte (Umsatz)" %}</td><td class="fw-right fw-num">{{ estv.z200|chf }}</td></tr>
+            <tr><td class="fw-mono">399</td><td>{% trans "Total geschuldete Steuer" %}</td><td class="fw-right fw-num">{{ estv.z399|chf }}</td></tr>
             {% if mwst_methode != 'saldo' %}
-            <tr><td class="fw-faint tabular-nums">479</td><td class="fw-ink">{% trans "Total Vorsteuer" %}</td><td class="text-right tabular-nums fw-gut fw-right">{{ estv.z479|chf }}</td></tr>
+            <tr><td class="fw-mono">479</td><td>{% trans "Total Vorsteuer" %}</td><td class="fw-right fw-num"><span class="fw-gut">{{ estv.z479|chf }}</span></td></tr>
             {% endif %}
-            <tr class="fw-markenflaeche"><td class="fw-faint tabular-nums font-bold">500</td><td class="font-bold fw-strong">{% trans "An die ESTV zu bezahlen" %}</td><td class="text-right tabular-nums font-bold fw-marke fw-right">{{ estv.z500|chf }}</td></tr>
-            {% if estv.z510 %}<tr class="fw-gut-flaeche"><td class="fw-faint tabular-nums font-bold">510</td><td class="font-bold fw-strong">{% trans "Guthaben" %}</td><td class="text-right tabular-nums font-bold fw-gut fw-right">{{ estv.z510|chf }}</td></tr>{% endif %}
+            <tr class="fw-markenflaeche"><td class="fw-mono fw-strong">500</td><td class="fw-strong">{% trans "An die ESTV zu bezahlen" %}</td><td class="fw-right fw-num"><span class="fw-strong fw-marke">{{ estv.z500|chf }}</span></td></tr>
+            {% if estv.z510 %}<tr class="fw-gut-flaeche"><td class="fw-mono fw-strong">510</td><td class="fw-strong">{% trans "Guthaben" %}</td><td class="fw-right fw-num"><span class="fw-strong fw-gut">{{ estv.z510|chf }}</span></td></tr>{% endif %}
         </tbody>
     </table>
 </div>
 </div>
 
 <!-- MWST-Einstellungen -->
-<details class="max-w-xl mt-4">
-    <summary class="cursor-pointer text-sm font-semibold fw-mutet hover:fw-marke">{% zeichen 'einstellungen' klasse='mr-1.5' %}{% trans "MWST-Einstellungen (Methode / Satz / Nummer)" %}</summary>
-    <form method="post" action="/neu/mwst/einstellungen/" class="fw-card p-5 mt-2 space-y-3">
+<details class="fw-klapp max-w-xl">
+    <summary>{% zeichen 'einstellungen' %}{% trans "MWST-Einstellungen (Methode / Satz / Nummer)" %}</summary>
+    <form method="post" action="/neu/mwst/einstellungen/" class="fw-formular fw-rumpf">
         {% csrf_token %}
         <input type="hidden" name="zurueck" value="/neu/mwst/?jahr={{ jahr }}&quartal={{ quartal }}">
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "MWST-Methode" %}</label>
-            <select name="mwst_methode" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "MWST-Methode" %}</label>
+            <select name="mwst_methode" class="fw-feld">
                 <option value="effektiv" {% if mwst_methode == 'effektiv' %}selected{% endif %}>{% trans "Effektive Methode (Umsatzsteuer − Vorsteuer)" %}</option>
                 <option value="saldo" {% if mwst_methode == 'saldo' %}selected{% endif %}>{% trans "Saldosteuersatz" %}</option>
             </select></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Saldosteuersatz (%) — nur bei Saldo-Methode" %}</label>
-            <input name="saldosteuersatz" value="{{ saldosteuersatz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "MWST-Nummer (CHE-…)" %}</label>
-            <input name="mwst_uid" value="{{ mwst_uid }}" placeholder="{% trans 'CHE-123.456.789 MWST' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% trans "Speichern" %}</button>
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Saldosteuersatz (%) — nur bei Saldo-Methode" %}</label>
+            <input name="saldosteuersatz" value="{{ saldosteuersatz }}" class="fw-feld"></div>
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "MWST-Nummer (CHE-…)" %}</label>
+            <input name="mwst_uid" value="{{ mwst_uid }}" placeholder="{% trans 'CHE-123.456.789 MWST' %}" class="fw-feld"></div>
+        <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Speichern" %}</button></div>
     </form>
 </details>
 
-<p class="text-xs fw-faint mt-4 max-w-xl">{% blocktrans trimmed %}Hinweis: Die Vermietung ist grundsätzlich von der MWST ausgenommen — MWST fällt nur bei <b>optierten</b> Objekten an (Option nach Art. 22 MWSTG, i. d. R. Gewerbe). Diese Auswertung dient der Vorbereitung; die effektive MWST-Deklaration erfolgt über das ESTV-Portal. Werte bitte mit dem Treuhänder prüfen.{% endblocktrans %}</p>
+<p class="fw-hilfe max-w-xl">{% blocktrans trimmed %}Hinweis: Die Vermietung ist grundsätzlich von der MWST ausgenommen — MWST fällt nur bei <b>optierten</b> Objekten an (Option nach Art. 22 MWSTG, i. d. R. Gewerbe). Diese Auswertung dient der Vorbereitung; die effektive MWST-Deklaration erfolgt über das ESTV-Portal. Werte bitte mit dem Treuhänder prüfen.{% endblocktrans %}</p>
 {% endblock %}

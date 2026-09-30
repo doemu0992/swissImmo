@@ -3,10 +3,10 @@
 <html lang="{{ aktuelle_sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}swissImmo{% endblock %}</title>
     <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230f6f6a%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2230%22 fill=%22%230e6b65%22/><text x=%2250%22 y=%2266%22 font-size=%2244%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
 {% include 'fw/_assets.html' %}
     {% include 'fw/_schicht_link.html' %}
 {% include 'fw/_zeichen.html' %}
@@ -24,165 +24,97 @@
                 document.documentElement.classList.add('_embed');
         } catch (e) {}
     </script>
-    <style>
-    /* ===== Dunkelmodus — NUR aktiv bei <html data-theme="dark">.
-
-       WAS HIER FRÜHER STAND UND WARUM ES WEG IST (E2.84, 21.09.2026)
-       ---------------------------------------------------------------
-       Bis E2.83 remappte dieser Block 51 Tailwind-Farb-Utilities auf dunkle
-       Werte — `.bg-white`, `.text-slate-700`, `.border-slate-200`, neun
-       `:hover`-Flächen und so fort. Das war nötig, solange die Seiten diese
-       Klassen trugen: Ohne das Remapping wäre eine `bg-white`-Karte im
-       Dunkelmodus weiss geblieben.
-
-       Der Vorlagendurchgang von E2 hat ihnen die Grundlage entzogen. Keine
-       einzige Vorlage unter dieser Hülle benutzt die Klassen noch; die
-       Schicht (`_schicht.html`) trägt die Flächen heute über `--ds-*`, und
-       die Tokens schalten selbst um. Die Rest-Treffer im Farbklassen-Zähler
-       standen in KOMMENTAREN, in Testdateien und in `*/admin.py` — letztere
-       rendern in den Django-Admin, der diese Hülle gar nicht erbt.
-
-       Belegt, nicht angenommen: 15 Seiten im Dunkelmodus, für jedes Element
-       Hintergrund-, Schrift- und Rahmenfarbe berechnet, einmal mit und
-       einmal ohne diesen Block. **6915 Elemente verglichen, 0 verändert.**
-       (Ein erster Durchgang zeigte 60 Abweichungen von je ~2/255, in BEIDE
-       Richtungen je nach Seite — das waren laufende CSS-Übergänge, nicht
-       Farben. Mit abgeschalteten `transition`s blieb exakt nichts übrig.
-       Wer das nachstellt, schaltet Übergänge ab, sonst misst er eine
-       Animation.)
-
-       WAS BLEIBT, UND WARUM GERADE DAS
-       Drei Regelgruppen, die KEINE Farbklassen remappen und deshalb auch
-       nicht mit dem Zähler verschwinden:
-
-         * `body` und der Scrollbalken — Elementregeln, keine Klassen.
-         * Formularfelder. `input`/`select`/`textarea` zeichnet der Browser
-           selbst; ohne diese Regel stehen helle Eingabefelder in einer
-           dunklen Anwendung.
-         * `.shadow-*` — Grössenklassen ohne Farbnamen im Namen, die der
-           Zähler nie erfasst hat. Sie haben echte Nutzer (u.a. `berichte`,
-           `kreditoren`, `logbuch`, `verzug_257d`), und ein Schatten braucht
-           im Dunkeln mehr Deckung als im Hellen.
-
-       PETROL, NICHT INDIGO (4b.9) — der historische Grund, warum dieser
-       Block einmal auseinanderlief: 4b.6 stellte die Tailwind-KONFIGURATION
-       auf Petrol um, was nur im Hellmodus wirkte, während hier feste
-       Indigo-Hexwerte mit !important standen. Zwei Farbwelten in einer
-       Anwendung, je nach Systemeinstellung. Mit dem Ausbau ist diese
-       Fehlerquelle strukturell erledigt: Was nicht mehr doppelt definiert
-       ist, kann nicht mehr auseinanderlaufen.
-       Bewacht von core/tests/test_palette.py. ===== */
-    html[data-theme="dark"] body { color:#e7eff2; }
-    html[data-theme="dark"] ::-webkit-scrollbar-thumb { background:#2c4750; }
-
-    html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea {
-        background-color:#1e3238 !important; color:#e7eff2 !important; border-color:#263c44 !important; }
-    html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::placeholder { color:#6b8993 !important; }
-
-    html[data-theme="dark"] .shadow-sm, html[data-theme="dark"] .shadow, html[data-theme="dark"] .shadow-md,
-    html[data-theme="dark"] .shadow-lg, html[data-theme="dark"] .shadow-xl {
-        box-shadow:0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.4) !important; }
-    </style>
 </head>
-<body class="fw-flaeche2 fw-strong">
-<div class="flex min-h-[100dvh]">
+{% comment %}
+DIE HUELLE NACH KONZEPT-V8 (Redesign 30.09.2026)
 
-    <!-- Backdrop für mobiles Menü -->
-    <div id="fwBackdrop" onclick="fwCloseMobileNav()" class="fixed inset-0 fw-vorhang z-40 hidden lg:hidden"></div>
+Quelle: `mockups/konzept-v8-cockpit.html`. Aufbau und Masse stehen in der
+Stilschicht (`fw/_schicht.html`, Abschnitt «Die Huelle nach konzept-v8»); hier
+steht nur das Geruest.
 
-    <!-- ================= SIDEBAR (Fairwalter-Struktur) ================= -->
-    <aside id="fwSidebar" class="w-60 fw-flaeche border-r fw-linie fw-ink flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
+WAS AUS DER ALTEN HUELLE WOHIN GING — nichts ist weggefallen:
 
-        {% if fw_mandant %}
-        {% comment %}
-        WELCHER MANDANT GERADE GILT (E1.2)
+  Mandantenwechsel      Leiste oben, unter der Marke (nur bei mehreren)
+  Globaler Filter `lg`  Kopfzeile links, als Auswahl «Ganzer Bestand» — im
+                        Mockup die Kapsel vor dem Suchfeld
+  Suche `/neu/suche/`   Kopfzeile, ⌘K oeffnet daneben die Palette
+  Dokumente, Kommun.    Kopfzeile rechts, als runde Knoepfe
+  Hell/Dunkel           Kopfzeile rechts (neu) UND im Profilmenue (wie bisher)
+  Profilmenue           unten in der Leiste; am Telefon der Kreis oben rechts
+  Leiste einklappen     Pfeil neben der Marke (`_sbc`, localStorage)
+  Tab-Leiste            unten, unter 1024 px
 
-        Bis hierher stand es nirgends. Wer fuer zwei Verwaltungen arbeitet, sah
-        zwei identische Oberflaechen und musste an den Daten erkennen, in
-        welcher er steckt — die Middleware nahm stillschweigend die aelteste
-        Mitgliedschaft und schrieb einen Hinweis ins Protokoll, den niemand
-        liest.
+Die Ids und Funktionsnamen sind unveraendert — Tests, `_fwmodal.html` und die
+Detailseiten rufen sie beim Namen.
+{% endcomment %}
+<body class="fw-body">
+<div class="fw-app">
 
-        Bei einer Mitgliedschaft steht hier nur der Name: keine Auswahl, wo es
-        nichts zu waehlen gibt. Bei mehreren wird daraus eine Liste, die beim
-        Wechseln absendet. Die Pruefung, ob die Person dort ueberhaupt Mitglied
-        ist, macht `fw_mandant_wechseln` — nicht dieses Formular.
-        {% endcomment %}
-        <div class="px-5 py-3 border-b fw-linie sb-filter">
-            <div class="fw-fs-mikro uppercase tracking-wider fw-faint mb-1">{% trans "Mandant" %}</div>
-            {% if fw_mandanten|length > 1 %}
-            <form method="post" action="/neu/mandant/">{% csrf_token %}
-                <select name="organisation" onchange="this.form.submit()" aria-label="{% trans 'Mandant wechseln' %}"
-                        class="w-full fw-flaeche border fw-linie rounded-md px-2 py-1.5 text-sm fw-strong focus:outline-none focus:fw-linie [&>option]:text-slate-900">
-                    {% for m in fw_mandanten %}
-                    <option value="{{ m.id }}" {% if fw_mandant and fw_mandant.id == m.id %}selected{% endif %}
-                            >{{ m.firma }}</option>
-                    {% endfor %}
-                </select>
-            </form>
-            {% else %}
-            <div class="text-sm font-semibold fw-strong truncate" title="{{ fw_mandant.firma }}">{{ fw_mandant.firma }}</div>
-            {% endif %}
-        </div>
-        {% endif %}
+    <!-- Vorhang für die Leiste am Telefon -->
+    <div id="fwBackdrop" onclick="fwCloseMobileNav()" class="fw-vorhang-mobil hidden"></div>
 
-        <div class="px-5 py-5 flex items-center gap-2.5 border-b fw-linie sb-logo">
-            <a href="/neu/" title="{% trans 'Zur Übersicht' %}" class="w-8 h-8 rounded-lg fw-balken-voll flex items-center justify-center text-xs shadow-lg fw-schatten-marke shrink-0">
-                {% zeichen 'liegenschaft' %}
-            </a>
-            <a href="/neu/" class="font-bold tracking-wide text-sm uppercase sb-logotext flex-1">swissImmo</a>
-            <button onclick="fwToggleSidebar()" title="{% trans 'Menü ein-/ausklappen' %}" class="hidden lg:block fw-faint hover:fw-strong transition-colors">
-                {% zeichen 'zurueck' klasse='text-xs sb-collapse-icon' %}
+    <!-- ================= LEISTE ================= -->
+    <aside id="fwSidebar" class="fw-side fw-flaeche" aria-label="{% trans 'Hauptnavigation' %}">
+        <div class="fw-side-kopf sb-logo">
+            <a href="/neu/" title="{% trans 'Zur Übersicht' %}" class="fw-marke-zeichen">si</a>
+            <div class="fw-marke-text sb-logotext">
+                <a href="/neu/">swissImmo</a>
+                {% if fw_mandant and fw_mandanten|length <= 1 %}<small class="fw-faint" title="{{ fw_mandant.firma }}">{{ fw_mandant.firma }}</small>{% endif %}
+            </div>
+            <button type="button" onclick="fwToggleSidebar()" title="{% trans 'Menü ein-/ausklappen' %}" class="fw-side-knopf fw-nur-breit">
+                {% zeichen 'zurueck' klasse='sb-collapse-icon' %}
             </button>
-            <button type="button" onclick="fwCloseMobileNav()" aria-label="{% trans 'Menü schliessen' %}" class="lg:hidden fw-faint hover:fw-strong transition-colors">
+            <button type="button" onclick="fwCloseMobileNav()" aria-label="{% trans 'Menü schliessen' %}" class="fw-side-knopf fw-nur-mobil">
                 {% zeichen 'schliessen' %}
             </button>
         </div>
 
-        <!-- GLOBALER FILTER -->
-        <form method="get" class="px-4 py-3 fw-flaeche border-b fw-linie sb-filter">
-            <label class="block fw-fs-klein font-semibold fw-faint">{% trans "Globaler Filter" %}</label>
-            <select name="lg" onchange="this.form.submit()"
-                    class="mt-1 w-full bg-transparent text-sm fw-faint focus:outline-none cursor-pointer [&>option]:text-slate-900">
-                <option value="">{% trans "Liegenschaft auswählen" %}</option>
-                {% for l in alle_liegenschaften %}
-                <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
+        {% if fw_mandant and fw_mandanten|length > 1 %}
+        {% comment %}
+        WELCHER MANDANT GERADE GILT (E1.2)
+
+        Bei einer Mitgliedschaft steht der Name unter der Marke: keine Auswahl,
+        wo es nichts zu waehlen gibt. Bei mehreren wird daraus eine Liste, die
+        beim Wechseln absendet. Die Pruefung, ob die Person dort ueberhaupt
+        Mitglied ist, macht `fw_mandant_wechseln` — nicht dieses Formular.
+        {% endcomment %}
+        <form method="post" action="/neu/mandant/" class="fw-mandant sb-filter">{% csrf_token %}
+            <label for="fwMandantWahl">{% trans "Mandant" %}</label>
+            <select id="fwMandantWahl" name="organisation" onchange="this.form.submit()" aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
+                {% for m in fw_mandanten %}
+                <option value="{{ m.id }}" {% if fw_mandant.id == m.id %}selected{% endif %}>{{ m.firma }}</option>
                 {% endfor %}
             </select>
         </form>
+        {% endif %}
 
-        <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-sm">
+        <nav class="fw-nav">
             {% for g in fw_nav_gruppen %}
             <div class="{% if nav in g.alle_keys %}nav-open{% endif %}" id="navgrp-{{ g.key }}">
                 {% if g.ziel %}
                 <a href="{{ g.ziel }}{{ lg_query }}" title="{{ g.label }}"
-                   class="sb-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold transition-all
-                          {% if nav in g.alle_keys %}fw-btn fw-primary shadow-md{% else %}fw-faint hover:fw-flaeche hover:fw-strong{% endif %}">
-                    {% zeichen_wert g.icon klasse='w-4 text-center fw-fs-fein' %}
-                    <span class="sb-label flex-1">{{ g.label }}</span>
-                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label min-w-[18px] text-center fw-fs-mikro font-bold fw-krit-voll fw-strong rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
+                   class="fw-nav-eintrag sb-item{% if nav in g.alle_keys %} hier{% endif %}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
+                    {% zeichen_wert g.icon %}
+                    <span class="sb-label">{{ g.label }}</span>
+                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label fw-nav-zahl" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
                     {% if g.items %}
-                    <span class="sb-label sb-chev fw-fs-mikro {% if nav in g.alle_keys %}fw-faint{% else %}fw-mutet{% endif %} p-1 -m-1"
-                          onclick="event.preventDefault();event.stopPropagation();fwNavToggle('{{ g.key }}')">{% zeichen 'weiter' klasse='transition-transform' %}</span>
+                    <span class="sb-label sb-chev fw-nav-pfeil" onclick="event.preventDefault();event.stopPropagation();fwNavToggle('{{ g.key }}')">{% zeichen 'weiter' %}</span>
                     {% endif %}
                 </a>
                 {% else %}
-                <button type="button" onclick="fwNavToggle('{{ g.key }}')" title="{{ g.label }}"
-                        class="sb-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold fw-mutet hover:fw-flaeche hover:fw-strong transition-all">
-                    {% zeichen_wert g.icon klasse='w-4 text-center fw-fs-fein' %}
-                    <span class="sb-label flex-1 text-left">{{ g.label }}</span>
-                    <span class="sb-label sb-chev fw-fs-mikro fw-mutet p-1 -m-1">{% zeichen 'weiter' klasse='transition-transform' %}</span>
+                <button type="button" onclick="fwNavToggle('{{ g.key }}')" title="{{ g.label }}" class="fw-nav-eintrag sb-item">
+                    {% zeichen_wert g.icon %}
+                    <span class="sb-label">{{ g.label }}</span>
+                    <span class="sb-label sb-chev fw-nav-pfeil">{% zeichen 'weiter' %}</span>
                 </button>
                 {% endif %}
                 {% if g.items %}
-                <div id="navsub-{{ g.key }}" class="sb-sub flex flex-col gap-0.5 pt-1 pb-1 pl-[26px] {% if nav not in g.alle_keys %}hidden{% endif %}">
+                <div id="navsub-{{ g.key }}" class="fw-nav-unter sb-sub{% if nav not in g.alle_keys %} hidden{% endif %}">
                     {% for it in g.items %}
-                    {% if it.section %}<div class="pt-2 pb-0.5 px-3 fw-fs-mikro font-bold uppercase tracking-[0.18em] fw-mutet">{{ it.section }}</div>{% endif %}
-                    <a href="{{ it.ziel }}{{ lg_query }}"
-                       class="flex items-center gap-2 px-3 py-1.5 rounded-md fw-fs-fein transition-colors
-                              {% if nav in it.keys %}fw-flaeche fw-strong font-semibold{% else %}fw-faint hover:fw-flaeche hover:fw-strong{% endif %}">
-                        <span class="flex-1">{{ it.label }}</span>
-                        {% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="min-w-[18px] text-center fw-fs-mikro font-bold fw-krit-voll fw-strong rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
+                    {% if it.section %}<div class="fw-nav-abschnitt">{{ it.section }}</div>{% endif %}
+                    <a href="{{ it.ziel }}{{ lg_query }}" class="fw-nav-unterpunkt{% if nav in it.keys %} hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}>
+                        <span>{{ it.label }}</span>
+                        {% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-nav-zahl" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
                     </a>
                     {% endfor %}
                 </div>
@@ -191,90 +123,90 @@
             {% endfor %}
         </nav>
 
-        <div class="px-3 pb-4 sb-filter">
-            <a href="/neu/einstellungen/{{ lg_query }}"
-               class="flex items-center gap-3 px-3 py-2 rounded-lg fw-fs-fein {% if nav in fw_einstellungen_keys %}fw-flaeche fw-strong{% else %}fw-mutet hover:fw-flaeche hover:fw-strong{% endif %} transition-colors">
-                {% zeichen 'einstellungen' klasse='fw-fs-fein' %} <span class="sb-label">{% trans "Einstellungen" %}</span>
+        <div class="fw-side-fuss">
+            <a href="/neu/einstellungen/{{ lg_query }}" class="fw-nav-eintrag sb-item{% if nav in fw_einstellungen_keys %} hier{% endif %}">
+                {% zeichen 'einstellungen' %} <span class="sb-label">{% trans "Einstellungen" %}</span>
             </a>
+            <button type="button" onclick="fwProfilMenu()" class="fw-ich" aria-haspopup="true" aria-controls="fwProfil">
+                <span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span>
+                <span class="sb-label"><b class="fw-ink truncate">{{ request.user.get_full_name|default:request.user.username }}</b><small class="fw-faint truncate">{{ request.user.email|default:request.user.username }}</small></span>
+            </button>
         </div>
-
     </aside>
 
     <!-- ================= INHALT ================= -->
-    <div class="flex-1 min-w-0 flex flex-col">
+    <div class="fw-haupt">
 
-        <!-- TOPBAR -->
-        <header class="h-16 px-6 md:px-8 flex items-center gap-4 fw-flaeche border-b fw-linie sticky top-0 z-40">
-            <button type="button" onclick="fwOpenMobileNav()" aria-label="{% trans 'Menü öffnen' %}" class="lg:hidden fw-mutet hover:fw-strong text-lg -ml-1 p-1">{% zeichen 'mehr' %}</button>
-            <form method="get" action="/neu/suche/" class="w-full max-w-md">
-                <div class="relative">
-                    {% zeichen 'suchen' klasse='absolute left-4 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
-                    <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="{% trans 'Suche nach Person, Objekt, Vertrag …' %}"
-                           class="w-full fw-flaeche2 pl-11 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 fw-fokusring placeholder:fw-faint">
-                </div>
+        <header class="fw-top" id="fwTop">
+            <button type="button" onclick="fwOpenMobileNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund fw-nur-mobil">{% zeichen 'mehr' %}</button>
+
+            <!-- GLOBALER FILTER: gilt für die ganze Anwendung -->
+            <form method="get" class="fw-bereich" title="{% trans 'Globaler Filter' %}">
+                <span class="fw-bereich-zeichen">{% zeichen 'liegenschaft' %}</span>
+                <select name="lg" onchange="this.form.submit()" aria-label="{% trans 'Globaler Filter' %}">
+                    <option value="">{% trans "Ganzer Bestand" %}</option>
+                    {% for l in alle_liegenschaften %}
+                    <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
+                    {% endfor %}
+                </select>
             </form>
-            <!-- Account ganz rechts aussen -->
-            <div class="ml-auto flex items-center gap-2 md:gap-3">
-            <a href="/neu/dokumente/{{ lg_query }}" title="{% trans 'Dokumente' %}"
-               class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'dokumente' %}fw-markenflaeche fw-marke{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
-                {% zeichen 'dokument' klasse='fw-fs-text' %}
-            </a>
-            <a href="/neu/kommunikation/{{ lg_query }}" title="{% trans 'Kommunikation' %}"
-               class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'kommunikation' %}fw-markenflaeche fw-marke{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
-                {% zeichen 'senden' klasse='fw-fs-text' %}
-            </a>
-            <div class="relative">
-                <button onclick="fwProfilMenu()" class="flex items-center gap-2.5 group">
-                    <span class="text-sm fw-mutet hidden md:inline">{% trans "Hallo," %} <span class="font-semibold fw-strong">{{ request.user.first_name|default:request.user.username }}</span></span>
-                    <span class="w-9 h-9 rounded-full fw-btn fw-primary flex items-center justify-center text-xs font-bold group-hover:ring-2 fw-fokusring transition-all">
-                        {{ request.user.username|slice:":2"|upper }}
-                    </span>
-                </button>
-                <!-- Dropdown -->
-                <div id="fwProfil" class="hidden absolute right-0 mt-2 w-64 fw-card shadow-xl fw-schatten py-2 z-50">
-                    <div class="px-4 py-2 flex items-center gap-3 border-b fw-linie mb-1">
-                        <span class="w-10 h-10 rounded-full fw-btn fw-primary flex items-center justify-center text-sm font-bold">{{ request.user.username|slice:":2"|upper }}</span>
-                        <div class="min-w-0">
-                            <div class="text-sm font-semibold fw-strong truncate">{{ request.user.get_full_name|default:request.user.username }}</div>
-                            <div class="text-xs fw-faint truncate">{{ request.user.email|default:request.user.username }}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="px-4 py-2">
-                        <div class="fw-fs-klein font-semibold fw-faint uppercase tracking-wider mb-1.5">{% trans "Darstellung" %}</div>
-                        <div class="flex fw-flaeche2 rounded-lg p-0.5 gap-0.5">
-                            <button type="button" data-theme-btn="light" onclick="fwSetTheme('light')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors fw-mutet hover:fw-ink">{% trans "Hell" %}</button>
-                            <button type="button" data-theme-btn="dark" onclick="fwSetTheme('dark')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors fw-mutet hover:fw-ink">{% trans "Dunkel" %}</button>
-                        </div>
-                    </div>
-                    <div class="px-4 py-2">
-                        <div class="fw-fs-klein font-semibold fw-faint uppercase tracking-wider mb-1.5">Sprache · Langue · Lingua</div>
-                        {% include 'core/_sprachwahl.html' with rahmen='flex fw-flaeche2 rounded-lg p-0.5 gap-0.5' knopf='flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors' aktiv='fw-balken-voll shadow-sm' passiv='fw-mutet hover:fw-ink' %}
-                    </div>
-                    <div class="border-t fw-linie my-1.5"></div>
-                    {% include 'fw/_menu_item.html' with ziel='/neu/einstellungen/' icon='einstellungen' label=_('Einstellungen') %}
-                    <div class="border-t fw-linie my-1.5"></div>
-                    <a href="/logout/" class="flex items-center gap-3 px-4 py-2 text-sm fw-kritisch hover:fw-krit-flaeche">
-                        {% zeichen 'extern' klasse='w-4 text-center' %} {% trans "Abmelden" %}
-                    </a>
-                </div>
-            </div>
+
+            <form method="get" action="/neu/suche/" class="fw-suche" role="search">
+                {% zeichen 'suchen' %}
+                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="{% trans 'Suche nach Person, Objekt, Vertrag …' %}" aria-label="{% trans 'Suche nach Person, Objekt, Vertrag …' %}">
+                {% if fw_palette %}<kbd class="fw-taste" onclick="fwPaletteOpen()">⌘K</kbd>{% endif %}
+            </form>
+
+            <div class="fw-top-rechts">
+                <a href="/neu/dokumente/{{ lg_query }}" title="{% trans 'Dokumente' %}" aria-label="{% trans 'Dokumente' %}"
+                   class="fw-knopf-rund fw-nur-breit{% if nav == 'dokumente' %} hier{% endif %}">{% zeichen 'dokument' %}</a>
+                <a href="/neu/kommunikation/{{ lg_query }}" title="{% trans 'Kommunikation' %}" aria-label="{% trans 'Kommunikation' %}"
+                   class="fw-knopf-rund fw-nur-breit{% if nav == 'kommunikation' %} hier{% endif %}">{% zeichen 'senden' %}</a>
+                <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund">{% zeichen 'darstellung' %}</button>
+                <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-nur-mobil"><span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
         </header>
 
+        <!-- Profilmenü -->
+        <div id="fwProfil" class="fw-profil hidden">
+            <div class="fw-profil-kopf">
+                <span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span>
+                <div class="fw-profil-name">
+                    <b>{% trans "Hallo," %} {{ request.user.get_full_name|default:request.user.username }}</b>
+                    <small>{{ request.user.email|default:request.user.username }}</small>
+                </div>
+            </div>
+            <div class="fw-profil-abschnitt">
+                <div class="fw-profil-titel">{% trans "Darstellung" %}</div>
+                <div class="fw-segment">
+                    <button type="button" data-theme-btn="light" onclick="fwSetTheme('light')">{% trans "Hell" %}</button>
+                    <button type="button" data-theme-btn="dark" onclick="fwSetTheme('dark')">{% trans "Dunkel" %}</button>
+                </div>
+            </div>
+            <div class="fw-profil-abschnitt">
+                <div class="fw-profil-titel">Sprache · Langue · Lingua</div>
+                {% include 'core/_sprachwahl.html' with rahmen='fw-segment' knopf='' aktiv='an' passiv='' %}
+            </div>
+            <div class="fw-profil-trenner"></div>
+            <a href="/neu/dokumente/{{ lg_query }}" class="fw-profil-link">{% zeichen 'dokument' %} {% trans "Dokumente" %}</a>
+            <a href="/neu/kommunikation/{{ lg_query }}" class="fw-profil-link">{% zeichen 'senden' %} {% trans "Kommunikation" %}</a>
+            <a href="/neu/einstellungen/" class="fw-profil-link">{% zeichen 'einstellungen' %} {% trans "Einstellungen" %}</a>
+            <div class="fw-profil-trenner"></div>
+            <a href="/logout/" class="fw-profil-link crit">{% zeichen 'extern' %} {% trans "Abmelden" %}</a>
+        </div>
+
         {% if messages %}
         {% comment %} Audit Etappe 3: Screenreader erfuhren von keiner Meldung. Der Stapel
-           ist jetzt eine höfliche Live-Region; Fehler melden sich als `alert` sofort.
+           ist eine höfliche Live-Region; Fehler melden sich als `alert` sofort.
            Das führende Emoji der Texte entfällt bei der Anzeige (`ohne_emoji`) — das
            Symbol je Meldungsart steht schon davor. {% endcomment %}
-        <div id="fw-toasts" class="fixed top-4 right-4 z-[100] w-[min(92vw,380px)] space-y-2" role="status" aria-live="polite">
+        <div id="fw-toasts" class="fw-toasts" role="status" aria-live="polite">
             {% for m in messages %}
-            <div {% if 'error' in m.tags %}role="alert" {% endif %}class="fw-toast flex items-start gap-2 text-sm px-4 py-3 rounded-xl shadow-lg border
-                {% if 'error' in m.tags %}fw-krit-flaeche fw-linie-krit fw-kritisch{% elif 'warning' in m.tags %}fw-warn-flaeche fw-linie-warn fw-warnton{% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}"
+            <div {% if 'error' in m.tags %}role="alert" {% endif %}class="fw-toast{% if 'error' in m.tags %} crit{% elif 'warning' in m.tags %} warn{% elif 'info' in m.tags %} info{% endif %}"
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
-                {% if 'error' in m.tags %}{% zeichen 'kritisch' klasse='mt-0.5' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' klasse='mt-0.5' %}{% elif 'info' in m.tags %}{% zeichen 'hinweis' klasse='mt-0.5' %}{% else %}{% zeichen 'gut' klasse='mt-0.5' %}{% endif %}
-                <div class="flex-1">{{ m|ohne_emoji }}</div>
-                <button type="button" onclick="this.closest('.fw-toast').remove()" title="{% trans 'Meldung schliessen' %}" class="fw-faint hover:fw-mutet">{% zeichen 'schliessen' %}</button>
+                {% if 'error' in m.tags %}{% zeichen 'kritisch' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' %}{% elif 'info' in m.tags %}{% zeichen 'hinweis' %}{% else %}{% zeichen 'gut' %}{% endif %}
+                <div class="fw-toast-text">{{ m|ohne_emoji }}</div>
+                <button type="button" onclick="this.closest('.fw-toast').remove()" title="{% trans 'Meldung schliessen' %}">{% zeichen 'schliessen' %}</button>
             </div>
             {% endfor %}
         </div>
@@ -290,54 +222,50 @@
         </script>
         {% endif %}
 
-        <main class="p-6 md:p-8 w-full max-w-[1400px] mx-auto">
+        <main class="fw-inhalt">
             {% block content %}{% endblock %}
         </main>
     </div>
 </div>
 {% if fw_palette %}
 {{ fw_palette|json_script:"fw-palette-data" }}
-<!-- ⌘K Command-Palette -->
-<div id="fwPalette" class="hidden fixed inset-0 z-[110]">
-    <div class="absolute inset-0 fw-vorhang" onclick="fwPaletteClose()"></div>
-    <div class="relative max-w-lg mx-auto mt-[12vh] fw-flaeche rounded-2xl shadow-2xl border fw-linie overflow-hidden">
-        <div class="flex items-center gap-3 px-4 border-b fw-linie">
-            {% zeichen 'suchen' klasse='fw-faint text-sm' %}
-            <input id="fwPaletteInput" type="text" placeholder="{% trans 'Person, Objekt, Mietverhältnis oder Seite …' %}" autocomplete="off"
-                   class="flex-1 py-3.5 text-sm focus:outline-none placeholder:fw-faint">
-            <span class="fw-fs-mikro font-semibold fw-faint border fw-linie rounded px-1.5 py-0.5">ESC</span>
+<!-- ⌘K Befehlspalette -->
+<div id="fwPalette" class="fw-palette hidden" onclick="if(event.target===this)fwPaletteClose()">
+    <div class="fw-palette-box" role="dialog" aria-label="{% trans 'Person, Objekt, Mietverhältnis oder Seite …' %}">
+        <div class="fw-palette-feld">
+            {% zeichen 'suchen' %}
+            <input id="fwPaletteInput" type="text" placeholder="{% trans 'Person, Objekt, Mietverhältnis oder Seite …' %}" autocomplete="off">
+            <span class="fw-taste">ESC</span>
         </div>
-        <div id="fwPaletteList" class="max-h-[50vh] overflow-y-auto py-1.5"></div>
-        <div class="px-4 py-2 border-t fw-linie fw-fs-klein fw-faint">
-            ↵ {% trans "öffnen" %} · <span id="fwPaletteFuss">{% trans "Tippen sucht in Akten und Seiten" %}</span>
+        <div id="fwPaletteList" class="fw-palette-liste"></div>
+        <div class="fw-palette-fuss">
+            <span>↵ {% trans "öffnen" %}</span><span id="fwPaletteFuss">{% trans "Tippen sucht in Akten und Seiten" %}</span>
         </div>
     </div>
 </div>
 {% endif %}
 <script>
-// Generische Tab-Umschaltung für Detailseiten:
-// Buttons: data-tab="<gruppe>" data-target="<name>"; Panels: id="<gruppe>-<name>"
-// Sidebar ein-/ausklappen (Zustand in localStorage)
+// Leiste ein-/ausklappen (Zustand in localStorage)
 function fwToggleSidebar() {
     var collapsed = document.documentElement.classList.toggle('_sbc');
     localStorage.setItem('sbCollapsed', collapsed ? '1' : '0');
 }
 
-// Mobiles Menü (Off-Canvas-Drawer) öffnen/schliessen
+// Leiste am Telefon als Schublade öffnen/schliessen
 function fwOpenMobileNav() {
-    document.getElementById('fwSidebar').classList.remove('-translate-x-full');
+    document.getElementById('fwSidebar').classList.add('offen');
     document.getElementById('fwBackdrop').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
 function fwCloseMobileNav() {
-    document.getElementById('fwSidebar').classList.add('-translate-x-full');
+    document.getElementById('fwSidebar').classList.remove('offen');
     document.getElementById('fwBackdrop').classList.add('hidden');
     document.body.style.overflow = '';
 }
-// ESC schliesst das mobile Menü
+// ESC schliesst die Schublade
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') fwCloseMobileNav(); });
 
-// Navigationsgruppe auf-/zuklappen (6-Türen-Sidebar)
+// Navigationsgruppe auf-/zuklappen
 function fwNavToggle(key) {
     var grp = document.getElementById('navgrp-' + key);
     var sub = document.getElementById('navsub-' + key);
@@ -346,7 +274,16 @@ function fwNavToggle(key) {
     grp.classList.toggle('nav-open', !sub.classList.contains('hidden'));
 }
 
-// ─── ⌘K / Ctrl+K Command-Palette ───
+// Kopfzeile: Trennlinie erst, wenn der Inhalt darunter durchläuft
+(function () {
+    var top = document.getElementById('fwTop');
+    if (!top) return;
+    function pruefen() { top.classList.toggle('fw-gerollt', window.scrollY > 4); }
+    window.addEventListener('scroll', pruefen, {passive: true});
+    pruefen();
+})();
+
+// ─── ⌘K / Ctrl+K Befehlspalette ───
 (function () {
     var pal = document.getElementById('fwPalette');
     if (!pal) return;
@@ -380,12 +317,11 @@ function fwNavToggle(key) {
     }
 
     function zeile(url, label, zusatz, art, aktiv) {
-        return '<a href="' + url + '" class="fw-pal-item flex items-center gap-3 px-4 py-2.5 text-sm ' +
-               (aktiv ? 'fw-markenflaeche fw-marke' : 'fw-ink hover:fw-flaeche2 ') + '">' +
-               (art ? '<span class="fw-fs-mikro font-semibold uppercase tracking-wide fw-faint w-[92px] shrink-0">' + esc(art) + '</span>'
-                    : '{% zeichen 'weiter' klasse='fw-fs-mikro fw-faint w-[92px] shrink-0' %}') +
-               '<span class="flex-1 truncate">' + esc(label) + '</span>' +
-               (zusatz ? '<span class="fw-fs-klein fw-faint truncate max-w-[45%]">' + esc(zusatz) + '</span>' : '') +
+        return '<a href="' + url + '" class="fw-pal-item' + (aktiv ? ' aktiv' : '') + '">' +
+               (art ? '<span class="fw-pal-art">' + esc(art) + '</span>'
+                    : '{% zeichen 'weiter' klasse='fw-faint' %}') +
+               '<span class="fw-pal-label">' + esc(label) + '</span>' +
+               (zusatz ? '<span class="fw-pal-zusatz">' + esc(zusatz) + '</span>' : '') +
                '</a>';
     }
 
@@ -397,19 +333,19 @@ function fwNavToggle(key) {
         var nr = 0;
 
         if (meine.length) {
-            stuecke.push('<div class="px-4 pt-2 pb-1 fw-fs-mikro font-semibold uppercase tracking-wider fw-faint">{% filter escapejs %}{% trans "Akten" %}{% endfilter %}</div>');
+            stuecke.push('<div class="fw-palette-gruppe">{% filter escapejs %}{% trans "Akten" %}{% endfilter %}</div>');
             meine.forEach(function (t) { stuecke.push(zeile(t.url, t.label, t.zusatz, t.art, nr++ === 0)); });
         }
         if (seiten.length) {
             if (meine.length) {
-                stuecke.push('<div class="px-4 pt-2 pb-1 fw-fs-mikro font-semibold uppercase tracking-wider fw-faint border-t fw-linie mt-1">{% filter escapejs %}{% trans "Seiten" %}{% endfilter %}</div>');
+                stuecke.push('<div class="fw-palette-gruppe">{% filter escapejs %}{% trans "Seiten" %}{% endfilter %}</div>');
             }
             seiten.slice(0, meine.length ? 5 : 12).forEach(function (d) {
                 stuecke.push(zeile(d.url, d.label, d.gruppe || '', '', nr++ === 0));
             });
         }
         if (!stuecke.length) {
-            list.innerHTML = '<div class="px-4 py-3 text-sm fw-faint">{% filter escapejs %}{% trans "Nichts gefunden — ↵ sucht ausführlich nach" %}{% endfilter %} «' + esc(q) + '»</div>';
+            list.innerHTML = '<div class="fw-palette-leer">{% filter escapejs %}{% trans "Nichts gefunden — ↵ sucht ausführlich nach" %}{% endfilter %} «' + esc(q) + '»</div>';
             return;
         }
         list.innerHTML = stuecke.join('');
@@ -454,7 +390,7 @@ function fwNavToggle(key) {
     });
 })();
 
-// Profil-Dropdown öffnen/schliessen
+// Profilmenü öffnen/schliessen
 function fwProfilMenu() {
     var m = document.getElementById('fwProfil');
     if (m) m.classList.toggle('hidden');
@@ -462,21 +398,27 @@ function fwProfilMenu() {
 document.addEventListener('click', function(e) {
     var m = document.getElementById('fwProfil');
     if (!m || m.classList.contains('hidden')) return;
-    // Klick ausserhalb von Menü + Avatar-Button schliesst
+    // Klick ausserhalb von Menü + Auslöser schliesst
     if (!m.contains(e.target) && !e.target.closest('button[onclick="fwProfilMenu()"]')) {
         m.classList.add('hidden');
     }
 });
+document.addEventListener('keydown', function(e) {
+    var m = document.getElementById('fwProfil');
+    if (e.key === 'Escape' && m) m.classList.add('hidden');
+});
 
+// Generische Tab-Umschaltung für Detailseiten:
+// Buttons: data-tab="<gruppe>" data-target="<name>"; Panels: id="<gruppe>-<name>"
 function fwTab(gruppe, name) {
     document.querySelectorAll('[data-panel="' + gruppe + '"]').forEach(function(p) {
         p.classList.toggle('hidden', p.id !== gruppe + '-' + name);
     });
     document.querySelectorAll('[data-tab="' + gruppe + '"]').forEach(function(b) {
         var aktiv = b.dataset.target === name;
-        // `hier` ist die Klasse der neuen Reiterleiste (Phase 4b, Tokens).
-        // Die vier Tailwind-Klassen bleiben, solange noch Seiten die alte
-        // Leiste benutzen — sie schaden der neuen nicht.
+        // `hier` ist die Klasse der Reiterleiste (Tokens). Die vier
+        // Tailwind-Klassen bleiben, solange noch Seiten die alte Leiste
+        // benutzen — sie schaden der neuen nicht.
         b.classList.toggle('hier', aktiv);
         b.classList.toggle('border-indigo-600', aktiv);
         b.classList.toggle('fw-marke', aktiv);
@@ -509,11 +451,8 @@ document.addEventListener('submit', function(e) {
         btn.classList.add('opacity-60', 'cursor-wait');
         // SEIT E2.39 GIBT ES KEIN `<i class="fa-…">` MEHR.
         //
-        // Hier stand `btn.querySelector('i.fa-solid, i.fa-regular')`. Nach
-        // der Umstellung tragen die Knoepfe `<svg class="fw-zeichen">`, also
-        // traf die Abfrage nie mehr — und KEIN Absendeknopf der Anwendung
-        // zeigte noch einen Spinner. Lautlos, wie immer bei einem Zeichen,
-        // das fehlt statt falsch zu sein.
+        // Die Knoepfe tragen `<svg class="fw-zeichen">`; das Zeichen wird
+        // gegen den drehenden Kreis getauscht.
         var ic = btn.querySelector('svg.fw-zeichen use');
         if (ic) { ic.setAttribute('href', '#z-laedt');
                   ic.parentNode.classList.add('fw-dreht'); }
@@ -562,7 +501,7 @@ document.addEventListener('click', function(ev) {
 });
 
 // ---- Tabellen mobil stapelbar machen ----
-// Jede Zelle bekommt die Überschrift ihrer Spalte als data-label; das CSS oben
+// Jede Zelle bekommt die Überschrift ihrer Spalte als data-label; die Schicht
 // blendet unter 768 px den Kopf aus und zeigt stattdessen «Label — Wert» pro
 // Zeile. Zentral statt in ~40 Templates: quer scrollen hiess bisher, entweder
 // die Bezeichnung ODER den Betrag zu sehen.
@@ -633,14 +572,17 @@ function fwSetTheme(t){
     try { localStorage.setItem('fw-theme', t); } catch(e){}
     fwSyncThemeButtons();
 }
+// Der runde Knopf in der Kopfzeile: wechselt vom gerade sichtbaren Modus in
+// den anderen — auch wenn der sichtbare aus der Systemeinstellung kommt.
+function fwThemeWechseln(){
+    var r = document.documentElement.getAttribute('data-theme');
+    var jetzt = r || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    fwSetTheme(jetzt === 'dark' ? 'light' : 'dark');
+}
 function fwSyncThemeButtons(){
     var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
     document.querySelectorAll('[data-theme-btn]').forEach(function(b){
-        var on = b.getAttribute('data-theme-btn') === cur;
-        b.classList.toggle('fw-balken-voll', on);
-        b.classList.toggle('text-white', on);
-        b.classList.toggle('shadow-sm', on);
-        b.classList.toggle('fw-mutet', !on);
+        b.classList.toggle('an', b.getAttribute('data-theme-btn') === cur);
     });
 }
 fwSyncThemeButtons();
@@ -648,44 +590,22 @@ fwSyncThemeButtons();
 {% block scripts %}{% endblock %}
 
 {% if fw_nav_gruppen %}
-{% comment %} ===== TAB-LEISTE (nur Handy, E1.2) =====================================
-   Bis hierher war die Navigation auf dem Telefon NUR über das Symbol in der
-   Kopfzeile erreichbar: antippen, Schublade fährt auf, Bereich suchen,
-   antippen, Schublade schliesst. Vier Handgriffe für einen Wechsel, den man
-   unterwegs zwanzigmal macht — und das Symbol sitzt oben links, also genau
-   dort, wo der Daumen einer Hand nicht hinkommt.
+{% comment %} ===== TAB-LEISTE (nur Telefon, E1.2) =====================================
+   Die fünf Bereiche stehen unten, in Daumenreichweite. Die Schublade (Knopf
+   oben links) bleibt: Sie führt die Untereinträge, die hier keinen Platz haben.
 
-   Die fünf Bereiche stehen deshalb unten, in Daumenreichweite. Die Schublade
-   bleibt: Sie führt die Untereinträge, die hier keinen Platz haben.
-
-   `env(safe-area-inset-bottom)` hält die Leiste über der Gestenzeile
-   neuerer Telefone; ohne das liegt der letzte Eintrag unter dem Balken.
+   Masse, `env(safe-area-inset-bottom)` und die Breitenbegrenzung (`100vw`,
+   `min-width:0` je Spalte) stehen in der Stilschicht unter `.fw-tabbar` —
+   ohne sie dehnte sich die Leiste auf 690 px und schob das Telefon quer.
    ===================================================================== {% endcomment %}
-{% comment %} `w-screen` ist nicht doppelt gemoppelt zu `inset-x-0`, sondern noetig:
-   Ohne feste Breite entsteht eine Rueckkopplung. Die Leiste dehnt sich auf
-   ihre Mindestbreite (5 x 138 px = 690), macht damit das Dokument 690 breit —
-   und weil das Sichtfeld auf dem Telefon mitwaechst, richtet sich `right:0`
-   danach und die Leiste bleibt 690. Gemessen: 300 px Querlauf auf jeder
-   Seite. `100vw` bricht den Kreis, weil es am Sichtfeld haengt und nicht am
-   Inhalt. {% endcomment %}
-<nav class="lg:hidden fixed bottom-0 left-0 w-screen max-w-full z-40 fw-flaeche border-t fw-linie grid grid-cols-5"
-     style="padding-bottom:max(4px,env(safe-area-inset-bottom))" aria-label="{% trans 'Bereiche' %}">
+<nav class="fw-tabbar" aria-label="{% trans 'Bereiche' %}">
     {% for g in fw_nav_gruppen %}
-    <a href="{{ g.ziel }}{{ lg_query }}"
-       {% comment %} `min-w-0` ist die eigentliche Loesung: Ohne das ist die
-          Mindestbreite einer Rasterspalte die Breite ihres laengsten Wortes,
-          `truncate` greift nie, und fuenf Spalten brauchen 690 statt 390 px.
-          Erst damit darf die Spalte schmaler werden als ihr Inhalt. {% endcomment %}
-       class="flex flex-col items-center justify-center gap-1 py-2 min-h-[52px] min-w-0 fw-fs-klein transition-colors
-              {% if nav in g.alle_keys %}fw-marke font-semibold{% else %}fw-mutet{% endif %}"
-       {% if nav in g.alle_keys %}aria-current="page"{% endif %}>
-        {% zeichen_wert g.icon klasse='fw-fs-text' %}
-        <span class="truncate max-w-full px-0.5">{{ g.label }}</span>
+    <a href="{{ g.ziel }}{{ lg_query }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
+        {% zeichen_wert g.icon %}
+        <span>{{ g.label }}</span>
     </a>
     {% endfor %}
 </nav>
-{# Platz, damit die Leiste den letzten Inhalt nicht verdeckt. #}
-<div class="lg:hidden" style="height:calc(56px + env(safe-area-inset-bottom))" aria-hidden="true"></div>
 {% endif %}
 {% include 'fw/_bestaetigen.html' %}
 </body>
