@@ -50,3 +50,18 @@ def postfaecher_brauchen_einen_schluessel(app_configs, **kwargs):
              'Ist der Schlüssel verloren, müssen die Zugangsdaten in den '
              'Einstellungen neu eingegeben werden.',
         id='core.W001')]
+
+
+@register()
+def ahv_braucht_einen_schluessel(app_configs, **kwargs):
+    """AHV-Nummern liegen verschlüsselt — ohne Schlüssel lassen sie sich weder
+    speichern noch lesen."""
+    from core.services.geheimnis import UMGEBUNGSNAME, schluessel_vorhanden
+
+    if schluessel_vorhanden():
+        return []
+    return [Warning(
+        f'{UMGEBUNGSNAME} ist nicht gesetzt. AHV-Nummern werden verschlüsselt '
+        'gespeichert; ohne Schlüssel kann keine AHV-Nummer erfasst werden.',
+        hint=f'{UMGEBUNGSNAME}=… in die .env eintragen (Erzeugung siehe README).',
+        id='core.W002')]
