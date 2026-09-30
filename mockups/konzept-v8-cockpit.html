@@ -331,7 +331,146 @@ h1 em{font-style:normal;color:var(--faint);font-weight:400}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 </style>
+<style>
+/* ─── Weitere Seiten ─── */
+[hidden]{display:none!important}
+.page{display:flex;flex-direction:column;gap:24px;min-width:0}
+.page.enter{animation:pin .22s var(--ease)}
+@keyframes pin{from{opacity:0;transform:translateY(6px)}}
+.phead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.phead > div:first-child{min-width:0}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px;color:var(--faint);font-weight:500}
+.crumbs a{color:var(--muted)}
+.crumbs a:hover{color:var(--brand);text-decoration:underline;text-underline-offset:3px}
+.sub{margin:6px 0 0;color:var(--muted);font-size:13.5px}
+.kpis.stats .kpi{cursor:default}
+.kpis.stats .kpi-v{font-size:22px}
+.kpi-v.crit{color:var(--crit)}
+.kpi-v.good{color:var(--good)}
+.two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;align-items:start}
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;font-size:12px;color:var(--faint);padding:10px 16px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface-2)}
+.tbl td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl tfoot td{font-weight:600;border-top:1px solid var(--line-strong);border-bottom:0;background:var(--surface-2)}
+.tbl .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl tr.click{cursor:pointer;transition:background .12s}
+.tbl tr.click:hover{background:var(--hover)}
+.tbl .strong{font-weight:600}
+.tbl .dim{color:var(--faint);font-size:12px;font-weight:400}
+.tbl .neg{color:var(--crit);font-weight:600}
+.tbl .pos{color:var(--good);font-weight:600}
+.tbl .zero{color:var(--faint)}
+.tbl a.link{font-weight:500}
+.p-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--line)}
+.p-search{display:flex;align-items:center;gap:8px;flex:1;min-width:200px;max-width:360px;height:34px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--faint)}
+.p-search:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.p-search input{flex:1;border:0;background:none;min-width:0;font-size:13px;color:var(--ink)}
+.p-search input:focus{outline:none}
+.more{display:flex;justify-content:center;padding:12px}
+.issues{list-style:none;margin:0;padding:6px 0}
+.issues li{display:flex;align-items:center;gap:12px;padding:12px 20px}
+.issues li + li{border-top:1px solid var(--line)}
+.issues .body{flex:1;min-width:0}
+.issues b{display:block;font-weight:600;font-size:13.5px}
+.issues span{font-size:12.5px;color:var(--muted)}
+.sev{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--line-strong)}
+.sev.crit{background:var(--crit)}.sev.warn{background:var(--warn)}.sev.good{background:var(--good)}
+.pill.neutral{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.callout{display:flex;gap:14px;align-items:center;padding:16px 20px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+.callout .ico{flex:0 0 auto}
+.callout.crit{background:var(--crit-soft);border-color:transparent}
+.callout.crit .ico{color:var(--crit)}
+.callout.good{background:var(--good-soft);border-color:transparent}
+.callout.good .ico{color:var(--good)}
+.callout .body{flex:1;min-width:200px}
+.callout b{display:block;font-weight:600}
+.callout span{font-size:13px;color:var(--muted)}
+.tabs.inpanel{padding-top:4px}
 
+/* Läufe */
+.runs{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.run{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.run-h{display:flex;align-items:flex-start;gap:12px}
+.run-h .body{flex:1;min-width:0}
+.run-h b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.run-h span{font-size:12.5px;color:var(--muted)}
+.run .pill{grid-row:auto;grid-column:auto}
+.pipe{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
+.pipe div{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--faint);min-width:0}
+.pipe i{height:4px;border-radius:3px;background:var(--line-strong)}
+.pipe .on i{background:var(--brand)}
+.pipe .cur i{background:var(--brand);opacity:.45}
+.pipe .blk i{background:var(--crit)}
+.pipe .on,.pipe .cur{color:var(--ink)}
+.pipe span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run-f{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:12px;margin-top:auto}
+.run-f .dim{font-size:12px;color:var(--faint)}
+.blockers{list-style:none;margin:0;padding:6px 0}
+.blockers li{display:flex;gap:14px;padding:14px 20px;align-items:flex-start;flex-wrap:wrap;transition:background .2s}
+.blockers li + li{border-top:1px solid var(--line)}
+.blockers .body{flex:1;min-width:220px}
+.blockers b{display:block;font-weight:600;font-size:13.5px}
+.blockers p{margin:2px 0 0;font-size:12.5px;color:var(--muted);max-width:60ch}
+.blockers .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.blockers li.ok{background:color-mix(in srgb,var(--good-soft) 55%,transparent)}
+.resolved{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--good)}
+.release{position:sticky;bottom:16px;z-index:5;display:flex;align-items:center;gap:16px;padding:14px 16px 14px 20px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--shadow-2);flex-wrap:wrap}
+.release .body{flex:1;min-width:200px;font-size:13px;color:var(--muted)}
+.release .body b{color:var(--ink);display:block;font-size:13.5px}
+.progress{height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line);margin-top:8px}
+.progress i{display:block;height:100%;background:var(--brand);transition:width .08s linear}
+.btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;transform:none}
+
+/* Formulare in der Schublade */
+.form{display:flex;flex-direction:column;gap:18px}
+.field{display:flex;flex-direction:column;gap:6px}
+.lbl{font-size:12.5px;font-weight:600;color:var(--muted)}
+.inp{height:40px;border:1px solid var(--line-strong);border-radius:9px;padding:0 12px;background:var(--surface);color:var(--ink);font-size:14px;width:100%;transition:border-color .12s,box-shadow .12s}
+textarea.inp{height:auto;min-height:88px;padding:10px 12px;resize:vertical;line-height:1.5}
+.inp:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.inp.bad{border-color:var(--crit);box-shadow:0 0 0 3px var(--crit-soft)}
+.err{font-size:12.5px;color:var(--crit);font-weight:500}
+.hint{font-size:12px;color:var(--faint)}
+.radios{display:flex;flex-wrap:wrap;gap:6px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+
+/* Diagramme */
+.chart{padding:8px 20px 16px;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ax{font:11px var(--f-sans);fill:var(--faint)}
+.chart .grid-l{stroke:var(--line);stroke-width:1}
+.chart .hit{fill:transparent;cursor:crosshair}
+.chart .cross{stroke:var(--line-strong);stroke-width:1;opacity:0;pointer-events:none}
+.chart g.h:hover .cross{opacity:1}
+.chart g.h:hover .dotp{r:5}
+.chart .val{font:600 12px var(--f-sans);fill:var(--ink)}
+.hbar{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) 96px;gap:10px;align-items:center;padding:7px 0;font-size:13px}
+.hbar .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.hbar .track{height:14px;border-radius:0 4px 4px 0;position:relative}
+.hbar .track i{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;background:var(--brand)}
+.hbar .track::before{content:"";position:absolute;left:0;top:-4px;bottom:-4px;width:1px;background:var(--line-strong)}
+.hbar .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.hbar .v.zero{color:var(--faint);font-weight:400}
+.tip{position:fixed;z-index:95;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12.5px;padding:8px 10px;border-radius:8px;box-shadow:var(--shadow-3);line-height:1.45;max-width:240px;opacity:0;transition:opacity .1s}
+.tip.on{opacity:1}
+.tip b{font-weight:600}
+
+@media (max-width:1180px){ .two{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:720px){
+  .p-tools{padding:10px 16px}
+  .p-search{max-width:none}
+  .tbl th,.tbl td{padding:10px 12px}
+  .hbar{grid-template-columns:minmax(0,110px) minmax(0,1fr) 84px}
+  .chart{padding:8px 12px 14px}
+  .run{padding:16px}
+  .row2{grid-template-columns:minmax(0,1fr)}
+  .release{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+}
+.row.fresh{animation:fresh 2.4s var(--ease)}
+@keyframes fresh{0%,40%{background:var(--brand-soft)}}
+</style>
 </head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></symbol>
@@ -354,121 +493,118 @@ h1 em{font-style:normal;color:var(--faint);font-weight:400}
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
   <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3 13.5 5.5 5h13l2.5 8.5V19a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 13.5h5l1.5 2.5h5l1.5-2.5h5"/></symbol>
 </svg>
-
 <div class="app">
   <aside class="side" aria-label="Hauptnavigation">
-    <div class="brand">
+    <a class="brand" href="#heute">
       <div class="brand-mark">si</div>
       <div><b>swissImmo</b><small>Seeblick Verwaltungen AG</small></div>
-    </div>
+    </a>
     <nav class="nav">
-      <a href="#" aria-current="page"><svg class="ico"><use href="#i-home"/></svg>Heute<span class="count hot" id="navCount">9</span></a>
-      <a href="#"><svg class="ico"><use href="#i-folder"/></svg>Akten</a>
-      <a href="#"><svg class="ico"><use href="#i-loop"/></svg>Läufe<span class="count">2</span></a>
-      <a href="#"><svg class="ico"><use href="#i-coins"/></svg>Finanzen</a>
-      <a href="#"><svg class="ico"><use href="#i-chart"/></svg>Berichte</a>
+      <a href="#heute" data-sec="heute"><svg class="ico"><use href="#i-home"/></svg>Heute<span class="count hot" id="navCount"></span></a>
+      <a href="#akten" data-sec="akten"><svg class="ico"><use href="#i-folder"/></svg>Akten</a>
+      <a href="#laeufe" data-sec="laeufe"><svg class="ico"><use href="#i-loop"/></svg>Läufe<span class="count" id="navLaeufe"></span></a>
+      <a href="#finanzen" data-sec="finanzen"><svg class="ico"><use href="#i-coins"/></svg>Finanzen</a>
+      <a href="#berichte" data-sec="berichte"><svg class="ico"><use href="#i-chart"/></svg>Berichte</a>
       <div class="nav-label">Zuletzt geöffnet</div>
-      <a href="#"><span class="avatar" style="width:18px;height:18px;font-size:9px">RB</span>Reto Blaser · MV-204</a>
-      <a href="#"><span class="avatar" style="width:18px;height:18px;font-size:9px">SS</span>Seestrasse 14, Thalwil</a>
-      <a href="#"><span class="avatar" style="width:18px;height:18px;font-size:9px">KA</span>Sanitär Keller AG</a>
+      <div id="recent"></div>
     </nav>
     <div class="side-foot nav">
-      <a href="#"><svg class="ico"><use href="#i-gear"/></svg>Einstellungen</a>
+      <a href="#" data-toast="Einstellungen sind in diesem Mockup nicht ausgebaut"><svg class="ico"><use href="#i-gear"/></svg>Einstellungen</a>
       <div class="me"><span class="avatar">LF</span><div><b>Lea Frei</b><span>Bewirtschafterin</span></div></div>
     </div>
   </aside>
 
   <div class="main">
     <header class="top" id="top">
-      <button class="icon-btn menu-btn" aria-label="Menü öffnen"><svg class="ico"><use href="#i-menu"/></svg></button>
       <label class="scope" for="scopeSel">
-        <span class="dot">Alle</span>
+        <span class="dot" id="scopeDot">Alle</span>
         <span class="sr">Bestand eingrenzen</span>
         <select id="scopeSel">
-          <option>Ganzer Bestand · 248 Objekte</option>
-          <option>Huber Immobilien AG</option>
-          <option>Stiftung Seeblick</option>
-          <option>STWEG Zugerstrasse 51</option>
-          <option>Familie Keller-Brunner</option>
+          <option value="">Ganzer Bestand · 248 Objekte</option>
+          <option value="hub">Huber Immobilien AG</option>
+          <option value="see">Stiftung Seeblick</option>
+          <option value="stw">STWEG Zugerstrasse 51</option>
+          <option value="kel">Familie Keller-Brunner</option>
         </select>
       </label>
       <button class="search" id="openPal" aria-label="Suchen oder Befehl ausführen">
         <svg class="ico sm"><use href="#i-search"/></svg><span>Person, Objekt, Vertrag oder Befehl …</span><kbd>⌘K</kbd>
       </button>
       <div class="top-actions">
-        <button class="icon-btn hide-sm" aria-label="Neu erfassen"><svg class="ico"><use href="#i-plus"/></svg></button>
-        <button class="icon-btn" aria-label="Mitteilungen, 3 neu"><svg class="ico"><use href="#i-bell"/></svg><span class="pip"></span></button>
+        <button class="icon-btn hide-sm" data-new="" aria-label="Neuen Fall erfassen"><svg class="ico"><use href="#i-plus"/></svg></button>
+        <button class="icon-btn" data-toast="3 Mitteilungen: 2 Bewerbungen, 1 Rapport" aria-label="Mitteilungen, 3 neu"><svg class="ico"><use href="#i-bell"/></svg><span class="pip"></span></button>
         <button class="icon-btn" id="themeBtn" aria-label="Hell- oder Dunkelmodus"><svg class="ico"><use href="#i-moon"/></svg></button>
       </div>
     </header>
 
     <main class="content">
-      <section class="hello">
-        <div>
-          <div class="eyebrow">Mittwoch, 30. September 2026 · KW 40</div>
-          <h1>Guten Morgen, Lea. <em id="summary">9 Dinge brauchen heute dich.</em></h1>
-        </div>
-        <div class="hello-actions">
-          <button class="btn" data-toast="Sollstellung Oktober geöffnet"><svg class="ico sm"><use href="#i-loop"/></svg>Sollstellung Oktober</button>
-          <button class="btn primary" data-toast="Neuer Fall angelegt"><svg class="ico sm"><use href="#i-plus"/></svg>Neuer Fall</button>
-        </div>
-      </section>
+      <div class="page" id="p-heute">
+        <section class="hello">
+          <div>
+            <div class="eyebrow">Mittwoch, 30. September 2026 · KW 40</div>
+            <h1>Guten Morgen, Lea. <em id="summary"></em></h1>
+          </div>
+          <div class="hello-actions">
+            <a class="btn" href="#lauf-soll"><svg class="ico sm"><use href="#i-loop"/></svg>Sollstellung Oktober</a>
+            <button class="btn primary" data-new=""><svg class="ico sm"><use href="#i-plus"/></svg>Neuer Fall</button>
+          </div>
+        </section>
 
-      <section class="kpis" aria-label="Lage im Überblick" id="kpis"></section>
+        <section class="kpis" aria-label="Lage im Überblick" id="kpis"></section>
 
-      <div class="grid">
-        <div class="col">
-          <section class="panel" aria-labelledby="h-vorrat">
-            <div class="panel-h">
-              <h2 id="h-vorrat">Arbeitsvorrat</h2>
-              <span class="meta" id="vMeta"></span>
-              <div class="right">
-                <button class="btn ghost sm" data-toast="Ansicht gespeichert">Ansicht speichern</button>
+        <div class="grid">
+          <div class="col">
+            <section class="panel" aria-labelledby="h-vorrat">
+              <div class="panel-h">
+                <h2 id="h-vorrat">Arbeitsvorrat</h2>
+                <span class="meta" id="vMeta"></span>
+                <div class="right"><button class="btn ghost sm" data-toast="Ansicht gespeichert">Ansicht speichern</button></div>
               </div>
-            </div>
-            <div class="tabs" role="tablist" id="tabs"></div>
-            <div class="filters" id="filters"></div>
-            <ul class="list" id="list" role="listbox" aria-label="Vorgänge"></ul>
-            <div class="panel-f">
-              <div class="keys"><span><kbd>J</kbd><kbd>K</kbd> bewegen</span><span><kbd>↵</kbd> öffnen</span><span><kbd>E</kbd> erledigen</span></div>
-              <a href="#" class="link">Alle Fälle <svg class="ico sm"><use href="#i-arrow"/></svg></a>
-            </div>
-          </section>
-        </div>
+              <div class="tabs" role="tablist" id="tabs"></div>
+              <div class="filters" id="filters"></div>
+              <ul class="list" id="list" role="listbox" aria-label="Vorgänge"></ul>
+              <div class="panel-f">
+                <div class="keys"><span><kbd>J</kbd><kbd>K</kbd> bewegen</span><span><kbd>↵</kbd> öffnen</span><span><kbd>E</kbd> erledigen</span></div>
+                <button class="link" data-view="alle">Alle Vorgänge <svg class="ico sm"><use href="#i-arrow"/></svg></button>
+              </div>
+            </section>
+          </div>
 
-        <div class="col ctx">
-          <section class="panel" aria-labelledby="h-zulauf">
-            <div class="panel-h"><h2 id="h-zulauf">Zulauf</h2><span class="meta" id="zMeta"></span>
-              <div class="right"><a href="#" class="link">Posteingang</a></div></div>
-            <ul class="feed" id="feed"></ul>
-          </section>
+          <div class="col ctx">
+            <section class="panel" aria-labelledby="h-zulauf">
+              <div class="panel-h"><h2 id="h-zulauf">Zulauf</h2><span class="meta" id="zMeta"></span>
+                <div class="right"><a href="#" class="link" data-toast="Der ganze Posteingang ist in diesem Mockup nicht ausgebaut">Posteingang</a></div></div>
+              <ul class="feed" id="feed"></ul>
+            </section>
 
-          <section class="panel" aria-labelledby="h-termine">
-            <div class="panel-h"><h2 id="h-termine">Termine heute</h2><span class="meta">3</span></div>
-            <ul class="agenda">
-              <li class="past"><time>09:30</time><span class="pin"></span><div><b>Besichtigung 4.5 Zi., Wädenswil</b><span>Obere Bahnhofstrasse 8 · 4 Interessenten</span></div></li>
-              <li class="now"><time>14:00</time><span class="pin"></span><div><b>Wohnungsabnahme Müller<span class="now-tag">als Nächstes</span></b><span>Zugerstrasse 51, Baar · mit D. Gerber</span></div></li>
-              <li><time>16:30</time><span class="pin"></span><div><b>Eigentümergespräch Huber Immobilien AG</b><span>Videocall · Budget 2027</span></div></li>
-            </ul>
-          </section>
+            <section class="panel" aria-labelledby="h-termine">
+              <div class="panel-h"><h2 id="h-termine">Termine heute</h2><span class="meta">3</span></div>
+              <ul class="agenda">
+                <li class="past"><time>09:30</time><span class="pin"></span><div><b>Besichtigung 4.5 Zi., Wädenswil</b><span>Obere Bahnhofstrasse 8 · 4 Interessenten</span></div></li>
+                <li class="now"><time>14:00</time><span class="pin"></span><div><b>Wohnungsabnahme Müller<span class="now-tag">als Nächstes</span></b><span>Zugerstrasse 51, Baar · mit D. Gerber</span></div></li>
+                <li><time>16:30</time><span class="pin"></span><div><b>Eigentümergespräch Huber Immobilien AG</b><span>Videocall · Budget 2027</span></div></li>
+              </ul>
+            </section>
 
-          <section class="panel" aria-labelledby="h-mandate">
-            <div class="panel-h"><h2 id="h-mandate">Mandate</h2><span class="meta">nach Auffälligkeit</span></div>
-            <ul class="mandates" id="mandates"></ul>
-            <div class="panel-f"><span>248 Objekte in 4 Mandaten</span><a href="#" class="link">Alle Berichte</a></div>
-          </section>
+            <section class="panel" aria-labelledby="h-mandate">
+              <div class="panel-h"><h2 id="h-mandate">Mandate</h2><span class="meta">nach Auffälligkeit</span></div>
+              <ul class="mandates" id="mandates"></ul>
+              <div class="panel-f"><span>248 Objekte in 4 Mandaten</span><a href="#berichte" class="link">Alle Berichte</a></div>
+            </section>
+          </div>
         </div>
       </div>
+      <div class="page" id="p-page" hidden></div>
     </main>
   </div>
 </div>
 
 <nav class="tabbar" aria-label="Bereiche">
-  <a href="#" aria-current="page"><svg class="ico"><use href="#i-home"/></svg>Heute</a>
-  <a href="#"><svg class="ico"><use href="#i-folder"/></svg>Akten</a>
-  <a href="#"><svg class="ico"><use href="#i-loop"/></svg>Läufe</a>
-  <a href="#"><svg class="ico"><use href="#i-coins"/></svg>Finanzen</a>
-  <a href="#"><svg class="ico"><use href="#i-chart"/></svg>Berichte</a>
+  <a href="#heute" data-sec="heute"><svg class="ico"><use href="#i-home"/></svg>Heute</a>
+  <a href="#akten" data-sec="akten"><svg class="ico"><use href="#i-folder"/></svg>Akten</a>
+  <a href="#laeufe" data-sec="laeufe"><svg class="ico"><use href="#i-loop"/></svg>Läufe</a>
+  <a href="#finanzen" data-sec="finanzen"><svg class="ico"><use href="#i-coins"/></svg>Finanzen</a>
+  <a href="#berichte" data-sec="berichte"><svg class="ico"><use href="#i-chart"/></svg>Berichte</a>
 </nav>
 
 <div class="scrim" id="scrim"></div>
@@ -481,95 +617,182 @@ h1 em{font-style:normal;color:var(--faint);font-weight:400}
   </div>
   <div class="d-body" id="dBody"></div>
   <div class="d-foot">
-    <button class="btn" id="dLater">Auf morgen</button>
+    <button class="btn" id="dLater"></button>
     <button class="btn primary" id="dDo"></button>
   </div>
 </aside>
 
 <div class="palette" id="palette" aria-hidden="true">
   <div class="pal-box" role="dialog" aria-label="Suchen und springen">
-    <div class="pal-in"><svg class="ico"><use href="#i-search"/></svg><input id="palIn" placeholder="Blaser, Seestrasse, Mahnlauf …" autocomplete="off"><kbd>ESC</kbd></div>
+    <div class="pal-in"><svg class="ico"><use href="#i-search"/></svg><input id="palIn" placeholder="Blaser, Seestrasse, Bankabgleich …" autocomplete="off"><kbd>ESC</kbd></div>
     <div class="pal-list" id="palList"></div>
     <div class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> wählen</span><span><kbd>↵</kbd> öffnen</span></div>
   </div>
 </div>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
-
+<div class="tip" id="tip" role="tooltip"></div>
 <script>
 (function(){
-  /* Beispieldaten */
-  var TASKS = [
-    {id:1,sev:'crit',art:'Mietzins',nr:'F-2026-0398',titel:'Zahlungsverzug: Zugang der Androhung erfassen',obj:'Reto Blaser · Seestrasse 14, Thalwil · 4.5 Zi. EG',step:4,steps:['Rückstand festgestellt','Mahnung versandt','Androhung nach Art. 257d OR','Zugang erfassen','Frist 30 Tage','Kündigung prüfen'],wer:'LF',due:-2,act:'Zugang erfassen',betrag:'CHF 4’380.00 Rückstand (Aug.–Sep.)',hinweis:'Die 30-Tage-Frist beginnt erst mit dem Zugang. Ohne erfassten Zugang läuft sie nicht.'},
-    {id:2,sev:'crit',art:'Schaden',nr:'F-2026-0412',titel:'Wasserschaden Küche: Offerte freigeben',obj:'Obere Bahnhofstrasse 8, Wädenswil · Whg. 2.3',step:3,steps:['Meldung erfasst','Handwerker aufgeboten','Offerte freigeben','Ausführung','Rechnung prüfen','Versicherung'],wer:'DG',due:0,act:'Freigeben',betrag:'CHF 4’870.00 · Sanitär Keller AG'},
-    {id:3,sev:'warn',art:'Mieterwechsel',nr:'F-2026-0405',titel:'Wohnungsabnahme Müller um 14:00',obj:'Zugerstrasse 51, Baar · 3.5 Zi. 1. OG',step:2,steps:['Kündigung bestätigt','Abnahme','Mängel verrechnen','Kaution freigeben','Übergabe Nachmieter'],wer:'DG',due:0,act:'Protokoll öffnen'},
-    {id:4,sev:'warn',art:'Lauf',nr:'L-2026-10',titel:'Sollstellung Oktober freigeben',obj:'248 Objekte · 231 QR-Rechnungen bereit, 3 blockiert',step:3,steps:['Mietzinse übernommen','Abweichungen prüfen','Freigeben','QR-Rechnungen versenden'],wer:'LF',due:1,act:'Prüfen'},
-    {id:5,sev:'neutral',art:'Nebenkosten',nr:'L-2026-NK07',titel:'NK-Abrechnung 2025/26 versenden',obj:'Seestrasse 14, Thalwil · 18 Parteien',step:5,steps:['Kosten erfasst','Verteilschlüssel','Abrechnung erstellt','Revision','Versand','Saldi verbuchen'],wer:'LF',due:3,act:'Versenden'},
-    {id:6,sev:'neutral',art:'Vermarktung',nr:'F-2026-0409',titel:'12 Bewerbungen sichten',obj:'Obere Bahnhofstrasse 8, Wädenswil · 4.5 Zi. 3. OG',step:2,steps:['Inserat online','Bewerbungen sichten','Zusage','Vertrag'],wer:'LF',due:5,act:'Vergleichen'},
-    {id:7,sev:'neutral',art:'Mietzins',nr:'F-2026-0391',titel:'Mietzinsanpassung nach LIK',obj:'Gewerbe · Zugerstrasse 51, Baar · Café Linde GmbH',step:1,steps:['Formular erstellen','Eigentümer freigeben','Versand eingeschrieben','Sollstellung anpassen'],wer:'LF',due:6,act:'Formular erstellen'},
-    {id:8,sev:'warn',art:'Schaden',nr:'F-2026-0377',titel:'Lift-Störung: Rapport des Lieferanten ausstehend',obj:'Seestrasse 14, Thalwil · Anlage A',step:2,steps:['Meldung erfasst','Rapport','Reparatur','Abschluss'],wer:'DG',due:null,wait:8,act:'Nachfassen'},
-    {id:9,sev:'crit',art:'Mieterwechsel',nr:'F-2026-0344',titel:'Kündigung Garage 12 bestätigen',obj:'Sarah Nüesch · Zugerstrasse 51, Baar',step:1,steps:['Kündigung bestätigen','Abnahme','Abrechnung'],wer:null,due:null,stale:16,act:'Bestätigen'}
+  'use strict';
+  var $=function(id){return document.getElementById(id)};
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function chf(n){return n.toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function chf0(n){return Math.round(n).toLocaleString('de-CH')}
+  function sum(a){return a.reduce(function(x,y){return x+y},0)}
+  function ico(id,cls){return '<svg class="ico'+(cls?' '+cls:'')+'"><use href="#'+id+'"/></svg>'}
+  function ini(n){return n.split(/[\s-]+/).filter(function(w){return /^[A-Za-zÀ-ÿ]/.test(w)}).slice(0,2).map(function(w){return w[0]}).join('').toUpperCase()}
+  function dm(iso){var p=iso.split('-');return p[2]+'.'+p[1]+'.'+p[0]}
+
+  /* ════════════ Beispieldaten: ein Bestand, auf allen Seiten derselbe ════════════ */
+  var MANDATE={hub:'Huber Immobilien AG',see:'Stiftung Seeblick',stw:'STWEG Zugerstrasse 51',kel:'Familie Keller-Brunner'};
+  var LG=[
+    {id:'bahnhof',str:'Obere Bahnhofstrasse 8',plz:'8820',ort:'Wädenswil',m:'see',n:12,bj:1994,f:1.05,leer:[10]},
+    {id:'seestrasse',str:'Seestrasse 14',plz:'8800',ort:'Thalwil',m:'hub',n:18,bj:1987,f:1,leer:[]},
+    {id:'zuger',str:'Zugerstrasse 51',plz:'6340',ort:'Baar',m:'stw',n:24,bj:2008,f:1.1,leer:[14]},
+    {id:'dorf',str:'Dorfstrasse 3',plz:'8802',ort:'Kilchberg',m:'kel',n:16,bj:1972,f:.95,leer:[5,11]},
+    {id:'grund',str:'Im Grund 7',plz:'8810',ort:'Horgen',m:'kel',n:32,bj:2001,f:1,leer:[27]},
+    {id:'rueti',str:'Rütistrasse 22',plz:'8134',ort:'Adliswil',m:'hub',n:46,bj:1979,f:.92,leer:[20,33]},
+    {id:'park',str:'Seeblick-Park A–D',plz:'8805',ort:'Richterswil',m:'see',n:100,bj:2015,f:1.12,leer:[]}
   ];
-  var VIEWS = [
+  var SPECIAL={
+    seestrasse:{1:['Reto Blaser',204,'2019-04-01'],7:['Petra Imhof',207,'2021-10-01']},
+    zuger:{0:['Café Linde GmbH',230,'2017-03-01','Gewerbe'],2:['Sarah Nüesch',218,'2022-06-01'],3:['Hans Müller',221,'2014-11-01']},
+    grund:{0:['Marco Rossi',312,'2020-02-01']},
+    rueti:{1:['Nadine Frey',405,'2023-05-01'],2:['Tobias Wyss',409,'2018-08-01']},
+    park:{0:['Anna Brunner',131,'2016-01-01']}
+  };
+  var FN=['Laura','Simon','Nina','Lukas','Sara','David','Mia','Jonas','Fabienne','Fabian','Julia','Marc','Andrea','Patrick','Claudia','Stefan','Sandra','Beat','Monika','Urs','Corinne','Adrian','Martina','Thomas','Selina','Raphael','Noemi'];
+  var LN=['Meier','Schneider','Keller','Weber','Baumann','Fischer','Gerber','Steiner','Moser','Graf','Zürcher','Kälin','Bachmann','Suter','Hofer','Egli','Bühler','Schmid','Widmer','Lüthi','Ammann','Roth','Kaufmann','Hess','Vogel','Studer','Marti','Frick','Aebi'];
+  var TYP=[{z:'3.5',n:1560,nk:220,m2:84},{z:'4.5',n:1930,nk:260,m2:104},{z:'2.5',n:1250,nk:180,m2:62},{z:'3.5',n:1560,nk:220,m2:86},{z:'4.5',n:1930,nk:260,m2:108},{z:'5.5',n:2280,nk:300,m2:126}];
+  var SEITE=['links','mitte','rechts'];
+  var UNITS=[],MVS={},used={};
+  Object.keys(SPECIAL).forEach(function(k){Object.keys(SPECIAL[k]).forEach(function(j){used[SPECIAL[k][j][1]]=1})});
+  var ctr=101,gi=0;
+  LG.forEach(function(L){
+    L.units=[];
+    for(var j=0;j<L.n;j++){
+      var k=L.id==='park'?j%25:j,f=Math.floor(k/3),t=TYP[j%6];
+      var label=(L.id==='park'?'Haus '+'ABCD'[Math.floor(j/25)]+' · ':'')+t.z+' Zi. '+(f===0?'EG':f+'. OG')+' '+SEITE[k%3];
+      var u={lg:L,j:j,label:label,typ:'Wohnung',m2:t.m2,netto:Math.round(t.n*L.f/10)*10+f*20,nk:t.nk,leer:L.leer.indexOf(j)>-1};
+      var sp=SPECIAL[L.id]&&SPECIAL[L.id][j];
+      if(sp){u.mieter=sp[0];u.nr=sp[1];u.seit=sp[2];if(sp[3]){u.typ='Gewerbe';u.label='Gewerbe EG · Café';u.m2=148;u.netto=2700;u.nk=300}}
+      else if(!u.leer){while(used[ctr])ctr++;u.nr=ctr++;gi++;u.mieter=FN[(gi*7)%FN.length]+' '+LN[(gi*11)%LN.length];
+        u.seit=(2009+(gi*5)%16)+'-'+String(1+(gi*3)%12).padStart(2,'0')+'-01'}
+      if(u.nr===204){u.netto=1930;u.nk=260}
+      u.brutto=u.netto+u.nk;
+      L.units.push(u);UNITS.push(u);if(u.nr)MVS[u.nr]=u;
+    }
+  });
+  function lgById(id){return LG.filter(function(l){return l.id===id})[0]}
+  function lgName(L){return L.str+', '+L.ort}
+
+  /* Rückstände je Mietverhältnis: [1–30, 31–60, 61–90, > 90 Tage] */
+  var DEBT={204:[2190,2190,0,0],312:[0,1980,1980,2260],405:[0,1850,0,0],409:[0,2190,2190,0],230:[0,3000,0,0],207:[0,1000,0,0]};
+  var DEBT0=JSON.parse(JSON.stringify(DEBT));
+  var MAHN={204:'Androhung Art. 257d',312:'2. Mahnung',409:'1. Mahnung',405:'1. Mahnung',230:'1. Mahnung',207:'Zahlungserinnerung'};
+  var PAY={};
+  function debt(nr){return DEBT[nr]||[0,0,0,0]}
+  function over30(nr){var b=debt(nr);return b[1]+b[2]+b[3]}
+  function total(nr){return sum(debt(nr))}
+  function pay(nr,amt,text,date){
+    var b=DEBT[nr]||(DEBT[nr]=[0,0,0,0]),rest=amt;
+    for(var i=3;i>=0&&rest>0;i--){var x=Math.min(b[i],rest);b[i]=Math.round((b[i]-x)*100)/100;rest-=x}
+    (PAY[nr]=PAY[nr]||[]).push({d:date||'30.09.2026',t:text||'Zahlung',a:amt});
+  }
+  function lgOver30(L){return sum(L.units.map(function(u){return u.nr?over30(u.nr):0}))}
+  function lgSoll(L){return sum(L.units.map(function(u){return u.leer?0:u.brutto}))}
+  var SOLL=sum(LG.map(lgSoll));
+
+  var STEPS={
+    Schaden:['Meldung erfasst','Handwerker aufgeboten','Offerte freigeben','Ausführung','Rechnung prüfen','Versicherung'],
+    Mieterwechsel:['Kündigung bestätigen','Abnahme','Mängel verrechnen','Kaution freigeben','Übergabe'],
+    Mietzins:['Formular erstellen','Eigentümer freigeben','Versand eingeschrieben','Sollstellung anpassen'],
+    Vermarktung:['Inserat online','Bewerbungen sichten','Zusage','Vertrag'],
+    Allgemein:['Erfasst','In Arbeit','Abgeschlossen']
+  };
+  var TASKS=[
+    {id:1,sev:'crit',art:'Mietzins',nr:'F-2026-0398',titel:'Zahlungsverzug: Zugang der Androhung erfassen',obj:'Reto Blaser · Seestrasse 14, Thalwil · 4.5 Zi. EG',akte:'mv-204',step:4,steps:['Rückstand festgestellt','Mahnung versandt','Androhung nach Art. 257d OR','Zugang erfassen','Frist 30 Tage','Kündigung prüfen'],wer:'LF',due:-2,act:'Zugang erfassen',betrag:'CHF 4’380.00 Rückstand (Aug.–Sep.)',hinweis:'Die 30-Tage-Frist beginnt erst mit dem Zugang. Ohne erfassten Zugang läuft sie nicht.'},
+    {id:2,sev:'crit',art:'Schaden',nr:'F-2026-0412',titel:'Wasserschaden Küche: Offerte freigeben',obj:'Obere Bahnhofstrasse 8, Wädenswil · 3.5 Zi. 2. OG links',akte:'lg-bahnhof',step:3,steps:STEPS.Schaden,wer:'DG',due:0,act:'Freigeben',betrag:'CHF 4’870.00 · Sanitär Keller AG'},
+    {id:3,sev:'warn',art:'Mieterwechsel',nr:'F-2026-0405',titel:'Wohnungsabnahme Müller um 14:00',obj:'Hans Müller · Zugerstrasse 51, Baar · 3.5 Zi. 1. OG links',akte:'mv-221',step:2,steps:STEPS.Mieterwechsel,wer:'DG',due:0,act:'Protokoll öffnen'},
+    {id:4,sev:'warn',art:'Lauf',nr:'L-2026-10',titel:'Sollstellung Oktober freigeben',obj:'248 Positionen · 3 blockiert',akte:'lauf-soll',go:'lauf-soll',step:3,steps:['Übernommen','Geprüft','Freigeben','Versendet'],wer:'LF',due:1,act:'Prüfen'},
+    {id:5,sev:'neutral',art:'Nebenkosten',nr:'L-2026-NK07',titel:'NK-Abrechnung 2025/26 versenden',obj:'Seestrasse 14, Thalwil · 18 Parteien',akte:'lg-seestrasse',step:5,steps:['Kosten erfasst','Verteilschlüssel','Abrechnung erstellt','Revision','Versand','Saldi verbuchen'],wer:'LF',due:3,act:'Versenden'},
+    {id:6,sev:'neutral',art:'Vermarktung',nr:'F-2026-0409',titel:'12 Bewerbungen sichten',obj:'Obere Bahnhofstrasse 8, Wädenswil · 4.5 Zi. 3. OG mitte',akte:'lg-bahnhof',step:2,steps:STEPS.Vermarktung,wer:'LF',due:5,act:'Vergleichen'},
+    {id:7,sev:'neutral',art:'Mietzins',nr:'F-2026-0391',titel:'Mietzinsanpassung nach LIK',obj:'Café Linde GmbH · Zugerstrasse 51, Baar · Gewerbe EG',akte:'mv-230',step:1,steps:STEPS.Mietzins,wer:'LF',due:6,act:'Formular erstellen'},
+    {id:8,sev:'warn',art:'Schaden',nr:'F-2026-0377',titel:'Lift-Störung: Rapport des Lieferanten ausstehend',obj:'Seestrasse 14, Thalwil · Anlage A',akte:'lg-seestrasse',step:2,steps:['Meldung erfasst','Rapport','Reparatur','Abschluss'],wer:'DG',due:null,wait:8,act:'Nachfassen'},
+    {id:9,sev:'crit',art:'Mieterwechsel',nr:'F-2026-0344',titel:'Kündigung Garage bestätigen',obj:'Marco Rossi · Im Grund 7, Horgen · Garagenplatz 12',akte:'mv-312',step:1,steps:['Kündigung bestätigen','Abnahme','Abrechnung'],wer:null,due:null,stale:16,act:'Bestätigen'}
+  ];
+  var nextNr=413;
+  var VIEWS=[
     {k:'heute',l:'Heute',f:function(t){return t.due!==null&&t.due<=0}},
     {k:'woche',l:'Diese Woche',f:function(t){return t.due!==null&&t.due<=7}},
     {k:'wartet',l:'Wartet auf Dritte',f:function(t){return !!t.wait}},
     {k:'liegen',l:'Liegengeblieben',f:function(t){return !!t.stale},crit:true},
     {k:'alle',l:'Alle',f:function(){return true}}
   ];
-  var FEED = [
+  var FEED=[
     {id:'z1',src:'i-mail',t:'Rechnung 2026-1187 · Sanitär Keller AG',s:'heute 07:42 · E-Mail mit PDF',sug:'Kreditor → Fall F-2026-0412',conf:96},
     {id:'z2',src:'i-scan',t:'Kündigung Mietvertrag Sarah Nüesch',s:'gestern 16:10 · Post, gescannt',sug:'MV-218 → Mieterwechsel starten',conf:91},
     {id:'z3',src:'i-mail',t:'Frage zur Nebenkostenabrechnung',s:'gestern 11:05 · p.imhof@bluewin.ch',sug:null}
   ];
-  var MANDATES = [
-    {n:'Familie Keller-Brunner',o:48,leer:3,offen:'CHF 6’220 offen',st:'crit',bel:93.8},
-    {n:'Huber Immobilien AG',o:64,leer:2,offen:'CHF 9’420 offen',st:'crit',bel:96.9},
-    {n:'STWEG Zugerstrasse 51',o:24,leer:1,offen:'1 leer',st:'warn',bel:95.8},
-    {n:'Stiftung Seeblick',o:112,leer:1,offen:'ohne Befund',st:'good',bel:99.1}
+  var QUOTE=[93.8,94.6,95.1,94.2,95.9,96.3,95.0,94.4,95.7,94.9,94.7,96.1];
+  var MONATE=['Okt','Nov','Dez','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep'];
+  var BANK=[
+    {id:'b1',d:'29.09.',t:'SARAH NUESCH · QR-Ref. …00218',a:1430,nr:218,sug:'MV-218 Nüesch · Mietzins Oktober',conf:99},
+    {id:'b2',d:'29.09.',t:'N. FREY · ohne Referenz',a:1850,nr:405,sug:'MV-405 Frey · Rückstand August',conf:88},
+    {id:'b3',d:'28.09.',t:'CAFE LINDE GMBH · Miete',a:3000,nr:230,sug:'MV-230 Café Linde · Rückstand August',conf:94},
+    {id:'b4',d:'28.09.',t:'ZINSGUTSCHRIFT Q3 2026',a:312.40,nr:null,sug:'Konto 6850 · Zinsertrag',conf:99},
+    {id:'b5',d:'27.09.',t:'UEBERWEISUNG T WYSS',a:740,nr:null,sug:null}
   ];
-  var KPIS = [
-    {l:'Zahlungseingang Sept.',v:'96.1',u:'%',f:'CHF 412’380 von 428’950',d:'+1.4 Pp',good:true,s:[93.8,94.6,95.1,94.2,95.9,96.3,95.0,94.4,95.7,94.9,94.7,96.1]},
-    {l:'Leerstand',v:'2.8',u:'%',f:'7 von 248 Objekten',d:'−0.4 Pp',good:true,s:[4.1,3.9,3.9,3.6,3.6,3.2,3.4,3.2,3.2,3.0,3.2,2.8]},
-    {l:'Offene Fälle',v:'37',u:'',f:'9 davon überfällig',d:'+5',good:false,s:[29,31,28,30,33,32,30,34,31,32,32,37]},
-    {l:'Ausstände > 30 Tage',v:'18’640',u:'CHF',f:'6 Mietparteien',d:'+2’100',good:false,s:[12.4,14.1,13.0,11.8,12.6,15.2,14.8,13.9,15.5,16.1,16.5,18.6]}
+  var RUN={soll:{block:{},released:false,prog:0},mahn:false,zahl:false};
+  var BLOCK=[
+    {id:1,t:'MV-218 Sarah Nüesch: gekündigt per 31.10.2026',p:'Oktober ist der letzte Mietmonat. Die Sollstellung läuft normal, danach endet der Vertrag.',a:['Normal erstellen','Auslassen']},
+    {id:2,t:'Obere Bahnhofstrasse 8 · 4.5 Zi. 3. OG mitte ist leer',p:'Keine Mietpartei. Der Ausfall wird als Leerstand gebucht und erscheint in der Eigentümerabrechnung.',a:['Leerstand buchen','Überspringen']},
+    {id:3,t:'MV-230 Café Linde GmbH: neuer Mietzins nicht mitgeteilt',p:'Die Anpassung nach LIK (F-2026-0391) ist noch nicht versandt. Bis zur Mitteilung gilt der bisherige Mietzins.',a:['Bisheriger Mietzins','Zum Fall'],task:7}
   ];
 
-  var state={view:'heute',art:null,sel:0,done:{},later:{},zdone:{},open:null};
-  var $=function(id){return document.getElementById(id)};
-  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var state={page:'heute',view:'heute',art:null,sel:0,done:{},later:{},zdone:{},bdone:{},open:null,scope:'',
+    akTab:'lg',akQ:'',akShow:25,lgShow:20,mvTab:'konto',
+    recent:[{h:'#mv-204',l:'Reto Blaser · MV-204'},{h:'#lg-seestrasse',l:'Seestrasse 14, Thalwil'},{h:'#lauf-soll',l:'Sollstellung Oktober'}]};
   function live(){return TASKS.filter(function(t){return !state.done[t.id]&&!state.later[t.id]})}
+  function inScope(L){return !state.scope||L.m===state.scope}
 
-  /* Kennzahlen mit Verlauf, alle Punkte auf einer Skala */
+  /* ════════════ Heute ════════════ */
   function spark(vals,good){
     var w=96,h=34,p=3,min=Math.min.apply(0,vals),max=Math.max.apply(0,vals),r=(max-min)||1;
-    var pts=vals.map(function(v,i){return [p+i*(w-2*p)/(vals.length-1), h-p-(v-min)/r*(h-2*p)]});
+    var pts=vals.map(function(v,i){return [p+i*(w-2*p)/(vals.length-1),h-p-(v-min)/r*(h-2*p)]});
     var line=pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1)}).join(' ');
     var col=good?'var(--good)':'var(--crit)',last=pts[pts.length-1];
-    return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" aria-hidden="true">'+
-      '<polygon points="'+p+','+(h-p)+' '+line+' '+(w-p)+','+(h-p)+'" fill="'+col+'" opacity=".10"/>'+
-      '<polyline points="'+line+'" fill="none" stroke="'+col+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>'+
-      '<circle cx="'+last[0]+'" cy="'+last[1]+'" r="2.8" fill="'+col+'"/></svg>';
+    return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><polygon points="'+p+','+(h-p)+' '+line+' '+(w-p)+','+(h-p)+'" fill="'+col+'" opacity=".10"/>'+
+      '<polyline points="'+line+'" fill="none" stroke="'+col+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+last[0]+'" cy="'+last[1]+'" r="2.8" fill="'+col+'"/></svg>';
   }
-  $('kpis').innerHTML=KPIS.map(function(k){
-    var v=k.u==='CHF'?'<small style="margin:0 4px 0 0">CHF</small>'+k.v:k.v+(k.u?'<small>'+k.u+'</small>':'');
-    return '<button class="kpi" type="button"><div class="kpi-l">'+k.l+'</div><div class="kpi-row"><div class="kpi-v">'+v+'</div>'+spark(k.s,k.good)+'</div>'+
-      '<div class="kpi-f"><span class="delta '+(k.good?'good':'bad')+'">'+k.d+'</span>'+k.f+'</div></button>';
-  }).join('');
-
+  function renderKpis(){
+    var o30=sum(Object.keys(DEBT).map(over30)),parties=Object.keys(DEBT).filter(function(n){return over30(n)>0}).length;
+    var open=live().length+28,overdue=live().filter(function(t){return (t.due!==null&&t.due<0)||t.stale}).length;
+    var K=[
+      {l:'Zahlungseingang Sept.',v:'96.1',u:'%',f:'CHF '+chf0(SOLL*.961)+' von '+chf0(SOLL),d:'+1.4 Pp',good:true,s:QUOTE,go:'#berichte'},
+      {l:'Leerstand',v:'2.8',u:'%',f:'7 von 248 Objekten',d:'−0.4 Pp',good:true,s:[4.1,3.9,3.9,3.6,3.6,3.2,3.4,3.2,3.2,3.0,3.2,2.8],go:'#akten'},
+      {l:'Offene Fälle',v:String(open),u:'',f:overdue+' überfällig oder liegengeblieben',d:'+5',good:false,s:[29,31,28,30,33,32,30,34,31,32,32,open],go:'#heute'},
+      {l:'Ausstände > 30 Tage',v:chf0(o30),u:'CHF',f:parties+' Mietparteien',d:(o30>=16540?'+':'−')+chf0(Math.abs(o30-16540)),good:o30<16540,s:[12.4,14.1,13.0,11.8,12.6,15.2,14.8,13.9,15.5,16.1,16.5,o30/1000],go:'#finanzen'}
+    ];
+    $('kpis').innerHTML=K.map(function(k){
+      var v=k.u==='CHF'?'<small style="margin:0 4px 0 0">CHF</small>'+k.v:k.v+(k.u?'<small>'+k.u+'</small>':'');
+      return '<a class="kpi" href="'+k.go+'"><div class="kpi-l">'+k.l+'</div><div class="kpi-row"><div class="kpi-v">'+v+'</div>'+spark(k.s,k.good)+'</div>'+
+        '<div class="kpi-f"><span class="delta '+(k.good?'good':'bad')+'">'+k.d+'</span>'+k.f+'</div></a>';
+    }).join('');
+  }
   function dueText(t){
     if(t.wait) return {b:t.wait+' Tage',s:'wartet',c:'warn'};
     if(t.stale) return {b:t.stale+' Tage',s:'ohne Bewegung',c:'crit'};
-    if(t.due<0) return {b:(-t.due)+' Tage über',s:'Frist 28.09.',c:'crit'};
+    if(t.due<0){var dd=new Date(2026,8,30+t.due);return {b:(-t.due)+(t.due===-1?' Tag':' Tage')+' über',s:'Frist '+dd.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit'})+'.',c:'crit'}}
     if(t.due===0) return {b:'Heute',s:'fällig',c:'warn'};
     var d=new Date(2026,8,30+t.due);
     return {b:d.toLocaleDateString('de-CH',{weekday:'short',day:'2-digit',month:'2-digit'}),s:'in '+t.due+(t.due===1?' Tag':' Tagen'),c:''};
   }
   function stepsHtml(t){var h='<span class="steps" title="Schritt '+t.step+' von '+t.steps.length+'">';
-    for(var i=1;i<=t.steps.length;i++)h+='<i class="'+(i<t.step?'on':i===t.step?'now':'')+'"></i>';return h+'</span>';}
-
+    for(var i=1;i<=t.steps.length;i++)h+='<i class="'+(i<t.step?'on':i===t.step?'now':'')+'"></i>';return h+'</span>'}
   function current(){var v=VIEWS.filter(function(x){return x.k===state.view})[0];return live().filter(v.f)}
-  function render(){
+  function renderHeute(){
     var L=live();
     $('tabs').innerHTML=VIEWS.map(function(v){var n=L.filter(v.f).length;
       return '<button class="tab'+(v.crit&&n?' crit':'')+'" role="tab" aria-selected="'+(v.k===state.view)+'" data-view="'+v.k+'">'+v.l+'<span class="n">'+n+'</span></button>'}).join('');
@@ -585,108 +808,450 @@ h1 em{font-style:normal;color:var(--faint);font-weight:400}
     if(state.sel>=rows.length)state.sel=Math.max(0,rows.length-1);
     $('vMeta').textContent=rows.length+(rows.length===1?' Vorgang':' Vorgänge');
     $('list').innerHTML=rows.length?rows.map(function(t,i){var d=dueText(t);
-      return '<li class="row '+t.sev+(i===state.sel?' sel':'')+'" role="option" aria-selected="'+(i===state.sel)+'" data-id="'+t.id+'" data-i="'+i+'">'+
-        '<div class="r-main"><div class="r-head"><span class="tag">'+t.art+'</span><span class="mono">'+t.nr+'</span></div>'+
-        '<div class="r-title">'+esc(t.titel)+'</div>'+
-        '<div class="r-sub">'+stepsHtml(t)+'<span class="obj">'+esc(t.obj)+'</span></div></div>'+
+      return '<li class="row '+t.sev+(i===state.sel?' sel':'')+(t.fresh?' fresh':'')+'" role="option" aria-selected="'+(i===state.sel)+'" data-id="'+t.id+'" data-i="'+i+'">'+
+        '<div class="r-main"><div class="r-head"><span class="tag">'+esc(t.art)+'</span><span class="mono">'+t.nr+'</span></div>'+
+        '<div class="r-title">'+esc(t.titel)+'</div><div class="r-sub">'+stepsHtml(t)+'<span class="obj">'+esc(t.obj)+'</span></div></div>'+
         '<div class="r-who">'+(t.wer?'<span class="avatar" title="zuständig">'+t.wer+'</span>':'<span class="avatar" title="niemand zuständig" style="border-style:dashed">?</span>')+'</div>'+
         '<div class="r-due '+d.c+'"><b>'+d.b+'</b><span>'+d.s+'</span></div>'+
-        '<div class="r-act"><button class="btn sm" data-do="'+t.id+'">'+t.act+'</button></div></li>'}).join('')
-      :'<li class="empty"><div class="ok"><svg class="ico"><use href="#i-check"/></svg></div><b>Alles erledigt.</b>In dieser Ansicht wartet nichts auf dich.</li>';
-    var today=L.filter(VIEWS[0].f).length+L.filter(function(t){return t.stale}).length;
-    $('summary').textContent=today?today+(today===1?' Ding braucht':' Dinge brauchen')+' heute dich.':'Heute ist alles erledigt.';
-    $('navCount').textContent=today;$('navCount').hidden=!today;
-
+        '<div class="r-act"><button class="btn sm" data-do="'+t.id+'">'+esc(t.act)+'</button></div></li>'}).join('')
+      :'<li class="empty"><div class="ok">'+ico('i-check')+'</div><b>Alles erledigt.</b>In dieser Ansicht wartet nichts auf dich.</li>';
+    TASKS.forEach(function(t){delete t.fresh});
     var F=FEED.filter(function(z){return !state.zdone[z.id]});
     $('zMeta').textContent=F.length+' nicht zugeordnet';
     $('feed').innerHTML=F.length?F.map(function(z){
-      return '<li data-z="'+z.id+'"><span class="src"><svg class="ico sm"><use href="#'+z.src+'"/></svg></span><div class="body"><div class="t">'+esc(z.t)+'</div><div class="s">'+z.s+'</div>'+
+      return '<li data-z="'+z.id+'"><span class="src">'+ico(z.src,'sm')+'</span><div class="body"><div class="t">'+esc(z.t)+'</div><div class="s">'+z.s+'</div>'+
       '<div class="sugg">'+(z.sug?'<span class="what">'+esc(z.sug)+'</span><span class="conf">'+z.conf+' % sicher</span>':'<span class="what unsure">Kein sicherer Vorschlag</span>')+'</div>'+
-      '<div class="sugg">'+(z.sug?'<button class="btn sm primary" data-take="'+z.id+'"><svg class="ico sm"><use href="#i-check"/></svg>Übernehmen</button><button class="btn sm ghost" data-take="'+z.id+'" data-manual="1">Anders</button>':'<button class="btn sm" data-take="'+z.id+'" data-manual="1">Zuordnen</button>')+'</div></div></li>'}).join('')
-      :'<li class="empty" style="display:block"><div class="ok"><svg class="ico"><use href="#i-inbox"/></svg></div><b>Posteingang leer.</b>Alles ist zugeordnet.</li>';
+      '<div class="sugg">'+(z.sug?'<button class="btn sm primary" data-take="'+z.id+'">'+ico('i-check','sm')+'Übernehmen</button><button class="btn sm ghost" data-take="'+z.id+'" data-manual="1">Anders</button>':'<button class="btn sm" data-take="'+z.id+'" data-manual="1">Zuordnen</button>')+'</div></div></li>'}).join('')
+      :'<li class="empty" style="display:block"><div class="ok">'+ico('i-inbox')+'</div><b>Posteingang leer.</b>Alles ist zugeordnet.</li>';
+    var M=Object.keys(MANDATE).map(function(k){
+      var ls=LG.filter(function(l){return l.m===k}),o=sum(ls.map(function(l){return l.n})),leer=sum(ls.map(function(l){return l.leer.length})),off=sum(ls.map(lgOver30));
+      return {n:MANDATE[k],o:o,leer:leer,off:off,bel:(o-leer)/o*100,st:off?'crit':leer>1?'warn':'good'};
+    }).sort(function(a,b){return b.off-a.off||b.leer-a.leer});
+    $('mandates').innerHTML=M.map(function(m){
+      return '<li><span class="name">'+m.n+'</span><span class="pill '+m.st+'">'+(m.off?'CHF '+chf0(m.off)+' offen':m.leer>1?m.leer+' leer':'ohne Befund')+'</span><span class="info num">'+m.o+' Objekte · '+m.bel.toFixed(1)+' % belegt</span><span class="bar"><i style="width:'+m.bel+'%"></i></span></li>'}).join('');
+    renderKpis();
   }
-  $('mandates').innerHTML=MANDATES.map(function(m){
-    return '<li><span class="name">'+m.n+'</span><span class="pill '+m.st+'">'+m.offen+'</span><span class="info num">'+m.o+' Objekte · '+m.bel.toFixed(1)+' % belegt</span><span class="bar"><i style="width:'+m.bel+'%"></i></span></li>'}).join('');
-
-  /* Meldungen mit Rückgängig */
-  function toast(msg,undo){
-    var el=document.createElement('div');el.className='toast';
-    el.innerHTML='<svg class="ico sm"><use href="#i-check"/></svg><span>'+esc(msg)+'</span>'+(undo?'<button type="button">Rückgängig</button>':'');
-    $('toasts').appendChild(el);
-    var gone=function(){if(el.parentNode)el.remove()};
-    if(undo)el.querySelector('button').onclick=function(){undo();gone()};
-    setTimeout(gone,undo?6000:3200);
-    while($('toasts').children.length>3)$('toasts').firstChild.remove();
-  }
-  function finish(id,how){
-    var t=TASKS.filter(function(x){return x.id===id})[0],row=document.querySelector('.row[data-id="'+id+'"]');
-    var apply=function(){(how==='later'?state.later:state.done)[id]=true;render()};
-    if(row){row.classList.add('leaving');setTimeout(apply,220)}else apply();
-    toast(how==='later'?'Auf morgen verschoben: '+t.nr:t.act+' · '+t.nr+' erledigt',function(){delete state.done[id];delete state.later[id];render()});
+  function renderChrome(){
+    var L=live(),n=L.filter(VIEWS[0].f).length+L.filter(function(t){return t.stale}).length;
+    $('summary').textContent=n?n+(n===1?' Ding braucht':' Dinge brauchen')+' heute dich.':'Heute ist alles erledigt.';
+    $('navCount').textContent=n;$('navCount').hidden=!n;
+    var r=runs().filter(function(x){return x.need}).length;$('navLaeufe').textContent=r;$('navLaeufe').hidden=!r;
+    $('recent').innerHTML=state.recent.map(function(x){return '<a href="'+x.h+'"><span class="avatar" style="width:18px;height:18px;font-size:9px">'+ini(x.l)+'</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.l)+'</span></a>'}).join('');
+    var dot=$('scopeDot');dot.textContent=state.scope?ini(MANDATE[state.scope]):'Alle';
   }
 
-  /* Schublade */
-  function openDrawer(id){
-    var t=TASKS.filter(function(x){return x.id===id})[0];state.open=id;
-    $('dTag').textContent=t.art;$('dNr').textContent=t.nr;$('dTitle').textContent=t.titel;$('dObj').textContent=t.obj;$('dDo').textContent=t.act;
-    var d=dueText(t);
-    $('dBody').innerHTML=(t.hinweis?'<div class="note"><svg class="ico sm"><use href="#i-alert"/></svg><div>'+esc(t.hinweis)+'</div></div>':'')+
-      '<div class="d-sec"><h4>Ablauf · Schritt '+t.step+' von '+t.steps.length+'</h4><ol class="timeline">'+t.steps.map(function(s,i){var n=i+1,c=n<t.step?'done':n===t.step?'cur':'';
-        return '<li class="'+c+'"><span class="tl-dot">'+(c==='done'?'<svg class="ico sm" style="width:12px;height:12px;stroke-width:2.6"><use href="#i-check"/></svg>':'')+'</span><b>'+esc(s)+'</b><span>'+(c==='cur'?d.b:c==='done'?'erledigt':'')+'</span></li>'}).join('')+'</ol></div>'+
-      '<div class="d-sec"><h4>Eckdaten</h4><dl class="facts"><dt>Zuständig</dt><dd>'+(t.wer==='LF'?'Lea Frei':t.wer==='DG'?'Daniel Gerber':'niemand, bitte übernehmen')+'</dd><dt>Fällig</dt><dd>'+d.b+' · '+d.s+'</dd>'+(t.betrag?'<dt>Betrag</dt><dd class="num">'+esc(t.betrag)+'</dd>':'')+'<dt>Akte</dt><dd><a class="link" href="#">'+esc(t.obj.split(' · ')[0])+'</a></dd></dl></div>';
+  /* ════════════ Seitenbausteine ════════════ */
+  function head(crumbs,title,sub,actions){
+    return '<section class="phead"><div><nav class="crumbs" aria-label="Pfad">'+crumbs.map(function(c){return c[1]?'<a href="'+c[1]+'">'+esc(c[0])+'</a>':'<span>'+esc(c[0])+'</span>'}).join('<span aria-hidden="true">/</span>')+
+      '</nav><h1>'+title+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div><div class="hello-actions">'+(actions||'')+'</div></section>';
+  }
+  function stats(a){return '<section class="kpis stats">'+a.map(function(s){return '<div class="kpi"><div class="kpi-l">'+s[0]+'</div><div class="kpi-v'+(s[3]?' '+s[3]:'')+'">'+s[1]+'</div><div class="kpi-f">'+s[2]+'</div></div>'}).join('')+'</section>'}
+  function panel(title,meta,inner,right,foot){
+    return '<section class="panel"><div class="panel-h"><h2>'+title+'</h2>'+(meta?'<span class="meta">'+meta+'</span>':'')+(right?'<div class="right">'+right+'</div>':'')+'</div>'+inner+(foot?'<div class="panel-f">'+foot+'</div>':'')+'</section>';
+  }
+  function money(n,cls){return n?'<span class="'+(cls||'')+'">'+chf(n)+'</span>':'<span class="zero">–</span>'}
+  function unitStatus(u){
+    if(u.leer)return '<span class="pill warn">leer</span>';
+    if(total(u.nr)>0)return '<span class="pill crit">Rückstand</span>';
+    if(u.nr===218)return '<span class="pill warn">gekündigt 31.10.</span>';
+    if(u.nr===221)return '<span class="pill warn">Auszug 30.09.</span>';
+    return '';
+  }
+
+  /* ════════════ Akten ════════════ */
+  function lgBefund(L){var o=lgOver30(L),l=L.leer.length;return o?{c:'crit',t:'CHF '+chf0(o)+' offen',s:3e6+o}:l?{c:'warn',t:l+' leer',s:l}:{c:'good',t:'ohne Befund',s:0}}
+  function pageAkten(){
+    return head([['Akten']],'Akten','Liegenschaften und Mietverhältnisse'+(state.scope?' · '+MANDATE[state.scope]:' im ganzen Bestand'),'<button class="btn primary" data-new="">'+ico('i-plus','sm')+'Neuer Fall</button>')+
+      '<section class="panel"><div class="tabs inpanel" role="tablist">'+
+      [['lg','Liegenschaften',LG.filter(inScope).length],['mv','Mietverhältnisse',UNITS.filter(function(u){return u.nr&&inScope(u.lg)}).length]].map(function(t){
+        return '<button class="tab" role="tab" aria-selected="'+(state.akTab===t[0])+'" data-aktab="'+t[0]+'">'+t[1]+'<span class="n">'+t[2]+'</span></button>'}).join('')+'</div>'+
+      '<div class="p-tools"><label class="p-search">'+ico('i-search','sm')+'<span class="sr">Filtern</span><input id="akQ" value="'+esc(state.akQ)+'" placeholder="'+(state.akTab==='lg'?'Strasse, Ort oder Mandat':'Name, MV-Nummer oder Adresse')+'" autocomplete="off"></label>'+
+      '<span class="hint">'+(state.akTab==='lg'?'Sortiert nach Auffälligkeit, nicht nach Alphabet.':'Rückstände zuerst.')+'</span></div><div id="akList"></div></section>';
+  }
+  function renderAkList(){
+    var q=state.akQ.trim().toLowerCase(),h;
+    if(state.akTab==='lg'){
+      var rows=LG.filter(inScope).filter(function(L){return !q||(L.str+L.ort+L.plz+MANDATE[L.m]).toLowerCase().indexOf(q)>-1})
+        .sort(function(a,b){return lgBefund(b).s-lgBefund(a).s});
+      h='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Liegenschaft</th><th>Mandat</th><th class="r">Objekte</th><th class="r">Belegung</th><th class="r">Soll / Monat</th><th>Befund</th></tr></thead><tbody>'+
+        rows.map(function(L){var b=lgBefund(L);return '<tr class="click" data-href="#lg-'+L.id+'"><td><a class="strong" href="#lg-'+L.id+'">'+L.str+'</a><div class="dim">'+L.plz+' '+L.ort+' · Baujahr '+L.bj+'</div></td><td>'+MANDATE[L.m]+'</td><td class="r">'+L.n+'</td><td class="r">'+((L.n-L.leer.length)/L.n*100).toFixed(1)+' %</td><td class="r">CHF '+chf0(lgSoll(L))+'</td><td><span class="pill '+b.c+'">'+b.t+'</span></td></tr>'}).join('')+
+        '</tbody></table></div>'+(rows.length?'':'<div class="empty">Keine Liegenschaft passt zu «'+esc(state.akQ)+'».</div>');
+    }else{
+      var us=UNITS.filter(function(u){return u.nr&&inScope(u.lg)&&(!q||(u.mieter+' mv-'+u.nr+' '+u.lg.str+' '+u.lg.ort).toLowerCase().indexOf(q)>-1)})
+        .sort(function(a,b){return total(b.nr)-total(a.nr)||a.nr-b.nr});
+      var shown=us.slice(0,state.akShow);
+      h='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mietverhältnis</th><th>Objekt</th><th class="r">Mietzins brutto</th><th class="r">Saldo</th><th>Mahnstufe</th></tr></thead><tbody>'+
+        shown.map(function(u){var t=total(u.nr);return '<tr class="click" data-href="#mv-'+u.nr+'"><td><a class="strong" href="#mv-'+u.nr+'">'+esc(u.mieter)+'</a><div class="dim mono">MV-'+u.nr+'</div></td><td>'+u.lg.str+', '+u.lg.ort+'<div class="dim">'+u.label+'</div></td><td class="r">'+chf(u.brutto)+'</td><td class="r">'+(t?'<span class="neg">'+chf(t)+'</span>':'<span class="zero">0.00</span>')+'</td><td>'+(t&&MAHN[u.nr]?'<span class="pill crit">'+MAHN[u.nr]+'</span>':'')+'</td></tr>'}).join('')+
+        '</tbody></table></div>'+(us.length>shown.length?'<div class="more"><button class="btn sm" data-more="ak">Weitere '+Math.min(25,us.length-shown.length)+' laden · '+(us.length-shown.length)+' übrig</button></div>':'')+(us.length?'':'<div class="empty">Kein Mietverhältnis passt zu «'+esc(state.akQ)+'».</div>');
+    }
+    $('akList').innerHTML=h;
+  }
+  function tasksFor(keys){return live().filter(function(t){return keys.indexOf(t.akte)>-1})}
+  function pageLg(L){
+    var keys=['lg-'+L.id].concat(L.units.filter(function(u){return u.nr}).map(function(u){return 'mv-'+u.nr}));
+    var tk=tasksFor(keys),debtors=L.units.filter(function(u){return u.nr&&total(u.nr)>0}),leer=L.units.filter(function(u){return u.leer});
+    var o30=lgOver30(L);
+    var issues=tk.map(function(t){return '<li><span class="sev '+t.sev+'"></span><div class="body"><b>'+esc(t.titel)+'</b><span class="mono">'+t.nr+'</span> <span>· '+dueText(t).b+'</span></div><button class="btn sm" data-task="'+t.id+'">Öffnen</button></li>'})
+      .concat(debtors.map(function(u){return '<li><span class="sev crit"></span><div class="body"><b>Rückstand '+esc(u.mieter)+': CHF '+chf(total(u.nr))+'</b><span>'+u.label+' · '+(MAHN[u.nr]||'noch nicht gemahnt')+'</span></div><a class="btn sm" href="#mv-'+u.nr+'">Zur Akte</a></li>'}))
+      .concat(leer.map(function(u){return '<li><span class="sev warn"></span><div class="body"><b>Leer: '+u.label+'</b><span>'+u.m2+' m² · Marktmiete ca. CHF '+chf0(u.brutto)+' brutto</span></div><button class="btn sm" data-toast="Inserat für '+u.label+' als Entwurf angelegt">Inserieren</button></li>'}));
+    var shown=L.units.slice(0,state.lgShow);
+    return head([['Akten','#akten'],['Liegenschaften','#akten'],[L.str]],esc(L.str),L.plz+' '+L.ort+' · '+MANDATE[L.m]+' · Baujahr '+L.bj,
+        '<button class="btn" data-toast="Dokumentablage geöffnet (Mockup)">Dokumente</button><button class="btn primary" data-new="lg-'+L.id+'">'+ico('i-plus','sm')+'Neuer Fall</button>')+
+      stats([['Objekte',String(L.n),L.leer.length?L.leer.length+' leer':'alle vermietet'],['Belegung',((L.n-L.leer.length)/L.n*100).toFixed(1)+' %','Stand 30.09.2026',L.leer.length?'':'good'],['Soll / Monat','CHF '+chf0(lgSoll(L)),'Mietzins brutto'],['Ausstände > 30 Tage','CHF '+chf0(o30),debtors.length+' Mietparteien',o30?'crit':'']])+
+      '<div class="two">'+
+      panel('Objekte',L.n+' Einheiten','<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Objekt</th><th>Mietpartei</th><th class="r">Brutto</th><th>Status</th></tr></thead><tbody>'+
+        shown.map(function(u){return '<tr'+(u.nr?' class="click" data-href="#mv-'+u.nr+'"':'')+'><td class="strong">'+u.label+'<div class="dim">'+u.typ+' · '+u.m2+' m²</div></td><td>'+(u.nr?'<a class="link" href="#mv-'+u.nr+'">'+esc(u.mieter)+'</a><div class="dim mono">MV-'+u.nr+'</div>':'<span class="zero">–</span>')+'</td><td class="r">'+chf(u.brutto)+'</td><td>'+unitStatus(u)+'</td></tr>'}).join('')+
+        '</tbody></table></div>'+(L.n>shown.length?'<div class="more"><button class="btn sm" data-more="lg">Alle '+L.n+' Objekte zeigen</button></div>':''))+
+      panel('Was auffällt',issues.length?String(issues.length):'',issues.length?'<ul class="issues">'+issues.join('')+'</ul>':'<div class="empty"><div class="ok">'+ico('i-check')+'</div><b>Nichts fällt auf.</b>Alle Objekte vermietet, keine Rückstände, kein offener Vorgang.</div>')+
+      '</div>';
+  }
+  function ledger(u){
+    var nr=u.nr,b0=DEBT0[nr]||[0,0,0,0],rows=[],saldo=0,mi=[3,4,5,6,7,8],names=['April','Mai','Juni','Juli','August','September'];
+    var open={5:b0[3],6:b0[2],7:b0[1],8:b0[0]};
+    rows.push({d:'31.03.2026',t:'Saldovortrag',s:0,h:0});
+    mi.forEach(function(m,i){
+      var mm=String(m+1).padStart(2,'0'),o=open[m]||0,soll=Math.max(u.brutto,o);
+      rows.push({d:'01.'+mm+'.2026',t:'Mietzins '+names[i]+(soll>u.brutto?' inkl. NK-Nachzahlung':''),s:soll,h:0});
+      var paid=soll-o;
+      if(paid>0)rows.push({d:'0'+(2+i%3)+'.'+mm+'.2026',t:paid<soll?'Teilzahlung':'Zahlung QR-Referenz',s:0,h:paid});
+    });
+    (PAY[nr]||[]).forEach(function(p){rows.push({d:p.d,t:p.t,s:0,h:p.a})});
+    return rows.map(function(r){saldo+=r.s-r.h;r.saldo=saldo;return r});
+  }
+  function pageMv(u){
+    var t=total(u.nr),tk=tasksFor(['mv-'+u.nr]),L=u.lg;
+    var tabs=[['konto','Konto'],['vertrag','Vertrag'],['dokumente','Dokumente']];
+    var body='';
+    if(state.mvTab==='konto'){
+      var rows=ledger(u);
+      body='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Datum</th><th>Buchung</th><th class="r">Soll</th><th class="r">Haben</th><th class="r">Saldo</th></tr></thead><tbody>'+
+        rows.map(function(r){return '<tr><td class="num">'+r.d+'</td><td>'+esc(r.t)+'</td><td class="r">'+money(r.s)+'</td><td class="r">'+money(r.h,'pos')+'</td><td class="r '+(r.saldo>0?'neg':'')+'">'+chf(r.saldo)+'</td></tr>'}).join('')+
+        '</tbody></table></div>';
+    }else if(state.mvTab==='vertrag'){
+      body='<div style="padding:16px 20px 20px"><dl class="facts"><dt>Mietpartei</dt><dd>'+esc(u.mieter)+'</dd><dt>Objekt</dt><dd>'+L.str+', '+L.plz+' '+L.ort+' · '+u.label+'</dd><dt>Fläche</dt><dd>'+u.m2+' m²</dd><dt>Mietbeginn</dt><dd>'+dm(u.seit)+'</dd>'+
+        '<dt>Nettomietzins</dt><dd class="num">CHF '+chf(u.netto)+'</dd><dt>Nebenkosten</dt><dd class="num">CHF '+chf(u.nk)+' Akonto</dd><dt>Kündigungsfrist</dt><dd>'+(u.typ==='Gewerbe'?'6 Monate':'3 Monate')+', ortsübliche Termine</dd>'+
+        '<dt>Kaution</dt><dd class="num">CHF '+chf(u.netto*3)+' · Mietkautionskonto</dd><dt>Eigentümer</dt><dd>'+MANDATE[L.m]+'</dd></dl></div>';
+    }else{
+      var docs=[['Mietvertrag, unterzeichnet',dm(u.seit)],['Übergabeprotokoll Einzug',dm(u.seit)],['Nebenkostenabrechnung 2024/25','14.11.2025'],['Hausordnung','01.01.2024']];
+      if(t)docs.unshift([MAHN[u.nr]||'Mahnung','12.09.2026']);
+      body='<ul class="issues">'+docs.map(function(d){return '<li>'+ico('i-mail','sm')+'<div class="body"><b>'+esc(d[0])+'</b><span>PDF · '+d[1]+'</span></div><button class="btn sm ghost" data-toast="'+esc(d[0])+' geöffnet (Mockup)">Öffnen</button></li>'}).join('')+'</ul>';
+    }
+    var call=t?'<div class="callout crit">'+ico('i-alert')+'<div class="body"><b>Rückstand CHF '+chf(t)+'</b><span>'+(MAHN[u.nr]||'Noch nicht gemahnt')+' · davon CHF '+chf(over30(u.nr))+' älter als 30 Tage</span></div>'+
+      (tk.length?'<button class="btn sm" data-task="'+tk[0].id+'">Fall '+tk[0].nr+'</button>':'')+'<button class="btn sm primary" data-pay="'+u.nr+'">Zahlung erfassen</button></div>':
+      (tk.length?'<div class="callout">'+ico('i-cal')+'<div class="body"><b>'+esc(tk[0].titel)+'</b><span class="mono">'+tk[0].nr+'</span> <span>· '+dueText(tk[0]).b+'</span></div><button class="btn sm" data-task="'+tk[0].id+'">Öffnen</button></div>':'');
+    return head([['Akten','#akten'],[L.str,'#lg-'+L.id],['MV-'+u.nr]],esc(u.mieter),'<span class="mono">MV-'+u.nr+'</span> · '+L.str+', '+L.ort+' · '+u.label,
+        '<button class="btn" data-pay="'+u.nr+'">Zahlung erfassen</button><button class="btn primary" data-new="mv-'+u.nr+'">'+ico('i-plus','sm')+'Neuer Fall</button>')+
+      stats([['Mietzins brutto','CHF '+chf(u.brutto),'netto '+chf(u.netto)+' + NK '+chf(u.nk)],['Saldo','CHF '+chf(t),t?'offen':'ausgeglichen',t?'crit':'good'],['Kaution','CHF '+chf0(u.netto*3),'Mietkautionskonto'],['Mietbeginn',dm(u.seit),u.typ]])+
+      call+
+      '<section class="panel"><div class="tabs inpanel" role="tablist">'+tabs.map(function(x){return '<button class="tab" role="tab" aria-selected="'+(state.mvTab===x[0])+'" data-mvtab="'+x[0]+'">'+x[1]+'</button>'}).join('')+'</div>'+body+'</section>';
+  }
+
+  /* ════════════ Läufe ════════════ */
+  function blocked(){return BLOCK.filter(function(b){return !RUN.soll.block[b.id]}).length}
+  function runs(){
+    var bo=BANK.filter(function(b){return !state.bdone[b.id]}).length,bl=blocked(),s=RUN.soll;
+    return [
+      {k:'soll',t:'Sollstellung Oktober 2026',m:'248 Positionen · QR-Rechnung und eBill · fällig 01.10.',steps:['Übernommen','Geprüft','Freigegeben','Versendet'],cur:s.released?4:bl?1:2,blk:!s.released&&bl,
+        pill:s.released?['good','Versendet']:bl?['crit',bl+' blockiert']:['warn','Bereit zur Freigabe'],need:!s.released,act:'<a class="btn sm primary" href="#lauf-soll">'+(s.released?'Ansehen':'Öffnen')+'</a>',f:'erstellt 28.09. · Lea Frei'},
+      {k:'bank',t:'Bankabgleich 30.09.',m:'camt.054 · ZKB Mietzinskonto · 5 Gutschriften',steps:['Importiert','Zugeordnet','Verbucht'],cur:bo?1:3,
+        pill:bo?['warn',bo+' offen']:['good','Abgeglichen'],need:bo>0,act:'<a class="btn sm'+(bo?' primary':'')+'" href="#finanzen">'+(bo?'Zuordnen':'Ansehen')+'</a>',f:'Import heute 06:02'},
+      {k:'mahn',t:'Mahnlauf September',m:'4 Mahnungen · 1 Androhung nach Art. 257d OR',steps:['Vorgeschlagen','Geprüft','Erzeugt','Versandt'],cur:RUN.mahn?3:1,
+        pill:RUN.mahn?['good','Erzeugt']:['warn','Bereit'],need:!RUN.mahn,act:RUN.mahn?'<span class="dim">im Postausgang</span>':'<button class="btn sm primary" data-run="mahn">Mahnungen erzeugen</button>',f:'Stichtag 30.09.'},
+      {k:'zahl',t:'Zahllauf 02.10.2026',m:'11 Kreditorenrechnungen · CHF 38’412.60 · pain.001',steps:['Zusammengestellt','Freigegeben','An Bank'],cur:RUN.zahl?3:1,
+        pill:RUN.zahl?['good','An Bank übermittelt']:['warn','Freigabe nötig'],need:!RUN.zahl,act:RUN.zahl?'<span class="dim">Ausführung 02.10.</span>':'<button class="btn sm primary" data-run="zahl">Freigeben</button>',f:'Vier-Augen: Daniel Gerber'},
+      {k:'nk',t:'NK-Abrechnung 2025/26 · Seestrasse 14',m:'18 Parteien · Abrechnungsperiode 01.07.–30.06.',steps:TASKS.filter(function(t){return t.id===5})[0].steps,cur:state.done[5]?6:4,
+        pill:state.done[5]?['good','Versendet']:['neutral','Schritt 5 von 6'],need:false,act:state.done[5]?'':'<button class="btn sm" data-task="5">Öffnen</button>',f:'Revision durch Eigentümer erfolgt'},
+      {k:'mz',t:'Mietzinsanpassung LIK · Café Linde GmbH',m:'Gewerbe EG · Zugerstrasse 51, Baar',steps:STEPS.Mietzins,cur:state.done[7]?4:0,
+        pill:state.done[7]?['good','Abgeschlossen']:['neutral','Schritt 1 von 4'],need:false,act:state.done[7]?'':'<button class="btn sm" data-task="7">Öffnen</button>',f:'amtliches Formular erforderlich'}
+    ];
+  }
+  function pipe(r){return '<div class="pipe">'+r.steps.map(function(s,i){var c=i<r.cur?'on':i===r.cur?(r.blk?'blk':'cur'):'';return '<div class="'+c+'"><i></i><span>'+esc(s)+'</span></div>'}).join('')+'</div>'}
+  function pageLaeufe(){
+    var R=runs();
+    return head([['Läufe']],'Läufe','Alles, was einen Zustand hat und blockieren kann · '+R.filter(function(r){return r.need}).length+' brauchen dich')+
+      '<div class="runs">'+R.map(function(r){return '<section class="panel run"><div class="run-h"><div class="body"><b>'+esc(r.t)+'</b><span>'+esc(r.m)+'</span></div><span class="pill '+r.pill[0]+'">'+r.pill[1]+'</span></div>'+pipe(r)+
+        '<div class="run-f"><span class="dim">'+r.f+'</span>'+r.act+'</div></section>'}).join('')+'</div>';
+  }
+  function pageSoll(){
+    var s=RUN.soll,bl=blocked(),norm=BLOCK.filter(function(b){return RUN.soll.block[b.id]&&/Normal|Bisheriger/.test(RUN.soll.block[b.id])}).length;
+    var sample=UNITS.filter(function(u){return u.nr}).slice(0,10);
+    var out=head([['Läufe','#laeufe'],['Sollstellung Oktober']],'Sollstellung Oktober 2026','Fällig 01.10.2026 · erstellt 28.09. von Lea Frei · Vier-Augen-Prinzip aus')+
+      stats([['Positionen','248','ganzer Bestand'],['QR-Rechnung',String(231+norm),'Versand per Post und E-Mail'],['eBill','14','direkt ins E-Banking'],['Blockiert',String(s.released?0:bl),bl&&!s.released?'vor Freigabe lösen':'keine Blockade',bl&&!s.released?'crit':'good']]);
+    if(s.released) out+='<div class="callout good">'+ico('i-check')+'<div class="body"><b>Versendet am 30.09.2026</b><span>'+(245+norm)+' Rechnungen erzeugt · Sollbuchungen auf den Mieterkonten verbucht</span></div><a class="btn sm" href="#laeufe">Zu den Läufen</a></div>';
+    out+=panel('Blockaden',s.released?'gelöst':bl?bl+' offen':'alle gelöst','<ul class="blockers">'+BLOCK.map(function(b){var r=s.block[b.id];
+      return '<li class="'+(r?'ok':'')+'"><span class="sev '+(r?'good':'crit')+'" style="margin-top:6px"></span><div class="body"><b>'+esc(b.t)+'</b><p>'+esc(b.p)+'</p></div><div class="acts">'+
+        (r?'<span class="resolved">'+ico('i-check','sm')+esc(r)+'</span>'+(s.released?'':'<button class="btn sm ghost" data-unblock="'+b.id+'">Ändern</button>'):
+        b.a.map(function(a,i){return (b.task&&i===1)?'<button class="btn sm ghost" data-task="'+b.task+'">'+a+'</button>':'<button class="btn sm'+(i===0?' primary':'')+'" data-block="'+b.id+'" data-choice="'+esc(a)+'">'+a+'</button>'}).join(''))+'</div></li>'}).join('')+'</ul>')+
+      panel('Positionen','Stichprobe · 10 von 248','<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mietverhältnis</th><th>Objekt</th><th class="r">Netto</th><th class="r">NK</th><th class="r">Total</th><th>Kanal</th></tr></thead><tbody>'+
+        sample.map(function(u,i){return '<tr class="click" data-href="#mv-'+u.nr+'"><td><span class="strong">'+esc(u.mieter)+'</span><div class="dim mono">MV-'+u.nr+'</div></td><td>'+u.lg.str+'<div class="dim">'+u.label+'</div></td><td class="r">'+chf(u.netto)+'</td><td class="r">'+chf(u.nk)+'</td><td class="r strong">'+chf(u.brutto)+'</td><td>'+(i%4===2?'eBill':'QR-Rechnung')+'</td></tr>'}).join('')+
+        '</tbody></table></div>',null,'<span>Summe Oktober: CHF '+chf(SOLL)+'</span><span>238 weitere Positionen</span>');
+    if(!s.released) out+='<div class="release" id="release"><div class="body"><b id="relT">'+(bl?'Noch '+bl+(bl===1?' Blockade':' Blockaden')+' offen':'Bereit zur Freigabe')+'</b><span id="relS">'+(bl?'Erst wenn alle gelöst sind, kann der Lauf freigegeben werden.':'248 Rechnungen werden erzeugt und versendet. Das dauert wenige Sekunden.')+'</span>'+
+      '<div class="progress" id="relP" hidden><i style="width:0"></i></div></div><button class="btn primary" id="relBtn"'+(bl?' disabled':'')+'>Freigeben und versenden</button></div>';
+    return out;
+  }
+  function releaseSoll(){
+    var btn=$('relBtn');btn.disabled=true;$('relP').hidden=false;var i=0,bar=$('relP').firstChild;
+    $('relT').textContent='Rechnungen werden erzeugt …';
+    var tm=setInterval(function(){i=Math.min(248,i+9);bar.style.width=(i/248*100)+'%';$('relS').textContent=i+' von 248 · QR-Referenzen und Swiss QR Codes';
+      if(i>=248){clearInterval(tm);setTimeout(function(){RUN.soll.released=true;state.done[4]=true;toast('Sollstellung Oktober versendet · 248 Rechnungen');route()},250)}},45);
+  }
+
+  /* ════════════ Finanzen ════════════ */
+  function pageFinanzen(){
+    var bo=BANK.filter(function(b){return !state.bdone[b.id]});
+    var got=sum(BANK.filter(function(b){return state.bdone[b.id]}).map(function(b){return b.a}));
+    var deb=Object.keys(DEBT).map(Number).filter(function(n){return total(n)>0&&inScope(MVS[n].lg)}).sort(function(a,b){return over30(b)-over30(a)});
+    var cols=[0,1,2,3].map(function(i){return sum(deb.map(function(n){return debt(n)[i]}))});
+    var o30=cols[1]+cols[2]+cols[3];
+    return head([['Finanzen']],'Finanzen','Stand 30.09.2026 · letzter camt-Import heute 06:02','<button class="btn" data-toast="camt.054 importiert · keine neuen Buchungen">'+ico('i-loop','sm')+'camt importieren</button>')+
+      stats([['Mietzinskonto ZKB','CHF '+chf(1284930.55+got),got?'+ '+chf(got)+' heute zugeordnet':'CH93 0070 0110 0012 3456 7'],['Offene Kreditoren','CHF 38’412.60','11 Rechnungen · Zahllauf 02.10.'],['Ausstände > 30 Tage','CHF '+chf0(o30),deb.filter(function(n){return over30(n)>0}).length+' Mietparteien',o30?'crit':'good'],['Kautionen','CHF '+chf0(sum(UNITS.filter(function(u){return u.nr}).map(function(u){return u.netto*3}))),'auf Mietkautionskonten']])+
+      panel('Bankabgleich',bo.length?bo.length+' Gutschriften offen':'alles zugeordnet',bo.length?'<ul class="feed">'+bo.map(function(b){
+        return '<li data-b="'+b.id+'"><span class="src">'+ico('i-coins','sm')+'</span><div class="body"><div class="t" style="display:flex;gap:12px;justify-content:space-between"><span class="mono" style="font-weight:500">'+esc(b.t)+'</span><span class="num" style="color:var(--good);white-space:nowrap">+ '+chf(b.a)+'</span></div><div class="s">Valuta '+b.d+'2026</div>'+
+        '<div class="sugg">'+(b.sug?'<span class="what">'+esc(b.sug)+'</span><span class="conf">'+b.conf+' % sicher</span>':'<span class="what unsure">Betrag passt zu keinem offenen Posten</span>')+'</div>'+
+        '<div class="sugg">'+(b.sug?'<button class="btn sm primary" data-bank="'+b.id+'">'+ico('i-check','sm')+'Übernehmen</button><button class="btn sm ghost" data-bankpick="'+b.id+'">Anders zuordnen</button>':'<button class="btn sm" data-bankpick="'+b.id+'">Zuordnen</button>')+'</div></div></li>'}).join('')+'</ul>'
+        :'<div class="empty"><div class="ok">'+ico('i-check')+'</div><b>Abgeglichen.</b>Alle Gutschriften sind verbucht.</div>')+
+      panel('Ausstände nach Alter',state.scope?MANDATE[state.scope]:'ganzer Bestand','<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mietpartei</th><th class="r">1–30</th><th class="r">31–60</th><th class="r">61–90</th><th class="r">&gt; 90</th><th class="r">Total</th><th>Mahnstufe</th></tr></thead><tbody>'+
+        deb.map(function(n){var u=MVS[n],b=debt(n);return '<tr class="click" data-href="#mv-'+n+'"><td><a class="strong" href="#mv-'+n+'">'+esc(u.mieter)+'</a><div class="dim">'+u.lg.str+', '+u.lg.ort+'</div></td>'+
+          b.map(function(x,i){return '<td class="r">'+(x?'<span class="'+(i?'neg':'')+'">'+chf0(x)+'</span>':'<span class="zero">–</span>')+'</td>'}).join('')+'<td class="r strong">'+chf(total(n))+'</td><td>'+(MAHN[n]?'<span class="pill '+(/257d|2\./.test(MAHN[n])?'crit':'warn')+'">'+MAHN[n]+'</span>':'')+'</td></tr>'}).join('')+
+        '</tbody><tfoot><tr><td>Total</td>'+cols.map(function(c){return '<td class="r">'+chf0(c)+'</td>'}).join('')+'<td class="r">'+chf(sum(cols))+'</td><td></td></tr></tfoot></table></div>',null,'<span>Beträge in CHF · Tage seit Fälligkeit</span><a href="#laeufe" class="link">Zum Mahnlauf</a>');
+  }
+  function bankApply(b,nr,label){
+    var snap=JSON.stringify({DEBT:DEBT,PAY:PAY});
+    if(nr)pay(nr,b.a,'Zahlung '+b.t.split(' · ')[0],b.d+'2026');
+    state.bdone[b.id]=true;
+    var li=document.querySelector('[data-b="'+b.id+'"]');
+    var go=function(){route()};if(li){li.classList.add('leaving');setTimeout(go,220)}else go();
+    toast('Verbucht: '+label,function(){var o=JSON.parse(snap);DEBT=o.DEBT;PAY=o.PAY;delete state.bdone[b.id];route()});
+  }
+
+  /* ════════════ Berichte ════════════ */
+  function pageBerichte(){
+    var W=640,H=220,pl=40,pr=14,pt=14,pb=26,min=92,max=98,x=function(i){return pl+i*(W-pl-pr)/11},y=function(v){return pt+(max-v)/(max-min)*(H-pt-pb)};
+    var grid='',hits='',pts=QUOTE.map(function(v,i){return x(i).toFixed(1)+','+y(v).toFixed(1)}).join(' ');
+    for(var g=min;g<=max;g+=2)grid+='<line class="grid-l" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y(g)+'" y2="'+y(g)+'"/><text class="ax" x="'+(pl-8)+'" y="'+(y(g)+4)+'" text-anchor="end">'+g+' %</text>';
+    QUOTE.forEach(function(v,i){var soll=SOLL*(1-.003*(11-i)),mon=MONATE[i]+(i<3?' 2025':' 2026');
+      grid+='<text class="ax" x="'+x(i)+'" y="'+(H-6)+'" text-anchor="middle">'+MONATE[i]+'</text>';
+      hits+='<g class="h" data-tip="<b>'+mon+'</b><br>Quote '+v.toFixed(1)+' %<br>Ist CHF '+chf0(soll*v/100)+'<br>Soll CHF '+chf0(soll)+'"><line class="cross" x1="'+x(i)+'" x2="'+x(i)+'" y1="'+pt+'" y2="'+(H-pb)+'"/><circle class="dotp" cx="'+x(i)+'" cy="'+y(v)+'" r="'+(i===11?4.5:0)+'" fill="var(--brand)" stroke="var(--surface)" stroke-width="2"/><rect class="hit" x="'+(x(i)-(W-pl-pr)/22)+'" y="'+pt+'" width="'+((W-pl-pr)/11)+'" height="'+(H-pt-pb)+'"/></g>'});
+    var line='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Zahlungsquote je Monat, Oktober 2025 bis September 2026, zwischen 93.8 und 96.3 Prozent">'+grid+
+      '<polygon points="'+x(0)+','+(H-pb)+' '+pts+' '+x(11)+','+(H-pb)+'" fill="var(--brand)" opacity=".08"/><polyline points="'+pts+'" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
+      '<text class="val" x="'+(x(11)-8)+'" y="'+(y(96.1)-10)+'" text-anchor="end">96.1 %</text>'+hits+'</svg>';
+    var lgs=LG.filter(inScope).map(function(L){return {L:L,v:lgOver30(L)}}).sort(function(a,b){return b.v-a.v}),mx=Math.max.apply(0,lgs.map(function(a){return a.v}))||1;
+    var bars=lgs.map(function(a){return '<div class="hbar" data-tip="<b>'+esc(a.L.str)+'</b><br>'+(a.v?'CHF '+chf(a.v)+' älter als 30 Tage':'keine Ausstände')+'"><span class="lab">'+a.L.str+'</span><span class="track"><i style="width:'+(a.v/mx*100)+'%"></i></span><span class="v'+(a.v?'':' zero')+'">'+(a.v?chf0(a.v):'–')+'</span></div>'}).join('');
+    var rows=Object.keys(MANDATE).filter(function(k){return !state.scope||k===state.scope}).map(function(k){var ls=LG.filter(function(l){return l.m===k}),o=sum(ls.map(function(l){return l.n})),le=sum(ls.map(function(l){return l.leer.length}));
+      return '<tr><td class="strong">'+MANDATE[k]+'</td><td class="r">'+ls.length+'</td><td class="r">'+o+'</td><td class="r">'+((o-le)/o*100).toFixed(1)+' %</td><td class="r">'+chf0(sum(ls.map(lgSoll)))+'</td><td class="r">'+(sum(ls.map(lgOver30))?'<span class="neg">'+chf0(sum(ls.map(lgOver30)))+'</span>':'<span class="zero">–</span>')+'</td></tr>'}).join('');
+    return head([['Berichte']],'Berichte','Oktober 2025 bis September 2026 · '+(state.scope?MANDATE[state.scope]:'ganzer Bestand'),'<button class="btn" data-toast="Bericht als PDF bereitgestellt (Mockup)">PDF erstellen</button>')+
+      '<div class="two">'+panel('Zahlungsquote je Monat','Ist in % vom Soll','<div class="chart">'+line+'</div>')+
+      panel('Ausstände &gt; 30 Tage je Liegenschaft','CHF','<div class="chart" style="padding-top:14px">'+bars+'</div>')+'</div>'+
+      panel('Kennzahlen je Mandat','Stand 30.09.2026','<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mandat</th><th class="r">Liegenschaften</th><th class="r">Objekte</th><th class="r">Belegung</th><th class="r">Soll / Monat CHF</th><th class="r">Ausstände &gt; 30 CHF</th></tr></thead><tbody>'+rows+'</tbody></table></div>');
+  }
+
+  /* ════════════ Router ════════════ */
+  var SECT={heute:'heute',akten:'akten',lg:'akten',mv:'akten',laeufe:'laeufe',lauf:'laeufe',finanzen:'finanzen',berichte:'berichte'};
+  function remember(h,l){state.recent=[{h:h,l:l}].concat(state.recent.filter(function(x){return x.h!==h})).slice(0,3)}
+  function route(keep){
+    var h=(location.hash||'#heute').slice(1),p=h.split('-')[0],id=h.slice(p.length+1),html=null,title='Heute';
+    if(!SECT[p]){h='heute';p='heute'}
+    if(!keep)closeDrawer();palClose();
+    var changed=state.page!==h;state.page=h;
+    if(p==='akten'){html=pageAkten();title='Akten'}
+    else if(p==='lg'){var L=lgById(id);if(L){html=pageLg(L);title=L.str;remember('#'+h,lgName(L))}}
+    else if(p==='mv'){var u=MVS[id];if(u){html=pageMv(u);title=u.mieter;remember('#'+h,u.mieter+' · MV-'+u.nr)}}
+    else if(p==='laeufe'){html=pageLaeufe();title='Läufe'}
+    else if(p==='lauf'){html=pageSoll();title='Sollstellung Oktober';remember('#lauf-soll','Sollstellung Oktober')}
+    else if(p==='finanzen'){html=pageFinanzen();title='Finanzen'}
+    else if(p==='berichte'){html=pageBerichte();title='Berichte'}
+    var pg=$('p-page');
+    if(html===null){$('p-heute').hidden=false;pg.hidden=true;renderHeute();if(changed)$('p-heute').classList.add('enter')}
+    else{$('p-heute').hidden=true;pg.hidden=false;pg.innerHTML=html;if(changed){pg.classList.remove('enter');void pg.offsetWidth;pg.classList.add('enter')}
+      if(p==='akten')renderAkList()}
+    document.title=title+' · swissImmo';
+    document.querySelectorAll('[data-sec]').forEach(function(a){if(a.dataset.sec===SECT[p])a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+    renderChrome();
+    if(changed)window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange',function(){route()});
+
+  /* ════════════ Schublade ════════════ */
+  var onDo=null,onLater=null;
+  function openPanel(o){
+    state.open=o.key||'panel';
+    $('dTag').hidden=!o.tag;$('dTag').textContent=o.tag||'';$('dNr').textContent=o.nr||'';
+    $('dTitle').textContent=o.title;$('dObj').textContent=o.sub||'';$('dObj').hidden=!o.sub;
+    $('dBody').innerHTML=o.body;$('dDo').textContent=o.primary;onDo=o.onDo;
+    $('dLater').hidden=!o.secondary;$('dLater').textContent=o.secondary||'';onLater=o.onLater;
     $('drawer').classList.add('open');$('drawer').setAttribute('aria-hidden','false');$('scrim').classList.add('open');
-    setTimeout(function(){$('dDo').focus()},50);
+    setTimeout(function(){var f=o.focus&&$(o.focus);(f||$('dDo')).focus()},60);
   }
   function closeDrawer(){state.open=null;$('drawer').classList.remove('open');$('drawer').setAttribute('aria-hidden','true');$('scrim').classList.remove('open')}
   $('dClose').onclick=closeDrawer;$('scrim').onclick=closeDrawer;
-  $('dDo').onclick=function(){var id=state.open;closeDrawer();finish(id,'done')};
-  $('dLater').onclick=function(){var id=state.open;closeDrawer();finish(id,'later')};
+  $('dDo').onclick=function(){if(onDo&&onDo()===false)return;closeDrawer()};
+  $('dLater').onclick=function(){if(onLater&&onLater()===false)return;closeDrawer()};
+  $('drawer').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.matches('input'))$('dDo').click()});
 
-  /* Klicks */
-  document.addEventListener('click',function(e){
-    var el;
-    if((el=e.target.closest('[data-view]'))){state.view=el.dataset.view;state.art=null;state.sel=0;render();return}
-    if((el=e.target.closest('[data-art]'))){state.art=el.dataset.art||null;state.sel=0;render();return}
-    if((el=e.target.closest('[data-do]'))){e.stopPropagation();finish(+el.dataset.do,'done');return}
-    if((el=e.target.closest('[data-take]'))){var id=el.dataset.take,li=el.closest('li'),z=FEED.filter(function(x){return x.id===id})[0];
-      li.classList.add('leaving');setTimeout(function(){state.zdone[id]=true;render()},220);
-      toast(el.dataset.manual?'Zur Zuordnung geöffnet':'Zugeordnet: '+z.sug,function(){delete state.zdone[id];render()});return}
-    if((el=e.target.closest('.row'))){state.sel=+el.dataset.i;render();openDrawer(+el.dataset.id);return}
-    if((el=e.target.closest('[data-toast]'))){toast(el.dataset.toast);return}
-    if(e.target.closest('a[href="#"]'))e.preventDefault();
+  function openTask(id){
+    var t=TASKS.filter(function(x){return x.id===id})[0];if(!t)return;var d=dueText(t);
+    openPanel({key:'t'+id,tag:t.art,nr:t.nr,title:t.titel,sub:t.obj,primary:t.act,secondary:'Auf morgen',
+      body:(t.hinweis?'<div class="note">'+ico('i-alert','sm')+'<div>'+esc(t.hinweis)+'</div></div>':'')+
+        (t.id===1?'<div class="field"><label class="lbl" for="zugang">Androhung zugestellt am</label><input class="inp" type="date" id="zugang" value="2026-09-29" max="2026-09-30"><span class="hint">Eingeschrieben, Sendungsnummer 98.40.123456.78901234 · Frist endet 30 Tage nach Zugang</span></div>':'')+
+        '<div class="d-sec"><h4>Ablauf · Schritt '+t.step+' von '+t.steps.length+'</h4><ol class="timeline">'+t.steps.map(function(s,i){var n=i+1,c=n<t.step?'done':n===t.step?'cur':'';
+          return '<li class="'+c+'"><span class="tl-dot">'+(c==='done'?'<svg class="ico sm" style="width:12px;height:12px;stroke-width:2.6"><use href="#i-check"/></svg>':'')+'</span><b>'+esc(s)+'</b><span>'+(c==='cur'?d.b:c==='done'?'erledigt':'')+'</span></li>'}).join('')+'</ol></div>'+
+        '<div class="d-sec"><h4>Eckdaten</h4><dl class="facts"><dt>Zuständig</dt><dd>'+(t.wer==='LF'?'Lea Frei':t.wer==='DG'?'Daniel Gerber':'niemand, bitte übernehmen')+'</dd><dt>Fällig</dt><dd>'+d.b+' · '+d.s+'</dd>'+(t.betrag?'<dt>Betrag</dt><dd class="num">'+esc(t.betrag)+'</dd>':'')+
+        (t.akte?'<dt>Akte</dt><dd><a class="link" href="#'+t.akte+'">'+esc(t.akte.indexOf('mv-')===0?t.obj.split(' · ')[0]+' · '+t.akte.toUpperCase():t.akte==='lauf-soll'?'Sollstellung Oktober':t.obj.split(' · ')[0])+'</a></dd>':'')+'</dl></div>',
+      onDo:function(){if(t.go){location.hash=t.go;return}
+        if(t.id===1){var v=$('zugang').value;if(!v){$('zugang').classList.add('bad');return false}
+          setTimeout(function(){finish(id,'done','Zugang am '+dm(v)+' erfasst · Frist läuft bis '+new Date(new Date(v).getTime()+30*864e5).toLocaleDateString('de-CH'))},10);return}
+        setTimeout(function(){finish(id,'done')},10)},
+      onLater:function(){setTimeout(function(){finish(id,'later')},10)}});
+  }
+  function finish(id,how,msg){
+    var t=TASKS.filter(function(x){return x.id===id})[0],row=document.querySelector('.row[data-id="'+id+'"]');
+    var apply=function(){(how==='later'?state.later:state.done)[id]=true;route(true)};
+    if(row){row.classList.add('leaving');setTimeout(apply,220)}else apply();
+    toast(msg||(how==='later'?'Auf morgen verschoben: '+t.nr:t.act+' · '+t.nr+' erledigt'),function(){delete state.done[id];delete state.later[id];route(true)});
+  }
+
+  function newCase(preset){
+    var arts=Object.keys(STEPS),sel=arts[0];
+    var opts=LG.map(function(L){return '<option value="lg-'+L.id+'"'+(preset==='lg-'+L.id?' selected':'')+'>'+lgName(L)+'</option>'}).join('');
+    if(preset&&preset.indexOf('mv-')===0){var u=MVS[preset.slice(3)];opts='<option value="'+preset+'" selected>'+esc(u.mieter)+' · MV-'+u.nr+'</option>'+opts}
+    openPanel({key:'new',title:'Neuer Fall',sub:'Wird in deinem Arbeitsvorrat angelegt.',primary:'Fall anlegen',secondary:'Abbrechen',focus:'nfT',
+      body:'<div class="form"><div class="field"><span class="lbl" id="nfArtL">Art</span><div class="radios" role="radiogroup" aria-labelledby="nfArtL">'+
+        arts.map(function(a){return '<button type="button" class="chip" role="radio" aria-pressed="'+(a===sel)+'" aria-checked="'+(a===sel)+'" data-fa="'+a+'">'+a+'</button>'}).join('')+'</div></div>'+
+        '<div class="field"><label class="lbl" for="nfT">Betreff</label><input class="inp" id="nfT" placeholder="z. B. Heizung ausgefallen, Wohnung 2.3" autocomplete="off"><span class="err" id="nfE" hidden>Bitte einen Betreff mit mindestens 3 Zeichen eingeben.</span></div>'+
+        '<div class="field"><label class="lbl" for="nfA">Akte</label><select class="inp" id="nfA">'+opts+'</select></div>'+
+        '<div class="row2"><div class="field"><label class="lbl" for="nfD">Frist</label><input class="inp" type="date" id="nfD" value="2026-10-07" min="2026-09-30"></div>'+
+        '<div class="field"><label class="lbl" for="nfW">Zuständig</label><select class="inp" id="nfW"><option value="LF">Lea Frei (ich)</option><option value="DG">Daniel Gerber</option><option value="">noch offen</option></select></div></div>'+
+        '<div class="field"><label class="lbl" for="nfB">Notiz <span style="font-weight:400;color:var(--faint)">(optional)</span></label><textarea class="inp" id="nfB" placeholder="Was ist passiert, wer hat gemeldet?"></textarea></div></div>',
+      onDo:function(){
+        var ti=$('nfT').value.trim();if(ti.length<3){$('nfT').classList.add('bad');$('nfE').hidden=false;$('nfT').focus();return false}
+        var art=(document.querySelector('[data-fa][aria-pressed="true"]')||{}).dataset.fa||'Allgemein',ak=$('nfA').value,dv=$('nfD').value||'2026-10-07';
+        var due=Math.round((new Date(dv+'T12:00')-new Date(2026,8,30,12))/864e5);
+        var obj=ak.indexOf('mv-')===0?MVS[ak.slice(3)].mieter+' · '+lgName(MVS[ak.slice(3)].lg):lgName(lgById(ak.slice(3)));
+        var t={id:100+nextNr,sev:due<0?'crit':'neutral',art:art,nr:'F-2026-0'+(nextNr++),titel:ti,obj:obj,akte:ak,step:1,steps:STEPS[art],wer:$('nfW').value||null,due:due,act:'Bearbeiten',fresh:true};
+        TASKS.unshift(t);
+        state.view=due<=0?'heute':due<=7?'woche':'alle';state.art=null;state.sel=0;
+        if(location.hash!=='#heute'&&location.hash!=='')location.hash='heute';else route();
+        toast('Fall '+t.nr+' angelegt · '+VIEWS.filter(function(v){return v.k===state.view})[0].l);
+      }});
+  }
+  function payForm(nr){
+    var u=MVS[nr],t=total(nr);
+    openPanel({key:'pay',tag:'Zahlung',nr:'MV-'+nr,title:'Zahlung erfassen',sub:u.mieter+' · '+lgName(u.lg),primary:'Verbuchen',secondary:'Abbrechen',focus:'pyA',
+      body:'<div class="form"><div class="row2"><div class="field"><label class="lbl" for="pyA">Betrag CHF</label><input class="inp num" id="pyA" inputmode="decimal" value="'+(t||u.brutto).toFixed(2)+'"><span class="err" id="pyE" hidden>Bitte einen Betrag über 0 eingeben.</span></div>'+
+        '<div class="field"><label class="lbl" for="pyD">Valuta</label><input class="inp" type="date" id="pyD" value="2026-09-30" max="2026-09-30"></div></div>'+
+        '<div class="field"><label class="lbl" for="pyR">Buchungstext</label><input class="inp" id="pyR" value="Zahlung Schalter / Überweisung"></div>'+
+        '<p class="hint">Offen: CHF '+chf(t)+'. Die Zahlung tilgt die älteste Forderung zuerst. Ein Überschuss wird als Vorauszahlung geführt.</p></div>',
+      onDo:function(){var a=parseFloat(String($('pyA').value).replace(/[’'\s]/g,'').replace(',','.'));
+        if(!(a>0)){$('pyA').classList.add('bad');$('pyE').hidden=false;return false}
+        pay(nr,a,$('pyR').value||'Zahlung',dm($('pyD').value||'2026-09-30'));setTimeout(function(){route()},10);
+        toast('CHF '+chf(a)+' verbucht · Saldo '+u.mieter+': CHF '+chf(total(nr)))}});
+  }
+  function bankPick(b){
+    var deb=Object.keys(DEBT).map(Number).filter(function(n){return total(n)>0});
+    deb=deb.concat(Object.keys(MVS).map(Number).filter(function(n){return deb.indexOf(n)<0}));
+    openPanel({key:'bank',tag:'Bankabgleich',nr:'Valuta '+b.d+'2026',title:'Gutschrift CHF '+chf(b.a)+' zuordnen',sub:b.t,primary:'Zuordnen und verbuchen',secondary:'Abbrechen',focus:'bkS',
+      body:'<div class="form"><div class="field"><label class="lbl" for="bkS">Mietverhältnis</label><select class="inp" id="bkS">'+
+        deb.map(function(n){var u=MVS[n];return '<option value="'+n+'"'+(n===409&&b.id==='b5'?' selected':'')+'>'+esc(u.mieter)+' · MV-'+n+' · offen CHF '+chf(total(n))+'</option>'}).join('')+'</select>'+
+        '<span class="hint">Offene Posten zuerst. Tobias Wyss passt über den Namen im Buchungstext, der Betrag deckt den Rückstand nur teilweise.</span></div></div>',
+      onDo:function(){var n=+$('bkS').value;setTimeout(function(){bankApply(b,n,'MV-'+n+' '+MVS[n].mieter)},10)}});
+  }
+
+  /* ════════════ Meldungen & Tooltip ════════════ */
+  function toast(msg,undo){
+    var el=document.createElement('div');el.className='toast';
+    el.innerHTML=ico('i-check','sm')+'<span>'+esc(msg)+'</span>'+(undo?'<button type="button">Rückgängig</button>':'');
+    $('toasts').appendChild(el);
+    var gone=function(){if(el.parentNode)el.remove()};
+    if(undo)el.querySelector('button').onclick=function(){undo();gone()};
+    setTimeout(gone,undo?6000:3400);
+    while($('toasts').children.length>3)$('toasts').firstChild.remove();
+  }
+  var tip=$('tip');
+  document.addEventListener('mousemove',function(e){
+    var t=e.target.closest&&e.target.closest('[data-tip]');
+    if(!t){tip.classList.remove('on');return}
+    tip.innerHTML=t.getAttribute('data-tip');tip.classList.add('on');
+    var x=e.clientX+14,y=e.clientY+14,w=tip.offsetWidth,h=tip.offsetHeight;
+    if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;
+    tip.style.left=x+'px';tip.style.top=y+'px';
   });
 
-  /* Tastatur */
+  /* ════════════ Klicks ════════════ */
+  document.addEventListener('click',function(e){
+    var el=e.target.closest?e.target:null;if(!el)return;
+    if((el=e.target.closest('[data-view]'))){state.view=el.dataset.view;state.art=null;state.sel=0;if(state.page!=='heute')location.hash='heute';else renderHeute();return}
+    if((el=e.target.closest('[data-art]'))){state.art=el.dataset.art||null;state.sel=0;renderHeute();return}
+    if((el=e.target.closest('[data-fa]'))){document.querySelectorAll('[data-fa]').forEach(function(b){var on=b===el;b.setAttribute('aria-pressed',on);b.setAttribute('aria-checked',on)});return}
+    if((el=e.target.closest('[data-do]'))){e.stopPropagation();var t=TASKS.filter(function(x){return x.id===+el.dataset.do})[0];
+      if(t.go)location.hash=t.go;else if(t.id===1)openTask(1);else finish(t.id,'done');return}
+    if((el=e.target.closest('[data-task]'))){openTask(+el.dataset.task);return}
+    if((el=e.target.closest('[data-new]'))){newCase(el.dataset.new);return}
+    if((el=e.target.closest('[data-pay]'))){payForm(+el.dataset.pay);return}
+    if((el=e.target.closest('[data-take]'))){var id=el.dataset.take,li=el.closest('li'),z=FEED.filter(function(x){return x.id===id})[0];
+      if(el.dataset.manual){toast('Zuordnung von «'+z.t+'» als Entwurf geöffnet (Mockup)');return}
+      li.classList.add('leaving');setTimeout(function(){state.zdone[id]=true;renderHeute()},220);
+      toast('Zugeordnet: '+z.sug,function(){delete state.zdone[id];renderHeute()});return}
+    if((el=e.target.closest('[data-bank]'))){var b=BANK.filter(function(x){return x.id===el.dataset.bank})[0];bankApply(b,b.nr,b.sug);return}
+    if((el=e.target.closest('[data-bankpick]'))){bankPick(BANK.filter(function(x){return x.id===el.dataset.bankpick})[0]);return}
+    if((el=e.target.closest('[data-block]'))){RUN.soll.block[el.dataset.block]=el.dataset.choice;route(true);return}
+    if((el=e.target.closest('[data-unblock]'))){delete RUN.soll.block[el.dataset.unblock];route(true);return}
+    if((el=e.target.closest('#relBtn'))){releaseSoll();return}
+    if((el=e.target.closest('[data-run]'))){var k=el.dataset.run;RUN[k]=true;route(true);
+      toast(k==='mahn'?'4 Mahnungen erzeugt · als PDF im Postausgang':'Zahllauf freigegeben · pain.001 an die ZKB übermittelt',function(){RUN[k]=false;route(true)});return}
+    if((el=e.target.closest('[data-aktab]'))){state.akTab=el.dataset.aktab;state.akQ='';state.akShow=25;route(true);return}
+    if((el=e.target.closest('[data-mvtab]'))){state.mvTab=el.dataset.mvtab;route(true);return}
+    if((el=e.target.closest('[data-more]'))){if(el.dataset.more==='ak'){state.akShow+=25;renderAkList()}else{state.lgShow=999;route(true)}return}
+    if((el=e.target.closest('[data-toast]'))){e.preventDefault();toast(el.dataset.toast);return}
+    if((el=e.target.closest('tr[data-href]'))&&!e.target.closest('a')){location.hash=el.dataset.href.slice(1);return}
+    if((el=e.target.closest('.row'))){state.sel=+el.dataset.i;renderHeute();openTask(+el.dataset.id);return}
+    if(e.target.closest('a[href="#"]'))e.preventDefault();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target.id==='akQ'){state.akQ=e.target.value;state.akShow=25;renderAkList()}
+    if(e.target.classList&&e.target.classList.contains('bad')){e.target.classList.remove('bad');var er=e.target.parentNode.querySelector('.err');if(er)er.hidden=true}
+  });
+  $('scopeSel').addEventListener('change',function(){state.scope=this.value;toast(state.scope?'Bestand eingegrenzt: '+MANDATE[state.scope]:'Ganzer Bestand');route(true)});
+  document.addEventListener('change',function(e){if(e.target.id==='whoSel')toast('Filter «'+e.target.value+'» angewendet (Mockup)')});
+
+  /* ════════════ Tastatur ════════════ */
   document.addEventListener('keydown',function(e){
     if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();pal.classList.contains('open')?palClose():palOpen();return}
     if(e.key==='Escape'){if(pal.classList.contains('open'))palClose();else closeDrawer();return}
     if(pal.classList.contains('open')||state.open||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
-    var rows=document.querySelectorAll('.row');if(!rows.length)return;
-    if(e.key==='j'||e.key==='ArrowDown'){state.sel=Math.min(rows.length-1,state.sel+1);render();e.preventDefault()}
-    else if(e.key==='k'||e.key==='ArrowUp'){state.sel=Math.max(0,state.sel-1);render();e.preventDefault()}
-    else if(e.key==='Enter'){openDrawer(+rows[state.sel].dataset.id)}
-    else if(e.key==='e'){finish(+rows[state.sel].dataset.id,'done')}
+    if(e.key==='/'){e.preventDefault();palOpen();return}
+    if(state.page!=='heute')return;
+    var rows=document.querySelectorAll('#list .row');if(!rows.length)return;
+    if(e.key==='j'||e.key==='ArrowDown'){state.sel=Math.min(rows.length-1,state.sel+1);renderHeute();e.preventDefault()}
+    else if(e.key==='k'||e.key==='ArrowUp'){state.sel=Math.max(0,state.sel-1);renderHeute();e.preventDefault()}
+    else if(e.key==='Enter'){openTask(+rows[state.sel].dataset.id)}
+    else if(e.key==='e'){var t=TASKS.filter(function(x){return x.id===+rows[state.sel].dataset.id})[0];if(t.go||t.id===1)openTask(t.id);else finish(t.id,'done')}
   });
 
-  /* Befehlspalette */
+  /* ════════════ Befehlspalette ════════════ */
   var pal=$('palette'),palIn=$('palIn'),palAct=0;
-  var PAGES=['Liegenschaften','Mietverhältnisse','Personen','Bankabgleich','Mahnwesen','Sollstellung','Nebenkosten','QR-Rechnungen','Kautionen','Einstellungen'];
-  var PEOPLE=[['Reto Blaser','MV-204 · Seestrasse 14'],['Sarah Nüesch','MV-218 · Zugerstrasse 51'],['Sanitär Keller AG','Dienstleister · Wädenswil'],['Seestrasse 14, Thalwil','Liegenschaft · 18 Objekte']];
+  var PAGES=[['Heute','#heute'],['Liegenschaften','#akten'],['Mietverhältnisse','#akten','mv'],['Läufe','#laeufe'],['Sollstellung Oktober','#lauf-soll'],['Bankabgleich','#finanzen'],['Ausstände','#finanzen'],['Mahnlauf','#laeufe'],['Berichte','#berichte'],['Neuer Fall','new']];
   function palRender(){
     var q=palIn.value.trim().toLowerCase(),h='',n=0;
-    var ppl=PEOPLE.filter(function(p){return !q||(p[0]+p[1]).toLowerCase().indexOf(q)>-1});
+    var lg=LG.filter(function(L){return q&&(L.str+' '+L.ort).toLowerCase().indexOf(q)>-1}).slice(0,3);
+    var mv=UNITS.filter(function(u){return u.nr&&(q?(u.mieter+' mv-'+u.nr+' '+u.nr).toLowerCase().indexOf(q)>-1:[204,218,230].indexOf(u.nr)>-1)}).slice(0,5);
     var tk=live().filter(function(t){return q&&(t.titel+t.nr+t.obj).toLowerCase().indexOf(q)>-1}).slice(0,4);
-    var pg=PAGES.filter(function(p){return !q||p.toLowerCase().indexOf(q)>-1}).slice(0,6);
-    if(ppl.length){h+='<div class="pal-grp">Akten</div>'+ppl.map(function(p){return '<button class="pal-item" data-i="'+(n++)+'"><svg class="ico sm"><use href="#i-folder"/></svg>'+esc(p[0])+'<span class="z">'+esc(p[1])+'</span></button>'}).join('')}
-    if(tk.length){h+='<div class="pal-grp">Vorgänge</div>'+tk.map(function(t){return '<button class="pal-item" data-i="'+(n++)+'" data-open="'+t.id+'"><span class="mono" style="color:var(--faint)">'+t.nr+'</span>'+esc(t.titel)+'</button>'}).join('')}
-    if(pg.length){h+='<div class="pal-grp">Seiten</div>'+pg.map(function(p){return '<button class="pal-item" data-i="'+(n++)+'"><svg class="ico sm"><use href="#i-arrow"/></svg>'+esc(p)+'</button>'}).join('')}
-    $('palList').innerHTML=h||'<div class="empty">Nichts gefunden für «'+esc(palIn.value)+'». ↵ sucht im ganzen Bestand.</div>';
+    var pg=PAGES.filter(function(p){return !q||p[0].toLowerCase().indexOf(q)>-1}).slice(0,6);
+    function item(attrs,iconHtml,label,z){return '<button class="pal-item" data-i="'+(n++)+'" '+attrs+'>'+iconHtml+esc(label)+(z?'<span class="z">'+esc(z)+'</span>':'')+'</button>'}
+    if(mv.length||lg.length){h+='<div class="pal-grp">Akten</div>'+mv.map(function(u){return item('data-go="#mv-'+u.nr+'"','<span class="avatar" style="width:20px;height:20px;font-size:9px">'+ini(u.mieter)+'</span>',u.mieter,'MV-'+u.nr+' · '+u.lg.str)}).join('')+
+      lg.map(function(L){return item('data-go="#lg-'+L.id+'"',ico('i-home','sm'),lgName(L),L.n+' Objekte · '+MANDATE[L.m])}).join('')}
+    if(tk.length){h+='<div class="pal-grp">Vorgänge</div>'+tk.map(function(t){return item('data-open="'+t.id+'"','<span class="mono" style="color:var(--faint)">'+t.nr+'</span>',t.titel)}).join('')}
+    if(pg.length){h+='<div class="pal-grp">Seiten und Befehle</div>'+pg.map(function(p){return item(p[1]==='new'?'data-cmd="new"':'data-go="'+p[1]+'"'+(p[2]?' data-tab="'+p[2]+'"':''),ico(p[1]==='new'?'i-plus':'i-arrow','sm'),p[0])}).join('')}
+    $('palList').innerHTML=h||'<div class="empty">Nichts gefunden für «'+esc(palIn.value)+'».</div>';
     palAct=Math.min(palAct,Math.max(0,n-1));
     var items=$('palList').querySelectorAll('.pal-item');if(items[palAct])items[palAct].classList.add('act');
   }
   function palOpen(){pal.classList.add('open');pal.setAttribute('aria-hidden','false');palIn.value='';palAct=0;palRender();setTimeout(function(){palIn.focus()},20)}
-  function palClose(){pal.classList.remove('open');pal.setAttribute('aria-hidden','true')}
-  function palPick(el){palClose();if(el&&el.dataset.open)openDrawer(+el.dataset.open);else if(el)toast(el.textContent.trim().split('  ')[0]+' geöffnet')}
+  function palClose(){if(!pal)return;pal.classList.remove('open');pal.setAttribute('aria-hidden','true')}
+  function palPick(el){if(!el)return;palClose();
+    if(el.dataset.open)openTask(+el.dataset.open);
+    else if(el.dataset.cmd==='new')newCase('');
+    else if(el.dataset.go){if(el.dataset.tab)state.akTab=el.dataset.tab;else if(el.dataset.go==='#akten')state.akTab='lg';
+      if(location.hash===el.dataset.go)route(true);else location.hash=el.dataset.go.slice(1)}}
   $('openPal').onclick=palOpen;
   pal.addEventListener('click',function(e){if(e.target===pal)palClose();var it=e.target.closest('.pal-item');if(it)palPick(it)});
   palIn.addEventListener('input',function(){palAct=0;palRender()});
@@ -695,17 +1260,14 @@ h1 em{font-style:normal;color:var(--faint);font-weight:400}
     if(e.key==='ArrowUp'){palAct=Math.max(0,palAct-1);palRender();e.preventDefault()}
     if(e.key==='Enter'){palPick(items[palAct]);e.preventDefault()}});
 
-  /* Kopfzeile: Linie erst beim Scrollen */
   window.addEventListener('scroll',function(){$('top').classList.toggle('scrolled',window.scrollY>4)},{passive:true});
-
-  /* Hell/Dunkel */
   $('themeBtn').onclick=function(){
     var r=document.documentElement,cur=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
     var next=cur==='dark'?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('si-theme',next)}catch(e){}
   };
   try{var st=localStorage.getItem('si-theme');if(st)document.documentElement.setAttribute('data-theme',st)}catch(e){}
 
-  render();
+  route();
 })();
 </script>
 </body></html>
