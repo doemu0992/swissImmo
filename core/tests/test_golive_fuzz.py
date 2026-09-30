@@ -86,6 +86,8 @@ class FuzzTests(TestCase):
                     if r.status_code >= 500:
                         ei = getattr(r, 'exc_info', None) or (None, None, None)
                         fehler.append((methode.upper(), url, f'{r.status_code} {ei[0].__name__ if ei[0] else ""}: {str(ei[1])[:100]}'))
+        self.maxDiff = None
+        print('FUZZ', gruppe, *sorted(set(fehler), key=str), sep='\n  ')
         self.assertEqual(sorted(set(fehler), key=str)[:60], [], f'{gruppe}: {len(set(fehler))} Route(n) mit 500')
 
     def test_angemeldet(self):

@@ -193,6 +193,7 @@ MIDDLEWARE = [
     'core.middleware_zweifaktor.ZweiFaktorPflichtMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware_eingabe.UnlesbareEingabeMiddleware',
 ]
 
 ROOT_URLCONF = 'swiss_immo.urls'
