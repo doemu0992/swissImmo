@@ -228,8 +228,8 @@ def send_abrechnung_email_view(request, periode_id):
 
 # Nur POST: Die Ansicht verschickt eine Mahnung mit Kündigungsandrohung und legt
 # sie in der Akte ab. Als GET genügte ein Link-Prefetch oder ein Crawler dafür.
-@require_POST
 @rolle_erforderlich(ROLLE_VERWALTER)
+@require_POST
 def send_mahnung_email_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     # Absender der Mahnung: die Verwaltung DIESES Vertrags — an ihrem Briefkopf

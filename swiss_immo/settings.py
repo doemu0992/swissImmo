@@ -83,6 +83,13 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 import sys as _sys
 TESTING = ('test' in _sys.argv) or ('pytest' in _sys.argv[0] if _sys.argv else False)
 
+# Nur für Testläufe: fester Schlüssel für verschlüsselte Felder (AHV-Nummer),
+# damit Tests ohne .env laufen. In Betrieb kommt er ausschliesslich aus der
+# Umgebung (IMAP_SCHLUESSEL) — dieser Wert schützt dort nichts und gilt nur,
+# solange `manage.py test` läuft.
+if TESTING:
+    IMAP_SCHLUESSEL = os.getenv('IMAP_SCHLUESSEL') or 'EV9Cq9O_Bf3KXTtRNITG9iiMDSNs7KZen9YgQQmA29c='
+
 # Clickjacking-Schutz: SAMEORIGIN erlaubt der App, EIGENE Seiten zu framen
 # (Cockpit-Modals laden /neu/-Seiten per iframe) — externes Framing bleibt
 # blockiert. 'DENY' (Django-Default) würde auch die eigenen Popups leer lassen.
@@ -144,6 +151,8 @@ MIDDLEWARE = [
     # scheiterten an genau derselben fehlenden Tabelle. Die Wartungsseite
     # braucht davon nichts (siehe docs/WARTUNGSSEITE.md).
     'core.wartung.WartungsMiddleware',
+    # Vor allem, was Eingaben liest: PostgreSQL verträgt kein NUL-Byte.
+    'core.middleware_nul.NulBytesMiddleware',
     # Antworten komprimiert ausliefern. Die Listenseiten bestehen fast nur aus
     # sich wiederholendem Markup (Tailwind-Klassen, je Zeile eine Karte fürs
     # Handy UND eine Tabellenzeile für den PC) — das lässt sich hervorragend

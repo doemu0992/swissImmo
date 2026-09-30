@@ -19,8 +19,8 @@ from core.utils.market_data import update_verwaltung_rates
 
 # Nur POST: startet einen Import aus dem Internet und schreibt die Marktdaten
 # der Organisation. Die Oberfläche nutzt /neu/marktdaten/aktualisieren/.
-@require_POST
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
+@require_POST
 def update_market_data_view(request):
     """
     Startet den manuellen Import von BWO (Zins) und BFS (LIK).

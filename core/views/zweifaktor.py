@@ -55,8 +55,28 @@ ANZAHL_CODES = 10
 
 
 def _ip(request):
-    weiter = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    return (weiter.split(',')[0].strip() if weiter else request.META.get('REMOTE_ADDR')) or None
+    from core.utils.throttle import client_ip
+    return client_ip(request) or None
+
+
+#: Anmelde-Bremse: so viele Fehlversuche je Benutzername UND je IP im Fenster.
+LOGIN_MAX_FEHLVERSUCHE = 10
+LOGIN_FENSTER = 15 * 60
+
+
+def _sicheres_ziel(request, ziel):
+    """`next` nur, wenn es auf DIESE Anwendung zeigt (kein offener Redirect).
+
+    Ein Link `/login/?next=https://fremd.example` schickte den Benutzer nach
+    dem Login auf eine fremde Seite — dort sieht «bitte erneut anmelden» wie
+    die echte Anwendung aus.
+    """
+    from django.utils.http import url_has_allowed_host_and_scheme
+    if ziel and url_has_allowed_host_and_scheme(
+            ziel, allowed_hosts={request.get_host()},
+            require_https=request.is_secure()):
+        return ziel
+    return ''
 
 
 def _sicherheit(aktion, objekt='', details='', request=None):
@@ -82,19 +102,34 @@ def _sicherheit(aktion, objekt='', details='', request=None):
 @sensitive_post_parameters('password')
 def zweifaktor_login(request, template_name='core/login.html'):
     """Ersetzt `auth_views.LoginView` — meldet nur an, wenn kein Faktor aussteht."""
-    weiter = request.POST.get('next') or request.GET.get('next') or ''
+    weiter = _sicheres_ziel(request, request.POST.get('next') or request.GET.get('next') or '')
     if request.method != 'POST':
         return render(request, template_name, {'next': weiter})
+
+    from core.utils.throttle import client_ip, fehlversuch, ist_gesperrt, zuruecksetzen
+    name = (request.POST.get('username', '') or '').strip().lower()[:150]
+    schl_ip = f'login:ip:{client_ip(request)}'
+    schl_name = f'login:name:{name}'
+    if ist_gesperrt(schl_ip, LOGIN_MAX_FEHLVERSUCHE * 3) or ist_gesperrt(schl_name, LOGIN_MAX_FEHLVERSUCHE):
+        _sicherheit('login_gesperrt', objekt=name, request=request,
+                    details='Zu viele Fehlversuche — Anmeldung vorübergehend gesperrt.')
+        return render(request, template_name, {
+            'next': weiter,
+            'fehler': 'Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.'},
+            status=429)
 
     benutzer = authenticate(request,
                             username=request.POST.get('username', ''),
                             password=request.POST.get('password', ''))
     if benutzer is None or not benutzer.is_active:
+        fehlversuch(schl_ip, LOGIN_FENSTER)
+        fehlversuch(schl_name, LOGIN_FENSTER)
         # Die Meldung nennt bewusst nicht, WELCHER Teil falsch war.
         return render(request, template_name, {
             'next': weiter,
             'fehler': 'Benutzername oder Passwort stimmt nicht.'}, status=200)
 
+    zuruecksetzen(schl_name)
     faktor = ZweiterFaktor.objects.filter(benutzer=benutzer).first()
     if faktor is None or not faktor.ist_aktiv:
         django_login(request, benutzer)
@@ -142,7 +177,7 @@ def _notiz_loeschen(request):
 def _anmelden(request, benutzer):
     """`login()` mit dem Verfahren, das im ersten Schritt geprüft hat."""
     backend = request.session.get('zf_backend') or ''
-    weiter = request.session.get('zf_next') or ''
+    weiter = _sicheres_ziel(request, request.session.get('zf_next') or '')
     _notiz_loeschen(request)
     django_login(request, benutzer, backend=backend or None)
     return weiter

@@ -22,7 +22,8 @@ def generate_pdf_view(request, vertrag_id):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
     except Exception as e:
-        return HttpResponse(f'Fehler beim Erstellen des PDFs: {str(e)}', status=500)
+        logger.error("PDF-Erzeugung fehlgeschlagen (Vertrag %s)", vertrag_id, exc_info=True)
+        return HttpResponse('Fehler beim Erstellen des PDFs.', status=500)
 
 
 def _ablegen_vertragsdokument(pdf_bytes, titel, vertrag, *, ueberschreiben=True):
@@ -127,4 +128,5 @@ def generate_dokument_view(request, vertrag_id, doc_type):
         response['Content-Disposition'] = f'inline; filename="{filename}"'
         return response
     except Exception as e:
-        return HttpResponse(f'Fehler beim Erstellen des PDFs: {str(e)}', status=500)
+        logger.error("PDF-Erzeugung fehlgeschlagen (Vertrag %s)", vertrag_id, exc_info=True)
+        return HttpResponse('Fehler beim Erstellen des PDFs.', status=500)

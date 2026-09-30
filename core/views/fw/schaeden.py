@@ -20,7 +20,8 @@ from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
-                       TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+                       TEAM_ROLLEN, TICKET_LESE_ROLLEN, TICKET_SCHREIB_ROLLEN,
+                       VERWALTUNGS_ROLLEN)
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
 
@@ -50,7 +51,7 @@ PRIO_PILL = {
 }
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*TICKET_LESE_ROLLEN)
 def fw_schaeden(request):
     """Schadensliste nach G9 — sortiert nach Befund, nicht nach Eingang.
 
@@ -271,7 +272,7 @@ def fw_schaden_neu(request):
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*TICKET_LESE_ROLLEN)
 def fw_schaden_detail(request, pk):
     from tickets.models import SchadenMeldung
     t = get_object_or_404(
@@ -538,7 +539,7 @@ def fw_schaden_auftrag(request, pk):
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*TICKET_SCHREIB_ROLLEN)
 def fw_schaden_status(request, pk):
     """Ticket-Status ändern; optional Melder automatisch informieren
     (bei „erledigt" die Erledigt-Vorlage)."""

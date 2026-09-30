@@ -9,6 +9,7 @@ from django.db import models
 
 from core.funktionen import STUFEN_NAMEN, STUFEN_REIHENFOLGE
 from core.tenancy import AlleOrganisationenManager, TenantManager
+from core.verschluesselt import VerschluesseltesCharField
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 from django.utils.translation import gettext_lazy as _, pgettext_lazy
 
@@ -168,6 +169,7 @@ class Mitgliedschaft(models.Model):
     ROLLE_VERWALTER = 'Verwalter'
     ROLLE_SACHBEARBEITER = 'Sachbearbeiter'
     ROLLE_LESEZUGRIFF = 'Lesezugriff'
+    ROLLE_HAUSWART = 'Hauswart'
     # Beschriftung bewusst NICHT übersetzt: Die Rollennamen stehen auch in
     # den übersetzten Hilfetexten deutsch («<b>Verwalter</b> (accès complet
     # …)») — sie sind Begriffe des Produkts, keine Umgangssprache.
@@ -176,6 +178,7 @@ class Mitgliedschaft(models.Model):
         (ROLLE_VERWALTER, 'Verwalter'),
         (ROLLE_SACHBEARBEITER, 'Sachbearbeiter'),
         (ROLLE_LESEZUGRIFF, 'Lesezugriff'),
+        (ROLLE_HAUSWART, 'Hauswart'),
     ]
 
     benutzer = models.ForeignKey(
@@ -331,7 +334,9 @@ class Mieter(models.Model):
     vorname = models.CharField("Vorname", max_length=100, blank=True, default='')
     nachname = models.CharField("Nachname", max_length=100, blank=True, default='')
     geburtsdatum = models.DateField("Geburtsdatum", null=True, blank=True)
-    ahv_nummer = models.CharField("AHV-Nummer", max_length=20, blank=True, default='')
+    # Verschlüsselt abgelegt (Fernet, siehe core/verschluesselt.py) — nie filtern.
+    ahv_nummer = VerschluesseltesCharField("AHV-Nummer", klartext_max_laenge=20,
+                                           blank=True, default='')
     zivilstand = models.CharField("Zivilstand", max_length=50, blank=True, default='')
     nationalitaet = models.CharField("Nationalität", max_length=100, blank=True, default='')
     heimatort = models.CharField("Heimatort", max_length=150, blank=True, default='')

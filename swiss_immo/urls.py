@@ -24,13 +24,16 @@ from mietprozess.api import router as mietprozess_router
 # jemand an die Berechtigung denkt, wäre er session-pflichtig statt offen.
 # `docs_url=None` schaltet /api/docs ab: Zwei öffentliche Endpunkte brauchen
 # keinen Schema-Browser, und was es nicht gibt, muss nicht abgesichert werden
-# (vorher hing die Seite an staff_member_required).
+# (vorher hing die Seite an staff_member_required). `openapi_url=None` schaltet
+# auch /api/openapi.json ab — das Schema war bis zum Security-Audit anonym
+# abrufbar und beschrieb jedes Feld des Bewerbungsformulars samt Uploads.
 api = NinjaAPI(
     title="swissImmo API",
     version="2.0.0",
     description="Nur noch öffentliche Endpunkte: Bewerbungsformular und DocuSeal-Webhook.",
     auth=auth_lesen,
     docs_url=None,
+    openapi_url=None,
 )
 
 api.add_router("/rentals", rentals_router)

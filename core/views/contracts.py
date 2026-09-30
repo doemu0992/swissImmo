@@ -230,5 +230,6 @@ def mietzins_anpassung_view(request, vertrag_id):
 
     return render(request, 'core/mietzins_form.html', context)
 
+@rolle_erforderlich(ROLLE_VERWALTER)
 def generiere_amtliches_formular(request, vertrag_id):
     return redirect('mietzins_anpassung', vertrag_id=vertrag_id)

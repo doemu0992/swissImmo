@@ -288,8 +288,8 @@ def fw_fall_detail(request, pk):
     })
 
 
-@require_POST
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
 def fw_fallschritt_erledigen(request, pk):
     """Einen Schritt abhaken.
 
@@ -317,8 +317,8 @@ def _weiter(request, vorgabe):
     return vorgabe
 
 
-@require_POST
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
 def fw_fallschritt_verschieben(request, pk):
     """«Auf morgen» aus der Schublade (konzept-v8): die Frist um einen Tag.
 
@@ -579,8 +579,8 @@ def fw_zulauf(request):
     })
 
 
-@require_POST
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
 def fw_zulauf_uebernehmen(request, pk):
     """Den Vorschlag übernehmen — oder begründet ablegen."""
     from faelle.zulauf import uebernehmen
@@ -631,8 +631,8 @@ def fw_termine(request):
     })
 
 
-@require_POST
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
 def fw_termin_neu(request):
     from faelle.termin_models import Termin
 
@@ -655,8 +655,8 @@ def fw_termin_neu(request):
     return redirect('/neu/termine/')
 
 
-@require_POST
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
 def fw_termin_status(request, pk):
     """Erledigt oder abgesagt — beides nimmt den Termin aus der Heute-Sicht."""
     from faelle.termin_models import Termin
@@ -699,8 +699,8 @@ def fw_abwesenheiten(request):
     })
 
 
-@require_POST
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
 def fw_abwesenheit_neu(request):
     from django.core.exceptions import ValidationError
 

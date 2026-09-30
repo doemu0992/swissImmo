@@ -54,6 +54,7 @@ def brevo_inbound_webhook(request):
                     return JsonResponse({'status': 'ticket not found'}, status=404)
 
             return JsonResponse({'status': 'no ticket id in subject'})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+        except Exception:
+            logger.error("Brevo-Webhook: Verarbeitung fehlgeschlagen", exc_info=True)
+            return JsonResponse({'error': 'internal error'}, status=500)
     return JsonResponse({'status': 'invalid method'}, status=405)
