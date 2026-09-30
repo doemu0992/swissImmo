@@ -32,7 +32,7 @@
                     </div>
                 </a>
                 {% empty %}
-                <div class="px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine Fristen in den nächsten 90 Tagen." %}</div>
+                {% include 'fw/_empty.html' with knapp=True icon='termin' titel=_('Keine Fristen in den nächsten 90 Tagen.') %}
                 {% endfor %}
             </div>
         </div>
@@ -77,7 +77,7 @@
             </div>
         </div>
         {% empty %}
-        <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">{% trans "Keine offenen Pendenzen." %}</div>
+        <div class="fw-card">{% include 'fw/_empty.html' with icon='gut' titel=_('Keine offenen Pendenzen.') %}</div>
         {% endfor %}
 
         {% if erledigte %}

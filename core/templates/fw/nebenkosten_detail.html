@@ -135,7 +135,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Mieter in dieser Periode." %}</td></tr>
+                <tr><td colspan="7" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='person' titel=_('Keine Mieter in dieser Periode.') %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -160,7 +160,7 @@
                 <td class="fw-mutet">{{ b.get_kategorie_display }}</td>
                 <td class="text-right font-medium fw-strong whitespace-nowrap fw-right">{{ b.betrag|chf }}</td></tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Belege erfasst. HNK-relevante Kreditorenrechnungen fliessen automatisch ein." %}</td></tr>
+            <tr><td colspan="4" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='rechnung' titel=_('Keine Belege erfasst.') subtext=_('HNK-relevante Kreditorenrechnungen fliessen automatisch ein.') %}</td></tr>
             {% endfor %}
             </tbody>
         </table></div>

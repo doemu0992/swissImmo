@@ -393,8 +393,17 @@ Abrechnung, keine Liste. Echte Lücken waren:
   sobald die Liegenschaft aktive Mieter hatte. Das Skript las das erste
   Formular der Seite — «Verteilen», ohne Betragsfeld — und brach mit einem
   Fehler ab (im Browser nachgewiesen).
-Offen: 33 Listen zeigen den leeren Zustand noch als kursiven Einzeiler statt
-mit `fw/_empty.html`.*
+Die 33 kursiven Einzeiler folgten im nächsten Schritt (unten).*
+
+*Leere Zustände einheitlich (30.09.2026): Die 33 kursiven Einzeiler «Keine …»
+in 23 Vorlagen laufen jetzt über `fw/_empty.html`. Der Baustein hat dafür eine
+knappe Form (`knapp=True`) für Tabellenzeilen und Nebenlisten; die grosse Form
+bleibt für eine Liste, die die Seite trägt (Pendenzen). Neue Knöpfe gibt es
+dabei bewusst nicht — nicht jede Rolle, die eine Liste sieht, darf dort auch
+erfassen. Wächter: `test_stilschuld.KursiveLeereZustaende` hält die Zahl bei
+null. Nebenbei geschlossen: Der Übersetzungswächter prüfte in Vorlagen nur
+`{% trans %}`, nicht `_('…')` als Argument — genau die Form, mit der leere
+Zustände ihre Texte bekommen.*
 
 ### Offene Entscheide (entschieden 29.09.2026)
 

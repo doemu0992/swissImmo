@@ -213,7 +213,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs fw-marke font-medium hover:underline shrink-0" target="_blank" rel="noopener">{% trans "Öffnen" %}</a>{% endif %}
                 </div>
                 {% empty %}
-                <div class="px-5 py-4 text-center text-xs fw-faint italic">{% trans "Noch keine Dokumente zu diesem Verhältnis." %}</div>
+                {% include 'fw/_empty.html' with knapp=True icon='dokument' titel=_('Noch keine Dokumente zu diesem Verhältnis.') %}
                 {% endfor %}
             </div>
         </details>
@@ -399,7 +399,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="text-center text-xs fw-faint italic fw-zentriert">{% trans "Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins." %}</td></tr>
+                <tr><td colspan="4" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='trend' titel=_('Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins.') %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table></div>
@@ -450,7 +450,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="3" class="text-center text-xs fw-faint italic fw-zentriert">{% trans "Noch keine Staffelstufen — Vertrag läuft mit festem Mietzins." %}</td></tr>
+                <tr><td colspan="3" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='trend' titel=_('Noch keine Staffelstufen — Vertrag läuft mit festem Mietzins.') %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table></div>

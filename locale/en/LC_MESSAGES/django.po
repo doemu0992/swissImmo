@@ -20170,3 +20170,14 @@ msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
 msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
 msgstr[0] "Record %(n)s adjustment + official form (combined PDF)"
 msgstr[1] "Record %(n)s adjustments + official forms (combined PDF)"
+#: core/templates/fw/logbuch.html
+msgid "Noch keine Aktivität."
+msgstr "No activity yet."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "Keine Belege erfasst."
+msgstr "No receipts recorded."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."
+msgstr "Supplier invoices relevant to ancillary costs are included automatically."

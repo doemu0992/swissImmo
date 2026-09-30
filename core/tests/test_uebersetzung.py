@@ -478,6 +478,9 @@ class KatalogTests(SimpleTestCase):
         Nachgeschlagen wird im gebauten französischen `.mo`. Ein `%` in einer
         Vorlage legt makemessages als `%%` ab.
 
+        In Vorlagen zählt auch `_('…')` als Argument eines Tags (leere
+        Zustände: `titel=_('…')`).
+
         Gegenprobe: in `core/templates/fw/liegenschaften.html` den Text
         `{% trans "Sortieren" %}` in `{% trans "Sortieren nach" %}` ändern —
         der Test wird rot.
@@ -492,6 +495,13 @@ class KatalogTests(SimpleTestCase):
             for m in vorlage.finditer(text):
                 s = m.group(1) if m.group(1) is not None else m.group(2)
                 if s and s not in katalog and s.replace('%', '%%') not in katalog:
+                    fehlend.append(f'{pfad.relative_to(WURZEL)}: {s}')
+            # `_('…')` als Argument, etwa `{% include 'fw/_empty.html' with
+            # titel=_('…') %}`. Bis 30.09.2026 nicht geprüft — so fielen neue
+            # Texte der leeren Zustände durch.
+            for m in code.finditer(text):
+                s = m.group(1) if m.group(1) is not None else m.group(2)
+                if s and s not in katalog:
                     fehlend.append(f'{pfad.relative_to(WURZEL)}: {s}')
         for app in ('core', 'crm', 'portfolio', 'rentals', 'finance', 'tickets',
                     'faelle', 'mietprozess', 'benutzer'):

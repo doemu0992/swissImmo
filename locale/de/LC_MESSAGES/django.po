@@ -20284,3 +20284,14 @@ msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
 msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
 msgstr[0] "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
 msgstr[1] "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
+#: core/templates/fw/logbuch.html
+msgid "Noch keine Aktivität."
+msgstr "Noch keine Aktivität."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "Keine Belege erfasst."
+msgstr "Keine Belege erfasst."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."
+msgstr "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."

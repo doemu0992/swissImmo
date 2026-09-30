@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ e.nummer }}</span><a href="/neu/buchhaltung/konto/{{ e.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ e.bezeichnung }}</a></td>
                     <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ e.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Ertragsbuchungen." %}</td></tr>
+                <tr><td colspan="3" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='geld' titel=_('Keine Ertragsbuchungen.') %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
                     <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Aufwandbuchungen." %}</td></tr>
+                <tr><td colspan="3" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='geld' titel=_('Keine Aufwandbuchungen.') %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td class="pl-4 pr-2 sm:px-5"><span class="sm:hidden font-mono text-xs fw-faint mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-ink hover:fw-marke hover:underline">{{ a.bezeichnung }}</a></td>
                     <td class="pr-4 pl-2 sm:px-5 text-right font-medium fw-strong whitespace-nowrap fw-right">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
-                <tr><td colspan="3" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Aktivkonten mit Saldo." %}</td></tr>
+                <tr><td colspan="3" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='geld' titel=_('Keine Aktivkonten mit Saldo.') %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -346,9 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </div>
             {% empty %}
-            <div class="px-5 py-8 text-center text-sm fw-faint italic">
-                {% if j_suche or j_konto or j_von or j_bis %}{% trans "Keine Buchung passt zu diesem Filter." %}{% else %}{% trans "Noch keine Buchungen." %}{% endif %}
-            </div>
+            {% if j_suche or j_konto or j_von or j_bis %}{% include 'fw/_empty.html' with knapp=True icon='suchen' titel=_('Keine Buchung passt zu diesem Filter.') %}{% else %}{% include 'fw/_empty.html' with knapp=True icon='dokument' titel=_('Noch keine Buchungen.') %}{% endif %}
             {% endfor %}
             {% if journal %}
             <div class="px-4 py-3 fw-flaeche2 flex items-center justify-between font-semibold fw-strong">
@@ -409,9 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">
-                    {% if j_suche or j_konto or j_von or j_bis %}{% trans "Keine Buchung passt zu diesem Filter." %}{% else %}{% trans "Noch keine Buchungen." %}{% endif %}
-                </td></tr>
+                <tr><td colspan="7" class="fw-leerzeile">{% if j_suche or j_konto or j_von or j_bis %}{% include 'fw/_empty.html' with knapp=True icon='suchen' titel=_('Keine Buchung passt zu diesem Filter.') %}{% else %}{% include 'fw/_empty.html' with knapp=True icon='dokument' titel=_('Noch keine Buchungen.') %}{% endif %}</td></tr>
                 {% endfor %}
                 </tbody>
                 {% if journal %}

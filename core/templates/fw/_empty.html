@@ -1,6 +1,21 @@
 {% load zeichen %}
-{% comment %}Einheitlicher Leerzustand mit Handlungsaufforderung.
-Parameter: icon (fa-Klasse), titel, subtext, cta_url (optional), cta_label (optional){% endcomment %}
+{% comment %}Einheitlicher leerer Zustand.
+Parameter: icon (Zeichenname), titel, subtext, cta_url, cta_label, cta_icon (alle optional ausser titel).
+knapp=True: die kleine Form für eine Tabellenzeile (in `td.fw-leerzeile`) oder
+eine Nebenliste in einer Karte — Zeichen, Titel, Untertext und Knopf bleiben,
+nur kleiner. Ohne `knapp` die grosse Form für eine Liste, die die Seite trägt.
+Kursive Einzeiler «Keine …» ersetzt dieser Baustein (Audit Etappe 4); der
+Wächter `test_stilschuld.KursiveLeereZustaende` hält die Zahl bei null.{% endcomment %}
+{% if knapp %}
+<div class="fw-leer-knapp text-center">
+    <span class="fw-faint">{% zeichen_wert icon|default:'wartet' klasse='text-lg' %}</span>
+    <p class="text-sm font-medium fw-mutet mt-1">{{ titel }}</p>
+    {% if subtext %}<p class="text-xs fw-faint mt-0.5 max-w-sm mx-auto">{{ subtext }}</p>{% endif %}
+    {% if cta_url %}
+    <a href="{{ cta_url }}" class="fw-btn fw-knapp mt-3">{% zeichen_wert cta_icon|default:'neu' %}{{ cta_label|default:'Erfassen' }}</a>
+    {% endif %}
+</div>
+{% else %}
 <div class="py-12 text-center">
     <span class="w-14 h-14 rounded-2xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4">
         {% zeichen_wert icon|default:'wartet' klasse='text-xl' %}
@@ -9,7 +24,8 @@ Parameter: icon (fa-Klasse), titel, subtext, cta_url (optional), cta_label (opti
     {% if subtext %}<p class="text-sm fw-faint mt-1 max-w-sm mx-auto">{{ subtext }}</p>{% endif %}
     {% if cta_url %}
     <a href="{{ cta_url }}" class="inline-flex items-center gap-2 mt-4 fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
-        {% zeichen 'neu' %}{{ cta_label|default:'Erfassen' }}
+        {% zeichen_wert cta_icon|default:'neu' %}{{ cta_label|default:'Erfassen' }}
     </a>
     {% endif %}
 </div>
+{% endif %}

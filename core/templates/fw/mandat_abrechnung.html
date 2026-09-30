@@ -70,7 +70,7 @@
                 <td class="px-5 py-3 text-right font-semibold whitespace-nowrap {% if z.saldo < 0 %}fw-kritisch{% else %}fw-strong{% endif %}">{{ z.saldo|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Liegenschaften diesem Eigentümer zugeordnet." %}</td></tr>
+            <tr><td colspan="4" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='liegenschaft' titel=_('Keine Liegenschaften diesem Eigentümer zugeordnet.') %}</td></tr>
             {% endfor %}
             </tbody>
             {% if zeilen %}

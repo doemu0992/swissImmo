@@ -20395,3 +20395,14 @@ msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
 msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
 msgstr[0] "Saisir %(n)s adaptation + formule officielle (PDF groupé)"
 msgstr[1] "Saisir %(n)s adaptations + formules officielles (PDF groupé)"
+#: core/templates/fw/logbuch.html
+msgid "Noch keine Aktivität."
+msgstr "Aucune activité pour l'instant."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "Keine Belege erfasst."
+msgstr "Aucune pièce saisie."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."
+msgstr "Les factures fournisseurs relevant des frais accessoires sont reprises automatiquement."

@@ -20372,3 +20372,14 @@ msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
 msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
 msgstr[0] "Registrare %(n)s adeguamento + modulo ufficiale (PDF collettivo)"
 msgstr[1] "Registrare %(n)s adeguamenti + moduli ufficiali (PDF collettivo)"
+#: core/templates/fw/logbuch.html
+msgid "Noch keine Aktivität."
+msgstr "Ancora nessuna attività."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "Keine Belege erfasst."
+msgstr "Nessun giustificativo registrato."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."
+msgstr "Le fatture fornitori rilevanti per le spese accessorie vengono riprese automaticamente."
