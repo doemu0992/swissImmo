@@ -105,6 +105,9 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'portfolio.Liegenschaft.hauswarte':
+     'wird in «Benutzer & Rollen» beim Hauswart zugeordnet (benutzer.py, '
+     'Gegenseite der Beziehung), nicht im Liegenschaftsformular',
     'rentals.AbnahmeMangel.mieteranteil':
      'BERECHNET aus der Lebensdauer (`berechne_mieteranteil`, '
      'abnahme.py:100), nicht eingegeben',

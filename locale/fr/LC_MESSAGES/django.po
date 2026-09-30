@@ -21067,3 +21067,11 @@ msgstr "Veuillez choisir un dossier."
 #, python-format
 msgid "Fall %(nummer)s angelegt."
 msgstr "Affaire %(nummer)s créée."
+
+#: core/templates/fw/benutzer_form.html:52
+msgid "Liegenschaften des Hauswarts"
+msgstr "Immeubles du concierge"
+
+#: core/templates/fw/benutzer_form.html:59
+msgid "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts."
+msgstr "Uniquement pour le rôle Hauswart (concierge) : il voit et traite exclusivement les déclarations de sinistre de ces immeubles. Sans sélection, il ne voit rien."

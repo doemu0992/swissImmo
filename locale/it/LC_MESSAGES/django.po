@@ -21045,3 +21045,11 @@ msgstr "Scegliere un fascicolo."
 #, python-format
 msgid "Fall %(nummer)s angelegt."
 msgstr "Pratica %(nummer)s creata."
+
+#: core/templates/fw/benutzer_form.html:52
+msgid "Liegenschaften des Hauswarts"
+msgstr "Immobili del custode"
+
+#: core/templates/fw/benutzer_form.html:59
+msgid "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts."
+msgstr "Solo per il ruolo Hauswart (custode): vede e gestisce esclusivamente le segnalazioni di danno di questi immobili. Senza selezione non vede nulla."

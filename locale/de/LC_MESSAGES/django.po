@@ -20955,3 +20955,11 @@ msgstr "Verteilung"
 #: core/views/fw/arbeit.py:477
 msgid "Vorbereitung"
 msgstr "Vorbereitung"
+
+#: core/templates/fw/benutzer_form.html:52
+msgid "Liegenschaften des Hauswarts"
+msgstr "Liegenschaften des Hauswarts"
+
+#: core/templates/fw/benutzer_form.html:59
+msgid "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts."
+msgstr "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts."
