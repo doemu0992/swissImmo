@@ -24,7 +24,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.contrib.staticfiles import finders
 
-from xhtml2pdf import pisa
+from core.services.pdf_text import format_chf, html_zu_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -121,10 +121,10 @@ def send_via_docuseal(request, vertrag_id):
             'verwaltung': verwaltung,
             'verwaltungs_name': DEFAULT_VERWALTUNG_NAME,
             'heute': timezone.localdate(),
-            'miete_fmt': f"{netto:.2f}",
-            'nk_fmt': f"{nk:.2f}",
-            'brutto_fmt': f"{brutto:.2f}",
-            'kaution_fmt': f"{kaution:.2f}",
+            'miete_fmt': format_chf(netto),
+            'nk_fmt': format_chf(nk),
+            'brutto_fmt': format_chf(brutto),
+            'kaution_fmt': format_chf(kaution),
             'unterschrift_path': unterschrift_path,
         }
 
@@ -133,11 +133,7 @@ def send_via_docuseal(request, vertrag_id):
         from core.services.dokumentsprache import STANDARD, in_sprache
         with in_sprache(STANDARD):
             html = get_template(template_path).render(context)
-        pdf_file = io.BytesIO()
-        pisa_status = pisa.CreatePDF(html, dest=pdf_file, link_callback=link_callback)
-
-        if pisa_status.err: raise Exception(f"Pisa Error: {pisa_status.err}")
-        pdf_value = pdf_file.getvalue()
+        pdf_value = html_zu_pdf(html, link_callback=link_callback, quelle='Vertrag (DocuSeal)')
 
     except Exception as e:
         logger.error(f"PDF Gen Error: {e}")

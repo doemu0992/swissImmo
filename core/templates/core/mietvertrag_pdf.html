@@ -110,9 +110,9 @@
     {% for k in mietzins_zeitplan %}
     <tr style="border-bottom:1px solid #e2e8f0;">
         <td style="padding:4pt 6pt 4pt 0;">{{ k.gueltig_ab|date:"d.m.Y" }}{% if k.notiz %}<br><span style="color:#94a3b8; font-size:8pt;">{{ k.notiz }}</span>{% endif %}</td>
-        <td style="padding:4pt 6pt; text-align:right;">CHF {{ k.brutto|floatformat:2 }}</td>
-        <td style="padding:4pt 6pt; text-align:right; color:#b45309;">{% if k.hat_rabatt %}– CHF {{ k.rabatt_gesamt|floatformat:2 }}{% else %}–{% endif %}</td>
-        <td style="padding:4pt 0 4pt 6pt; text-align:right; font-weight:bold;">CHF {{ k.verrechnet_brutto|floatformat:2 }}{% if k.verrechnet_brutto == 0 %}<br><span style="color:#94a3b8; font-size:8pt; font-weight:normal;">mietzinsfrei</span>{% endif %}</td></tr>
+        <td style="padding:4pt 6pt; text-align:right;">CHF {{ k.brutto|chf }}</td>
+        <td style="padding:4pt 6pt; text-align:right; color:#b45309;">{% if k.hat_rabatt %}– CHF {{ k.rabatt_gesamt|chf }}{% else %}–{% endif %}</td>
+        <td style="padding:4pt 0 4pt 6pt; text-align:right; font-weight:bold;">CHF {{ k.verrechnet_brutto|chf }}{% if k.verrechnet_brutto == 0 %}<br><span style="color:#94a3b8; font-size:8pt; font-weight:normal;">mietzinsfrei</span>{% endif %}</td></tr>
     {% endfor %}
 </table>
 {% endif %}
@@ -133,7 +133,7 @@
 <p class="note">Die Parteien vereinbaren folgende gestaffelte Nettomietzinse. Die Staffelung gilt als im Voraus vereinbart; einer erneuten Mitteilung bedarf es nicht.</p>
 <table class="data">
     <tr><td class="k">ab {{ vertrag.beginn|date:"d.m.Y" }}</td><td>CHF {{ miete_fmt }}</td></tr>
-    {% for s in vertrag.staffelstufen.all %}<tr><td class="k">ab {{ s.ab_datum|date:"d.m.Y" }}</td><td>CHF {{ s.netto_mietzins|floatformat:2 }}</td></tr>{% endfor %}
+    {% for s in vertrag.staffelstufen.all %}<tr><td class="k">ab {{ s.ab_datum|date:"d.m.Y" }}</td><td>CHF {{ s.netto_mietzins|chf }}</td></tr>{% endfor %}
 </table>
 {% endif %}
 

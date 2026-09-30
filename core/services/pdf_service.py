@@ -1,13 +1,12 @@
 # core/services/pdf_service.py
 import os
-import io
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.template.loader import get_template
 from django.utils import timezone
-from xhtml2pdf import pisa
 from crm.models import Organisation
 from core.services.dokumentsprache import nur_deutsch
+from core.services.pdf_text import format_chf, html_zu_pdf
 
 def make_image_transparent(image_path):
     """ Öffnet das Bild, entfernt den weissen Hintergrund und speichert es als transparentes PNG """
@@ -102,12 +101,12 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
         'eigentuemer': eigentuemer,
         'verwaltung': verwaltung,
         'heute': timezone.localdate(),
-        'miete_fmt': f"{netto:,.2f}".replace(",", "'"),
-        'nk_fmt': f"{nk:,.2f}".replace(",", "'"),
-        'brutto_fmt': f"{brutto:,.2f}".replace(",", "'"),
-        'kaution_fmt': f"{kaution:,.2f}".replace(",", "'"),
-        'ref_fmt': f"{(vertrag.basis_referenzzinssatz or 0):.2f}",
-        'lik_fmt': f"{(vertrag.basis_lik_punkte or 0):.1f}",
+        'miete_fmt': format_chf(netto),
+        'nk_fmt': format_chf(nk),
+        'brutto_fmt': format_chf(brutto),
+        'kaution_fmt': format_chf(kaution),
+        'ref_fmt': format_chf(vertrag.basis_referenzzinssatz or 0),
+        'lik_fmt': format_chf(vertrag.basis_lik_punkte or 0, 1),
         # Zeitplan + Klartext-Hinweise (Gratismonate) — auch für unsaved Vertrag.
         'mietzins_zeitplan': vertrag.mietzins_zeitplan(),
         'mietzins_hinweise': vertrag.mietzins_hinweise(),
@@ -129,8 +128,4 @@ def render_vertrag_html(vertrag, *, mit_unterschrift=True):
 def generate_vertrag_pdf_bytes(vertrag):
     template_name, context = build_vertrag_context(vertrag)
     html = get_template(template_name).render(context)
-    result_buffer = io.BytesIO()
-    pisa_status = pisa.CreatePDF(html, dest=result_buffer, link_callback=link_callback, encoding='utf-8')
-
-    if pisa_status.err: raise Exception(f"Fehler bei der PDF Generierung: {pisa_status.err}")
-    return result_buffer.getvalue()
+    return html_zu_pdf(html, link_callback=link_callback, quelle='Mietvertrag')

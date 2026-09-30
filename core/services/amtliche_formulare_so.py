@@ -14,6 +14,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from core.services.dokumentsprache import nur_deutsch
+from core.services.pdf_text import format_chf
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +29,7 @@ SCHLICHTUNGSBEHOERDEN_SO = [
 
 
 def _fr(d):
-    try:
-        return f"{Decimal(str(d)):,.2f}".replace(",", "'")
-    except Exception:
-        return ""
+    return format_chf(d, leer="")
 
 
 def _absender(verwaltung, eigentuemer):

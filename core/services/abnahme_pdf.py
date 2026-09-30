@@ -7,13 +7,11 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from core.services.dokumentsprache import nur_deutsch
+from core.services.pdf_text import LEERER_BETRAG, format_chf
 
 
 def _fmt(d):
-    try:
-        return f"{Decimal(str(d)):,.2f}".replace(",", "'")
-    except Exception:
-        return str(d)
+    return format_chf(d, leer=LEERER_BETRAG)
 
 
 VERURS_LABEL = {'abnutzung': 'normale Abnutzung', 'mieter': 'Mieter (Schaden)', 'vermieter': 'Vermieter'}

@@ -15,6 +15,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from core.services.dokumentsprache import nur_deutsch
+from core.services.pdf_text import LEERER_BETRAG, format_chf
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +31,7 @@ def _absender_zeilen(verwaltung, eigentuemer):
 
 
 def _fr(d):
-    try:
-        return f"{Decimal(str(d)):,.2f}".replace(',', "'")
-    except Exception:
-        return '0.00'
+    return format_chf(d, leer=LEERER_BETRAG)
 
 
 def _wrap(text, breite):

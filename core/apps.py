@@ -33,6 +33,11 @@ class CoreConfig(AppConfig):
         from core.wartung import pruefe_migrationsstand
         pruefe_migrationsstand()
 
+        # PDF: Standardschriften filtern Zeichen ausserhalb cp1252 zentral
+        # (sonst stiller Buchstabensalat, siehe core/services/pdf_text.py).
+        from core.services.pdf_text import installiere_reportlab_schutz
+        installiere_reportlab_schutz()
+
         # Startprüfungen registrieren (siehe core/checks.py). Nur der Import
         # zählt — die Funktionen tragen sich über `@register()` selbst ein.
         from core import checks  # noqa: F401

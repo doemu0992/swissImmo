@@ -51,7 +51,7 @@ def docuseal_senden(vertrag):
 
     try:
         import requests
-        from xhtml2pdf import pisa
+        from core.services.pdf_text import PdfFehler, format_chf, html_zu_pdf
         from django.contrib.staticfiles import finders
         from core.views.docuseal import link_callback, sanitize_filename
 
@@ -85,18 +85,19 @@ def docuseal_senden(vertrag):
             'liegenschaft': liegenschaft, 'eigentuemer': eigentuemer, 'verwaltung': verwaltung,
             'verwaltungs_name': getattr(settings, 'VERWALTUNG_NAME', 'SwissImmo Verwaltung'),
             'heute': timezone.localdate(),
-            'miete_fmt': f"{netto:.2f}", 'nk_fmt': f"{nk:.2f}",
-            'brutto_fmt': f"{(netto + nk):.2f}",
-            'kaution_fmt': f"{(vertrag.kautions_betrag or 0):.2f}",
+            'miete_fmt': format_chf(netto), 'nk_fmt': format_chf(nk),
+            'brutto_fmt': format_chf(netto + nk),
+            'kaution_fmt': format_chf(vertrag.kautions_betrag or 0),
             'unterschrift_path': unterschrift_path,
         }
         html = get_template(template_path).render(context)
-        pdf_file = io.BytesIO()
-        status = pisa.CreatePDF(html, dest=pdf_file, link_callback=link_callback)
-        if status.err:
+        try:
+            pdf_bytes = html_zu_pdf(html, link_callback=link_callback, quelle='Vertrag (DocuSeal)')
+        except PdfFehler:
+            logger.error("Vertrags-PDF für DocuSeal fehlgeschlagen", exc_info=True)
             return (False, "Vertrags-PDF konnte nicht erzeugt werden.")
 
-        b64 = base64.b64encode(pdf_file.getvalue()).decode('ascii').replace('\n', '')
+        b64 = base64.b64encode(pdf_bytes).decode('ascii').replace('\n', '')
         filename = f"{sanitize_filename(f'mietvertrag_{mieter.nachname}_{vertrag.id}')}.pdf"
         # KEINE festen Koordinaten mehr: Die Position kommt aus dem Textanker
         # {{Unterschrift Mieter;type=signature;role=Mieter}} im PDF (unsichtbar auf

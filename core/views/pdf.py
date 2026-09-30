@@ -4,11 +4,20 @@ from core.auth import rolle_erforderlich, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER,
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.utils.text import slugify
+from django.utils.http import content_disposition_header
 from rentals.models import Mietvertrag
 from core.services.pdf_service import generate_vertrag_pdf_bytes
 from core.services.dokument_service import generate_dokument_pdf_bytes, DOKUMENT_TYPEN
 
 logger = logging.getLogger(__name__)
+
+
+def _dateiname(name):
+    """Dateiname für den Download: ohne Zeilenumbrüche/Pfadzeichen (ein Name
+    mit Zeilenumbruch im Header liesse die Antwort mit 500 scheitern), mit
+    Umlauten und Akzenten (RFC 6266 regelt die Kodierung)."""
+    bereinigt = ''.join(z if z.isprintable() and z not in '/\\:*?"<>|' else '_' for z in name)
+    return bereinigt.strip() or 'Dokument.pdf'
 
 
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
@@ -19,7 +28,7 @@ def generate_pdf_view(request, vertrag_id):
         _ablegen_vertragsdokument(pdf_bytes, "Mietvertrag", vertrag, ueberschreiben=False)
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         filename = f"Mietvertrag_{vertrag.einheit.bezeichnung}_{vertrag.mieter.nachname}.pdf"
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Disposition'] = content_disposition_header(True, _dateiname(filename))
         return response
     except Exception as e:
         logger.error("PDF-Erzeugung fehlgeschlagen (Vertrag %s)", vertrag_id, exc_info=True)
@@ -78,7 +87,8 @@ def erzeuge_und_ablege_vertragspaket(vertrag, *, ueberschreiben=True):
         _ablegen_vertragsdokument(pdf, "Mietvertrag", vertrag, ueberschreiben=ueberschreiben)
         dateien.append((f"01_Mietvertrag_{slugify(vertrag.mieter.nachname)}.pdf", pdf))
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        # Ein fehlender Mietvertrag im Paket muss im Betrieb auffallen.
+        logger.error("Vertragspaket: Mietvertrag nicht erzeugt (Vertrag %s)", vertrag.pk, exc_info=True)
     for i, doc_type in enumerate(VERTRAGSPAKET, start=2):
         if doc_type not in DOKUMENT_TYPEN:
             continue
@@ -88,6 +98,7 @@ def erzeuge_und_ablege_vertragspaket(vertrag, *, ueberschreiben=True):
             _ablegen_vertragsdokument(pdf, titel, vertrag, ueberschreiben=ueberschreiben)
             dateien.append((f"{i:02d}_{slugify(titel)}.pdf", pdf))
         except Exception:
+            logger.error("Vertragspaket: «%s» nicht erzeugt (Vertrag %s)", doc_type, vertrag.pk, exc_info=True)
             continue
     return dateien
 
@@ -125,7 +136,7 @@ def generate_dokument_view(request, vertrag_id, doc_type):
         _ablegen_vertragsdokument(pdf_bytes, titel, vertrag, ueberschreiben=False)
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         filename = f"{slugify(titel)}_{vertrag.mieter.nachname}.pdf"
-        response['Content-Disposition'] = f'inline; filename="{filename}"'
+        response['Content-Disposition'] = content_disposition_header(False, _dateiname(filename))
         return response
     except Exception as e:
         logger.error("PDF-Erzeugung fehlgeschlagen (Vertrag %s)", vertrag_id, exc_info=True)

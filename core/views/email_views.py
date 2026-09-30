@@ -24,6 +24,7 @@ from reportlab.lib import colors
 
 # Eigene Imports
 from core.utils.billing import berechne_abrechnung
+from core.services.pdf_text import format_chf
 from core.utils.qr_code import draw_qr_bill
 
 # ==============================================================================
@@ -72,13 +73,13 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
     y = 170*mm
     c.setFillColorRGB(0.9, 0.9, 0.9); c.rect(20*mm, y-2*mm, 170*mm, 8*mm, fill=1, stroke=0); c.setFillColorRGB(0, 0, 0)
     c.setFont("Helvetica-Bold", 10); c.drawString(25*mm, y, "Beschreibung"); c.drawRightString(185*mm, y, "Betrag (CHF)")
-    y -= 10*mm; c.setFont("Helvetica", 10); c.drawString(25*mm, y, f"Kostenanteil"); c.drawRightString(185*mm, y, f"{row['kosten_anteil']:.2f}")
+    y -= 10*mm; c.setFont("Helvetica", 10); c.drawString(25*mm, y, f"Kostenanteil"); c.drawRightString(185*mm, y, format_chf(row['kosten_anteil']))
     y -= 6*mm; akonto = row.get('akonto', 0)
-    if akonto > 0: c.drawString(25*mm, y, "Abzüglich Akonto Zahlungen"); c.drawRightString(185*mm, y, f"- {akonto:.2f}"); y -= 8*mm
+    if akonto > 0: c.drawString(25*mm, y, "Abzüglich Akonto Zahlungen"); c.drawRightString(185*mm, y, f"- {format_chf(akonto)}"); y -= 8*mm
     c.line(20*mm, y, 190*mm, y); y -= 8*mm; betrag = abs(row['saldo'])
     c.setFont("Helvetica-Bold", 12)
     label = "Nachzahlung zu Ihren Lasten:" if row['nachzahlung'] else "Guthaben zu Ihren Gunsten:"
-    c.drawString(25*mm, y, label); c.drawRightString(185*mm, y, f"CHF {betrag:.2f}")
+    c.drawString(25*mm, y, label); c.drawRightString(185*mm, y, f"CHF {format_chf(betrag)}")
 
     c.showPage()
     if row['nachzahlung'] and liegenschaft.iban:
@@ -143,7 +144,7 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
 
     lines = [
         f"Bei der Kontrolle unserer Mietzinseingänge mussten wir leider feststellen, dass für den",
-        f"Monat {monat_str} noch ein Betrag von CHF {betrag_str} ausstehend ist.", "",
+        f"Monat {monat_str} noch ein Betrag von CHF {format_chf(betrag_str)} ausstehend ist.", "",
         "Gestützt auf Art. 257d des Schweizerischen Obligationenrechts (OR) setzen wir Ihnen",
         "hiermit eine formelle Zahlungsfrist von", "",
         "30 TAGEN", "",
@@ -181,7 +182,7 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     if iban:
         try:
             c.showPage()
-            betrag_float = float(str(betrag_str).replace(',', '.'))
+            betrag_float = float(str(betrag_str).replace("'", '').replace(',', '.'))
 
             if verwaltung:
                 creditor = {'name': verwaltung.firma, 'line1': verwaltung.strasse,
@@ -274,20 +275,20 @@ def send_mahnung_email_view(request, vertrag_id):
         email = EmailMultiAlternatives(
             subject=f"{_TITEL.get(stufe, 'Mahnung')}: {objekt}",
             body=(f"Guten Tag, im Anhang finden Sie die {_TITEL.get(stufe, 'Mahnung')} "
-                  f"für {monat_str} über CHF {betrag_str} (Kopie; das Original erhalten "
+                  f"für {monat_str} über CHF {format_chf(betrag_str)} (Kopie; das Original erhalten "
                   f"Sie auf dem Postweg)."),
             from_email=settings.DEFAULT_FROM_EMAIL, to=[vertrag.mieter.email])
         email.attach(f"Mahnung_{stufe}_{monat_str.replace(' ', '_')}.pdf", pdf_bytes, 'application/pdf')
         email.send()
         log_aktion(request, f"{stufe}. Mahnung als Kopie versendet", str(vertrag),
-                   f"an {vertrag.mieter.email}, {monat_str}, CHF {betrag_str}")
+                   f"an {vertrag.mieter.email}, {monat_str}, CHF {format_chf(betrag_str)}")
         messages.success(request, '✅ ' + gettext('Mahnung inkl. QR-Rechnung an %(email)s gesendet.') % {'email': vertrag.mieter.email})
         return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
     # 257d-Kündigungsandrohung: Betrag muss ein positiver Betrag sein — die Vorgabe
     # '0.00' liess eine Kündigungsandrohung über CHF 0.00 zu.
     try:
-        _betrag_ok = Decimal(str(betrag_str).replace(',', '.')) > 0
+        _betrag_ok = Decimal(str(betrag_str).replace("'", '').replace(',', '.')) > 0
     except Exception:
         _betrag_ok = False
     if not _betrag_ok:
@@ -322,7 +323,7 @@ def send_mahnung_email_view(request, vertrag_id):
     email.send()
 
     log_aktion(request, "Mahnung versendet (Art. 257d OR)", str(vertrag),
-               f"an {vertrag.mieter.email}, Monat {monat_str}, CHF {betrag_str}")
+               f"an {vertrag.mieter.email}, Monat {monat_str}, CHF {format_chf(betrag_str)}")
     messages.success(request, '✅ ' + gettext('Mahnung inkl. QR-Rechnung an %(email)s gesendet.') % {'email': vertrag.mieter.email})
     return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 

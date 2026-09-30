@@ -1,11 +1,10 @@
 # core/services/dokument_service.py
 """Erzeugt die Fairwalter-Begleitdokumente zum Mietvertrag als PDF."""
-import io
 from django.template.loader import get_template
 from django.utils import timezone
-from xhtml2pdf import pisa
 from crm.models import Organisation
 from core.services.pdf_service import link_callback
+from core.services.pdf_text import format_chf, html_zu_pdf
 from core.services.dokumentsprache import STANDARD, in_sprache, sprache_von
 
 # doc_type -> (Template, Titel, zusätzliche Kontext-Flags)
@@ -54,9 +53,9 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     # Datierte Mietzins-Komponenten (Gratismonate/gestaffelter Start) für den Vertrag
     komponenten = [{
         'ab': k.gueltig_ab.strftime('%d.%m.%Y'),
-        'netto': f"{(k.netto_mietzins or 0):,.2f}".replace(",", "'"),
-        'nk': f"{(k.nebenkosten or 0):,.2f}".replace(",", "'"),
-        'brutto': f"{k.brutto:,.2f}".replace(",", "'"),
+        'netto': format_chf(k.netto_mietzins or 0),
+        'nk': format_chf(k.nebenkosten or 0),
+        'brutto': format_chf(k.brutto),
         'notiz': k.notiz or '',
     } for k in vertrag.mietzins_komponenten.all()]
 
@@ -71,8 +70,8 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
         'heute': timezone.localdate(),
         'vermieter_name': v_name, 'vermieter_strasse': v_str,
         'vermieter_plz': v_plz, 'vermieter_ort': v_ort,
-        'brutto_fmt': f"{brutto:,.2f}".replace(",", "'"),
-        'kaution_fmt': f"{kaution:,.2f}".replace(",", "'"),
+        'brutto_fmt': format_chf(brutto),
+        'kaution_fmt': format_chf(kaution),
         'mietzins_komponenten': komponenten,
         **extra,
     }
@@ -80,8 +79,4 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     sprache = sprache_von(vertrag.mieter) if doc_type in IN_MIETERSPRACHE else STANDARD
     with in_sprache(sprache):
         html = get_template(template_name).render({**context, 'dokumentsprache': sprache})
-    buffer = io.BytesIO()
-    status = pisa.CreatePDF(html, dest=buffer, link_callback=link_callback, encoding='utf-8')
-    if status.err:
-        raise Exception(f"Fehler bei der PDF-Generierung: {status.err}")
-    return buffer.getvalue()
+    return html_zu_pdf(html, link_callback=link_callback, quelle=_titel)

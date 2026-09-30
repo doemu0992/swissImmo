@@ -18,7 +18,12 @@ angedroht, weil sie hier nicht angedroht wird.
 """
 import io
 
+import logging
+
 from core.services.dokumentsprache import nur_deutsch
+from core.services.pdf_text import format_chf
+
+logger = logging.getLogger(__name__)
 
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
           "September", "Oktober", "November", "Dezember"]
@@ -57,6 +62,10 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     from core.utils.qr_code import draw_qr_bill
 
     m = vertrag.mieter
+    betrag_roh = betrag                       # für den QR-Betrag: Zahl, kein Anzeigetext
+    betrag = format_chf(betrag_roh) or '0.00'  # Anzeige: CHF 1'250.50
+    if hasattr(monat, 'month'):               # Datum statt fertigem «Januar 2025»
+        monat = monat_text(monat)
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     links = 25 * mm
@@ -77,7 +86,7 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     c.drawString(fenster, y - 10 * mm, f"{m.plz} {m.ort}")
 
     c.setFont("Helvetica", 10)
-    c.drawString(links, 210 * mm, f"{verwaltung.ort if verwaltung else ''}, {datum:%d.%m.%Y}")
+    c.drawString(links, 210 * mm, ", ".join(t for t in ((verwaltung.ort if verwaltung else ''), f"{datum:%d.%m.%Y}") if t))
     c.setFont("Helvetica-Bold", 12)
     c.drawString(links, 195 * mm, _TITEL.get(stufe, f"{stufe}. Mahnung"))
     c.setFont("Helvetica-Bold", 10)
@@ -103,7 +112,7 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                    f"CHF {betrag} weiterhin offen.", "",
                    "Wir bitten Sie, den Betrag umgehend zu überweisen."]
     if gebuehr and gebuehr > 0:
-        zeilen += ["", f"Für diese Mahnung stellen wir eine Mahngebühr von CHF {gebuehr:.2f} in Rechnung."]
+        zeilen += ["", f"Für diese Mahnung stellen wir eine Mahngebühr von CHF {format_chf(gebuehr)} in Rechnung."]
     if letzte_stufe:
         zeilen += ["", "Dies ist unsere letzte Mahnung. Bleibt die Zahlung weiterhin aus, setzen wir",
                    "Ihnen in einem gesonderten, eingeschriebenen Schreiben eine Zahlungsfrist nach",
@@ -133,11 +142,13 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                             'line2': f"{lg.plz} {lg.ort}"}
             debtor = {'name': (getattr(m, 'firma', None) or f"{m.vorname} {m.nachname}").strip(),
                       'line1': m.strasse or '', 'line2': f"{m.plz} {m.ort}"}
-            draw_qr_bill(c, iban, creditor, debtor, float(str(betrag).replace(',', '.')),
+            draw_qr_bill(c, iban, creditor, debtor, float(str(betrag_roh).replace("'", '').replace(',', '.')),
                          f"{_TITEL.get(stufe, 'Mahnung')} {monat} {e.bezeichnung}",
                          reference=getattr(rechnung, 'qr_referenz', None) or None)
         except Exception:
-            pass
+            # Ohne QR-Teil ist die Mahnung nicht einzahlbar — das darf im
+            # Betrieb nicht unbemerkt bleiben.
+            logger.error("QR-Rechnung der Mahnung nicht erzeugt (Vertrag %s)", vertrag.pk, exc_info=True)
     c.save()
     buffer.seek(0)
     return buffer.getvalue()
