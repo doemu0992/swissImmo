@@ -90,6 +90,28 @@ def fw_kaution_aktion(request, vertrag_id):
         except Exception:
             return Decimal('0.00')
 
+    # DATUM DER KAUTIONSBUCHUNG: nie in der Zukunft, und wer in einen vergangenen
+    # Monat zurückdatiert, bekommt es gesagt (Stresstest 30.09.2026, Punkt 14:
+    # erfasst am 02.04., gebucht auf den 31.03. — der Monatsabschluss März war
+    # schon erstellt und stimmte danach nicht mehr). Gesperrte Perioden hält
+    # weiterhin `Buchung.save()` ab; dies betrifft den Raum dazwischen.
+    def _datum_pruefen(feld, bezeichnung):
+        wert = d(feld)
+        if wert is None:
+            return True
+        heute_ = timezone.localdate()
+        if wert > heute_:
+            messages.error(request, '❌ ' + gettext('%(was)s kann nicht in der Zukunft liegen (%(datum)s).') % {'was': bezeichnung, 'datum': f'{wert:%d.%m.%Y}'})
+            return False
+        if (wert.year, wert.month) < (heute_.year, heute_.month):
+            messages.warning(request, '⚠️ ' + gettext('%(was)s liegt im Vormonat oder früher (%(datum)s): Ist der Monatsabschluss schon erstellt, weicht er nach dieser Buchung ab.') % {'was': bezeichnung, 'datum': f'{wert:%d.%m.%Y}'})
+        return True
+
+    if aktion == 'einzahlung' and not _datum_pruefen('einbezahlt_am', gettext('Das Einzahlungsdatum')):
+        return redirect(f'/neu/vertraege/{v.id}/')
+    if aktion == 'rueckzahlung' and not _datum_pruefen('zurueckbezahlt_am', gettext('Das Rückzahlungsdatum')):
+        return redirect(f'/neu/vertraege/{v.id}/')
+
     if aktion == 'einzahlung':
         # Sperrkonto: Einzahlung auf Mietkonto bestätigen.
         # Statusänderung UND Bilanzbuchung (1015 an 2010) in EINER Transaktion —

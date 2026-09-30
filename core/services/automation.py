@@ -146,6 +146,9 @@ MAHN_STUFEN_TAGE = [(3, 60), (2, 30), (1, 14)]   # (Stufe, ab Tagen überfällig
 MAHN_GEBUEHR = {1: Decimal('0.00'), 2: Decimal('20.00'), 3: Decimal('40.00')}
 VERZUGSZINS_PROZENT = Decimal('5.0')   # Art. 104 OR
 
+#: Nach so vielen Tagen ohne Änderung an einem offenen Ticket entsteht eine Pendenz.
+TICKET_TAGE_OHNE_BEWEGUNG = 14
+
 
 def _stufe_fuer_tage(tage):
     for stufe, ab in MAHN_STUFEN_TAGE:
@@ -412,6 +415,37 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
                 v.ende, 'vertrag',
                 "Befristeter Vertrag läuft aus — Verlängerung oder Auszug prüfen.",
                 liegenschaft=v.einheit.liegenschaft if v.einheit_id else None, vertrag=v)
+
+    # a1) Auszug abgeschlossen (Ende vorbei UND Rücknahme protokolliert): die
+    # Sammel-Pendenz «Auszug …» ist erledigt. Sie wurde nie abgehakt.
+    for p in (Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:auszug:')
+              .select_related('vertrag')):
+        v = p.vertrag
+        if v is not None and v.ende and v.ende < heute and v.abnahmen.filter(typ='auszug').exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a3) Tickets ohne Bewegung → nachfassen. Im Stresstest lag ein Wasserschaden
+    # 83 Tage «in Bearbeitung», ohne dass irgendwo eine Warnung erschien.
+    from tickets.models import SchadenMeldung
+    ticket_grenze = heute - timedelta(days=TICKET_TAGE_OHNE_BEWEGUNG)
+    offen_t = SchadenMeldung.objects.exclude(status='erledigt').select_related('liegenschaft')
+    for t in offen_t.filter(aktualisiert_am__date__lt=ticket_grenze):
+        tage_t = (heute - timezone.localtime(t.aktualisiert_am).date()).days
+        _ensure(f"auto:ticket:{t.id}",
+                f"Ticket #{t.id} seit {tage_t} Tagen ohne Bewegung: {t.titel}"[:200],
+                heute, 'unterhalt',
+                f"Status «{t.get_status_display()}» — nachfassen, Handwerker/Melder kontaktieren "
+                f"oder Status anpassen.",
+                liegenschaft=t.liegenschaft)
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:ticket:'):
+        tid = p.quelle.rsplit(':', 1)[-1]
+        if not SchadenMeldung.objects.filter(pk=tid).exclude(status='erledigt').filter(
+                aktualisiert_am__date__lt=ticket_grenze).exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
 
     # a2) Beendet, aber nicht zurückgenommen → Nutzungsentschädigung prüfen
     from core.services.nutzungsentschaedigung import nutzung_pendenzen

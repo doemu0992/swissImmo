@@ -204,6 +204,12 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         # Auszugscheckliste automatisch als Pendenzen anlegen
         leerstand_gewuenscht = P.get('leerstand_anlegen') == 'on'
         n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=leerstand_gewuenscht)
+        # Wird die Kündigung schon beim Erfassen als bestätigt angelegt, ist «Kündigung
+        # schriftlich bestätigen» erledigt — gleiche Regel wie in fw_kuendigung_bestaetigen.
+        # Vorher blieb die Pendenz offen, obwohl das Häkchen gesetzt war (Stresstest, Punkt 12).
+        if k.status == 'bestaetigt':
+            from core.services.automation import erledige_pendenzen_fuer
+            erledige_pendenzen_fuer(v, ['schriftlich', 'Kündigungsformular'], user=request.user)
 
         # Leerstand ab Tag nach Vertragsende (opt-in)
         hinweis = ""

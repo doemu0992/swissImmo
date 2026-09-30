@@ -675,8 +675,12 @@ def mieter_schaden_melden(request):
     v = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), id=vertrag_id)
          .select_related('einheit__liegenschaft').first()) if vertrag_id else None
     if not v:
-        v = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), status='aktiv')
-             .select_related('einheit__liegenschaft').first())
+        # Auch ein GEKÜNDIGTER Mieter wohnt bis zum Vertragsende dort und muss
+        # einen Schaden melden können (Stresstest 30.09.2026, Punkt 16: die
+        # Meldung endete mit der Weiterleitung auf die Startseite). «aktiv» sortiert
+        # vor «gekuendigt».
+        v = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), status__in=('aktiv', 'gekuendigt'))
+             .select_related('einheit__liegenschaft').order_by('status', '-beginn').first())
     if not v or not v.einheit_id:
         messages.error(request, gettext('Kein aktives Mietobjekt gefunden.'))
         return redirect('mieter_portal')

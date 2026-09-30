@@ -4,6 +4,7 @@ from django.utils.translation import gettext_noop
 from django.db import models
 from core.organisation_kette import OrganisationAusKette
 from django.utils import timezone
+from datetime import timedelta
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 from django.utils.translation import gettext_lazy as _, pgettext_lazy
@@ -637,6 +638,39 @@ class Mietvertrag(OrganisationAusKette):
                 if uf is not None:
                     kwargs['update_fields'] = list(set(uf) | {'kautions_betrag'})
         super().save(*args, **kwargs)
+        if self.status == 'aktiv' and self.einheit_id:
+            self._leerstand_schliessen()
+            self._vorgaenger_abschliessen()
+
+    def _vorgaenger_abschliessen(self):
+        """Der Nachmieter ist da: «Nachmieter suchen / Inserat» der gekündigten
+        Vorgänger-Verträge der Einheit sind erledigt. Stresstest, Punkt 12: Nach
+        Abnahme, Schlussabrechnung UND Neuvermietung standen bei A4 noch vier
+        Pendenzen offen."""
+        from core.services.automation import erledige_pendenzen_fuer
+        for alt in (self.einheit.vertraege.filter(status__in=('gekuendigt', 'archiviert'))
+                    .exclude(pk=self.pk)):
+            erledige_pendenzen_fuer(alt, ['Nachmieter', 'Inserat'])
+
+    def _leerstand_schliessen(self):
+        """Ein aktiver Vertrag beendet den offenen Leerstand der Einheit.
+
+        Stresstest 30.09.2026, Punkt 11: Der bei der Kündigung angelegte Leerstand
+        von A4 lief weiter, obwohl die Wohnung seit 01.04. wieder vermietet war —
+        Leerquote und Mieterspiegel zeigten sie als leer. Der Leerstand endet am
+        Tag vor Mietbeginn. Begänne er erst an oder nach dem Mietbeginn, gab es
+        ihn nie: Der leere Zeitraum wird entfernt statt mit umgekehrten Daten
+        stehen zu bleiben.
+        """
+        if not self.beginn:
+            return
+        ende = self.beginn - timedelta(days=1)
+        for l in self.einheit.leerstaende.filter(ende__isnull=True, beginn__lte=self.beginn):
+            if l.beginn > ende:
+                l.delete()
+            else:
+                l.ende = ende
+                l.save(update_fields=['ende'])
 
         # Unterzeichneten Vertrag zentral ablegen → erscheint überall (Portal,
         # Person, Objekt/Liegenschaft). Jeder Rücklauf wird als NEUES, mit
