@@ -40,7 +40,7 @@ Django-Kommentare. Beides ist hier noetig, weil die Datei eine Vorlage ist
 und einen Stilblock enthaelt.
 {% endcomment %}
     <style>
-        body { font-family: 'IBM Plex Sans', sans-serif; }
+        body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--ds-line); border-radius: 10px; }
 
@@ -52,7 +52,8 @@ und einen Stilblock enthaelt.
            präfixiert → keine Kollision mit Tailwind oder Bestand.
            Seiten werden Stück für Stück auf diese Klassen portiert.
            ============================================================ */
-        /* Palette nach mockups/konzept-v3 bis v6 (Phase 4b).
+        /* Palette nach mockups/konzept-v8-cockpit.html (Redesign 30.09.2026).
+           Vorher: konzept-v3 bis v6 (Phase 4b).
            Der Bestand fuhr Indigo #4f46e5 auf Slate; das Konzept fuehrt Petrol
            auf waermeren Blaugrautoenen. Radius 16 -> 10 px, weil die Prototypen
            deutlich flachere Karten zeigen.
@@ -63,45 +64,61 @@ und einen Stilblock enthaelt.
            derselbe Petrolton, eine Stufe dunkler. Die Regel weiter unten haengt
            text-slate-400/-300 an --ds-muted; das bleibt unveraendert. */
         :root{
-            --ds-bg:#eff2f3;--ds-surface:#fff;--ds-surface-2:#f4f7f7;--ds-ink:#0e2227;--ds-muted:#4c6169;--ds-faint:#5c757c;--ds-line:#dde6e8;
-            --ds-brand:#0f6f6a;--ds-brand-600:#0b5450;--ds-brand-soft:#d9efed;
+            --ds-bg:#f2f5f5;--ds-surface:#fff;--ds-surface-2:#f6f8f8;--ds-ink:#0c1f23;--ds-muted:#465b62;--ds-faint:#5d7279;--ds-line:#e1e8e9;
+            --ds-brand:#0e6b65;--ds-brand-600:#0a4f4b;--ds-brand-soft:#e2f1ef;
+            /* Flaeche unter dem Zeiger (Zeilen, Menues, Knoepfe) — eine Stufe
+               ueber --ds-surface-2, damit `hover` von `ruhend` zu unterscheiden
+               ist. Grau darauf erreicht noch 4.52:1. */
+            --ds-hover:#eef3f3;
             /* Markenverlauf mit weisser Schrift (Kopf des Mieterportals).
                BEWUSST in beiden Modi gleich und nicht an --ds-brand gehaengt:
-               Im Dunkelmodus ist die Marke hell (#4fb3aa/#6fcac2), weisse
-               Schrift darauf erreichte nur 2.5 bzw. 1.9:1. Nachgemessen mit
-               diesen Werten: Weiss 8.8:1, `fw-faint` (85 % Weiss) 6.8:1 und
-               auf einer `fw-glas`-Kachel 4.8:1 — ueberall WCAG AA. */
+               Im Dunkelmodus ist die Marke hell, weisse Schrift darauf
+               erreichte nur 2.5:1. Mit diesen Werten: Weiss 8.8:1. */
             --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;
             /* Schrift auf einer GESAETTIGTEN Flaeche — Marke, kritisch,
                gut, Warnung. Nachgemessen fuer alle vier: Im Hellmodus
-               gewinnt Weiss (5.2-7.1:1), im Dunkelmodus die dunkle Tinte
-               (7.4-8.9:1). Ein fester Wert kann das nicht leisten —
-               `color:#fff` erreichte im Dunkeln 2.0-2.5:1. */
+               gewinnt Weiss (5.8-6.8:1), im Dunkelmodus die dunkle Tinte
+               (7.2-8.8:1). Ein fester Wert kann das nicht leisten. */
             --ds-auf-satt:#ffffff;
             /* Eine Stufe deutlicher als die Grundlinie: fuer Umrandungen,
                die beim Ueberfahren hervortreten sollen. */
-            --ds-line-stark:#c2d2d4;
-            --ds-good:#166534;--ds-good-soft:#e0f2e5;--ds-warn:#a35a09;--ds-warn-soft:#fbeeda;--ds-crit:#b32133;--ds-crit-soft:#fbe6e9;--ds-info:#0b5c8f;--ds-info-soft:#e0eff8;
-            --ds-shadow-sm:0 1px 2px rgba(14,34,39,.06);--ds-shadow:0 1px 2px rgba(14,34,39,.05),0 6px 20px rgba(14,34,39,.05);
-            --ds-radius:10px;--ds-radius-sm:7px;--ds-pill:999px;
+            --ds-line-stark:#cbd7d9;
+            --ds-good:#15683a;--ds-good-soft:#e3f3e8;--ds-warn:#955708;--ds-warn-soft:#fbf0de;--ds-crit:#b0222e;--ds-crit-soft:#fbe9eb;--ds-info:#0b5c8f;--ds-info-soft:#e0eff8;
+            /* Drei Hoehen wie im Mockup: aufliegend (Karten), schwebend
+               (Popover, Freigabeleiste), abgehoben (Schublade, Dialog). */
+            --ds-shadow-sm:0 1px 2px rgba(12,31,35,.05);--ds-shadow:0 1px 2px rgba(12,31,35,.04),0 12px 32px -8px rgba(12,31,35,.10);--ds-shadow-lg:0 24px 64px -12px rgba(12,31,35,.28);
+            /* Vorhang hinter Schublade, Palette und Dialog. */
+            --ds-scrim:rgba(8,22,26,.36);
+            --ds-radius:12px;--ds-radius-sm:8px;--ds-pill:999px;
+            /* Knoepfe und Felder (9), Kapsel-Etiketten (5), Dialoge (14). */
+            --ds-radius-knopf:9px;--ds-radius-xs:5px;--ds-radius-lg:14px;
+            --ds-font:'IBM Plex Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+            --ds-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+            --ds-ease:cubic-bezier(.2,.8,.2,1);
         }
         @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-            --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
-            --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-bg:#0a1417;--ds-surface:#101f23;--ds-surface-2:#13262b;--ds-ink:#e5eeef;--ds-muted:#a7bec3;--ds-faint:#8aa2a8;--ds-line:#1e363d;
+            --ds-brand:#53b8ae;--ds-brand-600:#7fd0c7;--ds-brand-soft:#123331;
+            --ds-hover:#172e34;
             --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;   /* wie hell: die Schrift darauf ist weiss */
-            --ds-auf-satt:#0a1518;
-            --ds-line-stark:#33474d;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
-            --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
-            --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+            --ds-auf-satt:#06201e;
+            --ds-line-stark:#2b4851;
+            --ds-good:#5fcf92;--ds-good-soft:#12302a;--ds-warn:#e2a84f;--ds-warn-soft:#33270f;--ds-crit:#f08b93;--ds-crit-soft:#361b1f;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
+            --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -8px rgba(0,0,0,.45);--ds-shadow-lg:0 24px 64px -12px rgba(0,0,0,.6);
+            --ds-scrim:rgba(0,0,0,.55);
+            color-scheme:dark;
         }}
         :root[data-theme="dark"]{
-            --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
-            --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-bg:#0a1417;--ds-surface:#101f23;--ds-surface-2:#13262b;--ds-ink:#e5eeef;--ds-muted:#a7bec3;--ds-faint:#8aa2a8;--ds-line:#1e363d;
+            --ds-brand:#53b8ae;--ds-brand-600:#7fd0c7;--ds-brand-soft:#123331;
+            --ds-hover:#172e34;
             --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;   /* wie hell: die Schrift darauf ist weiss */
-            --ds-auf-satt:#0a1518;
-            --ds-line-stark:#33474d;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
-            --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
-            --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+            --ds-auf-satt:#06201e;
+            --ds-line-stark:#2b4851;
+            --ds-good:#5fcf92;--ds-good-soft:#12302a;--ds-warn:#e2a84f;--ds-warn-soft:#33270f;--ds-crit:#f08b93;--ds-crit-soft:#361b1f;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
+            --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -8px rgba(0,0,0,.45);--ds-shadow-lg:0 24px 64px -12px rgba(0,0,0,.6);
+            --ds-scrim:rgba(0,0,0,.55);
+            color-scheme:dark;
         }
         .fw-num{font-variant-numeric:tabular-nums}
         /* A11y-Fundament: Kontrast + Tastatur-Fokus (wirkt global auf /neu) */
@@ -117,7 +134,7 @@ und einen Stilblock enthaelt.
             outline:2px solid var(--ds-brand);outline-offset:2px;border-radius:6px
         }
         /* Seitenkopf */
-        .fw-phead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+        .fw-phead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
         /* Die zwei Kopf-Filter aus v7. Eine eigene Zeile UNTER dem Kopf, nicht
            darin: `fw-phead` verteilt genau zwei Kinder auf die Zeilenenden,
            ein drittes schoebe die Knoepfe um. */
@@ -126,14 +143,14 @@ und einen Stilblock enthaelt.
         /* Das Fallart-Band unter den Reitern. Kapseln statt Reiter, damit es
            sich von der Reiterzeile darueber klar unterscheidet — es filtert
            innerhalb der Ansicht, es wechselt sie nicht. */
-        .fw-band{display:flex;flex-wrap:wrap;align-items:center;gap:7px;
-            padding:9px 15px;border-bottom:1px solid var(--ds-line);font-size:11.5px}
-        .fw-band>a{padding:3px 10px;border-radius:999px;
-            border:1px solid var(--ds-line);color:var(--ds-faint);
-            text-decoration:none;white-space:nowrap}
-        .fw-band>a:hover{border-color:var(--ds-brand);color:var(--ds-brand)}
-        .fw-band>a.hier{border-color:var(--ds-brand);color:var(--ds-brand);
-            background:var(--ds-brand-soft);font-weight:700}
+        .fw-band{display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+            padding:12px 20px;border-bottom:1px solid var(--ds-line);font-size:12.5px}
+        .fw-band>a{display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:999px;
+            border:1px solid var(--ds-line);color:var(--ds-muted);background:var(--ds-surface);font-weight:500;
+            text-decoration:none;white-space:nowrap;transition:border-color .12s,color .12s,background .12s}
+        .fw-band>a:hover{border-color:var(--ds-line-stark);color:var(--ds-ink)}
+        .fw-band>a.hier{border-color:var(--ds-ink);color:var(--ds-surface);
+            background:var(--ds-ink);font-weight:600}
         /* DIE FILTER ALS KAPSELN — NACH KONZEPT v7 (E2.68).
 
            Der Prototyp zeigt zwei Kapseln nebeneinander: «Zuständigkeit:
@@ -146,9 +163,9 @@ und einen Stilblock enthaelt.
            Rahmen am `label` und dem Feld ohne eigenen bleiben es zwei
            Kapseln, die nebeneinander passen. */
         .fw-kopffilter label{display:inline-flex;align-items:center;gap:5px;
-            padding:5px 11px;border:1px solid var(--ds-line);border-radius:999px;
-            background:var(--ds-surface);white-space:nowrap;max-width:100%}
-        .fw-kopffilter label:focus-within{border-color:var(--ds-brand)}
+            height:30px;padding:0 11px;border:1px solid var(--ds-line);border-radius:999px;
+            background:var(--ds-surface);white-space:nowrap;max-width:100%;transition:border-color .12s}
+        .fw-kopffilter label:focus-within{border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
         /* DAS AUSWAHLFELD BEMISST SICH AM LAENGSTEN EINTRAG, nicht an der
            Auswahl. Ein Mandat «Muster Immobilien AG» machte die Kapsel 235
            Pixel breit — dann passen die zwei nicht mehr nebeneinander. */
@@ -161,13 +178,14 @@ und einen Stilblock enthaelt.
             .fw-kopffilter label{padding:4px 9px;font-size:12px}
             .fw-kopffilter .fw-feld{max-width:78px}
         }
-        .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:700;color:var(--ds-ink)}
-        .fw-phead p{font-size:13px;color:var(--ds-muted);margin-top:2px}
+        .fw-phead h1{font-size:28px;line-height:1.15;letter-spacing:-.025em;font-weight:600;color:var(--ds-ink);text-wrap:balance}
+        .fw-phead p{font-size:13.5px;color:var(--ds-muted);margin-top:6px}
         /* Buttons */
-        .fw-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;text-decoration:none;padding:9px 14px;border-radius:var(--ds-radius-sm);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
-        .fw-btn:hover{border-color:var(--ds-brand)}
+        .fw-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;font-size:13px;font-weight:600;line-height:1.2;text-decoration:none;padding:7px 14px;border-radius:var(--ds-radius-knopf);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink);white-space:nowrap;transition:background .12s,border-color .12s,box-shadow .12s,transform .08s}
+        .fw-btn:hover{border-color:var(--ds-line-stark);box-shadow:var(--ds-shadow-sm)}
         .fw-btn.fw-primary{background:var(--ds-brand);color:var(--ds-auf-satt);border-color:transparent}
-        .fw-btn.fw-primary:hover{background:var(--ds-brand-600);border-color:transparent}
+        .fw-btn.fw-primary:hover{background:var(--ds-brand-600);border-color:transparent;box-shadow:0 6px 18px -6px color-mix(in srgb,var(--ds-brand) 60%,transparent)}
+        .fw-btn:active{transform:scale(.97)}
         /* Farbiger Schatten unter einem Markenknopf. `shadow-indigo-600/25`
            war zur Bauzeit auf Petrol festgeschrieben; ueber den Token folgt er
            dem Dunkelmodus und spaeterem Branding. `color-mix` faellt in alten
@@ -195,11 +213,11 @@ und einen Stilblock enthaelt.
            Grösse (`fw-knapp`) und Farben, die es vorher nur als Einzelklassen
            gab. Namen bewusst eigen — `fw-klein` und `fw-akzent` sind schon
            belegt (Schriftgrösse, Formularfarbe). */
-        .fw-btn.fw-knapp{padding:6px 11px;font-size:12px;gap:5px}
+        .fw-btn.fw-knapp{min-height:30px;padding:5px 11px;font-size:12.5px;gap:6px;border-radius:var(--ds-radius-sm)}
         .fw-btn.fw-leise{background:var(--ds-surface-2);border-color:transparent;color:var(--ds-muted)}
         .fw-btn.fw-leise:hover{color:var(--ds-ink);border-color:var(--ds-line)}
         .fw-btn.fw-geist{background:transparent;border-color:transparent;color:var(--ds-muted)}
-        .fw-btn.fw-geist:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
+        .fw-btn.fw-geist:hover{background:var(--ds-hover);color:var(--ds-ink);box-shadow:none}
         .fw-btn.fw-weich{background:var(--ds-brand-soft);border-color:transparent;color:var(--ds-brand-600)}
         .fw-btn.fw-weich:hover{border-color:var(--ds-brand)}
         .fw-btn.fw-rand-marke{border-color:var(--ds-brand);color:var(--ds-brand)}
@@ -210,28 +228,28 @@ und einen Stilblock enthaelt.
         .fw-btn.fw-rand-warn:hover{background:var(--ds-warn-soft)}
         .fw-btn.fw-rand-gut{border-color:var(--ds-good);color:var(--ds-good)}
         .fw-btn.fw-rand-gut:hover{background:var(--ds-good-soft)}
-        .fw-btn:disabled,.fw-btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
+        .fw-btn:disabled,.fw-btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;box-shadow:none;transform:none}
         /* KPI-Kacheln */
-        .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:16px}
-        .fw-kpi{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:14px;padding:15px 16px;box-shadow:var(--ds-shadow);display:flex;flex-direction:column;gap:2px}
+        .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;margin-bottom:24px;background:var(--ds-line);border:1px solid var(--ds-line);border-radius:var(--ds-radius);overflow:hidden;box-shadow:var(--ds-shadow-sm)}
+        .fw-kpi{background:var(--ds-surface);padding:18px 20px 16px;display:flex;flex-direction:column;gap:6px;min-width:0;transition:background .12s}
         .fw-kpi.fw-accent{background:linear-gradient(150deg,color-mix(in srgb,var(--ds-brand) 12%,var(--ds-surface)),var(--ds-surface))}
-        .fw-kpi .fw-l{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--ds-faint);font-weight:600}
-        .fw-kpi .fw-v{font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-kpi .fw-l{font-size:12.5px;color:var(--ds-muted);font-weight:500}
+        .fw-kpi .fw-v{font-size:26px;line-height:1.1;font-weight:600;letter-spacing:-.03em;color:var(--ds-ink);font-variant-numeric:tabular-nums}
         .fw-kpi .fw-v.fw-crit{color:var(--ds-crit)}.fw-kpi .fw-v.fw-warn{color:var(--ds-warn)}.fw-kpi .fw-v.fw-good{color:var(--ds-good)}
-        .fw-kpi .fw-f{font-size:11.5px;color:var(--ds-muted)}
+        .fw-kpi .fw-f{font-size:12px;color:var(--ds-faint)}
         /* Karte */
-        .fw-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);margin-bottom:16px;overflow:hidden}
-        .fw-card>.fw-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--ds-line)}
-        .fw-card>.fw-h .fw-t{font-weight:700;font-size:14px;color:var(--ds-ink)}
-        .fw-card>.fw-h .fw-t small{color:var(--ds-faint);font-weight:500;font-size:12px;margin-left:6px}
+        .fw-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-sm);margin-bottom:24px;overflow:hidden}
+        .fw-card>.fw-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--ds-line)}
+        .fw-card>.fw-h .fw-t{font-weight:600;font-size:15px;letter-spacing:-.01em;color:var(--ds-ink)}
+        .fw-card>.fw-h .fw-t small{color:var(--ds-faint);font-weight:400;font-size:12.5px;margin-left:8px;letter-spacing:0}
         .fw-card>.fw-h .fw-r{margin-left:auto;display:flex;gap:6px;align-items:center}
         /* Tabelle (nur mit .fw-table — global bleibt unberührt) */
         .fw-tablewrap{overflow-x:auto}
         table.fw-table{width:100%;border-collapse:collapse;font-size:13px}
-        table.fw-table thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600;padding:11px 18px;border-bottom:1px solid var(--ds-line);white-space:nowrap}
-        table.fw-table tbody td{padding:12px 18px;border-bottom:1px solid var(--ds-line);color:var(--ds-ink)}
+        table.fw-table thead th{text-align:left;font-size:12px;color:var(--ds-faint);font-weight:600;padding:10px 16px;border-bottom:1px solid var(--ds-line);white-space:nowrap;background:var(--ds-surface-2)}
+        table.fw-table tbody td{padding:11px 16px;border-bottom:1px solid var(--ds-line);color:var(--ds-ink);vertical-align:middle}
         table.fw-table tbody tr:last-child td{border-bottom:0}
-        table.fw-table tbody tr:hover{background:var(--ds-brand-soft)}
+        table.fw-table tbody tr:hover{background:var(--ds-hover)}
         table.fw-table td.fw-right,table.fw-table th.fw-right{text-align:right;white-space:nowrap}
         /* Ergänzungen für die umgestellten Datentabellen (Audit Etappe 3, Teil 2).
            `thead th` steht oben auf `text-align:left` — ohne diese Klassen
@@ -244,22 +262,22 @@ und einen Stilblock enthaelt.
         table.fw-table.fw-dicht tbody td{padding:8px 14px}
         /* Fusszeile (Summen). Ohne diese Regel verlor sie mit den Tailwind-
            Abständen jeden Innenabstand — «TOTAL» klebte am Rand (gemessen). */
-        table.fw-table tfoot td,table.fw-table tfoot th{padding:12px 18px;border-top:1px solid var(--ds-line)}
+        table.fw-table tfoot td,table.fw-table tfoot th{padding:11px 16px;border-top:1px solid var(--ds-line-stark);background:var(--ds-surface-2);font-weight:600}
         table.fw-table.fw-dicht tfoot td,table.fw-table.fw-dicht tfoot th{padding:8px 14px}
         table.fw-table tfoot .fw-right{text-align:right;white-space:nowrap}
         /* Mockup-Optik: Marken-Ton als Zeilen-Hover fuer alle Tabellen in Karten (global) */
-        .fw-card tbody tr:hover{background:var(--ds-brand-soft)}
+        .fw-card tbody tr:hover{background:var(--ds-hover)}
         .fw-strong{font-weight:600;color:var(--ds-ink)}.fw-sub2{color:var(--ds-faint);font-size:12px}
         /* Chips */
-        .fw-chip{font-size:11px;font-weight:700;padding:2px 9px;border-radius:var(--ds-pill);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+        .fw-chip{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:var(--ds-pill);white-space:nowrap;display:inline-flex;align-items:center;gap:5px;line-height:1.5}
         .fw-chip.fw-good{background:var(--ds-good-soft);color:var(--ds-good)}.fw-chip.fw-warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
         .fw-chip.fw-crit{background:var(--ds-crit-soft);color:var(--ds-crit)}.fw-chip.fw-info{background:var(--ds-info-soft);color:var(--ds-info)}
         .fw-chip.fw-brand{background:var(--ds-brand-soft);color:var(--ds-brand-600)}.fw-chip.fw-mut{background:var(--ds-surface-2);color:var(--ds-muted)}
         .fw-chip.fw-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
         /* Filter-Chips */
         .fw-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
-        .fw-fchip{font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-muted);cursor:pointer;text-decoration:none}
-        .fw-fchip.fw-on{background:var(--ds-brand-soft);color:var(--ds-brand-600);border-color:transparent}
+        .fw-fchip{display:inline-flex;align-items:center;gap:6px;height:28px;font-size:12.5px;font-weight:500;padding:0 11px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-muted);cursor:pointer;text-decoration:none;transition:border-color .12s,color .12s,background .12s}
+        .fw-fchip.fw-on{background:var(--ds-ink);color:var(--ds-surface);border-color:var(--ds-ink);font-weight:600}
         /* Raster */
         .fw-grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
         @media (max-width:860px){.fw-grid2{grid-template-columns:1fr}}
@@ -283,7 +301,7 @@ und einen Stilblock enthaelt.
         .fw-avci{width:30px;height:30px;border-radius:50%;background:var(--ds-brand-soft);color:var(--ds-brand-600);display:grid;place-items:center;font-weight:700;font-size:11px;flex:none}
         /* Info-Karten für Detailseiten: Icon-Kopf + Key/Value-Zeilen (Mockup-Look) */
         .fw-nomb{margin-bottom:0}
-        .fw-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;font-size:13px}
+        .fw-ic{width:30px;height:30px;border-radius:var(--ds-radius-knopf);display:grid;place-items:center;flex:none;font-size:13px}
         .fw-ic.b{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
         .fw-ic.g{background:var(--ds-good-soft);color:var(--ds-good)}
         .fw-ic.i{background:var(--ds-info-soft);color:var(--ds-info)}
@@ -527,11 +545,12 @@ und einen Stilblock enthaelt.
             html._sbc #fwSidebar .sb-sub { display: none !important; }
         }
         /* Aufklapp-Pfeil der Navigationsgruppen */
-        .nav-open .sb-chev i { transform: rotate(90deg); }
+        .nav-open .sb-chev .fw-zeichen { transform: rotate(90deg); }
         /* Embed-Modus (im Modal geladen): Sidebar/Topbar aus, Inhalt füllt das Fenster */
         html._embed #fwSidebar,
         html._embed header,
-        html._embed #fwBackdrop { display: none !important; }
+        html._embed #fwBackdrop,
+        html._embed .fw-tabbar { display: none !important; }
         html._embed main { padding: 1.25rem !important; max-width: none !important; }
     
         /* ---- Aktenrahmen nach mockups/konzept-v3 (Phase 4b) --------------
@@ -541,7 +560,7 @@ und einen Stilblock enthaelt.
            gab, und machte die Regeln damit unwirksam. */
                 /* Leseansicht der Akte: Gruppen aus Bezeichnung und Wert (Phase 4b).
            Ersetzt die frueheren Karten-Paare mit eingestreuten Formularen. */
-                .fw-leer{padding:26px 16px;text-align:center;font-size:13px;color:var(--ds-faint);font-style:italic}
+                .fw-leer{padding:40px 20px;text-align:center;font-size:13.5px;color:var(--ds-muted)}
         /* ===== GRUNDVOKABULAR DER SCHICHT (E2) =====================
            Die kleinsten Bausteine: eine Flaeche, eine Linie, ein Textton.
            Sie ersetzen die fest verdrahteten Tailwind-Farbklassen, von denen
@@ -745,10 +764,10 @@ und einen Stilblock enthaelt.
         /* Ein Formularfeld, das nicht nach Systemelement aussieht. `font:inherit`
            ist Absicht: Ohne das erben `select` und `textarea` die Schriftart des
            Betriebssystems und stehen neben dem Fliesstext. */
-        .fw-feld{background:var(--ds-surface-2);border:1px solid var(--ds-line);
-            border-radius:var(--ds-radius-sm);padding:8px 11px;font-size:13px;
-            color:var(--ds-ink);font-family:inherit;max-width:100%}
-        .fw-feld:focus{outline:2px solid var(--ds-brand);outline-offset:-1px}
+        .fw-feld{background:var(--ds-surface);border:1px solid var(--ds-line-stark);
+            border-radius:var(--ds-radius-knopf);padding:8px 12px;font-size:13.5px;min-height:38px;
+            color:var(--ds-ink);font-family:inherit;max-width:100%;transition:border-color .12s,box-shadow .12s}
+        .fw-feld:focus{outline:none;border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
         /* Feldfehler (Audit Etappe 2): Ein Formular kommt mit der Meldung AM
            Feld zurück, nicht mit einem Toast und leeren Feldern. Die Rahmenfarbe
            allein trägt die Aussage nicht (Farbsehschwäche) — deshalb steht der
@@ -800,9 +819,12 @@ und einen Stilblock enthaelt.
         .fw-aufklapp>summary{padding:9px 16px;font-size:12.5px;font-weight:600;
             color:var(--ds-brand);cursor:pointer;list-style:none;display:flex;
             align-items:center;gap:7px}
-        .fw-aufklapp>summary::before{content:"\f067";font-family:"Font Awesome 6 Free";
-            font-weight:900;font-size:10px}
-        .fw-aufklapp[open]>summary::before{content:"\f068"}
+        /* Pfeil aus zwei Raendern statt aus Font Awesome. Die Schrift wird
+           seit E2.43 nicht mehr geladen — bis zum Redesign stand hier ein
+           leeres Kaestchen. */
+        .fw-aufklapp>summary::before{content:"";width:6px;height:6px;border-right:1.6px solid currentColor;
+            border-bottom:1.6px solid currentColor;transform:rotate(-45deg);transition:transform .15s}
+        .fw-aufklapp[open]>summary::before{transform:rotate(45deg)}
         .fw-aufklapp>summary:hover{background:var(--ds-surface-2)}
         .fw-aufklapp-inhalt{padding:4px 16px 14px;background:var(--ds-surface-2)}
 
@@ -820,7 +842,7 @@ und einen Stilblock enthaelt.
             align-items:center;justify-content:center;flex:0 0 48px;font-size:20px}
         .fw-akte-typ{font-size:10px;font-weight:700;letter-spacing:.14em;
             text-transform:uppercase;color:var(--ds-faint);margin-bottom:4px}
-        .fw-akte-oben h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-akte-oben h1{margin:0;font-size:24px;line-height:1.2;font-weight:600;letter-spacing:-.02em;color:var(--ds-ink)}
         .fw-akte-pfad{font-size:12px;color:var(--ds-faint);margin-top:4px;line-height:1.55}
         .fw-akte-pfad b{color:var(--ds-muted);font-weight:600}
         /* Eine Angabe je Zeile, Beschriftungen untereinander ausgerichtet.
@@ -841,14 +863,13 @@ und einen Stilblock enthaelt.
         .fw-kzn{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--ds-line)}
         .fw-kzn>div{padding:12px 20px;border-right:1px solid var(--ds-line)}
         .fw-kzn>div:last-child{border-right:0}
-        .fw-kzn .fw-l{font-size:10px;font-weight:700;letter-spacing:.1em;
-            text-transform:uppercase;color:var(--ds-faint)}
-        .fw-kzn .fw-w{font-size:17px;font-weight:700;margin-top:3px;
+        .fw-kzn .fw-l{font-size:12.5px;font-weight:500;color:var(--ds-muted)}
+        .fw-kzn .fw-w{font-size:20px;font-weight:600;letter-spacing:-.02em;margin-top:4px;
             font-variant-numeric:tabular-nums;color:var(--ds-ink)}
         .fw-kzn .fw-w.warn{color:var(--ds-warn)}
         .fw-kzn .fw-w.crit{color:var(--ds-crit)}
         .fw-kzn .fw-w.good{color:var(--ds-good)}
-        .fw-kzn .fw-f{font-size:11.5px;color:var(--ds-faint);margin-top:2px}
+        .fw-kzn .fw-f{font-size:12px;color:var(--ds-faint);margin-top:2px}
         /* Der Titel einer Frist ist regelmaessig breiter als seine Spalte:
            «Art. 257d: Zahlungsfrist läuft ab – Behlül Piskin» sind 48 Zeichen.
            Vorher schnitt `truncatechars:38` ihn mitten im Namen ab («– B…»),
@@ -895,32 +916,34 @@ und einen Stilblock enthaelt.
            `.fw-reiter button` (Aktenreiter). Eine zusaetzliche Regel dafuer
            waere doppelt, und die auf `button` griffe auf der Startseite
            ohnehin nicht: Dort sind die Reiter `<a>`. */
-        .fw-reiter{display:flex;gap:2px;border-top:1px solid var(--ds-line);
-            padding:0 12px;background:var(--ds-surface-2);
+        .fw-reiter{display:flex;gap:2px;border-top:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line);
+            padding:6px 14px 0;background:var(--ds-surface);
             flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
         .fw-reiter::-webkit-scrollbar{display:none}
-        .fw-reiter button{padding:10px 14px;font-size:13px;font-weight:600;
+        .fw-reiter button{position:relative;padding:9px 10px 12px;font-size:13px;font-weight:500;
             color:var(--ds-muted);cursor:pointer;background:none;border:0;
-            border-bottom:2px solid transparent;white-space:nowrap;
-            display:flex;align-items:center;gap:7px}
+            white-space:nowrap;
+            display:flex;align-items:center;gap:7px;transition:color .12s}
         .fw-reiter button:hover{color:var(--ds-ink)}
-        .fw-reiter button.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
-        .fw-reiter .fw-z{font-size:10px;font-weight:700;background:var(--ds-surface);
-            border:1px solid var(--ds-line);border-radius:var(--ds-pill);padding:1px 6px}
+        .fw-reiter button.hier{color:var(--ds-ink);font-weight:600}
+        .fw-reiter button.hier::after,.fw-reiter a.hier::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;
+            height:2px;border-radius:var(--ds-radius-xs);background:var(--ds-brand)}
+        .fw-reiter .fw-z{font-size:11.5px;font-weight:600;background:var(--ds-surface-2);color:var(--ds-faint);
+            border:1px solid var(--ds-line);border-radius:var(--ds-pill);padding:0 6px;min-width:20px;text-align:center}
 
-        .fw-kopf{padding:11px 15px;border-bottom:1px solid var(--ds-line);
+        .fw-kopf{padding:16px 20px;border-bottom:1px solid var(--ds-line);
             display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-        .fw-kopf h2,.fw-kopf .fw-t{margin:0;font-size:14px;font-weight:700;color:var(--ds-ink)}
+        .fw-kopf h2,.fw-kopf .fw-t{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ds-ink)}
         .fw-kopf .fw-neben{font-size:12.5px;color:var(--ds-faint)}
         .fw-kopf .fw-rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-        .fw-ikon{width:27px;height:27px;border-radius:var(--ds-radius-sm);
+        .fw-ikon{width:30px;height:30px;border-radius:var(--ds-radius-knopf);
             background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
-            align-items:center;justify-content:center;flex:0 0 27px;font-size:13px}
+            align-items:center;justify-content:center;flex:0 0 30px;font-size:14px}
         .fw-ikon.warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
         .fw-ikon.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
         .fw-ikon.good{background:var(--ds-good-soft);color:var(--ds-good)}
-        .fw-fuss{padding:8px 15px;border-top:1px solid var(--ds-line);display:flex;
-            justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ds-faint)}
+        .fw-fuss{padding:12px 20px;border-top:1px solid var(--ds-line);display:flex;
+            justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ds-faint)}
         /* Listen-Werkzeugkasten (Audit Etappe 4): Suche, Sortierung, Export in
            einer Zeile; am Telefon bricht sie um, die Suche nimmt die ganze Breite. */
         .fw-listwerkzeug{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -935,14 +958,14 @@ und einen Stilblock enthaelt.
         .fw-seiten-knoepfe{display:inline-flex;align-items:center;gap:8px}
         .fw-seiten .fw-btn{padding:6px 11px;font-size:12px}
 
-        .fw-zeile{display:flex;align-items:center;gap:12px;padding:11px 15px;
-            flex-wrap:nowrap;border-bottom:1px solid var(--ds-line)}
+        .fw-zeile{display:flex;align-items:center;gap:16px;padding:12px 20px;
+            flex-wrap:nowrap;border-bottom:1px solid var(--ds-line);transition:background .12s}
         .fw-zeile:last-child{border-bottom:0}
         .fw-zeile.klick{cursor:pointer}
-        .fw-zeile.klick:hover{background:var(--ds-surface-2)}
+        .fw-zeile.klick:hover{background:var(--ds-hover)}
         .fw-zeile .fw-mitte{flex:1;min-width:0}
-        .fw-zeile .fw-t{font-size:13.5px;font-weight:600;color:var(--ds-ink)}
-        .fw-zeile .fw-s{font-size:11.5px;color:var(--ds-faint);margin-top:2px;line-height:1.45}
+        .fw-zeile .fw-t{font-size:14px;font-weight:600;letter-spacing:-.005em;color:var(--ds-ink)}
+        .fw-zeile .fw-s{font-size:12.5px;color:var(--ds-muted);margin-top:3px;line-height:1.45}
         .fw-zeile .fw-zeit{font-size:12.5px;font-weight:700;color:var(--ds-muted);
             font-variant-numeric:tabular-nums;white-space:nowrap}
         /* Auf dem Handy bekommt der Titel die VOLLE Breite, alles andere
@@ -956,7 +979,10 @@ und einen Stilblock enthaelt.
            an `.fw-zeile` und gilt damit fuer jede Zeile der Anwendung —
            Arbeitsvorrat, Termine, Freigaben, Mandate, Regelwerk. */
         @media(max-width:640px){
-            .fw-zeile{flex-wrap:wrap}
+            /* Am Telefon zurueck auf 12 px Abstand: Die Rechnung unten zieht
+               genau 3 (Marker) + 12 (Abstand) ab. Auf dem Desktop sind es seit
+               dem Redesign 16. */
+            .fw-zeile{flex-wrap:wrap;gap:12px;padding:12px 16px}
             /* DER MARKER GEHOERT NEBEN DEN TEXT, NICHT DARUEBER.
 
                `flex-basis:100%` an der Mitte draengte ihn auf eine eigene
@@ -1009,7 +1035,7 @@ und einen Stilblock enthaelt.
         .fw-hinweis.info{background:var(--ds-info-soft)}
         .fw-hinweis.good{background:var(--ds-good-soft)}
         .fw-hinweis .fw-hi{width:26px;height:26px;border-radius:999px;display:flex;
-            align-items:center;justify-content:center;flex:0 0 26px;color:#fff;font-size:12px}
+            align-items:center;justify-content:center;flex:0 0 26px;color:var(--ds-auf-satt);font-size:12px}
         .fw-hinweis.warn .fw-hi{background:var(--ds-warn)}
         .fw-hinweis.crit .fw-hi{background:var(--ds-crit)}
         .fw-hinweis.info .fw-hi{background:var(--ds-info)}
@@ -1053,11 +1079,11 @@ und einen Stilblock enthaelt.
         /* Bestätigungsdialog (fw/_bestaetigen.html) statt der Browser-Rückfrage.
            `<dialog>` mit showModal(): Fokusfalle, Esc und Hintergrund liefert der
            Browser; hier nur das Aussehen. */
-        .fw-bestaetigen{border:0;border-radius:var(--ds-radius);padding:20px 22px;
-            width:calc(100% - 32px);max-width:420px;background:var(--ds-surface);
-            color:var(--ds-ink);box-shadow:var(--ds-shadow)}
-        .fw-bestaetigen::backdrop{background:rgba(14,34,39,.45)}
-        .fw-bestaetigen-titel{font-size:16px;font-weight:700;margin:0 0 8px}
+        .fw-bestaetigen{border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg);padding:22px 24px;
+            width:calc(100% - 32px);max-width:440px;background:var(--ds-surface);
+            color:var(--ds-ink);box-shadow:var(--ds-shadow-lg)}
+        .fw-bestaetigen::backdrop{background:var(--ds-scrim)}
+        .fw-bestaetigen-titel{font-size:17px;font-weight:600;letter-spacing:-.01em;margin:0 0 8px}
         .fw-bestaetigen-text{font-size:14px;line-height:1.5;color:var(--ds-muted);margin:0 0 18px;white-space:pre-line}
         .fw-bestaetigen-knoepfe{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
         .fw-mutet{color:var(--ds-faint)}
@@ -1091,9 +1117,9 @@ und einen Stilblock enthaelt.
            aussieht, ist Dekoration; der Pfeil daneben ist die Aussage. */
         .fw-lage{display:grid;grid-template-columns:repeat(4,1fr);
             background:var(--ds-surface);border:1px solid var(--ds-line);
-            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
-            margin-bottom:14px;overflow:hidden}
-        .fw-lage>div{padding:10px 16px;border-right:1px solid var(--ds-line)}
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-sm);
+            margin-bottom:24px;overflow:hidden}
+        .fw-lage>div{padding:18px 20px 16px;border-right:1px solid var(--ds-line);min-width:0}
         .fw-lage>div:last-child{border-right:0}
         /* AUF DEM TELEFON ZWEI SPALTEN STATT VIER.
            
@@ -1109,20 +1135,22 @@ und einen Stilblock enthaelt.
             .fw-lage>div:nth-child(2n){border-right:0}
             .fw-lage>div:nth-last-child(-n+2){border-bottom:0}
         }
-        .fw-lage .fw-l{font-size:10px;font-weight:700;letter-spacing:.1em;
-            text-transform:uppercase;color:var(--ds-faint)}
-        .fw-lage .fw-w{font-size:16px;font-weight:700;margin-top:2px;
-            font-variant-numeric:tabular-nums;color:var(--ds-ink)}
+        .fw-lage .fw-l{font-size:12.5px;font-weight:500;color:var(--ds-muted)}
+        .fw-lage .fw-w{font-size:26px;line-height:1.1;font-weight:600;letter-spacing:-.03em;margin-top:6px;
+            font-variant-numeric:tabular-nums;color:var(--ds-ink);white-space:nowrap}
         .fw-lage .fw-w.crit{color:var(--ds-crit)}
         .fw-lage .fw-w.warn{color:var(--ds-warn)}
-        .fw-lage .fw-f{font-size:11px;color:var(--ds-faint);margin-top:1px}
+        .fw-lage .fw-f{font-size:12px;color:var(--ds-faint);margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
         /* Die Richtung allein sagt nichts: Ein steigender Zahlungseingang ist
            gut, ein steigender unbelegte Flaeche schlecht. Deshalb heissen die Klassen
            nach der BEWERTUNG, nicht nach der Richtung — welche ein Pfeil
            bekommt, entscheidet `delta_gut_wenn` in der Vorlage. */
-        .fw-trend{font-weight:700;margin-right:4px}
+        .fw-trend{display:inline-flex;align-items:center;gap:3px;font-weight:600;font-size:11.5px;
+            padding:1px 7px;border-radius:var(--ds-pill);background:var(--ds-surface-2);margin-right:0}
         .fw-trend.hoch{color:var(--ds-crit)}
         .fw-trend.runter{color:var(--ds-good)}
+        .fw-trend.hoch{background:var(--ds-crit-soft)}
+        .fw-trend.runter{background:var(--ds-good-soft)}
         @media(max-width:820px){.fw-lage{grid-template-columns:1fr 1fr}}
 
         /* Zugeklappter Block — «Lage des Bestands». Zu ist der Normalfall:
@@ -1134,20 +1162,20 @@ und einen Stilblock enthaelt.
             cursor:pointer;list-style:none;display:flex;align-items:center;
             gap:10px;color:var(--ds-ink)}
         .fw-klapp>summary::-webkit-details-marker{display:none}
-        .fw-klapp>summary::after{content:"\f078";font-family:"Font Awesome 6 Free";
-            font-weight:900;font-size:10px;color:var(--ds-faint);margin-left:auto}
-        .fw-klapp[open]>summary::after{content:"\f077"}
+        .fw-klapp>summary::after{content:"";width:7px;height:7px;border-right:1.6px solid var(--ds-faint);
+            border-bottom:1.6px solid var(--ds-faint);transform:rotate(45deg);margin:0 4px 3px auto;transition:transform .15s}
+        .fw-klapp[open]>summary::after{transform:rotate(-135deg);margin-bottom:-3px}
         .fw-klapp>summary:hover{background:var(--ds-surface-2)}
 
         /* Zahl am Reiter der Startseite. `.fw-reiter .fw-z` gibt es schon für
            die Aktenreiter — dort sitzt sie an einem <button>, hier an einem
            <a>. Derselbe Bauteil, deshalb keine zweite Klasse. */
-        .fw-reiter a{padding:10px 14px;font-size:13px;font-weight:600;
+        .fw-reiter a{position:relative;padding:9px 10px 12px;font-size:13px;font-weight:500;
             color:var(--ds-muted);text-decoration:none;
-            border-bottom:2px solid transparent;white-space:nowrap;
-            display:flex;align-items:center;gap:7px}
+            white-space:nowrap;
+            display:flex;align-items:center;gap:7px;transition:color .12s}
         .fw-reiter a:hover{color:var(--ds-ink)}
-        .fw-reiter a.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
+        .fw-reiter a.hier{color:var(--ds-ink);font-weight:600}
 
     
         /* Zeichen aus dem Sprite (D5). Groesse und Farbe kommen aus der
@@ -1208,25 +1236,20 @@ und einen Stilblock enthaelt.
            Rund und gedaempft: Es soll die Zeile einordnen, nicht mit dem
            Titel um Aufmerksamkeit streiten. */
         .fw-kuerzel{display:inline-flex;align-items:center;justify-content:center;
-              min-width:26px;height:22px;padding:0 6px;border-radius:999px;
+              width:30px;height:30px;padding:0;border-radius:var(--ds-pill);
               background:var(--ds-surface-2);border:1px solid var(--ds-line);
-              /* `--ds-muted`, nicht `--ds-mute` — nachgesehen, nicht geraten.
-                 Ein Tippfehler im Tokennamen faellt durch: Der Browser nimmt
-                 den Erbwert, die Farbe stimmt zufaellig ungefaehr, und
-                 auffallen wuerde es erst im Dunkelmodus. */
-              color:var(--ds-muted);font-size:11px;font-weight:700;
-              letter-spacing:.02em}
+              color:var(--ds-muted);font-size:11.5px;font-weight:600;flex:0 0 auto}
 
         /* DIE ZEILENKOPFZEILE NACH KONZEPT v7 (E2.66).
            Fallart als Kapsel, Nummer in Ziffernschrift — beide klein und
            gedaempft, damit der Titel darunter die Zeile fuehrt. */
         .fw-zkopf{display:flex;align-items:center;gap:7px;margin-bottom:2px}
-        .fw-marke-kapsel{display:inline-block;padding:1px 7px;border-radius:999px;
+        .fw-marke-kapsel{display:inline-block;padding:1px 7px;border-radius:var(--ds-radius-xs);
               background:var(--ds-surface-2);border:1px solid var(--ds-line);
-              color:var(--ds-muted);font-size:10px;font-weight:700;
-              letter-spacing:.04em;text-transform:uppercase}
-        .fw-mono{font-variant-numeric:tabular-nums;font-size:11px;
-              color:var(--ds-faint);letter-spacing:.02em}
+              color:var(--ds-muted);font-size:11px;font-weight:600;
+              letter-spacing:.02em}
+        .fw-mono{font-family:var(--ds-mono);font-variant-numeric:tabular-nums;font-size:12px;
+              color:var(--ds-faint);letter-spacing:-.01em}
 
         /* Das Wort vor dem Datum (v7: `st`). Klein und gedaempft — es ordnet
            die Frist ein, ohne mit ihr zu konkurrieren. Ein Datum ohne dieses
@@ -1247,4 +1270,349 @@ und einen Stilblock enthaelt.
         .fw-vertretungssatz{padding:11px 15px;font-size:13px;line-height:1.5;
               color:var(--ds-muted);border-bottom:1px solid var(--ds-line)}
         .fw-vertretungssatz b{color:var(--ds-ink);font-weight:700}
+        /* ============================================================
+           DIE HUELLE NACH KONZEPT-V8 (Redesign 30.09.2026)
+
+           Quelle: mockups/konzept-v8-cockpit.html. Helle Leiste links
+           (236 px), eine Kopfzeile, die beim Scrollen stehen bleibt und
+           leicht durchscheint, Inhalt bis 1440 px. Unter 1024 px faellt
+           die Leiste weg und die Tab-Leiste unten uebernimmt die fuenf
+           Bereiche; die Leiste bleibt als Schublade fuer die Unterpunkte.
+
+           Die Ids (`fwSidebar`, `fwBackdrop`, `fwProfil`, `fwPalette`,
+           `fw-toasts`) sind dieselben wie vorher — Skripte, Tests und die
+           Regeln fuer `_sbc` und `_embed` haengen daran.
+           ============================================================ */
+        .fw-body{margin:0;background:var(--ds-bg);color:var(--ds-ink)}
+        .fw-app{display:flex;min-height:100vh;min-height:100dvh}
+        .fw-side{position:sticky;top:0;height:100vh;height:100dvh;width:236px;flex:0 0 236px;
+            display:flex;flex-direction:column;gap:2px;padding:18px 12px 12px;
+            border-right:1px solid var(--ds-line);background:var(--ds-surface);z-index:50;
+            transition:transform .22s var(--ds-ease),width .18s var(--ds-ease)}
+        .fw-side-kopf{display:flex;align-items:center;gap:10px;padding:4px 8px 16px 10px}
+        .fw-marke-zeichen{width:30px;height:30px;border-radius:var(--ds-radius-knopf);background:var(--ds-brand);
+            color:var(--ds-auf-satt);display:grid;place-items:center;font-weight:700;font-size:13px;
+            letter-spacing:-.02em;text-decoration:none;flex:0 0 30px}
+        .fw-marke-text{min-width:0;flex:1;line-height:1.25}
+        .fw-marke-text a{font-weight:700;font-size:15px;letter-spacing:-.02em;color:var(--ds-ink);text-decoration:none}
+        .fw-marke-text small{display:block;font-size:11.5px;color:var(--ds-faint);font-weight:500;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-side-knopf{width:28px;height:28px;border-radius:var(--ds-radius-sm);display:grid;place-items:center;
+            color:var(--ds-faint);background:none;border:0;cursor:pointer;flex:0 0 28px;transition:background .12s,color .12s}
+        .fw-side-knopf:hover{background:var(--ds-hover);color:var(--ds-ink)}
+        .fw-mandant{padding:0 10px 12px}
+        .fw-mandant label{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;
+            text-transform:uppercase;color:var(--ds-faint);margin-bottom:4px}
+        .fw-mandant select{width:100%}
+        .fw-nav{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding-bottom:8px}
+        .fw-nav-eintrag{display:flex;align-items:center;gap:11px;width:100%;padding:8px 12px;
+            border-radius:var(--ds-radius-sm);color:var(--ds-muted);font-weight:500;font-size:14px;
+            text-decoration:none;background:none;border:0;cursor:pointer;text-align:left;
+            transition:background .12s,color .12s}
+        .fw-nav-eintrag:hover{background:var(--ds-hover);color:var(--ds-ink)}
+        .fw-nav-eintrag.hier{background:var(--ds-brand-soft);color:var(--ds-brand-600);font-weight:600}
+        .fw-nav-eintrag .fw-zeichen{width:18px!important;height:18px!important}
+        .fw-nav-zahl{margin-left:auto;min-width:18px;padding:0 6px;border-radius:var(--ds-pill);
+            font-size:11.5px;font-weight:600;line-height:18px;text-align:center;
+            background:var(--ds-crit);color:var(--ds-auf-satt)}
+        .fw-nav-pfeil{margin-left:auto;padding:4px;margin-right:-4px;color:var(--ds-faint);display:flex}
+        .fw-nav-pfeil .fw-zeichen{transition:transform .15s}
+        .fw-nav-zahl + .fw-nav-pfeil{margin-left:4px}
+        .fw-nav-unter{display:flex;flex-direction:column;gap:1px;padding:2px 0 6px 29px}
+        .fw-nav-unter.hidden{display:none}
+        .fw-nav-abschnitt{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+            color:var(--ds-faint);padding:10px 12px 4px}
+        .fw-nav-unterpunkt{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--ds-radius-sm);
+            font-size:13px;color:var(--ds-muted);text-decoration:none;transition:background .12s,color .12s}
+        .fw-nav-unterpunkt:hover{background:var(--ds-hover);color:var(--ds-ink)}
+        .fw-nav-unterpunkt.hier{color:var(--ds-ink);font-weight:600;background:var(--ds-hover)}
+        .fw-nav-unterpunkt .fw-nav-zahl{margin-left:auto}
+        .fw-side-fuss{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--ds-line);padding-top:8px}
+        .fw-ich{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:var(--ds-radius-sm);
+            background:none;border:0;cursor:pointer;text-align:left;color:var(--ds-ink);transition:background .12s}
+        .fw-ich:hover{background:var(--ds-hover)}
+        .fw-ich span:last-child{min-width:0;line-height:1.3}
+        .fw-ich b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-ich small{display:block;font-size:12px;color:var(--ds-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-avatar{width:30px;height:30px;border-radius:var(--ds-pill);display:grid;place-items:center;flex:0 0 30px;
+            font-size:11.5px;font-weight:600;background:var(--ds-surface-2);border:1px solid var(--ds-line);color:var(--ds-muted)}
+
+        .fw-haupt{flex:1;min-width:0;display:flex;flex-direction:column}
+        .fw-top{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;padding:12px 32px;
+            background:color-mix(in srgb,var(--ds-bg) 82%,transparent);
+            -webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);
+            border-bottom:1px solid transparent;transition:border-color .2s}
+        .fw-top.fw-gerollt{border-bottom-color:var(--ds-line)}
+        .fw-bereich{display:flex;align-items:center;gap:8px;height:38px;padding:0 10px 0 8px;border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius-knopf);background:var(--ds-surface);min-width:0;transition:border-color .12s}
+        .fw-bereich:hover{border-color:var(--ds-line-stark)}
+        .fw-bereich:focus-within{border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
+        .fw-bereich-zeichen{width:22px;height:22px;border-radius:var(--ds-radius-xs);background:var(--ds-brand-soft);color:var(--ds-brand-600);
+            display:grid;place-items:center;flex:0 0 22px;font-size:12px}
+        .fw-bereich select{border:0;background:none;font:inherit;font-weight:600;font-size:13px;color:var(--ds-ink);
+            max-width:240px;text-overflow:ellipsis;cursor:pointer;padding:0 2px 0 0;min-height:0}
+        .fw-bereich select:focus{outline:none;box-shadow:none}
+        .fw-suche{flex:1;max-width:520px;display:flex;align-items:center;gap:10px;height:38px;padding:0 8px 0 12px;
+            border:1px solid var(--ds-line);border-radius:var(--ds-radius-knopf);background:var(--ds-surface);color:var(--ds-faint);
+            transition:border-color .12s,box-shadow .12s}
+        .fw-suche:hover{border-color:var(--ds-line-stark);box-shadow:var(--ds-shadow-sm)}
+        .fw-suche:focus-within{border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
+        .fw-suche input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:13.5px;color:var(--ds-ink);padding:0}
+        .fw-suche input:focus{outline:none;box-shadow:none}
+        .fw-suche input::placeholder{color:var(--ds-faint)}
+        .fw-taste{font-family:var(--ds-mono);font-size:11px;line-height:1.4;padding:1px 6px;border:1px solid var(--ds-line);
+            border-bottom-width:2px;border-radius:var(--ds-radius-xs);color:var(--ds-faint);background:var(--ds-surface-2);
+            cursor:pointer;white-space:nowrap}
+        .fw-top-rechts{margin-left:auto;display:flex;align-items:center;gap:4px}
+        .fw-knopf-rund{width:36px;height:36px;border-radius:var(--ds-radius-knopf);display:grid;place-items:center;
+            color:var(--ds-muted);background:none;border:0;cursor:pointer;position:relative;text-decoration:none;
+            font-size:18px;transition:background .12s,color .12s,transform .08s}
+        .fw-knopf-rund:hover{background:var(--ds-hover);color:var(--ds-ink)}
+        .fw-knopf-rund:active{transform:scale(.94)}
+        .fw-knopf-rund.hier{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+        .fw-nur-mobil{display:none!important}
+        .fw-inhalt{padding:28px 32px 56px;width:100%;max-width:1440px;margin:0 auto;min-width:0}
+
+        /* Profilmenue: ein Element, zwei Ausloeser (Leiste unten, Kopfzeile am
+           Telefon). Die Lage steht fest im Fenster statt am Ausloeser —
+           so braucht es kein Skript, das Positionen rechnet. */
+        .fw-profil{position:fixed;left:12px;bottom:72px;width:272px;z-index:70;background:var(--ds-surface);
+            border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-lg);padding:6px 0}
+        .fw-profil-kopf{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;border-bottom:1px solid var(--ds-line);margin-bottom:6px}
+        .fw-profil-name{min-width:0}
+        .fw-profil-kopf b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-profil-kopf small{display:block;font-size:12px;color:var(--ds-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-profil-abschnitt{padding:6px 16px 8px}
+        .fw-profil-titel{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint);margin-bottom:6px}
+        .fw-segment{display:flex;gap:2px;padding:2px;border-radius:var(--ds-radius-sm);background:var(--ds-surface-2);border:1px solid var(--ds-line)}
+        .fw-segment button{flex:1;padding:5px 8px;border-radius:var(--ds-radius-xs);border:0;background:none;cursor:pointer;
+            font:inherit;font-size:12.5px;font-weight:600;color:var(--ds-muted);transition:background .12s,color .12s}
+        .fw-segment button:hover{color:var(--ds-ink)}
+        .fw-segment button.an,.fw-segment button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
+        .fw-profil-link{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13.5px;color:var(--ds-ink);text-decoration:none}
+        .fw-profil-link:hover{background:var(--ds-hover)}
+        .fw-profil-link.crit{color:var(--ds-crit)}
+        .fw-profil-link.crit:hover{background:var(--ds-crit-soft)}
+        .fw-profil-link .fw-zeichen{color:var(--ds-faint)}
+        .fw-profil-link.crit .fw-zeichen{color:var(--ds-crit)}
+        .fw-profil-trenner{border-top:1px solid var(--ds-line);margin:6px 0}
+
+        /* Meldungen: dunkle Leiste unten in der Mitte, wie im Mockup. Fehler
+           und Warnungen tragen ihr Zeichen in der Zustandsfarbe und bleiben
+           stehen, bis sie jemand wegklickt. */
+        .fw-toasts{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+            z-index:100;display:flex;flex-direction:column;gap:8px;align-items:center;width:min(460px,calc(100% - 32px))}
+        .fw-toast{display:flex;align-items:flex-start;gap:12px;width:100%;padding:11px 10px 11px 16px;border-radius:var(--ds-radius);
+            background:var(--ds-ink);color:var(--ds-surface);box-shadow:var(--ds-shadow-lg);font-size:13.5px;line-height:1.45;
+            animation:fw-toast-ein .22s var(--ds-ease)}
+        .fw-toast>.fw-zeichen{margin-top:3px;color:var(--ds-good)}
+        .fw-toast.warn>.fw-zeichen{color:var(--ds-warn)}
+        .fw-toast.crit>.fw-zeichen{color:var(--ds-crit)}
+        .fw-toast.info>.fw-zeichen{color:var(--ds-info)}
+        .fw-toast-text{flex:1;min-width:0}
+        .fw-toast button{color:var(--ds-surface);background:none;border:0;cursor:pointer;padding:3px 6px;
+            border-radius:var(--ds-radius-xs);opacity:.75;display:flex}
+        .fw-toast button:hover{opacity:1;background:color-mix(in srgb,var(--ds-surface) 14%,transparent)}
+        @keyframes fw-toast-ein{from{opacity:0;transform:translateY(8px)}}
+
+        /* Befehlspalette */
+        .fw-palette{position:fixed;inset:0;z-index:110;display:flex;justify-content:center;align-items:flex-start;
+            padding:12vh 16px 16px;background:var(--ds-scrim)}
+        .fw-palette.hidden{display:none}
+        .fw-palette-box{width:min(600px,100%);background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-lg);overflow:hidden;animation:fw-palette-ein .18s var(--ds-ease)}
+        @keyframes fw-palette-ein{from{opacity:0;transform:translateY(-6px) scale(.985)}}
+        .fw-palette-feld{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--ds-line);color:var(--ds-faint)}
+        .fw-palette-feld input{flex:1;border:0;background:none;padding:16px 0;font:inherit;font-size:15px;color:var(--ds-ink)}
+        .fw-palette-feld input:focus{outline:none;box-shadow:none}
+        .fw-palette-liste{max-height:48vh;overflow-y:auto;padding:6px}
+        .fw-palette-gruppe{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint);padding:10px 10px 4px}
+        .fw-pal-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--ds-radius-sm);
+            font-size:13.5px;color:var(--ds-ink);text-decoration:none}
+        .fw-pal-item:hover{background:var(--ds-hover)}
+        .fw-pal-item.aktiv{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+        .fw-pal-art{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ds-faint);width:92px;flex:0 0 92px}
+        .fw-pal-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-pal-zusatz{font-size:12px;color:var(--ds-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
+        .fw-palette-leer{padding:14px 12px;font-size:13.5px;color:var(--ds-muted)}
+        .fw-palette-fuss{display:flex;gap:16px;padding:10px 16px;border-top:1px solid var(--ds-line);font-size:12px;color:var(--ds-faint)}
+
+        /* Tab-Leiste unten, nur unter 1024 px */
+        .fw-tabbar{display:none}
+        .fw-vorhang-mobil{position:fixed;inset:0;background:var(--ds-scrim);z-index:45}
+
+        @media (max-width:1023px){
+            .fw-side{position:fixed;left:0;top:0;bottom:0;transform:translateX(-104%);box-shadow:var(--ds-shadow-lg)}
+            .fw-side.offen{transform:none}
+            .fw-nur-mobil{display:grid!important}
+            .fw-nur-breit{display:none!important}
+            .fw-top{padding:10px 16px}
+            .fw-inhalt{padding:20px 16px calc(88px + env(safe-area-inset-bottom,0px))}
+            .fw-profil{left:auto;right:12px;bottom:auto;top:60px}
+            .fw-toasts{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+            .fw-tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;
+                width:100vw;max-width:100%;z-index:40;
+                background:color-mix(in srgb,var(--ds-surface) 90%,transparent);
+                -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--ds-line);
+                padding:6px 4px max(6px,env(safe-area-inset-bottom))}
+            .fw-tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+                min-height:48px;min-width:0;font-size:11px;font-weight:500;color:var(--ds-faint);text-decoration:none}
+            .fw-tabbar a .fw-zeichen{width:20px!important;height:20px!important}
+            .fw-tabbar a span{max-width:100%;padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            .fw-tabbar a[aria-current="page"]{color:var(--ds-brand);font-weight:600}
+        }
+        @media (min-width:1024px){ .fw-vorhang-mobil{display:none} }
+        @media (max-width:720px){
+            /* Zwei Reihen: oben Menue, Bestand und Knoepfe, darunter die Suche
+               ueber die ganze Breite. In einer Reihe blieben der Auswahl
+               bei 390 px zwei Buchstaben. */
+            .fw-top{flex-wrap:wrap;row-gap:8px}
+            .fw-bereich{flex:1 1 0}
+            .fw-bereich select{max-width:none;width:100%}
+            .fw-suche{order:5;flex:1 1 100%;max-width:none}
+            .fw-suche .fw-taste{display:none}
+            .fw-phead h1{font-size:23px}
+            .fw-lage>div{padding:14px 14px 12px}
+            .fw-lage .fw-w{font-size:21px}
+        }
+        @media (max-width:420px){
+            .fw-bereich{padding:0 8px}
+            .fw-bereich-zeichen{display:none}
+        }
+        /* Zugeklappte Leiste auf dem Desktop (`_sbc`): nur die Zeichen. */
+        @media (min-width:1024px){
+            html._sbc #fwSidebar{flex-basis:72px}
+            html._sbc #fwSidebar .fw-side-kopf{flex-direction:column;padding:4px 0 12px}
+            html._sbc #fwSidebar .fw-nav-eintrag{padding:9px 0}
+            html._sbc #fwSidebar .fw-ich{justify-content:center;padding:8px 0}
+            html._sbc .fw-profil{left:12px}
+        }
+        @media (prefers-reduced-motion:reduce){
+            .fw-side,.fw-toast,.fw-palette-box,.fw-btn,.fw-knopf-rund{transition:none;animation:none}
+        }
+        /* Formularfelder im Dunkeln. Der Browser zeichnet `input`, `select`
+           und `textarea` selbst; ohne diese Regel stehen helle Felder in einer
+           dunklen Anwendung. Bis zum Redesign stand sie in `base.html` und
+           galt nur fuer den Umschalter — nicht fuer die Systemeinstellung. */
+        @media (prefers-color-scheme:dark){
+            :root:not([data-theme="light"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            :root:not([data-theme="light"]) select,
+            :root:not([data-theme="light"]) textarea{background-color:var(--ds-surface-2);color:var(--ds-ink);border-color:var(--ds-line-stark)}
+        }
+        :root[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+        :root[data-theme="dark"] select,
+        :root[data-theme="dark"] textarea{background-color:var(--ds-surface-2);color:var(--ds-ink);border-color:var(--ds-line-stark)}
+        :root[data-theme="dark"] ::placeholder{color:var(--ds-faint)}
+        .fw-bereich select,.fw-suche input,.fw-palette-feld input,
+        .fw-kopffilter .fw-feld,.fw-feld-schlank{background-color:transparent!important;border:0!important}
+        /* Die Schublade von rechts (`fw/_fwmodal.html`): laedt einen Schritt
+           im Rahmen, die Liste bleibt dahinter sichtbar. */
+        .fw-schublade{position:fixed;inset:0;z-index:60}
+        .fw-schublade.hidden{display:none}
+        .fw-schublade-vorhang{position:absolute;inset:0;background:var(--ds-scrim);animation:fw-vorhang-ein .2s var(--ds-ease)}
+        .fw-schublade-box{position:absolute;top:0;right:0;bottom:0;width:min(640px,100%);display:flex;flex-direction:column;
+            background:var(--ds-surface);border-left:1px solid var(--ds-line);box-shadow:var(--ds-shadow-lg);
+            animation:fw-schublade-ein .28s var(--ds-ease)}
+        .fw-schublade-box.breit{width:min(96vw,1240px)}
+        .fw-schublade-kopf{display:flex;align-items:center;gap:12px;padding:14px 16px 14px 24px;
+            padding-top:calc(14px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--ds-line)}
+        .fw-schublade-kopf h2{flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-schublade-inhalt{position:relative;flex:1;display:flex;min-height:0}
+        .fw-schublade-inhalt iframe{position:relative;flex:1;width:100%;border:0;background:var(--ds-surface)}
+        .fw-schublade-laedt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;
+            font-size:13.5px;color:var(--ds-faint)}
+        .fw-schublade-laedt.hidden{display:none}
+        @keyframes fw-schublade-ein{from{transform:translateX(24px);opacity:.6}}
+        @keyframes fw-vorhang-ein{from{opacity:0}}
+        @media (prefers-reduced-motion:reduce){.fw-schublade-box,.fw-schublade-vorhang{animation:none}}
+        /* Inhalt in der Schublade (`fw/base_embed.html`) und das Fertig-Signal
+           (`fw/_modal_done.html`). */
+        .fw-einbettung{padding:24px;max-width:960px;margin:0 auto}
+        .fw-einbettung-meldungen{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+        .fw-einbettung-meldungen .fw-hinweis{border-radius:var(--ds-radius-sm);border:0}
+        .fw-fertig{min-height:40vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
+        .fw-fertig-zeichen{width:56px;height:56px;border-radius:var(--ds-pill);background:var(--ds-good-soft);color:var(--ds-good);
+            display:grid;place-items:center;font-size:26px;margin-bottom:14px}
+        .fw-fertig-titel{font-size:17px;font-weight:600;color:var(--ds-ink);margin:0}
+        .fw-fertig-text{font-size:13.5px;color:var(--ds-faint);margin:4px 0 0}
+        @media (max-width:640px){.fw-einbettung{padding:16px}}
+        /* ============================================================
+           STARTSEITE NACH KONZEPT-V8 (`fw/dashboard.html`)
+           ============================================================ */
+        .fw-eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
+        .fw-eyebrow b{font-weight:600}
+        .fw-phead .fw-eyebrow + h1{margin-top:6px}
+        .fw-phead h1 em{font-style:normal;font-weight:400;color:var(--ds-faint)}
+        .fw-phead-knoepfe{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+        .fw-cockpit{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:24px;align-items:start}
+        .fw-cockpit-haupt{min-width:0}
+        .fw-cockpit-kontext{min-width:0}
+        .fw-vorrat .fw-mitte{min-width:0}
+        @media (max-width:1180px){.fw-cockpit{grid-template-columns:minmax(0,1fr)}}
+        .fw-kopf.fw-kopf-offen{border-bottom:0;padding-bottom:6px}
+        .fw-reiter a.crit .fw-z{background:var(--ds-crit-soft);color:var(--ds-crit);border-color:transparent}
+        a.fw-zeile{text-decoration:none;color:inherit}
+        .fw-zeile .fw-zeit.crit{color:var(--ds-crit)}
+        .fw-zeile .fw-zeit.warn{color:var(--ds-warn)}
+        .fw-zeile .fw-zeit{text-align:right;line-height:1.35}
+        .fw-zeile .fw-s{display:flex;align-items:center;gap:10px;min-width:0}
+        .fw-zeile .fw-s>span:last-child{min-width:0}
+        .fw-schritte{display:inline-flex;gap:3px;flex:0 0 auto}
+        .fw-schritte i{width:14px;height:4px;border-radius:var(--ds-radius-xs);background:var(--ds-line-stark)}
+        .fw-schritte i.fertig{background:var(--ds-brand);color:var(--ds-auf-satt)}
+        .fw-schritte i.jetzt{background:var(--ds-brand);color:var(--ds-auf-satt);opacity:.45}
+        .fw-leer .fw-leer-zeichen{width:40px;height:40px;border-radius:var(--ds-pill);background:var(--ds-good-soft);color:var(--ds-good);
+            display:grid;place-items:center;margin:0 auto 10px;font-size:18px}
+        .fw-leer b{display:block;color:var(--ds-ink);font-weight:600}
+        .fw-eingang{align-items:flex-start}
+        .fw-quelle{width:32px;height:32px;border-radius:var(--ds-radius-knopf);display:grid;place-items:center;flex:0 0 32px;
+            background:var(--ds-surface-2);border:1px solid var(--ds-line);color:var(--ds-muted);font-size:15px}
+        .fw-vorschlag{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:500;padding:3px 8px;border-radius:var(--ds-radius-xs);
+            background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+        .fw-vorschlag.unsicher{background:var(--ds-warn-soft);color:var(--ds-warn)}
+        .fw-eingang-knoepfe{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+        .fw-agenda{padding:10px 20px 14px}
+        .fw-agenda-zeile{display:grid;grid-template-columns:52px 22px minmax(0,1fr);gap:10px;align-items:start;padding:8px 0;position:relative}
+        .fw-agenda-zeile:not(:last-child)::after{content:"";position:absolute;left:72px;top:30px;bottom:-8px;width:1px;background:var(--ds-line)}
+        .fw-agenda-zeit{font-family:var(--ds-mono);font-size:12.5px;color:var(--ds-muted);padding-top:1px;display:flex;flex-direction:column}
+        .fw-agenda-punkt{width:22px;height:22px;border-radius:var(--ds-pill);border:1.5px solid var(--ds-brand);background:var(--ds-surface);
+            color:var(--ds-brand);display:grid;place-items:center;font-size:11px;position:relative;z-index:1}
+        .fw-agenda .fw-t{font-weight:600;font-size:13.5px;line-height:1.35;color:var(--ds-ink)}
+        .fw-agenda .fw-s{font-size:12px;color:var(--ds-faint)}
+        .fw-agenda .fw-link{display:inline-block;margin-top:4px}
+        .fw-mandat{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--ds-line)}
+        .fw-mandat:last-of-type{border-bottom:0}
+        .fw-mandat .fw-t{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ds-ink)}
+        .fw-mandat .fw-s{font-size:12px;color:var(--ds-faint)}
+        .fw-belegung{grid-column:1 / -1;height:4px;border-radius:var(--ds-radius-xs);background:var(--ds-surface-2);overflow:hidden;border:1px solid var(--ds-line)}
+        .fw-belegung i{display:block;height:100%;background:var(--ds-brand)}
+        .fw-belegung.warn i{background:var(--ds-warn)}
+        .fw-belegung.crit i{background:var(--ds-crit)}
+        @media (max-width:640px){
+            .fw-zeile .fw-zeit{text-align:left}
+            .fw-agenda{padding:10px 16px 14px}
+            .fw-mandat{padding:12px 16px}
+        }
+        /* ============================================================
+           FORMULARE NACH KONZEPT-V8 (docs/DESIGN-V8.md)
+           ============================================================ */
+        .fw-formular{display:grid;grid-template-columns:minmax(0,1fr);gap:16px 20px}
+        @media (min-width:640px){.fw-formular{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        .fw-formular.drei{grid-template-columns:minmax(0,1fr)}
+        @media (min-width:900px){.fw-formular.drei{grid-template-columns:repeat(3,minmax(0,1fr))}}
+        .fw-feldblock{display:flex;flex-direction:column;gap:6px;min-width:0}
+        .fw-feldblock.breit{grid-column:1 / -1}
+        .fw-feldblock .fw-feld{width:100%}
+        .fw-label{display:block;font-size:12.5px;font-weight:600;color:var(--ds-muted)}
+        .fw-hilfe{font-size:12px;color:var(--ds-faint);margin:0}
+        .fw-formular-fuss{grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;
+            padding-top:8px;border-top:1px solid var(--ds-line);margin-top:4px}
+        textarea.fw-feld{min-height:88px;line-height:1.5;resize:vertical}
+        /* Grundform fuer Felder, die noch Utilities tragen: nur Farbe, Rand
+           und Fokus. `:where` haelt die Spezifitaet bei null — jede Klasse
+           am Feld gewinnt weiterhin. */
+        :where(.fw-inhalt, .fw-einbettung) :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), select, textarea){
+            border-color:var(--ds-line-stark);color:var(--ds-ink);font-family:inherit}
+        :where(.fw-inhalt, .fw-einbettung) :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea):focus{
+            outline:none;border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
 </style>

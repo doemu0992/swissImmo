@@ -38,7 +38,9 @@ Vorhang in `base.html` (56 → 55): 236 in 42.
 E2.84 nahm das Dunkelmodus-Overlay — `base.html` (55 → 4): 185 in 42.
 Audit Etappe 3 (Knopf-Varianten) nahm `text-white` von selbstgebauten
 Knöpfen — `integrationen`, `mietzins`, `objekt_ausschreiben`, `vermarktung`
-(→ 0), `kreditoren` (3 → 2): **STAND 179 in 38 Vorlagen**.
+(→ 0), `kreditoren` (3 → 2): 179 in 38.
+Redesign nach konzept-v8 (30.09.2026): Die neue Huelle traegt die Farben
+ueber die Schicht — `base.html` (4 → 1): **STAND 176 in 38 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -294,7 +296,7 @@ OBERGRENZE = {
     'core/templates/fw/_schicht.html': 2,
     'core/templates/fw/anlagen.html': 3,
     'core/templates/fw/bankabgleich.html': 1,
-    'core/templates/fw/base.html': 4,
+    'core/templates/fw/base.html': 1,
     'core/templates/fw/bewerber_vergleich.html': 3,
     'core/templates/fw/bewerbung_detail.html': 1,
     'core/templates/fw/dokumente.html': 1,

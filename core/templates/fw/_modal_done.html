@@ -4,13 +4,17 @@
 <head>
     <meta charset="UTF-8">
 {% include 'fw/_assets.html' %}
-    <style>body{font-family:'Inter',sans-serif;}</style>
+    {% comment %} Bis zum Redesign fehlten hier Stilschicht und Sprite: Die
+       `fw-*`-Klassen darunter wirkten nicht, und das Haken-Zeichen zeigte auf
+       ein Symbol, das es in der Seite nicht gab. {% endcomment %}
+    {% include 'fw/_schicht_link.html' %}
+{% include 'fw/_zeichen.html' %}
 </head>
-<body class="fw-flaeche2">
-<div class="min-h-[40vh] flex flex-col items-center justify-center text-center p-8">
-    <span class="w-16 h-16 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mb-4">{% zeichen 'gut' klasse='text-2xl' %}</span>
-    <p class="font-bold fw-strong text-lg">{{ msg|default:"Erledigt" }}</p>
-    <p class="text-sm fw-faint mt-1">{% trans "Fenster wird geschlossen …" %}</p>
+<body class="fw-body fw-flaeche">
+<div class="fw-fertig">
+    <span class="fw-fertig-zeichen">{% zeichen 'gut' %}</span>
+    <p class="fw-fertig-titel">{{ msg|default:"Erledigt" }}</p>
+    <p class="fw-fertig-text">{% trans "Fenster wird geschlossen …" %}</p>
 </div>
 <script>
     // Elternfenster (Cockpit) informieren: Schritt erledigt → Modal schliessen + neu laden

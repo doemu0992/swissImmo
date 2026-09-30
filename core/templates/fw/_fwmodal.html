@@ -16,18 +16,22 @@ AUDIT ETAPPE 3 — WAS SICH GEÄNDERT HAT
 - Fokus: geht beim Öffnen auf «Schliessen» und beim Schliessen zurück dorthin,
   wo er vorher war.
 {% endcomment %}
-<div id="fwModal" class="fixed inset-0 z-[60] hidden">
-    <div class="absolute inset-0 fw-balken-voll backdrop-blur-sm" onclick="fwModalClose()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-6 pointer-events-none">
-        <div id="fwModalBox" role="dialog" aria-modal="true" aria-labelledby="fwModalTitle" class="fw-flaeche rounded-2xl shadow-2xl w-full max-w-3xl h-[88vh] flex flex-col overflow-hidden pointer-events-auto">
-            <div class="flex items-center justify-between px-5 py-3 border-b fw-linie shrink-0">
-                <h2 id="fwModalTitle" class="font-bold fw-strong">{% trans "Schritt" %}</h2>
-                <button type="button" id="fwModalZu" onclick="fwModalClose()" title="{% trans 'Schliessen' %}" aria-label="{% trans 'Schliessen' %}" class="w-8 h-8 rounded-lg fw-faint hover:fw-flaeche2 hover:fw-ink">{% zeichen 'schliessen' %}</button>
-            </div>
-            <div class="relative flex-1 flex">
-                <div id="fwModalLaedt" class="absolute inset-0 flex items-center justify-center fw-mutet text-sm" aria-hidden="true">{% zeichen 'laedt' klasse='fw-dreht mr-2' %}{% trans "Wird geladen …" %}</div>
-                <iframe id="fwModalFrame" class="relative flex-1 w-full border-0" src="about:blank" title="{% trans 'Schritt' %}"></iframe>
-            </div>
+{% comment %}
+REDESIGN NACH KONZEPT-V8 (30.09.2026): Aus dem mittigen Fenster wird die
+Schublade von rechts, wie im Mockup die Detailansicht eines Vorgangs. Die
+Liste dahinter bleibt sichtbar; man verliert beim Arbeiten nicht den Ort.
+Ids, Rollen, Funktionen und das Fertig-Signal sind unveraendert.
+{% endcomment %}
+<div id="fwModal" class="fw-schublade hidden">
+    <div class="fw-schublade-vorhang" onclick="fwModalClose()"></div>
+    <div id="fwModalBox" role="dialog" aria-modal="true" aria-labelledby="fwModalTitle" class="fw-schublade-box">
+        <div class="fw-schublade-kopf">
+            <h2 id="fwModalTitle">{% trans "Schritt" %}</h2>
+            <button type="button" id="fwModalZu" onclick="fwModalClose()" title="{% trans 'Schliessen' %}" aria-label="{% trans 'Schliessen' %}" class="fw-knopf-rund">{% zeichen 'schliessen' %}</button>
+        </div>
+        <div class="fw-schublade-inhalt">
+            <div id="fwModalLaedt" class="fw-schublade-laedt" aria-hidden="true">{% zeichen 'laedt' klasse='fw-dreht' %}{% trans "Wird geladen …" %}</div>
+            <iframe id="fwModalFrame" src="about:blank" title="{% trans 'Schritt' %}"></iframe>
         </div>
     </div>
 </div>
@@ -53,7 +57,8 @@ function fwModalOpenUrl(url, title, wide) {
     url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
     document.getElementById('fwModalTitle').textContent = title || '{% filter escapejs %}{% trans "Schritt" %}{% endfilter %}';
     var box = document.getElementById('fwModalBox');
-    box.style.maxWidth = wide ? 'min(96vw, 1240px)' : '48rem';
+    // Breite der Schublade: schmal fuer einen Schritt, breit fuer Vertrag mit Vorschau.
+    box.classList.toggle('breit', !!wide);
     fwModalLadungen = 0;
     fwModalGetippt = false;
     fwModalVorher = document.activeElement;

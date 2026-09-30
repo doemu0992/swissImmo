@@ -225,7 +225,12 @@ class TailwindPaletteTests(TestCase):
         kopf = ohne_kommentare(text[:text.index('</head>')]).lower()
         self.assertNotIn('4f46e5', kopf,
                          'Das alte Indigo steht noch im Kopfbereich.')
-        self.assertIn('%230f6f6a', kopf, 'Das Favicon führt nicht die Markenfarbe.')
+        # Die Markenfarbe aus der Schicht, nicht abgeschrieben: Beim Redesign
+        # (konzept-v8) wechselte sie, und ein fester Wert haette das Favicon
+        # auf der alten Farbe festgehalten.
+        marke = re.search(r':root\{[^}]*--ds-brand:(#[0-9a-f]{6})',
+                          (WURZEL / 'core/templates/fw/_schicht.html').read_text(encoding='utf-8')).group(1)
+        self.assertIn('%23' + marke[1:], kopf, 'Das Favicon führt nicht die Markenfarbe.')
 
     def test_kommentare_zaehlen_nicht_als_farbe(self):
         """Gegenprobe zu genau dem Fehler, den dieser Test selbst hatte."""

@@ -20372,3 +20372,37 @@ msgid "%(n)s Anpassung erfassen + amtliches Formular (Sammel-PDF)"
 msgid_plural "%(n)s Anpassungen erfassen + amtliche Formulare (Sammel-PDF)"
 msgstr[0] "Registrare %(n)s adeguamento + modulo ufficiale (PDF collettivo)"
 msgstr[1] "Registrare %(n)s adeguamenti + moduli ufficiali (PDF collettivo)"
+
+#: core/templates/fw/base.html:57
+msgid "Hauptnavigation"
+msgstr "Navigazione principale"
+
+#: core/templates/fw/base.html:148
+msgid "Ganzer Bestand"
+msgstr "Intero portafoglio"
+
+#: core/templates/fw/base.html:166
+msgid "Hell- oder Dunkelmodus"
+msgstr "Modalità chiara o scura"
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Morgen, %(name)s."
+msgstr "Buongiorno, %(name)s."
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Tag, %(name)s."
+msgstr "Buongiorno, %(name)s."
+
+#: core/templates/fw/dashboard.html:47
+#, python-format
+msgid "Guten Abend, %(name)s."
+msgstr "Buonasera, %(name)s."
+
+#: core/templates/fw/dashboard.html:48
+#, python-format
+msgid "%(n)s Vorgang braucht heute dich."
+msgid_plural "%(n)s Vorgänge brauchen heute dich."
+msgstr[0] "%(n)s pratica ha bisogno di te oggi."
+msgstr[1] "%(n)s pratiche hanno bisogno di te oggi."

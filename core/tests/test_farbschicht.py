@@ -74,7 +74,8 @@ class TokensSindDefiniertTests(TestCase):
         hell = _tokens_im_block(quelle, r':root\{')
         dunkel = _tokens_im_block(quelle, r':root\[data-theme="dark"\]\{')
         # Form- und Schattentokens sind bewusst nicht themenabhängig.
-        egal = {t for t in hell if t.startswith(('--ds-radius', '--ds-pill'))}
+        egal = {t for t in hell if t.startswith(('--ds-radius', '--ds-pill', '--ds-font',
+                                                 '--ds-mono', '--ds-ease'))}
         fehlend = sorted((hell - dunkel) - egal)
         self.assertEqual(
             fehlend, [],

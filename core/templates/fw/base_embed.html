@@ -14,18 +14,16 @@
        in `fw/base.html`; `test_embed_huelle_laedt_was_base_laedt` hält sie gleich. {% endcomment %}
     {% include 'fw/_schicht_link.html' %}
 {% include 'fw/_zeichen.html' %}
-    <style>
-        body { font-family: 'IBM Plex Sans', sans-serif; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-    </style>
 </head>
-<body class="fw-flaeche2 fw-strong">
-<div class="p-5 sm:p-6 max-w-3xl mx-auto">
+{% comment %} Redesign nach konzept-v8: Der Inhalt steht in der Schublade auf
+   weisser Flaeche. Schrift, Scrollbalken und Meldungen kommen aus der
+   Stilschicht; der eigene <style>-Block entfaellt. {% endcomment %}
+<body class="fw-body fw-flaeche">
+<div class="fw-einbettung">
     {% if messages %}
-    <div class="space-y-2 mb-4" role="status" aria-live="polite">
+    <div class="fw-einbettung-meldungen" role="status" aria-live="polite">
         {% for m in messages %}
-        <div {% if 'error' in m.tags %}role="alert" {% endif %}class="text-sm px-4 py-2 rounded-xl {% if 'error' in m.tags %}fw-krit-flaeche fw-kritisch border fw-linie-krit{% else %}fw-gut-flaeche fw-gut border fw-linie-gut{% endif %}">{{ m|ohne_emoji }}</div>
+        <div {% if 'error' in m.tags %}role="alert" {% endif %}class="fw-hinweis {% if 'error' in m.tags %}crit{% else %}good{% endif %}"><div class="fw-ht">{{ m|ohne_emoji }}</div></div>
         {% endfor %}
     </div>
     {% endif %}

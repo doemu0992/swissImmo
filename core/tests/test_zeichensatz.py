@@ -132,7 +132,10 @@ STAND_VORKOMMEN = 1
 #: D5 sagt «~40». Die Tilde traegt jetzt einundzwanzig Zeichen. Wer die
 #: naechsten dazunimmt, sollte begruenden, warum keines der bestehenden
 #: passt — und pruefen, ob das noch ein Satz ist oder schon ein Katalog.
-ZIEL_ZEICHEN = 61
+#:
+#: 62 seit dem Redesign (30.09.2026): `darstellung` fuer den Hell/Dunkel-
+#: Knopf in der Kopfzeile. Begruendung in docs/ZEICHEN.md unter «Bedienung».
+ZIEL_ZEICHEN = 62
 
 #: Klassen, die in Gebrauch sind und bewusst noch keiner Bedeutung zugeordnet
 #: wurden. Diese Liste darf schrumpfen, nicht wachsen — sonst wird «noch offen»

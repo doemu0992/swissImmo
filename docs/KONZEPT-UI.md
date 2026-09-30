@@ -1087,26 +1087,29 @@ belegt; `core/tests/test_palette.py` verwies auf dieses Dokument, das dazu nicht
 
 ### 16.1 Palette
 
-Verbindlich, geprüft von `core/tests/test_palette.py`. Definiert in `core/templates/fw/base.html`
-unter `:root`, im `@media (prefers-color-scheme:dark)`-Block und unter `:root[data-theme="dark"]`.
+Verbindlich, geprüft von `core/tests/test_palette.py`. Quelle seit dem Redesign vom 30.09.2026:
+`mockups/konzept-v8-cockpit.html`. Definiert in `core/templates/fw/_schicht.html` unter `:root`,
+im `@media (prefers-color-scheme:dark)`-Block und unter `:root[data-theme="dark"]`.
 
 | Token | Hell | Dunkel | Rolle |
 |---|---|---|---|
-| `--ds-brand` | `#0f6f6a` | `#4fb3aa` | Petrol, Markenfarbe |
-| `--ds-brand-600` | `#0b5450` | `#6fcac2` | gedrückter Zustand |
-| `--ds-brand-soft` | `#d9efed` | `#0f2f2e` | Fläche hinter Markenfarbe |
-| `--ds-ink` | `#0e2227` | `#e4edee` | Fliesstext |
-| `--ds-muted` | `#4c6169` | `#a8c0c5` | Zweitrangiges |
-| `--ds-faint` | `#5c757c` | `#8ba4aa` | Beschriftungen |
-| `--ds-line` | `#dde6e8` | `#22404a` | Trennlinien |
-| `--ds-radius` / `-sm` | `10px` / `7px` | dieselben | Geometrie, im Dunkeln unverändert |
+| `--ds-brand` | `#0e6b65` | `#53b8ae` | Petrol, Markenfarbe |
+| `--ds-brand-600` | `#0a4f4b` | `#7fd0c7` | gedrückter Zustand |
+| `--ds-brand-soft` | `#e2f1ef` | `#123331` | Fläche hinter Markenfarbe |
+| `--ds-ink` | `#0c1f23` | `#e5eeef` | Fliesstext |
+| `--ds-muted` | `#465b62` | `#a7bec3` | Zweitrangiges |
+| `--ds-faint` | `#5d7279` | `#8aa2a8` | Beschriftungen |
+| `--ds-line` | `#e1e8e9` | `#1e363d` | Trennlinien |
+| `--ds-hover` | `#eef3f3` | `#172e34` | Fläche unter dem Zeiger |
+| `--ds-radius` / `-sm` | `12px` / `8px` | dieselben | Geometrie, im Dunkeln unverändert |
 
-Dazu `good` / `warn` / `crit` / `info`, jeweils mit `-soft`-Fläche.
+Dazu `good` / `warn` / `crit` / `info`, jeweils mit `-soft`-Fläche, drei Schattenhöhen
+(`--ds-shadow-sm`, `--ds-shadow`, `--ds-shadow-lg`) und `--ds-scrim` für den Vorhang.
 
-**Eine bewusste Abweichung vom Prototyp.** Dessen `--ds-faint` (`#7f959c`) erreicht auf Weiss
-nur **3.14:1** und verfehlt WCAG AA; die Prototypen entstanden ohne Kontrastprüfung. Hier steht
-`#5c757c` — derselbe Petrolton eine Stufe dunkler, **4.89:1**. Jeder andere Wert liegt ohnehin
-über AA; der knappste ist `--ds-warn` auf `--ds-warn-soft` mit **4.56:1**.
+**Keine Abweichung mehr vom Prototyp.** Bis konzept-v7 stand hier eine: Dessen `--ds-faint`
+(`#7f959c`) erreichte auf Weiss nur **3.14:1**; die Anwendung setzte `#5c757c`. Das v8-Mockup
+wurde mit Kontrastprüfung gebaut. Sein Grau erreicht 5.06:1 auf Weiss und 4.52:1 auf der
+Hover-Fläche; jeder andere Wert liegt darüber.
 
 Wer die Palette ändert, ändert das Konzept: Tabelle hier, Werte in `base.html` und Erwartung in
 `test_palette.py` gehören zusammen. Der Test rechnet den Kontrast selbst nach und hat dafür eine
