@@ -3,7 +3,7 @@
 from django.template.loader import get_template
 from django.utils import timezone
 from crm.models import Organisation
-from core.services.pdf_service import html_zu_pdf
+from core.services.pdf_service import pdf_aus_html
 from core.services.dokumentsprache import STANDARD, in_sprache, sprache_von
 
 # doc_type -> (Template, Titel, zusätzliche Kontext-Flags)
@@ -78,4 +78,4 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     sprache = sprache_von(vertrag.mieter) if doc_type in IN_MIETERSPRACHE else STANDARD
     with in_sprache(sprache):
         html = get_template(template_name).render({**context, 'dokumentsprache': sprache})
-    return html_zu_pdf(html)
+    return pdf_aus_html(html)

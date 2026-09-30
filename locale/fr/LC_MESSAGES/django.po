@@ -21253,3 +21253,87 @@ msgstr "dossier uniquement"
 #, python-format
 msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
 msgstr "Paiement excédentaire : CHF %(betrag)s comptabilisés comme avoir du locataire (compte 2030)."
+
+msgid "Bitte eine Liegenschaft oder ein Objekt wählen, dem das Dokument gehört."
+msgstr "Veuillez choisir l’immeuble ou l’objet auquel le document appartient."
+
+#, python-format
+msgid "Datei abgelehnt: %(grund)s"
+msgstr "Fichier refusé : %(grund)s"
+
+#, python-format
+msgid "Beleg nicht gespeichert: %(grund)s"
+msgstr "Justificatif non enregistré : %(grund)s"
+
+#, python-format
+msgid "«%(name)s» abgelehnt: %(grund)s"
+msgstr "« %(name)s » refusé : %(grund)s"
+
+msgid "Foto abgelehnt (kein gültiges Bild oder zu gross) — Eintrag ohne Foto gespeichert."
+msgstr "Photo refusée (image invalide ou trop volumineuse) — entrée enregistrée sans photo."
+
+msgid "Foto abgelehnt (kein gültiges Bild oder zu gross) — bisheriges Foto bleibt."
+msgstr "Photo refusée (image invalide ou trop volumineuse) — la photo actuelle est conservée."
+
+#, python-format
+msgid "Zertifikat abgelehnt: %(grund)s"
+msgstr "Certificat refusé : %(grund)s"
+
+#, python-format
+msgid "Der gewünschte Bezugstermin der Bewerbung (%(datum)s) ist nicht plausibel — der Entwurf beginnt heute. Bitte im Vertrag prüfen."
+msgstr "La date d’entrée souhaitée dans la candidature (%(datum)s) n’est pas plausible — le projet commence aujourd’hui. Veuillez vérifier dans le contrat."
+
+#, python-format
+msgid "Logo abgelehnt: %(grund)s"
+msgstr "Logo refusé : %(grund)s"
+
+#, python-format
+msgid "%(abgelehnt)s Datei(en) abgelehnt (kein gültiges Bild oder zu gross) — das Ticket wurde trotzdem erfasst."
+msgstr "%(abgelehnt)s fichier(s) refusé(s) (image invalide ou trop volumineuse) — le ticket a tout de même été enregistré."
+
+#, python-format
+msgid "%(anzahl)s Vertrag/Verträge wurden übersprungen (Datenfehler, siehe Log): Vertrag-Nr. %(ids)s. Alle übrigen sind gestellt."
+msgstr "%(anzahl)s contrat(s) ignoré(s) (erreur de données, voir le journal) : contrat n° %(ids)s. Tous les autres ont été facturés."
+
+#, python-format
+msgid "Die Sollstellung %(monat)s/%(jahr)s wurde wegen eines Datenbankfehlers abgebrochen — nichts wurde gebucht. Bitte in einigen Minuten erneut starten (bereits Gestelltes wird nie doppelt erzeugt)."
+msgstr "La facturation %(monat)s/%(jahr)s a été interrompue à cause d’une erreur de base de données — rien n’a été comptabilisé. Veuillez relancer dans quelques minutes (ce qui a déjà été facturé n’est jamais généré deux fois)."
+
+msgid "Der Vertrag konnte wegen eines Datenbankfehlers nicht gespeichert werden — nichts wurde gespeichert. Bitte erneut versuchen."
+msgstr "Le contrat n’a pas pu être enregistré à cause d’une erreur de base de données — rien n’a été enregistré. Veuillez réessayer."
+
+msgid "Vertrag gespeichert, aber die Dokumente konnten nicht erzeugt werden. Bitte später erneut versuchen."
+msgstr "Contrat enregistré, mais les documents n’ont pas pu être générés. Veuillez réessayer plus tard."
+
+#, python-format
+msgid "Vertrag gespeichert, aber nicht alle Dokumente konnten erzeugt werden (%(liste)s). Bitte später über «Vertragsdokumente» erneut erzeugen."
+msgstr "Contrat enregistré, mais tous les documents n’ont pas pu être générés (%(liste)s). Veuillez les régénérer plus tard via « Documents du contrat »."
+
+msgid "Der Netto-Mietzins"
+msgstr "Le loyer net"
+
+msgid "Die Kaution"
+msgstr "La garantie de loyer"
+
+msgid "Die Nebenkosten"
+msgstr "Les charges"
+
+#, python-format
+msgid "Die Personenzahl muss zwischen 1 und %(max)s liegen."
+msgstr "Le nombre de personnes doit être compris entre 1 et %(max)s."
+
+#, python-format
+msgid "%(feld)s darf nicht negativ sein."
+msgstr "%(feld)s : la valeur ne doit pas être négative."
+
+#, python-format
+msgid "Der Mietbeginn %(datum)s ist nicht plausibel (erlaubt: %(von)s bis %(bis)s)."
+msgstr "Le début du bail %(datum)s n’est pas plausible (autorisé : de %(von)s à %(bis)s)."
+
+#, python-format
+msgid "%(feld)s ist zu hoch (höchstens CHF %(max)s)."
+msgstr "%(feld)s : valeur trop élevée (maximum CHF %(max)s)."
+
+#, python-format
+msgid "Der Mietbeginn (%(jahr)s) liegt vor dem Baujahr der Liegenschaft (%(baujahr)s)."
+msgstr "Le début du bail (%(jahr)s) est antérieur à l’année de construction de l’immeuble (%(baujahr)s)."

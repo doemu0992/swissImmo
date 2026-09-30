@@ -39,7 +39,7 @@ eingetragen).
 - **Antivirus** auf Uploads: externer Dienst / Kosten → Freigabe nötig.
 - **Andere PDF-Erzeuger** (`docuseal_service`, `views/docuseal.py`, Briefe,
   Abrechnungen) nutzen weiter `pisa.CreatePDF` direkt. Nur Mietvertrag und
-  Begleitdokumente laufen über `html_zu_pdf`. Nächster Schritt: dieselbe
+  Begleitdokumente laufen über `pdf_aus_html`. Nächster Schritt: dieselbe
   Umstellung, je Erzeuger ein eigener PR.
 - **Sollstellung mit 500 echten Verträgen auf PostgreSQL:** die Tests laufen auf
   SQLite mit 30. Das Verhalten (eine Transaktion, Savepoints) ist auf beiden

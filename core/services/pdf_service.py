@@ -141,7 +141,7 @@ class PdfFehler(Exception):
 MAX_HTML_ZEICHEN = 5_000_000
 
 
-def html_zu_pdf(html):
+def pdf_aus_html(html):
     """HTML → PDF-Bytes. Wirft ausschliesslich `PdfFehler`."""
     if len(html) > MAX_HTML_ZEICHEN:
         raise PdfFehler(f"Dokument zu gross für die PDF-Erzeugung ({len(html):,} Zeichen).")
@@ -163,4 +163,4 @@ def html_zu_pdf(html):
 @nur_deutsch
 def generate_vertrag_pdf_bytes(vertrag):
     template_name, context = build_vertrag_context(vertrag)
-    return html_zu_pdf(get_template(template_name).render(context))
+    return pdf_aus_html(get_template(template_name).render(context))

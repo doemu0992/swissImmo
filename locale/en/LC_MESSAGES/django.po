@@ -21027,3 +21027,87 @@ msgstr "file only"
 #, python-format
 msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
 msgstr "Overpayment: CHF %(betrag)s booked as tenant credit (account 2030)."
+
+msgid "Bitte eine Liegenschaft oder ein Objekt wählen, dem das Dokument gehört."
+msgstr "Please choose the property or unit the document belongs to."
+
+#, python-format
+msgid "Datei abgelehnt: %(grund)s"
+msgstr "File rejected: %(grund)s"
+
+#, python-format
+msgid "Beleg nicht gespeichert: %(grund)s"
+msgstr "Receipt not saved: %(grund)s"
+
+#, python-format
+msgid "«%(name)s» abgelehnt: %(grund)s"
+msgstr "“%(name)s” rejected: %(grund)s"
+
+msgid "Foto abgelehnt (kein gültiges Bild oder zu gross) — Eintrag ohne Foto gespeichert."
+msgstr "Photo rejected (not a valid image or too large) — entry saved without a photo."
+
+msgid "Foto abgelehnt (kein gültiges Bild oder zu gross) — bisheriges Foto bleibt."
+msgstr "Photo rejected (not a valid image or too large) — the existing photo is kept."
+
+#, python-format
+msgid "Zertifikat abgelehnt: %(grund)s"
+msgstr "Certificate rejected: %(grund)s"
+
+#, python-format
+msgid "Der gewünschte Bezugstermin der Bewerbung (%(datum)s) ist nicht plausibel — der Entwurf beginnt heute. Bitte im Vertrag prüfen."
+msgstr "The desired move-in date in the application (%(datum)s) is not plausible — the draft starts today. Please check it in the contract."
+
+#, python-format
+msgid "Logo abgelehnt: %(grund)s"
+msgstr "Logo rejected: %(grund)s"
+
+#, python-format
+msgid "%(abgelehnt)s Datei(en) abgelehnt (kein gültiges Bild oder zu gross) — das Ticket wurde trotzdem erfasst."
+msgstr "%(abgelehnt)s file(s) rejected (not a valid image or too large) — the ticket was recorded anyway."
+
+#, python-format
+msgid "%(anzahl)s Vertrag/Verträge wurden übersprungen (Datenfehler, siehe Log): Vertrag-Nr. %(ids)s. Alle übrigen sind gestellt."
+msgstr "%(anzahl)s contract(s) skipped (data error, see log): contract no. %(ids)s. All others have been billed."
+
+#, python-format
+msgid "Die Sollstellung %(monat)s/%(jahr)s wurde wegen eines Datenbankfehlers abgebrochen — nichts wurde gebucht. Bitte in einigen Minuten erneut starten (bereits Gestelltes wird nie doppelt erzeugt)."
+msgstr "The monthly billing run %(monat)s/%(jahr)s was aborted because of a database error — nothing was booked. Please restart in a few minutes (anything already billed is never created twice)."
+
+msgid "Der Vertrag konnte wegen eines Datenbankfehlers nicht gespeichert werden — nichts wurde gespeichert. Bitte erneut versuchen."
+msgstr "The contract could not be saved because of a database error — nothing was saved. Please try again."
+
+msgid "Vertrag gespeichert, aber die Dokumente konnten nicht erzeugt werden. Bitte später erneut versuchen."
+msgstr "Contract saved, but the documents could not be generated. Please try again later."
+
+#, python-format
+msgid "Vertrag gespeichert, aber nicht alle Dokumente konnten erzeugt werden (%(liste)s). Bitte später über «Vertragsdokumente» erneut erzeugen."
+msgstr "Contract saved, but not all documents could be generated (%(liste)s). Please generate them again later via “Contract documents”."
+
+msgid "Der Netto-Mietzins"
+msgstr "The net rent"
+
+msgid "Die Kaution"
+msgstr "The deposit"
+
+msgid "Die Nebenkosten"
+msgstr "The service charges"
+
+#, python-format
+msgid "Die Personenzahl muss zwischen 1 und %(max)s liegen."
+msgstr "The number of persons must be between 1 and %(max)s."
+
+#, python-format
+msgid "%(feld)s darf nicht negativ sein."
+msgstr "%(feld)s: the value must not be negative."
+
+#, python-format
+msgid "Der Mietbeginn %(datum)s ist nicht plausibel (erlaubt: %(von)s bis %(bis)s)."
+msgstr "The lease start %(datum)s is not plausible (allowed: %(von)s to %(bis)s)."
+
+#, python-format
+msgid "%(feld)s ist zu hoch (höchstens CHF %(max)s)."
+msgstr "%(feld)s: value too high (maximum CHF %(max)s)."
+
+#, python-format
+msgid "Der Mietbeginn (%(jahr)s) liegt vor dem Baujahr der Liegenschaft (%(baujahr)s)."
+msgstr "The lease start (%(jahr)s) is before the building’s year of construction (%(baujahr)s)."

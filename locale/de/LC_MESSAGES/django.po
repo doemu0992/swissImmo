@@ -21141,3 +21141,87 @@ msgstr "nur Akte"
 #, python-format
 msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
 msgstr "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
+
+msgid "Bitte eine Liegenschaft oder ein Objekt wählen, dem das Dokument gehört."
+msgstr "Bitte eine Liegenschaft oder ein Objekt wählen, dem das Dokument gehört."
+
+#, python-format
+msgid "Datei abgelehnt: %(grund)s"
+msgstr "Datei abgelehnt: %(grund)s"
+
+#, python-format
+msgid "Beleg nicht gespeichert: %(grund)s"
+msgstr "Beleg nicht gespeichert: %(grund)s"
+
+#, python-format
+msgid "«%(name)s» abgelehnt: %(grund)s"
+msgstr "«%(name)s» abgelehnt: %(grund)s"
+
+msgid "Foto abgelehnt (kein gültiges Bild oder zu gross) — Eintrag ohne Foto gespeichert."
+msgstr "Foto abgelehnt (kein gültiges Bild oder zu gross) — Eintrag ohne Foto gespeichert."
+
+msgid "Foto abgelehnt (kein gültiges Bild oder zu gross) — bisheriges Foto bleibt."
+msgstr "Foto abgelehnt (kein gültiges Bild oder zu gross) — bisheriges Foto bleibt."
+
+#, python-format
+msgid "Zertifikat abgelehnt: %(grund)s"
+msgstr "Zertifikat abgelehnt: %(grund)s"
+
+#, python-format
+msgid "Der gewünschte Bezugstermin der Bewerbung (%(datum)s) ist nicht plausibel — der Entwurf beginnt heute. Bitte im Vertrag prüfen."
+msgstr "Der gewünschte Bezugstermin der Bewerbung (%(datum)s) ist nicht plausibel — der Entwurf beginnt heute. Bitte im Vertrag prüfen."
+
+#, python-format
+msgid "Logo abgelehnt: %(grund)s"
+msgstr "Logo abgelehnt: %(grund)s"
+
+#, python-format
+msgid "%(abgelehnt)s Datei(en) abgelehnt (kein gültiges Bild oder zu gross) — das Ticket wurde trotzdem erfasst."
+msgstr "%(abgelehnt)s Datei(en) abgelehnt (kein gültiges Bild oder zu gross) — das Ticket wurde trotzdem erfasst."
+
+#, python-format
+msgid "%(anzahl)s Vertrag/Verträge wurden übersprungen (Datenfehler, siehe Log): Vertrag-Nr. %(ids)s. Alle übrigen sind gestellt."
+msgstr "%(anzahl)s Vertrag/Verträge wurden übersprungen (Datenfehler, siehe Log): Vertrag-Nr. %(ids)s. Alle übrigen sind gestellt."
+
+#, python-format
+msgid "Die Sollstellung %(monat)s/%(jahr)s wurde wegen eines Datenbankfehlers abgebrochen — nichts wurde gebucht. Bitte in einigen Minuten erneut starten (bereits Gestelltes wird nie doppelt erzeugt)."
+msgstr "Die Sollstellung %(monat)s/%(jahr)s wurde wegen eines Datenbankfehlers abgebrochen — nichts wurde gebucht. Bitte in einigen Minuten erneut starten (bereits Gestelltes wird nie doppelt erzeugt)."
+
+msgid "Der Vertrag konnte wegen eines Datenbankfehlers nicht gespeichert werden — nichts wurde gespeichert. Bitte erneut versuchen."
+msgstr "Der Vertrag konnte wegen eines Datenbankfehlers nicht gespeichert werden — nichts wurde gespeichert. Bitte erneut versuchen."
+
+msgid "Vertrag gespeichert, aber die Dokumente konnten nicht erzeugt werden. Bitte später erneut versuchen."
+msgstr "Vertrag gespeichert, aber die Dokumente konnten nicht erzeugt werden. Bitte später erneut versuchen."
+
+#, python-format
+msgid "Vertrag gespeichert, aber nicht alle Dokumente konnten erzeugt werden (%(liste)s). Bitte später über «Vertragsdokumente» erneut erzeugen."
+msgstr "Vertrag gespeichert, aber nicht alle Dokumente konnten erzeugt werden (%(liste)s). Bitte später über «Vertragsdokumente» erneut erzeugen."
+
+msgid "Der Netto-Mietzins"
+msgstr "Der Netto-Mietzins"
+
+msgid "Die Kaution"
+msgstr "Die Kaution"
+
+msgid "Die Nebenkosten"
+msgstr "Die Nebenkosten"
+
+#, python-format
+msgid "Die Personenzahl muss zwischen 1 und %(max)s liegen."
+msgstr "Die Personenzahl muss zwischen 1 und %(max)s liegen."
+
+#, python-format
+msgid "%(feld)s darf nicht negativ sein."
+msgstr "%(feld)s darf nicht negativ sein."
+
+#, python-format
+msgid "Der Mietbeginn %(datum)s ist nicht plausibel (erlaubt: %(von)s bis %(bis)s)."
+msgstr "Der Mietbeginn %(datum)s ist nicht plausibel (erlaubt: %(von)s bis %(bis)s)."
+
+#, python-format
+msgid "%(feld)s ist zu hoch (höchstens CHF %(max)s)."
+msgstr "%(feld)s ist zu hoch (höchstens CHF %(max)s)."
+
+#, python-format
+msgid "Der Mietbeginn (%(jahr)s) liegt vor dem Baujahr der Liegenschaft (%(baujahr)s)."
+msgstr "Der Mietbeginn (%(jahr)s) liegt vor dem Baujahr der Liegenschaft (%(baujahr)s)."

@@ -20,7 +20,7 @@ from unittest import mock
 from django.test import SimpleTestCase, TestCase
 from django.utils import translation
 
-from core.services import dokument_service
+from core.services import dokument_service, pdf_service
 from core.services.dokumentsprache import sprache_von
 from core.tests._helfer import _basis_objekte
 
@@ -30,9 +30,10 @@ def _html(vertrag, doc_type):
 
     def _create(html, dest, **_kw):
         gefangen['html'] = html
+        dest.write(b'%PDF-1.4 test')   # pdf_aus_html lehnt leere Ausgabe ab
         return SimpleNamespace(err=0)
 
-    with mock.patch.object(dokument_service.pisa, 'CreatePDF', side_effect=_create):
+    with mock.patch.object(pdf_service.pisa, 'CreatePDF', side_effect=_create):
         dokument_service.generate_dokument_pdf_bytes(vertrag, doc_type)
     return gefangen['html']
 
