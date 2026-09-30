@@ -139,6 +139,72 @@ def hole_abrechnung(periode):
 # im deutsch formulierten Abrechnungs-PDF. Mit der Sprache der Sachbearbeitung
 # stünden dort übersetzte Kategorien (`get_kategorie_display`).
 @nur_deutsch
+def akonto_gestellt(vertrag, v_start, v_ende):
+    """Akonto-Nebenkosten, die dem Mieter im Zeitraum TATSÄCHLICH gestellt wurden.
+
+    Stresstest 30.09.2026: Die Engine rechnete mit dem heutigen Vertragswert mal
+    zwölf Monate und ignorierte, was gestellt worden war. Unterjährige
+    Akonto-Anpassungen, Gratismonate und NK-Erlasse flossen nicht ein; der Saldo
+    stimmte dann nicht mit dem Mieterkonto überein.
+
+    Je Kalendermonat des Zeitraums:
+      · Gibt es die Sollstellungs-Forderung «Miete & NK MM/JJJJ» (nicht storniert),
+        zählt ihr NK-Anteil: Haben 3020 abzüglich NK-Erlass (Soll 3091) —
+        anteilig, wenn die Periode den Monat nur teilweise deckt.
+      · Gibt es sie nicht (Sollstellung nicht gelaufen, Altbestand), gilt wie
+        bisher der Vertragswert für diese Tage.
+
+    Massgebend ist das GESTELLTE, nicht das bezahlte Akonto: Unbezahltes bleibt
+    als offene Forderung im Mieterkonto und würde sonst zweimal verlangt.
+    Gibt (betrag, anzahl_monate_aus_buchungen) zurück.
+    """
+    from finance.models import Buchung, DebitorenRechnung
+
+    tage_jahr = Decimal(366 if calendar.isleap(v_start.year) else 365)
+    nk_monat = vertrag.nebenkosten or Decimal('0.00')
+    gesamt = Decimal('0.00')
+    aus_buchungen = 0
+    j, m = v_start.year, v_start.month
+    while (j, m) <= (v_ende.year, v_ende.month):
+        letzter = calendar.monthrange(j, m)[1]
+        m_start, m_ende = datetime.date(j, m, 1), datetime.date(j, m, letzter)
+        von, bis = max(v_start, m_start), min(v_ende, m_ende)
+        tage = (bis - von).days + 1
+        if tage > 0:
+            rechnung = (DebitorenRechnung.alle_organisationen
+                        .filter(vertrag=vertrag, titel=f"Miete & NK {m:02d}/{j}")
+                        .exclude(status='storniert').first())
+            gestellt = None
+            if rechnung is not None:
+                basis = Buchung.alle_organisationen.filter(
+                    debitoren_rechnung=rechnung, ist_storno=False, storniert_am__isnull=True)
+                haben = basis.filter(haben_konto__nummer='3020').aggregate(s=Sum('betrag'))['s']
+                if haben is not None:
+                    erlass = basis.filter(soll_konto__nummer='3091').aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+                    gestellt = Decimal(haben) - Decimal(erlass)
+            if gestellt is not None:
+                # Vertragstage des Monats (Einzug/Auszug mitten im Monat): darauf bezog
+                # sich die Forderung. Die Periode deckt davon `tage`.
+                v_von = max(vertrag.beginn, m_start)
+                v_bis = min(vertrag.ende, m_ende) if vertrag.ende else m_ende
+                v_tage = max((v_bis - v_von).days + 1, 1)
+                gesamt += gestellt * Decimal(min(tage, v_tage)) / Decimal(v_tage)
+                aus_buchungen += 1
+            else:
+                # Lücke im gemischten Fall: der Monatswert für diese Tage (volle
+                # Monate ergeben genau den Vertragswert, ohne Tagesrundungsreste).
+                gesamt += nk_monat * Decimal(tage) / Decimal(letzter)
+        m += 1
+        if m == 13:
+            j, m = j + 1, 1
+    if aus_buchungen == 0:
+        # Keine einzige Sollstellung im Zeitraum: unverändert die bisherige
+        # Jahresformel — Altbestand und Abrechnungen ohne Mietenlauf bleiben
+        # auf den Rappen gleich.
+        gesamt = nk_monat * 12 / tage_jahr * Decimal((v_ende - v_start).days + 1)
+    return gesamt, aus_buchungen
+
+
 def berechne_abrechnung(periode_id):
     """
     Professionelle Schweizer HNK-Abrechnung (Expert-Version).
@@ -393,12 +459,9 @@ def berechne_abrechnung(periode_id):
             nk_typ = getattr(vertrag, 'nk_abrechnungsart', 'akonto')
 
             if nk_typ == 'akonto':
-                import calendar as _cal
-                nk_monat = vertrag.nebenkosten or Decimal('0.00')
-                # Tage des Kalenderjahres (Schaltjahr = 366) statt fix 365 — sonst wird
-                # das bezahlte Akonto in Schaltjahren um ~0.27 % zu hoch angesetzt.
-                _tage_jahr = Decimal(366 if _cal.isleap(start_p.year) else 365)
-                bezahltes_akonto = (nk_monat * 12 / _tage_jahr) * Decimal(tage_bewohnt)
+                # Das TATSÄCHLICH gestellte Akonto (Sollstellung), je Monat — nur wo keine
+                # Forderung existiert, gilt der Vertragswert (siehe `akonto_gestellt`).
+                bezahltes_akonto, _n_buch = akonto_gestellt(vertrag, v_start, v_ende)
                 saldo = mieter_total_kosten - bezahltes_akonto # Positiv = Nachzahlung
 
                 abrechnungen.append({
