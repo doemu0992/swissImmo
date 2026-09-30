@@ -2068,22 +2068,26 @@ def fw_schlussabrechnung(request, vertrag_id):
                         # Gutschrift zugunsten Mieter → als echtes Guthaben (2030) führen,
                         # damit es im Mieterkonto sichtbar und auszahlbar ist.
                         from finance.booking import konto as _k_s
-                        if netto_neu != 0:
-                            buche("3600", "2030", abs(netto_neu),
-                                  f"Schlussabrechnung [V{v.pk}] {v.mieter} — Gutschrift",
-                                  datum=dat_s, liegenschaft=lg_s, user=request.user)
-                        if mwst_neu < 0:
-                            # Spiegelbildliche Steuerkorrektur: der Umsatz wird
-                            # gemindert, also auch die geschuldete MWST.
-                            buche("2200", "2030", abs(mwst_neu),
-                                  f"MWST-Korrektur Schlussabrechnung [V{v.pk}] {v.mieter}",
-                                  datum=dat_s, liegenschaft=lg_s, user=request.user)
-                        Zahlungseingang.objects.create(
+                        # REIHENFOLGE ist Pflicht: erst den Zahlungseingang anlegen, DANN
+                        # mit `zahlung=` buchen. Der Storno hebt nur Buchungen auf, die an
+                        # einem Zahlungseingang hängen — sonst bleibt nach einem Storno das
+                        # Guthaben im Hauptbuch stehen, das Nebenbuch aber nicht (Audit).
+                        z_gut = Zahlungseingang.objects.create(
                             vertrag=v, betrag=abs(neu_saldo), datum_eingang=dat_s,
                             buchungs_monat=dat_s.replace(day=1),
                             bemerkung="Schlussabrechnung — Guthaben Mieter"[:255],
                             konto=_k_s("2030"), liegenschaft=lg_s,
                             erstellt_von=request.user, status='verbucht')
+                        if netto_neu != 0:
+                            buche("3600", "2030", abs(netto_neu),
+                                  f"Schlussabrechnung [V{v.pk}] {v.mieter} — Gutschrift",
+                                  datum=dat_s, liegenschaft=lg_s, zahlung=z_gut, user=request.user)
+                        if mwst_neu < 0:
+                            # Spiegelbildliche Steuerkorrektur: der Umsatz wird
+                            # gemindert, also auch die geschuldete MWST.
+                            buche("2200", "2030", abs(mwst_neu),
+                                  f"MWST-Korrektur Schlussabrechnung [V{v.pk}] {v.mieter}",
+                                  datum=dat_s, liegenschaft=lg_s, zahlung=z_gut, user=request.user)
 
                     # ── 2) Kaution bilanziell abwickeln (Audit K3) ──
                     # Früher wurden nur Vertragsfelder gesetzt — 1015/2010 blieben ewig
@@ -2131,15 +2135,15 @@ def fw_schlussabrechnung(request, vertrag_id):
                             v.save()
                             from finance.models import Buchung as _BS
                             beleg_k = f"Kaution Schlussabrechnung [V{v.pk}] {v.mieter}"
-                            if not _BS.objects.filter(beleg_text__startswith=beleg_k,
-                                                      ist_storno=False,
-                                                      storniert_am__isnull=True).exists():
+                            noch_nicht_gebucht = not _BS.objects.filter(
+                                beleg_text__startswith=beleg_k, ist_storno=False,
+                                storniert_am__isnull=True).exists()
+                            if noch_nicht_gebucht:
                                 buche("1020", "1015", kaution, f"{beleg_k} — Sperrkonto freigegeben",
                                       datum=dat_s, liegenschaft=lg_s, user=request.user)
-                                if verrechnet > 0:
-                                    buche("2010", "1100", verrechnet,
-                                          f"{beleg_k} — Verrechnung offene Forderungen",
-                                          datum=dat_s, liegenschaft=lg_s, user=request.user)
+                                # Die VERRECHNUNG (2010 an 1100) wird unten je Forderung gebucht,
+                                # jeweils am zugehörigen Zahlungseingang: nur so hebt der Storno
+                                # einer Verrechnung ihre Buchung mit auf.
                                 if rueck > 0:
                                     buche("2010", "1020", rueck, f"{beleg_k} — Rückzahlung an Mieter",
                                           datum=dat_s, liegenschaft=lg_s, user=request.user)
@@ -2152,12 +2156,17 @@ def fw_schlussabrechnung(request, vertrag_id):
                                 teil = min(rest_v, r_op.offener_betrag)
                                 if teil <= 0:
                                     continue
-                                Zahlungseingang.objects.create(
+                                z_verr = Zahlungseingang.objects.create(
                                     vertrag=v, betrag=teil, datum_eingang=dat_s,
                                     buchungs_monat=(r_op.faellig_am or r_op.datum or dat_s).replace(day=1),
                                     bemerkung=f"Verrechnung Mietkaution — {r_op.titel}"[:255],
                                     debitoren_rechnung=r_op, liegenschaft=lg_s,
                                     erstellt_von=request.user, status='verbucht')
+                                if noch_nicht_gebucht:
+                                    buche("2010", "1100", teil,
+                                          f"{beleg_k} — Verrechnung offene Forderungen ({r_op.titel})",
+                                          datum=dat_s, liegenschaft=lg_s, debitor=r_op,
+                                          zahlung=z_verr, user=request.user)
                                 r_op.status = 'bezahlt' if r_op.offener_betrag <= 0 else 'teilbezahlt'
                                 r_op.save(update_fields=['status'])
                                 rest_v -= teil
@@ -2170,9 +2179,12 @@ def fw_schlussabrechnung(request, vertrag_id):
                     guthaben_pos = _guthaben_positionen(v)
                     guthaben_offen = sum((z.betrag for z in guthaben_pos), Decimal('0.00'))
                     if guthaben_offen > 0:
-                        buche("2030", "1020", guthaben_offen,
-                              f"Schlussabrechnung [V{v.pk}] {v.mieter} — Guthaben ausbezahlt",
-                              datum=dat_s, liegenschaft=lg_s, user=request.user)
+                        # Je Guthaben-Position gebucht und am Zahlungseingang verankert: Ein
+                        # Storno der Position hebt so auch ihre Auszahlung auf.
+                        for z_g in guthaben_pos:
+                            buche("2030", "1020", z_g.betrag,
+                                  f"Schlussabrechnung [V{v.pk}] {v.mieter} — Guthaben ausbezahlt",
+                                  datum=dat_s, liegenschaft=lg_s, zahlung=z_g, user=request.user)
                         for z_g in guthaben_pos:
                             z_g.bemerkung = f"{z_g.bemerkung} {GUTHABEN_AUSBEZAHLT}"[:255]
                             z_g.save(update_fields=['bemerkung'])
