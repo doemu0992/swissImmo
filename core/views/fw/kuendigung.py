@@ -684,3 +684,94 @@ def fw_nutzungsentschaedigung(request, vertrag_id):
         **basis, 'nav': 'vertraege', 'v': v, 'offen': offen,
         'vorschau': vorschau, 'rueckgabe': ne.rueckgabe_datum(v),
     })
+
+
+#: Art. 270a Abs. 2 OR: Der Vermieter muss das Herabsetzungsbegehren innert 30 Tagen beantworten.
+HERABSETZUNG_ANTWORT_TAGE = 30
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_herabsetzung(request, vertrag_id):
+    """Herabsetzungsbegehren des Mieters als Vorgang (Art. 270a OR).
+
+    Bisher gab es nur die Potenzialanzeige («Senkung möglich»). Verlangt der Mieter
+    eine Herabsetzung, muss der Vermieter innert 30 Tagen antworten — die Frist
+    läuft ab Eingang. POST `aktion=eingang`: Begehren erfassen (Frist-Pendenz).
+    POST `aktion=antwort`: Antwort erteilt (schliesst die Pendenz, hält das Ergebnis
+    fest und zeigt, bis wann der Mieter die Schlichtungsbehörde anrufen kann)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.models import Pendenz
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'),
+                          id=vertrag_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+    lg = v.einheit.liegenschaft if v.einheit_id else None
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        if aktion == 'eingang':
+            try:
+                eingang = date.fromisoformat(request.POST.get('eingang_datum') or '')
+            except ValueError:
+                eingang = heute
+            if eingang > heute:
+                messages.error(request, gettext('Das Eingangsdatum liegt in der Zukunft.'))
+                return redirect(f'/neu/vertraege/{v.id}/herabsetzung/')
+            quelle = f'270a:{v.pk}:{eingang.isoformat()}'
+            if Pendenz.objects.filter(vertrag=v, quelle=quelle).exists():
+                messages.info(request, gettext('Dieses Begehren ist bereits erfasst.'))
+                return redirect(f'/neu/vertraege/{v.id}/herabsetzung/')
+            frist = eingang + _timedelta(days=HERABSETZUNG_ANTWORT_TAGE)
+            Pendenz.objects.create(
+                titel=f'Art. 270a: Herabsetzungsbegehren beantworten – {v.mieter.display_name}',
+                beschreibung=(f'Begehren des Mieters eingegangen am {eingang:%d.%m.%Y}. Der Vermieter '
+                              f'muss innert {HERABSETZUNG_ANTWORT_TAGE} Tagen antworten (Art. 270a Abs. 2 OR). '
+                              + (f'Notiz: {request.POST.get("notiz").strip()[:300]}'
+                                 if (request.POST.get('notiz') or '').strip() else '')).strip(),
+                kategorie='frist', faellig_am=frist, vertrag=v, liegenschaft=lg, quelle=quelle,
+                erstellt_von=request.user if request.user.is_authenticated else None)
+            log_aktion(request, 'Herabsetzungsbegehren erfasst', str(v.mieter),
+                       f'eingegangen {eingang:%d.%m.%Y}, Antwort bis {frist:%d.%m.%Y}', ziel=v)
+            messages.success(request, '✅ ' + gettext('Begehren erfasst — Antwort bis %(frist)s.') % {'frist': frist.strftime('%d.%m.%Y')})
+        elif aktion == 'antwort':
+            p = Pendenz.objects.filter(vertrag=v, pk=request.POST.get('pendenz') or 0,
+                                       quelle__startswith='270a:', erledigt=False).first()
+            ergebnis = request.POST.get('ergebnis')
+            if p is None or ergebnis not in ('zustimmung', 'teilweise', 'ablehnung'):
+                messages.error(request, gettext('Bitte ein offenes Begehren und das Ergebnis der Antwort wählen.'))
+                return redirect(f'/neu/vertraege/{v.id}/herabsetzung/')
+            try:
+                antwort_am = date.fromisoformat(request.POST.get('antwort_datum') or '')
+            except ValueError:
+                antwort_am = heute
+            text = {'zustimmung': 'Zustimmung', 'teilweise': 'Teilweise Zustimmung',
+                    'ablehnung': 'Ablehnung'}[ergebnis]
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.beschreibung = f'Antwort am {antwort_am:%d.%m.%Y}: {text}.\n\n{p.beschreibung}'
+            p.save(update_fields=['erledigt', 'erledigt_am', 'beschreibung'])
+            if ergebnis != 'zustimmung':
+                # Information für die Verwaltung: Bis dahin kann der Mieter anrufen.
+                Pendenz.objects.create(
+                    titel=f'Art. 270a: Anrufungsfrist des Mieters läuft – {v.mieter.display_name}',
+                    beschreibung=(f'{text} am {antwort_am:%d.%m.%Y}. Der Mieter kann die '
+                                  f'Schlichtungsbehörde innert 30 Tagen anrufen (Art. 270a Abs. 3 OR). '
+                                  'Danach gilt die Antwort als akzeptiert.'),
+                    kategorie='frist', faellig_am=antwort_am + _timedelta(days=30), vertrag=v,
+                    liegenschaft=lg, quelle=f'270a-anrufung:{v.pk}:{antwort_am.isoformat()}')
+            log_aktion(request, 'Herabsetzungsbegehren beantwortet', str(v.mieter), text, ziel=v)
+            messages.success(request, '✅ ' + gettext('Antwort festgehalten: %(text)s.') % {'text': text})
+            if ergebnis != 'ablehnung':
+                messages.info(request, gettext('Die Senkung wird über «Mietzinsanpassung» mit dem amtlichen Formular mitgeteilt.'))
+        return redirect(f'/neu/vertraege/{v.id}/herabsetzung/')
+
+    offene = list(Pendenz.objects.filter(vertrag=v, quelle__startswith='270a:', erledigt=False)
+                  .order_by('faellig_am'))
+    return render(request, 'fw/herabsetzung.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'offene': offene, 'heute_iso': heute.isoformat(),
+        'antwort_tage': HERABSETZUNG_ANTWORT_TAGE,
+    })

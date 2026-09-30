@@ -1,0 +1,57 @@
+{% extends 'fw/base.html' %}
+{% load zeichen %}
+{% block title %}Herabsetzungsbegehren — {{ v.mieter.display_name }}{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>Herabsetzungsbegehren</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>Herabsetzungsbegehren (Art. 270a OR)</h1>
+        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}</p>
+    </div>
+</div>
+
+<div class="fw-card fw-rumpf space-y-4 max-w-2xl">
+    <div class="fw-hinweis info rounded-lg"><span class="fw-hi">{% zeichen 'recht' %}</span>
+        <div class="fw-ht">Verlangt der Mieter eine Herabsetzung des Mietzinses, muss der Vermieter innert <b>{{ antwort_tage }} Tagen</b> antworten. Die Frist läuft ab Eingang des Begehrens.</div>
+    </div>
+
+    {% if offene %}
+    <h2>Offene Begehren</h2>
+    {% for p in offene %}
+    <form method="post" class="fw-card fw-rumpf space-y-2">
+        {% csrf_token %}
+        <input type="hidden" name="aktion" value="antwort">
+        <input type="hidden" name="pendenz" value="{{ p.id }}">
+        <p><b>Antwort bis {{ p.faellig_am|date:"d.m.Y" }}</b><br><span class="fw-klein">{{ p.beschreibung }}</span></p>
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label class="fw-label">Ergebnis</label>
+                <select name="ergebnis" class="fw-feld">
+                    <option value="zustimmung">Zustimmung</option>
+                    <option value="teilweise">Teilweise Zustimmung</option>
+                    <option value="ablehnung">Ablehnung</option>
+                </select></div>
+            <div class="fw-feldblock"><label class="fw-label">Antwort erteilt am</label>
+                <input type="date" name="antwort_datum" value="{{ heute_iso }}" max="{{ heute_iso }}" class="fw-feld"></div>
+        </div>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} Antwort festhalten</button>
+    </form>
+    {% endfor %}
+    {% endif %}
+
+    <h2>Neues Begehren erfassen</h2>
+    <form method="post" class="space-y-2">
+        {% csrf_token %}
+        <input type="hidden" name="aktion" value="eingang">
+        <div class="fw-feldblock"><label class="fw-label">Eingegangen am</label>
+            <input type="date" name="eingang_datum" value="{{ heute_iso }}" max="{{ heute_iso }}" class="fw-feld sm:w-64"></div>
+        <div class="fw-feldblock"><label class="fw-label">Notiz</label>
+            <input name="notiz" class="fw-feld" placeholder="z. B. Begründung des Mieters, verlangte Senkung"></div>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} Begehren erfassen</button>
+    </form>
+</div>
+{% endblock %}
