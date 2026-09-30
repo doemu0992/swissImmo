@@ -648,9 +648,11 @@ class Mietvertrag(OrganisationAusKette):
         Abnahme, Schlussabrechnung UND Neuvermietung standen bei A4 noch vier
         Pendenzen offen."""
         from core.services.automation import erledige_pendenzen_fuer
+        from core.services.mieterwechsel_fall import nachmieter_aktiv
         for alt in (self.einheit.vertraege.filter(status__in=('gekuendigt', 'archiviert'))
                     .exclude(pk=self.pk)):
             erledige_pendenzen_fuer(alt, ['Nachmieter', 'Inserat'])
+            nachmieter_aktiv(alt, self)
 
     def _leerstand_schliessen(self):
         """Ein aktiver Vertrag beendet den offenen Leerstand der Einheit.

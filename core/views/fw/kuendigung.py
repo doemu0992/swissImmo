@@ -210,6 +210,10 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         # Auszugscheckliste automatisch als Pendenzen anlegen
         leerstand_gewuenscht = P.get('leerstand_anlegen') == 'on'
         n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=leerstand_gewuenscht)
+        # Der Auszug ist EIN Vorgang: Fall «Mieterwechsel» eröffnen (wenn die Fallart
+        # eingerichtet ist), bevor die Stichwort-Ereignisse unten seine Schritte abhaken.
+        from core.services.mieterwechsel_fall import eroeffnen as _mw_eroeffnen
+        _mw_eroeffnen(v, benutzer=request.user if request.user.is_authenticated else None)
         # Wird die Kündigung schon beim Erfassen als bestätigt angelegt, ist «Kündigung
         # schriftlich bestätigen» erledigt — gleiche Regel wie in fw_kuendigung_bestaetigen.
         # Vorher blieb die Pendenz offen, obwohl das Häkchen gesetzt war (Stresstest, Punkt 12).
@@ -580,6 +584,8 @@ def fw_kuendigung_bestaetigen(request, pk):
     v.save(update_fields=['status', 'aktiv', 'ende'])
 
     n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=False)
+    from core.services.mieterwechsel_fall import eroeffnen as _mw_eroeffnen
+    _mw_eroeffnen(v, benutzer=request.user if request.user.is_authenticated else None)
     # Bestätigung erfolgt → 'Kündigung schriftlich bestätigen' abhaken
     from core.services.automation import erledige_pendenzen_fuer
     erledige_pendenzen_fuer(v, ['schriftlich', 'Kündigungsformular'], user=request.user)

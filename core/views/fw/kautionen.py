@@ -131,6 +131,8 @@ def fw_kaution_aktion(request, vertrag_id):
         except Exception as exc:
             messages.error(request, '❌ ' + gettext('Kautions-Einzahlung konnte nicht gebucht werden: %(exc)s') % {'exc': exc})
             return redirect(f'/neu/vertraege/{v.id}/')
+        from core.services.mieterwechsel_fall import kaution_einbezahlt
+        kaution_einbezahlt(v, benutzer=request.user)
         log_aktion(request, "Kaution einbezahlt (Sperrkonto)", str(v.mieter), f"CHF {v.kautions_betrag}", ziel=v)
         messages.success(request, '✅ ' + gettext('Kautions-Einzahlung auf Sperrkonto erfasst (bilanziert).'))
 

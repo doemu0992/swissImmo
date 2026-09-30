@@ -375,6 +375,13 @@ def erledige_pendenzen_fuer(vertrag, keywords, user=None):
         p.erledigt_am = heute
         p.save(update_fields=['erledigt', 'erledigt_am'])
         n += 1
+    # Dieselben Ereignisse haken die Schritte des Falls «Mieterwechsel» ab
+    # (core/services/mieterwechsel_fall.py) — eine Buchführung, nicht zwei.
+    try:
+        from core.services.mieterwechsel_fall import schritte_abhaken
+        schritte_abhaken(vertrag, keywords, benutzer=user)
+    except Exception:
+        logger.warning('Fall «Mieterwechsel»: Schritte zu %s nicht abgehakt', vertrag.pk, exc_info=True)
     return n
 
 
