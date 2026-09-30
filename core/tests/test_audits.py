@@ -769,7 +769,7 @@ class NachtN6BewirtschafterTests(TestCase):
         self.assertEqual(r.status_code, 200)
         body = r.content.decode()
         self.assertIn('Wird angepasst', body)
-        self.assertIn('Anpassung(en) erfassen', body)
+        self.assertIn('1 Anpassung erfassen', body)
 
     def test_massenanpassung_ausfuehren_und_idempotent(self):
         from rentals.models import MietzinsAnpassung
