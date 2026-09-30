@@ -183,6 +183,7 @@
         <label class="fw-haekchen"><input type="checkbox" name="mit_zins" class="fw-akzent">{% trans "Verzugszins (5%) berechnen" %}</label>
         <label class="fw-haekchen"><input type="checkbox" name="kein_versand" class="fw-akzent">{% trans "Testlauf: nur erstellen, keine E-Mails versenden" %}</label>
     </div>
+    <a href="/neu/mahnwesen/trockenlauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'suchen' %}{% trans "Trockenlauf ansehen" %}</a>
     <button type="submit" class="fw-btn fw-primary">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
 </form>
 {% endif %}

@@ -149,6 +149,9 @@ VERZUGSZINS_PROZENT = Decimal('5.0')   # Art. 104 OR
 #: Nach so vielen Tagen ohne Änderung an einem offenen Ticket entsteht eine Pendenz.
 TICKET_TAGE_OHNE_BEWEGUNG = 14
 
+#: Mindestabstand (Tage) zwischen zwei Mahnungen derselben Forderung im Mahnlauf.
+MAHN_MIN_ABSTAND_TAGE = 7
+
 
 def _stufe_fuer_tage(tage):
     for stufe, ab in MAHN_STUFEN_TAGE:
@@ -164,13 +167,19 @@ def verzugszins(betrag, tage, prozent=VERZUGSZINS_PROZENT):
     return (Decimal(betrag) * prozent / Decimal('100') * Decimal(tage) / Decimal('360')).quantize(Decimal('0.01'))
 
 
-def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
+def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry_run=False):
     """Führt einen Sammel-Mahnlauf über alle überfälligen offenen Debitoren aus.
     Für jede fällige Rechnung, die noch keine Mahnung der berechneten Stufe hat,
     wird ein revisionssicherer Mahnung-Eintrag erzeugt (+ optional Mahngebühr als
     Debitor, + optional Zahlungserinnerung per E-Mail). Idempotent pro Stufe.
 
     Gibt dict zurück: {'gemahnt': n, 'emails': m, 'gebuehren': CHF, 'zins': CHF}.
+
+    `dry_run=True` (Trockenlauf): rechnet genau dieselben Entscheidungen, schreibt
+    und versendet aber NICHTS. `res['plan']` enthält je geplanter Mahnung eine Zeile
+    (Rechnung, Mieter, Stufe, offener Betrag, Gebühr, Zins, E-Mail ja/nein). Damit
+    sieht die Verwaltung vor dem Lauf, was er täte — im Stresstest gingen sonst 52
+    Mails ungesehen raus.
     """
     from finance.models import DebitorenRechnung
     from django.db.models import Q
@@ -190,7 +199,8 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
 
-    res = {'gemahnt': 0, 'emails': 0, 'gebuehren': Decimal('0.00'), 'zins': Decimal('0.00'), 'geprueft': 0}
+    res = {'gemahnt': 0, 'emails': 0, 'gebuehren': Decimal('0.00'), 'zins': Decimal('0.00'), 'geprueft': 0,
+           'plan': []}
 
     for r in qs:
         faellig = r.faellig_am or r.datum
@@ -217,6 +227,11 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         hoechste = r.mahnungen.order_by('-stufe').first()
         if hoechste and hoechste.stufe >= stufe:
             continue
+        # MINDESTABSTAND zwischen zwei Mahnungen derselben Forderung: Läuft der Lauf
+        # an Tag 29 und Tag 30, gingen sonst 1. und 2. Mahnung an aufeinanderfolgenden
+        # Tagen raus (samt Gebühr), und der Mieter hätte keine Zeit zu zahlen.
+        if hoechste and (heute - hoechste.datum).days < MAHN_MIN_ABSTAND_TAGE:
+            continue
 
         gebuehr = _s['gebuehr']
         # Verzugszins nur als DELTA zur bereits fakturierten Summe (Art. 104 OR:
@@ -227,6 +242,19 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         if mit_zins:
             bereits = sum((m.zins or Decimal('0.00')) for m in r.mahnungen.all())
             zins = max(Decimal('0.00'), verzugszins(offen, tage) - bereits)
+        will_mail = bool(send_email and r.vertrag and r.vertrag.mieter.email)
+        if dry_run:
+            res['plan'].append({
+                'rechnung': r, 'mieter': r.vertrag.mieter.display_name if r.vertrag_id else '—',
+                'stufe': stufe, 'label': _s['label'], 'tage': tage, 'betrag': offen,
+                'gebuehr': gebuehr, 'zins': zins, 'email': will_mail,
+                'kuendigung': _s['kuendigung']})
+            res['gemahnt'] += 1
+            res['gebuehren'] += gebuehr
+            res['zins'] += zins
+            if will_mail:
+                res['emails'] += 1
+            continue
         try:
             _mahnschritt_buchen(r, stufe, heute, offen, gebuehr, zins, tage,
                                 send_email, user)

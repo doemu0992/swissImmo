@@ -370,6 +370,21 @@ def fw_mahnung_erfassen(request):
 
 
 @rolle_erforderlich(ROLLE_VERWALTER)
+def fw_mahnlauf_trockenlauf(request):
+    """Was der Mahnlauf JETZT täte — ohne etwas zu buchen oder zu versenden."""
+    from django.shortcuts import render
+    from core.services.automation import run_mahnlauf
+    basis = _global_filter(request)
+    mit_zins = request.GET.get('mit_zins') == 'on'
+    send_email = request.GET.get('kein_versand') != 'on'
+    res = run_mahnlauf(aktive_lg=basis['aktive_lg'], send_email=send_email,
+                       mit_zins=mit_zins, dry_run=True)
+    return render(request, 'fw/mahnlauf_trockenlauf.html', {
+        **basis, 'nav': 'mahnwesen', 'res': res, 'plan': res['plan'],
+        'mit_zins': mit_zins, 'send_email': send_email})
+
+
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_mahnlauf(request):
     """Sammel-Mahnlauf über ALLE fälligen offenen Debitoren (statt einzeln).
     Erzeugt Mahnungen je Stufe (idempotent), stellt Mahngebühr + optional
