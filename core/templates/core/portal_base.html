@@ -3,78 +3,82 @@
 {% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{% block title %}{% trans "Portal — SwissImmo" %}{% endblock %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
+    <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2230%22 fill=%22%230e6b65%22/><text x=%2250%22 y=%2266%22 font-size=%2244%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
 {% include 'core/_assets_aussen.html' %}
-    <style>
-        body { font-family: 'IBM Plex Sans', sans-serif; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    </style>
 </head>
-<body class="fw-flaeche2 fw-strong">
-<div class="flex min-h-[100dvh]">
+{% comment %}
+DIE PORTALHUELLE NACH KONZEPT-V8 (Redesign 30.09.2026)
 
-    <!-- Backdrop (mobil) -->
-    <div id="pBackdrop" onclick="pCloseNav()" class="fixed inset-0 fw-vorhang z-40 hidden lg:hidden"></div>
+Dieselbe Hülle wie die Anwendung (`fw/base.html`): helle Leiste links,
+Inhalt auf dem Grund, am Telefon eine Kopfzeile mit Menüknopf. Bis dahin
+trug das Portal eine dunkle Leiste in einem eigenen Farbton (#161926).
 
-    <!-- ================= SIDEBAR ================= -->
-    <aside id="pSidebar" class="w-60 bg-[#161926] text-white flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
-        <div class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5">
-            <span class="w-9 h-9 rounded-lg fw-balken-voll flex items-center justify-center shadow-lg fw-schatten-marke shrink-0">
-                {% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-schluessel"/></svg>{% endblock %}
-            </span>
-            <div class="leading-tight flex-1">
-                <div class="font-bold tracking-wide text-sm uppercase">{% block brand %}{% trans "Mieterportal" %}{% endblock %}</div>
-                <div class="text-[11px] fw-faint">SwissImmo</div>
+Unverändert: die Ids `pSidebar`/`pBackdrop`, `pOpenNav`/`pCloseNav`, alle
+Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
+`scripts`), die Sprachwahl und das Abmelden per POST.
+{% endcomment %}
+<body class="fw-body">
+<div class="fw-app">
+
+    <!-- Vorhang (mobil) -->
+    <div id="pBackdrop" onclick="pCloseNav()" class="fw-vorhang-mobil hidden"></div>
+
+    <!-- ================= LEISTE ================= -->
+    <aside id="pSidebar" class="fw-side fw-flaeche" aria-label="{% trans 'Hauptnavigation' %}">
+        <div class="fw-side-kopf">
+            <span class="fw-marke-zeichen">{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke" aria-hidden="true"><use href="#z-schluessel"/></svg>{% endblock %}</span>
+            <div class="fw-marke-text">
+                <b class="fw-portal-titel">{% block brand %}{% trans "Mieterportal" %}{% endblock %}</b>
+                <small class="fw-faint">SwissImmo</small>
             </div>
-            <button type="button" onclick="pCloseNav()" aria-label="{% trans 'Menü schliessen' %}" class="lg:hidden fw-faint hover:text-white">{% zeichen 'schliessen' %}</button>
+            <button type="button" onclick="pCloseNav()" aria-label="{% trans 'Menü schliessen' %}" class="fw-side-knopf fw-nur-mobil">{% zeichen 'schliessen' %}</button>
         </div>
 
-        <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto text-sm">
+        <nav class="fw-nav">
             {% block nav %}{% endblock %}
         </nav>
 
-        <div class="px-3 py-4 border-t border-white/5">
-            <div class="px-3 pb-3">
-                {% include 'core/_sprachwahl.html' with rahmen='flex gap-1' knopf='flex-1 px-2 py-1.5 rounded-md text-xs font-semibold transition-colors' aktiv='fw-btn fw-primary' passiv='fw-faint hover:fw-flaeche' %}
+        <div class="fw-side-fuss">
+            <div class="fw-profil-abschnitt">
+                {% include 'core/_sprachwahl.html' with rahmen='fw-segment' knopf='' aktiv='an' passiv='' %}
             </div>
             <form method="post" action="/logout/">{% csrf_token %}
-                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg fw-faint hover:fw-flaeche hover:text-white transition-colors">
-                    {% zeichen 'extern' klasse='w-5 text-center' %} {% trans "Abmelden" %}
+                <button type="submit" class="fw-nav-eintrag fw-mutet">
+                    {% zeichen 'extern' %} {% trans "Abmelden" %}
                 </button>
             </form>
         </div>
     </aside>
 
     <!-- ================= INHALT ================= -->
-    <div class="flex-1 min-w-0 flex flex-col">
-        <!-- Topbar (mobil) -->
-        <header class="lg:hidden h-16 px-4 flex items-center gap-3 bg-[#161926] text-white sticky top-0 z-30">
-            <button type="button" onclick="pOpenNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-faint hover:text-white text-lg p-1">{% zeichen 'mehr' %}</button>
-            <span class="font-bold tracking-wide text-sm uppercase">{% block brand_mobile %}{% trans "Mieterportal" %}{% endblock %}</span>
+    <div class="fw-haupt">
+        <!-- Kopfzeile (mobil) -->
+        <header class="fw-top fw-portal-top">
+            <button type="button" onclick="pOpenNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund">{% zeichen 'mehr' %}</button>
+            <b class="fw-portal-titel">{% block brand_mobile %}{% trans "Mieterportal" %}{% endblock %}</b>
         </header>
 
-        <main class="p-4 sm:p-6 lg:p-10 w-full max-w-5xl mx-auto pb-24">
+        <main class="fw-inhalt fw-portal-inhalt">
             {% if messages %}{% for m in messages %}
-            <div class="flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border mb-4
-                {% if 'error' in m.tags %}fw-krit-flaeche fw-linie-krit fw-kritisch{% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}">
-                {% if 'error' in m.tags %}{% zeichen 'kritisch' klasse='mt-0.5' %}{% else %}{% zeichen 'gut' klasse='mt-0.5' %}{% endif %}
-                <div>{{ m }}</div>
+            <div class="fw-hinweis fw-meldung {% if 'error' in m.tags %}crit{% else %}good{% endif %}"{% if 'error' in m.tags %} role="alert"{% else %} role="status"{% endif %}>
+                <span class="fw-hi">{% if 'error' in m.tags %}{% zeichen 'kritisch' %}{% else %}{% zeichen 'gut' %}{% endif %}</span>
+                <div class="fw-ht">{{ m }}</div>
             </div>
             {% endfor %}{% endif %}
 
             {% block content %}{% endblock %}
 
-            <p class="text-center text-xs fw-faint mt-8">{% block footer %}{% trans "SwissImmo Mieterportal · Alle Angaben ohne Gewähr" %}{% endblock %}</p>
+            <p class="fw-portal-fuss">{% block footer %}{% trans "SwissImmo Mieterportal · Alle Angaben ohne Gewähr" %}{% endblock %}</p>
         </main>
     </div>
 </div>
 
 <script>
-function pOpenNav(){ document.getElementById('pSidebar').classList.remove('-translate-x-full'); document.getElementById('pBackdrop').classList.remove('hidden'); document.body.style.overflow='hidden'; }
-function pCloseNav(){ document.getElementById('pSidebar').classList.add('-translate-x-full'); document.getElementById('pBackdrop').classList.add('hidden'); document.body.style.overflow=''; }
+function pOpenNav(){ document.getElementById('pSidebar').classList.add('offen'); document.getElementById('pBackdrop').classList.remove('hidden'); document.body.style.overflow='hidden'; }
+function pCloseNav(){ document.getElementById('pSidebar').classList.remove('offen'); document.getElementById('pBackdrop').classList.add('hidden'); document.body.style.overflow=''; }
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') pCloseNav(); });
 // Anker-Links im Drawer schliessen das Menü
 document.querySelectorAll('#pSidebar a[href^="#"]').forEach(function(a){ a.addEventListener('click', pCloseNav); });

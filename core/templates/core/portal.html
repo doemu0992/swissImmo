@@ -1,41 +1,30 @@
-{% load chf i18n %}<!DOCTYPE html>
+{% load chf i18n zeichen %}<!DOCTYPE html>
 {% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% trans "Eigentümer-Portal — SwissImmo" %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230e6b65%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
+{% include 'core/_assets_schrift.html' %}
+{% include 'fw/_schicht_link.html' %}
+{% include 'fw/_zeichen.html' %}
     <style>
+        /* REDESIGN V8 (30.09.2026): Die eigenen Namen dieser Seite zeigen auf
+           die Tokens der Stilschicht. Bis dahin fuhr das Eigentuemerportal eine
+           eigene Indigo-Palette mit Systemschrift. Hell/Dunkel kommen jetzt aus
+           der Schicht; die zwei eigenen Dunkel-Bloecke sind entfallen. */
         :root {
-            --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f1f2f8;
-            --ink: #171a2b; --muted: #5b6072; --faint: #8b90a4; --line: #e6e7f0;
-            --accent: #4f46e5; --accent-strong: #4338ca; --accent-soft: #eef0fe;
-            --good: #16a34a; --warn: #d97706; --warn-soft: #fdf1e1;
-            --crit: #dc2626; --crit-soft: #fdeaea;
-            --shadow: 0 1px 2px rgba(23,26,43,.05), 0 6px 20px rgba(23,26,43,.06);
-            --radius: 16px;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root:not([data-theme="light"]) {
-                --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
-                --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
-                --accent: #6366f1; --accent-strong: #818cf8; --accent-soft: #20233d;
-                --good: #34d399; --warn: #fbbf24; --warn-soft: #2a2113;
-                --crit: #f87171; --crit-soft: #2b1618;
-                --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
-            }
-        }
-        :root[data-theme="dark"] {
-            --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
-            --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
-            --accent: #6366f1; --accent-strong: #818cf8; --accent-soft: #20233d;
-            --good: #34d399; --warn: #fbbf24; --warn-soft: #2a2113;
-            --crit: #f87171; --crit-soft: #2b1618;
-            --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+            --bg: var(--ds-bg); --surface: var(--ds-surface); --surface-2: var(--ds-surface-2);
+            --ink: var(--ds-ink); --muted: var(--ds-muted); --faint: var(--ds-faint); --line: var(--ds-line);
+            --accent: var(--ds-brand); --accent-strong: var(--ds-brand-600); --accent-soft: var(--ds-brand-soft);
+            --good: var(--ds-good); --warn: var(--ds-warn); --warn-soft: var(--ds-warn-soft);
+            --crit: var(--ds-crit); --crit-soft: var(--ds-crit-soft);
+            --shadow: var(--ds-shadow-sm);
+            --radius: var(--ds-radius);
         }
         * { box-sizing: border-box; margin: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: var(--ds-font); font-size: 14px;
             background: var(--bg); color: var(--ink); line-height: 1.5; -webkit-font-smoothing: antialiased;
         }
         .num { font-variant-numeric: tabular-nums; }
@@ -48,10 +37,10 @@
         }
         .brand { display: flex; align-items: center; gap: 11px; }
         .brand .mark {
-            width: 34px; height: 34px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-            color: #fff; font-weight: 700; font-size: 15px; display: grid; place-items: center;
-            letter-spacing: -.02em; box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 45%, transparent);
+            width: 30px; height: 30px; border-radius: var(--ds-radius-knopf);
+            background: var(--accent);
+            color: var(--ds-auf-satt); font-weight: 700; font-size: 13px; display: grid; place-items: center;
+            letter-spacing: -.02em;
         }
         .brand .name { font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
         .brand .sub { font-size: 12px; color: var(--muted); }
@@ -70,7 +59,7 @@
         main { max-width: 1080px; margin: 0 auto; padding: 26px 20px 72px; }
 
         .hello { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 22px; }
-        .hello h1 { font-size: 22px; letter-spacing: -.02em; text-wrap: balance; }
+        .hello h1 { font-size: 28px; line-height: 1.15; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
         .hello p { color: var(--muted); font-size: 14px; }
         .actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn {
@@ -78,10 +67,10 @@
             padding: 9px 14px; border-radius: 10px; cursor: pointer;
             border: 1px solid var(--line); background: var(--surface); color: var(--ink);
         }
-        .btn:hover { border-color: var(--accent); }
+        .btn:hover { border-color: var(--ds-line-stark); box-shadow: var(--ds-shadow-sm); }
+        .btn.primary:hover { background: var(--accent-strong); }
         .btn.primary {
-            background: linear-gradient(135deg, var(--accent), var(--accent-strong)); color: #fff; border-color: transparent;
-            box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent);
+            background: var(--accent); color: var(--ds-auf-satt); border-color: transparent;
         }
 
         .attention {
@@ -109,29 +98,34 @@
             border-radius: 9px; padding: 8px 11px; font: inherit; font-size: 13px;
         }
         .mini { font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 8px 14px; border-radius: 9px; border: 1px solid transparent; }
-        .mini.ok { background: var(--good); color: #fff; }
+        .mini.ok { background: var(--good); color: var(--ds-auf-satt); }
         .mini.no { background: var(--surface); color: var(--crit); border-color: color-mix(in srgb, var(--crit) 35%, var(--line)); }
         .mini.no:hover { background: var(--crit-soft); }
 
-        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 12px; margin-bottom: 8px; }
-        .kpi {
-            background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 15px 16px;
-            box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 3px;
-        }
-        .kpi.accent { background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 12%, var(--surface)), var(--surface)); }
-        .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--faint); font-weight: 600; }
-        .kpi .wert { font-size: 22px; font-weight: 750; letter-spacing: -.02em; }
+        /* Ein zusammenhaengender Kennzahlenstreifen wie im Mockup. */
+        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-bottom: 8px;
+            background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        /* Trennlinien je Zelle rechts und unten; die aeusseren schneidet der
+           Rahmen ab (negativer Rand). So bleibt keine graue Restflaeche, wenn
+           die letzte Reihe nicht voll ist. */
+        .kpi { padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 6px;
+            border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 -1px -1px 0; }
+        .btn .fw-zeichen, .mini .fw-zeichen { width: 15px !important; height: 15px !important; }
+        .warnzeichen { color: var(--warn); display: inline-flex; }
+        .kpi.accent { background: var(--surface); }
+        .kpi .label { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+        .kpi .wert { font-size: 26px; line-height: 1.1; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
         .kpi .wert small { font-size: 13px; font-weight: 600; color: var(--muted); }
         .kpi .foot { font-size: 11.5px; color: var(--muted); }
         .kpi .foot.crit { color: var(--crit); font-weight: 600; }
         .note { font-size: 11px; color: var(--faint); margin: 4px 2px 24px; }
 
-        .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 18px; overflow: hidden; }
+        .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 24px; overflow: hidden; }
         .card > .h {
             display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
             padding: 15px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap;
         }
-        .card > .h .addr { font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
+        .card > .h .addr { font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
         .card > .h .addr .bj { color: var(--faint); font-weight: 500; font-size: 13px; }
         .card > .h .fin { display: flex; align-items: center; gap: 10px; font-size: 13px; flex-wrap: wrap; }
         .card > .h .fin .soll { font-weight: 700; }
@@ -143,10 +137,11 @@
         .tablewrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
         thead th {
-            text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--faint);
-            font-weight: 600; padding: 11px 18px; border-bottom: 1px solid var(--line); white-space: nowrap;
+            text-align: left; font-size: 12px; color: var(--faint); background: var(--surface-2);
+            font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--line); white-space: nowrap;
         }
-        tbody td { padding: 12px 18px; border-bottom: 1px solid var(--line); }
+        tbody td { padding: 11px 16px; border-bottom: 1px solid var(--line); }
+        tbody tr:hover { background: var(--ds-hover); }
         tbody tr:last-child td { border-bottom: 0; }
         td.right, th.right { text-align: right; white-space: nowrap; }
         .obj { font-weight: 600; }
@@ -182,7 +177,7 @@
             border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
         }
         .sprachwahl-knopf:hover { color: var(--ink); border-color: var(--accent); }
-        .sprachwahl-knopf.ist-aktiv { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .sprachwahl-knopf.ist-aktiv { background: var(--ink); border-color: var(--ink); color: var(--surface); }
         /* Am Telefon eine eigene Zeile unter dem Kopf — sonst drängen die vier
            Knöpfe Farbschema und «Abmelden» aus dem Bild (gemessen bei 390 px). */
         @media (max-width: 560px) {
@@ -202,7 +197,7 @@
     </div>
     <div class="spacer"></div>
     <div class="topbar-sprache">{% include 'core/_sprachwahl.html' %}</div>
-    <button class="iconbtn" id="themeToggle" type="button" title="{% trans 'Hell / Dunkel' %}" aria-label="{% trans 'Farbschema wechseln' %}">◐</button>
+    <button class="iconbtn" id="themeToggle" type="button" title="{% trans 'Hell / Dunkel' %}" aria-label="{% trans 'Farbschema wechseln' %}">{% zeichen 'darstellung' %}</button>
     <form method="post" action="/logout/">{% csrf_token %}<button class="logout" type="submit">{% trans "Abmelden" %}</button></form>
 </div>
 <main>
@@ -213,16 +208,16 @@
                 <p>{% trans "Hier finden Sie den aktuellen Stand Ihrer Liegenschaften." %}</p>
             </div>
             <div class="actions">
-                <a class="btn primary" href="/portal/report/" target="_blank" rel="noopener">{% trans "📄 Portfolio-Report" %}</a>
-                <a class="btn" href="/portal/steuerauszug/?jahr={{ steuerjahr }}" target="_blank" rel="noopener">🧾 {% blocktrans with jahr=steuerjahr %}Steuerauszug {{ jahr }}{% endblocktrans %}</a>
-                <a class="btn" href="/portal/kontokorrent/" target="_blank" rel="noopener">{% trans "📒 Kontokorrent" %}</a>
+                <a class="btn primary" href="/portal/report/" target="_blank" rel="noopener">{% zeichen 'bericht' %}{% trans "📄 Portfolio-Report" as t %}{{ t|ohne_emoji }}</a>
+                <a class="btn" href="/portal/steuerauszug/?jahr={{ steuerjahr }}" target="_blank" rel="noopener">{% zeichen 'recht' %}{% blocktrans with jahr=steuerjahr %}Steuerauszug {{ jahr }}{% endblocktrans %}</a>
+                <a class="btn" href="/portal/kontokorrent/" target="_blank" rel="noopener">{% zeichen 'geld' %}{% trans "📒 Kontokorrent" as t %}{{ t|ohne_emoji }}</a>
             </div>
         </div>
 
         {% if freigaben %}
         <section class="attention" aria-label="{% trans 'Reparaturen zur Freigabe' %}">
             <div class="h">
-                <span>⚠️</span>
+                <span class="warnzeichen">{% zeichen 'warnung' %}</span>
                 <span class="t">{% trans "Reparaturen zur Freigabe" %}</span>
                 <span class="badge-count num">{{ freigaben|length }}</span>
             </div>
@@ -238,7 +233,7 @@
                 <form class="fform" method="post" action="/portal/freigabe/{{ f.id }}/">
                     {% csrf_token %}
                     <input type="text" name="kommentar" placeholder="{% trans 'Kommentar (optional)' %}">
-                    <button class="mini ok" type="submit" name="aktion" value="freigeben">{% trans "✓ Freigeben" %}</button>
+                    <button class="mini ok" type="submit" name="aktion" value="freigeben">{% zeichen 'gut' %} {% trans "✓ Freigeben" as t %}{{ t|ohne_emoji }}</button>
                     <button class="mini no" type="submit" name="aktion" value="ablehnen">{% trans "✗ Ablehnen" %}</button>
                 </form>
             </div>

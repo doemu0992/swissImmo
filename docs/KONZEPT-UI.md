@@ -1336,6 +1336,10 @@ nicht `tailwind.css`. Das ist die Entscheidung, die dieser Absatz ursprünglich
 meinte — sie betrifft Tailwinds Standardfarben, nicht die Anbindung. Dass die
 Petrol-Tokens dort trotzdem wirken, liegt an der Komponentenschicht.
 
+> **Überholt am 30.09.2026 (Redesign v8).** Alle Seiten tragen jetzt dasselbe Design wie
+> `mockups/konzept-v8-cockpit.html`. Die Aussenseiten laden `tailwind.css`; `tailwind-aussen.css`
+> und `tailwind.aussen.config.js` sind entfernt. Bausteine: `docs/DESIGN-V8.md`.
+
 ### 16.5 Was hier bewusst nicht steht
 
 Der **Aufbau** ausserhalb der Aktenseiten. Die Palette gilt seit 4b.6 in der Anwendung, seit

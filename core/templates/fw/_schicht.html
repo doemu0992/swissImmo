@@ -145,9 +145,10 @@ und einen Stilblock enthaelt.
            innerhalb der Ansicht, es wechselt sie nicht. */
         .fw-band{display:flex;flex-wrap:wrap;align-items:center;gap:6px;
             padding:12px 20px;border-bottom:1px solid var(--ds-line);font-size:12.5px}
-        .fw-band>a{display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:999px;
+        .fw-band>a{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:999px;
             border:1px solid var(--ds-line);color:var(--ds-muted);background:var(--ds-surface);font-weight:500;
             text-decoration:none;white-space:nowrap;transition:border-color .12s,color .12s,background .12s}
+        .fw-band>a b{font-weight:600;opacity:.7}
         .fw-band>a:hover{border-color:var(--ds-line-stark);color:var(--ds-ink)}
         .fw-band>a.hier{border-color:var(--ds-ink);color:var(--ds-surface);
             background:var(--ds-ink);font-weight:600}
@@ -173,6 +174,7 @@ und einen Stilblock enthaelt.
             font-weight:700;color:var(--ds-ink);max-width:130px;
             text-overflow:ellipsis}
         .fw-kopffilter .fw-feld:focus{outline:none;box-shadow:none}
+        .fw-kopffilter .fw-feld{min-height:0;width:auto}
         @media (max-width:640px){
             .fw-kopffilter{gap:8px}
             .fw-kopffilter label{padding:4px 9px;font-size:12px}
@@ -230,8 +232,12 @@ und einen Stilblock enthaelt.
         .fw-btn.fw-rand-gut:hover{background:var(--ds-good-soft)}
         .fw-btn:disabled,.fw-btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;box-shadow:none;transform:none}
         /* KPI-Kacheln */
-        .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;margin-bottom:24px;background:var(--ds-line);border:1px solid var(--ds-line);border-radius:var(--ds-radius);overflow:hidden;box-shadow:var(--ds-shadow-sm)}
-        .fw-kpi{background:var(--ds-surface);padding:18px 20px 16px;display:flex;flex-direction:column;gap:6px;min-width:0;transition:background .12s}
+        /* Ein Streifen: Trennlinien je Zelle rechts und unten, die aeusseren
+           schneidet der Rahmen ab. Keine graue Restflaeche, wenn die letzte
+           Reihe nicht voll ist (so im Eigentuemerportal gesehen). */
+        .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:24px;background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);overflow:hidden;box-shadow:var(--ds-shadow-sm)}
+        .fw-kpi{background:var(--ds-surface);padding:18px 20px 16px;display:flex;flex-direction:column;gap:6px;min-width:0;transition:background .12s;
+            border-right:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line);margin:0 -1px -1px 0}
         .fw-kpi.fw-accent{background:linear-gradient(150deg,color-mix(in srgb,var(--ds-brand) 12%,var(--ds-surface)),var(--ds-surface))}
         .fw-kpi .fw-l{font-size:12.5px;color:var(--ds-muted);font-weight:500}
         .fw-kpi .fw-v{font-size:26px;line-height:1.1;font-weight:600;letter-spacing:-.03em;color:var(--ds-ink);font-variant-numeric:tabular-nums}
@@ -1236,7 +1242,7 @@ und einen Stilblock enthaelt.
            Rund und gedaempft: Es soll die Zeile einordnen, nicht mit dem
            Titel um Aufmerksamkeit streiten. */
         .fw-kuerzel{display:inline-flex;align-items:center;justify-content:center;
-              width:30px;height:30px;padding:0;border-radius:var(--ds-pill);
+              min-width:30px;height:30px;padding:0 8px;border-radius:var(--ds-pill);
               background:var(--ds-surface-2);border:1px solid var(--ds-line);
               color:var(--ds-muted);font-size:11.5px;font-weight:600;flex:0 0 auto}
 
@@ -1590,6 +1596,7 @@ und einen Stilblock enthaelt.
         .fw-belegung.crit i{background:var(--ds-crit)}
         @media (max-width:640px){
             .fw-zeile .fw-zeit{text-align:left}
+            .fw-zeile .fw-s{flex-wrap:wrap;gap:4px 10px}
             .fw-agenda{padding:10px 16px 14px}
             .fw-mandat{padding:12px 16px}
         }
@@ -1615,4 +1622,13 @@ und einen Stilblock enthaelt.
             border-color:var(--ds-line-stark);color:var(--ds-ink);font-family:inherit}
         :where(.fw-inhalt, .fw-einbettung) :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea):focus{
             outline:none;border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
+        /* ============================================================
+           PORTALE (`core/portal_base.html`) — dieselbe Huelle wie innen
+           ============================================================ */
+        .fw-portal-titel{font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-portal-inhalt{max-width:1040px}
+        .fw-portal-fuss{text-align:center;font-size:12px;color:var(--ds-faint);margin-top:32px}
+        .fw-meldung{border:0;border-radius:var(--ds-radius);margin-bottom:16px}
+        .fw-marke-zeichen .fw-zeichen{width:16px!important;height:16px!important}
+        @media (min-width:1024px){.fw-portal-top{display:none}}
 </style>

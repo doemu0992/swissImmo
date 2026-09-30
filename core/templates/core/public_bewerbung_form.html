@@ -9,12 +9,13 @@
 {% include 'core/_assets_aussen.html' %}
  <script src="{% static 'js/vue.global.prod.js' %}"></script>
  <style>
- body { font-family: 'Nunito', sans-serif; background-color: var(--ds-bg); }
+ /* Redesign v8: Schrift und Grund aus der Schicht (`fw-body`). Hier stand
+    'Nunito' — nie geladen, der Browser nahm Arial. */
  .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
  .fade-enter-from, .fade-leave-to { opacity: 0; }
  </style>
 </head>
-<body class="fw-strong antialiased min-h-screen flex flex-col items-center py-10 px-4">
+<body class="fw-body min-h-screen flex flex-col items-center py-10 px-4">
 
  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
@@ -24,9 +25,9 @@
  <div class="w-24 h-24 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-5xl mx-auto mb-6">
  {% zeichen 'gut' %}
  </div>
- <h1 class="text-4xl font-bold fw-strong mb-4">Bewerbung eingereicht!</h1>
+ <h1 class="text-3xl font-semibold tracking-tight fw-strong mb-4">Bewerbung eingereicht!</h1>
  <p class="fw-mutet text-lg mb-8">Vielen Dank für dein Interesse. Wir haben deine Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei dir.</p>
- <a href="/" class="fw-btn fw-primary px-8 py-3 rounded-xl font-bold hover:fw-balken-voll transition-colors">Zurück zur Startseite</a>
+ <a href="/" class="fw-btn fw-primary">Zurück zur Startseite</a>
  </div>
 
  <div v-else class="fw-flaeche rounded-3xl shadow-xl overflow-hidden">
@@ -37,7 +38,7 @@
  <span class="text-xl font-bold tracking-tighter">swissImmo</span>
  </div>
  <p class="fw-marke font-bold uppercase tracking-widest text-xs mb-1">Digitale Bewerbung</p>
- <h1 class="text-3xl font-bold mb-2">{{ einheit.bezeichnung }}</h1>
+ <h1 class="text-3xl font-semibold tracking-tight mb-2">{{ einheit.bezeichnung }}</h1>
  <p class="fw-faint flex items-center gap-2">{% zeichen 'liegenschaft' %} {{ einheit.liegenschaft.strasse }}, {{ einheit.liegenschaft.plz }} {{ einheit.liegenschaft.ort }}</p>
  </div>
 

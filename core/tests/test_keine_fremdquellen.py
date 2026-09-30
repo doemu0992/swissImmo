@@ -84,7 +84,7 @@ def _vorlagen():
     sie entstehen aus Quellen, die hier ohnehin geprueft werden, und ein
     Treffer dort waere ein Symptom, keine Ursache.
     """
-    GEBAUT = ('static/css/tailwind.css', 'static/css/tailwind-aussen.css',
+    GEBAUT = ('static/css/tailwind.css',
               'static/css/schicht.css', 'static/css/schicht.src.css')
     for muster in ('*.html', '*.css'):
         for pfad in WURZEL.rglob(muster):
@@ -177,7 +177,6 @@ class StilbausteineVorhandenTest(SimpleTestCase):
 
     ERWARTET = (
         'static/css/tailwind.css',
-        'static/css/tailwind-aussen.css',
         'static/css/schriften.css',
         'static/css/fontawesome.css',
         'static/fonts/IBMPlexSans-Regular-Latin1.woff2',

@@ -12,19 +12,20 @@ bei Dritten.
 Jetzt liegt alles unter static/. Der Tailwind-Bau erzeugt tailwind.css aus
 denselben Vorlagen, die ihn benutzen (siehe package.json, `npm run css`).
 
-ZWEI TAILWIND-DATEIEN, UND WARUM
+EINE TAILWIND-DATEI FUER ALLE SEITEN (Redesign v8, 30.09.2026)
 
-`tailwind.css` traegt die Petrol-Palette, `tailwind-aussen.css` Tailwinds
-Voreinstellung. Das ist kein Versehen: `_tailwind_palette.html` lag bewusst
-nur auf den fw-Huellen, nie auf Mieterportal, Bewerbungsformular und
-Fehlerseiten. Eine einzige Datei fuer alle wuerde diese Seiten nebenbei
-umfaerben — eine Gestaltungsentscheidung, die in E0 nichts zu suchen hat.
-Wer die Aussenseiten auf die Marke holen will, tauscht dort den Verweis;
-bis dahin sehen Mieter und Bewerber genau das, was sie vorher sahen.
+Bis zum Redesign gab es zwei: `tailwind.css` mit der Petrol-Palette fuer die
+Anwendung und eine zweite in Tailwinds Voreinstellung fuer die Aussenseiten
+(Mieterportal, Bewerbung, oeffentliche Formulare, Fehlerseiten). Das war
+bewusst so — diese Seiten sollten nicht nebenbei umgefaerbt werden.
+
+Mit dem Redesign ist das entschieden: Alle Seiten tragen dasselbe Design wie
+das Mockup `konzept-v8-cockpit.html`, aussen wie innen. Die zweite Datei und
+ihr Bau (`tailwind.aussen.config.js`, `npm run css:aussen`) sind entfernt.
 
 Bewacht von core/tests/test_keine_fremdquellen.py.
 {% endcomment %}
-<link rel="stylesheet" href="{% static 'css/tailwind-aussen.css' %}">
+<link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 <link rel="stylesheet" href="{% static 'css/schriften.css' %}">
 {% comment %}
 FONT AWESOME IST SEIT E2.42 NICHT MEHR NOETIG — UND SEIT E2.43 NIRGENDS MEHR.
