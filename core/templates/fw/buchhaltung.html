@@ -38,7 +38,7 @@
 
 <div id="buchform" class="hidden fw-card">
     <div class="fw-kopf"><h2>{% zeichen 'bearbeiten' klasse='fw-marke mr-1.5' %}{% trans "Manuelle Buchung (Soll an Haben)" %}</h2></div>
-    <form method="post" action="/neu/buchhaltung/buchung/" class="fw-formular drei p-5">
+    <form method="post" action="/neu/buchhaltung/buchung/" class="fw-formular drei fw-rumpf">
         {% csrf_token %}
         <div class="fw-feldblock"><label class="fw-label">{% trans "Datum" %}</label>
             <input type="date" name="datum" id="bu-datum" value="{{ letztes_datum|date:'Y-m-d' }}"
@@ -67,7 +67,7 @@
             <input name="beleg_text" id="bu-text" required class="fw-feld"></div>
         <div class="fw-feldblock breit"><div class="flex items-center gap-3 flex-wrap">
             <button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Buchen" %}</button>
-            <label class="flex items-center gap-2 fw-hilfe">
+            <label class="fw-haekchen">
                 <input type="checkbox" name="weiter" value="1" {% if serienerfassung %}checked{% endif %} class="fw-akzent">
                 {% trans "Serienerfassung — Maske bleibt offen, Datum und Konten bleiben stehen" %}
             </label>
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <!-- JAHRESABSCHLUSS: Erfolgskonten gegen 2970 saldieren -->
     {% if jahr != 'alle' %}
-    <div class="fw-card p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="fw-card fw-rumpf flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <div class="flex items-center gap-2.5"><span class="fw-ikon">{% zeichen 'gesperrt' %}</span><span class="fw-strong">{% blocktrans %}Jahresabschluss {{ jahr }}{% endblocktrans %}</span></div>
             <p class="fw-hilfe mt-1 max-w-xl">
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <div data-panel="bh" id="bh-journal" class="hidden">
     <!-- Filterleiste: ohne sie war das Journal auf die letzten 60 Zeilen gedeckelt
          und ein Beleg praktisch nicht wiederzufinden. -->
-    <form method="get" class="fw-card p-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+    <form method="get" class="fw-card fw-rumpf grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <input type="hidden" name="tab" value="journal">
         <label class="sm:col-span-4 block">

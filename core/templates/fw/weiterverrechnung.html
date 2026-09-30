@@ -56,7 +56,7 @@ Erklärung, warum.{% endcomment %}
         <div class="fw-feldblock flex-1 min-w-[12rem]"><label class="fw-label">{% trans "Titel" %}</label>
             <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" class="fw-feld"></div>
         {% if ist_hnk %}
-        <label class="flex items-center gap-2 fw-kritisch pb-2.5"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">{% trans "Trotzdem direkt weiterverrechnen" %}</label>
+        <label class="fw-haekchen pb-2.5"><input type="checkbox" name="hnk_override" class="fw-akzent-krit"><span class="fw-kritisch">{% trans "Trotzdem direkt weiterverrechnen" %}</span></label>
         {% endif %}
         <button class="fw-btn fw-primary"
                 onclick="return confirm('{% filter escapejs %}{% blocktrans with n=verteil_mieter %}Offenen Betrag auf alle {{ n }} Mieter verteilen?{% endblocktrans %}{% endfilter %}');">
@@ -128,7 +128,7 @@ Erklärung, warum.{% endcomment %}
     </div>
 
     {% if ist_hnk %}
-    <label class="flex items-center gap-2 fw-kritisch mb-4"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">{% trans "Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)" %}</label>
+    <label class="fw-haekchen mb-4"><input type="checkbox" name="hnk_override" class="fw-akzent-krit"><span class="fw-kritisch">{% trans "Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)" %}</span></label>
     {% endif %}
     <div class="flex items-center gap-3 flex-wrap mb-6">
         <button type="submit" class="fw-btn fw-primary">

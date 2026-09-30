@@ -111,7 +111,7 @@
         {% if honorar %}
         <div class="fw-card">
             <div class="fw-kopf"><h2>{% blocktrans %}Verwaltungshonorar {{ jahr }}{% endblocktrans %}</h2></div>
-            <div class="p-5">
+            <div class="fw-rumpf">
             <p class="fw-hilfe mb-3">{% blocktrans trimmed with p=honorar.prozent %}{{ p }} % der Mieterträge · Soll 4500 / Haben 2850
                 (Kontokorrent Eigentümer) — das Honorar ist eine Verrechnung, kein Geldfluss; ausbezahlt wird es
                 über die Auszahlung unten.{% endblocktrans %}</p>
@@ -144,12 +144,12 @@
         {% elif jahr and md.honorar_prozent == 0 %}
         <div class="fw-card">
             <div class="fw-kopf"><h2>{% trans "Verwaltungshonorar" %}</h2></div>
-            <p class="fw-hilfe p-5">{% blocktrans trimmed with id=md.id %}Kein Honorarsatz hinterlegt. <a href="/neu/mandate/{{ id }}/bearbeiten/" class="fw-marke hover:underline">Im Mandat setzen</a>, um es hier zu buchen.{% endblocktrans %}</p>
+            <p class="fw-hilfe fw-rumpf">{% blocktrans trimmed with id=md.id %}Kein Honorarsatz hinterlegt. <a href="/neu/mandate/{{ id }}/bearbeiten/" class="fw-marke hover:underline">Im Mandat setzen</a>, um es hier zu buchen.{% endblocktrans %}</p>
         </div>
         {% endif %}
         <div class="fw-card">
             <div class="fw-kopf"><h2>{% trans "Auszahlung erfassen" %}</h2></div>
-            <div class="p-5">
+            <div class="fw-rumpf">
             <p class="fw-hilfe mb-4">{% trans "Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank." %}</p>
             <form method="post" action="/neu/mandate/{{ md.id }}/auszahlung/" class="space-y-3">
                 {% csrf_token %}

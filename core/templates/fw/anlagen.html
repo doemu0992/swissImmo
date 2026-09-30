@@ -45,7 +45,7 @@
         </tbody>
     </table>
 </div>
-    <div class="border-t fw-linie p-4 fw-flaeche2">
+    <div class="border-t fw-linie fw-rumpf fw-flaeche2">
         <form method="post" class="grid grid-cols-1 sm:grid-cols-6 gap-2 items-end">{% csrf_token %}
             <input type="hidden" name="aktion" value="anlage_neu">
             <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Bezeichnung" %}</label>
@@ -76,7 +76,7 @@
                     ohne Aktivierungsbuchung und das Anlagekonto liefe später
                     ins Minus, ohne dass irgendwo etwas dazu stünde.
                 {% endcomment %}
-                <label class="inline-flex items-start gap-2 fw-hilfe cursor-pointer">
+                <label class="fw-haekchen">
                     <input type="checkbox" name="aktivieren" checked class="mt-0.5 fw-akzent">
                     <span>{% trans "Aktivierung buchen (1500 an Gegenkonto) — nötig, damit die Abschreibungen das Anlagekonto nicht ins Minus ziehen" %}</span>
                 </label>
@@ -113,7 +113,7 @@
         </tbody>
     </table>
 </div>
-    <div class="border-t fw-linie p-4 fw-flaeche2">
+    <div class="border-t fw-linie fw-rumpf fw-flaeche2">
         <form method="post" class="flex flex-wrap items-end gap-2">{% csrf_token %}
             <input type="hidden" name="aktion" value="fonds_set">
             <div><label class="fw-label mb-1">{% trans "Liegenschaft" %}</label>
@@ -132,7 +132,7 @@
 <!-- PERIODENSPERRE -->
 <div class="fw-card max-w-xl">
     <div class="fw-kopf"><h2>{% zeichen 'gesperrt' klasse='fw-warnton mr-1.5' %}{% trans "Periodensperre" %}</h2></div>
-    <div class="p-5">
+    <div class="fw-rumpf">
     <p class="fw-hilfe mb-3">{% trans "Buchungen mit Datum ≤ Stichtag werden gesperrt (abgeschlossene Periode, Revisionssicherheit)." %}
         {% if gesperrt_bis %}<span class="fw-warnton fw-strong">{% blocktrans with datum=gesperrt_bis|date:"d.m.Y" %}Aktuell gesperrt bis {{ datum }}.{% endblocktrans %}</span>{% else %}{% trans "Aktuell keine Sperre." %}{% endif %}</p>
     <form method="post" class="flex items-end gap-2 flex-wrap">{% csrf_token %}

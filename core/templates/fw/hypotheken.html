@@ -19,7 +19,7 @@
 {% if kann_schreiben %}
 <div id="hypoform" class="hidden fw-card">
     <div class="fw-kopf"><h2>{% zeichen 'bank' klasse='fw-marke mr-1.5' %}{% trans "Hypothek erfassen" %}</h2></div>
-    <form method="post" action="/neu/hypotheken/" class="fw-formular drei p-5">
+    <form method="post" action="/neu/hypotheken/" class="fw-formular drei fw-rumpf">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
         <div class="fw-feldblock"><label class="fw-label">{% trans "Liegenschaft *" %}</label>

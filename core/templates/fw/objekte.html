@@ -68,7 +68,7 @@
 
 {% for g in gruppen %}
 <details class="fw-card"{% if g.offen %} open{% endif %}>
-    <summary class="fw-kopf" style="cursor:pointer;list-style:none">
+    <summary class="fw-kopf cursor-pointer list-none">
         {% zeichen 'weiter' klasse='fw-klein' %}
         <span class="fw-ikon{% if g.stufe != 'good' %} {{ g.stufe }}{% endif %}">{% zeichen 'liegenschaft' %}</span>
         <span class="fw-t">{{ g.lg.strasse }}</span><span class="fw-neben">{{ g.lg.plz }} {{ g.lg.ort }}</span>
@@ -86,13 +86,13 @@
             <div class="fw-t">{{ z.e.bezeichnung }}</div>
             <div class="fw-s">{{ z.e.get_typ_display }}{% if z.e.zimmer %} · {% blocktrans with n=z.e.zimmer %}{{ n }} Zi.{% endblocktrans %}{% endif %}{% if z.e.flaeche_m2 %} · {{ z.e.flaeche_m2|floatformat:0 }} m²{% endif %}{% if z.mieter %} · {{ z.mieter }}{% endif %}</div>
             {% if z.befunde %}
-            <div class="fw-s" style="margin-top:4px">
+            <div class="fw-s mt-1">
                 {% for b in z.befunde %}
-                <span class="fw-chip fw-{{ b.stufe }} fw-dot" style="margin-right:5px">{{ b.text }}{% if b.titel %} — {{ b.titel }}{% endif %}</span>
+                <span class="fw-chip fw-{{ b.stufe }} fw-dot mr-1">{{ b.text }}{% if b.titel %} — {{ b.titel }}{% endif %}</span>
                 {% endfor %}
             </div>
             {% elif z.nachmieter_ab %}
-            <div class="fw-s" style="margin-top:4px">
+            <div class="fw-s mt-1">
                 <span class="fw-chip fw-good fw-dot">{% blocktrans with ab=z.nachmieter_ab|date:"d.m.Y" %}Nachmieter ab {{ ab }}{% endblocktrans %}</span>
             </div>
             {% endif %}

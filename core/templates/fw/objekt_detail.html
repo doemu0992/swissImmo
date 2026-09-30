@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<nav class="fw-akte-pfad" style="margin-bottom:10px">
+<nav class="fw-akte-pfad mb-3">
     <a href="/neu/objekte/{{ lg_query }}">{% trans "Objekte" %}</a>
     {% zeichen 'weiter' %}
     <a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/">{{ e.liegenschaft.strasse }}</a>
@@ -57,7 +57,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="relative">
                 <button type="button" onclick="document.getElementById('oAktionen').classList.toggle('hidden'); event.stopPropagation();"
                         class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
-                <div id="oAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
+                <div id="oAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     <form method="post" action="/neu/objekte/{{ e.id }}/ausschreiben/">
                         {% csrf_token %}
                         <input type="hidden" name="ziel" value="{% if e.zur_ausschreibung %}aus{% else %}an{% endif %}">

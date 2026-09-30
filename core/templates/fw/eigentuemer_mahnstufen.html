@@ -33,7 +33,7 @@ sie nur an und schickt sie unverändert zurück. Die Feldnamen
     <div class="fw-card">
         <div class="fw-kopf">
             <h3 class="fw-t">{% blocktrans with stufe=s.stufe %}{{ stufe }}. Mahnung{% endblocktrans %}</h3>
-            <label class="fw-rechts flex items-center gap-2 fw-mutet cursor-pointer">
+            <label class="fw-rechts fw-haekchen">
                 <input type="checkbox" name="aktiv_{{ s.stufe }}" {% if s.aktiv %}checked{% endif %} class="fw-akzent">
                 {% trans "Stufe aktiv" %}
             </label>
@@ -46,7 +46,7 @@ sie nur an und schickt sie unverändert zurück. Die Feldnamen
                 <input id="geb-{{ s.stufe }}" name="gebuehr_{{ s.stufe }}" type="text" inputmode="decimal"
                        value="{{ s.gebuehr }}" class="fw-feld"></div>
             <div class="fw-feldblock breit">
-        <label class="flex items-center gap-2 fw-mutet cursor-pointer">
+        <label class="fw-haekchen">
             <input type="checkbox" name="kuendigung_{{ s.stufe }}" {% if s.kuendigung %}checked{% endif %} class="fw-akzent">
             {% trans "Mit Kündigungsandrohung" %}
         </label>

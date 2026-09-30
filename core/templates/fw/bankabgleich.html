@@ -231,7 +231,7 @@
                     || (alert('{% filter escapejs %}{% trans "Bitte zuerst Zahlungen auswählen." %}{% endfilter %}'), false);">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <label class="cursor-pointer">
+        <label class="fw-haekchen">
             <input type="checkbox" data-alle class="fw-akzent">{% trans "Alle" %}
         </label>
         <span class="fw-klein" data-anzahl>{% trans "0 ausgewählt" %}</span>

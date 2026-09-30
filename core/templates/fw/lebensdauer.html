@@ -3,10 +3,10 @@
 {% block title %}{% trans "Lebensdauertabelle" %} — swissImmo{% endblock %}
 {% block content %}
 
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/ersatzplanung/" class="hover:fw-marke">{% trans "Ersatzplanung" %}</a>
+<nav class="fw-akte-pfad mb-3">
+    <a href="/neu/ersatzplanung/">{% trans "Ersatzplanung" %}</a>
     {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% trans "Lebensdauertabelle" %}</span>
+    <b>{% trans "Lebensdauertabelle" %}</b>
 </nav>
 
 <div class="fw-phead">
@@ -14,7 +14,7 @@
         <h1>{% trans "Lebensdauertabelle" %}</h1>
         <p>{% trans "Paritätische Nutzungsdauern (Mieterverband/HEV) — Grundlage für den Zeitwert bei der Wohnungsabnahme." %}</p>
     </div>
-    <form method="post" action="/neu/lebensdauer/">
+    <form method="post" action="/neu/lebensdauer/" class="fw-phead-knoepfe">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="seed">
         <button class="fw-btn">{% zeichen 'lauf' %}{% trans "Standardwerte ergänzen" %}</button>
@@ -22,18 +22,18 @@
 </div>
 
 <!-- Neue Kategorie -->
-<div class="fw-flaeche rounded-xl border fw-linie-marke p-5 mb-5">
-    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'neu' klasse='fw-marke mr-1.5' %}{% trans "Kategorie hinzufügen" %}</h3>
-    <form method="post" action="/neu/lebensdauer/" class="flex flex-wrap items-end gap-3">
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Kategorie hinzufügen" %}</h2></div>
+    <form method="post" action="/neu/lebensdauer/" class="fw-rumpf flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
-        <div class="flex-1 min-w-[200px]"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kategorie *" %}</label>
-            <input name="kategorie" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Jahre *" %}</label>
-            <input name="jahre" inputmode="numeric" required class="w-24 fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="flex-1 min-w-[160px]"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bemerkung" %}</label>
-            <input name="bemerkung" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Hinzufügen" %}</button>
+        <div class="flex-1 min-w-[200px]"><label class="fw-label mb-1">{% trans "Kategorie *" %}</label>
+            <input name="kategorie" required class="fw-feld w-full"></div>
+        <div><label class="fw-label mb-1">{% trans "Jahre *" %}</label>
+            <input name="jahre" inputmode="numeric" required class="fw-feld w-24"></div>
+        <div class="flex-1 min-w-[160px]"><label class="fw-label mb-1">{% trans "Bemerkung" %}</label>
+            <input name="bemerkung" class="fw-feld w-full"></div>
+        <button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Hinzufügen" %}</button>
     </form>
 </div>
 
@@ -41,34 +41,34 @@
 <form method="post" action="/neu/lebensdauer/">
     {% csrf_token %}
     <input type="hidden" name="aktion" value="speichern">
-    <div class="fw-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="fw-table min-w-max">
+    <div class="fw-card">
+        <div class="fw-tablewrap">
+            <table class="fw-table">
                 <thead><tr>
-                    <th class="font-semibold">{% trans "Kategorie" %}</th>
-                    <th class="font-semibold w-32">{% trans "Lebensdauer (J)" %}</th>
-                    <th class="font-semibold">{% trans "Bemerkung" %}</th>
+                    <th>{% trans "Kategorie" %}</th>
+                    <th class="w-32">{% trans "Lebensdauer (J)" %}</th>
+                    <th>{% trans "Bemerkung" %}</th>
                     <th></th>
                 </tr></thead>
-                <tbody class="fw-dv">
+                <tbody>
                 {% for r in rows %}
                 <tr>
                     <td class="font-medium fw-strong">{{ r.kategorie }}</td>
-                    <td><input name="jahre_{{ r.id }}" value="{{ r.jahre }}" inputmode="numeric" class="w-24 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right"></td>
-                    <td><input name="bemerkung_{{ r.id }}" value="{{ r.bemerkung }}" class="w-full fw-flaeche2 rounded-lg text-sm px-2 py-1.5"></td>
-                    <td class="text-right fw-right">
-                        <button type="submit" form="del_{{ r.id }}" class="fw-faint hover:fw-kritisch text-xs" title="{% trans 'Löschen' %}" onclick="return confirm('{% filter escapejs %}{% blocktrans with k=r.kategorie %}Kategorie «{{ k }}» löschen?{% endblocktrans %}{% endfilter %}');">{% zeichen 'loeschen' %}</button>
+                    <td><input name="jahre_{{ r.id }}" value="{{ r.jahre }}" inputmode="numeric" class="fw-feld w-24 text-right"></td>
+                    <td><input name="bemerkung_{{ r.id }}" value="{{ r.bemerkung }}" class="fw-feld w-full"></td>
+                    <td class="fw-right">
+                        <button type="submit" form="del_{{ r.id }}" class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}" onclick="return confirm('{% filter escapejs %}{% blocktrans with k=r.kategorie %}Kategorie «{{ k }}» löschen?{% endblocktrans %}{% endfilter %}');">{% zeichen 'loeschen' %}</button>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch keine Kategorien — «Standardwerte ergänzen» klicken." %}</td></tr>
+                <tr><td colspan="4" class="fw-leerzeile fw-leer">{% trans "Noch keine Kategorien — «Standardwerte ergänzen» klicken." %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
         {% if rows %}
-        <div class="px-5 py-3 border-t fw-linie flex justify-end">
-            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2 rounded-lg">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Änderungen speichern" %}</button>
+        <div class="fw-fuss">
+            <button class="fw-btn fw-primary ml-auto">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Änderungen speichern" %}</button>
         </div>
         {% endif %}
     </div>
@@ -79,10 +79,10 @@
 <form method="post" action="/neu/lebensdauer/" id="del_{{ r.id }}" class="hidden">{% csrf_token %}<input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ r.id }}"></form>
 {% endfor %}
 
-<p class="text-xs fw-faint mt-4">
+<p class="fw-hilfe">
     {% zeichen 'recht' klasse='mr-1' %}
     {% comment %}Bewusst nicht übersetzt: Haftungsregel (Zeitwert bei mieterverursachten
        Schäden) — Rechtstext, Übersetzung erst nach juristischer Prüfung.{% endcomment %}
-    Bei mieterverursachten Schäden zahlt der Mieter nur den <span class="font-semibold">Zeitwert</span> (Restnutzungsdauer / Lebensdauer × Neuwert bzw. Reparaturkosten). Ein vollständig abgeschriebenes Element ist für den Mieter kostenlos.
+    Bei mieterverursachten Schäden zahlt der Mieter nur den <b>Zeitwert</b> (Restnutzungsdauer / Lebensdauer × Neuwert bzw. Reparaturkosten). Ein vollständig abgeschriebenes Element ist für den Mieter kostenlos.
 </p>
 {% endblock %}

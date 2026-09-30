@@ -3,12 +3,12 @@
 {% block title %}{% if ist_neu %}{% trans "Neue Person" %}{% else %}{% blocktrans with name=m.display_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
 
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/personen/{{ lg_query }}" class="hover:fw-marke">{% trans "Personen" %}</a>
+<nav class="fw-akte-pfad mb-3">
+    <a href="/neu/personen/{{ lg_query }}">{% trans "Personen" %}</a>
     {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    {% if not ist_neu %}<a href="/neu/personen/{{ m.id }}/" class="hover:fw-marke">{{ m.display_name }}</a>
+    {% if not ist_neu %}<a href="/neu/personen/{{ m.id }}/">{{ m.display_name }}</a>
     {% zeichen 'weiter' klasse='fw-fs-mikro' %}{% endif %}
-    <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neue Person" %}{% else %}{% trans "Bearbeiten" %}{% endif %}</span>
+    <b>{% if ist_neu %}{% trans "Neue Person" %}{% else %}{% trans "Bearbeiten" %}{% endif %}</b>
 </nav>
 
 <div class="fw-phead">
@@ -18,7 +18,7 @@
     </div>
 </div>
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" class="max-w-3xl">
     {% csrf_token %}
 
     {% if anzahl_fehler %}
@@ -29,62 +29,63 @@
     {% endif %}
 
     {% if dublette_warnung %}
-    <div class="fw-warn-flaeche border fw-linie-warn rounded-xl p-5">
-        <div class="flex items-start gap-3">
-            <div class="fw-warnton text-xl">⚠️</div>
-            <div class="flex-1">
-                <h3 class="font-bold fw-warnton text-sm mb-1">{% trans "Mögliche Dublette gefunden" %}</h3>
-                <p class="text-sm fw-warnton mb-3">{% trans "Es existieren bereits ähnliche Personen. Bitte prüfen Sie, ob es sich um dieselbe Person handelt" %}:</p>
+    <div class="fw-card">
+        <div class="fw-hinweis warn">
+            <span class="fw-hi">{% zeichen 'warnung' %}</span>
+            <div class="fw-ht">
+                <b>{% trans "Mögliche Dublette gefunden" %}</b>
+                <p class="mb-3">{% trans "Es existieren bereits ähnliche Personen. Bitte prüfen Sie, ob es sich um dieselbe Person handelt" %}:</p>
                 <div class="space-y-1.5 mb-4">
                     {% for d in dubletten %}
-                    <a href="/neu/personen/{{ d.id }}/" class="flex items-center gap-2 text-sm fw-flaeche rounded-lg px-3 py-2 border fw-linie-warn hover:fw-linie-warn">
-                        <span class="font-semibold fw-strong">{{ d.name }}</span>
+                    <a href="/neu/personen/{{ d.id }}/" class="flex items-center gap-2 fw-flaeche rounded-lg px-3 py-2 border fw-linie-warn">
+                        <span class="fw-strong">{{ d.name }}</span>
                         {% if d.email %}<span class="fw-faint">· {{ d.email }}</span>{% endif %}
                         {% if d.ort %}<span class="fw-faint">· {{ d.ort }}</span>{% endif %}
-                        <span class="ml-auto fw-marke text-xs font-semibold">{% trans "Öffnen" %} →</span>
+                        <span class="ml-auto fw-link">{% trans "Öffnen" %} →</span>
                     </a>
                     {% endfor %}
                 </div>
                 <input type="hidden" name="dublette_ok" value="1">
-                <p class="text-xs fw-warnton">{% trans "Ist es dennoch eine neue Person? Dann unten auf „Trotzdem speichern“ klicken." %}</p>
+                <p class="fw-hilfe">{% trans "Ist es dennoch eine neue Person? Dann unten auf „Trotzdem speichern“ klicken." %}</p>
             </div>
         </div>
     </div>
     {% endif %}
 
     <!-- Typ -->
-    <div class="fw-card p-5">
-        <label class="block text-xs font-semibold fw-mutet mb-2">{% trans "Kunden-Typ" %}</label>
-        <div class="flex flex-wrap gap-2" id="typWahl">
+    <div class="fw-card fw-rumpf">
+        <label class="fw-label mb-2">{% trans "Kunden-Typ" %}</label>
+        <div class="fw-filters fw-nomb" id="typWahl">
             {% for val, lbl in m.TYP_CHOICES %}{% endfor %}
-            <button type="button" data-typ="person" onclick="setTyp('person')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">{% trans "Privatperson" %}</button>
-            <button type="button" data-typ="firma" onclick="setTyp('firma')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">{% trans "Firma / Unternehmen" %}</button>
-            <button type="button" data-typ="verein" onclick="setTyp('verein')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">{% trans "Verein / Stiftung" %}</button>
+            <button type="button" data-typ="person" onclick="setTyp('person')" class="typ-btn fw-fchip">{% trans "Privatperson" %}</button>
+            <button type="button" data-typ="firma" onclick="setTyp('firma')" class="typ-btn fw-fchip">{% trans "Firma / Unternehmen" %}</button>
+            <button type="button" data-typ="verein" onclick="setTyp('verein')" class="typ-btn fw-fchip">{% trans "Verein / Stiftung" %}</button>
         </div>
         <input type="hidden" name="typ" id="f_typ" value="{{ m.typ|default:'person' }}">
     </div>
 
     <!-- Person -->
-    <div class="fw-card p-5 space-y-4" id="box-person">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Person" %}</h3>
+    <div class="fw-card" id="box-person">
+        <div class="fw-kopf"><h2>{% trans "Person" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Anrede" %}</label>
-                <select name="anrede" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="fw-label mb-1">{% trans "Anrede" %}</label>
+                <select name="anrede" class="fw-feld w-full">
                     {% for a in "Herr,Frau,Familie" %}{% endfor %}
                     <option value="Herr" {% if m.anrede == 'Herr' %}selected{% endif %}>{% trans "Herr" %}</option>
                     <option value="Frau" {% if m.anrede == 'Frau' %}selected{% endif %}>{% trans "Frau" %}</option>
                     <option value="Familie" {% if m.anrede == 'Familie' %}selected{% endif %}>{% trans "Familie" %}</option>
                 </select></div>
-            <div class="sm:col-span-1"><label for="p-vorname" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Vorname" %}</label>
-                <input name="vorname" value="{{ m.vorname }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-vorname"{% if feld_fehler.vorname %} aria-invalid="true" aria-describedby="p-vorname_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.vorname feld_id='p-vorname' %}</div>
-            <div class="sm:col-span-2"><label for="p-nachname" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nachname" %} <span class="fw-kritisch">*</span></label>
-                <input name="nachname" value="{{ m.nachname }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-nachname"{% if feld_fehler.nachname %} aria-invalid="true" aria-describedby="p-nachname_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.nachname feld_id='p-nachname' %}</div>
+            <div class="sm:col-span-1"><label for="p-vorname" class="fw-label mb-1">{% trans "Vorname" %}</label>
+                <input name="vorname" value="{{ m.vorname }}" class="fw-feld w-full" id="p-vorname"{% if feld_fehler.vorname %} aria-invalid="true" aria-describedby="p-vorname_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.vorname feld_id='p-vorname' %}</div>
+            <div class="sm:col-span-2"><label for="p-nachname" class="fw-label mb-1">{% trans "Nachname" %} <span class="fw-kritisch">*</span></label>
+                <input name="nachname" value="{{ m.nachname }}" class="fw-feld w-full" id="p-nachname"{% if feld_fehler.nachname %} aria-invalid="true" aria-describedby="p-nachname_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.nachname feld_id='p-nachname' %}</div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label for="p-geburtsdatum" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Geburtsdatum" %}</label>
-                <input type="date" name="geburtsdatum" value="{{ wert.geburtsdatum }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-geburtsdatum"{% if feld_fehler.geburtsdatum %} aria-invalid="true" aria-describedby="p-geburtsdatum_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.geburtsdatum feld_id='p-geburtsdatum' %}</div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zivilstand" %}</label>
-                <select name="zivilstand" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div><label for="p-geburtsdatum" class="fw-label mb-1">{% trans "Geburtsdatum" %}</label>
+                <input type="date" name="geburtsdatum" value="{{ wert.geburtsdatum }}" class="fw-feld w-full" id="p-geburtsdatum"{% if feld_fehler.geburtsdatum %} aria-invalid="true" aria-describedby="p-geburtsdatum_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.geburtsdatum feld_id='p-geburtsdatum' %}</div>
+            <div><label class="fw-label mb-1">{% trans "Zivilstand" %}</label>
+                <select name="zivilstand" class="fw-feld w-full">
                     <option value="" {% if not m.zivilstand %}selected{% endif %}>—</option>
                     <option value="ledig" {% if m.zivilstand == 'ledig' %}selected{% endif %}>{% trans "ledig" %}</option>
                     <option value="verheiratet" {% if m.zivilstand == 'verheiratet' %}selected{% endif %}>{% trans "verheiratet" %}</option>
@@ -93,8 +94,8 @@
                     <option value="verwitwet" {% if m.zivilstand == 'verwitwet' %}selected{% endif %}>{% trans "verwitwet" %}</option>
                     <option value="getrennt" {% if m.zivilstand == 'getrennt' %}selected{% endif %}>{% trans "getrennt" %}</option>
                 </select></div>
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Korrespondenzsprache" %}</label>
-                <select name="sprache" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="fw-label mb-1">{% trans "Korrespondenzsprache" %}</label>
+                <select name="sprache" class="fw-feld w-full">
                     <option value="de" {% if m.sprache == 'de' or not m.sprache %}selected{% endif %}>{% trans "Deutsch" %}</option>
                     <option value="fr" {% if m.sprache == 'fr' %}selected{% endif %}>{% trans "Französisch" %}</option>
                     <option value="it" {% if m.sprache == 'it' %}selected{% endif %}>{% trans "Italienisch" %}</option>
@@ -102,105 +103,117 @@
                 </select></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label for="p-nationalitaet" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nationalität" %}</label>
-                <input name="nationalitaet" value="{{ m.nationalitaet }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-nationalitaet"{% if feld_fehler.nationalitaet %} aria-invalid="true" aria-describedby="p-nationalitaet_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.nationalitaet feld_id='p-nationalitaet' %}</div>
-            <div><label for="p-heimatort" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Heimatort / Geburtsort" %}</label>
-                <input name="heimatort" value="{{ m.heimatort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-heimatort"{% if feld_fehler.heimatort %} aria-invalid="true" aria-describedby="p-heimatort_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.heimatort feld_id='p-heimatort' %}</div>
-            <div><label for="p-ahv_nummer" class="block text-xs font-semibold fw-mutet mb-1">{% trans "AHV-Nummer" %}</label>
-                <input name="ahv_nummer" value="{{ m.ahv_nummer }}" placeholder="756…" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono" id="p-ahv_nummer"{% if feld_fehler.ahv_nummer %} aria-invalid="true" aria-describedby="p-ahv_nummer_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ahv_nummer feld_id='p-ahv_nummer' %}</div>
+            <div><label for="p-nationalitaet" class="fw-label mb-1">{% trans "Nationalität" %}</label>
+                <input name="nationalitaet" value="{{ m.nationalitaet }}" class="fw-feld w-full" id="p-nationalitaet"{% if feld_fehler.nationalitaet %} aria-invalid="true" aria-describedby="p-nationalitaet_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.nationalitaet feld_id='p-nationalitaet' %}</div>
+            <div><label for="p-heimatort" class="fw-label mb-1">{% trans "Heimatort / Geburtsort" %}</label>
+                <input name="heimatort" value="{{ m.heimatort }}" class="fw-feld w-full" id="p-heimatort"{% if feld_fehler.heimatort %} aria-invalid="true" aria-describedby="p-heimatort_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.heimatort feld_id='p-heimatort' %}</div>
+            <div><label for="p-ahv_nummer" class="fw-label mb-1">{% trans "AHV-Nummer" %}</label>
+                <input name="ahv_nummer" value="{{ m.ahv_nummer }}" placeholder="756…" class="fw-feld w-full font-mono" id="p-ahv_nummer"{% if feld_fehler.ahv_nummer %} aria-invalid="true" aria-describedby="p-ahv_nummer_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ahv_nummer feld_id='p-ahv_nummer' %}</div>
+        </div>
         </div>
     </div>
 
     <!-- Firma -->
-    <div class="fw-card p-5 space-y-4 hidden" id="box-firma">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Firma / Organisation" %}</h3>
+    <div class="fw-card hidden" id="box-firma">
+        <div class="fw-kopf"><h2>{% trans "Firma / Organisation" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="p-firmen_name" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Firmenname" %} <span class="fw-kritisch">*</span></label>
-                <input name="firmen_name" value="{{ m.firmen_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-firmen_name"{% if feld_fehler.firmen_name %} aria-invalid="true" aria-describedby="p-firmen_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.firmen_name feld_id='p-firmen_name' %}</div>
-            <div><label for="p-uid_nummer" class="block text-xs font-semibold fw-mutet mb-1">{% trans "UID / CHE-Nummer" %}</label>
-                <input name="uid_nummer" value="{{ m.uid_nummer }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-uid_nummer"{% if feld_fehler.uid_nummer %} aria-invalid="true" aria-describedby="p-uid_nummer_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.uid_nummer feld_id='p-uid_nummer' %}</div>
-            <div class="sm:col-span-2"><label for="p-kontaktperson" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kontaktperson" %}</label>
-                <input name="kontaktperson" value="{{ m.kontaktperson }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-kontaktperson"{% if feld_fehler.kontaktperson %} aria-invalid="true" aria-describedby="p-kontaktperson_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kontaktperson feld_id='p-kontaktperson' %}</div>
+            <div><label for="p-firmen_name" class="fw-label mb-1">{% trans "Firmenname" %} <span class="fw-kritisch">*</span></label>
+                <input name="firmen_name" value="{{ m.firmen_name }}" class="fw-feld w-full" id="p-firmen_name"{% if feld_fehler.firmen_name %} aria-invalid="true" aria-describedby="p-firmen_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.firmen_name feld_id='p-firmen_name' %}</div>
+            <div><label for="p-uid_nummer" class="fw-label mb-1">{% trans "UID / CHE-Nummer" %}</label>
+                <input name="uid_nummer" value="{{ m.uid_nummer }}" class="fw-feld w-full" id="p-uid_nummer"{% if feld_fehler.uid_nummer %} aria-invalid="true" aria-describedby="p-uid_nummer_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.uid_nummer feld_id='p-uid_nummer' %}</div>
+            <div class="sm:col-span-2"><label for="p-kontaktperson" class="fw-label mb-1">{% trans "Kontaktperson" %}</label>
+                <input name="kontaktperson" value="{{ m.kontaktperson }}" class="fw-feld w-full" id="p-kontaktperson"{% if feld_fehler.kontaktperson %} aria-invalid="true" aria-describedby="p-kontaktperson_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kontaktperson feld_id='p-kontaktperson' %}</div>
+        </div>
         </div>
     </div>
 
     <!-- Kontakt -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Kontakt" %}</h3>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Kontakt" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label for="p-email" class="block text-xs font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
-                <input type="email" name="email" value="{{ m.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-email"{% if feld_fehler.email %} aria-invalid="true" aria-describedby="p-email_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.email feld_id='p-email' %}</div>
-            <div><label for="p-telefon_privat" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
-                <input name="telefon_privat" value="{{ m.telefon_privat }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-telefon_privat"{% if feld_fehler.telefon_privat %} aria-invalid="true" aria-describedby="p-telefon_privat_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.telefon_privat feld_id='p-telefon_privat' %}</div>
-            <div><label for="p-mobile" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Mobile" %}</label>
-                <input name="mobile" value="{{ m.mobile }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-mobile"{% if feld_fehler.mobile %} aria-invalid="true" aria-describedby="p-mobile_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.mobile feld_id='p-mobile' %}</div>
-            <div><label for="p-telefon_geschaeft" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon Geschäft" %}</label>
-                <input name="telefon_geschaeft" value="{{ m.telefon_geschaeft }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-telefon_geschaeft"{% if feld_fehler.telefon_geschaeft %} aria-invalid="true" aria-describedby="p-telefon_geschaeft_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.telefon_geschaeft feld_id='p-telefon_geschaeft' %}</div>
+            <div><label for="p-email" class="fw-label mb-1">{% trans "E-Mail" %}</label>
+                <input type="email" name="email" value="{{ m.email }}" class="fw-feld w-full" id="p-email"{% if feld_fehler.email %} aria-invalid="true" aria-describedby="p-email_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.email feld_id='p-email' %}</div>
+            <div><label for="p-telefon_privat" class="fw-label mb-1">{% trans "Telefon" %}</label>
+                <input name="telefon_privat" value="{{ m.telefon_privat }}" class="fw-feld w-full" id="p-telefon_privat"{% if feld_fehler.telefon_privat %} aria-invalid="true" aria-describedby="p-telefon_privat_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.telefon_privat feld_id='p-telefon_privat' %}</div>
+            <div><label for="p-mobile" class="fw-label mb-1">{% trans "Mobile" %}</label>
+                <input name="mobile" value="{{ m.mobile }}" class="fw-feld w-full" id="p-mobile"{% if feld_fehler.mobile %} aria-invalid="true" aria-describedby="p-mobile_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.mobile feld_id='p-mobile' %}</div>
+            <div><label for="p-telefon_geschaeft" class="fw-label mb-1">{% trans "Telefon Geschäft" %}</label>
+                <input name="telefon_geschaeft" value="{{ m.telefon_geschaeft }}" class="fw-feld w-full" id="p-telefon_geschaeft"{% if feld_fehler.telefon_geschaeft %} aria-invalid="true" aria-describedby="p-telefon_geschaeft_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.telefon_geschaeft feld_id='p-telefon_geschaeft' %}</div>
         </div>
+    </div>
     </div>
 
     <!-- Wohnadresse -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Wohnadresse" %}</h3>
-        <p class="fw-fs-klein fw-faint -mt-2">{% trans "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite." %}</p>
-        <div><label for="p-strasse" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr." %}</label>
-            <input name="strasse" value="{{ m.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-strasse"{% if feld_fehler.strasse %} aria-invalid="true" aria-describedby="p-strasse_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.strasse feld_id='p-strasse' %}</div>
-        <div><label for="p-adresszusatz" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Adresszusatz" %}</label>
-            <input name="adresszusatz" value="{{ m.adresszusatz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-adresszusatz"{% if feld_fehler.adresszusatz %} aria-invalid="true" aria-describedby="p-adresszusatz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.adresszusatz feld_id='p-adresszusatz' %}</div>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Wohnadresse" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
+        <p class="fw-hilfe -mt-2">{% trans "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite." %}</p>
+        <div><label for="p-strasse" class="fw-label mb-1">{% trans "Strasse & Nr." %}</label>
+            <input name="strasse" value="{{ m.strasse }}" class="fw-feld w-full" id="p-strasse"{% if feld_fehler.strasse %} aria-invalid="true" aria-describedby="p-strasse_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.strasse feld_id='p-strasse' %}</div>
+        <div><label for="p-adresszusatz" class="fw-label mb-1">{% trans "Adresszusatz" %}</label>
+            <input name="adresszusatz" value="{{ m.adresszusatz }}" class="fw-feld w-full" id="p-adresszusatz"{% if feld_fehler.adresszusatz %} aria-invalid="true" aria-describedby="p-adresszusatz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.adresszusatz feld_id='p-adresszusatz' %}</div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label for="p-plz" class="block text-xs font-semibold fw-mutet mb-1">{% trans "PLZ" %}</label>
-                <input name="plz" value="{{ m.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-plz"{% if feld_fehler.plz %} aria-invalid="true" aria-describedby="p-plz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.plz feld_id='p-plz' %}</div>
-            <div><label for="p-ort" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ort" %}</label>
-                <input name="ort" value="{{ m.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-ort"{% if feld_fehler.ort %} aria-invalid="true" aria-describedby="p-ort_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ort feld_id='p-ort' %}</div>
-            <div><label for="p-land" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Land" %}</label>
-                <input name="land" value="{{ m.land|default:'Schweiz' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-land"{% if feld_fehler.land %} aria-invalid="true" aria-describedby="p-land_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.land feld_id='p-land' %}</div>
+            <div><label for="p-plz" class="fw-label mb-1">{% trans "PLZ" %}</label>
+                <input name="plz" value="{{ m.plz }}" class="fw-feld w-full" id="p-plz"{% if feld_fehler.plz %} aria-invalid="true" aria-describedby="p-plz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.plz feld_id='p-plz' %}</div>
+            <div><label for="p-ort" class="fw-label mb-1">{% trans "Ort" %}</label>
+                <input name="ort" value="{{ m.ort }}" class="fw-feld w-full" id="p-ort"{% if feld_fehler.ort %} aria-invalid="true" aria-describedby="p-ort_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ort feld_id='p-ort' %}</div>
+            <div><label for="p-land" class="fw-label mb-1">{% trans "Land" %}</label>
+                <input name="land" value="{{ m.land|default:'Schweiz' }}" class="fw-feld w-full" id="p-land"{% if feld_fehler.land %} aria-invalid="true" aria-describedby="p-land_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.land feld_id='p-land' %}</div>
         </div>
+    </div>
     </div>
 
     <!-- Korrespondenzadresse (optional, hat Vorrang für die Zustellung) -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Korrespondenzadresse" %} <span class="font-normal fw-faint">{% trans "(optional)" %}</span></h3>
-        <p class="fw-fs-klein fw-faint -mt-2">{% trans "Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll (z.B. c/o, Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare dorthin adressiert." %}</p>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Strasse & Nr. / c/o" %}</label>
-            <input name="k_strasse" value="{{ korr_adr.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Adresszusatz" %}</label>
-            <input name="k_adresszusatz" value="{{ korr_adr.adresszusatz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Korrespondenzadresse" %} <span class="font-normal fw-faint">{% trans "(optional)" %}</span></h2></div>
+        <div class="fw-rumpf space-y-4">
+        <p class="fw-hilfe -mt-2">{% trans "Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll (z.B. c/o, Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare dorthin adressiert." %}</p>
+        <div><label class="fw-label mb-1">{% trans "Strasse & Nr. / c/o" %}</label>
+            <input name="k_strasse" value="{{ korr_adr.strasse }}" class="fw-feld w-full"></div>
+        <div><label class="fw-label mb-1">{% trans "Adresszusatz" %}</label>
+            <input name="k_adresszusatz" value="{{ korr_adr.adresszusatz }}" class="fw-feld w-full"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "PLZ" %}</label>
-                <input name="k_plz" value="{{ korr_adr.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ort" %}</label>
-                <input name="k_ort" value="{{ korr_adr.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="fw-label mb-1">{% trans "PLZ" %}</label>
+                <input name="k_plz" value="{{ korr_adr.plz }}" class="fw-feld w-full"></div>
+            <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Ort" %}</label>
+                <input name="k_ort" value="{{ korr_adr.ort }}" class="fw-feld w-full"></div>
         </div>
+    </div>
     </div>
 
     <!-- Person-spezifische Sektionen (nur Privatperson) -->
     <div id="box-person-extra" class="space-y-5">
         <!-- Aufenthalt -->
-        <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">{% trans "Aufenthalt" %}</h3>
-            <p class="fw-fs-klein fw-faint -mt-2">{% trans "Bei Vermietung an ausländische Staatsangehörige Pflichtangabe." %}</p>
+        <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Aufenthalt" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
+            <p class="fw-hilfe -mt-2">{% trans "Bei Vermietung an ausländische Staatsangehörige Pflichtangabe." %}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Aufenthaltsbewilligung" %}</label>
-                    <select name="aufenthaltsbewilligung" id="f_bewilligung" onchange="bewilligungHinweis()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="fw-label mb-1">{% trans "Aufenthaltsbewilligung" %}</label>
+                    <select name="aufenthaltsbewilligung" id="f_bewilligung" onchange="bewilligungHinweis()" class="fw-feld w-full">
                         {% for val, lbl in m.AUFENTHALT_CHOICES %}
                         <option value="{{ val }}" {% if m.aufenthaltsbewilligung == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div><label for="p-bewilligung_gueltig_bis" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bewilligung gültig bis" %}</label>
-                    <input type="date" name="bewilligung_gueltig_bis" value="{{ wert.bewilligung_gueltig_bis }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-bewilligung_gueltig_bis"{% if feld_fehler.bewilligung_gueltig_bis %} aria-invalid="true" aria-describedby="p-bewilligung_gueltig_bis_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.bewilligung_gueltig_bis feld_id='p-bewilligung_gueltig_bis' %}</div>
+                <div><label for="p-bewilligung_gueltig_bis" class="fw-label mb-1">{% trans "Bewilligung gültig bis" %}</label>
+                    <input type="date" name="bewilligung_gueltig_bis" value="{{ wert.bewilligung_gueltig_bis }}" class="fw-feld w-full" id="p-bewilligung_gueltig_bis"{% if feld_fehler.bewilligung_gueltig_bis %} aria-invalid="true" aria-describedby="p-bewilligung_gueltig_bis_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.bewilligung_gueltig_bis feld_id='p-bewilligung_gueltig_bis' %}</div>
             </div>
-            <div id="bewilligung_hinweis" class="hidden text-xs rounded-lg px-3 py-2.5 fw-info-flaeche border fw-linie fw-info">
-                <p id="bewilligung_hinweis_txt" class="font-medium"></p>
+            <div id="bewilligung_hinweis" class="hidden">
+                <div class="fw-hinweis info rounded-lg"><div class="fw-ht"><p id="bewilligung_hinweis_txt" class="fw-strong"></p>
                 {% comment %}Rechtshinweis (Art. 253 ff. OR, Meldepflicht) und die Hinweise je Aufenthaltstitel im Skript bleiben deutsch — Übersetzung erst nach juristischer Prüfung.{% endcomment %}
-                <p class="fw-fs-klein fw-info mt-1">Mieten ist für alle Aufenthaltstitel zulässig (Privatrecht, Art. 253 ff. OR) — der Titel ist kein Mietverbot, sondern ein Risiko-/Verfahrenshinweis. Meldepflicht: Anmeldung bei der Einwohnerkontrolle binnen 14 Tagen (in einzelnen Kantonen zusätzlich Vermieter-Meldepflicht).</p>
+                <p class="fw-hilfe mt-1">Mieten ist für alle Aufenthaltstitel zulässig (Privatrecht, Art. 253 ff. OR) — der Titel ist kein Mietverbot, sondern ein Risiko-/Verfahrenshinweis. Meldepflicht: Anmeldung bei der Einwohnerkontrolle binnen 14 Tagen (in einzelnen Kantonen zusätzlich Vermieter-Meldepflicht).</p></div></div>
             </div>
         </div>
+    </div>
 
         <!-- Beruf & Bonität -->
-        <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">{% trans "Beruf & Bonität" %}</h3>
+        <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Beruf & Bonität" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Erwerbsstatus" %}</label>
-                    <select name="erwerbsstatus" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="fw-label mb-1">{% trans "Erwerbsstatus" %}</label>
+                    <select name="erwerbsstatus" class="fw-feld w-full">
                         <option value="" {% if not m.erwerbsstatus %}selected{% endif %}>—</option>
                         <option value="angestellt" {% if m.erwerbsstatus == 'angestellt' %}selected{% endif %}>{% trans "angestellt" %}</option>
                         <option value="selbständig" {% if m.erwerbsstatus == 'selbständig' %}selected{% endif %}>{% trans "selbständig" %}</option>
@@ -209,117 +222,128 @@
                         <option value="arbeitslos" {% if m.erwerbsstatus == 'arbeitslos' %}selected{% endif %}>{% trans "arbeitslos" %}</option>
                         <option value="andere" {% if m.erwerbsstatus == 'andere' %}selected{% endif %}>{% trans "andere" %}</option>
                     </select></div>
-                <div><label for="p-beruf" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beruf" %}</label>
-                    <input name="beruf" value="{{ m.beruf }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-beruf"{% if feld_fehler.beruf %} aria-invalid="true" aria-describedby="p-beruf_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.beruf feld_id='p-beruf' %}</div>
-                <div><label for="p-arbeitgeber" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Arbeitgeber" %}</label>
-                    <input name="arbeitgeber" value="{{ m.arbeitgeber }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-arbeitgeber"{% if feld_fehler.arbeitgeber %} aria-invalid="true" aria-describedby="p-arbeitgeber_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.arbeitgeber feld_id='p-arbeitgeber' %}</div>
-                <div><label for="p-einkommen_jahr" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Jahreseinkommen (CHF)" %}</label>
-                    <input name="einkommen_jahr" value="{{ m.einkommen_jahr }}" placeholder="z.B. 90'000" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-einkommen_jahr"{% if feld_fehler.einkommen_jahr %} aria-invalid="true" aria-describedby="p-einkommen_jahr_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.einkommen_jahr feld_id='p-einkommen_jahr' %}</div>
-                <div><label for="p-bonitaet_datum" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betreibungsauszug vom" %}</label>
-                    <input type="date" name="bonitaet_datum" value="{{ wert.bonitaet_datum }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-bonitaet_datum"{% if feld_fehler.bonitaet_datum %} aria-invalid="true" aria-describedby="p-bonitaet_datum_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.bonitaet_datum feld_id='p-bonitaet_datum' %}</div>
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betreibungsauszug-Ergebnis" %}</label>
-                    <select name="betreibung_ergebnis" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <div><label for="p-beruf" class="fw-label mb-1">{% trans "Beruf" %}</label>
+                    <input name="beruf" value="{{ m.beruf }}" class="fw-feld w-full" id="p-beruf"{% if feld_fehler.beruf %} aria-invalid="true" aria-describedby="p-beruf_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.beruf feld_id='p-beruf' %}</div>
+                <div><label for="p-arbeitgeber" class="fw-label mb-1">{% trans "Arbeitgeber" %}</label>
+                    <input name="arbeitgeber" value="{{ m.arbeitgeber }}" class="fw-feld w-full" id="p-arbeitgeber"{% if feld_fehler.arbeitgeber %} aria-invalid="true" aria-describedby="p-arbeitgeber_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.arbeitgeber feld_id='p-arbeitgeber' %}</div>
+                <div><label for="p-einkommen_jahr" class="fw-label mb-1">{% trans "Jahreseinkommen (CHF)" %}</label>
+                    <input name="einkommen_jahr" value="{{ m.einkommen_jahr }}" placeholder="z.B. 90'000" class="fw-feld w-full" id="p-einkommen_jahr"{% if feld_fehler.einkommen_jahr %} aria-invalid="true" aria-describedby="p-einkommen_jahr_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.einkommen_jahr feld_id='p-einkommen_jahr' %}</div>
+                <div><label for="p-bonitaet_datum" class="fw-label mb-1">{% trans "Betreibungsauszug vom" %}</label>
+                    <input type="date" name="bonitaet_datum" value="{{ wert.bonitaet_datum }}" class="fw-feld w-full" id="p-bonitaet_datum"{% if feld_fehler.bonitaet_datum %} aria-invalid="true" aria-describedby="p-bonitaet_datum_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.bonitaet_datum feld_id='p-bonitaet_datum' %}</div>
+                <div><label class="fw-label mb-1">{% trans "Betreibungsauszug-Ergebnis" %}</label>
+                    <select name="betreibung_ergebnis" class="fw-feld w-full">
                         {% for val, lbl in m.BETREIBUNG_CHOICES %}<option value="{{ val }}" {% if m.betreibung_ergebnis == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Referenz Vorvermieter (Name · Telefon · E-Mail)" %}</label>
+                <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Referenz Vorvermieter (Name · Telefon · E-Mail)" %}</label>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input name="ref_vermieter_name" value="{{ m.ref_vermieter_name }}" placeholder="{% trans 'Name' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-ref_vermieter_name"{% if feld_fehler.ref_vermieter_name %} aria-invalid="true" aria-describedby="p-ref_vermieter_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ref_vermieter_name feld_id='p-ref_vermieter_name' %}
-                        <input name="ref_vermieter_telefon" value="{{ m.ref_vermieter_telefon }}" placeholder="{% trans 'Telefon' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-ref_vermieter_telefon"{% if feld_fehler.ref_vermieter_telefon %} aria-invalid="true" aria-describedby="p-ref_vermieter_telefon_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ref_vermieter_telefon feld_id='p-ref_vermieter_telefon' %}
-                        <input name="ref_vermieter_email" value="{{ m.ref_vermieter_email }}" placeholder="{% trans 'E-Mail' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-ref_vermieter_email"{% if feld_fehler.ref_vermieter_email %} aria-invalid="true" aria-describedby="p-ref_vermieter_email_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ref_vermieter_email feld_id='p-ref_vermieter_email' %}
+                        <input name="ref_vermieter_name" value="{{ m.ref_vermieter_name }}" placeholder="{% trans 'Name' %}" class="fw-feld w-full" id="p-ref_vermieter_name"{% if feld_fehler.ref_vermieter_name %} aria-invalid="true" aria-describedby="p-ref_vermieter_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ref_vermieter_name feld_id='p-ref_vermieter_name' %}
+                        <input name="ref_vermieter_telefon" value="{{ m.ref_vermieter_telefon }}" placeholder="{% trans 'Telefon' %}" class="fw-feld w-full" id="p-ref_vermieter_telefon"{% if feld_fehler.ref_vermieter_telefon %} aria-invalid="true" aria-describedby="p-ref_vermieter_telefon_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ref_vermieter_telefon feld_id='p-ref_vermieter_telefon' %}
+                        <input name="ref_vermieter_email" value="{{ m.ref_vermieter_email }}" placeholder="{% trans 'E-Mail' %}" class="fw-feld w-full" id="p-ref_vermieter_email"{% if feld_fehler.ref_vermieter_email %} aria-invalid="true" aria-describedby="p-ref_vermieter_email_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ref_vermieter_email feld_id='p-ref_vermieter_email' %}
                     </div></div>
             </div>
         </div>
+    </div>
 
         <!-- Vertretung / Beistand -->
-        <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">{% trans "Vertretung / Beistand" %} <span class="font-normal fw-faint">{% trans "(optional)" %}</span></h3>
+        <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Vertretung / Beistand" %} <span class="font-normal fw-faint">{% trans "(optional)" %}</span></h2></div>
+        <div class="fw-rumpf space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Art" %}</label>
-                    <select name="vertretung_art" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="fw-label mb-1">{% trans "Art" %}</label>
+                    <select name="vertretung_art" class="fw-feld w-full">
                         {% for val, lbl in m.VERTRETUNG_CHOICES %}<option value="{{ val }}" {% if m.vertretung_art == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div><label for="p-vertretung_name" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Name / Behörde" %}</label>
-                    <input name="vertretung_name" value="{{ m.vertretung_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-vertretung_name"{% if feld_fehler.vertretung_name %} aria-invalid="true" aria-describedby="p-vertretung_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.vertretung_name feld_id='p-vertretung_name' %}</div>
-                <div><label for="p-vertretung_kontakt" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kontakt" %}</label>
-                    <input name="vertretung_kontakt" value="{{ m.vertretung_kontakt }}" placeholder="{% trans 'Telefon / E-Mail' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-vertretung_kontakt"{% if feld_fehler.vertretung_kontakt %} aria-invalid="true" aria-describedby="p-vertretung_kontakt_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.vertretung_kontakt feld_id='p-vertretung_kontakt' %}</div>
+                <div><label for="p-vertretung_name" class="fw-label mb-1">{% trans "Name / Behörde" %}</label>
+                    <input name="vertretung_name" value="{{ m.vertretung_name }}" class="fw-feld w-full" id="p-vertretung_name"{% if feld_fehler.vertretung_name %} aria-invalid="true" aria-describedby="p-vertretung_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.vertretung_name feld_id='p-vertretung_name' %}</div>
+                <div><label for="p-vertretung_kontakt" class="fw-label mb-1">{% trans "Kontakt" %}</label>
+                    <input name="vertretung_kontakt" value="{{ m.vertretung_kontakt }}" placeholder="{% trans 'Telefon / E-Mail' %}" class="fw-feld w-full" id="p-vertretung_kontakt"{% if feld_fehler.vertretung_kontakt %} aria-invalid="true" aria-describedby="p-vertretung_kontakt_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.vertretung_kontakt feld_id='p-vertretung_kontakt' %}</div>
             </div>
         </div>
+    </div>
 
         <!-- Haushalt -->
-        <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">{% trans "Haushalt" %}</h3>
+        <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Haushalt" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div><label for="p-haushalt_erwachsene" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Erwachsene" %}</label>
-                    <input inputmode="numeric" name="haushalt_erwachsene" value="{{ wert.haushalt_erwachsene }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums" id="p-haushalt_erwachsene"{% if feld_fehler.haushalt_erwachsene %} aria-invalid="true" aria-describedby="p-haushalt_erwachsene_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haushalt_erwachsene feld_id='p-haushalt_erwachsene' %}</div>
-                <div><label for="p-haushalt_kinder" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kinder" %}</label>
-                    <input inputmode="numeric" name="haushalt_kinder" value="{{ wert.haushalt_kinder }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums" id="p-haushalt_kinder"{% if feld_fehler.haushalt_kinder %} aria-invalid="true" aria-describedby="p-haushalt_kinder_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haushalt_kinder feld_id='p-haushalt_kinder' %}</div>
-                <div class="flex items-end pb-1"><label class="inline-flex items-center gap-2 text-sm fw-ink">
+                <div><label for="p-haushalt_erwachsene" class="fw-label mb-1">{% trans "Erwachsene" %}</label>
+                    <input inputmode="numeric" name="haushalt_erwachsene" value="{{ wert.haushalt_erwachsene }}" class="fw-feld w-full tabular-nums" id="p-haushalt_erwachsene"{% if feld_fehler.haushalt_erwachsene %} aria-invalid="true" aria-describedby="p-haushalt_erwachsene_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haushalt_erwachsene feld_id='p-haushalt_erwachsene' %}</div>
+                <div><label for="p-haushalt_kinder" class="fw-label mb-1">{% trans "Kinder" %}</label>
+                    <input inputmode="numeric" name="haushalt_kinder" value="{{ wert.haushalt_kinder }}" class="fw-feld w-full tabular-nums" id="p-haushalt_kinder"{% if feld_fehler.haushalt_kinder %} aria-invalid="true" aria-describedby="p-haushalt_kinder_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haushalt_kinder feld_id='p-haushalt_kinder' %}</div>
+                <div class="flex items-end pb-1"><label class="fw-haekchen">
                     <input type="checkbox" name="haustiere" {% if m.haustiere %}checked{% endif %} class="rounded"> {% trans "Haustiere" %}</label></div>
-                <div><label for="p-haustiere_details" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Haustiere (Details)" %}</label>
-                    <input name="haustiere_details" value="{{ m.haustiere_details }}" placeholder="{% trans 'z.B. 1 Katze' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-haustiere_details"{% if feld_fehler.haustiere_details %} aria-invalid="true" aria-describedby="p-haustiere_details_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haustiere_details feld_id='p-haustiere_details' %}</div>
+                <div><label for="p-haustiere_details" class="fw-label mb-1">{% trans "Haustiere (Details)" %}</label>
+                    <input name="haustiere_details" value="{{ m.haustiere_details }}" placeholder="{% trans 'z.B. 1 Katze' %}" class="fw-feld w-full" id="p-haustiere_details"{% if feld_fehler.haustiere_details %} aria-invalid="true" aria-describedby="p-haustiere_details_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haustiere_details feld_id='p-haustiere_details' %}</div>
             </div>
         </div>
+    </div>
 
         <!-- Versicherung & Notfall -->
-        <div class="fw-card p-5 space-y-4">
-            <h3 class="font-bold fw-strong text-sm">{% trans "Versicherung & Notfallkontakt" %}</h3>
+        <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Versicherung & Notfallkontakt" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label for="p-haftpflicht_gesellschaft" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Haftpflicht-Versicherung" %}</label>
-                    <input name="haftpflicht_gesellschaft" value="{{ m.haftpflicht_gesellschaft }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-haftpflicht_gesellschaft"{% if feld_fehler.haftpflicht_gesellschaft %} aria-invalid="true" aria-describedby="p-haftpflicht_gesellschaft_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haftpflicht_gesellschaft feld_id='p-haftpflicht_gesellschaft' %}</div>
-                <div><label for="p-haftpflicht_police" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Policen-Nr." %}</label>
-                    <input name="haftpflicht_police" value="{{ m.haftpflicht_police }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-haftpflicht_police"{% if feld_fehler.haftpflicht_police %} aria-invalid="true" aria-describedby="p-haftpflicht_police_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haftpflicht_police feld_id='p-haftpflicht_police' %}</div>
-                <div><label for="p-notfall_name" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Notfallkontakt / Bürge" %}</label>
-                    <input name="notfall_name" value="{{ m.notfall_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-notfall_name"{% if feld_fehler.notfall_name %} aria-invalid="true" aria-describedby="p-notfall_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.notfall_name feld_id='p-notfall_name' %}</div>
+                <div><label for="p-haftpflicht_gesellschaft" class="fw-label mb-1">{% trans "Haftpflicht-Versicherung" %}</label>
+                    <input name="haftpflicht_gesellschaft" value="{{ m.haftpflicht_gesellschaft }}" class="fw-feld w-full" id="p-haftpflicht_gesellschaft"{% if feld_fehler.haftpflicht_gesellschaft %} aria-invalid="true" aria-describedby="p-haftpflicht_gesellschaft_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haftpflicht_gesellschaft feld_id='p-haftpflicht_gesellschaft' %}</div>
+                <div><label for="p-haftpflicht_police" class="fw-label mb-1">{% trans "Policen-Nr." %}</label>
+                    <input name="haftpflicht_police" value="{{ m.haftpflicht_police }}" class="fw-feld w-full" id="p-haftpflicht_police"{% if feld_fehler.haftpflicht_police %} aria-invalid="true" aria-describedby="p-haftpflicht_police_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.haftpflicht_police feld_id='p-haftpflicht_police' %}</div>
+                <div><label for="p-notfall_name" class="fw-label mb-1">{% trans "Notfallkontakt / Bürge" %}</label>
+                    <input name="notfall_name" value="{{ m.notfall_name }}" class="fw-feld w-full" id="p-notfall_name"{% if feld_fehler.notfall_name %} aria-invalid="true" aria-describedby="p-notfall_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.notfall_name feld_id='p-notfall_name' %}</div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div><label for="p-notfall_telefon" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Telefon" %}</label>
-                        <input name="notfall_telefon" value="{{ m.notfall_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-notfall_telefon"{% if feld_fehler.notfall_telefon %} aria-invalid="true" aria-describedby="p-notfall_telefon_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.notfall_telefon feld_id='p-notfall_telefon' %}</div>
-                    <div><label for="p-notfall_beziehung" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Beziehung" %}</label>
-                        <input name="notfall_beziehung" value="{{ m.notfall_beziehung }}" placeholder="{% trans 'z.B. Elternteil' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-notfall_beziehung"{% if feld_fehler.notfall_beziehung %} aria-invalid="true" aria-describedby="p-notfall_beziehung_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.notfall_beziehung feld_id='p-notfall_beziehung' %}</div>
+                    <div><label for="p-notfall_telefon" class="fw-label mb-1">{% trans "Telefon" %}</label>
+                        <input name="notfall_telefon" value="{{ m.notfall_telefon }}" class="fw-feld w-full" id="p-notfall_telefon"{% if feld_fehler.notfall_telefon %} aria-invalid="true" aria-describedby="p-notfall_telefon_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.notfall_telefon feld_id='p-notfall_telefon' %}</div>
+                    <div><label for="p-notfall_beziehung" class="fw-label mb-1">{% trans "Beziehung" %}</label>
+                        <input name="notfall_beziehung" value="{{ m.notfall_beziehung }}" placeholder="{% trans 'z.B. Elternteil' %}" class="fw-feld w-full" id="p-notfall_beziehung"{% if feld_fehler.notfall_beziehung %} aria-invalid="true" aria-describedby="p-notfall_beziehung_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.notfall_beziehung feld_id='p-notfall_beziehung' %}</div>
                 </div>
             </div>
         </div>
     </div>
+    </div>
 
     <!-- Zahlungsverkehr -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Zahlungsverkehr" %}</h3>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Zahlungsverkehr" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Zahlungsart" %}</label>
-                <select name="zahlungsart" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="fw-label mb-1">{% trans "Zahlungsart" %}</label>
+                <select name="zahlungsart" class="fw-feld w-full">
                     {% for val, lbl in m.ZAHLUNGSART_CHOICES %}<option value="{{ val }}" {% if m.zahlungsart == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select></div>
-            <div class="sm:col-span-2"><label for="p-ebill_email" class="block text-xs font-semibold fw-mutet mb-1">{% trans "eBill- / E-Rechnungs-Adresse" %}</label>
-                <input name="ebill_email" value="{{ m.ebill_email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-ebill_email"{% if feld_fehler.ebill_email %} aria-invalid="true" aria-describedby="p-ebill_email_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ebill_email feld_id='p-ebill_email' %}</div>
+            <div class="sm:col-span-2"><label for="p-ebill_email" class="fw-label mb-1">{% trans "eBill- / E-Rechnungs-Adresse" %}</label>
+                <input name="ebill_email" value="{{ m.ebill_email }}" class="fw-feld w-full" id="p-ebill_email"{% if feld_fehler.ebill_email %} aria-invalid="true" aria-describedby="p-ebill_email_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ebill_email feld_id='p-ebill_email' %}</div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="sm:col-span-2"><label for="p-iban" class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
-                <input name="iban" value="{{ m.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="{% trans 'CH…' %}" id="p-iban"{% if feld_fehler.iban %} aria-invalid="true" aria-describedby="p-iban_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.iban feld_id='p-iban' %}</div>
-            <div><label for="p-bank_name" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bank" %}</label>
-                <input name="bank_name" value="{{ m.bank_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-bank_name"{% if feld_fehler.bank_name %} aria-invalid="true" aria-describedby="p-bank_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.bank_name feld_id='p-bank_name' %}</div>
+            <div class="sm:col-span-2"><label for="p-iban" class="fw-label mb-1">IBAN</label>
+                <input name="iban" value="{{ m.iban }}" class="fw-feld w-full font-mono" placeholder="{% trans 'CH…' %}" id="p-iban"{% if feld_fehler.iban %} aria-invalid="true" aria-describedby="p-iban_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.iban feld_id='p-iban' %}</div>
+            <div><label for="p-bank_name" class="fw-label mb-1">{% trans "Bank" %}</label>
+                <input name="bank_name" value="{{ m.bank_name }}" class="fw-feld w-full" id="p-bank_name"{% if feld_fehler.bank_name %} aria-invalid="true" aria-describedby="p-bank_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.bank_name feld_id='p-bank_name' %}</div>
         </div>
-        <label class="inline-flex items-center gap-2 text-sm fw-ink">
+        <label class="fw-haekchen">
             <input type="checkbox" name="mahnsperre" {% if m.mahnsperre %}checked{% endif %} class="rounded"> {% trans "Mahnsperre (laufende Zahlungsvereinbarung — kein automatischer Mahnlauf)" %}</label>
         <div class="pt-2 border-t fw-linie">
-            <p class="text-xs font-semibold fw-mutet mb-2">{% trans "Abweichender Zahler / Kostenträger" %} <span class="font-normal fw-faint">{% trans "(z.B. Sozialamt, Firma)" %}</span></p>
+            <p class="fw-label mb-2">{% trans "Abweichender Zahler / Kostenträger" %} <span class="font-normal fw-faint">{% trans "(z.B. Sozialamt, Firma)" %}</span></p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <input name="zahler_name" value="{{ m.zahler_name }}" placeholder="{% trans 'Name' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-zahler_name"{% if feld_fehler.zahler_name %} aria-invalid="true" aria-describedby="p-zahler_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.zahler_name feld_id='p-zahler_name' %}
-                <input name="zahler_adresse" value="{{ m.zahler_adresse }}" placeholder="{% trans 'Adresse' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5" id="p-zahler_adresse"{% if feld_fehler.zahler_adresse %} aria-invalid="true" aria-describedby="p-zahler_adresse_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.zahler_adresse feld_id='p-zahler_adresse' %}
-                <input name="zahler_iban" value="{{ m.zahler_iban }}" placeholder="{% trans 'IBAN' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono" id="p-zahler_iban"{% if feld_fehler.zahler_iban %} aria-invalid="true" aria-describedby="p-zahler_iban_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.zahler_iban feld_id='p-zahler_iban' %}
+                <input name="zahler_name" value="{{ m.zahler_name }}" placeholder="{% trans 'Name' %}" class="fw-feld w-full" id="p-zahler_name"{% if feld_fehler.zahler_name %} aria-invalid="true" aria-describedby="p-zahler_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.zahler_name feld_id='p-zahler_name' %}
+                <input name="zahler_adresse" value="{{ m.zahler_adresse }}" placeholder="{% trans 'Adresse' %}" class="fw-feld w-full" id="p-zahler_adresse"{% if feld_fehler.zahler_adresse %} aria-invalid="true" aria-describedby="p-zahler_adresse_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.zahler_adresse feld_id='p-zahler_adresse' %}
+                <input name="zahler_iban" value="{{ m.zahler_iban }}" placeholder="{% trans 'IBAN' %}" class="fw-feld w-full font-mono" id="p-zahler_iban"{% if feld_fehler.zahler_iban %} aria-invalid="true" aria-describedby="p-zahler_iban_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.zahler_iban feld_id='p-zahler_iban' %}
             </div>
         </div>
     </div>
-
-    <!-- Notizen -->
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Interne Notizen" %}</h3>
-        <textarea name="notizen" rows="3" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ m.notizen }}</textarea>
     </div>
 
-    <div class="flex items-center gap-3">
-        <button type="submit" class="{% if dublette_warnung %}fw-warn-flaeche hover:fw-warn-voll{% else %}fw-balken-voll hover:fw-balken-voll{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+    <!-- Notizen -->
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Interne Notizen" %}</h2></div>
+        <div class="fw-rumpf space-y-4">
+        <textarea name="notizen" rows="3" class="fw-feld w-full">{{ m.notizen }}</textarea>
+    </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+        <button type="submit" class="fw-btn {% if dublette_warnung %}fw-rand-warn{% else %}fw-primary{% endif %}">
             {% zeichen 'speichern' klasse='mr-1.5' %}{% if dublette_warnung %}{% trans "Trotzdem speichern" %}{% else %}{% trans "Speichern" %}{% endif %}
         </button>
-        <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">{% trans "Abbrechen" %}</a>
+        <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 
@@ -328,10 +352,7 @@ function setTyp(t){
     document.getElementById('f_typ').value = t;
     document.querySelectorAll('.typ-btn').forEach(function(b){
         var aktiv = b.dataset.typ === t;
-        b.classList.toggle('fw-balken-voll', aktiv);
-        b.classList.toggle('text-white', aktiv);
-        b.classList.toggle('fw-flaeche2', !aktiv);
-        b.classList.toggle('fw-mutet', !aktiv);
+        b.classList.toggle('fw-on', aktiv);
     });
     document.getElementById('box-person').classList.toggle('hidden', t !== 'person');
     document.getElementById('box-person-extra').classList.toggle('hidden', t !== 'person');

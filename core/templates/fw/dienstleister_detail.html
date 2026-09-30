@@ -9,7 +9,7 @@
    Handwerker im laufenden Jahr gekostet hat oder was bei ihm liegt, musste
    die Schadensliste durchgehen. {% endcomment %}
 
-<nav class="fw-akte-pfad" style="margin-bottom:10px">
+<nav class="fw-akte-pfad mb-3">
     <a href="/neu/dienstleister/">{% trans "Dienstleister" %}</a>
     {% zeichen 'weiter' %}
     <b>{{ h.firma }}</b>
@@ -71,8 +71,7 @@
 <!-- ===== BEREICH: STAMMDATEN ===== -->
 <div data-panel="dl" id="dl-stammdaten">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'person' %}</span>
-            <span class="fw-t">{% trans "Angaben" %}</span></div>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Angaben" %}</span></div>
         <table class="fw-table" data-stack>
             <tbody>
                 <tr><td data-label="Feld">{% trans "Firma" %}</td><td data-label="Wert">{{ h.firma }}</td></tr>
@@ -124,7 +123,7 @@
                sonst liest sich eine Schaetzung wie eine Rechnung. {% endcomment %}
             <span class="fw-betrag mut">≈ CHF {{ a.kosten_geschaetzt|chf }}</span>
             {% endif %}
-            {% if a.ticket_id %}<a href="/neu/schaeden/{{ a.ticket_id }}/" class="fw-btn">{% trans "Zum Schaden" %}</a>{% endif %}
+            {% if a.ticket_id %}<a href="/neu/schaeden/{{ a.ticket_id }}/" class="fw-btn fw-knapp">{% trans "Zum Schaden" %}</a>{% endif %}
         </div>
         {% empty %}
         <p class="fw-leer">{% trans "Kein Auftrag an diesen Dienstleister vergeben." %}</p>
@@ -135,8 +134,7 @@
 <!-- ===== BEREICH: FINANZEN ===== -->
 <div data-panel="dl" id="dl-finanzen" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'rechnung' %}</span>
-            <span class="fw-t">{% trans "Rechnungen zu Aufträgen" %}</span></div>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Rechnungen zu Aufträgen" %}</span></div>
         {% for a in auftraege %}{% if a.kreditoren_rechnung_id %}
         <div class="fw-zeile">
             <span class="fw-ikon">{% zeichen 'rechnung' %}</span>
@@ -145,7 +143,7 @@
                 <div class="fw-s">{{ a.kreditoren_rechnung.get_status_display }}{% if a.kreditoren_rechnung.datum %} · {{ a.kreditoren_rechnung.datum|date:"d.m.Y" }}{% endif %}</div>
             </div>
             <span class="fw-betrag">CHF {{ a.kreditoren_rechnung.betrag|chf }}</span>
-            <a href="/neu/kreditoren/" class="fw-btn">{% trans "Kreditoren" %}</a>
+            <a href="/neu/kreditoren/" class="fw-btn fw-knapp">{% trans "Kreditoren" %}</a>
         </div>
         {% endif %}{% empty %}
         <p class="fw-leer">{% trans "Kein Auftrag erfasst." %}</p>
@@ -160,8 +158,7 @@
 <!-- ===== BEREICH: DOKUMENTE ===== -->
 <div data-panel="dl" id="dl-dokumente" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
-            <span class="fw-t">{% trans "Dokumente" %}</span></div>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Dokumente" %}</span></div>
         {% comment %} `crm.Handwerker` führt keine Dokumentenbeziehung. Das ist
            eine Lücke im Datenmodell, keine leere Liste — und es steht hier so,
            statt einen Platzhalter zu zeigen, der Vollständigkeit vortäuscht. {% endcomment %}
@@ -172,8 +169,7 @@
 <!-- ===== BEREICH: FÄLLE ===== -->
 <div data-panel="dl" id="dl-faelle" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'dokument' %}</span>
-            <span class="fw-t">{% trans "Fälle" %}</span><span class="fw-neben">{{ dl_faelle|length }}</span></div>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Fälle" %}</span><span class="fw-neben">{{ dl_faelle|length }}</span></div>
         {% for f in dl_faelle %}
         <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
             <span class="fw-marker {% if f.ist_liegengeblieben %}crit{% elif f.status == 'wartet' %}warn{% endif %}"></span>
@@ -192,8 +188,7 @@
 <!-- ===== BEREICH: CHRONIK ===== -->
 <div data-panel="dl" id="dl-chronik" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'verlauf' %}</span>
-            <span class="fw-t">{% trans "Verlauf" %}</span></div>
+        <div class="fw-kopf"><span class="fw-t">{% trans "Verlauf" %}</span></div>
         {% comment %} Die Chronik eines Dienstleisters ist die Folge seiner
            Auftraege — `AktivitaetsLog` kennt keinen Ziel-Typ dafuer, und ein
            Abgleich ueber den Firmennamen waere geraten. {% endcomment %}

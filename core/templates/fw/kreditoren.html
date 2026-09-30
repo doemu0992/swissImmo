@@ -30,7 +30,7 @@
 <!-- KI-Rechnungsscanner: Upload → Beleg wird direkt gescannt und als Rechnung angelegt -->
 <div id="scanform" class="hidden fw-card">
     <div class="fw-kopf"><h2>{% zeichen 'einstellungen' klasse='fw-marke mr-1.5' %}{% trans "KI-Rechnungsscanner" %}</h2></div>
-    <div class="p-5">
+    <div class="fw-rumpf">
     <p class="fw-hilfe mb-4">{% blocktrans trimmed %}Belege (PDF oder Foto, <b>auch mehrere gleichzeitig</b>) hochladen — Lieferant, Betrag,
         Datum, IBAN und QR-Referenz werden automatisch ausgelesen und je Beleg eine Rechnung mit Status «Neu» angelegt.
         Zeile anklicken, um die Werte neben der Beleg-Vorschau zu prüfen/korrigieren, dann freigeben.{% endblocktrans %}</p>
@@ -72,7 +72,7 @@
 
 <div id="kredform" class="{% if not neu_fehler %}hidden {% endif %}fw-card">
     <div class="fw-kopf"><h2>{% zeichen 'rechnung' klasse='fw-marke mr-1.5' %}{% trans "Kreditorenrechnung erfassen" %}</h2></div>
-    <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-5" novalidate>
+    <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3 fw-rumpf" novalidate>
         {% csrf_token %}
         {% comment %} Audit Etappe 2: Mit Fehlern kommt dieses Formular offen und mit der
            Eingabe zurück; die Meldung steht am Feld. Nur die Belegdatei muss neu
@@ -111,7 +111,7 @@
         <div><label for="kr-beleg" class="fw-label mb-1">{% trans "Beleg (PDF/Bild)" %}</label>
             <input id="kr-beleg" type="file" name="beleg_scan" class="w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white"></div>
         <div class="sm:col-span-2 flex items-center">
-            <label class="inline-flex items-center gap-2 fw-label cursor-pointer"><input type="checkbox" name="is_hnk_relevant" {% if neu_werte.is_hnk_relevant %}checked{% endif %} class="fw-akzent">{% trans "In Nebenkostenabrechnung einbeziehen (HNK)" %}</label>
+            <label class="fw-haekchen"><input type="checkbox" name="is_hnk_relevant" {% if neu_werte.is_hnk_relevant %}checked{% endif %} class="fw-akzent">{% trans "In Nebenkostenabrechnung einbeziehen (HNK)" %}</label>
             <span class="ml-2 fw-hilfe">— {% trans "wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt" %}</span></div>
         <div class="sm:col-span-3"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen (Status: Neu)" %}</button></div>
     </form>
@@ -303,7 +303,7 @@
                                 {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.werte.konto_id == kx.id|stringformat:"s" %}selected{% endif %} {% if kx.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                             </select>{% if row.fehler.konto_id %}<p id="kc-konto-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.konto_id }}</p>{% endif %}</div>
                         <div class="col-span-2 flex items-center">
-                            <label class="inline-flex items-center gap-2 fw-label cursor-pointer">
+                            <label class="fw-haekchen">
                                 <input type="checkbox" name="is_hnk_relevant" {% if row.werte.is_hnk_relevant %}checked{% endif %} class="fw-akzent">
                                 {% trans "In Nebenkostenabrechnung einbeziehen (HNK)" %}
                             </label>
@@ -355,7 +355,7 @@
                                 <input id="ks-bez-{{ row.k.id }}" name="bezeichnung" placeholder="{% trans 'optional' %}" class="fw-feld w-full"></div>
                             <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="fw-label mb-1">{% trans "Betrag" %}</label>
                                 <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="fw-feld w-full text-right fw-num"></div>
-                            <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 fw-label cursor-pointer" title="{% trans 'In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet' %}"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">{% trans "HNK" %}</label></div>
+                            <div class="sm:col-span-2 flex items-center pb-1.5"><label class="fw-haekchen" title="{% trans 'In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet' %}"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">{% trans "HNK" %}</label></div>
                             <div class="sm:col-span-1"><button class="fw-btn fw-primary fw-knapp w-full" title="{% trans 'Position hinzufügen' %}">{% zeichen 'neu' %}</button></div>
                         </form>
                     </div>

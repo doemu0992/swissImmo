@@ -49,7 +49,7 @@
 </div>
 <div id="kontoform" class="hidden fw-card">
     <div class="fw-kopf"><h2>{% trans "Konto anlegen" %}</h2></div>
-    <form method="post" class="fw-formular p-5">
+    <form method="post" class="fw-formular fw-rumpf">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
         <div class="fw-feldblock"><label for="kp-nummer" class="fw-label">{% trans "Nummer *" %}</label>
@@ -66,7 +66,7 @@
                 <option value="einheit">{% trans "pro Einheit" %}</option><option value="personen">{% trans "Personen" %}</option>
             </select></div>
         <div class="fw-feldblock breit"><div class="flex items-center gap-3 flex-wrap">
-            <label class="flex items-center gap-2 fw-label">
+            <label class="fw-haekchen">
                 <input type="checkbox" name="hnk" class="fw-akzent">
                 {% trans "HNK-relevant (fliesst in die Nebenkostenabrechnung)" %}
             </label>
@@ -134,7 +134,7 @@
                                 {% for wert, label in typen %}<option value="{{ wert }}" {% if z.k.typ == wert %}selected{% endif %}>{{ label }}</option>{% endfor %}
                             </select>
                         </label>
-                        <label class="flex items-center gap-2 fw-label pb-2">
+                        <label class="fw-haekchen pb-2">
                             <input type="checkbox" name="hnk" {% if z.k.is_hnk_relevant %}checked{% endif %} class="fw-akzent">{% trans "HNK" %}
                         </label>
                         <button class="fw-btn fw-primary">{% trans "Speichern" %}</button>
