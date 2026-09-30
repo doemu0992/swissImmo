@@ -214,10 +214,14 @@ def _rates_schreiben(verwaltung, data):
     msg = []
 
     # ZINS UPDATE
+    zins_alt = None
+    zins_geaendert = False
     if 'ref_zins' in data and data['ref_zins']:
         if verwaltung.aktueller_referenzzinssatz != data['ref_zins']:
+            zins_alt = verwaltung.aktueller_referenzzinssatz
             verwaltung.aktueller_referenzzinssatz = data['ref_zins']
             updated = True
+            zins_geaendert = True
         msg.append(f"Zins: {data['ref_zins']}%")
 
     # LIK UPDATE
@@ -236,4 +240,8 @@ def _rates_schreiben(verwaltung, data):
     if msg:
         verwaltung.letztes_update_marktdaten = timezone.now()
         verwaltung.save()
+    if zins_geaendert:
+        # Historie (Stichtag, Quelle) und Hinweis auf die betroffenen Verträge.
+        from core.services.referenzzins import aenderung_festhalten
+        aenderung_festhalten(verwaltung, zins_alt, verwaltung.aktueller_referenzzinssatz, quelle='bwo')
     return updated, msg
