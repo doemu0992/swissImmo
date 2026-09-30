@@ -451,6 +451,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-kzn>div{padding:8px 14px}
             .fw-kzn .fw-w{margin-top:1px}
             .fw-kzn .fw-f{margin-top:0}
+            .fw-kzn .fw-w{font-size:18px}
         }
         .fw-reiter{display:flex;gap:2px;border-top:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line);
             padding:6px 14px 0;background:var(--ds-surface);
