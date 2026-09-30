@@ -11,9 +11,9 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Mietverhältnisse" %}</h1>
-        <p>{% blocktrans count n=treffer %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %} · <span style="color:var(--ds-good);font-weight:600">{% blocktrans count n=aktiv_count %}{{ n }} aktiv{% plural %}{{ n }} aktiv{% endblocktrans %}</span>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/vertraege/" style="color:var(--ds-faint)">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% blocktrans count n=treffer %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %} · <b class="fw-gut">{% blocktrans count n=aktiv_count %}{{ n }} aktiv{% plural %}{{ n }} aktiv{% endblocktrans %}</b>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/vertraege/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <div class="fw-phead-knoepfe">
         <a href="{{ csv_url }}" download class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV" %}</a>
         <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Vertrag erstellen" %}</a>
     </div>
@@ -21,8 +21,8 @@
 
 <div class="fw-card">
 
-    <div class="fw-h" style="flex-wrap:wrap">
-        <div class="fw-filters" style="margin-bottom:0">
+    <div class="fw-kopf">
+        <div class="fw-filters fw-nomb">
             {% for wert, label, url in status_chips %}
             <a href="{{ url }}" class="fw-fchip{% if status_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
@@ -33,24 +33,19 @@
     <!-- Mobile: Karten -->
     <div class="md:hidden fw-dv">
         {% for row in rows %}
-        <a href="/neu/vertraege/{{ row.v.id }}/" class="flex items-center gap-3 px-4 py-3.5 hover:fw-flaeche2 transition-colors">
-            <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'dokument' %}</div>
-            <div class="min-w-0 flex-1">
-                <div class="font-semibold fw-strong break-words">{{ row.v.mieter.display_name }}</div>
-                <div class="text-xs fw-mutet break-words">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div>
-                <div class="mt-1.5 flex items-center gap-2 flex-wrap">
+        <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-zeile klick">
+            <div class="fw-mitte">
+                <div class="fw-t">{{ row.v.mieter.display_name }} <span class="fw-mono">MV-{{ row.v.id }}</span></div>
+                <div class="fw-s">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div>
+                <div class="fw-s">
                     <span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span>
-                    <span class="fw-fs-klein fw-faint">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %}</span>
+                    <span class="fw-faint">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %}</span>
+                    <span><b class="fw-strong fw-num">{{ row.brutto|chf }}</b> <span class="fw-faint">{% trans "Brutto" %}</span></span>
                 </div>
             </div>
-            <div class="text-right shrink-0">
-                <div class="font-bold fw-strong whitespace-nowrap">{{ row.brutto|chf }}</div>
-                <div class="fw-fs-klein fw-faint">{% trans "Brutto" %}</div>
-            </div>
-            {% zeichen 'weiter' klasse='fw-faint text-xs shrink-0' %}
         </a>
         {% empty %}
-        <div class="px-4">
+        <div>
             {% if q or status_filter %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Verträge gefunden.') %}{% else %}{% include 'fw/_empty.html' with icon='vertrag' titel=_('Noch keine Verträge') subtext=_('Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.') cta_url='/neu/vertraege/neu/' cta_label=_('Ersten Vertrag erstellen') %}{% endif %}
         </div>
         {% endfor %}
@@ -58,7 +53,7 @@
 
     <!-- Desktop: Tabelle -->
     <div class="fw-tablewrap hidden md:block">
-        <table class="fw-table" style="min-width:max-content">
+        <table class="fw-table whitespace-nowrap">
             <thead>
             <tr>
                 <th>{% trans "Mieter" %}</th>
@@ -76,23 +71,21 @@
             {% for row in rows %}
             <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
                 <td>
-                    <a href="/neu/vertraege/{{ row.v.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
-                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'dokument' %}</div>
-                        <span class="fw-strong" style="white-space:nowrap">{{ row.v.mieter.display_name }}</span>
-                    </a>
+                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-strong" onclick="event.stopPropagation()">{{ row.v.mieter.display_name }}</a>
+                    <div class="fw-mono">MV-{{ row.v.id }}</div>
                 </td>
-                <td class="hidden md:table-cell" style="white-space:nowrap">{{ row.v.einheit.liegenschaft.strasse }} <span class="fw-sub2">· {{ row.v.einheit.bezeichnung }}</span></td>
-                <td class="hidden lg:table-cell fw-num" style="white-space:nowrap">{{ row.v.beginn|date:"d.m.Y" }}</td>
-                <td class="hidden lg:table-cell fw-num" style="white-space:nowrap{% if row.v.status == 'gekuendigt' %};color:var(--ds-crit);font-weight:600{% endif %}">
+                <td class="hidden md:table-cell">{{ row.v.einheit.liegenschaft.strasse }}<div class="fw-sub2">{{ row.v.einheit.bezeichnung }}</div></td>
+                <td class="hidden lg:table-cell fw-num">{{ row.v.beginn|date:"d.m.Y" }}</td>
+                <td class="hidden lg:table-cell fw-num"><span class="{% if row.v.status == 'gekuendigt' %}fw-strong fw-kritisch{% endif %}">
                     {% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}<span class="fw-sub2">{% trans "unbefristet" %}</span>{% endif %}
-                </td>
+                </span></td>
                 <td class="fw-right fw-num hidden lg:table-cell">{{ row.v.netto_mietzins|chf }}</td>
                 <td class="fw-right fw-num hidden lg:table-cell"><span class="fw-sub2">{{ row.v.nebenkosten|chf }}</span></td>
                 <td class="fw-right fw-num"><span class="fw-strong">{{ row.brutto|chf }}</span></td>
                 <td><span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span></td>
-                <td class="fw-right" style="white-space:nowrap">
+                <td class="fw-right">
                     {% if row.v.status == 'aktiv' %}
-                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'{% filter escapejs %}{% trans "Kündigung erfassen" %}{% endfilter %}')" class="text-xs font-semibold fw-warnton hover:fw-warnton mr-1">{% zeichen 'kritisch' klasse='mr-0.5' %}{% trans "Kündigen" %}</a>{% endif %}
+                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'{% filter escapejs %}{% trans "Kündigung erfassen" %}{% endfilter %}')" class="fw-btn fw-knapp fw-geist">{% zeichen 'kritisch' %}{% trans "Kündigen" %}</a>{% endif %}
                     {% endif %}
                     {% zeichen 'weiter' klasse='fw-faint text-xs' %}
                 </td>

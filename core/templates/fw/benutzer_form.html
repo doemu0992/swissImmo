@@ -2,10 +2,10 @@
 {% load zeichen i18n %}
 {% block title %}{% if ist_neu %}{% trans "Neuer Benutzer" %}{% else %}{% blocktrans with name=ziel.username %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/benutzer/" class="hover:fw-marke">{% trans "Benutzer" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <span class="fw-mutet font-medium">{% if ist_neu %}{% trans "Neu" %}{% else %}{{ ziel.username }}{% endif %}</span>
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/benutzer/">{% trans "Benutzer" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% if ist_neu %}{% trans "Neu" %}{% else %}{{ ziel.username }}{% endif %}</b>
 </nav>
 
 <div class="fw-phead">
@@ -15,46 +15,51 @@
     </div>
 </div>
 
-<form method="post" class="max-w-2xl space-y-5">
+<form method="post" class="max-w-2xl">
     {% csrf_token %}
-    <div class="fw-card p-5 space-y-4">
-        <div><label for="bf-username" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Benutzername *" %}</label>
-            {% if ist_neu %}<input id="bf-username" name="username" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
-            {% else %}<input id="bf-username" value="{{ ziel.username }}" disabled class="w-full fw-flaeche2 fw-faint rounded-lg text-sm px-3 py-2.5">{% endif %}</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label for="bf-first" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Vorname" %}</label>
-                <input id="bf-first" name="first_name" value="{{ ziel.first_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label for="bf-last" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nachname" %}</label>
-                <input id="bf-last" name="last_name" value="{{ ziel.last_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        </div>
-        <div><label for="bf-email" class="block text-xs font-semibold fw-mutet mb-1">{% trans "E-Mail" %}</label>
-            <input id="bf-email" type="email" name="email" value="{{ ziel.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="bf-pw" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Passwort" %} {% if not ist_neu %}<span class="fw-faint font-normal">{% trans "(leer lassen = unverändert)" %}</span>{% else %}*{% endif %}</label>
-            <input id="bf-pw" type="text" name="passwort" {% if ist_neu %}required{% endif %} autocomplete="new-password" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+    <div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Benutzer" %}</span></div>
+    <div class="fw-formular p-5">
+        <div class="fw-feldblock breit"><label for="bf-username" class="fw-label">{% trans "Benutzername *" %}</label>
+            {% if ist_neu %}<input id="bf-username" name="username" required class="fw-feld">
+            {% else %}<input id="bf-username" value="{{ ziel.username }}" disabled class="fw-feld">{% endif %}</div>
+            <div class="fw-feldblock"><label for="bf-first" class="fw-label">{% trans "Vorname" %}</label>
+                <input id="bf-first" name="first_name" value="{{ ziel.first_name }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="bf-last" class="fw-label">{% trans "Nachname" %}</label>
+                <input id="bf-last" name="last_name" value="{{ ziel.last_name }}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="bf-email" class="fw-label">{% trans "E-Mail" %}</label>
+            <input id="bf-email" type="email" name="email" value="{{ ziel.email }}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="bf-pw" class="fw-label">{% trans "Passwort" %} {% if not ist_neu %}<span class="fw-faint">{% trans "(leer lassen = unverändert)" %}</span>{% else %}*{% endif %}</label>
+            <input id="bf-pw" type="text" name="passwort" {% if ist_neu %}required{% endif %} autocomplete="new-password" class="fw-feld"></div>
+    </div>
     </div>
 
-    <div class="fw-card p-5 space-y-4">
-        <h3 class="font-bold fw-strong text-sm">{% trans "Rolle &amp; Status" %}</h3>
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Rolle &amp; Status" %}</h2></div>
+        <div class="fw-formular p-5">
         {% if ziel.is_superuser %}
-        <p class="text-sm fw-warnton fw-warn-flaeche rounded-lg px-3 py-2">{% trans "Dieser Benutzer ist ein Superuser (Admin) — die Rolle wird nicht verändert." %}</p>
+        <div class="fw-feldblock breit"><div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% trans "Dieser Benutzer ist ein Superuser (Admin) — die Rolle wird nicht verändert." %}</div></div></div>
         {% else %}
-        <div><label for="bf-rolle" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Rolle" %}</label>
-            <select id="bf-rolle" name="rolle" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock breit"><label for="bf-rolle" class="fw-label">{% trans "Rolle" %}</label>
+            <select id="bf-rolle" name="rolle" class="fw-feld">
                 {% for r in rollen %}<option value="{{ r }}" {% if aktuelle_rolle == r or ist_neu and r == 'Lesezugriff' %}selected{% endif %}>{{ r }}</option>{% endfor %}
             </select>
-            <p class="text-xs fw-faint mt-1">{% trans "Inhaber = Vollzugriff inkl. Abo · Verwalter = Vollzugriff im Tagesgeschäft · Sachbearbeiter = schreibend · Lesezugriff = nur ansehen" %}</p></div>
+            <p class="fw-hilfe">{% trans "Inhaber = Vollzugriff inkl. Abo · Verwalter = Vollzugriff im Tagesgeschäft · Sachbearbeiter = schreibend · Lesezugriff = nur ansehen" %}</p></div>
         {% endif %}
-        <label class="flex items-center gap-2 text-sm fw-ink">
+        <div class="fw-feldblock breit">
+        <label class="flex items-center gap-2 flex-wrap">
             <input type="checkbox" name="is_active" {% if ist_neu or ziel.is_active %}checked{% endif %} {% if ist_selbst %}disabled{% endif %} class="fw-akzent"> {% trans "Konto aktiv" %}
-            {% if ist_selbst %}<span class="text-xs fw-faint">{% trans "(eigener Account — kann nicht deaktiviert werden)" %}</span>{% endif %}
+            {% if ist_selbst %}<span class="fw-hilfe">{% trans "(eigener Account — kann nicht deaktiviert werden)" %}</span>{% endif %}
         </label>
+        </div>
+        </div>
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}
+        <button type="submit" class="fw-btn fw-primary">
+            {% zeichen 'speichern' %}{% trans "Speichern" %}
         </button>
-        <a href="/neu/benutzer/" class="text-sm fw-mutet hover:fw-ink font-medium">{% trans "Abbrechen" %}</a>
+        <a href="/neu/benutzer/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

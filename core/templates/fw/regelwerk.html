@@ -12,7 +12,7 @@
         <h1>{% trans "Regelwerk" %}</h1>
         <p>{% trans "Fristen und Termine als Daten, nicht als Programmcode — damit eine Berichtigung eine Eingabe ist und keine Auslieferung." %}</p>
     </div>
-    <div class="flex gap-2">
+    <div class="fw-phead-knoepfe">
         <a href="/neu/regelwerk/protokoll/" class="fw-btn">{% zeichen 'verlauf' %}{% trans "Protokoll" %}</a>
         <a href="/neu/regelwerk/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Regelsatz" %}</a>
     </div>
@@ -45,13 +45,13 @@
         <span class="fw-ikon {% if s.satz.geprueft %}good{% else %}warn{% endif %}">
             {% if s.satz.geprueft %}{% zeichen 'recht' %}{% else %}{% zeichen 'entwurf' %}{% endif %}</span>
         <span class="fw-t">{{ s.satz.bezeichnung }}</span>
-        {% if s.satz.kanton %}<span class="fw-chip fw-brand">{{ s.satz.kanton }}</span>
+        {% if s.satz.kanton %}<span class="fw-marke-kapsel">{{ s.satz.kanton }}</span>
         {% else %}<span class="fw-chip fw-mut">{% trans "alle Kantone" %}</span>{% endif %}
         {% if s.satz.geprueft %}<span class="fw-chip fw-good">{% trans "geprüft" %}</span>
         {% else %}<span class="fw-chip fw-warn">{% trans "ungeprüft — warnt nur" %}</span>{% endif %}
         {% if not s.satz.aktiv %}<span class="fw-chip fw-mut">{% trans "inaktiv" %}</span>{% endif %}
         <span class="fw-rechts">
-            <a href="/neu/regelwerk/{{ s.satz.id }}/" class="fw-btn">{% trans "Bearbeiten" %}</a></span>
+            <a href="/neu/regelwerk/{{ s.satz.id }}/" class="fw-btn fw-knapp">{% trans "Bearbeiten" %}</a></span>
     </div>
 
     {% if s.satz.hinweis %}
@@ -84,15 +84,15 @@
 </div>
 {% empty %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'recht' %}</span>
+    <div class="fw-kopf">
         <span class="fw-t">{% trans "Kein Regelsatz hinterlegt" %}</span></div>
     <p class="fw-leer">{% trans "Ohne Regelsatz prüft die Kündigungserfassung nur gegen die Angaben im einzelnen Vertrag — Frist und Termine, wie sie dort stehen. Das ist keine Fehlfunktion, aber es gibt weder eine kantonale Fassung noch eine Sperre." %}<br>
         <a href="/neu/regelwerk/neu/" class="fw-btn fw-primary mt-3">{% zeichen 'neu' %}{% trans "Ersten Regelsatz anlegen" %}</a></p>
 </div>
 {% endfor %}
 
-<div class="fw-subhead">{% trans "Zuletzt angewendet" %}</div>
 <div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Zuletzt angewendet" %}</span></div>
     {% for a in letzte %}
     <div class="fw-zeile">
         <span class="fw-marker {% if a.befund == 'beanstandet' and not a.uebersteuert %}crit{% elif a.befund == 'beanstandet' %}warn{% else %}good{% endif %}"></span>

@@ -50,7 +50,7 @@
     <div class="fw-hinweis {{ h.art }}">
         <span class="fw-hi">{% zeichen_wert h.ikon %}</span>
         <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
-            <div style="margin-top:9px"><a href="{{ h.url }}" class="fw-btn" style="padding:6px 12px;font-size:12px">{{ h.knopf }}</a></div></div>
+            <div class="mt-2"><a href="{{ h.url }}" class="fw-btn fw-knapp">{{ h.knopf }}</a></div></div>
     </div>
     {% endfor %}
 </div>
@@ -118,15 +118,14 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             </div>
         </div>
         <div class="fw-akte-rechts">
-<div class="flex flex-wrap items-center gap-2">
-            <a href="/neu/vertraege/{{ v.id }}/bearbeiten/" class="fw-btn" style="padding:6px 12px;font-size:12px">{% zeichen 'bearbeiten' klasse='mr-1' %}{% trans "Bearbeiten" %}{% if v.status == 'entwurf' %} <span class="fw-chip fw-brand ml-1">{% trans "Entwurf" %}</span>{% endif %}</a>
+            <a href="/neu/vertraege/{{ v.id }}/bearbeiten/" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}{% if v.status == 'entwurf' %} <span class="fw-chip fw-brand">{% trans "Entwurf" %}</span>{% endif %}</a>
             {% if v.status != 'gekuendigt' %}
-            {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ v.id }}/kuendigen/" class="fw-btn" style="padding:6px 12px;font-size:12px;border-color:var(--ds-warn-soft);color:var(--ds-warn)">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "Kündigung erfassen" %}</a>{% endif %}
+            {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ v.id }}/kuendigen/" class="fw-btn fw-knapp fw-rand-warn">{% zeichen 'kritisch' %}{% trans "Kündigung erfassen" %}</a>{% endif %}
             {% endif %}
             <div class="relative">
                 <button type="button" onclick="document.getElementById('vAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                        class="fw-btn" style="padding:6px 12px;font-size:12px">
-                    {% zeichen 'mehr' klasse='mr-1' %}{% trans "Mehr" %}
+                        class="fw-btn fw-knapp">
+                    {% zeichen 'mehr' %}{% trans "Mehr" %}
                 </button>
                 <div id="vAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
                     <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='fw-marke w-4' %}{% trans "Schlussabrechnung" %}</a>
@@ -138,9 +137,9 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='fw-faint w-4' %}{% trans "Vertrag als PDF" %}</a>
                     <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" onsubmit="return confirm('{% filter escapejs %}{% if v.sign_status == 'unterzeichnet' %}{% trans "Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift senden?" %}{% else %}{% blocktrans with name=v.mieter.display_name %}Vertrag an {{ name }} zur digitalen Unterschrift senden?{% endblocktrans %}{% endif %}{% endfilter %}');"{% if not docuseal_konfiguriert %} title="{% trans 'DocuSeal ist noch nicht konfiguriert (Integrationen)' %}"{% endif %}>
                         {% csrf_token %}
-                        <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2">{% zeichen 'vertrag' klasse='fw-marke w-4' %}{% if v.sign_status == 'offen' %}{% trans "Zur Unterschrift senden" %}{% else %}{% trans "Erneut zur Unterschrift" %}{% endif %}</button>
+                        <button class="fw-menuzeile">{% zeichen 'vertrag' klasse='fw-marke w-4' %}{% if v.sign_status == 'offen' %}{% trans "Zur Unterschrift senden" %}{% else %}{% trans "Erneut zur Unterschrift" %}{% endif %}</button>
                     </form>
-                    <div class="my-1 border-t fw-linie"></div>
+                    <div class="fw-menutrenner"></div>
                     <form method="post" action="/neu/vertraege/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% if rechnungs_rows %}{% blocktrans with r=rechnungs_rows|length z=zahlungen|length %}Diesen Vertrag wirklich löschen?
 
 {{ r }} verknüpfte Rechnung(en) und {{ z }} Zahlung(en) bleiben erhalten (werden entkoppelt).{% endblocktrans %}{% else %}{% trans "Diesen Vertrag wirklich löschen?" %}{% endif %}{% endfilter %}');">
@@ -155,7 +154,6 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
               });
             </script>
-        </div>
         </div>
     </div>
 
@@ -203,7 +201,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {{ v.mieter.display_name }}
                 <small>{% if weitere_mieter %}{% blocktrans count n=weitere_mieter|length %}Solidarisch haftend mit {{ n }} weiterer{% plural %}Solidarisch haftend mit {{ n }} weiteren{% endblocktrans %}{% else %}{% trans "Keine weiteren Mieter erfasst" %}{% endif %}</small></div></div>
             <div class="fw-dz"><div class="fw-dl">{% trans "Vermieterschaft" %}</div><div class="fw-dv">
-                {% if kopf_eigentuemer %}{{ kopf_eigentuemer }}{% else %}<span style="color:var(--ds-faint)">{% trans "kein Mandat hinterlegt" %}</span>{% endif %}
+                {% if kopf_eigentuemer %}{{ kopf_eigentuemer }}{% else %}<span class="fw-faint">{% trans "kein Mandat hinterlegt" %}</span>{% endif %}
                 <small>{% trans "vertreten durch die Verwaltung" %}</small></div></div>
             <div class="fw-dz"><div class="fw-dl">{% trans "Anzahl Personen" %}</div><div class="fw-dv">{{ v.anzahl_personen|default:"—" }}</div></div>
             {% if v.familienwohnung %}<div class="fw-dz"><div class="fw-dl">{% trans "Familienwohnung" %}</div>
@@ -229,7 +227,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         {% csrf_token %}
                         <input type="hidden" name="aktion" value="entfernen">
                         <input type="hidden" name="mieter_id" value="{{ wm.id }}">
-                        <button type="submit" class="fw-kritisch hover:fw-kritisch text-xs" title="{% trans 'Entfernen' %}">{% zeichen 'loeschen' %}</button>
+                        <button type="submit" class="fw-ikon mut gefahr" title="{% trans 'Entfernen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                 </div>
                 {% empty %}
@@ -239,11 +237,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <form method="post" action="/neu/vertraege/{{ v.id }}/wg-mieter/" class="flex items-center gap-1.5 mt-1.5">
                     {% csrf_token %}
                     <input type="hidden" name="aktion" value="hinzufuegen">
-                    <select name="mieter_id" class="flex-1 fw-flaeche2 rounded-lg text-xs px-2 py-1.5">
+                    <select name="mieter_id" class="fw-feld flex-1">
                         <option value="">{% trans "Person wählen …" %}</option>
                         {% for k in wg_kandidaten %}<option value="{{ k.id }}">{{ k.display_name }}</option>{% endfor %}
                     </select>
-                    <button type="submit" title="{% trans 'Person zum Vertrag hinzufügen' %}" class="fw-btn fw-primary text-xs font-semibold px-2.5 py-1.5 rounded-lg">{% zeichen 'neu' %}</button>
+                    <button type="submit" title="{% trans 'Person zum Vertrag hinzufügen' %}" class="fw-btn fw-primary fw-knapp">{% zeichen 'neu' %}</button>
                 </form>
                 {% endif %}
             </div>
@@ -253,10 +251,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-dz"><div class="fw-dl">{% trans "Nettomietzins" %}</div><div class="fw-dv">CHF {{ v.netto_mietzins|chf }}</div></div>
             <div class="fw-dz"><div class="fw-dl">{% trans "Nebenkosten" %}</div><div class="fw-dv">CHF {{ v.nebenkosten|chf }}
                 <small>{{ v.get_nk_abrechnungsart_display }}</small></div></div>
-            <div class="fw-dz"><div class="fw-dl">{% trans "Bruttomietzins" %}</div><div class="fw-dv" style="font-weight:700">CHF {{ brutto|chf }}</div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Bruttomietzins" %}</div><div class="fw-dv fw-strong">CHF {{ brutto|chf }}</div></div>
             <div class="fw-dz"><div class="fw-dl">{% trans "Zahlungsrhythmus" %}</div><div class="fw-dv">{{ v.get_zahlungsrhythmus_display }}</div></div>
             <div class="fw-dz"><div class="fw-dl">{% trans "Referenzzins bei Festsetzung" %}</div><div class="fw-dv">
-                {% if v.basis_referenzzinssatz %}{{ v.basis_referenzzinssatz }} %{% else %}<span style="color:var(--ds-warn)">{% trans "nicht erfasst" %}</span>{% endif %}
+                {% if v.basis_referenzzinssatz %}{{ v.basis_referenzzinssatz }} %{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}
                 <small>Grundlage jeder Anpassung nach Art. 269a OR</small></div></div>
             {% if v.mwst_pflichtig %}<div class="fw-dz"><div class="fw-dl">MWST</div>
                 <div class="fw-dv">{% blocktrans with s=v.mwst_satz %}{{ s }} % — optiert{% endblocktrans %}</div></div>{% endif %}
@@ -293,21 +291,21 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <div class="fw-dv">{{ v.erstmals_kuendbar_auf|date:"d.m.Y" }}</div></div>{% endif %}
             <div class="fw-dz"><div class="fw-dl">{% trans "Kündigungstermine" %}</div><div class="fw-dv">{{ v.kuendigungstermine|default:"—" }}</div></div>
             {% if kuendigungen %}<div class="fw-dz"><div class="fw-dl">{% trans "Erfasste Kündigungen" %}</div>
-                <div class="fw-dv" style="font-weight:400">{% for k in kuendigungen %}
+                <div class="fw-dv">{% for k in kuendigungen %}
             <div class="fw-abtrenner">
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-semibold {% if k.status == 'zurueckgezogen' %}fw-faint line-through{% else %}fw-warnton{% endif %}">
                         {% zeichen 'kritisch' klasse='mr-1' %}{% blocktrans with a=k.get_absender_display %}Kündigung durch {{ a }}{% endblocktrans %}
-                        {% if k.status == 'erfasst' and k.absender == 'mieter' %}<span class="fw-chip fw-brand ml-1">{% trans "über Portal · eingegangen" %}</span>{% elif k.status == 'bestaetigt' %}<span class="fw-chip fw-good ml-1">{% trans "bestätigt" %}</span>{% endif %}
+                        {% if k.status == 'erfasst' and k.absender == 'mieter' %}<span class="fw-chip fw-brand">{% trans "über Portal · eingegangen" %}</span>{% elif k.status == 'bestaetigt' %}<span class="fw-chip fw-good">{% trans "bestätigt" %}</span>{% endif %}
                     </div>
                     <span class="fw-klein">{{ k.eingang_datum|date:"d.m.Y" }}</span>
                 </div>
-                <div class="text-sm mt-1">{% trans "Vertragsende" %}: <b class="fw-t">{{ k.per_datum|date:"d.m.Y" }}</b>
-                    {% if k.ausserordentlich %}<span class="ml-1 text-xs fw-kritisch">{% trans "ausserordentlich" %}</span>{% endif %}</div>
+                <div class="mt-1">{% trans "Vertragsende" %}: <b class="fw-strong">{{ k.per_datum|date:"d.m.Y" }}</b>
+                    {% if k.ausserordentlich %}<span class="fw-chip fw-crit">{% trans "ausserordentlich" %}</span>{% endif %}</div>
                 {% if k.status == 'erfasst' and request.user|darf:"/neu/kuendigung/1/bestaetigen/" %}
                 <form method="post" action="/neu/kuendigung/{{ k.id }}/bestaetigen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Kündigung bestätigen? Der Vertrag wird auf gekündigt gesetzt und Auszugs-Pendenzen werden erstellt." %}{% endfilter %}');" class="mt-2">
                     {% csrf_token %}
-                    <button class="fw-btn fw-primary" style="background:var(--ds-good);border-color:var(--ds-good);padding:6px 12px;font-size:12px">{% zeichen 'gut' klasse='mr-1' %}{% trans "Bestätigen &amp; Vertrag beenden" %}</button>
+                    <button class="fw-btn fw-gutknopf fw-knapp">{% zeichen 'gut' %}{% trans "Bestätigen &amp; Vertrag beenden" %}</button>
                 </form>
                 {% elif k.status == 'erfasst' %}
                 <p class="fw-klein mt-2">{% trans "Wartet auf Bestätigung durch Inhaber oder Verwalter." %}</p>
@@ -315,11 +313,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {% if k.status != 'zurueckgezogen' %}
                 <div class="flex items-center gap-3 mt-1.5">
                     <a href="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" rel="noopener" class="fw-link">{% zeichen 'vertrag' klasse='mr-0.5' %}{% trans "Amtliches Formular" %}{% if formular_kanton %} {{ formular_kanton }}{% endif %} {% trans "(PDF)" %}</a>
-                    <a href="/vertrag/{{ v.id }}/dokument/kuendigungsbestaetigung/" target="_blank" rel="noopener" class="text-xs font-medium fw-mutet hover:underline">{% trans "Bestätigung" %}</a>
+                    <a href="/vertrag/{{ v.id }}/dokument/kuendigungsbestaetigung/" target="_blank" rel="noopener" class="fw-link">{% trans "Bestätigung" %}</a>
                     {% if request.user|darf:"/neu/kuendigung/1/zuruecknehmen/" %}
                     <form method="post" action="/neu/kuendigung/{{ k.id }}/zuruecknehmen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Kündigung zurücknehmen und Vertrag reaktivieren?" %}{% endfilter %}');" class="inline">
                         {% csrf_token %}
-                        <button class="text-xs font-medium fw-faint hover:fw-kritisch">{% trans "zurücknehmen" %}</button>
+                        <button class="fw-btn fw-geist fw-knapp">{% trans "zurücknehmen" %}</button>
                     </form>
                     {% endif %}
                 </div>
@@ -332,10 +330,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {% if v.kautions_betrag %}CHF {{ v.kautions_betrag|chf }}{% else %}{% trans "keine vereinbart" %}{% endif %}
                 <small>{% trans v.kautions_status_label %}{% if v.kautions_konto %} · {{ v.kautions_konto }}{% endif %}{% if v.kautions_versicherer %} · {{ v.kautions_versicherer }}{% endif %}</small></div></div>
             <div class="fw-dz"><div class="fw-dl">{% trans "Nebenobjekte" %}</div><div class="fw-dv">
-                {% for n in nebenobjekte %}{{ n.bezeichnung }}{% if not forloop.last %}, {% endif %}{% empty %}<span style="color:var(--ds-faint)">{% trans "keine" %}</span>{% endfor %}</div></div>
+                {% for n in nebenobjekte %}{{ n.bezeichnung }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="fw-faint">{% trans "keine" %}</span>{% endfor %}</div></div>
             {% if v.mitbenutzung %}<div class="fw-dz"><div class="fw-dl">{% trans "Mitbenutzung" %}</div><div class="fw-dv">{{ v.mitbenutzung }}</div></div>{% endif %}
             <div class="fw-dz"><div class="fw-dl">{% trans "Besondere Vereinbarungen" %}</div><div class="fw-dv">
-                {% if v.besondere_vereinbarungen %}{{ v.besondere_vereinbarungen|linebreaksbr }}{% else %}<span style="color:var(--ds-faint)">{% trans "keine" %}</span>{% endif %}</div></div>
+                {% if v.besondere_vereinbarungen %}{{ v.besondere_vereinbarungen|linebreaksbr }}{% else %}<span class="fw-faint">{% trans "keine" %}</span>{% endif %}</div></div>
         </div>
       </div>
 
@@ -359,7 +357,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-dz"><div class="fw-dl" style="flex-basis:105px">{% trans "Sprache" %}</div>
                 <div class="fw-dv">{{ v.mieter.get_sprache_display|default:"Deutsch" }}</div></div>
             <div class="fw-fuss">
-                <a href="/neu/personen/{{ v.mieter.id }}/" style="color:var(--ds-muted);font-weight:600">{% trans "Zur Personenakte" %}</a>
+                <a href="/neu/personen/{{ v.mieter.id }}/" class="fw-link">{% trans "Zur Personenakte" %}</a>
                 <span>{% blocktrans count n=v.mieter.vertraege.count %}{{ n }} Mietverhältnis{% plural %}{{ n }} Mietverhältnisse{% endblocktrans %}</span>
             </div>
         </div>
@@ -367,40 +365,41 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
 
 {% if v.kautions_betrag %}
-    <div id="kaution" class="fw-card mt-4 max-w-2xl scroll-mt-24" style="padding:16px">
-        <div class="flex items-center gap-2.5 mb-3">
-            <span class="fw-ic i">{% zeichen 'gesperrt' %}</span>
-            <h3 class="font-bold fw-strong">{% trans "Mietzinsdepot" %}</h3>
-            <span class="fw-klein" style="margin-left:auto">Art. 257e OR · {% if v.ist_kautionsversicherung %}Kautionsversicherung{% else %}Sperrkonto auf Mietername{% endif %}</span>
+    <div id="kaution" class="fw-card max-w-2xl scroll-mt-24">
+        <div class="fw-kopf">
+            <span class="fw-ikon">{% zeichen 'gesperrt' %}</span>
+            <h2>{% trans "Mietzinsdepot" %}</h2>
+            <span class="fw-rechts fw-neben">Art. 257e OR · {% if v.ist_kautionsversicherung %}Kautionsversicherung{% else %}Sperrkonto auf Mietername{% endif %}</span>
         </div>
-        <dl class="text-sm space-y-2 mb-3">
-            <div class="flex justify-between"><dt class="fw-s">{% trans "Betrag" %}</dt><dd class="fw-strong font-semibold">CHF {{ v.kautions_betrag|chf }}</dd></div>
-            {% if v.kautions_status != 'erwartet' %}<div class="flex justify-between"><dt class="fw-s">{% trans "Status" %}</dt><dd class="fw-t">{% trans v.kautions_status_label %}</dd></div>{% endif %}
+        <div class="p-5">
+        <dl class="mb-3">
+            <div class="fw-kv"><dt>{% trans "Betrag" %}</dt><dd>CHF {{ v.kautions_betrag|chf }}</dd></div>
+            {% if v.kautions_status != 'erwartet' %}<div class="fw-kv"><dt>{% trans "Status" %}</dt><dd>{% trans v.kautions_status_label %}</dd></div>{% endif %}
             {% if v.ist_kautionsversicherung %}
-                {% if v.kautions_versicherer %}<div class="flex justify-between"><dt class="fw-s">{% trans "Versicherer" %}</dt><dd class="fw-t">{{ v.kautions_versicherer }}</dd></div>{% endif %}
-                {% if v.kautions_policennummer %}<div class="flex justify-between"><dt class="fw-s">{% trans "Policennummer" %}</dt><dd class="fw-s font-mono">{{ v.kautions_policennummer }}</dd></div>{% endif %}
-                {% if v.kautions_zertifikat %}<div class="flex justify-between"><dt class="fw-s">{% trans "Zertifikat" %}</dt><dd><a href="{{ v.kautions_zertifikat.url }}" target="_blank" rel="noopener" class="fw-link text-xs font-semibold">{% zeichen 'drucken' klasse='mr-0.5' %}{% trans "Police öffnen" %}</a></dd></div>{% endif %}
-                {% if v.kautions_einbezahlt_am %}<div class="flex justify-between"><dt class="fw-s">{% trans "Police aktiv ab" %}</dt><dd class="fw-t">{{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</dd></div>{% endif %}
+                {% if v.kautions_versicherer %}<div class="fw-kv"><dt>{% trans "Versicherer" %}</dt><dd>{{ v.kautions_versicherer }}</dd></div>{% endif %}
+                {% if v.kautions_policennummer %}<div class="fw-kv"><dt>{% trans "Policennummer" %}</dt><dd class="mono">{{ v.kautions_policennummer }}</dd></div>{% endif %}
+                {% if v.kautions_zertifikat %}<div class="fw-kv"><dt>{% trans "Zertifikat" %}</dt><dd><a href="{{ v.kautions_zertifikat.url }}" target="_blank" rel="noopener" class="fw-link">{% zeichen 'drucken' klasse='mr-0.5' %}{% trans "Police öffnen" %}</a></dd></div>{% endif %}
+                {% if v.kautions_einbezahlt_am %}<div class="fw-kv"><dt>{% trans "Police aktiv ab" %}</dt><dd>{{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</dd></div>{% endif %}
             {% else %}
-                {% if v.kautions_konto %}<div class="flex justify-between"><dt class="fw-s">{% trans "Sperrkonto" %}</dt><dd class="fw-s font-mono">{{ v.kautions_konto }}</dd></div>{% endif %}
-                {% if v.kautions_einbezahlt_am %}<div class="flex justify-between"><dt class="fw-s">{% trans "Einbezahlt" %}</dt><dd class="fw-t">{{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</dd></div>{% endif %}
+                {% if v.kautions_konto %}<div class="fw-kv"><dt>{% trans "Sperrkonto" %}</dt><dd class="mono">{{ v.kautions_konto }}</dd></div>{% endif %}
+                {% if v.kautions_einbezahlt_am %}<div class="fw-kv"><dt>{% trans "Einbezahlt" %}</dt><dd>{{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</dd></div>{% endif %}
             {% endif %}
             {% if v.kautions_zurueckbezahlt_am %}
-            <div class="flex justify-between"><dt class="fw-s">{% if v.ist_kautionsversicherung %}{% trans "Aufgelöst" %}{% else %}{% trans "Zurückbezahlt" %}{% endif %}</dt><dd class="fw-t">{{ v.kautions_zurueckbezahlt_am|date:"d.m.Y" }}{% if not v.ist_kautionsversicherung %} · CHF {{ v.kautions_rueckzahlung_betrag|chf }}{% endif %}</dd></div>
-            {% if v.kautions_abzug_betrag %}<div class="flex justify-between"><dt class="fw-s">{% trans "Einbehalt" %}</dt><dd class="fw-kritisch font-medium">CHF {{ v.kautions_abzug_betrag|chf }}</dd></div>{% endif %}
+            <div class="fw-kv"><dt>{% if v.ist_kautionsversicherung %}{% trans "Aufgelöst" %}{% else %}{% trans "Zurückbezahlt" %}{% endif %}</dt><dd>{{ v.kautions_zurueckbezahlt_am|date:"d.m.Y" }}{% if not v.ist_kautionsversicherung %} · CHF {{ v.kautions_rueckzahlung_betrag|chf }}{% endif %}</dd></div>
+            {% if v.kautions_abzug_betrag %}<div class="fw-kv"><dt>{% trans "Einbehalt" %}</dt><dd><span class="fw-kritisch">CHF {{ v.kautions_abzug_betrag|chf }}</span></dd></div>{% endif %}
             {% endif %}
         </dl>
         {% if v.kautions_einbezahlt_am %}
         <div class="flex flex-wrap gap-2 mb-3">
-            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/hinterlegung/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Bestätigung an Mieter" %}</a>
+            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/hinterlegung/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'drucken' %}{% trans "Bestätigung an Mieter" %}</a>
             {% if not v.ist_kautionsversicherung %}
-            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/freigabe/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'bank' klasse='mr-1' %}{% trans "Freigabe an Bank" %}</a>
+            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/freigabe/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'bank' %}{% trans "Freigabe an Bank" %}</a>
             {% endif %}
         </div>
         {% endif %}
 
         {% if v.kautions_status == 'erwartet' %}
-        <details class="fw-aufklapp" style="border:0;margin-top:10px">
+        <details class="fw-aufklapp">
           <summary>{% trans "Einzahlung oder Zertifikat erfassen" %}</summary>
           <div class="fw-aufklapp-inhalt">
             <div class="inline-flex rounded-lg fw-flaeche2 p-0.5 mb-3 text-xs font-semibold">
@@ -408,30 +407,32 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <button type="button" id="kt-tab-vers" onclick="ktSwitch('vers')" class="px-3 py-1.5 rounded-md fw-mutet">{% trans "Versicherung" %}</button>
             </div>
 
-            <form id="kt-form-sperr" method="post" action="/neu/vertraege/{{ v.id }}/kaution/" class="flex flex-wrap items-end gap-2">
+            <form id="kt-form-sperr" method="post" action="/neu/vertraege/{{ v.id }}/kaution/">
                 {% csrf_token %}<input type="hidden" name="aktion" value="einzahlung">
-                <div><label class="block fw-klein mb-1">{% trans "Einbezahlt am" %}</label>
+                <div class="fw-formular">
+                <div class="fw-feldblock"><label class="fw-label">{% trans "Einbezahlt am" %}</label>
                     <input type="date" name="einbezahlt_am" class="fw-feld"></div>
-                <div class="flex-1 min-w-[160px]"><label class="block fw-klein mb-1">{% trans "Sperrkonto (IBAN)" %}</label>
-                    <input name="kautions_konto" value="{{ v.kautions_konto }}" placeholder="{% trans 'CH…' %}" class="fw-feld w-full font-mono"></div>
-                <button class="fw-btn fw-primary" style="background:var(--ds-good);border-color:var(--ds-good)">{% trans "Einzahlung bestätigen" %}</button>
+                <div class="fw-feldblock"><label class="fw-label">{% trans "Sperrkonto (IBAN)" %}</label>
+                    <input name="kautions_konto" value="{{ v.kautions_konto }}" placeholder="{% trans 'CH…' %}" class="fw-feld fw-mono"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-gutknopf">{% trans "Einzahlung bestätigen" %}</button></div>
+                </div>
             </form>
 
-            <form id="kt-form-vers" method="post" action="/neu/vertraege/{{ v.id }}/kaution/" enctype="multipart/form-data" class="hidden space-y-2">
+            <form id="kt-form-vers" method="post" action="/neu/vertraege/{{ v.id }}/kaution/" enctype="multipart/form-data" class="hidden">
                 {% csrf_token %}<input type="hidden" name="aktion" value="versicherung">
-                <div class="flex flex-wrap gap-2">
-                    <div class="flex-1 min-w-[160px]"><label class="block fw-klein mb-1">{% trans "Versicherer / Anbieter" %}</label>
-                        <input name="kautions_versicherer" list="kt-versicherer" value="{{ v.kautions_versicherer }}" placeholder="{% trans 'z. B. SwissCaution' %}" class="fw-feld w-full">
+                <div class="fw-formular">
+                    <div class="fw-feldblock breit"><label class="fw-label">{% trans "Versicherer / Anbieter" %}</label>
+                        <input name="kautions_versicherer" list="kt-versicherer" value="{{ v.kautions_versicherer }}" placeholder="{% trans 'z. B. SwissCaution' %}" class="fw-feld">
                         <datalist id="kt-versicherer"><option>SwissCaution</option><option>GoCaution</option><option>Firstcaution</option><option>SmartCaution</option><option>Helvetia Kautionsversicherung</option><option>Zürich Kautionsgarantie</option></datalist></div>
-                    <div class="min-w-[140px]"><label class="block fw-klein mb-1">{% trans "Policennummer" %}</label>
-                        <input name="kautions_policennummer" value="{{ v.kautions_policennummer }}" placeholder="{% trans 'Police-Nr.' %}" class="fw-feld w-full font-mono"></div>
-                    <div><label class="block fw-klein mb-1">{% trans "Aktiv ab" %}</label>
+                    <div class="fw-feldblock"><label class="fw-label">{% trans "Policennummer" %}</label>
+                        <input name="kautions_policennummer" value="{{ v.kautions_policennummer }}" placeholder="{% trans 'Police-Nr.' %}" class="fw-feld fw-mono"></div>
+                    <div class="fw-feldblock"><label class="fw-label">{% trans "Aktiv ab" %}</label>
                         <input type="date" name="einbezahlt_am" class="fw-feld"></div>
+                <div class="fw-feldblock breit"><label class="fw-label">{% trans "Zertifikat / Police (PDF) *" %}</label>
+                    <input type="file" name="kautions_zertifikat" accept="application/pdf,image/*" class="w-full text-sm fw-mutet file:mr-3 file:rounded-lg file:border-0 file:fw-flaeche2 file:px-3 file:py-1.5 file:fw-ink">
+                <p class="fw-hilfe">{% zeichen 'hinweis' klasse='mr-1' %}{% trans "Bestätigen, sobald das Zertifikat des Versicherers vorliegt." %}</p></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-gutknopf">{% trans "Versicherung bestätigen" %}</button></div>
                 </div>
-                <div><label class="block fw-klein mb-1">{% trans "Zertifikat / Police (PDF) *" %}</label>
-                    <input type="file" name="kautions_zertifikat" accept="application/pdf,image/*" class="w-full text-sm fw-mutet file:mr-3 file:rounded-lg file:border-0 file:fw-flaeche2 file:px-3 file:py-1.5 file:fw-ink"></div>
-                <p class="fw-klein">{% zeichen 'hinweis' klasse='mr-1' %}{% trans "Bestätigen, sobald das Zertifikat des Versicherers vorliegt." %}</p>
-                <button class="fw-btn fw-primary" style="background:var(--ds-good);border-color:var(--ds-good)">{% trans "Versicherung bestätigen" %}</button>
             </form>
 
             <script>
@@ -448,51 +449,50 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
           </div>
         </details>
         {% elif v.kautions_status == 'einbezahlt' %}
-        <form method="post" action="/neu/vertraege/{{ v.id }}/kaution/" class="border-t fw-linie pt-3 space-y-2">
+        <form method="post" action="/neu/vertraege/{{ v.id }}/kaution/" class="fw-formular border-t fw-linie pt-3">
             {% csrf_token %}<input type="hidden" name="aktion" value="rueckzahlung">
-            <div class="fw-klein">{% if v.ist_kautionsversicherung %}{% trans "Police auflösen bei Auszug" %}{% else %}{% trans "Rückzahlung bei Auszug" %}{% endif %}</div>
-            <div class="flex flex-wrap gap-2">
-                <div><label class="block fw-klein mb-1">{% trans "Datum" %}</label>
+            <div class="fw-subhead fw-feldblock breit">{% if v.ist_kautionsversicherung %}{% trans "Police auflösen bei Auszug" %}{% else %}{% trans "Rückzahlung bei Auszug" %}{% endif %}</div>
+                <div class="fw-feldblock"><label class="fw-label">{% trans "Datum" %}</label>
                     <input type="date" name="zurueckbezahlt_am" class="fw-feld"></div>
-                <div><label class="block fw-klein mb-1">{% if v.ist_kautionsversicherung %}{% trans "Schadenforderung (CHF)" %}{% else %}{% trans "Einbehalt (CHF)" %}{% endif %}</label>
-                    <input type="number" step="0.05" name="abzug_betrag" value="0" class="w-28 fw-flaeche2 rounded-lg text-sm px-3 py-2"></div>
-                <div class="flex-1 min-w-[160px]"><label class="block fw-klein mb-1">{% trans "Grund" %}</label>
-                    <input name="abzug_grund" placeholder="{% trans 'z. B. Schäden, offene Miete' %}" class="fw-feld w-full"></div>
-            </div>
-            <label class="fw-s flex items-center gap-2"><input type="checkbox" name="abzug_verrechnen" class="fw-haken"> {% if v.ist_kautionsversicherung %}{% trans "Schadenforderung" %}{% else %}{% trans "Einbehalt" %}{% endif %} {% trans "als Debitoren-Weiterverrechnung buchen" %}</label>
-            <button class="fw-btn fw-primary">{% if v.ist_kautionsversicherung %}{% trans "Police auflösen" %}{% else %}{% trans "Rückzahlung erfassen" %}{% endif %}</button>
+                <div class="fw-feldblock"><label class="fw-label">{% if v.ist_kautionsversicherung %}{% trans "Schadenforderung (CHF)" %}{% else %}{% trans "Einbehalt (CHF)" %}{% endif %}</label>
+                    <input type="number" step="0.05" name="abzug_betrag" value="0" class="fw-feld fw-num"></div>
+                <div class="fw-feldblock breit"><label class="fw-label">{% trans "Grund" %}</label>
+                    <input name="abzug_grund" placeholder="{% trans 'z. B. Schäden, offene Miete' %}" class="fw-feld"></div>
+            <div class="fw-feldblock breit"><label class="fw-label flex items-center gap-2"><input type="checkbox" name="abzug_verrechnen" class="fw-haken"> {% if v.ist_kautionsversicherung %}{% trans "Schadenforderung" %}{% else %}{% trans "Einbehalt" %}{% endif %} {% trans "als Debitoren-Weiterverrechnung buchen" %}</label></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% if v.ist_kautionsversicherung %}{% trans "Police auflösen" %}{% else %}{% trans "Rückzahlung erfassen" %}{% endif %}</button></div>
         </form>
         {% endif %}
+        </div>
     </div>
     {% endif %}
 
     <h3 class="fw-subhead">{% trans "Mietzins und Anpassungen" %}</h3>
     <!-- ===== MIETZINS-ZEITPLAN (nur Ansicht — verwaltet am Objekt-Sollmietzins) ===== -->
     {% if v.mietzins_zeitplan %}
-    <div class="fw-card mb-4">
-        <div class="px-5 pt-4 pb-2 flex items-start justify-between">
-            <div>
-                <h3 class="fw-t flex items-center gap-2.5"><span class="fw-ikon">{% zeichen 'mehr' %}</span>{% trans "Gratismonate / Rabatt" %}</h3>
-                <p class="fw-klein mt-0.5">{% blocktrans trimmed %}Datierte Miete dieses Verhältnisses. <b>Referenz</b> = echte vereinbarte Miete; <b>Rabatt/Erlass</b> mindert nur die Verrechnung (Gratismonat = zu zahlen 0.00, Ertrag wird trotzdem voll gebucht → Konto 3090). Verwaltet am <b>Objekt → Mietzins</b>.{% endblocktrans %}</p>
-            </div>
-            {% if v.einheit_id %}<a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="text-xs fw-link whitespace-nowrap mt-0.5">{% trans "Am Objekt bearbeiten" %} {% zeichen 'weiter' klasse='ml-0.5 fw-fs-mikro' %}</a>{% endif %}
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-ikon">{% zeichen 'mehr' %}</span><h2>{% trans "Gratismonate / Rabatt" %}</h2>
+            {% if v.einheit_id %}<span class="fw-rechts"><a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="fw-link">{% trans "Am Objekt bearbeiten" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a></span>{% endif %}
         </div>
-        <div class="overflow-x-auto"><table class="fw-table fw-dicht min-w-max">
-            <thead><tr class="border-y">
-                <th class="font-semibold">{% trans "Gültig ab" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Referenz" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
-                <th class="font-semibold text-right fw-right">{% trans "Rabatt" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
-                <th class="font-semibold text-right fw-right">{% trans "zu zahlen" %}</th>
-                <th class="font-semibold">{% trans "Notiz" %}</th>
+        <div class="px-5 py-3">
+                <p class="fw-hilfe">{% blocktrans trimmed %}Datierte Miete dieses Verhältnisses. <b>Referenz</b> = echte vereinbarte Miete; <b>Rabatt/Erlass</b> mindert nur die Verrechnung (Gratismonat = zu zahlen 0.00, Ertrag wird trotzdem voll gebucht → Konto 3090). Verwaltet am <b>Objekt → Mietzins</b>.{% endblocktrans %}</p>
+        </div>
+        <div class="fw-tablewrap"><table class="fw-table fw-dicht">
+            <thead><tr>
+                <th>{% trans "Gültig ab" %}</th>
+                <th class="fw-right">{% trans "Referenz" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
+                <th class="fw-right">{% trans "Rabatt" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
+                <th class="fw-right">{% trans "zu zahlen" %}</th>
+                <th>{% trans "Notiz" %}</th>
             </tr></thead>
-            <tbody class="">
+            <tbody>
             {% for k in v.mietzins_zeitplan %}
             <tr>
-                <td class="fw-ink whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
-                <td class="text-right fw-ink whitespace-nowrap fw-right">{{ k.netto_mietzins|chf }} / {{ k.nebenkosten|chf }}</td>
-                <td class="px-4 py-2 text-right whitespace-nowrap {% if k.hat_rabatt %}fw-warnton font-semibold{% else %}fw-faint{% endif %}">{% if k.hat_rabatt %}−{{ k.rabatt_netto|chf }} / −{{ k.rabatt_nk|chf }}{% else %}—{% endif %}</td>
-                <td class="px-4 py-2 text-right font-semibold whitespace-nowrap {% if k.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ k.verrechnet_brutto|chf }}{% if k.verrechnet_brutto == 0 %} <span class="fw-fs-mikro font-normal">{% trans "(frei)" %}</span>{% endif %}</td>
-                <td class="fw-mutet truncate max-w-[140px]">{{ k.notiz|default:"—" }}</td>
+                <td class="fw-num whitespace-nowrap">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
+                <td class="fw-right fw-num">{{ k.netto_mietzins|chf }} / {{ k.nebenkosten|chf }}</td>
+                <td class="fw-right fw-num"><span class="{% if k.hat_rabatt %}fw-strong fw-warnton{% else %}fw-faint{% endif %}">{% if k.hat_rabatt %}−{{ k.rabatt_netto|chf }} / −{{ k.rabatt_nk|chf }}{% else %}—{% endif %}</span></td>
+                <td class="fw-right fw-num"><span class="fw-strong {% if k.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ k.verrechnet_brutto|chf }}</span>{% if k.verrechnet_brutto == 0 %} <span class="fw-klein">{% trans "(frei)" %}</span>{% endif %}</td>
+                <td class="truncate max-w-[140px]"><span class="fw-mutet">{{ k.notiz|default:"—" }}</span></td>
             </tr>
             {% endfor %}
             </tbody>
@@ -500,35 +500,35 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
     {% endif %}
 
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
-        <h3 class="fw-t flex items-center gap-2.5"><span class="fw-ikon">{% zeichen 'bericht' %}</span>{% trans "Amtliche Mietzinsanpassungen" %}</h3>
-        <div class="flex flex-wrap items-center gap-2">
-            <a href="/neu/mietzins/{{ v.id }}/anfangsmietzins/" class="inline-flex items-center gap-1.5 fw-btn" style="padding:7px 13px;font-size:12px">
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-ikon">{% zeichen 'bericht' %}</span><h2>{% trans "Amtliche Mietzinsanpassungen" %}</h2>
+            <div class="fw-rechts">
+            <a href="/neu/mietzins/{{ v.id }}/anfangsmietzins/" class="fw-btn fw-knapp">
                 {% zeichen 'rechnung' %} Anfangsmietzins (Art. 270)
             </a>
-            <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="inline-flex items-center gap-1.5 fw-btn fw-primary" style="padding:7px 13px;font-size:12px">
+            <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="fw-btn fw-primary fw-knapp">
                 {% zeichen 'bericht' %} {% trans "Amtliche Anpassung erstellen" %}
             </a>
+            </div>
         </div>
-    </div>
-    <div class="fw-card">
-        <div class="overflow-x-auto"><table class="fw-table min-w-max">
+        <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th class="font-semibold">{% trans "Wirksam ab" %}</th><th class="font-semibold text-right fw-right">{% trans "Alt" %}</th><th class="font-semibold text-right fw-right">{% trans "Neu" %}</th><th class="font-semibold">{% trans "Grund" %}</th><th></th>
+                <th>{% trans "Wirksam ab" %}</th><th class="fw-right">{% trans "Alt" %}</th><th class="fw-right">{% trans "Neu" %}</th><th>{% trans "Grund" %}</th><th></th>
             </tr></thead>
-            <tbody class="">
+            <tbody>
             {% for a in anpassungen %}
-            <tr><td class="fw-s whitespace-nowrap">{{ a.wirksam_ab|date:"d.m.Y" }}</td>
-                <td class="text-right fw-mutet fw-right">{% if a.alter_netto_mietzins %}{{ a.alter_netto_mietzins|chf }}{% else %}—{% endif %}</td>
-                <td class="text-right font-semibold fw-strong fw-right">{{ a.neuer_netto_mietzins|chf }}</td>
-                <td class="fw-mutet truncate max-w-[220px]">{{ a.begruendung|default:"—" }}</td>
-                <td class="text-right fw-right">
+            <tr><td class="fw-num whitespace-nowrap">{{ a.wirksam_ab|date:"d.m.Y" }}</td>
+                <td class="fw-right fw-num"><span class="fw-mutet">{% if a.alter_netto_mietzins %}{{ a.alter_netto_mietzins|chf }}{% else %}—{% endif %}</span></td>
+                <td class="fw-right fw-num fw-strong">{{ a.neuer_netto_mietzins|chf }}</td>
+                <td class="truncate max-w-[220px]"><span class="fw-mutet">{{ a.begruendung|default:"—" }}</span></td>
+                <td class="fw-right">
                     <form method="post" action="/neu/anpassung/{{ a.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Mietzinsanpassung löschen? Künftige Sollläufe verrechnen dann wieder den vorherigen Mietzins." %}{% endfilter %}');">{% csrf_token %}
-                        <button class="fw-faint hover:fw-kritisch text-xs" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
+                        <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                 </td></tr>
             {% empty %}
-            <tr><td colspan="5" class="fw-leer">{% trans "Keine Mietzinsanpassungen." %}</td></tr>
+            <tr><td colspan="5" class="fw-leerzeile fw-leer">{% trans "Keine Mietzinsanpassungen." %}</td></tr>
             {% endfor %}
             </tbody>
         </table></div>
@@ -538,18 +538,18 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <!-- ===== REITER: CHRONIK ===== -->
 <div data-panel="vt" id="vt-chronik" class="hidden">
     <div class="fw-card">
-        <div class="fw-kopf">{% trans "Verlauf — wer hat was gemacht" %}</div>
-        <div class="">
+        <div class="fw-kopf"><h2>{% trans "Verlauf — wer hat was gemacht" %}</h2></div>
+        <div>
             {% for e in verlauf %}
             <div class="fw-zeile">
                 <div class="fw-avci">
                     {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="fw-mitte">
                     <div class="fw-t">{{ e.aktion }}</div>
-                    {% if e.details %}<div class="fw-klein">{{ e.details }}</div>{% endif %}
+                    {% if e.details %}<div class="fw-s">{{ e.details }}</div>{% endif %}
                 </div>
-                <div class="fw-klein whitespace-nowrap text-right shrink-0">
+                <div class="fw-klein fw-num whitespace-nowrap text-right shrink-0">
                     {{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
                     <span class="fw-faint">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}{% trans "System" %}{% endif %}</span>
                 </div>
@@ -559,32 +559,32 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             {% endfor %}
         </div>
     </div>
-    <p class="fw-klein mt-3">{% blocktrans trimmed %}Vollständiges Logbuch aller Objekte unter <a href="/neu/logbuch/" class="fw-link">Profil → Logbuch</a>.{% endblocktrans %}</p>
+    <p class="fw-klein">{% blocktrans trimmed %}Vollständiges Logbuch aller Objekte unter <a href="/neu/logbuch/" class="fw-link">Profil → Logbuch</a>.{% endblocktrans %}</p>
 </div>
 
 <!-- ===== REITER: FINANZEN ===== -->
 <div data-panel="vt" id="vt-finanzen" class="hidden">
     {% if total_offen > 0 %}
-    <div class="fw-krit-flaeche border fw-linie-krit rounded-xl p-4 mb-4 flex items-start gap-3">
-        {% zeichen 'warnung' klasse='fw-kritisch mt-0.5' %}
-        <div class="flex-1 min-w-0">
-            <div class="text-sm font-bold fw-kritisch">{% blocktrans with b=total_offen|chf %}Offener Betrag: CHF {{ b }}{% endblocktrans %}</div>
-            <p class="text-xs fw-kritisch mt-0.5">Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit 30-Tage-Frist, danach ausserordentliche Kündigung möglich.</p>
+    <div class="fw-card"><div class="fw-hinweis crit">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht">
+            <b>{% blocktrans with b=total_offen|chf %}Offener Betrag: CHF {{ b }}{% endblocktrans %}</b>
+            Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit 30-Tage-Frist, danach ausserordentliche Kündigung möglich.
         </div>
         {% if request.user|darf:"/neu/vertraege/1/verzug/" %}
-        <a href="/neu/vertraege/{{ v.id }}/verzug/" class="shrink-0 inline-flex items-center gap-1.5 fw-btn fw-gefahr text-white text-xs font-semibold px-3.5 py-2 rounded-lg">
+        <a href="/neu/vertraege/{{ v.id }}/verzug/" class="fw-btn fw-gefahr fw-knapp">
             {% zeichen 'recht' %} Zahlungsverzug 257d
         </a>
         {% endif %}
-    </div>
+    </div></div>
     {% endif %}
     {% if vertrag_fristen %}
-    <div class="fw-card mb-4">
+    <div class="fw-card">
         <div class="fw-kopf">
-            <div class="fw-t flex items-center gap-2.5"><span class="fw-ikon">{% zeichen 'wartet' %}</span>{% trans "Fristen" %}</div>
-            <a href="/neu/fristen/" class="fw-link">{% trans "Fristen-Center" %}</a>
+            <span class="fw-ikon">{% zeichen 'wartet' %}</span><h2>{% trans "Fristen" %}</h2>
+            <span class="fw-rechts"><a href="/neu/fristen/" class="fw-link">{% trans "Fristen-Center" %}</a></span>
         </div>
-        <div class="">
+        <div>
             {% for e in vertrag_fristen %}
             <div class="fw-hover px-5 py-3">
                 <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap">
@@ -603,86 +603,86 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </div>
     </div>
     {% endif %}
-    <div class="fw-card mb-4">
-        <div class="fw-kopf">{% trans "Offene Posten & Rechnungen" %}</div>
-        <div class="overflow-x-auto"><table class="fw-table min-w-max">
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Offene Posten & Rechnungen" %}</h2></div>
+        <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th class="font-semibold">{% trans "Datum" %}</th><th class="font-semibold">{% trans "Titel" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th><th class="font-semibold text-right fw-right">{% trans "Offen" %}</th><th class="font-semibold">{% trans "Status" %}</th>
+                <th>{% trans "Datum" %}</th><th>{% trans "Titel" %}</th>
+                <th class="fw-right">{% trans "Betrag" %}</th><th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Status" %}</th>
             </tr></thead>
-            <tbody class="">
+            <tbody>
             {% for row in rechnungs_rows %}
-            <tr><td class="fw-s whitespace-nowrap">{{ row.r.datum|date:"d.m.Y" }}</td>
+            <tr><td class="fw-num whitespace-nowrap">{{ row.r.datum|date:"d.m.Y" }}</td>
                 <td class="fw-strong">{{ row.r.titel }}</td>
-                <td class="text-right fw-ink fw-right">{{ row.r.betrag|chf }}</td>
-                <td class="px-5 py-3 text-right font-semibold {% if row.offen %}fw-strong{% else %}fw-faint{% endif %}">{{ row.offen|chf }}</td>
-                <td><span class="fw-chip {{ row.pill_cls }}">● {{ row.status_label }}</span></td></tr>
+                <td class="fw-right fw-num">{{ row.r.betrag|chf }}</td>
+                <td class="fw-right fw-num"><span class="{% if row.offen %}fw-strong{% else %}fw-faint{% endif %}">{{ row.offen|chf }}</span></td>
+                <td><span class="fw-chip fw-dot {{ row.pill_cls }}">{{ row.status_label }}</span></td></tr>
             {% empty %}
-            <tr><td colspan="5" class="fw-leer">{% trans "Keine Rechnungen." %}</td></tr>
+            <tr><td colspan="5" class="fw-leerzeile fw-leer">{% trans "Keine Rechnungen." %}</td></tr>
             {% endfor %}
             </tbody>
         </table></div>
     </div>
     <div class="fw-card">
-        <div class="fw-kopf">{% trans "Zahlungseingänge" %}</div>
-        <div class="overflow-x-auto"><table class="fw-table min-w-max">
+        <div class="fw-kopf"><h2>{% trans "Zahlungseingänge" %}</h2></div>
+        <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th class="font-semibold">{% trans "Eingang" %}</th><th class="font-semibold">{% trans "Für Monat" %}</th><th class="font-semibold text-right fw-right">{% trans "Betrag" %}</th>
+                <th>{% trans "Eingang" %}</th><th>{% trans "Für Monat" %}</th><th class="fw-right">{% trans "Betrag" %}</th>
             </tr></thead>
-            <tbody class="">
+            <tbody>
             {% for z in zahlungen %}
-            <tr><td class="fw-s whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
-                <td class="fw-mutet">{% if z.buchungs_monat %}{{ z.buchungs_monat|date:"m/Y" }}{% else %}—{% endif %}</td>
-                <td class="text-right font-medium fw-gut fw-right">+{{ z.betrag|chf }}</td></tr>
+            <tr><td class="fw-num whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
+                <td class="fw-num"><span class="fw-mutet">{% if z.buchungs_monat %}{{ z.buchungs_monat|date:"m/Y" }}{% else %}—{% endif %}</span></td>
+                <td class="fw-right fw-num fw-strong"><span class="fw-gut">+{{ z.betrag|chf }}</span></td></tr>
             {% empty %}
-            <tr><td colspan="3" class="fw-leer">{% trans "Noch keine Zahlungen erfasst." %}</td></tr>
+            <tr><td colspan="3" class="fw-leerzeile fw-leer">{% trans "Noch keine Zahlungen erfasst." %}</td></tr>
             {% endfor %}
             </tbody>
         </table></div>
     </div>
-    <a href="/neu/nebenkosten/?lg={{ v.einheit.liegenschaft_id }}" class="inline-flex items-center gap-1.5 mt-4 fw-link">{% zeichen 'weiter' %}{% trans "Zur Nebenkosten-Abrechnung dieser Liegenschaft" %}</a>
+    <a href="/neu/nebenkosten/?lg={{ v.einheit.liegenschaft_id }}" class="inline-flex items-center gap-1.5 fw-link">{% zeichen 'weiter' %}{% trans "Zur Nebenkosten-Abrechnung dieser Liegenschaft" %}</a>
 </div>
 
 <!-- ===== REITER: DOKUMENTE ===== -->
 <div data-panel="vt" id="vt-dokumente" class="hidden">
     <!-- Erstellbare Dokumente (Fairwalter-Stil) -->
-    <div class="fw-card" style="padding:16px">
-        <div class="flex items-start justify-between gap-3 mb-1">
-            <div>
-                <h3 class="font-bold fw-strong mb-1">{% trans "Erstellbare Dokumente" %}</h3>
-                <p class="fw-klein mb-4">{% trans "Direkt aus diesem Vertrag generieren" %}</p>
-            </div>
-            <a href="/vertrag/{{ v.id }}/dokumente-zip/"
-               class="shrink-0 inline-flex items-center gap-1.5 fw-btn fw-primary" style="padding:7px 13px;font-size:12px">
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <h2>{% trans "Erstellbare Dokumente" %}</h2>
+            <span class="fw-neben">{% trans "Direkt aus diesem Vertrag generieren" %}</span>
+            <span class="fw-rechts"><a href="/vertrag/{{ v.id }}/dokumente-zip/"
+               class="fw-btn fw-primary fw-knapp">
                 {% zeichen 'herunterladen' %} {% trans "Alle als ZIP" %}
-            </a>
+            </a></span>
         </div>
-        <p class="fw-klein mb-4">{% trans "„Alle als ZIP“ erzeugt Mietvertrag + Beilagen, legt sie einzeln in die Akte (erscheinen im Mieterportal) und lädt sie gebündelt herunter." %}</p>
+        <div class="p-5">
+        <p class="fw-hilfe mb-4">{% trans "„Alle als ZIP“ erzeugt Mietvertrag + Beilagen, legt sie einzeln in die Akte (erscheinen im Mieterportal) und lädt sie gebündelt herunter." %}</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {% for d in erstellbare_dokumente %}
             <a href="{{ d.url }}" target="_blank" rel="noopener"
                class="flex items-center gap-3 p-3.5 rounded-lg border fw-linie hover:fw-linie-marke hover:fw-markenflaeche transition-all group">
-                <div class="fw-ikon" style="width:38px;height:38px;flex:0 0 38px">
+                <div class="fw-ikon">
                     {% zeichen_wert d.icon %}
                 </div>
-                <div class="flex-1 min-w-0"><div class="fw-t">{{ d.titel }}</div>
+                <div class="flex-1 min-w-0"><div class="fw-strong">{{ d.titel }}</div>
                     <div class="fw-klein">{{ d.sub }}</div></div>
                 {% zeichen 'extern' klasse='fw-faint text-xs group-hover:fw-marke' %}
             </a>
             {% endfor %}
         </div>
+        </div>
     </div>
     <!-- Abgelegte Dokumente -->
     <div class="fw-card">
-        <div class="fw-kopf">{% trans "Abgelegte Dokumente" %}</div>
+        <div class="fw-kopf"><h2>{% trans "Abgelegte Dokumente" %}</h2></div>
         {% for d in dokumente %}
-        <div class="flex items-center gap-3 px-5 py-3.5">
-            <div class="w-9 h-9 rounded-lg fw-flaeche2 fw-mutet flex items-center justify-center shrink-0">{% zeichen 'hochladen' %}</div>
-            <div class="flex-1 min-w-0"><div class="fw-t truncate">{{ d.bezeichnung|default:d.titel }}</div>
-                <div class="fw-klein">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
-            {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="text-xs fw-marke font-medium hover:underline shrink-0">{% trans "Öffnen" %}</a>{% endif %}
+        <div class="fw-zeile">
+            <span class="fw-ikon mut">{% zeichen 'hochladen' %}</span>
+            <div class="fw-mitte"><div class="fw-t truncate">{{ d.bezeichnung|default:d.titel }}</div>
+                <div class="fw-s">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
+            {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>{% endif %}
             <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=d.bezeichnung|default:d.titel %}Dokument «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
-                <button class="w-8 h-8 rounded-lg flex items-center justify-center fw-flaeche2 fw-faint hover:fw-krit-flaeche hover:fw-kritisch" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' klasse='text-xs' %}</button>
+                <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
             </form>
         </div>
         {% empty %}
@@ -691,31 +691,31 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
 
     <h3 class="fw-subhead">{% trans "Formulare und Prozesse" %}</h3>
-    <p class="fw-klein mb-4">{% zeichen 'hinweis' klasse='mr-1' %}{% trans "Alle amtlichen Formulare und Prozesse für diesen Vertrag an einem Ort — kontextabhängig nach Status und Objektart. Erzeugte Dokumente landen automatisch in der Akte (Tab «Dokumente»)." %}</p>
-    <div class="space-y-4">
+    <p class="fw-klein mb-3">{% zeichen 'hinweis' klasse='mr-1' %}{% trans "Alle amtlichen Formulare und Prozesse für diesen Vertrag an einem Ort — kontextabhängig nach Status und Objektart. Erzeugte Dokumente landen automatisch in der Akte (Tab «Dokumente»)." %}</p>
+    <div>
         {% for g in formular_gruppen %}
         <div class="fw-card">
-            <div class="fw-kopf">{% zeichen_wert g.icon klasse='fw-marke mr-1.5' %}{{ g.titel }}</div>
-            <div class="">
+            <div class="fw-kopf"><span class="fw-ikon">{% zeichen_wert g.icon %}</span><h2>{{ g.titel }}</h2></div>
+            <div>
                 {% for it in g.items %}
                 {% if it.verfuegbar %}
                 <a href="{{ it.url }}" {% if '/pdf/' in it.url or '/qr/' in it.url or '/dokument/' in it.url or 'kaution-beleg' in it.url %}target="_blank" rel="noopener"{% endif %} class="fw-zeile klick group">
-                    <div class="fw-ikon" style="width:34px;height:34px;flex:0 0 34px">{% zeichen_wert it.icon %}</div>
-                    <div class="flex-1 min-w-0">
+                    <div class="fw-ikon">{% zeichen_wert it.icon %}</div>
+                    <div class="fw-mitte">
                         <div class="fw-t">{{ it.titel }}
-                            {% if it.pflicht %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-bold fw-warn-flaeche fw-warnton">{% trans "Formularpflicht" %}</span>{% endif %}
-                            {% if it.erledigt %}<span class="fw-chip fw-good ml-1">{% trans "erstellt" %}</span>{% endif %}
+                            {% if it.pflicht %}<span class="fw-chip fw-warn">{% trans "Formularpflicht" %}</span>{% endif %}
+                            {% if it.erledigt %}<span class="fw-chip fw-good">{% trans "erstellt" %}</span>{% endif %}
                         </div>
-                        <div class="fw-klein truncate">{{ it.sub }}</div>
+                        <div class="fw-s truncate">{{ it.sub }}</div>
                     </div>
                     {% zeichen 'weiter' klasse='text-xs fw-faint group-hover:fw-marke' %}
                 </a>
                 {% else %}
-                <div class="flex items-center gap-3 px-5 py-3 opacity-40 cursor-not-allowed" title="{% if it.gesperrt %}Ihre Rolle darf diesen Vorgang nicht auslösen{% else %}Für diesen Vertragsstatus nicht verfügbar{% endif %}">
-                    <div class="w-9 h-9 rounded-lg fw-flaeche2 fw-faint flex items-center justify-center shrink-0">{% if it.gesperrt %}{% zeichen 'gesperrt' %}{% else %}{% zeichen_wert it.icon %}{% endif %}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold fw-mutet truncate">{{ it.titel }}</div>
-                        <div class="fw-klein truncate">{{ it.sub }} · {% if it.gesperrt %}{% trans "nicht für Ihre Rolle" %}{% else %}{% trans "derzeit nicht verfügbar" %}{% endif %}</div>
+                <div class="fw-zeile opacity-40 cursor-not-allowed" title="{% if it.gesperrt %}Ihre Rolle darf diesen Vorgang nicht auslösen{% else %}Für diesen Vertragsstatus nicht verfügbar{% endif %}">
+                    <div class="fw-ikon mut">{% if it.gesperrt %}{% zeichen 'gesperrt' %}{% else %}{% zeichen_wert it.icon %}{% endif %}</div>
+                    <div class="fw-mitte">
+                        <div class="fw-t truncate">{{ it.titel }}</div>
+                        <div class="fw-s truncate">{{ it.sub }} · {% if it.gesperrt %}{% trans "nicht für Ihre Rolle" %}{% else %}{% trans "derzeit nicht verfügbar" %}{% endif %}</div>
                     </div>
                 </div>
                 {% endif %}
@@ -730,18 +730,17 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div data-panel="vt" id="vt-faelle" class="hidden">
     <div class="fw-card">
         <div class="fw-kopf">
-            <div class="fw-t flex items-center gap-2.5"><span class="fw-ikon warn">{% zeichen 'kritisch' %}</span>{% trans "Schäden am Mietobjekt" %}</div>
-            <a href="/neu/schaeden/" class="fw-link">{% trans "Alle Schadensfälle" %}</a>
+            <span class="fw-ikon warn">{% zeichen 'kritisch' %}</span><h2>{% trans "Schäden am Mietobjekt" %}</h2>
+            <span class="fw-rechts"><a href="/neu/schaeden/" class="fw-link">{% trans "Alle Schadensfälle" %}</a></span>
         </div>
-        <div class="">
+        <div>
             {% for t in vertrag_schaeden %}
-            <a href="/neu/schaeden/{{ t.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-                <div class="w-9 h-9 rounded-lg {% if t.status == 'erledigt' %}fw-gut-flaeche fw-gut{% else %}fw-warn-flaeche fw-warnton{% endif %} flex items-center justify-center shrink-0">{% zeichen 'arbeit' klasse='text-sm' %}</div>
-                <div class="min-w-0 flex-1">
+            <a href="/neu/schaeden/{{ t.id }}/" class="fw-zeile klick">
+                <span class="fw-marker {% if t.status == 'erledigt' %}good{% else %}warn{% endif %}"></span>
+                <div class="fw-mitte">
                     <div class="fw-t truncate">{{ t.titel }}</div>
-                    <div class="fw-klein">{{ t.erstellt_am|date:"d.m.Y" }} · {{ t.get_status_display }}</div>
+                    <div class="fw-s">{{ t.erstellt_am|date:"d.m.Y" }} · {{ t.get_status_display }}</div>
                 </div>
-                {% zeichen 'weiter' klasse='fw-faint text-xs shrink-0' %}
             </a>
             {% empty %}
             <p class="fw-leer">{% trans "Keine Schadenmeldungen zu diesem Mietobjekt." %}</p>
@@ -752,10 +751,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <h3 class="fw-subhead">{% trans "Pendenzen und Fristen" %}</h3>
     <div class="fw-card">
         <div class="fw-kopf">
-            <div class="fw-t flex items-center gap-2.5"><span class="fw-ikon">{% zeichen 'arbeit' %}</span>{% trans "Offene Pendenzen &amp; Fristen" %}</div>
-            <a href="/neu/pendenzen/" class="fw-link">{% trans "Alle Pendenzen" %}</a>
+            <span class="fw-ikon">{% zeichen 'arbeit' %}</span><h2>{% trans "Offene Pendenzen &amp; Fristen" %}</h2>
+            <span class="fw-rechts"><a href="/neu/pendenzen/" class="fw-link">{% trans "Alle Pendenzen" %}</a></span>
         </div>
-        <div class="">
+        <div>
             {% for e in vertrag_pendenzen %}
             <div class="fw-hover px-5 py-3">
                 <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap">
@@ -778,8 +777,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 
 <div data-panel="vt" id="vt-nebenkosten" class="hidden">
     <div class="fw-card">
-        <div class="fw-h"><span class="fw-ic">{% zeichen 'kritisch' %}</span>
-            <span class="fw-t">{% trans "Nebenkosten" %}</span></div>
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'kritisch' %}</span>
+            <h2>{% trans "Nebenkosten" %}</h2></div>
         <p class="fw-leer">
             {% trans "Der Anteil dieses Mietverhältnisses an der Nebenkostenabrechnung erscheint hier, sobald die Periode abgeschlossen ist." %}
             <br><a href="/neu/nebenkosten/" class="fw-link">{% trans "Zu den Abrechnungen" %}</a>

@@ -6,105 +6,102 @@
 {% block content %}
 
 <div class="fw-phead">
-    <h1>{% trans "Nebenkosten" %}</h1>
-    <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Periode anlegen" %}</button>
+    <div>
+        <h1>{% trans "Nebenkosten" %}</h1>
+        <p>{% trans "Heiz- und Nebenkosten-Abrechnungsperioden" %}
+            {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>
+            <a href="/neu/nebenkosten/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Periode anlegen" %}</button>
+    </div>
 </div>
-<p class="text-sm fw-mutet mb-5">{% trans "Heiz- und Nebenkosten-Abrechnungsperioden" %}
-    {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/nebenkosten/" class="text-xs fw-faint hover:fw-marke">× {% trans "aufheben" %}</a>{% endif %}</p>
 
 
-<div id="nkform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
-    <h3 class="font-bold fw-strong text-sm mb-4">{% zeichen 'kritisch' klasse='fw-marke mr-1.5' %}{% trans "Neue Abrechnungsperiode" %}</h3>
-    <form method="post" action="/neu/nebenkosten/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div id="nkform" class="hidden fw-card">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Neue Abrechnungsperiode" %}</h3></div>
+    <form method="post" action="/neu/nebenkosten/neu/" class="fw-formular p-5">
         {% csrf_token %}
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft *" %}</label>
-            <select name="liegenschaft_id" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Liegenschaft *" %}</label>
+            <select name="liegenschaft_id" required class="fw-feld">
                 <option value="">— {% trans "wählen" %} —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bezeichnung *" %}</label>
-            <input name="bezeichnung" required placeholder="{% trans 'z.B. Heizperiode 2025/2026' %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Von *" %}</label>
-            <input type="date" name="start_datum" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Bis *" %}</label>
-            <input type="date" name="ende_datum" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Periode anlegen" %}</button></div>
+        <div class="fw-feldblock breit"><label class="fw-label">{% trans "Bezeichnung *" %}</label>
+            <input name="bezeichnung" required placeholder="{% trans 'z.B. Heizperiode 2025/2026' %}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Von *" %}</label>
+            <input type="date" name="start_datum" required class="fw-feld"></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Bis *" %}</label>
+            <input type="date" name="ende_datum" required class="fw-feld"></div>
+        <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Periode anlegen" %}</button></div>
     </form>
 </div>
 
 <!-- KPI -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0">{% zeichen 'kritisch' %}</div>
-        <div><div class="text-2xl font-bold fw-marke">CHF {{ total_kosten_offen|chf }}</div><div class="text-sm fw-mutet">{% trans "Kosten offene Perioden" %}</div></div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Kosten offene Perioden" %}</div>
+        <div class="fw-v">CHF {{ total_kosten_offen|chf }}</div>
     </div>
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0">{% zeichen 'wartet' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ n_offen }}</div><div class="text-sm fw-mutet">{% trans "Offene Perioden" %}</div></div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Offene Perioden" %}</div>
+        <div class="fw-v">{{ n_offen }}</div>
     </div>
-    <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0">{% zeichen 'gut' %}</div>
-        <div><div class="text-2xl font-bold fw-strong">{{ n_zu }}</div><div class="text-sm fw-mutet">{% trans "Abgeschlossen" %}</div></div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Abgeschlossen" %}</div>
+        <div class="fw-v">{{ n_zu }}</div>
     </div>
 </div>
 
 <!-- Tabelle -->
-<div class="fw-card overflow-hidden">
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b fw-linie">
-        <div class="flex items-center gap-1.5 flex-wrap">
+<div class="fw-card">
+    <div class="fw-band">
             {% for wert, label in status_chips %}
             <a href="?status={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if status_filter == wert %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ label }}</a>
+               class="{% if status_filter == wert %}hier{% endif %}">{{ label }}</a>
             {% endfor %}
-        </div>
-        <div class="ml-auto text-xs fw-faint">{% blocktrans count n=anzahl %}{{ n }} Periode{% plural %}{{ n }} Perioden{% endblocktrans %}</div>
+        <span class="ml-auto fw-klein">{% blocktrans count n=anzahl %}{{ n }} Periode{% plural %}{{ n }} Perioden{% endblocktrans %}</span>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="fw-table min-w-max">
+    <div class="fw-tablewrap">
+        <table class="fw-table">
             <thead>
             <tr>
-                <th class="font-semibold">{% trans "Periode" %}</th>
-                <th class="font-semibold">{% trans "Liegenschaft" %}</th>
-                <th class="font-semibold">{% trans "Zeitraum" %}</th>
-                <th class="font-semibold text-center fw-zentriert">{% trans "Belege" %}</th>
-                <th class="font-semibold text-right fw-right">{% trans "Total Kosten" %}</th>
-                <th class="font-semibold">{% trans "Status" %}</th>
+                <th>{% trans "Periode" %}</th>
+                <th>{% trans "Liegenschaft" %}</th>
+                <th>{% trans "Zeitraum" %}</th>
+                <th class="fw-zentriert">{% trans "Belege" %}</th>
+                <th class="fw-right">{% trans "Total Kosten" %}</th>
+                <th>{% trans "Status" %}</th>
                 <th></th>
             </tr>
             </thead>
-            <tbody class="fw-dv">
+            <tbody>
             {% for row in rows %}
-            <tr class="transition-colors cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
+            <tr class="cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
                 <td>
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">{% zeichen 'rechnung' %}</div>
-                        <span class="font-semibold fw-strong">{{ row.p.bezeichnung }}</span>
-                    </div>
+                    <span class="fw-strong">{{ row.p.bezeichnung }}</span>
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ row.lg }}</td>
-                <td class="fw-mutet whitespace-nowrap">{{ row.p.start_datum|date:"d.m.Y" }} – {{ row.p.ende_datum|date:"d.m.Y" }}</td>
-                <td class="text-center fw-mutet fw-zentriert">{{ row.belege }}</td>
-                <td class="text-right font-semibold fw-strong whitespace-nowrap fw-right">CHF {{ row.kosten|chf }}</td>
+                <td class="fw-mutet fw-num whitespace-nowrap">{{ row.p.start_datum|date:"d.m.Y" }} – {{ row.p.ende_datum|date:"d.m.Y" }}</td>
+                <td class="fw-zentriert fw-mutet">{{ row.belege }}</td>
+                <td class="fw-right fw-num fw-strong">CHF {{ row.kosten|chf }}</td>
                 <td>
-                    {% if row.p.abgeschlossen %}<span class="fw-chip fw-gut-flaeche fw-gut">{% trans "● Abgeschlossen" %}</span>
-                    {% else %}<span class="fw-chip fw-warn-flaeche fw-warnton">{% trans "● Offen" %}</span>{% endif %}
+                    {% if row.p.abgeschlossen %}<span class="fw-chip fw-good">{% trans "● Abgeschlossen" %}</span>
+                    {% else %}<span class="fw-chip fw-warn">{% trans "● Offen" %}</span>{% endif %}
                 </td>
-                <td class="text-right whitespace-nowrap fw-right">
+                <td class="fw-right">
                     {% if not row.p.abgeschlossen %}
                     <form method="post" action="/neu/nebenkosten/{{ row.p.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.p.bezeichnung|safe %}Abrechnungsperiode «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
-                        <button class="fw-faint hover:fw-kritisch text-xs mr-2" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
+                        <button class="fw-btn fw-geist fw-knapp" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                     {% endif %}
-                    {% zeichen 'weiter' klasse='fw-faint text-xs' %}</td>
+                    {% zeichen 'weiter' klasse='fw-faint' %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="text-center fw-zentriert fw-leerzeile">
-                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto">{% zeichen 'kritisch' %}</div>
-                <p class="text-sm font-medium fw-ink">{% if status_filter %}{% trans "Keine Perioden in diesem Status" %}{% else %}{% trans "Noch keine Abrechnungsperioden" %}{% endif %}</p>
-                <p class="text-xs fw-faint mt-1">{% trans "Perioden werden in der klassischen Ansicht angelegt." %}</p>
+            <tr><td colspan="7" class="fw-leerzeile fw-leer">
+                <b>{% if status_filter %}{% trans "Keine Perioden in diesem Status" %}{% else %}{% trans "Noch keine Abrechnungsperioden" %}{% endif %}</b>
+                <p>{% trans "Perioden werden in der klassischen Ansicht angelegt." %}</p>
             </td></tr>
             {% endfor %}
             </tbody>

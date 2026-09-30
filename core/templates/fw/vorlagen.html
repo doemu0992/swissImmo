@@ -3,51 +3,55 @@
 {% block title %}{% trans "Vorlagen" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
-    <h1>{% trans "Vorlagen" %}</h1>
-    <div class="flex items-center gap-2">
+    <div>
+        <h1>{% trans "Vorlagen" %}</h1>
+        <p>{% trans "Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz. «Standardvorlagen erstellen» legt vorbelegte Texte für alle Bereiche an, die du dann anpassen kannst." %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
         <a href="/neu/vorlagen/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Vorlage erstellen" %}</a>
         <div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
                 <form method="post" action="/neu/vorlagen/standard/">
                     {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2" title="{% trans 'Legt fehlende Standardvorlagen mit vorbelegtem Text an' %}">{% zeichen 'einstellungen' klasse='w-4 fw-marke' %}{% trans "Standardvorlagen erstellen" %}</button>
+                    <button class="fw-menuzeile" title="{% trans 'Legt fehlende Standardvorlagen mit vorbelegtem Text an' %}">{% zeichen 'einstellungen' %}{% trans "Standardvorlagen erstellen" %}</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-<p class="text-sm fw-mutet mb-6">{% trans "Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz. «Standardvorlagen erstellen» legt vorbelegte Texte für alle Bereiche an, die du dann anpassen kannst." %}</p>
 
 
 {% if vorlagen %}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Vorlagen" %}</span><span class="fw-neben">{{ vorlagen|length }}</span></div>
     {% for v in vorlagen %}
-    <div class="fw-card p-5 flex flex-col">
-        <div class="flex items-start justify-between mb-2">
-            <span class="px-2.5 py-1 rounded-md fw-fs-klein font-semibold fw-markenflaeche fw-marke">{{ v.get_kategorie_display }}</span>
-            <form method="post" action="/neu/vorlagen/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Vorlage löschen?" %}{% endfilter %}');">
-                {% csrf_token %}
-                <button title="{% trans 'Vorlage löschen' %}" class="fw-faint hover:fw-kritisch text-xs">{% zeichen 'loeschen' %}</button>
-            </form>
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-zkopf"><span class="fw-marke-kapsel">{{ v.get_kategorie_display }}</span></div>
+            <div class="fw-t">{{ v.name }}</div>
+            {% if v.betreff %}<div class="fw-s">{% trans "Betreff" %}: {{ v.betreff }}</div>{% endif %}
+            <div class="fw-s fw-faint line-clamp-3">{{ v.inhalt|truncatechars:120 }}</div>
         </div>
-        <h3 class="font-bold fw-strong text-sm mb-1">{{ v.name }}</h3>
-        {% if v.betreff %}<p class="text-xs fw-mutet mb-1">{% trans "Betreff" %}: {{ v.betreff }}</p>{% endif %}
-        <p class="text-xs fw-faint line-clamp-3 flex-1">{{ v.inhalt|truncatechars:120 }}</p>
-        <a href="/neu/vorlagen/{{ v.id }}/bearbeiten/" class="mt-3 text-xs font-semibold fw-marke hover:underline">{% zeichen 'bearbeiten' klasse='fw-fs-mikro mr-1' %}{% trans "Bearbeiten" %}</a>
+        <a href="/neu/vorlagen/{{ v.id }}/bearbeiten/" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
+        <form method="post" action="/neu/vorlagen/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Vorlage löschen?" %}{% endfilter %}');">
+            {% csrf_token %}
+            <button title="{% trans 'Vorlage löschen' %}" class="fw-btn fw-knapp fw-geist">{% zeichen 'loeschen' %}</button>
+        </form>
     </div>
     {% endfor %}
 </div>
 {% else %}
-<div class="fw-card p-10 text-center max-w-2xl">
-    <div class="w-14 h-14 rounded-2xl fw-markenflaeche fw-marke flex items-center justify-center text-xl mx-auto mb-3">{% zeichen 'dokument' %}</div>
-    <p class="text-sm fw-mutet mb-4">{% trans "Noch keine Vorlagen. Lege mit einem Klick die vorbelegten Standardvorlagen an — oder erstelle eine eigene." %}</p>
-    <div class="flex items-center justify-center gap-2">
+<div class="fw-card">
+    <div class="fw-leer">
+    <p class="mb-4">{% trans "Noch keine Vorlagen. Lege mit einem Klick die vorbelegten Standardvorlagen an — oder erstelle eine eigene." %}</p>
+    <div class="flex items-center justify-center gap-2 flex-wrap">
         <form method="post" action="/neu/vorlagen/standard/">
             {% csrf_token %}
-            <button class="inline-block fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">{% zeichen 'einstellungen' klasse='mr-1.5' %}{% trans "Standardvorlagen erstellen" %}</button>
+            <button class="fw-btn fw-primary">{% zeichen 'einstellungen' %}{% trans "Standardvorlagen erstellen" %}</button>
         </form>
-        <a href="/neu/vorlagen/neu/" class="fw-btn">{% zeichen 'neu' klasse='mr-1.5' %}{% trans "Eigene Vorlage" %}</a>
+        <a href="/neu/vorlagen/neu/" class="fw-btn">{% zeichen 'neu' %}{% trans "Eigene Vorlage" %}</a>
+    </div>
     </div>
 </div>
 {% endif %}

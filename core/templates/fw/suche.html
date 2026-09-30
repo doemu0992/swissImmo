@@ -2,30 +2,30 @@
 {% load zeichen i18n %}
 {% block title %}{% trans "Suche" %}{% if q %}: {{ q }}{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<div class="fw-phead"><h1>{% trans "Suche" %}</h1></div>
+<div class="fw-phead"><div><h1>{% trans "Suche" %}</h1>
 {% if q %}
-<p class="text-sm fw-mutet mb-6">{% blocktrans trimmed %}{{ total }} Treffer für „<span class="font-semibold fw-ink">{{ q }}</span>"{% endblocktrans %}</p>
+<p>{% blocktrans trimmed %}{{ total }} Treffer für „<span class="font-semibold fw-ink">{{ q }}</span>"{% endblocktrans %}</p>
 {% else %}
-<p class="text-sm fw-mutet mb-6">{% trans "Gib oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge." %}</p>
+<p>{% trans "Gib oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge." %}</p>
 {% endif %}
+</div></div>
 
 {% if q and total == 0 %}
-<div class="fw-card p-8 text-center fw-faint">
-    {% zeichen 'suchen' klasse='text-2xl mb-3 fw-faint' %}
-    <p class="text-sm">{% blocktrans %}Keine Treffer für „{{ q }}".{% endblocktrans %}</p>
+<div class="fw-card">
+    <div class="fw-leer">{% blocktrans %}Keine Treffer für „{{ q }}".{% endblocktrans %}</div>
 </div>
 {% endif %}
 
 {% if personen %}
-<div class="mb-6">
-    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">{% trans "Personen" %} ({{ personen|length }})</div>
-    <div class="fw-card fw-dv">
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Personen" %}</span><span class="fw-neben">{{ personen|length }}</span></div>
+    <div>
         {% for m in personen %}
-        <a href="/neu/personen/{{ m.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-            <span class="w-8 h-8 rounded-full fw-btn fw-primary flex items-center justify-center text-xs font-bold">{{ m.display_name|slice:":2"|upper }}</span>
-            <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ m.display_name }}</div>
-                <div class="text-xs fw-faint">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</div></div>
-            {% zeichen 'weiter' klasse='text-xs fw-faint' %}
+        <a href="/neu/personen/{{ m.id }}/" class="fw-zeile klick">
+            <span class="fw-ikon">{{ m.display_name|slice:":2"|upper }}</span>
+            <div class="fw-mitte"><div class="fw-t truncate">{{ m.display_name }}</div>
+                <div class="fw-s">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</div></div>
+            <span class="fw-faint">{% zeichen 'weiter' %}</span>
         </a>
         {% endfor %}
     </div>
@@ -33,15 +33,15 @@
 {% endif %}
 
 {% if liegenschaften %}
-<div class="mb-6">
-    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">{% trans "Liegenschaften" %} ({{ liegenschaften|length }})</div>
-    <div class="fw-card fw-dv">
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Liegenschaften" %}</span><span class="fw-neben">{{ liegenschaften|length }}</span></div>
+    <div>
         {% for lg in liegenschaften %}
-        <a href="/neu/liegenschaften/{{ lg.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'liegenschaft' klasse='text-xs' %}</span>
-            <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ lg.strasse }}</div>
-                <div class="text-xs fw-faint">{{ lg.plz }} {{ lg.ort }}</div></div>
-            {% zeichen 'weiter' klasse='text-xs fw-faint' %}
+        <a href="/neu/liegenschaften/{{ lg.id }}/" class="fw-zeile klick">
+            <span class=\"fw-ikon\">{% zeichen 'liegenschaft' %}</span>
+            <div class="fw-mitte"><div class="fw-t truncate">{{ lg.strasse }}</div>
+                <div class="fw-s">{{ lg.plz }} {{ lg.ort }}</div></div>
+            <span class="fw-faint">{% zeichen 'weiter' %}</span>
         </a>
         {% endfor %}
     </div>
@@ -49,15 +49,15 @@
 {% endif %}
 
 {% if objekte %}
-<div class="mb-6">
-    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">{% trans "Objekte" %} ({{ objekte|length }})</div>
-    <div class="fw-card fw-dv">
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Objekte" %}</span><span class="fw-neben">{{ objekte|length }}</span></div>
+    <div>
         {% for e in objekte %}
-        <a href="/neu/objekte/{{ e.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'liegenschaft' klasse='text-xs' %}</span>
-            <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ e.bezeichnung }}</div>
-                <div class="text-xs fw-faint">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.ort }}{% if e.etage %} · {{ e.etage }}{% endif %}</div></div>
-            {% zeichen 'weiter' klasse='text-xs fw-faint' %}
+        <a href="/neu/objekte/{{ e.id }}/" class="fw-zeile klick">
+            <span class=\"fw-ikon\">{% zeichen 'liegenschaft' %}</span>
+            <div class="fw-mitte"><div class="fw-t truncate">{{ e.bezeichnung }}</div>
+                <div class="fw-s">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.ort }}{% if e.etage %} · {{ e.etage }}{% endif %}</div></div>
+            <span class="fw-faint">{% zeichen 'weiter' %}</span>
         </a>
         {% endfor %}
     </div>
@@ -65,15 +65,15 @@
 {% endif %}
 
 {% if vertraege %}
-<div class="mb-6">
-    <div class="text-xs font-bold uppercase tracking-wide fw-faint mb-2">{% trans "Verträge" %} ({{ vertraege|length }})</div>
-    <div class="fw-card fw-dv">
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Verträge" %}</span><span class="fw-neben">{{ vertraege|length }}</span></div>
+    <div>
         {% for v in vertraege %}
-        <a href="/neu/vertraege/{{ v.id }}/" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
-            <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'vertrag' klasse='text-xs' %}</span>
-            <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</div>
-                <div class="text-xs fw-faint">{{ v.einheit.liegenschaft.strasse }} · {% trans "ab" %} {{ v.beginn|date:"d.m.Y" }}</div></div>
-            {% zeichen 'weiter' klasse='text-xs fw-faint' %}
+        <a href="/neu/vertraege/{{ v.id }}/" class="fw-zeile klick">
+            <span class=\"fw-ikon\">{% zeichen 'vertrag' %}</span>
+            <div class="fw-mitte"><div class="fw-t truncate">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</div>
+                <div class="fw-s">{{ v.einheit.liegenschaft.strasse }} · {% trans "ab" %} {{ v.beginn|date:"d.m.Y" }}</div></div>
+            <span class="fw-faint">{% zeichen 'weiter' %}</span>
         </a>
         {% endfor %}
     </div>

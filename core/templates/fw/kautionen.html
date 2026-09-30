@@ -10,37 +10,37 @@
     </div>
 </div>
 
-<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-5 max-w-3xl">
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">{% trans "Depots" %}</div></div>
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold fw-gut">CHF {{ sum_gehalten|chf }}</div><div class="text-sm fw-mutet">{% trans "Einbezahlt / gehalten" %}</div></div>
-    <div class="fw-card p-4">
-        <div class="text-2xl font-bold fw-warnton">CHF {{ sum_erwartet|chf }}</div><div class="text-sm fw-mutet">{% trans "Noch erwartet" %}</div></div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Depots" %}</div><div class="fw-v">{{ anzahl }}</div></div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Einbezahlt / gehalten" %}</div><div class="fw-v">CHF {{ sum_gehalten|chf }}</div></div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Noch erwartet" %}</div><div class="fw-v{% if sum_erwartet %} fw-warn{% endif %}">CHF {{ sum_erwartet|chf }}</div></div>
 </div>
 
-<div class="fw-card overflow-hidden">
-    <div class="overflow-x-auto">
+<div class="fw-card">
+    <div class="fw-tablewrap">
     <table class="fw-table min-w-max">
-        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
+        <thead>
             <tr><th class="text-left">{% trans "Mieter / Objekt" %}</th><th class="text-right fw-right">{% trans "Betrag" %}</th>
                 <th class="text-left">{% trans "Art" %}</th><th class="text-left">{% trans "Sperrkonto / Police" %}</th><th class="text-left">{% trans "Seit" %}</th>
                 <th class="text-left">{% trans "Status" %}</th></tr>
         </thead>
-        <tbody class="fw-dv">
+        <tbody>
             {% for row in rows %}
             <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
-                <td><div class="font-medium fw-strong">{{ row.v.mieter.display_name }}</div>
-                    <div class="text-xs fw-faint">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div></td>
-                <td class="text-right font-semibold tabular-nums fw-right">CHF {{ row.v.kautions_betrag|chf }}</td>
-                <td>{% if row.v.ist_kautionsversicherung %}<span class="px-2 py-0.5 rounded fw-markenflaeche fw-marke text-xs font-semibold">{% zeichen 'gesperrt' klasse='mr-0.5' %}{% trans "Versicherung" %}</span>{% else %}<span class="px-2 py-0.5 rounded fw-flaeche2 fw-mutet text-xs font-semibold">{% trans "Sperrkonto" %}</span>{% endif %}</td>
-                <td class="font-mono text-xs fw-mutet">{% if row.v.ist_kautionsversicherung %}{{ row.v.kautions_versicherer|default:"—" }}{% if row.v.kautions_policennummer %} · {{ row.v.kautions_policennummer }}{% endif %}{% else %}{{ row.v.kautions_konto|default:"—" }}{% endif %}</td>
-                <td class="fw-mutet">{{ row.v.kautions_einbezahlt_am|date:"d.m.Y"|default:"—" }}</td>
+                <td><div class="fw-strong">{{ row.v.mieter.display_name }}</div>
+                    <div class="fw-sub2">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div></td>
+                <td class="text-right fw-right fw-num fw-strong">CHF {{ row.v.kautions_betrag|chf }}</td>
+                <td>{% if row.v.ist_kautionsversicherung %}<span class="fw-marke-kapsel">{% zeichen 'gesperrt' klasse='mr-0.5' %}{% trans "Versicherung" %}</span>{% else %}<span class="fw-marke-kapsel">{% trans "Sperrkonto" %}</span>{% endif %}</td>
+                <td><span class="fw-mono">{% if row.v.ist_kautionsversicherung %}{{ row.v.kautions_versicherer|default:"—" }}{% if row.v.kautions_policennummer %} · {{ row.v.kautions_policennummer }}{% endif %}{% else %}{{ row.v.kautions_konto|default:"—" }}{% endif %}</span></td>
+                <td class="fw-num">{{ row.v.kautions_einbezahlt_am|date:"d.m.Y"|default:"—" }}</td>
                 <td><span class="fw-chip {{ row.cls }}">● {{ row.label }}</span>
-                    {% if row.status == 'zurueckbezahlt' and row.v.kautions_abzug_betrag %}<div class="text-xs fw-kritisch mt-0.5">{% blocktrans with betrag=row.v.kautions_abzug_betrag|chf %}Abzug CHF {{ betrag }}{% endblocktrans %}</div>{% endif %}</td>
+                    {% if row.status == 'zurueckbezahlt' and row.v.kautions_abzug_betrag %}<div class="fw-klein fw-kritisch mt-0.5">{% blocktrans with betrag=row.v.kautions_abzug_betrag|chf %}Abzug CHF {{ betrag }}{% endblocktrans %}</div>{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Kautionen erfasst." %}</td></tr>
+            <tr><td colspan="6" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Kautionen erfasst." %}</span></td></tr>
             {% endfor %}
         </tbody>
     </table>

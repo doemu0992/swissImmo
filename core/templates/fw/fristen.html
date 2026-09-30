@@ -3,89 +3,85 @@
 {% block title %}{% trans "Fristen-Center" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
-    <h1>{% trans "Fristen-Center" %}</h1>
-    <div class="flex items-center gap-2 text-sm">
-        <a href="/neu/fristen/" class="px-3 py-2 rounded-lg font-semibold {% if not nur_frist %}fw-btn fw-primary{% else %}fw-btn fw-linie fw-mutet hover:fw-flaeche2{% endif %}">{% trans "Alle" %}</a>
-        <a href="/neu/fristen/?nur=frist" class="px-3 py-2 rounded-lg font-semibold {% if nur_frist %}fw-btn fw-primary{% else %}fw-btn border fw-linie fw-mutet hover:fw-flaeche2{% endif %}">{% trans "Nur gesetzliche Fristen" %}</a>
+    <div>
+        <h1>{% trans "Fristen-Center" %}</h1>
+        <p>{% blocktrans trimmed %}Alle datierten offenen Fristen chronologisch — Kündigungstermine, Anfechtungs-,
+    Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden.{% endblocktrans %} {% blocktrans count n=gesamt %}{{ n }} Frist{% plural %}{{ n }} Fristen{% endblocktrans %}{% if ueberfaellig_n %} · <b class="fw-kritisch">{% blocktrans with n=ueberfaellig_n %}{{ n }} überfällig{% endblocktrans %}</b>{% endif %}.</p>
+    </div>
+    <div class="fw-phead-knoepfe">
         <button type="button" onclick="document.getElementById('kalender-box').classList.toggle('hidden')"
                 class="fw-btn">
-            {% zeichen 'neu' klasse='mr-1' %}{% trans "Kalender" %}
+            {% zeichen 'termin' %}{% trans "Kalender" %}
         </button>
     </div>
 </div>
 
-<!-- Kalender-Export / Abo -->
-<div id="kalender-box" class="hidden fw-card p-4 mb-5">
-    <div class="flex items-center gap-2 mb-3">
-        <a href="/neu/fristen/export.ics" class="inline-flex items-center gap-1.5 fw-btn fw-primary text-sm font-semibold px-3.5 py-2 rounded-lg">
-            {% zeichen 'herunterladen' %} {% trans ".ics herunterladen" %}
-        </a>
-        <span class="text-xs fw-faint">{% trans "einmaliger Import in Outlook / Apple / Google Calendar" %}</span>
-    </div>
-    <label class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kalender abonnieren (aktualisiert sich automatisch)" %}</label>
-    <div class="flex items-center gap-2">
-        <input id="feed-url" readonly value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
-               class="flex-1 fw-flaeche2 rounded-lg text-xs px-3 py-2 font-mono fw-mutet">
-        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
-                class="fw-btn fw-knapp whitespace-nowrap">{% trans "Kopieren" %}</button>
-    </div>
-    <p class="fw-fs-klein fw-faint mt-1.5">{% trans "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben." %}</p>
+<div class="fw-filters">
+    <a href="/neu/fristen/" class="fw-fchip{% if not nur_frist %} fw-on{% endif %}">{% trans "Alle" %}</a>
+    <a href="/neu/fristen/?nur=frist" class="fw-fchip{% if nur_frist %} fw-on{% endif %}">{% trans "Nur gesetzliche Fristen" %}</a>
 </div>
-<p class="text-sm fw-mutet mb-6">{% blocktrans trimmed %}Alle datierten offenen Fristen chronologisch — Kündigungstermine, Anfechtungs-,
-    Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden.{% endblocktrans %} {% blocktrans count n=gesamt %}{{ n }} Frist{% plural %}{{ n }} Fristen{% endblocktrans %}{% if ueberfaellig_n %} · <span class="fw-kritisch font-semibold">{% blocktrans with n=ueberfaellig_n %}{{ n }} überfällig{% endblocktrans %}</span>{% endif %}.</p>
+
+<!-- Kalender-Export / Abo -->
+<div id="kalender-box" class="hidden fw-card">
+    <div class="fw-kopf">
+        <span class="fw-t">{% trans "Kalender" %}</span>
+        <span class="fw-neben">{% trans "einmaliger Import in Outlook / Apple / Google Calendar" %}</span>
+        <span class="fw-rechts"><a href="/neu/fristen/export.ics" class="fw-btn fw-knapp fw-primary">
+            {% zeichen 'herunterladen' %} {% trans ".ics herunterladen" %}
+        </a></span>
+    </div>
+    <div class="p-5">
+        <div class="fw-feldblock">
+            <label class="fw-label">{% trans "Kalender abonnieren (aktualisiert sich automatisch)" %}</label>
+            <div class="flex items-center gap-2">
+                <input id="feed-url" readonly value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
+                       class="fw-feld fw-mono flex-1 min-w-0">
+                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
+                        class="fw-btn">{% trans "Kopieren" %}</button>
+            </div>
+            <p class="fw-hilfe">{% trans "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben." %}</p>
+        </div>
+    </div>
+</div>
 
 {% for b in buckets %}
 {% if b.items %}
-<div class="mb-6">
-    <div class="flex items-center gap-2 mb-2.5">
-        {% zeichen_wert b.icon klasse='{{ b.cls }}' %}
-        <h2 class="text-sm font-bold {{ b.cls }} uppercase tracking-wide">{{ b.titel }}</h2>
-        <span class="fw-fs-klein font-bold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ b.items|length }}</span>
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon{% if b.key == 'ueberfaellig' %} crit{% elif b.key == 'woche' %} warn{% endif %}">{% zeichen_wert b.icon %}</span>
+        <h2>{{ b.titel }}</h2>
+        <span class="fw-neben">{{ b.items|length }}</span>
     </div>
-    <div class="fw-card fw-dv overflow-hidden">
-        {% for e in b.items %}
-        <div class="px-5 py-3.5">
-          <div class="flex items-center gap-4">
-            <div class="text-center shrink-0 w-16">
-                <div class="text-sm font-bold fw-strong">{{ e.faellig|date:"d.m." }}</div>
-                <div class="fw-fs-klein {% if e.tage < 0 %}fw-kritisch font-semibold{% else %}fw-faint{% endif %}">
-                    {% if e.tage < 0 %}{{ e.tage }} T{% elif e.tage == 0 %}{% trans "heute" %}{% else %}in {{ e.tage }} T{% endif %}
-                </div>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium fw-strong truncate">{{ e.titel }}</div>
-                <div class="text-xs fw-faint truncate">
-                    {% if e.bezug %}{{ e.bezug }}{% endif %}
-                    {% if e.art %}<span class="ml-1 fw-marke font-semibold">· {{ e.art }}</span>{% endif %}
-                    {% if e.p.sendungsnummer and not e.p.zugang_am %}<span class="ml-1 fw-warnton font-semibold">· {% trans "Frist provisorisch" %}</span>{% endif %}
-                </div>
-            </div>
-            {% if e.url %}
-            <a href="{{ e.url }}" onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"
-               class="fw-btn text-xs px-2.5 py-1 shrink-0 whitespace-nowrap">{{ e.label }}</a>
+    {% for e in b.items %}
+    <div class="fw-zeile">
+        <span class="fw-marker{% if e.tage < 0 %} crit{% elif e.tage <= 7 %} warn{% endif %}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ e.titel }}</div>
+            <div class="fw-s"><span>{% if e.bezug %}{{ e.bezug }}{% endif %}{% if e.art %} · <span class="fw-marke-kapsel">{{ e.art }}</span>{% endif %}{% if e.p.sendungsnummer and not e.p.zugang_am %} · <b class="fw-warnton">{% trans "Frist provisorisch" %}</b>{% endif %}</span></div>
+            {% if e.p.sendungsnummer %}
+            {% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next='/neu/fristen/' %}
             {% endif %}
-          </div>
-          {% if e.p.sendungsnummer %}
-          <div class="ml-20">
-              {% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next='/neu/fristen/' %}
-          </div>
-          {% endif %}
         </div>
-        {% endfor %}
+        <div class="fw-zeit{% if e.tage < 0 %} crit{% elif e.tage == 0 %} warn{% endif %}">{{ e.faellig|date:"d.m." }}<br>
+            <span class="fw-klein">{% if e.tage < 0 %}{{ e.tage }} T{% elif e.tage == 0 %}{% trans "heute" %}{% else %}in {{ e.tage }} T{% endif %}</span></div>
+        {% if e.url %}
+        <a href="{{ e.url }}" onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"
+           class="fw-btn fw-knapp">{{ e.label }}</a>
+        {% endif %}
     </div>
+    {% endfor %}
 </div>
 {% endif %}
 {% empty %}
 {% endfor %}
 
 {% if not gesamt %}
-<div class="fw-card p-10 text-center fw-faint">
-    {% zeichen 'gut' klasse='text-3xl mb-3 fw-faint' %}
-    <p class="text-sm">{% trans "Keine offenen Fristen im gewählten Bereich." %}</p>
+<div class="fw-card">
+    <div class="fw-leer"><span class="fw-leer-zeichen">{% zeichen 'gut' %}</span><b>{% trans "Keine offenen Fristen im gewählten Bereich." %}</b></div>
 </div>
 {% endif %}
 
-<p class="text-xs fw-faint mt-4 max-w-3xl">{% blocktrans trimmed %}Fristen entstehen automatisch aus Kündigungen, Mietzinsanpassungen, Zahlungsverzug, Wartungsverträgen und dem Referenzzinssatz — sowie aus manuell erfassten Pendenzen mit Fälligkeit. Erledigen/abhaken im <a href="/neu/pendenzen/" class="fw-marke hover:underline">Pendenzen-Center</a>.{% endblocktrans %}</p>
+<p class="fw-hilfe">{% blocktrans trimmed %}Fristen entstehen automatisch aus Kündigungen, Mietzinsanpassungen, Zahlungsverzug, Wartungsverträgen und dem Referenzzinssatz — sowie aus manuell erfassten Pendenzen mit Fälligkeit. Erledigen/abhaken im <a href="/neu/pendenzen/" class="fw-marke hover:underline">Pendenzen-Center</a>.{% endblocktrans %}</p>
 
 {% include 'fw/_fwmodal.html' %}
 {% endblock %}

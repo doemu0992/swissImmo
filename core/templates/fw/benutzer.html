@@ -3,50 +3,54 @@
 {% block title %}{% trans "Benutzer" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
-    <h1>{% trans "Benutzer" %}</h1>
+    <div>
+        <h1>{% trans "Benutzer" %}</h1>
+        <p>{% blocktrans count n=rows|length %}{{ n }} Team-Mitglied mit Zugriff auf die Verwaltung.{% plural %}{{ n }} Team-Mitglieder mit Zugriff auf die Verwaltung.{% endblocktrans %}</p>
+    </div>
     {% if request.user|darf:"/neu/benutzer/neu/" %}
+    <div class="fw-phead-knoepfe">
     <a href="/neu/benutzer/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Benutzer erfassen" %}</a>
+    </div>
     {% endif %}
 </div>
-<p class="text-sm fw-mutet mb-6">{% blocktrans count n=rows|length %}{{ n }} Team-Mitglied mit Zugriff auf die Verwaltung.{% plural %}{{ n }} Team-Mitglieder mit Zugriff auf die Verwaltung.{% endblocktrans %}</p>
 
 
-<div class="fw-card overflow-x-auto">
-    <table class="fw-table min-w-max">
-        <thead class="fw-fs-klein uppercase tracking-wider fw-faint border-b fw-linie">
-            <tr><th class="text-left">{% trans "Name" %}</th><th class="text-left">{% trans "Rolle" %}</th>
-                <th class="text-left">{% trans "E-Mail" %}</th><th class="text-right fw-right">{% trans "Aktionen" %}</th></tr>
+<div class="fw-card"><div class="fw-tablewrap">
+    <table class="fw-table">
+        <thead>
+            <tr><th>{% trans "Name" %}</th><th>{% trans "Rolle" %}</th>
+                <th>{% trans "E-Mail" %}</th><th class="fw-right">{% trans "Aktionen" %}</th></tr>
         </thead>
-        <tbody class="fw-dv">
+        <tbody>
             {% with darf_verwalten=request.user|darf:"/neu/benutzer/neu/" %}
             {% for row in rows %}
-            <tr class="hover:fw-flaeche2 {% if not row.u.is_active %}opacity-50{% endif %}">
+            <tr class="{% if not row.u.is_active %}opacity-50{% endif %}">
                 <td>
                     <{% if darf_verwalten %}a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/"{% else %}div{% endif %} class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full fw-btn fw-primary flex items-center justify-center text-xs font-bold">{{ row.name|slice:":2"|upper }}</span>
-                        <span><span class="font-medium fw-strong">{{ row.name }}</span>
-                            <span class="text-xs fw-faint block">{{ row.u.username }}{% if not row.u.is_active %} · {% trans "inaktiv" %}{% endif %}</span></span>
+                        <span class="fw-avci">{{ row.name|slice:":2"|upper }}</span>
+                        <span><b>{{ row.name }}</b>
+                            <span class="fw-klein block">{{ row.u.username }}{% if not row.u.is_active %} · {% trans "inaktiv" %}{% endif %}</span></span>
                     </{% if darf_verwalten %}a{% else %}div{% endif %}>
                 </td>
-                <td><span class="fw-chip fw-markenflaeche fw-marke">{{ row.rolle }}</span></td>
+                <td><span class="fw-marke-kapsel">{{ row.rolle }}</span></td>
                 <td class="fw-mutet">{{ row.u.email|default:"—" }}</td>
-                <td class="text-right whitespace-nowrap fw-right">
+                <td class="fw-right">
                     {% if darf_verwalten %}
-                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3">{% zeichen 'bearbeiten' klasse='fw-fs-mikro mr-0.5' %}{% trans "Bearbeiten" %}</a>
+                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
                     <form method="post" action="/neu/benutzer/{{ row.u.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.u.username|safe %}Benutzer {{ name }} wirklich löschen?{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
-                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch">{% zeichen 'loeschen' klasse='fw-fs-mikro mr-0.5' %}{% trans "Löschen" %}</button>
+                        <button class="fw-btn fw-knapp fw-rand-krit">{% zeichen 'loeschen' %}{% trans "Löschen" %}</button>
                     </form>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Benutzer." %}</td></tr>
+            <tr><td colspan="4" class="fw-leerzeile fw-faint">{% trans "Keine Benutzer." %}</td></tr>
             {% endfor %}
             {% endwith %}
         </tbody>
     </table>
-</div>
-<p class="text-xs fw-faint mt-4 max-w-3xl">{% blocktrans trimmed %}Rollen: <b>Inhaber</b> (Vollzugriff inkl. Abo und Organisation), <b>Verwalter</b> (Vollzugriff im Tagesgeschäft), <b>Sachbearbeiter</b> (schreibend), <b>Lesezugriff</b> (nur ansehen). Reine Eigentümer-Portal-Zugänge werden hier nicht angezeigt.{% endblocktrans %}</p>
+</div></div>
+<p class="fw-hilfe">{% blocktrans trimmed %}Rollen: <b>Inhaber</b> (Vollzugriff inkl. Abo und Organisation), <b>Verwalter</b> (Vollzugriff im Tagesgeschäft), <b>Sachbearbeiter</b> (schreibend), <b>Lesezugriff</b> (nur ansehen). Reine Eigentümer-Portal-Zugänge werden hier nicht angezeigt.{% endblocktrans %}</p>
 {% endblock %}
