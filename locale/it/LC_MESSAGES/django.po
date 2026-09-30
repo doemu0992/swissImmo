@@ -20868,7 +20868,7 @@ msgstr "Notifiche"
 #: core/templates/fw/berichte.html:34
 #, python-format
 msgid "Ist in %% vom Soll"
-msgstr "Effettivo in % del dovuto"
+msgstr "Effettivo in %% del dovuto"
 
 #: core/templates/fw/dashboard.html:55
 msgid "Lage im Überblick"
