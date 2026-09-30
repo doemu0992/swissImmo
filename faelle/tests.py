@@ -278,7 +278,7 @@ class EinrichtungTests(TestCase):
         for org in (self.a.organisation, self.b.organisation):
             with self.subTest(org=org.pk):
                 self.assertEqual(
-                    Fallart.alle_organisationen.filter(organisation=org).count(), 5)
+                    Fallart.alle_organisationen.filter(organisation=org).count(), 8)
 
     def test_befehl_ist_idempotent(self):
         call_command('fallarten_anlegen', verbosity=0)

@@ -277,3 +277,38 @@ class NkFristUndKautionFreigabeTests(TestCase):
         c.get(f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', secure=True)
         p.refresh_from_db()
         self.assertTrue(p.erledigt)
+
+
+class VersicherungsfallTests(TestCase):
+
+    def test_wasserschaden_erzeugt_versicherungs_pendenz_und_fall_erledigt_sie(self):
+        from django.contrib.contenttypes.models import ContentType
+        from django.core.management import call_command
+        from core.models import Pendenz
+        from core.services.automation import generate_auto_pendenzen
+        from faelle.models import Fall, Fallart
+        from tickets.models import SchadenMeldung
+        lg, e, m, v = _basis_objekte()
+        call_command('fallarten_anlegen', verbosity=0)
+        t = SchadenMeldung.objects.create(titel='Wasserschaden Bad', liegenschaft=lg,
+                                          betroffene_einheit=e, status='in_bearbeitung')
+        SchadenMeldung.objects.create(titel='Lampe defekt', liegenschaft=lg, status='neu')
+        generate_auto_pendenzen(horizont_tage=30)
+        self.assertTrue(Pendenz.objects.filter(quelle=f'auto:versicherung:{t.pk}', erledigt=False).exists())
+        self.assertEqual(Pendenz.objects.filter(quelle__startswith='auto:versicherung:').count(), 1,
+                         'Eine Lampe ist kein Versicherungsfall.')
+        fall = Fall(fallart=Fallart.objects.get(schluessel='versicherungsfall'), akte=t)
+        fall.save(); fall.schritte_anlegen()
+        generate_auto_pendenzen(horizont_tage=30)
+        self.assertTrue(Pendenz.objects.get(quelle=f'auto:versicherung:{t.pk}').erledigt)
+
+    def test_gerueste_fuer_betreibung_ausweisung_und_versicherungsfall_sind_angelegt(self):
+        from django.core.management import call_command
+        from faelle.models import Fallart
+        _basis_objekte()
+        call_command('fallarten_anlegen', verbosity=0)
+        for schluessel in ('betreibung', 'ausweisung', 'versicherungsfall'):
+            art = Fallart.objects.get(schluessel=schluessel)
+            self.assertGreaterEqual(art.schrittvorlagen.count(), 6, schluessel)
+            # Keine geratenen Fristen: Die Gerüste tragen keine Fristregel.
+            self.assertFalse(art.schrittvorlagen.exclude(frist_regel='').exists(), schluessel)

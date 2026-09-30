@@ -155,6 +155,10 @@ MAHN_MIN_ABSTAND_TAGE = 7
 #: Richtwert (Tage nach Periodenende) für die Nebenkostenabrechnung. Keine gesetzliche Frist.
 NK_ABRECHNUNG_RICHTWERT_TAGE = 180
 
+#: Stichwörter für Schäden, die die Gebäudeversicherung betreffen können.
+VERSICHERUNGS_STICHWORTE = ('wasserschaden', 'rohrbruch', 'feuerschaden', 'brandschaden',
+                            'sturmschaden', 'hagel', 'einbruch', 'glasbruch', 'überschwemmung')
+
 
 def _stufe_fuer_tage(tage):
     for stufe, ab in MAHN_STUFEN_TAGE:
@@ -419,6 +423,7 @@ def generate_auto_pendenzen(horizont_tage=90, user=None, organisation=None):
 
 def _pendenzen_fuer_organisation(horizont_tage, user):
     """Ein Durchgang im Kontext genau einer Verwaltung."""
+    from django.db.models import Q
     from core.models import Pendenz
     from core.utils import get_current_ref_zins
     from rentals.models import Mietvertrag, Kuendigung
@@ -511,6 +516,38 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
         tid = p.quelle.rsplit(':', 1)[-1]
         if not SchadenMeldung.objects.filter(pk=tid).exclude(status='erledigt').filter(
                 aktualisiert_am__date__lt=ticket_grenze).exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a3b) Versicherungsrelevante Schäden (Wasser, Feuer, Sturm, Hagel, Einbruch, Glas):
+    # an die Gebäudeversicherung melden — oft mit kurzer Meldefrist laut Police.
+    # Ein Wasserschaden blieb im Stresstest 83 Tage offen, ohne dass die Meldung
+    # je zur Sprache kam. Erledigt, wenn das Ticket erledigt ist oder ein Fall
+    # «Versicherungsfall» am Ticket existiert.
+    from django.contrib.contenttypes.models import ContentType
+    from faelle.models import Fall
+    t_ct = ContentType.objects.get_for_model(SchadenMeldung)
+    vers_faelle = set(Fall.objects.filter(akte_typ=t_ct, fallart__schluessel='versicherungsfall')
+                      .values_list('akte_id', flat=True))
+    q_vers = Q()
+    for kw in VERSICHERUNGS_STICHWORTE:
+        q_vers |= Q(titel__icontains=kw) | Q(kategorie__icontains=kw)
+    for t in offen_t.filter(q_vers):
+        if t.pk in vers_faelle:
+            continue
+        _ensure(f"auto:versicherung:{t.id}",
+                f"Versicherungsmeldung prüfen: Ticket #{t.id} {t.titel}"[:200],
+                heute, 'unterhalt',
+                "Schaden mit möglicher Deckung durch die Gebäudeversicherung — Police und "
+                "Meldefrist prüfen, Schaden melden, Selbstbehalt klären (Fall «Versicherungsfall»).",
+                liegenschaft=t.liegenschaft)
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:versicherung:'):
+        try:
+            tid = int(p.quelle.rsplit(':', 1)[-1])
+        except ValueError:
+            continue
+        if tid in vers_faelle or not offen_t.filter(pk=tid).exists():
             p.erledigt = True
             p.erledigt_am = heute
             p.save(update_fields=['erledigt', 'erledigt_am'])
