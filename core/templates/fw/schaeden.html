@@ -11,7 +11,9 @@
         <p>{% trans "Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/schaeden/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
+        {% if kann_schreiben %}
         <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Schaden erfassen" %}</button>
+        {% endif %}
         <div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
@@ -21,7 +23,8 @@
     </div>
 </div>
 
-<!-- Schaden intern erfassen -->
+<!-- Schaden intern erfassen (nur wer schreiben darf — der Hauswart sieht das Formular nicht) -->
+{% if kann_schreiben %}
 <div id="neuschaden" class="hidden fw-card">
     <div class="fw-kopf"><span class="fw-ikon crit">{% zeichen 'warnung' %}</span><h2>{% trans "Schaden erfassen (z.B. telefonisch gemeldet)" %}</h2></div>
     <form method="post" action="/neu/schaeden/neu/" enctype="multipart/form-data" class="fw-formular fw-rumpf">
@@ -61,6 +64,7 @@
         </div>
     </form>
 </div>
+{% endif %}
 
 {% comment %} KENNZAHLEN — vier schmale Zahlen statt drei halbseitiger Kacheln.
    «Total angezeigt» ist ersatzlos gestrichen: Es zaehlte, was der eigene

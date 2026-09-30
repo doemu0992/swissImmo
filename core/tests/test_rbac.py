@@ -347,6 +347,16 @@ class HauswartLiegenschaftTests(RbacBasis):
         self.assertNotContains(r, 'Dach undicht')
         self.assertEqual(self.client.get(f'/neu/schaeden/{self.ticket.pk}/').status_code, 403)
 
+    def test_hauswart_sieht_kein_formular_neue_meldung(self):
+        """Das Absenden wäre ohnehin 403 — die Sackgasse gar nicht erst zeigen."""
+        self.client.force_login(self.u_hauswart)
+        r = self.client.get('/neu/schaeden/', {'sicht': ''})
+        self.assertNotContains(r, '/neu/schaeden/neu/')
+        self.assertNotContains(r, 'id="neuschaden"')
+        self.client.force_login(self.u_verwalter)
+        r = self.client.get('/neu/schaeden/', {'sicht': ''})
+        self.assertContains(r, 'id="neuschaden"')
+
     def test_team_sieht_weiterhin_alles(self):
         self.client.force_login(self.u_verwalter)
         r = self.client.get('/neu/schaeden/', {'sicht': ''})
