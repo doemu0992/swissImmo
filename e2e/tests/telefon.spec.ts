@@ -155,7 +155,11 @@ test('Die Kennzahlenleiste bleibt am Telefon flach', async ({ page }) => {
   await login(page);
   await goto(page, '/neu/vertraege/1/');
 
-  const leiste = page.locator('.fw-aktenkopf .fw-kzn');
+  // Seit konzept-v8 (30.09.2026, Tranche A) steht die Leiste als `fw-kpis
+  // fw-stats` zwischen Seitenkopf und Reitern, nicht mehr im Aktenkopf.
+  // Gemessen 390 x 844, Vertragsakte 1: 183 px mit den Telefon-Regeln
+  // (`.fw-kpis.fw-stats` in der Stilschicht, Abschnitt Tranche A), 236 px ohne.
+  const leiste = page.locator('.fw-kpis.fw-stats');
   await expect(leiste, 'Die Vertragsakte zeigt keine Kennzahlenleiste — ' +
     'dann misst dieser Test nichts.').toBeVisible();
 
@@ -168,13 +172,12 @@ test('Die Kennzahlenleiste bleibt am Telefon flach', async ({ page }) => {
   //   ohne alle drei                 206 px
   const hoehe = (await leiste.boundingBox())!.height;
   expect(hoehe, `Die Kennzahlenleiste ist ${Math.round(hoehe)} Pixel hoch — ` +
-    'erwartet unter 195. Gemessen: 182 mit den drei Telefon-Regeln, 198 ohne ' +
-    'den engeren Innenabstand, 206 ohne alle drei.').toBeLessThan(195);
+    'erwartet unter 195. Gemessen (v8): 183 mit den Telefon-Regeln, 236 ohne.').toBeLessThan(195);
 
   // Der Grund, nicht nur die Folge. Ohne diese Zusicherung bliebe der Test
   // grün, wenn die Leiste aus einem anderen Grund kürzer würde — etwa weil
   // eine Zelle verschwunden ist.
-  const zellen = await leiste.locator('> div').count();
+  const zellen = await leiste.locator('> .fw-kpi').count();
   expect(zellen, 'Die Leiste führt nicht mehr vier Kennzahlen — dann ist sie ' +
     'nicht flacher, sondern ärmer.').toBe(4);
 });
@@ -358,5 +361,22 @@ test('Seitenkopf: Brotkrume klein über dem Titel, auch auf Unterseiten', async 
     expect(m, `${pfad}: keine Brotkrume im Seitenkopf`).not.toBeNull();
     expect(m!.krume).toBeLessThanOrEqual(m!.h1);
     expect(m!.schrift).toBe('12.5px');
+  }
+});
+
+// AKTEN NACH KONZEPT-V8 (Tranche A, 30.09.2026): Liegenschaften und
+// Mietverhältnisse als EINE Karte mit Reitern. Die Reiterzeile muss am
+// Telefon EINE Reihe bleiben (gemessen 46 px), und die Tabelle darf die Seite
+// nicht quer schieben — die Unterzeile «PLZ Ort · Baujahr» ist `nowrap`.
+test('Akten: Reiter einreihig, nichts quer', async ({ page }) => {
+  await login(page);
+  for (const pfad of ['/neu/liegenschaften/', '/neu/vertraege/']) {
+    await goto(page, pfad);
+    const reiter = page.locator('.fw-akten-karte > .fw-reiter');
+    await expect(reiter, `${pfad}: keine Reiterzeile in der Aktenkarte`).toBeVisible();
+    const h = (await reiter.boundingBox())!.height;
+    expect(h, `${pfad}: Reiterzeile ${Math.round(h)} px — umgebrochen?`).toBeLessThan(60);
+    const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+    expect(quer, `${pfad}: die Seite scrollt ${quer} px quer`).toBeLessThanOrEqual(0);
   }
 });

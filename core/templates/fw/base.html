@@ -316,6 +316,16 @@ function fwNavToggle(key) {
     document.getElementById('fwZuletztTitel').hidden = false;
 })();
 
+// Bereichsreiter: der aktive Reiter steht am Telefon im Bild, nicht rechts
+// ausserhalb der Zeile (z. B. «Vermarktung» unter Akten).
+(function () {
+    var hier = document.querySelector('.fw-bereichsreiter a.hier');
+    if (!hier) return;
+    var zeile = hier.parentNode;
+    if (zeile.scrollWidth <= zeile.clientWidth) return;
+    zeile.scrollLeft = Math.max(0, hier.offsetLeft - (zeile.clientWidth - hier.offsetWidth) / 2);
+})();
+
 // Kopfzeile: Trennlinie erst, wenn der Inhalt darunter durchläuft
 (function () {
     var top = document.getElementById('fwTop');
