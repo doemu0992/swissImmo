@@ -153,8 +153,12 @@ class PdfAusfallTests(TestCase):
     def test_speicher_voll_ergibt_pdf_fehler_statt_absturz(self):
         from core.services.pdf_service import PdfFehler, generate_vertrag_pdf_bytes
         with mock.patch('core.services.pdf_service.pisa.CreatePDF', side_effect=MemoryError()):
-            with self.assertRaises(PdfFehler):
+            with self.assertRaises(PdfFehler) as ctx:
                 generate_vertrag_pdf_bytes(self.vertrag)
+        # Die Ursache muss benannt sein – ein allgemeiner Renderer-Absturz waere
+        # ein anderer Fall (die Gegenprobe ohne MemoryError-Zweig blieb sonst gruen).
+        self.assertIn('Arbeitsspeicher', str(ctx.exception))
+        self.assertIsInstance(ctx.exception.__cause__, MemoryError)
 
     def test_bibliothek_meldet_fehler_ergibt_pdf_fehler(self):
         from core.services.pdf_service import PdfFehler, generate_vertrag_pdf_bytes
