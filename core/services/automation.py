@@ -17,6 +17,18 @@ logger = logging.getLogger(__name__)
 
 
 
+def _konten_fuer(v):
+    """Ertragskonten eines Vertrags: (Miete, Nebenkosten, NK-Bezeichnung)."""
+    e = v.einheit
+    # Mietertrag: Gewerbe/Parkplätze/Nebenobjekte → 3010, Wohnen → 3000.
+    ertrag_konto = "3010" if (e and e.mietrecht_kategorie in ('gewerbe', 'nebenobjekt')) else "3000"
+    # Nebenkosten: Pauschale ist definitiver Ertrag (keine Jahresabrechnung)
+    # → eigenes Konto 3021; Akonto (Vorschuss, wird abgerechnet) → 3020.
+    if getattr(v, 'nk_abrechnungsart', 'akonto') == 'pauschal':
+        return ertrag_konto, "3021", "NK-Pauschal"
+    return ertrag_konto, "3020", "NK-Akonto"
+
+
 # ============================================================
 # 1. SOLLSTELLUNG (monatlicher Mietenlauf)
 # ============================================================
@@ -98,18 +110,10 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             netto_schuld = verr_netto + verr_nk + mwst
             rechnung = DebitorenRechnung.objects.create(
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                titel=titel, betrag=netto_schuld, faellig_am=start_date,
+                titel=titel, betrag=netto_schuld, faellig_am=v_start,
                 status='bezahlt' if netto_schuld <= 0 else 'offen')
             lg = v.einheit.liegenschaft if v.einheit_id else None
-            e = v.einheit
-            # Mietertrag: Gewerbe/Parkplätze/Nebenobjekte → 3010, Wohnen → 3000.
-            ertrag_konto = "3010" if (e and e.mietrecht_kategorie in ('gewerbe', 'nebenobjekt')) else "3000"
-            # Nebenkosten: Pauschale ist definitiver Ertrag (keine Jahresabrechnung)
-            # → eigenes Konto 3021; Akonto (Vorschuss, wird abgerechnet) → 3020.
-            if getattr(v, 'nk_abrechnungsart', 'akonto') == 'pauschal':
-                nk_konto, nk_label = "3021", "NK-Pauschal"
-            else:
-                nk_konto, nk_label = "3020", "NK-Akonto"
+            ertrag_konto, nk_konto, nk_label = _konten_fuer(v)
             # Vollen Referenzertrag als Ertrag buchen (Bilanz/Mieterspiegel korrekt) …
             buche("1100", ertrag_konto, ref_netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
@@ -408,6 +412,10 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
                 v.ende, 'vertrag',
                 "Befristeter Vertrag läuft aus — Verlängerung oder Auszug prüfen.",
                 liegenschaft=v.einheit.liegenschaft if v.einheit_id else None, vertrag=v)
+
+    # a2) Beendet, aber nicht zurückgenommen → Nutzungsentschädigung prüfen
+    from core.services.nutzungsentschaedigung import nutzung_pendenzen
+    neu += nutzung_pendenzen(heute)
 
     # b) Gekündigte Verträge → Auszug/Abnahme/Kautionsabrechnung
     for v in (Mietvertrag.objects.filter(status='gekuendigt', ende__range=[heute, grenze])

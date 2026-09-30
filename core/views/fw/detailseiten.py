@@ -1752,6 +1752,9 @@ def _formulare_prozesse(v, user=None):
         {'titel': 'Prozesse', 'icon': 'einstellungen', 'items': [
             {'titel': 'Zahlungsverzug (Art. 257d)', 'icon': 'recht',
              'url': f'/neu/vertraege/{v.id}/verzug/', 'sub': 'Frist + Kündigungsandrohung'},
+            {'titel': 'Nutzungsentschädigung', 'icon': 'geld',
+             'url': f'/neu/vertraege/{v.id}/nutzungsentschaedigung/', 'verfuegbar': v.ist_beendet,
+             'sub': 'Mieter nach Vertragsende nicht ausgezogen'},
             {'titel': 'Mängelrüge (Art. 259)', 'icon': 'warnung',
              'url': f'/neu/vertraege/{v.id}/maengelruege/', 'erledigt': hat('Mängelrüge'),
              'sub': 'Fristansetzung zur Mängelbehebung'},

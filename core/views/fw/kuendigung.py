@@ -621,3 +621,48 @@ def fw_kuendigung_formular(request, pk):
     resp = HttpResponse(bytes(pdf_bytes), content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'
     return resp
+
+
+# Nutzungsentschädigung: eine Forderung zu stellen ist eine Entscheidung der
+# Verwaltung (Ist der Mieter wirklich noch drin?) — dieselbe Stufe wie die
+# Fristansetzung nach Art. 257d OR.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_nutzungsentschaedigung(request, vertrag_id):
+    """Nutzungsentschädigung nach Vertragsende (core/services/nutzungsentschaedigung.py).
+    GET: Vorschau der fehlenden Monate · POST: Forderungen stellen."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.services import nutzungsentschaedigung as ne
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'),
+                          id=vertrag_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+    offen = ne.ist_offen(v, heute)
+
+    if request.method == 'POST':
+        if not offen:
+            messages.error(request, gettext(
+                'Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der '
+                'Vergangenheit oder die Rücknahme ist protokolliert.'))
+            return redirect(f'/neu/vertraege/{v.id}/')
+        neu = ne.stelle_bis_heute(v, user=request.user)
+        if neu:
+            total = sum((r.betrag for r in neu), Decimal('0.00'))
+            log_aktion(request, 'Nutzungsentschädigung gestellt', str(v.mieter),
+                       f'{len(neu)} Monat(e), CHF {total:.2f}', ziel=v)
+            messages.success(request, '✅ ' + gettext(
+                '%(n)s Forderung(en) über CHF %(total)s gestellt.') % {'n': len(neu), 'total': f'{total:.2f}'})
+        else:
+            messages.info(request, gettext('Es gibt keine offenen Monate — alles ist bereits gestellt.'))
+        return redirect(f'/neu/vertraege/{v.id}/')
+
+    vorschau = []
+    for j, m in ne.monate_ohne_forderung(v, heute):
+        vorschau.append({'jahr': j, 'monat': m})
+    return render(request, 'fw/nutzungsentschaedigung.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'offen': offen,
+        'vorschau': vorschau, 'rueckgabe': ne.rueckgabe_datum(v),
+    })
