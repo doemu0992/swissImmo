@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<nav class="fw-akte-pfad" style="margin-bottom:10px">
+<nav class="fw-akte-pfad mb-2.5">
     <a href="/neu/vertraege/{{ lg_query }}">{% trans "Verträge" %}</a>
     {% zeichen 'weiter' %}
     <b>{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</b>
@@ -59,7 +59,7 @@
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'vertrag' %}</div>
-        <div style="min-width:0">
+        <div class="min-w-0">
             <div class="fw-akte-typ">{% trans "Mietverhältnis" %} · MV-{{ v.id }}</div>
             <h1>{{ v.mieter.display_name }}</h1>
             {% comment %} Eine Angabe je Zeile mit ausgerichteter Beschriftung
@@ -111,7 +111,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
    und Kuendigung». Erst nachdem das dort ergaenzt war, durfte die Zeile
    hier weg. {% endcomment %}
             </div>
-            <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <div class="mt-2 flex gap-1.5 flex-wrap items-center">
                 {% for art, text in kopf_chips %}<span class="fw-chip fw-{{ art }}">{{ text }}</span>{% endfor %}
                 {% if v.sign_status == 'unterzeichnet' %}<span class="fw-chip fw-good"{% if v.unterzeichnet_am %} title="Unterschrieben zurück am {{ v.unterzeichnet_am|date:'d.m.Y H:i' }} Uhr"{% endif %}>{% zeichen 'vertrag' %}{% trans "Unterzeichnet" %}</span>
                 {% elif v.sign_status == 'gesendet' %}<span class="fw-chip fw-warn">{% zeichen 'senden' %}{% trans "Zur Unterschrift" %}</span>{% endif %}
@@ -127,7 +127,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         class="fw-btn fw-knapp">
                     {% zeichen 'mehr' %}{% trans "Mehr" %}
                 </button>
-                <div id="vAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
+                <div id="vAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='fw-marke w-4' %}{% trans "Schlussabrechnung" %}</a>
                     <a href="/neu/vertraege/{{ v.id }}/abnahme/neu/" class="fw-menuzeile">{% zeichen 'gut' klasse='fw-marke w-4' %}{% trans "Wohnungsabnahme" %}</a>
                     {% if kann_schreiben %}{# Erklärungen mit Rechtsfolgen — für «Lesend» ausgeblendet #}

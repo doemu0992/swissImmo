@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<nav class="fw-akte-pfad" style="margin-bottom:10px">
+<nav class="fw-akte-pfad mb-2.5">
     <a href="/neu/schaeden/{{ lg_query }}">{% trans "Schadensfälle" %}</a>
     {% zeichen 'weiter' %}
     <b>{% blocktrans with id=t.id %}Schaden #{{ id }}{% endblocktrans %}</b>
@@ -19,7 +19,7 @@
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
         <div class="fw-akte-bild">{% zeichen 'warnung' %}</div>
-        <div style="min-width:0">
+        <div class="min-w-0">
             <div class="fw-akte-typ">{% trans "Schaden" %} · SC-{{ t.id|stringformat:"05d" }}</div>
             <h1>{{ t.titel }}</h1>
             <div class="fw-akte-pfad">
@@ -42,7 +42,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <div class="fw-pz"><span>{% trans "Gemeldet von" %}</span><b>{{ melder }}</b></div>
                 <div class="fw-pz"><span>{% trans "Gemeldet am" %}</span><b>{{ t.erstellt_am|date:"d.m.Y H:i" }}</b></div>
             </div>
-            <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <div class="mt-2 flex gap-1.5 flex-wrap items-center">
                 <span class="fw-chip {{ s_cls }}">{{ s_label }}</span>
                 <span class="fw-chip {{ p_cls }}">{% trans "Priorität" %} {{ p_label }}</span>
                 {% if offen_seit > 30 and t.status != 'erledigt' %}<span class="fw-chip fw-crit">{% blocktrans with n=offen_seit %}seit {{ n }} Tagen offen{% endblocktrans %}</span>{% endif %}
@@ -54,7 +54,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         class="fw-btn fw-knapp">
                     {% zeichen 'mehr' %}{% trans "Mehr" %}
                 </button>
-                <div id="sAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
+                <div id="sAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with id=t.id %}Schadensmeldung #{{ id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
