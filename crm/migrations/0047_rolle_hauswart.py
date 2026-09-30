@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("crm", "0045_abostufen_marktnamen"),
+        ("crm", "0046_ahv_nummer_verschluesselt"),
     ]
 
     operations = [
