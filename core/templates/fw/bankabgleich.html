@@ -298,6 +298,12 @@
             <button type="submit" class="fw-btn fw-primary fw-knapp">
                 {% trans "Zuordnen" %}
             </button>
+            {% if z.konto.nummer == '2030' and z.vertrag_id %}
+            <button type="submit" formaction="/neu/bankabgleich/guthaben/rueckerstatten/" formnovalidate class="fw-btn fw-knapp"
+                    onclick="return confirm('{% filter escapejs %}{% trans "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank." %}{% endfilter %}');">
+                {% trans "Zurückerstatten" %}
+            </button>
+            {% endif %}
         </form>
         {% endfor %}
     </div>

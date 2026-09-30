@@ -350,6 +350,57 @@ def fw_bankabgleich_verbuchen(request):
     return _r(ziel)
 
 
+@rolle_erforderlich(ROLLE_VERWALTER)
+def fw_guthaben_rueckerstatten(request):
+    """Mieterguthaben (Konto 2030) an den Mieter zurückzahlen.
+
+    Eine Überzahlung oder Doppelzahlung landet als Guthaben auf 2030 — bisher gab es
+    nur den Weg, sie mit einer offenen Forderung zu verrechnen (Zuordnen). Wer das
+    Geld zurückhaben will, hatte keinen Vorgang (Stresstest 30.09.2026). Gebucht wird
+    2030 an Bank; die Buchung hängt am Zahlungseingang, damit ein späterer Storno der
+    Zahlung sie mit aufhebt. Danach ist das Guthaben aus der Liste der geparkten
+    Zahlungen verschwunden (`konto` wird leer, wie bei der Zuordnung)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    from finance.booking import buche
+
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+    valuta = timezone.localdate()
+    roh = (request.POST.get('valuta') or '').strip()
+    if roh:
+        valuta = _datum_aus_eingabe(roh)
+        if valuta is None or valuta > timezone.localdate():
+            messages.error(request, gettext('Ungültiges oder zukünftiges Valutadatum.'))
+            return redirect('fw_bankabgleich')
+    bank_nr = (request.POST.get('bank_konto') or '1020').strip()
+    try:
+        with transaction.atomic():
+            z = get_object_or_404(
+                Zahlungseingang.objects.select_for_update(of=('self',))
+                .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'konto'),
+                id=request.POST.get('zahlung_id'))
+            if z.status != 'verbucht' or not z.konto_id or z.konto.nummer != '2030' or not z.vertrag_id:
+                messages.error(request, gettext('Nur ein verbuchtes Mieterguthaben (Konto 2030) kann zurückerstattet werden.'))
+                return redirect('fw_bankabgleich')
+            lg = z.vertrag.einheit.liegenschaft if z.vertrag.einheit_id else None
+            buche('2030', bank_nr, z.betrag,
+                  f"Rückerstattung Guthaben {z.vertrag.mieter} [Z{z.pk}]",
+                  datum=valuta, liegenschaft=lg, zahlung=z, user=request.user)
+            z.konto = None
+            z.bemerkung = (f"{z.bemerkung} → zurückerstattet {valuta:%d.%m.%Y}")[:255]
+            z.save(update_fields=['konto', 'bemerkung'])
+    except PermissionError as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect('fw_bankabgleich')
+    log_aktion(request, "Mieterguthaben zurückerstattet", str(z.vertrag),
+               f"CHF {z.betrag}, Valuta {valuta:%d.%m.%Y}", ziel=z.vertrag)
+    messages.success(request, '✅ ' + gettext('CHF %(betrag)s an %(mieter)s zurückerstattet (2030 an Bank).') % {
+        'betrag': z.betrag, 'mieter': z.vertrag.mieter.display_name})
+    return redirect('fw_bankabgleich')
+
+
 def _datum_aus_eingabe(roh):
     """ISO (2026-03-30) oder Schweizer Schreibweise (30.03.2026) → date, sonst None."""
     from datetime import datetime

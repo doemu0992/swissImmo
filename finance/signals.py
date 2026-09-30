@@ -38,10 +38,42 @@ def _pruefen(vertrag_id):
                          vertrag_id)
 
 
+def _guthaben_pendenz(z):
+    """Ein neues Mieterguthaben (Konto 2030) braucht einen Entscheid: verrechnen
+    oder zurückerstatten. Ohne Pendenz liegt es monatelang auf 2030 (Stresstest
+    30.09.2026: Überzahlung und Doppelzahlung waren als Vorgang nicht vorgesehen).
+    Erledigt sich im täglichen Lauf, sobald das Guthaben nicht mehr auf 2030 steht."""
+    from core.models import Pendenz
+    from core.tenancy import organisation_kontext
+    from rentals.models import Mietvertrag
+
+    vertrag = Mietvertrag.alle_organisationen.filter(pk=z.vertrag_id).select_related(
+        'mieter', 'einheit__liegenschaft').first()
+    if vertrag is None:
+        return
+    with organisation_kontext(vertrag.organisation):
+        Pendenz.objects.get_or_create(
+            quelle=f'auto:guthaben:{z.pk}',
+            defaults={
+                'titel': f'Mieterguthaben CHF {z.betrag:.2f}: verrechnen oder zurückerstatten – '
+                         f'{vertrag.mieter.display_name}',
+                'beschreibung': 'Überzahlung oder Doppelzahlung liegt als Guthaben auf Konto 2030. '
+                                'Mit einer offenen Forderung verrechnen («Zuordnen») oder dem Mieter '
+                                'zurückzahlen («Zurückerstatten») — beides im Bankabgleich.',
+                'kategorie': 'finanzen', 'faellig_am': z.datum_eingang, 'vertrag': vertrag,
+                'liegenschaft': vertrag.einheit.liegenschaft if vertrag.einheit_id else None})
+
+
 @receiver(post_save, sender=Zahlungseingang, dispatch_uid='zahlung_257d')
-def _zahlung_gespeichert(sender, instance, raw=False, **kwargs):
+def _zahlung_gespeichert(sender, instance, raw=False, created=False, **kwargs):
     if raw:
         return
+    if (created and instance.status == 'verbucht' and instance.konto_id
+            and instance.vertrag_id and instance.konto.nummer == '2030'):
+        try:
+            _guthaben_pendenz(instance)
+        except Exception:
+            logger.exception('Guthaben-Pendenz für Zahlung %s nicht angelegt', instance.pk)
     vertrag_id = instance.vertrag_id
     if not vertrag_id and instance.debitoren_rechnung_id:
         vertrag_id = (DebitorenRechnung.alle_organisationen

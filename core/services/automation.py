@@ -520,6 +520,19 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             p.erledigt_am = heute
             p.save(update_fields=['erledigt', 'erledigt_am'])
 
+    # a3a) Mieterguthaben-Pendenzen erledigen, sobald das Guthaben nicht mehr auf 2030
+    # steht (verrechnet, zurückerstattet oder storniert).
+    from finance.models import Zahlungseingang
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:guthaben:'):
+        try:
+            zid = int(p.quelle.rsplit(':', 1)[-1])
+        except ValueError:
+            continue
+        if not Zahlungseingang.objects.filter(pk=zid, status='verbucht', konto__nummer='2030').exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
     # a3b) Versicherungsrelevante Schäden (Wasser, Feuer, Sturm, Hagel, Einbruch, Glas):
     # an die Gebäudeversicherung melden — oft mit kurzer Meldefrist laut Police.
     # Ein Wasserschaden blieb im Stresstest 83 Tage offen, ohne dass die Meldung
