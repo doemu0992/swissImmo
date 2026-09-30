@@ -35,7 +35,7 @@
                 </div>
             </a>
             {% empty %}
-            <div class="text-center text-xs fw-faint italic py-6">{% trans "Keine Bewerbungen" %}</div>
+            {% include 'fw/_empty.html' with knapp=True icon='person' titel=_('Keine Bewerbungen') %}
             {% endfor %}
         </div>
     </div>

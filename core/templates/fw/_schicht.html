@@ -239,6 +239,10 @@ und einen Stilblock enthaelt.
         table.fw-table td.fw-zentriert,table.fw-table th.fw-zentriert{text-align:center}
         table.fw-table td.fw-leerzeile{padding:32px 18px;text-align:center}
         table.fw-table tbody tr:has(td.fw-leerzeile):hover{background:transparent}
+        /* Leerer Zustand, knappe Form (fw/_empty.html mit knapp=True). In der
+           Tabellenzeile gibt td.fw-leerzeile den Abstand, sonst der Block selbst. */
+        .fw-leer-knapp{padding:24px 16px}
+        table.fw-table td.fw-leerzeile .fw-leer-knapp{padding:0}
         /* Enge Tabellen (Konten-, Objekt-Unterlisten): gleiche Gestalt, weniger Luft. */
         table.fw-table.fw-dicht thead th{padding:8px 14px}
         table.fw-table.fw-dicht tbody td{padding:8px 14px}

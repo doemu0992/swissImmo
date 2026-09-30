@@ -61,7 +61,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch keine Kategorien — «Standardwerte ergänzen» klicken." %}</td></tr>
+                <tr><td colspan="4" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='verlauf' titel=_('Noch keine Kategorien — «Standardwerte ergänzen» klicken.') %}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>

@@ -44,7 +44,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch keine Eigentümer erfasst." %}</td></tr>
+            <tr><td colspan="5" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='person' titel=_('Noch keine Eigentümer erfasst.') %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

@@ -20094,3 +20094,15 @@ msgstr "Copy by email"
 #: portfolio/forms.py
 msgid "Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR)."
 msgstr "Bei Wohnräumen sind höchstens drei Monatsmieten Kaution zulässig (Art. 257e OR)."
+
+#: core/templates/fw/logbuch.html
+msgid "Noch keine Aktivität."
+msgstr "No activity yet."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "Keine Belege erfasst."
+msgstr "No receipts recorded."
+
+#: core/templates/fw/nebenkosten_detail.html
+msgid "HNK-relevante Kreditorenrechnungen fliessen automatisch ein."
+msgstr "Supplier invoices relevant to ancillary costs are included automatically."

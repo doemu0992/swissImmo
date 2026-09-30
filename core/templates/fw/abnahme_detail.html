@@ -96,7 +96,7 @@
                 <td class="text-center fw-zentriert">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="text-center fw-faint italic fw-zentriert fw-leerzeile">{% trans "Keine Mängel festgestellt." %}</td></tr>
+            <tr><td colspan="6" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='gut' titel=_('Keine Mängel festgestellt.') %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

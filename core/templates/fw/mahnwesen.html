@@ -176,7 +176,7 @@
                 <td class="px-5 py-3 text-right whitespace-nowrap {% if h.gebuehr > 0 %}fw-kritisch font-medium{% else %}fw-faint{% endif %}">{{ h.gebuehr|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="text-center text-sm fw-faint italic fw-zentriert fw-leerzeile">{% trans "Noch keine Mahnungen erfasst." %}</td></tr>
+            <tr><td colspan="6" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='gut' titel=_('Noch keine Mahnungen erfasst.') %}</td></tr>
             {% endfor %}
             </tbody>
         </table>

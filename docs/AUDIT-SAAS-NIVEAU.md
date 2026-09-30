@@ -379,6 +379,16 @@ Danach die übrigen drei Listen:
   (Entscheid G9). Geblättert wird in ganzen Liegenschaften (20 je Seite),
   damit eine Gruppe nie auf zwei Seiten zerfällt; CSV aller Objekte.*
 
+*Leere Zustände einheitlich (30.09.2026): Die 33 kursiven Einzeiler «Keine …»
+in 23 Vorlagen laufen jetzt über `fw/_empty.html`. Der Baustein hat dafür eine
+knappe Form (`knapp=True`) für Tabellenzeilen und Nebenlisten; die grosse Form
+bleibt für eine Liste, die die Seite trägt (Pendenzen). Neue Knöpfe gibt es
+dabei bewusst nicht — nicht jede Rolle, die eine Liste sieht, darf dort auch
+erfassen. Wächter: `test_stilschuld.KursiveLeereZustaende` hält die Zahl bei
+null. Nebenbei geschlossen: Der Übersetzungswächter prüfte in Vorlagen nur
+`{% trans %}`, nicht `_('…')` als Argument — genau die Form, mit der leere
+Zustände ihre Texte bekommen.*
+
 ### Offene Entscheide (entschieden 29.09.2026)
 
 - **Mahnung per E-Mail:** als Zusatz verlinkt, siehe Etappe 0, Punkt 1.
