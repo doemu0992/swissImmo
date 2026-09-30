@@ -7,13 +7,24 @@ Stand 30.09.2026. Tests: `core/tests/test_rbac.py`.
 | Rolle | Herkunft | Zugang |
 |---|---|---|
 | Inhaber / Verwalter / Sachbearbeiter / Lesezugriff | `Mitgliedschaft.rolle` | `/neu/…` je nach `@rolle_erforderlich` |
-| **Hauswart** (neu) | `Mitgliedschaft.rolle = 'Hauswart'` | nur Schadensmeldungen: Liste, Detail, Status (`HAUSWART_ROLLEN`, `TICKET_LESE_ROLLEN`, `TICKET_SCHREIB_ROLLEN`) |
+| **Hauswart** | `Mitgliedschaft.rolle = 'Hauswart'` | nur Schadensmeldungen **der ihm zugeordneten Liegenschaften**: Liste, Detail, Status (`HAUSWART_ROLLEN`, `TICKET_LESE_ROLLEN`, `TICKET_SCHREIB_ROLLEN`; Zuordnung `Liegenschaft.hauswarte`) |
 | Eigentümer | `Eigentuemer.benutzer`, keine Mitgliedschaft | nur `/portal/` |
 | Mieter | `Mieter.benutzer`, keine Mitgliedschaft | nur `/mieter/` |
 
 Der Hauswart steht bewusst **nicht** in `TEAM_ROLLEN`: Jede View, die nur das
 Team zulässt (Finanzen, Mietzinse, Verträge, Personen, Einstellungen), sperrt
 ihn ohne weiteres Zutun.
+
+## Zuordnung Hauswart → Liegenschaft
+
+`Liegenschaft.hauswarte` (M2M auf `Benutzer`, getrennt von `betreut_von`).
+Der Inhaber setzt sie in «Benutzer & Rollen» beim Hauswart; ein Rollenwechsel
+löscht sie. `ist_nur_hauswart()` und `hauswart_darf_liegenschaft()`
+(`core/auth.py`) entscheiden; Schadensliste und Liegenschaftsmenü
+(`_global_filter`) filtern, Detail und Status einer fremden Liegenschaft
+antworten mit 403. Ohne Zuordnung sieht der Hauswart nichts. Team und
+Superuser gelten nie als «nur Hauswart». Die Schadensliste blendet das
+Formular «Schaden erfassen» aus, wenn die Rolle nicht schreiben darf.
 
 ## Was geprüft wird
 
@@ -36,7 +47,10 @@ Ausnahmen stehen mit Begründung in `OFFEN_FUER_ANGEMELDETE` und
 
 ## Bewusst offen
 
-- Der Hauswart sieht die Schadensmeldungen **aller** Liegenschaften der
-  Verwaltung; eine Zuordnung Hauswart → Liegenschaft gibt es im Modell nicht.
+- Die Detailseite eines Schadens zeigt dem Hauswart noch Knöpfe, die 403
+  ergeben (Auftrag, Antwort, Löschen); nur das Erfassungsformular der Liste ist
+  ausgeblendet.
+- Bestehende Hauswart-Konten mit «Lesezugriff» werden nicht automatisch
+  umgestellt (Umstellung von Hand in «Benutzer & Rollen»).
 - Portal-Objektprüfung (fremdes Ticket im Mieterportal) antwortet 404 statt
   403 — gewollt, um die Existenz nicht zu verraten.
