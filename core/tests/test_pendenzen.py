@@ -78,9 +78,11 @@ class TagesstartCockpitTests(TestCase):
         # Nachgezaehlt: 4x auf /neu/, aber auch 2x auf /neu/liegenschaften/,
         # wo es gar keinen Zulauf-Bereich gibt.
         #
-        # Geprueft wird jetzt der Knopf, den nur das Dashboard rendert —
-        # 1x auf /neu/, 0x auf /neu/liegenschaften/.
-        self.assertIn('href="/neu/zulauf/" class="fw-btn"', body,
+        # Geprueft wird jetzt die Zulauf-Karte, die nur das Dashboard rendert —
+        # ihre Überschrift-Id, 1x auf /neu/, 0x auf /neu/liegenschaften/.
+        # (Bis zum zweiten Durchgang v8 war es ein Knopf im Seitenkopf; im
+        # Mockup ist der Zulauf eine Karte mit Verweis «Posteingang».)
+        self.assertIn('id="h-zulauf"', body,
                       'Der Zulauf-Bereich fehlt auf dem Tagesstart. Ein Wort '
                       'aus der Seitenleiste zu pruefen genuegt nicht — das '
                       'steht ueberall.')
