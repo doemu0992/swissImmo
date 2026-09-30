@@ -21045,3 +21045,7 @@ msgstr "Scegliere un fascicolo."
 #, python-format
 msgid "Fall %(nummer)s angelegt."
 msgstr "Pratica %(nummer)s creata."
+
+#: core/views/fw/listen.py:315
+msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
+msgstr "Solo le fatture dei fornitori approvate possono essere rifatturate."

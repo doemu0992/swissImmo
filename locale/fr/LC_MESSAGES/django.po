@@ -21067,3 +21067,7 @@ msgstr "Veuillez choisir un dossier."
 #, python-format
 msgid "Fall %(nummer)s angelegt."
 msgstr "Affaire %(nummer)s créée."
+
+#: core/views/fw/listen.py:315
+msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
+msgstr "Seules les factures fournisseurs validées peuvent être refacturées."

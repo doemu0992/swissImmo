@@ -20955,3 +20955,7 @@ msgstr "Verteilung"
 #: core/views/fw/arbeit.py:477
 msgid "Vorbereitung"
 msgstr "Vorbereitung"
+
+#: core/views/fw/listen.py:315
+msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
+msgstr "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."

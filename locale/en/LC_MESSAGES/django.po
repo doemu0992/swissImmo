@@ -20841,3 +20841,7 @@ msgstr "Please choose a file."
 #, python-format
 msgid "Fall %(nummer)s angelegt."
 msgstr "Case %(nummer)s created."
+
+#: core/views/fw/listen.py:315
+msgid "Nur freigegebene Lieferantenrechnungen können weiterverrechnet werden."
+msgstr "Only approved supplier invoices can be recharged."
