@@ -1073,9 +1073,14 @@ def fw_kontoauszug_rueckgaengig(request, pk):
     arefs = {b.bank_referenz for b in auszug.bewegungen.all() if b.bank_referenz}
     zahlungen = []
     if arefs:
+        # Alle Geschwister mit Suffix («:ueber» Überschuss, «:rest» Rest aus
+        # der Zuordnung) — sonst bliebe ein Mieterguthaben aus einer Zahlung
+        # stehen, die es nach dem Rückgängig nicht mehr gibt.
+        _geschwister = _Q()
+        for a in arefs:
+            _geschwister |= _Q(bank_referenz__startswith=f"{a}:")
         zahlungen = list(Zahlungseingang.objects.filter(
-            _Q(bank_referenz__in=arefs)
-            | _Q(bank_referenz__in=[f"{a}:ueber" for a in arefs])))
+            _Q(bank_referenz__in=arefs) | _geschwister))
 
     dateiname = auszug.dateiname or f"Auszug #{auszug.id}"
     storniert = 0
@@ -1092,10 +1097,16 @@ def fw_kontoauszug_rueckgaengig(request, pk):
                 z.status = 'storniert'
                 z.save(update_fields=['status'])
                 # Rechnungsstatus zurückrollen (Gegenstück zu _verbuche()).
+                # Abgeschriebene/stornierte Rechnungen nicht wieder öffnen: die
+                # Abschreibung (3805) bleibt gebucht, der Betrag würde sonst ein
+                # zweites Mal gemahnt (gleicher Schutz wie `fw_zahlung_stornieren`).
                 if z.debitoren_rechnung_id:
                     rech = z.debitoren_rechnung
-                    rech.status = 'offen' if rech.offener_betrag >= rech.betrag else 'teilbezahlt'
-                    rech.save(update_fields=['status'])
+                    if rech.status not in ('storniert', 'abgeschrieben'):
+                        offen = rech.offener_betrag
+                        rech.status = ('bezahlt' if offen <= 0
+                                       else 'offen' if offen >= rech.betrag else 'teilbezahlt')
+                        rech.save(update_fields=['status'])
                 storniert += 1
             # Auszug + Auszugszeilen (Rohdaten, keine Buchungen) entfernen.
             auszug.delete()

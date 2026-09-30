@@ -124,6 +124,18 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         # rechnet. Eine Regel auf einen Fall anzuwenden, für den sie nicht
         # gemacht ist, wäre schlechter als keine Regel.
         regel_anwendung = None
+        # ZAHLUNGSVERZUG (Art. 257d Abs. 2 OR): Kündigen darf nur, wer eine
+        # Frist angesetzt hat, die unbenützt abgelaufen ist. Läuft sie noch
+        # oder hat der Mieter innert Frist bezahlt, wäre die Kündigung
+        # unwirksam — hier hält das System an, statt sie anzulegen.
+        _ao_grund = (P.get('ausserordentlich_grund') or '').lower()
+        if ausserord and P.get('absender', 'mieter') == 'vermieter' and (
+                '257d' in _ao_grund or 'zahlungsverzug' in _ao_grund):
+            from core.services.zahlungsverzug import kuendigung_sperre
+            sperre = kuendigung_sperre(v, eingang)
+            if sperre:
+                messages.error(request, f'⛔ {sperre}')
+                return redirect(f'/neu/vertraege/{v.id}/kuendigen/?grund=verzug')
         if not ausserord:
             from core.views.fw.regelwerk import folgekosten, pruefung_zum_vertrag
             from faelle.regelwerk import sperrt
@@ -365,13 +377,20 @@ def fw_verzug_257d(request, vertrag_id):
                   f"Zahlungsfrist bis {frist:%d.%m.%Y} (Art. 257d Abs. 1 OR). ")
                + "Nach fruchtlosem Ablauf: ausserordentliche Kündigung mit 30 Tagen auf Monatsende "
                  "(Art. 257d Abs. 2 OR).")
+        from core.services.zahlungsverzug import fall_eroeffnen, quelle_fuer
+        _benutzer = request.user if request.user.is_authenticated else None
         Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
-            beschreibung=_bt,
+            beschreibung=_bt, quelle=quelle_fuer(v),
             kategorie='frist', faellig_am=frist, vertrag=v, liegenschaft=lg,
             sendungsnummer=sendungsnummer, versand_am=versand_am, frist_tage=FRIST_TAGE,
-            erstellt_von=request.user if request.user.is_authenticated else None,
+            erstellt_von=_benutzer,
         )
+        # Der Gesamtvorgang: Fall «Zahlungsverzug» an der Vertragsakte. Eine
+        # Zahlung innert Frist schliesst Frist und Fall zusammen
+        # (core/services/zahlungsverzug.py, ausgelöst in finance/signals.py).
+        fall_eroeffnen(v, benutzer=_benutzer, frist=frist,
+                       betreff=f"Zahlungsverzug {v.mieter.display_name} – CHF {offen_total:.2f}")
         log_aktion(request, "Zahlungsaufforderung 257d erstellt", str(v.mieter),
                    f"Frist bis {frist:%d.%m.%Y}, offen CHF {offen_total:.2f}", ziel=v)
         if request.POST.get('als_pdf') == '1':
@@ -423,6 +442,9 @@ def fw_verzug_zugang(request, pk):
                         "(Art. 257d Abs. 1 OR, strikte Empfangstheorie). Nach fruchtlosem Ablauf: "
                         "ausserordentliche Kündigung mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR).")
     p.save(update_fields=['zugang_am', 'faellig_am', 'beschreibung'])
+    if p.vertrag_id:
+        from core.services.zahlungsverzug import fall_frist_nachfuehren
+        fall_frist_nachfuehren(p.vertrag, neu_frist)
     log_aktion(request, "257d-Zugang bestätigt",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
                f"Zugang {zugang:%d.%m.%Y}, Frist neu bis {neu_frist:%d.%m.%Y}",
@@ -465,6 +487,9 @@ def fw_verzug_sendung(request, pk):
             p.faellig_am = vs + timedelta(days=1 + (p.frist_tage or 30))
             felder += ['versand_am', 'faellig_am']
     p.save(update_fields=felder)
+    if 'faellig_am' in felder and p.vertrag_id:
+        from core.services.zahlungsverzug import fall_frist_nachfuehren
+        fall_frist_nachfuehren(p.vertrag, p.faellig_am)
     log_aktion(request, "257d-Sendungsnummer korrigiert",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
                p.sendungsnummer or '—', ziel=p.vertrag if p.vertrag_id else None)

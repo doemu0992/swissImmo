@@ -1360,9 +1360,16 @@ def fw_zahlung_stornieren(request, pk):
                     erstelle_storno_buchung(b, benutzer=request.user)
                 zz.status = 'storniert'
                 zz.save(update_fields=['status'])
-            rech = z.debitoren_rechnung
-            if rech and rech.status not in ('storniert', 'abgeschrieben'):
-                rech.status = 'offen' if rech.offener_betrag >= rech.betrag else 'teilbezahlt'
+            # Status JEDER betroffenen Rechnung zurückrollen, nicht nur der
+            # ersten: Ein Überschuss («…:ueber») kann per Zuordnung eine andere
+            # Rechnung bezahlt haben. Bliebe sie «bezahlt», fiele sie mit vollem
+            # offenem Betrag aus Mahnwesen und OP-Liste.
+            for rech in {zz.debitoren_rechnung for zz in zahlungen if zz.debitoren_rechnung_id}:
+                if rech.status in ('storniert', 'abgeschrieben'):
+                    continue
+                offen = rech.offener_betrag
+                rech.status = ('bezahlt' if offen <= 0
+                               else 'offen' if offen >= rech.betrag else 'teilbezahlt')
                 rech.save(update_fields=['status'])
     except PermissionError as exc:
         messages.error(request, f"❌ {exc}")

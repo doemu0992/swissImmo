@@ -9,7 +9,7 @@ import calendar as _calendar
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from core.services.dokumentsprache import auf_deutsch
 
@@ -165,15 +165,20 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
 
     Gibt dict zurück: {'gemahnt': n, 'emails': m, 'gebuehren': CHF, 'zins': CHF}.
     """
-    from finance.models import DebitorenRechnung, Mahnung
+    from finance.models import DebitorenRechnung
     from django.db.models import Q
     from core.utils.email_service import send_payment_reminder
-    from finance.booking import buche
     # Mahnstufen + Gebuehr pro Eigentuemer (crm.Eigentuemer.mahn_konfig); Fallback Standard.
     from core.services.mahnstufen import stufe_fuer_tage as _stufe_cfg, eigentuemer_von_rechnung
 
     heute = timezone.localdate()
-    qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+    # Abgeleitete Forderungen (Mahngebühr, Verzugszins — `stammrechnung`)
+    # werden NICHT selbst gemahnt: Sonst trägt eine Mahngebühr nach dreissig
+    # Tagen ihre eigene Mahngebühr und eine Zinsrechnung ihren eigenen Zins —
+    # Zinseszins, den Art. 105 Abs. 3 OR ausschliesst. Sie bleiben im OP-Buch
+    # und werden mit der Hauptforderung eingefordert.
+    qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'],
+                                           stammrechnung__isnull=True)
           .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'))
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
@@ -215,34 +220,18 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         if mit_zins:
             bereits = sum((m.zins or Decimal('0.00')) for m in r.mahnungen.all())
             zins = max(Decimal('0.00'), verzugszins(offen, tage) - bereits)
-        with transaction.atomic():
-            Mahnung.objects.create(
-                debitoren_rechnung=r, vertrag=r.vertrag, stufe=stufe, datum=heute,
-                betrag_offen=offen, gebuehr=gebuehr, zins=zins,
-                versandart='email' if (send_email and r.vertrag and r.vertrag.mieter.email) else 'manuell',
-                bemerkung=(f"Verzugszins CHF {zins} ({tage} Tage, Delta zu Vorstufen)" if zins > 0 else ''),
-                erstellt_von=user,
-            )
-            zusatz = gebuehr + zins
-            if zusatz > 0 and r.vertrag_id:
-                lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None)
-                teile = []
-                if gebuehr > 0:
-                    teile.append(f"Mahngebühr {stufe}. Mahnung")
-                if zins > 0:
-                    teile.append(f"Verzugszins {VERZUGSZINS_PROZENT}%")
-                gebuehr_rechnung = DebitorenRechnung.objects.create(
-                    vertrag=r.vertrag, liegenschaft=lg,
-                    titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
-                    datum=heute, faellig_am=heute + timedelta(days=30),
-                    betrag=zusatz, status='offen',
-                    stammrechnung=r)   # für Storno-Kaskade (Live-Test E)
-                # Ins Hauptbuch buchen (Forderung an übrigen Ertrag) — sonst driften
-                # Nebenbuch (OP/Debitoren) und Hauptbuch (1100) auseinander, der
-                # Gebühren-/Zinsertrag fehlt in der Erfolgsrechnung, und eine spätere
-                # Zahlung würde 1100 belasten, das nie bebucht wurde.
-                buche("1100", "3600", zusatz, f"{' + '.join(teile)} {r.vertrag.mieter}",
-                      datum=heute, liegenschaft=lg, debitor=gebuehr_rechnung, user=user)
+        try:
+            _mahnschritt_buchen(r, stufe, heute, offen, gebuehr, zins, tage,
+                                send_email, user)
+        except IntegrityError:
+            # Gleichzeitiger zweiter Lauf (Knopf + Scheduler) hat diese Stufe
+            # schon erfasst — `uniq_mahnung_rechnung_stufe`. Kein Abbruch des
+            # ganzen Laufs, wie in `fw_mahnung_erfassen`.
+            continue
+        except PermissionError:
+            # Gesperrte Buchungsperiode: diese Rechnung auslassen, Rest mahnen.
+            logger.warning('Mahnlauf: Rechnung %s übersprungen (Periode gesperrt)', r.pk)
+            continue
         res['gemahnt'] += 1
         res['gebuehren'] += gebuehr
         res['zins'] += zins
@@ -264,6 +253,41 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
     return res
+
+
+
+def _mahnschritt_buchen(r, stufe, heute, offen, gebuehr, zins, tage, send_email, user):
+    """Ein Mahnschritt in einer Transaktion: Historie + Gebühr/Zins-Forderung + Buchung."""
+    from finance.models import DebitorenRechnung, Mahnung
+    from finance.booking import buche
+    with transaction.atomic():
+        Mahnung.objects.create(
+            debitoren_rechnung=r, vertrag=r.vertrag, stufe=stufe, datum=heute,
+            betrag_offen=offen, gebuehr=gebuehr, zins=zins,
+            versandart='email' if (send_email and r.vertrag and r.vertrag.mieter.email) else 'manuell',
+            bemerkung=(f"Verzugszins CHF {zins} ({tage} Tage, Delta zu Vorstufen)" if zins > 0 else ''),
+            erstellt_von=user,
+        )
+        zusatz = gebuehr + zins
+        if zusatz > 0 and r.vertrag_id:
+            lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None)
+            teile = []
+            if gebuehr > 0:
+                teile.append(f"Mahngebühr {stufe}. Mahnung")
+            if zins > 0:
+                teile.append(f"Verzugszins {VERZUGSZINS_PROZENT}%")
+            gebuehr_rechnung = DebitorenRechnung.objects.create(
+                vertrag=r.vertrag, liegenschaft=lg,
+                titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
+                datum=heute, faellig_am=heute + timedelta(days=30),
+                betrag=zusatz, status='offen',
+                stammrechnung=r)   # für Storno-Kaskade (Live-Test E)
+            # Ins Hauptbuch buchen (Forderung an übrigen Ertrag) — sonst driften
+            # Nebenbuch (OP/Debitoren) und Hauptbuch (1100) auseinander, der
+            # Gebühren-/Zinsertrag fehlt in der Erfolgsrechnung, und eine spätere
+            # Zahlung würde 1100 belasten, das nie bebucht wurde.
+            buche("1100", "3600", zusatz, f"{' + '.join(teile)} {r.vertrag.mieter}",
+                  datum=heute, liegenschaft=lg, debitor=gebuehr_rechnung, user=user)
 
 
 def run_adress_umzuege():
