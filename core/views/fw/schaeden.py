@@ -761,7 +761,7 @@ def fw_versicherungsfall(request, pk):
                     gemeldet = heute
                 vf = vs.melden(t, police=police, schadennummer=request.POST.get('schadennummer') or '',
                                gemeldet_am=gemeldet, schadensumme=dec('schadensumme'),
-                               traeger=request.POST.get('traeger') or 'eigentuemer',
+                               traeger=request.POST.get('selbstbehalt_traeger') or 'eigentuemer',
                                benutzer=request.user, bemerkung=(request.POST.get('bemerkung') or '').strip())
                 log_aktion(request, 'Versicherungsfall gemeldet', f'Ticket #{t.id}',
                            f'{vf.schadennummer or "ohne Schadennummer"}, Selbstbehalt CHF {vf.selbstbehalt}')

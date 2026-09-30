@@ -42,7 +42,7 @@ class VersicherungsfallTests(TestCase):
 
     def _melden(self, **extra):
         d = {'aktion': 'melden', 'police': self.police.id, 'schadennummer': 'S-2026-1',
-             'schadensumme': '1240.00', 'traeger': 'eigentuemer'}
+             'schadensumme': '1240.00', 'selbstbehalt_traeger': 'eigentuemer'}
         d.update(extra)
         return self.c.post(self.url, d, secure=True)
 
@@ -99,7 +99,7 @@ class VersicherungsfallTests(TestCase):
 
     def test_selbstbehalt_ueberwaelzen_stellt_dem_mieter_eine_forderung(self):
         from finance.models import DebitorenRechnung
-        self._melden(traeger='mieter')
+        self._melden(selbstbehalt_traeger='mieter')
         f = self._fall()
         self.c.post(self.url, {'aktion': 'ueberwaelzen', 'fall': f.id, 'vertrag': self.v.id}, secure=True)
         r = DebitorenRechnung.objects.get(titel__startswith='Selbstbehalt')
@@ -117,7 +117,7 @@ class VersicherungsfallTests(TestCase):
         from finance.models import DebitorenRechnung
         from portfolio.models import Einheit
         from rentals.models import Mietvertrag
-        self._melden(traeger='mieter')
+        self._melden(selbstbehalt_traeger='mieter')
         f = self._fall()
         e2 = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='Andere', typ='whg')
         m2 = Mieter.objects.create(typ='person', vorname='A', nachname='B')

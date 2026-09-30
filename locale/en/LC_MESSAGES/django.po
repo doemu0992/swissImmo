@@ -21027,3 +21027,50 @@ msgstr "file only"
 #, python-format
 msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
 msgstr "Overpayment: CHF %(betrag)s booked as tenant credit (account 2030)."
+
+msgid "Als abgelehnt vermerkt."
+msgstr "Noted as rejected."
+
+msgid "Bei der Police ist kein Selbstbehalt hinterlegt — mit CHF 0.00 angesetzt."
+msgstr "No deductible is recorded on the policy — set at CHF 0.00."
+
+msgid "Buchungen zum Versicherungsfall sind Inhabern und Verwaltern vorbehalten."
+msgstr "Bookings for an insurance claim are reserved for owners and managers."
+
+#, python-format
+msgid "CHF %(betrag)s (Leerstand) bleiben beim Eigentümer."
+msgstr "CHF %(betrag)s (vacancy) remain with the owner."
+
+msgid "Das war nur die Kopie. Rechtsgültig ist der eingeschriebene Brief — die Fristansetzung jetzt erfassen, sonst läuft keine Frist."
+msgstr "That was only the copy. The registered letter is what counts — record the notice setting a deadline now, otherwise no deadline is running."
+
+msgid "Die gewählte Police gehört nicht zu dieser Liegenschaft."
+msgstr "The selected policy does not belong to this property."
+
+msgid "Entschädigt"
+msgstr "Compensated"
+
+msgid "In Abklärung"
+msgstr "Under review"
+
+msgid "Keine Police gewählt — der Selbstbehalt ist mit CHF 0.00 angesetzt."
+msgstr "No policy selected — the deductible is set at CHF 0.00."
+
+msgid "Mieter (Überwälzung)"
+msgstr "Tenant (pass-on)"
+
+msgid "Selbstbehalt je Schaden CHF"
+msgstr "Deductible per claim CHF"
+
+#, python-format
+msgid "Selbstbehalt von CHF %(betrag)s dem Mieter in Rechnung gestellt."
+msgstr "Deductible of CHF %(betrag)s invoiced to the tenant."
+
+msgid "Versicherungsfall"
+msgstr "Insurance claim"
+
+msgid "Versicherungsfall erfasst."
+msgstr "Insurance claim recorded."
+
+msgid "Versicherungsleistung verbucht."
+msgstr "Insurance payout booked."

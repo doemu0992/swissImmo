@@ -21231,3 +21231,50 @@ msgstr "solo dossier"
 #, python-format
 msgid "Überzahlung: CHF %(betrag)s als Mieterguthaben (Konto 2030) gebucht."
 msgstr "Pagamento eccedente: CHF %(betrag)s registrati come avere del locatario (conto 2030)."
+
+msgid "Als abgelehnt vermerkt."
+msgstr "Annotato come rifiutato."
+
+msgid "Bei der Police ist kein Selbstbehalt hinterlegt — mit CHF 0.00 angesetzt."
+msgstr "Nessuna franchigia è registrata per la polizza — fissata a CHF 0.00."
+
+msgid "Buchungen zum Versicherungsfall sind Inhabern und Verwaltern vorbehalten."
+msgstr "Le registrazioni relative a un sinistro assicurativo sono riservate a titolari e amministratori."
+
+#, python-format
+msgid "CHF %(betrag)s (Leerstand) bleiben beim Eigentümer."
+msgstr "CHF %(betrag)s (sfitto) restano a carico del proprietario."
+
+msgid "Das war nur die Kopie. Rechtsgültig ist der eingeschriebene Brief — die Fristansetzung jetzt erfassen, sonst läuft keine Frist."
+msgstr "Questa era solo la copia. Fa stato la lettera raccomandata — registrare ora la fissazione del termine, altrimenti non decorre alcun termine."
+
+msgid "Die gewählte Police gehört nicht zu dieser Liegenschaft."
+msgstr "La polizza scelta non appartiene a questo stabile."
+
+msgid "Entschädigt"
+msgstr "Indennizzato"
+
+msgid "In Abklärung"
+msgstr "In verifica"
+
+msgid "Keine Police gewählt — der Selbstbehalt ist mit CHF 0.00 angesetzt."
+msgstr "Nessuna polizza selezionata — la franchigia è fissata a CHF 0.00."
+
+msgid "Mieter (Überwälzung)"
+msgstr "Locatario (trasferimento)"
+
+msgid "Selbstbehalt je Schaden CHF"
+msgstr "Franchigia per sinistro CHF"
+
+#, python-format
+msgid "Selbstbehalt von CHF %(betrag)s dem Mieter in Rechnung gestellt."
+msgstr "Franchigia di CHF %(betrag)s fatturata al locatario."
+
+msgid "Versicherungsfall"
+msgstr "Sinistro assicurativo"
+
+msgid "Versicherungsfall erfasst."
+msgstr "Sinistro assicurativo registrato."
+
+msgid "Versicherungsleistung verbucht."
+msgstr "Prestazione assicurativa registrata."
