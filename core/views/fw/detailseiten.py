@@ -2210,18 +2210,23 @@ def fw_schlussabrechnung(request, vertrag_id):
     schaden_text = v.kautions_abzug_grund or ('Schadenforderung' if schaden_betrag > 0 else '')
     # Mängel aus einem Abnahmeprotokoll (Verursacher = Mieter) als Positionen vorbelegen
     prefill_positionen = []
+    # OHNE ausdrückliche Wahl gilt das jüngste Auszugsprotokoll: Der Bewirtschafter
+    # tippte die Mängel (Mieteranteil CHF 860 im Stresstest) sonst erneut ab, obwohl
+    # sie im Protokoll stehen.
     ab_id = request.GET.get('abnahme')
+    from rentals.models import Abnahmeprotokoll
     if ab_id:
-        from rentals.models import Abnahmeprotokoll
         ab = Abnahmeprotokoll.objects.filter(id=ab_id, vertrag=v).first()
-        if ab:
-            for m in ab.maengel_mieter:
-                betrag = m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung
-                if betrag:
-                    txt = f"{m.raum + ': ' if m.raum else ''}{m.beschreibung}"
-                    if m.mieteranteil is not None and m.ausstattung_id:
-                        txt += " (Zeitwert)"
-                    prefill_positionen.append({'text': txt[:90], 'betrag': betrag})
+    else:
+        ab = v.abnahmen.filter(typ='auszug').order_by('-datum', '-id').first()
+    if ab:
+        for m in ab.maengel_mieter:
+            betrag = m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung
+            if betrag:
+                txt = f"{m.raum + ': ' if m.raum else ''}{m.beschreibung}"
+                if m.mieteranteil is not None and m.ausstattung_id:
+                    txt += " (Zeitwert)"
+                prefill_positionen.append({'text': txt[:90], 'betrag': betrag})
     if schaden_betrag > 0:
         prefill_positionen.insert(0, {'text': schaden_text, 'betrag': schaden_betrag})
     return render(request, 'fw/schlussabrechnung.html', {

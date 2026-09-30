@@ -202,3 +202,30 @@ class PortalGekuendigtTests(TestCase):
         t = SchadenMeldung.objects.filter(titel='Storen klemmt').first()
         self.assertIsNotNone(t, 'Ein gekündigter Mieter kann keinen Schaden mehr melden.')
         self.assertEqual(t.betroffene_einheit_id, e.pk)
+
+
+class SchlussabrechnungVorbelegungTests(TestCase):
+
+    def test_maengel_aus_dem_auszugsprotokoll_sind_ohne_auswahl_vorbelegt(self):
+        from rentals.models import AbnahmeMangel, Abnahmeprotokoll
+        lg, e, m, v = _basis_objekte()
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        AbnahmeMangel.objects.create(protokoll=prot, raum='Bad', beschreibung='Spiegel zerbrochen',
+                                     verursacher='mieter', kostenschaetzung=Decimal('860.00'))
+        c = Client(); c.force_login(_team_user('Verwalter'))
+        r = c.get(f'/neu/vertraege/{v.id}/schlussabrechnung/', secure=True)
+        self.assertEqual(r.status_code, 200)
+        pos = r.context['prefill_positionen']
+        self.assertEqual([p['betrag'] for p in pos], [Decimal('860.00')],
+                         'Der Mieteranteil aus dem Protokoll muss nicht abgetippt werden.')
+        self.assertContains(r, 'Spiegel zerbrochen')
+
+    def test_abnutzung_wird_nicht_vorbelegt(self):
+        from rentals.models import AbnahmeMangel, Abnahmeprotokoll
+        lg, e, m, v = _basis_objekte()
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        AbnahmeMangel.objects.create(protokoll=prot, raum='Wohnzimmer', beschreibung='Parkett abgenützt',
+                                     verursacher='abnutzung', kostenschaetzung=Decimal('500.00'))
+        c = Client(); c.force_login(_team_user('Verwalter'))
+        r = c.get(f'/neu/vertraege/{v.id}/schlussabrechnung/', secure=True)
+        self.assertEqual(r.context['prefill_positionen'], [])
