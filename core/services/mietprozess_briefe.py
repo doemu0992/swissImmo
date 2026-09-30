@@ -62,7 +62,7 @@ def _brief(absender, empfaenger_zeilen, ort, betreff, absaetze, gruss_name,
         c.drawString(120 * mm, y, z); y -= 5.2 * mm
     # Ort/Datum
     c.setFont("Helvetica", 10)
-    c.drawString(120 * mm, y - 6 * mm, f"{ort}, {heute}")
+    c.drawString(120 * mm, y - 6 * mm, ", ".join(t for t in (ort, heute) if t))
     # Betreff
     c.setFont("Helvetica-Bold", 11)
     c.drawString(25 * mm, 225 * mm, betreff)

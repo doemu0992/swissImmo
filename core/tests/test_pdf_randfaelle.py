@@ -272,6 +272,13 @@ class BriefeUndProtokolleTests(_Basis):
         self.assertIn("CHF 12'500.50", t)
         self.assertIn('Mahngebühr von CHF 30.00', t)
 
+    def test_brief_ohne_ort_hat_kein_fuehrendes_komma(self):
+        from core.services import mietprozess_briefe as mb
+        t = _flach(mb._brief(['Absender AG', 'Str 1', '8000 Zürich'], ['Herr Muster'], '', 'Betreff',
+                             ['Absatz'], 'Muster'))
+        self.assertNotIn(', ' + date.today().strftime('%d.%m.%Y'), t)
+        self.assertIn(date.today().strftime('%d.%m.%Y'), t)
+
     def test_fehlender_betrag_wird_kein_none(self):
         from core.services import mietprozess_briefe as mb
         v = self._vertrag()
