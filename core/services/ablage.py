@@ -62,11 +62,14 @@ SIGNIERT_TITEL = "Mietvertrag (unterzeichnet)"
 
 
 def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
-                   pdf_bytes=None):
+                   pdf_bytes=None, rechnung=None, gebuehr=None, letzte_stufe=False):
     """Legt die Mahnung als PDF in der Vertrags-Akte ab.
 
-    Eine Mahnung ist der Beleg für eine Zahlungsaufforderung — bei Art. 257d OR
-    hängt daran die Kündigungsandrohung. Sie landete bisher nirgends in der Akte:
+    Eine Mahnung ist der Beleg für eine Zahlungsaufforderung. Ohne `pdf_bytes`
+    entsteht das Schreiben der MAHNSTUFE (`core/services/mahnbrief.py`), nie eine
+    257d-Kündigungsandrohung: Die Akte darf keine Fristansetzung belegen, die nicht
+    stattgefunden hat. Die 257d-Fristansetzung (eingeschrieben, unterschrieben)
+    kommt als fertiges `pdf_bytes` aus `fw_verzug_257d`. Sie landete bisher nirgends in der Akte:
     Historie und Gebühr wurden gebucht, das Schreiben selbst existierte nur als
     Download im Moment des Klicks. Wer später nachweisen musste, WAS dem Mieter
     zugestellt wurde, fand unter Vertrag → Dokumente nichts.
@@ -83,17 +86,21 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
         return None
     datum = datum or timezone.localdate()
     if pdf_bytes is None:
+        # Die ABGELEGTE Mahnung ist die Mahnung der Stufe — keine 257d-
+        # Kündigungsandrohung (siehe core/services/mahnbrief.py). Die formelle
+        # Fristansetzung legt `fw_verzug_257d` selbst ab, wenn sie gesetzt wird.
         try:
-            from core.views.email_views import (generate_mahnung_combined_pdf_bytes,
-                                                get_aktueller_monat)
-            monat = monat or get_aktueller_monat()
+            from core.services.mahnbrief import forderungs_monat, mahnbrief_pdf, monat_text
+            if not monat:
+                monat = forderungs_monat(rechnung) if rechnung is not None else monat_text(datum)
             if not betrag:
-                betrag = f"{(vertrag.netto_mietzins or 0) + (vertrag.nebenkosten or 0):.2f}"
-            # Absender der Mahnung: die Verwaltung DIESES Vertrags. Eine Mahnung
-            # mit fremdem Briefkopf ist nach OR 257d nicht bloss unschoen — an
-            # ihr haengt die Kuendigungsandrohung.
-            pdf_bytes = generate_mahnung_combined_pdf_bytes(
-                vertrag, vertrag.organisation, monat, str(betrag), datum)
+                betrag = (f"{rechnung.offener_betrag:.2f}" if rechnung is not None else
+                          f"{(vertrag.netto_mietzins or 0) + (vertrag.nebenkosten or 0):.2f}")
+            # Absender: die Verwaltung DIESES Vertrags (nie ein Singleton).
+            pdf_bytes = mahnbrief_pdf(
+                vertrag, vertrag.organisation, stufe=stufe or 1, monat=monat,
+                betrag=str(betrag), datum=datum, gebuehr=gebuehr,
+                letzte_stufe=letzte_stufe, rechnung=rechnung)
         except Exception:
             return None
     if not pdf_bytes:

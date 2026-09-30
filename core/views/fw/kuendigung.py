@@ -354,7 +354,12 @@ def fw_verzug_257d(request, vertrag_id):
         _betrag = f"{offen_total:.2f}"
         pdf = None
         for i, ovr in enumerate(zustellungen):
-            _p = generate_mahnung_combined_pdf_bytes(v, vw, _monat, _betrag, heute, empfaenger=ovr)
+            # Eine einzelne QRR trägt nur EINE Forderung: bei mehreren gemahnten
+            # Forderungen bleibt die Referenz leer, statt die Zahlung der ersten
+            # zuzuschlagen.
+            _ref = faellige[0].qr_referenz if len(faellige) == 1 else None
+            _p = generate_mahnung_combined_pdf_bytes(v, vw, _monat, _betrag, heute,
+                                                     empfaenger=ovr, reference=_ref)
             if i == 0:
                 pdf = _p
             _to = ovr['name'] if ovr else m.display_name
@@ -377,7 +382,7 @@ def fw_verzug_257d(request, vertrag_id):
                   f"Zahlungsfrist bis {frist:%d.%m.%Y} (Art. 257d Abs. 1 OR). ")
                + "Nach fruchtlosem Ablauf: ausserordentliche Kündigung mit 30 Tagen auf Monatsende "
                  "(Art. 257d Abs. 2 OR).")
-        from core.services.zahlungsverzug import fall_eroeffnen, quelle_fuer
+        from core.services.zahlungsverzug import fall_eroeffnen, quelle_fuer, vorschlaege_erledigen
         _benutzer = request.user if request.user.is_authenticated else None
         Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
@@ -389,6 +394,7 @@ def fw_verzug_257d(request, vertrag_id):
         # Der Gesamtvorgang: Fall «Zahlungsverzug» an der Vertragsakte. Eine
         # Zahlung innert Frist schliesst Frist und Fall zusammen
         # (core/services/zahlungsverzug.py, ausgelöst in finance/signals.py).
+        vorschlaege_erledigen(v, 'Fristansetzung nach Art. 257d OR erfolgt.')
         fall_eroeffnen(v, benutzer=_benutzer, frist=frist,
                        betreff=f"Zahlungsverzug {v.mieter.display_name} – CHF {offen_total:.2f}")
         log_aktion(request, "Zahlungsaufforderung 257d erstellt", str(v.mieter),

@@ -196,14 +196,87 @@ def pruefe_nach_zahlung(vertrag):
             logger.info('257d-Frist %s (Vertrag %s) durch Zahlung erledigt',
                         p.pk, vertrag.pk)
 
-        if geschlossen and not aktive_fristen(vertrag).exists():
+        # Kein fälliger Rückstand mehr und keine laufende Frist: Der Vorgang ist
+        # erledigt — auch wenn es nie zur Fristansetzung kam (Mieter zahlt nach
+        # der 3. Mahnung). Sonst bliebe der Fall «Zahlungsverzug» offen und die
+        # Vorschlags-Pendenz «Fristansetzung prüfen» stünde weiter im Arbeitsvorrat.
+        if not aktive_fristen(vertrag).exists() and not faelliger_rueckstand(vertrag):
+            if geschlossen:
+                grund = ('Zahlungsrückstand innert der Frist nach Art. 257d OR '
+                         'beglichen.')
+            else:
+                grund = 'Zahlungsrückstand vollständig beglichen.'
             _fall_abschliessen(vertrag, (
-                f'Automatisch abgeschlossen am {timezone.localdate():%d.%m.%Y}: '
-                'Zahlungsrückstand innert der Frist nach Art. 257d OR beglichen.'))
+                f'Automatisch abgeschlossen am {timezone.localdate():%d.%m.%Y}: {grund}'))
+            vorschlaege_erledigen(vertrag, 'Rückstand bezahlt — keine Fristansetzung nötig.')
     return geschlossen
 
 
-def fall_eroeffnen(vertrag, benutzer=None, betreff='', frist=None):
+def faelliger_rueckstand(vertrag, stichtag=None):
+    """Offener Betrag der heute fälligen Mietforderungen (ohne Mahngebühr/Zins)."""
+    stichtag = stichtag or timezone.localdate()
+    total = Decimal('0.00')
+    for r in (vertrag.debitoren_rechnungen.filter(status__in=('offen', 'teilbezahlt'),
+                                                  stammrechnung__isnull=True)
+              .prefetch_related('zahlungseingaenge')):
+        if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= stichtag:
+            total += r.offener_betrag
+    return total
+
+
+#: Quelle der Vorschlags-Pendenz «257d-Fristansetzung prüfen». Bewusst NICHT
+#: `257d:` — sie ist keine Frist, sondern die Aufforderung, eine zu setzen.
+VORSCHLAG_PRAEFIX = '257d-vorschlag:'
+
+
+def eskalation_257d(rechnung, benutzer=None):
+    """Die letzte Mahnstufe (Konfiguration `kuendigung`) führt zur Fristansetzung.
+
+    Stresstest 30.09.2026, Punkt 7: Stufe 3 hiess «Kündigungsandrohung» und tat
+    nichts — die echte 257d-Fristansetzung war ein getrennter Handprozess ohne
+    Verbindung zum Mahnlauf. Jetzt entsteht hier die Pendenz, die dorthin führt,
+    und der Fall «Zahlungsverzug» wird eröffnet. Die Fristansetzung selbst bleibt
+    ein bewusster Schritt der Verwaltung (Einschreiben, Unterschrift, Rolle) —
+    sie wird nicht automatisch versandt.
+
+    Idempotent: Läuft bereits eine 257d-Frist oder liegt schon ein Vorschlag vor,
+    geschieht nichts. Gibt die Pendenz zurück, wenn eine angelegt wurde.
+    """
+    from core.models import Pendenz
+
+    v = rechnung.vertrag
+    if v is None or rechnung.stammrechnung_id:
+        return None
+    if aktive_fristen(v).exists():
+        return None
+    quelle = f'{VORSCHLAG_PRAEFIX}{v.pk}'
+    if v.pendenzen.filter(quelle=quelle, erledigt=False).exists():
+        return None
+    lg = v.einheit.liegenschaft if v.einheit_id else None
+    fall_eroeffnen(v, benutzer=benutzer, frist_angesetzt=False,
+                   betreff=f'Zahlungsverzug {v.mieter.display_name} – {rechnung.titel}')
+    return Pendenz.objects.create(
+        titel=f'Art. 257d: Fristansetzung prüfen – {v.mieter.display_name}',
+        beschreibung=(
+            f'Letzte Mahnstufe erreicht für «{rechnung.titel}» '
+            f'(CHF {rechnung.offener_betrag:.2f} offen). Bleibt die Zahlung aus, '
+            'Zahlungsfrist mit Kündigungsandrohung per Einschreiben ansetzen '
+            '(Wohn-/Geschäftsräume: mindestens 30 Tage, Art. 257d Abs. 1 OR). '
+            'Erst nach unbenütztem Ablauf kann gekündigt werden.'),
+        kategorie='frist', faellig_am=timezone.localdate(), vertrag=v, liegenschaft=lg,
+        quelle=quelle, erstellt_von=benutzer)
+
+
+def vorschlaege_erledigen(vertrag, grund):
+    """Schliesst die Vorschlags-Pendenzen des Vertrags. Gibt die Anzahl zurück."""
+    n = 0
+    for p in vertrag.pendenzen.filter(quelle__startswith=VORSCHLAG_PRAEFIX, erledigt=False):
+        frist_erledigen(p, grund)
+        n += 1
+    return n
+
+
+def fall_eroeffnen(vertrag, benutzer=None, betreff='', frist=None, frist_angesetzt=True):
     """Eröffnet (oder findet) den Zahlungsverzugsfall zum Vertrag.
 
     Nur wenn die Organisation die Fallart eingerichtet hat
@@ -228,7 +301,7 @@ def fall_eroeffnen(vertrag, benutzer=None, betreff='', frist=None):
         fall.schritte_anlegen()
     schritt = fall.schritte.filter(bezeichnung=SCHRITT_FRISTANSETZUNG,
                                    erledigt_am__isnull=True).first()
-    if schritt is not None:
+    if schritt is not None and frist_angesetzt:
         schritt.erledigen(benutzer)
     if frist is not None:
         fall.schritte.filter(bezeichnung=SCHRITT_UEBERWACHEN,

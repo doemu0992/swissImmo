@@ -243,9 +243,19 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
             try:
                 from core.services.ablage import ablage_mahnung
                 ablage_mahnung(r.vertrag, stufe=stufe, datum=heute,
-                               betrag=f"{offen:.2f}")
+                               betrag=f"{offen:.2f}", rechnung=r, gebuehr=gebuehr,
+                               letzte_stufe=_s['kuendigung'])
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
+            # Die Stufe mit Kündigungsandrohung führt zur Fristansetzung (Pendenz +
+            # Fall) — sie ist kein Endpunkt. Fehlertolerant wie die Ablage.
+            if _s['kuendigung']:
+                try:
+                    from core.services.zahlungsverzug import eskalation_257d
+                    eskalation_257d(r, benutzer=user)
+                except Exception:
+                    logger.warning("257d-Eskalation für Rechnung %s fehlgeschlagen", r.pk,
+                                   exc_info=True)
         if send_email and r.vertrag and r.vertrag.mieter.email:
             try:
                 if send_payment_reminder(r.vertrag, faellig, offen):

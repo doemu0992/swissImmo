@@ -5,6 +5,7 @@ from finance.models import AbrechnungsPeriode
 
 import io
 import datetime
+from decimal import Decimal
 from django.core.mail import EmailMultiAlternatives
 from django.utils.translation import gettext
 from django.template.loader import render_to_string
@@ -90,7 +91,7 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
 
 # 🔥 VERBESSERT: Hilfsfunktion für das kombinierte PDF (Brief S1 + QR S2)
 def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute,
-                                        empfaenger=None):
+                                        empfaenger=None, reference=None):
     """257d-Zahlungsaufforderung mit Kuendigungsandrohung (+ QR-Rechnung).
     empfaenger (optional): {firma, name, strasse, ort_line, nachname, anrede} —
     ueberschreibt den Empfaenger fuer separat adressierte Kopien (Art. 266n OR:
@@ -192,7 +193,12 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
             m_name = firma_name if firma_name else r_name
             debtor = {'name': m_name, 'line1': r_strasse or '', 'line2': r_ortline}
 
-            draw_qr_bill(c, iban, creditor, debtor, betrag_float, f"Mahnung {monat_str} {vertrag.einheit.bezeichnung}")
+            # `reference`: QRR der gemahnten Forderung. Ohne sie wäre die QR-Rechnung
+            # mit QR-IBAN nach SIX-Spezifikation ungültig (NON + QR-IBAN) und die
+            # Zahlung im camt-Import nicht zuordenbar.
+            draw_qr_bill(c, iban, creditor, debtor, betrag_float,
+                         f"Mahnung {monat_str} {vertrag.einheit.bezeichnung}",
+                         reference=reference)
         except: pass
 
     c.save(); buffer.seek(0)
@@ -238,10 +244,59 @@ def send_mahnung_email_view(request, vertrag_id):
         messages.error(request, gettext('Mieter hat keine E-Mail.')); return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
     heute = datetime.date.today()
+    from core.services.ablage import ablage_mahnung
+
+    # Aus der Mahnliste (`rechnung` + `stufe`): die Kopie der MAHNUNG dieser Stufe,
+    # mit Monat und offenem Betrag der Forderung. Sie ist keine 257d-Androhung.
+    rid, stufe_roh = request.POST.get('rechnung'), request.POST.get('stufe')
+    if rid and stufe_roh:
+        from finance.models import DebitorenRechnung
+        from core.services.mahnbrief import _TITEL, forderungs_monat, mahnbrief_pdf
+        from core.services.mahnstufen import eigentuemer_von_rechnung, mahnstufen_config
+        rechnung = get_object_or_404(DebitorenRechnung, pk=rid, vertrag=vertrag)
+        if rechnung.offener_betrag <= 0:
+            messages.error(request, gettext('Diese Forderung ist nicht mehr offen.'))
+            return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+        try:
+            stufe = min(max(int(stufe_roh), 1), 3)
+        except ValueError:
+            stufe = 1
+        cfg = next((x for x in mahnstufen_config(eigentuemer_von_rechnung(rechnung))
+                    if x['stufe'] == stufe), None)
+        monat_str = forderungs_monat(rechnung)
+        betrag_str = f"{rechnung.offener_betrag:.2f}"
+        pdf_bytes = mahnbrief_pdf(
+            vertrag, verwaltung, stufe=stufe, monat=monat_str, betrag=betrag_str,
+            datum=heute, gebuehr=cfg['gebuehr'] if cfg else None,
+            letzte_stufe=bool(cfg and cfg['kuendigung']), rechnung=rechnung)
+        ablage_mahnung(vertrag, stufe=stufe, datum=heute, pdf_bytes=pdf_bytes)
+        objekt = f"{vertrag.einheit.bezeichnung} ({vertrag.einheit.liegenschaft.strasse})"
+        email = EmailMultiAlternatives(
+            subject=f"{_TITEL.get(stufe, 'Mahnung')}: {objekt}",
+            body=(f"Guten Tag, im Anhang finden Sie die {_TITEL.get(stufe, 'Mahnung')} "
+                  f"für {monat_str} über CHF {betrag_str} (Kopie; das Original erhalten "
+                  f"Sie auf dem Postweg)."),
+            from_email=settings.DEFAULT_FROM_EMAIL, to=[vertrag.mieter.email])
+        email.attach(f"Mahnung_{stufe}_{monat_str.replace(' ', '_')}.pdf", pdf_bytes, 'application/pdf')
+        email.send()
+        log_aktion(request, f"{stufe}. Mahnung als Kopie versendet", str(vertrag),
+                   f"an {vertrag.mieter.email}, {monat_str}, CHF {betrag_str}")
+        messages.success(request, '✅ ' + gettext('Mahnung inkl. QR-Rechnung an %(email)s gesendet.') % {'email': vertrag.mieter.email})
+        return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+
+    # 257d-Kündigungsandrohung: Betrag muss ein positiver Betrag sein — die Vorgabe
+    # '0.00' liess eine Kündigungsandrohung über CHF 0.00 zu.
+    try:
+        _betrag_ok = Decimal(str(betrag_str).replace(',', '.')) > 0
+    except Exception:
+        _betrag_ok = False
+    if not _betrag_ok:
+        messages.error(request, gettext('Ungültiger oder fehlender Betrag — Mahnung nicht versendet.'))
+        return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+
     pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute)
     # Dasselbe PDF, das der Mieter erhält, gehört in die Akte — sonst lässt sich
     # später nicht belegen, WAS zugestellt wurde.
-    from core.services.ablage import ablage_mahnung
     ablage_mahnung(vertrag, monat=monat_str, betrag=betrag_str, datum=heute,
                    pdf_bytes=pdf_bytes)
 
@@ -284,10 +339,40 @@ def generate_mahnung_pdf_view(request, vertrag_id):
     betrag_str = request.GET.get('betrag') or request.POST.get('betrag', default_betrag)
 
     heute = datetime.date.today()
+    from core.services.ablage import ablage_mahnung
+
+    # MAHNSTUFE AUS DEM MAHNWESEN (`?rechnung=<id>&stufe=<n>`): Das Schreiben der
+    # Stufe — mit Monat und offenem Betrag DER FORDERUNG, nicht frei eingebbar.
+    # Nur der Aufruf ohne Stufe (Vertragsseite, Fristansetzung) liefert die
+    # 257d-Kündigungsandrohung. Vorher zeigte «PDF» in der Mahnliste für jede
+    # Stufe — auch die erste — die Kündigungsandrohung.
+    rid, stufe_roh = request.GET.get('rechnung'), request.GET.get('stufe')
+    if rid and stufe_roh:
+        from finance.models import DebitorenRechnung
+        from core.services.mahnbrief import forderungs_monat, mahnbrief_pdf
+        from core.services.mahnstufen import eigentuemer_von_rechnung, mahnstufen_config
+        rechnung = get_object_or_404(DebitorenRechnung, pk=rid, vertrag=vertrag)
+        try:
+            stufe = min(max(int(stufe_roh), 1), 3)
+        except ValueError:
+            stufe = 1
+        cfg = next((x for x in mahnstufen_config(eigentuemer_von_rechnung(rechnung))
+                    if x['stufe'] == stufe), None)
+        pdf_bytes = mahnbrief_pdf(
+            vertrag, verwaltung, stufe=stufe, monat=forderungs_monat(rechnung),
+            betrag=f"{rechnung.offener_betrag:.2f}", datum=heute,
+            gebuehr=cfg['gebuehr'] if cfg else None,
+            letzte_stufe=bool(cfg and cfg['kuendigung']), rechnung=rechnung)
+        ablage_mahnung(vertrag, stufe=stufe, datum=heute, pdf_bytes=pdf_bytes)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = (
+            f'inline; filename="Mahnung_{stufe}_{vertrag.mieter.nachname}.pdf"')
+        response.write(pdf_bytes)
+        return response
+
     pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute)
     # In die Vertrags-Akte legen: sonst existiert die Mahnung nur als Download im
     # Moment des Klicks und ist unter Vertrag -> Dokumente nirgends nachweisbar.
-    from core.services.ablage import ablage_mahnung
     ablage_mahnung(vertrag, monat=monat_str, betrag=betrag_str, datum=heute,
                    pdf_bytes=pdf_bytes)
 

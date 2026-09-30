@@ -91,7 +91,7 @@ def fw_mahnwesen(request):
             'vertrag_id': r.vertrag_id,
             'hat_email': bool(r.vertrag and r.vertrag.mieter.email),
             'monat': monat,
-            'mahn_url': (f"/vertrag/{r.vertrag_id}/mahnung/?betrag={offen}&monat={monat}"
+            'mahn_url': (f"/vertrag/{r.vertrag_id}/mahnung/?rechnung={r.id}&stufe={stufe['stufe']}"
                          if r.vertrag_id else None),
         })
     rows.sort(key=lambda x: (-x['stufe']['stufe'], -x['tage']))
@@ -266,6 +266,11 @@ def fw_mahnung_erfassen(request):
     # gemahnt werden — sonst wird eine Mahngebühr auf eine Forderung gestellt, die
     # gar nicht mehr offen ist (Live-Test E). offener_betrag deckt den
     # (teil-)bezahlten Fall mit ab.
+    # Mahngebühren und Zinsen werden mit der Hauptforderung eingefordert, nicht
+    # selbst gemahnt (Gebühr auf Gebühr, Art. 105 Abs. 3 OR).
+    if rechnung.stammrechnung_id:
+        messages.error(request, gettext('Eine Mahngebühr bzw. Zinsrechnung wird nicht selbst gemahnt — mahnen Sie die Hauptforderung.'))
+        return redirect('fw_mahnwesen')
     if rechnung.status in ('bezahlt', 'storniert', 'abgeschrieben') or rechnung.offener_betrag <= 0:
         messages.error(request, gettext('Diese Forderung ist nicht (mehr) offen und kann nicht gemahnt werden.'))
         return redirect('fw_mahnwesen')
@@ -338,8 +343,16 @@ def fw_mahnung_erfassen(request):
     # PDF darf den erfassten Mahnschritt nicht zurückrollen.
     if rechnung.vertrag_id:
         from core.services.ablage import ablage_mahnung
+        from core.services.mahnstufen import mahnstufen_config
+        _cfg = next((x for x in mahnstufen_config(eigentuemer_von_rechnung(rechnung))
+                     if x['stufe'] == stufe), None)
+        _letzte = bool(_cfg and _cfg['kuendigung'])
         ablage_mahnung(rechnung.vertrag, stufe=stufe, datum=heute,
-                       betrag=f"{rechnung.offener_betrag:.2f}")
+                       betrag=f"{rechnung.offener_betrag:.2f}", rechnung=rechnung,
+                       gebuehr=gebuehr, letzte_stufe=_letzte)
+        if _letzte:
+            from core.services.zahlungsverzug import eskalation_257d
+            eskalation_257d(rechnung, benutzer=request.user)
 
     log_aktion(request, f"{stufe}. Mahnung erfasst",
                rechnung.vertrag.mieter.display_name if rechnung.vertrag_id else rechnung.titel,
