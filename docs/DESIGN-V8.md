@@ -63,6 +63,11 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 | Laufkarte | `div.fw-laeufe` > `section.fw-card.fw-lauf` > `fw-lauf-kopf` (`fw-lauf-titel` > `b`, `span` + `fw-chip`), `fw-stufen`, `fw-lauf-fuss` | Raster 3 / 2 / 1 Spalten (ab 1180 / 720 px). Fuss: Kontext links, Knopf rechts. `fw-lauf-leer` für den Leerzustand über alle Spalten. |
 | Kopf einer Laufseite | `fw-phead.fw-phead-lauf` > `div` (`nav.fw-krumen`, `h1`, `p`) + `fw-phead-knoepfe` | Brotkrume «Läufe / …»; die lange Unterzeile bricht um, Knöpfe/Wahl bleiben rechts. In `fw-phead-knoepfe` sitzt `fw-kopffilter` ohne eigenen Aussenabstand. |
 | Freigabeleiste in einer Karte | `fw-card` > `div.fw-freigabe` | Wenn der Knopf zum Formular der Karte gehört (Zahllauf). 12 px Abstand zum Kartenrand. |
+| Gutschriften-Liste | `ul.fw-gs-liste` > `li.fw-gs` > `span.fw-quelle` + `fw-mitte` (`fw-gs-kopf` > `fw-mono.fw-gs-wer` + `fw-betrag good`; `fw-s`; `fw-eingang-knoepfe` > `fw-vorschlag` (`unsicher`) + `fw-gs-grund`; `fw-eingang-knoepfe` mit Knöpfen) | Bankabgleich auf «Finanzen» (Mockup `.feed` + `.sugg`). Der Grund sagt, worauf der Vorschlag beruht («Betrag passt») — keine erfundene Prozentzahl. |
+| Zwei Diagrammkarten | `div.fw-bericht-zwei` > 2 × `fw-card` | 1.35 : 1, unter 1100 px untereinander. |
+| Liniendiagramm | `{% load diagramm %}{% linien_diagramm werte beschriftungen titel as x %}` → `fw-kurve` | SVG nur für Linie/Fläche/Raster; Achsen, Endwert, Punkt als HTML (lesbar bei 390 px). `None` = Lücke in der Linie. Am Telefon jede zweite Monatsbeschriftung (`fw-kurve-x-neben` aus). |
+| Balkenliste | `{% balken_liste zeilen %}` → `div.fw-hbar` (`fw-hbar-lab`, `fw-hbar-spur` > `i`, `fw-hbar-v`) | `zeilen` = dicts `lab`, `wert`, `url`. Null zeigt «–» ohne Balken. |
+| Aging-Tabelle | `table.fw-table.fw-aging-tabelle`, Beträge über 30 Tage in `fw-aging-neg`, Zeile `tr[data-href]` | Summenzeile im `tfoot`. Klick auf die Zeile öffnet die Akte (kleines Skript in `fw/finanzen.html`). |
 
 ## Was nicht mehr vorkommen soll
 

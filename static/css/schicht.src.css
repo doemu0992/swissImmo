@@ -1826,6 +1826,11 @@
             .fw-auffaellig li{padding:12px 16px;flex-wrap:wrap}
             .fw-auffaellig .fw-mitte{flex-basis:calc(100% - 20px)}
             .fw-ansage{padding:14px 16px}
+            /* Kennzahlen der Akten am Telefon flacher (gemessen 390 px,
+               Vertragsakte: 236 px bei 21 px Wert und vollem Innenabstand). */
+            .fw-kpis.fw-stats .fw-kpi{padding:10px 14px;gap:3px}
+            .fw-kpis.fw-stats .fw-kpi .fw-v{font-size:18px}
+            .fw-kpis.fw-stats .fw-kpi .fw-f{font-size:11.5px}
         }
         /* ---- Tranche B: Läufe und Sollstellung nach konzept-v8 (#laeufe, #lauf-soll) ----
            Laufkarten im Raster (`.runs`, `.run`, `.run-h`, `.run-f`) mit dem
