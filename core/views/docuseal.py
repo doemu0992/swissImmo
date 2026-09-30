@@ -65,8 +65,8 @@ def link_callback(uri, rel):
 
 # Nur POST: Der Aufruf schickt den Vertrag an DocuSeal (externer Dienst, Mail an
 # den Mieter). Ein GET-Link löste das bei jedem Prefetch aus.
-@require_POST
 @rolle_erforderlich(ROLLE_VERWALTER)
+@require_POST
 def send_via_docuseal(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     DEFAULT_VERWALTUNG_NAME = getattr(settings, 'VERWALTUNG_NAME', "SwissImmo Verwaltung")

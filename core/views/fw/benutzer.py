@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 
-from core.auth import (INHABER_ROLLEN, ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_SACHBEARBEITER,
+from core.auth import (INHABER_ROLLEN, ROLLE_HAUSWART, ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_SACHBEARBEITER,
                        ROLLE_VERWALTER, rolle_erforderlich)
 
 from ._basis import _global_filter
@@ -24,7 +24,8 @@ from ._basis import _global_filter
 # Die vier Team-Rollen seit Etappe 4.3. `Inhaber` steht bewusst dabei: Wer
 # die Benutzerverwaltung offen hat, ist Verwalter oder Inhaber und muss die
 # Nachfolge regeln koennen. Eigentuemer fehlt — das ist eine Portal-Rolle.
-_ROLLEN_WAHL = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
+_ROLLEN_WAHL = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF,
+                ROLLE_HAUSWART)
 
 
 def _team_benutzer_oder_404(request, pk):

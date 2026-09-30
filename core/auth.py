@@ -36,6 +36,13 @@ ROLLE_VERWALTER = "Verwalter"
 ROLLE_SACHBEARBEITER = "Sachbearbeiter"
 ROLLE_LESEZUGRIFF = "Lesezugriff"
 
+#: Betriebsrolle für die Hauswartung. Bewusst KEINE Team-Rolle: Sie steht nicht
+#: in `TEAM_ROLLEN`, und jede View, die nur `TEAM_ROLLEN` verlangt (Finanzen,
+#: Mietzinse, Verträge, Personen, Einstellungen …), antwortet ihr mit 403.
+#: Freigeschaltet ist sie ausschliesslich dort, wo `HAUSWART_ROLLEN` steht —
+#: heute die Schadensmeldungen (Liste, Detail, Status).
+ROLLE_HAUSWART = "Hauswart"
+
 #: Portal-Rolle, KEINE Team-Rolle. Eigentümer bekommen keine Mitgliedschaft;
 #: sie hängen über `Eigentuemer.benutzer` an ihrem Datensatz. Deshalb bleibt
 #: diese eine Rolle bei den Gruppen — sie beantwortet eine andere Frage.
@@ -52,6 +59,12 @@ VERWALTUNGS_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER)
 #: hier, damit der Unterschied zwischen Inhaber und Verwalter einen Ort hat
 #: und nicht beim ersten Bedarf neu erfunden wird.
 INHABER_ROLLEN = (ROLLE_INHABER,)
+
+#: Wer Schadensmeldungen ansehen darf: das Team plus die Hauswartung.
+HAUSWART_ROLLEN = (ROLLE_HAUSWART,)
+TICKET_LESE_ROLLEN = TEAM_ROLLEN + HAUSWART_ROLLEN
+#: Wer den Status einer Schadensmeldung ändern darf.
+TICKET_SCHREIB_ROLLEN = SCHREIB_ROLLEN + HAUSWART_ROLLEN
 
 
 def hat_rolle(user, rollen):
