@@ -164,6 +164,17 @@ class Mahnstufen:
                 return s
         return None
 
+    def tage_im_verzug(self, faellig, heute, eigentuemer=None, organisation=None):
+        """Tage seit Fälligkeit — oder None, solange der Verzug nach der Einstellung
+        der Organisation (`mahn_verzug_ab_tag`) noch nicht begonnen hat.
+
+        Der Fälligkeitstag ist Tag 0. Mit `mahn_verzug_ab_tag = 0` ist eine am 1.
+        fällige Miete am 1. im Mahnlauf sichtbar, mit 1 erst am 2.
+        """
+        org = _organisation_bestimmen(eigentuemer, organisation)
+        tage = (heute - faellig).days
+        return tage if tage >= org.mahn_verzug_ab_tag else None
+
 
 def roh_konfig(eigentuemer, organisation=None):
     """Alle Stufen der Organisation (auch inaktive) zum BEARBEITEN der

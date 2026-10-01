@@ -614,21 +614,21 @@ class NachtN1KritischeBugsTests(TestCase):
             faellig_am=date.today() - timedelta(days=31), status='offen')
         run_mahnlauf(send_email=False, mit_zins=True)
         m1 = r.mahnungen.order_by('-id').first()
-        self.assertEqual(m1.zins, verzugszins(Decimal('1000'), 31))
+        self.assertEqual(m1.zins, verzugszins(Decimal('1000'), 31, Decimal('5.00')))
         # Fälligkeit zurückdatieren → nächste Stufe wird fällig
         r.faellig_am = date.today() - timedelta(days=65)
         r.save(update_fields=['faellig_am'])
         # Die beiden Läufe liegen in Wirklichkeit Wochen auseinander: Die erste
-        # Mahnung ist entsprechend alt (Mindestabstand MAHN_MIN_ABSTAND_TAGE).
+        # Mahnung ist entsprechend alt (Mindestabstand Organisation.mahn_mindestabstand_tage).
         Mahnung.objects.filter(pk=m1.pk).update(datum=date.today() - timedelta(days=34))
         run_mahnlauf(send_email=False, mit_zins=True)
         m2 = r.mahnungen.order_by('-id').first()
         self.assertGreater(m2.stufe, m1.stufe)
         # Stufe 2 fakturiert nur das DELTA: voller Zins(65) − bereits Zins(31)
-        erwartet = verzugszins(Decimal('1000'), 65) - m1.zins
+        erwartet = verzugszins(Decimal('1000'), 65, Decimal('5.00')) - m1.zins
         self.assertEqual(m2.zins, erwartet)
         total = sum(x.zins for x in r.mahnungen.all())
-        self.assertEqual(total, verzugszins(Decimal('1000'), 65))  # nie mehr als 1×
+        self.assertEqual(total, verzugszins(Decimal('1000'), 65, Decimal('5.00')))  # nie mehr als 1×
 
     def test_266a_zu_fruehes_ende_geklemmt(self):
         from rentals.services import berechne_kuendigungstermin

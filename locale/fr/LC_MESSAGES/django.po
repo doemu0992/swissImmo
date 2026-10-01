@@ -21401,3 +21401,52 @@ msgstr "Niveau de rappel supprimé."
 #: core/templates/fw/mahnstufen.html:1
 msgid "Diese Mahnstufe gibt es nicht."
 msgstr "Ce niveau de rappel n'existe pas."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf-Einstellungen"
+msgstr "Paramètres du processus de rappel"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzug beginnt (Tage nach Fälligkeit)"
+msgstr "Début de la demeure (jours après l'échéance)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "0 = der Fälligkeitstag zählt als Tag 0: Eine am 1. fällige Miete ist am 1. im Mahnlauf sichtbar. 1 = Verzug erst ab dem Folgetag."
+msgstr "0 = le jour d'échéance compte comme jour 0 : un loyer échu le 1er apparaît le 1er dans le processus de rappel. 1 = demeure seulement dès le lendemain."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mindestabstand zwischen zwei Mahnungen (Tage)"
+msgstr "Intervalle minimal entre deux rappels (jours)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzugszins (% pro Jahr)"
+msgstr "Intérêt moratoire (% par an)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Einstellungen speichern"
+msgstr "Enregistrer les paramètres"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Titel des Mahnschreibens (leer = Standard)"
+msgstr "Titre du courrier de rappel (vide = standard)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Text des Mahnschreibens (leer = Standardtext)"
+msgstr "Texte du courrier de rappel (vide = texte standard)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Platzhalter: {monat} {betrag} {gebuehr} {mieter}"
+msgstr "Variables : {monat} {betrag} {gebuehr} {mieter}"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzugsbeginn und Mindestabstand (ganze Tage) sowie Verzugszins (Prozent) prüfen."
+msgstr "Vérifier le début de la demeure et l'intervalle minimal (jours entiers) ainsi que l'intérêt moratoire (pourcent)."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnwesen-Einstellungen gespeichert."
+msgstr "Paramètres des rappels enregistrés."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Verzugszins (%(zins)s%%) berechnen"
+msgstr "Calculer l'intérêt moratoire (%(zins)s%%)"

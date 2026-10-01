@@ -17,6 +17,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext
 
 from core.auth import rolle_erforderlich, VERWALTUNGS_ROLLEN, log_aktion
+from core.tenancy import organisation_der_anfrage
 from crm.models import MahnStufe
 
 from ._basis import _global_filter
@@ -67,24 +68,29 @@ def fw_mahnstufen(request):
                 fehler.append(gettext('Stufe %(stufe)s: Bezeichnung, Tage (ganze Zahl) und Spesen (Betrag) ausfüllen.')
                               % {'stufe': s.stufe})
                 continue
-            neue_werte.append((s, name, tage, geb, request.POST.get(f'art_257d_{s.pk}') == 'on'))
+            brief = ((request.POST.get(f'brief_titel_{s.pk}') or '').strip()[:120],
+                     (request.POST.get(f'brief_text_{s.pk}') or '').strip())
+            neue_werte.append((s, name, tage, geb, request.POST.get(f'art_257d_{s.pk}') == 'on', brief))
         if not fehler:
-            reihenfolge = _reihenfolge_fehler([(s.stufe, tage) for s, _n, tage, _g, _a in neue_werte])
+            reihenfolge = _reihenfolge_fehler([(s.stufe, tage) for s, _n, tage, _g, _a, _b in neue_werte])
             if reihenfolge:
                 fehler.append(reihenfolge)
         if fehler:
             for f in fehler:
                 messages.error(request, '❌ ' + f)
         else:
-            for s, name, tage, geb, art in neue_werte:
+            for s, name, tage, geb, art, (titel, text) in neue_werte:
                 s.bezeichnung, s.ab_tage, s.gebuehr, s.art_257d = name, tage, geb, art
-                s.save(update_fields=['bezeichnung', 'ab_tage', 'gebuehr', 'art_257d'])
+                s.brief_titel, s.brief_text = titel, text
+                s.save(update_fields=['bezeichnung', 'ab_tage', 'gebuehr', 'art_257d',
+                                      'brief_titel', 'brief_text'])
             log_aktion(request, "Mahnstufen geändert", "Mahnstufen",
                        " · ".join(f"St{s.stufe}:{s.ab_tage}T/CHF {s.gebuehr}" for s in stufen))
             messages.success(request, '✅ ' + gettext('Mahnstufen gespeichert.'))
         return redirect(ZIEL)
     return render(request, 'fw/mahnstufen.html', {
         **_global_filter(request), 'nav': 'mahnwesen', 'stufen': stufen,
+        'org': organisation_der_anfrage(request),
         'naechste_stufe': (stufen[-1].stufe + 1) if stufen else 1,
     })
 
@@ -125,4 +131,27 @@ def fw_mahnstufe_loeschen(request, pk):
     log_aktion(request, "Mahnstufe gelöscht", "Mahnstufen", f"Stufe {s.stufe}: {s.bezeichnung}")
     s.delete()
     messages.success(request, '✅ ' + gettext('Mahnstufe gelöscht.'))
+    return redirect(ZIEL)
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_mahnwesen_einstellungen(request):
+    """Verzugsbeginn, Mindestabstand und Verzugszins der eigenen Verwaltung.
+
+    Geschrieben wird immer die Organisation der Anfrage — es gibt keine ID im
+    Pfad, die man auf eine fremde Verwaltung richten könnte."""
+    if request.method != 'POST':
+        return redirect(ZIEL)
+    org = organisation_der_anfrage(request)
+    ab_tag = _zahl(request.POST.get('mahn_verzug_ab_tag'))
+    abstand = _zahl(request.POST.get('mahn_mindestabstand_tage'))
+    zins = _betrag(request.POST.get('verzugszins_prozent'))
+    if ab_tag is None or abstand is None or zins is None or ab_tag > 365 or abstand > 365 or zins > 100:
+        messages.error(request, '❌ ' + gettext('Verzugsbeginn und Mindestabstand (ganze Tage) sowie Verzugszins (Prozent) prüfen.'))
+        return redirect(ZIEL)
+    org.mahn_verzug_ab_tag, org.mahn_mindestabstand_tage, org.verzugszins_prozent = ab_tag, abstand, zins
+    org.save(update_fields=['mahn_verzug_ab_tag', 'mahn_mindestabstand_tage', 'verzugszins_prozent'])
+    log_aktion(request, "Mahnwesen-Einstellungen geändert", "Mahnstufen",
+               f"Verzug ab Tag {ab_tag} · Mindestabstand {abstand} Tage · Verzugszins {zins} %")
+    messages.success(request, '✅ ' + gettext('Mahnwesen-Einstellungen gespeichert.'))
     return redirect(ZIEL)

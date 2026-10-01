@@ -42,6 +42,34 @@ _TITEL = {
 }
 
 
+def _eigener_brief(vertrag, stufe):
+    """Die Stufe der Organisation des Vertrags (Titel/Text der Verwaltung) — oder None."""
+    from crm.models import MahnStufe
+    # alle_organisationen mit ausdrücklichem Organisationsfilter: Das Schreiben
+    # entsteht auch im Scheduler ohne Anfrage; die Grenze steht im Ausdruck.
+    return (MahnStufe.alle_organisationen
+            .filter(organisation_id=vertrag.organisation_id, stufe=stufe).first())
+
+
+class _Platzhalter(dict):
+    def __missing__(self, key):
+        return '{' + key + '}'
+
+
+def _eigener_text(vorlage, **werte):
+    """Setzt {monat} {betrag} {gebuehr} {mieter} ein; unbekannte Platzhalter bleiben stehen.
+    Absätze bleiben erhalten, lange Zeilen werden auf Seitenbreite umbrochen."""
+    import textwrap
+    try:
+        text = vorlage.format_map(_Platzhalter(werte))
+    except (ValueError, IndexError):
+        text = vorlage      # kaputte Klammern: Text unverändert statt Fehler beim Versand
+    zeilen = []
+    for absatz in text.splitlines():
+        zeilen += textwrap.wrap(absatz, width=88) or [""]
+    return zeilen
+
+
 @nur_deutsch
 def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                   gebuehr=None, letzte_stufe=False, rechnung=None):
@@ -57,6 +85,7 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     from core.utils.qr_code import draw_qr_bill
 
     m = vertrag.mieter
+    eigene = _eigener_brief(vertrag, stufe)
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     links = 25 * mm
@@ -79,7 +108,8 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     c.setFont("Helvetica", 10)
     c.drawString(links, 210 * mm, f"{verwaltung.ort if verwaltung else ''}, {datum:%d.%m.%Y}")
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(links, 195 * mm, _TITEL.get(stufe, f"{stufe}. Mahnung"))
+    c.drawString(links, 195 * mm, (eigene and eigene.brief_titel)
+                 or _TITEL.get(stufe, f"{stufe}. Mahnung"))
     c.setFont("Helvetica-Bold", 10)
     e = vertrag.einheit
     c.drawString(links, 189 * mm, f"Mietobjekt: {e.bezeichnung}, {e.liegenschaft.strasse}")
@@ -93,7 +123,12 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
         gruss = "Sehr geehrte Damen und Herren,"
 
     zeilen = [gruss, ""]
-    if stufe <= 1:
+    if eigene and eigene.brief_text.strip():
+        # Wortlaut der Verwaltung (crm.MahnStufe.brief_text) statt des Standardtexts.
+        zeilen += _eigener_text(eigene.brief_text, monat=monat, betrag=betrag,
+                                gebuehr=f"{gebuehr:.2f}" if gebuehr else "0.00",
+                                mieter=f"{m.vorname} {m.nachname}".strip())
+    elif stufe <= 1:
         zeilen += [f"bei der Kontrolle unserer Zahlungseingänge haben wir festgestellt, dass für",
                    f"{monat} noch CHF {betrag} ausstehend sind.", "",
                    "Sicher haben Sie die Zahlung nur übersehen. Wir bitten Sie, den Betrag",

@@ -21379,3 +21379,52 @@ msgstr "Livello di sollecito eliminato."
 #: core/templates/fw/mahnstufen.html:1
 msgid "Diese Mahnstufe gibt es nicht."
 msgstr "Questo livello di sollecito non esiste."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf-Einstellungen"
+msgstr "Impostazioni del ciclo di sollecito"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzug beginnt (Tage nach Fälligkeit)"
+msgstr "Inizio della mora (giorni dopo la scadenza)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "0 = der Fälligkeitstag zählt als Tag 0: Eine am 1. fällige Miete ist am 1. im Mahnlauf sichtbar. 1 = Verzug erst ab dem Folgetag."
+msgstr "0 = il giorno di scadenza conta come giorno 0: un affitto scaduto il 1° compare il 1° nel ciclo di sollecito. 1 = mora solo dal giorno successivo."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mindestabstand zwischen zwei Mahnungen (Tage)"
+msgstr "Intervallo minimo tra due solleciti (giorni)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzugszins (% pro Jahr)"
+msgstr "Interesse di mora (% annuo)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Einstellungen speichern"
+msgstr "Salva le impostazioni"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Titel des Mahnschreibens (leer = Standard)"
+msgstr "Titolo della lettera di sollecito (vuoto = standard)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Text des Mahnschreibens (leer = Standardtext)"
+msgstr "Testo della lettera di sollecito (vuoto = testo standard)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Platzhalter: {monat} {betrag} {gebuehr} {mieter}"
+msgstr "Segnaposto: {monat} {betrag} {gebuehr} {mieter}"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzugsbeginn und Mindestabstand (ganze Tage) sowie Verzugszins (Prozent) prüfen."
+msgstr "Verificare inizio della mora e intervallo minimo (giorni interi) nonché interesse di mora (percento)."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnwesen-Einstellungen gespeichert."
+msgstr "Impostazioni dei solleciti salvate."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Verzugszins (%(zins)s%%) berechnen"
+msgstr "Calcolare l'interesse di mora (%(zins)s%%)"

@@ -108,6 +108,16 @@ class Organisation(models.Model):
     # Einrichtung (core.views.zweifaktor).
     zweifaktor_pflicht = models.BooleanField(
         "Zwei-Faktor für alle Konten dieser Verwaltung verlangen", default=False)
+    # Mahnwesen — je Verwaltung einstellbar (Seite /neu/mahnstufen/), nichts davon im Code.
+    mahn_verzug_ab_tag = models.PositiveSmallIntegerField(
+        "Verzug beginnt n Tage nach Fälligkeit", default=0,
+        help_text="0 = der Fälligkeitstag zählt als Tag 0 (eine am 1. fällige Miete ist am 1. "
+                  "im Mahnlauf sichtbar); 1 = Verzug erst ab dem Folgetag.")
+    mahn_mindestabstand_tage = models.PositiveSmallIntegerField(
+        "Mindestabstand zwischen zwei Mahnungen (Tage)", default=7)
+    verzugszins_prozent = models.DecimalField(
+        "Verzugszins (% p.a.)", max_digits=4, decimal_places=2, default=Decimal('5.00'),
+        help_text="Gesetzlich 5 % (Art. 104 OR); vertraglich abweichend möglich.")
 
     class Meta:
         verbose_name = "Organisation"
@@ -156,6 +166,12 @@ class MahnStufe(models.Model):
     art_257d = models.BooleanField(
         "Kündigungsandrohung (Art. 257d OR)", default=False,
         help_text="Diese Stufe setzt die Zahlungsfrist mit Kündigungsandrohung.")
+    brief_titel = models.CharField(
+        "Titel des Mahnschreibens", max_length=120, blank=True, default='',
+        help_text="Leer = Standardtitel.")
+    brief_text = models.TextField(
+        "Text des Mahnschreibens", blank=True, default='',
+        help_text="Leer = Standardtext. Platzhalter: {monat} {betrag} {gebuehr} {mieter}.")
 
     objects = TenantManager()
     alle_organisationen = AlleOrganisationenManager()

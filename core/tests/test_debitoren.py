@@ -115,10 +115,10 @@ class MahnlaufTests(TestCase):
     def test_verzugszins_art104(self):
         from core.services.automation import verzugszins
         # 12'000 × 5% × 360/360 = 600.00
-        self.assertEqual(verzugszins(Decimal('12000'), 360), Decimal('600.00'))
+        self.assertEqual(verzugszins(Decimal('12000'), 360, Decimal('5.00')), Decimal('600.00'))
         # 10'000 × 5% × 90/360 = 125.00
-        self.assertEqual(verzugszins(Decimal('10000'), 90), Decimal('125.00'))
-        self.assertEqual(verzugszins(Decimal('1000'), 0), Decimal('0.00'))
+        self.assertEqual(verzugszins(Decimal('10000'), 90, Decimal('5.00')), Decimal('125.00'))
+        self.assertEqual(verzugszins(Decimal('1000'), 0, Decimal('5.00')), Decimal('0.00'))
 
     def test_mahnstufe_nach_tagen(self):
         """Die Schwellen kommen aus crm.MahnStufe (Startwert 14/30/60), nicht aus dem Code."""
