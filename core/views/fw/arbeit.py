@@ -439,7 +439,7 @@ def fw_leistenzahlen(request):
     except Exception:
         logger.exception('Zähler «Heute» nicht ermittelbar')
         zahl_heute = None
-    laeufe = (Lauf.objects.exclude(status=Lauf.ABGESCHLOSSEN)
+    laeufe = (Lauf.objects.offen()
               .filter(Q(faellig_am__lte=heute) | Q(blockaden__isnull=False,
                                                     blockaden__behoben_am__isnull=True))
               .distinct().count())
@@ -545,7 +545,8 @@ def fw_laeufe(request):
             # (`fw_zaehler`): Stichtag erreicht oder offen blockiert.
             'braucht_dich': bool(blockaden) or tage <= 0,
         }
-        (erledigt if lauf.status == Lauf.ABGESCHLOSSEN else offen).append(zeile)
+        (erledigt if lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN)
+         else offen).append(zeile)
     offen.sort(key=lambda z: z['lauf'].faellig_am)
     # nav 'laeufe' (bis v8: 'arbeit'): Die Seite ist der Kopf des Bereichs
     # «Läufe» (core/navigation.py) — mit 'arbeit' leuchtete «Heute» auf.

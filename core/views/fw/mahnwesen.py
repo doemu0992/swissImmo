@@ -400,6 +400,10 @@ def fw_mahnlauf(request):
     send_email = request.POST.get('kein_versand') != 'on'
     res = run_mahnlauf(aktive_lg=basis['aktive_lg'], send_email=send_email,
                        mit_zins=mit_zins, user=request.user)
+    if not basis['aktive_lg']:
+        from faelle.lauf_dienst import lauf_erledigt, periode_von
+        lauf_erledigt('mahnlauf', periode_von(timezone.localdate()),
+                      benutzer=request.user, gemahnt=res['gemahnt'])
     log_aktion(request, "Mahnlauf ausgeführt", "Sammellauf",
                f"{res['gemahnt']} gemahnt, {res['emails']} E-Mails, Gebühren CHF {res['gebuehren']}, Zins CHF {res['zins']}")
     if res['gemahnt']:

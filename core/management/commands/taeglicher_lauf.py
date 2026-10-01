@@ -113,6 +113,17 @@ class Command(BaseCommand):
         except Exception as e:
             details.append(f"Bewerbungs-Bereinigung übersprungen ({e})")
 
+        # Die Läufe des Monats im Arbeitsvorrat bereitstellen (1. Sollstellung,
+        # 5. Bankabgleich, 15. Mahnlauf, 25. Zahllauf) — idempotent. Vorher hat
+        # sie niemand angelegt, ausser jemand startete `laeufe_planen` von Hand.
+        try:
+            from faelle.lauf_dienst import planen
+            _arten, neue = planen(organisation)
+            if neue:
+                details.append(f"{neue} Lauf/Läufe für den Monat geplant")
+        except Exception as e:
+            details.append(f"Laufplanung übersprungen ({e})")
+
         msg = "Täglicher Lauf: " + ", ".join(details) + "."
         AktivitaetsLog.objects.create(aktion="Täglicher Lauf (Scheduler)", objekt="", details=msg)
         self.stdout.write(self.style.SUCCESS(f"{organisation}: {msg}"))

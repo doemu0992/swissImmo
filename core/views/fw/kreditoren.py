@@ -430,6 +430,9 @@ def fw_zahllauf(request):
                 r.zahlung_ausfuehrung = exec_date
                 r.save(update_fields=['status', 'zahlung_ausfuehrung'])
                 n += 1
+            from faelle.lauf_dienst import lauf_erledigt, periode_von
+            lauf_erledigt('zahllauf', periode_von(heute), benutzer=request.user,
+                          zahlungen=anzahl)
             log_aktion(request, "Zahllauf erzeugt", msg_id,
                        f"{anzahl} Zahlungen, CHF {summe}, Ausführung {exec_date}")
             resp = HttpResponse(xml, content_type='application/xml')
@@ -470,6 +473,10 @@ def fw_zahllauf(request):
                     # Nie stillschweigend überspringen — der Lauf gälte sonst
                     # als vollständig verbucht.
                     gesperrt += 1
+            if n:
+                from faelle.lauf_dienst import lauf_erledigt, periode_von
+                lauf_erledigt('zahllauf', periode_von(heute),
+                              benutzer=request.user, verbucht=n)
             log_aktion(request, "Zahllauf verbucht", f"{n} Zahlungen",
                        f"CHF {summe} · Valuta {valuta} · Konto {bank_nr}")
             if n:

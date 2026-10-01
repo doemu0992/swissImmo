@@ -802,7 +802,7 @@ def fw_finanzen(request):
         anzahl, summe = OFFENE_ZAHLEN.get(lauf.laufart.schluessel, (None, None))
         checkliste.append({
             'titel': f'{lauf.laufart.bezeichnung} {lauf.periode}',
-            'ok': lauf.status == Lauf.ABGESCHLOSSEN,
+            'ok': lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN),
             # `ziel_ansicht` ist ein VIEW-NAME, keine Adresse — das Feld
             # sagt es selbst: «Name der bestehenden View, die den Lauf
             # tatsaechlich ausfuehrt». Ohne `reverse()` stand
@@ -820,7 +820,7 @@ def fw_finanzen(request):
             # aufgehoben: Dringend ist, was den Stichtag ueberschritten hat
             # oder blockiert ist. Das ist eine Tatsache aus den Daten, nicht
             # eine Einschaetzung im Code.
-            'dringend': (lauf.status != Lauf.ABGESCHLOSSEN
+            'dringend': (lauf.status not in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN)
                          and (bool(blockaden) or lauf.faellig_am < heute)),
             'hinweis': (', '.join(b.grund for b in blockaden) if blockaden
                         else (f'abgeschlossen am '
