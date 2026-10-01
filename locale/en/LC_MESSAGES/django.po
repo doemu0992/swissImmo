@@ -21328,3 +21328,16 @@ msgstr "Open, but not in the reminder run — and why"
 #: core/templates/fw/mahnstufen.html:1
 msgid "Mit Kündigungsandrohung (Art. 257d OR) ist das Schreiben fest vorgegeben («Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung», Einschreiben, 30 Tage). Titel und Text unten gelten dann nicht."
 msgstr "With a termination warning (Art. 257d CO) the letter is fixed (“Payment default under Art. 257d CO – termination warning”, registered mail, 30 days). The title and text below do not apply then."
+
+#: core/templates/fw/vertrag_detail.html:1
+#, python-format
+msgid "Zugang bestätigt am %(datum)s"
+msgstr "Receipt confirmed on %(datum)s"
+
+#: core/templates/fw/vertrag_detail.html:1
+msgid "Versandt — Zugang nicht bestätigt"
+msgstr "Sent — receipt not confirmed"
+
+#: core/templates/fw/vertrag_detail.html:1
+msgid "Nicht zugestellt — Zugang nicht bestätigt"
+msgstr "Not delivered — receipt not confirmed"

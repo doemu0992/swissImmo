@@ -113,9 +113,18 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     """
     if letzte_stufe:
         from core.views.email_views import generate_mahnung_combined_pdf_bytes
+        # Die Mahngebühr der Stufe steht im Brief und hat einen eigenen Einzahlungsschein;
+        # dessen QRR ist die der Gebührenforderung (`stammrechnung` = die gemahnte Forderung).
+        # Gibt es sie noch nicht (Vorschau vor «Erfassen»), bleibt die Referenz leer.
+        gebuehr_ref = None
+        if gebuehr and gebuehr > 0 and rechnung is not None:
+            folge = (rechnung.folgeforderungen.filter(titel__icontains='Mahngebühr')
+                     .order_by('-id').first())
+            gebuehr_ref = (folge.qr_referenz if folge else None) or None
         return generate_mahnung_combined_pdf_bytes(
             vertrag, verwaltung, monat, betrag, datum,
-            reference=getattr(rechnung, 'qr_referenz', None) or None)
+            reference=getattr(rechnung, 'qr_referenz', None) or None,
+            gebuehr=gebuehr, gebuehr_reference=gebuehr_ref)
 
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm

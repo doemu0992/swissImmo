@@ -91,8 +91,15 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
 
 # 🔥 VERBESSERT: Hilfsfunktion für das kombinierte PDF (Brief S1 + QR S2)
 def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute,
-                                        empfaenger=None, reference=None):
+                                        empfaenger=None, reference=None,
+                                        gebuehr=None, gebuehr_reference=None):
     """257d-Zahlungsaufforderung mit Kuendigungsandrohung (+ QR-Rechnung).
+
+    `gebuehr` (> 0): Die Mahngebühr der Stufe. Sie steht als eigener Absatz im Brief und
+    bekommt einen SEPARATEN QR-Einzahlungsschein (letzte Seite, `gebuehr_reference` = QRR
+    der Gebührenforderung). Sie ist bewusst NICHT im Betrag der Fristansetzung und nicht auf
+    dem ersten Einzahlungsschein: Art. 257d OR nennt nur Mietzinse und Nebenkosten
+    (siehe core/services/zahlungsverzug.py).
     empfaenger (optional): {firma, name, strasse, ort_line, nachname, anrede} —
     ueberschreibt den Empfaenger fuer separat adressierte Kopien (Art. 266n OR:
     Familienwohnung/Mitmieter). Ohne Override: vertrag.mieter."""
@@ -151,6 +158,9 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
         "KÜNDIGUNGSANDROHUNG:",
         "Sollte die vollständige Zahlung nicht innert dieser Frist bei uns eintreffen, werden wir",
         "das Mietverhältnis gestützt auf Art. 257d Abs. 2 OR ausserordentlich kündigen.", "",
+        *([f"Für diese Mahnung stellen wir Ihnen eine Mahngebühr von CHF {gebuehr:.2f} in Rechnung.",
+           "Bitte bezahlen Sie diese mit dem separaten Einzahlungsschein auf der letzten Seite.", ""]
+          if gebuehr and gebuehr > 0 else []),
         "Sollte sich Ihre Zahlung mit diesem Schreiben gekreuzt haben, bitten wir Sie,",
         "dieses Schreiben als gegenstandslos zu betrachten.", "",
         "Freundliche Grüsse", "", "", "__________________________",
@@ -199,6 +209,12 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
             draw_qr_bill(c, iban, creditor, debtor, betrag_float,
                          f"Mahnung {monat_str} {vertrag.einheit.bezeichnung}",
                          reference=reference)
+            # SEPARATER Einzahlungsschein für die Mahngebühr — eigener Betrag, eigene Referenz.
+            if gebuehr and gebuehr > 0:
+                c.showPage()
+                draw_qr_bill(c, iban, creditor, debtor, float(gebuehr),
+                             f"Mahngebühr {monat_str} {vertrag.einheit.bezeichnung}",
+                             reference=gebuehr_reference)
         except: pass
 
     c.save(); buffer.seek(0)
@@ -302,7 +318,7 @@ def send_mahnung_email_view(request, vertrag_id):
     # Dasselbe PDF, das der Mieter erhält, gehört in die Akte — sonst lässt sich
     # später nicht belegen, WAS zugestellt wurde.
     ablage_mahnung(vertrag, monat=monat_str, betrag=betrag_str, datum=heute,
-                   pdf_bytes=pdf_bytes)
+                   pdf_bytes=pdf_bytes, zugang_pflichtig=True)
 
     firma_name = getattr(vertrag.mieter, 'firma', None)
     anzeige_name = firma_name if firma_name else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
