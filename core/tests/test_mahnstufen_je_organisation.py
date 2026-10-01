@@ -545,3 +545,79 @@ class MahnlaufTerminTests(TestCase):
         _stufen_setzen(self.a.organisation, {1: 0})
         mahnlauf_termin_nachziehen(self.a.organisation, self.STICHTAG)
         self.assertEqual(self._faellig(self.a).day, 15)
+
+
+class VorlaufAbschnittTests(TestCase):
+    """Eine fällige Miete, die noch unter der ersten Stufe liegt, ist sichtbar und mahnbar.
+
+    Vorher zeigte `/neu/mahnwesen/` nur Forderungen, die schon eine Stufe erreicht hatten:
+    Mit der Standard-Stufe (ab 14 Tagen) fehlte eine am 1. fällige Miete am 1. ersatzlos.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def _seite(self, fixture):
+        c = Client()
+        c.force_login(fixture.benutzer)
+        return c, c.get('/neu/mahnwesen/')
+
+    def test_heute_faellige_miete_steht_im_abschnitt(self):
+        r = _ueberfaellige_rechnung(self.a, 0)
+        _c, antwort = self._seite(self.a)
+        vorlauf = antwort.context['vorlauf']
+        self.assertEqual([v['r'].pk for v in vorlauf], [r.pk])
+        self.assertEqual(vorlauf[0]['naechste']['stufe'], 1)
+        self.assertEqual(antwort.context['anzahl_total'], 0)
+        self.assertContains(antwort, 'Jetzt mahnen')
+
+    def test_echte_sollstellung_oktober(self):
+        """Der echte Weg: Sollstellung stellt die Miete am 1. fällig, die Seite zeigt sie am 1."""
+        from unittest import mock
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        heute = timezone.datetime(2026, 10, 1).date()
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=self.a.debitor.pk).update(status='bezahlt')
+            self.assertEqual(run_sollstellung(2026, 10), 1)
+            rechnung = DebitorenRechnung.objects.get(titel='Miete & NK 10/2026')
+            self.assertEqual(rechnung.faellig_am, heute)
+        with mock.patch('django.utils.timezone.localdate', return_value=heute):
+            _c, antwort = self._seite(self.a)
+        self.assertEqual([v['r'].pk for v in antwort.context['vorlauf']], [rechnung.pk])
+
+    def test_klick_erfasst_die_naechste_stufe(self):
+        from finance.models import Mahnung
+        r = _ueberfaellige_rechnung(self.a, 0)
+        c, antwort = self._seite(self.a)
+        v = antwort.context['vorlauf'][0]
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': v['naechste']['stufe']})
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(list(Mahnung.objects.filter(debitoren_rechnung=r)
+                                  .values_list('stufe', flat=True)), [1])
+        # Danach ist die nächste Stufe 2 (nicht wieder 1).
+        _c, antwort = self._seite(self.a)
+        self.assertEqual(antwort.context['vorlauf'][0]['naechste']['stufe'], 2)
+
+    def test_nicht_faellige_miete_steht_nicht_da(self):
+        from finance.models import DebitorenRechnung
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=self.a.debitor.pk).update(status='bezahlt')
+            morgen = timezone.localdate() + timedelta(days=1)
+            DebitorenRechnung.objects.create(
+                vertrag=self.a.vertrag, liegenschaft=self.a.liegenschaft, titel='Miete morgen',
+                betrag=Decimal('1700'), datum=morgen, faellig_am=morgen, status='offen')
+        _c, antwort = self._seite(self.a)
+        self.assertEqual(antwort.context['vorlauf'], [])
+
+    def test_mahnsperre_und_fremde_organisation(self):
+        from crm.models import Mieter
+        _ueberfaellige_rechnung(self.a, 0)
+        _ueberfaellige_rechnung(self.b, 0)
+        _c, antwort = self._seite(self.a)
+        self.assertEqual(len(antwort.context['vorlauf']), 1)      # nur die eigene
+        Mieter.alle_organisationen.filter(pk=self.a.mieter.pk).update(mahnsperre=True)
+        _c, antwort = self._seite(self.a)
+        self.assertEqual(antwort.context['vorlauf'], [])

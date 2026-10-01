@@ -174,6 +174,47 @@
         </table>
     </div>
 </div>
+{% if vorlauf %}
+<div class="fw-card">
+    <div class="fw-kopf">
+        <h3 class="fw-t">{% trans "Im Verzug, Frist der nächsten Stufe noch nicht erreicht" %}</h3>
+    </div>
+    <p class="fw-mutet fw-rumpf">{% trans "Diese Forderungen sind fällig, haben aber die Frist der nächsten Mahnstufe noch nicht erreicht. Der reguläre Mahnlauf erfasst sie nicht — hier können Sie sie trotzdem mahnen." %}</p>
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th>{% trans "Mieter" %}</th><th>{% trans "Objekt" %}</th><th>{% trans "Forderung" %}</th>
+                <th>{% trans "Fällig am" %}</th><th class="fw-zentriert">{% trans "Tage" %}</th>
+                <th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Nächste Stufe" %}</th>
+                <th class="fw-right">{% trans "Aktion" %}</th>
+            </tr></thead>
+            <tbody>
+            {% for v in vorlauf %}
+            <tr>
+                <td class="fw-strong whitespace-nowrap"><a href="/neu/vertraege/{{ v.vertrag_id }}/" class="fw-link">{{ v.mieter }}</a></td>
+                <td class="fw-mutet whitespace-nowrap">{{ v.objekt }}</td>
+                <td>{{ v.r.titel }}</td>
+                <td class="fw-mutet fw-num whitespace-nowrap">{{ v.faellig|date:"d.m.Y" }}</td>
+                <td class="fw-zentriert fw-num">{% if v.tage == 0 %}<span class="fw-strong">{% trans "heute fällig" %}</span>{% else %}{{ v.tage }}{% endif %}</td>
+                <td class="fw-right fw-num fw-strong">{{ v.offen|chf }}</td>
+                <td>{{ v.naechste.label }} <span class="fw-klein">({% blocktrans with n=v.naechste.ab_tage %}ab {{ n }} Tagen{% endblocktrans %})</span></td>
+                <td class="fw-right">
+                    <form method="post" action="/neu/mahnwesen/erfassen/" class="inline"
+                          onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt." %}{% endfilter %}');">
+                        {% csrf_token %}
+                        <input type="hidden" name="rechnung_id" value="{{ v.r.id }}">
+                        <input type="hidden" name="stufe" value="{{ v.naechste.stufe }}">
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <button type="submit" class="fw-btn fw-primary fw-knapp">{% zeichen 'verlauf' %} {% trans "Jetzt mahnen" %}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 {% comment %} Freigabeleiste nach konzept-v8 (Läufe): Der Mahnlauf wandert aus dem
    Seitenkopf nach unten — Optionen links, Knopf rechts. {% endcomment %}
 {% comment %} Die Leiste steht IMMER da: Vorher nur bei `anzahl_total` — eine heute fällige

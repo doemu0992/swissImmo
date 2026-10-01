@@ -21466,3 +21466,27 @@ msgstr "FORCER le processus de rappel ? Chaque créance en demeure reçoit maint
 #: core/templates/fw/mahnstufen.html:1
 msgid "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
 msgstr "Processus forcé : chaque créance en demeure reçoit le niveau de rappel suivant, même si son délai n'est pas encore atteint."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Im Verzug, Frist der nächsten Stufe noch nicht erreicht"
+msgstr "En demeure, délai du niveau suivant pas encore atteint"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Forderungen sind fällig, haben aber die Frist der nächsten Mahnstufe noch nicht erreicht. Der reguläre Mahnlauf erfasst sie nicht — hier können Sie sie trotzdem mahnen."
+msgstr "Ces créances sont échues mais n'ont pas encore atteint le délai du prochain niveau de rappel. Le processus de rappel régulier ne les saisit pas — vous pouvez quand même les relancer ici."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "heute fällig"
+msgstr "échu aujourd'hui"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Nächste Stufe"
+msgstr "Niveau suivant"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Jetzt mahnen"
+msgstr "Relancer maintenant"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
+msgstr "Relancer cette créance maintenant ? Le rappel est saisi et les frais de rappel du niveau sont facturés."

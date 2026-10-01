@@ -21354,3 +21354,27 @@ msgstr "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste 
 #: core/templates/fw/mahnstufen.html:1
 msgid "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
 msgstr "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Im Verzug, Frist der nächsten Stufe noch nicht erreicht"
+msgstr "Im Verzug, Frist der nächsten Stufe noch nicht erreicht"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Forderungen sind fällig, haben aber die Frist der nächsten Mahnstufe noch nicht erreicht. Der reguläre Mahnlauf erfasst sie nicht — hier können Sie sie trotzdem mahnen."
+msgstr "Diese Forderungen sind fällig, haben aber die Frist der nächsten Mahnstufe noch nicht erreicht. Der reguläre Mahnlauf erfasst sie nicht — hier können Sie sie trotzdem mahnen."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "heute fällig"
+msgstr "heute fällig"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Nächste Stufe"
+msgstr "Nächste Stufe"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Jetzt mahnen"
+msgstr "Jetzt mahnen"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
+msgstr "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
