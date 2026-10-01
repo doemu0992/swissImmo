@@ -214,6 +214,9 @@ class MandantenFixture:
         from tickets.models import HandwerkerAuftrag
 
         k = self.kuerzel
+        # Die Standard-Mahnstufen legt `Organisation.save` an; hier wird die erste gegriffen.
+        from crm.models import MahnStufe
+        self.mahnstufe = MahnStufe.objects.get(stufe=1)
         self.abnahme = Abnahmeprotokoll.objects.create(vertrag=self.vertrag)
         self.anpassung = MietzinsAnpassung.objects.create(
             vertrag=self.vertrag, wirksam_ab=date(2025, 4, 1),
@@ -413,6 +416,9 @@ class MandantenFixture:
     #: gewinnt, deshalb stehen die spezifischeren Muster vorn.
     #: Abgelesen aus dem `get_object_or_404` der jeweiligen View, nicht geraten.
     NAME_MUSTER = (
+        # Mahnstufen je Organisation: `fw_mahnstufe_loeschen` nimmt die `pk` einer
+        # Stufe. Ein POST auf eine FREMDE Stufe darf nichts löschen (404).
+        ('mahnstufe',       'mahnstufe'),
         # Phase 4b.5 — die ersten URLs zu Phase 4a. Die Selbstpruefung
         # `test_jeder_parameter_ist_zugeordnet` hat sie beim Bauen sofort
         # gemeldet: Ohne Eintrag hier waeren sie durch den Sweep gefallen,
