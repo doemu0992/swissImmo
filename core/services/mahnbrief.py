@@ -118,7 +118,7 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
         # Gibt es sie noch nicht (Vorschau vor «Erfassen»), bleibt die Referenz leer.
         gebuehr_ref = None
         if gebuehr and gebuehr > 0 and rechnung is not None:
-            folge = (rechnung.folgeforderungen.filter(titel__icontains='Mahngebühr')
+            folge = (rechnung.folgeforderungen.filter(titel__icontains='Mahngebühr').exclude(status='storniert')
                      .order_by('-id').first())
             gebuehr_ref = (folge.qr_referenz if folge else None) or None
         return generate_mahnung_combined_pdf_bytes(

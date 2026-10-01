@@ -21567,3 +21567,17 @@ msgstr "Envoyé — réception non confirmée"
 #: core/templates/fw/vertrag_detail.html:1
 msgid "Nicht zugestellt — Zugang nicht bestätigt"
 msgstr "Non remis — réception non confirmée"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahngebühr fehlt (storniert/gelöscht) — «Erfassen» stellt sie neu."
+msgstr "Frais de rappel manquants (annulés/supprimés) — « Enregistrer » les facture à nouveau."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
+msgstr "Frais de rappel du %(stufe)s. rappel refacturés · CHF %(gebuehr)s."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
+msgstr "Les frais de rappel n'ont pas pu être comptabilisés : %(exc)s"
