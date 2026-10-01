@@ -518,23 +518,15 @@ def fw_schaden_auftrag(request, pk):
     hw = get_object_or_404(Handwerker, id=request.POST.get('handwerker_id'))
     auftragstext = (request.POST.get('auftragstext') or '').strip()
 
-    from tickets.workflow import handwerker_zuweisen
-    handwerker_zuweisen(t, hw, auftragstext)
-
-    # Mail an Handwerker (Auftragstext, Foto als Anhang)
-    hw_betreff, hw_text = vorlage_text('ticket_handwerker', t, handwerker=hw)
-    if auftragstext:
-        hw_text = auftragstext
-    hw_ok = send_ticket_email(hw.email, hw_betreff, hw_text, foto_field=t.foto) if hw.email else False
-
-    # Info-Mail an Melder
+    from django.core.exceptions import ValidationError
+    from tickets.workflow import auftrag_vergeben
+    try:
+        res = auftrag_vergeben(t, hw, auftragstext)
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+        return redirect(f'/neu/schaeden/{t.id}/')
+    hw_ok, melder_ok = res['handwerker_versendet'], res['melder_informiert']
     melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
-    m_betreff, m_text = vorlage_text('ticket_melder', t, handwerker=hw)
-    melder_ok = send_ticket_email(melder_email, m_betreff, m_text) if melder_email else False
-
-    if melder_ok:
-        TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
-                                       nachricht=f"Melder automatisch informiert ({melder_email}).", is_intern=True)
 
     log_aktion(request, "Handwerker beauftragt", f"Ticket #{t.id}", f"{hw.firma}")
     hinweise = []
@@ -568,23 +560,21 @@ def fw_schaden_status(request, pk):
         return redirect(f'/neu/schaeden/{t.id}/')
     from django.core.exceptions import ValidationError
     from tickets.workflow import wechsle_status
+    informieren = request.POST.get('melder_informieren') == 'on'
+    melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
+    n_vorher = t.nachrichten.count()
     try:
-        wechsle_status(t, neu)
+        wechsle_status(t, neu, melder_informieren=informieren)
     except ValidationError as e:
         messages.error(request, '⛔ ' + ' '.join(e.messages))
         return redirect(f'/neu/schaeden/{t.id}/')
+    melder_informiert = t.nachrichten.count() > n_vorher   # Service hat Mail protokolliert
     TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
                                    nachricht=f"Status geändert: {auf_deutsch(t.get_status_display)}.", is_intern=True)
 
     info = ""
-    if request.POST.get('melder_informieren') == 'on':
-        melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
-        kat = 'ticket_erledigt' if neu == 'erledigt' else 'ticket_melder_status'
-        betreff, text = vorlage_text(kat, t, status=auf_deutsch(t.get_status_display))
-        if melder_email and send_ticket_email(melder_email, betreff, text):
-            info = f" · Melder informiert ({melder_email})"
-            TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
-                                           nachricht=f"Melder über Status '{auf_deutsch(t.get_status_display)}' informiert.", is_intern=True)
+    if informieren and melder_informiert:
+        info = f" · Melder informiert ({melder_email})"
 
     log_aktion(request, "Ticket-Status geändert", f"Ticket #{t.id}", auf_deutsch(t.get_status_display))
     messages.success(request, '✅ ' + gettext('Status: %(get_status_display)s%(info)s.') % {'get_status_display': t.get_status_display(), 'info': info})

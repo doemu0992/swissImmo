@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 # Helper to send mail via Hoststar
-def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None):
+def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None):
     try:
         from_email = settings.DEFAULT_FROM_EMAIL
         reply_addr = os.environ.get('EMAIL_REPLY_USER', 'reply@immoswiss.app')
@@ -30,6 +30,8 @@ def send_via_hoststar(to_email, subject, html_content, attachment_name=None, att
         if attachment_name and attachment_content:
             mime_type = 'application/pdf' if attachment_name.endswith('.pdf') else 'image/jpeg'
             email.attach(attachment_name, attachment_content, mime_type)
+        for name, inhalt, mime in (weitere_anhaenge or []):
+            email.attach(name, inhalt, mime)
 
         email.send(fail_silently=False)
         print(f"✅ Mail sent to {to_email}")

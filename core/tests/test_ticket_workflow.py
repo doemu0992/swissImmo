@@ -163,3 +163,97 @@ class SperreTests(TestCase):
         c.post(f'/neu/schaeden/{t.id}/status/', {'status': 'erledigt'})
         t.refresh_from_db()
         self.assertEqual(t.status, 'erledigt')
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class KommunikationTests(TestCase):
+    """Das Ticket spricht von selbst: Handwerker bekommt den Auftrag, der Mieter die Info."""
+
+    def test_auftrag_vergeben_sendet_handwerker_und_mieter(self):
+        from tickets.workflow import auftrag_vergeben
+        t = _ticket()
+        res = auftrag_vergeben(t, _handwerker(), 'Dichtung ersetzen')
+        self.assertTrue(res['handwerker_versendet'])
+        self.assertTrue(res['melder_informiert'])
+        an = {m.to[0]: m for m in mail.outbox}
+        self.assertEqual(set(an), {'hw@example.ch', 'hans@example.ch'})
+        self.assertEqual(an['hw@example.ch'].attachments[0][2], 'application/pdf')
+        self.assertIn('Sanitär AG', an['hans@example.ch'].body)   # Mieter erfährt die Firma
+        t.refresh_from_db()
+        self.assertEqual(t.status, 'in_bearbeitung')
+        typen = list(t.nachrichten.values_list('typ', 'is_intern'))
+        self.assertIn(('handwerker_mail', True), typen)
+        self.assertIn(('email', False), typen)   # für den Mieter im Portal sichtbar
+
+    def test_status_wechsel_informiert_mieter_automatisch(self):
+        from tickets.workflow import wechsle_status
+        t = _ticket()
+        wechsle_status(t, 'in_bearbeitung', melder_informieren=True)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['hans@example.ch'])
+
+    def test_interner_status_schweigt(self):
+        from tickets.workflow import wechsle_status
+        t = _ticket(status='in_bearbeitung')
+        wechsle_status(t, 'wartet_auf_rechnung', melder_informieren=True)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_ohne_flag_keine_mail(self):
+        from tickets.workflow import wechsle_status
+        wechsle_status(_ticket(), 'in_bearbeitung')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_abschluss_per_rechnung_informiert_mieter(self):
+        from tickets.workflow import auftrag_vergeben, rechnung_verknuepfen
+        t = _ticket()
+        a = auftrag_vergeben(t, _handwerker())['auftrag']
+        mail.outbox.clear()
+        rechnung_verknuepfen(a, _rechnung(t))
+        t.refresh_from_db()
+        self.assertEqual(t.status, 'erledigt')
+        self.assertEqual([m.to[0] for m in mail.outbox], ['hans@example.ch'])
+        self.assertIn('behoben', mail.outbox[0].subject)
+
+    def test_mailfehler_blockiert_nichts(self):
+        from unittest import mock
+        from tickets.workflow import auftrag_vergeben
+        t = _ticket()
+        with mock.patch('core.utils.email_service.send_ticket_email', side_effect=RuntimeError('smtp')):
+            res = auftrag_vergeben(t, _handwerker())
+        self.assertFalse(res['melder_informiert'])
+        t.refresh_from_db()
+        self.assertEqual(t.status, 'in_bearbeitung')
+        self.assertEqual(t.handwerker_auftraege.count(), 1)
+
+    def test_melder_ohne_mail_kein_absturz(self):
+        from tickets.workflow import auftrag_vergeben
+        t = _ticket()
+        t.email_melder = ''; t.save()
+        t.gemeldet_von.email = ''; t.gemeldet_von.save()
+        res = auftrag_vergeben(t, _handwerker())
+        self.assertFalse(res['melder_informiert'])
+
+    def test_handwerker_ohne_mail_wird_im_verlauf_vermerkt(self):
+        from crm.models import Handwerker
+        from tickets.workflow import auftrag_vergeben
+        t = _ticket()
+        res = auftrag_vergeben(t, Handwerker.objects.create(firma='Ohne Mail GmbH'))
+        self.assertFalse(res['handwerker_versendet'])
+        n = t.nachrichten.filter(typ='handwerker_mail').get()
+        self.assertIn('NICHT versendet', n.nachricht)
+
+    def test_ansicht_beauftragen_sendet_alles(self):
+        t = _ticket()
+        hw = _handwerker()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/schaeden/{t.id}/auftrag/', {'handwerker_id': hw.id, 'auftragstext': 'Bitte Termin'})
+        t.refresh_from_db()
+        self.assertEqual(t.status, 'in_bearbeitung')
+        self.assertEqual(sorted(m.to[0] for m in mail.outbox), ['hans@example.ch', 'hw@example.ch'])
+
+    def test_ansicht_status_erledigt_informiert_per_checkbox(self):
+        t = _ticket()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/schaeden/{t.id}/status/', {'status': 'erledigt', 'melder_informieren': 'on'})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('behoben', mail.outbox[0].subject)
