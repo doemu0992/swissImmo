@@ -21464,3 +21464,8 @@ msgstr "Mahngebühr fehlt (storniert/gelöscht) — «Erfassen» stellt sie neu.
 #, python-format
 msgid "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
 msgstr "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
+msgstr "Mahngebühr konnte nicht gebucht werden: %(exc)s"

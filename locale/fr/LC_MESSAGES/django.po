@@ -21576,3 +21576,8 @@ msgstr "Frais de rappel manquants (annulés/supprimés) — « Enregistrer » le
 #, python-format
 msgid "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
 msgstr "Frais de rappel du %(stufe)s. rappel refacturés · CHF %(gebuehr)s."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
+msgstr "Les frais de rappel n'ont pas pu être comptabilisés : %(exc)s"

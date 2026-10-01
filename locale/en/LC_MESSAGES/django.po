@@ -21350,3 +21350,8 @@ msgstr "Reminder fee missing (cancelled/deleted) — «Record» issues it again.
 #, python-format
 msgid "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
 msgstr "Reminder fee of reminder %(stufe)s issued again · CHF %(gebuehr)s."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
+msgstr "The reminder fee could not be booked: %(exc)s"

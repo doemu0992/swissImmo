@@ -21554,3 +21554,8 @@ msgstr "Spese di sollecito mancanti (stornate/eliminate) — «Registra» le rie
 #, python-format
 msgid "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
 msgstr "Spese di sollecito del %(stufe)s. sollecito riemesse · CHF %(gebuehr)s."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
+msgstr "Le spese di sollecito non hanno potuto essere contabilizzate: %(exc)s"
