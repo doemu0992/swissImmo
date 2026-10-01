@@ -35,11 +35,33 @@ def forderungs_monat(rechnung):
     return monat_text(d) if d else ''
 
 
-_TITEL = {
-    1: "Zahlungserinnerung",
-    2: "2. Mahnung",
-    3: "3. Mahnung – letzte Mahnung",
-}
+def _ist_erste_stufe(vertrag, stufe):
+    """Ist `stufe` die niedrigste Stufe der Organisation — also die erste Mahnung?
+
+    Der Ton des Schreibens hängt davon ab, nicht von der Nummer: Hat die Verwaltung
+    nur EINE Stufe (oder die Stufe 1 gelöscht), ist die niedrigste trotzdem die erste."""
+    from crm.models import MahnStufe
+    return not (MahnStufe.alle_organisationen
+                .filter(organisation_id=vertrag.organisation_id, stufe__lt=stufe).exists())
+
+
+def titel_fuer(vertrag, stufe, letzte_stufe=False):
+    """Titel des Mahnschreibens (auch Betreff der Kopie per E-Mail, Text der QR-Rechnung).
+
+    Vorrang hat der Titel der Verwaltung (`MahnStufe.brief_titel`). Sonst richtet er sich
+    nach dem, was das Schreiben tut — nicht nach der Stufennummer:
+
+    * Stufe mit Kündigungsandrohung (Art. 257d-Häkchen): «Letzte Mahnung» bzw.
+      «N. Mahnung – letzte Mahnung»;
+    * sonst die erste Stufe: «Zahlungserinnerung»; alle weiteren: «N. Mahnung».
+    """
+    eigene = _eigener_brief(vertrag, stufe)
+    if eigene and eigene.brief_titel:
+        return eigene.brief_titel
+    erste = _ist_erste_stufe(vertrag, stufe)
+    if letzte_stufe:
+        return "Letzte Mahnung" if erste else f"{stufe}. Mahnung – letzte Mahnung"
+    return "Zahlungserinnerung" if erste else f"{stufe}. Mahnung"
 
 
 def _eigener_brief(vertrag, stufe):
@@ -86,6 +108,7 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
 
     m = vertrag.mieter
     eigene = _eigener_brief(vertrag, stufe)
+    erste = _ist_erste_stufe(vertrag, stufe)
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     links = 25 * mm
@@ -108,8 +131,8 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     c.setFont("Helvetica", 10)
     c.drawString(links, 210 * mm, f"{verwaltung.ort if verwaltung else ''}, {datum:%d.%m.%Y}")
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(links, 195 * mm, (eigene and eigene.brief_titel)
-                 or _TITEL.get(stufe, f"{stufe}. Mahnung"))
+    titel = titel_fuer(vertrag, stufe, letzte_stufe)
+    c.drawString(links, 195 * mm, titel)
     c.setFont("Helvetica-Bold", 10)
     e = vertrag.einheit
     c.drawString(links, 189 * mm, f"Mietobjekt: {e.bezeichnung}, {e.liegenschaft.strasse}")
@@ -128,7 +151,14 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
         zeilen += _eigener_text(eigene.brief_text, monat=monat, betrag=betrag,
                                 gebuehr=f"{gebuehr:.2f}" if gebuehr else "0.00",
                                 mieter=f"{m.vorname} {m.nachname}".strip())
-    elif stufe <= 1:
+    elif letzte_stufe and erste:
+        # Erste UND letzte Stufe (z. B. nur eine Stufe mit Kündigungsandrohung): weder
+        # «übersehen» (das wäre die freundliche Erinnerung) noch «trotz früherer
+        # Schreiben» (es gab keine) — sachlich, mit der Aufforderung zur Zahlung.
+        zeilen += [f"bei der Kontrolle unserer Zahlungseingänge haben wir festgestellt, dass für",
+                   f"{monat} noch CHF {betrag} ausstehend sind.", "",
+                   "Wir bitten Sie, den Betrag umgehend zu überweisen."]
+    elif erste:
         zeilen += [f"bei der Kontrolle unserer Zahlungseingänge haben wir festgestellt, dass für",
                    f"{monat} noch CHF {betrag} ausstehend sind.", "",
                    "Sicher haben Sie die Zahlung nur übersehen. Wir bitten Sie, den Betrag",
@@ -169,7 +199,7 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
             debtor = {'name': (getattr(m, 'firma', None) or f"{m.vorname} {m.nachname}").strip(),
                       'line1': m.strasse or '', 'line2': f"{m.plz} {m.ort}"}
             draw_qr_bill(c, iban, creditor, debtor, float(str(betrag).replace(',', '.')),
-                         f"{_TITEL.get(stufe, 'Mahnung')} {monat} {e.bezeichnung}",
+                         f"{titel} {monat} {e.bezeichnung}",
                          reference=getattr(rechnung, 'qr_referenz', None) or None)
         except Exception:
             pass
