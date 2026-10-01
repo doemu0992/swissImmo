@@ -18971,6 +18971,10 @@ msgstr "In attesa dell'inquilino"
 msgid "Warte auf Handwerker"
 msgstr "In attesa dell'artigiano"
 
+#: core/views/fw/schaeden.py:52 tickets/models.py:16
+msgid "Wartet auf Rechnung"
+msgstr "In attesa della fattura"
+
 #: core/views/fw/schaeden.py:126
 #, python-format
 msgid "Offen (%(n)s)"

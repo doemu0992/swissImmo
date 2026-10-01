@@ -18781,6 +18781,10 @@ msgstr "Waiting for tenant"
 msgid "Warte auf Handwerker"
 msgstr "Waiting for tradesperson"
 
+#: core/views/fw/schaeden.py:52 tickets/models.py:16
+msgid "Wartet auf Rechnung"
+msgstr "Waiting for invoice"
+
 #: core/views/fw/schaeden.py:126
 #, python-format
 msgid "Offen (%(n)s)"

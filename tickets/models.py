@@ -13,6 +13,7 @@ class SchadenMeldung(OrganisationAusKette):
         ('in_bearbeitung', _('In Bearbeitung')),
         ('warte_auf_mieter', _('Warte auf Mieter')),
         ('warte_auf_handwerker', _('Warte auf Handwerker')),
+        ('wartet_auf_rechnung', _('Wartet auf Rechnung')),
         ('erledigt', _('Erledigt'))
     ]
     ZUTRITT_CHOICES = [
@@ -56,7 +57,20 @@ class SchadenMeldung(OrganisationAusKette):
     erstellt_am = models.DateTimeField(auto_now_add=True)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 
+    def clean(self):
+        # Admin-/ModelForm-Weg: Fehler am Formular statt 500.
+        if self.status == 'erledigt' and self.pk:
+            from .workflow import abschluss_pruefen
+            abschluss_pruefen(self)
+
     def save(self, *args, **kwargs):
+        # Sicherheitssperre (tickets/workflow.py): ein Ticket mit Handwerker-
+        # auftrag wird nicht «erledigt», solange eine Handwerkerrechnung fehlt.
+        # Sie sitzt im Modell, nicht in der Ansicht — sonst umgeht sie die
+        # Admin-Aktion, ein Skript oder die nächste Ansicht.
+        if self.status == 'erledigt' and self.pk:
+            from .workflow import abschluss_pruefen
+            abschluss_pruefen(self)
         super().save(*args, **kwargs)
         # Ein erledigtes Ticket schliesst seine Handwerkeraufträge. Der Status
         # des Auftrags änderte sich nie («offen» auch bei erledigtem Ticket und

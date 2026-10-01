@@ -125,8 +125,16 @@ class AuftragTicketTests(TestCase):
                                                betroffene_einheit=self.e, status='in_bearbeitung')
         self.a = HandwerkerAuftrag.objects.create(ticket=self.t, handwerker=Handwerker.objects.create(firma='HLK AG'))
 
+    def _rechnung_verknuepfen(self):
+        # Sperre: ohne Handwerkerrechnung kein Abschluss (tickets/workflow.py).
+        from finance.models import KreditorenRechnung
+        self.a.kreditoren_rechnung = KreditorenRechnung.objects.create(
+            liegenschaft=self.lg, lieferant='HLK AG', betrag=100, status='neu')
+        self.a.save()
+
     def test_erledigtes_ticket_schliesst_den_auftrag(self):
         self.assertEqual(self.a.status, 'offen')
+        self._rechnung_verknuepfen()
         self.t.status = 'erledigt'; self.t.save()
         self.a.refresh_from_db()
         self.assertEqual(self.a.status, 'erledigt', 'Auftrag bleibt «offen» bei erledigtem Ticket.')
@@ -146,6 +154,7 @@ class AuftragTicketTests(TestCase):
         p = Pendenz.objects.get(quelle=f'auto:ticket:{self.t.pk}')
         self.assertIn('83 Tagen', p.titel)
         self.assertFalse(p.erledigt)
+        self._rechnung_verknuepfen()
         self.t.refresh_from_db(); self.t.status = 'erledigt'; self.t.save()
         generate_auto_pendenzen(horizont_tage=30)
         p.refresh_from_db()
