@@ -755,6 +755,7 @@ TICKET_STATUS_PILL = {
     'in_bearbeitung':       (gettext_lazy('In Bearbeitung'),      'fw-info-flaeche fw-info'),
     'warte_auf_mieter':     (gettext_lazy('Warte auf Sie'),       'fw-warn-flaeche fw-warnton'),
     'warte_auf_handwerker': (gettext_lazy('Handwerker beauftragt'), 'fw-markenflaeche fw-marke'),
+    'wartet_auf_rechnung':  (gettext_lazy('Handwerker beauftragt'), 'fw-markenflaeche fw-marke'),
     'erledigt':             (gettext_lazy('Erledigt'),            'fw-gut-flaeche fw-gut'),
 }
 

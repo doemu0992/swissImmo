@@ -81,7 +81,7 @@ STUFEN_RANG = {'crit': 0, 'warn': 1, 'good': 2}
 #: gemeldet und heute beauftragt wurde, läuft korrekt.
 PRIO_RANG = {'hoch': 0, 'mittel': 1, 'tief': 2}
 
-WARTEZUSTAENDE = ('warte_auf_mieter', 'warte_auf_handwerker')
+WARTEZUSTAENDE = ('warte_auf_mieter', 'warte_auf_handwerker', 'wartet_auf_rechnung')
 
 #: Die zwei Systemnotizen, die einen NACHGEWIESENEN Versand an den Melder
 #: protokollieren — beide entstehen ausschliesslich nach erfolgreichem

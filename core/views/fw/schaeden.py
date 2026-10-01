@@ -49,6 +49,7 @@ TICKET_PILL = {
     'in_bearbeitung':        (gettext_lazy('In Bearbeitung'),     'fw-info-flaeche fw-info'),
     'warte_auf_mieter':      (gettext_lazy('Warte auf Mieter'),   'fw-warn-flaeche fw-warnton'),
     'warte_auf_handwerker':  (gettext_lazy('Warte auf Handwerker'),'fw-warn-flaeche fw-warnton'),
+    'wartet_auf_rechnung':   (gettext_lazy('Wartet auf Rechnung'),'fw-warn-flaeche fw-warnton'),
     'erledigt':              (gettext_lazy('Erledigt'),           'fw-gut-flaeche fw-gut'),
 }
 PRIO_PILL = {
@@ -517,13 +518,8 @@ def fw_schaden_auftrag(request, pk):
     hw = get_object_or_404(Handwerker, id=request.POST.get('handwerker_id'))
     auftragstext = (request.POST.get('auftragstext') or '').strip()
 
-    with transaction.atomic():
-        auftrag = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, bemerkung=auftragstext, status='offen')
-        TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
-                                       nachricht=f"Auftrag an {hw.firma} vergeben.", is_intern=True)
-        if t.status == 'neu':
-            t.status = 'in_bearbeitung'
-        t.save()
+    from tickets.workflow import handwerker_zuweisen
+    handwerker_zuweisen(t, hw, auftragstext)
 
     # Mail an Handwerker (Auftragstext, Foto als Anhang)
     hw_betreff, hw_text = vorlage_text('ticket_handwerker', t, handwerker=hw)
@@ -570,8 +566,13 @@ def fw_schaden_status(request, pk):
     if neu not in dict(SchadenMeldung.STATUS_CHOICES):
         messages.error(request, gettext('Ungültiger Status.'))
         return redirect(f'/neu/schaeden/{t.id}/')
-    t.status = neu
-    t.save()
+    from django.core.exceptions import ValidationError
+    from tickets.workflow import wechsle_status
+    try:
+        wechsle_status(t, neu)
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+        return redirect(f'/neu/schaeden/{t.id}/')
     TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
                                    nachricht=f"Status geändert: {auf_deutsch(t.get_status_display)}.", is_intern=True)
 
