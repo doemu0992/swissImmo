@@ -251,7 +251,7 @@ def send_mahnung_email_view(request, vertrag_id):
     rid, stufe_roh = request.POST.get('rechnung'), request.POST.get('stufe')
     if rid and stufe_roh:
         from finance.models import DebitorenRechnung
-        from core.services.mahnbrief import _TITEL, forderungs_monat, mahnbrief_pdf
+        from core.services.mahnbrief import forderungs_monat, mahnbrief_pdf, titel_fuer
         from core.services.mahnstufen import eigentuemer_von_rechnung, mahnstufen_config
         rechnung = get_object_or_404(DebitorenRechnung, pk=rid, vertrag=vertrag)
         if rechnung.offener_betrag <= 0:
@@ -274,9 +274,10 @@ def send_mahnung_email_view(request, vertrag_id):
             letzte_stufe=bool(cfg and cfg['kuendigung']), rechnung=rechnung)
         ablage_mahnung(vertrag, stufe=stufe, datum=heute, pdf_bytes=pdf_bytes)
         objekt = f"{vertrag.einheit.bezeichnung} ({vertrag.einheit.liegenschaft.strasse})"
+        titel = titel_fuer(vertrag, stufe, bool(cfg and cfg['kuendigung']))
         email = EmailMultiAlternatives(
-            subject=f"{_TITEL.get(stufe, 'Mahnung')}: {objekt}",
-            body=(f"Guten Tag, im Anhang finden Sie die {_TITEL.get(stufe, 'Mahnung')} "
+            subject=f"{titel}: {objekt}",
+            body=(f"Guten Tag, im Anhang finden Sie die {titel} "
                   f"für {monat_str} über CHF {betrag_str} (Kopie; das Original erhalten "
                   f"Sie auf dem Postweg)."),
             from_email=settings.DEFAULT_FROM_EMAIL, to=[vertrag.mieter.email])

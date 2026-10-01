@@ -746,3 +746,72 @@ class OhneMahnfallBegruendungTests(TestCase):
         antwort, gruende = self._gruende()
         self.assertEqual(gruende, [])
         self.assertEqual(len(antwort.context['rows']), 1)
+
+
+class MahnschreibenPassendZurStufeTests(TestCase):
+    """Titel und Text des Schreibens folgen dem Häkchen Art. 257d und der Stellung der Stufe —
+    nicht nur der Stufennummer. Vorher bekam eine einzige Stufe mit Häkchen den Titel
+    «Zahlungserinnerung» und «Sicher haben Sie die Zahlung nur übersehen» — und darunter
+    «Dies ist unsere letzte Mahnung»."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _brief(self, stufe, letzte, gebuehr=Decimal('0.00')):
+        import io
+        from pypdf import PdfReader
+        from core.services.mahnbrief import mahnbrief_pdf
+        with organisation_kontext(self.a.organisation):
+            pdf = mahnbrief_pdf(self.a.vertrag, self.a.organisation, stufe=stufe, monat='Oktober 2026',
+                                betrag='100.00', datum=timezone.localdate(), gebuehr=gebuehr,
+                                letzte_stufe=letzte)
+        return ' '.join(PdfReader(io.BytesIO(pdf)).pages[0].extract_text().split())
+
+    def test_erste_stufe_ohne_haekchen_ist_die_freundliche_erinnerung(self):
+        text = self._brief(1, False)
+        self.assertIn('Zahlungserinnerung', text)
+        self.assertIn('nur übersehen', text)
+        self.assertNotIn('letzte Mahnung', text)
+
+    def test_einzige_stufe_mit_haekchen_ist_sachlich_und_letzte_mahnung(self):
+        """Der gemeldete Fall: nur eine Stufe, mit Art.-257d-Häkchen und Gebühr CHF 40."""
+        from crm.models import MahnStufe
+        with organisation_kontext(self.a.organisation):
+            MahnStufe.objects.filter(stufe__in=(2, 3)).delete()
+            MahnStufe.objects.filter(stufe=1).update(art_257d=True, gebuehr=Decimal('40.00'))
+        text = self._brief(1, True, Decimal('40.00'))
+        self.assertIn('Letzte Mahnung', text)
+        self.assertNotIn('Zahlungserinnerung', text)
+        self.assertNotIn('übersehen', text)                  # keine freundliche Erinnerung
+        self.assertNotIn('früheren Schreiben', text)         # es gab keine früheren
+        self.assertIn('Wir bitten Sie, den Betrag umgehend zu überweisen', text)
+        self.assertIn('Mahngebühr von CHF 40.00', text)
+        self.assertIn('Dies ist unsere letzte Mahnung', text)
+        self.assertIn('Art. 257d OR', text)
+
+    def test_letzte_stufe_nach_fruehreren_ist_numeriert_und_verweist_auf_fruehere(self):
+        text = self._brief(3, True)
+        self.assertIn('3. Mahnung – letzte Mahnung', text)
+        self.assertIn('trotz unserer früheren Schreiben', text)
+
+    def test_mittlere_stufe(self):
+        text = self._brief(2, False)
+        self.assertIn('2. Mahnung', text)
+        self.assertNotIn('letzte Mahnung', text)
+        self.assertIn('trotz unserer früheren Schreiben', text)
+
+    def test_wenn_stufe_1_geloescht_ist_die_niedrigste_die_erste(self):
+        from crm.models import MahnStufe
+        with organisation_kontext(self.a.organisation):
+            MahnStufe.objects.filter(stufe=1).delete()
+        text = self._brief(2, False)
+        self.assertIn('Zahlungserinnerung', text)
+        self.assertIn('nur übersehen', text)
+
+    def test_titel_der_verwaltung_hat_vorrang(self):
+        from core.services.mahnbrief import titel_fuer
+        from crm.models import MahnStufe
+        with organisation_kontext(self.a.organisation):
+            MahnStufe.objects.filter(stufe=1).update(brief_titel='Freundliche Erinnerung')
+            self.assertEqual(titel_fuer(self.a.vertrag, 1, True), 'Freundliche Erinnerung')
