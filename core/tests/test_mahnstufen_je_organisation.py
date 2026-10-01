@@ -683,3 +683,66 @@ class EigentuemerUebersteuerungTests(TestCase):
         antwort = self.c.get('/neu/mahnwesen/')
         self.assertEqual(antwort.context['offen_gesamt_n'], 1)
         self.assertContains(antwort, 'Offene Forderungen insgesamt: 1')
+
+
+class OhneMahnfallBegruendungTests(TestCase):
+    """Jede offene Forderung, die nicht in der Liste steht, nennt ihren Grund."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def setUp(self):
+        self.c = Client()
+        self.c.force_login(self.a.benutzer)
+
+    def _gruende(self):
+        antwort = self.c.get('/neu/mahnwesen/')
+        return antwort, [z['grund'] for z in antwort.context['ohne_mahnfall']]
+
+    def test_noch_nicht_faellig(self):
+        from finance.models import DebitorenRechnung
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=self.a.debitor.pk).update(status='bezahlt')
+            morgen = timezone.localdate() + timedelta(days=1)
+            DebitorenRechnung.objects.create(
+                vertrag=self.a.vertrag, liegenschaft=self.a.liegenschaft, titel='Miete morgen',
+                betrag=Decimal('1700'), datum=morgen, faellig_am=morgen, status='offen')
+        antwort, gruende = self._gruende()
+        self.assertEqual(len(gruende), 1)
+        self.assertIn('Noch nicht fällig', gruende[0])
+        self.assertContains(antwort, 'Offen, aber nicht im Mahnlauf')
+
+    def test_mahnsperre(self):
+        from crm.models import Mieter
+        _ueberfaellige_rechnung(self.a, 0)
+        Mieter.alle_organisationen.filter(pk=self.a.mieter.pk).update(mahnsperre=True)
+        _antwort, gruende = self._gruende()
+        self.assertEqual([g for g in gruende if 'Mahnsperre' in g], gruende)
+        self.assertEqual(len(gruende), 1)
+
+    def test_eigentuemer_hat_alle_stufen_deaktiviert(self):
+        """Der Fall, der eine fällige Miete ohne jeden Hinweis verschwinden liess."""
+        from crm.models import Eigentuemer
+        Eigentuemer.alle_organisationen.filter(pk=self.a.eigentuemer.pk).update(
+            mahn_konfig=[{'stufe': 1, 'aktiv': False}, {'stufe': 2, 'aktiv': False},
+                         {'stufe': 3, 'aktiv': False}])
+        _ueberfaellige_rechnung(self.a, 0)
+        _antwort, gruende = self._gruende()
+        self.assertEqual(len(gruende), 1)
+        self.assertIn('Keine aktive Mahnstufe', gruende[0])
+        self.assertIn(self.a.eigentuemer.firma_oder_name, gruende[0])
+
+    def test_verzugsbeginn(self):
+        from crm.models import Organisation
+        Organisation.objects.filter(pk=self.a.organisation.pk).update(mahn_verzug_ab_tag=3)
+        _ueberfaellige_rechnung(self.a, 1)
+        _antwort, gruende = self._gruende()
+        self.assertEqual(len(gruende), 1)
+        self.assertIn('Der Verzug beginnt erst 3 Tage', gruende[0])
+
+    def test_gemahnte_forderung_steht_nicht_in_der_liste(self):
+        _ueberfaellige_rechnung(self.a, 20)      # Stufe 1 erreicht → normale Zeile
+        antwort, gruende = self._gruende()
+        self.assertEqual(gruende, [])
+        self.assertEqual(len(antwort.context['rows']), 1)

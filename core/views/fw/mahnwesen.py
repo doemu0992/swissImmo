@@ -68,6 +68,7 @@ def fw_mahnwesen(request):
     summe = defaultdict(lambda: Decimal('0.00'))
     stufen_laden = Mahnstufen()
     vorlauf = []
+    ohne_mahnfall = []      # (Rechnung, fällig, offen, Grund): offen, aber nicht in der Liste — mit Begründung
     offen_gesamt_n, offen_gesamt_summe = 0, Decimal('0.00')
     for r in qs:
         faellig = r.faellig_am or r.datum
@@ -82,6 +83,12 @@ def fw_mahnwesen(request):
         tage = stufen_laden.tage_im_verzug(faellig, heute, _eigentuemer_von_rechnung(r),
                                            organisation=r.organisation)
         if tage is None:
+            if _offen > 0:
+                grund = (gettext('Noch nicht fällig (fällig am %(d)s)') % {'d': faellig.strftime('%d.%m.%Y')}
+                         if faellig > heute else
+                         gettext('Der Verzug beginnt erst %(n)s Tage nach Fälligkeit (Einstellung der Verwaltung)')
+                         % {'n': r.organisation.mahn_verzug_ab_tag})
+                ohne_mahnfall.append((r, faellig, _offen, grund))
             continue
         stufe = stufen_laden.stufe_fuer_tage(tage, _eigentuemer_von_rechnung(r),
                                              organisation=r.organisation)
@@ -96,6 +103,14 @@ def fw_mahnwesen(request):
             if (r.stammrechnung_id is None and mieter is not None
                     and not getattr(mieter, 'mahnsperre', False)):
                 vorlauf.append((r, faellig, tage, offen))
+            else:
+                if r.stammrechnung_id is not None:
+                    grund = gettext('Abgeleitete Forderung (Mahngebühr/Zins) — wird mit der Hauptforderung eingefordert')
+                elif mieter is None:
+                    grund = gettext('Kein Vertrag verknüpft')
+                else:
+                    grund = gettext('Mahnsperre (laufende Zahlungsvereinbarung)')
+                ohne_mahnfall.append((r, faellig, offen, grund))
             continue
         counts[stufe['stufe']] += 1
         summe[stufe['stufe']] += offen
@@ -148,6 +163,15 @@ def fw_mahnwesen(request):
                         key=lambda x: x['stufe'])
         naechste = next((s for s in aktive if s['stufe'] > (bisher.get(r.id) or 0)), None)
         if naechste is None:
+            eig = _eigentuemer_von_rechnung(r)
+            if not aktive:
+                grund = gettext('Keine aktive Mahnstufe')
+                if eig is not None and eig.mahn_konfig:
+                    grund += ' — ' + gettext('übersteuert durch die Einstellung des Eigentümers «%(name)s»') % {
+                        'name': eig.firma_oder_name}
+            else:
+                grund = gettext('Alle Mahnstufen sind bereits erfasst')
+            ohne_mahnfall.append((r, faellig, offen, grund))
             continue
         lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None)
         vorlauf_rows.append({
@@ -163,6 +187,10 @@ def fw_mahnwesen(request):
         'total': total,
         'mahnstufen': legende,
         'vorlauf': vorlauf_rows,
+        'ohne_mahnfall': [
+            {'r': r, 'faellig': f, 'offen': o, 'grund': g,
+             'mieter': r.vertrag.mieter.display_name if r.vertrag_id else '—'}
+            for r, f, o, g in sorted(ohne_mahnfall, key=lambda x: x[1])[:50]],
         'offen_gesamt_n': offen_gesamt_n, 'offen_gesamt_summe': offen_gesamt_summe,
         'verzugszins': organisation_der_anfrage(request).verzugszins_prozent.normalize(),
         'counts': counts, 'summe': summe,

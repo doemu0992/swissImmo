@@ -21511,3 +21511,42 @@ msgstr "Rétablir les niveaux de la gérance"
 #: core/templates/fw/mahnstufen.html:1
 msgid "Eigene Einstellung entfernt — es gelten die Mahnstufen der Verwaltung."
 msgstr "Réglage propre supprimé — les niveaux de la gérance s'appliquent."
+
+#: core/views/fw/mahnwesen.py:1
+#, python-format
+msgid "Noch nicht fällig (fällig am %(d)s)"
+msgstr "Pas encore échu (échéance le %(d)s)"
+
+#: core/views/fw/mahnwesen.py:1
+#, python-format
+msgid "Der Verzug beginnt erst %(n)s Tage nach Fälligkeit (Einstellung der Verwaltung)"
+msgstr "La demeure ne commence que %(n)s jours après l'échéance (réglage de la gérance)"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Abgeleitete Forderung (Mahngebühr/Zins) — wird mit der Hauptforderung eingefordert"
+msgstr "Créance dérivée (frais de rappel/intérêts) — réclamée avec la créance principale"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Kein Vertrag verknüpft"
+msgstr "Aucun contrat lié"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Mahnsperre (laufende Zahlungsvereinbarung)"
+msgstr "Blocage des rappels (convention de paiement en cours)"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Keine aktive Mahnstufe"
+msgstr "Aucun niveau de rappel actif"
+
+#: core/views/fw/mahnwesen.py:1
+#, python-format
+msgid "übersteuert durch die Einstellung des Eigentümers «%(name)s»"
+msgstr "remplacé par le réglage du propriétaire « %(name)s »"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Alle Mahnstufen sind bereits erfasst"
+msgstr "Tous les niveaux de rappel sont déjà saisis"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Offen, aber nicht im Mahnlauf — und warum"
+msgstr "Ouvert, mais pas dans le processus de rappel — et pourquoi"

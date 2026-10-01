@@ -21285,3 +21285,42 @@ msgstr "Reset to the property manager's levels"
 #: core/templates/fw/mahnstufen.html:1
 msgid "Eigene Einstellung entfernt — es gelten die Mahnstufen der Verwaltung."
 msgstr "Own setting removed — the property manager's levels apply."
+
+#: core/views/fw/mahnwesen.py:1
+#, python-format
+msgid "Noch nicht fällig (fällig am %(d)s)"
+msgstr "Not yet due (due on %(d)s)"
+
+#: core/views/fw/mahnwesen.py:1
+#, python-format
+msgid "Der Verzug beginnt erst %(n)s Tage nach Fälligkeit (Einstellung der Verwaltung)"
+msgstr "Default only starts %(n)s days after the due date (property manager's setting)"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Abgeleitete Forderung (Mahngebühr/Zins) — wird mit der Hauptforderung eingefordert"
+msgstr "Derived receivable (reminder fee/interest) — collected with the main receivable"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Kein Vertrag verknüpft"
+msgstr "No contract linked"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Mahnsperre (laufende Zahlungsvereinbarung)"
+msgstr "Reminder block (payment agreement in place)"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Keine aktive Mahnstufe"
+msgstr "No active reminder level"
+
+#: core/views/fw/mahnwesen.py:1
+#, python-format
+msgid "übersteuert durch die Einstellung des Eigentümers «%(name)s»"
+msgstr "overridden by the setting of owner “%(name)s”"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Alle Mahnstufen sind bereits erfasst"
+msgstr "All reminder levels are already recorded"
+
+#: core/views/fw/mahnwesen.py:1
+msgid "Offen, aber nicht im Mahnlauf — und warum"
+msgstr "Open, but not in the reminder run — and why"

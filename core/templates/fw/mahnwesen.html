@@ -175,6 +175,30 @@
         </table>
     </div>
 </div>
+{% if ohne_mahnfall %}
+<div class="fw-card">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Offen, aber nicht im Mahnlauf — und warum" %}</h3></div>
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th>{% trans "Mieter" %}</th><th>{% trans "Forderung" %}</th><th>{% trans "Fällig am" %}</th>
+                <th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Grund" %}</th>
+            </tr></thead>
+            <tbody>
+            {% for z in ohne_mahnfall %}
+            <tr>
+                <td class="fw-strong whitespace-nowrap">{{ z.mieter }}</td>
+                <td>{{ z.r.titel }}</td>
+                <td class="fw-mutet fw-num whitespace-nowrap">{{ z.faellig|date:"d.m.Y" }}</td>
+                <td class="fw-right fw-num fw-strong">{{ z.offen|chf }}</td>
+                <td class="fw-mutet">{{ z.grund }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 {% if vorlauf %}
 <div class="fw-card">
     <div class="fw-kopf">
