@@ -163,7 +163,7 @@ MUSTER_VORLAGE = re.compile(r'fa-(?:solid|regular|brands)\s+(fa-[a-z0-9-]+)')
 MUSTER_PYTHON = re.compile(r"""['"](fa-[a-z0-9-]+)['"]""")
 
 
-def _quellen():
+def _quellen(wurzel=WURZEL):
     """Alle Dateien, in denen ein Zeichen *gewaehlt* wird.
 
     Testdateien bleiben aussen vor: Was dort in einer Vorrichtung oder einer
@@ -174,17 +174,17 @@ def _quellen():
     # bleibt, weil `DIRS` weiter dorthin zeigt und jemand ihn wieder
     # befuellen kann. `rglob` auf einen fehlenden Pfad liefert nichts.
     for ordner in ('core/templates', 'templates'):
-        yield from ((p, MUSTER_VORLAGE) for p in sorted((WURZEL / ordner).rglob('*.html')))
-    for p in sorted(WURZEL.rglob('*.py')):
+        yield from ((p, MUSTER_VORLAGE) for p in sorted((wurzel / ordner).rglob('*.html')))
+    for p in sorted(wurzel.rglob('*.py')):
         teile = p.parts
         if 'node_modules' in teile or 'migrations' in teile or p.name.startswith('test_'):
             continue
         yield p, MUSTER_PYTHON
 
 
-def _zeichen_im_bestand():
+def _zeichen_im_bestand(wurzel=WURZEL):
     gefunden = {}
-    for pfad, muster in _quellen():
+    for pfad, muster in _quellen(wurzel):
         for treffer in muster.findall(pfad.read_text(encoding='utf-8')):
             gefunden[treffer] = gefunden.get(treffer, 0) + 1
     return gefunden
@@ -338,14 +338,19 @@ class ZeichensatzTest(SimpleTestCase):
         `_zeichen_im_bestand()` muss einen Namen finden, der NUR in einer
         Python-Datei steht. Geprüft wird das an einer angelegten Datei, nicht
         am Bestand: So bleibt die Aussage gültig, wenn der Bestand sauber ist.
+
+        Der Ordner liegt AUSSERHALB des Repositorys und wird allein durchsucht.
+        Lag er darin, sahen ihn parallel laufende Tests, die den Bestand lesen
+        (`test_zeichen_wert._datenwerte`), und stolperten über die schon
+        wieder gelöschte Datei.
         """
         import tempfile
 
-        with tempfile.TemporaryDirectory(dir=str(WURZEL)) as ordner:
+        with tempfile.TemporaryDirectory() as ordner:
             datei = pathlib.Path(ordner) / 'probe_zeichen.py'
             datei.write_text("KACHELN = [{'icon': 'fa-erfunden'}]\n",
                              encoding='utf-8')
-            gefunden = _zeichen_im_bestand()
+            gefunden = _zeichen_im_bestand(pathlib.Path(ordner))
         self.assertIn(
             'fa-erfunden', gefunden,
             'Ein Zeichen, das nur in einer Python-Datei steht, wird nicht '
