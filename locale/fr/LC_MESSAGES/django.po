@@ -21554,3 +21554,16 @@ msgstr "Ouvert, mais pas dans le processus de rappel — et pourquoi"
 #: core/templates/fw/mahnstufen.html:1
 msgid "Mit Kündigungsandrohung (Art. 257d OR) ist das Schreiben fest vorgegeben («Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung», Einschreiben, 30 Tage). Titel und Text unten gelten dann nicht."
 msgstr "Avec menace de résiliation (art. 257d CO), le courrier est fixé (« Demeure de paiement selon l'art. 257d CO – menace de résiliation », envoi recommandé, 30 jours). Le titre et le texte ci-dessous ne s'appliquent alors pas."
+
+#: core/templates/fw/vertrag_detail.html:1
+#, python-format
+msgid "Zugang bestätigt am %(datum)s"
+msgstr "Réception confirmée le %(datum)s"
+
+#: core/templates/fw/vertrag_detail.html:1
+msgid "Versandt — Zugang nicht bestätigt"
+msgstr "Envoyé — réception non confirmée"
+
+#: core/templates/fw/vertrag_detail.html:1
+msgid "Nicht zugestellt — Zugang nicht bestätigt"
+msgstr "Non remis — réception non confirmée"

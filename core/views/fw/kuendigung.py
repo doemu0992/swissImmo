@@ -369,6 +369,7 @@ def fw_verzug_257d(request, vertrag_id):
         _monat = (min((r.faellig_am or r.datum) for r in faellige)).strftime('%m/%Y') if faellige else heute.strftime('%m/%Y')
         _betrag = f"{offen_total:.2f}"
         pdf = None
+        abgelegt = []
         for i, ovr in enumerate(zustellungen):
             # Eine einzelne QRR trägt nur EINE Forderung: bei mehreren gemahnten
             # Forderungen bleibt die Referenz leer, statt die Zahlung der ersten
@@ -379,8 +380,9 @@ def fw_verzug_257d(request, vertrag_id):
             if i == 0:
                 pdf = _p
             _to = ovr['name'] if ovr else m.display_name
-            ablegen(_p, f"Zahlungsaufforderung 257d – {_to} – Frist {frist:%d.%m.%Y}",
-                    kategorie='korrespondenz', vertrag=v, dedup=False)
+            abgelegt.append(ablegen(_p, f"Zahlungsaufforderung 257d – {_to} – Frist {frist:%d.%m.%Y}",
+                                    kategorie='korrespondenz', vertrag=v, dedup=False,
+                                    zugang_pflichtig=True))
         if len(zustellungen) > 1:
             messages.info(request, f"📮 {len(zustellungen)} separat adressierte 257d-Briefe erzeugt "
                                    "(Art. 266n OR: Familienwohnung/Mitmieter) — jede Kopie einzeln "
@@ -400,13 +402,18 @@ def fw_verzug_257d(request, vertrag_id):
                  "(Art. 257d Abs. 2 OR).")
         from core.services.zahlungsverzug import fall_eroeffnen, quelle_fuer, vorschlaege_erledigen
         _benutzer = request.user if request.user.is_authenticated else None
-        Pendenz.objects.create(
+        _frist_pendenz = Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
             beschreibung=_bt, quelle=quelle_fuer(v),
             kategorie='frist', faellig_am=frist, vertrag=v, liegenschaft=lg,
             sendungsnummer=sendungsnummer, versand_am=versand_am, frist_tage=FRIST_TAGE,
             erstellt_von=_benutzer,
         )
+        # Die abgelegten Briefe gehören zu dieser Frist: Ihr Zustellstand in der Akte folgt
+        # Sendungsnummer und «Zugang bestätigen» der Pendenz (`Dokument.zustellstatus`).
+        for _dok in (d for d in abgelegt if d is not None):
+            _dok.frist_pendenz_id = _frist_pendenz.pk
+            _dok.save(update_fields=['frist_pendenz_id'])
         # Der Gesamtvorgang: Fall «Zahlungsverzug» an der Vertragsakte. Eine
         # Zahlung innert Frist schliesst Frist und Fall zusammen
         # (core/services/zahlungsverzug.py, ausgelöst in finance/signals.py).

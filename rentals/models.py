@@ -861,9 +861,41 @@ class Dokument(OrganisationAusKette):
     datum = models.DateField(auto_now_add=True)
     # Exakter Ablage-Zeitpunkt (Datum + Uhrzeit). datum bleibt für Alt-Auswertungen.
     erstellt_am = models.DateTimeField("Abgelegt am", auto_now_add=True, null=True)
+    # Schreiben, dessen ZUGANG beim Mieter nachzuweisen ist (Art.-257d-Fristansetzung bzw. die
+    # Mahnung mit Kündigungsandrohung). Solange der Zugang nicht bestätigt ist, gilt es in der
+    # Akte als «nicht zugestellt» — siehe `zustellstatus`.
+    zugang_pflichtig = models.BooleanField("Zugang nachzuweisen (Art. 257d)", default=False)
+    # Die Fristen-Pendenz (core.Pendenz) der eingeschriebenen Fristansetzung, zu der dieses
+    # Schreiben gehört (Sendungsnummer, `zugang_am`). Bewusst nur die ID: Ein Fremdschlüssel nach
+    # `core` bräuchte eine Migrationsabhängigkeit rentals → core, und core hängt schon an rentals.
+    frist_pendenz_id = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         db_table = 'core_dokument'
+
+    @property
+    def zustellstatus(self):
+        """Zustellstand eines Schreibens mit nachzuweisendem Zugang.
+
+        `None` — kein solches Schreiben. Sonst `(art, datum)`:
+        `('bestaetigt', Zugangsdatum)` — der Zugang ist aus Track & Trace bestätigt;
+        `('versandt', None)` — als Einschreiben erfasst, Zugang NICHT bestätigt;
+        `('offen', None)` — kein Einschreiben erfasst: nicht zugestellt (Entwurf/Kopie).
+        """
+        if not self.zugang_pflichtig:
+            return None
+        if self.frist_pendenz_id:
+            from core.models import Pendenz
+            # alle_organisationen mit der Vertragsgrenze im Ausdruck: Die Pendenz muss zum
+            # SELBEN Vertrag gehören wie das Dokument.
+            p = Pendenz.alle_organisationen.filter(pk=self.frist_pendenz_id,
+                                                   vertrag_id=self.vertrag_id).first()
+            if p is not None:
+                if p.zugang_am:
+                    return ('bestaetigt', p.zugang_am)
+                if p.sendungsnummer or p.versand_am:
+                    return ('versandt', None)
+        return ('offen', None)
 
     @property
     def ablage_zeit(self):

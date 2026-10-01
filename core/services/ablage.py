@@ -10,12 +10,14 @@ logger = logging.getLogger(__name__)
 
 def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
             vertrag=None, mieter=None, einheit=None, liegenschaft=None,
-            dateiname=None, dedup=False):
+            dateiname=None, dedup=False, zugang_pflichtig=False):
     """Speichert ``pdf_bytes`` als Dokument in der Akte.
 
     Fehlende Bezüge werden - soweit möglich - aus dem Vertrag abgeleitet.
     Mit ``dedup=True`` wird ein bereits vorhandenes Dokument gleicher
     Bezeichnung (am selben Vertrag) überschrieben statt dupliziert.
+    `zugang_pflichtig`: Das Schreiben muss dem Mieter nachweislich zugehen (Art. 257d) —
+    es gilt als «nicht zugestellt», bis der Zugang bestätigt ist (`Dokument.zustellstatus`).
     Gibt das (erstellte oder aktualisierte) Dokument zurück (oder ``None``)."""
     from rentals.models import Dokument
     if vertrag is not None:
@@ -37,6 +39,9 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
                 if not (dateiname or '').lower().endswith('.pdf'):
                     dateiname = f"{_slug(dateiname or titel or 'dokument')}.pdf"
                 vorhanden.datei.save(dateiname, ContentFile(pdf_bytes), save=True)
+                if zugang_pflichtig and not vorhanden.zugang_pflichtig:
+                    vorhanden.zugang_pflichtig = True
+                    vorhanden.save(update_fields=['zugang_pflichtig'])
                 return vorhanden
             except Exception:
                 return None
@@ -51,6 +56,7 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
             titel=(titel or 'Dokument')[:200],
             kategorie=kategorie,
             vertrag=vertrag, mieter=mieter, einheit=einheit, liegenschaft=liegenschaft,
+            zugang_pflichtig=zugang_pflichtig,
         )
         dok.datei.save(dateiname, ContentFile(pdf_bytes), save=True)
         return dok
@@ -62,13 +68,18 @@ SIGNIERT_TITEL = "Mietvertrag (unterzeichnet)"
 
 
 def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
-                   pdf_bytes=None, rechnung=None, gebuehr=None, letzte_stufe=False):
+                   pdf_bytes=None, rechnung=None, gebuehr=None, letzte_stufe=False,
+                   zugang_pflichtig=None):
     """Legt die Mahnung als PDF in der Vertrags-Akte ab.
 
     Eine Mahnung ist der Beleg für eine Zahlungsaufforderung. Ohne `pdf_bytes`
-    entsteht das Schreiben der MAHNSTUFE (`core/services/mahnbrief.py`), nie eine
-    257d-Kündigungsandrohung: Die Akte darf keine Fristansetzung belegen, die nicht
-    stattgefunden hat. Die 257d-Fristansetzung (eingeschrieben, unterschrieben)
+    entsteht das Schreiben der MAHNSTUFE (`core/services/mahnbrief.py`). Seit dem
+    Entscheid vom 01.10.2026 ist das bei einer Stufe mit Art.-257d-Häkchen das
+    257d-Schreiben selbst — die Akte würde dann einen Brief belegen, der noch nicht
+    zugestellt ist. Deshalb trägt so ein Dokument `zugang_pflichtig` und gilt als
+    «nicht zugestellt», bis die eingeschriebene Fristansetzung erfasst und ihr Zugang
+    bestätigt ist (`Dokument.zustellstatus`). `zugang_pflichtig=None` heisst: wie
+    `letzte_stufe`. Die 257d-Fristansetzung (eingeschrieben, unterschrieben)
     kommt als fertiges `pdf_bytes` aus `fw_verzug_257d`. Sie landete bisher nirgends in der Akte:
     Historie und Gebühr wurden gebucht, das Schreiben selbst existierte nur als
     Download im Moment des Klicks. Wer später nachweisen musste, WAS dem Mieter
@@ -86,9 +97,9 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
         return None
     datum = datum or timezone.localdate()
     if pdf_bytes is None:
-        # Die ABGELEGTE Mahnung ist die Mahnung der Stufe — keine 257d-
-        # Kündigungsandrohung (siehe core/services/mahnbrief.py). Die formelle
-        # Fristansetzung legt `fw_verzug_257d` selbst ab, wenn sie gesetzt wird.
+        # Die ABGELEGTE Mahnung ist das Schreiben der Stufe (bei Häkchen: das 257d-Schreiben,
+        # siehe core/services/mahnbrief.py). Die formelle, eingeschriebene Fristansetzung legt
+        # `fw_verzug_257d` selbst ab, wenn sie gesetzt wird.
         try:
             from core.services.mahnbrief import forderungs_monat, mahnbrief_pdf, monat_text
             if not monat:
@@ -110,7 +121,8 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
     titel = f"{stufe_txt} vom {datum.strftime('%d.%m.%Y')}"
     dateiname = f"Mahnung_{stufe or ''}_{getattr(vertrag, 'id', '')}_{datum:%Y%m%d}.pdf"
     return ablegen(pdf_bytes, titel, kategorie='korrespondenz',
-                   vertrag=vertrag, dateiname=dateiname, dedup=True)
+                   vertrag=vertrag, dateiname=dateiname, dedup=True,
+                   zugang_pflichtig=bool(letzte_stufe if zugang_pflichtig is None else zugang_pflichtig))
 
 
 def _file_sha256(fieldfile):

@@ -800,8 +800,13 @@ class MahnschreibenPassendZurStufeTests(TestCase):
         ):
             self.assertIn(satz, text)
         for fremd in ('Zahlungserinnerung', 'Letzte Mahnung', 'übersehen', 'früheren Schreiben',
-                      'Mahngebühr', 'Anderer Titel', 'Anderer Text'):
+                      'Anderer Titel', 'Anderer Text'):
             self.assertNotIn(fremd, text)
+        # Die Gebühr der Stufe (CHF 40) steht als eigener Absatz im Brief …
+        self.assertIn('Für diese Mahnung stellen wir Ihnen eine Mahngebühr von CHF 40.00 in Rechnung.', text)
+        self.assertIn('separaten Einzahlungsschein', text)
+        # … und ist NICHT Teil des Betrags der Fristansetzung.
+        self.assertIn('noch ein Betrag von CHF 100.00 ausstehend ist', text)
 
     def test_haekchen_stufe_nach_fruehreren_ist_dasselbe_schreiben(self):
         self.assertEqual(self._brief(3, True), self._brief(1, True))
@@ -840,3 +845,150 @@ class MahnschreibenPassendZurStufeTests(TestCase):
             # Bei der Stufe mit Art.-257d-Häkchen ist der Titel fest.
             self.assertEqual(titel_fuer(self.a.vertrag, 1, True),
                              'Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung')
+
+
+class MahngebuehrImSchreibenTests(TestCase):
+    """Mahngebühr im 257d-Schreiben — mit SEPARATEM QR-Einzahlungsschein (eigener Betrag/Referenz).
+    Die Fristansetzung selbst nennt nur den Mietzins (Art. 257d: Mietzinse und Nebenkosten)."""
+
+    QR_IBAN = 'CH4431999123000889012'            # QR-IBAN (IID 31999)
+    REFERENZ = '210000000003139471430009017'     # gültige QRR (Modulo 10 rekursiv)
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _seiten(self, gebuehr, rechnung=None, iban=QR_IBAN):
+        import io
+        from pypdf import PdfReader
+        from core.services.mahnbrief import mahnbrief_pdf
+        from crm.models import Organisation
+        Organisation.objects.filter(pk=self.a.organisation.pk).update(iban=iban)
+        self.a.organisation.refresh_from_db()
+        with organisation_kontext(self.a.organisation):
+            pdf = mahnbrief_pdf(self.a.vertrag, self.a.organisation, stufe=3, monat='Oktober 2026',
+                                betrag='100.00', datum=timezone.localdate(), gebuehr=gebuehr,
+                                letzte_stufe=True, rechnung=rechnung)
+        return [' '.join((p.extract_text() or '').split()) for p in PdfReader(io.BytesIO(pdf)).pages]
+
+    def test_mit_gebuehr_drei_seiten_brief_mietzins_gebuehr(self):
+        seiten = self._seiten(Decimal('40.00'))
+        self.assertEqual(len(seiten), 3)
+        self.assertIn('Mahngebühr von CHF 40.00', seiten[0])
+        # Seite 2: Einzahlungsschein für den Mietzins (CHF 100.00), nicht für die Gebühr.
+        self.assertIn('100.00', seiten[1])
+        self.assertNotIn('40.00', seiten[1])
+        # Seite 3: SEPARATER Einzahlungsschein für die Mahngebühr.
+        self.assertIn('40.00', seiten[2])
+        self.assertIn('Mahngebühr', seiten[2])
+        self.assertNotIn('100.00', seiten[2])
+
+    def test_ohne_gebuehr_kein_absatz_und_nur_zwei_seiten(self):
+        seiten = self._seiten(Decimal('0.00'))
+        self.assertEqual(len(seiten), 2)
+        self.assertNotIn('Mahngebühr', seiten[0])
+        self.assertEqual(len(self._seiten(None)), 2)
+
+    def test_gebuehr_qr_traegt_die_referenz_der_gebuehrenforderung(self):
+        """Die QRR der Gebührenforderung (stammrechnung = gemahnte Forderung) gehört auf den
+        zweiten Schein — die der Mietforderung auf den ersten. (Die Referenz steht nur im QR-Code,
+        nicht als Text; deshalb wird der Aufruf von `draw_qr_bill` geprüft.)"""
+        from unittest import mock
+        from finance.models import DebitorenRechnung
+        miete = _ueberfaellige_rechnung(self.a, 70)
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=miete.pk).update(qr_referenz='111111111111111111111111116')
+            DebitorenRechnung.objects.create(
+                vertrag=self.a.vertrag, liegenschaft=self.a.liegenschaft, titel='Mahngebühr 3. Mahnung',
+                betrag=Decimal('40.00'), datum=timezone.localdate(), faellig_am=timezone.localdate(),
+                status='offen', stammrechnung=miete, qr_referenz=self.REFERENZ)
+            miete.refresh_from_db()
+            with mock.patch('core.views.email_views.draw_qr_bill') as qr:
+                self._seiten(Decimal('40.00'), rechnung=miete)
+        self.assertEqual(len(qr.call_args_list), 2)
+        (_c1, _i1, _cr1, _d1, betrag1, _info1), kw1 = qr.call_args_list[0][0], qr.call_args_list[0][1]
+        (_c2, _i2, _cr2, _d2, betrag2, info2), kw2 = qr.call_args_list[1][0], qr.call_args_list[1][1]
+        self.assertEqual((betrag1, kw1['reference']), (100.0, '111111111111111111111111116'))
+        self.assertEqual((betrag2, kw2['reference']), (40.0, self.REFERENZ))
+        self.assertIn('Mahngebühr', info2)
+
+    def test_ohne_iban_keine_qr_seiten_aber_der_absatz_bleibt(self):
+        seiten = self._seiten(Decimal('40.00'), iban='')
+        self.assertEqual(len(seiten), 1)
+        self.assertIn('Mahngebühr von CHF 40.00', seiten[0])
+
+
+class ZustellstatusTests(TestCase):
+    """Ein 257d-Schreiben gilt in der Akte als «nicht zugestellt», bis der Zugang bestätigt ist."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def _ablegen(self, letzte, **kw):
+        from core.services.ablage import ablage_mahnung
+        with organisation_kontext(self.a.organisation):
+            return ablage_mahnung(self.a.vertrag, stufe=3 if letzte else 1, monat='Oktober 2026',
+                                  betrag='100.00', datum=timezone.localdate(),
+                                  letzte_stufe=letzte, **kw)
+
+    def test_haekchen_stufe_ist_nicht_zugestellt(self):
+        dok = self._ablegen(True)
+        self.assertTrue(dok.zugang_pflichtig)
+        self.assertEqual(dok.zustellstatus, ('offen', None))
+
+    def test_stufe_ohne_haekchen_hat_keinen_zustellstatus(self):
+        dok = self._ablegen(False)
+        self.assertFalse(dok.zugang_pflichtig)
+        self.assertIsNone(dok.zustellstatus)
+
+    def test_versandt_aber_zugang_nicht_bestaetigt_dann_bestaetigt(self):
+        from core.models import Pendenz
+        dok = self._ablegen(True)
+        with organisation_kontext(self.a.organisation):
+            p = Pendenz.objects.create(titel='Art. 257d: Zahlungsfrist', kategorie='frist',
+                                       vertrag=self.a.vertrag, quelle=f'257d:{self.a.vertrag.pk}',
+                                       sendungsnummer='98.00.123456', versand_am=timezone.localdate())
+        dok.frist_pendenz_id = p.pk
+        self.assertEqual(dok.zustellstatus, ('versandt', None))
+        Pendenz.alle_organisationen.filter(pk=p.pk).update(zugang_am=timezone.localdate())
+        self.assertEqual(dok.zustellstatus, ('bestaetigt', timezone.localdate()))
+
+    def test_pendenz_eines_anderen_vertrags_zaehlt_nicht(self):
+        from core.models import Pendenz
+        dok = self._ablegen(True)
+        with organisation_kontext(self.b.organisation):
+            fremd = Pendenz.objects.create(titel='fremd', kategorie='frist', vertrag=self.b.vertrag,
+                                           sendungsnummer='x', zugang_am=timezone.localdate())
+        dok.frist_pendenz_id = fremd.pk
+        self.assertEqual(dok.zustellstatus, ('offen', None))
+
+    def test_akte_zeigt_den_hinweis(self):
+        self._ablegen(True)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        seite = c.get(f'/neu/vertraege/{self.a.vertrag.pk}/')
+        self.assertContains(seite, 'Nicht zugestellt — Zugang nicht bestätigt')
+
+    def test_echter_weg_fristansetzung_dann_zugang_bestaetigen(self):
+        """fw_verzug_257d legt die Briefe zugang_pflichtig ab und verknüpft sie mit der Frist;
+        «Zugang bestätigen» (fw_verzug_zugang) macht daraus «bestätigt»."""
+        from core.models import Pendenz
+        from rentals.models import Dokument
+        _ueberfaellige_rechnung(self.a, 40)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        antwort = c.post(f'/neu/vertraege/{self.a.vertrag.pk}/verzug/', {
+            'sendungsnummer': '98.00.987654', 'versand_am': timezone.localdate().isoformat()})
+        self.assertEqual(antwort.status_code, 302)
+        with organisation_kontext(self.a.organisation):
+            dok = Dokument.objects.filter(vertrag=self.a.vertrag, bezeichnung__startswith='Zahlungsaufforderung 257d').first()
+            self.assertIsNotNone(dok)
+            self.assertTrue(dok.zugang_pflichtig)
+            self.assertEqual(dok.zustellstatus, ('versandt', None))
+            frist = Pendenz.objects.get(pk=dok.frist_pendenz_id)
+            antwort = c.post(f'/neu/fristen/verzug/{frist.pk}/zugang/', {'zugang_am': timezone.localdate().isoformat()})
+            self.assertEqual(antwort.status_code, 302)
+            dok.refresh_from_db()
+            self.assertEqual(dok.zustellstatus, ('bestaetigt', timezone.localdate()))
