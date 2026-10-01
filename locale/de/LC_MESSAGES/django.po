@@ -21196,3 +21196,32 @@ msgstr "Versicherungsfall erfasst."
 
 msgid "Versicherungsleistung verbucht."
 msgstr "Versicherungsleistung verbucht."
+
+#: core/templates/fw/laeufe.html:36
+msgid "Überspringen"
+msgstr "Überspringen"
+
+#: core/templates/fw/laeufe.html:37
+msgid "Begründung, z. B. keine offenen Posten"
+msgstr "Begründung, z. B. keine offenen Posten"
+
+#: core/templates/fw/laeufe.html:37
+msgid "Begründung"
+msgstr "Begründung"
+
+#: core/views/fw/arbeit.py:600
+msgid "Dieser Lauf ist bereits erledigt."
+msgstr "Dieser Lauf ist bereits erledigt."
+
+#: core/views/fw/arbeit.py:603
+msgid "Ein blockierter Lauf lässt sich nicht überspringen — zuerst die Blockade beheben."
+msgstr "Ein blockierter Lauf lässt sich nicht überspringen — zuerst die Blockade beheben."
+
+#: core/views/fw/arbeit.py:609
+msgid "Überspringen braucht eine Begründung."
+msgstr "Überspringen braucht eine Begründung."
+
+#: core/views/fw/arbeit.py:612
+#, python-format
+msgid "%(lauf)s übersprungen."
+msgstr "%(lauf)s übersprungen."

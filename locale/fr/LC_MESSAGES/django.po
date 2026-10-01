@@ -21308,3 +21308,32 @@ msgstr "Sinistre d'assurance enregistré."
 
 msgid "Versicherungsleistung verbucht."
 msgstr "Prestation d'assurance comptabilisée."
+
+#: core/templates/fw/laeufe.html:36
+msgid "Überspringen"
+msgstr "Ignorer"
+
+#: core/templates/fw/laeufe.html:37
+msgid "Begründung, z. B. keine offenen Posten"
+msgstr "Motif, p. ex. aucun poste ouvert"
+
+#: core/templates/fw/laeufe.html:37
+msgid "Begründung"
+msgstr "Motif"
+
+#: core/views/fw/arbeit.py:600
+msgid "Dieser Lauf ist bereits erledigt."
+msgstr "Ce traitement est déjà terminé."
+
+#: core/views/fw/arbeit.py:603
+msgid "Ein blockierter Lauf lässt sich nicht überspringen — zuerst die Blockade beheben."
+msgstr "Un traitement bloqué ne peut pas être ignoré — levez d’abord le blocage."
+
+#: core/views/fw/arbeit.py:609
+msgid "Überspringen braucht eine Begründung."
+msgstr "Ignorer nécessite un motif."
+
+#: core/views/fw/arbeit.py:612
+#, python-format
+msgid "%(lauf)s übersprungen."
+msgstr "%(lauf)s ignoré."

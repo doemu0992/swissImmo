@@ -582,6 +582,39 @@ def fw_zulauf(request):
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 @require_POST
+def fw_lauf_ueberspringen(request, pk):
+    """Einen Lauf bewusst auslassen — nur mit Begründung.
+
+    Für Läufe, die nie belegbar ausgeführt werden (Mahnlauf ohne offene
+    Posten, Zahllauf ohne Rechnungen) und sonst ewig im Arbeitsvorrat stünden.
+    Die Begründung bleibt am Lauf stehen: «übersprungen» ist damit von
+    «vergessen» unterscheidbar. Blockierte Läufe lassen sich nicht
+    überspringen — die Ursache steht noch.
+    """
+    from core.auth import log_aktion
+    from faelle.lauf_models import Lauf
+
+    lauf = get_object_or_404(Lauf.objects.select_related('laufart'), pk=pk)
+    ziel = '/neu/laeufe/'
+    if lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN):
+        messages.info(request, gettext('Dieser Lauf ist bereits erledigt.'))
+        return redirect(ziel)
+    if lauf.ist_blockiert:
+        messages.error(request, gettext(
+            'Ein blockierter Lauf lässt sich nicht überspringen — zuerst die Blockade beheben.'))
+        return redirect(ziel)
+    try:
+        lauf.ueberspringen(request.POST.get('bemerkung') or '', benutzer=request.user)
+    except ValueError:
+        messages.error(request, gettext('Überspringen braucht eine Begründung.'))
+        return redirect(ziel)
+    log_aktion(request, 'Lauf übersprungen', str(lauf), lauf.bemerkung)
+    messages.success(request, gettext('%(lauf)s übersprungen.') % {'lauf': lauf})
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
 def fw_zulauf_uebernehmen(request, pk):
     """Den Vorschlag übernehmen — oder begründet ablegen."""
     from faelle.zulauf import uebernehmen
