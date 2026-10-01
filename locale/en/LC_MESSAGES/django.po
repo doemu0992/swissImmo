@@ -21341,3 +21341,12 @@ msgstr "Sent — receipt not confirmed"
 #: core/templates/fw/vertrag_detail.html:1
 msgid "Nicht zugestellt — Zugang nicht bestätigt"
 msgstr "Not delivered — receipt not confirmed"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahngebühr fehlt (storniert/gelöscht) — «Erfassen» stellt sie neu."
+msgstr "Reminder fee missing (cancelled/deleted) — «Record» issues it again."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
+msgstr "Reminder fee of reminder %(stufe)s issued again · CHF %(gebuehr)s."

@@ -1014,3 +1014,73 @@ class ZustellstatusTests(TestCase):
             self.assertEqual(antwort.status_code, 302)
             dok.refresh_from_db()
             self.assertEqual(dok.zustellstatus, ('bestaetigt', timezone.localdate()))
+
+
+class FehlendeMahngebuehrNachstellenTests(TestCase):
+    """Wird die Gebührenrechnung einer erfassten Mahnung storniert oder gelöscht, stellt
+    «Erfassen» sie neu — ohne zweite Mahnung und ohne doppelte Gebühr."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _erfassen(self, c, r, stufe=2):
+        return c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': stufe})
+
+    def _setup(self):
+        r = _ueberfaellige_rechnung(self.a, 31)          # Stufe 2: CHF 20 Gebühr
+        c = Client()
+        c.force_login(self.a.benutzer)
+        self._erfassen(c, r)
+        return c, r
+
+    def _gebuehren(self, r):
+        with organisation_kontext(self.a.organisation):
+            return list(r.folgeforderungen.filter(titel='Mahngebühr 2. Mahnung')
+                        .exclude(status='storniert'))
+
+    def test_storniert_dann_erfassen_stellt_neu(self):
+        from finance.models import DebitorenRechnung, Mahnung
+        c, r = self._setup()
+        (geb,) = self._gebuehren(r)
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=geb.pk).update(status='storniert')
+        self.assertEqual(self._gebuehren(r), [])
+        self.assertContains(c.get('/neu/mahnwesen/'), 'Mahngebühr fehlt')
+        self._erfassen(c, r)
+        neu = self._gebuehren(r)
+        self.assertEqual(len(neu), 1)
+        self.assertNotEqual(neu[0].pk, geb.pk)
+        self.assertEqual(neu[0].betrag, Decimal('20.00'))
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 1)
+            # die Hauptbuchbuchung entsteht mit
+            from finance.models import Buchung
+            self.assertTrue(Buchung.objects.filter(debitoren_rechnung=neu[0],
+                                                   ist_storno=False).exists())
+
+    def test_geloescht_dann_erfassen_stellt_neu(self):
+        from finance.models import DebitorenRechnung
+        c, r = self._setup()
+        (geb,) = self._gebuehren(r)
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=geb.pk).delete()
+        self._erfassen(c, r)
+        self.assertEqual(len(self._gebuehren(r)), 1)
+
+    def test_nochmal_erfassen_ohne_luecke_doppelt_nichts(self):
+        c, r = self._setup()
+        self._erfassen(c, r)
+        self._erfassen(c, r)
+        self.assertEqual(len(self._gebuehren(r)), 1)
+
+    def test_rueckschritt_bleibt_gesperrt(self):
+        from finance.models import DebitorenRechnung, Mahnung
+        c, r = self._setup()
+        (geb,) = self._gebuehren(r)
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=geb.pk).update(status='storniert')
+        self._erfassen(c, r, stufe=1)
+        self.assertEqual(self._gebuehren(r), [])
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 1)

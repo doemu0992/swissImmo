@@ -141,6 +141,10 @@ def fw_mahnwesen(request):
         letzte_je_rechnung[mn.debitoren_rechnung_id] = mn
     for row in rows:
         row['letzte_mahnung'] = letzte_je_rechnung.get(row['r'].id)
+        lm = row['letzte_mahnung']
+        # Erfasst, aber ihre Gebührenrechnung wurde storniert/gelöscht: «Erfassen» stellt sie neu.
+        row['gebuehr_fehlt'] = bool(lm and lm.stufe == row['stufe']['stufe']
+                                    and _mahngebuehr_fehlt(row['r'], lm))
 
     historie_qs = (Mahnung.objects.select_related('vertrag__mieter', 'debitoren_rechnung')
                    .order_by('-datum', '-id'))
@@ -316,6 +320,60 @@ def fw_debitoren_aging(request):
 # MAHN-HISTORIE (revisionssicher) + Mahngebühren
 # ============================================================
 
+def _mahngebuehr_rechnung(rechnung, stufe):
+    """Die gültige (nicht stornierte) Gebührenrechnung dieser Stufe — oder None."""
+    return (rechnung.folgeforderungen
+            .filter(titel=f"Mahngebühr {stufe}. Mahnung")
+            .exclude(status='storniert').first())
+
+
+def _mahngebuehr_fehlt(rechnung, mahnung):
+    """Die Mahnung nennt eine Gebühr, aber es gibt keine gültige Gebührenrechnung dazu."""
+    return (mahnung.gebuehr > 0 and bool(rechnung.vertrag_id)
+            and _mahngebuehr_rechnung(rechnung, mahnung.stufe) is None)
+
+
+def _mahngebuehr_stellen(rechnung, stufe, gebuehr, user, heute):
+    """Gebührenrechnung samt Hauptbuch-Buchung (Forderung an übrigen Ertrag).
+    Läuft im Aufrufer innerhalb einer Transaktion."""
+    from finance.models import DebitorenRechnung
+    from finance.booking import buche
+    lg = rechnung.liegenschaft or (rechnung.vertrag.einheit.liegenschaft
+                                   if rechnung.vertrag.einheit_id else None)
+    geb_rechnung = DebitorenRechnung.objects.create(
+        vertrag=rechnung.vertrag, liegenschaft=lg,
+        titel=f"Mahngebühr {stufe}. Mahnung",
+        beschreibung=f"Mahngebühr zu: {rechnung.titel}",
+        datum=heute, faellig_am=heute + _timedelta(days=30),
+        betrag=gebuehr, status='offen',
+        stammrechnung=rechnung,   # für Storno-Kaskade (Live-Test E)
+    )
+    buche("1100", "3600", gebuehr, f"Mahngebühr {stufe}. Mahnung {rechnung.vertrag.mieter}",
+          datum=heute, liegenschaft=lg, debitor=geb_rechnung, user=user)
+    return geb_rechnung
+
+
+def _mahngebuehr_nachstellen(request, rechnung, mahnung):
+    """Stellt die fehlende Mahngebühr einer bereits erfassten Mahnung neu.
+    Die Mahnung selbst (Historie, Brief) bleibt unberührt."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    try:
+        with transaction.atomic():
+            _mahngebuehr_stellen(rechnung, mahnung.stufe, mahnung.gebuehr, request.user,
+                                 timezone.localdate())
+    except Exception as exc:
+        messages.error(request, '❌ ' + gettext('Mahngebühr konnte nicht gebucht werden: %(exc)s') % {'exc': exc})
+        return redirect('fw_mahnwesen')
+    log_aktion(request, f"Mahngebühr {mahnung.stufe}. Mahnung neu gestellt",
+               rechnung.vertrag.mieter.display_name, f"Gebühr CHF {mahnung.gebuehr}")
+    messages.success(request, '✅ ' + gettext(
+        'Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s.') % {
+        'stufe': mahnung.stufe, 'gebuehr': mahnung.gebuehr})
+    return redirect('fw_mahnwesen')
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_mahnung_erfassen(request):
     """Erfasst einen revisionssicheren Mahnschritt in der Historie und legt
@@ -358,6 +416,10 @@ def fw_mahnung_erfassen(request):
     # zweiter Historien-Eintrag + doppelte Mahngebühr, oder man könnte nach der
     # 2. Mahnung wieder eine 1. erfassen (Live-Test E).
     hoechste = Mahnung.objects.filter(debitoren_rechnung=rechnung).order_by('-stufe').first()
+    # Ausnahme: Dieselbe Stufe ist erfasst, aber ihre Mahngebühr fehlt (die Gebührenrechnung
+    # wurde storniert oder gelöscht) — dann wird NUR die Gebühr nachgestellt.
+    if hoechste and hoechste.stufe == stufe and _mahngebuehr_fehlt(rechnung, hoechste):
+        return _mahngebuehr_nachstellen(request, rechnung, hoechste)
     if hoechste and hoechste.stufe >= stufe:
         messages.info(request, gettext('Für diese Rechnung ist bereits die %(stufe)s. Mahnung erfasst — eine %(stufe2)s. Mahnung wäre ein Rückschritt.') % {'stufe': hoechste.stufe, 'stufe2': stufe})
         return redirect('fw_mahnwesen')
@@ -391,21 +453,9 @@ def fw_mahnung_erfassen(request):
                 erstellt_von=request.user,
             )
             # Mahngebühr als separate Debitorenrechnung (falls > 0) — inkl. Hauptbuch-
-            # Buchung (Forderung an übrigen Ertrag), sonst driften Neben-/Hauptbuch.
+            # Buchung, sonst driften Neben-/Hauptbuch.
             if gebuehr > 0 and rechnung.vertrag_id:
-                lg_geb = rechnung.liegenschaft or (rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None)
-                geb_rechnung = DebitorenRechnung.objects.create(
-                    vertrag=rechnung.vertrag,
-                    liegenschaft=lg_geb,
-                    titel=f"Mahngebühr {stufe}. Mahnung",
-                    beschreibung=f"Mahngebühr zu: {rechnung.titel}",
-                    datum=heute, faellig_am=heute + _timedelta(days=30),
-                    betrag=gebuehr, status='offen',
-                    stammrechnung=rechnung,   # für Storno-Kaskade (Live-Test E)
-                )
-                from finance.booking import buche
-                buche("1100", "3600", gebuehr, f"Mahngebühr {stufe}. Mahnung {rechnung.vertrag.mieter}",
-                      datum=heute, liegenschaft=lg_geb, debitor=geb_rechnung, user=request.user)
+                _mahngebuehr_stellen(rechnung, stufe, gebuehr, request.user, heute)
     except IntegrityError:
         messages.info(request, gettext('Die %(stufe)s. Mahnung wurde für diese Rechnung bereits erfasst.') % {'stufe': stufe})
         return redirect('fw_mahnwesen')

@@ -21545,3 +21545,12 @@ msgstr "Inviato — ricezione non confermata"
 #: core/templates/fw/vertrag_detail.html:1
 msgid "Nicht zugestellt — Zugang nicht bestätigt"
 msgstr "Non consegnato — ricezione non confermata"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahngebühr fehlt (storniert/gelöscht) — «Erfassen» stellt sie neu."
+msgstr "Spese di sollecito mancanti (stornate/eliminate) — «Registra» le riemette."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
+msgstr "Spese di sollecito del %(stufe)s. sollecito riemesse · CHF %(gebuehr)s."
