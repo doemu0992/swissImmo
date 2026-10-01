@@ -621,3 +621,14 @@ class VorlaufAbschnittTests(TestCase):
         Mieter.alle_organisationen.filter(pk=self.a.mieter.pk).update(mahnsperre=True)
         _c, antwort = self._seite(self.a)
         self.assertEqual(antwort.context['vorlauf'], [])
+
+
+class KeineFestenGebuehrenImTextTests(TestCase):
+    def test_hilfetext_nennt_keine_festen_gebuehren(self):
+        """Die Gebühren stellt die Verwaltung ein — der Hilfetext darf keine nennen."""
+        a = MandantenFixture('A', '8000', 'Zürich')
+        c = Client()
+        c.force_login(a.benutzer)
+        seite = c.get('/neu/mahnwesen/').content.decode()
+        self.assertNotIn('Stufe 2: CHF 20', seite)
+        self.assertIn('Mahnstufen anpassen', seite)

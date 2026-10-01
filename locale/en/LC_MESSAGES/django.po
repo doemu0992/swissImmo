@@ -21264,3 +21264,7 @@ msgstr "Remind now"
 #: core/templates/fw/mahnstufen.html:1
 msgid "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
 msgstr "Send a reminder for this receivable now? The reminder is recorded and the level's reminder fee is charged."
+
+#: core/templates/fw/mahnwesen.html:138
+msgid "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."
+msgstr "The dunning level is determined by the number of days overdue. “PDF” opens the finished reminder (with QR bill; the level with a termination warning announces the payment deadline under Art. 257d CO — the deadline itself is set in the contract file). “Record” writes the dunning step to the history with an audit trail and charges the level's dunning fee. Days, fees and termination warning are set under “Adjust reminder levels”."

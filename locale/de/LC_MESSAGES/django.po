@@ -21378,3 +21378,7 @@ msgstr "Jetzt mahnen"
 #: core/templates/fw/mahnstufen.html:1
 msgid "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
 msgstr "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
+
+#: core/templates/fw/mahnwesen.html:138
+msgid "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."
+msgstr "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."

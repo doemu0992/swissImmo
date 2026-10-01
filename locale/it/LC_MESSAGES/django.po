@@ -21468,3 +21468,7 @@ msgstr "Sollecitare ora"
 #: core/templates/fw/mahnstufen.html:1
 msgid "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
 msgstr "Sollecitare ora questo credito? Il sollecito viene registrato e vengono addebitate le spese di sollecito del livello."
+
+#: core/templates/fw/mahnwesen.html:138
+msgid "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."
+msgstr "Il livello di sollecito è determinato dal numero di giorni di ritardo. «PDF» apre il sollecito pronto (con fattura QR; il livello con comminatoria di disdetta annuncia la fissazione di un termine secondo l'art. 257d CO — il termine stesso si fissa nel dossier del contratto). «Registrare» iscrive il passo di sollecito in modo tracciabile nello storico e addebita le spese di sollecito del livello. Giorni, spese e comminatoria di disdetta si impostano sotto «Adatta i livelli di sollecito»."

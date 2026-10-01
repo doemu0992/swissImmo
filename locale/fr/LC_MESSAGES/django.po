@@ -21490,3 +21490,7 @@ msgstr "Relancer maintenant"
 #: core/templates/fw/mahnstufen.html:1
 msgid "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
 msgstr "Relancer cette créance maintenant ? Le rappel est saisi et les frais de rappel du niveau sont facturés."
+
+#: core/templates/fw/mahnwesen.html:138
+msgid "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."
+msgstr "Le niveau de rappel est déterminé par le nombre de jours de retard. «PDF» ouvre le rappel prêt (avec facture QR ; le niveau avec menace de résiliation annonce la fixation d'un délai selon l'art. 257d CO — le délai lui-même se fixe dans le dossier du contrat). «Saisir» inscrit l'étape de rappel de manière traçable dans l'historique et facture les frais de rappel du niveau. Jours, frais et menace de résiliation se règlent sous «Adapter les niveaux de rappel»."
