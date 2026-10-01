@@ -144,13 +144,11 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
 # ============================================================
 # Fristen, Stufen und Mahnspesen stehen NICHT hier: Sie liegen je Organisation in
 # `crm.MahnStufe` und werden über `core.services.mahnstufen` gelesen.
-VERZUGSZINS_PROZENT = Decimal('5.0')   # Art. 104 OR
+# Verzugszins-Satz und Mindestabstand zwischen Mahnungen: je Organisation
+# (`Organisation.verzugszins_prozent`, `.mahn_mindestabstand_tage`), nicht hier.
 
 #: Nach so vielen Tagen ohne Änderung an einem offenen Ticket entsteht eine Pendenz.
 TICKET_TAGE_OHNE_BEWEGUNG = 14
-
-#: Mindestabstand (Tage) zwischen zwei Mahnungen derselben Forderung im Mahnlauf.
-MAHN_MIN_ABSTAND_TAGE = 7
 
 #: Richtwert (Tage nach Periodenende) für die Nebenkostenabrechnung. Keine gesetzliche Frist.
 NK_ABRECHNUNG_RICHTWERT_TAGE = 180
@@ -160,8 +158,9 @@ VERSICHERUNGS_STICHWORTE = ('wasserschaden', 'rohrbruch', 'feuerschaden', 'brand
                             'sturmschaden', 'hagel', 'einbruch', 'glasbruch', 'überschwemmung')
 
 
-def verzugszins(betrag, tage, prozent=VERZUGSZINS_PROZENT):
-    """Verzugszins nach Art. 104 OR: betrag × prozent × tage / 360 (kaufm.)."""
+def verzugszins(betrag, tage, prozent):
+    """Verzugszins nach Art. 104 OR: betrag × prozent × tage / 360 (kaufm.).
+    `prozent` ist der Satz der Organisation (`Organisation.verzugszins_prozent`)."""
     if betrag <= 0 or tage <= 0:
         return Decimal('0.00')
     return (Decimal(betrag) * prozent / Decimal('100') * Decimal(tage) / Decimal('360')).quantize(Decimal('0.01'))
@@ -205,12 +204,17 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
 
     for r in qs:
         faellig = r.faellig_am or r.datum
-        if not faellig or faellig >= heute:
+        if not faellig:
             continue
         offen = r.offener_betrag
         if offen <= 0:
             continue
-        tage = (heute - faellig).days
+        # Verzugsbeginn je Organisation: Der Fälligkeitstag ist Tag 0.
+        tage = stufen_laden.tage_im_verzug(faellig, heute, eigentuemer_von_rechnung(r),
+                                           organisation=r.organisation)
+        if tage is None:
+            continue
+        org = r.organisation
         # Verjährte Mietzinsforderung (Art. 128 Ziff. 1 OR: 5 Jahre) nicht mehr
         # mahnen — Mahnungen unterbrechen die Verjährung ohnehin nicht; der Fall
         # gehört zur Abschreibung/Betreibung (eigene Verjährungs-Pendenz).
@@ -232,7 +236,7 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
         # MINDESTABSTAND zwischen zwei Mahnungen derselben Forderung: Läuft der Lauf
         # an Tag 29 und Tag 30, gingen sonst 1. und 2. Mahnung an aufeinanderfolgenden
         # Tagen raus (samt Gebühr), und der Mieter hätte keine Zeit zu zahlen.
-        if hoechste and (heute - hoechste.datum).days < MAHN_MIN_ABSTAND_TAGE:
+        if hoechste and (heute - hoechste.datum).days < org.mahn_mindestabstand_tage:
             continue
 
         gebuehr = _s['gebuehr']
@@ -243,7 +247,7 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
         zins = Decimal('0.00')
         if mit_zins:
             bereits = sum((m.zins or Decimal('0.00')) for m in r.mahnungen.all())
-            zins = max(Decimal('0.00'), verzugszins(offen, tage) - bereits)
+            zins = max(Decimal('0.00'), verzugszins(offen, tage, org.verzugszins_prozent) - bereits)
         will_mail = bool(send_email and r.vertrag and r.vertrag.mieter.email)
         if dry_run:
             res['plan'].append({
@@ -317,12 +321,13 @@ def _mahnschritt_buchen(r, stufe, heute, offen, gebuehr, zins, tage, send_email,
         )
         zusatz = gebuehr + zins
         if zusatz > 0 and r.vertrag_id:
+            zins_satz = r.organisation.verzugszins_prozent
             lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None)
             teile = []
             if gebuehr > 0:
                 teile.append(f"Mahngebühr {stufe}. Mahnung")
             if zins > 0:
-                teile.append(f"Verzugszins {VERZUGSZINS_PROZENT}%")
+                teile.append(f"Verzugszins {zins_satz.normalize():f}%")
             gebuehr_rechnung = DebitorenRechnung.objects.create(
                 vertrag=r.vertrag, liegenschaft=lg,
                 titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",

@@ -22,6 +22,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from core.tenancy import organisation_der_anfrage
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
 from crm.models import Mieter
 from finance.models import DebitorenRechnung
@@ -68,9 +69,13 @@ def fw_mahnwesen(request):
     stufen_laden = Mahnstufen()
     for r in qs:
         faellig = r.faellig_am or r.datum
-        if not faellig or faellig >= heute:
+        if not faellig:
             continue
-        tage = (heute - faellig).days
+        # Der Fälligkeitstag ist Tag 0; wann der Verzug beginnt, stellt die Verwaltung ein.
+        tage = stufen_laden.tage_im_verzug(faellig, heute, _eigentuemer_von_rechnung(r),
+                                           organisation=r.organisation)
+        if tage is None:
+            continue
         stufe = stufen_laden.stufe_fuer_tage(tage, _eigentuemer_von_rechnung(r),
                                              organisation=r.organisation)
         if not stufe:
@@ -120,6 +125,7 @@ def fw_mahnwesen(request):
         'stufe_filter': stufe_filter, 'stufe_chips': stufe_chips,
         'total': total,
         'mahnstufen': legende,
+        'verzugszins': organisation_der_anfrage(request).verzugszins_prozent.normalize(),
         'counts': counts, 'summe': summe,
         'anzahl_total': sum(counts.values()),
         'historie': historie,

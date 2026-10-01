@@ -23,6 +23,26 @@ steht keine Frist. Feldnamen: `bezeichnung_<id>`, `ab_tage_<id>`, `gebuehr_<id>`
     </div>
 </div>
 
+<form method="post" action="/neu/mahnstufen/einstellungen/" class="max-w-3xl">
+    {% csrf_token %}
+    <div class="fw-card">
+        <div class="fw-kopf"><h3 class="fw-t">{% trans "Mahnlauf-Einstellungen" %}</h3></div>
+        <div class="fw-formular fw-rumpf">
+            <div class="fw-feldblock"><label for="verzug-ab" class="fw-label">{% trans "Verzug beginnt (Tage nach Fälligkeit)" %}</label>
+                <input id="verzug-ab" name="mahn_verzug_ab_tag" type="number" min="0" max="365" step="1" inputmode="numeric" required
+                       value="{{ org.mahn_verzug_ab_tag }}" class="fw-feld">
+                <p class="fw-mutet">{% trans "0 = der Fälligkeitstag zählt als Tag 0: Eine am 1. fällige Miete ist am 1. im Mahnlauf sichtbar. 1 = Verzug erst ab dem Folgetag." %}</p></div>
+            <div class="fw-feldblock"><label for="abstand" class="fw-label">{% trans "Mindestabstand zwischen zwei Mahnungen (Tage)" %}</label>
+                <input id="abstand" name="mahn_mindestabstand_tage" type="number" min="0" max="365" step="1" inputmode="numeric" required
+                       value="{{ org.mahn_mindestabstand_tage }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="zins" class="fw-label">{% trans "Verzugszins (% pro Jahr)" %}</label>
+                <input id="zins" name="verzugszins_prozent" type="text" inputmode="decimal" required
+                       value="{{ org.verzugszins_prozent }}" class="fw-feld"></div>
+        </div>
+        <div class="fw-rumpf"><button type="submit" class="fw-btn">{% trans "Einstellungen speichern" %}</button></div>
+    </div>
+</form>
+
 <form method="post" class="max-w-3xl">
     {% csrf_token %}
     {% for s in stufen %}
@@ -48,6 +68,12 @@ steht keine Frist. Feldnamen: `bezeichnung_<id>`, `ab_tage_<id>`, `gebuehr_<id>`
                     {% trans "Kündigungsandrohung: führt zur Fristansetzung nach Art. 257d OR" %}
                 </label>
             </div>
+            <div class="fw-feldblock breit"><label for="bt-{{ s.pk }}" class="fw-label">{% trans "Titel des Mahnschreibens (leer = Standard)" %}</label>
+                <input id="bt-{{ s.pk }}" name="brief_titel_{{ s.pk }}" type="text" maxlength="120"
+                       value="{{ s.brief_titel }}" class="fw-feld"></div>
+            <div class="fw-feldblock breit"><label for="bx-{{ s.pk }}" class="fw-label">{% trans "Text des Mahnschreibens (leer = Standardtext)" %}</label>
+                <textarea id="bx-{{ s.pk }}" name="brief_text_{{ s.pk }}" rows="5" class="fw-feld">{{ s.brief_text }}</textarea>
+                <p class="fw-mutet">{% trans "Platzhalter: {monat} {betrag} {gebuehr} {mieter}" %}</p></div>
         </div>
     </div>
     {% empty %}

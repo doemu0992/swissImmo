@@ -54,10 +54,13 @@ def _mahnstufe(faellig, heute, status, eigentuemer=None, stufen=None):
     'Fällig' als Fallback, wenn überfällig, aber noch unter der ersten aktiven
     Stufe. `stufen`: ein `Mahnstufen`-Lader, damit eine Liste die Datenbank
     nicht je Zeile fragt."""
-    if status not in ('offen', 'teilbezahlt') or not faellig or faellig >= heute:
+    if status not in ('offen', 'teilbezahlt') or not faellig:
         return None
-    tage = (heute - faellig).days
-    s = (stufen or _Mahnstufen()).stufe_fuer_tage(tage, eigentuemer)
+    stufen = stufen or _Mahnstufen()
+    tage = stufen.tage_im_verzug(faellig, heute, eigentuemer)
+    if tage is None:
+        return None
+    s = stufen.stufe_fuer_tage(tage, eigentuemer)
     if s:
         return {'label': s['label'], 'cls': s['cls'], 'tage': tage}
     return {'label': _('Fällig'), 'cls': 'fw-warn-flaeche fw-warnton', 'tage': tage}

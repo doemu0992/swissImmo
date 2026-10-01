@@ -247,3 +247,136 @@ class MahnstufenSeiteTests(TestCase):
         c = Client()
         c.force_login(_team_user('Hauswart'))
         self.assertEqual(c.get('/neu/mahnstufen/').status_code, 403)
+
+
+class VerzugsbeginnTests(TestCase):
+    """Der Fälligkeitstag ist Tag 0 — und wann der Verzug beginnt, stellt jede Verwaltung ein."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def _gemahnt(self, fixture, rechnung):
+        from core.services.automation import run_mahnlauf
+        from finance.models import Mahnung
+        with organisation_kontext(fixture.organisation):
+            run_mahnlauf(send_email=False)
+            return Mahnung.objects.filter(debitoren_rechnung=rechnung).first()
+
+    def test_heute_faellige_miete_erscheint_bei_stufe_ab_0_tagen(self):
+        """«1. des Monats ist Fälligkeitstag»: Mit einer Stufe ab 0 Tagen ist sie am 1. dabei."""
+        from crm.models import MahnStufe
+        with organisation_kontext(self.a.organisation):
+            MahnStufe.objects.filter(stufe=1).update(ab_tage=0)
+        r = _ueberfaellige_rechnung(self.a, 0)
+        m = self._gemahnt(self.a, r)
+        self.assertIsNotNone(m)
+        self.assertEqual(m.stufe, 1)
+
+    def test_standard_mahnt_heute_faellige_miete_noch_nicht(self):
+        """Mit den Standardstufen (ab 14 Tagen) ist sie sichtbar, aber nicht mahnbar."""
+        r = _ueberfaellige_rechnung(self.a, 0)
+        self.assertIsNone(self._gemahnt(self.a, r))
+
+    def test_verzugsbeginn_je_organisation(self):
+        """A: Verzug ab Tag 0, B: erst ab Tag 1 — dieselbe heute fällige Miete, zwei Antworten."""
+        from crm.models import MahnStufe, Organisation
+        for fx, ab_tag in ((self.a, 0), (self.b, 1)):
+            Organisation.objects.filter(pk=fx.organisation.pk).update(mahn_verzug_ab_tag=ab_tag)
+            with organisation_kontext(fx.organisation):
+                MahnStufe.objects.filter(stufe=1).update(ab_tage=0)
+        ra = _ueberfaellige_rechnung(self.a, 0)
+        rb = _ueberfaellige_rechnung(self.b, 0)
+        self.assertIsNotNone(self._gemahnt(self.a, ra))
+        self.assertIsNone(self._gemahnt(self.b, rb))
+
+    def test_mindestabstand_je_organisation(self):
+        """Mahnt A nach 14 Tagen und nach 30: Mit Mindestabstand 7 geht die 2. Mahnung nicht
+        schon am Folgetag, mit 0 schon."""
+        from core.services.automation import run_mahnlauf
+        from crm.models import Organisation
+        from finance.models import Mahnung
+        r = _ueberfaellige_rechnung(self.a, 30)
+        with organisation_kontext(self.a.organisation):
+            Mahnung.objects.create(debitoren_rechnung=r, vertrag=r.vertrag, stufe=1,
+                                   datum=timezone.localdate() - timedelta(days=3),
+                                   betrag_offen=Decimal('1700'))
+            run_mahnlauf(send_email=False)
+            self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 1)
+        Organisation.objects.filter(pk=self.a.organisation.pk).update(mahn_mindestabstand_tage=0)
+        with organisation_kontext(self.a.organisation):
+            run_mahnlauf(send_email=False)
+            self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 2)
+
+    def test_verzugszins_satz_je_organisation(self):
+        from core.services.automation import run_mahnlauf
+        from crm.models import Organisation
+        from finance.models import Mahnung
+        Organisation.objects.filter(pk=self.a.organisation.pk).update(verzugszins_prozent=Decimal('8.00'))
+        r = _ueberfaellige_rechnung(self.a, 36)
+        with organisation_kontext(self.a.organisation):
+            run_mahnlauf(send_email=False, mit_zins=True)
+            zins = Mahnung.objects.get(debitoren_rechnung=r).zins
+        # 1700 × 8 % × 36 / 360 = 13.60  (bei 5 % wären es 8.50)
+        self.assertEqual(zins, Decimal('13.60'))
+
+    def test_mahnschreiben_nimmt_den_text_der_verwaltung(self):
+        from core.services.mahnbrief import _eigener_brief, _eigener_text
+        from crm.models import MahnStufe
+        with organisation_kontext(self.a.organisation):
+            MahnStufe.objects.filter(stufe=1).update(
+                brief_titel='Zahlungserinnerung Miete', brief_text='Guten Tag {mieter}\n\n{monat}: CHF {betrag} offen. {unbekannt}')
+        eigene = _eigener_brief(self.a.vertrag, 1)
+        self.assertEqual(eigene.brief_titel, 'Zahlungserinnerung Miete')
+        zeilen = _eigener_text(eigene.brief_text, monat='Oktober 2026', betrag='1700.00',
+                               gebuehr='0.00', mieter='Hans Muster')
+        self.assertEqual(zeilen, ['Guten Tag Hans Muster', '',
+                                  'Oktober 2026: CHF 1700.00 offen. {unbekannt}'])
+        # und die andere Verwaltung hat ihren eigenen (leeren) Text
+        self.assertEqual(_eigener_brief(self.b.vertrag, 1).brief_text, '')
+
+
+class MahnwesenEinstellungenSeiteTests(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def setUp(self):
+        self.c = Client()
+        self.c.force_login(self.a.benutzer)
+
+    def test_speichern_nur_fuer_die_eigene_organisation(self):
+        from crm.models import Organisation
+        antwort = self.c.post('/neu/mahnstufen/einstellungen/', {
+            'mahn_verzug_ab_tag': '1', 'mahn_mindestabstand_tage': '3', 'verzugszins_prozent': '6,5'})
+        self.assertEqual(antwort.status_code, 302)
+        a = Organisation.objects.get(pk=self.a.organisation.pk)
+        b = Organisation.objects.get(pk=self.b.organisation.pk)
+        self.assertEqual((a.mahn_verzug_ab_tag, a.mahn_mindestabstand_tage, a.verzugszins_prozent),
+                         (1, 3, Decimal('6.50')))
+        self.assertEqual((b.mahn_verzug_ab_tag, b.mahn_mindestabstand_tage, b.verzugszins_prozent),
+                         (0, 7, Decimal('5.00')))
+
+    def test_ungueltige_werte_werden_abgelehnt(self):
+        from crm.models import Organisation
+        self.c.post('/neu/mahnstufen/einstellungen/', {
+            'mahn_verzug_ab_tag': 'x', 'mahn_mindestabstand_tage': '3', 'verzugszins_prozent': '5'})
+        self.assertEqual(Organisation.objects.get(pk=self.a.organisation.pk).mahn_mindestabstand_tage, 7)
+
+    def test_brieftext_wird_mit_den_stufen_gespeichert(self):
+        from crm.models import MahnStufe
+        with organisation_kontext(self.a.organisation):
+            daten = {}
+            for s in MahnStufe.objects.all():
+                daten.update({f'bezeichnung_{s.pk}': s.bezeichnung, f'ab_tage_{s.pk}': str(s.ab_tage),
+                              f'gebuehr_{s.pk}': str(s.gebuehr)})
+            s1 = MahnStufe.objects.get(stufe=1)
+        daten[f'brief_titel_{s1.pk}'] = 'Freundliche Erinnerung'
+        daten[f'brief_text_{s1.pk}'] = 'Bitte zahlen: {betrag}'
+        self.c.post('/neu/mahnstufen/', daten)
+        with organisation_kontext(self.a.organisation):
+            s1 = MahnStufe.objects.get(stufe=1)
+        self.assertEqual((s1.brief_titel, s1.brief_text), ('Freundliche Erinnerung', 'Bitte zahlen: {betrag}'))

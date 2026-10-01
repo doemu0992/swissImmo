@@ -56,7 +56,8 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     deb = [r for r in deb_qs.select_related('liegenschaft__eigentuemer',
                                             'vertrag__einheit__liegenschaft__eigentuemer')
                              .prefetch_related('zahlungseingaenge') if r.offener_betrag > 0]
-    deb_ueberf = [r for r in deb if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute]
+    # `<=`: Der Fälligkeitstag ist Tag 0; ob schon Verzug ist, entscheidet `_zu_mahnen`.
+    deb_ueberf = [r for r in deb if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= heute]
     # «Mahnen» nur für Forderungen, deren für die Überfälligkeit fällige Mahnstufe
     # noch NICHT in der Historie erfasst ist. Sonst bleibt die Aufgabe stehen,
     # obwohl der Nutzer die Mahnung bereits erfasst hat (Nutzer-Bug).
@@ -72,7 +73,9 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
         stufen_laden = Mahnstufen()
 
         def _zu_mahnen(r):
-            tage = (heute - (r.faellig_am or r.datum)).days
+            tage = stufen_laden.tage_im_verzug(r.faellig_am or r.datum, heute, eigentuemer_von_rechnung(r))
+            if tage is None:
+                return False
             s = stufen_laden.stufe_fuer_tage(tage, eigentuemer_von_rechnung(r))
             return bool(s) and s['stufe'] > (_hoechste.get(r.id) or 0)
         deb_ueberf = [r for r in deb_ueberf if _zu_mahnen(r)]

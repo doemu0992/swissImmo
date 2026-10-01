@@ -163,7 +163,7 @@ Der fachliche Kern ist der eigentliche Wert des Repositories und deutlich breite
 |---|---|
 | QR-Rechnung | `core/utils/qr_code.py` (459 Zeilen), QR-IBAN-Erkennung, Debitoren-QR |
 | Zahlungsverkehr | `pain.001` (Zahlungsaufträge), Bankabgleich mit Kontoauszügen, Zahler-Zuordnung |
-| Mietrecht | `mietrecht.py`, `mahnstufen.py` (Art. 257d OR; Fristen, Spesen und Stufenzahl je Organisation in `crm.MahnStufe`, bearbeitbar unter `/neu/mahnstufen/` — keine Frist im Code), `kuendigung_brief.py`, Kautionsgrenze nach Art. 257e OR serverseitig durchgesetzt |
+| Mietrecht | `mietrecht.py`, `mahnstufen.py` (Art. 257d OR; Fristen, Spesen und Stufenzahl je Organisation in `crm.MahnStufe`, bearbeitbar unter `/neu/mahnstufen/` — keine Frist im Code; Verzugsbeginn, Mindestabstand, Verzugszins und Mahnbrief-Texte je Organisation einstellbar), `kuendigung_brief.py`, Kautionsgrenze nach Art. 257e OR serverseitig durchgesetzt |
 | Amtliche Formulare | `formularpflicht.py` + `kantone.py` mit **allen 26 Kantonen**; ausgefüllte Original-PDFs für BE, SO, ZH (Anfangsmietzins, Mietzinsanpassung, Kündigung) |
 | Nebenkosten | `nk_abrechnung.py`, Heizgradtage, unterjähriger Mieterwechsel, Verwaltungshonorar |
 | MWST | `mwst_estv.py`, effektive Methode und Saldosteuersatz |

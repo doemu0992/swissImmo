@@ -21289,3 +21289,52 @@ msgstr "Mahnstufe gelöscht."
 #: core/templates/fw/mahnstufen.html:1
 msgid "Diese Mahnstufe gibt es nicht."
 msgstr "Diese Mahnstufe gibt es nicht."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf-Einstellungen"
+msgstr "Mahnlauf-Einstellungen"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzug beginnt (Tage nach Fälligkeit)"
+msgstr "Verzug beginnt (Tage nach Fälligkeit)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "0 = der Fälligkeitstag zählt als Tag 0: Eine am 1. fällige Miete ist am 1. im Mahnlauf sichtbar. 1 = Verzug erst ab dem Folgetag."
+msgstr "0 = der Fälligkeitstag zählt als Tag 0: Eine am 1. fällige Miete ist am 1. im Mahnlauf sichtbar. 1 = Verzug erst ab dem Folgetag."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mindestabstand zwischen zwei Mahnungen (Tage)"
+msgstr "Mindestabstand zwischen zwei Mahnungen (Tage)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzugszins (% pro Jahr)"
+msgstr "Verzugszins (% pro Jahr)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Einstellungen speichern"
+msgstr "Einstellungen speichern"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Titel des Mahnschreibens (leer = Standard)"
+msgstr "Titel des Mahnschreibens (leer = Standard)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Text des Mahnschreibens (leer = Standardtext)"
+msgstr "Text des Mahnschreibens (leer = Standardtext)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Platzhalter: {monat} {betrag} {gebuehr} {mieter}"
+msgstr "Platzhalter: {monat} {betrag} {gebuehr} {mieter}"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzugsbeginn und Mindestabstand (ganze Tage) sowie Verzugszins (Prozent) prüfen."
+msgstr "Verzugsbeginn und Mindestabstand (ganze Tage) sowie Verzugszins (Prozent) prüfen."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnwesen-Einstellungen gespeichert."
+msgstr "Mahnwesen-Einstellungen gespeichert."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Verzugszins (%(zins)s%%) berechnen"
+msgstr "Verzugszins (%(zins)s%%) berechnen"

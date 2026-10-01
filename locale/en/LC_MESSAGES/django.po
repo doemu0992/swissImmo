@@ -21175,3 +21175,52 @@ msgstr "Reminder level deleted."
 #: core/templates/fw/mahnstufen.html:1
 msgid "Diese Mahnstufe gibt es nicht."
 msgstr "This reminder level does not exist."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf-Einstellungen"
+msgstr "Reminder run settings"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzug beginnt (Tage nach Fälligkeit)"
+msgstr "Default starts (days after due date)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "0 = der Fälligkeitstag zählt als Tag 0: Eine am 1. fällige Miete ist am 1. im Mahnlauf sichtbar. 1 = Verzug erst ab dem Folgetag."
+msgstr "0 = the due date counts as day 0: a rent due on the 1st shows up in the reminder run on the 1st. 1 = default only from the next day."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mindestabstand zwischen zwei Mahnungen (Tage)"
+msgstr "Minimum interval between two reminders (days)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzugszins (% pro Jahr)"
+msgstr "Default interest (% per year)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Einstellungen speichern"
+msgstr "Save settings"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Titel des Mahnschreibens (leer = Standard)"
+msgstr "Reminder letter title (empty = default)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Text des Mahnschreibens (leer = Standardtext)"
+msgstr "Reminder letter text (empty = default text)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Platzhalter: {monat} {betrag} {gebuehr} {mieter}"
+msgstr "Placeholders: {monat} {betrag} {gebuehr} {mieter}"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Verzugsbeginn und Mindestabstand (ganze Tage) sowie Verzugszins (Prozent) prüfen."
+msgstr "Check default start and minimum interval (whole days) and default interest (percent)."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnwesen-Einstellungen gespeichert."
+msgstr "Reminder settings saved."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Verzugszins (%(zins)s%%) berechnen"
+msgstr "Charge default interest (%(zins)s%%)"
