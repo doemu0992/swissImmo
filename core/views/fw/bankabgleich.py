@@ -763,6 +763,28 @@ def _bank_csv_parse(raw):
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_camt_import(request):
+    """Alles oder nichts: ein unerwarteter Fehler mitten im Import rollt den
+    GANZEN Import zurück (Kontoauszug, Bewegungen, Zahlungen, Buchungen).
+
+    Bewusst nicht Teil davon: Zeilen, die die Periodensperre abweist — die
+    meldet der Import laut und lässt sich nach dem Entsperren wiederholen
+    (Duplikate werden übersprungen).
+    """
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    try:
+        with transaction.atomic():
+            return _camt_import_ausfuehren(request)
+    except Exception:
+        logger.exception('Bank-Import abgebrochen — vollständig zurückgerollt')
+        messages.error(request, gettext(
+            'Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts gespeichert. '
+            'Bitte die Datei prüfen (beschädigt oder unvollständig?).'))
+        return redirect('fw_bankabgleich')
+
+
+def _camt_import_ausfuehren(request):
     """Importiert einen Bank-Kontoauszug — camt.053 (ISO 20022) ODER CSV-Export
     der Bank. Gutschriften werden per QRR-Referenz den offenen Debitoren-
     rechnungen zugeordnet und als Zahlungseingang (Bank an Debitoren) verbucht;

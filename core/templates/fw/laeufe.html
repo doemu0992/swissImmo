@@ -40,7 +40,8 @@
         </ol>
         <div class="fw-lauf-fuss">
             <span>{% if z.lauf.gestartet_am %}{% blocktrans with datum=z.lauf.gestartet_am|date:"d.m.Y" %}gestartet {{ datum }}{% endblocktrans %} · {% endif %}{% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% if z.tage > 0 %} · {% blocktrans count n=z.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span>
-            <a href="{{ z.url }}" class="fw-btn fw-knapp{% if z.braucht_dich %} fw-primary{% endif %}">{% trans "Öffnen" %}</a>
+            <span><a href="{% url 'fw_lauf_detail' z.lauf.pk %}" class="fw-btn fw-knapp">{% trans "Details" %}</a>
+            <a href="{{ z.url }}" class="fw-btn fw-knapp{% if z.braucht_dich %} fw-primary{% endif %}">{% trans "Öffnen" %}</a></span>
         </div>
         {% if kann_schreiben and not z.blockaden %}
         {% comment %} Bewusst auslassen — nur mit Begründung (`Lauf.ueberspringen`).
@@ -65,7 +66,7 @@
     <div class="fw-zeile">
         <span class="fw-marker good"></span>
         <div class="fw-mitte">
-            <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
+            <div class="fw-t"><a href="{% url 'fw_lauf_detail' z.lauf.pk %}">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</a></div>
             <div class="fw-s">{% for schluessel, wert in z.lauf.kennzahlen.items %}{{ schluessel }} {{ wert }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
         </div>
         <div class="fw-zeit">{{ z.lauf.abgeschlossen_am|date:"d.m.Y" }}</div>

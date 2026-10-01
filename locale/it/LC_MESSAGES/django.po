@@ -21563,3 +21563,99 @@ msgstr "Spese di sollecito del %(stufe)s. sollecito riemesse · CHF %(gebuehr)s.
 #, python-format
 msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
 msgstr "Le spese di sollecito non hanno potuto essere contabilizzate: %(exc)s"
+
+
+#: core/templates/fw/lauf_detail.html:19
+msgid "blockiert"
+msgstr "bloccato"
+
+#: core/templates/fw/lauf_detail.html:25
+msgid "Lauf öffnen / ausführen"
+msgstr "Aprire / eseguire il processo"
+
+#: core/templates/fw/lauf_detail.html:28
+msgid "Zuerst die Blockade beheben."
+msgstr "Risolvere prima il blocco."
+
+#: core/templates/fw/lauf_detail.html:28
+msgid "Lauf abschliessen"
+msgstr "Chiudere il processo"
+
+#: core/templates/fw/lauf_detail.html:43
+msgid "Lauf zurücksetzen"
+msgstr "Reimpostare il processo"
+
+#: core/templates/fw/lauf_detail.html:45
+msgid "Begründung (wird festgehalten)"
+msgstr "Motivazione (verrà registrata)"
+
+#: core/templates/fw/lauf_detail.html:47
+msgid "Rechnungen der Periode per Gegenbuchung stornieren"
+msgstr "Stornare le fatture del periodo con scrittura inversa"
+
+#: core/templates/fw/lauf_detail.html:56
+msgid "Verarbeitet in dieser Periode"
+msgstr "Elaborato in questo periodo"
+
+#: core/templates/fw/lauf_detail.html:63
+msgid "Noch nichts verarbeitet."
+msgstr "Ancora nulla elaborato."
+
+#: core/templates/fw/lauf_detail.html:65
+msgid "Liste gekürzt — die Summe zählt alle Belege."
+msgstr "Elenco abbreviato — il totale comprende tutti i documenti."
+
+#: core/templates/fw/lauf_detail.html:70
+msgid "Bemerkung / Verlauf"
+msgstr "Annotazione / cronologia"
+
+#: core/views/fw/arbeit.py:668
+#, python-format
+msgid "%(lauf)s abgeschlossen."
+msgstr "%(lauf)s chiuso."
+
+#: core/views/fw/arbeit.py:692
+msgid "Zurücksetzen braucht eine Begründung."
+msgstr "Per reimpostare è necessario un motivo."
+
+#: core/views/fw/arbeit.py:700
+msgid "Dieser Lauf ist nicht abgeschlossen."
+msgstr "Questo processo non è chiuso."
+
+#: core/views/fw/arbeit.py:705
+msgid "Stornieren gibt es nur bei der Sollstellung."
+msgstr "Lo storno è previsto solo per la fatturazione delle pigioni."
+
+#: core/views/fw/arbeit.py:708
+msgid "Rechnungen stornieren darf nur ein Verwalter."
+msgstr "Solo un amministratore può stornare le fatture."
+
+#: core/views/fw/arbeit.py:718
+#, python-format
+msgid "%(lauf)s zurückgesetzt."
+msgstr "%(lauf)s reimpostato."
+
+#: core/views/fw/arbeit.py:719
+#, python-format
+msgid "%(n)s Rechnung(en) storniert."
+msgstr "%(n)s fattura/e stornata/e."
+
+#: core/views/fw/bankabgleich.py:782
+msgid ""
+"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts "
+"gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgstr "L'importazione è stata interrotta e completamente annullata — non è stato salvato nulla. Verificare il file (danneggiato o incompleto?)."
+
+#: core/views/fw/mahnwesen.py:491
+msgid ""
+"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
+"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
+"erzwingen."
+msgstr "Il processo dei solleciti di questo mese è già chiuso — nessun doppio sollecito. Per ripeterlo, reimpostarlo sotto «Processi» o forzarlo deliberatamente."
+
+#: core/views/fw/sollstellung.py:189
+#, python-format
+msgid ""
+"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
+"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
+msgstr "La fatturazione delle pigioni %(titel)s è già chiusa — nulla è stato fatturato due volte. Per ripeterla, reimpostare prima il processo sotto «Processi»."

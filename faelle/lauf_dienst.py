@@ -18,6 +18,7 @@ import calendar
 import logging
 from datetime import date
 
+from django.db import transaction
 from django.utils import timezone
 
 from faelle.lauf_models import Lauf, Laufart
@@ -214,7 +215,10 @@ def lauf_erledigt(schluessel, periode, benutzer=None, auch_aeltere=False,
         if lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN):
             return lauf
         try:
-            return lauf.abschliessen(benutzer=benutzer, **kennzahlen)
+            # Savepoint: lauft der Aufrufer in einer Transaktion (camt-Import),
+            # darf ein Fehler hier sie nicht vergiften.
+            with transaction.atomic():
+                return lauf.abschliessen(benutzer=benutzer, **kennzahlen)
         except ValueError:
             log.warning('Lauf %s bleibt offen: Blockade steht.', lauf)
             return lauf

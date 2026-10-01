@@ -21585,3 +21585,99 @@ msgstr "Frais de rappel du %(stufe)s. rappel refacturés · CHF %(gebuehr)s."
 #, python-format
 msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
 msgstr "Les frais de rappel n'ont pas pu être comptabilisés : %(exc)s"
+
+
+#: core/templates/fw/lauf_detail.html:19
+msgid "blockiert"
+msgstr "bloqué"
+
+#: core/templates/fw/lauf_detail.html:25
+msgid "Lauf öffnen / ausführen"
+msgstr "Ouvrir / exécuter le processus"
+
+#: core/templates/fw/lauf_detail.html:28
+msgid "Zuerst die Blockade beheben."
+msgstr "Résolvez d'abord le blocage."
+
+#: core/templates/fw/lauf_detail.html:28
+msgid "Lauf abschliessen"
+msgstr "Clôturer le processus"
+
+#: core/templates/fw/lauf_detail.html:43
+msgid "Lauf zurücksetzen"
+msgstr "Réinitialiser le processus"
+
+#: core/templates/fw/lauf_detail.html:45
+msgid "Begründung (wird festgehalten)"
+msgstr "Motif (sera consigné)"
+
+#: core/templates/fw/lauf_detail.html:47
+msgid "Rechnungen der Periode per Gegenbuchung stornieren"
+msgstr "Annuler les factures de la période par contre-écriture"
+
+#: core/templates/fw/lauf_detail.html:56
+msgid "Verarbeitet in dieser Periode"
+msgstr "Traité pendant cette période"
+
+#: core/templates/fw/lauf_detail.html:63
+msgid "Noch nichts verarbeitet."
+msgstr "Rien n'a encore été traité."
+
+#: core/templates/fw/lauf_detail.html:65
+msgid "Liste gekürzt — die Summe zählt alle Belege."
+msgstr "Liste abrégée — le total compte tous les justificatifs."
+
+#: core/templates/fw/lauf_detail.html:70
+msgid "Bemerkung / Verlauf"
+msgstr "Remarque / historique"
+
+#: core/views/fw/arbeit.py:668
+#, python-format
+msgid "%(lauf)s abgeschlossen."
+msgstr "%(lauf)s clôturé."
+
+#: core/views/fw/arbeit.py:692
+msgid "Zurücksetzen braucht eine Begründung."
+msgstr "La réinitialisation nécessite un motif."
+
+#: core/views/fw/arbeit.py:700
+msgid "Dieser Lauf ist nicht abgeschlossen."
+msgstr "Ce processus n'est pas clôturé."
+
+#: core/views/fw/arbeit.py:705
+msgid "Stornieren gibt es nur bei der Sollstellung."
+msgstr "L'annulation n'existe que pour la facturation des loyers."
+
+#: core/views/fw/arbeit.py:708
+msgid "Rechnungen stornieren darf nur ein Verwalter."
+msgstr "Seul un gestionnaire peut annuler des factures."
+
+#: core/views/fw/arbeit.py:718
+#, python-format
+msgid "%(lauf)s zurückgesetzt."
+msgstr "%(lauf)s réinitialisé."
+
+#: core/views/fw/arbeit.py:719
+#, python-format
+msgid "%(n)s Rechnung(en) storniert."
+msgstr "%(n)s facture(s) annulée(s)."
+
+#: core/views/fw/bankabgleich.py:782
+msgid ""
+"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts "
+"gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgstr "L'importation a été interrompue et entièrement annulée — rien n'a été enregistré. Veuillez vérifier le fichier (endommagé ou incomplet ?)."
+
+#: core/views/fw/mahnwesen.py:491
+msgid ""
+"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
+"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
+"erzwingen."
+msgstr "Le processus de rappels de ce mois est déjà clôturé — aucun double rappel. Pour le répéter, réinitialisez-le sous « Processus » ou forcez-le volontairement."
+
+#: core/views/fw/sollstellung.py:189
+#, python-format
+msgid ""
+"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
+"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
+msgstr "La facturation des loyers %(titel)s est déjà clôturée — rien n'a été facturé deux fois. Pour la répéter, réinitialisez d'abord le processus sous « Processus »."

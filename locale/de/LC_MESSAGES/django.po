@@ -21473,3 +21473,99 @@ msgstr "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
 #, python-format
 msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
 msgstr "Mahngebühr konnte nicht gebucht werden: %(exc)s"
+
+
+#: core/templates/fw/lauf_detail.html:19
+msgid "blockiert"
+msgstr "blockiert"
+
+#: core/templates/fw/lauf_detail.html:25
+msgid "Lauf öffnen / ausführen"
+msgstr "Lauf öffnen / ausführen"
+
+#: core/templates/fw/lauf_detail.html:28
+msgid "Zuerst die Blockade beheben."
+msgstr "Zuerst die Blockade beheben."
+
+#: core/templates/fw/lauf_detail.html:28
+msgid "Lauf abschliessen"
+msgstr "Lauf abschliessen"
+
+#: core/templates/fw/lauf_detail.html:43
+msgid "Lauf zurücksetzen"
+msgstr "Lauf zurücksetzen"
+
+#: core/templates/fw/lauf_detail.html:45
+msgid "Begründung (wird festgehalten)"
+msgstr "Begründung (wird festgehalten)"
+
+#: core/templates/fw/lauf_detail.html:47
+msgid "Rechnungen der Periode per Gegenbuchung stornieren"
+msgstr "Rechnungen der Periode per Gegenbuchung stornieren"
+
+#: core/templates/fw/lauf_detail.html:56
+msgid "Verarbeitet in dieser Periode"
+msgstr "Verarbeitet in dieser Periode"
+
+#: core/templates/fw/lauf_detail.html:63
+msgid "Noch nichts verarbeitet."
+msgstr "Noch nichts verarbeitet."
+
+#: core/templates/fw/lauf_detail.html:65
+msgid "Liste gekürzt — die Summe zählt alle Belege."
+msgstr "Liste gekürzt — die Summe zählt alle Belege."
+
+#: core/templates/fw/lauf_detail.html:70
+msgid "Bemerkung / Verlauf"
+msgstr "Bemerkung / Verlauf"
+
+#: core/views/fw/arbeit.py:668
+#, python-format
+msgid "%(lauf)s abgeschlossen."
+msgstr "%(lauf)s abgeschlossen."
+
+#: core/views/fw/arbeit.py:692
+msgid "Zurücksetzen braucht eine Begründung."
+msgstr "Zurücksetzen braucht eine Begründung."
+
+#: core/views/fw/arbeit.py:700
+msgid "Dieser Lauf ist nicht abgeschlossen."
+msgstr "Dieser Lauf ist nicht abgeschlossen."
+
+#: core/views/fw/arbeit.py:705
+msgid "Stornieren gibt es nur bei der Sollstellung."
+msgstr "Stornieren gibt es nur bei der Sollstellung."
+
+#: core/views/fw/arbeit.py:708
+msgid "Rechnungen stornieren darf nur ein Verwalter."
+msgstr "Rechnungen stornieren darf nur ein Verwalter."
+
+#: core/views/fw/arbeit.py:718
+#, python-format
+msgid "%(lauf)s zurückgesetzt."
+msgstr "%(lauf)s zurückgesetzt."
+
+#: core/views/fw/arbeit.py:719
+#, python-format
+msgid "%(n)s Rechnung(en) storniert."
+msgstr "%(n)s Rechnung(en) storniert."
+
+#: core/views/fw/bankabgleich.py:782
+msgid ""
+"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts "
+"gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgstr "Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+
+#: core/views/fw/mahnwesen.py:491
+msgid ""
+"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
+"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
+"erzwingen."
+msgstr "Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen."
+
+#: core/views/fw/sollstellung.py:189
+#, python-format
+msgid ""
+"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
+"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
+msgstr "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
