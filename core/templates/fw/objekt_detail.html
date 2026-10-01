@@ -210,7 +210,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <div class="flex items-center gap-3 px-5 py-3">
                     <span class="fw-ikon mut">{% zeichen 'hochladen' %}</span>
                     <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ d.bezeichnung|default:d.titel }}</div>
-                        <div class="fw-klein">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div></div>
+                        <div class="fw-klein">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}{% include 'fw/_zustellstatus.html' with d=d z=None %}</div></div>
                     {% if d.datei %}<a href="{{ d.datei.url }}" class="fw-link shrink-0" target="_blank" rel="noopener">{% trans "Öffnen" %}</a>{% endif %}
                 </div>
                 {% empty %}
@@ -518,7 +518,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <span class="fw-ikon">{% zeichen 'dokument' %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ d.get_kategorie_display|default:d.kategorie }}</div>
-            <div class="fw-s">{{ x.namen }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div>
+            <div class="fw-s">{{ x.namen }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}{% include 'fw/_zustellstatus.html' with d=d z=None %}</div>
         </div>
         <a href="/neu/vertraege/{{ x.v.id }}/" class="fw-btn">{% trans "Zum Vertrag" %}</a>
     </div>
