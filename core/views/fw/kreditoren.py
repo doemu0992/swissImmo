@@ -432,7 +432,7 @@ def fw_zahllauf(request):
                 n += 1
             from faelle.lauf_dienst import lauf_erledigt, periode_von
             lauf_erledigt('zahllauf', periode_von(heute), benutzer=request.user,
-                          zahlungen=anzahl)
+                          auch_aeltere=True, zahlungen=anzahl)
             log_aktion(request, "Zahllauf erzeugt", msg_id,
                        f"{anzahl} Zahlungen, CHF {summe}, Ausführung {exec_date}")
             resp = HttpResponse(xml, content_type='application/xml')
@@ -476,7 +476,7 @@ def fw_zahllauf(request):
             if n:
                 from faelle.lauf_dienst import lauf_erledigt, periode_von
                 lauf_erledigt('zahllauf', periode_von(heute),
-                              benutzer=request.user, verbucht=n)
+                              benutzer=request.user, auch_aeltere=True, verbucht=n)
             log_aktion(request, "Zahllauf verbucht", f"{n} Zahlungen",
                        f"CHF {summe} · Valuta {valuta} · Konto {bank_nr}")
             if n:

@@ -119,6 +119,8 @@ class Command(BaseCommand):
         try:
             from faelle.lauf_dienst import planen
             _arten, neue = planen(organisation)
+            from faelle.lauf_dienst import abgleichen_aus_daten
+            abgleichen_aus_daten()
             if neue:
                 details.append(f"{neue} Lauf/Läufe für den Monat geplant")
         except Exception as e:

@@ -127,7 +127,8 @@ def aktuelle_periode_sicherstellen(organisation, heute=None):
     return planen(organisation, heute)[1]
 
 
-def lauf_erledigt(schluessel, periode, benutzer=None, **kennzahlen):
+def lauf_erledigt(schluessel, periode, benutzer=None, auch_aeltere=False,
+                  **kennzahlen):
     """Schliesst den Lauf `schluessel` der Periode ab, falls er geplant ist.
 
     Aufgerufen von jedem Weg, der den Lauf tatsächlich ausführt. Verhalten:
@@ -138,10 +139,23 @@ def lauf_erledigt(schluessel, periode, benutzer=None, **kennzahlen):
     * Offene Blockade → bleibt offen, wird protokolliert. Ein Lauf mit
       stehender Ursache darf nicht aus dem Vorrat verschwinden.
 
+    `auch_aeltere=True` für Läufe ohne Periodenwahl (Mahnlauf, Bankabgleich,
+    Zahllauf): Sie verarbeiten IMMER den ganzen heutigen Bestand. Ein im
+    Oktober ausgeführter Mahnlauf hat damit auch den versäumten August
+    erledigt — sonst bliebe «Mahnlauf 2026-08» ewig überfällig.
+
     Ein Fehler hier darf die Ausführung selbst nie zurückrollen: Die Buchungen
     sind gemacht, die Buchführung darüber ist nachgeordnet.
     """
     try:
+        if auch_aeltere:
+            for alt in (Lauf.objects.offen().select_related('laufart')
+                        .filter(laufart__schluessel=schluessel,
+                                laufart__rhythmus=Laufart.MONATLICH,
+                                periode__lt=periode,
+                                faellig_am__lt=timezone.localdate())):
+                lauf_erledigt(schluessel, alt.periode, benutzer=benutzer,
+                              quelle='mit späterem Lauf erledigt')
         lauf = (Lauf.objects.select_related('laufart')
                 .filter(laufart__schluessel=schluessel, periode=periode).first())
         if lauf is None:

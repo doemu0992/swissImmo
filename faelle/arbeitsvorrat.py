@@ -724,6 +724,11 @@ def arbeitsvorrat(request, aktive_lg=None, wer=None, mandat=None):
         from core.tenancy import aktuelle_organisation
         from faelle.lauf_dienst import aktuelle_periode_sicherstellen
         aktuelle_periode_sicherstellen(aktuelle_organisation(), heute)
+        # Bereits ausgeführte Altläufe schliessen, wenn die Daten es belegen
+        # (Läufe von vor der Verdrahtung). Eine Abfrage, solange nichts
+        # überfällig ist.
+        from faelle.lauf_dienst import abgleichen_aus_daten
+        abgleichen_aus_daten(heute)
     except Exception:
         log.exception('Arbeitsvorrat: Läufe des Monats konnten nicht geplant werden')
     reisst = was_reisst(heute, aktive_lg=aktive_lg, wer=wer, mandat=mandat)
