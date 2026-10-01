@@ -472,7 +472,7 @@ alten Liegenschaft betreut.
             <span class="fw-ikon mut">{% zeichen 'hochladen' %}</span>
             <div class="fw-mitte">
                 <div class="fw-t truncate">{{ d.bezeichnung|default:d.titel }}</div>
-                <div class="fw-s">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div>
+                <div class="fw-s">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}{% include 'fw/_zustellstatus.html' with d=d z=None %}</div>
             </div>
             <form method="post" action="/neu/dokument/{{ d.id }}/portal-sichtbar/" class="shrink-0" title="{% if d.im_portal_sichtbar %}Im Mieterportal sichtbar – klicken zum Ausblenden{% else %}Im Mieterportal ausgeblendet – klicken zum Anzeigen{% endif %}">
                 {% csrf_token %}

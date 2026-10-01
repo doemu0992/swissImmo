@@ -971,6 +971,28 @@ class ZustellstatusTests(TestCase):
         seite = c.get(f'/neu/vertraege/{self.a.vertrag.pk}/')
         self.assertContains(seite, 'Nicht zugestellt — Zugang nicht bestätigt')
 
+    def _seite_zeigt_hinweis(self, url):
+        self._ablegen(True)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        self.assertContains(c.get(url), 'Nicht zugestellt — Zugang nicht bestätigt')
+
+    def test_hinweis_auch_am_objekt(self):
+        self._seite_zeigt_hinweis(f'/neu/objekte/{self.a.einheit.pk}/')
+
+    def test_hinweis_auch_in_der_personenakte(self):
+        self._seite_zeigt_hinweis(f'/neu/personen/{self.a.mieter.pk}/')
+
+    def test_hinweis_auch_in_der_zentralen_ablage(self):
+        self._seite_zeigt_hinweis('/neu/dokumente/')
+
+    def test_gewoehnliches_dokument_zeigt_keinen_hinweis(self):
+        self._ablegen(False)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        for url in (f'/neu/vertraege/{self.a.vertrag.pk}/', '/neu/dokumente/'):
+            self.assertNotContains(c.get(url), 'Zugang nicht bestätigt')
+
     def test_echter_weg_fristansetzung_dann_zugang_bestaetigen(self):
         """fw_verzug_257d legt die Briefe zugang_pflichtig ab und verknüpft sie mit der Frist;
         «Zugang bestätigen» (fw_verzug_zugang) macht daraus «bestätigt»."""

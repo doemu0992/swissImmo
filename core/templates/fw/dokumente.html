@@ -78,7 +78,7 @@
                 <td>
                     <div class="flex items-center gap-3">
                         <span class="fw-ikon">{% zeichen_wert e.icon %}</span>
-                        <b>{{ e.name }}</b>
+                        <b>{{ e.name }}</b>{% include 'fw/_zustellstatus.html' with z=e.zustell d=None %}
                     </div>
                 </td>
                 <td><span class="fw-marke-kapsel capitalize">{{ e.kat }}</span></td>

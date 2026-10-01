@@ -61,6 +61,7 @@ def fw_dokumente(request):
         eintraege.append({
             'name': name, 'kat': d.kategorie or 'sonstiges', 'datum': d.datum,
             'url': d.datei.url, 'kontext': kontext, 'quelle': 'Vertragsablage',
+            'zustell': d.zustellstatus,
         })
 
     # 2) Objekt-/Liegenschafts-Ablage (portfolio)
