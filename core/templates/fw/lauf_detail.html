@@ -66,6 +66,6 @@
 </div>
 
 {% if lauf.bemerkung %}
-<div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Bemerkung / Verlauf" %}</span></div><p style="white-space:pre-line">{{ lauf.bemerkung }}</p></div>
+<div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Bemerkung / Verlauf" %}</span></div><p>{{ lauf.bemerkung|linebreaksbr }}</p></div>
 {% endif %}
 {% endblock %}

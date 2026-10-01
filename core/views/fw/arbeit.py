@@ -655,7 +655,7 @@ def fw_lauf_abschliessen(request, pk):
     ziel = f'/neu/laeufe/{pk}/'
     with transaction.atomic():
         lauf = get_object_or_404(
-            Lauf.objects.select_for_update().select_related('laufart'), pk=pk)
+            Lauf.objects.select_related('laufart').select_for_update(of=('self',)), pk=pk)
         if lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN):
             messages.info(request, gettext('Dieser Lauf ist bereits erledigt.'))
             return redirect(ziel)
@@ -695,7 +695,7 @@ def fw_lauf_zuruecksetzen(request, pk):
     try:
         with transaction.atomic():
             lauf = get_object_or_404(
-                Lauf.objects.select_for_update().select_related('laufart'), pk=pk)
+                Lauf.objects.select_related('laufart').select_for_update(of=('self',)), pk=pk)
             if lauf.status in (Lauf.OFFEN, Lauf.LAEUFT):
                 messages.info(request, gettext('Dieser Lauf ist nicht abgeschlossen.'))
                 return redirect(ziel)
