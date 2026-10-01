@@ -176,8 +176,9 @@
 </div>
 {% comment %} Freigabeleiste nach konzept-v8 (Läufe): Der Mahnlauf wandert aus dem
    Seitenkopf nach unten — Optionen links, Knopf rechts. {% endcomment %}
-{% if anzahl_total %}
-<form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');" class="fw-freigabe">
+{% comment %} Die Leiste steht IMMER da: Vorher nur bei `anzahl_total` — eine heute fällige
+   Miete (noch unter der ersten Stufe) hatte damit gar keinen Knopf. {% endcomment %}
+<form method="post" action="/neu/mahnwesen/lauf/" class="fw-freigabe">
     {% csrf_token %}
     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
     <div class="fw-ht">
@@ -185,7 +186,10 @@
         <label class="fw-haekchen"><input type="checkbox" name="kein_versand" class="fw-akzent">{% trans "Testlauf: nur erstellen, keine E-Mails versenden" %}</label>
     </div>
     <a href="/neu/mahnwesen/trockenlauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'suchen' %}{% trans "Trockenlauf ansehen" %}</a>
-    <button type="submit" class="fw-btn fw-primary">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
+    <a href="/neu/mahnwesen/trockenlauf/?erzwingen=1{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'suchen' %}{% trans "Erzwungenen Lauf ansehen" %}</a>
+    <button type="submit" name="erzwingen" value="1" class="fw-btn"
+            onclick="return confirm('{% filter escapejs %}{% trans "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');">{% zeichen 'kritisch' %}{% trans "Mahnlauf erzwingen" %}</button>
+    <button type="submit" class="fw-btn fw-primary"
+            onclick="return confirm('{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
 </form>
-{% endif %}
 {% endblock %}

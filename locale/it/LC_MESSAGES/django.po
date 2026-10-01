@@ -21428,3 +21428,19 @@ msgstr "Impostazioni dei solleciti salvate."
 #, python-format
 msgid "Verzugszins (%(zins)s%%) berechnen"
 msgstr "Calcolare l'interesse di mora (%(zins)s%%)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf erzwingen"
+msgstr "Forzare il ciclo di sollecito"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Erzwungenen Lauf ansehen"
+msgstr "Vedere il ciclo forzato"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt."
+msgstr "FORZARE il ciclo di sollecito? Ogni credito in mora riceve ora il livello di sollecito successivo — anche se il termine non è ancora raggiunto. Vengono creati solleciti e inviati promemoria di pagamento per e-mail."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
+msgstr "Ciclo forzato: ogni credito in mora riceve il livello di sollecito successivo, anche se il termine non è ancora raggiunto."

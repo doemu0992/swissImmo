@@ -21450,3 +21450,19 @@ msgstr "Paramètres des rappels enregistrés."
 #, python-format
 msgid "Verzugszins (%(zins)s%%) berechnen"
 msgstr "Calculer l'intérêt moratoire (%(zins)s%%)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf erzwingen"
+msgstr "Forcer le processus de rappel"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Erzwungenen Lauf ansehen"
+msgstr "Voir le processus forcé"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt."
+msgstr "FORCER le processus de rappel ? Chaque créance en demeure reçoit maintenant le niveau de rappel suivant — même si son délai n'est pas encore atteint. Des rappels sont créés et des rappels de paiement envoyés par e-mail."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
+msgstr "Processus forcé : chaque créance en demeure reçoit le niveau de rappel suivant, même si son délai n'est pas encore atteint."

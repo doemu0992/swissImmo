@@ -388,11 +388,12 @@ def fw_mahnlauf_trockenlauf(request):
     basis = _global_filter(request)
     mit_zins = request.GET.get('mit_zins') == 'on'
     send_email = request.GET.get('kein_versand') != 'on'
+    erzwingen = request.GET.get('erzwingen') == '1'
     res = run_mahnlauf(aktive_lg=basis['aktive_lg'], send_email=send_email,
-                       mit_zins=mit_zins, dry_run=True)
+                       mit_zins=mit_zins, dry_run=True, erzwingen=erzwingen)
     return render(request, 'fw/mahnlauf_trockenlauf.html', {
         **basis, 'nav': 'mahnwesen', 'res': res, 'plan': res['plan'],
-        'mit_zins': mit_zins, 'send_email': send_email})
+        'mit_zins': mit_zins, 'send_email': send_email, 'erzwingen': erzwingen})
 
 
 @rolle_erforderlich(ROLLE_VERWALTER)
@@ -409,14 +410,16 @@ def fw_mahnlauf(request):
     basis = _global_filter(request)
     mit_zins = request.POST.get('mit_zins') == 'on'
     send_email = request.POST.get('kein_versand') != 'on'
+    erzwingen = request.POST.get('erzwingen') == '1'
     res = run_mahnlauf(aktive_lg=basis['aktive_lg'], send_email=send_email,
-                       mit_zins=mit_zins, user=request.user)
-    if not basis['aktive_lg']:
+                       mit_zins=mit_zins, user=request.user, erzwingen=erzwingen)
+    # Ein erzwungener Lauf ist ein Zusatzlauf — er schliesst den regulären Monatslauf nicht ab.
+    if not basis['aktive_lg'] and not erzwingen:
         from faelle.lauf_dienst import lauf_erledigt, periode_von
         lauf_erledigt('mahnlauf', periode_von(timezone.localdate()),
                       benutzer=request.user, auch_aeltere=True,
                       gemahnt=res['gemahnt'])
-    log_aktion(request, "Mahnlauf ausgeführt", "Sammellauf",
+    log_aktion(request, "Mahnlauf erzwungen" if erzwingen else "Mahnlauf ausgeführt", "Sammellauf",
                f"{res['gemahnt']} gemahnt, {res['emails']} E-Mails, Gebühren CHF {res['gebuehren']}, Zins CHF {res['zins']}")
     if res['gemahnt']:
         teile = [gettext('%(n)s Mahnung(en) erstellt') % {'n': res['gemahnt']}]

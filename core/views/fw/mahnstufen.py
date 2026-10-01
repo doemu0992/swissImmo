@@ -20,6 +20,8 @@ from core.auth import rolle_erforderlich, VERWALTUNGS_ROLLEN, log_aktion
 from core.tenancy import organisation_der_anfrage
 from crm.models import MahnStufe
 
+from faelle.lauf_dienst import mahnlauf_termin_nachziehen
+
 from ._basis import _global_filter
 
 ZIEL = '/neu/mahnstufen/'
@@ -86,6 +88,7 @@ def fw_mahnstufen(request):
                                       'brief_titel', 'brief_text'])
             log_aktion(request, "Mahnstufen geändert", "Mahnstufen",
                        " · ".join(f"St{s.stufe}:{s.ab_tage}T/CHF {s.gebuehr}" for s in stufen))
+            mahnlauf_termin_nachziehen(organisation_der_anfrage(request))
             messages.success(request, '✅ ' + gettext('Mahnstufen gespeichert.'))
         return redirect(ZIEL)
     return render(request, 'fw/mahnstufen.html', {
@@ -116,6 +119,7 @@ def fw_mahnstufe_neu(request):
     MahnStufe.objects.create(stufe=stufe, bezeichnung=name, ab_tage=tage, gebuehr=geb,
                              art_257d=request.POST.get('art_257d') == 'on')
     log_aktion(request, "Mahnstufe hinzugefügt", "Mahnstufen", f"Stufe {stufe}: {name} ab {tage} Tagen")
+    mahnlauf_termin_nachziehen(organisation_der_anfrage(request))
     messages.success(request, '✅ ' + gettext('Mahnstufe hinzugefügt.'))
     return redirect(ZIEL)
 
@@ -130,6 +134,7 @@ def fw_mahnstufe_loeschen(request, pk):
     s = get_object_or_404(MahnStufe, pk=pk)
     log_aktion(request, "Mahnstufe gelöscht", "Mahnstufen", f"Stufe {s.stufe}: {s.bezeichnung}")
     s.delete()
+    mahnlauf_termin_nachziehen(organisation_der_anfrage(request))
     messages.success(request, '✅ ' + gettext('Mahnstufe gelöscht.'))
     return redirect(ZIEL)
 
@@ -153,5 +158,6 @@ def fw_mahnwesen_einstellungen(request):
     org.save(update_fields=['mahn_verzug_ab_tag', 'mahn_mindestabstand_tage', 'verzugszins_prozent'])
     log_aktion(request, "Mahnwesen-Einstellungen geändert", "Mahnstufen",
                f"Verzug ab Tag {ab_tag} · Mindestabstand {abstand} Tage · Verzugszins {zins} %")
+    mahnlauf_termin_nachziehen(org)
     messages.success(request, '✅ ' + gettext('Mahnwesen-Einstellungen gespeichert.'))
     return redirect(ZIEL)

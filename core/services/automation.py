@@ -166,13 +166,20 @@ def verzugszins(betrag, tage, prozent):
     return (Decimal(betrag) * prozent / Decimal('100') * Decimal(tage) / Decimal('360')).quantize(Decimal('0.01'))
 
 
-def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry_run=False):
+def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry_run=False,
+                 erzwingen=False):
     """Führt einen Sammel-Mahnlauf über alle überfälligen offenen Debitoren aus.
     Für jede fällige Rechnung, die noch keine Mahnung der berechneten Stufe hat,
     wird ein revisionssicherer Mahnung-Eintrag erzeugt (+ optional Mahngebühr als
     Debitor, + optional Zahlungserinnerung per E-Mail). Idempotent pro Stufe.
 
     Gibt dict zurück: {'gemahnt': n, 'emails': m, 'gebuehren': CHF, 'zins': CHF}.
+
+    `erzwingen=True` (Knopf «Mahnlauf erzwingen»): Jede Forderung im Verzug (Verzugsbeginn
+    der Organisation erreicht) bekommt die NÄCHSTE Mahnstufe, auch wenn deren `ab_tage`
+    noch nicht erreicht ist — und ohne Mindestabstand zur letzten Mahnung. Es geht immer
+    nur eine Stufe weiter (nie über mehrere Stufen), Mahnsperre, Verjährung, abgeleitete
+    Forderungen und die Einmaligkeit je Stufe gelten unverändert.
 
     `dry_run=True` (Trockenlauf): rechnet genau dieselben Entscheidungen, schreibt
     und versendet aber NICHTS. `res['plan']` enthält je geplanter Mahnung eine Zeile
@@ -220,8 +227,16 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
         # gehört zur Abschreibung/Betreibung (eigene Verjährungs-Pendenz).
         if tage > 5 * 365:
             continue
-        _s = stufen_laden.stufe_fuer_tage(tage, eigentuemer_von_rechnung(r),
-                                          organisation=r.organisation)
+        hoechste = r.mahnungen.order_by('-stufe').first()
+        if erzwingen:
+            # Nächste aktive Stufe nach der bisher höchsten — unabhängig von `ab_tage`.
+            aktive = sorted(stufen_laden.config(eigentuemer_von_rechnung(r), organisation=org),
+                            key=lambda x: x['stufe'])
+            bisher = hoechste.stufe if hoechste else 0
+            _s = next((s for s in aktive if s['stufe'] > bisher), None)
+        else:
+            _s = stufen_laden.stufe_fuer_tage(tage, eigentuemer_von_rechnung(r),
+                                              organisation=r.organisation)
         if not _s:
             continue
         stufe = _s['stufe']
@@ -230,13 +245,13 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
             continue
         res['geprueft'] += 1
         # Idempotenz: existiert bereits eine Mahnung dieser (oder höherer) Stufe?
-        hoechste = r.mahnungen.order_by('-stufe').first()
         if hoechste and hoechste.stufe >= stufe:
             continue
         # MINDESTABSTAND zwischen zwei Mahnungen derselben Forderung: Läuft der Lauf
         # an Tag 29 und Tag 30, gingen sonst 1. und 2. Mahnung an aufeinanderfolgenden
         # Tagen raus (samt Gebühr), und der Mieter hätte keine Zeit zu zahlen.
-        if hoechste and (heute - hoechste.datum).days < org.mahn_mindestabstand_tage:
+        if (not erzwingen and hoechste
+                and (heute - hoechste.datum).days < org.mahn_mindestabstand_tage):
             continue
 
         gebuehr = _s['gebuehr']

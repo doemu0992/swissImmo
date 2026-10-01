@@ -21338,3 +21338,19 @@ msgstr "Mahnwesen-Einstellungen gespeichert."
 #, python-format
 msgid "Verzugszins (%(zins)s%%) berechnen"
 msgstr "Verzugszins (%(zins)s%%) berechnen"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf erzwingen"
+msgstr "Mahnlauf erzwingen"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Erzwungenen Lauf ansehen"
+msgstr "Erzwungenen Lauf ansehen"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt."
+msgstr "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
+msgstr "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."

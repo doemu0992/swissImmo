@@ -21224,3 +21224,19 @@ msgstr "Reminder settings saved."
 #, python-format
 msgid "Verzugszins (%(zins)s%%) berechnen"
 msgstr "Charge default interest (%(zins)s%%)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf erzwingen"
+msgstr "Force reminder run"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Erzwungenen Lauf ansehen"
+msgstr "Preview forced run"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt."
+msgstr "FORCE the reminder run? Every receivable in default now gets the next reminder level — even if its deadline has not been reached. Reminders are created and payment reminders sent by e-mail."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
+msgstr "Forced run: every receivable in default gets the next reminder level, even if its deadline has not been reached."
