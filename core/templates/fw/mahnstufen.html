@@ -23,6 +23,24 @@ steht keine Frist. Feldnamen: `bezeichnung_<id>`, `ab_tage_<id>`, `gebuehr_<id>`
     </div>
 </div>
 
+{% if uebersteuert %}
+<div class="fw-hinweis warn max-w-3xl">
+    <div class="fw-ht">
+        <p class="fw-strong">{% trans "Für diese Eigentümer gilt eine eigene Mahnstufen-Einstellung. Sie übersteuert die Werte unten — deshalb kann eine Forderung später oder gar nicht erscheinen." %}</p>
+        <ul>
+        {% for e in uebersteuert %}
+            <li class="flex items-center gap-3 flex-wrap">
+                <a href="/neu/mandate/{{ e.id }}/mahnstufen/" class="fw-link">{{ e.firma_oder_name }}</a>
+                <form method="post" action="/neu/mahnstufen/eigentuemer/{{ e.id }}/zuruecksetzen/" class="inline">{% csrf_token %}
+                    <button type="submit" class="fw-btn fw-knapp">{% trans "Auf die Stufen der Verwaltung zurücksetzen" %}</button>
+                </form>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
 <form method="post" action="/neu/mahnstufen/einstellungen/" class="max-w-3xl">
     {% csrf_token %}
     <div class="fw-card">

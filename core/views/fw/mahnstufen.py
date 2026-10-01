@@ -91,8 +91,13 @@ def fw_mahnstufen(request):
             mahnlauf_termin_nachziehen(organisation_der_anfrage(request))
             messages.success(request, '✅ ' + gettext('Mahnstufen gespeichert.'))
         return redirect(ZIEL)
+    from crm.models import Eigentuemer
+    # Eine Einstellung am Eigentümer (`mahn_konfig`) legt sich STILL über diese Werte —
+    # sichtbar machen, sonst wirkt «ab 0 Tagen» hier nicht und niemand weiss warum.
+    uebersteuert = [e for e in Eigentuemer.objects.order_by('firma_oder_name') if e.mahn_konfig]
     return render(request, 'fw/mahnstufen.html', {
         **_global_filter(request), 'nav': 'mahnwesen', 'stufen': stufen,
+        'uebersteuert': uebersteuert,
         'org': organisation_der_anfrage(request),
         'naechste_stufe': (stufen[-1].stufe + 1) if stufen else 1,
     })
@@ -160,4 +165,20 @@ def fw_mahnwesen_einstellungen(request):
                f"Verzug ab Tag {ab_tag} · Mindestabstand {abstand} Tage · Verzugszins {zins} %")
     mahnlauf_termin_nachziehen(org)
     messages.success(request, '✅ ' + gettext('Mahnwesen-Einstellungen gespeichert.'))
+    return redirect(ZIEL)
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_eigentuemer_mahnstufen_zuruecksetzen(request, pk):
+    """Entfernt die eigene Mahnstufen-Einstellung eines Eigentümers: Es gelten wieder
+    die Stufen der Verwaltung."""
+    from crm.models import Eigentuemer
+    if request.method != 'POST':
+        return redirect(ZIEL)
+    # 404 bei fremder ID: Eigentuemer.objects filtert auf die Organisation des Kontexts.
+    eigentuemer = get_object_or_404(Eigentuemer, pk=pk)
+    eigentuemer.mahn_konfig = None
+    eigentuemer.save(update_fields=['mahn_konfig'])
+    log_aktion(request, "Mahnstufen des Eigentümers zurückgesetzt", eigentuemer.firma_oder_name, "")
+    messages.success(request, '✅ ' + gettext('Eigene Einstellung entfernt — es gelten die Mahnstufen der Verwaltung.'))
     return redirect(ZIEL)

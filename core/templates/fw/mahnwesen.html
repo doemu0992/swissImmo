@@ -42,7 +42,8 @@
             <a href="?stufe={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="{% if stufe_filter == wert %}hier{% endif %}">{{ label }}</a>
             {% endfor %}
-        <span class="ml-auto fw-klein">{% blocktrans count n=rows|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}</span>
+        <span class="ml-auto fw-klein">{% blocktrans count n=rows|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
+            · {% blocktrans with n=offen_gesamt_n summe=offen_gesamt_summe|chf %}Offene Forderungen insgesamt: {{ n }} (CHF {{ summe }}){% endblocktrans %}</span>
     </div>
 
     <div class="fw-tablewrap">
@@ -136,8 +137,8 @@
         <span class="fw-hi">{% zeichen 'hinweis' %}</span>
         <div class="fw-ht">
     {% blocktrans trimmed %}Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung
-    (inkl. QR-Rechnung; die letzte Stufe kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den
-    Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr (Stufe 2: CHF 20, Stufe 3: CHF 40).{% endblocktrans %}
+    (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den
+    Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein.{% endblocktrans %}
         </div>
     </div>
 </div>
@@ -174,6 +175,30 @@
         </table>
     </div>
 </div>
+{% if ohne_mahnfall %}
+<div class="fw-card">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Offen, aber nicht im Mahnlauf — und warum" %}</h3></div>
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th>{% trans "Mieter" %}</th><th>{% trans "Forderung" %}</th><th>{% trans "Fällig am" %}</th>
+                <th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Grund" %}</th>
+            </tr></thead>
+            <tbody>
+            {% for z in ohne_mahnfall %}
+            <tr>
+                <td class="fw-strong whitespace-nowrap">{{ z.mieter }}</td>
+                <td>{{ z.r.titel }}</td>
+                <td class="fw-mutet fw-num whitespace-nowrap">{{ z.faellig|date:"d.m.Y" }}</td>
+                <td class="fw-right fw-num fw-strong">{{ z.offen|chf }}</td>
+                <td class="fw-mutet">{{ z.grund }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 {% if vorlauf %}
 <div class="fw-card">
     <div class="fw-kopf">
