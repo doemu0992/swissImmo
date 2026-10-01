@@ -18889,6 +18889,10 @@ msgstr "Warte auf Mieter"
 msgid "Warte auf Handwerker"
 msgstr "Warte auf Handwerker"
 
+#: core/views/fw/schaeden.py:52 tickets/models.py:16
+msgid "Wartet auf Rechnung"
+msgstr "Wartet auf Rechnung"
+
 #: core/views/fw/schaeden.py:126
 #, python-format
 msgid "Offen (%(n)s)"
