@@ -21083,6 +21083,35 @@ msgstr "Insurance claim recorded."
 msgid "Versicherungsleistung verbucht."
 msgstr "Insurance payout booked."
 
+#: core/templates/fw/laeufe.html:36
+msgid "Überspringen"
+msgstr "Skip"
+
+#: core/templates/fw/laeufe.html:37
+msgid "Begründung, z. B. keine offenen Posten"
+msgstr "Reason, e.g. no open items"
+
+#: core/templates/fw/laeufe.html:37
+msgid "Begründung"
+msgstr "Reason"
+
+#: core/views/fw/arbeit.py:600
+msgid "Dieser Lauf ist bereits erledigt."
+msgstr "This run is already done."
+
+#: core/views/fw/arbeit.py:603
+msgid "Ein blockierter Lauf lässt sich nicht überspringen — zuerst die Blockade beheben."
+msgstr "A blocked run cannot be skipped — resolve the blockage first."
+
+#: core/views/fw/arbeit.py:609
+msgid "Überspringen braucht eine Begründung."
+msgstr "Skipping requires a reason."
+
+#: core/views/fw/arbeit.py:612
+#, python-format
+msgid "%(lauf)s übersprungen."
+msgstr "%(lauf)s skipped."
+
 #: core/templates/fw/mahnstufen.html:1
 msgid "Ab wie vielen Tagen nach Fälligkeit welche Mahnung greift und welche Mahnspesen sie auslöst — für Ihre ganze Verwaltung."
 msgstr "After how many days past due which reminder applies and which reminder fees it triggers — for your whole property management."

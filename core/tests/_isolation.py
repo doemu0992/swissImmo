@@ -461,6 +461,10 @@ class MandantenFixture:
         ('budget_speichern', 'liegenschaft'),
         ('fall_detail',     'fall'),
         ('zulauf_uebernehmen', 'eingang'),
+        # Der Überspringen-Knopf der Läufe: `pk` ist der Lauf. Von der
+        # Selbstprüfung gemeldet — ein POST auf den Lauf einer fremden
+        # Verwaltung darf ihn weder überspringen noch preisgeben.
+        ('lauf_ueberspringen', 'lauf'),
         ('abnahme',         'abnahme'),
         ('akonto',          'periode'),
         ('anpassung',       'anpassung'),

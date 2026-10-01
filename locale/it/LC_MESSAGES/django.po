@@ -21287,6 +21287,35 @@ msgstr "Sinistro assicurativo registrato."
 msgid "Versicherungsleistung verbucht."
 msgstr "Prestazione assicurativa registrata."
 
+#: core/templates/fw/laeufe.html:36
+msgid "Überspringen"
+msgstr "Salta"
+
+#: core/templates/fw/laeufe.html:37
+msgid "Begründung, z. B. keine offenen Posten"
+msgstr "Motivo, ad es. nessuna posizione aperta"
+
+#: core/templates/fw/laeufe.html:37
+msgid "Begründung"
+msgstr "Motivo"
+
+#: core/views/fw/arbeit.py:600
+msgid "Dieser Lauf ist bereits erledigt."
+msgstr "Questa esecuzione è già completata."
+
+#: core/views/fw/arbeit.py:603
+msgid "Ein blockierter Lauf lässt sich nicht überspringen — zuerst die Blockade beheben."
+msgstr "Un’esecuzione bloccata non può essere saltata — risolvere prima il blocco."
+
+#: core/views/fw/arbeit.py:609
+msgid "Überspringen braucht eine Begründung."
+msgstr "Per saltare è necessario un motivo."
+
+#: core/views/fw/arbeit.py:612
+#, python-format
+msgid "%(lauf)s übersprungen."
+msgstr "%(lauf)s saltato."
+
 #: core/templates/fw/mahnstufen.html:1
 msgid "Ab wie vielen Tagen nach Fälligkeit welche Mahnung greift und welche Mahnspesen sie auslöst — für Ihre ganze Verwaltung."
 msgstr "Dopo quanti giorni dalla scadenza scatta quale sollecito e quali spese di sollecito comporta — per tutta la vostra amministrazione."

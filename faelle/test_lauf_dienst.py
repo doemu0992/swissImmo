@@ -251,3 +251,75 @@ class AltlaufTests(_Basis):
                 m.filter.return_value.exists.return_value = True
                 arbeitsvorrat(request=None)
             self.assertEqual(self._august().status, Lauf.ABGESCHLOSSEN)
+
+
+class UeberspringenKnopfTests(_Basis):
+    def _client(self):
+        from django.test import Client
+        c = Client()
+        c.force_login(self.a.benutzer)
+        return c
+
+    def _mahnlauf(self, periode='2026-08'):
+        return Lauf.objects.get(laufart__schluessel='mahnlauf', periode=periode)
+
+    def test_knopf_steht_auf_der_laufseite(self):
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            pk = self._mahnlauf().pk
+        html = self._client().get('/neu/laeufe/').content.decode()
+        self.assertIn(f'/neu/laeufe/{pk}/ueberspringen/', html)
+
+    def test_ueberspringen_mit_begruendung_nimmt_den_lauf_aus_dem_vorrat(self):
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            pk = self._mahnlauf().pk
+        antwort = self._client().post(f'/neu/laeufe/{pk}/ueberspringen/',
+                                      {'bemerkung': 'Keine offenen Posten.'})
+        self.assertEqual(antwort.status_code, 302)
+        with mandant(self.org):
+            lauf = self._mahnlauf()
+            self.assertEqual(lauf.status, Lauf.UEBERSPRUNGEN)
+            self.assertEqual(lauf.bemerkung, 'Keine offenen Posten.')
+            self.assertNotIn(('mahnlauf', '2026-08'),
+                             _titel(was_reisst(OKTOBER)))
+
+    def test_ohne_begruendung_wird_nichts_gespeichert(self):
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            pk = self._mahnlauf().pk
+        self._client().post(f'/neu/laeufe/{pk}/ueberspringen/', {'bemerkung': '  '})
+        with mandant(self.org):
+            self.assertEqual(self._mahnlauf().status, Lauf.OFFEN)
+
+    def test_blockierter_lauf_laesst_sich_nicht_ueberspringen(self):
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            lauf = self._mahnlauf()
+            lauf.blockieren('Sieben unzugeordnete Eingänge')
+            pk = lauf.pk
+        self._client().post(f'/neu/laeufe/{pk}/ueberspringen/',
+                            {'bemerkung': 'egal'})
+        with mandant(self.org):
+            self.assertEqual(self._mahnlauf().status, Lauf.OFFEN)
+
+    def test_get_ist_nicht_erlaubt(self):
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            pk = self._mahnlauf().pk
+        self.assertEqual(
+            self._client().get(f'/neu/laeufe/{pk}/ueberspringen/').status_code, 405)
+
+    def test_fremder_lauf_ist_nicht_erreichbar(self):
+        """Mandantentrennung: Verwaltung B darf den Lauf von A nicht überspringen."""
+        from django.test import Client
+        b = MandantenFixture('B', '3000', 'Bern')
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            pk = self._mahnlauf().pk
+        c = Client()
+        c.force_login(b.benutzer)
+        antwort = c.post(f'/neu/laeufe/{pk}/ueberspringen/', {'bemerkung': 'x'})
+        self.assertEqual(antwort.status_code, 404)
+        with mandant(self.org):
+            self.assertEqual(self._mahnlauf().status, Lauf.OFFEN)
