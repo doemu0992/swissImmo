@@ -45,10 +45,10 @@
         {% if kann_schreiben and not z.blockaden %}
         {% comment %} Bewusst auslassen — nur mit Begründung (`Lauf.ueberspringen`).
            Blockierte Läufe bekommen den Knopf nicht: Die Ursache steht noch. {% endcomment %}
-        <details style="margin-top:8px">
+        <details>
             <summary>{% trans "Überspringen" %}</summary>
-            <form method="post" action="{% url 'fw_lauf_ueberspringen' z.lauf.pk %}">{% csrf_token %}
-                <input type="text" name="bemerkung" class="fw-feld" style="width:220px" required maxlength="300" placeholder="{% trans 'Begründung, z. B. keine offenen Posten' %}" aria-label="{% trans 'Begründung' %}">
+            <form method="post" action="{% url 'fw_lauf_ueberspringen' z.lauf.pk %}" class="fw-eingang-knoepfe">{% csrf_token %}
+                <input type="text" name="bemerkung" class="fw-feld" required maxlength="300" placeholder="{% trans 'Begründung, z. B. keine offenen Posten' %}" aria-label="{% trans 'Begründung' %}">
                 <button class="fw-btn fw-knapp">{% trans "Überspringen" %}</button>
             </form>
         </details>
