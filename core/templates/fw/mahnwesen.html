@@ -14,6 +14,7 @@
             <a href="/neu/mahnwesen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
+        <a href="/neu/mahnstufen/" class="fw-btn">{% zeichen 'einstellungen' %}{% trans "Mahnstufen anpassen" %}</a>
         <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-btn">{% zeichen 'bericht' %}{% trans "Altersstruktur (OP-Aging) ansehen" %}</a>
     </div>
 </div>
@@ -28,7 +29,7 @@
     <a href="?stufe={{ s.stufe }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
        class="fw-kpi fw-hover{% if stufe_filter == s.stufe|stringformat:'s' %} fw-accent{% endif %}">
         <div class="fw-l"><span class="fw-chip {{ s.cls }}">{{ s.stufe }}</span> {{ s.label }}</div>
-        <div class="fw-v">{% if s.stufe == 3 %}{{ counts.3 }}{% elif s.stufe == 2 %}{{ counts.2 }}{% else %}{{ counts.1 }}{% endif %}</div>
+        <div class="fw-v">{{ s.anzahl }}</div>
     </a>
     {% endfor %}
 </div>
@@ -124,7 +125,7 @@
         {% for s in mahnstufen %}
         <div class="flex items-center gap-1.5">
             <span class="fw-punkt {{ s.dot }}"></span>
-            <span class="fw-strong">{{ s.label }}</span> {% blocktrans with n=s.ab_tage %}ab {{ n }} Tagen{% endblocktrans %} — {{ s.unter }}
+            <span class="fw-strong">{{ s.label }}</span> {% blocktrans with n=s.ab_tage %}ab {{ n }} Tagen{% endblocktrans %}{% if s.unter %} — {{ s.unter }}{% endif %}
         </div>
         {% endfor %}
     </div>

@@ -37,6 +37,7 @@ from .eigentuemer_abrechnung import *  # noqa: F401,F403
 from .hypotheken import *              # noqa: F401,F403
 from .kommunikation import *           # noqa: F401,F403
 from .mahnwesen import *               # noqa: F401,F403
+from .mahnstufen import *              # noqa: F401,F403
 from .mwst import *                    # noqa: F401,F403
 from .nebenkosten import *             # noqa: F401,F403
 from .pendenzen import *               # noqa: F401,F403

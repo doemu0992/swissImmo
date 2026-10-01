@@ -121,6 +121,60 @@ class Organisation(models.Model):
 
     def save(self, *args, **kwargs):
         _unterschrift_aufbereiten(self, 'sig_vw_')
+        neu = self._state.adding
+        super().save(*args, **kwargs)
+        if neu:
+            # Jede neue Verwaltung startet mit den Standard-Mahnstufen. Danach
+            # gehören sie ihr: bearbeiten, ergänzen, löschen (/neu/mahnstufen/).
+            from core.services.mahnstufen import standard_mahnstufen_anlegen
+            standard_mahnstufen_anlegen(self)
+
+
+class MahnStufe(models.Model):
+    """Eine Mahnstufe einer Verwaltung — die EINZIGE Quelle für Fristen und Gebühren.
+
+    Keine Frist steht im Programmcode: Der Mahnlauf (`core.services.automation.run_mahnlauf`)
+    liest `ab_tage` je Organisation aus dieser Tabelle. Jede Verwaltung darf
+    schon nach 10 Tagen mahnen, eine vierte Stufe ergänzen oder die erste
+    streichen, ohne die anderen zu berühren.
+
+    Der Bezug heisst `organisation` und nicht «Mandant»: Im Code ist Mandant
+    der Eigentümer einer Liegenschaft gewesen (`crm.Eigentuemer`); der Tenant
+    ist die Organisation.
+    """
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+    stufe = models.PositiveSmallIntegerField(
+        "Stufe", help_text="1, 2, 3 … — eine höhere Stufe ist die strengere Mahnung.")
+    bezeichnung = models.CharField("Bezeichnung", max_length=120)
+    ab_tage = models.PositiveIntegerField(
+        "Ab Tagen nach Fälligkeit",
+        help_text="Ab so vielen Tagen Verzug ist diese Stufe erreicht.")
+    gebuehr = models.DecimalField("Mahnspesen (CHF)", max_digits=8, decimal_places=2,
+                                  default=Decimal('0.00'))
+    art_257d = models.BooleanField(
+        "Kündigungsandrohung (Art. 257d OR)", default=False,
+        help_text="Diese Stufe setzt die Zahlungsfrist mit Kündigungsandrohung.")
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = "Mahnstufe"
+        verbose_name_plural = "Mahnstufen"
+        ordering = ['stufe']
+        constraints = [
+            models.UniqueConstraint(fields=['organisation', 'stufe'],
+                                    name='uniq_mahnstufe_organisation_stufe'),
+        ]
+
+    def __str__(self):
+        return f"{self.stufe}. {self.bezeichnung} (ab {self.ab_tage} Tagen)"
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
 
