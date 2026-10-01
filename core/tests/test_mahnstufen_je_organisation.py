@@ -1014,3 +1014,93 @@ class ZustellstatusTests(TestCase):
             self.assertEqual(antwort.status_code, 302)
             dok.refresh_from_db()
             self.assertEqual(dok.zustellstatus, ('bestaetigt', timezone.localdate()))
+
+
+class FehlendeMahngebuehrNachstellenTests(TestCase):
+    """Wird die Gebührenrechnung einer erfassten Mahnung storniert oder gelöscht, stellt
+    «Erfassen» sie neu — ohne zweite Mahnung und ohne doppelte Gebühr.
+
+    Der echte Weg ist die Stornierung über die Oberfläche: Sie setzt die Gebühr in der
+    Mahn-Historie auf 0. Ein Test, der nur den Status setzt, träfe das nicht."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _erfassen(self, c, r, stufe=2):
+        return c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': stufe})
+
+    def _setup(self):
+        r = _ueberfaellige_rechnung(self.a, 31)          # Stufe 2: CHF 20 Gebühr
+        c = Client()
+        c.force_login(self.a.benutzer)
+        self._erfassen(c, r)
+        return c, r
+
+    def _gebuehren(self, r):
+        with organisation_kontext(self.a.organisation):
+            return list(r.folgeforderungen.filter(titel__startswith='Mahngebühr 2.')
+                        .exclude(status='storniert'))
+
+    def _mahnung(self, r):
+        from finance.models import Mahnung
+        with organisation_kontext(self.a.organisation):
+            return Mahnung.objects.get(debitoren_rechnung=r)
+
+    def _storniere(self, c, geb):
+        antwort = c.post(f'/neu/debitoren/{geb.pk}/stornieren/')
+        self.assertEqual(antwort.status_code, 302)
+
+    def test_ueber_die_oberflaeche_storniert_dann_erfassen_stellt_neu(self):
+        from finance.models import Buchung, Mahnung
+        c, r = self._setup()
+        (geb,) = self._gebuehren(r)
+        self._storniere(c, geb)
+        self.assertEqual(self._gebuehren(r), [])
+        # die Stornierung hat die Gebühr der Historie auf 0 gesetzt
+        self.assertEqual(self._mahnung(r).gebuehr, Decimal('0.00'))
+        self.assertContains(c.get('/neu/mahnwesen/'), 'Mahngebühr fehlt')
+        self._erfassen(c, r)
+        neu = self._gebuehren(r)
+        self.assertEqual(len(neu), 1)
+        self.assertNotEqual(neu[0].pk, geb.pk)
+        self.assertEqual(neu[0].betrag, Decimal('20.00'))
+        self.assertEqual(self._mahnung(r).gebuehr, Decimal('20.00'))
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 1)
+            self.assertTrue(Buchung.objects.filter(debitoren_rechnung=neu[0],
+                                                   ist_storno=False).exists())
+        self.assertNotContains(c.get('/neu/mahnwesen/'), 'Mahngebühr fehlt')
+
+    def test_geloescht_dann_erfassen_stellt_neu(self):
+        from finance.models import DebitorenRechnung
+        c, r = self._setup()
+        (geb,) = self._gebuehren(r)
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=geb.pk).delete()
+        self._erfassen(c, r)
+        self.assertEqual(len(self._gebuehren(r)), 1)
+
+    def test_nochmal_erfassen_ohne_luecke_doppelt_nichts(self):
+        c, r = self._setup()
+        self._erfassen(c, r)
+        self._erfassen(c, r)
+        self.assertEqual(len(self._gebuehren(r)), 1)
+
+    def test_nach_zweimaligem_stornieren_wieder_neu(self):
+        c, r = self._setup()
+        for _ in range(2):
+            (geb,) = self._gebuehren(r)
+            self._storniere(c, geb)
+            self._erfassen(c, r)
+        self.assertEqual(len(self._gebuehren(r)), 1)
+
+    def test_rueckschritt_bleibt_gesperrt(self):
+        from finance.models import Mahnung
+        c, r = self._setup()
+        (geb,) = self._gebuehren(r)
+        self._storniere(c, geb)
+        self._erfassen(c, r, stufe=1)
+        self.assertEqual(self._gebuehren(r), [])
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 1)

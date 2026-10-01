@@ -53,6 +53,10 @@ class _Basis(TestCase):
         cls.heute = timezone.localdate()
         from portfolio.models import Einheit
         with mandant(cls.a.organisation):
+            # Die Sperre (tickets/workflow.py) verlangt für den Abschluss die
+            # Handwerkerrechnung am Auftrag.
+            cls.a.auftrag.kreditoren_rechnung = cls.a.kreditor
+            cls.a.auftrag.save()
             cls.a.schaden.status = 'erledigt'
             cls.a.schaden.save(update_fields=['status'])
             cls.a.wartungsfrist.aktiv = False

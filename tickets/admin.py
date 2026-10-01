@@ -136,9 +136,13 @@ class SchadenMeldungAdmin(NurLesenModelAdmin):
     @action(description="✅ Als erledigt markieren", url_path="mark-done")
     def action_mark_done(self, request, object_id):
         obj = self.get_object(request, object_id)
-        obj.status = 'erledigt'
-        obj.save()
-        messages.success(request, gettext('Ticket wurde erfolgreich geschlossen.'))
+        from django.core.exceptions import ValidationError
+        try:
+            obj.status = 'erledigt'
+            obj.save()
+            messages.success(request, gettext('Ticket wurde erfolgreich geschlossen.'))
+        except ValidationError as e:
+            messages.error(request, ' '.join(e.messages))
         return redirect(request.META.get('HTTP_REFERER'))
 
     @action(description="📝 Neue Notiz / Antwort", url_path="add-note")
