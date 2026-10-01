@@ -208,3 +208,46 @@ class ViewVerdrahtungTests(_Basis):
         with mandant(self.org):
             self.assertEqual(self._lauf('sollstellung', '2026-08').status,
                              Lauf.ABGESCHLOSSEN)
+
+
+class AltlaufTests(_Basis):
+    """Gemeldet nach dem Merge: «bereits ausgeführt, werden trotzdem angezeigt»."""
+
+    def test_ausfuehrung_im_oktober_erledigt_auch_den_versaeumten_august(self):
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            planen(self.org, OKTOBER)
+            lauf_erledigt('mahnlauf', '2026-10', auch_aeltere=True)
+            status = {l.periode: l.status
+                      for l in Lauf.objects.filter(laufart__schluessel='mahnlauf')}
+            self.assertEqual(status['2026-08'], Lauf.ABGESCHLOSSEN)
+            self.assertEqual(status['2026-10'], Lauf.ABGESCHLOSSEN)
+
+    def test_ohne_auch_aeltere_bleibt_august_offen(self):
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            lauf_erledigt('mahnlauf', '2026-10')
+            self.assertNotEqual(self._august().status, Lauf.ABGESCHLOSSEN)
+
+    def _august(self):
+        return Lauf.objects.get(laufart__schluessel='mahnlauf', periode='2026-08')
+
+    def test_blockierter_altlauf_bleibt_trotz_spaeterem_lauf_offen(self):
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            self._august().blockieren('Sieben unzugeordnete Eingänge')
+            lauf_erledigt('mahnlauf', '2026-10', auch_aeltere=True)
+            self.assertNotEqual(self._august().status, Lauf.ABGESCHLOSSEN)
+
+    def test_heute_seite_heilt_belegt_ausgefuehrte_altlaeufe(self):
+        from faelle.arbeitsvorrat import arbeitsvorrat
+        with mandant(self.org):
+            planen(self.org, date(2026, 8, 1))
+            with mock.patch('django.utils.timezone.localdate',
+                            return_value=OKTOBER), \
+                    mock.patch('core.tenancy.aktuelle_organisation',
+                               return_value=self.org), \
+                    mock.patch('finance.models.Mahnung.objects') as m:
+                m.filter.return_value.exists.return_value = True
+                arbeitsvorrat(request=None)
+            self.assertEqual(self._august().status, Lauf.ABGESCHLOSSEN)

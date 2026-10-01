@@ -339,7 +339,7 @@ def fw_bankabgleich_verbuchen(request):
 
     from faelle.lauf_dienst import lauf_erledigt, periode_von
     lauf_erledigt('bankabgleich', periode_von(timezone.localdate()),
-                  benutzer=request.user)
+                  benutzer=request.user, auch_aeltere=True)
     log_aktion(request, "Zahlung via Bankabgleich verbucht", str(vertrag),
                f"CHF {betrag} auf {rechnung.titel}, Valuta {valuta:%d.%m.%Y}"
                + (f", Überzahlung CHF {ueberschuss} → 2030" if ueberschuss > 0 else ''))
@@ -1107,7 +1107,8 @@ def fw_camt_import(request):
     if verbucht or geklaert or guthaben or belastungen:
         from faelle.lauf_dienst import lauf_erledigt, periode_von
         lauf_erledigt('bankabgleich', periode_von(timezone.localdate()),
-                      benutzer=request.user, verbucht=verbucht)
+                      benutzer=request.user, auch_aeltere=True,
+                      verbucht=verbucht)
     log_aktion(request, f"{quelle}-Import", datei.name,
                f"{verbucht} verbucht (davon {fuzzy} fuzzy, {gelernt_treffer} gelernter "
                f"Absender), CHF {zugeordnet_summe}, "

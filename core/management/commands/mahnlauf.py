@@ -41,7 +41,7 @@ class Command(BaseCommand):
         from django.utils import timezone
         from faelle.lauf_dienst import lauf_erledigt, periode_von
         lauf_erledigt('mahnlauf', periode_von(timezone.localdate()),
-                      gemahnt=res['gemahnt'])
+                      auch_aeltere=True, gemahnt=res['gemahnt'])
         AktivitaetsLog.objects.create(aktion="Mahnlauf (Scheduler)", objekt="Sammellauf",
                                       details=msg)
         self.stdout.write(self.style.SUCCESS(f"{organisation}: {msg}"))

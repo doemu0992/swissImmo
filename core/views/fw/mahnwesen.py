@@ -403,7 +403,8 @@ def fw_mahnlauf(request):
     if not basis['aktive_lg']:
         from faelle.lauf_dienst import lauf_erledigt, periode_von
         lauf_erledigt('mahnlauf', periode_von(timezone.localdate()),
-                      benutzer=request.user, gemahnt=res['gemahnt'])
+                      benutzer=request.user, auch_aeltere=True,
+                      gemahnt=res['gemahnt'])
     log_aktion(request, "Mahnlauf ausgeführt", "Sammellauf",
                f"{res['gemahnt']} gemahnt, {res['emails']} E-Mails, Gebühren CHF {res['gebuehren']}, Zins CHF {res['zins']}")
     if res['gemahnt']:
