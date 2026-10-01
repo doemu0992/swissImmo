@@ -67,6 +67,7 @@ def fw_mahnwesen(request):
     counts = defaultdict(int)
     summe = defaultdict(lambda: Decimal('0.00'))
     stufen_laden = Mahnstufen()
+    vorlauf = []
     for r in qs:
         faellig = r.faellig_am or r.datum
         if not faellig:
@@ -78,10 +79,17 @@ def fw_mahnwesen(request):
             continue
         stufe = stufen_laden.stufe_fuer_tage(tage, _eigentuemer_von_rechnung(r),
                                              organisation=r.organisation)
-        if not stufe:
-            continue  # unter der ersten aktiven Stufe: noch kein Mahnfall
         offen = r.offener_betrag
         if offen <= 0:
+            continue
+        if not stufe:
+            # Im Verzug, aber noch unter der ersten aktiven Stufe: kein Mahnfall des
+            # regulären Laufs — aber sichtbar und von Hand mahnbar (Abschnitt unten).
+            # Vorher verschwand eine heute fällige Miete hier ersatzlos.
+            mieter = r.vertrag.mieter if r.vertrag_id else None
+            if (r.stammrechnung_id is None and mieter is not None
+                    and not getattr(mieter, 'mahnsperre', False)):
+                vorlauf.append((r, faellig, tage, offen))
             continue
         counts[stufe['stufe']] += 1
         summe[stufe['stufe']] += offen
@@ -120,11 +128,35 @@ def fw_mahnwesen(request):
     historie = list(historie_qs[:30])
 
     legende = [dict(s, anzahl=counts.get(s['stufe'], 0)) for s in legende]
+
+    # Im Verzug, Frist der nächsten Stufe noch nicht erreicht: mit der Stufe, die ein
+    # Klick darauf erfasst (nächste aktive Stufe nach der bisher höchsten Mahnung).
+    from django.db.models import Max
+    from finance.models import Mahnung as _Mahnung
+    bisher = {z['debitoren_rechnung_id']: z['mx'] for z in
+              _Mahnung.objects.filter(debitoren_rechnung_id__in=[v[0].id for v in vorlauf])
+              .values('debitoren_rechnung_id').annotate(mx=Max('stufe'))}
+    vorlauf_rows = []
+    for r, faellig, tage, offen in vorlauf:
+        aktive = sorted(stufen_laden.config(_eigentuemer_von_rechnung(r), organisation=r.organisation),
+                        key=lambda x: x['stufe'])
+        naechste = next((s for s in aktive if s['stufe'] > (bisher.get(r.id) or 0)), None)
+        if naechste is None:
+            continue
+        lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None)
+        vorlauf_rows.append({
+            'r': r, 'faellig': faellig, 'tage': tage, 'offen': offen, 'naechste': naechste,
+            'mieter': r.vertrag.mieter.display_name,
+            'objekt': f"{lg.strasse}, {lg.ort}" if lg else '—',
+            'vertrag_id': r.vertrag_id,
+        })
+    vorlauf_rows.sort(key=lambda x: (x['faellig'], x['mieter']))
     context = {
         **basis, 'nav': 'mahnwesen', 'rows': rows,
         'stufe_filter': stufe_filter, 'stufe_chips': stufe_chips,
         'total': total,
         'mahnstufen': legende,
+        'vorlauf': vorlauf_rows,
         'verzugszins': organisation_der_anfrage(request).verzugszins_prozent.normalize(),
         'counts': counts, 'summe': summe,
         'anzahl_total': sum(counts.values()),

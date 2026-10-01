@@ -21240,3 +21240,27 @@ msgstr "FORCE the reminder run? Every receivable in default now gets the next re
 #: core/templates/fw/mahnstufen.html:1
 msgid "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
 msgstr "Forced run: every receivable in default gets the next reminder level, even if its deadline has not been reached."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Im Verzug, Frist der nächsten Stufe noch nicht erreicht"
+msgstr "In default, deadline of the next level not yet reached"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Forderungen sind fällig, haben aber die Frist der nächsten Mahnstufe noch nicht erreicht. Der reguläre Mahnlauf erfasst sie nicht — hier können Sie sie trotzdem mahnen."
+msgstr "These receivables are due but have not yet reached the deadline of the next reminder level. The regular reminder run does not pick them up — you can still send a reminder here."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "heute fällig"
+msgstr "due today"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Nächste Stufe"
+msgstr "Next level"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Jetzt mahnen"
+msgstr "Remind now"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
+msgstr "Send a reminder for this receivable now? The reminder is recorded and the level's reminder fee is charged."

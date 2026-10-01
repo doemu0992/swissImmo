@@ -21444,3 +21444,27 @@ msgstr "FORZARE il ciclo di sollecito? Ogni credito in mora riceve ora il livell
 #: core/templates/fw/mahnstufen.html:1
 msgid "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist."
 msgstr "Ciclo forzato: ogni credito in mora riceve il livello di sollecito successivo, anche se il termine non è ancora raggiunto."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Im Verzug, Frist der nächsten Stufe noch nicht erreicht"
+msgstr "In mora, termine del livello successivo non ancora raggiunto"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Forderungen sind fällig, haben aber die Frist der nächsten Mahnstufe noch nicht erreicht. Der reguläre Mahnlauf erfasst sie nicht — hier können Sie sie trotzdem mahnen."
+msgstr "Questi crediti sono scaduti ma non hanno ancora raggiunto il termine del prossimo livello di sollecito. Il ciclo di sollecito regolare non li rileva — qui potete comunque sollecitarli."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "heute fällig"
+msgstr "scade oggi"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Nächste Stufe"
+msgstr "Livello successivo"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Jetzt mahnen"
+msgstr "Sollecitare ora"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt."
+msgstr "Sollecitare ora questo credito? Il sollecito viene registrato e vengono addebitate le spese di sollecito del livello."
