@@ -21472,3 +21472,20 @@ msgstr "Sollecitare ora questo credito? Il sollecito viene registrato e vengono 
 #: core/templates/fw/mahnwesen.html:138
 msgid "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."
 msgstr "Il livello di sollecito è determinato dal numero di giorni di ritardo. «PDF» apre il sollecito pronto (con fattura QR; il livello con comminatoria di disdetta annuncia la fissazione di un termine secondo l'art. 257d CO — il termine stesso si fissa nel dossier del contratto). «Registrare» iscrive il passo di sollecito in modo tracciabile nello storico e addebita le spese di sollecito del livello. Giorni, spese e comminatoria di disdetta si impostano sotto «Adatta i livelli di sollecito»."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Offene Forderungen insgesamt: %(n)s (CHF %(summe)s)"
+msgstr "Crediti aperti in totale: %(n)s (CHF %(summe)s)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Für diese Eigentümer gilt eine eigene Mahnstufen-Einstellung. Sie übersteuert die Werte unten — deshalb kann eine Forderung später oder gar nicht erscheinen."
+msgstr "Per questi proprietari vale un'impostazione propria dei livelli di sollecito. Sovrascrive i valori qui sotto — per questo un credito può comparire più tardi o non comparire affatto."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Auf die Stufen der Verwaltung zurücksetzen"
+msgstr "Ripristina i livelli dell'amministrazione"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Eigene Einstellung entfernt — es gelten die Mahnstufen der Verwaltung."
+msgstr "Impostazione propria rimossa — valgono i livelli dell'amministrazione."

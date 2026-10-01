@@ -21268,3 +21268,20 @@ msgstr "Send a reminder for this receivable now? The reminder is recorded and th
 #: core/templates/fw/mahnwesen.html:138
 msgid "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."
 msgstr "The dunning level is determined by the number of days overdue. “PDF” opens the finished reminder (with QR bill; the level with a termination warning announces the payment deadline under Art. 257d CO — the deadline itself is set in the contract file). “Record” writes the dunning step to the history with an audit trail and charges the level's dunning fee. Days, fees and termination warning are set under “Adjust reminder levels”."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Offene Forderungen insgesamt: %(n)s (CHF %(summe)s)"
+msgstr "Open receivables in total: %(n)s (CHF %(summe)s)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Für diese Eigentümer gilt eine eigene Mahnstufen-Einstellung. Sie übersteuert die Werte unten — deshalb kann eine Forderung später oder gar nicht erscheinen."
+msgstr "These owners have their own reminder-level setting. It overrides the values below — so a receivable may show up later or not at all."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Auf die Stufen der Verwaltung zurücksetzen"
+msgstr "Reset to the property manager's levels"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Eigene Einstellung entfernt — es gelten die Mahnstufen der Verwaltung."
+msgstr "Own setting removed — the property manager's levels apply."

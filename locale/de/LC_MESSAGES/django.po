@@ -21382,3 +21382,20 @@ msgstr "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr 
 #: core/templates/fw/mahnwesen.html:138
 msgid "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."
 msgstr "Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. «PDF» öffnet die fertige Mahnung (inkl. QR-Rechnung; die Stufe mit Kündigungsandrohung kündigt die Fristansetzung nach Art. 257d OR an — die Fristansetzung selbst setzen Sie auf der Vertragsakte). «Erfassen» schreibt den Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr der Stufe. Tage, Gebühren und Kündigungsandrohung stellen Sie unter «Mahnstufen anpassen» ein."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Offene Forderungen insgesamt: %(n)s (CHF %(summe)s)"
+msgstr "Offene Forderungen insgesamt: %(n)s (CHF %(summe)s)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Für diese Eigentümer gilt eine eigene Mahnstufen-Einstellung. Sie übersteuert die Werte unten — deshalb kann eine Forderung später oder gar nicht erscheinen."
+msgstr "Für diese Eigentümer gilt eine eigene Mahnstufen-Einstellung. Sie übersteuert die Werte unten — deshalb kann eine Forderung später oder gar nicht erscheinen."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Auf die Stufen der Verwaltung zurücksetzen"
+msgstr "Auf die Stufen der Verwaltung zurücksetzen"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Eigene Einstellung entfernt — es gelten die Mahnstufen der Verwaltung."
+msgstr "Eigene Einstellung entfernt — es gelten die Mahnstufen der Verwaltung."

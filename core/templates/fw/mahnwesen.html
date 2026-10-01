@@ -42,7 +42,8 @@
             <a href="?stufe={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="{% if stufe_filter == wert %}hier{% endif %}">{{ label }}</a>
             {% endfor %}
-        <span class="ml-auto fw-klein">{% blocktrans count n=rows|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}</span>
+        <span class="ml-auto fw-klein">{% blocktrans count n=rows|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
+            · {% blocktrans with n=offen_gesamt_n summe=offen_gesamt_summe|chf %}Offene Forderungen insgesamt: {{ n }} (CHF {{ summe }}){% endblocktrans %}</span>
     </div>
 
     <div class="fw-tablewrap">

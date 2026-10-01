@@ -68,10 +68,16 @@ def fw_mahnwesen(request):
     summe = defaultdict(lambda: Decimal('0.00'))
     stufen_laden = Mahnstufen()
     vorlauf = []
+    offen_gesamt_n, offen_gesamt_summe = 0, Decimal('0.00')
     for r in qs:
         faellig = r.faellig_am or r.datum
         if not faellig:
             continue
+        # Kontrollzahl für die Seite: Was ist überhaupt offen — auch wenn nichts mahnfällig ist?
+        _offen = r.offener_betrag
+        if _offen > 0 and r.stammrechnung_id is None:
+            offen_gesamt_n += 1
+            offen_gesamt_summe += _offen
         # Der Fälligkeitstag ist Tag 0; wann der Verzug beginnt, stellt die Verwaltung ein.
         tage = stufen_laden.tage_im_verzug(faellig, heute, _eigentuemer_von_rechnung(r),
                                            organisation=r.organisation)
@@ -157,6 +163,7 @@ def fw_mahnwesen(request):
         'total': total,
         'mahnstufen': legende,
         'vorlauf': vorlauf_rows,
+        'offen_gesamt_n': offen_gesamt_n, 'offen_gesamt_summe': offen_gesamt_summe,
         'verzugszins': organisation_der_anfrage(request).verzugszins_prozent.normalize(),
         'counts': counts, 'summe': summe,
         'anzahl_total': sum(counts.values()),
