@@ -148,7 +148,10 @@ def _laeufe(heute, bis):
                   .prefetch_related(Prefetch(
                       'blockaden',
                       queryset=Blockade.objects.filter(behoben_am__isnull=True),
-                      to_attr='_offene_blockaden'))[:60])
+                      to_attr='_offene_blockaden'))[:300])
+    # 300 statt 60: Die Menge ist nach Stichtag AUFSTEIGEND sortiert. Mit 60
+    # verdraengten alte, nie abgeschlossene Laeufe die des laufenden Monats
+    # aus dem Fenster — sie wurden gar nicht erst betrachtet.
 
     zeilen = []
     for lauf in kandidaten:
@@ -161,8 +164,10 @@ def _laeufe(heute, bis):
             vorlauf = VORLAUF_JE_RHYTHMUS.get(lauf.laufart.rhythmus, 14)
             if (lauf.faellig_am - heute).days > vorlauf:
                 continue
-        if len(zeilen) >= 20:
-            break
+        # KEIN `break` bei 20 Zeilen: Die Kandidaten laufen nach Stichtag
+        # AUFSTEIGEND. Ein Limit hier hiess «die ältesten 20 behalten» — bei
+        # liegengebliebenen Altläufen fiel der laufende Monat komplett weg.
+        # Begrenzt ist die Menge schon durch die Kandidatenabfrage (300).
         tage = (lauf.faellig_am - heute).days
         blockaden = blockaden_vorab      # oben schon geholt, nicht zweimal fragen
         zeilen.append({
@@ -708,6 +713,19 @@ def liegezeit(zeilen):
 def arbeitsvorrat(request, aktive_lg=None, wer=None, mandat=None):
     """Alles, was die Heute-Ansicht braucht — in einem Aufruf."""
     heute = timezone.localdate()
+    # DER MONAT PLANT SICH SELBST — HIER, NICHT IN `was_reisst`.
+    #
+    # Ohne Scheduler (oder wenn er einen Monat auslaesst) fehlten die Laeufe des
+    # laufenden Monats im Vorrat vollstaendig: niemand hatte `laeufe_planen`
+    # gestartet. `was_reisst` bleibt reine Abfrage — es laeuft auf JEDER Seite
+    # (Zaehler in der Leiste) und hat ein exaktes Abfragebudget. Die
+    # Heute-Seite ist der eine Ort, an dem der Monat vorliegen MUSS.
+    try:
+        from core.tenancy import aktuelle_organisation
+        from faelle.lauf_dienst import aktuelle_periode_sicherstellen
+        aktuelle_periode_sicherstellen(aktuelle_organisation(), heute)
+    except Exception:
+        log.exception('Arbeitsvorrat: Läufe des Monats konnten nicht geplant werden')
     reisst = was_reisst(heute, aktive_lg=aktive_lg, wer=wer, mandat=mandat)
     eingaenge, eingaenge_gesamt = posteingang()
     termin_zeilen = termine(heute)

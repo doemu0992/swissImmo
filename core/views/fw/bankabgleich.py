@@ -337,6 +337,9 @@ def fw_bankabgleich_verbuchen(request):
                   f"Bankabgleich Überzahlung {vertrag.mieter} - {rechnung.titel}",
                   datum=valuta, liegenschaft=lg_v, zahlung=z_ueber, user=request.user)
 
+    from faelle.lauf_dienst import lauf_erledigt, periode_von
+    lauf_erledigt('bankabgleich', periode_von(timezone.localdate()),
+                  benutzer=request.user)
     log_aktion(request, "Zahlung via Bankabgleich verbucht", str(vertrag),
                f"CHF {betrag} auf {rechnung.titel}, Valuta {valuta:%d.%m.%Y}"
                + (f", Überzahlung CHF {ueberschuss} → 2030" if ueberschuss > 0 else ''))
@@ -1101,6 +1104,10 @@ def fw_camt_import(request):
                 Bankbewegung.objects.filter(bank_referenz=_aref, zahlung__isnull=True,
                                             status='offen').delete()
 
+    if verbucht or geklaert or guthaben or belastungen:
+        from faelle.lauf_dienst import lauf_erledigt, periode_von
+        lauf_erledigt('bankabgleich', periode_von(timezone.localdate()),
+                      benutzer=request.user, verbucht=verbucht)
     log_aktion(request, f"{quelle}-Import", datei.name,
                f"{verbucht} verbucht (davon {fuzzy} fuzzy, {gelernt_treffer} gelernter "
                f"Absender), CHF {zugeordnet_summe}, "

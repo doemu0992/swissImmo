@@ -38,6 +38,10 @@ class Command(BaseCommand):
                            mit_zins=opts['zins'], user=None)
         msg = (f"Mahnlauf: {res['gemahnt']} gemahnt, {res['emails']} E-Mails, "
                f"Gebühren CHF {res['gebuehren']}, Zins CHF {res['zins']}.")
+        from django.utils import timezone
+        from faelle.lauf_dienst import lauf_erledigt, periode_von
+        lauf_erledigt('mahnlauf', periode_von(timezone.localdate()),
+                      gemahnt=res['gemahnt'])
         AktivitaetsLog.objects.create(aktion="Mahnlauf (Scheduler)", objekt="Sammellauf",
                                       details=msg)
         self.stdout.write(self.style.SUCCESS(f"{organisation}: {msg}"))

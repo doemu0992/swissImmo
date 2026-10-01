@@ -53,6 +53,8 @@ class Command(BaseCommand):
             # aber auch kein Erfolg: als Fehler weiterreichen, damit der Lauf
             # nicht still als erledigt gilt.
             raise CommandError(str(e)) from e
+        from faelle.lauf_dienst import lauf_erledigt
+        lauf_erledigt('sollstellung', f'{jahr}-{monat:02d}', rechnungen=n)
         msg = f"Sollstellung {monat:02d}/{jahr}: {n} Rechnung(en) erstellt."
         AktivitaetsLog.objects.create(aktion="Sollstellung (Scheduler)",
                                       objekt=f"{monat:02d}/{jahr}", details=msg)

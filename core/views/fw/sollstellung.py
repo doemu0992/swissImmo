@@ -180,6 +180,13 @@ def fw_sollstellung_run(request):
         messages.error(request, f"{e}")
         return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
 
+    if lauf_lg is None:
+        # Nur ein Lauf über das ganze Portfolio schliesst die Periode; ein
+        # Teillauf für eine Liegenschaft lässt sie offen.
+        from faelle.lauf_dienst import lauf_erledigt
+        lauf_erledigt('sollstellung', f'{jahr}-{monat:02d}',
+                      benutzer=request.user, rechnungen=erstellt)
+
     log_aktion(request, "Sollstellung ausgeführt", titel,
                f"{erstellt} Rechnungen erstellt"
                + (f" · nur {lauf_lg.strasse}" if lauf_lg else " · ganzes Portfolio"))
