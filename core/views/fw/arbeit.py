@@ -613,6 +613,114 @@ def fw_lauf_ueberspringen(request, pk):
     return redirect(ziel)
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_lauf_detail(request, pk):
+    """Detailansicht eines Laufs: was er verarbeitet hat, bevor man quittiert.
+
+    Zeigt die Belege der Periode (`faelle.lauf_belege.belege`) und bietet die
+    drei Handgriffe des Buchhalters an: Abschliessen (quittieren), Überspringen
+    und — bei einem erledigten Lauf — Zurücksetzen (bei der Sollstellung
+    wahlweise samt Storno der Rechnungen).
+    """
+    from faelle.lauf_belege import belege
+    from faelle.lauf_models import Lauf
+
+    from .dashboard import _lauf_url
+
+    basis = _global_filter(request)
+    lauf = get_object_or_404(Lauf.objects.select_related('laufart', 'abgeschlossen_durch'), pk=pk)
+    erledigt = lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN)
+    return render(request, 'fw/lauf_detail.html', {
+        **basis, 'nav': 'laeufe', 'lauf': lauf, 'erledigt': erledigt,
+        'blockaden': list(lauf.offene_blockaden),
+        'belege': belege(lauf),
+        'url': _lauf_url(lauf.laufart.ziel_ansicht) + basis['lg_query'],
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def fw_lauf_abschliessen(request, pk):
+    """Einen Lauf von Hand quittieren (Status → abgeschlossen).
+
+    Für Läufe, die der Buchhalter nach Durchsicht der Belege ausdrücklich
+    freigibt — etwa einen Teillauf je Liegenschaft, der die Periode nicht
+    selbst abschliesst. Offene Blockaden verhindern den Abschluss.
+    """
+    from django.db import transaction
+
+    from core.auth import log_aktion
+    from faelle.lauf_models import Lauf
+
+    ziel = f'/neu/laeufe/{pk}/'
+    with transaction.atomic():
+        lauf = get_object_or_404(
+            Lauf.objects.select_for_update().select_related('laufart'), pk=pk)
+        if lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN):
+            messages.info(request, gettext('Dieser Lauf ist bereits erledigt.'))
+            return redirect(ziel)
+        try:
+            lauf.abschliessen(benutzer=request.user, quittiert='von Hand')
+        except ValueError as fehler:
+            messages.error(request, str(fehler))
+            return redirect(ziel)
+    log_aktion(request, 'Lauf abgeschlossen', str(lauf), 'von Hand quittiert')
+    messages.success(request, gettext('%(lauf)s abgeschlossen.') % {'lauf': lauf})
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def fw_lauf_zuruecksetzen(request, pk):
+    """Einen erledigten Lauf wieder öffnen — der Storno-Weg des Buchhalters.
+
+    Nur mit Begründung. Bei der Sollstellung kann zusätzlich `stornieren=1`
+    gesetzt werden: Dann werden die Rechnungen der Periode per Gegenbuchung
+    aufgehoben (alles oder nichts, nur für Verwalter, nur solange keine
+    Zahlung darauf verbucht ist). Ohne dieses Häkchen bleibt die Buchhaltung
+    unberührt — der Lauf ist nur wieder offen und kann (idempotent) neu laufen.
+    """
+    from django.db import transaction
+
+    from core.auth import VERWALTUNGS_ROLLEN, hat_rolle, log_aktion
+    from faelle.lauf_belege import StornoBlockiert, sollstellung_stornieren
+    from faelle.lauf_models import Lauf
+
+    ziel = f'/neu/laeufe/{pk}/'
+    grund = (request.POST.get('grund') or '').strip()
+    if not grund:
+        messages.error(request, gettext('Zurücksetzen braucht eine Begründung.'))
+        return redirect(ziel)
+    stornieren = request.POST.get('stornieren') == '1'
+    try:
+        with transaction.atomic():
+            lauf = get_object_or_404(
+                Lauf.objects.select_for_update().select_related('laufart'), pk=pk)
+            if lauf.status in (Lauf.OFFEN, Lauf.LAEUFT):
+                messages.info(request, gettext('Dieser Lauf ist nicht abgeschlossen.'))
+                return redirect(ziel)
+            n_storno = 0
+            if stornieren:
+                if lauf.laufart.schluessel != 'sollstellung':
+                    messages.error(request, gettext('Stornieren gibt es nur bei der Sollstellung.'))
+                    return redirect(ziel)
+                if not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
+                    messages.error(request, gettext('Rechnungen stornieren darf nur ein Verwalter.'))
+                    return redirect(ziel)
+                n_storno = sollstellung_stornieren(lauf.periode, benutzer=request.user)
+                grund = f'{grund} (Storno: {n_storno} Rechnung(en))'
+            lauf.zuruecksetzen(grund, benutzer=request.user)
+    except StornoBlockiert as fehler:
+        # Die Transaktion ist zurückgerollt: weder Rechnungen noch Lauf verändert.
+        messages.error(request, str(fehler))
+        return redirect(ziel)
+    log_aktion(request, 'Lauf zurückgesetzt', str(lauf), grund)
+    messages.success(request, gettext('%(lauf)s zurückgesetzt.') % {'lauf': lauf}
+                     + (' ' + gettext('%(n)s Rechnung(en) storniert.') % {'n': n_storno}
+                        if stornieren else ''))
+    return redirect(ziel)
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 @require_POST
 def fw_zulauf_uebernehmen(request, pk):

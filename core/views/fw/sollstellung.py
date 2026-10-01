@@ -173,6 +173,22 @@ def fw_sollstellung_run(request):
     # Rechnung, obwohl der Dialog die gefilterte Anzahl nannte (Praxis-Audit).
     # `lg` kommt beim POST aus dem Formular-Feld (_global_filter liest nur GET).
     lauf_lg = Liegenschaft.objects.filter(id=request.POST.get('lg') or None).first()
+    # Doppelausführungs-Schutz: Ist der Lauf dieser Periode schon abgeschlossen,
+    # wird nicht noch einmal gestellt. Die Rechnungen selbst sind zusätzlich
+    # idempotent (run_sollstellung), das hier ist die sichtbare Sperre für den
+    # Buchhalter. Wer wirklich neu stellen will (z. B. Nachzügler-Vertrag),
+    # setzt den Lauf unter «Läufe» mit Begründung zurück.
+    from faelle.lauf_models import Lauf
+    if lauf_lg is None:
+        erledigt = (Lauf.objects.select_related('laufart')
+                    .filter(laufart__schluessel='sollstellung',
+                            periode=f'{jahr}-{monat:02d}',
+                            status=Lauf.ABGESCHLOSSEN).first())
+        if erledigt is not None:
+            messages.error(request, gettext(
+                'Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. '
+                'Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen.') % {'titel': titel})
+            return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
     from core.services.automation import run_sollstellung
     try:
         erstellt = run_sollstellung(jahr, monat, user=request.user, liegenschaft=lauf_lg)

@@ -203,6 +203,32 @@ class Lauf(OrganisationAusKette):
                                  'abgeschlossen_durch', 'kennzahlen'])
         return self
 
+    def zuruecksetzen(self, grund, benutzer=None):
+        """Öffnet einen erledigten Lauf wieder — mit Begründung, sonst nicht.
+
+        Der Storno-Weg des Buchhalters: Wer bemerkt, dass ein Lauf falsch
+        quittiert oder falsch ausgeführt wurde, setzt ihn zurück und führt ihn
+        neu aus. Die Begründung bleibt in der Bemerkung stehen (Revision),
+        die bisherigen Kennzahlen werden verworfen — sie beschrieben einen
+        Stand, der nicht mehr gilt.
+        """
+        if not grund or not grund.strip():
+            raise ValueError('Zurücksetzen ohne Begründung wird nicht gespeichert.')
+        if self.status in (self.OFFEN, self.LAEUFT):
+            raise ValueError(f'{self} ist nicht abgeschlossen — es gibt nichts zurückzusetzen.')
+        stempel = timezone.localtime().strftime('%d.%m.%Y %H:%M')
+        wer = getattr(benutzer, 'username', '') or '?'
+        zeile = f'[{stempel} {wer}] zurückgesetzt: {grund.strip()}'
+        self.bemerkung = f'{self.bemerkung}\n{zeile}'.strip()
+        self.status = self.OFFEN
+        self.gestartet_am = None
+        self.abgeschlossen_am = None
+        self.abgeschlossen_durch = None
+        self.kennzahlen = {}
+        self.save(update_fields=['status', 'gestartet_am', 'abgeschlossen_am',
+                                 'abgeschlossen_durch', 'kennzahlen', 'bemerkung'])
+        return self
+
     def ueberspringen(self, bemerkung, benutzer=None):
         """Bewusst auslassen — mit Begründung, sonst nicht.
 
