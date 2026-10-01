@@ -774,26 +774,48 @@ class MahnschreibenPassendZurStufeTests(TestCase):
         self.assertIn('nur übersehen', text)
         self.assertNotIn('letzte Mahnung', text)
 
-    def test_einzige_stufe_mit_haekchen_ist_sachlich_und_letzte_mahnung(self):
-        """Der gemeldete Fall: nur eine Stufe, mit Art.-257d-Häkchen und Gebühr CHF 40."""
+    def test_stufe_mit_haekchen_ist_genau_das_257d_schreiben(self):
+        """Der Wortlaut des Schreibens mit Kündigungsandrohung ist vorgegeben (Referenz-PDF der
+        Verwaltung vom 01.10.2026) — nicht «Letzte Mahnung», nicht «Zahlungserinnerung»."""
         from crm.models import MahnStufe
         with organisation_kontext(self.a.organisation):
             MahnStufe.objects.filter(stufe__in=(2, 3)).delete()
-            MahnStufe.objects.filter(stufe=1).update(art_257d=True, gebuehr=Decimal('40.00'))
+            MahnStufe.objects.filter(stufe=1).update(art_257d=True, gebuehr=Decimal('40.00'),
+                                                     brief_titel='Anderer Titel', brief_text='Anderer Text')
         text = self._brief(1, True, Decimal('40.00'))
-        self.assertIn('Letzte Mahnung', text)
-        self.assertNotIn('Zahlungserinnerung', text)
-        self.assertNotIn('übersehen', text)                  # keine freundliche Erinnerung
-        self.assertNotIn('früheren Schreiben', text)         # es gab keine früheren
-        self.assertIn('Wir bitten Sie, den Betrag umgehend zu überweisen', text)
-        self.assertIn('Mahngebühr von CHF 40.00', text)
-        self.assertIn('Dies ist unsere letzte Mahnung', text)
-        self.assertIn('Art. 257d OR', text)
+        for satz in (
+            'EINSCHREIBEN',
+            'Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung',
+            'Bei der Kontrolle unserer Mietzinseingänge mussten wir leider feststellen, dass für den '
+            'Monat Oktober 2026 noch ein Betrag von CHF 100.00 ausstehend ist.',
+            'Gestützt auf Art. 257d des Schweizerischen Obligationenrechts (OR) setzen wir Ihnen '
+            'hiermit eine formelle Zahlungsfrist von 30 TAGEN ab Erhalt dieses Schreibens an, um den '
+            'oben genannten Betrag zu begleichen.',
+            'KÜNDIGUNGSANDROHUNG: Sollte die vollständige Zahlung nicht innert dieser Frist bei uns '
+            'eintreffen, werden wir das Mietverhältnis gestützt auf Art. 257d Abs. 2 OR '
+            'ausserordentlich kündigen.',
+            'Sollte sich Ihre Zahlung mit diesem Schreiben gekreuzt haben, bitten wir Sie, dieses '
+            'Schreiben als gegenstandslos zu betrachten.',
+            'Freundliche Grüsse',
+        ):
+            self.assertIn(satz, text)
+        for fremd in ('Zahlungserinnerung', 'Letzte Mahnung', 'übersehen', 'früheren Schreiben',
+                      'Mahngebühr', 'Anderer Titel', 'Anderer Text'):
+            self.assertNotIn(fremd, text)
 
-    def test_letzte_stufe_nach_fruehreren_ist_numeriert_und_verweist_auf_fruehere(self):
-        text = self._brief(3, True)
-        self.assertIn('3. Mahnung – letzte Mahnung', text)
-        self.assertIn('trotz unserer früheren Schreiben', text)
+    def test_haekchen_stufe_nach_fruehreren_ist_dasselbe_schreiben(self):
+        self.assertEqual(self._brief(3, True), self._brief(1, True))
+
+    def test_haekchen_schreiben_ist_byteweise_das_der_257d_funktion(self):
+        """Eine Quelle für den Wortlaut: kein zweiter, nachgebauter Text."""
+        import io
+        from pypdf import PdfReader
+        from core.views.email_views import generate_mahnung_combined_pdf_bytes
+        with organisation_kontext(self.a.organisation):
+            direkt = generate_mahnung_combined_pdf_bytes(
+                self.a.vertrag, self.a.organisation, 'Oktober 2026', '100.00', timezone.localdate())
+        direkt_text = ' '.join(PdfReader(io.BytesIO(direkt)).pages[0].extract_text().split())
+        self.assertEqual(self._brief(1, True), direkt_text)
 
     def test_mittlere_stufe(self):
         text = self._brief(2, False)
@@ -814,4 +836,7 @@ class MahnschreibenPassendZurStufeTests(TestCase):
         from crm.models import MahnStufe
         with organisation_kontext(self.a.organisation):
             MahnStufe.objects.filter(stufe=1).update(brief_titel='Freundliche Erinnerung')
-            self.assertEqual(titel_fuer(self.a.vertrag, 1, True), 'Freundliche Erinnerung')
+            self.assertEqual(titel_fuer(self.a.vertrag, 1, False), 'Freundliche Erinnerung')
+            # Bei der Stufe mit Art.-257d-Häkchen ist der Titel fest.
+            self.assertEqual(titel_fuer(self.a.vertrag, 1, True),
+                             'Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung')

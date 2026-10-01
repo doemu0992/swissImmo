@@ -86,6 +86,9 @@ steht keine Frist. Feldnamen: `bezeichnung_<id>`, `ab_tage_<id>`, `gebuehr_<id>`
                     {% trans "Kündigungsandrohung: führt zur Fristansetzung nach Art. 257d OR" %}
                 </label>
             </div>
+            {% if s.art_257d %}
+            <div class="fw-feldblock breit"><p class="fw-mutet">{% trans "Mit Kündigungsandrohung (Art. 257d OR) ist das Schreiben fest vorgegeben («Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung», Einschreiben, 30 Tage). Titel und Text unten gelten dann nicht." %}</p></div>
+            {% endif %}
             <div class="fw-feldblock breit"><label for="bt-{{ s.pk }}" class="fw-label">{% trans "Titel des Mahnschreibens (leer = Standard)" %}</label>
                 <input id="bt-{{ s.pk }}" name="brief_titel_{{ s.pk }}" type="text" maxlength="120"
                        value="{{ s.brief_titel }}" class="fw-feld"></div>

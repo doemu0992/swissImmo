@@ -13,8 +13,13 @@ Eine 257d-Fristansetzung ist ein eingeschriebener, unterschriebener Brief mit
 Kündigungsandrohung (`fw_verzug_257d`). Die Mahnstufen davor sind Mahnungen,
 nichts weiter. Dieses Modul erzeugt sie: mit dem Monat der Forderung, dem
 offenen Betrag und — auf der letzten Stufe — dem ausdrücklichen Hinweis, dass die
-formelle Fristansetzung separat folgt. «Kündigung» steht hier nie als
-angedroht, weil sie hier nicht angedroht wird.
+formelle Fristansetzung separat folgt.
+
+ÄNDERUNG 01.10.2026 (Entscheid der Verwaltung): Eine Stufe mit dem
+Art.-257d-Häkchen verschickt GENAU das Schreiben «Zahlungsverzug gemäss
+Art. 257d OR – Kündigungsandrohung» (Einschreiben, 30 Tage) — siehe
+`mahnbrief_pdf`. Die Vorgabe aus dem Stresstest bleibt für die Stufen OHNE
+Häkchen: Sie sind Mahnungen und drohen nichts an.
 """
 import io
 
@@ -35,6 +40,10 @@ def forderungs_monat(rechnung):
     return monat_text(d) if d else ''
 
 
+#: Titel des Schreibens mit Kündigungsandrohung (steht so in `generate_mahnung_combined_pdf_bytes`).
+TITEL_257D = "Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung"
+
+
 def _ist_erste_stufe(vertrag, stufe):
     """Ist `stufe` die niedrigste Stufe der Organisation — also die erste Mahnung?
 
@@ -48,20 +57,17 @@ def _ist_erste_stufe(vertrag, stufe):
 def titel_fuer(vertrag, stufe, letzte_stufe=False):
     """Titel des Mahnschreibens (auch Betreff der Kopie per E-Mail, Text der QR-Rechnung).
 
-    Vorrang hat der Titel der Verwaltung (`MahnStufe.brief_titel`). Sonst richtet er sich
-    nach dem, was das Schreiben tut — nicht nach der Stufennummer:
-
-    * Stufe mit Kündigungsandrohung (Art. 257d-Häkchen): «Letzte Mahnung» bzw.
-      «N. Mahnung – letzte Mahnung»;
-    * sonst die erste Stufe: «Zahlungserinnerung»; alle weiteren: «N. Mahnung».
+    * Stufe mit Art.-257d-Häkchen: der Titel des 257d-Schreibens, unveränderbar
+      (das Schreiben selbst ist fest, siehe `mahnbrief_pdf`);
+    * sonst der Titel der Verwaltung (`MahnStufe.brief_titel`);
+    * sonst die erste Stufe «Zahlungserinnerung», alle weiteren «N. Mahnung».
     """
+    if letzte_stufe:
+        return TITEL_257D
     eigene = _eigener_brief(vertrag, stufe)
     if eigene and eigene.brief_titel:
         return eigene.brief_titel
-    erste = _ist_erste_stufe(vertrag, stufe)
-    if letzte_stufe:
-        return "Letzte Mahnung" if erste else f"{stufe}. Mahnung – letzte Mahnung"
-    return "Zahlungserinnerung" if erste else f"{stufe}. Mahnung"
+    return "Zahlungserinnerung" if _ist_erste_stufe(vertrag, stufe) else f"{stufe}. Mahnung"
 
 
 def _eigener_brief(vertrag, stufe):
@@ -97,9 +103,20 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                   gebuehr=None, letzte_stufe=False, rechnung=None):
     """Mahnschreiben der Stufe `stufe` als PDF-Bytes (Brief + QR-Rechnung).
 
-    `letzte_stufe`: Die Stufe führt laut Konfiguration zur 257d-Fristansetzung —
-    das Schreiben kündigt sie als nächsten Schritt an (ohne sie zu setzen).
+    `letzte_stufe`: Die Stufe trägt das Art.-257d-Häkchen. Ihr Schreiben ist dann
+    GENAU das bestehende Schreiben «Zahlungsverzug gemäss Art. 257d OR –
+    Kündigungsandrohung» (Einschreiben, Zahlungsfrist 30 Tage, Kündigungsandrohung,
+    mit QR-Rechnung) — `core.views.email_views.generate_mahnung_combined_pdf_bytes`,
+    dieselbe Funktion wie beim Knopf «Mahnung mit Kündigungsandrohung». Der Wortlaut
+    steht an EINER Stelle; er ist hier weder nachgebaut noch durch Titel/Text der
+    Verwaltung (`brief_titel`, `brief_text`) veränderbar.
     """
+    if letzte_stufe:
+        from core.views.email_views import generate_mahnung_combined_pdf_bytes
+        return generate_mahnung_combined_pdf_bytes(
+            vertrag, verwaltung, monat, betrag, datum,
+            reference=getattr(rechnung, 'qr_referenz', None) or None)
+
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
     from reportlab.pdfgen import canvas
@@ -151,13 +168,6 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
         zeilen += _eigener_text(eigene.brief_text, monat=monat, betrag=betrag,
                                 gebuehr=f"{gebuehr:.2f}" if gebuehr else "0.00",
                                 mieter=f"{m.vorname} {m.nachname}".strip())
-    elif letzte_stufe and erste:
-        # Erste UND letzte Stufe (z. B. nur eine Stufe mit Kündigungsandrohung): weder
-        # «übersehen» (das wäre die freundliche Erinnerung) noch «trotz früherer
-        # Schreiben» (es gab keine) — sachlich, mit der Aufforderung zur Zahlung.
-        zeilen += [f"bei der Kontrolle unserer Zahlungseingänge haben wir festgestellt, dass für",
-                   f"{monat} noch CHF {betrag} ausstehend sind.", "",
-                   "Wir bitten Sie, den Betrag umgehend zu überweisen."]
     elif erste:
         zeilen += [f"bei der Kontrolle unserer Zahlungseingänge haben wir festgestellt, dass für",
                    f"{monat} noch CHF {betrag} ausstehend sind.", "",
@@ -169,11 +179,6 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                    "Wir bitten Sie, den Betrag umgehend zu überweisen."]
     if gebuehr and gebuehr > 0:
         zeilen += ["", f"Für diese Mahnung stellen wir eine Mahngebühr von CHF {gebuehr:.2f} in Rechnung."]
-    if letzte_stufe:
-        zeilen += ["", "Dies ist unsere letzte Mahnung. Bleibt die Zahlung weiterhin aus, setzen wir",
-                   "Ihnen in einem gesonderten, eingeschriebenen Schreiben eine Zahlungsfrist nach",
-                   "Art. 257d OR an. Bei fruchtlosem Ablauf dieser Frist wäre eine ausserordentliche",
-                   "Kündigung möglich."]
     zeilen += ["", "Hat sich Ihre Zahlung mit diesem Schreiben gekreuzt, betrachten Sie es",
                "bitte als gegenstandslos.", "", "Freundliche Grüsse", "",
                verwaltung.firma if verwaltung else "Die Vermieterschaft"]

@@ -21528,3 +21528,7 @@ msgstr "Tutti i livelli di sollecito sono già registrati"
 #: core/views/fw/mahnwesen.py:1
 msgid "Offen, aber nicht im Mahnlauf — und warum"
 msgstr "Aperto, ma non nel ciclo di sollecito — e perché"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mit Kündigungsandrohung (Art. 257d OR) ist das Schreiben fest vorgegeben («Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung», Einschreiben, 30 Tage). Titel und Text unten gelten dann nicht."
+msgstr "Con la comminatoria di disdetta (art. 257d CO) la lettera è fissa («Mora nel pagamento secondo l'art. 257d CO – comminatoria di disdetta», raccomandata, 30 giorni). Titolo e testo qui sotto non valgono allora."
