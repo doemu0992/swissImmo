@@ -21360,6 +21360,81 @@ msgstr "Reminder fee of reminder %(stufe)s issued again · CHF %(gebuehr)s."
 msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
 msgstr "The reminder fee could not be booked: %(exc)s"
 
+#: core/templates/fw/lauf_detail.html:19
+msgid "blockiert"
+msgstr "blocked"
+
+#: core/templates/fw/lauf_detail.html:25
+msgid "Lauf öffnen / ausführen"
+msgstr "Open / run"
+
+#: core/templates/fw/lauf_detail.html:28
+msgid "Zuerst die Blockade beheben."
+msgstr "Resolve the blockage first."
+
+#: core/templates/fw/lauf_detail.html:28
+msgid "Lauf abschliessen"
+msgstr "Complete run"
+
+#: core/templates/fw/lauf_detail.html:43
+msgid "Lauf zurücksetzen"
+msgstr "Reset run"
+
+#: core/templates/fw/lauf_detail.html:45
+msgid "Begründung (wird festgehalten)"
+msgstr "Reason (will be recorded)"
+
+#: core/templates/fw/lauf_detail.html:47
+msgid "Rechnungen der Periode per Gegenbuchung stornieren"
+msgstr "Cancel the period's invoices by reversing entries"
+
+#: core/templates/fw/lauf_detail.html:56
+msgid "Verarbeitet in dieser Periode"
+msgstr "Processed in this period"
+
+#: core/templates/fw/lauf_detail.html:63
+msgid "Noch nichts verarbeitet."
+msgstr "Nothing processed yet."
+
+#: core/templates/fw/lauf_detail.html:65
+msgid "Liste gekürzt — die Summe zählt alle Belege."
+msgstr "List shortened — the total counts all documents."
+
+#: core/templates/fw/lauf_detail.html:70
+msgid "Bemerkung / Verlauf"
+msgstr "Remark / history"
+
+#: core/views/fw/arbeit.py:668
+#, python-format
+msgid "%(lauf)s abgeschlossen."
+msgstr "%(lauf)s completed."
+
+#: core/views/fw/arbeit.py:692
+msgid "Zurücksetzen braucht eine Begründung."
+msgstr "Resetting requires a reason."
+
+#: core/views/fw/arbeit.py:700
+msgid "Dieser Lauf ist nicht abgeschlossen."
+msgstr "This run is not completed."
+
+#: core/views/fw/arbeit.py:705
+msgid "Stornieren gibt es nur bei der Sollstellung."
+msgstr "Cancelling is only available for the rent billing run."
+
+#: core/views/fw/arbeit.py:708
+msgid "Rechnungen stornieren darf nur ein Verwalter."
+msgstr "Only a property manager may cancel invoices."
+
+#: core/views/fw/arbeit.py:718
+#, python-format
+msgid "%(lauf)s zurückgesetzt."
+msgstr "%(lauf)s reset."
+
+#: core/views/fw/arbeit.py:719
+#, python-format
+msgid "%(n)s Rechnung(en) storniert."
+msgstr "%(n)s invoice(s) cancelled."
+
 #: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
 msgid "Termin abgesagt"
 msgstr "Appointment cancelled"

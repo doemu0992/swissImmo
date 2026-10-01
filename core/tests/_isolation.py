@@ -470,6 +470,11 @@ class MandantenFixture:
         # Selbstprüfung gemeldet — ein POST auf den Lauf einer fremden
         # Verwaltung darf ihn weder überspringen noch preisgeben.
         ('lauf_ueberspringen', 'lauf'),
+        # Monatsabschluss-Härtetest: Detail, Abschliessen und Zurücksetzen nehmen
+        # die `pk` eines Laufs; ein fremder Lauf muss 404 geben.
+        ('lauf_detail', 'lauf'),
+        ('lauf_abschliessen', 'lauf'),
+        ('lauf_zuruecksetzen', 'lauf'),
         ('abnahme',         'abnahme'),
         ('akonto',          'periode'),
         ('anpassung',       'anpassung'),

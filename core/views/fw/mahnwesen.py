@@ -549,6 +549,19 @@ def fw_mahnlauf(request):
     mit_zins = request.POST.get('mit_zins') == 'on'
     send_email = request.POST.get('kein_versand') != 'on'
     erzwingen = request.POST.get('erzwingen') == '1'
+    # Doppelausführungs-Schutz: Ein im laufenden Monat bereits abgeschlossener
+    # Mahnlauf wird nicht noch einmal ausgelöst (sonst zweite Mahnwelle samt
+    # E-Mails). «Erzwingen» bleibt der bewusste Zusatzlauf.
+    if not erzwingen and not basis['aktive_lg']:
+        from faelle.lauf_dienst import periode_von
+        from faelle.lauf_models import Lauf
+        if (Lauf.objects.filter(laufart__schluessel='mahnlauf',
+                                periode=periode_von(timezone.localdate()),
+                                status=Lauf.ABGESCHLOSSEN).exists()):
+            messages.error(request, gettext(
+                'Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt gemahnt. '
+                'Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen.'))
+            return redirect('fw_mahnwesen')
     res = run_mahnlauf(aktive_lg=basis['aktive_lg'], send_email=send_email,
                        mit_zins=mit_zins, user=request.user, erzwingen=erzwingen)
     # Ein erzwungener Lauf ist ein Zusatzlauf — er schliesst den regulären Monatslauf nicht ab.
