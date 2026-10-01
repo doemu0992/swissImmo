@@ -58,9 +58,57 @@ def periode_fuer(art, stichtag):
     return str(stichtag.year - 1)      # abgerechnet wird das Vorjahr
 
 
+def faelligkeits_tag(art):
+    """Der Tag im Monat, an dem der Lauf fällig ist.
+
+    Beim Mahnlauf folgt er den Mahnstufen der Organisation (erste Stufe + Verzugsbeginn,
+    `core.services.mahnstufen.mahnlauf_tag_im_monat`) und nicht der Vorgabe in
+    `VORLAGEN` — sonst stünde dort ein fester Tag, der mit den eingestellten
+    Fristen nichts zu tun hat. Alle anderen Läufe: der eingestellte Tag.
+    """
+    if art.schluessel == 'mahnlauf':
+        from core.services.mahnstufen import mahnlauf_tag_im_monat
+        # alle_organisationen/organisation_id: Die Laufart kennt ihre Organisation;
+        # der Lauf läuft auch im Scheduler ohne Anfrage.
+        tag = mahnlauf_tag_im_monat(art.organisation)
+        if tag is not None:
+            return tag
+    return art.faellig_am_tag
+
+
 def faelligkeit(art, stichtag):
-    tag = min(art.faellig_am_tag, calendar.monthrange(stichtag.year, stichtag.month)[1])
+    tag = min(faelligkeits_tag(art), calendar.monthrange(stichtag.year, stichtag.month)[1])
     return date(stichtag.year, stichtag.month, tag)
+
+
+def mahnlauf_termin_nachziehen(organisation, heute=None):
+    """Setzt den Fälligkeitstermin der OFFENEN Mahnläufe (ab dem laufenden Monat) neu.
+
+    Nötig, weil ein Lauf sein Fälligkeitsdatum beim Planen bekommt: Ändert die
+    Verwaltung die Mahnstufen, müsste sonst der schon geplante Lauf auf dem alten
+    Datum stehen bleiben (z. B. 15.10., obwohl Stufe 1 jetzt ab 0 Tagen gilt).
+    Abgeschlossene und übersprungene Läufe bleiben unangetastet. Idempotent.
+    """
+    heute = heute or timezone.localdate()
+    ab = f'{heute.year}-{heute.month:02d}'
+    geaendert = 0
+    laeufe = (Lauf.alle_organisationen
+              .filter(laufart__organisation=organisation, laufart__schluessel='mahnlauf',
+                      status=Lauf.OFFEN, periode__gte=ab)
+              .select_related('laufart'))
+    for lauf in laeufe:
+        try:
+            jahr, monat = (int(x) for x in lauf.periode.split('-'))
+        except ValueError:
+            continue
+        soll = faelligkeit(lauf.laufart, date(jahr, monat, 1))
+        tag = faelligkeits_tag(lauf.laufart)
+        if lauf.faellig_am != soll:
+            Lauf.alle_organisationen.filter(pk=lauf.pk).update(faellig_am=soll)
+            geaendert += 1
+        if lauf.laufart.faellig_am_tag != tag:
+            Laufart.alle_organisationen.filter(pk=lauf.laufart_id).update(faellig_am_tag=tag)
+    return geaendert
 
 
 def planen(organisation, stichtag=None):
@@ -72,6 +120,7 @@ def planen(organisation, stichtag=None):
     abgeschlossener Lauf wird nie wieder geöffnet.
     """
     stichtag = stichtag or timezone.localdate()
+    mahnlauf_termin_nachziehen(organisation, stichtag)
     neue_arten = neue_laeufe = 0
     for schluessel, (bez, rhythmus, tag, reihe, ent, ziel) in VORLAGEN.items():
         art, erzeugt = Laufart.alle_organisationen.get_or_create(
@@ -114,6 +163,8 @@ def aktuelle_periode_sicherstellen(organisation, heute=None):
                     periode__lte=f'{heute.year}-{heute.month:02d}')
             .exists()):
         return 0
+    # Ein bereits geplanter Mahnlauf folgt den aktuellen Mahnstufen (siehe Docstring).
+    mahnlauf_termin_nachziehen(organisation, heute)
     erwartet = 0
     for schluessel, (_b, rhythmus, *_rest) in VORLAGEN.items():
         if rhythmus == Laufart.MONATLICH:

@@ -14,6 +14,7 @@
     <div>
         <h1>{% trans "Mahnlauf — Trockenlauf" %}</h1>
         <p>{% trans "Das täte der Mahnlauf jetzt. Es wird nichts gebucht und nichts versandt." %}</p>
+        {% if erzwingen %}<p class="fw-strong">{% trans "Erzwungener Lauf: Jede Forderung im Verzug bekommt die nächste Mahnstufe, auch wenn deren Frist noch nicht erreicht ist." %}</p>{% endif %}
     </div>
 </div>
 

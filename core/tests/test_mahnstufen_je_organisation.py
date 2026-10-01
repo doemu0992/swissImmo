@@ -380,3 +380,168 @@ class MahnwesenEinstellungenSeiteTests(TestCase):
         with organisation_kontext(self.a.organisation):
             s1 = MahnStufe.objects.get(stufe=1)
         self.assertEqual((s1.brief_titel, s1.brief_text), ('Freundliche Erinnerung', 'Bitte zahlen: {betrag}'))
+
+
+class MahnlaufErzwingenTests(TestCase):
+    """«Mahnlauf erzwingen»: Die nächste Stufe, auch wenn deren Frist noch nicht erreicht ist."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def _lauf(self, fixture, **kw):
+        from core.services.automation import run_mahnlauf
+        with organisation_kontext(fixture.organisation):
+            return run_mahnlauf(send_email=False, **kw)
+
+    def _stufen_von(self, fixture, rechnung):
+        from finance.models import Mahnung
+        with organisation_kontext(fixture.organisation):
+            return list(Mahnung.objects.filter(debitoren_rechnung=rechnung)
+                        .order_by('stufe').values_list('stufe', flat=True))
+
+    def test_regulaerer_lauf_mahnt_heute_faellige_miete_nicht_erzwungener_schon(self):
+        r = _ueberfaellige_rechnung(self.a, 0)
+        self.assertEqual(self._lauf(self.a)['gemahnt'], 0)
+        res = self._lauf(self.a, erzwingen=True)
+        self.assertEqual(res['gemahnt'], 1)
+        self.assertEqual(self._stufen_von(self.a, r), [1])
+
+    def test_immer_nur_eine_stufe_weiter_ohne_mindestabstand(self):
+        """Zweimal erzwungen am selben Tag: erst Stufe 1, dann Stufe 2 — nie gleich Stufe 3."""
+        r = _ueberfaellige_rechnung(self.a, 0)
+        self._lauf(self.a, erzwingen=True)
+        self._lauf(self.a, erzwingen=True)
+        self.assertEqual(self._stufen_von(self.a, r), [1, 2])
+
+    def test_nach_der_letzten_stufe_ist_schluss(self):
+        r = _ueberfaellige_rechnung(self.a, 0)
+        for _ in range(5):
+            self._lauf(self.a, erzwingen=True)
+        self.assertEqual(self._stufen_von(self.a, r), [1, 2, 3])
+
+    def test_nicht_faellige_forderung_wird_nicht_erzwungen(self):
+        """Erzwingen heisst «nächste Stufe», nicht «auch ungefällige mahnen»."""
+        from finance.models import DebitorenRechnung
+        with organisation_kontext(self.a.organisation):
+            DebitorenRechnung.objects.filter(pk=self.a.debitor.pk).update(status='bezahlt')
+            morgen = timezone.localdate() + timedelta(days=1)
+            r = DebitorenRechnung.objects.create(
+                vertrag=self.a.vertrag, liegenschaft=self.a.liegenschaft, titel='Miete später',
+                betrag=Decimal('1700'), datum=morgen, faellig_am=morgen, status='offen')
+        self.assertEqual(self._lauf(self.a, erzwingen=True)['gemahnt'], 0)
+        self.assertEqual(self._stufen_von(self.a, r), [])
+
+    def test_mahnsperre_gilt_auch_erzwungen(self):
+        from crm.models import Mieter
+        r = _ueberfaellige_rechnung(self.a, 0)
+        Mieter.alle_organisationen.filter(pk=self.a.mieter.pk).update(mahnsperre=True)
+        self.assertEqual(self._lauf(self.a, erzwingen=True)['gemahnt'], 0)
+        self.assertEqual(self._stufen_von(self.a, r), [])
+
+    def test_erzwingen_in_a_fasst_b_nicht_an(self):
+        _ueberfaellige_rechnung(self.a, 0)
+        rb = _ueberfaellige_rechnung(self.b, 0)
+        self._lauf(self.a, erzwingen=True)
+        self.assertEqual(self._stufen_von(self.b, rb), [])
+
+    def test_trockenlauf_erzwungen_bucht_nichts(self):
+        r = _ueberfaellige_rechnung(self.a, 0)
+        res = self._lauf(self.a, erzwingen=True, dry_run=True)
+        self.assertEqual(res['gemahnt'], 1)
+        self.assertEqual(self._stufen_von(self.a, r), [])
+
+    def test_knopf_ist_auch_ohne_mahnfall_da_und_wirkt(self):
+        """Vorher stand die Leiste nur bei `anzahl_total` — bei einer heute fälligen Miete
+        gab es gar keinen Knopf."""
+        r = _ueberfaellige_rechnung(self.a, 0)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        seite = c.get('/neu/mahnwesen/')
+        self.assertContains(seite, 'Mahnlauf erzwingen')
+        self.assertContains(seite, 'name="erzwingen"')
+        antwort = c.post('/neu/mahnwesen/lauf/', {'erzwingen': '1', 'kein_versand': 'on'})
+        self.assertEqual(antwort.status_code, 302)
+        self.assertEqual(self._stufen_von(self.a, r), [1])
+        # Der reguläre Knopf mahnt sie nicht (Stufe 1 erst ab 14 Tagen).
+        r2 = _ueberfaellige_rechnung(self.a, 0)
+        c.post('/neu/mahnwesen/lauf/', {'kein_versand': 'on'})
+        self.assertEqual(self._stufen_von(self.a, r2), [])
+
+
+class MahnlaufTerminTests(TestCase):
+    """Der Termin des Mahnlaufs im Arbeitsvorrat folgt den Mahnstufen — kein fester 15."""
+
+    STICHTAG = timezone.datetime(2026, 10, 1).date()
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def _faellig(self, fixture):
+        from faelle.lauf_models import Lauf
+        return Lauf.alle_organisationen.get(
+            laufart__organisation=fixture.organisation, laufart__schluessel='mahnlauf',
+            periode='2026-10').faellig_am
+
+    def test_standard_ist_der_15_weil_erste_stufe_ab_14_tagen(self):
+        from faelle.lauf_dienst import planen
+        planen(self.a.organisation, self.STICHTAG)
+        self.assertEqual(self._faellig(self.a).day, 15)
+
+    def test_stufe_ab_0_tagen_gibt_den_1(self):
+        """«Wenn ich 0 eintrage, muss das Datum von heute stehen»."""
+        from faelle.lauf_dienst import planen
+        _stufen_setzen(self.a.organisation, {1: 0})
+        planen(self.a.organisation, self.STICHTAG)
+        self.assertEqual(self._faellig(self.a), self.STICHTAG)
+
+    def test_termin_je_organisation(self):
+        from faelle.lauf_dienst import planen
+        _stufen_setzen(self.b.organisation, {1: 10, 2: 20, 3: 40})
+        planen(self.a.organisation, self.STICHTAG)
+        planen(self.b.organisation, self.STICHTAG)
+        self.assertEqual((self._faellig(self.a).day, self._faellig(self.b).day), (15, 11))
+
+    def test_verzugsbeginn_schiebt_den_termin(self):
+        from crm.models import Organisation
+        from faelle.lauf_dienst import planen
+        _stufen_setzen(self.a.organisation, {1: 0})
+        Organisation.objects.filter(pk=self.a.organisation.pk).update(mahn_verzug_ab_tag=1)
+        self.a.organisation.refresh_from_db()
+        planen(self.a.organisation, self.STICHTAG)
+        self.assertEqual(self._faellig(self.a).day, 2)
+
+    def test_geplanter_lauf_wird_nach_aenderung_der_stufen_nachgezogen(self):
+        """Der Lauf stand schon auf dem 15. — die Einstellung 0 Tage muss ihn auf den 1. setzen."""
+        from faelle.lauf_dienst import planen
+        planen(self.a.organisation, self.STICHTAG)
+        self.assertEqual(self._faellig(self.a).day, 15)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        from crm.models import MahnStufe
+        with organisation_kontext(self.a.organisation):
+            daten = {}
+            for s in MahnStufe.objects.all():
+                daten.update({f'bezeichnung_{s.pk}': s.bezeichnung,
+                              f'ab_tage_{s.pk}': '0' if s.stufe == 1 else str(s.ab_tage),
+                              f'gebuehr_{s.pk}': str(s.gebuehr)})
+        c.post('/neu/mahnstufen/', daten)
+        heute = timezone.localdate()
+        from faelle.lauf_models import Lauf
+        lauf = Lauf.alle_organisationen.get(
+            laufart__organisation=self.a.organisation, laufart__schluessel='mahnlauf',
+            periode=f'{heute.year}-{heute.month:02d}')
+        self.assertEqual(lauf.faellig_am, heute.replace(day=1))
+
+    def test_abgeschlossener_lauf_bleibt(self):
+        from faelle.lauf_dienst import mahnlauf_termin_nachziehen, planen
+        from faelle.lauf_models import Lauf
+        planen(self.a.organisation, self.STICHTAG)
+        Lauf.alle_organisationen.filter(laufart__organisation=self.a.organisation,
+                                        laufart__schluessel='mahnlauf').update(status=Lauf.ABGESCHLOSSEN)
+        _stufen_setzen(self.a.organisation, {1: 0})
+        mahnlauf_termin_nachziehen(self.a.organisation, self.STICHTAG)
+        self.assertEqual(self._faellig(self.a).day, 15)

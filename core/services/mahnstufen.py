@@ -214,3 +214,23 @@ def pruefe_reihenfolge(zeilen):
         if t2 <= t1:
             return s1, t1, s2, t2
     return None
+
+
+def mahnlauf_tag_im_monat(organisation):
+    """Tag im Monat, ab dem der Mahnlauf etwas mahnen kann — aus den Mahnstufen, nicht fest.
+
+    Die Miete ist am 1. des Monats fällig. Gemahnt werden kann frühestens, wenn
+    die erste aktive Stufe erreicht UND der Verzug nach der Einstellung der
+    Organisation (`mahn_verzug_ab_tag`) begonnen hat:
+
+        Tag = 1 + max(ab_tage der ersten Stufe, Verzugsbeginn)
+
+    Stufe 1 ab 14 Tagen → 15. · Stufe 1 ab 0 Tagen → 1. · ab 10 Tagen → 11.
+    Ohne aktive Stufe gibt es keinen Termin: `None` (der Aufrufer behält dann
+    seinen bisherigen Tag).
+    """
+    stufen = [s for s in stufen_der_organisation(organisation) if s['aktiv']]
+    if not stufen:
+        return None
+    erste = min(s['ab_tage'] for s in stufen)
+    return 1 + max(erste, organisation.mahn_verzug_ab_tag)
