@@ -42,6 +42,17 @@
             <span>{% if z.lauf.gestartet_am %}{% blocktrans with datum=z.lauf.gestartet_am|date:"d.m.Y" %}gestartet {{ datum }}{% endblocktrans %} · {% endif %}{% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% if z.tage > 0 %} · {% blocktrans count n=z.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span>
             <a href="{{ z.url }}" class="fw-btn fw-knapp{% if z.braucht_dich %} fw-primary{% endif %}">{% trans "Öffnen" %}</a>
         </div>
+        {% if kann_schreiben and not z.blockaden %}
+        {% comment %} Bewusst auslassen — nur mit Begründung (`Lauf.ueberspringen`).
+           Blockierte Läufe bekommen den Knopf nicht: Die Ursache steht noch. {% endcomment %}
+        <details>
+            <summary>{% trans "Überspringen" %}</summary>
+            <form method="post" action="{% url 'fw_lauf_ueberspringen' z.lauf.pk %}" class="fw-eingang-knoepfe">{% csrf_token %}
+                <input type="text" name="bemerkung" class="fw-feld" required maxlength="300" placeholder="{% trans 'Begründung, z. B. keine offenen Posten' %}" aria-label="{% trans 'Begründung' %}">
+                <button class="fw-btn fw-knapp">{% trans "Überspringen" %}</button>
+            </form>
+        </details>
+        {% endif %}
     </section>
     {% empty %}
     <div class="fw-card fw-lauf-leer">{% include 'fw/_empty.html' with icon='lauf' titel=_('Kein offener Lauf.') %}</div>
