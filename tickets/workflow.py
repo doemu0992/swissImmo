@@ -275,3 +275,160 @@ def rechnung_verknuepfen(auftrag, rechnung, abschliessen=True):
     if abgeschlossen:
         melder_benachrichtigen(ticket, 'ticket_erledigt')
     return auftrag
+
+
+# ---------------------------------------------------------------------------
+# Freitext an den Handwerker, Termine, eingehende Antworten
+# ---------------------------------------------------------------------------
+
+def nachricht_an_handwerker(auftrag, text, absender='Verwaltung'):
+    """Freitext-Mail an den Handwerker eines Auftrags; Verlaufseintrag.
+
+    Der Betreff trägt «Ticket #N» — seine Antwort landet über ``fetch_replies``
+    wieder im Ticket. Gibt True zurück, wenn versendet wurde.
+    """
+    from core.utils.email_service import send_ticket_email
+    from .models import TicketNachricht
+    text = (text or '').strip()
+    hw, ticket = auftrag.handwerker, auftrag.ticket
+    if not text or not hw.email:
+        return False
+    betreff = f"{ticket.titel} (Ticket #{ticket.pk})"
+    try:
+        ok = send_ticket_email(hw.email, betreff, text)
+    except Exception:
+        logger.exception("Mail an Handwerker zu Ticket #%s fehlgeschlagen", ticket.pk)
+        ok = False
+    TicketNachricht.objects.create(
+        ticket=ticket, absender_name=absender, typ='handwerker_mail',
+        empfaenger_handwerker=hw, is_intern=True, is_von_verwaltung=True,
+        nachricht=text if ok else f"[NICHT versendet] {text}")
+    return ok
+
+
+def _ics(auftrag, termin_am, absagen=False):
+    """Kalendereintrag (iCalendar) für den Termin; 1 Stunde, UTC."""
+    from datetime import timedelta, timezone as dt_tz
+    t = auftrag.ticket
+    start = termin_am.astimezone(dt_tz.utc)
+    fmt = '%Y%m%dT%H%M%SZ'
+    def esc(x):
+        return str(x).replace('\\', '\\\\').replace(';', '\;').replace(',', '\\,').replace('\n', '\\n')
+    zeilen = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//swissImmo//Ticket//DE',
+              'METHOD:CANCEL' if absagen else 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+              f'UID:auftrag-{auftrag.pk}@swissimmo',
+              f"DTSTAMP:{start.strftime(fmt)}", f"DTSTART:{start.strftime(fmt)}",
+              f"DTEND:{(start + timedelta(hours=1)).strftime(fmt)}",
+              f"SUMMARY:{esc(f'Reparatur: {t.titel} (Ticket #{t.pk})')}",
+              f"DESCRIPTION:{esc(f'{auftrag.handwerker.firma} — Ticket #{t.pk}')}",
+              'STATUS:CANCELLED' if absagen else 'STATUS:CONFIRMED',
+              'END:VEVENT', 'END:VCALENDAR']
+    return '\r\n'.join(zeilen) + '\r\n'
+
+
+def _termin_text(termin_am):
+    from django.utils import timezone
+    return timezone.localtime(termin_am).strftime('%d.%m.%Y, %H:%M Uhr')
+
+
+def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
+    """Mails an Mieter und Handwerker; gibt (mieter_ok, hw_ok) zurück."""
+    from core.services.ticket_workflow import vorlage_text
+    from core.utils.email_service import send_via_hoststar
+    ticket, hw = auftrag.ticket, auftrag.handwerker
+    ics = [('Termin.ics', _ics(auftrag, termin_am, absagen), 'text/calendar')]
+    text = _termin_text(termin_am)
+
+    def senden(adresse, kat):
+        if not adresse:
+            return False
+        try:
+            betreff, inhalt = vorlage_text(kat, ticket, handwerker=hw, termin=text)
+            html = ("<html><body style='font-family:Arial,sans-serif'>"
+                    + inhalt.replace('\n', '<br>') + "</body></html>")
+            return send_via_hoststar(adresse, betreff, html, weitere_anhaenge=ics)
+        except Exception:
+            logger.exception("Termin-Mail zu Ticket #%s fehlgeschlagen", ticket.pk)
+            return False
+    return senden(melder_adresse(ticket), kat_mieter), senden(hw.email, kat_hw)
+
+
+def termin_festlegen(auftrag, termin_am):
+    """Termin setzen oder verschieben: Mieter und Handwerker bekommen Mail + Kalendereintrag.
+
+    Das Ticket geht (falls «in Bearbeitung») auf «Warte auf Handwerker».
+    """
+    from django.utils import timezone
+    if termin_am is None:
+        raise ValidationError('Kein Termin angegeben.', code='termin_fehlt')
+    if timezone.is_naive(termin_am):
+        termin_am = timezone.make_aware(termin_am)
+    if auftrag.status == AUFTRAG_STORNIERT:
+        raise ValidationError('Der Auftrag ist storniert.', code='storniert')
+    ticket = auftrag.ticket
+    with transaction.atomic():
+        auftrag.termin_am, auftrag.termin_status = termin_am, 'vereinbart'
+        auftrag.save(update_fields=['termin_am', 'termin_status'])
+        if ticket.status == 'in_bearbeitung':
+            wechsle_status(ticket, 'warte_auf_handwerker')
+    m_ok, h_ok = _termin_mails(auftrag, termin_am, 'ticket_termin', 'ticket_termin_handwerker')
+    _protokoll(ticket, f"Termin {auftrag.handwerker.firma}: {_termin_text(termin_am)} "
+                       f"(Mieter {'informiert' if m_ok else 'NICHT informiert'}, "
+                       f"Handwerker {'informiert' if h_ok else 'NICHT informiert'}).")
+    return m_ok, h_ok
+
+
+def termin_absagen(auftrag):
+    """Termin absagen: beide Seiten erfahren es (Kalendereintrag wird storniert)."""
+    if auftrag.termin_status != 'vereinbart' or not auftrag.termin_am:
+        raise ValidationError('Es gibt keinen vereinbarten Termin.', code='kein_termin')
+    alt = auftrag.termin_am
+    auftrag.termin_status = 'abgesagt'
+    auftrag.save(update_fields=['termin_status'])
+    m_ok, h_ok = _termin_mails(auftrag, alt, 'ticket_termin_abgesagt',
+                               'ticket_termin_abgesagt', absagen=True)
+    _protokoll(auftrag.ticket, f"Termin {_termin_text(alt)} abgesagt "
+                               f"(Mieter {'informiert' if m_ok else 'NICHT informiert'}, "
+                               f"Handwerker {'informiert' if h_ok else 'NICHT informiert'}).")
+    return m_ok, h_ok
+
+
+def antwort_zuordnen(ticket, absender, inhalt):
+    """Eingehende Mail einem Ticket zuordnen und den Fluss nachführen.
+
+    ``absender`` ist der rohe From-Header. Kommt er von der Adresse eines
+    Handwerkers, der einen Auftrag am Ticket hat, wird die Nachricht als
+    Handwerker-Antwort geführt; sonst als Antwort des Melders. Wartete das
+    Ticket auf genau diese Seite, geht es zurück auf «In Bearbeitung» — die
+    Verwaltung ist wieder am Zug. Gibt ``'handwerker'`` oder ``'melder'`` zurück.
+    """
+    from email.utils import parseaddr
+    from .models import TicketNachricht
+    adresse = parseaddr(absender)[1].strip().lower()
+    hw = None
+    if adresse:
+        for a in ticket.handwerker_auftraege.select_related('handwerker'):
+            if a.handwerker.email and a.handwerker.email.strip().lower() == adresse:
+                hw = a.handwerker
+                break
+    if hw is not None:
+        TicketNachricht.objects.create(
+            ticket=ticket, absender_name=hw.firma, typ='handwerker_mail',
+            empfaenger_handwerker=hw, nachricht=inhalt, is_intern=True,
+            is_von_verwaltung=False, gelesen=False)
+        wartet_auf = 'warte_auf_handwerker'
+        seite = 'handwerker'
+    else:
+        TicketNachricht.objects.create(
+            ticket=ticket, absender_name=absender, typ='mail_antwort',
+            nachricht=inhalt, gelesen=False)
+        wartet_auf = 'warte_auf_mieter'
+        seite = 'melder'
+    ticket.gelesen = False
+    ticket.save(update_fields=['gelesen'])
+    if ticket.status == wartet_auf:
+        try:
+            wechsle_status(ticket, 'in_bearbeitung')
+        except ValidationError:
+            logger.exception("Ticket #%s: Rückwechsel nach Antwort nicht möglich", ticket.pk)
+    return seite

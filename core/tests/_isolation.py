@@ -432,6 +432,11 @@ class MandantenFixture:
         # stehen, sonst greift das kuerzere Muster zuerst.
         ('fallschritt',     'fallschritt'),
         ('fall',            'fall'),
+        # Handwerker-Kommunikation (Freitext, Termin) lädt einen AUFTRAG. Muss VOR
+        # ('termin', 'termin') stehen: die Reihenfolge entscheidet, und `auftrag_termin`
+        # enthält «termin» (Fund der Selbstprüfung, 01.10.2026).
+        ('auftrag_nachricht', 'auftrag'),
+        ('auftrag_termin',  'auftrag'),
         ('termin',          'termin'),
         ('abwesenheit',     'abwesenheit'),
         # Phase 4b.10 — der Fristenwaechter. Wieder von der Selbstpruefung

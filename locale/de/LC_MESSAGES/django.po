@@ -21473,3 +21473,63 @@ msgstr "Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s."
 #, python-format
 msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
 msgstr "Mahngebühr konnte nicht gebucht werden: %(exc)s"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin abgesagt"
+msgstr "Termin abgesagt"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin (Datum, Zeit)"
+msgstr "Termin (Datum, Zeit)"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin setzen & beide informieren"
+msgstr "Termin setzen & beide informieren"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin absagen"
+msgstr "Termin absagen"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Bitte eine Nachricht eingeben."
+msgstr "Bitte eine Nachricht eingeben."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Der Handwerker hat keine E-Mail-Adresse."
+msgstr "Der Handwerker hat keine E-Mail-Adresse."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+#, python-format
+msgid "Nachricht an %(firma)s gesendet."
+msgstr "Nachricht an %(firma)s gesendet."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Versand fehlgeschlagen — die Nachricht steht im Verlauf."
+msgstr "Versand fehlgeschlagen — die Nachricht steht im Verlauf."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin abgesagt, beide Seiten informiert."
+msgstr "Termin abgesagt, beide Seiten informiert."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin gesetzt, Mieter und Handwerker informiert."
+msgstr "Termin gesetzt, Mieter und Handwerker informiert."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Kein Termin"
+msgstr "Kein Termin"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin vereinbart"
+msgstr "Termin vereinbart"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+#, python-format
+msgid "Termin: %(d)s Uhr"
+msgstr "Termin: %(d)s Uhr"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+#, python-format
+msgid "Nachricht an %(f)s"
+msgstr "Nachricht an %(f)s"
+

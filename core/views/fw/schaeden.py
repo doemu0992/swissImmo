@@ -635,6 +635,63 @@ def fw_auftrag_pdf(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_nachricht(request, pk):
+    """Freitext-Mail an den Handwerker eines Auftrags (Antwort kommt ins Ticket zurück)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import HandwerkerAuftrag
+    from tickets.workflow import nachricht_an_handwerker
+    from core.auth import log_aktion
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket', 'handwerker'), id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{a.ticket_id}/?tab=handwerker')
+    text = (request.POST.get('text') or '').strip()
+    if not text:
+        messages.error(request, gettext('Bitte eine Nachricht eingeben.'))
+    elif not a.handwerker.email:
+        messages.error(request, gettext('Der Handwerker hat keine E-Mail-Adresse.'))
+    elif nachricht_an_handwerker(a, text, absender=(request.user.get_full_name() or request.user.username)):
+        log_aktion(request, "Nachricht an Handwerker", f"Ticket #{a.ticket_id}", a.handwerker.firma)
+        messages.success(request, '✅ ' + gettext('Nachricht an %(firma)s gesendet.') % {'firma': a.handwerker.firma})
+    else:
+        messages.error(request, gettext('Versand fehlgeschlagen — die Nachricht steht im Verlauf.'))
+    return redirect(f'/neu/schaeden/{a.ticket_id}/?tab=handwerker')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_termin(request, pk):
+    """Termin eines Auftrags setzen/verschieben oder absagen; Mieter und Handwerker
+    bekommen Mail mit Kalendereintrag."""
+    from datetime import datetime
+    from django.core.exceptions import ValidationError
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import HandwerkerAuftrag
+    from tickets.workflow import termin_festlegen, termin_absagen
+    from core.auth import log_aktion
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket', 'handwerker'), id=pk)
+    ziel = f'/neu/schaeden/{a.ticket_id}/?tab=handwerker'
+    if request.method != 'POST':
+        return redirect(ziel)
+    try:
+        if request.POST.get('aktion') == 'absagen':
+            termin_absagen(a)
+            log_aktion(request, "Termin abgesagt", f"Ticket #{a.ticket_id}", a.handwerker.firma)
+            messages.success(request, '✅ ' + gettext('Termin abgesagt, beide Seiten informiert.'))
+        else:
+            try:
+                wann = datetime.strptime(request.POST.get('termin', ''), '%Y-%m-%dT%H:%M')
+            except ValueError:
+                raise ValidationError(gettext('Ungültiges Datum.'))
+            termin_festlegen(a, wann)
+            log_aktion(request, "Termin festgelegt", f"Ticket #{a.ticket_id}", a.handwerker.firma)
+            messages.success(request, '✅ ' + gettext('Termin gesetzt, Mieter und Handwerker informiert.'))
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_auftrag_kosten(request, pk):
     """Reparaturkosten auf einem Handwerker-Auftrag erfassen; optional eine
     Kreditorenrechnung erzeugen und verknüpfen."""

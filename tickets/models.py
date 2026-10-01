@@ -123,6 +123,15 @@ class HandwerkerAuftrag(OrganisationAusKette):
     kosten_effektiv = models.DecimalField("Effektive Kosten (CHF)", max_digits=10, decimal_places=2, null=True, blank=True)
     kreditoren_rechnung = models.ForeignKey('finance.KreditorenRechnung', on_delete=models.SET_NULL, null=True, blank=True, related_name='handwerker_auftraege')
 
+    # Terminvereinbarung Handwerker <-> Mieter (tickets/workflow.py: termin_festlegen)
+    TERMIN_CHOICES = [
+        ('offen', _('Kein Termin')),
+        ('vereinbart', _('Termin vereinbart')),
+        ('abgesagt', _('Termin abgesagt')),
+    ]
+    termin_am = models.DateTimeField("Termin", null=True, blank=True)
+    termin_status = models.CharField("Terminstatus", max_length=12, choices=TERMIN_CHOICES, default='offen')
+
     # 🔥 Reparaturfreigabe durch den Eigentümer (Portal)
     FREIGABE_CHOICES = [
         ('nicht_noetig', _('Keine Freigabe nötig')),
