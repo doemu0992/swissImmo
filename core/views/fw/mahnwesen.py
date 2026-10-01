@@ -321,15 +321,30 @@ def fw_debitoren_aging(request):
 # ============================================================
 
 def _mahngebuehr_rechnung(rechnung, stufe):
-    """Die gültige (nicht stornierte) Gebührenrechnung dieser Stufe — oder None."""
+    """Die gültige (nicht stornierte) Gebührenrechnung dieser Stufe — oder None.
+
+    Der Titel kann mit Verzugszins zusammengesetzt sein («Mahngebühr 1. Mahnung + Verzugszins
+    5%», so stellt ihn der Mahnlauf), darum `startswith`."""
     return (rechnung.folgeforderungen
-            .filter(titel=f"Mahngebühr {stufe}. Mahnung")
+            .filter(titel__startswith=f"Mahngebühr {stufe}.")
             .exclude(status='storniert').first())
 
 
+def _mahngebuehr_soll(rechnung, mahnung):
+    """Die Gebühr, die zur erfassten Mahnung gehört.
+
+    Wird die Gebührenrechnung storniert, setzt die Stornierung die Gebühr in der Historie auf 0
+    (`_mahngebuehr_historie_ausgleichen`) — dann zählt die Gebühr der Stufe aus den Einstellungen."""
+    from core.services.mahnstufen import gebuehr_fuer_stufe, eigentuemer_von_rechnung
+    if mahnung.gebuehr > 0:
+        return mahnung.gebuehr
+    return gebuehr_fuer_stufe(mahnung.stufe, eigentuemer_von_rechnung(rechnung),
+                              organisation=rechnung.organisation)
+
+
 def _mahngebuehr_fehlt(rechnung, mahnung):
-    """Die Mahnung nennt eine Gebühr, aber es gibt keine gültige Gebührenrechnung dazu."""
-    return (mahnung.gebuehr > 0 and bool(rechnung.vertrag_id)
+    """Die Mahnung hätte eine Gebühr, aber es gibt keine gültige Gebührenrechnung dazu."""
+    return (bool(rechnung.vertrag_id) and _mahngebuehr_soll(rechnung, mahnung) > 0
             and _mahngebuehr_rechnung(rechnung, mahnung.stufe) is None)
 
 
@@ -355,22 +370,28 @@ def _mahngebuehr_stellen(rechnung, stufe, gebuehr, user, heute):
 
 def _mahngebuehr_nachstellen(request, rechnung, mahnung):
     """Stellt die fehlende Mahngebühr einer bereits erfassten Mahnung neu.
-    Die Mahnung selbst (Historie, Brief) bleibt unberührt."""
+    Die Mahnung selbst (Historie, Brief) bleibt bestehen; ihre Gebühr in der Historie wird
+    wieder eingetragen."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from core.auth import log_aktion
+    gebuehr = _mahngebuehr_soll(rechnung, mahnung)
     try:
         with transaction.atomic():
-            _mahngebuehr_stellen(rechnung, mahnung.stufe, mahnung.gebuehr, request.user,
+            _mahngebuehr_stellen(rechnung, mahnung.stufe, gebuehr, request.user,
                                  timezone.localdate())
+            mahnung.gebuehr = gebuehr
+            verm = f"Mahngebühr CHF {gebuehr} neu gestellt"
+            mahnung.bemerkung = (f"{mahnung.bemerkung} · {verm}" if mahnung.bemerkung else verm)[:255]
+            mahnung.save(update_fields=['gebuehr', 'bemerkung'])
     except Exception as exc:
         messages.error(request, '❌ ' + gettext('Mahngebühr konnte nicht gebucht werden: %(exc)s') % {'exc': exc})
         return redirect('fw_mahnwesen')
     log_aktion(request, f"Mahngebühr {mahnung.stufe}. Mahnung neu gestellt",
-               rechnung.vertrag.mieter.display_name, f"Gebühr CHF {mahnung.gebuehr}")
+               rechnung.vertrag.mieter.display_name, f"Gebühr CHF {gebuehr}")
     messages.success(request, '✅ ' + gettext(
         'Mahngebühr der %(stufe)s. Mahnung neu gestellt · CHF %(gebuehr)s.') % {
-        'stufe': mahnung.stufe, 'gebuehr': mahnung.gebuehr})
+        'stufe': mahnung.stufe, 'gebuehr': gebuehr})
     return redirect('fw_mahnwesen')
 
 
