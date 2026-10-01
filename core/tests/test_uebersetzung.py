@@ -78,6 +78,7 @@ UEBERSETZT = (
     'fw/dienstleister.html',
     # Tranche «Läufe»
     'fw/laeufe.html',
+    'fw/lauf_detail.html',
     'fw/sollstellung.html',
     'fw/bankabgleich.html',
     'fw/mahnwesen.html',
