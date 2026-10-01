@@ -35,26 +35,46 @@ class MahnbriefTests(TestCase):
         from rentals.models import Dokument
         return list(Dokument.objects.filter(vertrag=self.v, bezeichnung__icontains='Mahnung'))
 
-    def test_abgelegte_mahnung_nennt_den_monat_der_forderung_und_keine_androhung(self):
+    def test_abgelegte_mahnung_ohne_haekchen_nennt_den_monat_und_keine_androhung(self):
+        """Stufen OHNE Art.-257d-Häkchen sind Mahnungen und drohen nichts an (Stresstest 30.09.).
+        Hier: die letzte Stufe, aber ohne Häkchen."""
         from core.services.automation import run_mahnlauf
+        from crm.models import MahnStufe
+        MahnStufe.objects.filter(stufe=3).update(art_257d=False)
         run_mahnlauf(send_email=False)
         docs = self._dokumente()
         self.assertTrue(docs, 'Keine Mahnung in der Akte.')
         text = _pdf_text(docs[0])
         self.assertIn('Dezember', text, 'Falscher Monat im Mahnbrief.')
         self.assertIn(str(self.faellig.year), text)
-        self.assertNotIn('Kündigungsandrohung', text.replace('Kündigung', 'Kündigung'),
+        self.assertNotIn('Kündigungsandrohung', text,
                          'Die abgelegte Mahnung behauptet eine 257d-Kündigungsandrohung.')
         self.assertNotIn('30 TAGEN', text)
 
-    def test_letzte_stufe_kuendigt_die_fristansetzung_nur_an(self):
+    def test_abgelegte_mahnung_der_haekchen_stufe_ist_das_257d_schreiben(self):
+        """ENTSCHEID 01.10.2026 (Verwaltung, Referenz-PDF): Die Stufe mit Art.-257d-Häkchen
+        verschickt genau das Schreiben «Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung»,
+        mit dem Monat der FORDERUNG (nicht dem von heute)."""
         from core.services.automation import run_mahnlauf
-        run_mahnlauf(send_email=False)            # > 60 Tage → Stufe 3
+        run_mahnlauf(send_email=False)            # > 60 Tage → Stufe 3 (Standard: Häkchen)
         docs = self._dokumente()
+        self.assertTrue(docs, 'Keine Mahnung in der Akte.')
         text = ' '.join(_pdf_text(d) for d in docs)
-        self.assertIn('gesonderten', text)
-        self.assertIn('eingeschriebenen', text)
-        self.assertNotIn('30 TAGEN', text)
+        self.assertIn('Dezember', text, 'Falscher Monat im Mahnbrief.')
+        self.assertIn(str(self.faellig.year), text)
+        self.assertIn('Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung', text)
+        self.assertIn('EINSCHREIBEN', text)
+        self.assertIn('30 TAGEN', text)
+        self.assertIn('KÜNDIGUNGSANDROHUNG', text)
+
+    def test_letzte_stufe_legt_die_pendenz_zur_fristansetzung_an(self):
+        """Die Fristansetzung selbst bleibt ein bewusster Schritt (Einschreiben, Unterschrift):
+        Der Mahnlauf legt die Pendenz an, die dorthin führt — er stellt nichts zu."""
+        from core.services.automation import run_mahnlauf
+        from core.services.zahlungsverzug import VORSCHLAG_PRAEFIX
+        run_mahnlauf(send_email=False)            # > 60 Tage → Stufe 3 mit Häkchen
+        self.assertTrue(self.v.pendenzen.filter(quelle=f'{VORSCHLAG_PRAEFIX}{self.v.pk}',
+                                                erledigt=False).exists())
 
     def test_pdf_aus_der_mahnliste_ist_das_schreiben_der_stufe(self):
         c = Client(); c.force_login(_team_user())
