@@ -63,15 +63,17 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     if deb_ueberf:
         from django.db.models import Max
         from finance.models import Mahnung
-        from core.services.mahnstufen import stufe_fuer_tage, eigentuemer_von_rechnung
+        from core.services.mahnstufen import Mahnstufen, eigentuemer_von_rechnung
         _ids = [r.id for r in deb_ueberf]
         _hoechste = {row['debitoren_rechnung_id']: row['mx'] for row in
                      Mahnung.objects.filter(debitoren_rechnung_id__in=_ids)
                      .values('debitoren_rechnung_id').annotate(mx=Max('stufe'))}
 
+        stufen_laden = Mahnstufen()
+
         def _zu_mahnen(r):
             tage = (heute - (r.faellig_am or r.datum)).days
-            s = stufe_fuer_tage(tage, eigentuemer_von_rechnung(r))
+            s = stufen_laden.stufe_fuer_tage(tage, eigentuemer_von_rechnung(r))
             return bool(s) and s['stufe'] > (_hoechste.get(r.id) or 0)
         deb_ueberf = [r for r in deb_ueberf if _zu_mahnen(r)]
     if deb_ueberf:

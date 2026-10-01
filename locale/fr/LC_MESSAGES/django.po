@@ -21337,3 +21337,67 @@ msgstr "Ignorer nécessite un motif."
 #, python-format
 msgid "%(lauf)s übersprungen."
 msgstr "%(lauf)s ignoré."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Ab wie vielen Tagen nach Fälligkeit welche Mahnung greift und welche Mahnspesen sie auslöst — für Ihre ganze Verwaltung."
+msgstr "À partir de combien de jours après l'échéance quel rappel s'applique et quels frais de rappel il entraîne — pour toute votre gérance."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Stufe %(stufe)s"
+msgstr "Niveau %(stufe)s"
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Stufe %(stufe)s hinzufügen"
+msgstr "Ajouter le niveau %(stufe)s"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Mahnstufe löschen?"
+msgstr "Supprimer ce niveau de rappel ?"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Ab Tagen nach Fälligkeit"
+msgstr "À partir de (jours après l'échéance)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnspesen (CHF)"
+msgstr "Frais de rappel (CHF)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Kündigungsandrohung: führt zur Fristansetzung nach Art. 257d OR"
+msgstr "Menace de résiliation : mène à la fixation d'un délai selon l'art. 257d CO"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Keine Mahnstufen eingerichtet — es wird nicht gemahnt. Fügen Sie unten eine Stufe hinzu."
+msgstr "Aucun niveau de rappel configuré — aucun rappel ne sera envoyé. Ajoutez un niveau ci-dessous."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnstufen anpassen"
+msgstr "Adapter les niveaux de rappel"
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Stufe %(s2)s (%(t2)s Tage) muss später greifen als Stufe %(s1)s (%(t1)s Tage)."
+msgstr "Le niveau %(s2)s (%(t2)s jours) doit s'appliquer plus tard que le niveau %(s1)s (%(t1)s jours)."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Stufe %(stufe)s: Bezeichnung, Tage (ganze Zahl) und Spesen (Betrag) ausfüllen."
+msgstr "Niveau %(stufe)s : renseigner la désignation, les jours (nombre entier) et les frais (montant)."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Bezeichnung, Tage (ganze Zahl) und Spesen (Betrag) ausfüllen."
+msgstr "Renseigner la désignation, les jours (nombre entier) et les frais (montant)."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnstufe hinzugefügt."
+msgstr "Niveau de rappel ajouté."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahnstufe gelöscht."
+msgstr "Niveau de rappel supprimé."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Diese Mahnstufe gibt es nicht."
+msgstr "Ce niveau de rappel n'existe pas."

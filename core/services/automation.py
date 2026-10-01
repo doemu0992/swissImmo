@@ -142,8 +142,8 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
 # ============================================================
 # 2. MAHNLAUF (Sammellauf über alle fälligen Debitoren)
 # ============================================================
-MAHN_STUFEN_TAGE = [(3, 60), (2, 30), (1, 14)]   # (Stufe, ab Tagen überfällig)
-MAHN_GEBUEHR = {1: Decimal('0.00'), 2: Decimal('20.00'), 3: Decimal('40.00')}
+# Fristen, Stufen und Mahnspesen stehen NICHT hier: Sie liegen je Organisation in
+# `crm.MahnStufe` und werden über `core.services.mahnstufen` gelesen.
 VERZUGSZINS_PROZENT = Decimal('5.0')   # Art. 104 OR
 
 #: Nach so vielen Tagen ohne Änderung an einem offenen Ticket entsteht eine Pendenz.
@@ -158,13 +158,6 @@ NK_ABRECHNUNG_RICHTWERT_TAGE = 180
 #: Stichwörter für Schäden, die die Gebäudeversicherung betreffen können.
 VERSICHERUNGS_STICHWORTE = ('wasserschaden', 'rohrbruch', 'feuerschaden', 'brandschaden',
                             'sturmschaden', 'hagel', 'einbruch', 'glasbruch', 'überschwemmung')
-
-
-def _stufe_fuer_tage(tage):
-    for stufe, ab in MAHN_STUFEN_TAGE:
-        if tage >= ab:
-            return stufe
-    return None
 
 
 def verzugszins(betrag, tage, prozent=VERZUGSZINS_PROZENT):
@@ -191,8 +184,9 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
     from finance.models import DebitorenRechnung
     from django.db.models import Q
     from core.utils.email_service import send_payment_reminder
-    # Mahnstufen + Gebuehr pro Eigentuemer (crm.Eigentuemer.mahn_konfig); Fallback Standard.
-    from core.services.mahnstufen import stufe_fuer_tage as _stufe_cfg, eigentuemer_von_rechnung
+    # Mahnstufen + Gebuehr je Organisation (crm.MahnStufe), ggf. vom Eigentümer übersteuert.
+    from core.services.mahnstufen import Mahnstufen, eigentuemer_von_rechnung
+    stufen_laden = Mahnstufen()
 
     heute = timezone.localdate()
     # Abgeleitete Forderungen (Mahngebühr, Verzugszins — `stammrechnung`)
@@ -222,7 +216,8 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
         # gehört zur Abschreibung/Betreibung (eigene Verjährungs-Pendenz).
         if tage > 5 * 365:
             continue
-        _s = _stufe_cfg(tage, eigentuemer_von_rechnung(r))
+        _s = stufen_laden.stufe_fuer_tage(tage, eigentuemer_von_rechnung(r),
+                                          organisation=r.organisation)
         if not _s:
             continue
         stufe = _s['stufe']

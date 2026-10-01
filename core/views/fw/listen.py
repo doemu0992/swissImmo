@@ -24,7 +24,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import dateformat, timezone
 from django.utils.translation import gettext as _, gettext_lazy
 
-from core.services.mahnstufen import (stufe_fuer_tage as _stufe_fuer_tage,
+from core.services.mahnstufen import (Mahnstufen as _Mahnstufen,
                                       eigentuemer_von_rechnung as _eigentuemer_von_rechnung)
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -48,14 +48,16 @@ from core.tenancy import aktuelle_organisation
 # ETAPPE B: LISTEN ALS DATENTABELLEN
 # ============================================================
 
-def _mahnstufe(faellig, heute, status, eigentuemer=None):
-    """Mahnstufen-Badge aus Fälligkeit + der Mahnkonfig des Eigentümers
-    (core.services.mahnstufen). 'Fällig' als Fallback, wenn überfällig, aber
-    noch unter der ersten aktiven Stufe. eigentuemer=None → Standard (14/30/60)."""
+def _mahnstufe(faellig, heute, status, eigentuemer=None, stufen=None):
+    """Mahnstufen-Badge aus Fälligkeit + den Mahnstufen der Organisation
+    (crm.MahnStufe, ggf. vom Eigentümer übersteuert; core.services.mahnstufen).
+    'Fällig' als Fallback, wenn überfällig, aber noch unter der ersten aktiven
+    Stufe. `stufen`: ein `Mahnstufen`-Lader, damit eine Liste die Datenbank
+    nicht je Zeile fragt."""
     if status not in ('offen', 'teilbezahlt') or not faellig or faellig >= heute:
         return None
     tage = (heute - faellig).days
-    s = _stufe_fuer_tage(tage, eigentuemer)
+    s = (stufen or _Mahnstufen()).stufe_fuer_tage(tage, eigentuemer)
     if s:
         return {'label': s['label'], 'cls': s['cls'], 'tage': tage}
     return {'label': _('Fällig'), 'cls': 'fw-warn-flaeche fw-warnton', 'tage': tage}
@@ -150,6 +152,7 @@ def fw_debitoren(request):
         seiten_objekte += list(andere_sortiert[max(0, _start - n_offen_rows):_ende - n_offen_rows])
 
     rows = []
+    mahn_lader = _Mahnstufen()
     for r in seiten_objekte:
         lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
         einheit = r.einheit or (r.vertrag.einheit if r.vertrag_id else None)
@@ -157,7 +160,7 @@ def fw_debitoren(request):
         # r.offener_betrag, aber ohne die Zahlungen nachzuladen.
         offen = r._o if r.status in _OFFEN_STATUS else Decimal('0.00')
         faellig = r.faellig_am or r.datum
-        mahn = _mahnstufe(faellig, heute, r.status, _eigentuemer_von_rechnung(r))
+        mahn = _mahnstufe(faellig, heute, r.status, _eigentuemer_von_rechnung(r), mahn_lader)
         label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'fw-flaeche2 fw-mutet'))
         rows.append({
             'r': r,

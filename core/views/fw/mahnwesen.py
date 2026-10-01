@@ -11,6 +11,7 @@
 # Erreichbar bleibt alles ueber `core.views.fw` -- das __init__.py des Pakets
 # re-exportiert; swiss_immo/urls.py und die Tests aendern sich nicht.
 
+from collections import defaultdict
 from datetime import timedelta as _timedelta
 from decimal import Decimal
 
@@ -32,15 +33,13 @@ from ._basis import _global_filter, _num
 # ETAPPE D: MAHNWESEN (Mahnstufen aus überfälligen Debitoren)
 # ============================================================
 
-# Mahnstufen-Konfiguration liegt jetzt PRO MANDANT (crm.Eigentuemer.mahn_konfig) —
-# EINE Quelle der Wahrheit in core.services.mahnstufen. MAHN_STUFEN = Standard-
-# Legende (ohne Eigentuemer); die View berechnet die effektive Legende pro Eigentuemer.
+# Die Mahnstufen liegen je Organisation in der Datenbank (crm.MahnStufe) —
+# EINE Quelle der Wahrheit in core.services.mahnstufen. Hier steht keine Frist.
 from core.services.mahnstufen import (  # noqa: E402
     mahnstufen_config as _mahnstufen_config,
-    stufe_fuer_tage as _stufe_fuer_tage,
+    Mahnstufen,
     eigentuemer_von_rechnung as _eigentuemer_von_rechnung,
 )
-MAHN_STUFEN = _mahnstufen_config(None)
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -58,19 +57,22 @@ def fw_mahnwesen(request):
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
 
     stufe_filter = request.GET.get('stufe', '')
-    # Effektive Mahnstufen-Legende: die des gefilterten Eigentümer, sonst Standard.
+    # Effektive Mahnstufen-Legende: die Stufen der Organisation, bei gewählter
+    # Liegenschaft mit der Übersteuerung ihres Eigentümers.
     legende = _mahnstufen_config(getattr(aktive_lg, 'eigentuemer', None) if aktive_lg else None)
 
     rows = []
     total = Decimal('0.00')
-    counts = {1: 0, 2: 0, 3: 0}
-    summe = {1: Decimal('0.00'), 2: Decimal('0.00'), 3: Decimal('0.00')}
+    counts = defaultdict(int)
+    summe = defaultdict(lambda: Decimal('0.00'))
+    stufen_laden = Mahnstufen()
     for r in qs:
         faellig = r.faellig_am or r.datum
         if not faellig or faellig >= heute:
             continue
         tage = (heute - faellig).days
-        stufe = _stufe_fuer_tage(tage, _eigentuemer_von_rechnung(r))
+        stufe = stufen_laden.stufe_fuer_tage(tage, _eigentuemer_von_rechnung(r),
+                                             organisation=r.organisation)
         if not stufe:
             continue  # unter der ersten aktiven Stufe: noch kein Mahnfall
         offen = r.offener_betrag
@@ -112,13 +114,14 @@ def fw_mahnwesen(request):
         historie_qs = historie_qs.filter(vertrag__einheit__liegenschaft=aktive_lg)
     historie = list(historie_qs[:30])
 
+    legende = [dict(s, anzahl=counts.get(s['stufe'], 0)) for s in legende]
     context = {
         **basis, 'nav': 'mahnwesen', 'rows': rows,
         'stufe_filter': stufe_filter, 'stufe_chips': stufe_chips,
         'total': total,
         'mahnstufen': legende,
         'counts': counts, 'summe': summe,
-        'anzahl_total': counts[1] + counts[2] + counts[3],
+        'anzahl_total': sum(counts.values()),
         'historie': historie,
     }
     return render(request, 'fw/mahnwesen.html', context)
@@ -240,9 +243,6 @@ def fw_debitoren_aging(request):
 # MAHN-HISTORIE (revisionssicher) + Mahngebühren
 # ============================================================
 
-MAHN_GEBUEHR = {1: Decimal('0.00'), 2: Decimal('20.00'), 3: Decimal('40.00')}
-
-
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_mahnung_erfassen(request):
     """Erfasst einen revisionssicheren Mahnschritt in der Historie und legt
@@ -260,7 +260,12 @@ def fw_mahnung_erfassen(request):
         stufe = int(request.POST.get('stufe') or 1)
     except ValueError:
         stufe = 1
-    stufe = min(max(stufe, 1), 3)
+    # Die Stufe muss es in der Organisation geben — wie viele es sind und wie sie
+    # heissen, bestimmt die Verwaltung (crm.MahnStufe), nicht der Code.
+    from core.services.mahnstufen import stufen_der_organisation
+    if stufe not in {s['stufe'] for s in stufen_der_organisation(rechnung.organisation)}:
+        messages.error(request, gettext('Diese Mahnstufe gibt es nicht.'))
+        return redirect('fw_mahnwesen')
 
     # Eine bezahlte, stornierte oder abgeschriebene Forderung darf nicht (mehr)
     # gemahnt werden — sonst wird eine Mahngebühr auf eine Forderung gestellt, die

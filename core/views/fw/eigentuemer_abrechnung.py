@@ -177,23 +177,24 @@ def fw_eigentuemer_honorar(request, pk):
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_eigentuemer_mahnstufen(request, pk):
-    """Mahnstufen-Konfiguration eines Eigentümers (feste 3 Stufen: aktiv / ab_tage /
-    gebuehr / kuendigung). Speichert nach Eigentuemer.mahn_konfig (JSON). Leer =
-    Standard 14/30/60. Siehe core.services.mahnstufen."""
+    """Übersteuerung der Mahnstufen für EINEN Eigentümer: je Stufe der Organisation
+    (crm.MahnStufe) aktiv / ab_tage / gebuehr / kuendigung. Speichert nach
+    Eigentuemer.mahn_konfig (JSON). Stufen, die hier nicht abweichen, gelten wie
+    bei der Organisation (`/neu/mahnstufen/`). Siehe core.services.mahnstufen."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Eigentuemer
-    from core.services.mahnstufen import roh_konfig
+    from core.services.mahnstufen import stufen_der_organisation
     from core.auth import log_aktion
     md = get_object_or_404(Eigentuemer, id=pk)
     if request.method == 'POST':
-        std_tage = {1: 14, 2: 30, 3: 60}
         konfig = []
-        for s in (1, 2, 3):
+        for basis in stufen_der_organisation(md.organisation):
+            s = basis['stufe']
             try:
-                ab = max(0, int(request.POST.get(f'ab_tage_{s}') or std_tage[s]))
+                ab = max(0, int(request.POST.get(f'ab_tage_{s}') or basis['ab_tage']))
             except ValueError:
-                ab = std_tage[s]
+                ab = basis['ab_tage']
             try:
                 geb = Decimal(str(request.POST.get(f'gebuehr_{s}') or '0').replace(',', '.'))
                 geb = max(Decimal('0'), geb)
@@ -213,6 +214,7 @@ def fw_eigentuemer_mahnstufen(request, pk):
                               for c in konfig))
         messages.success(request, '✅ ' + gettext('Mahnstufen gespeichert.'))
         return redirect(f'/neu/mandate/{md.id}/mahnstufen/')
+    from core.services.mahnstufen import roh_konfig
     return render(request, 'fw/eigentuemer_mahnstufen.html', {
         **_global_filter(request), 'nav': 'mandate', 'md': md, 'stufen': roh_konfig(md),
     })

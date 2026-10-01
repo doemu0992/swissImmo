@@ -1,0 +1,88 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+MAHNSTUFEN DER VERWALTUNG — Bearbeitung von `crm.MahnStufe`.
+
+Jede Verwaltung legt selbst fest, ab wie vielen Tagen Verzug sie mahnt, was die
+Mahnung kostet und welche Stufe die Kündigung nach Art. 257d OR androht. Im Code
+steht keine Frist. Feldnamen: `bezeichnung_<id>`, `ab_tage_<id>`, `gebuehr_<id>`,
+`art_257d_<id>`; Neuanlage und Löschen haben eigene Formulare.
+{% endcomment %}
+{% block title %}{% trans "Mahnstufen" %} — swissImmo{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/mahnwesen/">{% trans "Mahnwesen" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Mahnstufen" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Mahnstufen" %}</h1>
+        <p>{% trans "Ab wie vielen Tagen nach Fälligkeit welche Mahnung greift und welche Mahnspesen sie auslöst — für Ihre ganze Verwaltung." %}</p>
+    </div>
+</div>
+
+<form method="post" class="max-w-3xl">
+    {% csrf_token %}
+    {% for s in stufen %}
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <h3 class="fw-t">{% blocktrans with stufe=s.stufe %}Stufe {{ stufe }}{% endblocktrans %}</h3>
+            <button type="submit" form="loeschen-{{ s.pk }}" class="fw-rechts fw-btn fw-geist"
+                    onclick="return confirm('{% trans "Diese Mahnstufe löschen?" %}')">{% trans "Löschen" %}</button>
+        </div>
+        <div class="fw-formular fw-rumpf">
+            <div class="fw-feldblock breit"><label for="name-{{ s.pk }}" class="fw-label">{% trans "Bezeichnung" %}</label>
+                <input id="name-{{ s.pk }}" name="bezeichnung_{{ s.pk }}" type="text" maxlength="120" required
+                       value="{{ s.bezeichnung }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="ab-{{ s.pk }}" class="fw-label">{% trans "Ab Tagen nach Fälligkeit" %}</label>
+                <input id="ab-{{ s.pk }}" name="ab_tage_{{ s.pk }}" type="number" min="0" step="1" inputmode="numeric" required
+                       value="{{ s.ab_tage }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="geb-{{ s.pk }}" class="fw-label">{% trans "Mahnspesen (CHF)" %}</label>
+                <input id="geb-{{ s.pk }}" name="gebuehr_{{ s.pk }}" type="text" inputmode="decimal"
+                       value="{{ s.gebuehr }}" class="fw-feld"></div>
+            <div class="fw-feldblock breit">
+                <label class="fw-haekchen">
+                    <input type="checkbox" name="art_257d_{{ s.pk }}" {% if s.art_257d %}checked{% endif %} class="fw-akzent">
+                    {% trans "Kündigungsandrohung: führt zur Fristansetzung nach Art. 257d OR" %}
+                </label>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="fw-mutet">{% trans "Keine Mahnstufen eingerichtet — es wird nicht gemahnt. Fügen Sie unten eine Stufe hinzu." %}</p>
+    {% endfor %}
+
+    {% if stufen %}
+    <div class="flex items-center gap-3 flex-wrap mb-6">
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
+        <a href="/neu/mahnwesen/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+    </div>
+    {% endif %}
+</form>
+
+{% for s in stufen %}
+<form id="loeschen-{{ s.pk }}" method="post" action="/neu/mahnstufen/{{ s.pk }}/loeschen/">{% csrf_token %}</form>
+{% endfor %}
+
+<form method="post" action="/neu/mahnstufen/neu/" class="max-w-3xl">
+    {% csrf_token %}
+    <div class="fw-card">
+        <div class="fw-kopf"><h3 class="fw-t">{% blocktrans with stufe=naechste_stufe %}Stufe {{ stufe }} hinzufügen{% endblocktrans %}</h3></div>
+        <div class="fw-formular fw-rumpf">
+            <div class="fw-feldblock breit"><label for="neu-name" class="fw-label">{% trans "Bezeichnung" %}</label>
+                <input id="neu-name" name="bezeichnung" type="text" maxlength="120" required class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="neu-ab" class="fw-label">{% trans "Ab Tagen nach Fälligkeit" %}</label>
+                <input id="neu-ab" name="ab_tage" type="number" min="0" step="1" inputmode="numeric" required class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="neu-geb" class="fw-label">{% trans "Mahnspesen (CHF)" %}</label>
+                <input id="neu-geb" name="gebuehr" type="text" inputmode="decimal" value="0.00" class="fw-feld"></div>
+            <div class="fw-feldblock breit">
+                <label class="fw-haekchen"><input type="checkbox" name="art_257d" class="fw-akzent">
+                    {% trans "Kündigungsandrohung: führt zur Fristansetzung nach Art. 257d OR" %}</label>
+            </div>
+        </div>
+        <div class="fw-rumpf"><button type="submit" class="fw-btn">{% trans "Stufe hinzufügen" %}</button></div>
+    </div>
+</form>
+{% endblock %}

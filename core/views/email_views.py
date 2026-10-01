@@ -257,12 +257,15 @@ def send_mahnung_email_view(request, vertrag_id):
         if rechnung.offener_betrag <= 0:
             messages.error(request, gettext('Diese Forderung ist nicht mehr offen.'))
             return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+        # Nur Stufen, die die Verwaltung eingerichtet hat (crm.MahnStufe); sonst die erste.
+        stufen = sorted(mahnstufen_config(eigentuemer_von_rechnung(rechnung),
+                                          rechnung.organisation), key=lambda x: x['stufe'])
         try:
-            stufe = min(max(int(stufe_roh), 1), 3)
+            stufe = int(stufe_roh)
         except ValueError:
-            stufe = 1
-        cfg = next((x for x in mahnstufen_config(eigentuemer_von_rechnung(rechnung))
-                    if x['stufe'] == stufe), None)
+            stufe = None
+        cfg = next((x for x in stufen if x['stufe'] == stufe), None) or (stufen[0] if stufen else None)
+        stufe = cfg['stufe'] if cfg else 1
         monat_str = forderungs_monat(rechnung)
         betrag_str = f"{rechnung.offener_betrag:.2f}"
         pdf_bytes = mahnbrief_pdf(
@@ -368,12 +371,15 @@ def generate_mahnung_pdf_view(request, vertrag_id):
         from core.services.mahnbrief import forderungs_monat, mahnbrief_pdf
         from core.services.mahnstufen import eigentuemer_von_rechnung, mahnstufen_config
         rechnung = get_object_or_404(DebitorenRechnung, pk=rid, vertrag=vertrag)
+        # Nur Stufen, die die Verwaltung eingerichtet hat (crm.MahnStufe); sonst die erste.
+        stufen = sorted(mahnstufen_config(eigentuemer_von_rechnung(rechnung),
+                                          rechnung.organisation), key=lambda x: x['stufe'])
         try:
-            stufe = min(max(int(stufe_roh), 1), 3)
+            stufe = int(stufe_roh)
         except ValueError:
-            stufe = 1
-        cfg = next((x for x in mahnstufen_config(eigentuemer_von_rechnung(rechnung))
-                    if x['stufe'] == stufe), None)
+            stufe = None
+        cfg = next((x for x in stufen if x['stufe'] == stufe), None) or (stufen[0] if stufen else None)
+        stufe = cfg['stufe'] if cfg else 1
         pdf_bytes = mahnbrief_pdf(
             vertrag, verwaltung, stufe=stufe, monat=forderungs_monat(rechnung),
             betrag=f"{rechnung.offener_betrag:.2f}", datum=heute,

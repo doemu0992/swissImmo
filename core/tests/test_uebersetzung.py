@@ -70,6 +70,7 @@ UEBERSETZT = (
     'fw/mandate.html',
     'fw/liegenschaften.html',
     'fw/eigentuemer_mahnstufen.html',
+    'fw/mahnstufen.html',
     'fw/objekte.html',
     'fw/vertraege.html',
     'fw/personen.html',

@@ -121,11 +121,14 @@ class MahnlaufTests(TestCase):
         self.assertEqual(verzugszins(Decimal('1000'), 0), Decimal('0.00'))
 
     def test_mahnstufe_nach_tagen(self):
-        from core.services.automation import _stufe_fuer_tage
-        self.assertIsNone(_stufe_fuer_tage(13))
-        self.assertEqual(_stufe_fuer_tage(14), 1)
-        self.assertEqual(_stufe_fuer_tage(30), 2)
-        self.assertEqual(_stufe_fuer_tage(60), 3)
+        """Die Schwellen kommen aus crm.MahnStufe (Startwert 14/30/60), nicht aus dem Code."""
+        from core.services.mahnstufen import stufe_fuer_tage
+        from core.tests._helfer import _test_organisation
+        org = _test_organisation()
+        self.assertIsNone(stufe_fuer_tage(13, organisation=org))
+        self.assertEqual(stufe_fuer_tage(14, organisation=org)['stufe'], 1)
+        self.assertEqual(stufe_fuer_tage(30, organisation=org)['stufe'], 2)
+        self.assertEqual(stufe_fuer_tage(60, organisation=org)['stufe'], 3)
 
     def _ueberfaellig(self, tage):
         from django.utils import timezone
