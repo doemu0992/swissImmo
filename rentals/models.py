@@ -1084,3 +1084,65 @@ class AbnahmeMangel(OrganisationAusKette):
         Nur für verursacher='mieter'; sonst 0. Abgelaufene Lebensdauer → 0,
         ausser bei absichtlicher Beschädigung (`vorsaetzlich`) → voller Betrag."""
         return self.berechne_ergebnis(stichtag).betrag
+
+
+class AbnahmePosition(OrganisationAusKette):
+    ORGANISATION_PFAD = 'protokoll'
+    """Ein Bauteil in einem Raum, bewertet bei der Abnahme vor Ort (Ampel).
+
+    Die Vor-Ort-Abnahme geht Raum für Raum durch alle Bauteile und hält je
+    Bauteil fest: neuwertig / normale Abnutzung / übermässige Abnutzung.
+    Nur «übermässig» ist ein Schaden: Dann entsteht (und bleibt synchron) ein
+    `AbnahmeMangel`, an dem die Zeitwert-Rechnung hängt. «Normale Abnutzung»
+    ist Sache des Vermieters (Art. 267 OR: Abnutzung durch vertragsgemässen
+    Gebrauch) und kostet den Mieter nichts."""
+    ZUSTAND_OFFEN = ''
+    ZUSTAND = [('', _('Offen')), ('io', _('Neu i.O.')),
+               ('normal', _('Normale Abnutzung')), ('uebermaessig', _('Übermässige Abnutzung'))]
+    protokoll = models.ForeignKey(Abnahmeprotokoll, on_delete=models.CASCADE, related_name='positionen')
+    raum = models.CharField("Raum", max_length=60)
+    bezeichnung = models.CharField("Bauteil", max_length=120)
+    ausstattung = models.ForeignKey('portfolio.Ausstattung', on_delete=models.SET_NULL,
+                                    null=True, blank=True, related_name='abnahme_positionen')
+    zustand = models.CharField("Zustand", max_length=12, choices=ZUSTAND, blank=True, default='')
+    kommentar = models.TextField("Kommentar", blank=True, default='')
+    foto = models.ImageField("Foto", upload_to=get_smart_upload_path, null=True, blank=True)
+    kostenschaetzung = models.DecimalField("Kostenschätzung CHF", max_digits=9, decimal_places=2,
+                                           null=True, blank=True)
+    vorsaetzlich = models.BooleanField("Absichtlich beschädigt", default=False)
+    # Der zugehörige Schaden, solange der Zustand «übermässig» ist.
+    mangel = models.OneToOneField(AbnahmeMangel, on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name='position')
+    sortierung = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'core_abnahmeposition'
+        ordering = ['sortierung', 'id']
+
+    def __str__(self):
+        return f"{self.raum}: {self.bezeichnung} ({self.zustand or 'offen'})"
+
+    def mangel_abgleichen(self):
+        """Hält den `AbnahmeMangel` im Einklang mit dem Zustand.
+
+        «Übermässig» → Mangel (beim Auszug dem Mieter zugeordnet, beim Einzug
+        als Vorzustand beim Vermieter), mit Zeitwert-Rechnung. Alles andere →
+        ein vorhandener Mangel wird entfernt."""
+        if self.zustand != 'uebermaessig':
+            if self.mangel_id:
+                self.mangel.delete()
+                self.mangel = None
+            return
+        mangel = self.mangel or AbnahmeMangel(protokoll=self.protokoll)
+        beschreibung = self.bezeichnung + (f": {self.kommentar.strip()}" if self.kommentar.strip() else '')
+        mangel.raum = self.raum
+        mangel.beschreibung = beschreibung[:255]
+        mangel.verursacher = 'mieter' if self.protokoll.typ == 'auszug' else 'vermieter'
+        mangel.ausstattung = self.ausstattung
+        mangel.kostenschaetzung = self.kostenschaetzung
+        mangel.vorsaetzlich = self.vorsaetzlich
+        if self.foto:
+            mangel.foto = self.foto.name     # dieselbe Datei, keine zweite Kopie
+        mangel.mieteranteil = mangel.berechne_mieteranteil(stichtag=self.protokoll.datum)
+        mangel.save()
+        self.mangel = mangel

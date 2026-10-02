@@ -15,6 +15,12 @@
         <h1>{% trans "Wohnungsabnahme" %}</h1>
         <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
     </div>
+    {% if not embed_base %}
+    <form method="post" action="/neu/vertraege/{{ v.id }}/abnahme/vorort/">{% csrf_token %}
+        <input type="hidden" name="typ" value="{{ typ_default }}">
+        <button type="submit" class="fw-btn fw-gutknopf">{% zeichen 'gut' klasse='mr-1' %}{% trans "Vor Ort abnehmen (Telefon)" %}</button>
+    </form>
+    {% endif %}
 </div>
 
 <form method="post" enctype="multipart/form-data" class="max-w-3xl">

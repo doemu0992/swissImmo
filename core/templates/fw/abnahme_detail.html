@@ -106,5 +106,23 @@
 </div>
 </div>
 
+{% if positionen %}
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Bewertete Bauteile" %}</h2><span class="fw-neben">{{ positionen|length }}</span></div>
+    <div class="fw-tablewrap">
+<table class="fw-table">
+        <thead><tr><th>{% trans "Raum" %}</th><th>{% trans "Bauteil" %}</th><th>{% trans "Zustand" %}</th><th>{% trans "Kommentar" %}</th></tr></thead>
+        <tbody>
+            {% for pos in positionen %}
+            <tr><td>{{ pos.raum }}</td><td class="fw-strong">{{ pos.bezeichnung }}</td>
+                <td><span class="fw-chip {% if pos.zustand == 'io' %}fw-good{% elif pos.zustand == 'normal' %}fw-warn{% elif pos.zustand == 'uebermaessig' %}fw-crit{% else %}fw-mut{% endif %}">{{ pos.get_zustand_display }}</span></td>
+                <td>{{ pos.kommentar|default:"—" }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
 {% if p.bemerkungen %}<div class="fw-card"><div class="fw-kopf"><h2>{% trans "Bemerkungen" %}</h2></div><div class="fw-rumpf">{{ p.bemerkungen|linebreaksbr }}</div></div>{% endif %}
 {% endblock %}

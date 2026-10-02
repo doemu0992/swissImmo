@@ -21760,3 +21760,104 @@ msgstr "Voller Betrag: Alter/Lebensdauer fehlt"
 #, python-format
 msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
 msgstr "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vor Ort abnehmen (Telefon)"
+msgstr "Vor Ort abnehmen (Telefon)"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahme vor Ort"
+msgstr "Abnahme vor Ort"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Gespeichert"
+msgstr "Gespeichert"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Nicht gespeichert — bitte erneut versuchen"
+msgstr "Nicht gespeichert — bitte erneut versuchen"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Übergabe vor Ort"
+msgstr "Übergabe vor Ort"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Rücknahme vor Ort"
+msgstr "Rücknahme vor Ort"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Raum wählen"
+msgstr "Raum wählen"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Voriger Raum"
+msgstr "Voriger Raum"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Nächster Raum"
+msgstr "Nächster Raum"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Alle offenen Bauteile dieses Raums setzen auf:"
+msgstr "Alle offenen Bauteile dieses Raums setzen auf:"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kommentar"
+msgstr "Kommentar"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Foto aufnehmen"
+msgstr "Foto aufnehmen"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Foto aus der Galerie"
+msgstr "Foto aus der Galerie"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kostenschätzung CHF"
+msgstr "Kostenschätzung CHF"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Absichtlich beschädigt (kein Zeitwertabzug)"
+msgstr "Absichtlich beschädigt (kein Zeitwertabzug)"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zum Abschluss"
+msgstr "Zum Abschluss"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Strom"
+msgstr "Zählerstand Strom"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Wasser"
+msgstr "Zählerstand Wasser"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Gas/Wärme"
+msgstr "Zählerstand Gas/Wärme"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahme abschliessen"
+msgstr "Abnahme abschliessen"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Neu i.O."
+msgstr "Neu i.O."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Übermässige Abnutzung"
+msgstr "Übermässige Abnutzung"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Noch nicht bewertet: %(n)s"
+msgstr "Noch nicht bewertet: %(n)s"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Bewertete Bauteile"
+msgstr "Bewertete Bauteile"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Bauteil"
+msgstr "Bauteil"

@@ -270,6 +270,9 @@ ALIAS = {
     'rentals.AbnahmeMangel.kostenschaetzung': 'm_kosten',
     # Auswahlfeld '' / '1' im Mängelformular (keine Checkbox: parallele Listen).
     'rentals.AbnahmeMangel.vorsaetzlich': 'm_vorsatz',
+    # Abnahme vor Ort: Eingaben je Bauteil, gesendet von fw_abnahme_position_speichern.
+    'rentals.AbnahmePosition.kostenschaetzung': 'kosten',
+    'rentals.AbnahmePosition.vorsaetzlich': 'vorsatz',
 }
 
 

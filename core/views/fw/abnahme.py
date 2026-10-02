@@ -11,7 +11,9 @@
 from datetime import date
 from decimal import Decimal
 
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_POST
 from django.utils.translation import gettext
 from django.utils import timezone
 
@@ -171,6 +173,7 @@ def fw_abnahme_detail(request, pk):
     return render(request, 'fw/abnahme_detail.html', {
         **basis, 'nav': 'vertraege', 'p': prot, 'v': prot.vertrag,
         'maengel': prot.maengel.select_related('ausstattung'),
+        'positionen': prot.positionen.all(),
         'hat_mieter_maengel': any(m.verursacher == 'mieter' for m in prot.maengel.all()),
     })
 
@@ -292,3 +295,170 @@ def fw_vertrag_loeschen(request, pk):
         messages.success(request, '🗑️ ' + gettext('Vertrag (%(name)s · %(einheit)s) wurde gelöscht.') % {'name': name, 'einheit': einheit})
         return redirect('/neu/vertraege/')
     return redirect(f'/neu/vertraege/{v.id}/')
+
+
+# ============================================================
+# ABNAHME VOR ORT (Telefon): Raum für Raum, Ampel je Bauteil
+# ============================================================
+# Standard-Bauteile, wenn die Einheit noch kein Raumbuch hat. Gespeicherte
+# Werte wie die Raumnamen oben: bleiben unübersetzt.
+VORORT_BAUTEILE = ['Boden', 'Decke', 'Wände', 'Fenster/Fenstersims', 'Türen', 'Beleuchtung/Steckdosen']
+VORORT_STANDARDRAEUME = [r for r in ABNAHME_RAEUME if r != 'Allgemein']
+# Schlüssel der Ampel, in der Reihenfolge der Anzeige. Quelle ist das Modell.
+VORORT_ZUSTAENDE = ('io', 'normal', 'uebermaessig')
+
+
+def _vorort_positionen_anlegen(prot):
+    """Legt die Bauteile für ein neues Protokoll an: aus dem Raumbuch der
+    Einheit, sonst aus dem Standardsatz je Raum."""
+    from portfolio.models import Ausstattung
+    from rentals.models import AbnahmePosition
+    elemente = list(Ausstattung.objects.filter(einheit=prot.vertrag.einheit)
+                    .order_by('raum', 'sortierung', 'id'))
+    if elemente:
+        zeilen = [(a.raum, a.kategorie + (f' – {a.bezeichnung}' if a.bezeichnung else ''), a)
+                  for a in elemente]
+    else:
+        zeilen = [(raum, bauteil, None) for raum in VORORT_STANDARDRAEUME for bauteil in VORORT_BAUTEILE]
+    for nr, (raum, bezeichnung, element) in enumerate(zeilen):
+        # Einzelnes save(): die Organisation wird dort aus der Kette abgeleitet.
+        AbnahmePosition.objects.create(protokoll=prot, raum=raum, bezeichnung=bezeichnung[:120],
+                                       ausstattung=element, sortierung=nr)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_abnahme_vorort_start(request, vertrag_id):
+    """Beginnt die Abnahme vor Ort — oder setzt den offenen Entwurf fort.
+    Nur POST: Der Aufruf legt ein Protokoll an."""
+    from django.shortcuts import redirect
+    from rentals.models import Abnahmeprotokoll
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    if request.method != 'POST':
+        return redirect(f'/neu/vertraege/{v.id}/abnahme/neu/')
+    typ = request.POST.get('typ')
+    if typ not in ('auszug', 'einzug'):
+        typ = 'auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug'
+    prot = Abnahmeprotokoll.objects.filter(vertrag=v, typ=typ, abgeschlossen=False).order_by('-id').first()
+    if prot is None or not prot.positionen.exists():
+        if prot is None:
+            prot = Abnahmeprotokoll.objects.create(
+                vertrag=v, typ=typ, datum=timezone.localdate(),
+                verwalter_name=(request.user.get_full_name() or request.user.username))
+        _vorort_positionen_anlegen(prot)
+    return redirect(f'/neu/abnahme/{prot.id}/vorort/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_abnahme_vorort(request, pk):
+    """Die Abnahme vor Ort: ein Raum pro Seite, am Ende der Abschluss."""
+    from rentals.models import Abnahmeprotokoll
+    basis = _global_filter(request)
+    from django.shortcuts import redirect
+    from rentals.models import AbnahmePosition
+    prot = get_object_or_404(Abnahmeprotokoll.objects.select_related(
+        'vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    if prot.abgeschlossen:
+        return redirect(f'/neu/abnahme/{prot.id}/')
+    positionen = list(prot.positionen.all())
+    gruppen = {}
+    for pos in positionen:
+        gruppen.setdefault(pos.raum, []).append(pos)
+    raeume = [{'nr': nr, 'name': name, 'positionen': ps,
+               'offen': sum(1 for p in ps if not p.zustand),
+               'fertig': all(p.zustand for p in ps)}
+              for nr, (name, ps) in enumerate(gruppen.items())]
+    try:
+        schritt = int(request.GET.get('r', 0))
+    except ValueError:
+        schritt = 0
+    schritt = max(0, min(schritt, len(raeume)))        # len(raeume) = Abschluss
+    aktuell = raeume[schritt] if schritt < len(raeume) else None
+    return render(request, 'fw/abnahme_vorort.html', {
+        **basis, 'nav': 'vertraege', 'p': prot, 'v': prot.vertrag,
+        'raeume': raeume, 'schritt': schritt, 'raum': aktuell,
+        'letzter': len(raeume), 'offen_total': sum(r['offen'] for r in raeume),
+        'zustaende': [(z, dict(AbnahmePosition.ZUSTAND)[z]) for z in VORORT_ZUSTAENDE],
+        'vorher': schritt - 1 if schritt > 0 else None,
+        'nachher': schritt + 1 if schritt < len(raeume) else None,
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def fw_abnahme_position_speichern(request, pk):
+    """Speichert eine Änderung an einem Bauteil (Ampel, Kommentar, Foto,
+    Kosten, Absicht) und hält den zugehörigen Mangel im Einklang. Antwort: JSON.
+    Nur die Felder, die im Aufruf stehen, werden angefasst."""
+    from rentals.models import Abnahmeprotokoll, AbnahmePosition
+    prot = get_object_or_404(Abnahmeprotokoll, id=pk)
+    pos = get_object_or_404(AbnahmePosition, id=request.POST.get('position') or 0, protokoll=prot)
+    if prot.abgeschlossen:
+        return JsonResponse({'ok': False, 'fehler': 'abgeschlossen'}, status=409)
+    P = request.POST
+    if 'zustand' in P:
+        if P['zustand'] not in ('',) + VORORT_ZUSTAENDE:
+            return JsonResponse({'ok': False, 'fehler': 'zustand'}, status=400)
+        pos.zustand = P['zustand']
+    if 'kommentar' in P:
+        pos.kommentar = P['kommentar'].strip()[:2000]
+    if 'kosten' in P:
+        try:
+            pos.kostenschaetzung = Decimal(_num(P['kosten'])) if P['kosten'].strip() else None
+        except Exception:
+            return JsonResponse({'ok': False, 'fehler': 'kosten'}, status=400)
+    if 'vorsatz' in P:
+        pos.vorsaetzlich = P['vorsatz'] == '1'
+    if request.FILES.get('foto'):
+        pos.foto = request.FILES['foto']
+    pos.save()                 # zuerst: erst dabei bekommt ein neues Foto seinen Ablagepfad
+    pos.mangel_abgleichen()
+    pos.save()
+    return JsonResponse({
+        'ok': True, 'zustand': pos.zustand,
+        'foto': pos.foto.url if pos.foto else '',
+        'mieteranteil': (str(pos.mangel.mieteranteil) if pos.mangel_id and pos.mangel.mieteranteil is not None else ''),
+        'grundlage': (pos.mangel.zeitwert_grundlage if pos.mangel_id else ''),
+        'offen': prot.positionen.filter(zustand='').count(),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def fw_abnahme_vorort_abschliessen(request, pk):
+    """Schliesst die Abnahme vor Ort ab: Zählerstände, Schlüssel, Namen der
+    Unterzeichnenden. Danach ist das Protokoll nicht mehr änderbar."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Abnahmeprotokoll
+    from core.auth import log_aktion
+    prot = get_object_or_404(Abnahmeprotokoll.objects.select_related(
+        'vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    if prot.abgeschlossen:
+        return redirect(f'/neu/abnahme/{prot.id}/')
+    P = request.POST
+    prot.mieter_anwesend = P.get('mieter_anwesend') == 'on'
+    prot.zaehler_strom = P.get('zaehler_strom', '').strip()[:40]
+    prot.zaehler_wasser = P.get('zaehler_wasser', '').strip()[:40]
+    prot.zaehler_gas = P.get('zaehler_gas', '').strip()[:40]
+    prot.schluessel_anzahl = int(P['schluessel_anzahl']) if P.get('schluessel_anzahl', '').isdigit() else None
+    prot.bemerkungen = P.get('bemerkungen', '').strip()
+    prot.unterschrift_mieter = P.get('unterschrift_mieter', '').strip()[:120]
+    prot.unterschrift_verwalter = P.get('unterschrift_verwalter', '').strip()[:120]
+    prot.abgeschlossen = True
+    prot.save()
+    v = prot.vertrag
+    log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter),
+               f"{auf_deutsch(prot.get_typ_display)} {prot.datum} (vor Ort)", ziel=v)
+    if prot.typ == 'auszug':
+        from core.services.automation import erledige_pendenzen_fuer
+        kw = ['Wohnungsabnahme', 'Abnahmetermin']
+        if prot.zaehler_strom or prot.zaehler_wasser or prot.zaehler_gas:
+            kw.append('Zählerstände')
+        if prot.schluessel_anzahl is not None:
+            kw.append('Schlüssel')
+        # Wie in fw_abnahme_neu: ohne Mieter-Mängel ist die 267a-Pendenz gegenstandslos.
+        if not prot.maengel.filter(verursacher='mieter').exists():
+            kw.append('Mängelrüge Art. 267a')
+        erledige_pendenzen_fuer(v, kw, user=request.user)
+    messages.success(request, '✅ ' + gettext('Abnahmeprotokoll erfasst (%(count)s Mängel).') % {'count': prot.maengel.count()})
+    return redirect(f'/neu/abnahme/{prot.id}/')
