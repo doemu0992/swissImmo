@@ -1319,3 +1319,43 @@ class AelteresMahnschreibenZustellungTests(TestCase):
         c.post(f'/neu/dokument/{dok.pk}/zustellung/', {'sendungsnummer': 'x'})
         with organisation_kontext(self.a.organisation):
             self.assertFalse(Dokument.objects.get(pk=dok.pk).zugang_pflichtig)
+
+
+class TrackAndTraceLinkTests(TestCase):
+    """Aus der Sendungsnummer entsteht der Track-&-Trace-Link der Post — vor und nach dem Zugang."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _erfasst(self, **felder):
+        from rentals.models import Dokument
+        r = _ueberfaellige_rechnung(self.a, 61)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 3})
+        with organisation_kontext(self.a.organisation):
+            dok = Dokument.objects.filter(vertrag=self.a.vertrag, zugang_pflichtig=True).latest('id')
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', felder)
+        return c
+
+    LINK = 'post.ch/swisspost-tracking?formattedParcelCodes=980099250300308529'
+
+    def test_link_im_mahnwesen_und_in_der_akte(self):
+        c = self._erfasst(sendungsnummer='980099250300308529')
+        self.assertContains(c.get('/neu/mahnwesen/'), self.LINK)
+        self.assertContains(c.get(f'/neu/vertraege/{self.a.vertrag.pk}/'), self.LINK)
+
+    def test_link_bleibt_nach_bestaetigtem_zugang(self):
+        c = self._erfasst(sendungsnummer='980099250300308529',
+                          zugang_am=timezone.localdate().isoformat())
+        self.assertContains(c.get(f'/neu/vertraege/{self.a.vertrag.pk}/'), self.LINK)
+
+    def test_ohne_sendungsnummer_kein_link(self):
+        c = self._erfasst(versand_am=timezone.localdate().isoformat())
+        self.assertNotContains(c.get('/neu/mahnwesen/'), 'swisspost-tracking')
+
+    def test_sonderzeichen_werden_kodiert(self):
+        c = self._erfasst(sendungsnummer='98.00 99&x')
+        seite = c.get('/neu/mahnwesen/')
+        self.assertContains(seite, 'formattedParcelCodes=98.00%2099%26x')
