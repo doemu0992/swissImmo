@@ -136,3 +136,36 @@ class AbgelaufeneLebensdauerTests(TestCase):
         absicht = AbnahmeMangel.objects.get(beschreibung='mutwillig bemalt')
         self.assertTrue(absicht.vorsaetzlich)
         self.assertEqual(absicht.mieteranteil, Decimal('1800.00'))
+
+
+class HinweisOhneLebensdauerTests(TestCase):
+    """Mieterschaden ohne Alter/Lebensdauer: voller Betrag, aber sichtbar gemacht."""
+
+    def _post(self, c, v, element_id):
+        return c.post(f'/neu/vertraege/{v.id}/abnahme/neu/', {
+            'typ': 'auszug', 'datum': '2026-06-30',
+            'm_raum': ['Wohnen'], 'm_beschreibung': ['Loch in Wand'],
+            'm_verursacher': ['mieter'], 'm_kosten': ['300'],
+            'm_ausstattung': [element_id], 'm_neuwert': [''], 'm_vorsatz': ['']},
+            follow=True)
+
+    def test_warnung_und_hinweis_ohne_element(self):
+        from django.test import Client
+        from ._helfer import _team_user
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = self._post(c, v, '')
+        self.assertContains(r, 'ohne Alter oder Lebensdauer')
+        self.assertContains(r, 'Alter/Lebensdauer fehlt')
+
+    def test_keine_warnung_wenn_zeitwert_berechnet(self):
+        from django.test import Client
+        from portfolio.models import Ausstattung
+        from ._helfer import _team_user
+        _lg, e, _m, v = _basis_objekte()
+        el = Ausstattung.objects.create(einheit=e, raum='Wohnen', kategorie='Wände / Anstrich',
+                                        einbau_datum=date(2024, 1, 1), lebensdauer_jahre=8)
+        c = Client(); c.force_login(_team_user())
+        r = self._post(c, v, str(el.id))
+        self.assertNotContains(r, 'ohne Alter oder Lebensdauer')
+        self.assertNotContains(r, 'Alter/Lebensdauer fehlt')

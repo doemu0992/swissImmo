@@ -21747,3 +21747,16 @@ msgstr "Unabsichtlich (Zeitwertabzug)"
 #: core/templates/fw/abnahme_neu.html
 msgid "Absichtlich (voller Betrag, kein Abzug)"
 msgstr "Absichtlich (voller Betrag, kein Abzug)"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Absichtlich: kein Abzug"
+msgstr "Absichtlich: kein Abzug"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Voller Betrag: Alter/Lebensdauer fehlt"
+msgstr "Voller Betrag: Alter/Lebensdauer fehlt"
+
+#: core/templates/fw/abnahme_detail.html
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
+msgstr "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."

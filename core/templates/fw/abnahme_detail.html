@@ -94,7 +94,8 @@
                     {% if m.verursacher == 'mieter' %}fw-crit{% elif m.verursacher == 'vermieter' %}fw-info{% else %}fw-mut{% endif %}">{{ m.get_verursacher_display }}</span></td>
                 <td class="fw-right fw-num"><span class="fw-mutet">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</span></td>
                 <td class="fw-right fw-num fw-strong"><span class="{% if m.verursacher == 'mieter' %}fw-kritisch{% else %}fw-faint{% endif %}">
-                    {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</span></td>
+                    {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</span>
+                    {% if m.verursacher == 'mieter' %}{% if m.vorsaetzlich %}<div class="fw-sub2">{% trans "Absichtlich: kein Abzug" %}</div>{% elif m.zeitwert_grundlage == 'ohne_lebensdauer' %}<div class="fw-sub2 fw-kritisch">{% trans "Voller Betrag: Alter/Lebensdauer fehlt" %}</div>{% endif %}{% endif %}</td>
                 <td class="fw-zentriert">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
             </tr>
             {% empty %}

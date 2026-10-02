@@ -21859,3 +21859,16 @@ msgstr "Non intentionnel (déduction de la valeur actuelle)"
 #: core/templates/fw/abnahme_neu.html
 msgid "Absichtlich (voller Betrag, kein Abzug)"
 msgstr "Intentionnel (montant intégral, sans déduction)"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Absichtlich: kein Abzug"
+msgstr "Intentionnel : sans déduction"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Voller Betrag: Alter/Lebensdauer fehlt"
+msgstr "Montant intégral : âge/durée de vie manquants"
+
+#: core/templates/fw/abnahme_detail.html
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
+msgstr "%(count)s dommage(s) locataire sans âge ni durée de vie de l'élément : montant intégral imputé. Veuillez vérifier la date de pose et la durée de vie dans le registre des pièces."

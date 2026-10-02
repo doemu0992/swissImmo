@@ -1073,6 +1073,11 @@ class AbnahmeMangel(OrganisationAusKette):
         return mieteranteil(basis, self.zeitwert_faktor(stichtag),
                             verursacher=self.verursacher, vorsaetzlich=self.vorsaetzlich)
 
+    @property
+    def zeitwert_grundlage(self):
+        """Stabiler Schlüssel, wie der Mieteranteil zustande kam (core/services/zeitwert.py)."""
+        return self.berechne_ergebnis().grundlage
+
     def berechne_mieteranteil(self, stichtag=None):
         """Vom Mieter zu tragender Betrag: bei verknüpftem Element der Zeitwert-
         anteil der Kosten/des Neuwerts; sonst die volle Kostenschätzung.

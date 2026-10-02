@@ -21837,3 +21837,16 @@ msgstr "Non intenzionale (deduzione del valore attuale)"
 #: core/templates/fw/abnahme_neu.html
 msgid "Absichtlich (voller Betrag, kein Abzug)"
 msgstr "Intenzionale (importo intero, senza deduzione)"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Absichtlich: kein Abzug"
+msgstr "Intenzionale: senza deduzione"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Voller Betrag: Alter/Lebensdauer fehlt"
+msgstr "Importo intero: età/durata di vita mancanti"
+
+#: core/templates/fw/abnahme_detail.html
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
+msgstr "%(count)s danno/i del conduttore senza età o durata di vita dell'elemento: addebitato l'importo intero. Verificare data di installazione e durata di vita nel registro dei locali."

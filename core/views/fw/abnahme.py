@@ -138,6 +138,15 @@ def fw_abnahme_neu(request, vertrag_id):
             typ_txt = prot.get_typ_display()
             return render(request, 'fw/_modal_done.html', {'msg': f"{typ_txt} erfasst ({prot.maengel.count()} Mängel)"})
         messages.success(request, '✅ ' + gettext('Abnahmeprotokoll erfasst (%(count)s Mängel).') % {'count': prot.maengel.count()})
+        # Mieterschaden ohne Alter/Lebensdauer: wird mit dem vollen Betrag belastet,
+        # das ist angreifbar (Beweislast des Vermieters) — sichtbar machen statt still rechnen.
+        from core.services.zeitwert import OHNE_LEBENSDAUER
+        ohne = sum(1 for m in prot.maengel.select_related('ausstattung')
+                   if m.zeitwert_grundlage == OHNE_LEBENSDAUER)
+        if ohne:
+            messages.warning(request, '⚠️ ' + gettext(
+                '%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag '
+                'belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen.') % {'count': ohne})
         return redirect(f'/neu/abnahme/{prot.id}/')
 
     embed = request.GET.get('embed') == '1'
@@ -161,7 +170,7 @@ def fw_abnahme_detail(request, pk):
     prot = get_object_or_404(Abnahmeprotokoll.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
     return render(request, 'fw/abnahme_detail.html', {
         **basis, 'nav': 'vertraege', 'p': prot, 'v': prot.vertrag,
-        'maengel': prot.maengel.all(),
+        'maengel': prot.maengel.select_related('ausstattung'),
         'hat_mieter_maengel': any(m.verursacher == 'mieter' for m in prot.maengel.all()),
     })
 

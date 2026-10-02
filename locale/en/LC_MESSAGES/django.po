@@ -21633,3 +21633,16 @@ msgstr "Unintentional (current-value deduction)"
 #: core/templates/fw/abnahme_neu.html
 msgid "Absichtlich (voller Betrag, kein Abzug)"
 msgstr "Intentional (full amount, no deduction)"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Absichtlich: kein Abzug"
+msgstr "Intentional: no deduction"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Voller Betrag: Alter/Lebensdauer fehlt"
+msgstr "Full amount: age/useful life missing"
+
+#: core/templates/fw/abnahme_detail.html
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
+msgstr "%(count)s tenant damage item(s) without age or useful life of the component: full amount charged. Please check installation date and useful life in the room book."
