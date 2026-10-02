@@ -160,7 +160,8 @@ def fw_schaden_kosten(request):
     except ValueError:
         jahr = 0
 
-    auf = HandwerkerAuftrag.objects.select_related('ticket__liegenschaft', 'handwerker')
+    auf = (HandwerkerAuftrag.objects.exclude(status='storniert')
+           .select_related('ticket__liegenschaft', 'handwerker'))
     if aktive_lg:
         auf = auf.filter(ticket__liegenschaft=aktive_lg)
     if jahr:
@@ -341,6 +342,17 @@ def fw_schaden_detail(request, pk):
     offen_seit = (timezone.localdate() - t.erstellt_am.date()).days if t.erstellt_am else None
     letzte_nachricht = nachrichten.last()
 
+    # Verknüpfbare Rechnungen: dieselbe Liegenschaft (oder ohne), nicht storniert, an keinem
+    # Auftrag hängend. `objects` filtert auf die eigene Verwaltung.
+    from finance.models import KreditorenRechnung
+    rechnungen_frei = []
+    if any(a.status != 'storniert' and not a.kreditoren_rechnung_id for a in auftraege):
+        rechnungen_frei = list(
+            KreditorenRechnung.objects.filter(handwerker_auftraege__isnull=True)
+            .exclude(status='storniert')
+            .filter(Q(liegenschaft=t.liegenschaft) | Q(liegenschaft__isnull=True))
+            .order_by('-id')[:50])
+
     tab_liste = _reiter_aus_alt('schaden', [
         ('uebersicht', 'Übersicht', None),
         ('verlauf', 'Verlauf', nachrichten.count() or None),
@@ -360,6 +372,7 @@ def fw_schaden_detail(request, pk):
         'ausstattung_elemente': ausstattung_elemente,
         'handwerker_liste': handwerker_liste, 'auftrag_vorschlag': auftrag_vorschlag,
         'melder_email': melder_email, 'status_wahl': TICKET_PILL,
+        'rechnungen_frei': rechnungen_frei,
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -692,6 +705,62 @@ def fw_auftrag_termin(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_rechnung(request, pk):
+    """Bestehende Kreditorenrechnung mit dem Auftrag verknüpfen; optional das Ticket abschliessen."""
+    from django.core.exceptions import ValidationError
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung
+    from tickets.models import HandwerkerAuftrag
+    from tickets.workflow import rechnung_verknuepfen
+    from core.auth import log_aktion
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket', 'handwerker'), id=pk)
+    ziel = f'/neu/schaeden/{a.ticket_id}/?tab=handwerker'
+    if request.method != 'POST':
+        return redirect(ziel)
+    try:
+        try:
+            rechnung_id = int(request.POST.get('rechnung_id') or 0)
+        except ValueError:
+            raise ValidationError(gettext('Bitte eine Rechnung wählen.'))
+        kr = get_object_or_404(KreditorenRechnung.objects, id=rechnung_id)
+        if kr.handwerker_auftraege.exclude(pk=a.pk).exists():
+            raise ValidationError(gettext('Die Rechnung hängt schon an einem anderen Auftrag.'))
+        rechnung_verknuepfen(a, kr, abschliessen=request.POST.get('abschliessen') == 'on')
+        log_aktion(request, "Rechnung mit Auftrag verknüpft", f"Ticket #{a.ticket_id}", f"Kreditor #{kr.id}")
+        a.ticket.refresh_from_db()
+        if a.ticket.status == 'erledigt':
+            messages.success(request, '✅ ' + gettext('Rechnung verknüpft — Ticket abgeschlossen.'))
+        else:
+            messages.success(request, '✅ ' + gettext('Rechnung verknüpft.'))
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_storno(request, pk):
+    """Auftrag stornieren; der Handwerker erfährt es, ein Termin wird abgesagt."""
+    from django.core.exceptions import ValidationError
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import HandwerkerAuftrag
+    from tickets.workflow import auftrag_stornieren
+    from core.auth import log_aktion
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket', 'handwerker'), id=pk)
+    ziel = f'/neu/schaeden/{a.ticket_id}/?tab=handwerker'
+    if request.method != 'POST':
+        return redirect(ziel)
+    try:
+        auftrag_stornieren(a, request.POST.get('grund', ''))
+        log_aktion(request, "Auftrag storniert", f"Ticket #{a.ticket_id}", a.handwerker.firma)
+        messages.success(request, '✅ ' + gettext('Auftrag storniert, Handwerker informiert.'))
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_auftrag_kosten(request, pk):
     """Reparaturkosten auf einem Handwerker-Auftrag erfassen; optional eine
     Kreditorenrechnung erzeugen und verknüpfen."""
@@ -766,7 +835,12 @@ def fw_auftrag_kosten(request, pk):
             betrag=a.kosten_effektiv,
             status='neu',
         )
-        a.kreditoren_rechnung = kr
+        # Über den Service: gleiche Prüfungen und ein Verlaufseintrag. Nur verknüpfen — das
+        # Ticket schliesst nicht von selbst, nur weil die Kosten erfasst wurden.
+        from tickets.workflow import rechnung_verknuepfen
+        a.save()
+        rechnung_verknuepfen(a, kr, abschliessen=False)
+        a.refresh_from_db()
         messages.success(request, '✅ ' + gettext('Kosten erfasst und Kreditorenrechnung über CHF %(kosten_effektiv)s erstellt (Status: Neu — im Kreditoren-Tab freigeben).') % {'kosten_effektiv': a.kosten_effektiv})
     else:
         messages.success(request, '✅ ' + gettext('Kosten erfasst.'))

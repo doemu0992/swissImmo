@@ -21494,3 +21494,47 @@ msgstr "Appointment: %(d)s"
 msgid "Nachricht an %(f)s"
 msgstr "Message to %(f)s"
 
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Handwerkerrechnung verknüpfen"
+msgstr "Link tradesperson invoice"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "— Rechnung wählen —"
+msgstr "— Select invoice —"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Ticket abschliessen, wenn alle Rechnungen da sind"
+msgstr "Close ticket once all invoices are in"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpfen"
+msgstr "Link invoice"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag wirklich stornieren? Der Handwerker wird informiert."
+msgstr "Really cancel the order? The tradesperson will be informed."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Grund (optional)"
+msgstr "Reason (optional)"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag stornieren"
+msgstr "Cancel order"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Die Rechnung hängt schon an einem anderen Auftrag."
+msgstr "The invoice is already linked to another order."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft — Ticket abgeschlossen."
+msgstr "Invoice linked — ticket closed."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft."
+msgstr "Invoice linked."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag storniert, Handwerker informiert."
+msgstr "Order cancelled, tradesperson informed."
+

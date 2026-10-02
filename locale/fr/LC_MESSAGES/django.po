@@ -21720,3 +21720,47 @@ msgstr "Rendez-vous : %(d)s"
 msgid "Nachricht an %(f)s"
 msgstr "Message à %(f)s"
 
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Handwerkerrechnung verknüpfen"
+msgstr "Associer la facture de l'artisan"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "— Rechnung wählen —"
+msgstr "— Choisir la facture —"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Ticket abschliessen, wenn alle Rechnungen da sind"
+msgstr "Clore le ticket quand toutes les factures sont là"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpfen"
+msgstr "Associer la facture"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag wirklich stornieren? Der Handwerker wird informiert."
+msgstr "Vraiment annuler le mandat ? L'artisan sera informé."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Grund (optional)"
+msgstr "Motif (facultatif)"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag stornieren"
+msgstr "Annuler le mandat"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Die Rechnung hängt schon an einem anderen Auftrag."
+msgstr "La facture est déjà associée à un autre mandat."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft — Ticket abgeschlossen."
+msgstr "Facture associée — ticket clos."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft."
+msgstr "Facture associée."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag storniert, Handwerker informiert."
+msgstr "Mandat annulé, artisan informé."
+

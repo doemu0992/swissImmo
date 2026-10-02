@@ -21698,3 +21698,47 @@ msgstr "Appuntamento: %(d)s"
 msgid "Nachricht an %(f)s"
 msgstr "Messaggio a %(f)s"
 
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Handwerkerrechnung verknüpfen"
+msgstr "Collega la fattura dell'artigiano"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "— Rechnung wählen —"
+msgstr "— Seleziona la fattura —"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Ticket abschliessen, wenn alle Rechnungen da sind"
+msgstr "Chiudi il ticket quando tutte le fatture sono arrivate"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpfen"
+msgstr "Collega la fattura"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag wirklich stornieren? Der Handwerker wird informiert."
+msgstr "Annullare davvero l'incarico? L'artigiano verrà informato."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Grund (optional)"
+msgstr "Motivo (facoltativo)"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag stornieren"
+msgstr "Annulla l'incarico"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Die Rechnung hängt schon an einem anderen Auftrag."
+msgstr "La fattura è già collegata a un altro incarico."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft — Ticket abgeschlossen."
+msgstr "Fattura collegata — ticket chiuso."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft."
+msgstr "Fattura collegata."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag storniert, Handwerker informiert."
+msgstr "Incarico annullato, artigiano informato."
+

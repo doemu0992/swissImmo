@@ -314,7 +314,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-kopf items-start">
                 <div class="min-w-0">
                     <h2>{{ a.handwerker }}</h2>
-                    <div class="fw-klein">{% blocktrans with d=a.beauftragt_am|date:"d.m.Y" %}Beauftragt {{ d }}{% endblocktrans %} · {% trans "Status:" %} {{ a.status }}</div>
+                    <div class="fw-klein">{% blocktrans with d=a.beauftragt_am|date:"d.m.Y" %}Beauftragt {{ d }}{% endblocktrans %} · {% trans "Status:" %} {% if a.status == 'storniert' %}<span class="fw-chip fw-crit">{% trans "Storniert" %}</span>{% else %}{{ a.status }}{% endif %}</div>
                     {% if a.freigabe_status == 'ausstehend' %}
                     <span class="fw-chip fw-warn mt-1">{% trans "⏳ Eigentümer-Freigabe ausstehend" %}</span>
                     {% elif a.freigabe_status == 'freigegeben' %}
@@ -332,6 +332,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% endif %}
                 </div>
             </div>
+            {% if a.status != 'storniert' %}
             <div class="fw-rumpf">
                 {% if a.termin_status == 'vereinbart' %}
                 <div class="fw-chip fw-good mb-2">{% zeichen 'kalender' %} {% blocktrans with d=a.termin_am|date:"d.m.Y, H:i" %}Termin: {{ d }} Uhr{% endblocktrans %}</div>
@@ -359,6 +360,28 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </form>
                 {% endif %}
             </div>
+            {% if not a.kreditoren_rechnung_id and rechnungen_frei %}
+            <form method="post" action="/neu/auftrag/{{ a.id }}/rechnung/" class="fw-formular items-end fw-rumpf">
+                {% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label">{% trans "Handwerkerrechnung verknüpfen" %}</label>
+                    <select name="rechnung_id" required class="fw-feld w-full">
+                        <option value="">{% trans "— Rechnung wählen —" %}</option>
+                        {% for r in rechnungen_frei %}<option value="{{ r.id }}">#{{ r.id }} · {{ r.lieferant|default:"—" }} · CHF {{ r.betrag|default_if_none:"—" }}</option>{% endfor %}
+                    </select></div>
+                <div>
+                    <label class="fw-haekchen mb-2"><input type="checkbox" name="abschliessen" class="fw-haken" checked>{% trans "Ticket abschliessen, wenn alle Rechnungen da sind" %}</label>
+                    <button class="w-full fw-btn fw-knapp">{% trans "Rechnung verknüpfen" %}</button>
+                </div>
+            </form>
+            {% endif %}
+            {% if not a.kreditoren_rechnung_id and a.status != 'erledigt' %}
+            <form method="post" action="/neu/auftrag/{{ a.id }}/storno/" class="fw-formular items-end fw-rumpf" onsubmit="return confirm('{% trans "Auftrag wirklich stornieren? Der Handwerker wird informiert." %}')">
+                {% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label">{% trans "Grund (optional)" %}</label>
+                    <input name="grund" class="fw-feld w-full"></div>
+                <button class="fw-btn fw-knapp">{% trans "Auftrag stornieren" %}</button>
+            </form>
+            {% endif %}
             <form method="post" action="/neu/auftrag/{{ a.id }}/kosten/" class="fw-formular drei items-end fw-rumpf">
                 {% csrf_token %}
                 <div class="fw-feldblock"><label class="fw-label">{% trans "Kostenschätzung (CHF)" %}</label>
@@ -379,6 +402,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <button class="w-full fw-btn fw-primary">{% trans "Kosten speichern" %}</button>
                 </div>
             </form>
+            {% endif %}
         </div>
         {% empty %}
         <div class="fw-card">{% include 'fw/_empty.html' with knapp=True icon='arbeit' titel=_('Noch kein Handwerker beauftragt.') %}</div>

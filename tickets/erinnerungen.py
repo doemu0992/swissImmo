@@ -75,7 +75,7 @@ def erinnerungen_senden(jetzt=None):
     from core.services.ticket_workflow import vorlage_text
     from core.utils.email_service import send_ticket_email
     from .models import HandwerkerAuftrag, SchadenMeldung
-    from .workflow import melder_adresse
+    from .workflow import melder_adresse, reply_to
 
     jetzt = jetzt or timezone.now()
     gesendet = {'auftrag': 0, 'rechnung': 0, 'mieter': 0}
@@ -95,7 +95,7 @@ def erinnerungen_senden(jetzt=None):
             continue
         try:
             betreff, text = vorlage_text('ticket_erinnerung_handwerker', t, handwerker=a.handwerker)
-            ok = send_ticket_email(a.handwerker.email, betreff, text)
+            ok = send_ticket_email(a.handwerker.email, betreff, text, reply_to=reply_to(t))
         except Exception:
             logger.exception("Erinnerung (Auftrag) zu Ticket #%s fehlgeschlagen", t.pk)
             ok = False
@@ -112,7 +112,7 @@ def erinnerungen_senden(jetzt=None):
                 continue
             try:
                 betreff, text = vorlage_text('ticket_erinnerung_rechnung', t, handwerker=a.handwerker)
-                ok = send_ticket_email(a.handwerker.email, betreff, text)
+                ok = send_ticket_email(a.handwerker.email, betreff, text, reply_to=reply_to(t))
             except Exception:
                 logger.exception("Erinnerung (Rechnung) zu Ticket #%s fehlgeschlagen", t.pk)
                 ok = False
@@ -126,7 +126,7 @@ def erinnerungen_senden(jetzt=None):
             continue
         try:
             betreff, text = vorlage_text('ticket_erinnerung_mieter', t)
-            ok = send_ticket_email(adresse, betreff, text)
+            ok = send_ticket_email(adresse, betreff, text, reply_to=reply_to(t))
         except Exception:
             logger.exception("Erinnerung (Mieter) zu Ticket #%s fehlgeschlagen", t.pk)
             ok = False

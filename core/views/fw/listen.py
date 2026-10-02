@@ -956,7 +956,7 @@ def fw_berichte(request):
     leerstandsquote = round(leer_n / len(einh) * 100, 1) if einh else 0.0
 
     # --- Reparaturkosten laufendes Jahr (effektiv) ---
-    auf = HandwerkerAuftrag.objects.filter(beauftragt_am__year=heute.year)
+    auf = HandwerkerAuftrag.objects.exclude(status='storniert').filter(beauftragt_am__year=heute.year)
     if aktive_lg:
         auf = auf.filter(ticket__liegenschaft=aktive_lg)
     reparatur_eff = sum((a.kosten_effektiv or Decimal('0') for a in auf), Decimal('0.00'))

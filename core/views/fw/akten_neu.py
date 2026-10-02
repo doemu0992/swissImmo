@@ -316,7 +316,7 @@ def fw_dienstleister_detail(request, pk):
     auftraege = list(HandwerkerAuftrag.objects.filter(handwerker=h)
                      .select_related('ticket', 'kreditoren_rechnung')
                      .order_by('-beauftragt_am'))
-    offen = [a for a in auftraege if a.status != 'erledigt']
+    offen = [a for a in auftraege if a.status not in ('erledigt', 'storniert')]
     # `liegt` wird HIER gesetzt, nicht in der Vorlage: Ein Datumsvergleich in
     # einem `{% if %}` ist in Django-Vorlagen nicht ausdrueckbar, und ein
     # Modellfeld `tage_offen` gibt es nicht — der erste Entwurf hat es
