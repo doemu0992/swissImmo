@@ -99,13 +99,35 @@ def generate_debitor_qr_pdf(rechnung):
 
     yt = y - 40 * _mm
     c.setStrokeColor(_colors.lightgrey); c.line(20 * _mm, yt + 5 * _mm, 190 * _mm, yt + 5 * _mm)
+    def _chf(wert):
+        return f"CHF {float(wert):,.2f}".replace(",", "'")
+
+    mwst = r.mwst_betrag or 0
     c.setFont("Helvetica", 10)
     c.drawString(20 * _mm, yt, r.beschreibung or r.titel)
-    c.drawRightString(190 * _mm, yt, f"CHF {float(r.betrag):,.2f}".replace(",", "'"))
+    if mwst > 0:
+        # Steuerpflichtig vermietet (Option Art. 22 MWSTG): Netto, Satz, MWST und
+        # Brutto stehen einzeln auf der Rechnung. Wohnraum läuft nie in diesen
+        # Zweig (mwst_betrag = 0) und weist keine MWST aus.
+        c.drawString(20 * _mm, yt - 7 * _mm, "Nettobetrag")
+        c.drawRightString(190 * _mm, yt - 7 * _mm, _chf(r.netto_betrag))
+        c.drawString(20 * _mm, yt - 12 * _mm, f"MWST {r.mwst_satz:.1f} %")
+        c.drawRightString(190 * _mm, yt - 12 * _mm, _chf(mwst))
+        c.setLineWidth(0.5); c.line(20 * _mm, yt - 15 * _mm, 190 * _mm, yt - 15 * _mm)
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(20 * _mm, yt - 20 * _mm, "Bruttobetrag (inkl. MWST)")
+        c.drawRightString(190 * _mm, yt - 20 * _mm, _chf(r.betrag))
+        uid = getattr(vw, 'mwst_uid', '') or ''
+        if uid:
+            c.setFont("Helvetica", 9)
+            c.drawRightString(190 * _mm, y - 10 * _mm, f"MWST-Nr.: {uid}")
+        yt -= 20 * _mm
+    else:
+        c.drawRightString(190 * _mm, yt, _chf(r.betrag))
     c.setLineWidth(0.5); c.line(20 * _mm, yt - 4 * _mm, 190 * _mm, yt - 4 * _mm)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(20 * _mm, yt - 11 * _mm, "Zu bezahlen")
-    c.drawRightString(190 * _mm, yt - 11 * _mm, f"CHF {betrag:,.2f}".replace(",", "'"))
+    c.drawRightString(190 * _mm, yt - 11 * _mm, _chf(betrag))
 
     draw_qr_bill(c, iban, creditor, debtor, betrag, r.titel, reference=ref)
     c.showPage(); c.save(); buf.seek(0)

@@ -265,16 +265,22 @@ def fw_debitor_neu(request):
         konto_haben = Buchungskonto.objects.filter(id=request.POST['konto_haben']).first()
     haben_nr = konto_haben.nummer if konto_haben else "3600"
 
+    # Der erfasste Betrag ist NETTO; bei optiertem Vertrag kommt die MWST obendrauf.
+    satz = vertrag.mwst_satz_wirksam if vertrag else Decimal('0')
+    mwst = (betrag * satz / Decimal('100')).quantize(Decimal('0.01')) if satz > 0 else Decimal('0.00')
     with transaction.atomic():
         rechnung = DebitorenRechnung.objects.create(
             vertrag=vertrag, liegenschaft=lg,
             einheit=(vertrag.einheit if vertrag else None),
             titel=titel, beschreibung=(request.POST.get('beschreibung') or '').strip(),
-            datum=heute, faellig_am=faellig, betrag=betrag, status='offen',
+            datum=heute, faellig_am=faellig, betrag=betrag + mwst, status='offen',
             konto_haben=konto_haben,
+            mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst,
         )
         from finance.booking import buche
         buche("1100", haben_nr, betrag, f"Weiterverrechnung: {titel}", datum=heute,
+              liegenschaft=lg, debitor=rechnung, user=request.user)
+        buche("1100", "2200", mwst, f"MWST {satz}% {titel}", datum=heute,
               liegenschaft=lg, debitor=rechnung, user=request.user)
 
     log_aktion(request, "Ad-hoc-Debitorenrechnung erstellt", titel, f"CHF {betrag}")
@@ -372,28 +378,37 @@ def fw_weiterverrechnung(request, kreditor_id):
                     #    entsteht keine Ausgangssteuer. Die bei der Freigabe abgezogene Vorsteuer
                     #    ist dann zu korrigieren (1170 zurück) — nicht als Ausgangssteuer zu
                     #    buchen, die es nicht gibt.
-                    if vertrag.mwst_pflichtig:
+                    if vertrag.mwst_satz_wirksam > 0:
                         buche("1190", "2200", mwst, f"MWST Weiterverrechnung {satz}% {vertrag.mieter}",
                               datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
                     else:
                         buche("1190", "1170", mwst,
                               f"Vorsteuerkorrektur Weiterverrechnung {satz}% {vertrag.mieter} (nicht steuerbar)",
                               datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
+                zmwst = Decimal('0.00')
                 if zuschlag > 0:
                     buche("1100", "3600", zuschlag, f"Zuschlag Weiterverrechnung {vertrag.mieter}",
                           datum=heute, liegenschaft=lg2, debitor=rechnung, user=request.user)
                     # Ein Zuschlag ist eine eigene Leistung des Vermieters: Bei steuerpflichtiger
                     # Vermietung mit MWST — bisher ohne, auch wenn der Mieter optiert hat.
-                    if vertrag.mwst_pflichtig and (vertrag.mwst_satz or 0) > 0:
-                        zmwst = (zuschlag * vertrag.mwst_satz / Decimal('100')).quantize(Decimal('0.01'))
+                    if vertrag.mwst_satz_wirksam > 0:
+                        zmwst = (zuschlag * vertrag.mwst_satz_wirksam / Decimal('100')).quantize(Decimal('0.01'))
                         if zmwst > 0:
-                            buche("1100", "2200", zmwst, f"MWST auf Zuschlag {vertrag.mwst_satz}% {vertrag.mieter}",
+                            buche("1100", "2200", zmwst, f"MWST auf Zuschlag {vertrag.mwst_satz_wirksam}% {vertrag.mieter}",
                                   datum=heute, liegenschaft=lg2, debitor=rechnung, user=request.user)
                             rechnung.betrag = total + zmwst
                             # Der Abstimmung gilt der Zuschlag samt Steuer nicht als durchgereichte Kosten.
                             rechnung.weiterverrechnung_zuschlag = zuschlag + zmwst
                             rechnung.save(update_fields=['betrag', 'weiterverrechnung_zuschlag'])
                             total = total + zmwst
+                # MWST-Ausweis auf der Rechnung: nur bei steuerpflichtigem Vertrag
+                # (Grund-MWST wurde auf 2200 gebucht, Zuschlags-MWST oben).
+                if vertrag.mwst_satz_wirksam > 0:
+                    ausgewiesen = mwst + zmwst
+                    if ausgewiesen > 0:
+                        rechnung.mwst_satz = vertrag.mwst_satz_wirksam
+                        rechnung.mwst_betrag = ausgewiesen
+                        rechnung.save(update_fields=['mwst_satz', 'mwst_betrag'])
                 return rechnung, total
 
             # --- Doppelverrechnungs-Schutz (bindend): eine HNK-relevante Rechnung

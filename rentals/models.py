@@ -307,6 +307,21 @@ class Mietvertrag(OrganisationAusKette):
                          "ortsüblichen Termin bzw. das Ende einer dreimonatigen Mietdauer "
                          "(Art. 266b OR), soweit oben nichts anderes vereinbart ist.")
 
+    @property
+    def mwst_satz_wirksam(self):
+        """MWST-Satz (%), der auf Rechnungen dieses Vertrags tatsächlich anfällt.
+
+        Single Source für ALLE Rechnungsstellungen (Sollstellung, NK-Abrechnung,
+        Nutzungsentschädigung, Schlussabrechnung, Weiterverrechnung). 0 heisst: keine
+        MWST ausweisen. Die Vermietung ist nach Art. 21 Abs. 2 Ziff. 21 MWSTG
+        ausgenommen; die Option (Art. 22 MWSTG) steht nur bei Nicht-Wohnraum offen
+        (Art. 22 Abs. 2 lit. b) — bei Wohnraum nie MWST, auch wenn das Flag gesetzt ist."""
+        if not self.mwst_pflichtig:
+            return Decimal('0')
+        if self.einheit_id and self.einheit.mietrecht_kategorie == 'wohnen':
+            return Decimal('0')
+        return self.mwst_satz or Decimal('0')
+
     def effektiver_netto_mietzins(self, fuer_datum=None):
         """Netto-Mietzins, der an einem bestimmten Datum gilt — verrechnungswirksam.
 
@@ -630,6 +645,13 @@ class Mietvertrag(OrganisationAusKette):
         # Kaution-Obergrenze durchsetzen (Art. 257e OR: max. 3 Monatsmieten bei
         # Wohnräumen). Bisher nur eine JS-Warnung — der überschiessende Teil ist
         # gesetzlich nicht durchsetzbar, daher serverseitig auf 3× (netto+NK) klemmen.
+        # MWST-Option gibt es bei Wohnraum nicht (Art. 22 Abs. 2 lit. b MWSTG):
+        # das Flag wird serverseitig zurückgesetzt, nicht nur in der Maske verborgen.
+        if self.mwst_pflichtig and self.einheit_id and self.einheit.mietrecht_kategorie == 'wohnen':
+            self.mwst_pflichtig = False
+            uf = kwargs.get('update_fields')
+            if uf is not None:
+                kwargs['update_fields'] = list(set(uf) | {'mwst_pflichtig'})
         maxbetrag = self.kaution_obergrenze
         if maxbetrag and self.kautions_betrag:
             if self.kautions_betrag > maxbetrag:

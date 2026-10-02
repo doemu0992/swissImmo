@@ -792,6 +792,7 @@ class MoneyBugBatchTests(TestCase):
         lg, e, m, v = _basis_objekte()
         # Entscheid 30.09.2026: Ausgangssteuer nur bei STEUERPFLICHTIG vermietetem Vertrag
         # (Wohnraum: Vorsteuerkorrektur statt 2200 — siehe test_entscheide_weiterverrechnung).
+        e.typ = 'gew'; e.save()  # MWST-Option nur bei Geschäftsraum (Art. 22 Abs. 2 lit. b MWSTG)
         v.mwst_pflichtig = True; v.mwst_satz = Decimal('8.1'); v.save()
         k = KreditorenRechnung.objects.create(
             lieferant='Sanitär AG', betrag=Decimal('1081.00'), mwst_satz=Decimal('8.1'),

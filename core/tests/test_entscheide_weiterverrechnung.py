@@ -41,6 +41,7 @@ class MwstWeiterverrechnungTests(TestCase):
         self.assertEqual(_saldo('1170'), Decimal('-81.00'), 'Vorsteuer ist nicht zurückgebucht.')
 
     def test_steuerpflichtiger_vertrag_bucht_ausgangssteuer(self):
+        self.e.typ = 'gew'; self.e.save()  # MWST-Option nur bei Geschäftsraum (Art. 22 Abs. 2 lit. b MWSTG)
         self.v.mwst_pflichtig = True; self.v.mwst_satz = Decimal('8.1'); self.v.save()
         self._wv()
         self.assertEqual(_saldo('2200'), Decimal('-81.00'))
@@ -48,6 +49,7 @@ class MwstWeiterverrechnungTests(TestCase):
 
     def test_zuschlag_traegt_mwst_bei_steuerpflichtigem_vertrag(self):
         from finance.models import DebitorenRechnung
+        self.e.typ = 'gew'; self.e.save()  # MWST-Option nur bei Geschäftsraum (Art. 22 Abs. 2 lit. b MWSTG)
         self.v.mwst_pflichtig = True; self.v.mwst_satz = Decimal('8.1'); self.v.save()
         self._wv(zuschlag='100.00')
         r = DebitorenRechnung.objects.get(quell_kreditor=self.k)
@@ -66,6 +68,7 @@ class MwstWeiterverrechnungTests(TestCase):
         from core.services import nutzungsentschaedigung as ne
         self.v.status = 'gekuendigt'; self.v.ende = date(2026, 2, 28)
         self.v.netto_mietzins = Decimal('1300.00'); self.v.nebenkosten = Decimal('180.00')
+        self.e.typ = 'gew'; self.e.save()  # MWST-Option nur bei Geschäftsraum (Art. 22 Abs. 2 lit. b MWSTG)
         self.v.mwst_pflichtig = True; self.v.mwst_satz = Decimal('8.1'); self.v.save()
         r = ne.stelle(self.v, 2026, 3)
         self.assertEqual(r.betrag, Decimal('1480.00') + Decimal('119.88'))

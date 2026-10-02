@@ -446,6 +446,7 @@ class BuchhalterFixesTests(TestCase):
         from finance.booking import buche, ensure_kontenplan
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
+        e.typ = 'gew'; e.save()  # MWST-Option nur bei Geschäftsraum (Art. 22 Abs. 2 lit. b MWSTG)
         v.mwst_pflichtig = True; v.mwst_satz = Decimal('8.1'); v.save()
         r = DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
                                              titel='Miete 03/2024', datum=date(2024, 3, 1),
@@ -663,6 +664,7 @@ class BuchhalterFixesTests(TestCase):
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
+        e.typ = 'gew'; e.save()  # MWST-Option nur bei Geschäftsraum (Art. 22 Abs. 2 lit. b MWSTG)
         v.mwst_pflichtig = True; v.mwst_satz = Decimal('8.1'); v.kautions_betrag = Decimal('0')
         v.save()
         c = Client(); c.force_login(_team_user())

@@ -2055,7 +2055,9 @@ def fw_schlussabrechnung(request, vertrag_id):
                         rech = DebitorenRechnung.objects.create(
                             vertrag=v, liegenschaft=lg_s, einheit=v.einheit,
                             titel="Schlussabrechnung (Nachzahlung)", datum=dat_s,
-                            faellig_am=dat_s + _timedelta(days=30), betrag=neu_saldo, status='offen')
+                            faellig_am=dat_s + _timedelta(days=30), betrag=neu_saldo, status='offen',
+                            mwst_satz=(daten.get('mwst_satz') or Decimal('0.0')) if mwst_neu > 0 else Decimal('0.0'),
+                            mwst_betrag=mwst_neu if mwst_neu > 0 else Decimal('0.00'))
                         if netto_neu != 0:
                             buche("1100", "3600", netto_neu,
                                   f"Schlussabrechnung [V{v.pk}] {v.mieter} (Schäden/Nebenkosten)",

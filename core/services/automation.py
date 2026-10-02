@@ -96,9 +96,13 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             if ref_netto + ref_nk <= 0:
                 continue
             # MWST folgt dem effektiv verrechneten Betrag (nicht dem Referenzwert).
+            # Satz über `mwst_satz_wirksam`: bei Wohnraum immer 0, auch wenn das
+            # Flag gesetzt wäre. Miete UND Nebenkosten tragen die MWST (NK teilen
+            # den Satz der Hauptleistung).
+            satz = v.mwst_satz_wirksam
             mwst = Decimal('0.00')
-            if v.mwst_pflichtig and (v.mwst_satz or 0) > 0:
-                mwst = round((verr_netto + verr_nk) * (v.mwst_satz / Decimal('100')), 2)
+            if satz > 0:
+                mwst = round((verr_netto + verr_nk) * (satz / Decimal('100')), 2)
             # Der Debitor schuldet nur den verrechneten Betrag (Gratismonat = 0).
             # Schuldet der Mieter diesen Monat NICHTS (Gratismonat / voller Erlass),
             # entsteht keine offene Forderung: Die Rechnung wird sofort als 'bezahlt'
@@ -111,6 +115,7 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             rechnung = DebitorenRechnung.objects.create(
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
                 titel=titel, betrag=netto_schuld, faellig_am=v_start,
+                mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst,
                 status='bezahlt' if netto_schuld <= 0 else 'offen')
             lg = v.einheit.liegenschaft if v.einheit_id else None
             ertrag_konto, nk_konto, nk_label = _konten_fuer(v)
@@ -133,7 +138,7 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             buche("3091", "1100", rabatt_nk,
                   f"NK-Erlass {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            buche("1100", "2200", mwst, f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
+            buche("1100", "2200", mwst, f"MWST {satz}% {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
             erstellt += 1
     return erstellt

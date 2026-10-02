@@ -75,7 +75,7 @@ def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrec
     # werden — wie in der Sollstellung — als NETTO erfasst, die Steuer kommt
     # obendrauf. Ohne diese Abgrenzung fehlte die Steuer in der ESTV-Abrechnung
     # und der Umsatz in Ziffer 289 (Audit).
-    satz = (vertrag.mwst_satz or Decimal('0')) if getattr(vertrag, 'mwst_pflichtig', False) else Decimal('0')
+    satz = vertrag.mwst_satz_wirksam
     if satz > 0 and steuerbar_saldo != 0:
         mwst_neu = (steuerbar_saldo * satz / Decimal('100')).quantize(Decimal('0.01'))
     else:

@@ -81,6 +81,7 @@ class PrueferFundeTests(TestCase):
         from core.services.automation import run_sollstellung
         _seed_konten()
         lg, e, m, v = _basis_objekte()
+        e.typ = 'gew'; e.save()  # MWST-Option nur bei Geschäftsraum (Art. 22 Abs. 2 lit. b MWSTG)
         v.mwst_pflichtig = True; v.mwst_satz = Decimal('8.1'); v.save()
         run_sollstellung(2024, 3)
         c = Client(); c.force_login(_team_user())
