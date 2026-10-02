@@ -126,6 +126,17 @@ class Command(BaseCommand):
         except Exception as e:
             details.append(f"Laufplanung übersprungen ({e})")
 
+        # Ticket-Erinnerungen (Handwerker ohne Rückmeldung, fehlende Rechnung,
+        # schweigender Mieter) — je Verwaltung, gedeckelt (tickets/erinnerungen.py).
+        try:
+            from tickets.erinnerungen import erinnerungen_senden
+            e = erinnerungen_senden()
+            if any(e.values()):
+                details.append(f"Ticket-Erinnerungen: {e['auftrag']} Auftrag, "
+                               f"{e['rechnung']} Rechnung, {e['mieter']} Mieter")
+        except Exception as ex:
+            details.append(f"Ticket-Erinnerungen übersprungen ({ex})")
+
         msg = "Täglicher Lauf: " + ", ".join(details) + "."
         AktivitaetsLog.objects.create(aktion="Täglicher Lauf (Scheduler)", objekt="", details=msg)
         self.stdout.write(self.style.SUCCESS(f"{organisation}: {msg}"))

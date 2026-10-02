@@ -21564,7 +21564,6 @@ msgstr "Spese di sollecito del %(stufe)s. sollecito riemesse · CHF %(gebuehr)s.
 msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
 msgstr "Le spese di sollecito non hanno potuto essere contabilizzate: %(exc)s"
 
-
 #: core/templates/fw/lauf_detail.html:19
 msgid "blockiert"
 msgstr "bloccato"
@@ -21640,6 +21639,67 @@ msgstr "%(lauf)s reimpostato."
 msgid "%(n)s Rechnung(en) storniert."
 msgstr "%(n)s fattura/e stornata/e."
 
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin abgesagt"
+msgstr "Appuntamento annullato"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin (Datum, Zeit)"
+msgstr "Appuntamento (data, ora)"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin setzen & beide informieren"
+msgstr "Fissa l'appuntamento e informa entrambi"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin absagen"
+msgstr "Annulla l'appuntamento"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Bitte eine Nachricht eingeben."
+msgstr "Inserisci un messaggio."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Der Handwerker hat keine E-Mail-Adresse."
+msgstr "L'artigiano non ha un indirizzo e-mail."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+#, python-format
+msgid "Nachricht an %(firma)s gesendet."
+msgstr "Messaggio inviato a %(firma)s."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Versand fehlgeschlagen — die Nachricht steht im Verlauf."
+msgstr "Invio non riuscito — il messaggio è nella cronologia."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin abgesagt, beide Seiten informiert."
+msgstr "Appuntamento annullato, entrambe le parti informate."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin gesetzt, Mieter und Handwerker informiert."
+msgstr "Appuntamento fissato, inquilino e artigiano informati."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Kein Termin"
+msgstr "Nessun appuntamento"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin vereinbart"
+msgstr "Appuntamento concordato"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+#, python-format
+msgid "Termin: %(d)s Uhr"
+msgstr "Appuntamento: %(d)s"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+#, python-format
+msgid "Nachricht an %(f)s"
+msgstr "Messaggio a %(f)s"
+
+
+
 #: core/views/fw/bankabgleich.py:782
 msgid ""
 "Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts "
@@ -21659,7 +21719,6 @@ msgid ""
 "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
 "doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
 msgstr "La fatturazione delle pigioni %(titel)s è già chiusa — nulla è stato fatturato due volte. Per ripeterla, reimpostare prima il processo sotto «Processi»."
-
 
 #: core/views/fw/arbeit.py
 msgid "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."

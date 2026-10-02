@@ -146,7 +146,7 @@ class Command(BaseCommand):
         ist der Unterschied zur alten Fassung: Ein Fehler ist hier ein Fehler
         und keine Protokollzeile.
         """
-        from tickets.models import SchadenMeldung, TicketNachricht
+        from tickets.models import SchadenMeldung
 
         nachricht = email.message_from_bytes(roh)
         betreff = self._betreff(nachricht)
@@ -173,12 +173,10 @@ class Command(BaseCommand):
             self.stdout.write('   Inhalt leer — übersprungen.')
             return
 
-        TicketNachricht.objects.create(
-            ticket=ticket, absender_name=absender, typ='mail_antwort',
-            nachricht=inhalt, gelesen=False)
-        ticket.gelesen = False
-        ticket.save(update_fields=['gelesen'])
-        self.stdout.write(self.style.SUCCESS(f'   In Ticket #{nummer} übernommen.'))
+        from tickets.workflow import antwort_zuordnen
+        seite = antwort_zuordnen(ticket, absender, inhalt)
+        self.stdout.write(self.style.SUCCESS(
+            f'   In Ticket #{nummer} übernommen ({"Handwerker" if seite == "handwerker" else "Melder"}).'))
 
     @staticmethod
     def _betreff(nachricht):
