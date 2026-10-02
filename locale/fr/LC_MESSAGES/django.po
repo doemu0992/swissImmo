@@ -21787,3 +21787,41 @@ msgstr "Mandat annulé, artisan informé."
 #: core/views/fw/schaeden.py
 msgid "Bitte eine Rechnung wählen."
 msgstr "Veuillez choisir une facture."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Einschreiben / Zugang erfassen"
+msgstr "Enregistrer l'envoi recommandé / la réception"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Sendungsnummer"
+msgstr "Numéro d'envoi"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Versanddatum"
+msgstr "Date d'envoi"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Zugang (Zustell-/Abholdatum)"
+msgstr "Réception (date de remise/retrait)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage."
+msgstr "Date réelle de remise/retrait selon Track & Trace — laisser vide tant que la réception n'est pas établie. Les 30 jours courent dès la réception."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Versand- und Zugangsdatum können nicht in der Zukunft liegen."
+msgstr "Les dates d'envoi et de réception ne peuvent pas être dans le futur."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Bitte Sendungsnummer, Versand- oder Zugangsdatum angeben."
+msgstr "Veuillez indiquer le numéro d'envoi, la date d'envoi ou de réception."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Zugang bestätigt (%(d)s) — Zahlungsfrist läuft bis %(f)s (Art. 257d Abs. 1 OR)."
+msgstr "Réception confirmée (%(d)s) — le délai de paiement court jusqu'au %(f)s (art. 257d al. 1 CO)."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
+msgstr "Envoi recommandé enregistré — délai provisoire jusqu'au %(f)s. Confirmer la réception dès que la remise est établie."

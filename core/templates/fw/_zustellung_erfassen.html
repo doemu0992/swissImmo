@@ -1,0 +1,18 @@
+{% load i18n zeichen %}{% comment %}Einschreiben und Zugang eines 257d-Schreibens erfassen (Sendungsnummer, Versand, Zugang). Parameter: d = rentals.Dokument, heute_iso, next = seiten-relatives /neu/-Ziel. Gibt nichts aus, wenn kein Zugangsnachweis nötig ist oder der Zugang schon bestätigt ist.{% endcomment %}{% with z=d.zustellstatus %}{% if z and z.0 != 'bestaetigt' %}{% with p=d.zustell_pendenz %}
+<details class="mt-1.5 fw-fs-klein" {% if z.0 == 'offen' %}open{% endif %}>
+    <summary class="fw-link cursor-pointer select-none">{% zeichen 'bearbeiten' klasse='mr-0.5' %}{% trans "Einschreiben / Zugang erfassen" %}</summary>
+    <form method="post" action="/neu/dokument/{{ d.id }}/zustellung/" class="mt-1.5 flex items-end gap-2 flex-wrap">
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <label class="fw-klein">{% trans "Sendungsnummer" %}
+            <input type="text" name="sendungsnummer" value="{{ p.sendungsnummer|default:'' }}" inputmode="numeric"
+                   placeholder="98.00.123456.00000001" class="fw-feld font-mono w-56 block"></label>
+        <label class="fw-klein">{% trans "Versanddatum" %}
+            <input type="date" name="versand_am" value="{{ p.versand_am|date:'Y-m-d' }}" max="{{ heute_iso }}" class="fw-feld block"></label>
+        <label class="fw-klein">{% trans "Zugang (Zustell-/Abholdatum)" %}
+            <input type="date" name="zugang_am" max="{{ heute_iso }}" class="fw-feld block"
+                   title="{% trans 'Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage.' %}"></label>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} {% trans "Speichern" %}</button>
+    </form>
+</details>
+{% endwith %}{% endif %}{% endwith %}

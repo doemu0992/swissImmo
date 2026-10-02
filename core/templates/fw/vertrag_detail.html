@@ -671,7 +671,7 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
             <span class="fw-ikon mut">{% zeichen 'hochladen' %}</span>
             <div class="fw-mitte"><div class="fw-t truncate">{{ d.bezeichnung|default:d.titel }}</div>
                 <div class="fw-s">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}
-                    {% include 'fw/_zustellstatus.html' with d=d z=None %}</div></div>
+                    {% include 'fw/_zustellstatus.html' with d=d z=None %}{% include 'fw/_zustellung_erfassen.html' with d=d next=request.path %}</div></div>
             {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>{% endif %}
             <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=d.bezeichnung|default:d.titel %}Dokument «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
                 <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>

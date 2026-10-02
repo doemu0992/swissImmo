@@ -21675,3 +21675,41 @@ msgstr "Auftrag storniert, Handwerker informiert."
 #: core/views/fw/schaeden.py
 msgid "Bitte eine Rechnung wählen."
 msgstr "Bitte eine Rechnung wählen."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Einschreiben / Zugang erfassen"
+msgstr "Einschreiben / Zugang erfassen"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Sendungsnummer"
+msgstr "Sendungsnummer"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Versanddatum"
+msgstr "Versanddatum"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Zugang (Zustell-/Abholdatum)"
+msgstr "Zugang (Zustell-/Abholdatum)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage."
+msgstr "Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Versand- und Zugangsdatum können nicht in der Zukunft liegen."
+msgstr "Versand- und Zugangsdatum können nicht in der Zukunft liegen."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Bitte Sendungsnummer, Versand- oder Zugangsdatum angeben."
+msgstr "Bitte Sendungsnummer, Versand- oder Zugangsdatum angeben."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Zugang bestätigt (%(d)s) — Zahlungsfrist läuft bis %(f)s (Art. 257d Abs. 1 OR)."
+msgstr "Zugang bestätigt (%(d)s) — Zahlungsfrist läuft bis %(f)s (Art. 257d Abs. 1 OR)."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
+msgstr "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."

@@ -21765,3 +21765,41 @@ msgstr "Incarico annullato, artigiano informato."
 #: core/views/fw/schaeden.py
 msgid "Bitte eine Rechnung wählen."
 msgstr "Seleziona una fattura."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Einschreiben / Zugang erfassen"
+msgstr "Registra raccomandata / ricezione"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Sendungsnummer"
+msgstr "Numero di spedizione"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Versanddatum"
+msgstr "Data di spedizione"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Zugang (Zustell-/Abholdatum)"
+msgstr "Ricezione (data di consegna/ritiro)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage."
+msgstr "Data effettiva di consegna/ritiro da Track & Trace — lasciare vuoto finché la ricezione non è accertata. I 30 giorni decorrono dalla ricezione."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Versand- und Zugangsdatum können nicht in der Zukunft liegen."
+msgstr "Le date di spedizione e di ricezione non possono essere future."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Bitte Sendungsnummer, Versand- oder Zugangsdatum angeben."
+msgstr "Indicare il numero di spedizione, la data di spedizione o di ricezione."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Zugang bestätigt (%(d)s) — Zahlungsfrist läuft bis %(f)s (Art. 257d Abs. 1 OR)."
+msgstr "Ricezione confermata (%(d)s) — il termine di pagamento scade il %(f)s (art. 257d cpv. 1 CO)."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
+msgstr "Raccomandata registrata — termine provvisorio fino al %(f)s. Confermare la ricezione non appena la consegna è accertata."
