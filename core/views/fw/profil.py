@@ -551,9 +551,10 @@ def fw_mieterwechsel(request):
                             .exclude(status='inaktiv')
                             .select_related('mieter').order_by('beginn').first())
         bewerbungen = Mietbewerbung.objects.filter(einheit=e).exclude(status='abgelehnt').count() if e else 0
-        auszug_prot = v.abnahmen.filter(typ='auszug').order_by('-datum').first() if v else None
+        from core.services.abnahme_vorgaenger import durchgefuehrt
+        auszug_prot = durchgefuehrt(v.abnahmen.filter(typ='auszug')).order_by('-datum').first() if v else None
         auszug = auszug_prot is not None
-        einzug = nachmieter_v.abnahmen.filter(typ='einzug').exists() if nachmieter_v else False
+        einzug = durchgefuehrt(nachmieter_v.abnahmen.filter(typ='einzug')).exists() if nachmieter_v else False
 
         kaution_status = v.kautions_status if v else 'keine'
         kaution_offen = kaution_status in ('erwartet', 'einbezahlt')

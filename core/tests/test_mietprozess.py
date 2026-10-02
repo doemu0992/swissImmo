@@ -48,12 +48,12 @@ class MieterwechselCockpitTests(TestCase):
         self.assertContains(c.get('/neu/mieterwechsel/'), 'Kein laufender Mieterwechsel')
 
     def test_ruecknahme_aktion_verlinkt_vorgetypt(self):
-        """Cockpit verlinkt die Rücknahme direkt auf den vorgetypten Abnahme-Flow."""
+        """Cockpit verlinkt die Rücknahme direkt auf den vorgetypten Abnahme-Assistenten."""
         lg, e, m, v, k, ende = self._kuendigung()
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
-        self.assertIn(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', body)
+        self.assertIn(f'/neu/vertraege/{v.id}/abnahme/vorort/?typ=auszug', body)
         self.assertIn('Rücknahme starten', body)
 
     def test_uebergabe_aktion_bei_nachmieter(self):
@@ -66,7 +66,7 @@ class MieterwechselCockpitTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
-        self.assertIn(f'/neu/vertraege/{nv.id}/abnahme/neu/?typ=einzug', body)
+        self.assertIn(f'/neu/vertraege/{nv.id}/abnahme/vorort/?typ=einzug', body)
         self.assertIn('Übergabe starten', body)
 
     def test_abnahme_form_uebernimmt_typ_aus_query(self):
@@ -363,7 +363,7 @@ class MieterwechselE2ETests(TestCase):
         # Übergabe-Link ist der Beweis, dass der Nachmieter erkannt wurde.)
         body = c.get('/neu/mieterwechsel/').content.decode()
         self.assertIn('Neu Mieter', body)
-        self.assertIn(f'/neu/vertraege/{nv.id}/abnahme/neu/?typ=einzug', body)
+        self.assertIn(f'/neu/vertraege/{nv.id}/abnahme/vorort/?typ=einzug', body)
 
         # 7) ÜBERGABE an Nachmieter
         r = c.post(f'/neu/vertraege/{nv.id}/abnahme/neu/?typ=einzug', {

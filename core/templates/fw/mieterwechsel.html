@@ -67,7 +67,7 @@
         <div class="mt-3 flex items-center justify-between gap-3 flex-wrap">
             <div class="fw-klein">{% zeichen 'weiter' klasse='fw-marke' %} {% trans "Nächster Schritt" %}: <span class="fw-strong">{{ r.aktion }}</span></div>
             <div class="flex gap-2 flex-wrap">
-                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Wohnungsrücknahme" %}{% endfilter %}')" class="fw-btn fw-rand-warn fw-knapp">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Rücknahme starten" %}</a>{% endif %}
+                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/vorort/?typ={% if r.nachmieter_vid %}beides{% else %}auszug{% endif %}" class="fw-btn fw-rand-warn fw-knapp">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Rücknahme starten" %}</a>{% endif %}
                 {% if r.schluss_offen %}<a href="/neu/vertraege/{{ r.v.id }}/schlussabrechnung/{% if r.auszug_prot_id %}?abnahme={{ r.auszug_prot_id }}{% endif %}" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Schlussabrechnung" %}{% endfilter %}')" class="fw-btn fw-warnknopf fw-knapp">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Schlussabrechnung" %}</a>{% endif %}
                 {% if not r.nachmieter and r.einheit_id %}
                     {% if r.ausgeschrieben %}
@@ -78,7 +78,7 @@
                 {% endif %}
                 {% if not r.nachmieter %}<a href="/neu/bewerbungen/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Bewerbungen" %}{% endfilter %}')" class="fw-btn fw-rand-marke fw-knapp">{% trans "Bewerbungen" %}</a>{% endif %}
                 {% if r.nachmieter_vid %}
-                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Wohnungsübergabe" %}{% endfilter %}')" class="fw-btn fw-gutknopf fw-knapp">{% zeichen 'schluessel' klasse='mr-1' %}{% trans "Übergabe starten" %}</a>{% endif %}
+                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/vorort/?typ=einzug" class="fw-btn fw-gutknopf fw-knapp">{% zeichen 'schluessel' klasse='mr-1' %}{% trans "Übergabe starten" %}</a>{% endif %}
                     <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Vertrag" %}{% endfilter %}',true)" class="fw-btn fw-rand-marke fw-knapp">{% trans "Neuer Vertrag" %}</a>
                 {% else %}<a href="/neu/vertraege/neu/{% if r.einheit_id %}?einheit={{ r.einheit_id }}{% endif %}" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Vertrag erstellen" %}{% endfilter %}',true)" class="fw-btn fw-primary fw-knapp">{% trans "Vertrag erstellen" %}</a>{% endif %}
             </div>
