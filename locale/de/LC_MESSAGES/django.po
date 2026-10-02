@@ -21713,3 +21713,21 @@ msgstr "Zugang bestätigt (%(d)s) — Zahlungsfrist läuft bis %(f)s (Art. 257d 
 #, python-format
 msgid "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
 msgstr "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahngebühr stellen (CHF)"
+msgstr "Mahngebühr stellen (CHF)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Stellen"
+msgstr "Stellen"
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Die %(stufe)s. Mahnung ist bereits erfasst; ihre Mahngebühr beträgt CHF 0.00 (Einstellung der Stufe). Soll eine Gebühr gestellt werden, den Betrag im Feld «Mahngebühr stellen» angeben."
+msgstr "Die %(stufe)s. Mahnung ist bereits erfasst; ihre Mahngebühr beträgt CHF 0.00 (Einstellung der Stufe). Soll eine Gebühr gestellt werden, den Betrag im Feld «Mahngebühr stellen» angeben."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
+msgstr "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."

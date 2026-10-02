@@ -21825,3 +21825,21 @@ msgstr "Réception confirmée (%(d)s) — le délai de paiement court jusqu'au %
 #, python-format
 msgid "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
 msgstr "Envoi recommandé enregistré — délai provisoire jusqu'au %(f)s. Confirmer la réception dès que la remise est établie."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahngebühr stellen (CHF)"
+msgstr "Facturer les frais de rappel (CHF)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Stellen"
+msgstr "Facturer"
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Die %(stufe)s. Mahnung ist bereits erfasst; ihre Mahngebühr beträgt CHF 0.00 (Einstellung der Stufe). Soll eine Gebühr gestellt werden, den Betrag im Feld «Mahngebühr stellen» angeben."
+msgstr "Le %(stufe)s. rappel est déjà enregistré ; ses frais s'élèvent à CHF 0.00 (réglage du niveau). Pour facturer des frais, indiquer le montant dans le champ « Facturer les frais de rappel »."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
+msgstr "Le %(stufe)s. rappel est déjà enregistré et ses frais sont facturés (CHF %(betrag)s, %(status)s) — rien à refacturer."

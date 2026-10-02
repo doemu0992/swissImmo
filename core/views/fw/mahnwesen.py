@@ -150,6 +150,11 @@ def fw_mahnwesen(request):
         # Erfasst, aber ihre Gebührenrechnung wurde storniert/gelöscht: «Erfassen» stellt sie neu.
         row['gebuehr_fehlt'] = bool(lm and lm.stufe == row['stufe']['stufe']
                                     and _mahngebuehr_fehlt(row['r'], lm))
+        # Mahnung dieser Stufe erfasst, aber keine gültige Gebührenrechnung dazu: Die Zeile bietet
+        # an, sie zu stellen — mit dem Betrag, der zur Mahnung gehört (frei änderbar).
+        row['gebuehr_stellbar'] = bool(lm and lm.stufe == row['stufe']['stufe'] and row['vertrag_id']
+                                       and _mahngebuehr_rechnung(row['r'], lm.stufe) is None)
+        row['gebuehr_vorschlag'] = (_mahngebuehr_soll(row['r'], lm) if row['gebuehr_stellbar'] else None)
 
     historie_qs = (Mahnung.objects.select_related('vertrag__mieter', 'debitoren_rechnung')
                    .order_by('-datum', '-id'))
@@ -339,10 +344,17 @@ def _mahngebuehr_soll(rechnung, mahnung):
     """Die Gebühr, die zur erfassten Mahnung gehört.
 
     Wird die Gebührenrechnung storniert, setzt die Stornierung die Gebühr in der Historie auf 0
-    (`_mahngebuehr_historie_ausgleichen`) — dann zählt die Gebühr der Stufe aus den Einstellungen."""
+    (`_mahngebuehr_historie_ausgleichen`). Dann zählt, was storniert wurde — der Betrag der
+    stornierten Gebührenrechnung — und erst danach die Gebühr der Stufe aus den Einstellungen
+    (die inzwischen auch anders stehen kann)."""
     from core.services.mahnstufen import gebuehr_fuer_stufe, eigentuemer_von_rechnung
     if mahnung.gebuehr > 0:
         return mahnung.gebuehr
+    storniert = (rechnung.folgeforderungen
+                 .filter(titel__startswith=f"Mahngebühr {mahnung.stufe}.", status='storniert',
+                         betrag__gt=0).order_by('-id').first())
+    if storniert is not None:
+        return Decimal(storniert.betrag)
     return gebuehr_fuer_stufe(mahnung.stufe, eigentuemer_von_rechnung(rechnung),
                               organisation=rechnung.organisation)
 
@@ -373,14 +385,14 @@ def _mahngebuehr_stellen(rechnung, stufe, gebuehr, user, heute):
     return geb_rechnung
 
 
-def _mahngebuehr_nachstellen(request, rechnung, mahnung):
+def _mahngebuehr_nachstellen(request, rechnung, mahnung, gebuehr=None):
     """Stellt die fehlende Mahngebühr einer bereits erfassten Mahnung neu.
     Die Mahnung selbst (Historie, Brief) bleibt bestehen; ihre Gebühr in der Historie wird
     wieder eingetragen."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from core.auth import log_aktion
-    gebuehr = _mahngebuehr_soll(rechnung, mahnung)
+    gebuehr = gebuehr if gebuehr is not None else _mahngebuehr_soll(rechnung, mahnung)
     try:
         with transaction.atomic():
             _mahngebuehr_stellen(rechnung, mahnung.stufe, gebuehr, request.user,
@@ -443,9 +455,30 @@ def fw_mahnung_erfassen(request):
     # 2. Mahnung wieder eine 1. erfassen (Live-Test E).
     hoechste = Mahnung.objects.filter(debitoren_rechnung=rechnung).order_by('-stufe').first()
     # Ausnahme: Dieselbe Stufe ist erfasst, aber ihre Mahngebühr fehlt (die Gebührenrechnung
-    # wurde storniert oder gelöscht) — dann wird NUR die Gebühr nachgestellt.
-    if hoechste and hoechste.stufe == stufe and _mahngebuehr_fehlt(rechnung, hoechste):
-        return _mahngebuehr_nachstellen(request, rechnung, hoechste)
+    # wurde storniert oder gelöscht) — dann wird NUR die Gebühr nachgestellt. Ein im Formular
+    # angegebener Betrag gilt, sonst der Betrag der Mahnung bzw. der Einstellung.
+    if hoechste and hoechste.stufe == stufe and rechnung.vertrag_id:
+        _p = _num(request.POST.get('gebuehr'))
+        try:
+            _betrag = Decimal(str(_p)) if _p not in (None, '') else None
+        except Exception:
+            _betrag = None
+        if _mahngebuehr_rechnung(rechnung, stufe) is None:
+            if _betrag is None and _mahngebuehr_soll(rechnung, hoechste) > 0:
+                return _mahngebuehr_nachstellen(request, rechnung, hoechste)
+            if _betrag is not None and _betrag > 0:
+                return _mahngebuehr_nachstellen(request, rechnung, hoechste, gebuehr=_betrag)
+            messages.info(request, gettext(
+                'Die %(stufe)s. Mahnung ist bereits erfasst; ihre Mahngebühr beträgt CHF 0.00 '
+                '(Einstellung der Stufe). Soll eine Gebühr gestellt werden, den Betrag im Feld '
+                '«Mahngebühr stellen» angeben.') % {'stufe': stufe})
+            return redirect('fw_mahnwesen')
+        messages.info(request, gettext(
+            'Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt '
+            '(CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen.') % {
+            'stufe': stufe, 'betrag': _mahngebuehr_rechnung(rechnung, stufe).betrag,
+            'status': _mahngebuehr_rechnung(rechnung, stufe).get_status_display()})
+        return redirect('fw_mahnwesen')
     if hoechste and hoechste.stufe >= stufe:
         messages.info(request, gettext('Für diese Rechnung ist bereits die %(stufe)s. Mahnung erfasst — eine %(stufe2)s. Mahnung wäre ein Rückschritt.') % {'stufe': hoechste.stufe, 'stufe2': stufe})
         return redirect('fw_mahnwesen')

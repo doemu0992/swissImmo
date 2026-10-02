@@ -75,7 +75,18 @@
                 <td class="fw-right">
                     {% if row.letzte_mahnung %}<div class="fw-klein mb-1">{% blocktrans with stufe=row.letzte_mahnung.stufe datum=row.letzte_mahnung.datum|date:"d.m.Y" %}zuletzt: {{ stufe }}. Mahnung {{ datum }}{% endblocktrans %}</div>{% endif %}
                     {% if row.zustell_dok %}<div class="fw-klein mb-1">{% include 'fw/_zustellstatus.html' with d=row.zustell_dok z=None %}{% include 'fw/_zustellung_erfassen.html' with d=row.zustell_dok next='/neu/mahnwesen/' %}</div>{% endif %}
+                    {% if row.gebuehr_stellbar %}
                     {% if row.gebuehr_fehlt %}<div class="fw-klein fw-warnton mb-1">{% trans "Mahngebühr fehlt (storniert/gelöscht) — «Erfassen» stellt sie neu." %}</div>{% endif %}
+                    <form method="post" action="/neu/mahnwesen/erfassen/" class="inline-flex items-center gap-1.5 mb-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
+                        <input type="hidden" name="stufe" value="{{ row.stufe.stufe }}">
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <label class="fw-klein">{% trans "Mahngebühr stellen (CHF)" %}
+                            <input type="number" name="gebuehr" step="0.05" min="0" value="{{ row.gebuehr_vorschlag|default_if_none:'' }}" class="fw-feld w-24 inline-block"></label>
+                        <button type="submit" class="fw-btn fw-knapp">{% trans "Stellen" %}</button>
+                    </form>
+                    {% endif %}
                     <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
                     {% if row.mahn_url %}
                     <a href="{{ row.mahn_url }}" target="_blank" rel="noopener"

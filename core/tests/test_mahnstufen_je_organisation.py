@@ -1201,3 +1201,67 @@ class ZustellungAusDemMahnwesenTests(TestCase):
         antwort = cb.post(f'/neu/dokument/{dok.pk}/zustellung/', {'sendungsnummer': 'x'})
         self.assertEqual(antwort.status_code, 404)
         self.assertIsNone(self._pendenz())
+
+
+class MahngebuehrBetragUndMeldungTests(TestCase):
+    """Stufe ohne Gebühr, geänderte Einstellung, freier Betrag — und eine Meldung, die sagt, warum."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _client(self):
+        c = Client()
+        c.force_login(self.a.benutzer)
+        return c
+
+    def _folgen(self, r, stufe):
+        with organisation_kontext(self.a.organisation):
+            return list(r.folgeforderungen.filter(titel__startswith=f'Mahngebühr {stufe}.')
+                        .exclude(status='storniert'))
+
+    def _meldungen(self, antwort_folge):
+        return [str(m) for m in antwort_folge.context['messages']]
+
+    def test_storniert_dann_gilt_der_stornierte_betrag_auch_wenn_die_einstellung_0_ist(self):
+        from crm.models import MahnStufe
+        from finance.models import Mahnung
+        r = _ueberfaellige_rechnung(self.a, 31)               # Stufe 2: CHF 20
+        c = self._client()
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 2})
+        (geb,) = self._folgen(r, 2)
+        c.post(f'/neu/debitoren/{geb.pk}/stornieren/')
+        with organisation_kontext(self.a.organisation):
+            MahnStufe.objects.filter(stufe=2).update(gebuehr=Decimal('0.00'))
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 2})
+        (neu,) = self._folgen(r, 2)
+        self.assertEqual(neu.betrag, Decimal('20.00'))
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Mahnung.objects.get(debitoren_rechnung=r).gebuehr, Decimal('20.00'))
+
+    def test_stufe_ohne_gebuehr_aber_freier_betrag_im_formular(self):
+        from finance.models import Mahnung
+        r = _ueberfaellige_rechnung(self.a, 15)               # Stufe 1: CHF 0
+        c = self._client()
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 1})
+        self.assertEqual(self._folgen(r, 1), [])
+        # Die Seite bietet das Feld an …
+        self.assertContains(c.get('/neu/mahnwesen/'), 'Mahngebühr stellen')
+        # … ohne Betrag sagt «Erfassen», warum nichts geschieht …
+        antwort = c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 1}, follow=True)
+        self.assertTrue(any('CHF 0.00' in m for m in self._meldungen(antwort)))
+        self.assertEqual(self._folgen(r, 1), [])
+        # … mit Betrag wird die Gebühr gestellt.
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 1, 'gebuehr': '15.00'})
+        (geb,) = self._folgen(r, 1)
+        self.assertEqual(geb.betrag, Decimal('15.00'))
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Mahnung.objects.get(debitoren_rechnung=r).gebuehr, Decimal('15.00'))
+
+    def test_gebuehr_schon_gestellt_meldet_das_und_stellt_nichts_doppelt(self):
+        r = _ueberfaellige_rechnung(self.a, 31)
+        c = self._client()
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 2})
+        antwort = c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 2}, follow=True)
+        self.assertTrue(any('ist gestellt' in m for m in self._meldungen(antwort)))
+        self.assertEqual(len(self._folgen(r, 2)), 1)
