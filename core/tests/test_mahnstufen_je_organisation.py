@@ -1343,8 +1343,10 @@ class TrackAndTraceLinkTests(TestCase):
 
     def test_link_im_mahnwesen_und_in_der_akte(self):
         c = self._erfasst(sendungsnummer='980099250300308529')
-        self.assertContains(c.get('/neu/mahnwesen/'), self.LINK)
-        self.assertContains(c.get(f'/neu/vertraege/{self.a.vertrag.pk}/'), self.LINK)
+        self.assertContains(c.get('/neu/mahnwesen/'), self.LINK, count=1)
+        # In der Akte zeigt ihn die Fristen-Pendenz selbst (an zwei Stellen, wie bisher —
+        # `test_mietrecht.Verzug257dTests` hält das fest); das Erfassen-Feld legt keinen dritten dazu.
+        self.assertContains(c.get(f'/neu/vertraege/{self.a.vertrag.pk}/'), self.LINK, count=2)
 
     def test_link_bleibt_nach_bestaetigtem_zugang(self):
         c = self._erfasst(sendungsnummer='980099250300308529',
