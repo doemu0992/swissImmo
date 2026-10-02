@@ -21599,3 +21599,21 @@ msgstr "Receipt confirmed (%(d)s) — payment deadline runs until %(f)s (Art. 25
 #, python-format
 msgid "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
 msgstr "Registered mail recorded — deadline provisional until %(f)s. Confirm receipt as soon as delivery is established."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahngebühr stellen (CHF)"
+msgstr "Issue reminder fee (CHF)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Stellen"
+msgstr "Issue"
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Die %(stufe)s. Mahnung ist bereits erfasst; ihre Mahngebühr beträgt CHF 0.00 (Einstellung der Stufe). Soll eine Gebühr gestellt werden, den Betrag im Feld «Mahngebühr stellen» angeben."
+msgstr "Reminder %(stufe)s is already recorded; its fee is CHF 0.00 (level setting). To issue a fee, enter the amount in the field «Issue reminder fee»."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
+msgstr "Reminder %(stufe)s is already recorded and its fee has been issued (CHF %(betrag)s, %(status)s) — nothing to reissue."

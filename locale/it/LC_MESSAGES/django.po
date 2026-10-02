@@ -21803,3 +21803,21 @@ msgstr "Ricezione confermata (%(d)s) — il termine di pagamento scade il %(f)s 
 #, python-format
 msgid "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
 msgstr "Raccomandata registrata — termine provvisorio fino al %(f)s. Confermare la ricezione non appena la consegna è accertata."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Mahngebühr stellen (CHF)"
+msgstr "Emetti spese di sollecito (CHF)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Stellen"
+msgstr "Emetti"
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Die %(stufe)s. Mahnung ist bereits erfasst; ihre Mahngebühr beträgt CHF 0.00 (Einstellung der Stufe). Soll eine Gebühr gestellt werden, den Betrag im Feld «Mahngebühr stellen» angeben."
+msgstr "Il %(stufe)s. sollecito è già registrato; le sue spese ammontano a CHF 0.00 (impostazione del livello). Per emettere spese, indicare l'importo nel campo «Emetti spese di sollecito»."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
+msgstr "Il %(stufe)s. sollecito è già registrato e le sue spese sono emesse (CHF %(betrag)s, %(status)s) — nulla da riemettere."
