@@ -21698,28 +21698,6 @@ msgstr "Appuntamento: %(d)s"
 msgid "Nachricht an %(f)s"
 msgstr "Messaggio a %(f)s"
 
-
-
-#: core/views/fw/bankabgleich.py:782
-msgid ""
-"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts "
-"gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
-msgstr "L'importazione è stata interrotta e completamente annullata — non è stato salvato nulla. Verificare il file (danneggiato o incompleto?)."
-
-#: core/views/fw/mahnwesen.py:491
-msgid ""
-"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
-"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
-"erzwingen."
-msgstr "Il processo dei solleciti di questo mese è già chiuso — nessun doppio sollecito. Per ripeterlo, reimpostarlo sotto «Processi» o forzarlo deliberatamente."
-
-#: core/views/fw/sollstellung.py:189
-#, python-format
-msgid ""
-"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
-"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
-msgstr "La fatturazione delle pigioni %(titel)s è già chiusa — nulla è stato fatturato due volte. Per ripeterla, reimpostare prima il processo sotto «Processi»."
-
 #: core/views/fw/arbeit.py
 msgid "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
 msgstr "Reimpostare riapre solo il processo — i documenti già contabilizzati restano."
@@ -21739,3 +21717,51 @@ msgstr "Le fatture «in pagamento» tornano «approvate» con «Reimposta selezi
 #: core/views/fw/arbeit.py
 msgid "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."
 msgstr "Una spesa di sollecito si annulla stornando la relativa fattura sotto Debitori."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Handwerkerrechnung verknüpfen"
+msgstr "Collega la fattura dell'artigiano"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "— Rechnung wählen —"
+msgstr "— Seleziona la fattura —"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Ticket abschliessen, wenn alle Rechnungen da sind"
+msgstr "Chiudi il ticket quando tutte le fatture sono arrivate"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpfen"
+msgstr "Collega la fattura"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag wirklich stornieren? Der Handwerker wird informiert."
+msgstr "Annullare davvero l'incarico? L'artigiano verrà informato."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Grund (optional)"
+msgstr "Motivo (facoltativo)"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag stornieren"
+msgstr "Annulla l'incarico"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Die Rechnung hängt schon an einem anderen Auftrag."
+msgstr "La fattura è già collegata a un altro incarico."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft — Ticket abgeschlossen."
+msgstr "Fattura collegata — ticket chiuso."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft."
+msgstr "Fattura collegata."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag storniert, Handwerker informiert."
+msgstr "Incarico annullato, artigiano informato."
+
+#: core/views/fw/schaeden.py
+msgid "Bitte eine Rechnung wählen."
+msgstr "Seleziona una fattura."

@@ -12,10 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 # Helper to send mail via Hoststar
-def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None):
+def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None, reply_to=None):
     try:
         from_email = settings.DEFAULT_FROM_EMAIL
-        reply_addr = os.environ.get('EMAIL_REPLY_USER', 'reply@immoswiss.app')
+        # Antworten gehen an das Antwort-Postfach der VERWALTUNG, die schreibt (`reply_to`),
+        # sonst an die globale Adresse aus der Umgebung.
+        reply_addr = reply_to or os.environ.get('EMAIL_REPLY_USER', 'reply@immoswiss.app')
 
         email = EmailMessage(
             subject=subject,
@@ -69,7 +71,10 @@ def send_ticket_receipt(ticket):
     <p>{_text5}<br>ImmoSwiss Verwaltung</p>
     </body></html>
     """
-    threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, subject, html_msg)).start()
+    from tickets.workflow import reply_to
+    # Die Adresse wird HIER im Anfrage-Thread bestimmt: der Mail-Thread hat keinen Mandantenkontext.
+    threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, subject, html_msg),
+                     kwargs={'reply_to': reply_to(ticket)}).start()
 
 
 def send_handyman_notification(auftrag):
@@ -190,7 +195,7 @@ def journal_email(betreff, inhalt, *, mieter=None, vertrag=None, liegenschaft=No
         return False
 
 
-def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None):
+def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None, reply_to=None):
     """Sendet eine Ticket-Mail (aus Vorlage) synchron. inhalt_text ist Klartext
     mit Zeilenumbrüchen; wird zu HTML gewandelt. Gibt True/False zurück."""
     if not to_email:
@@ -206,7 +211,7 @@ def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None):
                 att_name = os.path.basename(foto_field.name)
         except Exception:
             att_name = att_content = None
-    return send_via_hoststar(to_email, betreff, html, att_name, att_content)
+    return send_via_hoststar(to_email, betreff, html, att_name, att_content, reply_to=reply_to)
 
 
 def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma='',

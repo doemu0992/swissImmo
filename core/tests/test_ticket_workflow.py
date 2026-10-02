@@ -558,3 +558,303 @@ class MandantengrenzeTests(TestCase):
         n = erinnerungen_senden(timezone.now() + timedelta(days=10))   # Kontext: eigene Verwaltung
         self.assertEqual(n['auftrag'], 1)
         self.assertEqual([m.to[0] for m in mail.outbox], ['hw@example.ch'])   # nie die fremde Adresse
+
+
+@MAIL
+class ReplyToTests(TestCase):
+    """Antworten gehen an das Antwort-Postfach der Verwaltung des Tickets."""
+
+    def _postfach(self, org, benutzer, aktiv=True):
+        from core.models import Postfach
+        return Postfach.alle_organisationen.create(
+            organisation=org, zweck='antworten', benutzer=benutzer, aktiv=aktiv, server='imap.example.ch')
+
+    def test_reply_to_ist_das_postfach_der_verwaltung(self):
+        from tickets.workflow import melder_benachrichtigen
+        t = _ticket()
+        self._postfach(t.organisation, 'antworten@verwaltung-a.ch')
+        mail.outbox.clear()
+        self.assertTrue(melder_benachrichtigen(t, 'ticket_melder_status'))
+        self.assertEqual(mail.outbox[0].reply_to, ['antworten@verwaltung-a.ch'])
+
+    def test_ohne_postfach_oder_ohne_adresse_gilt_die_globale(self):
+        from tickets.workflow import melder_benachrichtigen, reply_to
+        t = _ticket()
+        self.assertIsNone(reply_to(t))
+        self._postfach(t.organisation, 'kein-at-zeichen')
+        self.assertIsNone(reply_to(t))
+        mail.outbox.clear()
+        melder_benachrichtigen(t, 'ticket_melder_status')
+        self.assertEqual(len(mail.outbox[0].reply_to), 1)       # die globale Adresse aus der Umgebung
+        self.assertNotIn('kein-at-zeichen', mail.outbox[0].reply_to)
+
+    def test_inaktives_postfach_zaehlt_nicht(self):
+        from tickets.workflow import reply_to
+        t = _ticket()
+        self._postfach(t.organisation, 'alt@verwaltung-a.ch', aktiv=False)
+        self.assertIsNone(reply_to(t))
+
+    def test_postfach_einer_fremden_verwaltung_wird_nie_benutzt(self):
+        from core.tenancy import organisation_kontext
+        from core.tests._isolation import MandantenFixture
+        from tickets.workflow import reply_to
+        t = _ticket()
+        fremd = MandantenFixture('B', '3000', 'Bern')
+        self._postfach(fremd.organisation, 'antworten@fremd.ch')
+        with organisation_kontext(t.organisation):
+            self.assertIsNone(reply_to(t))
+
+    def test_alle_ticket_mails_tragen_den_reply_to(self):
+        from datetime import datetime
+        from tickets.workflow import (auftrag_vergeben, nachricht_an_handwerker, termin_festlegen,
+                                      auftrag_stornieren)
+        t = _ticket()
+        self._postfach(t.organisation, 'antworten@verwaltung-a.ch')
+        mail.outbox.clear()
+        a = auftrag_vergeben(t, _handwerker())['auftrag']
+        nachricht_an_handwerker(a, 'Hallo')
+        termin_festlegen(a, datetime(2026, 11, 3, 8, 30))
+        auftrag_stornieren(a)
+        self.assertGreaterEqual(len(mail.outbox), 7)
+        for m in mail.outbox:
+            self.assertEqual(m.reply_to, ['antworten@verwaltung-a.ch'], m.subject)
+
+
+@MAIL
+class StornoTests(TestCase):
+    def test_storno_informiert_handwerker_und_setzt_ticket_zurueck(self):
+        from tickets.workflow import auftrag_stornieren, wechsle_status
+        t, a = _mit_auftrag()
+        wechsle_status(t, 'warte_auf_handwerker')
+        mail.outbox.clear()
+        self.assertTrue(auftrag_stornieren(a, 'Mieter hat selbst repariert'))
+        a.refresh_from_db(); t.refresh_from_db()
+        self.assertEqual(a.status, 'storniert')
+        self.assertEqual(t.status, 'in_bearbeitung')
+        self.assertEqual([m.to[0] for m in mail.outbox], ['hw@example.ch'])
+        self.assertIn('storniert', mail.outbox[0].subject)
+        self.assertIn('Mieter hat selbst repariert', mail.outbox[0].body)
+
+    def test_storno_sagt_termin_ab(self):
+        from datetime import datetime
+        from tickets.workflow import termin_festlegen, auftrag_stornieren
+        t, a = _mit_auftrag()
+        termin_festlegen(a, datetime(2026, 11, 3, 8, 30))
+        mail.outbox.clear()
+        auftrag_stornieren(a)
+        a.refresh_from_db()
+        self.assertEqual(a.termin_status, 'abgesagt')
+        self.assertTrue(any('METHOD:CANCEL' in m.attachments[0][1] for m in mail.outbox if m.attachments))
+
+    def test_storno_verwirft_offene_freigabe(self):
+        from tickets.workflow import auftrag_stornieren
+        t, a = _mit_auftrag()
+        a.freigabe_status = 'ausstehend'; a.save()
+        auftrag_stornieren(a)
+        a.refresh_from_db()
+        self.assertEqual(a.freigabe_status, 'nicht_noetig')
+
+    def test_zweiter_aktiver_auftrag_haelt_den_status(self):
+        from tickets.workflow import auftrag_stornieren, handwerker_zuweisen, wechsle_status
+        t, a1 = _mit_auftrag()
+        handwerker_zuweisen(t, _handwerker())
+        wechsle_status(t, 'warte_auf_handwerker')
+        auftrag_stornieren(a1)
+        t.refresh_from_db()
+        self.assertEqual(t.status, 'warte_auf_handwerker')
+
+    def test_nicht_stornierbar_mit_rechnung_erledigt_oder_schon_storniert(self):
+        from tickets.workflow import auftrag_stornieren, rechnung_verknuepfen
+        t, a = _mit_auftrag()
+        rechnung_verknuepfen(a, _rechnung(t), abschliessen=False)
+        with self.assertRaises(ValidationError):
+            auftrag_stornieren(a)
+        t2, b = _mit_auftrag()
+        auftrag_stornieren(b)
+        with self.assertRaises(ValidationError):
+            auftrag_stornieren(b)
+        t3, c = _mit_auftrag()
+        c.status = 'erledigt'; c.save()
+        with self.assertRaises(ValidationError):
+            auftrag_stornieren(c)
+
+    def test_stornierter_auftrag_bekommt_keine_erinnerung(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from tickets.erinnerungen import erinnerungen_senden
+        from tickets.workflow import auftrag_stornieren
+        t, a = _mit_auftrag()
+        auftrag_stornieren(a)
+        mail.outbox.clear()
+        self.assertEqual(erinnerungen_senden(timezone.now() + timedelta(days=30))['auftrag'], 0)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_nur_stornierter_auftrag_ist_kein_auftrag_im_befund(self):
+        from datetime import date, timedelta
+        from faelle.schaeden import _befunde, OHNE_AUFTRAG_TAGE
+        from tickets.models import SchadenMeldung
+        from tickets.workflow import auftrag_stornieren
+        t, a = _mit_auftrag()
+        auftrag_stornieren(a)
+        SchadenMeldung.objects.filter(pk=t.pk).update(
+            erstellt_am=__import__('django.utils.timezone', fromlist=['now']).now() - timedelta(days=OHNE_AUFTRAG_TAGE + 5))
+        t.refresh_from_db()
+        texte = [b['text'] for b in _befunde(t, date.today())]
+        self.assertIn('Kein Auftrag', texte)
+
+    def test_summen_ohne_stornierte_auftraege(self):
+        from decimal import Decimal
+        from core.services.versicherungsfall import schadensumme_vorschlag
+        from tickets.workflow import auftrag_stornieren, handwerker_zuweisen
+        t, a1 = _mit_auftrag()
+        a2 = handwerker_zuweisen(t, _handwerker())
+        a1.kosten_effektiv = Decimal('1000'); a1.save()
+        a2.kosten_effektiv = Decimal('300'); a2.save()
+        auftrag_stornieren(a1)
+        self.assertEqual(schadensumme_vorschlag(t), Decimal('300.00'))
+
+    def test_ansicht_storno(self):
+        t, a = _mit_auftrag()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/auftrag/{a.id}/storno/', {'grund': 'doppelt'})
+        a.refresh_from_db()
+        self.assertEqual(a.status, 'storniert')
+
+
+@MAIL
+class RechnungVerknuepfenAnsichtTests(TestCase):
+    def test_verknuepfen_und_abschliessen(self):
+        t, a = _mit_auftrag()
+        kr = _rechnung(t)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/auftrag/{a.id}/rechnung/', {'rechnung_id': kr.id, 'abschliessen': 'on'})
+        a.refresh_from_db(); t.refresh_from_db()
+        self.assertEqual(a.kreditoren_rechnung_id, kr.id)
+        self.assertEqual(t.status, 'erledigt')
+
+    def test_verknuepfen_ohne_abschliessen_laesst_ticket_offen(self):
+        t, a = _mit_auftrag()
+        kr = _rechnung(t)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/auftrag/{a.id}/rechnung/', {'rechnung_id': kr.id})
+        t.refresh_from_db()
+        self.assertEqual(t.status, 'in_bearbeitung')
+
+    def test_rechnung_an_anderem_auftrag_wird_abgelehnt(self):
+        from tickets.workflow import handwerker_zuweisen, rechnung_verknuepfen
+        t, a1 = _mit_auftrag()
+        a2 = handwerker_zuweisen(t, _handwerker())
+        kr = _rechnung(t)
+        rechnung_verknuepfen(a1, kr, abschliessen=False)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/auftrag/{a2.id}/rechnung/', {'rechnung_id': kr.id})
+        a2.refresh_from_db()
+        self.assertIsNone(a2.kreditoren_rechnung_id)
+
+    def test_detailseite_bietet_nur_freie_rechnungen_an(self):
+        from tickets.workflow import rechnung_verknuepfen
+        t, a = _mit_auftrag()
+        _rechnung(t, '111.00')
+        belegt = _rechnung(t, '222.00')
+        storniert = _rechnung(t, '333.00'); storniert.status = 'storniert'; storniert.save()
+        from tickets.workflow import handwerker_zuweisen
+        b = handwerker_zuweisen(t, _handwerker())
+        rechnung_verknuepfen(b, belegt, abschliessen=False)
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/schaeden/{t.id}/').content.decode()
+        # Der Optionstext ist eindeutig; `value="2"` käme auch in anderen Feldern der Seite vor.
+        import re
+        optionen = re.findall(r'<option value="\d+">#\d+ · [^<]*</option>', body)
+        self.assertEqual(len(optionen), 1, optionen)    # nur die freie Rechnung
+        self.assertRegex(optionen[0], r'CHF 111[.,]00')
+
+    def test_kosten_mit_kreditor_erstellen_verknuepft_ueber_den_service(self):
+        t, a = _mit_auftrag()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/auftrag/{a.id}/kosten/', {'kosten_effektiv': '480', 'kreditor_erstellen': 'on'})
+        a.refresh_from_db(); t.refresh_from_db()
+        self.assertIsNotNone(a.kreditoren_rechnung_id)
+        self.assertTrue(t.nachrichten.filter(nachricht__contains='Handwerkerrechnung').exists())
+        self.assertEqual(t.status, 'in_bearbeitung')          # nur verknüpft, nicht abgeschlossen
+
+
+@MAIL
+class MandantengrenzeNeueUrlsTests(TestCase):
+    """Rechnung verknüpfen / Storno: fremder Auftrag oder fremde Rechnung -> 404, nichts geändert.
+
+    Gegenprobe (protokolliert): in `fw_auftrag_storno` `HandwerkerAuftrag.objects` durch
+    `.alle_organisationen` ersetzen -> rot.
+    """
+
+    def test_fremder_auftrag_storno_und_rechnung_sind_404(self):
+        from core.tenancy import organisation_kontext
+        from core.tests._isolation import MandantenFixture
+        from tickets.models import HandwerkerAuftrag
+        eigen_t, eigen_a = _mit_auftrag()
+        fremd = MandantenFixture('B', '3000', 'Bern')
+        with organisation_kontext(fremd.organisation):
+            fremder_auftrag = fremd.auftrag
+            fremde_rechnung = fremd.kreditor
+        mail.outbox.clear()
+        c = Client(); c.force_login(_team_user())
+        r1 = c.post(f'/neu/auftrag/{fremder_auftrag.pk}/storno/', {})
+        r2 = c.post(f'/neu/auftrag/{fremder_auftrag.pk}/rechnung/', {'rechnung_id': fremde_rechnung.pk})
+        # eigener Auftrag, FREMDE Rechnung: darf nicht verknüpfbar sein
+        r3 = c.post(f'/neu/auftrag/{eigen_a.pk}/rechnung/', {'rechnung_id': fremde_rechnung.pk})
+        self.assertEqual((r1.status_code, r2.status_code, r3.status_code), (404, 404, 404))
+        self.assertEqual(len(mail.outbox), 0)
+        eigen_a.refresh_from_db()
+        self.assertIsNone(eigen_a.kreditoren_rechnung_id)
+        with organisation_kontext(fremd.organisation):
+            a = HandwerkerAuftrag.objects.get(pk=fremder_auftrag.pk)
+            self.assertNotEqual(a.status, 'storniert')
+            self.assertIsNone(a.kreditoren_rechnung_id)
+
+
+@MAIL
+class EingangsbestaetigungTests(TestCase):
+    """`send_ticket_receipt` schickt im Thread — die Antwortadresse wird vorher bestimmt."""
+
+    def _sofort(self):
+        """Thread synchron laufen lassen, damit der Test nicht auf einen Hintergrund-Thread wartet."""
+        from unittest import mock
+
+        class SofortThread:
+            def __init__(self, target=None, args=(), kwargs=None):
+                self._t, self._a, self._k = target, args, kwargs or {}
+            def start(self):
+                self._t(*self._a, **self._k)
+        return mock.patch('core.utils.email_service.threading.Thread', SofortThread)
+
+    def test_eingangsbestaetigung_traegt_den_reply_to_der_verwaltung(self):
+        from core.models import Postfach
+        from core.utils.email_service import send_ticket_receipt
+        t = _ticket()
+        Postfach.alle_organisationen.create(organisation=t.organisation, zweck='antworten',
+                                            benutzer='antworten@verwaltung-a.ch', server='imap.example.ch')
+        mail.outbox.clear()
+        with self._sofort():
+            send_ticket_receipt(t)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].reply_to, ['antworten@verwaltung-a.ch'])
+
+    def test_im_thread_laeuft_keine_mandanten_query(self):
+        """Der Thread bekommt eine fertige Adresse; `send_via_hoststar` selbst fragt die DB nichts."""
+        from unittest import mock
+        from core.utils.email_service import send_ticket_receipt
+        t = _ticket()
+        with self._sofort(), mock.patch('core.utils.email_service.send_via_hoststar') as senden:
+            send_ticket_receipt(t)
+        self.assertIn('reply_to', senden.call_args.kwargs)
+
+
+@MAIL
+class RechnungIdEingabeTests(TestCase):
+    def test_nicht_numerische_rechnungs_id_gibt_meldung_statt_500(self):
+        t, a = _mit_auftrag()
+        c = Client(); c.force_login(_team_user())
+        for wert in ('abc', '', '1; DROP'):
+            r = c.post(f'/neu/auftrag/{a.id}/rechnung/', {'rechnung_id': wert})
+            self.assertIn(r.status_code, (302, 404), wert)      # nie 500
+        a.refresh_from_db()
+        self.assertIsNone(a.kreditoren_rechnung_id)

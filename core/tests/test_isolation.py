@@ -1055,7 +1055,8 @@ class IsolationstestsSelbstpruefungTests(TestCase):
         from tickets.models import HandwerkerAuftrag
         b = MandantenFixture('B', '3000', 'Bern')
         for name in ('fw_auftrag_kosten', 'fw_auftrag_pdf',
-                     'fw_auftrag_nachricht', 'fw_auftrag_termin'):
+                     'fw_auftrag_nachricht', 'fw_auftrag_termin',
+                     'fw_auftrag_rechnung', 'fw_auftrag_storno'):
             with self.subTest(url=name):
                 self.assertIsInstance(b.objekt_fuer('pk', name), HandwerkerAuftrag)
 

@@ -49,6 +49,14 @@ DEFAULT_VORLAGEN = {
 }
 
 DEFAULT_VORLAGEN.update({
+    'ticket_auftrag_storniert': {
+        'betreff': 'Auftrag storniert (Ticket #{ticket_id})',
+        'inhalt': (
+            "Guten Tag\n\nunser Auftrag „{schaden}“ ({objekt}) wird storniert. Bitte führen Sie "
+            "keine Arbeiten aus und stellen Sie keine Rechnung dafür.\n\n"
+            "Freundliche Grüsse\nIhre Liegenschaftsverwaltung"
+        ),
+    },
     'ticket_termin': {
         'betreff': 'Termin für Ihre Reparatur: {termin} (Ticket #{ticket_id})',
         'inhalt': (

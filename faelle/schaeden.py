@@ -147,7 +147,8 @@ def _befunde(t, stichtag):
             'stufe': stufe, 'text': 'Ungelesen',
             'titel': f'seit {alter} Tag{"en" if alter != 1 else ""}'})
 
-    auftraege = list(t.handwerker_auftraege.all())
+    # Stornierte Aufträge zählen nicht: Ist der einzige storniert, ist niemand beauftragt.
+    auftraege = [a for a in t.handwerker_auftraege.all() if a.status != 'storniert']
 
     # Freigabe zuerst: Wer auf die Eigentuemerfreigabe wartet, hat seine Arbeit
     # getan — «kein Auftrag» waere dort eine falsche Anklage. Die beiden Zweige

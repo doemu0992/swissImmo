@@ -437,6 +437,8 @@ class MandantenFixture:
         # enthält «termin» (Fund der Selbstprüfung, 01.10.2026).
         ('auftrag_nachricht', 'auftrag'),
         ('auftrag_termin',  'auftrag'),
+        ('auftrag_rechnung', 'auftrag'),
+        ('auftrag_storno',  'auftrag'),
         ('termin',          'termin'),
         ('abwesenheit',     'abwesenheit'),
         # Phase 4b.10 — der Fristenwaechter. Wieder von der Selbstpruefung

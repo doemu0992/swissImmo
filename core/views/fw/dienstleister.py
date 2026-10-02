@@ -43,7 +43,7 @@ def fw_dienstleister(request):
 
     # Offene Aufträge je Handwerker zählen
     offene = {}
-    for a in HandwerkerAuftrag.objects.exclude(status='erledigt').values_list('handwerker_id', flat=True):
+    for a in HandwerkerAuftrag.objects.exclude(status__in=('erledigt', 'storniert')).values_list('handwerker_id', flat=True):
         offene[a] = offene.get(a, 0) + 1
 
     rows = []

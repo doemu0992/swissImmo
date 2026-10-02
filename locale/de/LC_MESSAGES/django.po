@@ -21608,28 +21608,6 @@ msgstr "Termin: %(d)s Uhr"
 msgid "Nachricht an %(f)s"
 msgstr "Nachricht an %(f)s"
 
-
-
-#: core/views/fw/bankabgleich.py:782
-msgid ""
-"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts "
-"gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
-msgstr "Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
-
-#: core/views/fw/mahnwesen.py:491
-msgid ""
-"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
-"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
-"erzwingen."
-msgstr "Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen."
-
-#: core/views/fw/sollstellung.py:189
-#, python-format
-msgid ""
-"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
-"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
-msgstr "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
-
 #: core/views/fw/arbeit.py
 msgid "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
 msgstr "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
@@ -21649,3 +21627,51 @@ msgstr "Rechnungen «in Zahlung» setzt «Auswahl zurücksetzen» im Zahllauf wi
 #: core/views/fw/arbeit.py
 msgid "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."
 msgstr "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Handwerkerrechnung verknüpfen"
+msgstr "Handwerkerrechnung verknüpfen"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "— Rechnung wählen —"
+msgstr "— Rechnung wählen —"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Ticket abschliessen, wenn alle Rechnungen da sind"
+msgstr "Ticket abschliessen, wenn alle Rechnungen da sind"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpfen"
+msgstr "Rechnung verknüpfen"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag wirklich stornieren? Der Handwerker wird informiert."
+msgstr "Auftrag wirklich stornieren? Der Handwerker wird informiert."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Grund (optional)"
+msgstr "Grund (optional)"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag stornieren"
+msgstr "Auftrag stornieren"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Die Rechnung hängt schon an einem anderen Auftrag."
+msgstr "Die Rechnung hängt schon an einem anderen Auftrag."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft — Ticket abgeschlossen."
+msgstr "Rechnung verknüpft — Ticket abgeschlossen."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Rechnung verknüpft."
+msgstr "Rechnung verknüpft."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
+msgid "Auftrag storniert, Handwerker informiert."
+msgstr "Auftrag storniert, Handwerker informiert."
+
+#: core/views/fw/schaeden.py
+msgid "Bitte eine Rechnung wählen."
+msgstr "Bitte eine Rechnung wählen."

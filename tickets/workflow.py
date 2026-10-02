@@ -128,6 +128,23 @@ def wechsle_status(ticket, neu, melder_informieren=False):
     return ticket
 
 
+def reply_to(ticket):
+    """Antwortadresse der Verwaltung des Tickets: ihr aktives «Antworten»-Postfach.
+
+    Das ist genau das Postfach, das ``fetch_replies`` für diese Verwaltung abruft —
+    eine Antwort auf eine Ticket-Mail landet damit im richtigen Bestand. Ohne
+    eingerichtetes Postfach (oder ohne Adresse als Benutzername) ``None``: dann
+    gilt die globale Adresse. Der Absender (From) bleibt global — er hängt am
+    SMTP-Konto.
+    """
+    from core.models import Postfach
+    pf = (Postfach.alle_organisationen
+          .filter(organisation_id=ticket.organisation_id,
+                  zweck=Postfach.ZWECK_ANTWORTEN, aktiv=True)
+          .order_by('pk').first())
+    return pf.benutzer if pf and '@' in (pf.benutzer or '') else None
+
+
 def melder_adresse(ticket):
     """E-Mail-Adresse des Melders (Formular oder Mieterstamm), sonst ''."""
     return ticket.email_melder or (
@@ -150,7 +167,8 @@ def melder_benachrichtigen(ticket, kategorie, handwerker=None, text=None, betref
         return False
     try:
         v_betreff, v_text = vorlage_text(kategorie, ticket, handwerker=handwerker)
-        ok = send_ticket_email(adresse, betreff or v_betreff, text or v_text)
+        ok = send_ticket_email(adresse, betreff or v_betreff, text or v_text,
+                               reply_to=reply_to(ticket))
     except Exception:
         logger.exception("Melder-Mail zu Ticket #%s (%s) fehlgeschlagen", ticket.pk, kategorie)
         return False
@@ -217,7 +235,7 @@ def arbeitsauftrag_senden(auftrag, text=''):
                 + inhalt.replace('\n', '<br>') + "</body></html>")
         versendet = send_via_hoststar(
             hw.email, betreff, html, f"Reparaturauftrag_{auftrag.id}.pdf", pdf,
-            weitere_anhaenge=anhaenge)
+            weitere_anhaenge=anhaenge, reply_to=reply_to(ticket))
     TicketNachricht.objects.create(
         ticket=ticket, absender_name='System', typ='handwerker_mail',
         empfaenger_handwerker=hw, is_intern=True, is_von_verwaltung=True,
@@ -295,7 +313,7 @@ def nachricht_an_handwerker(auftrag, text, absender='Verwaltung'):
         return False
     betreff = f"{ticket.titel} (Ticket #{ticket.pk})"
     try:
-        ok = send_ticket_email(hw.email, betreff, text)
+        ok = send_ticket_email(hw.email, betreff, text, reply_to=reply_to(ticket))
     except Exception:
         logger.exception("Mail an Handwerker zu Ticket #%s fehlgeschlagen", ticket.pk)
         ok = False
@@ -346,7 +364,8 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
             betreff, inhalt = vorlage_text(kat, ticket, handwerker=hw, termin=text)
             html = ("<html><body style='font-family:Arial,sans-serif'>"
                     + inhalt.replace('\n', '<br>') + "</body></html>")
-            return send_via_hoststar(adresse, betreff, html, weitere_anhaenge=ics)
+            return send_via_hoststar(adresse, betreff, html, weitere_anhaenge=ics,
+                                     reply_to=reply_to(ticket))
         except Exception:
             logger.exception("Termin-Mail zu Ticket #%s fehlgeschlagen", ticket.pk)
             return False
@@ -432,3 +451,55 @@ def antwort_zuordnen(ticket, absender, inhalt):
         except ValidationError:
             logger.exception("Ticket #%s: Rückwechsel nach Antwort nicht möglich", ticket.pk)
     return seite
+
+
+def auftrag_stornieren(auftrag, grund=''):
+    """Auftrag stornieren: Handwerker informieren, Termin absagen, Ticket zurück auf «In Bearbeitung».
+
+    Nicht stornierbar: ein erledigter oder schon stornierter Auftrag und einer mit
+    verknüpfter Rechnung (die Rechnung wurde gestellt — erst die Verknüpfung klären).
+    Ein offener Eigentümer-Freigabe-Antrag verfällt (``nicht_noetig``): zu einem
+    stornierten Auftrag gibt es nichts freizugeben. Wartete das Ticket nur auf diesen
+    Auftrag (``Warte auf Handwerker`` / ``Wartet auf Rechnung``) und gibt es keinen
+    anderen aktiven, geht es zurück auf «In Bearbeitung» — die Verwaltung ist am Zug.
+    """
+    from core.services.ticket_workflow import vorlage_text
+    from core.utils.email_service import send_ticket_email
+    ticket, hw = auftrag.ticket, auftrag.handwerker
+    if auftrag.status in (AUFTRAG_STORNIERT, 'erledigt'):
+        raise ValidationError('Der Auftrag ist schon abgeschlossen oder storniert.', code='nicht_stornierbar')
+    if auftrag.kreditoren_rechnung_id:
+        raise ValidationError('Zum Auftrag ist schon eine Rechnung verknüpft — kein Storno.', code='rechnung')
+    mit_termin = auftrag.termin_status == 'vereinbart' and auftrag.termin_am
+    with transaction.atomic():
+        if mit_termin:
+            termin_absagen(auftrag)
+        auftrag.status = AUFTRAG_STORNIERT
+        if auftrag.freigabe_status == 'ausstehend':
+            auftrag.freigabe_status = 'nicht_noetig'
+            auftrag.freigabe_datum = None
+        auftrag.save(update_fields=['status', 'freigabe_status', 'freigabe_datum'])
+        grund = (grund or '').strip()
+        _protokoll(ticket, f"Auftrag #{auftrag.id} an {hw.firma} storniert"
+                           + (f": {grund}" if grund else "."))
+        aktive = ticket.handwerker_auftraege.exclude(status=AUFTRAG_STORNIERT).exclude(status='erledigt')
+        if (not aktive.exists()
+                and ticket.status in ('warte_auf_handwerker', 'wartet_auf_rechnung')):
+            wechsle_status(ticket, 'in_bearbeitung')
+    ok = False
+    if hw.email:
+        try:
+            betreff, text = vorlage_text('ticket_auftrag_storniert', ticket, handwerker=hw)
+            if grund:
+                text += f"\n\nGrund: {grund}"
+            ok = send_ticket_email(hw.email, betreff, text, reply_to=reply_to(ticket))
+        except Exception:
+            logger.exception("Storno-Mail zu Ticket #%s fehlgeschlagen", ticket.pk)
+    from .models import TicketNachricht
+    TicketNachricht.objects.create(
+        ticket=ticket, absender_name='System', typ='handwerker_mail', empfaenger_handwerker=hw,
+        is_intern=True, is_von_verwaltung=True,
+        nachricht=(f"Storno an {hw.firma} per E-Mail gesendet." if ok else
+                   f"Storno an {hw.firma} NICHT versendet "
+                   f"({'keine E-Mail-Adresse' if not hw.email else 'Versand fehlgeschlagen'})."))
+    return ok

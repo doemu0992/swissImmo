@@ -31,7 +31,7 @@ def aufwand_konto(ticket):
 def schadensumme_vorschlag(ticket):
     """Summe der effektiven (sonst geschätzten) Kosten der Handwerkeraufträge."""
     summe = Decimal('0.00')
-    for a in ticket.handwerker_auftraege.all():
+    for a in ticket.handwerker_auftraege.exclude(status='storniert'):
         summe += a.kosten_effektiv or a.kosten_geschaetzt or Decimal('0.00')
     return summe
 
