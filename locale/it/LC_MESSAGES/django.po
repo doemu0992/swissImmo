@@ -21821,3 +21821,19 @@ msgstr "Il %(stufe)s. sollecito è già registrato; le sue spese ammontano a CHF
 #, python-format
 msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
 msgstr "Il %(stufe)s. sollecito è già registrato e le sue spese sono emesse (CHF %(betrag)s, %(status)s) — nulla da riemettere."
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Beschädigung"
+msgstr "Danno"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Bei Absicht gibt es keinen Zeitwertabzug"
+msgstr "In caso di danno intenzionale non si applica alcuna deduzione del valore attuale"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Unabsichtlich (Zeitwertabzug)"
+msgstr "Non intenzionale (deduzione del valore attuale)"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Absichtlich (voller Betrag, kein Abzug)"
+msgstr "Intenzionale (importo intero, senza deduzione)"

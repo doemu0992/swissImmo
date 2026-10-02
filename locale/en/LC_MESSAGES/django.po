@@ -21617,3 +21617,19 @@ msgstr "Reminder %(stufe)s is already recorded; its fee is CHF 0.00 (level setti
 #, python-format
 msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
 msgstr "Reminder %(stufe)s is already recorded and its fee has been issued (CHF %(betrag)s, %(status)s) — nothing to reissue."
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Beschädigung"
+msgstr "Damage"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Bei Absicht gibt es keinen Zeitwertabzug"
+msgstr "No current-value deduction applies for intentional damage"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Unabsichtlich (Zeitwertabzug)"
+msgstr "Unintentional (current-value deduction)"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Absichtlich (voller Betrag, kein Abzug)"
+msgstr "Intentional (full amount, no deduction)"

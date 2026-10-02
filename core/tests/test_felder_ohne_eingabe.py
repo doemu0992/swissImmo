@@ -268,6 +268,8 @@ def _quellen():
 #: Eintrag sieht aus wie eine Feststellung und ist keine.
 ALIAS = {
     'rentals.AbnahmeMangel.kostenschaetzung': 'm_kosten',
+    # Auswahlfeld '' / '1' im Mängelformular (keine Checkbox: parallele Listen).
+    'rentals.AbnahmeMangel.vorsaetzlich': 'm_vorsatz',
 }
 
 

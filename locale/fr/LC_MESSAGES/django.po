@@ -21843,3 +21843,19 @@ msgstr "Le %(stufe)s. rappel est déjà enregistré ; ses frais s'élèvent à C
 #, python-format
 msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
 msgstr "Le %(stufe)s. rappel est déjà enregistré et ses frais sont facturés (CHF %(betrag)s, %(status)s) — rien à refacturer."
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Beschädigung"
+msgstr "Dommage"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Bei Absicht gibt es keinen Zeitwertabzug"
+msgstr "En cas de dommage intentionnel, il n'y a pas de déduction de la valeur actuelle"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Unabsichtlich (Zeitwertabzug)"
+msgstr "Non intentionnel (déduction de la valeur actuelle)"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Absichtlich (voller Betrag, kein Abzug)"
+msgstr "Intentionnel (montant intégral, sans déduction)"

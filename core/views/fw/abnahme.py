@@ -75,6 +75,7 @@ def fw_abnahme_neu(request, vertrag_id):
         kosten = P.getlist('m_kosten')
         assets = P.getlist('m_ausstattung')
         neuwerte = P.getlist('m_neuwert')
+        vorsatz = P.getlist('m_vorsatz')  # Auswahlfeld '' / '1' (Checkbox liesse die Listen auseinanderlaufen)
         fotos = list(request.FILES.getlist('m_foto'))
         from portfolio.models import Ausstattung as _Ausstattung
         for i, b in enumerate(beschr):
@@ -96,6 +97,7 @@ def fw_abnahme_neu(request, vertrag_id):
                 kostenschaetzung=_dec(kosten[i] if i < len(kosten) else ''),
                 ausstattung=element,
                 neuwert=nw,
+                vorsaetzlich=(vorsatz[i] if i < len(vorsatz) else '') == '1',
                 foto=(fotos.pop(0) if fotos else None),
             )
             # Mieteranteil nach Lebensdauertabelle berechnen und einfrieren

@@ -1043,6 +1043,8 @@ class AbnahmeMangel(OrganisationAusKette):
                                     null=True, blank=True, related_name='maengel')
     neuwert = models.DecimalField("Neuwert CHF", max_digits=9, decimal_places=2, null=True, blank=True)
     mieteranteil = models.DecimalField("Mieteranteil CHF (nach Lebensdauer)", max_digits=9, decimal_places=2, null=True, blank=True)
+    # Absichtliche Beschädigung: kein Zeitwertabzug, der Mieter trägt den vollen Betrag.
+    vorsaetzlich = models.BooleanField("Absichtlich beschädigt (kein Zeitwertabzug)", default=False)
 
     class Meta:
         db_table = 'core_abnahmemangel'
@@ -1057,27 +1059,23 @@ class AbnahmeMangel(OrganisationAusKette):
         if not self.ausstattung_id:
             return None
         from datetime import date as _date
+        from core.services.zeitwert import restwert_faktor
         a = self.ausstattung
-        ld = a.effektive_lebensdauer()
-        if not (a.einbau_datum and ld):
-            return None
         tag = stichtag or (self.protokoll.datum if self.protokoll_id else None) or _date.today()
-        alter = max(0.0, (tag - a.einbau_datum).days / 365.25)
-        rest = max(0.0, float(ld) - alter)
-        return rest / float(ld)
+        return restwert_faktor(a.einbau_datum, a.effektive_lebensdauer(), tag)
+
+    def berechne_ergebnis(self, stichtag=None):
+        """Zeitwert-Ergebnis (Betrag, Faktor, Grundlage) — siehe core/services/zeitwert.py."""
+        from core.services.zeitwert import mieteranteil
+        basis = self.kostenschaetzung or self.neuwert
+        if basis is None and self.ausstattung_id:
+            basis = self.ausstattung.neuwert
+        return mieteranteil(basis, self.zeitwert_faktor(stichtag),
+                            verursacher=self.verursacher, vorsaetzlich=self.vorsaetzlich)
 
     def berechne_mieteranteil(self, stichtag=None):
         """Vom Mieter zu tragender Betrag: bei verknüpftem Element der Zeitwert-
         anteil der Kosten/des Neuwerts; sonst die volle Kostenschätzung.
-        Nur für verursacher='mieter'; sonst 0."""
-        if self.verursacher != 'mieter':
-            return Decimal('0.00')
-        basis = self.kostenschaetzung or self.neuwert
-        if basis is None and self.ausstattung_id:
-            basis = self.ausstattung.neuwert
-        if basis is None:
-            return Decimal('0.00')
-        faktor = self.zeitwert_faktor(stichtag)
-        if faktor is None:
-            return Decimal(basis).quantize(Decimal('0.01'))
-        return (Decimal(basis) * Decimal(str(faktor))).quantize(Decimal('0.01'))
+        Nur für verursacher='mieter'; sonst 0. Abgelaufene Lebensdauer → 0,
+        ausser bei absichtlicher Beschädigung (`vorsaetzlich`) → voller Betrag."""
+        return self.berechne_ergebnis(stichtag).betrag

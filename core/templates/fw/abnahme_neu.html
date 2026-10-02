@@ -107,6 +107,13 @@
             </select>
             <input name="m_neuwert" inputmode="decimal" placeholder="{% trans 'Neuwert CHF' %}" class="fw-feld sm:col-span-3 text-right fw-mutet" title="{% trans 'Neuwert (optional, sonst vom Element)' %}">
         </div>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
+            <span class="sm:col-span-3 fw-klein">{% trans "Beschädigung" %}</span>
+            <select name="m_vorsatz" class="fw-feld sm:col-span-6 fw-mutet" title="{% trans 'Bei Absicht gibt es keinen Zeitwertabzug' %}">
+                <option value="">{% trans "Unabsichtlich (Zeitwertabzug)" %}</option>
+                <option value="1">{% trans "Absichtlich (voller Betrag, kein Abzug)" %}</option>
+            </select>
+        </div>
     </div>
 </template>
 <script>
