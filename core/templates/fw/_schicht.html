@@ -1885,6 +1885,11 @@ und einen Stilblock enthaelt.
         .fw-lauf-titel span{font-size:12.5px;color:var(--ds-muted)}
         .fw-lauf-fuss{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;
             padding-top:12px;border-top:1px solid var(--ds-line);font-size:12px;color:var(--ds-faint)}
+        /* Zwei Knöpfe («Details», «Öffnen») in einer Reihe; der Kontexttext nimmt den Rest und
+           bricht NEBEN ihnen um. Ohne das rutschten die Knöpfe bei langem Text («gestartet … ·
+           Stichtag … · in n Tagen», ab dem Monatsersten) unter den Text: 73 statt 43 px am Telefon. */
+        .fw-lauf-fuss>span:first-child{flex:1 1 0;min-width:0}
+        .fw-lauf-fuss>span:last-child{display:flex;gap:6px;flex:0 0 auto}
         .fw-lauf-leer{grid-column:1 / -1}
         .fw-stufen{list-style:none;margin:0;padding:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
         .fw-stufen li{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:11.5px;color:var(--ds-faint)}
