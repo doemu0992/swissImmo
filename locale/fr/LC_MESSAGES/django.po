@@ -21720,6 +21720,26 @@ msgstr "Rendez-vous : %(d)s"
 msgid "Nachricht an %(f)s"
 msgstr "Message à %(f)s"
 
+#: core/views/fw/arbeit.py
+msgid "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
+msgstr "La réinitialisation rouvre seulement le processus — les pièces déjà comptabilisées restent."
+
+#: core/views/fw/arbeit.py
+msgid "Dorthin wechseln"
+msgstr "Y aller"
+
+#: core/views/fw/arbeit.py
+msgid "Einen Bank-Import macht «Import rückgängig» im Bankabgleich revisionssicher rückgängig."
+msgstr "Une importation bancaire s'annule de façon traçable avec « Annuler l'importation » dans le rapprochement bancaire."
+
+#: core/views/fw/arbeit.py
+msgid "Rechnungen «in Zahlung» setzt «Auswahl zurücksetzen» im Zahllauf wieder auf freigegeben."
+msgstr "Les factures « en paiement » repassent à « validées » avec « Réinitialiser la sélection » dans le lot de paiement."
+
+#: core/views/fw/arbeit.py
+msgid "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."
+msgstr "Un frais de rappel est annulé en annulant sa facture sous Débiteurs."
+
 #: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py
 msgid "Handwerkerrechnung verknüpfen"
 msgstr "Associer la facture de l'artisan"

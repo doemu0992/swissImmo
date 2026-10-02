@@ -292,3 +292,86 @@ class StornoTests(_Basis):
         r.refresh_from_db(); lauf.refresh_from_db()
         self.assertEqual(r.status, 'offen')
         self.assertEqual(lauf.status, Lauf.OFFEN)
+
+
+class ZahllaufZweiSchritteTests(_Basis):
+    """Die Datei erledigt den Zahllauf nicht — erst die Bank-Bestätigung."""
+
+    def _kreditoren(self, n=2):
+        from finance.booking import konto as _k
+        from finance.models import KreditorenRechnung
+        return [KreditorenRechnung.objects.create(
+            lieferant=f'Lieferant {i}', betrag=Decimal('800'), status='freigegeben',
+            liegenschaft=self.lg, konto=_k('4000'),
+            iban='CH9300762011623852957', referenz=f'R-{i}') for i in range(n)]
+
+    def test_datei_setzt_den_lauf_auf_laeuft_und_nicht_auf_abgeschlossen(self):
+        k = self._kreditoren(1)
+        self.c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': [str(k[0].id)]})
+        k[0].refresh_from_db()
+        self.assertEqual(k[0].status, 'in_zahlung')
+        self.assertEqual(self.lauf('zahllauf').status, Lauf.LAEUFT)
+
+    def test_bestaetigung_schliesst_den_lauf(self):
+        k = self._kreditoren(1)
+        self.c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': [str(k[0].id)]})
+        self.c.post('/neu/zahllauf/', {'aktion': 'bezahlt', 'rechnung_ids': [str(k[0].id)]})
+        self.assertEqual(self.lauf('zahllauf').status, Lauf.ABGESCHLOSSEN)
+
+    def test_teilbestaetigung_laesst_den_lauf_offen(self):
+        a, b = self._kreditoren(2)
+        self.c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': [str(a.id), str(b.id)]})
+        self.c.post('/neu/zahllauf/', {'aktion': 'bezahlt', 'rechnung_ids': [str(a.id)]})
+        self.assertEqual(self.lauf('zahllauf').status, Lauf.LAEUFT)
+        self.c.post('/neu/zahllauf/', {'aktion': 'bezahlt', 'rechnung_ids': [str(b.id)]})
+        self.assertEqual(self.lauf('zahllauf').status, Lauf.ABGESCHLOSSEN)
+
+
+class DublettenPruefungTests(_Basis):
+    def _lauf_befehl(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+        aus = StringIO()
+        try:
+            call_command('sollstellung_dubletten_pruefen', stdout=aus)
+            return 0, aus.getvalue()
+        except SystemExit as e:
+            return e.code, aus.getvalue()
+
+    def test_sauberer_bestand_meldet_keine_dubletten(self):
+        self.sollstellung()
+        code, text = self._lauf_befehl()
+        self.assertEqual(code, 0)
+        self.assertIn('Keine Dubletten', text)
+
+    def test_doppelte_rechnung_wird_gefunden_und_nicht_veraendert(self):
+        from finance.models import DebitorenRechnung
+        self.sollstellung()
+        r = DebitorenRechnung.objects.get(titel=f'Miete & NK {HEUTE.month:02d}/{HEUTE.year}')
+        # Altlast herstellen: am Dienst vorbei eine zweite Rechnung anlegen.
+        DebitorenRechnung.objects.create(vertrag=r.vertrag, titel=r.titel, betrag=r.betrag,
+                                         faellig_am=r.faellig_am, status='offen')
+        vorher = DebitorenRechnung.objects.count()
+        code, text = self._lauf_befehl()
+        self.assertEqual(code, 1)
+        self.assertIn('2×', text)
+        self.assertEqual(DebitorenRechnung.objects.count(), vorher)
+
+    def test_stornierte_rechnung_zaehlt_nicht_als_dublette(self):
+        from finance.models import DebitorenRechnung
+        self.sollstellung()
+        r = DebitorenRechnung.objects.get(titel=f'Miete & NK {HEUTE.month:02d}/{HEUTE.year}')
+        DebitorenRechnung.objects.create(vertrag=r.vertrag, titel=r.titel, betrag=r.betrag,
+                                         faellig_am=r.faellig_am, status='storniert')
+        self.assertEqual(self._lauf_befehl()[0], 0)
+
+
+class RueckgaengigHinweisTests(_Basis):
+    def test_detail_nennt_den_rueckgaengig_weg_der_laufart(self):
+        lauf = self.lauf('bankabgleich')
+        self.c.post(f'/neu/laeufe/{lauf.pk}/abschliessen/')
+        antwort = self.c.get(f'/neu/laeufe/{lauf.pk}/')
+        self.assertContains(antwort, 'Import rückgängig')
+        self.assertContains(antwort, 'href="/neu/bankabgleich/"')
+        self.assertContains(antwort, 'gebuchte Belege bleiben bestehen')

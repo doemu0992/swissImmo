@@ -15,16 +15,16 @@
 </div>
 
 {% for b in blockaden %}
-<div class="fw-card"><span class="fw-chip fw-crit">{% trans "blockiert" %}</span> {{ b.grund }}{% if b.quelle %} <span class="fw-s">· {{ b.quelle }}</span>{% endif %}</div>
+<div class="fw-card"><span class="fw-chip fw-crit">{% trans "blockiert" %}</span> {{ b.grund }}{% if b.quelle %} <span class="fw-klein">· {{ b.quelle }}</span>{% endif %}</div>
 {% endfor %}
 
 <div class="fw-card" id="lauf-aktionen">
     <div class="fw-kopf"><span class="fw-t">{% trans "Aktionen" %}</span></div>
     <div class="fw-eingang-knoepfe">
-        <a href="{{ url }}" class="fw-btn fw-knapp{% if not erledigt %} fw-primary{% endif %}" id="lauf-oeffnen">{% trans "Lauf öffnen / ausführen" %}</a>
+        <a href="{{ url }}" class="fw-btn{% if not erledigt %} fw-primary{% endif %}" id="lauf-oeffnen">{% trans "Lauf öffnen / ausführen" %}</a>
         {% if kann_schreiben and not erledigt %}
         <form method="post" action="{% url 'fw_lauf_abschliessen' lauf.pk %}">{% csrf_token %}
-            <button class="fw-btn fw-knapp" id="lauf-abschliessen"{% if blockaden %} disabled title="{% trans 'Zuerst die Blockade beheben.' %}"{% endif %}>{% trans "Lauf abschliessen" %}</button>
+            <button class="fw-btn" id="lauf-abschliessen"{% if blockaden %} disabled title="{% trans 'Zuerst die Blockade beheben.' %}"{% endif %}>{% trans "Lauf abschliessen" %}</button>
         </form>
         {% endif %}
     </div>
@@ -33,19 +33,20 @@
         <summary>{% trans "Überspringen" %}</summary>
         <form method="post" action="{% url 'fw_lauf_ueberspringen' lauf.pk %}" class="fw-eingang-knoepfe">{% csrf_token %}
             <input type="text" name="bemerkung" class="fw-feld" required maxlength="300" placeholder="{% trans 'Begründung, z. B. keine offenen Posten' %}" aria-label="{% trans 'Begründung' %}">
-            <button class="fw-btn fw-knapp">{% trans "Überspringen" %}</button>
+            <button class="fw-btn">{% trans "Überspringen" %}</button>
         </form>
     </details>
     {% endif %}
     {% if kann_schreiben and erledigt %}
     <details id="lauf-zuruecksetzen">
         <summary>{% trans "Lauf zurücksetzen" %}</summary>
+        <p class="fw-klein">{% trans "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen." %}{% if rueckgaengig %} {{ rueckgaengig.0 }} <a href="{{ rueckgaengig.1 }}">{% trans "Dorthin wechseln" %}</a>{% endif %}</p>
         <form method="post" action="{% url 'fw_lauf_zuruecksetzen' lauf.pk %}" class="fw-eingang-knoepfe">{% csrf_token %}
             <input type="text" name="grund" class="fw-feld" required maxlength="300" placeholder="{% trans 'Begründung (wird festgehalten)' %}" aria-label="{% trans 'Begründung' %}">
             {% if lauf.laufart.schluessel == 'sollstellung' %}
             <label><input type="checkbox" name="stornieren" value="1"> {% trans "Rechnungen der Periode per Gegenbuchung stornieren" %}</label>
             {% endif %}
-            <button class="fw-btn fw-knapp">{% trans "Zurücksetzen" %}</button>
+            <button class="fw-btn">{% trans "Zurücksetzen" %}</button>
         </form>
     </details>
     {% endif %}
@@ -61,8 +62,8 @@
     {% empty %}
     {% include 'fw/_empty.html' with knapp=True icon='lauf' titel=_('Noch nichts verarbeitet.') %}
     {% endfor %}
-    {% if belege.gekuerzt %}<p class="fw-s">{% trans "Liste gekürzt — die Summe zählt alle Belege." %}</p>{% endif %}
-    {% if belege.hinweis %}<p class="fw-s">{{ belege.hinweis }}</p>{% endif %}
+    {% if belege.gekuerzt %}<p class="fw-klein">{% trans "Liste gekürzt — die Summe zählt alle Belege." %}</p>{% endif %}
+    {% if belege.hinweis %}<p class="fw-klein">{{ belege.hinweis }}</p>{% endif %}
 </div>
 
 {% if lauf.bemerkung %}
