@@ -270,6 +270,16 @@ test('Läufe: eine Spalte, Stufenband in einer Reihe, Knopf neben dem Kontext', 
   }
   const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(quer).toBeLessThanOrEqual(0);
+
+  // Der LÄNGSTE Kontext («gestartet … · Stichtag … · in n Tagen») steht erst ab dem Monatsersten
+  // im Text — der Bestand von heute zeigt ihn nicht immer. Ohne diesen Fall war der Test vom
+  // Kalenderdatum abhängig: am 01.10.2026 war er rot (73 px), am 02.10. grün (43 px).
+  const lang = await karten.first().evaluate((k) => {
+    const fuss = k.querySelector('.fw-lauf-fuss')!;
+    fuss.querySelector('span')!.textContent = 'gestartet 01.10.2026 · Stichtag 05.10.2026 · in 4 Tagen';
+    return fuss.getBoundingClientRect().height;
+  });
+  expect(lang, 'Fusszeile mit langem Kontext bricht die Knöpfe unter den Text').toBeLessThan(60);
 });
 
 test('Sollstellung: die Freigabeleiste verdeckt am Telefon nicht die halbe Seite', async ({ page }) => {
