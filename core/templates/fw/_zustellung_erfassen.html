@@ -1,4 +1,10 @@
-{% load i18n zeichen %}{% comment %}Einschreiben und Zugang eines 257d-Schreibens erfassen (Sendungsnummer, Versand, Zugang). Parameter: d = rentals.Dokument, heute_iso, next = seiten-relatives /neu/-Ziel. Gibt nichts aus, wenn kein Zugangsnachweis nötig ist oder der Zugang schon bestätigt ist.{% endcomment %}{% with z=d.zustellstatus %}{% if z and z.0 != 'bestaetigt' or erzwingen and not z %}{% with p=d.zustell_pendenz %}
+{% load i18n zeichen %}{% comment %}Einschreiben und Zugang eines 257d-Schreibens erfassen (Sendungsnummer, Versand, Zugang). Parameter: d = rentals.Dokument, heute_iso, next = seiten-relatives /neu/-Ziel. Mit mit_link=True zeigt es den Track-&-Trace-Link, sobald eine Sendungsnummer erfasst ist (nur dort, wo die Fristen-Pendenz ihn nicht selbst zeigt, also im Mahnwesen); das Formular verschwindet, sobald der Zugang bestätigt ist; ohne Zugangsnachweis keine Ausgabe.{% endcomment %}{% with z=d.zustellstatus %}{% with p=d.zustell_pendenz %}{% if mit_link and z and p.sendungsnummer %}
+<div class="mt-1 fw-fs-klein">
+    <a href="https://www.post.ch/swisspost-tracking?formattedParcelCodes={{ p.sendungsnummer|urlencode }}&amp;p_language=de"
+       target="_blank" rel="noopener" class="fw-link inline-flex items-center gap-1">
+        {% zeichen 'lauf' %} Track &amp; Trace <span class="font-mono fw-klein">{{ p.sendungsnummer }}</span>
+    </a>
+</div>{% endif %}{% if z and z.0 != 'bestaetigt' or erzwingen and not z %}
 <details class="mt-1.5 fw-fs-klein" {% if z.0 == 'offen' or not z %}open{% endif %}>
     <summary class="fw-link cursor-pointer select-none">{% zeichen 'bearbeiten' klasse='mr-0.5' %}{% trans "Einschreiben / Zugang erfassen" %}</summary>
     <form method="post" action="/neu/dokument/{{ d.id }}/zustellung/" class="mt-1.5 flex items-end gap-2 flex-wrap">
@@ -15,4 +21,4 @@
         <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} {% trans "Speichern" %}</button>
     </form>
 </details>
-{% endwith %}{% endif %}{% endwith %}
+{% endif %}{% endwith %}{% endwith %}
