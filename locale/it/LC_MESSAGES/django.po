@@ -22103,3 +22103,52 @@ msgstr "Difetti: %(n)s"
 #, python-format
 msgid "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
 msgstr "%(count)s elemento/i erano già contestati nel verbale precedente: decidere se addebitarli al conduttore."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Die Unterschrift konnte nicht gelesen werden. Bitte erneut unterschreiben."
+msgstr "La firma non ha potuto essere letta. Si prega di firmare di nuovo."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Fehlend"
+msgstr "Mancante"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Ist"
+msgstr "Effettivo"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Mit dem Finger im Feld unterschreiben"
+msgstr "Firmare nel campo con il dito"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schliessanlage / Schlüsselnummer"
+msgstr "Impianto di chiusura / numero della chiave"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüssel hinzufügen"
+msgstr "Aggiungere una chiave"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüsselverzeichnis"
+msgstr "Elenco delle chiavi"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüsselzeile entfernen"
+msgstr "Rimuovere la riga della chiave"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Unterschrift Verwaltung"
+msgstr "Firma dell'amministrazione"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Unterschriften"
+msgstr "Firme"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Verwaltung"
+msgstr "Amministrazione"
+
+#: core/templates/fw/_abnahme_schluesselzeile.html
+msgctxt "Schlüssel"
+msgid "Soll"
+msgstr "Previsto"

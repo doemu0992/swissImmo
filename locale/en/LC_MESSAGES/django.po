@@ -21899,3 +21899,52 @@ msgstr "Defects: %(n)s"
 #, python-format
 msgid "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
 msgstr "%(count)s component(s) were already flagged in the previous report: please decide whether they are charged to the tenant."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Die Unterschrift konnte nicht gelesen werden. Bitte erneut unterschreiben."
+msgstr "The signature could not be read. Please sign again."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Fehlend"
+msgstr "Missing"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Ist"
+msgstr "Actual"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Mit dem Finger im Feld unterschreiben"
+msgstr "Sign in the field with your finger"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schliessanlage / Schlüsselnummer"
+msgstr "Locking system / key number"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüssel hinzufügen"
+msgstr "Add key"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüsselverzeichnis"
+msgstr "Key register"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüsselzeile entfernen"
+msgstr "Remove key row"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Unterschrift Verwaltung"
+msgstr "Signature property management"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Unterschriften"
+msgstr "Signatures"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Verwaltung"
+msgstr "Property management"
+
+#: core/templates/fw/_abnahme_schluesselzeile.html
+msgctxt "Schlüssel"
+msgid "Soll"
+msgstr "Expected"

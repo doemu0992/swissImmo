@@ -6,7 +6,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
-from reportlab.lib.utils import simpleSplit
+from reportlab.lib.utils import ImageReader, simpleSplit
+from reportlab.pdfbase.pdfmetrics import stringWidth
+from core.services.abnahme_texte import schlussbestimmungen
 from core.services.dokumentsprache import nur_deutsch
 
 
@@ -18,6 +20,28 @@ def _fmt(d):
 
 
 ZUSTAND_LABEL = {'': 'offen', 'io': 'Neu i.O.', 'normal': 'Normal', 'uebermaessig': 'Übermässig'}
+def _kuerzen(text, groesse, breite):
+    """Kürzt einen Text auf die Spaltenbreite (Helvetica), mit «…»."""
+    text = str(text or '')
+    if stringWidth(text, 'Helvetica', groesse) <= breite:
+        return text
+    while text and stringWidth(text + '…', 'Helvetica', groesse) > breite:
+        text = text[:-1]
+    return text.rstrip() + '…'
+
+
+def _bildleser(feld):
+    """Ein hochgeladenes Bild für reportlab; None, wenn keines da oder nicht lesbar
+    (eine fehlende Datei darf das PDF nicht verhindern)."""
+    if not feld:
+        return None
+    try:
+        with feld.open('rb') as f:
+            return ImageReader(io.BytesIO(f.read()))
+    except Exception:
+        return None
+
+
 VERURS_LABEL = {'abnutzung': 'normale Abnutzung', 'mieter': 'Mieter (Schaden)', 'vermieter': 'Vermieter'}
 
 
@@ -101,7 +125,10 @@ def generate_abnahme_pdf(prot, verwaltung=None):
 
     # Bewertete Bauteile (Abnahme vor Ort): alle Bauteile mit Zustand, bei
     # aufbauenden Protokollen zusätzlich der Vorzustand aus dem Vorgänger.
+    # Die Nummer läuft durch Bauteile und Schlüssel (wie im Praxisprotokoll)
+    # und verbindet die Tabelle mit den Bildern am Ende.
     positionen = list(prot.positionen.select_related('vorgaenger_position__protokoll'))
+    nummern = {pos.id: i for i, pos in enumerate(positionen, start=1)}
     if positionen:
         vorg = prot.vorgaenger
         if y < 60 * mm:
@@ -117,14 +144,16 @@ def generate_abnahme_pdf(prot, verwaltung=None):
             c.setFillColor(colors.black)
             y -= 6 * mm
 
-        # Spalten (mm): Raum 20, Bauteil 40, Vorzustand 80, Zustand 104, Kommentar 128–190
+        # Spalten (mm): Nr 20, Raum 28, Bauteil 45, Vorzustand 87, Zustand 110, Kommentar 134–190
+        bauteil_breite = (40 if vorg is not None else 62) * mm
+
         def kopfzeile():
             nonlocal y
             c.setFont("Helvetica-Bold", 8); c.setFillColor(colors.grey)
-            c.drawString(20 * mm, y, "Raum"); c.drawString(40 * mm, y, "Bauteil")
+            c.drawString(20 * mm, y, "Nr"); c.drawString(28 * mm, y, "Raum"); c.drawString(45 * mm, y, "Bauteil")
             if vorg is not None:
-                c.drawString(80 * mm, y, "Vorzustand")
-            c.drawString(104 * mm, y, "Zustand"); c.drawString(128 * mm, y, "Kommentar")
+                c.drawString(87 * mm, y, "Vorzustand")
+            c.drawString(110 * mm, y, "Zustand"); c.drawString(134 * mm, y, "Kommentar")
             c.setFillColor(colors.black)
             y -= 5 * mm
         kopfzeile()
@@ -135,25 +164,52 @@ def generate_abnahme_pdf(prot, verwaltung=None):
             elif pos.vorbestand_entscheid == 'mieter':
                 bemerkung = ('[dem Mieter belastet] ' + bemerkung).strip()
             # Langer Kommentar: bis zu drei Zeilen, der Rest wird abgeschnitten.
-            zeilen = (simpleSplit(bemerkung, "Helvetica", 8, 62 * mm)[:3]) or ['']
+            zeilen = (simpleSplit(bemerkung, "Helvetica", 8, 56 * mm)[:3]) or ['']
             hoehe = 4.2 * mm * len(zeilen) + 0.8 * mm
             if y - hoehe < 40 * mm:
                 c.showPage(); y = 280 * mm; kopfzeile()
             c.setFont("Helvetica", 8)
-            c.drawString(20 * mm, y, (pos.raum or '—')[:14])
-            c.drawString(40 * mm, y, (pos.bezeichnung or '')[:26])
+            c.drawString(20 * mm, y, str(nummern[pos.id]))
+            c.drawString(28 * mm, y, _kuerzen(pos.raum or '—', 8, 16 * mm))
+            c.drawString(45 * mm, y, _kuerzen(pos.bezeichnung or '', 8, bauteil_breite))
             if vorg is not None:
                 vp = pos.vorgaenger_position
-                c.drawString(80 * mm, y, ZUSTAND_LABEL.get(vp.zustand, '—') if vp else '—')
-            c.drawString(104 * mm, y, ZUSTAND_LABEL.get(pos.zustand, 'offen'))
+                c.drawString(87 * mm, y, ZUSTAND_LABEL.get(vp.zustand, '—') if vp else '—')
+            c.drawString(110 * mm, y, ZUSTAND_LABEL.get(pos.zustand, 'offen'))
             for i, zeile_text in enumerate(zeilen):
-                c.drawString(128 * mm, y - i * 4.2 * mm, zeile_text)
+                c.drawString(134 * mm, y - i * 4.2 * mm, zeile_text)
             y -= hoehe
         y -= 4 * mm
 
+    # Schlüsselverzeichnis: Soll gegen Ist, Nummern setzen die der Bauteile fort.
+    schluessel = list(prot.schluessel.all())
+    if schluessel:
+        if y < 60 * mm:
+            c.showPage(); y = 280 * mm
+        c.setFont("Helvetica-Bold", 11); c.drawString(20 * mm, y, "Schlüsselverzeichnis")
+        y -= 2 * mm
+        c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y)
+        y -= 5 * mm
+        c.setFont("Helvetica-Bold", 8); c.setFillColor(colors.grey)
+        c.drawString(20 * mm, y, "Nr"); c.drawString(28 * mm, y, "Schlüssel"); c.drawString(75 * mm, y, "Schliessanlage / Schlüsselnummer")
+        c.drawRightString(160 * mm, y, "Soll"); c.drawRightString(172 * mm, y, "Ist"); c.drawRightString(190 * mm, y, "Fehlend")
+        c.setFillColor(colors.black)
+        y -= 5 * mm
+        c.setFont("Helvetica", 8)
+        for i, z in enumerate(schluessel, start=len(positionen) + 1):
+            if y < 40 * mm:
+                c.showPage(); y = 280 * mm; c.setFont("Helvetica", 8)
+            c.drawString(20 * mm, y, str(i))
+            c.drawString(28 * mm, y, _kuerzen(z.bezeichnung, 8, 44 * mm))
+            c.drawString(75 * mm, y, _kuerzen(z.anlage or '—', 8, 62 * mm))
+            c.drawRightString(160 * mm, y, str(z.soll))
+            c.drawRightString(172 * mm, y, '—' if z.ist is None else str(z.ist))
+            c.drawRightString(190 * mm, y, '—' if z.fehlend is None else str(z.fehlend))
+            y -= 5 * mm
+        y -= 4 * mm
+
     if prot.bemerkungen:
-        # Der Platz über der Unterschriftszeile (bei 35 mm) bleibt frei: Reicht er
-        # nicht, geht es auf einer neuen Seite weiter.
+        # Reicht der Platz nicht, geht es auf einer neuen Seite weiter.
         if y < 60 * mm:
             c.showPage(); y = 280 * mm
         c.setFont("Helvetica-Bold", 9); c.drawString(20 * mm, y, "Bemerkungen:"); y -= 5 * mm
@@ -163,16 +219,81 @@ def generate_abnahme_pdf(prot, verwaltung=None):
                 if y < 45 * mm:
                     c.showPage(); y = 280 * mm; c.setFont("Helvetica", 9)
                 c.drawString(20 * mm, y, chunk); y -= 5 * mm
+        y -= 3 * mm
 
-    # Unterschriften: stehen fest bei 35 mm. Tabellenzeilen enden über 40 mm, und
-    # Bemerkungen brechen selbst um (siehe oben) — das Band darunter bleibt frei.
-    y = max(y, 45 * mm)
-    c.setStrokeColor(colors.HexColor("#94a3b8"))
-    c.line(20 * mm, 35 * mm, 90 * mm, 35 * mm)
-    c.line(115 * mm, 35 * mm, 185 * mm, 35 * mm)
-    c.setFont("Helvetica", 8); c.setFillColor(colors.grey)
-    c.drawString(20 * mm, 31 * mm, f"Mieter{'  ' + prot.unterschrift_mieter if prot.unterschrift_mieter else ''}")
-    c.drawString(115 * mm, 31 * mm, f"Verwaltung{'  ' + prot.unterschrift_verwalter if prot.unterschrift_verwalter else ''}")
+    # Schlussbestimmungen (Standardtext der Verwaltung, siehe abnahme_texte)
+    absaetze = schlussbestimmungen(prot)
+    if absaetze:
+        if y < 70 * mm:
+            c.showPage(); y = 280 * mm
+        c.setFont("Helvetica-Bold", 11); c.drawString(20 * mm, y, "Schlussbestimmungen")
+        y -= 2 * mm
+        c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y)
+        y -= 6 * mm
+        for titel, text in absaetze:
+            zeilen = simpleSplit(text, "Helvetica", 8.5, 170 * mm)
+            if y - (len(zeilen) + 1) * 4.2 * mm < 25 * mm:
+                c.showPage(); y = 280 * mm
+            c.setFont("Helvetica-Bold", 9); c.drawString(20 * mm, y, titel); y -= 5 * mm
+            c.setFont("Helvetica", 8.5)
+            for zeile_text in zeilen:
+                c.drawString(20 * mm, y, zeile_text); y -= 4.2 * mm
+            y -= 3 * mm
+
+    # Unterschriften: im Fluss hinter dem Inhalt, mit der gezeichneten Unterschrift über der Linie.
+    if y < 75 * mm:
+        c.showPage(); y = 280 * mm
+    y -= 4 * mm
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(20 * mm, y, "Unterschriften")
+    y -= 3 * mm
+    for x, bild, name, rolle in ((20 * mm, prot.unterschrift_mieter_bild, prot.unterschrift_mieter, 'Mieter'),
+                                 (115 * mm, prot.unterschrift_verwalter_bild, prot.unterschrift_verwalter, 'Verwaltung')):
+        leser = _bildleser(bild)
+        if leser is not None:
+            c.drawImage(leser, x, y - 26 * mm, width=70 * mm, height=25 * mm, preserveAspectRatio=True, anchor='sw')
+        c.setStrokeColor(colors.HexColor("#94a3b8"))
+        c.line(x, y - 28 * mm, x + 70 * mm, y - 28 * mm)
+        c.setFont("Helvetica", 8); c.setFillColor(colors.grey)
+        c.drawString(x, y - 32 * mm, f"{rolle}{'  ' + name if name else ''}")
+        c.setFillColor(colors.black)
+    y -= 36 * mm
+
+    # Bilder: alle Fotos der Bauteile, nach Raum gruppiert, mit der Nummer der Tabelle
+    mit_foto = [pos for pos in positionen if pos.foto]
+    if mit_foto:
+        c.showPage()
+        y = 280 * mm
+        c.setFont("Helvetica-Bold", 13); c.drawString(20 * mm, y, "Bilder")
+        y -= 3 * mm
+        c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y)
+        y -= 8 * mm
+        raum, spalte = None, 0
+        zellen_hoehe, zellen_breite = 68 * mm, 82 * mm
+        for pos in mit_foto:
+            leser = _bildleser(pos.foto)
+            if leser is None:
+                continue
+            if pos.raum != raum:
+                # Neuer Raum: neue Zeile mit Raumüberschrift
+                if spalte == 1:
+                    y -= zellen_hoehe
+                    spalte = 0
+                if y - 14 * mm - zellen_hoehe < 15 * mm:
+                    c.showPage(); y = 280 * mm
+                raum = pos.raum
+                c.setFont("Helvetica-Bold", 10); c.drawString(20 * mm, y, raum or '—')
+                y -= 7 * mm
+            if spalte == 0 and y - zellen_hoehe < 15 * mm:
+                c.showPage(); y = 280 * mm
+            x = 20 * mm + spalte * 88 * mm
+            c.setFont("Helvetica", 8)
+            c.drawString(x, y, _kuerzen(f"{nummern[pos.id]} {pos.bezeichnung}", 8, zellen_breite))
+            c.drawImage(leser, x, y - 4 * mm - 56 * mm, width=zellen_breite, height=56 * mm,
+                        preserveAspectRatio=True, anchor='nw')
+            if spalte == 1:
+                y -= zellen_hoehe
+            spalte = 1 - spalte
 
     c.showPage(); c.save(); buf.seek(0)
     return buf.read()

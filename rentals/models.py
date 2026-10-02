@@ -1013,6 +1013,12 @@ class Abnahmeprotokoll(OrganisationAusKette):
     bemerkungen = models.TextField("Bemerkungen", blank=True, default='')
     unterschrift_mieter = models.CharField("Unterschrift Mieter", max_length=120, blank=True, default='')
     unterschrift_verwalter = models.CharField("Unterschrift Verwalter", max_length=120, blank=True, default='')
+    # Handschrift auf dem Bildschirm (PNG). Der Name oben bleibt: er steht auch im
+    # PDF unter der Linie, wenn jemand nur tippt statt zu unterschreiben.
+    unterschrift_mieter_bild = models.ImageField("Unterschrift Mieter (Bild)", upload_to=get_smart_upload_path,
+                                                 null=True, blank=True)
+    unterschrift_verwalter_bild = models.ImageField("Unterschrift Verwaltung (Bild)", upload_to=get_smart_upload_path,
+                                                    null=True, blank=True)
     abgeschlossen = models.BooleanField("Abgeschlossen", default=False)
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
@@ -1104,6 +1110,33 @@ class AbnahmeMangel(OrganisationAusKette):
         Nur für verursacher='mieter'; sonst 0. Abgelaufene Lebensdauer → 0,
         ausser bei absichtlicher Beschädigung (`vorsaetzlich`) → voller Betrag."""
         return self.berechne_ergebnis(stichtag).betrag
+
+
+class AbnahmeSchluessel(OrganisationAusKette):
+    ORGANISATION_PFAD = 'protokoll'
+    """Eine Zeile im Schlüsselverzeichnis der Abnahme: Soll gegen Ist.
+
+    Soll kommt aus dem Schlüsselregister der Einheit (oder dem Vorgänger-
+    Protokoll), Ist wird bei der Abnahme gezählt. Fehlende Schlüssel sind
+    `soll − ist` und gehören dem Mieter (Kostenanteil)."""
+    protokoll = models.ForeignKey(Abnahmeprotokoll, on_delete=models.CASCADE, related_name='schluessel')
+    bezeichnung = models.CharField("Schlüssel", max_length=80)
+    anlage = models.CharField("Schliessanlage / Schlüsselnummer", max_length=80, blank=True, default='')
+    soll = models.PositiveSmallIntegerField("Soll", default=0)
+    ist = models.PositiveSmallIntegerField("Ist", null=True, blank=True)
+    sortierung = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'core_abnahmeschluessel'
+        ordering = ['sortierung', 'id']
+
+    def __str__(self):
+        return f"{self.bezeichnung}: {self.ist if self.ist is not None else '?'}/{self.soll}"
+
+    @property
+    def fehlend(self):
+        """Fehlende Schlüssel; None, solange nicht gezählt (None heisst nicht erfasst, 0 heisst vollständig)."""
+        return None if self.ist is None else max(0, self.soll - self.ist)
 
 
 class AbnahmePosition(OrganisationAusKette):

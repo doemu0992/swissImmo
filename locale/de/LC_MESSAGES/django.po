@@ -22013,3 +22013,52 @@ msgstr "Mängel: %(n)s"
 #, python-format
 msgid "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
 msgstr "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Die Unterschrift konnte nicht gelesen werden. Bitte erneut unterschreiben."
+msgstr "Die Unterschrift konnte nicht gelesen werden. Bitte erneut unterschreiben."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Fehlend"
+msgstr "Fehlend"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Ist"
+msgstr "Ist"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Mit dem Finger im Feld unterschreiben"
+msgstr "Mit dem Finger im Feld unterschreiben"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schliessanlage / Schlüsselnummer"
+msgstr "Schliessanlage / Schlüsselnummer"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüssel hinzufügen"
+msgstr "Schlüssel hinzufügen"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüsselverzeichnis"
+msgstr "Schlüsselverzeichnis"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüsselzeile entfernen"
+msgstr "Schlüsselzeile entfernen"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Unterschrift Verwaltung"
+msgstr "Unterschrift Verwaltung"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Unterschriften"
+msgstr "Unterschriften"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Verwaltung"
+msgstr "Verwaltung"
+
+#: core/templates/fw/_abnahme_schluesselzeile.html
+msgctxt "Schlüssel"
+msgid "Soll"
+msgstr "Soll"

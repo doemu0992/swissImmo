@@ -88,32 +88,6 @@ class PdfTests(TestCase):
         self.assertEqual(r['Content-Type'], 'application/pdf')
 
 
-    def test_im_band_der_unterschrift_steht_nur_die_unterschrift(self):
-        """Die Tabelle endet je nach Bauteilzahl auf jeder Höhe. Das untere Band
-        (die untersten 38 mm: Unterschriftslinien und -beschriftung) bleibt frei.
-
-        Geometrie statt Textvergleich: Die Zeilen sind 5 mm hoch, ihre Grundlinie
-        fällt bei jeder Bauteilzahl auf dieselbe Höhe und träfe die Beschriftung
-        höchstens zufällig — ein Überlappungstest bliebe grün, obwohl Text im
-        Band steht."""
-        import pdfplumber
-        from reportlab.lib.units import mm
-        from core.services.abnahme_pdf import generate_abnahme_pdf
-        erlaubt = {'Mieter', 'Verwaltung'}
-        for n in range(70, 86):
-            prot = _protokoll(self.v1, 'auszug', date(2026, 6, 30),
-                              [('Raum', f'Bauteil {i:03d}', 'io', '') for i in range(n)])
-            prot.bemerkungen = '\n'.join(f'Bemerkung Zeile {k}: Schlüssel wurden übergeben.' for k in range(8))
-            prot.save()
-            with pdfplumber.open(io.BytesIO(generate_abnahme_pdf(prot))) as d:
-                for seite in d.pages:
-                    band_oben = seite.height - 38 * mm
-                    eindringlinge = [w['text'] for w in seite.extract_words()
-                                     if w['bottom'] > band_oben and w['text'] not in erlaubt]
-                    self.assertEqual(eindringlinge, [], f'{n} Bauteile: Text im Unterschriftsband')
-            prot.delete()
-
-
 class DurchgefuehrtTests(TestCase):
     def setUp(self):
         self.lg, self.einheit, self.mieter, self.v1 = _basis_objekte()

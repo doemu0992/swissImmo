@@ -58,6 +58,17 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
 .vo-entscheid button { min-height: 2.75rem; border-radius:var(--ds-radius); border: 1px solid var(--ds-line-stark); background: var(--ds-surface);
     color: var(--ds-ink); font-weight: 600; cursor: pointer; padding: 0 .8rem; text-align: left; }
 .vo-entscheid button[aria-pressed="true"] { background: var(--ds-brand); color: var(--ds-auf-satt); border-color: var(--ds-brand); }
+.vo-skz { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; padding: .6rem; margin-bottom: .5rem;
+    background: var(--ds-surface-2); border: 1px solid var(--ds-line); border-radius:var(--ds-radius-lg); }
+.vo-skz .breit { grid-column: span 3; }
+.vo-skz .zwei { grid-column: span 2; }
+.vo-skz input { width: 100%; min-width: 0; box-sizing: border-box; }
+.vo-skz label { display: grid; min-width: 0; gap: .15rem; font-size: .75rem; color: var(--ds-muted); }
+.vo-skz-fehlt { display: grid; gap: .15rem; font-size: .75rem; color: var(--ds-muted); }
+.vo-skz-fehlt b { min-height: 2.75rem; display: flex; align-items: center; font-size: 1rem; color: var(--ds-ink); }
+.vo-pad { border: 1px solid var(--ds-line-stark); border-radius:var(--ds-radius-lg); background: var(--ds-surface); overflow: hidden; }
+.vo-pad canvas { display: block; width: 100%; height: 9rem; touch-action: none; cursor: crosshair; }
+.vo-padzeile { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
 .vo-fuss { display: flex; gap: .6rem; margin: 1rem 0 2rem; }
 .vo-fuss > * { flex: 1; text-align: center; justify-content: center; min-height: 2.75rem; }
 .vo-status { min-height: 1.4rem; font-size: .85rem; color: var(--ds-muted); margin-bottom: .5rem; }
@@ -109,7 +120,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     {% for pos in raum.positionen %}
     <section class="vo-karte" data-pos="{{ pos.id }}" data-zustand="{{ pos.zustand }}" data-vor="{{ pos.vorgaenger_position.zustand }}">
         <div class="vo-kopf">
-            <h3>{{ forloop.counter }}. {{ pos.bezeichnung }}</h3>
+            <h3 data-nr="{{ forloop.counter }}">{{ forloop.counter }}. {{ pos.bezeichnung }}</h3>
             <button type="button" class="vo-ikon" data-kommentar aria-label="{% trans 'Kommentar' %}" title="{% trans 'Kommentar' %}">{% zeichen 'hinweis' %}</button>
             <label class="vo-ikon" title="{% trans 'Foto aufnehmen' %}">{% zeichen 'dokument' %}<span class="vo-sr">{% trans "Foto aufnehmen" %}</span>
                 <input type="file" accept="image/*" capture="environment" hidden data-foto></label>
@@ -135,6 +146,8 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
         </div>
         {% endif %}{% endwith %}{% endif %}
         <div class="vo-mehr" {% if not pos.kommentar and pos.zustand != 'uebermaessig' and not pos.foto %}hidden{% endif %}>
+            <label class="vo-feld"><span class="fw-label">{% trans "Bezeichnung" %}</span>
+                <input class="fw-feld" name="bezeichnung" data-feld="bezeichnung" maxlength="120" value="{{ pos.bezeichnung }}"></label>
             <textarea class="fw-feld" rows="2" name="kommentar" data-feld="kommentar" placeholder="{% trans 'Kommentar' %}" {% if not pos.kommentar %}hidden{% endif %}>{{ pos.kommentar }}</textarea>
             <div class="vo-schaden" {% if pos.zustand != 'uebermaessig' %}hidden{% endif %}>
                 <div class="vo-feld"><label class="fw-label">{% trans "Kostenschätzung CHF" %}</label>
@@ -160,10 +173,26 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
         <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Strom" %}</label><input class="fw-feld" name="zaehler_strom" inputmode="decimal"></div>
         <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Wasser" %}</label><input class="fw-feld" name="zaehler_wasser" inputmode="decimal"></div>
         <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Gas/Wärme" %}</label><input class="fw-feld" name="zaehler_gas" inputmode="decimal"></div>
-        <div class="vo-feld"><label class="fw-label">{% trans "Schlüssel" %}</label><input class="fw-feld" name="schluessel_anzahl" inputmode="numeric"></div>
+        <div class="vo-feld"><span class="fw-label">{% trans "Schlüsselverzeichnis" %}</span>
+            <div id="voSchluessel">
+                {% for z in schluessel %}{% include 'fw/_abnahme_schluesselzeile.html' with z=z %}{% endfor %}
+            </div>
+            <button type="button" class="fw-btn" id="voSchAdd">{% trans "Schlüssel hinzufügen" %}</button>
+            <template id="voSchTpl">{% include 'fw/_abnahme_schluesselzeile.html' with z=None %}</template>
+        </div>
         <div class="vo-feld"><label class="fw-label">{% trans "Bemerkungen" %}</label><textarea class="fw-feld" name="bemerkungen" rows="3"></textarea></div>
-        <div class="vo-feld"><label class="fw-label">{% trans "Unterschrift Mieter (Name)" %}</label><input class="fw-feld" name="unterschrift_mieter" value="{{ v.mieter.display_name }}"></div>
-        <div class="vo-feld"><label class="fw-label">{% trans "Unterschrift Verwaltung (Name)" %}</label><input class="fw-feld" name="unterschrift_verwalter" value="{{ p.verwalter_name }}"></div>
+        <div class="vo-feld"><label class="fw-label">{% trans "Unterschrift Mieter (Name)" %}</label>
+            <input class="fw-feld" name="unterschrift_mieter" value="{{ v.mieter.display_name }}">
+            <div class="vo-pad"><canvas data-pad="unterschrift_mieter_bild" width="900" height="360" aria-label="{% trans 'Unterschrift Mieter' %}"></canvas></div>
+            <div class="vo-padzeile"><small class="fw-faint">{% trans "Mit dem Finger im Feld unterschreiben" %}</small>
+                <button type="button" class="fw-btn" data-pad-weg="unterschrift_mieter_bild">{% trans "Löschen" %}</button></div>
+            <input type="hidden" name="unterschrift_mieter_bild" id="unterschrift_mieter_bild"></div>
+        <div class="vo-feld"><label class="fw-label">{% trans "Unterschrift Verwaltung (Name)" %}</label>
+            <input class="fw-feld" name="unterschrift_verwalter" value="{{ p.verwalter_name }}">
+            <div class="vo-pad"><canvas data-pad="unterschrift_verwalter_bild" width="900" height="360" aria-label="{% trans 'Unterschrift Verwaltung' %}"></canvas></div>
+            <div class="vo-padzeile"><small class="fw-faint">{% trans "Mit dem Finger im Feld unterschreiben" %}</small>
+                <button type="button" class="fw-btn" data-pad-weg="unterschrift_verwalter_bild">{% trans "Löschen" %}</button></div>
+            <input type="hidden" name="unterschrift_verwalter_bild" id="unterschrift_verwalter_bild"></div>
         <div class="vo-fuss">
             {% if vorher is not None %}<a class="fw-btn" href="?r={{ vorher }}">{% trans "Zurück" %}</a>{% endif %}
             <button type="submit" class="fw-btn fw-gutknopf">{% trans "Abnahme abschliessen" %}</button>
@@ -286,10 +315,63 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
             e.target.value = '';
         } else if (e.target.matches('[data-feld="vorsatz"]')) {
             senden(karte, { vorsatz: e.target.checked ? '1' : '0' }).catch(function () {});
+        } else if (e.target.matches('[data-feld="bezeichnung"]')) {
+            senden(karte, { bezeichnung: e.target.value }).then(function (j) {
+                var h = karte.querySelector('h3');
+                h.textContent = h.dataset.nr + '. ' + j.bezeichnung;
+                e.target.value = j.bezeichnung;
+            }).catch(function () {});
         } else if (e.target.matches('[data-feld="kommentar"], [data-feld="kosten"]')) {
             var d = {}; d[e.target.dataset.feld] = e.target.value;
             senden(karte, d).catch(function () {});
         }
+    });
+})();
+
+// Abschluss: Schlüsselverzeichnis (Zeilen ergänzen/entfernen, Fehlend rechnen) und Unterschriftsfelder
+(function () {
+    var liste = document.getElementById('voSchluessel');
+    if (!liste) return;
+    function fehlend(zeile) {
+        var soll = parseInt(zeile.querySelector('[name=s_soll]').value, 10);
+        var ist = parseInt(zeile.querySelector('[name=s_ist]').value, 10);
+        zeile.querySelector('[data-fehlt]').textContent = (isNaN(soll) || isNaN(ist)) ? '–' : Math.max(0, soll - ist);
+    }
+    liste.querySelectorAll('.vo-skz').forEach(fehlend);
+    liste.addEventListener('input', function (e) { var z = e.target.closest('.vo-skz'); if (z) fehlend(z); });
+    liste.addEventListener('click', function (e) {
+        if (e.target.closest('[data-sch-weg]')) e.target.closest('.vo-skz').remove();
+    });
+    document.getElementById('voSchAdd').addEventListener('click', function () {
+        liste.appendChild(document.getElementById('voSchTpl').content.cloneNode(true));
+        var z = liste.lastElementChild; fehlend(z); z.querySelector('[name=s_bezeichnung]').focus();
+    });
+
+    var pads = {};
+    document.querySelectorAll('canvas[data-pad]').forEach(function (c) {
+        var ctx = c.getContext('2d'), zeichnet = false, benutzt = false, letzte = null;
+        function leeren() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); benutzt = false; }
+        function punkt(e) {
+            var r = c.getBoundingClientRect();
+            return { x: (e.clientX - r.left) * c.width / r.width, y: (e.clientY - r.top) * c.height / r.height };
+        }
+        leeren();
+        ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000000';
+        c.addEventListener('pointerdown', function (e) { zeichnet = true; letzte = punkt(e); c.setPointerCapture(e.pointerId);
+            ctx.beginPath(); ctx.moveTo(letzte.x, letzte.y); ctx.lineTo(letzte.x + 0.1, letzte.y + 0.1); ctx.stroke(); benutzt = true; e.preventDefault(); });
+        c.addEventListener('pointermove', function (e) { if (!zeichnet) return; var p = punkt(e);
+            ctx.beginPath(); ctx.moveTo(letzte.x, letzte.y); ctx.lineTo(p.x, p.y); ctx.stroke(); letzte = p; e.preventDefault(); });
+        ['pointerup', 'pointercancel'].forEach(function (n) { c.addEventListener(n, function () { zeichnet = false; }); });
+        pads[c.dataset.pad] = { leeren: leeren, benutzt: function () { return benutzt; }, bild: function () { return c.toDataURL('image/png'); } };
+    });
+    document.querySelectorAll('[data-pad-weg]').forEach(function (b) {
+        b.addEventListener('click', function () { pads[b.dataset.padWeg].leeren(); document.getElementById(b.dataset.padWeg).value = ''; });
+    });
+    // Beim Absenden: gezeichnete Unterschrift als PNG in das versteckte Feld
+    liste.closest('form').addEventListener('submit', function () {
+        Object.keys(pads).forEach(function (name) {
+            document.getElementById(name).value = pads[name].benutzt() ? pads[name].bild() : '';
+        });
     });
 })();
 </script>
