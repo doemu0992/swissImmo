@@ -630,7 +630,17 @@ def fw_lauf_detail(request, pk):
     basis = _global_filter(request)
     lauf = get_object_or_404(Lauf.objects.select_related('laufart', 'abgeschlossen_durch'), pk=pk)
     erledigt = lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN)
-    return render(request, 'fw/lauf_detail.html', {
+    # «Zurücksetzen» öffnet nur den Lauf, die gebuchten Belege bleiben. Den Weg,
+    # sie rückgängig zu machen, gibt es je Laufart schon — hier wird er genannt.
+    rueckgaengig = {
+        'bankabgleich': (gettext('Einen Bank-Import macht «Import rückgängig» im Bankabgleich revisionssicher rückgängig.'),
+                         '/neu/bankabgleich/'),
+        'zahllauf': (gettext('Rechnungen «in Zahlung» setzt «Auswahl zurücksetzen» im Zahllauf wieder auf freigegeben.'),
+                     '/neu/zahllauf/'),
+        'mahnlauf': (gettext('Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird.'),
+                     '/neu/debitoren/'),
+    }.get(lauf.laufart.schluessel)
+    return render(request, 'fw/lauf_detail.html', {'rueckgaengig': rueckgaengig,
         **basis, 'nav': 'laeufe', 'lauf': lauf, 'erledigt': erledigt,
         'blockaden': list(lauf.offene_blockaden),
         'belege': belege(lauf),

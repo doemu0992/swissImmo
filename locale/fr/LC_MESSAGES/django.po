@@ -21720,3 +21720,44 @@ msgstr "Rendez-vous : %(d)s"
 msgid "Nachricht an %(f)s"
 msgstr "Message à %(f)s"
 
+
+
+#: core/views/fw/bankabgleich.py:782
+msgid ""
+"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts "
+"gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgstr "L'importation a été interrompue et entièrement annulée — rien n'a été enregistré. Veuillez vérifier le fichier (endommagé ou incomplet ?)."
+
+#: core/views/fw/mahnwesen.py:491
+msgid ""
+"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
+"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
+"erzwingen."
+msgstr "Le processus de rappels de ce mois est déjà clôturé — aucun double rappel. Pour le répéter, réinitialisez-le sous « Processus » ou forcez-le volontairement."
+
+#: core/views/fw/sollstellung.py:189
+#, python-format
+msgid ""
+"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
+"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
+msgstr "La facturation des loyers %(titel)s est déjà clôturée — rien n'a été facturé deux fois. Pour la répéter, réinitialisez d'abord le processus sous « Processus »."
+
+#: core/views/fw/arbeit.py
+msgid "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
+msgstr "La réinitialisation rouvre seulement le processus — les pièces déjà comptabilisées restent."
+
+#: core/views/fw/arbeit.py
+msgid "Dorthin wechseln"
+msgstr "Y aller"
+
+#: core/views/fw/arbeit.py
+msgid "Einen Bank-Import macht «Import rückgängig» im Bankabgleich revisionssicher rückgängig."
+msgstr "Une importation bancaire s'annule de façon traçable avec « Annuler l'importation » dans le rapprochement bancaire."
+
+#: core/views/fw/arbeit.py
+msgid "Rechnungen «in Zahlung» setzt «Auswahl zurücksetzen» im Zahllauf wieder auf freigegeben."
+msgstr "Les factures « en paiement » repassent à « validées » avec « Réinitialiser la sélection » dans le lot de paiement."
+
+#: core/views/fw/arbeit.py
+msgid "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."
+msgstr "Un frais de rappel est annulé en annulant sa facture sous Débiteurs."
