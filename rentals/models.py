@@ -983,7 +983,22 @@ class Abnahmeprotokoll(OrganisationAusKette):
     """Wohnungsabnahme-Protokoll (Einzug/Auszug): Zustand Raum-für-Raum mit
     Mängeln, Verursacher-Zuordnung, Fotos, Zählerständen und Unterschriften."""
     TYP_CHOICES = [('einzug', _('Einzug / Übergabe')), ('auszug', _('Auszug / Rücknahme'))]
+    # CASCADE bleibt (PROTECT blockierte das Löschen von Mieter, Eigentümer und
+    # Liegenschaft und damit den Daten-Reset). Der Schutz vor versehentlichem
+    # Löschen sitzt dort, wo ein Mensch ihn auslöst: `fw_vertrag_loeschen`
+    # verweigert, solange Protokolle am Vertrag hängen.
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE, related_name='abnahmen')
+    # Die Ablage: Jedes Protokoll steht bei der Einheit, über alle Mieter hinweg.
+    # Abgeleitet aus dem Vertrag (save), nicht eingegeben.
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='abnahmen',
+                                editable=False)
+    # Das Protokoll, auf dem dieses aufbaut (Auszug → späterer Einzug und umgekehrt).
+    vorgaenger = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='nachfolger', verbose_name="Baut auf Protokoll")
+    # Aus- und Einzug in einem Termin: der Vertrag des Nachmieters, für den beim
+    # Abschluss das Einzugsprotokoll vorbereitet wird.
+    folge_vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True,
+                                      blank=True, related_name='+')
     typ = models.CharField("Art", max_length=10, choices=TYP_CHOICES, default='auszug')
     datum = models.DateField("Datum", default=timezone.now)
     mieter_anwesend = models.BooleanField("Mieter anwesend", default=True)
@@ -1006,6 +1021,11 @@ class Abnahmeprotokoll(OrganisationAusKette):
         verbose_name_plural = "Abnahmeprotokolle"
         ordering = ['-datum', '-id']
         db_table = 'core_abnahmeprotokoll'
+
+    def save(self, *args, **kwargs):
+        if self.einheit_id is None and self.vertrag_id:
+            self.einheit_id = self.vertrag.einheit_id
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.get_typ_display()} {self.vertrag} ({self.datum})"
@@ -1114,6 +1134,16 @@ class AbnahmePosition(OrganisationAusKette):
     mangel = models.OneToOneField(AbnahmeMangel, on_delete=models.SET_NULL, null=True, blank=True,
                                   related_name='position')
     sortierung = models.PositiveIntegerField(default=0)
+    # Dasselbe Bauteil im Vorgänger-Protokoll: der Vorzustand.
+    vorgaenger_position = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='nachfolger')
+    # Wurde das Bauteil schon im Vorgänger als übermässig abgenutzt festgehalten
+    # und ist es jetzt wieder so, entscheidet der Verwalter, ob es dem Mieter
+    # belastet wird (z. B. weil es sich verschlechtert hat) oder vorbestehend ist.
+    ENTSCHEID = [('', _('Offen')), ('mieter', _('Weiterhin dem Mieter belasten')),
+                 ('vorbestehend', _('Vorbestehend, nicht belasten'))]
+    vorbestand_entscheid = models.CharField("Entscheid Vorbestand", max_length=12, choices=ENTSCHEID,
+                                            blank=True, default='')
 
     class Meta:
         db_table = 'core_abnahmeposition'
@@ -1121,6 +1151,18 @@ class AbnahmePosition(OrganisationAusKette):
 
     def __str__(self):
         return f"{self.raum}: {self.bezeichnung} ({self.zustand or 'offen'})"
+
+    @property
+    def vorbestand_warnung(self):
+        """Beim Auszug: übermässig abgenutzt, war es aber schon im Vorgänger-Protokoll."""
+        return (self.protokoll.typ == 'auszug' and self.zustand == 'uebermaessig'
+                and self.vorgaenger_position_id is not None
+                and self.vorgaenger_position.zustand == 'uebermaessig')
+
+    @property
+    def vorbestand_offen(self):
+        """Warnung, die der Verwalter noch bestätigen muss."""
+        return self.vorbestand_warnung and not self.vorbestand_entscheid
 
     def mangel_abgleichen(self):
         """Hält den `AbnahmeMangel` im Einklang mit dem Zustand.
@@ -1137,7 +1179,9 @@ class AbnahmePosition(OrganisationAusKette):
         beschreibung = self.bezeichnung + (f": {self.kommentar.strip()}" if self.kommentar.strip() else '')
         mangel.raum = self.raum
         mangel.beschreibung = beschreibung[:255]
-        mangel.verursacher = 'mieter' if self.protokoll.typ == 'auszug' else 'vermieter'
+        mieterschaden = (self.protokoll.typ == 'auszug'
+                         and not (self.vorbestand_warnung and self.vorbestand_entscheid == 'vorbestehend'))
+        mangel.verursacher = 'mieter' if mieterschaden else 'vermieter'
         mangel.ausstattung = self.ausstattung
         mangel.kostenschaetzung = self.kostenschaetzung
         mangel.vorsaetzlich = self.vorsaetzlich

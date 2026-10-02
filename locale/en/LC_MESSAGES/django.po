@@ -21808,3 +21808,94 @@ msgstr "More groups:"
 #, python-format
 msgid "Es gibt einen offenen Entwurf vom %(datum)s."
 msgstr "There is an open draft from %(datum)s."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahmen"
+msgstr "Inspections"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Aus- und Einzug"
+msgstr "Move-out and move-in"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Dem Mieter belastet"
+msgstr "Charged to the tenant"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Der Vertrag hat Abnahmeprotokolle und kann nicht gelöscht werden: Sie gehören zur Einheit."
+msgstr "The contract has inspection reports and cannot be deleted: they belong to the unit."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Einzugsprotokoll für den Nachmieter vorbereitet: bitte prüfen und abschliessen."
+msgstr "Move-in report for the new tenant prepared: please review and complete."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Neue Abnahme starten"
+msgstr "Start new inspection"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Noch keine Abnahme an diesem Objekt."
+msgstr "No inspection for this unit yet."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Protokoll öffnen"
+msgstr "Open report"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schon im Vorprotokoll als übermässig abgenutzt festgehalten. Soll der Mangel dem Mieter belastet werden?"
+msgstr "Already recorded as excessively worn in the previous report. Should the defect be charged to the tenant?"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorbestehend"
+msgstr "Pre-existing"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorbestehend, nicht belasten"
+msgstr "Pre-existing, do not charge"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorzustand"
+msgstr "Previous condition"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Weiterhin dem Mieter belasten"
+msgstr "Still charge to the tenant"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Wie Vorprotokoll übernehmen (nur i.O. und Normal)"
+msgstr "Copy from previous report (only OK and normal)"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Aus- und Einzug: Das Einzugsprotokoll für %(name)s wird beim Abschluss vorbereitet."
+msgstr "Move-out and move-in: the move-in report for %(name)s is prepared on completion."
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Aus letzter Abnahme (%(art)s %(datum)s)"
+msgstr "From last inspection (%(art)s %(datum)s)"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Letzte Abnahme dieser Einheit: %(art)s vom %(datum)s (%(name)s). Mit der Vorlage «Aus letzter Abnahme» steht ihr Zustand neben jedem Bauteil."
+msgstr "Last inspection of this unit: %(art)s of %(datum)s (%(name)s). With the template “From last inspection”, its condition is shown next to each component."
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Vorbestand noch nicht entschieden: %(n)s"
+msgstr "Pre-existing condition not yet decided: %(n)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Baut auf: %(art)s vom %(datum)s"
+msgstr "Based on: %(art)s of %(datum)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Mängel: %(n)s"
+msgstr "Defects: %(n)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
+msgstr "%(count)s component(s) were already flagged in the previous report: please decide whether they are charged to the tenant."

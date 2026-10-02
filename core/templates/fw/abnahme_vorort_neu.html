@@ -16,7 +16,8 @@ im Quelltext, JavaScript ergänzt nur die Knöpfe.
     color: var(--ds-muted); font-weight: 600; cursor: pointer; }
 .vn-reiter button[aria-selected="true"] { color: var(--ds-ink); border-bottom-color: var(--ds-brand); }
 .vn [hidden] { display: none !important; }
-.vn-feld { display: grid; gap: .25rem; margin-bottom: .9rem; }
+.vn-feld { display: grid; grid-template-columns: minmax(0, 1fr); gap: .25rem; margin-bottom: .9rem; }
+.vn-feld select { max-width: 100%; text-overflow: ellipsis; }   /* lange Vorlagen-Namen dürfen den Rand nicht sprengen */
 .vn-liste { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; }   /* minmax: sonst weitet das Textfeld die Spalte über den Rand */
 .vn-zeile { display: flex; align-items: center; gap: .15rem; background: var(--ds-surface); border: 1px solid var(--ds-line);
     border-radius:var(--ds-radius-lg); padding: .25rem .25rem .25rem .6rem; }
@@ -74,13 +75,17 @@ im Quelltext, JavaScript ergänzt nur die Knöpfe.
                 <select class="fw-feld" name="typ" id="vnTyp">
                     <option value="auszug" {% if typ == 'auszug' %}selected{% endif %}>{% trans "Auszug / Rücknahme" %}</option>
                     <option value="einzug" {% if typ == 'einzug' %}selected{% endif %}>{% trans "Einzug / Übergabe" %}</option>
-                </select></div>
+                    {% if nachmieter %}<option value="beides" {% if typ == 'beides' %}selected{% endif %}>{% trans "Aus- und Einzug" %}</option>{% endif %}
+                </select>
+                {% if nachmieter %}<small class="fw-faint">{% blocktrans with name=nachmieter.mieter.display_name %}Aus- und Einzug: Das Einzugsprotokoll für {{ name }} wird beim Abschluss vorbereitet.{% endblocktrans %}</small>{% endif %}</div>
             <div class="vn-feld"><label class="fw-label" for="vnVorlage">{% trans "Strukturvorlage" %}</label>
                 <select class="fw-feld" name="vorlage" id="vnVorlage">
+                    {% if 'vorgaenger' in vorlagen %}<option value="vorgaenger" {% if vorlage == 'vorgaenger' %}selected{% endif %}>{% blocktrans with art=vorgaenger.get_typ_display datum=vorgaenger.datum|date:"d.m.Y" %}Aus letzter Abnahme ({{ art }} {{ datum }}){% endblocktrans %}</option>{% endif %}
                     {% if 'raumbuch' in vorlagen %}<option value="raumbuch" {% if vorlage == 'raumbuch' %}selected{% endif %}>{% trans "Aus dem Raumbuch" %}</option>{% endif %}
                     <option value="standard" {% if vorlage == 'standard' %}selected{% endif %}>{% trans "Standard (Wohnung)" %}</option>
                     <option value="leer" {% if vorlage == 'leer' %}selected{% endif %}>{% trans "Leer" %}</option>
                 </select></div>
+            {% if vorgaenger %}<p class="vn-hinweis">{% blocktrans with art=vorgaenger.get_typ_display datum=vorgaenger.datum|date:"d.m.Y" name=vorgaenger.vertrag.mieter.display_name %}Letzte Abnahme dieser Einheit: {{ art }} vom {{ datum }} ({{ name }}). Mit der Vorlage «Aus letzter Abnahme» steht ihr Zustand neben jedem Bauteil.{% endblocktrans %}</p>{% endif %}
             <div class="vn-fuss"><span></span><button type="button" class="fw-btn fw-gutknopf" data-tab="struktur">{% trans "Weiter" %}</button></div>
         </section>
 

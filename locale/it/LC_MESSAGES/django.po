@@ -22012,3 +22012,94 @@ msgstr "Altri gruppi:"
 #, python-format
 msgid "Es gibt einen offenen Entwurf vom %(datum)s."
 msgstr "Esiste una bozza aperta del %(datum)s."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahmen"
+msgstr "Ispezioni"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Aus- und Einzug"
+msgstr "Uscita e ingresso"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Dem Mieter belastet"
+msgstr "Addebitato al conduttore"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Der Vertrag hat Abnahmeprotokolle und kann nicht gelöscht werden: Sie gehören zur Einheit."
+msgstr "Il contratto ha verbali di ispezione e non può essere eliminato: appartengono all'unità."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Einzugsprotokoll für den Nachmieter vorbereitet: bitte prüfen und abschliessen."
+msgstr "Verbale di ingresso per il nuovo conduttore preparato: verificare e concludere."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Neue Abnahme starten"
+msgstr "Avviare una nuova ispezione"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Noch keine Abnahme an diesem Objekt."
+msgstr "Nessuna ispezione per questo oggetto."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Protokoll öffnen"
+msgstr "Aprire il verbale"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schon im Vorprotokoll als übermässig abgenutzt festgehalten. Soll der Mangel dem Mieter belastet werden?"
+msgstr "Già registrato come usura eccessiva nel verbale precedente. Il difetto deve essere addebitato al conduttore?"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorbestehend"
+msgstr "Preesistente"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorbestehend, nicht belasten"
+msgstr "Preesistente, non addebitare"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorzustand"
+msgstr "Stato precedente"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Weiterhin dem Mieter belasten"
+msgstr "Continuare ad addebitare al conduttore"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Wie Vorprotokoll übernehmen (nur i.O. und Normal)"
+msgstr "Riprendere dal verbale precedente (solo in ordine e normale)"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Aus- und Einzug: Das Einzugsprotokoll für %(name)s wird beim Abschluss vorbereitet."
+msgstr "Uscita e ingresso: il verbale di ingresso per %(name)s viene preparato alla conclusione."
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Aus letzter Abnahme (%(art)s %(datum)s)"
+msgstr "Dall'ultima ispezione (%(art)s %(datum)s)"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Letzte Abnahme dieser Einheit: %(art)s vom %(datum)s (%(name)s). Mit der Vorlage «Aus letzter Abnahme» steht ihr Zustand neben jedem Bauteil."
+msgstr "Ultima ispezione di questa unità: %(art)s del %(datum)s (%(name)s). Con il modello «Dall'ultima ispezione» il suo stato appare accanto a ogni elemento."
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Vorbestand noch nicht entschieden: %(n)s"
+msgstr "Stato preesistente non ancora deciso: %(n)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Baut auf: %(art)s vom %(datum)s"
+msgstr "Basato su: %(art)s del %(datum)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Mängel: %(n)s"
+msgstr "Difetti: %(n)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
+msgstr "%(count)s elemento/i erano già contestati nel verbale precedente: decidere se addebitarli al conduttore."

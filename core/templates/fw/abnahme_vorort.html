@@ -50,6 +50,14 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     padding: .8rem 1rem; margin-bottom: .9rem; }
 .vo-legende .vo-ampel { margin-top: 0; }
 .vo-legende small { display: block; margin-bottom: .6rem; color: var(--ds-muted); }
+.vo-wievor { display: block; width: 100%; margin-bottom: .8rem; min-height: 2.75rem; }
+.vo-vor { margin-top: .5rem; font-size: .85rem; color: var(--ds-muted); }
+.vo-warn { margin-top: .7rem; padding: .7rem .8rem; border-radius:var(--ds-radius-lg); background: var(--ds-warn-soft); color: var(--ds-ink); }
+.vo-warn p { margin: 0 0 .5rem; font-weight: 600; }
+.vo-entscheid { display: grid; gap: .4rem; }
+.vo-entscheid button { min-height: 2.75rem; border-radius:var(--ds-radius); border: 1px solid var(--ds-line-stark); background: var(--ds-surface);
+    color: var(--ds-ink); font-weight: 600; cursor: pointer; padding: 0 .8rem; text-align: left; }
+.vo-entscheid button[aria-pressed="true"] { background: var(--ds-brand); color: var(--ds-auf-satt); border-color: var(--ds-brand); }
 .vo-fuss { display: flex; gap: .6rem; margin: 1rem 0 2rem; }
 .vo-fuss > * { flex: 1; text-align: center; justify-content: center; min-height: 2.75rem; }
 .vo-status { min-height: 1.4rem; font-size: .85rem; color: var(--ds-muted); margin-bottom: .5rem; }
@@ -96,8 +104,10 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
         </div>
     </div>
 
+    {% if vorgaenger %}<button type="button" class="fw-btn vo-wievor" data-wie-vor>{% trans "Wie Vorprotokoll übernehmen (nur i.O. und Normal)" %}</button>{% endif %}
+
     {% for pos in raum.positionen %}
-    <section class="vo-karte" data-pos="{{ pos.id }}" data-zustand="{{ pos.zustand }}">
+    <section class="vo-karte" data-pos="{{ pos.id }}" data-zustand="{{ pos.zustand }}" data-vor="{{ pos.vorgaenger_position.zustand }}">
         <div class="vo-kopf">
             <h3>{{ forloop.counter }}. {{ pos.bezeichnung }}</h3>
             <button type="button" class="vo-ikon" data-kommentar aria-label="{% trans 'Kommentar' %}" title="{% trans 'Kommentar' %}">{% zeichen 'hinweis' %}</button>
@@ -112,6 +122,18 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
                 aria-checked="{% if pos.zustand == z %}true{% else %}false{% endif %}" aria-label="{{ label }}">{% zeichen 'gut' %}</button></div>
             {% endfor %}
         </div>
+        {% if pos.vorgaenger_position %}{% with vp=pos.vorgaenger_position %}
+        <div class="vo-vor">{{ vp.protokoll.get_typ_display }} {{ vp.protokoll.datum|date:"d.m.Y" }}:
+            <b>{{ vp.get_zustand_display|default:"—" }}</b>{% if vp.kommentar %} · {{ vp.kommentar }}{% endif %}{% if vp.foto %} · <a href="{{ vp.foto.url }}" target="_blank" rel="noopener">{% trans "Foto" %}</a>{% endif %}</div>
+        {% if p.typ == 'auszug' and vp.zustand == 'uebermaessig' %}
+        <div class="vo-warn" data-vorbestand {% if pos.zustand != 'uebermaessig' %}hidden{% endif %}>
+            <p>{% trans "Schon im Vorprotokoll als übermässig abgenutzt festgehalten. Soll der Mangel dem Mieter belastet werden?" %}</p>
+            <div class="vo-entscheid">
+                <button type="button" data-entscheid="mieter" aria-pressed="{% if pos.vorbestand_entscheid == 'mieter' %}true{% else %}false{% endif %}">{% trans "Weiterhin dem Mieter belasten" %}</button>
+                <button type="button" data-entscheid="vorbestehend" aria-pressed="{% if pos.vorbestand_entscheid == 'vorbestehend' %}true{% else %}false{% endif %}">{% trans "Vorbestehend, nicht belasten" %}</button>
+            </div>
+        </div>
+        {% endif %}{% endwith %}{% endif %}
         <div class="vo-mehr" {% if not pos.kommentar and pos.zustand != 'uebermaessig' and not pos.foto %}hidden{% endif %}>
             <textarea class="fw-feld" rows="2" name="kommentar" data-feld="kommentar" placeholder="{% trans 'Kommentar' %}" {% if not pos.kommentar %}hidden{% endif %}>{{ pos.kommentar }}</textarea>
             <div class="vo-schaden" {% if pos.zustand != 'uebermaessig' %}hidden{% endif %}>
@@ -132,6 +154,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     {% else %}
     <form method="post" action="/neu/abnahme/{{ p.id }}/vorort/abschliessen/" class="fw-card"><div class="fw-rumpf vo-form">
         {% csrf_token %}
+        {% if vorbestand_offen_total %}<p class="fw-kritisch">{% blocktrans with n=vorbestand_offen_total %}Vorbestand noch nicht entschieden: {{ n }}{% endblocktrans %}</p>{% endif %}
         {% if offen_total %}<p class="fw-kritisch">{% blocktrans with n=offen_total %}Noch nicht bewertet: {{ n }}{% endblocktrans %}</p>{% endif %}
         <label><input type="checkbox" name="mieter_anwesend" checked> {% trans "Mieter anwesend" %}</label>
         <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Strom" %}</label><input class="fw-feld" name="zaehler_strom" inputmode="decimal"></div>
@@ -181,6 +204,8 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
         });
         var mehr = karte.querySelector('.vo-mehr');
         karte.querySelector('.vo-schaden').hidden = z !== 'uebermaessig';
+        var warn = karte.querySelector('[data-vorbestand]');
+        if (warn) warn.hidden = z !== 'uebermaessig';
         if (z === 'uebermaessig') mehr.hidden = false;
     }
 
@@ -209,6 +234,27 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
             // Zweiter Tipp auf den gewählten Punkt nimmt die Bewertung zurück.
             var neu = punkt.getAttribute('aria-checked') === 'true' ? '' : punkt.dataset.zustand;
             senden(karte, { zustand: neu }).then(function () { zeigeZustand(karte, neu); });
+            return;
+        }
+        var ent = e.target.closest('[data-entscheid]');
+        if (ent) {
+            var kk = ent.closest('.vo-karte');
+            var wert = ent.getAttribute('aria-pressed') === 'true' ? '' : ent.dataset.entscheid;
+            senden(kk, { vorbestand: wert }).then(function () {
+                kk.querySelectorAll('[data-entscheid]').forEach(function (b) {
+                    b.setAttribute('aria-pressed', b.dataset.entscheid === wert ? 'true' : 'false'); });
+            });
+            return;
+        }
+        if (e.target.closest('[data-wie-vor]')) {
+            var kette = Promise.resolve();
+            root.querySelectorAll('.vo-karte[data-zustand=""]').forEach(function (k) {
+                var vor = k.dataset.vor;
+                if (vor === 'io' || vor === 'normal') {
+                    kette = kette.then(function () { return senden(k, { zustand: vor }).then(function () { zeigeZustand(k, vor); }); });
+                }
+            });
+            kette.catch(function () {});
             return;
         }
         var komm = e.target.closest('[data-kommentar]');

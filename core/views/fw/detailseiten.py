@@ -15,7 +15,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import dateformat, timezone
 from django.utils.translation import gettext, ngettext
@@ -766,6 +766,10 @@ def fw_objekt_detail(request, pk):
                    .filter(ziel_typ='vertrag', ziel_id__in=_vids)
                    .select_related('benutzer')[:50]) if _vids else []
 
+    # Abnahmen: gehören zur Einheit, über alle Mieter hinweg (nicht nur zum aktuellen Vertrag).
+    abnahmen_objekt = list(e.abnahmen.select_related('vertrag__mieter')
+                           .annotate(n_maengel=Count('maengel', distinct=True)).order_by('-datum', '-id'))
+
     tab_liste = _reiter_aus_alt('objekt', [
         ('uebersicht', 'Übersicht', None),
         ('fotos', 'Fotos', len(fotos) or None),
@@ -783,6 +787,7 @@ def fw_objekt_detail(request, pk):
     return render(request, 'fw/objekt_detail.html', {
         **basis, 'nav': 'objekte', 'e': e,
         'objekt_faelle': objekt_faelle,
+        'abnahmen_objekt': abnahmen_objekt,
         'objekt_schaeden': objekt_schaeden,
         'objekt_schaeden_offen': objekt_schaeden_offen,
         'verlauf': verlauf,
