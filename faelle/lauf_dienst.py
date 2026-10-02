@@ -228,6 +228,26 @@ def lauf_erledigt(schluessel, periode, benutzer=None, auch_aeltere=False,
         return None
 
 
+def lauf_gestartet(schluessel, periode):
+    """Setzt den Lauf auf «läuft», ohne ihn abzuschliessen.
+
+    Für Läufe mit zwei Schritten: Beim Zahllauf entsteht zuerst die
+    Zahlungsdatei (Lauf läuft, Rechnungen «in Zahlung»), und erst die
+    Bank-Bestätigung verbucht die Zahlungen und schliesst den Lauf. Ein Fehler
+    hier rollt nichts zurück, wie bei `lauf_erledigt`.
+    """
+    try:
+        lauf = (Lauf.objects.select_related('laufart')
+                .filter(laufart__schluessel=schluessel, periode=periode).first())
+        if lauf is not None:
+            with transaction.atomic():
+                lauf.starten()
+        return lauf
+    except Exception:
+        log.exception('Lauf «%s» %s konnte nicht gestartet werden', schluessel, periode)
+        return None
+
+
 def periode_von(datum):
     return f'{datum.year}-{datum.month:02d}'
 

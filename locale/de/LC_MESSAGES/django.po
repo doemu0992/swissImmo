@@ -21569,3 +21569,24 @@ msgid ""
 "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
 "doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
 msgstr "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
+
+
+#: core/views/fw/arbeit.py
+msgid "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
+msgstr "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
+
+#: core/views/fw/arbeit.py
+msgid "Dorthin wechseln"
+msgstr "Dorthin wechseln"
+
+#: core/views/fw/arbeit.py
+msgid "Einen Bank-Import macht «Import rückgängig» im Bankabgleich revisionssicher rückgängig."
+msgstr "Einen Bank-Import macht «Import rückgängig» im Bankabgleich revisionssicher rückgängig."
+
+#: core/views/fw/arbeit.py
+msgid "Rechnungen «in Zahlung» setzt «Auswahl zurücksetzen» im Zahllauf wieder auf freigegeben."
+msgstr "Rechnungen «in Zahlung» setzt «Auswahl zurücksetzen» im Zahllauf wieder auf freigegeben."
+
+#: core/views/fw/arbeit.py
+msgid "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."
+msgstr "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."

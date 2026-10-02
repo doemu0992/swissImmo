@@ -21455,3 +21455,24 @@ msgid ""
 "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
 "doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
 msgstr "The rent billing run %(titel)s is already completed — nothing was billed twice. To repeat it, first reset the run under \"Runs\"."
+
+
+#: core/views/fw/arbeit.py
+msgid "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
+msgstr "Resetting only reopens the run — documents already posted remain."
+
+#: core/views/fw/arbeit.py
+msgid "Dorthin wechseln"
+msgstr "Go there"
+
+#: core/views/fw/arbeit.py
+msgid "Einen Bank-Import macht «Import rückgängig» im Bankabgleich revisionssicher rückgängig."
+msgstr "A bank import is reversed in an auditable way with \"Undo import\" in the bank reconciliation."
+
+#: core/views/fw/arbeit.py
+msgid "Rechnungen «in Zahlung» setzt «Auswahl zurücksetzen» im Zahllauf wieder auf freigegeben."
+msgstr "Invoices \"in payment\" are set back to approved with \"Reset selection\" in the payment run."
+
+#: core/views/fw/arbeit.py
+msgid "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."
+msgstr "A reminder fee is cancelled by cancelling its invoice under Debtors."

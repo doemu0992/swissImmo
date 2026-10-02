@@ -430,9 +430,10 @@ def fw_zahllauf(request):
                 r.zahlung_ausfuehrung = exec_date
                 r.save(update_fields=['status', 'zahlung_ausfuehrung'])
                 n += 1
-            from faelle.lauf_dienst import lauf_erledigt, periode_von
-            lauf_erledigt('zahllauf', periode_von(heute), benutzer=request.user,
-                          auch_aeltere=True, zahlungen=anzahl)
+            # Die Datei allein erledigt den Zahllauf nicht: Gezahlt ist erst,
+            # was die Sammelbestätigung verbucht. Bis dahin «läuft» der Lauf.
+            from faelle.lauf_dienst import lauf_gestartet, periode_von
+            lauf_gestartet('zahllauf', periode_von(heute))
             log_aktion(request, "Zahllauf erzeugt", msg_id,
                        f"{anzahl} Zahlungen, CHF {summe}, Ausführung {exec_date}")
             resp = HttpResponse(xml, content_type='application/xml')
@@ -473,7 +474,9 @@ def fw_zahllauf(request):
                     # Nie stillschweigend überspringen — der Lauf gälte sonst
                     # als vollständig verbucht.
                     gesperrt += 1
-            if n:
+            # Abschluss erst, wenn keine Rechnung mehr in einer Zahlungsdatei
+            # hängt: Bei einer Teilbestätigung steht der Rest noch aus.
+            if n and not KreditorenRechnung.objects.filter(status='in_zahlung').exists():
                 from faelle.lauf_dienst import lauf_erledigt, periode_von
                 lauf_erledigt('zahllauf', periode_von(heute),
                               benutzer=request.user, auch_aeltere=True, verbucht=n)

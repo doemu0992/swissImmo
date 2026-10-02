@@ -21659,3 +21659,24 @@ msgid ""
 "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
 "doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
 msgstr "La fatturazione delle pigioni %(titel)s è già chiusa — nulla è stato fatturato due volte. Per ripeterla, reimpostare prima il processo sotto «Processi»."
+
+
+#: core/views/fw/arbeit.py
+msgid "Zurücksetzen öffnet nur den Lauf — bereits gebuchte Belege bleiben bestehen."
+msgstr "Reimpostare riapre solo il processo — i documenti già contabilizzati restano."
+
+#: core/views/fw/arbeit.py
+msgid "Dorthin wechseln"
+msgstr "Vai lì"
+
+#: core/views/fw/arbeit.py
+msgid "Einen Bank-Import macht «Import rückgängig» im Bankabgleich revisionssicher rückgängig."
+msgstr "Un'importazione bancaria si annulla in modo verificabile con «Annulla importazione» nella riconciliazione bancaria."
+
+#: core/views/fw/arbeit.py
+msgid "Rechnungen «in Zahlung» setzt «Auswahl zurücksetzen» im Zahllauf wieder auf freigegeben."
+msgstr "Le fatture «in pagamento» tornano «approvate» con «Reimposta selezione» nel lotto di pagamento."
+
+#: core/views/fw/arbeit.py
+msgid "Eine Mahngebühr wird aufgehoben, indem ihre Rechnung unter Debitoren storniert wird."
+msgstr "Una spesa di sollecito si annulla stornando la relativa fattura sotto Debitori."
