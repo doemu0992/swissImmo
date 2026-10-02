@@ -8,6 +8,7 @@
 # geraten werden darf (Skill schweizer-fachlogik). Der Umzug aendert daran
 # nichts: Der Blockinhalt ist gegen HEAD Zeile fuer Zeile geprueft.
 
+import re
 from datetime import date
 from decimal import Decimal
 
@@ -308,44 +309,116 @@ VORORT_STANDARDRAEUME = [r for r in ABNAHME_RAEUME if r != 'Allgemein']
 VORORT_ZUSTAENDE = ('io', 'normal', 'uebermaessig')
 
 
-def _vorort_positionen_anlegen(prot):
-    """Legt die Bauteile für ein neues Protokoll an: aus dem Raumbuch der
-    Einheit, sonst aus dem Standardsatz je Raum."""
+VORORT_MAX_RAEUME = 40
+
+
+def _vorort_vorlagen(einheit):
+    """Die Strukturvorlagen: Raumliste je Vorlage. «raumbuch» gibt es nur, wenn
+    die Einheit Ausstattung hat."""
+    from portfolio.models import Ausstattung
+    aus_raumbuch = []
+    for raum in Ausstattung.objects.filter(einheit=einheit).order_by('raum', 'sortierung', 'id') \
+            .values_list('raum', flat=True):
+        if raum not in aus_raumbuch:
+            aus_raumbuch.append(raum)
+    vorlagen = {'standard': list(VORORT_STANDARDRAEUME), 'leer': []}
+    if aus_raumbuch:
+        vorlagen = {'raumbuch': aus_raumbuch, **vorlagen}
+    return vorlagen
+
+
+def _vorort_raumkatalog(einheit, vorlagen):
+    """Alle Räume, die in «Weitere Gruppen» angeboten werden (ohne Doppelte)."""
+    from core.services.raumkatalog import RAUMTYPEN
+    gesehen, katalog = set(), []
+    for name in [*vorlagen.get('raumbuch', []), *ABNAHME_RAEUME, *RAUMTYPEN]:
+        # «Bad/WC» und «Bad / WC» sind derselbe Raum in zwei Schreibweisen.
+        schluessel = re.sub(r'\s*/\s*', '/', name).casefold()
+        if schluessel not in gesehen:
+            gesehen.add(schluessel)
+            katalog.append(name)
+    return katalog
+
+
+def _vorort_raeume_bereinigen(namen):
+    """Räume in Eingabereihenfolge: getrimmt, ohne Leere und Doppelte, begrenzt."""
+    gesehen, raeume = set(), []
+    for n in namen:
+        n = ' '.join((n or '').split())[:60]
+        if n and n.casefold() not in gesehen:
+            gesehen.add(n.casefold())
+            raeume.append(n)
+    return raeume[:VORORT_MAX_RAEUME]
+
+
+def _vorort_positionen_anlegen(prot, raeume=None):
+    """Legt die Bauteile für ein neues Protokoll an, Raum für Raum in der
+    gewählten Reihenfolge. Hat die Einheit im Raumbuch Ausstattung für den
+    Raum, werden deren Elemente bewertet (mit Zeitwert-Bezug); sonst gilt der
+    Standardsatz. Ohne `raeume`: Raumbuch der Einheit, sonst Standardräume."""
     from portfolio.models import Ausstattung
     from rentals.models import AbnahmePosition
-    elemente = list(Ausstattung.objects.filter(einheit=prot.vertrag.einheit)
-                    .order_by('raum', 'sortierung', 'id'))
-    if elemente:
-        zeilen = [(a.raum, a.kategorie + (f' – {a.bezeichnung}' if a.bezeichnung else ''), a)
-                  for a in elemente]
-    else:
-        zeilen = [(raum, bauteil, None) for raum in VORORT_STANDARDRAEUME for bauteil in VORORT_BAUTEILE]
-    for nr, (raum, bezeichnung, element) in enumerate(zeilen):
-        # Einzelnes save(): die Organisation wird dort aus der Kette abgeleitet.
-        AbnahmePosition.objects.create(protokoll=prot, raum=raum, bezeichnung=bezeichnung[:120],
-                                       ausstattung=element, sortierung=nr)
+    if raeume is None:
+        vorlagen = _vorort_vorlagen(prot.vertrag.einheit)
+        raeume = vorlagen.get('raumbuch') or vorlagen['standard']
+    je_raum = {}
+    for a in Ausstattung.objects.filter(einheit=prot.vertrag.einheit).order_by('sortierung', 'id'):
+        je_raum.setdefault(a.raum.casefold(), []).append(a)
+    nr = 0
+    for raum in raeume:
+        elemente = je_raum.get(raum.casefold())
+        zeilen = ([(a.kategorie + (f' – {a.bezeichnung}' if a.bezeichnung else ''), a) for a in elemente]
+                  if elemente else [(bauteil, None) for bauteil in VORORT_BAUTEILE])
+        for bezeichnung, element in zeilen:
+            # Einzelnes save(): die Organisation wird dort aus der Kette abgeleitet.
+            AbnahmePosition.objects.create(protokoll=prot, raum=raum, bezeichnung=bezeichnung[:120],
+                                           ausstattung=element, sortierung=nr)
+            nr += 1
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_abnahme_vorort_start(request, vertrag_id):
-    """Beginnt die Abnahme vor Ort — oder setzt den offenen Entwurf fort.
-    Nur POST: Der Aufruf legt ein Protokoll an."""
+    """Einrichtung der Abnahme vor Ort (Allgemein, Struktur) und Anlegen.
+
+    GET zeigt den Assistenten; POST legt ein neues Protokoll an — mit Datum, Art
+    und der gewählten Raumstruktur. Ein offener Entwurf wird nicht überschrieben,
+    sondern oben zum Fortsetzen angeboten."""
     from django.shortcuts import redirect
+    from django.contrib import messages
     from rentals.models import Abnahmeprotokoll
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
-    if request.method != 'POST':
-        return redirect(f'/neu/vertraege/{v.id}/abnahme/neu/')
-    typ = request.POST.get('typ')
-    if typ not in ('auszug', 'einzug'):
-        typ = 'auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug'
-    prot = Abnahmeprotokoll.objects.filter(vertrag=v, typ=typ, abgeschlossen=False).order_by('-id').first()
-    if prot is None or not prot.positionen.exists():
-        if prot is None:
+    vorlagen = _vorort_vorlagen(v.einheit)
+    standard_typ = 'auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug'
+    P = request.POST if request.method == 'POST' else request.GET
+    typ = P.get('typ') if P.get('typ') in ('auszug', 'einzug') else standard_typ
+    vorlage = P.get('vorlage') if P.get('vorlage') in vorlagen else next(iter(vorlagen))
+
+    if request.method == 'POST':
+        try:
+            datum = date.fromisoformat(P.get('datum') or '')
+        except ValueError:
+            datum = timezone.localdate()
+        # Ohne Raumliste im Aufruf (altes Formular, Skript) gilt die Vorlage.
+        raeume = _vorort_raeume_bereinigen(P.getlist('raum')) if 'raum' in P else vorlagen[vorlage]
+        if raeume:
             prot = Abnahmeprotokoll.objects.create(
-                vertrag=v, typ=typ, datum=timezone.localdate(),
+                vertrag=v, typ=typ, datum=datum,
                 verwalter_name=(request.user.get_full_name() or request.user.username))
-        _vorort_positionen_anlegen(prot)
-    return redirect(f'/neu/abnahme/{prot.id}/vorort/')
+            _vorort_positionen_anlegen(prot, raeume)
+            return redirect(f'/neu/abnahme/{prot.id}/vorort/')
+        messages.error(request, gettext('Mindestens ein Raum ist nötig.'))
+    else:
+        raeume = vorlagen[vorlage]
+        datum = timezone.localdate()
+
+    entwurf = Abnahmeprotokoll.objects.filter(vertrag=v, abgeschlossen=False, positionen__isnull=False) \
+        .distinct().order_by('-id').first()
+    return render(request, 'fw/abnahme_vorort_neu.html', {
+        **_global_filter(request), 'nav': 'vertraege', 'v': v,
+        'typ': typ, 'datum': datum.isoformat(), 'vorlage': vorlage, 'raeume': raeume,
+        'vorlagen': vorlagen, 'katalog': _vorort_raumkatalog(v.einheit, vorlagen),
+        'entwurf': entwurf,
+    })
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

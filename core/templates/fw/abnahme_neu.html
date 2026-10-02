@@ -16,10 +16,7 @@
         <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
     </div>
     {% if not embed_base %}
-    <form method="post" action="/neu/vertraege/{{ v.id }}/abnahme/vorort/">{% csrf_token %}
-        <input type="hidden" name="typ" value="{{ typ_default }}">
-        <button type="submit" class="fw-btn fw-gutknopf">{% zeichen 'gut' klasse='mr-1' %}{% trans "Vor Ort abnehmen (Telefon)" %}</button>
-    </form>
+    <a class="fw-btn fw-gutknopf" href="/neu/vertraege/{{ v.id }}/abnahme/vorort/?typ={{ typ_default }}">{% zeichen 'gut' klasse='mr-1' %}{% trans "Vor Ort abnehmen (Telefon)" %}</a>
     {% endif %}
 </div>
 

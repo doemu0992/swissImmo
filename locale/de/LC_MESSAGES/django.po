@@ -21861,3 +21861,64 @@ msgstr "Bewertete Bauteile"
 #: core/templates/fw/abnahme_detail.html
 msgid "Bauteil"
 msgstr "Bauteil"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme erstellen"
+msgstr "Abnahme erstellen"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme vor Ort einrichten"
+msgstr "Abnahme vor Ort einrichten"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus dem Raumbuch"
+msgstr "Aus dem Raumbuch"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Eigener Raum"
+msgstr "Eigener Raum"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Entwurf fortsetzen"
+msgstr "Entwurf fortsetzen"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Mindestens ein Raum ist nötig."
+msgstr "Mindestens ein Raum ist nötig."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen."
+msgstr "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum entfernen"
+msgstr "Raum entfernen"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach oben"
+msgstr "Raum nach oben"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach unten"
+msgstr "Raum nach unten"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Standard (Wohnung)"
+msgstr "Standard (Wohnung)"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Struktur"
+msgstr "Struktur"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Strukturvorlage"
+msgstr "Strukturvorlage"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Weitere Gruppen:"
+msgstr "Weitere Gruppen:"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Es gibt einen offenen Entwurf vom %(datum)s."
+msgstr "Es gibt einen offenen Entwurf vom %(datum)s."

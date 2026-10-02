@@ -21951,3 +21951,64 @@ msgstr "Elementi valutati"
 #: core/templates/fw/abnahme_detail.html
 msgid "Bauteil"
 msgstr "Elemento"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme erstellen"
+msgstr "Creare l'ispezione"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme vor Ort einrichten"
+msgstr "Configurare l'ispezione sul posto"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus dem Raumbuch"
+msgstr "Dal registro dei locali"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Eigener Raum"
+msgstr "Locale personalizzato"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Entwurf fortsetzen"
+msgstr "Continuare la bozza"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Mindestens ein Raum ist nötig."
+msgstr "È necessario almeno un locale."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen."
+msgstr "Nessun locale — aggiungerne uno con «Aggiungi»."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum entfernen"
+msgstr "Rimuovere il locale"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach oben"
+msgstr "Sposta il locale in alto"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach unten"
+msgstr "Sposta il locale in basso"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Standard (Wohnung)"
+msgstr "Standard (appartamento)"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Struktur"
+msgstr "Struttura"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Strukturvorlage"
+msgstr "Modello di struttura"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Weitere Gruppen:"
+msgstr "Altri gruppi:"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Es gibt einen offenen Entwurf vom %(datum)s."
+msgstr "Esiste una bozza aperta del %(datum)s."

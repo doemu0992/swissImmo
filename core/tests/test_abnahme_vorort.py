@@ -53,13 +53,16 @@ class VorOrtTests(TestCase):
         prot = self._protokoll()
         self.assertEqual(prot.positionen.count(), len(VORORT_BAUTEILE) * len(VORORT_STANDARDRAEUME))
 
-    def test_start_ist_nur_post_und_setzt_den_entwurf_fort(self):
+    def test_assistent_get_legt_nichts_an_und_post_immer_ein_neues_protokoll(self):
         from rentals.models import Abnahmeprotokoll
         r = self.c.get(f'/neu/vertraege/{self.vertrag.id}/abnahme/vorort/')
-        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Strukturvorlage')
         self.assertEqual(Abnahmeprotokoll.objects.count(), 0)     # GET legt nichts an
         self._start(); self._start()
-        self.assertEqual(Abnahmeprotokoll.objects.count(), 1)     # zweiter Start: derselbe Entwurf
+        self.assertEqual(Abnahmeprotokoll.objects.count(), 2)     # POST: jedes Mal ein neues
+        r = self.c.get(f'/neu/vertraege/{self.vertrag.id}/abnahme/vorort/')
+        self.assertContains(r, 'Entwurf fortsetzen')              # der offene Entwurf wird angeboten
 
     def test_seite_rendert_raum_und_abschluss(self):
         _element(self.einheit)
@@ -178,6 +181,85 @@ class VorOrtTests(TestCase):
         self.assertEqual(self.c.get(f'/neu/abnahme/{prot.id}/vorort/').status_code, 302)
 
 
+class AssistentTests(TestCase):
+    """Einrichtung: Datum, Art, Strukturvorlage, Räume in Reihenfolge."""
+
+    def setUp(self):
+        self.lg, self.einheit, _m, self.vertrag = _basis_objekte()
+        self.c = Client()
+        self.c.force_login(_team_user())
+        self.url = f'/neu/vertraege/{self.vertrag.id}/abnahme/vorort/'
+
+    def _protokoll(self):
+        from rentals.models import Abnahmeprotokoll
+        return Abnahmeprotokoll.objects.get(vertrag=self.vertrag)
+
+    def test_raeume_in_gewaehlter_reihenfolge_mit_datum_und_art(self):
+        r = self.c.post(self.url, {'typ': 'einzug', 'datum': '2026-10-14',
+                                   'raum': ['Keller', 'Büro 1', 'Bad']})
+        prot = self._protokoll()
+        self.assertRedirects(r, f'/neu/abnahme/{prot.id}/vorort/', fetch_redirect_response=False)
+        self.assertEqual((prot.typ, prot.datum), ('einzug', date(2026, 10, 14)))
+        reihenfolge = []
+        for p in prot.positionen.all():
+            if p.raum not in reihenfolge:
+                reihenfolge.append(p.raum)
+        self.assertEqual(reihenfolge, ['Keller', 'Büro 1', 'Bad'])
+
+    def test_entfernter_raum_aus_dem_raumbuch_wird_nicht_bewertet(self):
+        _element(self.einheit, raum='Wohnzimmer')
+        _element(self.einheit, raum='Küche', kategorie='Backofen')
+        self.c.post(self.url, {'typ': 'auszug', 'raum': ['Küche']})
+        prot = self._protokoll()
+        self.assertEqual([(p.raum, p.bezeichnung) for p in prot.positionen.all()], [('Küche', 'Backofen')])
+        self.assertIsNotNone(prot.positionen.get().ausstattung_id)   # Bezug zum Zeitwert bleibt
+
+    def test_raum_ohne_raumbuch_bekommt_standardbauteile_auch_neuer_name(self):
+        from core.views.fw.abnahme import VORORT_BAUTEILE
+        _element(self.einheit, raum='Küche', kategorie='Backofen')
+        self.c.post(self.url, {'typ': 'auszug', 'raum': ['Küche', 'Hobbyraum']})
+        prot = self._protokoll()
+        self.assertEqual(prot.positionen.filter(raum='Hobbyraum').count(), len(VORORT_BAUTEILE))
+
+    def test_namen_werden_bereinigt_doppelte_und_leere_entfallen(self):
+        self.c.post(self.url, {'typ': 'auszug', 'raum': ['  Keller ', 'keller', '', '   ', 'Estrich']})
+        prot = self._protokoll()
+        self.assertEqual(sorted({p.raum for p in prot.positionen.all()}), ['Estrich', 'Keller'])
+
+    def test_ohne_raum_wird_nichts_angelegt(self):
+        from rentals.models import Abnahmeprotokoll
+        r = self.c.post(self.url, {'typ': 'auszug', 'raum': ['', ' ']})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Mindestens ein Raum ist nötig')
+        self.assertEqual(Abnahmeprotokoll.objects.count(), 0)
+
+    def test_vorlage_raumbuch_nur_wenn_vorhanden(self):
+        r = self.c.get(self.url)
+        self.assertNotContains(r, 'Aus dem Raumbuch')
+        _element(self.einheit)
+        r = self.c.get(self.url)
+        self.assertContains(r, 'Aus dem Raumbuch')
+
+    def test_datum_ist_der_stichtag_der_zeitwertrechnung(self):
+        _element(self.einheit)                       # Teppich 10 J., Einbau 1.3.2020
+        self.c.post(self.url, {'typ': 'auszug', 'datum': '2026-03-01', 'raum': ['Wohnzimmer']})
+        prot = self._protokoll()
+        pos = prot.positionen.get()
+        self.c.post(f'/neu/abnahme/{prot.id}/vorort/position/',
+                    {'position': pos.id, 'zustand': 'uebermaessig', 'kosten': '1000'})
+        pos.refresh_from_db()
+        self.assertEqual(pos.mangel.mieteranteil, Decimal('400.00'))
+
+    def test_katalog_fuehrt_schreibvarianten_nur_einmal(self):
+        r = self.c.get(self.url)
+        katalog = r.context['katalog']
+        self.assertEqual(sum(1 for n in katalog if n.replace(' ', '').casefold() == 'bad/wc'), 1)
+
+    def test_maximal_vierzig_raeume(self):
+        self.c.post(self.url, {'typ': 'auszug', 'raum': [f'Raum {i}' for i in range(60)]})
+        self.assertEqual(len({p.raum for p in self._protokoll().positionen.all()}), 40)
+
+
 class VorOrtMandantenTests(TestCase):
     """Die Grenze wird aktiv verletzt: A greift auf das Protokoll von B."""
 
@@ -213,6 +295,9 @@ class VorOrtMandantenTests(TestCase):
         self.assertEqual(r.status_code, 404)
         self.prot_b.refresh_from_db()
         self.assertFalse(self.prot_b.abgeschlossen)
+
+    def test_fremden_assistenten_oeffnen_ist_404(self):
+        self.assertEqual(self.c.get(f'/neu/vertraege/{self.b.vertrag.id}/abnahme/vorort/').status_code, 404)
 
     def test_fremden_vertrag_starten_ist_404(self):
         r = self.c.post(f'/neu/vertraege/{self.b.vertrag.id}/abnahme/vorort/', {'typ': 'auszug'})

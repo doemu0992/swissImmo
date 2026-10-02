@@ -216,6 +216,7 @@ UEBERSETZT = (
     # Tranche «Wohnungsabnahme»
     'fw/abnahme_neu.html',
     'fw/abnahme_vorort.html',
+    'fw/abnahme_vorort_neu.html',
     # Tranche «Vertrag bearbeiten»
     'fw/vertrag_bearbeiten.html',
     # Tranche «Öffentliche Meldeformulare» (modern_base.html trägt nur die

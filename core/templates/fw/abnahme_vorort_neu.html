@@ -1,0 +1,202 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Abnahme vor Ort einrichten" %} — {{ v.mieter.display_name }}{% endblock %}
+{% block content %}
+{% comment %}
+Einrichtung der Abnahme vor Ort, in zwei Schritten wie bei immotop:
+«Allgemein» (Datum, Art, Strukturvorlage) und «Struktur» (Räume ergänzen,
+umbenennen, umsortieren, entfernen). Ein Formular, ein POST. Ohne JavaScript
+bleibt es eine Liste aus Textfeldern — die Räume stehen als <input name="raum">
+im Quelltext, JavaScript ergänzt nur die Knöpfe.
+{% endcomment %}
+<style>
+.vn { max-width: 34rem; margin: 0 auto; padding-bottom: 6rem; }
+.vn-reiter { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--ds-line); margin-bottom: 1rem; }
+.vn-reiter button { min-height: 2.75rem; background: transparent; border: 0; border-bottom: .2rem solid transparent;
+    color: var(--ds-muted); font-weight: 600; cursor: pointer; }
+.vn-reiter button[aria-selected="true"] { color: var(--ds-ink); border-bottom-color: var(--ds-brand); }
+.vn [hidden] { display: none !important; }
+.vn-feld { display: grid; gap: .25rem; margin-bottom: .9rem; }
+.vn-liste { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; }   /* minmax: sonst weitet das Textfeld die Spalte über den Rand */
+.vn-zeile { display: flex; align-items: center; gap: .15rem; background: var(--ds-surface); border: 1px solid var(--ds-line);
+    border-radius:var(--ds-radius-lg); padding: .25rem .25rem .25rem .6rem; }
+.vn-zeile input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ds-ink); font-size: 1rem; font-weight: 600; min-height: 2.75rem; }
+.vn-ikon { width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 0; border-radius:var(--ds-radius); color: var(--ds-brand); cursor: pointer; }
+.vn-ikon.gefahr { color: var(--ds-crit); }
+.vn-ikon.hoch svg { transform: rotate(180deg); }
+.vn-ikon:disabled { color: var(--ds-faint); cursor: default; }
+.vn-kopf { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
+.vn-kopf h2 { margin: 0; font-size: 1.3rem; }
+.vn-fuss { display: flex; justify-content: space-between; gap: .6rem; margin-top: 1rem; }
+.vn-fuss > * { min-height: 2.75rem; }
+.vn-hinweis { background: var(--ds-info-soft); border-radius:var(--ds-radius-lg); padding: .8rem 1rem; margin-bottom: 1rem; }
+.vn dialog { width: min(32rem, calc(100vw - 2rem)); max-height: 80vh; border: 0; border-radius:var(--ds-radius-lg);
+    padding: 1rem; background: var(--ds-surface); color: var(--ds-ink); box-shadow: var(--ds-shadow-lg); }
+.vn dialog::backdrop { background: var(--ds-scrim); }
+.vn-dkopf { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
+.vn-dkopf h3 { margin: 0; font-size: 1.2rem; }
+.vn-katalog { list-style: none; margin: .8rem 0 0; padding: 0; display: grid; gap: .4rem; max-height: 45vh; overflow: auto; }
+.vn-katalog button { width: 100%; min-height: 2.75rem; display: flex; align-items: center; justify-content: space-between;
+    background: var(--ds-surface-2); border: 1px solid var(--ds-line); border-radius:var(--ds-radius-lg);
+    padding: 0 .9rem; color: var(--ds-ink); font-weight: 600; cursor: pointer; text-align: left; }
+.vn #vnSuche { width: 100%; box-sizing: border-box; }
+.vn-eigen { display: flex; gap: .5rem; margin-top: .8rem; }
+.vn-eigen input { flex: 1; min-width: 0; }
+</style>
+
+<div class="vn" id="vn">
+    <div class="fw-phead">
+        <div>
+            <h1>{% trans "Abnahme vor Ort einrichten" %}</h1>
+            <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
+        </div>
+    </div>
+
+    {% if entwurf %}
+    <div class="vn-hinweis">
+        <p>{% blocktrans with datum=entwurf.datum|date:"d.m.Y" %}Es gibt einen offenen Entwurf vom {{ datum }}.{% endblocktrans %}</p>
+        <a class="fw-btn fw-leise" href="/neu/abnahme/{{ entwurf.id }}/vorort/">{% trans "Entwurf fortsetzen" %}</a>
+    </div>
+    {% endif %}
+
+    <form method="post" action="/neu/vertraege/{{ v.id }}/abnahme/vorort/" id="vnForm">
+        {% csrf_token %}
+        <div class="vn-reiter" role="tablist">
+            <button type="button" role="tab" data-tab="allgemein" aria-selected="true">{% trans "Allgemein" %}</button>
+            <button type="button" role="tab" data-tab="struktur" aria-selected="false">{% trans "Struktur" %}</button>
+        </div>
+
+        <section data-seite="allgemein">
+            <div class="vn-feld"><label class="fw-label" for="vnDatum">{% trans "Datum" %}</label>
+                <input class="fw-feld" type="date" name="datum" id="vnDatum" value="{{ datum }}"></div>
+            <div class="vn-feld"><label class="fw-label" for="vnTyp">{% trans "Art" %}</label>
+                <select class="fw-feld" name="typ" id="vnTyp">
+                    <option value="auszug" {% if typ == 'auszug' %}selected{% endif %}>{% trans "Auszug / Rücknahme" %}</option>
+                    <option value="einzug" {% if typ == 'einzug' %}selected{% endif %}>{% trans "Einzug / Übergabe" %}</option>
+                </select></div>
+            <div class="vn-feld"><label class="fw-label" for="vnVorlage">{% trans "Strukturvorlage" %}</label>
+                <select class="fw-feld" name="vorlage" id="vnVorlage">
+                    {% if 'raumbuch' in vorlagen %}<option value="raumbuch" {% if vorlage == 'raumbuch' %}selected{% endif %}>{% trans "Aus dem Raumbuch" %}</option>{% endif %}
+                    <option value="standard" {% if vorlage == 'standard' %}selected{% endif %}>{% trans "Standard (Wohnung)" %}</option>
+                    <option value="leer" {% if vorlage == 'leer' %}selected{% endif %}>{% trans "Leer" %}</option>
+                </select></div>
+            <div class="vn-fuss"><span></span><button type="button" class="fw-btn fw-gutknopf" data-tab="struktur">{% trans "Weiter" %}</button></div>
+        </section>
+
+        <section data-seite="struktur">
+            <div class="vn-kopf"><h2>{% trans "Struktur" %}</h2>
+                <button type="button" class="fw-btn fw-gutknopf" id="vnHinzu" hidden>{% zeichen 'neu' klasse='mr-1' %}{% trans "Hinzufügen" %}</button></div>
+            <ul class="vn-liste" id="vnListe">
+                {% for r in raeume %}<li class="vn-zeile"><input name="raum" value="{{ r }}" maxlength="60" aria-label="{% trans 'Raum' %}"></li>{% endfor %}
+            </ul>
+            <p class="fw-faint" id="vnLeer" {% if raeume %}hidden{% endif %}>{% trans "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen." %}</p>
+            <div class="vn-fuss">
+                <button type="button" class="fw-btn" data-tab="allgemein">{% trans "Zurück" %}</button>
+                <button type="submit" class="fw-btn fw-gutknopf">{% trans "Abnahme erstellen" %}</button>
+            </div>
+        </section>
+    </form>
+
+    <dialog id="vnDialog" aria-labelledby="vnDTitel">
+        <div class="vn-dkopf"><h3 id="vnDTitel">{% trans "Weitere Gruppen:" %}</h3>
+            <button type="button" class="vn-ikon" id="vnDZu" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
+        <input class="fw-feld" type="search" id="vnSuche" placeholder="{% trans 'Suche' %}" autocomplete="off">
+        <ul class="vn-katalog" id="vnKatalog"></ul>
+        <div class="vn-eigen"><input class="fw-feld" id="vnEigen" maxlength="60" placeholder="{% trans 'Eigener Raum' %}">
+            <button type="button" class="fw-btn fw-gutknopf" id="vnEigenOk">{% trans "Hinzufügen" %}</button></div>
+    </dialog>
+    {{ vorlagen|json_script:"vnVorlagen" }}
+    {{ katalog|json_script:"vnKatalogDaten" }}
+</div>
+
+<script>
+(function () {
+    var wurzel = document.getElementById('vn');
+    var liste = document.getElementById('vnListe');
+    var vorlagen = JSON.parse(document.getElementById('vnVorlagen').textContent);
+    var katalog = JSON.parse(document.getElementById('vnKatalogDaten').textContent);
+    var dialog = document.getElementById('vnDialog');
+    var T = {
+        hoch: "{% filter escapejs %}{% trans 'Raum nach oben' %}{% endfilter %}",
+        runter: "{% filter escapejs %}{% trans 'Raum nach unten' %}{% endfilter %}",
+        weg: "{% filter escapejs %}{% trans 'Raum entfernen' %}{% endfilter %}"
+    };
+    var ZEICHEN = { ab: '<svg class="fw-zeichen" aria-hidden="true"><use href="#z-aufklappen"/></svg>',
+                    weg: '<svg class="fw-zeichen" aria-hidden="true"><use href="#z-loeschen"/></svg>' };
+
+    function zeigeSeite(name) {
+        wurzel.querySelectorAll('[data-seite]').forEach(function (s) { s.hidden = s.dataset.seite !== name; });
+        wurzel.querySelectorAll('.vn-reiter [data-tab]').forEach(function (b) {
+            b.setAttribute('aria-selected', b.dataset.tab === name ? 'true' : 'false'); });
+        window.scrollTo(0, 0);
+    }
+    function werte() {
+        return Array.prototype.map.call(liste.querySelectorAll('input[name=raum]'), function (i) { return i.value.trim(); })
+            .filter(Boolean);
+    }
+    function knopf(klasse, text, svg) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'vn-ikon ' + klasse; b.setAttribute('aria-label', text); b.title = text; b.innerHTML = svg;
+        return b;
+    }
+    function zeile(name) {
+        var li = document.createElement('li'); li.className = 'vn-zeile';
+        var i = document.createElement('input'); i.name = 'raum'; i.value = name; i.maxLength = 60; i.setAttribute('aria-label', 'Raum');
+        li.appendChild(i);
+        li.appendChild(knopf('hoch', T.hoch, ZEICHEN.ab));
+        li.appendChild(knopf('runter', T.runter, ZEICHEN.ab));
+        li.appendChild(knopf('gefahr', T.weg, ZEICHEN.weg));
+        return li;
+    }
+    function aufbauen(namen) {
+        liste.innerHTML = '';
+        namen.forEach(function (n) { liste.appendChild(zeile(n)); });
+        pruefe();
+    }
+    function pruefe() {
+        var zeilen = liste.querySelectorAll('.vn-zeile');
+        zeilen.forEach(function (li, nr) {
+            li.querySelector('.hoch').disabled = nr === 0;
+            li.querySelector('.runter').disabled = nr === zeilen.length - 1;
+        });
+        document.getElementById('vnLeer').hidden = zeilen.length > 0;
+    }
+    function ergaenze(name) {
+        name = name.trim();
+        if (!name || werte().some(function (w) { return w.toLowerCase() === name.toLowerCase(); })) return;
+        liste.appendChild(zeile(name)); pruefe();
+    }
+
+    // Aus der reinen Textliste wird die Bedienung: Knöpfe ergänzen.
+    document.getElementById('vnHinzu').hidden = false;
+    aufbauen(werte());
+    zeigeSeite('allgemein');
+
+    wurzel.addEventListener('click', function (e) {
+        var tab = e.target.closest('[data-tab]');
+        if (tab) { zeigeSeite(tab.dataset.tab); return; }
+        var li = e.target.closest('.vn-zeile');
+        if (li && e.target.closest('.hoch') && li.previousElementSibling) liste.insertBefore(li, li.previousElementSibling);
+        else if (li && e.target.closest('.runter') && li.nextElementSibling) liste.insertBefore(li.nextElementSibling, li);
+        else if (li && e.target.closest('.gefahr')) li.remove();
+        else if (e.target.closest('#vnHinzu')) { baueKatalog(''); dialog.showModal(); }
+        else if (e.target.closest('#vnDZu')) dialog.close();
+        else if (e.target.closest('#vnEigenOk')) { var f = document.getElementById('vnEigen'); ergaenze(f.value); f.value = ''; dialog.close(); }
+        else if (e.target.closest('#vnKatalog button')) { ergaenze(e.target.closest('button').dataset.name); dialog.close(); }
+        pruefe();
+    });
+    document.getElementById('vnVorlage').addEventListener('change', function () { aufbauen(vorlagen[this.value] || []); });
+    document.getElementById('vnSuche').addEventListener('input', function () { baueKatalog(this.value); });
+
+    function baueKatalog(suche) {
+        var ul = document.getElementById('vnKatalog'); ul.innerHTML = '';
+        katalog.filter(function (n) { return n.toLowerCase().indexOf(suche.trim().toLowerCase()) !== -1; })
+            .forEach(function (n) {
+                var li = document.createElement('li'), b = document.createElement('button');
+                b.type = 'button'; b.dataset.name = n; b.textContent = n; li.appendChild(b); ul.appendChild(li);
+            });
+    }
+})();
+</script>
+{% endblock %}
