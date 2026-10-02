@@ -1,5 +1,5 @@
-{% load i18n zeichen %}{% comment %}Einschreiben und Zugang eines 257d-Schreibens erfassen (Sendungsnummer, Versand, Zugang). Parameter: d = rentals.Dokument, heute_iso, next = seiten-relatives /neu/-Ziel. Gibt nichts aus, wenn kein Zugangsnachweis nötig ist oder der Zugang schon bestätigt ist.{% endcomment %}{% with z=d.zustellstatus %}{% if z and z.0 != 'bestaetigt' %}{% with p=d.zustell_pendenz %}
-<details class="mt-1.5 fw-fs-klein" {% if z.0 == 'offen' %}open{% endif %}>
+{% load i18n zeichen %}{% comment %}Einschreiben und Zugang eines 257d-Schreibens erfassen (Sendungsnummer, Versand, Zugang). Parameter: d = rentals.Dokument, heute_iso, next = seiten-relatives /neu/-Ziel. Gibt nichts aus, wenn kein Zugangsnachweis nötig ist oder der Zugang schon bestätigt ist.{% endcomment %}{% with z=d.zustellstatus %}{% if z and z.0 != 'bestaetigt' or erzwingen and not z %}{% with p=d.zustell_pendenz %}
+<details class="mt-1.5 fw-fs-klein" {% if z.0 == 'offen' or not z %}open{% endif %}>
     <summary class="fw-link cursor-pointer select-none">{% zeichen 'bearbeiten' klasse='mr-0.5' %}{% trans "Einschreiben / Zugang erfassen" %}</summary>
     <form method="post" action="/neu/dokument/{{ d.id }}/zustellung/" class="mt-1.5 flex items-end gap-2 flex-wrap">
         {% csrf_token %}
