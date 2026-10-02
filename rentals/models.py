@@ -1043,6 +1043,8 @@ class AbnahmeMangel(OrganisationAusKette):
                                     null=True, blank=True, related_name='maengel')
     neuwert = models.DecimalField("Neuwert CHF", max_digits=9, decimal_places=2, null=True, blank=True)
     mieteranteil = models.DecimalField("Mieteranteil CHF (nach Lebensdauer)", max_digits=9, decimal_places=2, null=True, blank=True)
+    # Absichtliche Beschädigung: kein Zeitwertabzug, der Mieter trägt den vollen Betrag.
+    vorsaetzlich = models.BooleanField("Absichtlich beschädigt (kein Zeitwertabzug)", default=False)
 
     class Meta:
         db_table = 'core_abnahmemangel'
@@ -1057,27 +1059,90 @@ class AbnahmeMangel(OrganisationAusKette):
         if not self.ausstattung_id:
             return None
         from datetime import date as _date
+        from core.services.zeitwert import restwert_faktor
         a = self.ausstattung
-        ld = a.effektive_lebensdauer()
-        if not (a.einbau_datum and ld):
-            return None
         tag = stichtag or (self.protokoll.datum if self.protokoll_id else None) or _date.today()
-        alter = max(0.0, (tag - a.einbau_datum).days / 365.25)
-        rest = max(0.0, float(ld) - alter)
-        return rest / float(ld)
+        return restwert_faktor(a.einbau_datum, a.effektive_lebensdauer(), tag)
+
+    def berechne_ergebnis(self, stichtag=None):
+        """Zeitwert-Ergebnis (Betrag, Faktor, Grundlage) — siehe core/services/zeitwert.py."""
+        from core.services.zeitwert import mieteranteil
+        basis = self.kostenschaetzung or self.neuwert
+        if basis is None and self.ausstattung_id:
+            basis = self.ausstattung.neuwert
+        return mieteranteil(basis, self.zeitwert_faktor(stichtag),
+                            verursacher=self.verursacher, vorsaetzlich=self.vorsaetzlich)
+
+    @property
+    def zeitwert_grundlage(self):
+        """Stabiler Schlüssel, wie der Mieteranteil zustande kam (core/services/zeitwert.py)."""
+        return self.berechne_ergebnis().grundlage
 
     def berechne_mieteranteil(self, stichtag=None):
         """Vom Mieter zu tragender Betrag: bei verknüpftem Element der Zeitwert-
         anteil der Kosten/des Neuwerts; sonst die volle Kostenschätzung.
-        Nur für verursacher='mieter'; sonst 0."""
-        if self.verursacher != 'mieter':
-            return Decimal('0.00')
-        basis = self.kostenschaetzung or self.neuwert
-        if basis is None and self.ausstattung_id:
-            basis = self.ausstattung.neuwert
-        if basis is None:
-            return Decimal('0.00')
-        faktor = self.zeitwert_faktor(stichtag)
-        if faktor is None:
-            return Decimal(basis).quantize(Decimal('0.01'))
-        return (Decimal(basis) * Decimal(str(faktor))).quantize(Decimal('0.01'))
+        Nur für verursacher='mieter'; sonst 0. Abgelaufene Lebensdauer → 0,
+        ausser bei absichtlicher Beschädigung (`vorsaetzlich`) → voller Betrag."""
+        return self.berechne_ergebnis(stichtag).betrag
+
+
+class AbnahmePosition(OrganisationAusKette):
+    ORGANISATION_PFAD = 'protokoll'
+    """Ein Bauteil in einem Raum, bewertet bei der Abnahme vor Ort (Ampel).
+
+    Die Vor-Ort-Abnahme geht Raum für Raum durch alle Bauteile und hält je
+    Bauteil fest: neuwertig / normale Abnutzung / übermässige Abnutzung.
+    Nur «übermässig» ist ein Schaden: Dann entsteht (und bleibt synchron) ein
+    `AbnahmeMangel`, an dem die Zeitwert-Rechnung hängt. «Normale Abnutzung»
+    ist Sache des Vermieters (Art. 267 OR: Abnutzung durch vertragsgemässen
+    Gebrauch) und kostet den Mieter nichts."""
+    ZUSTAND_OFFEN = ''
+    ZUSTAND = [('', _('Offen')), ('io', _('Neu i.O.')),
+               ('normal', _('Normale Abnutzung')), ('uebermaessig', _('Übermässige Abnutzung'))]
+    protokoll = models.ForeignKey(Abnahmeprotokoll, on_delete=models.CASCADE, related_name='positionen')
+    raum = models.CharField("Raum", max_length=60)
+    bezeichnung = models.CharField("Bauteil", max_length=120)
+    ausstattung = models.ForeignKey('portfolio.Ausstattung', on_delete=models.SET_NULL,
+                                    null=True, blank=True, related_name='abnahme_positionen')
+    zustand = models.CharField("Zustand", max_length=12, choices=ZUSTAND, blank=True, default='')
+    kommentar = models.TextField("Kommentar", blank=True, default='')
+    foto = models.ImageField("Foto", upload_to=get_smart_upload_path, null=True, blank=True)
+    kostenschaetzung = models.DecimalField("Kostenschätzung CHF", max_digits=9, decimal_places=2,
+                                           null=True, blank=True)
+    vorsaetzlich = models.BooleanField("Absichtlich beschädigt", default=False)
+    # Der zugehörige Schaden, solange der Zustand «übermässig» ist.
+    mangel = models.OneToOneField(AbnahmeMangel, on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name='position')
+    sortierung = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'core_abnahmeposition'
+        ordering = ['sortierung', 'id']
+
+    def __str__(self):
+        return f"{self.raum}: {self.bezeichnung} ({self.zustand or 'offen'})"
+
+    def mangel_abgleichen(self):
+        """Hält den `AbnahmeMangel` im Einklang mit dem Zustand.
+
+        «Übermässig» → Mangel (beim Auszug dem Mieter zugeordnet, beim Einzug
+        als Vorzustand beim Vermieter), mit Zeitwert-Rechnung. Alles andere →
+        ein vorhandener Mangel wird entfernt."""
+        if self.zustand != 'uebermaessig':
+            if self.mangel_id:
+                self.mangel.delete()
+                self.mangel = None
+            return
+        mangel = self.mangel or AbnahmeMangel(protokoll=self.protokoll)
+        beschreibung = self.bezeichnung + (f": {self.kommentar.strip()}" if self.kommentar.strip() else '')
+        mangel.raum = self.raum
+        mangel.beschreibung = beschreibung[:255]
+        mangel.verursacher = 'mieter' if self.protokoll.typ == 'auszug' else 'vermieter'
+        mangel.ausstattung = self.ausstattung
+        mangel.kostenschaetzung = self.kostenschaetzung
+        mangel.vorsaetzlich = self.vorsaetzlich
+        if self.foto:
+            mangel.foto = self.foto.name     # dieselbe Datei, keine zweite Kopie
+        mangel.mieteranteil = mangel.berechne_mieteranteil(stichtag=self.protokoll.datum)
+        mangel.save()
+        self.mangel = mangel

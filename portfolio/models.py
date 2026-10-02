@@ -671,14 +671,11 @@ class Ausstattung(OrganisationAusKette):
     def zeitwert(self, stichtag=None):
         """Zeitwert (Restwert) nach paritätischer Lebensdauertabelle:
         Neuwert × Restnutzungsdauer / Lebensdauer. None, wenn Daten fehlen."""
-        from decimal import Decimal
-        ld = self.effektive_lebensdauer()
-        if not (self.neuwert and self.einbau_datum and ld):
+        from core.services.zeitwert import zeitwert
+        if not self.neuwert:
             return None
-        tag = stichtag or date.today()
-        alter = max(0.0, (tag - self.einbau_datum).days / 365.25)
-        rest = max(0.0, float(ld) - alter)
-        return (self.neuwert * Decimal(str(rest / float(ld)))).quantize(Decimal('0.01'))
+        return zeitwert(self.neuwert, self.einbau_datum, self.effektive_lebensdauer(),
+                        stichtag or date.today())
 
     def rest_jahre(self, stichtag=None):
         """Verbleibende Nutzungsdauer in Jahren (kann negativ = überfällig).

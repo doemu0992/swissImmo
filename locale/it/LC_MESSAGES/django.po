@@ -21821,3 +21821,194 @@ msgstr "Il %(stufe)s. sollecito è già registrato; le sue spese ammontano a CHF
 #, python-format
 msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
 msgstr "Il %(stufe)s. sollecito è già registrato e le sue spese sono emesse (CHF %(betrag)s, %(status)s) — nulla da riemettere."
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Beschädigung"
+msgstr "Danno"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Bei Absicht gibt es keinen Zeitwertabzug"
+msgstr "In caso di danno intenzionale non si applica alcuna deduzione del valore attuale"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Unabsichtlich (Zeitwertabzug)"
+msgstr "Non intenzionale (deduzione del valore attuale)"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Absichtlich (voller Betrag, kein Abzug)"
+msgstr "Intenzionale (importo intero, senza deduzione)"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Absichtlich: kein Abzug"
+msgstr "Intenzionale: senza deduzione"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Voller Betrag: Alter/Lebensdauer fehlt"
+msgstr "Importo intero: età/durata di vita mancanti"
+
+#: core/templates/fw/abnahme_detail.html
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
+msgstr "%(count)s danno/i del conduttore senza età o durata di vita dell'elemento: addebitato l'importo intero. Verificare data di installazione e durata di vita nel registro dei locali."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vor Ort abnehmen (Telefon)"
+msgstr "Presa in consegna sul posto (telefono)"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahme vor Ort"
+msgstr "Ispezione sul posto"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Gespeichert"
+msgstr "Salvato"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Nicht gespeichert — bitte erneut versuchen"
+msgstr "Non salvato — riprovare"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Übergabe vor Ort"
+msgstr "Consegna sul posto"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Rücknahme vor Ort"
+msgstr "Riconsegna sul posto"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Raum wählen"
+msgstr "Scegliere il locale"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Voriger Raum"
+msgstr "Locale precedente"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Nächster Raum"
+msgstr "Locale successivo"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Alle offenen Bauteile dieses Raums setzen auf:"
+msgstr "Impostare tutti gli elementi aperti di questo locale su:"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kommentar"
+msgstr "Commento"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Foto aufnehmen"
+msgstr "Scattare una foto"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Foto aus der Galerie"
+msgstr "Foto dalla galleria"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kostenschätzung CHF"
+msgstr "Stima dei costi CHF"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Absichtlich beschädigt (kein Zeitwertabzug)"
+msgstr "Danneggiato intenzionalmente (senza deduzione del valore attuale)"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zum Abschluss"
+msgstr "Alla chiusura"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Strom"
+msgstr "Lettura contatore elettricità"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Wasser"
+msgstr "Lettura contatore acqua"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Gas/Wärme"
+msgstr "Lettura contatore gas/calore"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahme abschliessen"
+msgstr "Concludere l'ispezione"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Neu i.O."
+msgstr "Nuovo / in ordine"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Übermässige Abnutzung"
+msgstr "Usura eccessiva"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Noch nicht bewertet: %(n)s"
+msgstr "Non ancora valutato: %(n)s"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Bewertete Bauteile"
+msgstr "Elementi valutati"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Bauteil"
+msgstr "Elemento"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme erstellen"
+msgstr "Creare l'ispezione"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme vor Ort einrichten"
+msgstr "Configurare l'ispezione sul posto"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus dem Raumbuch"
+msgstr "Dal registro dei locali"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Eigener Raum"
+msgstr "Locale personalizzato"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Entwurf fortsetzen"
+msgstr "Continuare la bozza"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Mindestens ein Raum ist nötig."
+msgstr "È necessario almeno un locale."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen."
+msgstr "Nessun locale — aggiungerne uno con «Aggiungi»."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum entfernen"
+msgstr "Rimuovere il locale"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach oben"
+msgstr "Sposta il locale in alto"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach unten"
+msgstr "Sposta il locale in basso"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Standard (Wohnung)"
+msgstr "Standard (appartamento)"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Struktur"
+msgstr "Struttura"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Strukturvorlage"
+msgstr "Modello di struttura"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Weitere Gruppen:"
+msgstr "Altri gruppi:"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Es gibt einen offenen Entwurf vom %(datum)s."
+msgstr "Esiste una bozza aperta del %(datum)s."

@@ -21843,3 +21843,194 @@ msgstr "Le %(stufe)s. rappel est déjà enregistré ; ses frais s'élèvent à C
 #, python-format
 msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
 msgstr "Le %(stufe)s. rappel est déjà enregistré et ses frais sont facturés (CHF %(betrag)s, %(status)s) — rien à refacturer."
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Beschädigung"
+msgstr "Dommage"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Bei Absicht gibt es keinen Zeitwertabzug"
+msgstr "En cas de dommage intentionnel, il n'y a pas de déduction de la valeur actuelle"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Unabsichtlich (Zeitwertabzug)"
+msgstr "Non intentionnel (déduction de la valeur actuelle)"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Absichtlich (voller Betrag, kein Abzug)"
+msgstr "Intentionnel (montant intégral, sans déduction)"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Absichtlich: kein Abzug"
+msgstr "Intentionnel : sans déduction"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Voller Betrag: Alter/Lebensdauer fehlt"
+msgstr "Montant intégral : âge/durée de vie manquants"
+
+#: core/templates/fw/abnahme_detail.html
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
+msgstr "%(count)s dommage(s) locataire sans âge ni durée de vie de l'élément : montant intégral imputé. Veuillez vérifier la date de pose et la durée de vie dans le registre des pièces."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vor Ort abnehmen (Telefon)"
+msgstr "Réception sur place (téléphone)"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahme vor Ort"
+msgstr "Réception sur place"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Gespeichert"
+msgstr "Enregistré"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Nicht gespeichert — bitte erneut versuchen"
+msgstr "Non enregistré — veuillez réessayer"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Übergabe vor Ort"
+msgstr "Remise sur place"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Rücknahme vor Ort"
+msgstr "Reprise sur place"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Raum wählen"
+msgstr "Choisir la pièce"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Voriger Raum"
+msgstr "Pièce précédente"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Nächster Raum"
+msgstr "Pièce suivante"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Alle offenen Bauteile dieses Raums setzen auf:"
+msgstr "Mettre tous les éléments ouverts de cette pièce sur :"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kommentar"
+msgstr "Commentaire"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Foto aufnehmen"
+msgstr "Prendre une photo"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Foto aus der Galerie"
+msgstr "Photo de la galerie"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kostenschätzung CHF"
+msgstr "Estimation des coûts CHF"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Absichtlich beschädigt (kein Zeitwertabzug)"
+msgstr "Endommagé intentionnellement (sans déduction de la valeur actuelle)"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zum Abschluss"
+msgstr "Vers la clôture"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Strom"
+msgstr "Relevé du compteur d'électricité"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Wasser"
+msgstr "Relevé du compteur d'eau"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Gas/Wärme"
+msgstr "Relevé du compteur de gaz/chaleur"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahme abschliessen"
+msgstr "Clôturer la réception"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Neu i.O."
+msgstr "Neuf / en ordre"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Übermässige Abnutzung"
+msgstr "Usure excessive"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Noch nicht bewertet: %(n)s"
+msgstr "Pas encore évalué : %(n)s"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Bewertete Bauteile"
+msgstr "Éléments évalués"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Bauteil"
+msgstr "Élément"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme erstellen"
+msgstr "Créer la réception"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme vor Ort einrichten"
+msgstr "Configurer la réception sur place"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus dem Raumbuch"
+msgstr "Depuis le registre des pièces"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Eigener Raum"
+msgstr "Pièce personnalisée"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Entwurf fortsetzen"
+msgstr "Poursuivre le brouillon"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Mindestens ein Raum ist nötig."
+msgstr "Au moins une pièce est nécessaire."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen."
+msgstr "Aucune pièce — ajoutez-en une avec « Ajouter »."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum entfernen"
+msgstr "Supprimer la pièce"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach oben"
+msgstr "Monter la pièce"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach unten"
+msgstr "Descendre la pièce"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Standard (Wohnung)"
+msgstr "Standard (appartement)"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Struktur"
+msgstr "Structure"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Strukturvorlage"
+msgstr "Modèle de structure"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Weitere Gruppen:"
+msgstr "Autres groupes :"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Es gibt einen offenen Entwurf vom %(datum)s."
+msgstr "Il existe un brouillon ouvert du %(datum)s."

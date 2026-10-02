@@ -21617,3 +21617,194 @@ msgstr "Reminder %(stufe)s is already recorded; its fee is CHF 0.00 (level setti
 #, python-format
 msgid "Die %(stufe)s. Mahnung ist bereits erfasst, und ihre Mahngebühr ist gestellt (CHF %(betrag)s, %(status)s) — es gibt nichts nachzustellen."
 msgstr "Reminder %(stufe)s is already recorded and its fee has been issued (CHF %(betrag)s, %(status)s) — nothing to reissue."
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Beschädigung"
+msgstr "Damage"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Bei Absicht gibt es keinen Zeitwertabzug"
+msgstr "No current-value deduction applies for intentional damage"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Unabsichtlich (Zeitwertabzug)"
+msgstr "Unintentional (current-value deduction)"
+
+#: core/templates/fw/abnahme_neu.html
+msgid "Absichtlich (voller Betrag, kein Abzug)"
+msgstr "Intentional (full amount, no deduction)"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Absichtlich: kein Abzug"
+msgstr "Intentional: no deduction"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Voller Betrag: Alter/Lebensdauer fehlt"
+msgstr "Full amount: age/useful life missing"
+
+#: core/templates/fw/abnahme_detail.html
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag belastet. Bitte Einbaudatum und Lebensdauer im Raumbuch prüfen."
+msgstr "%(count)s tenant damage item(s) without age or useful life of the component: full amount charged. Please check installation date and useful life in the room book."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vor Ort abnehmen (Telefon)"
+msgstr "On-site handover (phone)"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahme vor Ort"
+msgstr "On-site inspection"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Gespeichert"
+msgstr "Saved"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Nicht gespeichert — bitte erneut versuchen"
+msgstr "Not saved — please try again"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Übergabe vor Ort"
+msgstr "Handover on site"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Rücknahme vor Ort"
+msgstr "Return inspection on site"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Raum wählen"
+msgstr "Select room"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Voriger Raum"
+msgstr "Previous room"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Nächster Raum"
+msgstr "Next room"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Alle offenen Bauteile dieses Raums setzen auf:"
+msgstr "Set all open components in this room to:"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kommentar"
+msgstr "Comment"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Foto aufnehmen"
+msgstr "Take photo"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Foto aus der Galerie"
+msgstr "Photo from gallery"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kostenschätzung CHF"
+msgstr "Cost estimate CHF"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Absichtlich beschädigt (kein Zeitwertabzug)"
+msgstr "Intentionally damaged (no current-value deduction)"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zum Abschluss"
+msgstr "To completion"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Strom"
+msgstr "Meter reading electricity"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Wasser"
+msgstr "Meter reading water"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Zählerstand Gas/Wärme"
+msgstr "Meter reading gas/heat"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahme abschliessen"
+msgstr "Complete inspection"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Neu i.O."
+msgstr "New / OK"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Übermässige Abnutzung"
+msgstr "Excessive wear"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Noch nicht bewertet: %(n)s"
+msgstr "Not yet rated: %(n)s"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Bewertete Bauteile"
+msgstr "Rated components"
+
+#: core/templates/fw/abnahme_detail.html
+msgid "Bauteil"
+msgstr "Component"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme erstellen"
+msgstr "Create inspection"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Abnahme vor Ort einrichten"
+msgstr "Set up on-site inspection"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus dem Raumbuch"
+msgstr "From the room book"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Eigener Raum"
+msgstr "Custom room"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Entwurf fortsetzen"
+msgstr "Continue draft"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Mindestens ein Raum ist nötig."
+msgstr "At least one room is required."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen."
+msgstr "No room yet — add one with “Add”."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum entfernen"
+msgstr "Remove room"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach oben"
+msgstr "Move room up"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Raum nach unten"
+msgstr "Move room down"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Standard (Wohnung)"
+msgstr "Standard (apartment)"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Struktur"
+msgstr "Structure"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Strukturvorlage"
+msgstr "Structure template"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Weitere Gruppen:"
+msgstr "More groups:"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Es gibt einen offenen Entwurf vom %(datum)s."
+msgstr "There is an open draft from %(datum)s."
