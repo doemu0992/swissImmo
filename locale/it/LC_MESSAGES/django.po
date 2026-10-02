@@ -21762,3 +21762,6 @@ msgstr "Fattura collegata."
 msgid "Auftrag storniert, Handwerker informiert."
 msgstr "Incarico annullato, artigiano informato."
 
+#: core/views/fw/schaeden.py
+msgid "Bitte eine Rechnung wählen."
+msgstr "Seleziona una fattura."

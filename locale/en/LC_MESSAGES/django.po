@@ -21558,3 +21558,6 @@ msgstr "Invoice linked."
 msgid "Auftrag storniert, Handwerker informiert."
 msgstr "Order cancelled, tradesperson informed."
 
+#: core/views/fw/schaeden.py
+msgid "Bitte eine Rechnung wählen."
+msgstr "Please select an invoice."

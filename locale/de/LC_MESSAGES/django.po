@@ -21672,3 +21672,6 @@ msgstr "Rechnung verknüpft."
 msgid "Auftrag storniert, Handwerker informiert."
 msgstr "Auftrag storniert, Handwerker informiert."
 
+#: core/views/fw/schaeden.py
+msgid "Bitte eine Rechnung wählen."
+msgstr "Bitte eine Rechnung wählen."

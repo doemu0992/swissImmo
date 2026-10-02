@@ -21784,3 +21784,6 @@ msgstr "Facture associée."
 msgid "Auftrag storniert, Handwerker informiert."
 msgstr "Mandat annulé, artisan informé."
 
+#: core/views/fw/schaeden.py
+msgid "Bitte eine Rechnung wählen."
+msgstr "Veuillez choisir une facture."
