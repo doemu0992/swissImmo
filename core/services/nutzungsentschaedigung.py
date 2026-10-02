@@ -38,7 +38,8 @@ def _titel(jahr, monat):
 
 def rueckgabe_datum(vertrag):
     """Datum der protokollierten Rücknahme (Auszugsprotokoll), sonst None."""
-    p = (vertrag.abnahmen.filter(typ='auszug').order_by('datum', 'id').first())
+    from core.services.abnahme_vorgaenger import durchgefuehrt
+    p = durchgefuehrt(vertrag.abnahmen.filter(typ='auszug')).order_by('datum', 'id').first()
     return p.datum if p else None
 
 

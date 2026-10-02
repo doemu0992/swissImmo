@@ -224,11 +224,11 @@ class AusUndEinzugTests(KetteBasis):
         from rentals.models import Abnahmeprotokoll
         v2 = _vertrag_nachher(self.einheit)
         self.c.post(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/',
-                    {'typ': 'beides', 'datum': '2026-08-31', 'raum': ['Küche']})
+                    {'typ': 'beides', 'datum': '2026-08-31', 'raum': ['Keller']})      # 5 Bauteile
         aus = Abnahmeprotokoll.objects.get(typ='auszug')
         self.assertEqual(aus.folge_vertrag_id, v2.id)
-        for p, z, k in zip(aus.positionen.all(), ['uebermaessig', 'normal', 'io', 'io', 'io', 'io'],
-                           ['Kratzer', '', '', '', '', '']):
+        for p, z, k in zip(aus.positionen.all(), ['uebermaessig', 'normal', 'io', 'io', 'io'],
+                           ['Kratzer', '', '', '', '']):
             self.c.post(f'/neu/abnahme/{aus.id}/vorort/position/',
                         {'position': p.id, 'zustand': z, 'kommentar': k, 'kosten': '200'})
         r = self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', {'zaehler_strom': '777'})
@@ -237,7 +237,7 @@ class AusUndEinzugTests(KetteBasis):
         self.assertEqual((ein.vertrag_id, ein.vorgaenger_id, ein.datum), (v2.id, aus.id, date(2026, 8, 31)))
         self.assertFalse(ein.abgeschlossen)                               # der Einziehende prüft selbst
         self.assertEqual(ein.zaehler_strom, '777')
-        self.assertEqual([p.zustand for p in ein.positionen.all()], ['uebermaessig', 'normal', 'io', 'io', 'io', 'io'])
+        self.assertEqual([p.zustand for p in ein.positionen.all()], ['uebermaessig', 'normal', 'io', 'io', 'io'])
         erster = ein.positionen.first()
         self.assertEqual(erster.kommentar, 'Kratzer')
         self.assertEqual(erster.vorgaenger_position.protokoll_id, aus.id)

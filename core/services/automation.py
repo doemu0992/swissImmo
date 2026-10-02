@@ -12,6 +12,7 @@ from decimal import Decimal
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from core.services.dokumentsprache import auf_deutsch
+from core.services.abnahme_vorgaenger import durchgefuehrt as _durchgefuehrt
 
 logger = logging.getLogger(__name__)
 
@@ -484,7 +485,7 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
     for p in (Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:auszug:')
               .select_related('vertrag')):
         v = p.vertrag
-        if v is not None and v.ende and v.ende < heute and v.abnahmen.filter(typ='auszug').exists():
+        if v is not None and v.ende and v.ende < heute and _durchgefuehrt(v.abnahmen.filter(typ='auszug')).exists():
             p.erledigt = True
             p.erledigt_am = heute
             p.save(update_fields=['erledigt', 'erledigt_am'])
@@ -635,7 +636,7 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
         ende = k.per_datum or k.berechneter_termin
         if not ende or ende < heute or ende > grenze:
             continue
-        if v.abnahmen.filter(typ='auszug').exists():
+        if _durchgefuehrt(v.abnahmen.filter(typ='auszug')).exists():
             continue   # Rücknahme bereits durchgeführt
         _ensure(f"auto:ruecknahme:{k.id}",
                 f"Wohnungsrücknahme planen: {v.mieter.display_name} ({v.einheit.bezeichnung})",

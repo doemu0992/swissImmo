@@ -44,14 +44,19 @@ class VorOrtTests(TestCase):
         _element(self.einheit)
         _element(self.einheit, kategorie='Wände / Anstrich', jahre=8)
         prot = self._protokoll()
-        self.assertEqual([p.bezeichnung for p in prot.positionen.all()],
-                         ['Teppich', 'Wände / Anstrich'])
+        bezeichnungen = [p.bezeichnung for p in prot.positionen.all()]
+        self.assertIn('Teppich', bezeichnungen)           # Raumbuch-Element ohne Standard-Entsprechung
+        self.assertIn('Decke', bezeichnungen)             # Standard des Raumtyps «Wohnzimmer»
+        self.assertEqual(bezeichnungen.count('Wände'), 1)  # «Wände / Anstrich» ersetzt «Wände», nicht doppelt
+        self.assertTrue(prot.positionen.get(bezeichnung='Wände').ausstattung_id)   # Zeitwert-Bezug bleibt
         self.assertEqual({p.zustand for p in prot.positionen.all()}, {''})
 
     def test_start_ohne_raumbuch_nimmt_standardbauteile(self):
-        from core.views.fw.abnahme import VORORT_BAUTEILE, VORORT_STANDARDRAEUME
+        from core.services.abnahme_bauteile import BAUTEILE, raumtyp
+        from core.views.fw.abnahme import VORORT_STANDARDRAEUME
         prot = self._protokoll()
-        self.assertEqual(prot.positionen.count(), len(VORORT_BAUTEILE) * len(VORORT_STANDARDRAEUME))
+        erwartet = sum(len(BAUTEILE[raumtyp(r)]) for r in VORORT_STANDARDRAEUME)
+        self.assertEqual(prot.positionen.count(), erwartet)
 
     def test_assistent_get_legt_nichts_an_und_post_immer_ein_neues_protokoll(self):
         from rentals.models import Abnahmeprotokoll
@@ -80,7 +85,7 @@ class VorOrtTests(TestCase):
         el = _element(self.einheit)
         prot = self._protokoll()
         prot.datum = date(2026, 3, 1); prot.save()
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         r = self._speichern(prot, pos, zustand='uebermaessig', kosten='1000', kommentar='Brandfleck')
         self.assertEqual(r.status_code, 200)
         pos.refresh_from_db()
@@ -94,7 +99,7 @@ class VorOrtTests(TestCase):
         from rentals.models import AbnahmeMangel
         _element(self.einheit)
         prot = self._protokoll()
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         self._speichern(prot, pos, zustand='uebermaessig', kosten='500')
         self.assertEqual(AbnahmeMangel.objects.count(), 1)
         self._speichern(prot, pos, zustand='normal')
@@ -106,7 +111,7 @@ class VorOrtTests(TestCase):
         from rentals.models import AbnahmeMangel
         _element(self.einheit)
         prot = self._protokoll()
-        self._speichern(prot, prot.positionen.get(), zustand='normal', kosten='500')
+        self._speichern(prot, prot.positionen.filter(ausstattung__isnull=False).get(), zustand='normal', kosten='500')
         self.assertEqual(AbnahmeMangel.objects.count(), 0)
         self.assertEqual(prot.kosten_mieter_total, Decimal('0.00'))
 
@@ -114,7 +119,7 @@ class VorOrtTests(TestCase):
         _element(self.einheit, einbau=date(2010, 1, 1), jahre=8, kategorie='Wände / Anstrich')
         prot = self._protokoll()
         prot.datum = date(2026, 6, 30); prot.save()
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         self._speichern(prot, pos, zustand='uebermaessig', kosten='1800')
         pos.refresh_from_db()
         self.assertEqual(pos.mangel.mieteranteil, Decimal('0.00'))
@@ -125,7 +130,7 @@ class VorOrtTests(TestCase):
     def test_beim_einzug_ist_der_mangel_kein_mieterschaden(self):
         _element(self.einheit)
         prot = self._protokoll('einzug')
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         self._speichern(prot, pos, zustand='uebermaessig', kosten='500')
         pos.refresh_from_db()
         self.assertEqual(pos.mangel.verursacher, 'vermieter')
@@ -134,7 +139,7 @@ class VorOrtTests(TestCase):
     def test_ungueltiger_zustand_und_kosten_werden_abgelehnt(self):
         _element(self.einheit)
         prot = self._protokoll()
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         self.assertEqual(self._speichern(prot, pos, zustand='rot').status_code, 400)
         self.assertEqual(self._speichern(prot, pos, kosten='viel').status_code, 400)
         pos.refresh_from_db()
@@ -146,7 +151,7 @@ class VorOrtTests(TestCase):
         from PIL import Image
         _element(self.einheit)
         prot = self._protokoll()
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         buf = io.BytesIO(); Image.new('RGB', (4, 4), 'red').save(buf, 'JPEG')
         self._speichern(prot, pos, zustand='uebermaessig', kosten='100',
                         foto=SimpleUploadedFile('foto.jpg', buf.getvalue(), 'image/jpeg'))
@@ -159,7 +164,7 @@ class VorOrtTests(TestCase):
         _element(self.einheit)
         prot1 = self._protokoll('auszug')
         prot2 = self._protokoll('einzug')
-        fremd = prot2.positionen.get()
+        fremd = prot2.positionen.filter(ausstattung__isnull=False).get()
         r = self._speichern(prot1, fremd, zustand='io')
         self.assertEqual(r.status_code, 404)
         fremd.refresh_from_db()
@@ -169,7 +174,7 @@ class VorOrtTests(TestCase):
     def test_abschliessen_sperrt_das_protokoll(self):
         _element(self.einheit)
         prot = self._protokoll()
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         r = self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/',
                         {'zaehler_strom': '1234', 'schluessel_anzahl': '3',
                          'unterschrift_mieter': 'Hans Muster'})
@@ -211,15 +216,17 @@ class AssistentTests(TestCase):
         _element(self.einheit, raum='Küche', kategorie='Backofen')
         self.c.post(self.url, {'typ': 'auszug', 'raum': ['Küche']})
         prot = self._protokoll()
-        self.assertEqual([(p.raum, p.bezeichnung) for p in prot.positionen.all()], [('Küche', 'Backofen')])
-        self.assertIsNotNone(prot.positionen.get().ausstattung_id)   # Bezug zum Zeitwert bleibt
+        self.assertEqual({p.raum for p in prot.positionen.all()}, {'Küche'})     # Wohnzimmer wurde entfernt
+        self.assertIn('Küchenschränke unten', [p.bezeichnung for p in prot.positionen.all()])
+        ofen = prot.positionen.filter(ausstattung__isnull=False).get()
+        self.assertEqual(ofen.bezeichnung, 'Backofen')                           # Bezug zum Zeitwert bleibt
 
     def test_raum_ohne_raumbuch_bekommt_standardbauteile_auch_neuer_name(self):
-        from core.views.fw.abnahme import VORORT_BAUTEILE
+        from core.services.abnahme_bauteile import BAUTEILE
         _element(self.einheit, raum='Küche', kategorie='Backofen')
         self.c.post(self.url, {'typ': 'auszug', 'raum': ['Küche', 'Hobbyraum']})
         prot = self._protokoll()
-        self.assertEqual(prot.positionen.filter(raum='Hobbyraum').count(), len(VORORT_BAUTEILE))
+        self.assertEqual(prot.positionen.filter(raum='Hobbyraum').count(), len(BAUTEILE['allgemein']))
 
     def test_namen_werden_bereinigt_doppelte_und_leere_entfallen(self):
         self.c.post(self.url, {'typ': 'auszug', 'raum': ['  Keller ', 'keller', '', '   ', 'Estrich']})
@@ -244,7 +251,7 @@ class AssistentTests(TestCase):
         _element(self.einheit)                       # Teppich 10 J., Einbau 1.3.2020
         self.c.post(self.url, {'typ': 'auszug', 'datum': '2026-03-01', 'raum': ['Wohnzimmer']})
         prot = self._protokoll()
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         self.c.post(f'/neu/abnahme/{prot.id}/vorort/position/',
                     {'position': pos.id, 'zustand': 'uebermaessig', 'kosten': '1000'})
         pos.refresh_from_db()
@@ -312,7 +319,7 @@ class VorOrtDetailTests(TestCase):
         c.post(f'/neu/vertraege/{vertrag.id}/abnahme/vorort/', {'typ': 'auszug'})
         from rentals.models import Abnahmeprotokoll
         prot = Abnahmeprotokoll.objects.get(vertrag=vertrag)
-        pos = prot.positionen.get()
+        pos = prot.positionen.filter(ausstattung__isnull=False).get()
         c.post(f'/neu/abnahme/{prot.id}/vorort/position/', {'position': pos.id, 'zustand': 'io'})
         r = c.get(f'/neu/abnahme/{prot.id}/')
         self.assertContains(r, 'Bewertete Bauteile')

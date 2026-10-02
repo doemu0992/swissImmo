@@ -7,6 +7,18 @@ als Vorzustand neben jedem Bauteil.
 """
 
 
+def durchgefuehrt(qs):
+    """Protokolle, die als «Abnahme erfolgt» zählen.
+
+    Abgeschlossen — oder aus dem klassischen Formular (ohne Bauteile; dort ist
+    «abgeschlossen» nur ein Häkchen, das oft fehlt). Ein offener Vor-Ort-Entwurf
+    zählt nicht: Er entsteht schon beim Einrichten und ist noch keine Abnahme.
+    Ohne diese Unterscheidung stünde der Mieterwechsel nach dem ersten Tippen
+    auf «Rücknahme erfolgt»."""
+    from django.db.models import Q
+    return qs.filter(Q(abgeschlossen=True) | Q(positionen__isnull=True)).distinct()
+
+
 def vorgaenger_fuer(einheit, datum, ausser=None):
     """Das letzte abgeschlossene Abnahmeprotokoll der Einheit bis zum Datum.
 

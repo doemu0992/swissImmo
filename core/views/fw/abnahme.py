@@ -310,8 +310,9 @@ def fw_vertrag_loeschen(request, pk):
 # ============================================================
 # Standard-Bauteile, wenn die Einheit noch kein Raumbuch hat. Gespeicherte
 # Werte wie die Raumnamen oben: bleiben unübersetzt.
-VORORT_BAUTEILE = ['Boden', 'Decke', 'Wände', 'Fenster/Fenstersims', 'Türen', 'Beleuchtung/Steckdosen']
-VORORT_STANDARDRAEUME = [r for r in ABNAHME_RAEUME if r != 'Allgemein']
+# Die Bauteile je Raum stehen in core/services/abnahme_bauteile.py (nach Raumtyp).
+VORORT_STANDARDRAEUME = ['Küche', 'Bad/WC', 'Wohnzimmer', 'Zimmer 1', 'Zimmer 2', 'Zimmer 3',
+                         'Eingang/Korridor', 'Balkon/Terrasse', 'Keller', 'Estrich']
 # Schlüssel der Ampel, in der Reihenfolge der Anzeige. Quelle ist das Modell.
 VORORT_ZUSTAENDE = ('io', 'normal', 'uebermaessig')
 
@@ -376,12 +377,14 @@ def _vorort_positionen_anlegen(prot, raeume=None, vorgaenger=None):
     gewählten Reihenfolge. Quelle je Raum, in dieser Rangfolge:
 
     1. das Vorgänger-Protokoll (Bauteile samt Bezug zum Vorzustand),
-    2. das Raumbuch der Einheit (mit Zeitwert-Bezug),
-    3. der Standardsatz.
+    2. die Bauteile des Raumtyps (Küche: Schränke, Arbeitsplatte, Backofen …),
+       wobei passende Raumbuch-Elemente den Standardeintrag ersetzen (mit
+       Zeitwert-Bezug) und Elemente ohne Entsprechung dazukommen.
 
     Ohne `raeume`: die Räume des Vorgängers, sonst Raumbuch, sonst Standard."""
     from portfolio.models import Ausstattung
     from rentals.models import AbnahmePosition
+    from core.services.abnahme_bauteile import bauteile_fuer_raum
     if raeume is None:
         vorlagen = _vorort_vorlagen(prot.vertrag.einheit, vorgaenger)
         raeume = next(iter(vorlagen.values()))
@@ -397,13 +400,11 @@ def _vorort_positionen_anlegen(prot, raeume=None, vorgaenger=None):
     nr = 0
     for raum in raeume:
         vorher = je_raum_vorher.get(raum.casefold())
-        elemente = je_raum.get(raum.casefold())
         if vorher:
             zeilen = [(vp.bezeichnung, vp.ausstattung, vp) for vp in vorher]
-        elif elemente:
-            zeilen = [(a.kategorie + (f' – {a.bezeichnung}' if a.bezeichnung else ''), a, None) for a in elemente]
         else:
-            zeilen = [(bauteil, None, None) for bauteil in VORORT_BAUTEILE]
+            # Raumbuch-Elemente ersetzen passende Standard-Bauteile, der Rest des Raumtyps bleibt
+            zeilen = [(b, a, None) for b, a in bauteile_fuer_raum(raum, je_raum.get(raum.casefold(), ()))]
         for bezeichnung, element, vp in zeilen:
             # Einzelnes save(): die Organisation wird dort aus der Kette abgeleitet.
             AbnahmePosition.objects.create(protokoll=prot, raum=raum, bezeichnung=bezeichnung[:120],

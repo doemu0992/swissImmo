@@ -2241,7 +2241,8 @@ def fw_schlussabrechnung(request, vertrag_id):
     if ab_id:
         ab = Abnahmeprotokoll.objects.filter(id=ab_id, vertrag=v).first()
     else:
-        ab = v.abnahmen.filter(typ='auszug').order_by('-datum', '-id').first()
+        from core.services.abnahme_vorgaenger import durchgefuehrt
+        ab = durchgefuehrt(v.abnahmen.filter(typ='auszug')).order_by('-datum', '-id').first()
     if ab:
         for m in ab.maengel_mieter:
             betrag = m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung
