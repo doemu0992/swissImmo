@@ -235,13 +235,21 @@ def fw_nebenkosten_verbuchen(request, pk):
             v = Mietvertrag.objects.filter(id=vid).select_related('einheit__liegenschaft').first()
             if not v:
                 continue
+            # Der Saldo der Abrechnung ist NETTO. Bei optiertem Gewerbe teilen die
+            # Nebenkosten den MWST-Satz der Miete (Sollstellung belastet sie ebenso):
+            # Die Steuer kommt obendrauf und gehört auf 2200. Wohnraum: satz = 0.
+            satz = v.mwst_satz_wirksam
+            mwst = (abs(saldo) * satz / Decimal('100')).quantize(Decimal('0.01')) if satz > 0 else Decimal('0.00')
             if saldo > 0:  # Nachzahlung -> Debitor
                 rech = DebitorenRechnung.objects.create(
                     vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
                     titel=f"NK-Abrechnung Nachzahlung - {p.bezeichnung}",
                     beschreibung=f"Periode {p.start_datum:%d.%m.%Y}–{p.ende_datum:%d.%m.%Y}",
-                    betrag=saldo, faellig_am=heute + timezone.timedelta(days=30), konto_haben=konto_nk)
+                    betrag=saldo + mwst, faellig_am=heute + timezone.timedelta(days=30), konto_haben=konto_nk,
+                    mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst)
                 buche("1100", "3020", saldo, f"NK-Nachzahlung {v.mieter} - {p.bezeichnung}",
+                      datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech, user=request.user)
+                buche("1100", "2200", mwst, f"MWST {satz}% NK-Nachzahlung {v.mieter} - {p.bezeichnung}",
                       datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech, user=request.user)
                 n_nach += 1
             else:  # Guthaben → als ECHTES Mieterguthaben führen (Audit-Befund W1):
@@ -255,12 +263,15 @@ def fw_nebenkosten_verbuchen(request, pk):
                 # Storno des Guthabens auch die Buchung 3020/2030 auf (sonst bleibt 2030
                 # im Hauptbuch stehen, das Nebenbuch nicht).
                 z_nk = Zahlungseingang.objects.create(
-                    vertrag=v, betrag=abs(saldo), datum_eingang=heute,
+                    vertrag=v, betrag=abs(saldo) + mwst, datum_eingang=heute,
                     buchungs_monat=heute.replace(day=1),
                     bemerkung=f"NK-Gutschrift {p.bezeichnung} (Guthaben Mieter)",
                     konto=konto_2030, liegenschaft=v.einheit.liegenschaft,
                     erstellt_von=request.user, status='verbucht')
                 buche("3020", "2030", abs(saldo), f"NK-Gutschrift {v.mieter} - {p.bezeichnung}",
+                      datum=heute, liegenschaft=v.einheit.liegenschaft, zahlung=z_nk, user=request.user)
+                # Umsatzminderung: auch die geschuldete MWST wird zurückgenommen.
+                buche("2200", "2030", mwst, f"MWST-Korrektur {satz}% NK-Gutschrift {v.mieter} - {p.bezeichnung}",
                       datum=heute, liegenschaft=v.einheit.liegenschaft, zahlung=z_nk, user=request.user)
                 n_gut += 1
         p.abgeschlossen = True

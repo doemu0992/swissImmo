@@ -314,7 +314,12 @@ class DebitorenRechnung(OrganisationAusKette):
     beschreibung = models.TextField(blank=True, default="")
     datum = models.DateField(default=timezone.now)
     faellig_am = models.DateField(null=True, blank=True)
-    betrag = models.DecimalField(max_digits=10, decimal_places=2)
+    betrag = models.DecimalField(max_digits=10, decimal_places=2)  # Bruttobetrag (inkl. MWST, falls ausgewiesen)
+    # MWST-Ausweis (Momentaufnahme bei der Rechnungsstellung): Satz und Betrag
+    # bleiben auf der Rechnung stehen, auch wenn der Vertrag später ändert.
+    # mwst_satz = 0 → keine MWST (Wohnraum, nicht optiert): das PDF weist nichts aus.
+    mwst_satz = models.DecimalField("MWST-Satz (%)", max_digits=4, decimal_places=1, default=Decimal('0.0'))
+    mwst_betrag = models.DecimalField("MWST (CHF)", max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
     konto_haben = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, null=True, blank=True, help_text="Gegenkonto (z.B. 1190 Durchlaufkonto oder 3000 Ertrag)")
 
@@ -349,6 +354,11 @@ class DebitorenRechnung(OrganisationAusKette):
             models.Index(fields=['status', 'faellig_am'], name='idx_debrech_status_faellig'),
             models.Index(fields=['vertrag', 'status'], name='idx_debrech_vertrag_status'),
         ]
+
+    @property
+    def netto_betrag(self):
+        """Betrag ohne MWST (= betrag, wenn keine MWST ausgewiesen ist)."""
+        return self.betrag - (self.mwst_betrag or Decimal('0.00'))
 
     def __str__(self):
         return f"{self.titel} - CHF {self.betrag} ({self.get_status_display()})"
