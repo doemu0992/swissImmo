@@ -74,7 +74,7 @@
                 <td class="fw-right fw-num fw-strong">{{ row.offen|chf }}</td>
                 <td class="fw-right">
                     {% if row.letzte_mahnung %}<div class="fw-klein mb-1">{% blocktrans with stufe=row.letzte_mahnung.stufe datum=row.letzte_mahnung.datum|date:"d.m.Y" %}zuletzt: {{ stufe }}. Mahnung {{ datum }}{% endblocktrans %}</div>{% endif %}
-                    {% if row.zustell_dok %}<div class="fw-klein mb-1">{% include 'fw/_zustellstatus.html' with d=row.zustell_dok z=None %}{% include 'fw/_zustellung_erfassen.html' with d=row.zustell_dok next='/neu/mahnwesen/' %}</div>{% endif %}
+                    {% if row.zustell_dok %}<div class="fw-klein mb-1">{% include 'fw/_zustellstatus.html' with d=row.zustell_dok z=None %}{% if not row.zustell_dok.zugang_pflichtig %} · <b class="fw-warnton">{% trans "Nicht zugestellt — Zugang nicht bestätigt" %}</b>{% endif %}{% include 'fw/_zustellung_erfassen.html' with d=row.zustell_dok next='/neu/mahnwesen/' erzwingen=True %}</div>{% endif %}
                     {% if row.gebuehr_stellbar %}
                     {% if row.gebuehr_fehlt %}<div class="fw-klein fw-warnton mb-1">{% trans "Mahngebühr fehlt (storniert/gelöscht) — «Erfassen» stellt sie neu." %}</div>{% endif %}
                     <form method="post" action="/neu/mahnwesen/erfassen/" class="inline-flex items-center gap-1.5 mb-1">

@@ -145,8 +145,15 @@ def fw_mahnwesen(request):
         lm = row['letzte_mahnung']
         # Das zuletzt abgelegte 257d-Schreiben dieses Vertrags (Mahnung mit Kündigungsandrohung):
         # Hier werden Sendungsnummer und Zugang erfasst, direkt an der Mahnung.
-        row['zustell_dok'] = (RDok.objects.filter(vertrag_id=row['vertrag_id'], zugang_pflichtig=True)
-                              .order_by('-id').first() if lm and row['vertrag_id'] else None)
+        zd = None
+        if lm and row['vertrag_id']:
+            _dok = RDok.objects.filter(vertrag_id=row['vertrag_id'])
+            zd = _dok.filter(zugang_pflichtig=True).order_by('-id').first()
+            if (zd is None and row['stufe'].get('kuendigung') and lm.stufe == row['stufe']['stufe']):
+                # Älteres Schreiben dieser Stufe, abgelegt, bevor die Akte Zustellnachweise kannte:
+                # Es trägt noch kein `zugang_pflichtig` und wird beim Erfassen so geführt.
+                zd = _dok.filter(titel__startswith=f"{lm.stufe}. Mahnung").order_by('-id').first()
+        row['zustell_dok'] = zd
         # Erfasst, aber ihre Gebührenrechnung wurde storniert/gelöscht: «Erfassen» stellt sie neu.
         row['gebuehr_fehlt'] = bool(lm and lm.stufe == row['stufe']['stufe']
                                     and _mahngebuehr_fehlt(row['r'], lm))

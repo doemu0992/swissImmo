@@ -1265,3 +1265,57 @@ class MahngebuehrBetragUndMeldungTests(TestCase):
         antwort = c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 2}, follow=True)
         self.assertTrue(any('ist gestellt' in m for m in self._meldungen(antwort)))
         self.assertEqual(len(self._folgen(r, 2)), 1)
+
+
+class AelteresMahnschreibenZustellungTests(TestCase):
+    """Das Schreiben wurde abgelegt, bevor die Akte Zustellnachweise kannte (`zugang_pflichtig`
+    fehlt): Die Mahnwesen-Zeile bietet das Erfassen trotzdem an und führt es dann als 257d-Brief."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _setup(self):
+        from rentals.models import Dokument
+        r = _ueberfaellige_rechnung(self.a, 61)
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 3})
+        with organisation_kontext(self.a.organisation):
+            Dokument.objects.filter(vertrag=self.a.vertrag).update(zugang_pflichtig=False)
+            dok = Dokument.objects.filter(vertrag=self.a.vertrag, titel__startswith='3. Mahnung').get()
+        return c, dok
+
+    def test_zeile_zeigt_das_formular_obwohl_das_dokument_nicht_markiert_ist(self):
+        c, dok = self._setup()
+        seite = c.get('/neu/mahnwesen/')
+        self.assertContains(seite, f'/neu/dokument/{dok.pk}/zustellung/')
+        self.assertContains(seite, 'Nicht zugestellt — Zugang nicht bestätigt')
+
+    def test_erfassen_markiert_und_legt_die_frist_an(self):
+        from core.models import Pendenz
+        from rentals.models import Dokument
+        c, dok = self._setup()
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', {'sendungsnummer': '98.00.77'})
+        with organisation_kontext(self.a.organisation):
+            neu = Dokument.objects.get(pk=dok.pk)
+            self.assertTrue(neu.zugang_pflichtig)
+            self.assertEqual(neu.zustellstatus, ('versandt', None))
+            self.assertEqual(Pendenz.objects.filter(vertrag=self.a.vertrag,
+                                                    quelle__startswith='257d:').count(), 1)
+
+    def test_ohne_angaben_wird_nichts_markiert(self):
+        from rentals.models import Dokument
+        c, dok = self._setup()
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', {})
+        with organisation_kontext(self.a.organisation):
+            self.assertFalse(Dokument.objects.get(pk=dok.pk).zugang_pflichtig)
+
+    def test_beliebiges_dokument_wird_nicht_zum_257d_brief(self):
+        from rentals.models import Dokument
+        c, dok = self._setup()
+        with organisation_kontext(self.a.organisation):
+            Dokument.objects.filter(pk=dok.pk).update(titel='Mietvertrag (unterzeichnet)')
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', {'sendungsnummer': 'x'})
+        with organisation_kontext(self.a.organisation):
+            self.assertFalse(Dokument.objects.get(pk=dok.pk).zugang_pflichtig)

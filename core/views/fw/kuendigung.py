@@ -10,6 +10,7 @@
 # der Nachweis wichtig, dass hier NICHTS geaendert wurde -- Blockinhalt
 # gegen HEAD Zeile fuer Zeile identisch.
 
+import re
 from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
@@ -882,8 +883,15 @@ def fw_dokument_zustellung(request, pk):
     nxt = request.POST.get('next') or ''
     ziel = nxt if nxt.startswith('/neu/') and '//' not in nxt[1:] else (
         f'/neu/vertraege/{v.pk}/' if v else '/neu/dokumente/')
-    if request.method != 'POST' or not d.zugang_pflichtig or v is None:
+    if request.method != 'POST' or v is None:
         return redirect(ziel)
+    if not d.zugang_pflichtig:
+        # Älteres Mahnschreiben mit Kündigungsandrohung, abgelegt vor den Zustellnachweisen:
+        # Es wird beim Erfassen als Schreiben mit nachzuweisendem Zugang geführt.
+        titel = d.titel or ''
+        if not (re.match(r'\d+\. Mahnung', titel) or '257d' in titel):
+            return redirect(ziel)
+        d.zugang_pflichtig = True      # gespeichert erst nach der Eingabeprüfung
 
     heute = timezone.localdate()
     sendungsnummer = (request.POST.get('sendungsnummer') or '').strip()[:40]
@@ -898,6 +906,8 @@ def fw_dokument_zustellung(request, pk):
         messages.error(request, gettext('Bitte Sendungsnummer, Versand- oder Zugangsdatum angeben.'))
         return redirect(ziel)
 
+    if d.zugang_pflichtig and not Dokument.objects.filter(pk=d.pk, zugang_pflichtig=True).exists():
+        d.save(update_fields=['zugang_pflichtig'])
     FRIST_TAGE = 30
     POSTWEG_TAGE = 1
     benutzer = request.user if request.user.is_authenticated else None
