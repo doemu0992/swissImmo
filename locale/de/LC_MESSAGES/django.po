@@ -21922,3 +21922,94 @@ msgstr "Weitere Gruppen:"
 #, python-format
 msgid "Es gibt einen offenen Entwurf vom %(datum)s."
 msgstr "Es gibt einen offenen Entwurf vom %(datum)s."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahmen"
+msgstr "Abnahmen"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Aus- und Einzug"
+msgstr "Aus- und Einzug"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Dem Mieter belastet"
+msgstr "Dem Mieter belastet"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Der Vertrag hat Abnahmeprotokolle und kann nicht gelöscht werden: Sie gehören zur Einheit."
+msgstr "Der Vertrag hat Abnahmeprotokolle und kann nicht gelöscht werden: Sie gehören zur Einheit."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Einzugsprotokoll für den Nachmieter vorbereitet: bitte prüfen und abschliessen."
+msgstr "Einzugsprotokoll für den Nachmieter vorbereitet: bitte prüfen und abschliessen."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Neue Abnahme starten"
+msgstr "Neue Abnahme starten"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Noch keine Abnahme an diesem Objekt."
+msgstr "Noch keine Abnahme an diesem Objekt."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Protokoll öffnen"
+msgstr "Protokoll öffnen"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schon im Vorprotokoll als übermässig abgenutzt festgehalten. Soll der Mangel dem Mieter belastet werden?"
+msgstr "Schon im Vorprotokoll als übermässig abgenutzt festgehalten. Soll der Mangel dem Mieter belastet werden?"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorbestehend"
+msgstr "Vorbestehend"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorbestehend, nicht belasten"
+msgstr "Vorbestehend, nicht belasten"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorzustand"
+msgstr "Vorzustand"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Weiterhin dem Mieter belasten"
+msgstr "Weiterhin dem Mieter belasten"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Wie Vorprotokoll übernehmen (nur i.O. und Normal)"
+msgstr "Wie Vorprotokoll übernehmen (nur i.O. und Normal)"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Aus- und Einzug: Das Einzugsprotokoll für %(name)s wird beim Abschluss vorbereitet."
+msgstr "Aus- und Einzug: Das Einzugsprotokoll für %(name)s wird beim Abschluss vorbereitet."
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Aus letzter Abnahme (%(art)s %(datum)s)"
+msgstr "Aus letzter Abnahme (%(art)s %(datum)s)"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Letzte Abnahme dieser Einheit: %(art)s vom %(datum)s (%(name)s). Mit der Vorlage «Aus letzter Abnahme» steht ihr Zustand neben jedem Bauteil."
+msgstr "Letzte Abnahme dieser Einheit: %(art)s vom %(datum)s (%(name)s). Mit der Vorlage «Aus letzter Abnahme» steht ihr Zustand neben jedem Bauteil."
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Vorbestand noch nicht entschieden: %(n)s"
+msgstr "Vorbestand noch nicht entschieden: %(n)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Baut auf: %(art)s vom %(datum)s"
+msgstr "Baut auf: %(art)s vom %(datum)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Mängel: %(n)s"
+msgstr "Mängel: %(n)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
+msgstr "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."

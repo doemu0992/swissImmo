@@ -22034,3 +22034,94 @@ msgstr "Autres groupes :"
 #, python-format
 msgid "Es gibt einen offenen Entwurf vom %(datum)s."
 msgstr "Il existe un brouillon ouvert du %(datum)s."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Abnahmen"
+msgstr "Réceptions"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Aus- und Einzug"
+msgstr "Sortie et entrée"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Dem Mieter belastet"
+msgstr "Imputé au locataire"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Der Vertrag hat Abnahmeprotokolle und kann nicht gelöscht werden: Sie gehören zur Einheit."
+msgstr "Le contrat a des procès-verbaux de réception et ne peut pas être supprimé : ils appartiennent à l'unité."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Einzugsprotokoll für den Nachmieter vorbereitet: bitte prüfen und abschliessen."
+msgstr "Procès-verbal d'entrée préparé pour le nouveau locataire : veuillez le vérifier et le clôturer."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Neue Abnahme starten"
+msgstr "Démarrer une nouvelle réception"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Noch keine Abnahme an diesem Objekt."
+msgstr "Aucune réception pour cet objet."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Protokoll öffnen"
+msgstr "Ouvrir le procès-verbal"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schon im Vorprotokoll als übermässig abgenutzt festgehalten. Soll der Mangel dem Mieter belastet werden?"
+msgstr "Déjà consigné comme usure excessive dans le procès-verbal précédent. Le défaut doit-il être imputé au locataire ?"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorbestehend"
+msgstr "Préexistant"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorbestehend, nicht belasten"
+msgstr "Préexistant, ne pas imputer"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Vorzustand"
+msgstr "État précédent"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Weiterhin dem Mieter belasten"
+msgstr "Continuer à imputer au locataire"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Wie Vorprotokoll übernehmen (nur i.O. und Normal)"
+msgstr "Reprendre du procès-verbal précédent (seulement en ordre et normal)"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Aus- und Einzug: Das Einzugsprotokoll für %(name)s wird beim Abschluss vorbereitet."
+msgstr "Sortie et entrée : le procès-verbal d'entrée pour %(name)s est préparé à la clôture."
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Aus letzter Abnahme (%(art)s %(datum)s)"
+msgstr "Depuis la dernière réception (%(art)s %(datum)s)"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Letzte Abnahme dieser Einheit: %(art)s vom %(datum)s (%(name)s). Mit der Vorlage «Aus letzter Abnahme» steht ihr Zustand neben jedem Bauteil."
+msgstr "Dernière réception de cette unité : %(art)s du %(datum)s (%(name)s). Avec le modèle « Depuis la dernière réception », son état figure à côté de chaque élément."
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Vorbestand noch nicht entschieden: %(n)s"
+msgstr "État préexistant pas encore tranché : %(n)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Baut auf: %(art)s vom %(datum)s"
+msgstr "Basé sur : %(art)s du %(datum)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "Mängel: %(n)s"
+msgstr "Défauts : %(n)s"
+
+#: core/templates/fw/abnahme_vorort.html
+#, python-format
+msgid "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
+msgstr "%(count)s élément(s) étaient déjà contestés dans le procès-verbal précédent : veuillez décider s'ils sont imputés au locataire."

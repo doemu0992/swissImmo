@@ -108,15 +108,17 @@
 
 {% if positionen %}
 <div class="fw-card">
+    {% if p.vorgaenger %}<p class="fw-faint fw-rumpf">{% blocktrans with art=p.vorgaenger.get_typ_display datum=p.vorgaenger.datum|date:"d.m.Y" %}Baut auf: {{ art }} vom {{ datum }}{% endblocktrans %} · <a href="/neu/abnahme/{{ p.vorgaenger.id }}/">{% trans "Protokoll öffnen" %}</a></p>{% endif %}
     <div class="fw-kopf"><h2>{% trans "Bewertete Bauteile" %}</h2><span class="fw-neben">{{ positionen|length }}</span></div>
     <div class="fw-tablewrap">
 <table class="fw-table">
-        <thead><tr><th>{% trans "Raum" %}</th><th>{% trans "Bauteil" %}</th><th>{% trans "Zustand" %}</th><th>{% trans "Kommentar" %}</th></tr></thead>
+        <thead><tr><th>{% trans "Raum" %}</th><th>{% trans "Bauteil" %}</th>{% if p.vorgaenger %}<th>{% trans "Vorzustand" %}</th>{% endif %}<th>{% trans "Zustand" %}</th><th>{% trans "Kommentar" %}</th></tr></thead>
         <tbody>
             {% for pos in positionen %}
             <tr><td>{{ pos.raum }}</td><td class="fw-strong">{{ pos.bezeichnung }}</td>
+                {% if p.vorgaenger %}<td>{{ pos.vorgaenger_position.get_zustand_display|default:"—" }}</td>{% endif %}
                 <td><span class="fw-chip {% if pos.zustand == 'io' %}fw-good{% elif pos.zustand == 'normal' %}fw-warn{% elif pos.zustand == 'uebermaessig' %}fw-crit{% else %}fw-mut{% endif %}">{{ pos.get_zustand_display }}</span></td>
-                <td>{{ pos.kommentar|default:"—" }}</td></tr>
+                <td>{{ pos.kommentar|default:"—" }}{% if pos.vorbestand_entscheid == 'vorbestehend' %} · <b>{% trans "Vorbestehend" %}</b>{% elif pos.vorbestand_entscheid == 'mieter' %} · <b>{% trans "Dem Mieter belastet" %}</b>{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

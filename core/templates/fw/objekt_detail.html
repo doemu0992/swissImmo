@@ -526,6 +526,24 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <p class="fw-leer">{% trans "Kein Vertragsdokument an diesem Objekt." %}</p>
     {% endfor %}
 </div>
+
+{% comment %} Abnahmen gehören zur Einheit: alle Protokolle über alle Mieter, neueste zuerst. {% endcomment %}
+<div class="fw-subhead">{% trans "Abnahmen" %}</div>
+<div class="fw-card">
+    {% for ab in abnahmen_objekt %}
+    <a href="/neu/abnahme/{{ ab.id }}/" class="fw-zeile klick">
+        <span class="fw-ikon">{% zeichen 'dokument' %}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ ab.get_typ_display }} · {{ ab.datum|date:"d.m.Y" }}</div>
+            <div class="fw-s">{{ ab.vertrag.mieter.display_name }}{% if ab.n_maengel %} · {% blocktrans with n=ab.n_maengel %}Mängel: {{ n }}{% endblocktrans %}{% endif %}</div>
+        </div>
+        <span class="fw-chip {% if ab.abgeschlossen %}fw-good{% else %}fw-warn{% endif %}">{% if ab.abgeschlossen %}{% trans "Abgeschlossen" %}{% else %}{% trans "Entwurf" %}{% endif %}</span>
+    </a>
+    {% empty %}
+    <p class="fw-leer">{% trans "Noch keine Abnahme an diesem Objekt." %}</p>
+    {% endfor %}
+    {% if aktiver_vertrag %}<div class="fw-rumpf"><a class="fw-btn" href="/neu/vertraege/{{ aktiver_vertrag.id }}/abnahme/vorort/">{% trans "Neue Abnahme starten" %}</a></div>{% endif %}
+</div>
 </div>
 
 <!-- ===== BEREICH: FÄLLE ===== -->

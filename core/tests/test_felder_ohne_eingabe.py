@@ -117,6 +117,9 @@ AUSNAHMEN = {
     'rentals.AbnahmeMangel.mieteranteil':
      'BERECHNET aus der Lebensdauer (`berechne_mieteranteil`, '
      'abnahme.py:100), nicht eingegeben',
+    'rentals.Abnahmeprotokoll.folge_vertrag':
+     'GESETZT aus der Art «Aus- und Einzug» im Assistenten (`fw_abnahme_vorort_start`): der '
+     'Nachmieter-Vertrag der Einheit wird gefunden, nicht gewählt',
     'finance.Buchung.zahlungseingang': 'setzt die Zuordnung im Bankabgleich (booking.py:133)',
     'finance.Buchung.ist_storno': 'setzt `finance/booking.py:156` beim Stornieren — angezeigt, nicht eingegeben',
     'faelle.Eingang.absender_email': 'kommt aus dem Postfach',
