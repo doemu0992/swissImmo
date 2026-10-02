@@ -120,7 +120,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% endfor %}
                 </select>
                 <label class="fw-haekchen">
-                    <input type="checkbox" name="melder_informieren" class="fw-haken">{% trans "Melder per E-Mail informieren" %}
+                    <input type="checkbox" name="melder_informieren" class="fw-haken" checked>{% trans "Melder per E-Mail informieren" %}
                 </label>
                 <button class="fw-btn fw-primary fw-knapp">{% trans "Status setzen" %}</button>
             </form>
@@ -331,6 +331,33 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <a href="/neu/kreditoren/" class="fw-link">{% zeichen 'extern' klasse='mr-1' %}{% blocktrans with id=a.kreditoren_rechnung_id %}Kreditor #{{ id }}{% endblocktrans %}</a>
                     {% endif %}
                 </div>
+            </div>
+            <div class="fw-rumpf">
+                {% if a.termin_status == 'vereinbart' %}
+                <div class="fw-chip fw-good mb-2">{% zeichen 'kalender' %} {% blocktrans with d=a.termin_am|date:"d.m.Y, H:i" %}Termin: {{ d }} Uhr{% endblocktrans %}</div>
+                {% elif a.termin_status == 'abgesagt' %}
+                <div class="fw-chip fw-warn mb-2">{% trans "Termin abgesagt" %}</div>
+                {% endif %}
+                <form method="post" action="/neu/auftrag/{{ a.id }}/termin/" class="fw-formular items-end">
+                    {% csrf_token %}
+                    <div class="fw-feldblock"><label class="fw-label">{% trans "Termin (Datum, Zeit)" %}</label>
+                        <input type="datetime-local" name="termin" required class="fw-feld"></div>
+                    <button class="fw-btn fw-knapp">{% trans "Termin setzen & beide informieren" %}</button>
+                </form>
+                {% if a.termin_status == 'vereinbart' %}
+                <form method="post" action="/neu/auftrag/{{ a.id }}/termin/" class="mt-2">
+                    {% csrf_token %}<input type="hidden" name="aktion" value="absagen">
+                    <button class="fw-btn fw-knapp">{% trans "Termin absagen" %}</button>
+                </form>
+                {% endif %}
+                {% if a.handwerker.email %}
+                <form method="post" action="/neu/auftrag/{{ a.id }}/nachricht/" class="fw-formular mt-3">
+                    {% csrf_token %}
+                    <label class="fw-label">{% blocktrans with f=a.handwerker.firma %}Nachricht an {{ f }}{% endblocktrans %}</label>
+                    <textarea name="text" rows="3" required class="fw-feld w-full"></textarea>
+                    <button class="fw-btn fw-knapp mt-2">{% zeichen 'senden' %}{% trans "Nachricht senden" %}</button>
+                </form>
+                {% endif %}
             </div>
             <form method="post" action="/neu/auftrag/{{ a.id }}/kosten/" class="fw-formular drei items-end fw-rumpf">
                 {% csrf_token %}

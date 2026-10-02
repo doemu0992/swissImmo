@@ -48,6 +48,60 @@ DEFAULT_VORLAGEN = {
     },
 }
 
+DEFAULT_VORLAGEN.update({
+    'ticket_termin': {
+        'betreff': 'Termin für Ihre Reparatur: {termin} (Ticket #{ticket_id})',
+        'inhalt': (
+            "Guten Tag {melder_name}\n\n"
+            "für „{schaden}“ wurde ein Termin vereinbart:\n\n"
+            "Wann: {termin}\nWer: {handwerker}\nWo: {objekt}\n\n"
+            "Bitte stellen Sie den Zutritt sicher. Können Sie nicht, antworten Sie auf diese "
+            "Mail, dann verschieben wir den Termin. Der Kalendereintrag hängt an.\n\n"
+            "Freundliche Grüsse\nIhre Liegenschaftsverwaltung"
+        ),
+    },
+    'ticket_termin_handwerker': {
+        'betreff': 'Termin bestätigt: {termin} (Ticket #{ticket_id})',
+        'inhalt': (
+            "Guten Tag\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\n"
+            "Mieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an.\n\n"
+            "Freundliche Grüsse\nIhre Liegenschaftsverwaltung"
+        ),
+    },
+    'ticket_termin_abgesagt': {
+        'betreff': 'Termin abgesagt (Ticket #{ticket_id})',
+        'inhalt': (
+            "Guten Tag\n\nDer Termin für „{schaden}“ ({objekt}) am {termin} wurde abgesagt. "
+            "Ein neuer Termin folgt.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+        ),
+    },
+    'ticket_erinnerung_handwerker': {
+        'betreff': 'Erinnerung: Reparaturauftrag {objekt} (Ticket #{ticket_id})',
+        'inhalt': (
+            "Guten Tag\n\nzu unserem Auftrag „{schaden}“ ({objekt}) haben wir noch keine "
+            "Rückmeldung oder Terminbestätigung. Bitte melden Sie sich beim Mieter {melder_name} "
+            "({melder_tel}) und bestätigen Sie uns den Termin. Referenz: Ticket #{ticket_id}.\n\n"
+            "Freundliche Grüsse\nIhre Liegenschaftsverwaltung"
+        ),
+    },
+    'ticket_erinnerung_rechnung': {
+        'betreff': 'Erinnerung: Rechnung zu Ticket #{ticket_id}',
+        'inhalt': (
+            "Guten Tag\n\nfür den ausgeführten Auftrag „{schaden}“ ({objekt}) liegt uns noch "
+            "keine Rechnung vor. Bitte senden Sie sie mit der Referenz Ticket #{ticket_id}.\n\n"
+            "Freundliche Grüsse\nIhre Liegenschaftsverwaltung"
+        ),
+    },
+    'ticket_erinnerung_mieter': {
+        'betreff': 'Erinnerung zu Ihrer Meldung (Ticket #{ticket_id})',
+        'inhalt': (
+            "Guten Tag {melder_name}\n\nzu Ihrer Meldung „{schaden}“ warten wir auf Ihre "
+            "Rückmeldung. Bitte antworten Sie auf diese Mail.\n\n"
+            "Freundliche Grüsse\nIhre Liegenschaftsverwaltung"
+        ),
+    },
+})
+
 TICKET_PLATZHALTER = [
     ('{melder_name}', gettext_lazy('Name des Melders')),
     ('{melder_tel}', gettext_lazy('Telefon des Melders')),
@@ -60,7 +114,7 @@ TICKET_PLATZHALTER = [
 ]
 
 
-def ticket_kontext(ticket, handwerker=None, status=None):
+def ticket_kontext(ticket, handwerker=None, status=None, termin=None):
     """Baut das Platzhalter-Dict für ein Ticket.
 
     Enthält sowohl die Schaden-spezifischen Platzhalter ({melder_name}, {schaden} …)
@@ -99,6 +153,7 @@ def ticket_kontext(ticket, handwerker=None, status=None):
         'ticket_id': str(ticket.id),
         'handwerker': (handwerker.firma if handwerker else ''),
         'status': status or auf_deutsch(ticket.get_status_display),
+        'termin': termin or '',
         # Allgemeine Vorlagen-Platzhalter (Alias/Kompatibilität)
         'mieter_name': melder,
         'mieter_adresse': mieter_adresse,
@@ -115,7 +170,7 @@ def _ersetze(text, kontext):
     return text
 
 
-def vorlage_text(kategorie, ticket, handwerker=None, status=None):
+def vorlage_text(kategorie, ticket, handwerker=None, status=None, termin=None):
     """Gibt (betreff, inhalt) für eine Ticket-Kategorie zurück — aus der DB-Vorlage
     (erste passende) oder aus DEFAULT_VORLAGEN, mit ersetzten Platzhaltern."""
     from crm.models import Vorlage
@@ -127,5 +182,5 @@ def vorlage_text(kategorie, ticket, handwerker=None, status=None):
     else:
         d = DEFAULT_VORLAGEN.get(kategorie, {})
         betreff, inhalt = d.get('betreff', ''), d.get('inhalt', '')
-    kontext = ticket_kontext(ticket, handwerker=handwerker, status=status)
+    kontext = ticket_kontext(ticket, handwerker=handwerker, status=status, termin=termin)
     return _ersetze(betreff, kontext), _ersetze(inhalt, kontext)

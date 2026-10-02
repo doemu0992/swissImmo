@@ -518,23 +518,15 @@ def fw_schaden_auftrag(request, pk):
     hw = get_object_or_404(Handwerker, id=request.POST.get('handwerker_id'))
     auftragstext = (request.POST.get('auftragstext') or '').strip()
 
-    from tickets.workflow import handwerker_zuweisen
-    handwerker_zuweisen(t, hw, auftragstext)
-
-    # Mail an Handwerker (Auftragstext, Foto als Anhang)
-    hw_betreff, hw_text = vorlage_text('ticket_handwerker', t, handwerker=hw)
-    if auftragstext:
-        hw_text = auftragstext
-    hw_ok = send_ticket_email(hw.email, hw_betreff, hw_text, foto_field=t.foto) if hw.email else False
-
-    # Info-Mail an Melder
+    from django.core.exceptions import ValidationError
+    from tickets.workflow import auftrag_vergeben
+    try:
+        res = auftrag_vergeben(t, hw, auftragstext)
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+        return redirect(f'/neu/schaeden/{t.id}/')
+    hw_ok, melder_ok = res['handwerker_versendet'], res['melder_informiert']
     melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
-    m_betreff, m_text = vorlage_text('ticket_melder', t, handwerker=hw)
-    melder_ok = send_ticket_email(melder_email, m_betreff, m_text) if melder_email else False
-
-    if melder_ok:
-        TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
-                                       nachricht=f"Melder automatisch informiert ({melder_email}).", is_intern=True)
 
     log_aktion(request, "Handwerker beauftragt", f"Ticket #{t.id}", f"{hw.firma}")
     hinweise = []
@@ -568,23 +560,21 @@ def fw_schaden_status(request, pk):
         return redirect(f'/neu/schaeden/{t.id}/')
     from django.core.exceptions import ValidationError
     from tickets.workflow import wechsle_status
+    informieren = request.POST.get('melder_informieren') == 'on'
+    melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
+    n_vorher = t.nachrichten.count()
     try:
-        wechsle_status(t, neu)
+        wechsle_status(t, neu, melder_informieren=informieren)
     except ValidationError as e:
         messages.error(request, '⛔ ' + ' '.join(e.messages))
         return redirect(f'/neu/schaeden/{t.id}/')
+    melder_informiert = t.nachrichten.count() > n_vorher   # Service hat Mail protokolliert
     TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
                                    nachricht=f"Status geändert: {auf_deutsch(t.get_status_display)}.", is_intern=True)
 
     info = ""
-    if request.POST.get('melder_informieren') == 'on':
-        melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
-        kat = 'ticket_erledigt' if neu == 'erledigt' else 'ticket_melder_status'
-        betreff, text = vorlage_text(kat, t, status=auf_deutsch(t.get_status_display))
-        if melder_email and send_ticket_email(melder_email, betreff, text):
-            info = f" · Melder informiert ({melder_email})"
-            TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
-                                           nachricht=f"Melder über Status '{auf_deutsch(t.get_status_display)}' informiert.", is_intern=True)
+    if informieren and melder_informiert:
+        info = f" · Melder informiert ({melder_email})"
 
     log_aktion(request, "Ticket-Status geändert", f"Ticket #{t.id}", auf_deutsch(t.get_status_display))
     messages.success(request, '✅ ' + gettext('Status: %(get_status_display)s%(info)s.') % {'get_status_display': t.get_status_display(), 'info': info})
@@ -642,6 +632,63 @@ def fw_auftrag_pdf(request, pk):
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Reparaturauftrag_{a.id}.pdf"'
     return resp
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_nachricht(request, pk):
+    """Freitext-Mail an den Handwerker eines Auftrags (Antwort kommt ins Ticket zurück)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import HandwerkerAuftrag
+    from tickets.workflow import nachricht_an_handwerker
+    from core.auth import log_aktion
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket', 'handwerker'), id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{a.ticket_id}/?tab=handwerker')
+    text = (request.POST.get('text') or '').strip()
+    if not text:
+        messages.error(request, gettext('Bitte eine Nachricht eingeben.'))
+    elif not a.handwerker.email:
+        messages.error(request, gettext('Der Handwerker hat keine E-Mail-Adresse.'))
+    elif nachricht_an_handwerker(a, text, absender=(request.user.get_full_name() or request.user.username)):
+        log_aktion(request, "Nachricht an Handwerker", f"Ticket #{a.ticket_id}", a.handwerker.firma)
+        messages.success(request, '✅ ' + gettext('Nachricht an %(firma)s gesendet.') % {'firma': a.handwerker.firma})
+    else:
+        messages.error(request, gettext('Versand fehlgeschlagen — die Nachricht steht im Verlauf.'))
+    return redirect(f'/neu/schaeden/{a.ticket_id}/?tab=handwerker')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_termin(request, pk):
+    """Termin eines Auftrags setzen/verschieben oder absagen; Mieter und Handwerker
+    bekommen Mail mit Kalendereintrag."""
+    from datetime import datetime
+    from django.core.exceptions import ValidationError
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import HandwerkerAuftrag
+    from tickets.workflow import termin_festlegen, termin_absagen
+    from core.auth import log_aktion
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket', 'handwerker'), id=pk)
+    ziel = f'/neu/schaeden/{a.ticket_id}/?tab=handwerker'
+    if request.method != 'POST':
+        return redirect(ziel)
+    try:
+        if request.POST.get('aktion') == 'absagen':
+            termin_absagen(a)
+            log_aktion(request, "Termin abgesagt", f"Ticket #{a.ticket_id}", a.handwerker.firma)
+            messages.success(request, '✅ ' + gettext('Termin abgesagt, beide Seiten informiert.'))
+        else:
+            try:
+                wann = datetime.strptime(request.POST.get('termin', ''), '%Y-%m-%dT%H:%M')
+            except ValueError:
+                raise ValidationError(gettext('Ungültiges Datum.'))
+            termin_festlegen(a, wann)
+            log_aktion(request, "Termin festgelegt", f"Ticket #{a.ticket_id}", a.handwerker.firma)
+            messages.success(request, '✅ ' + gettext('Termin gesetzt, Mieter und Handwerker informiert.'))
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+    return redirect(ziel)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

@@ -535,6 +535,25 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             p.erledigt_am = heute
             p.save(update_fields=['erledigt', 'erledigt_am'])
 
+    # a3b0) Rechnung fehlt: Ticket «Wartet auf Rechnung» seit über 7 Tagen. Die
+    # automatischen Erinnerungen an den Handwerker (tickets/erinnerungen.py)
+    # ersetzen den Menschen nicht — die Pendenz sorgt dafür, dass die Rechnung
+    # nicht stillschweigend ausbleibt. Erledigt, sobald das Ticket den Status verlässt.
+    rechnung_grenze = heute - timedelta(days=7)
+    for t in offen_t.filter(status='wartet_auf_rechnung', aktualisiert_am__date__lt=rechnung_grenze):
+        _ensure(f"auto:rechnung:{t.id}",
+                f"Rechnung fehlt: Ticket #{t.id} {t.titel}"[:200],
+                heute, 'unterhalt',
+                "Arbeit ausgeführt, aber keine Handwerkerrechnung verknüpft — Rechnung "
+                "beim Handwerker anfordern und mit dem Auftrag verknüpfen.",
+                liegenschaft=t.liegenschaft)
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:rechnung:'):
+        tid = p.quelle.rsplit(':', 1)[-1]
+        if not SchadenMeldung.objects.filter(pk=tid, status='wartet_auf_rechnung').exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
     # a3c) Zahlungsvereinbarungen bewerten: erfüllt oder gebrochen.
     from core.services.zahlungsvereinbarung import pruefen_alle
     pruefen_alle()

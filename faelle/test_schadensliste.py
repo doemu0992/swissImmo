@@ -277,21 +277,29 @@ class ProtokollWortlautTests(TestCase):
     stillschweigend zu oft meldet.
     """
 
-    def test_beide_erzeugerstellen_beginnen_mit_dem_praefix(self):
-        import pathlib
-        import re
+    def test_automatische_melder_mail_zaehlt_als_echo_ohne_textabgleich(self):
+        """Seit der Kommunikation in `tickets/workflow.py` steht das Echo als
+        sichtbare Verwaltungsnachricht im Verlauf (nicht intern) — `hat_echo`
+        braucht dafuer keinen Wortlaut mehr. Der Praefix bleibt fuer den
+        Altbestand (Systemnotizen «Melder automatisch informiert …»)."""
+        from decimal import Decimal  # noqa: F401
+        from django.core import mail
+        from django.test import override_settings
 
-        from django.conf import settings
+        from core.tests._helfer import _basis_objekte
+        from faelle.schaeden import hat_echo
+        from tickets.models import SchadenMeldung
+        from tickets.workflow import melder_benachrichtigen
 
-        from faelle.schaeden import ECHO_PROTOKOLL_PRAEFIX
-
-        quelle = (pathlib.Path(settings.BASE_DIR)
-                  / 'core/views/fw/schaeden.py').read_text()
-        treffer = re.findall(r'nachricht=f?"(Melder[^"]*)"', quelle)
-        self.assertGreaterEqual(len(treffer), 2, quelle.count('Melder'))
-        for text in treffer:
-            with self.subTest(text=text):
-                self.assertTrue(text.startswith(ECHO_PROTOKOLL_PRAEFIX), text)
+        lg, e, m, v = _basis_objekte()
+        t = SchadenMeldung.objects.create(liegenschaft=lg, gemeldet_von=m, titel='X',
+                                          beschreibung='y', email_melder='hans@example.ch')
+        self.assertFalse(hat_echo(t))
+        with override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
+            self.assertTrue(melder_benachrichtigen(t, 'ticket_melder_status'))
+        self.assertEqual(len(mail.outbox), 1)
+        t = SchadenMeldung.objects.prefetch_related('nachrichten').get(pk=t.pk)
+        self.assertTrue(hat_echo(t))
 
     def test_die_pruefung_wuerde_eine_umformulierung_bemerken(self):
         """Gegenprobe zur Gegenprobe: Der Abgleich darf nicht leerlaufen."""

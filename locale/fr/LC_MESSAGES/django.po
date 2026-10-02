@@ -21586,7 +21586,6 @@ msgstr "Frais de rappel du %(stufe)s. rappel refacturés · CHF %(gebuehr)s."
 msgid "Mahngebühr konnte nicht gebucht werden: %(exc)s"
 msgstr "Les frais de rappel n'ont pas pu être comptabilisés : %(exc)s"
 
-
 #: core/templates/fw/lauf_detail.html:19
 msgid "blockiert"
 msgstr "bloqué"
@@ -21662,22 +21661,62 @@ msgstr "%(lauf)s réinitialisé."
 msgid "%(n)s Rechnung(en) storniert."
 msgstr "%(n)s facture(s) annulée(s)."
 
-#: core/views/fw/bankabgleich.py:782
-msgid ""
-"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts "
-"gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
-msgstr "L'importation a été interrompue et entièrement annulée — rien n'a été enregistré. Veuillez vérifier le fichier (endommagé ou incomplet ?)."
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin abgesagt"
+msgstr "Rendez-vous annulé"
 
-#: core/views/fw/mahnwesen.py:491
-msgid ""
-"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
-"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
-"erzwingen."
-msgstr "Le processus de rappels de ce mois est déjà clôturé — aucun double rappel. Pour le répéter, réinitialisez-le sous « Processus » ou forcez-le volontairement."
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin (Datum, Zeit)"
+msgstr "Rendez-vous (date, heure)"
 
-#: core/views/fw/sollstellung.py:189
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin setzen & beide informieren"
+msgstr "Fixer le rendez-vous et informer les deux"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin absagen"
+msgstr "Annuler le rendez-vous"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Bitte eine Nachricht eingeben."
+msgstr "Veuillez saisir un message."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Der Handwerker hat keine E-Mail-Adresse."
+msgstr "L'artisan n'a pas d'adresse e-mail."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
 #, python-format
-msgid ""
-"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
-"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
-msgstr "La facturation des loyers %(titel)s est déjà clôturée — rien n'a été facturé deux fois. Pour la répéter, réinitialisez d'abord le processus sous « Processus »."
+msgid "Nachricht an %(firma)s gesendet."
+msgstr "Message envoyé à %(firma)s."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Versand fehlgeschlagen — die Nachricht steht im Verlauf."
+msgstr "Échec de l'envoi — le message figure dans l'historique."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin abgesagt, beide Seiten informiert."
+msgstr "Rendez-vous annulé, les deux parties informées."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin gesetzt, Mieter und Handwerker informiert."
+msgstr "Rendez-vous fixé, locataire et artisan informés."
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Kein Termin"
+msgstr "Pas de rendez-vous"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+msgid "Termin vereinbart"
+msgstr "Rendez-vous convenu"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+#, python-format
+msgid "Termin: %(d)s Uhr"
+msgstr "Rendez-vous : %(d)s"
+
+#: core/templates/fw/schaden_detail.html core/views/fw/schaeden.py tickets/models.py
+#, python-format
+msgid "Nachricht an %(f)s"
+msgstr "Message à %(f)s"
+
