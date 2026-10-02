@@ -136,12 +136,17 @@ def fw_mahnwesen(request):
 
     # Letzte erfasste Mahnung je Rechnung + Historie
     from finance.models import Mahnung
+    from rentals.models import Dokument as RDok
     letzte_je_rechnung = {}
     for mn in Mahnung.objects.all().order_by('datum'):
         letzte_je_rechnung[mn.debitoren_rechnung_id] = mn
     for row in rows:
         row['letzte_mahnung'] = letzte_je_rechnung.get(row['r'].id)
         lm = row['letzte_mahnung']
+        # Das zuletzt abgelegte 257d-Schreiben dieses Vertrags (Mahnung mit Kündigungsandrohung):
+        # Hier werden Sendungsnummer und Zugang erfasst, direkt an der Mahnung.
+        row['zustell_dok'] = (RDok.objects.filter(vertrag_id=row['vertrag_id'], zugang_pflichtig=True)
+                              .order_by('-id').first() if lm and row['vertrag_id'] else None)
         # Erfasst, aber ihre Gebührenrechnung wurde storniert/gelöscht: «Erfassen» stellt sie neu.
         row['gebuehr_fehlt'] = bool(lm and lm.stufe == row['stufe']['stufe']
                                     and _mahngebuehr_fehlt(row['r'], lm))
@@ -186,7 +191,7 @@ def fw_mahnwesen(request):
         })
     vorlauf_rows.sort(key=lambda x: (x['faellig'], x['mieter']))
     context = {
-        **basis, 'nav': 'mahnwesen', 'rows': rows,
+        **basis, 'nav': 'mahnwesen', 'rows': rows, 'heute_iso': heute.isoformat(),
         'stufe_filter': stufe_filter, 'stufe_chips': stufe_chips,
         'total': total,
         'mahnstufen': legende,

@@ -438,6 +438,26 @@ def fw_verzug_257d(request, vertrag_id):
     })
 
 
+def _zugang_setzen(p, zugang):
+    """Trägt den bestätigten Zugang an der Fristen-Pendenz ein und zieht die Frist nach:
+    definitive Zahlungsfrist = Zugang + `frist_tage`. Gibt das neue Fristende zurück."""
+    from datetime import timedelta
+    tage = p.frist_tage or 30
+    neu_frist = zugang + timedelta(days=tage)
+    p.zugang_am = zugang
+    p.faellig_am = neu_frist
+    p.beschreibung = (f"Zugang bestätigt am {zugang:%d.%m.%Y}"
+                      + (f" (Einschreiben {p.sendungsnummer})" if p.sendungsnummer else "")
+                      + f". Definitive {tage}-Tage-Zahlungsfrist bis {neu_frist:%d.%m.%Y} "
+                        "(Art. 257d Abs. 1 OR, strikte Empfangstheorie). Nach fruchtlosem Ablauf: "
+                        "ausserordentliche Kündigung mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR).")
+    p.save(update_fields=['zugang_am', 'faellig_am', 'beschreibung'])
+    if p.vertrag_id:
+        from core.services.zahlungsverzug import fall_frist_nachfuehren
+        fall_frist_nachfuehren(p.vertrag, neu_frist)
+    return neu_frist
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_verzug_zugang(request, pk):
     """Bestätigt den ZUGANG eines 257d-Einschreibens (strikte Empfangstheorie):
@@ -462,18 +482,7 @@ def fw_verzug_zugang(request, pk):
     if zugang > heute:
         zugang = heute
     tage = p.frist_tage or 30
-    neu_frist = zugang + timedelta(days=tage)
-    p.zugang_am = zugang
-    p.faellig_am = neu_frist
-    p.beschreibung = (f"Zugang bestätigt am {zugang:%d.%m.%Y}"
-                      + (f" (Einschreiben {p.sendungsnummer})" if p.sendungsnummer else "")
-                      + f". Definitive {tage}-Tage-Zahlungsfrist bis {neu_frist:%d.%m.%Y} "
-                        "(Art. 257d Abs. 1 OR, strikte Empfangstheorie). Nach fruchtlosem Ablauf: "
-                        "ausserordentliche Kündigung mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR).")
-    p.save(update_fields=['zugang_am', 'faellig_am', 'beschreibung'])
-    if p.vertrag_id:
-        from core.services.zahlungsverzug import fall_frist_nachfuehren
-        fall_frist_nachfuehren(p.vertrag, neu_frist)
+    neu_frist = _zugang_setzen(p, zugang)
     log_aktion(request, "257d-Zugang bestätigt",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
                f"Zugang {zugang:%d.%m.%Y}, Frist neu bis {neu_frist:%d.%m.%Y}",
@@ -840,3 +849,102 @@ def fw_zahlungsvereinbarung(request, vertrag_id):
         'frist_laeuft': aktive_fristen(v).exists(),
         'heute_iso': heute.isoformat(),
     })
+
+
+def _datum_oder_none(wert):
+    try:
+        return date.fromisoformat(wert) if wert else None
+    except ValueError:
+        return None
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_dokument_zustellung(request, pk):
+    """Sendungsnummer, Versanddatum und Zugang eines 257d-Schreibens erfassen — direkt am Dokument.
+
+    Für das Schreiben, das aus dem Mahnwesen («Erfassen» der Stufe mit Kündigungsandrohung)
+    abgelegt wurde und noch keine Fristen-Pendenz hat: Die Pendenz wird hier angelegt (Frist
+    PROVISORISCH ab Versand, definitiv ab bestätigtem Zugang), die Vorschlags-Pendenz
+    «Fristansetzung prüfen» wird erledigt, der Fall «Zahlungsverzug» führt die Frist nach.
+    Hat das Schreiben schon eine Pendenz (Weg über die Vertragsakte), wird sie ergänzt.
+    """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from datetime import timedelta
+    from core.models import Pendenz
+    from core.auth import log_aktion
+    from core.services.zahlungsverzug import (aktive_fristen, fall_eroeffnen, quelle_fuer,
+                                              vorschlaege_erledigen, fall_frist_nachfuehren)
+    from rentals.models import Dokument
+
+    d = get_object_or_404(Dokument.objects.select_related('vertrag__mieter', 'vertrag__einheit'), pk=pk)
+    v = d.vertrag
+    nxt = request.POST.get('next') or ''
+    ziel = nxt if nxt.startswith('/neu/') and '//' not in nxt[1:] else (
+        f'/neu/vertraege/{v.pk}/' if v else '/neu/dokumente/')
+    if request.method != 'POST' or not d.zugang_pflichtig or v is None:
+        return redirect(ziel)
+
+    heute = timezone.localdate()
+    sendungsnummer = (request.POST.get('sendungsnummer') or '').strip()[:40]
+    versand_am = _datum_oder_none(request.POST.get('versand_am'))
+    zugang_am = _datum_oder_none(request.POST.get('zugang_am'))
+    if (versand_am and versand_am > heute) or (zugang_am and zugang_am > heute):
+        messages.error(request, gettext('Versand- und Zugangsdatum können nicht in der Zukunft liegen.'))
+        return redirect(ziel)
+
+    p = d.zustell_pendenz() or aktive_fristen(v).first()
+    if not (sendungsnummer or versand_am or zugang_am or (p and (p.sendungsnummer or p.versand_am))):
+        messages.error(request, gettext('Bitte Sendungsnummer, Versand- oder Zugangsdatum angeben.'))
+        return redirect(ziel)
+
+    FRIST_TAGE = 30
+    POSTWEG_TAGE = 1
+    benutzer = request.user if request.user.is_authenticated else None
+    neu = p is None
+    if neu:
+        lg = v.einheit.liegenschaft if v.einheit_id else None
+        basis = zugang_am or versand_am or heute
+        frist = basis + timedelta(days=(0 if zugang_am else POSTWEG_TAGE) + FRIST_TAGE)
+        p = Pendenz.objects.create(
+            titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
+            beschreibung="Mahnung mit Kündigungsandrohung (Art. 257d OR) per Einschreiben.",
+            quelle=quelle_fuer(v), kategorie='frist', faellig_am=frist, vertrag=v, liegenschaft=lg,
+            frist_tage=FRIST_TAGE, erstellt_von=benutzer)
+    if sendungsnummer:
+        p.sendungsnummer = sendungsnummer
+    if versand_am and not p.zugang_am:
+        p.versand_am = versand_am
+    if not p.zugang_am:
+        # Frist bleibt PROVISORISCH, bis der Zugang bestätigt ist.
+        vs = p.versand_am or heute
+        p.faellig_am = vs + timedelta(days=POSTWEG_TAGE + (p.frist_tage or FRIST_TAGE))
+        p.beschreibung = (
+            f"Einschreiben {p.sendungsnummer or '—'}"
+            + (f", versandt {p.versand_am:%d.%m.%Y}" if p.versand_am else "")
+            + f". PROVISORISCH bis {p.faellig_am:%d.%m.%Y} — definitive {p.frist_tage or FRIST_TAGE}-Tage-Frist "
+              "läuft ab bestätigtem Zugang (strikte Empfangstheorie). Nach fruchtlosem Ablauf: "
+              "ausserordentliche Kündigung mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR).")
+    p.save()
+    if zugang_am:
+        _zugang_setzen(p, zugang_am)
+    if d.frist_pendenz_id != p.pk:
+        d.frist_pendenz_id = p.pk
+        d.save(update_fields=['frist_pendenz_id'])
+    if neu:
+        vorschlaege_erledigen(v, 'Mahnung mit Kündigungsandrohung per Einschreiben versandt.')
+        fall_eroeffnen(v, benutzer=benutzer, frist=p.faellig_am,
+                       betreff=f"Zahlungsverzug {v.mieter.display_name}")
+    else:
+        fall_frist_nachfuehren(v, p.faellig_am)
+    log_aktion(request, "257d-Zustellung erfasst", str(v.mieter),
+               f"Einschreiben {p.sendungsnummer or '—'}"
+               + (f", Zugang {zugang_am:%d.%m.%Y}" if zugang_am else ", Zugang offen")
+               + f", Frist bis {p.faellig_am:%d.%m.%Y}", ziel=v)
+    if zugang_am:
+        messages.success(request, '✅ ' + gettext('Zugang bestätigt (%(d)s) — Zahlungsfrist läuft bis %(f)s (Art. 257d Abs. 1 OR).')
+                         % {'d': f'{zugang_am:%d.%m.%Y}', 'f': f'{p.faellig_am:%d.%m.%Y}'})
+    else:
+        messages.success(request, '✅ ' + gettext('Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht.')
+                         % {'f': f'{p.faellig_am:%d.%m.%Y}'})
+    return redirect(ziel)

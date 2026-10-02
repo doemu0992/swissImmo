@@ -884,18 +884,23 @@ class Dokument(OrganisationAusKette):
         """
         if not self.zugang_pflichtig:
             return None
-        if self.frist_pendenz_id:
-            from core.models import Pendenz
-            # alle_organisationen mit der Vertragsgrenze im Ausdruck: Die Pendenz muss zum
-            # SELBEN Vertrag gehören wie das Dokument.
-            p = Pendenz.alle_organisationen.filter(pk=self.frist_pendenz_id,
-                                                   vertrag_id=self.vertrag_id).first()
-            if p is not None:
-                if p.zugang_am:
-                    return ('bestaetigt', p.zugang_am)
-                if p.sendungsnummer or p.versand_am:
-                    return ('versandt', None)
+        p = self.zustell_pendenz()
+        if p is not None:
+            if p.zugang_am:
+                return ('bestaetigt', p.zugang_am)
+            if p.sendungsnummer or p.versand_am:
+                return ('versandt', None)
         return ('offen', None)
+
+    def zustell_pendenz(self):
+        """Die Fristen-Pendenz, an der Sendungsnummer und Zugang dieses Schreibens hängen — oder None."""
+        if not self.frist_pendenz_id:
+            return None
+        from core.models import Pendenz
+        # alle_organisationen mit der Vertragsgrenze im Ausdruck: Die Pendenz muss zum
+        # SELBEN Vertrag gehören wie das Dokument.
+        return Pendenz.alle_organisationen.filter(pk=self.frist_pendenz_id,
+                                                  vertrag_id=self.vertrag_id).first()
 
     @property
     def ablage_zeit(self):

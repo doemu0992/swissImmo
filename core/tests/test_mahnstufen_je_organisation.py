@@ -1104,3 +1104,100 @@ class FehlendeMahngebuehrNachstellenTests(TestCase):
         self.assertEqual(self._gebuehren(r), [])
         with organisation_kontext(self.a.organisation):
             self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 1)
+
+
+class ZustellungAusDemMahnwesenTests(TestCase):
+    """Das 257d-Schreiben wurde im Mahnwesen erfasst (nicht über «Zahlungsverzug» an der
+    Vertragsakte): Sendungsnummer, Versand und Zugang lassen sich direkt dort erfassen."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def _setup(self, fixture=None):
+        from core.models import Pendenz
+        f = fixture or self.a
+        r = _ueberfaellige_rechnung(f, 61)                 # Stufe 3 = Kündigungsandrohung
+        c = Client()
+        c.force_login(f.benutzer)
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.pk, 'stufe': 3})
+        from rentals.models import Dokument
+        with organisation_kontext(f.organisation):
+            dok = Dokument.objects.filter(vertrag=f.vertrag, zugang_pflichtig=True).latest('id')
+            self.assertEqual(dok.zustellstatus, ('offen', None))
+            self.assertFalse(Pendenz.objects.filter(vertrag=f.vertrag, quelle__startswith='257d:').exists())
+        return c, r, dok
+
+    def _pendenz(self, fixture=None):
+        from core.models import Pendenz
+        f = fixture or self.a
+        with organisation_kontext(f.organisation):
+            return Pendenz.objects.filter(vertrag=f.vertrag, quelle__startswith='257d:',
+                                          erledigt=False).first()
+
+    def _dok(self, dok):
+        from rentals.models import Dokument
+        return Dokument.alle_organisationen.get(pk=dok.pk)
+
+    def test_mahnwesen_zeigt_das_formular(self):
+        c, r, dok = self._setup()
+        seite = c.get('/neu/mahnwesen/')
+        self.assertContains(seite, f'/neu/dokument/{dok.pk}/zustellung/')
+        self.assertContains(seite, 'Nicht zugestellt — Zugang nicht bestätigt')
+
+    def test_sendungsnummer_legt_die_frist_provisorisch_an(self):
+        c, r, dok = self._setup()
+        heute = timezone.localdate()
+        antwort = c.post(f'/neu/dokument/{dok.pk}/zustellung/', {
+            'sendungsnummer': '98.00.123456', 'versand_am': heute.isoformat(), 'next': '/neu/mahnwesen/'})
+        self.assertRedirects(antwort, '/neu/mahnwesen/', fetch_redirect_response=False)
+        p = self._pendenz()
+        self.assertEqual(p.sendungsnummer, '98.00.123456')
+        self.assertIsNone(p.zugang_am)
+        self.assertEqual(p.faellig_am, heute + timedelta(days=31))      # Versand + 1 Tag Postweg + 30
+        self.assertEqual(self._dok(dok).frist_pendenz_id, p.pk)
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(self._dok(dok).zustellstatus, ('versandt', None))
+
+    def test_zugang_bestaetigen_setzt_die_definitive_frist(self):
+        c, r, dok = self._setup()
+        heute = timezone.localdate()
+        zugang = heute - timedelta(days=2)
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', {'sendungsnummer': '98.00.1',
+                                                       'zugang_am': zugang.isoformat()})
+        p = self._pendenz()
+        self.assertEqual(p.zugang_am, zugang)
+        self.assertEqual(p.faellig_am, zugang + timedelta(days=30))
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(self._dok(dok).zustellstatus, ('bestaetigt', zugang))
+        # danach zeigt die Seite «Zugang bestätigt» und kein Formular mehr
+        seite = c.get('/neu/mahnwesen/')
+        self.assertContains(seite, 'Zugang bestätigt am')
+        self.assertNotContains(seite, f'/neu/dokument/{dok.pk}/zustellung/')
+
+    def test_zweiter_schritt_ergaenzt_dieselbe_pendenz(self):
+        from core.models import Pendenz
+        c, r, dok = self._setup()
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', {'sendungsnummer': '98.00.1'})
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', {'zugang_am': timezone.localdate().isoformat()})
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Pendenz.objects.filter(vertrag=self.a.vertrag,
+                                                    quelle__startswith='257d:').count(), 1)
+        self.assertEqual(self._pendenz().sendungsnummer, '98.00.1')
+        self.assertIsNotNone(self._pendenz().zugang_am)
+
+    def test_ohne_angaben_und_zukunftsdatum_wird_nichts_erfasst(self):
+        c, r, dok = self._setup()
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', {})
+        morgen = timezone.localdate() + timedelta(days=1)
+        c.post(f'/neu/dokument/{dok.pk}/zustellung/', {'sendungsnummer': 'x', 'zugang_am': morgen.isoformat()})
+        self.assertIsNone(self._pendenz())
+
+    def test_fremde_organisation_kommt_nicht_heran(self):
+        c, r, dok = self._setup()
+        cb = Client()
+        cb.force_login(self.b.benutzer)
+        antwort = cb.post(f'/neu/dokument/{dok.pk}/zustellung/', {'sendungsnummer': 'x'})
+        self.assertEqual(antwort.status_code, 404)
+        self.assertIsNone(self._pendenz())

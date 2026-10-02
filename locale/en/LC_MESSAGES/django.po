@@ -21561,3 +21561,41 @@ msgstr "Order cancelled, tradesperson informed."
 #: core/views/fw/schaeden.py
 msgid "Bitte eine Rechnung wählen."
 msgstr "Please select an invoice."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Einschreiben / Zugang erfassen"
+msgstr "Record registered mail / receipt"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Sendungsnummer"
+msgstr "Tracking number"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Versanddatum"
+msgstr "Dispatch date"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Zugang (Zustell-/Abholdatum)"
+msgstr "Receipt (delivery/pick-up date)"
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage."
+msgstr "Actual delivery/pick-up date from Track & Trace — leave empty until receipt is established. The 30 days run from receipt."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Versand- und Zugangsdatum können nicht in der Zukunft liegen."
+msgstr "Dispatch and receipt dates cannot be in the future."
+
+#: core/templates/fw/mahnstufen.html:1
+msgid "Bitte Sendungsnummer, Versand- oder Zugangsdatum angeben."
+msgstr "Please enter the tracking number, dispatch date or receipt date."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Zugang bestätigt (%(d)s) — Zahlungsfrist läuft bis %(f)s (Art. 257d Abs. 1 OR)."
+msgstr "Receipt confirmed (%(d)s) — payment deadline runs until %(f)s (Art. 257d para. 1 CO)."
+
+#: core/templates/fw/mahnstufen.html:1
+#, python-format
+msgid "Einschreiben erfasst — Frist provisorisch bis %(f)s. Zugang bestätigen, sobald die Zustellung feststeht."
+msgstr "Registered mail recorded — deadline provisional until %(f)s. Confirm receipt as soon as delivery is established."

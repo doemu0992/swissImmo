@@ -65,6 +65,7 @@ UEBERSETZT = (
     'fw/termine.html',
     'fw/zulauf.html',
     'fw/_zustellstatus.html',
+    'fw/_zustellung_erfassen.html',
     'fw/_arbeitsvorrat_abschnitte.html',
     'fw/base.html',
     # Tranche «Akten»: die sechs Register
