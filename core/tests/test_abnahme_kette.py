@@ -264,7 +264,7 @@ class AusUndEinzugTests(KetteBasis):
         self.assertEqual(aus_und_einzug_paar(v2), (self.v1, v2))
         self.assertEqual(aus_und_einzug_paar(v2, v3.id), (v2, v3))
         # ein Vertrag einer anderen Einheit ist kein gültiger Partner
-        andere = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='Andere', typ='wohnung')
+        andere = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='Andere', typ='whg')
         fremd = _vertrag_nachher(andere, beginn=date(2026, 1, 1), name='Fremd')
         self.assertEqual(aus_und_einzug_paar(v2, fremd.id), (self.v1, v2))
 
