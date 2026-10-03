@@ -210,10 +210,41 @@ class AusUndEinzugTests(KetteBasis):
 
     def test_art_aus_und_einzug_nur_mit_nachmieter(self):
         r = self.c.get(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/')
-        self.assertNotContains(r, 'value="beides"')
+        self.assertContains(r, 'value="beides" disabled')       # sichtbar, aber nicht wählbar
+        self.assertContains(r, f'/neu/vertraege/neu/?einheit={self.einheit.id}')   # und der Weg zum Folgevertrag
         _vertrag_nachher(self.einheit)
         r = self.c.get(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/')
         self.assertContains(r, 'value="beides"')
+        self.assertNotContains(r, 'value="beides" disabled')
+
+    def test_aus_und_einzug_auch_vom_vertrag_des_einziehenden_aus(self):
+        """Wer den neuen Vertrag öffnet (Standard: Einzug), muss Aus- und Einzug
+        ebenfalls wählen können; das Auszugsprotokoll gehört dem Vorgänger."""
+        from rentals.models import Abnahmeprotokoll
+        v2 = _vertrag_nachher(self.einheit)
+        r = self.c.get(f'/neu/vertraege/{v2.id}/abnahme/vorort/')
+        self.assertContains(r, 'value="beides"')
+        self.assertNotContains(r, 'value="beides" disabled')
+        self.assertContains(r, 'Auszug von Hans Muster')
+        self.c.post(f'/neu/vertraege/{v2.id}/abnahme/vorort/',
+                    {'typ': 'beides', 'datum': '2026-08-31', 'raum': ['Keller']})
+        aus = Abnahmeprotokoll.objects.get(typ='auszug')
+        self.assertEqual((aus.vertrag_id, aus.folge_vertrag_id), (self.v1.id, v2.id))
+        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', {})
+        ein = Abnahmeprotokoll.objects.get(typ='einzug')
+        self.assertEqual((ein.vertrag_id, ein.vorgaenger_id), (v2.id, aus.id))
+
+    def test_gekuendigter_vertrag_ist_immer_der_ausziehende(self):
+        from core.services.abnahme_vorgaenger import aus_und_einzug_paar
+        v2 = _vertrag_nachher(self.einheit)
+        self.v1.status = 'gekuendigt'
+        self.v1.save()
+        self.assertEqual(aus_und_einzug_paar(self.v1), (self.v1, v2))
+        self.assertEqual(aus_und_einzug_paar(v2), (self.v1, v2))
+
+    def test_ohne_zweiten_vertrag_gibt_es_kein_paar(self):
+        from core.services.abnahme_vorgaenger import aus_und_einzug_paar
+        self.assertIsNone(aus_und_einzug_paar(self.v1))
 
     def test_ohne_nachmieter_wird_beides_zu_standard(self):
         self.c.post(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/', {'typ': 'beides', 'raum': ['Küche']})

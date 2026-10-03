@@ -22107,3 +22107,20 @@ msgstr "Zu lang (höchstens %(n)s Zeichen): %(titel)s"
 #: core/templates/fw/abnahme_texte.html
 msgid "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
 msgstr "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "kein zweiter Vertrag"
+msgstr "kein zweiter Vertrag"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist."
+msgstr "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Folgevertrag anlegen"
+msgstr "Folgevertrag anlegen"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
+msgstr "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."

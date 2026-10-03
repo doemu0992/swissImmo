@@ -22219,3 +22219,20 @@ msgstr "Trop long (%(n)s caractères au maximum) : %(titel)s"
 #: core/templates/fw/abnahme_texte.html
 msgid "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
 msgstr "Libellé des dispositions finales : responsabilité, garantie de loyer, avis des défauts"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "kein zweiter Vertrag"
+msgstr "pas de second contrat"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist."
+msgstr "L’état des lieux de sortie et d’entrée en un seul rendez-vous est possible dès qu’un second contrat (locataire précédent ou suivant) existe pour cette unité."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Folgevertrag anlegen"
+msgstr "Créer le contrat suivant"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
+msgstr "Sortie et entrée : sortie de %(aus)s, puis le procès-verbal d’entrée pour %(ein)s est préparé à la clôture."

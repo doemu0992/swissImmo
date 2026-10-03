@@ -41,6 +41,34 @@ def nachmieter_vertrag(vertrag):
             .select_related('mieter').order_by('beginn').first())
 
 
+def vorgaenger_vertrag(vertrag):
+    """Der letzte andere Vertrag auf derselben Einheit, der vor diesem beginnt —
+    der Mieter, der dort auszieht, wenn dieser einzieht."""
+    from rentals.models import Mietvertrag
+    return (Mietvertrag.objects.filter(einheit=vertrag.einheit)
+            .exclude(id=vertrag.id).exclude(status='inaktiv')
+            .filter(beginn__lte=vertrag.beginn)
+            .select_related('mieter').order_by('-beginn', '-id').first())
+
+
+def aus_und_einzug_paar(vertrag):
+    """`(ausziehender, einziehender)` Vertrag für Aus- und Einzug in einem
+    Termin — von beiden Seiten aus erreichbar — oder None, wenn die Einheit
+    keinen zweiten Vertrag hat.
+
+    Ein gekündigter oder archivierter Vertrag ist der ausziehende; jeder
+    andere (Entwurf, laufend) ist der einziehende, sobald es einen Vorgänger
+    gibt. Wer von keiner Seite eingeordnet werden kann, aber einen Nachfolger
+    hat, zieht aus."""
+    nach = nachmieter_vertrag(vertrag)
+    if vertrag.status in ('gekuendigt', 'archiviert'):
+        return (vertrag, nach) if nach else None
+    vor = vorgaenger_vertrag(vertrag)
+    if vor:
+        return (vor, vertrag)
+    return (vertrag, nach) if nach else None
+
+
 def einzug_vorbereiten(auszug):
     """Legt aus einem abgeschlossenen Auszugsprotokoll das Einzugsprotokoll des
     Nachmieters an (Aus- und Einzug in einem Termin).

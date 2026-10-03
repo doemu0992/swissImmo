@@ -75,9 +75,10 @@ im Quelltext, JavaScript ergänzt nur die Knöpfe.
                 <select class="fw-feld" name="typ" id="vnTyp">
                     <option value="auszug" {% if typ == 'auszug' %}selected{% endif %}>{% trans "Auszug / Rücknahme" %}</option>
                     <option value="einzug" {% if typ == 'einzug' %}selected{% endif %}>{% trans "Einzug / Übergabe" %}</option>
-                    {% if nachmieter %}<option value="beides" {% if typ == 'beides' %}selected{% endif %}>{% trans "Aus- und Einzug" %}</option>{% endif %}
+                    <option value="beides" {% if not paar %}disabled{% elif typ == 'beides' %}selected{% endif %}>{% trans "Aus- und Einzug" %}{% if not paar %} — {% trans "kein zweiter Vertrag" %}{% endif %}</option>
                 </select>
-                {% if nachmieter %}<small class="fw-faint">{% blocktrans with name=nachmieter.mieter.display_name %}Aus- und Einzug: Das Einzugsprotokoll für {{ name }} wird beim Abschluss vorbereitet.{% endblocktrans %}</small>{% endif %}</div>
+                {% if paar %}<small class="fw-faint">{% if ausziehend.id == v.id %}{% blocktrans with name=einziehend.mieter.display_name %}Aus- und Einzug: Das Einzugsprotokoll für {{ name }} wird beim Abschluss vorbereitet.{% endblocktrans %}{% else %}{% blocktrans with aus=ausziehend.mieter.display_name ein=einziehend.mieter.display_name %}Aus- und Einzug: Auszug von {{ aus }}, danach wird das Einzugsprotokoll für {{ ein }} beim Abschluss vorbereitet.{% endblocktrans %}{% endif %}</small>
+                {% else %}<small class="fw-faint">{% trans "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist." %} <a class="fw-link" href="/neu/vertraege/neu/?einheit={{ v.einheit_id }}">{% trans "Folgevertrag anlegen" %}</a></small>{% endif %}</div>
             <div class="vn-feld"><label class="fw-label" for="vnVorlage">{% trans "Strukturvorlage" %}</label>
                 <select class="fw-feld" name="vorlage" id="vnVorlage">
                     {% if 'vorgaenger' in vorlagen %}<option value="vorgaenger" {% if vorlage == 'vorgaenger' %}selected{% endif %}>{% blocktrans with art=vorgaenger.get_typ_display datum=vorgaenger.datum|date:"d.m.Y" %}Aus letzter Abnahme ({{ art }} {{ datum }}){% endblocktrans %}</option>{% endif %}

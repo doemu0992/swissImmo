@@ -21993,3 +21993,20 @@ msgstr "Too long (at most %(n)s characters): %(titel)s"
 #: core/templates/fw/abnahme_texte.html
 msgid "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
 msgstr "Wording of the final provisions: liability, rent deposit, notice of defects"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "kein zweiter Vertrag"
+msgstr "no second contract"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist."
+msgstr "Move-out and move-in in one appointment is possible as soon as a second contract (previous or next tenant) exists for this unit."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Folgevertrag anlegen"
+msgstr "Create follow-up contract"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
+msgstr "Move-out and move-in: move-out of %(aus)s, then the move-in report for %(ein)s is prepared on completion."
