@@ -22197,3 +22197,28 @@ msgstr "Troppo lungo (al massimo %(n)s caratteri): %(titel)s"
 #: core/templates/fw/abnahme_texte.html
 msgid "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
 msgstr "Testo delle disposizioni finali: responsabilità, garanzia di locazione, contestazione dei difetti"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "kein zweiter Vertrag"
+msgstr "nessun secondo contratto"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist."
+msgstr "Riconsegna e consegna in un unico appuntamento sono possibili non appena esiste un secondo contratto (inquilino precedente o successivo) per questa unità."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Folgevertrag anlegen"
+msgstr "Crea il contratto successivo"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+#, python-format
+msgid "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
+msgstr "Riconsegna e consegna: uscita di %(aus)s, poi alla chiusura viene preparato il verbale di consegna per %(ein)s."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug mit Vertrag"
+msgstr "Riconsegna e consegna con il contratto"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
+msgstr "Solo per «Riconsegna e consegna»: il contratto che inizia prima esce, l’altro entra. Il verbale di consegna viene preparato alla chiusura."

@@ -421,18 +421,25 @@ def fw_abnahme_vorort_start(request, vertrag_id):
     und der gewählten Raumstruktur. Ein offener Entwurf wird nicht überschrieben,
     sondern oben zum Fortsetzen angeboten.
 
-    Die Art kann «Aus- und Einzug» sein (nur mit einem Nachmieter-Vertrag auf
-    der Einheit): Dann entsteht das Auszugsprotokoll, und beim Abschluss wird
-    das Einzugsprotokoll des Nachmieters daraus vorbereitet."""
+    Die Art kann «Aus- und Einzug» sein (nur mit einem zweiten Vertrag auf der
+    Einheit, von beiden Seiten aus: aus dem Vertrag des Ausziehenden oder aus dem
+    des Einziehenden): Dann entsteht das Auszugsprotokoll am Vertrag des
+    Ausziehenden, und beim Abschluss wird das Einzugsprotokoll des Einziehenden
+    daraus vorbereitet."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from rentals.models import Abnahmeprotokoll
-    from core.services.abnahme_vorgaenger import vorgaenger_fuer, nachmieter_vertrag
+    from core.services.abnahme_vorgaenger import vorgaenger_fuer, aus_und_einzug_paar, andere_vertraege
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
     standard_typ = 'auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug'
     P = request.POST if request.method == 'POST' else request.GET
-    nachmieter = nachmieter_vertrag(v)
-    erlaubt = ('auszug', 'einzug') + (('beides',) if nachmieter else ())
+    try:
+        partner_id = int(P.get('partner') or 0)
+    except ValueError:
+        partner_id = 0
+    paar = aus_und_einzug_paar(v, partner_id)         # (ausziehender, einziehender) oder None
+    ausziehend, einziehend = paar if paar else (None, None)
+    erlaubt = ('auszug', 'einzug') + (('beides',) if paar else ())
     typ = P.get('typ') if P.get('typ') in erlaubt else standard_typ
     try:
         datum = date.fromisoformat(P.get('datum') or '')
@@ -449,9 +456,10 @@ def fw_abnahme_vorort_start(request, vertrag_id):
         if raeume:
             nutzt_vorgaenger = vorlage == 'vorgaenger'
             prot = Abnahmeprotokoll.objects.create(
-                vertrag=v, typ=('auszug' if typ == 'beides' else typ), datum=datum,
+                vertrag=ausziehend if typ == 'beides' else v,
+                typ=('auszug' if typ == 'beides' else typ), datum=datum,
                 vorgaenger=vorgaenger if nutzt_vorgaenger else None,
-                folge_vertrag=nachmieter if typ == 'beides' else None,
+                folge_vertrag=einziehend if typ == 'beides' else None,
                 verwalter_name=(request.user.get_full_name() or request.user.username))
             _vorort_positionen_anlegen(prot, raeume, vorgaenger if nutzt_vorgaenger else None)
             from core.services.abnahme_schluessel import schluessel_anlegen
@@ -461,13 +469,17 @@ def fw_abnahme_vorort_start(request, vertrag_id):
     else:
         raeume = vorlagen[vorlage]
 
-    entwurf = Abnahmeprotokoll.objects.filter(vertrag=v, abgeschlossen=False, positionen__isnull=False) \
+    entwurf = Abnahmeprotokoll.objects.filter(vertrag__in=[v, *( [ausziehend] if ausziehend else [] )],
+                                              abgeschlossen=False, positionen__isnull=False) \
         .distinct().order_by('-id').first()
     return render(request, 'fw/abnahme_vorort_neu.html', {
         **_global_filter(request), 'nav': 'vertraege', 'v': v,
         'typ': typ, 'datum': datum.isoformat(), 'vorlage': vorlage, 'raeume': raeume,
         'vorlagen': vorlagen, 'katalog': _vorort_raumkatalog(v.einheit, vorlagen),
-        'entwurf': entwurf, 'vorgaenger': vorgaenger, 'nachmieter': nachmieter,
+        'entwurf': entwurf, 'vorgaenger': vorgaenger,
+        'paar': paar, 'ausziehend': ausziehend, 'einziehend': einziehend,
+        'partner': (einziehend if ausziehend.id == v.id else ausziehend) if paar else None,
+        'andere': andere_vertraege(v),
     })
 
 

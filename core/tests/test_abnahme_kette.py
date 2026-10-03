@@ -210,10 +210,76 @@ class AusUndEinzugTests(KetteBasis):
 
     def test_art_aus_und_einzug_nur_mit_nachmieter(self):
         r = self.c.get(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/')
-        self.assertNotContains(r, 'value="beides"')
+        self.assertContains(r, 'value="beides" disabled')       # sichtbar, aber nicht wählbar
+        self.assertContains(r, f'/neu/vertraege/neu/?einheit={self.einheit.id}')   # und der Weg zum Folgevertrag
         _vertrag_nachher(self.einheit)
         r = self.c.get(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/')
         self.assertContains(r, 'value="beides"')
+        self.assertNotContains(r, 'value="beides" disabled')
+
+    def test_aus_und_einzug_auch_vom_vertrag_des_einziehenden_aus(self):
+        """Wer den neuen Vertrag öffnet (Standard: Einzug), muss Aus- und Einzug
+        ebenfalls wählen können; das Auszugsprotokoll gehört dem Vorgänger."""
+        from rentals.models import Abnahmeprotokoll
+        v2 = _vertrag_nachher(self.einheit)
+        r = self.c.get(f'/neu/vertraege/{v2.id}/abnahme/vorort/')
+        self.assertContains(r, 'value="beides"')
+        self.assertNotContains(r, 'value="beides" disabled')
+        self.assertContains(r, 'name="partner"')
+        self.assertContains(r, f'<option value="{self.v1.id}" selected>')     # der Vorgänger ist vorgewählt
+        self.c.post(f'/neu/vertraege/{v2.id}/abnahme/vorort/',
+                    {'typ': 'beides', 'datum': '2026-08-31', 'raum': ['Keller']})
+        aus = Abnahmeprotokoll.objects.get(typ='auszug')
+        self.assertEqual((aus.vertrag_id, aus.folge_vertrag_id), (self.v1.id, v2.id))
+        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', {})
+        ein = Abnahmeprotokoll.objects.get(typ='einzug')
+        self.assertEqual((ein.vertrag_id, ein.vorgaenger_id), (v2.id, aus.id))
+
+    def test_gekuendigter_vertrag_ist_immer_der_ausziehende(self):
+        from core.services.abnahme_vorgaenger import aus_und_einzug_paar
+        v2 = _vertrag_nachher(self.einheit)
+        self.v1.status = 'gekuendigt'
+        self.v1.save()
+        self.assertEqual(aus_und_einzug_paar(self.v1), (self.v1, v2))
+        self.assertEqual(aus_und_einzug_paar(v2), (self.v1, v2))
+
+    def test_paar_auch_wenn_die_daten_nicht_lueckenlos_anschliessen(self):
+        """Der Nachmieter beginnt vor dem Ende des alten Vertrags (Überlappung) oder
+        der alte hat gar kein Ende: Die Kombination bleibt wählbar."""
+        from core.services.abnahme_vorgaenger import aus_und_einzug_paar
+        self.v1.ende = date(2026, 12, 31)
+        self.v1.save()
+        v2 = _vertrag_nachher(self.einheit, beginn=date(2026, 10, 1))        # beginnt vor dem Ende von v1
+        self.assertEqual(aus_und_einzug_paar(self.v1), (self.v1, v2))
+        self.assertEqual(aus_und_einzug_paar(v2), (self.v1, v2))
+        r = self.c.get(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/')
+        self.assertNotContains(r, 'value="beides" disabled')
+
+    def test_partner_waehlbar_und_fremde_einheit_wird_ignoriert(self):
+        from core.services.abnahme_vorgaenger import aus_und_einzug_paar
+        from portfolio.models import Einheit
+        v2 = _vertrag_nachher(self.einheit, beginn=date(2026, 9, 1), name='Zwei')
+        v3 = _vertrag_nachher(self.einheit, beginn=date(2027, 3, 1), name='Drei')
+        # Mittlerer Vertrag, aktiv: Vorgänger ist der Partner, gewählt werden kann auch der Nachfolger
+        self.assertEqual(aus_und_einzug_paar(v2), (self.v1, v2))
+        self.assertEqual(aus_und_einzug_paar(v2, v3.id), (v2, v3))
+        # ein Vertrag einer anderen Einheit ist kein gültiger Partner
+        andere = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='Andere', typ='whg')
+        fremd = _vertrag_nachher(andere, beginn=date(2026, 1, 1), name='Fremd')
+        self.assertEqual(aus_und_einzug_paar(v2, fremd.id), (self.v1, v2))
+
+    def test_gewaehlter_partner_bestimmt_das_protokoll(self):
+        from rentals.models import Abnahmeprotokoll
+        v2 = _vertrag_nachher(self.einheit, beginn=date(2026, 9, 1), name='Zwei')
+        v3 = _vertrag_nachher(self.einheit, beginn=date(2027, 3, 1), name='Drei')
+        self.c.post(f'/neu/vertraege/{v2.id}/abnahme/vorort/',
+                    {'typ': 'beides', 'partner': v3.id, 'datum': '2027-02-28', 'raum': ['Keller']})
+        aus = Abnahmeprotokoll.objects.get(typ='auszug')
+        self.assertEqual((aus.vertrag_id, aus.folge_vertrag_id), (v2.id, v3.id))
+
+    def test_ohne_zweiten_vertrag_gibt_es_kein_paar(self):
+        from core.services.abnahme_vorgaenger import aus_und_einzug_paar
+        self.assertIsNone(aus_und_einzug_paar(self.v1))
 
     def test_ohne_nachmieter_wird_beides_zu_standard(self):
         self.c.post(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/', {'typ': 'beides', 'raum': ['Küche']})
