@@ -78,8 +78,9 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
 </style>
 
 <div class="vo" id="vo" data-url="/neu/abnahme/{{ p.id }}/vorort/position/"
-     data-msg-ok="{% trans 'Gespeichert' %}" data-msg-fehler="{% trans 'Nicht gespeichert — bitte erneut versuchen' %}"
-     data-msg-offen="{% trans 'noch offen' %}">
+     data-raeume="{{ letzter }}" data-msg-ok="{% trans 'Gespeichert' %}" data-msg-fehler="{% trans 'Nicht gespeichert — bitte erneut versuchen' %}"
+     data-msg-offen="{% trans 'noch offen' %}"
+     data-msg-offline="{% trans 'Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet' %}">
     {% csrf_token %}
 
     <div class="fw-phead">
@@ -193,6 +194,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
             <div class="vo-padzeile"><small class="fw-faint">{% trans "Mit dem Finger im Feld unterschreiben" %}</small>
                 <button type="button" class="fw-btn" data-pad-weg="unterschrift_verwalter_bild">{% trans "Löschen" %}</button></div>
             <input type="hidden" name="unterschrift_verwalter_bild" id="unterschrift_verwalter_bild"></div>
+        <p class="vo-status fehler" id="voSync" role="alert" hidden>{% trans "Es sind noch Änderungen nicht gesendet. Abschliessen geht erst mit Empfang." %}</p>
         <div class="vo-fuss">
             {% if vorher is not None %}<a class="fw-btn" href="?r={{ vorher }}">{% trans "Zurück" %}</a>{% endif %}
             <button type="submit" class="fw-btn fw-gutknopf">{% trans "Abnahme abschliessen" %}</button>
@@ -212,18 +214,102 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     function melde(text, fehler) { status.textContent = text; status.classList.toggle('fehler', !!fehler); }
     function offenText(n) { return n ? n + ' ' + root.dataset.msgOffen : ''; }
 
-    function senden(karte, daten) {
+    // ---- Warteschlange für fehlenden Empfang (IndexedDB) -------------------
+    // Fällt das Netz weg, bleibt jede Eingabe auf dem Gerät und geht beim
+    // nächsten Empfang der Reihe nach hinaus. Ohne IndexedDB gilt das alte
+    // Verhalten: Meldung «Nicht gespeichert».
+    var datenbank = null;
+    function db() {
+        if (!datenbank) datenbank = new Promise(function (ok, nein) {
+            if (!window.indexedDB) { nein(new Error('indexedDB')); return; }
+            var q = indexedDB.open('swissimmo-abnahme', 1);
+            q.onupgradeneeded = function () { q.result.createObjectStore('queue', { keyPath: 'id', autoIncrement: true }); };
+            q.onsuccess = function () { ok(q.result); };
+            q.onerror = function () { nein(q.error); };
+        });
+        return datenbank;
+    }
+    function lager(modus, f) {
+        return db().then(function (d) {
+            return new Promise(function (ok, nein) {
+                var t = d.transaction('queue', modus), r = f(t.objectStore('queue'));
+                t.oncomplete = function () { ok(r ? r.result : undefined); };
+                t.onerror = t.onabort = function () { nein(t.error); };
+            });
+        });
+    }
+    function wartende() {
+        return lager('readonly', function (s) { return s.getAll(); }).then(function (alle) {
+            return alle.filter(function (e) { return e.url === url; });
+        }, function () { return []; });
+    }
+    function offlineText(n) { return root.dataset.msgOffline.replace('{n}', n); }
+
+    function formular(position, daten) {
         var fd = new FormData();
-        fd.append('position', karte.dataset.pos);
+        fd.append('position', position);
         fd.append('csrfmiddlewaretoken', csrf);
         Object.keys(daten).forEach(function (k) {
             if (k === 'foto') fd.append('foto', daten.foto, 'foto.jpg'); else fd.append(k, daten[k]);
         });
-        return fetch(url, { method: 'POST', body: fd, credentials: 'same-origin',
+        return fd;
+    }
+    // Wirft bei fehlendem Netz einen TypeError, bei einer Antwort des Servers das JSON.
+    function posten(position, daten) {
+        return fetch(url, { method: 'POST', body: formular(position, daten), credentials: 'same-origin',
                             headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) throw j; return j; }); })
-            .then(function (j) { melde(root.dataset.msgOk + (j.offen ? ' · ' + offenText(j.offen) : '')); return j; })
-            .catch(function (e) { melde(root.dataset.msgFehler, true); throw e; });
+            .then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) throw j; return j; }); });
+    }
+    function einreihen(karte, daten) {
+        return lager('readwrite', function (s) { return s.add({ url: url, position: karte.dataset.pos, daten: daten }); })
+            .then(wartende).then(function (w) {
+                melde(offlineText(w.length), true);
+                return { ok: true, queued: true, bezeichnung: daten.bezeichnung,
+                         foto: daten.foto ? URL.createObjectURL(daten.foto) : '' };
+            });
+    }
+    var laeuft = false;
+    function leeren() {
+        if (laeuft) return Promise.resolve();
+        laeuft = true;
+        return wartende().then(function (w) {
+            var gesendet = 0, verworfen = 0;
+            return w.reduce(function (kette, e) {
+                return kette.then(function (weiter) {
+                    if (!weiter) return false;
+                    return posten(e.position, e.daten).then(function () { gesendet++; return true; }, function (f) {
+                        // Nur eine klare Absage des Servers (JSON mit ok:false) verwirft den Eintrag;
+                        // Netzausfall oder abgelaufene Anmeldung lassen ihn liegen.
+                        if (f && f.ok === false) { verworfen++; return true; }
+                        return false;
+                    }).then(function (erledigt) {
+                        return erledigt ? lager('readwrite', function (s) { return s.delete(e.id); }).then(function () { return true; }) : false;
+                    });
+                });
+            }, Promise.resolve(true)).then(function () { return wartende(); }).then(function (rest) {
+                if (rest.length) melde(offlineText(rest.length), true);
+                else if (verworfen) melde(root.dataset.msgFehler, true);
+                else if (gesendet) melde(root.dataset.msgOk);
+            });
+        }).then(function () { laeuft = false; }, function () { laeuft = false; });
+    }
+    window.addEventListener('online', leeren);
+    setInterval(function () { wartende().then(function (w) { if (w.length) leeren(); }); }, 15000);
+    window.voSync = { wartende: wartende, leeren: leeren };
+
+    function senden(karte, daten) {
+        return wartende().then(function (w) {
+            // Liegt noch etwas in der Schlange, reiht sich alles dahinter ein (Reihenfolge bleibt).
+            if (w.length) return einreihen(karte, daten).then(function (j) { leeren(); return j; });
+            return posten(karte.dataset.pos, daten).then(function (j) {
+                melde(root.dataset.msgOk + (j.offen ? ' · ' + offenText(j.offen) : '')); return j;
+            }, function (f) {
+                if (f instanceof TypeError && window.indexedDB) {
+                    return einreihen(karte, daten).catch(function () { melde(root.dataset.msgFehler, true); throw f; });
+                }
+                melde(root.dataset.msgFehler, true); throw f;
+            });
+        });
     }
 
     function zeigeZustand(karte, z) {
@@ -237,6 +323,31 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
         if (warn) warn.hidden = z !== 'uebermaessig';
         if (z === 'uebermaessig') mehr.hidden = false;
     }
+
+    // Nach einem Neuladen ohne Empfang zeigt die Seite den Stand von vor den Eingaben;
+    // was noch in der Schlange liegt, wird darüber gelegt.
+    function anwenden(karte, d) {
+        if ('zustand' in d) zeigeZustand(karte, d.zustand);
+        ['kommentar', 'kosten', 'bezeichnung'].forEach(function (f) {
+            var feld = karte.querySelector('[data-feld="' + f + '"]');
+            if (f in d && feld) { feld.value = d[f]; if (f === 'kommentar' && d[f]) feld.hidden = false; }
+        });
+        if ('bezeichnung' in d && d.bezeichnung) {
+            var h = karte.querySelector('h3'); if (h) h.textContent = h.dataset.nr + '. ' + d.bezeichnung;
+        }
+        if ('vorsatz' in d) { var cb = karte.querySelector('[data-feld="vorsatz"]'); if (cb) cb.checked = d.vorsatz === '1'; }
+        if (d.foto) {
+            var v = karte.querySelector('[data-vorschau]');
+            if (v) { v.src = URL.createObjectURL(d.foto); v.hidden = false; karte.querySelector('.vo-mehr').hidden = false; }
+        }
+    }
+    wartende().then(function (w) {
+        w.forEach(function (e) {
+            var karte = root.querySelector('.vo-karte[data-pos="' + e.position + '"]');
+            if (karte) anwenden(karte, e.daten);
+        });
+        if (w.length) { melde(offlineText(w.length), true); leeren(); }
+    });
 
     // Foto vor dem Hochladen verkleinern: Telefonbilder sind 5–10 MB, im Keller
     // ohne Empfang entscheidet das, ob der Upload gelingt.
@@ -326,6 +437,16 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
             senden(karte, d).catch(function () {});
         }
     });
+    // Seite und Nachbarräume für die Fahrt in den Keller vorhalten.
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/abnahme-sw.js', { scope: '/neu/abnahme/' }).then(function () {
+            return navigator.serviceWorker.ready;
+        }).then(function (reg) {
+            var seiten = [];
+            for (var i = 0; i <= parseInt(root.dataset.raeume, 10); i++) seiten.push(location.pathname + '?r=' + i);
+            if (reg.active) reg.active.postMessage({ vorladen: seiten });
+        }).catch(function () {});
+    }
 })();
 
 // Abschluss: Schlüsselverzeichnis (Zeilen ergänzen/entfernen, Fehlend rechnen) und Unterschriftsfelder
@@ -368,9 +489,18 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
         b.addEventListener('click', function () { pads[b.dataset.padWeg].leeren(); document.getElementById(b.dataset.padWeg).value = ''; });
     });
     // Beim Absenden: gezeichnete Unterschrift als PNG in das versteckte Feld
-    liste.closest('form').addEventListener('submit', function () {
+    var form = liste.closest('form'), freigegeben = false;
+    form.addEventListener('submit', function (e) {
         Object.keys(pads).forEach(function (name) {
             document.getElementById(name).value = pads[name].benutzt() ? pads[name].bild() : '';
+        });
+        if (freigegeben || !window.voSync) return;
+        // Erst muss alles Wartende beim Server sein, sonst fehlt es im Protokoll.
+        e.preventDefault();
+        var hinweis = document.getElementById('voSync');
+        window.voSync.leeren().then(window.voSync.wartende).then(function (w) {
+            if (w.length || navigator.onLine === false) { hinweis.hidden = false; return; }
+            hinweis.hidden = true; freigegeben = true; form.submit();
         });
     });
 })();

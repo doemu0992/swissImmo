@@ -22152,3 +22152,11 @@ msgstr "Amministrazione"
 msgctxt "Schlüssel"
 msgid "Soll"
 msgstr "Previsto"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet"
+msgstr "Nessuna rete — {n} modifica/modifiche salvata/e sul dispositivo, verrà/anno inviata/e al ritorno della rete"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Es sind noch Änderungen nicht gesendet. Abschliessen geht erst mit Empfang."
+msgstr "Alcune modifiche non sono ancora state inviate. La chiusura è possibile solo con la rete."
