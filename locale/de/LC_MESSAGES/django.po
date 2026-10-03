@@ -22124,3 +22124,11 @@ msgstr "Folgevertrag anlegen"
 #, python-format
 msgid "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
 msgstr "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug mit Vertrag"
+msgstr "Aus- und Einzug mit Vertrag"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
+msgstr "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."

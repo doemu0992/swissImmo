@@ -429,11 +429,15 @@ def fw_abnahme_vorort_start(request, vertrag_id):
     from django.shortcuts import redirect
     from django.contrib import messages
     from rentals.models import Abnahmeprotokoll
-    from core.services.abnahme_vorgaenger import vorgaenger_fuer, aus_und_einzug_paar
+    from core.services.abnahme_vorgaenger import vorgaenger_fuer, aus_und_einzug_paar, andere_vertraege
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
     standard_typ = 'auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug'
     P = request.POST if request.method == 'POST' else request.GET
-    paar = aus_und_einzug_paar(v)                     # (ausziehender, einziehender) oder None
+    try:
+        partner_id = int(P.get('partner') or 0)
+    except ValueError:
+        partner_id = 0
+    paar = aus_und_einzug_paar(v, partner_id)         # (ausziehender, einziehender) oder None
     ausziehend, einziehend = paar if paar else (None, None)
     erlaubt = ('auszug', 'einzug') + (('beides',) if paar else ())
     typ = P.get('typ') if P.get('typ') in erlaubt else standard_typ
@@ -474,6 +478,8 @@ def fw_abnahme_vorort_start(request, vertrag_id):
         'vorlagen': vorlagen, 'katalog': _vorort_raumkatalog(v.einheit, vorlagen),
         'entwurf': entwurf, 'vorgaenger': vorgaenger,
         'paar': paar, 'ausziehend': ausziehend, 'einziehend': einziehend,
+        'partner': (einziehend if ausziehend.id == v.id else ausziehend) if paar else None,
+        'andere': andere_vertraege(v),
     })
 
 

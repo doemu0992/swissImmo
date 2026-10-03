@@ -22010,3 +22010,11 @@ msgstr "Create follow-up contract"
 #, python-format
 msgid "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
 msgstr "Move-out and move-in: move-out of %(aus)s, then the move-in report for %(ein)s is prepared on completion."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug mit Vertrag"
+msgstr "Move-out and move-in with contract"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
+msgstr "Only for “Move-out and move-in”: the contract that starts earlier moves out, the other moves in. The move-in report is prepared on completion."

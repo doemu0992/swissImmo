@@ -77,7 +77,12 @@ im Quelltext, JavaScript ergänzt nur die Knöpfe.
                     <option value="einzug" {% if typ == 'einzug' %}selected{% endif %}>{% trans "Einzug / Übergabe" %}</option>
                     <option value="beides" {% if not paar %}disabled{% elif typ == 'beides' %}selected{% endif %}>{% trans "Aus- und Einzug" %}{% if not paar %} — {% trans "kein zweiter Vertrag" %}{% endif %}</option>
                 </select>
-                {% if paar %}<small class="fw-faint">{% if ausziehend.id == v.id %}{% blocktrans with name=einziehend.mieter.display_name %}Aus- und Einzug: Das Einzugsprotokoll für {{ name }} wird beim Abschluss vorbereitet.{% endblocktrans %}{% else %}{% blocktrans with aus=ausziehend.mieter.display_name ein=einziehend.mieter.display_name %}Aus- und Einzug: Auszug von {{ aus }}, danach wird das Einzugsprotokoll für {{ ein }} beim Abschluss vorbereitet.{% endblocktrans %}{% endif %}</small>
+                {% if paar %}
+                <div class="vn-feld"><label class="fw-label" for="vnPartner">{% trans "Aus- und Einzug mit Vertrag" %}</label>
+                    <select class="fw-feld" name="partner" id="vnPartner">
+                        {% for a in andere %}<option value="{{ a.id }}" {% if partner.id == a.id %}selected{% endif %}>{{ a.mieter.display_name }} ({{ a.beginn|date:"d.m.Y" }}{% if a.ende %} – {{ a.ende|date:"d.m.Y" }}{% endif %})</option>{% endfor %}
+                    </select>
+                    <small class="fw-faint">{% trans "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet." %}</small></div>
                 {% else %}<small class="fw-faint">{% trans "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist." %} <a class="fw-link" href="/neu/vertraege/neu/?einheit={{ v.einheit_id }}">{% trans "Folgevertrag anlegen" %}</a></small>{% endif %}</div>
             <div class="vn-feld"><label class="fw-label" for="vnVorlage">{% trans "Strukturvorlage" %}</label>
                 <select class="fw-feld" name="vorlage" id="vnVorlage">

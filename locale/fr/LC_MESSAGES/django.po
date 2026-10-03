@@ -22236,3 +22236,11 @@ msgstr "Créer le contrat suivant"
 #, python-format
 msgid "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
 msgstr "Sortie et entrée : sortie de %(aus)s, puis le procès-verbal d’entrée pour %(ein)s est préparé à la clôture."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug mit Vertrag"
+msgstr "Sortie et entrée avec le contrat"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
+msgstr "Seulement pour « Sortie et entrée » : le contrat qui commence le plus tôt sort, l’autre entre. Le procès-verbal d’entrée est préparé à la clôture."

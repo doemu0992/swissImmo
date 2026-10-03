@@ -51,22 +51,35 @@ def vorgaenger_vertrag(vertrag):
             .select_related('mieter').order_by('-beginn', '-id').first())
 
 
-def aus_und_einzug_paar(vertrag):
+def andere_vertraege(vertrag):
+    """Alle anderen Verträge auf derselben Einheit, in zeitlicher Reihenfolge —
+    unabhängig von Status und Daten. Wer die Einheit kennt, soll den Partner
+    für Aus- und Einzug wählen können, auch wenn die Daten nicht lückenlos
+    anschliessen."""
+    from rentals.models import Mietvertrag
+    return list(Mietvertrag.objects.filter(einheit=vertrag.einheit).exclude(id=vertrag.id)
+                .select_related('mieter').order_by('beginn', 'id'))
+
+
+def aus_und_einzug_paar(vertrag, partner_id=None):
     """`(ausziehender, einziehender)` Vertrag für Aus- und Einzug in einem
     Termin — von beiden Seiten aus erreichbar — oder None, wenn die Einheit
     keinen zweiten Vertrag hat.
 
-    Ein gekündigter oder archivierter Vertrag ist der ausziehende; jeder
-    andere (Entwurf, laufend) ist der einziehende, sobald es einen Vorgänger
-    gibt. Wer von keiner Seite eingeordnet werden kann, aber einen Nachfolger
-    hat, zieht aus."""
-    nach = nachmieter_vertrag(vertrag)
-    if vertrag.status in ('gekuendigt', 'archiviert'):
-        return (vertrag, nach) if nach else None
-    vor = vorgaenger_vertrag(vertrag)
-    if vor:
-        return (vor, vertrag)
-    return (vertrag, nach) if nach else None
+    Der Partner ist der gewählte (`partner_id`, nur ein Vertrag derselben
+    Einheit) oder der naheliegende: bei gekündigtem/archiviertem Vertrag der
+    Nachmieter, sonst der Vorgänger, sonst der Nachmieter, zuletzt der zeitlich
+    nächste. Wer früher beginnt, zieht aus."""
+    andere = andere_vertraege(vertrag)
+    if not andere:
+        return None
+    partner = next((a for a in andere if a.id == partner_id), None) if partner_id else None
+    if partner is None:
+        nach, vor = nachmieter_vertrag(vertrag), vorgaenger_vertrag(vertrag)
+        partner = (nach or vor) if vertrag.status in ('gekuendigt', 'archiviert') else (vor or nach)
+    if partner is None:
+        partner = min(andere, key=lambda a: abs((a.beginn - vertrag.beginn).days))
+    return tuple(sorted((vertrag, partner), key=lambda c: (c.beginn, c.id)))
 
 
 def einzug_vorbereiten(auszug):

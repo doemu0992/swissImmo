@@ -22214,3 +22214,11 @@ msgstr "Crea il contratto successivo"
 #, python-format
 msgid "Aus- und Einzug: Auszug von %(aus)s, danach wird das Einzugsprotokoll für %(ein)s beim Abschluss vorbereitet."
 msgstr "Riconsegna e consegna: uscita di %(aus)s, poi alla chiusura viene preparato il verbale di consegna per %(ein)s."
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Aus- und Einzug mit Vertrag"
+msgstr "Riconsegna e consegna con il contratto"
+
+#: core/templates/fw/abnahme_vorort_neu.html
+msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
+msgstr "Solo per «Riconsegna e consegna»: il contratto che inizia prima esce, l’altro entra. Il verbale di consegna viene preparato alla chiusura."
