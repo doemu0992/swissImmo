@@ -109,6 +109,10 @@ AUSNAHMEN = {
      'wird in «Benutzer & Rollen» beim Hauswart zugeordnet (benutzer.py, '
      'Gegenseite der Beziehung), nicht im Liegenschaftsformular',
 
+    'rentals.MietzinsAnpassung.zins_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',
+    'rentals.MietzinsAnpassung.lik_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',
+    'rentals.MietzinsAnpassung.kosten_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',
+
     'crm.ReferenzzinsStand.vorher': 'schreibt `referenzzins.aenderung_festhalten` bei jeder Satzänderung',
     'crm.ReferenzzinsStand.betroffene_senkung': 'gezählt von `referenzzins.aenderung_festhalten`',
     'crm.ReferenzzinsStand.betroffene_erhoehung': 'gezählt von `referenzzins.aenderung_festhalten`',
