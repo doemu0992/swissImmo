@@ -73,6 +73,10 @@ def generate_abnahme_pdf(prot, verwaltung=None):
         c.setFont("Helvetica", 9); c.drawString(62 * mm, y, str(wert))
         y -= 5.5 * mm
 
+    eig = getattr(lg, 'eigentuemer', None)
+    zeile("Eigentümer", eig.firma_oder_name if eig else '')
+    zeile("Mietverhältnis", f"ab {v.beginn:%d.%m.%Y}" + (f" bis {v.ende:%d.%m.%Y}" if v.ende else ''))
+    zeile("Weitere Mieter", ', '.join(m.display_name for m in v.mitmieter_alle))
     zeile("Abnahme durch", prot.verwalter_name)
     zeile("Mieter anwesend", "Ja" if prot.mieter_anwesend else "Nein")
     zeile("Allgemeinzustand", prot.get_allgemein_zustand_display())

@@ -40,6 +40,28 @@ class PdfTests(TestCase):
         self.assertNotIn('Vorzustand', text)           # ohne Vorgänger keine Spalte
         self.assertNotIn('Baut auf', text)
 
+    def test_kopfbereich_mit_eigentuemer_mietdauer_und_weiteren_mietern(self):
+        from crm.models import Eigentuemer, Mieter
+        eig = Eigentuemer.objects.create(firma_oder_name='Muster Immobilien AG')
+        self.lg.eigentuemer = eig
+        self.lg.save()
+        zweite = Mieter.objects.create(vorname='Berta', nachname='Beispiel')
+        self.v1.mitmieter = zweite
+        self.v1.ende = date(2027, 3, 31)
+        self.v1.save()
+        prot = _protokoll(self.v1, 'auszug', date(2026, 6, 30), [('Bad', 'Dusche', 'io', '')])
+        text = _pdf_text(prot)[0]
+        self.assertIn('Muster Immobilien AG', text)
+        self.assertIn(f'{self.v1.beginn:%d.%m.%Y} bis 31.03.2027', text)
+        self.assertIn('Berta', text)
+
+    def test_kopfbereich_ohne_eigentuemer_und_mitmieter_bleibt_schlank(self):
+        prot = _protokoll(self.v1, 'auszug', date(2026, 6, 30), [('Bad', 'Dusche', 'io', '')])
+        text = _pdf_text(prot)[0]
+        self.assertNotIn('Eigentümer', text)
+        self.assertNotIn('Weitere Mieter', text)
+        self.assertIn('Mietverhältnis', text)
+
     def test_pdf_zeigt_vorzustand_und_vorbestand_entscheid(self):
         einzug = _protokoll(self.v1, 'einzug', date(2021, 3, 1),
                             [('Küche', 'Backofen', 'uebermaessig', 'Brandfleck links')])
