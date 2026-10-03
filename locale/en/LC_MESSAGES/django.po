@@ -21949,6 +21949,14 @@ msgctxt "Schlüssel"
 msgid "Soll"
 msgstr "Expected"
 
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet"
+msgstr "No signal — {n} change(s) saved on this device, will be sent once you have a connection"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Es sind noch Änderungen nicht gesendet. Abschliessen geht erst mit Empfang."
+msgstr "Some changes have not been sent yet. You can only finish once you have a connection."
+
 #: core/templates/fw/abnahme_texte.html
 msgid "Abnahmeprotokoll (Texte)"
 msgstr "Inspection report (texts)"
