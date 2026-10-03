@@ -1,0 +1,9 @@
+{% load i18n %}{% comment %}Eine Zeile des Schlüsselverzeichnisses (Abschluss der Abnahme vor Ort). `z` leer = Vorlage für «Schlüssel hinzufügen».{% endcomment %}
+<div class="vo-skz">
+    <label class="zwei">{% trans "Schlüssel" %}<input class="fw-feld" name="s_bezeichnung" maxlength="80" value="{{ z.bezeichnung|default:'' }}"></label>
+    <button type="button" class="fw-btn" data-sch-weg aria-label="{% trans 'Schlüsselzeile entfernen' %}">{% trans "Entfernen" %}</button>
+    <label class="breit">{% trans "Schliessanlage / Schlüsselnummer" %}<input class="fw-feld" name="s_anlage" maxlength="80" value="{{ z.anlage|default:'' }}"></label>
+    <label>{% trans "Soll" context "Schlüssel" %}<input class="fw-feld" name="s_soll" inputmode="numeric" value="{{ z.soll|default_if_none:'' }}"></label>
+    <label>{% trans "Ist" %}<input class="fw-feld" name="s_ist" inputmode="numeric" value="{{ z.ist|default_if_none:'' }}"></label>
+    <div class="vo-skz-fehlt">{% trans "Fehlend" %}<b data-fehlt>–</b></div>
+</div>

@@ -175,6 +175,7 @@ def fw_abnahme_detail(request, pk):
         **basis, 'nav': 'vertraege', 'p': prot, 'v': prot.vertrag,
         'maengel': prot.maengel.select_related('ausstattung'),
         'positionen': prot.positionen.select_related('vorgaenger_position__protokoll'),
+        'schluessel': prot.schluessel.all(),
         'hat_mieter_maengel': any(m.verursacher == 'mieter' for m in prot.maengel.all()),
     })
 
@@ -453,6 +454,8 @@ def fw_abnahme_vorort_start(request, vertrag_id):
                 folge_vertrag=nachmieter if typ == 'beides' else None,
                 verwalter_name=(request.user.get_full_name() or request.user.username))
             _vorort_positionen_anlegen(prot, raeume, vorgaenger if nutzt_vorgaenger else None)
+            from core.services.abnahme_schluessel import schluessel_anlegen
+            schluessel_anlegen(prot, vorgaenger if nutzt_vorgaenger else None)
             return redirect(f'/neu/abnahme/{prot.id}/vorort/')
         messages.error(request, gettext('Mindestens ein Raum ist nötig.'))
     else:
@@ -498,6 +501,7 @@ def fw_abnahme_vorort(request, pk):
         'raeume': raeume, 'schritt': schritt, 'raum': aktuell,
         'letzter': len(raeume), 'offen_total': sum(r['offen'] for r in raeume),
         'vorbestand_offen_total': sum(1 for p in positionen if p.vorbestand_offen),
+        'schluessel': list(prot.schluessel.all()),
         'vorgaenger': prot.vorgaenger,
         'zustaende': [(z, dict(AbnahmePosition.ZUSTAND)[z]) for z in VORORT_ZUSTAENDE],
         'vorher': schritt - 1 if schritt > 0 else None,
@@ -528,6 +532,11 @@ def fw_abnahme_position_speichern(request, pk):
             pos.kostenschaetzung = Decimal(_num(P['kosten'])) if P['kosten'].strip() else None
         except Exception:
             return JsonResponse({'ok': False, 'fehler': 'kosten'}, status=400)
+    if 'bezeichnung' in P:
+        name = ' '.join(P['bezeichnung'].split())[:120]
+        if not name:
+            return JsonResponse({'ok': False, 'fehler': 'bezeichnung'}, status=400)
+        pos.bezeichnung = name
     if 'vorsatz' in P:
         pos.vorsaetzlich = P['vorsatz'] == '1'
     if 'vorbestand' in P:
@@ -542,7 +551,7 @@ def fw_abnahme_position_speichern(request, pk):
     pos.mangel_abgleichen()
     pos.save()
     return JsonResponse({
-        'ok': True, 'zustand': pos.zustand,
+        'ok': True, 'zustand': pos.zustand, 'bezeichnung': pos.bezeichnung,
         'foto': pos.foto.url if pos.foto else '',
         'mieteranteil': (str(pos.mangel.mieteranteil) if pos.mangel_id and pos.mangel.mieteranteil is not None else ''),
         'grundlage': (pos.mangel.zeitwert_grundlage if pos.mangel_id else ''),
@@ -577,11 +586,21 @@ def fw_abnahme_vorort_abschliessen(request, pk):
             'ob sie dem Mieter belastet werden.') % {'count': offen})
         return redirect(f'/neu/abnahme/{prot.id}/vorort/?r={_vorort_abschluss_schritt(prot)}')
     P = request.POST
+    from core.services.abnahme_schluessel import schluessel_speichern, unterschrift_speichern
+    # Unterschriften zuerst prüfen: Eine ungültige Eingabe schliesst nichts ab.
+    for feld in ('unterschrift_mieter_bild', 'unterschrift_verwalter_bild'):
+        eingabe = P.get(feld, '')
+        if eingabe and not unterschrift_speichern(prot, feld, eingabe):
+            messages.error(request, gettext('Die Unterschrift konnte nicht gelesen werden. Bitte erneut unterschreiben.'))
+            return redirect(f'/neu/abnahme/{prot.id}/vorort/?r={_vorort_abschluss_schritt(prot)}')
     prot.mieter_anwesend = P.get('mieter_anwesend') == 'on'
     prot.zaehler_strom = P.get('zaehler_strom', '').strip()[:40]
     prot.zaehler_wasser = P.get('zaehler_wasser', '').strip()[:40]
     prot.zaehler_gas = P.get('zaehler_gas', '').strip()[:40]
-    prot.schluessel_anzahl = int(P['schluessel_anzahl']) if P.get('schluessel_anzahl', '').isdigit() else None
+    if 's_bezeichnung' in P:
+        schluessel_speichern(prot, P)          # setzt schluessel_anzahl aus der Summe der gezählten
+    else:
+        prot.schluessel_anzahl = int(P['schluessel_anzahl']) if P.get('schluessel_anzahl', '').isdigit() else None
     prot.bemerkungen = P.get('bemerkungen', '').strip()
     prot.unterschrift_mieter = P.get('unterschrift_mieter', '').strip()[:120]
     prot.unterschrift_verwalter = P.get('unterschrift_verwalter', '').strip()[:120]

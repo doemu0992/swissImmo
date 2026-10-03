@@ -126,5 +126,33 @@
 </div>
 {% endif %}
 
+{% if schluessel %}
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Schlüsselverzeichnis" %}</h2></div>
+    <div class="fw-tablewrap">
+<table class="fw-table">
+        <thead><tr><th>{% trans "Schlüssel" %}</th><th>{% trans "Schliessanlage / Schlüsselnummer" %}</th><th class="fw-right">{% trans "Soll" context "Schlüssel" %}</th><th class="fw-right">{% trans "Ist" %}</th><th class="fw-right">{% trans "Fehlend" %}</th></tr></thead>
+        <tbody>
+            {% for z in schluessel %}
+            <tr><td class="fw-strong">{{ z.bezeichnung }}</td><td>{{ z.anlage|default:"—" }}</td>
+                <td class="fw-right fw-num">{{ z.soll }}</td><td class="fw-right fw-num">{{ z.ist|default_if_none:"—" }}</td>
+                <td class="fw-right fw-num{% if z.fehlend %} fw-kritisch{% endif %}">{{ z.fehlend|default_if_none:"—" }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
 {% if p.bemerkungen %}<div class="fw-card"><div class="fw-kopf"><h2>{% trans "Bemerkungen" %}</h2></div><div class="fw-rumpf">{{ p.bemerkungen|linebreaksbr }}</div></div>{% endif %}
+{% if p.unterschrift_mieter_bild or p.unterschrift_verwalter_bild %}
+<style>.ab-unterschrift { display: block; max-width: 18rem; width: 100%; height: auto; margin-bottom: 1rem; border: 1px solid var(--ds-line); border-radius:var(--ds-radius); }</style>
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Unterschriften" %}</h2></div>
+    <div class="fw-rumpf">
+        {% if p.unterschrift_mieter_bild %}<p class="fw-faint">{% trans "Mieter" %}: {{ p.unterschrift_mieter }}</p><img src="{{ p.unterschrift_mieter_bild.url }}" alt="{% trans 'Unterschrift Mieter' %}" class="ab-unterschrift">{% endif %}
+        {% if p.unterschrift_verwalter_bild %}<p class="fw-faint">{% trans "Verwaltung" %}: {{ p.unterschrift_verwalter }}</p><img src="{{ p.unterschrift_verwalter_bild.url }}" alt="{% trans 'Unterschrift Verwaltung' %}" class="ab-unterschrift">{% endif %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

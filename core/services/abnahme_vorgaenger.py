@@ -63,4 +63,9 @@ def einzug_vorbereiten(auszug):
         neu.save()
         neu.mangel_abgleichen()
         neu.save()
+    # Schlüsselverzeichnis: Was zurückgegeben wurde, wird übergeben (Soll und Ist übernommen)
+    from rentals.models import AbnahmeSchluessel
+    for z in auszug.schluessel.all():
+        AbnahmeSchluessel.objects.create(protokoll=einzug, bezeichnung=z.bezeichnung, anlage=z.anlage,
+                                         soll=z.soll, ist=z.ist, sortierung=z.sortierung)
     return einzug

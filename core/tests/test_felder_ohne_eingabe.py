@@ -117,6 +117,8 @@ AUSNAHMEN = {
     'rentals.AbnahmeMangel.mieteranteil':
      'BERECHNET aus der Lebensdauer (`berechne_mieteranteil`, '
      'abnahme.py:100), nicht eingegeben',
+    'rentals.AbnahmeSchluessel.protokoll': 'gesetzt vom Code: die Zeile gehört zum Protokoll, in dem sie entsteht',
+    'rentals.AbnahmeSchluessel.sortierung': 'Reihenfolge der Zeilen im Formular, vom Code durchnummeriert',
     'rentals.Abnahmeprotokoll.folge_vertrag':
      'GESETZT aus der Art «Aus- und Einzug» im Assistenten (`fw_abnahme_vorort_start`): der '
      'Nachmieter-Vertrag der Einheit wird gefunden, nicht gewählt',

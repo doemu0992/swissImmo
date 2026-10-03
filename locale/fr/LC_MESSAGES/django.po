@@ -22125,3 +22125,52 @@ msgstr "Défauts : %(n)s"
 #, python-format
 msgid "%(count)s Bauteil(e) waren schon im Vorgänger-Protokoll beanstandet: bitte entscheiden, ob sie dem Mieter belastet werden."
 msgstr "%(count)s élément(s) étaient déjà contestés dans le procès-verbal précédent : veuillez décider s'ils sont imputés au locataire."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Die Unterschrift konnte nicht gelesen werden. Bitte erneut unterschreiben."
+msgstr "La signature n'a pas pu être lue. Veuillez signer à nouveau."
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Fehlend"
+msgstr "Manquant"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Ist"
+msgstr "Réel"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Mit dem Finger im Feld unterschreiben"
+msgstr "Signer dans le champ avec le doigt"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schliessanlage / Schlüsselnummer"
+msgstr "Système de fermeture / numéro de clé"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüssel hinzufügen"
+msgstr "Ajouter une clé"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüsselverzeichnis"
+msgstr "Liste des clés"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Schlüsselzeile entfernen"
+msgstr "Supprimer la ligne de clé"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Unterschrift Verwaltung"
+msgstr "Signature de la gérance"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Unterschriften"
+msgstr "Signatures"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Verwaltung"
+msgstr "Gérance"
+
+#: core/templates/fw/_abnahme_schluesselzeile.html
+msgctxt "Schlüssel"
+msgid "Soll"
+msgstr "Prévu"
