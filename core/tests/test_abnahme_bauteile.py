@@ -64,11 +64,19 @@ class RaumtypTests(SimpleTestCase):
 
 
 class _Element:
-    def __init__(self, kategorie, bezeichnung=''):
-        self.kategorie, self.bezeichnung = kategorie, bezeichnung
+    def __init__(self, kategorie, bezeichnung='', material=''):
+        self.kategorie, self.bezeichnung, self.material = kategorie, bezeichnung, material
 
 
 class RaumbuchAbgleichTests(SimpleTestCase):
+
+    def test_material_aus_dem_raumbuch_steht_im_bauteilnamen(self):
+        zeilen = dict(bauteile_fuer_raum('Küche', [_Element('Boden', material='Vinyl Steinoptik')]))
+        self.assertIn('Boden – Vinyl Steinoptik', zeilen)
+        zeilen = dict(bauteile_fuer_raum('Küche', [_Element('Boden', 'Wohnbereich', 'Vinyl')]))
+        self.assertIn('Boden – Wohnbereich, Vinyl', zeilen)
+        zeilen = dict(bauteile_fuer_raum('Küche', [_Element('Dunstabzug', material='Edelstahl')]))
+        self.assertIn('Dunstabzug – Edelstahl', zeilen)        # Zusatz-Element ohne Standardeintrag
 
     def test_passendes_element_ersetzt_den_standardeintrag_der_rest_bleibt(self):
         backofen = _Element('Backofen', 'Bosch HBA')

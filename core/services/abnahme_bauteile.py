@@ -117,6 +117,12 @@ def _gleich(bauteil, element):
     return len(wa) >= 5 and wa == wb
 
 
+def _zusatz(element):
+    """« – Bezeichnung, Material» aus dem Raumbuch (leere Teile entfallen)."""
+    teile = [t for t in (element.bezeichnung, element.material) if t]
+    return f' – {", ".join(teile)}' if teile else ''
+
+
 def bauteile_fuer_raum(name, elemente=()):
     """Die Bauteile eines Raums als Liste von `(Bezeichnung, Raumbuch-Element|None)`.
 
@@ -130,10 +136,9 @@ def bauteile_fuer_raum(name, elemente=()):
         treffer = next((e for e in restliche if _gleich(bezeichnung, e.kategorie)), None)
         if treffer is not None:
             restliche.remove(treffer)
-            zusatz = f' – {treffer.bezeichnung}' if treffer.bezeichnung else ''
-            ergebnis.append((bezeichnung + zusatz, treffer))
+            ergebnis.append((bezeichnung + _zusatz(treffer), treffer))
         else:
             ergebnis.append((bezeichnung, None))
     for e in restliche:
-        ergebnis.append((e.kategorie + (f' – {e.bezeichnung}' if e.bezeichnung else ''), e))
+        ergebnis.append((e.kategorie + _zusatz(e), e))
     return ergebnis
