@@ -1,0 +1,39 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Abnahmeprotokoll (Texte)" %} — swissImmo{% endblock %}
+{% block content %}
+
+<nav class="fw-brotkrume mb-3">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
+    <b>{% trans "Abnahmeprotokoll (Texte)" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Abnahmeprotokoll (Texte)" %}</h1>
+        <p>{% trans "Wortlaut der Schlussbestimmungen im Protokoll. Ein leeres Feld stellt den Standardtext wieder her." %}</p>
+    </div>
+</div>
+
+<div class="fw-card"><div class="fw-rumpf">
+    {# Rechtshinweis: bleibt bis zur juristischen Durchsicht Deutsch, wie in der Abnahme. #}
+    <p class="fw-hilfe">{% zeichen 'recht' klasse='mr-1 fw-faint' %}{% trans "Die Texte enthalten Rechtsfolgen (Art. 267a OR, Haftung, Mietzinsdepot, Rügefrist). Der Standardtext ist nicht juristisch geprüft; bitte vor dem Einsatz von einer Mietrechtsfachperson ansehen lassen." %}</p>
+</div></div>
+
+<form method="post" action="/neu/abnahme-texte/" class="max-w-3xl">
+    {% csrf_token %}
+    {% for a in absaetze %}
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans a.titel %}</h2>
+            <span class="fw-rechts fw-klein fw-faint">{% if a.eigen %}{% trans "Eigener Wortlaut" %}{% else %}{% trans "Standardtext" %}{% endif %}</span></div>
+        <div class="fw-rumpf">
+            <textarea name="text_{{ a.schluessel }}" rows="6" maxlength="3000" class="fw-feld w-full">{{ a.text }}</textarea>
+        </div>
+    </div>
+    {% endfor %}
+    <div class="flex items-center gap-3">
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
+    </div>
+</form>
+{% endblock %}

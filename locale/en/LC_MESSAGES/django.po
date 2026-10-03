@@ -21948,3 +21948,40 @@ msgstr "Property management"
 msgctxt "Schlüssel"
 msgid "Soll"
 msgstr "Expected"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Abnahmeprotokoll (Texte)"
+msgstr "Inspection report (texts)"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Wortlaut der Schlussbestimmungen im Protokoll. Ein leeres Feld stellt den Standardtext wieder her."
+msgstr "Wording of the final provisions in the report. An empty field restores the standard text."
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Die Texte enthalten Rechtsfolgen (Art. 267a OR, Haftung, Mietzinsdepot, Rügefrist). Der Standardtext ist nicht juristisch geprüft; bitte vor dem Einsatz von einer Mietrechtsfachperson ansehen lassen."
+msgstr "The texts contain legal consequences (Art. 267a CO, liability, rent deposit, notice period). The standard text has not been reviewed by a lawyer; please have a tenancy law specialist look at it before use."
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Eigener Wortlaut"
+msgstr "Own wording"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Standardtext"
+msgstr "Standard text"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Kostenübernahme"
+msgstr "Assumption of costs"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Haftung"
+msgstr "Liability"
+
+#: core/templates/fw/abnahme_texte.html
+#, python-format
+msgid "Zu lang (höchstens %(n)s Zeichen): %(titel)s"
+msgstr "Too long (at most %(n)s characters): %(titel)s"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
+msgstr "Wording of the final provisions: liability, rent deposit, notice of defects"

@@ -887,6 +887,9 @@ def fw_einstellungen(request):
         # die man einmal festlegt und selten ändert.
         {'titel': _('Lebensdauertabelle'), 'sub': _('Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung'),
          'url': '/neu/lebensdauer/', 'icon': 'verlauf'},
+        # Der Wortlaut der Schlussbestimmungen gehört der Verwaltung, nicht dem Code.
+        {'titel': _('Abnahmeprotokoll (Texte)'), 'sub': _('Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge'),
+         'url': '/neu/abnahme-texte/', 'icon': 'recht'},
     ]
     return render(request, 'fw/einstellungen.html', {
         **basis, 'nav': 'einstellungen', 'karten': karten,

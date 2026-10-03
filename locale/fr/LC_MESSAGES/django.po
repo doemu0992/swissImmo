@@ -22174,3 +22174,40 @@ msgstr "Gérance"
 msgctxt "Schlüssel"
 msgid "Soll"
 msgstr "Prévu"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Abnahmeprotokoll (Texte)"
+msgstr "Procès-verbal d’état des lieux (textes)"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Wortlaut der Schlussbestimmungen im Protokoll. Ein leeres Feld stellt den Standardtext wieder her."
+msgstr "Libellé des dispositions finales du procès-verbal. Un champ vide rétablit le texte standard."
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Die Texte enthalten Rechtsfolgen (Art. 267a OR, Haftung, Mietzinsdepot, Rügefrist). Der Standardtext ist nicht juristisch geprüft; bitte vor dem Einsatz von einer Mietrechtsfachperson ansehen lassen."
+msgstr "Les textes contiennent des conséquences juridiques (art. 267a CO, responsabilité, garantie de loyer, délai de réclamation). Le texte standard n’a pas été vérifié juridiquement ; veuillez le faire examiner par un spécialiste du droit du bail avant utilisation."
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Eigener Wortlaut"
+msgstr "Libellé personnalisé"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Standardtext"
+msgstr "Texte standard"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Kostenübernahme"
+msgstr "Prise en charge des coûts"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Haftung"
+msgstr "Responsabilité"
+
+#: core/templates/fw/abnahme_texte.html
+#, python-format
+msgid "Zu lang (höchstens %(n)s Zeichen): %(titel)s"
+msgstr "Trop long (%(n)s caractères au maximum) : %(titel)s"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
+msgstr "Libellé des dispositions finales : responsabilité, garantie de loyer, avis des défauts"

@@ -22062,3 +22062,40 @@ msgstr "Verwaltung"
 msgctxt "Schlüssel"
 msgid "Soll"
 msgstr "Soll"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Abnahmeprotokoll (Texte)"
+msgstr "Abnahmeprotokoll (Texte)"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Wortlaut der Schlussbestimmungen im Protokoll. Ein leeres Feld stellt den Standardtext wieder her."
+msgstr "Wortlaut der Schlussbestimmungen im Protokoll. Ein leeres Feld stellt den Standardtext wieder her."
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Die Texte enthalten Rechtsfolgen (Art. 267a OR, Haftung, Mietzinsdepot, Rügefrist). Der Standardtext ist nicht juristisch geprüft; bitte vor dem Einsatz von einer Mietrechtsfachperson ansehen lassen."
+msgstr "Die Texte enthalten Rechtsfolgen (Art. 267a OR, Haftung, Mietzinsdepot, Rügefrist). Der Standardtext ist nicht juristisch geprüft; bitte vor dem Einsatz von einer Mietrechtsfachperson ansehen lassen."
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Eigener Wortlaut"
+msgstr "Eigener Wortlaut"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Standardtext"
+msgstr "Standardtext"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Kostenübernahme"
+msgstr "Kostenübernahme"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Haftung"
+msgstr "Haftung"
+
+#: core/templates/fw/abnahme_texte.html
+#, python-format
+msgid "Zu lang (höchstens %(n)s Zeichen): %(titel)s"
+msgstr "Zu lang (höchstens %(n)s Zeichen): %(titel)s"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
+msgstr "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"

@@ -2,7 +2,8 @@ import logging
 # rentals/models.py
 from django.utils.translation import gettext_noop
 from django.db import models
-from core.organisation_kette import OrganisationAusKette
+from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
+from core.tenancy import AlleOrganisationenManager, TenantManager
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
@@ -1223,3 +1224,36 @@ class AbnahmePosition(OrganisationAusKette):
         mangel.mieteranteil = mangel.berechne_mieteranteil(stichtag=self.protokoll.datum)
         mangel.save()
         self.mangel = mangel
+
+
+class AbnahmeText(models.Model):
+    """Eigener Wortlaut eines Schlussbestimmungs-Absatzes im Abnahmeprotokoll.
+
+    JE ORGANISATION: Der Standardtext (`core/services/abnahme_texte.py`) ist der
+    Wortlaut einer einzelnen Verwaltung. Jede Verwaltung muss ihren eigenen
+    Wortlaut hinterlegen können, ohne den einer anderen zu berühren. Ohne Zeile
+    gilt der Standard; die Zeile wird nur angelegt, wenn der Text abweicht.
+    """
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='abnahme_texte',
+                                     verbose_name='Organisation')
+    schluessel = models.CharField(max_length=20)
+    text = models.TextField(max_length=3000)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        db_table = 'core_abnahmetext'
+        constraints = [
+            models.UniqueConstraint(fields=['organisation', 'schluessel'],
+                                    name='uniq_abnahmetext_je_organisation'),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_aus_kontext()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.schluessel}: {self.text[:40]}"

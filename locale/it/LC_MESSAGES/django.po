@@ -22152,3 +22152,40 @@ msgstr "Amministrazione"
 msgctxt "Schlüssel"
 msgid "Soll"
 msgstr "Previsto"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Abnahmeprotokoll (Texte)"
+msgstr "Verbale di consegna (testi)"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Wortlaut der Schlussbestimmungen im Protokoll. Ein leeres Feld stellt den Standardtext wieder her."
+msgstr "Testo delle disposizioni finali del verbale. Un campo vuoto ripristina il testo standard."
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Die Texte enthalten Rechtsfolgen (Art. 267a OR, Haftung, Mietzinsdepot, Rügefrist). Der Standardtext ist nicht juristisch geprüft; bitte vor dem Einsatz von einer Mietrechtsfachperson ansehen lassen."
+msgstr "I testi contengono conseguenze giuridiche (art. 267a CO, responsabilità, garanzia di locazione, termine di contestazione). Il testo standard non è stato verificato giuridicamente; prima dell’uso farlo esaminare da uno specialista di diritto locatizio."
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Eigener Wortlaut"
+msgstr "Testo personalizzato"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Standardtext"
+msgstr "Testo standard"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Kostenübernahme"
+msgstr "Assunzione dei costi"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Haftung"
+msgstr "Responsabilità"
+
+#: core/templates/fw/abnahme_texte.html
+#, python-format
+msgid "Zu lang (höchstens %(n)s Zeichen): %(titel)s"
+msgstr "Troppo lungo (al massimo %(n)s caratteri): %(titel)s"
+
+#: core/templates/fw/abnahme_texte.html
+msgid "Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge"
+msgstr "Testo delle disposizioni finali: responsabilità, garanzia di locazione, contestazione dei difetti"
