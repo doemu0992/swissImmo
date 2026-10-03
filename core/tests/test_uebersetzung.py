@@ -59,6 +59,7 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 #: Vorlagen, die bereits ausgezeichnet sind. Diese Liste darf nur WACHSEN —
 #: dieselbe Sperrklinke wie beim Farbklassen-Zaehler, nur andersherum.
 UEBERSETZT = (
+    'fw/abnahme_texte.html',
     'fw/abwesenheiten.html',
     'fw/dashboard.html',
     'fw/fall_neu.html',

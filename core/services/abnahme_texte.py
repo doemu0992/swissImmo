@@ -42,13 +42,41 @@ MAENGEL_EINZUG = (
 )
 
 
+#: Schlüssel → (Überschrift im PDF, Standardtext). Die Reihenfolge ist die der Einstellungsseite.
+ABSAETZE = {
+    'kosten': ("Kostenübernahme", KOSTENUEBERNAHME),
+    'haftung': ("Haftung", HAFTUNG),
+    'depot': ("Mietzinsdepot", MIETZINSDEPOT),
+    'einzug': ("Mängel", MAENGEL_EINZUG),
+}
+MAX_LAENGE = 3000
+
+
+def eigene_texte(organisation):
+    """Die abweichenden Texte einer Organisation als `{schluessel: text}`.
+    Ausdrücklich über `alle_organisationen` mit Organisation: Das PDF kann auch
+    ausserhalb eines Anfragekontexts entstehen."""
+    from rentals.models import AbnahmeText
+    if organisation is None:
+        return {}
+    return dict(AbnahmeText.alle_organisationen.filter(organisation=organisation)
+                .values_list('schluessel', 'text'))
+
+
 def schlussbestimmungen(prot):
-    """Die Absätze (Überschrift, Text) für dieses Protokoll."""
+    """Die Absätze (Überschrift, Text) für dieses Protokoll — mit dem Wortlaut
+    der Verwaltung, soweit sie ihn geändert hat, sonst mit dem Standard."""
+    eigene = eigene_texte(prot.organisation)
+
+    def absatz(schluessel):
+        titel, standard = ABSAETZE[schluessel]
+        return (titel, eigene.get(schluessel) or standard)
+
     if prot.typ == 'einzug':
-        return [("Mängel", MAENGEL_EINZUG)]
+        return [absatz('einzug')]
     absaetze = []
     if prot.maengel_mieter:
-        absaetze.append(("Kostenübernahme", KOSTENUEBERNAHME))
-    absaetze.append(("Haftung", HAFTUNG))
-    absaetze.append(("Mietzinsdepot", MIETZINSDEPOT))
+        absaetze.append(absatz('kosten'))
+    absaetze.append(absatz('haftung'))
+    absaetze.append(absatz('depot'))
     return absaetze

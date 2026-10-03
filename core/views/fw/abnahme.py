@@ -685,3 +685,50 @@ def abnahme_service_worker(request):
     r = HttpResponse(_SERVICE_WORKER, content_type='text/javascript; charset=utf-8')
     r['Cache-Control'] = 'no-cache'
     return r
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_abnahme_texte(request):
+    """Einstellungsseite: Wortlaut der Schlussbestimmungen im Abnahmeprotokoll.
+
+    Gespeichert wird nur, was vom Standard abweicht; ein leeres Feld oder der
+    Standardtext selbst stellt den Standard wieder her."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    from core.auth import hat_rolle, log_aktion
+    from core.services.abnahme_texte import ABSAETZE, MAX_LAENGE, eigene_texte
+    from rentals.models import AbnahmeText
+    basis = _global_filter(request)
+    organisation = getattr(request, 'organisation', None)
+
+    if request.method == 'POST':
+        if organisation is None or not hat_rolle(request.user, SCHREIB_ROLLEN):
+            messages.error(request, gettext('Keine Berechtigung zum Bearbeiten.'))
+            return redirect('/neu/abnahme-texte/')
+        zu_lang = []
+        geaendert = 0
+        for schluessel, (titel, standard) in ABSAETZE.items():
+            text = ' '.join((request.POST.get(f'text_{schluessel}') or '').split())
+            if len(text) > MAX_LAENGE:
+                zu_lang.append(gettext(titel))
+                continue
+            vorher = eigene_texte(organisation).get(schluessel)
+            if not text or text == ' '.join(standard.split()):
+                if vorher is not None:
+                    AbnahmeText.objects.filter(organisation=organisation, schluessel=schluessel).delete()
+                    geaendert += 1
+            elif text != vorher:
+                AbnahmeText.objects.update_or_create(organisation=organisation, schluessel=schluessel,
+                                                     defaults={'text': text})
+                geaendert += 1
+        if zu_lang:
+            messages.error(request, gettext('Zu lang (höchstens %(n)s Zeichen): %(titel)s') % {
+                'n': MAX_LAENGE, 'titel': ', '.join(zu_lang)})
+        elif geaendert:
+            log_aktion(request, 'Abnahme-Texte bearbeitet')
+            messages.success(request, gettext('Gespeichert'))
+        return redirect('/neu/abnahme-texte/')
+
+    eigene = eigene_texte(organisation)
+    absaetze = [{'schluessel': k, 'titel': titel, 'text': eigene.get(k) or standard,
+                 'eigen': k in eigene} for k, (titel, standard) in ABSAETZE.items()]
+    return render(request, 'fw/abnahme_texte.html', {**basis, 'nav': 'einstellungen', 'absaetze': absaetze})
