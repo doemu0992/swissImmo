@@ -22174,3 +22174,11 @@ msgstr "Gérance"
 msgctxt "Schlüssel"
 msgid "Soll"
 msgstr "Prévu"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet"
+msgstr "Pas de réseau — {n} modification(s) enregistrée(s) sur l’appareil, envoi dès le retour du réseau"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Es sind noch Änderungen nicht gesendet. Abschliessen geht erst mit Empfang."
+msgstr "Certaines modifications n’ont pas encore été envoyées. La clôture n’est possible qu’avec du réseau."

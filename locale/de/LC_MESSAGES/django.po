@@ -22062,3 +22062,11 @@ msgstr "Verwaltung"
 msgctxt "Schlüssel"
 msgid "Soll"
 msgstr "Soll"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet"
+msgstr "Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet"
+
+#: core/templates/fw/abnahme_vorort.html
+msgid "Es sind noch Änderungen nicht gesendet. Abschliessen geht erst mit Empfang."
+msgstr "Es sind noch Änderungen nicht gesendet. Abschliessen geht erst mit Empfang."

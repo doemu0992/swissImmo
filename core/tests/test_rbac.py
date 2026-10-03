@@ -90,6 +90,7 @@ OFFEN_FUER_ANGEMELDETE = (
     '/media/', '/static/',
     '/report/', '/schaden/melden/',        # öffentliche Schadenmeldung (QR am Aushang)
     '/bewerben/', '/bewerbung/', '/datenschutz/', '/aushang/',
+    '/abnahme-sw.js',         # Service Worker der Vor-Ort-Abnahme: feste Skriptdatei ohne Mandantendaten
     '/webhooks/', '/docuseal/webhook/', '/fristen.ics',          # Token-/Secret-geschützt, eigene Tests
 )
 

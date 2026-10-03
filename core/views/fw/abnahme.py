@@ -628,3 +628,60 @@ def fw_abnahme_vorort_abschliessen(request, pk):
             'Einzugsprotokoll für den Nachmieter vorbereitet: bitte prüfen und abschliessen.'))
         return redirect(f'/neu/abnahme/{einzug.id}/vorort/?r={_vorort_abschluss_schritt(einzug)}')
     return redirect(f'/neu/abnahme/{prot.id}/')
+
+
+_SERVICE_WORKER = """\
+// Abnahme vor Ort: Seiten und Schriften vorhalten, damit ein Raum ohne Empfang
+// offen bleibt. Nur die Vor-Ort-Seiten und /static/ — nichts sonst.
+const CACHE = 'abnahme-vor-ort-v1';
+const MAX_ALTER = 24 * 3600 * 1000;       // Seiten mit Mieterdaten bleiben höchstens einen Tag
+const SEITE = /^\\/neu\\/abnahme\\/\\d+\\/vorort\\/$/;
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+
+async function aufraeumen(cache) {
+  for (const anfrage of await cache.keys()) {
+    const antwort = await cache.match(anfrage);
+    const datum = antwort && Date.parse(antwort.headers.get('date') || '');
+    if (!datum || Date.now() - datum > MAX_ALTER) await cache.delete(anfrage);
+  }
+}
+async function netzZuerst(anfrage) {
+  const cache = await caches.open(CACHE);
+  try {
+    const antwort = await fetch(anfrage);
+    if (antwort.ok && !antwort.redirected) { cache.put(anfrage, antwort.clone()); aufraeumen(cache); }
+    return antwort;
+  } catch (fehler) {
+    const treffer = await cache.match(anfrage);
+    if (treffer) return treffer;
+    throw fehler;
+  }
+}
+self.addEventListener('fetch', e => {
+  const r = e.request;
+  if (r.method !== 'GET') return;
+  const u = new URL(r.url);
+  if (u.origin !== self.location.origin) return;
+  if (SEITE.test(u.pathname) || u.pathname.startsWith('/static/')) e.respondWith(netzZuerst(r));
+});
+self.addEventListener('message', e => {
+  const seiten = (e.data && e.data.vorladen) || [];
+  e.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    for (const s of seiten) {
+      if (!SEITE.test(new URL(s, self.location.origin).pathname)) continue;
+      try { const a = await fetch(s, { credentials: 'same-origin' }); if (a.ok && !a.redirected) await cache.put(s, a); } catch (x) {}
+    }
+  })());
+});
+"""
+
+
+def abnahme_service_worker(request):
+    """Service Worker der Vor-Ort-Abnahme (Scope /neu/abnahme/). Enthält nichts
+    Mandantenspezifisches und braucht deshalb keine Anmeldung."""
+    from django.http import HttpResponse
+    r = HttpResponse(_SERVICE_WORKER, content_type='text/javascript; charset=utf-8')
+    r['Cache-Control'] = 'no-cache'
+    return r
