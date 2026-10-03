@@ -15,6 +15,12 @@ class MietrechtLogicTests(TestCase):
         self.dummy_vertrag.basis_referenzzinssatz = Decimal('1.25')
         self.dummy_vertrag.basis_lik_punkte = Decimal('100.0')
         self.dummy_vertrag.netto_mietzins = Decimal('1000.00')
+        self._basis(Decimal('1.25'), Decimal('100.0'))
+
+    def _basis(self, ref, lik):
+        self.dummy_vertrag.basis_referenzzinssatz = ref
+        self.dummy_vertrag.basis_lik_punkte = lik
+        self.dummy_vertrag.effektive_basis.return_value = (ref, lik)
 
     def test_fehlende_basisdaten(self):
         self.dummy_vertrag.basis_referenzzinssatz = None
@@ -28,7 +34,7 @@ class MietrechtLogicTests(TestCase):
         self.assertEqual(ergebnis['neu_chf'], Decimal('1030.00'))
 
     def test_zins_senkung(self):
-        self.dummy_vertrag.basis_referenzzinssatz = Decimal('1.50')
+        self._basis(Decimal('1.50'), Decimal('100.0'))
         ergebnis = berechne_mietpotenzial(self.dummy_vertrag, Decimal('1.25'), Decimal('100.0'))
         self.assertEqual(ergebnis['action'], 'DOWN')
         self.assertEqual(ergebnis['delta_prozent'], Decimal('-2.91'))

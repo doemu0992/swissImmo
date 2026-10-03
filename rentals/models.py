@@ -811,6 +811,11 @@ class MietzinsAnpassung(OrganisationAusKette):
     neuer_referenzzinssatz = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     neuer_lik_index = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     erhoehung_prozent_total = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    # Aufschlüsselung des Totals (je Anteil in %, auf 0.01 gerundet; Summe = Total) —
+    # der «genaue Berechnungsgrund» des amtlichen Formulars, später nachvollziehbar.
+    zins_prozent = models.DecimalField("Anteil Referenzzins (%)", max_digits=6, decimal_places=2, null=True, blank=True)
+    lik_prozent = models.DecimalField("Anteil Teuerung/LIK (%)", max_digits=6, decimal_places=2, null=True, blank=True)
+    kosten_prozent = models.DecimalField("Anteil Kostensteigerung (%)", max_digits=6, decimal_places=2, null=True, blank=True)
     begruendung = models.TextField(blank=True, null=True)
 
     class Meta:
