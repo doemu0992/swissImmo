@@ -227,6 +227,14 @@ class Einheit(OrganisationAusKette):
     stockwerkeigentuemer = models.ForeignKey(
         'crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='stweg_einheiten', verbose_name="Stockwerkeigentümer")
+    #: Nur STWEG: weitere Personen, denen die Einheit mit gehört (Ehepaar, Erbengemeinschaft).
+    #: `stockwerkeigentuemer` bleibt die Hauptansprechperson der Einheit: Sie übt die Kopfstimme
+    #: aus, erteilt Vollmachten, stellt Anfragen und bekommt die Abrechnung. Miteigentümer
+    #: erhalten Einladung, Protokoll und Beschlüsse und sehen sie im Portal, stimmen aber
+    #: nicht selbst ab — eine Einheit hat genau eine Stimme.
+    miteigentuemer = models.ManyToManyField(
+        'crm.Eigentuemer', blank=True, related_name='stweg_miteigentum',
+        verbose_name="Miteigentümer")
     bezeichnung = models.CharField("Objektbezeichnung", max_length=50)
     typ = models.CharField("Typ", max_length=10, choices=TYP_CHOICES, default='whg')
     etage = models.CharField("Etage", max_length=50, blank=True)

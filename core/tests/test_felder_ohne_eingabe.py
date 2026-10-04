@@ -109,6 +109,10 @@ AUSNAHMEN = {
      'wird in «Benutzer & Rollen» beim Hauswart zugeordnet (benutzer.py, '
      'Gegenseite der Beziehung), nicht im Liegenschaftsformular',
 
+    'portfolio.Einheit.miteigentuemer':
+     'erfasst auf der STWEG-Seite «Einheiten und Eigentümer» (`stweg/views.py: stweg_einheiten_speichern`, '
+     'Eingaben `mit_<id>` in `stweg/templates/stweg/einheiten.html`) — ausserhalb von `core/templates`, '
+     'dem Suchbereich dieses Wächters',
     'finance.ErneuerungsfondsBewegung.fonds':
      'gesetzt von `stweg.fonds.jahreseinlage_belasten` / `entnahme_buchen`: die Bewegung gehört zum Fonds, aus dem sie entsteht',
     'finance.ErneuerungsfondsBewegung.buchung':

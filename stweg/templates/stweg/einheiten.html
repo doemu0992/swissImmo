@@ -35,6 +35,14 @@
                 {% for eig in eigentuemer %}<option value="{{ eig.pk }}"{% if e.stockwerkeigentuemer_id == eig.pk %} selected{% endif %}>{{ eig.firma_oder_name }}</option>{% endfor %}
             </select>
         </div>
+        <details class="fw-aufklapp"><summary>Miteigentümer von «{{ e.bezeichnung }}» ({{ e.mit_ids|length }})</summary>
+            <div class="fw-aufklapp-inhalt">
+                <input type="hidden" name="mit_set_{{ e.pk }}" value="1">
+                <select name="mit_{{ e.pk }}" multiple size="4" class="fw-feld" aria-label="Miteigentümer {{ e.bezeichnung }}">
+                    {% for eig in eigentuemer %}<option value="{{ eig.pk }}"{% if eig.pk in e.mit_ids %} selected{% endif %}>{{ eig.firma_oder_name }}</option>{% endfor %}
+                </select>
+                <p class="fw-s">Miteigentümer (Ehepaar, Erbengemeinschaft) erhalten Einladung, Protokoll und Beschlüsse und sehen sie im Portal. Die Stimme der Einheit gibt die Hauptansprechperson ab.</p>
+            </div></details>
         {% empty %}<p class="fw-leer">Noch keine Einheit. Unten die erste anlegen.</p>{% endfor %}
         {% if einheiten %}<div class="fw-formular-fuss"><button class="fw-btn fw-primary">Speichern</button></div>{% endif %}
     </form>
@@ -71,7 +79,7 @@
                     <select id="ne_sprache" name="sprache" class="fw-feld">{% for w, b in sprachen %}<option value="{{ w }}">{{ b }}</option>{% endfor %}</select></div>
                 <div class="fw-formular-fuss"><button class="fw-btn">Erfassen</button></div>
             </form>
-            <p class="fw-s">Ehepaare und Erbengemeinschaften werden als ein Eigentümer erfasst (eine Kopfstimme).</p>
+            <p class="fw-s">Gehört eine Einheit mehreren Personen, wird eine als Hauptansprechperson der Einheit zugeteilt (sie gibt die Stimme ab); die übrigen werden bei der Einheit als Miteigentümer eingetragen.</p>
         </div></details>
 </div>
 

@@ -691,7 +691,10 @@ def _zur_einheitenseite(lg):
 def stweg_einheiten(request, stweg_id):
     from crm.models import Eigentuemer
     lg = _gemeinschaft(stweg_id)
-    haupt = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    haupt = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer')
+                 .prefetch_related('miteigentuemer').order_by('bezeichnung'))
+    for e in haupt:
+        e.mit_ids = {m.pk for m in e.miteigentuemer.all()}
     neben = list(lg.einheiten.filter(gehoert_zu__isnull=False).select_related('gehoert_zu').order_by('bezeichnung'))
     summe = wertquoten_summe(lg)
     return render(request, 'stweg/einheiten.html', {
@@ -720,6 +723,13 @@ def stweg_einheiten_speichern(request, stweg_id):
         if quote is None:
             fehler.append(f'«{e.bezeichnung}»: Die Wertquote «{roh}» ist ungültig.')
             continue
+        mit = None                       # None = unverändert
+        if f'mit_set_{e.pk}' in request.POST:
+            ids = {int(x) for x in request.POST.getlist(f'mit_{e.pk}') if x.isdigit()}
+            mit = list(Eigentuemer.objects.filter(pk__in=ids))
+            if len(mit) != len(ids):
+                fehler.append(f'«{e.bezeichnung}»: Ein Miteigentümer ist nicht (mehr) erfasst.')
+                continue
         eig = e.stockwerkeigentuemer
         if f'eig_{e.pk}' in request.POST:
             wert = request.POST[f'eig_{e.pk}']
@@ -730,15 +740,18 @@ def stweg_einheiten_speichern(request, stweg_id):
                 if eig is None:
                     fehler.append(f'«{e.bezeichnung}»: Dieser Eigentümer ist nicht (mehr) erfasst.')
                     continue
-        aenderungen.append((e, quote, eig))
+        aenderungen.append((e, quote, eig, mit))
     if fehler:
         for f in fehler:
             messages.error(request, f)
         return _zur_einheitenseite(lg)
     with transaction.atomic():
-        for e, quote, eig in aenderungen:
+        for e, quote, eig, mit in aenderungen:
             e.wertquote, e.stockwerkeigentuemer = quote, eig
             e.save(update_fields=['wertquote', 'stockwerkeigentuemer'])
+            if mit is not None:
+                # Die Hauptansprechperson ist nie zugleich Miteigentümer.
+                e.miteigentuemer.set([m for m in mit if m.pk != (eig.pk if eig else None)])
     messages.success(request, 'Einheiten gespeichert.')
     return _zur_einheitenseite(lg)
 

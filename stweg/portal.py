@@ -12,6 +12,7 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
@@ -40,15 +41,27 @@ def _meine_einheiten(eig):
                                   gehoert_zu__isnull=True)
 
 
+def _sichtbare_einheiten(eig):
+    """Einheiten, die der Eigentümer SEHEN darf: seine eigenen und die, an denen er Miteigentümer
+    ist. Handeln (abstimmen, bevollmächtigen, Anfrage stellen) darf nur die Hauptansprechperson
+    — `_meine_einheiten`."""
+    return (Einheit.objects.filter(Q(stockwerkeigentuemer=eig) | Q(miteigentuemer=eig),
+                                   liegenschaft__typ=Liegenschaft.TYP_STWEG, gehoert_zu__isnull=True)
+            .distinct())
+
+
 @never_cache
 @login_required
 def portal_stweg(request):
     eig = _eigentuemer(request)
-    einheiten = list(_meine_einheiten(eig).select_related('liegenschaft'))
+    einheiten = list(_sichtbare_einheiten(eig).select_related('liegenschaft', 'stockwerkeigentuemer'))
     gemeinschaften = {}
     for e in einheiten:
-        g = gemeinschaften.setdefault(e.liegenschaft_id, {'lg': e.liegenschaft, 'einheiten': []})
+        g = gemeinschaften.setdefault(e.liegenschaft_id, {'lg': e.liegenschaft, 'einheiten': [], 'meine': []})
         g['einheiten'].append(e)
+        if e.stockwerkeigentuemer_id == eig.pk:
+            g['meine'].append(e)                       # nur hier darf er handeln
+        e.miteigentum = e.stockwerkeigentuemer_id != eig.pk
     for lg_id, g in gemeinschaften.items():
         g['versammlungen'] = list(Versammlung.objects.filter(liegenschaft_id=lg_id)
                                   .exclude(status=Versammlung.ENTWURF).order_by('-datum'))
@@ -56,7 +69,7 @@ def portal_stweg(request):
             # Vollmachten je eigene Einheit — nur solange die Versammlung noch bevorsteht.
             v.meine_vollmachten = []
             if v.status == Versammlung.EINGELADEN:
-                for e in g['einheiten']:
+                for e in g['meine']:
                     v.meine_vollmachten.append({
                         'einheit': e,
                         'vollmacht': Vollmacht.objects.filter(
@@ -70,7 +83,7 @@ def portal_stweg(request):
             stimmen = {st.einheit_id: st.wert for st in ZirkularStimme.objects.filter(zirkular=z)}
             g['abstimmungen'].append({
                 'z': z, 'offen': z.status == Zirkularbeschluss.LAUFEND and heute <= z.frist_bis,
-                'meine': [{'einheit': e, 'wert': stimmen.get(e.pk, '')} for e in g['einheiten']]})
+                'meine': [{'einheit': e, 'wert': stimmen.get(e.pk, '')} for e in g['meine']]})
         # Nur ABGESCHLOSSENE Abrechnungen, und nur der eigene Teil davon.
         g['abrechnungen'] = [
             {'abrechnung': a, 'saldo': sum(p.saldo for p in
@@ -85,7 +98,7 @@ def portal_stweg(request):
 def _versammlung_des_eigentuemers(request, pk):
     eig = _eigentuemer(request)
     v = Versammlung.objects.select_related('liegenschaft').filter(pk=pk).first()
-    if v is None or not _meine_einheiten(eig).filter(liegenschaft=v.liegenschaft).exists():
+    if v is None or not _sichtbare_einheiten(eig).filter(liegenschaft=v.liegenschaft).exists():
         raise Http404
     return eig, v
 
@@ -163,7 +176,7 @@ def _zirkular_des_eigentuemers(request, pk):
     eig = _eigentuemer(request)
     z = Zirkularbeschluss.objects.select_related('liegenschaft').filter(pk=pk).first()
     if z is None or z.status == Zirkularbeschluss.ENTWURF \
-            or not _meine_einheiten(eig).filter(liegenschaft=z.liegenschaft).exists():
+            or not _sichtbare_einheiten(eig).filter(liegenschaft=z.liegenschaft).exists():
         raise Http404                      # fremd oder noch Entwurf
     return eig, z
 

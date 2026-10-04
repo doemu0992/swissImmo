@@ -15,7 +15,8 @@
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{{ g.lg }}</span></div>
     {% for e in g.einheiten %}
-    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div></div>
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div>
+        {% if e.miteigentum %}<div class="fw-s">Miteigentum — Hauptansprechperson: {{ e.stockwerkeigentuemer.firma_oder_name|default:"—" }}. Sie sehen Einladung, Protokoll und Beschlüsse; die Stimme der Einheit gibt die Hauptansprechperson ab.</div>{% endif %}</div>
         <div class="fw-zeit">Wertquote {{ e.wertquote|floatformat:"-2" }} / {{ g.lg.wertquote_total }}</div></div>
     {% endfor %}
 </div>
@@ -54,7 +55,8 @@
         <div class="fw-t">{{ a.z.titel }}</div>
         <div class="fw-s">{% if a.z.status == 'abgeschlossen' %}{{ a.z.get_ergebnis_display }} (Ja {{ a.z.ja_koepfe }} · Nein {{ a.z.nein_koepfe }} · Enthaltung {{ a.z.enthaltung_koepfe }}){% elif a.offen %}Abstimmung bis {{ a.z.frist_bis|date:"d.m.Y" }}{% else %}Abstimmung beendet, Ergebnis folgt{% endif %}</div>
         <div class="fw-s" style="white-space:pre-line">{{ a.z.antrag }}</div>
-        {% if a.offen %}
+        {% if a.offen and not a.meine %}<div class="fw-s">Die Stimme für Ihre Einheit gibt die Hauptansprechperson ab.</div>{% endif %}
+        {% if a.offen and a.meine %}
         <form method="post" action="/portal/stweg/abstimmen/{{ a.z.pk }}/" class="fw-formular">{% csrf_token %}
             {% for m in a.meine %}
             <div class="fw-feldblock"><label class="fw-label" for="s{{ a.z.pk }}_{{ m.einheit.pk }}">Ihre Stimme für {{ m.einheit.bezeichnung }}</label>
@@ -89,6 +91,7 @@
         <div class="fw-s">{{ a.erstellt_am|date:"d.m.Y" }} · {{ a.get_status_display }}</div>
         {% if a.antwort %}<div class="fw-s">Antwort: {{ a.antwort }}</div>{% endif %}</div></div>
     {% empty %}<p class="fw-leer">Noch keine Anfrage.</p>{% endfor %}
+    {% if g.meine %}
     <details class="fw-aufklapp"><summary>Anfrage an die Verwaltung</summary>
         <div class="fw-aufklapp-inhalt">
             <form method="post" action="/portal/stweg/anfrage/{{ g.lg.pk }}/" class="fw-formular">{% csrf_token %}
@@ -98,6 +101,7 @@
                     <textarea id="t{{ g.lg.pk }}" name="text" rows="3" class="fw-feld"></textarea></div>
                 <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Senden</button></div>
             </form></div></details>
+    {% endif %}
 </div>
 {% empty %}
 <div class="fw-card"><p class="fw-leer">Ihnen ist keine Stockwerkeigentümer-Einheit zugeordnet.</p></div>
