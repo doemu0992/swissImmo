@@ -1,0 +1,54 @@
+{% extends 'core/portal_base.html' %}
+{% block title %}Stockwerkeigentum — SwissImmo{% endblock %}
+{% block brand %}Eigentümerportal{% endblock %}
+{% block brand_mobile %}Eigentümerportal{% endblock %}
+{% block nav %}
+<a class="fw-nav-eintrag" href="/portal/">Übersicht</a>
+<a class="fw-nav-eintrag fw-aktiv" href="/portal/stweg/">Stockwerkeigentum</a>
+{% endblock %}
+{% block content %}
+<div class="fw-phead"><div><h1>Stockwerkeigentum</h1>
+    <p>Ihre Einheiten, Einladungen und Protokolle der Versammlungen und Ihre Anfragen an die Verwaltung.</p></div></div>
+
+{% for g in gemeinschaften %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{{ g.lg }}</span></div>
+    {% for e in g.einheiten %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div></div>
+        <div class="fw-zeit">Wertquote {{ e.wertquote|floatformat:"-2" }} / {{ g.lg.wertquote_total }}</div></div>
+    {% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Versammlungen</span></div>
+    {% for v in g.versammlungen %}
+    <div class="fw-zeile"><div class="fw-mitte">
+        <div class="fw-t">{{ v.titel }}</div>
+        <div class="fw-s">{{ v.datum|date:"d.m.Y H:i" }}{% if v.ort %} · {{ v.ort }}{% endif %}</div></div>
+        {% if v.einladung_versendet_am %}<a class="fw-btn" href="/portal/stweg/einladung/{{ v.pk }}/" target="_blank" rel="noopener">Einladung</a>{% endif %}
+        {% if v.protokoll_versendet_am %}<a class="fw-btn" href="/portal/stweg/protokoll/{{ v.pk }}/" target="_blank" rel="noopener">Protokoll</a>{% endif %}
+    </div>
+    {% empty %}<p class="fw-leer">Keine Versammlung.</p>{% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Meine Anfragen</span></div>
+    {% for a in g.anfragen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ a.betreff }}</div>
+        <div class="fw-s">{{ a.erstellt_am|date:"d.m.Y" }} · {{ a.get_status_display }}</div>
+        {% if a.antwort %}<div class="fw-s">Antwort: {{ a.antwort }}</div>{% endif %}</div></div>
+    {% empty %}<p class="fw-leer">Noch keine Anfrage.</p>{% endfor %}
+    <details class="fw-aufklapp"><summary>Anfrage an die Verwaltung</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/portal/stweg/anfrage/{{ g.lg.pk }}/" class="fw-formular">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="b{{ g.lg.pk }}">Betreff *</label>
+                    <input id="b{{ g.lg.pk }}" name="betreff" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="t{{ g.lg.pk }}">Ihre Frage</label>
+                    <textarea id="t{{ g.lg.pk }}" name="text" rows="3" class="fw-feld"></textarea></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Senden</button></div>
+            </form></div></details>
+</div>
+{% empty %}
+<div class="fw-card"><p class="fw-leer">Ihnen ist keine Stockwerkeigentümer-Einheit zugeordnet.</p></div>
+{% endfor %}
+{% endblock %}

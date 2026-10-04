@@ -545,6 +545,7 @@ urlpatterns = [
     path('neu/bankabgleich/auszug/<int:pk>/rueckgaengig/', fw_kontoauszug_rueckgaengig, name='fw_kontoauszug_rueckgaengig'),
 
     # --- EIGENTÜMER-PORTAL (read-only, nur eigener Eigentuemer) ---
+    path('portal/stweg/', include('stweg.portal_urls')),
     path('portal/', portal_view, name='portal'),
     path('portal/dokument/<int:pk>/', portal_dokument_download, name='portal_dokument_download'),
     path('portal/report/', portal_report_pdf, name='portal_report_pdf'),
