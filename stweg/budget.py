@@ -10,10 +10,10 @@ geteilt (grösster Rest — die Raten ergeben den Jahresbetrag exakt) und mit F�
 vorgeschrieben. Die Vorschreibung ist eine Forderung; die Zahlung kommt als `StwegAkonto`.
 Gebucht wird hier nichts (siehe docs/STWEG.md, «Hauptbuch»).
 """
+import calendar
 from datetime import date
 from decimal import Decimal
 
-from dateutil.relativedelta import relativedelta
 from django.db import transaction
 from django.utils import timezone
 
@@ -24,6 +24,13 @@ from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheit
 from stweg.verteilung import verteile_nach_quoten
 
 NULL = Decimal('0.00')
+
+
+def _plus_monate(d, n):
+    """`d` plus `n` Monate; der Tag wird auf das Monatsende begrenzt (31.01. + 1 → 28./29.02.)."""
+    monat = d.month - 1 + n
+    jahr, monat = d.year + monat // 12, monat % 12 + 1
+    return date(jahr, monat, min(d.day, calendar.monthrange(jahr, monat)[1]))
 
 
 class BudgetFehler(ValueError):
@@ -100,7 +107,7 @@ def _faelligkeiten(budget):
     abstand = 12 // budget.raten if 12 % budget.raten == 0 else None
     if abstand is None:
         raise BudgetFehler(f'{budget.raten} Raten lassen sich nicht gleichmässig auf zwölf Monate legen.')
-    return [start + relativedelta(months=abstand * i) for i in range(budget.raten)]
+    return [_plus_monate(start, abstand * i) for i in range(budget.raten)]
 
 
 @transaction.atomic

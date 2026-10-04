@@ -269,3 +269,12 @@ class VorschreibungPdfTests(TestCase):
         b2 = StwegBudget.objects.create(liegenschaft=self.lg, jahr=2027)
         with self.assertRaises(bd.BudgetFehler):
             bd.vorschreibungen_versenden(b2)
+
+
+class FaelligkeitTests(TestCase):
+    def test_monatsende_wird_begrenzt(self):
+        from stweg.budget import _plus_monate
+        self.assertEqual(_plus_monate(date(2026, 1, 31), 1), date(2026, 2, 28))
+        self.assertEqual(_plus_monate(date(2028, 1, 31), 1), date(2028, 2, 29))
+        self.assertEqual(_plus_monate(date(2026, 11, 15), 3), date(2027, 2, 15))
+        self.assertEqual(_plus_monate(date(2026, 12, 1), 12), date(2027, 12, 1))
