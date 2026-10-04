@@ -20,7 +20,7 @@ from django.views.decorators.http import require_POST
 
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
-from stweg.models import StwegAbrechnung, StwegAbrechnungPosition, StwegAnfrage, Versammlung
+from stweg.models import StwegAbrechnung, StwegAbrechnungPosition, StwegAnfrage, Versammlung, Vollmacht
 from stweg.pdf import abrechnung_pdf, einladung_pdf, protokoll_pdf
 
 logger = logging.getLogger(__name__)
@@ -47,8 +47,17 @@ def portal_stweg(request):
         g = gemeinschaften.setdefault(e.liegenschaft_id, {'lg': e.liegenschaft, 'einheiten': []})
         g['einheiten'].append(e)
     for lg_id, g in gemeinschaften.items():
-        g['versammlungen'] = (Versammlung.objects.filter(liegenschaft_id=lg_id)
-                              .exclude(status=Versammlung.ENTWURF).order_by('-datum'))
+        g['versammlungen'] = list(Versammlung.objects.filter(liegenschaft_id=lg_id)
+                                  .exclude(status=Versammlung.ENTWURF).order_by('-datum'))
+        for v in g['versammlungen']:
+            # Vollmachten je eigene Einheit — nur solange die Versammlung noch bevorsteht.
+            v.meine_vollmachten = []
+            if v.status == Versammlung.EINGELADEN:
+                for e in g['einheiten']:
+                    v.meine_vollmachten.append({
+                        'einheit': e,
+                        'vollmacht': Vollmacht.objects.filter(
+                            versammlung=v, einheit=e, widerrufen_am__isnull=True).first()})
         g['anfragen'] = StwegAnfrage.objects.filter(liegenschaft_id=lg_id, eigentuemer=eig)
         # Nur ABGESCHLOSSENE Abrechnungen, und nur der eigene Teil davon.
         g['abrechnungen'] = [
@@ -102,6 +111,40 @@ def portal_stweg_abrechnung(request, pk):
     if a is None:
         raise Http404                      # fremd, nicht abgeschlossen oder nicht meine
     return _pdf(abrechnung_pdf(a, eig), f'Abrechnung_{a.jahr}.pdf')
+
+
+@login_required
+@require_POST
+def portal_stweg_vollmacht(request, pk):
+    from stweg.vollmacht import VollmachtFehler, erteilen
+    eig, v = _versammlung_des_eigentuemers(request, pk)
+    einheit = _meine_einheiten(eig).filter(pk=request.POST.get('einheit') or 0,
+                                           liegenschaft=v.liegenschaft).first() \
+        if (request.POST.get('einheit') or '').isdigit() else None
+    if einheit is None:
+        raise Http404
+    try:
+        erteilen(v, einheit, request.POST.get('bevollmaechtigter'), erteilt_von=eig, kanal='portal')
+        messages.success(request, 'Ihre Vollmacht wurde erfasst.')
+    except VollmachtFehler as e:
+        messages.error(request, str(e))
+    return redirect('/portal/stweg/')
+
+
+@login_required
+@require_POST
+def portal_stweg_vollmacht_widerruf(request, pk):
+    from stweg.vollmacht import VollmachtFehler, widerrufen
+    eig = _eigentuemer(request)
+    vm = Vollmacht.objects.select_related('versammlung', 'einheit').filter(pk=pk).first()
+    if vm is None or vm.einheit.stockwerkeigentuemer_id != eig.pk:
+        raise Http404
+    try:
+        widerrufen(vm)
+        messages.success(request, 'Die Vollmacht wurde widerrufen.')
+    except VollmachtFehler as e:
+        messages.error(request, str(e))
+    return redirect('/portal/stweg/')
 
 
 @login_required

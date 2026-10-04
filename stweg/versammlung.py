@@ -117,9 +117,16 @@ def durchfuehren(versammlung):
     v = versammlung
     if v.status != v.EINGELADEN:
         raise VersammlungsFehler(['Durchführen setzt eine versendete Einladung voraus.'])
+    from stweg.vollmacht import gueltige
+    vollmachten = {x.einheit_id: x for x in gueltige(v)}
     for e in v.liegenschaft.einheiten.all():
-        Anwesenheit.objects.get_or_create(versammlung=v, einheit=e,
-                                          defaults={'art': Anwesenheit.ABWESEND})
+        vm = vollmachten.get(e.pk)
+        # Eine gültige Vollmacht heisst «vertreten»; wer trotzdem kommt, wird
+        # in der Anwesenheitsliste von Hand auf «anwesend» gestellt.
+        Anwesenheit.objects.get_or_create(
+            versammlung=v, einheit=e,
+            defaults={'art': Anwesenheit.VERTRETEN if vm else Anwesenheit.ABWESEND,
+                      'vertreter': vm.bevollmaechtigter if vm else ''})
     v.status = v.DURCHGEFUEHRT
     v.save(update_fields=['status'])
     return v

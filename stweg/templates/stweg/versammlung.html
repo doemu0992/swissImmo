@@ -84,6 +84,30 @@
 </div>
 {% endif %}
 
+{% if v.status == 'eingeladen' or vollmachten %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Vollmachten</span><span class="fw-neben">{{ vollmachten|length }}</span></div>
+    {% for vm in vollmachten %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ vm.einheit.bezeichnung }} → {{ vm.bevollmaechtigter }}</div>
+        <div class="fw-s">erteilt {{ vm.erteilt_am|date:"d.m.Y H:i" }} · {{ vm.get_kanal_display }}{% if vm.widerrufen_am %} · widerrufen {{ vm.widerrufen_am|date:"d.m.Y" }}{% endif %}</div></div>
+        {% if vm.gueltig and v.status == 'eingeladen' %}
+        <form method="post" action="/neu/stweg/vollmacht/{{ vm.pk }}/widerrufen/">{% csrf_token %}<button class="fw-btn">Widerrufen</button></form>{% endif %}
+    </div>
+    {% empty %}<p class="fw-leer">Keine Vollmacht erteilt.</p>{% endfor %}
+    {% if v.status == 'eingeladen' %}
+    <details class="fw-aufklapp"><summary>Vollmacht erfassen (schriftlich erhalten)</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/vollmacht/neu/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="vm_einheit">Einheit *</label>
+                    <select id="vm_einheit" name="einheit" required class="fw-feld">{% for e in einheiten %}<option value="{{ e.pk }}">{{ e.bezeichnung }}{% if e.stockwerkeigentuemer %} ({{ e.stockwerkeigentuemer.firma_oder_name }}){% endif %}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="vm_name">Vertreten durch *</label>
+                    <input id="vm_name" name="bevollmaechtigter" required class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Erfassen</button></div>
+            </form></div></details>
+    {% endif %}
+</div>
+{% endif %}
+
 {% if v.status == 'durchgefuehrt' or v.status == 'protokolliert' %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">Anwesenheit</span>

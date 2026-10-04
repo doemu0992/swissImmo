@@ -7,5 +7,7 @@ urlpatterns = [
     path('einladung/<int:pk>/', p.portal_stweg_einladung, name='portal_stweg_einladung'),
     path('protokoll/<int:pk>/', p.portal_stweg_protokoll, name='portal_stweg_protokoll'),
     path('abrechnung/<int:pk>/', p.portal_stweg_abrechnung, name='portal_stweg_abrechnung'),
+    path('vollmacht/<int:pk>/erteilen/', p.portal_stweg_vollmacht, name='portal_stweg_vollmacht'),
+    path('vollmacht/<int:pk>/widerrufen/', p.portal_stweg_vollmacht_widerruf, name='portal_stweg_vollmacht_widerruf'),
     path('anfrage/<int:stweg_id>/', p.portal_stweg_anfrage, name='portal_stweg_anfrage'),
 ]

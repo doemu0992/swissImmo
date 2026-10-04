@@ -52,18 +52,18 @@ def praesenz(versammlung):
     }
 
 
-def auswerten(traktandum):
-    """Zählt die Stimmen und schlägt ein Ergebnis vor. Ändert nichts."""
-    v = traktandum.versammlung
-    lg = v.liegenschaft
-    alle = list(lg.einheiten.all())
-    vertreten = {e.pk: e for e in vertretene_einheiten(v)}
-    stimmen = {s.einheit_id: s.wert for s in Stimme.objects.filter(traktandum=traktandum)
-               if s.einheit_id in vertreten}
+def zaehlen(einheiten, stimmen, mehrheitsart, total_quoten):
+    """Zählt Stimmen und schlägt ein Ergebnis vor — gemeinsam für Versammlung und
+    Zirkularbeschluss.
 
+    `einheiten`: ALLE Einheiten der Gemeinschaft; `stimmen`: {einheit: wert} der
+    Einheiten, die abgestimmt haben (bei der Versammlung nur die vertretenen)."""
+    vertreten = {e.pk: e for e in einheiten if e.pk in stimmen}
     quoten = {Stimme.JA: Decimal('0'), Stimme.NEIN: Decimal('0'), Stimme.ENTHALTUNG: Decimal('0')}
     je_kopf = {}
     for eid, wert in stimmen.items():
+        if eid not in vertreten:
+            continue
         quoten[wert] += vertreten[eid].wertquote
         je_kopf.setdefault(_kopf(vertreten[eid]), set()).add(wert)
 
@@ -78,26 +78,25 @@ def auswerten(traktandum):
         else:
             koepfe[Stimme.ENTHALTUNG] += 1
 
-    total_koepfe = len({_kopf(e) for e in alle})
-    total_quoten = Decimal(lg.wertquote_total)
+    total_koepfe = len({_kopf(e) for e in einheiten})
+    total_quoten = Decimal(total_quoten)
     ja_k, nein_k = koepfe[Stimme.JA], koepfe[Stimme.NEIN]
     ja_q, nein_q = quoten[Stimme.JA], quoten[Stimme.NEIN]
 
-    art = traktandum.mehrheitsart
-    if art == 'kenntnisnahme':
+    if mehrheitsart == 'kenntnisnahme':
         angenommen = None
-    elif art == 'einfach_koepfe':
+    elif mehrheitsart == 'einfach_koepfe':
         angenommen = ja_k > nein_k
-    elif art == 'einfach_quoten':
+    elif mehrheitsart == 'einfach_quoten':
         angenommen = ja_q > nein_q
-    elif art == 'doppelt':
+    elif mehrheitsart == 'doppelt':
         angenommen = ja_k > nein_k and ja_q > nein_q
-    elif art == 'doppelt_aller':
+    elif mehrheitsart == 'doppelt_aller':
         angenommen = ja_k * 2 > total_koepfe and ja_q * 2 > total_quoten
-    elif art == 'einstimmig':
+    elif mehrheitsart == 'einstimmig':
         angenommen = ja_k == total_koepfe
     else:
-        raise BeschlussFehler(f'Unbekannte Mehrheitsart «{art}».')
+        raise BeschlussFehler(f'Unbekannte Mehrheitsart «{mehrheitsart}».')
 
     vorschlag = (Traktandum.KENNTNIS if angenommen is None
                  else Traktandum.ANGENOMMEN if angenommen else Traktandum.ABGELEHNT)
@@ -107,6 +106,16 @@ def auswerten(traktandum):
         'total_koepfe': total_koepfe, 'total_quoten': total_quoten,
         'vorschlag': vorschlag, 'widerspruch': widerspruch,
     }
+
+
+def auswerten(traktandum):
+    """Zählt die Stimmen eines Traktandums und schlägt ein Ergebnis vor. Ändert nichts."""
+    v = traktandum.versammlung
+    vertreten = {e.pk for e in vertretene_einheiten(v)}
+    stimmen = {s.einheit_id: s.wert for s in Stimme.objects.filter(traktandum=traktandum)
+               if s.einheit_id in vertreten}
+    return zaehlen(list(v.liegenschaft.einheiten.all()), stimmen, traktandum.mehrheitsart,
+                   v.liegenschaft.wertquote_total)
 
 
 @transaction.atomic

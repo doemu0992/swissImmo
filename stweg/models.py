@@ -301,3 +301,33 @@ class StwegVersand(OrganisationAusKette):
     class Meta:
         db_table = 'stweg_versand'
         ordering = ['-zeitpunkt']
+
+
+class Vollmacht(OrganisationAusKette):
+    """Vollmacht eines Stockwerkeigentümers für EINE Versammlung und EINE Einheit.
+
+    Wer nicht teilnimmt, benennt vorab, wer ihn vertritt. Beim Eröffnen der
+    Versammlung (`durchfuehren`) wird die Einheit als «vertreten» erfasst. Ein
+    Widerruf bleibt als Zeile erhalten (`widerrufen_am`) — wer wann wen
+    bevollmächtigt hat, ist später belegbar."""
+    ORGANISATION_PFAD = 'versammlung'
+    versammlung = models.ForeignKey(Versammlung, on_delete=models.CASCADE, related_name='vollmachten')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
+    bevollmaechtigter = models.CharField("Vertreten durch", max_length=120)
+    erteilt_von = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='+')
+    kanal = models.CharField(max_length=12, default='portal',
+                             choices=[('portal', 'Portal'), ('verwaltung', 'Von der Verwaltung erfasst')])
+    erteilt_am = models.DateTimeField(auto_now_add=True)
+    widerrufen_am = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'stweg_vollmacht'
+        ordering = ['erteilt_am']
+        constraints = [models.UniqueConstraint(
+            fields=['versammlung', 'einheit'], condition=models.Q(widerrufen_am__isnull=True),
+            name='stweg_vollmacht_eine_gueltige_je_einheit')]
+
+    @property
+    def gueltig(self):
+        return self.widerrufen_am is None

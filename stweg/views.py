@@ -22,7 +22,7 @@ from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
 from stweg import aufgaben, beschluss
 from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegAkonto, StwegAnfrage,
-                          StwegVersand, Traktandum, Versammlung)
+                          StwegVersand, Traktandum, Versammlung, Vollmacht)
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, wertquoten_summe
 from stweg.versammlung import (VersammlungsFehler, durchfuehren, einladung_pruefen,
                                einladung_versenden, protokoll_pruefen, protokoll_versenden)
@@ -130,6 +130,7 @@ def stweg_versammlung(request, pk):
         'versaende': v.versaende.select_related('eigentuemer'),
         'mehrheiten': Traktandum.MEHRHEIT_CHOICES, 'ergebnisse': Traktandum.ERGEBNIS_CHOICES,
         'anwesenheitsarten': Anwesenheit.ART_CHOICES, 'stimmwerte': Stimme.WERT_CHOICES,
+        'vollmachten': v.vollmachten.select_related('einheit').order_by('-erteilt_am'),
     })
 
 
@@ -514,3 +515,35 @@ def stweg_fonds_entnahme(request, stweg_id):
     except (FondsFehler, WertquotenFehler) as e:
         messages.error(request, str(getattr(e, 'message', None) or e))
     return _zur_abrechnung(lg, jahr)
+
+
+# ── Vollmachten ──────────────────────────────────────────────────────────
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_vollmacht_neu(request, pk):
+    from stweg.vollmacht import VollmachtFehler, erteilen
+    v = get_object_or_404(Versammlung, pk=pk)
+    einheit = Einheit.objects.filter(pk=_zahl(request.POST.get('einheit')) or 0,
+                                     liegenschaft=v.liegenschaft).first()
+    if einheit is None:
+        messages.error(request, 'Bitte eine Einheit wählen.')
+        return _zurueck(v)
+    try:
+        erteilen(v, einheit, request.POST.get('bevollmaechtigter'), kanal='verwaltung')
+        messages.success(request, f'Vollmacht für {einheit.bezeichnung} erfasst.')
+    except VollmachtFehler as e:
+        _fehler(request, e)
+    return _zurueck(v)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_vollmacht_widerrufen(request, pk):
+    from stweg.vollmacht import VollmachtFehler, widerrufen
+    vm = get_object_or_404(Vollmacht.objects.select_related('versammlung'), pk=pk)
+    try:
+        widerrufen(vm)
+    except VollmachtFehler as e:
+        _fehler(request, e)
+    return _zurueck(vm.versammlung)

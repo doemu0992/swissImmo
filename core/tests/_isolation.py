@@ -268,6 +268,9 @@ class MandantenFixture:
         from stweg.models import StwegAbrechnung as _Abrechnung, StwegAkonto as _Akonto
         self.stweg_abrechnung = _Abrechnung.objects.create(liegenschaft=self.liegenschaft, jahr=2025)
         self.stweg_akonto = _Akonto.objects.create(einheit=self.einheit, betrag=Decimal('100'))
+        from stweg.models import Vollmacht as _Vollmacht
+        self.stweg_vollmacht = _Vollmacht.objects.create(
+            versammlung=self.stweg_versammlung, einheit=self.einheit, bevollmaechtigter=f'Vertreter {k}')
         # Ohne Geheimnis angelegt: Der Registrylauf prüft SICHTBARKEIT, und
         # dafür braucht es keinen Schlüssel. Ein verschlüsseltes Passwort
         # hier hiesse, dass das ganze Fixture — und damit jeder Test, der es
@@ -450,6 +453,8 @@ class MandantenFixture:
         # eine ANFRAGE oder eine AUFGABE (Pendenz) — abgelesen am
         # `get_object_or_404` in stweg/views.py. 'stweg_traktandum_neu' trägt die
         # Versammlung und muss deshalb VOR 'stweg_traktandum' stehen.
+        ('stweg_vollmacht_neu',      'stweg_versammlung'),
+        ('stweg_vollmacht',          'stweg_vollmacht'),
         ('stweg_abrechnung',         'stweg_abrechnung'),
         ('stweg_akonto',             'stweg_akonto'),
         ('stweg_traktandum_neu',     'stweg_versammlung'),
