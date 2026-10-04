@@ -173,3 +173,55 @@ class AbrechnungMitSchluesselnTests(TestCase):
             self.assertEqual(sum(p.kostenanteil for p in a.positionen.all()), a.gesamtkosten)
             self.assertEqual(a.positionen.get(einheit=self.e[0]).schluesselanteile
                              .get(schluessel_name='Lift').betrag, D('0.00'))
+
+
+class EinzelkostenTests(TestCase):
+    """Eine Rechnung für EINE Einheit gehört dieser Einheit — sie fällt nicht aus der Abrechnung."""
+
+    def setUp(self):
+        self.lg, self.e = haus()
+        self.d = date(2026, 5, 1)
+
+    def abrechnen(self):
+        return StwegAbrechnungService(self.lg).abrechnen(2026)
+
+    def test_einzelkosten_werden_der_einheit_belastet(self):
+        rechnung(self.lg, 1000, self.d)                                 # allgemein
+        rechnung(self.lg, 500, self.d, einheit=self.e[2], lieferant='Sanitär AG')   # nur Whg 2.OG
+        a = self.abrechnen()
+        self.assertEqual(a.gesamtkosten, D('1500.00'))
+        p = {x.einheit.bezeichnung: x for x in a.positionen.select_related('einheit')}
+        self.assertEqual(p['Whg 2.OG'].kostenanteil, D('750.00'))       # 250 allgemein + 500 direkt
+        self.assertEqual(p['Whg EG'].kostenanteil, D('150.00'))
+        self.assertEqual(sum(x.kostenanteil for x in p.values()), a.gesamtkosten)
+        t = p['Whg 2.OG'].schluesselanteile.get(schluessel_name='Direkt belastet')
+        self.assertEqual(t.betrag, D('500.00'))
+        self.assertTrue(a.kostenzeilen.filter(schluessel_name='Direkt belastet: Whg 2.OG').exists())
+
+    def test_rechnung_auf_nebenraum_geht_an_das_hauptobjekt(self):
+        keller = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='Keller 3', typ='keller',
+                                        gehoert_zu=self.e[1])
+        rechnung(self.lg, 200, self.d, einheit=keller)
+        a = self.abrechnen()
+        self.assertEqual(a.positionen.get(einheit=self.e[1]).kostenanteil, D('200.00'))
+        self.assertEqual(a.gesamtkosten, D('200.00'))
+
+    def test_positionen_mit_einheit_werden_direkt_belastet(self):
+        from finance.models import KreditorPosition, KreditorenRechnung
+        k = konto('4400', 'Reparaturen')
+        r = KreditorenRechnung.objects.create(liegenschaft=self.lg, lieferant='Handwerker', betrag=D('900'),
+                                              datum=self.d, status='freigegeben')
+        KreditorPosition.objects.create(rechnung=r, konto=k, liegenschaft=self.lg, betrag=D('600'),
+                                        bezeichnung='Allgemein')
+        KreditorPosition.objects.create(rechnung=r, konto=k, liegenschaft=self.lg, einheit=self.e[3],
+                                        betrag=D('300'), bezeichnung='nur 3. OG')
+        a = self.abrechnen()
+        self.assertEqual(a.gesamtkosten, D('900.00'))
+        self.assertEqual(a.positionen.get(einheit=self.e[3]).kostenanteil, D('120.00') + D('300.00'))
+        self.assertEqual(sum(x.kostenanteil for x in a.positionen.all()), D('900.00'))
+
+    def test_fremde_einheit_zaehlt_nicht(self):
+        fremd_lg, fremd_e = haus()
+        rechnung(self.lg, 300, self.d, einheit=fremd_e[0])
+        a = self.abrechnen()
+        self.assertEqual(a.gesamtkosten, D('0.00'))

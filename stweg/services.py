@@ -41,25 +41,48 @@ class StwegAbrechnungService:
             raise AbrechnungsFehler(f'«{liegenschaft}» ist keine STWEG-Liegenschaft.')
         self.liegenschaft = liegenschaft
 
-    def kostenzeilen(self, jahr):
-        """Die allgemeinen Kosten der Gemeinschaft im Jahr, Zeile für Zeile."""
+    def _rechnungen(self, jahr):
         lg = self.liegenschaft
-        rechnungen = (KreditorenRechnung.objects
-                      .filter(Q(liegenschaft=lg) | Q(positionen__liegenschaft=lg), datum__year=jahr)
-                      .exclude(status__in=AUSGESCHLOSSENE_STATUS)
-                      .distinct().prefetch_related('positionen').order_by('datum', 'id'))
+        return (KreditorenRechnung.objects
+                .filter(Q(liegenschaft=lg) | Q(positionen__liegenschaft=lg) | Q(positionen__einheit__liegenschaft=lg),
+                        datum__year=jahr)
+                .exclude(status__in=AUSGESCHLOSSENE_STATUS)
+                .distinct().prefetch_related('positionen').order_by('datum', 'id'))
+
+    def _zeilen(self, jahr):
+        """Alle Kostenzeilen der Gemeinschaft; `einheit` ist die belastete Einheit oder None (allgemein)."""
+        lg = self.liegenschaft
         zeilen = []
-        for r in rechnungen:
+        for r in self._rechnungen(jahr):
             positionen = list(r.positionen.all())
             if positionen:
                 for p in positionen:
-                    if p.liegenschaft_id == lg.pk and p.einheit_id is None:
-                        zeilen.append({'datum': r.datum, 'lieferant': r.lieferant,
-                                       'text': p.bezeichnung, 'betrag': p.betrag,
-                                       'konto': p.konto or r.konto})
-            elif r.liegenschaft_id == lg.pk and r.einheit_id is None:
-                zeilen.append({'datum': r.datum, 'lieferant': r.lieferant, 'text': '',
-                               'betrag': r.betrag or NULL, 'konto': r.konto})
+                    einheit = p.einheit if p.einheit_id and p.einheit.liegenschaft_id == lg.pk else None
+                    if p.liegenschaft_id == lg.pk and p.einheit_id is None or einheit is not None:
+                        zeilen.append({'datum': r.datum, 'lieferant': r.lieferant, 'text': p.bezeichnung,
+                                       'betrag': p.betrag, 'konto': p.konto or r.konto, 'einheit': einheit})
+            elif r.liegenschaft_id == lg.pk:
+                einheit = r.einheit if r.einheit_id and r.einheit.liegenschaft_id == lg.pk else None
+                if r.einheit_id is None or einheit is not None:
+                    zeilen.append({'datum': r.datum, 'lieferant': r.lieferant, 'text': '',
+                                   'betrag': r.betrag or NULL, 'konto': r.konto, 'einheit': einheit})
+        return zeilen
+
+    def kostenzeilen(self, jahr):
+        """Die allgemeinen Kosten der Gemeinschaft im Jahr, Zeile für Zeile."""
+        return [z for z in self._zeilen(jahr) if z['einheit'] is None]
+
+    def einzelkosten(self, jahr):
+        """Kosten, die einer einzelnen Einheit zugeordnet sind (z. B. Reparatur in einer Wohnung).
+
+        Sie gehören nicht in die Verteilung auf alle, sondern zu dieser Einheit — dem Eigentümer des
+        Hauptobjekts, auch wenn die Rechnung auf einen Nebenraum (Keller, Parkplatz) lautet. Früher
+        fielen sie aus der Abrechnung heraus: Die Gemeinschaft bezahlte, belastet wurde niemand."""
+        zeilen = []
+        for z in self._zeilen(jahr):
+            if z['einheit'] is not None:
+                haupt = z['einheit'].gehoert_zu or z['einheit']
+                zeilen.append({**z, 'einheit': haupt})
         return zeilen
 
     def allgemeine_kosten(self, jahr):
@@ -87,7 +110,13 @@ class StwegAbrechnungService:
 
             einheiten = list(stimm_einheiten(lg).order_by('pk'))
             zeilen = self.kostenzeilen(jahr)
-            kosten = sum((z['betrag'] for z in zeilen), NULL).quantize(Decimal('0.01'))
+            einzel = self.einzelkosten(jahr)
+            ids = {e.pk for e in einheiten}
+            for z in einzel:
+                if z['einheit'].pk not in ids:
+                    raise AbrechnungsFehler(f"Einzelkosten ({z['lieferant']}, CHF {z['betrag']}) hängen an einer "
+                                            f"Einheit ohne Stimmrecht: «{z['einheit'].bezeichnung}».")
+            kosten = sum((z['betrag'] for z in zeilen + einzel), NULL).quantize(Decimal('0.01'))
             akonto = self.akonto_je_einheit(jahr)
 
             # Kosten je Schlüssel bündeln und je Schlüssel EINMAL verteilen (Rappen gehen auf).
@@ -114,6 +143,14 @@ class StwegAbrechnungService:
                 StwegAbrechnungKosten.objects.create(
                     abrechnung=abrechnung, datum=z['datum'], lieferant=z['lieferant'], text=z['text'],
                     betrag=z['betrag'], schluessel=sl, schluessel_name=sl.name)
+            direkt = {e.pk: NULL for e in einheiten}
+            for z in einzel:
+                name = f"Direkt belastet: {z['einheit'].bezeichnung}"
+                StwegAbrechnungKosten.objects.create(
+                    abrechnung=abrechnung, datum=z['datum'], lieferant=z['lieferant'], text=z['text'],
+                    betrag=z['betrag'], schluessel_name=name)
+                direkt[z['einheit'].pk] += z['betrag']
+                anteil_je_einheit[z['einheit'].pk] += z['betrag']
             for e in einheiten:
                 anteil = anteil_je_einheit[e.pk]
                 bezahlt = akonto.get(e.pk, NULL)
@@ -126,6 +163,11 @@ class StwegAbrechnungService:
                         position=position, schluessel=sl, schluessel_name=sl.name,
                         gewicht=gew[e.pk], gewicht_total=sum(gew.values(), Decimal('0')),
                         kosten_total=summe, betrag=anteile[e.pk])
+                if direkt[e.pk]:
+                    StwegAbrechnungAnteil.objects.create(
+                        position=position, schluessel=None, schluessel_name='Direkt belastet',
+                        gewicht=Decimal('1'), gewicht_total=Decimal('1'), kosten_total=direkt[e.pk],
+                        betrag=direkt[e.pk])
             return abrechnung
 
     @staticmethod
