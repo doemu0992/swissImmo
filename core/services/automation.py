@@ -802,9 +802,9 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
         basis_ref = v.basis_referenzzinssatz or Decimal('0')
         if not v.einheit_id or basis_ref <= 0 or aktuell_ref >= basis_ref:
             continue
-        # Näherung: ~2.91 % Mietzinssenkung je 0.25-Prozentpunkt-Schritt (VMWG).
-        schritte = (basis_ref - aktuell_ref) / Decimal('0.25')
-        senkung_pct = (schritte * Decimal('2.91')).quantize(Decimal('0.1'))
+        # Senkung nicht linear: 1 Schritt 2.91 %, 2 Schritte 5.66 % … (Art. 13 VMWG).
+        from core.services.mietzins_rechner import referenzzins_prozent
+        senkung_pct = abs(referenzzins_prozent(basis_ref, aktuell_ref)).quantize(Decimal('0.1'))
         _ensure(f"auto:refsenkung:{v.id}:{aktuell_ref}",
                 f"Referenzzinssenkung prüfen: {v.mieter.display_name} ({v.einheit.bezeichnung})",
                 heute, 'vertrag',

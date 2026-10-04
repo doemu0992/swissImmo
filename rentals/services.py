@@ -14,61 +14,59 @@ def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=De
     """
     Berechnet das Erhöhungs- oder Senkungspotenzial nach Schweizer Mietrecht.
     Inklusive Referenzzinssatz, Teuerung (LIK) und allgemeiner Kostensteigerung.
+    Rechenkerne und Herleitung: core.services.mietzins_rechner.
+
+    Basis ist der Stand, auf dem der aktuell verrechnete Mietzins beruht
+    (`Mietvertrag.effektive_basis()`: jüngste wirksame Anpassung, sonst Vertragsbeginn) —
+    sonst würde ein bereits weitergegebener Zinsschritt ein zweites Mal verrechnet.
     """
+    from core.services import mietzins_rechner as rz
+    from core.services.mietrecht import runde_mietzins
+
     if not vertrag.basis_referenzzinssatz or not vertrag.basis_lik_punkte:
         return None
 
-    basis_ref = Decimal(str(vertrag.basis_referenzzinssatz))
+    basis_ref, basis_lik = vertrag.effektive_basis()
+    basis_ref = Decimal(str(basis_ref))
+    basis_lik = Decimal(str(basis_lik))
     curr_ref = Decimal(str(aktuell_ref))
-    basis_lik = Decimal(str(vertrag.basis_lik_punkte))
     curr_lik = Decimal(str(aktuell_lik))
     netto_miete = Decimal(str(vertrag.netto_mietzins))
 
-    # --- 1. REFERENZZINSSATZ ---
-    zins_delta = curr_ref - basis_ref
-    steps = int(zins_delta / Decimal('0.25'))
-    zins_prozent = Decimal('0.00')
-
-    if steps > 0:
-        zins_prozent = Decimal(steps) * Decimal('3.00')
-    elif steps < 0:
-        abs_steps = abs(steps)
-        zins_prozent = Decimal(abs_steps) * Decimal('-2.91')
-
-    # --- 2. TEUERUNG (LIK) ---
-    lik_prozent = Decimal('0.00')
-    if curr_lik > basis_lik:
-        teuerung = (curr_lik - basis_lik) / basis_lik
-        lik_prozent = teuerung * Decimal('100') * Decimal('0.4')
-
-    # --- 3. ALLGEMEINE KOSTENSTEIGERUNG ---
-    kosten_prozent = Decimal(str(allg_kosten_pct))
-
-    # --- 4. ZUSAMMENFASSUNG ---
+    zins_prozent = rz.referenzzins_prozent(basis_ref, curr_ref)       # 1. Referenzzinssatz
+    lik_prozent = rz.lik_prozent(basis_lik, curr_lik)                 # 2. Teuerung (40 %)
+    kosten_prozent = Decimal(str(allg_kosten_pct)).quantize(Decimal('0.01'))   # 3. Kosten
     total_prozent = zins_prozent + lik_prozent + kosten_prozent
 
-    faktor = 1 + (total_prozent / Decimal('100'))
     # Auf 5 Rappen gerundet (core.services.mietrecht.runde_mietzins): Der Vorschlag
     # 1699.08 war nicht zahlbar. Die Differenz folgt dem gerundeten Betrag.
-    from core.services.mietrecht import runde_mietzins
-    neue_miete = runde_mietzins(netto_miete * faktor)
+    neue_miete = runde_mietzins(netto_miete * (1 + total_prozent / Decimal('100')))
     differenz_chf = neue_miete - netto_miete
 
     action = 'OK'
-    if total_prozent > 0.5:
+    if total_prozent > Decimal('0.5'):
         action = 'UP'
-    elif total_prozent < -0.5:
+    elif total_prozent < Decimal('-0.5'):
         action = 'DOWN'
 
+    hinweise = []
+    if max(basis_ref, curr_ref) >= Decimal('5.00'):
+        hinweise.append(
+            f"Referenzzins {basis_ref} % → {curr_ref} %: Der Überwälzungssatz von 3 % je Viertelprozent gilt "
+            "nur unter 5 % (Art. 13 VMWG). Bei höheren Sätzen gelten andere Sätze — "
+            "Berechnung von Hand prüfen.")
     return {
+        'hinweise': hinweise,
         'mieter': f"{vertrag.mieter}",
         'objekt': str(vertrag.einheit),
         'aktuell_chf': round(netto_miete, 2),
         'neu_chf': round(neue_miete, 2),
         'delta_chf': round(differenz_chf, 2),
-        'delta_prozent': round(total_prozent, 2),
+        'delta_prozent': total_prozent,
+        'zins_pct': zins_prozent, 'lik_pct': lik_prozent, 'kosten_pct': kosten_prozent,
+        'zins_schritte': rz.zins_schritte(basis_ref, curr_ref),
         'details_zins': f"{zins_prozent}% (Ref: {basis_ref} -> {curr_ref})",
-        'details_lik': f"{round(lik_prozent, 2)}% (Index: {basis_lik} -> {curr_lik})",
+        'details_lik': f"{lik_prozent}% (Index: {basis_lik} -> {curr_lik})",
         'details_kosten': f"{kosten_prozent}% (Allg. Kostensteigerung)",
         'action': action
     }

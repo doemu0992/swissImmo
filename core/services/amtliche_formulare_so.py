@@ -14,6 +14,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from core.services.dokumentsprache import nur_deutsch
+from core.services.mietzins_rechner import anteil_suffix
 
 logger = logging.getLogger(__name__)
 
@@ -174,9 +175,9 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
     c.setFont("Helvetica", 9)
     gruende = []
     if daten.get('alt_zins') is not None and daten.get('neu_zins') is not None and daten['alt_zins'] != daten['neu_zins']:
-        gruende.append(f"Anpassung an den Referenzzinssatz: {daten['alt_zins']} % → {daten['neu_zins']} %.")
+        gruende.append(f"Anpassung an den Referenzzinssatz: {daten['alt_zins']} % → {daten['neu_zins']} %." + anteil_suffix(daten, 'zins_pct'))
     if daten.get('alt_lik') is not None and daten.get('neu_lik') is not None and daten['alt_lik'] != daten['neu_lik']:
-        gruende.append(f"Teuerungsausgleich (LIK): {daten['alt_lik']} → {daten['neu_lik']} Punkte, 40 % anrechenbar.")
+        gruende.append(f"Teuerungsausgleich (LIK): {daten['alt_lik']} → {daten['neu_lik']} Punkte, 40 % anrechenbar." + anteil_suffix(daten, 'lik_pct'))
     if daten.get('kosten_pct'):
         gruende.append(f"Allgemeine Kostensteigerung: {daten.get('kosten_pct')} %.")
     if daten.get('begruendung'):

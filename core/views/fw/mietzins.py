@@ -174,6 +174,11 @@ def fw_mietzins_anpassung(request, vertrag_id):
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
         v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte', 'basis_lik_stand'])
+        if v.anpassungen.exists():
+            messages.warning(request, gettext(
+                'Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand '
+                'der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben '
+                'eingegebenen Basiswerten.') % {'zins': v.effektive_basis()[0], 'lik': v.effektive_basis()[1]})
         neu_netto = _dec(request.POST.get('neu_netto'), str(v.netto_mietzins))
         neu_zins = _dec(request.POST.get('neu_zins'), str(aktuell_ref))
         neu_lik = _dec(request.POST.get('neu_lik'), str(aktuell_lik))
@@ -200,15 +205,16 @@ def fw_mietzins_anpassung(request, vertrag_id):
 
         pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik,
                                      _dec(request.POST.get('kosten_pct'), '0')) or {}
+        alt_zins, alt_lik = v.effektive_basis()
         daten = {
             'alt_netto': v.netto_mietzins, 'neu_netto': neu_netto,
             'nebenkosten': v.nebenkosten,
-            'alt_zins': v.basis_referenzzinssatz, 'neu_zins': neu_zins,
-            'alt_lik': v.basis_lik_punkte, 'neu_lik': neu_lik,
+            'alt_zins': alt_zins, 'neu_zins': neu_zins,
+            'alt_lik': alt_lik, 'neu_lik': neu_lik,
             'lik_basis': lik_basis,
             'alt_lik_stand': v.basis_lik_stand, 'neu_lik_stand': aktuell_lik_stand,
-            'zins_pct': None, 'lik_pct': None,
-            'kosten_pct': request.POST.get('kosten_pct') or None,
+            'zins_pct': pot.get('zins_pct'), 'lik_pct': pot.get('lik_pct'),
+            'kosten_pct': pot.get('kosten_pct'),
             'total_pct': pot.get('delta_prozent'),
             'wirksam_ab': wirksam_ab, 'begruendung': begruendung,
             'schlichtungsbehoerde': request.POST.get('schlichtungsbehoerde') or '',
@@ -222,9 +228,11 @@ def fw_mietzins_anpassung(request, vertrag_id):
             vertrag=v, wirksam_ab=wirksam_ab, neuer_netto_mietzins=neu_netto,
             defaults={
                 'alter_netto_mietzins': v.netto_mietzins,
-                'alter_referenzzinssatz': v.basis_referenzzinssatz, 'neuer_referenzzinssatz': neu_zins,
-                'alter_lik_index': v.basis_lik_punkte, 'neuer_lik_index': neu_lik,
+                'alter_referenzzinssatz': alt_zins, 'neuer_referenzzinssatz': neu_zins,
+                'alter_lik_index': alt_lik, 'neuer_lik_index': neu_lik,
                 'erhoehung_prozent_total': pot.get('delta_prozent'),
+                'zins_prozent': pot.get('zins_pct'), 'lik_prozent': pot.get('lik_pct'),
+                'kosten_prozent': pot.get('kosten_pct'),
                 'begruendung': begruendung or 'Anpassung an Referenzzinssatz und Teuerung',
             })
         # Die Objekt-Sollmietzins-Zeile (gültig ab = wirksam_ab) wird jetzt zentral
@@ -270,7 +278,14 @@ def fw_mietzins_anpassung(request, vertrag_id):
         return resp
 
     # --- GET: Vorschlag berechnen ---
-    pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, Decimal('0.00')) or {}
+    # Allgemeine Kostensteigerung: Pauschale (0.5 %/Jahr) seit «ausgeglichen bis», sonst seit
+    # Vertragsbeginn — als editierbarer Vorschlag, nicht automatisch weitergegeben.
+    from core.services.mietzins_rechner import kostensteigerung_pauschal_pct
+    kosten_vorschlag = kostensteigerung_pauschal_pct(v.kostensteigerung_datum or v.beginn,
+                                                     timezone.localdate())
+    pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, kosten_vorschlag) or {}
+    for hinweis in pot.get('hinweise', []):
+        messages.warning(request, hinweis)
     vorschlag_netto = pot.get('neu_chf', v.netto_mietzins)
     naechster_termin = naechster_anpassungstermin(v, timezone.localdate())
 
@@ -296,7 +311,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
         'lik_basis': lik_basis,
         'alt_lik_stand': v.basis_lik_stand, 'aktuell_lik_stand': aktuell_lik_stand,
         'vorschlag_netto': vorschlag_netto, 'naechster_termin': naechster_termin,
-        'pot': pot, 'index_vorschlag': index_vorschlag,
+        'pot': pot, 'index_vorschlag': index_vorschlag, 'kosten_vorschlag': kosten_vorschlag,
     })
 
 
@@ -380,13 +395,16 @@ def fw_mietzins_massenanpassung(request):
         neu_netto = r['neu_netto']
         wirksam_ab = r['termin']
         pot = r['pot']
+        alt_zins, alt_lik = v.effektive_basis()
         anp, anp_created = MietzinsAnpassung.objects.get_or_create(
             vertrag=v, wirksam_ab=wirksam_ab, neuer_netto_mietzins=neu_netto,
             defaults={
                 'alter_netto_mietzins': v.netto_mietzins,
-                'alter_referenzzinssatz': v.basis_referenzzinssatz, 'neuer_referenzzinssatz': aktuell_ref,
-                'alter_lik_index': v.basis_lik_punkte, 'neuer_lik_index': aktuell_lik,
+                'alter_referenzzinssatz': alt_zins, 'neuer_referenzzinssatz': aktuell_ref,
+                'alter_lik_index': alt_lik, 'neuer_lik_index': aktuell_lik,
                 'erhoehung_prozent_total': pot.get('delta_prozent'),
+                'zins_prozent': pot.get('zins_pct'), 'lik_prozent': pot.get('lik_pct'),
+                'kosten_prozent': pot.get('kosten_pct'),
                 'begruendung': 'Anpassung an Referenzzinssatz und Teuerung (Massenanpassung)',
             })
         if anp_created:
@@ -405,11 +423,12 @@ def fw_mietzins_massenanpassung(request):
         daten = {
             'alt_netto': v.netto_mietzins, 'neu_netto': neu_netto,
             'nebenkosten': v.nebenkosten,
-            'alt_zins': v.basis_referenzzinssatz, 'neu_zins': aktuell_ref,
-            'alt_lik': v.basis_lik_punkte, 'neu_lik': aktuell_lik,
+            'alt_zins': alt_zins, 'neu_zins': aktuell_ref,
+            'alt_lik': alt_lik, 'neu_lik': aktuell_lik,
             'lik_basis': lik_basis,
             'alt_lik_stand': v.basis_lik_stand, 'neu_lik_stand': aktuell_lik_stand,
-            'zins_pct': None, 'lik_pct': None, 'kosten_pct': None,
+            'zins_pct': pot.get('zins_pct'), 'lik_pct': pot.get('lik_pct'),
+            'kosten_pct': pot.get('kosten_pct'),
             'total_pct': pot.get('delta_prozent'),
             'wirksam_ab': wirksam_ab,
             'begruendung': 'Anpassung an Referenzzinssatz und Teuerung',

@@ -16,6 +16,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from pypdf import PdfReader, PdfWriter
 from core.services.dokumentsprache import nur_deutsch
+from core.services.mietzins_rechner import anteil_suffix
 
 _DIR = os.path.join(os.path.dirname(__file__), 'formulare')
 SO_MIETZINS = os.path.join(_DIR, 'SO_mietzins_original.pdf')
@@ -115,9 +116,9 @@ def fill_mietzins_so(vertrag, daten, verwaltung=None):
 
     gruende = []
     if daten.get('alt_zins') is not None and daten.get('neu_zins') is not None and daten['alt_zins'] != daten['neu_zins']:
-        gruende.append(f"Anpassung an den Referenzzinssatz: {daten['alt_zins']} % auf {daten['neu_zins']} %.")
+        gruende.append(f"Anpassung an den Referenzzinssatz: {daten['alt_zins']} % auf {daten['neu_zins']} %." + anteil_suffix(daten, 'zins_pct'))
     if daten.get('alt_lik') is not None and daten.get('neu_lik') is not None and daten['alt_lik'] != daten['neu_lik']:
-        gruende.append(f"Teuerungsausgleich (LIK): {daten['alt_lik']} auf {daten['neu_lik']} Punkte (40 % anrechenbar).")
+        gruende.append(f"Teuerungsausgleich (LIK): {daten['alt_lik']} auf {daten['neu_lik']} Punkte (40 % anrechenbar)." + anteil_suffix(daten, 'lik_pct'))
     if daten.get('kosten_pct'):
         gruende.append(f"Allgemeine Kostensteigerung: {daten.get('kosten_pct')} %.")
     if daten.get('begruendung'):
@@ -380,9 +381,9 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
 
     gruende = []
     if daten.get('alt_zins') is not None and daten.get('neu_zins') is not None and daten['alt_zins'] != daten['neu_zins']:
-        gruende.append(f"Referenzzinssatz: {daten['alt_zins']} % auf {daten['neu_zins']} %.")
+        gruende.append(f"Referenzzinssatz: {daten['alt_zins']} % auf {daten['neu_zins']} %." + anteil_suffix(daten, 'zins_pct'))
     if daten.get('alt_lik') is not None and daten.get('neu_lik') is not None and daten['alt_lik'] != daten['neu_lik']:
-        gruende.append(f"Teuerung (LIK): {daten['alt_lik']} auf {daten['neu_lik']} Punkte (40 % anrechenbar).")
+        gruende.append(f"Teuerung (LIK): {daten['alt_lik']} auf {daten['neu_lik']} Punkte (40 % anrechenbar)." + anteil_suffix(daten, 'lik_pct'))
     if daten.get('kosten_pct'):
         gruende.append(f"Allgemeine Kostensteigerung: {daten.get('kosten_pct')} %.")
     if daten.get('begruendung'):
@@ -464,9 +465,9 @@ def fill_mietzins_be(vertrag, daten, verwaltung=None):
 
     gruende = []
     if daten.get('alt_zins') is not None and daten.get('neu_zins') is not None and daten['alt_zins'] != daten['neu_zins']:
-        gruende.append(f"Referenzzinssatz {daten['alt_zins']} % auf {daten['neu_zins']} %.")
+        gruende.append(f"Referenzzinssatz {daten['alt_zins']} % auf {daten['neu_zins']} %." + anteil_suffix(daten, 'zins_pct'))
     if daten.get('alt_lik') is not None and daten.get('neu_lik') is not None and daten['alt_lik'] != daten['neu_lik']:
-        gruende.append(f"Teuerung (LIK) {daten['alt_lik']} auf {daten['neu_lik']} Punkte (40 %).")
+        gruende.append(f"Teuerung (LIK) {daten['alt_lik']} auf {daten['neu_lik']} Punkte (40 %)." + anteil_suffix(daten, 'lik_pct'))
     if daten.get('kosten_pct'):
         gruende.append(f"Kostensteigerung {daten.get('kosten_pct')} %.")
     if daten.get('begruendung'):

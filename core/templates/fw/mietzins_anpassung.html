@@ -61,7 +61,7 @@
             </div>
             <div class="fw-feldblock">
                 <label for="mz_kosten" class="fw-label">Allg. Kostensteigerung (%)</label>
-                <input id="mz_kosten" name="kosten_pct" value="0.5" class="fw-feld w-full">
+                <input id="mz_kosten" name="kosten_pct" value="{% localize off %}{{ kosten_vorschlag }}{% endlocalize %}" class="fw-feld w-full">
             </div>
         </div>
     </div>

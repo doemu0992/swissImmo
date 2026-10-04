@@ -12,6 +12,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from core.services.dokumentsprache import nur_deutsch
+from core.services.mietzins_rechner import anteil_suffix
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +147,7 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
     c.setFont("Helvetica", 9)
     c.setFillColor(colors.HexColor("#B91C1C") if diff > 0 else colors.HexColor("#047857"))
     c.drawString(24*mm, yy - 7*mm, f"Veränderung Nettomietzins: {'+' if diff >= 0 else ''}{_fmt(diff)} CHF"
-                                   + (f"  ({daten.get('total_pct')} %)" if daten.get('total_pct') is not None else ""))
+                                   + (f"  ({Decimal(str(daten['total_pct'])):+.2f} %)" if daten.get('total_pct') is not None else ""))
     c.setFillColor(colors.black)
 
     # --- Begründung mit Bezifferung ---
@@ -158,7 +159,7 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
     gruende = []
     if daten.get('alt_zins') is not None and daten.get('neu_zins') is not None and daten['alt_zins'] != daten['neu_zins']:
         gruende.append(f"Referenzzinssatz: {daten['alt_zins']} % → {daten['neu_zins']} %"
-                       + (f"  (Anteil {daten.get('zins_pct')} %)" if daten.get('zins_pct') is not None else ""))
+                       + anteil_suffix(daten, 'zins_pct'))
     if daten.get('alt_lik') is not None and daten.get('neu_lik') is not None and daten['alt_lik'] != daten['neu_lik']:
         from core.services.lik import stand_label
         _basis = daten.get('lik_basis') or 'Dezember 2020'
@@ -166,9 +167,9 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
         gruende.append(f"Teuerung (LIK, Basis {_basis} = 100): {daten['alt_lik']} Punkte"
                        + (f" (Stand {_as})" if _as else "") + f" → {daten['neu_lik']} Punkte"
                        + (f" (Stand {_ns})" if _ns else "") + ", 40 % anrechenbar"
-                       + (f"  (Anteil {daten.get('lik_pct')} %)" if daten.get('lik_pct') is not None else ""))
+                       + anteil_suffix(daten, 'lik_pct'))
     if daten.get('kosten_pct'):
-        gruende.append(f"Allgemeine Kostensteigerung: Anteil {daten.get('kosten_pct')} %")
+        gruende.append("Allgemeine Kostensteigerung" + anteil_suffix(daten, 'kosten_pct'))
     if daten.get('begruendung'):
         gruende.append(daten['begruendung'])
     if not gruende:
