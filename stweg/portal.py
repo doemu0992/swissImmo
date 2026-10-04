@@ -36,7 +36,9 @@ def _eigentuemer(request):
 
 
 def _meine_einheiten(eig):
-    return Einheit.objects.filter(stockwerkeigentuemer=eig, liegenschaft__typ=Liegenschaft.TYP_STWEG)
+    # Nur Hauptobjekte: Nebenräume haben weder Quote noch Stimme (stimm_einheiten).
+    return Einheit.objects.filter(stockwerkeigentuemer=eig, liegenschaft__typ=Liegenschaft.TYP_STWEG,
+                                  gehoert_zu__isnull=True)
 
 
 @never_cache

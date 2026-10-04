@@ -23,6 +23,7 @@ ist hier nicht zuständig. Rechtswerte stehen nicht fest im Code (siehe «Offen�
 | Vollmachten (Portal und Verwaltung), wirken beim Eröffnen als «vertreten» | `stweg/vollmacht.py` |
 | Zirkularbeschluss: Antrag, Frist, Abstimmung im Portal, Feststellung, Ergebnisversand | `stweg/zirkular.py` |
 | Abrechnung mit Kostenschnappschuss, PDF, Akonto, Fondseinlage/-entnahme | `stweg/views.py` (`/neu/stweg/<id>/abrechnung/`), `stweg/pdf.py` |
+| Einheiten, Wertquoten und Eigentümer zuteilen, Gemeinschaft aktivieren | `/neu/stweg/<id>/einheiten/` |
 | Anfragen, Aufgaben, offene Punkte (als `core.Pendenz`) | `stweg/anfragen.py`, `stweg/aufgaben.py` |
 | Oberfläche Verwaltung | `/neu/stweg/` (`stweg/views.py`) |
 | Eigentümerportal | `/portal/stweg/` (`stweg/portal.py`) |
@@ -61,5 +62,12 @@ vorbehalten und überspringt STWEG.
 * Einzelspeicherung von Einheiten prüft die Quoten nicht; geprüft wird bei
   Aktivierung, Einlage, Einladung, Zirkularversand und Abrechnung.
   `QuerySet.update()` umgeht `save()`.
-* Eine STWEG lässt sich im Liegenschaftsformular anlegen (Art/Status); Einheiten
-  mit Wertquote und Eigentümer erfasst man im Objektformular.
+* Eine STWEG wird im Liegenschaftsformular angelegt (Art «Stockwerkeigentum»); das
+  Feld «Eigentümer» entfällt dort bewusst (`Liegenschaft.eigentuemer` bleibt leer,
+  denn Mietlogik und Portal lesen es). Danach führt die Seite «Einheiten und
+  Eigentümer» durch Quoten, Eigentümer und Aktivierung.
+* **Nebenräume** (`gehoert_zu` gesetzt) haben weder Quote noch Stimme und zählen
+  nirgends mit (`stimm_einheiten`). Eine selbständige Garage mit eigener Quote wird
+  als eigenständiges Objekt erfasst.
+* **Wertquote-Vorgabe:** Das Feld stammt aus dem Mietmodul (Vorgabe 10). Neue
+  Einheiten einer STWEG und GWR-importierte Einheiten bekommen 0.

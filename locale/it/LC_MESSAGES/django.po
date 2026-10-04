@@ -22294,3 +22294,7 @@ msgstr "Proprietà per piani"
 #: portfolio/forms.py
 msgid "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
 msgstr "Per questa comunione esistono assemblee — il tipo non può più essere modificato."
+
+#: core/templates/fw/liegenschaft_form.html
+msgid "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu."
+msgstr "Nella proprietà per piani ogni unità ha il proprio proprietario. Quote di valore e proprietari si assegnano dopo il salvataggio."

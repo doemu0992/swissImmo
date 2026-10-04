@@ -23,6 +23,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from stweg.models import Anwesenheit, Stimme, Traktandum
+from stweg.validierung import stimm_einheiten
 
 
 class BeschlussFehler(ValueError):
@@ -37,13 +38,13 @@ def vertretene_einheiten(versammlung):
     ids = set(Anwesenheit.objects.filter(
         versammlung=versammlung, art__in=(Anwesenheit.ANWESEND, Anwesenheit.VERTRETEN)
     ).values_list('einheit_id', flat=True))
-    return [e for e in versammlung.liegenschaft.einheiten.all() if e.pk in ids]
+    return [e for e in stimm_einheiten(versammlung.liegenschaft) if e.pk in ids]
 
 
 def praesenz(versammlung):
     """Vertretene Köpfe und Wertquoten gegenüber dem Total — Information, KEIN
     Urteil über die Beschlussfähigkeit (die richtet sich nach Reglement)."""
-    alle = list(versammlung.liegenschaft.einheiten.all())
+    alle = list(stimm_einheiten(versammlung.liegenschaft))
     da = vertretene_einheiten(versammlung)
     return {
         'koepfe': len({_kopf(e) for e in da}), 'koepfe_total': len({_kopf(e) for e in alle}),
@@ -114,7 +115,7 @@ def auswerten(traktandum):
     vertreten = {e.pk for e in vertretene_einheiten(v)}
     stimmen = {s.einheit_id: s.wert for s in Stimme.objects.filter(traktandum=traktandum)
                if s.einheit_id in vertreten}
-    return zaehlen(list(v.liegenschaft.einheiten.all()), stimmen, traktandum.mehrheitsart,
+    return zaehlen(list(stimm_einheiten(v.liegenschaft)), stimmen, traktandum.mehrheitsart,
                    v.liegenschaft.wertquote_total)
 
 

@@ -25,7 +25,7 @@ from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegAkonto, Stw
                           StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
 from stweg.beschluss import BeschlussFehler
-from stweg.validierung import WertquotenFehler, pruefe_wertquoten, wertquoten_summe
+from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten, wertquoten_summe
 from stweg.versammlung import (VersammlungsFehler, durchfuehren, einladung_pruefen,
                                einladung_versenden, protokoll_pruefen, protokoll_versenden)
 
@@ -80,7 +80,7 @@ def stweg_gemeinschaft(request, stweg_id):
     return render(request, 'stweg/gemeinschaft.html', {
         'nav': 'stweg', 'lg': lg, 'quoten_fehler': quoten_fehler,
         'quoten_summe': wertquoten_summe(lg),
-        'einheiten': lg.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'),
+        'einheiten': stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'),
         'versammlungen': Versammlung.objects.filter(liegenschaft=lg),
         'zirkulare': Zirkularbeschluss.objects.filter(liegenschaft=lg),
         'mehrheiten': Traktandum.MEHRHEIT_CHOICES,
@@ -116,7 +116,7 @@ def stweg_versammlung(request, pk):
     v = get_object_or_404(Versammlung.objects.select_related('liegenschaft'), pk=pk)
     lg = v.liegenschaft
     traktanden = list(v.traktanden.all())
-    einheiten = list(lg.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    einheiten = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
     anw = {a.einheit_id: a for a in v.anwesenheiten.all()}
     for e in einheiten:
         a = anw.get(e.pk)
@@ -213,7 +213,7 @@ def stweg_anwesenheit_speichern(request, pk):
     if v.status != v.DURCHGEFUEHRT:
         messages.error(request, 'Anwesenheit lässt sich nur bei einer durchgeführten Versammlung erfassen.')
         return _zurueck(v)
-    for e in v.liegenschaft.einheiten.all():
+    for e in stimm_einheiten(v.liegenschaft):
         art = request.POST.get(f'art_{e.pk}')
         if art in dict(Anwesenheit.ART_CHOICES):
             beschluss.anwesenheit_setzen(v, e, art, (request.POST.get(f'vertreter_{e.pk}') or '').strip())
@@ -399,7 +399,7 @@ def stweg_abrechnung(request, stweg_id):
     abrechnung = (StwegAbrechnung.objects.filter(liegenschaft=lg, jahr=jahr)
                   .prefetch_related('positionen__einheit', 'positionen__eigentuemer', 'kostenzeilen').first())
     service = StwegAbrechnungService(lg)
-    einheiten = list(lg.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    einheiten = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
     akonto = service.akonto_je_einheit(jahr)
     for e in einheiten:
         e.akonto_summe = akonto.get(e.pk, 0)
@@ -586,7 +586,7 @@ def stweg_zirkular_neu(request, stweg_id):
 def stweg_zirkular(request, pk):
     from stweg import zirkular as zk
     z = get_object_or_404(Zirkularbeschluss.objects.select_related('liegenschaft'), pk=pk)
-    einheiten = list(z.liegenschaft.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    einheiten = list(stimm_einheiten(z.liegenschaft).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
     stimmen = {s.einheit_id: s for s in z.stimmen.all()}
     for e in einheiten:
         e.stimme = stimmen.get(e.pk)
@@ -623,7 +623,7 @@ def stweg_zirkular_stimmen(request, pk):
     from stweg import zirkular as zk
     z = get_object_or_404(Zirkularbeschluss.objects.select_related('liegenschaft'), pk=pk)
     try:
-        for e in z.liegenschaft.einheiten.all():
+        for e in stimm_einheiten(z.liegenschaft):
             wert = request.POST.get(f'stimme_{e.pk}')
             if wert in dict(Stimme.WERT_CHOICES):
                 zk.stimme_abgeben(z, e, wert, kanal='verwaltung')
@@ -669,3 +669,128 @@ def stweg_zirkular_pdf(request, pk):
     antwort = HttpResponse(zirkular_pdf(z), content_type='application/pdf')
     antwort['Content-Disposition'] = f'inline; filename="Zirkular_{z.pk}.pdf"'
     return antwort
+
+
+# ── Einheiten und Eigentümer einer Gemeinschaft ──────────────────────────
+
+def _quote(wert):
+    """Wertquote aus dem Formular: «200», «12,5» — nicht negativ, höchstens 99999.99."""
+    from decimal import Decimal, InvalidOperation
+    try:
+        q = Decimal((wert or '').strip().replace("'", '').replace(',', '.')).quantize(Decimal('0.01'))
+    except InvalidOperation:
+        return None
+    return q if 0 <= q <= Decimal('99999.99') else None
+
+
+def _zur_einheitenseite(lg):
+    return redirect(f'/neu/stweg/{lg.pk}/einheiten/')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_einheiten(request, stweg_id):
+    from crm.models import Eigentuemer
+    lg = _gemeinschaft(stweg_id)
+    haupt = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    neben = list(lg.einheiten.filter(gehoert_zu__isnull=False).select_related('gehoert_zu').order_by('bezeichnung'))
+    summe = wertquoten_summe(lg)
+    return render(request, 'stweg/einheiten.html', {
+        'nav': 'stweg', 'lg': lg, 'einheiten': haupt, 'nebenraeume': neben,
+        'summe': summe, 'passt': summe == lg.wertquote_total,
+        'eigentuemer': Eigentuemer.objects.all().order_by('firma_oder_name'),
+        'ohne_eigentuemer': sum(1 for e in haupt if e.stockwerkeigentuemer_id is None),
+        'sprachen': [('de', 'Deutsch'), ('fr', 'Französisch'), ('it', 'Italienisch'), ('en', 'Englisch')],
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_einheiten_speichern(request, stweg_id):
+    """Alle Quoten und Eigentümer in einem Zug — oder nichts: Eine ungültige Eingabe
+    verwirft die ganze Seite, damit keine halb geänderte Verteilung entsteht."""
+    from django.db import transaction
+
+    from crm.models import Eigentuemer
+    lg = _gemeinschaft(stweg_id)
+    fehler = []
+    aenderungen = []
+    for e in stimm_einheiten(lg):
+        roh = request.POST.get(f'quote_{e.pk}')
+        quote = e.wertquote if roh is None else _quote(roh)
+        if quote is None:
+            fehler.append(f'«{e.bezeichnung}»: Die Wertquote «{roh}» ist ungültig.')
+            continue
+        eig = e.stockwerkeigentuemer
+        if f'eig_{e.pk}' in request.POST:
+            wert = request.POST[f'eig_{e.pk}']
+            if wert == '':
+                eig = None
+            else:
+                eig = Eigentuemer.objects.filter(pk=_zahl(wert) or 0).first()
+                if eig is None:
+                    fehler.append(f'«{e.bezeichnung}»: Dieser Eigentümer ist nicht (mehr) erfasst.')
+                    continue
+        aenderungen.append((e, quote, eig))
+    if fehler:
+        for f in fehler:
+            messages.error(request, f)
+        return _zur_einheitenseite(lg)
+    with transaction.atomic():
+        for e, quote, eig in aenderungen:
+            e.wertquote, e.stockwerkeigentuemer = quote, eig
+            e.save(update_fields=['wertquote', 'stockwerkeigentuemer'])
+    messages.success(request, 'Einheiten gespeichert.')
+    return _zur_einheitenseite(lg)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_einheit_neu(request, stweg_id):
+    from crm.models import Eigentuemer
+    lg = _gemeinschaft(stweg_id)
+    bezeichnung = (request.POST.get('bezeichnung') or '').strip()
+    quote = _quote(request.POST.get('wertquote') or '0')
+    if not bezeichnung or quote is None:
+        messages.error(request, 'Bezeichnung und eine gültige Wertquote sind nötig.')
+        return _zur_einheitenseite(lg)
+    eig = None
+    if request.POST.get('eigentuemer'):
+        eig = Eigentuemer.objects.filter(pk=_zahl(request.POST['eigentuemer']) or 0).first()
+        if eig is None:
+            messages.error(request, 'Dieser Eigentümer ist nicht (mehr) erfasst.')
+            return _zur_einheitenseite(lg)
+    Einheit.objects.create(liegenschaft=lg, bezeichnung=bezeichnung[:50], typ='stwe', wertquote=quote,
+                           etage=(request.POST.get('etage') or '').strip()[:50], stockwerkeigentuemer=eig)
+    messages.success(request, f'Einheit «{bezeichnung}» angelegt.')
+    return _zur_einheitenseite(lg)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_eigentuemer_neu(request, stweg_id):
+    """Einen Stockwerkeigentümer erfassen, ohne die Seite zu verlassen."""
+    from crm.models import Eigentuemer
+    lg = _gemeinschaft(stweg_id)
+    name = (request.POST.get('name') or '').strip()
+    if not name:
+        messages.error(request, 'Der Name des Eigentümers fehlt.')
+        return _zur_einheitenseite(lg)
+    sprache = request.POST.get('sprache')
+    Eigentuemer.objects.create(
+        firma_oder_name=name[:100], email=(request.POST.get('email') or '').strip()[:254],
+        sprache=sprache if sprache in ('de', 'fr', 'it', 'en') else 'de')
+    messages.success(request, f'Eigentümer «{name}» erfasst — jetzt einer Einheit zuteilen.')
+    return _zur_einheitenseite(lg)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_aktivieren(request, stweg_id):
+    lg = _gemeinschaft(stweg_id)
+    lg.status = lg.STATUS_AKTIV
+    try:
+        lg.save()
+        messages.success(request, 'Die Gemeinschaft ist aktiv: Einladung, Abstimmung und Abrechnung sind freigegeben.')
+    except WertquotenFehler as e:
+        messages.error(request, str(e.message))
+    return _zur_einheitenseite(lg)

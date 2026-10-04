@@ -22316,3 +22316,7 @@ msgstr "Propriété par étages"
 #: portfolio/forms.py
 msgid "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
 msgstr "Cette communauté a des assemblées — le type ne peut plus être modifié."
+
+#: core/templates/fw/liegenschaft_form.html
+msgid "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu."
+msgstr "En propriété par étages, chaque unité a son propre propriétaire. Vous attribuez les quotes-parts et les propriétaires après l'enregistrement."

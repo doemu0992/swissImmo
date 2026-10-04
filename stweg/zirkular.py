@@ -11,7 +11,7 @@ from core.utils.email_service import send_via_hoststar
 from stweg.beschluss import BeschlussFehler, zaehlen
 from stweg.models import Stimme, Traktandum, Zirkularbeschluss, ZirkularStimme, ZirkularVersand
 from stweg.pdf import zirkular_pdf
-from stweg.validierung import WertquotenFehler, pruefe_wertquoten
+from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
 from stweg.versammlung import VersammlungsFehler
 
 
@@ -108,13 +108,13 @@ def stimme_abgeben(z, einheit, wert, *, kanal='portal', heute=None):
 
 def auswerten(z):
     stimmen = {s.einheit_id: s.wert for s in ZirkularStimme.objects.filter(zirkular=z)}
-    return zaehlen(list(z.liegenschaft.einheiten.all()), stimmen, z.mehrheitsart,
+    return zaehlen(list(stimm_einheiten(z.liegenschaft)), stimmen, z.mehrheitsart,
                    z.liegenschaft.wertquote_total)
 
 
 def vollstaendig(z):
     """Haben alle Einheiten abgestimmt?"""
-    return ZirkularStimme.objects.filter(zirkular=z).count() >= z.liegenschaft.einheiten.count()
+    return ZirkularStimme.objects.filter(zirkular=z).count() >= stimm_einheiten(z.liegenschaft).count()
 
 
 @transaction.atomic

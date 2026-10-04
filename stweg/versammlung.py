@@ -6,7 +6,7 @@ from django.utils import timezone
 from core.utils.email_service import send_via_hoststar
 from stweg.models import Anwesenheit, StwegVersand, Versammlung
 from stweg.pdf import einladung_pdf, protokoll_pdf
-from stweg.validierung import WertquotenFehler, pruefe_wertquoten
+from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
 
 
 class VersammlungsFehler(ValueError):
@@ -19,7 +19,7 @@ class VersammlungsFehler(ValueError):
 
 def empfaenger(versammlung):
     """Die Eigentümer der Gemeinschaft (je einmal) und Einheiten ohne Eigentümer."""
-    einheiten = list(versammlung.liegenschaft.einheiten.select_related('stockwerkeigentuemer'))
+    einheiten = list(stimm_einheiten(versammlung.liegenschaft).select_related('stockwerkeigentuemer'))
     eig, ohne = {}, []
     for e in einheiten:
         if e.stockwerkeigentuemer_id:
@@ -119,7 +119,7 @@ def durchfuehren(versammlung):
         raise VersammlungsFehler(['Durchführen setzt eine versendete Einladung voraus.'])
     from stweg.vollmacht import gueltige
     vollmachten = {x.einheit_id: x for x in gueltige(v)}
-    for e in v.liegenschaft.einheiten.all():
+    for e in stimm_einheiten(v.liegenschaft):
         vm = vollmachten.get(e.pk)
         # Eine gültige Vollmacht heisst «vertreten»; wer trotzdem kommt, wird
         # in der Anwesenheitsliste von Hand auf «anwesend» gestellt.

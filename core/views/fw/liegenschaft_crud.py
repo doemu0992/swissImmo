@@ -77,7 +77,12 @@ def fw_liegenschaft_form(request, pk=None):
                     feld_fehler['betreut_von'] = gettext('Diese Person gehört nicht zu Ihrer Verwaltung.')
         # Der Eigentuemer kommt ueber den `TenantManager`: Eine fremde ID
         # findet nichts. Bisher wurde daraus STILL «kein Eigentuemer».
-        eigentuemer_wert = (P.get('eigentuemer_id') or '').strip()
+        # Bei einer STWEG gibt es keinen einzelnen Eigentümer: Jede Einheit hat ihren
+        # eigenen (Seite «Einheiten und Eigentümer»). Das Feld wird dort ignoriert,
+        # sonst stünde ein Pseudo-Eigentümer in Mietlogik und Portal, die
+        # `Liegenschaft.eigentuemer` lesen.
+        ist_stweg = (P.get('typ') if 'typ' in P else (lg.typ if lg else 'MIETE')) == Liegenschaft.TYP_STWEG
+        eigentuemer_wert = '' if ist_stweg else (P.get('eigentuemer_id') or '').strip()
         eigentuemer = None
         if eigentuemer_wert:
             if eigentuemer_wert.isdigit():
@@ -90,6 +95,7 @@ def fw_liegenschaft_form(request, pk=None):
             if betreut_setzen:
                 obj.betreut_von = person
             obj.eigentuemer = eigentuemer
+            # Neu angelegt oder umgestellt: `form.save(commit=False)` hat typ/status gesetzt.
             obj.save()
             _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
             log_aktion(request, "Liegenschaft bearbeitet" if pk else "Liegenschaft erstellt",
@@ -104,7 +110,12 @@ def fw_liegenschaft_form(request, pk=None):
             if P.get('gwr_import') == 'on' and (not obj.egid or obj.einheiten.count() == 0):
                 try:
                     from portfolio.services import sync_liegenschaft_with_gwr
+                    vorher = set(obj.einheiten.values_list('pk', flat=True))
                     res = sync_liegenschaft_with_gwr(obj)
+                    if obj.typ == Liegenschaft.TYP_STWEG:
+                        # Importierte Einheiten tragen die Mietmodul-Vorgabe 10 als Wertquote;
+                        # bei einer STWEG würde sie die Summe still verfälschen.
+                        obj.einheiten.exclude(pk__in=vorher).update(wertquote=0, typ='stwe')
                     if res.get('egid_found'):
                         messages.success(request, '📍 ' + gettext('EGID %(wert)s automatisch ermittelt.') % {'wert': res['egid_found']})
                     if res.get('units_created'):
@@ -115,6 +126,9 @@ def fw_liegenschaft_form(request, pk=None):
                         messages.warning(request, '⚠️ ' + gettext('GWR-Import teilweise fehlgeschlagen: %(wert)s') % {'wert': res['error']})
                 except Exception as e:
                     messages.warning(request, '⚠️ ' + gettext('Automatischer GWR-Import nicht möglich: %(e)s') % {'e': e})
+            if obj.typ == Liegenschaft.TYP_STWEG:
+                # Weiter zur Zuteilung von Wertquoten und Eigentümern.
+                return redirect(f'/neu/stweg/{obj.id}/einheiten/')
             return redirect(f'/neu/liegenschaften/{obj.id}/')
 
     # Mit Fehlern zurueck auf dieselbe Seite — Eingaben bleiben stehen, jede
@@ -279,6 +293,11 @@ def fw_objekt_form(request, pk=None):
             obj = form.save(commit=False)
             obj.liegenschaft = liegenschaft
             obj.gehoert_zu = hauptobjekt
+            # Neue Einheit einer STWEG ohne angegebene Wertquote: 0, nicht die Vorgabe 10 des
+            # Mietmodells — sonst verfälschte jede nicht angepasste Einheit die Quotensumme.
+            if not pk and liegenschaft is not None and liegenschaft.ist_stweg \
+                    and not (P.get('wertquote') or '').strip():
+                obj.wertquote = Decimal('0')
             # Der Mietzins wird NICHT mehr direkt am Objekt gepflegt — einzige Quelle
             # ist der datierte Sollmietzins (Objekt → Mietzins). nettomiete_aktuell/
             # nebenkosten_aktuell sind rein abgeleitet (sync_aktuelle_miete beim
