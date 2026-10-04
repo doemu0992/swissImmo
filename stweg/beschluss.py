@@ -17,6 +17,7 @@ ZÄHLWEISE
   · Stimmt derselbe Eigentümer mit seinen Einheiten widersprüchlich (Ja und
     Nein), ist das ein Erfassungsfehler: Feststellung wird verweigert.
 """
+from django.utils.translation import gettext
 from decimal import Decimal
 
 from django.db import transaction
@@ -98,12 +99,12 @@ def zaehlen(einheiten, stimmen, mehrheitsart, total_quoten, anwesende_koepfe=Non
         angenommen = ja_k * 2 > total_koepfe and ja_q * 2 > total_quoten
     elif mehrheitsart == 'doppelt_anwesende':
         if anwesende_koepfe is None:
-            raise BeschlussFehler('«Mehrheit der Anwesenden» braucht eine Versammlung mit Anwesenheit.')
+            raise BeschlussFehler(gettext('«Mehrheit der Anwesenden» braucht eine Versammlung mit Anwesenheit.'))
         angenommen = ja_k * 2 > anwesende_koepfe and ja_q * 2 > total_quoten
     elif mehrheitsart == 'einstimmig':
         angenommen = ja_k == total_koepfe
     else:
-        raise BeschlussFehler(f'Unbekannte Mehrheitsart «{mehrheitsart}».')
+        raise BeschlussFehler(gettext('Unbekannte Mehrheitsart «%(mehrheitsart)s».') % {'mehrheitsart': mehrheitsart})
 
     vorschlag = (Traktandum.KENNTNIS if angenommen is None
                  else Traktandum.ANGENOMMEN if angenommen else Traktandum.ABGELEHNT)
@@ -127,17 +128,28 @@ def auswerten(traktandum):
 
 
 @transaction.atomic
-def feststellen(traktandum, ergebnis, *, beschlusstext=None, user=None):
+def feststellen(traktandum, ergebnis, *, beschlusstext=None, user=None, trotzdem=False):
     """Hält das Ergebnis fest (Zahlen als Momentaufnahme) und legt bei einem
     angenommenen Beschluss mit Vollzugsaufgabe eine Pendenz an."""
     if ergebnis not in dict(Traktandum.ERGEBNIS_CHOICES) or ergebnis == Traktandum.OFFEN:
-        raise BeschlussFehler(f'Ungültiges Ergebnis «{ergebnis}».')
+        raise BeschlussFehler(gettext('Ungültiges Ergebnis «%(ergebnis)s».') % {'ergebnis': ergebnis})
     v = traktandum.versammlung
     if v.status == v.ENTWURF:
-        raise BeschlussFehler('Die Versammlung wurde noch nicht einberufen.')
+        raise BeschlussFehler(gettext('Die Versammlung wurde noch nicht einberufen.'))
     z = auswerten(traktandum)
     if z['widerspruch'] and ergebnis in (Traktandum.ANGENOMMEN, Traktandum.ABGELEHNT):
-        raise BeschlussFehler('Widersprüchliche Stimmen desselben Eigentümers — bitte zuerst korrigieren.')
+        raise BeschlussFehler(gettext('Widersprüchliche Stimmen desselben Eigentümers — bitte zuerst korrigieren.'))
+    # Beschlussfähigkeit: nur, wenn die Gemeinschaft ein Quorum eingetragen hat (`stweg.vorgaben`);
+    # das System kennt keinen Wert von sich aus. Die Verwaltung kann trotzdem feststellen — das steht dann im Protokoll.
+    traktandum.ohne_beschlussfaehigkeit = False
+    if ergebnis in (Traktandum.ANGENOMMEN, Traktandum.ABGELEHNT):
+        from stweg import vorgaben
+        bf = vorgaben.beschlussfaehigkeit(v)
+        if bf is not None and not bf['beschlussfaehig']:
+            if not trotzdem:
+                raise BeschlussFehler(gettext('Nicht beschlussfähig nach den Vorgaben der Gemeinschaft: %(gruende)s')
+                                      % {'gruende': ' '.join(bf['gruende'])})
+            traktandum.ohne_beschlussfaehigkeit = True
 
     for feld in ('ja_koepfe', 'nein_koepfe', 'enthaltung_koepfe',
                  'ja_quoten', 'nein_quoten', 'enthaltung_quoten'):
@@ -154,7 +166,7 @@ def feststellen(traktandum, ergebnis, *, beschlusstext=None, user=None):
             try:
                 bd.budget_genehmigen(traktandum.budget, traktandum=traktandum)
             except bd.BudgetFehler as e:
-                raise BeschlussFehler(f'Das Budget kann nicht genehmigt werden: {e}')
+                raise BeschlussFehler(gettext('Das Budget kann nicht genehmigt werden: %(e)s') % {'e': e})
         elif ergebnis == Traktandum.ABGELEHNT and traktandum.budget.status == traktandum.budget.VORGELEGT:
             bd.budget_ablehnen(traktandum.budget)
 
@@ -166,7 +178,7 @@ def feststellen(traktandum, ergebnis, *, beschlusstext=None, user=None):
 
 def anwesenheit_setzen(versammlung, einheit, art, vertreter=''):
     if einheit.liegenschaft_id != versammlung.liegenschaft_id:
-        raise BeschlussFehler('Die Einheit gehört nicht zu dieser Gemeinschaft.')
+        raise BeschlussFehler(gettext('Die Einheit gehört nicht zu dieser Gemeinschaft.'))
     obj, _ = Anwesenheit.objects.update_or_create(
         versammlung=versammlung, einheit=einheit,
         defaults={'art': art, 'vertreter': vertreter if art == Anwesenheit.VERTRETEN else ''})
@@ -178,14 +190,13 @@ def stimme_abgeben(traktandum, einheit, wert, *, kanal='verwaltung', eigentuemer
     sie gesperrt (das Protokoll hielte sonst Zahlen fest, die nicht mehr stimmen). Jede Abgabe
     steht zusätzlich im Ereignisprotokoll `StimmeEreignis`."""
     if wert not in dict(Stimme.WERT_CHOICES):
-        raise BeschlussFehler(f'Ungültige Stimme «{wert}».')
+        raise BeschlussFehler(gettext('Ungültige Stimme «%(wert)s».') % {'wert': wert})
     if traktandum.ergebnis != Traktandum.OFFEN:
-        raise BeschlussFehler('Das Ergebnis dieses Traktandums ist bereits festgestellt — '
-                              'die Stimmen sind gesperrt.')
+        raise BeschlussFehler(gettext('Das Ergebnis dieses Traktandums ist bereits festgestellt — die Stimmen sind gesperrt.'))
     if traktandum.mehrheitsart == 'kenntnisnahme':
-        raise BeschlussFehler('Zur Kenntnisnahme wird nicht abgestimmt.')
+        raise BeschlussFehler(gettext('Zur Kenntnisnahme wird nicht abgestimmt.'))
     if einheit.pk not in {e.pk for e in vertretene_einheiten(traktandum.versammlung)}:
-        raise BeschlussFehler('Diese Einheit ist nicht anwesend oder vertreten — sie hat kein Stimmrecht.')
+        raise BeschlussFehler(gettext('Diese Einheit ist nicht anwesend oder vertreten — sie hat kein Stimmrecht.'))
     with transaction.atomic():
         alt = Stimme.objects.filter(traktandum=traktandum, einheit=einheit).first()
         obj, _ = Stimme.objects.update_or_create(
@@ -200,8 +211,7 @@ def stimme_loeschen(traktandum, einheit, *, kanal='verwaltung'):
     """Nimmt eine erfasste Stimme zurück (Erfassungsfehler). Gesperrt nach der Feststellung;
     das Ereignisprotokoll hält den Widerruf mit leerem Wert fest."""
     if traktandum.ergebnis != Traktandum.OFFEN:
-        raise BeschlussFehler('Das Ergebnis dieses Traktandums ist bereits festgestellt — '
-                              'die Stimmen sind gesperrt.')
+        raise BeschlussFehler(gettext('Das Ergebnis dieses Traktandums ist bereits festgestellt — die Stimmen sind gesperrt.'))
     with transaction.atomic():
         alt = Stimme.objects.filter(traktandum=traktandum, einheit=einheit).first()
         if alt is None:

@@ -9,6 +9,7 @@ Fehlende Angaben sind ein Fehler, keine stille Null: Hat eine Einheit keine Flä
 (Schlüssel «Fläche») oder keinen Eintrag (Schlüssel «manuell»), wird nicht verteilt.
 Sonst fiele eine Einheit unbemerkt aus der Verteilung und die anderen trügen ihren Teil.
 """
+from django.utils.translation import gettext
 from decimal import Decimal
 
 from stweg.models import StwegKostenzuordnung, StwegSchluessel, StwegSchluesselAnteil
@@ -32,7 +33,7 @@ def standard_schluessel(liegenschaft):
             liegenschaft=liegenschaft, name=STANDARD_NAME,
             defaults={'art': StwegSchluessel.WERTQUOTE, 'ist_standard': True})
         if not s.ist_standard:
-            raise SchluesselFehler(f'Der Schlüssel «{STANDARD_NAME}» existiert, ist aber nicht Standard.')
+            raise SchluesselFehler(gettext('Der Schlüssel «%(STANDARD_NAME)s» existiert, ist aber nicht Standard.') % {'STANDARD_NAME': STANDARD_NAME})
     return s
 
 
@@ -56,23 +57,21 @@ def gewichte(schluessel, einheiten=None):
         feld, einheit_name = (('flaeche_m2', 'm²') if art == StwegSchluessel.FLAECHE else ('volumen_m3', 'm³'))
         fehlt = [e.bezeichnung for e in einheiten if getattr(e, feld) is None]
         if fehlt:
-            raise SchluesselFehler(f'Schlüssel «{schluessel.name}»: Angabe in {einheit_name} fehlt bei '
-                                   f'{", ".join(fehlt)}.')
+            raise SchluesselFehler(gettext('Schlüssel «%(name)s»: Angabe in %(einheit_name)s fehlt bei %(wert)s.') % {'name': schluessel.name, 'einheit_name': einheit_name, 'wert': ", ".join(fehlt)})
         g = {e.pk: Decimal(getattr(e, feld)) for e in einheiten}
     elif art == StwegSchluessel.MANUELL:
         vorhanden = {a.einheit_id: Decimal(a.anteil) for a in
                      StwegSchluesselAnteil.objects.filter(schluessel=schluessel)}
         fehlt = [e.bezeichnung for e in einheiten if e.pk not in vorhanden]
         if fehlt:
-            raise SchluesselFehler(f'Schlüssel «{schluessel.name}»: kein Anteil für {", ".join(fehlt)} '
-                                   '(0 eintragen, wenn die Einheit nichts trägt).')
+            raise SchluesselFehler(gettext('Schlüssel «%(name)s»: kein Anteil für %(wert)s (0 eintragen, wenn die Einheit nichts trägt).') % {'name': schluessel.name, 'wert': ", ".join(fehlt)})
         g = {e.pk: vorhanden[e.pk] for e in einheiten}
     else:
-        raise SchluesselFehler(f'Unbekannte Schlüsselart «{art}».')
+        raise SchluesselFehler(gettext('Unbekannte Schlüsselart «%(art)s».') % {'art': art})
     if any(w < 0 for w in g.values()):
-        raise SchluesselFehler(f'Schlüssel «{schluessel.name}» enthält negative Gewichte.')
+        raise SchluesselFehler(gettext('Schlüssel «%(name)s» enthält negative Gewichte.') % {'name': schluessel.name})
     if sum(g.values(), Decimal('0')) <= 0:
-        raise SchluesselFehler(f'Schlüssel «{schluessel.name}»: die Summe der Gewichte ist 0.')
+        raise SchluesselFehler(gettext('Schlüssel «%(name)s»: die Summe der Gewichte ist 0.') % {'name': schluessel.name})
     return g
 
 
@@ -87,12 +86,12 @@ def manuellen_schluessel_setzen(liegenschaft, name, anteile, *, bemerkung=''):
     s, _ = StwegSchluessel.objects.get_or_create(
         liegenschaft=liegenschaft, name=name, defaults={'art': StwegSchluessel.MANUELL, 'bemerkung': bemerkung})
     if s.art != StwegSchluessel.MANUELL:
-        raise SchluesselFehler(f'«{name}» ist kein Schlüssel mit eigenen Anteilen.')
+        raise SchluesselFehler(gettext('«%(name)s» ist kein Schlüssel mit eigenen Anteilen.') % {'name': name})
     for einheit, gewicht in anteile.items():
         if einheit.liegenschaft_id != liegenschaft.pk:
-            raise SchluesselFehler(f'Einheit «{einheit.bezeichnung}» gehört nicht zu dieser Gemeinschaft.')
+            raise SchluesselFehler(gettext('Einheit «%(bezeichnung)s» gehört nicht zu dieser Gemeinschaft.') % {'bezeichnung': einheit.bezeichnung})
         if Decimal(gewicht) < 0:
-            raise SchluesselFehler('Anteile dürfen nicht negativ sein.')
+            raise SchluesselFehler(gettext('Anteile dürfen nicht negativ sein.'))
         StwegSchluesselAnteil.objects.update_or_create(schluessel=s, einheit=einheit,
                                                        defaults={'anteil': Decimal(gewicht)})
     return s
@@ -110,6 +109,6 @@ def lift_schluessel(liegenschaft, name='Lift', ausgeschlossen=EG_SCHREIBWEISEN):
 
 def kostenart_zuordnen(liegenschaft, konto, schluessel):
     if schluessel.liegenschaft_id != liegenschaft.pk:
-        raise SchluesselFehler('Der Schlüssel gehört zu einer anderen Gemeinschaft.')
+        raise SchluesselFehler(gettext('Der Schlüssel gehört zu einer anderen Gemeinschaft.'))
     return StwegKostenzuordnung.objects.update_or_create(
         liegenschaft=liegenschaft, konto=konto, defaults={'schluessel': schluessel})[0]

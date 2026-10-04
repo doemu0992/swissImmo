@@ -16,6 +16,7 @@ Zwei Stellen erzwingen sie:
 Nicht erfasst: `QuerySet.update()` und `bulk_create()` gehen an `save()`
 vorbei. Die Abrechnung prüft deshalb unabhängig davon noch einmal.
 """
+from django.utils.translation import gettext
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -65,6 +66,5 @@ def pruefe_wertquoten(liegenschaft):
     total = Decimal(liegenschaft.wertquote_total)
     if summe != total:
         raise WertquotenFehler(
-            f'Wertquoten von «{liegenschaft}» ergeben {zahl(summe)}/{zahl(total)}, '
-            f'erwartet {zahl(total)}/{zahl(total)}. Differenz: {"+" if total >= summe else "-"}{zahl(abs(total - summe))}.',
+            gettext('Wertquoten von «%(liegenschaft)s» ergeben %(wert)s/%(wert2)s, erwartet %(wert3)s/%(wert4)s. Differenz: %(wert5)s%(wert6)s.') % {'liegenschaft': liegenschaft, 'wert': zahl(summe), 'wert2': zahl(total), 'wert3': zahl(total), 'wert4': zahl(total), 'wert5': "+" if total >= summe else "-", 'wert6': zahl(abs(total - summe))},
             code='wertquoten_summe')

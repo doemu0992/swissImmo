@@ -10,6 +10,12 @@
     </div>
 </div>
 
+{% if vorgaben_unbestaetigt %}
+<div class="fw-card"><div class="fw-rumpf"><span class="fw-chip fw-warn">{% trans "Rechtswerte nicht bestätigt" %}</span>
+    {% trans "Einladungsfrist, Beschlussfähigkeit und Anfechtungsfrist sind nicht aus dem Reglement hinterlegt und bestätigt." %}
+    <a href="/neu/stweg/{{ lg.pk }}/vorgaben/">{% trans "Vorgaben eintragen" %}</a></div></div>
+{% endif %}
+
 {% if quoten_fehler %}
 <div class="fw-card"><div class="fw-rumpf"><span class="fw-chip fw-warn">{% trans "Wertquoten" %}</span> {{ quoten_fehler }}
     {% trans "Solange die Summe nicht aufgeht, wird weder eingeladen noch abgerechnet." %}</div></div>
@@ -19,6 +25,8 @@
     <div class="fw-kopf"><span class="fw-t">{% trans "Abrechnung und Erneuerungsfonds" %}</span></div>
     <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/abrechnung/"><div class="fw-mitte"><div class="fw-t">{% trans "Jahresabrechnung, Akonto, Fonds" %}</div>
         <div class="fw-s">{% trans "Kosten nach Wertquoten verteilen, Akonto abziehen, Einlagen und Entnahmen" %}</div></div></a>
+    <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/vorgaben/"><div class="fw-mitte"><div class="fw-t">{% trans "Vorgaben der Gemeinschaft" %}</div>
+        <div class="fw-s">{% trans "Einladungsfrist, Beschlussfähigkeit, Anfechtungsfrist aus dem Reglement" %}</div></div></a>
     <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/budget/"><div class="fw-mitte"><div class="fw-t">{% trans "Budget und Akonto-Rechnungen" %}</div>
         <div class="fw-s">{% trans "Jahresbudget aufstellen, der Versammlung vorlegen, nach Annahme Akonto vorschreiben" %}</div></div></a>
     <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/schluessel/"><div class="fw-mitte"><div class="fw-t">{% trans "Verteilschlüssel" %}</div>
@@ -135,7 +143,7 @@
                 <div class="fw-feldblock"><label class="fw-label" for="v_ort">{% trans "Ort" %}</label>
                     <input id="v_ort" name="ort" class="fw-feld"></div>
                 <div class="fw-feldblock"><label class="fw-label" for="v_frist">{% trans "Einladungsfrist (Tage)" %}</label>
-                    <input id="v_frist" name="einladungsfrist_tage" inputmode="numeric" value="10" class="fw-feld"></div>
+                    <input id="v_frist" name="einladungsfrist_tage" inputmode="numeric" value="{{ frist_vorgabe }}" class="fw-feld"></div>
                 <div class="fw-feldblock"><label class="fw-label" for="v_evoting"><input id="v_evoting" type="checkbox" name="evoting" value="1"> {% trans "E-Voting im Portal erlauben (digitale Teilnahme und Stimmabgabe)" %}</label></div>
                 <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Anlegen" %}</button></div>
             </form></div></details>
@@ -156,13 +164,15 @@
                 <div class="fw-feldblock"><label class="fw-label" for="zk_frist">{% trans "Abstimmung bis *" %}</label>
                     <input id="zk_frist" type="date" name="frist_bis" required class="fw-feld"></div>
                 <div class="fw-feldblock"><label class="fw-label" for="zk_art">{% trans "Erforderliche Mehrheit (Gesetz oder Reglement)" %}</label>
-                    <select id="zk_art" name="mehrheitsart" class="fw-feld">{% for w, b in mehrheiten %}{% if w != 'kenntnisnahme' %}<option value="{{ w }}"{% if w == 'einstimmig' %} selected{% endif %}>{{ b }}</option>{% endif %}{% endfor %}</select></div>
+                    <select id="zk_art" name="mehrheitsart" class="fw-feld">{% for w, b in mehrheiten %}{% if w != 'kenntnisnahme' and w != 'doppelt_anwesende' %}<option value="{{ w }}"{% if w == 'einstimmig' %} selected{% endif %}>{{ b }}</option>{% endif %}{% endfor %}</select></div>
                 <div class="fw-feldblock"><label class="fw-label" for="zk_recht">{% trans "Rechtsgrundlage / Reglement" %}</label>
                     <input id="zk_recht" name="rechtsgrundlage" class="fw-feld"></div>
                 <div class="fw-feldblock"><label class="fw-label" for="zk_antrag">{% trans "Antrag *" %}</label>
                     <textarea id="zk_antrag" name="antrag" rows="3" required class="fw-feld"></textarea></div>
                 <div class="fw-feldblock"><label class="fw-label" for="zk_beg">{% trans "Begründung" %}</label>
                     <textarea id="zk_beg" name="begruendung" rows="2" class="fw-feld"></textarea></div>
+                {% if budgets_vorgelegt %}<div class="fw-feldblock"><label class="fw-label" for="zk_budget">{% trans "Budget, das beschlossen wird (Annahme schreibt die Akonto-Raten vor)" %}</label>
+                    <select id="zk_budget" name="budget" class="fw-feld"><option value="">{% trans "— keines —" %}</option>{% for b in budgets_vorgelegt %}<option value="{{ b.pk }}">{{ b }}</option>{% endfor %}</select></div>{% endif %}
                 <div class="fw-feldblock"><label class="fw-label" for="zk_voll">{% trans "Vollzug bei Annahme (wird zur Aufgabe)" %}</label>
                     <input id="zk_voll" name="vollzug_aufgabe" class="fw-feld"></div>
                 <div class="fw-feldblock"><label class="fw-label" for="zk_vf">{% trans "Vollzug bis" %}</label>

@@ -1,5 +1,6 @@
 """Ablauf einer Versammlung: Einladung prüfen und versenden, durchführen,
 Protokoll versenden. Jede Zustellung wird in `StwegVersand` festgehalten."""
+from django.utils.translation import gettext
 from django.db import transaction
 from django.utils import timezone
 
@@ -43,25 +44,23 @@ def einladung_pruefen(versammlung, heute=None):
     lg = v.liegenschaft
     probleme = []
     if not lg.ist_stweg or lg.status != lg.STATUS_AKTIV:
-        probleme.append('Die Gemeinschaft muss eine aktive STWEG sein.')
+        probleme.append(gettext('Die Gemeinschaft muss eine aktive STWEG sein.'))
     else:
         try:
             pruefe_wertquoten(lg)
         except WertquotenFehler as e:
             probleme.append(str(e.message))
     if not v.traktanden.exists():
-        probleme.append('Es ist kein Traktandum erfasst.')
+        probleme.append(gettext('Es ist kein Traktandum erfasst.'))
     tage = (timezone.localtime(v.datum).date() - heute).days if timezone.is_aware(v.datum) \
         else (v.datum.date() - heute).days
     if tage < v.einladungsfrist_tage:
-        probleme.append(f'Einladungsfrist unterschritten: noch {tage} Tage bis zur Versammlung, '
-                        f'verlangt sind {v.einladungsfrist_tage}.')
+        probleme.append(gettext('Einladungsfrist unterschritten: noch %(tage)s Tage bis zur Versammlung, verlangt sind %(einladungsfrist_tage)s.') % {'tage': tage, 'einladungsfrist_tage': v.einladungsfrist_tage})
     eig, ohne = empfaenger(v)
     if not eig:
-        probleme.append('Keine Stockwerkeigentümer den Einheiten zugeordnet.')
+        probleme.append(gettext('Keine Stockwerkeigentümer den Einheiten zugeordnet.'))
     for e in ohne:
-        probleme.append(f'Einheit «{e.bezeichnung}» hat keinen Stockwerkeigentümer — '
-                        'sie würde nicht eingeladen.')
+        probleme.append(gettext('Einheit «%(bezeichnung)s» hat keinen Stockwerkeigentümer — sie würde nicht eingeladen.') % {'bezeichnung': e.bezeichnung})
     return probleme
 
 
@@ -93,7 +92,7 @@ def einladung_versenden(versammlung, *, heute=None):
     Versandeinträge zurück."""
     v = versammlung
     if v.status not in (v.ENTWURF, v.EINGELADEN):
-        raise VersammlungsFehler(['Die Versammlung ist bereits durchgeführt.'])
+        raise VersammlungsFehler([gettext('Die Versammlung ist bereits durchgeführt.')])
     probleme = einladung_pruefen(v, heute)
     if probleme:
         raise VersammlungsFehler(probleme)
@@ -124,7 +123,7 @@ def durchfuehren(versammlung):
     """Eröffnet die Erfassung: Status «durchgeführt», jede Einheit zunächst abwesend."""
     v = versammlung
     if v.status != v.EINGELADEN:
-        raise VersammlungsFehler(['Durchführen setzt eine versendete Einladung voraus.'])
+        raise VersammlungsFehler([gettext('Durchführen setzt eine versendete Einladung voraus.')])
     from stweg.vollmacht import gueltige
     vollmachten = {x.einheit_id: x for x in gueltige(v)}
     for e in stimm_einheiten(v.liegenschaft):
@@ -144,9 +143,9 @@ def protokoll_pruefen(versammlung):
     from stweg.models import Traktandum
     probleme = []
     if versammlung.status not in (versammlung.DURCHGEFUEHRT, versammlung.PROTOKOLLIERT):
-        probleme.append('Die Versammlung ist noch nicht durchgeführt.')
+        probleme.append(gettext('Die Versammlung ist noch nicht durchgeführt.'))
     for t in versammlung.traktanden.filter(ergebnis=Traktandum.OFFEN):
-        probleme.append(f'Traktandum {t.nr} «{t.titel}» hat noch kein festgestelltes Ergebnis.')
+        probleme.append(gettext('Traktandum %(nr)s «%(titel)s» hat noch kein festgestelltes Ergebnis.') % {'nr': t.nr, 'titel': t.titel})
     return probleme
 
 

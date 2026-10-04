@@ -37,6 +37,9 @@ STANDARD_KONTEN = [
     ('2035', 'Akonto-Beiträge Stockwerkeigentümer', 'passiv', False, 'm2'),
     ('2850', 'Kontokorrent Eigentümer', 'passiv', False, 'm2'),
     ('2970', 'Jahresergebnis / Gewinnvortrag', 'passiv', False, 'm2'),
+    # STWEG: Beiträge der Stockwerkeigentümer = ihre Kostenanteile. Gegenstück zum Aufwand, den die
+    # Gemeinschaft trägt; das Jahresergebnis einer STWEG ist damit null.
+    ('3100', 'Beiträge Stockwerkeigentümer (Kostenanteile)', 'ertrag', False, 'm2'),
     ('3000', 'Mieterträge Wohnungen', 'ertrag', False, 'm2'),
     ('3010', 'Mieterträge Gewerbe/Parkplätze', 'ertrag', False, 'm2'),
     ('3020', 'Nebenkosten Akonto-Zahlungen', 'ertrag', False, 'm2'),

@@ -29,7 +29,7 @@ def kontokorrent(einheit, heute=None):
     for v in StwegVorschreibung.objects.filter(einheit=einheit).select_related('budget'):
         bew.append({'datum': v.faellig_am, 'art': 'vorschreibung',
                     'text': f'Akonto {v.budget.jahr}, Rate {v.rate_nr}/{v.rate_total}', 'betrag': v.betrag})
-    for z in StwegAkonto.objects.filter(einheit=einheit):
+    for z in StwegAkonto.objects.filter(einheit=einheit, zweck=StwegAkonto.AKONTO):
         bew.append({'datum': z.datum, 'art': 'zahlung', 'text': z.bemerkung or 'Zahlung', 'betrag': -z.betrag})
     for p in (StwegAbrechnungPosition.objects
               .filter(einheit=einheit, abrechnung__status=StwegAbrechnung.STATUS_ABGESCHLOSSEN)

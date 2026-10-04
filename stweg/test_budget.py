@@ -278,3 +278,77 @@ class FaelligkeitTests(TestCase):
         self.assertEqual(_plus_monate(date(2028, 1, 31), 1), date(2028, 2, 29))
         self.assertEqual(_plus_monate(date(2026, 11, 15), 3), date(2027, 2, 15))
         self.assertEqual(_plus_monate(date(2026, 12, 1), 12), date(2027, 12, 1))
+
+
+class BudgetZirkularTests(TestCase):
+    """Ein Budget lässt sich auch auf dem Zirkularweg beschliessen."""
+
+    def setUp(self):
+        from stweg.models import Zirkularbeschluss
+        self.lg, self.e, self.eigs = haus_mit_eigentuemern()
+        self.b = budget_2026(self.lg)
+        self.z = Zirkularbeschluss.objects.create(
+            liegenschaft=self.lg, titel='Budget 2026', antrag='Budget genehmigen',
+            frist_bis=date.today() + timedelta(days=14), mehrheitsart='einfach_koepfe')
+
+    def abstimmen(self, werte):
+        from stweg import zirkular as zk
+        self.z.status = 'laufend'
+        self.z.save()
+        for e, w in zip(self.e, werte):
+            zk.stimme_abgeben(self.z, e, w, kanal='verwaltung')
+
+    def test_angenommen_schreibt_vor(self):
+        from stweg import zirkular as zk
+        bd.an_zirkular_haengen(self.z, self.b)
+        self.abstimmen(['ja', 'ja', 'ja', 'nein', 'nein'])
+        zk.feststellen(self.z, 'angenommen', heute=self.z.frist_bis + timedelta(days=1))
+        self.b.refresh_from_db()
+        self.assertEqual((self.b.status, StwegVorschreibung.objects.count()), ('genehmigt', 20))
+
+    def test_abgelehnt_setzt_das_budget_zurueck(self):
+        from stweg import zirkular as zk
+        bd.an_zirkular_haengen(self.z, self.b)
+        self.abstimmen(['nein'] * 5)
+        zk.feststellen(self.z, 'abgelehnt', heute=self.z.frist_bis + timedelta(days=1))
+        self.b.refresh_from_db()
+        self.assertEqual((self.b.status, StwegVorschreibung.objects.count()), ('abgelehnt', 0))
+
+    def test_fremdes_budget_und_laufendes_zirkular(self):
+        fremd, _, _ = haus_mit_eigentuemern()
+        with self.assertRaises(bd.BudgetFehler):
+            bd.an_zirkular_haengen(self.z, budget_2026(fremd))
+        self.z.status = 'laufend'
+        self.z.save()
+        with self.assertRaises(bd.BudgetFehler):
+            bd.an_zirkular_haengen(self.z, self.b)
+
+    def test_nicht_genehmigbares_budget_blockiert_die_feststellung(self):
+        from stweg import zirkular as zk
+        from stweg.beschluss import BeschlussFehler
+        from stweg.models import StwegSchluessel
+        bd.an_zirkular_haengen(self.z, self.b)
+        heiz = StwegSchluessel.objects.create(liegenschaft=self.lg, name='Heizung', art='flaeche')
+        self.e[0].flaeche_m2 = None
+        self.e[0].save()
+        self.b.positionen.create(bezeichnung='Heizöl', schluessel=heiz, betrag=D('900'))
+        self.abstimmen(['ja'] * 5)
+        with self.assertRaises(BeschlussFehler):
+            zk.feststellen(self.z, 'angenommen', heute=self.z.frist_bis + timedelta(days=1))
+        self.z.refresh_from_db()
+        self.assertEqual(self.z.status, 'laufend')                 # atomar zurückgerollt
+
+    def test_formular_legt_budget_an_und_blendet_doppelt_anwesende_aus(self):
+        from core.tests._helfer import _team_user
+        self.client.force_login(_team_user('Verwaltung'))
+        seite = self.client.get(f'/neu/stweg/{self.lg.pk}/')
+        zk = seite.content.decode().split('id="zk_art"')[1].split('</select>')[0]
+        self.assertNotIn('doppelt_anwesende', zk)
+        self.assertIn('zk_budget', seite.content.decode())
+        r = self.client.post(f'/neu/stweg/{self.lg.pk}/zirkular/neu/', {
+            'titel': 'Budget', 'antrag': 'Genehmigen', 'frist_bis': '2027-01-31', 'mehrheitsart': 'doppelt_aller',
+            'budget': self.b.pk})
+        self.assertEqual(r.status_code, 302)
+        from stweg.models import Zirkularbeschluss
+        z = Zirkularbeschluss.objects.exclude(pk=self.z.pk).get()
+        self.assertEqual((z.budget_id, z.mehrheitsart), (self.b.pk, 'doppelt_aller'))

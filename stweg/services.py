@@ -14,6 +14,7 @@ Ablauf einer Abrechnung für (Liegenschaft, Jahr):
 
 Nicht Teil der Abrechnung: Fonds-Einlagen (`stweg.fonds`) — sie sind keine Kosten.
 """
+from django.utils.translation import gettext
 from decimal import Decimal
 
 from django.db import transaction
@@ -21,6 +22,7 @@ from django.db.models import Q, Sum
 
 from core.tenancy import organisation_kontext
 from finance.models import KreditorenRechnung
+from stweg import hauptbuch
 from stweg.models import (StwegAbrechnung, StwegAbrechnungAnteil, StwegAbrechnungKosten,
                           StwegAbrechnungPosition, StwegAkonto)
 from stweg.schluessel import SchluesselFehler, schluessel_fuer_konto, verteile
@@ -38,7 +40,7 @@ class AbrechnungsFehler(ValueError):
 class StwegAbrechnungService:
     def __init__(self, liegenschaft):
         if not liegenschaft.ist_stweg:
-            raise AbrechnungsFehler(f'«{liegenschaft}» ist keine STWEG-Liegenschaft.')
+            raise AbrechnungsFehler(gettext('«%(liegenschaft)s» ist keine STWEG-Liegenschaft.') % {'liegenschaft': liegenschaft})
         self.liegenschaft = liegenschaft
 
     def _rechnungen(self, jahr):
@@ -90,7 +92,8 @@ class StwegAbrechnungService:
         return sum((z['betrag'] for z in self.kostenzeilen(jahr)), NULL).quantize(Decimal('0.01'))
 
     def akonto_je_einheit(self, jahr):
-        rows = (StwegAkonto.objects.filter(einheit__liegenschaft=self.liegenschaft, datum__year=jahr)
+        rows = (StwegAkonto.objects.filter(einheit__liegenschaft=self.liegenschaft, datum__year=jahr,
+                                         zweck=StwegAkonto.AKONTO)
                 .values('einheit').annotate(s=Sum('betrag')))
         return {r['einheit']: r['s'] or NULL for r in rows}
 
@@ -99,13 +102,13 @@ class StwegAbrechnungService:
         lg = self.liegenschaft
         with organisation_kontext(lg.organisation):
             if lg.status != lg.STATUS_AKTIV:
-                raise AbrechnungsFehler(f'«{lg}» ist nicht aktiv — es wird nicht abgerechnet.')
+                raise AbrechnungsFehler(gettext('«%(lg)s» ist nicht aktiv — es wird nicht abgerechnet.') % {'lg': lg})
             pruefe_wertquoten(lg)       # hart: nie mit falschen Quoten abrechnen
 
             bestehend = StwegAbrechnung.objects.filter(liegenschaft=lg, jahr=jahr).first()
             if bestehend is not None:
                 if bestehend.status == StwegAbrechnung.STATUS_ABGESCHLOSSEN:
-                    raise AbrechnungsFehler(f'Die Abrechnung {jahr} ist abgeschlossen.')
+                    raise AbrechnungsFehler(gettext('Die Abrechnung %(jahr)s ist abgeschlossen.') % {'jahr': jahr})
                 bestehend.delete()      # Entwurf wird neu berechnet
 
             einheiten = list(stimm_einheiten(lg).order_by('pk'))
@@ -114,8 +117,7 @@ class StwegAbrechnungService:
             ids = {e.pk for e in einheiten}
             for z in einzel:
                 if z['einheit'].pk not in ids:
-                    raise AbrechnungsFehler(f"Einzelkosten ({z['lieferant']}, CHF {z['betrag']}) hängen an einer "
-                                            f"Einheit ohne Stimmrecht: «{z['einheit'].bezeichnung}».")
+                    raise AbrechnungsFehler(gettext('Einzelkosten (%(wert)s, CHF %(wert2)s) hängen an einer Einheit ohne Stimmrecht: «%(bezeichnung)s».') % {'wert': z['lieferant'], 'wert2': z['betrag'], 'bezeichnung': z['einheit'].bezeichnung})
             kosten = sum((z['betrag'] for z in zeilen + einzel), NULL).quantize(Decimal('0.01'))
             akonto = self.akonto_je_einheit(jahr)
 
@@ -171,7 +173,17 @@ class StwegAbrechnungService:
             return abrechnung
 
     @staticmethod
-    def abschliessen(abrechnung):
+    @transaction.atomic
+    def abschliessen(abrechnung, *, user=None):
+        """Schliesst die Abrechnung ab und bucht sie ins Hauptbuch (`stweg.hauptbuch.abschluss_buchen`).
+        Ein zweiter Aufruf ändert nichts und bucht nichts nochmals."""
+        abrechnung.refresh_from_db(fields=['status'])
+        if abrechnung.status == StwegAbrechnung.STATUS_ABGESCHLOSSEN:
+            return abrechnung
+        try:
+            hauptbuch.abschluss_buchen(abrechnung, user=user)
+        except hauptbuch.HauptbuchFehler as e:
+            raise AbrechnungsFehler(str(e))
         abrechnung.status = StwegAbrechnung.STATUS_ABGESCHLOSSEN
         abrechnung.save(update_fields=['status'])
         return abrechnung

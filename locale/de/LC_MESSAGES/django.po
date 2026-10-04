@@ -23340,3 +23340,863 @@ msgstr "Ihre Teilnahme ist erfasst. Sie können jetzt abstimmen."
 #: stweg/templates/stweg/*.html
 msgid "Ihre Stimmen wurden gespeichert."
 msgstr "Ihre Stimmen wurden gespeichert."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zweck"
+msgstr "Zweck"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bankeingang aus dem Kontoauszug-Import"
+msgstr "Bankeingang aus dem Kontoauszug-Import"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "— keiner: direkt auf die Bank buchen —"
+msgstr "— keiner: direkt auf die Bank buchen —"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Stammt die Zahlung aus dem Kontoauszug-Import, hier den Eingang wählen — sonst läge der Betrag zweimal auf dem Bankkonto."
+msgstr "Stammt die Zahlung aus dem Kontoauszug-Import, hier den Eingang wählen — sonst läge der Betrag zweimal auf dem Bankkonto."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Rechtswerte nicht bestätigt"
+msgstr "Rechtswerte nicht bestätigt"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einladungsfrist, Beschlussfähigkeit und Anfechtungsfrist sind nicht aus dem Reglement hinterlegt und bestätigt."
+msgstr "Einladungsfrist, Beschlussfähigkeit und Anfechtungsfrist sind nicht aus dem Reglement hinterlegt und bestätigt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben eintragen"
+msgstr "Vorgaben eintragen"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben der Gemeinschaft"
+msgstr "Vorgaben der Gemeinschaft"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einladungsfrist, Beschlussfähigkeit, Anfechtungsfrist aus dem Reglement"
+msgstr "Einladungsfrist, Beschlussfähigkeit, Anfechtungsfrist aus dem Reglement"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Budget, das beschlossen wird (Annahme schreibt die Akonto-Raten vor)"
+msgstr "Budget, das beschlossen wird (Annahme schreibt die Akonto-Raten vor)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "— keines —"
+msgstr "— keines —"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan öffnen"
+msgstr "Scan öffnen"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan der unterschriebenen Vollmacht (optional)"
+msgstr "Scan der unterschriebenen Vollmacht (optional)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "beschlussfähig"
+msgstr "beschlussfähig"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "nicht beschlussfähig"
+msgstr "nicht beschlussfähig"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Vorgaben sind noch nicht bestätigt."
+msgstr "Die Vorgaben sind noch nicht bestätigt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan der unterschriebenen Vollmacht"
+msgstr "Scan der unterschriebenen Vollmacht"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan ablegen"
+msgstr "Scan ablegen"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan der unterschriebenen Vollmacht (PDF oder Bild, optional)"
+msgstr "Scan der unterschriebenen Vollmacht (PDF oder Bild, optional)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Trotz fehlender Beschlussfähigkeit feststellen (steht im Protokoll)"
+msgstr "Trotz fehlender Beschlussfähigkeit feststellen (steht im Protokoll)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben"
+msgstr "Vorgaben"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Diese Werte folgen aus Reglement und Gesetz. Das System kennt sie nicht und setzt keine ein: Tragen Sie sie ein, geben Sie die Quelle an und bestätigen Sie sie. Leere Felder heissen: es wird nicht beurteilt."
+msgstr "Diese Werte folgen aus Reglement und Gesetz. Das System kennt sie nicht und setzt keine ein: Tragen Sie sie ein, geben Sie die Quelle an und bestätigen Sie sie. Leere Felder heissen: es wird nicht beurteilt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "nicht bestätigt"
+msgstr "nicht bestätigt"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Beschlussfähig ab Anteil der Köpfe (in Prozent)"
+msgstr "Beschlussfähig ab Anteil der Köpfe (in Prozent)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Beschlussfähig ab Anteil der Wertquoten (in Prozent)"
+msgstr "Beschlussfähig ab Anteil der Wertquoten (in Prozent)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anfechtungsfrist (Tage ab Versand des Protokolls)"
+msgstr "Anfechtungsfrist (Tage ab Versand des Protokolls)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Quelle (Reglement, Artikel)"
+msgstr "Quelle (Reglement, Artikel)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ich bestätige, dass diese Werte dem Reglement und dem Gesetz entsprechen."
+msgstr "Ich bestätige, dass diese Werte dem Reglement und dem Gesetz entsprechen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anfragen gibt es nur bei STWEG-Liegenschaften."
+msgstr "Anfragen gibt es nur bei STWEG-Liegenschaften."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Antwort darf nicht leer sein."
+msgstr "Die Antwort darf nicht leer sein."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«Mehrheit der Anwesenden» braucht eine Versammlung mit Anwesenheit."
+msgstr "«Mehrheit der Anwesenden» braucht eine Versammlung mit Anwesenheit."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Unbekannte Mehrheitsart «%(mehrheitsart)s»."
+msgstr "Unbekannte Mehrheitsart «%(mehrheitsart)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ungültiges Ergebnis «%(ergebnis)s»."
+msgstr "Ungültiges Ergebnis «%(ergebnis)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Versammlung wurde noch nicht einberufen."
+msgstr "Die Versammlung wurde noch nicht einberufen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Widersprüchliche Stimmen desselben Eigentümers — bitte zuerst korrigieren."
+msgstr "Widersprüchliche Stimmen desselben Eigentümers — bitte zuerst korrigieren."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Nicht beschlussfähig nach den Vorgaben der Gemeinschaft: %(gruende)s"
+msgstr "Nicht beschlussfähig nach den Vorgaben der Gemeinschaft: %(gruende)s"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Budget kann nicht genehmigt werden: %(e)s"
+msgstr "Das Budget kann nicht genehmigt werden: %(e)s"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Ergebnis dieses Traktandums ist bereits festgestellt — die Stimmen sind gesperrt."
+msgstr "Das Ergebnis dieses Traktandums ist bereits festgestellt — die Stimmen sind gesperrt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zur Kenntnisnahme wird nicht abgestimmt."
+msgstr "Zur Kenntnisnahme wird nicht abgestimmt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Diese Einheit ist nicht anwesend oder vertreten — sie hat kein Stimmrecht."
+msgstr "Diese Einheit ist nicht anwesend oder vertreten — sie hat kein Stimmrecht."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein genehmigtes Budget ist abgeschlossen."
+msgstr "Ein genehmigtes Budget ist abgeschlossen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Schlüssel gehört zu einer anderen Gemeinschaft."
+msgstr "Der Schlüssel gehört zu einer anderen Gemeinschaft."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Betrag einer Budgetposition muss grösser 0 sein."
+msgstr "Der Betrag einer Budgetposition muss grösser 0 sein."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Budget hat keine Positionen."
+msgstr "Das Budget hat keine Positionen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein Budget im Status «%(wert)s» kann nicht vorgelegt werden."
+msgstr "Ein Budget im Status «%(wert)s» kann nicht vorgelegt werden."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(raten)s Raten lassen sich nicht gleichmässig auf zwölf Monate legen."
+msgstr "%(raten)s Raten lassen sich nicht gleichmässig auf zwölf Monate legen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Genehmigt werden kann nur ein vorgelegtes Budget (Status: %(wert)s)."
+msgstr "Genehmigt werden kann nur ein vorgelegtes Budget (Status: %(wert)s)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Abgelehnt werden kann nur ein vorgelegtes Budget."
+msgstr "Abgelehnt werden kann nur ein vorgelegtes Budget."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Budget und Traktandum gehören zu verschiedenen Gemeinschaften."
+msgstr "Budget und Traktandum gehören zu verschiedenen Gemeinschaften."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Traktandum ist schon entschieden."
+msgstr "Das Traktandum ist schon entschieden."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Budget und Zirkularbeschluss gehören zu verschiedenen Gemeinschaften."
+msgstr "Budget und Zirkularbeschluss gehören zu verschiedenen Gemeinschaften."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein Budget lässt sich nur an einen Zirkularbeschluss im Entwurf hängen."
+msgstr "Ein Budget lässt sich nur an einen Zirkularbeschluss im Entwurf hängen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Akonto-Rechnungen gibt es erst nach der Genehmigung des Budgets."
+msgstr "Akonto-Rechnungen gibt es erst nach der Genehmigung des Budgets."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Unbekannte Kategorie."
+msgstr "Unbekannte Kategorie."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein Titel ist nötig."
+msgstr "Ein Titel ist nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«Gültig bis» liegt vor «gültig ab»."
+msgstr "«Gültig bis» liegt vor «gültig ab»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für diese Versammlung ist kein E-Voting vorgesehen."
+msgstr "Für diese Versammlung ist kein E-Voting vorgesehen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das E-Voting ist nur während der durchgeführten Versammlung offen."
+msgstr "Das E-Voting ist nur während der durchgeführten Versammlung offen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das E-Voting ist geschlossen."
+msgstr "Das E-Voting ist geschlossen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Sie haben in dieser Gemeinschaft keine stimmberechtigte Einheit."
+msgstr "Sie haben in dieser Gemeinschaft keine stimmberechtigte Einheit."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ungültige Abstimmung: Traktandum oder Einheit gehört nicht zu Ihnen."
+msgstr "Ungültige Abstimmung: Traktandum oder Einheit gehört nicht zu Ihnen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bitte zuerst die Teilnahme erklären (Einheit «%(bezeichnung)s»)."
+msgstr "Bitte zuerst die Teilnahme erklären (Einheit «%(bezeichnung)s»)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(liegenschaft)s» ist keine STWEG-Liegenschaft."
+msgstr "«%(liegenschaft)s» ist keine STWEG-Liegenschaft."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(liegenschaft)s» ist nicht aktiv."
+msgstr "«%(liegenschaft)s» ist nicht aktiv."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Einlage muss grösser 0 sein."
+msgstr "Die Einlage muss grösser 0 sein."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für %(jahr)s wurde die Einlage bereits belastet."
+msgstr "Für %(jahr)s wurde die Einlage bereits belastet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Entnahme muss grösser 0 sein."
+msgstr "Die Entnahme muss grösser 0 sein."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Entnahme CHF %(betrag)s übersteigt den Fondsbestand CHF %(bestand)s."
+msgstr "Entnahme CHF %(betrag)s übersteigt den Fondsbestand CHF %(bestand)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Buchung ist nicht möglich — Periode abgeschlossen? (%(fehler)s)"
+msgstr "Die Buchung ist nicht möglich — Periode abgeschlossen? (%(fehler)s)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Diese Zahlung ist schon gebucht."
+msgstr "Diese Zahlung ist schon gebucht."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Eingang liegt nicht auf dem Durchlaufkonto 1190 (ungeklärte Zahlungen)."
+msgstr "Der Eingang liegt nicht auf dem Durchlaufkonto 1190 (ungeklärte Zahlungen)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Eingang lautet auf CHF %(betrag)s, die Zahlung auf CHF %(betrag2)s — Teilzuordnungen gibt es nicht."
+msgstr "Der Eingang lautet auf CHF %(betrag)s, die Zahlung auf CHF %(betrag2)s — Teilzuordnungen gibt es nicht."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Dieser Eingang ist schon einer Zahlung zugeordnet."
+msgstr "Dieser Eingang ist schon einer Zahlung zugeordnet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Abschluss dieser Abrechnung ist schon gebucht."
+msgstr "Der Abschluss dieser Abrechnung ist schon gebucht."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Schlüssel «%(STANDARD_NAME)s» existiert, ist aber nicht Standard."
+msgstr "Der Schlüssel «%(STANDARD_NAME)s» existiert, ist aber nicht Standard."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s»: Angabe in %(einheit_name)s fehlt bei %(wert)s."
+msgstr "Schlüssel «%(name)s»: Angabe in %(einheit_name)s fehlt bei %(wert)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s»: kein Anteil für %(wert)s (0 eintragen, wenn die Einheit nichts trägt)."
+msgstr "Schlüssel «%(name)s»: kein Anteil für %(wert)s (0 eintragen, wenn die Einheit nichts trägt)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Unbekannte Schlüsselart «%(art)s»."
+msgstr "Unbekannte Schlüsselart «%(art)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s» enthält negative Gewichte."
+msgstr "Schlüssel «%(name)s» enthält negative Gewichte."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s»: die Summe der Gewichte ist 0."
+msgstr "Schlüssel «%(name)s»: die Summe der Gewichte ist 0."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(name)s» ist kein Schlüssel mit eigenen Anteilen."
+msgstr "«%(name)s» ist kein Schlüssel mit eigenen Anteilen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit «%(bezeichnung)s» gehört nicht zu dieser Gemeinschaft."
+msgstr "Einheit «%(bezeichnung)s» gehört nicht zu dieser Gemeinschaft."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anteile dürfen nicht negativ sein."
+msgstr "Anteile dürfen nicht negativ sein."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(lg)s» ist nicht aktiv — es wird nicht abgerechnet."
+msgstr "«%(lg)s» ist nicht aktiv — es wird nicht abgerechnet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Abrechnung %(jahr)s ist abgeschlossen."
+msgstr "Die Abrechnung %(jahr)s ist abgeschlossen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einzelkosten (%(wert)s, CHF %(wert2)s) hängen an einer Einheit ohne Stimmrecht: «%(bezeichnung)s»."
+msgstr "Einzelkosten (%(wert)s, CHF %(wert2)s) hängen an einer Einheit ohne Stimmrecht: «%(bezeichnung)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Wertquoten von «%(liegenschaft)s» ergeben %(wert)s/%(wert2)s, erwartet %(wert3)s/%(wert4)s. Differenz: %(wert5)s%(wert6)s."
+msgstr "Wertquoten von «%(liegenschaft)s» ergeben %(wert)s/%(wert2)s, erwartet %(wert3)s/%(wert4)s. Differenz: %(wert5)s%(wert6)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Gemeinschaft muss eine aktive STWEG sein."
+msgstr "Die Gemeinschaft muss eine aktive STWEG sein."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Es ist kein Traktandum erfasst."
+msgstr "Es ist kein Traktandum erfasst."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einladungsfrist unterschritten: noch %(tage)s Tage bis zur Versammlung, verlangt sind %(einladungsfrist_tage)s."
+msgstr "Einladungsfrist unterschritten: noch %(tage)s Tage bis zur Versammlung, verlangt sind %(einladungsfrist_tage)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Keine Stockwerkeigentümer den Einheiten zugeordnet."
+msgstr "Keine Stockwerkeigentümer den Einheiten zugeordnet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit «%(bezeichnung)s» hat keinen Stockwerkeigentümer — sie würde nicht eingeladen."
+msgstr "Einheit «%(bezeichnung)s» hat keinen Stockwerkeigentümer — sie würde nicht eingeladen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Versammlung ist bereits durchgeführt."
+msgstr "Die Versammlung ist bereits durchgeführt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Durchführen setzt eine versendete Einladung voraus."
+msgstr "Durchführen setzt eine versendete Einladung voraus."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Versammlung ist noch nicht durchgeführt."
+msgstr "Die Versammlung ist noch nicht durchgeführt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Traktandum %(nr)s «%(titel)s» hat noch kein festgestelltes Ergebnis."
+msgstr "Traktandum %(nr)s «%(titel)s» hat noch kein festgestelltes Ergebnis."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Titel und Datum (mit Uhrzeit) sind nötig."
+msgstr "Titel und Datum (mit Uhrzeit) sind nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Versammlung angelegt. Jetzt Traktanden erfassen."
+msgstr "Versammlung angelegt. Jetzt Traktanden erfassen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Protokoll ist versendet — E-Voting lässt sich nicht mehr ändern."
+msgstr "Das Protokoll ist versendet — E-Voting lässt sich nicht mehr ändern."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "E-Voting ist eingeschaltet."
+msgstr "E-Voting ist eingeschaltet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "E-Voting ist ausgeschaltet."
+msgstr "E-Voting ist ausgeschaltet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Traktanden lassen sich nur ändern, solange die Einladung nicht versendet ist."
+msgstr "Traktanden lassen sich nur ändern, solange die Einladung nicht versendet ist."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein Traktandum braucht einen Titel."
+msgstr "Ein Traktandum braucht einen Titel."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einladung: %(gesendet)s per E-Mail versendet."
+msgstr "Einladung: %(gesendet)s per E-Mail versendet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(post)s Eigentümer ohne E-Mail-Adresse — Einladung per Post zustellen."
+msgstr "%(post)s Eigentümer ohne E-Mail-Adresse — Einladung per Post zustellen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(fehler)s Versand(e) fehlgeschlagen — «Einladung versenden» wiederholt nur diese."
+msgstr "%(fehler)s Versand(e) fehlgeschlagen — «Einladung versenden» wiederholt nur diese."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anwesenheit lässt sich nur bei einer durchgeführten Versammlung erfassen."
+msgstr "Anwesenheit lässt sich nur bei einer durchgeführten Versammlung erfassen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anwesenheit gespeichert."
+msgstr "Anwesenheit gespeichert."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Stimmen lassen sich nur bei einer durchgeführten Versammlung erfassen."
+msgstr "Stimmen lassen sich nur bei einer durchgeführten Versammlung erfassen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Beschlüsse werden nach der Versammlung festgestellt."
+msgstr "Beschlüsse werden nach der Versammlung festgestellt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Traktandum %(nr)s: Ergebnis festgestellt."
+msgstr "Traktandum %(nr)s: Ergebnis festgestellt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bemerkungen gespeichert."
+msgstr "Bemerkungen gespeichert."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Protokoll an %(wert)s Eigentümer versendet."
+msgstr "Protokoll an %(wert)s Eigentümer versendet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(wert)s Zustellung(en) offen (keine E-Mail-Adresse oder Fehler)."
+msgstr "%(wert)s Zustellung(en) offen (keine E-Mail-Adresse oder Fehler)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Anfrage braucht einen Betreff."
+msgstr "Die Anfrage braucht einen Betreff."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anfrage erfasst."
+msgstr "Anfrage erfasst."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Antwort gespeichert und per E-Mail versendet."
+msgstr "Antwort gespeichert und per E-Mail versendet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Antwort gespeichert (keine E-Mail versendet)."
+msgstr "Antwort gespeichert (keine E-Mail versendet)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Aufgabe braucht einen Titel."
+msgstr "Die Aufgabe braucht einen Titel."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bitte ein Jahr angeben."
+msgstr "Bitte ein Jahr angeben."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Abrechnung %(jahr)s berechnet."
+msgstr "Abrechnung %(jahr)s berechnet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Abrechnung %(jahr)s abgeschlossen und ins Hauptbuch gebucht."
+msgstr "Abrechnung %(jahr)s abgeschlossen und ins Hauptbuch gebucht."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit und ein Betrag grösser 0 sind nötig."
+msgstr "Einheit und ein Betrag grösser 0 sind nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der gewählte Bankeingang wurde nicht gefunden."
+msgstr "Der gewählte Bankeingang wurde nicht gefunden."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(wert)s CHF %(betrag)s für %(bezeichnung)s erfasst und gebucht."
+msgstr "%(wert)s CHF %(betrag)s für %(bezeichnung)s erfasst und gebucht."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Abrechnung %(jahr)s ist abgeschlossen — Akonto lässt sich nicht mehr ändern."
+msgstr "Die Abrechnung %(jahr)s ist abgeschlossen — Akonto lässt sich nicht mehr ändern."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Jahr und Betrag sind nötig."
+msgstr "Jahr und Betrag sind nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einlage %(jahr)s: CHF %(betrag)s auf %(wert)s Einheiten verteilt."
+msgstr "Einlage %(jahr)s: CHF %(betrag)s auf %(wert)s Einheiten verteilt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Jahr, Betrag und Verwendungszweck sind nötig."
+msgstr "Jahr, Betrag und Verwendungszweck sind nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Entnahme CHF %(betrag)s gebucht."
+msgstr "Entnahme CHF %(betrag)s gebucht."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bitte eine Einheit wählen."
+msgstr "Bitte eine Einheit wählen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vollmacht für %(bezeichnung)s erfasst."
+msgstr "Vollmacht für %(bezeichnung)s erfasst."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan der Vollmacht abgelegt."
+msgstr "Scan der Vollmacht abgelegt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Titel, Antrag und Abstimmungsfrist sind nötig."
+msgstr "Titel, Antrag und Abstimmungsfrist sind nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zirkularbeschluss angelegt, aber ohne Budget: %(e)s"
+msgstr "Zirkularbeschluss angelegt, aber ohne Budget: %(e)s"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zirkularbeschluss angelegt. Prüfen und versenden."
+msgstr "Zirkularbeschluss angelegt. Prüfen und versenden."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Antrag: %(wert)s per E-Mail versendet."
+msgstr "Antrag: %(wert)s per E-Mail versendet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ergebnis festgestellt."
+msgstr "Ergebnis festgestellt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ergebnis an %(wert)s Eigentümer versendet."
+msgstr "Ergebnis an %(wert)s Eigentümer versendet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheiten gespeichert."
+msgstr "Einheiten gespeichert."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bezeichnung und eine gültige Wertquote sind nötig."
+msgstr "Bezeichnung und eine gültige Wertquote sind nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit «%(bezeichnung)s» angelegt."
+msgstr "Einheit «%(bezeichnung)s» angelegt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Name des Eigentümers fehlt."
+msgstr "Der Name des Eigentümers fehlt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Eigentümer «%(name)s» erfasst — jetzt einer Einheit zuteilen."
+msgstr "Eigentümer «%(name)s» erfasst — jetzt einer Einheit zuteilen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Gemeinschaft ist aktiv: Einladung, Abstimmung und Abrechnung sind freigegeben."
+msgstr "Die Gemeinschaft ist aktiv: Einladung, Abstimmung und Abrechnung sind freigegeben."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben gespeichert und bestätigt."
+msgstr "Vorgaben gespeichert und bestätigt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben gespeichert — noch nicht bestätigt."
+msgstr "Vorgaben gespeichert — noch nicht bestätigt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Dokument abgelegt."
+msgstr "Dokument abgelegt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für Eigentümer freigegeben."
+msgstr "Für Eigentümer freigegeben."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für Eigentümer nicht mehr sichtbar."
+msgstr "Für Eigentümer nicht mehr sichtbar."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Name und Art sind nötig."
+msgstr "Name und Art sind nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s» angelegt: Erdgeschoss trägt nichts, die übrigen Einheiten nach Wertquote. Anteile bei Bedarf anpassen."
+msgstr "Schlüssel «%(name)s» angelegt: Erdgeschoss trägt nichts, die übrigen Einheiten nach Wertquote. Anteile bei Bedarf anpassen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s» angelegt."
+msgstr "Schlüssel «%(name)s» angelegt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einen Schlüssel «%(name)s» gibt es schon."
+msgstr "Einen Schlüssel «%(name)s» gibt es schon."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Nur Schlüssel mit eigenen Anteilen haben Anteile zu pflegen."
+msgstr "Nur Schlüssel mit eigenen Anteilen haben Anteile zu pflegen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(roh)s» ist keine Zahl (%(bezeichnung)s)."
+msgstr "«%(roh)s» ist keine Zahl (%(bezeichnung)s)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anteile dürfen nicht negativ sein (%(bezeichnung)s)."
+msgstr "Anteile dürfen nicht negativ sein (%(bezeichnung)s)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anteile von «%(name)s» gespeichert."
+msgstr "Anteile von «%(name)s» gespeichert."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Standardschlüssel lässt sich nicht löschen."
+msgstr "Der Standardschlüssel lässt sich nicht löschen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(name)s» wird noch verwendet (Kostenart oder Budget)."
+msgstr "«%(name)s» wird noch verwendet (Kostenart oder Budget)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel gelöscht."
+msgstr "Schlüssel gelöscht."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(name)s» wird noch verwendet."
+msgstr "«%(name)s» wird noch verwendet."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bitte ein Aufwandkonto wählen."
+msgstr "Bitte ein Aufwandkonto wählen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zuordnung für %(nummer)s entfernt: Kosten laufen über den Standardschlüssel."
+msgstr "Zuordnung für %(nummer)s entfernt: Kosten laufen über den Standardschlüssel."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel nicht gefunden."
+msgstr "Schlüssel nicht gefunden."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Kosten auf %(nummer)s %(bezeichnung)s werden nach «%(name)s» verteilt."
+msgstr "Kosten auf %(nummer)s %(bezeichnung)s werden nach «%(name)s» verteilt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Jahr und eine Ratenzahl (1, 2, 3, 4, 6 oder 12) sind nötig."
+msgstr "Jahr und eine Ratenzahl (1, 2, 3, 4, 6 oder 12) sind nötig."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für %(jahr)s gibt es schon ein Budget."
+msgstr "Für %(jahr)s gibt es schon ein Budget."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Vollmacht ist widerrufen."
+msgstr "Die Vollmacht ist widerrufen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(roh)s» ist keine gültige Zahl (%(name)s)."
+msgstr "«%(roh)s» ist keine gültige Zahl (%(name)s)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(name)s: erlaubt sind Werte von 0 bis 100."
+msgstr "%(name)s: erlaubt sind Werte von 0 bis 100."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(name)s: erlaubt sind Werte ab 0."
+msgstr "%(name)s: erlaubt sind Werte ab 0."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Köpfe: %(anteil)s %% anwesend, verlangt %(soll)s %%."
+msgstr "Köpfe: %(anteil)s %% anwesend, verlangt %(soll)s %%."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Wertquoten: %(anteil)s %% anwesend, verlangt %(soll)s %%."
+msgstr "Wertquoten: %(anteil)s %% anwesend, verlangt %(soll)s %%."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Antrag fehlt."
+msgstr "Der Antrag fehlt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«Mehrheit der Anwesenden» gibt es nur in einer Versammlung, nicht im Zirkularverfahren."
+msgstr "«Mehrheit der Anwesenden» gibt es nur in einer Versammlung, nicht im Zirkularverfahren."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Abstimmungsfrist muss in der Zukunft liegen."
+msgstr "Die Abstimmungsfrist muss in der Zukunft liegen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit «%(bezeichnung)s» hat keinen Stockwerkeigentümer — sie könnte nicht abstimmen."
+msgstr "Einheit «%(bezeichnung)s» hat keinen Stockwerkeigentümer — sie könnte nicht abstimmen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Beschluss ist bereits abgeschlossen."
+msgstr "Der Beschluss ist bereits abgeschlossen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Nur ein laufender Beschluss lässt sich feststellen."
+msgstr "Nur ein laufender Beschluss lässt sich feststellen."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Frist läuft noch und nicht alle Einheiten haben abgestimmt."
+msgstr "Die Frist läuft noch und nicht alle Einheiten haben abgestimmt."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Ergebnis ist noch nicht festgestellt."
+msgstr "Das Ergebnis ist noch nicht festgestellt."
+
+#: stweg/models.py
+msgid "Akonto-Beitrag"
+msgstr "Akonto-Beitrag"
+
+#: stweg/models.py
+msgid "Einlage Erneuerungsfonds"
+msgstr "Einlage Erneuerungsfonds"
+
+#: stweg/models.py
+msgid "Ordentliche Versammlung"
+msgstr "Ordentliche Versammlung"
+
+#: stweg/models.py
+msgid "Ausserordentliche Versammlung"
+msgstr "Ausserordentliche Versammlung"
+
+#: stweg/models.py
+msgid "Eingeladen"
+msgstr "Eingeladen"
+
+#: stweg/models.py
+msgid "Durchgeführt"
+msgstr "Durchgeführt"
+
+#: stweg/models.py
+msgid "Protokoll versendet"
+msgstr "Protokoll versendet"
+
+#: stweg/models.py
+msgid "Mehrheit der Stimmenden (nach Köpfen)"
+msgstr "Mehrheit der Stimmenden (nach Köpfen)"
+
+#: stweg/models.py
+msgid "Mehrheit der Stimmenden (nach Wertquoten)"
+msgstr "Mehrheit der Stimmenden (nach Wertquoten)"
+
+#: stweg/models.py
+msgid "Mehrheit nach Köpfen UND Wertquoten (der Stimmenden)"
+msgstr "Mehrheit nach Köpfen UND Wertquoten (der Stimmenden)"
+
+#: stweg/models.py
+msgid "Mehrheit aller Eigentümer UND aller Wertquoten"
+msgstr "Mehrheit aller Eigentümer UND aller Wertquoten"
+
+#: stweg/models.py
+msgid "Mehrheit der anwesenden Eigentümer UND mehr als die Hälfte aller Wertquoten"
+msgstr "Mehrheit der anwesenden Eigentümer UND mehr als die Hälfte aller Wertquoten"
+
+#: stweg/models.py
+msgid "Einstimmigkeit aller Eigentümer"
+msgstr "Einstimmigkeit aller Eigentümer"
+
+#: stweg/models.py
+msgid "Zur Kenntnisnahme (keine Abstimmung)"
+msgstr "Zur Kenntnisnahme (keine Abstimmung)"
+
+#: stweg/models.py
+msgid "Anwesend"
+msgstr "Anwesend"
+
+#: stweg/models.py
+msgid "Vertreten (Vollmacht)"
+msgstr "Vertreten (Vollmacht)"
+
+#: stweg/models.py
+msgid "Abwesend"
+msgstr "Abwesend"
+
+#: stweg/models.py
+msgid "Portal"
+msgstr "Portal"
+
+#: stweg/models.py
+msgid "Per E-Mail gesendet"
+msgstr "Per E-Mail gesendet"
+
+#: stweg/models.py
+msgid "Fehler beim Versand"
+msgstr "Fehler beim Versand"
+
+#: stweg/models.py
+msgid "Per Post zustellen (keine E-Mail-Adresse)"
+msgstr "Per Post zustellen (keine E-Mail-Adresse)"
+
+#: stweg/models.py
+msgid "Von der Verwaltung erfasst"
+msgstr "Von der Verwaltung erfasst"
+
+#: stweg/models.py
+msgid "Wertquote (aus der Einheit)"
+msgstr "Wertquote (aus der Einheit)"
+
+#: stweg/models.py
+msgid "Fläche m² (aus der Einheit)"
+msgstr "Fläche m² (aus der Einheit)"
+
+#: stweg/models.py
+msgid "Volumen m³ (aus der Einheit)"
+msgstr "Volumen m³ (aus der Einheit)"
+
+#: stweg/models.py
+msgid "Eigene Anteile je Einheit (z. B. Lift)"
+msgstr "Eigene Anteile je Einheit (z. B. Lift)"
+
+#: stweg/models.py
+msgid "Der Versammlung vorgelegt"
+msgstr "Der Versammlung vorgelegt"
+
+#: stweg/models.py
+msgid "Genehmigt"
+msgstr "Genehmigt"
+
+#: stweg/models.py
+msgid "Begründungsakt"
+msgstr "Begründungsakt"
+
+#: stweg/models.py
+msgid "STWEG-Reglement"
+msgstr "STWEG-Reglement"
+
+#: stweg/models.py
+msgid "Nutzungs- und Verwaltungsordnung"
+msgstr "Nutzungs- und Verwaltungsordnung"
+
+#: stweg/models.py
+msgid "Versicherungspolice"
+msgstr "Versicherungspolice"
+
+#: stweg/models.py
+msgid "Jahresrechnung"
+msgstr "Jahresrechnung"

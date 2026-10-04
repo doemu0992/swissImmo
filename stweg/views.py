@@ -9,8 +9,10 @@ Ansichten lesen Eingaben, rufen sie auf und melden das Ergebnis.
 Mandantentrennung: Jedes Objekt wird über seinen `TenantManager` geladen
 (`get_object_or_404(Modell, pk=…)`). Eine fremde ID findet nichts → 404.
 """
+from django.utils.translation import gettext
 from django.contrib import messages
-from django.http import HttpResponse
+from django.db import transaction
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
@@ -20,8 +22,8 @@ from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
 from core.models import Pendenz
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
-from stweg import aufgaben, beschluss, dokumente
-from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegAkonto, StwegAnfrage,
+from stweg import aufgaben, beschluss, dokumente, vorgaben
+from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegBudget, StwegAkonto, StwegAnfrage,
                           StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
 from stweg.beschluss import BeschlussFehler
@@ -87,6 +89,9 @@ def stweg_gemeinschaft(request, stweg_id):
         'offen': aufgaben.offene_punkte(lg),
         'art_choices': Versammlung.ART_CHOICES,
         'dokument_luecken': dokumente.luecken(lg),
+        'vorgaben_unbestaetigt': not vorgaben.ist_bestaetigt(lg),
+        'frist_vorgabe': vorgaben.einladungsfrist_vorgabe(lg),
+        'budgets_vorgelegt': StwegBudget.objects.filter(liegenschaft=lg, status__in=('entwurf', 'vorgelegt')),
     })
 
 
@@ -99,7 +104,7 @@ def stweg_versammlung_neu(request, stweg_id):
     datum = parse_datetime((request.POST.get('datum') or '').strip())
     titel = (request.POST.get('titel') or '').strip()
     if not titel or datum is None:
-        messages.error(request, 'Titel und Datum (mit Uhrzeit) sind nötig.')
+        messages.error(request, gettext('Titel und Datum (mit Uhrzeit) sind nötig.'))
         return redirect(f'/neu/stweg/{lg.pk}/')
     if timezone.is_naive(datum):
         datum = timezone.make_aware(datum)
@@ -107,9 +112,10 @@ def stweg_versammlung_neu(request, stweg_id):
     v = Versammlung.objects.create(
         liegenschaft=lg, titel=titel, datum=datum, ort=(request.POST.get('ort') or '').strip(),
         art=art if art in dict(Versammlung.ART_CHOICES) else 'ordentlich',
-        einladungsfrist_tage=_zahl(request.POST.get('einladungsfrist_tage')) or 10,
+        einladungsfrist_tage=_zahl(request.POST.get('einladungsfrist_tage'))
+        or vorgaben.einladungsfrist_vorgabe(lg),
         evoting=bool(request.POST.get('evoting')))
-    messages.success(request, 'Versammlung angelegt. Jetzt Traktanden erfassen.')
+    messages.success(request, gettext('Versammlung angelegt. Jetzt Traktanden erfassen.'))
     return _zurueck(v)
 
 
@@ -118,7 +124,7 @@ def stweg_versammlung_neu(request, stweg_id):
 def stweg_versammlung_evoting(request, pk):
     v = get_object_or_404(Versammlung, pk=pk)
     if v.status == v.PROTOKOLLIERT:
-        messages.error(request, 'Das Protokoll ist versendet — E-Voting lässt sich nicht mehr ändern.')
+        messages.error(request, gettext('Das Protokoll ist versendet — E-Voting lässt sich nicht mehr ändern.'))
         return _zurueck(v)
     bis = parse_datetime((request.POST.get('evoting_bis') or '').strip())
     if bis is not None and timezone.is_naive(bis):
@@ -126,7 +132,7 @@ def stweg_versammlung_evoting(request, pk):
     v.evoting = bool(request.POST.get('evoting'))
     v.evoting_bis = bis if v.evoting else None
     v.save(update_fields=['evoting', 'evoting_bis'])
-    messages.success(request, 'E-Voting ist eingeschaltet.' if v.evoting else 'E-Voting ist ausgeschaltet.')
+    messages.success(request, gettext('E-Voting ist eingeschaltet.') if v.evoting else gettext('E-Voting ist ausgeschaltet.'))
     return _zurueck(v)
 
 
@@ -155,6 +161,8 @@ def stweg_versammlung(request, pk):
         'mehrheiten': Traktandum.MEHRHEIT_CHOICES, 'ergebnisse': Traktandum.ERGEBNIS_CHOICES,
         'anwesenheitsarten': Anwesenheit.ART_CHOICES, 'stimmwerte': Stimme.WERT_CHOICES,
         'vollmachten': v.vollmachten.select_related('einheit').order_by('-erteilt_am'),
+        'beschlussfaehigkeit': vorgaben.beschlussfaehigkeit(v) if v.status != v.ENTWURF else None,
+        'anfechtungsfrist_bis': vorgaben.anfechtungsfrist_bis(v),
     })
 
 
@@ -163,11 +171,11 @@ def stweg_versammlung(request, pk):
 def stweg_traktandum_neu(request, pk):
     v = get_object_or_404(Versammlung, pk=pk)
     if v.status != v.ENTWURF:
-        messages.error(request, 'Traktanden lassen sich nur ändern, solange die Einladung nicht versendet ist.')
+        messages.error(request, gettext('Traktanden lassen sich nur ändern, solange die Einladung nicht versendet ist.'))
         return _zurueck(v)
     titel = (request.POST.get('titel') or '').strip()
     if not titel:
-        messages.error(request, 'Ein Traktandum braucht einen Titel.')
+        messages.error(request, gettext('Ein Traktandum braucht einen Titel.'))
         return _zurueck(v)
     nr = (v.traktanden.order_by('-nr').values_list('nr', flat=True).first() or 0) + 1
     art = request.POST.get('mehrheitsart')
@@ -188,7 +196,7 @@ def stweg_traktandum_loeschen(request, pk):
     t = get_object_or_404(Traktandum.objects.select_related('versammlung'), pk=pk)
     v = t.versammlung
     if v.status != v.ENTWURF:
-        messages.error(request, 'Traktanden lassen sich nur ändern, solange die Einladung nicht versendet ist.')
+        messages.error(request, gettext('Traktanden lassen sich nur ändern, solange die Einladung nicht versendet ist.'))
     else:
         t.delete()
     return _zurueck(v)
@@ -206,11 +214,11 @@ def stweg_einladung_versenden(request, pk):
     gesendet = sum(1 for n in neu if n.status == StwegVersand.GESENDET)
     post = sum(1 for n in neu if n.status == StwegVersand.POST)
     fehler = sum(1 for n in neu if n.status == StwegVersand.FEHLER)
-    messages.success(request, f'Einladung: {gesendet} per E-Mail versendet.')
+    messages.success(request, gettext('Einladung: %(gesendet)s per E-Mail versendet.') % {'gesendet': gesendet})
     if post:
-        messages.warning(request, f'{post} Eigentümer ohne E-Mail-Adresse — Einladung per Post zustellen.')
+        messages.warning(request, gettext('%(post)s Eigentümer ohne E-Mail-Adresse — Einladung per Post zustellen.') % {'post': post})
     if fehler:
-        messages.error(request, f'{fehler} Versand(e) fehlgeschlagen — «Einladung versenden» wiederholt nur diese.')
+        messages.error(request, gettext('%(fehler)s Versand(e) fehlgeschlagen — «Einladung versenden» wiederholt nur diese.') % {'fehler': fehler})
     return _zurueck(v)
 
 
@@ -230,7 +238,7 @@ def stweg_durchfuehren(request, pk):
 def stweg_anwesenheit_speichern(request, pk):
     v = get_object_or_404(Versammlung, pk=pk)
     if v.status != v.DURCHGEFUEHRT:
-        messages.error(request, 'Anwesenheit lässt sich nur bei einer durchgeführten Versammlung erfassen.')
+        messages.error(request, gettext('Anwesenheit lässt sich nur bei einer durchgeführten Versammlung erfassen.'))
         return _zurueck(v)
     for e in stimm_einheiten(v.liegenschaft):
         art = request.POST.get(f'art_{e.pk}')
@@ -240,7 +248,7 @@ def stweg_anwesenheit_speichern(request, pk):
         if key in request.POST:
             setattr(v, key, request.POST[key].strip())
     v.save(update_fields=['leitung', 'protokollfuehrung'])
-    messages.success(request, 'Anwesenheit gespeichert.')
+    messages.success(request, gettext('Anwesenheit gespeichert.'))
     return _zurueck(v)
 
 
@@ -250,7 +258,7 @@ def stweg_stimmen_speichern(request, pk):
     t = get_object_or_404(Traktandum.objects.select_related('versammlung'), pk=pk)
     v = t.versammlung
     if v.status != v.DURCHGEFUEHRT:
-        messages.error(request, 'Stimmen lassen sich nur bei einer durchgeführten Versammlung erfassen.')
+        messages.error(request, gettext('Stimmen lassen sich nur bei einer durchgeführten Versammlung erfassen.'))
         return _zurueck(v)
     try:
         for e in beschluss.vertretene_einheiten(v):
@@ -270,13 +278,13 @@ def stweg_beschluss_feststellen(request, pk):
     t = get_object_or_404(Traktandum.objects.select_related('versammlung'), pk=pk)
     v = t.versammlung
     if v.status not in (v.DURCHGEFUEHRT, v.PROTOKOLLIERT):
-        messages.error(request, 'Beschlüsse werden nach der Versammlung festgestellt.')
+        messages.error(request, gettext('Beschlüsse werden nach der Versammlung festgestellt.'))
         return _zurueck(v)
     try:
         beschluss.feststellen(t, request.POST.get('ergebnis') or '',
                               beschlusstext=(request.POST.get('beschlusstext') or '').strip(),
-                              user=request.user)
-        messages.success(request, f'Traktandum {t.nr}: Ergebnis festgestellt.')
+                              user=request.user, trotzdem=bool(request.POST.get('trotzdem')))
+        messages.success(request, gettext('Traktandum %(nr)s: Ergebnis festgestellt.') % {'nr': t.nr})
     except beschluss.BeschlussFehler as e:
         _fehler(request, e)
     return _zurueck(v)
@@ -288,7 +296,7 @@ def stweg_protokoll_speichern(request, pk):
     v = get_object_or_404(Versammlung, pk=pk)
     v.protokoll_text = (request.POST.get('protokoll_text') or '').strip()
     v.save(update_fields=['protokoll_text'])
-    messages.success(request, 'Bemerkungen gespeichert.')
+    messages.success(request, gettext('Bemerkungen gespeichert.'))
     return _zurueck(v)
 
 
@@ -301,11 +309,10 @@ def stweg_protokoll_versenden(request, pk):
     except VersammlungsFehler as e:
         _fehler(request, e)
         return _zurueck(v)
-    messages.success(request, f'Protokoll an {sum(1 for n in neu if n.status == StwegVersand.GESENDET)} '
-                              'Eigentümer versendet.')
+    messages.success(request, gettext('Protokoll an %(wert)s Eigentümer versendet.') % {'wert': sum(1 for n in neu if n.status == StwegVersand.GESENDET)})
     offen = [n for n in neu if n.status != StwegVersand.GESENDET]
     if offen:
-        messages.warning(request, f'{len(offen)} Zustellung(en) offen (keine E-Mail-Adresse oder Fehler).')
+        messages.warning(request, gettext('%(wert)s Zustellung(en) offen (keine E-Mail-Adresse oder Fehler).') % {'wert': len(offen)})
     return _zurueck(v)
 
 
@@ -333,7 +340,7 @@ def stweg_anfrage_neu(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     betreff = (request.POST.get('betreff') or '').strip()
     if not betreff:
-        messages.error(request, 'Die Anfrage braucht einen Betreff.')
+        messages.error(request, gettext('Die Anfrage braucht einen Betreff.'))
         return redirect(f'/neu/stweg/{lg.pk}/')
     einheit = None
     if _zahl(request.POST.get('einheit')):
@@ -343,7 +350,7 @@ def stweg_anfrage_neu(request, stweg_id):
         lg, betreff, (request.POST.get('text') or '').strip(), einheit=einheit,
         kanal=kanal if kanal in dict(StwegAnfrage.KANAL_CHOICES) else 'telefon',
         faellig_am=parse_date(request.POST.get('faellig_am') or ''), user=request.user)
-    messages.success(request, 'Anfrage erfasst.')
+    messages.success(request, gettext('Anfrage erfasst.'))
     return redirect(f'/neu/stweg/{lg.pk}/')
 
 
@@ -353,8 +360,8 @@ def stweg_anfrage_beantworten(request, pk):
     a = get_object_or_404(StwegAnfrage, pk=pk)
     try:
         gesendet = anf.beantworten(a, request.POST.get('antwort') or '')
-        messages.success(request, 'Antwort gespeichert' + (' und per E-Mail versendet.' if gesendet
-                                                           else ' (keine E-Mail versendet).'))
+        messages.success(request, gettext('Antwort gespeichert und per E-Mail versendet.') if gesendet
+                         else gettext('Antwort gespeichert (keine E-Mail versendet).'))
     except anf.AnfrageFehler as e:
         _fehler(request, e)
     return redirect(f'/neu/stweg/{a.liegenschaft_id}/')
@@ -374,7 +381,7 @@ def stweg_aufgabe_neu(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     titel = (request.POST.get('titel') or '').strip()
     if not titel:
-        messages.error(request, 'Die Aufgabe braucht einen Titel.')
+        messages.error(request, gettext('Die Aufgabe braucht einen Titel.'))
     else:
         aufgaben.aufgabe_erfassen(lg, titel, faellig_am=parse_date(request.POST.get('faellig_am') or ''),
                                   user=request.user)
@@ -409,6 +416,15 @@ def _zur_abrechnung(lg, jahr=None):
     return redirect(f'/neu/stweg/{lg.pk}/abrechnung/' + (f'?jahr={jahr}' if jahr else ''))
 
 
+def _geparkte_eingaenge():
+    """Importierte, noch nicht zugeordnete Bankeingänge (Durchlaufkonto 1190), die zu einer Zahlung
+    zugeordnet werden können."""
+    from finance.models import Zahlungseingang
+    vergeben = StwegAkonto.objects.exclude(zahlungseingang__isnull=True).values_list('zahlungseingang_id', flat=True)
+    return list(Zahlungseingang.objects.filter(status='verbucht', konto__nummer='1190')
+                .exclude(pk__in=vergeben).order_by('-datum_eingang')[:50])
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def stweg_abrechnung(request, stweg_id):
     from finance.models import Erneuerungsfonds
@@ -431,6 +447,8 @@ def stweg_abrechnung(request, stweg_id):
         'akontos': StwegAkonto.objects.filter(einheit__liegenschaft=lg, datum__year=jahr)
         .select_related('einheit'),
         'fonds': fonds,
+        'geparkt': _geparkte_eingaenge(),
+        'zwecke': StwegAkonto.ZWECK_CHOICES,
         'bewegungen': list(fonds.bewegungen.select_related('einheit').order_by('-datum', '-id')[:30]) if fonds else [],
         'eigentuemer': sorted({p.eigentuemer for p in abrechnung.positionen.all() if p.eigentuemer},
                               key=lambda x: x.firma_oder_name) if abrechnung else [],
@@ -444,11 +462,11 @@ def stweg_abrechnung_berechnen(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     jahr = _jahr(request.POST.get('jahr'))
     if jahr is None:
-        messages.error(request, 'Bitte ein Jahr angeben.')
+        messages.error(request, gettext('Bitte ein Jahr angeben.'))
         return _zur_abrechnung(lg)
     try:
         StwegAbrechnungService(lg).abrechnen(jahr)
-        messages.success(request, f'Abrechnung {jahr} berechnet.')
+        messages.success(request, gettext('Abrechnung %(jahr)s berechnet.') % {'jahr': jahr})
     except (AbrechnungsFehler, WertquotenFehler) as e:
         messages.error(request, str(getattr(e, 'message', None) or e))
     return _zur_abrechnung(lg, jahr)
@@ -459,8 +477,12 @@ def stweg_abrechnung_berechnen(request, stweg_id):
 def stweg_abrechnung_abschliessen(request, pk):
     from stweg.services import StwegAbrechnungService
     a = get_object_or_404(StwegAbrechnung.objects.select_related('liegenschaft'), pk=pk)
-    StwegAbrechnungService.abschliessen(a)
-    messages.success(request, f'Abrechnung {a.jahr} abgeschlossen.')
+    from stweg.services import AbrechnungsFehler
+    try:
+        StwegAbrechnungService.abschliessen(a, user=request.user)
+        messages.success(request, gettext('Abrechnung %(jahr)s abgeschlossen und ins Hauptbuch gebucht.') % {'jahr': a.jahr})
+    except AbrechnungsFehler as e:
+        messages.error(request, str(e))
     return _zur_abrechnung(a.liegenschaft, a.jahr)
 
 
@@ -485,11 +507,28 @@ def stweg_akonto_neu(request, stweg_id):
     betrag = _betrag(request.POST.get('betrag'))
     datum = parse_date(request.POST.get('datum') or '') or timezone.localdate()
     if einheit is None or betrag is None or betrag <= 0:
-        messages.error(request, 'Einheit und ein Betrag grösser 0 sind nötig.')
+        messages.error(request, gettext('Einheit und ein Betrag grösser 0 sind nötig.'))
         return _zur_abrechnung(lg)
-    StwegAkonto.objects.create(einheit=einheit, betrag=betrag, datum=datum,
-                               bemerkung=(request.POST.get('bemerkung') or '').strip()[:200])
-    messages.success(request, f'Akonto CHF {betrag} für {einheit.bezeichnung} erfasst.')
+    from finance.models import Zahlungseingang
+    from stweg import hauptbuch
+    zweck = request.POST.get('zweck') if request.POST.get('zweck') in dict(StwegAkonto.ZWECK_CHOICES) \
+        else StwegAkonto.AKONTO
+    ze = None
+    if request.POST.get('zahlungseingang'):
+        ze = Zahlungseingang.objects.filter(pk=_zahl(request.POST.get('zahlungseingang')) or 0).first()
+        if ze is None:
+            messages.error(request, gettext('Der gewählte Bankeingang wurde nicht gefunden.'))
+            return _zur_abrechnung(lg, datum.year)
+    try:
+        with transaction.atomic():
+            k = StwegAkonto.objects.create(einheit=einheit, betrag=betrag, datum=datum, zweck=zweck,
+                                           zahlungseingang=ze,
+                                           bemerkung=(request.POST.get('bemerkung') or '').strip()[:200])
+            hauptbuch.zahlung_buchen(k, user=request.user)
+    except hauptbuch.HauptbuchFehler as e:
+        messages.error(request, str(e))
+        return _zur_abrechnung(lg, datum.year)
+    messages.success(request, gettext('%(wert)s CHF %(betrag)s für %(bezeichnung)s erfasst und gebucht.') % {'wert': k.get_zweck_display(), 'betrag': betrag, 'bezeichnung': einheit.bezeichnung})
     return _zur_abrechnung(lg, datum.year)
 
 
@@ -498,11 +537,17 @@ def stweg_akonto_neu(request, stweg_id):
 def stweg_akonto_loeschen(request, pk):
     k = get_object_or_404(StwegAkonto.objects.select_related('einheit__liegenschaft'), pk=pk)
     lg, jahr = k.einheit.liegenschaft, k.datum.year
-    if StwegAbrechnung.objects.filter(liegenschaft=lg, jahr=jahr,
-                                      status=StwegAbrechnung.STATUS_ABGESCHLOSSEN).exists():
-        messages.error(request, f'Die Abrechnung {jahr} ist abgeschlossen — Akonto lässt sich nicht mehr ändern.')
+    from stweg import hauptbuch
+    if k.zweck == StwegAkonto.AKONTO and StwegAbrechnung.objects.filter(
+            liegenschaft=lg, jahr=jahr, status=StwegAbrechnung.STATUS_ABGESCHLOSSEN).exists():
+        messages.error(request, gettext('Die Abrechnung %(jahr)s ist abgeschlossen — Akonto lässt sich nicht mehr ändern.') % {'jahr': jahr})
     else:
-        k.delete()
+        try:
+            with transaction.atomic():
+                hauptbuch.zahlung_stornieren(k, user=request.user)     # Gegenbuchung, nichts wird überschrieben
+                k.delete()
+        except hauptbuch.HauptbuchFehler as e:
+            messages.error(request, str(e))
     return _zur_abrechnung(lg, jahr)
 
 
@@ -513,11 +558,11 @@ def stweg_fonds_einlage(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     jahr, betrag = _jahr(request.POST.get('jahr')), _betrag(request.POST.get('betrag'))
     if jahr is None or betrag is None:
-        messages.error(request, 'Jahr und Betrag sind nötig.')
+        messages.error(request, gettext('Jahr und Betrag sind nötig.'))
         return _zur_abrechnung(lg)
     try:
         verteilt = jahreseinlage_belasten(lg, jahr, betrag, user=request.user)
-        messages.success(request, f'Einlage {jahr}: CHF {betrag} auf {len(verteilt)} Einheiten verteilt.')
+        messages.success(request, gettext('Einlage %(jahr)s: CHF %(betrag)s auf %(wert)s Einheiten verteilt.') % {'jahr': jahr, 'betrag': betrag, 'wert': len(verteilt)})
     except (FondsFehler, WertquotenFehler) as e:
         messages.error(request, str(getattr(e, 'message', None) or e))
     return _zur_abrechnung(lg, jahr)
@@ -531,11 +576,11 @@ def stweg_fonds_entnahme(request, stweg_id):
     jahr, betrag = _jahr(request.POST.get('jahr')), _betrag(request.POST.get('betrag'))
     text = (request.POST.get('text') or '').strip()
     if jahr is None or betrag is None or not text:
-        messages.error(request, 'Jahr, Betrag und Verwendungszweck sind nötig.')
+        messages.error(request, gettext('Jahr, Betrag und Verwendungszweck sind nötig.'))
         return _zur_abrechnung(lg)
     try:
         entnahme_buchen(lg, jahr, betrag, text, user=request.user)
-        messages.success(request, f'Entnahme CHF {betrag} gebucht.')
+        messages.success(request, gettext('Entnahme CHF %(betrag)s gebucht.') % {'betrag': betrag})
     except (FondsFehler, WertquotenFehler) as e:
         messages.error(request, str(getattr(e, 'message', None) or e))
     return _zur_abrechnung(lg, jahr)
@@ -551,14 +596,40 @@ def stweg_vollmacht_neu(request, pk):
     einheit = Einheit.objects.filter(pk=_zahl(request.POST.get('einheit')) or 0,
                                      liegenschaft=v.liegenschaft).first()
     if einheit is None:
-        messages.error(request, 'Bitte eine Einheit wählen.')
+        messages.error(request, gettext('Bitte eine Einheit wählen.'))
         return _zurueck(v)
     try:
-        erteilen(v, einheit, request.POST.get('bevollmaechtigter'), kanal='verwaltung')
-        messages.success(request, f'Vollmacht für {einheit.bezeichnung} erfasst.')
+        erteilen(v, einheit, request.POST.get('bevollmaechtigter'), kanal='verwaltung',
+                 dokument=request.FILES.get('dokument'))
+        messages.success(request, gettext('Vollmacht für %(bezeichnung)s erfasst.') % {'bezeichnung': einheit.bezeichnung})
     except VollmachtFehler as e:
         _fehler(request, e)
     return _zurueck(v)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_vollmacht_dokument(request, pk):
+    from stweg.vollmacht import VollmachtFehler, dokument_anhaengen
+    vm = get_object_or_404(Vollmacht.objects.select_related('versammlung'), pk=pk)
+    if not request.FILES.get('dokument'):
+        messages.error(request, gettext('Keine Datei ausgewählt.'))
+        return _zurueck(vm.versammlung)
+    try:
+        dokument_anhaengen(vm, request.FILES['dokument'])
+        messages.success(request, gettext('Scan der Vollmacht abgelegt.'))
+    except VollmachtFehler as e:
+        _fehler(request, e)
+    return _zurueck(vm.versammlung)
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_vollmacht_datei(request, pk):
+    from stweg.views_dokumente import datei_antwort
+    vm = get_object_or_404(Vollmacht, pk=pk)
+    if not vm.dokument:
+        raise Http404
+    return datei_antwort(vm, feld='dokument')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -587,7 +658,7 @@ def stweg_zirkular_neu(request, stweg_id):
     antrag = (request.POST.get('antrag') or '').strip()
     frist = parse_date(request.POST.get('frist_bis') or '')
     if not titel or not antrag or frist is None:
-        messages.error(request, 'Titel, Antrag und Abstimmungsfrist sind nötig.')
+        messages.error(request, gettext('Titel, Antrag und Abstimmungsfrist sind nötig.'))
         return redirect(f'/neu/stweg/{lg.pk}/')
     art = request.POST.get('mehrheitsart')
     z = Zirkularbeschluss.objects.create(
@@ -597,7 +668,18 @@ def stweg_zirkular_neu(request, stweg_id):
         rechtsgrundlage=(request.POST.get('rechtsgrundlage') or '').strip()[:200],
         vollzug_aufgabe=(request.POST.get('vollzug_aufgabe') or '').strip()[:200],
         vollzug_faellig_am=parse_date(request.POST.get('vollzug_faellig_am') or ''))
-    messages.success(request, 'Zirkularbeschluss angelegt. Prüfen und versenden.')
+    budget_pk = _zahl(request.POST.get('budget'))
+    if budget_pk:
+        from stweg import budget as bd
+        b = StwegBudget.objects.filter(pk=budget_pk, liegenschaft=lg).first()
+        try:
+            if b is None:
+                raise bd.BudgetFehler('Budget nicht gefunden.')
+            bd.an_zirkular_haengen(z, b)
+        except bd.BudgetFehler as e:
+            messages.error(request, gettext('Zirkularbeschluss angelegt, aber ohne Budget: %(e)s') % {'e': e})
+            return _zirkular_zurueck(z)
+    messages.success(request, gettext('Zirkularbeschluss angelegt. Prüfen und versenden.'))
     return _zirkular_zurueck(z)
 
 
@@ -629,10 +711,10 @@ def stweg_zirkular_versenden(request, pk):
     except VersammlungsFehler as e:
         _fehler(request, e)
         return _zirkular_zurueck(z)
-    messages.success(request, f'Antrag: {sum(1 for n in neu if n.status == "gesendet")} per E-Mail versendet.')
+    messages.success(request, gettext('Antrag: %(wert)s per E-Mail versendet.') % {'wert': sum(1 for n in neu if n.status == "gesendet")})
     offen = [n for n in neu if n.status != 'gesendet']
     if offen:
-        messages.warning(request, f'{len(offen)} Zustellung(en) offen (keine E-Mail-Adresse oder Fehler).')
+        messages.warning(request, gettext('%(wert)s Zustellung(en) offen (keine E-Mail-Adresse oder Fehler).') % {'wert': len(offen)})
     return _zirkular_zurueck(z)
 
 
@@ -662,7 +744,7 @@ def stweg_zirkular_feststellen(request, pk):
     try:
         zk.feststellen(z, request.POST.get('ergebnis') or '',
                        beschlusstext=(request.POST.get('beschlusstext') or '').strip(), user=request.user)
-        messages.success(request, 'Ergebnis festgestellt.')
+        messages.success(request, gettext('Ergebnis festgestellt.'))
     except BeschlussFehler as e:
         _fehler(request, e)
     return _zirkular_zurueck(z)
@@ -675,7 +757,7 @@ def stweg_zirkular_ergebnis(request, pk):
     z = get_object_or_404(Zirkularbeschluss, pk=pk)
     try:
         neu = zk.ergebnis_versenden(z)
-        messages.success(request, f'Ergebnis an {sum(1 for n in neu if n.status == "gesendet")} Eigentümer versendet.')
+        messages.success(request, gettext('Ergebnis an %(wert)s Eigentümer versendet.') % {'wert': sum(1 for n in neu if n.status == "gesendet")})
     except VersammlungsFehler as e:
         _fehler(request, e)
     return _zirkular_zurueck(z)
@@ -771,7 +853,7 @@ def stweg_einheiten_speichern(request, stweg_id):
             if mit is not None:
                 # Die Hauptansprechperson ist nie zugleich Miteigentümer.
                 e.miteigentuemer.set([m for m in mit if m.pk != (eig.pk if eig else None)])
-    messages.success(request, 'Einheiten gespeichert.')
+    messages.success(request, gettext('Einheiten gespeichert.'))
     return _zur_einheitenseite(lg)
 
 
@@ -783,17 +865,17 @@ def stweg_einheit_neu(request, stweg_id):
     bezeichnung = (request.POST.get('bezeichnung') or '').strip()
     quote = _quote(request.POST.get('wertquote') or '0')
     if not bezeichnung or quote is None:
-        messages.error(request, 'Bezeichnung und eine gültige Wertquote sind nötig.')
+        messages.error(request, gettext('Bezeichnung und eine gültige Wertquote sind nötig.'))
         return _zur_einheitenseite(lg)
     eig = None
     if request.POST.get('eigentuemer'):
         eig = Eigentuemer.objects.filter(pk=_zahl(request.POST['eigentuemer']) or 0).first()
         if eig is None:
-            messages.error(request, 'Dieser Eigentümer ist nicht (mehr) erfasst.')
+            messages.error(request, gettext('Dieser Eigentümer ist nicht (mehr) erfasst.'))
             return _zur_einheitenseite(lg)
     Einheit.objects.create(liegenschaft=lg, bezeichnung=bezeichnung[:50], typ='stwe', wertquote=quote,
                            etage=(request.POST.get('etage') or '').strip()[:50], stockwerkeigentuemer=eig)
-    messages.success(request, f'Einheit «{bezeichnung}» angelegt.')
+    messages.success(request, gettext('Einheit «%(bezeichnung)s» angelegt.') % {'bezeichnung': bezeichnung})
     return _zur_einheitenseite(lg)
 
 
@@ -805,13 +887,13 @@ def stweg_eigentuemer_neu(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     name = (request.POST.get('name') or '').strip()
     if not name:
-        messages.error(request, 'Der Name des Eigentümers fehlt.')
+        messages.error(request, gettext('Der Name des Eigentümers fehlt.'))
         return _zur_einheitenseite(lg)
     sprache = request.POST.get('sprache')
     Eigentuemer.objects.create(
         firma_oder_name=name[:100], email=(request.POST.get('email') or '').strip()[:254],
         sprache=sprache if sprache in ('de', 'fr', 'it', 'en') else 'de')
-    messages.success(request, f'Eigentümer «{name}» erfasst — jetzt einer Einheit zuteilen.')
+    messages.success(request, gettext('Eigentümer «%(name)s» erfasst — jetzt einer Einheit zuteilen.') % {'name': name})
     return _zur_einheitenseite(lg)
 
 
@@ -822,7 +904,29 @@ def stweg_aktivieren(request, stweg_id):
     lg.status = lg.STATUS_AKTIV
     try:
         lg.save()
-        messages.success(request, 'Die Gemeinschaft ist aktiv: Einladung, Abstimmung und Abrechnung sind freigegeben.')
+        messages.success(request, gettext('Die Gemeinschaft ist aktiv: Einladung, Abstimmung und Abrechnung sind freigegeben.'))
     except WertquotenFehler as e:
         messages.error(request, str(e.message))
     return _zur_einheitenseite(lg)
+
+
+# ── Vorgaben der Gemeinschaft ────────────────────────────────────────────
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_vorgaben(request, stweg_id):
+    lg = _gemeinschaft(stweg_id)
+    return render(request, 'stweg/vorgaben.html', {
+        'nav': 'stweg', 'lg': lg, 'v': vorgaben.vorgaben_von(lg), 'system_frist': vorgaben.SYSTEM_EINLADUNGSFRIST})
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_vorgaben_speichern(request, stweg_id):
+    lg = _gemeinschaft(stweg_id)
+    try:
+        v = vorgaben.speichern(lg, request.POST, bestaetigen=bool(request.POST.get('bestaetigt')),
+                               user=request.user)
+        messages.success(request, gettext('Vorgaben gespeichert und bestätigt.') if v.bestaetigt_am else gettext('Vorgaben gespeichert — noch nicht bestätigt.'))
+    except vorgaben.VorgabenFehler as e:
+        messages.error(request, str(e))
+    return redirect(f'/neu/stweg/{lg.pk}/vorgaben/')

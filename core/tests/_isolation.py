@@ -464,6 +464,7 @@ class MandantenFixture:
         # Portal: 'vollmacht/<pk>/erteilen' trägt die VERSAMMLUNG, '…/widerrufen' die VOLLMACHT.
         ('portal_stweg_vollmacht_widerruf', 'stweg_vollmacht'),
         ('portal_stweg_dokument',    'stweg_dokument'),
+        ('portal_stweg_scan',        'stweg_vollmacht'),
         ('portal_stweg_akonto',      'stweg_budget'),
         ('portal_stweg_teilnehmen',  'stweg_versammlung'),
         ('portal_stweg_evoting',     'stweg_versammlung'),

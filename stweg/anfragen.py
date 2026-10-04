@@ -1,5 +1,6 @@
 """Anfragen von Stockwerkeigentümern: erfassen, beantworten, erledigen."""
 
+from django.utils.translation import gettext
 import logging
 
 from django.core.mail import send_mail
@@ -23,9 +24,9 @@ def anfrage_erfassen(liegenschaft, betreff, text='', *, einheit=None, eigentueme
                      kanal='portal', faellig_am=None, user=None):
     """Legt die Anfrage an und eine Pendenz «beantworten» dazu."""
     if not liegenschaft.ist_stweg:
-        raise AnfrageFehler('Anfragen gibt es nur bei STWEG-Liegenschaften.')
+        raise AnfrageFehler(gettext('Anfragen gibt es nur bei STWEG-Liegenschaften.'))
     if einheit is not None and einheit.liegenschaft_id != liegenschaft.pk:
-        raise AnfrageFehler('Die Einheit gehört nicht zu dieser Gemeinschaft.')
+        raise AnfrageFehler(gettext('Die Einheit gehört nicht zu dieser Gemeinschaft.'))
     if eigentuemer is None and einheit is not None:
         eigentuemer = einheit.stockwerkeigentuemer
     a = StwegAnfrage.objects.create(
@@ -52,7 +53,7 @@ def in_bearbeitung(anfrage):
 def beantworten(anfrage, antwort, *, per_mail=True):
     """Hält die Antwort fest, schliesst die Pendenz und schickt sie dem Eigentümer."""
     if not antwort.strip():
-        raise AnfrageFehler('Die Antwort darf nicht leer sein.')
+        raise AnfrageFehler(gettext('Die Antwort darf nicht leer sein.'))
     anfrage.antwort = antwort
     anfrage.status = StwegAnfrage.BEANTWORTET
     anfrage.beantwortet_am = timezone.now()

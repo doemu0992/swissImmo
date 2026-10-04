@@ -16,4 +16,5 @@ urlpatterns = [
     path('akonto/<int:pk>/', p.portal_stweg_akonto, name='portal_stweg_akonto'),
     path('teilnehmen/<int:pk>/', p.portal_stweg_teilnehmen, name='portal_stweg_teilnehmen'),
     path('evoting/<int:pk>/', p.portal_stweg_evoting, name='portal_stweg_evoting'),
+    path('scan/<int:pk>/', p.portal_stweg_scan, name='portal_stweg_scan'),
 ]

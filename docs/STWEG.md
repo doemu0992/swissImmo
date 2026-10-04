@@ -35,6 +35,22 @@ ist hier nicht zuständig. Rechtswerte stehen nicht fest im Code (siehe «Offen�
 
 ## Buchhaltung
 
+Hauptbuch-Anbindung (`stweg/hauptbuch.py`):
+
+| Ereignis | Buchung |
+|---|---|
+| Rate wird vorgeschrieben (Budget genehmigt) | Soll 1110 Forderungen Stockwerkeigentümer / Haben 2035 Akonto-Beiträge |
+| Zahlung, direkt erfasst | Soll 1020 Bank / Haben 1110 |
+| Zahlung aus dem Kontoauszug-Import (geparkt auf 1190) | Soll 1190 / Haben 1110 — die Bank steht schon im Import, sie wird nicht nochmals gebucht |
+| Abschluss der Abrechnung, je Einheit | Soll 2035 / Haben 3100 (Vorschreibungen freigeben); Nachzahlung: Soll 1110 / Haben 3100; Guthaben: Soll 3100 / Haben 1110 |
+| Storno einer Zahlung | Gegenbuchung (`storniere_buchung`); ein zugeordneter Importeingang liegt wieder auf 1190 |
+
+3100 «Beiträge Stockwerkeigentümer» ist Ertrag in Höhe der Kostenanteile; die Aufwandskonten tragen die
+Kosten, das Jahresergebnis der Gemeinschaft ist damit null, und der Saldo auf 1110 je Einheit entspricht dem
+Kontokorrent. Eine gesperrte Periode (`Organisation.buchung_gesperrt_bis`) verhindert die Genehmigung eines
+Budgets bzw. den Abschluss ganz (nichts wird halb gebucht). Zahlungen für den Erneuerungsfonds werden mit
+Zweck «fonds» erfasst und decken nie den Kostenanteil. Der Abschluss bucht nur einmal.
+
 Der Fonds gehört der Gemeinschaft, nicht der Verwaltung: Einlage = Soll 1110
 (Forderungen Stockwerkeigentümer) an Haben 2800 (Erneuerungsfonds, **Passivum**);
 Entnahme = Soll 2800 an Haben 1020 (Bank). Kein Aufwand, kein Ertrag.
@@ -66,7 +82,8 @@ Verhältnis der Gewichte verteilt (grösster Rest, Summe exakt). Gewicht 0 = tr�
 2. «Vorlegen» prüft Wertquoten und Schlüssel; eine Änderung danach setzt auf «Entwurf» zurück.
 3. Das Budget wird einem **Traktandum** zugewiesen (`Traktandum.budget`). `beschluss.feststellen` löst bei
    «angenommen» `budget_genehmigen` aus (atomar: scheitert das Budget, scheitert die Feststellung);
-   bei «abgelehnt» wird es «abgelehnt», bei «vertagt» bleibt alles offen.
+   bei «abgelehnt» wird es «abgelehnt», bei «vertagt» bleibt alles offen. Dasselbe gilt für einen
+   **Zirkularbeschluss** (`Zirkularbeschluss.budget`, beim Anlegen wählbar). Jede Rate wird ins Hauptbuch gebucht.
 4. Pro Einheit: Jahresbetrag = Summe der Anteile an den Positionen (je Schlüssel einmal verteilt), in
    gleich grosse Raten, die den Jahresbetrag exakt ergeben. Die Aufteilung nach Schlüsseln wird je
    Vorschreibung als Momentaufnahme gespeichert.
@@ -121,24 +138,25 @@ Dokumente, nur Gemeinschaften, an denen der Eigentümer beteiligt ist; sonst 404
 
 ## Offen — bewusst nicht getan
 
-* **Rechtswerte nicht geprüft.** Einladungsfrist (Vorgabe 10 Tage, je Versammlung
-  einstellbar) und erforderliche Mehrheit (je Traktandum bzw. Zirkularbeschluss
-  gewählt: Köpfe, Quoten, beides, aller, einstimmig) sind Daten, keine Rechtsnorm.
-  Beim Zirkularbeschluss ist die strengste Art (einstimmig) vorgegeben; ob ein
-  Zirkularbeschluss für ein Geschäft überhaupt zulässig ist, entscheidet die
-  Verwaltung. Vor Gebrauch juristisch bestätigen.
-* Beschlussfähigkeit und Anfechtungsfrist werden nicht beurteilt bzw. geführt.
-* Die Jahresabrechnung bucht nicht ins Hauptbuch (nur der Fonds tut es). Das ist
-  eine Buchhaltungsentscheid (Akonto gegen Bank 1020 riskiert Doppelbuchung mit
-  dem Bankabgleich), keine Lücke im Code.
-* Vollmachten sind digital erfasst (Name des Vertreters), nicht als hochgeladenes
-  Dokument; eine Beglaubigung oder Unterschrift führt das System nicht.
-* Oberfläche und Portal sind viersprachig (de/en/fr/it); Einladung, Protokoll, Abrechnung, Zirkular
-  und Akonto-Rechnung (PDF/Mail) bleiben deutsch (Entscheid D11). Meldungen der Services
-  (`beschluss`, `budget`, `evoting`, …) und die Mehrheitsarten stehen noch deutsch.
-* Ein Budget wird nur über ein Versammlungs-Traktandum genehmigt; ein Zirkularbeschluss kann ein Budget
-  (noch) nicht auslösen.
-* Das Akonto wird nicht ins Hauptbuch gebucht (siehe oben).
+* **Rechtswerte nicht im Code.** Einladungsfrist, Quorum (Beschlussfähigkeit) und Anfechtungsfrist trägt
+  eine Person je Gemeinschaft ein, mit Quelle, und bestätigt sie (`/neu/stweg/<id>/vorgaben/`,
+  `stweg/vorgaben.py`). Leer heisst: es wird nicht beurteilt; bis zur Bestätigung zeigt die
+  Gemeinschaftsseite einen Hinweis. Eine Änderung der Zahlen nimmt die Bestätigung zurück. Die Systemvorgabe
+  der Einladungsfrist (10 Tage) bleibt ausdrücklich ungeprüft. Welche Mehrheitsart ein Geschäft verlangt,
+  wählt die Verwaltung je Traktandum; beim Zirkularbeschluss ist «einstimmig» vorgegeben, und ob ein
+  Zirkularbeschluss für ein Geschäft zulässig ist, entscheidet die Verwaltung. **Vor Gebrauch juristisch
+  bestätigen — das Programm kennt diese Werte nicht und setzt keine ein.**
+* Fehlt das Quorum, blockiert `feststellen` ein Ergebnis («angenommen»/«abgelehnt»); «trotzdem feststellen»
+  ist möglich, steht aber im Protokoll. «Vertagt» ist immer möglich.
+* Vollmachten sind digital erfasst (Name des Vertreters); optional hängt der Scan der unterschriebenen
+  Vollmacht daran (PDF/Bild, geschützt ausgeliefert). Das System prüft keine Unterschrift und führt
+  keine Beglaubigung.
+* Oberfläche, Portal, Meldungen der Services und die Bezeichnungen (Mehrheitsarten, Status) sind
+  viersprachig (de/en/fr/it); Einladung, Protokoll, Abrechnung, Zirkular und Akonto-Rechnung (PDF/Mail)
+  bleiben deutsch (Entscheid D11). Mail-Texte und in der Datenbank abgelegte Texte (Pendenzen, Versandfehler)
+  stehen deutsch.
+* Zahlungen aus der Zeit vor der Hauptbuch-Anbindung haben keine Buchung (`StwegAkonto.buchung` leer) und
+  werden nicht nachgebucht; ein Storno betrifft nur gebuchte Zahlungen.
 * Einzelspeicherung von Einheiten prüft die Quoten nicht; geprüft wird bei
   Aktivierung, Einlage, Einladung, Zirkularversand und Abrechnung.
   `QuerySet.update()` umgeht `save()`.

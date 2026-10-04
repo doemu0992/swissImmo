@@ -23430,3 +23430,863 @@ msgstr "La vostra partecipazione è registrata. Ora potete votare."
 #: stweg/templates/stweg/*.html
 msgid "Ihre Stimmen wurden gespeichert."
 msgstr "I vostri voti sono stati salvati."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zweck"
+msgstr "Scopo"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bankeingang aus dem Kontoauszug-Import"
+msgstr "Accredito bancario dall'importazione dell'estratto conto"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "— keiner: direkt auf die Bank buchen —"
+msgstr "— nessuno: registrare direttamente sulla banca —"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Stammt die Zahlung aus dem Kontoauszug-Import, hier den Eingang wählen — sonst läge der Betrag zweimal auf dem Bankkonto."
+msgstr "Se il pagamento proviene dall'importazione dell'estratto conto, scegliere qui l'accredito — altrimenti l'importo sarebbe due volte sul conto bancario."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Rechtswerte nicht bestätigt"
+msgstr "Valori giuridici non confermati"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einladungsfrist, Beschlussfähigkeit und Anfechtungsfrist sind nicht aus dem Reglement hinterlegt und bestätigt."
+msgstr "Il termine di convocazione, il quorum e il termine di impugnazione non sono inseriti dal regolamento né confermati."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben eintragen"
+msgstr "Inserire i requisiti"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben der Gemeinschaft"
+msgstr "Requisiti della comunione"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einladungsfrist, Beschlussfähigkeit, Anfechtungsfrist aus dem Reglement"
+msgstr "Termine di convocazione, quorum, termine di impugnazione dal regolamento"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Budget, das beschlossen wird (Annahme schreibt die Akonto-Raten vor)"
+msgstr "Preventivo da decidere (l'approvazione addebita le rate d'acconto)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "— keines —"
+msgstr "— nessuno —"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan öffnen"
+msgstr "Apri la scansione"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan der unterschriebenen Vollmacht (optional)"
+msgstr "Scansione della procura firmata (facoltativa)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "beschlussfähig"
+msgstr "quorum raggiunto"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "nicht beschlussfähig"
+msgstr "quorum non raggiunto"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Vorgaben sind noch nicht bestätigt."
+msgstr "I requisiti non sono ancora confermati."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan der unterschriebenen Vollmacht"
+msgstr "Scansione della procura firmata"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan ablegen"
+msgstr "Archivia la scansione"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan der unterschriebenen Vollmacht (PDF oder Bild, optional)"
+msgstr "Scansione della procura firmata (PDF o immagine, facoltativa)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Trotz fehlender Beschlussfähigkeit feststellen (steht im Protokoll)"
+msgstr "Accertare nonostante il quorum mancante (figura nel verbale)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben"
+msgstr "Requisiti"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Diese Werte folgen aus Reglement und Gesetz. Das System kennt sie nicht und setzt keine ein: Tragen Sie sie ein, geben Sie die Quelle an und bestätigen Sie sie. Leere Felder heissen: es wird nicht beurteilt."
+msgstr "Questi valori derivano dal regolamento e dalla legge. Il sistema non li conosce e non ne presume alcuno: inseriteli, indicate la fonte e confermateli. Un campo vuoto significa: nessuna valutazione."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "nicht bestätigt"
+msgstr "non confermato"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Beschlussfähig ab Anteil der Köpfe (in Prozent)"
+msgstr "Quorum dalla quota delle persone (in percento)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Beschlussfähig ab Anteil der Wertquoten (in Prozent)"
+msgstr "Quorum dalla quota dei valori (in percento)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anfechtungsfrist (Tage ab Versand des Protokolls)"
+msgstr "Termine di impugnazione (giorni dall'invio del verbale)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Quelle (Reglement, Artikel)"
+msgstr "Fonte (regolamento, articolo)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ich bestätige, dass diese Werte dem Reglement und dem Gesetz entsprechen."
+msgstr "Confermo che questi valori corrispondono al regolamento e alla legge."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anfragen gibt es nur bei STWEG-Liegenschaften."
+msgstr "Le richieste esistono solo per immobili in PPP."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Antwort darf nicht leer sein."
+msgstr "La risposta non deve essere vuota."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«Mehrheit der Anwesenden» braucht eine Versammlung mit Anwesenheit."
+msgstr "«Maggioranza dei presenti» richiede un'assemblea con presenze."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Unbekannte Mehrheitsart «%(mehrheitsart)s»."
+msgstr "Tipo di maggioranza sconosciuto «%(mehrheitsart)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ungültiges Ergebnis «%(ergebnis)s»."
+msgstr "Risultato non valido «%(ergebnis)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Versammlung wurde noch nicht einberufen."
+msgstr "L'assemblea non è ancora stata convocata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Widersprüchliche Stimmen desselben Eigentümers — bitte zuerst korrigieren."
+msgstr "Voti contraddittori dello stesso proprietario — correggere prima."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Nicht beschlussfähig nach den Vorgaben der Gemeinschaft: %(gruende)s"
+msgstr "Quorum non raggiunto secondo i requisiti della comunione: %(gruende)s"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Budget kann nicht genehmigt werden: %(e)s"
+msgstr "Il preventivo non può essere approvato: %(e)s"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Ergebnis dieses Traktandums ist bereits festgestellt — die Stimmen sind gesperrt."
+msgstr "Il risultato di questo punto all'ordine del giorno è già accertato — i voti sono bloccati."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zur Kenntnisnahme wird nicht abgestimmt."
+msgstr "Sui punti per presa di conoscenza non si vota."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Diese Einheit ist nicht anwesend oder vertreten — sie hat kein Stimmrecht."
+msgstr "Questa unità non è né presente né rappresentata — non ha diritto di voto."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein genehmigtes Budget ist abgeschlossen."
+msgstr "Un preventivo approvato è chiuso."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Schlüssel gehört zu einer anderen Gemeinschaft."
+msgstr "La chiave appartiene a un’altra comunione."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Betrag einer Budgetposition muss grösser 0 sein."
+msgstr "L'importo di una voce di preventivo deve essere maggiore di 0."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Budget hat keine Positionen."
+msgstr "Il preventivo non ha voci."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein Budget im Status «%(wert)s» kann nicht vorgelegt werden."
+msgstr "Un preventivo con stato «%(wert)s» non può essere sottoposto."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(raten)s Raten lassen sich nicht gleichmässig auf zwölf Monate legen."
+msgstr "%(raten)s rate non si possono distribuire uniformemente su dodici mesi."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Genehmigt werden kann nur ein vorgelegtes Budget (Status: %(wert)s)."
+msgstr "Può essere approvato solo un preventivo sottoposto (stato: %(wert)s)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Abgelehnt werden kann nur ein vorgelegtes Budget."
+msgstr "Può essere respinto solo un preventivo sottoposto."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Budget und Traktandum gehören zu verschiedenen Gemeinschaften."
+msgstr "Preventivo e punto all'ordine del giorno appartengono a comunioni diverse."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Traktandum ist schon entschieden."
+msgstr "Il punto all'ordine del giorno è già deciso."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Budget und Zirkularbeschluss gehören zu verschiedenen Gemeinschaften."
+msgstr "Preventivo e decisione per circolazione appartengono a comunioni diverse."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein Budget lässt sich nur an einen Zirkularbeschluss im Entwurf hängen."
+msgstr "Un preventivo può essere collegato solo a una decisione per circolazione in bozza."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Akonto-Rechnungen gibt es erst nach der Genehmigung des Budgets."
+msgstr "Le fatture d'acconto esistono solo dopo l'approvazione del preventivo."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Unbekannte Kategorie."
+msgstr "Categoria sconosciuta."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein Titel ist nötig."
+msgstr "È necessario un titolo."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«Gültig bis» liegt vor «gültig ab»."
+msgstr "«Valido fino al» precede «valido dal»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für diese Versammlung ist kein E-Voting vorgesehen."
+msgstr "Per questa assemblea non è previsto il voto elettronico."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das E-Voting ist nur während der durchgeführten Versammlung offen."
+msgstr "Il voto elettronico è aperto solo durante l'assemblea."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das E-Voting ist geschlossen."
+msgstr "Il voto elettronico è chiuso."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Sie haben in dieser Gemeinschaft keine stimmberechtigte Einheit."
+msgstr "In questa comunione non avete alcuna unità con diritto di voto."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ungültige Abstimmung: Traktandum oder Einheit gehört nicht zu Ihnen."
+msgstr "Voto non valido: il punto all'ordine del giorno o l'unità non vi appartiene."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bitte zuerst die Teilnahme erklären (Einheit «%(bezeichnung)s»)."
+msgstr "Dichiarate prima la partecipazione (unità «%(bezeichnung)s»)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(liegenschaft)s» ist keine STWEG-Liegenschaft."
+msgstr "«%(liegenschaft)s» non è un immobile in PPP."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(liegenschaft)s» ist nicht aktiv."
+msgstr "«%(liegenschaft)s» non è attivo."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Einlage muss grösser 0 sein."
+msgstr "Il versamento deve essere maggiore di 0."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für %(jahr)s wurde die Einlage bereits belastet."
+msgstr "Il versamento per %(jahr)s è già stato addebitato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Entnahme muss grösser 0 sein."
+msgstr "Il prelievo deve essere maggiore di 0."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Entnahme CHF %(betrag)s übersteigt den Fondsbestand CHF %(bestand)s."
+msgstr "Il prelievo di CHF %(betrag)s supera il saldo del fondo di CHF %(bestand)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Buchung ist nicht möglich — Periode abgeschlossen? (%(fehler)s)"
+msgstr "La registrazione non è possibile — periodo chiuso? (%(fehler)s)"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Diese Zahlung ist schon gebucht."
+msgstr "Questo pagamento è già registrato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Eingang liegt nicht auf dem Durchlaufkonto 1190 (ungeklärte Zahlungen)."
+msgstr "L'accredito non si trova sul conto transitorio 1190 (pagamenti non chiariti)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Eingang lautet auf CHF %(betrag)s, die Zahlung auf CHF %(betrag2)s — Teilzuordnungen gibt es nicht."
+msgstr "L'accredito è di CHF %(betrag)s, il pagamento di CHF %(betrag2)s — le assegnazioni parziali non esistono."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Dieser Eingang ist schon einer Zahlung zugeordnet."
+msgstr "Questo accredito è già assegnato a un pagamento."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Abschluss dieser Abrechnung ist schon gebucht."
+msgstr "La chiusura di questo conteggio è già registrata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Schlüssel «%(STANDARD_NAME)s» existiert, ist aber nicht Standard."
+msgstr "La chiave «%(STANDARD_NAME)s» esiste ma non è quella standard."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s»: Angabe in %(einheit_name)s fehlt bei %(wert)s."
+msgstr "Chiave «%(name)s»: manca il valore in %(einheit_name)s per %(wert)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s»: kein Anteil für %(wert)s (0 eintragen, wenn die Einheit nichts trägt)."
+msgstr "Chiave «%(name)s»: nessuna quota per %(wert)s (inserire 0 se l'unità non sostiene nulla)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Unbekannte Schlüsselart «%(art)s»."
+msgstr "Tipo di chiave sconosciuto «%(art)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s» enthält negative Gewichte."
+msgstr "La chiave «%(name)s» contiene pesi negativi."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s»: die Summe der Gewichte ist 0."
+msgstr "Chiave «%(name)s»: la somma dei pesi è 0."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(name)s» ist kein Schlüssel mit eigenen Anteilen."
+msgstr "«%(name)s» non è una chiave con quote proprie."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit «%(bezeichnung)s» gehört nicht zu dieser Gemeinschaft."
+msgstr "L'unità «%(bezeichnung)s» non appartiene a questa comunione."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anteile dürfen nicht negativ sein."
+msgstr "Le quote non devono essere negative."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(lg)s» ist nicht aktiv — es wird nicht abgerechnet."
+msgstr "«%(lg)s» non è attivo — non si effettua alcun conteggio."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Abrechnung %(jahr)s ist abgeschlossen."
+msgstr "Il conteggio %(jahr)s è chiuso."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einzelkosten (%(wert)s, CHF %(wert2)s) hängen an einer Einheit ohne Stimmrecht: «%(bezeichnung)s»."
+msgstr "Costi individuali (%(wert)s, CHF %(wert2)s) sono collegati a un'unità senza diritto di voto: «%(bezeichnung)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Wertquoten von «%(liegenschaft)s» ergeben %(wert)s/%(wert2)s, erwartet %(wert3)s/%(wert4)s. Differenz: %(wert5)s%(wert6)s."
+msgstr "Le quote di valore di «%(liegenschaft)s» danno %(wert)s/%(wert2)s, atteso %(wert3)s/%(wert4)s. Differenza: %(wert5)s%(wert6)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Gemeinschaft muss eine aktive STWEG sein."
+msgstr "La comunione deve essere una PPP attiva."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Es ist kein Traktandum erfasst."
+msgstr "Nessun punto all'ordine del giorno è registrato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einladungsfrist unterschritten: noch %(tage)s Tage bis zur Versammlung, verlangt sind %(einladungsfrist_tage)s."
+msgstr "Termine di convocazione non rispettato: ancora %(tage)s giorni all'assemblea, richiesti %(einladungsfrist_tage)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Keine Stockwerkeigentümer den Einheiten zugeordnet."
+msgstr "Nessun proprietario per piani assegnato alle unità."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit «%(bezeichnung)s» hat keinen Stockwerkeigentümer — sie würde nicht eingeladen."
+msgstr "L'unità «%(bezeichnung)s» non ha un proprietario per piani — non verrebbe invitata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Versammlung ist bereits durchgeführt."
+msgstr "L'assemblea si è già svolta."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Durchführen setzt eine versendete Einladung voraus."
+msgstr "Lo svolgimento presuppone un invito inviato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Versammlung ist noch nicht durchgeführt."
+msgstr "L'assemblea non si è ancora svolta."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Traktandum %(nr)s «%(titel)s» hat noch kein festgestelltes Ergebnis."
+msgstr "Il punto %(nr)s «%(titel)s» non ha ancora un risultato accertato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Titel und Datum (mit Uhrzeit) sind nötig."
+msgstr "Titolo e data (con ora) sono necessari."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Versammlung angelegt. Jetzt Traktanden erfassen."
+msgstr "Assemblea creata. Registrate ora i punti all'ordine del giorno."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Protokoll ist versendet — E-Voting lässt sich nicht mehr ändern."
+msgstr "Il verbale è inviato — il voto elettronico non può più essere modificato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "E-Voting ist eingeschaltet."
+msgstr "Il voto elettronico è attivato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "E-Voting ist ausgeschaltet."
+msgstr "Il voto elettronico è disattivato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Traktanden lassen sich nur ändern, solange die Einladung nicht versendet ist."
+msgstr "I punti all'ordine del giorno si possono modificare solo finché l'invito non è inviato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ein Traktandum braucht einen Titel."
+msgstr "Un punto all'ordine del giorno ha bisogno di un titolo."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einladung: %(gesendet)s per E-Mail versendet."
+msgstr "Invito: %(gesendet)s inviato/i per e-mail."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(post)s Eigentümer ohne E-Mail-Adresse — Einladung per Post zustellen."
+msgstr "%(post)s proprietario/i senza indirizzo e-mail — recapitare l'invito per posta."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(fehler)s Versand(e) fehlgeschlagen — «Einladung versenden» wiederholt nur diese."
+msgstr "%(fehler)s invio/i non riuscito/i — «Invia invito» ripete solo questi."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anwesenheit lässt sich nur bei einer durchgeführten Versammlung erfassen."
+msgstr "Le presenze si possono registrare solo in un'assemblea svolta."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anwesenheit gespeichert."
+msgstr "Presenze salvate."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Stimmen lassen sich nur bei einer durchgeführten Versammlung erfassen."
+msgstr "I voti si possono registrare solo in un'assemblea svolta."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Beschlüsse werden nach der Versammlung festgestellt."
+msgstr "Le decisioni vengono accertate dopo l'assemblea."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Traktandum %(nr)s: Ergebnis festgestellt."
+msgstr "Punto %(nr)s: risultato accertato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bemerkungen gespeichert."
+msgstr "Osservazioni salvate."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Protokoll an %(wert)s Eigentümer versendet."
+msgstr "Verbale inviato a %(wert)s proprietario/i."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(wert)s Zustellung(en) offen (keine E-Mail-Adresse oder Fehler)."
+msgstr "%(wert)s recapito/i aperto/i (nessun indirizzo e-mail o errore)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Anfrage braucht einen Betreff."
+msgstr "La richiesta ha bisogno di un oggetto."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anfrage erfasst."
+msgstr "Richiesta registrata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Antwort gespeichert und per E-Mail versendet."
+msgstr "Risposta salvata e inviata per e-mail."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Antwort gespeichert (keine E-Mail versendet)."
+msgstr "Risposta salvata (nessuna e-mail inviata)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Aufgabe braucht einen Titel."
+msgstr "Il compito ha bisogno di un titolo."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bitte ein Jahr angeben."
+msgstr "Indicare un anno."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Abrechnung %(jahr)s berechnet."
+msgstr "Conteggio %(jahr)s calcolato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Abrechnung %(jahr)s abgeschlossen und ins Hauptbuch gebucht."
+msgstr "Conteggio %(jahr)s chiuso e registrato nel libro mastro."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit und ein Betrag grösser 0 sind nötig."
+msgstr "Sono necessari un'unità e un importo maggiore di 0."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der gewählte Bankeingang wurde nicht gefunden."
+msgstr "L'accredito bancario scelto non è stato trovato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(wert)s CHF %(betrag)s für %(bezeichnung)s erfasst und gebucht."
+msgstr "%(wert)s CHF %(betrag)s per %(bezeichnung)s registrato e contabilizzato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Abrechnung %(jahr)s ist abgeschlossen — Akonto lässt sich nicht mehr ändern."
+msgstr "Il conteggio %(jahr)s è chiuso — gli acconti non si possono più modificare."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Jahr und Betrag sind nötig."
+msgstr "Anno e importo sono necessari."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einlage %(jahr)s: CHF %(betrag)s auf %(wert)s Einheiten verteilt."
+msgstr "Versamento %(jahr)s: CHF %(betrag)s ripartito su %(wert)s unità."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Jahr, Betrag und Verwendungszweck sind nötig."
+msgstr "Anno, importo e scopo sono necessari."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Entnahme CHF %(betrag)s gebucht."
+msgstr "Prelievo di CHF %(betrag)s registrato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bitte eine Einheit wählen."
+msgstr "Scegliere un'unità."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vollmacht für %(bezeichnung)s erfasst."
+msgstr "Procura per %(bezeichnung)s registrata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Scan der Vollmacht abgelegt."
+msgstr "Scansione della procura archiviata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Titel, Antrag und Abstimmungsfrist sind nötig."
+msgstr "Titolo, proposta e termine di votazione sono necessari."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zirkularbeschluss angelegt, aber ohne Budget: %(e)s"
+msgstr "Decisione per circolazione creata, ma senza preventivo: %(e)s"
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zirkularbeschluss angelegt. Prüfen und versenden."
+msgstr "Decisione per circolazione creata. Verificare e inviare."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Antrag: %(wert)s per E-Mail versendet."
+msgstr "Proposta: %(wert)s inviata/e per e-mail."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ergebnis festgestellt."
+msgstr "Risultato accertato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Ergebnis an %(wert)s Eigentümer versendet."
+msgstr "Risultato inviato a %(wert)s proprietario/i."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheiten gespeichert."
+msgstr "Unità salvate."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bezeichnung und eine gültige Wertquote sind nötig."
+msgstr "Sono necessari una designazione e una quota di valore valida."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit «%(bezeichnung)s» angelegt."
+msgstr "Unità «%(bezeichnung)s» creata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Name des Eigentümers fehlt."
+msgstr "Il nome del proprietario manca."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Eigentümer «%(name)s» erfasst — jetzt einer Einheit zuteilen."
+msgstr "Proprietario «%(name)s» registrato — ora assegnarlo a un'unità."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Gemeinschaft ist aktiv: Einladung, Abstimmung und Abrechnung sind freigegeben."
+msgstr "La comunione è attiva: invito, votazione e conteggio sono abilitati."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben gespeichert und bestätigt."
+msgstr "Requisiti salvati e confermati."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Vorgaben gespeichert — noch nicht bestätigt."
+msgstr "Requisiti salvati — non ancora confermati."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Dokument abgelegt."
+msgstr "Documento archiviato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für Eigentümer freigegeben."
+msgstr "Pubblicato per i proprietari."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für Eigentümer nicht mehr sichtbar."
+msgstr "Non più visibile ai proprietari."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Name und Art sind nötig."
+msgstr "Nome e tipo sono necessari."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s» angelegt: Erdgeschoss trägt nichts, die übrigen Einheiten nach Wertquote. Anteile bei Bedarf anpassen."
+msgstr "Chiave «%(name)s» creata: il piano terra non sostiene nulla, le altre unità secondo la quota di valore. Adattare le quote se necessario."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel «%(name)s» angelegt."
+msgstr "Chiave «%(name)s» creata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einen Schlüssel «%(name)s» gibt es schon."
+msgstr "Esiste già una chiave «%(name)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Nur Schlüssel mit eigenen Anteilen haben Anteile zu pflegen."
+msgstr "Solo le chiavi con quote proprie hanno quote da gestire."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(roh)s» ist keine Zahl (%(bezeichnung)s)."
+msgstr "«%(roh)s» non è un numero (%(bezeichnung)s)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anteile dürfen nicht negativ sein (%(bezeichnung)s)."
+msgstr "Le quote non devono essere negative (%(bezeichnung)s)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Anteile von «%(name)s» gespeichert."
+msgstr "Quote di «%(name)s» salvate."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Standardschlüssel lässt sich nicht löschen."
+msgstr "La chiave standard non può essere eliminata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(name)s» wird noch verwendet (Kostenart oder Budget)."
+msgstr "«%(name)s» è ancora in uso (tipo di costo o preventivo)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel gelöscht."
+msgstr "Chiave eliminata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(name)s» wird noch verwendet."
+msgstr "«%(name)s» è ancora in uso."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Bitte ein Aufwandkonto wählen."
+msgstr "Scegliere un conto spese."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Zuordnung für %(nummer)s entfernt: Kosten laufen über den Standardschlüssel."
+msgstr "Assegnazione per %(nummer)s rimossa: i costi seguono la chiave standard."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Schlüssel nicht gefunden."
+msgstr "Chiave non trovata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Kosten auf %(nummer)s %(bezeichnung)s werden nach «%(name)s» verteilt."
+msgstr "I costi su %(nummer)s %(bezeichnung)s vengono ripartiti secondo «%(name)s»."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Jahr und eine Ratenzahl (1, 2, 3, 4, 6 oder 12) sind nötig."
+msgstr "Sono necessari un anno e un numero di rate (1, 2, 3, 4, 6 o 12)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Für %(jahr)s gibt es schon ein Budget."
+msgstr "Esiste già un preventivo per %(jahr)s."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Vollmacht ist widerrufen."
+msgstr "La procura è revocata."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«%(roh)s» ist keine gültige Zahl (%(name)s)."
+msgstr "«%(roh)s» non è un numero valido (%(name)s)."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(name)s: erlaubt sind Werte von 0 bis 100."
+msgstr "%(name)s: sono ammessi valori da 0 a 100."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "%(name)s: erlaubt sind Werte ab 0."
+msgstr "%(name)s: sono ammessi valori a partire da 0."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Köpfe: %(anteil)s %% anwesend, verlangt %(soll)s %%."
+msgstr "Persone: %(anteil)s %% presenti, richiesti %(soll)s %%."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Wertquoten: %(anteil)s %% anwesend, verlangt %(soll)s %%."
+msgstr "Quote di valore: %(anteil)s %% presenti, richiesti %(soll)s %%."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Antrag fehlt."
+msgstr "La proposta manca."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "«Mehrheit der Anwesenden» gibt es nur in einer Versammlung, nicht im Zirkularverfahren."
+msgstr "«Maggioranza dei presenti» esiste solo in un'assemblea, non nella procedura per circolazione."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Abstimmungsfrist muss in der Zukunft liegen."
+msgstr "Il termine di votazione deve essere nel futuro."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Einheit «%(bezeichnung)s» hat keinen Stockwerkeigentümer — sie könnte nicht abstimmen."
+msgstr "L'unità «%(bezeichnung)s» non ha un proprietario per piani — non potrebbe votare."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Der Beschluss ist bereits abgeschlossen."
+msgstr "La decisione è già conclusa."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Nur ein laufender Beschluss lässt sich feststellen."
+msgstr "Si può accertare solo una decisione in corso."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Die Frist läuft noch und nicht alle Einheiten haben abgestimmt."
+msgstr "Il termine è ancora in corso e non tutte le unità hanno votato."
+
+#: stweg/*.py, stweg/templates/stweg/*.html
+msgid "Das Ergebnis ist noch nicht festgestellt."
+msgstr "Il risultato non è ancora accertato."
+
+#: stweg/models.py
+msgid "Akonto-Beitrag"
+msgstr "Acconto"
+
+#: stweg/models.py
+msgid "Einlage Erneuerungsfonds"
+msgstr "Versamento al fondo di rinnovamento"
+
+#: stweg/models.py
+msgid "Ordentliche Versammlung"
+msgstr "Assemblea ordinaria"
+
+#: stweg/models.py
+msgid "Ausserordentliche Versammlung"
+msgstr "Assemblea straordinaria"
+
+#: stweg/models.py
+msgid "Eingeladen"
+msgstr "Invitato"
+
+#: stweg/models.py
+msgid "Durchgeführt"
+msgstr "Svolta"
+
+#: stweg/models.py
+msgid "Protokoll versendet"
+msgstr "Verbale inviato"
+
+#: stweg/models.py
+msgid "Mehrheit der Stimmenden (nach Köpfen)"
+msgstr "Maggioranza dei votanti (per persone)"
+
+#: stweg/models.py
+msgid "Mehrheit der Stimmenden (nach Wertquoten)"
+msgstr "Maggioranza dei votanti (secondo le quote di valore)"
+
+#: stweg/models.py
+msgid "Mehrheit nach Köpfen UND Wertquoten (der Stimmenden)"
+msgstr "Maggioranza per persone E quote di valore (dei votanti)"
+
+#: stweg/models.py
+msgid "Mehrheit aller Eigentümer UND aller Wertquoten"
+msgstr "Maggioranza di tutti i proprietari E di tutte le quote di valore"
+
+#: stweg/models.py
+msgid "Mehrheit der anwesenden Eigentümer UND mehr als die Hälfte aller Wertquoten"
+msgstr "Maggioranza dei proprietari presenti E più della metà di tutte le quote di valore"
+
+#: stweg/models.py
+msgid "Einstimmigkeit aller Eigentümer"
+msgstr "Unanimità di tutti i proprietari"
+
+#: stweg/models.py
+msgid "Zur Kenntnisnahme (keine Abstimmung)"
+msgstr "Per presa di conoscenza (nessuna votazione)"
+
+#: stweg/models.py
+msgid "Anwesend"
+msgstr "Presente"
+
+#: stweg/models.py
+msgid "Vertreten (Vollmacht)"
+msgstr "Rappresentato (procura)"
+
+#: stweg/models.py
+msgid "Abwesend"
+msgstr "Assente"
+
+#: stweg/models.py
+msgid "Portal"
+msgstr "Portale"
+
+#: stweg/models.py
+msgid "Per E-Mail gesendet"
+msgstr "Inviato per e-mail"
+
+#: stweg/models.py
+msgid "Fehler beim Versand"
+msgstr "Errore durante l'invio"
+
+#: stweg/models.py
+msgid "Per Post zustellen (keine E-Mail-Adresse)"
+msgstr "Recapitare per posta (nessun indirizzo e-mail)"
+
+#: stweg/models.py
+msgid "Von der Verwaltung erfasst"
+msgstr "Registrato dall'amministrazione"
+
+#: stweg/models.py
+msgid "Wertquote (aus der Einheit)"
+msgstr "Quota di valore (dell'unità)"
+
+#: stweg/models.py
+msgid "Fläche m² (aus der Einheit)"
+msgstr "Superficie m² (dell'unità)"
+
+#: stweg/models.py
+msgid "Volumen m³ (aus der Einheit)"
+msgstr "Volume m³ (dell'unità)"
+
+#: stweg/models.py
+msgid "Eigene Anteile je Einheit (z. B. Lift)"
+msgstr "Quote proprie per unità (p. es. ascensore)"
+
+#: stweg/models.py
+msgid "Der Versammlung vorgelegt"
+msgstr "Sottoposto all'assemblea"
+
+#: stweg/models.py
+msgid "Genehmigt"
+msgstr "Approvato"
+
+#: stweg/models.py
+msgid "Begründungsakt"
+msgstr "Atto costitutivo"
+
+#: stweg/models.py
+msgid "STWEG-Reglement"
+msgstr "Regolamento della PPP"
+
+#: stweg/models.py
+msgid "Nutzungs- und Verwaltungsordnung"
+msgstr "Regolamento d'uso e di amministrazione"
+
+#: stweg/models.py
+msgid "Versicherungspolice"
+msgstr "Polizza assicurativa"
+
+#: stweg/models.py
+msgid "Jahresrechnung"
+msgstr "Conti annuali"

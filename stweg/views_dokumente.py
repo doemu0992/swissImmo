@@ -2,6 +2,7 @@
 
 Ausgeliefert wird nie über /media/, sondern hier: Login, Rolle, Mandant (`TenantManager` → fremde
 ID = 404). Der Eigentümer-Download steht in `stweg.portal`."""
+from django.utils.translation import gettext
 import os
 
 from django.contrib import messages
@@ -18,13 +19,14 @@ from stweg.views import _gemeinschaft
 INLINE = {'.pdf', '.jpg', '.jpeg', '.png', '.webp'}
 
 
-def datei_antwort(d):
+def datei_antwort(d, feld='datei'):
     """Die Datei eines Dokuments; PDFs und Bilder inline, alles andere als Download, nie «sniffen»."""
+    datei = getattr(d, feld)
     try:
-        f = d.datei.open('rb')
+        f = datei.open('rb')
     except (FileNotFoundError, ValueError, OSError):
         raise Http404
-    name = os.path.basename(d.datei.name)
+    name = os.path.basename(datei.name)
     antwort = FileResponse(f)
     antwort['X-Content-Type-Options'] = 'nosniff'
     antwort['Content-Disposition'] = ('inline' if os.path.splitext(name.lower())[1] in INLINE else 'attachment') \
@@ -52,7 +54,7 @@ def stweg_dokument_neu(request, stweg_id):
                       gueltig_bis=parse_date(request.POST.get('gueltig_bis') or ''),
                       sichtbar=bool(request.POST.get('sichtbar')), user=request.user)
         dok.aufgaben_nachziehen(lg)
-        messages.success(request, 'Dokument abgelegt.')
+        messages.success(request, gettext('Dokument abgelegt.'))
     except dok.DokumentFehler as e:
         messages.error(request, str(e))
     return redirect(f'/neu/stweg/{lg.pk}/dokumente/')
@@ -71,7 +73,7 @@ def stweg_dokument_loeschen(request, pk):
     d.datei.delete(save=False)
     d.delete()
     dok.aufgaben_nachziehen(lg)
-    messages.success(request, 'Dokument gelöscht.')
+    messages.success(request, gettext('Dokument gelöscht.'))
     return redirect(f'/neu/stweg/{lg.pk}/dokumente/')
 
 
@@ -81,5 +83,5 @@ def stweg_dokument_sichtbar(request, pk):
     d = get_object_or_404(StwegDokument.objects.select_related('liegenschaft'), pk=pk)
     d.sichtbar = not d.sichtbar
     d.save(update_fields=['sichtbar'])
-    messages.success(request, 'Für Eigentümer freigegeben.' if d.sichtbar else 'Für Eigentümer nicht mehr sichtbar.')
+    messages.success(request, gettext('Für Eigentümer freigegeben.') if d.sichtbar else gettext('Für Eigentümer nicht mehr sichtbar.'))
     return redirect(f'/neu/stweg/{d.liegenschaft.pk}/dokumente/')
