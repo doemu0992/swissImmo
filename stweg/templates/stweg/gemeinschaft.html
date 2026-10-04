@@ -164,6 +164,8 @@
 
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">Einheiten</span><span class="fw-neben">{{ einheiten|length }}</span></div>
+    <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/einheiten/"><div class="fw-mitte"><div class="fw-t">Einheiten, Wertquoten und Eigentümer bearbeiten</div>
+        <div class="fw-s">Zuteilung, laufende Quotensumme, Gemeinschaft aktivieren</div></div></a>
     {% for e in einheiten %}
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div>
         <div class="fw-s">{{ e.stockwerkeigentuemer.firma_oder_name|default:"kein Eigentümer zugeordnet" }}</div></div>

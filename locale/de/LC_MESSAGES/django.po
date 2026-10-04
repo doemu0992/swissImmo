@@ -22204,3 +22204,7 @@ msgstr "Stockwerkeigentum"
 #: portfolio/forms.py
 msgid "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
 msgstr "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
+
+#: core/templates/fw/liegenschaft_form.html
+msgid "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu."
+msgstr "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu."

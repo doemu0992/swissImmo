@@ -124,12 +124,28 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
                 <input id="id_geak_datum" name="geak_datum" type="date" value="{{ form.geak_datum.value|date:'Y-m-d'|default:form.geak_datum.value|default_if_none:'' }}" class="fw-feld w-full"{% if form.geak_datum.errors %} aria-invalid="true" aria-describedby="id_geak_datum_fehler"{% endif %}>
                 {% include 'fw/_feldfehler.html' with f=form.geak_datum %}</div>
         </div>
-        <div><label for="id_eigentuemer_id" class="fw-label mb-1">{% trans "Eigentümer" %}</label>
+        <div id="eigentuemer_block"><label for="id_eigentuemer_id" class="fw-label mb-1">{% trans "Eigentümer" %}</label>
             <select id="id_eigentuemer_id" name="eigentuemer_id" class="fw-feld w-full"{% if feld_fehler.eigentuemer_id %} aria-invalid="true" aria-describedby="id_eigentuemer_id_fehler"{% endif %}>
                 <option value="">— {% trans "kein Eigentümer" %} —</option>
                 {% for md in eigentuemer %}<option value="{{ md.id }}" {% if eigentuemer_wert == md.id|stringformat:"s" %}selected{% endif %}>{{ md.firma_oder_name }}</option>{% endfor %}
             </select>
             {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.eigentuemer_id feld_id="id_eigentuemer_id" %}</div>
+        <p id="stweg_hinweis" class="fw-hinweis info rounded-lg" hidden>{% trans "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu." %}</p>
+        <script>
+        (function () {
+            var art = document.getElementById('id_typ');
+            var block = document.getElementById('eigentuemer_block');
+            var hinweis = document.getElementById('stweg_hinweis');
+            if (!art || !block || !hinweis) { return; }
+            function umschalten() {
+                var stweg = art.value === 'STWEG';
+                block.hidden = stweg;
+                hinweis.hidden = !stweg;
+            }
+            art.addEventListener('change', umschalten);
+            umschalten();
+        })();
+        </script>
         {% if ist_neu %}
         <label class="fw-hinweis info rounded-lg">
             <input type="checkbox" name="gwr_import" {% if not form.is_bound or form.data.gwr_import %}checked{% endif %} class="fw-akzent mt-0.5">
