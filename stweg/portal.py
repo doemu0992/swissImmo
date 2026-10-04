@@ -12,7 +12,6 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
@@ -209,15 +208,6 @@ def portal_stweg_anfrage(request, stweg_id):
         return redirect('/portal/stweg/')
     a = anf.anfrage_erfassen(einheit.liegenschaft, betreff, (request.POST.get('text') or '').strip(),
                              einheit=einheit, eigentuemer=eig, kanal='portal')
-    zustaendig = einheit.liegenschaft.betreut_von
-    if zustaendig is not None and zustaendig.email:
-        try:
-            send_mail(f'Neue STWEG-Anfrage: {a.betreff}',
-                      f'{eig.firma_oder_name} ({einheit.bezeichnung}, {einheit.liegenschaft}):\n\n{a.text}',
-                      None, [zustaendig.email], fail_silently=False)
-        except Exception:                                           # noqa: BLE001
-            # Die Anfrage ist gespeichert und als Pendenz sichtbar; die Mail ist
-            # nur der Hinweis darauf. Ihr Scheitern darf die Anfrage nicht verlieren.
-            logger.warning('Benachrichtigung zur STWEG-Anfrage %s fehlgeschlagen', a.pk, exc_info=True)
+    anf.verwaltung_benachrichtigen(a)
     messages.success(request, 'Ihre Anfrage wurde an die Verwaltung übermittelt.')
     return redirect('/portal/stweg/')

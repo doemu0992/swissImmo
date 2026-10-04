@@ -162,3 +162,58 @@ class PortalAndereGemeinschaftDerselbenVerwaltungTests(TestCase):
         self.assertEqual(r.status_code, 404)
         self.assertEqual(StwegAnfrage.objects.count(), 0)
         self.assertNotContains(self.dora.get('/portal/stweg/'), self.v.titel)
+
+
+class PortalBenachrichtigungTests(TestCase):
+    """Wer erfährt von einer neuen Portal-Anfrage — und was, wenn niemand erreichbar ist."""
+
+    def setUp(self):
+        self.lg, self.e, self.eigs = sonnenblick()
+        u = User.objects.create_user(username='anna_b', password='x')
+        self.eigs[0].benutzer = u
+        self.eigs[0].save()
+        self.c = Client()
+        self.c.force_login(u)
+        self.org = self.lg.organisation
+        mail.outbox.clear()
+
+    def anfrage(self):
+        return self.c.post(f'/portal/stweg/anfrage/{self.lg.pk}/', {'betreff': 'Lift?', 'text': 'Defekt'})
+
+    def test_betreuende_person_bekommt_den_hinweis(self):
+        betreuer = User.objects.create_user(username='betreuer', password='x', email='lea@verwaltung.ch')
+        self.lg.betreut_von = betreuer
+        self.lg.save()
+        self.org.email = 'info@verwaltung.ch'
+        self.org.save()
+        self.anfrage()
+        self.assertEqual([m.to for m in mail.outbox], [['lea@verwaltung.ch']])
+        self.assertIn('Defekt', mail.outbox[0].body)
+        self.assertIn('Anna', mail.outbox[0].body)
+
+    def test_ohne_betreuung_geht_der_hinweis_an_die_verwaltung(self):
+        self.org.email = 'info@verwaltung.ch'
+        self.org.save()
+        self.anfrage()
+        self.assertEqual([m.to for m in mail.outbox], [['info@verwaltung.ch']])
+
+    def test_ohne_adresse_bleibt_die_anfrage_erhalten_und_der_mangel_wird_protokolliert(self):
+        self.org.email = ''
+        self.org.save()
+        with self.assertLogs('stweg.anfragen', level='WARNING') as log:
+            r = self.anfrage()
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(StwegAnfrage.objects.count(), 1)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertIn('keine Empfängeradresse', ' '.join(log.output))
+
+    def test_scheitert_die_mail_bleibt_die_anfrage(self):
+        from unittest import mock
+        self.org.email = 'info@verwaltung.ch'
+        self.org.save()
+        with mock.patch('stweg.anfragen.send_mail', side_effect=OSError('SMTP weg')), \
+                self.assertLogs('stweg.anfragen', level='WARNING') as log:
+            r = self.anfrage()
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(StwegAnfrage.objects.count(), 1)
+        self.assertIn('fehlgeschlagen', ' '.join(log.output))
