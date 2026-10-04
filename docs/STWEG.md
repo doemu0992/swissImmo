@@ -53,8 +53,9 @@ vorbehalten und überspringt STWEG.
   Zirkularbeschluss für ein Geschäft überhaupt zulässig ist, entscheidet die
   Verwaltung. Vor Gebrauch juristisch bestätigen.
 * Beschlussfähigkeit und Anfechtungsfrist werden nicht beurteilt bzw. geführt.
-* Die Jahresabrechnung bucht nicht ins Hauptbuch (nur der Fonds tut es) und hat
-  keinen QR-Einzahlschein für Nachzahlungen.
+* Die Jahresabrechnung bucht nicht ins Hauptbuch (nur der Fonds tut es). Das ist
+  eine Buchhaltungsentscheid (Akonto gegen Bank 1020 riskiert Doppelbuchung mit
+  dem Bankabgleich), keine Lücke im Code.
 * Vollmachten sind digital erfasst (Name des Vertreters), nicht als hochgeladenes
   Dokument; eine Beglaubigung oder Unterschrift führt das System nicht.
 * Neue Texte der Oberfläche, Einladung, Protokoll, Abrechnung und Zirkular nur
@@ -66,6 +67,15 @@ vorbehalten und überspringt STWEG.
   Feld «Eigentümer» entfällt dort bewusst (`Liegenschaft.eigentuemer` bleibt leer,
   denn Mietlogik und Portal lesen es). Danach führt die Seite «Einheiten und
   Eigentümer» durch Quoten, Eigentümer und Aktivierung.
+* **QR-Zahlteil:** Der Beleg eines Eigentümers mit Nachzahlung (abgeschlossene
+  Abrechnung) enthält einen QR-Zahlteil auf das IBAN der Gemeinschaft; ohne gültige
+  IBAN steht nur ein Überweisungshinweis.
+* **Portal-Anfrage:** Die Verwaltung wird per Mail benachrichtigt (betreuende
+  Person, sonst Organisations-Adresse). Fehlt eine Adresse oder scheitert der
+  Versand, wird nur geloggt — die Anfrage geht nie verloren.
+* **Miteigentum:** `Einheit.miteigentuemer` (weitere Personen). Sie erhalten
+  Einladung und sehen Unterlagen im Portal; Stimme, Vollmacht und Anfrage bleiben
+  bei der Hauptansprechperson (eine Einheit, eine Stimme).
 * **Nebenräume** (`gehoert_zu` gesetzt) haben weder Quote noch Stimme und zählen
   nirgends mit (`stimm_einheiten`). Eine selbständige Garage mit eigener Quote wird
   als eigenständiges Objekt erfasst.
