@@ -18,7 +18,7 @@ from django.db import transaction
 from core.tenancy import organisation_kontext
 from finance import booking
 from finance.models import Erneuerungsfonds, ErneuerungsfondsBewegung
-from stweg.validierung import pruefe_wertquoten
+from stweg.validierung import pruefe_wertquoten, stimm_einheiten
 from stweg.verteilung import verteile_nach_quoten
 
 
@@ -64,7 +64,7 @@ def jahreseinlage_belasten(liegenschaft, jahr, gesamtbetrag, *, datum=None, user
         if fonds.bewegungen.filter(art='einlage', jahr=jahr).exists():
             raise FondsFehler(f'Für {jahr} wurde die Einlage bereits belastet.')
         _fonds_passiv_sicherstellen()
-        einheiten = list(liegenschaft.einheiten.order_by('pk'))
+        einheiten = list(stimm_einheiten(liegenschaft).order_by('pk'))
         anteile = verteile_nach_quoten(gesamtbetrag, {e.pk: e.wertquote for e in einheiten})
         datum = datum or date(jahr, 12, 31)
         ergebnis = {}

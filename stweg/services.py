@@ -20,7 +20,7 @@ from django.db.models import Q, Sum
 from core.tenancy import organisation_kontext
 from finance.models import KreditorenRechnung
 from stweg.models import StwegAbrechnung, StwegAbrechnungKosten, StwegAbrechnungPosition, StwegAkonto
-from stweg.validierung import pruefe_wertquoten
+from stweg.validierung import pruefe_wertquoten, stimm_einheiten
 from stweg.verteilung import verteile_nach_quoten
 
 NULL = Decimal('0.00')
@@ -81,7 +81,7 @@ class StwegAbrechnungService:
                     raise AbrechnungsFehler(f'Die Abrechnung {jahr} ist abgeschlossen.')
                 bestehend.delete()      # Entwurf wird neu berechnet
 
-            einheiten = list(lg.einheiten.order_by('pk'))
+            einheiten = list(stimm_einheiten(lg).order_by('pk'))
             zeilen = self.kostenzeilen(jahr)
             kosten = sum((z['betrag'] for z in zeilen), NULL).quantize(Decimal('0.01'))
             anteile = verteile_nach_quoten(kosten, {e.pk: e.wertquote for e in einheiten})

@@ -25,7 +25,7 @@ from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegAkonto, Stw
                           StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
 from stweg.beschluss import BeschlussFehler
-from stweg.validierung import WertquotenFehler, pruefe_wertquoten, wertquoten_summe
+from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten, wertquoten_summe
 from stweg.versammlung import (VersammlungsFehler, durchfuehren, einladung_pruefen,
                                einladung_versenden, protokoll_pruefen, protokoll_versenden)
 
@@ -80,7 +80,7 @@ def stweg_gemeinschaft(request, stweg_id):
     return render(request, 'stweg/gemeinschaft.html', {
         'nav': 'stweg', 'lg': lg, 'quoten_fehler': quoten_fehler,
         'quoten_summe': wertquoten_summe(lg),
-        'einheiten': lg.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'),
+        'einheiten': stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'),
         'versammlungen': Versammlung.objects.filter(liegenschaft=lg),
         'zirkulare': Zirkularbeschluss.objects.filter(liegenschaft=lg),
         'mehrheiten': Traktandum.MEHRHEIT_CHOICES,
@@ -116,7 +116,7 @@ def stweg_versammlung(request, pk):
     v = get_object_or_404(Versammlung.objects.select_related('liegenschaft'), pk=pk)
     lg = v.liegenschaft
     traktanden = list(v.traktanden.all())
-    einheiten = list(lg.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    einheiten = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
     anw = {a.einheit_id: a for a in v.anwesenheiten.all()}
     for e in einheiten:
         a = anw.get(e.pk)
@@ -213,7 +213,7 @@ def stweg_anwesenheit_speichern(request, pk):
     if v.status != v.DURCHGEFUEHRT:
         messages.error(request, 'Anwesenheit lässt sich nur bei einer durchgeführten Versammlung erfassen.')
         return _zurueck(v)
-    for e in v.liegenschaft.einheiten.all():
+    for e in stimm_einheiten(v.liegenschaft):
         art = request.POST.get(f'art_{e.pk}')
         if art in dict(Anwesenheit.ART_CHOICES):
             beschluss.anwesenheit_setzen(v, e, art, (request.POST.get(f'vertreter_{e.pk}') or '').strip())
@@ -399,7 +399,7 @@ def stweg_abrechnung(request, stweg_id):
     abrechnung = (StwegAbrechnung.objects.filter(liegenschaft=lg, jahr=jahr)
                   .prefetch_related('positionen__einheit', 'positionen__eigentuemer', 'kostenzeilen').first())
     service = StwegAbrechnungService(lg)
-    einheiten = list(lg.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    einheiten = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
     akonto = service.akonto_je_einheit(jahr)
     for e in einheiten:
         e.akonto_summe = akonto.get(e.pk, 0)
@@ -586,7 +586,7 @@ def stweg_zirkular_neu(request, stweg_id):
 def stweg_zirkular(request, pk):
     from stweg import zirkular as zk
     z = get_object_or_404(Zirkularbeschluss.objects.select_related('liegenschaft'), pk=pk)
-    einheiten = list(z.liegenschaft.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    einheiten = list(stimm_einheiten(z.liegenschaft).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
     stimmen = {s.einheit_id: s for s in z.stimmen.all()}
     for e in einheiten:
         e.stimme = stimmen.get(e.pk)
@@ -623,7 +623,7 @@ def stweg_zirkular_stimmen(request, pk):
     from stweg import zirkular as zk
     z = get_object_or_404(Zirkularbeschluss.objects.select_related('liegenschaft'), pk=pk)
     try:
-        for e in z.liegenschaft.einheiten.all():
+        for e in stimm_einheiten(z.liegenschaft):
             wert = request.POST.get(f'stimme_{e.pk}')
             if wert in dict(Stimme.WERT_CHOICES):
                 zk.stimme_abgeben(z, e, wert, kanal='verwaltung')

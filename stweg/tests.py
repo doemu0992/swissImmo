@@ -381,3 +381,41 @@ class ArtUndStatusImFormularTests(TestCase):
         lg = Liegenschaft.objects.get(strasse='Formularweg 1')
         self.assertEqual((lg.typ, lg.status), ('STWEG', 'entwurf'))
         self.assertContains(self.client.get('/neu/stweg/'), 'Formularweg 1')
+
+
+class NebenraeumeTests(TestCase):
+    """Parkplätze und Keller (`gehoert_zu`) haben weder Quote noch Stimme."""
+
+    def test_nebenraeume_zaehlen_nicht_in_der_quotensumme(self):
+        from stweg.validierung import stimm_einheiten, wertquoten_summe
+        lg, e = neue_stweg(quoten=(200, 300, 500), status='aktiv')
+        pp = Einheit.objects.create(liegenschaft=lg, bezeichnung='Parkplatz 1', typ='pp', gehoert_zu=e[0])
+        self.assertEqual(pp.wertquote, Decimal('10.00'))              # die Vorgabe aus dem Mietmodul
+        self.assertEqual(wertquoten_summe(lg), Decimal('1000'))
+        self.assertEqual(set(stimm_einheiten(lg)), set(e))
+        pruefe_wertquoten(lg)                                         # wirft nicht
+
+    def test_selbstaendige_einheit_ohne_gehoert_zu_zaehlt(self):
+        lg, e = neue_stweg(quoten=(200, 300, 400), status='entwurf')
+        Einheit.objects.create(liegenschaft=lg, bezeichnung='Garage', typ='gar', wertquote=Decimal(100))
+        lg.status = 'aktiv'
+        lg.save()                                                     # 200+300+400+100
+
+    def test_nebenraum_ohne_eigentuemer_blockiert_keine_einladung_und_keine_abstimmung(self):
+        from stweg.test_versammlung import sonnenblick, versammlung
+        from stweg.versammlung import einladung_pruefen
+        lg, e, _ = sonnenblick()
+        Einheit.objects.create(liegenschaft=lg, bezeichnung='Keller', typ='bas', gehoert_zu=e[0])
+        self.assertEqual(einladung_pruefen(versammlung(lg)), [])
+        from stweg import beschluss
+        from stweg.validierung import stimm_einheiten
+        z = beschluss.zaehlen(list(stimm_einheiten(lg)), {}, 'einstimmig', 1000)
+        self.assertEqual(z['total_koepfe'], 3)
+
+    def test_fondseinlage_und_abrechnung_verteilen_nur_auf_hauptobjekte(self):
+        from stweg.fonds import jahreseinlage_belasten
+        lg, e = neue_stweg(quoten=(200, 300, 500), status='aktiv')
+        Einheit.objects.create(liegenschaft=lg, bezeichnung='Keller', typ='bas', gehoert_zu=e[1])
+        verteilt = jahreseinlage_belasten(lg, 2026, Decimal('1000'))
+        self.assertEqual(len(verteilt), 3)
+        self.assertEqual(sum(verteilt.values()), Decimal('1000.00'))

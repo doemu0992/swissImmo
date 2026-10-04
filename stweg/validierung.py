@@ -36,10 +36,22 @@ class WertquotenFehler(ValidationError):
     """Die Wertquoten einer STWEG ergeben nicht das Total."""
 
 
+def stimm_einheiten(liegenschaft):
+    """Die Einheiten, die eine Wertquote und eine Stimme haben: die Hauptobjekte.
+
+    Nebenräume (Parkplatz, Keller — `gehoert_zu` gesetzt) gehören zu einer
+    Einheit und haben in der Regel weder eigene Quote noch eigenen Eigentümer.
+    Zählten sie mit, ginge die Quotensumme nie auf (das Feld hat die Vorgabe 10
+    aus dem Mietmodul) und jeder Keller wäre ein zusätzlicher «Kopf».
+
+    Ist ein Parkplatz eine selbständige Stockwerkeinheit mit eigener Quote, wird
+    er als eigenständiges Objekt erfasst (ohne `gehoert_zu`) und zählt mit."""
+    return liegenschaft.einheiten.filter(gehoert_zu__isnull=True)
+
+
 def wertquoten_summe(liegenschaft):
-    """Summe der Wertquoten aller Einheiten der Liegenschaft (Decimal)."""
-    # Rückbezug über die Instanz: gefiltert wird durch die Liegenschaft selbst.
-    return liegenschaft.einheiten.aggregate(s=Sum('wertquote'))['s'] or Decimal('0')
+    """Summe der Wertquoten aller stimmberechtigten Einheiten (Decimal)."""
+    return stimm_einheiten(liegenschaft).aggregate(s=Sum('wertquote'))['s'] or Decimal('0')
 
 
 def pruefe_wertquoten(liegenschaft):
