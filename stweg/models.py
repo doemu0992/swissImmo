@@ -84,3 +84,202 @@ class StwegAbrechnungPosition(OrganisationAusKette):
     @property
     def zahllast(self):
         return self.saldo if self.saldo > 0 else Decimal('0.00')
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# DIGITALER ABLAUF: Versammlung, Traktanden, Beschlüsse, Anfragen, Versand
+#
+# Rechtswerte stehen hier NICHT fest verdrahtet. Weder die Einladungsfrist noch
+# die nötige Mehrheit werden aus dem Gedächtnis eingesetzt: Die Frist ist ein
+# Datenfeld (Vorgabe 10 Tage, Reglement kann abweichen), die Mehrheitsart wählt
+# die Verwaltung je Traktandum. Das System RECHNET einen Vorschlag; festgestellt
+# wird das Ergebnis von einer Person (`StwegTraktandum.feststellen`).
+# ──────────────────────────────────────────────────────────────────────────
+
+class Versammlung(OrganisationAusKette):
+    """Eine Stockwerkeigentümerversammlung (ordentlich oder ausserordentlich)."""
+    ORGANISATION_PFAD = 'liegenschaft'
+    ART_CHOICES = [('ordentlich', 'Ordentliche Versammlung'),
+                   ('ausserordentlich', 'Ausserordentliche Versammlung')]
+    ENTWURF, EINGELADEN, DURCHGEFUEHRT, PROTOKOLLIERT = (
+        'entwurf', 'eingeladen', 'durchgefuehrt', 'protokolliert')
+    STATUS_CHOICES = [(ENTWURF, 'Entwurf'), (EINGELADEN, 'Eingeladen'),
+                      (DURCHGEFUEHRT, 'Durchgeführt'), (PROTOKOLLIERT, 'Protokoll versendet')]
+
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
+                                     related_name='versammlungen')
+    art = models.CharField(max_length=20, choices=ART_CHOICES, default='ordentlich')
+    titel = models.CharField(max_length=200)
+    datum = models.DateTimeField("Beginn")
+    ort = models.CharField(max_length=200, blank=True, default='')
+    #: Mindestabstand Einladung → Versammlung in Tagen. Vorgabe 10; das Reglement
+    #: der Gemeinschaft kann eine andere Frist vorsehen — hier eintragen. Die
+    #: Rechtsgrundlage ist vor Gebrauch von der Verwaltung zu bestätigen.
+    einladungsfrist_tage = models.PositiveSmallIntegerField(default=10)
+    status = models.CharField(max_length=14, choices=STATUS_CHOICES, default=ENTWURF)
+    leitung = models.CharField("Versammlungsleitung", max_length=120, blank=True, default='')
+    protokollfuehrung = models.CharField(max_length=120, blank=True, default='')
+    einladung_versendet_am = models.DateTimeField(null=True, blank=True)
+    protokoll_text = models.TextField(blank=True, default='')
+    protokoll_versendet_am = models.DateTimeField(null=True, blank=True)
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'stweg_versammlung'
+        ordering = ['-datum']
+        verbose_name = 'Versammlung'
+        verbose_name_plural = 'Versammlungen'
+
+    def __str__(self):
+        return f"{self.titel} ({self.datum:%d.%m.%Y})"
+
+
+class Traktandum(OrganisationAusKette):
+    """Ein Traktandum mit Antrag, Mehrheitsart und (nach der Versammlung) Ergebnis."""
+    ORGANISATION_PFAD = 'versammlung'
+    #: Wie die Mehrheit GERECHNET wird. Welche davon für ein Geschäft verlangt
+    #: ist (Gesetz oder Reglement), bestimmt die Verwaltung — nicht dieses System.
+    MEHRHEIT_CHOICES = [
+        ('einfach_koepfe', 'Mehrheit der Stimmenden (nach Köpfen)'),
+        ('einfach_quoten', 'Mehrheit der Stimmenden (nach Wertquoten)'),
+        ('doppelt', 'Mehrheit nach Köpfen UND Wertquoten (der Stimmenden)'),
+        ('doppelt_aller', 'Mehrheit aller Eigentümer UND aller Wertquoten'),
+        ('einstimmig', 'Einstimmigkeit aller Eigentümer'),
+        ('kenntnisnahme', 'Zur Kenntnisnahme (keine Abstimmung)'),
+    ]
+    OFFEN, ANGENOMMEN, ABGELEHNT, VERTAGT, KENNTNIS = (
+        'offen', 'angenommen', 'abgelehnt', 'vertagt', 'kenntnis')
+    ERGEBNIS_CHOICES = [(OFFEN, 'Offen'), (ANGENOMMEN, 'Angenommen'), (ABGELEHNT, 'Abgelehnt'),
+                        (VERTAGT, 'Vertagt'), (KENNTNIS, 'Zur Kenntnis genommen')]
+
+    versammlung = models.ForeignKey(Versammlung, on_delete=models.CASCADE, related_name='traktanden')
+    nr = models.PositiveSmallIntegerField()
+    titel = models.CharField(max_length=200)
+    beschreibung = models.TextField(blank=True, default='')
+    antrag = models.TextField("Antrag der Verwaltung", blank=True, default='')
+    mehrheitsart = models.CharField(max_length=20, choices=MEHRHEIT_CHOICES, default='einfach_koepfe')
+    rechtsgrundlage = models.CharField(
+        "Rechtsgrundlage / Reglement", max_length=200, blank=True, default='',
+        help_text='Von der Verwaltung zu bestätigen; wird nicht automatisch ermittelt.')
+    ergebnis = models.CharField(max_length=10, choices=ERGEBNIS_CHOICES, default=OFFEN)
+    beschlusstext = models.TextField(blank=True, default='')
+    # Zahlen zum Zeitpunkt der Feststellung (das Protokoll muss stabil bleiben,
+    # auch wenn später Anwesenheit oder Stimmen noch korrigiert werden).
+    ja_koepfe = models.PositiveSmallIntegerField(default=0)
+    nein_koepfe = models.PositiveSmallIntegerField(default=0)
+    enthaltung_koepfe = models.PositiveSmallIntegerField(default=0)
+    ja_quoten = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal('0.00'))
+    nein_quoten = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal('0.00'))
+    enthaltung_quoten = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal('0.00'))
+    festgestellt_am = models.DateTimeField(null=True, blank=True)
+    # Vollzug: aus einem angenommenen Beschluss entsteht eine Pendenz.
+    vollzug_aufgabe = models.CharField("Vollzug (Aufgabe)", max_length=200, blank=True, default='')
+    vollzug_faellig_am = models.DateField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'stweg_traktandum'
+        ordering = ['versammlung_id', 'nr']
+        constraints = [models.UniqueConstraint(fields=['versammlung', 'nr'],
+                                               name='stweg_traktandum_nr_je_versammlung')]
+
+    def __str__(self):
+        return f"{self.nr}. {self.titel}"
+
+
+class Anwesenheit(OrganisationAusKette):
+    """Wer ist für welche Einheit in der Versammlung (selbst oder vertreten)?"""
+    ORGANISATION_PFAD = 'versammlung'
+    ANWESEND, VERTRETEN, ABWESEND = 'anwesend', 'vertreten', 'abwesend'
+    ART_CHOICES = [(ANWESEND, 'Anwesend'), (VERTRETEN, 'Vertreten (Vollmacht)'),
+                   (ABWESEND, 'Abwesend')]
+    versammlung = models.ForeignKey(Versammlung, on_delete=models.CASCADE, related_name='anwesenheiten')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
+    art = models.CharField(max_length=10, choices=ART_CHOICES, default=ABWESEND)
+    vertreter = models.CharField("Vertreten durch", max_length=120, blank=True, default='')
+
+    class Meta:
+        db_table = 'stweg_anwesenheit'
+        constraints = [models.UniqueConstraint(fields=['versammlung', 'einheit'],
+                                               name='stweg_anwesenheit_je_einheit')]
+
+    @property
+    def stimmberechtigt_vertreten(self):
+        return self.art in (self.ANWESEND, self.VERTRETEN)
+
+
+class Stimme(OrganisationAusKette):
+    """Die Stimme einer Einheit zu einem Traktandum."""
+    ORGANISATION_PFAD = 'traktandum'
+    JA, NEIN, ENTHALTUNG = 'ja', 'nein', 'enthaltung'
+    WERT_CHOICES = [(JA, 'Ja'), (NEIN, 'Nein'), (ENTHALTUNG, 'Enthaltung')]
+    traktandum = models.ForeignKey(Traktandum, on_delete=models.CASCADE, related_name='stimmen')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
+    wert = models.CharField(max_length=10, choices=WERT_CHOICES)
+
+    class Meta:
+        db_table = 'stweg_stimme'
+        constraints = [models.UniqueConstraint(fields=['traktandum', 'einheit'],
+                                               name='stweg_stimme_je_einheit')]
+
+
+class StwegAnfrage(OrganisationAusKette):
+    """Anfrage eines Stockwerkeigentümers an die Verwaltung (Portal, Mail, Telefon …)."""
+    ORGANISATION_PFAD = 'liegenschaft'
+    NEU, IN_BEARBEITUNG, BEANTWORTET, ERLEDIGT = 'neu', 'in_bearbeitung', 'beantwortet', 'erledigt'
+    STATUS_CHOICES = [(NEU, 'Neu'), (IN_BEARBEITUNG, 'In Bearbeitung'),
+                      (BEANTWORTET, 'Beantwortet'), (ERLEDIGT, 'Erledigt')]
+    KANAL_CHOICES = [('portal', 'Portal'), ('email', 'E-Mail'), ('telefon', 'Telefon'),
+                     ('brief', 'Brief'), ('persoenlich', 'Persönlich')]
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
+                                     related_name='stweg_anfragen')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='stweg_anfragen')
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='stweg_anfragen')
+    betreff = models.CharField(max_length=200)
+    text = models.TextField(blank=True, default='')
+    kanal = models.CharField(max_length=12, choices=KANAL_CHOICES, default='portal')
+    status = models.CharField(max_length=14, choices=STATUS_CHOICES, default=NEU)
+    antwort = models.TextField(blank=True, default='')
+    beantwortet_am = models.DateTimeField(null=True, blank=True)
+    faellig_am = models.DateField(null=True, blank=True)
+    #: Anfrage soll an einer Versammlung behandelt werden.
+    traktandum = models.ForeignKey(Traktandum, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='anfragen')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'stweg_anfrage'
+        ordering = ['-erstellt_am']
+        verbose_name = 'Anfrage'
+        verbose_name_plural = 'Anfragen'
+
+    def __str__(self):
+        return self.betreff
+
+
+class StwegVersand(OrganisationAusKette):
+    """Protokoll jeder Zustellung (Einladung, Protokoll) an einen Eigentümer.
+
+    Beweisfunktion: Wer wann auf welchem Weg eingeladen wurde, muss sich später
+    belegen lassen — etwa wenn ein Beschluss wegen Einladungsmängeln angefochten
+    wird. Fehlschläge werden festgehalten, nicht verschluckt.
+    """
+    ORGANISATION_PFAD = 'versammlung'
+    EINLADUNG, PROTOKOLL = 'einladung', 'protokoll'
+    ART_CHOICES = [(EINLADUNG, 'Einladung'), (PROTOKOLL, 'Protokoll')]
+    GESENDET, FEHLER, POST = 'gesendet', 'fehler', 'post_noetig'
+    STATUS_CHOICES = [(GESENDET, 'Per E-Mail gesendet'), (FEHLER, 'Fehler beim Versand'),
+                      (POST, 'Per Post zustellen (keine E-Mail-Adresse)')]
+    versammlung = models.ForeignKey(Versammlung, on_delete=models.CASCADE, related_name='versaende')
+    art = models.CharField(max_length=10, choices=ART_CHOICES)
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True,
+                                    related_name='+')
+    email = models.CharField(max_length=254, blank=True, default='')
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES)
+    zeitpunkt = models.DateTimeField(auto_now_add=True)
+    fehler = models.CharField(max_length=300, blank=True, default='')
+
+    class Meta:
+        db_table = 'stweg_versand'
+        ordering = ['-zeitpunkt']
