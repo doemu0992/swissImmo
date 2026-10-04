@@ -15,6 +15,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
+from django.utils.translation import gettext
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -150,7 +151,7 @@ def portal_stweg_vollmacht(request, pk):
         raise Http404
     try:
         erteilen(v, einheit, request.POST.get('bevollmaechtigter'), erteilt_von=eig, kanal='portal')
-        messages.success(request, 'Ihre Vollmacht wurde erfasst.')
+        messages.success(request, gettext('Ihre Vollmacht wurde erfasst.'))
     except VollmachtFehler as e:
         messages.error(request, str(e))
     return redirect('/portal/stweg/')
@@ -166,7 +167,7 @@ def portal_stweg_vollmacht_widerruf(request, pk):
         raise Http404
     try:
         widerrufen(vm)
-        messages.success(request, 'Die Vollmacht wurde widerrufen.')
+        messages.success(request, gettext('Die Vollmacht wurde widerrufen.'))
     except VollmachtFehler as e:
         messages.error(request, str(e))
     return redirect('/portal/stweg/')
@@ -197,7 +198,8 @@ def portal_stweg_abstimmen(request, pk):
     except BeschlussFehler as fehler:
         messages.error(request, str(fehler))
         return redirect('/portal/stweg/')
-    messages.success(request, 'Ihre Stimme wurde gespeichert.' if abgegeben else 'Keine Stimme angegeben.')
+    messages.success(request, gettext('Ihre Stimme wurde gespeichert.') if abgegeben
+                     else gettext('Keine Stimme angegeben.'))
     return redirect('/portal/stweg/')
 
 
@@ -217,10 +219,10 @@ def portal_stweg_anfrage(request, stweg_id):
         raise Http404
     betreff = (request.POST.get('betreff') or '').strip()
     if not betreff:
-        messages.error(request, 'Bitte einen Betreff angeben.')
+        messages.error(request, gettext('Bitte einen Betreff angeben.'))
         return redirect('/portal/stweg/')
     a = anf.anfrage_erfassen(einheit.liegenschaft, betreff, (request.POST.get('text') or '').strip(),
                              einheit=einheit, eigentuemer=eig, kanal='portal')
     anf.verwaltung_benachrichtigen(a)
-    messages.success(request, 'Ihre Anfrage wurde an die Verwaltung übermittelt.')
+    messages.success(request, gettext('Ihre Anfrage wurde an die Verwaltung übermittelt.'))
     return redirect('/portal/stweg/')

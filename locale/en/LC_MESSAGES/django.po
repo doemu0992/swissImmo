@@ -22094,3 +22094,207 @@ msgstr "This community has meetings — its type can no longer be changed."
 #: core/templates/fw/liegenschaft_form.html
 msgid "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu."
 msgstr "With condominium ownership each unit has its own owner. You assign value quotas and owners after saving."
+
+#: stweg/templates/stweg/portal.html
+msgid "Eigentümerportal"
+msgstr "Owner portal"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Einheiten, Einladungen und Protokolle der Versammlungen und Ihre Anfragen an die Verwaltung."
+msgstr "Your units, the invitations and minutes of the meetings and your requests to the management."
+
+#: stweg/templates/stweg/portal.html
+msgid "Miteigentum — Hauptansprechperson: %(name)s. Sie sehen Einladung, Protokoll und Beschlüsse; die Stimme der Einheit gibt die Hauptansprechperson ab."
+msgstr "Co-ownership — main contact: %(name)s. You can see the invitation, minutes and resolutions; the main contact casts the vote for the unit."
+
+#: stweg/templates/stweg/portal.html
+msgid "Wertquote %(q)s / %(total)s"
+msgstr "Value quota %(q)s / %(total)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Versammlungen"
+msgstr "Meetings"
+
+#: stweg/templates/stweg/portal.html
+msgid "Einladung"
+msgstr "Invitation"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmacht %(einheit)s"
+msgstr "Proxy %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertreten durch %(name)s"
+msgstr "Represented by %(name)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Sie nehmen selbst teil, oder erteilen eine Vollmacht:"
+msgstr "You attend in person, or grant a proxy:"
+
+#: stweg/templates/stweg/portal.html
+msgid "Widerrufen"
+msgstr "Revoke"
+
+#: stweg/templates/stweg/portal.html
+msgid "Name der vertretenden Person"
+msgstr "Name of the representing person"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertretung %(einheit)s"
+msgstr "Representation %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmacht erteilen"
+msgstr "Grant proxy"
+
+#: stweg/templates/stweg/portal.html
+msgid "Keine Versammlung."
+msgstr "No meeting."
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmungen"
+msgstr "Votes"
+
+#: stweg/templates/stweg/portal.html
+msgid "%(ergebnis)s (Ja %(ja)s · Nein %(nein)s · Enthaltung %(enth)s)"
+msgstr "%(ergebnis)s (Yes %(ja)s · No %(nein)s · Abstention %(enth)s)"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmung bis %(datum)s"
+msgstr "Vote until %(datum)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmung beendet, Ergebnis folgt"
+msgstr "Vote closed, result to follow"
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Stimme für Ihre Einheit gibt die Hauptansprechperson ab."
+msgstr "The main contact casts the vote for your unit."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Stimme für %(einheit)s"
+msgstr "Your vote for %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "— noch nicht abgestimmt —"
+msgstr "— not voted yet —"
+
+#: stweg/templates/stweg/portal.html
+msgid "Enthaltung"
+msgstr "Abstention"
+
+#: stweg/templates/stweg/portal.html
+msgid "Stimme speichern"
+msgstr "Save vote"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abrechnungen"
+msgstr "Statements"
+
+#: stweg/templates/stweg/portal.html
+msgid "Jahresabrechnung %(jahr)s"
+msgstr "Annual statement %(jahr)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Nachzahlung CHF %(betrag)s"
+msgstr "Additional payment CHF %(betrag)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Guthaben CHF %(betrag)s"
+msgstr "Credit CHF %(betrag)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Noch keine abgeschlossene Abrechnung."
+msgstr "No completed statement yet."
+
+#: stweg/templates/stweg/portal.html
+msgid "Meine Anfragen"
+msgstr "My requests"
+
+#: stweg/templates/stweg/portal.html
+msgid "Antwort: %(antwort)s"
+msgstr "Answer: %(antwort)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Noch keine Anfrage."
+msgstr "No request yet."
+
+#: stweg/templates/stweg/portal.html
+msgid "Anfrage an die Verwaltung"
+msgstr "Request to the management"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Frage"
+msgstr "Your question"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihnen ist keine Stockwerkeigentümer-Einheit zugeordnet."
+msgstr "No condominium unit is assigned to you."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Vollmacht wurde erfasst."
+msgstr "Your proxy has been recorded."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Vollmacht wurde widerrufen."
+msgstr "The proxy has been revoked."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Stimme wurde gespeichert."
+msgstr "Your vote has been saved."
+
+#: stweg/templates/stweg/portal.html
+msgid "Keine Stimme angegeben."
+msgstr "No vote given."
+
+#: stweg/templates/stweg/portal.html
+msgid "Bitte einen Betreff angeben."
+msgstr "Please enter a subject."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Anfrage wurde an die Verwaltung übermittelt."
+msgstr "Your request has been sent to the management."
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmachten lassen sich nur nach der Einladung und vor der Versammlung erteilen."
+msgstr "Proxies can only be granted after the invitation and before the meeting."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Einheit gehört nicht zu dieser Gemeinschaft."
+msgstr "The unit does not belong to this community."
+
+#: stweg/templates/stweg/portal.html
+msgid "Bitte angeben, wer vertreten soll."
+msgstr "Please state who is to represent you."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Versammlung hat bereits stattgefunden."
+msgstr "The meeting has already taken place."
+
+#: stweg/templates/stweg/portal.html
+msgid "Über diesen Beschluss wird zurzeit nicht abgestimmt."
+msgstr "This resolution is not currently being voted on."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Abstimmungsfrist ist abgelaufen."
+msgstr "The voting deadline has passed."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ungültige Stimme «%(wert)s»."
+msgstr "Invalid vote “%(wert)s”."
+
+#: stweg/templates/stweg/portal.html
+msgid "Angenommen"
+msgstr "Accepted"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertagt"
+msgstr "Postponed"
+
+#: stweg/templates/stweg/portal.html
+msgid "Zur Kenntnis genommen"
+msgstr "Noted"
+
+#: stweg/templates/stweg/portal.html
+msgid "Beantwortet"
+msgstr "Answered"

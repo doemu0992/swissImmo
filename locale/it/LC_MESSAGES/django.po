@@ -22298,3 +22298,207 @@ msgstr "Per questa comunione esistono assemblee — il tipo non può più essere
 #: core/templates/fw/liegenschaft_form.html
 msgid "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu."
 msgstr "Nella proprietà per piani ogni unità ha il proprio proprietario. Quote di valore e proprietari si assegnano dopo il salvataggio."
+
+#: stweg/templates/stweg/portal.html
+msgid "Eigentümerportal"
+msgstr "Portale dei proprietari"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Einheiten, Einladungen und Protokolle der Versammlungen und Ihre Anfragen an die Verwaltung."
+msgstr "Le vostre unità, gli inviti e i verbali delle assemblee e le vostre richieste all'amministrazione."
+
+#: stweg/templates/stweg/portal.html
+msgid "Miteigentum — Hauptansprechperson: %(name)s. Sie sehen Einladung, Protokoll und Beschlüsse; die Stimme der Einheit gibt die Hauptansprechperson ab."
+msgstr "Comproprietà — persona di contatto principale: %(name)s. Vedete invito, verbale e decisioni; il voto dell'unità è espresso dalla persona di contatto principale."
+
+#: stweg/templates/stweg/portal.html
+msgid "Wertquote %(q)s / %(total)s"
+msgstr "Quota di valore %(q)s / %(total)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Versammlungen"
+msgstr "Assemblee"
+
+#: stweg/templates/stweg/portal.html
+msgid "Einladung"
+msgstr "Invito"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmacht %(einheit)s"
+msgstr "Procura %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertreten durch %(name)s"
+msgstr "Rappresentato da %(name)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Sie nehmen selbst teil, oder erteilen eine Vollmacht:"
+msgstr "Partecipate di persona o conferite una procura:"
+
+#: stweg/templates/stweg/portal.html
+msgid "Widerrufen"
+msgstr "Revocare"
+
+#: stweg/templates/stweg/portal.html
+msgid "Name der vertretenden Person"
+msgstr "Nome della persona che rappresenta"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertretung %(einheit)s"
+msgstr "Rappresentanza %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmacht erteilen"
+msgstr "Conferire procura"
+
+#: stweg/templates/stweg/portal.html
+msgid "Keine Versammlung."
+msgstr "Nessuna assemblea."
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmungen"
+msgstr "Votazioni"
+
+#: stweg/templates/stweg/portal.html
+msgid "%(ergebnis)s (Ja %(ja)s · Nein %(nein)s · Enthaltung %(enth)s)"
+msgstr "%(ergebnis)s (Sì %(ja)s · No %(nein)s · Astensione %(enth)s)"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmung bis %(datum)s"
+msgstr "Votazione fino al %(datum)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmung beendet, Ergebnis folgt"
+msgstr "Votazione conclusa, risultato in arrivo"
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Stimme für Ihre Einheit gibt die Hauptansprechperson ab."
+msgstr "Il voto per la vostra unità è espresso dalla persona di contatto principale."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Stimme für %(einheit)s"
+msgstr "Il vostro voto per %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "— noch nicht abgestimmt —"
+msgstr "— non ancora votato —"
+
+#: stweg/templates/stweg/portal.html
+msgid "Enthaltung"
+msgstr "Astensione"
+
+#: stweg/templates/stweg/portal.html
+msgid "Stimme speichern"
+msgstr "Salva il voto"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abrechnungen"
+msgstr "Conteggi"
+
+#: stweg/templates/stweg/portal.html
+msgid "Jahresabrechnung %(jahr)s"
+msgstr "Conteggio annuale %(jahr)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Nachzahlung CHF %(betrag)s"
+msgstr "Conguaglio a debito CHF %(betrag)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Guthaben CHF %(betrag)s"
+msgstr "Credito CHF %(betrag)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Noch keine abgeschlossene Abrechnung."
+msgstr "Nessun conteggio concluso finora."
+
+#: stweg/templates/stweg/portal.html
+msgid "Meine Anfragen"
+msgstr "Le mie richieste"
+
+#: stweg/templates/stweg/portal.html
+msgid "Antwort: %(antwort)s"
+msgstr "Risposta: %(antwort)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Noch keine Anfrage."
+msgstr "Nessuna richiesta finora."
+
+#: stweg/templates/stweg/portal.html
+msgid "Anfrage an die Verwaltung"
+msgstr "Richiesta all'amministrazione"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Frage"
+msgstr "La vostra domanda"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihnen ist keine Stockwerkeigentümer-Einheit zugeordnet."
+msgstr "Nessuna unità di proprietà per piani vi è assegnata."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Vollmacht wurde erfasst."
+msgstr "La vostra procura è stata registrata."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Vollmacht wurde widerrufen."
+msgstr "La procura è stata revocata."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Stimme wurde gespeichert."
+msgstr "Il vostro voto è stato salvato."
+
+#: stweg/templates/stweg/portal.html
+msgid "Keine Stimme angegeben."
+msgstr "Nessun voto indicato."
+
+#: stweg/templates/stweg/portal.html
+msgid "Bitte einen Betreff angeben."
+msgstr "Indicare un oggetto."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Anfrage wurde an die Verwaltung übermittelt."
+msgstr "La vostra richiesta è stata inoltrata all'amministrazione."
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmachten lassen sich nur nach der Einladung und vor der Versammlung erteilen."
+msgstr "Le procure possono essere conferite solo dopo l'invito e prima dell'assemblea."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Einheit gehört nicht zu dieser Gemeinschaft."
+msgstr "L'unità non appartiene a questa comunione."
+
+#: stweg/templates/stweg/portal.html
+msgid "Bitte angeben, wer vertreten soll."
+msgstr "Indicare chi deve rappresentare."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Versammlung hat bereits stattgefunden."
+msgstr "L'assemblea si è già svolta."
+
+#: stweg/templates/stweg/portal.html
+msgid "Über diesen Beschluss wird zurzeit nicht abgestimmt."
+msgstr "Su questa decisione al momento non si vota."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Abstimmungsfrist ist abgelaufen."
+msgstr "Il termine di votazione è scaduto."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ungültige Stimme «%(wert)s»."
+msgstr "Voto non valido «%(wert)s»."
+
+#: stweg/templates/stweg/portal.html
+msgid "Angenommen"
+msgstr "Approvato"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertagt"
+msgstr "Rinviato"
+
+#: stweg/templates/stweg/portal.html
+msgid "Zur Kenntnis genommen"
+msgstr "Preso atto"
+
+#: stweg/templates/stweg/portal.html
+msgid "Beantwortet"
+msgstr "Risposto"

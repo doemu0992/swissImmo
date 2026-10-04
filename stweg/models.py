@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from core.organisation_kette import OrganisationAusKette
 
@@ -167,8 +168,8 @@ class Traktandum(OrganisationAusKette):
     ]
     OFFEN, ANGENOMMEN, ABGELEHNT, VERTAGT, KENNTNIS = (
         'offen', 'angenommen', 'abgelehnt', 'vertagt', 'kenntnis')
-    ERGEBNIS_CHOICES = [(OFFEN, 'Offen'), (ANGENOMMEN, 'Angenommen'), (ABGELEHNT, 'Abgelehnt'),
-                        (VERTAGT, 'Vertagt'), (KENNTNIS, 'Zur Kenntnis genommen')]
+    ERGEBNIS_CHOICES = [(OFFEN, _('Offen')), (ANGENOMMEN, _('Angenommen')), (ABGELEHNT, _('Abgelehnt')),
+                        (VERTAGT, _('Vertagt')), (KENNTNIS, _('Zur Kenntnis genommen'))]
 
     versammlung = models.ForeignKey(Versammlung, on_delete=models.CASCADE, related_name='traktanden')
     nr = models.PositiveSmallIntegerField()
@@ -244,8 +245,8 @@ class StwegAnfrage(OrganisationAusKette):
     """Anfrage eines Stockwerkeigentümers an die Verwaltung (Portal, Mail, Telefon …)."""
     ORGANISATION_PFAD = 'liegenschaft'
     NEU, IN_BEARBEITUNG, BEANTWORTET, ERLEDIGT = 'neu', 'in_bearbeitung', 'beantwortet', 'erledigt'
-    STATUS_CHOICES = [(NEU, 'Neu'), (IN_BEARBEITUNG, 'In Bearbeitung'),
-                      (BEANTWORTET, 'Beantwortet'), (ERLEDIGT, 'Erledigt')]
+    STATUS_CHOICES = [(NEU, _('Neu')), (IN_BEARBEITUNG, _('In Bearbeitung')),
+                      (BEANTWORTET, _('Beantwortet')), (ERLEDIGT, _('Erledigt'))]
     KANAL_CHOICES = [('portal', 'Portal'), ('email', 'E-Mail'), ('telefon', 'Telefon'),
                      ('brief', 'Brief'), ('persoenlich', 'Persönlich')]
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
