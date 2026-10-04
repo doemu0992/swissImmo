@@ -1811,6 +1811,26 @@ def _wg_kandidaten(vertrag):
                 .order_by('nachname', 'vorname')[:50])
 
 
+def _mietzins_grundlage(v):
+    """Referenzzins und LIK, auf denen der verrechnete Mietzins beruht (Basis), samt
+    «ausgeglichen bis» und dem aktuellen Stand der Verwaltung zum Vergleich."""
+    from core.services.lik import lik_bezeichnung, stand_label
+    zins, lik = v.effektive_basis()
+    letzte = max((a for a in v.anpassungen.all() if a.wirksam_ab and a.wirksam_ab <= date.today()),
+                 key=lambda a: (a.wirksam_ab, a.id or 0), default=None)
+    org = v.organisation
+    stand = None if letzte else v.basis_lik_stand
+    return {
+        'zins': zins, 'lik': lik,
+        'lik_text': lik_bezeichnung(lik, basis=getattr(org, 'lik_basis', None) or 'Dezember 2020', stand=stand),
+        'teuerung_bis': stand_label(stand),
+        'angepasst_per': letzte.wirksam_ab if letzte else None,
+        'kosten_bis': v.kostensteigerung_datum,
+        'aktuell_zins': getattr(org, 'aktueller_referenzzinssatz', None),
+        'aktuell_lik': getattr(org, 'aktueller_lik_punkte', None),
+    }
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_vertrag_detail(request, pk):
     from rentals.models import Dokument as RentalsDokument
@@ -1902,6 +1922,7 @@ def fw_vertrag_detail(request, pk):
         **basis, 'nav': 'vertraege', 'v': v, 'verlauf': verlauf,
         'vertrag_pill': _vertrag_status_pill(v),
         'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
+        'mz_grundlage': _mietzins_grundlage(v),
         'rechnungs_rows': rechnungs_rows,
         'total_offen': total_offen,
         'anzahl_offen': len(offene),

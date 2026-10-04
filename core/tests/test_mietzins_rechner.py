@@ -170,3 +170,20 @@ class OffenePunkteTests(TestCase):
         self.assertEqual(r.status_code, 200)
         soll = rz.kostensteigerung_pauschal_pct(date(2024, 1, 1), date.today())
         self.assertContains(r, f'name="kosten_pct" value="{soll}"')
+
+
+class VertragsakteGrundlageTests(TestCase):
+    def test_akte_zeigt_referenzzins_lik_und_ausgeglichen_bis(self):
+        from django.test import Client
+        from ._helfer import _team_user
+        _lg, _e, _m, v = _basis_objekte()
+        v.basis_referenzzinssatz = D('1.50'); v.basis_lik_punkte = D('106.2')
+        v.basis_lik_stand = date(2023, 12, 1); v.kostensteigerung_datum = date(2024, 6, 1)
+        v.save()
+        c = Client(); c.force_login(_team_user('Verwalter'))
+        r = c.get(f'/neu/vertraege/{v.id}/', secure=True)
+        self.assertContains(r, 'Referenzzins (Basis)')
+        self.assertContains(r, '106,2 Punkte')
+        self.assertContains(r, 'Stand Dezember 2023')
+        self.assertContains(r, 'Teuerung ausgeglichen bis')
+        self.assertContains(r, '06.2024')

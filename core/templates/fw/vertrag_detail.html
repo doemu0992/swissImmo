@@ -218,9 +218,18 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                 <small>{{ v.get_nk_abrechnungsart_display }}</small></div></div>
             <div class="fw-dz"><div class="fw-dl">{% trans "Bruttomietzins" %}</div><div class="fw-dv fw-strong">CHF {{ brutto|chf }}</div></div>
             <div class="fw-dz"><div class="fw-dl">{% trans "Zahlungsrhythmus" %}</div><div class="fw-dv">{{ v.get_zahlungsrhythmus_display }}</div></div>
-            <div class="fw-dz"><div class="fw-dl">{% trans "Referenzzins bei Festsetzung" %}</div><div class="fw-dv">
-                {% if v.basis_referenzzinssatz %}{{ v.basis_referenzzinssatz }} %{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}
-                <small>Grundlage jeder Anpassung nach Art. 269a OR</small></div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Referenzzins (Basis)" %}</div><div class="fw-dv">
+                {% if mz_grundlage.zins %}{{ mz_grundlage.zins }} %{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}
+                <small>{% if mz_grundlage.angepasst_per %}{% blocktrans with d=mz_grundlage.angepasst_per|date:"d.m.Y" %}Stand der Anpassung per {{ d }}{% endblocktrans %}{% else %}{% trans "bei Vertragsbeginn" %}{% endif %}
+                    {% if mz_grundlage.aktuell_zins %}· {% blocktrans with z=mz_grundlage.aktuell_zins %}aktuell {{ z }} %{% endblocktrans %}{% endif %}
+                    · Art. 269a OR</small></div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "LIK (Basis)" %}</div><div class="fw-dv">
+                {% if mz_grundlage.lik %}{{ mz_grundlage.lik_text }}{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}
+                {% if mz_grundlage.aktuell_lik %}<small>{% blocktrans with p=mz_grundlage.aktuell_lik %}aktuell {{ p }} Punkte{% endblocktrans %}</small>{% endif %}</div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Teuerung ausgeglichen bis" %}</div><div class="fw-dv">
+                {% if mz_grundlage.teuerung_bis %}{{ mz_grundlage.teuerung_bis }}{% elif mz_grundlage.angepasst_per %}{{ mz_grundlage.angepasst_per|date:"d.m.Y" }}{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}</div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Kostensteigerung ausgeglichen bis" %}</div><div class="fw-dv">
+                {% if mz_grundlage.kosten_bis %}{{ mz_grundlage.kosten_bis|date:"m.Y" }}{% else %}<span class="fw-warnton">{% trans "nicht erfasst" %}</span>{% endif %}</div></div>
             {% if v.mwst_pflichtig %}<div class="fw-dz"><div class="fw-dl">MWST</div>
                 <div class="fw-dv">{% blocktrans with s=v.mwst_satz %}{{ s }} % — optiert{% endblocktrans %}</div></div>{% endif %}
 
