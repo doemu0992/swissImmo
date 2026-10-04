@@ -1,84 +1,85 @@
 {% extends 'fw/base.html' %}
+{% load i18n %}
 {% block title %}{{ v.titel }} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="Pfad"><a href="/neu/stweg/">Stockwerkeigentum</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>{{ v.titel }}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans "Pfad" %}"><a href="/neu/stweg/">{% trans "Stockwerkeigentum" %}</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>{{ v.titel }}</span></nav>
         <h1>{{ v.titel }}</h1>
         <p>{{ v.get_art_display }} · {{ v.datum|date:"d.m.Y H:i" }}{% if v.ort %} · {{ v.ort }}{% endif %} · <strong>{{ v.get_status_display }}</strong></p>
     </div>
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Ablauf</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Ablauf" %}</span></div>
     <div class="fw-zeile"><div class="fw-mitte">
-        <div class="fw-t">1. Traktanden</div><div class="fw-s">{{ traktanden|length }} erfasst</div></div>
-        <span class="fw-chip {% if traktanden %}fw-brand{% endif %}">{% if traktanden %}erledigt{% else %}offen{% endif %}</span></div>
+        <div class="fw-t">{% trans "1. Traktanden" %}</div><div class="fw-s">{% blocktrans with n=traktanden|length %}{{ n }} erfasst{% endblocktrans %}</div></div>
+        <span class="fw-chip {% if traktanden %}fw-brand{% endif %}">{% if traktanden %}{% trans "erledigt" %}{% else %}{% trans "offen" %}{% endif %}</span></div>
     <div class="fw-zeile"><div class="fw-mitte">
-        <div class="fw-t">2. Einladung versenden</div>
-        <div class="fw-s">{% if v.einladung_versendet_am %}versendet am {{ v.einladung_versendet_am|date:"d.m.Y H:i" }}{% else %}noch nicht versendet{% endif %}</div></div>
-        <span class="fw-chip {% if v.einladung_versendet_am %}fw-brand{% endif %}">{% if v.einladung_versendet_am %}erledigt{% else %}offen{% endif %}</span></div>
+        <div class="fw-t">{% trans "2. Einladung versenden" %}</div>
+        <div class="fw-s">{% if v.einladung_versendet_am %}{% blocktrans with d=v.einladung_versendet_am|date:"d.m.Y H:i" %}versendet am {{ d }}{% endblocktrans %}{% else %}{% trans "noch nicht versendet" %}{% endif %}</div></div>
+        <span class="fw-chip {% if v.einladung_versendet_am %}fw-brand{% endif %}">{% if v.einladung_versendet_am %}{% trans "erledigt" %}{% else %}{% trans "offen" %}{% endif %}</span></div>
     <div class="fw-zeile"><div class="fw-mitte">
-        <div class="fw-t">3. Versammlung durchführen, Anwesenheit und Stimmen erfassen</div></div>
-        <span class="fw-chip {% if v.status == 'durchgefuehrt' or v.status == 'protokolliert' %}fw-brand{% endif %}">{% if v.status == 'durchgefuehrt' or v.status == 'protokolliert' %}erledigt{% else %}offen{% endif %}</span></div>
+        <div class="fw-t">{% trans "3. Versammlung durchführen, Anwesenheit und Stimmen erfassen" %}</div></div>
+        <span class="fw-chip {% if v.status == 'durchgefuehrt' or v.status == 'protokolliert' %}fw-brand{% endif %}">{% if v.status == 'durchgefuehrt' or v.status == 'protokolliert' %}{% trans "erledigt" %}{% else %}{% trans "offen" %}{% endif %}</span></div>
     <div class="fw-zeile"><div class="fw-mitte">
-        <div class="fw-t">4. Protokoll versenden</div>
-        <div class="fw-s">{% if v.protokoll_versendet_am %}versendet am {{ v.protokoll_versendet_am|date:"d.m.Y H:i" }}{% else %}noch nicht versendet{% endif %}</div></div>
-        <span class="fw-chip {% if v.protokoll_versendet_am %}fw-brand{% endif %}">{% if v.protokoll_versendet_am %}erledigt{% else %}offen{% endif %}</span></div>
+        <div class="fw-t">{% trans "4. Protokoll versenden" %}</div>
+        <div class="fw-s">{% if v.protokoll_versendet_am %}{% blocktrans with d=v.protokoll_versendet_am|date:"d.m.Y H:i" %}versendet am {{ d }}{% endblocktrans %}{% else %}{% trans "noch nicht versendet" %}{% endif %}</div></div>
+        <span class="fw-chip {% if v.protokoll_versendet_am %}fw-brand{% endif %}">{% if v.protokoll_versendet_am %}{% trans "erledigt" %}{% else %}{% trans "offen" %}{% endif %}</span></div>
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Traktanden</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Traktanden" %}</span></div>
     {% for t in traktanden %}
     <div class="fw-zeile"><div class="fw-mitte">
         <div class="fw-t">{{ t.nr }}. {{ t.titel }}</div>
         <div class="fw-s">{{ t.get_mehrheitsart_display }}{% if t.rechtsgrundlage %} · {{ t.rechtsgrundlage }}{% endif %}</div>
-        {% if t.antrag %}<div class="fw-s">Antrag: {{ t.antrag }}</div>{% endif %}
-        {% if t.vollzug_aufgabe %}<div class="fw-s">Vollzug bei Annahme: {{ t.vollzug_aufgabe }}{% if t.vollzug_faellig_am %} (bis {{ t.vollzug_faellig_am|date:"d.m.Y" }}){% endif %}</div>{% endif %}
+        {% if t.antrag %}<div class="fw-s">{% blocktrans with antrag=t.antrag %}Antrag: {{ antrag }}{% endblocktrans %}</div>{% endif %}
+        {% if t.vollzug_aufgabe %}<div class="fw-s">{% blocktrans with aufgabe=t.vollzug_aufgabe %}Vollzug bei Annahme: {{ aufgabe }}{% endblocktrans %}{% if t.vollzug_faellig_am %} {% blocktrans with d=t.vollzug_faellig_am|date:"d.m.Y" %}(bis {{ d }}){% endblocktrans %}{% endif %}</div>{% endif %}
         </div>
         {% if v.status == 'entwurf' %}
-        <form method="post" action="/neu/stweg/traktandum/{{ t.pk }}/loeschen/">{% csrf_token %}<button class="fw-btn">Entfernen</button></form>
+        <form method="post" action="/neu/stweg/traktandum/{{ t.pk }}/loeschen/">{% csrf_token %}<button class="fw-btn">{% trans "Entfernen" %}</button></form>
         {% else %}<span class="fw-chip">{{ t.get_ergebnis_display }}</span>{% endif %}
     </div>
-    {% empty %}<p class="fw-leer">Noch kein Traktandum.</p>{% endfor %}
+    {% empty %}<p class="fw-leer">{% trans "Noch kein Traktandum." %}</p>{% endfor %}
     {% if v.status == 'entwurf' %}
-    <details class="fw-aufklapp" open><summary>Traktandum hinzufügen</summary>
+    <details class="fw-aufklapp" open><summary>{% trans "Traktandum hinzufügen" %}</summary>
         <div class="fw-aufklapp-inhalt">
             <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/traktandum/neu/" class="fw-formular drei">{% csrf_token %}
-                <div class="fw-feldblock"><label class="fw-label" for="t_titel">Titel *</label>
+                <div class="fw-feldblock"><label class="fw-label" for="t_titel">{% trans "Titel *" %}</label>
                     <input id="t_titel" name="titel" required class="fw-feld"></div>
-                <div class="fw-feldblock"><label class="fw-label" for="t_mehrheit">Erforderliche Mehrheit (Gesetz oder Reglement)</label>
+                <div class="fw-feldblock"><label class="fw-label" for="t_mehrheit">{% trans "Erforderliche Mehrheit (Gesetz oder Reglement)" %}</label>
                     <select id="t_mehrheit" name="mehrheitsart" class="fw-feld">{% for w, b in mehrheiten %}<option value="{{ w }}">{{ b }}</option>{% endfor %}</select></div>
-                <div class="fw-feldblock"><label class="fw-label" for="t_recht">Rechtsgrundlage / Reglement</label>
+                <div class="fw-feldblock"><label class="fw-label" for="t_recht">{% trans "Rechtsgrundlage / Reglement" %}</label>
                     <input id="t_recht" name="rechtsgrundlage" class="fw-feld"></div>
-                <div class="fw-feldblock"><label class="fw-label" for="t_beschr">Beschreibung</label>
+                <div class="fw-feldblock"><label class="fw-label" for="t_beschr">{% trans "Beschreibung" %}</label>
                     <textarea id="t_beschr" name="beschreibung" rows="2" class="fw-feld"></textarea></div>
-                <div class="fw-feldblock"><label class="fw-label" for="t_antrag">Antrag der Verwaltung</label>
+                <div class="fw-feldblock"><label class="fw-label" for="t_antrag">{% trans "Antrag der Verwaltung" %}</label>
                     <textarea id="t_antrag" name="antrag" rows="2" class="fw-feld"></textarea></div>
-                <div class="fw-feldblock"><label class="fw-label" for="t_vollzug">Vollzug bei Annahme (wird zur Aufgabe)</label>
+                <div class="fw-feldblock"><label class="fw-label" for="t_vollzug">{% trans "Vollzug bei Annahme (wird zur Aufgabe)" %}</label>
                     <input id="t_vollzug" name="vollzug_aufgabe" class="fw-feld"></div>
-                <div class="fw-feldblock"><label class="fw-label" for="t_vfrist">Vollzug bis</label>
+                <div class="fw-feldblock"><label class="fw-label" for="t_vfrist">{% trans "Vollzug bis" %}</label>
                     <input id="t_vfrist" type="date" name="vollzug_faellig_am" class="fw-feld"></div>
-                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Hinzufügen</button></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Hinzufügen" %}</button></div>
             </form></div></details>
     {% endif %}
 </div>
 
 {% if v.status == 'entwurf' or v.status == 'eingeladen' %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Einladung</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Einladung" %}</span></div>
     <div class="fw-rumpf">
         {% if einladung_probleme %}
-        <p><span class="fw-chip fw-warn">Noch nicht versandbereit</span></p>
+        <p><span class="fw-chip fw-warn">{% trans "Noch nicht versandbereit" %}</span></p>
         <ul>{% for p in einladung_probleme %}<li>{{ p }}</li>{% endfor %}</ul>
-        {% else %}<p><span class="fw-chip fw-brand">Versandbereit</span> Jeder Eigentümer erhält Einladung und Traktandenliste als PDF per E-Mail; Eigentümer ohne E-Mail-Adresse werden für den Postversand vermerkt.</p>{% endif %}
+        {% else %}<p><span class="fw-chip fw-brand">{% trans "Versandbereit" %}</span> {% trans "Jeder Eigentümer erhält Einladung und Traktandenliste als PDF per E-Mail; Eigentümer ohne E-Mail-Adresse werden für den Postversand vermerkt." %}</p>{% endif %}
         <p>
-            <a class="fw-btn" href="/neu/stweg/versammlung/{{ v.pk }}/pdf/einladung/" target="_blank" rel="noopener">Vorschau (PDF)</a>
+            <a class="fw-btn" href="/neu/stweg/versammlung/{{ v.pk }}/pdf/einladung/" target="_blank" rel="noopener">{% trans "Vorschau (PDF)" %}</a>
             <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/einladung/" style="display:inline">{% csrf_token %}
-                <button class="fw-btn fw-primary"{% if einladung_probleme %} disabled{% endif %}>{% if v.status == 'eingeladen' %}Fehlende erneut versenden{% else %}Einladung versenden{% endif %}</button></form>
+                <button class="fw-btn fw-primary"{% if einladung_probleme %} disabled{% endif %}>{% if v.status == 'eingeladen' %}{% trans "Fehlende erneut versenden" %}{% else %}{% trans "Einladung versenden" %}{% endif %}</button></form>
             {% if v.status == 'eingeladen' %}
             <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/durchfuehren/" style="display:inline">{% csrf_token %}
-                <button class="fw-btn">Versammlung durchführen</button></form>{% endif %}
+                <button class="fw-btn">{% trans "Versammlung durchführen" %}</button></form>{% endif %}
         </p>
     </div>
 </div>
@@ -86,23 +87,23 @@
 
 {% if v.status == 'eingeladen' or vollmachten %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Vollmachten</span><span class="fw-neben">{{ vollmachten|length }}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Vollmachten" %}</span><span class="fw-neben">{{ vollmachten|length }}</span></div>
     {% for vm in vollmachten %}
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ vm.einheit.bezeichnung }} → {{ vm.bevollmaechtigter }}</div>
-        <div class="fw-s">erteilt {{ vm.erteilt_am|date:"d.m.Y H:i" }} · {{ vm.get_kanal_display }}{% if vm.widerrufen_am %} · widerrufen {{ vm.widerrufen_am|date:"d.m.Y" }}{% endif %}</div></div>
+        <div class="fw-s">{% blocktrans with d=vm.erteilt_am|date:"d.m.Y H:i" %}erteilt {{ d }}{% endblocktrans %} · {{ vm.get_kanal_display }}{% if vm.widerrufen_am %} · {% blocktrans with d=vm.widerrufen_am|date:"d.m.Y" %}widerrufen {{ d }}{% endblocktrans %}{% endif %}</div></div>
         {% if vm.gueltig and v.status == 'eingeladen' %}
-        <form method="post" action="/neu/stweg/vollmacht/{{ vm.pk }}/widerrufen/">{% csrf_token %}<button class="fw-btn">Widerrufen</button></form>{% endif %}
+        <form method="post" action="/neu/stweg/vollmacht/{{ vm.pk }}/widerrufen/">{% csrf_token %}<button class="fw-btn">{% trans "Widerrufen" %}</button></form>{% endif %}
     </div>
-    {% empty %}<p class="fw-leer">Keine Vollmacht erteilt.</p>{% endfor %}
+    {% empty %}<p class="fw-leer">{% trans "Keine Vollmacht erteilt." %}</p>{% endfor %}
     {% if v.status == 'eingeladen' %}
-    <details class="fw-aufklapp"><summary>Vollmacht erfassen (schriftlich erhalten)</summary>
+    <details class="fw-aufklapp"><summary>{% trans "Vollmacht erfassen (schriftlich erhalten)" %}</summary>
         <div class="fw-aufklapp-inhalt">
             <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/vollmacht/neu/" class="fw-formular drei">{% csrf_token %}
-                <div class="fw-feldblock"><label class="fw-label" for="vm_einheit">Einheit *</label>
+                <div class="fw-feldblock"><label class="fw-label" for="vm_einheit">{% trans "Einheit *" %}</label>
                     <select id="vm_einheit" name="einheit" required class="fw-feld">{% for e in einheiten %}<option value="{{ e.pk }}">{{ e.bezeichnung }}{% if e.stockwerkeigentuemer %} ({{ e.stockwerkeigentuemer.firma_oder_name }}){% endif %}</option>{% endfor %}</select></div>
-                <div class="fw-feldblock"><label class="fw-label" for="vm_name">Vertreten durch *</label>
+                <div class="fw-feldblock"><label class="fw-label" for="vm_name">{% trans "Vertreten durch *" %}</label>
                     <input id="vm_name" name="bevollmaechtigter" required class="fw-feld"></div>
-                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Erfassen</button></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Erfassen" %}</button></div>
             </form></div></details>
     {% endif %}
 </div>
@@ -110,22 +111,22 @@
 
 {% if v.status == 'durchgefuehrt' or v.status == 'protokolliert' %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Anwesenheit</span>
-        {% if praesenz %}<span class="fw-neben">{{ praesenz.koepfe }}/{{ praesenz.koepfe_total }} Eigentümer · Wertquoten {{ praesenz.quoten|floatformat:"-2" }}/{{ praesenz.quoten_total|floatformat:"-2" }}</span>{% endif %}</div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Anwesenheit" %}</span>
+        {% if praesenz %}<span class="fw-neben">{% blocktrans with k=praesenz.koepfe kt=praesenz.koepfe_total q=praesenz.quoten|floatformat:"-2" qt=praesenz.quoten_total|floatformat:"-2" %}{{ k }}/{{ kt }} Eigentümer · Wertquoten {{ q }}/{{ qt }}{% endblocktrans %}</span>{% endif %}</div>
     <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/anwesenheit/" class="fw-formular">{% csrf_token %}
         {% for e in einheiten %}
         <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }} · {{ e.wertquote|floatformat:"-2" }}</div>
             <div class="fw-s">{{ e.stockwerkeigentuemer.firma_oder_name|default:"kein Eigentümer" }}</div></div>
             <select name="art_{{ e.pk }}" class="fw-feld" aria-label="Anwesenheit {{ e.bezeichnung }}"{% if v.status == 'protokolliert' %} disabled{% endif %}>
                 {% for w, b in anwesenheitsarten %}<option value="{{ w }}"{% if e.anwesenheit == w %} selected{% endif %}>{{ b }}</option>{% endfor %}</select>
-            <input name="vertreter_{{ e.pk }}" value="{{ e.vertreter }}" class="fw-feld" placeholder="Vertreter" aria-label="Vertreter {{ e.bezeichnung }}"{% if v.status == 'protokolliert' %} disabled{% endif %}>
+            <input name="vertreter_{{ e.pk }}" value="{{ e.vertreter }}" class="fw-feld" placeholder="{% trans "Vertreter" %}" aria-label="Vertreter {{ e.bezeichnung }}"{% if v.status == 'protokolliert' %} disabled{% endif %}>
         </div>
         {% endfor %}
-        <div class="fw-feldblock"><label class="fw-label" for="leitung">Versammlungsleitung</label>
+        <div class="fw-feldblock"><label class="fw-label" for="leitung">{% trans "Versammlungsleitung" %}</label>
             <input id="leitung" name="leitung" value="{{ v.leitung }}" class="fw-feld"></div>
-        <div class="fw-feldblock"><label class="fw-label" for="pfuehrung">Protokollführung</label>
+        <div class="fw-feldblock"><label class="fw-label" for="pfuehrung">{% trans "Protokollführung" %}</label>
             <input id="pfuehrung" name="protokollfuehrung" value="{{ v.protokollfuehrung }}" class="fw-feld"></div>
-        {% if v.status == 'durchgefuehrt' %}<div class="fw-formular-fuss"><button class="fw-btn fw-primary">Anwesenheit speichern</button></div>{% endif %}
+        {% if v.status == 'durchgefuehrt' %}<div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Anwesenheit speichern" %}</button></div>{% endif %}
     </form>
 </div>
 
@@ -140,55 +141,55 @@
             <select name="stimme_{{ e.pk }}" class="fw-feld" aria-label="Stimme {{ e.bezeichnung }}">
                 <option value="">—</option>
                 {% for w, b in stimmwerte %}<option value="{{ w }}"{% if wert == w %} selected{% endif %}>{{ b }}</option>{% endfor %}</select></div>
-        {% empty %}<p class="fw-leer">Zuerst die Anwesenheit erfassen.</p>{% endfor %}
-        <div class="fw-formular-fuss"><button class="fw-btn">Stimmen speichern</button></div>
+        {% empty %}<p class="fw-leer">{% trans "Zuerst die Anwesenheit erfassen." %}</p>{% endfor %}
+        <div class="fw-formular-fuss"><button class="fw-btn">{% trans "Stimmen speichern" %}</button></div>
     </form>
     {% endif %}
     {% if t.zaehlung %}
     <div class="fw-rumpf">
-        <p>Köpfe: Ja {{ t.zaehlung.ja_koepfe }} · Nein {{ t.zaehlung.nein_koepfe }} · Enthaltung {{ t.zaehlung.enthaltung_koepfe }} (von {{ t.zaehlung.total_koepfe }})<br>
-           Wertquoten: Ja {{ t.zaehlung.ja_quoten|floatformat:"-2" }} · Nein {{ t.zaehlung.nein_quoten|floatformat:"-2" }} · Enthaltung {{ t.zaehlung.enthaltung_quoten|floatformat:"-2" }} (von {{ t.zaehlung.total_quoten|floatformat:"-2" }})</p>
-        {% if t.zaehlung.widerspruch %}<p><span class="fw-chip fw-warn">Widersprüchliche Stimmen desselben Eigentümers — bitte korrigieren.</span></p>{% endif %}
-        {% if t.ergebnis == 'offen' %}<p>Rechnerischer Vorschlag ({{ t.get_mehrheitsart_display }}): <strong>{% if t.zaehlung.vorschlag == 'angenommen' %}angenommen{% elif t.zaehlung.vorschlag == 'abgelehnt' %}abgelehnt{% else %}zur Kenntnisnahme{% endif %}</strong>. Das Ergebnis gilt erst, wenn es festgestellt ist.</p>{% endif %}
+        <p>{% blocktrans with ja=t.zaehlung.ja_koepfe nein=t.zaehlung.nein_koepfe enth=t.zaehlung.enthaltung_koepfe total=t.zaehlung.total_koepfe %}Köpfe: Ja {{ ja }} · Nein {{ nein }} · Enthaltung {{ enth }} (von {{ total }}){% endblocktrans %}<br>
+           {% blocktrans with ja=t.zaehlung.ja_quoten|floatformat:"-2" nein=t.zaehlung.nein_quoten|floatformat:"-2" enth=t.zaehlung.enthaltung_quoten|floatformat:"-2" total=t.zaehlung.total_quoten|floatformat:"-2" %}Wertquoten: Ja {{ ja }} · Nein {{ nein }} · Enthaltung {{ enth }} (von {{ total }}){% endblocktrans %}</p>
+        {% if t.zaehlung.widerspruch %}<p><span class="fw-chip fw-warn">{% trans "Widersprüchliche Stimmen desselben Eigentümers — bitte korrigieren." %}</span></p>{% endif %}
+        {% if t.ergebnis == 'offen' %}<p>{% blocktrans with art=t.get_mehrheitsart_display %}Rechnerischer Vorschlag ({{ art }}):{% endblocktrans %} <strong>{% if t.zaehlung.vorschlag == 'angenommen' %}{% trans "angenommen" %}{% elif t.zaehlung.vorschlag == 'abgelehnt' %}{% trans "abgelehnt" %}{% else %}{% trans "zur Kenntnisnahme" %}{% endif %}</strong>. {% trans "Das Ergebnis gilt erst, wenn es festgestellt ist." %}</p>{% endif %}
     </div>
     {% endif %}
     {% if v.status == 'durchgefuehrt' %}
     <form method="post" action="/neu/stweg/traktandum/{{ t.pk }}/feststellen/" class="fw-formular drei">{% csrf_token %}
-        <div class="fw-feldblock"><label class="fw-label" for="erg_{{ t.pk }}">Ergebnis feststellen</label>
+        <div class="fw-feldblock"><label class="fw-label" for="erg_{{ t.pk }}">{% trans "Ergebnis feststellen" %}</label>
             <select id="erg_{{ t.pk }}" name="ergebnis" class="fw-feld">
                 {% for w, b in ergebnisse %}{% if w != 'offen' %}<option value="{{ w }}"{% if t.zaehlung and t.zaehlung.vorschlag == w and t.ergebnis == 'offen' %} selected{% elif t.ergebnis == w %} selected{% endif %}>{{ b }}</option>{% endif %}{% endfor %}</select></div>
-        <div class="fw-feldblock"><label class="fw-label" for="bt_{{ t.pk }}">Beschlusstext</label>
+        <div class="fw-feldblock"><label class="fw-label" for="bt_{{ t.pk }}">{% trans "Beschlusstext" %}</label>
             <textarea id="bt_{{ t.pk }}" name="beschlusstext" rows="2" class="fw-feld">{{ t.beschlusstext|default:t.antrag }}</textarea></div>
-        <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Feststellen</button></div>
+        <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Feststellen" %}</button></div>
     </form>
     {% endif %}
 </div>
 {% endfor %}
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Protokoll</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Protokoll" %}</span></div>
     <div class="fw-rumpf">
         {% if protokoll_probleme %}<ul>{% for p in protokoll_probleme %}<li>{{ p }}</li>{% endfor %}</ul>{% endif %}
         <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/protokoll/" class="fw-formular">{% csrf_token %}
-            <div class="fw-feldblock"><label class="fw-label" for="pt">Weitere Bemerkungen im Protokoll</label>
+            <div class="fw-feldblock"><label class="fw-label" for="pt">{% trans "Weitere Bemerkungen im Protokoll" %}</label>
                 <textarea id="pt" name="protokoll_text" rows="4" class="fw-feld">{{ v.protokoll_text }}</textarea></div>
-            <div class="fw-formular-fuss"><button class="fw-btn">Bemerkungen speichern</button></div>
+            <div class="fw-formular-fuss"><button class="fw-btn">{% trans "Bemerkungen speichern" %}</button></div>
         </form>
         <p>
-            <a class="fw-btn" href="/neu/stweg/versammlung/{{ v.pk }}/pdf/protokoll/" target="_blank" rel="noopener">Protokoll (PDF)</a>
+            <a class="fw-btn" href="/neu/stweg/versammlung/{{ v.pk }}/pdf/protokoll/" target="_blank" rel="noopener">{% trans "Protokoll (PDF)" %}</a>
             <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/protokoll/versenden/" style="display:inline">{% csrf_token %}
-                <button class="fw-btn fw-primary"{% if protokoll_probleme %} disabled{% endif %}>{% if v.status == 'protokolliert' %}Fehlende erneut versenden{% else %}Protokoll an alle Eigentümer versenden{% endif %}</button></form>
+                <button class="fw-btn fw-primary"{% if protokoll_probleme %} disabled{% endif %}>{% if v.status == 'protokolliert' %}{% trans "Fehlende erneut versenden" %}{% else %}{% trans "Protokoll an alle Eigentümer versenden" %}{% endif %}</button></form>
         </p>
     </div>
 </div>
 {% endif %}
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Versandprotokoll</span><span class="fw-neben">{{ versaende|length }}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Versandprotokoll" %}</span><span class="fw-neben">{{ versaende|length }}</span></div>
     {% for z in versaende %}
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ z.get_art_display }} an {{ z.eigentuemer.firma_oder_name|default:"—" }}</div>
         <div class="fw-s">{{ z.zeitpunkt|date:"d.m.Y H:i" }}{% if z.email %} · {{ z.email }}{% endif %}{% if z.fehler %} · {{ z.fehler }}{% endif %}</div></div>
         <span class="fw-chip {% if z.status == 'gesendet' %}fw-brand{% else %}fw-warn{% endif %}">{{ z.get_status_display }}</span></div>
-    {% empty %}<p class="fw-leer">Noch nichts versendet.</p>{% endfor %}
+    {% empty %}<p class="fw-leer">{% trans "Noch nichts versendet." %}</p>{% endfor %}
 </div>
 {% endblock %}

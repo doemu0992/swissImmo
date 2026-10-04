@@ -1,26 +1,27 @@
 {% extends 'fw/base.html' %}
-{% block title %}Stockwerkeigentum — swissImmo{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Stockwerkeigentum" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="Pfad"><a href="/neu/liegenschaften/">Akten</a><span aria-hidden="true">/</span><span>Stockwerkeigentum</span></nav>
-        <h1>Stockwerkeigentum</h1>
-        <p>Gemeinschaften, ihre nächste Versammlung und was noch offen ist.</p>
+        <nav class="fw-krumen" aria-label="{% trans "Pfad" %}"><a href="/neu/liegenschaften/">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Stockwerkeigentum" %}</span></nav>
+        <h1>{% trans "Stockwerkeigentum" %}</h1>
+        <p>{% trans "Gemeinschaften, ihre nächste Versammlung und was noch offen ist." %}</p>
     </div>
 </div>
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Gemeinschaften</span><span class="fw-neben">{{ gemeinschaften|length }}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Gemeinschaften" %}</span><span class="fw-neben">{{ gemeinschaften|length }}</span></div>
     {% for g in gemeinschaften %}
     <a class="fw-zeile" href="/neu/stweg/{{ g.lg.pk }}/">
         <div class="fw-mitte">
             <div class="fw-t">{{ g.lg }}</div>
-            <div class="fw-s">{% if g.naechste %}Nächste Versammlung: {{ g.naechste.datum|date:"d.m.Y H:i" }}{% else %}Keine Versammlung geplant{% endif %}
-                · {% if g.lg.status == 'aktiv' %}aktiv{% else %}{{ g.lg.get_status_display }}{% endif %}</div>
+            <div class="fw-s">{% if g.naechste %}{% blocktrans with datum=g.naechste.datum|date:"d.m.Y H:i" %}Nächste Versammlung: {{ datum }}{% endblocktrans %}{% else %}{% trans "Keine Versammlung geplant" %}{% endif %}
+                · {% if g.lg.status == 'aktiv' %}{% trans "aktiv" %}{% else %}{{ g.lg.get_status_display }}{% endif %}</div>
         </div>
-        {% if g.offen %}<span class="fw-chip fw-warn">{{ g.offen }} offen</span>{% else %}<span class="fw-chip">alles erledigt</span>{% endif %}
+        {% if g.offen %}<span class="fw-chip fw-warn">{% blocktrans with n=g.offen %}{{ n }} offen{% endblocktrans %}</span>{% else %}<span class="fw-chip">{% trans "alles erledigt" %}</span>{% endif %}
     </a>
     {% empty %}
-    <p class="fw-leer">Noch keine Stockwerkeigentümergemeinschaft. Eine Liegenschaft wird zur STWEG, indem ihre Art auf «Stockwerkeigentum (STWEG)» gesetzt wird.</p>
+    <p class="fw-leer">{% trans "Noch keine Stockwerkeigentümergemeinschaft. Eine Liegenschaft wird zur STWEG, indem ihre Art auf «Stockwerkeigentum (STWEG)» gesetzt wird." %}</p>
     {% endfor %}
 </div>
 {% endblock %}

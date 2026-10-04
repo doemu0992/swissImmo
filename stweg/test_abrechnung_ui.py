@@ -239,3 +239,24 @@ class QrZahlteilTests(TestCase):
         r = c.get(f'/portal/stweg/abrechnung/{self.a.pk}/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(self.seiten(r.content), 2)
+
+
+class VerwaltungSprachenTests(TestCase):
+    """Die Verwaltungsoberfläche erscheint in der gewählten Sprache (PDFs bleiben deutsch, D11)."""
+
+    def setUp(self):
+        self.lg, self.e, self.eigs = sonnenblick()
+        self.client.force_login(_team_user('Verwaltung'))
+
+    def seite(self, pfad, sprache):
+        from django.conf import settings
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = sprache
+        return self.client.get(pfad)
+
+    def test_seiten_auf_franzoesisch(self):
+        s = self.seite(f'/neu/stweg/{self.lg.pk}/abrechnung/', 'fr')
+        self.assertContains(s, 'Année du décompte')
+        self.assertNotContains(s, 'Abrechnungsjahr')
+        self.assertContains(self.seite(f'/neu/stweg/{self.lg.pk}/abrechnung/', 'de'), 'Abrechnungsjahr')
+        for pfad in ('/neu/stweg/', f'/neu/stweg/{self.lg.pk}/', f'/neu/stweg/{self.lg.pk}/einheiten/'):
+            self.assertEqual(self.seite(pfad, 'fr').status_code, 200)
