@@ -138,6 +138,38 @@ def _chf(betrag):
     return f"{betrag:,.2f}".replace(',', "'")
 
 
+def _qr_daten(abrechnung, eigentuemer, betrag):
+    """Die Angaben für den QR-Zahlteil — oder None, wenn keiner möglich ist.
+
+    Gezahlt wird auf das Konto der GEMEINSCHAFT (`Liegenschaft.iban`). Ohne gültige
+    IBAN gibt es keinen Zahlteil; der Beleg nennt die Nachzahlung trotzdem. Die
+    Referenz (QRR) verwendet `draw_qr_bill` nur bei einer QR-IBAN; bei einer
+    gewöhnlichen IBAN verlangt die Norm keine."""
+    from core.services.iban import ist_gueltige_iban, normalisiere_iban
+    from core.utils.qr_code import qrr_referenz
+    lg = abrechnung.liegenschaft
+    iban = normalisiere_iban(lg.iban)
+    if not iban or not ist_gueltige_iban(iban) or betrag <= 0:
+        return None
+    creditor = {'name': f'Stockwerkeigentümergemeinschaft {lg.strasse}'[:70], 'line1': lg.strasse or '',
+                'line2': f"{lg.plz or ''} {lg.ort or ''}".strip(), 'plz': lg.plz or '', 'ort': lg.ort or ''}
+    debtor = {'name': eigentuemer.firma_oder_name, 'line1': eigentuemer.strasse or '',
+              'line2': f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip(),
+              'plz': eigentuemer.plz or '', 'ort': eigentuemer.ort or ''}
+    # Eindeutig je Abrechnung und Eigentümer; die Funktion nennt ihre Parameter noch nach dem
+    # Mietmodell (vertrag_id, rechnung_id), rechnet aber nur mit den Zahlen.
+    referenz, _ = qrr_referenz(abrechnung.pk, eigentuemer.pk)
+    return {'iban': iban, 'creditor': creditor, 'debtor': debtor, 'referenz': referenz,
+            'grund': f'Abrechnung {abrechnung.jahr} {lg.strasse}'[:140]}
+
+
+def _qr_zeichnen(seite, daten, betrag):
+    from core.utils.qr_code import draw_qr_bill
+    seite.c.showPage()
+    draw_qr_bill(seite.c, daten['iban'], daten['creditor'], daten['debtor'], betrag,
+                 daten['grund'], reference=daten['referenz'])
+
+
 @nur_deutsch
 def abrechnung_pdf(abrechnung, eigentuemer=None):
     """Jahresabrechnung. Ohne `eigentuemer`: die Gesamtübersicht für die Verwaltung;
@@ -185,6 +217,14 @@ def abrechnung_pdf(abrechnung, eigentuemer=None):
         s.luecke(2)
         s.zeile(("Total Nachzahlung" if total_saldo > 0 else "Total Guthaben" if total_saldo < 0
                  else "Total ausgeglichen") + f": CHF {_chf(abs(total_saldo))}", fett=True, gr=11)
+        if total_saldo > 0:
+            # Der Zahlteil gehört nur an eine ABGESCHLOSSENE Abrechnung: Ein Entwurf darf
+            # nicht zur Zahlung auffordern.
+            qr = _qr_daten(a, eigentuemer, total_saldo) if a.status == a.STATUS_ABGESCHLOSSEN else None
+            s.zeile("Zahlung mit dem QR-Zahlteil auf der folgenden Seite." if qr else
+                    "Bitte überweisen Sie den Betrag auf das Konto der Gemeinschaft.", gr=9, abstand=4)
+            if qr:
+                _qr_zeichnen(s, qr, total_saldo)
     return s.bytes()
 
 
