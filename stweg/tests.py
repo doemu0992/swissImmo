@@ -134,3 +134,95 @@ class ErneuerungsfondsTests(TestCase):
         f.jaehrliche_einlage = Decimal('500')
         f.save()
         self.assertEqual(run_erneuerungsfonds_einlage(2026)[0], 0)
+
+
+def rechnung(lg, betrag, datum, status='freigegeben', **kw):
+    from finance.models import KreditorenRechnung
+    return KreditorenRechnung.objects.create(
+        liegenschaft=lg, lieferant=kw.pop('lieferant', 'Lieferant AG'),
+        betrag=Decimal(betrag), datum=datum, status=status, **kw)
+
+
+class StwegAbrechnungServiceTests(TestCase):
+    def setUp(self):
+        from datetime import date
+        self.lg, self.e = neue_stweg(quoten=(200, 300, 500), status='aktiv')
+        self.d = date(2026, 6, 15)
+
+    def service(self):
+        from stweg.services import StwegAbrechnungService
+        return StwegAbrechnungService(self.lg)
+
+    def test_nur_allgemeine_kosten_des_jahres_ohne_neu_und_storniert(self):
+        from datetime import date
+        rechnung(self.lg, 1000, self.d)
+        rechnung(self.lg, 500, date(2026, 1, 2), status='bezahlt')
+        rechnung(self.lg, 999, self.d, status='neu')
+        rechnung(self.lg, 999, self.d, status='storniert')
+        rechnung(self.lg, 999, date(2025, 12, 31))                   # Vorjahr
+        rechnung(self.lg, 999, self.d, einheit=self.e[0])            # nur eine Einheit
+        self.assertEqual(self.service().allgemeine_kosten(2026), Decimal('1500.00'))
+
+    def test_aufgeteilte_rechnung_zaehlt_nur_positionen_dieser_liegenschaft(self):
+        from finance.models import Buchungskonto, KreditorPosition
+        lg2, _ = neue_stweg(name='Andere')
+        r = rechnung(self.lg, 1000, self.d)
+        konto = Buchungskonto.objects.create(nummer='4000', bezeichnung='Unterhalt', typ='aufwand')
+        KreditorPosition.objects.create(rechnung=r, konto=konto, liegenschaft=self.lg, betrag=Decimal('300'))
+        KreditorPosition.objects.create(rechnung=r, konto=konto, liegenschaft=lg2, betrag=Decimal('700'))
+        self.assertEqual(self.service().allgemeine_kosten(2026), Decimal('300.00'))
+
+    def test_keine_abrechnung_bei_falschen_quoten(self):
+        from stweg.services import StwegAbrechnungService
+        rechnung(self.lg, 1000, self.d)
+        Einheit.objects.filter(pk=self.e[0].pk).update(wertquote=Decimal(199))   # umgeht save()
+        with self.assertRaises(WertquotenFehler):
+            StwegAbrechnungService(self.lg).abrechnen(2026)
+
+    def test_keine_abrechnung_im_entwurf_oder_fuer_miete(self):
+        from stweg.services import AbrechnungsFehler, StwegAbrechnungService
+        lg, _ = neue_stweg(name='Entwurf')
+        with self.assertRaises(AbrechnungsFehler):
+            StwegAbrechnungService(lg).abrechnen(2026)
+        miete = Liegenschaft.objects.create(strasse='M 1', plz='8000', ort='Z',
+                                            organisation=_test_organisation())
+        with self.assertRaises(AbrechnungsFehler):
+            StwegAbrechnungService(miete)
+
+    def test_rappen_gehen_auf(self):
+        lg, e = neue_stweg(name='Drittel', quoten=(333, 333, 334), status='aktiv')
+        rechnung(lg, '100.00', self.d)
+        from stweg.services import StwegAbrechnungService
+        a = StwegAbrechnungService(lg).abrechnen(2026)
+        self.assertEqual(sum(p.kostenanteil for p in a.positionen.all()), Decimal('100.00'))
+
+    def test_neuberechnung_ersetzt_entwurf_nicht_abgeschlossene(self):
+        from stweg.models import StwegAbrechnung
+        from stweg.services import AbrechnungsFehler
+        rechnung(self.lg, 1000, self.d)
+        s = self.service()
+        s.abrechnen(2026)
+        rechnung(self.lg, 1000, self.d)
+        a = s.abrechnen(2026)
+        self.assertEqual(a.gesamtkosten, Decimal('2000.00'))
+        self.assertEqual(StwegAbrechnung.objects.filter(liegenschaft=self.lg).count(), 1)
+        s.abschliessen(a)
+        with self.assertRaises(AbrechnungsFehler):
+            s.abrechnen(2026)
+
+    def test_fremde_organisation_fliesst_nicht_ein(self):
+        """Kosten und Akonto einer anderen Verwaltung dürfen nie mitgezählt werden."""
+        from core.tenancy import organisation_kontext
+        from crm.models import Organisation
+        from stweg.models import StwegAkonto
+        rechnung(self.lg, 1000, self.d)
+        fremd = Organisation.objects.create(firma='Fremd AG', strasse='X 1', plz='9000', ort='St. Gallen')
+        with organisation_kontext(fremd):
+            flg = Liegenschaft.objects.create(strasse='F 1', plz='9000', ort='SG', typ='STWEG',
+                                              status='entwurf', organisation=fremd)
+            rechnung(flg, 7777, self.d)
+            fe = Einheit.objects.create(liegenschaft=flg, bezeichnung='F', typ='stwe', wertquote=1000)
+            StwegAkonto.objects.create(einheit=fe, betrag=Decimal('5555'), datum=self.d)
+        a = self.service().abrechnen(2026)
+        self.assertEqual(a.gesamtkosten, Decimal('1000.00'))
+        self.assertEqual(sum(p.akonto for p in a.positionen.all()), Decimal('0.00'))
