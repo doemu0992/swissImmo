@@ -46,7 +46,7 @@ Klartextnamen aus `MARKT.md`: **Start · Team · Professional · Enterprise**. D
 
 ## D9 · Stockwerkeigentum bleibt Vorschlag
 
-Als zubuchbares Modul im Zielbild sichtbar, aber **nicht gebaut**. Entscheid nach E7. Bestand heute: `Einheit.typ='stwe'` und `finance.Erneuerungsfonds`.
+**Überholt (04.10.2026):** Das Modul wurde auf ausdrücklichen Auftrag gebaut — siehe `docs/STWEG.md`. Der ursprüngliche Entscheid lautete: als zubuchbares Modul im Zielbild sichtbar, aber nicht gebaut. Entscheid nach E7. Bestand damals: `Einheit.typ='stwe'` und `finance.Erneuerungsfonds`.
 
 ## D10 · Eine Anwendung, auch vor Ort
 
