@@ -22200,3 +22200,7 @@ msgstr "Wertquoten-Total (Nenner)"
 #: core/navigation.py
 msgid "Stockwerkeigentum"
 msgstr "Stockwerkeigentum"
+
+#: portfolio/forms.py
+msgid "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
+msgstr "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."

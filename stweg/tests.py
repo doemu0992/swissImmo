@@ -323,3 +323,61 @@ class FormularTests(TestCase):
         f = LiegenschaftForm(basis, instance=lg)            # leer → unverändert
         self.assertTrue(f.is_valid(), f.errors)
         self.assertEqual(f.save().wertquote_total, 100)
+
+
+class ArtUndStatusImFormularTests(TestCase):
+    """Die Art «STWEG» und der Status lassen sich im Liegenschaftsformular setzen."""
+
+    BASIS = {'strasse': 'Formularweg 1', 'plz': '8000', 'ort': 'Zürich'}
+
+    def form(self, daten, instanz=None):
+        from portfolio.forms import LiegenschaftForm
+        return LiegenschaftForm({**self.BASIS, **daten}, instance=instanz or Liegenschaft(organisation=_test_organisation()))
+
+    def test_neue_stweg_wird_als_entwurf_gespeichert_auch_wenn_aktiv_gewaehlt(self):
+        f = self.form({'typ': 'STWEG', 'status': 'aktiv', 'wertquote_total': '1000'})
+        self.assertTrue(f.is_valid(), f.errors)
+        lg = f.save()
+        self.assertEqual((lg.typ, lg.status), ('STWEG', 'entwurf'))
+
+    def test_ohne_felder_bleibt_alles_wie_gehabt(self):
+        lg, _ = neue_stweg()
+        f = self.form({}, instanz=lg)
+        self.assertTrue(f.is_valid(), f.errors)
+        lg = f.save()
+        self.assertEqual((lg.typ, lg.status), ('STWEG', 'entwurf'))
+        neu = self.form({}).save()
+        self.assertEqual((neu.typ, neu.status), ('MIETE', 'aktiv'))
+
+    def test_aktivieren_mit_falschen_quoten_ist_ein_formularfehler(self):
+        lg, _ = neue_stweg(quoten=(200, 300, 499))
+        f = self.form({'typ': 'STWEG', 'status': 'aktiv'}, instanz=lg)
+        self.assertFalse(f.is_valid())
+        self.assertIn('999/1000', ' '.join(f.errors['status']))
+
+    def test_aktivieren_mit_passenden_quoten_geht(self):
+        lg, _ = neue_stweg()
+        f = self.form({'typ': 'STWEG', 'status': 'aktiv'}, instanz=lg)
+        self.assertTrue(f.is_valid(), f.errors)
+        self.assertEqual(f.save().status, 'aktiv')
+
+    def test_stweg_mit_versammlung_wird_nicht_zur_miete(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from stweg.models import Versammlung
+        lg, _ = neue_stweg()
+        Versammlung.objects.create(liegenschaft=lg, titel='V', datum=timezone.now() + timedelta(days=30))
+        f = self.form({'typ': 'MIETE'}, instanz=lg)
+        self.assertFalse(f.is_valid())
+        self.assertIn('typ', f.errors)
+
+    def test_ueber_die_oberflaeche(self):
+        from core.tests._helfer import _team_user
+        self.client.force_login(_team_user('Verwaltung'))
+        r = self.client.post('/neu/liegenschaften/neu/', {**self.BASIS, 'typ': 'STWEG', 'status': 'aktiv'})
+        self.assertIn(r.status_code, (302, 200))
+        lg = Liegenschaft.objects.get(strasse='Formularweg 1')
+        self.assertEqual((lg.typ, lg.status), ('STWEG', 'entwurf'))
+        self.assertContains(self.client.get('/neu/stweg/'), 'Formularweg 1')

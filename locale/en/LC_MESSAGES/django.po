@@ -22086,3 +22086,7 @@ msgstr "Total value quota (denominator)"
 #: core/navigation.py
 msgid "Stockwerkeigentum"
 msgstr "Condominium"
+
+#: portfolio/forms.py
+msgid "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
+msgstr "This community has meetings — its type can no longer be changed."

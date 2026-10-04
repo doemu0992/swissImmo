@@ -22312,3 +22312,7 @@ msgstr "Total des quotes-parts (dénominateur)"
 #: core/navigation.py
 msgid "Stockwerkeigentum"
 msgstr "Propriété par étages"
+
+#: portfolio/forms.py
+msgid "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
+msgstr "Cette communauté a des assemblées — le type ne peut plus être modifié."

@@ -22290,3 +22290,7 @@ msgstr "Totale quote di valore (denominatore)"
 #: core/navigation.py
 msgid "Stockwerkeigentum"
 msgstr "Proprietà per piani"
+
+#: portfolio/forms.py
+msgid "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
+msgstr "Per questa comunione esistono assemblee — il tipo non può più essere modificato."

@@ -40,7 +40,7 @@ class LiegenschaftForm(forms.ModelForm):
             'energietraeger', 'geak_datum',
             'hauswart_name', 'hauswart_telefon', 'sanitaer_name', 'sanitaer_telefon',
             'elektriker_name', 'elektriker_telefon', 'bank_name', 'iban',
-            'hkvo_aktiv', 'hkvo_grundkosten_prozent', 'wertquote_total',
+            'hkvo_aktiv', 'hkvo_grundkosten_prozent', 'wertquote_total', 'typ', 'status',
         )
         field_classes = {name: SchweizerZahl for name in (
             'versicherungswert', 'grundstuecksflaeche_m2', 'gebaeudevolumen_m3',
@@ -60,6 +60,8 @@ class LiegenschaftForm(forms.ModelForm):
         # von 0 machte jede Wertquoten-Prüfung sinnlos.
         self.fields['wertquote_total'].required = False
         self.fields['wertquote_total'].min_value = 1
+        self.fields['typ'].required = False
+        self.fields['status'].required = False
         # `egid` ist in der Datenbank nullbar; die Ansicht speicherte bisher ''.
         # Dabei bleibt es — `not lg.egid` fragt beides ab, ein Filter auf ''
         # nicht.
@@ -105,6 +107,42 @@ class LiegenschaftForm(forms.ModelForm):
     def clean_wertquote_total(self):
         wert = self.cleaned_data.get('wertquote_total')
         return self.instance.wertquote_total if not wert else wert
+
+    # Art und Status: Fehlt das Feld im POST, bleibt der bisherige Wert stehen
+    # (so schickten alle bisherigen Formulare und Tests ihre Daten). Ein neuer
+    # Datensatz bekommt die Vorgaben des Modells (MIETE, aktiv).
+    def clean_typ(self):
+        wert = self.cleaned_data.get('typ')
+        return wert or self.instance.typ
+
+    def clean_status(self):
+        wert = self.cleaned_data.get('status')
+        return wert or self.instance.status
+
+    def clean(self):
+        daten = super().clean()
+        typ, status = daten.get('typ'), daten.get('status')
+        if typ is None or status is None:
+            return daten
+        lg = self.instance
+        # Eine STWEG wird als Entwurf angelegt: Vor den Einheiten gibt es keine
+        # Wertquoten, die aufgehen könnten.
+        if typ == Liegenschaft.TYP_STWEG and lg.pk is None and status == Liegenschaft.STATUS_AKTIV:
+            daten['status'] = status = Liegenschaft.STATUS_ENTWURF
+        # «Aktiv» setzt voraus, dass die Wertquoten aufgehen — die Meldung der
+        # Prüfung kommt als Formularfehler statt als Absturz beim Speichern.
+        if typ == Liegenschaft.TYP_STWEG and status == Liegenschaft.STATUS_AKTIV and lg.pk is not None:
+            from stweg.validierung import WertquotenFehler, pruefe_wertquoten
+            lg.wertquote_total = daten.get('wertquote_total') or lg.wertquote_total
+            try:
+                pruefe_wertquoten(lg)
+            except WertquotenFehler as fehler:
+                self.add_error('status', fehler.message)
+        # Eine STWEG mit Versammlungen wird nicht stillschweigend zur Mietliegenschaft.
+        if lg.pk is not None and lg.typ == Liegenschaft.TYP_STWEG and typ != Liegenschaft.TYP_STWEG \
+                and lg.versammlungen.exists():
+            self.add_error('typ', _t('Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern.'))
+        return daten
 
 
 class EinheitForm(forms.ModelForm):
