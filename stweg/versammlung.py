@@ -18,14 +18,22 @@ class VersammlungsFehler(ValueError):
 
 
 def empfaenger(versammlung):
-    """Die Eigentümer der Gemeinschaft (je einmal) und Einheiten ohne Eigentümer."""
-    einheiten = list(stimm_einheiten(versammlung.liegenschaft).select_related('stockwerkeigentuemer'))
+    """Alle, die Einladung und Protokoll bekommen — je Person einmal — und die Einheiten
+    ohne Hauptansprechperson.
+
+    Dazu gehören neben den Eigentümern der Einheiten auch deren Miteigentümer. Fehlt der
+    Hauptansprechperson einer Einheit, ist das ein Mangel (`ohne`), auch wenn Miteigentümer
+    eingetragen sind: Wer die Stimme der Einheit ausübt, muss feststehen."""
+    einheiten = list(stimm_einheiten(versammlung.liegenschaft)
+                     .select_related('stockwerkeigentuemer').prefetch_related('miteigentuemer'))
     eig, ohne = {}, []
     for e in einheiten:
         if e.stockwerkeigentuemer_id:
             eig[e.stockwerkeigentuemer_id] = e.stockwerkeigentuemer
         else:
             ohne.append(e)
+        for m in e.miteigentuemer.all():
+            eig.setdefault(m.pk, m)
     return list(eig.values()), ohne
 
 

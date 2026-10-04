@@ -146,3 +146,117 @@ class AbrechnungPortalTests(TestCase):
         c = Client()
         c.force_login(u)
         self.assertEqual(c.get(f'/portal/stweg/abrechnung/{self.abrechnung.pk}/').status_code, 404)
+
+
+class QrZahlteilTests(TestCase):
+    """Nachzahlung: QR-Zahlteil auf das Konto der Gemeinschaft."""
+    IBAN = 'CH9300762011623852957'              # gültige Prüfsumme, keine QR-IBAN
+
+    def setUp(self):
+        from stweg.services import StwegAbrechnungService
+        self.lg, self.e, self.eigs = sonnenblick()
+        for e in self.e:
+            StwegAkonto.objects.create(einheit=e, betrag=Decimal('1000'), datum=date(2026, 3, 1))
+        rechnung(self.lg, 4000, date(2026, 6, 1))
+        self.a = StwegAbrechnungService(self.lg).abrechnen(2026)
+        self.carla, self.anna = self.eigs[2], self.eigs[0]                 # Nachzahlung / Guthaben
+
+    def pdf(self, eig):
+        from stweg.pdf import abrechnung_pdf
+        return abrechnung_pdf(self.a, eig)
+
+    def abschliessen(self, iban=None):
+        from portfolio.models import Liegenschaft
+        from stweg.services import StwegAbrechnungService
+        if iban is not None:
+            Liegenschaft.objects.filter(pk=self.lg.pk).update(iban=iban)
+            self.lg.refresh_from_db()
+            self.a.refresh_from_db()
+        StwegAbrechnungService.abschliessen(self.a)
+        self.a.refresh_from_db()
+
+    def seiten(self, daten):
+        import re
+        return len(re.findall(rb'/Type\s*/Page\b', daten))
+
+    def test_nachzahlung_mit_iban_bekommt_eine_zweite_seite_mit_zahlteil(self):
+        from unittest import mock
+
+        from core.utils import qr_code
+        self.abschliessen(self.IBAN)
+        # Die echte Funktion läuft mit (sonst bliebe die zweite Seite leer und entfiele);
+        # beobachtet werden nur ihre Argumente.
+        with mock.patch('core.utils.qr_code.draw_qr_bill', wraps=qr_code.draw_qr_bill) as zeichnen:
+            daten = self.pdf(self.carla)
+        self.assertEqual(self.seiten(daten), 2)
+        args, kw = zeichnen.call_args
+        self.assertEqual(args[1], self.IBAN)
+        self.assertEqual(args[2]['name'], 'Stockwerkeigentümergemeinschaft Sonnenblickweg 1')
+        self.assertEqual(args[3]['name'], 'Carla')
+        self.assertEqual(args[4], Decimal('1000.00'))
+        self.assertIn('2026', args[5])
+
+    def test_guthaben_bekommt_keinen_zahlteil(self):
+        self.abschliessen(self.IBAN)
+        self.assertEqual(self.seiten(self.pdf(self.anna)), 1)
+
+    def test_entwurf_fordert_nicht_zur_zahlung_auf(self):
+        from portfolio.models import Liegenschaft
+        Liegenschaft.objects.filter(pk=self.lg.pk).update(iban=self.IBAN)
+        self.lg.refresh_from_db()
+        self.a.refresh_from_db()
+        self.assertEqual(self.seiten(self.pdf(self.carla)), 1)
+
+    def test_ohne_oder_mit_ungueltiger_iban_kein_zahlteil(self):
+        self.abschliessen('')
+        self.assertEqual(self.seiten(self.pdf(self.carla)), 1)
+        from portfolio.models import Liegenschaft
+        Liegenschaft.objects.filter(pk=self.lg.pk).update(iban='CH0000000000000000000')
+        self.lg.refresh_from_db()
+        self.a.refresh_from_db()
+        self.assertEqual(self.seiten(self.pdf(self.carla)), 1)
+
+    def test_gesamtuebersicht_hat_nie_einen_zahlteil(self):
+        self.abschliessen(self.IBAN)
+        self.assertEqual(self.seiten(self.pdf(None)), 1)
+
+    def test_referenz_ist_je_eigentuemer_verschieden_und_27_stellig(self):
+        from stweg.pdf import _qr_daten
+        self.abschliessen(self.IBAN)
+        d1 = _qr_daten(self.a, self.carla, Decimal(10))
+        d2 = _qr_daten(self.a, self.eigs[1], Decimal(10))
+        self.assertNotEqual(d1['referenz'], d2['referenz'])
+        self.assertEqual(len(d1['referenz']), 27)
+
+    def test_portal_pdf_mit_zahlteil(self):
+        from core.tests._helfer import _team_user  # noqa: F401
+        self.abschliessen(self.IBAN)
+        u = User.objects.create_user(username='carla', password='x')
+        self.carla.benutzer = u
+        self.carla.save()
+        c = Client()
+        c.force_login(u)
+        r = c.get(f'/portal/stweg/abrechnung/{self.a.pk}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self.seiten(r.content), 2)
+
+
+class VerwaltungSprachenTests(TestCase):
+    """Die Verwaltungsoberfläche erscheint in der gewählten Sprache (PDFs bleiben deutsch, D11)."""
+
+    def setUp(self):
+        self.lg, self.e, self.eigs = sonnenblick()
+        self.client.force_login(_team_user('Verwaltung'))
+
+    def seite(self, pfad, sprache):
+        from django.conf import settings
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = sprache
+        return self.client.get(pfad)
+
+    def test_seiten_auf_franzoesisch(self):
+        s = self.seite(f'/neu/stweg/{self.lg.pk}/abrechnung/', 'fr')
+        self.assertContains(s, 'Année du décompte')
+        self.assertNotContains(s, 'Abrechnungsjahr')
+        self.assertContains(self.seite(f'/neu/stweg/{self.lg.pk}/abrechnung/', 'de'), 'Abrechnungsjahr')
+        for pfad in ('/neu/stweg/', f'/neu/stweg/{self.lg.pk}/', f'/neu/stweg/{self.lg.pk}/einheiten/'):
+            self.assertEqual(self.seite(pfad, 'fr').status_code, 200)

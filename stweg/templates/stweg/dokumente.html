@@ -1,0 +1,46 @@
+{% extends 'fw/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Dokumente" %} — {{ lg }} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans "Pfad" %}"><a href="/neu/stweg/">{% trans "Stockwerkeigentum" %}</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>{% trans "Dokumente" %}</span></nav>
+        <h1>{% trans "Dokumente" %}</h1>
+        <p>{% trans "Die Unterlagen der Gemeinschaft. Eigentümer sehen im Portal nur, was Sie freigeben." %}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Pflichtdokumente" %}</span></div>
+    {% for s in status %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ s.name }}</div>
+        <div class="fw-s">{% if s.status == 'automatisch' %}{% blocktrans with n=s.anzahl_abrechnungen %}{{ n }} abgeschlossene Abrechnung(en), im Portal automatisch für jeden Eigentümer{% endblocktrans %}{% else %}{% for d in s.dokumente %}{{ d.titel }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div></div>
+        {% if s.status == 'ok' %}<span class="fw-chip fw-brand">{% trans "vorhanden" %}</span>
+        {% elif s.status == 'abgelaufen' %}<span class="fw-chip fw-warn">{% trans "abgelaufen" %}</span>
+        {% elif s.status == 'fehlt' %}<span class="fw-chip fw-warn">{% trans "fehlt" %}</span>
+        {% else %}<span class="fw-chip">{% trans "automatisch" %}</span>{% endif %}</div>
+    {% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Alle Dokumente" %}</span><span class="fw-neben">{{ dokumente|length }}</span></div>
+    {% for d in dokumente %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t"><a href="/neu/stweg/dokument/{{ d.pk }}/" target="_blank" rel="noopener">{{ d.titel }}</a></div>
+        <div class="fw-s">{{ d.get_kategorie_display }} · {% blocktrans with ab=d.gueltig_ab|date:"d.m.Y" %}gültig ab {{ ab }}{% endblocktrans %}{% if d.gueltig_bis %} {% blocktrans with bis=d.gueltig_bis|date:"d.m.Y" %}bis {{ bis }}{% endblocktrans %}{% endif %}</div></div>
+        <form method="post" action="/neu/stweg/dokument/{{ d.pk }}/sichtbar/">{% csrf_token %}<button class="fw-btn">{% if d.sichtbar %}Für Eigentümer sichtbar{% else %}Nur Verwaltung{% endif %}</button></form>
+        <form method="post" action="/neu/stweg/dokument/{{ d.pk }}/loeschen/">{% csrf_token %}<button class="fw-btn">{% trans "Löschen" %}</button></form></div>
+    {% empty %}<div class="fw-rumpf"><p class="fw-leer">{% trans "Noch kein Dokument abgelegt." %}</p></div>{% endfor %}
+    <details class="fw-aufklapp"><summary>{% trans "Dokument hochladen" %}</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/{{ lg.pk }}/dokumente/neu/" enctype="multipart/form-data" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="do_kat">{% trans "Kategorie *" %}</label>
+                    <select id="do_kat" name="kategorie" class="fw-feld">{% for k, n in kategorien %}<option value="{{ k }}">{{ n }}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="do_titel">{% trans "Titel *" %}</label><input id="do_titel" name="titel" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="do_datei">{% trans "Datei (PDF oder Bild, max. 10 MB) *" %}</label><input id="do_datei" type="file" name="datei" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="do_ab">{% trans "Gültig ab" %}</label><input id="do_ab" type="date" name="gueltig_ab" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="do_bis">{% trans "Gültig bis (z. B. Police)" %}</label><input id="do_bis" type="date" name="gueltig_bis" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="do_sicht"><input id="do_sicht" type="checkbox" name="sichtbar" value="1" checked> {% trans "Für Eigentümer im Portal sichtbar" %}</label></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Hochladen" %}</button></div>
+            </form></div></details>
+</div>
+{% endblock %}

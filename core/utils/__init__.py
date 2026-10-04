@@ -184,6 +184,7 @@ UPLOAD_ORDNER = {
     'SchadenMeldung': 'schaden_fotos',      # Fotos aus der Wohnung des Mieters
     'SchadenFoto':    'schaden_fotos',
     'Dokument':       'dokumente',          # Verträge, Korrespondenz (auch als Bild)
+    'StwegDokument':  'dokumente',          # Reglement, Policen: nur über geprüfte Views
     'Unterhalt':      'unterhalt_belege',
     'Ausstattung':    'ausstattung_fotos',  # Innenaufnahmen des Objekts
     'EinheitFoto':    'objekt_fotos',       # fürs Inserat — bewusst öffentlich

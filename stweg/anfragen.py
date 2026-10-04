@@ -1,5 +1,8 @@
 """Anfragen von Stockwerkeigentümern: erfassen, beantworten, erledigen."""
 
+import logging
+
+from django.core.mail import send_mail
 from django.utils import timezone
 
 from core.models import Pendenz
@@ -7,6 +10,9 @@ from core.services.dokumentsprache import in_sprache
 from stweg.aufgaben import PREFIX, erledigen
 from stweg.models import StwegAnfrage
 
+
+
+logger = logging.getLogger(__name__)
 
 
 class AnfrageFehler(ValueError):
@@ -77,3 +83,36 @@ def erledigt(anfrage):
     if p and not p.erledigt:
         erledigen(p)
     return anfrage
+
+
+def verwaltung_empfaenger(liegenschaft):
+    """Wer von einer neuen Portal-Anfrage erfährt: die betreuende Person der Liegenschaft,
+    sonst die Adresse der Verwaltung. Leer, wenn beides fehlt."""
+    zustaendig = liegenschaft.betreut_von
+    if zustaendig is not None and zustaendig.email:
+        return [zustaendig.email]
+    org = liegenschaft.organisation
+    return [org.email] if org.email else []
+
+
+def verwaltung_benachrichtigen(anfrage):
+    """Schickt der Verwaltung einen Hinweis auf eine neue Anfrage; True, wenn er rausging.
+
+    Die Anfrage selbst ist schon gespeichert und als Pendenz sichtbar — die Mail ist nur
+    der Hinweis. Ihr Scheitern (oder eine fehlende Adresse) darf die Anfrage nicht verlieren,
+    wird aber protokolliert statt verschluckt."""
+    empfaenger = verwaltung_empfaenger(anfrage.liegenschaft)
+    if not empfaenger:
+        logger.warning('STWEG-Anfrage %s: keine Empfängeradresse (weder betreuende Person noch '
+                       'Verwaltung) — die Anfrage steht nur in den offenen Punkten.', anfrage.pk)
+        return False
+    ein = anfrage.einheit
+    wer = anfrage.eigentuemer.firma_oder_name if anfrage.eigentuemer_id else 'unbekannt'
+    try:
+        send_mail(f'Neue STWEG-Anfrage: {anfrage.betreff}',
+                  f'{wer} ({ein.bezeichnung if ein else "—"}, {anfrage.liegenschaft}):\n\n{anfrage.text}',
+                  None, empfaenger, fail_silently=False)
+    except Exception:                                                   # noqa: BLE001
+        logger.warning('Benachrichtigung zur STWEG-Anfrage %s fehlgeschlagen', anfrage.pk, exc_info=True)
+        return False
+    return True

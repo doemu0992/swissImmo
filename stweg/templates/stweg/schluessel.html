@@ -1,0 +1,74 @@
+{% extends 'fw/base.html' %}
+{% load i18n %}
+{% load chf %}
+{% block title %}{% trans "Verteilschlüssel" %} — {{ lg }} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans "Pfad" %}"><a href="/neu/stweg/">{% trans "Stockwerkeigentum" %}</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>{% trans "Verteilschlüssel" %}</span></nav>
+        <h1>{% trans "Verteilschlüssel" %}</h1>
+        <p>{% trans "Nicht jede Kostenart wird nach Wertquote verteilt. Hier legen Sie beliebig viele Schlüssel fest und ordnen jeder Kostenart (Aufwandkonto) einen zu. Kosten ohne Zuordnung laufen über den Standardschlüssel." %}</p>
+    </div>
+</div>
+
+{% for x in schluessel %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{{ x.s.name }}</span>
+        <span class="fw-chip">{{ x.s.get_art_display }}</span>
+        {% if x.s.ist_standard %}<span class="fw-chip fw-brand">{% trans "Standard" %}</span>{% endif %}</div>
+    {% if x.fehler %}<div class="fw-rumpf"><p class="fw-chip fw-warn">{{ x.fehler }}</p></div>{% endif %}
+    {% if x.s.art == 'manuell' %}
+    <form method="post" action="/neu/stweg/schluessel/{{ x.s.pk }}/anteile/" class="fw-formular">{% csrf_token %}
+        {% for z in x.zeilen %}
+        <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ z.einheit.bezeichnung }}{% if z.einheit.etage %} · {{ z.einheit.etage }}{% endif %}</div>
+            <div class="fw-s">{% if z.prozent != None %}{{ z.prozent }} %{% endif %}</div></div>
+            <input name="anteil_{{ z.einheit.pk }}" value="{{ z.anteil|default_if_none:''|floatformat:'-4' }}" inputmode="decimal" class="fw-feld" style="max-width:8rem" aria-label="{% blocktrans with einheit=z.einheit.bezeichnung %}Anteil {{ einheit }}{% endblocktrans %}">
+        </div>
+        {% endfor %}
+        <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Anteile speichern" %}</button>
+            <span class="fw-s">{% trans "0 heisst: die Einheit trägt nichts. Eine leere Zeile ist ein Fehler, keine Null." %}</span></div>
+    </form>
+    {% else %}
+    {% for z in x.zeilen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ z.einheit.bezeichnung }}{% if z.einheit.etage %} · {{ z.einheit.etage }}{% endif %}</div></div>
+        <div class="fw-zeit">{% if z.gewicht != None %}{{ z.gewicht|floatformat:"-2" }} · {{ z.prozent }} %{% else %}—{% endif %}</div></div>
+    {% endfor %}
+    {% endif %}
+    {% if not x.s.ist_standard %}
+    <div class="fw-rumpf"><form method="post" action="/neu/stweg/schluessel/{{ x.s.pk }}/loeschen/">{% csrf_token %}<button class="fw-btn">{% trans "Schlüssel löschen" %}</button></form></div>
+    {% endif %}
+</div>
+{% empty %}
+<div class="fw-card"><div class="fw-rumpf"><p class="fw-leer">{% trans "Noch kein Schlüssel. Der Standardschlüssel «Allgemeine Wertquote» entsteht beim ersten Budget oder hier unten." %}</p></div></div>
+{% endfor %}
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Schlüssel hinzufügen" %}</span></div>
+    <div class="fw-rumpf">
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/schluessel/neu/" class="fw-formular drei">{% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="sk_name">{% trans "Name *" %}</label>
+                <input id="sk_name" name="name" required class="fw-feld" placeholder="{% trans "z. B. Lift" %}"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="sk_art">{% trans "Art *" %}</label>
+                <select id="sk_art" name="art" class="fw-feld">{% for k, n in art_choices %}<option value="{{ k }}">{{ n }}</option>{% endfor %}</select></div>
+            <div class="fw-feldblock"><label class="fw-label" for="sk_eg"><input id="sk_eg" type="checkbox" name="ohne_eg" value="1"> {% trans "Nur bei «eigene Anteile»: Erdgeschoss trägt nichts (übrige nach Wertquote)" %}</label></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Anlegen" %}</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Kostenart → Schlüssel" %}</span></div>
+    {% for z in zuordnungen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ z.konto.nummer }} {{ z.konto.bezeichnung }}</div></div><span class="fw-chip">{{ z.schluessel.name }}</span></div>
+    {% empty %}<div class="fw-rumpf"><p class="fw-leer">{% trans "Keine Zuordnung: alle Kosten laufen über den Standardschlüssel." %}</p></div>{% endfor %}
+    <div class="fw-rumpf">
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/kostenart/" class="fw-formular drei">{% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="za_konto">{% trans "Aufwandkonto *" %}</label>
+                <select id="za_konto" name="konto" required class="fw-feld">{% for k in konten %}<option value="{{ k.pk }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}</select></div>
+            <div class="fw-feldblock"><label class="fw-label" for="za_sk">{% trans "Schlüssel" %}</label>
+                <select id="za_sk" name="schluessel" class="fw-feld"><option value="">{% trans "— Standardschlüssel (Zuordnung entfernen) —" %}</option>{% for s in alle_schluessel %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Zuordnen" %}</button></div>
+        </form>
+    </div>
+</div>
+{% endblock %}

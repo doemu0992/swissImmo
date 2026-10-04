@@ -162,3 +162,136 @@ class PortalAndereGemeinschaftDerselbenVerwaltungTests(TestCase):
         self.assertEqual(r.status_code, 404)
         self.assertEqual(StwegAnfrage.objects.count(), 0)
         self.assertNotContains(self.dora.get('/portal/stweg/'), self.v.titel)
+
+
+class PortalBenachrichtigungTests(TestCase):
+    """Wer erfährt von einer neuen Portal-Anfrage — und was, wenn niemand erreichbar ist."""
+
+    def setUp(self):
+        self.lg, self.e, self.eigs = sonnenblick()
+        u = User.objects.create_user(username='anna_b', password='x')
+        self.eigs[0].benutzer = u
+        self.eigs[0].save()
+        self.c = Client()
+        self.c.force_login(u)
+        self.org = self.lg.organisation
+        mail.outbox.clear()
+
+    def anfrage(self):
+        return self.c.post(f'/portal/stweg/anfrage/{self.lg.pk}/', {'betreff': 'Lift?', 'text': 'Defekt'})
+
+    def test_betreuende_person_bekommt_den_hinweis(self):
+        betreuer = User.objects.create_user(username='betreuer', password='x', email='lea@verwaltung.ch')
+        self.lg.betreut_von = betreuer
+        self.lg.save()
+        self.org.email = 'info@verwaltung.ch'
+        self.org.save()
+        self.anfrage()
+        self.assertEqual([m.to for m in mail.outbox], [['lea@verwaltung.ch']])
+        self.assertIn('Defekt', mail.outbox[0].body)
+        self.assertIn('Anna', mail.outbox[0].body)
+
+    def test_ohne_betreuung_geht_der_hinweis_an_die_verwaltung(self):
+        self.org.email = 'info@verwaltung.ch'
+        self.org.save()
+        self.anfrage()
+        self.assertEqual([m.to for m in mail.outbox], [['info@verwaltung.ch']])
+
+    def test_ohne_adresse_bleibt_die_anfrage_erhalten_und_der_mangel_wird_protokolliert(self):
+        self.org.email = ''
+        self.org.save()
+        with self.assertLogs('stweg.anfragen', level='WARNING') as log:
+            r = self.anfrage()
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(StwegAnfrage.objects.count(), 1)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertIn('keine Empfängeradresse', ' '.join(log.output))
+
+    def test_scheitert_die_mail_bleibt_die_anfrage(self):
+        from unittest import mock
+        self.org.email = 'info@verwaltung.ch'
+        self.org.save()
+        with mock.patch('stweg.anfragen.send_mail', side_effect=OSError('SMTP weg')), \
+                self.assertLogs('stweg.anfragen', level='WARNING') as log:
+            r = self.anfrage()
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(StwegAnfrage.objects.count(), 1)
+        self.assertIn('fehlgeschlagen', ' '.join(log.output))
+
+
+class PortalSprachenTests(TestCase):
+    """Das Portal erscheint in der gewählten Sprache; Rechtsdokumente (PDF) bleiben deutsch (D11)."""
+
+    def setUp(self):
+        self.lg, self.e, self.eigs = sonnenblick()
+        self.v = versammlung(self.lg)
+        einladung_versenden(self.v)
+        u = User.objects.create_user(username='anna_s', password='x')
+        self.eigs[0].benutzer = u
+        self.eigs[0].save()
+        self.c = Client()
+        self.c.force_login(u)
+
+    def seite(self, sprache):
+        from django.conf import settings
+        self.c.cookies[settings.LANGUAGE_COOKIE_NAME] = sprache
+        return self.c.get('/portal/stweg/')
+
+    def test_deutsch_ist_die_vorgabe(self):
+        s = self.seite('de')
+        self.assertContains(s, 'Meine Anfragen')
+        self.assertContains(s, 'Vollmacht erteilen')
+
+    def test_franzoesisch(self):
+        s = self.seite('fr')
+        for text in ('Mes demandes', 'Assemblées', 'Donner une procuration', 'Quote-part 200 / 1000'):
+            self.assertContains(s, text)
+        self.assertNotContains(s, 'Meine Anfragen')
+        self.assertNotContains(s, 'Vollmacht erteilen')
+
+    def test_italienisch_und_englisch(self):
+        self.assertContains(self.seite('it'), 'Le mie richieste')
+        self.assertContains(self.seite('it'), 'Conferire procura')
+        self.assertContains(self.seite('en'), 'My requests')
+        self.assertContains(self.seite('en'), 'Grant proxy')
+
+    def test_meldungen_und_dienstmeldungen_folgen_der_sprache(self):
+        from django.conf import settings
+        self.c.cookies[settings.LANGUAGE_COOKIE_NAME] = 'fr'
+        r = self.c.post(f'/portal/stweg/vollmacht/{self.v.pk}/erteilen/',
+                        {'einheit': self.e[0].pk, 'bevollmaechtigter': ' '}, follow=True)
+        self.assertContains(r, 'Veuillez indiquer qui doit vous représenter.')
+        r = self.c.post(f'/portal/stweg/anfrage/{self.lg.pk}/', {'betreff': ' '}, follow=True)
+        self.assertContains(r, 'Veuillez indiquer un objet.')
+        r = self.c.post(f'/portal/stweg/anfrage/{self.lg.pk}/', {'betreff': 'Ascenseur'}, follow=True)
+        self.assertContains(r, 'transmise à la gérance')
+
+    def test_status_der_anfrage_ist_uebersetzt(self):
+        from stweg import anfragen
+        anfragen.anfrage_erfassen(self.lg, 'Lift', einheit=self.e[0])
+        self.assertContains(self.seite('fr'), 'Nouveau')
+        self.assertContains(self.seite('de'), 'Neu')
+
+    def test_pdf_bleibt_deutsch(self):
+        from django.conf import settings
+        self.c.cookies[settings.LANGUAGE_COOKIE_NAME] = 'fr'
+        r = self.c.get(f'/portal/stweg/einladung/{self.v.pk}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        # Direkt prüfen, in welcher Sprache der Erzeuger läuft — nicht über die Dateigrösse.
+        from unittest import mock
+
+        from django.utils import translation
+
+        from stweg import pdf as pdf_modul
+        gesehen = []
+        echt = pdf_modul._kopf
+
+        def beobachten(seite, v):
+            gesehen.append(translation.get_language())
+            return echt(seite, v)
+
+        with translation.override('fr'), mock.patch.object(pdf_modul, '_kopf', beobachten):
+            pdf_modul.einladung_pdf(self.v)
+            pdf_modul.protokoll_pdf(self.v)
+        self.assertEqual(gesehen, ['de', 'de'])

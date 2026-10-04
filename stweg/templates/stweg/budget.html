@@ -1,0 +1,32 @@
+{% extends 'fw/base.html' %}
+{% load i18n %}
+{% load chf %}
+{% block title %}{% trans "Budget" %} — {{ lg }} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans "Pfad" %}"><a href="/neu/stweg/">{% trans "Stockwerkeigentum" %}</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>{% trans "Budget" %}</span></nav>
+        <h1>{% trans "Budget" %}</h1>
+        <p>{% trans "Das Jahresbudget wird der Versammlung vorgelegt. Mit dem angenommenen Beschluss entstehen die Akonto-Rechnungen an die Eigentümer." %}</p>
+    </div>
+</div>
+<div class="fw-card">
+    {% for b in budgets %}
+    <a class="fw-zeile" href="/neu/stweg/budget/{{ b.pk }}/"><div class="fw-mitte"><div class="fw-t">{% blocktrans with jahr=b.jahr|stringformat:"s" %}Budget {{ jahr }}{% endblocktrans %}</div>
+        <div class="fw-s">{% blocktrans with total=b.total|chf raten=b.raten %}CHF {{ total }} · {{ raten }} Raten{% endblocktrans %}</div></div>
+        <span class="fw-chip {% if b.status == 'genehmigt' %}fw-brand{% elif b.status == 'abgelehnt' %}fw-warn{% endif %}">{{ b.get_status_display }}</span></a>
+    {% empty %}<div class="fw-rumpf"><p class="fw-leer">{% trans "Noch kein Budget." %}</p></div>{% endfor %}
+</div>
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Neues Budget" %}</span></div>
+    <div class="fw-rumpf">
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/budget/neu/" class="fw-formular drei">{% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="bu_jahr">{% trans "Jahr *" %}</label><input id="bu_jahr" name="jahr" value="{{ jahr }}" inputmode="numeric" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="bu_raten">{% trans "Raten *" %}</label>
+                <select id="bu_raten" name="raten" class="fw-feld"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>6</option><option>12</option></select></div>
+            <div class="fw-feldblock"><label class="fw-label" for="bu_faellig">{% trans "Erste Fälligkeit" %}</label><input id="bu_faellig" type="date" name="erste_faelligkeit" class="fw-feld"></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Anlegen" %}</button></div>
+        </form>
+    </div>
+</div>
+{% endblock %}

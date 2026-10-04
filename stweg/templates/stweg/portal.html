@@ -1,70 +1,136 @@
 {% extends 'core/portal_base.html' %}
-{% load chf %}
-{% block title %}Stockwerkeigentum — SwissImmo{% endblock %}
-{% block brand %}Eigentümerportal{% endblock %}
-{% block brand_mobile %}Eigentümerportal{% endblock %}
+{% load chf i18n %}
+{% block title %}{% trans "Stockwerkeigentum" %} — SwissImmo{% endblock %}
+{% block brand %}{% trans "Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Eigentümerportal" %}{% endblock %}
 {% block nav %}
-<a class="fw-nav-eintrag" href="/portal/">Übersicht</a>
-<a class="fw-nav-eintrag fw-aktiv" href="/portal/stweg/">Stockwerkeigentum</a>
+<a class="fw-nav-eintrag" href="/portal/">{% trans "Übersicht" %}</a>
+<a class="fw-nav-eintrag fw-aktiv" href="/portal/stweg/">{% trans "Stockwerkeigentum" %}</a>
 {% endblock %}
 {% block content %}
-<div class="fw-phead"><div><h1>Stockwerkeigentum</h1>
-    <p>Ihre Einheiten, Einladungen und Protokolle der Versammlungen und Ihre Anfragen an die Verwaltung.</p></div></div>
+<div class="fw-phead"><div><h1>{% trans "Stockwerkeigentum" %}</h1>
+    <p>{% trans "Ihre Einheiten, Einladungen und Protokolle der Versammlungen und Ihre Anfragen an die Verwaltung." %}</p></div></div>
 
 {% for g in gemeinschaften %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{{ g.lg }}</span></div>
     {% for e in g.einheiten %}
-    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div></div>
-        <div class="fw-zeit">Wertquote {{ e.wertquote|floatformat:"-2" }} / {{ g.lg.wertquote_total }}</div></div>
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div>
+        {% if e.miteigentum %}<div class="fw-s">{% blocktrans with name=e.stockwerkeigentuemer.firma_oder_name|default:"—" %}Miteigentum — Hauptansprechperson: {{ name }}. Sie sehen Einladung, Protokoll und Beschlüsse; die Stimme der Einheit gibt die Hauptansprechperson ab.{% endblocktrans %}</div>{% endif %}</div>
+        <div class="fw-zeit">{% blocktrans with q=e.wertquote|floatformat:"-2" total=g.lg.wertquote_total %}Wertquote {{ q }} / {{ total }}{% endblocktrans %}</div></div>
     {% endfor %}
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Versammlungen</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Versammlungen" %}</span></div>
     {% for v in g.versammlungen %}
     <div class="fw-zeile"><div class="fw-mitte">
         <div class="fw-t">{{ v.titel }}</div>
         <div class="fw-s">{{ v.datum|date:"d.m.Y H:i" }}{% if v.ort %} · {{ v.ort }}{% endif %}</div></div>
-        {% if v.einladung_versendet_am %}<a class="fw-btn" href="/portal/stweg/einladung/{{ v.pk }}/" target="_blank" rel="noopener">Einladung</a>{% endif %}
-        {% if v.protokoll_versendet_am %}<a class="fw-btn" href="/portal/stweg/protokoll/{{ v.pk }}/" target="_blank" rel="noopener">Protokoll</a>{% endif %}
+        {% if v.einladung_versendet_am %}<a class="fw-btn" href="/portal/stweg/einladung/{{ v.pk }}/" target="_blank" rel="noopener">{% trans "Einladung" %}</a>{% endif %}
+        {% if v.protokoll_versendet_am %}<a class="fw-btn" href="/portal/stweg/protokoll/{{ v.pk }}/" target="_blank" rel="noopener">{% trans "Protokoll" %}</a>{% endif %}
     </div>
     {% for m in v.meine_vollmachten %}
     <div class="fw-zeile"><div class="fw-mitte">
-        <div class="fw-t">Vollmacht {{ m.einheit.bezeichnung }}</div>
-        {% if m.vollmacht %}<div class="fw-s">Vertreten durch {{ m.vollmacht.bevollmaechtigter }}</div>{% else %}<div class="fw-s">Sie nehmen selbst teil, oder erteilen eine Vollmacht:</div>{% endif %}</div>
+        <div class="fw-t">{% blocktrans with einheit=m.einheit.bezeichnung %}Vollmacht {{ einheit }}{% endblocktrans %}</div>
+        {% if m.vollmacht %}<div class="fw-s">{% blocktrans with name=m.vollmacht.bevollmaechtigter %}Vertreten durch {{ name }}{% endblocktrans %}</div>{% else %}<div class="fw-s">{% trans "Sie nehmen selbst teil, oder erteilen eine Vollmacht:" %}</div>{% endif %}</div>
         {% if m.vollmacht %}
-        <form method="post" action="/portal/stweg/vollmacht/{{ m.vollmacht.pk }}/widerrufen/">{% csrf_token %}<button class="fw-btn">Widerrufen</button></form>
+        <form method="post" action="/portal/stweg/vollmacht/{{ m.vollmacht.pk }}/widerrufen/">{% csrf_token %}<button class="fw-btn">{% trans "Widerrufen" %}</button></form>
         {% else %}
         <form method="post" action="/portal/stweg/vollmacht/{{ v.pk }}/erteilen/" class="fw-formular">{% csrf_token %}
             <input type="hidden" name="einheit" value="{{ m.einheit.pk }}">
-            <input name="bevollmaechtigter" required class="fw-feld" placeholder="Name der vertretenden Person" aria-label="Vertretung {{ m.einheit.bezeichnung }}">
-            <button class="fw-btn">Vollmacht erteilen</button></form>
+            <input name="bevollmaechtigter" required class="fw-feld" placeholder="{% trans 'Name der vertretenden Person' %}" aria-label="{% blocktrans with einheit=m.einheit.bezeichnung %}Vertretung {{ einheit }}{% endblocktrans %}">
+            <button class="fw-btn">{% trans "Vollmacht erteilen" %}</button></form>
         {% endif %}
     </div>
     {% endfor %}
-    {% empty %}<p class="fw-leer">Keine Versammlung.</p>{% endfor %}
+    {% if v.evoting_offen and g.meine %}
+    <div class="fw-zeile"><div class="fw-mitte">
+        <div class="fw-t">{% trans "E-Voting" %}</div>
+        {% if not v.teilnahme_erklaert %}
+        <div class="fw-s">{% trans "Die Versammlung läuft. Erklären Sie Ihre Teilnahme, um digital abzustimmen." %}</div>
+        <form method="post" action="/portal/stweg/teilnehmen/{{ v.pk }}/">{% csrf_token %}<button class="fw-btn fw-primary">{% trans "Digital teilnehmen" %}</button></form>
+        {% else %}
+        <div class="fw-s">{% trans "Sie nehmen digital teil. Ihre Stimme können Sie ändern, bis das Ergebnis festgestellt ist." %}</div>
+        <form method="post" action="/portal/stweg/evoting/{{ v.pk }}/" class="fw-formular">{% csrf_token %}
+            {% for x in v.evoting_traktanden %}
+            <div class="fw-t">{{ x.t.nr }}. {{ x.t.titel }}</div>
+            {% if x.t.antrag %}<div class="fw-s" style="white-space:pre-line">{{ x.t.antrag }}</div>{% endif %}
+            {% for z in x.zeilen %}
+            <div class="fw-feldblock"><label class="fw-label" for="ev{{ x.t.pk }}_{{ z.einheit.pk }}">{% blocktrans with einheit=z.einheit.bezeichnung %}Ihre Stimme für {{ einheit }}{% endblocktrans %}</label>
+                <select id="ev{{ x.t.pk }}_{{ z.einheit.pk }}" name="stimme_{{ x.t.pk }}_{{ z.einheit.pk }}" class="fw-feld">
+                    <option value="">{% trans "— noch nicht abgestimmt —" %}</option>
+                    <option value="ja"{% if z.wert == 'ja' %} selected{% endif %}>{% trans "Ja" %}</option>
+                    <option value="nein"{% if z.wert == 'nein' %} selected{% endif %}>{% trans "Nein" %}</option>
+                    <option value="enthaltung"{% if z.wert == 'enthaltung' %} selected{% endif %}>{% trans "Enthaltung" %}</option></select></div>
+            {% endfor %}
+            {% empty %}<p class="fw-s">{% trans "Keine offene Abstimmung." %}</p>{% endfor %}
+            {% if v.evoting_traktanden %}<div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Stimmen speichern" %}</button></div>{% endif %}
+        </form>
+        {% endif %}
+    </div></div>
+    {% endif %}
+    {% empty %}<p class="fw-leer">{% trans "Keine Versammlung." %}</p>{% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Kontokorrent" %}</span></div>
+    {% for k in g.kontokorrent %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ k.einheit.bezeichnung }}</div>
+        <div class="fw-s">{% if k.saldo_faellig > 0 %}{% blocktrans with betrag=k.saldo_faellig|chf %}Offen: CHF {{ betrag }}{% endblocktrans %}{% elif k.saldo_faellig < 0 %}{% blocktrans with betrag=k.saldo_faellig|cut:"-"|chf %}Guthaben: CHF {{ betrag }}{% endblocktrans %}{% else %}{% trans "Keine offenen Beträge" %}{% endif %}
+            {% if k.kuenftig %} · {% blocktrans with betrag=k.kuenftig|chf %}weitere Raten CHF {{ betrag }}{% endblocktrans %}{% endif %}</div></div></div>
+    {% for b in k.bewegungen %}{% if forloop.revcounter <= 6 %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-s">{{ b.datum|date:"d.m.Y" }} · {{ b.text }}</div></div><div class="fw-zeit">{{ b.betrag|chf }}</div></div>
+    {% endif %}{% endfor %}
+    {% endfor %}
+    {% for bu in g.akonto_budgets %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% blocktrans with jahr=bu.jahr|stringformat:"s" %}Akonto-Rechnung {{ jahr }}{% endblocktrans %}</div></div>
+        <a class="fw-btn" href="/portal/stweg/akonto/{{ bu.pk }}/" target="_blank" rel="noopener">PDF</a></div>
+    {% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Erneuerungsfonds" %}</span>
+        <span class="fw-neben">{% blocktrans with betrag=g.fonds.bestand|chf %}Bestand CHF {{ betrag }}{% endblocktrans %}</span></div>
+    {% for f in g.fonds.einheiten %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ f.einheit.bezeichnung }}</div>
+        <div class="fw-s">{% blocktrans with einlagen=f.einlagen|chf %}Ihre Einlagen CHF {{ einlagen }}{% endblocktrans %}</div></div>
+        <div class="fw-zeit">{% blocktrans with anteil=f.anteil|chf %}Anteil CHF {{ anteil }}{% endblocktrans %}</div></div>
+    {% endfor %}
+    <div class="fw-rumpf"><p class="fw-s">{% trans "Der Fonds gehört der Gemeinschaft. Der Anteil ist rechnerisch (Bestand nach Wertquote)." %}</p></div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Dokumente" %}</span></div>
+    {% for gr in g.dokumente %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ gr.name }}</div></div></div>
+    {% for d in gr.dokumente %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-s">{{ d.titel }} · {{ d.gueltig_ab|date:"d.m.Y" }}{% if d.ist_aktuell %} · {% trans "aktuell" %}{% endif %}</div></div>
+        <a class="fw-btn" href="/portal/stweg/dokument/{{ d.pk }}/" target="_blank" rel="noopener">{% trans "Öffnen" %}</a></div>
+    {% endfor %}
+    {% empty %}<p class="fw-leer">{% trans "Noch kein Dokument freigegeben." %}</p>{% endfor %}
 </div>
 
 {% if g.abstimmungen %}
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Abstimmungen</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Abstimmungen" %}</span></div>
     {% for a in g.abstimmungen %}
     <div class="fw-zeile"><div class="fw-mitte">
         <div class="fw-t">{{ a.z.titel }}</div>
-        <div class="fw-s">{% if a.z.status == 'abgeschlossen' %}{{ a.z.get_ergebnis_display }} (Ja {{ a.z.ja_koepfe }} · Nein {{ a.z.nein_koepfe }} · Enthaltung {{ a.z.enthaltung_koepfe }}){% elif a.offen %}Abstimmung bis {{ a.z.frist_bis|date:"d.m.Y" }}{% else %}Abstimmung beendet, Ergebnis folgt{% endif %}</div>
+        <div class="fw-s">{% if a.z.status == 'abgeschlossen' %}{% blocktrans with ergebnis=a.z.get_ergebnis_display ja=a.z.ja_koepfe nein=a.z.nein_koepfe enth=a.z.enthaltung_koepfe %}{{ ergebnis }} (Ja {{ ja }} · Nein {{ nein }} · Enthaltung {{ enth }}){% endblocktrans %}{% elif a.offen %}{% blocktrans with datum=a.z.frist_bis|date:"d.m.Y" %}Abstimmung bis {{ datum }}{% endblocktrans %}{% else %}{% trans "Abstimmung beendet, Ergebnis folgt" %}{% endif %}</div>
         <div class="fw-s" style="white-space:pre-line">{{ a.z.antrag }}</div>
-        {% if a.offen %}
+        {% if a.offen and not a.meine %}<div class="fw-s">{% trans "Die Stimme für Ihre Einheit gibt die Hauptansprechperson ab." %}</div>{% endif %}
+        {% if a.offen and a.meine %}
         <form method="post" action="/portal/stweg/abstimmen/{{ a.z.pk }}/" class="fw-formular">{% csrf_token %}
             {% for m in a.meine %}
-            <div class="fw-feldblock"><label class="fw-label" for="s{{ a.z.pk }}_{{ m.einheit.pk }}">Ihre Stimme für {{ m.einheit.bezeichnung }}</label>
+            <div class="fw-feldblock"><label class="fw-label" for="s{{ a.z.pk }}_{{ m.einheit.pk }}">{% blocktrans with einheit=m.einheit.bezeichnung %}Ihre Stimme für {{ einheit }}{% endblocktrans %}</label>
                 <select id="s{{ a.z.pk }}_{{ m.einheit.pk }}" name="stimme_{{ m.einheit.pk }}" class="fw-feld">
-                    <option value="">— noch nicht abgestimmt —</option>
-                    <option value="ja"{% if m.wert == 'ja' %} selected{% endif %}>Ja</option>
-                    <option value="nein"{% if m.wert == 'nein' %} selected{% endif %}>Nein</option>
-                    <option value="enthaltung"{% if m.wert == 'enthaltung' %} selected{% endif %}>Enthaltung</option></select></div>
+                    <option value="">{% trans "— noch nicht abgestimmt —" %}</option>
+                    <option value="ja"{% if m.wert == 'ja' %} selected{% endif %}>{% trans "Ja" %}</option>
+                    <option value="nein"{% if m.wert == 'nein' %} selected{% endif %}>{% trans "Nein" %}</option>
+                    <option value="enthaltung"{% if m.wert == 'enthaltung' %} selected{% endif %}>{% trans "Enthaltung" %}</option></select></div>
             {% endfor %}
-            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Stimme speichern</button></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Stimme speichern" %}</button></div>
         </form>
         {% endif %}
         </div>
@@ -74,32 +140,34 @@
 {% endif %}
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Abrechnungen</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Abrechnungen" %}</span></div>
     {% for x in g.abrechnungen %}
-    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">Jahresabrechnung {{ x.abrechnung.jahr }}</div>
-        <div class="fw-s">{% if x.saldo > 0 %}Nachzahlung CHF {{ x.saldo|chf }}{% elif x.saldo < 0 %}Guthaben CHF {{ x.saldo|cut:"-"|chf }}{% else %}ausgeglichen{% endif %}</div></div>
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% blocktrans with jahr=x.abrechnung.jahr|stringformat:"s" %}Jahresabrechnung {{ jahr }}{% endblocktrans %}</div>
+        <div class="fw-s">{% if x.saldo > 0 %}{% blocktrans with betrag=x.saldo|chf %}Nachzahlung CHF {{ betrag }}{% endblocktrans %}{% elif x.saldo < 0 %}{% blocktrans with betrag=x.saldo|cut:"-"|chf %}Guthaben CHF {{ betrag }}{% endblocktrans %}{% else %}{% trans "ausgeglichen" %}{% endif %}</div></div>
         <a class="fw-btn" href="/portal/stweg/abrechnung/{{ x.abrechnung.pk }}/" target="_blank" rel="noopener">PDF</a></div>
-    {% empty %}<p class="fw-leer">Noch keine abgeschlossene Abrechnung.</p>{% endfor %}
+    {% empty %}<p class="fw-leer">{% trans "Noch keine abgeschlossene Abrechnung." %}</p>{% endfor %}
 </div>
 
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">Meine Anfragen</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Meine Anfragen" %}</span></div>
     {% for a in g.anfragen %}
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ a.betreff }}</div>
         <div class="fw-s">{{ a.erstellt_am|date:"d.m.Y" }} · {{ a.get_status_display }}</div>
-        {% if a.antwort %}<div class="fw-s">Antwort: {{ a.antwort }}</div>{% endif %}</div></div>
-    {% empty %}<p class="fw-leer">Noch keine Anfrage.</p>{% endfor %}
-    <details class="fw-aufklapp"><summary>Anfrage an die Verwaltung</summary>
+        {% if a.antwort %}<div class="fw-s">{% blocktrans with antwort=a.antwort %}Antwort: {{ antwort }}{% endblocktrans %}</div>{% endif %}</div></div>
+    {% empty %}<p class="fw-leer">{% trans "Noch keine Anfrage." %}</p>{% endfor %}
+    {% if g.meine %}
+    <details class="fw-aufklapp"><summary>{% trans "Anfrage an die Verwaltung" %}</summary>
         <div class="fw-aufklapp-inhalt">
             <form method="post" action="/portal/stweg/anfrage/{{ g.lg.pk }}/" class="fw-formular">{% csrf_token %}
-                <div class="fw-feldblock"><label class="fw-label" for="b{{ g.lg.pk }}">Betreff *</label>
+                <div class="fw-feldblock"><label class="fw-label" for="b{{ g.lg.pk }}">{% trans "Betreff" %} *</label>
                     <input id="b{{ g.lg.pk }}" name="betreff" required class="fw-feld"></div>
-                <div class="fw-feldblock"><label class="fw-label" for="t{{ g.lg.pk }}">Ihre Frage</label>
+                <div class="fw-feldblock"><label class="fw-label" for="t{{ g.lg.pk }}">{% trans "Ihre Frage" %}</label>
                     <textarea id="t{{ g.lg.pk }}" name="text" rows="3" class="fw-feld"></textarea></div>
-                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Senden</button></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Senden" %}</button></div>
             </form></div></details>
+    {% endif %}
 </div>
 {% empty %}
-<div class="fw-card"><p class="fw-leer">Ihnen ist keine Stockwerkeigentümer-Einheit zugeordnet.</p></div>
+<div class="fw-card"><p class="fw-leer">{% trans "Ihnen ist keine Stockwerkeigentümer-Einheit zugeordnet." %}</p></div>
 {% endfor %}
 {% endblock %}

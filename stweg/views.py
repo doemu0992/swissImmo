@@ -20,7 +20,7 @@ from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
 from core.models import Pendenz
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
-from stweg import aufgaben, beschluss
+from stweg import aufgaben, beschluss, dokumente
 from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegAkonto, StwegAnfrage,
                           StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
@@ -86,6 +86,7 @@ def stweg_gemeinschaft(request, stweg_id):
         'mehrheiten': Traktandum.MEHRHEIT_CHOICES,
         'offen': aufgaben.offene_punkte(lg),
         'art_choices': Versammlung.ART_CHOICES,
+        'dokument_luecken': dokumente.luecken(lg),
     })
 
 
@@ -106,8 +107,26 @@ def stweg_versammlung_neu(request, stweg_id):
     v = Versammlung.objects.create(
         liegenschaft=lg, titel=titel, datum=datum, ort=(request.POST.get('ort') or '').strip(),
         art=art if art in dict(Versammlung.ART_CHOICES) else 'ordentlich',
-        einladungsfrist_tage=_zahl(request.POST.get('einladungsfrist_tage')) or 10)
+        einladungsfrist_tage=_zahl(request.POST.get('einladungsfrist_tage')) or 10,
+        evoting=bool(request.POST.get('evoting')))
     messages.success(request, 'Versammlung angelegt. Jetzt Traktanden erfassen.')
+    return _zurueck(v)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_versammlung_evoting(request, pk):
+    v = get_object_or_404(Versammlung, pk=pk)
+    if v.status == v.PROTOKOLLIERT:
+        messages.error(request, 'Das Protokoll ist versendet — E-Voting lässt sich nicht mehr ändern.')
+        return _zurueck(v)
+    bis = parse_datetime((request.POST.get('evoting_bis') or '').strip())
+    if bis is not None and timezone.is_naive(bis):
+        bis = timezone.make_aware(bis)
+    v.evoting = bool(request.POST.get('evoting'))
+    v.evoting_bis = bis if v.evoting else None
+    v.save(update_fields=['evoting', 'evoting_bis'])
+    messages.success(request, 'E-Voting ist eingeschaltet.' if v.evoting else 'E-Voting ist ausgeschaltet.')
     return _zurueck(v)
 
 
@@ -239,7 +258,7 @@ def stweg_stimmen_speichern(request, pk):
             if wert in dict(Stimme.WERT_CHOICES):
                 beschluss.stimme_abgeben(t, e, wert)
             elif wert == '':
-                Stimme.objects.filter(traktandum=t, einheit=e).delete()
+                beschluss.stimme_loeschen(t, e)
     except beschluss.BeschlussFehler as e:
         _fehler(request, e)
     return _zurueck(v)
@@ -574,7 +593,7 @@ def stweg_zirkular_neu(request, stweg_id):
     z = Zirkularbeschluss.objects.create(
         liegenschaft=lg, titel=titel[:200], antrag=antrag,
         begruendung=(request.POST.get('begruendung') or '').strip(), frist_bis=frist,
-        mehrheitsart=art if art in dict(Traktandum.MEHRHEIT_CHOICES) and art != 'kenntnisnahme' else 'einstimmig',
+        mehrheitsart=art if art in dict(Traktandum.MEHRHEIT_CHOICES) and art not in ('kenntnisnahme', 'doppelt_anwesende') else 'einstimmig',
         rechtsgrundlage=(request.POST.get('rechtsgrundlage') or '').strip()[:200],
         vollzug_aufgabe=(request.POST.get('vollzug_aufgabe') or '').strip()[:200],
         vollzug_faellig_am=parse_date(request.POST.get('vollzug_faellig_am') or ''))
@@ -691,7 +710,10 @@ def _zur_einheitenseite(lg):
 def stweg_einheiten(request, stweg_id):
     from crm.models import Eigentuemer
     lg = _gemeinschaft(stweg_id)
-    haupt = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    haupt = list(stimm_einheiten(lg).select_related('stockwerkeigentuemer')
+                 .prefetch_related('miteigentuemer').order_by('bezeichnung'))
+    for e in haupt:
+        e.mit_ids = {m.pk for m in e.miteigentuemer.all()}
     neben = list(lg.einheiten.filter(gehoert_zu__isnull=False).select_related('gehoert_zu').order_by('bezeichnung'))
     summe = wertquoten_summe(lg)
     return render(request, 'stweg/einheiten.html', {
@@ -720,6 +742,13 @@ def stweg_einheiten_speichern(request, stweg_id):
         if quote is None:
             fehler.append(f'«{e.bezeichnung}»: Die Wertquote «{roh}» ist ungültig.')
             continue
+        mit = None                       # None = unverändert
+        if f'mit_set_{e.pk}' in request.POST:
+            ids = {int(x) for x in request.POST.getlist(f'mit_{e.pk}') if x.isdigit()}
+            mit = list(Eigentuemer.objects.filter(pk__in=ids))
+            if len(mit) != len(ids):
+                fehler.append(f'«{e.bezeichnung}»: Ein Miteigentümer ist nicht (mehr) erfasst.')
+                continue
         eig = e.stockwerkeigentuemer
         if f'eig_{e.pk}' in request.POST:
             wert = request.POST[f'eig_{e.pk}']
@@ -730,15 +759,18 @@ def stweg_einheiten_speichern(request, stweg_id):
                 if eig is None:
                     fehler.append(f'«{e.bezeichnung}»: Dieser Eigentümer ist nicht (mehr) erfasst.')
                     continue
-        aenderungen.append((e, quote, eig))
+        aenderungen.append((e, quote, eig, mit))
     if fehler:
         for f in fehler:
             messages.error(request, f)
         return _zur_einheitenseite(lg)
     with transaction.atomic():
-        for e, quote, eig in aenderungen:
+        for e, quote, eig, mit in aenderungen:
             e.wertquote, e.stockwerkeigentuemer = quote, eig
             e.save(update_fields=['wertquote', 'stockwerkeigentuemer'])
+            if mit is not None:
+                # Die Hauptansprechperson ist nie zugleich Miteigentümer.
+                e.miteigentuemer.set([m for m in mit if m.pk != (eig.pk if eig else None)])
     messages.success(request, 'Einheiten gespeichert.')
     return _zur_einheitenseite(lg)
 

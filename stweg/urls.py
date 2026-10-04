@@ -1,6 +1,8 @@
 from django.urls import path
 
 from stweg import views as v
+from stweg import views_dokumente as vd
+from stweg import views_finanzen as vf
 
 urlpatterns = [
     path('', v.stweg_uebersicht, name='stweg_uebersicht'),
@@ -22,6 +24,7 @@ urlpatterns = [
     path('abrechnung/<int:pk>/pdf/', v.stweg_abrechnung_pdf, name='stweg_abrechnung_pdf'),
     path('akonto/<int:pk>/loeschen/', v.stweg_akonto_loeschen, name='stweg_akonto_loeschen'),
     path('versammlung/<int:pk>/', v.stweg_versammlung, name='stweg_versammlung'),
+    path('versammlung/<int:pk>/evoting/', v.stweg_versammlung_evoting, name='stweg_versammlung_evoting'),
     path('versammlung/<int:pk>/traktandum/neu/', v.stweg_traktandum_neu, name='stweg_traktandum_neu'),
     path('versammlung/<int:pk>/einladung/', v.stweg_einladung_versenden, name='stweg_einladung_versenden'),
     path('versammlung/<int:pk>/durchfuehren/', v.stweg_durchfuehren, name='stweg_durchfuehren'),
@@ -44,4 +47,25 @@ urlpatterns = [
     path('anfrage/<int:pk>/beantworten/', v.stweg_anfrage_beantworten, name='stweg_anfrage_beantworten'),
     path('anfrage/<int:pk>/erledigt/', v.stweg_anfrage_erledigt, name='stweg_anfrage_erledigt'),
     path('aufgabe/<int:pk>/erledigt/', v.stweg_aufgabe_erledigt, name='stweg_aufgabe_erledigt'),
+    # Verteilschlüssel und Budget
+    path('<int:stweg_id>/schluessel/', vf.stweg_schluessel, name='stweg_schluessel'),
+    path('<int:stweg_id>/schluessel/neu/', vf.stweg_schluessel_neu, name='stweg_schluessel_neu'),
+    path('<int:stweg_id>/kostenart/', vf.stweg_kostenart_zuordnen, name='stweg_kostenart_zuordnen'),
+    path('schluessel/<int:pk>/anteile/', vf.stweg_schluessel_anteile, name='stweg_schluessel_anteile'),
+    path('schluessel/<int:pk>/loeschen/', vf.stweg_schluessel_loeschen, name='stweg_schluessel_loeschen'),
+    path('<int:stweg_id>/budget/', vf.stweg_budget, name='stweg_budget'),
+    path('<int:stweg_id>/budget/neu/', vf.stweg_budget_neu, name='stweg_budget_neu'),
+    path('budget/<int:pk>/', vf.stweg_budget_detail, name='stweg_budget_detail'),
+    path('budget/<int:pk>/position/neu/', vf.stweg_budget_position_neu, name='stweg_budget_position_neu'),
+    path('budget/<int:pk>/position/loeschen/', vf.stweg_budget_position_loeschen, name='stweg_budget_position_loeschen'),
+    path('budget/<int:pk>/vorlegen/', vf.stweg_budget_vorlegen, name='stweg_budget_vorlegen'),
+    path('budget/<int:pk>/traktandum/', vf.stweg_budget_traktandum, name='stweg_budget_traktandum'),
+    path('budget/<int:pk>/versenden/', vf.stweg_budget_versenden, name='stweg_budget_versenden'),
+    path('budget/<int:pk>/pdf/', vf.stweg_budget_pdf, name='stweg_budget_pdf'),
+    # Dokumenten-Repository
+    path('<int:stweg_id>/dokumente/', vd.stweg_dokumente, name='stweg_dokumente'),
+    path('<int:stweg_id>/dokumente/neu/', vd.stweg_dokument_neu, name='stweg_dokument_neu'),
+    path('dokument/<int:pk>/', vd.stweg_dokument_download, name='stweg_dokument_download'),
+    path('dokument/<int:pk>/loeschen/', vd.stweg_dokument_loeschen, name='stweg_dokument_loeschen'),
+    path('dokument/<int:pk>/sichtbar/', vd.stweg_dokument_sichtbar, name='stweg_dokument_sichtbar'),
 ]

@@ -22320,3 +22320,1135 @@ msgstr "Cette communauté a des assemblées — le type ne peut plus être modif
 #: core/templates/fw/liegenschaft_form.html
 msgid "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu."
 msgstr "En propriété par étages, chaque unité a son propre propriétaire. Vous attribuez les quotes-parts et les propriétaires après l'enregistrement."
+
+#: stweg/templates/stweg/portal.html
+msgid "Eigentümerportal"
+msgstr "Portail des propriétaires"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Einheiten, Einladungen und Protokolle der Versammlungen und Ihre Anfragen an die Verwaltung."
+msgstr "Vos unités, les convocations et procès-verbaux des assemblées et vos demandes à la gérance."
+
+#: stweg/templates/stweg/portal.html
+msgid "Miteigentum — Hauptansprechperson: %(name)s. Sie sehen Einladung, Protokoll und Beschlüsse; die Stimme der Einheit gibt die Hauptansprechperson ab."
+msgstr "Copropriété — personne de contact principale : %(name)s. Vous voyez la convocation, le procès-verbal et les décisions ; la voix de l'unité est exprimée par la personne de contact principale."
+
+#: stweg/templates/stweg/portal.html
+msgid "Wertquote %(q)s / %(total)s"
+msgstr "Quote-part %(q)s / %(total)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Versammlungen"
+msgstr "Assemblées"
+
+#: stweg/templates/stweg/portal.html
+msgid "Einladung"
+msgstr "Convocation"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmacht %(einheit)s"
+msgstr "Procuration %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertreten durch %(name)s"
+msgstr "Représenté par %(name)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Sie nehmen selbst teil, oder erteilen eine Vollmacht:"
+msgstr "Vous participez vous-même ou donnez une procuration :"
+
+#: stweg/templates/stweg/portal.html
+msgid "Widerrufen"
+msgstr "Révoquer"
+
+#: stweg/templates/stweg/portal.html
+msgid "Name der vertretenden Person"
+msgstr "Nom de la personne qui représente"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertretung %(einheit)s"
+msgstr "Représentation %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmacht erteilen"
+msgstr "Donner une procuration"
+
+#: stweg/templates/stweg/portal.html
+msgid "Keine Versammlung."
+msgstr "Aucune assemblée."
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmungen"
+msgstr "Votations"
+
+#: stweg/templates/stweg/portal.html
+msgid "%(ergebnis)s (Ja %(ja)s · Nein %(nein)s · Enthaltung %(enth)s)"
+msgstr "%(ergebnis)s (Oui %(ja)s · Non %(nein)s · Abstention %(enth)s)"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmung bis %(datum)s"
+msgstr "Vote jusqu'au %(datum)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abstimmung beendet, Ergebnis folgt"
+msgstr "Vote terminé, résultat à venir"
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Stimme für Ihre Einheit gibt die Hauptansprechperson ab."
+msgstr "La voix de votre unité est exprimée par la personne de contact principale."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Stimme für %(einheit)s"
+msgstr "Votre voix pour %(einheit)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "— noch nicht abgestimmt —"
+msgstr "— pas encore voté —"
+
+#: stweg/templates/stweg/portal.html
+msgid "Enthaltung"
+msgstr "Abstention"
+
+#: stweg/templates/stweg/portal.html
+msgid "Stimme speichern"
+msgstr "Enregistrer la voix"
+
+#: stweg/templates/stweg/portal.html
+msgid "Abrechnungen"
+msgstr "Décomptes"
+
+#: stweg/templates/stweg/portal.html
+msgid "Jahresabrechnung %(jahr)s"
+msgstr "Décompte annuel %(jahr)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Nachzahlung CHF %(betrag)s"
+msgstr "Complément à payer CHF %(betrag)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Guthaben CHF %(betrag)s"
+msgstr "Avoir CHF %(betrag)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Noch keine abgeschlossene Abrechnung."
+msgstr "Aucun décompte clôturé pour le moment."
+
+#: stweg/templates/stweg/portal.html
+msgid "Meine Anfragen"
+msgstr "Mes demandes"
+
+#: stweg/templates/stweg/portal.html
+msgid "Antwort: %(antwort)s"
+msgstr "Réponse : %(antwort)s"
+
+#: stweg/templates/stweg/portal.html
+msgid "Noch keine Anfrage."
+msgstr "Aucune demande pour le moment."
+
+#: stweg/templates/stweg/portal.html
+msgid "Anfrage an die Verwaltung"
+msgstr "Demande à la gérance"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Frage"
+msgstr "Votre question"
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihnen ist keine Stockwerkeigentümer-Einheit zugeordnet."
+msgstr "Aucune unité de propriété par étages ne vous est attribuée."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Vollmacht wurde erfasst."
+msgstr "Votre procuration a été enregistrée."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Vollmacht wurde widerrufen."
+msgstr "La procuration a été révoquée."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Stimme wurde gespeichert."
+msgstr "Votre voix a été enregistrée."
+
+#: stweg/templates/stweg/portal.html
+msgid "Keine Stimme angegeben."
+msgstr "Aucune voix indiquée."
+
+#: stweg/templates/stweg/portal.html
+msgid "Bitte einen Betreff angeben."
+msgstr "Veuillez indiquer un objet."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ihre Anfrage wurde an die Verwaltung übermittelt."
+msgstr "Votre demande a été transmise à la gérance."
+
+#: stweg/templates/stweg/portal.html
+msgid "Vollmachten lassen sich nur nach der Einladung und vor der Versammlung erteilen."
+msgstr "Les procurations ne peuvent être données qu'après la convocation et avant l'assemblée."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Einheit gehört nicht zu dieser Gemeinschaft."
+msgstr "L'unité n'appartient pas à cette communauté."
+
+#: stweg/templates/stweg/portal.html
+msgid "Bitte angeben, wer vertreten soll."
+msgstr "Veuillez indiquer qui doit vous représenter."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Versammlung hat bereits stattgefunden."
+msgstr "L'assemblée a déjà eu lieu."
+
+#: stweg/templates/stweg/portal.html
+msgid "Über diesen Beschluss wird zurzeit nicht abgestimmt."
+msgstr "Cette décision n'est pas soumise au vote actuellement."
+
+#: stweg/templates/stweg/portal.html
+msgid "Die Abstimmungsfrist ist abgelaufen."
+msgstr "Le délai de vote est expiré."
+
+#: stweg/templates/stweg/portal.html
+msgid "Ungültige Stimme «%(wert)s»."
+msgstr "Voix invalide « %(wert)s »."
+
+#: stweg/templates/stweg/portal.html
+msgid "Angenommen"
+msgstr "Accepté"
+
+#: stweg/templates/stweg/portal.html
+msgid "Vertagt"
+msgstr "Ajourné"
+
+#: stweg/templates/stweg/portal.html
+msgid "Zur Kenntnis genommen"
+msgstr "Pris acte"
+
+#: stweg/templates/stweg/portal.html
+msgid "Beantwortet"
+msgstr "Répondu"
+
+#: stweg/templates/stweg/*.html
+msgid "1. Traktanden"
+msgstr "1. Ordre du jour"
+
+#: stweg/templates/stweg/*.html
+msgid "2. Einladung versenden"
+msgstr "2. Envoyer la convocation"
+
+#: stweg/templates/stweg/*.html
+msgid "3. Versammlung durchführen, Anwesenheit und Stimmen erfassen"
+msgstr "3. Tenir l'assemblée, saisir présences et voix"
+
+#: stweg/templates/stweg/*.html
+msgid "4. Protokoll versenden"
+msgstr "4. Envoyer le procès-verbal"
+
+#: stweg/templates/stweg/*.html
+msgid "Abrechnung abschliessen (Eigentümer sehen sie im Portal)"
+msgstr "Clôturer le décompte (les propriétaires le voient dans le portail)"
+
+#: stweg/templates/stweg/*.html
+msgid "Abrechnung und Erneuerungsfonds"
+msgstr "Décompte et fonds de rénovation"
+
+#: stweg/templates/stweg/*.html
+msgid "Abrechnungsjahr"
+msgstr "Année du décompte"
+
+#: stweg/templates/stweg/*.html
+msgid "Abschliessen"
+msgstr "Clôturer"
+
+#: stweg/templates/stweg/*.html
+msgid "Abstimmung bis *"
+msgstr "Vote jusqu'au *"
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Zahlung erfassen"
+msgstr "Saisir un paiement d'acompte"
+
+#: stweg/templates/stweg/*.html
+msgid "Allgemeine Kosten, nach Wertquoten verteilt, abzüglich der Akonto-Beiträge."
+msgstr "Frais généraux, répartis selon les quotes-parts, moins les acomptes."
+
+#: stweg/templates/stweg/*.html
+msgid "Anfrage erfassen"
+msgstr "Saisir une demande"
+
+#: stweg/templates/stweg/*.html
+msgid "Anfragen"
+msgstr "Demandes"
+
+#: stweg/templates/stweg/*.html
+msgid "Antrag"
+msgstr "Proposition"
+
+#: stweg/templates/stweg/*.html
+msgid "Antrag (PDF)"
+msgstr "Proposition (PDF)"
+
+#: stweg/templates/stweg/*.html
+msgid "Antrag *"
+msgstr "Proposition *"
+
+#: stweg/templates/stweg/*.html
+msgid "Antrag der Verwaltung"
+msgstr "Proposition de la gérance"
+
+#: stweg/templates/stweg/*.html
+msgid "Antrag versenden"
+msgstr "Envoyer la proposition"
+
+#: stweg/templates/stweg/*.html
+msgid "Antwort (wird dem Eigentümer per E-Mail gesendet)"
+msgstr "Réponse (envoyée au propriétaire par e-mail)"
+
+#: stweg/templates/stweg/*.html
+msgid "Antwort bis"
+msgstr "Réponse jusqu'au"
+
+#: stweg/templates/stweg/*.html
+msgid "Antworten"
+msgstr "Répondre"
+
+#: stweg/templates/stweg/*.html
+msgid "Anwesenheit"
+msgstr "Présences"
+
+#: stweg/templates/stweg/*.html
+msgid "Anwesenheit speichern"
+msgstr "Enregistrer les présences"
+
+#: stweg/templates/stweg/*.html
+msgid "Aufgabe *"
+msgstr "Tâche *"
+
+#: stweg/templates/stweg/*.html
+msgid "Aufgabe erfassen"
+msgstr "Saisir une tâche"
+
+#: stweg/templates/stweg/*.html
+msgid "Beantworten"
+msgstr "Répondre"
+
+#: stweg/templates/stweg/*.html
+msgid "Beginn *"
+msgstr "Début *"
+
+#: stweg/templates/stweg/*.html
+msgid "Belasten"
+msgstr "Facturer"
+
+#: stweg/templates/stweg/*.html
+msgid "Bemerkungen speichern"
+msgstr "Enregistrer les remarques"
+
+#: stweg/templates/stweg/*.html
+msgid "Beschlusstext"
+msgstr "Texte de la décision"
+
+#: stweg/templates/stweg/*.html
+msgid "Betreff *"
+msgstr "Objet *"
+
+#: stweg/templates/stweg/*.html
+msgid "Das Ergebnis gilt erst, wenn es festgestellt ist."
+msgstr "Le résultat ne vaut que lorsqu'il a été constaté."
+
+#: stweg/templates/stweg/*.html
+msgid "Das Ergebnis ist noch nicht an die Eigentümer versendet."
+msgstr "Le résultat n'a pas encore été envoyé aux propriétaires."
+
+#: stweg/templates/stweg/*.html
+msgid "Der Antrag geht mit PDF an alle Eigentümer; sie stimmen im Portal ab. Eigentümer ohne E-Mail werden für den Postversand vermerkt."
+msgstr "La proposition est envoyée en PDF à tous les propriétaires ; ils votent dans le portail. Les propriétaires sans e-mail sont notés pour l'envoi postal."
+
+#: stweg/templates/stweg/*.html
+msgid "Der Fonds gehört der Gemeinschaft: Einlagen sind kein Ertrag der Verwaltung, sondern eine Verbindlichkeit (Konto 2800)."
+msgstr "Le fonds appartient à la communauté : les versements ne sont pas un produit de la gérance mais une dette (compte 2800)."
+
+#: stweg/templates/stweg/*.html
+msgid "Die Frist läuft noch, und nicht alle Einheiten haben abgestimmt."
+msgstr "Le délai court encore et toutes les unités n'ont pas voté."
+
+#: stweg/templates/stweg/*.html
+msgid "E-Mail (für Einladung und Protokoll)"
+msgstr "E-mail (pour la convocation et le procès-verbal)"
+
+#: stweg/templates/stweg/*.html
+msgid "Einheit *"
+msgstr "Unité *"
+
+#: stweg/templates/stweg/*.html
+msgid "Einheit hinzufügen"
+msgstr "Ajouter une unité"
+
+#: stweg/templates/stweg/*.html
+msgid "Einheiten und Eigentümer"
+msgstr "Unités et propriétaires"
+
+#: stweg/templates/stweg/*.html
+msgid "Einheiten, Wertquoten und Eigentümer bearbeiten"
+msgstr "Modifier unités, quotes-parts et propriétaires"
+
+#: stweg/templates/stweg/*.html
+msgid "Einladung versenden"
+msgstr "Envoyer la convocation"
+
+#: stweg/templates/stweg/*.html
+msgid "Einladungsfrist (Tage)"
+msgstr "Délai de convocation (jours)"
+
+#: stweg/templates/stweg/*.html
+msgid "Entnahme buchen"
+msgstr "Comptabiliser un prélèvement"
+
+#: stweg/templates/stweg/*.html
+msgid "Entnehmen"
+msgstr "Prélever"
+
+#: stweg/templates/stweg/*.html
+msgid "Er gilt erst, wenn er festgestellt ist."
+msgstr "Elle ne vaut que lorsqu'elle a été constatée."
+
+#: stweg/templates/stweg/*.html
+msgid "Erforderliche Mehrheit (Gesetz oder Reglement)"
+msgstr "Majorité requise (loi ou règlement)"
+
+#: stweg/templates/stweg/*.html
+msgid "Ergebnis an alle Eigentümer versenden"
+msgstr "Envoyer le résultat à tous les propriétaires"
+
+#: stweg/templates/stweg/*.html
+msgid "Ergebnis feststellen"
+msgstr "Constater le résultat"
+
+#: stweg/templates/stweg/*.html
+msgid "Ergebnis noch nicht versendet"
+msgstr "Résultat pas encore envoyé"
+
+#: stweg/templates/stweg/*.html
+msgid "Erneuerungsfonds"
+msgstr "Fonds de rénovation"
+
+#: stweg/templates/stweg/*.html
+msgid "Erst möglich, wenn die Summe aufgeht."
+msgstr "Possible seulement lorsque le total est exact."
+
+#: stweg/templates/stweg/*.html
+msgid "Fehlende erneut versenden"
+msgstr "Renvoyer les manquants"
+
+#: stweg/templates/stweg/*.html
+msgid "Feststellen"
+msgstr "Constater"
+
+#: stweg/templates/stweg/*.html
+msgid "Feststellen ist erst danach möglich."
+msgstr "La constatation n'est possible qu'ensuite."
+
+#: stweg/templates/stweg/*.html
+msgid "Gehört eine Einheit mehreren Personen, wird eine als Hauptansprechperson der Einheit zugeteilt (sie gibt die Stimme ab); die übrigen werden bei der Einheit als Miteigentümer eingetragen."
+msgstr "Si une unité appartient à plusieurs personnes, l'une d'elles est désignée personne de contact principale de l'unité (elle exprime la voix) ; les autres sont inscrites comme copropriétaires de l'unité."
+
+#: stweg/templates/stweg/*.html
+msgid "Gemeinschaft aktivieren"
+msgstr "Activer la communauté"
+
+#: stweg/templates/stweg/*.html
+msgid "Gemeinschaften"
+msgstr "Communautés"
+
+#: stweg/templates/stweg/*.html
+msgid "Gemeinschaften, ihre nächste Versammlung und was noch offen ist."
+msgstr "Communautés, leur prochaine assemblée et ce qui reste ouvert."
+
+#: stweg/templates/stweg/*.html
+msgid "Gesamtbetrag (CHF) *"
+msgstr "Montant total (CHF) *"
+
+#: stweg/templates/stweg/*.html
+msgid "Gesamtkosten"
+msgstr "Coûts totaux"
+
+#: stweg/templates/stweg/*.html
+msgid "Gesamtübersicht (PDF)"
+msgstr "Vue d'ensemble (PDF)"
+
+#: stweg/templates/stweg/*.html
+msgid "Jahresabrechnung, Akonto, Fonds"
+msgstr "Décompte annuel, acomptes, fonds"
+
+#: stweg/templates/stweg/*.html
+msgid "Jahreseinlage nach Wertquoten belasten"
+msgstr "Facturer le versement annuel selon les quotes-parts"
+
+#: stweg/templates/stweg/*.html
+msgid "Jeder Eigentümer erhält Einladung und Traktandenliste als PDF per E-Mail; Eigentümer ohne E-Mail-Adresse werden für den Postversand vermerkt."
+msgstr "Chaque propriétaire reçoit la convocation et l'ordre du jour en PDF par e-mail ; les propriétaires sans adresse e-mail sont notés pour l'envoi postal."
+
+#: stweg/templates/stweg/*.html
+msgid "Kanal"
+msgstr "Canal"
+
+#: stweg/templates/stweg/*.html
+msgid "Keine Versammlung geplant"
+msgstr "Aucune assemblée prévue"
+
+#: stweg/templates/stweg/*.html
+msgid "Keine Vollmacht erteilt."
+msgstr "Aucune procuration donnée."
+
+#: stweg/templates/stweg/*.html
+msgid "Keine offenen Anfragen."
+msgstr "Aucune demande ouverte."
+
+#: stweg/templates/stweg/*.html
+msgid "Kosten nach Wertquoten verteilen, Akonto abziehen, Einlagen und Entnahmen"
+msgstr "Répartir les coûts selon les quotes-parts, déduire les acomptes, versements et prélèvements"
+
+#: stweg/templates/stweg/*.html
+msgid "Miteigentümer (Ehepaar, Erbengemeinschaft) erhalten Einladung, Protokoll und Beschlüsse und sehen sie im Portal. Die Stimme der Einheit gibt die Hauptansprechperson ab."
+msgstr "Les copropriétaires (couple, hoirie) reçoivent la convocation, le procès-verbal et les décisions et les voient dans le portail. La voix de l'unité est exprimée par la personne de contact principale."
+
+#: stweg/templates/stweg/*.html
+msgid "Nebenräume (ohne Quote und Stimme, gehören zu einer Einheit):"
+msgstr "Locaux annexes (sans quote-part ni voix, appartiennent à une unité) :"
+
+#: stweg/templates/stweg/*.html
+msgid "Neu berechnen"
+msgstr "Recalculer"
+
+#: stweg/templates/stweg/*.html
+msgid "Nichts offen."
+msgstr "Rien d'ouvert."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Traktandum."
+msgstr "Aucun point à l'ordre du jour."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Zirkularbeschluss."
+msgstr "Aucune décision par voie de circulation."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch keine Einheit. Unten die erste anlegen."
+msgstr "Aucune unité. Créez la première ci-dessous."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch keine Stockwerkeigentümergemeinschaft. Eine Liegenschaft wird zur STWEG, indem ihre Art auf «Stockwerkeigentum (STWEG)» gesetzt wird."
+msgstr "Aucune communauté de propriétaires par étages. Un immeuble devient une PPE en réglant son type sur « Propriété par étages (PPE) »."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch keine Versammlung."
+msgstr "Aucune assemblée."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch nicht versandbereit"
+msgstr "Pas encore prêt à l'envoi"
+
+#: stweg/templates/stweg/*.html
+msgid "Noch nichts versendet."
+msgstr "Rien n'a encore été envoyé."
+
+#: stweg/templates/stweg/*.html
+msgid "Offene Punkte"
+msgstr "Points ouverts"
+
+#: stweg/templates/stweg/*.html
+msgid "Ordentliche Versammlung 2026"
+msgstr "Assemblée ordinaire 2026"
+
+#: stweg/templates/stweg/*.html
+msgid "Protokoll (PDF)"
+msgstr "Procès-verbal (PDF)"
+
+#: stweg/templates/stweg/*.html
+msgid "Protokoll an alle Eigentümer versenden"
+msgstr "Envoyer le procès-verbal à tous les propriétaires"
+
+#: stweg/templates/stweg/*.html
+msgid "Protokoll noch nicht versendet"
+msgstr "Procès-verbal pas encore envoyé"
+
+#: stweg/templates/stweg/*.html
+msgid "Protokollführung"
+msgstr "Rédaction du procès-verbal"
+
+#: stweg/templates/stweg/*.html
+msgid "Rechtsgrundlage / Reglement"
+msgstr "Base légale / règlement"
+
+#: stweg/templates/stweg/*.html
+msgid "Solange die Summe nicht aufgeht, wird weder eingeladen noch abgerechnet."
+msgstr "Tant que le total n'est pas exact, il n'y a ni convocation ni décompte."
+
+#: stweg/templates/stweg/*.html
+msgid "Status der Gemeinschaft:"
+msgstr "Statut de la communauté :"
+
+#: stweg/templates/stweg/*.html
+msgid "Stimmen"
+msgstr "Voix"
+
+#: stweg/templates/stweg/*.html
+msgid "Stimmen speichern"
+msgstr "Enregistrer les voix"
+
+#: stweg/templates/stweg/*.html
+msgid "Stimmen speichern (schriftlich erhalten)"
+msgstr "Enregistrer les voix (reçues par écrit)"
+
+#: stweg/templates/stweg/*.html
+msgid "Stockwerkeigentümer erfassen"
+msgstr "Saisir un copropriétaire PPE"
+
+#: stweg/templates/stweg/*.html
+msgid "Traktanden"
+msgstr "Ordre du jour"
+
+#: stweg/templates/stweg/*.html
+msgid "Traktandum hinzufügen"
+msgstr "Ajouter un point à l'ordre du jour"
+
+#: stweg/templates/stweg/*.html
+msgid "Versammlung durchführen"
+msgstr "Tenir l'assemblée"
+
+#: stweg/templates/stweg/*.html
+msgid "Versammlung einberufen"
+msgstr "Convoquer l'assemblée"
+
+#: stweg/templates/stweg/*.html
+msgid "Versammlungsleitung"
+msgstr "Direction de l'assemblée"
+
+#: stweg/templates/stweg/*.html
+msgid "Versandbereit"
+msgstr "Prêt à l'envoi"
+
+#: stweg/templates/stweg/*.html
+msgid "Versandprotokoll"
+msgstr "Journal d'envoi"
+
+#: stweg/templates/stweg/*.html
+msgid "Vertreten durch *"
+msgstr "Représenté par *"
+
+#: stweg/templates/stweg/*.html
+msgid "Vertreter"
+msgstr "Représentant"
+
+#: stweg/templates/stweg/*.html
+msgid "Verwendungszweck *"
+msgstr "Motif *"
+
+#: stweg/templates/stweg/*.html
+msgid "Vollmacht erfassen (schriftlich erhalten)"
+msgstr "Saisir une procuration (reçue par écrit)"
+
+#: stweg/templates/stweg/*.html
+msgid "Vollmachten"
+msgstr "Procurations"
+
+#: stweg/templates/stweg/*.html
+msgid "Vollzug bei Annahme (wird zur Aufgabe)"
+msgstr "Exécution en cas d'acceptation (devient une tâche)"
+
+#: stweg/templates/stweg/*.html
+msgid "Vollzug bis"
+msgstr "Exécution jusqu'au"
+
+#: stweg/templates/stweg/*.html
+msgid "Vorschau (PDF)"
+msgstr "Aperçu (PDF)"
+
+#: stweg/templates/stweg/*.html
+msgid "Vorschau der Kosten"
+msgstr "Aperçu des coûts"
+
+#: stweg/templates/stweg/*.html
+msgid "Weitere Bemerkungen im Protokoll"
+msgstr "Autres remarques dans le procès-verbal"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquote *"
+msgstr "Quote-part *"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquoten"
+msgstr "Quotes-parts"
+
+#: stweg/templates/stweg/*.html
+msgid "Widersprüchliche Stimmen desselben Eigentümers — bitte korrigieren."
+msgstr "Voix contradictoires du même propriétaire — veuillez corriger."
+
+#: stweg/templates/stweg/*.html
+msgid "Zirkularbeschluss"
+msgstr "Décision par voie de circulation"
+
+#: stweg/templates/stweg/*.html
+msgid "Zirkularbeschluss anlegen"
+msgstr "Créer une décision par voie de circulation"
+
+#: stweg/templates/stweg/*.html
+msgid "Zirkularbeschlüsse"
+msgstr "Décisions par voie de circulation"
+
+#: stweg/templates/stweg/*.html
+msgid "Zuerst die Anwesenheit erfassen."
+msgstr "Saisir d'abord les présences."
+
+#: stweg/templates/stweg/*.html
+msgid "Zuteilung, laufende Quotensumme, Gemeinschaft aktivieren"
+msgstr "Attribution, somme des quotes-parts en cours, activer la communauté"
+
+#: stweg/templates/stweg/*.html
+msgid "abgelehnt"
+msgstr "rejeté"
+
+#: stweg/templates/stweg/*.html
+msgid "alles erledigt"
+msgstr "tout est réglé"
+
+#: stweg/templates/stweg/*.html
+msgid "angenommen"
+msgstr "accepté"
+
+#: stweg/templates/stweg/*.html
+msgid "noch nicht versendet"
+msgstr "pas encore envoyé"
+
+#: stweg/templates/stweg/*.html
+msgid "z. B. 3.5-Zi EG links"
+msgstr "p. ex. 3,5 pièces rez gauche"
+
+#: stweg/templates/stweg/*.html
+msgid "zur Kenntnisnahme"
+msgstr "pour information"
+
+#: stweg/templates/stweg/*.html
+msgid "— kein Eigentümer —"
+msgstr "— aucun propriétaire —"
+
+#: stweg/templates/stweg/*.html
+msgid "— nicht abgestimmt —"
+msgstr "— n'a pas voté —"
+
+#: stweg/templates/stweg/*.html
+msgid "— später zuteilen —"
+msgstr "— attribuer plus tard —"
+
+#: stweg/templates/stweg/*.html
+msgid "%(k)s/%(kt)s Eigentümer · Wertquoten %(q)s/%(qt)s"
+msgstr "%(k)s/%(kt)s propriétaires · quotes-parts %(q)s/%(qt)s"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s Einheit(en) ohne Eigentümer"
+msgstr "%(n)s unité(s) sans propriétaire"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s Kostenposition(en)"
+msgstr "%(n)s poste(s) de coûts"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s erfasst"
+msgstr "%(n)s saisi(s)"
+
+#: stweg/templates/stweg/*.html
+msgid "(bis %(d)s)"
+msgstr "(jusqu'au %(d)s)"
+
+#: stweg/templates/stweg/*.html
+msgid "Abrechnung %(jahr)s berechnen"
+msgstr "Calculer le décompte %(jahr)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Abstimmung bis %(d)s"
+msgstr "Vote jusqu'au %(d)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Beiträge %(jahr)s"
+msgstr "Acomptes %(jahr)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Antrag: %(antrag)s"
+msgstr "Proposition : %(antrag)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Begründung: %(text)s"
+msgstr "Motivation : %(text)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Bestand CHF %(betrag)s"
+msgstr "Solde CHF %(betrag)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Erforderliche Mehrheit: %(art)s"
+msgstr "Majorité requise : %(art)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Ergebnis versendet am %(d)s."
+msgstr "Résultat envoyé le %(d)s."
+
+#: stweg/templates/stweg/*.html
+msgid "Ja %(ja)s · Nein %(nein)s · Enthaltung %(enth)s"
+msgstr "Oui %(ja)s · Non %(nein)s · Abstention %(enth)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Jede Einheit hat ihre Wertquote und ihren Stockwerkeigentümer. Die Quoten müssen zusammen exakt %(total)s ergeben."
+msgstr "Chaque unité a sa quote-part et son copropriétaire PPE. Les quotes-parts doivent totaliser exactement %(total)s."
+
+#: stweg/templates/stweg/*.html
+msgid "Keine allgemeinen Kosten im Jahr %(jahr)s (nur freigegebene Rechnungen der Gemeinschaft ohne Einheitsbezug zählen)."
+msgstr "Aucun frais généraux en %(jahr)s (seules comptent les factures validées de la communauté sans lien avec une unité)."
+
+#: stweg/templates/stweg/*.html
+msgid "Köpfe: Ja %(ja)s · Nein %(nein)s · Enthaltung %(enth)s (von %(total)s)"
+msgstr "Têtes : Oui %(ja)s · Non %(nein)s · Abstention %(enth)s (sur %(total)s)"
+
+#: stweg/templates/stweg/*.html
+msgid "Miteigentümer von «%(einheit)s» (%(n)s)"
+msgstr "Copropriétaires de « %(einheit)s » (%(n)s)"
+
+#: stweg/templates/stweg/*.html
+msgid "Nächste Versammlung: %(datum)s"
+msgstr "Prochaine assemblée : %(datum)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Rechnerischer Vorschlag (%(art)s):"
+msgstr "Proposition calculée (%(art)s) :"
+
+#: stweg/templates/stweg/*.html
+msgid "Traktandum %(nr)s: %(titel)s"
+msgstr "Point %(nr)s : %(titel)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Vollzug bei Annahme: %(aufgabe)s"
+msgstr "Exécution en cas d'acceptation : %(aufgabe)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquote %(q)s/%(total)s · Kostenanteil CHF %(anteil)s − Akonto CHF %(akonto)s"
+msgstr "Quote-part %(q)s/%(total)s · part des coûts CHF %(anteil)s − acompte CHF %(akonto)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquoten %(q)s / %(total)s"
+msgstr "Quotes-parts %(q)s / %(total)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquoten %(q)s / %(total)s · Status: %(status)s"
+msgstr "Quotes-parts %(q)s / %(total)s · Statut : %(status)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquoten: Ja %(ja)s · Nein %(nein)s · Enthaltung %(enth)s (von %(total)s)"
+msgstr "Quotes-parts : Oui %(ja)s · Non %(nein)s · Abstention %(enth)s (sur %(total)s)"
+
+#: stweg/templates/stweg/*.html
+msgid "Zirkularbeschluss «%(titel)s»"
+msgstr "Décision par voie de circulation « %(titel)s »"
+
+#: stweg/templates/stweg/*.html
+msgid "erteilt %(d)s"
+msgstr "donnée le %(d)s"
+
+#: stweg/templates/stweg/*.html
+msgid "versendet am %(d)s"
+msgstr "envoyé le %(d)s"
+
+#: stweg/templates/stweg/*.html
+msgid "widerrufen %(d)s"
+msgstr "révoquée le %(d)s"
+
+#: stweg/templates/stweg/*.html
+msgid "%(einheit)s · Rate %(nr)s/%(total)s"
+msgstr "%(einheit)s · acompte %(nr)s/%(total)s"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s Pflichtdokument(e) fehlen"
+msgstr "%(n)s document(s) obligatoire(s) manquant(s)"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s Rate(n) noch nicht versendet."
+msgstr "%(n)s acompte(s) pas encore envoyé(s)."
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s abgeschlossene Abrechnung(en), im Portal automatisch für jeden Eigentümer"
+msgstr "%(n)s décompte(s) clôturé(s), automatiquement disponible(s) pour chaque propriétaire dans le portail"
+
+#: stweg/templates/stweg/*.html
+msgid "0 heisst: die Einheit trägt nichts. Eine leere Zeile ist ein Fehler, keine Null."
+msgstr "0 signifie que l'unité ne supporte rien. Une ligne vide est une erreur, pas un zéro."
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnung %(jahr)s"
+msgstr "Facture d'acompte %(jahr)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnungen"
+msgstr "Factures d'acompte"
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnungen per E-Mail senden"
+msgstr "Envoyer les factures d'acompte par e-mail"
+
+#: stweg/templates/stweg/*.html
+msgid "Alle Dokumente"
+msgstr "Tous les documents"
+
+#: stweg/templates/stweg/*.html
+msgid "Alle versendet."
+msgstr "Tout est envoyé."
+
+#: stweg/templates/stweg/*.html
+msgid "Anteil %(einheit)s"
+msgstr "Part %(einheit)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Anteil CHF %(anteil)s"
+msgstr "Part CHF %(anteil)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Anteile speichern"
+msgstr "Enregistrer les parts"
+
+#: stweg/templates/stweg/*.html
+msgid "Art *"
+msgstr "Type *"
+
+#: stweg/templates/stweg/*.html
+msgid "Aufwandkonto *"
+msgstr "Compte de charges *"
+
+#: stweg/templates/stweg/*.html
+msgid "Begründungsakt, Reglement, Nutzungsordnung, Policen, Jahresrechnungen"
+msgstr "Acte constitutif, règlement, règlement d'utilisation, polices, comptes annuels"
+
+#: stweg/templates/stweg/*.html
+msgid "Beschluss"
+msgstr "Décision"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget"
+msgstr "Budget"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget %(jahr)s"
+msgstr "Budget %(jahr)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget und Akonto-Rechnungen"
+msgstr "Budget et factures d'acompte"
+
+#: stweg/templates/stweg/*.html
+msgid "CHF %(total)s · %(raten)s Raten"
+msgstr "CHF %(total)s · %(raten)s acomptes"
+
+#: stweg/templates/stweg/*.html
+msgid "Das Jahresbudget wird der Versammlung vorgelegt. Mit dem angenommenen Beschluss entstehen die Akonto-Rechnungen an die Eigentümer."
+msgstr "Le budget annuel est soumis à l'assemblée. Une fois la décision adoptée, les factures d'acompte aux propriétaires sont établies."
+
+#: stweg/templates/stweg/*.html
+msgid "Datei (PDF oder Bild, max. 10 MB) *"
+msgstr "Fichier (PDF ou image, max. 10 Mo) *"
+
+#: stweg/templates/stweg/*.html
+msgid "Der Fonds gehört der Gemeinschaft. Der Anteil ist rechnerisch (Bestand nach Wertquote)."
+msgstr "Le fonds appartient à la communauté. La part est un calcul (solde selon la quote-part)."
+
+#: stweg/templates/stweg/*.html
+msgid "Der Versammlung vorlegen"
+msgstr "Soumettre à l'assemblée"
+
+#: stweg/templates/stweg/*.html
+msgid "Die Unterlagen der Gemeinschaft. Eigentümer sehen im Portal nur, was Sie freigeben."
+msgstr "Les documents de la communauté. Les propriétaires ne voient dans le portail que ce que vous publiez."
+
+#: stweg/templates/stweg/*.html
+msgid "Die Versammlung läuft. Erklären Sie Ihre Teilnahme, um digital abzustimmen."
+msgstr "L'assemblée est en cours. Déclarez votre participation pour voter numériquement."
+
+#: stweg/templates/stweg/*.html
+msgid "Digital teilnehmen"
+msgstr "Participer numériquement"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting"
+msgstr "Vote électronique"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting im Portal"
+msgstr "Vote électronique dans le portail"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting im Portal erlauben (digitale Teilnahme und Stimmabgabe)"
+msgstr "Autoriser le vote électronique dans le portail (participation et vote numériques)"
+
+#: stweg/templates/stweg/*.html
+msgid "Eigentümer erklären im Portal ihre Teilnahme und stimmen dort ab, solange die Versammlung durchgeführt wird. Jede Stimme wird mit Zeit und Weg protokolliert. Das Ergebnis stellen Sie fest."
+msgstr "Les propriétaires déclarent leur participation dans le portail et y votent pendant l'assemblée. Chaque voix est consignée avec l'heure et le canal. Vous constatez le résultat."
+
+#: stweg/templates/stweg/*.html
+msgid "Erste Fälligkeit"
+msgstr "Première échéance"
+
+#: stweg/templates/stweg/*.html
+msgid "Für Eigentümer im Portal sichtbar"
+msgstr "Visible pour les propriétaires dans le portail"
+
+#: stweg/templates/stweg/*.html
+msgid "Guthaben: CHF %(betrag)s"
+msgstr "Avoir : CHF %(betrag)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Gültig bis (z. B. Police)"
+msgstr "Valable jusqu'au (p. ex. police)"
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Einlagen CHF %(einlagen)s"
+msgstr "Vos versements CHF %(einlagen)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Jahresbetrag je Einheit"
+msgstr "Montant annuel par unité"
+
+#: stweg/templates/stweg/*.html
+msgid "Jahresbudget aufstellen, der Versammlung vorlegen, nach Annahme Akonto vorschreiben"
+msgstr "Établir le budget annuel, le soumettre à l'assemblée, facturer les acomptes après adoption"
+
+#: stweg/templates/stweg/*.html
+msgid "Keine Zuordnung: alle Kosten laufen über den Standardschlüssel."
+msgstr "Aucune affectation : tous les frais suivent la clé par défaut."
+
+#: stweg/templates/stweg/*.html
+msgid "Keine offene Abstimmung."
+msgstr "Aucun vote ouvert."
+
+#: stweg/templates/stweg/*.html
+msgid "Keine offenen Beträge"
+msgstr "Aucun montant ouvert"
+
+#: stweg/templates/stweg/*.html
+msgid "Kostenart → Schlüssel"
+msgstr "Type de frais → clé"
+
+#: stweg/templates/stweg/*.html
+msgid "Legen Sie zuerst eine Versammlung mit einem Traktandum «Budget» an."
+msgstr "Créez d'abord une assemblée avec un point « Budget » à l'ordre du jour."
+
+#: stweg/templates/stweg/*.html
+msgid "Name *"
+msgstr "Nom *"
+
+#: stweg/templates/stweg/*.html
+msgid "Neues Budget"
+msgstr "Nouveau budget"
+
+#: stweg/templates/stweg/*.html
+msgid "Nicht jede Kostenart wird nach Wertquote verteilt. Hier legen Sie beliebig viele Schlüssel fest und ordnen jeder Kostenart (Aufwandkonto) einen zu. Kosten ohne Zuordnung laufen über den Standardschlüssel."
+msgstr "Tous les frais ne sont pas répartis selon la quote-part. Définissez ici autant de clés que vous voulez et affectez-en une à chaque type de frais (compte de charges). Les frais sans affectation suivent la clé par défaut."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Budget."
+msgstr "Pas encore de budget."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Dokument abgelegt."
+msgstr "Aucun document classé pour le moment."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Dokument freigegeben."
+msgstr "Aucun document publié pour le moment."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Schlüssel. Der Standardschlüssel «Allgemeine Wertquote» entsteht beim ersten Budget oder hier unten."
+msgstr "Pas encore de clé. La clé par défaut « Quote-part générale » est créée avec le premier budget ou ci-dessous."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch keine Position."
+msgstr "Pas encore de poste."
+
+#: stweg/templates/stweg/*.html
+msgid "Nur bei «eigene Anteile»: Erdgeschoss trägt nichts (übrige nach Wertquote)"
+msgstr "Seulement pour « parts propres » : le rez-de-chaussée ne supporte rien (les autres selon la quote-part)"
+
+#: stweg/templates/stweg/*.html
+msgid "Offen bis (optional)"
+msgstr "Ouvert jusqu'au (facultatif)"
+
+#: stweg/templates/stweg/*.html
+msgid "Pflichtdokumente"
+msgstr "Documents obligatoires"
+
+#: stweg/templates/stweg/*.html
+msgid "Raten *"
+msgstr "Acomptes *"
+
+#: stweg/templates/stweg/*.html
+msgid "Schlüssel löschen"
+msgstr "Supprimer la clé"
+
+#: stweg/templates/stweg/*.html
+msgid "Schlüssel: %(name)s"
+msgstr "Clé : %(name)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Sie nehmen digital teil. Ihre Stimme können Sie ändern, bis das Ergebnis festgestellt ist."
+msgstr "Vous participez numériquement. Vous pouvez modifier votre voix jusqu'à la constatation du résultat."
+
+#: stweg/templates/stweg/*.html
+msgid "Total CHF %(total)s · %(raten)s Raten"
+msgstr "Total CHF %(total)s · %(raten)s acomptes"
+
+#: stweg/templates/stweg/*.html
+msgid "Traktandum zuweisen"
+msgstr "Affecter le point de l'ordre du jour"
+
+#: stweg/templates/stweg/*.html
+msgid "Unter welchem Traktandum beschliessen? *"
+msgstr "Sous quel point de l'ordre du jour décider ? *"
+
+#: stweg/templates/stweg/*.html
+msgid "Verteilschlüssel *"
+msgstr "Clé de répartition *"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquote, Lift, Heizung (Fläche oder Volumen) und weitere je Kostenart"
+msgstr "Quote-part, ascenseur, chauffage (surface ou volume) et autres par type de frais"
+
+#: stweg/templates/stweg/*.html
+msgid "Wird beschlossen unter Traktandum %(nr)s «%(titel)s» der Versammlung"
+msgstr "Sera décidé au point %(nr)s « %(titel)s » de l'assemblée"
+
+#: stweg/templates/stweg/*.html
+msgid "automatisch"
+msgstr "automatique"
+
+#: stweg/templates/stweg/*.html
+msgid "eingeschaltet"
+msgstr "activé"
+
+#: stweg/templates/stweg/*.html
+msgid "gültig ab %(ab)s"
+msgstr "valable dès le %(ab)s"
+
+#: stweg/templates/stweg/*.html
+msgid "vorhanden"
+msgstr "présent"
+
+#: stweg/templates/stweg/*.html
+msgid "weitere Raten CHF %(betrag)s"
+msgstr "autres acomptes CHF %(betrag)s"
+
+#: stweg/templates/stweg/*.html
+msgid "z. B. Lift"
+msgstr "p. ex. ascenseur"
+
+#: stweg/templates/stweg/*.html
+msgid "— Standardschlüssel (Zuordnung entfernen) —"
+msgstr "— clé par défaut (supprimer l’affectation) —"
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Teilnahme ist erfasst. Sie können jetzt abstimmen."
+msgstr "Votre participation est enregistrée. Vous pouvez maintenant voter."
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Stimmen wurden gespeichert."
+msgstr "Vos voix ont été enregistrées."

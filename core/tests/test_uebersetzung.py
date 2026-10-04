@@ -514,8 +514,16 @@ class KatalogTests(SimpleTestCase):
                 s = m.group(1) if m.group(1) is not None else m.group(2)
                 if s and s not in katalog:
                     fehlend.append(f'{pfad.relative_to(WURZEL)}: {s}')
+        for pfad in sorted((WURZEL / 'stweg' / 'templates').rglob('*.html')):
+            # Die STWEG-Vorlagen der Verwaltung sind (noch) nicht ausgezeichnet; was ausgezeichnet
+            # ist — das Eigentümerportal —, muss im Katalog stehen.
+            text = pfad.read_text(encoding='utf-8')
+            for m in list(vorlage.finditer(text)) + list(code.finditer(text)):
+                gruppen = [g for g in m.groups() if g is not None]
+                if gruppen and gruppen[0] not in katalog and gruppen[0].replace('%', '%%') not in katalog:
+                    fehlend.append(f'{pfad.relative_to(WURZEL)}: {gruppen[0]}')
         for app in ('core', 'crm', 'portfolio', 'rentals', 'finance', 'tickets',
-                    'faelle', 'mietprozess', 'benutzer'):
+                    'faelle', 'mietprozess', 'benutzer', 'stweg'):
             for pfad in sorted((WURZEL / app).rglob('*.py')):
                 if {'tests', 'migrations'} & set(pfad.parts):
                     continue

@@ -6,6 +6,7 @@ die Verwaltung erfasst schriftlich eingegangene Stimmen. Nach der Frist (oder
 sobald alle Einheiten abgestimmt haben) wird das Ergebnis festgestellt."""
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext
 
 from core.utils.email_service import send_via_hoststar
 from stweg.beschluss import BeschlussFehler, zaehlen
@@ -34,6 +35,8 @@ def pruefen(z, heute=None):
             probleme.append(str(e.message))
     if not z.antrag.strip():
         probleme.append('Der Antrag fehlt.')
+    if z.mehrheitsart == 'doppelt_anwesende':
+        probleme.append('«Mehrheit der Anwesenden» gibt es nur in einer Versammlung, nicht im Zirkularverfahren.')
     if z.frist_bis <= heute:
         probleme.append('Die Abstimmungsfrist muss in der Zukunft liegen.')
     eig, ohne = _empfaenger(z)
@@ -94,13 +97,13 @@ def versenden(z, *, heute=None):
 def stimme_abgeben(z, einheit, wert, *, kanal='portal', heute=None):
     heute = heute or timezone.localdate()
     if z.status != z.LAUFEND:
-        raise BeschlussFehler('Über diesen Beschluss wird zurzeit nicht abgestimmt.')
+        raise BeschlussFehler(gettext('Über diesen Beschluss wird zurzeit nicht abgestimmt.'))
     if kanal == 'portal' and heute > z.frist_bis:
-        raise BeschlussFehler('Die Abstimmungsfrist ist abgelaufen.')
+        raise BeschlussFehler(gettext('Die Abstimmungsfrist ist abgelaufen.'))
     if einheit.liegenschaft_id != z.liegenschaft_id:
-        raise BeschlussFehler('Die Einheit gehört nicht zu dieser Gemeinschaft.')
+        raise BeschlussFehler(gettext('Die Einheit gehört nicht zu dieser Gemeinschaft.'))
     if wert not in dict(Stimme.WERT_CHOICES):
-        raise BeschlussFehler(f'Ungültige Stimme «{wert}».')
+        raise BeschlussFehler(gettext('Ungültige Stimme «%(wert)s».') % {'wert': wert})
     obj, _ = ZirkularStimme.objects.update_or_create(
         zirkular=z, einheit=einheit, defaults={'wert': wert, 'kanal': kanal})
     return obj
