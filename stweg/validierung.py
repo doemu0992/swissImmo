@@ -22,6 +22,16 @@ from django.core.exceptions import ValidationError
 from django.db.models import Sum
 
 
+def zahl(wert):
+    """Eine Quote für die Anzeige: ohne überflüssige Nullen, auf jeder Datenbank gleich.
+
+    SQLite liefert die Summe als `Decimal('999')`, PostgreSQL als `Decimal('999.00')`
+    (die Spalte hat zwei Nachkommastellen). `format(…, 'g')` behält diese Nullen —
+    «999.00/1000» statt «999/1000». Aufgefallen erst im CI-Lauf gegen PostgreSQL."""
+    d = Decimal(wert)
+    return format(d.quantize(Decimal(1)) if d == d.to_integral_value() else d.normalize(), 'f')
+
+
 class WertquotenFehler(ValidationError):
     """Die Wertquoten einer STWEG ergeben nicht das Total."""
 
@@ -43,6 +53,6 @@ def pruefe_wertquoten(liegenschaft):
     total = Decimal(liegenschaft.wertquote_total)
     if summe != total:
         raise WertquotenFehler(
-            f'Wertquoten von «{liegenschaft}» ergeben {summe:g}/{total:g}, '
-            f'erwartet {total:g}/{total:g}. Differenz: {total - summe:+g}.',
+            f'Wertquoten von «{liegenschaft}» ergeben {zahl(summe)}/{zahl(total)}, '
+            f'erwartet {zahl(total)}/{zahl(total)}. Differenz: {"+" if total >= summe else "-"}{zahl(abs(total - summe))}.',
             code='wertquoten_summe')

@@ -6,6 +6,7 @@ Rechtstext-nahe Dokumente: fest deutsch, bis ihr Wortlaut juristisch geprüft
 import io
 
 from core.services.dokumentsprache import nur_deutsch
+from stweg.validierung import zahl
 
 
 def _umbruch(text, breite=95):
@@ -114,14 +115,14 @@ def protokoll_pdf(versammlung):
     p = praesenz(v)
     s.luecke(3)
     s.zeile(f"Vertreten: {p['koepfe']} von {p['koepfe_total']} Eigentümern, "
-            f"Wertquoten {p['quoten']:g} von {p['quoten_total']:g}")
+            f"Wertquoten {zahl(p['quoten'])} von {zahl(p['quoten_total'])}")
     s.luecke(5)
     for t in v.traktanden.all():
         s.zeile(f"{t.nr}. {t.titel}", fett=True, gr=11)
         if t.mehrheitsart != 'kenntnisnahme':
             s.zeile(f"Ja {t.ja_koepfe} / Nein {t.nein_koepfe} / Enthaltung {t.enthaltung_koepfe} "
-                    f"(Köpfe) · Ja {t.ja_quoten:g} / Nein {t.nein_quoten:g} / "
-                    f"Enthaltung {t.enthaltung_quoten:g} (Wertquoten)", gr=9, abstand=4)
+                    f"(Köpfe) · Ja {zahl(t.ja_quoten)} / Nein {zahl(t.nein_quoten)} / "
+                    f"Enthaltung {zahl(t.enthaltung_quoten)} (Wertquoten)", gr=9, abstand=4)
         s.zeile(f"Ergebnis: {t.get_ergebnis_display()}", gr=10)
         if t.beschlusstext:
             s.absatz(t.beschlusstext, gr=9, abstand=4)
@@ -172,7 +173,7 @@ def abrechnung_pdf(abrechnung, eigentuemer=None):
         positionen = positionen.filter(eigentuemer=eigentuemer)
     total_saldo = 0
     for p in positionen:
-        s.zeile(f"{p.einheit.bezeichnung} · Wertquote {p.wertquote:g}/{p.wertquote_total}"
+        s.zeile(f"{p.einheit.bezeichnung} · Wertquote {zahl(p.wertquote)}/{p.wertquote_total}"
                 + (f" · {p.eigentuemer.firma_oder_name}" if eigentuemer is None and p.eigentuemer else ''),
                 fett=True, gr=10)
         s.zeile(f"Kostenanteil CHF {_chf(p.kostenanteil)} − Akonto CHF {_chf(p.akonto)}", gr=9, abstand=4)
@@ -215,7 +216,7 @@ def zirkular_pdf(z):
         s.luecke(5)
         s.zeile(f"Ergebnis: {z.get_ergebnis_display()}", fett=True, gr=12, abstand=6)
         s.zeile(f"Köpfe: Ja {z.ja_koepfe} · Nein {z.nein_koepfe} · Enthaltung {z.enthaltung_koepfe}", gr=10)
-        s.zeile(f"Wertquoten: Ja {z.ja_quoten:g} · Nein {z.nein_quoten:g} · Enthaltung {z.enthaltung_quoten:g}", gr=10)
+        s.zeile(f"Wertquoten: Ja {zahl(z.ja_quoten)} · Nein {zahl(z.nein_quoten)} · Enthaltung {zahl(z.enthaltung_quoten)}", gr=10)
         if z.beschlusstext:
             s.luecke(2)
             s.absatz(z.beschlusstext, gr=10, abstand=4)
