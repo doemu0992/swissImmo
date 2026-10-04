@@ -277,3 +277,49 @@ class SonnenblickSimulationTests(TestCase):
         # Nichts geht verloren: Kosten verteilt = Kosten angefallen
         self.assertEqual(sum(p.kostenanteil for p in abrechnung.positionen.all()), Decimal('4000.00'))
         self.assertEqual(p3.eigentuemer.firma_oder_name, 'Carla')
+
+
+class FormularTests(TestCase):
+    def test_einheitsformular_speichert_stockwerkeigentuemer_und_behaelt_ihn(self):
+        from crm.models import Eigentuemer
+        from portfolio.forms import EinheitForm
+        lg, einheiten = neue_stweg()
+        eig = Eigentuemer.objects.create(firma_oder_name='Anna')
+        e = einheiten[0]
+        daten = {'bezeichnung': e.bezeichnung, 'typ': 'stwe', 'wertquote': '200',
+                 'stockwerkeigentuemer': str(eig.pk)}
+        form = EinheitForm(daten, instance=e)
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        e.refresh_from_db()
+        self.assertEqual(e.stockwerkeigentuemer, eig)
+        # Feld fehlt im POST ganz → bleibt stehen
+        form = EinheitForm({'bezeichnung': e.bezeichnung, 'typ': 'stwe', 'wertquote': '200'}, instance=e)
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        e.refresh_from_db()
+        self.assertEqual(e.stockwerkeigentuemer, eig)
+
+    def test_fremder_eigentuemer_nicht_waehlbar(self):
+        from core.tenancy import organisation_kontext
+        from crm.models import Eigentuemer, Organisation
+        from portfolio.forms import EinheitForm
+        lg, einheiten = neue_stweg()
+        fremd = Organisation.objects.create(firma='Fremd AG', strasse='X 1', plz='9000', ort='SG')
+        with organisation_kontext(fremd):
+            f_eig = Eigentuemer.objects.create(firma_oder_name='Fremder')
+        form = EinheitForm({'bezeichnung': 'X', 'typ': 'stwe', 'wertquote': '1',
+                            'stockwerkeigentuemer': str(f_eig.pk)}, instance=einheiten[0])
+        self.assertFalse(form.is_valid())
+        self.assertIn('stockwerkeigentuemer', form.errors)
+
+    def test_wertquote_total_im_liegenschaftsformular(self):
+        from portfolio.forms import LiegenschaftForm
+        lg, _ = neue_stweg()
+        basis = {'strasse': lg.strasse, 'plz': '8000', 'ort': 'Zürich'}
+        f = LiegenschaftForm({**basis, 'wertquote_total': '100'}, instance=lg)
+        self.assertTrue(f.is_valid(), f.errors)
+        self.assertEqual(f.save().wertquote_total, 100)
+        f = LiegenschaftForm(basis, instance=lg)            # leer → unverändert
+        self.assertTrue(f.is_valid(), f.errors)
+        self.assertEqual(f.save().wertquote_total, 100)

@@ -109,6 +109,11 @@ AUSNAHMEN = {
      'wird in «Benutzer & Rollen» beim Hauswart zugeordnet (benutzer.py, '
      'Gegenseite der Beziehung), nicht im Liegenschaftsformular',
 
+    'finance.ErneuerungsfondsBewegung.fonds':
+     'gesetzt von `stweg.fonds.jahreseinlage_belasten` / `entnahme_buchen`: die Bewegung gehört zum Fonds, aus dem sie entsteht',
+    'finance.ErneuerungsfondsBewegung.buchung':
+     'die Hauptbuch-Buchung, die `stweg.fonds` zur Bewegung erzeugt — nicht eingegeben',
+
     'rentals.MietzinsAnpassung.zins_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',
     'rentals.MietzinsAnpassung.lik_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',
     'rentals.MietzinsAnpassung.kosten_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',

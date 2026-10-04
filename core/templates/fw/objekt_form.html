@@ -71,6 +71,12 @@
             {% include 'fw/_feld.html' with f=form.letzte_renovation label=_("Letzte Renovation (Jahr)") inputmodus="numeric" %}
             {% include 'fw/_feld.html' with f=form.standard_kautionsmonate label=_("Standard-Kaution (Monate)") inputmodus="numeric" platzhalter="3" %}
         </div>
+        <div><label for="id_stockwerkeigentuemer" class="fw-label mb-1">{% trans "Stockwerkeigentümer" %}</label>
+            <select id="id_stockwerkeigentuemer" name="stockwerkeigentuemer" class="fw-feld w-full"{% if form.stockwerkeigentuemer.errors %} aria-invalid="true" aria-describedby="id_stockwerkeigentuemer_fehler"{% endif %}>
+                <option value="">— {% trans "wählen" %} —</option>
+                {% for eig in form.fields.stockwerkeigentuemer.queryset %}<option value="{{ eig.pk }}" {% if form.stockwerkeigentuemer.value|stringformat:'s' == eig.pk|stringformat:'s' %}selected{% endif %}>{{ eig.firma_oder_name }}</option>{% endfor %}
+            </select>
+            {% include 'fw/_feldfehler.html' with f=form.stockwerkeigentuemer %}</div>
         {% if not ist_neu and hauptobjekte %}
         <div><label for="id_gehoert_zu_id" class="fw-label mb-1">{% trans "Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)" %}</label>
             <select id="id_gehoert_zu_id" name="gehoert_zu_id" class="fw-feld w-full"{% if feld_fehler.gehoert_zu_id %} aria-invalid="true" aria-describedby="id_gehoert_zu_id_fehler"{% endif %}>

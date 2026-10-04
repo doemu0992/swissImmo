@@ -22262,3 +22262,27 @@ msgstr "attuale %(p)s punti"
 #, python-format
 msgid "Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben eingegebenen Basiswerten."
 msgstr "Per questo contratto esiste già un adeguamento della pigione: il calcolo parte dallo stato dell'ultimo adeguamento (tasso di riferimento %(zins)s %%, IPC %(lik)s), non dai valori di base inseriti sopra."
+
+#: portfolio/models.py (STWEG)
+msgid "Mietliegenschaft"
+msgstr "Immobile locativo"
+
+#: portfolio/models.py (STWEG)
+msgid "Stockwerkeigentum (STWEG)"
+msgstr "Proprietà per piani (PPP)"
+
+#: portfolio/models.py (STWEG)
+msgid "Einlage"
+msgstr "Versamento"
+
+#: portfolio/models.py (STWEG)
+msgid "Entnahme"
+msgstr "Prelievo"
+
+#: portfolio/models.py (STWEG)
+msgid "Stockwerkeigentümer"
+msgstr "Comproprietario PPP"
+
+#: portfolio/models.py (STWEG)
+msgid "Wertquoten-Total (Nenner)"
+msgstr "Totale quote di valore (denominatore)"

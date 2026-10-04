@@ -22284,3 +22284,27 @@ msgstr "actuel %(p)s points"
 #, python-format
 msgid "Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben eingegebenen Basiswerten."
 msgstr "Une adaptation de loyer existe déjà pour ce contrat : le calcul part de l'état de la dernière adaptation (taux de référence %(zins)s %%, IPC %(lik)s), et non des valeurs de base saisies ci-dessus."
+
+#: portfolio/models.py (STWEG)
+msgid "Mietliegenschaft"
+msgstr "Immeuble locatif"
+
+#: portfolio/models.py (STWEG)
+msgid "Stockwerkeigentum (STWEG)"
+msgstr "Propriété par étages (PPE)"
+
+#: portfolio/models.py (STWEG)
+msgid "Einlage"
+msgstr "Versement"
+
+#: portfolio/models.py (STWEG)
+msgid "Entnahme"
+msgstr "Prélèvement"
+
+#: portfolio/models.py (STWEG)
+msgid "Stockwerkeigentümer"
+msgstr "Copropriétaire PPE"
+
+#: portfolio/models.py (STWEG)
+msgid "Wertquoten-Total (Nenner)"
+msgstr "Total des quotes-parts (dénominateur)"
