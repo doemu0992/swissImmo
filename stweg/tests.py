@@ -226,3 +226,54 @@ class StwegAbrechnungServiceTests(TestCase):
         a = self.service().abrechnen(2026)
         self.assertEqual(a.gesamtkosten, Decimal('1000.00'))
         self.assertEqual(sum(p.akonto for p in a.positionen.all()), Decimal('0.00'))
+
+
+class SonnenblickSimulationTests(TestCase):
+    """End-to-End: Gemeinschaft «Sonnenblick», 3 Eigentümer, Jahresabrechnung 2026."""
+
+    def test_sonnenblick(self):
+        from datetime import date
+
+        from crm.models import Eigentuemer
+        from stweg.models import StwegAkonto
+        from stweg.services import StwegAbrechnungService
+
+        # 1. Gemeinschaft mit 3 Eigentümern, Wertquoten 200 / 300 / 500
+        lg = Liegenschaft.objects.create(
+            strasse='Sonnenblick 1', plz='6003', ort='Luzern', typ='STWEG',
+            status='entwurf', wertquote_total=1000, organisation=_test_organisation())
+        einheiten = []
+        for name, quote in (('Anna', 200), ('Bruno', 300), ('Carla', 500)):
+            eig = Eigentuemer.objects.create(firma_oder_name=name)
+            einheiten.append(Einheit.objects.create(
+                liegenschaft=lg, bezeichnung=f'Whg {name}', typ='stwe',
+                wertquote=Decimal(quote), stockwerkeigentuemer=eig))
+        lg.status = 'aktiv'
+        lg.save()                                   # 1000/1000 → erlaubt
+
+        # 2. Alle zahlen 1'000 CHF Akonto (als Quartalsraten à 250)
+        for e in einheiten:
+            for monat in (3, 6, 9, 12):
+                StwegAkonto.objects.create(einheit=e, betrag=Decimal('250'), datum=date(2026, monat, 1))
+
+        # 3. Allgemeine Kosten 4'000 CHF
+        rechnung(lg, 1500, date(2026, 2, 1), lieferant='Gebäudeversicherung')
+        rechnung(lg, 1000, date(2026, 5, 1), lieferant='Gartenpflege')
+        rechnung(lg, 1500, date(2026, 8, 1), lieferant='Liftwartung')
+
+        # 4. Abrechnung
+        abrechnung = StwegAbrechnungService(lg).abrechnen(2026)
+
+        # 5. Mathematik
+        self.assertEqual(abrechnung.gesamtkosten, Decimal('4000.00'))
+        p1, p2, p3 = abrechnung.positionen.order_by('einheit_id')
+        self.assertEqual((p1.kostenanteil, p1.akonto, p1.saldo),
+                         (Decimal('800.00'), Decimal('1000.00'), Decimal('-200.00')))
+        self.assertEqual(p1.guthaben, Decimal('200.00'))
+        self.assertEqual((p2.kostenanteil, p2.saldo), (Decimal('1200.00'), Decimal('200.00')))
+        self.assertEqual((p3.kostenanteil, p3.akonto, p3.saldo),
+                         (Decimal('2000.00'), Decimal('1000.00'), Decimal('1000.00')))
+        self.assertEqual(p3.zahllast, Decimal('1000.00'))
+        # Nichts geht verloren: Kosten verteilt = Kosten angefallen
+        self.assertEqual(sum(p.kostenanteil for p in abrechnung.positionen.all()), Decimal('4000.00'))
+        self.assertEqual(p3.eigentuemer.firma_oder_name, 'Carla')
