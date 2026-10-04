@@ -21,7 +21,8 @@ from core.models import Pendenz
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
 from stweg import aufgaben, beschluss
-from stweg.models import (Anwesenheit, Stimme, StwegAnfrage, StwegVersand, Traktandum, Versammlung)
+from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegAkonto, StwegAnfrage,
+                          StwegVersand, Traktandum, Versammlung)
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, wertquoten_summe
 from stweg.versammlung import (VersammlungsFehler, durchfuehren, einladung_pruefen,
                                einladung_versenden, protokoll_pruefen, protokoll_versenden)
@@ -361,3 +362,155 @@ def stweg_aufgabe_erledigt(request, pk):
     p = get_object_or_404(Pendenz, pk=pk, quelle__startswith=aufgaben.PREFIX)
     aufgaben.erledigen(p)
     return redirect(f'/neu/stweg/{p.liegenschaft_id}/')
+
+
+# ── Abrechnung, Akonto, Erneuerungsfonds ─────────────────────────────────
+
+def _betrag(wert):
+    """Beträge aus dem Formular: «1'234.50», «1234,5» — sonst None."""
+    from decimal import Decimal, InvalidOperation
+    try:
+        return Decimal((wert or '').strip().replace("'", '').replace(',', '.')).quantize(Decimal('0.01'))
+    except InvalidOperation:
+        return None
+
+
+def _jahr(wert):
+    j = _zahl(wert)
+    return j if j and 1990 <= j <= 2100 else None
+
+
+def _zur_abrechnung(lg, jahr=None):
+    return redirect(f'/neu/stweg/{lg.pk}/abrechnung/' + (f'?jahr={jahr}' if jahr else ''))
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_abrechnung(request, stweg_id):
+    from finance.models import Erneuerungsfonds
+    from stweg.services import StwegAbrechnungService
+    lg = _gemeinschaft(stweg_id)
+    jahr = _jahr(request.GET.get('jahr')) or timezone.localdate().year - 1
+    abrechnung = (StwegAbrechnung.objects.filter(liegenschaft=lg, jahr=jahr)
+                  .prefetch_related('positionen__einheit', 'positionen__eigentuemer', 'kostenzeilen').first())
+    service = StwegAbrechnungService(lg)
+    einheiten = list(lg.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    akonto = service.akonto_je_einheit(jahr)
+    for e in einheiten:
+        e.akonto_summe = akonto.get(e.pk, 0)
+    # Lesen legt nichts an: den Fonds gibt es erst mit der ersten Einlage.
+    fonds = Erneuerungsfonds.objects.filter(liegenschaft=lg).first()
+    return render(request, 'stweg/abrechnung.html', {
+        'nav': 'stweg', 'lg': lg, 'jahr': jahr, 'abrechnung': abrechnung, 'einheiten': einheiten,
+        'vorschau': None if abrechnung else service.kostenzeilen(jahr),
+        'vorschau_total': None if abrechnung else service.allgemeine_kosten(jahr),
+        'akontos': StwegAkonto.objects.filter(einheit__liegenschaft=lg, datum__year=jahr)
+        .select_related('einheit'),
+        'fonds': fonds,
+        'bewegungen': list(fonds.bewegungen.select_related('einheit').order_by('-datum', '-id')[:30]) if fonds else [],
+        'eigentuemer': sorted({p.eigentuemer for p in abrechnung.positionen.all() if p.eigentuemer},
+                              key=lambda x: x.firma_oder_name) if abrechnung else [],
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_abrechnung_berechnen(request, stweg_id):
+    from stweg.services import AbrechnungsFehler, StwegAbrechnungService
+    lg = _gemeinschaft(stweg_id)
+    jahr = _jahr(request.POST.get('jahr'))
+    if jahr is None:
+        messages.error(request, 'Bitte ein Jahr angeben.')
+        return _zur_abrechnung(lg)
+    try:
+        StwegAbrechnungService(lg).abrechnen(jahr)
+        messages.success(request, f'Abrechnung {jahr} berechnet.')
+    except (AbrechnungsFehler, WertquotenFehler) as e:
+        messages.error(request, str(getattr(e, 'message', None) or e))
+    return _zur_abrechnung(lg, jahr)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_abrechnung_abschliessen(request, pk):
+    from stweg.services import StwegAbrechnungService
+    a = get_object_or_404(StwegAbrechnung.objects.select_related('liegenschaft'), pk=pk)
+    StwegAbrechnungService.abschliessen(a)
+    messages.success(request, f'Abrechnung {a.jahr} abgeschlossen.')
+    return _zur_abrechnung(a.liegenschaft, a.jahr)
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_abrechnung_pdf(request, pk):
+    from crm.models import Eigentuemer
+    from stweg.pdf import abrechnung_pdf
+    a = get_object_or_404(StwegAbrechnung.objects.select_related('liegenschaft'), pk=pk)
+    eig = None
+    if request.GET.get('eigentuemer'):
+        eig = get_object_or_404(Eigentuemer, pk=_zahl(request.GET['eigentuemer']) or 0)
+    antwort = HttpResponse(abrechnung_pdf(a, eig), content_type='application/pdf')
+    antwort['Content-Disposition'] = f'inline; filename="Abrechnung_{a.jahr}.pdf"'
+    return antwort
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_akonto_neu(request, stweg_id):
+    lg = _gemeinschaft(stweg_id)
+    einheit = Einheit.objects.filter(pk=_zahl(request.POST.get('einheit')) or 0, liegenschaft=lg).first()
+    betrag = _betrag(request.POST.get('betrag'))
+    datum = parse_date(request.POST.get('datum') or '') or timezone.localdate()
+    if einheit is None or betrag is None or betrag <= 0:
+        messages.error(request, 'Einheit und ein Betrag grösser 0 sind nötig.')
+        return _zur_abrechnung(lg)
+    StwegAkonto.objects.create(einheit=einheit, betrag=betrag, datum=datum,
+                               bemerkung=(request.POST.get('bemerkung') or '').strip()[:200])
+    messages.success(request, f'Akonto CHF {betrag} für {einheit.bezeichnung} erfasst.')
+    return _zur_abrechnung(lg, datum.year)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_akonto_loeschen(request, pk):
+    k = get_object_or_404(StwegAkonto.objects.select_related('einheit__liegenschaft'), pk=pk)
+    lg, jahr = k.einheit.liegenschaft, k.datum.year
+    if StwegAbrechnung.objects.filter(liegenschaft=lg, jahr=jahr,
+                                      status=StwegAbrechnung.STATUS_ABGESCHLOSSEN).exists():
+        messages.error(request, f'Die Abrechnung {jahr} ist abgeschlossen — Akonto lässt sich nicht mehr ändern.')
+    else:
+        k.delete()
+    return _zur_abrechnung(lg, jahr)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_fonds_einlage(request, stweg_id):
+    from stweg.fonds import FondsFehler, jahreseinlage_belasten
+    lg = _gemeinschaft(stweg_id)
+    jahr, betrag = _jahr(request.POST.get('jahr')), _betrag(request.POST.get('betrag'))
+    if jahr is None or betrag is None:
+        messages.error(request, 'Jahr und Betrag sind nötig.')
+        return _zur_abrechnung(lg)
+    try:
+        verteilt = jahreseinlage_belasten(lg, jahr, betrag, user=request.user)
+        messages.success(request, f'Einlage {jahr}: CHF {betrag} auf {len(verteilt)} Einheiten verteilt.')
+    except (FondsFehler, WertquotenFehler) as e:
+        messages.error(request, str(getattr(e, 'message', None) or e))
+    return _zur_abrechnung(lg, jahr)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_fonds_entnahme(request, stweg_id):
+    from stweg.fonds import FondsFehler, entnahme_buchen
+    lg = _gemeinschaft(stweg_id)
+    jahr, betrag = _jahr(request.POST.get('jahr')), _betrag(request.POST.get('betrag'))
+    text = (request.POST.get('text') or '').strip()
+    if jahr is None or betrag is None or not text:
+        messages.error(request, 'Jahr, Betrag und Verwendungszweck sind nötig.')
+        return _zur_abrechnung(lg)
+    try:
+        entnahme_buchen(lg, jahr, betrag, text, user=request.user)
+        messages.success(request, f'Entnahme CHF {betrag} gebucht.')
+    except (FondsFehler, WertquotenFehler) as e:
+        messages.error(request, str(getattr(e, 'message', None) or e))
+    return _zur_abrechnung(lg, jahr)

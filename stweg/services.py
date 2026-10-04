@@ -19,7 +19,7 @@ from django.db.models import Q, Sum
 
 from core.tenancy import organisation_kontext
 from finance.models import KreditorenRechnung
-from stweg.models import StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto
+from stweg.models import StwegAbrechnung, StwegAbrechnungKosten, StwegAbrechnungPosition, StwegAkonto
 from stweg.validierung import pruefe_wertquoten
 from stweg.verteilung import verteile_nach_quoten
 
@@ -38,22 +38,29 @@ class StwegAbrechnungService:
             raise AbrechnungsFehler(f'«{liegenschaft}» ist keine STWEG-Liegenschaft.')
         self.liegenschaft = liegenschaft
 
-    def allgemeine_kosten(self, jahr):
-        """Summe aller allgemeinen Kosten der Gemeinschaft im Jahr."""
+    def kostenzeilen(self, jahr):
+        """Die allgemeinen Kosten der Gemeinschaft im Jahr, Zeile für Zeile."""
         lg = self.liegenschaft
         rechnungen = (KreditorenRechnung.objects
                       .filter(Q(liegenschaft=lg) | Q(positionen__liegenschaft=lg), datum__year=jahr)
                       .exclude(status__in=AUSGESCHLOSSENE_STATUS)
-                      .distinct().prefetch_related('positionen'))
-        total = NULL
+                      .distinct().prefetch_related('positionen').order_by('datum', 'id'))
+        zeilen = []
         for r in rechnungen:
             positionen = list(r.positionen.all())
             if positionen:
-                total += sum((p.betrag for p in positionen
-                              if p.liegenschaft_id == lg.pk and p.einheit_id is None), NULL)
+                for p in positionen:
+                    if p.liegenschaft_id == lg.pk and p.einheit_id is None:
+                        zeilen.append({'datum': r.datum, 'lieferant': r.lieferant,
+                                       'text': p.bezeichnung, 'betrag': p.betrag})
             elif r.liegenschaft_id == lg.pk and r.einheit_id is None:
-                total += r.betrag or NULL
-        return total.quantize(Decimal('0.01'))
+                zeilen.append({'datum': r.datum, 'lieferant': r.lieferant, 'text': '',
+                               'betrag': r.betrag or NULL})
+        return zeilen
+
+    def allgemeine_kosten(self, jahr):
+        """Summe aller allgemeinen Kosten der Gemeinschaft im Jahr."""
+        return sum((z['betrag'] for z in self.kostenzeilen(jahr)), NULL).quantize(Decimal('0.01'))
 
     def akonto_je_einheit(self, jahr):
         rows = (StwegAkonto.objects.filter(einheit__liegenschaft=self.liegenschaft, datum__year=jahr)
@@ -75,12 +82,15 @@ class StwegAbrechnungService:
                 bestehend.delete()      # Entwurf wird neu berechnet
 
             einheiten = list(lg.einheiten.order_by('pk'))
-            kosten = self.allgemeine_kosten(jahr)
+            zeilen = self.kostenzeilen(jahr)
+            kosten = sum((z['betrag'] for z in zeilen), NULL).quantize(Decimal('0.01'))
             anteile = verteile_nach_quoten(kosten, {e.pk: e.wertquote for e in einheiten})
             akonto = self.akonto_je_einheit(jahr)
 
             abrechnung = StwegAbrechnung.objects.create(
                 liegenschaft=lg, jahr=jahr, gesamtkosten=kosten)
+            for z in zeilen:
+                StwegAbrechnungKosten.objects.create(abrechnung=abrechnung, **z)
             for e in einheiten:
                 anteil = anteile[e.pk]
                 bezahlt = akonto.get(e.pk, NULL)

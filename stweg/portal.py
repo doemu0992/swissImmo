@@ -20,8 +20,8 @@ from django.views.decorators.http import require_POST
 
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
-from stweg.models import StwegAnfrage, Versammlung
-from stweg.pdf import einladung_pdf, protokoll_pdf
+from stweg.models import StwegAbrechnung, StwegAbrechnungPosition, StwegAnfrage, Versammlung
+from stweg.pdf import abrechnung_pdf, einladung_pdf, protokoll_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +50,13 @@ def portal_stweg(request):
         g['versammlungen'] = (Versammlung.objects.filter(liegenschaft_id=lg_id)
                               .exclude(status=Versammlung.ENTWURF).order_by('-datum'))
         g['anfragen'] = StwegAnfrage.objects.filter(liegenschaft_id=lg_id, eigentuemer=eig)
+        # Nur ABGESCHLOSSENE Abrechnungen, und nur der eigene Teil davon.
+        g['abrechnungen'] = [
+            {'abrechnung': a, 'saldo': sum(p.saldo for p in
+                                           StwegAbrechnungPosition.objects.filter(abrechnung=a, eigentuemer=eig))}
+            for a in StwegAbrechnung.objects.filter(
+                liegenschaft_id=lg_id, status=StwegAbrechnung.STATUS_ABGESCHLOSSEN,
+                positionen__eigentuemer=eig).distinct()]
     return render(request, 'stweg/portal.html', {
         'eigentuemer': eig, 'gemeinschaften': list(gemeinschaften.values())})
 
@@ -84,6 +91,17 @@ def portal_stweg_protokoll(request, pk):
     if v.protokoll_versendet_am is None:
         raise Http404                      # Protokoll erst nach dem Versand
     return _pdf(protokoll_pdf(v), f'Protokoll_{v.datum:%Y%m%d}.pdf')
+
+
+@never_cache
+@login_required
+def portal_stweg_abrechnung(request, pk):
+    eig = _eigentuemer(request)
+    a = StwegAbrechnung.objects.filter(pk=pk, status=StwegAbrechnung.STATUS_ABGESCHLOSSEN,
+                                       positionen__eigentuemer=eig).first()
+    if a is None:
+        raise Http404                      # fremd, nicht abgeschlossen oder nicht meine
+    return _pdf(abrechnung_pdf(a, eig), f'Abrechnung_{a.jahr}.pdf')
 
 
 @login_required

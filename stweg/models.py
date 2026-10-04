@@ -55,6 +55,24 @@ class StwegAbrechnung(OrganisationAusKette):
         return f"STWEG-Abrechnung {self.jahr}: {self.liegenschaft}"
 
 
+class StwegAbrechnungKosten(OrganisationAusKette):
+    """Eine Kostenzeile der Abrechnung — Momentaufnahme zum Zeitpunkt der Berechnung.
+
+    Die Abrechnung muss auch dann stimmen, wenn eine Rechnung später geändert
+    oder storniert wird; sie liest ihre Kosten deshalb aus dieser Tabelle, nicht
+    aus den Kreditorenrechnungen."""
+    ORGANISATION_PFAD = 'abrechnung'
+    abrechnung = models.ForeignKey(StwegAbrechnung, on_delete=models.CASCADE, related_name='kostenzeilen')
+    datum = models.DateField(null=True, blank=True)
+    lieferant = models.CharField(max_length=200, blank=True, default='')
+    text = models.CharField(max_length=200, blank=True, default='')
+    betrag = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = 'stweg_abrechnung_kosten'
+        ordering = ['datum', 'id']
+
+
 class StwegAbrechnungPosition(OrganisationAusKette):
     """Anteil einer Einheit an der Jahresabrechnung."""
     ORGANISATION_PFAD = 'abrechnung'

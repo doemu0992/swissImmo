@@ -1,4 +1,5 @@
 {% extends 'core/portal_base.html' %}
+{% load chf %}
 {% block title %}Stockwerkeigentum — SwissImmo{% endblock %}
 {% block brand %}Eigentümerportal{% endblock %}
 {% block brand_mobile %}Eigentümerportal{% endblock %}
@@ -29,6 +30,15 @@
         {% if v.protokoll_versendet_am %}<a class="fw-btn" href="/portal/stweg/protokoll/{{ v.pk }}/" target="_blank" rel="noopener">Protokoll</a>{% endif %}
     </div>
     {% empty %}<p class="fw-leer">Keine Versammlung.</p>{% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Abrechnungen</span></div>
+    {% for x in g.abrechnungen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">Jahresabrechnung {{ x.abrechnung.jahr }}</div>
+        <div class="fw-s">{% if x.saldo > 0 %}Nachzahlung CHF {{ x.saldo|chf }}{% elif x.saldo < 0 %}Guthaben CHF {{ x.saldo|cut:"-"|chf }}{% else %}ausgeglichen{% endif %}</div></div>
+        <a class="fw-btn" href="/portal/stweg/abrechnung/{{ x.abrechnung.pk }}/" target="_blank" rel="noopener">PDF</a></div>
+    {% empty %}<p class="fw-leer">Noch keine abgeschlossene Abrechnung.</p>{% endfor %}
 </div>
 
 <div class="fw-card">

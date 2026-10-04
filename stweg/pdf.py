@@ -131,3 +131,57 @@ def protokoll_pdf(versammlung):
         s.zeile("Weitere Bemerkungen", fett=True)
         s.absatz(v.protokoll_text, gr=9, abstand=4)
     return s.bytes()
+
+
+def _chf(betrag):
+    return f"{betrag:,.2f}".replace(',', "'")
+
+
+@nur_deutsch
+def abrechnung_pdf(abrechnung, eigentuemer=None):
+    """Jahresabrechnung. Ohne `eigentuemer`: die Gesamtübersicht für die Verwaltung;
+    mit `eigentuemer`: nur dessen Einheiten (der Beleg für den Eigentümer)."""
+    a = abrechnung
+    lg = a.liegenschaft
+    s = _Seite(f"Abrechnung {a.jahr} {lg}")
+    org = lg.organisation
+    s.zeile(org.firma or '', fett=True, gr=11)
+    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
+    s.luecke(6)
+    if eigentuemer is not None:
+        s.zeile(eigentuemer.firma_oder_name)
+        if eigentuemer.strasse:
+            s.zeile(eigentuemer.strasse)
+        s.zeile(f"{eigentuemer.plz} {eigentuemer.ort}".strip())
+        s.luecke(6)
+    s.zeile(f"Jahresabrechnung {a.jahr}", fett=True, gr=14, abstand=7)
+    s.zeile(f"Stockwerkeigentümergemeinschaft {lg}", gr=11)
+    if a.status != a.STATUS_ABGESCHLOSSEN:
+        s.zeile("ENTWURF — noch nicht abgeschlossen", fett=True)
+    s.luecke(5)
+    s.zeile("Allgemeine Kosten", fett=True, gr=12, abstand=6)
+    for k in a.kostenzeilen.all():
+        text = ' · '.join(x for x in (k.lieferant, k.text) if x)
+        datum = f"{k.datum:%d.%m.%Y}" if k.datum else '          '
+        s.zeile(f"{datum}  {text[:60]:<60}  CHF {_chf(k.betrag):>12}", gr=9, abstand=4)
+    s.zeile(f"Total Kosten: CHF {_chf(a.gesamtkosten)}", fett=True)
+    s.luecke(5)
+    s.zeile("Verteilung nach Wertquoten", fett=True, gr=12, abstand=6)
+    positionen = a.positionen.select_related('einheit', 'eigentuemer')
+    if eigentuemer is not None:
+        positionen = positionen.filter(eigentuemer=eigentuemer)
+    total_saldo = 0
+    for p in positionen:
+        s.zeile(f"{p.einheit.bezeichnung} · Wertquote {p.wertquote:g}/{p.wertquote_total}"
+                + (f" · {p.eigentuemer.firma_oder_name}" if eigentuemer is None and p.eigentuemer else ''),
+                fett=True, gr=10)
+        s.zeile(f"Kostenanteil CHF {_chf(p.kostenanteil)} − Akonto CHF {_chf(p.akonto)}", gr=9, abstand=4)
+        s.zeile(("Nachzahlung (Zahllast)" if p.saldo > 0 else "Guthaben" if p.saldo < 0 else "Ausgeglichen")
+                + f": CHF {_chf(abs(p.saldo))}", fett=True, gr=10)
+        s.luecke(2)
+        total_saldo += p.saldo
+    if eigentuemer is not None:
+        s.luecke(2)
+        s.zeile(("Total Nachzahlung" if total_saldo > 0 else "Total Guthaben" if total_saldo < 0
+                 else "Total ausgeglichen") + f": CHF {_chf(abs(total_saldo))}", fett=True, gr=11)
+    return s.bytes()
