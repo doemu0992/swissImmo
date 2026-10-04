@@ -22196,3 +22196,7 @@ msgstr "Stockwerkeigentümer"
 #: portfolio/models.py (STWEG)
 msgid "Wertquoten-Total (Nenner)"
 msgstr "Wertquoten-Total (Nenner)"
+
+#: core/navigation.py
+msgid "Stockwerkeigentum"
+msgstr "Stockwerkeigentum"

@@ -22308,3 +22308,7 @@ msgstr "Copropriétaire PPE"
 #: portfolio/models.py (STWEG)
 msgid "Wertquoten-Total (Nenner)"
 msgstr "Total des quotes-parts (dénominateur)"
+
+#: core/navigation.py
+msgid "Stockwerkeigentum"
+msgstr "Propriété par étages"

@@ -1,0 +1,129 @@
+{% extends 'fw/base.html' %}
+{% block title %}{{ lg }} — Stockwerkeigentum — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="Pfad"><a href="/neu/stweg/">Stockwerkeigentum</a><span aria-hidden="true">/</span><span>{{ lg }}</span></nav>
+        <h1>{{ lg }}</h1>
+        <p>Wertquoten {{ quoten_summe|floatformat:"-2" }} / {{ lg.wertquote_total }} · Status: {{ lg.get_status_display }}</p>
+    </div>
+</div>
+
+{% if quoten_fehler %}
+<div class="fw-card"><div class="fw-rumpf"><span class="fw-chip fw-warn">Wertquoten</span> {{ quoten_fehler }}
+    Solange die Summe nicht aufgeht, wird weder eingeladen noch abgerechnet.</div></div>
+{% endif %}
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Offene Punkte</span></div>
+    {% for p in offen.aufgaben %}
+    <div class="fw-zeile">
+        <div class="fw-mitte"><div class="fw-t">{{ p.titel }}</div>
+            <div class="fw-s">{% if p.faellig_am %}fällig {{ p.faellig_am|date:"d.m.Y" }}{% else %}ohne Frist{% endif %}</div></div>
+        <form method="post" action="/neu/stweg/aufgabe/{{ p.pk }}/erledigt/">{% csrf_token %}<button class="fw-btn">Erledigt</button></form>
+    </div>
+    {% endfor %}
+    {% for t in offen.unentschiedene_traktanden %}
+    <a class="fw-zeile" href="/neu/stweg/versammlung/{{ t.versammlung_id }}/">
+        <div class="fw-mitte"><div class="fw-t">Traktandum {{ t.nr }}: {{ t.titel }}</div>
+            <div class="fw-s">{{ t.get_ergebnis_display }} — {{ t.versammlung }}</div></div></a>
+    {% endfor %}
+    {% for v in offen.protokoll_ausstehend %}
+    <a class="fw-zeile" href="/neu/stweg/versammlung/{{ v.pk }}/">
+        <div class="fw-mitte"><div class="fw-t">Protokoll noch nicht versendet</div><div class="fw-s">{{ v }}</div></div></a>
+    {% endfor %}
+    {% for z in offen.zustellung_offen %}
+    <a class="fw-zeile" href="/neu/stweg/versammlung/{{ z.versammlung_id }}/">
+        <div class="fw-mitte"><div class="fw-t">{{ z.get_art_display }} an {{ z.eigentuemer.firma_oder_name|default:"—" }}</div>
+            <div class="fw-s">{{ z.get_status_display }}</div></div></a>
+    {% endfor %}
+    {% if not offen.aufgaben and not offen.unentschiedene_traktanden and not offen.protokoll_ausstehend and not offen.zustellung_offen %}
+    <p class="fw-leer">Nichts offen.</p>{% endif %}
+    <details class="fw-aufklapp"><summary>Aufgabe erfassen</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/{{ lg.pk }}/aufgabe/neu/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="aufg_titel">Aufgabe *</label>
+                    <input id="aufg_titel" name="titel" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="aufg_frist">Fällig am</label>
+                    <input id="aufg_frist" type="date" name="faellig_am" class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Erfassen</button></div>
+            </form></div></details>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Anfragen</span><span class="fw-neben">{{ offen.anfragen|length }} offen</span></div>
+    {% for a in offen.anfragen %}
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.betreff }}</div>
+            <div class="fw-s">{{ a.eigentuemer.firma_oder_name|default:"unbekannt" }}{% if a.einheit %} · {{ a.einheit.bezeichnung }}{% endif %} · {{ a.get_kanal_display }} · {{ a.get_status_display }}</div>
+            {% if a.text %}<div class="fw-s">{{ a.text }}</div>{% endif %}
+            {% if a.status != 'beantwortet' %}
+            <details class="fw-aufklapp"><summary>Beantworten</summary><div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/stweg/anfrage/{{ a.pk }}/beantworten/" class="fw-formular">{% csrf_token %}
+                    <div class="fw-feldblock"><label class="fw-label" for="antw_{{ a.pk }}">Antwort (wird dem Eigentümer per E-Mail gesendet)</label>
+                        <textarea id="antw_{{ a.pk }}" name="antwort" rows="3" required class="fw-feld"></textarea></div>
+                    <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Antworten</button></div>
+                </form></div></details>
+            {% else %}<div class="fw-s">Antwort: {{ a.antwort }}</div>{% endif %}
+        </div>
+        {% if a.status == 'beantwortet' %}
+        <form method="post" action="/neu/stweg/anfrage/{{ a.pk }}/erledigt/">{% csrf_token %}<button class="fw-btn">Abschliessen</button></form>{% endif %}
+    </div>
+    {% empty %}<p class="fw-leer">Keine offenen Anfragen.</p>{% endfor %}
+    <details class="fw-aufklapp"><summary>Anfrage erfassen</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/{{ lg.pk }}/anfrage/neu/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="anf_betreff">Betreff *</label>
+                    <input id="anf_betreff" name="betreff" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="anf_einheit">Einheit</label>
+                    <select id="anf_einheit" name="einheit" class="fw-feld"><option value="">—</option>
+                        {% for e in einheiten %}<option value="{{ e.pk }}">{{ e.bezeichnung }}{% if e.stockwerkeigentuemer %} ({{ e.stockwerkeigentuemer.firma_oder_name }}){% endif %}</option>{% endfor %}
+                    </select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="anf_kanal">Kanal</label>
+                    <select id="anf_kanal" name="kanal" class="fw-feld">
+                        <option value="telefon">Telefon</option><option value="email">E-Mail</option>
+                        <option value="brief">Brief</option><option value="persoenlich">Persönlich</option></select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="anf_text">Text</label>
+                    <textarea id="anf_text" name="text" rows="2" class="fw-feld"></textarea></div>
+                <div class="fw-feldblock"><label class="fw-label" for="anf_frist">Antwort bis</label>
+                    <input id="anf_frist" type="date" name="faellig_am" class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Erfassen</button></div>
+            </form></div></details>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Versammlungen</span><span class="fw-neben">{{ versammlungen|length }}</span></div>
+    {% for v in versammlungen %}
+    <a class="fw-zeile" href="/neu/stweg/versammlung/{{ v.pk }}/">
+        <div class="fw-mitte"><div class="fw-t">{{ v.titel }}</div>
+            <div class="fw-s">{{ v.datum|date:"d.m.Y H:i" }}{% if v.ort %} · {{ v.ort }}{% endif %}</div></div>
+        <span class="fw-chip">{{ v.get_status_display }}</span>
+    </a>
+    {% empty %}<p class="fw-leer">Noch keine Versammlung.</p>{% endfor %}
+    <details class="fw-aufklapp"><summary>Versammlung einberufen</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/{{ lg.pk }}/versammlung/neu/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="v_titel">Titel *</label>
+                    <input id="v_titel" name="titel" required class="fw-feld" placeholder="Ordentliche Versammlung 2026"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="v_art">Art</label>
+                    <select id="v_art" name="art" class="fw-feld">{% for w, b in art_choices %}<option value="{{ w }}">{{ b }}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="v_datum">Beginn *</label>
+                    <input id="v_datum" type="datetime-local" name="datum" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="v_ort">Ort</label>
+                    <input id="v_ort" name="ort" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="v_frist">Einladungsfrist (Tage)</label>
+                    <input id="v_frist" name="einladungsfrist_tage" inputmode="numeric" value="10" class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Anlegen</button></div>
+            </form></div></details>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Einheiten</span><span class="fw-neben">{{ einheiten|length }}</span></div>
+    {% for e in einheiten %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div>
+        <div class="fw-s">{{ e.stockwerkeigentuemer.firma_oder_name|default:"kein Eigentümer zugeordnet" }}</div></div>
+        <div class="fw-zeit">{{ e.wertquote|floatformat:"-2" }} / {{ lg.wertquote_total }}</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

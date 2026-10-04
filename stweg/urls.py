@@ -1,0 +1,25 @@
+from django.urls import path
+
+from stweg import views as v
+
+urlpatterns = [
+    path('', v.stweg_uebersicht, name='stweg_uebersicht'),
+    path('<int:stweg_id>/', v.stweg_gemeinschaft, name='stweg_gemeinschaft'),
+    path('<int:stweg_id>/versammlung/neu/', v.stweg_versammlung_neu, name='stweg_versammlung_neu'),
+    path('<int:stweg_id>/anfrage/neu/', v.stweg_anfrage_neu, name='stweg_anfrage_neu'),
+    path('<int:stweg_id>/aufgabe/neu/', v.stweg_aufgabe_neu, name='stweg_aufgabe_neu'),
+    path('versammlung/<int:pk>/', v.stweg_versammlung, name='stweg_versammlung'),
+    path('versammlung/<int:pk>/traktandum/neu/', v.stweg_traktandum_neu, name='stweg_traktandum_neu'),
+    path('versammlung/<int:pk>/einladung/', v.stweg_einladung_versenden, name='stweg_einladung_versenden'),
+    path('versammlung/<int:pk>/durchfuehren/', v.stweg_durchfuehren, name='stweg_durchfuehren'),
+    path('versammlung/<int:pk>/anwesenheit/', v.stweg_anwesenheit_speichern, name='stweg_anwesenheit_speichern'),
+    path('versammlung/<int:pk>/protokoll/', v.stweg_protokoll_speichern, name='stweg_protokoll_speichern'),
+    path('versammlung/<int:pk>/protokoll/versenden/', v.stweg_protokoll_versenden, name='stweg_protokoll_versenden'),
+    path('versammlung/<int:pk>/pdf/<str:art>/', v.stweg_pdf, name='stweg_pdf'),
+    path('traktandum/<int:pk>/loeschen/', v.stweg_traktandum_loeschen, name='stweg_traktandum_loeschen'),
+    path('traktandum/<int:pk>/stimmen/', v.stweg_stimmen_speichern, name='stweg_stimmen_speichern'),
+    path('traktandum/<int:pk>/feststellen/', v.stweg_beschluss_feststellen, name='stweg_beschluss_feststellen'),
+    path('anfrage/<int:pk>/beantworten/', v.stweg_anfrage_beantworten, name='stweg_anfrage_beantworten'),
+    path('anfrage/<int:pk>/erledigt/', v.stweg_anfrage_erledigt, name='stweg_anfrage_erledigt'),
+    path('aufgabe/<int:pk>/erledigt/', v.stweg_aufgabe_erledigt, name='stweg_aufgabe_erledigt'),
+]

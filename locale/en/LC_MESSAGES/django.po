@@ -22082,3 +22082,7 @@ msgstr "Condominium owner"
 #: portfolio/models.py (STWEG)
 msgid "Wertquoten-Total (Nenner)"
 msgstr "Total value quota (denominator)"
+
+#: core/navigation.py
+msgid "Stockwerkeigentum"
+msgstr "Condominium"

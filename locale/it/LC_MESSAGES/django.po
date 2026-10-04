@@ -22286,3 +22286,7 @@ msgstr "Comproprietario PPP"
 #: portfolio/models.py (STWEG)
 msgid "Wertquoten-Total (Nenner)"
 msgstr "Totale quote di valore (denominatore)"
+
+#: core/navigation.py
+msgid "Stockwerkeigentum"
+msgstr "Proprietà per piani"

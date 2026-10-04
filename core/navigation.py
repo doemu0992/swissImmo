@@ -136,6 +136,7 @@ def nav_gruppen():
             _i(_('Mandate'), '/neu/mandate/', ['mandate']),
             _i(_('Liegenschaften'), '/neu/liegenschaften/', ['liegenschaften']),
             _i(_('Objekte'), '/neu/objekte/', ['objekte']),
+            _i(_('Stockwerkeigentum'), '/neu/stweg/', ['stweg']),
             _i(_('Mietverhältnisse'), '/neu/vertraege/', ['vertraege']),
             _i(_('Personen'), '/neu/personen/', ['personen']),
             _i(_('Dienstleister'), '/neu/dienstleister/', ['dienstleister']),
