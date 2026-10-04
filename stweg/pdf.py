@@ -199,8 +199,8 @@ def abrechnung_pdf(abrechnung, eigentuemer=None):
         s.zeile(f"{datum}  {text[:60]:<60}  CHF {_chf(k.betrag):>12}", gr=9, abstand=4)
     s.zeile(f"Total Kosten: CHF {_chf(a.gesamtkosten)}", fett=True)
     s.luecke(5)
-    s.zeile("Verteilung nach Wertquoten", fett=True, gr=12, abstand=6)
-    positionen = a.positionen.select_related('einheit', 'eigentuemer')
+    s.zeile("Verteilung nach Schlüsseln", fett=True, gr=12, abstand=6)
+    positionen = a.positionen.select_related('einheit', 'eigentuemer').prefetch_related('schluesselanteile')
     if eigentuemer is not None:
         positionen = positionen.filter(eigentuemer=eigentuemer)
     total_saldo = 0
@@ -208,6 +208,9 @@ def abrechnung_pdf(abrechnung, eigentuemer=None):
         s.zeile(f"{p.einheit.bezeichnung} · Wertquote {zahl(p.wertquote)}/{p.wertquote_total}"
                 + (f" · {p.eigentuemer.firma_oder_name}" if eigentuemer is None and p.eigentuemer else ''),
                 fett=True, gr=10)
+        for t in p.schluesselanteile.all():
+            s.zeile(f"  {t.schluessel_name}: {zahl(t.gewicht)}/{zahl(t.gewicht_total)} von CHF "
+                    f"{_chf(t.kosten_total)} = CHF {_chf(t.betrag)}", gr=9, abstand=3)
         s.zeile(f"Kostenanteil CHF {_chf(p.kostenanteil)} − Akonto CHF {_chf(p.akonto)}", gr=9, abstand=4)
         s.zeile(("Nachzahlung (Zahllast)" if p.saldo > 0 else "Guthaben" if p.saldo < 0 else "Ausgeglichen")
                 + f": CHF {_chf(abs(p.saldo))}", fett=True, gr=10)

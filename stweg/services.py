@@ -6,7 +6,9 @@ Ablauf einer Abrechnung für (Liegenschaft, Jahr):
      Jahr datiert sind, nicht einer einzelnen Einheit zugeordnet (`einheit` leer)
      und weder `neu` (ungeprüfter Scan) noch `storniert`. Bei aufgeteilten
      Rechnungen zählen nur die Positionen dieser Liegenschaft.
-  3. Nach Wertquoten verteilen (grösster Rest — die Rappen gehen auf).
+  3. Jede Kostenzeile nach dem Schlüssel ihres Kontos verteilen (`stweg.schluessel`;
+     ohne Zuordnung: Standardschlüssel «Allgemeine Wertquote»). Je Schlüssel einmal
+     verteilt, grösster Rest — die Rappen gehen auf.
   4. Geleistete Akonto-Zahlungen des Jahres je Einheit abziehen.
   5. Saldo je Einheit: positiv = Zahllast, negativ = Guthaben.
 
@@ -19,9 +21,10 @@ from django.db.models import Q, Sum
 
 from core.tenancy import organisation_kontext
 from finance.models import KreditorenRechnung
-from stweg.models import StwegAbrechnung, StwegAbrechnungKosten, StwegAbrechnungPosition, StwegAkonto
+from stweg.models import (StwegAbrechnung, StwegAbrechnungAnteil, StwegAbrechnungKosten,
+                          StwegAbrechnungPosition, StwegAkonto)
+from stweg.schluessel import SchluesselFehler, schluessel_fuer_konto, verteile
 from stweg.validierung import pruefe_wertquoten, stimm_einheiten
-from stweg.verteilung import verteile_nach_quoten
 
 NULL = Decimal('0.00')
 #: `neu` = noch nicht freigegeben, `storniert` = ungültig.
@@ -52,10 +55,11 @@ class StwegAbrechnungService:
                 for p in positionen:
                     if p.liegenschaft_id == lg.pk and p.einheit_id is None:
                         zeilen.append({'datum': r.datum, 'lieferant': r.lieferant,
-                                       'text': p.bezeichnung, 'betrag': p.betrag})
+                                       'text': p.bezeichnung, 'betrag': p.betrag,
+                                       'konto': p.konto or r.konto})
             elif r.liegenschaft_id == lg.pk and r.einheit_id is None:
                 zeilen.append({'datum': r.datum, 'lieferant': r.lieferant, 'text': '',
-                               'betrag': r.betrag or NULL})
+                               'betrag': r.betrag or NULL, 'konto': r.konto})
         return zeilen
 
     def allgemeine_kosten(self, jahr):
@@ -84,20 +88,44 @@ class StwegAbrechnungService:
             einheiten = list(stimm_einheiten(lg).order_by('pk'))
             zeilen = self.kostenzeilen(jahr)
             kosten = sum((z['betrag'] for z in zeilen), NULL).quantize(Decimal('0.01'))
-            anteile = verteile_nach_quoten(kosten, {e.pk: e.wertquote for e in einheiten})
             akonto = self.akonto_je_einheit(jahr)
+
+            # Kosten je Schlüssel bündeln und je Schlüssel EINMAL verteilen (Rappen gehen auf).
+            je_schluessel = {}
+            for z in zeilen:
+                sl = schluessel_fuer_konto(lg, z['konto'])
+                je_schluessel.setdefault(sl.pk, [sl, NULL])[1] += z['betrag']
+            verteilt = {}
+            for pk, (sl, summe) in je_schluessel.items():
+                try:
+                    anteile, gew = verteile(summe.quantize(Decimal('0.01')), sl, einheiten)
+                except SchluesselFehler as e:
+                    raise AbrechnungsFehler(str(e))
+                verteilt[pk] = (sl, summe.quantize(Decimal('0.01')), anteile, gew)
+            anteil_je_einheit = {e.pk: NULL for e in einheiten}
+            for sl, summe, anteile, gew in verteilt.values():
+                for e in einheiten:
+                    anteil_je_einheit[e.pk] += anteile[e.pk]
 
             abrechnung = StwegAbrechnung.objects.create(
                 liegenschaft=lg, jahr=jahr, gesamtkosten=kosten)
             for z in zeilen:
-                StwegAbrechnungKosten.objects.create(abrechnung=abrechnung, **z)
+                sl = schluessel_fuer_konto(lg, z['konto'])
+                StwegAbrechnungKosten.objects.create(
+                    abrechnung=abrechnung, datum=z['datum'], lieferant=z['lieferant'], text=z['text'],
+                    betrag=z['betrag'], schluessel=sl, schluessel_name=sl.name)
             for e in einheiten:
-                anteil = anteile[e.pk]
+                anteil = anteil_je_einheit[e.pk]
                 bezahlt = akonto.get(e.pk, NULL)
-                StwegAbrechnungPosition.objects.create(
+                position = StwegAbrechnungPosition.objects.create(
                     abrechnung=abrechnung, einheit=e, eigentuemer=e.stockwerkeigentuemer,
                     wertquote=e.wertquote, wertquote_total=lg.wertquote_total,
                     kostenanteil=anteil, akonto=bezahlt, saldo=anteil - bezahlt)
+                for sl, summe, anteile, gew in verteilt.values():
+                    StwegAbrechnungAnteil.objects.create(
+                        position=position, schluessel=sl, schluessel_name=sl.name,
+                        gewicht=gew[e.pk], gewicht_total=sum(gew.values(), Decimal('0')),
+                        kosten_total=summe, betrag=anteile[e.pk])
             return abrechnung
 
     @staticmethod

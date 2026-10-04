@@ -68,6 +68,11 @@ class StwegAbrechnungKosten(OrganisationAusKette):
     lieferant = models.CharField(max_length=200, blank=True, default='')
     text = models.CharField(max_length=200, blank=True, default='')
     betrag = models.DecimalField(max_digits=12, decimal_places=2)
+    #: Nach welchem Schlüssel diese Zeile verteilt wurde (Name als Momentaufnahme: die
+    #: Abrechnung muss lesbar bleiben, auch wenn der Schlüssel später umbenannt wird).
+    schluessel = models.ForeignKey('stweg.StwegSchluessel', on_delete=models.SET_NULL, null=True,
+                                   blank=True, related_name='+')
+    schluessel_name = models.CharField(max_length=100, blank=True, default='')
 
     class Meta:
         db_table = 'stweg_abrechnung_kosten'
@@ -414,3 +419,92 @@ class ZirkularVersand(OrganisationAusKette):
     class Meta:
         db_table = 'stweg_zirkular_versand'
         ordering = ['-zeitpunkt']
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# VERTEILSCHLÜSSEL
+#
+# Nicht jede Kostenart wird nach Wertquote verteilt: Der Lift kostet das Erdgeschoss
+# nichts, die Heizung richtet sich nach Fläche oder Volumen. Je Liegenschaft sind
+# beliebig viele Schlüssel definierbar; jede Kostenart (Buchungskonto) ist einem
+# Schlüssel zugeordnet, nicht zugeordnete Kosten laufen über den Standardschlüssel.
+# ──────────────────────────────────────────────────────────────────────────
+
+class StwegSchluessel(OrganisationAusKette):
+    """Ein Verteilschlüssel der Gemeinschaft."""
+    ORGANISATION_PFAD = 'liegenschaft'
+    WERTQUOTE, FLAECHE, VOLUMEN, MANUELL = 'wertquote', 'flaeche', 'volumen', 'manuell'
+    ART_CHOICES = [
+        (WERTQUOTE, 'Wertquote (aus der Einheit)'),
+        (FLAECHE, 'Fläche m² (aus der Einheit)'),
+        (VOLUMEN, 'Volumen m³ (aus der Einheit)'),
+        (MANUELL, 'Eigene Anteile je Einheit (z. B. Lift)'),
+    ]
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
+                                     related_name='stweg_schluessel')
+    name = models.CharField(max_length=100)
+    art = models.CharField(max_length=10, choices=ART_CHOICES, default=WERTQUOTE)
+    #: Genau ein Standardschlüssel je Gemeinschaft nimmt alle Kosten ohne Zuordnung auf.
+    ist_standard = models.BooleanField(default=False)
+    bemerkung = models.CharField(max_length=200, blank=True, default='')
+
+    class Meta:
+        db_table = 'stweg_schluessel'
+        ordering = ['name']
+        verbose_name = 'Verteilschlüssel'
+        verbose_name_plural = 'Verteilschlüssel'
+        constraints = [
+            models.UniqueConstraint(fields=['liegenschaft', 'name'], name='stweg_schluessel_name_je_lg'),
+            models.UniqueConstraint(fields=['liegenschaft'], condition=models.Q(ist_standard=True),
+                                    name='stweg_schluessel_ein_standard_je_lg'),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class StwegSchluesselAnteil(OrganisationAusKette):
+    """Anteil einer Einheit an einem Schlüssel der Art «manuell». 0 = trägt nichts."""
+    ORGANISATION_PFAD = 'schluessel'
+    schluessel = models.ForeignKey(StwegSchluessel, on_delete=models.CASCADE, related_name='anteile')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
+    anteil = models.DecimalField(max_digits=12, decimal_places=4)
+
+    class Meta:
+        db_table = 'stweg_schluessel_anteil'
+        constraints = [
+            models.UniqueConstraint(fields=['schluessel', 'einheit'], name='stweg_anteil_je_einheit'),
+            models.CheckConstraint(condition=models.Q(anteil__gte=0), name='stweg_anteil_nicht_negativ'),
+        ]
+
+
+class StwegKostenzuordnung(OrganisationAusKette):
+    """Welcher Schlüssel gilt für Kosten auf diesem Buchungskonto?"""
+    ORGANISATION_PFAD = 'liegenschaft'
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
+                                     related_name='stweg_kostenzuordnungen')
+    konto = models.ForeignKey('finance.Buchungskonto', on_delete=models.CASCADE, related_name='+')
+    schluessel = models.ForeignKey(StwegSchluessel, on_delete=models.PROTECT, related_name='zuordnungen')
+
+    class Meta:
+        db_table = 'stweg_kostenzuordnung'
+        constraints = [models.UniqueConstraint(fields=['liegenschaft', 'konto'],
+                                               name='stweg_zuordnung_je_konto')]
+
+
+class StwegAbrechnungAnteil(OrganisationAusKette):
+    """Wie sich der Kostenanteil einer Einheit auf die Schlüssel verteilt (Momentaufnahme)."""
+    ORGANISATION_PFAD = 'position'
+    position = models.ForeignKey(StwegAbrechnungPosition, on_delete=models.CASCADE,
+                                 related_name='schluesselanteile')
+    schluessel = models.ForeignKey(StwegSchluessel, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='+')
+    schluessel_name = models.CharField(max_length=100)
+    gewicht = models.DecimalField(max_digits=14, decimal_places=4)
+    gewicht_total = models.DecimalField(max_digits=14, decimal_places=4)
+    kosten_total = models.DecimalField(max_digits=12, decimal_places=2)
+    betrag = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = 'stweg_abrechnung_anteil'
+        ordering = ['schluessel_name', 'id']
