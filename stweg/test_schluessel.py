@@ -199,7 +199,7 @@ class EinzelkostenTests(TestCase):
         self.assertTrue(a.kostenzeilen.filter(schluessel_name='Direkt belastet: Whg 2.OG').exists())
 
     def test_rechnung_auf_nebenraum_geht_an_das_hauptobjekt(self):
-        keller = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='Keller 3', typ='keller',
+        keller = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='Keller 3', typ='bas',
                                         gehoert_zu=self.e[1])
         rechnung(self.lg, 200, self.d, einheit=keller)
         a = self.abrechnen()
