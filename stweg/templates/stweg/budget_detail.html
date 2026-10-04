@@ -1,0 +1,77 @@
+{% extends 'fw/base.html' %}
+{% load i18n %}
+{% load chf %}
+{% block title %}{% blocktrans with jahr=b.jahr|stringformat:"s" %}Budget {{ jahr }}{% endblocktrans %} — {{ lg }} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans "Pfad" %}"><a href="/neu/stweg/">{% trans "Stockwerkeigentum" %}</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/budget/">{% trans "Budget" %}</a><span aria-hidden="true">/</span><span>{{ b.jahr }}</span></nav>
+        <h1>{% blocktrans with jahr=b.jahr|stringformat:"s" %}Budget {{ jahr }}{% endblocktrans %}</h1>
+        <p>{% trans "Status:" %} <strong>{{ b.get_status_display }}</strong> · {% blocktrans with total=b.total|chf raten=b.raten %}Total CHF {{ total }} · {{ raten }} Raten{% endblocktrans %}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Positionen" %}</span></div>
+    {% for p in positionen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ p.bezeichnung }}</div><div class="fw-s">{% blocktrans with name=p.schluessel.name %}Schlüssel: {{ name }}{% endblocktrans %}</div></div>
+        <div class="fw-zeit">CHF {{ p.betrag|chf }}</div>
+        {% if b.status != 'genehmigt' %}<form method="post" action="/neu/stweg/budget/{{ b.pk }}/position/loeschen/">{% csrf_token %}<input type="hidden" name="position" value="{{ p.pk }}"><button class="fw-btn">{% trans "Entfernen" %}</button></form>{% endif %}</div>
+    {% empty %}<div class="fw-rumpf"><p class="fw-leer">{% trans "Noch keine Position." %}</p></div>{% endfor %}
+    {% if b.status != 'genehmigt' %}
+    <details class="fw-aufklapp"{% if not positionen %} open{% endif %}><summary>{% trans "Position hinzufügen" %}</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/budget/{{ b.pk }}/position/neu/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="bp_bez">{% trans "Bezeichnung *" %}</label><input id="bp_bez" name="bezeichnung" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="bp_sk">{% trans "Verteilschlüssel *" %}</label>
+                    <select id="bp_sk" name="schluessel" class="fw-feld">{% for s in schluessel %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="bp_betrag">{% trans "Betrag (CHF) *" %}</label><input id="bp_betrag" name="betrag" required inputmode="decimal" class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Hinzufügen" %}</button></div>
+            </form></div></details>
+    {% endif %}
+</div>
+
+{% if fehler %}<div class="fw-card"><div class="fw-rumpf"><p class="fw-chip fw-warn">{{ fehler }}</p></div></div>{% endif %}
+{% if vorschau %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Jahresbetrag je Einheit" %}</span></div>
+    {% for e, d in vorschau %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}{% if e.etage %} · {{ e.etage }}{% endif %}</div>
+        <div class="fw-s">{% for t in d.aufteilung %}{{ t.schluessel }} CHF {{ t.betrag }}{% if not forloop.last %} · {% endif %}{% endfor %}</div></div>
+        <div class="fw-zeit">CHF {{ d.summe|chf }}</div></div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if b.status != 'genehmigt' %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Beschluss" %}</span></div>
+    <div class="fw-rumpf">
+        {% for p in probleme %}<p class="fw-chip fw-warn">{{ p }}</p>{% endfor %}
+        {% for t in angehaengt %}<p>{% blocktrans with nr=t.nr titel=t.titel %}Wird beschlossen unter Traktandum {{ nr }} «{{ titel }}» der Versammlung{% endblocktrans %} <a href="/neu/stweg/versammlung/{{ t.versammlung.pk }}/">{{ t.versammlung }}</a>.</p>{% endfor %}
+        <form method="post" action="/neu/stweg/budget/{{ b.pk }}/vorlegen/" style="display:inline">{% csrf_token %}<button class="fw-btn"{% if probleme %} disabled{% endif %}>{% trans "Der Versammlung vorlegen" %}</button></form>
+        {% if b.status == 'vorgelegt' and traktanden %}
+        <form method="post" action="/neu/stweg/budget/{{ b.pk }}/traktandum/" class="fw-formular drei">{% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="bt_t">{% trans "Unter welchem Traktandum beschliessen? *" %}</label>
+                <select id="bt_t" name="traktandum" class="fw-feld">{% for t in traktanden %}<option value="{{ t.pk }}">{{ t.versammlung.datum|date:"d.m.Y" }} · {{ t.nr }}. {{ t.titel }}</option>{% endfor %}</select></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Traktandum zuweisen" %}</button></div>
+        </form>
+        {% elif b.status == 'vorgelegt' %}<p class="fw-s">{% trans "Legen Sie zuerst eine Versammlung mit einem Traktandum «Budget» an." %}</p>{% endif %}
+    </div>
+</div>
+{% else %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Akonto-Rechnungen" %}</span><span class="fw-neben">{{ vorschreibungen|length }}</span></div>
+    <div class="fw-rumpf">
+        <p>{% if offen_versand %}{% blocktrans with n=offen_versand %}{{ n }} Rate(n) noch nicht versendet.{% endblocktrans %}{% else %}{% trans "Alle versendet." %}{% endif %}</p>
+        <form method="post" action="/neu/stweg/budget/{{ b.pk }}/versenden/" style="display:inline">{% csrf_token %}<button class="fw-btn fw-primary"{% if not offen_versand %} disabled{% endif %}>{% trans "Akonto-Rechnungen per E-Mail senden" %}</button></form>
+        {% for eig in eigentuemer %}<a class="fw-btn" href="/neu/stweg/budget/{{ b.pk }}/pdf/?eigentuemer={{ eig.pk }}" target="_blank" rel="noopener">{{ eig.firma_oder_name }}</a>{% endfor %}
+    </div>
+    {% for v in vorschreibungen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% blocktrans with einheit=v.einheit.bezeichnung nr=v.rate_nr total=v.rate_total %}{{ einheit }} · Rate {{ nr }}/{{ total }}{% endblocktrans %}</div>
+        <div class="fw-s">{% blocktrans with d=v.faellig_am|date:"d.m.Y" %}fällig {{ d }}{% endblocktrans %} · {{ v.eigentuemer.firma_oder_name|default:_("kein Eigentümer") }}</div></div>
+        <div class="fw-zeit">CHF {{ v.betrag|chf }}</div></div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

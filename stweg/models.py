@@ -7,11 +7,13 @@ den geleisteten Akontos gegenüber: Zahllast oder Guthaben.
 """
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.organisation_kette import OrganisationAusKette
+from core.utils import get_smart_upload_path
 
 
 class StwegAkonto(OrganisationAusKette):
@@ -620,3 +622,43 @@ class StimmeEreignis(OrganisationAusKette):
     class Meta:
         db_table = 'stweg_stimme_ereignis'
         ordering = ['zeitpunkt', 'id']
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# DOKUMENTEN-REPOSITORY
+#
+# Die Unterlagen der Gemeinschaft liegen an einer Stelle. Der Eigentümer sieht nur, was für
+# ihn freigegeben ist (`sichtbar`), und nur in Gemeinschaften, an denen er beteiligt ist.
+# Ausgeliefert wird ausschliesslich über geprüfte Views, nie über /media/ (Ordner «dokumente/»
+# ist dort Team-Sache).
+# ──────────────────────────────────────────────────────────────────────────
+
+class StwegDokument(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
+    BEGRUENDUNGSAKT, REGLEMENT, NUTZUNGSORDNUNG, VERSICHERUNG, JAHRESRECHNUNG, SONSTIGES = (
+        'begruendungsakt', 'reglement', 'nutzungsordnung', 'versicherung', 'jahresrechnung', 'sonstiges')
+    KATEGORIE_CHOICES = [
+        (BEGRUENDUNGSAKT, 'Begründungsakt'),
+        (REGLEMENT, 'STWEG-Reglement'),
+        (NUTZUNGSORDNUNG, 'Nutzungs- und Verwaltungsordnung'),
+        (VERSICHERUNG, 'Versicherungspolice'),
+        (JAHRESRECHNUNG, 'Jahresrechnung'),
+        (SONSTIGES, 'Sonstiges'),
+    ]
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
+                                     related_name='stweg_dokumente')
+    kategorie = models.CharField(max_length=20, choices=KATEGORIE_CHOICES)
+    titel = models.CharField(max_length=200)
+    datei = models.FileField(upload_to=get_smart_upload_path)
+    gueltig_ab = models.DateField(default=timezone.localdate)
+    gueltig_bis = models.DateField(null=True, blank=True)
+    #: Für Eigentümer im Portal freigegeben?
+    sichtbar = models.BooleanField(default=True)
+    hochgeladen_am = models.DateTimeField(auto_now_add=True)
+    hochgeladen_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                        blank=True, related_name='+')
+
+    class Meta:
+        db_table = 'stweg_dokument'
+        ordering = ['kategorie', '-gueltig_ab', '-id']
+        verbose_name = 'Dokument'

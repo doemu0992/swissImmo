@@ -22,9 +22,13 @@ from django.views.decorators.http import require_POST
 
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
-from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAnfrage, Versammlung, Vollmacht,
+from stweg import dokumente as dok
+from stweg import evoting
+from stweg.konto import fonds_stand, kontokorrent
+from stweg.models import (Anwesenheit, StwegAbrechnung, StwegAbrechnungPosition, StwegAnfrage, StwegBudget,
+                          StwegDokument, StwegVorschreibung, Traktandum, Versammlung, Vollmacht,
                           Zirkularbeschluss, ZirkularStimme)
-from stweg.pdf import abrechnung_pdf, einladung_pdf, protokoll_pdf, zirkular_pdf
+from stweg.pdf import abrechnung_pdf, einladung_pdf, protokoll_pdf, vorschreibung_pdf, zirkular_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +79,19 @@ def portal_stweg(request):
                         'einheit': e,
                         'vollmacht': Vollmacht.objects.filter(
                             versammlung=v, einheit=e, widerrufen_am__isnull=True).first()})
+        # E-Voting: nur Versammlungen, bei denen es eingeschaltet ist.
+        meine_ids = {e.pk for e in g['meine']}
+        for v in g['versammlungen']:
+            v.evoting_offen = evoting.ist_offen(v)
+            if v.evoting_offen and g['meine']:
+                stimmen = evoting.meine_stimmen(v, eig)
+                da = set(Anwesenheit.objects.filter(versammlung=v, einheit_id__in=meine_ids,
+                                                    art=Anwesenheit.ANWESEND).values_list('einheit_id', flat=True))
+                v.teilnahme_erklaert = meine_ids <= da
+                v.evoting_traktanden = [
+                    {'t': t, 'zeilen': [{'einheit': e, 'wert': stimmen.get((t.pk, e.pk), ''),
+                                         'angemeldet': e.pk in da} for e in g['meine']]}
+                    for t in v.traktanden.exclude(mehrheitsart='kenntnisnahme').filter(ergebnis=Traktandum.OFFEN)]
         g['anfragen'] = StwegAnfrage.objects.filter(liegenschaft_id=lg_id, eigentuemer=eig)
         # Abstimmungen: laufende mit meiner Stimme je Einheit, abgeschlossene mit Ergebnis.
         heute = timezone.localdate()
@@ -92,6 +109,13 @@ def portal_stweg(request):
             for a in StwegAbrechnung.objects.filter(
                 liegenschaft_id=lg_id, status=StwegAbrechnung.STATUS_ABGESCHLOSSEN,
                 positionen__eigentuemer=eig).distinct()]
+    for lg_id, g in gemeinschaften.items():
+        g['kontokorrent'] = [{'einheit': e, **kontokorrent(e)} for e in g['einheiten']]
+        g['fonds'] = fonds_stand(g['lg'], g['einheiten'])
+        g['dokumente'] = dok.fuer_eigentuemer(g['lg'])
+        g['akonto_budgets'] = StwegBudget.objects.filter(
+            liegenschaft_id=lg_id, status=StwegBudget.GENEHMIGT,
+            vorschreibungen__eigentuemer=eig).distinct()
     return render(request, 'stweg/portal.html', {
         'eigentuemer': eig, 'gemeinschaften': list(gemeinschaften.values())})
 
@@ -225,4 +249,62 @@ def portal_stweg_anfrage(request, stweg_id):
                              einheit=einheit, eigentuemer=eig, kanal='portal')
     anf.verwaltung_benachrichtigen(a)
     messages.success(request, gettext('Ihre Anfrage wurde an die Verwaltung übermittelt.'))
+    return redirect('/portal/stweg/')
+
+
+@never_cache
+@login_required
+def portal_stweg_dokument(request, pk):
+    eig = _eigentuemer(request)
+    d = StwegDokument.objects.select_related('liegenschaft').filter(pk=pk, sichtbar=True).first()
+    if d is None or not _sichtbare_einheiten(eig).filter(liegenschaft=d.liegenschaft).exists():
+        raise Http404                      # fremd oder nicht freigegeben
+    from stweg.views_dokumente import datei_antwort
+    return datei_antwort(d)
+
+
+@never_cache
+@login_required
+def portal_stweg_akonto(request, pk):
+    eig = _eigentuemer(request)
+    b = StwegBudget.objects.filter(pk=pk, status=StwegBudget.GENEHMIGT,
+                                   vorschreibungen__eigentuemer=eig).distinct().first()
+    if b is None:
+        raise Http404
+    return _pdf(vorschreibung_pdf(b, eig), f'Akonto_{b.jahr}.pdf')
+
+
+@login_required
+@require_POST
+def portal_stweg_teilnehmen(request, pk):
+    from stweg.beschluss import BeschlussFehler
+    eig, v = _versammlung_des_eigentuemers(request, pk)
+    try:
+        evoting.teilnehmen(v, eig)
+        messages.success(request, gettext('Ihre Teilnahme ist erfasst. Sie können jetzt abstimmen.'))
+    except BeschlussFehler as e:
+        messages.error(request, str(e))
+    return redirect('/portal/stweg/')
+
+
+@login_required
+@require_POST
+def portal_stweg_evoting(request, pk):
+    from stweg.beschluss import BeschlussFehler
+    eig, v = _versammlung_des_eigentuemers(request, pk)
+    stimmen = {}
+    for schluessel, wert in request.POST.items():
+        if schluessel.startswith('stimme_') and wert:
+            teile = schluessel.split('_')
+            if len(teile) == 3 and teile[1].isdigit() and teile[2].isdigit():
+                stimmen[(int(teile[1]), int(teile[2]))] = wert
+    if not stimmen:
+        messages.error(request, gettext('Keine Stimme angegeben.'))
+        return redirect('/portal/stweg/')
+    try:
+        n = evoting.abstimmen(v, eig, stimmen)
+        messages.success(request, gettext('Ihre Stimme wurde gespeichert.') if n == 1
+                         else gettext('Ihre Stimmen wurden gespeichert.'))
+    except BeschlussFehler as e:
+        messages.error(request, str(e))
     return redirect('/portal/stweg/')

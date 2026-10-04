@@ -12,4 +12,8 @@ urlpatterns = [
     path('abstimmen/<int:pk>/', p.portal_stweg_abstimmen, name='portal_stweg_abstimmen'),
     path('zirkular/<int:pk>/', p.portal_stweg_zirkular, name='portal_stweg_zirkular'),
     path('anfrage/<int:stweg_id>/', p.portal_stweg_anfrage, name='portal_stweg_anfrage'),
+    path('dokument/<int:pk>/', p.portal_stweg_dokument, name='portal_stweg_dokument'),
+    path('akonto/<int:pk>/', p.portal_stweg_akonto, name='portal_stweg_akonto'),
+    path('teilnehmen/<int:pk>/', p.portal_stweg_teilnehmen, name='portal_stweg_teilnehmen'),
+    path('evoting/<int:pk>/', p.portal_stweg_evoting, name='portal_stweg_evoting'),
 ]

@@ -44,7 +44,71 @@
         {% endif %}
     </div>
     {% endfor %}
+    {% if v.evoting_offen and g.meine %}
+    <div class="fw-zeile"><div class="fw-mitte">
+        <div class="fw-t">{% trans "E-Voting" %}</div>
+        {% if not v.teilnahme_erklaert %}
+        <div class="fw-s">{% trans "Die Versammlung läuft. Erklären Sie Ihre Teilnahme, um digital abzustimmen." %}</div>
+        <form method="post" action="/portal/stweg/teilnehmen/{{ v.pk }}/">{% csrf_token %}<button class="fw-btn fw-primary">{% trans "Digital teilnehmen" %}</button></form>
+        {% else %}
+        <div class="fw-s">{% trans "Sie nehmen digital teil. Ihre Stimme können Sie ändern, bis das Ergebnis festgestellt ist." %}</div>
+        <form method="post" action="/portal/stweg/evoting/{{ v.pk }}/" class="fw-formular">{% csrf_token %}
+            {% for x in v.evoting_traktanden %}
+            <div class="fw-t">{{ x.t.nr }}. {{ x.t.titel }}</div>
+            {% if x.t.antrag %}<div class="fw-s" style="white-space:pre-line">{{ x.t.antrag }}</div>{% endif %}
+            {% for z in x.zeilen %}
+            <div class="fw-feldblock"><label class="fw-label" for="ev{{ x.t.pk }}_{{ z.einheit.pk }}">{% blocktrans with einheit=z.einheit.bezeichnung %}Ihre Stimme für {{ einheit }}{% endblocktrans %}</label>
+                <select id="ev{{ x.t.pk }}_{{ z.einheit.pk }}" name="stimme_{{ x.t.pk }}_{{ z.einheit.pk }}" class="fw-feld">
+                    <option value="">{% trans "— noch nicht abgestimmt —" %}</option>
+                    <option value="ja"{% if z.wert == 'ja' %} selected{% endif %}>{% trans "Ja" %}</option>
+                    <option value="nein"{% if z.wert == 'nein' %} selected{% endif %}>{% trans "Nein" %}</option>
+                    <option value="enthaltung"{% if z.wert == 'enthaltung' %} selected{% endif %}>{% trans "Enthaltung" %}</option></select></div>
+            {% endfor %}
+            {% empty %}<p class="fw-s">{% trans "Keine offene Abstimmung." %}</p>{% endfor %}
+            {% if v.evoting_traktanden %}<div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Stimmen speichern" %}</button></div>{% endif %}
+        </form>
+        {% endif %}
+    </div></div>
+    {% endif %}
     {% empty %}<p class="fw-leer">{% trans "Keine Versammlung." %}</p>{% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Kontokorrent" %}</span></div>
+    {% for k in g.kontokorrent %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ k.einheit.bezeichnung }}</div>
+        <div class="fw-s">{% if k.saldo_faellig > 0 %}{% blocktrans with betrag=k.saldo_faellig|chf %}Offen: CHF {{ betrag }}{% endblocktrans %}{% elif k.saldo_faellig < 0 %}{% blocktrans with betrag=k.saldo_faellig|cut:"-"|chf %}Guthaben: CHF {{ betrag }}{% endblocktrans %}{% else %}{% trans "Keine offenen Beträge" %}{% endif %}
+            {% if k.kuenftig %} · {% blocktrans with betrag=k.kuenftig|chf %}weitere Raten CHF {{ betrag }}{% endblocktrans %}{% endif %}</div></div></div>
+    {% for b in k.bewegungen %}{% if forloop.revcounter <= 6 %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-s">{{ b.datum|date:"d.m.Y" }} · {{ b.text }}</div></div><div class="fw-zeit">{{ b.betrag|chf }}</div></div>
+    {% endif %}{% endfor %}
+    {% endfor %}
+    {% for bu in g.akonto_budgets %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% blocktrans with jahr=bu.jahr|stringformat:"s" %}Akonto-Rechnung {{ jahr }}{% endblocktrans %}</div></div>
+        <a class="fw-btn" href="/portal/stweg/akonto/{{ bu.pk }}/" target="_blank" rel="noopener">PDF</a></div>
+    {% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Erneuerungsfonds" %}</span>
+        <span class="fw-neben">{% blocktrans with betrag=g.fonds.bestand|chf %}Bestand CHF {{ betrag }}{% endblocktrans %}</span></div>
+    {% for f in g.fonds.einheiten %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ f.einheit.bezeichnung }}</div>
+        <div class="fw-s">{% blocktrans with einlagen=f.einlagen|chf %}Ihre Einlagen CHF {{ einlagen }}{% endblocktrans %}</div></div>
+        <div class="fw-zeit">{% blocktrans with anteil=f.anteil|chf %}Anteil CHF {{ anteil }}{% endblocktrans %}</div></div>
+    {% endfor %}
+    <div class="fw-rumpf"><p class="fw-s">{% trans "Der Fonds gehört der Gemeinschaft. Der Anteil ist rechnerisch (Bestand nach Wertquote)." %}</p></div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Dokumente" %}</span></div>
+    {% for gr in g.dokumente %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ gr.name }}</div></div></div>
+    {% for d in gr.dokumente %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-s">{{ d.titel }} · {{ d.gueltig_ab|date:"d.m.Y" }}{% if d.ist_aktuell %} · {% trans "aktuell" %}{% endif %}</div></div>
+        <a class="fw-btn" href="/portal/stweg/dokument/{{ d.pk }}/" target="_blank" rel="noopener">{% trans "Öffnen" %}</a></div>
+    {% endfor %}
+    {% empty %}<p class="fw-leer">{% trans "Noch kein Dokument freigegeben." %}</p>{% endfor %}
 </div>
 
 {% if g.abstimmungen %}

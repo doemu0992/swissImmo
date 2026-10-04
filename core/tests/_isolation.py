@@ -268,6 +268,11 @@ class MandantenFixture:
         from stweg.models import StwegAbrechnung as _Abrechnung, StwegAkonto as _Akonto
         self.stweg_abrechnung = _Abrechnung.objects.create(liegenschaft=self.liegenschaft, jahr=2025)
         self.stweg_akonto = _Akonto.objects.create(einheit=self.einheit, betrag=Decimal('100'))
+        from stweg.models import StwegBudget as _Budget, StwegDokument as _Dokument, StwegSchluessel as _Schluessel
+        self.stweg_schluessel = _Schluessel.objects.create(liegenschaft=self.liegenschaft, name=f'Schlüssel {k}')
+        self.stweg_budget = _Budget.objects.create(liegenschaft=self.liegenschaft, jahr=2025)
+        self.stweg_dokument = _Dokument.objects.create(
+            liegenschaft=self.liegenschaft, kategorie='reglement', titel=f'Reglement {k}', datei=f'dok/{k}.pdf')
         from stweg.models import Vollmacht as _Vollmacht, Zirkularbeschluss as _Zirkular
         self.stweg_zirkular = _Zirkular.objects.create(
             liegenschaft=self.liegenschaft, titel=f'Zirkular {k}', antrag='Antrag',
@@ -458,6 +463,13 @@ class MandantenFixture:
         # Versammlung und muss deshalb VOR 'stweg_traktandum' stehen.
         # Portal: 'vollmacht/<pk>/erteilen' trägt die VERSAMMLUNG, '…/widerrufen' die VOLLMACHT.
         ('portal_stweg_vollmacht_widerruf', 'stweg_vollmacht'),
+        ('portal_stweg_dokument',    'stweg_dokument'),
+        ('portal_stweg_akonto',      'stweg_budget'),
+        ('portal_stweg_teilnehmen',  'stweg_versammlung'),
+        ('portal_stweg_evoting',     'stweg_versammlung'),
+        ('stweg_schluessel',         'stweg_schluessel'),
+        ('stweg_budget',             'stweg_budget'),
+        ('stweg_dokument',           'stweg_dokument'),
         ('portal_stweg_vollmacht',   'stweg_versammlung'),
         ('portal_stweg_abstimmen',   'stweg_zirkular'),
         ('stweg_zirkular',           'stweg_zirkular'),

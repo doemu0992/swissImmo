@@ -19,6 +19,13 @@
     <div class="fw-kopf"><span class="fw-t">{% trans "Abrechnung und Erneuerungsfonds" %}</span></div>
     <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/abrechnung/"><div class="fw-mitte"><div class="fw-t">{% trans "Jahresabrechnung, Akonto, Fonds" %}</div>
         <div class="fw-s">{% trans "Kosten nach Wertquoten verteilen, Akonto abziehen, Einlagen und Entnahmen" %}</div></div></a>
+    <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/budget/"><div class="fw-mitte"><div class="fw-t">{% trans "Budget und Akonto-Rechnungen" %}</div>
+        <div class="fw-s">{% trans "Jahresbudget aufstellen, der Versammlung vorlegen, nach Annahme Akonto vorschreiben" %}</div></div></a>
+    <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/schluessel/"><div class="fw-mitte"><div class="fw-t">{% trans "Verteilschlüssel" %}</div>
+        <div class="fw-s">{% trans "Wertquote, Lift, Heizung (Fläche oder Volumen) und weitere je Kostenart" %}</div></div></a>
+    <a class="fw-zeile" href="/neu/stweg/{{ lg.pk }}/dokumente/"><div class="fw-mitte"><div class="fw-t">{% trans "Dokumente" %}</div>
+        <div class="fw-s">{% trans "Begründungsakt, Reglement, Nutzungsordnung, Policen, Jahresrechnungen" %}</div></div>
+        {% if dokument_luecken %}<span class="fw-chip fw-warn">{% blocktrans with n=dokument_luecken|length %}{{ n }} Pflichtdokument(e) fehlen{% endblocktrans %}</span>{% endif %}</a>
 </div>
 
 <div class="fw-card">
@@ -129,6 +136,7 @@
                     <input id="v_ort" name="ort" class="fw-feld"></div>
                 <div class="fw-feldblock"><label class="fw-label" for="v_frist">{% trans "Einladungsfrist (Tage)" %}</label>
                     <input id="v_frist" name="einladungsfrist_tage" inputmode="numeric" value="10" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="v_evoting"><input id="v_evoting" type="checkbox" name="evoting" value="1"> {% trans "E-Voting im Portal erlauben (digitale Teilnahme und Stimmabgabe)" %}</label></div>
                 <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Anlegen" %}</button></div>
             </form></div></details>
 </div>

@@ -20,7 +20,7 @@ from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
 from core.models import Pendenz
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
-from stweg import aufgaben, beschluss
+from stweg import aufgaben, beschluss, dokumente
 from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegAkonto, StwegAnfrage,
                           StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
@@ -86,6 +86,7 @@ def stweg_gemeinschaft(request, stweg_id):
         'mehrheiten': Traktandum.MEHRHEIT_CHOICES,
         'offen': aufgaben.offene_punkte(lg),
         'art_choices': Versammlung.ART_CHOICES,
+        'dokument_luecken': dokumente.luecken(lg),
     })
 
 
@@ -106,8 +107,26 @@ def stweg_versammlung_neu(request, stweg_id):
     v = Versammlung.objects.create(
         liegenschaft=lg, titel=titel, datum=datum, ort=(request.POST.get('ort') or '').strip(),
         art=art if art in dict(Versammlung.ART_CHOICES) else 'ordentlich',
-        einladungsfrist_tage=_zahl(request.POST.get('einladungsfrist_tage')) or 10)
+        einladungsfrist_tage=_zahl(request.POST.get('einladungsfrist_tage')) or 10,
+        evoting=bool(request.POST.get('evoting')))
     messages.success(request, 'Versammlung angelegt. Jetzt Traktanden erfassen.')
+    return _zurueck(v)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_versammlung_evoting(request, pk):
+    v = get_object_or_404(Versammlung, pk=pk)
+    if v.status == v.PROTOKOLLIERT:
+        messages.error(request, 'Das Protokoll ist versendet — E-Voting lässt sich nicht mehr ändern.')
+        return _zurueck(v)
+    bis = parse_datetime((request.POST.get('evoting_bis') or '').strip())
+    if bis is not None and timezone.is_naive(bis):
+        bis = timezone.make_aware(bis)
+    v.evoting = bool(request.POST.get('evoting'))
+    v.evoting_bis = bis if v.evoting else None
+    v.save(update_fields=['evoting', 'evoting_bis'])
+    messages.success(request, 'E-Voting ist eingeschaltet.' if v.evoting else 'E-Voting ist ausgeschaltet.')
     return _zurueck(v)
 
 

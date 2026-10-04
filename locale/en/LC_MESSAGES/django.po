@@ -22930,3 +22930,299 @@ msgstr "sent on %(d)s"
 #: stweg/templates/stweg/*.html
 msgid "widerrufen %(d)s"
 msgstr "revoked %(d)s"
+
+#: stweg/templates/stweg/*.html
+msgid "%(einheit)s · Rate %(nr)s/%(total)s"
+msgstr "%(einheit)s · instalment %(nr)s/%(total)s"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s Pflichtdokument(e) fehlen"
+msgstr "%(n)s mandatory document(s) missing"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s Rate(n) noch nicht versendet."
+msgstr "%(n)s instalment(s) not yet sent."
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s abgeschlossene Abrechnung(en), im Portal automatisch für jeden Eigentümer"
+msgstr "%(n)s closed statement(s), automatically available to each owner in the portal"
+
+#: stweg/templates/stweg/*.html
+msgid "0 heisst: die Einheit trägt nichts. Eine leere Zeile ist ein Fehler, keine Null."
+msgstr "0 means the unit pays nothing. An empty row is an error, not a zero."
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnung %(jahr)s"
+msgstr "Advance invoice %(jahr)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnungen"
+msgstr "Advance invoices"
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnungen per E-Mail senden"
+msgstr "Send advance invoices by email"
+
+#: stweg/templates/stweg/*.html
+msgid "Alle Dokumente"
+msgstr "All documents"
+
+#: stweg/templates/stweg/*.html
+msgid "Alle versendet."
+msgstr "All sent."
+
+#: stweg/templates/stweg/*.html
+msgid "Anteil %(einheit)s"
+msgstr "Share %(einheit)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Anteil CHF %(anteil)s"
+msgstr "Share CHF %(anteil)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Anteile speichern"
+msgstr "Save shares"
+
+#: stweg/templates/stweg/*.html
+msgid "Art *"
+msgstr "Type *"
+
+#: stweg/templates/stweg/*.html
+msgid "Aufwandkonto *"
+msgstr "Expense account *"
+
+#: stweg/templates/stweg/*.html
+msgid "Begründungsakt, Reglement, Nutzungsordnung, Policen, Jahresrechnungen"
+msgstr "Deed of constitution, regulations, usage rules, policies, annual statements"
+
+#: stweg/templates/stweg/*.html
+msgid "Beschluss"
+msgstr "Resolution"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget"
+msgstr "Budget"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget %(jahr)s"
+msgstr "Budget %(jahr)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget und Akonto-Rechnungen"
+msgstr "Budget and advance invoices"
+
+#: stweg/templates/stweg/*.html
+msgid "CHF %(total)s · %(raten)s Raten"
+msgstr "CHF %(total)s · %(raten)s instalments"
+
+#: stweg/templates/stweg/*.html
+msgid "Das Jahresbudget wird der Versammlung vorgelegt. Mit dem angenommenen Beschluss entstehen die Akonto-Rechnungen an die Eigentümer."
+msgstr "The annual budget is put to the assembly. Once the resolution is passed, the advance invoices to the owners are created."
+
+#: stweg/templates/stweg/*.html
+msgid "Datei (PDF oder Bild, max. 10 MB) *"
+msgstr "File (PDF or image, max. 10 MB) *"
+
+#: stweg/templates/stweg/*.html
+msgid "Der Fonds gehört der Gemeinschaft. Der Anteil ist rechnerisch (Bestand nach Wertquote)."
+msgstr "The fund belongs to the community. The share is a calculation (balance by value quota)."
+
+#: stweg/templates/stweg/*.html
+msgid "Der Versammlung vorlegen"
+msgstr "Put to the assembly"
+
+#: stweg/templates/stweg/*.html
+msgid "Die Unterlagen der Gemeinschaft. Eigentümer sehen im Portal nur, was Sie freigeben."
+msgstr "The documents of the community. Owners only see in the portal what you release."
+
+#: stweg/templates/stweg/*.html
+msgid "Die Versammlung läuft. Erklären Sie Ihre Teilnahme, um digital abzustimmen."
+msgstr "The meeting is in progress. Declare your participation to vote digitally."
+
+#: stweg/templates/stweg/*.html
+msgid "Digital teilnehmen"
+msgstr "Take part digitally"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting"
+msgstr "E-voting"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting im Portal"
+msgstr "E-voting in the portal"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting im Portal erlauben (digitale Teilnahme und Stimmabgabe)"
+msgstr "Allow e-voting in the portal (digital participation and voting)"
+
+#: stweg/templates/stweg/*.html
+msgid "Eigentümer erklären im Portal ihre Teilnahme und stimmen dort ab, solange die Versammlung durchgeführt wird. Jede Stimme wird mit Zeit und Weg protokolliert. Das Ergebnis stellen Sie fest."
+msgstr "Owners declare their participation in the portal and vote there while the meeting is held. Every vote is logged with time and channel. You determine the result."
+
+#: stweg/templates/stweg/*.html
+msgid "Erste Fälligkeit"
+msgstr "First due date"
+
+#: stweg/templates/stweg/*.html
+msgid "Für Eigentümer im Portal sichtbar"
+msgstr "Visible to owners in the portal"
+
+#: stweg/templates/stweg/*.html
+msgid "Guthaben: CHF %(betrag)s"
+msgstr "Credit: CHF %(betrag)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Gültig bis (z. B. Police)"
+msgstr "Valid until (e.g. policy)"
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Einlagen CHF %(einlagen)s"
+msgstr "Your contributions CHF %(einlagen)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Jahresbetrag je Einheit"
+msgstr "Annual amount per unit"
+
+#: stweg/templates/stweg/*.html
+msgid "Jahresbudget aufstellen, der Versammlung vorlegen, nach Annahme Akonto vorschreiben"
+msgstr "Draw up the annual budget, put it to the assembly, charge advances once approved"
+
+#: stweg/templates/stweg/*.html
+msgid "Keine Zuordnung: alle Kosten laufen über den Standardschlüssel."
+msgstr "No assignment: all costs use the default key."
+
+#: stweg/templates/stweg/*.html
+msgid "Keine offene Abstimmung."
+msgstr "No open vote."
+
+#: stweg/templates/stweg/*.html
+msgid "Keine offenen Beträge"
+msgstr "No outstanding amounts"
+
+#: stweg/templates/stweg/*.html
+msgid "Kostenart → Schlüssel"
+msgstr "Cost type → key"
+
+#: stweg/templates/stweg/*.html
+msgid "Legen Sie zuerst eine Versammlung mit einem Traktandum «Budget» an."
+msgstr "First create a meeting with an agenda item “Budget”."
+
+#: stweg/templates/stweg/*.html
+msgid "Name *"
+msgstr "Name *"
+
+#: stweg/templates/stweg/*.html
+msgid "Neues Budget"
+msgstr "New budget"
+
+#: stweg/templates/stweg/*.html
+msgid "Nicht jede Kostenart wird nach Wertquote verteilt. Hier legen Sie beliebig viele Schlüssel fest und ordnen jeder Kostenart (Aufwandkonto) einen zu. Kosten ohne Zuordnung laufen über den Standardschlüssel."
+msgstr "Not every cost type is distributed by value quota. Here you define as many keys as you like and assign one to each cost type (expense account). Costs without assignment use the default key."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Budget."
+msgstr "No budget yet."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Dokument abgelegt."
+msgstr "No document filed yet."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Dokument freigegeben."
+msgstr "No document released yet."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Schlüssel. Der Standardschlüssel «Allgemeine Wertquote» entsteht beim ersten Budget oder hier unten."
+msgstr "No key yet. The default key “General value quota” is created with the first budget or below."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch keine Position."
+msgstr "No item yet."
+
+#: stweg/templates/stweg/*.html
+msgid "Nur bei «eigene Anteile»: Erdgeschoss trägt nichts (übrige nach Wertquote)"
+msgstr "Only for “own shares”: ground floor pays nothing (others by value quota)"
+
+#: stweg/templates/stweg/*.html
+msgid "Offen bis (optional)"
+msgstr "Open until (optional)"
+
+#: stweg/templates/stweg/*.html
+msgid "Pflichtdokumente"
+msgstr "Mandatory documents"
+
+#: stweg/templates/stweg/*.html
+msgid "Raten *"
+msgstr "Instalments *"
+
+#: stweg/templates/stweg/*.html
+msgid "Schlüssel löschen"
+msgstr "Delete key"
+
+#: stweg/templates/stweg/*.html
+msgid "Schlüssel: %(name)s"
+msgstr "Key: %(name)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Sie nehmen digital teil. Ihre Stimme können Sie ändern, bis das Ergebnis festgestellt ist."
+msgstr "You are taking part digitally. You can change your vote until the result is determined."
+
+#: stweg/templates/stweg/*.html
+msgid "Total CHF %(total)s · %(raten)s Raten"
+msgstr "Total CHF %(total)s · %(raten)s instalments"
+
+#: stweg/templates/stweg/*.html
+msgid "Traktandum zuweisen"
+msgstr "Assign agenda item"
+
+#: stweg/templates/stweg/*.html
+msgid "Unter welchem Traktandum beschliessen? *"
+msgstr "Under which agenda item is it decided? *"
+
+#: stweg/templates/stweg/*.html
+msgid "Verteilschlüssel *"
+msgstr "Distribution key *"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquote, Lift, Heizung (Fläche oder Volumen) und weitere je Kostenart"
+msgstr "Value quota, lift, heating (area or volume) and more per cost type"
+
+#: stweg/templates/stweg/*.html
+msgid "Wird beschlossen unter Traktandum %(nr)s «%(titel)s» der Versammlung"
+msgstr "To be decided under agenda item %(nr)s “%(titel)s” of the meeting"
+
+#: stweg/templates/stweg/*.html
+msgid "automatisch"
+msgstr "automatic"
+
+#: stweg/templates/stweg/*.html
+msgid "eingeschaltet"
+msgstr "on"
+
+#: stweg/templates/stweg/*.html
+msgid "gültig ab %(ab)s"
+msgstr "valid from %(ab)s"
+
+#: stweg/templates/stweg/*.html
+msgid "vorhanden"
+msgstr "present"
+
+#: stweg/templates/stweg/*.html
+msgid "weitere Raten CHF %(betrag)s"
+msgstr "further instalments CHF %(betrag)s"
+
+#: stweg/templates/stweg/*.html
+msgid "z. B. Lift"
+msgstr "e.g. lift"
+
+#: stweg/templates/stweg/*.html
+msgid "— Standardschlüssel (Zuordnung entfernen) —"
+msgstr "— default key (remove assignment) —"
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Teilnahme ist erfasst. Sie können jetzt abstimmen."
+msgstr "Your participation is recorded. You can now vote."
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Stimmen wurden gespeichert."
+msgstr "Your votes have been saved."

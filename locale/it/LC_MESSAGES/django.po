@@ -23134,3 +23134,299 @@ msgstr "inviato il %(d)s"
 #: stweg/templates/stweg/*.html
 msgid "widerrufen %(d)s"
 msgstr "revocata il %(d)s"
+
+#: stweg/templates/stweg/*.html
+msgid "%(einheit)s · Rate %(nr)s/%(total)s"
+msgstr "%(einheit)s · rata %(nr)s/%(total)s"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s Pflichtdokument(e) fehlen"
+msgstr "mancano %(n)s documento/i obbligatorio/i"
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s Rate(n) noch nicht versendet."
+msgstr "%(n)s rata/e non ancora inviata/e."
+
+#: stweg/templates/stweg/*.html
+msgid "%(n)s abgeschlossene Abrechnung(en), im Portal automatisch für jeden Eigentümer"
+msgstr "%(n)s conteggio/i concluso/i, automaticamente per ogni proprietario nel portale"
+
+#: stweg/templates/stweg/*.html
+msgid "0 heisst: die Einheit trägt nichts. Eine leere Zeile ist ein Fehler, keine Null."
+msgstr "0 significa che l'unità non sostiene nulla. Una riga vuota è un errore, non uno zero."
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnung %(jahr)s"
+msgstr "Fattura d’acconto %(jahr)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnungen"
+msgstr "Fatture d'acconto"
+
+#: stweg/templates/stweg/*.html
+msgid "Akonto-Rechnungen per E-Mail senden"
+msgstr "Inviare le fatture d'acconto per e-mail"
+
+#: stweg/templates/stweg/*.html
+msgid "Alle Dokumente"
+msgstr "Tutti i documenti"
+
+#: stweg/templates/stweg/*.html
+msgid "Alle versendet."
+msgstr "Tutto inviato."
+
+#: stweg/templates/stweg/*.html
+msgid "Anteil %(einheit)s"
+msgstr "Quota %(einheit)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Anteil CHF %(anteil)s"
+msgstr "Quota CHF %(anteil)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Anteile speichern"
+msgstr "Salva le quote"
+
+#: stweg/templates/stweg/*.html
+msgid "Art *"
+msgstr "Tipo *"
+
+#: stweg/templates/stweg/*.html
+msgid "Aufwandkonto *"
+msgstr "Conto spese *"
+
+#: stweg/templates/stweg/*.html
+msgid "Begründungsakt, Reglement, Nutzungsordnung, Policen, Jahresrechnungen"
+msgstr "Atto costitutivo, regolamento, regolamento d'uso, polizze, conti annuali"
+
+#: stweg/templates/stweg/*.html
+msgid "Beschluss"
+msgstr "Decisione"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget"
+msgstr "Preventivo"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget %(jahr)s"
+msgstr "Preventivo %(jahr)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Budget und Akonto-Rechnungen"
+msgstr "Preventivo e fatture d'acconto"
+
+#: stweg/templates/stweg/*.html
+msgid "CHF %(total)s · %(raten)s Raten"
+msgstr "CHF %(total)s · %(raten)s rate"
+
+#: stweg/templates/stweg/*.html
+msgid "Das Jahresbudget wird der Versammlung vorgelegt. Mit dem angenommenen Beschluss entstehen die Akonto-Rechnungen an die Eigentümer."
+msgstr "Il preventivo annuale viene sottoposto all'assemblea. Con la decisione approvata nascono le fatture d'acconto ai proprietari."
+
+#: stweg/templates/stweg/*.html
+msgid "Datei (PDF oder Bild, max. 10 MB) *"
+msgstr "File (PDF o immagine, max. 10 MB) *"
+
+#: stweg/templates/stweg/*.html
+msgid "Der Fonds gehört der Gemeinschaft. Der Anteil ist rechnerisch (Bestand nach Wertquote)."
+msgstr "Il fondo appartiene alla comunione. La quota è un calcolo (saldo secondo la quota di valore)."
+
+#: stweg/templates/stweg/*.html
+msgid "Der Versammlung vorlegen"
+msgstr "Sottoporre all'assemblea"
+
+#: stweg/templates/stweg/*.html
+msgid "Die Unterlagen der Gemeinschaft. Eigentümer sehen im Portal nur, was Sie freigeben."
+msgstr "I documenti della comunione. I proprietari vedono nel portale solo ciò che pubblicate."
+
+#: stweg/templates/stweg/*.html
+msgid "Die Versammlung läuft. Erklären Sie Ihre Teilnahme, um digital abzustimmen."
+msgstr "L'assemblea è in corso. Dichiarate la vostra partecipazione per votare digitalmente."
+
+#: stweg/templates/stweg/*.html
+msgid "Digital teilnehmen"
+msgstr "Partecipare digitalmente"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting"
+msgstr "Voto elettronico"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting im Portal"
+msgstr "Voto elettronico nel portale"
+
+#: stweg/templates/stweg/*.html
+msgid "E-Voting im Portal erlauben (digitale Teilnahme und Stimmabgabe)"
+msgstr "Consentire il voto elettronico nel portale (partecipazione e voto digitali)"
+
+#: stweg/templates/stweg/*.html
+msgid "Eigentümer erklären im Portal ihre Teilnahme und stimmen dort ab, solange die Versammlung durchgeführt wird. Jede Stimme wird mit Zeit und Weg protokolliert. Das Ergebnis stellen Sie fest."
+msgstr "I proprietari dichiarano la partecipazione nel portale e vi votano durante l'assemblea. Ogni voto è registrato con ora e canale. Il risultato lo accertate voi."
+
+#: stweg/templates/stweg/*.html
+msgid "Erste Fälligkeit"
+msgstr "Prima scadenza"
+
+#: stweg/templates/stweg/*.html
+msgid "Für Eigentümer im Portal sichtbar"
+msgstr "Visibile ai proprietari nel portale"
+
+#: stweg/templates/stweg/*.html
+msgid "Guthaben: CHF %(betrag)s"
+msgstr "Credito: CHF %(betrag)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Gültig bis (z. B. Police)"
+msgstr "Valido fino al (p. es. polizza)"
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Einlagen CHF %(einlagen)s"
+msgstr "I vostri versamenti CHF %(einlagen)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Jahresbetrag je Einheit"
+msgstr "Importo annuo per unità"
+
+#: stweg/templates/stweg/*.html
+msgid "Jahresbudget aufstellen, der Versammlung vorlegen, nach Annahme Akonto vorschreiben"
+msgstr "Allestire il preventivo annuale, sottoporlo all'assemblea, addebitare gli acconti dopo l'approvazione"
+
+#: stweg/templates/stweg/*.html
+msgid "Keine Zuordnung: alle Kosten laufen über den Standardschlüssel."
+msgstr "Nessuna assegnazione: tutti i costi seguono la chiave standard."
+
+#: stweg/templates/stweg/*.html
+msgid "Keine offene Abstimmung."
+msgstr "Nessuna votazione aperta."
+
+#: stweg/templates/stweg/*.html
+msgid "Keine offenen Beträge"
+msgstr "Nessun importo aperto"
+
+#: stweg/templates/stweg/*.html
+msgid "Kostenart → Schlüssel"
+msgstr "Tipo di costo → chiave"
+
+#: stweg/templates/stweg/*.html
+msgid "Legen Sie zuerst eine Versammlung mit einem Traktandum «Budget» an."
+msgstr "Create prima un'assemblea con un punto all'ordine del giorno «Preventivo»."
+
+#: stweg/templates/stweg/*.html
+msgid "Name *"
+msgstr "Nome *"
+
+#: stweg/templates/stweg/*.html
+msgid "Neues Budget"
+msgstr "Nuovo preventivo"
+
+#: stweg/templates/stweg/*.html
+msgid "Nicht jede Kostenart wird nach Wertquote verteilt. Hier legen Sie beliebig viele Schlüssel fest und ordnen jeder Kostenart (Aufwandkonto) einen zu. Kosten ohne Zuordnung laufen über den Standardschlüssel."
+msgstr "Non ogni tipo di costo viene ripartito secondo la quota di valore. Qui definite quante chiavi volete e ne assegnate una a ogni tipo di costo (conto spese). I costi senza assegnazione seguono la chiave standard."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Budget."
+msgstr "Ancora nessun preventivo."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Dokument abgelegt."
+msgstr "Nessun documento ancora archiviato."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Dokument freigegeben."
+msgstr "Nessun documento ancora pubblicato."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch kein Schlüssel. Der Standardschlüssel «Allgemeine Wertquote» entsteht beim ersten Budget oder hier unten."
+msgstr "Nessuna chiave. La chiave standard «Quota di valore generale» nasce con il primo preventivo o qui sotto."
+
+#: stweg/templates/stweg/*.html
+msgid "Noch keine Position."
+msgstr "Ancora nessuna voce."
+
+#: stweg/templates/stweg/*.html
+msgid "Nur bei «eigene Anteile»: Erdgeschoss trägt nichts (übrige nach Wertquote)"
+msgstr "Solo per «quote proprie»: il piano terra non sostiene nulla (gli altri secondo la quota di valore)"
+
+#: stweg/templates/stweg/*.html
+msgid "Offen bis (optional)"
+msgstr "Aperto fino al (facoltativo)"
+
+#: stweg/templates/stweg/*.html
+msgid "Pflichtdokumente"
+msgstr "Documenti obbligatori"
+
+#: stweg/templates/stweg/*.html
+msgid "Raten *"
+msgstr "Rate *"
+
+#: stweg/templates/stweg/*.html
+msgid "Schlüssel löschen"
+msgstr "Elimina chiave"
+
+#: stweg/templates/stweg/*.html
+msgid "Schlüssel: %(name)s"
+msgstr "Chiave: %(name)s"
+
+#: stweg/templates/stweg/*.html
+msgid "Sie nehmen digital teil. Ihre Stimme können Sie ändern, bis das Ergebnis festgestellt ist."
+msgstr "Partecipate digitalmente. Potete modificare il vostro voto fino all'accertamento del risultato."
+
+#: stweg/templates/stweg/*.html
+msgid "Total CHF %(total)s · %(raten)s Raten"
+msgstr "Totale CHF %(total)s · %(raten)s rate"
+
+#: stweg/templates/stweg/*.html
+msgid "Traktandum zuweisen"
+msgstr "Assegna punto all'ordine del giorno"
+
+#: stweg/templates/stweg/*.html
+msgid "Unter welchem Traktandum beschliessen? *"
+msgstr "Sotto quale punto all'ordine del giorno si decide? *"
+
+#: stweg/templates/stweg/*.html
+msgid "Verteilschlüssel *"
+msgstr "Chiave di ripartizione *"
+
+#: stweg/templates/stweg/*.html
+msgid "Wertquote, Lift, Heizung (Fläche oder Volumen) und weitere je Kostenart"
+msgstr "Quota di valore, ascensore, riscaldamento (superficie o volume) e altre per tipo di costo"
+
+#: stweg/templates/stweg/*.html
+msgid "Wird beschlossen unter Traktandum %(nr)s «%(titel)s» der Versammlung"
+msgstr "Sarà deciso al punto %(nr)s «%(titel)s» dell'assemblea"
+
+#: stweg/templates/stweg/*.html
+msgid "automatisch"
+msgstr "automatico"
+
+#: stweg/templates/stweg/*.html
+msgid "eingeschaltet"
+msgstr "attivato"
+
+#: stweg/templates/stweg/*.html
+msgid "gültig ab %(ab)s"
+msgstr "valido dal %(ab)s"
+
+#: stweg/templates/stweg/*.html
+msgid "vorhanden"
+msgstr "presente"
+
+#: stweg/templates/stweg/*.html
+msgid "weitere Raten CHF %(betrag)s"
+msgstr "altre rate CHF %(betrag)s"
+
+#: stweg/templates/stweg/*.html
+msgid "z. B. Lift"
+msgstr "p. es. ascensore"
+
+#: stweg/templates/stweg/*.html
+msgid "— Standardschlüssel (Zuordnung entfernen) —"
+msgstr "— chiave standard (rimuovi assegnazione) —"
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Teilnahme ist erfasst. Sie können jetzt abstimmen."
+msgstr "La vostra partecipazione è registrata. Ora potete votare."
+
+#: stweg/templates/stweg/*.html
+msgid "Ihre Stimmen wurden gespeichert."
+msgstr "I vostri voti sono stati salvati."

@@ -29,6 +29,21 @@
 </div>
 
 <div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "E-Voting" %}</span>
+        <span class="fw-chip {% if v.evoting %}fw-brand{% endif %}">{% if v.evoting %}{% trans "eingeschaltet" %}{% else %}{% trans "aus" %}{% endif %}</span></div>
+    <div class="fw-rumpf">
+        <p class="fw-s">{% trans "Eigentümer erklären im Portal ihre Teilnahme und stimmen dort ab, solange die Versammlung durchgeführt wird. Jede Stimme wird mit Zeit und Weg protokolliert. Das Ergebnis stellen Sie fest." %}</p>
+        {% if v.status != 'protokolliert' %}
+        <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/evoting/" class="fw-formular drei">{% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="ev_an"><input id="ev_an" type="checkbox" name="evoting" value="1"{% if v.evoting %} checked{% endif %}> {% trans "E-Voting im Portal" %}</label></div>
+            <div class="fw-feldblock"><label class="fw-label" for="ev_bis">{% trans "Offen bis (optional)" %}</label>
+                <input id="ev_bis" type="datetime-local" name="evoting_bis" class="fw-feld"></div>
+            <div class="fw-formular-fuss"><button class="fw-btn">{% trans "Speichern" %}</button></div>
+        </form>{% endif %}
+    </div>
+</div>
+
+<div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{% trans "Traktanden" %}</span></div>
     {% for t in traktanden %}
     <div class="fw-zeile"><div class="fw-mitte">
