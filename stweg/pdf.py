@@ -185,3 +185,38 @@ def abrechnung_pdf(abrechnung, eigentuemer=None):
         s.zeile(("Total Nachzahlung" if total_saldo > 0 else "Total Guthaben" if total_saldo < 0
                  else "Total ausgeglichen") + f": CHF {_chf(abs(total_saldo))}", fett=True, gr=11)
     return s.bytes()
+
+
+@nur_deutsch
+def zirkular_pdf(z):
+    """Antrag (laufend) bzw. Antrag mit Ergebnis (abgeschlossen)."""
+    lg = z.liegenschaft
+    s = _Seite(f"Zirkularbeschluss {z.titel}")
+    org = lg.organisation
+    s.zeile(org.firma or '', fett=True, gr=11)
+    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
+    s.luecke(6)
+    s.zeile("Zirkularbeschluss", fett=True, gr=14, abstand=7)
+    s.zeile(f"Stockwerkeigentümergemeinschaft {lg}", gr=11)
+    s.luecke(3)
+    s.zeile(z.titel, fett=True, gr=12, abstand=6)
+    s.zeile(f"Abstimmung bis: {z.frist_bis:%d.%m.%Y}")
+    s.zeile(f"Erforderliche Mehrheit: {z.get_mehrheitsart_display()}")
+    if z.rechtsgrundlage:
+        s.zeile(f"Grundlage: {z.rechtsgrundlage}")
+    s.luecke(4)
+    s.zeile("Antrag", fett=True)
+    s.absatz(z.antrag, gr=10, abstand=4)
+    if z.begruendung:
+        s.luecke(3)
+        s.zeile("Begründung", fett=True)
+        s.absatz(z.begruendung, gr=9, abstand=4)
+    if z.status == z.ABGESCHLOSSEN:
+        s.luecke(5)
+        s.zeile(f"Ergebnis: {z.get_ergebnis_display()}", fett=True, gr=12, abstand=6)
+        s.zeile(f"Köpfe: Ja {z.ja_koepfe} · Nein {z.nein_koepfe} · Enthaltung {z.enthaltung_koepfe}", gr=10)
+        s.zeile(f"Wertquoten: Ja {z.ja_quoten:g} · Nein {z.nein_quoten:g} · Enthaltung {z.enthaltung_quoten:g}", gr=10)
+        if z.beschlusstext:
+            s.luecke(2)
+            s.absatz(z.beschlusstext, gr=10, abstand=4)
+    return s.bytes()

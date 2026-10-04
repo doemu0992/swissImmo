@@ -22,7 +22,9 @@ from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
 from stweg import aufgaben, beschluss
 from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegAkonto, StwegAnfrage,
-                          StwegVersand, Traktandum, Versammlung, Vollmacht)
+                          StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
+                          ZirkularStimme)
+from stweg.beschluss import BeschlussFehler
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, wertquoten_summe
 from stweg.versammlung import (VersammlungsFehler, durchfuehren, einladung_pruefen,
                                einladung_versenden, protokoll_pruefen, protokoll_versenden)
@@ -59,7 +61,8 @@ def stweg_uebersicht(request):
         gemeinschaften.append({
             'lg': lg,
             'offen': sum(len(op[k]) for k in ('aufgaben', 'anfragen', 'unentschiedene_traktanden',
-                                              'protokoll_ausstehend', 'zustellung_offen')),
+                                              'protokoll_ausstehend', 'zustellung_offen',
+                                              'zirkulare_offen', 'zirkular_ergebnis_ausstehend')),
             'naechste': (Versammlung.objects.filter(liegenschaft=lg, datum__gte=timezone.now())
                          .order_by('datum').first()),
         })
@@ -79,6 +82,8 @@ def stweg_gemeinschaft(request, stweg_id):
         'quoten_summe': wertquoten_summe(lg),
         'einheiten': lg.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'),
         'versammlungen': Versammlung.objects.filter(liegenschaft=lg),
+        'zirkulare': Zirkularbeschluss.objects.filter(liegenschaft=lg),
+        'mehrheiten': Traktandum.MEHRHEIT_CHOICES,
         'offen': aufgaben.offene_punkte(lg),
         'art_choices': Versammlung.ART_CHOICES,
     })
@@ -547,3 +552,120 @@ def stweg_vollmacht_widerrufen(request, pk):
     except VollmachtFehler as e:
         _fehler(request, e)
     return _zurueck(vm.versammlung)
+
+
+# ── Zirkularbeschlüsse ───────────────────────────────────────────────────
+
+def _zirkular_zurueck(z):
+    return redirect(f'/neu/stweg/zirkular/{z.pk}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_zirkular_neu(request, stweg_id):
+    lg = _gemeinschaft(stweg_id)
+    titel = (request.POST.get('titel') or '').strip()
+    antrag = (request.POST.get('antrag') or '').strip()
+    frist = parse_date(request.POST.get('frist_bis') or '')
+    if not titel or not antrag or frist is None:
+        messages.error(request, 'Titel, Antrag und Abstimmungsfrist sind nötig.')
+        return redirect(f'/neu/stweg/{lg.pk}/')
+    art = request.POST.get('mehrheitsart')
+    z = Zirkularbeschluss.objects.create(
+        liegenschaft=lg, titel=titel[:200], antrag=antrag,
+        begruendung=(request.POST.get('begruendung') or '').strip(), frist_bis=frist,
+        mehrheitsart=art if art in dict(Traktandum.MEHRHEIT_CHOICES) and art != 'kenntnisnahme' else 'einstimmig',
+        rechtsgrundlage=(request.POST.get('rechtsgrundlage') or '').strip()[:200],
+        vollzug_aufgabe=(request.POST.get('vollzug_aufgabe') or '').strip()[:200],
+        vollzug_faellig_am=parse_date(request.POST.get('vollzug_faellig_am') or ''))
+    messages.success(request, 'Zirkularbeschluss angelegt. Prüfen und versenden.')
+    return _zirkular_zurueck(z)
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_zirkular(request, pk):
+    from stweg import zirkular as zk
+    z = get_object_or_404(Zirkularbeschluss.objects.select_related('liegenschaft'), pk=pk)
+    einheiten = list(z.liegenschaft.einheiten.select_related('stockwerkeigentuemer').order_by('bezeichnung'))
+    stimmen = {s.einheit_id: s for s in z.stimmen.all()}
+    for e in einheiten:
+        e.stimme = stimmen.get(e.pk)
+    return render(request, 'stweg/zirkular.html', {
+        'nav': 'stweg', 'z': z, 'lg': z.liegenschaft, 'einheiten': einheiten,
+        'probleme': zk.pruefen(z) if z.status in (z.ENTWURF, z.LAUFEND) else [],
+        'zaehlung': zk.auswerten(z) if z.status != z.ENTWURF else None,
+        'vollstaendig': zk.vollstaendig(z), 'frist_vorbei': timezone.localdate() > z.frist_bis,
+        'versaende': z.versaende.select_related('eigentuemer'),
+        'stimmwerte': Stimme.WERT_CHOICES,
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_zirkular_versenden(request, pk):
+    from stweg import zirkular as zk
+    z = get_object_or_404(Zirkularbeschluss, pk=pk)
+    try:
+        neu = zk.versenden(z)
+    except VersammlungsFehler as e:
+        _fehler(request, e)
+        return _zirkular_zurueck(z)
+    messages.success(request, f'Antrag: {sum(1 for n in neu if n.status == "gesendet")} per E-Mail versendet.')
+    offen = [n for n in neu if n.status != 'gesendet']
+    if offen:
+        messages.warning(request, f'{len(offen)} Zustellung(en) offen (keine E-Mail-Adresse oder Fehler).')
+    return _zirkular_zurueck(z)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_zirkular_stimmen(request, pk):
+    from stweg import zirkular as zk
+    z = get_object_or_404(Zirkularbeschluss.objects.select_related('liegenschaft'), pk=pk)
+    try:
+        for e in z.liegenschaft.einheiten.all():
+            wert = request.POST.get(f'stimme_{e.pk}')
+            if wert in dict(Stimme.WERT_CHOICES):
+                zk.stimme_abgeben(z, e, wert, kanal='verwaltung')
+            elif wert == '':
+                if z.status == z.LAUFEND:
+                    ZirkularStimme.objects.filter(zirkular=z, einheit=e).delete()
+    except BeschlussFehler as e:
+        _fehler(request, e)
+    return _zirkular_zurueck(z)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_zirkular_feststellen(request, pk):
+    from stweg import zirkular as zk
+    z = get_object_or_404(Zirkularbeschluss, pk=pk)
+    try:
+        zk.feststellen(z, request.POST.get('ergebnis') or '',
+                       beschlusstext=(request.POST.get('beschlusstext') or '').strip(), user=request.user)
+        messages.success(request, 'Ergebnis festgestellt.')
+    except BeschlussFehler as e:
+        _fehler(request, e)
+    return _zirkular_zurueck(z)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_zirkular_ergebnis(request, pk):
+    from stweg import zirkular as zk
+    z = get_object_or_404(Zirkularbeschluss, pk=pk)
+    try:
+        neu = zk.ergebnis_versenden(z)
+        messages.success(request, f'Ergebnis an {sum(1 for n in neu if n.status == "gesendet")} Eigentümer versendet.')
+    except VersammlungsFehler as e:
+        _fehler(request, e)
+    return _zirkular_zurueck(z)
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_zirkular_pdf(request, pk):
+    from stweg.pdf import zirkular_pdf
+    z = get_object_or_404(Zirkularbeschluss.objects.select_related('liegenschaft'), pk=pk)
+    antwort = HttpResponse(zirkular_pdf(z), content_type='application/pdf')
+    antwort['Content-Disposition'] = f'inline; filename="Zirkular_{z.pk}.pdf"'
+    return antwort

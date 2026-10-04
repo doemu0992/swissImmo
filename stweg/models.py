@@ -331,3 +331,85 @@ class Vollmacht(OrganisationAusKette):
     @property
     def gueltig(self):
         return self.widerrufen_am is None
+
+
+class Zirkularbeschluss(OrganisationAusKette):
+    """Beschluss auf dem Zirkularweg: Antrag an alle Eigentümer, Abstimmung bis zu einer Frist,
+    ohne Versammlung.
+
+    Welche Mehrheit gilt — und ob ein Zirkularbeschluss für das Geschäft überhaupt
+    zulässig ist —, bestimmen Gesetz und Reglement. Vorgabe ist die strengste Art
+    (Einstimmigkeit aller Eigentümer); die Verwaltung wählt sie je Beschluss und
+    hält die Grundlage fest. Wie bei der Versammlung rechnet das System einen
+    Vorschlag, festgestellt wird er von einer Person."""
+    ORGANISATION_PFAD = 'liegenschaft'
+    ENTWURF, LAUFEND, ABGESCHLOSSEN = 'entwurf', 'laufend', 'abgeschlossen'
+    STATUS_CHOICES = [(ENTWURF, 'Entwurf'), (LAUFEND, 'Läuft'), (ABGESCHLOSSEN, 'Abgeschlossen')]
+
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
+                                     related_name='zirkularbeschluesse')
+    titel = models.CharField(max_length=200)
+    antrag = models.TextField("Antrag")
+    begruendung = models.TextField(blank=True, default='')
+    mehrheitsart = models.CharField(max_length=20, choices=Traktandum.MEHRHEIT_CHOICES, default='einstimmig')
+    rechtsgrundlage = models.CharField(max_length=200, blank=True, default='')
+    frist_bis = models.DateField("Abstimmung bis")
+    status = models.CharField(max_length=14, choices=STATUS_CHOICES, default=ENTWURF)
+    versendet_am = models.DateTimeField(null=True, blank=True)
+    ergebnis = models.CharField(max_length=10, choices=Traktandum.ERGEBNIS_CHOICES, default=Traktandum.OFFEN)
+    beschlusstext = models.TextField(blank=True, default='')
+    ja_koepfe = models.PositiveSmallIntegerField(default=0)
+    nein_koepfe = models.PositiveSmallIntegerField(default=0)
+    enthaltung_koepfe = models.PositiveSmallIntegerField(default=0)
+    ja_quoten = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal('0.00'))
+    nein_quoten = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal('0.00'))
+    enthaltung_quoten = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal('0.00'))
+    festgestellt_am = models.DateTimeField(null=True, blank=True)
+    ergebnis_versendet_am = models.DateTimeField(null=True, blank=True)
+    vollzug_aufgabe = models.CharField(max_length=200, blank=True, default='')
+    vollzug_faellig_am = models.DateField(null=True, blank=True)
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'stweg_zirkular'
+        ordering = ['-erstellt_am']
+        verbose_name = 'Zirkularbeschluss'
+        verbose_name_plural = 'Zirkularbeschlüsse'
+
+    def __str__(self):
+        return self.titel
+
+
+class ZirkularStimme(OrganisationAusKette):
+    """Die Stimme einer Einheit zu einem Zirkularbeschluss."""
+    ORGANISATION_PFAD = 'zirkular'
+    zirkular = models.ForeignKey(Zirkularbeschluss, on_delete=models.CASCADE, related_name='stimmen')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
+    wert = models.CharField(max_length=10, choices=Stimme.WERT_CHOICES)
+    kanal = models.CharField(max_length=12, default='portal',
+                             choices=[('portal', 'Portal'), ('verwaltung', 'Von der Verwaltung erfasst')])
+    abgegeben_am = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'stweg_zirkular_stimme'
+        constraints = [models.UniqueConstraint(fields=['zirkular', 'einheit'],
+                                               name='stweg_zirkular_stimme_je_einheit')]
+
+
+class ZirkularVersand(OrganisationAusKette):
+    """Zustellprotokoll zum Zirkularbeschluss (Antrag, Ergebnis)."""
+    ORGANISATION_PFAD = 'zirkular'
+    ANTRAG, ERGEBNIS = 'antrag', 'ergebnis'
+    ART_CHOICES = [(ANTRAG, 'Antrag'), (ERGEBNIS, 'Ergebnis')]
+    zirkular = models.ForeignKey(Zirkularbeschluss, on_delete=models.CASCADE, related_name='versaende')
+    art = models.CharField(max_length=10, choices=ART_CHOICES)
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True,
+                                    related_name='+')
+    email = models.CharField(max_length=254, blank=True, default='')
+    status = models.CharField(max_length=12, choices=StwegVersand.STATUS_CHOICES)
+    zeitpunkt = models.DateTimeField(auto_now_add=True)
+    fehler = models.CharField(max_length=300, blank=True, default='')
+
+    class Meta:
+        db_table = 'stweg_zirkular_versand'
+        ordering = ['-zeitpunkt']

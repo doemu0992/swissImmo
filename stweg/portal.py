@@ -16,12 +16,14 @@ from django.core.mail import send_mail
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
-from stweg.models import StwegAbrechnung, StwegAbrechnungPosition, StwegAnfrage, Versammlung, Vollmacht
-from stweg.pdf import abrechnung_pdf, einladung_pdf, protokoll_pdf
+from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAnfrage, Versammlung, Vollmacht,
+                          Zirkularbeschluss, ZirkularStimme)
+from stweg.pdf import abrechnung_pdf, einladung_pdf, protokoll_pdf, zirkular_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +61,15 @@ def portal_stweg(request):
                         'vollmacht': Vollmacht.objects.filter(
                             versammlung=v, einheit=e, widerrufen_am__isnull=True).first()})
         g['anfragen'] = StwegAnfrage.objects.filter(liegenschaft_id=lg_id, eigentuemer=eig)
+        # Abstimmungen: laufende mit meiner Stimme je Einheit, abgeschlossene mit Ergebnis.
+        heute = timezone.localdate()
+        g['abstimmungen'] = []
+        for z in Zirkularbeschluss.objects.filter(liegenschaft_id=lg_id).exclude(
+                status=Zirkularbeschluss.ENTWURF).order_by('-erstellt_am')[:10]:
+            stimmen = {st.einheit_id: st.wert for st in ZirkularStimme.objects.filter(zirkular=z)}
+            g['abstimmungen'].append({
+                'z': z, 'offen': z.status == Zirkularbeschluss.LAUFEND and heute <= z.frist_bis,
+                'meine': [{'einheit': e, 'wert': stimmen.get(e.pk, '')} for e in g['einheiten']]})
         # Nur ABGESCHLOSSENE Abrechnungen, und nur der eigene Teil davon.
         g['abrechnungen'] = [
             {'abrechnung': a, 'saldo': sum(p.saldo for p in
@@ -145,6 +156,42 @@ def portal_stweg_vollmacht_widerruf(request, pk):
     except VollmachtFehler as e:
         messages.error(request, str(e))
     return redirect('/portal/stweg/')
+
+
+def _zirkular_des_eigentuemers(request, pk):
+    eig = _eigentuemer(request)
+    z = Zirkularbeschluss.objects.select_related('liegenschaft').filter(pk=pk).first()
+    if z is None or z.status == Zirkularbeschluss.ENTWURF \
+            or not _meine_einheiten(eig).filter(liegenschaft=z.liegenschaft).exists():
+        raise Http404                      # fremd oder noch Entwurf
+    return eig, z
+
+
+@login_required
+@require_POST
+def portal_stweg_abstimmen(request, pk):
+    from stweg import zirkular as zk
+    from stweg.beschluss import BeschlussFehler
+    eig, z = _zirkular_des_eigentuemers(request, pk)
+    abgegeben = 0
+    try:
+        for e in _meine_einheiten(eig).filter(liegenschaft=z.liegenschaft):
+            wert = request.POST.get(f'stimme_{e.pk}')
+            if wert:
+                zk.stimme_abgeben(z, e, wert, kanal='portal')
+                abgegeben += 1
+    except BeschlussFehler as fehler:
+        messages.error(request, str(fehler))
+        return redirect('/portal/stweg/')
+    messages.success(request, 'Ihre Stimme wurde gespeichert.' if abgegeben else 'Keine Stimme angegeben.')
+    return redirect('/portal/stweg/')
+
+
+@never_cache
+@login_required
+def portal_stweg_zirkular(request, pk):
+    eig, z = _zirkular_des_eigentuemers(request, pk)
+    return _pdf(zirkular_pdf(z), f'Zirkular_{z.pk}.pdf')
 
 
 @login_required

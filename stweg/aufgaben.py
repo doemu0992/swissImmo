@@ -11,7 +11,7 @@ Die Herkunft steht im Schlüssel `quelle`:
 from django.utils import timezone
 
 from core.models import Pendenz
-from stweg.models import StwegAnfrage, StwegVersand, Traktandum, Versammlung
+from stweg.models import StwegAnfrage, StwegVersand, Traktandum, Versammlung, Zirkularbeschluss
 
 PREFIX = 'stweg:'
 
@@ -59,6 +59,11 @@ def offene_punkte(liegenschaft):
                 versammlung__status__in=(Versammlung.DURCHGEFUEHRT, Versammlung.PROTOKOLLIERT),
                 ergebnis__in=(Traktandum.OFFEN, Traktandum.VERTAGT))
             .select_related('versammlung')),
+        'zirkulare_offen': list(Zirkularbeschluss.objects.filter(
+            liegenschaft=liegenschaft, status__in=(Zirkularbeschluss.ENTWURF, Zirkularbeschluss.LAUFEND))),
+        'zirkular_ergebnis_ausstehend': list(Zirkularbeschluss.objects.filter(
+            liegenschaft=liegenschaft, status=Zirkularbeschluss.ABGESCHLOSSEN,
+            ergebnis_versendet_am__isnull=True)),
         'protokoll_ausstehend': list(Versammlung.objects.filter(
             liegenschaft=liegenschaft, status=Versammlung.DURCHGEFUEHRT)),
         # Zustellungen, die nicht (mehr) automatisch laufen.

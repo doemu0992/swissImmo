@@ -20,6 +20,9 @@ ist hier nicht zuständig. Rechtswerte stehen nicht fest im Code (siehe «Offen�
 | Jahresabrechnung: Kosten − Akonto = Zahllast/Guthaben | `stweg/services.py` |
 | Versammlung, Traktanden, Anwesenheit, Stimmen | `stweg/models.py`, `stweg/beschluss.py` |
 | Einladung/Protokoll als PDF per E-Mail, Versandprotokoll | `stweg/versammlung.py`, `stweg/pdf.py` |
+| Vollmachten (Portal und Verwaltung), wirken beim Eröffnen als «vertreten» | `stweg/vollmacht.py` |
+| Zirkularbeschluss: Antrag, Frist, Abstimmung im Portal, Feststellung, Ergebnisversand | `stweg/zirkular.py` |
+| Abrechnung mit Kostenschnappschuss, PDF, Akonto, Fondseinlage/-entnahme | `stweg/views.py` (`/neu/stweg/<id>/abrechnung/`), `stweg/pdf.py` |
 | Anfragen, Aufgaben, offene Punkte (als `core.Pendenz`) | `stweg/anfragen.py`, `stweg/aufgaben.py` |
 | Oberfläche Verwaltung | `/neu/stweg/` (`stweg/views.py`) |
 | Eigentümerportal | `/portal/stweg/` (`stweg/portal.py`) |
@@ -43,15 +46,20 @@ vorbehalten und überspringt STWEG.
 ## Offen — bewusst nicht getan
 
 * **Rechtswerte nicht geprüft.** Einladungsfrist (Vorgabe 10 Tage, je Versammlung
-  einstellbar) und erforderliche Mehrheit (je Traktandum gewählt: Köpfe, Quoten,
-  beides, aller, einstimmig) sind Daten, keine Rechtsnorm. Vor Gebrauch juristisch
-  bestätigen.
+  einstellbar) und erforderliche Mehrheit (je Traktandum bzw. Zirkularbeschluss
+  gewählt: Köpfe, Quoten, beides, aller, einstimmig) sind Daten, keine Rechtsnorm.
+  Beim Zirkularbeschluss ist die strengste Art (einstimmig) vorgegeben; ob ein
+  Zirkularbeschluss für ein Geschäft überhaupt zulässig ist, entscheidet die
+  Verwaltung. Vor Gebrauch juristisch bestätigen.
 * Beschlussfähigkeit und Anfechtungsfrist werden nicht beurteilt bzw. geführt.
-* Zirkularbeschluss, Online-Abstimmung, Vollmachten als Dokument: nicht gebaut.
-* Die Jahresabrechnung bucht nicht ins Hauptbuch und hat keine Oberfläche/PDF.
-* Das Liegenschaftsformular hat kein Feld «Art» (STWEG) und «Status»; eine STWEG
-  wird bisher im Code angelegt. Neue STWEG beginnt als `entwurf`.
-* Neue Texte der Oberfläche, Einladung und Protokoll nur deutsch (Entscheid D11).
+* Die Jahresabrechnung bucht nicht ins Hauptbuch (nur der Fonds tut es) und hat
+  keinen QR-Einzahlschein für Nachzahlungen.
+* Vollmachten sind digital erfasst (Name des Vertreters), nicht als hochgeladenes
+  Dokument; eine Beglaubigung oder Unterschrift führt das System nicht.
+* Neue Texte der Oberfläche, Einladung, Protokoll, Abrechnung und Zirkular nur
+  deutsch (Entscheid D11).
 * Einzelspeicherung von Einheiten prüft die Quoten nicht; geprüft wird bei
-  Aktivierung, Einlage, Einladung und Abrechnung. `QuerySet.update()` umgeht
-  `save()`.
+  Aktivierung, Einlage, Einladung, Zirkularversand und Abrechnung.
+  `QuerySet.update()` umgeht `save()`.
+* Eine STWEG lässt sich im Liegenschaftsformular anlegen (Art/Status); Einheiten
+  mit Wertquote und Eigentümer erfasst man im Objektformular.

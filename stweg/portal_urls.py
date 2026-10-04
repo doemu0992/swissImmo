@@ -9,5 +9,7 @@ urlpatterns = [
     path('abrechnung/<int:pk>/', p.portal_stweg_abrechnung, name='portal_stweg_abrechnung'),
     path('vollmacht/<int:pk>/erteilen/', p.portal_stweg_vollmacht, name='portal_stweg_vollmacht'),
     path('vollmacht/<int:pk>/widerrufen/', p.portal_stweg_vollmacht_widerruf, name='portal_stweg_vollmacht_widerruf'),
+    path('abstimmen/<int:pk>/', p.portal_stweg_abstimmen, name='portal_stweg_abstimmen'),
+    path('zirkular/<int:pk>/', p.portal_stweg_zirkular, name='portal_stweg_zirkular'),
     path('anfrage/<int:stweg_id>/', p.portal_stweg_anfrage, name='portal_stweg_anfrage'),
 ]

@@ -46,6 +46,33 @@
     {% empty %}<p class="fw-leer">Keine Versammlung.</p>{% endfor %}
 </div>
 
+{% if g.abstimmungen %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Abstimmungen</span></div>
+    {% for a in g.abstimmungen %}
+    <div class="fw-zeile"><div class="fw-mitte">
+        <div class="fw-t">{{ a.z.titel }}</div>
+        <div class="fw-s">{% if a.z.status == 'abgeschlossen' %}{{ a.z.get_ergebnis_display }} (Ja {{ a.z.ja_koepfe }} · Nein {{ a.z.nein_koepfe }} · Enthaltung {{ a.z.enthaltung_koepfe }}){% elif a.offen %}Abstimmung bis {{ a.z.frist_bis|date:"d.m.Y" }}{% else %}Abstimmung beendet, Ergebnis folgt{% endif %}</div>
+        <div class="fw-s" style="white-space:pre-line">{{ a.z.antrag }}</div>
+        {% if a.offen %}
+        <form method="post" action="/portal/stweg/abstimmen/{{ a.z.pk }}/" class="fw-formular">{% csrf_token %}
+            {% for m in a.meine %}
+            <div class="fw-feldblock"><label class="fw-label" for="s{{ a.z.pk }}_{{ m.einheit.pk }}">Ihre Stimme für {{ m.einheit.bezeichnung }}</label>
+                <select id="s{{ a.z.pk }}_{{ m.einheit.pk }}" name="stimme_{{ m.einheit.pk }}" class="fw-feld">
+                    <option value="">— noch nicht abgestimmt —</option>
+                    <option value="ja"{% if m.wert == 'ja' %} selected{% endif %}>Ja</option>
+                    <option value="nein"{% if m.wert == 'nein' %} selected{% endif %}>Nein</option>
+                    <option value="enthaltung"{% if m.wert == 'enthaltung' %} selected{% endif %}>Enthaltung</option></select></div>
+            {% endfor %}
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Stimme speichern</button></div>
+        </form>
+        {% endif %}
+        </div>
+        <a class="fw-btn" href="/portal/stweg/zirkular/{{ a.z.pk }}/" target="_blank" rel="noopener">PDF</a></div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">Abrechnungen</span></div>
     {% for x in g.abrechnungen %}

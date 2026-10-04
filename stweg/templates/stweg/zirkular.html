@@ -1,0 +1,98 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}{{ z.titel }} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="Pfad"><a href="/neu/stweg/">Stockwerkeigentum</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>{{ z.titel }}</span></nav>
+        <h1>{{ z.titel }}</h1>
+        <p>Zirkularbeschluss · Abstimmung bis {{ z.frist_bis|date:"d.m.Y" }} · <strong>{{ z.get_status_display }}</strong></p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Antrag</span></div>
+    <div class="fw-rumpf">
+        <p style="white-space:pre-line">{{ z.antrag }}</p>
+        {% if z.begruendung %}<p class="fw-s" style="white-space:pre-line">Begründung: {{ z.begruendung }}</p>{% endif %}
+        <p class="fw-s">Erforderliche Mehrheit: {{ z.get_mehrheitsart_display }}{% if z.rechtsgrundlage %} · {{ z.rechtsgrundlage }}{% endif %}</p>
+        {% if z.vollzug_aufgabe %}<p class="fw-s">Vollzug bei Annahme: {{ z.vollzug_aufgabe }}{% if z.vollzug_faellig_am %} (bis {{ z.vollzug_faellig_am|date:"d.m.Y" }}){% endif %}</p>{% endif %}
+        <a class="fw-btn" href="/neu/stweg/zirkular/{{ z.pk }}/pdf/" target="_blank" rel="noopener">Antrag (PDF)</a>
+    </div>
+</div>
+
+{% if z.status != 'abgeschlossen' %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Versand</span></div>
+    <div class="fw-rumpf">
+        {% if probleme %}<p><span class="fw-chip fw-warn">Noch nicht versandbereit</span></p><ul>{% for p in probleme %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% else %}<p><span class="fw-chip fw-brand">Versandbereit</span> Der Antrag geht mit PDF an alle Eigentümer; sie stimmen im Portal ab. Eigentümer ohne E-Mail werden für den Postversand vermerkt.</p>{% endif %}
+        <form method="post" action="/neu/stweg/zirkular/{{ z.pk }}/versenden/">{% csrf_token %}
+            <button class="fw-btn fw-primary"{% if probleme %} disabled{% endif %}>{% if z.status == 'laufend' %}Fehlende erneut versenden{% else %}Antrag versenden{% endif %}</button></form>
+    </div>
+</div>
+{% endif %}
+
+{% if z.status != 'entwurf' %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Stimmen</span>
+        <span class="fw-neben">{% if zaehlung %}Ja {{ zaehlung.ja_koepfe }} · Nein {{ zaehlung.nein_koepfe }} · Enthaltung {{ zaehlung.enthaltung_koepfe }}{% endif %}</span></div>
+    <form method="post" action="/neu/stweg/zirkular/{{ z.pk }}/stimmen/" class="fw-formular">{% csrf_token %}
+        {% for e in einheiten %}
+        <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }} · {{ e.wertquote|floatformat:"-2" }}</div>
+            <div class="fw-s">{{ e.stockwerkeigentuemer.firma_oder_name|default:"kein Eigentümer" }}{% if e.stimme %} · {{ e.stimme.get_kanal_display }}, {{ e.stimme.abgegeben_am|date:"d.m.Y H:i" }}{% endif %}</div></div>
+            <select name="stimme_{{ e.pk }}" class="fw-feld" aria-label="Stimme {{ e.bezeichnung }}"{% if z.status == 'abgeschlossen' %} disabled{% endif %}>
+                <option value="">— nicht abgestimmt —</option>
+                {% for w, b in stimmwerte %}<option value="{{ w }}"{% if e.stimme.wert == w %} selected{% endif %}>{{ b }}</option>{% endfor %}</select></div>
+        {% endfor %}
+        {% if z.status == 'laufend' %}<div class="fw-formular-fuss"><button class="fw-btn">Stimmen speichern (schriftlich erhalten)</button></div>{% endif %}
+    </form>
+    {% if zaehlung %}
+    <div class="fw-rumpf">
+        <p>Wertquoten: Ja {{ zaehlung.ja_quoten|floatformat:"-2" }} · Nein {{ zaehlung.nein_quoten|floatformat:"-2" }} · Enthaltung {{ zaehlung.enthaltung_quoten|floatformat:"-2" }} (von {{ zaehlung.total_quoten|floatformat:"-2" }})</p>
+        {% if zaehlung.widerspruch %}<p><span class="fw-chip fw-warn">Widersprüchliche Stimmen desselben Eigentümers — bitte korrigieren.</span></p>{% endif %}
+        {% if z.status == 'laufend' %}<p>Rechnerischer Vorschlag ({{ z.get_mehrheitsart_display }}): <strong>{% if zaehlung.vorschlag == 'angenommen' %}angenommen{% else %}abgelehnt{% endif %}</strong>. Er gilt erst, wenn er festgestellt ist.</p>{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if z.status == 'laufend' %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Ergebnis feststellen</span></div>
+    <div class="fw-rumpf">
+        {% if not vollstaendig and not frist_vorbei %}<p><span class="fw-chip fw-warn">Die Frist läuft noch, und nicht alle Einheiten haben abgestimmt.</span> Feststellen ist erst danach möglich.</p>{% endif %}
+        <form method="post" action="/neu/stweg/zirkular/{{ z.pk }}/feststellen/" class="fw-formular drei">{% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="z_erg">Ergebnis</label>
+                <select id="z_erg" name="ergebnis" class="fw-feld">
+                    <option value="angenommen"{% if zaehlung.vorschlag == 'angenommen' %} selected{% endif %}>Angenommen</option>
+                    <option value="abgelehnt"{% if zaehlung.vorschlag == 'abgelehnt' %} selected{% endif %}>Abgelehnt</option></select></div>
+            <div class="fw-feldblock"><label class="fw-label" for="z_text">Beschlusstext</label>
+                <textarea id="z_text" name="beschlusstext" rows="2" class="fw-feld">{{ z.antrag }}</textarea></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Feststellen</button></div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if z.status == 'abgeschlossen' %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Ergebnis</span><span class="fw-chip fw-brand">{{ z.get_ergebnis_display }}</span></div>
+    <div class="fw-rumpf">
+        {% if z.beschlusstext %}<p style="white-space:pre-line">{{ z.beschlusstext }}</p>{% endif %}
+        <p>{% if z.ergebnis_versendet_am %}Ergebnis versendet am {{ z.ergebnis_versendet_am|date:"d.m.Y H:i" }}.{% else %}Das Ergebnis ist noch nicht an die Eigentümer versendet.{% endif %}</p>
+        <form method="post" action="/neu/stweg/zirkular/{{ z.pk }}/ergebnis/">{% csrf_token %}
+            <button class="fw-btn fw-primary">{% if z.ergebnis_versendet_am %}Fehlende erneut versenden{% else %}Ergebnis an alle Eigentümer versenden{% endif %}</button></form>
+    </div>
+</div>
+{% endif %}
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Versandprotokoll</span><span class="fw-neben">{{ versaende|length }}</span></div>
+    {% for v in versaende %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ v.get_art_display }} an {{ v.eigentuemer.firma_oder_name|default:"—" }}</div>
+        <div class="fw-s">{{ v.zeitpunkt|date:"d.m.Y H:i" }}{% if v.email %} · {{ v.email }}{% endif %}{% if v.fehler %} · {{ v.fehler }}{% endif %}</div></div>
+        <span class="fw-chip {% if v.status == 'gesendet' %}fw-brand{% else %}fw-warn{% endif %}">{{ v.get_status_display }}</span></div>
+    {% empty %}<p class="fw-leer">Noch nichts versendet.</p>{% endfor %}
+</div>
+{% endblock %}

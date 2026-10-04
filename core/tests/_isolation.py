@@ -268,7 +268,10 @@ class MandantenFixture:
         from stweg.models import StwegAbrechnung as _Abrechnung, StwegAkonto as _Akonto
         self.stweg_abrechnung = _Abrechnung.objects.create(liegenschaft=self.liegenschaft, jahr=2025)
         self.stweg_akonto = _Akonto.objects.create(einheit=self.einheit, betrag=Decimal('100'))
-        from stweg.models import Vollmacht as _Vollmacht
+        from stweg.models import Vollmacht as _Vollmacht, Zirkularbeschluss as _Zirkular
+        self.stweg_zirkular = _Zirkular.objects.create(
+            liegenschaft=self.liegenschaft, titel=f'Zirkular {k}', antrag='Antrag',
+            frist_bis=date.today() + timedelta(days=14))
         self.stweg_vollmacht = _Vollmacht.objects.create(
             versammlung=self.stweg_versammlung, einheit=self.einheit, bevollmaechtigter=f'Vertreter {k}')
         # Ohne Geheimnis angelegt: Der Registrylauf prüft SICHTBARKEIT, und
@@ -453,6 +456,11 @@ class MandantenFixture:
         # eine ANFRAGE oder eine AUFGABE (Pendenz) — abgelesen am
         # `get_object_or_404` in stweg/views.py. 'stweg_traktandum_neu' trägt die
         # Versammlung und muss deshalb VOR 'stweg_traktandum' stehen.
+        # Portal: 'vollmacht/<pk>/erteilen' trägt die VERSAMMLUNG, '…/widerrufen' die VOLLMACHT.
+        ('portal_stweg_vollmacht_widerruf', 'stweg_vollmacht'),
+        ('portal_stweg_vollmacht',   'stweg_versammlung'),
+        ('portal_stweg_abstimmen',   'stweg_zirkular'),
+        ('stweg_zirkular',           'stweg_zirkular'),
         ('stweg_vollmacht_neu',      'stweg_versammlung'),
         ('stweg_vollmacht',          'stweg_vollmacht'),
         ('stweg_abrechnung',         'stweg_abrechnung'),
