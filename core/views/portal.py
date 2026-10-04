@@ -59,7 +59,8 @@ def portal_view(request):
     from django.utils import timezone
     steuerjahr = timezone.localdate().year - 1
     return render(request, 'core/portal.html', {
-        'eigentuemer': eigentuemer, 'freigaben': freigaben, 'steuerjahr': steuerjahr, **daten})
+        'eigentuemer': eigentuemer, 'freigaben': freigaben, 'steuerjahr': steuerjahr,
+        'hat_stweg': eigentuemer.stweg_einheiten.exists(), **daten})
 
 
 def _offene_freigaben(eigentuemer):

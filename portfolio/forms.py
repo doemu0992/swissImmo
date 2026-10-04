@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _t
 
 from core.formfelder import SchweizerZahl
+from crm.models import Eigentuemer
 from portfolio.models import Einheit, Liegenschaft
 
 
@@ -39,7 +40,7 @@ class LiegenschaftForm(forms.ModelForm):
             'energietraeger', 'geak_datum',
             'hauswart_name', 'hauswart_telefon', 'sanitaer_name', 'sanitaer_telefon',
             'elektriker_name', 'elektriker_telefon', 'bank_name', 'iban',
-            'hkvo_aktiv', 'hkvo_grundkosten_prozent',
+            'hkvo_aktiv', 'hkvo_grundkosten_prozent', 'wertquote_total', 'typ', 'status',
         )
         field_classes = {name: SchweizerZahl for name in (
             'versicherungswert', 'grundstuecksflaeche_m2', 'gebaeudevolumen_m3',
@@ -55,6 +56,12 @@ class LiegenschaftForm(forms.ModelForm):
             if not (data.get('hkvo_grundkosten_prozent') or '').strip():
                 data['hkvo_grundkosten_prozent'] = '40'
         super().__init__(data, *args, **kwargs)
+        # STWEG-Nenner: leer = unverändert (Standard 1000), nie 0 — ein Nenner
+        # von 0 machte jede Wertquoten-Prüfung sinnlos.
+        self.fields['wertquote_total'].required = False
+        self.fields['wertquote_total'].min_value = 1
+        self.fields['typ'].required = False
+        self.fields['status'].required = False
         # `egid` ist in der Datenbank nullbar; die Ansicht speicherte bisher ''.
         # Dabei bleibt es — `not lg.egid` fragt beides ab, ein Filter auf ''
         # nicht.
@@ -97,6 +104,47 @@ class LiegenschaftForm(forms.ModelForm):
         return iban
 
 
+    def clean_wertquote_total(self):
+        wert = self.cleaned_data.get('wertquote_total')
+        return self.instance.wertquote_total if not wert else wert
+
+    # Art und Status: Fehlt das Feld im POST, bleibt der bisherige Wert stehen
+    # (so schickten alle bisherigen Formulare und Tests ihre Daten). Ein neuer
+    # Datensatz bekommt die Vorgaben des Modells (MIETE, aktiv).
+    def clean_typ(self):
+        wert = self.cleaned_data.get('typ')
+        return wert or self.instance.typ
+
+    def clean_status(self):
+        wert = self.cleaned_data.get('status')
+        return wert or self.instance.status
+
+    def clean(self):
+        daten = super().clean()
+        typ, status = daten.get('typ'), daten.get('status')
+        if typ is None or status is None:
+            return daten
+        lg = self.instance
+        # Eine STWEG wird als Entwurf angelegt: Vor den Einheiten gibt es keine
+        # Wertquoten, die aufgehen könnten.
+        if typ == Liegenschaft.TYP_STWEG and lg.pk is None and status == Liegenschaft.STATUS_AKTIV:
+            daten['status'] = status = Liegenschaft.STATUS_ENTWURF
+        # «Aktiv» setzt voraus, dass die Wertquoten aufgehen — die Meldung der
+        # Prüfung kommt als Formularfehler statt als Absturz beim Speichern.
+        if typ == Liegenschaft.TYP_STWEG and status == Liegenschaft.STATUS_AKTIV and lg.pk is not None:
+            from stweg.validierung import WertquotenFehler, pruefe_wertquoten
+            lg.wertquote_total = daten.get('wertquote_total') or lg.wertquote_total
+            try:
+                pruefe_wertquoten(lg)
+            except WertquotenFehler as fehler:
+                self.add_error('status', fehler.message)
+        # Eine STWEG mit Versammlungen wird nicht stillschweigend zur Mietliegenschaft.
+        if lg.pk is not None and lg.typ == Liegenschaft.TYP_STWEG and typ != Liegenschaft.TYP_STWEG \
+                and lg.versammlungen.exists():
+            self.add_error('typ', _t('Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern.'))
+        return daten
+
+
 class EinheitForm(forms.ModelForm):
     """Prüft die Stammdaten eines Mietobjekts (Audit Etappe 2).
 
@@ -114,6 +162,13 @@ class EinheitForm(forms.ModelForm):
     nettomiete_aktuell = SchweizerZahl(max_digits=8, decimal_places=2, min_value=0, required=False)
     nebenkosten_aktuell = SchweizerZahl(max_digits=6, decimal_places=2, min_value=0, required=False)
     soll_gueltig_ab = forms.DateField(required=False)
+    # Bewusst NICHT in `Meta.fields`: Django baute den Auswahlbereich beim
+    # IMPORT der Klasse (`Eigentuemer._default_manager`) — ausserhalb einer
+    # Anfrage wirft der TenantManager, innerhalb fröre er den Filter der ersten
+    # Anfrage ein (siehe Kopf dieses Moduls). Der echte Auswahlbereich kommt in
+    # `__init__`, gespeichert wird in `save()`.
+    stockwerkeigentuemer = forms.ModelChoiceField(
+        queryset=Eigentuemer.alle_organisationen.none(), required=False)
 
     class Meta:
         model = Einheit
@@ -130,6 +185,20 @@ class EinheitForm(forms.ModelForm):
         # die Ansicht schon vorher. Beide Felder sind im Modell Pflicht.
         self.fields['wertquote'].required = False
         self.fields['standard_kautionsmonate'].required = False
+        # Nur STWEG. Der Auswahlbereich kommt vom TenantManager — ein Eigentümer
+        # einer fremden Verwaltung ist nicht wählbar (und wäre ein ungültiger Wert).
+        self.fields['stockwerkeigentuemer'].queryset = Eigentuemer.objects.all()
+        self.initial.setdefault('stockwerkeigentuemer', self.instance.stockwerkeigentuemer_id)
+
+    def save(self, commit=True):
+        self.instance.stockwerkeigentuemer = self.cleaned_data.get('stockwerkeigentuemer')
+        return super().save(commit=commit)
+
+    def clean_stockwerkeigentuemer(self):
+        # Fehlt das Feld im POST ganz, bleibt der bisherige Eigentümer stehen.
+        if 'stockwerkeigentuemer' not in self.data:
+            return self.instance.stockwerkeigentuemer
+        return self.cleaned_data.get('stockwerkeigentuemer')
 
     def clean_wertquote(self):
         wert = self.cleaned_data.get('wertquote')

@@ -30,7 +30,11 @@ STANDARD_KONTEN = [
     # liess 1020 ab dem Stichtag vom realen Kontoauszug abweichen und erzeugte
     # beim späteren Bank-Import eine Doppelbuchung (Audit).
     ('2201', 'Abrechnungskonto MWST (ESTV)', 'passiv', False, 'm2'),
-    ('2800', 'Erneuerungsfonds (Rückstellung)', 'bilanz', False, 'm2'),
+    # STWEG: Der Fonds gehört der Gemeinschaft, nicht der Verwaltung — eine
+    # Verbindlichkeit, nie Ertrag. Deshalb 'passiv' (nicht dynamisch nach Saldo).
+    ('2800', 'Erneuerungsfonds (Rückstellung)', 'passiv', False, 'm2'),
+    ('1110', 'Forderungen Stockwerkeigentümer', 'aktiv', False, 'm2'),
+    ('2035', 'Akonto-Beiträge Stockwerkeigentümer', 'passiv', False, 'm2'),
     ('2850', 'Kontokorrent Eigentümer', 'passiv', False, 'm2'),
     ('2970', 'Jahresergebnis / Gewinnvortrag', 'passiv', False, 'm2'),
     ('3000', 'Mieterträge Wohnungen', 'ertrag', False, 'm2'),

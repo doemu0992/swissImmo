@@ -1,0 +1,123 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Abrechnung {{ jahr }} — {{ lg }} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="Pfad"><a href="/neu/stweg/">Stockwerkeigentum</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>Abrechnung</span></nav>
+        <h1>Abrechnung {{ jahr }}</h1>
+        <p>Allgemeine Kosten, nach Wertquoten verteilt, abzüglich der Akonto-Beiträge.</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-rumpf">
+        <form method="get" class="fw-formular drei">
+            <div class="fw-feldblock"><label class="fw-label" for="jahr">Abrechnungsjahr</label>
+                <input id="jahr" name="jahr" value="{{ jahr }}" inputmode="numeric" class="fw-feld"></div>
+            <div class="fw-formular-fuss"><button class="fw-btn">Anzeigen</button></div>
+        </form>
+    </div>
+</div>
+
+{% if abrechnung %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Abrechnung</span>
+        <span class="fw-chip {% if abrechnung.status == 'abgeschlossen' %}fw-brand{% else %}fw-warn{% endif %}">{{ abrechnung.get_status_display }}</span></div>
+    <div class="fw-rumpf"><p>Gesamtkosten <strong>CHF {{ abrechnung.gesamtkosten|chf }}</strong> · {{ abrechnung.kostenzeilen.count }} Kostenposition(en)</p></div>
+    {% for p in abrechnung.positionen.all %}
+    <div class="fw-zeile"><div class="fw-mitte">
+        <div class="fw-t">{{ p.einheit.bezeichnung }} · {{ p.eigentuemer.firma_oder_name|default:"kein Eigentümer" }}</div>
+        <div class="fw-s">Wertquote {{ p.wertquote|floatformat:"-2" }}/{{ p.wertquote_total }} · Kostenanteil CHF {{ p.kostenanteil|chf }} − Akonto CHF {{ p.akonto|chf }}</div></div>
+        {% if p.saldo > 0 %}<span class="fw-chip fw-warn">Nachzahlung CHF {{ p.zahllast|chf }}</span>
+        {% elif p.saldo < 0 %}<span class="fw-chip fw-brand">Guthaben CHF {{ p.guthaben|chf }}</span>
+        {% else %}<span class="fw-chip">ausgeglichen</span>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="fw-rumpf">
+        <a class="fw-btn" href="/neu/stweg/abrechnung/{{ abrechnung.pk }}/pdf/" target="_blank" rel="noopener">Gesamtübersicht (PDF)</a>
+        {% for eig in eigentuemer %}<a class="fw-btn" href="/neu/stweg/abrechnung/{{ abrechnung.pk }}/pdf/?eigentuemer={{ eig.pk }}" target="_blank" rel="noopener">{{ eig.firma_oder_name }}</a>{% endfor %}
+        {% if abrechnung.status != 'abgeschlossen' %}
+        <form method="post" action="/neu/stweg/abrechnung/{{ abrechnung.pk }}/abschliessen/" style="display:inline">{% csrf_token %}
+            <button class="fw-btn fw-primary">Abrechnung abschliessen (Eigentümer sehen sie im Portal)</button></form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if abrechnung.status != 'abgeschlossen' %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% if abrechnung %}Neu berechnen{% else %}Vorschau der Kosten{% endif %}</span></div>
+    {% if vorschau != None %}
+    {% for z in vorschau %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ z.lieferant }}{% if z.text %} · {{ z.text }}{% endif %}</div>
+        <div class="fw-s">{{ z.datum|date:"d.m.Y" }}</div></div><div class="fw-zeit">CHF {{ z.betrag|chf }}</div></div>
+    {% empty %}<p class="fw-leer">Keine allgemeinen Kosten im Jahr {{ jahr }} (nur freigegebene Rechnungen der Gemeinschaft ohne Einheitsbezug zählen).</p>{% endfor %}
+    <div class="fw-rumpf"><p>Total <strong>CHF {{ vorschau_total|chf }}</strong></p></div>
+    {% endif %}
+    <div class="fw-rumpf">
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/abrechnung/berechnen/">{% csrf_token %}
+            <input type="hidden" name="jahr" value="{{ jahr }}">
+            <button class="fw-btn fw-primary">Abrechnung {{ jahr }} berechnen</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Akonto-Beiträge {{ jahr }}</span></div>
+    {% for e in einheiten %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div>
+        <div class="fw-s">{{ e.stockwerkeigentuemer.firma_oder_name|default:"kein Eigentümer" }}</div></div>
+        <div class="fw-zeit">CHF {{ e.akonto_summe|chf }}</div></div>
+    {% endfor %}
+    {% for k in akontos %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-s">{{ k.datum|date:"d.m.Y" }} · {{ k.einheit.bezeichnung }} · CHF {{ k.betrag|chf }}{% if k.bemerkung %} · {{ k.bemerkung }}{% endif %}</div></div>
+        <form method="post" action="/neu/stweg/akonto/{{ k.pk }}/loeschen/">{% csrf_token %}<button class="fw-btn">Entfernen</button></form></div>
+    {% endfor %}
+    <details class="fw-aufklapp"><summary>Akonto-Zahlung erfassen</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/{{ lg.pk }}/akonto/neu/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="ak_einheit">Einheit *</label>
+                    <select id="ak_einheit" name="einheit" required class="fw-feld">{% for e in einheiten %}<option value="{{ e.pk }}">{{ e.bezeichnung }}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="ak_betrag">Betrag (CHF) *</label>
+                    <input id="ak_betrag" name="betrag" required inputmode="decimal" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="ak_datum">Datum</label>
+                    <input id="ak_datum" type="date" name="datum" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="ak_bem">Bemerkung</label>
+                    <input id="ak_bem" name="bemerkung" class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Erfassen</button></div>
+            </form></div></details>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Erneuerungsfonds</span>
+        <span class="fw-neben">Bestand CHF {{ fonds.bestand|default:0|chf }}</span></div>
+    <div class="fw-rumpf"><p>Der Fonds gehört der Gemeinschaft: Einlagen sind kein Ertrag der Verwaltung, sondern eine Verbindlichkeit (Konto 2800).</p></div>
+    {% for b in bewegungen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ b.get_art_display }} {{ b.jahr }}{% if b.einheit %} · {{ b.einheit.bezeichnung }}{% endif %}</div>
+        <div class="fw-s">{{ b.datum|date:"d.m.Y" }}{% if b.text %} · {{ b.text }}{% endif %}</div></div>
+        <div class="fw-zeit">{% if b.art == 'entnahme' %}−{% endif %}CHF {{ b.betrag|chf }}</div></div>
+    {% endfor %}
+    <details class="fw-aufklapp"><summary>Jahreseinlage nach Wertquoten belasten</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/{{ lg.pk }}/fonds/einlage/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="fe_jahr">Jahr *</label>
+                    <input id="fe_jahr" name="jahr" value="{{ jahr }}" required inputmode="numeric" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="fe_betrag">Gesamtbetrag (CHF) *</label>
+                    <input id="fe_betrag" name="betrag" required inputmode="decimal" class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Belasten</button></div>
+            </form></div></details>
+    <details class="fw-aufklapp"><summary>Entnahme buchen</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/{{ lg.pk }}/fonds/entnahme/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="fn_jahr">Jahr *</label>
+                    <input id="fn_jahr" name="jahr" value="{{ jahr }}" required inputmode="numeric" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="fn_betrag">Betrag (CHF) *</label>
+                    <input id="fn_betrag" name="betrag" required inputmode="decimal" class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="fn_text">Verwendungszweck *</label>
+                    <input id="fn_text" name="text" required class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Entnehmen</button></div>
+            </form></div></details>
+</div>
+{% endblock %}

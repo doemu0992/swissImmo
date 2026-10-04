@@ -22058,3 +22058,35 @@ msgstr "current %(p)s points"
 #, python-format
 msgid "Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben eingegebenen Basiswerten."
 msgstr "This contract already has a rent adjustment: the calculation starts from the state of the last adjustment (reference rate %(zins)s %%, CPI %(lik)s), not from the basis values entered above."
+
+#: portfolio/models.py (STWEG)
+msgid "Mietliegenschaft"
+msgstr "Rental property"
+
+#: portfolio/models.py (STWEG)
+msgid "Stockwerkeigentum (STWEG)"
+msgstr "Condominium (STWEG)"
+
+#: portfolio/models.py (STWEG)
+msgid "Einlage"
+msgstr "Deposit"
+
+#: portfolio/models.py (STWEG)
+msgid "Entnahme"
+msgstr "Withdrawal"
+
+#: portfolio/models.py (STWEG)
+msgid "Stockwerkeigentümer"
+msgstr "Condominium owner"
+
+#: portfolio/models.py (STWEG)
+msgid "Wertquoten-Total (Nenner)"
+msgstr "Total value quota (denominator)"
+
+#: core/navigation.py
+msgid "Stockwerkeigentum"
+msgstr "Condominium"
+
+#: portfolio/forms.py
+msgid "Für diese Gemeinschaft gibt es Versammlungen — die Art lässt sich nicht mehr ändern."
+msgstr "This community has meetings — its type can no longer be changed."

@@ -210,6 +210,7 @@
             <div class="actions">
                 <a class="btn primary" href="/portal/report/" target="_blank" rel="noopener">{% zeichen 'bericht' %}{% trans "📄 Portfolio-Report" as t %}{{ t|ohne_emoji }}</a>
                 <a class="btn" href="/portal/steuerauszug/?jahr={{ steuerjahr }}" target="_blank" rel="noopener">{% zeichen 'recht' %}{% blocktrans with jahr=steuerjahr %}Steuerauszug {{ jahr }}{% endblocktrans %}</a>
+                {% if hat_stweg %}<a class="btn" href="/portal/stweg/">{% trans "Stockwerkeigentum" %}</a>{% endif %}
                 <a class="btn" href="/portal/kontokorrent/" target="_blank" rel="noopener">{% zeichen 'geld' %}{% trans "📒 Kontokorrent" as t %}{{ t|ohne_emoji }}</a>
             </div>
         </div>

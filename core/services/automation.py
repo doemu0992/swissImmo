@@ -979,7 +979,9 @@ def run_erneuerungsfonds_einlage(jahr, user=None):
     fonds_konto = _konto('2800', 'Erneuerungsfonds (Rückstellung)', 'bilanz')
     buchungsdatum = date(jahr, 12, 31)
     anzahl, summe = 0, D('0.00')
-    for f in Erneuerungsfonds.objects.filter(jaehrliche_einlage__gt=0):
+    # STWEG-Fonds NICHT hier: Dort sind Einlagen kein Aufwand der Verwaltung,
+    # sondern Passivum der Gemeinschaft, belastet je Eigentümer (stweg.fonds).
+    for f in Erneuerungsfonds.objects.filter(jaehrliche_einlage__gt=0, liegenschaft__typ='MIETE'):
         if f.letzte_einlage_jahr == jahr:
             continue
         einlage = f.jaehrliche_einlage

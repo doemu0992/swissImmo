@@ -46,6 +46,35 @@ class Liegenschaft(models.Model):
     # `CASCADE` + `null=False` ist dasselbe Muster wie `Mitgliedschaft`
     # (Etappe 4.1): dieselbe Beziehung, dieselbe Semantik.
     organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, related_name='liegenschaften')
+    #: ART DER LIEGENSCHAFT (STWEG-Modul).
+    #
+    # `MIETE` ist der Bestand: Ein Eigentümer vermietet, die Verwaltung bucht
+    # Mietertrag. `STWEG` ist eine Stockwerkeigentümergemeinschaft (Art. 712a ff.
+    # ZGB): Es gibt keinen Ertrag, nur Kosten, die nach Wertquoten auf die
+    # Stockwerkeigentümer verteilt werden. Alle Mietlogik (Sollstellung,
+    # Mietzinsanpassung, Mahnung an Mieter …) ist für STWEG nicht zuständig.
+    TYP_MIETE = 'MIETE'
+    TYP_STWEG = 'STWEG'
+    TYP_CHOICES = [(TYP_MIETE, _('Mietliegenschaft')), (TYP_STWEG, _('Stockwerkeigentum (STWEG)'))]
+    typ = models.CharField("Art", max_length=10, choices=TYP_CHOICES, default=TYP_MIETE)
+
+    #: Lebenszyklus. Bestand und Mietliegenschaften sind `aktiv`. Eine STWEG
+    #: wird als `entwurf` angelegt, solange ihre Wertquoten nicht aufgehen —
+    #: `aktiv` setzt voraus, dass die Summe exakt `wertquote_total` ist
+    #: (siehe `portfolio.stweg.pruefe_wertquoten`).
+    STATUS_ENTWURF = 'entwurf'
+    STATUS_AKTIV = 'aktiv'
+    STATUS_ARCHIVIERT = 'archiviert'
+    STATUS_CHOICES = [(STATUS_ENTWURF, _('Entwurf')), (STATUS_AKTIV, _('Aktiv')),
+                      (STATUS_ARCHIVIERT, _('Archiviert'))]
+    status = models.CharField("Status", max_length=12, choices=STATUS_CHOICES, default=STATUS_AKTIV)
+
+    #: Nenner der Wertquoten dieser Gemeinschaft (im Grundbuch meist 1000,
+    #: seltener 100 oder 10000). Gehört an die Liegenschaft, nicht an die
+    #: Einheit: Es gibt genau einen Nenner je Gemeinschaft, und eine Einheit mit
+    #: abweichendem Nenner wäre ein Datenfehler, kein Fall.
+    wertquote_total = models.PositiveIntegerField("Wertquoten-Total (Nenner)", default=1000)
+
     strasse = models.CharField("Strasse & Nr.", max_length=200)
     plz = models.CharField("PLZ", max_length=10)
     ort = models.CharField("Ort", max_length=100)
@@ -111,6 +140,18 @@ class Liegenschaft(models.Model):
         # (`obj = lg or Liegenschaft()`, danach nur Formularfelder).
         if self.organisation_id is None:
             self.organisation_id = organisation_aus_kontext()
+        # STWEG wird nie «aktiv», wenn die Wertquoten nicht aufgehen. Vor dem
+        # Speichern, damit nichts Halbes in der Datenbank landet. Bei einem
+        # neuen Datensatz gibt es noch keine Einheiten — eine neue STWEG
+        # beginnt also als `entwurf`.
+        if self.typ == self.TYP_STWEG and self.status == self.STATUS_AKTIV:
+            from stweg.validierung import WertquotenFehler, pruefe_wertquoten
+            if self.pk is None:
+                raise WertquotenFehler(
+                    'Eine neue STWEG kann nicht «aktiv» angelegt werden: Es gibt '
+                    'noch keine Einheiten mit Wertquoten. Als «entwurf» anlegen, '
+                    'Einheiten erfassen, dann aktivieren.', code='wertquoten_summe')
+            pruefe_wertquoten(self)
         super().save(*args, **kwargs)
 
 
@@ -123,6 +164,10 @@ class Liegenschaft(models.Model):
 
     def __str__(self):
         return f"{self.strasse}, {self.ort}"
+
+    @property
+    def ist_stweg(self):
+        return self.typ == self.TYP_STWEG
 
 
 class Versicherung(OrganisationAusKette):
@@ -175,6 +220,13 @@ class Einheit(OrganisationAusKette):
         ('bas', _('Bastelraum'))
     ]
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='einheiten')
+    #: Nur STWEG: der Stockwerkeigentümer dieser Einheit. Bei einer
+    #: Mietliegenschaft gehört alles `Liegenschaft.eigentuemer`; in einer STWEG
+    #: hat jede Einheit ihren eigenen. `SET_NULL`: Ein gelöschter Eigentümer
+    #: löscht keine Einheit (und damit keine Wertquote).
+    stockwerkeigentuemer = models.ForeignKey(
+        'crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='stweg_einheiten', verbose_name="Stockwerkeigentümer")
     bezeichnung = models.CharField("Objektbezeichnung", max_length=50)
     typ = models.CharField("Typ", max_length=10, choices=TYP_CHOICES, default='whg')
     etage = models.CharField("Etage", max_length=50, blank=True)

@@ -1001,6 +1001,38 @@ class Erneuerungsfonds(OrganisationAusKette):
         return f"Erneuerungsfonds {self.liegenschaft} — CHF {self.bestand}"
 
 
+class ErneuerungsfondsBewegung(OrganisationAusKette):
+    """Einzelne Einlage oder Entnahme eines Erneuerungsfonds (nur Bewegungen).
+
+    Der Saldo `Erneuerungsfonds.bestand` ist die Summe dieser Zeilen — jede
+    Änderung hinterlässt hier eine Spur, kein stilles Überschreiben des Bestands.
+    Bei einer STWEG gehört der Fonds der Gemeinschaft, nicht der Verwaltung:
+    Einlagen sind KEIN Ertrag, sondern Passivum (Konto 2800).
+    """
+    ORGANISATION_PFAD = 'fonds'
+    ART_EINLAGE = 'einlage'
+    ART_ENTNAHME = 'entnahme'
+    ART_CHOICES = [(ART_EINLAGE, gettext_lazy('Einlage')), (ART_ENTNAHME, gettext_lazy('Entnahme'))]
+
+    fonds = models.ForeignKey(Erneuerungsfonds, on_delete=models.CASCADE, related_name='bewegungen')
+    art = models.CharField(max_length=10, choices=ART_CHOICES)
+    #: Immer positiv; die Richtung steht in `art`.
+    betrag = models.DecimalField(max_digits=12, decimal_places=2)
+    jahr = models.PositiveIntegerField()
+    datum = models.DateField(default=timezone.localdate)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='fonds_bewegungen')
+    text = models.CharField(max_length=255, blank=True, default='')
+    buchung = models.ForeignKey('Buchung', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        db_table = 'finance_erneuerungsfondsbewegung'
+        ordering = ['datum', 'id']
+
+    def __str__(self):
+        return f"{self.get_art_display()} {self.betrag} ({self.jahr})"
+
+
 class EigentuemerAuszahlung(models.Model):
     """Auszahlung an einen Eigentümer aus dem Kontokorrent Eigentümer.
     Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank — reduziert die

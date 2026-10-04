@@ -404,6 +404,7 @@ urlpatterns = [
     path('neu/termine/', fw_termine, name='fw_termine'),
     path('neu/termine/neu/', fw_termin_neu, name='fw_termin_neu'),
     path('neu/termine/<int:pk>/status/', fw_termin_status, name='fw_termin_status'),
+    path('neu/stweg/', include('stweg.urls')),
     path('neu/abwesenheiten/', fw_abwesenheiten, name='fw_abwesenheiten'),
     path('neu/abwesenheiten/neu/', fw_abwesenheit_neu, name='fw_abwesenheit_neu'),
     # Phase 4b.10: Fristenwaechter. Die Reihenfolge ist bedeutsam — 'neu' und
@@ -544,6 +545,7 @@ urlpatterns = [
     path('neu/bankabgleich/auszug/<int:pk>/rueckgaengig/', fw_kontoauszug_rueckgaengig, name='fw_kontoauszug_rueckgaengig'),
 
     # --- EIGENTÜMER-PORTAL (read-only, nur eigener Eigentuemer) ---
+    path('portal/stweg/', include('stweg.portal_urls')),
     path('portal/', portal_view, name='portal'),
     path('portal/dokument/<int:pk>/', portal_dokument_download, name='portal_dokument_download'),
     path('portal/report/', portal_report_pdf, name='portal_report_pdf'),

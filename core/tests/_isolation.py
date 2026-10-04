@@ -47,6 +47,7 @@ PARAMETER_MODELL = {
     'einheit_id':      'einheit',
     'liegenschaft_id': 'liegenschaft',
     'lg_id':           'liegenschaft',
+    'stweg_id':        'stweg_liegenschaft',      # STWEG-Modul: Gemeinschaft, nicht Mietliegenschaft
     'mieter_id':       'mieter',
     'periode_id':      'periode',
     'kreditor_id':     'kreditor',
@@ -241,6 +242,38 @@ class MandantenFixture:
         self.kuendigung = Kuendigung.objects.create(vertrag=self.vertrag)
         self.pendenz = Pendenz.objects.create(
             titel=f'Frist {k}', liegenschaft=self.liegenschaft)
+        # STWEG-Modul: Versammlung, Traktandum, Anfrage und Aufgabe — damit der
+        # Registrylauf FREMDE IDs der stweg-URLs tatsächlich anfasst, statt sie
+        # zu überspringen.
+        #
+        # Bewusst an der VORHANDENEN Liegenschaft und ohne eine zweite: Eine
+        # zusätzliche Liegenschaft je Bestand verschob in `faelle` die Zählungen
+        # (Abfragezahl 12 statt 11, Listen mit einem Eintrag mehr). Die Art
+        # `STWEG` stört dort nicht; sie wird nur vom STWEG-Modul gelesen.
+        from django.utils import timezone as _tz
+        from portfolio.models import Liegenschaft
+        from stweg.models import StwegAnfrage as _Anfrage, Traktandum as _Traktandum, Versammlung as _Versammlung
+        Liegenschaft.objects.filter(pk=self.liegenschaft.pk).update(typ='STWEG', status='entwurf')
+        self.liegenschaft.refresh_from_db()
+        self.stweg_liegenschaft = self.liegenschaft
+        self.stweg_versammlung = _Versammlung.objects.create(
+            liegenschaft=self.liegenschaft, titel=f'Versammlung {k}',
+            datum=_tz.now() + timedelta(days=30))
+        self.stweg_traktandum = _Traktandum.objects.create(
+            versammlung=self.stweg_versammlung, nr=1, titel=f'Traktandum {k}')
+        self.stweg_anfrage = _Anfrage.objects.create(liegenschaft=self.liegenschaft, betreff=f'Anfrage {k}')
+        # Die Aufgabe ist die vorhandene Pendenz, mit STWEG-Schlüssel.
+        Pendenz.objects.filter(pk=self.pendenz.pk).update(quelle='stweg:aufgabe')
+        self.stweg_pendenz = self.pendenz
+        from stweg.models import StwegAbrechnung as _Abrechnung, StwegAkonto as _Akonto
+        self.stweg_abrechnung = _Abrechnung.objects.create(liegenschaft=self.liegenschaft, jahr=2025)
+        self.stweg_akonto = _Akonto.objects.create(einheit=self.einheit, betrag=Decimal('100'))
+        from stweg.models import Vollmacht as _Vollmacht, Zirkularbeschluss as _Zirkular
+        self.stweg_zirkular = _Zirkular.objects.create(
+            liegenschaft=self.liegenschaft, titel=f'Zirkular {k}', antrag='Antrag',
+            frist_bis=date.today() + timedelta(days=14))
+        self.stweg_vollmacht = _Vollmacht.objects.create(
+            versammlung=self.stweg_versammlung, einheit=self.einheit, bevollmaechtigter=f'Vertreter {k}')
         # Ohne Geheimnis angelegt: Der Registrylauf prüft SICHTBARKEIT, und
         # dafür braucht es keinen Schlüssel. Ein verschlüsseltes Passwort
         # hier hiesse, dass das ganze Fixture — und damit jeder Test, der es
@@ -419,6 +452,31 @@ class MandantenFixture:
         # Mahnstufen je Organisation: `fw_mahnstufe_loeschen` nimmt die `pk` einer
         # Stufe. Ein POST auf eine FREMDE Stufe darf nichts löschen (404).
         ('mahnstufe',       'mahnstufe'),
+        # STWEG-Modul. `pk` ist je nach URL EINE VERSAMMLUNG, ein TRAKTANDUM,
+        # eine ANFRAGE oder eine AUFGABE (Pendenz) — abgelesen am
+        # `get_object_or_404` in stweg/views.py. 'stweg_traktandum_neu' trägt die
+        # Versammlung und muss deshalb VOR 'stweg_traktandum' stehen.
+        # Portal: 'vollmacht/<pk>/erteilen' trägt die VERSAMMLUNG, '…/widerrufen' die VOLLMACHT.
+        ('portal_stweg_vollmacht_widerruf', 'stweg_vollmacht'),
+        ('portal_stweg_vollmacht',   'stweg_versammlung'),
+        ('portal_stweg_abstimmen',   'stweg_zirkular'),
+        ('stweg_zirkular',           'stweg_zirkular'),
+        ('stweg_vollmacht_neu',      'stweg_versammlung'),
+        ('stweg_vollmacht',          'stweg_vollmacht'),
+        ('stweg_abrechnung',         'stweg_abrechnung'),
+        ('stweg_akonto',             'stweg_akonto'),
+        ('stweg_traktandum_neu',     'stweg_versammlung'),
+        ('stweg_traktandum',         'stweg_traktandum'),
+        ('stweg_stimmen',            'stweg_traktandum'),
+        ('stweg_beschluss',          'stweg_traktandum'),
+        ('stweg_anfrage',            'stweg_anfrage'),
+        ('stweg_aufgabe',            'stweg_pendenz'),
+        ('stweg_versammlung',        'stweg_versammlung'),
+        ('stweg_einladung',          'stweg_versammlung'),
+        ('stweg_durchfuehren',       'stweg_versammlung'),
+        ('stweg_anwesenheit',        'stweg_versammlung'),
+        ('stweg_protokoll',          'stweg_versammlung'),
+        ('stweg_pdf',                'stweg_versammlung'),
         # Phase 4b.5 — die ersten URLs zu Phase 4a. Die Selbstpruefung
         # `test_jeder_parameter_ist_zugeordnet` hat sie beim Bauen sofort
         # gemeldet: Ohne Eintrag hier waeren sie durch den Sweep gefallen,

@@ -1,0 +1,105 @@
+{% extends 'core/portal_base.html' %}
+{% load chf %}
+{% block title %}Stockwerkeigentum — SwissImmo{% endblock %}
+{% block brand %}Eigentümerportal{% endblock %}
+{% block brand_mobile %}Eigentümerportal{% endblock %}
+{% block nav %}
+<a class="fw-nav-eintrag" href="/portal/">Übersicht</a>
+<a class="fw-nav-eintrag fw-aktiv" href="/portal/stweg/">Stockwerkeigentum</a>
+{% endblock %}
+{% block content %}
+<div class="fw-phead"><div><h1>Stockwerkeigentum</h1>
+    <p>Ihre Einheiten, Einladungen und Protokolle der Versammlungen und Ihre Anfragen an die Verwaltung.</p></div></div>
+
+{% for g in gemeinschaften %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{{ g.lg }}</span></div>
+    {% for e in g.einheiten %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}</div></div>
+        <div class="fw-zeit">Wertquote {{ e.wertquote|floatformat:"-2" }} / {{ g.lg.wertquote_total }}</div></div>
+    {% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Versammlungen</span></div>
+    {% for v in g.versammlungen %}
+    <div class="fw-zeile"><div class="fw-mitte">
+        <div class="fw-t">{{ v.titel }}</div>
+        <div class="fw-s">{{ v.datum|date:"d.m.Y H:i" }}{% if v.ort %} · {{ v.ort }}{% endif %}</div></div>
+        {% if v.einladung_versendet_am %}<a class="fw-btn" href="/portal/stweg/einladung/{{ v.pk }}/" target="_blank" rel="noopener">Einladung</a>{% endif %}
+        {% if v.protokoll_versendet_am %}<a class="fw-btn" href="/portal/stweg/protokoll/{{ v.pk }}/" target="_blank" rel="noopener">Protokoll</a>{% endif %}
+    </div>
+    {% for m in v.meine_vollmachten %}
+    <div class="fw-zeile"><div class="fw-mitte">
+        <div class="fw-t">Vollmacht {{ m.einheit.bezeichnung }}</div>
+        {% if m.vollmacht %}<div class="fw-s">Vertreten durch {{ m.vollmacht.bevollmaechtigter }}</div>{% else %}<div class="fw-s">Sie nehmen selbst teil, oder erteilen eine Vollmacht:</div>{% endif %}</div>
+        {% if m.vollmacht %}
+        <form method="post" action="/portal/stweg/vollmacht/{{ m.vollmacht.pk }}/widerrufen/">{% csrf_token %}<button class="fw-btn">Widerrufen</button></form>
+        {% else %}
+        <form method="post" action="/portal/stweg/vollmacht/{{ v.pk }}/erteilen/" class="fw-formular">{% csrf_token %}
+            <input type="hidden" name="einheit" value="{{ m.einheit.pk }}">
+            <input name="bevollmaechtigter" required class="fw-feld" placeholder="Name der vertretenden Person" aria-label="Vertretung {{ m.einheit.bezeichnung }}">
+            <button class="fw-btn">Vollmacht erteilen</button></form>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% empty %}<p class="fw-leer">Keine Versammlung.</p>{% endfor %}
+</div>
+
+{% if g.abstimmungen %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Abstimmungen</span></div>
+    {% for a in g.abstimmungen %}
+    <div class="fw-zeile"><div class="fw-mitte">
+        <div class="fw-t">{{ a.z.titel }}</div>
+        <div class="fw-s">{% if a.z.status == 'abgeschlossen' %}{{ a.z.get_ergebnis_display }} (Ja {{ a.z.ja_koepfe }} · Nein {{ a.z.nein_koepfe }} · Enthaltung {{ a.z.enthaltung_koepfe }}){% elif a.offen %}Abstimmung bis {{ a.z.frist_bis|date:"d.m.Y" }}{% else %}Abstimmung beendet, Ergebnis folgt{% endif %}</div>
+        <div class="fw-s" style="white-space:pre-line">{{ a.z.antrag }}</div>
+        {% if a.offen %}
+        <form method="post" action="/portal/stweg/abstimmen/{{ a.z.pk }}/" class="fw-formular">{% csrf_token %}
+            {% for m in a.meine %}
+            <div class="fw-feldblock"><label class="fw-label" for="s{{ a.z.pk }}_{{ m.einheit.pk }}">Ihre Stimme für {{ m.einheit.bezeichnung }}</label>
+                <select id="s{{ a.z.pk }}_{{ m.einheit.pk }}" name="stimme_{{ m.einheit.pk }}" class="fw-feld">
+                    <option value="">— noch nicht abgestimmt —</option>
+                    <option value="ja"{% if m.wert == 'ja' %} selected{% endif %}>Ja</option>
+                    <option value="nein"{% if m.wert == 'nein' %} selected{% endif %}>Nein</option>
+                    <option value="enthaltung"{% if m.wert == 'enthaltung' %} selected{% endif %}>Enthaltung</option></select></div>
+            {% endfor %}
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Stimme speichern</button></div>
+        </form>
+        {% endif %}
+        </div>
+        <a class="fw-btn" href="/portal/stweg/zirkular/{{ a.z.pk }}/" target="_blank" rel="noopener">PDF</a></div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Abrechnungen</span></div>
+    {% for x in g.abrechnungen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">Jahresabrechnung {{ x.abrechnung.jahr }}</div>
+        <div class="fw-s">{% if x.saldo > 0 %}Nachzahlung CHF {{ x.saldo|chf }}{% elif x.saldo < 0 %}Guthaben CHF {{ x.saldo|cut:"-"|chf }}{% else %}ausgeglichen{% endif %}</div></div>
+        <a class="fw-btn" href="/portal/stweg/abrechnung/{{ x.abrechnung.pk }}/" target="_blank" rel="noopener">PDF</a></div>
+    {% empty %}<p class="fw-leer">Noch keine abgeschlossene Abrechnung.</p>{% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">Meine Anfragen</span></div>
+    {% for a in g.anfragen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ a.betreff }}</div>
+        <div class="fw-s">{{ a.erstellt_am|date:"d.m.Y" }} · {{ a.get_status_display }}</div>
+        {% if a.antwort %}<div class="fw-s">Antwort: {{ a.antwort }}</div>{% endif %}</div></div>
+    {% empty %}<p class="fw-leer">Noch keine Anfrage.</p>{% endfor %}
+    <details class="fw-aufklapp"><summary>Anfrage an die Verwaltung</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/portal/stweg/anfrage/{{ g.lg.pk }}/" class="fw-formular">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="b{{ g.lg.pk }}">Betreff *</label>
+                    <input id="b{{ g.lg.pk }}" name="betreff" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="t{{ g.lg.pk }}">Ihre Frage</label>
+                    <textarea id="t{{ g.lg.pk }}" name="text" rows="3" class="fw-feld"></textarea></div>
+                <div class="fw-formular-fuss"><button class="fw-btn fw-primary">Senden</button></div>
+            </form></div></details>
+</div>
+{% empty %}
+<div class="fw-card"><p class="fw-leer">Ihnen ist keine Stockwerkeigentümer-Einheit zugeordnet.</p></div>
+{% endfor %}
+{% endblock %}

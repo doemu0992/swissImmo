@@ -48,6 +48,17 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {% include 'fw/_feld.html' with f=form.egid label=_("EGID") platzhalter=_("automatisch aus Adresse") %}
             {% include 'fw/_feld.html' with f=form.kataster_nummer label=_("Kataster-Nr.") %}
+            <div><label for="id_typ" class="fw-label mb-1">{% trans "Art" %}</label>
+                <select id="id_typ" name="typ" class="fw-feld w-full"{% if form.typ.errors %} aria-invalid="true" aria-describedby="id_typ_fehler"{% endif %}>
+                    {% for val, lab in form.fields.typ.choices %}<option value="{{ val }}" {% if form.typ.value == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
+                </select>
+                {% include 'fw/_feldfehler.html' with f=form.typ %}</div>
+            <div><label for="id_status" class="fw-label mb-1">{% trans "Status" %}</label>
+                <select id="id_status" name="status" class="fw-feld w-full"{% if form.status.errors %} aria-invalid="true" aria-describedby="id_status_fehler"{% endif %}>
+                    {% for val, lab in form.fields.status.choices %}<option value="{{ val }}" {% if form.status.value == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
+                </select>
+                {% include 'fw/_feldfehler.html' with f=form.status %}</div>
+            {% include 'fw/_feld.html' with f=form.wertquote_total label=_("Wertquoten-Total (Nenner)") inputmodus="numeric" platzhalter="1000" %}
             {% comment %}
 WER DIESE LIEGENSCHAFT BETREUT (E2.70)
 
