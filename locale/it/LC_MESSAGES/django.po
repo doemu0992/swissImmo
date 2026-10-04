@@ -22222,3 +22222,43 @@ msgstr "Riconsegna e consegna con il contratto"
 #: core/templates/fw/abnahme_vorort_neu.html
 msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
 msgstr "Solo per «Riconsegna e consegna»: il contratto che inizia prima esce, l’altro entra. Il verbale di consegna viene preparato alla chiusura."
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Referenzzins (Basis)"
+msgstr "Tasso di riferimento (base)"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "bei Vertragsbeginn"
+msgstr "all'inizio del contratto"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "LIK (Basis)"
+msgstr "IPC (base)"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Teuerung ausgeglichen bis"
+msgstr "Rincaro compensato fino a"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Kostensteigerung ausgeglichen bis"
+msgstr "Aumento dei costi compensato fino a"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "Stand der Anpassung per %(d)s"
+msgstr "Stato dell'adeguamento al %(d)s"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "aktuell %(z)s %%"
+msgstr "attuale %(z)s %%"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "aktuell %(p)s Punkte"
+msgstr "attuale %(p)s punti"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben eingegebenen Basiswerten."
+msgstr "Per questo contratto esiste già un adeguamento della pigione: il calcolo parte dallo stato dell'ultimo adeguamento (tasso di riferimento %(zins)s %%, IPC %(lik)s), non dai valori di base inseriti sopra."

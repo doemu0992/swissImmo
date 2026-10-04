@@ -22244,3 +22244,43 @@ msgstr "Sortie et entrée avec le contrat"
 #: core/templates/fw/abnahme_vorort_neu.html
 msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
 msgstr "Seulement pour « Sortie et entrée » : le contrat qui commence le plus tôt sort, l’autre entre. Le procès-verbal d’entrée est préparé à la clôture."
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Referenzzins (Basis)"
+msgstr "Taux de référence (base)"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "bei Vertragsbeginn"
+msgstr "au début du contrat"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "LIK (Basis)"
+msgstr "IPC (base)"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Teuerung ausgeglichen bis"
+msgstr "Renchérissement compensé jusqu'à"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Kostensteigerung ausgeglichen bis"
+msgstr "Hausse des coûts compensée jusqu'à"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "Stand der Anpassung per %(d)s"
+msgstr "État de l'adaptation au %(d)s"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "aktuell %(z)s %%"
+msgstr "actuel %(z)s %%"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "aktuell %(p)s Punkte"
+msgstr "actuel %(p)s points"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben eingegebenen Basiswerten."
+msgstr "Une adaptation de loyer existe déjà pour ce contrat : le calcul part de l'état de la dernière adaptation (taux de référence %(zins)s %%, IPC %(lik)s), et non des valeurs de base saisies ci-dessus."

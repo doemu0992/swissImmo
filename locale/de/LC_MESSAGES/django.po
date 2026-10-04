@@ -22132,3 +22132,43 @@ msgstr "Aus- und Einzug mit Vertrag"
 #: core/templates/fw/abnahme_vorort_neu.html
 msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
 msgstr "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Referenzzins (Basis)"
+msgstr "Referenzzins (Basis)"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "bei Vertragsbeginn"
+msgstr "bei Vertragsbeginn"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "LIK (Basis)"
+msgstr "LIK (Basis)"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Teuerung ausgeglichen bis"
+msgstr "Teuerung ausgeglichen bis"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Kostensteigerung ausgeglichen bis"
+msgstr "Kostensteigerung ausgeglichen bis"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "Stand der Anpassung per %(d)s"
+msgstr "Stand der Anpassung per %(d)s"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "aktuell %(z)s %%"
+msgstr "aktuell %(z)s %%"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "aktuell %(p)s Punkte"
+msgstr "aktuell %(p)s Punkte"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben eingegebenen Basiswerten."
+msgstr "Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben eingegebenen Basiswerten."

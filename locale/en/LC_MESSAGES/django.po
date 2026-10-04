@@ -22018,3 +22018,43 @@ msgstr "Move-out and move-in with contract"
 #: core/templates/fw/abnahme_vorort_neu.html
 msgid "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet."
 msgstr "Only for “Move-out and move-in”: the contract that starts earlier moves out, the other moves in. The move-in report is prepared on completion."
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Referenzzins (Basis)"
+msgstr "Reference rate (basis)"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "bei Vertragsbeginn"
+msgstr "at start of contract"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "LIK (Basis)"
+msgstr "CPI (basis)"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Teuerung ausgeglichen bis"
+msgstr "Inflation compensated until"
+
+#: core/templates/fw/vertrag_detail.html
+msgid "Kostensteigerung ausgeglichen bis"
+msgstr "Cost increase compensated until"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "Stand der Anpassung per %(d)s"
+msgstr "As of the adjustment on %(d)s"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "aktuell %(z)s %%"
+msgstr "current %(z)s %%"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "aktuell %(p)s Punkte"
+msgstr "current %(p)s points"
+
+#: core/templates/fw/vertrag_detail.html
+#, python-format
+msgid "Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben eingegebenen Basiswerten."
+msgstr "This contract already has a rent adjustment: the calculation starts from the state of the last adjustment (reference rate %(zins)s %%, CPI %(lik)s), not from the basis values entered above."
