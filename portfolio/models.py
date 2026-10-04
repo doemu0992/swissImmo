@@ -140,6 +140,18 @@ class Liegenschaft(models.Model):
         # (`obj = lg or Liegenschaft()`, danach nur Formularfelder).
         if self.organisation_id is None:
             self.organisation_id = organisation_aus_kontext()
+        # STWEG wird nie «aktiv», wenn die Wertquoten nicht aufgehen. Vor dem
+        # Speichern, damit nichts Halbes in der Datenbank landet. Bei einem
+        # neuen Datensatz gibt es noch keine Einheiten — eine neue STWEG
+        # beginnt also als `entwurf`.
+        if self.typ == self.TYP_STWEG and self.status == self.STATUS_AKTIV:
+            from stweg.validierung import WertquotenFehler, pruefe_wertquoten
+            if self.pk is None:
+                raise WertquotenFehler(
+                    'Eine neue STWEG kann nicht «aktiv» angelegt werden: Es gibt '
+                    'noch keine Einheiten mit Wertquoten. Als «entwurf» anlegen, '
+                    'Einheiten erfassen, dann aktivieren.', code='wertquoten_summe')
+            pruefe_wertquoten(self)
         super().save(*args, **kwargs)
 
 

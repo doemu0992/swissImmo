@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     'tickets',      # Schadensmeldungen
     'mietprozess',  # Bewerber- & Mietprozesse
     'faelle',       # Fallmaschine (Phase 4a)
+    'stweg',        # Stockwerkeigentum: Wertquoten, Fonds, Abrechnung
 
     # --- Standard Django ---
     'django.contrib.admin',
