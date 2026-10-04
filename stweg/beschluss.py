@@ -22,7 +22,7 @@ from decimal import Decimal
 from django.db import transaction
 from django.utils import timezone
 
-from stweg.models import Anwesenheit, Stimme, Traktandum
+from stweg.models import Anwesenheit, Stimme, StimmeEreignis, Traktandum
 from stweg.validierung import stimm_einheiten
 
 
@@ -53,12 +53,14 @@ def praesenz(versammlung):
     }
 
 
-def zaehlen(einheiten, stimmen, mehrheitsart, total_quoten):
+def zaehlen(einheiten, stimmen, mehrheitsart, total_quoten, anwesende_koepfe=None):
     """Zählt Stimmen und schlägt ein Ergebnis vor — gemeinsam für Versammlung und
     Zirkularbeschluss.
 
     `einheiten`: ALLE Einheiten der Gemeinschaft; `stimmen`: {einheit: wert} der
-    Einheiten, die abgestimmt haben (bei der Versammlung nur die vertretenen)."""
+    Einheiten, die abgestimmt haben (bei der Versammlung nur die vertretenen);
+    `anwesende_koepfe`: Köpfe der anwesenden oder vertretenen Eigentümer, auch wenn sie nicht
+    abgestimmt haben (nur für «doppelt_anwesende»; beim Zirkularbeschluss gibt es keine Anwesenheit)."""
     vertreten = {e.pk: e for e in einheiten if e.pk in stimmen}
     quoten = {Stimme.JA: Decimal('0'), Stimme.NEIN: Decimal('0'), Stimme.ENTHALTUNG: Decimal('0')}
     je_kopf = {}
@@ -94,6 +96,10 @@ def zaehlen(einheiten, stimmen, mehrheitsart, total_quoten):
         angenommen = ja_k > nein_k and ja_q > nein_q
     elif mehrheitsart == 'doppelt_aller':
         angenommen = ja_k * 2 > total_koepfe and ja_q * 2 > total_quoten
+    elif mehrheitsart == 'doppelt_anwesende':
+        if anwesende_koepfe is None:
+            raise BeschlussFehler('«Mehrheit der Anwesenden» braucht eine Versammlung mit Anwesenheit.')
+        angenommen = ja_k * 2 > anwesende_koepfe and ja_q * 2 > total_quoten
     elif mehrheitsart == 'einstimmig':
         angenommen = ja_k == total_koepfe
     else:
@@ -115,8 +121,9 @@ def auswerten(traktandum):
     vertreten = {e.pk for e in vertretene_einheiten(v)}
     stimmen = {s.einheit_id: s.wert for s in Stimme.objects.filter(traktandum=traktandum)
                if s.einheit_id in vertreten}
+    anwesende = len({_kopf(e) for e in vertretene_einheiten(v)})
     return zaehlen(list(stimm_einheiten(v.liegenschaft)), stimmen, traktandum.mehrheitsart,
-                   v.liegenschaft.wertquote_total)
+                   v.liegenschaft.wertquote_total, anwesende_koepfe=anwesende)
 
 
 @transaction.atomic
@@ -141,6 +148,16 @@ def feststellen(traktandum, ergebnis, *, beschlusstext=None, user=None):
     traktandum.festgestellt_am = timezone.now()
     traktandum.save()
 
+    if traktandum.budget_id:
+        from stweg import budget as bd
+        if ergebnis == Traktandum.ANGENOMMEN:
+            try:
+                bd.budget_genehmigen(traktandum.budget, traktandum=traktandum)
+            except bd.BudgetFehler as e:
+                raise BeschlussFehler(f'Das Budget kann nicht genehmigt werden: {e}')
+        elif ergebnis == Traktandum.ABGELEHNT and traktandum.budget.status == traktandum.budget.VORGELEGT:
+            bd.budget_ablehnen(traktandum.budget)
+
     if ergebnis == Traktandum.ANGENOMMEN and traktandum.vollzug_aufgabe:
         from stweg.aufgaben import vollzug_pendenz
         vollzug_pendenz(traktandum, user=user)
@@ -156,11 +173,39 @@ def anwesenheit_setzen(versammlung, einheit, art, vertreter=''):
     return obj
 
 
-def stimme_abgeben(traktandum, einheit, wert):
+def stimme_abgeben(traktandum, einheit, wert, *, kanal='verwaltung', eigentuemer=None):
+    """Erfasst oder ändert die Stimme einer Einheit. Nach der Feststellung des Ergebnisses ist
+    sie gesperrt (das Protokoll hielte sonst Zahlen fest, die nicht mehr stimmen). Jede Abgabe
+    steht zusätzlich im Ereignisprotokoll `StimmeEreignis`."""
     if wert not in dict(Stimme.WERT_CHOICES):
         raise BeschlussFehler(f'Ungültige Stimme «{wert}».')
+    if traktandum.ergebnis != Traktandum.OFFEN:
+        raise BeschlussFehler('Das Ergebnis dieses Traktandums ist bereits festgestellt — '
+                              'die Stimmen sind gesperrt.')
+    if traktandum.mehrheitsart == 'kenntnisnahme':
+        raise BeschlussFehler('Zur Kenntnisnahme wird nicht abgestimmt.')
     if einheit.pk not in {e.pk for e in vertretene_einheiten(traktandum.versammlung)}:
         raise BeschlussFehler('Diese Einheit ist nicht anwesend oder vertreten — sie hat kein Stimmrecht.')
-    obj, _ = Stimme.objects.update_or_create(traktandum=traktandum, einheit=einheit,
-                                             defaults={'wert': wert})
+    with transaction.atomic():
+        alt = Stimme.objects.filter(traktandum=traktandum, einheit=einheit).first()
+        obj, _ = Stimme.objects.update_or_create(
+            traktandum=traktandum, einheit=einheit,
+            defaults={'wert': wert, 'kanal': kanal, 'abgegeben_am': timezone.now()})
+        StimmeEreignis.objects.create(traktandum=traktandum, einheit=einheit, wert=wert,
+                                      vorher=alt.wert if alt else '', kanal=kanal, eigentuemer=eigentuemer)
     return obj
+
+
+def stimme_loeschen(traktandum, einheit, *, kanal='verwaltung'):
+    """Nimmt eine erfasste Stimme zurück (Erfassungsfehler). Gesperrt nach der Feststellung;
+    das Ereignisprotokoll hält den Widerruf mit leerem Wert fest."""
+    if traktandum.ergebnis != Traktandum.OFFEN:
+        raise BeschlussFehler('Das Ergebnis dieses Traktandums ist bereits festgestellt — '
+                              'die Stimmen sind gesperrt.')
+    with transaction.atomic():
+        alt = Stimme.objects.filter(traktandum=traktandum, einheit=einheit).first()
+        if alt is None:
+            return
+        alt.delete()
+        StimmeEreignis.objects.create(traktandum=traktandum, einheit=einheit, wert='', vorher=alt.wert,
+                                      kanal=kanal)

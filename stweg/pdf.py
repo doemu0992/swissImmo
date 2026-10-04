@@ -4,6 +4,7 @@ Rechtstext-nahe Dokumente: fest deutsch, bis ihr Wortlaut juristisch geprüft
 übersetzt ist (Entscheid D11, `core/services/dokumentsprache.py`).
 """
 import io
+from decimal import Decimal
 
 from core.services.dokumentsprache import nur_deutsch
 from stweg.validierung import zahl
@@ -138,16 +139,9 @@ def _chf(betrag):
     return f"{betrag:,.2f}".replace(',', "'")
 
 
-def _qr_daten(abrechnung, eigentuemer, betrag):
-    """Die Angaben für den QR-Zahlteil — oder None, wenn keiner möglich ist.
-
-    Gezahlt wird auf das Konto der GEMEINSCHAFT (`Liegenschaft.iban`). Ohne gültige
-    IBAN gibt es keinen Zahlteil; der Beleg nennt die Nachzahlung trotzdem. Die
-    Referenz (QRR) verwendet `draw_qr_bill` nur bei einer QR-IBAN; bei einer
-    gewöhnlichen IBAN verlangt die Norm keine."""
+def _qr_basis(lg, eigentuemer, betrag, ref_a, ref_b, grund):
     from core.services.iban import ist_gueltige_iban, normalisiere_iban
     from core.utils.qr_code import qrr_referenz
-    lg = abrechnung.liegenschaft
     iban = normalisiere_iban(lg.iban)
     if not iban or not ist_gueltige_iban(iban) or betrag <= 0:
         return None
@@ -156,11 +150,26 @@ def _qr_daten(abrechnung, eigentuemer, betrag):
     debtor = {'name': eigentuemer.firma_oder_name, 'line1': eigentuemer.strasse or '',
               'line2': f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip(),
               'plz': eigentuemer.plz or '', 'ort': eigentuemer.ort or ''}
-    # Eindeutig je Abrechnung und Eigentümer; die Funktion nennt ihre Parameter noch nach dem
-    # Mietmodell (vertrag_id, rechnung_id), rechnet aber nur mit den Zahlen.
-    referenz, _ = qrr_referenz(abrechnung.pk, eigentuemer.pk)
-    return {'iban': iban, 'creditor': creditor, 'debtor': debtor, 'referenz': referenz,
-            'grund': f'Abrechnung {abrechnung.jahr} {lg.strasse}'[:140]}
+    # `qrr_referenz` nennt ihre Parameter noch nach dem Mietmodell (vertrag_id, rechnung_id),
+    # rechnet aber nur mit den Zahlen.
+    referenz, _ = qrr_referenz(ref_a, ref_b)
+    return {'iban': iban, 'creditor': creditor, 'debtor': debtor, 'referenz': referenz, 'grund': grund[:140]}
+
+
+def _qr_daten(abrechnung, eigentuemer, betrag):
+    """Die Angaben für den QR-Zahlteil — oder None, wenn keiner möglich ist.
+
+    Gezahlt wird auf das Konto der GEMEINSCHAFT (`Liegenschaft.iban`). Ohne gültige
+    IBAN gibt es keinen Zahlteil; der Beleg nennt die Nachzahlung trotzdem. Eindeutig je
+    Abrechnung und Eigentümer."""
+    lg = abrechnung.liegenschaft
+    return _qr_basis(lg, eigentuemer, betrag, abrechnung.pk, eigentuemer.pk,
+                     f'Abrechnung {abrechnung.jahr} {lg.strasse}')
+
+
+#: Vorschreibungs-Referenzen beginnen hinter diesem Offset, damit sie nie mit der Referenz
+#: einer Abrechnung (kleine ID im selben Feld) zusammenfallen.
+VORSCHREIBUNG_REFERENZ_OFFSET = 5_000_000_000
 
 
 def _qr_zeichnen(seite, daten, betrag):
@@ -263,4 +272,48 @@ def zirkular_pdf(z):
         if z.beschlusstext:
             s.luecke(2)
             s.absatz(z.beschlusstext, gr=10, abstand=4)
+    return s.bytes()
+
+
+@nur_deutsch
+def vorschreibung_pdf(budget, eigentuemer):
+    """Akonto-Rechnung eines Eigentümers für das genehmigte Budget: je Einheit die Aufteilung nach
+    Schlüsseln und die Raten, danach ein QR-Zahlteil je Rate (ohne gültige IBAN entfällt er)."""
+    from stweg.models import StwegVorschreibung
+    lg = budget.liegenschaft
+    s = _Seite(f"Akonto-Rechnung {budget.jahr} {lg}")
+    org = lg.organisation
+    s.zeile(org.firma or '', fett=True, gr=11)
+    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
+    s.luecke(6)
+    s.zeile(eigentuemer.firma_oder_name)
+    if eigentuemer.strasse:
+        s.zeile(eigentuemer.strasse)
+    s.zeile(f"{eigentuemer.plz} {eigentuemer.ort}".strip())
+    s.luecke(6)
+    s.zeile(f"Akonto-Rechnung {budget.jahr}", fett=True, gr=14, abstand=7)
+    s.zeile(f"Stockwerkeigentümergemeinschaft {lg}", gr=11)
+    s.zeile("Grundlage: von der Versammlung genehmigtes Budget.", gr=9)
+    s.luecke(4)
+    vs = list(StwegVorschreibung.objects.filter(budget=budget, eigentuemer=eigentuemer)
+              .select_related('einheit').order_by('einheit_id', 'rate_nr'))
+    gesehen = []
+    for v in vs:
+        if v.einheit_id not in gesehen:
+            gesehen.append(v.einheit_id)
+            s.zeile(f"{v.einheit.bezeichnung} · Jahresbetrag CHF {_chf(v.jahresbetrag)}", fett=True, gr=10)
+            for t in v.aufteilung:
+                s.zeile(f"  {t['schluessel']}: CHF {_chf(Decimal(t['betrag']))}", gr=9, abstand=4)
+    s.luecke(3)
+    s.zeile("Raten", fett=True, gr=12, abstand=6)
+    for v in vs:
+        s.zeile(f"{v.einheit.bezeichnung} · Rate {v.rate_nr}/{v.rate_total} · fällig {v.faellig_am:%d.%m.%Y}"
+                f" · CHF {_chf(v.betrag)}", gr=9, abstand=4)
+    total = sum((v.betrag for v in vs), Decimal('0.00'))
+    s.zeile(f"Total CHF {_chf(total)}", fett=True)
+    for v in vs:
+        qr = _qr_basis(lg, eigentuemer, v.betrag, VORSCHREIBUNG_REFERENZ_OFFSET + v.pk, eigentuemer.pk,
+                       f'Akonto {budget.jahr} {v.einheit.bezeichnung} Rate {v.rate_nr}/{v.rate_total}')
+        if qr:
+            _qr_zeichnen(s, qr, v.betrag)
     return s.bytes()

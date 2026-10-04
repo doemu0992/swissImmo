@@ -140,6 +140,10 @@ class Versammlung(OrganisationAusKette):
     #: der Gemeinschaft kann eine andere Frist vorsehen — hier eintragen. Die
     #: Rechtsgrundlage ist vor Gebrauch von der Verwaltung zu bestätigen.
     einladungsfrist_tage = models.PositiveSmallIntegerField(default=10)
+    #: Digitale Teilnahme und Stimmabgabe im Portal (E-Voting) während der Versammlung. Die
+    #: Verwaltung kann Stimmen weiterhin von Hand erfassen (Anwesende im Saal).
+    evoting = models.BooleanField("E-Voting im Portal", default=False)
+    evoting_bis = models.DateTimeField("E-Voting offen bis", null=True, blank=True)
     status = models.CharField(max_length=14, choices=STATUS_CHOICES, default=ENTWURF)
     leitung = models.CharField("Versammlungsleitung", max_length=120, blank=True, default='')
     protokollfuehrung = models.CharField(max_length=120, blank=True, default='')
@@ -168,6 +172,7 @@ class Traktandum(OrganisationAusKette):
         ('einfach_quoten', 'Mehrheit der Stimmenden (nach Wertquoten)'),
         ('doppelt', 'Mehrheit nach Köpfen UND Wertquoten (der Stimmenden)'),
         ('doppelt_aller', 'Mehrheit aller Eigentümer UND aller Wertquoten'),
+        ('doppelt_anwesende', 'Mehrheit der anwesenden Eigentümer UND mehr als die Hälfte aller Wertquoten'),
         ('einstimmig', 'Einstimmigkeit aller Eigentümer'),
         ('kenntnisnahme', 'Zur Kenntnisnahme (keine Abstimmung)'),
     ]
@@ -199,6 +204,11 @@ class Traktandum(OrganisationAusKette):
     # Vollzug: aus einem angenommenen Beschluss entsteht eine Pendenz.
     vollzug_aufgabe = models.CharField("Vollzug (Aufgabe)", max_length=200, blank=True, default='')
     vollzug_faellig_am = models.DateField(null=True, blank=True)
+    #: Hängt ein Budget an diesem Traktandum, löst ein angenommener Beschluss die
+    #: Akonto-Vorschreibungen aus (`stweg.budget.budget_genehmigen`), ein abgelehnter
+    #: setzt das Budget zurück auf «abgelehnt».
+    budget = models.ForeignKey('stweg.StwegBudget', on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='traktanden')
 
     class Meta:
         db_table = 'stweg_traktandum'
@@ -239,6 +249,10 @@ class Stimme(OrganisationAusKette):
     traktandum = models.ForeignKey(Traktandum, on_delete=models.CASCADE, related_name='stimmen')
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
     wert = models.CharField(max_length=10, choices=WERT_CHOICES)
+    #: Wie und wann die geltende Stimme abgegeben wurde. Jede Abgabe und Änderung steht
+    #: zusätzlich unveränderlich in `StimmeEreignis`.
+    kanal = models.CharField(max_length=10, default='verwaltung')
+    abgegeben_am = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'stweg_stimme'
@@ -508,3 +522,101 @@ class StwegAbrechnungAnteil(OrganisationAusKette):
     class Meta:
         db_table = 'stweg_abrechnung_anteil'
         ordering = ['schluessel_name', 'id']
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# BUDGET und AKONTO-VORSCHREIBUNG
+#
+# Die Verwaltung stellt das Jahresbudget auf (Positionen je Verteilschlüssel), die
+# Versammlung genehmigt es. Mit dem angenommenen Beschluss entstehen die Akonto-
+# Vorschreibungen: je Einheit der Jahresbetrag nach den Schlüsseln der Positionen,
+# in Raten. Der Erneuerungsfonds ist nicht Teil davon (`stweg.fonds`).
+# ──────────────────────────────────────────────────────────────────────────
+
+class StwegBudget(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
+    ENTWURF, VORGELEGT, GENEHMIGT, ABGELEHNT = 'entwurf', 'vorgelegt', 'genehmigt', 'abgelehnt'
+    STATUS_CHOICES = [(ENTWURF, 'Entwurf'), (VORGELEGT, 'Der Versammlung vorgelegt'),
+                      (GENEHMIGT, 'Genehmigt'), (ABGELEHNT, 'Abgelehnt')]
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
+                                     related_name='stweg_budgets')
+    jahr = models.PositiveIntegerField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=ENTWURF)
+    #: Zahl der Akonto-Raten und Fälligkeit der ersten (die weiteren folgen im gleichen Abstand).
+    raten = models.PositiveSmallIntegerField(default=4)
+    erste_faelligkeit = models.DateField(null=True, blank=True)
+    bemerkung = models.TextField(blank=True, default='')
+    genehmigt_am = models.DateTimeField(null=True, blank=True)
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'stweg_budget'
+        ordering = ['-jahr']
+        verbose_name = 'Budget'
+        constraints = [models.UniqueConstraint(fields=['liegenschaft', 'jahr'],
+                                               name='stweg_budget_je_lg_und_jahr'),
+                       models.CheckConstraint(condition=models.Q(raten__in=(1, 2, 3, 4, 6, 12)),
+                                              name='stweg_budget_raten_gueltig')]
+
+    def __str__(self):
+        return f'Budget {self.jahr} {self.liegenschaft}'
+
+    @property
+    def total(self):
+        return sum((p.betrag for p in self.positionen.all()), Decimal('0.00'))
+
+
+class StwegBudgetPosition(OrganisationAusKette):
+    ORGANISATION_PFAD = 'budget'
+    budget = models.ForeignKey(StwegBudget, on_delete=models.CASCADE, related_name='positionen')
+    bezeichnung = models.CharField(max_length=200)
+    schluessel = models.ForeignKey(StwegSchluessel, on_delete=models.PROTECT, related_name='+')
+    betrag = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = 'stweg_budget_position'
+        ordering = ['id']
+
+
+class StwegVorschreibung(OrganisationAusKette):
+    """Eine Akonto-Rate, die einer Einheit nach dem genehmigten Budget vorgeschrieben wird."""
+    ORGANISATION_PFAD = 'budget'
+    budget = models.ForeignKey(StwegBudget, on_delete=models.CASCADE, related_name='vorschreibungen')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, related_name='stweg_vorschreibungen')
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='+')
+    rate_nr = models.PositiveSmallIntegerField()
+    rate_total = models.PositiveSmallIntegerField()
+    faellig_am = models.DateField()
+    betrag = models.DecimalField(max_digits=12, decimal_places=2)
+    #: Jahresbetrag der Einheit und seine Aufteilung nach Schlüsseln (Momentaufnahme).
+    jahresbetrag = models.DecimalField(max_digits=12, decimal_places=2)
+    aufteilung = models.JSONField(default=list, blank=True)
+    versendet_am = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'stweg_vorschreibung'
+        ordering = ['faellig_am', 'einheit_id']
+        constraints = [models.UniqueConstraint(fields=['budget', 'einheit', 'rate_nr'],
+                                               name='stweg_vorschreibung_je_rate')]
+
+
+class StimmeEreignis(OrganisationAusKette):
+    """Protokoll jeder Stimmabgabe oder -änderung (nur anhängen, nie ändern).
+
+    Wer hat wann auf welchem Weg für welche Einheit welche Stimme abgegeben? Das muss sich später
+    belegen lassen, etwa bei der Anfechtung eines Beschlusses. `stimme_abgeben` schreibt hier
+    bei jedem Aufruf mit."""
+    ORGANISATION_PFAD = 'traktandum'
+    traktandum = models.ForeignKey(Traktandum, on_delete=models.CASCADE, related_name='stimm_ereignisse')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
+    wert = models.CharField(max_length=10)
+    vorher = models.CharField(max_length=10, blank=True, default='')
+    kanal = models.CharField(max_length=10)
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='+')
+    zeitpunkt = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'stweg_stimme_ereignis'
+        ordering = ['zeitpunkt', 'id']

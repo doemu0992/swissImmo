@@ -35,6 +35,8 @@ def pruefen(z, heute=None):
             probleme.append(str(e.message))
     if not z.antrag.strip():
         probleme.append('Der Antrag fehlt.')
+    if z.mehrheitsart == 'doppelt_anwesende':
+        probleme.append('«Mehrheit der Anwesenden» gibt es nur in einer Versammlung, nicht im Zirkularverfahren.')
     if z.frist_bis <= heute:
         probleme.append('Die Abstimmungsfrist muss in der Zukunft liegen.')
     eig, ohne = _empfaenger(z)

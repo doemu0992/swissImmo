@@ -239,7 +239,7 @@ def stweg_stimmen_speichern(request, pk):
             if wert in dict(Stimme.WERT_CHOICES):
                 beschluss.stimme_abgeben(t, e, wert)
             elif wert == '':
-                Stimme.objects.filter(traktandum=t, einheit=e).delete()
+                beschluss.stimme_loeschen(t, e)
     except beschluss.BeschlussFehler as e:
         _fehler(request, e)
     return _zurueck(v)
@@ -574,7 +574,7 @@ def stweg_zirkular_neu(request, stweg_id):
     z = Zirkularbeschluss.objects.create(
         liegenschaft=lg, titel=titel[:200], antrag=antrag,
         begruendung=(request.POST.get('begruendung') or '').strip(), frist_bis=frist,
-        mehrheitsart=art if art in dict(Traktandum.MEHRHEIT_CHOICES) and art != 'kenntnisnahme' else 'einstimmig',
+        mehrheitsart=art if art in dict(Traktandum.MEHRHEIT_CHOICES) and art not in ('kenntnisnahme', 'doppelt_anwesende') else 'einstimmig',
         rechtsgrundlage=(request.POST.get('rechtsgrundlage') or '').strip()[:200],
         vollzug_aufgabe=(request.POST.get('vollzug_aufgabe') or '').strip()[:200],
         vollzug_faellig_am=parse_date(request.POST.get('vollzug_faellig_am') or ''))
