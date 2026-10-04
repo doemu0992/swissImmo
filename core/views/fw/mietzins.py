@@ -174,6 +174,11 @@ def fw_mietzins_anpassung(request, vertrag_id):
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
         v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte', 'basis_lik_stand'])
+        if v.anpassungen.exists():
+            messages.warning(request, gettext(
+                'Für diesen Vertrag liegt bereits eine Mietzinsanpassung vor: Gerechnet wird ab dem Stand '
+                'der letzten Anpassung (Referenzzins %(zins)s %%, LIK %(lik)s), nicht ab den oben '
+                'eingegebenen Basiswerten.') % {'zins': v.effektive_basis()[0], 'lik': v.effektive_basis()[1]})
         neu_netto = _dec(request.POST.get('neu_netto'), str(v.netto_mietzins))
         neu_zins = _dec(request.POST.get('neu_zins'), str(aktuell_ref))
         neu_lik = _dec(request.POST.get('neu_lik'), str(aktuell_lik))
@@ -273,7 +278,14 @@ def fw_mietzins_anpassung(request, vertrag_id):
         return resp
 
     # --- GET: Vorschlag berechnen ---
-    pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, Decimal('0.00')) or {}
+    # Allgemeine Kostensteigerung: Pauschale (0.5 %/Jahr) seit «ausgeglichen bis», sonst seit
+    # Vertragsbeginn — als editierbarer Vorschlag, nicht automatisch weitergegeben.
+    from core.services.mietzins_rechner import kostensteigerung_pauschal_pct
+    kosten_vorschlag = kostensteigerung_pauschal_pct(v.kostensteigerung_datum or v.beginn,
+                                                     timezone.localdate())
+    pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, kosten_vorschlag) or {}
+    for hinweis in pot.get('hinweise', []):
+        messages.warning(request, hinweis)
     vorschlag_netto = pot.get('neu_chf', v.netto_mietzins)
     naechster_termin = naechster_anpassungstermin(v, timezone.localdate())
 
@@ -299,7 +311,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
         'lik_basis': lik_basis,
         'alt_lik_stand': v.basis_lik_stand, 'aktuell_lik_stand': aktuell_lik_stand,
         'vorschlag_netto': vorschlag_netto, 'naechster_termin': naechster_termin,
-        'pot': pot, 'index_vorschlag': index_vorschlag,
+        'pot': pot, 'index_vorschlag': index_vorschlag, 'kosten_vorschlag': kosten_vorschlag,
     })
 
 

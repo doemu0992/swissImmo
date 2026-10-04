@@ -142,3 +142,31 @@ class FormularBegruendungTests(TestCase):
         self.assertIn('-2.91 %', text)
         self.assertIn('Rechtsmittelbelehrung', text)
         self.assertIn('1500.00', text.replace("'", ''))                # alte Miete
+
+
+class OffenePunkteTests(TestCase):
+    def test_altes_formular_leitet_auf_das_amtliche_um(self):
+        from django.test import Client
+        from ._helfer import _team_user
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user('Verwalter'))
+        r = c.get(f'/mietzins/{v.id}/', secure=True)
+        self.assertEqual((r.status_code, r.url), (302, f'/neu/mietzins/{v.id}/anpassung/'))
+
+    def test_hinweis_bei_referenzzins_ab_5_prozent(self):
+        from rentals.services import berechne_mietpotenzial
+        _lg, _e, _m, v = _basis_objekte()
+        v.basis_referenzzinssatz = D('5.00'); v.basis_lik_punkte = D('100.0')
+        self.assertTrue(berechne_mietpotenzial(v, D('4.75'), D('100.0'))['hinweise'])
+        v.basis_referenzzinssatz = D('1.50')
+        self.assertEqual(berechne_mietpotenzial(v, D('1.25'), D('100.0'))['hinweise'], [])
+
+    def test_anpassungsformular_belegt_kostenpauschale_vor(self):
+        from django.test import Client
+        from ._helfer import _team_user
+        _lg, _e, _m, v = _basis_objekte()          # beginn 2024-01-01
+        c = Client(); c.force_login(_team_user('Verwalter'))
+        r = c.get(f'/neu/mietzins/{v.id}/anpassung/', secure=True)
+        self.assertEqual(r.status_code, 200)
+        soll = rz.kostensteigerung_pauschal_pct(date(2024, 1, 1), date.today())
+        self.assertContains(r, f'name="kosten_pct" value="{soll}"')

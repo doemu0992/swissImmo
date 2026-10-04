@@ -49,7 +49,14 @@ def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=De
     elif total_prozent < Decimal('-0.5'):
         action = 'DOWN'
 
+    hinweise = []
+    if max(basis_ref, curr_ref) >= Decimal('5.00'):
+        hinweise.append(
+            f"Referenzzins {basis_ref} % → {curr_ref} %: Der Überwälzungssatz von 3 % je Viertelprozent gilt "
+            "nur unter 5 % (Art. 13 VMWG). Bei höheren Sätzen gelten andere Sätze — "
+            "Berechnung von Hand prüfen.")
     return {
+        'hinweise': hinweise,
         'mieter': f"{vertrag.mieter}",
         'objekt': str(vertrag.einheit),
         'aktuell_chf': round(netto_miete, 2),
