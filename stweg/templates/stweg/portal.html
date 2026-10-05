@@ -95,7 +95,7 @@
         <span class="fw-neben">{% blocktrans with betrag=g.fonds.bestand|chf %}Bestand CHF {{ betrag }}{% endblocktrans %}</span></div>
     {% for f in g.fonds.einheiten %}
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ f.einheit.bezeichnung }}</div>
-        <div class="fw-s">{% blocktrans with einlagen=f.einlagen|chf %}Ihre Einlagen CHF {{ einlagen }}{% endblocktrans %}</div></div>
+        <div class="fw-s">{% blocktrans with einlagen=f.einlagen|chf %}Ihre Einlagen CHF {{ einlagen }}{% endblocktrans %}{% if f.offen > 0 %} · {% blocktrans with offen=f.offen|chf %}davon noch offen CHF {{ offen }}{% endblocktrans %}{% endif %}</div></div>
         <div class="fw-zeit">{% blocktrans with anteil=f.anteil|chf %}Anteil CHF {{ anteil }}{% endblocktrans %}</div></div>
     {% endfor %}
     <div class="fw-rumpf"><p class="fw-s">{% trans "Der Fonds gehört der Gemeinschaft. Der Anteil ist rechnerisch (Bestand nach Wertquote)." %}</p></div>

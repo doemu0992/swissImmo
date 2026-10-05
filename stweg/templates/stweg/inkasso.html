@@ -15,6 +15,12 @@
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{{ z.einheit.bezeichnung }}{% if z.einheit.stockwerkeigentuemer %} · {{ z.einheit.stockwerkeigentuemer.firma_oder_name }}{% endif %}</span>
         <span class="fw-chip {% if z.offen > 0 %}fw-warn{% else %}fw-brand{% endif %}">{% blocktrans with b=z.offen|chf %}offen CHF {{ b }}{% endblocktrans %}</span></div>
+    {% if z.altforderung > 0 %}
+    <div class="fw-rumpf"><p class="fw-s">{% blocktrans with b=z.altforderung|chf %}Davon CHF {{ b }} gegen einen früheren Eigentümer: Die Mahnung richtet sich nur an den heutigen Eigentümer; das Pfandrecht haftet am Anteil.{% endblocktrans %}</p></div>
+    {% endif %}
+    {% if z.zins %}
+    <div class="fw-rumpf"><p class="fw-s">{% blocktrans with p=z.zins.prozent|floatformat:"-2" b=z.zins.total|chf %}Verzugszins zu {{ p }} % bis heute: CHF {{ b }} (nicht in der Pfandsumme){% endblocktrans %}{% if not z.zins.bestaetigt %} · {% trans "Satz nicht bestätigt: steht nicht in der Mahnung" %}{% endif %}</p></div>
+    {% endif %}
     {% if z.pfand %}
     <div class="fw-rumpf">
         <p>{% blocktrans with p=z.pfand.pfandberechtigt|chf a=z.pfand.ausgeschlossen|chf %}Pfandberechtigt: CHF {{ p }} · nicht pfandberechtigt (älter): CHF {{ a }}{% endblocktrans %}</p>

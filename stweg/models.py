@@ -719,6 +719,9 @@ class StwegVorgaben(OrganisationAusKette):
     anfechtungsfrist_tage = models.PositiveSmallIntegerField(
         "Anfechtungsfrist (Tage ab Versand des Protokolls)", null=True, blank=True,
         help_text='Leer = es wird keine Frist geführt.')
+    verzugszins_prozent = models.DecimalField(
+        "Verzugszins auf Beiträge (% pro Jahr)", max_digits=5, decimal_places=2, null=True, blank=True,
+        help_text='Aus Reglement oder Gesetz. Leer = es werden keine Verzugszinsen berechnet.')
     bemerkung = models.TextField("Quelle (Reglement, Artikel)", blank=True, default='')
     bestaetigt_am = models.DateTimeField(null=True, blank=True)
     bestaetigt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
@@ -807,3 +810,22 @@ class StwegPfandrecht(OrganisationAusKette):
     class Meta:
         db_table = 'stweg_pfandrecht'
         ordering = ['-angemeldet_am']
+
+
+class StwegEigentuemerwechsel(OrganisationAusKette):
+    """Handänderung: ab `datum` ist `neu` Eigentümer der Einheit. Die Beiträge, die vorher fällig wurden, schuldete
+    der bisherige Eigentümer (siehe `stweg.eigentuemer`)."""
+    ORGANISATION_PFAD = 'einheit__liegenschaft'
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='stweg_wechsel')
+    datum = models.DateField("Eigentumsübergang (Tag des Grundbucheintrags oder Antritt)")
+    bisheriger = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='+')
+    neu = models.ForeignKey('crm.Eigentuemer', on_delete=models.PROTECT, related_name='+')
+    bemerkung = models.CharField(max_length=200, blank=True, default='')
+    erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='+')
+
+    class Meta:
+        db_table = 'stweg_eigentuemerwechsel'
+        ordering = ['datum', 'id']
+        constraints = [models.UniqueConstraint(fields=['einheit', 'datum'], name='stweg_wechsel_ein_wechsel_je_tag')]

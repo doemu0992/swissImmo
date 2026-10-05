@@ -148,16 +148,28 @@ der Mietmahnbrief stuft die letzte Stufe herab) und der Mahn-PDF-Pfad des Mietmo
 * **Tilgungsreihenfolge:** Zahlung mit gewählter Rate (`StwegAkonto.vorschreibung`, Art. 86 OR) tilgt diese;
   sonst die älteste offene Forderung (FIFO). Ohne diese Regel würde eine späte Zahlung alte Forderungen tilgen und die
   Pfandsumme überschätzen.
-* **Nicht modelliert:** Verzugszinsen, anteilige Beiträge bei Eigentümerwechsel (Handänderung), Kostenvorschuss
-  Grundbuchamt. Die rechtliche Lesart (Forderungsdatum, Tilgung, 36 Monate) ist durch eine Fachperson zu bestätigen.
+* **Verzugszins:** Das System kennt keinen Satz. Die Gemeinschaft trägt ihn bei den Vorgaben ein (mit Quelle, zu
+  bestätigen); leer = es wird nichts berechnet. Berechnung: einfacher Zins auf die heute OFFENEN Beträge vom Tag nach
+  der Fälligkeit bis zum Stichtag (Tage/365, auf Rappen). Zins auf spät bezahlte Teile fehlt (Vereinfachung). Die Mahnung
+  nennt den Zins erst nach Bestätigung des Satzes, immer ausserhalb des Totals; in der Pfandsumme steht er nie.
+* **Handänderung** (`stweg/eigentuemer.py`, «Handänderung erfassen» auf der Einheitenseite): Datum, bisheriger und
+  neuer Eigentümer, Miteigentümer werden gelöscht. Jede Forderung hat einen Schuldner (Eigentümer am Fälligkeitstag;
+  Übergangstag zählt zum neuen; bei Abrechnungen der in der Abrechnung genannte). Die Mahnung geht nur an den heutigen
+  Eigentümer und nennt nur seine Forderungen; Forderungen gegen einen früheren Eigentümer werden auf der Inkassoseite
+  ausgewiesen, das Gemeinschaftspfandrecht umfasst sie (haftet am Anteil — Annahme, rechtlich zu bestätigen). Nicht
+  abgebildet: anteilige Aufteilung auf den Übergangstag, Absprachen im Kaufvertrag.
+* **Nicht modelliert:** Kostenvorschuss Grundbuchamt, Mahnkosten. Die rechtliche Lesart (Forderungsdatum, Tilgung,
+  36 Monate, Handänderung, Zins) ist durch eine Fachperson zu bestätigen.
 
 ## Integritätsprüfung und Audit
 
 `python manage.py stweg_audit [--organisation ID] [--liegenschaft ID]` (Exit-Code 1 bei Fehler) und
 `stweg.integritaet.pruefe(lg)`: Wertquoten 1000/1000, Einheiten ohne Eigentümer/E-Mail, Schlüssel-Lücken,
-Fonds-Bestand gegen Bewegungen, Konten 2035/2800 als Passiva, Zahlungen ohne Buchung und der **Abgleich Hauptbuch ↔
+Fonds-Bestand gegen Bewegungen (auf der Gemeinschaftsseite als «Prüfung der Daten» sichtbar), Konten 2035/2800 als Passiva, Zahlungen ohne Buchung und der **Abgleich Hauptbuch ↔
 Fachtabellen** (1110, 2035, 3100, 2800). **Lift nach Stockwerk:** `schluessel.lift_nach_stockwerk` (Gewicht = Stockwerknummer,
 EG = 0; Unlesbares bricht ab, es wird nicht geraten). Das Reglement kann anderes vorsehen.
+
+Das Portal zeigt dem Eigentümer bei den Fonds-Einlagen, was davon noch offen ist.
 
 ## Geschäftsjahr-Simulation
 

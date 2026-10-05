@@ -47,6 +47,22 @@
         {% empty %}<p class="fw-leer">{% trans "Noch keine Einheit. Unten die erste anlegen." %}</p>{% endfor %}
         {% if einheiten %}<div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Speichern" %}</button></div>{% endif %}
     </form>
+    <details class="fw-aufklapp"><summary>{% trans "Handänderung erfassen (Eigentümerwechsel)" %}</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/stweg/{{ lg.pk }}/einheiten/wechsel/" class="fw-formular drei">{% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="hw_e">{% trans "Einheit" %}</label>
+                    <select id="hw_e" name="einheit" required class="fw-feld">{% for e in einheiten %}<option value="{{ e.pk }}">{{ e.bezeichnung }}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="hw_n">{% trans "Neuer Eigentümer" %}</label>
+                    <select id="hw_n" name="neu" required class="fw-feld">{% for eig in eigentuemer %}<option value="{{ eig.pk }}">{{ eig.firma_oder_name }}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="hw_d">{% trans "Eigentumsübergang (Datum)" %}</label>
+                    <input id="hw_d" name="datum" type="date" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="hw_b">{% trans "Bemerkung" %}</label>
+                    <input id="hw_b" name="bemerkung" maxlength="200" class="fw-feld"></div>
+                <div class="fw-formular-fuss"><button class="fw-btn">{% trans "Handänderung erfassen" %}</button></div>
+            </form>
+            <p class="fw-s">{% trans "Beiträge, die vor dem Übergang fällig wurden, schuldet der bisherige Eigentümer. Das Gemeinschaftspfandrecht haftet am Anteil. Die Miteigentümer werden gelöscht." %}</p>
+            {% for w in wechsel %}<div class="fw-s">{{ w.datum|date:"d.m.Y" }} · {{ w.einheit.bezeichnung }} · {{ w.bisheriger.firma_oder_name|default:"—" }} → {{ w.neu.firma_oder_name }}</div>{% endfor %}
+        </div></details>
     {% if nebenraeume %}
     <div class="fw-rumpf"><p class="fw-s">{% trans "Nebenräume (ohne Quote und Stimme, gehören zu einer Einheit):" %}
         {% for n in nebenraeume %}{{ n.bezeichnung }} → {{ n.gehoert_zu.bezeichnung }}{% if not forloop.last %}, {% endif %}{% endfor %}</p></div>

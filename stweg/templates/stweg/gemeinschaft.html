@@ -16,6 +16,10 @@
     <a href="/neu/stweg/{{ lg.pk }}/vorgaben/">{% trans "Vorgaben eintragen" %}</a></div></div>
 {% endif %}
 
+{% if befunde %}
+<div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Prüfung der Daten" %}</span><span class="fw-chip fw-warn">{{ befunde|length }}</span></div>
+    <div class="fw-rumpf">{% for stufe, text in befunde %}<div class="fw-s"><strong>{% if stufe == 'fehler' %}{% trans "Fehler" %}{% else %}{% trans "Warnung" %}{% endif %}:</strong> {{ text }}</div>{% endfor %}</div></div>
+{% endif %}
 {% if quoten_fehler %}
 <div class="fw-card"><div class="fw-rumpf"><span class="fw-chip fw-warn">{% trans "Wertquoten" %}</span> {{ quoten_fehler }}
     {% trans "Solange die Summe nicht aufgeht, wird weder eingeladen noch abgerechnet." %}</div></div>

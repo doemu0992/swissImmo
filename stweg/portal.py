@@ -9,6 +9,7 @@ Fremde Gemeinschaften, Versammlungen und Anfragen antworten mit 404, nie mit
 403: Ein 403 bestätigte, dass die ID existiert.
 """
 import logging
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -23,6 +24,7 @@ from django.views.decorators.http import require_POST
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
 from stweg import dokumente as dok
+from stweg import inkasso
 from stweg import evoting
 from stweg.konto import fonds_stand, kontokorrent
 from stweg.models import (Anwesenheit, StwegAbrechnung, StwegAbrechnungPosition, StwegAnfrage, StwegBudget,
@@ -112,6 +114,9 @@ def portal_stweg(request):
     for lg_id, g in gemeinschaften.items():
         g['kontokorrent'] = [{'einheit': e, **kontokorrent(e)} for e in g['einheiten']]
         g['fonds'] = fonds_stand(g['lg'], g['einheiten'])
+        for f in g['fonds']['einheiten']:                    # Einlagen, die noch nicht bezahlt sind
+            f['offen'] = sum((c['offen'] for c in inkasso.forderungen(f['einheit']) if c['art'] == 'fonds'),
+                             Decimal('0.00'))
         g['dokumente'] = dok.fuer_eigentuemer(g['lg'])
         g['akonto_budgets'] = StwegBudget.objects.filter(
             liegenschaft_id=lg_id, status=StwegBudget.GENEHMIGT,

@@ -24408,3 +24408,79 @@ msgstr "Inscription au registre foncier notée."
 #: stweg/inkasso
 msgid "Die gewählte Rate gehört nicht zu dieser Einheit."
 msgstr "L'acompte choisi n'appartient pas à cette unité."
+
+#: stweg/eigentuemer
+msgid "Handänderung erfassen (Eigentümerwechsel)"
+msgstr "Saisir un changement de propriétaire"
+
+#: stweg/eigentuemer
+msgid "Eigentumsübergang (Datum)"
+msgstr "Transfert de propriété (date)"
+
+#: stweg/eigentuemer
+msgid "Handänderung erfassen"
+msgstr "Saisir le changement de propriétaire"
+
+#: stweg/eigentuemer
+msgid "Beiträge, die vor dem Übergang fällig wurden, schuldet der bisherige Eigentümer. Das Gemeinschaftspfandrecht haftet am Anteil. Die Miteigentümer werden gelöscht."
+msgstr "Les contributions échues avant le transfert sont dues par l'ancien propriétaire. L'hypothèque légale grève la part. Les copropriétaires sont supprimés."
+
+#: stweg/eigentuemer
+msgid "Prüfung der Daten"
+msgstr "Contrôle des données"
+
+#: stweg/eigentuemer
+msgid "Fehler"
+msgstr "Erreur"
+
+#: stweg/eigentuemer
+msgid "Warnung"
+msgstr "Avertissement"
+
+#: stweg/eigentuemer
+msgid "Verzugszins auf Beiträge (Prozent pro Jahr)"
+msgstr "Intérêts moratoires sur les contributions (pour cent par an)"
+
+#: stweg/eigentuemer
+msgid "Leer = es werden keine Verzugszinsen berechnet."
+msgstr "Vide = aucun intérêt moratoire n'est calculé."
+
+#: stweg/eigentuemer
+msgid "Satz nicht bestätigt: steht nicht in der Mahnung"
+msgstr "Taux non confirmé : ne figure pas dans le rappel"
+
+#: stweg/eigentuemer
+msgid "Bitte den neuen Eigentümer wählen."
+msgstr "Veuillez choisir le nouveau propriétaire."
+
+#: stweg/eigentuemer
+msgid "Dieser Eigentümer ist bereits eingetragen."
+msgstr "Ce propriétaire est déjà inscrit."
+
+#: stweg/eigentuemer
+msgid "Bitte das Datum des Eigentumsübergangs angeben."
+msgstr "Veuillez indiquer la date du transfert de propriété."
+
+#: stweg/eigentuemer
+msgid "Der Übergang muss nach dem letzten erfassten Wechsel (%(datum)s) liegen."
+msgstr "Le transfert doit être postérieur au dernier changement saisi (%(datum)s)."
+
+#: stweg/eigentuemer
+msgid "Handänderung erfasst: «%(einheit)s» hat einen neuen Eigentümer."
+msgstr "Changement de propriétaire saisi : « %(einheit)s » a un nouveau propriétaire."
+
+#: stweg/eigentuemer
+msgid "Davon CHF %(b)s gegen einen früheren Eigentümer: Die Mahnung richtet sich nur an den heutigen Eigentümer; das Pfandrecht haftet am Anteil."
+msgstr "Dont CHF %(b)s contre un ancien propriétaire : le rappel ne s'adresse qu'au propriétaire actuel ; l'hypothèque grève la part."
+
+#: stweg/eigentuemer
+msgid "Verzugszins zu %(p)s %% bis heute: CHF %(b)s (nicht in der Pfandsumme)"
+msgstr "Intérêts moratoires à %(p)s %% à ce jour : CHF %(b)s (pas dans le montant du gage)"
+
+#: stweg/eigentuemer
+msgid "davon noch offen CHF %(offen)s"
+msgstr "dont encore ouvert CHF %(offen)s"
+
+#: stweg/eigentuemer
+msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
+msgstr "Seules des créances contre un ancien propriétaire sont ouvertes. Un rappel au propriétaire actuel n'est pas possible ; l'hypothèque légale grève la part."

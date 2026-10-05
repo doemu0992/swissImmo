@@ -24296,3 +24296,79 @@ msgstr "Eintragung im Grundbuch vermerkt."
 #: stweg/inkasso
 msgid "Die gewählte Rate gehört nicht zu dieser Einheit."
 msgstr "Die gewählte Rate gehört nicht zu dieser Einheit."
+
+#: stweg/eigentuemer
+msgid "Handänderung erfassen (Eigentümerwechsel)"
+msgstr "Handänderung erfassen (Eigentümerwechsel)"
+
+#: stweg/eigentuemer
+msgid "Eigentumsübergang (Datum)"
+msgstr "Eigentumsübergang (Datum)"
+
+#: stweg/eigentuemer
+msgid "Handänderung erfassen"
+msgstr "Handänderung erfassen"
+
+#: stweg/eigentuemer
+msgid "Beiträge, die vor dem Übergang fällig wurden, schuldet der bisherige Eigentümer. Das Gemeinschaftspfandrecht haftet am Anteil. Die Miteigentümer werden gelöscht."
+msgstr "Beiträge, die vor dem Übergang fällig wurden, schuldet der bisherige Eigentümer. Das Gemeinschaftspfandrecht haftet am Anteil. Die Miteigentümer werden gelöscht."
+
+#: stweg/eigentuemer
+msgid "Prüfung der Daten"
+msgstr "Prüfung der Daten"
+
+#: stweg/eigentuemer
+msgid "Fehler"
+msgstr "Fehler"
+
+#: stweg/eigentuemer
+msgid "Warnung"
+msgstr "Warnung"
+
+#: stweg/eigentuemer
+msgid "Verzugszins auf Beiträge (Prozent pro Jahr)"
+msgstr "Verzugszins auf Beiträge (Prozent pro Jahr)"
+
+#: stweg/eigentuemer
+msgid "Leer = es werden keine Verzugszinsen berechnet."
+msgstr "Leer = es werden keine Verzugszinsen berechnet."
+
+#: stweg/eigentuemer
+msgid "Satz nicht bestätigt: steht nicht in der Mahnung"
+msgstr "Satz nicht bestätigt: steht nicht in der Mahnung"
+
+#: stweg/eigentuemer
+msgid "Bitte den neuen Eigentümer wählen."
+msgstr "Bitte den neuen Eigentümer wählen."
+
+#: stweg/eigentuemer
+msgid "Dieser Eigentümer ist bereits eingetragen."
+msgstr "Dieser Eigentümer ist bereits eingetragen."
+
+#: stweg/eigentuemer
+msgid "Bitte das Datum des Eigentumsübergangs angeben."
+msgstr "Bitte das Datum des Eigentumsübergangs angeben."
+
+#: stweg/eigentuemer
+msgid "Der Übergang muss nach dem letzten erfassten Wechsel (%(datum)s) liegen."
+msgstr "Der Übergang muss nach dem letzten erfassten Wechsel (%(datum)s) liegen."
+
+#: stweg/eigentuemer
+msgid "Handänderung erfasst: «%(einheit)s» hat einen neuen Eigentümer."
+msgstr "Handänderung erfasst: «%(einheit)s» hat einen neuen Eigentümer."
+
+#: stweg/eigentuemer
+msgid "Davon CHF %(b)s gegen einen früheren Eigentümer: Die Mahnung richtet sich nur an den heutigen Eigentümer; das Pfandrecht haftet am Anteil."
+msgstr "Davon CHF %(b)s gegen einen früheren Eigentümer: Die Mahnung richtet sich nur an den heutigen Eigentümer; das Pfandrecht haftet am Anteil."
+
+#: stweg/eigentuemer
+msgid "Verzugszins zu %(p)s %% bis heute: CHF %(b)s (nicht in der Pfandsumme)"
+msgstr "Verzugszins zu %(p)s %% bis heute: CHF %(b)s (nicht in der Pfandsumme)"
+
+#: stweg/eigentuemer
+msgid "davon noch offen CHF %(offen)s"
+msgstr "davon noch offen CHF %(offen)s"
+
+#: stweg/eigentuemer
+msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
+msgstr "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
