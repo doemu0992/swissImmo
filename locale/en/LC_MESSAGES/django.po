@@ -24182,3 +24182,79 @@ msgstr "Land register entry noted."
 #: stweg/inkasso
 msgid "Die gewählte Rate gehört nicht zu dieser Einheit."
 msgstr "The selected instalment does not belong to this unit."
+
+#: stweg/eigentuemer
+msgid "Handänderung erfassen (Eigentümerwechsel)"
+msgstr "Record change of ownership"
+
+#: stweg/eigentuemer
+msgid "Eigentumsübergang (Datum)"
+msgstr "Transfer of ownership (date)"
+
+#: stweg/eigentuemer
+msgid "Handänderung erfassen"
+msgstr "Record change of ownership"
+
+#: stweg/eigentuemer
+msgid "Beiträge, die vor dem Übergang fällig wurden, schuldet der bisherige Eigentümer. Das Gemeinschaftspfandrecht haftet am Anteil. Die Miteigentümer werden gelöscht."
+msgstr "Contributions that fell due before the transfer are owed by the previous owner. The community lien attaches to the share. Co-owners are removed."
+
+#: stweg/eigentuemer
+msgid "Prüfung der Daten"
+msgstr "Data check"
+
+#: stweg/eigentuemer
+msgid "Fehler"
+msgstr "Error"
+
+#: stweg/eigentuemer
+msgid "Warnung"
+msgstr "Warning"
+
+#: stweg/eigentuemer
+msgid "Verzugszins auf Beiträge (Prozent pro Jahr)"
+msgstr "Default interest on contributions (percent per year)"
+
+#: stweg/eigentuemer
+msgid "Leer = es werden keine Verzugszinsen berechnet."
+msgstr "Empty = no default interest is calculated."
+
+#: stweg/eigentuemer
+msgid "Satz nicht bestätigt: steht nicht in der Mahnung"
+msgstr "Rate not confirmed: not shown in the reminder"
+
+#: stweg/eigentuemer
+msgid "Bitte den neuen Eigentümer wählen."
+msgstr "Please choose the new owner."
+
+#: stweg/eigentuemer
+msgid "Dieser Eigentümer ist bereits eingetragen."
+msgstr "This owner is already registered."
+
+#: stweg/eigentuemer
+msgid "Bitte das Datum des Eigentumsübergangs angeben."
+msgstr "Please enter the date of the transfer of ownership."
+
+#: stweg/eigentuemer
+msgid "Der Übergang muss nach dem letzten erfassten Wechsel (%(datum)s) liegen."
+msgstr "The transfer must be after the last recorded change (%(datum)s)."
+
+#: stweg/eigentuemer
+msgid "Handänderung erfasst: «%(einheit)s» hat einen neuen Eigentümer."
+msgstr "Change of ownership recorded: \"%(einheit)s\" has a new owner."
+
+#: stweg/eigentuemer
+msgid "Davon CHF %(b)s gegen einen früheren Eigentümer: Die Mahnung richtet sich nur an den heutigen Eigentümer; das Pfandrecht haftet am Anteil."
+msgstr "Of which CHF %(b)s against a previous owner: the reminder goes only to the current owner; the lien attaches to the share."
+
+#: stweg/eigentuemer
+msgid "Verzugszins zu %(p)s %% bis heute: CHF %(b)s (nicht in der Pfandsumme)"
+msgstr "Default interest at %(p)s %% to date: CHF %(b)s (not in the lien amount)"
+
+#: stweg/eigentuemer
+msgid "davon noch offen CHF %(offen)s"
+msgstr "of which still open CHF %(offen)s"
+
+#: stweg/eigentuemer
+msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
+msgstr "Only claims against a previous owner are open. A reminder to the current owner is not possible; the community lien attaches to the share."

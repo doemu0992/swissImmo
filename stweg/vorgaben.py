@@ -17,7 +17,8 @@ from stweg.beschluss import praesenz
 from stweg.models import StwegVorgaben
 
 SYSTEM_EINLADUNGSFRIST = 10
-FELDER = ('einladungsfrist_tage', 'quorum_koepfe_prozent', 'quorum_quoten_prozent', 'anfechtungsfrist_tage')
+FELDER = ('einladungsfrist_tage', 'quorum_koepfe_prozent', 'quorum_quoten_prozent', 'anfechtungsfrist_tage',
+          'verzugszins_prozent')
 
 
 class VorgabenFehler(ValueError):
@@ -62,6 +63,7 @@ def speichern(liegenschaft, daten, *, bestaetigen=False, user=None):
         'quorum_koepfe_prozent': _wert(daten.get('quorum_koepfe_prozent'), 'Quorum Köpfe', prozent=True),
         'quorum_quoten_prozent': _wert(daten.get('quorum_quoten_prozent'), 'Quorum Wertquoten', prozent=True),
         'anfechtungsfrist_tage': _wert(daten.get('anfechtungsfrist_tage'), 'Anfechtungsfrist', ganzzahl=True),
+        'verzugszins_prozent': _wert(daten.get('verzugszins_prozent'), 'Verzugszins', prozent=True),
     }
     v = vorgaben_von(liegenschaft) or StwegVorgaben(liegenschaft=liegenschaft)
     geaendert = v.pk is None or any(

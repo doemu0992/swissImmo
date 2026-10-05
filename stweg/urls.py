@@ -13,6 +13,7 @@ urlpatterns = [
     path('<int:stweg_id>/aufgabe/neu/', v.stweg_aufgabe_neu, name='stweg_aufgabe_neu'),
     path('<int:stweg_id>/einheiten/', v.stweg_einheiten, name='stweg_einheiten'),
     path('<int:stweg_id>/einheiten/speichern/', v.stweg_einheiten_speichern, name='stweg_einheiten_speichern'),
+    path('<int:stweg_id>/einheiten/wechsel/', v.stweg_eigentuemerwechsel, name='stweg_eigentuemerwechsel'),
     path('<int:stweg_id>/einheiten/neu/', v.stweg_einheit_neu, name='stweg_einheit_neu'),
     path('<int:stweg_id>/eigentuemer/neu/', v.stweg_eigentuemer_neu, name='stweg_eigentuemer_neu'),
     path('<int:stweg_id>/aktivieren/', v.stweg_aktivieren, name='stweg_aktivieren'),

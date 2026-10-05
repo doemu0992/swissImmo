@@ -24386,3 +24386,79 @@ msgstr "Iscrizione nel registro fondiario annotata."
 #: stweg/inkasso
 msgid "Die gewählte Rate gehört nicht zu dieser Einheit."
 msgstr "L'acconto scelto non appartiene a questa unità."
+
+#: stweg/eigentuemer
+msgid "Handänderung erfassen (Eigentümerwechsel)"
+msgstr "Registrare un cambio di proprietario"
+
+#: stweg/eigentuemer
+msgid "Eigentumsübergang (Datum)"
+msgstr "Trasferimento di proprietà (data)"
+
+#: stweg/eigentuemer
+msgid "Handänderung erfassen"
+msgstr "Registrare il cambio di proprietario"
+
+#: stweg/eigentuemer
+msgid "Beiträge, die vor dem Übergang fällig wurden, schuldet der bisherige Eigentümer. Das Gemeinschaftspfandrecht haftet am Anteil. Die Miteigentümer werden gelöscht."
+msgstr "I contributi scaduti prima del trasferimento sono dovuti dal precedente proprietario. Il pegno della comunione grava sulla quota. I comproprietari vengono eliminati."
+
+#: stweg/eigentuemer
+msgid "Prüfung der Daten"
+msgstr "Controllo dei dati"
+
+#: stweg/eigentuemer
+msgid "Fehler"
+msgstr "Errore"
+
+#: stweg/eigentuemer
+msgid "Warnung"
+msgstr "Avvertenza"
+
+#: stweg/eigentuemer
+msgid "Verzugszins auf Beiträge (Prozent pro Jahr)"
+msgstr "Interessi di mora sui contributi (per cento all'anno)"
+
+#: stweg/eigentuemer
+msgid "Leer = es werden keine Verzugszinsen berechnet."
+msgstr "Vuoto = non vengono calcolati interessi di mora."
+
+#: stweg/eigentuemer
+msgid "Satz nicht bestätigt: steht nicht in der Mahnung"
+msgstr "Tasso non confermato: non figura nel sollecito"
+
+#: stweg/eigentuemer
+msgid "Bitte den neuen Eigentümer wählen."
+msgstr "Scegliere il nuovo proprietario."
+
+#: stweg/eigentuemer
+msgid "Dieser Eigentümer ist bereits eingetragen."
+msgstr "Questo proprietario è già registrato."
+
+#: stweg/eigentuemer
+msgid "Bitte das Datum des Eigentumsübergangs angeben."
+msgstr "Indicare la data del trasferimento di proprietà."
+
+#: stweg/eigentuemer
+msgid "Der Übergang muss nach dem letzten erfassten Wechsel (%(datum)s) liegen."
+msgstr "Il trasferimento deve essere successivo all'ultimo cambio registrato (%(datum)s)."
+
+#: stweg/eigentuemer
+msgid "Handänderung erfasst: «%(einheit)s» hat einen neuen Eigentümer."
+msgstr "Cambio di proprietario registrato: «%(einheit)s» ha un nuovo proprietario."
+
+#: stweg/eigentuemer
+msgid "Davon CHF %(b)s gegen einen früheren Eigentümer: Die Mahnung richtet sich nur an den heutigen Eigentümer; das Pfandrecht haftet am Anteil."
+msgstr "Di cui CHF %(b)s nei confronti di un precedente proprietario: il sollecito è rivolto solo all'attuale proprietario; il pegno grava sulla quota."
+
+#: stweg/eigentuemer
+msgid "Verzugszins zu %(p)s %% bis heute: CHF %(b)s (nicht in der Pfandsumme)"
+msgstr "Interessi di mora al %(p)s %% a oggi: CHF %(b)s (non nell'importo del pegno)"
+
+#: stweg/eigentuemer
+msgid "davon noch offen CHF %(offen)s"
+msgstr "di cui ancora aperto CHF %(offen)s"
+
+#: stweg/eigentuemer
+msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
+msgstr "Sono aperti solo crediti nei confronti di un precedente proprietario. Un sollecito all'attuale proprietario non è possibile; il pegno della comunione grava sulla quota."

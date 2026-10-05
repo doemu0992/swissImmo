@@ -28,12 +28,13 @@ DIE DREI JAHRE (Art. 712i ZGB, wie im Auftrag vorgegeben)
   Forderungsdatum: das Fälligkeitsdatum der Rate, bei einer Jahresabrechnung der 31.12. des Abrechnungsjahres (das
   ist das frühere und damit vorsichtigere Datum). Eine Forderung, die genau 36 Monate zurückliegt, zählt NICHT
   (strikt neuer als der Stichtag minus 36 Monate). Ältere Forderungen bleiben geschuldet, werden aber getrennt
-  ausgewiesen und gehen nicht in die Pfandsumme ein. Nicht abgebildet: Verzugszinsen, Mahnkosten, Anteil eines
+  ausgewiesen und gehen nicht in die Pfandsumme ein. Verzugszinsen: nur wenn die Gemeinschaft den Satz eingetragen hat
+  (`verzugszins`), nie in der Pfandsumme. Nicht abgebildet: Mahnkosten, Anteil eines
   Jahres, der in das Fenster ragt (die Forderung gilt ganz oder gar nicht). Ob die Auslegung «Forderungsdatum» der
   Rechtsprechung entspricht, ist nicht geprüft — vor der Anmeldung juristisch bestätigen.
 """
 from datetime import date, timedelta
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
 from django.utils import timezone
@@ -42,6 +43,7 @@ from django.utils.translation import gettext
 from core.models import Pendenz
 from finance.models import ErneuerungsfondsBewegung
 from stweg.budget import _plus_monate
+from stweg.eigentuemer import eigentuemer_am
 from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegInkassoFall, StwegMahnung,
                           StwegPfandrecht, StwegVorschreibung)
 
@@ -106,12 +108,14 @@ def forderungen(einheit, stichtag=None):
     akonto = []
     for jahr, p in abr.items():
         akonto.append({'datum': date(jahr, 12, 31), 'text': f'Abrechnung {jahr}', 'betrag': p.kostenanteil,
-                       'art': 'abrechnung', 'schluessel': ('j', jahr)})
+                       'art': 'abrechnung', 'schluessel': ('j', jahr),
+                       'schuldner': p.eigentuemer_id or eigentuemer_am(einheit, date(jahr, 12, 31))})
     for v in StwegVorschreibung.objects.filter(einheit=einheit).select_related('budget'):
         if v.budget.jahr in abr:
             continue                               # für dieses Jahr gilt die Abrechnung
         akonto.append({'datum': v.faellig_am, 'text': f'Akonto {v.budget.jahr}, Rate {v.rate_nr}/{v.rate_total}',
-                       'betrag': v.betrag, 'art': 'akonto', 'schluessel': ('v', v.pk)})
+                       'betrag': v.betrag, 'art': 'akonto', 'schluessel': ('v', v.pk),
+                       'schuldner': eigentuemer_am(einheit, v.faellig_am)})
     akonto = [c for c in akonto if c['datum'] <= stichtag]
     vorschr_jahr = {v.pk: v.budget.jahr for v in StwegVorschreibung.objects.filter(einheit=einheit)
                     .select_related('budget')}
@@ -124,7 +128,8 @@ def forderungen(einheit, stichtag=None):
             ziel = ('j', vorschr_jahr[z.vorschreibung_id]) if vorschr_jahr.get(z.vorschreibung_id) in abr \
                 else ('v', z.vorschreibung_id)
         zahl.append((z.betrag, ziel))
-    fonds = [{'datum': b.datum, 'text': f'Einlage Erneuerungsfonds {b.jahr}', 'betrag': b.betrag, 'art': 'fonds'}
+    fonds = [{'datum': b.datum, 'text': f'Einlage Erneuerungsfonds {b.jahr}', 'betrag': b.betrag, 'art': 'fonds',
+             'schuldner': eigentuemer_am(einheit, b.datum)}
              for b in ErneuerungsfondsBewegung.objects.filter(einheit=einheit, art='einlage', datum__lte=stichtag)]
     zahl_f = [(z.betrag, None) for z in StwegAkonto.objects.filter(einheit=einheit, zweck=StwegAkonto.FONDS,
                                                                    datum__lte=stichtag).order_by('datum', 'id')]
@@ -134,6 +139,39 @@ def forderungen(einheit, stichtag=None):
 
 def offener_betrag(einheit, stichtag=None):
     return sum((c['offen'] for c in forderungen(einheit, stichtag)), NULL)
+
+
+def _gegen_aktuellen(einheit, c):
+    """Schuldet der heutige Eigentümer diese Forderung persönlich? (Unbekannter Schuldner: ja.)"""
+    return c.get('schuldner') in (None, einheit.stockwerkeigentuemer_id)
+
+
+def offener_betrag_eigentuemer(einheit, stichtag=None):
+    """Der Teil, den der heutige Eigentümer persönlich schuldet (ohne Forderungen gegen frühere Eigentümer)."""
+    return sum((c['offen'] for c in forderungen(einheit, stichtag) if _gegen_aktuellen(einheit, c)), NULL)
+
+
+def verzugszins(einheit, stichtag=None):
+    """Verzugszins auf die heute OFFENEN Beträge, einfach, vom Tag nach der Fälligkeit bis zum Stichtag (Tage/365).
+    None, solange die Gemeinschaft keinen Satz eingetragen hat. Nie Teil der Pfandsumme. Vereinfachung: Zins auf
+    bereits bezahlte Teile (spät bezahlt) wird nicht gerechnet; ob und ab wann Verzugszins geschuldet ist
+    (Fälligkeit, Mahnung), bestimmt das Reglement bzw. Gesetz — der eingetragene Satz ist die Vorgabe."""
+    from stweg.vorgaben import vorgaben_von
+    v = vorgaben_von(einheit.liegenschaft)
+    if v is None or v.verzugszins_prozent is None:
+        return None
+    stichtag = stichtag or timezone.localdate()
+    zeilen, total = [], NULL
+    for c in forderungen(einheit, stichtag):
+        tage = (stichtag - c['datum']).days
+        if c['offen'] <= 0 or tage <= 0:
+            continue
+        zins = (c['offen'] * Decimal(v.verzugszins_prozent) / 100 * tage / 365).quantize(Decimal('0.01'),
+                                                                                           rounding=ROUND_HALF_UP)
+        zeilen.append({'text': c['text'], 'tage': tage, 'zins': zins})
+        total += zins
+    return {'prozent': Decimal(v.verzugszins_prozent), 'bestaetigt': bool(v.bestaetigt_am), 'total': total,
+            'zeilen': zeilen}
 
 
 def pfandberechtigt(einheit, stichtag=None, monate=PFANDRECHT_MONATE):
@@ -181,8 +219,12 @@ def mahnung_erstellen(einheit, *, heute=None, frist_tage=MAHNFRIST_TAGE, user=No
     if not einheit.liegenschaft.ist_stweg:
         raise InkassoFehler(gettext('«%(liegenschaft)s» ist keine STWEG-Liegenschaft.')
                             % {'liegenschaft': einheit.liegenschaft})
-    betrag = offener_betrag(einheit, heute)
+    betrag = offener_betrag_eigentuemer(einheit, heute)
     if betrag <= 0:
+        if offener_betrag(einheit, heute) > 0:
+            raise InkassoFehler(gettext('Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an '
+                                        'den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht '
+                                        'haftet am Anteil.'))
         raise InkassoFehler('Es ist nichts fällig und offen — keine Mahnung.')
     fall = offener_fall(einheit) or StwegInkassoFall.objects.create(
         einheit=einheit, eigentuemer=einheit.stockwerkeigentuemer, eroeffnet_am=heute)
@@ -210,9 +252,14 @@ def mahntext(mahnung):
         'Gemäss unseren Unterlagen sind folgende Beitragsforderungen der Gemeinschaft offen:',
     ]
     for c in forderungen(e, mahnung.datum):
-        if c['offen'] > 0:
+        if c['offen'] > 0 and _gegen_aktuellen(e, c):
             zeilen.append(f"{c['datum']:%d.%m.%Y}  {c['text']}  CHF {_chf(c['offen'])}")
-    zeilen += ['', f"Total offen: CHF {_chf(mahnung.betrag)}",
+    zeilen += ['', f"Total offen: CHF {_chf(mahnung.betrag)}"]
+    z = verzugszins(e, mahnung.datum)
+    if z and z['bestaetigt'] and z['total'] > 0:
+        zeilen.append(f"Dazu Verzugszins von {z['prozent'].normalize():f} % bis {mahnung.datum:%d.%m.%Y}: CHF {_chf(z['total'])} "
+                      '(nicht im Total enthalten).')
+    zeilen += ['',
                f'Wir bitten Sie, den Betrag bis {mahnung.frist_bis:%d.%m.%Y} auf das Konto der Gemeinschaft zu bezahlen.']
     if mahnung.stufe == 2:
         zeilen.append('Bleibt die Zahlung aus, wird die Gemeinschaft ihre Rechte nach Gesetz und Reglement wahrnehmen.')

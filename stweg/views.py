@@ -24,8 +24,9 @@ from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
 from stweg import aufgaben, beschluss, dokumente, vorgaben
 from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegBudget, StwegVorschreibung, StwegAkonto, StwegAnfrage,
-                          StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
+                          StwegEigentuemerwechsel, StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
+from stweg import integritaet
 from stweg.beschluss import BeschlussFehler
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten, wertquoten_summe
 from stweg.versammlung import (VersammlungsFehler, durchfuehren, einladung_pruefen,
@@ -92,6 +93,7 @@ def stweg_gemeinschaft(request, stweg_id):
         'vorgaben_unbestaetigt': not vorgaben.ist_bestaetigt(lg),
         'frist_vorgabe': vorgaben.einladungsfrist_vorgabe(lg),
         'budgets_vorgelegt': StwegBudget.objects.filter(liegenschaft=lg, status__in=('entwurf', 'vorgelegt')),
+        'befunde': [b for b in integritaet.pruefe(lg) if b[0] in (integritaet.FEHLER, integritaet.WARNUNG)],
     })
 
 
@@ -811,7 +813,31 @@ def stweg_einheiten(request, stweg_id):
         'eigentuemer': Eigentuemer.objects.all().order_by('firma_oder_name'),
         'ohne_eigentuemer': sum(1 for e in haupt if e.stockwerkeigentuemer_id is None),
         'sprachen': [('de', 'Deutsch'), ('fr', 'Französisch'), ('it', 'Italienisch'), ('en', 'Englisch')],
+        'wechsel': StwegEigentuemerwechsel.objects.filter(einheit__liegenschaft=lg)
+        .select_related('einheit', 'bisheriger', 'neu').order_by('-datum', '-id')[:30],
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_eigentuemerwechsel(request, stweg_id):
+    """Handänderung erfassen (Datum, neuer Eigentümer)."""
+    from crm.models import Eigentuemer
+    from stweg import eigentuemer as eig_modul
+    lg = _gemeinschaft(stweg_id)
+    e = stimm_einheiten(lg).filter(pk=_zahl(request.POST.get('einheit')) or 0).first()
+    if e is None:
+        messages.error(request, gettext('Bitte eine Einheit wählen.'))
+    else:
+        try:
+            eig_modul.wechseln(e, Eigentuemer.objects.filter(pk=_zahl(request.POST.get('neu')) or 0).first(),
+                               parse_date(request.POST.get('datum') or ''),
+                               bemerkung=request.POST.get('bemerkung') or '', user=request.user)
+            messages.success(request, gettext('Handänderung erfasst: «%(einheit)s» hat einen neuen Eigentümer.')
+                             % {'einheit': e.bezeichnung})
+        except eig_modul.WechselFehler as fehler:
+            messages.error(request, str(fehler))
+    return redirect(f'/neu/stweg/{lg.pk}/einheiten/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

@@ -34,7 +34,8 @@ def stweg_inkasso(request, stweg_id):
             continue
         p = inkasso.pfandberechtigt(e, heute) if offen > 0 else None
         zeilen.append({'einheit': e, 'offen': offen, 'fall': fall, 'pfand': p,
-                       'stufe': inkasso.mahnstufe(fall),
+                       'stufe': inkasso.mahnstufe(fall), 'zins': inkasso.verzugszins(e, heute),
+                       'altforderung': offen - inkasso.offener_betrag_eigentuemer(e, heute),
                        'mahnungen': list(fall.mahnungen.all()) if fall else [],
                        'pfandrechte': list(fall.pfandrechte.all()) if fall else [],
                        'naechste': (inkasso.mahnstufe(fall) + 1) if inkasso.mahnstufe(fall) < inkasso.MAX_STUFE
