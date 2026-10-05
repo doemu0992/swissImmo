@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n rechte %}
 {% load betreuung %}
 {% load chf %}
 {% block title %}{% blocktrans with id=t.id %}Ticket #{{ id }}{% endblocktrans %} — swissImmo{% endblock %}
@@ -107,6 +107,15 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
        in den Stammdaten — dieselbe Entscheidung wie beim Vertrag: Der Status
        gehoert zur Sache, nicht in eine Kopfzeile, die auf dem Handy hoch
        wird. `faelle/test_aktionen_vollstaendig.py` haelt ihn fest. {% endcomment %}
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Zuständigkeit" %}</h2>
+            {% if request.user|darf:"/neu/schaeden/1/zuweisen/" %}<a href="/neu/schaeden/{{ t.id }}/zuweisen/" class="fw-btn fw-knapp">{% trans "Zuweisen" %}</a>{% endif %}</div>
+        <div class="px-5 py-4 flex flex-wrap items-center gap-3">
+            <span>{% if t.zugewiesen_an %}{{ t.zugewiesen_an.get_full_name|default:t.zugewiesen_an.username }}{% else %}<span class="fw-mutet">{% trans "Niemand zugewiesen" %}</span>{% endif %}</span>
+            {% if t.faellig_bis %}<span class="fw-chip {% if ueberfaellig %}fw-crit{% endif %}">{% blocktrans with d=t.faellig_bis|date:"d.m.Y" %}erledigen bis {{ d }}{% endblocktrans %}{% if ueberfaellig %} · {% trans "überfällig" %}{% endif %}</span>{% endif %}
+        </div>
+    </div>
+
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
             <h2>{% trans "Status" %}</h2>

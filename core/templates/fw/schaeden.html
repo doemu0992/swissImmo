@@ -95,6 +95,8 @@
     <a href="?sicht={{ wert }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
        class="fw-fchip{% if sicht == wert %} fw-on{% endif %}">{{ label }}</a>
     {% endfor %}
+    <a href="?{% if nur_meine %}{% if sicht %}sicht={{ sicht }}{% endif %}{% else %}zustaendig=ich{% if sicht %}&amp;sicht={{ sicht }}{% endif %}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+       class="fw-fchip{% if nur_meine %} fw-on{% endif %}">{% trans "Meine Tickets" %}{% if nur_meine %} ×{% endif %}</a>
     {% if status_filter %}
     <a href="?{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip fw-on">{% trans "Status" %} «{{ status_filter }}» ×</a>
     {% endif %}
@@ -119,6 +121,8 @@
             </div>
             {% endif %}
         </div>
+        {% if row.t.zugewiesen_an %}<span class="fw-chip fw-mut" title="{% trans 'Zuständig' %}">{{ row.t.zugewiesen_an.get_full_name|default:row.t.zugewiesen_an.username }}</span>{% endif %}
+        {% if row.ueberfaellig %}<span class="fw-chip fw-crit" title="{% trans 'Zielzeit überschritten' %}">{% trans "SLA überfällig" %}</span>{% endif %}
         {% if row.t.prioritaet|lower == 'hoch' %}<span class="fw-chip fw-crit">{% trans "Hoch" %}</span>{% endif %}
         <span class="fw-chip fw-mut">{{ row.s_label }}</span>
         {% zeichen 'weiter' klasse='fw-klein' %}

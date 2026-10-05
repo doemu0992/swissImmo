@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n rechte %}
 {% load betreuung %}
 {% load chf %}
 {% block title %}{{ lg.strasse }} — swissImmo{% endblock %}
@@ -381,7 +381,8 @@ Liegenschaft ohne Betreuung soll auffallen.
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-t">{% trans "Allgemeine Zähler" %}</span>
             <span class="fw-neben">{{ lg_zaehler|length }}</span>
-            <span class="fw-neben w-full">{% trans "Allgemeinstrom, Hauptwasser …" %}</span></div>
+            <span class="fw-neben w-full">{% trans "Allgemeinstrom, Hauptwasser …" %}</span>
+            {% if request.user|darf:"/neu/liegenschaften/1/zaehlerstand/" %}<a href="/neu/liegenschaften/{{ lg.id }}/zaehlerstand/" class="fw-btn fw-knapp">{% trans "Zählerstand erfassen" %}</a>{% endif %}</div>
         <details class="fw-aufklapp">
             <summary>{% trans "Zähler erfassen" %}</summary>
             <div class="fw-aufklapp-inhalt">

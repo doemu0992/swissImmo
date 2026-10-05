@@ -1,0 +1,50 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{{ titel }} — swissImmo{% endblock %}
+{% block content %}
+{% comment %}
+EIN GENERISCHES FORMULAR für die Phase-2-Aktionen (Ticket zuweisen, NK-Zustellung,
+Betreibung, Zählerstand). Rendert ein Django-Form feldweise; Fehler stehen am Feld
+(`_feldfehler.html`), die Eingabe bleibt erhalten.
+{% endcomment %}
+<nav class="fw-brotkrume mb-3">
+    <a href="{{ zurueck }}">{{ zurueck_text }}</a>
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
+    <b>{{ titel }}</b>
+</nav>
+
+<div class="fw-phead"><div><h1>{{ titel }}</h1>{% if hinweis %}<p>{{ hinweis }}</p>{% endif %}</div></div>
+
+<form method="post" class="max-w-2xl" novalidate>
+    {% csrf_token %}
+    <div class="fw-card">
+        <div class="fw-rumpf space-y-4">
+            {% if form.non_field_errors %}
+            <div class="fw-hinweis crit rounded-lg" role="alert">
+                <div class="fw-ht">{% for e in form.non_field_errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+            </div>
+            {% endif %}
+            {% if fristen %}
+            <div class="fw-hinweis info rounded-lg"><span class="fw-hi">{% zeichen 'recht' %}</span>
+                <div class="fw-ht">{% blocktrans with d=fristen.rv|date:"d.m.Y" %}Rechtsvorschlag bis {{ d }} (Art. 74 SchKG).{% endblocktrans %}
+                {% if fristen.fortsetzung %}{% blocktrans with a=fristen.fortsetzung.0|date:"d.m.Y" b=fristen.fortsetzung.1|date:"d.m.Y" %}Fortsetzungsbegehren zwischen {{ a }} und {{ b }} (Art. 88 SchKG).{% endblocktrans %}{% endif %}</div>
+            </div>
+            {% endif %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {% for f in form %}
+                <div class="{% if f.field.widget.input_type == 'textarea' or f.name == 'bemerkung' %}sm:col-span-2{% endif %}">
+                    <label for="{{ f.id_for_label }}" class="fw-label mb-1">{{ f.label }}{% if f.field.required %} <span class="fw-pflicht" aria-hidden="true">*</span>{% endif %}</label>
+                    {{ f }}
+                    {% if f.errors %}<p id="{{ f.id_for_label }}_fehler" class="fw-feldfehler" role="alert">{{ f.errors.0 }}</p>{% endif %}
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-wrap gap-3 mt-4">
+        <button class="fw-btn fw-primary">{{ senden }}</button>
+        {% if weiter_knopf %}<button name="weiter" value="1" class="fw-btn">{% trans "Speichern und nächsten erfassen" %}</button>{% endif %}
+        <a href="{{ zurueck }}" class="fw-btn">{% trans "Abbrechen" %}</a>
+    </div>
+</form>
+{% endblock %}

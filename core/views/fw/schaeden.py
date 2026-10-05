@@ -94,6 +94,9 @@ def fw_schaeden(request):
     status_filter = request.GET.get('status', '')
     if status_filter in TICKET_PILL:
         qs = qs.filter(status=status_filter)
+    nur_meine = request.GET.get('zustaendig') == 'ich'
+    if nur_meine:
+        qs = qs.filter(zugewiesen_an=request.user)
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = qs.filter(Q(titel__icontains=q) | Q(beschreibung__icontains=q)
@@ -125,6 +128,8 @@ def fw_schaeden(request):
         zeile['p_label'], zeile['p_cls'] = PRIO_PILL.get(
             (t.prioritaet or '').lower(),
             (t.prioritaet or 'Mittel', 'fw-flaeche2 fw-mutet'))
+        from tickets.sla import ist_ueberfaellig
+        zeile['ueberfaellig'] = ist_ueberfaellig(t)
         zeile['objekt'] = (f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}"
                            if t.liegenschaft_id else '—')
         zeile['melder'] = (t.gemeldet_von.display_name if t.gemeldet_von_id
@@ -134,7 +139,7 @@ def fw_schaeden(request):
     from django.contrib import messages
     return render(request, 'fw/schaeden.html', {
         **basis, 'nav': 'schadensfaelle', 'rows': rows, 'kopf': kopf,
-        'sicht': sicht, 'status_filter': status_filter, 'q': q,
+        'sicht': sicht, 'status_filter': status_filter, 'q': q, 'nur_meine': nur_meine,
         'gefiltert': len(rows) != len(alle),
         'sicht_chips': [('offen', gettext('Offen (%(n)s)') % {'n': kopf["offen"]}),
                         ('befund', gettext('Mit Befund (%(n)s)') % {'n': kopf["mit_befund"]}),
@@ -372,6 +377,7 @@ def fw_schaden_detail(request, pk):
         'ausstattung_elemente': ausstattung_elemente,
         'handwerker_liste': handwerker_liste, 'auftrag_vorschlag': auftrag_vorschlag,
         'melder_email': melder_email, 'status_wahl': TICKET_PILL,
+        'ueberfaellig': __import__('tickets.sla', fromlist=['x']).ist_ueberfaellig(t),
         'rechnungen_frei': rechnungen_frei,
         'meldung': list(messages.get_messages(request)),
     })
