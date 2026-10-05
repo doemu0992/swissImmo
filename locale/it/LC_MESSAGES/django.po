@@ -24834,3 +24834,55 @@ msgstr "Esenzione revocata: l'unità sostiene di nuovo la sua quota di valore."
 #: stweg/schluessel
 msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
 msgstr "Devono restare unità che sostengono i costi — esentarle tutte non ripartisce nulla."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Non conforme"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Controllo di conformità giuridica"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Senza atto costitutivo, regolamento e attestato aggiornato dell'assicurazione dello stabile, l'amministrazione non è giuridicamente in grado di agire."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Caricare documenti"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Conforme"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "Atto costitutivo, regolamento e attestato dell'assicurazione dello stabile sono depositati e aggiornati."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "«%(name)s» non è stato caricato."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "«%(name)s» vale solo dal %(datum)s — fino ad allora manca un documento valido."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "«%(name)s» è scaduto — caricare la versione aggiornata."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "«%(name)s»: il file manca nella memoria — caricare di nuovo."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "nessuna data di scadenza registrata"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Attestato dell'assicurazione dello stabile"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Altra polizza assicurativa (p. es. responsabilità civile)"

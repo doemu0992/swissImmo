@@ -24856,3 +24856,55 @@ msgstr "Exonération levée : l'unité supporte à nouveau sa quote-part."
 #: stweg/schluessel
 msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
 msgstr "Il doit rester des unités qui supportent les frais — tout exonérer ne répartit rien."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Non conforme"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Contrôle de conformité juridique"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Sans acte constitutif, règlement et attestation d'assurance bâtiment actuelle, l'administration n'a pas la capacité juridique d'agir."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Téléverser des documents"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Conforme"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "L'acte constitutif, le règlement et l'attestation d'assurance bâtiment sont déposés et à jour."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "« %(name)s » n'a pas été téléversé."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "« %(name)s » n'est valable qu'à partir du %(datum)s — d'ici là, un document valable manque."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "« %(name)s » est expiré — veuillez téléverser la version actuelle."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "« %(name)s » : le fichier est absent du stockage — veuillez le téléverser à nouveau."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "aucune date d'expiration saisie"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Attestation d'assurance bâtiment"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Autre police d'assurance (p. ex. responsabilité civile)"

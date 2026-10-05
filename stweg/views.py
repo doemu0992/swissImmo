@@ -26,7 +26,7 @@ from stweg import aufgaben, beschluss, dokumente, vorgaben
 from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegBudget, StwegVorschreibung, StwegAkonto, StwegAnfrage,
                           StwegEigentuemerwechsel, StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
-from stweg import integritaet, quorum
+from stweg import compliance, integritaet, quorum
 from stweg.beschluss import BeschlussFehler
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten, wertquoten_summe
 from stweg.versammlung import (VersammlungsFehler, durchfuehren, einladung_pruefen,
@@ -62,7 +62,7 @@ def stweg_uebersicht(request):
     for lg in Liegenschaft.objects.filter(typ=Liegenschaft.TYP_STWEG).order_by('strasse'):
         op = aufgaben.offene_punkte(lg)
         gemeinschaften.append({
-            'lg': lg,
+            'lg': lg, 'compliance': compliance.health_check(lg),
             'offen': sum(len(op[k]) for k in ('aufgaben', 'anfragen', 'unentschiedene_traktanden',
                                               'protokoll_ausstehend', 'zustellung_offen',
                                               'zirkulare_offen', 'zirkular_ergebnis_ausstehend')),
@@ -90,6 +90,7 @@ def stweg_gemeinschaft(request, stweg_id):
         'offen': aufgaben.offene_punkte(lg),
         'art_choices': Versammlung.ART_CHOICES,
         'dokument_luecken': dokumente.luecken(lg),
+        'compliance': compliance.health_check(lg),
         'vorgaben_unbestaetigt': not vorgaben.ist_bestaetigt(lg),
         'frist_vorgabe': vorgaben.einladungsfrist_vorgabe(lg),
         'budgets_vorgelegt': StwegBudget.objects.filter(liegenschaft=lg, status__in=('entwurf', 'vorgelegt')),

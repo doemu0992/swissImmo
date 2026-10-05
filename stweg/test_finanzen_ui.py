@@ -153,8 +153,8 @@ class DokumenteTests(TestCase):
     def test_pflichtkategorien_fehlen_dann_ok(self):
         namen = {p['kategorie']: p['status'] for p in dok.pruefen(self.lg)}
         self.assertEqual(namen, {'begruendungsakt': 'fehlt', 'reglement': 'fehlt', 'nutzungsordnung': 'fehlt',
-                                 'versicherung': 'fehlt', 'jahresrechnung': 'automatisch'})
-        for kat in ('begruendungsakt', 'reglement', 'nutzungsordnung', 'versicherung'):
+                                 'gebaeudeversicherung': 'fehlt', 'jahresrechnung': 'automatisch'})
+        for kat in ('begruendungsakt', 'reglement', 'nutzungsordnung', 'gebaeudeversicherung'):
             dok.hochladen(self.lg, kat, kat, self.datei())
         self.assertEqual(dok.luecken(self.lg), [])
 
@@ -174,9 +174,10 @@ class DokumenteTests(TestCase):
         self.assertEqual([d.pk for d in dok.aktuell(self.lg, 'reglement')], [neu.pk])
         zukunft = dok.hochladen(self.lg, 'reglement', 'Reglement 2030', self.datei(), gueltig_ab=heute + timedelta(days=30))
         self.assertEqual([d.pk for d in dok.aktuell(self.lg, 'reglement')], [neu.pk])      # noch nicht gültig
-        dok.hochladen(self.lg, 'versicherung', 'Gebäude', self.datei(), gueltig_ab=heute - timedelta(days=400),
+        dok.hochladen(self.lg, 'gebaeudeversicherung', 'Gebäude', self.datei(), gueltig_ab=heute - timedelta(days=400),
                       gueltig_bis=heute - timedelta(days=1))
-        self.assertEqual({p['kategorie']: p['status'] for p in dok.pruefen(self.lg)}['versicherung'], 'abgelaufen')
+        self.assertEqual({p['kategorie']: p['status'] for p in dok.pruefen(self.lg)}['gebaeudeversicherung'],
+                         'abgelaufen')
         dok.hochladen(self.lg, 'versicherung', 'Haftpflicht', self.datei(), gueltig_bis=heute + timedelta(days=100))
         dok.hochladen(self.lg, 'versicherung', 'Gebäude neu', self.datei(), gueltig_bis=heute + timedelta(days=300))
         self.assertEqual(len(dok.aktuell(self.lg, 'versicherung')), 2)                     # parallel

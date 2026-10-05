@@ -1,12 +1,13 @@
 """Dokumenten-Repository der Gemeinschaft: Pflichtkategorien, Gültigkeit, Sichtbarkeit.
 
 PFLICHTKATEGORIEN, die das System überwacht: Begründungsakt, STWEG-Reglement, Nutzungs- und
-Verwaltungsordnung, Versicherungspolice, Jahresrechnung.
+Verwaltungsordnung, Gebäudeversicherungsnachweis, Jahresrechnung. (Der «Legal Health Check» der Gemeinschaftsseite,
+`stweg.compliance`, verlangt davon Begründungsakt, Reglement und den aktuellen Gebäudeversicherungsnachweis.)
 
   · Begründungsakt, Reglement, Nutzungsordnung — ERSETZEND: gültig ist jeweils die jüngste Fassung
     (`gueltig_ab` bis heute); ältere bleiben als Verlauf erhalten.
-  · Versicherungspolice — PARALLEL: mehrere Policen gelten nebeneinander (Gebäude, Haftpflicht);
-    gefordert ist mindestens eine, die nicht abgelaufen ist.
+  · Gebäudeversicherungsnachweis — ERSETZEND (jüngster gültiger Nachweis). «Weitere Versicherungspolice» (Haftpflicht
+    u. a.) — PARALLEL: mehrere Policen gelten nebeneinander; sie sind keine Pflicht.
   · Jahresrechnung — AUTOMATISCH: jede abgeschlossene Abrechnung ist für ihre Eigentümer ein
     Dokument (der persönliche Beleg); ein hochgeladenes Dokument dieser Kategorie ist zusätzlich möglich.
 
@@ -22,8 +23,8 @@ from core.utils.uploads import validiere_dokument
 from stweg.models import StwegAbrechnung, StwegDokument
 
 K = StwegDokument
-ERSETZEND = (K.BEGRUENDUNGSAKT, K.REGLEMENT, K.NUTZUNGSORDNUNG)
-PFLICHT = (K.BEGRUENDUNGSAKT, K.REGLEMENT, K.NUTZUNGSORDNUNG, K.VERSICHERUNG, K.JAHRESRECHNUNG)
+ERSETZEND = (K.BEGRUENDUNGSAKT, K.REGLEMENT, K.NUTZUNGSORDNUNG, K.GEBAEUDEVERSICHERUNG)
+PFLICHT = (K.BEGRUENDUNGSAKT, K.REGLEMENT, K.NUTZUNGSORDNUNG, K.GEBAEUDEVERSICHERUNG, K.JAHRESRECHNUNG)
 PREFIX = 'stweg:dokument:'
 
 

@@ -16,6 +16,21 @@
     <a href="/neu/stweg/{{ lg.pk }}/vorgaben/">{% trans "Vorgaben eintragen" %}</a></div></div>
 {% endif %}
 
+{% if not compliance.konform %}
+<div class="fw-card" role="alert" style="border:2px solid #c0392b">
+    <div class="fw-kopf"><span class="fw-chip fw-warn" style="background:#c0392b;color:#fff">{% trans "Nicht Compliance-Konform" %}</span>
+        <span class="fw-t">{% trans "Legal Health Check" %}</span></div>
+    <div class="fw-rumpf">
+        <p><strong>{% trans "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig." %}</strong></p>
+        {% for g in compliance.gruende %}<div class="fw-s">⛔ {{ g }}</div>{% endfor %}
+        <p><a class="fw-btn fw-primary" href="/neu/stweg/{{ lg.pk }}/dokumente/">{% trans "Dokumente hochladen" %}</a></p>
+    </div>
+</div>
+{% else %}
+<div class="fw-card"><div class="fw-rumpf"><span class="fw-chip fw-brand">{% trans "Compliance-konform" %}</span>
+    <span class="fw-s">{% trans "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell." %}
+    {% for p in compliance.punkte %}{% if p.hinweis %} · {{ p.name }}: {{ p.hinweis }}{% endif %}{% endfor %}</span></div></div>
+{% endif %}
 {% if befunde %}
 <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Prüfung der Daten" %}</span><span class="fw-chip fw-warn">{{ befunde|length }}</span></div>
     <div class="fw-rumpf">{% for stufe, text in befunde %}<div class="fw-s"><strong>{% if stufe == 'fehler' %}{% trans "Fehler" %}{% else %}{% trans "Warnung" %}{% endif %}:</strong> {{ text }}</div>{% endfor %}</div></div>

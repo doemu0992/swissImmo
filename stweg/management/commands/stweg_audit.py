@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand, CommandError
 from core.tenancy import organisation_kontext
 from crm.models import Organisation
 from portfolio.models import Liegenschaft
-from stweg import integritaet
+from stweg import compliance, integritaet
 
 
 class Command(BaseCommand):
@@ -29,6 +29,11 @@ class Command(BaseCommand):
                 for lg in lgs:
                     befunde = integritaet.pruefe(lg)
                     self.stdout.write(f'{org.firma} · {lg}: {"in Ordnung" if not befunde else f"{len(befunde)} Befund(e)"}')
+                    hc = compliance.health_check(lg)
+                    self.stdout.write('  Legal Health Check: ' + ('Compliance-konform' if hc['konform']
+                                                                 else 'NICHT COMPLIANCE-KONFORM'))
+                    for grund in hc['gruende']:
+                        self.stdout.write(f'  [COMPLIANCE] {grund}')
                     for stufe, text in befunde:
                         self.stdout.write(f'  [{stufe.upper()}] {text}')
                         fehler += stufe == integritaet.FEHLER

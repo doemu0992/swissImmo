@@ -24744,3 +24744,55 @@ msgstr "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
 #: stweg/schluessel
 msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
 msgstr "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Nicht Compliance-Konform"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Legal Health Check"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Dokumente hochladen"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Compliance-konform"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "«%(name)s» ist nicht hochgeladen."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "kein Ablaufdatum erfasst"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Gebäudeversicherungsnachweis"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Weitere Versicherungspolice (z. B. Haftpflicht)"

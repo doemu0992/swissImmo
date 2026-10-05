@@ -24630,3 +24630,55 @@ msgstr "Exemption cancelled: the unit bears its value share again."
 #: stweg/schluessel
 msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
 msgstr "Units must remain that bear the costs — exempting all distributes nothing."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Not compliant"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Legal health check"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Without the constitutive act, the regulations and a current building insurance certificate, the management is legally unable to act."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Upload documents"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Compliant"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "Constitutive act, regulations and building insurance certificate are on file and current."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "\"%(name)s\" has not been uploaded."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "\"%(name)s\" is valid only from %(datum)s — until then a valid document is missing."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "\"%(name)s\" has expired — please upload the current version."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "\"%(name)s\": the file is missing from storage — please upload again."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "no expiry date recorded"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Building insurance certificate"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Other insurance policy (e.g. liability)"

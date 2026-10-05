@@ -707,13 +707,15 @@ class StimmeEreignis(OrganisationAusKette):
 
 class StwegDokument(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
-    BEGRUENDUNGSAKT, REGLEMENT, NUTZUNGSORDNUNG, VERSICHERUNG, JAHRESRECHNUNG, SONSTIGES = (
-        'begruendungsakt', 'reglement', 'nutzungsordnung', 'versicherung', 'jahresrechnung', 'sonstiges')
+    BEGRUENDUNGSAKT, REGLEMENT, NUTZUNGSORDNUNG, VERSICHERUNG, JAHRESRECHNUNG, SONSTIGES, GEBAEUDEVERSICHERUNG = (
+        'begruendungsakt', 'reglement', 'nutzungsordnung', 'versicherung', 'jahresrechnung', 'sonstiges',
+        'gebaeudeversicherung')
     KATEGORIE_CHOICES = [
         (BEGRUENDUNGSAKT, _('Begründungsakt')),
         (REGLEMENT, _('STWEG-Reglement')),
         (NUTZUNGSORDNUNG, _('Nutzungs- und Verwaltungsordnung')),
-        (VERSICHERUNG, _('Versicherungspolice')),
+        (GEBAEUDEVERSICHERUNG, _('Gebäudeversicherungsnachweis')),
+        (VERSICHERUNG, _('Weitere Versicherungspolice (z. B. Haftpflicht)')),
         (JAHRESRECHNUNG, _('Jahresrechnung')),
         (SONSTIGES, _('Sonstiges')),
     ]
