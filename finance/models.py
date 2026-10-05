@@ -708,6 +708,23 @@ class AbrechnungsPeriode(OrganisationAusKette):
     # Verträge später geändert werden. Ohne diesen Snapshot drifteten Anzeige/PDF
     # von den tatsächlich verbuchten Nachzahlungen/Gutschriften weg (Live-Test G).
     snapshot_json = models.TextField("Eingefrorene Abrechnung (JSON)", blank=True, default='')
+    # Zustellung der Abrechnung an die Mieter. Ohne Datum ist der Fristbeginn
+    # für Einsprachen und die Belegeinsicht unbekannt (Phase-1-Audit).
+    versendet_am = models.DateField("Abrechnung zugestellt am", null=True, blank=True)
+    versand_kanal = models.CharField("Zustellung", max_length=20, blank=True, default='',
+                                     choices=[('email', gettext_lazy('E-Mail')),
+                                              ('brief', gettext_lazy('Brief')),
+                                              ('portal', gettext_lazy('Mieterportal'))])
+    #: Übliche Prüf- und Einsprachefrist in Tagen. Das Gesetz kennt keine feste
+    #: Frist; 30 Tage sind Branchenpraxis, abweichend im Mietvertrag regelbar.
+    EINSPRACHE_TAGE = 30
+
+    @property
+    def einsprache_bis(self):
+        if not self.versendet_am:
+            return None
+        from datetime import timedelta
+        return self.versendet_am + timedelta(days=self.EINSPRACHE_TAGE)
 
     # Für die Bestandesrechnung (Heizöl/Gas)
     anfangsbestand_liter = models.DecimalField("Anfangsbestand (L)", max_digits=10, decimal_places=2, default=0)
@@ -1252,3 +1269,66 @@ def _dezimalfeld_guard(sender, instance, **kwargs):
 
 
 _pre_save.connect(_dezimalfeld_guard, dispatch_uid='finance.dezimalfeld_guard')
+
+
+class Betreibung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'debitoren_rechnung'
+    """Betreibungsverfahren für eine offene Mietzinsforderung (SchKG).
+
+    Bildet den Weg ab: Begehren → Zahlungsbefehl → Rechtsvorschlag? →
+    Rechtsöffnung → Fortsetzung → Verlustschein. Die Stufe steht im Status,
+    die Daten halten Fristen fest (Rechtsvorschlag 10 Tage ab Zustellung,
+    Art. 74 SchKG; Fortsetzungsbegehren frühestens 20 Tage und spätestens ein
+    Jahr nach Zustellung des Zahlungsbefehls, Art. 88 SchKG).
+    """
+    STATUS_CHOICES = [
+        ('begehren', gettext_lazy('Begehren eingereicht')),
+        ('zahlungsbefehl', gettext_lazy('Zahlungsbefehl zugestellt')),
+        ('rechtsvorschlag', gettext_lazy('Rechtsvorschlag erhoben')),
+        ('rechtsoeffnung', gettext_lazy('Rechtsöffnung beantragt/erteilt')),
+        ('fortsetzung', gettext_lazy('Fortsetzungsbegehren')),
+        ('bezahlt', gettext_lazy('Bezahlt')),
+        ('verlustschein', gettext_lazy('Verlustschein')),
+        ('zurueckgezogen', gettext_lazy('Zurückgezogen')),
+    ]
+    debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.PROTECT, related_name='betreibungen')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='betreibungen')
+    status = models.CharField("Stand", max_length=20, choices=STATUS_CHOICES, default='begehren')
+    betreibungsamt = models.CharField("Betreibungsamt", max_length=120, blank=True, default='')
+    betreibungsnummer = models.CharField("Betreibungsnummer", max_length=40, blank=True, default='')
+    forderung = models.DecimalField("Forderung (CHF)", max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    kosten = models.DecimalField("Betreibungskosten (CHF)", max_digits=8, decimal_places=2, default=Decimal('0.00'))
+    begehren_am = models.DateField("Betreibungsbegehren am", default=timezone.now)
+    zahlungsbefehl_am = models.DateField("Zahlungsbefehl zugestellt am", null=True, blank=True)
+    rechtsvorschlag_am = models.DateField("Rechtsvorschlag am", null=True, blank=True)
+    rechtsoeffnung_am = models.DateField("Rechtsöffnung am", null=True, blank=True)
+    fortsetzung_am = models.DateField("Fortsetzungsbegehren am", null=True, blank=True)
+    verlustschein_am = models.DateField("Verlustschein am", null=True, blank=True)
+    bemerkung = models.TextField(blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        verbose_name = "Betreibung"
+        verbose_name_plural = "Betreibungen"
+        ordering = ['-begehren_am', '-id']
+
+    def __str__(self):
+        return f"Betreibung {self.betreibungsnummer or self.pk} – CHF {self.forderung} ({self.get_status_display()})"
+
+    @property
+    def rechtsvorschlag_frist_bis(self):
+        """Letzter Tag für den Rechtsvorschlag (10 Tage ab Zustellung, Art. 74 SchKG)."""
+        if not self.zahlungsbefehl_am:
+            return None
+        from datetime import timedelta
+        return self.zahlungsbefehl_am + timedelta(days=10)
+
+    @property
+    def fortsetzung_frist(self):
+        """(frühestens, spätestens) für das Fortsetzungsbegehren, Art. 88 SchKG."""
+        if not self.zahlungsbefehl_am:
+            return None
+        from datetime import timedelta
+        return (self.zahlungsbefehl_am + timedelta(days=20),
+                self.zahlungsbefehl_am + timedelta(days=365))
