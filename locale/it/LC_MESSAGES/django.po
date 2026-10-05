@@ -24864,3 +24864,9 @@ msgstr "Reimposta filtro"
 
 msgid "Spalte filtern"
 msgstr "Filtra colonna"
+
+#, python-format
+msgid "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch (Nachzügler)."
+msgid_plural "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch (Nachzügler)."
+msgstr[0] "Il ciclo %(monat)s %(jahr)s è concluso — %(n)s posizione è ancora in attesa (ritardatario)."
+msgstr[1] "Il ciclo %(monat)s %(jahr)s è concluso — %(n)s posizioni sono ancora in attesa (ritardatari)."

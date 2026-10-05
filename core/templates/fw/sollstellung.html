@@ -127,7 +127,13 @@
 <div class="fw-freigabe">
         <div class="fw-ht">{% if blockaden %}<b>{% blocktrans count n=blockaden|length %}Noch {{ n }} Blockade offen{% plural %}Noch {{ n }} Blockaden offen{% endblocktrans %}</b><br>{% elif n_offen %}<b>{% trans "Bereit zur Freigabe" %}</b><br>{% endif %}{% blocktrans with monat=monat_name %}Zu stellen ({{ monat }}){% endblocktrans %}: <b class="fw-num">CHF {{ total_soll|chf }}</b></div>
     <div>
-        {% if n_offen %}
+        {% if n_offen and lauf_gesperrt %}
+        {% comment %} Lauf der Periode ist abgeschlossen, es warten aber noch Positionen
+           (Nachzügler). Ein Start-Knopf würde von der Sperre abgelehnt — hier steht der
+           Grund und der Weg: Lauf unter «Läufe» mit Begründung zurücksetzen. {% endcomment %}
+        <div class="fw-ht" id="soll-gesperrt">{% blocktrans count n=n_offen with monat=monat_name jahr=jahr %}Der Lauf {{ monat }} {{ jahr }} ist abgeschlossen — {{ n }} Position wartet noch (Nachzügler).{% plural %}Der Lauf {{ monat }} {{ jahr }} ist abgeschlossen — {{ n }} Positionen warten noch (Nachzügler).{% endblocktrans %}</div>
+        <a href="/neu/laeufe/{{ lauf.pk }}/#lauf-zuruecksetzen" class="fw-btn fw-primary">{% zeichen 'lauf' %} {% trans "Lauf zurücksetzen" %}</a>
+        {% elif n_offen %}
         <form method="post" action="/neu/sollstellung/starten/" onsubmit="return confirm('{% filter escapejs %}{% if aktive_lg %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr strasse=aktive_lg.strasse|safe %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — nur {{ strasse }}?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — nur {{ strasse }}?{% endblocktrans %}{% else %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — ganzes Portfolio?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — ganzes Portfolio?{% endblocktrans %}{% endif %}{% endfilter %}');">
             {% csrf_token %}
             <input type="hidden" name="jahr" value="{{ jahr }}">

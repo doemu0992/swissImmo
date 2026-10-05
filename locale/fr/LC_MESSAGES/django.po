@@ -24886,3 +24886,9 @@ msgstr "Réinitialiser le filtre"
 
 msgid "Spalte filtern"
 msgstr "Filtrer la colonne"
+
+#, python-format
+msgid "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch (Nachzügler)."
+msgid_plural "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch (Nachzügler)."
+msgstr[0] "Le cycle %(monat)s %(jahr)s est terminé — %(n)s position attend encore (retardataire)."
+msgstr[1] "Le cycle %(monat)s %(jahr)s est terminé — %(n)s positions attendent encore (retardataires)."
