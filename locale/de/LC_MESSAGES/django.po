@@ -24200,3 +24200,99 @@ msgstr "Versicherungspolice"
 #: stweg/models.py
 msgid "Jahresrechnung"
 msgstr "Jahresrechnung"
+
+#: stweg/inkasso
+msgid "Bezahlte Rate (falls der Eigentümer sie angegeben hat)"
+msgstr "Bezahlte Rate (falls der Eigentümer sie angegeben hat)"
+
+#: stweg/inkasso
+msgid "— keine Angabe: älteste offene Forderung —"
+msgstr "— keine Angabe: älteste offene Forderung —"
+
+#: stweg/inkasso
+msgid "Inkasso"
+msgstr "Inkasso"
+
+#: stweg/inkasso
+msgid "Mahnungen, Retentionsrecht und Gemeinschaftspfandrecht — ohne Kündigungsandrohung"
+msgstr "Mahnungen, Retentionsrecht und Gemeinschaftspfandrecht — ohne Kündigungsandrohung"
+
+#: stweg/inkasso
+msgid "Ein Stockwerkeigentümer ist Eigentümer, nicht Mieter: Es gibt keine Kündigungsandrohung. Die Gemeinschaft sichert ihre Beitragsforderungen durch Mahnungen, das Retentionsrecht (Art. 712k ZGB) und das Gemeinschaftspfandrecht (Art. 712i ZGB)."
+msgstr "Ein Stockwerkeigentümer ist Eigentümer, nicht Mieter: Es gibt keine Kündigungsandrohung. Die Gemeinschaft sichert ihre Beitragsforderungen durch Mahnungen, das Retentionsrecht (Art. 712k ZGB) und das Gemeinschaftspfandrecht (Art. 712i ZGB)."
+
+#: stweg/inkasso
+msgid "älter als die Pfandfrist"
+msgstr "älter als die Pfandfrist"
+
+#: stweg/inkasso
+msgid "nicht versendet"
+msgstr "nicht versendet"
+
+#: stweg/inkasso
+msgid "Retentionsrecht geltend gemacht"
+msgstr "Retentionsrecht geltend gemacht"
+
+#: stweg/inkasso
+msgid "Gemeinschaftspfandrecht angemeldet"
+msgstr "Gemeinschaftspfandrecht angemeldet"
+
+#: stweg/inkasso
+msgid "PDF für das Grundbuchamt"
+msgstr "PDF für das Grundbuchamt"
+
+#: stweg/inkasso
+msgid "Eintragung vermerken"
+msgstr "Eintragung vermerken"
+
+#: stweg/inkasso
+msgid "Retentionsrecht geltend machen (Art. 712k ZGB)"
+msgstr "Retentionsrecht geltend machen (Art. 712k ZGB)"
+
+#: stweg/inkasso
+msgid "Sachen, an denen das Retentionsrecht geltend gemacht wird *"
+msgstr "Sachen, an denen das Retentionsrecht geltend gemacht wird *"
+
+#: stweg/inkasso
+msgid "Auch ohne drei Mahnungen (die Stufen sind eine Richtlinie, keine gesetzliche Voraussetzung)"
+msgstr "Auch ohne drei Mahnungen (die Stufen sind eine Richtlinie, keine gesetzliche Voraussetzung)"
+
+#: stweg/inkasso
+msgid "Retentionsrecht festhalten"
+msgstr "Retentionsrecht festhalten"
+
+#: stweg/inkasso
+msgid "Auch ohne drei Mahnungen"
+msgstr "Auch ohne drei Mahnungen"
+
+#: stweg/inkasso
+msgid "Gemeinschaftspfandrecht anmelden"
+msgstr "Gemeinschaftspfandrecht anmelden"
+
+#: stweg/inkasso
+msgid "Keine offenen Beitragsforderungen."
+msgstr "Keine offenen Beitragsforderungen."
+
+#: stweg/inkasso
+msgid "%(stufe)s. Mahnung per E-Mail versendet."
+msgstr "%(stufe)s. Mahnung per E-Mail versendet."
+
+#: stweg/inkasso
+msgid "%(stufe)s. Mahnung erstellt, aber der Versand ist fehlgeschlagen."
+msgstr "%(stufe)s. Mahnung erstellt, aber der Versand ist fehlgeschlagen."
+
+#: stweg/inkasso
+msgid "Für diese Einheit ist kein Inkassofall offen."
+msgstr "Für diese Einheit ist kein Inkassofall offen."
+
+#: stweg/inkasso
+msgid "Das Retentionsrecht ist festgehalten."
+msgstr "Das Retentionsrecht ist festgehalten."
+
+#: stweg/inkasso
+msgid "Eintragung im Grundbuch vermerkt."
+msgstr "Eintragung im Grundbuch vermerkt."
+
+#: stweg/inkasso
+msgid "Die gewählte Rate gehört nicht zu dieser Einheit."
+msgstr "Die gewählte Rate gehört nicht zu dieser Einheit."

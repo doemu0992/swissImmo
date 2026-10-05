@@ -24290,3 +24290,99 @@ msgstr "Polizza assicurativa"
 #: stweg/models.py
 msgid "Jahresrechnung"
 msgstr "Conti annuali"
+
+#: stweg/inkasso
+msgid "Bezahlte Rate (falls der Eigentümer sie angegeben hat)"
+msgstr "Acconto pagato (se il proprietario lo ha indicato)"
+
+#: stweg/inkasso
+msgid "— keine Angabe: älteste offene Forderung —"
+msgstr "— nessuna indicazione: credito aperto più vecchio —"
+
+#: stweg/inkasso
+msgid "Inkasso"
+msgstr "Incasso"
+
+#: stweg/inkasso
+msgid "Mahnungen, Retentionsrecht und Gemeinschaftspfandrecht — ohne Kündigungsandrohung"
+msgstr "Solleciti, diritto di ritenzione e pegno della comunione — senza comminatoria di disdetta"
+
+#: stweg/inkasso
+msgid "Ein Stockwerkeigentümer ist Eigentümer, nicht Mieter: Es gibt keine Kündigungsandrohung. Die Gemeinschaft sichert ihre Beitragsforderungen durch Mahnungen, das Retentionsrecht (Art. 712k ZGB) und das Gemeinschaftspfandrecht (Art. 712i ZGB)."
+msgstr "Un proprietario per piani è proprietario, non inquilino: non vi è comminatoria di disdetta. La comunione garantisce i crediti di contribuzione con solleciti, il diritto di ritenzione (art. 712k CC) e il pegno legale (art. 712i CC)."
+
+#: stweg/inkasso
+msgid "älter als die Pfandfrist"
+msgstr "anteriore al termine del pegno"
+
+#: stweg/inkasso
+msgid "nicht versendet"
+msgstr "non inviato"
+
+#: stweg/inkasso
+msgid "Retentionsrecht geltend gemacht"
+msgstr "Diritto di ritenzione fatto valere"
+
+#: stweg/inkasso
+msgid "Gemeinschaftspfandrecht angemeldet"
+msgstr "Pegno della comunione annunciato"
+
+#: stweg/inkasso
+msgid "PDF für das Grundbuchamt"
+msgstr "PDF per l'ufficio del registro fondiario"
+
+#: stweg/inkasso
+msgid "Eintragung vermerken"
+msgstr "Annotare l'iscrizione"
+
+#: stweg/inkasso
+msgid "Retentionsrecht geltend machen (Art. 712k ZGB)"
+msgstr "Far valere il diritto di ritenzione (art. 712k CC)"
+
+#: stweg/inkasso
+msgid "Sachen, an denen das Retentionsrecht geltend gemacht wird *"
+msgstr "Cose soggette al diritto di ritenzione *"
+
+#: stweg/inkasso
+msgid "Auch ohne drei Mahnungen (die Stufen sind eine Richtlinie, keine gesetzliche Voraussetzung)"
+msgstr "Anche senza tre solleciti (i livelli sono una direttiva, non un requisito legale)"
+
+#: stweg/inkasso
+msgid "Retentionsrecht festhalten"
+msgstr "Registrare il diritto di ritenzione"
+
+#: stweg/inkasso
+msgid "Auch ohne drei Mahnungen"
+msgstr "Anche senza tre solleciti"
+
+#: stweg/inkasso
+msgid "Gemeinschaftspfandrecht anmelden"
+msgstr "Annunciare il pegno della comunione"
+
+#: stweg/inkasso
+msgid "Keine offenen Beitragsforderungen."
+msgstr "Nessun credito di contribuzione aperto."
+
+#: stweg/inkasso
+msgid "%(stufe)s. Mahnung per E-Mail versendet."
+msgstr "%(stufe)s° sollecito inviato per e-mail."
+
+#: stweg/inkasso
+msgid "%(stufe)s. Mahnung erstellt, aber der Versand ist fehlgeschlagen."
+msgstr "%(stufe)s° sollecito creato, ma l'invio non è riuscito."
+
+#: stweg/inkasso
+msgid "Für diese Einheit ist kein Inkassofall offen."
+msgstr "Nessun caso di incasso è aperto per questa unità."
+
+#: stweg/inkasso
+msgid "Das Retentionsrecht ist festgehalten."
+msgstr "Il diritto di ritenzione è registrato."
+
+#: stweg/inkasso
+msgid "Eintragung im Grundbuch vermerkt."
+msgstr "Iscrizione nel registro fondiario annotata."
+
+#: stweg/inkasso
+msgid "Die gewählte Rate gehört nicht zu dieser Einheit."
+msgstr "L'acconto scelto non appartiene a questa unità."
