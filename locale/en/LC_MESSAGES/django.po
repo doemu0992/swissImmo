@@ -24350,3 +24350,273 @@ msgstr "Warning: This calculation does not replace legal review. The 36-month pe
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Interest statement (PDF)"
+
+msgid "Betreibungen"
+msgstr "Debt enforcement"
+
+#, python-format
+msgid "Offene Forderungen in Betreibung: CHF %(s)s"
+msgstr "Open claims in enforcement: CHF %(s)s"
+
+msgid "Mieter / Rechnung"
+msgstr "Tenant / invoice"
+
+msgid "Amt / Nr."
+msgstr "Office / no."
+
+msgid "Begehren"
+msgstr "Request"
+
+#, python-format
+msgid "Rechtsvorschlag bis %(d)s"
+msgstr "Objection until %(d)s"
+
+msgid "Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer überfälligen Rechnung ein."
+msgstr "No enforcement proceedings. Start one from dunning, on an overdue invoice."
+
+msgid "Zählerstand erfassen"
+msgstr "Record meter reading"
+
+#, python-format
+msgid "Verzugszins (%% pro Jahr)"
+msgstr "Default interest (%% per year)"
+
+msgid "Betreibung einleiten (SchKG)"
+msgstr "Start enforcement (SchKG)"
+
+msgid "Betreibung"
+msgstr "Enforcement"
+
+msgid "Zustelldatum erfassen — Beginn der Einsprachefrist"
+msgstr "Record delivery date — start of the objection period"
+
+#, python-format
+msgid "Einsprache bis %(d)s"
+msgstr "Objections until %(d)s"
+
+msgid "Zustellung erfassen"
+msgstr "Record delivery"
+
+#, python-format
+msgid "Rechtsvorschlag bis %(d)s (Art. 74 SchKG)."
+msgstr "Objection until %(d)s (art. 74 SchKG)."
+
+#, python-format
+msgid "Fortsetzungsbegehren zwischen %(a)s und %(b)s (Art. 88 SchKG)."
+msgstr "Request to continue between %(a)s and %(b)s (art. 88 SchKG)."
+
+msgid "Speichern und nächsten erfassen"
+msgstr "Save and enter next"
+
+msgid "Zuweisen"
+msgstr "Assign"
+
+msgid "Niemand zugewiesen"
+msgstr "Nobody assigned"
+
+#, python-format
+msgid "erledigen bis %(d)s"
+msgstr "complete by %(d)s"
+
+msgid "Meine Tickets"
+msgstr "My tickets"
+
+msgid "Zielzeit überschritten"
+msgstr "Target time exceeded"
+
+msgid "SLA überfällig"
+msgstr "SLA overdue"
+
+msgid "Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgstr "The import was aborted and fully rolled back — nothing was saved. Please check the file (damaged or incomplete?)."
+
+msgid "Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der Vergangenheit oder die Rücknahme ist protokolliert."
+msgstr "No usage compensation owed: the lease end is not in the past, or the handover is recorded."
+
+msgid "Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen."
+msgstr "This month's dunning run is already complete — nothing was dunned twice. To repeat it, reset the run under \"Runs\" or force it deliberately."
+
+msgid "Zuständig (intern)"
+msgstr "Responsible (internal)"
+
+msgid "— niemand —"
+msgstr "— nobody —"
+
+msgid "Erledigen bis (SLA)"
+msgstr "Complete by (SLA)"
+
+msgid "Die Frist liegt in der Vergangenheit."
+msgstr "The deadline is in the past."
+
+#, python-format
+msgid "Zuständig: %(name)s."
+msgstr "Responsible: %(name)s."
+
+#, python-format
+msgid "Ticket zugewiesen: %(name)s."
+msgstr "Ticket assigned: %(name)s."
+
+msgid "Ticket zuweisen"
+msgstr "Assign ticket"
+
+msgid "Ticket"
+msgstr "Ticket"
+
+msgid "Zugestellt am"
+msgstr "Delivered on"
+
+msgid "Das Zustelldatum liegt in der Zukunft."
+msgstr "The delivery date is in the future."
+
+msgid "Die Abrechnung kann nicht vor Ende der Abrechnungsperiode zugestellt werden."
+msgstr "The statement cannot be delivered before the end of the billing period."
+
+msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann zustellen."
+msgstr "The statement is not booked yet — book it first, then deliver."
+
+#, python-format
+msgid "Zustellung erfasst. Einsprachefrist bis %(d)s."
+msgstr "Delivery recorded. Objection period until %(d)s."
+
+msgid "Abrechnung zugestellt"
+msgstr "Statement delivered"
+
+#, python-format
+msgid "Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage)."
+msgstr "The review and objection period (%(n)s days) starts with the delivery date."
+
+msgid "Die Forderung muss grösser als 0 sein."
+msgstr "The claim must be greater than 0."
+
+#, python-format
+msgid "Für den Stand «%(s)s» ist dieses Datum nötig."
+msgstr "This date is required for the status \"%(s)s\"."
+
+msgid "Das Datum liegt in der Zukunft."
+msgstr "The date is in the future."
+
+#, python-format
+msgid "Das Datum liegt vor «%(f)s»."
+msgstr "The date is before \"%(f)s\"."
+
+msgid "Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte prüfen."
+msgstr "Objection after the 10-day period (art. 74 SchKG) — please check."
+
+msgid "Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet werden."
+msgstr "Enforcement cannot be started for a paid or cancelled invoice."
+
+msgid "Betreibung erfasst."
+msgstr "Enforcement recorded."
+
+msgid "Betreibung einleiten"
+msgstr "Start enforcement"
+
+msgid "Betreibung erfassen"
+msgstr "Record enforcement"
+
+msgid "Betreibung gespeichert."
+msgstr "Enforcement saved."
+
+msgid "Betreibung bearbeiten"
+msgstr "Edit enforcement"
+
+msgid "Ablesedatum"
+msgstr "Reading date"
+
+msgid "Zählerstand"
+msgstr "Meter reading"
+
+msgid "Das Ablesedatum liegt in der Zukunft."
+msgstr "The reading date is in the future."
+
+#, python-format
+msgid "Der Stand liegt unter dem Stand vom %(d)s (%(w)s)."
+msgstr "The reading is below the reading of %(d)s (%(w)s)."
+
+#, python-format
+msgid "Der Stand liegt über dem späteren Stand vom %(d)s (%(w)s)."
+msgstr "The reading is above the later reading of %(d)s (%(w)s)."
+
+msgid "Zählerstand erfasst."
+msgstr "Meter reading recorded."
+
+#, python-format
+msgid "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
+msgstr "The rent run %(titel)s is already complete — nothing was billed twice. To repeat it, first reset the run under \"Runs\"."
+
+msgid "Begehren eingereicht"
+msgstr "Request filed"
+
+msgid "Zahlungsbefehl zugestellt"
+msgstr "Payment order served"
+
+msgid "Rechtsvorschlag erhoben"
+msgstr "Objection raised"
+
+msgid "Rechtsöffnung beantragt/erteilt"
+msgstr "Removal of objection requested/granted"
+
+msgid "Fortsetzungsbegehren"
+msgstr "Request to continue"
+
+msgid "Verlustschein"
+msgstr "Certificate of loss"
+
+#, python-format
+msgid "Pfandberechtigt sind nur offene Beitragsforderungen der letzten %(m)s Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein."
+msgstr "Only open contribution claims of the last %(m)s months are secured by the lien. Older ones remain owed but are not included in the lien amount."
+
+#, python-format
+msgid "offen CHF %(b)s"
+msgstr "open CHF %(b)s"
+
+#, python-format
+msgid "Pfandberechtigt: CHF %(p)s · nicht pfandberechtigt (älter): CHF %(a)s"
+msgstr "Secured by lien: CHF %(p)s · not secured (older): CHF %(a)s"
+
+#, python-format
+msgid "%(s)s. Mahnung"
+msgstr "Reminder %(s)s"
+
+#, python-format
+msgid "zahlbar bis %(d)s"
+msgstr "payable by %(d)s"
+
+#, python-format
+msgid "Stichtag %(s)s · Pfandsumme CHF %(b)s"
+msgstr "Reference date %(s)s · lien amount CHF %(b)s"
+
+#, python-format
+msgid "eingetragen %(d)s"
+msgstr "registered %(d)s"
+
+#, python-format
+msgid "%(s)s. Mahnung erstellen und versenden"
+msgstr "Create and send reminder %(s)s"
+
+#, python-format
+msgid "Summiert nur die offenen Forderungen der letzten %(m)s Monate und erzeugt das PDF für das Grundbuchamt."
+msgstr "Sums only the open claims of the last %(m)s months and generates the PDF for the land registry."
+
+#, python-format
+msgid "Anfechtungsfrist (nach den Vorgaben der Gemeinschaft) bis %(d)s."
+msgstr "Challenge period (per the community rules) until %(d)s."
+
+#, python-format
+msgid "bestätigt am %(d)s"
+msgstr "confirmed on %(d)s"
+
+#, python-format
+msgid "Leer = %(n)s Tage (Systemvorgabe, nicht geprüft)."
+msgstr "Empty = %(n)s days (system default, unchecked)."
+
+#, python-format
+msgid "%(stufe)s. Mahnung erstellt — keine E-Mail-Adresse, bitte das PDF per Post zustellen."
+msgstr "Reminder %(stufe)s created — no e-mail address, please send the PDF by post."
+
+#, python-format
+msgid "Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(monate)s Monate). Das PDF für das Grundbuchamt liegt bereit."
+msgstr "Lien registered: lien amount CHF %(betrag)s (only the last %(monate)s months). The PDF for the land registry is ready."
+
+msgid "allgemein"
+msgstr "general"

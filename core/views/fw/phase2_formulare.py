@@ -257,8 +257,10 @@ class ZaehlerstandForm(forms.Form):
         self.fields['zaehler'].queryset = Zaehler.objects.filter(
             Q(liegenschaft=liegenschaft) | Q(einheit__liegenschaft=liegenschaft)
         ).select_related('einheit').order_by('typ', 'zaehler_nummer')
+        # Ausserhalb des f-Strings: `makemessages` liest Texte darin nicht.
+        allgemein = gettext('allgemein')
         self.fields['zaehler'].label_from_instance = lambda z: (
-            f"{z.typ} {z.zaehler_nummer}" + (f" · {z.einheit.bezeichnung}" if z.einheit_id else f" · {gettext('allgemein')}"))
+            f"{z.typ} {z.zaehler_nummer}" + (f" · {z.einheit.bezeichnung}" if z.einheit_id else f" · {allgemein}"))
 
     def clean_datum(self):
         d = self.cleaned_data['datum']
