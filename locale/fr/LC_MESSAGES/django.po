@@ -24664,3 +24664,147 @@ msgstr "Point %(nr)s « %(titel)s » : %(problem)s"
 #: stweg/quorum
 msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
 msgstr "Le quorum légal n'est pas atteint (%(art)s) : « accepté » ne peut pas être constaté."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Commun (les frais vont dans le décompte annuel PPE)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Droit exclusif (le propriétaire supporte directement les frais)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Toit"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Façade"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Fenêtres (côté extérieur)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Murs porteurs, dalles, fondations"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Conduites principales (eau, eaux usées, électricité, chauffage)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Cage d'escalier, entrée, locaux communs"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Ascenseur, chauffage et autres installations pour tous"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Terrain, abords, accès"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Fenêtres (côté intérieur : ferrures, peinture)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Cloison intérieure non porteuse"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Revêtement de sol dans l'unité"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Crépi, papier peint, peinture intérieure"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Cuisine, salle de bains et appareils sanitaires de l'unité"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Conduites à l'intérieur de l'unité"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Portes intérieures de l'unité"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Autre (vérifier juridiquement le classement)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Veuillez indiquer l'élément concerné."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "En cas de droit exclusif, indiquer l'unité concernée — elle détermine qui supporte les frais."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "« %(bauteil)s » est obligatoirement une partie commune (art. 712b al. 2 CC) : les frais ne peuvent pas être imputés à un seul propriétaire comme droit exclusif. Veuillez choisir « commun »."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Veuillez déclarer : « droit exclusif » (le propriétaire supporte les frais) ou « commun » (frais du décompte annuel)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Débiteur des frais (PPE)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "non déclaré"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Élément concerné"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— choisir l'élément —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "obligatoirement commun"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Débiteur des frais"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— choisir le débiteur des frais —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "Cet élément est obligatoirement une partie commune (art. 712b CC) : les frais ne peuvent pas être imputés à un seul propriétaire comme droit exclusif."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Élément (pour la PPE *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Débiteur des frais (pour la PPE *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "L'élément et le débiteur des frais ne valent que pour une communauté de PPE."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Veuillez choisir l'élément et le débiteur des frais."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Débiteur des frais enregistré."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "Pour une PPE, veuillez indiquer l'élément et le débiteur des frais (droit exclusif ou commun)."

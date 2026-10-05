@@ -101,6 +101,12 @@ def pruefe(lg):
         elif not e.stockwerkeigentuemer.email:
             befunde.append((HINWEIS, f'Eigentümer «{e.stockwerkeigentuemer.firma_oder_name}» hat keine E-Mail-Adresse '
                                      '(Einladung und Rechnung nur per Post).'))
+    from tickets.models import SchadenMeldung
+    offen = SchadenMeldung.objects.filter(liegenschaft=lg).exclude(status='erledigt')
+    ohne = offen.filter(kostentraeger='').count()
+    if ohne:
+        befunde.append((WARNUNG, f'{ohne} offene Schadenmeldung(en) ohne Kostenträger: «Sonderrecht» oder «gemeinschaftlich» '
+                                 'ist nicht erklärt (Art. 712b ZGB) — es wird weder beauftragt noch erledigt.'))
     for n in lg.einheiten.filter(gehoert_zu__isnull=False):
         if n.wertquote and n.wertquote != 0:
             befunde.append((HINWEIS, f'Nebenraum «{n.bezeichnung}» trägt eine Wertquote ({n.wertquote}) — sie zählt '

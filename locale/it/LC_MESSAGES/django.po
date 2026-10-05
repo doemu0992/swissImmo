@@ -24642,3 +24642,147 @@ msgstr "Punto %(nr)s «%(titel)s»: %(problem)s"
 #: stweg/quorum
 msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
 msgstr "Il quorum legale non è raggiunto (%(art)s): «approvato» non può essere accertato."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Comune (i costi confluiscono nel conteggio annuale PPP)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Diritto esclusivo (i costi li sostiene direttamente il proprietario)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Tetto"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Facciata"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Finestre (lato esterno)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Pareti portanti, soffitti, fondamenta"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Condotte principali (acqua, acque reflue, elettricità, riscaldamento)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Vano scale, ingresso, locali comuni"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Ascensore, riscaldamento e altri impianti per tutti"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Terreno, dintorni, accesso"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Finestre (lato interno: ferramenta, verniciatura)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Parete interna non portante"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Pavimentazione nell'unità"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Intonaco, carta da parati, tinteggiatura interna"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Cucina, bagno e apparecchi sanitari dell'unità"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Condotte all'interno dell'unità"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Porte interne dell'unità"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Altro (verificare giuridicamente la classificazione)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Indicare l'elemento interessato."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "In caso di diritto esclusivo indicare l'unità interessata — determina chi sostiene i costi."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "«%(bauteil)s» è obbligatoriamente proprietà comune (art. 712b cpv. 2 CC): i costi non possono essere addossati a un singolo proprietario come diritto esclusivo. Scegliere «comune»."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Dichiarare: «diritto esclusivo» (i costi li sostiene il proprietario) o «comune» (costi del conteggio annuale)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Onere dei costi (PPP)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "non dichiarato"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Elemento interessato"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— scegliere l'elemento —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "obbligatoriamente comune"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Onere dei costi"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— scegliere l'onere dei costi —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "Questo elemento è obbligatoriamente proprietà comune (art. 712b CC): i costi non possono essere addossati a un singolo proprietario come diritto esclusivo."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Elemento (per la PPP *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Onere dei costi (per la PPP *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "Elemento e onere dei costi valgono solo per una comunione PPP."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Scegliere elemento e onere dei costi."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Onere dei costi salvato."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "Per una PPP indicare elemento e onere dei costi (diritto esclusivo o comune)."

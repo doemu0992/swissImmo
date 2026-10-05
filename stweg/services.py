@@ -51,23 +51,38 @@ class StwegAbrechnungService:
                 .exclude(status__in=AUSGESCHLOSSENE_STATUS)
                 .distinct().prefetch_related('positionen').order_by('datum', 'id'))
 
+    def _gemeinschaftlich(self, rechnung):
+        """Gehört die Rechnung zu einem Ticket, dessen Kosten zwingend gemeinschaftlich sind (Art. 712b ZGB)?
+        Dann wird sie nie einer einzelnen Einheit belastet — auch wenn die Rechnung eine Einheit nennt."""
+        from stweg import bauteile
+        from tickets.models import HandwerkerAuftrag
+        for a in (HandwerkerAuftrag.objects.filter(kreditoren_rechnung=rechnung)
+                  .select_related('ticket__liegenschaft')):
+            t = a.ticket
+            if t.liegenschaft.ist_stweg and bauteile.gemeinschaftlich_zu_belasten(t):
+                return True
+        return False
+
     def _zeilen(self, jahr):
         """Alle Kostenzeilen der Gemeinschaft; `einheit` ist die belastete Einheit oder None (allgemein)."""
         lg = self.liegenschaft
         zeilen = []
         for r in self._rechnungen(jahr):
             positionen = list(r.positionen.all())
+            gemeinsam = self._gemeinschaftlich(r)
             if positionen:
                 for p in positionen:
                     einheit = p.einheit if p.einheit_id and p.einheit.liegenschaft_id == lg.pk else None
                     if p.liegenschaft_id == lg.pk and p.einheit_id is None or einheit is not None:
                         zeilen.append({'datum': r.datum, 'lieferant': r.lieferant, 'text': p.bezeichnung,
-                                       'betrag': p.betrag, 'konto': p.konto or r.konto, 'einheit': einheit})
+                                       'betrag': p.betrag, 'konto': p.konto or r.konto,
+                                       'einheit': None if gemeinsam else einheit})
             elif r.liegenschaft_id == lg.pk:
                 einheit = r.einheit if r.einheit_id and r.einheit.liegenschaft_id == lg.pk else None
                 if r.einheit_id is None or einheit is not None:
                     zeilen.append({'datum': r.datum, 'lieferant': r.lieferant, 'text': '',
-                                   'betrag': r.betrag or NULL, 'konto': r.konto, 'einheit': einheit})
+                                   'betrag': r.betrag or NULL, 'konto': r.konto,
+                                   'einheit': None if gemeinsam else einheit})
         return zeilen
 
     def kostenzeilen(self, jahr):

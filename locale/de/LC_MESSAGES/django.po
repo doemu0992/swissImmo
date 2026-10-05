@@ -24552,3 +24552,147 @@ msgstr "Traktandum %(nr)s «%(titel)s»: %(problem)s"
 #: stweg/quorum
 msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
 msgstr "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Dach"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Fassade"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Fenster (Aussenseite)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Tragende Wände, Decken, Fundament"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Treppenhaus, Eingang, gemeinschaftliche Räume"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Lift, Heizung und andere Anlagen für alle"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Grundstück, Umgebung, Zufahrt"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Fenster (Innenseite: Beschläge, Anstrich)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Nichttragende Innenwand"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Bodenbelag in der Einheit"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Verputz, Tapete, Anstrich innen"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Küche, Bad und Sanitärapparate der Einheit"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Leitungen innerhalb der Einheit"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Innentüren der Einheit"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Sonstiges (Einordnung rechtlich prüfen)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Bitte das betroffene Bauteil angeben."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Kostenträger (STWEG)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "nicht deklariert"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Betroffenes Bauteil"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— Bauteil wählen —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "zwingend gemeinschaftlich"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Kostenträger"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— Kostenträger wählen —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Bauteil (bei Stockwerkeigentum *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Kostenträger (bei Stockwerkeigentum *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Bitte Bauteil und Kostenträger wählen."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Kostenträger gespeichert."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."

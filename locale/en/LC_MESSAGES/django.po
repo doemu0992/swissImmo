@@ -24438,3 +24438,147 @@ msgstr "Agenda item %(nr)s \"%(titel)s\": %(problem)s"
 #: stweg/quorum
 msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
 msgstr "The legal quorum has not been reached (%(art)s): \"approved\" cannot be recorded."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Common (costs go into the condominium annual statement)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Exclusive right (the owner bears the costs directly)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Roof"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Facade"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Windows (exterior)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Load-bearing walls, ceilings, foundation"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Main lines (water, sewage, electricity, heating)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Staircase, entrance, common rooms"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Lift, heating and other installations for all"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Land, surroundings, access road"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Windows (interior: fittings, paint)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Non-load-bearing interior wall"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Flooring inside the unit"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Plaster, wallpaper, interior paint"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Kitchen, bathroom and sanitary fixtures of the unit"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Lines inside the unit"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Interior doors of the unit"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Other (check the classification legally)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Please state the affected component."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "For exclusive right, state the affected unit — it determines who bears the costs."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "\"%(bauteil)s\" is mandatorily common property (Art. 712b para. 2 CC): the costs cannot be charged to a single owner as exclusive right. Please choose \"common\"."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Please declare: \"exclusive right\" (the owner bears the costs) or \"common\" (costs of the annual statement)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Cost bearer (condominium)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "not declared"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Affected component"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— choose component —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "mandatorily common"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Cost bearer"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— choose cost bearer —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "This component is mandatorily common property (Art. 712b CC): the costs cannot be charged to a single owner as exclusive right."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Component (for condominium *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Cost bearer (for condominium *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "Component and cost bearer apply only to a condominium community."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Please choose component and cost bearer."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Cost bearer saved."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "For a condominium, please state component and cost bearer (exclusive right or common)."
