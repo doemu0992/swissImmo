@@ -27,23 +27,23 @@ def pruefen(z, heute=None):
     lg = z.liegenschaft
     probleme = []
     if not lg.ist_stweg or lg.status != lg.STATUS_AKTIV:
-        probleme.append('Die Gemeinschaft muss eine aktive STWEG sein.')
+        probleme.append(gettext('Die Gemeinschaft muss eine aktive STWEG sein.'))
     else:
         try:
             pruefe_wertquoten(lg)
         except WertquotenFehler as e:
             probleme.append(str(e.message))
     if not z.antrag.strip():
-        probleme.append('Der Antrag fehlt.')
+        probleme.append(gettext('Der Antrag fehlt.'))
     if z.mehrheitsart == 'doppelt_anwesende':
-        probleme.append('«Mehrheit der Anwesenden» gibt es nur in einer Versammlung, nicht im Zirkularverfahren.')
+        probleme.append(gettext('«Mehrheit der Anwesenden» gibt es nur in einer Versammlung, nicht im Zirkularverfahren.'))
     if z.frist_bis <= heute:
-        probleme.append('Die Abstimmungsfrist muss in der Zukunft liegen.')
+        probleme.append(gettext('Die Abstimmungsfrist muss in der Zukunft liegen.'))
     eig, ohne = _empfaenger(z)
     if not eig:
-        probleme.append('Keine Stockwerkeigentümer den Einheiten zugeordnet.')
+        probleme.append(gettext('Keine Stockwerkeigentümer den Einheiten zugeordnet.'))
     for e in ohne:
-        probleme.append(f'Einheit «{e.bezeichnung}» hat keinen Stockwerkeigentümer — sie könnte nicht abstimmen.')
+        probleme.append(gettext('Einheit «%(bezeichnung)s» hat keinen Stockwerkeigentümer — sie könnte nicht abstimmen.') % {'bezeichnung': e.bezeichnung})
     return probleme
 
 
@@ -67,7 +67,7 @@ def versenden(z, *, heute=None):
     """Prüft, schickt den Antrag an alle Eigentümer und setzt den Beschluss auf «läuft».
     Wiederholbar wie die Einladung: nur Fehlgeschlagene und Post-Fälle werden erneut versucht."""
     if z.status not in (z.ENTWURF, z.LAUFEND):
-        raise VersammlungsFehler(['Der Beschluss ist bereits abgeschlossen.'])
+        raise VersammlungsFehler([gettext('Der Beschluss ist bereits abgeschlossen.')])
     probleme = pruefen(z, heute)
     if probleme:
         raise VersammlungsFehler(probleme)
@@ -124,14 +124,14 @@ def vollstaendig(z):
 def feststellen(z, ergebnis, *, beschlusstext=None, user=None, heute=None):
     heute = heute or timezone.localdate()
     if z.status != z.LAUFEND:
-        raise BeschlussFehler('Nur ein laufender Beschluss lässt sich feststellen.')
+        raise BeschlussFehler(gettext('Nur ein laufender Beschluss lässt sich feststellen.'))
     if ergebnis not in (Traktandum.ANGENOMMEN, Traktandum.ABGELEHNT):
-        raise BeschlussFehler(f'Ungültiges Ergebnis «{ergebnis}».')
+        raise BeschlussFehler(gettext('Ungültiges Ergebnis «%(ergebnis)s».') % {'ergebnis': ergebnis})
     if heute <= z.frist_bis and not vollstaendig(z):
-        raise BeschlussFehler('Die Frist läuft noch und nicht alle Einheiten haben abgestimmt.')
+        raise BeschlussFehler(gettext('Die Frist läuft noch und nicht alle Einheiten haben abgestimmt.'))
     zz = auswerten(z)
     if zz['widerspruch']:
-        raise BeschlussFehler('Widersprüchliche Stimmen desselben Eigentümers — bitte zuerst korrigieren.')
+        raise BeschlussFehler(gettext('Widersprüchliche Stimmen desselben Eigentümers — bitte zuerst korrigieren.'))
     for feld in ('ja_koepfe', 'nein_koepfe', 'enthaltung_koepfe',
                  'ja_quoten', 'nein_quoten', 'enthaltung_quoten'):
         setattr(z, feld, zz[feld])
@@ -141,6 +141,15 @@ def feststellen(z, ergebnis, *, beschlusstext=None, user=None, heute=None):
     z.status = z.ABGESCHLOSSEN
     z.festgestellt_am = timezone.now()
     z.save()
+    if z.budget_id:
+        from stweg import budget as bd
+        if ergebnis == Traktandum.ANGENOMMEN:
+            try:
+                bd.budget_genehmigen(z.budget)
+            except bd.BudgetFehler as e:
+                raise BeschlussFehler(gettext('Das Budget kann nicht genehmigt werden: %(e)s') % {'e': e})
+        elif z.budget.status == z.budget.VORGELEGT:
+            bd.budget_ablehnen(z.budget)
     if ergebnis == Traktandum.ANGENOMMEN and z.vollzug_aufgabe:
         from core.models import Pendenz
         Pendenz.objects.update_or_create(
@@ -153,7 +162,7 @@ def feststellen(z, ergebnis, *, beschlusstext=None, user=None, heute=None):
 def ergebnis_versenden(z):
     """Teilt allen Eigentümern das Ergebnis mit (auch denen, die nicht abgestimmt haben)."""
     if z.status != z.ABGESCHLOSSEN:
-        raise VersammlungsFehler(['Das Ergebnis ist noch nicht festgestellt.'])
+        raise VersammlungsFehler([gettext('Das Ergebnis ist noch nicht festgestellt.')])
     eig, _ = _empfaenger(z)
     schon = _schon_gesendet(z, ZirkularVersand.ERGEBNIS)
     org = z.liegenschaft.organisation

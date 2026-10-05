@@ -174,7 +174,8 @@ def portal_stweg_vollmacht(request, pk):
     if einheit is None:
         raise Http404
     try:
-        erteilen(v, einheit, request.POST.get('bevollmaechtigter'), erteilt_von=eig, kanal='portal')
+        erteilen(v, einheit, request.POST.get('bevollmaechtigter'), erteilt_von=eig, kanal='portal',
+                 dokument=request.FILES.get('dokument'))
         messages.success(request, gettext('Ihre Vollmacht wurde erfasst.'))
     except VollmachtFehler as e:
         messages.error(request, str(e))
@@ -308,3 +309,15 @@ def portal_stweg_evoting(request, pk):
     except BeschlussFehler as e:
         messages.error(request, str(e))
     return redirect('/portal/stweg/')
+
+
+@never_cache
+@login_required
+def portal_stweg_scan(request, pk):
+    """Der Scan einer Vollmacht — nur für den Eigentümer der Einheit (und seine Miteigentümer)."""
+    eig = _eigentuemer(request)
+    vm = Vollmacht.objects.select_related('einheit').filter(pk=pk).first()
+    if vm is None or not vm.dokument or not _sichtbare_einheiten(eig).filter(pk=vm.einheit_id).exists():
+        raise Http404
+    from stweg.views_dokumente import datei_antwort
+    return datei_antwort(vm, feld='dokument')

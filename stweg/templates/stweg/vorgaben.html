@@ -1,0 +1,33 @@
+{% extends 'fw/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Vorgaben der Gemeinschaft" %} — {{ lg }} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/stweg/">{% trans "Stockwerkeigentum" %}</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>{% trans "Vorgaben" %}</span></nav>
+        <h1>{% trans "Vorgaben der Gemeinschaft" %}</h1>
+        <p>{% trans "Diese Werte folgen aus Reglement und Gesetz. Das System kennt sie nicht und setzt keine ein: Tragen Sie sie ein, geben Sie die Quelle an und bestätigen Sie sie. Leere Felder heissen: es wird nicht beurteilt." %}</p>
+    </div>
+</div>
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Stand" %}</span>
+        <span class="fw-chip {% if v and v.bestaetigt_am %}fw-brand{% else %}fw-warn{% endif %}">{% if v and v.bestaetigt_am %}{% blocktrans with d=v.bestaetigt_am|date:"d.m.Y" %}bestätigt am {{ d }}{% endblocktrans %}{% else %}{% trans "nicht bestätigt" %}{% endif %}</span></div>
+    <div class="fw-rumpf">
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/vorgaben/speichern/" class="fw-formular drei">{% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="vg_frist">{% trans "Einladungsfrist (Tage)" %}</label>
+                <input id="vg_frist" name="einladungsfrist_tage" inputmode="numeric" value="{{ v.einladungsfrist_tage|default_if_none:'' }}" class="fw-feld">
+                <span class="fw-s">{% blocktrans with n=system_frist %}Leer = {{ n }} Tage (Systemvorgabe, nicht geprüft).{% endblocktrans %}</span></div>
+            <div class="fw-feldblock"><label class="fw-label" for="vg_qk">{% trans "Beschlussfähig ab Anteil der Köpfe (in Prozent)" %}</label>
+                <input id="vg_qk" name="quorum_koepfe_prozent" inputmode="decimal" value="{{ v.quorum_koepfe_prozent|default_if_none:''|floatformat:'-2' }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="vg_qq">{% trans "Beschlussfähig ab Anteil der Wertquoten (in Prozent)" %}</label>
+                <input id="vg_qq" name="quorum_quoten_prozent" inputmode="decimal" value="{{ v.quorum_quoten_prozent|default_if_none:''|floatformat:'-2' }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="vg_af">{% trans "Anfechtungsfrist (Tage ab Versand des Protokolls)" %}</label>
+                <input id="vg_af" name="anfechtungsfrist_tage" inputmode="numeric" value="{{ v.anfechtungsfrist_tage|default_if_none:'' }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="vg_q">{% trans "Quelle (Reglement, Artikel)" %}</label>
+                <textarea id="vg_q" name="bemerkung" rows="2" class="fw-feld">{{ v.bemerkung }}</textarea></div>
+            <div class="fw-feldblock"><label class="fw-label" for="vg_b"><input id="vg_b" type="checkbox" name="bestaetigt" value="1"> {% trans "Ich bestätige, dass diese Werte dem Reglement und dem Gesetz entsprechen." %}</label></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Speichern" %}</button></div>
+        </form>
+    </div>
+</div>
+{% endblock %}

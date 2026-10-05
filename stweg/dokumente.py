@@ -12,6 +12,7 @@ Verwaltungsordnung, Versicherungspolice, Jahresrechnung.
 
 Was fehlt oder abgelaufen ist, meldet `pruefen` und legt `aufgaben_nachziehen` als Pendenz an.
 """
+from django.utils.translation import gettext
 from datetime import date
 
 from django.utils import timezone
@@ -33,15 +34,15 @@ class DokumentFehler(ValueError):
 def hochladen(liegenschaft, kategorie, titel, datei, *, gueltig_ab=None, gueltig_bis=None,
               sichtbar=True, user=None):
     if kategorie not in dict(K.KATEGORIE_CHOICES):
-        raise DokumentFehler('Unbekannte Kategorie.')
+        raise DokumentFehler(gettext('Unbekannte Kategorie.'))
     if not (titel or '').strip():
-        raise DokumentFehler('Ein Titel ist nötig.')
+        raise DokumentFehler(gettext('Ein Titel ist nötig.'))
     ok, fehler = validiere_dokument(datei)
     if not ok:
         raise DokumentFehler(fehler)
     gueltig_ab = gueltig_ab or timezone.localdate()
     if gueltig_bis and gueltig_bis < gueltig_ab:
-        raise DokumentFehler('«Gültig bis» liegt vor «gültig ab».')
+        raise DokumentFehler(gettext('«Gültig bis» liegt vor «gültig ab».'))
     return K.objects.create(liegenschaft=liegenschaft, kategorie=kategorie, titel=titel.strip()[:200], datei=datei,
                             gueltig_ab=gueltig_ab, gueltig_bis=gueltig_bis, sichtbar=sichtbar,
                             hochgeladen_von=user)

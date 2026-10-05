@@ -117,9 +117,18 @@ def protokoll_pdf(versammlung):
     s.luecke(3)
     s.zeile(f"Vertreten: {p['koepfe']} von {p['koepfe_total']} Eigentümern, "
             f"Wertquoten {zahl(p['quoten'])} von {zahl(p['quoten_total'])}")
+    from stweg import vorgaben
+    bf = vorgaben.beschlussfaehigkeit(v)
+    if bf is not None:
+        s.zeile("Beschlussfähigkeit nach den Vorgaben der Gemeinschaft: "
+                + ("erfüllt" if bf['beschlussfaehig'] else "NICHT erfüllt — " + ' '.join(bf['gruende'])),
+                gr=9, abstand=4)
     s.luecke(5)
     for t in v.traktanden.all():
         s.zeile(f"{t.nr}. {t.titel}", fett=True, gr=11)
+        if t.ohne_beschlussfaehigkeit:
+            s.zeile("Festgestellt trotz fehlender Beschlussfähigkeit (ausdrückliche Bestätigung der Verwaltung).",
+                    fett=True, gr=9, abstand=4)
         if t.mehrheitsart != 'kenntnisnahme':
             s.zeile(f"Ja {t.ja_koepfe} / Nein {t.nein_koepfe} / Enthaltung {t.enthaltung_koepfe} "
                     f"(Köpfe) · Ja {zahl(t.ja_quoten)} / Nein {zahl(t.nein_quoten)} / "

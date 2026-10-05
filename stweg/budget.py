@@ -8,8 +8,9 @@ Der Jahresbetrag einer Einheit ist die Summe ihrer Anteile an den Budgetposition
 Schlüssel einmal rappengenau verteilt (`stweg.schluessel`). Er wird in gleich grosse Raten
 geteilt (grösster Rest — die Raten ergeben den Jahresbetrag exakt) und mit Fälligkeit
 vorgeschrieben. Die Vorschreibung ist eine Forderung; die Zahlung kommt als `StwegAkonto`.
-Gebucht wird hier nichts (siehe docs/STWEG.md, «Hauptbuch»).
+Jede Rate wird ins Hauptbuch gebucht (`stweg.hauptbuch`: Soll 1110 / Haben 2035).
 """
+from django.utils.translation import gettext
 import calendar
 from datetime import date
 from decimal import Decimal
@@ -18,6 +19,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from core.tenancy import organisation_kontext
+from stweg import hauptbuch
 from stweg.models import StwegBudget, StwegBudgetPosition, StwegVorschreibung
 from stweg.schluessel import SchluesselFehler, verteile
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
@@ -41,12 +43,12 @@ def position_setzen(budget, bezeichnung, schluessel, betrag):
     """Fügt eine Position hinzu — nur solange das Budget noch nicht genehmigt ist."""
     budget.refresh_from_db(fields=['status'])       # nie nach einem veralteten Stand entscheiden
     if budget.status == StwegBudget.GENEHMIGT:
-        raise BudgetFehler('Ein genehmigtes Budget ist abgeschlossen.')
+        raise BudgetFehler(gettext('Ein genehmigtes Budget ist abgeschlossen.'))
     if schluessel.liegenschaft_id != budget.liegenschaft_id:
-        raise BudgetFehler('Der Schlüssel gehört zu einer anderen Gemeinschaft.')
+        raise BudgetFehler(gettext('Der Schlüssel gehört zu einer anderen Gemeinschaft.'))
     betrag = Decimal(betrag)
     if betrag <= 0:
-        raise BudgetFehler('Der Betrag einer Budgetposition muss grösser 0 sein.')
+        raise BudgetFehler(gettext('Der Betrag einer Budgetposition muss grösser 0 sein.'))
     p = StwegBudgetPosition.objects.create(budget=budget, bezeichnung=bezeichnung,
                                            schluessel=schluessel, betrag=betrag)
     if budget.status == StwegBudget.VORGELEGT:       # geändert → muss neu vorgelegt werden
@@ -77,7 +79,7 @@ def pruefen(budget):
     """Gründe, die dem Vorlegen im Weg stehen (leer = in Ordnung)."""
     probleme = []
     if not budget.positionen.exists():
-        probleme.append('Das Budget hat keine Positionen.')
+        probleme.append(gettext('Das Budget hat keine Positionen.'))
     try:
         pruefe_wertquoten(budget.liegenschaft)
     except WertquotenFehler as e:
@@ -93,7 +95,7 @@ def pruefen(budget):
 def vorlegen(budget):
     budget.refresh_from_db(fields=['status'])
     if budget.status not in (StwegBudget.ENTWURF, StwegBudget.VORGELEGT):
-        raise BudgetFehler(f'Ein Budget im Status «{budget.get_status_display()}» kann nicht vorgelegt werden.')
+        raise BudgetFehler(gettext('Ein Budget im Status «%(wert)s» kann nicht vorgelegt werden.') % {'wert': budget.get_status_display()})
     probleme = pruefen(budget)
     if probleme:
         raise BudgetFehler(' '.join(probleme))
@@ -106,7 +108,7 @@ def _faelligkeiten(budget):
     start = budget.erste_faelligkeit or date(budget.jahr, 1, 1)
     abstand = 12 // budget.raten if 12 % budget.raten == 0 else None
     if abstand is None:
-        raise BudgetFehler(f'{budget.raten} Raten lassen sich nicht gleichmässig auf zwölf Monate legen.')
+        raise BudgetFehler(gettext('%(raten)s Raten lassen sich nicht gleichmässig auf zwölf Monate legen.') % {'raten': budget.raten})
     return [_plus_monate(start, abstand * i) for i in range(budget.raten)]
 
 
@@ -116,8 +118,7 @@ def budget_genehmigen(budget, *, traktandum=None):
     aufrufer = budget
     budget = StwegBudget.objects.select_for_update().get(pk=budget.pk)
     if budget.status != StwegBudget.VORGELEGT:
-        raise BudgetFehler(f'Genehmigt werden kann nur ein vorgelegtes Budget (Status: '
-                           f'{budget.get_status_display()}).')
+        raise BudgetFehler(gettext('Genehmigt werden kann nur ein vorgelegtes Budget (Status: %(wert)s).') % {'wert': budget.get_status_display()})
     lg = budget.liegenschaft
     with organisation_kontext(lg.organisation):
         probleme = pruefen(budget)
@@ -128,10 +129,15 @@ def budget_genehmigen(budget, *, traktandum=None):
         for einheit, d in jahresbetraege(budget).items():
             raten = verteile_nach_quoten(d['summe'], {i: 1 for i in range(budget.raten)})
             for i, datum in enumerate(faellig):
-                neu.append(StwegVorschreibung.objects.create(
+                v = StwegVorschreibung.objects.create(
                     budget=budget, einheit=einheit, eigentuemer=einheit.stockwerkeigentuemer,
                     rate_nr=i + 1, rate_total=budget.raten, faellig_am=datum, betrag=raten[i],
-                    jahresbetrag=d['summe'], aufteilung=d['aufteilung']))
+                    jahresbetrag=d['summe'], aufteilung=d['aufteilung'])
+                try:
+                    hauptbuch.vorschreibung_buchen(v)
+                except hauptbuch.HauptbuchFehler as e:
+                    raise BudgetFehler(str(e))
+                neu.append(v)
         budget.status = StwegBudget.GENEHMIGT
         budget.genehmigt_am = timezone.now()
         budget.save(update_fields=['status', 'genehmigt_am'])
@@ -142,7 +148,7 @@ def budget_genehmigen(budget, *, traktandum=None):
 def budget_ablehnen(budget):
     budget.refresh_from_db(fields=['status'])
     if budget.status != StwegBudget.VORGELEGT:
-        raise BudgetFehler('Abgelehnt werden kann nur ein vorgelegtes Budget.')
+        raise BudgetFehler(gettext('Abgelehnt werden kann nur ein vorgelegtes Budget.'))
     budget.status = StwegBudget.ABGELEHNT
     budget.save(update_fields=['status'])
     return budget
@@ -151,13 +157,25 @@ def budget_ablehnen(budget):
 def an_traktandum_haengen(traktandum, budget):
     """Das Budget wird unter diesem Traktandum beschlossen. Legt es der Versammlung vor."""
     if traktandum.versammlung.liegenschaft_id != budget.liegenschaft_id:
-        raise BudgetFehler('Budget und Traktandum gehören zu verschiedenen Gemeinschaften.')
+        raise BudgetFehler(gettext('Budget und Traktandum gehören zu verschiedenen Gemeinschaften.'))
     if traktandum.ergebnis != traktandum.OFFEN:
-        raise BudgetFehler('Das Traktandum ist schon entschieden.')
+        raise BudgetFehler(gettext('Das Traktandum ist schon entschieden.'))
     vorlegen(budget)
     traktandum.budget = budget
     traktandum.save(update_fields=['budget'])
     return traktandum
+
+
+def an_zirkular_haengen(zirkular, budget):
+    """Das Budget wird auf dem Zirkularweg beschlossen. Legt es vor; nur solange das Zirkular im Entwurf ist."""
+    if zirkular.liegenschaft_id != budget.liegenschaft_id:
+        raise BudgetFehler(gettext('Budget und Zirkularbeschluss gehören zu verschiedenen Gemeinschaften.'))
+    if zirkular.status != zirkular.ENTWURF:
+        raise BudgetFehler(gettext('Ein Budget lässt sich nur an einen Zirkularbeschluss im Entwurf hängen.'))
+    vorlegen(budget)
+    zirkular.budget = budget
+    zirkular.save(update_fields=['budget'])
+    return zirkular
 
 
 def vorschreibungen_versenden(budget):
@@ -171,7 +189,7 @@ def vorschreibungen_versenden(budget):
     from tickets.workflow import reply_to
     budget.refresh_from_db(fields=['status'])
     if budget.status != StwegBudget.GENEHMIGT:
-        raise BudgetFehler('Akonto-Rechnungen gibt es erst nach der Genehmigung des Budgets.')
+        raise BudgetFehler(gettext('Akonto-Rechnungen gibt es erst nach der Genehmigung des Budgets.'))
     org = budget.liegenschaft.organisation
     je_eig = {}
     for v in StwegVorschreibung.objects.filter(budget=budget, versendet_am__isnull=True,

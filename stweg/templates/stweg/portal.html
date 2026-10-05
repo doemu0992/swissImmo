@@ -33,13 +33,14 @@
     {% for m in v.meine_vollmachten %}
     <div class="fw-zeile"><div class="fw-mitte">
         <div class="fw-t">{% blocktrans with einheit=m.einheit.bezeichnung %}Vollmacht {{ einheit }}{% endblocktrans %}</div>
-        {% if m.vollmacht %}<div class="fw-s">{% blocktrans with name=m.vollmacht.bevollmaechtigter %}Vertreten durch {{ name }}{% endblocktrans %}</div>{% else %}<div class="fw-s">{% trans "Sie nehmen selbst teil, oder erteilen eine Vollmacht:" %}</div>{% endif %}</div>
+        {% if m.vollmacht %}<div class="fw-s">{% blocktrans with name=m.vollmacht.bevollmaechtigter %}Vertreten durch {{ name }}{% endblocktrans %}{% if m.vollmacht.dokument %} · <a href="/portal/stweg/scan/{{ m.vollmacht.pk }}/" target="_blank" rel="noopener">{% trans "Scan öffnen" %}</a>{% endif %}</div>{% else %}<div class="fw-s">{% trans "Sie nehmen selbst teil, oder erteilen eine Vollmacht:" %}</div>{% endif %}</div>
         {% if m.vollmacht %}
         <form method="post" action="/portal/stweg/vollmacht/{{ m.vollmacht.pk }}/widerrufen/">{% csrf_token %}<button class="fw-btn">{% trans "Widerrufen" %}</button></form>
         {% else %}
-        <form method="post" action="/portal/stweg/vollmacht/{{ v.pk }}/erteilen/" class="fw-formular">{% csrf_token %}
+        <form method="post" action="/portal/stweg/vollmacht/{{ v.pk }}/erteilen/" enctype="multipart/form-data" class="fw-formular">{% csrf_token %}
             <input type="hidden" name="einheit" value="{{ m.einheit.pk }}">
             <input name="bevollmaechtigter" required class="fw-feld" placeholder="{% trans 'Name der vertretenden Person' %}" aria-label="{% blocktrans with einheit=m.einheit.bezeichnung %}Vertretung {{ einheit }}{% endblocktrans %}">
+            <input type="file" name="dokument" class="fw-feld" aria-label="{% trans 'Scan der unterschriebenen Vollmacht (optional)' %}">
             <button class="fw-btn">{% trans "Vollmacht erteilen" %}</button></form>
         {% endif %}
     </div>

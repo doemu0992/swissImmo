@@ -40,6 +40,8 @@ urlpatterns = [
     path('zirkular/<int:pk>/feststellen/', v.stweg_zirkular_feststellen, name='stweg_zirkular_feststellen'),
     path('zirkular/<int:pk>/ergebnis/', v.stweg_zirkular_ergebnis, name='stweg_zirkular_ergebnis'),
     path('zirkular/<int:pk>/pdf/', v.stweg_zirkular_pdf, name='stweg_zirkular_pdf'),
+    path('vollmacht/<int:pk>/dokument/', v.stweg_vollmacht_dokument, name='stweg_vollmacht_dokument'),
+    path('vollmacht/<int:pk>/datei/', v.stweg_vollmacht_datei, name='stweg_vollmacht_datei'),
     path('vollmacht/<int:pk>/widerrufen/', v.stweg_vollmacht_widerrufen, name='stweg_vollmacht_widerrufen'),
     path('traktandum/<int:pk>/loeschen/', v.stweg_traktandum_loeschen, name='stweg_traktandum_loeschen'),
     path('traktandum/<int:pk>/stimmen/', v.stweg_stimmen_speichern, name='stweg_stimmen_speichern'),
@@ -47,6 +49,8 @@ urlpatterns = [
     path('anfrage/<int:pk>/beantworten/', v.stweg_anfrage_beantworten, name='stweg_anfrage_beantworten'),
     path('anfrage/<int:pk>/erledigt/', v.stweg_anfrage_erledigt, name='stweg_anfrage_erledigt'),
     path('aufgabe/<int:pk>/erledigt/', v.stweg_aufgabe_erledigt, name='stweg_aufgabe_erledigt'),
+    path('<int:stweg_id>/vorgaben/', v.stweg_vorgaben, name='stweg_vorgaben'),
+    path('<int:stweg_id>/vorgaben/speichern/', v.stweg_vorgaben_speichern, name='stweg_vorgaben_speichern'),
     # Verteilschlüssel und Budget
     path('<int:stweg_id>/schluessel/', vf.stweg_schluessel, name='stweg_schluessel'),
     path('<int:stweg_id>/schluessel/neu/', vf.stweg_schluessel_neu, name='stweg_schluessel_neu'),

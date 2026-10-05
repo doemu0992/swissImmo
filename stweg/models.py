@@ -23,6 +23,18 @@ class StwegAkonto(OrganisationAusKette):
     datum = models.DateField(default=timezone.localdate)
     betrag = models.DecimalField("Betrag (CHF)", max_digits=10, decimal_places=2)
     bemerkung = models.CharField(max_length=200, blank=True, default='')
+    #: Wofür die Zahlung ist. Die Jahresabrechnung und das Kontokorrent rechnen nur «akonto» an;
+    #: Einlagen in den Erneuerungsfonds sind keine Kosten und dürfen den Kostenanteil nicht decken.
+    AKONTO, FONDS = 'akonto', 'fonds'
+    ZWECK_CHOICES = [(AKONTO, _('Akonto-Beitrag')), (FONDS, _('Einlage Erneuerungsfonds'))]
+    zweck = models.CharField(max_length=10, choices=ZWECK_CHOICES, default=AKONTO)
+    #: Die Buchung im Hauptbuch (leer bei Zahlungen aus der Zeit vor der Hauptbuch-Anbindung).
+    buchung = models.ForeignKey('finance.Buchung', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='+')
+    #: Stammt die Zahlung aus dem Kontoauszug-Import (auf dem Durchlaufkonto 1190 geparkt), wird sie
+    #: von dort zugeordnet — sonst läge der Betrag zweimal auf dem Bankkonto.
+    zahlungseingang = models.ForeignKey('finance.Zahlungseingang', on_delete=models.SET_NULL, null=True,
+                                        blank=True, related_name='+')
 
     class Meta:
         db_table = 'stweg_akonto'
@@ -39,7 +51,7 @@ class StwegAbrechnung(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     STATUS_ENTWURF = 'entwurf'
     STATUS_ABGESCHLOSSEN = 'abgeschlossen'
-    STATUS_CHOICES = [(STATUS_ENTWURF, 'Entwurf'), (STATUS_ABGESCHLOSSEN, 'Abgeschlossen')]
+    STATUS_CHOICES = [(STATUS_ENTWURF, _('Entwurf')), (STATUS_ABGESCHLOSSEN, _('Abgeschlossen'))]
 
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
                                      related_name='stweg_abrechnungen')
@@ -94,6 +106,8 @@ class StwegAbrechnungPosition(OrganisationAusKette):
     akonto = models.DecimalField(max_digits=12, decimal_places=2)
     #: Kostenanteil − Akonto. Positiv = Nachzahlung (Zahllast), negativ = Guthaben.
     saldo = models.DecimalField(max_digits=12, decimal_places=2)
+    #: Die Buchungen des Abschlusses dieser Position (Hauptbuch).
+    buchungen = models.ManyToManyField('finance.Buchung', blank=True, related_name='+')
 
     class Meta:
         db_table = 'stweg_abrechnung_position'
@@ -125,12 +139,12 @@ class StwegAbrechnungPosition(OrganisationAusKette):
 class Versammlung(OrganisationAusKette):
     """Eine Stockwerkeigentümerversammlung (ordentlich oder ausserordentlich)."""
     ORGANISATION_PFAD = 'liegenschaft'
-    ART_CHOICES = [('ordentlich', 'Ordentliche Versammlung'),
-                   ('ausserordentlich', 'Ausserordentliche Versammlung')]
+    ART_CHOICES = [('ordentlich', _('Ordentliche Versammlung')),
+                   ('ausserordentlich', _('Ausserordentliche Versammlung'))]
     ENTWURF, EINGELADEN, DURCHGEFUEHRT, PROTOKOLLIERT = (
         'entwurf', 'eingeladen', 'durchgefuehrt', 'protokolliert')
-    STATUS_CHOICES = [(ENTWURF, 'Entwurf'), (EINGELADEN, 'Eingeladen'),
-                      (DURCHGEFUEHRT, 'Durchgeführt'), (PROTOKOLLIERT, 'Protokoll versendet')]
+    STATUS_CHOICES = [(ENTWURF, _('Entwurf')), (EINGELADEN, _('Eingeladen')),
+                      (DURCHGEFUEHRT, _('Durchgeführt')), (PROTOKOLLIERT, _('Protokoll versendet'))]
 
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
                                      related_name='versammlungen')
@@ -170,13 +184,13 @@ class Traktandum(OrganisationAusKette):
     #: Wie die Mehrheit GERECHNET wird. Welche davon für ein Geschäft verlangt
     #: ist (Gesetz oder Reglement), bestimmt die Verwaltung — nicht dieses System.
     MEHRHEIT_CHOICES = [
-        ('einfach_koepfe', 'Mehrheit der Stimmenden (nach Köpfen)'),
-        ('einfach_quoten', 'Mehrheit der Stimmenden (nach Wertquoten)'),
-        ('doppelt', 'Mehrheit nach Köpfen UND Wertquoten (der Stimmenden)'),
-        ('doppelt_aller', 'Mehrheit aller Eigentümer UND aller Wertquoten'),
-        ('doppelt_anwesende', 'Mehrheit der anwesenden Eigentümer UND mehr als die Hälfte aller Wertquoten'),
-        ('einstimmig', 'Einstimmigkeit aller Eigentümer'),
-        ('kenntnisnahme', 'Zur Kenntnisnahme (keine Abstimmung)'),
+        ('einfach_koepfe', _('Mehrheit der Stimmenden (nach Köpfen)')),
+        ('einfach_quoten', _('Mehrheit der Stimmenden (nach Wertquoten)')),
+        ('doppelt', _('Mehrheit nach Köpfen UND Wertquoten (der Stimmenden)')),
+        ('doppelt_aller', _('Mehrheit aller Eigentümer UND aller Wertquoten')),
+        ('doppelt_anwesende', _('Mehrheit der anwesenden Eigentümer UND mehr als die Hälfte aller Wertquoten')),
+        ('einstimmig', _('Einstimmigkeit aller Eigentümer')),
+        ('kenntnisnahme', _('Zur Kenntnisnahme (keine Abstimmung)')),
     ]
     OFFEN, ANGENOMMEN, ABGELEHNT, VERTAGT, KENNTNIS = (
         'offen', 'angenommen', 'abgelehnt', 'vertagt', 'kenntnis')
@@ -211,6 +225,9 @@ class Traktandum(OrganisationAusKette):
     #: setzt das Budget zurück auf «abgelehnt».
     budget = models.ForeignKey('stweg.StwegBudget', on_delete=models.SET_NULL, null=True, blank=True,
                                related_name='traktanden')
+    #: Ergebnis festgestellt, obwohl die Gemeinschaft laut ihren Vorgaben nicht beschlussfähig war
+    #: (die Verwaltung hat das ausdrücklich bestätigt). Steht im Protokoll.
+    ohne_beschlussfaehigkeit = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'stweg_traktandum'
@@ -226,8 +243,8 @@ class Anwesenheit(OrganisationAusKette):
     """Wer ist für welche Einheit in der Versammlung (selbst oder vertreten)?"""
     ORGANISATION_PFAD = 'versammlung'
     ANWESEND, VERTRETEN, ABWESEND = 'anwesend', 'vertreten', 'abwesend'
-    ART_CHOICES = [(ANWESEND, 'Anwesend'), (VERTRETEN, 'Vertreten (Vollmacht)'),
-                   (ABWESEND, 'Abwesend')]
+    ART_CHOICES = [(ANWESEND, _('Anwesend')), (VERTRETEN, _('Vertreten (Vollmacht)')),
+                   (ABWESEND, _('Abwesend'))]
     versammlung = models.ForeignKey(Versammlung, on_delete=models.CASCADE, related_name='anwesenheiten')
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
     art = models.CharField(max_length=10, choices=ART_CHOICES, default=ABWESEND)
@@ -247,7 +264,7 @@ class Stimme(OrganisationAusKette):
     """Die Stimme einer Einheit zu einem Traktandum."""
     ORGANISATION_PFAD = 'traktandum'
     JA, NEIN, ENTHALTUNG = 'ja', 'nein', 'enthaltung'
-    WERT_CHOICES = [(JA, 'Ja'), (NEIN, 'Nein'), (ENTHALTUNG, 'Enthaltung')]
+    WERT_CHOICES = [(JA, _('Ja')), (NEIN, _('Nein')), (ENTHALTUNG, _('Enthaltung'))]
     traktandum = models.ForeignKey(Traktandum, on_delete=models.CASCADE, related_name='stimmen')
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
     wert = models.CharField(max_length=10, choices=WERT_CHOICES)
@@ -268,8 +285,8 @@ class StwegAnfrage(OrganisationAusKette):
     NEU, IN_BEARBEITUNG, BEANTWORTET, ERLEDIGT = 'neu', 'in_bearbeitung', 'beantwortet', 'erledigt'
     STATUS_CHOICES = [(NEU, _('Neu')), (IN_BEARBEITUNG, _('In Bearbeitung')),
                       (BEANTWORTET, _('Beantwortet')), (ERLEDIGT, _('Erledigt'))]
-    KANAL_CHOICES = [('portal', 'Portal'), ('email', 'E-Mail'), ('telefon', 'Telefon'),
-                     ('brief', 'Brief'), ('persoenlich', 'Persönlich')]
+    KANAL_CHOICES = [('portal', _('Portal')), ('email', _('E-Mail')), ('telefon', _('Telefon')),
+                     ('brief', _('Brief')), ('persoenlich', _('Persönlich'))]
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
                                      related_name='stweg_anfragen')
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True,
@@ -307,10 +324,10 @@ class StwegVersand(OrganisationAusKette):
     """
     ORGANISATION_PFAD = 'versammlung'
     EINLADUNG, PROTOKOLL = 'einladung', 'protokoll'
-    ART_CHOICES = [(EINLADUNG, 'Einladung'), (PROTOKOLL, 'Protokoll')]
+    ART_CHOICES = [(EINLADUNG, _('Einladung')), (PROTOKOLL, _('Protokoll'))]
     GESENDET, FEHLER, POST = 'gesendet', 'fehler', 'post_noetig'
-    STATUS_CHOICES = [(GESENDET, 'Per E-Mail gesendet'), (FEHLER, 'Fehler beim Versand'),
-                      (POST, 'Per Post zustellen (keine E-Mail-Adresse)')]
+    STATUS_CHOICES = [(GESENDET, _('Per E-Mail gesendet')), (FEHLER, _('Fehler beim Versand')),
+                      (POST, _('Per Post zustellen (keine E-Mail-Adresse)'))]
     versammlung = models.ForeignKey(Versammlung, on_delete=models.CASCADE, related_name='versaende')
     art = models.CharField(max_length=10, choices=ART_CHOICES)
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True,
@@ -339,9 +356,12 @@ class Vollmacht(OrganisationAusKette):
     erteilt_von = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='+')
     kanal = models.CharField(max_length=12, default='portal',
-                             choices=[('portal', 'Portal'), ('verwaltung', 'Von der Verwaltung erfasst')])
+                             choices=[('portal', _('Portal')), ('verwaltung', _('Von der Verwaltung erfasst'))])
     erteilt_am = models.DateTimeField(auto_now_add=True)
     widerrufen_am = models.DateTimeField(null=True, blank=True)
+    #: Optional: das unterschriebene Original als Scan (PDF oder Bild). Die digitale Erfassung gilt auch
+    #: ohne; das System prüft die Unterschrift nicht und führt keine Beglaubigung.
+    dokument = models.FileField(upload_to=get_smart_upload_path, null=True, blank=True)
 
     class Meta:
         db_table = 'stweg_vollmacht'
@@ -366,7 +386,7 @@ class Zirkularbeschluss(OrganisationAusKette):
     Vorschlag, festgestellt wird er von einer Person."""
     ORGANISATION_PFAD = 'liegenschaft'
     ENTWURF, LAUFEND, ABGESCHLOSSEN = 'entwurf', 'laufend', 'abgeschlossen'
-    STATUS_CHOICES = [(ENTWURF, 'Entwurf'), (LAUFEND, 'Läuft'), (ABGESCHLOSSEN, 'Abgeschlossen')]
+    STATUS_CHOICES = [(ENTWURF, _('Entwurf')), (LAUFEND, _('Läuft')), (ABGESCHLOSSEN, _('Abgeschlossen'))]
 
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
                                      related_name='zirkularbeschluesse')
@@ -390,6 +410,10 @@ class Zirkularbeschluss(OrganisationAusKette):
     ergebnis_versendet_am = models.DateTimeField(null=True, blank=True)
     vollzug_aufgabe = models.CharField(max_length=200, blank=True, default='')
     vollzug_faellig_am = models.DateField(null=True, blank=True)
+    #: Wird ein Budget auf dem Zirkularweg beschlossen, löst ein angenommener Beschluss die
+    #: Akonto-Vorschreibungen aus (wie beim Traktandum).
+    budget = models.ForeignKey('stweg.StwegBudget', on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='zirkulare')
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -409,7 +433,7 @@ class ZirkularStimme(OrganisationAusKette):
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
     wert = models.CharField(max_length=10, choices=Stimme.WERT_CHOICES)
     kanal = models.CharField(max_length=12, default='portal',
-                             choices=[('portal', 'Portal'), ('verwaltung', 'Von der Verwaltung erfasst')])
+                             choices=[('portal', _('Portal')), ('verwaltung', _('Von der Verwaltung erfasst'))])
     abgegeben_am = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -422,7 +446,7 @@ class ZirkularVersand(OrganisationAusKette):
     """Zustellprotokoll zum Zirkularbeschluss (Antrag, Ergebnis)."""
     ORGANISATION_PFAD = 'zirkular'
     ANTRAG, ERGEBNIS = 'antrag', 'ergebnis'
-    ART_CHOICES = [(ANTRAG, 'Antrag'), (ERGEBNIS, 'Ergebnis')]
+    ART_CHOICES = [(ANTRAG, _('Antrag')), (ERGEBNIS, _('Ergebnis'))]
     zirkular = models.ForeignKey(Zirkularbeschluss, on_delete=models.CASCADE, related_name='versaende')
     art = models.CharField(max_length=10, choices=ART_CHOICES)
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True,
@@ -451,10 +475,10 @@ class StwegSchluessel(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     WERTQUOTE, FLAECHE, VOLUMEN, MANUELL = 'wertquote', 'flaeche', 'volumen', 'manuell'
     ART_CHOICES = [
-        (WERTQUOTE, 'Wertquote (aus der Einheit)'),
-        (FLAECHE, 'Fläche m² (aus der Einheit)'),
-        (VOLUMEN, 'Volumen m³ (aus der Einheit)'),
-        (MANUELL, 'Eigene Anteile je Einheit (z. B. Lift)'),
+        (WERTQUOTE, _('Wertquote (aus der Einheit)')),
+        (FLAECHE, _('Fläche m² (aus der Einheit)')),
+        (VOLUMEN, _('Volumen m³ (aus der Einheit)')),
+        (MANUELL, _('Eigene Anteile je Einheit (z. B. Lift)')),
     ]
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
                                      related_name='stweg_schluessel')
@@ -538,8 +562,8 @@ class StwegAbrechnungAnteil(OrganisationAusKette):
 class StwegBudget(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     ENTWURF, VORGELEGT, GENEHMIGT, ABGELEHNT = 'entwurf', 'vorgelegt', 'genehmigt', 'abgelehnt'
-    STATUS_CHOICES = [(ENTWURF, 'Entwurf'), (VORGELEGT, 'Der Versammlung vorgelegt'),
-                      (GENEHMIGT, 'Genehmigt'), (ABGELEHNT, 'Abgelehnt')]
+    STATUS_CHOICES = [(ENTWURF, _('Entwurf')), (VORGELEGT, _('Der Versammlung vorgelegt')),
+                      (GENEHMIGT, _('Genehmigt')), (ABGELEHNT, _('Abgelehnt'))]
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
                                      related_name='stweg_budgets')
     jahr = models.PositiveIntegerField()
@@ -595,6 +619,9 @@ class StwegVorschreibung(OrganisationAusKette):
     jahresbetrag = models.DecimalField(max_digits=12, decimal_places=2)
     aufteilung = models.JSONField(default=list, blank=True)
     versendet_am = models.DateTimeField(null=True, blank=True)
+    #: Buchung im Hauptbuch: Soll 1110 Forderungen Stockwerkeigentümer / Haben 2035 Akonto-Beiträge.
+    buchung = models.ForeignKey('finance.Buchung', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='+')
 
     class Meta:
         db_table = 'stweg_vorschreibung'
@@ -638,12 +665,12 @@ class StwegDokument(OrganisationAusKette):
     BEGRUENDUNGSAKT, REGLEMENT, NUTZUNGSORDNUNG, VERSICHERUNG, JAHRESRECHNUNG, SONSTIGES = (
         'begruendungsakt', 'reglement', 'nutzungsordnung', 'versicherung', 'jahresrechnung', 'sonstiges')
     KATEGORIE_CHOICES = [
-        (BEGRUENDUNGSAKT, 'Begründungsakt'),
-        (REGLEMENT, 'STWEG-Reglement'),
-        (NUTZUNGSORDNUNG, 'Nutzungs- und Verwaltungsordnung'),
-        (VERSICHERUNG, 'Versicherungspolice'),
-        (JAHRESRECHNUNG, 'Jahresrechnung'),
-        (SONSTIGES, 'Sonstiges'),
+        (BEGRUENDUNGSAKT, _('Begründungsakt')),
+        (REGLEMENT, _('STWEG-Reglement')),
+        (NUTZUNGSORDNUNG, _('Nutzungs- und Verwaltungsordnung')),
+        (VERSICHERUNG, _('Versicherungspolice')),
+        (JAHRESRECHNUNG, _('Jahresrechnung')),
+        (SONSTIGES, _('Sonstiges')),
     ]
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE,
                                      related_name='stweg_dokumente')
@@ -662,3 +689,47 @@ class StwegDokument(OrganisationAusKette):
         db_table = 'stweg_dokument'
         ordering = ['kategorie', '-gueltig_ab', '-id']
         verbose_name = 'Dokument'
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# VORGABEN DER GEMEINSCHAFT (Reglement)
+#
+# Werte, die aus dem Reglement oder dem Gesetz folgen und die das System NICHT kennt:
+# Einladungsfrist, Beschlussfähigkeit (Quorum), Anfechtungsfrist. Sie sind leer, bis eine Person sie
+# einträgt und bestätigt. Leer heisst: das System urteilt nicht darüber.
+# ──────────────────────────────────────────────────────────────────────────
+
+class StwegVorgaben(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
+    liegenschaft = models.OneToOneField('portfolio.Liegenschaft', on_delete=models.CASCADE,
+                                        related_name='stweg_vorgaben')
+    einladungsfrist_tage = models.PositiveSmallIntegerField(
+        "Einladungsfrist (Tage)", null=True, blank=True,
+        help_text='Vorgabe für neue Versammlungen; leer = 10 Tage (Systemvorgabe, nicht geprüft).')
+    quorum_koepfe_prozent = models.DecimalField(
+        "Beschlussfähig ab Anteil der Köpfe (%)", max_digits=5, decimal_places=2, null=True, blank=True,
+        help_text='Anteil aller Stockwerkeigentümer, der anwesend oder vertreten sein muss. Leer = nicht beurteilt.')
+    quorum_quoten_prozent = models.DecimalField(
+        "Beschlussfähig ab Anteil der Wertquoten (%)", max_digits=5, decimal_places=2, null=True, blank=True,
+        help_text='Anteil aller Wertquoten, der anwesend oder vertreten sein muss. Leer = nicht beurteilt.')
+    anfechtungsfrist_tage = models.PositiveSmallIntegerField(
+        "Anfechtungsfrist (Tage ab Versand des Protokolls)", null=True, blank=True,
+        help_text='Leer = es wird keine Frist geführt.')
+    bemerkung = models.TextField("Quelle (Reglement, Artikel)", blank=True, default='')
+    bestaetigt_am = models.DateTimeField(null=True, blank=True)
+    bestaetigt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                       blank=True, related_name='+')
+
+    class Meta:
+        db_table = 'stweg_vorgaben'
+        verbose_name = 'Vorgaben der Gemeinschaft'
+        constraints = [
+            models.CheckConstraint(
+                condition=(models.Q(quorum_koepfe_prozent__isnull=True)
+                           | (models.Q(quorum_koepfe_prozent__gte=0) & models.Q(quorum_koepfe_prozent__lte=100))),
+                name='stweg_vorgaben_quorum_koepfe_0_100'),
+            models.CheckConstraint(
+                condition=(models.Q(quorum_quoten_prozent__isnull=True)
+                           | (models.Q(quorum_quoten_prozent__gte=0) & models.Q(quorum_quoten_prozent__lte=100))),
+                name='stweg_vorgaben_quorum_quoten_0_100'),
+        ]

@@ -4,6 +4,7 @@ Die Fachlogik steht in `stweg.schluessel` und `stweg.budget`; hier werden Eingab
 Services aufgerufen und Fehler gemeldet. Jedes Objekt wird über seinen `TenantManager` geladen
 (fremde ID → 404).
 """
+from django.utils.translation import gettext
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
@@ -68,20 +69,19 @@ def stweg_schluessel_neu(request, stweg_id):
     name = (request.POST.get('name') or '').strip()[:100]
     art = request.POST.get('art')
     if not name or art not in dict(StwegSchluessel.ART_CHOICES):
-        messages.error(request, 'Name und Art sind nötig.')
+        messages.error(request, gettext('Name und Art sind nötig.'))
         return _zu_schluessel(lg)
     try:
         with transaction.atomic():
             if art == StwegSchluessel.MANUELL and request.POST.get('ohne_eg'):
                 lift_schluessel(lg, name=name)
-                messages.success(request, f'Schlüssel «{name}» angelegt: Erdgeschoss trägt nichts, '
-                                          'die übrigen Einheiten nach Wertquote. Anteile bei Bedarf anpassen.')
+                messages.success(request, gettext('Schlüssel «%(name)s» angelegt: Erdgeschoss trägt nichts, die übrigen Einheiten nach Wertquote. Anteile bei Bedarf anpassen.') % {'name': name})
             else:
                 StwegSchluessel.objects.create(liegenschaft=lg, name=name, art=art,
                                                bemerkung=(request.POST.get('bemerkung') or '').strip()[:200])
-                messages.success(request, f'Schlüssel «{name}» angelegt.')
+                messages.success(request, gettext('Schlüssel «%(name)s» angelegt.') % {'name': name})
     except IntegrityError:
-        messages.error(request, f'Einen Schlüssel «{name}» gibt es schon.')
+        messages.error(request, gettext('Einen Schlüssel «%(name)s» gibt es schon.') % {'name': name})
     except SchluesselFehler as e:
         messages.error(request, str(e))
     return _zu_schluessel(lg)
@@ -93,7 +93,7 @@ def stweg_schluessel_anteile(request, pk):
     s = get_object_or_404(StwegSchluessel.objects.select_related('liegenschaft'), pk=pk)
     lg = s.liegenschaft
     if s.art != StwegSchluessel.MANUELL:
-        messages.error(request, 'Nur Schlüssel mit eigenen Anteilen haben Anteile zu pflegen.')
+        messages.error(request, gettext('Nur Schlüssel mit eigenen Anteilen haben Anteile zu pflegen.'))
         return _zu_schluessel(lg)
     neu = {}
     for e in stimm_einheiten(lg):
@@ -103,16 +103,16 @@ def stweg_schluessel_anteile(request, pk):
         try:
             w = Decimal(roh)
         except InvalidOperation:
-            messages.error(request, f'«{roh}» ist keine Zahl ({e.bezeichnung}).')
+            messages.error(request, gettext('«%(roh)s» ist keine Zahl (%(bezeichnung)s).') % {'roh': roh, 'bezeichnung': e.bezeichnung})
             return _zu_schluessel(lg)
         if w < 0:
-            messages.error(request, f'Anteile dürfen nicht negativ sein ({e.bezeichnung}).')
+            messages.error(request, gettext('Anteile dürfen nicht negativ sein (%(bezeichnung)s).') % {'bezeichnung': e.bezeichnung})
             return _zu_schluessel(lg)
         neu[e.pk] = w
     with transaction.atomic():
         for eid, w in neu.items():
             StwegSchluesselAnteil.objects.update_or_create(schluessel=s, einheit_id=eid, defaults={'anteil': w})
-    messages.success(request, f'Anteile von «{s.name}» gespeichert.')
+    messages.success(request, gettext('Anteile von «%(name)s» gespeichert.') % {'name': s.name})
     return _zu_schluessel(lg)
 
 
@@ -122,16 +122,16 @@ def stweg_schluessel_loeschen(request, pk):
     s = get_object_or_404(StwegSchluessel.objects.select_related('liegenschaft'), pk=pk)
     lg = s.liegenschaft
     if s.ist_standard:
-        messages.error(request, 'Der Standardschlüssel lässt sich nicht löschen.')
+        messages.error(request, gettext('Der Standardschlüssel lässt sich nicht löschen.'))
     elif (StwegBudgetPosition.objects.filter(schluessel=s).exists()
           or StwegKostenzuordnung.objects.filter(schluessel=s).exists()):
-        messages.error(request, f'«{s.name}» wird noch verwendet (Kostenart oder Budget).')
+        messages.error(request, gettext('«%(name)s» wird noch verwendet (Kostenart oder Budget).') % {'name': s.name})
     else:
         try:
             s.delete()
-            messages.success(request, 'Schlüssel gelöscht.')
+            messages.success(request, gettext('Schlüssel gelöscht.'))
         except ProtectedError:
-            messages.error(request, f'«{s.name}» wird noch verwendet.')
+            messages.error(request, gettext('«%(name)s» wird noch verwendet.') % {'name': s.name})
     return _zu_schluessel(lg)
 
 
@@ -141,18 +141,18 @@ def stweg_kostenart_zuordnen(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     konto = Buchungskonto.objects.filter(pk=_zahl(request.POST.get('konto')) or 0, typ='aufwand').first()
     if konto is None:
-        messages.error(request, 'Bitte ein Aufwandkonto wählen.')
+        messages.error(request, gettext('Bitte ein Aufwandkonto wählen.'))
         return _zu_schluessel(lg)
     if not request.POST.get('schluessel'):
         StwegKostenzuordnung.objects.filter(liegenschaft=lg, konto=konto).delete()
-        messages.success(request, f'Zuordnung für {konto.nummer} entfernt: Kosten laufen über den Standardschlüssel.')
+        messages.success(request, gettext('Zuordnung für %(nummer)s entfernt: Kosten laufen über den Standardschlüssel.') % {'nummer': konto.nummer})
         return _zu_schluessel(lg)
     s = lg.stweg_schluessel.filter(pk=_zahl(request.POST.get('schluessel')) or 0).first()
     if s is None:
-        messages.error(request, 'Schlüssel nicht gefunden.')
+        messages.error(request, gettext('Schlüssel nicht gefunden.'))
         return _zu_schluessel(lg)
     kostenart_zuordnen(lg, konto, s)
-    messages.success(request, f'Kosten auf {konto.nummer} {konto.bezeichnung} werden nach «{s.name}» verteilt.')
+    messages.success(request, gettext('Kosten auf %(nummer)s %(bezeichnung)s werden nach «%(name)s» verteilt.') % {'nummer': konto.nummer, 'bezeichnung': konto.bezeichnung, 'name': s.name})
     return _zu_schluessel(lg)
 
 
@@ -173,14 +173,14 @@ def stweg_budget_neu(request, stweg_id):
     jahr = _jahr(request.POST.get('jahr'))
     raten = _zahl(request.POST.get('raten')) or 4
     if jahr is None or raten not in (1, 2, 3, 4, 6, 12):
-        messages.error(request, 'Jahr und eine Ratenzahl (1, 2, 3, 4, 6 oder 12) sind nötig.')
+        messages.error(request, gettext('Jahr und eine Ratenzahl (1, 2, 3, 4, 6 oder 12) sind nötig.'))
         return redirect(f'/neu/stweg/{lg.pk}/budget/')
     standard_schluessel(lg)             # damit es für die Positionen einen Schlüssel zu wählen gibt
     b, neu = StwegBudget.objects.get_or_create(
         liegenschaft=lg, jahr=jahr,
         defaults={'raten': raten, 'erste_faelligkeit': parse_date(request.POST.get('erste_faelligkeit') or '')})
     if not neu:
-        messages.info(request, f'Für {jahr} gibt es schon ein Budget.')
+        messages.info(request, gettext('Für %(jahr)s gibt es schon ein Budget.') % {'jahr': jahr})
     return _zu_budget(b)
 
 
