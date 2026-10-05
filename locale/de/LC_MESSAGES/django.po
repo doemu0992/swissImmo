@@ -24761,3 +24761,16 @@ msgstr "Verlustschein am"
 
 msgid "Zahlungsbefehl zugestellt am"
 msgstr "Zahlungsbefehl zugestellt am"
+
+msgid "Filtern …"
+msgstr "Filtern …"
+
+#, python-format
+msgid "%(n)s von %(m)s Zeilen"
+msgstr "%(n)s von %(m)s Zeilen"
+
+msgid "Filter zurücksetzen"
+msgstr "Filter zurücksetzen"
+
+msgid "Spalte filtern"
+msgstr "Spalte filtern"

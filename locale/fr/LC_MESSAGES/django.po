@@ -24873,3 +24873,16 @@ msgstr "Acte de défaut de biens du"
 
 msgid "Zahlungsbefehl zugestellt am"
 msgstr "Commandement de payer notifié le"
+
+msgid "Filtern …"
+msgstr "Filtrer …"
+
+#, python-format
+msgid "%(n)s von %(m)s Zeilen"
+msgstr "%(n)s sur %(m)s lignes"
+
+msgid "Filter zurücksetzen"
+msgstr "Réinitialiser le filtre"
+
+msgid "Spalte filtern"
+msgstr "Filtrer la colonne"

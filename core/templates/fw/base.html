@@ -613,9 +613,97 @@ function fwTabellenStapeln(wurzel) {
         });
     });
 }
-document.addEventListener('DOMContentLoaded', function () { fwTabellenStapeln(); });
+/* Spaltenfilter für dichte Datentabellen (Phase 3).
+   `<table data-spaltenfilter>` bekommt unter dem Kopf eine Filterzeile: Spalten mit wenigen
+   verschiedenen Werten (Status, Stufe, Objekt) eine Auswahl, alle anderen ein Textfeld.
+   Gefiltert werden die GELADENEN Zeilen — bei Listen mit Seiten also die aktuelle Seite;
+   `th[data-nofilter]` nimmt eine Spalte aus. Mit Tastatur bedienbar, Stand per aria-live. */
+var FW_FILTER_TXT = {
+    ph: '{% filter escapejs %}{% trans "Filtern …" %}{% endfilter %}',
+    alle: '{% filter escapejs %}{% trans "Alle" %}{% endfilter %}',
+    stand: '{% filter escapejs %}{% trans "%(n)s von %(m)s Zeilen" %}{% endfilter %}',
+    reset: '{% filter escapejs %}{% trans "Filter zurücksetzen" %}{% endfilter %}',
+    spalte: '{% filter escapejs %}{% trans "Spalte filtern" %}{% endfilter %}'
+};
+function fwSpaltenfilter(wurzel) {
+    (wurzel || document).querySelectorAll('table[data-spaltenfilter]').forEach(function (tab) {
+        if (tab.dataset.filterBereit) return;
+        var kopf = tab.querySelector('thead tr'), tbody = tab.tBodies[0];
+        if (!kopf || !tbody) return;
+        // Zeilen mit colspan (Detail-, Leer- und Summenzeilen) gehören zur Zeile davor.
+        var zeilen = [], folge = {};
+        Array.prototype.forEach.call(tbody.rows, function (r) {
+            if (r.querySelector('td[colspan]')) { if (zeilen.length) (folge[zeilen.length - 1] = folge[zeilen.length - 1] || []).push(r); return; }
+            zeilen.push(r);
+        });
+        if (zeilen.length < 3) return;                 // bei zwei Zeilen hilft kein Filter
+        tab.dataset.filterBereit = '1';
+        var norm = function (t) { return (t || '').replace(/[\u2019\u0027\s]+/g, ' ').trim().toLowerCase(); };
+        var zellText = function (r, i) { var c = r.cells[i]; return c ? norm(c.textContent) : ''; };
+        var fz = document.createElement('tr'), felder = [];
+        fz.className = 'fw-filterzeile';
+        Array.prototype.forEach.call(kopf.cells, function (th, i) {
+            var z = document.createElement('th'), ueberschrift = (th.textContent || '').replace(/\s+/g, ' ').trim();
+            // Auf kleinen Schirmen ausgeblendete Spalten (`hidden lg:table-cell`) auch hier ausblenden.
+            z.className = (th.className || '').split(/\s+/).filter(function (c) { return c === 'hidden' || /:table-cell$/.test(c); }).join(' ');
+            fz.appendChild(z);
+            if (th.hasAttribute('data-nofilter') || !ueberschrift) { felder.push(null); return; }
+            var werte = {}, n = 0;
+            zeilen.forEach(function (r) { var t = zellText(r, i); if (t && !werte[t]) { werte[t] = 1; n++; } });
+            var feld;
+            if (n >= 2 && n <= 8 && Object.keys(werte).every(function (w) { return w.length <= 32; })) {
+                feld = document.createElement('select');
+                var o = document.createElement('option'); o.value = ''; o.textContent = FW_FILTER_TXT.alle; feld.appendChild(o);
+                zeilen.forEach(function (r) {      // Originalschreibweise, nach erster Fundstelle
+                    var c = r.cells[i], t = c ? norm(c.textContent) : '';
+                    if (t && !Array.prototype.some.call(feld.options, function (x) { return x.value === t; })) {
+                        var op = document.createElement('option'); op.value = t;
+                        op.textContent = (c.textContent || '').replace(/\s+/g, ' ').trim(); feld.appendChild(op);
+                    }
+                });
+                feld.dataset.exakt = '1';
+            } else {
+                feld = document.createElement('input'); feld.type = 'search'; feld.placeholder = FW_FILTER_TXT.ph;
+                feld.autocomplete = 'off';
+            }
+            feld.className = 'fw-filterfeld';
+            feld.setAttribute('aria-label', FW_FILTER_TXT.spalte + ': ' + ueberschrift);
+            z.appendChild(feld); felder.push(feld);
+        });
+        kopf.parentNode.appendChild(fz);
+        var stand = document.createElement('div');
+        stand.className = 'fw-filterstand'; stand.hidden = true; stand.setAttribute('aria-live', 'polite');
+        var rahmen = tab.closest('.fw-tablewrap') || tab;
+        rahmen.parentNode.insertBefore(stand, rahmen);
+        var hoehe = function () { tab.style.setProperty('--fw-kopf', kopf.getBoundingClientRect().height + 'px'); };
+        hoehe(); window.addEventListener('resize', hoehe);
+        function anwenden() {
+            var aktiv = 0, sichtbar = 0;
+            felder.forEach(function (f) { if (f) { var an = !!f.value; f.classList.toggle('fw-aktiv', an); if (an) aktiv++; } });
+            zeilen.forEach(function (r, ri) {
+                var ok = felder.every(function (f, i) {
+                    if (!f || !f.value) return true;
+                    var t = zellText(r, i), q = norm(f.value);
+                    return f.dataset.exakt ? t === q : t.indexOf(q) !== -1;
+                });
+                r.classList.toggle('fw-gefiltert', !ok);
+                (folge[ri] || []).forEach(function (x) { x.classList.toggle('fw-gefiltert', !ok); });
+                if (ok) sichtbar++;
+            });
+            stand.hidden = !aktiv;
+            if (aktiv) {
+                stand.textContent = FW_FILTER_TXT.stand.replace('%(n)s', sichtbar).replace('%(m)s', zeilen.length) + ' · ';
+                var b = document.createElement('button'); b.type = 'button'; b.textContent = FW_FILTER_TXT.reset;
+                b.onclick = function () { felder.forEach(function (f) { if (f) f.value = ''; }); anwenden(); };
+                stand.appendChild(b);
+            }
+        }
+        felder.forEach(function (f) { if (f) f.addEventListener(f.tagName === 'SELECT' ? 'change' : 'input', anwenden); });
+    });
+}
+document.addEventListener('DOMContentLoaded', function () { fwTabellenStapeln(); fwSpaltenfilter(); });
 // Nachgeladene Inhalte (Tab-Wechsel, Modal) ebenfalls erfassen
-document.addEventListener('fw:content', function (e) { fwTabellenStapeln(e.target); });
+document.addEventListener('fw:content', function (e) { fwTabellenStapeln(e.target); fwSpaltenfilter(e.target); });
 </script>
 <script>
 // Hell/Dunkel-Umschalter (persistiert pro Browser via localStorage)

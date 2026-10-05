@@ -24851,3 +24851,16 @@ msgstr "Attestato di carenza di beni del"
 
 msgid "Zahlungsbefehl zugestellt am"
 msgstr "Precetto esecutivo notificato il"
+
+msgid "Filtern …"
+msgstr "Filtra …"
+
+#, python-format
+msgid "%(n)s von %(m)s Zeilen"
+msgstr "%(n)s di %(m)s righe"
+
+msgid "Filter zurücksetzen"
+msgstr "Reimposta filtro"
+
+msgid "Spalte filtern"
+msgstr "Filtra colonna"

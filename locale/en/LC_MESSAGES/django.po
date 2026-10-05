@@ -24647,3 +24647,16 @@ msgstr "Certificate of loss on"
 
 msgid "Zahlungsbefehl zugestellt am"
 msgstr "Payment order served on"
+
+msgid "Filtern …"
+msgstr "Filter …"
+
+#, python-format
+msgid "%(n)s von %(m)s Zeilen"
+msgstr "%(n)s of %(m)s rows"
+
+msgid "Filter zurücksetzen"
+msgstr "Reset filter"
+
+msgid "Spalte filtern"
+msgstr "Filter column"

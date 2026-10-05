@@ -188,8 +188,8 @@
     </div>
 
     <!-- Desktop: Tabelle -->
-    <div class="fw-tablewrap overflow-x-auto hidden md:block">
-        <table class="fw-table min-w-max">
+    <div class="fw-tablewrap overflow-x-auto hidden md:block fw-sticky">
+        <table class="fw-table min-w-max" data-spaltenfilter>
             <thead>
             <tr>
                 <th class="hidden lg:table-cell">{% trans "Fälligkeit" %}</th>
@@ -205,7 +205,7 @@
             </thead>
             <tbody>
             {% for row in page %}
-            <tr>
+            <tr{% if row.mahn and row.r.status != 'bezahlt' %} class="fw-zeile-ueberfaellig"{% elif row.r.status == 'bezahlt' %} class="fw-zeile-bezahlt"{% endif %}>
                 <td class="px-5 whitespace-nowrap hidden lg:table-cell fw-num">
                     <span class="{% if row.mahn %}fw-strong fw-kritisch{% else %}fw-mutet{% endif %}">{{ row.faellig|date:"d.m.Y" }}</span>
                 </td>
