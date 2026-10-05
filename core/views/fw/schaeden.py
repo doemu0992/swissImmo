@@ -575,7 +575,7 @@ def fw_schaden_auftrag(request, pk):
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
-@rolle_erforderlich(*TICKET_SCHREIB_ROLLEN)
+@rolle_erforderlich(*SCHREIB_ROLLEN)       # eine Entscheidung der Verwaltung, nicht des Hauswarts
 def fw_schaden_kostentraeger(request, pk):
     """STWEG: Bauteil und Kostenträger (Sonderrecht / gemeinschaftlich) deklarieren. «Sonderrecht» auf einem zwingend
     gemeinschaftlichen Bauteil (Dach, Fassade, Fenster aussen …) wird abgewiesen (Art. 712b ZGB)."""

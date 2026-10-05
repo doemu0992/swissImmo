@@ -167,7 +167,8 @@ class MandantenFixture:
 
         self.schaden = SchadenMeldung.objects.create(
             liegenschaft=self.liegenschaft, betroffene_einheit=self.einheit,
-            titel=f'Wasserschaden {k}', beschreibung=f'Leck im Bad ({k})')
+            titel=f'Wasserschaden {k}', beschreibung=f'Leck im Bad ({k})',
+            bauteil='kueche_sanitaer', kostentraeger='sonderrecht')    # wird später STWEG: dann ist es deklariert
         self.wartungsfrist = Wartungsfrist.objects.create(
             liegenschaft=self.liegenschaft, bezeichnung=f'Heizungsservice {k}',
             naechste_faelligkeit=date.today() + timedelta(days=30))

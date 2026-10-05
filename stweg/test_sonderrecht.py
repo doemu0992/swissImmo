@@ -88,7 +88,7 @@ class TicketTests(TestCase):
     def test_ausserhalb_einer_stweg_aendert_sich_nichts(self):
         from portfolio.models import Liegenschaft
         from stweg.tests import _test_organisation
-        lg = Liegenschaft.objects.create(strasse='Mietweg 1', plz='8000', ort='Zürich', typ='MFH',
+        lg = Liegenschaft.objects.create(strasse='Mietweg 1', plz='8000', ort='Zürich', typ='MIETE',
                                          organisation=_test_organisation())
         t = ticket(lg)
         workflow.handwerker_zuweisen(t, self.hw)                 # keine Deklaration nötig
@@ -137,6 +137,14 @@ class OberflaecheTests(TestCase):
         self.c.post('/neu/schaeden/neu/', {'titel': 'Leck', 'liegenschaft_id': self.lg.pk, 'bauteil': 'dach',
                                            'kostentraeger': 'gemeinschaftlich'})
         self.assertEqual(SchadenMeldung.objects.count(), n + 1)
+
+    def test_der_hauswart_darf_nicht_deklarieren(self):
+        c = self.client_class()
+        c.force_login(_team_user('Hauswart'))
+        r = c.post(self.url, {'bauteil': 'dach', 'kostentraeger': 'gemeinschaftlich'})
+        self.assertEqual(r.status_code, 403)
+        self.t.refresh_from_db()
+        self.assertEqual(self.t.bauteil, '')
 
     def test_nur_schreibende_duerfen_deklarieren(self):
         c = self.client_class()
