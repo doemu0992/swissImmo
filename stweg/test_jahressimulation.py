@@ -87,7 +87,7 @@ class DigitalesStwegJahr(TestCase):
         # ── 2. Digitale Einberufung ──────────────────────────────────────────────────────────
         v = Versammlung.objects.create(liegenschaft=lg, titel='Ordentliche Versammlung 2026', art='ordentlich',
                                        datum=timezone.now() + timedelta(days=5), ort='Gemeindesaal', evoting=True)
-        t = Traktandum.objects.create(versammlung=v, nr=1, titel='Budget-Genehmigung 2026',
+        t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='Budget-Genehmigung 2026',
                                       antrag='Das Budget 2026 über CHF 16\'000 wird genehmigt.',
                                       mehrheitsart='doppelt_anwesende')
         bd.an_traktandum_haengen(t, b)

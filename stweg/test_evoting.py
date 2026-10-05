@@ -126,9 +126,9 @@ class EVotingTests(TestCase):
         self.v = Versammlung.objects.create(
             liegenschaft=self.lg, titel='OV', datum=timezone.now() + timedelta(days=20),
             status='durchgefuehrt', evoting=True)
-        self.t = Traktandum.objects.create(versammlung=self.v, nr=1, titel='Budget',
+        self.t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=self.v, nr=1, titel='Budget',
                                            mehrheitsart='doppelt_anwesende')
-        self.k = Traktandum.objects.create(versammlung=self.v, nr=2, titel='Information',
+        self.k = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=self.v, nr=2, titel='Information',
                                            mehrheitsart='kenntnisnahme')
         self.anna, self.bruno = self.eigs[0], self.eigs[1]
 

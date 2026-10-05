@@ -24576,3 +24576,91 @@ msgstr "Attention : ce calcul ne remplace pas un examen juridique. Le délai de 
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Décompte d'intérêts (PDF)"
+
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum manquant ou trop faible"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Nature de l'objet"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— veuillez choisir —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Type de majorité"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Nature de l'objet * (détermine la majorité légalement requise)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Type de majorité * (au moins celle exigée par la loi)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "Selon le dépouillement (résultat calculé)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Acte d'administration ordinaire"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Mesure de construction utile"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Modification du règlement"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Mesure de construction somptuaire"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Autre objet / quorum différent (base légale requise)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Veuillez choisir la nature de l'objet — elle détermine la majorité légalement requise."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Veuillez choisir le type de majorité."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "Il n'y a pas de vote pour une simple prise de connaissance."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "« %(geschaeft)s » nécessite un vote : la prise de connaissance ne suffit pas."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "Pour un autre objet ou un quorum différent, la base légale (règlement, article) doit être indiquée."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "Pour « %(geschaeft)s », la loi exige au moins : %(mindest)s (%(quelle)s). Une majorité plus faible a été choisie."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "Le résultat est déjà constaté — le type de majorité ne peut plus être modifié."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Nature de l'objet et majorité enregistrées."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Point %(nr)s « %(titel)s » : %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "Le quorum légal n'est pas atteint (%(art)s) : « accepté » ne peut pas être constaté."

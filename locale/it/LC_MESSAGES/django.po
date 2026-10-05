@@ -24554,3 +24554,91 @@ msgstr "Attenzione: questo calcolo non sostituisce una verifica giuridica. Il te
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Conteggio degli interessi (PDF)"
+
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum mancante o troppo debole"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Tipo di oggetto"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— scegliere —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Tipo di maggioranza"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Tipo di oggetto * (determina la maggioranza richiesta dalla legge)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Tipo di maggioranza * (almeno quella richiesta dalla legge)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "Secondo lo spoglio (risultato calcolato)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Atto di amministrazione ordinaria"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Misura edilizia utile"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Modifica del regolamento"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Misura edilizia voluttuaria"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Altro oggetto / quorum diverso (base giuridica necessaria)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Scegliere il tipo di oggetto — determina la maggioranza richiesta dalla legge."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Scegliere il tipo di maggioranza."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "Per la presa d'atto non c'è votazione."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "«%(geschaeft)s» richiede una votazione: la presa d'atto non basta."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "Per un altro oggetto o un quorum diverso va indicata la base giuridica (regolamento, articolo)."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "Per «%(geschaeft)s» la legge richiede almeno: %(mindest)s (%(quelle)s). È stata scelta una maggioranza più debole."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "Il risultato è già stato accertato — il tipo di maggioranza non può più essere modificato."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Tipo di oggetto e maggioranza salvati."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Punto %(nr)s «%(titel)s»: %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "Il quorum legale non è raggiunto (%(art)s): «approvato» non può essere accertato."

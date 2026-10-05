@@ -96,7 +96,7 @@ class BudgetOberflaecheTests(TestCase):
         self.assertContains(self.client.get(f'/neu/stweg/budget/{b.pk}/'), 'Versicherung')
         self.client.post(f'/neu/stweg/budget/{b.pk}/vorlegen/')
         v = Versammlung.objects.create(liegenschaft=self.lg, titel='OV', datum=timezone.now() + timedelta(days=20))
-        t = Traktandum.objects.create(versammlung=v, nr=1, titel='Budget', mehrheitsart='doppelt_aller')
+        t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='Budget', mehrheitsart='doppelt_aller')
         self.client.post(f'/neu/stweg/budget/{b.pk}/traktandum/', {'traktandum': t.pk})
         t.refresh_from_db()
         self.assertEqual(t.budget_id, b.pk)
@@ -284,7 +284,7 @@ class PortalEVotingTests(TestCase):
         self.lg, self.e, self.eigs = haus_mit_eigentuemern()
         self.v = Versammlung.objects.create(liegenschaft=self.lg, titel='OV', datum=timezone.now() + timedelta(days=20),
                                             status='durchgefuehrt', evoting=True)
-        self.t = Traktandum.objects.create(versammlung=self.v, nr=1, titel='Budget', antrag='Genehmigen?',
+        self.t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=self.v, nr=1, titel='Budget', antrag='Genehmigen?',
                                            mehrheitsart='doppelt_anwesende')
         self.cl = {}
         for eig in self.eigs:

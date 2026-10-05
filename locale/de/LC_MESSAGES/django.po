@@ -24464,3 +24464,91 @@ msgstr "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Mon
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Zinsabrechnung (PDF)"
+
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum fehlt oder zu schwach"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Art des Geschäfts"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— bitte wählen —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Mehrheitsart"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "Nach Auszählung (rechnerisches Ergebnis)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Gewöhnliche Verwaltungshandlung"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Nützliche bauliche Massnahme"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Änderung des Reglements"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Luxuriöse bauliche Massnahme"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Bitte die Mehrheitsart wählen."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "Zur Kenntnisnahme gibt es keine Abstimmung."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Art des Geschäfts und Mehrheit gespeichert."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."

@@ -24350,3 +24350,91 @@ msgstr "Warning: This calculation does not replace legal review. The 36-month pe
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Interest statement (PDF)"
+
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum missing or too weak"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Type of business"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— please choose —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Type of majority"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Type of business * (determines the legally required majority)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Type of majority * (at least the legally required one)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "According to the count (calculated result)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Ordinary administrative act"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Useful construction measure"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Amendment of the regulations"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Luxurious construction measure"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Other business / different quorum (legal basis required)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Please choose the type of business — it determines the legally required majority."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Please choose the type of majority."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "There is no vote for noting."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "\"%(geschaeft)s\" needs a vote: noting is not enough."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "For another business or a different quorum, the legal basis (regulations, article) must be stated."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "For \"%(geschaeft)s\" the law requires at least: %(mindest)s (%(quelle)s). A weaker majority was chosen."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "The result has already been determined — the type of majority can no longer be changed."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Type of business and majority saved."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Agenda item %(nr)s \"%(titel)s\": %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "The legal quorum has not been reached (%(art)s): \"approved\" cannot be recorded."

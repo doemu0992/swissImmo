@@ -31,7 +31,7 @@ def versammlung(lg, tage=30, **kw):
     v = Versammlung.objects.create(
         liegenschaft=lg, titel='Ordentliche Versammlung 2026',
         datum=timezone.now() + timedelta(days=tage), ort='Gemeindesaal', **kw)
-    Traktandum.objects.create(versammlung=v, nr=1, titel='Jahresrechnung', antrag='Genehmigung')
+    Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='Jahresrechnung', antrag='Genehmigung')
     return v
 
 

@@ -45,6 +45,7 @@ urlpatterns = [
     path('vollmacht/<int:pk>/dokument/', v.stweg_vollmacht_dokument, name='stweg_vollmacht_dokument'),
     path('vollmacht/<int:pk>/datei/', v.stweg_vollmacht_datei, name='stweg_vollmacht_datei'),
     path('vollmacht/<int:pk>/widerrufen/', v.stweg_vollmacht_widerrufen, name='stweg_vollmacht_widerrufen'),
+    path('traktandum/<int:pk>/geschaeftsart/', v.stweg_traktandum_geschaeftsart, name='stweg_traktandum_geschaeftsart'),
     path('traktandum/<int:pk>/loeschen/', v.stweg_traktandum_loeschen, name='stweg_traktandum_loeschen'),
     path('traktandum/<int:pk>/stimmen/', v.stweg_stimmen_speichern, name='stweg_stimmen_speichern'),
     path('traktandum/<int:pk>/feststellen/', v.stweg_beschluss_feststellen, name='stweg_beschluss_feststellen'),

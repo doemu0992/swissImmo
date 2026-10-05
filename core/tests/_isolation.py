@@ -259,7 +259,7 @@ class MandantenFixture:
         self.stweg_versammlung = _Versammlung.objects.create(
             liegenschaft=self.liegenschaft, titel=f'Versammlung {k}',
             datum=_tz.now() + timedelta(days=30))
-        self.stweg_traktandum = _Traktandum.objects.create(
+        self.stweg_traktandum = _Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)',
             versammlung=self.stweg_versammlung, nr=1, titel=f'Traktandum {k}')
         self.stweg_anfrage = _Anfrage.objects.create(liegenschaft=self.liegenschaft, betreff=f'Anfrage {k}')
         # Die Aufgabe ist die vorhandene Pendenz, mit STWEG-Schlüssel.

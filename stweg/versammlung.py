@@ -52,6 +52,11 @@ def einladung_pruefen(versammlung, heute=None):
             probleme.append(str(e.message))
     if not v.traktanden.exists():
         probleme.append(gettext('Es ist kein Traktandum erfasst.'))
+    from stweg import quorum
+    for t in v.traktanden.all():
+        for p in quorum.traktandum_pruefen(t):
+            probleme.append(gettext('Traktandum %(nr)s «%(titel)s»: %(problem)s')
+                            % {'nr': t.nr, 'titel': t.titel, 'problem': p})
     tage = (timezone.localtime(v.datum).date() - heute).days if timezone.is_aware(v.datum) \
         else (v.datum.date() - heute).days
     if tage < v.einladungsfrist_tage:

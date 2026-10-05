@@ -218,6 +218,9 @@ class Traktandum(OrganisationAusKette):
     beschreibung = models.TextField(blank=True, default='')
     antrag = models.TextField("Antrag der Verwaltung", blank=True, default='')
     mehrheitsart = models.CharField(max_length=20, choices=MEHRHEIT_CHOICES, default='einfach_koepfe')
+    #: Die Art des Geschäfts (`stweg.quorum`): bestimmt die gesetzlich mindestens verlangte Mehrheit. Leer nur bei
+    #: Traktanden aus der Zeit vor der Einführung — sie lassen sich weder einladen noch feststellen, bis sie gesetzt ist.
+    geschaeftsart = models.CharField("Art des Geschäfts", max_length=20, blank=True, default='')
     rechtsgrundlage = models.CharField(
         "Rechtsgrundlage / Reglement", max_length=200, blank=True, default='',
         help_text='Von der Verwaltung zu bestätigen; wird nicht automatisch ermittelt.')
@@ -252,6 +255,17 @@ class Traktandum(OrganisationAusKette):
 
     def __str__(self):
         return f"{self.nr}. {self.titel}"
+
+    @property
+    def get_geschaeftsart_anzeige(self):
+        from stweg.quorum import GESCHAEFTSARTEN
+        return GESCHAEFTSARTEN[self.geschaeftsart][0] if self.geschaeftsart in GESCHAEFTSARTEN else ''
+
+    @property
+    def quorum_probleme(self):
+        """Was an Art des Geschäfts und Mehrheitsart fehlt oder zu schwach ist (leer = in Ordnung)."""
+        from stweg import quorum
+        return quorum.traktandum_pruefen(self)
 
 
 class Anwesenheit(OrganisationAusKette):
