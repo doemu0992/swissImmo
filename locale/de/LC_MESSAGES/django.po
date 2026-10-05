@@ -24734,3 +24734,30 @@ msgstr "Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(mona
 
 msgid "allgemein"
 msgstr "allgemein"
+
+msgid "Betreibungsbegehren am"
+msgstr "Betreibungsbegehren am"
+
+msgid "Betreibungskosten (CHF)"
+msgstr "Betreibungskosten (CHF)"
+
+msgid "Betreibungsnummer"
+msgstr "Betreibungsnummer"
+
+msgid "Forderung (CHF)"
+msgstr "Forderung (CHF)"
+
+msgid "Fortsetzungsbegehren am"
+msgstr "Fortsetzungsbegehren am"
+
+msgid "Rechtsvorschlag am"
+msgstr "Rechtsvorschlag am"
+
+msgid "Rechtsöffnung am"
+msgstr "Rechtsöffnung am"
+
+msgid "Verlustschein am"
+msgstr "Verlustschein am"
+
+msgid "Zahlungsbefehl zugestellt am"
+msgstr "Zahlungsbefehl zugestellt am"

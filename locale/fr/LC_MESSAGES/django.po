@@ -24846,3 +24846,30 @@ msgstr "Hypothèque légale annoncée : somme garantie CHF %(betrag)s (seulement
 
 msgid "allgemein"
 msgstr "général"
+
+msgid "Betreibungsbegehren am"
+msgstr "Réquisition de poursuite du"
+
+msgid "Betreibungskosten (CHF)"
+msgstr "Frais de poursuite (CHF)"
+
+msgid "Betreibungsnummer"
+msgstr "Numéro de poursuite"
+
+msgid "Forderung (CHF)"
+msgstr "Créance (CHF)"
+
+msgid "Fortsetzungsbegehren am"
+msgstr "Réquisition de continuer la poursuite du"
+
+msgid "Rechtsvorschlag am"
+msgstr "Opposition du"
+
+msgid "Rechtsöffnung am"
+msgstr "Mainlevée du"
+
+msgid "Verlustschein am"
+msgstr "Acte de défaut de biens du"
+
+msgid "Zahlungsbefehl zugestellt am"
+msgstr "Commandement de payer notifié le"

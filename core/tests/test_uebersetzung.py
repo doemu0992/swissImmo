@@ -61,10 +61,13 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 UEBERSETZT = (
     'fw/abnahme_texte.html',
     'fw/abwesenheiten.html',
+    'fw/betreibung_form.html',
     'fw/betreibungen.html',
     'fw/dashboard.html',
     'fw/fall_neu.html',
+    'fw/nk_zustellung.html',
     'fw/phase2_form.html',
+    'fw/ticket_zuweisen.html',
     'fw/termine.html',
     'fw/zulauf.html',
     'fw/_zustellstatus.html',

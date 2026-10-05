@@ -1,0 +1,68 @@
+{% extends 'fw/phase2_form.html' %}
+{% load i18n %}
+{% block felder %}
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+        <label for="id_status" class="fw-label mb-1">{% trans "Stand" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+        <select id="id_status" name="status" class="fw-feld w-full">
+            {% for wert, bez in form.status.field.choices %}<option value="{{ wert }}"{% if werte.status == wert %} selected{% endif %}>{{ bez }}</option>{% endfor %}
+        </select>
+        {% include 'fw/_feldfehler.html' with f=form.status %}
+    </div>
+    <div>
+        <label for="id_betreibungsamt" class="fw-label mb-1">{% trans "Betreibungsamt" %}</label>
+        <input type="text" id="id_betreibungsamt" name="betreibungsamt" value="{{ werte.betreibungsamt }}" class="fw-feld w-full"{% if form.betreibungsamt.errors %} aria-invalid="true" aria-describedby="id_betreibungsamt_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.betreibungsamt %}
+    </div>
+    <div>
+        <label for="id_betreibungsnummer" class="fw-label mb-1">{% trans "Betreibungsnummer" %}</label>
+        <input type="text" id="id_betreibungsnummer" name="betreibungsnummer" value="{{ werte.betreibungsnummer }}" class="fw-feld w-full"{% if form.betreibungsnummer.errors %} aria-invalid="true" aria-describedby="id_betreibungsnummer_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.betreibungsnummer %}
+    </div>
+    <div>
+        <label for="id_forderung" class="fw-label mb-1">{% trans "Forderung (CHF)" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+        <input type="text" id="id_forderung" name="forderung" value="{{ werte.forderung }}" inputmode="decimal" class="fw-feld w-full"{% if form.forderung.errors %} aria-invalid="true" aria-describedby="id_forderung_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.forderung %}
+    </div>
+    <div>
+        <label for="id_kosten" class="fw-label mb-1">{% trans "Betreibungskosten (CHF)" %}</label>
+        <input type="text" id="id_kosten" name="kosten" value="{{ werte.kosten }}" inputmode="decimal" class="fw-feld w-full"{% if form.kosten.errors %} aria-invalid="true" aria-describedby="id_kosten_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.kosten %}
+    </div>
+    <div>
+        <label for="id_begehren_am" class="fw-label mb-1">{% trans "Betreibungsbegehren am" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+        <input type="date" id="id_begehren_am" name="begehren_am" value="{{ werte.begehren_am }}" class="fw-feld w-full" required{% if form.begehren_am.errors %} aria-invalid="true" aria-describedby="id_begehren_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.begehren_am %}
+    </div>
+    <div>
+        <label for="id_zahlungsbefehl_am" class="fw-label mb-1">{% trans "Zahlungsbefehl zugestellt am" %}</label>
+        <input type="date" id="id_zahlungsbefehl_am" name="zahlungsbefehl_am" value="{{ werte.zahlungsbefehl_am }}" class="fw-feld w-full"{% if form.zahlungsbefehl_am.errors %} aria-invalid="true" aria-describedby="id_zahlungsbefehl_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.zahlungsbefehl_am %}
+    </div>
+    <div>
+        <label for="id_rechtsvorschlag_am" class="fw-label mb-1">{% trans "Rechtsvorschlag am" %}</label>
+        <input type="date" id="id_rechtsvorschlag_am" name="rechtsvorschlag_am" value="{{ werte.rechtsvorschlag_am }}" class="fw-feld w-full"{% if form.rechtsvorschlag_am.errors %} aria-invalid="true" aria-describedby="id_rechtsvorschlag_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.rechtsvorschlag_am %}
+    </div>
+    <div>
+        <label for="id_rechtsoeffnung_am" class="fw-label mb-1">{% trans "Rechtsöffnung am" %}</label>
+        <input type="date" id="id_rechtsoeffnung_am" name="rechtsoeffnung_am" value="{{ werte.rechtsoeffnung_am }}" class="fw-feld w-full"{% if form.rechtsoeffnung_am.errors %} aria-invalid="true" aria-describedby="id_rechtsoeffnung_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.rechtsoeffnung_am %}
+    </div>
+    <div>
+        <label for="id_fortsetzung_am" class="fw-label mb-1">{% trans "Fortsetzungsbegehren am" %}</label>
+        <input type="date" id="id_fortsetzung_am" name="fortsetzung_am" value="{{ werte.fortsetzung_am }}" class="fw-feld w-full"{% if form.fortsetzung_am.errors %} aria-invalid="true" aria-describedby="id_fortsetzung_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.fortsetzung_am %}
+    </div>
+    <div>
+        <label for="id_verlustschein_am" class="fw-label mb-1">{% trans "Verlustschein am" %}</label>
+        <input type="date" id="id_verlustschein_am" name="verlustschein_am" value="{{ werte.verlustschein_am }}" class="fw-feld w-full"{% if form.verlustschein_am.errors %} aria-invalid="true" aria-describedby="id_verlustschein_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.verlustschein_am %}
+    </div>
+    <div class="sm:col-span-2">
+        <label for="id_bemerkung" class="fw-label mb-1">{% trans "Bemerkung" %}</label>
+        <textarea id="id_bemerkung" name="bemerkung" rows="3" class="fw-feld w-full">{{ werte.bemerkung }}</textarea>
+        {% include 'fw/_feldfehler.html' with f=form.bemerkung %}
+    </div>
+</div>
+{% endblock %}

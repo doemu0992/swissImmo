@@ -1,0 +1,18 @@
+{% extends 'fw/phase2_form.html' %}
+{% load i18n %}
+{% block felder %}
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+        <label for="id_versendet_am" class="fw-label mb-1">{% trans "Zugestellt am" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+        <input type="date" id="id_versendet_am" name="versendet_am" value="{{ werte.versendet_am }}" class="fw-feld w-full" required{% if form.versendet_am.errors %} aria-invalid="true" aria-describedby="id_versendet_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.versendet_am %}
+    </div>
+    <div>
+        <label for="id_versand_kanal" class="fw-label mb-1">{% trans "Zustellung" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+        <select id="id_versand_kanal" name="versand_kanal" class="fw-feld w-full">
+            {% for wert, bez in form.versand_kanal.field.choices %}<option value="{{ wert }}"{% if werte.versand_kanal == wert %} selected{% endif %}>{{ bez }}</option>{% endfor %}
+        </select>
+        {% include 'fw/_feldfehler.html' with f=form.versand_kanal %}
+    </div>
+</div>
+{% endblock %}

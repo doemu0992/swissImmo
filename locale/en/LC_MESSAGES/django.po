@@ -24620,3 +24620,30 @@ msgstr "Lien registered: lien amount CHF %(betrag)s (only the last %(monate)s mo
 
 msgid "allgemein"
 msgstr "general"
+
+msgid "Betreibungsbegehren am"
+msgstr "Enforcement request on"
+
+msgid "Betreibungskosten (CHF)"
+msgstr "Enforcement costs (CHF)"
+
+msgid "Betreibungsnummer"
+msgstr "Enforcement number"
+
+msgid "Forderung (CHF)"
+msgstr "Claim (CHF)"
+
+msgid "Fortsetzungsbegehren am"
+msgstr "Request to continue on"
+
+msgid "Rechtsvorschlag am"
+msgstr "Objection on"
+
+msgid "Rechtsöffnung am"
+msgstr "Removal of objection on"
+
+msgid "Verlustschein am"
+msgstr "Certificate of loss on"
+
+msgid "Zahlungsbefehl zugestellt am"
+msgstr "Payment order served on"

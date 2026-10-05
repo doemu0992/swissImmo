@@ -30,6 +30,7 @@ Betreibung, Zählerstand). Rendert ein Django-Form feldweise; Fehler stehen am F
                 {% if fristen.fortsetzung %}{% blocktrans with a=fristen.fortsetzung.0|date:"d.m.Y" b=fristen.fortsetzung.1|date:"d.m.Y" %}Fortsetzungsbegehren zwischen {{ a }} und {{ b }} (Art. 88 SchKG).{% endblocktrans %}{% endif %}</div>
             </div>
             {% endif %}
+            {% block felder %}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {% for f in form %}
                 <div class="{% if f.field.widget.input_type == 'textarea' or f.name == 'bemerkung' %}sm:col-span-2{% endif %}">
@@ -39,6 +40,7 @@ Betreibung, Zählerstand). Rendert ein Django-Form feldweise; Fehler stehen am F
                 </div>
             {% endfor %}
             </div>
+            {% endblock %}
         </div>
     </div>
     <div class="flex flex-wrap gap-3 mt-4">

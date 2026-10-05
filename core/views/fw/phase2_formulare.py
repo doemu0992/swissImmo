@@ -25,10 +25,35 @@ from ._basis import _global_filter
 DATUM = forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
 
 
-def _seite(request, form, *, titel, hinweis='', zurueck, zurueck_text, senden, extra=None, status=200):
-    ctx = {**_global_filter(request), 'form': form, 'titel': titel, 'hinweis': hinweis,
+def _werte(form):
+    """Feldwerte als Strings für Formulare mit ausgeschriebenen Eingabefeldern.
+
+    Nach einem Fehler steht dort, was eingetippt wurde (`form.data`); beim ersten
+    Aufruf der Anfangswert bzw. der Wert der Instanz. Daten kommen als ISO-Text
+    zurück: `<input type=date>` verträgt kein anderes Format, und die
+    Lokalisierung der Vorlage würde es in «05.10.2026» wandeln.
+    """
+    def text(roh):
+        if roh is None:
+            return ''
+        return roh.isoformat() if hasattr(roh, 'isoformat') else str(roh)
+
+    werte = {}
+    for name in form.fields:
+        if form.is_bound:
+            werte[name] = form.data.get(name, '')
+        elif name in form.initial:
+            werte[name] = text(form.initial[name])
+        else:
+            werte[name] = text(getattr(getattr(form, 'instance', None), name, None))
+    return werte
+
+
+def _seite(request, form, *, titel, hinweis='', zurueck, zurueck_text, senden, extra=None, status=200,
+           vorlage='fw/phase2_form.html'):
+    ctx = {**_global_filter(request), 'form': form, 'werte': _werte(form), 'titel': titel, 'hinweis': hinweis,
            'zurueck': zurueck, 'zurueck_text': zurueck_text, 'senden': senden, **(extra or {})}
-    return render(request, 'fw/phase2_form.html', ctx, status=status)
+    return render(request, vorlage, ctx, status=status)
 
 
 # ---------------------------------------------------------------- Ticket zuweisen
@@ -79,7 +104,8 @@ def fw_schaden_zuweisen(request, pk):
         return redirect(f'/neu/schaeden/{t.id}/')
     return _seite(request, form, titel=gettext('Ticket zuweisen'),
                   hinweis=t.titel, zurueck=f'/neu/schaeden/{t.id}/', zurueck_text=gettext('Ticket'),
-                  senden=gettext('Zuweisen'), status=400 if request.method == 'POST' else 200)
+                  senden=gettext('Zuweisen'), status=400 if request.method == 'POST' else 200,
+                  vorlage='fw/ticket_zuweisen.html')
 
 
 # ---------------------------------------------------------------- NK-Zustellung
@@ -128,7 +154,8 @@ def fw_nebenkosten_zustellung(request, pk):
                   hinweis=gettext('Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage).')
                   % {'n': p.EINSPRACHE_TAGE},
                   zurueck=f'/neu/nebenkosten/{p.id}/', zurueck_text=p.bezeichnung,
-                  senden=gettext('Speichern'), status=400 if request.method == 'POST' else 200)
+                  senden=gettext('Speichern'), status=400 if request.method == 'POST' else 200,
+                  vorlage='fw/nk_zustellung.html')
 
 
 # ---------------------------------------------------------------- Betreibung
@@ -219,7 +246,7 @@ def fw_betreibung_neu(request, pk):
     return _seite(request, form, titel=gettext('Betreibung einleiten'),
                   hinweis=f'{r.titel} · CHF {offen}', zurueck='/neu/mahnwesen/',
                   zurueck_text=gettext('Mahnwesen'), senden=gettext('Betreibung erfassen'),
-                  status=400 if request.method == 'POST' else 200)
+                  status=400 if request.method == 'POST' else 200, vorlage='fw/betreibung_form.html')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -239,7 +266,7 @@ def fw_betreibung_bearbeiten(request, pk):
     return _seite(request, form, titel=gettext('Betreibung bearbeiten'),
                   hinweis=f'{b.debitoren_rechnung.titel}', zurueck='/neu/betreibungen/',
                   zurueck_text=gettext('Betreibungen'), senden=gettext('Speichern'), extra=extra,
-                  status=400 if request.method == 'POST' else 200)
+                  status=400 if request.method == 'POST' else 200, vorlage='fw/betreibung_form.html')
 
 
 # ---------------------------------------------------------------- Zählerstand

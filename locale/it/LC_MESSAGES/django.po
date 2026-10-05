@@ -24824,3 +24824,30 @@ msgstr "Pegno annunciato: importo garantito CHF %(betrag)s (solo gli ultimi %(mo
 
 msgid "allgemein"
 msgstr "generale"
+
+msgid "Betreibungsbegehren am"
+msgstr "Domanda di esecuzione del"
+
+msgid "Betreibungskosten (CHF)"
+msgstr "Spese di esecuzione (CHF)"
+
+msgid "Betreibungsnummer"
+msgstr "Numero di esecuzione"
+
+msgid "Forderung (CHF)"
+msgstr "Credito (CHF)"
+
+msgid "Fortsetzungsbegehren am"
+msgstr "Richiesta di continuazione del"
+
+msgid "Rechtsvorschlag am"
+msgstr "Opposizione del"
+
+msgid "Rechtsöffnung am"
+msgstr "Rigetto dell'opposizione del"
+
+msgid "Verlustschein am"
+msgstr "Attestato di carenza di beni del"
+
+msgid "Zahlungsbefehl zugestellt am"
+msgstr "Precetto esecutivo notificato il"
