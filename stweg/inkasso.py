@@ -46,8 +46,8 @@ from stweg.budget import _plus_monate
 from stweg.eigentuemer import eigentuemer_am
 from stweg.zins import KAPITAL_ARTEN, oldest_first, zinsforderungen
 from stweg.zins import satz as zins_satz
-from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegInkassoFall, StwegMahnung,
-                          StwegPfandrecht, StwegVorschreibung)
+from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegInkassoFall,
+                          StwegInkassoPosition, StwegMahnung, StwegPfandrecht, StwegVorschreibung)
 
 NULL = Decimal('0.00')
 PFANDRECHT_MONATE = 36
@@ -112,8 +112,11 @@ def _tilgen(claims, zahlungen):
 
 
 def _kosten_forderungen(einheit, stichtag):
-    """Mahnspesen und Betreibungskosten als Forderungen (ohne Zahlung angerechnet)."""
-    return []
+    """Mahnspesen und Betreibungskosten als Forderungen (ohne Zahlung angerechnet); stornierte nicht."""
+    return [{'datum': p.datum, 'text': p.text, 'betrag': p.betrag, 'art': p.art, 'schluessel': None,
+             'schuldner': eigentuemer_am(einheit, p.datum)}
+            for p in StwegInkassoPosition.objects.filter(einheit=einheit, datum__lte=stichtag,
+                                                         storniert_am__isnull=True)]
 
 
 def forderungen(einheit, stichtag=None):
@@ -243,8 +246,74 @@ def mahnung_erstellen(einheit, *, heute=None, frist_tage=MAHNFRIST_TAGE, user=No
         raise InkassoFehler(f'Die {letzte.stufe}. Mahnung ist noch nicht versendet.')
     if frist_tage < 1:
         raise InkassoFehler('Die Zahlungsfrist muss mindestens einen Tag betragen.')
-    return StwegMahnung.objects.create(fall=fall, stufe=stufe, datum=heute, betrag=betrag,
-                                       frist_bis=heute + timedelta(days=frist_tage))
+    m = StwegMahnung.objects.create(fall=fall, stufe=stufe, datum=heute, betrag=betrag,
+                                    frist_bis=heute + timedelta(days=frist_tage))
+    gebuehr = mahngebuehr(einheit.liegenschaft, stufe)
+    if gebuehr is not None:                                  # echte Sollstellung: gebucht und Teil der Gesamtschuld
+        _position_buchen(einheit, StwegInkassoPosition.MAHNSPESEN, gebuehr, heute, f'Mahngebühr {stufe}. Mahnung',
+                         soll_haben=('1110', '3110'), fall=fall, mahnung=m, user=user)
+        m.betrag = offener_betrag_eigentuemer(einheit, heute)
+        m.save(update_fields=['betrag'])
+    return m
+
+
+def mahngebuehr(liegenschaft, stufe):
+    """Die Mahngebühr für diese Mahnstufe — oder None. Nur aus bestätigten Vorgaben; sonst keine Gebühr."""
+    from stweg.vorgaben import vorgaben_von
+    v = vorgaben_von(liegenschaft)
+    if v is None or v.mahngebuehr_chf is None or not v.bestaetigt_am or Decimal(v.mahngebuehr_chf) <= 0:
+        return None
+    return Decimal(v.mahngebuehr_chf) if stufe >= (v.mahngebuehr_ab_stufe or 2) else None
+
+
+def _position_buchen(einheit, art, betrag, datum, text, *, soll_haben, fall=None, mahnung=None, amt='', user=None):
+    from finance.booking import buche
+    try:
+        b = buche(soll_haben[0], soll_haben[1], betrag, f'{text}: {einheit.bezeichnung}', datum=datum,
+                  liegenschaft=einheit.liegenschaft, user=user)
+    except PermissionError as fehler:
+        raise InkassoFehler(gettext('Die Buchung ist nicht möglich — Periode abgeschlossen? (%(fehler)s)')
+                            % {'fehler': fehler})
+    return StwegInkassoPosition.objects.create(einheit=einheit, fall=fall, mahnung=mahnung, art=art, datum=datum,
+                                               betrag=betrag, text=text, amt=amt, buchung=b, erfasst_von=user)
+
+
+@transaction.atomic
+def position_stornieren(position, *, user=None, heute=None):
+    """Nimmt eine Nebenforderung zurück (Gegenbuchung); sie ist danach nicht mehr Teil der Gesamtschuld. Eine bereits
+    angerechnete Zahlung bleibt, wie sie war — der Betrag wird dann zum Kapital-Überschuss der nächsten Forderung."""
+    from finance.booking import storniere_buchung
+    if position.storniert_am is not None:
+        raise InkassoFehler(gettext('Diese Position ist schon storniert.'))
+    try:
+        if position.buchung_id and position.buchung.storniert_am is None:
+            storniere_buchung(position.buchung, user=user)
+    except PermissionError as fehler:
+        raise InkassoFehler(gettext('Die Buchung ist nicht möglich — Periode abgeschlossen? (%(fehler)s)')
+                            % {'fehler': fehler})
+    position.storniert_am = heute or timezone.localdate()
+    position.save(update_fields=['storniert_am'])
+    return position
+
+
+@transaction.atomic
+def kostenvorschuss_erfassen(fall, betrag, datum=None, *, amt='', user=None):
+    """Erfasst den Vorschuss an das Betreibungsamt (SchKG), den die Verwaltung für die Betreibung bezahlt hat. Er wird
+    der Gesamtschuld des Eigentümers zugeschlagen (Sollstellung Soll 1110 / Haben 1020) und ist Teil der Anrechnung
+    nach Art. 85 OR; in der Pfandsumme steht er nicht. Hält zugleich fest, dass die Betreibung eingeleitet ist."""
+    datum = datum or timezone.localdate()
+    betrag = Decimal(betrag or 0)
+    if fall.status != StwegInkassoFall.OFFEN:
+        raise InkassoFehler(gettext('Der Inkassofall ist erledigt.'))
+    if betrag <= 0:
+        raise InkassoFehler(gettext('Der Kostenvorschuss muss grösser als 0 sein.'))
+    p = _position_buchen(fall.einheit, StwegInkassoPosition.BETREIBUNGSKOSTEN, betrag, datum,
+                         'Kostenvorschuss Betreibung' + (f' ({amt})' if amt else ''), soll_haben=('1110', '1020'),
+                         fall=fall, amt=amt, user=user)
+    if fall.betreibung_eingeleitet_am is None:
+        fall.betreibung_eingeleitet_am, fall.betreibungsamt = datum, amt
+        fall.save(update_fields=['betreibung_eingeleitet_am', 'betreibungsamt'])
+    return p
 
 
 def mahntext(mahnung):

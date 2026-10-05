@@ -67,6 +67,24 @@
                     <div class="fw-feldblock"><label class="fw-label"><input type="checkbox" name="ohne_mahnungen" value="1"> {% trans "Auch ohne drei Mahnungen (die Stufen sind eine Richtlinie, keine gesetzliche Voraussetzung)" %}</label></div>
                     <div class="fw-formular-fuss"><button class="fw-btn">{% trans "Retentionsrecht festhalten" %}</button></div>
                 </form></div></details>
+        <details class="fw-aufklapp"><summary>{% trans "Kostenvorschuss für die Betreibung erfassen (SchKG)" %}</summary>
+            <div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/stweg/{{ lg.pk }}/inkasso/kostenvorschuss/" class="fw-formular drei">{% csrf_token %}
+                    <input type="hidden" name="einheit" value="{{ z.einheit.pk }}">
+                    <div class="fw-feldblock"><label class="fw-label" for="kv{{ z.einheit.pk }}">{% trans "Betrag (CHF) *" %}</label>
+                        <input id="kv{{ z.einheit.pk }}" name="betrag" inputmode="decimal" required class="fw-feld"></div>
+                    <div class="fw-feldblock"><label class="fw-label" for="kd{{ z.einheit.pk }}">{% trans "Datum der Zahlung" %}</label>
+                        <input id="kd{{ z.einheit.pk }}" name="datum" type="date" class="fw-feld"></div>
+                    <div class="fw-feldblock"><label class="fw-label" for="ka{{ z.einheit.pk }}">{% trans "Betreibungsamt" %}</label>
+                        <input id="ka{{ z.einheit.pk }}" name="amt" maxlength="120" class="fw-feld"></div>
+                    <div class="fw-formular-fuss"><button class="fw-btn">{% trans "Kostenvorschuss erfassen" %}</button></div>
+                </form>
+                <p class="fw-s">{% trans "Der Vorschuss wird der Gesamtschuld des Eigentümers zugeschlagen (nicht der Pfandsumme)." %}</p>
+                {% for p in z.positionen %}
+                <form method="post" action="/neu/stweg/{{ lg.pk }}/inkasso/position/{{ p.pk }}/storno/" class="fw-s">{% csrf_token %}
+                    {{ p.datum|date:"d.m.Y" }} · {{ p.text }} · CHF {{ p.betrag|chf }} <button class="fw-btn">{% trans "Stornieren" %}</button></form>
+                {% endfor %}
+            </div></details>
         <form method="post" action="/neu/stweg/{{ lg.pk }}/inkasso/pfandrecht/" class="fw-formular">{% csrf_token %}
             <input type="hidden" name="einheit" value="{{ z.einheit.pk }}">
             <div class="fw-feldblock"><label class="fw-label"><input type="checkbox" name="ohne_mahnungen" value="1"> {% trans "Auch ohne drei Mahnungen" %}</label></div>

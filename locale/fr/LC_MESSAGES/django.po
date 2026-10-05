@@ -24496,3 +24496,75 @@ msgstr "Le taux d'intérêt moratoire est saisi mais non confirmé : aucun inté
 #: stweg/handaenderung
 msgid "Handänderungs-Abrechnung (PDF)"
 msgstr "Décompte de changement de propriétaire (PDF)"
+
+#: stweg/inkasso
+msgid "Mahngebühr je Mahnung (CHF)"
+msgstr "Frais de rappel par rappel (CHF)"
+
+#: stweg/inkasso
+msgid "Leer = keine Mahngebühren. Nur mit bestätigten Vorgaben wird eine Gebühr belastet."
+msgstr "Vide = pas de frais de rappel. Des frais ne sont facturés qu'avec des données confirmées."
+
+#: stweg/inkasso
+msgid "Mahngebühr ab Mahnstufe (1 bis 3)"
+msgstr "Frais de rappel dès le niveau de rappel (1 à 3)"
+
+#: stweg/inkasso
+msgid "Leer = ab der 2. Mahnung."
+msgstr "Vide = dès le 2e rappel."
+
+#: stweg/inkasso
+msgid "Kostenvorschuss für die Betreibung erfassen (SchKG)"
+msgstr "Saisir l'avance de frais de poursuite (LP)"
+
+#: stweg/inkasso
+msgid "Datum der Zahlung"
+msgstr "Date du paiement"
+
+#: stweg/inkasso
+msgid "Betreibungsamt"
+msgstr "Office des poursuites"
+
+#: stweg/inkasso
+msgid "Kostenvorschuss erfassen"
+msgstr "Saisir l'avance de frais"
+
+#: stweg/inkasso
+msgid "Der Vorschuss wird der Gesamtschuld des Eigentümers zugeschlagen (nicht der Pfandsumme)."
+msgstr "L'avance est ajoutée à la dette totale du propriétaire (pas au montant du gage)."
+
+#: stweg/inkasso
+msgid "Bitte einen gültigen Betrag eingeben."
+msgstr "Veuillez saisir un montant valide."
+
+#: stweg/inkasso
+msgid "Kostenvorschuss erfasst und der Gesamtschuld zugeschlagen."
+msgstr "Avance de frais saisie et ajoutée à la dette totale."
+
+#: stweg/inkasso
+msgid "Die Position ist storniert."
+msgstr "La position est annulée."
+
+#: stweg/inkasso
+msgid "Diese Position ist schon storniert."
+msgstr "Cette position est déjà annulée."
+
+#: stweg/inkasso
+msgid "Der Inkassofall ist erledigt."
+msgstr "Le cas de recouvrement est clos."
+
+#: stweg/inkasso
+msgid "Der Kostenvorschuss muss grösser als 0 sein."
+msgstr "L'avance de frais doit être supérieure à 0."
+
+#: stweg/inkasso
+msgid "Mahngebühr"
+msgstr "Frais de rappel"
+
+#: stweg/inkasso
+msgid "Betreibungskostenvorschuss"
+msgstr "Avance de frais de poursuite"
+
+#: stweg/inkasso
+msgid "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
+msgstr "Frais de rappel dès le niveau : les niveaux de rappel 1 à 3 sont admis."

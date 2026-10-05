@@ -24384,3 +24384,75 @@ msgstr "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kei
 #: stweg/handaenderung
 msgid "Handänderungs-Abrechnung (PDF)"
 msgstr "Handänderungs-Abrechnung (PDF)"
+
+#: stweg/inkasso
+msgid "Mahngebühr je Mahnung (CHF)"
+msgstr "Mahngebühr je Mahnung (CHF)"
+
+#: stweg/inkasso
+msgid "Leer = keine Mahngebühren. Nur mit bestätigten Vorgaben wird eine Gebühr belastet."
+msgstr "Leer = keine Mahngebühren. Nur mit bestätigten Vorgaben wird eine Gebühr belastet."
+
+#: stweg/inkasso
+msgid "Mahngebühr ab Mahnstufe (1 bis 3)"
+msgstr "Mahngebühr ab Mahnstufe (1 bis 3)"
+
+#: stweg/inkasso
+msgid "Leer = ab der 2. Mahnung."
+msgstr "Leer = ab der 2. Mahnung."
+
+#: stweg/inkasso
+msgid "Kostenvorschuss für die Betreibung erfassen (SchKG)"
+msgstr "Kostenvorschuss für die Betreibung erfassen (SchKG)"
+
+#: stweg/inkasso
+msgid "Datum der Zahlung"
+msgstr "Datum der Zahlung"
+
+#: stweg/inkasso
+msgid "Betreibungsamt"
+msgstr "Betreibungsamt"
+
+#: stweg/inkasso
+msgid "Kostenvorschuss erfassen"
+msgstr "Kostenvorschuss erfassen"
+
+#: stweg/inkasso
+msgid "Der Vorschuss wird der Gesamtschuld des Eigentümers zugeschlagen (nicht der Pfandsumme)."
+msgstr "Der Vorschuss wird der Gesamtschuld des Eigentümers zugeschlagen (nicht der Pfandsumme)."
+
+#: stweg/inkasso
+msgid "Bitte einen gültigen Betrag eingeben."
+msgstr "Bitte einen gültigen Betrag eingeben."
+
+#: stweg/inkasso
+msgid "Kostenvorschuss erfasst und der Gesamtschuld zugeschlagen."
+msgstr "Kostenvorschuss erfasst und der Gesamtschuld zugeschlagen."
+
+#: stweg/inkasso
+msgid "Die Position ist storniert."
+msgstr "Die Position ist storniert."
+
+#: stweg/inkasso
+msgid "Diese Position ist schon storniert."
+msgstr "Diese Position ist schon storniert."
+
+#: stweg/inkasso
+msgid "Der Inkassofall ist erledigt."
+msgstr "Der Inkassofall ist erledigt."
+
+#: stweg/inkasso
+msgid "Der Kostenvorschuss muss grösser als 0 sein."
+msgstr "Der Kostenvorschuss muss grösser als 0 sein."
+
+#: stweg/inkasso
+msgid "Mahngebühr"
+msgstr "Mahngebühr"
+
+#: stweg/inkasso
+msgid "Betreibungskostenvorschuss"
+msgstr "Betreibungskostenvorschuss"
+
+#: stweg/inkasso
+msgid "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
+msgstr "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."

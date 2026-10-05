@@ -733,6 +733,12 @@ class StwegVorgaben(OrganisationAusKette):
     verzugszins_prozent = models.DecimalField(
         "Verzugszins auf Beiträge (% pro Jahr)", max_digits=5, decimal_places=2, null=True, blank=True,
         help_text='Aus Reglement oder Gesetz. Leer = es werden keine Verzugszinsen berechnet.')
+    mahngebuehr_chf = models.DecimalField(
+        "Mahngebühr je Mahnung (CHF)", max_digits=8, decimal_places=2, null=True, blank=True,
+        help_text='Aus Reglement oder Beschluss. Leer = keine Mahngebühren.')
+    mahngebuehr_ab_stufe = models.PositiveSmallIntegerField(
+        "Mahngebühr ab Mahnstufe", null=True, blank=True,
+        help_text='Leer = ab der 2. Mahnung. Gilt nur, wenn eine Mahngebühr eingetragen ist.')
     bemerkung = models.TextField("Quelle (Reglement, Artikel)", blank=True, default='')
     bestaetigt_am = models.DateTimeField(null=True, blank=True)
     bestaetigt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
@@ -775,6 +781,9 @@ class StwegInkassoFall(OrganisationAusKette):
     erledigt_am = models.DateField(null=True, blank=True)
     retention_erklaert_am = models.DateField(null=True, blank=True)
     retention_gegenstaende = models.TextField(blank=True, default='')
+    #: Betreibung (SchKG): wann das Begehren gestellt wurde und bei welchem Amt (mit dem Kostenvorschuss erfasst).
+    betreibung_eingeleitet_am = models.DateField(null=True, blank=True)
+    betreibungsamt = models.CharField(max_length=120, blank=True, default='')
 
     class Meta:
         db_table = 'stweg_inkassofall'
@@ -840,3 +849,31 @@ class StwegEigentuemerwechsel(OrganisationAusKette):
         db_table = 'stweg_eigentuemerwechsel'
         ordering = ['datum', 'id']
         constraints = [models.UniqueConstraint(fields=['einheit', 'datum'], name='stweg_wechsel_ein_wechsel_je_tag')]
+
+
+class StwegInkassoPosition(OrganisationAusKette):
+    """Eine Nebenforderung der Gemeinschaft gegen den Eigentümer: Mahngebühr oder Kostenvorschuss für die Betreibung.
+    Echte Sollstellung: Sie ist gebucht (Soll 1110) und Teil der Gesamtschuld."""
+    ORGANISATION_PFAD = 'einheit__liegenschaft'
+    MAHNSPESEN, BETREIBUNGSKOSTEN = 'mahnspesen', 'betreibungskosten'
+    ART_CHOICES = [(MAHNSPESEN, _('Mahngebühr')), (BETREIBUNGSKOSTEN, _('Betreibungskostenvorschuss'))]
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='stweg_inkassopositionen')
+    fall = models.ForeignKey(StwegInkassoFall, on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name='positionen')
+    mahnung = models.OneToOneField(StwegMahnung, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='position')
+    art = models.CharField(max_length=20, choices=ART_CHOICES)
+    datum = models.DateField(default=timezone.localdate)
+    betrag = models.DecimalField(max_digits=10, decimal_places=2)
+    text = models.CharField(max_length=200)
+    amt = models.CharField("Betreibungsamt", max_length=120, blank=True, default='')
+    buchung = models.ForeignKey('finance.Buchung', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='+')
+    storniert_am = models.DateField(null=True, blank=True)
+    erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='+')
+
+    class Meta:
+        db_table = 'stweg_inkassoposition'
+        ordering = ['datum', 'id']
+        constraints = [models.CheckConstraint(condition=models.Q(betrag__gt=0), name='stweg_inkassoposition_betrag_pos')]

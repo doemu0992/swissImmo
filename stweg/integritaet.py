@@ -17,7 +17,8 @@ from decimal import Decimal
 from django.db.models import Sum
 
 from finance.models import Buchung, Erneuerungsfonds, ErneuerungsfondsBewegung
-from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegVorschreibung)
+from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegInkassoPosition,
+                          StwegVorschreibung)
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
 
 NULL = Decimal('0.00')
@@ -53,15 +54,20 @@ def erwartet(lg):
         freigegeben += vorgeschrieben
         abgleich += p.kostenanteil - vorgeschrieben
         kostenanteil += p.kostenanteil
+    pos = StwegInkassoPosition.objects.filter(einheit__liegenschaft=lg, buchung__isnull=False,
+                                              buchung__storniert_am__isnull=True)
+    mahnspesen = pos.filter(art='mahnspesen').aggregate(s=Sum('betrag'))['s'] or NULL
+    auslagen = pos.filter(art='betreibungskosten').aggregate(s=Sum('betrag'))['s'] or NULL
     einlagen = (ErneuerungsfondsBewegung.objects.filter(fonds__liegenschaft=lg, art='einlage',
                                                         buchung__isnull=False).aggregate(s=Sum('betrag'))['s'] or NULL)
     entnahmen = (ErneuerungsfondsBewegung.objects.filter(fonds__liegenschaft=lg, art='entnahme',
                                                          buchung__isnull=False).aggregate(s=Sum('betrag'))['s'] or NULL)
     return {
-        '1110': v_summe - (z_summe - zins_summe) + abgleich + einlagen,
+        '1110': v_summe - (z_summe - zins_summe) + abgleich + einlagen + mahnspesen + auslagen,
         '2035': -(v_summe - freigegeben),
         '3100': -kostenanteil,
         '2800': -(einlagen - entnahmen),
+        '3110': -mahnspesen,
         '3120': -zins_summe,
     }
 

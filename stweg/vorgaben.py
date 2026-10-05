@@ -18,7 +18,7 @@ from stweg.models import StwegVorgaben
 
 SYSTEM_EINLADUNGSFRIST = 10
 FELDER = ('einladungsfrist_tage', 'quorum_koepfe_prozent', 'quorum_quoten_prozent', 'anfechtungsfrist_tage',
-          'verzugszins_prozent')
+          'verzugszins_prozent', 'mahngebuehr_chf', 'mahngebuehr_ab_stufe')
 
 
 class VorgabenFehler(ValueError):
@@ -64,7 +64,11 @@ def speichern(liegenschaft, daten, *, bestaetigen=False, user=None):
         'quorum_quoten_prozent': _wert(daten.get('quorum_quoten_prozent'), 'Quorum Wertquoten', prozent=True),
         'anfechtungsfrist_tage': _wert(daten.get('anfechtungsfrist_tage'), 'Anfechtungsfrist', ganzzahl=True),
         'verzugszins_prozent': _wert(daten.get('verzugszins_prozent'), 'Verzugszins', prozent=True),
+        'mahngebuehr_chf': _wert(daten.get('mahngebuehr_chf'), 'Mahngebühr'),
+        'mahngebuehr_ab_stufe': _wert(daten.get('mahngebuehr_ab_stufe'), 'Mahngebühr ab Stufe', ganzzahl=True),
     }
+    if neu['mahngebuehr_ab_stufe'] is not None and not 1 <= neu['mahngebuehr_ab_stufe'] <= 3:
+        raise VorgabenFehler(gettext('Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3.'))
     v = vorgaben_von(liegenschaft) or StwegVorgaben(liegenschaft=liegenschaft)
     geaendert = v.pk is None or any(
         (getattr(v, k) is None) != (w is None) or (w is not None and Decimal(getattr(v, k)) != Decimal(w))
