@@ -26,7 +26,7 @@ from stweg import aufgaben, beschluss, dokumente, vorgaben
 from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegBudget, StwegVorschreibung, StwegAkonto, StwegAnfrage,
                           StwegEigentuemerwechsel, StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
-from stweg import integritaet
+from stweg import compliance, integritaet, quorum
 from stweg.beschluss import BeschlussFehler
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten, wertquoten_summe
 from stweg.versammlung import (VersammlungsFehler, durchfuehren, einladung_pruefen,
@@ -62,7 +62,7 @@ def stweg_uebersicht(request):
     for lg in Liegenschaft.objects.filter(typ=Liegenschaft.TYP_STWEG).order_by('strasse'):
         op = aufgaben.offene_punkte(lg)
         gemeinschaften.append({
-            'lg': lg,
+            'lg': lg, 'compliance': compliance.health_check(lg),
             'offen': sum(len(op[k]) for k in ('aufgaben', 'anfragen', 'unentschiedene_traktanden',
                                               'protokoll_ausstehend', 'zustellung_offen',
                                               'zirkulare_offen', 'zirkular_ergebnis_ausstehend')),
@@ -90,6 +90,7 @@ def stweg_gemeinschaft(request, stweg_id):
         'offen': aufgaben.offene_punkte(lg),
         'art_choices': Versammlung.ART_CHOICES,
         'dokument_luecken': dokumente.luecken(lg),
+        'compliance': compliance.health_check(lg),
         'vorgaben_unbestaetigt': not vorgaben.ist_bestaetigt(lg),
         'frist_vorgabe': vorgaben.einladungsfrist_vorgabe(lg),
         'budgets_vorgelegt': StwegBudget.objects.filter(liegenschaft=lg, status__in=('entwurf', 'vorgelegt')),
@@ -161,6 +162,7 @@ def stweg_versammlung(request, pk):
         'praesenz': beschluss.praesenz(v) if v.status != v.ENTWURF else None,
         'versaende': v.versaende.select_related('eigentuemer'),
         'mehrheiten': Traktandum.MEHRHEIT_CHOICES, 'ergebnisse': Traktandum.ERGEBNIS_CHOICES,
+        'geschaeftsarten': quorum.auswahl(),
         'anwesenheitsarten': Anwesenheit.ART_CHOICES, 'stimmwerte': Stimme.WERT_CHOICES,
         'vollmachten': v.vollmachten.select_related('einheit').order_by('-erteilt_am'),
         'beschlussfaehigkeit': vorgaben.beschlussfaehigkeit(v) if v.status != v.ENTWURF else None,
@@ -179,17 +181,33 @@ def stweg_traktandum_neu(request, pk):
     if not titel:
         messages.error(request, gettext('Ein Traktandum braucht einen Titel.'))
         return _zurueck(v)
-    nr = (v.traktanden.order_by('-nr').values_list('nr', flat=True).first() or 0) + 1
-    art = request.POST.get('mehrheitsart')
-    Traktandum.objects.create(
-        versammlung=v, nr=nr, titel=titel,
-        beschreibung=(request.POST.get('beschreibung') or '').strip(),
-        antrag=(request.POST.get('antrag') or '').strip(),
-        mehrheitsart=art if art in dict(Traktandum.MEHRHEIT_CHOICES) else 'einfach_koepfe',
-        rechtsgrundlage=(request.POST.get('rechtsgrundlage') or '').strip(),
-        vollzug_aufgabe=(request.POST.get('vollzug_aufgabe') or '').strip(),
-        vollzug_faellig_am=parse_date(request.POST.get('vollzug_faellig_am') or ''))
+    try:
+        quorum.traktandum_anlegen(
+            v, titel, request.POST.get('geschaeftsart') or '', request.POST.get('mehrheitsart') or '',
+            beschreibung=(request.POST.get('beschreibung') or '').strip(),
+            antrag=(request.POST.get('antrag') or '').strip(),
+            rechtsgrundlage=(request.POST.get('rechtsgrundlage') or '').strip(),
+            vollzug_aufgabe=(request.POST.get('vollzug_aufgabe') or '').strip(),
+            vollzug_faellig_am=parse_date(request.POST.get('vollzug_faellig_am') or ''))
+    except quorum.QuorumFehler as e:
+        for p in e.probleme:
+            messages.error(request, p)
     return _zurueck(v)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_traktandum_geschaeftsart(request, pk):
+    """Art des Geschäfts und Mehrheitsart eines offenen Traktandums setzen (auch nachträglich für Altbestand)."""
+    t = get_object_or_404(Traktandum.objects.select_related('versammlung'), pk=pk)
+    try:
+        quorum.geschaeftsart_setzen(t, request.POST.get('geschaeftsart') or '', request.POST.get('mehrheitsart') or '',
+                                    (request.POST.get('rechtsgrundlage') or '').strip() or None)
+        messages.success(request, gettext('Art des Geschäfts und Mehrheit gespeichert.'))
+    except quorum.QuorumFehler as e:
+        for p in e.probleme:
+            messages.error(request, p)
+    return _zurueck(t.versammlung)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

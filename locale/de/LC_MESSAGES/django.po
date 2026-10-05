@@ -24465,6 +24465,338 @@ msgstr "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Mon
 msgid "Zinsabrechnung (PDF)"
 msgstr "Zinsabrechnung (PDF)"
 
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum fehlt oder zu schwach"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Art des Geschäfts"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— bitte wählen —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Mehrheitsart"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "Nach Auszählung (rechnerisches Ergebnis)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Gewöhnliche Verwaltungshandlung"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Nützliche bauliche Massnahme"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Änderung des Reglements"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Luxuriöse bauliche Massnahme"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Bitte die Mehrheitsart wählen."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "Zur Kenntnisnahme gibt es keine Abstimmung."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Art des Geschäfts und Mehrheit gespeichert."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Dach"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Fassade"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Fenster (Aussenseite)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Tragende Wände, Decken, Fundament"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Treppenhaus, Eingang, gemeinschaftliche Räume"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Lift, Heizung und andere Anlagen für alle"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Grundstück, Umgebung, Zufahrt"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Fenster (Innenseite: Beschläge, Anstrich)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Nichttragende Innenwand"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Bodenbelag in der Einheit"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Verputz, Tapete, Anstrich innen"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Küche, Bad und Sanitärapparate der Einheit"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Leitungen innerhalb der Einheit"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Innentüren der Einheit"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Sonstiges (Einordnung rechtlich prüfen)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Bitte das betroffene Bauteil angeben."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Kostenträger (STWEG)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "nicht deklariert"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Betroffenes Bauteil"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— Bauteil wählen —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "zwingend gemeinschaftlich"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Kostenträger"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— Kostenträger wählen —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Bauteil (bei Stockwerkeigentum *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Kostenträger (bei Stockwerkeigentum *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Bitte Bauteil und Kostenträger wählen."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Kostenträger gespeichert."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Schlüssel (z. B. Lift) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Befreite Einheiten *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Begründung (Reglement, Beschluss, Artikel) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Befreiung festhalten"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Bitte mindestens eine Einheit wählen."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Befreiung nach Art. 712h Abs. 3 ZGB"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Nicht Compliance-Konform"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Legal Health Check"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Dokumente hochladen"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Compliance-konform"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "«%(name)s» ist nicht hochgeladen."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "kein Ablaufdatum erfasst"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Gebäudeversicherungsnachweis"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Weitere Versicherungspolice (z. B. Haftpflicht)"
+
 msgid "Betreibungen"
 msgstr "Betreibungen"
 
@@ -24485,8 +24817,12 @@ msgstr "Begehren"
 msgid "Rechtsvorschlag bis %(d)s"
 msgstr "Rechtsvorschlag bis %(d)s"
 
-msgid "Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer überfälligen Rechnung ein."
-msgstr "Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer überfälligen Rechnung ein."
+msgid ""
+"Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer "
+"überfälligen Rechnung ein."
+msgstr ""
+"Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer "
+"überfälligen Rechnung ein."
 
 msgid "Zählerstand erfassen"
 msgstr "Zählerstand erfassen"
@@ -24541,14 +24877,28 @@ msgstr "Zielzeit überschritten"
 msgid "SLA überfällig"
 msgstr "SLA überfällig"
 
-msgid "Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
-msgstr "Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgid ""
+"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts"
+" gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgstr ""
+"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts"
+" gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
 
-msgid "Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der Vergangenheit oder die Rücknahme ist protokolliert."
-msgstr "Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der Vergangenheit oder die Rücknahme ist protokolliert."
+msgid ""
+"Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der "
+"Vergangenheit oder die Rücknahme ist protokolliert."
+msgstr ""
+"Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der "
+"Vergangenheit oder die Rücknahme ist protokolliert."
 
-msgid "Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen."
-msgstr "Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen."
+msgid ""
+"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
+"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
+"erzwingen."
+msgstr ""
+"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
+"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
+"erzwingen."
 
 msgid "Zuständig (intern)"
 msgstr "Zuständig (intern)"
@@ -24582,11 +24932,15 @@ msgstr "Zugestellt am"
 msgid "Das Zustelldatum liegt in der Zukunft."
 msgstr "Das Zustelldatum liegt in der Zukunft."
 
-msgid "Die Abrechnung kann nicht vor Ende der Abrechnungsperiode zugestellt werden."
-msgstr "Die Abrechnung kann nicht vor Ende der Abrechnungsperiode zugestellt werden."
+msgid ""
+"Die Abrechnung kann nicht vor Ende der Abrechnungsperiode zugestellt werden."
+msgstr ""
+"Die Abrechnung kann nicht vor Ende der Abrechnungsperiode zugestellt werden."
 
-msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann zustellen."
-msgstr "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann zustellen."
+msgid ""
+"Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann zustellen."
+msgstr ""
+"Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann zustellen."
 
 #, python-format
 msgid "Zustellung erfasst. Einsprachefrist bis %(d)s."
@@ -24596,8 +24950,10 @@ msgid "Abrechnung zugestellt"
 msgstr "Abrechnung zugestellt"
 
 #, python-format
-msgid "Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage)."
-msgstr "Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage)."
+msgid ""
+"Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage)."
+msgstr ""
+"Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage)."
 
 msgid "Die Forderung muss grösser als 0 sein."
 msgstr "Die Forderung muss grösser als 0 sein."
@@ -24613,11 +24969,19 @@ msgstr "Das Datum liegt in der Zukunft."
 msgid "Das Datum liegt vor «%(f)s»."
 msgstr "Das Datum liegt vor «%(f)s»."
 
-msgid "Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte prüfen."
-msgstr "Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte prüfen."
+msgid ""
+"Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte "
+"prüfen."
+msgstr ""
+"Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte "
+"prüfen."
 
-msgid "Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet werden."
-msgstr "Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet werden."
+msgid ""
+"Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet"
+" werden."
+msgstr ""
+"Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet"
+" werden."
 
 msgid "Betreibung erfasst."
 msgstr "Betreibung erfasst."
@@ -24655,8 +25019,14 @@ msgid "Zählerstand erfasst."
 msgstr "Zählerstand erfasst."
 
 #, python-format
-msgid "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
-msgstr "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
+msgid ""
+"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
+"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst "
+"zurücksetzen."
+msgstr ""
+"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
+"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst "
+"zurücksetzen."
 
 msgid "Begehren eingereicht"
 msgstr "Begehren eingereicht"
@@ -24677,8 +25047,12 @@ msgid "Verlustschein"
 msgstr "Verlustschein"
 
 #, python-format
-msgid "Pfandberechtigt sind nur offene Beitragsforderungen der letzten %(m)s Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein."
-msgstr "Pfandberechtigt sind nur offene Beitragsforderungen der letzten %(m)s Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein."
+msgid ""
+"Pfandberechtigt sind nur offene Beitragsforderungen der letzten %(m)s "
+"Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein."
+msgstr ""
+"Pfandberechtigt sind nur offene Beitragsforderungen der letzten %(m)s "
+"Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein."
 
 #, python-format
 msgid "offen CHF %(b)s"
@@ -24709,8 +25083,12 @@ msgid "%(s)s. Mahnung erstellen und versenden"
 msgstr "%(s)s. Mahnung erstellen und versenden"
 
 #, python-format
-msgid "Summiert nur die offenen Forderungen der letzten %(m)s Monate und erzeugt das PDF für das Grundbuchamt."
-msgstr "Summiert nur die offenen Forderungen der letzten %(m)s Monate und erzeugt das PDF für das Grundbuchamt."
+msgid ""
+"Summiert nur die offenen Forderungen der letzten %(m)s Monate und erzeugt "
+"das PDF für das Grundbuchamt."
+msgstr ""
+"Summiert nur die offenen Forderungen der letzten %(m)s Monate und erzeugt "
+"das PDF für das Grundbuchamt."
 
 #, python-format
 msgid "Anfechtungsfrist (nach den Vorgaben der Gemeinschaft) bis %(d)s."
@@ -24725,12 +25103,20 @@ msgid "Leer = %(n)s Tage (Systemvorgabe, nicht geprüft)."
 msgstr "Leer = %(n)s Tage (Systemvorgabe, nicht geprüft)."
 
 #, python-format
-msgid "%(stufe)s. Mahnung erstellt — keine E-Mail-Adresse, bitte das PDF per Post zustellen."
-msgstr "%(stufe)s. Mahnung erstellt — keine E-Mail-Adresse, bitte das PDF per Post zustellen."
+msgid ""
+"%(stufe)s. Mahnung erstellt — keine E-Mail-Adresse, bitte das PDF per Post "
+"zustellen."
+msgstr ""
+"%(stufe)s. Mahnung erstellt — keine E-Mail-Adresse, bitte das PDF per Post "
+"zustellen."
 
 #, python-format
-msgid "Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(monate)s Monate). Das PDF für das Grundbuchamt liegt bereit."
-msgstr "Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(monate)s Monate). Das PDF für das Grundbuchamt liegt bereit."
+msgid ""
+"Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(monate)s"
+" Monate). Das PDF für das Grundbuchamt liegt bereit."
+msgstr ""
+"Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(monate)s"
+" Monate). Das PDF für das Grundbuchamt liegt bereit."
 
 msgid "allgemein"
 msgstr "allgemein"
@@ -24776,19 +25162,39 @@ msgid "Spalte filtern"
 msgstr "Spalte filtern"
 
 #, python-format
-msgid "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch (Nachzügler)."
-msgid_plural "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch (Nachzügler)."
-msgstr[0] "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch (Nachzügler)."
-msgstr[1] "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch (Nachzügler)."
+msgid ""
+"Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch "
+"(Nachzügler)."
+msgid_plural ""
+"Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch"
+" (Nachzügler)."
+msgstr[0] ""
+"Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch "
+"(Nachzügler)."
+msgstr[1] ""
+"Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch"
+" (Nachzügler)."
 
 msgid "Notfall"
 msgstr "Notfall"
 
-msgid "Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung (HKVO/Heizgradtage)."
-msgstr "Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung (HKVO/Heizgradtage)."
+msgid ""
+"Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung "
+"angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt "
+"die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung "
+"(HKVO/Heizgradtage)."
+msgstr ""
+"Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung "
+"angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt "
+"die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung "
+"(HKVO/Heizgradtage)."
 
-msgid "Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
-msgstr "Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
+msgid ""
+"Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die "
+"Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
+msgstr ""
+"Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die "
+"Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
 
 msgid "Unter «Liegenschaft bearbeiten» einschalten"
 msgstr "Unter «Liegenschaft bearbeiten» einschalten"
@@ -24805,8 +25211,12 @@ msgstr "Gültig bis"
 msgid "Diesen Schlüssel löschen?"
 msgstr "Diesen Schlüssel löschen?"
 
-msgid "Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach dem Schlüssel am Beleg."
-msgstr "Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach dem Schlüssel am Beleg."
+msgid ""
+"Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach "
+"dem Schlüssel am Beleg."
+msgstr ""
+"Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach "
+"dem Schlüssel am Beleg."
 
 msgid "Summe muss 100 ergeben"
 msgstr "Summe muss 100 ergeben"
@@ -24820,11 +25230,21 @@ msgstr "— wählen —"
 msgid "Verteilung nach"
 msgstr "Verteilung nach"
 
-msgid "Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, pro Einheit und Personen wählen Sie weiterhin am Beleg."
-msgstr "Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, pro Einheit und Personen wählen Sie weiterhin am Beleg."
+msgid ""
+"Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der "
+"Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, "
+"pro Einheit und Personen wählen Sie weiterhin am Beleg."
+msgstr ""
+"Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der "
+"Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, "
+"pro Einheit und Personen wählen Sie weiterhin am Beleg."
 
-msgid "Bitte eine Kostenart wählen (Heizkosten laufen über die Heizkostenabrechnung)."
-msgstr "Bitte eine Kostenart wählen (Heizkosten laufen über die Heizkostenabrechnung)."
+msgid ""
+"Bitte eine Kostenart wählen (Heizkosten laufen über die "
+"Heizkostenabrechnung)."
+msgstr ""
+"Bitte eine Kostenart wählen (Heizkosten laufen über die "
+"Heizkostenabrechnung)."
 
 msgid "Bitte eine Verteilung wählen."
 msgstr "Bitte eine Verteilung wählen."
@@ -24863,8 +25283,16 @@ msgstr "Prozentanteile gespeichert."
 msgid "Unbekannte Aktion."
 msgstr "Unbekannte Aktion."
 
-msgid "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
-msgstr "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
+msgid ""
+"Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg "
+"gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, "
+"Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel "
+"pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
+msgstr ""
+"Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg "
+"gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, "
+"Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel "
+"pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
 
 #, python-format
 msgid "Prozentanteile — %(ka)s"
@@ -24873,34 +25301,56 @@ msgstr "Prozentanteile — %(ka)s"
 msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
 msgstr "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
 
-msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
-msgstr "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+msgid ""
+"Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+msgstr ""
+"Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
 
 #, python-format
-msgid "Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen."
-msgstr "Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen."
+msgid ""
+"Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden "
+"bitte bestätigen."
+msgstr ""
+"Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden "
+"bitte bestätigen."
 
 #, python-format
 msgid "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
 msgstr "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
 
 #, python-format
-msgid "%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst."
-msgstr "%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst."
+msgid ""
+"%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht "
+"erfasst."
+msgstr ""
+"%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht "
+"erfasst."
 
 #, python-format
-msgid "Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF)."
-msgstr "Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF)."
+msgid ""
+"Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per "
+"Brief (Sammel-PDF)."
+msgstr ""
+"Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per "
+"Brief (Sammel-PDF)."
 
 #, python-format
 msgid "Versand fehlgeschlagen: %(namen)s."
 msgstr "Versand fehlgeschlagen: %(namen)s."
 
-msgid "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)."
-msgstr "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)."
+msgid ""
+"Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-"
+"Adresse erhalten sie per Brief (Sammel-PDF)."
+msgstr ""
+"Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-"
+"Adresse erhalten sie per Brief (Sammel-PDF)."
 
-msgid "Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten"
-msgstr "Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten"
+msgid ""
+"Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird"
+" die Zustellung festgehalten"
+msgstr ""
+"Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird"
+" die Zustellung festgehalten"
 
 msgid "Erneut per E-Mail senden"
 msgstr "Erneut per E-Mail senden"

@@ -24351,6 +24351,338 @@ msgstr "Warning: This calculation does not replace legal review. The 36-month pe
 msgid "Zinsabrechnung (PDF)"
 msgstr "Interest statement (PDF)"
 
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum missing or too weak"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Type of business"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— please choose —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Type of majority"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Type of business * (determines the legally required majority)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Type of majority * (at least the legally required one)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "According to the count (calculated result)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Ordinary administrative act"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Useful construction measure"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Amendment of the regulations"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Luxurious construction measure"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Other business / different quorum (legal basis required)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Please choose the type of business — it determines the legally required majority."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Please choose the type of majority."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "There is no vote for noting."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "\"%(geschaeft)s\" needs a vote: noting is not enough."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "For another business or a different quorum, the legal basis (regulations, article) must be stated."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "For \"%(geschaeft)s\" the law requires at least: %(mindest)s (%(quelle)s). A weaker majority was chosen."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "The result has already been determined — the type of majority can no longer be changed."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Type of business and majority saved."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Agenda item %(nr)s \"%(titel)s\": %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "The legal quorum has not been reached (%(art)s): \"approved\" cannot be recorded."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Common (costs go into the condominium annual statement)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Exclusive right (the owner bears the costs directly)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Roof"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Facade"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Windows (exterior)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Load-bearing walls, ceilings, foundation"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Main lines (water, sewage, electricity, heating)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Staircase, entrance, common rooms"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Lift, heating and other installations for all"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Land, surroundings, access road"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Windows (interior: fittings, paint)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Non-load-bearing interior wall"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Flooring inside the unit"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Plaster, wallpaper, interior paint"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Kitchen, bathroom and sanitary fixtures of the unit"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Lines inside the unit"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Interior doors of the unit"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Other (check the classification legally)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Please state the affected component."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "For exclusive right, state the affected unit — it determines who bears the costs."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "\"%(bauteil)s\" is mandatorily common property (Art. 712b para. 2 CC): the costs cannot be charged to a single owner as exclusive right. Please choose \"common\"."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Please declare: \"exclusive right\" (the owner bears the costs) or \"common\" (costs of the annual statement)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Cost bearer (condominium)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "not declared"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Affected component"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— choose component —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "mandatorily common"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Cost bearer"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— choose cost bearer —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "This component is mandatorily common property (Art. 712b CC): the costs cannot be charged to a single owner as exclusive right."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Component (for condominium *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Cost bearer (for condominium *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "Component and cost bearer apply only to a condominium community."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Please choose component and cost bearer."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Cost bearer saved."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "For a condominium, please state component and cost bearer (exclusive right or common)."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Exemption from costs (Art. 712h para. 3 CC)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "If an installation does not serve individual owners, the distribution may differ. Exempted units bear nothing; the amount is recalculated for the others (new base 100 %, exact to the cent). The reason is mandatory and is recorded."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Key (e.g. lift) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Exempted units *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Reason (regulations, resolution, article) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Record exemption"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "An exemption needs the reason (regulations, resolution, article)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Please choose at least one unit."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Exemption under Art. 712h para. 3 CC"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Exemption recorded: the amount is recalculated for the other units."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Exemption cancelled: the unit bears its value share again."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Units must remain that bear the costs — exempting all distributes nothing."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Not compliant"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Legal health check"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Without the constitutive act, the regulations and a current building insurance certificate, the management is legally unable to act."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Upload documents"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Compliant"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "Constitutive act, regulations and building insurance certificate are on file and current."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "\"%(name)s\" has not been uploaded."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "\"%(name)s\" is valid only from %(datum)s — until then a valid document is missing."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "\"%(name)s\" has expired — please upload the current version."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "\"%(name)s\": the file is missing from storage — please upload again."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "no expiry date recorded"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Building insurance certificate"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Other insurance policy (e.g. liability)"
+
 msgid "Betreibungen"
 msgstr "Debt enforcement"
 
@@ -24371,8 +24703,11 @@ msgstr "Request"
 msgid "Rechtsvorschlag bis %(d)s"
 msgstr "Objection until %(d)s"
 
-msgid "Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer überfälligen Rechnung ein."
-msgstr "No enforcement proceedings. Start one from dunning, on an overdue invoice."
+msgid ""
+"Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer "
+"überfälligen Rechnung ein."
+msgstr ""
+"No enforcement proceedings. Start one from dunning, on an overdue invoice."
 
 msgid "Zählerstand erfassen"
 msgstr "Record meter reading"
@@ -24427,14 +24762,27 @@ msgstr "Target time exceeded"
 msgid "SLA überfällig"
 msgstr "SLA overdue"
 
-msgid "Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
-msgstr "The import was aborted and fully rolled back — nothing was saved. Please check the file (damaged or incomplete?)."
+msgid ""
+"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts"
+" gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgstr ""
+"The import was aborted and fully rolled back — nothing was saved. Please "
+"check the file (damaged or incomplete?)."
 
-msgid "Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der Vergangenheit oder die Rücknahme ist protokolliert."
-msgstr "No usage compensation owed: the lease end is not in the past, or the handover is recorded."
+msgid ""
+"Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der "
+"Vergangenheit oder die Rücknahme ist protokolliert."
+msgstr ""
+"No usage compensation owed: the lease end is not in the past, or the "
+"handover is recorded."
 
-msgid "Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen."
-msgstr "This month's dunning run is already complete — nothing was dunned twice. To repeat it, reset the run under \"Runs\" or force it deliberately."
+msgid ""
+"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
+"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
+"erzwingen."
+msgstr ""
+"This month's dunning run is already complete — nothing was dunned twice. To "
+"repeat it, reset the run under \"Runs\" or force it deliberately."
 
 msgid "Zuständig (intern)"
 msgstr "Responsible (internal)"
@@ -24468,10 +24816,13 @@ msgstr "Delivered on"
 msgid "Das Zustelldatum liegt in der Zukunft."
 msgstr "The delivery date is in the future."
 
-msgid "Die Abrechnung kann nicht vor Ende der Abrechnungsperiode zugestellt werden."
-msgstr "The statement cannot be delivered before the end of the billing period."
+msgid ""
+"Die Abrechnung kann nicht vor Ende der Abrechnungsperiode zugestellt werden."
+msgstr ""
+"The statement cannot be delivered before the end of the billing period."
 
-msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann zustellen."
+msgid ""
+"Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann zustellen."
 msgstr "The statement is not booked yet — book it first, then deliver."
 
 #, python-format
@@ -24482,8 +24833,10 @@ msgid "Abrechnung zugestellt"
 msgstr "Statement delivered"
 
 #, python-format
-msgid "Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage)."
-msgstr "The review and objection period (%(n)s days) starts with the delivery date."
+msgid ""
+"Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage)."
+msgstr ""
+"The review and objection period (%(n)s days) starts with the delivery date."
 
 msgid "Die Forderung muss grösser als 0 sein."
 msgstr "The claim must be greater than 0."
@@ -24499,10 +24852,14 @@ msgstr "The date is in the future."
 msgid "Das Datum liegt vor «%(f)s»."
 msgstr "The date is before \"%(f)s\"."
 
-msgid "Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte prüfen."
+msgid ""
+"Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte "
+"prüfen."
 msgstr "Objection after the 10-day period (art. 74 SchKG) — please check."
 
-msgid "Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet werden."
+msgid ""
+"Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet"
+" werden."
 msgstr "Enforcement cannot be started for a paid or cancelled invoice."
 
 msgid "Betreibung erfasst."
@@ -24541,8 +24898,13 @@ msgid "Zählerstand erfasst."
 msgstr "Meter reading recorded."
 
 #, python-format
-msgid "Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen."
-msgstr "The rent run %(titel)s is already complete — nothing was billed twice. To repeat it, first reset the run under \"Runs\"."
+msgid ""
+"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
+"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst "
+"zurücksetzen."
+msgstr ""
+"The rent run %(titel)s is already complete — nothing was billed twice. To "
+"repeat it, first reset the run under \"Runs\"."
 
 msgid "Begehren eingereicht"
 msgstr "Request filed"
@@ -24563,8 +24925,12 @@ msgid "Verlustschein"
 msgstr "Certificate of loss"
 
 #, python-format
-msgid "Pfandberechtigt sind nur offene Beitragsforderungen der letzten %(m)s Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein."
-msgstr "Only open contribution claims of the last %(m)s months are secured by the lien. Older ones remain owed but are not included in the lien amount."
+msgid ""
+"Pfandberechtigt sind nur offene Beitragsforderungen der letzten %(m)s "
+"Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein."
+msgstr ""
+"Only open contribution claims of the last %(m)s months are secured by the "
+"lien. Older ones remain owed but are not included in the lien amount."
 
 #, python-format
 msgid "offen CHF %(b)s"
@@ -24595,8 +24961,12 @@ msgid "%(s)s. Mahnung erstellen und versenden"
 msgstr "Create and send reminder %(s)s"
 
 #, python-format
-msgid "Summiert nur die offenen Forderungen der letzten %(m)s Monate und erzeugt das PDF für das Grundbuchamt."
-msgstr "Sums only the open claims of the last %(m)s months and generates the PDF for the land registry."
+msgid ""
+"Summiert nur die offenen Forderungen der letzten %(m)s Monate und erzeugt "
+"das PDF für das Grundbuchamt."
+msgstr ""
+"Sums only the open claims of the last %(m)s months and generates the PDF for"
+" the land registry."
 
 #, python-format
 msgid "Anfechtungsfrist (nach den Vorgaben der Gemeinschaft) bis %(d)s."
@@ -24611,12 +24981,19 @@ msgid "Leer = %(n)s Tage (Systemvorgabe, nicht geprüft)."
 msgstr "Empty = %(n)s days (system default, unchecked)."
 
 #, python-format
-msgid "%(stufe)s. Mahnung erstellt — keine E-Mail-Adresse, bitte das PDF per Post zustellen."
-msgstr "Reminder %(stufe)s created — no e-mail address, please send the PDF by post."
+msgid ""
+"%(stufe)s. Mahnung erstellt — keine E-Mail-Adresse, bitte das PDF per Post "
+"zustellen."
+msgstr ""
+"Reminder %(stufe)s created — no e-mail address, please send the PDF by post."
 
 #, python-format
-msgid "Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(monate)s Monate). Das PDF für das Grundbuchamt liegt bereit."
-msgstr "Lien registered: lien amount CHF %(betrag)s (only the last %(monate)s months). The PDF for the land registry is ready."
+msgid ""
+"Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(monate)s"
+" Monate). Das PDF für das Grundbuchamt liegt bereit."
+msgstr ""
+"Lien registered: lien amount CHF %(betrag)s (only the last %(monate)s "
+"months). The PDF for the land registry is ready."
 
 msgid "allgemein"
 msgstr "general"
@@ -24662,19 +25039,39 @@ msgid "Spalte filtern"
 msgstr "Filter column"
 
 #, python-format
-msgid "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch (Nachzügler)."
-msgid_plural "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch (Nachzügler)."
-msgstr[0] "The %(monat)s %(jahr)s run is complete — %(n)s position is still waiting (late move-in)."
-msgstr[1] "The %(monat)s %(jahr)s run is complete — %(n)s positions are still waiting (late move-ins)."
+msgid ""
+"Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch "
+"(Nachzügler)."
+msgid_plural ""
+"Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch"
+" (Nachzügler)."
+msgstr[0] ""
+"The %(monat)s %(jahr)s run is complete — %(n)s position is still waiting "
+"(late move-in)."
+msgstr[1] ""
+"The %(monat)s %(jahr)s run is complete — %(n)s positions are still waiting "
+"(late move-ins)."
 
 msgid "Notfall"
 msgstr "Emergency"
 
-msgid "Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung (HKVO/Heizgradtage)."
-msgstr "The distribution keys of this property are applied in the service-charge statement. For a cost type with a key, the key overrides the choice made on the receipt. Heating costs stay with the heating-cost statement (HKVO/heating degree days)."
+msgid ""
+"Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung "
+"angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt "
+"die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung "
+"(HKVO/Heizgradtage)."
+msgstr ""
+"The distribution keys of this property are applied in the service-charge "
+"statement. For a cost type with a key, the key overrides the choice made on "
+"the receipt. Heating costs stay with the heating-cost statement "
+"(HKVO/heating degree days)."
 
-msgid "Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
-msgstr "The keys are stored but not applied yet. The statement distributes as before, using the key chosen on the receipt."
+msgid ""
+"Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die "
+"Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
+msgstr ""
+"The keys are stored but not applied yet. The statement distributes as "
+"before, using the key chosen on the receipt."
 
 msgid "Unter «Liegenschaft bearbeiten» einschalten"
 msgstr "Switch on under \"Edit property\""
@@ -24691,8 +25088,12 @@ msgstr "Valid until"
 msgid "Diesen Schlüssel löschen?"
 msgstr "Delete this key?"
 
-msgid "Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach dem Schlüssel am Beleg."
-msgstr "No key stored yet. Without a key the statement distributes by the key on the receipt."
+msgid ""
+"Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach "
+"dem Schlüssel am Beleg."
+msgstr ""
+"No key stored yet. Without a key the statement distributes by the key on the"
+" receipt."
 
 msgid "Summe muss 100 ergeben"
 msgstr "Total must be 100"
@@ -24706,11 +25107,20 @@ msgstr "— select —"
 msgid "Verteilung nach"
 msgstr "Distribution by"
 
-msgid "Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, pro Einheit und Personen wählen Sie weiterhin am Beleg."
-msgstr "Rooms: by the number of rooms of the units. Value share: by the value share of the units. Percent: you set a share per unit. Area, volume, per unit and persons are still chosen on the receipt."
+msgid ""
+"Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der "
+"Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, "
+"pro Einheit und Personen wählen Sie weiterhin am Beleg."
+msgstr ""
+"Rooms: by the number of rooms of the units. Value share: by the value share "
+"of the units. Percent: you set a share per unit. Area, volume, per unit and "
+"persons are still chosen on the receipt."
 
-msgid "Bitte eine Kostenart wählen (Heizkosten laufen über die Heizkostenabrechnung)."
-msgstr "Please choose a cost type (heating runs through the heating-cost statement)."
+msgid ""
+"Bitte eine Kostenart wählen (Heizkosten laufen über die "
+"Heizkostenabrechnung)."
+msgstr ""
+"Please choose a cost type (heating runs through the heating-cost statement)."
 
 msgid "Bitte eine Verteilung wählen."
 msgstr "Please choose a distribution."
@@ -24749,8 +25159,16 @@ msgstr "Percentages saved."
 msgid "Unbekannte Aktion."
 msgstr "Unknown action."
 
-msgid "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
-msgstr "Off: service charges are distributed by the key chosen on the receipt. On: for cost types with their own key (rooms, value share, percent) that key overrides the choice on the receipt. You maintain the keys under \"Distribution keys\" in the property."
+msgid ""
+"Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg "
+"gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, "
+"Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel "
+"pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
+msgstr ""
+"Off: service charges are distributed by the key chosen on the receipt. On: "
+"for cost types with their own key (rooms, value share, percent) that key "
+"overrides the choice on the receipt. You maintain the keys under "
+"\"Distribution keys\" in the property."
 
 #, python-format
 msgid "Prozentanteile — %(ka)s"
@@ -24759,34 +25177,52 @@ msgstr "Percentages — %(ka)s"
 msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
 msgstr "Apply this property's own distribution keys"
 
-msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+msgid ""
+"Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
 msgstr "The statement is not booked yet — book it first, then send it."
 
 #, python-format
-msgid "Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen."
-msgstr "The statement was sent by e-mail on %(d)s. Please confirm to send it again."
+msgid ""
+"Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden "
+"bitte bestätigen."
+msgstr ""
+"The statement was sent by e-mail on %(d)s. Please confirm to send it again."
 
 #, python-format
 msgid "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
 msgstr "Statement sent to %(n)s tenants. Objection period until %(d)s."
 
 #, python-format
-msgid "%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst."
+msgid ""
+"%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht "
+"erfasst."
 msgstr "%(n)s of %(m)s statements sent. Delivery is not recorded yet."
 
 #, python-format
-msgid "Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF)."
-msgstr "No e-mail address: %(namen)s. These tenants receive the statement by post (combined PDF)."
+msgid ""
+"Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per "
+"Brief (Sammel-PDF)."
+msgstr ""
+"No e-mail address: %(namen)s. These tenants receive the statement by post "
+"(combined PDF)."
 
 #, python-format
 msgid "Versand fehlgeschlagen: %(namen)s."
 msgstr "Sending failed: %(namen)s."
 
-msgid "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)."
-msgstr "Send the statement by e-mail to all tenants now? Tenants without an e-mail address receive it by post (combined PDF)."
+msgid ""
+"Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-"
+"Adresse erhalten sie per Brief (Sammel-PDF)."
+msgstr ""
+"Send the statement by e-mail to all tenants now? Tenants without an e-mail "
+"address receive it by post (combined PDF)."
 
-msgid "Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten"
-msgstr "Sends each tenant their statement as a PDF; if every tenant is reached, the delivery is recorded"
+msgid ""
+"Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird"
+" die Zustellung festgehalten"
+msgstr ""
+"Sends each tenant their statement as a PDF; if every tenant is reached, the "
+"delivery is recorded"
 
 msgid "Erneut per E-Mail senden"
 msgstr "Send by e-mail again"

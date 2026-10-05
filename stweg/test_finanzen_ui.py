@@ -96,7 +96,7 @@ class BudgetOberflaecheTests(TestCase):
         self.assertContains(self.client.get(f'/neu/stweg/budget/{b.pk}/'), 'Versicherung')
         self.client.post(f'/neu/stweg/budget/{b.pk}/vorlegen/')
         v = Versammlung.objects.create(liegenschaft=self.lg, titel='OV', datum=timezone.now() + timedelta(days=20))
-        t = Traktandum.objects.create(versammlung=v, nr=1, titel='Budget', mehrheitsart='doppelt_aller')
+        t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='Budget', mehrheitsart='doppelt_aller')
         self.client.post(f'/neu/stweg/budget/{b.pk}/traktandum/', {'traktandum': t.pk})
         t.refresh_from_db()
         self.assertEqual(t.budget_id, b.pk)
@@ -153,8 +153,8 @@ class DokumenteTests(TestCase):
     def test_pflichtkategorien_fehlen_dann_ok(self):
         namen = {p['kategorie']: p['status'] for p in dok.pruefen(self.lg)}
         self.assertEqual(namen, {'begruendungsakt': 'fehlt', 'reglement': 'fehlt', 'nutzungsordnung': 'fehlt',
-                                 'versicherung': 'fehlt', 'jahresrechnung': 'automatisch'})
-        for kat in ('begruendungsakt', 'reglement', 'nutzungsordnung', 'versicherung'):
+                                 'gebaeudeversicherung': 'fehlt', 'jahresrechnung': 'automatisch'})
+        for kat in ('begruendungsakt', 'reglement', 'nutzungsordnung', 'gebaeudeversicherung'):
             dok.hochladen(self.lg, kat, kat, self.datei())
         self.assertEqual(dok.luecken(self.lg), [])
 
@@ -174,9 +174,10 @@ class DokumenteTests(TestCase):
         self.assertEqual([d.pk for d in dok.aktuell(self.lg, 'reglement')], [neu.pk])
         zukunft = dok.hochladen(self.lg, 'reglement', 'Reglement 2030', self.datei(), gueltig_ab=heute + timedelta(days=30))
         self.assertEqual([d.pk for d in dok.aktuell(self.lg, 'reglement')], [neu.pk])      # noch nicht gültig
-        dok.hochladen(self.lg, 'versicherung', 'Gebäude', self.datei(), gueltig_ab=heute - timedelta(days=400),
+        dok.hochladen(self.lg, 'gebaeudeversicherung', 'Gebäude', self.datei(), gueltig_ab=heute - timedelta(days=400),
                       gueltig_bis=heute - timedelta(days=1))
-        self.assertEqual({p['kategorie']: p['status'] for p in dok.pruefen(self.lg)}['versicherung'], 'abgelaufen')
+        self.assertEqual({p['kategorie']: p['status'] for p in dok.pruefen(self.lg)}['gebaeudeversicherung'],
+                         'abgelaufen')
         dok.hochladen(self.lg, 'versicherung', 'Haftpflicht', self.datei(), gueltig_bis=heute + timedelta(days=100))
         dok.hochladen(self.lg, 'versicherung', 'Gebäude neu', self.datei(), gueltig_bis=heute + timedelta(days=300))
         self.assertEqual(len(dok.aktuell(self.lg, 'versicherung')), 2)                     # parallel
@@ -284,7 +285,7 @@ class PortalEVotingTests(TestCase):
         self.lg, self.e, self.eigs = haus_mit_eigentuemern()
         self.v = Versammlung.objects.create(liegenschaft=self.lg, titel='OV', datum=timezone.now() + timedelta(days=20),
                                             status='durchgefuehrt', evoting=True)
-        self.t = Traktandum.objects.create(versammlung=self.v, nr=1, titel='Budget', antrag='Genehmigen?',
+        self.t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=self.v, nr=1, titel='Budget', antrag='Genehmigen?',
                                            mehrheitsart='doppelt_anwesende')
         self.cl = {}
         for eig in self.eigs:

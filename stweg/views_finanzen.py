@@ -20,9 +20,9 @@ from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
 from crm.models import Eigentuemer
 from finance.models import Buchungskonto
 from stweg import budget as bd
-from stweg.models import (StwegBudget, StwegBudgetPosition, StwegKostenzuordnung, StwegSchluessel,
+from stweg.models import (StwegBefreiung, StwegBudget, StwegBudgetPosition, StwegKostenzuordnung, StwegSchluessel,
                           StwegSchluesselAnteil, StwegVorschreibung, Traktandum, Versammlung)
-from stweg.schluessel import (SchluesselFehler, gewichte, kostenart_zuordnen, lift_schluessel,
+from stweg.schluessel import (SchluesselFehler, befreien, befreiung_aufheben, gewichte, kostenart_zuordnen, lift_schluessel,
                               standard_schluessel)
 from stweg.validierung import stimm_einheiten
 from stweg.views import _betrag, _gemeinschaft, _jahr, _zahl
@@ -59,7 +59,36 @@ def stweg_schluessel(request, stweg_id):
         'nav': 'stweg', 'lg': lg, 'schluessel': schluessel, 'art_choices': StwegSchluessel.ART_CHOICES,
         'konten': Buchungskonto.objects.filter(typ='aufwand').order_by('nummer'),
         'zuordnungen': StwegKostenzuordnung.objects.filter(liegenschaft=lg).select_related('konto', 'schluessel'),
-        'alle_schluessel': lg.stweg_schluessel.all()})
+        'alle_schluessel': lg.stweg_schluessel.all(),
+        'einheiten': einheiten,
+        'befreiungen': StwegBefreiung.objects.filter(schluessel__liegenschaft=lg)
+        .select_related('schluessel', 'einheit').order_by('schluessel__name', 'einheit__bezeichnung')})
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_schluessel_befreien(request, stweg_id):
+    """Einheiten von den Kosten eines Schlüssels befreien (Art. 712h Abs. 3 ZGB) — mit Begründung."""
+    lg = _gemeinschaft(stweg_id)
+    ids = [_zahl(x) for x in request.POST.getlist('einheit')]
+    einheiten = list(stimm_einheiten(lg).filter(pk__in=[i for i in ids if i]))
+    try:
+        with transaction.atomic():
+            befreien(lg, (request.POST.get('name') or '').strip()[:100] or 'Lift', einheiten,
+                     request.POST.get('begruendung') or '', user=request.user)
+        messages.success(request, gettext('Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet.'))
+    except SchluesselFehler as e:
+        messages.error(request, str(e))
+    return _zu_schluessel(lg)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_befreiung_aufheben(request, pk):
+    b = get_object_or_404(StwegBefreiung.objects.select_related('schluessel__liegenschaft'), pk=pk)
+    befreiung_aufheben(b)
+    messages.success(request, gettext('Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote.'))
+    return _zu_schluessel(b.schluessel.liegenschaft)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

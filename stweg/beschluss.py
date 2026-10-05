@@ -31,6 +31,10 @@ class BeschlussFehler(ValueError):
     pass
 
 
+#: `feststellen` mit diesem Wert hält das Ergebnis fest, das die Auszählung ergibt (rechtssicher, ohne Abweichung).
+NACH_ZAEHLUNG = 'nach_zaehlung'
+
+
 def _kopf(einheit):
     return f"e{einheit.stockwerkeigentuemer_id}" if einheit.stockwerkeigentuemer_id else f"u{einheit.pk}"
 
@@ -131,12 +135,26 @@ def auswerten(traktandum):
 def feststellen(traktandum, ergebnis, *, beschlusstext=None, user=None, trotzdem=False):
     """Hält das Ergebnis fest (Zahlen als Momentaufnahme) und legt bei einem
     angenommenen Beschluss mit Vollzugsaufgabe eine Pendenz an."""
-    if ergebnis not in dict(Traktandum.ERGEBNIS_CHOICES) or ergebnis == Traktandum.OFFEN:
+    nach_zaehlung = ergebnis == NACH_ZAEHLUNG
+    if not nach_zaehlung and (ergebnis not in dict(Traktandum.ERGEBNIS_CHOICES) or ergebnis == Traktandum.OFFEN):
         raise BeschlussFehler(gettext('Ungültiges Ergebnis «%(ergebnis)s».') % {'ergebnis': ergebnis})
     v = traktandum.versammlung
     if v.status == v.ENTWURF:
         raise BeschlussFehler(gettext('Die Versammlung wurde noch nicht einberufen.'))
     z = auswerten(traktandum)
+    if nach_zaehlung:
+        ergebnis = z['vorschlag']                               # das Ergebnis, das die Auszählung ergibt
+    if ergebnis in (Traktandum.ANGENOMMEN, Traktandum.ABGELEHNT):
+        from stweg import quorum
+        probleme = quorum.traktandum_pruefen(traktandum)       # keine Feststellung ohne gesetzlich gültiges Quorum
+        if probleme:
+            raise BeschlussFehler(' '.join(probleme))
+        # Ein Beschluss, der das gesetzliche Quorum verfehlt, kann nicht als angenommen festgestellt werden. (Bei
+        # «sonstiges» entscheidet die genannte Rechtsgrundlage; die Leitung darf dort vom Vorschlag abweichen.)
+        if (ergebnis == Traktandum.ANGENOMMEN and z['vorschlag'] == Traktandum.ABGELEHNT
+                and traktandum.geschaeftsart not in ('sonstiges', 'kenntnis')):
+            raise BeschlussFehler(gettext('Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht '
+                                          'festgestellt werden.') % {'art': traktandum.get_mehrheitsart_display()})
     if z['widerspruch'] and ergebnis in (Traktandum.ANGENOMMEN, Traktandum.ABGELEHNT):
         raise BeschlussFehler(gettext('Widersprüchliche Stimmen desselben Eigentümers — bitte zuerst korrigieren.'))
     # Beschlussfähigkeit: nur, wenn die Gemeinschaft ein Quorum eingetragen hat (`stweg.vorgaben`);

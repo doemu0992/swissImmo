@@ -107,6 +107,39 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
        in den Stammdaten — dieselbe Entscheidung wie beim Vertrag: Der Status
        gehoert zur Sache, nicht in eine Kopfzeile, die auf dem Handy hoch
        wird. `faelle/test_aktionen_vollstaendig.py` haelt ihn fest. {% endcomment %}
+    {% if stweg_bauteile %}
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
+            <h2>{% trans "Kostenträger (STWEG)" %}</h2>
+            {% if kt_probleme %}<span class="fw-chip fw-warn">{% trans "nicht deklariert" %}</span>{% endif %}</div>
+        <div class="px-5 py-4">
+            {% for p in kt_probleme %}<p class="fw-s">⛔ {{ p }}</p>{% endfor %}
+            <form method="post" action="/neu/schaeden/{{ t.id }}/kostentraeger/" class="flex flex-wrap items-center gap-3">
+                {% csrf_token %}
+                <select name="bauteil" id="kt_bauteil" required class="fw-feld" aria-label="{% trans 'Betroffenes Bauteil' %}">
+                    <option value="">{% trans "— Bauteil wählen —" %}</option>
+                    {% for k, b, z in stweg_bauteile %}<option value="{{ k }}" data-zwingend="{{ z|yesno:'1,' }}"{% if t.bauteil == k %} selected{% endif %}>{{ b }}{% if z %} ({% trans "zwingend gemeinschaftlich" %}){% endif %}</option>{% endfor %}
+                </select>
+                <select name="kostentraeger" id="kt_traeger" required class="fw-feld" aria-label="{% trans 'Kostenträger' %}">
+                    <option value="">{% trans "— Kostenträger wählen —" %}</option>
+                    {% for k, b in kt_traeger %}<option value="{{ k }}"{% if t.kostentraeger == k %} selected{% endif %}>{{ b }}</option>{% endfor %}
+                </select>
+                <button class="fw-btn fw-primary fw-knapp">{% trans "Speichern" %}</button>
+            </form>
+            <p id="kt_warnung" class="fw-s" hidden>⚠ {% trans "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden." %}</p>
+            <script>
+            (function () {
+                var b = document.getElementById('kt_bauteil'), k = document.getElementById('kt_traeger'), w = document.getElementById('kt_warnung');
+                function pruefen() {
+                    var zwingend = b.options[b.selectedIndex] && b.options[b.selectedIndex].getAttribute('data-zwingend');
+                    w.hidden = !(zwingend && k.value === 'sonderrecht');
+                }
+                b.addEventListener('change', pruefen); k.addEventListener('change', pruefen); pruefen();
+            }());
+            </script>
+        </div>
+    </div>
+    {% endif %}
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Zuständigkeit" %}</h2>
             {% if request.user|darf:"/neu/schaeden/1/zuweisen/" %}<a href="/neu/schaeden/{{ t.id }}/zuweisen/" class="fw-btn fw-knapp">{% trans "Zuweisen" %}</a>{% endif %}</div>

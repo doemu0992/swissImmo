@@ -101,6 +101,20 @@ def pruefe(lg):
         elif not e.stockwerkeigentuemer.email:
             befunde.append((HINWEIS, f'Eigentümer «{e.stockwerkeigentuemer.firma_oder_name}» hat keine E-Mail-Adresse '
                                      '(Einladung und Rechnung nur per Post).'))
+    from stweg.models import StwegBefreiung
+    for k in lg.stweg_schluessel.filter(art='manuell'):
+        begruendet = set(StwegBefreiung.objects.filter(schluessel=k).values_list('einheit_id', flat=True))
+        ohne_grund = [a.einheit.bezeichnung for a in k.anteile.select_related('einheit')
+                      if a.anteil == 0 and a.einheit_id not in begruendet]
+        if ohne_grund:
+            befunde.append((WARNUNG, f'Schlüssel «{k.name}»: {", ".join(ohne_grund)} tragen nichts, ohne dass eine Begründung '
+                                     'festgehalten ist (Art. 712h Abs. 3 ZGB: Reglement oder Beschluss).'))
+    from tickets.models import SchadenMeldung
+    offen = SchadenMeldung.objects.filter(liegenschaft=lg).exclude(status='erledigt')
+    ohne = offen.filter(kostentraeger='').count()
+    if ohne:
+        befunde.append((WARNUNG, f'{ohne} offene Schadenmeldung(en) ohne Kostenträger: «Sonderrecht» oder «gemeinschaftlich» '
+                                 'ist nicht erklärt (Art. 712b ZGB) — es wird weder beauftragt noch erledigt.'))
     for n in lg.einheiten.filter(gehoert_zu__isnull=False):
         if n.wertquote and n.wertquote != 0:
             befunde.append((HINWEIS, f'Nebenraum «{n.bezeichnung}» trägt eine Wertquote ({n.wertquote}) — sie zählt '

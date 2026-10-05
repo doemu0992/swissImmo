@@ -18,6 +18,7 @@
             <div class="fw-s">{% if g.naechste %}{% blocktrans with datum=g.naechste.datum|date:"d.m.Y H:i" %}Nächste Versammlung: {{ datum }}{% endblocktrans %}{% else %}{% trans "Keine Versammlung geplant" %}{% endif %}
                 · {% if g.lg.status == 'aktiv' %}{% trans "aktiv" %}{% else %}{{ g.lg.get_status_display }}{% endif %}</div>
         </div>
+        {% if not g.compliance.konform %}<span class="fw-chip fw-warn" style="background:#c0392b;color:#fff">{% trans "Nicht Compliance-Konform" %}</span>{% endif %}
         {% if g.offen %}<span class="fw-chip fw-warn">{% blocktrans with n=g.offen %}{{ n }} offen{% endblocktrans %}</span>{% else %}<span class="fw-chip">{% trans "alles erledigt" %}</span>{% endif %}
     </a>
     {% empty %}

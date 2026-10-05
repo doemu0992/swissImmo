@@ -23,6 +23,7 @@ from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, TICKET_LESE_ROLLEN, TICKET_SCHREIB_ROLLEN,
                        VERWALTUNGS_ROLLEN)
 from portfolio.models import Einheit, Liegenschaft
+from stweg import bauteile as _stweg_bauteile
 from rentals.models import Mietvertrag
 
 logger = logging.getLogger(__name__)
@@ -147,6 +148,8 @@ def fw_schaeden(request):
                         ('wartet', gettext('Wartet auf Dritte (%(n)s)') % {'n': kopf["wartet"]}),
                         ('erledigt', gettext('Erledigt')), ('', gettext('Alle'))],
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
+        'stweg_bauteile': _stweg_bauteile.auswahl(),
+        'kt_traeger': _stweg_bauteile.KOSTENTRAEGER_CHOICES,
         'einheiten': Einheit.objects.select_related('liegenschaft')
                      .order_by('liegenschaft__strasse', 'bezeichnung'),
         'meldung': list(messages.get_messages(request)),
@@ -246,8 +249,23 @@ def fw_schaden_neu(request):
         return redirect('fw_schaeden')
 
     einheit = Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first() if request.POST.get('einheit_id') else None
+    bauteil = (request.POST.get('bauteil') or '').strip()
+    kostentraeger = (request.POST.get('kostentraeger') or '').strip()
+    if lg.ist_stweg:                                    # STWEG: ohne Deklaration wird kein Schaden erfasst
+        from stweg import bauteile
+        fehler = []
+        if bauteil not in bauteile.BAUTEILE or kostentraeger not in dict(bauteile.KOSTENTRAEGER_CHOICES):
+            fehler.append(gettext('Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) '
+                                  'angeben.'))
+        elif bauteile.sperre(bauteil, kostentraeger):
+            fehler.append(bauteile.sperre(bauteil, kostentraeger))
+        if fehler:
+            for f in fehler:
+                messages.error(request, '⛔ ' + f)
+            return redirect('fw_schaeden')
     t = SchadenMeldung.objects.create(
         liegenschaft=lg, betroffene_einheit=einheit,
+        bauteil=bauteil if lg.ist_stweg else '', kostentraeger=kostentraeger if lg.ist_stweg else '',
         titel=titel, beschreibung=(request.POST.get('beschreibung') or '').strip(),
         kategorie=(request.POST.get('kategorie') or '').strip(),
         melder_vorname=(request.POST.get('melder_vorname') or '').strip(),
@@ -369,8 +387,13 @@ def fw_schaden_detail(request, pk):
         ('fotos', 'Fotos', len(fotos) or None),
     ], organisation=getattr(request, 'organisation', None) or _akt_org())
     from django.contrib import messages
+    kt = {}
+    if t.liegenschaft.ist_stweg:
+        from stweg import bauteile
+        kt = {'stweg_bauteile': bauteile.auswahl(), 'kt_probleme': bauteile.probleme(t),
+              'kt_traeger': bauteile.KOSTENTRAEGER_CHOICES}
     return render(request, 'fw/schaden_detail.html', {
-        **basis, 'nav': 'schadensfaelle', 't': t,
+        **basis, **kt, 'nav': 'schadensfaelle', 't': t,
         's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
         'nachrichten': nachrichten, 'auftraege': auftraege, 'melder': melder,
         'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
@@ -560,6 +583,33 @@ def fw_schaden_auftrag(request, pk):
     messages.success(request, '✅ ' + gettext('%(firma)s beauftragt · Status: In Bearbeitung · %(hinweise)s.')
                      % {'firma': hw.firma, 'hinweise': ' · '.join(hinweise)})
     return redirect(f'/neu/schaeden/{t.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)       # eine Entscheidung der Verwaltung, nicht des Hauswarts
+def fw_schaden_kostentraeger(request, pk):
+    """STWEG: Bauteil und Kostenträger (Sonderrecht / gemeinschaftlich) deklarieren. «Sonderrecht» auf einem zwingend
+    gemeinschaftlichen Bauteil (Dach, Fassade, Fenster aussen …) wird abgewiesen (Art. 712b ZGB)."""
+    from django.contrib import messages
+    from django.core.exceptions import ValidationError
+    from django.shortcuts import redirect
+    from tickets.models import SchadenMeldung
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{pk}/')
+    t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft'), id=pk)
+    if not t.liegenschaft.ist_stweg:
+        messages.error(request, gettext('Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft.'))
+        return redirect(f'/neu/schaeden/{pk}/')
+    t.bauteil = (request.POST.get('bauteil') or '').strip()
+    t.kostentraeger = (request.POST.get('kostentraeger') or '').strip()
+    try:
+        from stweg import bauteile
+        if t.bauteil not in bauteile.BAUTEILE or t.kostentraeger not in dict(bauteile.KOSTENTRAEGER_CHOICES):
+            raise ValidationError(gettext('Bitte Bauteil und Kostenträger wählen.'))
+        t.save(update_fields=['bauteil', 'kostentraeger'])
+        messages.success(request, gettext('Kostenträger gespeichert.'))
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+    return redirect(f'/neu/schaeden/{pk}/')
 
 
 @rolle_erforderlich(*TICKET_SCHREIB_ROLLEN)

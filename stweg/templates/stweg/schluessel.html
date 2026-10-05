@@ -43,6 +43,26 @@
 {% endfor %}
 
 <div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)" %}</span></div>
+    <div class="fw-rumpf">
+        <p class="fw-s">{% trans "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten." %}</p>
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/schluessel/befreien/" class="fw-formular drei">{% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="bf_name">{% trans "Schlüssel (z. B. Lift) *" %}</label>
+                <input id="bf_name" name="name" required value="Lift" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="bf_einheiten">{% trans "Befreite Einheiten *" %}</label>
+                <select id="bf_einheiten" name="einheit" multiple size="4" required class="fw-feld">{% for e in einheiten %}<option value="{{ e.pk }}">{{ e.bezeichnung }}{% if e.etage %} · {{ e.etage }}{% endif %}</option>{% endfor %}</select></div>
+            <div class="fw-feldblock"><label class="fw-label" for="bf_grund">{% trans "Begründung (Reglement, Beschluss, Artikel) *" %}</label>
+                <input id="bf_grund" name="begruendung" required maxlength="200" class="fw-feld"></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Befreiung festhalten" %}</button></div>
+        </form>
+        {% for b in befreiungen %}
+        <form method="post" action="/neu/stweg/befreiung/{{ b.pk }}/aufheben/" class="fw-s">{% csrf_token %}
+            {{ b.schluessel.name }} · {{ b.einheit.bezeichnung }} · {{ b.begruendung }} <button class="fw-btn">{% trans "Aufheben" %}</button></form>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{% trans "Schlüssel hinzufügen" %}</span></div>
     <div class="fw-rumpf">
         <form method="post" action="/neu/stweg/{{ lg.pk }}/schluessel/neu/" class="fw-formular drei">{% csrf_token %}

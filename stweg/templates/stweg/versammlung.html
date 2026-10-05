@@ -62,7 +62,13 @@
     {% for t in traktanden %}
     <div class="fw-zeile"><div class="fw-mitte">
         <div class="fw-t">{{ t.nr }}. {{ t.titel }}</div>
-        <div class="fw-s">{{ t.get_mehrheitsart_display }}{% if t.rechtsgrundlage %} · {{ t.rechtsgrundlage }}{% endif %}</div>
+        <div class="fw-s">{% if t.geschaeftsart %}{{ t.get_geschaeftsart_anzeige }} · {% endif %}{{ t.get_mehrheitsart_display }}{% if t.rechtsgrundlage %} · {{ t.rechtsgrundlage }}{% endif %}</div>
+        {% if t.quorum_probleme %}<div class="fw-s"><span class="fw-chip fw-warn">{% trans "Quorum fehlt oder zu schwach" %}</span> {{ t.quorum_probleme|join:" " }}</div>
+        {% if t.ergebnis == 'offen' %}<form method="post" action="/neu/stweg/traktandum/{{ t.pk }}/geschaeftsart/" class="fw-formular drei">{% csrf_token %}
+            <select name="geschaeftsart" required class="fw-feld" aria-label="{% trans 'Art des Geschäfts' %}"><option value="">{% trans "— bitte wählen —" %}</option>{% for k, b, m in geschaeftsarten %}<option value="{{ k }}"{% if k == t.geschaeftsart %} selected{% endif %}>{{ b }}</option>{% endfor %}</select>
+            <select name="mehrheitsart" required class="fw-feld" aria-label="{% trans 'Mehrheitsart' %}"><option value="">{% trans "— bitte wählen —" %}</option>{% for w, b in mehrheiten %}<option value="{{ w }}"{% if w == t.mehrheitsart %} selected{% endif %}>{{ b }}</option>{% endfor %}</select>
+            <input name="rechtsgrundlage" value="{{ t.rechtsgrundlage }}" class="fw-feld" placeholder="{% trans 'Rechtsgrundlage / Reglement' %}">
+            <button class="fw-btn">{% trans "Speichern" %}</button></form>{% endif %}{% endif %}
         {% if t.antrag %}<div class="fw-s">{% blocktrans with antrag=t.antrag %}Antrag: {{ antrag }}{% endblocktrans %}</div>{% endif %}
         {% if t.vollzug_aufgabe %}<div class="fw-s">{% blocktrans with aufgabe=t.vollzug_aufgabe %}Vollzug bei Annahme: {{ aufgabe }}{% endblocktrans %}{% if t.vollzug_faellig_am %} {% blocktrans with d=t.vollzug_faellig_am|date:"d.m.Y" %}(bis {{ d }}){% endblocktrans %}{% endif %}</div>{% endif %}
         </div>
@@ -77,8 +83,14 @@
             <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/traktandum/neu/" class="fw-formular drei">{% csrf_token %}
                 <div class="fw-feldblock"><label class="fw-label" for="t_titel">{% trans "Titel *" %}</label>
                     <input id="t_titel" name="titel" required class="fw-feld"></div>
-                <div class="fw-feldblock"><label class="fw-label" for="t_mehrheit">{% trans "Erforderliche Mehrheit (Gesetz oder Reglement)" %}</label>
-                    <select id="t_mehrheit" name="mehrheitsart" class="fw-feld">{% for w, b in mehrheiten %}<option value="{{ w }}">{{ b }}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="t_geschaeft">{% trans "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)" %}</label>
+                    <select id="t_geschaeft" name="geschaeftsart" required class="fw-feld">
+                        <option value="">{% trans "— bitte wählen —" %}</option>
+                        {% for k, b, m in geschaeftsarten %}<option value="{{ k }}" data-mehrheit="{{ m }}">{{ b }}</option>{% endfor %}</select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="t_mehrheit">{% trans "Mehrheitsart * (mindestens die gesetzlich verlangte)" %}</label>
+                    <select id="t_mehrheit" name="mehrheitsart" required class="fw-feld">
+                        <option value="">{% trans "— bitte wählen —" %}</option>
+                        {% for w, b in mehrheiten %}<option value="{{ w }}">{{ b }}</option>{% endfor %}</select></div>
                 <div class="fw-feldblock"><label class="fw-label" for="t_recht">{% trans "Rechtsgrundlage / Reglement" %}</label>
                     <input id="t_recht" name="rechtsgrundlage" class="fw-feld"></div>
                 <div class="fw-feldblock"><label class="fw-label" for="t_beschr">{% trans "Beschreibung" %}</label>
@@ -192,7 +204,8 @@
     <form method="post" action="/neu/stweg/traktandum/{{ t.pk }}/feststellen/" class="fw-formular drei">{% csrf_token %}
         <div class="fw-feldblock"><label class="fw-label" for="erg_{{ t.pk }}">{% trans "Ergebnis feststellen" %}</label>
             <select id="erg_{{ t.pk }}" name="ergebnis" class="fw-feld">
-                {% for w, b in ergebnisse %}{% if w != 'offen' %}<option value="{{ w }}"{% if t.zaehlung and t.zaehlung.vorschlag == w and t.ergebnis == 'offen' %} selected{% elif t.ergebnis == w %} selected{% endif %}>{{ b }}</option>{% endif %}{% endfor %}</select></div>
+                {% if t.ergebnis == 'offen' and t.mehrheitsart != 'kenntnisnahme' %}<option value="nach_zaehlung" selected>{% trans "Nach Auszählung (rechnerisches Ergebnis)" %}</option>{% endif %}
+                {% for w, b in ergebnisse %}{% if w != 'offen' %}<option value="{{ w }}"{% if t.ergebnis == w %} selected{% endif %}>{{ b }}</option>{% endif %}{% endfor %}</select></div>
         <div class="fw-feldblock"><label class="fw-label" for="bt_{{ t.pk }}">{% trans "Beschlusstext" %}</label>
             <textarea id="bt_{{ t.pk }}" name="beschlusstext" rows="2" class="fw-feld">{{ t.beschlusstext|default:t.antrag }}</textarea></div>
         {% if beschlussfaehigkeit and not beschlussfaehigkeit.beschlussfaehig %}
@@ -230,4 +243,14 @@
         <span class="fw-chip {% if z.status == 'gesendet' %}fw-brand{% else %}fw-warn{% endif %}">{{ z.get_status_display }}</span></div>
     {% empty %}<p class="fw-leer">{% trans "Noch nichts versendet." %}</p>{% endfor %}
 </div>
+<script>
+(function () {
+    var g = document.getElementById('t_geschaeft'), m = document.getElementById('t_mehrheit');
+    if (!g || !m) return;
+    g.addEventListener('change', function () {
+        var vorgabe = g.options[g.selectedIndex].getAttribute('data-mehrheit');
+        if (vorgabe) m.value = vorgabe;
+    });
+}());
+</script>
 {% endblock %}
