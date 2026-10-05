@@ -469,6 +469,51 @@ def pfandrecht_pdf(pfandrecht):
     return s.bytes()
 
 
+HINWEIS_RECHT = ("Achtung: Dieses Dokument ersetzt keine juristische Prüfung. Die Berechnung beruht auf den "
+                 "Annahmen in der Dokumentation des Programms; Fristen, Zinsen und Anrechnungen sind vor Gebrauch von "
+                 "einer Fachperson zu bestätigen.")
+
+
+def handaenderung_pdf(wechsel, *, jahresbetrag=None):
+    """Handänderungs-Abrechnung (pro rata temporis) zwischen Verkäufer und Käufer."""
+    from stweg import handaenderung
+    a = handaenderung.aufteilung(wechsel, jahresbetrag=jahresbetrag)
+    e = wechsel.einheit
+    lg = e.liegenschaft
+    org = lg.organisation
+    s = _Seite(f"Handänderung {lg}")
+    s.zeile(org.firma or '', fett=True, gr=11)
+    s.luecke(4)
+    s.zeile(f"Handänderungs-Abrechnung {a['jahr']}", fett=True, gr=13, abstand=7)
+    s.zeile(f"{lg.strasse}, {lg.plz} {lg.ort} — Einheit «{e.bezeichnung}»")
+    s.zeile(f"Eigentumsübergang: {wechsel.datum:%d.%m.%Y} (erster Tag des Käufers)")
+    s.zeile(f"Verkäufer: {a['verkaeufer'].firma_oder_name if a['verkaeufer'] else '— nicht erfasst —'}")
+    s.zeile(f"Käufer: {a['kaeufer'].firma_oder_name}")
+    s.luecke(4)
+    s.zeile(f"Jahresbetrag CHF {_chf(a['jahresbetrag'])}  ({a['quelle']})", fett=True)
+    s.zeile(f"Tage: Verkäufer {a['verkaeufer_tage']}, Käufer {a['kaeufer_tage']} von {a['jahrestage']}", gr=9)
+    s.luecke(3)
+    s.zeile(f"{'':<22}{'Verkäufer':>14}{'Käufer':>14}", fett=True, gr=9)
+    for text, v, k in (("Kostenanteil (pro rata)", a['verkaeufer_anteil'], a['kaeufer_anteil']),
+                       ("Akonto bezahlt", a['akonto_verkaeufer'], a['akonto_kaeufer']),
+                       ("Saldo (− = zu viel bezahlt)", a['saldo_verkaeufer'], a['saldo_kaeufer'])):
+        s.zeile(f"{text:<22}{_chf(v):>14}{_chf(k):>14}", gr=9, abstand=4)
+    s.luecke(3)
+    ausgleich = a['ausgleich_verkaeufer_an_kaeufer']
+    if ausgleich >= 0:
+        s.zeile(f"Ausgleich: Der Verkäufer erstattet dem Käufer CHF {_chf(ausgleich)}", fett=True)
+    else:
+        s.zeile(f"Ausgleich: Der Käufer erstattet dem Verkäufer CHF {_chf(-ausgleich)}", fett=True)
+    s.luecke(3)
+    s.zeile(f"Verzugszins bis zum Vortag des Übergangs: CHF {_chf(a['zins_bis_uebergang'])}; danach bis "
+            f"{a['stichtag']:%d.%m.%Y}: CHF {_chf(a['zins_danach'])}", gr=9)
+    s.zeile(f"Beiträge des Verkäufers, die am Vortag des Übergangs noch offen waren: CHF "
+            f"{_chf(a['offen_verkaeufer_bei_uebergang'])}", gr=9)
+    s.luecke(5)
+    s.absatz(HINWEIS_RECHT, gr=8, abstand=4)
+    return s.bytes()
+
+
 def date_fromiso(text):
     from datetime import date
     return date.fromisoformat(text)

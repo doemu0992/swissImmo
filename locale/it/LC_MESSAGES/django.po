@@ -24470,3 +24470,7 @@ msgstr "Interessi e spese (non nell'importo del pegno):"
 #: stweg/zins
 msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
 msgstr "Il tasso d'interesse di mora è inserito ma non confermato: non vengono calcolati interessi."
+
+#: stweg/handaenderung
+msgid "Handänderungs-Abrechnung (PDF)"
+msgstr "Conteggio per cambio di proprietario (PDF)"

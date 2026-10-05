@@ -24380,3 +24380,7 @@ msgstr "Zinsen und Kosten (nicht in der Pfandsumme):"
 #: stweg/zins
 msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
 msgstr "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
+
+#: stweg/handaenderung
+msgid "Handänderungs-Abrechnung (PDF)"
+msgstr "Handänderungs-Abrechnung (PDF)"

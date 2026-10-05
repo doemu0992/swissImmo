@@ -24492,3 +24492,7 @@ msgstr "Intérêts et frais (pas dans le montant du gage) :"
 #: stweg/zins
 msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
 msgstr "Le taux d'intérêt moratoire est saisi mais non confirmé : aucun intérêt n'est calculé."
+
+#: stweg/handaenderung
+msgid "Handänderungs-Abrechnung (PDF)"
+msgstr "Décompte de changement de propriétaire (PDF)"

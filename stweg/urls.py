@@ -82,5 +82,6 @@ urlpatterns = [
     path('mahnung/<int:pk>/pdf/', vi.stweg_mahnung_pdf, name='stweg_mahnung_pdf'),
     path('pfandrecht/<int:pk>/pdf/', vi.stweg_pfandrecht_pdf, name='stweg_pfandrecht_pdf'),
     path('pfandrecht/<int:pk>/eingetragen/', vi.stweg_pfandrecht_eingetragen, name='stweg_pfandrecht_eingetragen'),
+    path('handaenderung/<int:pk>/pdf/', vi.stweg_handaenderung_pdf, name='stweg_handaenderung_pdf'),
     path('inkassofall/<int:pk>/pdf/', vi.stweg_inkassofall_pdf, name='stweg_inkassofall_pdf'),
 ]

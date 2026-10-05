@@ -24266,3 +24266,7 @@ msgstr "Interest and costs (not in the lien amount):"
 #: stweg/zins
 msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
 msgstr "The default interest rate is entered but not confirmed: no interest is calculated."
+
+#: stweg/handaenderung
+msgid "Handänderungs-Abrechnung (PDF)"
+msgstr "Change-of-ownership statement (PDF)"

@@ -152,3 +152,13 @@ def stweg_inkassofall_pdf(request, pk):
     return _pdf(retention_pdf(fall), 'Retentionsrecht.pdf')
 
 
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_handaenderung_pdf(request, pk):
+    """Handänderungs-Abrechnung (pro rata temporis) zu einem erfassten Eigentümerwechsel."""
+    from stweg.models import StwegEigentuemerwechsel
+    from stweg.pdf import handaenderung_pdf
+    w = get_object_or_404(StwegEigentuemerwechsel.objects.select_related('einheit__liegenschaft', 'neu', 'bisheriger'),
+                          pk=pk)
+    return _pdf(handaenderung_pdf(w), 'Handaenderung.pdf')
