@@ -39,8 +39,8 @@ das ist Phase 2.
 
 ### 3.1 HK/NK
 - **K — Zählerstände nicht erfassbar:** `ZaehlerStand` wird in keiner View angelegt (nur Admin lesend). HKVO fällt in der Praxis auf m³ zurück. → Erfassungsformular, Zählerart als Enum.
-- **K — Verteilschlüssel-Modelle ungenutzt:** `Verteilschluessel`/`LiegenschaftVerteilschluessel` werden von `core/utils/billing.py` nicht gelesen; die Engine kennt vier feste Schlüssel.
-- **K — Versand/Einsprache:** Es gibt nur Sammel-PDF und Portal-Ablage, keinen Mail-/Briefversand. (Felder jetzt vorhanden, U3.)
+- ~~**K — Verteilschlüssel-Modelle ungenutzt**~~ — **erledigt** (siehe «Nachtrag» unten): opt-in je Liegenschaft, Zimmer/Wertquote/Prozent, Pflegeseite.
+- ~~**K — Versand/Einsprache**~~ — **erledigt** (siehe «Nachtrag»): Versand per E-Mail mit PDF, Zustellung und Einsprachefrist werden festgehalten. Brief bleibt das Sammel-PDF.
 - M — keine Korrekturabrechnung nach Verbuchen; Leerstandsanteil wird ausgewiesen, aber nicht beim Eigentümer verbucht; kein Mieterbrief bei Akonto-Erhöhung (Art. 269d OR).
 
 ### 3.2 Inkasso
@@ -109,3 +109,33 @@ danach ablehnte. Die Sperre ist Absicht und bleibt; die Seite nennt jetzt den Gr
 - Debitorentabelle ist bei 1440 px breiter als der Rahmen (Aktionsspalte scrollt) — schon vorher so.
 - Übersetzungen FR/IT/EN der neuen Texte stammen von der KI; Rechtsbegriffe fachlich gegenlesen.
 - NK-Versand per E-Mail/Brief, Verteilschlüssel-Anbindung der Engine, STWEG-Planung: siehe 3.1–3.4.
+
+## Nachtrag — Verteilschlüssel und NK-Versand per E-Mail
+
+**Verteilschlüssel (opt-in).** `Liegenschaft.verteilschluessel_aktiv` (Standard **aus**) schaltet die
+Schlüssel der Liegenschaft in der Abrechnung frei. Ohne Kennzeichen rechnet die Engine wie bisher —
+die Schlüsseltabellen waren bis dahin wirkungslos, vorhandene Zeilen dürfen nicht über Nacht Abrechnungen
+verändern (Regressionstest in `core/tests/test_verteilschluessel.py`, mit Gegenprobe).
+
+| Schlüssel | Basis |
+|---|---|
+| Zimmer | `Einheit.zimmer` |
+| Wertquote | `Einheit.wertquote` |
+| Prozent | je Einheit erfasst (`Verteilschluessel.wert`), Summe 100 |
+
+Gilt für Belege (`NebenkostenBeleg`) der Kostenart und **überschreibt** die Wahl am Beleg. Bewusst nicht
+angeschlossen: Heizkosten (bleiben bei HKVO/Heizgradtagen), «Pauschal» (CHF je Einheit — fachlich offen,
+wird nicht geraten), Kreditoren-Rechnungen (keine Zuordnung Konto → Kostenart). Fehlt die Basis (keine
+Zimmerzahl, Prozent ≠ 100), wird nach Fläche verteilt und gewarnt — die Kosten verschwinden nicht.
+Der Schlüssel gilt zum **Periodenende**; ein Wechsel innerhalb der Periode wird nicht anteilig gerechnet.
+Pflege: `/neu/liegenschaften/<pk>/verteilschluessel/` (ein neuer Schlüssel beendet einen offenen Vorgänger
+am Vortag).
+
+**NK-Versand per E-Mail.** `/neu/nebenkosten/<pk>/mail/` (Inhaber/Verwalter): nur verbuchte Periode,
+je Mieter das PDF als Anhang, Antwortadresse = «Antworten»-Postfach der Verwaltung, Ablage in der
+Mieterakte und im Kommunikationsjournal. Die Zustellung (`versendet_am`, Kanal «E-Mail», Einsprachefrist)
+wird **nur bei vollständigem Versand** festgehalten; fehlende Adressen und Fehlversand werden genannt.
+Mailtext und PDF sind deutsch (das Dokument ist fest deutsch).
+
+Weiterhin offen: Kreditoren-Zuordnung zur Kostenart für die Schlüssel, Briefversand mit Nachweis
+(Sammel-PDF + manuelle Zustellung bleibt), STWEG-Planung (3.4).

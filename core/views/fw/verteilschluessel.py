@@ -28,6 +28,12 @@ TYPEN = [(k, v) for k, v in Verteilschluessel.TYP_CHOICES if k in ('zimmer', 'an
 KOSTENARTEN = [(k, v) for k, v in Verteilschluessel.KOSTENART_CHOICES if k != 'heizung']
 
 
+def _ohne_nullen(wert):
+    """60.0000 → «60», 12.5000 → «12.5» (Punkt als Dezimaltrenner, wie im Eingabefeld)."""
+    text = format(Decimal(wert), 'f')
+    return text.rstrip('0').rstrip('.') if '.' in text else text
+
+
 def _datum(roh):
     try:
         return date.fromisoformat((roh or '').strip())
@@ -116,7 +122,7 @@ def _seite(request, lg, *, status=200, neu=None, neu_fehler=None, raster_id=None
     for s in standards:
         s.kostenart_name, s.typ_name = namen_ka.get(s.kostenart, s.kostenart), namen_typ.get(s.typ, s.typ)
         if s.typ == 'prozent':
-            vorhanden = {z.einheit_id: z.wert for z in Verteilschluessel.objects.filter(
+            vorhanden = {z.einheit_id: _ohne_nullen(z.wert) for z in Verteilschluessel.objects.filter(
                 einheit__liegenschaft=lg, kostenart=s.kostenart, typ='prozent', gueltig_ab=s.gueltig_ab)}
             if raster_id == s.id and raster is not None:
                 s.raster = [{'e': e, 'wert': raster.get(e.id, ''), 'fehler': (raster_fehler or {}).get(e.id)} for e in einheiten]
