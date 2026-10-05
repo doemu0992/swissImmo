@@ -24984,3 +24984,38 @@ msgstr "Pourcentages — %(ka)s"
 
 msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
 msgstr "Appliquer les clés de répartition propres à cet immeuble"
+
+msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+msgstr "Le décompte n'est pas encore comptabilisé — comptabiliser d'abord, envoyer ensuite."
+
+#, python-format
+msgid "Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen."
+msgstr "Le décompte a été envoyé par e-mail le %(d)s. Veuillez confirmer pour l'envoyer à nouveau."
+
+#, python-format
+msgid "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
+msgstr "Décompte envoyé à %(n)s locataires. Délai de contestation jusqu'au %(d)s."
+
+#, python-format
+msgid "%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst."
+msgstr "%(n)s décomptes sur %(m)s envoyés. La notification n'est pas encore enregistrée."
+
+#, python-format
+msgid "Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF)."
+msgstr "Pas d'adresse e-mail : %(namen)s. Ces locataires reçoivent le décompte par courrier (PDF collectif)."
+
+#, python-format
+msgid "Versand fehlgeschlagen: %(namen)s."
+msgstr "Échec de l'envoi : %(namen)s."
+
+msgid "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)."
+msgstr "Envoyer maintenant le décompte par e-mail à tous les locataires ? Ceux sans adresse e-mail le reçoivent par courrier (PDF collectif)."
+
+msgid "Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten"
+msgstr "Envoie à chaque locataire son décompte en PDF ; si l'envoi est complet, la notification est enregistrée"
+
+msgid "Erneut per E-Mail senden"
+msgstr "Renvoyer par e-mail"
+
+msgid "Per E-Mail an Mieter senden"
+msgstr "Envoyer aux locataires par e-mail"

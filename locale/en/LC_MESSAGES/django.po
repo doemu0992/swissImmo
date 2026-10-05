@@ -24758,3 +24758,38 @@ msgstr "Percentages — %(ka)s"
 
 msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
 msgstr "Apply this property's own distribution keys"
+
+msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+msgstr "The statement is not booked yet — book it first, then send it."
+
+#, python-format
+msgid "Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen."
+msgstr "The statement was sent by e-mail on %(d)s. Please confirm to send it again."
+
+#, python-format
+msgid "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
+msgstr "Statement sent to %(n)s tenants. Objection period until %(d)s."
+
+#, python-format
+msgid "%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst."
+msgstr "%(n)s of %(m)s statements sent. Delivery is not recorded yet."
+
+#, python-format
+msgid "Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF)."
+msgstr "No e-mail address: %(namen)s. These tenants receive the statement by post (combined PDF)."
+
+#, python-format
+msgid "Versand fehlgeschlagen: %(namen)s."
+msgstr "Sending failed: %(namen)s."
+
+msgid "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)."
+msgstr "Send the statement by e-mail to all tenants now? Tenants without an e-mail address receive it by post (combined PDF)."
+
+msgid "Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten"
+msgstr "Sends each tenant their statement as a PDF; if every tenant is reached, the delivery is recorded"
+
+msgid "Erneut per E-Mail senden"
+msgstr "Send by e-mail again"
+
+msgid "Per E-Mail an Mieter senden"
+msgstr "Send to tenants by e-mail"

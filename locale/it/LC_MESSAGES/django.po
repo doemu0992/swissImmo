@@ -24962,3 +24962,38 @@ msgstr "Percentuali — %(ka)s"
 
 msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
 msgstr "Applicare le chiavi di ripartizione proprie di questo stabile"
+
+msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+msgstr "Il conteggio non è ancora contabilizzato — prima contabilizzare, poi inviare."
+
+#, python-format
+msgid "Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen."
+msgstr "Il conteggio è stato inviato per e-mail il %(d)s. Confermare per inviarlo di nuovo."
+
+#, python-format
+msgid "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
+msgstr "Conteggio inviato a %(n)s inquilini. Termine di contestazione fino al %(d)s."
+
+#, python-format
+msgid "%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst."
+msgstr "%(n)s conteggi su %(m)s inviati. La notifica non è ancora registrata."
+
+#, python-format
+msgid "Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF)."
+msgstr "Nessun indirizzo e-mail: %(namen)s. Questi inquilini ricevono il conteggio per posta (PDF collettivo)."
+
+#, python-format
+msgid "Versand fehlgeschlagen: %(namen)s."
+msgstr "Invio non riuscito: %(namen)s."
+
+msgid "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)."
+msgstr "Inviare ora il conteggio per e-mail a tutti gli inquilini? Chi non ha un indirizzo e-mail lo riceve per posta (PDF collettivo)."
+
+msgid "Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten"
+msgstr "Invia a ogni inquilino il suo conteggio in PDF; se l'invio è completo, la notifica viene registrata"
+
+msgid "Erneut per E-Mail senden"
+msgstr "Invia di nuovo per e-mail"
+
+msgid "Per E-Mail an Mieter senden"
+msgstr "Invia agli inquilini per e-mail"

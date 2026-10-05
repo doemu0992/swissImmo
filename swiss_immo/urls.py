@@ -125,7 +125,7 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_schaden_auftrag, fw_schaden_status, fw_schaden_zuweisen, fw_nebenkosten_zustellung, fw_betreibungen, fw_betreibung_neu, fw_betreibung_bearbeiten, fw_zaehlerstand_neu, fw_verteilschluessel, fw_schaden_antwort, fw_schaden_neu,
                            fw_dienstleister, fw_buchhaltung, fw_kontoblatt, fw_kontenplan, fw_buchhaltung_export, fw_buchhaltung_pdf, fw_anlagen,
                            fw_sollstellung, fw_sollstellung_run,
-                           fw_nebenkosten, fw_nebenkosten_detail, fw_nebenkosten_verbuchen, fw_nebenkosten_versand, fw_akonto_anpassen,
+                           fw_nebenkosten, fw_nebenkosten_detail, fw_nebenkosten_verbuchen, fw_nebenkosten_versand, fw_nebenkosten_mail, fw_akonto_anpassen,
                            fw_mietzins, fw_mietzins_anpassung, fw_mietzins_massenanpassung, fw_anfangsmietzins, fw_dokumente, fw_kommunikation,
                            fw_vertrag_neu, fw_vertrag_neu_speichern, fw_vertrag_vorschau, fw_vertrag_bearbeiten,
                            fw_vertrag_status, fw_vertrag_loeschen, fw_schlussabrechnung, fw_vertrag_signieren,
@@ -402,6 +402,7 @@ urlpatterns = [
     path('neu/nebenkosten/<int:pk>/', fw_nebenkosten_detail, name='fw_nebenkosten_detail'),
     path('neu/nebenkosten/<int:pk>/verbuchen/', fw_nebenkosten_verbuchen, name='fw_nebenkosten_verbuchen'),
     path('neu/nebenkosten/<int:pk>/versand/', fw_nebenkosten_versand, name='fw_nebenkosten_versand'),
+    path('neu/nebenkosten/<int:pk>/mail/', fw_nebenkosten_mail, name='fw_nebenkosten_mail'),
     path('neu/nebenkosten/<int:pk>/akonto/', fw_akonto_anpassen, name='fw_akonto_anpassen'),
     # Phase 4b: die Oberflaechen zu Phase 4a. Bis hierher hatten Fall,
     # Eingang und Lauf keine einzige URL.

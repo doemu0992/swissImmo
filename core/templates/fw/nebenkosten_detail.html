@@ -30,6 +30,12 @@
             <button class="fw-btn">{% zeichen 'herunterladen' %}{% trans "Abrechnungen erstellen &amp; ablegen" %}</button>
         </form>
         {% endif %}
+        {% if p.abgeschlossen and request.user|darf:"/neu/nebenkosten/1/mail/" %}
+        <form method="post" action="/neu/nebenkosten/{{ p.id }}/mail/" onsubmit="return confirm('{% filter escapejs %}{% trans "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)." %}{% endfilter %}');">
+            {% csrf_token %}{% if p.versendet_am and p.versand_kanal == 'email' %}<input type="hidden" name="nochmals" value="1">{% endif %}
+            <button class="fw-btn" title="{% trans 'Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten' %}">{% zeichen 'senden' %}{% if p.versendet_am and p.versand_kanal == 'email' %}{% trans "Erneut per E-Mail senden" %}{% else %}{% trans "Per E-Mail an Mieter senden" %}{% endif %}</button>
+        </form>
+        {% endif %}
         {% if p.abgeschlossen and request.user|darf:"/neu/nebenkosten/1/zustellung/" %}
         <a href="/neu/nebenkosten/{{ p.id }}/zustellung/" class="fw-btn" title="{% trans 'Zustelldatum erfassen — Beginn der Einsprachefrist' %}">{% zeichen 'verlauf' %}{% if p.versendet_am %}{% blocktrans with d=p.einsprache_bis|date:"d.m.Y" %}Einsprache bis {{ d }}{% endblocktrans %}{% else %}{% trans "Zustellung erfassen" %}{% endif %}</a>
         {% endif %}

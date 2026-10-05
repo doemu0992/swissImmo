@@ -24872,3 +24872,38 @@ msgstr "Prozentanteile — %(ka)s"
 
 msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
 msgstr "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
+
+msgid "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+msgstr "Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+
+#, python-format
+msgid "Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen."
+msgstr "Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen."
+
+#, python-format
+msgid "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
+msgstr "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
+
+#, python-format
+msgid "%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst."
+msgstr "%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst."
+
+#, python-format
+msgid "Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF)."
+msgstr "Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF)."
+
+#, python-format
+msgid "Versand fehlgeschlagen: %(namen)s."
+msgstr "Versand fehlgeschlagen: %(namen)s."
+
+msgid "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)."
+msgstr "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)."
+
+msgid "Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten"
+msgstr "Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird die Zustellung festgehalten"
+
+msgid "Erneut per E-Mail senden"
+msgstr "Erneut per E-Mail senden"
+
+msgid "Per E-Mail an Mieter senden"
+msgstr "Per E-Mail an Mieter senden"
