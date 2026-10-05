@@ -66,6 +66,14 @@ class TicketZuweisenTests(_Basis):
         self.t.refresh_from_db()
         self.assertIsNone(self.t.zugewiesen_an)
 
+    def test_hauswart_darf_nicht_zuweisen(self):
+        c = Client()
+        c.force_login(_team_user('Hauswart'))
+        self.assertEqual(c.get(self.url).status_code, 403)
+        self.assertEqual(c.post(self.url, {'zugewiesen_an': self.verwalter.id}).status_code, 403)
+        self.t.refresh_from_db()
+        self.assertIsNone(self.t.zugewiesen_an)
+
     def test_filter_meine_tickets(self):
         from tickets.models import SchadenMeldung
         SchadenMeldung.objects.create(liegenschaft=self.lg, titel='Fremdes Ticket', beschreibung='x')

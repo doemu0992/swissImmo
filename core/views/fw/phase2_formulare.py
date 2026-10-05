@@ -55,15 +55,14 @@ class TicketZuweisungForm(forms.Form):
         return d
 
 
-@rolle_erforderlich(*TICKET_SCHREIB_ROLLEN)
+# Bewusst NUR die Schreibrollen, nicht TICKET_SCHREIB_ROLLEN: Der Hauswart darf den
+# Status eines Tickets ändern, aber nicht bestimmen, wer es bearbeitet
+# (`core/tests/test_rbac.py`: Hauswart bekommt ausser Schäden-Status überall 403).
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_schaden_zuweisen(request, pk):
     """Ticket einem internen Bearbeiter zuweisen und die Zielzeit setzen."""
     from tickets.models import SchadenMeldung, TicketNachricht
-    from core.auth import ist_nur_hauswart
     t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft'), pk=pk)
-    if ist_nur_hauswart(request.user):
-        from core.views.fw.schaeden import _hauswart_pruefen
-        _hauswart_pruefen(request, t)
     org = t.organisation
     form = TicketZuweisungForm(request.POST or None, organisation=org,
                                initial={'zugewiesen_an': t.zugewiesen_an_id, 'faellig_bis': t.faellig_bis})
