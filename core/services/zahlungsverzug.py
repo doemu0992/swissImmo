@@ -42,6 +42,7 @@ Verwaltung, kein Automatismus.
 import logging
 from decimal import Decimal
 
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.utils import timezone
 
@@ -227,6 +228,43 @@ def faelliger_rueckstand(vertrag, stichtag=None):
     return total
 
 
+class EigentuemerSchutz(PermissionDenied):
+    """Gegen einen Stockwerkeigentümer gibt es keine Kündigungsandrohung (Art. 257d OR gilt nur für Mieter).
+    Als `PermissionDenied` führt sie in einer Ansicht zu einer 403-Antwort — es entsteht nie ein Schreiben."""
+
+
+def _norm(text):
+    return ''.join((text or '').casefold().split())
+
+
+def eigentuemer_als_mieter(vertrag):
+    """Der Stockwerkeigentümer (oder Miteigentümer), der in einem Mietvertrag der STWEG als Mieter steht — oder None.
+
+    Ein Eigentümer erscheint nur dann als Mieter, wenn er fälschlich als solcher erfasst wurde (Wohnung selbst
+    bewohnt, «Mietvertrag» zur Verbuchung der Beiträge). Erkannt wird er an gleicher E-Mail-Adresse oder gleichem
+    Namen. Ein Mieter einer vermieteten Eigentumswohnung ist ein echter Mieter und bleibt es."""
+    einheit = vertrag.einheit if vertrag.einheit_id else None
+    if einheit is None or not einheit.liegenschaft.ist_stweg:
+        return None
+    mieter = vertrag.mieter
+    mail, name = (getattr(mieter, 'email', '') or '').casefold().strip(), _norm(mieter.display_name)
+    kandidaten = [e for e in [einheit.stockwerkeigentuemer, *einheit.miteigentuemer.all()] if e is not None]
+    for e in kandidaten:
+        if (mail and mail == (e.email or '').casefold().strip()) or (name and name == _norm(e.firma_oder_name)):
+            return e
+    return None
+
+
+def pruefe_kein_eigentuemer(vertrag):
+    """Wirft `EigentuemerSchutz`, wenn der «Mieter» in Wahrheit Stockwerkeigentümer der Einheit ist."""
+    e = eigentuemer_als_mieter(vertrag)
+    if e is not None:
+        raise EigentuemerSchutz(
+            f'«{e.firma_oder_name}» ist Stockwerkeigentümer dieser Einheit, kein Mieter: eine Kündigungsandrohung '
+            'nach Art. 257d OR ist nicht zulässig. Das Inkasso der Gemeinschaft läuft über die STWEG-Mahnungen '
+            '(Retentionsrecht, Gemeinschaftspfandrecht).')
+
+
 #: Quelle der Vorschlags-Pendenz «257d-Fristansetzung prüfen». Bewusst NICHT
 #: `257d:` — sie ist keine Frist, sondern die Aufforderung, eine zu setzen.
 VORSCHLAG_PRAEFIX = '257d-vorschlag:'
@@ -249,6 +287,9 @@ def eskalation_257d(rechnung, benutzer=None):
 
     v = rechnung.vertrag
     if v is None or rechnung.stammrechnung_id:
+        return None
+    if eigentuemer_als_mieter(v) is not None:       # Stockwerkeigentümer: keine Fristansetzung, keine Pendenz
+        logger.warning('257d-Eskalation für Vertrag %s unterlassen: Mieter ist Stockwerkeigentümer', v.pk)
         return None
     if aktive_fristen(v).exists():
         return None

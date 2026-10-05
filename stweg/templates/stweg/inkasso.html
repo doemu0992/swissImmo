@@ -1,0 +1,72 @@
+{% extends 'fw/base.html' %}
+{% load chf i18n %}
+{% block title %}{% trans "Inkasso" %} — {{ lg }} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/stweg/">{% trans "Stockwerkeigentum" %}</a><span aria-hidden="true">/</span><a href="/neu/stweg/{{ lg.pk }}/">{{ lg }}</a><span aria-hidden="true">/</span><span>{% trans "Inkasso" %}</span></nav>
+        <h1>{% trans "Inkasso" %}</h1>
+        <p>{% trans "Ein Stockwerkeigentümer ist Eigentümer, nicht Mieter: Es gibt keine Kündigungsandrohung. Die Gemeinschaft sichert ihre Beitragsforderungen durch Mahnungen, das Retentionsrecht (Art. 712k ZGB) und das Gemeinschaftspfandrecht (Art. 712i ZGB)." %}</p>
+        <p class="fw-s">{% blocktrans with m=monate %}Pfandberechtigt sind nur offene Beitragsforderungen der letzten {{ m }} Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein.{% endblocktrans %}</p>
+    </div>
+</div>
+
+{% for z in zeilen %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-t">{{ z.einheit.bezeichnung }}{% if z.einheit.stockwerkeigentuemer %} · {{ z.einheit.stockwerkeigentuemer.firma_oder_name }}{% endif %}</span>
+        <span class="fw-chip {% if z.offen > 0 %}fw-warn{% else %}fw-brand{% endif %}">{% blocktrans with b=z.offen|chf %}offen CHF {{ b }}{% endblocktrans %}</span></div>
+    {% if z.pfand %}
+    <div class="fw-rumpf">
+        <p>{% blocktrans with p=z.pfand.pfandberechtigt|chf a=z.pfand.ausgeschlossen|chf %}Pfandberechtigt: CHF {{ p }} · nicht pfandberechtigt (älter): CHF {{ a }}{% endblocktrans %}</p>
+        {% for c in z.pfand.zeilen %}
+        <div class="fw-s">{{ c.datum|date:"d.m.Y" }} · {{ c.text }} · CHF {{ c.offen|chf }}{% if not c.pfandberechtigt %} · {% trans "älter als die Pfandfrist" %}{% endif %}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% for m in z.mahnungen %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% blocktrans with s=m.stufe %}{{ s }}. Mahnung{% endblocktrans %}</div>
+        <div class="fw-s">{{ m.datum|date:"d.m.Y" }} · CHF {{ m.betrag|chf }} · {% blocktrans with d=m.frist_bis|date:"d.m.Y" %}zahlbar bis {{ d }}{% endblocktrans %}{% if m.versendet_am %} · {{ m.kanal }}{% else %} · {% trans "nicht versendet" %}{% endif %}</div></div>
+        <a class="fw-btn" href="/neu/stweg/mahnung/{{ m.pk }}/pdf/" target="_blank" rel="noopener">PDF</a></div>
+    {% endfor %}
+    {% if z.fall and z.fall.retention_erklaert_am %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "Retentionsrecht geltend gemacht" %}</div>
+        <div class="fw-s">{{ z.fall.retention_erklaert_am|date:"d.m.Y" }} · {{ z.fall.retention_gegenstaende|truncatechars:80 }}</div></div>
+        <a class="fw-btn" href="/neu/stweg/inkassofall/{{ z.fall.pk }}/pdf/" target="_blank" rel="noopener">PDF</a></div>
+    {% endif %}
+    {% for pf in z.pfandrechte %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "Gemeinschaftspfandrecht angemeldet" %}</div>
+        <div class="fw-s">{% blocktrans with s=pf.stichtag|date:"d.m.Y" b=pf.betrag_pfandberechtigt|chf %}Stichtag {{ s }} · Pfandsumme CHF {{ b }}{% endblocktrans %}{% if pf.eingetragen_am %} · {% blocktrans with d=pf.eingetragen_am|date:"d.m.Y" %}eingetragen {{ d }}{% endblocktrans %}{% endif %}</div></div>
+        <a class="fw-btn" href="/neu/stweg/pfandrecht/{{ pf.pk }}/pdf/" target="_blank" rel="noopener">{% trans "PDF für das Grundbuchamt" %}</a>
+        {% if not pf.eingetragen_am %}<form method="post" action="/neu/stweg/pfandrecht/{{ pf.pk }}/eingetragen/">{% csrf_token %}<button class="fw-btn">{% trans "Eintragung vermerken" %}</button></form>{% endif %}</div>
+    {% endfor %}
+    <div class="fw-rumpf">
+        {% if z.naechste %}
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/inkasso/mahnen/" style="display:inline">{% csrf_token %}
+            <input type="hidden" name="einheit" value="{{ z.einheit.pk }}">
+            <label class="fw-s" for="fr{{ z.einheit.pk }}">{% trans "Frist (Tage)" %}</label>
+            <input id="fr{{ z.einheit.pk }}" name="frist_tage" value="{{ frist }}" inputmode="numeric" class="fw-feld" style="max-width:5rem">
+            <button class="fw-btn fw-primary">{% blocktrans with s=z.naechste %}{{ s }}. Mahnung erstellen und versenden{% endblocktrans %}</button></form>
+        {% endif %}
+        {% if z.fall %}
+        <details class="fw-aufklapp"><summary>{% trans "Retentionsrecht geltend machen (Art. 712k ZGB)" %}</summary>
+            <div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/stweg/{{ lg.pk }}/inkasso/retention/" class="fw-formular">{% csrf_token %}
+                    <input type="hidden" name="einheit" value="{{ z.einheit.pk }}">
+                    <div class="fw-feldblock"><label class="fw-label" for="rg{{ z.einheit.pk }}">{% trans "Sachen, an denen das Retentionsrecht geltend gemacht wird *" %}</label>
+                        <textarea id="rg{{ z.einheit.pk }}" name="gegenstaende" rows="3" required class="fw-feld"></textarea></div>
+                    <div class="fw-feldblock"><label class="fw-label"><input type="checkbox" name="ohne_mahnungen" value="1"> {% trans "Auch ohne drei Mahnungen (die Stufen sind eine Richtlinie, keine gesetzliche Voraussetzung)" %}</label></div>
+                    <div class="fw-formular-fuss"><button class="fw-btn">{% trans "Retentionsrecht festhalten" %}</button></div>
+                </form></div></details>
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/inkasso/pfandrecht/" class="fw-formular">{% csrf_token %}
+            <input type="hidden" name="einheit" value="{{ z.einheit.pk }}">
+            <div class="fw-feldblock"><label class="fw-label"><input type="checkbox" name="ohne_mahnungen" value="1"> {% trans "Auch ohne drei Mahnungen" %}</label></div>
+            <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Gemeinschaftspfandrecht anmelden" %}</button>
+                <span class="fw-s">{% blocktrans with m=monate %}Summiert nur die offenen Forderungen der letzten {{ m }} Monate und erzeugt das PDF für das Grundbuchamt.{% endblocktrans %}</span></div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% empty %}
+<div class="fw-card"><div class="fw-rumpf"><p class="fw-leer">{% trans "Keine offenen Beitragsforderungen." %}</p></div></div>
+{% endfor %}
+{% endblock %}

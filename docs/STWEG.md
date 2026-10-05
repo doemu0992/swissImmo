@@ -128,6 +128,42 @@ Zugriff: Upload nur PDF/Bild (Inhalt geprüft, 10 MB). Ausgeliefert wird nie üb
 `/neu/stweg/dokument/<id>/` (Rolle + Mandant) bzw. `/portal/stweg/dokument/<id>/` (nur freigegebene
 Dokumente, nur Gemeinschaften, an denen der Eigentümer beteiligt ist; sonst 404).
 
+## Inkasso: Mahnung, Retentionsrecht, Gemeinschaftspfandrecht
+
+Ein Stockwerkeigentümer ist Eigentümer, nicht Mieter: **Es gibt nie eine Kündigungsandrohung nach Art. 257d OR.**
+Technisch erzwungen an drei Stellen: `inkasso.ohne_kuendigung` (Mahntext, schlägt zu bei «kündig»/«257d»),
+`core/services/zahlungsverzug.py` (`EigentuemerSchutz` → 403; `eskalation_257d` liefert für einen Eigentümer nichts;
+der Mietmahnbrief stuft die letzte Stufe herab) und der Mahn-PDF-Pfad des Mietmoduls.
+
+* **Fall:** `StwegInkassoFall` — höchstens ein offener je Einheit. **Mahnungen:** drei Stufen (interne Richtlinie,
+  keine gesetzliche Voraussetzung; Frist 10 Tage = Voreinstellung). Eine nächste Stufe gibt es erst, wenn die
+  vorige versendet ist.
+* **Retentionsrecht (Art. 712k ZGB):** wird mit den betroffenen Sachen festgehalten, PDF-Mitteilung.
+* **Gemeinschaftspfandrecht (Art. 712i ZGB):** Button «Gemeinschaftspfandrecht anmelden». Die Pfandsumme
+  enthält **nur Forderungen der letzten 36 Monate**: Grenze = Stichtag − 36 Monate (Monatsende-Klammerung),
+  eine Forderung zählt, wenn ihr Datum **strikt nach** der Grenze liegt. Forderungsdatum = Fälligkeit der Rate,
+  bei Abrechnungen der 31.12. des Abrechnungsjahres. Ältere Forderungen stehen getrennt im PDF («nicht
+  pfandberechtigt») und nicht in der Pfandsumme; der Stand wird als Schnappschuss in `StwegPfandrecht` gespeichert.
+  PDF für das Grundbuchamt: Entwurf — Grundbuchblatt/EGRID sind Platzhalter, die Unterschrift fehlt.
+* **Tilgungsreihenfolge:** Zahlung mit gewählter Rate (`StwegAkonto.vorschreibung`, Art. 86 OR) tilgt diese;
+  sonst die älteste offene Forderung (FIFO). Ohne diese Regel würde eine späte Zahlung alte Forderungen tilgen und die
+  Pfandsumme überschätzen.
+* **Nicht modelliert:** Verzugszinsen, anteilige Beiträge bei Eigentümerwechsel (Handänderung), Kostenvorschuss
+  Grundbuchamt. Die rechtliche Lesart (Forderungsdatum, Tilgung, 36 Monate) ist durch eine Fachperson zu bestätigen.
+
+## Integritätsprüfung und Audit
+
+`python manage.py stweg_audit [--organisation ID] [--liegenschaft ID]` (Exit-Code 1 bei Fehler) und
+`stweg.integritaet.pruefe(lg)`: Wertquoten 1000/1000, Einheiten ohne Eigentümer/E-Mail, Schlüssel-Lücken,
+Fonds-Bestand gegen Bewegungen, Konten 2035/2800 als Passiva, Zahlungen ohne Buchung und der **Abgleich Hauptbuch ↔
+Fachtabellen** (1110, 2035, 3100, 2800). **Lift nach Stockwerk:** `schluessel.lift_nach_stockwerk` (Gewicht = Stockwerknummer,
+EG = 0; Unlesbares bricht ab, es wird nicht geraten). Das Reglement kann anderes vorsehen.
+
+## Geschäftsjahr-Simulation
+
+`stweg/test_geschaeftsjahr.py` spielt eine Gemeinschaft (Quoten 200/300/500) durch: Budget per Beschluss (Doppeltes
+Mehr), Akonto, Rechnungen, Fonds-Einlage, Abrechnung, Mahnungen, Pfandrecht — mit Hauptbuch-Abgleich auf den Rappen.
+
 ## Korrekturen an der Dokumentation
 
 * `ENTSCHEIDE-V7.md` D9 («bleibt Vorschlag, nicht gebaut») gilt nicht mehr: Das

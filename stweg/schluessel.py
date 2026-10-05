@@ -107,6 +107,45 @@ def lift_schluessel(liegenschaft, name='Lift', ausgeschlossen=EG_SCHREIBWEISEN):
     return manuellen_schluessel_setzen(liegenschaft, name, anteile)
 
 
+def etage_nummer(text):
+    """Die Stockwerknummer aus dem freien Textfeld `Einheit.etage`: «EG» → 0, «1. OG» → 1, «2.OG» → 2.
+    Alles, was sich nicht eindeutig lesen lässt («Attika», «DG», «Maisonette»), gibt None — das System rät nicht."""
+    import re
+    t = (text or '').strip().lower()
+    if t in EG_SCHREIBWEISEN:
+        return 0
+    m = re.fullmatch(r'(\d+)\s*\.?\s*(?:og|obergeschoss|stock|etage)?', t)
+    if m and not re.search(r'ug|untergeschoss|keller', t):
+        return int(m.group(1))
+    return None
+
+
+def lift_nach_stockwerk(liegenschaft, name='Lift', *, etagen=None):
+    """Liftschlüssel nach Stockwerk: Gewicht = Stockwerknummer (EG = 0 trägt nichts, 1. OG = 1, 2. OG = 2 …).
+
+    Wer höher wohnt, fährt weiter und trägt mehr. Die Gewichtung nach Stockwerknummer ist eine übliche
+    Vereinbarung, aber KEINE Rechtsnorm — das Reglement der Gemeinschaft kann etwas anderes vorsehen; dann einen
+    eigenen Schlüssel mit eigenen Anteilen anlegen.
+
+    Lässt sich eine Etage nicht lesen (`etage_nummer` gibt None), wird nichts angelegt: `etagen` ({Einheit: Nummer})
+    muss sie ausdrücklich nennen."""
+    etagen = etagen or {}
+    anteile, unklar = {}, []
+    for e in stimm_einheiten(liegenschaft):
+        n = etagen.get(e, etagen.get(e.pk))
+        if n is None:
+            n = etage_nummer(e.etage)
+        if n is None:
+            unklar.append(f'«{e.bezeichnung}» (Etage «{e.etage or "leer"}»)')
+        else:
+            anteile[e] = Decimal(n)
+    if unklar:
+        raise SchluesselFehler('Die Stockwerknummer ist nicht lesbar bei ' + ', '.join(unklar)
+                               + ' — bitte in der Einheit eintragen oder ausdrücklich angeben.')
+    return manuellen_schluessel_setzen(liegenschaft, name, anteile,
+                                       bemerkung='nach Stockwerk (EG = 0)')
+
+
 def kostenart_zuordnen(liegenschaft, konto, schluessel):
     if schluessel.liegenschaft_id != liegenschaft.pk:
         raise SchluesselFehler(gettext('Der Schlüssel gehört zu einer anderen Gemeinschaft.'))

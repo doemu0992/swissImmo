@@ -103,6 +103,9 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     empfaenger (optional): {firma, name, strasse, ort_line, nachname, anrede} —
     ueberschreibt den Empfaenger fuer separat adressierte Kopien (Art. 266n OR:
     Familienwohnung/Mitmieter). Ohne Override: vertrag.mieter."""
+    # Gegen einen Stockwerkeigentümer gibt es keine Kündigungsandrohung (Art. 257d OR gilt nur für Mieter).
+    from core.services.zahlungsverzug import pruefe_kein_eigentuemer
+    pruefe_kein_eigentuemer(vertrag)
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     _e = empfaenger or {}

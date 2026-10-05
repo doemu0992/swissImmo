@@ -24086,3 +24086,99 @@ msgstr "Insurance policy"
 #: stweg/models.py
 msgid "Jahresrechnung"
 msgstr "Annual statement"
+
+#: stweg/inkasso
+msgid "Bezahlte Rate (falls der Eigentümer sie angegeben hat)"
+msgstr "Paid instalment (if the owner stated it)"
+
+#: stweg/inkasso
+msgid "— keine Angabe: älteste offene Forderung —"
+msgstr "— not stated: oldest open claim —"
+
+#: stweg/inkasso
+msgid "Inkasso"
+msgstr "Debt collection"
+
+#: stweg/inkasso
+msgid "Mahnungen, Retentionsrecht und Gemeinschaftspfandrecht — ohne Kündigungsandrohung"
+msgstr "Reminders, right of retention and community lien — without termination threat"
+
+#: stweg/inkasso
+msgid "Ein Stockwerkeigentümer ist Eigentümer, nicht Mieter: Es gibt keine Kündigungsandrohung. Die Gemeinschaft sichert ihre Beitragsforderungen durch Mahnungen, das Retentionsrecht (Art. 712k ZGB) und das Gemeinschaftspfandrecht (Art. 712i ZGB)."
+msgstr "A condominium owner is an owner, not a tenant: there is no termination threat. The community secures its contribution claims through reminders, the right of retention (Art. 712k CC) and the community lien (Art. 712i CC)."
+
+#: stweg/inkasso
+msgid "älter als die Pfandfrist"
+msgstr "older than the lien period"
+
+#: stweg/inkasso
+msgid "nicht versendet"
+msgstr "not sent"
+
+#: stweg/inkasso
+msgid "Retentionsrecht geltend gemacht"
+msgstr "Right of retention asserted"
+
+#: stweg/inkasso
+msgid "Gemeinschaftspfandrecht angemeldet"
+msgstr "Community lien registered"
+
+#: stweg/inkasso
+msgid "PDF für das Grundbuchamt"
+msgstr "PDF for the land registry"
+
+#: stweg/inkasso
+msgid "Eintragung vermerken"
+msgstr "Note registration"
+
+#: stweg/inkasso
+msgid "Retentionsrecht geltend machen (Art. 712k ZGB)"
+msgstr "Assert right of retention (Art. 712k CC)"
+
+#: stweg/inkasso
+msgid "Sachen, an denen das Retentionsrecht geltend gemacht wird *"
+msgstr "Items subject to the right of retention *"
+
+#: stweg/inkasso
+msgid "Auch ohne drei Mahnungen (die Stufen sind eine Richtlinie, keine gesetzliche Voraussetzung)"
+msgstr "Even without three reminders (the levels are a guideline, not a legal requirement)"
+
+#: stweg/inkasso
+msgid "Retentionsrecht festhalten"
+msgstr "Record right of retention"
+
+#: stweg/inkasso
+msgid "Auch ohne drei Mahnungen"
+msgstr "Even without three reminders"
+
+#: stweg/inkasso
+msgid "Gemeinschaftspfandrecht anmelden"
+msgstr "Register community lien"
+
+#: stweg/inkasso
+msgid "Keine offenen Beitragsforderungen."
+msgstr "No open contribution claims."
+
+#: stweg/inkasso
+msgid "%(stufe)s. Mahnung per E-Mail versendet."
+msgstr "Reminder no. %(stufe)s sent by e-mail."
+
+#: stweg/inkasso
+msgid "%(stufe)s. Mahnung erstellt, aber der Versand ist fehlgeschlagen."
+msgstr "Reminder no. %(stufe)s created, but sending failed."
+
+#: stweg/inkasso
+msgid "Für diese Einheit ist kein Inkassofall offen."
+msgstr "No collection case is open for this unit."
+
+#: stweg/inkasso
+msgid "Das Retentionsrecht ist festgehalten."
+msgstr "The right of retention has been recorded."
+
+#: stweg/inkasso
+msgid "Eintragung im Grundbuch vermerkt."
+msgstr "Land register entry noted."
+
+#: stweg/inkasso
+msgid "Die gewählte Rate gehört nicht zu dieser Einheit."
+msgstr "The selected instalment does not belong to this unit."

@@ -273,6 +273,13 @@ class MandantenFixture:
         self.stweg_budget = _Budget.objects.create(liegenschaft=self.liegenschaft, jahr=2025)
         self.stweg_dokument = _Dokument.objects.create(
             liegenschaft=self.liegenschaft, kategorie='reglement', titel=f'Reglement {k}', datei=f'dok/{k}.pdf')
+        from stweg.models import StwegInkassoFall as _Fall, StwegMahnung as _Mahnung, StwegPfandrecht as _Pfand
+        self.stweg_inkassofall = _Fall.objects.create(einheit=self.einheit)
+        self.stweg_mahnung = _Mahnung.objects.create(fall=self.stweg_inkassofall, stufe=1, betrag=Decimal('10'),
+                                                     frist_bis=_tz.now().date())
+        self.stweg_pfandrecht = _Pfand.objects.create(
+            fall=self.stweg_inkassofall, stichtag=_tz.now().date(), betrag_gesamt=Decimal('10'),
+            betrag_pfandberechtigt=Decimal('10'), betrag_ausgeschlossen=Decimal('0'))
         from stweg.models import Vollmacht as _Vollmacht, Zirkularbeschluss as _Zirkular
         self.stweg_zirkular = _Zirkular.objects.create(
             liegenschaft=self.liegenschaft, titel=f'Zirkular {k}', antrag='Antrag',
@@ -468,6 +475,9 @@ class MandantenFixture:
         ('portal_stweg_akonto',      'stweg_budget'),
         ('portal_stweg_teilnehmen',  'stweg_versammlung'),
         ('portal_stweg_evoting',     'stweg_versammlung'),
+        ('stweg_mahnung',            'stweg_mahnung'),
+        ('stweg_pfandrecht',         'stweg_pfandrecht'),
+        ('stweg_inkassofall',        'stweg_inkassofall'),
         ('stweg_schluessel',         'stweg_schluessel'),
         ('stweg_budget',             'stweg_budget'),
         ('stweg_dokument',           'stweg_dokument'),

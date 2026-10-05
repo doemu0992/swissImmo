@@ -35,6 +35,10 @@ class StwegAkonto(OrganisationAusKette):
     #: von dort zugeordnet — sonst läge der Betrag zweimal auf dem Bankkonto.
     zahlungseingang = models.ForeignKey('finance.Zahlungseingang', on_delete=models.SET_NULL, null=True,
                                         blank=True, related_name='+')
+    #: Die Rate, für die der Eigentümer bezahlt hat (Bestimmung des Schuldners, Art. 86 OR). Ohne Angabe wird die
+    #: Zahlung der ältesten offenen Forderung angerechnet (`stweg.inkasso`).
+    vorschreibung = models.ForeignKey('stweg.StwegVorschreibung', on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='+')
 
     class Meta:
         db_table = 'stweg_akonto'
@@ -733,3 +737,73 @@ class StwegVorgaben(OrganisationAusKette):
                            | (models.Q(quorum_quoten_prozent__gte=0) & models.Q(quorum_quoten_prozent__lte=100))),
                 name='stweg_vorgaben_quorum_quoten_0_100'),
         ]
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# INKASSO
+#
+# Gegen einen Stockwerkeigentümer gibt es KEINE Kündigung: Er ist Eigentümer, nicht Mieter (Art. 257d OR gilt
+# nicht). Die Gemeinschaft sichert ihre Beitragsforderungen stattdessen durch das Retentionsrecht an beweglichen
+# Sachen (Art. 712k ZGB) und das Gemeinschaftspfandrecht am Anteil (Art. 712i ZGB, nur für die Beitragsforderungen
+# der letzten drei Jahre). Der Ablauf: Mahnstufen 1–3 → Retentionsrecht geltend machen → Pfandrecht anmelden.
+# ──────────────────────────────────────────────────────────────────────────
+
+class StwegInkassoFall(OrganisationAusKette):
+    """Der Inkassofall einer Einheit; höchstens einer ist offen."""
+    ORGANISATION_PFAD = 'einheit__liegenschaft'
+    OFFEN, ERLEDIGT = 'offen', 'erledigt'
+    STATUS_CHOICES = [(OFFEN, _('Offen')), (ERLEDIGT, _('Erledigt'))]
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='stweg_inkassofaelle')
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='+')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=OFFEN)
+    eroeffnet_am = models.DateField(default=timezone.localdate)
+    erledigt_am = models.DateField(null=True, blank=True)
+    retention_erklaert_am = models.DateField(null=True, blank=True)
+    retention_gegenstaende = models.TextField(blank=True, default='')
+
+    class Meta:
+        db_table = 'stweg_inkassofall'
+        ordering = ['-eroeffnet_am', '-id']
+        constraints = [models.UniqueConstraint(fields=['einheit'], condition=models.Q(status='offen'),
+                                               name='stweg_inkasso_ein_offener_fall_je_einheit')]
+
+
+class StwegMahnung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'fall'
+    fall = models.ForeignKey(StwegInkassoFall, on_delete=models.CASCADE, related_name='mahnungen')
+    stufe = models.PositiveSmallIntegerField()
+    datum = models.DateField(default=timezone.localdate)
+    betrag = models.DecimalField(max_digits=12, decimal_places=2)
+    frist_bis = models.DateField()
+    versendet_am = models.DateTimeField(null=True, blank=True)
+    kanal = models.CharField(max_length=10, blank=True, default='')       # email | post
+
+    class Meta:
+        db_table = 'stweg_mahnung'
+        ordering = ['stufe']
+        constraints = [
+            models.UniqueConstraint(fields=['fall', 'stufe'], name='stweg_mahnung_eine_je_stufe'),
+            models.CheckConstraint(condition=models.Q(stufe__gte=1) & models.Q(stufe__lte=3),
+                                   name='stweg_mahnung_stufe_1_bis_3'),
+        ]
+
+
+class StwegPfandrecht(OrganisationAusKette):
+    """Anmeldung eines Gemeinschaftspfandrechts (Art. 712i ZGB) beim Grundbuchamt — Momentaufnahme der Forderungen."""
+    ORGANISATION_PFAD = 'fall'
+    fall = models.ForeignKey(StwegInkassoFall, on_delete=models.CASCADE, related_name='pfandrechte')
+    stichtag = models.DateField()
+    #: Alle offenen Beitragsforderungen, nur die der letzten 36 Monate (pfandberechtigt) und der Rest.
+    betrag_gesamt = models.DecimalField(max_digits=12, decimal_places=2)
+    betrag_pfandberechtigt = models.DecimalField(max_digits=12, decimal_places=2)
+    betrag_ausgeschlossen = models.DecimalField(max_digits=12, decimal_places=2)
+    zeilen = models.JSONField(default=list, blank=True)
+    angemeldet_am = models.DateTimeField(auto_now_add=True)
+    angemeldet_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='+')
+    eingetragen_am = models.DateField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'stweg_pfandrecht'
+        ordering = ['-angemeldet_am']
