@@ -203,6 +203,32 @@ Das Portal zeigt dem Eigentümer bei den Fonds-Einlagen, was davon noch offen is
 `stweg/test_geschaeftsjahr.py` spielt eine Gemeinschaft (Quoten 200/300/500) durch: Budget per Beschluss (Doppeltes
 Mehr), Akonto, Rechnungen, Fonds-Einlage, Abrechnung, Mahnungen, Pfandrecht — mit Hauptbuch-Abgleich auf den Rappen.
 
+## Legal-Audit nach ZGB (Art. 712a ff.)
+
+* **Quoren (`stweg/quorum.py`):** Beim Anlegen eines Traktandums MUSS die Verwaltung die **Art des Geschäfts** und die
+  **Mehrheitsart** wählen (keine stille Vorgabe). Gesetzlich verlangtes Minimum je Geschäftsart: gewöhnliche
+  Verwaltungshandlung = einfaches Mehr (Art. 712m ZGB i.V.m. Vereinsrecht); nützliche bauliche Massnahme und
+  Reglementsänderung = Mehrheit ALLER Eigentümer (Köpfe) UND mehr als die Hälfte aller Wertquoten (`doppelt_aller`;
+  Art. 647d ZGB, beim Reglement «gemäss Auftrag, Artikel zu bestätigen»); luxuriöse bauliche Massnahme = Einstimmigkeit
+  (Art. 647e ZGB). Eine schwächere Mehrheit wird abgewiesen, eine strengere ist erlaubt; wer ein abweichendes Quorum des
+  Reglements anwenden muss, wählt «sonstiges» und nennt die Rechtsgrundlage. Ohne gültige Angaben wird weder eingeladen noch
+  ein Ergebnis festgestellt; ein Beschluss, der das Quorum verfehlt, kann nicht als «angenommen» festgestellt werden
+  («nach Auszählung» stellt das rechnerische Ergebnis fest). Altbestand ohne Geschäftsart lässt sich nachtragen.
+* **Sonderrecht / Gemeinschaftseigentum (`stweg/bauteile.py`, Art. 712b ZGB):** Bei einem Schaden in einer STWEG müssen
+  **Bauteil** und **Kostenträger** («Sonderrecht» oder «gemeinschaftlich») deklariert sein, sonst gibt es keinen
+  Handwerkerauftrag und keinen Abschluss. «Sonderrecht» auf Dach, Fassade, Fenster (Aussenseite), tragenden Teilen,
+  Hauptleitungen, Treppenhaus, Anlagen für alle und Grundstück wird nicht gespeichert (Warnung in der Oberfläche, Sperre im
+  Modell). Rechnungen eines gemeinschaftlichen Tickets werden in der Jahresabrechnung nie einer einzelnen Einheit
+  belastet. Der Bauteil-Katalog ersetzt keine rechtliche Prüfung; «Sonstiges» ist nicht zwingend gemeinschaftlich.
+* **Abweichende Kostenverteilung (Art. 712h Abs. 3 ZGB):** `schluessel.befreien` befreit Einheiten von einem Schlüssel
+  (Anteil 0), mit Pflicht-Begründung (Reglement, Beschluss, Artikel). Der Betrag wird auf die übrigen umgerechnet (neue
+  Basis 100 %, grösster Rest, auf den Rappen genau). Die Datenprüfung warnt vor einem Nullanteil ohne Begründung.
+* **Legal Health Check (`stweg/compliance.py`):** Rote Warnung «Nicht Compliance-Konform» auf der Gemeinschaftsseite
+  und in der Übersicht, bis **Begründungsakt**, **Reglement** und der **aktuelle Gebäudeversicherungsnachweis** hochgeladen,
+  gültig (nicht abgelaufen, nicht erst künftig) und im Speicher vorhanden sind. Neue Dokumentenkategorie
+  «Gebäudeversicherungsnachweis» (ersetzend, Pflicht); «Weitere Versicherungspolice» ist keine Pflicht mehr. Der Check prüft das
+  Vorhandensein, nicht die Richtigkeit.
+
 ## Korrekturen an der Dokumentation
 
 * `ENTSCHEIDE-V7.md` D9 («bleibt Vorschlag, nicht gebaut») gilt nicht mehr: Das
