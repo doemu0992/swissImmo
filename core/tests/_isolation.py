@@ -280,6 +280,10 @@ class MandantenFixture:
         self.stweg_pfandrecht = _Pfand.objects.create(
             fall=self.stweg_inkassofall, stichtag=_tz.now().date(), betrag_gesamt=Decimal('10'),
             betrag_pfandberechtigt=Decimal('10'), betrag_ausgeschlossen=Decimal('0'))
+        from crm.models import Eigentuemer as _Eig
+        from stweg.models import StwegEigentuemerwechsel as _Wechsel
+        self.stweg_wechsel = _Wechsel.objects.create(
+            einheit=self.einheit, datum=_tz.now().date(), neu=_Eig.objects.create(firma_oder_name=f'Käufer {k}'))
         from stweg.models import Vollmacht as _Vollmacht, Zirkularbeschluss as _Zirkular
         self.stweg_zirkular = _Zirkular.objects.create(
             liegenschaft=self.liegenschaft, titel=f'Zirkular {k}', antrag='Antrag',
@@ -477,6 +481,7 @@ class MandantenFixture:
         ('portal_stweg_evoting',     'stweg_versammlung'),
         ('stweg_mahnung',            'stweg_mahnung'),
         ('stweg_pfandrecht',         'stweg_pfandrecht'),
+        ('stweg_handaenderung',      'stweg_wechsel'),
         ('stweg_inkassofall',        'stweg_inkassofall'),
         ('stweg_schluessel',         'stweg_schluessel'),
         ('stweg_budget',             'stweg_budget'),

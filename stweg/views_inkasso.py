@@ -1,4 +1,6 @@
 """Oberfläche für das STWEG-Inkasso (/neu/stweg/<id>/inkasso/)."""
+from decimal import Decimal
+
 from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -8,8 +10,8 @@ from django.utils.translation import gettext
 from django.views.decorators.http import require_POST
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
-from stweg import inkasso
-from stweg.models import StwegInkassoFall, StwegMahnung, StwegPfandrecht
+from stweg import inkasso, zins
+from stweg.models import StwegInkassoFall, StwegInkassoPosition, StwegMahnung, StwegPfandrecht
 from stweg.validierung import stimm_einheiten
 from stweg.views import _gemeinschaft, _zahl
 
@@ -34,7 +36,11 @@ def stweg_inkasso(request, stweg_id):
             continue
         p = inkasso.pfandberechtigt(e, heute) if offen > 0 else None
         zeilen.append({'einheit': e, 'offen': offen, 'fall': fall, 'pfand': p,
-                       'stufe': inkasso.mahnstufe(fall), 'zins': inkasso.verzugszins(e, heute),
+                       'stufe': inkasso.mahnstufe(fall), 'zins_unbestaetigt': zins.satz_unbestaetigt(lg),
+                       'neben': [c for c in inkasso.forderungen(e, heute)
+                                 if c['art'] not in zins.KAPITAL_ARTEN and c['offen'] > 0],
+                       'positionen': list(StwegInkassoPosition.objects.filter(einheit=e, storniert_am__isnull=True)
+                                          .filter(art='betreibungskosten')),
                        'altforderung': offen - inkasso.offener_betrag_eigentuemer(e, heute),
                        'mahnungen': list(fall.mahnungen.all()) if fall else [],
                        'pfandrechte': list(fall.pfandrechte.all()) if fall else [],
@@ -84,6 +90,43 @@ def stweg_inkasso_retention(request, stweg_id):
         inkasso.retention_geltend_machen(fall, request.POST.get('gegenstaende') or '',
                                          ohne_mahnungen=bool(request.POST.get('ohne_mahnungen')), user=request.user)
         messages.success(request, gettext('Das Retentionsrecht ist festgehalten.'))
+    except inkasso.InkassoFehler as fehler:
+        messages.error(request, str(fehler))
+    return _zurueck(lg)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_inkasso_kostenvorschuss(request, stweg_id):
+    """Vorschuss ans Betreibungsamt erfassen: kommt zur Gesamtschuld des Eigentümers."""
+    lg = _gemeinschaft(stweg_id)
+    e = _einheit(lg, request)
+    fall = inkasso.offener_fall(e) if e else None
+    if fall is None:
+        messages.error(request, gettext('Für diese Einheit ist kein Inkassofall offen.'))
+        return _zurueck(lg)
+    try:
+        betrag = Decimal((request.POST.get('betrag') or '0').replace("'", '').replace(',', '.').strip() or '0')
+    except ArithmeticError:
+        messages.error(request, gettext('Bitte einen gültigen Betrag eingeben.'))
+        return _zurueck(lg)
+    try:
+        inkasso.kostenvorschuss_erfassen(fall, betrag, parse_date(request.POST.get('datum') or ''),
+                                         amt=(request.POST.get('amt') or '').strip()[:120], user=request.user)
+        messages.success(request, gettext('Kostenvorschuss erfasst und der Gesamtschuld zugeschlagen.'))
+    except inkasso.InkassoFehler as fehler:
+        messages.error(request, str(fehler))
+    return _zurueck(lg)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def stweg_inkasso_position_storno(request, stweg_id, pk):
+    lg = _gemeinschaft(stweg_id)
+    pos = get_object_or_404(StwegInkassoPosition, pk=pk, einheit__liegenschaft=lg)
+    try:
+        inkasso.position_stornieren(pos, user=request.user)
+        messages.success(request, gettext('Die Position ist storniert.'))
     except inkasso.InkassoFehler as fehler:
         messages.error(request, str(fehler))
     return _zurueck(lg)
@@ -150,3 +193,26 @@ def stweg_inkassofall_pdf(request, pk):
     return _pdf(retention_pdf(fall), 'Retentionsrecht.pdf')
 
 
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_handaenderung_pdf(request, pk):
+    """Handänderungs-Abrechnung (pro rata temporis) zu einem erfassten Eigentümerwechsel."""
+    from stweg.models import StwegEigentuemerwechsel
+    from stweg.pdf import handaenderung_pdf
+    w = get_object_or_404(StwegEigentuemerwechsel.objects.select_related('einheit__liegenschaft', 'neu', 'bisheriger'),
+                          pk=pk)
+    return _pdf(handaenderung_pdf(w), 'Handaenderung.pdf')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_zinsabrechnung_pdf(request, stweg_id, einheit_id):
+    """Zinsabrechnung (Kontokorrent mit Verzugszins) einer Einheit per heute."""
+    from django.http import Http404
+
+    from stweg.pdf import zinsabrechnung_pdf
+    lg = _gemeinschaft(stweg_id)
+    e = stimm_einheiten(lg).filter(pk=einheit_id).first()
+    if e is None:
+        raise Http404
+    return _pdf(zinsabrechnung_pdf(e), 'Zinsabrechnung.pdf')

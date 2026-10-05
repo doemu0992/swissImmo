@@ -244,7 +244,7 @@ class Geschaeftsjahr2026(TestCase):
         # 11 ── Bücher: Hauptbuch und Fachtabellen stimmen auf den Rappen überein ───────────────────
         ab = integritaet.abstimmung_hauptbuch(lg)
         self.assertEqual({k: v['differenz'] for k, v in ab.items()}, {'1110': D('0'), '2035': D('0'), '3100': D('0'),
-                                                                      '2800': D('0')})
+                                                                      '2800': D('0'), '3110': D('0'), '3120': D('0')})
         self.assertEqual(saldo('3100', lg), D('-8581.65'))                 # Beiträge = Kostenanteile
         self.assertEqual(saldo('4120', lg) + saldo('4160', lg), D('8581.65'))   # Aufwand der Gemeinschaft
         self.assertEqual(saldo('3100', lg) + saldo('4120', lg) + saldo('4160', lg), D('0.00'))  # Jahresergebnis null

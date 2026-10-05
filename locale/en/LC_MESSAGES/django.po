@@ -24258,3 +24258,95 @@ msgstr "of which still open CHF %(offen)s"
 #: stweg/eigentuemer
 msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
 msgstr "Only claims against a previous owner are open. A reminder to the current owner is not possible; the community lien attaches to the share."
+
+#: stweg/zins
+msgid "Zinsen und Kosten (nicht in der Pfandsumme):"
+msgstr "Interest and costs (not in the lien amount):"
+
+#: stweg/zins
+msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
+msgstr "The default interest rate is entered but not confirmed: no interest is calculated."
+
+#: stweg/handaenderung
+msgid "Handänderungs-Abrechnung (PDF)"
+msgstr "Change-of-ownership statement (PDF)"
+
+#: stweg/inkasso
+msgid "Mahngebühr je Mahnung (CHF)"
+msgstr "Reminder fee per reminder (CHF)"
+
+#: stweg/inkasso
+msgid "Leer = keine Mahngebühren. Nur mit bestätigten Vorgaben wird eine Gebühr belastet."
+msgstr "Empty = no reminder fees. A fee is only charged with confirmed specifications."
+
+#: stweg/inkasso
+msgid "Mahngebühr ab Mahnstufe (1 bis 3)"
+msgstr "Reminder fee from reminder level (1 to 3)"
+
+#: stweg/inkasso
+msgid "Leer = ab der 2. Mahnung."
+msgstr "Empty = from the 2nd reminder."
+
+#: stweg/inkasso
+msgid "Kostenvorschuss für die Betreibung erfassen (SchKG)"
+msgstr "Record advance on debt collection costs (DEBA)"
+
+#: stweg/inkasso
+msgid "Datum der Zahlung"
+msgstr "Date of payment"
+
+#: stweg/inkasso
+msgid "Betreibungsamt"
+msgstr "Debt enforcement office"
+
+#: stweg/inkasso
+msgid "Kostenvorschuss erfassen"
+msgstr "Record cost advance"
+
+#: stweg/inkasso
+msgid "Der Vorschuss wird der Gesamtschuld des Eigentümers zugeschlagen (nicht der Pfandsumme)."
+msgstr "The advance is added to the owner's total debt (not to the lien amount)."
+
+#: stweg/inkasso
+msgid "Bitte einen gültigen Betrag eingeben."
+msgstr "Please enter a valid amount."
+
+#: stweg/inkasso
+msgid "Kostenvorschuss erfasst und der Gesamtschuld zugeschlagen."
+msgstr "Cost advance recorded and added to the total debt."
+
+#: stweg/inkasso
+msgid "Die Position ist storniert."
+msgstr "The item has been cancelled."
+
+#: stweg/inkasso
+msgid "Diese Position ist schon storniert."
+msgstr "This item is already cancelled."
+
+#: stweg/inkasso
+msgid "Der Inkassofall ist erledigt."
+msgstr "The collection case is closed."
+
+#: stweg/inkasso
+msgid "Der Kostenvorschuss muss grösser als 0 sein."
+msgstr "The cost advance must be greater than 0."
+
+#: stweg/inkasso
+msgid "Mahngebühr"
+msgstr "Reminder fee"
+
+#: stweg/inkasso
+msgid "Betreibungskostenvorschuss"
+msgstr "Advance on enforcement costs"
+
+#: stweg/inkasso
+msgid "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
+msgstr "Reminder fee from level: reminder levels 1 to 3 are allowed."
+
+#: stweg/pdf
+msgid "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen."
+msgstr "Warning: This calculation does not replace legal review. The 36-month period for the lien, the interest calculation, the allocation of payments (Art. 85 CO) and the apportionment on a change of ownership must be confirmed by a specialist."
+
+#: stweg/pdf
+msgid "Zinsabrechnung (PDF)"
+msgstr "Interest statement (PDF)"

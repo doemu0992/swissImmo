@@ -148,17 +148,44 @@ der Mietmahnbrief stuft die letzte Stufe herab) und der Mahn-PDF-Pfad des Mietmo
 * **Tilgungsreihenfolge:** Zahlung mit gewählter Rate (`StwegAkonto.vorschreibung`, Art. 86 OR) tilgt diese;
   sonst die älteste offene Forderung (FIFO). Ohne diese Regel würde eine späte Zahlung alte Forderungen tilgen und die
   Pfandsumme überschätzen.
-* **Verzugszins:** Das System kennt keinen Satz. Die Gemeinschaft trägt ihn bei den Vorgaben ein (mit Quelle, zu
-  bestätigen); leer = es wird nichts berechnet. Berechnung: einfacher Zins auf die heute OFFENEN Beträge vom Tag nach
-  der Fälligkeit bis zum Stichtag (Tage/365, auf Rappen). Zins auf spät bezahlte Teile fehlt (Vereinfachung). Die Mahnung
-  nennt den Zins erst nach Bestätigung des Satzes, immer ausserhalb des Totals; in der Pfandsumme steht er nie.
+* **Verzugszins** (`stweg/zins.py`): Das System kennt keinen Satz. Die Gemeinschaft trägt ihn bei den Vorgaben ein (mit
+  Quelle) und BESTÄTIGT ihn; ohne bestätigten Satz wird nichts gerechnet. Jede Beitragsforderung verzinst sich ab dem Tag
+  nach der Fälligkeit mit einfachem Zins auf das jeweils offene KAPITAL (Tage/365, je Zeitabschnitt auf Rappen gerundet).
+  Eine verspätet — auch teilweise — bezahlte Forderung lässt die Zinsschuld stehen: sie ist eine eigene Forderung (`art`
+  «zins»), auch wenn das Kapital bezahlt ist. Kein Zins auf Zinsen oder Kosten (Art. 105 Abs. 3 OR).
+* **Tilgungs-Wasserfall (Art. 85 Abs. 1 OR):** Eine Zahlung wird zuerst den KOSTEN (Mahngebühren, Betreibungskosten), dann
+  den ZINSEN, zuletzt dem KAPITAL angerechnet (`zins.TILGUNGSREIHENFOLGE`; `zins.zuordnen` nimmt die Reihenfolge als
+  Argument). Hinweis: Der Auftrag nannte «Art. 73 OR» (das ist der Zinsfuss) und «zuerst Zinsen, dann Spesen»; Art. 85 OR
+  stellt die Kosten vor die Zinsen. Die Anrechnung wird beim Erfassen der Zahlung berechnet und festgehalten
+  (`StwegAkonto.an_kosten`, `an_zins`, Rest = Kapital) und so gebucht: Kosten und Kapital Haben 1110, Zins Haben 3120
+  (Ertrag, bei Zahlung vereinnahmt). Die Angabe einer bezahlten Rate (Art. 86 OR) bestimmt nur, welches KAPITAL getilgt
+  wird. Eine rückdatiert erfasste Zahlung ändert die Anrechnung früherer Zahlungen nicht.
+* **Mahngebühr:** Betrag und Mahnstufe trägt die Gemeinschaft bei den Vorgaben ein und bestätigt sie (leer = keine
+  Gebühr; Voreinstellung der Stufe: ab der 2. Mahnung). Sie entsteht mit der Mahnung als echte Sollstellung (Soll 1110 /
+  Haben 3110), ist Teil des Totals der Mahnung und der Gesamtschuld.
+* **Kostenvorschuss Betreibung (SchKG):** «Kostenvorschuss erfassen» auf der Inkassoseite (Betrag, Datum, Amt): Soll 1110 /
+  Haben 1020 (Auslage der Verwaltung), Teil der Gesamtschuld, hält fest, dass die Betreibung eingeleitet ist; stornierbar.
+  Die Betreibung selbst (Begehren) erstellt das Programm nicht.
+* **Gesamtschuld und Pfandsumme:** Gesamtschuld = Kapital + Zinsen + Kosten. Die Pfandsumme enthält NUR Kapital der
+  letzten 36 Monate; Zinsen und Kosten stehen getrennt (ob sie vom Pfandrecht erfasst sind, ist rechtlich zu klären).
 * **Handänderung** (`stweg/eigentuemer.py`, «Handänderung erfassen» auf der Einheitenseite): Datum, bisheriger und
   neuer Eigentümer, Miteigentümer werden gelöscht. Jede Forderung hat einen Schuldner (Eigentümer am Fälligkeitstag;
   Übergangstag zählt zum neuen; bei Abrechnungen der in der Abrechnung genannte). Die Mahnung geht nur an den heutigen
   Eigentümer und nennt nur seine Forderungen; Forderungen gegen einen früheren Eigentümer werden auf der Inkassoseite
-  ausgewiesen, das Gemeinschaftspfandrecht umfasst sie (haftet am Anteil — Annahme, rechtlich zu bestätigen). Nicht
-  abgebildet: anteilige Aufteilung auf den Übergangstag, Absprachen im Kaufvertrag.
-* **Nicht modelliert:** Kostenvorschuss Grundbuchamt, Mahnkosten. Die rechtliche Lesart (Forderungsdatum, Tilgung,
+  ausgewiesen, das Gemeinschaftspfandrecht umfasst sie (haftet am Anteil — Annahme, rechtlich zu bestätigen).
+* **Handänderungs-Abrechnung** (`stweg/handaenderung.py`, PDF je Wechsel): Der Übergangstag ist der erste Tag des Käufers;
+  der Verkäufer trägt die Tage ab 1.1. bis zum Vortag (365/366 Tage). Grundlage ist das genehmigte Jahresbudget der Einheit
+  (oder ein übergebener Betrag). Der Verkäuferanteil wird auf Rappen gerundet, der Käufer trägt den Rest (die Summe
+  stimmt immer). Akonto-Zahlungen gehören dem Eigentümer am Zahlungstag (nur Kapital). Der Ausgleich zwischen den Parteien
+  folgt daraus. Zins wird bis zum Vortag und danach getrennt ausgewiesen. Eine Aufteilung nach Ist-Kosten der
+  Jahresabrechnung ist möglich (Betrag übergeben), aber nicht automatisiert.
+* **Zinsabrechnung** (PDF je Einheit): Forderungen, Zinsabschnitte, Anrechnung der Zahlungen, Gesamtschuld.
+* **Rechtliche Hinweise:** Pfandrecht-Antrag, Retentionsmitteilung, Handänderungs- und Zinsabrechnung tragen den Hinweis
+  «ersetzt keine juristische Prüfung» (oben fett und unten); ebenso die Inkasso- und die Einheitenseite. Die Mahnung an
+  den Eigentümer ist ein Brief und trägt keinen solchen Hinweis.
+* **36 Monate:** Test über jeden Stichtag 2020–2032 (`test_rechtshinweise.DreiJahreRegelTests`).
+* **Nicht modelliert:** Kostenvorschuss Grundbuchamt, das Betreibungsbegehren selbst, Zinseszins (nach Art. 105 OR ohnehin
+  ausgeschlossen), Mietmodul (Zins und Tilgung gelten nur für STWEG). Die rechtliche Lesart (Forderungsdatum, Tilgung,
   36 Monate, Handänderung, Zins) ist durch eine Fachperson zu bestätigen.
 
 ## Integritätsprüfung und Audit

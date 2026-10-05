@@ -18,7 +18,7 @@ from django.utils.translation import gettext
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import F, Q, Sum
 
 from core.tenancy import organisation_kontext
 from finance.models import KreditorenRechnung
@@ -94,7 +94,7 @@ class StwegAbrechnungService:
     def akonto_je_einheit(self, jahr):
         rows = (StwegAkonto.objects.filter(einheit__liegenschaft=self.liegenschaft, datum__year=jahr,
                                          zweck=StwegAkonto.AKONTO)
-                .values('einheit').annotate(s=Sum('betrag')))
+                .values('einheit').annotate(s=Sum(F('betrag') - F('an_kosten') - F('an_zins'))))
         return {r['einheit']: r['s'] or NULL for r in rows}
 
     @transaction.atomic

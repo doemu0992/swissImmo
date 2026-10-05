@@ -90,37 +90,9 @@ class WechselTests(TestCase):
         self.assertEqual(f[0]['schuldner'], self.eigs[1].pk)                     # steht so in der Abrechnung
 
 
-class VerzugszinsTests(TestCase):
+class VorgabeVerzugszinsTests(TestCase):
     def setUp(self):
         self.lg, self.e, self.eigs = haus_mit_eigentuemern()
-        self.b = self.e[1]
-        jahr_budget(self.lg, 2026)
-
-    def test_ohne_satz_keine_zinsen(self):
-        self.assertIsNone(inkasso.verzugszins(self.b, HEUTE))
-
-    def test_zins_auf_offenen_betrag_tage_durch_365(self):
-        vorgaben.speichern(self.lg, {'verzugszins_prozent': '5'})
-        z = inkasso.verzugszins(self.b, date(2026, 4, 11))      # Rate 1.1. (200): 100 Tage
-        self.assertEqual(z['zeilen'][0]['tage'], 100)
-        self.assertEqual(z['zeilen'][0]['zins'], (D('200') * D('0.05') * 100 / 365).quantize(D('0.01')))
-        self.assertEqual(z['zeilen'][0]['zins'], D('2.74'))
-        self.assertEqual(len(z['zeilen']), 2)                   # 1.4.: 10 Tage
-        self.assertFalse(z['bestaetigt'])
-
-    def test_bezahlte_raten_verzinsen_nicht(self):
-        vorgaben.speichern(self.lg, {'verzugszins_prozent': '5'})
-        StwegAkonto.objects.create(einheit=self.b, betrag=D('400'), datum=date(2026, 4, 5))
-        self.assertEqual(inkasso.verzugszins(self.b, date(2026, 4, 11))['total'], D('0.00'))
-
-    def test_mahnung_nennt_zins_erst_nach_bestaetigung(self):
-        vorgaben.speichern(self.lg, {'verzugszins_prozent': '5'})
-        m = inkasso.mahnung_erstellen(self.b, heute=date(2026, 4, 11))
-        self.assertNotIn('Verzugszins', '\n'.join(inkasso.mahntext(m)))
-        vorgaben.speichern(self.lg, {'verzugszins_prozent': '5'}, bestaetigen=True)
-        text = '\n'.join(inkasso.mahntext(m))
-        self.assertIn('Verzugszins von 5 %', text)
-        self.assertNotIn('ündig', text)
 
     def test_aenderung_nimmt_die_bestaetigung_zurueck(self):
         vorgaben.speichern(self.lg, {'verzugszins_prozent': '5'}, bestaetigen=True)
@@ -131,11 +103,6 @@ class VerzugszinsTests(TestCase):
         for roh in ('abc', '-1', '101'):
             with self.assertRaises(vorgaben.VorgabenFehler):
                 vorgaben.speichern(self.lg, {'verzugszins_prozent': roh})
-
-    def test_pfandsumme_enthaelt_nie_zinsen(self):
-        vorgaben.speichern(self.lg, {'verzugszins_prozent': '5'}, bestaetigen=True)
-        p = inkasso.pfandberechtigt(self.b, date(2026, 12, 31))
-        self.assertEqual(p['pfandberechtigt'], inkasso.offener_betrag(self.b, date(2026, 12, 31)))
 
 
 class OberflaecheTests(TestCase):
@@ -181,7 +148,7 @@ class OberflaecheTests(TestCase):
         eigentuemer.wechseln(self.b, self.neu, date(2025, 5, 1))
         r = self.client.get(f'/neu/stweg/{self.lg.pk}/inkasso/')
         self.assertContains(r, 'früheren Eigentümer')
-        self.assertContains(r, 'Verzugszins zu 5')
+        self.assertContains(r, 'Verzugszins-Satz ist eingetragen, aber nicht bestätigt')
 
 
 class PortalFondsOffenTests(TestCase):

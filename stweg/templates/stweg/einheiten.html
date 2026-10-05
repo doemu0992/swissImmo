@@ -60,8 +60,9 @@
                     <input id="hw_b" name="bemerkung" maxlength="200" class="fw-feld"></div>
                 <div class="fw-formular-fuss"><button class="fw-btn">{% trans "Handänderung erfassen" %}</button></div>
             </form>
+            <p class="fw-s"><strong>{% trans "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen." %}</strong></p>
             <p class="fw-s">{% trans "Beiträge, die vor dem Übergang fällig wurden, schuldet der bisherige Eigentümer. Das Gemeinschaftspfandrecht haftet am Anteil. Die Miteigentümer werden gelöscht." %}</p>
-            {% for w in wechsel %}<div class="fw-s">{{ w.datum|date:"d.m.Y" }} · {{ w.einheit.bezeichnung }} · {{ w.bisheriger.firma_oder_name|default:"—" }} → {{ w.neu.firma_oder_name }}</div>{% endfor %}
+            {% for w in wechsel %}<div class="fw-s">{{ w.datum|date:"d.m.Y" }} · {{ w.einheit.bezeichnung }} · {{ w.bisheriger.firma_oder_name|default:"—" }} → {{ w.neu.firma_oder_name }} · <a href="/neu/stweg/handaenderung/{{ w.pk }}/pdf/" target="_blank" rel="noopener">{% trans "Handänderungs-Abrechnung (PDF)" %}</a></div>{% endfor %}
         </div></details>
     {% if nebenraeume %}
     <div class="fw-rumpf"><p class="fw-s">{% trans "Nebenräume (ohne Quote und Stimme, gehören zu einer Einheit):" %}

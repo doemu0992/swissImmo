@@ -24462,3 +24462,95 @@ msgstr "di cui ancora aperto CHF %(offen)s"
 #: stweg/eigentuemer
 msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
 msgstr "Sono aperti solo crediti nei confronti di un precedente proprietario. Un sollecito all'attuale proprietario non è possibile; il pegno della comunione grava sulla quota."
+
+#: stweg/zins
+msgid "Zinsen und Kosten (nicht in der Pfandsumme):"
+msgstr "Interessi e spese (non nell'importo del pegno):"
+
+#: stweg/zins
+msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
+msgstr "Il tasso d'interesse di mora è inserito ma non confermato: non vengono calcolati interessi."
+
+#: stweg/handaenderung
+msgid "Handänderungs-Abrechnung (PDF)"
+msgstr "Conteggio per cambio di proprietario (PDF)"
+
+#: stweg/inkasso
+msgid "Mahngebühr je Mahnung (CHF)"
+msgstr "Spese di sollecito per sollecito (CHF)"
+
+#: stweg/inkasso
+msgid "Leer = keine Mahngebühren. Nur mit bestätigten Vorgaben wird eine Gebühr belastet."
+msgstr "Vuoto = nessuna spesa di sollecito. Una spesa viene addebitata solo con dati confermati."
+
+#: stweg/inkasso
+msgid "Mahngebühr ab Mahnstufe (1 bis 3)"
+msgstr "Spese di sollecito dal livello di sollecito (da 1 a 3)"
+
+#: stweg/inkasso
+msgid "Leer = ab der 2. Mahnung."
+msgstr "Vuoto = dal 2° sollecito."
+
+#: stweg/inkasso
+msgid "Kostenvorschuss für die Betreibung erfassen (SchKG)"
+msgstr "Registrare l'anticipo spese di esecuzione (LEF)"
+
+#: stweg/inkasso
+msgid "Datum der Zahlung"
+msgstr "Data del pagamento"
+
+#: stweg/inkasso
+msgid "Betreibungsamt"
+msgstr "Ufficio di esecuzione"
+
+#: stweg/inkasso
+msgid "Kostenvorschuss erfassen"
+msgstr "Registrare l'anticipo spese"
+
+#: stweg/inkasso
+msgid "Der Vorschuss wird der Gesamtschuld des Eigentümers zugeschlagen (nicht der Pfandsumme)."
+msgstr "L'anticipo viene aggiunto al debito totale del proprietario (non all'importo del pegno)."
+
+#: stweg/inkasso
+msgid "Bitte einen gültigen Betrag eingeben."
+msgstr "Inserire un importo valido."
+
+#: stweg/inkasso
+msgid "Kostenvorschuss erfasst und der Gesamtschuld zugeschlagen."
+msgstr "Anticipo spese registrato e aggiunto al debito totale."
+
+#: stweg/inkasso
+msgid "Die Position ist storniert."
+msgstr "La posizione è stata stornata."
+
+#: stweg/inkasso
+msgid "Diese Position ist schon storniert."
+msgstr "Questa posizione è già stata stornata."
+
+#: stweg/inkasso
+msgid "Der Inkassofall ist erledigt."
+msgstr "Il caso di incasso è chiuso."
+
+#: stweg/inkasso
+msgid "Der Kostenvorschuss muss grösser als 0 sein."
+msgstr "L'anticipo spese deve essere maggiore di 0."
+
+#: stweg/inkasso
+msgid "Mahngebühr"
+msgstr "Spese di sollecito"
+
+#: stweg/inkasso
+msgid "Betreibungskostenvorschuss"
+msgstr "Anticipo spese di esecuzione"
+
+#: stweg/inkasso
+msgid "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
+msgstr "Spese di sollecito dal livello: sono ammessi i livelli di sollecito da 1 a 3."
+
+#: stweg/pdf
+msgid "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen."
+msgstr "Attenzione: questo calcolo non sostituisce una verifica giuridica. Il termine di 36 mesi per il pegno, il calcolo degli interessi, l'imputazione dei pagamenti (art. 85 CO) e la ripartizione in caso di cambio di proprietario devono essere confermati da uno specialista."
+
+#: stweg/pdf
+msgid "Zinsabrechnung (PDF)"
+msgstr "Conteggio degli interessi (PDF)"

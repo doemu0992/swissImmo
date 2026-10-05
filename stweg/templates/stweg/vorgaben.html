@@ -26,6 +26,12 @@
             <div class="fw-feldblock"><label class="fw-label" for="vg_vz">{% trans "Verzugszins auf Beiträge (Prozent pro Jahr)" %}</label>
                 <input id="vg_vz" name="verzugszins_prozent" inputmode="decimal" value="{{ v.verzugszins_prozent|default_if_none:''|floatformat:'-2' }}" class="fw-feld">
                 <span class="fw-s">{% trans "Leer = es werden keine Verzugszinsen berechnet." %}</span></div>
+            <div class="fw-feldblock"><label class="fw-label" for="vg_mg">{% trans "Mahngebühr je Mahnung (CHF)" %}</label>
+                <input id="vg_mg" name="mahngebuehr_chf" inputmode="decimal" value="{{ v.mahngebuehr_chf|default_if_none:''|floatformat:'-2' }}" class="fw-feld">
+                <span class="fw-s">{% trans "Leer = keine Mahngebühren. Nur mit bestätigten Vorgaben wird eine Gebühr belastet." %}</span></div>
+            <div class="fw-feldblock"><label class="fw-label" for="vg_ms">{% trans "Mahngebühr ab Mahnstufe (1 bis 3)" %}</label>
+                <input id="vg_ms" name="mahngebuehr_ab_stufe" inputmode="numeric" value="{{ v.mahngebuehr_ab_stufe|default_if_none:'' }}" class="fw-feld">
+                <span class="fw-s">{% trans "Leer = ab der 2. Mahnung." %}</span></div>
             <div class="fw-feldblock"><label class="fw-label" for="vg_q">{% trans "Quelle (Reglement, Artikel)" %}</label>
                 <textarea id="vg_q" name="bemerkung" rows="2" class="fw-feld">{{ v.bemerkung }}</textarea></div>
             <div class="fw-feldblock"><label class="fw-label" for="vg_b"><input id="vg_b" type="checkbox" name="bestaetigt" value="1"> {% trans "Ich bestätige, dass diese Werte dem Reglement und dem Gesetz entsprechen." %}</label></div>

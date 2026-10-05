@@ -44,8 +44,10 @@ from core.models import Pendenz
 from finance.models import ErneuerungsfondsBewegung
 from stweg.budget import _plus_monate
 from stweg.eigentuemer import eigentuemer_am
-from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegInkassoFall, StwegMahnung,
-                          StwegPfandrecht, StwegVorschreibung)
+from stweg.zins import KAPITAL_ARTEN, oldest_first, zinsforderungen
+from stweg.zins import satz as zins_satz
+from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegInkassoFall,
+                          StwegInkassoPosition, StwegMahnung, StwegPfandrecht, StwegVorschreibung)
 
 NULL = Decimal('0.00')
 PFANDRECHT_MONATE = 36
@@ -75,32 +77,52 @@ def ohne_kuendigung(text):
 # ── Forderungen ──────────────────────────────────────────────────────────
 
 def _tilgen(claims, zahlungen):
-    """Rechnet Zahlungen an. `zahlungen`: [(betrag, ziel)]; `ziel` ist der Schlüssel der Forderung, für die der
-    Schuldner bezahlt hat (Bestimmung des Schuldners, Art. 86 OR), oder None. Erst werden die bestimmten Zahlungen
-    ihrer Forderung zugerechnet (ein Überschuss fällt in den allgemeinen Topf), dann der Topf der ÄLTESTEN offenen
-    Forderung zuerst. Gibt die Forderungen mit `bezahlt` und `offen`, nach Datum sortiert."""
-    claims = [{**c, 'bezahlt': NULL} for c in sorted(claims, key=lambda c: (c['datum'], c['text']))]
+    """Rechnet Kapitalzahlungen an. `zahlungen`: [(datum, betrag, ziel)]; `ziel` ist der Schlüssel der Forderung, für
+    die der Schuldner bezahlt hat (Bestimmung des Schuldners, Art. 86 OR), oder None. Erst werden die bestimmten
+    Zahlungen ihrer Forderung zugerechnet (ein Überschuss fällt in den allgemeinen Topf), dann der Topf der ÄLTESTEN
+    offenen Forderung zuerst. Gibt die Forderungen mit `bezahlt`, `offen` und `anrechnungen` ([(Datum, Betrag)], für
+    den Verzugszins), nach Datum sortiert."""
+    claims = [{**c, 'bezahlt': NULL, 'anrechnungen': []} for c in sorted(claims, key=lambda c: (c['datum'], c['text']))]
     nach_schluessel = {c['schluessel']: c for c in claims if c.get('schluessel') is not None}
-    pool = NULL
-    for betrag, ziel in zahlungen:
+    pool = []
+    for datum, betrag, ziel in sorted(zahlungen, key=lambda z: z[0]):
         c = nach_schluessel.get(ziel) if ziel is not None else None
         if c is None:
-            pool += betrag
+            pool.append((datum, betrag))
             continue
         frei = c['betrag'] - c['bezahlt']
         anrechnen = min(betrag, frei) if frei > 0 else NULL
-        c['bezahlt'] += anrechnen
-        pool += betrag - anrechnen
+        if anrechnen:
+            c['bezahlt'] += anrechnen
+            c['anrechnungen'].append((datum, anrechnen))
+        if betrag - anrechnen:
+            pool.append((datum, betrag - anrechnen))
+    for datum, betrag in pool:                              # in zeitlicher Reihenfolge: die älteste Forderung zuerst
+        for c in claims:
+            if betrag <= 0:
+                break
+            anrechnen = min(betrag, c['betrag'] - c['bezahlt']) if c['betrag'] > c['bezahlt'] else NULL
+            if anrechnen:
+                c['bezahlt'] += anrechnen
+                c['anrechnungen'].append((datum, anrechnen))
+                betrag -= anrechnen
     for c in claims:
-        anrechnen = min(pool, c['betrag'] - c['bezahlt']) if c['betrag'] > c['bezahlt'] else NULL
-        c['bezahlt'] += anrechnen
-        pool -= anrechnen
         c['offen'] = c['betrag'] - c['bezahlt']
     return claims
 
 
+def _kosten_forderungen(einheit, stichtag):
+    """Mahnspesen und Betreibungskosten als Forderungen (ohne Zahlung angerechnet); stornierte nicht."""
+    return [{'datum': p.datum, 'text': p.text, 'betrag': p.betrag, 'art': p.art, 'schluessel': None,
+             'schuldner': eigentuemer_am(einheit, p.datum)}
+            for p in StwegInkassoPosition.objects.filter(einheit=einheit, datum__lte=stichtag,
+                                                         storniert_am__isnull=True)]
+
+
 def forderungen(einheit, stichtag=None):
-    """Alle Beitragsforderungen der Einheit bis zum Stichtag mit bezahltem und offenem Betrag, älteste zuerst."""
+    """Alle Forderungen der Einheit bis zum Stichtag mit bezahltem und offenem Betrag, älteste zuerst: die
+    Kapitalforderungen (Raten, Abrechnungen, Fondseinlagen), dazu — wenn die Gemeinschaft einen bestätigten Satz hat —
+    die Zinsschuld (`art` «zins») und die Kosten (`art` «mahnspesen», «betreibungskosten»). Siehe `stweg.zins`."""
     stichtag = stichtag or timezone.localdate()
     abr = {p.abrechnung.jahr: p for p in StwegAbrechnungPosition.objects
            .filter(einheit=einheit, abrechnung__status=StwegAbrechnung.STATUS_ABGESCHLOSSEN)
@@ -119,21 +141,29 @@ def forderungen(einheit, stichtag=None):
     akonto = [c for c in akonto if c['datum'] <= stichtag]
     vorschr_jahr = {v.pk: v.budget.jahr for v in StwegVorschreibung.objects.filter(einheit=einheit)
                     .select_related('budget')}
-    zahl = []
-    for z in StwegAkonto.objects.filter(einheit=einheit, zweck=StwegAkonto.AKONTO,
-                                        datum__lte=stichtag).order_by('datum', 'id'):
-        ziel = None
-        if z.vorschreibung_id is not None:
-            # Für ein Jahr mit Abrechnung gibt es die Raten nicht mehr: die Zahlung tilgt die Abrechnung dieses Jahres.
-            ziel = ('j', vorschr_jahr[z.vorschreibung_id]) if vorschr_jahr.get(z.vorschreibung_id) in abr \
-                else ('v', z.vorschreibung_id)
-        zahl.append((z.betrag, ziel))
+    zahlungen = list(StwegAkonto.objects.filter(einheit=einheit, datum__lte=stichtag).order_by('datum', 'id'))
+    zahl, zahl_f = [], []
+    for z in zahlungen:
+        if z.zweck == StwegAkonto.AKONTO:
+            ziel = None
+            if z.vorschreibung_id is not None:
+                # Für ein Jahr mit Abrechnung gibt es die Raten nicht mehr: die Zahlung tilgt die Abrechnung dieses Jahres.
+                ziel = ('j', vorschr_jahr[z.vorschreibung_id]) if vorschr_jahr.get(z.vorschreibung_id) in abr \
+                    else ('v', z.vorschreibung_id)
+            zahl.append((z.datum, z.kapital, ziel))
+        else:
+            zahl_f.append((z.datum, z.kapital, None))
     fonds = [{'datum': b.datum, 'text': f'Einlage Erneuerungsfonds {b.jahr}', 'betrag': b.betrag, 'art': 'fonds',
-             'schuldner': eigentuemer_am(einheit, b.datum)}
+              'schuldner': eigentuemer_am(einheit, b.datum)}
              for b in ErneuerungsfondsBewegung.objects.filter(einheit=einheit, art='einlage', datum__lte=stichtag)]
-    zahl_f = [(z.betrag, None) for z in StwegAkonto.objects.filter(einheit=einheit, zweck=StwegAkonto.FONDS,
-                                                                   datum__lte=stichtag).order_by('datum', 'id')]
-    alle = _tilgen(akonto, zahl) + _tilgen(fonds, zahl_f)
+    kapital = _tilgen(akonto, zahl) + _tilgen(fonds, zahl_f)
+    alle = list(kapital)
+    prozent = zins_satz(einheit.liegenschaft)
+    if prozent is not None:
+        zins = zinsforderungen(kapital, stichtag, prozent)
+        alle += oldest_first(zins, sum((z.an_zins for z in zahlungen), NULL))
+    kosten = _kosten_forderungen(einheit, stichtag)
+    alle += oldest_first(kosten, sum((z.an_kosten for z in zahlungen), NULL))
     return sorted(alle, key=lambda c: (c['datum'], c['text']))
 
 
@@ -151,34 +181,13 @@ def offener_betrag_eigentuemer(einheit, stichtag=None):
     return sum((c['offen'] for c in forderungen(einheit, stichtag) if _gegen_aktuellen(einheit, c)), NULL)
 
 
-def verzugszins(einheit, stichtag=None):
-    """Verzugszins auf die heute OFFENEN Beträge, einfach, vom Tag nach der Fälligkeit bis zum Stichtag (Tage/365).
-    None, solange die Gemeinschaft keinen Satz eingetragen hat. Nie Teil der Pfandsumme. Vereinfachung: Zins auf
-    bereits bezahlte Teile (spät bezahlt) wird nicht gerechnet; ob und ab wann Verzugszins geschuldet ist
-    (Fälligkeit, Mahnung), bestimmt das Reglement bzw. Gesetz — der eingetragene Satz ist die Vorgabe."""
-    from stweg.vorgaben import vorgaben_von
-    v = vorgaben_von(einheit.liegenschaft)
-    if v is None or v.verzugszins_prozent is None:
-        return None
-    stichtag = stichtag or timezone.localdate()
-    zeilen, total = [], NULL
-    for c in forderungen(einheit, stichtag):
-        tage = (stichtag - c['datum']).days
-        if c['offen'] <= 0 or tage <= 0:
-            continue
-        zins = (c['offen'] * Decimal(v.verzugszins_prozent) / 100 * tage / 365).quantize(Decimal('0.01'),
-                                                                                           rounding=ROUND_HALF_UP)
-        zeilen.append({'text': c['text'], 'tage': tage, 'zins': zins})
-        total += zins
-    return {'prozent': Decimal(v.verzugszins_prozent), 'bestaetigt': bool(v.bestaetigt_am), 'total': total,
-            'zeilen': zeilen}
-
 
 def pfandberechtigt(einheit, stichtag=None, monate=PFANDRECHT_MONATE):
     """Teilt die offenen Forderungen in pfandberechtigt (jünger als `monate` vor dem Stichtag) und ausgeschlossen."""
     stichtag = stichtag or timezone.localdate()
     grenze = _plus_monate(stichtag, -monate)
-    offen = [c for c in forderungen(einheit, stichtag) if c['offen'] > 0]
+    alle = [c for c in forderungen(einheit, stichtag) if c['offen'] > 0]
+    offen = [c for c in alle if c['art'] in KAPITAL_ARTEN]           # Zinsen und Kosten sind nicht in der Pfandsumme
     drin = [{**c, 'pfandberechtigt': True} for c in offen if c['datum'] > grenze]
     draussen = [{**c, 'pfandberechtigt': False} for c in offen if c['datum'] <= grenze]
     return {
@@ -186,6 +195,7 @@ def pfandberechtigt(einheit, stichtag=None, monate=PFANDRECHT_MONATE):
         'gesamt': sum((c['offen'] for c in offen), NULL),
         'pfandberechtigt': sum((c['offen'] for c in drin), NULL),
         'ausgeschlossen': sum((c['offen'] for c in draussen), NULL),
+        'zinsen_kosten': sum((c['offen'] for c in alle if c['art'] not in KAPITAL_ARTEN), NULL),
         'zeilen': drin + draussen,
     }
 
@@ -236,8 +246,74 @@ def mahnung_erstellen(einheit, *, heute=None, frist_tage=MAHNFRIST_TAGE, user=No
         raise InkassoFehler(f'Die {letzte.stufe}. Mahnung ist noch nicht versendet.')
     if frist_tage < 1:
         raise InkassoFehler('Die Zahlungsfrist muss mindestens einen Tag betragen.')
-    return StwegMahnung.objects.create(fall=fall, stufe=stufe, datum=heute, betrag=betrag,
-                                       frist_bis=heute + timedelta(days=frist_tage))
+    m = StwegMahnung.objects.create(fall=fall, stufe=stufe, datum=heute, betrag=betrag,
+                                    frist_bis=heute + timedelta(days=frist_tage))
+    gebuehr = mahngebuehr(einheit.liegenschaft, stufe)
+    if gebuehr is not None:                                  # echte Sollstellung: gebucht und Teil der Gesamtschuld
+        _position_buchen(einheit, StwegInkassoPosition.MAHNSPESEN, gebuehr, heute, f'Mahngebühr {stufe}. Mahnung',
+                         soll_haben=('1110', '3110'), fall=fall, mahnung=m, user=user)
+        m.betrag = offener_betrag_eigentuemer(einheit, heute)
+        m.save(update_fields=['betrag'])
+    return m
+
+
+def mahngebuehr(liegenschaft, stufe):
+    """Die Mahngebühr für diese Mahnstufe — oder None. Nur aus bestätigten Vorgaben; sonst keine Gebühr."""
+    from stweg.vorgaben import vorgaben_von
+    v = vorgaben_von(liegenschaft)
+    if v is None or v.mahngebuehr_chf is None or not v.bestaetigt_am or Decimal(v.mahngebuehr_chf) <= 0:
+        return None
+    return Decimal(v.mahngebuehr_chf) if stufe >= (v.mahngebuehr_ab_stufe or 2) else None
+
+
+def _position_buchen(einheit, art, betrag, datum, text, *, soll_haben, fall=None, mahnung=None, amt='', user=None):
+    from finance.booking import buche
+    try:
+        b = buche(soll_haben[0], soll_haben[1], betrag, f'{text}: {einheit.bezeichnung}', datum=datum,
+                  liegenschaft=einheit.liegenschaft, user=user)
+    except PermissionError as fehler:
+        raise InkassoFehler(gettext('Die Buchung ist nicht möglich — Periode abgeschlossen? (%(fehler)s)')
+                            % {'fehler': fehler})
+    return StwegInkassoPosition.objects.create(einheit=einheit, fall=fall, mahnung=mahnung, art=art, datum=datum,
+                                               betrag=betrag, text=text, amt=amt, buchung=b, erfasst_von=user)
+
+
+@transaction.atomic
+def position_stornieren(position, *, user=None, heute=None):
+    """Nimmt eine Nebenforderung zurück (Gegenbuchung); sie ist danach nicht mehr Teil der Gesamtschuld. Eine bereits
+    angerechnete Zahlung bleibt, wie sie war — der Betrag wird dann zum Kapital-Überschuss der nächsten Forderung."""
+    from finance.booking import storniere_buchung
+    if position.storniert_am is not None:
+        raise InkassoFehler(gettext('Diese Position ist schon storniert.'))
+    try:
+        if position.buchung_id and position.buchung.storniert_am is None:
+            storniere_buchung(position.buchung, user=user)
+    except PermissionError as fehler:
+        raise InkassoFehler(gettext('Die Buchung ist nicht möglich — Periode abgeschlossen? (%(fehler)s)')
+                            % {'fehler': fehler})
+    position.storniert_am = heute or timezone.localdate()
+    position.save(update_fields=['storniert_am'])
+    return position
+
+
+@transaction.atomic
+def kostenvorschuss_erfassen(fall, betrag, datum=None, *, amt='', user=None):
+    """Erfasst den Vorschuss an das Betreibungsamt (SchKG), den die Verwaltung für die Betreibung bezahlt hat. Er wird
+    der Gesamtschuld des Eigentümers zugeschlagen (Sollstellung Soll 1110 / Haben 1020) und ist Teil der Anrechnung
+    nach Art. 85 OR; in der Pfandsumme steht er nicht. Hält zugleich fest, dass die Betreibung eingeleitet ist."""
+    datum = datum or timezone.localdate()
+    betrag = Decimal(betrag or 0)
+    if fall.status != StwegInkassoFall.OFFEN:
+        raise InkassoFehler(gettext('Der Inkassofall ist erledigt.'))
+    if betrag <= 0:
+        raise InkassoFehler(gettext('Der Kostenvorschuss muss grösser als 0 sein.'))
+    p = _position_buchen(fall.einheit, StwegInkassoPosition.BETREIBUNGSKOSTEN, betrag, datum,
+                         'Kostenvorschuss Betreibung' + (f' ({amt})' if amt else ''), soll_haben=('1110', '1020'),
+                         fall=fall, amt=amt, user=user)
+    if fall.betreibung_eingeleitet_am is None:
+        fall.betreibung_eingeleitet_am, fall.betreibungsamt = datum, amt
+        fall.save(update_fields=['betreibung_eingeleitet_am', 'betreibungsamt'])
+    return p
 
 
 def mahntext(mahnung):
@@ -249,16 +325,12 @@ def mahntext(mahnung):
         f'Stockwerkeigentümergemeinschaft {e.liegenschaft}',
         f'Einheit {e.bezeichnung}',
         '',
-        'Gemäss unseren Unterlagen sind folgende Beitragsforderungen der Gemeinschaft offen:',
+        'Gemäss unseren Unterlagen sind folgende Forderungen der Gemeinschaft (Beiträge, Zinsen, Kosten) offen:',
     ]
     for c in forderungen(e, mahnung.datum):
         if c['offen'] > 0 and _gegen_aktuellen(e, c):
             zeilen.append(f"{c['datum']:%d.%m.%Y}  {c['text']}  CHF {_chf(c['offen'])}")
     zeilen += ['', f"Total offen: CHF {_chf(mahnung.betrag)}"]
-    z = verzugszins(e, mahnung.datum)
-    if z and z['bestaetigt'] and z['total'] > 0:
-        zeilen.append(f"Dazu Verzugszins von {z['prozent'].normalize():f} % bis {mahnung.datum:%d.%m.%Y}: CHF {_chf(z['total'])} "
-                      '(nicht im Total enthalten).')
     zeilen += ['',
                f'Wir bitten Sie, den Betrag bis {mahnung.frist_bis:%d.%m.%Y} auf das Konto der Gemeinschaft zu bezahlen.']
     if mahnung.stufe == 2:
