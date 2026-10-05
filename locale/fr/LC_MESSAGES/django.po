@@ -24892,3 +24892,6 @@ msgid "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet n
 msgid_plural "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch (Nachzügler)."
 msgstr[0] "Le cycle %(monat)s %(jahr)s est terminé — %(n)s position attend encore (retardataire)."
 msgstr[1] "Le cycle %(monat)s %(jahr)s est terminé — %(n)s positions attendent encore (retardataires)."
+
+msgid "Notfall"
+msgstr "Urgence"

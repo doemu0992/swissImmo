@@ -24780,3 +24780,6 @@ msgid "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet n
 msgid_plural "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch (Nachzügler)."
 msgstr[0] "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch (Nachzügler)."
 msgstr[1] "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch (Nachzügler)."
+
+msgid "Notfall"
+msgstr "Notfall"

@@ -104,7 +104,7 @@ danach ablehnte. Die Sperre ist Absicht und bleibt; die Seite nennt jetzt den Gr
 «Läufe → Lauf zurücksetzen» (`faelle/test_sollstellung_nachzuegler.py`).
 
 ## Bewusst offen
-- Priorität «Notfall» (SLA 0 Tage) ist im Modell vorgesehen, das Meldeformular bietet sie nicht an.
+- ~~Priorität «Notfall»~~ — erledigt: wählbar im Meldeformular (nur bekannte Stufen), Frist heute, steht vor «Hoch» in der Liste, Chip und Admin-Badge (`faelle/test_prioritaet_notfall.py`). Im Mieterportal und im öffentlichen Formular bleibt es bei «mittel» — Mieter stufen nicht selbst als Notfall ein.
 - Spaltenfilter wirken nur auf die geladene Seite, nicht serverseitig über alle Seiten.
 - Debitorentabelle ist bei 1440 px breiter als der Rahmen (Aktionsspalte scrollt) — schon vorher so.
 - Übersetzungen FR/IT/EN der neuen Texte stammen von der KI; Rechtsbegriffe fachlich gegenlesen.

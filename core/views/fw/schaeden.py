@@ -53,6 +53,7 @@ TICKET_PILL = {
     'erledigt':              (gettext_lazy('Erledigt'),           'fw-gut-flaeche fw-gut'),
 }
 PRIO_PILL = {
+    'notfall': (gettext_lazy('Notfall'), 'fw-krit-flaeche fw-kritisch'),
     'hoch':   (gettext_lazy('Hoch'),   'fw-krit-flaeche fw-kritisch'),
     'mittel': (gettext_lazy('Mittel'), 'fw-warn-flaeche fw-warnton'),
     'tief':   (gettext_lazy('Tief'),   'fw-flaeche2 fw-mutet'),
@@ -253,7 +254,10 @@ def fw_schaden_neu(request):
         melder_nachname=(request.POST.get('melder_nachname') or '').strip(),
         email_melder=(request.POST.get('email_melder') or '').strip(),
         tel_melder=(request.POST.get('tel_melder') or '').strip(),
-        prioritaet=request.POST.get('prioritaet', 'mittel'), status='neu',
+        # Nur bekannte Stufen: ein frei eingesetzter Wert fiele sonst aus der Sortierung
+        # und der SLA-Frist (tickets/sla.py) und würde stillschweigend wie «mittel» behandelt.
+        prioritaet=(request.POST.get('prioritaet') if request.POST.get('prioritaet') in ('tief', 'mittel', 'hoch', 'notfall') else 'mittel'),
+        status='neu',
     )
     # Fotos (Mehrfach-Upload) anhängen
     from tickets.models import SchadenFoto
