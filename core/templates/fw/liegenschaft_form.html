@@ -188,6 +188,11 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
             {% include 'fw/_feldfehler.html' with f=form.hkvo_grundkosten_prozent %}
         </div>
         <p class="fw-hilfe">{% trans "Bei aktiver HKVO werden die Heizkosten in Grundkosten (nach m³) und Verbrauchskosten (nach Zählerständen der Wärmezähler) aufgeteilt." %}</p>
+        <label class="fw-haekchen">
+            <input type="checkbox" name="verteilschluessel_aktiv" {% if form.verteilschluessel_aktiv.value %}checked{% endif %} class="fw-akzent">
+            {% trans "Eigene Verteilschlüssel dieser Liegenschaft anwenden" %}
+        </label>
+        <p class="fw-hilfe">{% trans "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft." %}</p>
     </div>
     </div>
 

@@ -24669,3 +24669,92 @@ msgstr[1] "The %(monat)s %(jahr)s run is complete — %(n)s positions are still 
 
 msgid "Notfall"
 msgstr "Emergency"
+
+msgid "Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung (HKVO/Heizgradtage)."
+msgstr "The distribution keys of this property are applied in the service-charge statement. For a cost type with a key, the key overrides the choice made on the receipt. Heating costs stay with the heating-cost statement (HKVO/heating degree days)."
+
+msgid "Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
+msgstr "The keys are stored but not applied yet. The statement distributes as before, using the key chosen on the receipt."
+
+msgid "Unter «Liegenschaft bearbeiten» einschalten"
+msgstr "Switch on under \"Edit property\""
+
+msgid "Schlüssel je Kostenart"
+msgstr "Keys per cost type"
+
+msgid "Kostenart"
+msgstr "Cost type"
+
+msgid "Gültig bis"
+msgstr "Valid until"
+
+msgid "Diesen Schlüssel löschen?"
+msgstr "Delete this key?"
+
+msgid "Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach dem Schlüssel am Beleg."
+msgstr "No key stored yet. Without a key the statement distributes by the key on the receipt."
+
+msgid "Summe muss 100 ergeben"
+msgstr "Total must be 100"
+
+msgid "Prozentanteile speichern"
+msgstr "Save percentages"
+
+msgid "— wählen —"
+msgstr "— select —"
+
+msgid "Verteilung nach"
+msgstr "Distribution by"
+
+msgid "Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, pro Einheit und Personen wählen Sie weiterhin am Beleg."
+msgstr "Rooms: by the number of rooms of the units. Value share: by the value share of the units. Percent: you set a share per unit. Area, volume, per unit and persons are still chosen on the receipt."
+
+msgid "Bitte eine Kostenart wählen (Heizkosten laufen über die Heizkostenabrechnung)."
+msgstr "Please choose a cost type (heating runs through the heating-cost statement)."
+
+msgid "Bitte eine Verteilung wählen."
+msgstr "Please choose a distribution."
+
+msgid "Bitte ein gültiges Datum angeben."
+msgstr "Please enter a valid date."
+
+msgid "«Gültig bis» liegt vor «Gültig ab»."
+msgstr "\"Valid until\" is before \"Valid from\"."
+
+msgid "Für diese Kostenart gibt es im selben Zeitraum schon einen Schlüssel."
+msgstr "There is already a key for this cost type in the same period."
+
+msgid "Bitte eine Zahl angeben."
+msgstr "Please enter a number."
+
+msgid "Der Anteil liegt zwischen 0 und 100."
+msgstr "The share must be between 0 and 100."
+
+#, python-format
+msgid "Die Anteile ergeben %(summe)s statt 100."
+msgstr "The shares add up to %(summe)s instead of 100."
+
+msgid "Verteilschlüssel gespeichert."
+msgstr "Distribution key saved."
+
+msgid "Der bisherige Schlüssel dieser Kostenart wurde am Vortag beendet."
+msgstr "The previous key of this cost type was ended on the day before."
+
+msgid "Verteilschlüssel gelöscht."
+msgstr "Distribution key deleted."
+
+msgid "Prozentanteile gespeichert."
+msgstr "Percentages saved."
+
+msgid "Unbekannte Aktion."
+msgstr "Unknown action."
+
+msgid "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
+msgstr "Off: service charges are distributed by the key chosen on the receipt. On: for cost types with their own key (rooms, value share, percent) that key overrides the choice on the receipt. You maintain the keys under \"Distribution keys\" in the property."
+
+#, python-format
+msgid "Prozentanteile — %(ka)s"
+msgstr "Percentages — %(ka)s"
+
+msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
+msgstr "Apply this property's own distribution keys"

@@ -560,7 +560,7 @@ Liegenschaft ohne Betreuung soll auffallen.
 
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-t">{% trans "Nebenkosten-Perioden" %}</span>
-            <span class="fw-rechts"><a href="/neu/nebenkosten/{% if lg %}?lg={{ lg.id }}{% endif %}" class="fw-link">{% trans "Zur Abrechnung" %} →</a></span></div>
+            <span class="fw-rechts"><a href="/neu/liegenschaften/{{ lg.id }}/verteilschluessel/" class="fw-link">{% trans "Verteilschlüssel" %}</a> · <a href="/neu/nebenkosten/{% if lg %}?lg={{ lg.id }}{% endif %}" class="fw-link">{% trans "Zur Abrechnung" %} →</a></span></div>
         {% for p in perioden %}
         <div class="fw-zeile">
             <span class="fw-marker {% if p.abgeschlossen %}good{% else %}warn{% endif %}"></span>

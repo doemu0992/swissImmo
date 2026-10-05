@@ -24873,3 +24873,92 @@ msgstr[1] "Il ciclo %(monat)s %(jahr)s è concluso — %(n)s posizioni sono anco
 
 msgid "Notfall"
 msgstr "Emergenza"
+
+msgid "Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung (HKVO/Heizgradtage)."
+msgstr "Le chiavi di ripartizione di questo stabile vengono applicate nel conteggio delle spese accessorie. Per un tipo di spesa con chiave, questa prevale sulla scelta fatta sul giustificativo. Le spese di riscaldamento restano regolate dal conteggio del riscaldamento (OCRiCa/gradi giorno)."
+
+msgid "Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
+msgstr "Le chiavi sono registrate ma non ancora applicate. Il conteggio ripartisce come finora secondo la chiave scelta sul giustificativo."
+
+msgid "Unter «Liegenschaft bearbeiten» einschalten"
+msgstr "Attivare sotto «Modifica stabile»"
+
+msgid "Schlüssel je Kostenart"
+msgstr "Chiavi per tipo di spesa"
+
+msgid "Kostenart"
+msgstr "Tipo di spesa"
+
+msgid "Gültig bis"
+msgstr "Valido fino al"
+
+msgid "Diesen Schlüssel löschen?"
+msgstr "Eliminare questa chiave?"
+
+msgid "Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach dem Schlüssel am Beleg."
+msgstr "Nessuna chiave registrata. Senza chiave il conteggio ripartisce secondo la chiave del giustificativo."
+
+msgid "Summe muss 100 ergeben"
+msgstr "La somma deve essere 100"
+
+msgid "Prozentanteile speichern"
+msgstr "Salva le percentuali"
+
+msgid "— wählen —"
+msgstr "— scegliere —"
+
+msgid "Verteilung nach"
+msgstr "Ripartizione secondo"
+
+msgid "Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, pro Einheit und Personen wählen Sie weiterhin am Beleg."
+msgstr "Locali: secondo il numero di locali degli oggetti. Quota di valore: secondo la quota di valore degli oggetti. Percentuale: si stabilisce una quota per oggetto. Superficie, volume, per unità e persone si scelgono ancora sul giustificativo."
+
+msgid "Bitte eine Kostenart wählen (Heizkosten laufen über die Heizkostenabrechnung)."
+msgstr "Scegliere un tipo di spesa (il riscaldamento passa dal conteggio del riscaldamento)."
+
+msgid "Bitte eine Verteilung wählen."
+msgstr "Scegliere una ripartizione."
+
+msgid "Bitte ein gültiges Datum angeben."
+msgstr "Indicare una data valida."
+
+msgid "«Gültig bis» liegt vor «Gültig ab»."
+msgstr "«Valido fino al» precede «Valido dal»."
+
+msgid "Für diese Kostenart gibt es im selben Zeitraum schon einen Schlüssel."
+msgstr "Esiste già una chiave per questo tipo di spesa nello stesso periodo."
+
+msgid "Bitte eine Zahl angeben."
+msgstr "Indicare un numero."
+
+msgid "Der Anteil liegt zwischen 0 und 100."
+msgstr "La quota è compresa tra 0 e 100."
+
+#, python-format
+msgid "Die Anteile ergeben %(summe)s statt 100."
+msgstr "Le quote sommano %(summe)s invece di 100."
+
+msgid "Verteilschlüssel gespeichert."
+msgstr "Chiave di ripartizione salvata."
+
+msgid "Der bisherige Schlüssel dieser Kostenart wurde am Vortag beendet."
+msgstr "La chiave precedente di questo tipo di spesa è terminata il giorno prima."
+
+msgid "Verteilschlüssel gelöscht."
+msgstr "Chiave di ripartizione eliminata."
+
+msgid "Prozentanteile gespeichert."
+msgstr "Percentuali salvate."
+
+msgid "Unbekannte Aktion."
+msgstr "Azione sconosciuta."
+
+msgid "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
+msgstr "Disattivato: le spese accessorie sono ripartite secondo la chiave scelta sul giustificativo. Attivato: per i tipi di spesa con chiave propria (locali, quota di valore, percentuale) questa prevale sulla scelta fatta sul giustificativo. Le chiavi si gestiscono sotto «Chiavi di ripartizione» nello stabile."
+
+#, python-format
+msgid "Prozentanteile — %(ka)s"
+msgstr "Percentuali — %(ka)s"
+
+msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
+msgstr "Applicare le chiavi di ripartizione proprie di questo stabile"

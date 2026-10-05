@@ -68,6 +68,7 @@ UEBERSETZT = (
     'fw/nk_zustellung.html',
     'fw/phase2_form.html',
     'fw/ticket_zuweisen.html',
+    'fw/verteilschluessel.html',
     'fw/termine.html',
     'fw/zulauf.html',
     'fw/_zustellstatus.html',

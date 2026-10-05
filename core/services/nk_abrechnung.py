@@ -21,7 +21,8 @@ def _chf(v):
 
 
 _SCHLUESSEL_LABEL = {'m2': 'Fläche (m²)', 'm3': 'Volumen (m³)', 'einheit': 'pro Einheit',
-                     'personen': 'Personenzahl', 'verbrauch': 'Verbrauch', 'heizung': 'Heizung'}
+                     'personen': 'Personenzahl', 'verbrauch': 'Verbrauch', 'heizung': 'Heizung',
+                     'zimmer': 'Zimmerzahl', 'anteil': 'Wertquote', 'prozent': 'Prozentanteil'}
 
 
 def _draw_page(c, k):

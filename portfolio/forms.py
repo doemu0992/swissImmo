@@ -40,7 +40,7 @@ class LiegenschaftForm(forms.ModelForm):
             'energietraeger', 'geak_datum',
             'hauswart_name', 'hauswart_telefon', 'sanitaer_name', 'sanitaer_telefon',
             'elektriker_name', 'elektriker_telefon', 'bank_name', 'iban',
-            'hkvo_aktiv', 'hkvo_grundkosten_prozent', 'wertquote_total', 'typ', 'status',
+            'hkvo_aktiv', 'hkvo_grundkosten_prozent', 'verteilschluessel_aktiv', 'wertquote_total', 'typ', 'status',
         )
         field_classes = {name: SchweizerZahl for name in (
             'versicherungswert', 'grundstuecksflaeche_m2', 'gebaeudevolumen_m3',

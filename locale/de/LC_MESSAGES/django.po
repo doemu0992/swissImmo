@@ -24783,3 +24783,92 @@ msgstr[1] "Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen wa
 
 msgid "Notfall"
 msgstr "Notfall"
+
+msgid "Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung (HKVO/Heizgradtage)."
+msgstr "Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung (HKVO/Heizgradtage)."
+
+msgid "Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
+msgstr "Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
+
+msgid "Unter «Liegenschaft bearbeiten» einschalten"
+msgstr "Unter «Liegenschaft bearbeiten» einschalten"
+
+msgid "Schlüssel je Kostenart"
+msgstr "Schlüssel je Kostenart"
+
+msgid "Kostenart"
+msgstr "Kostenart"
+
+msgid "Gültig bis"
+msgstr "Gültig bis"
+
+msgid "Diesen Schlüssel löschen?"
+msgstr "Diesen Schlüssel löschen?"
+
+msgid "Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach dem Schlüssel am Beleg."
+msgstr "Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach dem Schlüssel am Beleg."
+
+msgid "Summe muss 100 ergeben"
+msgstr "Summe muss 100 ergeben"
+
+msgid "Prozentanteile speichern"
+msgstr "Prozentanteile speichern"
+
+msgid "— wählen —"
+msgstr "— wählen —"
+
+msgid "Verteilung nach"
+msgstr "Verteilung nach"
+
+msgid "Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, pro Einheit und Personen wählen Sie weiterhin am Beleg."
+msgstr "Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, pro Einheit und Personen wählen Sie weiterhin am Beleg."
+
+msgid "Bitte eine Kostenart wählen (Heizkosten laufen über die Heizkostenabrechnung)."
+msgstr "Bitte eine Kostenart wählen (Heizkosten laufen über die Heizkostenabrechnung)."
+
+msgid "Bitte eine Verteilung wählen."
+msgstr "Bitte eine Verteilung wählen."
+
+msgid "Bitte ein gültiges Datum angeben."
+msgstr "Bitte ein gültiges Datum angeben."
+
+msgid "«Gültig bis» liegt vor «Gültig ab»."
+msgstr "«Gültig bis» liegt vor «Gültig ab»."
+
+msgid "Für diese Kostenart gibt es im selben Zeitraum schon einen Schlüssel."
+msgstr "Für diese Kostenart gibt es im selben Zeitraum schon einen Schlüssel."
+
+msgid "Bitte eine Zahl angeben."
+msgstr "Bitte eine Zahl angeben."
+
+msgid "Der Anteil liegt zwischen 0 und 100."
+msgstr "Der Anteil liegt zwischen 0 und 100."
+
+#, python-format
+msgid "Die Anteile ergeben %(summe)s statt 100."
+msgstr "Die Anteile ergeben %(summe)s statt 100."
+
+msgid "Verteilschlüssel gespeichert."
+msgstr "Verteilschlüssel gespeichert."
+
+msgid "Der bisherige Schlüssel dieser Kostenart wurde am Vortag beendet."
+msgstr "Der bisherige Schlüssel dieser Kostenart wurde am Vortag beendet."
+
+msgid "Verteilschlüssel gelöscht."
+msgstr "Verteilschlüssel gelöscht."
+
+msgid "Prozentanteile gespeichert."
+msgstr "Prozentanteile gespeichert."
+
+msgid "Unbekannte Aktion."
+msgstr "Unbekannte Aktion."
+
+msgid "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
+msgstr "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
+
+#, python-format
+msgid "Prozentanteile — %(ka)s"
+msgstr "Prozentanteile — %(ka)s"
+
+msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
+msgstr "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
