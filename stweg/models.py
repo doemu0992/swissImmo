@@ -547,6 +547,22 @@ class StwegSchluesselAnteil(OrganisationAusKette):
         ]
 
 
+class StwegBefreiung(OrganisationAusKette):
+    """Eine Einheit trägt von einem Schlüssel nichts (Anteil 0) — mit Begründung (Art. 712h Abs. 3 ZGB: abweichende
+    Verteilung nach Reglement oder Beschluss; z. B. Lift für das Erdgeschoss)."""
+    ORGANISATION_PFAD = 'schluessel'
+    schluessel = models.ForeignKey(StwegSchluessel, on_delete=models.CASCADE, related_name='befreiungen')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
+    begruendung = models.CharField("Begründung (Reglement, Beschluss, Artikel)", max_length=200)
+    erfasst_am = models.DateField(default=timezone.localdate)
+    erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='+')
+
+    class Meta:
+        db_table = 'stweg_befreiung'
+        constraints = [models.UniqueConstraint(fields=['schluessel', 'einheit'], name='stweg_befreiung_je_einheit')]
+
+
 class StwegKostenzuordnung(OrganisationAusKette):
     """Welcher Schlüssel gilt für Kosten auf diesem Buchungskonto?"""
     ORGANISATION_PFAD = 'liegenschaft'

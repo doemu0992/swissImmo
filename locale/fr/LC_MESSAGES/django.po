@@ -24808,3 +24808,51 @@ msgstr "Débiteur des frais enregistré."
 #: stweg/bauteile
 msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
 msgstr "Pour une PPE, veuillez indiquer l'élément et le débiteur des frais (droit exclusif ou commun)."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Exonération de frais (art. 712h al. 3 CC)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Si une installation ne sert pas certains propriétaires, la répartition peut différer. Les unités exonérées ne supportent rien ; le montant est recalculé pour les autres (nouvelle base 100 %, au centime près). La justification est obligatoire et consignée."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Clé (p. ex. ascenseur) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Unités exonérées *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Justification (règlement, décision, article) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Consigner l'exonération"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "Une exonération nécessite une justification (règlement, décision, article)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Veuillez choisir au moins une unité."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Exonération selon l'art. 712h al. 3 CC"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Exonération consignée : le montant est recalculé pour les autres unités."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Exonération levée : l'unité supporte à nouveau sa quote-part."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Il doit rester des unités qui supportent les frais — tout exonérer ne répartit rien."

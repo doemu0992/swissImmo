@@ -284,6 +284,9 @@ class MandantenFixture:
         from stweg.models import StwegEigentuemerwechsel as _Wechsel
         self.stweg_wechsel = _Wechsel.objects.create(
             einheit=self.einheit, datum=_tz.now().date(), neu=_Eig.objects.create(firma_oder_name=f'Käufer {k}'))
+        from stweg.models import StwegBefreiung as _Befreiung
+        self.stweg_befreiung = _Befreiung.objects.create(schluessel=self.stweg_schluessel, einheit=self.einheit,
+                                                         begruendung='Reglement (Test)')
         from stweg.models import Vollmacht as _Vollmacht, Zirkularbeschluss as _Zirkular
         self.stweg_zirkular = _Zirkular.objects.create(
             liegenschaft=self.liegenschaft, titel=f'Zirkular {k}', antrag='Antrag',
@@ -482,6 +485,7 @@ class MandantenFixture:
         ('stweg_mahnung',            'stweg_mahnung'),
         ('stweg_pfandrecht',         'stweg_pfandrecht'),
         ('stweg_handaenderung',      'stweg_wechsel'),
+        ('stweg_befreiung',          'stweg_befreiung'),
         ('stweg_inkassofall',        'stweg_inkassofall'),
         ('stweg_schluessel',         'stweg_schluessel'),
         ('stweg_budget',             'stweg_budget'),

@@ -24786,3 +24786,51 @@ msgstr "Onere dei costi salvato."
 #: stweg/bauteile
 msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
 msgstr "Per una PPP indicare elemento e onere dei costi (diritto esclusivo o comune)."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Esenzione dai costi (art. 712h cpv. 3 CC)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Se un impianto non serve singoli proprietari, la ripartizione può differire. Le unità esentate non sostengono nulla; l'importo viene ricalcolato per le altre (nuova base 100 %, al centesimo). La motivazione è obbligatoria e viene registrata."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Chiave (p. es. ascensore) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Unità esentate *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Motivazione (regolamento, delibera, articolo) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Registrare l'esenzione"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "Un'esenzione richiede la motivazione (regolamento, delibera, articolo)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Scegliere almeno un'unità."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Esenzione secondo l'art. 712h cpv. 3 CC"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Esenzione registrata: l'importo viene ricalcolato per le altre unità."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Esenzione revocata: l'unità sostiene di nuovo la sua quota di valore."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Devono restare unità che sostengono i costi — esentarle tutte non ripartisce nulla."

@@ -24582,3 +24582,51 @@ msgstr "Cost bearer saved."
 #: stweg/bauteile
 msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
 msgstr "For a condominium, please state component and cost bearer (exclusive right or common)."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Exemption from costs (Art. 712h para. 3 CC)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "If an installation does not serve individual owners, the distribution may differ. Exempted units bear nothing; the amount is recalculated for the others (new base 100 %, exact to the cent). The reason is mandatory and is recorded."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Key (e.g. lift) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Exempted units *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Reason (regulations, resolution, article) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Record exemption"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "An exemption needs the reason (regulations, resolution, article)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Please choose at least one unit."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Exemption under Art. 712h para. 3 CC"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Exemption recorded: the amount is recalculated for the other units."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Exemption cancelled: the unit bears its value share again."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Units must remain that bear the costs — exempting all distributes nothing."

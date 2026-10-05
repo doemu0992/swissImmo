@@ -12,7 +12,7 @@ Sonst fiele eine Einheit unbemerkt aus der Verteilung und die anderen trügen ih
 from django.utils.translation import gettext
 from decimal import Decimal
 
-from stweg.models import StwegKostenzuordnung, StwegSchluessel, StwegSchluesselAnteil
+from stweg.models import StwegBefreiung, StwegKostenzuordnung, StwegSchluessel, StwegSchluesselAnteil
 from stweg.validierung import stimm_einheiten
 from stweg.verteilung import verteile_nach_quoten
 
@@ -97,14 +97,71 @@ def manuellen_schluessel_setzen(liegenschaft, name, anteile, *, bemerkung=''):
     return s
 
 
-def lift_schluessel(liegenschaft, name='Lift', ausgeschlossen=EG_SCHREIBWEISEN):
+def befreiungen_festhalten(schluessel, anteile, begruendung, user=None):
+    """Hält für jede Einheit mit Anteil 0 die Begründung fest (Art. 712h Abs. 3 ZGB). Ohne Begründung nichts."""
+    begruendung = (begruendung or '').strip()[:200]
+    if not begruendung:
+        return
+    for einheit, gewicht in anteile.items():
+        if Decimal(gewicht) == 0:
+            StwegBefreiung.objects.update_or_create(schluessel=schluessel, einheit=einheit,
+                                                    defaults={'begruendung': begruendung, 'erfasst_von': user})
+
+
+def befreien(liegenschaft, name, einheiten, begruendung, *, user=None):
+    """Befreit `einheiten` rechtssicher von den Kosten des Schlüssels `name` (Anteil 0) — mit Begründung.
+
+    Art. 712h Abs. 3 ZGB: Dient eine Anlage einzelnen Stockwerkeigentümern nicht oder kaum, kann die Verteilung
+    abweichen; die Grundlage (Reglement, Beschluss, Artikel) wird hier festgehalten und ist Pflicht. Der Schlüssel ist
+    ein «manueller»: Die übrigen Einheiten behalten ihren bisherigen Anteil (neu angelegt: ihre Wertquote), der Betrag
+    wird auf sie umgerechnet (neue Basis 100 %, auf den Rappen genau — grösster Rest). Wer alle befreit, verteilt
+    nichts: abgelehnt. Gibt den Schlüssel zurück."""
+    begruendung = (begruendung or '').strip()
+    if not begruendung:
+        raise SchluesselFehler(gettext('Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel).'))
+    einheiten = list(einheiten)
+    if not einheiten:
+        raise SchluesselFehler(gettext('Bitte mindestens eine Einheit wählen.'))
+    gueltig = {e.pk: e for e in stimm_einheiten(liegenschaft)}
+    for e in einheiten:
+        if e.pk not in gueltig:
+            raise SchluesselFehler(gettext('Einheit «%(bezeichnung)s» gehört nicht zu dieser Gemeinschaft.')
+                                   % {'bezeichnung': e.bezeichnung})
+    bestehend = liegenschaft.stweg_schluessel.filter(name=name).first()
+    if bestehend is not None and bestehend.art != StwegSchluessel.MANUELL:
+        raise SchluesselFehler(gettext('«%(name)s» ist kein Schlüssel mit eigenen Anteilen.') % {'name': name})
+    alt = ({a.einheit_id: Decimal(a.anteil) for a in StwegSchluesselAnteil.objects.filter(schluessel=bestehend)}
+           if bestehend is not None else {})
+    befreit = {e.pk for e in einheiten} | {b.einheit_id for b in StwegBefreiung.objects.filter(schluessel=bestehend)} \
+        if bestehend is not None else {e.pk for e in einheiten}
+    anteile = {e: (Decimal('0') if e.pk in befreit else alt.get(e.pk, Decimal(e.wertquote)))
+               for e in gueltig.values()}
+    if sum(anteile.values(), Decimal('0')) <= 0:
+        raise SchluesselFehler(gettext('Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien '
+                                       'verteilt nichts.'))
+    s = manuellen_schluessel_setzen(liegenschaft, name, anteile,
+                                    bemerkung=gettext('Befreiung nach Art. 712h Abs. 3 ZGB'))
+    befreiungen_festhalten(s, {e: anteile[e] for e in einheiten}, begruendung, user)
+    return s
+
+
+def befreiung_aufheben(befreiung):
+    """Hebt eine Befreiung auf: Die Einheit trägt wieder ihre Wertquote."""
+    s, e = befreiung.schluessel, befreiung.einheit
+    StwegSchluesselAnteil.objects.update_or_create(schluessel=s, einheit=e, defaults={'anteil': Decimal(e.wertquote)})
+    befreiung.delete()
+
+
+def lift_schluessel(liegenschaft, name='Lift', ausgeschlossen=EG_SCHREIBWEISEN, begruendung=None, user=None):
     """Liftschlüssel: Einheiten auf den Etagen `ausgeschlossen` (Vorgabe: Erdgeschoss) tragen 0,
     alle anderen ihre Wertquote. Ein anderes Verhältnis (z. B. höhere Stockwerke mehr) ist als
     manueller Schlüssel von Hand zu setzen."""
     ausgeschlossen = {str(x).strip().lower() for x in ausgeschlossen}
     anteile = {e: (Decimal('0') if (e.etage or '').strip().lower() in ausgeschlossen else Decimal(e.wertquote))
                for e in stimm_einheiten(liegenschaft)}
-    return manuellen_schluessel_setzen(liegenschaft, name, anteile)
+    s = manuellen_schluessel_setzen(liegenschaft, name, anteile)
+    befreiungen_festhalten(s, anteile, begruendung, user)
+    return s
 
 
 def etage_nummer(text):
@@ -120,7 +177,7 @@ def etage_nummer(text):
     return None
 
 
-def lift_nach_stockwerk(liegenschaft, name='Lift', *, etagen=None):
+def lift_nach_stockwerk(liegenschaft, name='Lift', *, etagen=None, begruendung=None, user=None):
     """Liftschlüssel nach Stockwerk: Gewicht = Stockwerknummer (EG = 0 trägt nichts, 1. OG = 1, 2. OG = 2 …).
 
     Wer höher wohnt, fährt weiter und trägt mehr. Die Gewichtung nach Stockwerknummer ist eine übliche
@@ -142,8 +199,9 @@ def lift_nach_stockwerk(liegenschaft, name='Lift', *, etagen=None):
     if unklar:
         raise SchluesselFehler('Die Stockwerknummer ist nicht lesbar bei ' + ', '.join(unklar)
                                + ' — bitte in der Einheit eintragen oder ausdrücklich angeben.')
-    return manuellen_schluessel_setzen(liegenschaft, name, anteile,
-                                       bemerkung='nach Stockwerk (EG = 0)')
+    s = manuellen_schluessel_setzen(liegenschaft, name, anteile, bemerkung='nach Stockwerk (EG = 0)')
+    befreiungen_festhalten(s, anteile, begruendung, user)     # EG trägt 0: die Grundlage steht in `begruendung`
+    return s
 
 
 def kostenart_zuordnen(liegenschaft, konto, schluessel):

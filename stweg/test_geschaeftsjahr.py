@@ -104,7 +104,7 @@ class Geschaeftsjahr2026(TestCase):
                                                    '(entsteht beim ersten Budget).')])
 
         # 2 ── Verteilschlüssel: Hauswartung nach Wertquote, Lift nach Stockwerk ──────────────────
-        self.lift = lift_nach_stockwerk(lg)
+        self.lift = lift_nach_stockwerk(lg, begruendung='Reglement Art. 9: Das Erdgeschoss nutzt den Lift nicht')
         gewichte = {a.einheit_id: a.anteil for a in self.lift.anteile.all()}
         self.assertEqual((gewichte[A.pk], gewichte[B.pk], gewichte[C.pk]), (D('0'), D('1'), D('2')))
         k_hauswart = konto_nr('4120')                                 # Hauswartung & Reinigung (Standardkonto)
