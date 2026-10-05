@@ -90,6 +90,9 @@
                     <select id="ak_ze" name="zahlungseingang" class="fw-feld"><option value="">{% trans "— keiner: direkt auf die Bank buchen —" %}</option>
                         {% for z in geparkt %}<option value="{{ z.pk }}">{{ z.datum_eingang|date:"d.m.Y" }} · CHF {{ z.betrag|chf }} · {{ z.bemerkung|truncatechars:50 }}</option>{% endfor %}</select>
                     <span class="fw-s">{% trans "Stammt die Zahlung aus dem Kontoauszug-Import, hier den Eingang wählen — sonst läge der Betrag zweimal auf dem Bankkonto." %}</span></div>
+                <div class="fw-feldblock"><label class="fw-label" for="ak_rate">{% trans "Bezahlte Rate (falls der Eigentümer sie angegeben hat)" %}</label>
+                    <select id="ak_rate" name="vorschreibung" class="fw-feld"><option value="">{% trans "— keine Angabe: älteste offene Forderung —" %}</option>
+                        {% for r in raten %}<option value="{{ r.pk }}">{{ r.einheit.bezeichnung }} · {{ r.budget.jahr }} {{ r.rate_nr }}/{{ r.rate_total }} · {{ r.faellig_am|date:"d.m.Y" }} · CHF {{ r.betrag|chf }}</option>{% endfor %}</select></div>
                 <div class="fw-feldblock"><label class="fw-label" for="ak_bem">{% trans "Bemerkung" %}</label>
                     <input id="ak_bem" name="bemerkung" class="fw-feld"></div>
                 <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Erfassen" %}</button></div>

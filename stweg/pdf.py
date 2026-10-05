@@ -326,3 +326,149 @@ def vorschreibung_pdf(budget, eigentuemer):
         if qr:
             _qr_zeichnen(s, qr, v.betrag)
     return s.bytes()
+
+
+#: Referenzen von Mahnungen beginnen hinter diesem Offset (nie gleich einer Abrechnungs- oder Vorschreibungs-Referenz).
+MAHNUNG_REFERENZ_OFFSET = 6_000_000_000
+
+
+@nur_deutsch
+def mahnung_pdf(mahnung):
+    """Mahnung an einen Stockwerkeigentümer. KEINE Kündigungsandrohung (Art. 257d OR gilt nur für Mieter): Der Text
+    läuft durch `inkasso.ohne_kuendigung`. Mit QR-Zahlteil, wenn die Gemeinschaft eine gültige IBAN hat."""
+    from stweg import inkasso
+    fall = mahnung.fall
+    e = fall.einheit
+    lg = e.liegenschaft
+    eig = fall.eigentuemer or e.stockwerkeigentuemer
+    s = _Seite(f"{mahnung.stufe}. Mahnung {lg}")
+    org = lg.organisation
+    s.zeile(org.firma or '', fett=True, gr=11)
+    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
+    s.luecke(6)
+    if eig is not None:
+        s.zeile(eig.firma_oder_name)
+        if eig.strasse:
+            s.zeile(eig.strasse)
+        s.zeile(f"{eig.plz} {eig.ort}".strip())
+    s.luecke(6)
+    zeilen = inkasso.mahntext(mahnung)
+    s.zeile(zeilen[0], fett=True, gr=14, abstand=7)
+    for z in zeilen[1:]:
+        if z:
+            s.absatz(z, gr=10, abstand=5)
+        else:
+            s.luecke(2)
+    s.luecke(4)
+    s.zeile(f"Datum: {mahnung.datum:%d.%m.%Y}")
+    s.zeile("Freundliche Grüsse")
+    s.zeile(org.firma or '')
+    if eig is not None:
+        qr = _qr_basis(lg, eig, mahnung.betrag, MAHNUNG_REFERENZ_OFFSET + mahnung.pk, eig.pk,
+                       f'{mahnung.stufe}. Mahnung {e.bezeichnung} {lg.strasse}')
+        if qr:
+            _qr_zeichnen(s, qr, mahnung.betrag)
+    return s.bytes()
+
+
+@nur_deutsch
+def retention_pdf(fall):
+    """Mitteilung über die Ausübung des Retentionsrechts (Art. 712k ZGB) — rudimentär, zur Prüfung."""
+    e = fall.einheit
+    lg = e.liegenschaft
+    eig = fall.eigentuemer or e.stockwerkeigentuemer
+    org = lg.organisation
+    s = _Seite(f"Retentionsrecht {lg}")
+    s.zeile(org.firma or '', fett=True, gr=11)
+    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
+    s.luecke(6)
+    if eig is not None:
+        s.zeile(eig.firma_oder_name)
+    s.luecke(5)
+    s.zeile("Mitteilung: Ausübung des Retentionsrechts (Art. 712k ZGB)", fett=True, gr=13, abstand=7)
+    s.zeile(f"Stockwerkeigentümergemeinschaft {lg} · Einheit {e.bezeichnung}")
+    s.luecke(3)
+    s.absatz("Die Gemeinschaft macht wegen der offenen Beitragsforderungen das Retentionsrecht an den beweglichen "
+             "Sachen geltend, die sich in den Räumen der Einheit befinden und zu deren Einrichtung oder Gebrauch "
+             "dienen:", gr=10, abstand=5)
+    s.luecke(2)
+    s.absatz(fall.retention_gegenstaende, gr=10, abstand=5)
+    s.luecke(3)
+    if fall.retention_erklaert_am:
+        s.zeile(f"Datum: {fall.retention_erklaert_am:%d.%m.%Y}")
+    s.luecke(3)
+    s.absatz("Entwurf zur Prüfung: Voraussetzungen und Umfang des Retentionsrechts sind im Einzelfall rechtlich zu "
+             "beurteilen.", gr=8, abstand=4)
+    s.luecke(4)
+    s.zeile(org.firma or '')
+    return s.bytes()
+
+
+@nur_deutsch
+def pfandrecht_pdf(pfandrecht):
+    """Antrag auf Eintragung eines Gemeinschaftspfandrechts (Art. 712i ZGB) beim Grundbuchamt — rudimentär.
+
+    Die Pfandsumme umfasst NUR die Beitragsforderungen der letzten 36 Monate; ältere offene Beträge stehen getrennt
+    und gehen nicht in die Summe ein. Der Antrag ist ein Entwurf zur Prüfung und zur Unterschrift."""
+    from stweg import inkasso
+    pf = pfandrecht
+    fall = pf.fall
+    e = fall.einheit
+    lg = e.liegenschaft
+    eig = fall.eigentuemer or e.stockwerkeigentuemer
+    org = lg.organisation
+    s = _Seite(f"Pfandrecht {lg}")
+    s.zeile(org.firma or '', fett=True, gr=11)
+    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
+    s.luecke(5)
+    s.zeile(f"Grundbuchamt {lg.ort or ''}{' (' + lg.kanton + ')' if lg.kanton else ''}".strip(), fett=True)
+    s.luecke(5)
+    s.zeile("Antrag auf Eintragung eines Gemeinschaftspfandrechts (Art. 712i ZGB)", fett=True, gr=13, abstand=7)
+    s.luecke(2)
+    s.zeile("Gläubigerin", fett=True)
+    s.zeile(f"Stockwerkeigentümergemeinschaft {lg.strasse}, {lg.plz} {lg.ort}")
+    s.zeile(f"vertreten durch die Verwaltung {org.firma or ''}")
+    s.luecke(3)
+    s.zeile("Schuldner (Stockwerkeigentümer)", fett=True)
+    s.zeile(eig.firma_oder_name if eig else '— nicht erfasst —')
+    if eig is not None and (eig.strasse or eig.ort):
+        s.zeile(f"{eig.strasse}, {eig.plz} {eig.ort}".strip(', '))
+    s.luecke(3)
+    s.zeile("Pfandobjekt", fett=True)
+    s.zeile(f"Stockwerkeinheit «{e.bezeichnung}»{' · ' + e.etage if e.etage else ''}, Wertquote "
+            f"{zahl(e.wertquote)}/{lg.wertquote_total}")
+    s.zeile(f"Liegenschaft {lg.strasse}, {lg.plz} {lg.ort}")
+    s.zeile("Grundbuchblatt / EGRID: ______________________  (vom Grundbuchamt bzw. aus dem Grundbuchauszug zu ergänzen)", gr=9)
+    s.luecke(4)
+    s.zeile(f"Pfandsumme: CHF {_chf(pf.betrag_pfandberechtigt)}", fett=True, gr=12, abstand=6)
+    s.absatz(f"Beitragsforderungen der Gemeinschaft der letzten drei Jahre vor dem Stichtag {pf.stichtag:%d.%m.%Y} "
+             f"(Forderungsdatum nach dem {inkasso._plus_monate(pf.stichtag, -inkasso.PFANDRECHT_MONATE):%d.%m.%Y}).",
+             gr=9, abstand=4)
+    s.luecke(2)
+    s.zeile("Aufstellung der pfandberechtigten Forderungen", fett=True)
+    for z in pf.zeilen:
+        if z['pfandberechtigt']:
+            d = date_fromiso(z['datum'])
+            s.zeile(f"{d:%d.%m.%Y}  {z['text'][:50]:<50}  CHF {_chf(Decimal(z['offen'])):>12}", gr=9, abstand=4)
+    ausgeschlossen = [z for z in pf.zeilen if not z['pfandberechtigt']]
+    if ausgeschlossen:
+        s.luecke(3)
+        s.zeile(f"Nicht pfandberechtigt (älter als drei Jahre), NICHT in der Pfandsumme: CHF "
+                f"{_chf(pf.betrag_ausgeschlossen)}", fett=True, gr=9)
+        for z in ausgeschlossen:
+            d = date_fromiso(z['datum'])
+            s.zeile(f"{d:%d.%m.%Y}  {z['text'][:50]:<50}  CHF {_chf(Decimal(z['offen'])):>12}", gr=8, abstand=4)
+    s.luecke(4)
+    s.absatz("Beilagen: Reglement bzw. Beschluss über die Beiträge, Mahnungen, Aufstellung der Forderungen.", gr=9,
+             abstand=4)
+    s.luecke(6)
+    s.zeile(f"Ort, Datum: ____________________      Unterschrift Verwaltung: ____________________")
+    s.luecke(4)
+    s.absatz("Entwurf zur Prüfung und Unterschrift. Das System rechnet die Pfandsumme aus den Forderungen; ob und in "
+             "welchem Umfang das Pfandrecht entsteht, ist rechtlich zu beurteilen.", gr=8, abstand=4)
+    return s.bytes()
+
+
+def date_fromiso(text):
+    from datetime import date
+    return date.fromisoformat(text)

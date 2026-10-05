@@ -3,6 +3,7 @@ from django.urls import path
 from stweg import views as v
 from stweg import views_dokumente as vd
 from stweg import views_finanzen as vf
+from stweg import views_inkasso as vi
 
 urlpatterns = [
     path('', v.stweg_uebersicht, name='stweg_uebersicht'),
@@ -72,4 +73,13 @@ urlpatterns = [
     path('dokument/<int:pk>/', vd.stweg_dokument_download, name='stweg_dokument_download'),
     path('dokument/<int:pk>/loeschen/', vd.stweg_dokument_loeschen, name='stweg_dokument_loeschen'),
     path('dokument/<int:pk>/sichtbar/', vd.stweg_dokument_sichtbar, name='stweg_dokument_sichtbar'),
+    # Inkasso (Retentionsrecht, Gemeinschaftspfandrecht)
+    path('<int:stweg_id>/inkasso/', vi.stweg_inkasso, name='stweg_inkasso'),
+    path('<int:stweg_id>/inkasso/mahnen/', vi.stweg_inkasso_mahnen, name='stweg_inkasso_mahnen'),
+    path('<int:stweg_id>/inkasso/retention/', vi.stweg_inkasso_retention, name='stweg_inkasso_retention'),
+    path('<int:stweg_id>/inkasso/pfandrecht/', vi.stweg_inkasso_pfandrecht, name='stweg_inkasso_pfandrecht'),
+    path('mahnung/<int:pk>/pdf/', vi.stweg_mahnung_pdf, name='stweg_mahnung_pdf'),
+    path('pfandrecht/<int:pk>/pdf/', vi.stweg_pfandrecht_pdf, name='stweg_pfandrecht_pdf'),
+    path('pfandrecht/<int:pk>/eingetragen/', vi.stweg_pfandrecht_eingetragen, name='stweg_pfandrecht_eingetragen'),
+    path('inkassofall/<int:pk>/pdf/', vi.stweg_inkassofall_pdf, name='stweg_inkassofall_pdf'),
 ]

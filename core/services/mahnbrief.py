@@ -112,6 +112,12 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     Verwaltung (`brief_titel`, `brief_text`) veränderbar.
     """
     if letzte_stufe:
+        # Ein als Mieter erfasster Stockwerkeigentümer bekommt nie das 257d-Schreiben: es wird ein gewöhnliches
+        # Mahnschreiben der Stufe (siehe `core.services.zahlungsverzug.eigentuemer_als_mieter`).
+        from core.services.zahlungsverzug import eigentuemer_als_mieter
+        if eigentuemer_als_mieter(vertrag) is not None:
+            letzte_stufe = False
+    if letzte_stufe:
         from core.views.email_views import generate_mahnung_combined_pdf_bytes
         # Die Mahngebühr der Stufe steht im Brief und hat einen eigenen Einzahlungsschein;
         # dessen QRR ist die der Gebührenforderung (`stammrechnung` = die gemahnte Forderung).

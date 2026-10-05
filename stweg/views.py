@@ -23,7 +23,7 @@ from core.models import Pendenz
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
 from stweg import aufgaben, beschluss, dokumente, vorgaben
-from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegBudget, StwegAkonto, StwegAnfrage,
+from stweg.models import (Anwesenheit, Stimme, StwegAbrechnung, StwegBudget, StwegVorschreibung, StwegAkonto, StwegAnfrage,
                           StwegVersand, Traktandum, Versammlung, Vollmacht, Zirkularbeschluss,
                           ZirkularStimme)
 from stweg.beschluss import BeschlussFehler
@@ -448,6 +448,8 @@ def stweg_abrechnung(request, stweg_id):
         .select_related('einheit'),
         'fonds': fonds,
         'geparkt': _geparkte_eingaenge(),
+        'raten': list(StwegVorschreibung.objects.filter(budget__liegenschaft=lg, faellig_am__lte=timezone.localdate())
+                      .select_related('einheit', 'budget').order_by('-faellig_am', 'einheit_id')[:80]),
         'zwecke': StwegAkonto.ZWECK_CHOICES,
         'bewegungen': list(fonds.bewegungen.select_related('einheit').order_by('-datum', '-id')[:30]) if fonds else [],
         'eigentuemer': sorted({p.eigentuemer for p in abrechnung.positionen.all() if p.eigentuemer},
@@ -519,12 +521,17 @@ def stweg_akonto_neu(request, stweg_id):
         if ze is None:
             messages.error(request, gettext('Der gewählte Bankeingang wurde nicht gefunden.'))
             return _zur_abrechnung(lg, datum.year)
+    rate = None
+    if request.POST.get('vorschreibung'):
+        from stweg.models import StwegVorschreibung
+        rate = StwegVorschreibung.objects.filter(pk=_zahl(request.POST.get('vorschreibung')) or 0,
+                                                 einheit=einheit).first()
+        if rate is None:
+            messages.error(request, gettext('Die gewählte Rate gehört nicht zu dieser Einheit.'))
+            return _zur_abrechnung(lg, datum.year)
     try:
-        with transaction.atomic():
-            k = StwegAkonto.objects.create(einheit=einheit, betrag=betrag, datum=datum, zweck=zweck,
-                                           zahlungseingang=ze,
-                                           bemerkung=(request.POST.get('bemerkung') or '').strip()[:200])
-            hauptbuch.zahlung_buchen(k, user=request.user)
+        k = hauptbuch.zahlung_erfassen(einheit, betrag, datum, zweck=zweck, vorschreibung=rate, zahlungseingang=ze,
+                                       bemerkung=(request.POST.get('bemerkung') or '').strip(), user=request.user)
     except hauptbuch.HauptbuchFehler as e:
         messages.error(request, str(e))
         return _zur_abrechnung(lg, datum.year)

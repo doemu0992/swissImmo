@@ -93,6 +93,25 @@ def zahlung_buchen(zahlung, *, user=None):
 
 
 @transaction.atomic
+def zahlung_erfassen(einheit, betrag, datum, *, zweck=StwegAkonto.AKONTO, vorschreibung=None, zahlungseingang=None,
+                     bemerkung='', user=None):
+    """Erfasst eine Zahlung und bucht sie (alles oder nichts). `vorschreibung`: die bezahlte Rate (Bestimmung des
+    Schuldners); sie muss zu derselben Einheit gehören und gilt nur für Akonto-Zahlungen."""
+    betrag = Decimal(betrag)
+    if betrag <= 0:
+        raise HauptbuchFehler('Der Betrag muss grösser 0 sein.')
+    if vorschreibung is not None:
+        if vorschreibung.einheit_id != einheit.pk:
+            raise HauptbuchFehler('Die Rate gehört zu einer anderen Einheit.')
+        if zweck != StwegAkonto.AKONTO:
+            raise HauptbuchFehler('Eine Rate kann nur mit einer Akonto-Zahlung bezahlt werden.')
+    z = StwegAkonto.objects.create(einheit=einheit, betrag=betrag, datum=datum, zweck=zweck, bemerkung=bemerkung[:200],
+                                   vorschreibung=vorschreibung, zahlungseingang=zahlungseingang)
+    zahlung_buchen(z, user=user)
+    return z
+
+
+@transaction.atomic
 def zahlung_stornieren(zahlung, *, user=None):
     """Hebt die Buchung einer Zahlung auf (revisionssicher: Gegenbuchung) und gibt einen
     zugeordneten Importeingang wieder auf 1190 frei. Zahlungen ohne Buchung (Altbestand) bleiben unberührt."""
