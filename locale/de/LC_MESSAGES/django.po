@@ -24456,3 +24456,11 @@ msgstr "Betreibungskostenvorschuss"
 #: stweg/inkasso
 msgid "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
 msgstr "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
+
+#: stweg/pdf
+msgid "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen."
+msgstr "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen."
+
+#: stweg/pdf
+msgid "Zinsabrechnung (PDF)"
+msgstr "Zinsabrechnung (PDF)"

@@ -24342,3 +24342,11 @@ msgstr "Advance on enforcement costs"
 #: stweg/inkasso
 msgid "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
 msgstr "Reminder fee from level: reminder levels 1 to 3 are allowed."
+
+#: stweg/pdf
+msgid "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen."
+msgstr "Warning: This calculation does not replace legal review. The 36-month period for the lien, the interest calculation, the allocation of payments (Art. 85 CO) and the apportionment on a change of ownership must be confirmed by a specialist."
+
+#: stweg/pdf
+msgid "Zinsabrechnung (PDF)"
+msgstr "Interest statement (PDF)"

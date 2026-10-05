@@ -203,3 +203,16 @@ def stweg_handaenderung_pdf(request, pk):
     w = get_object_or_404(StwegEigentuemerwechsel.objects.select_related('einheit__liegenschaft', 'neu', 'bisheriger'),
                           pk=pk)
     return _pdf(handaenderung_pdf(w), 'Handaenderung.pdf')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def stweg_zinsabrechnung_pdf(request, stweg_id, einheit_id):
+    """Zinsabrechnung (Kontokorrent mit Verzugszins) einer Einheit per heute."""
+    from django.http import Http404
+
+    from stweg.pdf import zinsabrechnung_pdf
+    lg = _gemeinschaft(stweg_id)
+    e = stimm_einheiten(lg).filter(pk=einheit_id).first()
+    if e is None:
+        raise Http404
+    return _pdf(zinsabrechnung_pdf(e), 'Zinsabrechnung.pdf')

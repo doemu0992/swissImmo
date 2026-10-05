@@ -11,6 +11,8 @@
     </div>
 </div>
 
+<div class="fw-card"><div class="fw-rumpf"><p><strong>{% trans "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen." %}</strong></p></div></div>
+
 {% for z in zeilen %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{{ z.einheit.bezeichnung }}{% if z.einheit.stockwerkeigentuemer %} · {{ z.einheit.stockwerkeigentuemer.firma_oder_name }}{% endif %}</span>
@@ -18,6 +20,7 @@
     {% if z.altforderung > 0 %}
     <div class="fw-rumpf"><p class="fw-s">{% blocktrans with b=z.altforderung|chf %}Davon CHF {{ b }} gegen einen früheren Eigentümer: Die Mahnung richtet sich nur an den heutigen Eigentümer; das Pfandrecht haftet am Anteil.{% endblocktrans %}</p></div>
     {% endif %}
+    <div class="fw-rumpf"><a class="fw-btn" href="/neu/stweg/{{ lg.pk }}/inkasso/zinsabrechnung/{{ z.einheit.pk }}/" target="_blank" rel="noopener">{% trans "Zinsabrechnung (PDF)" %}</a></div>
     {% if z.neben %}
     <div class="fw-rumpf"><p class="fw-s">{% trans "Zinsen und Kosten (nicht in der Pfandsumme):" %}</p>
         {% for c in z.neben %}<div class="fw-s">{{ c.datum|date:"d.m.Y" }} · {{ c.text }} · CHF {{ c.offen|chf }}</div>{% endfor %}</div>

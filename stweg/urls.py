@@ -82,6 +82,8 @@ urlpatterns = [
          name='stweg_inkasso_kostenvorschuss'),
     path('<int:stweg_id>/inkasso/position/<int:pk>/storno/', vi.stweg_inkasso_position_storno,
          name='stweg_inkasso_position_storno'),
+    path('<int:stweg_id>/inkasso/zinsabrechnung/<int:einheit_id>/', vi.stweg_zinsabrechnung_pdf,
+         name='stweg_zinsabrechnung_pdf'),
     path('<int:stweg_id>/inkasso/pfandrecht/', vi.stweg_inkasso_pfandrecht, name='stweg_inkasso_pfandrecht'),
     path('mahnung/<int:pk>/pdf/', vi.stweg_mahnung_pdf, name='stweg_mahnung_pdf'),
     path('pfandrecht/<int:pk>/pdf/', vi.stweg_pfandrecht_pdf, name='stweg_pfandrecht_pdf'),

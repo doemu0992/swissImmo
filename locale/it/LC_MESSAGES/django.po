@@ -24546,3 +24546,11 @@ msgstr "Anticipo spese di esecuzione"
 #: stweg/inkasso
 msgid "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
 msgstr "Spese di sollecito dal livello: sono ammessi i livelli di sollecito da 1 a 3."
+
+#: stweg/pdf
+msgid "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen."
+msgstr "Attenzione: questo calcolo non sostituisce una verifica giuridica. Il termine di 36 mesi per il pegno, il calcolo degli interessi, l'imputazione dei pagamenti (art. 85 CO) e la ripartizione in caso di cambio di proprietario devono essere confermati da uno specialista."
+
+#: stweg/pdf
+msgid "Zinsabrechnung (PDF)"
+msgstr "Conteggio degli interessi (PDF)"

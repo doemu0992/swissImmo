@@ -24568,3 +24568,11 @@ msgstr "Avance de frais de poursuite"
 #: stweg/inkasso
 msgid "Mahngebühr ab Stufe: erlaubt sind die Mahnstufen 1 bis 3."
 msgstr "Frais de rappel dès le niveau : les niveaux de rappel 1 à 3 sont admis."
+
+#: stweg/pdf
+msgid "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung sind von einer Fachperson zu bestätigen."
+msgstr "Attention : ce calcul ne remplace pas un examen juridique. Le délai de 36 mois pour le gage, le calcul des intérêts, l'imputation des paiements (art. 85 CO) et la répartition lors d'un changement de propriétaire doivent être confirmés par un spécialiste."
+
+#: stweg/pdf
+msgid "Zinsabrechnung (PDF)"
+msgstr "Décompte d'intérêts (PDF)"

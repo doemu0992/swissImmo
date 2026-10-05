@@ -399,6 +399,7 @@ def retention_pdf(fall):
     s.luecke(3)
     s.absatz("Entwurf zur Prüfung: Voraussetzungen und Umfang des Retentionsrechts sind im Einzelfall rechtlich zu "
              "beurteilen.", gr=8, abstand=4)
+    s.absatz(HINWEIS_RECHT, gr=8, abstand=4)
     s.luecke(4)
     s.zeile(org.firma or '')
     return s.bytes()
@@ -421,6 +422,7 @@ def pfandrecht_pdf(pfandrecht):
     s.zeile(org.firma or '', fett=True, gr=11)
     s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
     s.luecke(5)
+    _hinweis(s)
     s.zeile(f"Grundbuchamt {lg.ort or ''}{' (' + lg.kanton + ')' if lg.kanton else ''}".strip(), fett=True)
     s.luecke(5)
     s.zeile("Antrag auf Eintragung eines Gemeinschaftspfandrechts (Art. 712i ZGB)", fett=True, gr=13, abstand=7)
@@ -465,15 +467,26 @@ def pfandrecht_pdf(pfandrecht):
     s.zeile(f"Ort, Datum: ____________________      Unterschrift Verwaltung: ____________________")
     s.luecke(4)
     s.absatz("Entwurf zur Prüfung und Unterschrift. Das System rechnet die Pfandsumme aus den Forderungen; ob und in "
-             "welchem Umfang das Pfandrecht entsteht, ist rechtlich zu beurteilen.", gr=8, abstand=4)
+             "welchem Umfang das Pfandrecht entsteht, ist rechtlich zu beurteilen. Zinsen und Kosten sind nicht in der "
+             "Pfandsumme.", gr=8, abstand=4)
+    s.absatz(HINWEIS_RECHT, gr=8, abstand=4)
     return s.bytes()
 
 
-HINWEIS_RECHT = ("Achtung: Dieses Dokument ersetzt keine juristische Prüfung. Die Berechnung beruht auf den "
-                 "Annahmen in der Dokumentation des Programms; Fristen, Zinsen und Anrechnungen sind vor Gebrauch von "
-                 "einer Fachperson zu bestätigen.")
+HINWEIS_RECHT = ("Achtung: Dieses Dokument ersetzt keine juristische Prüfung. Die 36-Monats-Frist für das Pfandrecht, die "
+                 "Zinsberechnung, die Anrechnung der Zahlungen (Art. 85 OR) und die Aufteilung bei einer Handänderung "
+                 "beruhen auf den Annahmen in der Dokumentation des Programms und sind vor Gebrauch von einer Fachperson "
+                 "zu bestätigen.")
 
 
+def _hinweis(s):
+    """Der rechtliche Hinweis, fett und gut sichtbar (oben auf jedem Dokument mit rechtlicher Wirkung)."""
+    for z in _umbruch(HINWEIS_RECHT, breite=80):
+        s.zeile(z, fett=True, gr=9, abstand=4)
+    s.luecke(3)
+
+
+@nur_deutsch
 def handaenderung_pdf(wechsel, *, jahresbetrag=None):
     """Handänderungs-Abrechnung (pro rata temporis) zwischen Verkäufer und Käufer."""
     from stweg import handaenderung
@@ -483,7 +496,8 @@ def handaenderung_pdf(wechsel, *, jahresbetrag=None):
     org = lg.organisation
     s = _Seite(f"Handänderung {lg}")
     s.zeile(org.firma or '', fett=True, gr=11)
-    s.luecke(4)
+    s.luecke(2)
+    _hinweis(s)
     s.zeile(f"Handänderungs-Abrechnung {a['jahr']}", fett=True, gr=13, abstand=7)
     s.zeile(f"{lg.strasse}, {lg.plz} {lg.ort} — Einheit «{e.bezeichnung}»")
     s.zeile(f"Eigentumsübergang: {wechsel.datum:%d.%m.%Y} (erster Tag des Käufers)")
@@ -512,6 +526,53 @@ def handaenderung_pdf(wechsel, *, jahresbetrag=None):
     s.luecke(5)
     s.absatz(HINWEIS_RECHT, gr=8, abstand=4)
     return s.bytes()
+
+@nur_deutsch
+def zinsabrechnung_pdf(einheit, stichtag=None):
+    """Kontokorrent der Einheit mit Verzugszins: Forderungen, Zinsabschnitte, Anrechnung der Zahlungen."""
+    from django.utils import timezone
+
+    from stweg import inkasso
+    from stweg.models import StwegAkonto
+    from stweg.zins import satz
+    stichtag = stichtag or timezone.localdate()
+    lg = einheit.liegenschaft
+    eig = einheit.stockwerkeigentuemer
+    org = lg.organisation
+    stand = inkasso.forderungen(einheit, stichtag)
+    s = _Seite(f"Zinsabrechnung {lg}")
+    s.zeile(org.firma or '', fett=True, gr=11)
+    s.luecke(2)
+    _hinweis(s)
+    s.zeile(f"Zinsabrechnung per {stichtag:%d.%m.%Y}", fett=True, gr=13, abstand=7)
+    s.zeile(f"{lg.strasse}, {lg.plz} {lg.ort} — Einheit «{einheit.bezeichnung}»")
+    s.zeile(f"Eigentümer: {eig.firma_oder_name if eig else '— nicht erfasst —'}")
+    prozent = satz(lg)
+    s.zeile(f"Verzugszins: {prozent.normalize():f} % pro Jahr (einfacher Zins, Tage/365)" if prozent is not None
+            else "Verzugszins: kein bestätigter Satz — es wird kein Zins gerechnet.", gr=9)
+    s.luecke(3)
+    s.zeile("Forderungen", fett=True)
+    for c in stand:
+        s.zeile(f"{c['datum']:%d.%m.%Y}  {c['text'][:46]:<46}  {_chf(c['betrag']):>10}  offen {_chf(c['offen']):>10}",
+                gr=8, abstand=4)
+        for von, bis, kap, tage, z in c.get('abschnitte', []):
+            s.zeile(f"      {von:%d.%m.%Y}–{bis:%d.%m.%Y}: {tage} Tage auf CHF {_chf(kap)} = CHF {_chf(z)}", gr=8,
+                    abstand=4)
+    s.luecke(3)
+    s.zeile("Zahlungen und ihre Anrechnung (Kosten, Zinsen, Kapital — Art. 85 Abs. 1 OR)", fett=True)
+    for z in StwegAkonto.objects.filter(einheit=einheit, datum__lte=stichtag).order_by('datum', 'id'):
+        s.zeile(f"{z.datum:%d.%m.%Y}  CHF {_chf(z.betrag):>10}:  Kosten {_chf(z.an_kosten)}, Zinsen {_chf(z.an_zins)}, "
+                f"Kapital {_chf(z.kapital)}", gr=8, abstand=4)
+    s.luecke(3)
+    zinsen = sum((c['offen'] for c in stand if c['art'] == 'zins'), Decimal('0.00'))
+    kosten = sum((c['offen'] for c in stand if c['art'] in ('mahnspesen', 'betreibungskosten')), Decimal('0.00'))
+    kapital = sum((c['offen'] for c in stand if c['art'] in ('akonto', 'abrechnung', 'fonds')), Decimal('0.00'))
+    s.zeile(f"Offen: Kapital CHF {_chf(kapital)}, Zinsen CHF {_chf(zinsen)}, Kosten CHF {_chf(kosten)} — "
+            f"Gesamtschuld CHF {_chf(kapital + zinsen + kosten)}", fett=True, gr=9)
+    s.luecke(4)
+    s.absatz(HINWEIS_RECHT, gr=8, abstand=4)
+    return s.bytes()
+
 
 
 def date_fromiso(text):
