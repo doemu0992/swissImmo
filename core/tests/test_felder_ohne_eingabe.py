@@ -105,6 +105,8 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'finance.Betreibung.debitoren_rechnung':
+     'gesetzt von `fw_betreibung_neu` aus der Rechnung in der Adresse (`/neu/betreibungen/neu/<pk>/`), nicht im Formular gewählt',
     'portfolio.Liegenschaft.hauswarte':
      'wird in «Benutzer & Rollen» beim Hauswart zugeordnet (benutzer.py, '
      'Gegenseite der Beziehung), nicht im Liegenschaftsformular',

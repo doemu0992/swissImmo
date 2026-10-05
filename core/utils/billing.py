@@ -205,6 +205,64 @@ def akonto_gestellt(vertrag, v_start, v_ende):
     return gesamt, aus_buchungen
 
 
+#: Kategorie des Belegs → Kostenart der Verteilschlüssel (`Verteilschluessel.KOSTENART_CHOICES`).
+_BELEG_KOSTENART = {
+    'wasser': 'wasser', 'hauswart': 'hauswartung', 'strom': 'allgemeinstrom', 'lift': 'lift',
+    'verwaltung': 'verwaltung', 'tv': 'kabel_tv', 'kehricht': 'sonstiges', 'diverse': 'sonstiges',
+}
+#: Schlüsselarten, die über die Tabelle der Liegenschaft angewendet werden. Fläche, Volumen,
+#: pro Einheit und Personen wählt man weiterhin am Beleg; «Pauschal» (CHF je Einheit) ist
+#: fachlich offen und wird nicht geraten. Heizkosten bleiben bei HKVO/Heizgradtagen.
+_STD_TYPEN = ('zimmer', 'anteil', 'prozent')
+
+
+def _standard_schluessel(liegenschaft, stichtag):
+    """Je Kostenart der zum Stichtag gültige Standard-Schlüssel (neuester `gueltig_ab`).
+
+    Nur die Typen in `_STD_TYPEN`. Gibt {kostenart: LiegenschaftVerteilschluessel} zurück.
+    Gültig heisst: `gueltig_ab` <= Stichtag und (`gueltig_bis` leer oder >= Stichtag). Der
+    Stichtag ist das Periodenende; ein Schlüsselwechsel innerhalb der Periode wird nicht
+    anteilig gerechnet.
+    """
+    result = {}
+    for s in liegenschaft.standard_schluessel.filter(gueltig_ab__lte=stichtag).order_by('gueltig_ab', 'id'):
+        if s.gueltig_bis and s.gueltig_bis < stichtag:
+            continue
+        if s.kostenart == 'heizung' or s.typ not in _STD_TYPEN:
+            continue
+        result[s.kostenart] = s            # der spätere gueltig_ab überschreibt den früheren
+    return result
+
+
+def _std_anteile(typ, kostenart, einheiten, stichtag):
+    """Verteilbasis eines Standard-Schlüssels: ({einheit_id: Anteil, Summe 1}, None) oder (None, Grund).
+
+    Ohne verwertbare Basis gibt es keinen Anteil, sondern einen Grund — der Aufrufer verteilt
+    dann nach Fläche und meldet es, damit die Kosten nicht verschwinden.
+    """
+    if typ == 'zimmer':
+        werte = {e.id: (e.zimmer or Decimal('0')) for e in einheiten}
+        quelle = 'Zimmerzahl'
+    elif typ == 'anteil':
+        werte = {e.id: (e.wertquote or Decimal('0')) for e in einheiten}
+        quelle = 'Wertquote'
+    else:  # prozent: je Einheit erfasst
+        werte = {}
+        for e in einheiten:
+            zeilen = [z for z in e.verteilschluessel.filter(kostenart=kostenart, typ='prozent',
+                                                            gueltig_ab__lte=stichtag).order_by('gueltig_ab', 'id')
+                      if not z.gueltig_bis or z.gueltig_bis >= stichtag]
+            werte[e.id] = zeilen[-1].wert if zeilen else Decimal('0')
+        total = sum(werte.values(), Decimal('0'))
+        if abs(total - Decimal('100')) > Decimal('0.01'):
+            return None, f"Die Prozentanteile ({kostenart}) ergeben {total} statt 100"
+        return {i: w / Decimal('100') for i, w in werte.items()}, None
+    total = sum(werte.values(), Decimal('0'))
+    if total <= 0:
+        return None, f"Bei keiner Einheit ist {quelle} erfasst"
+    return {i: w / total for i, w in werte.items()}, None
+
+
 def berechne_abrechnung(periode_id):
     """
     Professionelle Schweizer HNK-Abrechnung (Expert-Version).
@@ -238,10 +296,26 @@ def berechne_abrechnung(periode_id):
     kategorien_liste = []
     warnungen = []
 
+    # Verteilschlüssel der Liegenschaft (nur wenn freigeschaltet): Kosten, deren Kostenart einen
+    # Standard-Schlüssel hat, gehen nicht in die vier festen Töpfe, sondern in `pool_std`
+    # (je (Typ, Kostenart)) und werden unten nach Zimmern, Wertquote oder Prozent verteilt.
+    std_schluessel = (_standard_schluessel(liegenschaft, ende_p)
+                      if getattr(liegenschaft, 'verteilschluessel_aktiv', False) else {})
+    pool_std = {}
+
     # A) Manuelle Belege (NebenkostenBeleg)
     for beleg in periode.belege.all():
         betrag = beleg.betrag or Decimal('0.00')
         if betrag <= 0: continue
+
+        _std = std_schluessel.get(_BELEG_KOSTENART.get(beleg.kategorie))
+        if _std is not None and beleg.kategorie != 'heizung':
+            pool_std[(_std.typ, _std.kostenart)] = pool_std.get((_std.typ, _std.kostenart), Decimal('0.00')) + betrag
+            kategorien_liste.append({
+                'datum': beleg.datum, 'text': beleg.text, 'kategorie': beleg.get_kategorie_display(),
+                'betrag': betrag, 'schluessel': _std.typ, 'quelle': 'Beleg'
+            })
+            continue
 
         if beleg.kategorie == 'heizung' or beleg.verteilschluessel == 'm3':
             pool_heizkosten += betrag
@@ -354,7 +428,7 @@ def berechne_abrechnung(periode_id):
     # Suche nach genau dieser Zeichenkette fallen (Audit 18.08.2026).
     _vw = getattr(periode, 'organisation', None)
     _satz_pct = _vw.nk_honorar_prozent if _vw else Decimal('3.00')
-    subtotal = pool_heizkosten + pool_nk_m2 + pool_nk_einheit + pool_nk_personen
+    subtotal = pool_heizkosten + pool_nk_m2 + pool_nk_einheit + pool_nk_personen + sum(pool_std.values(), Decimal('0.00'))
     honorarsatz = (_satz_pct or Decimal('0')) / Decimal('100')
     honorar_betrag = subtotal * honorarsatz
     pool_nk_m2 += honorar_betrag
@@ -396,7 +470,22 @@ def berechne_abrechnung(periode_id):
             pool_nk_m2 += pool_nk_personen
             pool_nk_personen = Decimal('0.00')
 
-    total_kosten_gesamt = pool_heizkosten + pool_nk_m2 + pool_nk_einheit + pool_nk_personen
+    # Standard-Schlüssel der Liegenschaft: je (Typ, Kostenart) auf die Einheiten verteilen.
+    # Fehlt die Basis, wird nach Fläche verteilt und gewarnt (Kosten dürfen nicht verschwinden).
+    std_je_einheit = {}
+    std_verteilt = Decimal('0.00')
+    for (_typ, _ka), _betrag in pool_std.items():
+        _anteile, _grund = _std_anteile(_typ, _ka, list(liegenschaft.einheiten.all()), ende_p)
+        if _anteile is None:
+            pool_nk_m2 += _betrag
+            warnungen.append(f"Verteilschlüssel «{_typ}» für {_ka} nicht anwendbar: {_grund}. "
+                             f"Die Kosten (CHF {_betrag}) wurden nach Fläche verteilt.")
+            continue
+        std_verteilt += _betrag
+        for _eid, _anteil in _anteile.items():
+            std_je_einheit[_eid] = std_je_einheit.get(_eid, Decimal('0.00')) + _betrag * _anteil
+
+    total_kosten_gesamt = pool_heizkosten + pool_nk_m2 + pool_nk_einheit + pool_nk_personen + std_verteilt
 
     # HKVO: verbrauchsabhängige Heizkosten (Grundkosten nach m³ + Verbrauchskosten nach Zähler)
     hkvo_aktiv = getattr(liegenschaft, 'hkvo_aktiv', False)
@@ -434,7 +523,8 @@ def berechne_abrechnung(periode_id):
             anteil_hk_einheit = grund + verbrauch
         else:
             anteil_hk_einheit = pool_heizkosten * (e_m3 / total_m3)
-        anteil_nk_einheit = (pool_nk_m2 * (e_m2 / total_m2)) + (pool_nk_einheit * (Decimal('1') / Decimal(total_einheiten)))
+        anteil_nk_einheit = ((pool_nk_m2 * (e_m2 / total_m2)) + (pool_nk_einheit * (Decimal('1') / Decimal(total_einheiten)))
+                             + std_je_einheit.get(einheit.id, Decimal('0.00')))
 
         # Mieter in dieser Periode finden
         # Alle Verträge, die die Objekt-Einheit während der Periode BEWOHNT haben —

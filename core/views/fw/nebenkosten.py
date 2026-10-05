@@ -319,38 +319,12 @@ def fw_nebenkosten_versand(request, pk):
         messages.error(request, result['error'])
         return redirect(f'/neu/nebenkosten/{p.id}/')
 
-    vw = p.organisation      # die Verwaltung DIESER Abrechnungsperiode
-    lg = p.liegenschaft
-    periode_str = f"{p.bezeichnung} ({p.start_datum:%d.%m.%Y}–{p.ende_datum:%d.%m.%Y})"
-    positionen = result.get('belege_details', [])
-    total_kosten = result.get('total_kosten', Decimal('0.00'))
-
+    # Kontext je Mieter (Absender = Verwaltung DIESER Periode): core/services/nk_versand.py
+    from core.services.nk_versand import mieter_kontexte
     kontexte = []
     abgelegt = 0
-    for a in result.get('abrechnungen', []):
-        vid = a.get('vertrag_id')
-        if not vid or a.get('typ') == 'leerstand':
-            continue
-        v = Mietvertrag.objects.filter(id=vid).select_related('mieter', 'mitmieter', 'einheit__liegenschaft').first()
-        if not v:
-            continue
-        m = v.mieter
-        namen = m.display_name
-        zweit = (v.mitmieter.display_name if v.mitmieter_id else (v.mitmieter_name or '')).strip()
-        if zweit:
-            namen += f" & {zweit}"
-        adresse = [namen]
-        if m.strasse:
-            adresse.append(m.strasse)
-        if m.plz or m.ort:
-            adresse.append(f"{m.plz or ''} {m.ort or ''}".strip())
-        k = {
-            'verwaltung': vw, 'periode': periode_str,
-            'objekt': f"{lg.strasse}, {lg.plz} {lg.ort} · {v.einheit.bezeichnung}" if lg and v.einheit_id else (v.einheit.bezeichnung if v.einheit_id else ''),
-            'adresse': adresse, 'positionen': positionen, 'total_kosten': total_kosten,
-            'kosten_anteil': a.get('kosten_anteil', 0), 'akonto': a.get('akonto', 0),
-            'saldo': a.get('saldo', 0), 'nachzahlung': a.get('nachzahlung', False),
-        }
+    for eintrag in mieter_kontexte(p, result):
+        v, m, k = eintrag['vertrag'], eintrag['mieter'], eintrag['k']
         kontexte.append(k)
         # Einzel-PDF in die Akte des Mieters (erscheint im Portal)
         try:
@@ -406,3 +380,96 @@ def fw_akonto_anpassen(request, pk):
                      ('✅ ' + gettext('Akonto bei %(n)s Vertrag/Verträgen angepasst.') % {'n': angepasst})
                      if angepasst else gettext('Keine Akonto-Anpassung übernommen.'))
     return redirect(f'/neu/nebenkosten/{p.id}/')
+
+
+# Nur Inhaber und Verwalter — wie der Versand ins Portal: Die Mail ist die Zustellung der
+# Abrechnung an die Mieter und setzt den Beginn der Einsprachefrist.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_nebenkosten_mail(request, pk):
+    """Schickt jedem Mieter seine Nebenkostenabrechnung (PDF) per E-Mail.
+
+    Nur für eine VERBUCHTE Periode: Es gilt der eingefrorene Stand, nicht eine Live-Rechnung.
+    Die Zustellung (`versendet_am`, Kanal «E-Mail», damit die Einsprachefrist) wird nur
+    festgehalten, wenn ALLE Mieter erreicht wurden. Fehlt eine Adresse oder scheitert ein
+    Versand, bleibt die Zustellung offen und die Meldung nennt die Betroffenen — sie
+    erhalten die Abrechnung per Brief (Sammel-PDF), danach wird die Zustellung von Hand erfasst.
+    """
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.services.ablage import ablegen
+    from core.services.nk_abrechnung import generate_nk_pdf_einzeln
+    from core.services.nk_versand import antwortadresse, mail_text, mieter_kontexte
+    from core.utils.billing import hole_abrechnung
+    from core.utils.email_service import journal_email, send_via_hoststar
+    from finance.models import AbrechnungsPeriode
+
+    p = get_object_or_404(AbrechnungsPeriode.objects.select_related('liegenschaft'), pk=pk)
+    ziel = f'/neu/nebenkosten/{p.id}/'
+    if request.method != 'POST':
+        return redirect(ziel)
+    if not p.abgeschlossen:
+        messages.error(request, gettext('Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden.'))
+        return redirect(ziel)
+    if p.versendet_am and p.versand_kanal == 'email' and request.POST.get('nochmals') != '1':
+        messages.error(request, gettext('Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden bitte bestätigen.')
+                       % {'d': p.versendet_am.strftime('%d.%m.%Y')})
+        return redirect(ziel)
+
+    result = hole_abrechnung(p)
+    if result.get('error'):
+        messages.error(request, result['error'])
+        return redirect(ziel)
+    eintraege = mieter_kontexte(p, result)
+    if not eintraege:
+        messages.error(request, gettext('Keine abzurechnenden Mieter in dieser Periode gefunden.'))
+        return redirect(ziel)
+
+    reply_to = antwortadresse(p.organisation_id)
+    gesendet, ohne_adresse, gescheitert = 0, [], []
+    for e in eintraege:
+        v, m, k = e['vertrag'], e['mieter'], e['k']
+        adresse = (m.email or '').strip()
+        name = m.display_name
+        if not adresse:
+            ohne_adresse.append(name)
+            continue
+        try:
+            pdf = generate_nk_pdf_einzeln(k)
+        except Exception:
+            logger.exception('NK-PDF für %s nicht erzeugt', name)
+            gescheitert.append(name)
+            continue
+        betreff = f"Nebenkostenabrechnung {p.bezeichnung}"
+        html = mail_text(k, p.bezeichnung)
+        dateiname = f"Nebenkostenabrechnung_{p.bezeichnung}_{v.id}.pdf".replace(' ', '_').replace('/', '-')
+        if not send_via_hoststar(adresse, betreff, html, dateiname, pdf, reply_to=reply_to):
+            gescheitert.append(name)
+            continue
+        gesendet += 1
+        ablegen(pdf, f"Nebenkostenabrechnung {p.bezeichnung}", kategorie='korrespondenz',
+                vertrag=v, mieter=m, dedup=True)
+        journal_email(betreff, f"Nebenkostenabrechnung {p.bezeichnung} (PDF) versendet.", mieter=m, vertrag=v,
+                      liegenschaft=p.liegenschaft, user=request.user, empfaenger=adresse)
+
+    vollstaendig = gesendet == len(eintraege)
+    if vollstaendig:
+        p.versendet_am = timezone.localdate()
+        p.versand_kanal = 'email'
+        p.save(update_fields=['versendet_am', 'versand_kanal'])
+    log_aktion(request, 'NK-Abrechnung per E-Mail versendet', p.bezeichnung,
+               f'{gesendet} von {len(eintraege)}')
+    if vollstaendig:
+        messages.success(request, gettext('Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s.')
+                         % {'n': gesendet, 'd': p.einsprache_bis.strftime('%d.%m.%Y')})
+    else:
+        if gesendet:
+            messages.warning(request, gettext('%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht erfasst.')
+                             % {'n': gesendet, 'm': len(eintraege)})
+        if ohne_adresse:
+            messages.error(request, gettext('Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per Brief (Sammel-PDF).')
+                           % {'namen': ', '.join(ohne_adresse)})
+        if gescheitert:
+            messages.error(request, gettext('Versand fehlgeschlagen: %(namen)s.') % {'namen': ', '.join(gescheitert)})
+    return redirect(ziel)

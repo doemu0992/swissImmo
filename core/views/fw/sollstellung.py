@@ -123,8 +123,14 @@ def _sollstellung_kontext(request):
     n_qr = sum(1 for r in rows if r['v'].mieter.zahlungsart == 'qr')
     n_ebill = sum(1 for r in rows if r['v'].mieter.zahlungsart == 'ebill')
     jahre = list(range(heute.year - 2, heute.year + 2))
+    # Der Lauf ist abgeschlossen, aber es gibt noch Positionen (Nachzügler-Vertrag,
+    # Einzug nach dem Monatslauf): `fw_sollstellung_run` lehnt den Start dann ab (Sperre
+    # gegen Doppelausführung, nur ohne Liegenschaftsfilter). Die Seite darf dann keinen
+    # Start-Knopf anbieten, der garantiert abgelehnt wird — sie nennt den Grund und den Weg.
+    lauf_gesperrt = bool(lauf and lauf.status == Lauf.ABGESCHLOSSEN
+                         and not basis['aktive_lg'] and n_offen)
     return {
-        **basis, 'nav': 'sollstellung', 'rows': rows,
+        **basis, 'nav': 'sollstellung', 'rows': rows, 'lauf_gesperrt': lauf_gesperrt,
         'jahr': jahr, 'monat': monat, 'titel': titel,
         'total_soll': total_soll, 'n_offen': n_offen, 'n_gestellt': n_gestellt,
         'monate': monate, 'jahre': jahre,

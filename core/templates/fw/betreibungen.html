@@ -1,0 +1,38 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Betreibungen" %} — swissImmo{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-3">
+    <a href="/neu/mahnwesen/">{% trans "Mahnwesen" %}</a>
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
+    <b>{% trans "Betreibungen" %}</b>
+</nav>
+<div class="fw-phead"><div><h1>{% trans "Betreibungen" %}</h1>
+    <p>{% blocktrans with s=summe_offen %}Offene Forderungen in Betreibung: CHF {{ s }}{% endblocktrans %}</p></div></div>
+
+<div class="fw-card">
+  {% if rows %}
+  <div class="fw-tablewrap overflow-x-auto fw-sticky"><table class="fw-table min-w-max" data-spaltenfilter>
+    <thead><tr>
+      <th>{% trans "Mieter / Rechnung" %}</th><th>{% trans "Stand" %}</th><th>{% trans "Amt / Nr." %}</th>
+      <th class="text-right">{% trans "Forderung" %}</th><th>{% trans "Begehren" %}</th><th>{% trans "Nächste Frist" %}</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for b in rows %}
+      <tr>
+        <td>{% if b.vertrag %}{{ b.vertrag.mieter.display_name }}<br>{% endif %}<span class="fw-klein">{{ b.debitoren_rechnung.titel }}</span></td>
+        <td>{% if b.status in abgeschlossen %}<span class="fw-chip">{{ b.get_status_display }}</span>{% else %}<span class="fw-chip fw-crit">{{ b.get_status_display }}</span>{% endif %}</td>
+        <td>{{ b.betreibungsamt|default:"—" }}<br><span class="fw-klein">{{ b.betreibungsnummer }}</span></td>
+        <td class="text-right tabular-nums">{{ b.forderung }}</td>
+        <td>{{ b.begehren_am|date:"d.m.Y" }}</td>
+        <td>{% if b.status == 'zahlungsbefehl' and b.rechtsvorschlag_frist_bis %}{% blocktrans with d=b.rechtsvorschlag_frist_bis|date:"d.m.Y" %}Rechtsvorschlag bis {{ d }}{% endblocktrans %}{% else %}—{% endif %}</td>
+        <td><a class="fw-btn" href="/neu/betreibungen/{{ b.id }}/">{% trans "Bearbeiten" %}</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <div class="fw-rumpf"><p class="fw-klein">{% trans "Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer überfälligen Rechnung ein." %}</p></div>
+  {% endif %}
+</div>
+{% endblock %}

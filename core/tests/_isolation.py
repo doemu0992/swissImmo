@@ -111,7 +111,7 @@ class MandantenFixture:
 
     def _bestand_anlegen(self, plz, ort):
         from crm.models import Eigentuemer, Mieter
-        from finance.models import (AbrechnungsPeriode, Buchung, Buchungskonto,
+        from finance.models import (AbrechnungsPeriode, Betreibung, Buchung, Buchungskonto,
                                     DebitorenRechnung, KreditorenRechnung, Zahlungseingang)
         from portfolio.models import Einheit, Liegenschaft, Wartungsfrist
         from rentals.models import Mietvertrag
@@ -155,6 +155,11 @@ class MandantenFixture:
         self.debitor = DebitorenRechnung.objects.create(
             vertrag=self.vertrag, titel=f'Miete 02/2024 {k}', betrag=Decimal('1700'),
             datum=date(2024, 2, 1), faellig_am=date(2024, 2, 28), status='offen')
+        # Phase 2: Betreibung (SchKG) — die URLs `fw_betreibung_*` nehmen die `pk`
+        # einer Betreibung bzw. (…_neu) einer Debitorenrechnung.
+        self.betreibung = Betreibung.objects.create(
+            debitoren_rechnung=self.debitor, vertrag=self.vertrag, forderung=Decimal('1700'),
+            begehren_am=date(2024, 3, 15))
         self.kreditor = KreditorenRechnung.objects.create(
             lieferant=f'Handwerk {k} GmbH', betrag=Decimal('500'),
             liegenschaft=self.liegenschaft, status='neu')
@@ -472,6 +477,9 @@ class MandantenFixture:
         # Mahnstufen je Organisation: `fw_mahnstufe_loeschen` nimmt die `pk` einer
         # Stufe. Ein POST auf eine FREMDE Stufe darf nichts löschen (404).
         ('mahnstufe',       'mahnstufe'),
+        # Phase 2: `fw_betreibung_neu` nimmt die RECHNUNG, `fw_betreibung_bearbeiten` die BETREIBUNG.
+        ('betreibung_neu',  'debitor'),
+        ('betreibung_bearbeiten', 'betreibung'),
         # STWEG-Modul. `pk` ist je nach URL EINE VERSAMMLUNG, ein TRAKTANDUM,
         # eine ANFRAGE oder eine AUFGABE (Pendenz) — abgelesen am
         # `get_object_or_404` in stweg/views.py. 'stweg_traktandum_neu' trägt die

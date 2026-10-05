@@ -24908,3 +24908,572 @@ msgstr "Attestation d'assurance bâtiment"
 #: stweg/compliance
 msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
 msgstr "Autre police d'assurance (p. ex. responsabilité civile)"
+
+msgid "Betreibungen"
+msgstr "Poursuites"
+
+#, python-format
+msgid "Offene Forderungen in Betreibung: CHF %(s)s"
+msgstr "Créances en poursuite : CHF %(s)s"
+
+msgid "Mieter / Rechnung"
+msgstr "Locataire / facture"
+
+msgid "Amt / Nr."
+msgstr "Office / n°"
+
+msgid "Begehren"
+msgstr "Réquisition"
+
+#, python-format
+msgid "Rechtsvorschlag bis %(d)s"
+msgstr "Opposition jusqu'au %(d)s"
+
+msgid ""
+"Keine Betreibungen. Eine Betreibung leiten Sie im Mahnwesen bei einer "
+"überfälligen Rechnung ein."
+msgstr ""
+"Aucune poursuite. Vous introduisez une poursuite dans les rappels, pour une "
+"facture échue."
+
+msgid "Zählerstand erfassen"
+msgstr "Saisir un relevé de compteur"
+
+#, python-format
+msgid "Verzugszins (%% pro Jahr)"
+msgstr "Intérêt moratoire (%% par an)"
+
+msgid "Betreibung einleiten (SchKG)"
+msgstr "Introduire une poursuite (LP)"
+
+msgid "Betreibung"
+msgstr "Poursuite"
+
+msgid "Zustelldatum erfassen — Beginn der Einsprachefrist"
+msgstr "Saisir la date de notification — début du délai de contestation"
+
+#, python-format
+msgid "Einsprache bis %(d)s"
+msgstr "Contestation jusqu'au %(d)s"
+
+msgid "Zustellung erfassen"
+msgstr "Saisir la notification"
+
+#, python-format
+msgid "Rechtsvorschlag bis %(d)s (Art. 74 SchKG)."
+msgstr "Opposition jusqu'au %(d)s (art. 74 LP)."
+
+#, python-format
+msgid "Fortsetzungsbegehren zwischen %(a)s und %(b)s (Art. 88 SchKG)."
+msgstr ""
+"Réquisition de continuer la poursuite entre le %(a)s et le %(b)s (art. 88 "
+"LP)."
+
+msgid "Speichern und nächsten erfassen"
+msgstr "Enregistrer et saisir le suivant"
+
+msgid "Zuweisen"
+msgstr "Attribuer"
+
+msgid "Niemand zugewiesen"
+msgstr "Personne attribué"
+
+#, python-format
+msgid "erledigen bis %(d)s"
+msgstr "à traiter d'ici le %(d)s"
+
+msgid "Meine Tickets"
+msgstr "Mes tickets"
+
+msgid "Zielzeit überschritten"
+msgstr "Délai cible dépassé"
+
+msgid "SLA überfällig"
+msgstr "SLA dépassé"
+
+msgid ""
+"Der Import wurde abgebrochen und vollständig zurückgerollt — es wurde nichts"
+" gespeichert. Bitte die Datei prüfen (beschädigt oder unvollständig?)."
+msgstr ""
+"L'importation a été interrompue et entièrement annulée — rien n'a été "
+"enregistré. Veuillez vérifier le fichier (endommagé ou incomplet ?)."
+
+msgid ""
+"Keine Nutzungsentschädigung geschuldet: Das Vertragsende liegt nicht in der "
+"Vergangenheit oder die Rücknahme ist protokolliert."
+msgstr ""
+"Aucune indemnité d'occupation due : la fin du bail n'est pas dans le passé "
+"ou la restitution est consignée."
+
+msgid ""
+"Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt "
+"gemahnt. Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst "
+"erzwingen."
+msgstr ""
+"Le cycle de rappels de ce mois est déjà terminé — aucun rappel en double. "
+"Pour le répéter, réinitialisez le cycle sous « Cycles » ou forcez-le "
+"délibérément."
+
+msgid "Zuständig (intern)"
+msgstr "Responsable (interne)"
+
+msgid "— niemand —"
+msgstr "— personne —"
+
+msgid "Erledigen bis (SLA)"
+msgstr "À traiter d'ici (SLA)"
+
+msgid "Die Frist liegt in der Vergangenheit."
+msgstr "Le délai est dans le passé."
+
+#, python-format
+msgid "Zuständig: %(name)s."
+msgstr "Responsable : %(name)s."
+
+#, python-format
+msgid "Ticket zugewiesen: %(name)s."
+msgstr "Ticket attribué : %(name)s."
+
+msgid "Ticket zuweisen"
+msgstr "Attribuer le ticket"
+
+msgid "Ticket"
+msgstr "Ticket"
+
+msgid "Zugestellt am"
+msgstr "Notifié le"
+
+msgid "Das Zustelldatum liegt in der Zukunft."
+msgstr "La date de notification est dans le futur."
+
+msgid ""
+"Die Abrechnung kann nicht vor Ende der Abrechnungsperiode zugestellt werden."
+msgstr ""
+"Le décompte ne peut pas être notifié avant la fin de la période de décompte."
+
+msgid ""
+"Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann zustellen."
+msgstr ""
+"Le décompte n'est pas encore comptabilisé — comptabiliser d'abord, notifier "
+"ensuite."
+
+#, python-format
+msgid "Zustellung erfasst. Einsprachefrist bis %(d)s."
+msgstr "Notification enregistrée. Délai de contestation jusqu'au %(d)s."
+
+msgid "Abrechnung zugestellt"
+msgstr "Décompte notifié"
+
+#, python-format
+msgid ""
+"Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage)."
+msgstr ""
+"La date de notification fait courir le délai d'examen et de contestation "
+"(%(n)s jours)."
+
+msgid "Die Forderung muss grösser als 0 sein."
+msgstr "La créance doit être supérieure à 0."
+
+#, python-format
+msgid "Für den Stand «%(s)s» ist dieses Datum nötig."
+msgstr "Cette date est requise pour l'état « %(s)s »."
+
+msgid "Das Datum liegt in der Zukunft."
+msgstr "La date est dans le futur."
+
+#, python-format
+msgid "Das Datum liegt vor «%(f)s»."
+msgstr "La date est antérieure à « %(f)s »."
+
+msgid ""
+"Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte "
+"prüfen."
+msgstr ""
+"Opposition après l'expiration du délai de 10 jours (art. 74 LP) — à "
+"vérifier."
+
+msgid ""
+"Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet"
+" werden."
+msgstr ""
+"Aucune poursuite ne peut être introduite pour une facture payée ou annulée."
+
+msgid "Betreibung erfasst."
+msgstr "Poursuite enregistrée."
+
+msgid "Betreibung einleiten"
+msgstr "Introduire une poursuite"
+
+msgid "Betreibung erfassen"
+msgstr "Enregistrer la poursuite"
+
+msgid "Betreibung gespeichert."
+msgstr "Poursuite enregistrée."
+
+msgid "Betreibung bearbeiten"
+msgstr "Modifier la poursuite"
+
+msgid "Ablesedatum"
+msgstr "Date de relevé"
+
+msgid "Zählerstand"
+msgstr "Relevé de compteur"
+
+msgid "Das Ablesedatum liegt in der Zukunft."
+msgstr "La date de relevé est dans le futur."
+
+#, python-format
+msgid "Der Stand liegt unter dem Stand vom %(d)s (%(w)s)."
+msgstr "Le relevé est inférieur à celui du %(d)s (%(w)s)."
+
+#, python-format
+msgid "Der Stand liegt über dem späteren Stand vom %(d)s (%(w)s)."
+msgstr "Le relevé est supérieur au relevé ultérieur du %(d)s (%(w)s)."
+
+msgid "Zählerstand erfasst."
+msgstr "Relevé de compteur enregistré."
+
+#, python-format
+msgid ""
+"Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts "
+"doppelt gestellt. Zum Wiederholen den Lauf unter «Läufe» zuerst "
+"zurücksetzen."
+msgstr ""
+"La facturation %(titel)s est déjà terminée — rien n'a été facturé en double."
+" Pour la répéter, réinitialisez d'abord le cycle sous « Cycles »."
+
+msgid "Begehren eingereicht"
+msgstr "Réquisition déposée"
+
+msgid "Zahlungsbefehl zugestellt"
+msgstr "Commandement de payer notifié"
+
+msgid "Rechtsvorschlag erhoben"
+msgstr "Opposition formée"
+
+msgid "Rechtsöffnung beantragt/erteilt"
+msgstr "Mainlevée requise/accordée"
+
+msgid "Fortsetzungsbegehren"
+msgstr "Réquisition de continuer la poursuite"
+
+msgid "Verlustschein"
+msgstr "Acte de défaut de biens"
+
+#, python-format
+msgid ""
+"Pfandberechtigt sind nur offene Beitragsforderungen der letzten %(m)s "
+"Monate. Ältere bleiben geschuldet, gehen aber nicht in die Pfandsumme ein."
+msgstr ""
+"Seules les contributions ouvertes des %(m)s derniers mois donnent droit au "
+"gage. Les plus anciennes restent dues mais ne comptent pas dans la somme "
+"garantie."
+
+#, python-format
+msgid "offen CHF %(b)s"
+msgstr "ouvert CHF %(b)s"
+
+#, python-format
+msgid "Pfandberechtigt: CHF %(p)s · nicht pfandberechtigt (älter): CHF %(a)s"
+msgstr ""
+"Garanti par le gage : CHF %(p)s · non garanti (plus ancien) : CHF %(a)s"
+
+#, python-format
+msgid "%(s)s. Mahnung"
+msgstr "%(s)se rappel"
+
+#, python-format
+msgid "zahlbar bis %(d)s"
+msgstr "payable jusqu'au %(d)s"
+
+#, python-format
+msgid "Stichtag %(s)s · Pfandsumme CHF %(b)s"
+msgstr "Date de référence %(s)s · somme garantie CHF %(b)s"
+
+#, python-format
+msgid "eingetragen %(d)s"
+msgstr "inscrit le %(d)s"
+
+#, python-format
+msgid "%(s)s. Mahnung erstellen und versenden"
+msgstr "Créer et envoyer le %(s)se rappel"
+
+#, python-format
+msgid ""
+"Summiert nur die offenen Forderungen der letzten %(m)s Monate und erzeugt "
+"das PDF für das Grundbuchamt."
+msgstr ""
+"Additionne uniquement les créances ouvertes des %(m)s derniers mois et "
+"génère le PDF pour le registre foncier."
+
+#, python-format
+msgid "Anfechtungsfrist (nach den Vorgaben der Gemeinschaft) bis %(d)s."
+msgstr ""
+"Délai de contestation (selon les règles de la communauté) jusqu'au %(d)s."
+
+#, python-format
+msgid "bestätigt am %(d)s"
+msgstr "confirmé le %(d)s"
+
+#, python-format
+msgid "Leer = %(n)s Tage (Systemvorgabe, nicht geprüft)."
+msgstr "Vide = %(n)s jours (valeur par défaut du système, non vérifiée)."
+
+#, python-format
+msgid ""
+"%(stufe)s. Mahnung erstellt — keine E-Mail-Adresse, bitte das PDF per Post "
+"zustellen."
+msgstr ""
+"%(stufe)se rappel créé — pas d'adresse e-mail, veuillez envoyer le PDF par "
+"la poste."
+
+#, python-format
+msgid ""
+"Pfandrecht angemeldet: Pfandsumme CHF %(betrag)s (nur die letzten %(monate)s"
+" Monate). Das PDF für das Grundbuchamt liegt bereit."
+msgstr ""
+"Hypothèque légale annoncée : somme garantie CHF %(betrag)s (seulement les "
+"%(monate)s derniers mois). Le PDF pour le registre foncier est prêt."
+
+msgid "allgemein"
+msgstr "général"
+
+msgid "Betreibungsbegehren am"
+msgstr "Réquisition de poursuite du"
+
+msgid "Betreibungskosten (CHF)"
+msgstr "Frais de poursuite (CHF)"
+
+msgid "Betreibungsnummer"
+msgstr "Numéro de poursuite"
+
+msgid "Forderung (CHF)"
+msgstr "Créance (CHF)"
+
+msgid "Fortsetzungsbegehren am"
+msgstr "Réquisition de continuer la poursuite du"
+
+msgid "Rechtsvorschlag am"
+msgstr "Opposition du"
+
+msgid "Rechtsöffnung am"
+msgstr "Mainlevée du"
+
+msgid "Verlustschein am"
+msgstr "Acte de défaut de biens du"
+
+msgid "Zahlungsbefehl zugestellt am"
+msgstr "Commandement de payer notifié le"
+
+msgid "Filtern …"
+msgstr "Filtrer …"
+
+#, python-format
+msgid "%(n)s von %(m)s Zeilen"
+msgstr "%(n)s sur %(m)s lignes"
+
+msgid "Filter zurücksetzen"
+msgstr "Réinitialiser le filtre"
+
+msgid "Spalte filtern"
+msgstr "Filtrer la colonne"
+
+#, python-format
+msgid ""
+"Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Position wartet noch "
+"(Nachzügler)."
+msgid_plural ""
+"Der Lauf %(monat)s %(jahr)s ist abgeschlossen — %(n)s Positionen warten noch"
+" (Nachzügler)."
+msgstr[0] ""
+"Le cycle %(monat)s %(jahr)s est terminé — %(n)s position attend encore "
+"(retardataire)."
+msgstr[1] ""
+"Le cycle %(monat)s %(jahr)s est terminé — %(n)s positions attendent encore "
+"(retardataires)."
+
+msgid "Notfall"
+msgstr "Urgence"
+
+msgid ""
+"Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung "
+"angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt "
+"die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung "
+"(HKVO/Heizgradtage)."
+msgstr ""
+"Les clés de répartition de cet immeuble sont appliquées dans le décompte de "
+"charges. Pour un type de charge ayant une clé, celle-ci prévaut sur le choix"
+" fait sur la pièce. Les frais de chauffage restent régis par le décompte de "
+"chauffage (OCF/degrés-jours)."
+
+msgid ""
+"Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die "
+"Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg."
+msgstr ""
+"Les clés sont enregistrées mais pas encore appliquées. Le décompte répartit "
+"comme auparavant selon la clé choisie sur la pièce."
+
+msgid "Unter «Liegenschaft bearbeiten» einschalten"
+msgstr "Activer sous « Modifier l'immeuble »"
+
+msgid "Schlüssel je Kostenart"
+msgstr "Clés par type de charge"
+
+msgid "Kostenart"
+msgstr "Type de charge"
+
+msgid "Gültig bis"
+msgstr "Valable jusqu'au"
+
+msgid "Diesen Schlüssel löschen?"
+msgstr "Supprimer cette clé ?"
+
+msgid ""
+"Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach "
+"dem Schlüssel am Beleg."
+msgstr ""
+"Aucune clé enregistrée. Sans clé, le décompte répartit selon la clé de la "
+"pièce."
+
+msgid "Summe muss 100 ergeben"
+msgstr "La somme doit faire 100"
+
+msgid "Prozentanteile speichern"
+msgstr "Enregistrer les pourcentages"
+
+msgid "— wählen —"
+msgstr "— choisir —"
+
+msgid "Verteilung nach"
+msgstr "Répartition selon"
+
+msgid ""
+"Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der "
+"Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, "
+"pro Einheit und Personen wählen Sie weiterhin am Beleg."
+msgstr ""
+"Pièces : selon le nombre de pièces des objets. Quote-part : selon la quote-"
+"part de valeur des objets. Pourcentage : vous fixez une part par objet. "
+"Surface, volume, par unité et personnes se choisissent toujours sur la "
+"pièce."
+
+msgid ""
+"Bitte eine Kostenart wählen (Heizkosten laufen über die "
+"Heizkostenabrechnung)."
+msgstr ""
+"Veuillez choisir un type de charge (le chauffage passe par le décompte de "
+"chauffage)."
+
+msgid "Bitte eine Verteilung wählen."
+msgstr "Veuillez choisir une répartition."
+
+msgid "Bitte ein gültiges Datum angeben."
+msgstr "Veuillez indiquer une date valide."
+
+msgid "«Gültig bis» liegt vor «Gültig ab»."
+msgstr "« Valable jusqu'au » précède « Valable dès »."
+
+msgid "Für diese Kostenart gibt es im selben Zeitraum schon einen Schlüssel."
+msgstr "Il existe déjà une clé pour ce type de charge sur la même période."
+
+msgid "Bitte eine Zahl angeben."
+msgstr "Veuillez indiquer un nombre."
+
+msgid "Der Anteil liegt zwischen 0 und 100."
+msgstr "La part doit être comprise entre 0 et 100."
+
+#, python-format
+msgid "Die Anteile ergeben %(summe)s statt 100."
+msgstr "Les parts totalisent %(summe)s au lieu de 100."
+
+msgid "Verteilschlüssel gespeichert."
+msgstr "Clé de répartition enregistrée."
+
+msgid "Der bisherige Schlüssel dieser Kostenart wurde am Vortag beendet."
+msgstr "La clé précédente de ce type de charge a pris fin la veille."
+
+msgid "Verteilschlüssel gelöscht."
+msgstr "Clé de répartition supprimée."
+
+msgid "Prozentanteile gespeichert."
+msgstr "Pourcentages enregistrés."
+
+msgid "Unbekannte Aktion."
+msgstr "Action inconnue."
+
+msgid ""
+"Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg "
+"gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, "
+"Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel "
+"pflegen Sie unter «Verteilschlüssel» in der Liegenschaft."
+msgstr ""
+"Désactivé : les charges sont réparties selon la clé choisie sur la pièce. "
+"Activé : pour les types de charge ayant leur propre clé (pièces, quote-part,"
+" pourcentage), celle-ci prévaut sur le choix fait sur la pièce. Les clés se "
+"gèrent sous « Clés de répartition » dans l'immeuble."
+
+#, python-format
+msgid "Prozentanteile — %(ka)s"
+msgstr "Pourcentages — %(ka)s"
+
+msgid "Eigene Verteilschlüssel dieser Liegenschaft anwenden"
+msgstr "Appliquer les clés de répartition propres à cet immeuble"
+
+msgid ""
+"Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden."
+msgstr ""
+"Le décompte n'est pas encore comptabilisé — comptabiliser d'abord, envoyer "
+"ensuite."
+
+#, python-format
+msgid ""
+"Die Abrechnung wurde am %(d)s per E-Mail versendet. Zum erneuten Senden "
+"bitte bestätigen."
+msgstr ""
+"Le décompte a été envoyé par e-mail le %(d)s. Veuillez confirmer pour "
+"l'envoyer à nouveau."
+
+#, python-format
+msgid "Abrechnung an %(n)s Mieter versendet. Einsprachefrist bis %(d)s."
+msgstr ""
+"Décompte envoyé à %(n)s locataires. Délai de contestation jusqu'au %(d)s."
+
+#, python-format
+msgid ""
+"%(n)s von %(m)s Abrechnungen versendet. Die Zustellung ist noch nicht "
+"erfasst."
+msgstr ""
+"%(n)s décomptes sur %(m)s envoyés. La notification n'est pas encore "
+"enregistrée."
+
+#, python-format
+msgid ""
+"Keine E-Mail-Adresse: %(namen)s. Diese Mieter erhalten die Abrechnung per "
+"Brief (Sammel-PDF)."
+msgstr ""
+"Pas d'adresse e-mail : %(namen)s. Ces locataires reçoivent le décompte par "
+"courrier (PDF collectif)."
+
+#, python-format
+msgid "Versand fehlgeschlagen: %(namen)s."
+msgstr "Échec de l'envoi : %(namen)s."
+
+msgid ""
+"Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-"
+"Adresse erhalten sie per Brief (Sammel-PDF)."
+msgstr ""
+"Envoyer maintenant le décompte par e-mail à tous les locataires ? Ceux sans "
+"adresse e-mail le reçoivent par courrier (PDF collectif)."
+
+msgid ""
+"Sendet jedem Mieter seine Abrechnung als PDF; bei vollständigem Versand wird"
+" die Zustellung festgehalten"
+msgstr ""
+"Envoie à chaque locataire son décompte en PDF ; si l'envoi est complet, la "
+"notification est enregistrée"
+
+msgid "Erneut per E-Mail senden"
+msgstr "Renvoyer par e-mail"
+
+msgid "Per E-Mail an Mieter senden"
+msgstr "Envoyer aux locataires par e-mail"

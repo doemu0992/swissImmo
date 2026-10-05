@@ -55,6 +55,13 @@ class SchadenMeldung(OrganisationAusKette):
     bauteil = models.CharField("Betroffenes Bauteil", max_length=20, blank=True, default='')
     kostentraeger = models.CharField("Kostenträger (STWEG)", max_length=20, blank=True, default='')
     prioritaet = models.CharField("Priorität", max_length=20, default='mittel')
+    # Interne Zuständigkeit und Zielzeit (Phase-1-Audit): bisher gab es nur die
+    # Zuweisung an Handwerker. `faellig_bis` wird beim Anlegen aus der Priorität
+    # vorbelegt (tickets/sla.py), kann aber überschrieben werden.
+    zugewiesen_an = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='zugewiesene_tickets', verbose_name="Zuständig (intern)")
+    faellig_bis = models.DateField("Erledigen bis (SLA)", null=True, blank=True)
     status = models.CharField("Status", max_length=20, choices=STATUS_CHOICES, default='neu')
     gelesen = models.BooleanField(default=False)
     erstellt_am = models.DateTimeField(auto_now_add=True)
@@ -85,6 +92,9 @@ class SchadenMeldung(OrganisationAusKette):
         if self.status == 'erledigt' and self.pk:
             from .workflow import abschluss_pruefen
             abschluss_pruefen(self)
+        if not self.pk and not self.faellig_bis:
+            from .sla import faellig_bis_fuer
+            self.faellig_bis = faellig_bis_fuer(self.prioritaet)
         super().save(*args, **kwargs)
         # Ein erledigtes Ticket schliesst seine Handwerkeraufträge. Der Status
         # des Auftrags änderte sich nie («offen» auch bei erledigtem Ticket und

@@ -2029,5 +2029,69 @@ und einen Stilblock enthaelt.
             .fw-kurve-x-neben{display:none}
             .fw-hbar{grid-template-columns:minmax(0,110px) minmax(0,1fr) 72px}
         }
+        /* ---- Phase 3: Glas, dichte Datentabellen, breite Bildschirme ---- */
+
+        /* GLAS — dezent, nur dort, wo etwas ÜBER dem Inhalt liegt oder ihn begleitet:
+           Seitenleiste (mobil als Schublade über der Seite), Bestätigungsdialog,
+           Befehlspalette, Vorhänge. Die Fläche bleibt zu 80–90 % deckend, damit der
+           Kontrast der Schrift gleich bleibt; der Blur gibt nur Tiefe. Farben nur über
+           Tokens, so gilt dieselbe Regel in Hell und Dunkel.
+           Rückfall: Wo `backdrop-filter` fehlt, bleibt die feste Fläche (@supports), und
+           wer «weniger Transparenz» eingestellt hat, bekommt sie ebenfalls fest. */
+        @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+            .fw-side{background:color-mix(in srgb,var(--ds-surface) 82%,transparent);
+                -webkit-backdrop-filter:saturate(1.5) blur(18px);backdrop-filter:saturate(1.5) blur(18px)}
+            .fw-bestaetigen{background:color-mix(in srgb,var(--ds-surface) 90%,transparent);
+                -webkit-backdrop-filter:saturate(1.4) blur(16px);backdrop-filter:saturate(1.4) blur(16px)}
+            .fw-bestaetigen::backdrop{-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+            .fw-palette{-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+            .fw-palette-box{background:color-mix(in srgb,var(--ds-surface) 92%,transparent);
+                -webkit-backdrop-filter:saturate(1.4) blur(18px);backdrop-filter:saturate(1.4) blur(18px)}
+            .fw-vorhang-mobil,.fw-schublade-vorhang,.fw-vg-vorhang{-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+        }
+        @media (prefers-reduced-transparency:reduce){
+            .fw-side,.fw-bestaetigen,.fw-palette-box{background:var(--ds-surface);
+                -webkit-backdrop-filter:none;backdrop-filter:none}
+            .fw-bestaetigen::backdrop,.fw-palette,.fw-vorhang-mobil,.fw-schublade-vorhang,.fw-vg-vorhang{
+                -webkit-backdrop-filter:none;backdrop-filter:none}
+        }
+
+        /* DATENTABELLEN MIT HOHER DICHTE (Buchhaltung, Arbeitsvorrat)
+           `.fw-sticky` am Rahmen: Der Rahmen scrollt selbst (Höhe begrenzt), damit der
+           Kopf oben stehen bleibt. Ohne diese Klasse scrollt nur die Seite — `sticky`
+           bindet sonst an `.fw-tablewrap` (overflow-x:auto macht ihn zum Scrollbehälter),
+           und der Kopf bliebe nicht stehen. Kopf und Filterzeile liegen als zwei Zeilen
+           übereinander; die Höhe der ersten gibt das Skript als --fw-kopf weiter. */
+        .fw-tablewrap.fw-sticky{overflow:auto;max-height:calc(100vh - 210px);max-height:calc(100dvh - 210px);
+            overscroll-behavior:contain}
+        .fw-sticky table.fw-table thead th{position:sticky;top:0;z-index:3;background:var(--ds-surface-2);
+            box-shadow:inset 0 -1px 0 var(--ds-line)}
+        .fw-sticky table.fw-table thead tr.fw-filterzeile th{top:var(--fw-kopf,38px);z-index:2}
+        .fw-sticky table.fw-table tfoot td,.fw-sticky table.fw-table tfoot th{position:sticky;bottom:0;z-index:2}
+        /* Filterzeile unter dem Tabellenkopf (fwSpaltenfilter in base.html) */
+        table.fw-table tr.fw-filterzeile th{padding:5px 8px;background:var(--ds-surface);font-weight:400;
+            border-bottom:1px solid var(--ds-line);text-transform:none;letter-spacing:0}
+        .fw-filterfeld{width:100%;min-width:92px;height:28px;padding:0 8px;font:inherit;font-size:12.5px;
+            color:var(--ds-ink);background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius-knopf);transition:border-color .12s,box-shadow .12s}
+        .fw-filterfeld:focus{outline:none;border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
+        .fw-filterfeld.fw-aktiv{border-color:var(--ds-brand);background:var(--ds-brand-soft)}
+        .fw-filterstand{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:12.5px;
+            color:var(--ds-faint);border-bottom:1px solid var(--ds-line)}
+        .fw-filterstand button{font:inherit;font-size:12.5px;color:var(--ds-brand);background:none;border:0;
+            cursor:pointer;padding:0;text-decoration:underline}
+        .fw-filterstand[hidden]{display:none}
+        table.fw-table tbody tr.fw-gefiltert{display:none}
+        [data-stack] thead tr.fw-filterzeile{display:none}
+        /* Statusfarben auf der Zeile: ein roter Rand links für Überfälliges, grün für Bezahltes
+           (zusätzlich zur Kapsel — Zustand in Form, nicht nur in Farbe). */
+        table.fw-table tbody tr.fw-zeile-ueberfaellig td:first-child{box-shadow:inset 3px 0 0 var(--ds-crit)}
+        table.fw-table tbody tr.fw-zeile-bezahlt td:first-child{box-shadow:inset 3px 0 0 var(--ds-good)}
+
+        /* BREITE BILDSCHIRME: Bis 1440 px war Schluss — auf 2560 px blieben 40 % der
+           Fläche leer, obwohl Buchhalter dort mehr Spalten wollen. Gestaffelt, damit
+           Zeilen nicht zu lang werden. */
+        @media (min-width:1760px){.fw-inhalt{max-width:1680px}}
+        @media (min-width:2200px){.fw-inhalt{max-width:2000px}}
         /* ---- Ende Tranche C ---- */
 </style>

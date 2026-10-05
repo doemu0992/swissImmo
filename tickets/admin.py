@@ -161,7 +161,8 @@ class SchadenMeldungAdmin(NurLesenModelAdmin):
         erstellt = obj.erstellt_am.strftime('%d.%m.%Y %H:%M') if obj.erstellt_am else "-"
 
         # Prio Logik
-        if obj.prioritaet == 'hoch': prio_color, prio_text = "#dc2626", "🚨 HOCH"
+        if obj.prioritaet == 'notfall': prio_color, prio_text = "#dc2626", "🚨 NOTFALL"
+        elif obj.prioritaet == 'hoch': prio_color, prio_text = "#dc2626", "🚨 HOCH"
         elif obj.prioritaet == 'mittel': prio_color, prio_text = "#d97706", "⚠️ MITTEL"
         else: prio_color, prio_text = "#059669", "🟢 TIEF"
 
@@ -226,6 +227,7 @@ class SchadenMeldungAdmin(NurLesenModelAdmin):
 
     @display(description="Priorität", label=True, ordering="prioritaet")
     def prioritaet_badge(self, obj):
+        if obj.prioritaet == 'notfall': return "NOTFALL", "danger"
         if obj.prioritaet == 'hoch': return "HOCH", "danger"
         elif obj.prioritaet == 'mittel': return "MITTEL", "warning"
         return "TIEF", "success"

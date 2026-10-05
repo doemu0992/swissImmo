@@ -1,0 +1,117 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Verteilschlüssel" %} — {{ lg.strasse }} — swissImmo{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-3">
+    <a href="/neu/liegenschaften/{{ lg.id }}/">{{ lg.strasse }}</a>
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
+    <b>{% trans "Verteilschlüssel" %}</b>
+</nav>
+
+<div class="fw-phead"><div><h1>{% trans "Verteilschlüssel" %}</h1>
+    <p>{{ lg.strasse }}, {{ lg.ort }}</p></div></div>
+
+<div class="fw-hinweis {% if lg.verteilschluessel_aktiv %}info{% else %}warn{% endif %} rounded-lg mb-4">
+    <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+    <div class="fw-ht">
+        {% if lg.verteilschluessel_aktiv %}
+        {% trans "Die Schlüssel dieser Liegenschaft werden in der Nebenkostenabrechnung angewendet. Für eine Kostenart mit Schlüssel gilt dieser; er überschreibt die Wahl am Beleg. Heizkosten bleiben bei der Heizkostenabrechnung (HKVO/Heizgradtage)." %}
+        {% else %}
+        {% trans "Die Schlüssel sind hinterlegt, werden aber noch nicht angewendet. Die Abrechnung verteilt wie bisher nach dem Schlüssel am Beleg." %}
+        {% if kann_schreiben %}<a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-link">{% trans "Unter «Liegenschaft bearbeiten» einschalten" %}</a>{% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Schlüssel je Kostenart" %}</h2></div>
+    {% if standards %}
+    <div class="fw-tablewrap"><table class="fw-table">
+        <thead><tr><th>{% trans "Kostenart" %}</th><th>{% trans "Verteilung" %}</th><th>{% trans "Gültig ab" %}</th><th>{% trans "Gültig bis" %}</th><th></th></tr></thead>
+        <tbody>
+        {% for s in standards %}
+        <tr>
+            <td class="fw-strong">{{ s.kostenart_name }}</td>
+            <td>{{ s.typ_name }}</td>
+            <td class="fw-num">{{ s.gueltig_ab|date:"d.m.Y" }}</td>
+            <td class="fw-num">{{ s.gueltig_bis|date:"d.m.Y"|default:"—" }}</td>
+            <td class="text-right">
+                {% if kann_schreiben %}
+                <form method="post" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diesen Schlüssel löschen?" %}{% endfilter %}')">
+                    {% csrf_token %}<input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ s.id }}">
+                    <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+    {% else %}
+    <div class="fw-rumpf"><p class="fw-klein">{% trans "Noch kein Schlüssel hinterlegt. Ohne Schlüssel verteilt die Abrechnung nach dem Schlüssel am Beleg." %}</p></div>
+    {% endif %}
+</div>
+
+{% for s in standards %}{% if s.typ == 'prozent' %}
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% blocktrans with ka=s.kostenart_name %}Prozentanteile — {{ ka }}{% endblocktrans %}</h2>
+        <span class="fw-neben">{% trans "Summe muss 100 ergeben" %}</span></div>
+    <form method="post" class="fw-rumpf space-y-3" novalidate>
+        {% csrf_token %}<input type="hidden" name="aktion" value="prozente"><input type="hidden" name="id" value="{{ s.id }}">
+        {% if s.summenfehler %}<div class="fw-hinweis crit rounded-lg" role="alert"><div class="fw-ht">{{ s.summenfehler }}</div></div>{% endif %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {% for r in s.raster %}
+            <div>
+                <label for="pct_{{ r.e.id }}_{{ s.id }}" class="fw-label mb-1">{{ r.e.bezeichnung }}</label>
+                <div class="flex items-center gap-2">
+                    <input type="text" inputmode="decimal" id="pct_{{ r.e.id }}_{{ s.id }}" name="pct_{{ r.e.id }}" value="{{ r.wert }}" class="fw-feld w-full text-right"{% if r.fehler %} aria-invalid="true" aria-describedby="pct_{{ r.e.id }}_{{ s.id }}_fehler"{% endif %}{% if not kann_schreiben %} readonly{% endif %}>
+                    <span class="fw-hilfe">%</span>
+                </div>
+                {% if r.fehler %}<p id="pct_{{ r.e.id }}_{{ s.id }}_fehler" class="fw-feldfehler" role="alert">{{ r.fehler }}</p>{% endif %}
+            </div>
+        {% endfor %}
+        </div>
+        {% if kann_schreiben %}<button class="fw-btn fw-primary">{% trans "Prozentanteile speichern" %}</button>{% endif %}
+    </form>
+</div>
+{% endif %}{% endfor %}
+
+{% if kann_schreiben %}
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Schlüssel hinzufügen" %}</h2></div>
+    <form method="post" class="fw-rumpf" novalidate>
+        {% csrf_token %}<input type="hidden" name="aktion" value="neu">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="id_kostenart" class="fw-label mb-1">{% trans "Kostenart" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                <select id="id_kostenart" name="kostenart" class="fw-feld w-full"{% if neu_fehler.kostenart %} aria-invalid="true" aria-describedby="id_kostenart_fehler"{% endif %}>
+                    <option value="">{% trans "— wählen —" %}</option>
+                    {% for k, n in kostenarten %}<option value="{{ k }}"{% if neu.kostenart == k %} selected{% endif %}>{{ n }}</option>{% endfor %}
+                </select>
+                {% if neu_fehler.kostenart %}<p id="id_kostenart_fehler" class="fw-feldfehler" role="alert">{{ neu_fehler.kostenart }}</p>{% endif %}
+            </div>
+            <div>
+                <label for="id_typ" class="fw-label mb-1">{% trans "Verteilung nach" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                <select id="id_typ" name="typ" class="fw-feld w-full"{% if neu_fehler.typ %} aria-invalid="true" aria-describedby="id_typ_fehler"{% endif %}>
+                    <option value="">{% trans "— wählen —" %}</option>
+                    {% for k, n in typen %}<option value="{{ k }}"{% if neu.typ == k %} selected{% endif %}>{{ n }}</option>{% endfor %}
+                </select>
+                {% if neu_fehler.typ %}<p id="id_typ_fehler" class="fw-feldfehler" role="alert">{{ neu_fehler.typ }}</p>{% endif %}
+            </div>
+            <div>
+                <label for="id_gueltig_ab" class="fw-label mb-1">{% trans "Gültig ab" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                <input type="date" id="id_gueltig_ab" name="gueltig_ab" value="{{ neu.gueltig_ab }}" class="fw-feld w-full"{% if neu_fehler.gueltig_ab %} aria-invalid="true" aria-describedby="id_gueltig_ab_fehler"{% endif %}>
+                {% if neu_fehler.gueltig_ab %}<p id="id_gueltig_ab_fehler" class="fw-feldfehler" role="alert">{{ neu_fehler.gueltig_ab }}</p>{% endif %}
+            </div>
+            <div>
+                <label for="id_gueltig_bis" class="fw-label mb-1">{% trans "Gültig bis" %}</label>
+                <input type="date" id="id_gueltig_bis" name="gueltig_bis" value="{{ neu.gueltig_bis }}" class="fw-feld w-full"{% if neu_fehler.gueltig_bis %} aria-invalid="true" aria-describedby="id_gueltig_bis_fehler"{% endif %}>
+                {% if neu_fehler.gueltig_bis %}<p id="id_gueltig_bis_fehler" class="fw-feldfehler" role="alert">{{ neu_fehler.gueltig_bis }}</p>{% endif %}
+            </div>
+        </div>
+        <p class="fw-hilfe mt-3">{% trans "Zimmer: nach der Zimmerzahl der Objekte. Wertquote: nach der Wertquote der Objekte. Prozent: Sie legen je Objekt einen Anteil fest. Fläche, Volumen, pro Einheit und Personen wählen Sie weiterhin am Beleg." %}</p>
+        <button class="fw-btn fw-primary mt-3">{% trans "Schlüssel speichern" %}</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

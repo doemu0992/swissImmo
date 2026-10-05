@@ -1,0 +1,19 @@
+{% extends 'fw/phase2_form.html' %}
+{% load i18n %}
+{% block felder %}
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+        <label for="id_zugewiesen_an" class="fw-label mb-1">{% trans "Zuständig (intern)" %}</label>
+        <select id="id_zugewiesen_an" name="zugewiesen_an" class="fw-feld w-full">
+            <option value="">{% trans "— niemand —" %}</option>
+            {% for u in form.zugewiesen_an.field.queryset %}<option value="{{ u.pk }}"{% if werte.zugewiesen_an == u.pk|stringformat:"s" %} selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>{% endfor %}
+        </select>
+        {% include 'fw/_feldfehler.html' with f=form.zugewiesen_an %}
+    </div>
+    <div>
+        <label for="id_faellig_bis" class="fw-label mb-1">{% trans "Erledigen bis (SLA)" %}</label>
+        <input type="date" id="id_faellig_bis" name="faellig_bis" value="{{ werte.faellig_bis }}" class="fw-feld w-full"{% if form.faellig_bis.errors %} aria-invalid="true" aria-describedby="id_faellig_bis_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.faellig_bis %}
+    </div>
+</div>
+{% endblock %}

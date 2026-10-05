@@ -14,6 +14,7 @@
             <a href="/neu/mahnwesen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
+        <a href="/neu/betreibungen/" class="fw-btn">{% zeichen 'recht' %}{% trans "Betreibungen" %}</a>
         <a href="/neu/mahnstufen/" class="fw-btn">{% zeichen 'einstellungen' %}{% trans "Mahnstufen anpassen" %}</a>
         <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-btn">{% zeichen 'bericht' %}{% trans "Altersstruktur (OP-Aging) ansehen" %}</a>
     </div>
@@ -46,8 +47,8 @@
             · {% blocktrans with n=offen_gesamt_n summe=offen_gesamt_summe|chf %}Offene Forderungen insgesamt: {{ n }} (CHF {{ summe }}){% endblocktrans %}</span>
     </div>
 
-    <div class="fw-tablewrap">
-        <table class="fw-table">
+    <div class="fw-tablewrap fw-sticky">
+        <table class="fw-table" data-spaltenfilter>
             <thead>
             <tr>
                 <th>{% trans "Stufe" %}</th>
@@ -88,6 +89,7 @@
                     </form>
                     {% endif %}
                     <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
+                    {% if request.user|darf:"/neu/betreibungen/neu/1/" %}<a href="/neu/betreibungen/neu/{{ row.r.id }}/" class="fw-btn fw-knapp" title="{% trans 'Betreibung einleiten (SchKG)' %}">{% zeichen 'recht' %} {% trans "Betreibung" %}</a>{% endif %}
                     {% if row.mahn_url %}
                     <a href="{{ row.mahn_url }}" target="_blank" rel="noopener"
                        class="fw-btn fw-primary fw-knapp">

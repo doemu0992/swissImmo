@@ -56,6 +56,8 @@ from .kautionen import *     # noqa: F401,F403 — Block 11
 from .kuendigung import *    # noqa: F401,F403 — Block 10
 from .mietprozess import *   # noqa: F401,F403 — Block 10
 from .schaeden import *      # noqa: F401,F403 — Block 5
+from .phase2_formulare import *      # noqa: F401,F403 — Phase 2 (Audit)
+from .verteilschluessel import *      # noqa: F401,F403 — Verteilschlüssel der Liegenschaft
 from .buchhaltung import *   # noqa: F401,F403 — Block 5
 from .mietzins import *      # noqa: F401,F403 — Block 5
 from .kreditoren import *    # noqa: F401,F403 — Block 4

@@ -54,6 +54,7 @@ TICKET_PILL = {
     'erledigt':              (gettext_lazy('Erledigt'),           'fw-gut-flaeche fw-gut'),
 }
 PRIO_PILL = {
+    'notfall': (gettext_lazy('Notfall'), 'fw-krit-flaeche fw-kritisch'),
     'hoch':   (gettext_lazy('Hoch'),   'fw-krit-flaeche fw-kritisch'),
     'mittel': (gettext_lazy('Mittel'), 'fw-warn-flaeche fw-warnton'),
     'tief':   (gettext_lazy('Tief'),   'fw-flaeche2 fw-mutet'),
@@ -95,6 +96,9 @@ def fw_schaeden(request):
     status_filter = request.GET.get('status', '')
     if status_filter in TICKET_PILL:
         qs = qs.filter(status=status_filter)
+    nur_meine = request.GET.get('zustaendig') == 'ich'
+    if nur_meine:
+        qs = qs.filter(zugewiesen_an=request.user)
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = qs.filter(Q(titel__icontains=q) | Q(beschreibung__icontains=q)
@@ -126,6 +130,8 @@ def fw_schaeden(request):
         zeile['p_label'], zeile['p_cls'] = PRIO_PILL.get(
             (t.prioritaet or '').lower(),
             (t.prioritaet or 'Mittel', 'fw-flaeche2 fw-mutet'))
+        from tickets.sla import ist_ueberfaellig
+        zeile['ueberfaellig'] = ist_ueberfaellig(t)
         zeile['objekt'] = (f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}"
                            if t.liegenschaft_id else '—')
         zeile['melder'] = (t.gemeldet_von.display_name if t.gemeldet_von_id
@@ -135,7 +141,7 @@ def fw_schaeden(request):
     from django.contrib import messages
     return render(request, 'fw/schaeden.html', {
         **basis, 'nav': 'schadensfaelle', 'rows': rows, 'kopf': kopf,
-        'sicht': sicht, 'status_filter': status_filter, 'q': q,
+        'sicht': sicht, 'status_filter': status_filter, 'q': q, 'nur_meine': nur_meine,
         'gefiltert': len(rows) != len(alle),
         'sicht_chips': [('offen', gettext('Offen (%(n)s)') % {'n': kopf["offen"]}),
                         ('befund', gettext('Mit Befund (%(n)s)') % {'n': kopf["mit_befund"]}),
@@ -266,7 +272,10 @@ def fw_schaden_neu(request):
         melder_nachname=(request.POST.get('melder_nachname') or '').strip(),
         email_melder=(request.POST.get('email_melder') or '').strip(),
         tel_melder=(request.POST.get('tel_melder') or '').strip(),
-        prioritaet=request.POST.get('prioritaet', 'mittel'), status='neu',
+        # Nur bekannte Stufen: ein frei eingesetzter Wert fiele sonst aus der Sortierung
+        # und der SLA-Frist (tickets/sla.py) und würde stillschweigend wie «mittel» behandelt.
+        prioritaet=(request.POST.get('prioritaet') if request.POST.get('prioritaet') in ('tief', 'mittel', 'hoch', 'notfall') else 'mittel'),
+        status='neu',
     )
     # Fotos (Mehrfach-Upload) anhängen
     from tickets.models import SchadenFoto
@@ -395,6 +404,7 @@ def fw_schaden_detail(request, pk):
         'ausstattung_elemente': ausstattung_elemente,
         'handwerker_liste': handwerker_liste, 'auftrag_vorschlag': auftrag_vorschlag,
         'melder_email': melder_email, 'status_wahl': TICKET_PILL,
+        'ueberfaellig': __import__('tickets.sla', fromlist=['x']).ist_ueberfaellig(t),
         'rechnungen_frei': rechnungen_frei,
         'meldung': list(messages.get_messages(request)),
     })

@@ -122,6 +122,12 @@ class Liegenschaft(models.Model):
     verteilschluessel_text = models.CharField("Verteilschlüssel Standard", max_length=200, default="nach Wohnfläche (m2)")
     # HKVO: verbrauchsabhängige Heizkostenabrechnung
     hkvo_aktiv = models.BooleanField("Verbrauchsabhängige Heizkosten (HKVO)", default=False)
+    #: Schaltet die Verteilschlüssel dieser Liegenschaft (`LiegenschaftVerteilschluessel`,
+    #: `Verteilschluessel`) in der Nebenkostenabrechnung frei. Aus = die Abrechnung verteilt
+    #: wie bisher (Fläche, Volumen, pro Einheit, Personen — gewählt am Beleg). Das Kennzeichen
+    #: ist Absicht: Die Schlüsseltabellen waren bis dahin wirkungslos; schon vorhandene Zeilen
+    #: dürfen nicht über Nacht Abrechnungen verändern.
+    verteilschluessel_aktiv = models.BooleanField("Verteilschlüssel der Liegenschaft anwenden", default=False)
     hkvo_grundkosten_prozent = models.IntegerField("Grundkosten-Anteil (%)", default=40)  # Rest = Verbrauchskosten
 
     # --- HAUSWARTUNG & NOTFALL ---

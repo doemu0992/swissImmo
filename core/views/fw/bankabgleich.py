@@ -467,6 +467,36 @@ def _camt_tx_details(el, richtung='CRDT'):
             'acct_ref': acct_ref, 'dbtr_name': dbtr_name}
 
 
+#: Wurzelelement der ISO-20022-Meldung -> Nachrichtentyp.
+#: camt.054 ist die Einzelavisierung (Gutschrifts-/Belastungsanzeige, bei
+#: Schweizer Banken oft pro Tag oder pro Eingang geliefert); sie enthält keine
+#: Salden. camt.053 ist der Tagesauszug, camt.052 der untertägige Bericht.
+_CAMT_TYPEN = {
+    'BkToCstmrStmt': 'camt.053',
+    'BkToCstmrDbtCdtNtfctn': 'camt.054',
+    'BkToCstmrAcctRpt': 'camt.052',
+}
+
+
+def _camt_typ(xml_bytes):
+    """Erkennt den camt-Nachrichtentyp ('camt.052'/'camt.053'/'camt.054').
+
+    Liest zuerst das Wurzelelement unter <Document>, dann den Namespace
+    (`...camt.054.001.08`). Unbekanntes oder kaputtes XML ergibt ''.
+    """
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.fromstring(xml_bytes)
+    except Exception:
+        return ''
+    for kind in root:
+        typ = _CAMT_TYPEN.get(_camt_localname(kind.tag))
+        if typ:
+            return typ
+    m = re.search(r'camt\.(052|053|054)\.', root.tag)
+    return f'camt.{m.group(1)}' if m else ''
+
+
 def _camt_kopf(xml_bytes):
     """Liest Kopfdaten des Auszugs: IBAN, Periode und Schlusssaldo.
 
@@ -523,7 +553,7 @@ def _camt_kopf(xml_bytes):
 
 
 def _camt_parse(xml_bytes, nur_gutschriften=True):
-    """Parst einen camt.053-Kontoauszug (ISO 20022) namespace-agnostisch.
+    """Parst einen camt.053-Kontoauszug oder eine camt.054-Avisierung (ISO 20022) namespace-agnostisch.
 
     `nur_gutschriften=False` liefert AUCH Belastungen (negatives Vorzeichen).
     Ohne Belastungen — Lieferantenzahlungen, Gebühren, Zinsen, Daueraufträge —
@@ -785,7 +815,7 @@ def fw_camt_import(request):
 
 
 def _camt_import_ausfuehren(request):
-    """Importiert einen Bank-Kontoauszug — camt.053 (ISO 20022) ODER CSV-Export
+    """Importiert einen Bank-Kontoauszug — camt.052/053/054 (ISO 20022) ODER CSV-Export
     der Bank. Gutschriften werden per QRR-Referenz den offenen Debitoren-
     rechnungen zugeordnet und als Zahlungseingang (Bank an Debitoren) verbucht;
     Unzuordenbares wird auf dem Durchlaufkonto 1190 geparkt."""
@@ -804,7 +834,7 @@ def _camt_import_ausfuehren(request):
         return redirect('fw_bankabgleich')
 
     roh = datei.read()
-    # Format erkennen: XML (camt.053) beginnt mit '<' — alles andere als Bank-CSV parsen.
+    # Format erkennen: XML (camt.052/053/054) beginnt mit '<' — alles andere als Bank-CSV parsen.
     kopf_bytes = roh.lstrip(b'\xef\xbb\xbf \t\r\n')
     ist_xml = kopf_bytes.startswith(b'<')
     try:
@@ -818,10 +848,11 @@ def _camt_import_ausfuehren(request):
             eintraege = _bank_csv_parse(roh)
             auszug_kopf = {}
     except Exception as e:
-        messages.error(request, gettext('Datei konnte nicht gelesen werden (%(wert)s): %(e)s') % {'wert': 'kein gültiges camt.053' if ist_xml else 'CSV-Format nicht erkannt', 'e': e})
+        messages.error(request, gettext('Datei konnte nicht gelesen werden (%(wert)s): %(e)s') % {'wert': 'kein gültiges camt.052/053/054' if ist_xml else 'CSV-Format nicht erkannt', 'e': e})
         return redirect('fw_bankabgleich')
 
-    quelle = 'camt.053' if ist_xml else 'Bank-CSV'
+    camt_typ = _camt_typ(roh) if ist_xml else ''
+    quelle = (camt_typ or 'camt.053') if ist_xml else 'Bank-CSV'
     if not eintraege:
         messages.warning(request, gettext('Keine Bewegungen im Kontoauszug gefunden.'))
         return redirect('fw_bankabgleich')
