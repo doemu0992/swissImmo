@@ -40,6 +40,9 @@ STANDARD_KONTEN = [
     # STWEG: Beiträge der Stockwerkeigentümer = ihre Kostenanteile. Gegenstück zum Aufwand, den die
     # Gemeinschaft trägt; das Jahresergebnis einer STWEG ist damit null.
     ('3100', 'Beiträge Stockwerkeigentümer (Kostenanteile)', 'ertrag', False, 'm2'),
+    # STWEG-Inkasso: Mahngebühren (Sollstellung bei der Mahnung) und Verzugszinsen (bei Zahlung vereinnahmt).
+    ('3110', 'Mahngebühren Stockwerkeigentümer', 'ertrag', False, 'm2'),
+    ('3120', 'Verzugszinsen Stockwerkeigentümer', 'ertrag', False, 'm2'),
     ('3000', 'Mieterträge Wohnungen', 'ertrag', False, 'm2'),
     ('3010', 'Mieterträge Gewerbe/Parkplätze', 'ertrag', False, 'm2'),
     ('3020', 'Nebenkosten Akonto-Zahlungen', 'ertrag', False, 'm2'),

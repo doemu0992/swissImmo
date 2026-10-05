@@ -42,6 +42,7 @@ def erwartet(lg):
     v_summe = vorschr.aggregate(s=Sum('betrag'))['s'] or NULL
     zahl = StwegAkonto.objects.filter(einheit__liegenschaft=lg, **_nicht_storniert('buchung'))
     z_summe = zahl.aggregate(s=Sum('betrag'))['s'] or NULL
+    zins_summe = zahl.aggregate(s=Sum('an_zins'))['s'] or NULL            # Zinsanteil: Ertrag 3120, nicht 1110
     # Abschluss: je Position die Beträge der Abschlussbuchungen, wie sie `hauptbuch.abschluss_buchen` verlangt.
     freigegeben = abgleich = kostenanteil = NULL
     for p in StwegAbrechnungPosition.objects.filter(abrechnung__liegenschaft=lg,
@@ -57,10 +58,11 @@ def erwartet(lg):
     entnahmen = (ErneuerungsfondsBewegung.objects.filter(fonds__liegenschaft=lg, art='entnahme',
                                                          buchung__isnull=False).aggregate(s=Sum('betrag'))['s'] or NULL)
     return {
-        '1110': v_summe - z_summe + abgleich + einlagen,
+        '1110': v_summe - (z_summe - zins_summe) + abgleich + einlagen,
         '2035': -(v_summe - freigegeben),
         '3100': -kostenanteil,
         '2800': -(einlagen - entnahmen),
+        '3120': -zins_summe,
     }
 
 

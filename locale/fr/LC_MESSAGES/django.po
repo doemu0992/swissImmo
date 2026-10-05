@@ -24484,3 +24484,11 @@ msgstr "dont encore ouvert CHF %(offen)s"
 #: stweg/eigentuemer
 msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
 msgstr "Seules des créances contre un ancien propriétaire sont ouvertes. Un rappel au propriétaire actuel n'est pas possible ; l'hypothèque légale grève la part."
+
+#: stweg/zins
+msgid "Zinsen und Kosten (nicht in der Pfandsumme):"
+msgstr "Intérêts et frais (pas dans le montant du gage) :"
+
+#: stweg/zins
+msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
+msgstr "Le taux d'intérêt moratoire est saisi mais non confirmé : aucun intérêt n'est calculé."

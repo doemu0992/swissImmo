@@ -8,7 +8,7 @@ from django.utils.translation import gettext
 from django.views.decorators.http import require_POST
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
-from stweg import inkasso
+from stweg import inkasso, zins
 from stweg.models import StwegInkassoFall, StwegMahnung, StwegPfandrecht
 from stweg.validierung import stimm_einheiten
 from stweg.views import _gemeinschaft, _zahl
@@ -34,7 +34,9 @@ def stweg_inkasso(request, stweg_id):
             continue
         p = inkasso.pfandberechtigt(e, heute) if offen > 0 else None
         zeilen.append({'einheit': e, 'offen': offen, 'fall': fall, 'pfand': p,
-                       'stufe': inkasso.mahnstufe(fall), 'zins': inkasso.verzugszins(e, heute),
+                       'stufe': inkasso.mahnstufe(fall), 'zins_unbestaetigt': zins.satz_unbestaetigt(lg),
+                       'neben': [c for c in inkasso.forderungen(e, heute)
+                                 if c['art'] not in zins.KAPITAL_ARTEN and c['offen'] > 0],
                        'altforderung': offen - inkasso.offener_betrag_eigentuemer(e, heute),
                        'mahnungen': list(fall.mahnungen.all()) if fall else [],
                        'pfandrechte': list(fall.pfandrechte.all()) if fall else [],

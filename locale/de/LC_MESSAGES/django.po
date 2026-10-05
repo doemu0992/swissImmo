@@ -24372,3 +24372,11 @@ msgstr "davon noch offen CHF %(offen)s"
 #: stweg/eigentuemer
 msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
 msgstr "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
+
+#: stweg/zins
+msgid "Zinsen und Kosten (nicht in der Pfandsumme):"
+msgstr "Zinsen und Kosten (nicht in der Pfandsumme):"
+
+#: stweg/zins
+msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
+msgstr "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."

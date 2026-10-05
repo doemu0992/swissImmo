@@ -24258,3 +24258,11 @@ msgstr "of which still open CHF %(offen)s"
 #: stweg/eigentuemer
 msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
 msgstr "Only claims against a previous owner are open. A reminder to the current owner is not possible; the community lien attaches to the share."
+
+#: stweg/zins
+msgid "Zinsen und Kosten (nicht in der Pfandsumme):"
+msgstr "Interest and costs (not in the lien amount):"
+
+#: stweg/zins
+msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
+msgstr "The default interest rate is entered but not confirmed: no interest is calculated."

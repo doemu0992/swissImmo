@@ -39,6 +39,17 @@ class StwegAkonto(OrganisationAusKette):
     #: Zahlung der ältesten offenen Forderung angerechnet (`stweg.inkasso`).
     vorschreibung = models.ForeignKey('stweg.StwegVorschreibung', on_delete=models.SET_NULL, null=True, blank=True,
                                       related_name='+')
+    #: Wie die Zahlung angerechnet wurde (Art. 85 Abs. 1 OR: Kosten, Zinsen, dann Kapital; `stweg.zins`). Der Rest
+    #: (betrag − an_kosten − an_zins) tilgt das Kapital. Beim Erfassen festgehalten und gebucht; Altbestand = 0.
+    an_kosten = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    an_zins = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    #: Buchung des Zinsanteils (Soll Bank / Haben 3120); leer, wenn kein Zins getilgt wurde.
+    zins_buchung = models.ForeignKey('finance.Buchung', on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='+')
+
+    @property
+    def kapital(self):
+        return self.betrag - self.an_kosten - self.an_zins
 
     class Meta:
         db_table = 'stweg_akonto'

@@ -24462,3 +24462,11 @@ msgstr "di cui ancora aperto CHF %(offen)s"
 #: stweg/eigentuemer
 msgid "Offen sind nur Forderungen gegen einen früheren Eigentümer. Eine Mahnung an den heutigen Eigentümer ist nicht möglich; das Gemeinschaftspfandrecht haftet am Anteil."
 msgstr "Sono aperti solo crediti nei confronti di un precedente proprietario. Un sollecito all'attuale proprietario non è possibile; il pegno della comunione grava sulla quota."
+
+#: stweg/zins
+msgid "Zinsen und Kosten (nicht in der Pfandsumme):"
+msgstr "Interessi e spese (non nell'importo del pegno):"
+
+#: stweg/zins
+msgid "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet."
+msgstr "Il tasso d'interesse di mora è inserito ma non confermato: non vengono calcolati interessi."

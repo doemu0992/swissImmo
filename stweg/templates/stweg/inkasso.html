@@ -18,8 +18,12 @@
     {% if z.altforderung > 0 %}
     <div class="fw-rumpf"><p class="fw-s">{% blocktrans with b=z.altforderung|chf %}Davon CHF {{ b }} gegen einen früheren Eigentümer: Die Mahnung richtet sich nur an den heutigen Eigentümer; das Pfandrecht haftet am Anteil.{% endblocktrans %}</p></div>
     {% endif %}
-    {% if z.zins %}
-    <div class="fw-rumpf"><p class="fw-s">{% blocktrans with p=z.zins.prozent|floatformat:"-2" b=z.zins.total|chf %}Verzugszins zu {{ p }} % bis heute: CHF {{ b }} (nicht in der Pfandsumme){% endblocktrans %}{% if not z.zins.bestaetigt %} · {% trans "Satz nicht bestätigt: steht nicht in der Mahnung" %}{% endif %}</p></div>
+    {% if z.neben %}
+    <div class="fw-rumpf"><p class="fw-s">{% trans "Zinsen und Kosten (nicht in der Pfandsumme):" %}</p>
+        {% for c in z.neben %}<div class="fw-s">{{ c.datum|date:"d.m.Y" }} · {{ c.text }} · CHF {{ c.offen|chf }}</div>{% endfor %}</div>
+    {% endif %}
+    {% if z.zins_unbestaetigt %}
+    <div class="fw-rumpf"><p class="fw-s">{% trans "Der Verzugszins-Satz ist eingetragen, aber nicht bestätigt: Es wird kein Zins gerechnet." %}</p></div>
     {% endif %}
     {% if z.pfand %}
     <div class="fw-rumpf">

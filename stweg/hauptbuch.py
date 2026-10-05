@@ -6,7 +6,8 @@ KONTEN (Standard-Kontenplan, `finance.booking.STANDARD_KONTEN`)
 
 BUCHUNGEN
   Vorschreibung einer Rate (Genehmigung des Budgets)   Soll 1110 / Haben 2035
-  Zahlung, direkt erfasst                              Soll 1020 / Haben 1110
+  Zahlung, direkt erfasst                              Soll 1020 / Haben 1110  (Kosten und Kapital)
+                                                       Soll 1020 / Haben 3120  (Zinsanteil, Art. 85 OR: `stweg.zins`)
   Zahlung aus dem Kontoauszug-Import (auf 1190)        Soll 1190 / Haben 1110   ← kein zweites Mal auf der Bank
   Abschluss der Jahresabrechnung, je Einheit:
       Vorschreibungen des Jahres freigeben             Soll 2035 / Haben 3100
@@ -77,12 +78,16 @@ def zahlung_buchen(zahlung, *, user=None):
     text = (f'{"Einlage Fonds" if zahlung.zweck == StwegAkonto.FONDS else "Akonto"}-Zahlung: '
             f'{zahlung.einheit.bezeichnung}')
     try:
-        b = buche(soll, '1110', zahlung.betrag, text, datum=zahlung.datum, liegenschaft=lg, user=user,
-                  zahlung=ze)
+        # Kosten und Kapital tilgen die Forderung auf 1110; der Zinsanteil ist Ertrag (3120), kein Kapital.
+        b = buche(soll, '1110', zahlung.betrag - zahlung.an_zins, text, datum=zahlung.datum, liegenschaft=lg,
+                  user=user, zahlung=ze)
+        if zahlung.an_zins > 0:
+            zahlung.zins_buchung = buche(soll, '3120', zahlung.an_zins, f'Verzugszins: {zahlung.einheit.bezeichnung}',
+                                         datum=zahlung.datum, liegenschaft=lg, user=user, zahlung=ze)
     except PermissionError as e:
         raise _gesperrt(e)
     zahlung.buchung = b
-    zahlung.save(update_fields=['buchung'])
+    zahlung.save(update_fields=['buchung', 'zins_buchung'])
     if ze is not None:
         # Der Eingang gehört jetzt der Gemeinschaft und taucht nicht mehr als «geparkt» auf.
         ze.konto = None
@@ -105,8 +110,11 @@ def zahlung_erfassen(einheit, betrag, datum, *, zweck=StwegAkonto.AKONTO, vorsch
             raise HauptbuchFehler('Die Rate gehört zu einer anderen Einheit.')
         if zweck != StwegAkonto.AKONTO:
             raise HauptbuchFehler('Eine Rate kann nur mit einer Akonto-Zahlung bezahlt werden.')
+    from stweg import zins
+    an_kosten, an_zins, _ = zins.zuordnen(einheit, betrag, datum)        # Art. 85 Abs. 1 OR: Kosten, Zinsen, Kapital
     z = StwegAkonto.objects.create(einheit=einheit, betrag=betrag, datum=datum, zweck=zweck, bemerkung=bemerkung[:200],
-                                   vorschreibung=vorschreibung, zahlungseingang=zahlungseingang)
+                                   vorschreibung=vorschreibung, zahlungseingang=zahlungseingang,
+                                   an_kosten=an_kosten, an_zins=an_zins)
     zahlung_buchen(z, user=user)
     return z
 
@@ -120,6 +128,8 @@ def zahlung_stornieren(zahlung, *, user=None):
         return None
     try:
         gegen = storniere_buchung(b, user=user)
+        if zahlung.zins_buchung_id and zahlung.zins_buchung.storniert_am is None:
+            storniere_buchung(zahlung.zins_buchung, user=user)
     except PermissionError as e:
         raise _gesperrt(e)
     ze = zahlung.zahlungseingang
