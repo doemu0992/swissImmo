@@ -124,7 +124,7 @@ class BudgetBeschlussTests(TestCase):
         self.lg, self.e, self.eigs = haus_mit_eigentuemern()
         self.v = Versammlung.objects.create(liegenschaft=self.lg, titel='OV 2026',
                                             datum=timezone.now() + timedelta(days=30), status='durchgefuehrt')
-        self.t = Traktandum.objects.create(versammlung=self.v, nr=1, titel='Budget-Genehmigung',
+        self.t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=self.v, nr=1, titel='Budget-Genehmigung',
                                            mehrheitsart='doppelt_aller')
         self.b = budget_2026(self.lg)
         bd.an_traktandum_haengen(self.t, self.b)
@@ -167,7 +167,7 @@ class BudgetBeschlussTests(TestCase):
     def test_budget_einer_anderen_gemeinschaft_nicht_anhaengbar(self):
         fremd, _, _ = haus_mit_eigentuemern()
         fb = budget_2026(fremd)
-        t2 = Traktandum.objects.create(versammlung=self.v, nr=2, titel='Anderes')
+        t2 = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=self.v, nr=2, titel='Anderes')
         with self.assertRaises(bd.BudgetFehler):
             bd.an_traktandum_haengen(t2, fb)
 

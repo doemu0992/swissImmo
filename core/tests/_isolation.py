@@ -167,7 +167,8 @@ class MandantenFixture:
 
         self.schaden = SchadenMeldung.objects.create(
             liegenschaft=self.liegenschaft, betroffene_einheit=self.einheit,
-            titel=f'Wasserschaden {k}', beschreibung=f'Leck im Bad ({k})')
+            titel=f'Wasserschaden {k}', beschreibung=f'Leck im Bad ({k})',
+            bauteil='kueche_sanitaer', kostentraeger='sonderrecht')    # wird später STWEG: dann ist es deklariert
         self.wartungsfrist = Wartungsfrist.objects.create(
             liegenschaft=self.liegenschaft, bezeichnung=f'Heizungsservice {k}',
             naechste_faelligkeit=date.today() + timedelta(days=30))
@@ -259,7 +260,7 @@ class MandantenFixture:
         self.stweg_versammlung = _Versammlung.objects.create(
             liegenschaft=self.liegenschaft, titel=f'Versammlung {k}',
             datum=_tz.now() + timedelta(days=30))
-        self.stweg_traktandum = _Traktandum.objects.create(
+        self.stweg_traktandum = _Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)',
             versammlung=self.stweg_versammlung, nr=1, titel=f'Traktandum {k}')
         self.stweg_anfrage = _Anfrage.objects.create(liegenschaft=self.liegenschaft, betreff=f'Anfrage {k}')
         # Die Aufgabe ist die vorhandene Pendenz, mit STWEG-Schlüssel.
@@ -284,6 +285,9 @@ class MandantenFixture:
         from stweg.models import StwegEigentuemerwechsel as _Wechsel
         self.stweg_wechsel = _Wechsel.objects.create(
             einheit=self.einheit, datum=_tz.now().date(), neu=_Eig.objects.create(firma_oder_name=f'Käufer {k}'))
+        from stweg.models import StwegBefreiung as _Befreiung
+        self.stweg_befreiung = _Befreiung.objects.create(schluessel=self.stweg_schluessel, einheit=self.einheit,
+                                                         begruendung='Reglement (Test)')
         from stweg.models import Vollmacht as _Vollmacht, Zirkularbeschluss as _Zirkular
         self.stweg_zirkular = _Zirkular.objects.create(
             liegenschaft=self.liegenschaft, titel=f'Zirkular {k}', antrag='Antrag',
@@ -482,6 +486,7 @@ class MandantenFixture:
         ('stweg_mahnung',            'stweg_mahnung'),
         ('stweg_pfandrecht',         'stweg_pfandrecht'),
         ('stweg_handaenderung',      'stweg_wechsel'),
+        ('stweg_befreiung',          'stweg_befreiung'),
         ('stweg_inkassofall',        'stweg_inkassofall'),
         ('stweg_schluessel',         'stweg_schluessel'),
         ('stweg_budget',             'stweg_budget'),

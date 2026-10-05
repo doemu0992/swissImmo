@@ -24350,3 +24350,335 @@ msgstr "Warning: This calculation does not replace legal review. The 36-month pe
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Interest statement (PDF)"
+
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum missing or too weak"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Type of business"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— please choose —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Type of majority"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Type of business * (determines the legally required majority)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Type of majority * (at least the legally required one)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "According to the count (calculated result)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Ordinary administrative act"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Useful construction measure"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Amendment of the regulations"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Luxurious construction measure"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Other business / different quorum (legal basis required)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Please choose the type of business — it determines the legally required majority."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Please choose the type of majority."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "There is no vote for noting."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "\"%(geschaeft)s\" needs a vote: noting is not enough."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "For another business or a different quorum, the legal basis (regulations, article) must be stated."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "For \"%(geschaeft)s\" the law requires at least: %(mindest)s (%(quelle)s). A weaker majority was chosen."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "The result has already been determined — the type of majority can no longer be changed."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Type of business and majority saved."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Agenda item %(nr)s \"%(titel)s\": %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "The legal quorum has not been reached (%(art)s): \"approved\" cannot be recorded."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Common (costs go into the condominium annual statement)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Exclusive right (the owner bears the costs directly)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Roof"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Facade"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Windows (exterior)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Load-bearing walls, ceilings, foundation"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Main lines (water, sewage, electricity, heating)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Staircase, entrance, common rooms"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Lift, heating and other installations for all"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Land, surroundings, access road"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Windows (interior: fittings, paint)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Non-load-bearing interior wall"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Flooring inside the unit"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Plaster, wallpaper, interior paint"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Kitchen, bathroom and sanitary fixtures of the unit"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Lines inside the unit"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Interior doors of the unit"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Other (check the classification legally)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Please state the affected component."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "For exclusive right, state the affected unit — it determines who bears the costs."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "\"%(bauteil)s\" is mandatorily common property (Art. 712b para. 2 CC): the costs cannot be charged to a single owner as exclusive right. Please choose \"common\"."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Please declare: \"exclusive right\" (the owner bears the costs) or \"common\" (costs of the annual statement)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Cost bearer (condominium)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "not declared"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Affected component"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— choose component —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "mandatorily common"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Cost bearer"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— choose cost bearer —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "This component is mandatorily common property (Art. 712b CC): the costs cannot be charged to a single owner as exclusive right."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Component (for condominium *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Cost bearer (for condominium *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "Component and cost bearer apply only to a condominium community."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Please choose component and cost bearer."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Cost bearer saved."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "For a condominium, please state component and cost bearer (exclusive right or common)."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Exemption from costs (Art. 712h para. 3 CC)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "If an installation does not serve individual owners, the distribution may differ. Exempted units bear nothing; the amount is recalculated for the others (new base 100 %, exact to the cent). The reason is mandatory and is recorded."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Key (e.g. lift) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Exempted units *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Reason (regulations, resolution, article) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Record exemption"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "An exemption needs the reason (regulations, resolution, article)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Please choose at least one unit."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Exemption under Art. 712h para. 3 CC"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Exemption recorded: the amount is recalculated for the other units."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Exemption cancelled: the unit bears its value share again."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Units must remain that bear the costs — exempting all distributes nothing."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Not compliant"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Legal health check"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Without the constitutive act, the regulations and a current building insurance certificate, the management is legally unable to act."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Upload documents"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Compliant"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "Constitutive act, regulations and building insurance certificate are on file and current."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "\"%(name)s\" has not been uploaded."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "\"%(name)s\" is valid only from %(datum)s — until then a valid document is missing."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "\"%(name)s\" has expired — please upload the current version."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "\"%(name)s\": the file is missing from storage — please upload again."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "no expiry date recorded"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Building insurance certificate"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Other insurance policy (e.g. liability)"

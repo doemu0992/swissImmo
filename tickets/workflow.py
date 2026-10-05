@@ -66,6 +66,19 @@ def auftraege_ohne_rechnung(ticket):
                 .exclude(status=AUFTRAG_STORNIERT))
 
 
+class KostentraegerFehlt(ValidationError):
+    """STWEG: Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) sind nicht deklariert."""
+
+
+def kostentraeger_pruefen(ticket):
+    """Wirft ``KostentraegerFehlt``, wenn ein STWEG-Ticket Bauteil und Kostenträger nicht (richtig) deklariert hat.
+    Ausserhalb einer STWEG tut es nichts. Siehe ``stweg.bauteile``."""
+    from stweg.bauteile import probleme
+    fehler = probleme(ticket)
+    if fehler:
+        raise KostentraegerFehlt(fehler, code='kostentraeger_fehlt')
+
+
 def abschluss_pruefen(ticket):
     """Wirft ``AbschlussGesperrt``, wenn das Ticket nicht erledigt werden darf.
 
@@ -78,6 +91,7 @@ def abschluss_pruefen(ticket):
            .values_list('status', flat=True).first())
     if alt == 'erledigt':
         return
+    kostentraeger_pruefen(ticket)
     offen = auftraege_ohne_rechnung(ticket)
     if offen:
         namen = ', '.join(str(a.handwerker) for a in offen)
@@ -195,6 +209,7 @@ def handwerker_zuweisen(ticket, handwerker, bemerkung=''):
     if handwerker.organisation_id != ticket.organisation_id:
         raise ValidationError('Der Handwerker gehört nicht zur Organisation des Tickets.',
                               code='fremde_organisation')
+    kostentraeger_pruefen(ticket)           # STWEG: erst deklarieren, wer die Kosten trägt, dann beauftragen
     with transaction.atomic():
         auftrag = HandwerkerAuftrag.objects.create(
             ticket=ticket, handwerker=handwerker, bemerkung=bemerkung, status='offen')

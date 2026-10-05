@@ -51,14 +51,27 @@ class SchadenMeldung(OrganisationAusKette):
     mieter_email = models.EmailField("Mieter E-Mail (Legacy)", blank=True)
     mieter_telefon = models.CharField("Mieter Telefon (Legacy)", max_length=30, blank=True)
 
+    #: STWEG: Was ist betroffen, und wer trägt die Kosten? (`stweg.bauteile`; Art. 712b ZGB). Leer ausserhalb einer STWEG.
+    bauteil = models.CharField("Betroffenes Bauteil", max_length=20, blank=True, default='')
+    kostentraeger = models.CharField("Kostenträger (STWEG)", max_length=20, blank=True, default='')
     prioritaet = models.CharField("Priorität", max_length=20, default='mittel')
     status = models.CharField("Status", max_length=20, choices=STATUS_CHOICES, default='neu')
     gelesen = models.BooleanField(default=False)
     erstellt_am = models.DateTimeField(auto_now_add=True)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 
+    def _sonderrecht_sperre(self):
+        """Sonderrecht auf zwingend gemeinschaftlichem Bauteil (STWEG, Art. 712b ZGB) wird nie gespeichert."""
+        if self.kostentraeger and self.bauteil and self.liegenschaft_id and self.liegenschaft.ist_stweg:
+            from stweg.bauteile import sperre
+            fehler = sperre(self.bauteil, self.kostentraeger)
+            if fehler:
+                from django.core.exceptions import ValidationError
+                raise ValidationError(fehler, code='sonderrecht_gesperrt')
+
     def clean(self):
         # Admin-/ModelForm-Weg: Fehler am Formular statt 500.
+        self._sonderrecht_sperre()
         if self.status == 'erledigt' and self.pk:
             from .workflow import abschluss_pruefen
             abschluss_pruefen(self)
@@ -68,6 +81,7 @@ class SchadenMeldung(OrganisationAusKette):
         # auftrag wird nicht «erledigt», solange eine Handwerkerrechnung fehlt.
         # Sie sitzt im Modell, nicht in der Ansicht — sonst umgeht sie die
         # Admin-Aktion, ein Skript oder die nächste Ansicht.
+        self._sonderrecht_sperre()
         if self.status == 'erledigt' and self.pk:
             from .workflow import abschluss_pruefen
             abschluss_pruefen(self)

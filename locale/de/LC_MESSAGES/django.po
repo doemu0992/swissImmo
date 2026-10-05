@@ -24464,3 +24464,335 @@ msgstr "Achtung: Diese Berechnung ersetzt keine juristische Prüfung. Die 36-Mon
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Zinsabrechnung (PDF)"
+
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum fehlt oder zu schwach"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Art des Geschäfts"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— bitte wählen —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Mehrheitsart"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "Nach Auszählung (rechnerisches Ergebnis)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Gewöhnliche Verwaltungshandlung"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Nützliche bauliche Massnahme"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Änderung des Reglements"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Luxuriöse bauliche Massnahme"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Bitte die Mehrheitsart wählen."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "Zur Kenntnisnahme gibt es keine Abstimmung."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Art des Geschäfts und Mehrheit gespeichert."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Dach"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Fassade"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Fenster (Aussenseite)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Tragende Wände, Decken, Fundament"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Treppenhaus, Eingang, gemeinschaftliche Räume"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Lift, Heizung und andere Anlagen für alle"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Grundstück, Umgebung, Zufahrt"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Fenster (Innenseite: Beschläge, Anstrich)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Nichttragende Innenwand"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Bodenbelag in der Einheit"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Verputz, Tapete, Anstrich innen"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Küche, Bad und Sanitärapparate der Einheit"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Leitungen innerhalb der Einheit"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Innentüren der Einheit"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Sonstiges (Einordnung rechtlich prüfen)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Bitte das betroffene Bauteil angeben."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Kostenträger (STWEG)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "nicht deklariert"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Betroffenes Bauteil"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— Bauteil wählen —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "zwingend gemeinschaftlich"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Kostenträger"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— Kostenträger wählen —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Bauteil (bei Stockwerkeigentum *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Kostenträger (bei Stockwerkeigentum *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Bitte Bauteil und Kostenträger wählen."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Kostenträger gespeichert."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Schlüssel (z. B. Lift) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Befreite Einheiten *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Begründung (Reglement, Beschluss, Artikel) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Befreiung festhalten"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Bitte mindestens eine Einheit wählen."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Befreiung nach Art. 712h Abs. 3 ZGB"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Nicht Compliance-Konform"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Legal Health Check"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Dokumente hochladen"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Compliance-konform"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "«%(name)s» ist nicht hochgeladen."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "kein Ablaufdatum erfasst"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Gebäudeversicherungsnachweis"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Weitere Versicherungspolice (z. B. Haftpflicht)"

@@ -61,14 +61,14 @@ class MeldungenSprachenTests(TestCase):
 
     def test_beschlussfehler_auf_franzoesisch_mit_platzhalter(self):
         v = Versammlung.objects.create(liegenschaft=self.lg, titel='OV', datum=timezone.now(), status='durchgefuehrt')
-        t = Traktandum.objects.create(versammlung=v, nr=1, titel='X')
+        t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='X')
         with translation.override('fr'), self.assertRaises(BeschlussFehler) as ctx:
             feststellen(t, 'quatsch')
         self.assertEqual(str(ctx.exception), 'Résultat invalide « quatsch ».')
 
     def test_pdf_bleibt_deutsch_auch_in_franzoesischer_sitzung(self):
         v = Versammlung.objects.create(liegenschaft=self.lg, titel='OV', datum=timezone.now(), status='durchgefuehrt')
-        Traktandum.objects.create(versammlung=v, nr=1, titel='X', mehrheitsart='doppelt_anwesende')
+        Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='X', mehrheitsart='doppelt_anwesende')
         with translation.override('fr'):
             text = ''.join(p.extract_text() for p in PdfReader(io.BytesIO(protokoll_pdf(v))).pages)
         self.assertIn('Protokoll der Ordentliche Versammlung', text)

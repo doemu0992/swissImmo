@@ -41,6 +41,16 @@
                 <option value="">— {% trans "ganze Liegenschaft" %} —</option>
                 {% for e in einheiten %}<option value="{{ e.id }}">{{ e.liegenschaft.strasse }} · {{ e.bezeichnung }}</option>{% endfor %}
             </select></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Bauteil (bei Stockwerkeigentum *)" %}</label>
+            <select name="bauteil" class="fw-feld">
+                <option value="">— {% trans "wählen" %} —</option>
+                {% for k, b, z in stweg_bauteile %}<option value="{{ k }}">{{ b }}{% if z %} ({% trans "zwingend gemeinschaftlich" %}){% endif %}</option>{% endfor %}
+            </select></div>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Kostenträger (bei Stockwerkeigentum *)" %}</label>
+            <select name="kostentraeger" class="fw-feld">
+                <option value="">— {% trans "wählen" %} —</option>
+                {% for k, b in kt_traeger %}<option value="{{ k }}">{{ b }}</option>{% endfor %}
+            </select></div>
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "Beschreibung" %}</label>
             <textarea name="beschreibung" rows="2" class="fw-feld"></textarea></div>
         <div class="fw-feldblock"><label class="fw-label">{% trans "Melder Vor-/Nachname" %}</label>

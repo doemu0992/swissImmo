@@ -218,6 +218,9 @@ class Traktandum(OrganisationAusKette):
     beschreibung = models.TextField(blank=True, default='')
     antrag = models.TextField("Antrag der Verwaltung", blank=True, default='')
     mehrheitsart = models.CharField(max_length=20, choices=MEHRHEIT_CHOICES, default='einfach_koepfe')
+    #: Die Art des Geschäfts (`stweg.quorum`): bestimmt die gesetzlich mindestens verlangte Mehrheit. Leer nur bei
+    #: Traktanden aus der Zeit vor der Einführung — sie lassen sich weder einladen noch feststellen, bis sie gesetzt ist.
+    geschaeftsart = models.CharField("Art des Geschäfts", max_length=20, blank=True, default='')
     rechtsgrundlage = models.CharField(
         "Rechtsgrundlage / Reglement", max_length=200, blank=True, default='',
         help_text='Von der Verwaltung zu bestätigen; wird nicht automatisch ermittelt.')
@@ -252,6 +255,17 @@ class Traktandum(OrganisationAusKette):
 
     def __str__(self):
         return f"{self.nr}. {self.titel}"
+
+    @property
+    def get_geschaeftsart_anzeige(self):
+        from stweg.quorum import GESCHAEFTSARTEN
+        return GESCHAEFTSARTEN[self.geschaeftsart][0] if self.geschaeftsart in GESCHAEFTSARTEN else ''
+
+    @property
+    def quorum_probleme(self):
+        """Was an Art des Geschäfts und Mehrheitsart fehlt oder zu schwach ist (leer = in Ordnung)."""
+        from stweg import quorum
+        return quorum.traktandum_pruefen(self)
 
 
 class Anwesenheit(OrganisationAusKette):
@@ -533,6 +547,22 @@ class StwegSchluesselAnteil(OrganisationAusKette):
         ]
 
 
+class StwegBefreiung(OrganisationAusKette):
+    """Eine Einheit trägt von einem Schlüssel nichts (Anteil 0) — mit Begründung (Art. 712h Abs. 3 ZGB: abweichende
+    Verteilung nach Reglement oder Beschluss; z. B. Lift für das Erdgeschoss)."""
+    ORGANISATION_PFAD = 'schluessel'
+    schluessel = models.ForeignKey(StwegSchluessel, on_delete=models.CASCADE, related_name='befreiungen')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='+')
+    begruendung = models.CharField("Begründung (Reglement, Beschluss, Artikel)", max_length=200)
+    erfasst_am = models.DateField(default=timezone.localdate)
+    erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='+')
+
+    class Meta:
+        db_table = 'stweg_befreiung'
+        constraints = [models.UniqueConstraint(fields=['schluessel', 'einheit'], name='stweg_befreiung_je_einheit')]
+
+
 class StwegKostenzuordnung(OrganisationAusKette):
     """Welcher Schlüssel gilt für Kosten auf diesem Buchungskonto?"""
     ORGANISATION_PFAD = 'liegenschaft'
@@ -677,13 +707,15 @@ class StimmeEreignis(OrganisationAusKette):
 
 class StwegDokument(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
-    BEGRUENDUNGSAKT, REGLEMENT, NUTZUNGSORDNUNG, VERSICHERUNG, JAHRESRECHNUNG, SONSTIGES = (
-        'begruendungsakt', 'reglement', 'nutzungsordnung', 'versicherung', 'jahresrechnung', 'sonstiges')
+    BEGRUENDUNGSAKT, REGLEMENT, NUTZUNGSORDNUNG, VERSICHERUNG, JAHRESRECHNUNG, SONSTIGES, GEBAEUDEVERSICHERUNG = (
+        'begruendungsakt', 'reglement', 'nutzungsordnung', 'versicherung', 'jahresrechnung', 'sonstiges',
+        'gebaeudeversicherung')
     KATEGORIE_CHOICES = [
         (BEGRUENDUNGSAKT, _('Begründungsakt')),
         (REGLEMENT, _('STWEG-Reglement')),
         (NUTZUNGSORDNUNG, _('Nutzungs- und Verwaltungsordnung')),
-        (VERSICHERUNG, _('Versicherungspolice')),
+        (GEBAEUDEVERSICHERUNG, _('Gebäudeversicherungsnachweis')),
+        (VERSICHERUNG, _('Weitere Versicherungspolice (z. B. Haftpflicht)')),
         (JAHRESRECHNUNG, _('Jahresrechnung')),
         (SONSTIGES, _('Sonstiges')),
     ]

@@ -24576,3 +24576,335 @@ msgstr "Attention : ce calcul ne remplace pas un examen juridique. Le délai de 
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Décompte d'intérêts (PDF)"
+
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum manquant ou trop faible"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Nature de l'objet"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— veuillez choisir —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Type de majorité"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Nature de l'objet * (détermine la majorité légalement requise)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Type de majorité * (au moins celle exigée par la loi)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "Selon le dépouillement (résultat calculé)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Acte d'administration ordinaire"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Mesure de construction utile"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Modification du règlement"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Mesure de construction somptuaire"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Autre objet / quorum différent (base légale requise)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Veuillez choisir la nature de l'objet — elle détermine la majorité légalement requise."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Veuillez choisir le type de majorité."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "Il n'y a pas de vote pour une simple prise de connaissance."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "« %(geschaeft)s » nécessite un vote : la prise de connaissance ne suffit pas."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "Pour un autre objet ou un quorum différent, la base légale (règlement, article) doit être indiquée."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "Pour « %(geschaeft)s », la loi exige au moins : %(mindest)s (%(quelle)s). Une majorité plus faible a été choisie."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "Le résultat est déjà constaté — le type de majorité ne peut plus être modifié."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Nature de l'objet et majorité enregistrées."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Point %(nr)s « %(titel)s » : %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "Le quorum légal n'est pas atteint (%(art)s) : « accepté » ne peut pas être constaté."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Commun (les frais vont dans le décompte annuel PPE)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Droit exclusif (le propriétaire supporte directement les frais)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Toit"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Façade"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Fenêtres (côté extérieur)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Murs porteurs, dalles, fondations"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Conduites principales (eau, eaux usées, électricité, chauffage)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Cage d'escalier, entrée, locaux communs"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Ascenseur, chauffage et autres installations pour tous"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Terrain, abords, accès"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Fenêtres (côté intérieur : ferrures, peinture)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Cloison intérieure non porteuse"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Revêtement de sol dans l'unité"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Crépi, papier peint, peinture intérieure"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Cuisine, salle de bains et appareils sanitaires de l'unité"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Conduites à l'intérieur de l'unité"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Portes intérieures de l'unité"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Autre (vérifier juridiquement le classement)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Veuillez indiquer l'élément concerné."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "En cas de droit exclusif, indiquer l'unité concernée — elle détermine qui supporte les frais."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "« %(bauteil)s » est obligatoirement une partie commune (art. 712b al. 2 CC) : les frais ne peuvent pas être imputés à un seul propriétaire comme droit exclusif. Veuillez choisir « commun »."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Veuillez déclarer : « droit exclusif » (le propriétaire supporte les frais) ou « commun » (frais du décompte annuel)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Débiteur des frais (PPE)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "non déclaré"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Élément concerné"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— choisir l'élément —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "obligatoirement commun"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Débiteur des frais"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— choisir le débiteur des frais —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "Cet élément est obligatoirement une partie commune (art. 712b CC) : les frais ne peuvent pas être imputés à un seul propriétaire comme droit exclusif."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Élément (pour la PPE *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Débiteur des frais (pour la PPE *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "L'élément et le débiteur des frais ne valent que pour une communauté de PPE."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Veuillez choisir l'élément et le débiteur des frais."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Débiteur des frais enregistré."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "Pour une PPE, veuillez indiquer l'élément et le débiteur des frais (droit exclusif ou commun)."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Exonération de frais (art. 712h al. 3 CC)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Si une installation ne sert pas certains propriétaires, la répartition peut différer. Les unités exonérées ne supportent rien ; le montant est recalculé pour les autres (nouvelle base 100 %, au centime près). La justification est obligatoire et consignée."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Clé (p. ex. ascenseur) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Unités exonérées *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Justification (règlement, décision, article) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Consigner l'exonération"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "Une exonération nécessite une justification (règlement, décision, article)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Veuillez choisir au moins une unité."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Exonération selon l'art. 712h al. 3 CC"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Exonération consignée : le montant est recalculé pour les autres unités."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Exonération levée : l'unité supporte à nouveau sa quote-part."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Il doit rester des unités qui supportent les frais — tout exonérer ne répartit rien."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Non conforme"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Contrôle de conformité juridique"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Sans acte constitutif, règlement et attestation d'assurance bâtiment actuelle, l'administration n'a pas la capacité juridique d'agir."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Téléverser des documents"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Conforme"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "L'acte constitutif, le règlement et l'attestation d'assurance bâtiment sont déposés et à jour."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "« %(name)s » n'a pas été téléversé."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "« %(name)s » n'est valable qu'à partir du %(datum)s — d'ici là, un document valable manque."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "« %(name)s » est expiré — veuillez téléverser la version actuelle."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "« %(name)s » : le fichier est absent du stockage — veuillez le téléverser à nouveau."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "aucune date d'expiration saisie"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Attestation d'assurance bâtiment"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Autre police d'assurance (p. ex. responsabilité civile)"

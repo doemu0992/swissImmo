@@ -24554,3 +24554,335 @@ msgstr "Attenzione: questo calcolo non sostituisce una verifica giuridica. Il te
 #: stweg/pdf
 msgid "Zinsabrechnung (PDF)"
 msgstr "Conteggio degli interessi (PDF)"
+
+#: stweg/quorum
+msgid "Quorum fehlt oder zu schwach"
+msgstr "Quorum mancante o troppo debole"
+
+#: stweg/quorum
+msgid "Art des Geschäfts"
+msgstr "Tipo di oggetto"
+
+#: stweg/quorum
+msgid "— bitte wählen —"
+msgstr "— scegliere —"
+
+#: stweg/quorum
+msgid "Mehrheitsart"
+msgstr "Tipo di maggioranza"
+
+#: stweg/quorum
+msgid "Art des Geschäfts * (bestimmt die gesetzlich verlangte Mehrheit)"
+msgstr "Tipo di oggetto * (determina la maggioranza richiesta dalla legge)"
+
+#: stweg/quorum
+msgid "Mehrheitsart * (mindestens die gesetzlich verlangte)"
+msgstr "Tipo di maggioranza * (almeno quella richiesta dalla legge)"
+
+#: stweg/quorum
+msgid "Nach Auszählung (rechnerisches Ergebnis)"
+msgstr "Secondo lo spoglio (risultato calcolato)"
+
+#: stweg/quorum
+msgid "Gewöhnliche Verwaltungshandlung"
+msgstr "Atto di amministrazione ordinaria"
+
+#: stweg/quorum
+msgid "Nützliche bauliche Massnahme"
+msgstr "Misura edilizia utile"
+
+#: stweg/quorum
+msgid "Änderung des Reglements"
+msgstr "Modifica del regolamento"
+
+#: stweg/quorum
+msgid "Luxuriöse bauliche Massnahme"
+msgstr "Misura edilizia voluttuaria"
+
+#: stweg/quorum
+msgid "Anderes Geschäft / abweichendes Quorum (Rechtsgrundlage nötig)"
+msgstr "Altro oggetto / quorum diverso (base giuridica necessaria)"
+
+#: stweg/quorum
+msgid "Bitte die Art des Geschäfts wählen — sie bestimmt die gesetzlich verlangte Mehrheit."
+msgstr "Scegliere il tipo di oggetto — determina la maggioranza richiesta dalla legge."
+
+#: stweg/quorum
+msgid "Bitte die Mehrheitsart wählen."
+msgstr "Scegliere il tipo di maggioranza."
+
+#: stweg/quorum
+msgid "Zur Kenntnisnahme gibt es keine Abstimmung."
+msgstr "Per la presa d'atto non c'è votazione."
+
+#: stweg/quorum
+msgid "«%(geschaeft)s» braucht eine Abstimmung: Kenntnisnahme genügt nicht."
+msgstr "«%(geschaeft)s» richiede una votazione: la presa d'atto non basta."
+
+#: stweg/quorum
+msgid "Für ein anderes Geschäft oder ein abweichendes Quorum ist die Rechtsgrundlage (Reglement, Artikel) anzugeben."
+msgstr "Per un altro oggetto o un quorum diverso va indicata la base giuridica (regolamento, articolo)."
+
+#: stweg/quorum
+msgid "Für «%(geschaeft)s» verlangt das Gesetz mindestens: %(mindest)s (%(quelle)s). Gewählt ist eine schwächere Mehrheit."
+msgstr "Per «%(geschaeft)s» la legge richiede almeno: %(mindest)s (%(quelle)s). È stata scelta una maggioranza più debole."
+
+#: stweg/quorum
+msgid "Das Ergebnis ist schon festgestellt — die Mehrheitsart lässt sich nicht mehr ändern."
+msgstr "Il risultato è già stato accertato — il tipo di maggioranza non può più essere modificato."
+
+#: stweg/quorum
+msgid "Art des Geschäfts und Mehrheit gespeichert."
+msgstr "Tipo di oggetto e maggioranza salvati."
+
+#: stweg/quorum
+msgid "Traktandum %(nr)s «%(titel)s»: %(problem)s"
+msgstr "Punto %(nr)s «%(titel)s»: %(problem)s"
+
+#: stweg/quorum
+msgid "Das gesetzliche Quorum ist nicht erreicht (%(art)s): «angenommen» kann nicht festgestellt werden."
+msgstr "Il quorum legale non è raggiunto (%(art)s): «approvato» non può essere accertato."
+
+#: stweg/bauteile
+msgid "Gemeinschaftlich (Kosten gehen in die STWEG-Jahresrechnung)"
+msgstr "Comune (i costi confluiscono nel conteggio annuale PPP)"
+
+#: stweg/bauteile
+msgid "Sonderrecht (Kosten trägt der Eigentümer direkt)"
+msgstr "Diritto esclusivo (i costi li sostiene direttamente il proprietario)"
+
+#: stweg/bauteile
+msgid "Dach"
+msgstr "Tetto"
+
+#: stweg/bauteile
+msgid "Fassade"
+msgstr "Facciata"
+
+#: stweg/bauteile
+msgid "Fenster (Aussenseite)"
+msgstr "Finestre (lato esterno)"
+
+#: stweg/bauteile
+msgid "Tragende Wände, Decken, Fundament"
+msgstr "Pareti portanti, soffitti, fondamenta"
+
+#: stweg/bauteile
+msgid "Hauptleitungen (Wasser, Abwasser, Strom, Heizung)"
+msgstr "Condotte principali (acqua, acque reflue, elettricità, riscaldamento)"
+
+#: stweg/bauteile
+msgid "Treppenhaus, Eingang, gemeinschaftliche Räume"
+msgstr "Vano scale, ingresso, locali comuni"
+
+#: stweg/bauteile
+msgid "Lift, Heizung und andere Anlagen für alle"
+msgstr "Ascensore, riscaldamento e altri impianti per tutti"
+
+#: stweg/bauteile
+msgid "Grundstück, Umgebung, Zufahrt"
+msgstr "Terreno, dintorni, accesso"
+
+#: stweg/bauteile
+msgid "Fenster (Innenseite: Beschläge, Anstrich)"
+msgstr "Finestre (lato interno: ferramenta, verniciatura)"
+
+#: stweg/bauteile
+msgid "Nichttragende Innenwand"
+msgstr "Parete interna non portante"
+
+#: stweg/bauteile
+msgid "Bodenbelag in der Einheit"
+msgstr "Pavimentazione nell'unità"
+
+#: stweg/bauteile
+msgid "Verputz, Tapete, Anstrich innen"
+msgstr "Intonaco, carta da parati, tinteggiatura interna"
+
+#: stweg/bauteile
+msgid "Küche, Bad und Sanitärapparate der Einheit"
+msgstr "Cucina, bagno e apparecchi sanitari dell'unità"
+
+#: stweg/bauteile
+msgid "Leitungen innerhalb der Einheit"
+msgstr "Condotte all'interno dell'unità"
+
+#: stweg/bauteile
+msgid "Innentüren der Einheit"
+msgstr "Porte interne dell'unità"
+
+#: stweg/bauteile
+msgid "Sonstiges (Einordnung rechtlich prüfen)"
+msgstr "Altro (verificare giuridicamente la classificazione)"
+
+#: stweg/bauteile
+msgid "Bitte das betroffene Bauteil angeben."
+msgstr "Indicare l'elemento interessato."
+
+#: stweg/bauteile
+msgid "Bei Sonderrecht die betroffene Einheit angeben — sie bestimmt, wer die Kosten trägt."
+msgstr "In caso di diritto esclusivo indicare l'unità interessata — determina chi sostiene i costi."
+
+#: stweg/bauteile
+msgid "«%(bauteil)s» ist zwingend gemeinschaftliches Eigentum (Art. 712b Abs. 2 ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden. Bitte «gemeinschaftlich» wählen."
+msgstr "«%(bauteil)s» è obbligatoriamente proprietà comune (art. 712b cpv. 2 CC): i costi non possono essere addossati a un singolo proprietario come diritto esclusivo. Scegliere «comune»."
+
+#: stweg/bauteile
+msgid "Bitte erklären: «Sonderrecht» (der Eigentümer trägt die Kosten) oder «Gemeinschaftlich» (Kosten der Jahresrechnung)."
+msgstr "Dichiarare: «diritto esclusivo» (i costi li sostiene il proprietario) o «comune» (costi del conteggio annuale)."
+
+#: stweg/bauteile
+msgid "Kostenträger (STWEG)"
+msgstr "Onere dei costi (PPP)"
+
+#: stweg/bauteile
+msgid "nicht deklariert"
+msgstr "non dichiarato"
+
+#: stweg/bauteile
+msgid "Betroffenes Bauteil"
+msgstr "Elemento interessato"
+
+#: stweg/bauteile
+msgid "— Bauteil wählen —"
+msgstr "— scegliere l'elemento —"
+
+#: stweg/bauteile
+msgid "zwingend gemeinschaftlich"
+msgstr "obbligatoriamente comune"
+
+#: stweg/bauteile
+msgid "Kostenträger"
+msgstr "Onere dei costi"
+
+#: stweg/bauteile
+msgid "— Kostenträger wählen —"
+msgstr "— scegliere l'onere dei costi —"
+
+#: stweg/bauteile
+msgid "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden."
+msgstr "Questo elemento è obbligatoriamente proprietà comune (art. 712b CC): i costi non possono essere addossati a un singolo proprietario come diritto esclusivo."
+
+#: stweg/bauteile
+msgid "Bauteil (bei Stockwerkeigentum *)"
+msgstr "Elemento (per la PPP *)"
+
+#: stweg/bauteile
+msgid "Kostenträger (bei Stockwerkeigentum *)"
+msgstr "Onere dei costi (per la PPP *)"
+
+#: stweg/bauteile
+msgid "Bauteil und Kostenträger gelten nur bei einer Stockwerkeigentümergemeinschaft."
+msgstr "Elemento e onere dei costi valgono solo per una comunione PPP."
+
+#: stweg/bauteile
+msgid "Bitte Bauteil und Kostenträger wählen."
+msgstr "Scegliere elemento e onere dei costi."
+
+#: stweg/bauteile
+msgid "Kostenträger gespeichert."
+msgstr "Onere dei costi salvato."
+
+#: stweg/bauteile
+msgid "Bei einer STWEG bitte Bauteil und Kostenträger (Sonderrecht oder gemeinschaftlich) angeben."
+msgstr "Per una PPP indicare elemento e onere dei costi (diritto esclusivo o comune)."
+
+#: stweg/schluessel
+msgid "Befreiung von Kosten (Art. 712h Abs. 3 ZGB)"
+msgstr "Esenzione dai costi (art. 712h cpv. 3 CC)"
+
+#: stweg/schluessel
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Se un impianto non serve singoli proprietari, la ripartizione può differire. Le unità esentate non sostengono nulla; l'importo viene ricalcolato per le altre (nuova base 100 %, al centesimo). La motivazione è obbligatoria e viene registrata."
+
+#: stweg/schluessel
+msgid "Schlüssel (z. B. Lift) *"
+msgstr "Chiave (p. es. ascensore) *"
+
+#: stweg/schluessel
+msgid "Befreite Einheiten *"
+msgstr "Unità esentate *"
+
+#: stweg/schluessel
+msgid "Begründung (Reglement, Beschluss, Artikel) *"
+msgstr "Motivazione (regolamento, delibera, articolo) *"
+
+#: stweg/schluessel
+msgid "Befreiung festhalten"
+msgstr "Registrare l'esenzione"
+
+#: stweg/schluessel
+msgid "Eine Befreiung braucht die Begründung (Reglement, Beschluss, Artikel)."
+msgstr "Un'esenzione richiede la motivazione (regolamento, delibera, articolo)."
+
+#: stweg/schluessel
+msgid "Bitte mindestens eine Einheit wählen."
+msgstr "Scegliere almeno un'unità."
+
+#: stweg/schluessel
+msgid "Befreiung nach Art. 712h Abs. 3 ZGB"
+msgstr "Esenzione secondo l'art. 712h cpv. 3 CC"
+
+#: stweg/schluessel
+msgid "Befreiung festgehalten: Der Betrag wird auf die übrigen Einheiten umgerechnet."
+msgstr "Esenzione registrata: l'importo viene ricalcolato per le altre unità."
+
+#: stweg/schluessel
+msgid "Befreiung aufgehoben: Die Einheit trägt wieder ihre Wertquote."
+msgstr "Esenzione revocata: l'unità sostiene di nuovo la sua quota di valore."
+
+#: stweg/schluessel
+msgid "Es müssen Einheiten übrig bleiben, die die Kosten tragen — alle zu befreien verteilt nichts."
+msgstr "Devono restare unità che sostengono i costi — esentarle tutte non ripartisce nulla."
+
+#: stweg/compliance
+msgid "Nicht Compliance-Konform"
+msgstr "Non conforme"
+
+#: stweg/compliance
+msgid "Legal Health Check"
+msgstr "Controllo di conformità giuridica"
+
+#: stweg/compliance
+msgid "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig."
+msgstr "Senza atto costitutivo, regolamento e attestato aggiornato dell'assicurazione dello stabile, l'amministrazione non è giuridicamente in grado di agire."
+
+#: stweg/compliance
+msgid "Dokumente hochladen"
+msgstr "Caricare documenti"
+
+#: stweg/compliance
+msgid "Compliance-konform"
+msgstr "Conforme"
+
+#: stweg/compliance
+msgid "Begründungsakt, Reglement und Gebäudeversicherungsnachweis sind hinterlegt und aktuell."
+msgstr "Atto costitutivo, regolamento e attestato dell'assicurazione dello stabile sono depositati e aggiornati."
+
+#: stweg/compliance
+msgid "«%(name)s» ist nicht hochgeladen."
+msgstr "«%(name)s» non è stato caricato."
+
+#: stweg/compliance
+msgid "«%(name)s» gilt erst ab %(datum)s — bis dahin fehlt ein gültiges Dokument."
+msgstr "«%(name)s» vale solo dal %(datum)s — fino ad allora manca un documento valido."
+
+#: stweg/compliance
+msgid "«%(name)s» ist abgelaufen — bitte die aktuelle Fassung hochladen."
+msgstr "«%(name)s» è scaduto — caricare la versione aggiornata."
+
+#: stweg/compliance
+msgid "«%(name)s»: Die Datei fehlt im Speicher — bitte neu hochladen."
+msgstr "«%(name)s»: il file manca nella memoria — caricare di nuovo."
+
+#: stweg/compliance
+msgid "kein Ablaufdatum erfasst"
+msgstr "nessuna data di scadenza registrata"
+
+#: stweg/compliance
+msgid "Gebäudeversicherungsnachweis"
+msgstr "Attestato dell'assicurazione dello stabile"
+
+#: stweg/compliance
+msgid "Weitere Versicherungspolice (z. B. Haftpflicht)"
+msgstr "Altra polizza assicurativa (p. es. responsabilità civile)"

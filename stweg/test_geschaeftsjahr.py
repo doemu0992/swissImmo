@@ -104,7 +104,7 @@ class Geschaeftsjahr2026(TestCase):
                                                    '(entsteht beim ersten Budget).')])
 
         # 2 ── Verteilschlüssel: Hauswartung nach Wertquote, Lift nach Stockwerk ──────────────────
-        self.lift = lift_nach_stockwerk(lg)
+        self.lift = lift_nach_stockwerk(lg, begruendung='Reglement Art. 9: Das Erdgeschoss nutzt den Lift nicht')
         gewichte = {a.einheit_id: a.anteil for a in self.lift.anteile.all()}
         self.assertEqual((gewichte[A.pk], gewichte[B.pk], gewichte[C.pk]), (D('0'), D('1'), D('2')))
         k_hauswart = konto_nr('4120')                                 # Hauswartung & Reinigung (Standardkonto)
@@ -131,7 +131,7 @@ class Geschaeftsjahr2026(TestCase):
         bd.vorlegen(b26)
         v = Versammlung.objects.create(liegenschaft=lg, titel='Ordentliche Versammlung 2025', art='ordentlich',
                                        datum=timezone.now() - timedelta(days=1), status='durchgefuehrt')
-        t = Traktandum.objects.create(versammlung=v, nr=1, titel='Budget 2026', mehrheitsart='doppelt_aller')
+        t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='Budget 2026', mehrheitsart='doppelt_aller')
         bd.an_traktandum_haengen(t, b26)
         for e in einheiten.values():
             anwesenheit_setzen(v, e, 'anwesend')

@@ -39,7 +39,7 @@ class OberflaecheTests(TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
         self.post(f'/neu/stweg/versammlung/{v.pk}/traktandum/neu/',
-                  {'titel': 'Jahresrechnung', 'antrag': 'Genehmigen', 'mehrheitsart': 'einfach_koepfe',
+                  {'titel': 'Jahresrechnung', 'antrag': 'Genehmigen', 'geschaeftsart': 'verwaltung', 'mehrheitsart': 'einfach_koepfe',
                    'vollzug_aufgabe': 'Rechnung ablegen'})
         t = Traktandum.objects.get()
 

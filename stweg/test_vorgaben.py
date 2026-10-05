@@ -85,7 +85,7 @@ class VorgabenTests(TestCase):
 
     def traktandum(self, anwesend):
         v = self.versammlung(anwesend)
-        t = Traktandum.objects.create(versammlung=v, nr=1, titel='X', mehrheitsart='einfach_koepfe')
+        t = Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='X', mehrheitsart='einfach_koepfe')
         for e in anwesend:
             stimme_abgeben(t, e, 'ja')
         return t
@@ -172,7 +172,7 @@ class VorgabenOberflaecheTests(TestCase):
         vorgaben.speichern(self.lg, {'quorum_koepfe_prozent': '60'})
         v = Versammlung.objects.create(liegenschaft=self.lg, titel='OV', status='durchgefuehrt', datum=timezone.now())
         anwesenheit_setzen(v, self.e[0], 'anwesend')
-        Traktandum.objects.create(versammlung=v, nr=1, titel='X', mehrheitsart='einfach_koepfe')
+        Traktandum.objects.create(geschaeftsart='sonstiges', rechtsgrundlage='Reglement (Test)', versammlung=v, nr=1, titel='X', mehrheitsart='einfach_koepfe')
         seite = self.client.get(f'/neu/stweg/versammlung/{v.pk}/')
         self.assertContains(seite, 'nicht beschlussfähig')
         self.assertContains(seite, 'name="trotzdem"')
