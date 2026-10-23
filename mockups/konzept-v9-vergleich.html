@@ -10,7 +10,7 @@
 /* LAYOUT: Vergleichsleiste oben (Variante, Modus, Regeln) → App-Hülle «Heute» (Seitenleiste, Kopf,
    Kennzahlenstreifen, Zahlungsquote + Fristen, Debitoren) → Bewertung (übernehmen / nicht übernehmen, Prüfliste).
    TYPE: IBM Plex Sans (wie das bestehende System v8), IBM Plex Mono für Nummern.
-   FARBE: Variante A = Petrol aus dem System v8; Variante B = Violett der Vorlage, auf ausreichenden Kontrast gebracht.
+   FARBE: Variante A = Petrol aus dem System v8; Variante B = Palette «Navy Mirage» (#141E30 / #35577D) aus deinen Screenshots.
    Zustandsfarben (rot/orange/grün) sind in beiden Varianten gleich: Farbe heisst Bedeutung. */
 :root{
   --page:#eaf0f0; --bg:#f2f5f5; --surface:#ffffff; --surface-2:#f6f8f8; --hover:#eef3f3;
@@ -47,30 +47,30 @@
   --shadow-1:0 1px 2px rgba(0,0,0,.3); --shadow-2:0 1px 2px rgba(0,0,0,.3),0 12px 32px -10px rgba(0,0,0,.5); --shadow-3:0 28px 70px -18px rgba(0,0,0,.7);
   color-scheme:dark;
 }
-/* Variante B: Violett (Vorlage). Setzt dieselben Tokens neu; Zustandsfarben bleiben unberührt. */
-:root[data-variante="violett"]{
-  --page:#e9e5f7; --bg:#f4f2fb; --surface:#ffffff; --surface-2:#f8f6fd; --hover:#f0ecfb;
-  --ink:#1a1433; --muted:#4b4570; --faint:#625c86; --line:#e6e1f5; --line-strong:#d2cbec;
-  --brand:#5b35d5; --brand-ink:#43249f; --brand-soft:#eee9ff; --on-brand:#ffffff;
-  --glow:rgba(110,70,235,.26); --glow-2:rgba(110,70,235,.12);
-  --stage:linear-gradient(135deg,#7650ee 0%,#5a35d4 48%,#3d2399 100%);
-  --glass:rgba(255,255,255,.62); --glass-line:rgba(255,255,255,.75);
+/* Variante B: Navy Mirage (#141E30 / #35577D). Setzt dieselben Tokens neu; Zustandsfarben bleiben unberührt. */
+:root[data-variante="navy"]{
+  --page:#e4e9f0; --bg:#f1f4f8; --surface:#ffffff; --surface-2:#f6f8fb; --hover:#eaeff6;
+  --ink:#141e30; --muted:#43526a; --faint:#5a6980; --line:#dde4ee; --line-strong:#c6d1e0;
+  --brand:#35577d; --brand-ink:#141e30; --brand-soft:#e3ebf5; --on-brand:#ffffff;
+  --glow:rgba(53,87,125,.26); --glow-2:rgba(53,87,125,.12);
+  --stage:linear-gradient(135deg,#4a6f99 0%,#35577d 48%,#141e30 100%);
+  --glass:rgba(255,255,255,.64); --glass-line:rgba(255,255,255,.78);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"])[data-variante="violett"]{
-  --page:#0b0818; --bg:#110d24; --surface:#18132f; --surface-2:#1d1737; --hover:#241d44;
-  --ink:#ece8fb; --muted:#b9b2d9; --faint:#9a93bf; --line:#2a2350; --line-strong:#3a3166;
-  --brand:#a690ff; --brand-ink:#c3b3ff; --brand-soft:#2a2058; --on-brand:#130a38;
-  --glow:rgba(150,120,255,.22); --glow-2:rgba(150,120,255,.10);
-  --stage:linear-gradient(135deg,#2a1b6b 0%,#150d3a 55%,#0d0826 100%);
-  --glass:rgba(24,19,47,.62); --glass-line:rgba(255,255,255,.08);
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"])[data-variante="navy"]{
+  --page:#0a1120; --bg:#0e1626; --surface:#141e30; --surface-2:#1a2639; --hover:#202e45;
+  --ink:#e8eef7; --muted:#b0bfd3; --faint:#93a4bb; --line:#26344c; --line-strong:#35577d;
+  --brand:#8fb1da; --brand-ink:#b4cdea; --brand-soft:#1f3556; --on-brand:#0a1120;
+  --glow:rgba(100,150,210,.20); --glow-2:rgba(100,150,210,.09);
+  --stage:linear-gradient(135deg,#1f3556 0%,#141e30 55%,#0a1120 100%);
+  --glass:rgba(20,30,48,.66); --glass-line:rgba(255,255,255,.08);
 }}
-:root[data-theme="dark"][data-variante="violett"]{
-  --page:#0b0818; --bg:#110d24; --surface:#18132f; --surface-2:#1d1737; --hover:#241d44;
-  --ink:#ece8fb; --muted:#b9b2d9; --faint:#9a93bf; --line:#2a2350; --line-strong:#3a3166;
-  --brand:#a690ff; --brand-ink:#c3b3ff; --brand-soft:#2a2058; --on-brand:#130a38;
-  --glow:rgba(150,120,255,.22); --glow-2:rgba(150,120,255,.10);
-  --stage:linear-gradient(135deg,#2a1b6b 0%,#150d3a 55%,#0d0826 100%);
-  --glass:rgba(24,19,47,.62); --glass-line:rgba(255,255,255,.08);
+:root[data-theme="dark"][data-variante="navy"]{
+  --page:#0a1120; --bg:#0e1626; --surface:#141e30; --surface-2:#1a2639; --hover:#202e45;
+  --ink:#e8eef7; --muted:#b0bfd3; --faint:#93a4bb; --line:#26344c; --line-strong:#35577d;
+  --brand:#8fb1da; --brand-ink:#b4cdea; --brand-soft:#1f3556; --on-brand:#0a1120;
+  --glow:rgba(100,150,210,.20); --glow-2:rgba(100,150,210,.09);
+  --stage:linear-gradient(135deg,#1f3556 0%,#141e30 55%,#0a1120 100%);
+  --glass:rgba(20,30,48,.66); --glass-line:rgba(255,255,255,.08);
 }
 
 *{box-sizing:border-box}
@@ -309,7 +309,7 @@ table.k th{position:static}
   <div class="grp"><span>Variante</span>
     <div class="seg" role="group" aria-label="Variante">
       <button type="button" id="v-petrol" aria-pressed="true">A · Petrol weiterentwickelt</button>
-      <button type="button" id="v-violett" aria-pressed="false">B · Violett (Vorlage)</button>
+      <button type="button" id="v-navy" aria-pressed="false">B · Navy Mirage</button>
     </div></div>
   <div class="grp"><span>Modus</span>
     <div class="seg" role="group" aria-label="Modus">
@@ -451,7 +451,7 @@ table.k th{position:static}
 
 <section class="sec" aria-labelledby="bew">
   <h2 id="bew">Wie das zu swissImmo passt</h2>
-  <p class="lead">Die Vorlage taugt als Gerüst, nicht als Farbwelt. Der Aufbau (Kennzahlen oben, gruppierte Karten, Filter über der Tabelle) deckt sich mit den sieben Dashboard-Regeln und lässt sich auf dem vorhandenen System umsetzen. Das Violett widerspricht der Regel «Farbe heisst Bedeutung» aus DESIGN-V8 und wird bei kleinen Pillen knapp lesbar.</p>
+  <p class="lead">Die Vorlage taugt als Gerüst. Der Aufbau (Kennzahlen oben, gruppierte Karten, Filter über der Tabelle) deckt sich mit den sieben Dashboard-Regeln und lässt sich auf dem vorhandenen System umsetzen. Bei der Farbe stehen zwei Wege offen: Petrol bleibt, oder Navy Mirage (#141E30 / #35577D) ersetzt es. Navy ist ruhig, kühl und kollidiert nicht mit Rot, Orange und Grün.</p>
   <div class="two">
     <div class="box ja"><h3><span class="t">✓</span>Übernehmen</h3><ul>
       <li><b>Kennzahlenstreifen mit Trend und Symbolchip</b><span>Die vier Zahlen des Morgens stehen zuerst, jede mit Veränderung zum Vormonat. Der Pfeil sagt die Richtung, die Farbe sagt, ob sie gut ist: mehr offene Forderungen ist orange, weniger Leerstand grün.</span></li>
@@ -461,9 +461,9 @@ table.k th{position:static}
       <li><b>Eine Hauptaktion je Seite</b><span>«Mahnlauf starten» ist der einzige gefüllte Knopf, alles andere ist zurückgenommen.</span></li>
     </ul></div>
     <div class="box nein"><h3><span class="t">✕</span>Nicht übernehmen</h3><ul>
-      <li><b>Violett als Markenfarbe</b><span>In der Vorlage ist Violett zugleich Marke, Auswahl und Status («Inside»). Bei uns bedeuten Rot, Orange und Grün Fristen und Geld. Eine vierte starke Farbe verwässert das. Variante B zeigt sie trotzdem, damit Sie selbst urteilen.</span></li>
-      <li><b>Weisse Schrift auf hellem Violett in kleinen Pillen</b><span>Gemessen 3.5 : 1, gefordert sind 4.5 : 1. Variante B nutzt ein dunkleres Violett (7.2 : 1).</span></li>
-      <li><b>Violetter Verlauf hinter der ganzen App</b><span>Wirkt im Bild, ermüdet bei acht Stunden Buchhaltung. Als Bühne um das Mockup in Ordnung, in der echten Oberfläche nicht.</span></li>
+      <li><b>Navy und Petrol gleichzeitig</b><span>Zwei Markenfarben nebeneinander verwässern «Farbe heisst Bedeutung». Entweder Variante A oder B, nicht gemischt. Bei B ersetzt #35577D das Petrol als Marke, #141E30 wird Text, Sidebar und dunkler Modus.</span></li>
+      <li><b>Hellblau auf Weiss für Kleingedrucktes</b><span>Mittelblau als Schriftfarbe auf kleinen Pillen wird knapp. Darum trägt #35577D nur Flächen mit weisser Schrift (7.5 : 1); Fliesstext bleibt #141E30 (15 : 1).</span></li>
+      <li><b>Verlauf hinter der ganzen App</b><span>Wirkt im Bild, ermüdet bei acht Stunden Buchhaltung. Als Bühne um das Mockup in Ordnung, in der echten Oberfläche nicht.</span></li>
       <li><b>Fotos in der Tabelle</b><span>Mieterdaten fallen unter das DSG. Initialen reichen und sind schneller.</span></li>
       <li><b>Halbkreis und mehrere Diagramme auf einer Seite</b><span>Regel 4: ein Diagramm, einfach. Hier zeigt es die Zahlungsquote.</span></li>
     </ul></div>
@@ -489,7 +489,7 @@ table.k th{position:static}
         <tr><td>Abstände</td><td>4 / 8 / 12 / 14 / 18 / 22 px, keine Einzelwerte dazwischen</td><td class="ok">erfüllt</td></tr>
         <tr><td>Hierarchie</td><td>Seitentitel 28, Zahl 30, Kartentitel 15, Text 13.5, Beschriftung 12 bis 12.5</td><td class="ok">erfüllt</td></tr>
         <tr><td>Kontrast A</td><td>Weiss auf Petrol 6.4 : 1, Petrol auf Petrol-hell 5.5 : 1, Rot auf Rot-hell 5.8 : 1</td><td class="ok">≥ 4.5 : 1</td></tr>
-        <tr><td>Kontrast B</td><td>Weiss auf Violett 7.2 : 1. Das Violett der Vorlage (#7C4DFF) erreicht nur 4.8 : 1, kleine Pillen 3.5 : 1</td><td class="no">Vorlage fällt durch</td></tr>
+        <tr><td>Kontrast B</td><td>Weiss auf #35577D 7.5 : 1, #141E30 auf Hellgrund 15 : 1; dunkel: Marke #8FB1DA auf #141E30 7.5 : 1</td><td class="ok">Besteht</td></tr>
         <tr><td>Einheitlichkeit</td><td>Karten, Pillen, Chips und Knöpfe aus je einer Form; Zustandsfarben in A und B identisch</td><td class="ok">erfüllt</td></tr>
         <tr><td>Zustände</td><td>Statuschips, Tabs und Knöpfe zeigen Ruhe, Hover, Auswahl, Fokus; «Mahnlauf» ist im Mockup nicht deaktiviert, in der App wäre er es ohne Überfällige</td><td class="ok">klickbar testen</td></tr>
         <tr><td>Telefon</td><td>Unter 760 px: Seitenleiste wird Leiste unten, Kennzahlen 2 × 2, Tabelle ohne Objekt und Mahnstufe</td><td class="ok">geprüft bei 390 px</td></tr>
@@ -503,8 +503,8 @@ table.k th{position:static}
 (function(){
   var root=document.documentElement;
   function setPressed(ids,on){ids.forEach(function(i){var e=document.getElementById(i);if(e)e.setAttribute('aria-pressed',String(i===on))})}
-  document.getElementById('v-petrol').onclick=function(){root.removeAttribute('data-variante');setPressed(['v-petrol','v-violett'],'v-petrol')};
-  document.getElementById('v-violett').onclick=function(){root.setAttribute('data-variante','violett');setPressed(['v-petrol','v-violett'],'v-violett')};
+  document.getElementById('v-petrol').onclick=function(){root.removeAttribute('data-variante');setPressed(['v-petrol','v-navy'],'v-petrol')};
+  document.getElementById('v-navy').onclick=function(){root.setAttribute('data-variante','navy');setPressed(['v-petrol','v-navy'],'v-navy')};
   document.getElementById('m-hell').onclick=function(){root.setAttribute('data-theme','light');setPressed(['m-hell','m-dunkel'],'m-hell')};
   document.getElementById('m-dunkel').onclick=function(){root.setAttribute('data-theme','dark');setPressed(['m-hell','m-dunkel'],'m-dunkel')};
   var rg=document.getElementById('t-regeln');
