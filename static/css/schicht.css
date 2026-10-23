@@ -1371,10 +1371,10 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             transition:box-shadow .15s var(--ds-ease),border-color .12s,transform .15s var(--ds-ease)}
         .fw-ampel:hover{border-color:var(--ds-line-stark);box-shadow:var(--ds-shadow);transform:translateY(-1px)}
         .fw-ampel.fw-on{border-color:var(--ds-ink);box-shadow:var(--ds-shadow)}
-        .fw-ampel-licht{width:14px;height:14px;flex:0 0 14px;border-radius:var(--ds-pill);background:var(--ds-good);
+        .fw-punkt-ampel{width:14px;height:14px;flex:0 0 14px;border-radius:var(--ds-pill);background:var(--ds-good);
             box-shadow:0 0 0 4px var(--ds-good-soft)}
-        .fw-ampel.gelb .fw-ampel-licht{background:var(--ds-warn);box-shadow:0 0 0 4px var(--ds-warn-soft)}
-        .fw-ampel.rot .fw-ampel-licht{background:var(--ds-crit);box-shadow:0 0 0 4px var(--ds-crit-soft)}
+        .fw-ampel.gelb .fw-punkt-ampel{background:var(--ds-warn);box-shadow:0 0 0 4px var(--ds-warn-soft)}
+        .fw-ampel.rot .fw-punkt-ampel{background:var(--ds-crit);box-shadow:0 0 0 4px var(--ds-crit-soft)}
         .fw-ampel-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
         .fw-ampel-text b{font-size:14px;font-weight:600}
         .fw-ampel-text span{font-size:12px;color:var(--ds-faint)}
@@ -1422,8 +1422,8 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-kal-nav{display:flex;align-items:center;gap:8px}
         .fw-kal-nav .fw-knopf-rund{border:1px solid var(--ds-line);background:var(--ds-surface)}
         .fw-kal-art b{font-weight:600;opacity:.75;margin-left:2px}
-        .fw-kal-punkt{width:8px;height:8px;border-radius:var(--ds-pill);display:inline-block;flex:0 0 8px;margin-right:6px;background:var(--ds-brand)}
-        .fw-kal-punkt.frist{background:var(--ds-warn)}.fw-kal-punkt.ticket{background:var(--ds-crit)}.fw-kal-punkt.auszug{background:var(--ds-good)}
+        .fw-punkt-kal{width:8px;height:8px;border-radius:var(--ds-pill);display:inline-block;flex:0 0 8px;margin-right:6px;background:var(--ds-brand)}
+        .fw-punkt-kal.frist{background:var(--ds-warn)}.fw-punkt-kal.ticket{background:var(--ds-crit)}.fw-punkt-kal.auszug{background:var(--ds-good)}
         .fw-kal-zwei{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
         .fw-kal-karte{margin-bottom:0;padding:0}
         .fw-kal-raster{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
@@ -1449,7 +1449,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-kal-mehr{font-size:12px;font-weight:600;color:var(--ds-muted);text-decoration:none;padding:0 4px}
         .fw-kal-tag-karte{position:sticky;top:76px;margin-bottom:0}
         .fw-kal-eintrag{align-items:flex-start}
-        .fw-kal-eintrag .fw-kal-punkt{margin-top:7px}
+        .fw-kal-eintrag .fw-punkt-kal{margin-top:7px}
         .fw-kal-liste{display:none}
         @media (max-width:1100px){.fw-kal-zwei{grid-template-columns:1fr}.fw-kal-tag-karte{position:static}}
         @media (max-width:720px){
@@ -1475,12 +1475,12 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-donut-spur,.fw-donut-teil{fill:none;stroke-width:5.2}
         .fw-donut-spur{stroke:var(--ds-surface-2)}
         .fw-donut-teil{stroke-linecap:butt;transition:opacity .15s}
-        .fw-donut-teil.t0,.fw-donut-punkt.t0{stroke:var(--ds-brand);background:var(--ds-brand)}
-        .fw-donut-teil.t1,.fw-donut-punkt.t1{stroke:color-mix(in srgb,var(--ds-brand) 78%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 78%,var(--ds-surface))}
-        .fw-donut-teil.t2,.fw-donut-punkt.t2{stroke:color-mix(in srgb,var(--ds-brand) 58%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 58%,var(--ds-surface))}
-        .fw-donut-teil.t3,.fw-donut-punkt.t3{stroke:color-mix(in srgb,var(--ds-brand) 42%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 42%,var(--ds-surface))}
-        .fw-donut-teil.t4,.fw-donut-punkt.t4{stroke:color-mix(in srgb,var(--ds-brand) 28%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 28%,var(--ds-surface))}
-        .fw-donut-teil.t5,.fw-donut-punkt.t5{stroke:color-mix(in srgb,var(--ds-brand) 18%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 18%,var(--ds-surface))}
+        .fw-donut-teil.t0,.fw-punkt-donut.t0{stroke:var(--ds-brand);background:var(--ds-brand)}
+        .fw-donut-teil.t1,.fw-punkt-donut.t1{stroke:color-mix(in srgb,var(--ds-brand) 78%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 78%,var(--ds-surface))}
+        .fw-donut-teil.t2,.fw-punkt-donut.t2{stroke:color-mix(in srgb,var(--ds-brand) 58%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 58%,var(--ds-surface))}
+        .fw-donut-teil.t3,.fw-punkt-donut.t3{stroke:color-mix(in srgb,var(--ds-brand) 42%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 42%,var(--ds-surface))}
+        .fw-donut-teil.t4,.fw-punkt-donut.t4{stroke:color-mix(in srgb,var(--ds-brand) 28%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 28%,var(--ds-surface))}
+        .fw-donut-teil.t5,.fw-punkt-donut.t5{stroke:color-mix(in srgb,var(--ds-brand) 18%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 18%,var(--ds-surface))}
         .fw-donut-teil{transform:rotate(0deg)}
         .fw-donut:hover .fw-donut-teil{opacity:.7}.fw-donut .fw-donut-teil:hover{opacity:1}
         .fw-donut-mitte{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
@@ -1489,5 +1489,5 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-donut-legende{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;flex:1;min-width:11rem}
         .fw-donut-legende li{display:flex;align-items:center;gap:10px;font-size:13.5px;min-width:0}
         .fw-donut-legende li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .fw-donut-punkt{width:10px;height:10px;border-radius:var(--ds-pill);flex:0 0 10px}
+        .fw-punkt-donut{width:10px;height:10px;border-radius:var(--ds-pill);flex:0 0 10px}
         @media (max-width:720px){.fw-cash-summe{grid-template-columns:1fr;gap:8px}.fw-donut-zeile{justify-content:center}}

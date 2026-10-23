@@ -94,7 +94,7 @@
             {% donut_diagramm teile donut_mitte.0 donut_mitte.1 donut_titel %}
             <ul class="fw-donut-legende">
                 {% for t in legende %}
-                <li><i class="fw-donut-punkt t{{ t.i }}" aria-hidden="true"></i><span>{{ t.lab }}</span><b class="fw-num">{{ t.anteil|floatformat:1 }} %</b></li>
+                <li><i class="fw-punkt-donut t{{ t.i }}" aria-hidden="true"></i><span>{{ t.lab }}</span><b class="fw-num">{{ t.anteil|floatformat:1 }} %</b></li>
                 {% endfor %}
             </ul>
         </div>

@@ -28,7 +28,7 @@
     </div>
     <div class="fw-filters fw-nomb" role="group" aria-label="{% trans 'Eintragsarten' %}">
         {% for a, b, n, an in arten %}
-        <button type="button" class="fw-fchip fw-kal-art{% if an %} fw-on{% endif %}" data-art="{{ a }}" aria-pressed="{% if an %}true{% else %}false{% endif %}"><span class="fw-kal-punkt {{ a }}" aria-hidden="true"></span>{{ b }} <b>{{ n }}</b></button>
+        <button type="button" class="fw-fchip fw-kal-art{% if an %} fw-on{% endif %}" data-art="{{ a }}" aria-pressed="{% if an %}true{% else %}false{% endif %}"><span class="fw-punkt-kal {{ a }}" aria-hidden="true"></span>{{ b }} <b>{{ n }}</b></button>
         {% endfor %}
     </div>
 </div>
@@ -70,7 +70,7 @@
         <span class="fw-neben">{{ tag_ereignisse|length }}</span></div>
     {% for e in tag_ereignisse %}
     <a href="{{ e.url }}" class="fw-zeile klick fw-kal-eintrag" data-art="{{ e.typ }}">
-        <span class="fw-kal-punkt {{ e.typ }}" aria-hidden="true"></span>
+        <span class="fw-punkt-kal {{ e.typ }}" aria-hidden="true"></span>
         <div class="fw-mitte">
             <div class="fw-t">{% if e.zeit %}<span class="fw-mono">{{ e.zeit }}</span> {% endif %}{{ e.titel }}</div>
             <div class="fw-s">{{ e.sub }}{% if e.status %} · {{ e.status }}{% endif %}</div>
