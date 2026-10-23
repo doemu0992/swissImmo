@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>immoswiss Dashboard Koralle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  /* Variante «Koralle»: dieselbe Navy-Basis (#141E30 … #35577D), der Akzent ist Koralle statt Hellblau.
+     60-30-10: 60 % Navy-Flächen, 30 % Strukturblau (Ränder, Linien), 10 % Koralle (aktive Navigation,
+     Hauptknopf, Warnung). Koralle bedeutet hier zugleich «Aufmerksamkeit» — darum steht sie sparsam. */
+  tailwind.config = {
+    theme: { extend: {
+      fontFamily: { sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+      colors: {
+        /* Kanalwerte (--c-*), damit Deckkraft-Stufen wie bg-surface/70 funktionieren */
+        bg: 'rgb(var(--c-bg) / <alpha-value>)', surface: 'rgb(var(--c-surface) / <alpha-value>)',
+        raised: 'rgb(var(--c-raised) / <alpha-value>)', line: 'rgb(var(--c-line) / <alpha-value>)',
+        ink: 'rgb(var(--c-ink) / <alpha-value>)', coral: 'rgb(var(--c-coral) / <alpha-value>)',
+        muted: 'var(--muted)', faint: 'var(--faint)', blue: 'var(--blue)', 'on-coral': 'var(--on-coral)',
+        good: 'var(--good)', 'good-soft': 'var(--good-soft)', bad: 'var(--bad)', 'bad-soft': 'var(--bad-soft)',
+        warn: 'var(--warn)', 'warn-soft': 'var(--warn-soft)'
+      }
+    } }
+  }
+</script>
+<style>
+  :root {
+    color-scheme: dark;
+    --c-bg: 10 18 34; --c-surface: 18 28 49; --c-raised: 25 38 63; --c-line: 42 58 92; --c-ink: 234 240 250; --c-coral: 244 124 98;
+    --bg: rgb(var(--c-bg)); --surface: rgb(var(--c-surface)); --raised: rgb(var(--c-raised)); --line: rgb(var(--c-line));
+    --ink: rgb(var(--c-ink)); --muted: #a3b4ce; --faint: #8497b4;
+    --blue: #7b9bf5; --coral: rgb(var(--c-coral)); --on-coral: #1b0c09;
+    --good: #5fd39a; --good-soft: #12342a; --bad: #f58a93; --bad-soft: #3d1c22;
+    --warn: #e8b25c; --warn-soft: #382a10;
+  }
+  html { background: var(--bg); }
+  body {
+    margin: 0; background-color: var(--bg); color: var(--ink);
+    background-image:
+      radial-gradient(1000px 520px at 85% -160px, rgba(53,87,125,.45), transparent 70%),
+      radial-gradient(700px 400px at 0% 100%, rgba(244,124,98,.07), transparent 70%);
+    background-repeat: no-repeat; background-attachment: fixed;
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  /* Karte: Verlauf Navy, feiner heller Rand wie im Vorbild */
+  .cardx {
+    background: linear-gradient(165deg, #172541 0%, #101a2f 70%);
+    border: 1px solid rgba(120,150,210,.24); border-radius: 22px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.05) inset, 0 18px 40px -22px rgba(0,0,0,.7);
+  }
+  .cardx-warn {
+    background: linear-gradient(165deg, #3a1f2a 0%, #1c1423 80%);
+    border: 1px solid rgba(244,124,98,.55); border-radius: 22px;
+    box-shadow: 0 0 0 1px rgba(244,124,98,.10), 0 18px 40px -22px rgba(244,124,98,.45);
+  }
+  .glass { background: rgba(15,25,45,.78); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); }
+  .nav-on { background: linear-gradient(90deg, #a3412f 0%, #7b3a3a 100%); color: #fff; box-shadow: 0 10px 24px -14px rgba(244,124,98,.7); }
+  .btn-coral { background: linear-gradient(135deg, #f47c62, #e0583f); color: var(--on-coral); }
+  :focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  .scroll-thin::-webkit-scrollbar { height: 6px; } .scroll-thin::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+/* =====================================================================
+   DUMMY-DATEN (CHF) — später durch API-Aufrufe ersetzen
+   ===================================================================== */
+const NAV = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'grid', short: 'Start' },
+  { id: 'immobilien', label: 'Immobilien', icon: 'home', short: 'Objekte' },
+  { id: 'mieter', label: 'Mieter', icon: 'users', short: 'Mieter' },
+  { id: 'finanzen', label: 'Finanzen', icon: 'coins', short: 'Finanzen' },
+  { id: 'dokumente', label: 'Dokumente', icon: 'file', short: 'Dateien' },
+  { id: 'einstellungen', label: 'Einstellungen', icon: 'cog', short: 'Mehr' },
+];
+
+const MONATE = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug'];
+const EINNAHMEN = [412, 438, 421, 455, 449, 468, 474, 496];   // in 1000 CHF
+const AUSGABEN = [331, 352, 338, 362, 369, 399, 372, 391];
+
+const TERMINE = [
+  { id: 1, titel: 'Wohnungsabnahme Seefeldstrasse 12', datum: '28.10.2026', zeit: '14:00', farbe: '#7b9bf5', leute: ['Muster Hans', 'Dominik Gerber'] },
+  { id: 2, titel: 'Heizungswartung Bahnhofstrasse 4', datum: '29.10.2026', zeit: '08:00', farbe: '#e8b25c', leute: ['Kälte Meier', 'Rossi Luca', 'Dominik Gerber'] },
+  { id: 3, titel: 'Besichtigung Rebbergweg 8', datum: '29.10.2026', zeit: '16:30', farbe: '#f47c62', leute: ['Bianchi Sara'] },
+  { id: 4, titel: 'Wohnungsübergabe Seestrasse 41', datum: '30.10.2026', zeit: '10:15', farbe: '#5fd39a', leute: ['Rossi Luca'] },
+];
+const TODOS = [
+  { id: 11, titel: 'Mahnung 2 an Keller Maria versenden', frist: 'fällig heute', done: false },
+  { id: 12, titel: 'Nebenkostenabrechnung 2025 prüfen', frist: 'bis 31.10.', done: false },
+  { id: 13, titel: 'Offerte Dachreparatur freigeben', frist: 'bis 03.11.', done: true },
+  { id: 14, titel: 'Mietvertrag Schmid P. unterschreiben lassen', frist: 'bis 05.11.', done: false },
+];
+
+const BELEGUNG = [
+  { label: 'Vermietet', value: 142, color: '#7b9bf5' },
+  { label: 'Gekündigt', value: 5, color: '#e8b25c' },
+  { label: 'Leerstand', value: 3, color: '#f47c62' },
+];
+
+const AKTIVITAETEN = [
+  { id: 1, was: 'Mieteingang Seefeldstrasse 12', detail: "CHF 1'850.00 · Muster Hans", status: 'Erledigt', vor: 'vor 12 Min.' },
+  { id: 2, was: 'Neue Anfrage Rebbergweg 8', detail: '2.5 Zi, DG · Bianchi Sara', status: 'Offen', vor: 'vor 1 Std.' },
+  { id: 3, was: 'Schadenmeldung Wasserhahn', detail: 'Bahnhofstrasse 4 · Keller Maria', status: 'In Arbeit', vor: 'vor 3 Std.' },
+  { id: 4, was: 'Mieteingang Bahnhofstrasse 4', detail: "CHF 4'800.00 · Meier AG", status: 'Erledigt', vor: 'gestern' },
+  { id: 5, was: 'Mahnung 1 versendet', detail: "CHF 1'420.00 · Keller Maria", status: 'Offen', vor: 'gestern' },
+];
+
+/* =====================================================================
+   UI-BAUSTEINE
+   ===================================================================== */
+const ICONS = {
+  grid: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
+  home: <><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10M10 20v-6h4v6"/></>,
+  users: <><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></>,
+  coins: <><circle cx="12" cy="12" r="9"/><path d="M14.8 9.2c-.5-.9-1.6-1.4-2.9-1.4-1.7 0-2.9.9-2.9 2.1 0 2.9 6 1.4 6 4.2 0 1.3-1.3 2.1-3.1 2.1-1.5 0-2.8-.5-3.4-1.5M12 6v1.8M12 16.2V18"/></>,
+  file: <><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h6"/></>,
+  cog: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></>,
+  search: <><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></>,
+  filter: <path d="M4 6h16M7 12h10M10 18h4"/>,
+  chevron: <path d="M6 9l6 6 6-6"/>,
+  cal: <><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></>,
+  dots: <><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></>,
+  dotsh: <><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></>,
+  arrow: <path d="M7 17L17 7M9 7h8v8"/>,
+  chat: <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>,
+  check: <path d="M5 12.5l4.5 4.5L19 7.5"/>,
+  bell: <><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></>,
+};
+function Icon({ name, className = 'w-5 h-5', strokeWidth = 1.8 }) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">{ICONS[name]}</svg>;
+}
+
+/* Initialen statt Fotos — Mieterdaten fallen unter das DSG */
+const TONES = [['#35577d', '#7b9bf5'], ['#2f6b5b', '#5fd39a'], ['#6b5530', '#e8b25c'], ['#6b3a40', '#f47c62']];
+function Avatar({ name, size = 'w-8 h-8', i = 0 }) {
+  const [a, b] = TONES[i % TONES.length];
+  const ini = name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+  return <span className={`${size} shrink-0 rounded-full grid place-items-center text-[11px] font-bold text-white ring-2 ring-[#121c31]`} style={{ background: `linear-gradient(135deg, ${a}, ${b})` }} aria-hidden="true">{ini}</span>;
+}
+function Select({ icon, children, label }) {
+  return (
+    <button className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl border border-line bg-surface/60 text-sm font-medium text-muted hover:text-ink transition-colors" aria-label={label}>
+      {icon && <Icon name={icon} className="w-4 h-4" />}{children}<Icon name="chevron" className="w-4 h-4" />
+    </button>
+  );
+}
+
+/* ---------- Navigation ---------- */
+function SwissCross({ className = 'w-3.5 h-3.5' }) {
+  return <svg viewBox="0 0 20 20" className={className} aria-label="Schweiz"><rect width="20" height="20" rx="3" fill="#e5342d"/><path d="M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z" fill="#fff"/></svg>;
+}
+function Logo() {
+  return (
+    <div className="flex items-center gap-2.5 px-1">
+      <svg viewBox="0 0 32 32" className="w-9 h-9" fill="none" stroke="#f47c62" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 15L16 4l13 11"/><path d="M7 13v14h18V13"/><path d="M12 27v-7h3v7M18 27v-9h3v9" stroke="#7b9bf5"/>
+      </svg>
+      <span className="relative text-[22px] font-extrabold tracking-tight">immoswiss<span className="absolute -top-1 -right-4"><SwissCross className="w-3.5 h-3.5" /></span></span>
+    </div>
+  );
+}
+function Sidebar({ active, onSelect }) {
+  return (
+    <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col gap-9 px-4 py-7 glass border-r border-line z-30" aria-label="Hauptnavigation">
+      <Logo />
+      <nav className="flex flex-col gap-1.5">
+        {NAV.map(n => (
+          <button key={n.id} onClick={() => onSelect(n.id)} aria-current={active === n.id ? 'page' : undefined}
+                  className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-[15px] font-medium text-left transition-colors ${active === n.id ? 'nav-on' : 'text-muted hover:bg-raised hover:text-ink'}`}>
+            <Icon name={n.icon} />{n.label}
+          </button>
+        ))}
+      </nav>
+      <div className="mt-auto rounded-2xl p-4 border border-line bg-raised/60">
+        <div className="text-sm font-bold">Nebenkosten 2025</div>
+        <p className="text-xs text-muted mt-1 leading-relaxed">38 von 126 Abrechnungen sind noch nicht versendet.</p>
+        <div className="mt-3 h-1.5 rounded-full bg-bg overflow-hidden" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" aria-label="Fortschritt Abrechnungen"><div className="h-full rounded-full btn-coral" style={{ width: '70%' }} /></div>
+        <div className="text-xs text-faint mt-1.5 num">88 / 126 versendet</div>
+      </div>
+    </aside>
+  );
+}
+function BottomNav({ active, onSelect }) {
+  return (
+    <nav className="lg:hidden fixed left-3 right-3 z-30 glass border border-line rounded-3xl px-1.5 py-1.5 grid grid-cols-6 shadow-2xl" style={{ bottom: 'max(12px, env(safe-area-inset-bottom))' }} aria-label="Hauptnavigation">
+      {NAV.map(n => (
+        <button key={n.id} onClick={() => onSelect(n.id)} aria-label={n.label} aria-current={active === n.id ? 'page' : undefined}
+                className={`flex flex-col items-center gap-0.5 rounded-2xl py-2 text-[10px] font-semibold min-w-0 ${active === n.id ? 'nav-on' : 'text-muted'}`}>
+          <Icon name={n.icon} /><span className="truncate max-w-full px-0.5">{n.short}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+/* ---------- Top-Bar ---------- */
+function TopBar() {
+  return (
+    <header className="flex items-center gap-3 px-4 sm:px-6 lg:px-8 pt-6 pb-1" style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}>
+      <div className="lg:hidden"><Logo /></div>
+      <label className="relative flex-1 max-w-xl hidden sm:block">
+        <span className="sr-only">Suche</span>
+        <Icon name="search" className="w-[18px] h-[18px] absolute left-4 top-1/2 -translate-y-1/2 text-faint pointer-events-none" />
+        <input type="search" placeholder="Suchen nach Immobilien, Mietern …" className="w-full h-12 rounded-xl bg-surface/70 border border-line pl-11 pr-4 text-sm text-ink placeholder:text-faint focus:border-coral outline-none transition-colors" />
+      </label>
+      <div className="ml-auto flex items-center gap-3">
+        <button className="sm:hidden grid place-items-center w-11 h-11 rounded-xl border border-line bg-surface/60 text-muted" aria-label="Suche"><Icon name="search" /></button>
+        <span className="hidden sm:block"><Select icon="filter" label="Filter">Filtern</Select></span>
+        <button className="relative grid place-items-center w-10 h-10 rounded-xl border border-line bg-surface/60 text-muted hover:text-ink" aria-label="Mitteilungen"><Icon name="bell" /><span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-coral ring-2 ring-[#121c31]" /></button>
+        <button className="flex items-center gap-3" aria-label="Profil">
+          <Avatar name="Dominik Gerber" size="w-11 h-11" />
+          <span className="hidden md:flex items-center gap-2 text-[15px] font-semibold">Grüezi, Dominik <SwissCross /><Icon name="chevron" className="w-4 h-4 text-faint" /></span>
+        </button>
+      </div>
+    </header>
+  );
+}
+
+/* ---------- Karten ---------- */
+function KpiCard({ label, value, suffix, trend, alert, dot }) {
+  return (
+    <section className={`${alert ? 'cardx-warn' : 'cardx'} p-5 sm:p-6 min-w-0`}>
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+        <h3 className="text-[15px] font-semibold text-ink/90 min-w-0">{label}</h3>
+        {trend && <span className="inline-flex items-center gap-1 whitespace-nowrap shrink-0 rounded-lg bg-good-soft text-good text-xs font-bold px-2 py-1"><Icon name="arrow" className="w-3 h-3" strokeWidth={2.6} />{trend}<span className="sr-only"> (günstig)</span></span>}
+        {dot && <span className="w-3 h-3 rounded-full bg-coral shadow-[0_0_14px_var(--coral)]"><span className="sr-only">Handlungsbedarf</span></span>}
+      </div>
+      <div className="mt-4 flex items-baseline gap-2 flex-wrap">
+        <span className="text-[30px] leading-none font-extrabold tracking-tight num whitespace-nowrap">{value}</span>
+        {suffix && <span className="text-base font-medium text-muted num">{suffix}</span>}
+      </div>
+    </section>
+  );
+}
+
+function FinanceCard() {
+  const canvas = useRef(null);
+  useEffect(() => {
+    const ctx = canvas.current.getContext('2d');
+    const gB = ctx.createLinearGradient(0, 0, 0, 300); gB.addColorStop(0, 'rgba(123,155,245,.32)'); gB.addColorStop(1, 'rgba(123,155,245,0)');
+    const gC = ctx.createLinearGradient(0, 0, 0, 300); gC.addColorStop(0, 'rgba(244,124,98,.22)'); gC.addColorStop(1, 'rgba(244,124,98,0)');
+    Chart.defaults.font.family = '"Plus Jakarta Sans", system-ui, sans-serif'; Chart.defaults.color = '#a3b4ce';
+    const ds = (label, data, color, fill) => ({ label, data, borderColor: color, borderWidth: 3, tension: 0.42, fill: true, backgroundColor: fill, pointRadius: 0, pointHoverRadius: 6, pointHoverBackgroundColor: color, pointHoverBorderColor: '#121c31', pointHoverBorderWidth: 3 });
+    const c = new Chart(ctx, {
+      type: 'line',
+      data: { labels: MONATE, datasets: [ds('Einnahmen', EINNAHMEN, '#7b9bf5', gB), ds('Ausgaben', AUSGABEN, '#f47c62', gC)] },
+      options: {
+        responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: { grid: { display: false }, border: { display: false }, ticks: { padding: 8 } },
+          y: { min: 300, max: 520, grid: { color: 'rgba(163,180,206,.12)' }, border: { display: false }, ticks: { padding: 10, stepSize: 55, callback: v => v + 'k' } },
+        },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#19263f', borderColor: '#35577d', borderWidth: 1, padding: 12, cornerRadius: 12, titleColor: '#eaf0fa', bodyColor: '#eaf0fa', usePointStyle: true, boxPadding: 5, callbacks: { label: x => ` ${x.dataset.label}  CHF ${x.parsed.y}'000` } } },
+      },
+    });
+    return () => c.destroy();
+  }, []);
+  return (
+    <section className="cardx p-5 sm:p-6 min-w-0 h-full flex flex-col">
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight">Finanz- &amp; Mietübersicht</h2>
+          <div className="mt-2 flex items-center gap-5 text-sm text-muted">
+            <span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-blue" />Einnahmen</span>
+            <span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-coral" />Ausgaben</span>
+          </div>
+        </div>
+        <Select icon="cal" label="Zeitraum">Okt. 2026</Select>
+      </header>
+      <div className="relative mt-5 flex-1 min-h-[16rem] sm:min-h-[19rem]"><canvas ref={canvas} role="img" aria-label="Liniendiagramm Einnahmen und Ausgaben, Januar bis August, in tausend Franken" /></div>
+    </section>
+  );
+}
+
+function AppointmentsCard() {
+  const [tab, setTab] = useState('termine');
+  const [todos, setTodos] = useState(TODOS);
+  const toggle = id => setTodos(t => t.map(x => x.id === id ? { ...x, done: !x.done } : x));
+  return (
+    <section className="cardx p-5 sm:p-6 min-w-0 h-full flex flex-col">
+      <header className="flex items-center gap-6 border-b border-line/70 -mx-1 px-1">
+        {[['termine', 'Anstehende Termine'], ['todos', 'To-Dos']].map(([id, l]) => (
+          <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
+                  className={`relative pb-3 text-[15px] font-semibold transition-colors ${tab === id ? 'text-ink' : 'text-faint hover:text-muted'}`}>
+            {l}{tab === id && <span className="absolute left-0 right-0 -bottom-px h-0.5 rounded bg-coral" />}
+          </button>
+        ))}
+        <button className="ml-auto mb-2 grid place-items-center w-8 h-8 rounded-lg border border-line text-muted" aria-label="Mehr"><Icon name="dots" className="w-4 h-4" /></button>
+      </header>
+
+      {tab === 'termine' ? (
+        <ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {TERMINE.map(t => (
+            <li key={t.id} className="relative rounded-2xl border border-line/80 bg-bg/40 pl-5 pr-4 py-3.5 overflow-hidden">
+              <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r" style={{ background: t.farbe }} />
+              <div className="text-sm font-bold leading-snug">{t.titel}</div>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <span className="text-xs text-muted num">{t.datum} · {t.zeit}</span>
+                <span className="flex -space-x-1.5 shrink-0">{t.leute.slice(0, 3).map((p, i) => <Avatar key={p} name={p} i={i} size="w-7 h-7" />)}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="mt-5 flex flex-col gap-2.5">
+          {todos.map(t => (
+            <li key={t.id}>
+              <button onClick={() => toggle(t.id)} role="checkbox" aria-checked={t.done} className="w-full flex items-center gap-3.5 rounded-2xl border border-line/80 bg-bg/40 p-3.5 text-left hover:border-coral/60 transition-colors">
+                <span className={`w-6 h-6 shrink-0 rounded-lg border-2 grid place-items-center ${t.done ? 'btn-coral border-transparent' : 'border-line text-transparent'}`}><Icon name="check" className="w-3.5 h-3.5" strokeWidth={3} /></span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block text-sm font-semibold ${t.done ? 'line-through text-faint' : ''}`}>{t.titel}</span>
+                  <span className={`block text-xs mt-0.5 ${t.frist.includes('heute') && !t.done ? 'text-bad font-semibold' : 'text-muted'}`}>{t.frist}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <a href="#" onClick={e => e.preventDefault()} className="mt-auto pt-5 text-center text-[15px] font-semibold text-coral hover:underline">Alle anzeigen</a>
+    </section>
+  );
+}
+
+function GaugeCard() {
+  const canvas = useRef(null);
+  const total = BELEGUNG.reduce((s, b) => s + b.value, 0);
+  const quote = ((BELEGUNG[0].value + BELEGUNG[1].value) / total * 100).toFixed(1);
+  useEffect(() => {
+    const c = new Chart(canvas.current.getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: BELEGUNG.map(b => b.label), datasets: [{ data: BELEGUNG.map(b => b.value), backgroundColor: BELEGUNG.map(b => b.color), borderColor: '#111b30', borderWidth: 4, borderRadius: 10, spacing: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, rotation: -90, circumference: 180, cutout: '72%', plugins: { legend: { display: false }, tooltip: { backgroundColor: '#19263f', borderColor: '#35577d', borderWidth: 1, padding: 10, cornerRadius: 10, callbacks: { label: x => ` ${x.label}: ${x.parsed} Objekte` } } } },
+    });
+    return () => c.destroy();
+  }, []);
+  return (
+    <section className="cardx p-5 sm:p-6 min-w-0 h-full">
+      <h2 className="text-lg font-bold tracking-tight">Belegungs- &amp; Objektstatus</h2>
+      <p className="text-sm text-muted mt-0.5">{total} Mietobjekte im Bestand</p>
+      <div className="relative mx-auto mt-4 w-full max-w-[19rem] h-40">
+        <canvas ref={canvas} role="img" aria-label={`Halbkreis-Diagramm: ${BELEGUNG.map(b => `${b.label} ${b.value}`).join(', ')}`} />
+        <div className="absolute inset-x-0 bottom-0 text-center pointer-events-none">
+          <div className="text-3xl font-extrabold tracking-tight num">{quote} %</div>
+          <div className="text-xs text-muted">belegt</div>
+        </div>
+      </div>
+      <ul className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted">
+        {BELEGUNG.map(b => <li key={b.label} className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ background: b.color }} />{b.label} <b className="text-ink num">{b.value}</b></li>)}
+      </ul>
+    </section>
+  );
+}
+
+const STATUS = { 'Erledigt': 'bg-good-soft text-good', 'Offen': 'bg-bad-soft text-bad', 'In Arbeit': 'bg-warn-soft text-warn' };
+function ActivityCard() {
+  return (
+    <section className="cardx min-w-0 h-full overflow-hidden">
+      <header className="flex items-center justify-between gap-3 p-5 sm:p-6 pb-4">
+        <h2 className="text-lg font-bold tracking-tight">Letzte Aktivitäten</h2>
+        <Select label="Sortierung">Neueste</Select>
+      </header>
+      <div className="relative overflow-x-auto scroll-thin">
+        <table className="w-full text-left min-w-[30rem]">
+          <thead>
+            <tr className="bg-raised/70 text-sm text-muted">
+              <th className="font-medium px-5 sm:px-6 py-3">Aktivität</th>
+              <th className="font-medium px-3 py-3 hidden md:table-cell">Details</th>
+              <th className="font-medium px-3 py-3">Status</th>
+              <th className="font-medium px-3 py-3 hidden sm:table-cell text-right">Zeit</th>
+              <th className="w-12 pr-4"><span className="sr-only">Aktionen</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {AKTIVITAETEN.map(a => (
+              <tr key={a.id} className="border-t border-line/60 hover:bg-raised/40 transition-colors">
+                <td className="px-5 sm:px-6 py-3.5 text-[15px] font-medium">{a.was}<span className="md:hidden block text-xs text-muted font-normal mt-0.5">{a.detail}</span></td>
+                <td className="px-3 py-3.5 text-sm text-muted hidden md:table-cell num">{a.detail}</td>
+                <td className="px-3 py-3.5"><span className={`inline-flex whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-bold ${STATUS[a.status]}`}>{a.status}</span></td>
+                <td className="px-3 py-3.5 text-sm text-faint text-right whitespace-nowrap hidden sm:table-cell">{a.vor}</td>
+                <td className="pr-4 text-right"><button className="p-1.5 rounded-lg text-muted hover:text-ink" aria-label={`Aktionen für ${a.was}`}><Icon name="dotsh" className="w-5 h-5" /></button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  const [active, setActive] = useState('dashboard');
+  return (
+    <div className="min-h-screen">
+      <Sidebar active={active} onSelect={setActive} />
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        <TopBar />
+        <main className="flex-1 w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-36 lg:pb-14 flex flex-col gap-5 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
+            <KpiCard label="Gesamteinnahmen" value="CHF 496'000" trend="12 %" />
+            <KpiCard label="Aktive Mietobjekte" value="142" suffix="/ 150 belegt" />
+            <KpiCard label="Offene Reparaturen" value="3" suffix="1 dringend" alert dot />
+            <KpiCard label="Leerstandsquote" value="5.3 %" />
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 lg:gap-6">
+            <div className="xl:col-span-7 min-w-0"><FinanceCard /></div>
+            <div className="xl:col-span-5 min-w-0"><AppointmentsCard /></div>
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 lg:gap-6">
+            <div className="xl:col-span-4 min-w-0"><GaugeCard /></div>
+            <div className="xl:col-span-8 min-w-0"><ActivityCard /></div>
+          </div>
+        </main>
+      </div>
+      <button className="fixed right-4 sm:right-6 bottom-6 max-lg:bottom-[calc(max(12px,env(safe-area-inset-bottom))+4.75rem)] z-40 inline-flex items-center gap-2.5 h-12 px-5 rounded-full btn-coral text-[15px] font-bold shadow-[0_14px_30px_-10px_rgba(244,124,98,.7)] hover:brightness-110 transition" aria-label="Feedback geben">
+        <Icon name="chat" className="w-5 h-5" />Feedback
+      </button>
+      <BottomNav active={active} onSelect={setActive} />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
