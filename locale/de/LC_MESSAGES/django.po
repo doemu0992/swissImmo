@@ -25357,3 +25357,246 @@ msgstr "Erneut per E-Mail senden"
 
 msgid "Per E-Mail an Mieter senden"
 msgstr "Per E-Mail an Mieter senden"
+
+msgid "Zahlungsstatus"
+msgstr "Zahlungsstatus"
+
+msgid "Ticket-Board"
+msgstr "Ticket-Board"
+
+msgid "Board"
+msgstr "Board"
+
+msgid "Ansicht"
+msgstr "Ansicht"
+
+msgid "Liste"
+msgstr "Liste"
+
+msgid "Mieter kontaktieren"
+msgstr "Mieter kontaktieren"
+
+msgid "Neues Ticket"
+msgstr "Neues Ticket"
+
+msgid "Ticket oder Objekt suchen…"
+msgstr "Ticket oder Objekt suchen…"
+
+msgid "Tickets durchsuchen"
+msgstr "Tickets durchsuchen"
+
+msgid "Dringend"
+msgstr "Dringend"
+
+msgid "Erledigen bis"
+msgstr "Erledigen bis"
+
+msgid "Zustand von Ticket"
+msgstr "Zustand von Ticket"
+
+msgid "Nichts in dieser Spalte."
+msgstr "Nichts in dieser Spalte."
+
+msgid "Verbindung unterbrochen — Zustand nicht geändert."
+msgstr "Verbindung unterbrochen — Zustand nicht geändert."
+
+#, python-format
+msgid "%(n)s Tickets nach Zustand. Karten ziehen oder den Zustand an der Karte wählen. Erledigtes bleibt %(erledigt_tage)s Tage sichtbar."
+msgstr "%(n)s Tickets nach Zustand. Karten ziehen oder den Zustand an der Karte wählen. Erledigtes bleibt %(erledigt_tage)s Tage sichtbar."
+
+msgid "Termin planen"
+msgstr "Termin planen"
+
+msgid "Vorheriger Monat"
+msgstr "Vorheriger Monat"
+
+msgid "Nächster Monat"
+msgstr "Nächster Monat"
+
+msgid "Eintragsarten"
+msgstr "Eintragsarten"
+
+msgid "Keine Einträge in diesem Monat."
+msgstr "Keine Einträge in diesem Monat."
+
+msgid "Für diesen Tag steht nichts an."
+msgstr "Für diesen Tag steht nichts an."
+
+#, python-format
+msgid "%(n)s Einträge im Monat — Termine, Fristen, Ticket-Zielzeiten und Auszüge an einem Ort."
+msgstr "%(n)s Einträge im Monat — Termine, Fristen, Ticket-Zielzeiten und Auszüge an einem Ort."
+
+#, python-format
+msgid "+%(n)s weitere"
+msgstr "+%(n)s weitere"
+
+msgid "Alle Mandate"
+msgstr "Alle Mandate"
+
+msgid "Soll-Mietertrag p. a."
+msgstr "Soll-Mietertrag p. a."
+
+msgid "kein Verkehrswert erfasst"
+msgstr "kein Verkehrswert erfasst"
+
+msgid "Zahlungsquote"
+msgstr "Zahlungsquote"
+
+msgid "Cashflow"
+msgstr "Cashflow"
+
+msgid "Mt."
+msgstr "Mt."
+
+msgid "Netto-Cashflow"
+msgstr "Netto-Cashflow"
+
+msgid "Ertrag und Aufwand je Monat"
+msgstr "Ertrag und Aufwand je Monat"
+
+msgid "ohne Storni und Umbuchungen"
+msgstr "ohne Storni und Umbuchungen"
+
+msgid "Nutzung"
+msgstr "Nutzung"
+
+msgid "Portfolio-Verteilung"
+msgstr "Portfolio-Verteilung"
+
+msgid "Anzahl Objekte je Nutzungsart"
+msgstr "Anzahl Objekte je Nutzungsart"
+
+msgid "Anteil am Soll-Mietertrag je Liegenschaft"
+msgstr "Anteil am Soll-Mietertrag je Liegenschaft"
+
+msgid "Performance je Liegenschaft"
+msgstr "Performance je Liegenschaft"
+
+msgid "Soll p. a."
+msgstr "Soll p. a."
+
+msgid "Aufwand 12 Mt."
+msgstr "Aufwand 12 Mt."
+
+msgid "voll vermietet"
+msgstr "voll vermietet"
+
+msgid "Rendite = Netto-Soll-Mietzins ÷ Verkehrswert (ersatzweise Anlagekosten); netto nach Betriebsaufwand der letzten 12 Monate."
+msgstr "Rendite = Netto-Soll-Mietzins ÷ Verkehrswert (ersatzweise Anlagekosten); netto nach Betriebsaufwand der letzten 12 Monate."
+
+msgid "Keine Liegenschaft im Portfolio"
+msgstr "Keine Liegenschaft im Portfolio"
+
+msgid "Sobald Liegenschaften erfasst sind, erscheinen hier Rendite, Leerstand und Cashflow."
+msgstr "Sobald Liegenschaften erfasst sind, erscheinen hier Rendite, Leerstand und Cashflow."
+
+msgid "Noch keine Buchungen im Zeitraum."
+msgstr "Noch keine Buchungen im Zeitraum."
+
+msgid "Der Cashflow erscheint, sobald Erträge und Aufwände auf Liegenschaften gebucht sind."
+msgstr "Der Cashflow erscheint, sobald Erträge und Aufwände auf Liegenschaften gebucht sind."
+
+msgid "Keine Daten für die Verteilung."
+msgstr "Keine Daten für die Verteilung."
+
+#, python-format
+msgid "Rendite, Leerstand, Zahlungsmoral und Cashflow des Bestands · Stand %(datum)s"
+msgstr "Rendite, Leerstand, Zahlungsmoral und Cashflow des Bestands · Stand %(datum)s"
+
+#, python-format
+msgid "Betriebsaufwand 12 Mt. CHF %(aufwand)s"
+msgstr "Betriebsaufwand 12 Mt. CHF %(aufwand)s"
+
+#, python-format
+msgid "brutto %(b)s %% · auf Verkehrswert"
+msgstr "brutto %(b)s %% · auf Verkehrswert"
+
+#, python-format
+msgid "%(n)s von %(m)s Objekten leer"
+msgstr "%(n)s von %(m)s Objekten leer"
+
+#, python-format
+msgid "offen CHF %(s)s · %(n)s überfällig"
+msgstr "offen CHF %(s)s · %(n)s überfällig"
+
+#, python-format
+msgid "letzte %(n)s Monate"
+msgstr "letzte %(n)s Monate"
+
+#, python-format
+msgid "%(n)s leer · %(q)s %%"
+msgstr "%(n)s leer · %(q)s %%"
+
+#, python-format
+msgid "Von «%(von)s» ist kein Wechsel in diese Spalte vorgesehen."
+msgstr "Von «%(von)s» ist kein Wechsel in diese Spalte vorgesehen."
+
+#, python-format
+msgid "Ticket #%(nr)s: %(status)s."
+msgstr "Ticket #%(nr)s: %(status)s."
+
+msgid "Ticket-Zielzeiten"
+msgstr "Ticket-Zielzeiten"
+
+msgid "Auszüge"
+msgstr "Auszüge"
+
+msgid "erledigen bis"
+msgstr "erledigen bis"
+
+msgid "Soll-Mietertrag p.a. (CHF)"
+msgstr "Soll-Mietertrag p.a. (CHF)"
+
+msgid "Betriebsaufwand 12 Mt. (CHF)"
+msgstr "Betriebsaufwand 12 Mt. (CHF)"
+
+msgid "Wert (CHF)"
+msgstr "Wert (CHF)"
+
+msgid "Wertbasis"
+msgstr "Wertbasis"
+
+msgid "Bruttorendite (%)"
+msgstr "Bruttorendite (%)"
+
+msgid "Nettorendite (%)"
+msgstr "Nettorendite (%)"
+
+msgid "Eingang verbucht"
+msgstr "Eingang verbucht"
+
+msgid "Offen, nicht fällig"
+msgstr "Offen, nicht fällig"
+
+msgid "Fälligkeit liegt vor uns"
+msgstr "Fälligkeit liegt vor uns"
+
+msgid "Zahlungsrückstand — Mahnwesen"
+msgstr "Zahlungsrückstand — Mahnwesen"
+
+msgid "grün"
+msgstr "grün"
+
+msgid "gelb"
+msgstr "gelb"
+
+msgid "rot"
+msgstr "rot"
+
+msgid "Betrag (CHF)"
+msgstr "Betrag (CHF)"
+
+msgid "Offen (CHF)"
+msgstr "Offen (CHF)"
+
+msgid "Ampel"
+msgstr "Ampel"
+
+msgid "Tage überfällig"
+msgstr "Tage überfällig"
+
+#, python-format
+msgid "Für %(n)s Liegenschaft ist weder Verkehrswert noch Anlagekosten erfasst — sie fehlt in der Rendite."
+msgid_plural "Für %(n)s Liegenschaften sind weder Verkehrswert noch Anlagekosten erfasst — sie fehlen in der Rendite."
+msgstr[0] "Für %(n)s Liegenschaft ist weder Verkehrswert noch Anlagekosten erfasst — sie fehlt in der Rendite."
+msgstr[1] "Für %(n)s Liegenschaften sind weder Verkehrswert noch Anlagekosten erfasst — sie fehlen in der Rendite."

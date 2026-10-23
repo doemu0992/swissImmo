@@ -139,3 +139,29 @@ Mailtext und PDF sind deutsch (das Dokument ist fest deutsch).
 
 Weiterhin offen: Kreditoren-Zuordnung zur Kostenart für die Schlüssel, Briefversand mit Nachweis
 (Sammel-PDF + manuelle Zustellung bleibt), STWEG-Planung (3.4).
+
+
+## Nachtrag 23.10.2026 — Funktionen für die drei Nutzergruppen
+
+Analyse: Die Anwendung ist eine serverseitig gerenderte Django-Oberfläche (rund 300 Routen unter
+`/neu/`), kein React-Projekt. shadcn/ui, recharts und lucide-react gibt es dort nicht; die Entsprechungen sind
+die `fw-`-Bausteine (`docs/DESIGN-V8.md`), die Zeichen aus `docs/ZEICHEN.md` und die serverseitigen SVG-Diagramme
+(`core/templatetags/diagramm.py`). Das Navy-Design (V9) gilt global über die Tokens. Der React-Weg ist als Zielbild
+in `mockups/immoswiss-next/` hinterlegt (Next.js, Tailwind, shadcn/ui, lucide-react, recharts, Dummy-Daten).
+
+Was fehlte, und was jetzt steht (alles auf der bestehenden Geschäftslogik, keine neuen Modelle):
+
+| Gruppe | Lücke | Umsetzung |
+|---|---|---|
+| Bewirtschafter | Tickets nur als Liste | **Ticket-Board** `/neu/schaeden/board/`: vier Spalten, Ziehen oder Auswahlfeld, nur erlaubte Übergänge (`tickets.workflow`), Sperre «nicht erledigt ohne Handwerkerrechnung» gilt beim Ziehen; Filter Meine / Dringend / SLA überfällig; Schnellaktionen «Neues Ticket», «Mieter kontaktieren» |
+| Bewirtschafter | Termine nur als Liste, Quellen auf vier Seiten verteilt | **Monatskalender** `/neu/termine/kalender/`: Termine, Fristen, Ticket-Zielzeiten, Auszüge; Monatswechsel, Eintragsarten ein-/ausblenden, Tagesliste; am Telefon Agenda |
+| Buchhalter | Kein Ampelsystem, kein Export der Debitoren | **Ampel** (grün bezahlt · gelb offen, nicht fällig · rot überfällig) als Karten und Filter; **CSV-Export** (alle Zeilen, mit Ampel und Tagen überfällig, folgt den Filtern, Formelschutz) |
+| Eigentümer | Keine Portfolio-Sicht | **Portfolio** `/neu/portfolio/`: Soll-Mietertrag, Brutto-/Nettorendite (nur mit Verkehrswert oder Anlagekosten — sonst «–» und Hinweis), Leerstand, Zahlungsquote, Cashflow 6/12/24 Monate, Donut nach Ertrag oder Nutzung, Performance je Liegenschaft, CSV |
+
+Wächter: `core/tests/test_rollen_funktionen.py` (36 Tests, Gegenprobe an Ampelfilter und Workflow), E2E
+`e2e/tests/rollen.spec.ts`; RBAC-Sweep kennt Board und «verschieben» als Hauswart-Rechte (wie Liste und Statuswechsel).
+
+Nicht gebaut (bewusst, mit Grund): Kanban für Aufgaben ohne Ticket (die Pendenzen haben keinen Zustandsfluss);
+Rechnungs-Workflow als eigene Seite (Kreditoren führen ihn schon: erfasst → freigegeben → bezahlt); Zeitreihe der
+Portfolio-Rendite (es gibt keine Verkehrswert-Historie — eine Linie wäre erfunden).
+Die Übersetzungen FR/IT/EN der neuen Texte sind KI-erzeugt und brauchen eine Fachprüfung.

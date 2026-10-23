@@ -90,6 +90,25 @@ def fw_debitoren(request):
                        | Q(vertrag__mieter__nachname__icontains=q)
                        | Q(vertrag__mieter__firmen_name__icontains=q))
 
+    # --- Ampel: Zahlungsstatus auf einen Blick -----------------------------
+    # Grün = bezahlt · Gelb = offen, Fälligkeit liegt noch vor uns ·
+    # Rot = offen und überfällig (Zahlungsrückstand). Die Zählung steht VOR dem
+    # Ampelfilter, sonst zeigte jede Ampel nur noch die eigene Zahl. Die
+    # Fälligkeit ist `faellig_am`, ersatzweise `datum` — als Q statt als
+    # Annotation, damit die späteren Aggregate unverändert bleiben.
+    ampel_filter = request.GET.get('ampel', '')
+    ueberfaellig_q = (Q(faellig_am__lt=heute)
+                      | Q(faellig_am__isnull=True, datum__lt=heute))
+    ampel_basis = qs
+    if ampel_filter == 'gruen':
+        qs = qs.filter(status='bezahlt')
+    elif ampel_filter == 'gelb':
+        qs = qs.filter(status__in=('offen', 'teilbezahlt')).exclude(ueberfaellig_q)
+    elif ampel_filter == 'rot':
+        qs = qs.filter(status__in=('offen', 'teilbezahlt')).filter(ueberfaellig_q)
+    else:
+        ampel_filter = ''
+
     # --- KPI-Summen als DB-Aggregate ---------------------------------------
     # Vorher lief hier eine Python-Schleife über ALLE Rechnungen (inkl. der
     # vorgeladenen Zahlungen), nur um vier Summen zu bilden und danach auf 50
@@ -126,6 +145,24 @@ def fw_debitoren(request):
     # exakt «offen und fällig vor heute» — reines SQL, ohne Eigentümer-Lookup.
     anzahl_ueberfaellig = (offene_qs.annotate(_f=_faellig_expr)
                            .filter(_f__lt=heute).count())
+
+    def _ampel_zahl(teil):
+        a = teil.annotate(_o=_offen_expr).aggregate(n=Count('id'), s=Sum('_o'))
+        return {'n': a['n'] or 0, 'summe': a['s'] or Decimal('0.00')}
+    _offen_basis = ampel_basis.filter(status__in=_OFFEN_STATUS)
+    ampeln = [
+        ('gruen', _('Bezahlt'), _ampel_zahl(ampel_basis.filter(status='bezahlt')),
+         _('Eingang verbucht')),
+        ('gelb', _('Offen, nicht fällig'), _ampel_zahl(_offen_basis.exclude(ueberfaellig_q)),
+         _('Fälligkeit liegt vor uns')),
+        ('rot', _('Überfällig'), _ampel_zahl(_offen_basis.filter(ueberfaellig_q)),
+         _('Zahlungsrückstand — Mahnwesen')),
+    ]
+
+    # CSV: dieselbe Auswahl wie die Liste, aber ALLE Zeilen (nicht nur Seite 1).
+    if request.GET.get('export') == 'csv':
+        return _debitoren_csv(
+            qs.annotate(_o=_offen_expr).order_by('faellig_am', 'datum', 'id'), heute)
 
     # --- Sortierung + Pagination in SQL ------------------------------------
     # Reihenfolge wie bisher: offene Posten zuerst (älteste Fälligkeit oben),
@@ -216,6 +253,8 @@ def fw_debitoren(request):
         'status_filter': status_filter,
         'q': q,
         'status_chips': [('', _('Alle'))] + [(k, v[0]) for k, v in STATUS_PILL.items()],
+        'ampeln': ampeln, 'ampel_filter': ampel_filter,
+        'csv_url': query_mit(request, export='csv'),
         'total_offen': total_offen,
         'total_betrag': total_betrag,
         'anzahl_offen': anzahl_offen,
@@ -228,6 +267,43 @@ def fw_debitoren(request):
         'page': page, 'rows_gesamt': rows_gesamt,
     }
     return render(request, 'fw/debitoren.html', context)
+
+
+def _debitoren_csv(rechnungen, heute):
+    """Debitorenliste für die Tabellenkalkulation: eine Zeile je Rechnung.
+
+    «Ampel» und «Tage überfällig» stehen als Text und Zahl drin, damit die
+    Buchhaltung nach Rückständen filtern kann, ohne die Fälligkeit selbst zu
+    rechnen.
+    """
+    ampel_text = {'bezahlt': _('grün'), 'gelb': _('gelb'), 'rot': _('rot')}
+
+    def zeilen():
+        for r in rechnungen:
+            lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft
+                                    if r.vertrag_id and r.vertrag.einheit_id else None)
+            einheit = r.einheit or (r.vertrag.einheit if r.vertrag_id else None)
+            faellig = r.faellig_am or r.datum
+            offen_status = r.status in ('offen', 'teilbezahlt')
+            tage = (heute - faellig).days if offen_status and faellig and faellig < heute else 0
+            if r.status == 'bezahlt':
+                ampel = ampel_text['bezahlt']
+            elif offen_status:
+                ampel = ampel_text['rot'] if tage > 0 else ampel_text['gelb']
+            else:
+                ampel = ''
+            yield [faellig.strftime('%d.%m.%Y') if faellig else '',
+                   r.vertrag.mieter.display_name if r.vertrag_id else '',
+                   f"{lg.strasse}, {lg.ort}" if lg else '',
+                   einheit.bezeichnung if einheit else '',
+                   r.titel, r.betrag, r._o if offen_status else Decimal('0.00'),
+                   STATUS_PILL.get(r.status, (r.status,))[0], ampel, tage]
+
+    return csv_antwort(
+        f'Debitoren_{heute:%Y-%m-%d}.csv',
+        [_('Fällig'), _('Mieter'), _('Liegenschaft'), _('Objekt'), _('Titel'),
+         _('Betrag (CHF)'), _('Offen (CHF)'), _('Status'), _('Ampel'), _('Tage überfällig')],
+        zeilen())
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

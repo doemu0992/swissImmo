@@ -1,0 +1,103 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Kalender" %} {{ monat_name }} — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %} MONATSKALENDER: Termine, Fristen, Ticket-Zielzeiten, Auszüge (core/views/fw/kalender.py).
+   Raster ab 720 px, darunter eine Tagesliste. Klick auf ein Ereignis führt an die Quelle. {% endcomment %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/{{ lg_query }}">{% trans "Heute" %}</a><span aria-hidden="true">/</span><a href="/neu/termine/">{% trans "Termine" %}</a><span aria-hidden="true">/</span><span>{% trans "Kalender" %}</span></nav>
+        <h1>{{ monat_name }}</h1>
+        <p>{% blocktrans trimmed with n=gesamt %}{{ n }} Einträge im Monat — Termine, Fristen, Ticket-Zielzeiten und Auszüge an einem Ort.{% endblocktrans %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <div class="fw-segment" role="group" aria-label="{% trans 'Ansicht' %}">
+            <a href="/neu/termine/" class="fw-seg-link">{% zeichen 'dokument' %} {% trans "Liste" %}</a>
+            <a href="/neu/termine/kalender/" class="fw-seg-link an" aria-current="page">{% zeichen 'termin' %} {% trans "Monat" %}</a>
+        </div>
+        <a href="/neu/termine/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Termin planen" %}</a>
+    </div>
+</div>
+
+<div class="fw-kal-leiste">
+    <div class="fw-kal-nav">
+        <a href="?monat={{ vorher }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-knopf-rund" aria-label="{% trans 'Vorheriger Monat' %}">{% zeichen 'zurueck' %}</a>
+        <a href="?monat={{ dieser }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-btn fw-knapp">{% trans "Heute" %}</a>
+        <a href="?monat={{ nachher }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-knopf-rund" aria-label="{% trans 'Nächster Monat' %}">{% zeichen 'weiter' %}</a>
+    </div>
+    <div class="fw-filters fw-nomb" role="group" aria-label="{% trans 'Eintragsarten' %}">
+        {% for a, b, n, an in arten %}
+        <button type="button" class="fw-fchip fw-kal-art{% if an %} fw-on{% endif %}" data-art="{{ a }}" aria-pressed="{% if an %}true{% else %}false{% endif %}"><span class="fw-kal-punkt {{ a }}" aria-hidden="true"></span>{{ b }} <b>{{ n }}</b></button>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="fw-kal-zwei">
+<div class="fw-card fw-kal-karte">
+    <div class="fw-kal-raster" role="grid" aria-label="{{ monat_name }}">
+        {% for w in wochentage %}<div class="fw-kal-kopf" role="columnheader">{{ w }}</div>{% endfor %}
+        {% for woche in wochen %}{% for t in woche %}
+        <div class="fw-kal-tag{% if not t.im_monat %} aus{% endif %}{% if t.heute %} heute{% endif %}{% if t.gewaehlt %} gewaehlt{% endif %}{% if t.wochenende %} we{% endif %}" role="gridcell">
+            <a class="fw-kal-nr" href="?monat={{ monat }}&amp;tag={{ t.datum|date:'Y-m-d' }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" aria-label="{{ t.datum|date:'l, d. F' }}{% if t.anzahl %} — {{ t.anzahl }}{% endif %}">{{ t.datum.day }}</a>
+            {% for e in t.ereignisse %}
+            <a href="{{ e.url }}" class="fw-kal-chip {{ e.ton }}{% if e.gedaempft %} gedaempft{% endif %}" data-art="{{ e.typ }}" title="{{ e.titel }}{% if e.sub %} — {{ e.sub }}{% endif %}">{% if e.zeit %}<i>{{ e.zeit }}</i> {% endif %}{{ e.titel }}</a>
+            {% endfor %}
+            {% if t.mehr %}<a class="fw-kal-mehr" href="?monat={{ monat }}&amp;tag={{ t.datum|date:'Y-m-d' }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}">{% blocktrans with n=t.mehr %}+{{ n }} weitere{% endblocktrans %}</a>{% endif %}
+        </div>
+        {% endfor %}{% endfor %}
+    </div>
+
+    {# Telefon: Tagesliste statt Raster #}
+    <div class="fw-kal-liste">
+        {% for tg in tage_liste %}
+        <div class="fw-kal-liste-tag{% if tg.heute %} heute{% endif %}">
+            <div class="fw-kal-liste-datum"><b>{{ tg.datum.day }}</b><span>{{ tg.datum|date:"D" }}</span></div>
+            <div class="fw-kal-liste-eintraege">
+                {% for e in tg.ereignisse %}
+                <a href="{{ e.url }}" class="fw-kal-chip {{ e.ton }}{% if e.gedaempft %} gedaempft{% endif %}" data-art="{{ e.typ }}">{% if e.zeit %}<i>{{ e.zeit }}</i> {% endif %}{{ e.titel }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="fw-leer">{% trans "Keine Einträge in diesem Monat." %}</div>
+        {% endfor %}
+    </div>
+</div>
+
+<aside class="fw-card fw-kal-tag-karte" aria-labelledby="kal-tag-titel">
+    <div class="fw-kopf"><h2 class="fw-t" id="kal-tag-titel">{{ tag|date:"l, d. F Y" }}</h2>
+        <span class="fw-neben">{{ tag_ereignisse|length }}</span></div>
+    {% for e in tag_ereignisse %}
+    <a href="{{ e.url }}" class="fw-zeile klick fw-kal-eintrag" data-art="{{ e.typ }}">
+        <span class="fw-kal-punkt {{ e.typ }}" aria-hidden="true"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{% if e.zeit %}<span class="fw-mono">{{ e.zeit }}</span> {% endif %}{{ e.titel }}</div>
+            <div class="fw-s">{{ e.sub }}{% if e.status %} · {{ e.status }}{% endif %}</div>
+        </div>
+        {% zeichen 'weiter' klasse='fw-klein' %}
+    </a>
+    {% empty %}
+    <div class="fw-leer">{% trans "Für diesen Tag steht nichts an." %}</div>
+    {% endfor %}
+</aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Eintragsarten ein-/ausblenden (nur im Browser — die Auswahl ist ein Blick, keine Einstellung).
+(function () {
+    document.querySelectorAll('.fw-kal-art').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var an = b.getAttribute('aria-pressed') !== 'true';
+            b.setAttribute('aria-pressed', an ? 'true' : 'false'); b.classList.toggle('fw-on', an);
+            document.querySelectorAll('[data-art="' + b.dataset.art + '"]').forEach(function (el) {
+                if (el === b) return; el.classList.toggle('hidden', !an);
+            });
+        });
+        // Anfangszustand: ausgeschaltete Arten sind schon serverseitig herausgefiltert.
+    });
+})();
+</script>
+{% endblock %}

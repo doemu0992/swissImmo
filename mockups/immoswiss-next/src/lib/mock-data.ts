@@ -1,6 +1,6 @@
 /* DUMMY-DATEN (CHF) — später durch Server-Daten (Server Components / API) ersetzen.
    Die Formen (Typen) sind so gewählt, dass die Komponenten unverändert bleiben. */
-import { Building2, Coins, FileText, Home, KeyRound, LayoutDashboard, Settings, Users, Wallet, Wrench, type LucideIcon } from "lucide-react";
+import { Building2, CalendarDays, Coins, FileText, Home, KeyRound, LayoutDashboard, LineChart, Settings, Ticket, Users, Wallet, Wrench, type LucideIcon } from "lucide-react";
 
 export type NavItem = { href: string; label: string; short: string; icon: LucideIcon; badge?: number };
 
@@ -8,7 +8,10 @@ export const NAV: NavItem[] = [
   { href: "/", label: "Dashboard", short: "Start", icon: LayoutDashboard },
   { href: "/immobilien", label: "Immobilien", short: "Objekte", icon: Building2 },
   { href: "/mieter", label: "Mieter", short: "Mieter", icon: Users },
+  { href: "/tickets", label: "Tickets", short: "Tickets", icon: Ticket, badge: 4 },
+  { href: "/kalender", label: "Kalender", short: "Kalender", icon: CalendarDays },
   { href: "/finanzen", label: "Finanzen", short: "Finanzen", icon: Wallet, badge: 3 },
+  { href: "/portfolio", label: "Portfolio", short: "Portfolio", icon: LineChart },
   { href: "/dokumente", label: "Dokumente", short: "Dateien", icon: FileText },
   { href: "/einstellungen", label: "Einstellungen", short: "Mehr", icon: Settings },
 ];

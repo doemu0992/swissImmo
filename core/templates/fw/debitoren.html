@@ -12,6 +12,7 @@
         <p>{% trans "Offene Posten aus Sollstellung und Weiterverrechnung (Sonnerie, Schlüssel, Ersatz …)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}, {{ aktive_lg.ort }} <a href="/neu/debitoren/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
+    <a href="{{ csv_url }}" class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV-Export" %}</a>
     <button type="button" onclick="document.getElementById('adhoc').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Rechnung erstellen" %}</button>
     </div>
 </div>
@@ -121,18 +122,34 @@
     </div>
 </div>
 
+{% comment %} AMPEL: Zahlungsstatus auf einen Blick. Jede Ampel ist zugleich Filter
+   (`?ampel=`). Punkt UND Text — Farbe steht nie allein. Die Zahlen gelten für
+   Liegenschafts- und Suchfilter, nicht für den Ampelfilter selbst. {% endcomment %}
+<div class="fw-ampeln" role="group" aria-label="{% trans 'Zahlungsstatus' %}">
+    {% for schluessel, label, z, hinweis in ampeln %}
+    <a href="{% if ampel_filter == schluessel %}?{% if status_filter %}status={{ status_filter }}&amp;{% endif %}{% if q %}q={{ q|urlencode }}&amp;{% endif %}{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}{% else %}?ampel={{ schluessel }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{% endif %}"
+       class="fw-ampel {{ schluessel }}{% if ampel_filter == schluessel %} fw-on{% endif %}"
+       aria-pressed="{% if ampel_filter == schluessel %}true{% else %}false{% endif %}">
+        <span class="fw-ampel-licht" aria-hidden="true"></span>
+        <span class="fw-ampel-text"><b>{{ label }}</b><span>{{ hinweis }}</span></span>
+        <span class="fw-ampel-zahl"><b class="fw-num">{{ z.n }}</b>{% if schluessel != 'gruen' %}<span class="fw-num">CHF {{ z.summe|chf }}</span>{% endif %}</span>
+    </a>
+    {% endfor %}
+</div>
+
 <!-- Tabelle mit Filterzeile -->
 <div class="fw-card">
 
     <div class="fw-kopf">
         <div class="fw-filters fw-nomb">
             {% for wert, label in status_chips %}
-            <a href="?status={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+            <a href="?status={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if ampel_filter %}&ampel={{ ampel_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="fw-fchip{% if status_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
         <form method="get" class="fw-rechts">
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            {% if ampel_filter %}<input type="hidden" name="ampel" value="{{ ampel_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Mieter oder Titel suchen…' %}" aria-label="{% trans 'Debitoren nach Mieter oder Titel durchsuchen' %}"
                    class="fw-feld w-64">

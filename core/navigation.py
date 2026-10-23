@@ -180,6 +180,7 @@ def nav_gruppen():
         # ── BERICHTE ─────────────────────────────────────────────────────────
         _g('berichte', _('Berichte'), 'bericht', '/neu/berichte/', [
             _i(_('Übersicht'), '/neu/berichte/', ['berichte']),
+            _i(_('Portfolio'), '/neu/portfolio/', ['portfolio']),
             _i(_('Auswertung'), '/neu/auswertung/', ['auswertung']),
         ]),
     ]

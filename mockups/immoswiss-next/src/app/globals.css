@@ -37,6 +37,7 @@
     --chart-2: 213 35% 65%;
     --chart-3: 33 70% 45%;
     --chart-4: 353 67% 45%;
+    --chart-5: 148 50% 32%;
   }
 
   /* Dunkel — Standard dieses Mockups (<html class="dark">) */
@@ -72,6 +73,7 @@
     --chart-2: 213 33% 45%;
     --chart-3: 40 74% 63%;
     --chart-4: 355 87% 75%;
+    --chart-5: 148 55% 60%;
   }
 
   * { @apply border-border; }

@@ -2165,5 +2165,137 @@ und einen Stilblock enthaelt.
             .fw-lage{gap:12px}.fw-kpis{gap:12px}
         }
         @media (prefers-reduced-motion:reduce){.fw-lage-kachel,.fw-card{transition:none}.fw-lage-kachel:hover{transform:none}}
+        /* AMPEL (Debitoren): drei Karten, zugleich Filter. Punkt + Text, nie nur Farbe. */
+        .fw-ampeln{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}
+        .fw-ampel{display:flex;align-items:center;gap:14px;padding:16px 18px;min-width:0;text-decoration:none;color:inherit;
+            background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-sm);
+            transition:box-shadow .15s var(--ds-ease),border-color .12s,transform .15s var(--ds-ease)}
+        .fw-ampel:hover{border-color:var(--ds-line-stark);box-shadow:var(--ds-shadow);transform:translateY(-1px)}
+        .fw-ampel.fw-on{border-color:var(--ds-ink);box-shadow:var(--ds-shadow)}
+        .fw-ampel-licht{width:14px;height:14px;flex:0 0 14px;border-radius:var(--ds-pill);background:var(--ds-good);
+            box-shadow:0 0 0 4px var(--ds-good-soft)}
+        .fw-ampel.gelb .fw-ampel-licht{background:var(--ds-warn);box-shadow:0 0 0 4px var(--ds-warn-soft)}
+        .fw-ampel.rot .fw-ampel-licht{background:var(--ds-crit);box-shadow:0 0 0 4px var(--ds-crit-soft)}
+        .fw-ampel-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+        .fw-ampel-text b{font-size:14px;font-weight:600}
+        .fw-ampel-text span{font-size:12px;color:var(--ds-faint)}
+        .fw-ampel-zahl{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}
+        .fw-ampel-zahl b{font-size:22px;font-weight:600;line-height:1}
+        .fw-ampel-zahl span{font-size:12px;color:var(--ds-muted)}
+        @media (max-width:900px){.fw-ampeln{grid-template-columns:1fr;gap:10px}}
+        /* nur für Hilfstechnik sichtbar (Beschriftung ohne sichtbaren Text) */
+        .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+        /* LINKS ALS SEGMENT (Liste | Board, Liste | Monat) */
+        .fw-segment .fw-seg-link{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--ds-radius-xs);
+            font-size:13px;font-weight:600;color:var(--ds-muted);text-decoration:none;transition:background .12s,color .12s}
+        .fw-segment .fw-seg-link:hover{color:var(--ds-ink)}
+        .fw-segment .fw-seg-link.an{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
+        .fw-segment .fw-seg-link .fw-zeichen{width:15px!important;height:15px!important}
+        /* TICKET-BOARD (Kanban) */
+        .fw-board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:start;margin-bottom:24px}
+        .fw-spalte{display:flex;flex-direction:column;gap:12px;min-width:0;padding:12px;border-radius:var(--ds-radius-lg);
+            background:var(--ds-surface-2);border:1px solid var(--ds-line);transition:border-color .12s,background .12s}
+        .fw-spalte.ziel{border-color:var(--ds-brand);background:var(--ds-brand-soft)}
+        .fw-spalte-kopf{display:flex;align-items:center;gap:8px;padding:2px 4px}
+        .fw-spalte-kopf h2{font-size:13px;font-weight:600;letter-spacing:.01em;margin:0}
+        .fw-spalte-kopf .fw-z{font-size:11px;font-weight:600;padding:0 7px;line-height:18px;border-radius:var(--ds-pill);
+            background:var(--ds-surface);border:1px solid var(--ds-line);color:var(--ds-muted)}
+        .fw-spalte-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;min-height:8px}
+        .fw-spalte-leer{font-size:12.5px;color:var(--ds-faint);text-align:center;padding:14px 8px}
+        .fw-karte{display:flex;flex-direction:column;gap:8px;padding:14px;background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-sm);transition:box-shadow .15s var(--ds-ease),border-color .12s;
+            border-left:3px solid var(--ds-line-stark)}
+        .fw-karte[draggable="true"]{cursor:grab}
+        .fw-karte:hover{box-shadow:var(--ds-shadow);border-color:var(--ds-line-stark)}
+        .fw-karte.zieht{opacity:.45}
+        .fw-karte.crit{border-left-color:var(--ds-crit)}.fw-karte.warn{border-left-color:var(--ds-warn)}
+        .fw-karte-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--ds-faint)}
+        .fw-karte-titel{font-size:14px;font-weight:600;line-height:1.35;color:var(--ds-ink);text-decoration:none}
+        .fw-karte-titel:hover{color:var(--ds-brand)}
+        .fw-karte-sub{font-size:12.5px;color:var(--ds-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .fw-karte-befunde{display:flex;flex-wrap:wrap;gap:6px}
+        .fw-karte-fuss{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:2px;min-width:0}
+        .fw-karte-alter{font-size:12px;color:var(--ds-faint);white-space:nowrap}
+        .fw-karte-form{margin-left:auto;min-width:0;max-width:100%}
+        .fw-karte-wahl{max-width:9.5rem;height:30px;padding:0 24px 0 8px;font:inherit;font-size:12px;font-weight:600;color:var(--ds-muted);
+            background-color:var(--ds-surface-2);border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);cursor:pointer}
+        .fw-board-suche{flex:1 1 16rem;max-width:22rem}
+        @media (max-width:1180px){.fw-board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media (max-width:720px){.fw-board{grid-template-columns:1fr}}
+        /* MONATSKALENDER */
+        .fw-kal-leiste{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+        .fw-kal-nav{display:flex;align-items:center;gap:8px}
+        .fw-kal-nav .fw-knopf-rund{border:1px solid var(--ds-line);background:var(--ds-surface)}
+        .fw-kal-art b{font-weight:600;opacity:.75;margin-left:2px}
+        .fw-kal-punkt{width:8px;height:8px;border-radius:var(--ds-pill);display:inline-block;flex:0 0 8px;margin-right:6px;background:var(--ds-brand)}
+        .fw-kal-punkt.frist{background:var(--ds-warn)}.fw-kal-punkt.ticket{background:var(--ds-crit)}.fw-kal-punkt.auszug{background:var(--ds-good)}
+        .fw-kal-zwei{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+        .fw-kal-karte{margin-bottom:0;padding:0}
+        .fw-kal-raster{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+        .fw-kal-kopf{padding:10px 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint);
+            background:var(--ds-surface-2);border-bottom:1px solid var(--ds-line)}
+        .fw-kal-tag{min-height:112px;padding:8px 8px 6px;border-right:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line);
+            display:flex;flex-direction:column;gap:4px;min-width:0}
+        .fw-kal-tag:nth-child(7n+14){border-right:0}
+        .fw-kal-tag.aus{background:var(--ds-surface-2)}.fw-kal-tag.aus .fw-kal-nr{color:var(--ds-faint)}
+        .fw-kal-tag.gewaehlt{box-shadow:inset 0 0 0 2px var(--ds-brand)}
+        .fw-kal-nr{align-self:flex-start;min-width:26px;height:26px;display:grid;place-items:center;border-radius:var(--ds-pill);
+            font-size:13px;font-weight:600;color:var(--ds-ink);text-decoration:none}
+        .fw-kal-nr:hover{background:var(--ds-hover)}
+        .fw-kal-tag.heute .fw-kal-nr{background:var(--ds-brand);color:var(--ds-auf-satt)}
+        .fw-kal-chip{display:block;padding:2px 7px;border-radius:var(--ds-radius-xs);font-size:12px;font-weight:500;line-height:1.5;
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;
+            background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+        .fw-kal-chip i{font-style:normal;font-weight:600;font-family:var(--ds-mono);font-size:11px}
+        .fw-kal-chip.warn{background:var(--ds-warn-soft);color:var(--ds-warn)}.fw-kal-chip.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
+        .fw-kal-chip.good{background:var(--ds-good-soft);color:var(--ds-good)}.fw-kal-chip.info{background:var(--ds-info-soft);color:var(--ds-info)}
+        .fw-kal-chip.gedaempft{opacity:.55;text-decoration:line-through}
+        .fw-kal-chip:hover{filter:brightness(.96)}
+        .fw-kal-mehr{font-size:12px;font-weight:600;color:var(--ds-muted);text-decoration:none;padding:0 4px}
+        .fw-kal-tag-karte{position:sticky;top:76px;margin-bottom:0}
+        .fw-kal-eintrag{align-items:flex-start}
+        .fw-kal-eintrag .fw-kal-punkt{margin-top:7px}
+        .fw-kal-liste{display:none}
+        @media (max-width:1100px){.fw-kal-zwei{grid-template-columns:1fr}.fw-kal-tag-karte{position:static}}
+        @media (max-width:720px){
+            .fw-kal-raster{display:none}
+            .fw-kal-liste{display:flex;flex-direction:column}
+            .fw-kal-liste-tag{display:flex;gap:14px;padding:12px 16px;border-bottom:1px solid var(--ds-line)}
+            .fw-kal-liste-tag.heute{background:var(--ds-brand-soft)}
+            .fw-kal-liste-datum{display:flex;flex-direction:column;align-items:center;width:38px;flex:0 0 38px}
+            .fw-kal-liste-datum b{font-size:20px;line-height:1.1}.fw-kal-liste-datum span{font-size:11px;color:var(--ds-faint);text-transform:uppercase}
+            .fw-kal-liste-eintraege{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+            .fw-kal-chip{white-space:normal}
+        }
+        /* PORTFOLIO: zweite Linie, Donut, Cashflow-Summen */
+        .fw-kurve-strich.zwei{stroke:var(--ds-faint);stroke-width:2;stroke-dasharray:6 5}
+        .fw-legende-strich{display:inline-block;width:18px;height:0;border-top:2px solid var(--ds-brand);vertical-align:middle;margin-right:4px}
+        .fw-legende-strich.zwei{border-top:2px dashed var(--ds-faint)}
+        .fw-cash-summe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding-bottom:4px}
+        .fw-cash-summe div{display:flex;flex-direction:column;gap:2px;min-width:0}
+        .fw-cash-summe span{font-size:12.5px;color:var(--ds-muted)}
+        .fw-cash-summe b{font-size:20px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
+        .fw-donut-zeile{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+        .fw-donut{position:relative;width:176px;height:176px;flex:0 0 176px}
+        .fw-donut svg{width:100%;height:100%;transform:none}
+        .fw-donut-spur,.fw-donut-teil{fill:none;stroke-width:5.2}
+        .fw-donut-spur{stroke:var(--ds-surface-2)}
+        .fw-donut-teil{stroke-linecap:butt;transition:opacity .15s}
+        .fw-donut-teil.t0,.fw-donut-punkt.t0{stroke:var(--ds-brand);background:var(--ds-brand)}
+        .fw-donut-teil.t1,.fw-donut-punkt.t1{stroke:color-mix(in srgb,var(--ds-brand) 78%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 78%,var(--ds-surface))}
+        .fw-donut-teil.t2,.fw-donut-punkt.t2{stroke:color-mix(in srgb,var(--ds-brand) 58%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 58%,var(--ds-surface))}
+        .fw-donut-teil.t3,.fw-donut-punkt.t3{stroke:color-mix(in srgb,var(--ds-brand) 42%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 42%,var(--ds-surface))}
+        .fw-donut-teil.t4,.fw-donut-punkt.t4{stroke:color-mix(in srgb,var(--ds-brand) 28%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 28%,var(--ds-surface))}
+        .fw-donut-teil.t5,.fw-donut-punkt.t5{stroke:color-mix(in srgb,var(--ds-brand) 18%,var(--ds-surface));background:color-mix(in srgb,var(--ds-brand) 18%,var(--ds-surface))}
+        .fw-donut-teil{transform:rotate(0deg)}
+        .fw-donut:hover .fw-donut-teil{opacity:.7}.fw-donut .fw-donut-teil:hover{opacity:1}
+        .fw-donut-mitte{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+        .fw-donut-mitte b{font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+        .fw-donut-mitte span{font-size:12px;color:var(--ds-muted)}
+        .fw-donut-legende{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;flex:1;min-width:11rem}
+        .fw-donut-legende li{display:flex;align-items:center;gap:10px;font-size:13.5px;min-width:0}
+        .fw-donut-legende li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .fw-donut-punkt{width:10px;height:10px;border-radius:var(--ds-pill);flex:0 0 10px}
+        @media (max-width:720px){.fw-cash-summe{grid-template-columns:1fr;gap:8px}.fw-donut-zeile{justify-content:center}}
         /* ---- Ende Konzept V9 ---- */
 </style>
