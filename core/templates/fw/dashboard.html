@@ -52,7 +52,10 @@
 <section class="fw-lage" aria-label="{% trans 'Lage im Überblick' %}">
     {% for k in lg_streifen %}
     <a class="fw-lage-kachel" href="{% if k.schluessel == 'eingang' %}/neu/debitoren/{% elif k.schluessel == 'ausstaende' %}/neu/mahnwesen/aging/{% elif k.schluessel == 'leerstand' %}/neu/vermarktung/{% else %}?ansicht=alle{% endif %}">
-        <div class="fw-l">{{ k.label }}</div>
+        <div class="fw-lage-kopf">
+            <span class="fw-sym{% if k.schluessel == 'ausstaende' %} warn{% endif %}" aria-hidden="true">{% if k.schluessel == 'eingang' %}{% zeichen 'geld' %}{% elif k.schluessel == 'ausstaende' %}{% zeichen 'rechnung' %}{% elif k.schluessel == 'leerstand' %}{% zeichen 'schluessel' %}{% else %}{% zeichen 'dokument' %}{% endif %}</span>
+            <div class="fw-l">{{ k.label }}</div>
+        </div>
         <div class="fw-lage-zeile">
             <div class="fw-w">{{ k.wert }}</div>
             {{ k.verlauf|verlaufslinie:k.ton }}

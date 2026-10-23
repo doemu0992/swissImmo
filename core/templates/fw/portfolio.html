@@ -1,0 +1,149 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n chf diagramm %}
+{% block title %}{% trans "Portfolio" %} — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %} PORTFOLIO für Eigentümer: Rendite, Leerstand, Zahlungsmoral, Cashflow.
+   Zahlen aus core/services/portfolio_kennzahlen.py — fehlt ein Wert, steht «–» und der Grund. {% endcomment %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/berichte/{{ lg_query }}">{% trans "Berichte" %}</a><span aria-hidden="true">/</span><span>{% trans "Portfolio" %}</span></nav>
+        <h1>{% trans "Portfolio" %}</h1>
+        <p>{% blocktrans trimmed with datum=stand|date:"d.m.Y" %}Rendite, Leerstand, Zahlungsmoral und Cashflow des Bestands · Stand {{ datum }}{% endblocktrans %}{% if mandat %} · {{ mandat.firma_oder_name }}{% endif %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <form method="get" class="fw-kopffilter">
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <input type="hidden" name="monate" value="{{ monate }}">
+            <label class="sr-only" for="pf-mandat">{% trans "Mandat" %}</label>
+            <select id="pf-mandat" name="mandat" class="fw-feld" onchange="this.form.submit()">
+                <option value="">{% trans "Alle Mandate" %}</option>
+                {% for m in mandate %}<option value="{{ m.pk }}"{% if mandat and mandat.pk == m.pk %} selected{% endif %}>{{ m.firma_oder_name }}</option>{% endfor %}
+            </select>
+        </form>
+        <a href="{{ csv_url }}" class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV-Export" %}</a>
+    </div>
+</div>
+
+{% if not zeilen %}
+<div class="fw-card">{% include 'fw/_empty.html' with icon='liegenschaft' titel=_('Keine Liegenschaft im Portfolio') subtext=_('Sobald Liegenschaften erfasst sind, erscheinen hier Rendite, Leerstand und Cashflow.') %}</div>
+{% else %}
+
+<div class="fw-kpis">
+    <div class="fw-kpi fw-accent">
+        <span class="fw-l">{% trans "Soll-Mietertrag p. a." %}</span>
+        <span class="fw-v fw-num">CHF {{ u.soll_jahr|chf:0 }}</span>
+        <span class="fw-f">{% blocktrans with aufwand=u.aufwand_jahr|chf:0 %}Betriebsaufwand 12 Mt. CHF {{ aufwand }}{% endblocktrans %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Nettorendite" %}</span>
+        <span class="fw-v fw-num">{% if u.netto is not None %}{{ u.netto|floatformat:2 }} %{% else %}–{% endif %}</span>
+        <span class="fw-f">{% if u.brutto is not None %}{% blocktrans with b=u.brutto|floatformat:2 %}brutto {{ b }} % · auf Verkehrswert{% endblocktrans %}{% else %}{% trans "kein Verkehrswert erfasst" %}{% endif %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Leerstandsquote" %}</span>
+        <span class="fw-v fw-num{% if u.leer_quote and u.leer_quote > 5 %} fw-warn{% endif %}">{% if u.leer_quote is not None %}{{ u.leer_quote|floatformat:1 }} %{% else %}–{% endif %}</span>
+        <span class="fw-f">{% blocktrans with n=u.leer m=u.objekte %}{{ n }} von {{ m }} Objekten leer{% endblocktrans %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Zahlungsquote" %}</span>
+        <span class="fw-v fw-num{% if u.zahlungsquote is not None and u.zahlungsquote < 95 %} fw-warn{% endif %}">{% if u.zahlungsquote is not None %}{{ u.zahlungsquote|floatformat:1 }} %{% else %}–{% endif %}</span>
+        <span class="fw-f">{% blocktrans with s=u.offen_summe|chf:0 n=u.ueberfaellig_n %}offen CHF {{ s }} · {{ n }} überfällig{% endblocktrans %}</span>
+    </div>
+</div>
+
+{% if u.ohne_wert %}
+<div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+    <div class="fw-ht fliess">{% blocktrans count n=u.ohne_wert %}Für {{ n }} Liegenschaft ist weder Verkehrswert noch Anlagekosten erfasst — sie fehlt in der Rendite.{% plural %}Für {{ n }} Liegenschaften sind weder Verkehrswert noch Anlagekosten erfasst — sie fehlen in der Rendite.{% endblocktrans %}</div></div>
+{% endif %}
+
+<div class="fw-bericht-zwei">
+    <section class="fw-card">
+        <div class="fw-kopf">
+            <h2>{% trans "Cashflow" %}</h2>
+            <span class="fw-neben">{% blocktrans with n=monate %}letzte {{ n }} Monate{% endblocktrans %}</span>
+            <div class="fw-rechts fw-filters fw-nomb" role="group" aria-label="{% trans 'Zeitraum' %}">
+                {% for z in zeitraeume %}<a href="?monate={{ z }}{% if mandat %}&amp;mandat={{ mandat.pk }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{% if verteilung == 'nutzung' %}&amp;verteilung=nutzung{% endif %}" class="fw-fchip{% if monate == z %} fw-on{% endif %}">{{ z }} {% trans "Mt." %}</a>{% endfor %}
+            </div>
+        </div>
+        {% if hat_cashflow %}
+        <div class="fw-rumpf fw-cash-summe">
+            <div><span>{% trans "Ertrag" %}</span><b class="fw-num">CHF {{ ertrag_summe|chf:0 }}</b></div>
+            <div><span>{% trans "Aufwand" %}</span><b class="fw-num">CHF {{ aufwand_summe|chf:0 }}</b></div>
+            <div><span>{% trans "Netto-Cashflow" %}</span><b class="fw-num {% if netto_summe < 0 %}fw-crit{% else %}fw-good{% endif %}">CHF {{ netto_summe|chf:0 }}</b></div>
+        </div>
+        {% trans "Ertrag und Aufwand je Monat" as cash_titel %}
+        <div class="fw-diagramm">{% cashflow_diagramm ertrag_werte aufwand_werte monate_namen cash_titel %}</div>
+        <div class="fw-fuss"><span><i class="fw-legende-strich"></i> {% trans "Ertrag" %} &nbsp; <i class="fw-legende-strich zwei"></i> {% trans "Aufwand" %} · {% trans "ohne Storni und Umbuchungen" %}</span></div>
+        {% else %}
+        {% include 'fw/_empty.html' with knapp=True icon='bericht' titel=_('Noch keine Buchungen im Zeitraum.') subtext=_('Der Cashflow erscheint, sobald Erträge und Aufwände auf Liegenschaften gebucht sind.') %}
+        {% endif %}
+    </section>
+
+    <section class="fw-card">
+        <div class="fw-kopf">
+            <h2>{% trans "Verteilung" %}</h2>
+            <div class="fw-rechts fw-filters fw-nomb" role="group" aria-label="{% trans 'Verteilung nach' %}">
+                <a href="?verteilung=liegenschaft&amp;monate={{ monate }}{% if mandat %}&amp;mandat={{ mandat.pk }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip{% if verteilung == 'liegenschaft' %} fw-on{% endif %}">{% trans "Ertrag" %}</a>
+                <a href="?verteilung=nutzung&amp;monate={{ monate }}{% if mandat %}&amp;mandat={{ mandat.pk }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip{% if verteilung == 'nutzung' %} fw-on{% endif %}">{% trans "Nutzung" %}</a>
+            </div>
+        </div>
+        {% if legende %}
+        <div class="fw-rumpf fw-donut-zeile">
+            {% trans "Portfolio-Verteilung" as donut_titel %}
+            {% donut_diagramm teile donut_mitte.0 donut_mitte.1 donut_titel %}
+            <ul class="fw-donut-legende">
+                {% for t in legende %}
+                <li><i class="fw-punkt-donut t{{ t.i }}" aria-hidden="true"></i><span>{{ t.lab }}</span><b class="fw-num">{{ t.anteil|floatformat:1 }} %</b></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="fw-fuss"><span>{% if verteilung == 'nutzung' %}{% trans "Anzahl Objekte je Nutzungsart" %}{% else %}{% trans "Anteil am Soll-Mietertrag je Liegenschaft" %}{% endif %}</span></div>
+        {% else %}
+        {% include 'fw/_empty.html' with knapp=True icon='bericht' titel=_('Keine Daten für die Verteilung.') %}
+        {% endif %}
+    </section>
+</div>
+
+<section class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Performance je Liegenschaft" %}</h2><span class="fw-neben">{{ zeilen|length }}</span></div>
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th>{% trans "Liegenschaft" %}</th>
+                <th class="fw-right">{% trans "Objekte" %}</th>
+                <th class="fw-right">{% trans "Soll p. a." %}</th>
+                <th class="fw-right">{% trans "Aufwand 12 Mt." %}</th>
+                <th class="fw-right">{% trans "Wert" %}</th>
+                <th class="fw-right">{% trans "Brutto" %}</th>
+                <th class="fw-right">{% trans "Netto" %}</th>
+                <th>{% trans "Leerstand" %}</th>
+            </tr></thead>
+            <tbody>
+                {% for z in zeilen %}
+                <tr class="fw-klickzeile" data-href="/neu/liegenschaften/{{ z.lg.id }}/">
+                    <td><a href="/neu/liegenschaften/{{ z.lg.id }}/" class="fw-zelle-titel">{{ z.lg.strasse }}</a><span class="fw-zelle-sub">{{ z.lg.plz }} {{ z.lg.ort }}</span></td>
+                    <td class="fw-right fw-num">{{ z.objekte }}</td>
+                    <td class="fw-right fw-num">{{ z.soll|chf:0 }}</td>
+                    <td class="fw-right fw-num">{{ z.aufwand|chf:0 }}</td>
+                    <td class="fw-right fw-num">{% if z.wert %}{{ z.wert|chf:0 }}{% else %}–{% endif %}</td>
+                    <td class="fw-right fw-num">{% if z.brutto is not None %}{{ z.brutto|floatformat:2 }} %{% else %}–{% endif %}</td>
+                    <td class="fw-right fw-num">{% if z.netto is not None %}<b>{{ z.netto|floatformat:2 }} %</b>{% else %}–{% endif %}</td>
+                    <td>{% if z.leer_quote is None %}–{% elif z.leer == 0 %}<span class="fw-chip fw-good fw-dot">{% trans "voll vermietet" %}</span>{% else %}<span class="fw-chip {% if z.leer_quote > 5 %}fw-crit{% else %}fw-warn{% endif %} fw-dot">{% blocktrans with n=z.leer q=z.leer_quote|floatformat:1 %}{{ n }} leer · {{ q }} %{% endblocktrans %}</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="fw-fuss"><span>{% trans "Rendite = Netto-Soll-Mietzins ÷ Verkehrswert (ersatzweise Anlagekosten); netto nach Betriebsaufwand der letzten 12 Monate." %}</span></div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('tr.fw-klickzeile[data-href]').forEach(function (r) {
+    r.addEventListener('click', function (e) { if (!e.target.closest('a,button')) location.href = r.dataset.href; });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1240 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>immoswiss Dashboard Mix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  /* Mischung aus Variante 1 (ruhiges Navy, KPI mit Linie und Trend, Umschalter am Diagramm) und
+     Variante 2 (Verlaufskarten mit feinem Rand, Termin-Kacheln mit Farbbalken, Halbkreis,
+     Aktivitätentabelle, Feedback-Knopf). Hell ist Standard; Dunkel nur auf Wunsch (Knopf oben).
+     60-30-10: 60 % Flächen, 30 % Navy (#35577D / #141E30), 10 % Zustandsfarben und Akzent. */
+  tailwind.config = {
+    theme: { extend: {
+      fontFamily: { sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+      colors: {
+        bg: 'rgb(var(--c-bg) / <alpha-value>)', surface: 'rgb(var(--c-surface) / <alpha-value>)',
+        raised: 'rgb(var(--c-raised) / <alpha-value>)', line: 'rgb(var(--c-line) / <alpha-value>)',
+        ink: 'rgb(var(--c-ink) / <alpha-value>)', accent: 'rgb(var(--c-accent) / <alpha-value>)',
+        brand: 'var(--brand)', muted: 'var(--muted)', faint: 'var(--faint)', 'on-accent': 'var(--on-accent)',
+        good: 'var(--good)', 'good-soft': 'var(--good-soft)', bad: 'var(--bad)', 'bad-soft': 'var(--bad-soft)',
+        warn: 'var(--warn)', 'warn-soft': 'var(--warn-soft)'
+      },
+      boxShadow: { card: 'var(--shadow-card)', pop: 'var(--shadow-pop)' }
+    } }
+  }
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --c-bg: 241 244 248; --c-surface: 255 255 255; --c-raised: 238 242 248; --c-line: 221 228 238; --c-ink: 20 30 48; --c-accent: 53 87 125;
+    --brand: #35577d; --muted: #43526a; --faint: #5a6980; --on-accent: #ffffff;
+    --good: #15683a; --good-soft: #e3f3e8; --bad: #b0222e; --bad-soft: #fbe9eb; --warn: #955708; --warn-soft: #fbf0de;
+    --shadow-card: 0 1px 2px rgba(20,30,48,.05), 0 14px 30px -16px rgba(20,30,48,.16);
+    --shadow-pop: 0 18px 50px -16px rgba(20,30,48,.28);
+    --card-from: #ffffff; --card-to: #f6f8fb; --card-line: #dde4ee;
+    --warn-from: #fdeef0; --warn-to: #ffffff; --warn-line: rgba(194,46,67,.45);
+    --glass: rgba(255,255,255,.78); --glow-1: rgba(53,87,125,.16); --glow-2: rgba(53,87,125,.09);
+    /* Diagrammfarben (werden im Skript gelesen) */
+    --ch-1: #35577d; --ch-2: #8aa6c8; --ch-grid: rgba(20,30,48,.08); --ch-tick: #5a6980;
+    --ch-tip: #ffffff; --ch-tip-line: #c6d1e0; --ch-tip-ink: #141e30; --ch-ring: #ffffff;
+    --g-1: #35577d; --g-2: #d08a2c; --g-3: #c22e43; --ch-fill: rgba(53,87,125,.22);
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --c-bg: 12 20 36; --c-surface: 20 30 48; --c-raised: 26 40 64; --c-line: 38 52 76; --c-ink: 232 238 247; --c-accent: 127 176 234;
+    --muted: #9db0c9; --faint: #8497b4; --on-accent: #0c1424;
+    --good: #5fd39a; --good-soft: #12332a; --bad: #f58a93; --bad-soft: #3a1c22; --warn: #e8b25c; --warn-soft: #36290f;
+    --shadow-card: 0 1px 0 rgba(255,255,255,.04) inset, 0 14px 30px -16px rgba(0,0,0,.7);
+    --shadow-pop: 0 18px 50px -16px rgba(0,0,0,.75);
+    --card-from: #172540; --card-to: #111b30; --card-line: rgba(120,150,210,.24);
+    --warn-from: #3a1f2a; --warn-to: #1c1423; --warn-line: rgba(245,138,147,.55);
+    --glass: rgba(16,26,46,.78); --glow-1: rgba(53,87,125,.40); --glow-2: rgba(53,87,125,.20);
+    --ch-1: #7fb0ea; --ch-2: #4d729f; --ch-grid: rgba(157,176,201,.12); --ch-tick: #9db0c9;
+    --ch-tip: #1a2840; --ch-tip-line: #35577d; --ch-tip-ink: #e8eef7; --ch-ring: #131d31;
+    --g-1: #7fb0ea; --g-2: #e8b25c; --g-3: #f58a93; --ch-fill: rgba(127,176,234,.32);
+  }
+  html { background: rgb(var(--c-bg)); }
+  body {
+    margin: 0; background-color: rgb(var(--c-bg)); color: rgb(var(--c-ink));
+    background-image: radial-gradient(900px 460px at 90% -140px, var(--glow-1), transparent 70%), radial-gradient(700px 420px at 8% 4%, var(--glow-2), transparent 70%);
+    background-repeat: no-repeat; background-attachment: fixed;
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  .cardx { background: linear-gradient(165deg, var(--card-from) 0%, var(--card-to) 100%); border: 1px solid var(--card-line); border-radius: 22px; box-shadow: var(--shadow-card); }
+  .cardx-warn { background: linear-gradient(165deg, var(--warn-from) 0%, var(--warn-to) 100%); border: 1px solid var(--warn-line); border-radius: 22px; box-shadow: var(--shadow-card); }
+  .glass { background: var(--glass); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); }
+  :focus-visible { outline: 2px solid rgb(var(--c-accent)); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  .scroll-thin::-webkit-scrollbar { height: 6px; } .scroll-thin::-webkit-scrollbar-thumb { background: rgb(var(--c-line)); border-radius: 6px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script>
+const {
+  useState,
+  useEffect,
+  useRef
+} = React;
+
+/* =====================================================================
+   DUMMY-DATEN (CHF) — später durch API-Aufrufe ersetzen
+   ===================================================================== */
+const NAV = [{
+  id: 'dashboard',
+  label: 'Dashboard',
+  icon: 'grid',
+  short: 'Start'
+}, {
+  id: 'immobilien',
+  label: 'Immobilien',
+  icon: 'home',
+  short: 'Objekte'
+}, {
+  id: 'mieter',
+  label: 'Mieter',
+  icon: 'users',
+  short: 'Mieter'
+}, {
+  id: 'finanzen',
+  label: 'Finanzen',
+  icon: 'coins',
+  short: 'Finanzen'
+}, {
+  id: 'dokumente',
+  label: 'Dokumente',
+  icon: 'file',
+  short: 'Dateien'
+}, {
+  id: 'einstellungen',
+  label: 'Einstellungen',
+  icon: 'cog',
+  short: 'Mehr'
+}];
+const KPIS = [{
+  id: 'einnahmen',
+  label: 'Gesamteinnahmen',
+  value: "CHF 482'350",
+  trend: +5.2,
+  unit: '% vs. Vormonat',
+  good: 'up',
+  icon: 'coins',
+  spark: [38, 41, 40, 44, 43, 47, 48]
+}, {
+  id: 'objekte',
+  label: 'Aktive Mietobjekte',
+  value: '126',
+  trend: +3,
+  unit: ' neu seit Vormonat',
+  good: 'up',
+  icon: 'home',
+  spark: [118, 118, 120, 121, 121, 123, 126]
+}, {
+  id: 'reparaturen',
+  label: 'Offene Reparaturen',
+  value: '14',
+  trend: +4,
+  unit: ' vs. Vormonat',
+  good: 'down',
+  icon: 'wrench',
+  spark: [8, 9, 7, 10, 10, 12, 14],
+  alert: true
+}, {
+  id: 'leerstand',
+  label: 'Leerstandsquote',
+  value: '2.4 %',
+  trend: -0.6,
+  unit: ' Pkt. vs. Vormonat',
+  good: 'down',
+  icon: 'key',
+  spark: [4.1, 3.8, 3.5, 3.2, 3.0, 3.0, 2.4]
+}];
+const MONATE = ['Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt'];
+const CHARTS = {
+  einnahmen: {
+    label: 'Finanz- & Mietübersicht',
+    fmt: v => 'CHF ' + v.toLocaleString('de-CH').replace(/[’,]/g, "'"),
+    summary: [{
+      l: 'Einnahmen Okt.',
+      v: "CHF 482'350",
+      t: '+5.2 %',
+      up: true
+    }, {
+      l: 'Mietsoll Okt.',
+      v: "CHF 470'000",
+      t: '+1.7 %',
+      up: true
+    }, {
+      l: 'Zahlungsquote',
+      v: '102.6 %',
+      t: '+1.1 Pkt.',
+      up: true
+    }],
+    sets: [{
+      name: 'Einnahmen',
+      data: [431200, 438900, 447500, 452300, 458700, 482350],
+      c: '--ch-1',
+      fill: true
+    }, {
+      name: 'Mietsoll',
+      data: [440000, 445000, 450000, 455000, 462000, 470000],
+      c: '--ch-2',
+      fill: false
+    }],
+    min: 420000,
+    max: 490000,
+    tick: v => Math.round(v / 1000) + 'k'
+  },
+  belegung: {
+    label: 'Belegungsquote',
+    fmt: v => v.toFixed(1) + ' %',
+    summary: [{
+      l: 'Belegung Okt.',
+      v: '97.6 %',
+      t: '+0.6 Pkt.',
+      up: true
+    }, {
+      l: 'Ø Leerstand',
+      v: '4.9 Tage',
+      t: '−1.2 Tage',
+      up: true
+    }, {
+      l: 'Kündigungen',
+      v: '5',
+      t: '+2',
+      up: false
+    }],
+    sets: [{
+      name: 'Belegung',
+      data: [94.8, 95.4, 96.1, 96.6, 97.0, 97.6],
+      c: '--ch-1',
+      fill: true
+    }],
+    min: 93,
+    max: 99,
+    tick: v => v + ' %'
+  }
+};
+const TERMINE = [{
+  id: 1,
+  titel: 'Wohnungsabnahme Seefeldstrasse 12',
+  datum: '28.10.2026',
+  zeit: '14:00',
+  farbe: '#4d729f',
+  leute: ['Muster Hans', 'Dominik Gerber']
+}, {
+  id: 2,
+  titel: 'Heizungswartung Bahnhofstrasse 4',
+  datum: '29.10.2026',
+  zeit: '08:00',
+  farbe: '#d08a2c',
+  leute: ['Kälte Meier', 'Rossi Luca', 'Dominik Gerber']
+}, {
+  id: 3,
+  titel: 'Besichtigung Rebbergweg 8',
+  datum: '29.10.2026',
+  zeit: '16:30',
+  farbe: '#c22e43',
+  leute: ['Bianchi Sara']
+}, {
+  id: 4,
+  titel: 'Wohnungsübergabe Seestrasse 41',
+  datum: '30.10.2026',
+  zeit: '10:15',
+  farbe: '#2f8f5b',
+  leute: ['Rossi Luca']
+}];
+const TODOS = [{
+  id: 11,
+  titel: 'Mahnung 2 an Keller Maria versenden',
+  frist: 'fällig heute',
+  done: false
+}, {
+  id: 12,
+  titel: 'Nebenkostenabrechnung 2025 prüfen',
+  frist: 'bis 31.10.',
+  done: false
+}, {
+  id: 13,
+  titel: 'Offerte Dachreparatur freigeben',
+  frist: 'bis 03.11.',
+  done: true
+}, {
+  id: 14,
+  titel: 'Mietvertrag Schmid P. unterschreiben lassen',
+  frist: 'bis 05.11.',
+  done: false
+}];
+const BELEGUNG = [{
+  label: 'Vermietet',
+  value: 118,
+  c: '--g-1'
+}, {
+  label: 'Gekündigt',
+  value: 5,
+  c: '--g-2'
+}, {
+  label: 'Leerstand',
+  value: 3,
+  c: '--g-3'
+}];
+const AKTIVITAETEN = [{
+  id: 1,
+  was: 'Mieteingang Seefeldstrasse 12',
+  detail: "CHF 1'850.00 · Muster Hans",
+  status: 'Erledigt',
+  vor: 'vor 12 Min.'
+}, {
+  id: 2,
+  was: 'Neue Anfrage Rebbergweg 8',
+  detail: '2.5 Zi, DG · Bianchi Sara',
+  status: 'Offen',
+  vor: 'vor 1 Std.'
+}, {
+  id: 3,
+  was: 'Schadenmeldung Wasserhahn',
+  detail: 'Bahnhofstrasse 4 · Keller Maria',
+  status: 'In Arbeit',
+  vor: 'vor 3 Std.'
+}, {
+  id: 4,
+  was: 'Mieteingang Bahnhofstrasse 4',
+  detail: "CHF 4'800.00 · Meier AG",
+  status: 'Erledigt',
+  vor: 'gestern'
+}, {
+  id: 5,
+  was: 'Mahnung 1 versendet',
+  detail: "CHF 1'420.00 · Keller Maria",
+  status: 'Offen',
+  vor: 'gestern'
+}];
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* =====================================================================
+   UI-BAUSTEINE
+   ===================================================================== */
+const ICONS = {
+  grid: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "3",
+    width: "7",
+    height: "7",
+    rx: "2"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "14",
+    y: "3",
+    width: "7",
+    height: "7",
+    rx: "2"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "14",
+    width: "7",
+    height: "7",
+    rx: "2"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "14",
+    y: "14",
+    width: "7",
+    height: "7",
+    rx: "2"
+  })),
+  home: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", {
+    d: "M3 11l9-8 9 8"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M5 10v10h14V10M10 20v-6h4v6"
+  })),
+  users: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "9",
+    cy: "8",
+    r: "3.5"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M2.5 20a6.5 6.5 0 0 1 13 0"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"
+  })),
+  coins: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "9"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M14.8 9.2c-.5-.9-1.6-1.4-2.9-1.4-1.7 0-2.9.9-2.9 2.1 0 2.9 6 1.4 6 4.2 0 1.3-1.3 2.1-3.1 2.1-1.5 0-2.8-.5-3.4-1.5M12 6v1.8M12 16.2V18"
+  })),
+  file: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", {
+    d: "M6 3h8l4 4v14H6z"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M14 3v4h4M9 13h6M9 17h6"
+  })),
+  cog: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "3"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+  })),
+  search: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "11",
+    cy: "11",
+    r: "7"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M20 20l-4-4"
+  })),
+  filter: /*#__PURE__*/React.createElement("path", {
+    d: "M4 6h16M7 12h10M10 18h4"
+  }),
+  bell: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", {
+    d: "M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M10 21h4"
+  })),
+  wrench: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", {
+    d: "M14.7 6.3a4 4 0 0 0 5 5L21 12.6 12.6 21a2.1 2.1 0 0 1-3-3L18 9.6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M14.7 6.3 11 10"
+  })),
+  key: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "8",
+    cy: "14",
+    r: "4"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M11 11l8-8M16 6l3 3"
+  })),
+  up: /*#__PURE__*/React.createElement("path", {
+    d: "M12 19V5M6 11l6-6 6 6"
+  }),
+  down: /*#__PURE__*/React.createElement("path", {
+    d: "M12 5v14M6 13l6 6 6-6"
+  }),
+  plus: /*#__PURE__*/React.createElement("path", {
+    d: "M12 5v14M5 12h14"
+  }),
+  check: /*#__PURE__*/React.createElement("path", {
+    d: "M5 12.5l4.5 4.5L19 7.5"
+  }),
+  chevron: /*#__PURE__*/React.createElement("path", {
+    d: "M6 9l6 6 6-6"
+  }),
+  dots: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "5",
+    r: "1.2"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "1.2"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "19",
+    r: "1.2"
+  })),
+  dotsh: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "5",
+    cy: "12",
+    r: "1.2"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "1.2"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "19",
+    cy: "12",
+    r: "1.2"
+  })),
+  chat: /*#__PURE__*/React.createElement("path", {
+    d: "M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"
+  }),
+  sun: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "4"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+  })),
+  moon: /*#__PURE__*/React.createElement("path", {
+    d: "M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"
+  })
+};
+function Icon({
+  name,
+  className = 'w-5 h-5',
+  strokeWidth = 1.8
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: strokeWidth,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className: className,
+    "aria-hidden": "true"
+  }, ICONS[name]);
+}
+
+/* Initialen statt Fotos — Mieterdaten fallen unter das DSG */
+const TONES = [['#35577d', '#6e9bd1'], ['#2f6b5b', '#4cc08a'], ['#6b5530', '#d9a548'], ['#5b3a52', '#d98cb7']];
+function Avatar({
+  name,
+  size = 'w-8 h-8',
+  i = 0
+}) {
+  const [a, b] = TONES[i % TONES.length];
+  const ini = name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+  return /*#__PURE__*/React.createElement("span", {
+    className: `${size} shrink-0 rounded-full grid place-items-center text-[11px] font-bold text-white ring-2 ring-surface`,
+    style: {
+      background: `linear-gradient(135deg, ${a}, ${b})`
+    },
+    "aria-hidden": "true"
+  }, ini);
+}
+function Segmented({
+  options,
+  value,
+  onChange,
+  label
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    role: "tablist",
+    "aria-label": label,
+    className: "inline-flex p-1 rounded-xl bg-bg border border-line"
+  }, options.map(o => /*#__PURE__*/React.createElement("button", {
+    key: o.id,
+    role: "tab",
+    "aria-selected": value === o.id,
+    onClick: () => onChange(o.id),
+    className: `px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${value === o.id ? 'bg-brand text-white shadow' : 'text-muted hover:text-ink'}`
+  }, o.label)));
+}
+function Select({
+  icon,
+  children,
+  label
+}) {
+  return /*#__PURE__*/React.createElement("button", {
+    className: "inline-flex items-center gap-2 h-10 px-3.5 rounded-xl border border-line bg-surface/70 text-sm font-medium text-muted hover:text-ink transition-colors",
+    "aria-label": label
+  }, icon && /*#__PURE__*/React.createElement(Icon, {
+    name: icon,
+    className: "w-4 h-4"
+  }), children, /*#__PURE__*/React.createElement(Icon, {
+    name: "chevron",
+    className: "w-4 h-4"
+  }));
+}
+function TrendBadge({
+  trend,
+  unit,
+  good
+}) {
+  const up = trend > 0,
+    positive = good === 'up' === up;
+  const abs = Math.abs(trend).toString().replace('.', ',');
+  return /*#__PURE__*/React.createElement("span", {
+    className: `inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-bold ${positive ? 'bg-good-soft text-good' : 'bg-bad-soft text-bad'}`
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: up ? 'up' : 'down',
+    className: "w-3 h-3",
+    strokeWidth: 2.6
+  }), up ? '+' : '−', abs, unit.startsWith('%') ? ' %' : '', /*#__PURE__*/React.createElement("span", {
+    className: "sr-only"
+  }, positive ? ' (günstig)' : ' (ungünstig)'));
+}
+function Sparkline({
+  data,
+  positive
+}) {
+  const w = 96,
+    h = 32,
+    min = Math.min(...data),
+    max = Math.max(...data);
+  const pts = data.map((v, i) => [i * (w / (data.length - 1)), h - 3 - (v - min) / (max - min || 1) * (h - 8)]);
+  const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const c = positive ? 'var(--good)' : 'var(--bad)';
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: `0 0 ${w} ${h}`,
+    className: "w-24 h-8 overflow-visible",
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: d,
+    fill: "none",
+    stroke: c,
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: pts[pts.length - 1][0],
+    cy: pts[pts.length - 1][1],
+    r: "3",
+    fill: c
+  }));
+}
+
+/* ---------- Logo (aus Variante 2, unverändert) ---------- */
+function SwissCross({
+  className = 'w-3.5 h-3.5'
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 20 20",
+    className: className,
+    role: "img",
+    "aria-label": "Schweiz"
+  }, /*#__PURE__*/React.createElement("rect", {
+    width: "20",
+    height: "20",
+    rx: "3",
+    fill: "#e5342d"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z",
+    fill: "#fff"
+  }));
+}
+function LogoMark({
+  className = 'w-9 h-9'
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 32 32",
+    className: className,
+    fill: "none",
+    stroke: "rgb(var(--c-accent))",
+    strokeWidth: "2.4",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M3 15L16 4l13 11"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M7 13v14h18V13"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 27v-7h3v7M18 27v-9h3v9",
+    stroke: "#6e9bd1"
+  }));
+}
+function Logo({
+  mandant = true
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2.5 px-1"
+  }, /*#__PURE__*/React.createElement(LogoMark, null), /*#__PURE__*/React.createElement("div", {
+    className: "leading-tight"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "relative text-[22px] font-extrabold tracking-tight"
+  }, "immoswiss", /*#__PURE__*/React.createElement("span", {
+    className: "absolute -top-1 -right-4"
+  }, /*#__PURE__*/React.createElement(SwissCross, null))), mandant && /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-faint font-medium mt-0.5"
+  }, "Muster Verwaltung AG")));
+}
+
+/* ---------- Navigation ---------- */
+function Sidebar({
+  active,
+  onSelect
+}) {
+  return /*#__PURE__*/React.createElement("aside", {
+    className: "hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col gap-8 px-4 py-6 glass border-r border-line z-30",
+    "aria-label": "Hauptnavigation"
+  }, /*#__PURE__*/React.createElement(Logo, null), /*#__PURE__*/React.createElement("nav", {
+    className: "flex flex-col gap-1"
+  }, NAV.map(n => /*#__PURE__*/React.createElement("button", {
+    key: n.id,
+    onClick: () => onSelect(n.id),
+    "aria-current": active === n.id ? 'page' : undefined,
+    className: `flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-left transition-colors ${active === n.id ? 'bg-brand text-white shadow-card' : 'text-muted hover:bg-raised hover:text-ink'}`
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: n.icon
+  }), n.label, n.id === 'finanzen' && /*#__PURE__*/React.createElement("span", {
+    className: "ml-auto rounded-full bg-bad-soft text-bad text-[11px] font-bold px-2 py-0.5"
+  }, "3")))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-auto rounded-2xl p-4 border border-line bg-raised"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-bold"
+  }, "Nebenkosten 2025"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-muted mt-1 leading-relaxed"
+  }, "38 von 126 Abrechnungen sind noch nicht versendet. Einsprachefrist: 30 Tage."), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 h-1.5 rounded-full bg-bg overflow-hidden",
+    role: "progressbar",
+    "aria-valuenow": "70",
+    "aria-valuemin": "0",
+    "aria-valuemax": "100",
+    "aria-label": "Fortschritt Abrechnungen"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full rounded-full bg-accent",
+    style: {
+      width: '70%'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-faint mt-1.5 num"
+  }, "88 / 126 versendet")));
+}
+function BottomNav({
+  active,
+  onSelect
+}) {
+  return /*#__PURE__*/React.createElement("nav", {
+    className: "lg:hidden fixed left-3 right-3 z-30 glass border border-line rounded-3xl shadow-pop px-1.5 py-1.5 grid grid-cols-6",
+    style: {
+      bottom: 'max(12px, env(safe-area-inset-bottom))'
+    },
+    "aria-label": "Hauptnavigation"
+  }, NAV.map(n => /*#__PURE__*/React.createElement("button", {
+    key: n.id,
+    onClick: () => onSelect(n.id),
+    "aria-label": n.label,
+    "aria-current": active === n.id ? 'page' : undefined,
+    className: `flex flex-col items-center gap-0.5 rounded-2xl py-2 text-[10px] font-semibold min-w-0 ${active === n.id ? 'bg-brand text-white' : 'text-muted'}`
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: n.icon
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "truncate max-w-full px-0.5"
+  }, n.short))));
+}
+
+/* ---------- Top-Bar ---------- */
+function TopBar({
+  theme,
+  onTheme
+}) {
+  return /*#__PURE__*/React.createElement("header", {
+    className: "sticky top-0 z-20 glass border-b border-line",
+    style: {
+      paddingTop: 'env(safe-area-inset-top, 0px)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 px-4 sm:px-6 lg:px-8 py-3.5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lg:hidden"
+  }, /*#__PURE__*/React.createElement(LogoMark, {
+    className: "w-10 h-10"
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "relative flex-1 max-w-xl"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "sr-only"
+  }, "Suche"), /*#__PURE__*/React.createElement(Icon, {
+    name: "search",
+    className: "w-[18px] h-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 text-faint pointer-events-none"
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "search",
+    placeholder: "Suchen nach Immobilien, Mietern \u2026",
+    className: "w-full h-11 rounded-xl bg-bg border border-line pl-10 pr-4 text-sm placeholder:text-faint focus:border-accent outline-none transition-colors"
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "inline-flex items-center gap-2 h-11 px-3.5 sm:px-4 rounded-xl border border-line bg-surface text-sm font-semibold hover:bg-raised transition-colors",
+    "aria-label": "Filter"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "filter",
+    className: "w-[18px] h-[18px]"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "hidden sm:inline"
+  }, "Filtern"), /*#__PURE__*/React.createElement("span", {
+    className: "rounded-full bg-brand text-white text-[11px] font-bold px-1.5 min-w-5 text-center"
+  }, "2")), /*#__PURE__*/React.createElement("button", {
+    onClick: onTheme,
+    className: "hidden sm:grid place-items-center w-11 h-11 rounded-xl border border-line bg-surface text-muted hover:text-ink transition-colors",
+    "aria-label": theme === 'dark' ? 'Helle Ansicht' : 'Dunkle Ansicht',
+    title: theme === 'dark' ? 'Helle Ansicht' : 'Dunkle Ansicht'
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: theme === 'dark' ? 'sun' : 'moon'
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "relative hidden sm:grid place-items-center w-11 h-11 rounded-xl border border-line bg-surface text-muted hover:text-ink transition-colors",
+    "aria-label": "Mitteilungen"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "bell"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "absolute top-2.5 right-3 w-2 h-2 rounded-full bg-bad ring-2 ring-surface"
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "flex items-center gap-3 pl-1.5 sm:pr-3 h-11 rounded-xl sm:border border-line sm:bg-surface",
+    "aria-label": "Profil"
+  }, /*#__PURE__*/React.createElement(Avatar, {
+    name: "Dominik Gerber",
+    size: "w-9 h-9"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "hidden md:flex items-center gap-2 text-sm font-bold"
+  }, "Gr\xFCezi, Dominik ", /*#__PURE__*/React.createElement(SwissCross, null), /*#__PURE__*/React.createElement(Icon, {
+    name: "chevron",
+    className: "w-4 h-4 text-faint"
+  })))));
+}
+
+/* ---------- Karten ---------- */
+function KpiCard({
+  k
+}) {
+  const positive = k.good === 'up' === k.trend > 0;
+  return /*#__PURE__*/React.createElement("section", {
+    className: `${k.alert ? 'cardx-warn' : 'cardx'} p-5 sm:p-6 min-w-0 transition-transform duration-200 hover:-translate-y-0.5`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `w-11 h-11 rounded-xl grid place-items-center ${k.alert ? 'bg-bad-soft text-bad' : 'bg-raised text-accent'}`
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: k.icon
+  })), /*#__PURE__*/React.createElement(Sparkline, {
+    data: k.spark,
+    positive: positive
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "mt-5 flex items-center gap-2 text-sm font-medium text-muted"
+  }, k.label, k.alert && /*#__PURE__*/React.createElement("span", {
+    className: "w-2 h-2 rounded-full bg-bad"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "sr-only"
+  }, "Handlungsbedarf"))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 text-[28px] leading-tight font-extrabold tracking-tight num whitespace-nowrap"
+  }, k.value), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-faint"
+  }, /*#__PURE__*/React.createElement(TrendBadge, {
+    trend: k.trend,
+    unit: k.unit,
+    good: k.good
+  }), /*#__PURE__*/React.createElement("span", null, k.unit.replace(/^% /, '').replace(/^ /, ''))));
+}
+function FinanceCard({
+  theme
+}) {
+  const [mode, setMode] = useState('einnahmen');
+  const canvas = useRef(null);
+  const cfg = CHARTS[mode];
+  useEffect(() => {
+    const ctx = canvas.current.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 320);
+    grad.addColorStop(0, css('--ch-fill'));
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    Chart.defaults.font.family = '"Plus Jakarta Sans", system-ui, sans-serif';
+    Chart.defaults.color = css('--ch-tick');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: MONATE,
+        datasets: cfg.sets.map((s, i) => {
+          const col = css(s.c);
+          return {
+            label: s.name,
+            data: s.data,
+            borderColor: col,
+            borderWidth: i === 0 ? 3 : 2,
+            borderDash: i === 0 ? [] : [6, 5],
+            tension: 0.42,
+            fill: s.fill,
+            backgroundColor: s.fill ? grad : 'transparent',
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: col,
+            pointHoverBorderColor: css('--ch-ring'),
+            pointHoverBorderWidth: 3
+          };
+        })
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            border: {
+              display: false
+            },
+            ticks: {
+              padding: 8
+            }
+          },
+          y: {
+            grid: {
+              color: css('--ch-grid')
+            },
+            border: {
+              display: false
+            },
+            ticks: {
+              padding: 10,
+              maxTicksLimit: 5,
+              callback: cfg.tick
+            },
+            min: cfg.min,
+            max: cfg.max
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: css('--ch-tip'),
+            borderColor: css('--ch-tip-line'),
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 12,
+            titleColor: css('--ch-tip-ink'),
+            bodyColor: css('--ch-tip-ink'),
+            boxPadding: 5,
+            usePointStyle: true,
+            callbacks: {
+              label: c => ' ' + c.dataset.label + '  ' + cfg.fmt(c.parsed.y)
+            }
+          }
+        }
+      }
+    });
+    return () => chart.destroy();
+  }, [mode, theme]);
+  return /*#__PURE__*/React.createElement("section", {
+    className: "cardx p-5 sm:p-6 min-w-0 h-full flex flex-col"
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "flex flex-wrap items-start justify-between gap-3 mb-5"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-lg font-bold tracking-tight"
+  }, cfg.label), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-muted mt-0.5"
+  }, "Letzte 6 Monate \xB7 Mai \u2013 Oktober 2026")), /*#__PURE__*/React.createElement(Segmented, {
+    label: "Diagrammansicht",
+    value: mode,
+    onChange: setMode,
+    options: [{
+      id: 'einnahmen',
+      label: 'Einnahmen'
+    }, {
+      id: 'belegung',
+      label: 'Belegung'
+    }]
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-5"
+  }, cfg.summary.map(s => /*#__PURE__*/React.createElement("div", {
+    key: s.l,
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-muted"
+  }, s.l), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-extrabold tracking-tight num"
+  }, s.v), /*#__PURE__*/React.createElement("span", {
+    className: `text-xs font-bold ${s.up ? 'text-good' : 'text-bad'}`
+  }, s.t))))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-5 mb-3 text-sm text-muted"
+  }, cfg.sets.map(s => /*#__PURE__*/React.createElement("span", {
+    key: s.name,
+    className: "inline-flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "w-2.5 h-2.5 rounded-full",
+    style: {
+      background: `var(${s.c})`
+    }
+  }), s.name))), /*#__PURE__*/React.createElement("div", {
+    className: "relative flex-1 min-h-[16rem] sm:min-h-[17rem]"
+  }, /*#__PURE__*/React.createElement("canvas", {
+    ref: canvas,
+    role: "img",
+    "aria-label": `Liniendiagramm: ${cfg.label}, Mai bis Oktober 2026`
+  })));
+}
+function AppointmentsCard() {
+  const [tab, setTab] = useState('termine');
+  const [todos, setTodos] = useState(TODOS);
+  const toggle = id => setTodos(t => t.map(x => x.id === id ? {
+    ...x,
+    done: !x.done
+  } : x));
+  return /*#__PURE__*/React.createElement("section", {
+    className: "cardx p-5 sm:p-6 min-w-0 h-full flex flex-col"
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "flex items-center gap-6 border-b border-line"
+  }, [['termine', 'Anstehende Termine'], ['todos', 'To-Dos']].map(([id, l]) => /*#__PURE__*/React.createElement("button", {
+    key: id,
+    role: "tab",
+    "aria-selected": tab === id,
+    onClick: () => setTab(id),
+    className: `relative pb-3 text-[15px] font-semibold transition-colors ${tab === id ? 'text-ink' : 'text-faint hover:text-muted'}`
+  }, l, tab === id && /*#__PURE__*/React.createElement("span", {
+    className: "absolute left-0 right-0 -bottom-px h-0.5 rounded bg-accent"
+  }))), /*#__PURE__*/React.createElement("button", {
+    className: "ml-auto mb-2 grid place-items-center w-8 h-8 rounded-lg border border-line text-muted",
+    "aria-label": "Mehr"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "dots",
+    className: "w-4 h-4"
+  }))), tab === 'termine' ? /*#__PURE__*/React.createElement("ul", {
+    className: "mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3"
+  }, TERMINE.map(t => /*#__PURE__*/React.createElement("li", {
+    key: t.id,
+    className: "relative rounded-2xl border border-line bg-bg/60 pl-5 pr-4 py-3.5 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "absolute left-0 top-3 bottom-3 w-1 rounded-r",
+    style: {
+      background: t.farbe
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-bold leading-snug"
+  }, t.titel), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex items-center justify-between gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-muted num"
+  }, t.datum, " \xB7 ", t.zeit), /*#__PURE__*/React.createElement("span", {
+    className: "flex -space-x-1.5 shrink-0"
+  }, t.leute.slice(0, 3).map((p, i) => /*#__PURE__*/React.createElement(Avatar, {
+    key: p,
+    name: p,
+    i: i,
+    size: "w-7 h-7"
+  }))))))) : /*#__PURE__*/React.createElement("ul", {
+    className: "mt-5 flex flex-col gap-2.5"
+  }, todos.map(t => /*#__PURE__*/React.createElement("li", {
+    key: t.id
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => toggle(t.id),
+    role: "checkbox",
+    "aria-checked": t.done,
+    className: "w-full flex items-center gap-3.5 rounded-2xl border border-line bg-bg/60 p-3.5 text-left hover:border-accent transition-colors"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `w-6 h-6 shrink-0 rounded-lg border-2 grid place-items-center ${t.done ? 'bg-accent border-accent text-on-accent' : 'border-line text-transparent'}`
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "check",
+    className: "w-3.5 h-3.5",
+    strokeWidth: 3
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "min-w-0 flex-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `block text-sm font-semibold ${t.done ? 'line-through text-faint' : ''}`
+  }, t.titel), /*#__PURE__*/React.createElement("span", {
+    className: `block text-xs mt-0.5 ${t.frist.includes('heute') && !t.done ? 'text-bad font-semibold' : 'text-muted'}`
+  }, t.frist)))))), /*#__PURE__*/React.createElement("button", {
+    className: "mt-auto pt-5 text-center text-[15px] font-semibold text-accent hover:underline"
+  }, "Alle anzeigen"));
+}
+function GaugeCard({
+  theme
+}) {
+  const canvas = useRef(null);
+  const total = BELEGUNG.reduce((s, b) => s + b.value, 0);
+  const quote = ((BELEGUNG[0].value + BELEGUNG[1].value) / total * 100).toFixed(1);
+  useEffect(() => {
+    const chart = new Chart(canvas.current.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: BELEGUNG.map(b => b.label),
+        datasets: [{
+          data: BELEGUNG.map(b => b.value),
+          backgroundColor: BELEGUNG.map(b => css(b.c)),
+          borderColor: css('--ch-ring'),
+          borderWidth: 4,
+          borderRadius: 10,
+          spacing: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        rotation: -90,
+        circumference: 180,
+        cutout: '72%',
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: css('--ch-tip'),
+            borderColor: css('--ch-tip-line'),
+            borderWidth: 1,
+            titleColor: css('--ch-tip-ink'),
+            bodyColor: css('--ch-tip-ink'),
+            padding: 10,
+            cornerRadius: 10,
+            callbacks: {
+              label: x => ` ${x.label}: ${x.parsed} Objekte`
+            }
+          }
+        }
+      }
+    });
+    return () => chart.destroy();
+  }, [theme]);
+  return /*#__PURE__*/React.createElement("section", {
+    className: "cardx p-5 sm:p-6 min-w-0 h-full"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-lg font-bold tracking-tight"
+  }, "Belegungs- & Objektstatus"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-muted mt-0.5"
+  }, total, " Mietobjekte im Bestand"), /*#__PURE__*/React.createElement("div", {
+    className: "relative mx-auto mt-4 w-full max-w-[19rem] h-40"
+  }, /*#__PURE__*/React.createElement("canvas", {
+    ref: canvas,
+    role: "img",
+    "aria-label": `Halbkreis-Diagramm: ${BELEGUNG.map(b => `${b.label} ${b.value}`).join(', ')}`
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "absolute inset-x-0 bottom-0 text-center pointer-events-none"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-3xl font-extrabold tracking-tight num"
+  }, quote, " %"), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-muted"
+  }, "belegt"))), /*#__PURE__*/React.createElement("ul", {
+    className: "mt-5 flex flex-col gap-2.5"
+  }, BELEGUNG.map(b => /*#__PURE__*/React.createElement("li", {
+    key: b.label,
+    className: "flex items-center gap-3 rounded-xl bg-bg/60 border border-line px-3.5 py-2.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "w-3 h-3 rounded-full shrink-0",
+    style: {
+      background: `var(${b.c})`
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-semibold flex-1"
+  }, b.label), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-extrabold num"
+  }, b.value), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-faint w-14 text-right num whitespace-nowrap"
+  }, (b.value / total * 100).toFixed(1), " %")))));
+}
+const STATUS = {
+  'Erledigt': 'bg-good-soft text-good',
+  'Offen': 'bg-bad-soft text-bad',
+  'In Arbeit': 'bg-warn-soft text-warn'
+};
+function ActivityCard() {
+  return /*#__PURE__*/React.createElement("section", {
+    className: "cardx min-w-0 h-full overflow-hidden"
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "flex items-center justify-between gap-3 p-5 sm:p-6 pb-4"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-lg font-bold tracking-tight"
+  }, "Letzte Aktivit\xE4ten"), /*#__PURE__*/React.createElement(Select, {
+    label: "Sortierung"
+  }, "Neueste")), /*#__PURE__*/React.createElement("div", {
+    className: "relative overflow-x-auto scroll-thin"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full text-left min-w-[30rem]"
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    className: "bg-raised text-sm text-muted"
+  }, /*#__PURE__*/React.createElement("th", {
+    className: "font-medium px-5 sm:px-6 py-3"
+  }, "Aktivit\xE4t"), /*#__PURE__*/React.createElement("th", {
+    className: "font-medium px-3 py-3 hidden md:table-cell"
+  }, "Details"), /*#__PURE__*/React.createElement("th", {
+    className: "font-medium px-3 py-3"
+  }, "Status"), /*#__PURE__*/React.createElement("th", {
+    className: "font-medium px-3 py-3 hidden sm:table-cell text-right"
+  }, "Zeit"), /*#__PURE__*/React.createElement("th", {
+    className: "w-12 pr-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "sr-only"
+  }, "Aktionen")))), /*#__PURE__*/React.createElement("tbody", null, AKTIVITAETEN.map(a => /*#__PURE__*/React.createElement("tr", {
+    key: a.id,
+    className: "border-t border-line hover:bg-raised/60 transition-colors"
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "px-5 sm:px-6 py-3.5 text-[15px] font-medium"
+  }, a.was, /*#__PURE__*/React.createElement("span", {
+    className: "md:hidden block text-xs text-muted font-normal mt-0.5"
+  }, a.detail)), /*#__PURE__*/React.createElement("td", {
+    className: "px-3 py-3.5 text-sm text-muted hidden md:table-cell num"
+  }, a.detail), /*#__PURE__*/React.createElement("td", {
+    className: "px-3 py-3.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `inline-flex whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-bold ${STATUS[a.status]}`
+  }, a.status)), /*#__PURE__*/React.createElement("td", {
+    className: "px-3 py-3.5 text-sm text-faint text-right whitespace-nowrap hidden sm:table-cell"
+  }, a.vor), /*#__PURE__*/React.createElement("td", {
+    className: "pr-4 text-right"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "p-1.5 rounded-lg text-muted hover:text-ink",
+    "aria-label": `Aktionen für ${a.was}`
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "dotsh",
+    className: "w-5 h-5"
+  })))))))));
+}
+
+/* ---------- Seite ---------- */
+function PageHeader() {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-end justify-between gap-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-xs font-bold tracking-widest uppercase text-faint"
+  }, "Freitag, 23. Oktober 2026 \xB7 KW 43"), /*#__PURE__*/React.createElement("h1", {
+    className: "mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight"
+  }, "Guten Morgen, Dominik"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-sm text-muted"
+  }, "7 Forderungen sind \xFCberf\xE4llig, 3 Fristen laufen diese Woche ab.")), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2.5"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "h-11 px-4 rounded-xl border border-line bg-surface text-sm font-semibold hover:bg-raised transition-colors"
+  }, "Bericht exportieren"), /*#__PURE__*/React.createElement("button", {
+    className: "h-11 px-4 rounded-xl bg-accent text-on-accent text-sm font-bold shadow-card hover:brightness-110 transition inline-flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "plus",
+    className: "w-4 h-4",
+    strokeWidth: 2.6
+  }), " Neues Objekt")));
+}
+function App() {
+  const [active, setActive] = useState('dashboard');
+  const [theme, setTheme] = useState('light');
+  /* Das Attribut muss VOR dem Neuzeichnen der Diagramme stehen (sie lesen die Farben daraus) —
+     darum wird es im Klick gesetzt und nicht in einem Effekt der Elternkomponente. */
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    if (next === 'dark') document.documentElement.setAttribute('data-theme', 'dark');else document.documentElement.removeAttribute('data-theme');
+    setTheme(next);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen"
+  }, /*#__PURE__*/React.createElement(Sidebar, {
+    active: active,
+    onSelect: setActive
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "lg:pl-64 flex flex-col min-h-screen"
+  }, /*#__PURE__*/React.createElement(TopBar, {
+    theme: theme,
+    onTheme: toggleTheme
+  }), /*#__PURE__*/React.createElement("main", {
+    className: "flex-1 w-full max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 pt-7 pb-36 lg:pb-14 flex flex-col gap-6 lg:gap-7"
+  }, /*#__PURE__*/React.createElement(PageHeader, null), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6"
+  }, KPIS.map(k => /*#__PURE__*/React.createElement(KpiCard, {
+    key: k.id,
+    k: k
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 xl:grid-cols-12 gap-5 lg:gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "xl:col-span-7 min-w-0"
+  }, /*#__PURE__*/React.createElement(FinanceCard, {
+    theme: theme
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "xl:col-span-5 min-w-0"
+  }, /*#__PURE__*/React.createElement(AppointmentsCard, null))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 xl:grid-cols-12 gap-5 lg:gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "xl:col-span-4 min-w-0"
+  }, /*#__PURE__*/React.createElement(GaugeCard, {
+    theme: theme
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "xl:col-span-8 min-w-0"
+  }, /*#__PURE__*/React.createElement(ActivityCard, null))))), /*#__PURE__*/React.createElement("button", {
+    className: "fixed right-4 sm:right-6 bottom-6 max-lg:bottom-[calc(max(12px,env(safe-area-inset-bottom))+4.75rem)] z-40 inline-flex items-center gap-2.5 h-12 px-5 rounded-full bg-brand text-white text-[15px] font-bold shadow-pop hover:brightness-110 transition",
+    "aria-label": "Feedback geben"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "chat",
+    className: "w-5 h-5"
+  }), "Feedback"), /*#__PURE__*/React.createElement(BottomNav, {
+    active: active,
+    onSelect: setActive
+  }));
+}
+ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));
+</script>
+</body>
+</html>

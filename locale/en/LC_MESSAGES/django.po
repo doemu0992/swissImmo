@@ -25229,3 +25229,246 @@ msgstr "Send by e-mail again"
 
 msgid "Per E-Mail an Mieter senden"
 msgstr "Send to tenants by e-mail"
+
+msgid "Zahlungsstatus"
+msgstr "Payment status"
+
+msgid "Ticket-Board"
+msgstr "Ticket board"
+
+msgid "Board"
+msgstr "Board"
+
+msgid "Ansicht"
+msgstr "View"
+
+msgid "Liste"
+msgstr "List"
+
+msgid "Mieter kontaktieren"
+msgstr "Contact tenant"
+
+msgid "Neues Ticket"
+msgstr "New ticket"
+
+msgid "Ticket oder Objekt suchen…"
+msgstr "Search ticket or property…"
+
+msgid "Tickets durchsuchen"
+msgstr "Search tickets"
+
+msgid "Dringend"
+msgstr "Urgent"
+
+msgid "Erledigen bis"
+msgstr "Resolve by"
+
+msgid "Zustand von Ticket"
+msgstr "Status of ticket"
+
+msgid "Nichts in dieser Spalte."
+msgstr "Nothing in this column."
+
+msgid "Verbindung unterbrochen — Zustand nicht geändert."
+msgstr "Connection lost — status not changed."
+
+#, python-format
+msgid "%(n)s Tickets nach Zustand. Karten ziehen oder den Zustand an der Karte wählen. Erledigtes bleibt %(erledigt_tage)s Tage sichtbar."
+msgstr "%(n)s tickets by status. Drag cards or pick the status on the card. Resolved tickets stay visible for %(erledigt_tage)s days."
+
+msgid "Termin planen"
+msgstr "Schedule appointment"
+
+msgid "Vorheriger Monat"
+msgstr "Previous month"
+
+msgid "Nächster Monat"
+msgstr "Next month"
+
+msgid "Eintragsarten"
+msgstr "Entry types"
+
+msgid "Keine Einträge in diesem Monat."
+msgstr "No entries this month."
+
+msgid "Für diesen Tag steht nichts an."
+msgstr "Nothing scheduled for this day."
+
+#, python-format
+msgid "%(n)s Einträge im Monat — Termine, Fristen, Ticket-Zielzeiten und Auszüge an einem Ort."
+msgstr "%(n)s entries this month — appointments, deadlines, ticket targets and move-outs in one place."
+
+#, python-format
+msgid "+%(n)s weitere"
+msgstr "+%(n)s more"
+
+msgid "Alle Mandate"
+msgstr "All mandates"
+
+msgid "Soll-Mietertrag p. a."
+msgstr "Target rental income p. a."
+
+msgid "kein Verkehrswert erfasst"
+msgstr "no market value recorded"
+
+msgid "Zahlungsquote"
+msgstr "Payment rate"
+
+msgid "Cashflow"
+msgstr "Cash flow"
+
+msgid "Mt."
+msgstr "mo."
+
+msgid "Netto-Cashflow"
+msgstr "Net cash flow"
+
+msgid "Ertrag und Aufwand je Monat"
+msgstr "Income and expenses per month"
+
+msgid "ohne Storni und Umbuchungen"
+msgstr "excluding reversals and transfers"
+
+msgid "Nutzung"
+msgstr "Use"
+
+msgid "Portfolio-Verteilung"
+msgstr "Portfolio allocation"
+
+msgid "Anzahl Objekte je Nutzungsart"
+msgstr "Number of units by use"
+
+msgid "Anteil am Soll-Mietertrag je Liegenschaft"
+msgstr "Share of target rental income by property"
+
+msgid "Performance je Liegenschaft"
+msgstr "Performance by property"
+
+msgid "Soll p. a."
+msgstr "Target p. a."
+
+msgid "Aufwand 12 Mt."
+msgstr "Expenses 12 mo."
+
+msgid "voll vermietet"
+msgstr "fully let"
+
+msgid "Rendite = Netto-Soll-Mietzins ÷ Verkehrswert (ersatzweise Anlagekosten); netto nach Betriebsaufwand der letzten 12 Monate."
+msgstr "Yield = net target rent ÷ market value (otherwise acquisition cost); net after operating costs of the last 12 months."
+
+msgid "Keine Liegenschaft im Portfolio"
+msgstr "No property in the portfolio"
+
+msgid "Sobald Liegenschaften erfasst sind, erscheinen hier Rendite, Leerstand und Cashflow."
+msgstr "Once properties are recorded, yield, vacancy and cash flow appear here."
+
+msgid "Noch keine Buchungen im Zeitraum."
+msgstr "No postings in the period yet."
+
+msgid "Der Cashflow erscheint, sobald Erträge und Aufwände auf Liegenschaften gebucht sind."
+msgstr "Cash flow appears once income and expenses are posted to properties."
+
+msgid "Keine Daten für die Verteilung."
+msgstr "No data for the allocation."
+
+#, python-format
+msgid "Rendite, Leerstand, Zahlungsmoral und Cashflow des Bestands · Stand %(datum)s"
+msgstr "Yield, vacancy, payment behaviour and cash flow of the portfolio · as of %(datum)s"
+
+#, python-format
+msgid "Betriebsaufwand 12 Mt. CHF %(aufwand)s"
+msgstr "Operating costs 12 mo. CHF %(aufwand)s"
+
+#, python-format
+msgid "brutto %(b)s %% · auf Verkehrswert"
+msgstr "gross %(b)s %% · on market value"
+
+#, python-format
+msgid "%(n)s von %(m)s Objekten leer"
+msgstr "%(n)s of %(m)s units vacant"
+
+#, python-format
+msgid "offen CHF %(s)s · %(n)s überfällig"
+msgstr "open CHF %(s)s · %(n)s overdue"
+
+#, python-format
+msgid "letzte %(n)s Monate"
+msgstr "last %(n)s months"
+
+#, python-format
+msgid "%(n)s leer · %(q)s %%"
+msgstr "%(n)s vacant · %(q)s %%"
+
+#, python-format
+msgid "Von «%(von)s» ist kein Wechsel in diese Spalte vorgesehen."
+msgstr "A move from “%(von)s” to this column is not allowed."
+
+#, python-format
+msgid "Ticket #%(nr)s: %(status)s."
+msgstr "Ticket #%(nr)s: %(status)s."
+
+msgid "Ticket-Zielzeiten"
+msgstr "Ticket targets"
+
+msgid "Auszüge"
+msgstr "Move-outs"
+
+msgid "erledigen bis"
+msgstr "resolve by"
+
+msgid "Soll-Mietertrag p.a. (CHF)"
+msgstr "Target rental income p.a. (CHF)"
+
+msgid "Betriebsaufwand 12 Mt. (CHF)"
+msgstr "Operating costs 12 mo. (CHF)"
+
+msgid "Wert (CHF)"
+msgstr "Value (CHF)"
+
+msgid "Wertbasis"
+msgstr "Value basis"
+
+msgid "Bruttorendite (%)"
+msgstr "Gross yield (%)"
+
+msgid "Nettorendite (%)"
+msgstr "Net yield (%)"
+
+msgid "Eingang verbucht"
+msgstr "Payment posted"
+
+msgid "Offen, nicht fällig"
+msgstr "Open, not yet due"
+
+msgid "Fälligkeit liegt vor uns"
+msgstr "Due date still ahead"
+
+msgid "Zahlungsrückstand — Mahnwesen"
+msgstr "Payment arrears — dunning"
+
+msgid "grün"
+msgstr "green"
+
+msgid "gelb"
+msgstr "yellow"
+
+msgid "rot"
+msgstr "red"
+
+msgid "Betrag (CHF)"
+msgstr "Amount (CHF)"
+
+msgid "Offen (CHF)"
+msgstr "Open (CHF)"
+
+msgid "Ampel"
+msgstr "Traffic light"
+
+msgid "Tage überfällig"
+msgstr "Days overdue"
+
+#, python-format
+msgid "Für %(n)s Liegenschaft ist weder Verkehrswert noch Anlagekosten erfasst — sie fehlt in der Rendite."
+msgid_plural "Für %(n)s Liegenschaften sind weder Verkehrswert noch Anlagekosten erfasst — sie fehlen in der Rendite."
+msgstr[0] "For %(n)s property neither market value nor acquisition cost is recorded — it is missing from the yield."
+msgstr[1] "For %(n)s properties neither market value nor acquisition cost is recorded — they are missing from the yield."

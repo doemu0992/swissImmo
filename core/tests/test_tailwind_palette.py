@@ -195,7 +195,7 @@ class TailwindPaletteTests(TestCase):
                     f'text-{familie}-{stufe} erreicht auf Weiss nur {r:.2f}:1.')
 
     def test_zustandsfarben_bleiben_unterscheidbar(self):
-        """Eine Warnung in Petrol wäre keine Warnung mehr.
+        """Eine Warnung in Navy wäre keine Warnung mehr.
 
         Die semantischen Familien werden an die Konzeptwerte angeglichen —
         aber Rot muss Rot bleiben und Grün Grün, sonst trägt die Farbe keine
@@ -210,7 +210,7 @@ class TailwindPaletteTests(TestCase):
         r, g, b = ton(self.rampen['emerald'][600])
         self.assertGreater(g, r + 40, 'emerald-600 ist nicht mehr grün.')
         r, g, b = ton(self.rampen['indigo'][600])
-        self.assertGreater(g, r + 40, 'indigo-600 ist nicht petrol.')
+        self.assertGreater(b, r + 40, 'indigo-600 ist nicht navy.')
 
     def test_das_favicon_ist_nicht_mehr_indigo(self):
         """Es trug `#4f46e5` — die alte Markenfarbe, im Browsertab sichtbar.

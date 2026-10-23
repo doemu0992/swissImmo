@@ -12,8 +12,8 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 1. **Eine Seite = Kopf, Kennzahlen (falls es welche gibt), dann Karten.** Abstand
    zwischen den Blöcken 24 px — den setzen die Bausteine selbst (`margin-bottom`),
    keine `mb-*`-Utilities dazwischen.
-2. **Farbe heisst Bedeutung.** Petrol = Marke und Handlung, Rot/Orange/Grün = Zustand.
-   Kein Blau, Violett oder Indigo für Zierde. Werte werden nicht eingefärbt, nur
+2. **Farbe heisst Bedeutung.** Navy (#35577D) = Marke und Handlung, Rot/Orange/Grün = Zustand,
+   Petrol (#0E6B65) = Information. Kein Violett oder Indigo, kein zweites Blau für Zierde. Werte werden nicht eingefärbt, nur
    weil sie Geld sind; eingefärbt wird, was auffallen soll (offen, überfällig).
 3. **Keine Kursivschrift** für Leerzustände oder Hinweise.
 4. **Zustand in Form, nicht nur in Zahlen:** Balken (`fw-marker`), Kapsel (`fw-chip`),
@@ -29,8 +29,9 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 | Zweck | Klassen | Bemerkung |
 |---|---|---|
 | Seitenkopf | `fw-phead` > `div` (`h1`, `p`) + `div.fw-phead-knoepfe` | Titel 28 px, Untertitel 13.5 px. Knöpfe rechts. Optional `div.fw-eyebrow` über dem `h1`. |
-| Kennzahlen | `fw-kpis` > `fw-kpi` > `fw-l`, `fw-v` (+ `fw-crit`/`fw-warn`/`fw-good`), `fw-f` | Ein zusammenhängender Streifen, **ohne** Symbolquadrat. Ersetzt jede Kachelreihe `grid … gap-4` mit `fw-card p-5`. |
-| Lagestreifen (Startseite) | `fw-lage` > `div` > `fw-l`, `fw-w`, `fw-f`, `fw-trend hoch/runter` | Nur auf «Heute». |
+| Kennzahlen | `fw-kpis` > `fw-kpi` > `fw-l`, `fw-v` (+ `fw-crit`/`fw-warn`/`fw-good`), `fw-f` | Einzelne Kacheln mit 16 px Abstand (seit V9, vorher ein Streifen). Ersetzt jede Kachelreihe `grid … gap-4` mit `fw-card p-5`. |
+| Symbol-Chip | `span.fw-sym` (+ `good`/`warn`/`crit`/`info`) mit `{% zeichen %}` | 32 px, weiche Zustandsfläche. Nur in Kennzahlkacheln, nie als Schmuck neben Fliesstext. |
+| Lagestreifen (Startseite) | `fw-lage` > `a.fw-lage-kachel` > `div.fw-lage-kopf` (`fw-sym`, `fw-l`), `fw-lage-zeile` (`fw-w`, Linie), `fw-f` (`fw-trend good/crit`) | Nur auf «Heute». |
 | Karte | `fw-card` | Radius 12, feiner Schatten, 24 px Abstand. |
 | Kartenkopf | `fw-kopf` > `fw-t` (oder `h2`), `fw-neben`, `fw-rechts` | Alternative bei alten Seiten: `fw-card > fw-h` mit `fw-t`, `fw-r`. |
 | Kartenfuss | `fw-fuss` | Links Erklärung, rechts `fw-link`. |
@@ -78,7 +79,32 @@ mit Tailwind-Utilities nachbaut, das es hier als Baustein gibt, ist nicht fertig
 | Aging-Tabelle | `table.fw-table.fw-aging-tabelle`, Beträge über 30 Tage in `fw-aging-neg`, Zeile `tr[data-href]` | Summenzeile im `tfoot`. Klick auf die Zeile öffnet die Akte (kleines Skript in `fw/finanzen.html`). |
 | Brotkrume im Seitenkopf | `fw-phead` > `div` > `nav.fw-krumen` (`a` Bereich, `span[aria-hidden]` «/», `span` Seite) vor dem `h1` | Auf jeder Seite mit Bereichsreitern: «Bereich / Seite» (Reiterbeschriftung), 12.5 px. Der Bereich verlinkt auf seine Landeseite mit `{{ lg_query }}`. |
 | Brotkrume über einer Akte oder Unterseite | `nav.fw-brotkrume` (`a`, `{% zeichen 'weiter' %}`, `b`) | 12 px, über dem Aktenkopf. Nicht `fw-akte-pfad` — das ist der Schlüssel-Wert-Block IM Aktenkopf (bekannte-fallen 2b). |
+| Ampel (Zahlungsstatus) | `div.fw-ampeln` > `a.fw-ampel` (`gruen`/`gelb`/`rot`, `fw-on`) > `span.fw-punkt-ampel`, `span.fw-ampel-text` (`b`, `span`), `span.fw-ampel-zahl` | Debitoren. Zugleich Filter (`?ampel=`); Punkt UND Text, nie nur Farbe. Zahlen gelten ohne den Ampelfilter selbst. |
+| Ansichtsumschalter | `div.fw-segment` > `a.fw-seg-link` (`an`) | Liste ‹›Board, Liste ‹›Monat. Links, keine Buttons — jede Ansicht hat eine Adresse. |
+| Ticket-Board | `div.fw-board` > `section.fw-spalte` (`fw-spalte-kopf`, `ul.fw-spalte-liste` > `li.fw-karte` + `crit`/`warn`) | Vier Spalten, Karten ziehen oder Zustand per Auswahlfeld (`fw-karte-wahl`); nur erlaubte Übergänge. `/neu/schaeden/board/`. |
+| Monatskalender | `div.fw-kal-raster` > `fw-kal-kopf`, `fw-kal-tag` (`aus`/`heute`/`gewaehlt`) > `a.fw-kal-chip` (`warn`/`crit`/`good`/`info`/`gedaempft`) | Unter 720 px `fw-kal-liste` statt Raster. `/neu/termine/kalender/`. |
+| Cashflow-Linien | `{% load diagramm %}{% cashflow_diagramm ertrag aufwand monate titel %}` | Zwei Linien auf EINER Achse (Tausend CHF); Aufwand gestrichelt (`fw-kurve-strich zwei`). |
+| Donut | `{% donut_diagramm teile mitte_wert mitte_text titel %}` + `ul.fw-donut-legende` | Abstufungen einer Farbe — die Farbe trägt keine Bedeutung, die Legende nennt den Anteil. |
+| Nur für Hilfstechnik | `.sr-only` | Beschriftung ohne sichtbaren Text. |
 | Dateifeld | `input[type=file].fw-datei` (+ `w-full`) | Rahmen wie `fw-feld`, Auswahlknopf wie `fw-btn` (`::file-selector-button`). Keine `file:`-Utilities. |
+
+## V9 «Navy Mirage» (23.10.2026)
+
+Quelle: `mockups/konzept-v9-vergleich.html` (Vergleich Petrol / Navy, hell / dunkel, die sieben
+Dashboard-Regeln, Prüfliste mit gemessenen Kontrasten). Übernommen aus den Vorlagen:
+
+- **Palette** #141E30 / #35577D, überall über Tokens (`docs/KONZEPT-UI.md` §16.1).
+- **60-30-10:** 60 % ruhige Fläche, 30 % Navy als Struktur, 10 % Akzent — ein Hauptknopf je Seite
+  (`fw-primary`, Schatten in Markenfarbe).
+- **Bühne und Glas:** weicher Schein (`--ds-glow`) hinter allem, Leiste, Kopfzeile und Tab-Leiste
+  sind Glas. Nie ein Bild, nie Violett.
+- **Kennzahlen zuerst, einzelne Kacheln** mit Symbol-Chip und Trendkapsel.
+- **Tab-Leiste am Telefon** schwebt als Glaskapsel mit 12 px Rand; aktiver Bereich als Fläche.
+- **Prüfliste vor «fertig»:** Ausrichtung, Abstände (4/8/12/16/24), Hierarchie, Kontrast ≥ 4.5 : 1,
+  Zustände (hover, Fokus, aktiv, deaktiviert), Einheitlichkeit, Telefon bei 390 px.
+
+Nicht übernommen, mit Grund: Fotos in Tabellen (DSG), mehrere Diagramme je Seite, violetter
+Verlauf als Fläche, Halbkreis-Diagramme.
 
 ## Was nicht mehr vorkommen soll
 

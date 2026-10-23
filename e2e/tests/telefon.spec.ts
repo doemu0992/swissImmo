@@ -172,7 +172,7 @@ test('Die Kennzahlenleiste bleibt am Telefon flach', async ({ page }) => {
   //   ohne alle drei                 206 px
   const hoehe = (await leiste.boundingBox())!.height;
   expect(hoehe, `Die Kennzahlenleiste ist ${Math.round(hoehe)} Pixel hoch — ` +
-    'erwartet unter 195. Gemessen (v8): 183 mit den Telefon-Regeln, 236 ohne.').toBeLessThan(195);
+    'erwartet unter 195. Gemessen (V9, die Aktenleiste bleibt ein Streifen): 183; als einzelne Kacheln 210; ohne Telefon-Regeln 236+.').toBeLessThan(195);
 
   // Der Grund, nicht nur die Folge. Ohne diese Zusicherung bliebe der Test
   // grün, wenn die Leiste aus einem anderen Grund kürzer würde — etwa weil

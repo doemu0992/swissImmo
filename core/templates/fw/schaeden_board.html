@@ -1,0 +1,132 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Ticket-Board" %} — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %} KANBAN-BOARD der Tickets. Dieselben Daten wie die Liste; der Statuswechsel läuft
+   über `tickets.workflow.wechsle_status` (Sperre «nicht erledigt ohne Handwerkerrechnung»
+   gilt auch hier). Ziehen mit der Maus ODER Auswahlfeld an der Karte (Tastatur, Telefon). {% endcomment %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><a href="/neu/schaeden/{{ lg_query }}">{% trans "Schäden" %}</a><span aria-hidden="true">/</span><span>{% trans "Board" %}</span></nav>
+        <h1>{% trans "Ticket-Board" %}</h1>
+        <p>{% blocktrans trimmed with n=gesamt %}{{ n }} Tickets nach Zustand. Karten ziehen oder den Zustand an der Karte wählen. Erledigtes bleibt {{ erledigt_tage }} Tage sichtbar.{% endblocktrans %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <div class="fw-segment" role="group" aria-label="{% trans 'Ansicht' %}">
+            <a href="/neu/schaeden/{{ lg_query }}" class="fw-seg-link">{% zeichen 'dokument' %} {% trans "Liste" %}</a>
+            <a href="/neu/schaeden/board/{{ lg_query }}" class="fw-seg-link an" aria-current="page">{% zeichen 'bericht' %} {% trans "Board" %}</a>
+        </div>
+        <a href="/neu/kommunikation/" class="fw-btn">{% zeichen 'senden' %} {% trans "Mieter kontaktieren" %}</a>
+        <a href="/neu/schaeden/?neu=1" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Neues Ticket" %}</a>
+    </div>
+</div>
+
+<div class="fw-filters">
+    <form method="get" class="fw-suchfeld fw-board-suche" role="search">
+        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+        <input type="search" name="q" value="{{ q }}" class="fw-feld" placeholder="{% trans 'Ticket oder Objekt suchen…' %}" aria-label="{% trans 'Tickets durchsuchen' %}">
+    </form>
+    <a href="?{% if nur_meine %}{% else %}zustaendig=ich{% endif %}{% if prio %}&amp;prio={{ prio }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip{% if nur_meine %} fw-on{% endif %}">{% trans "Meine Tickets" %}{% if nur_meine %} ×{% endif %}</a>
+    <a href="?{% if prio %}{% else %}prio=dringend{% endif %}{% if nur_meine %}&amp;zustaendig=ich{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip{% if prio %} fw-on{% endif %}">{% trans "Dringend" %}{% if prio %} ×{% endif %}</a>
+    <a href="?{% if nur_ueberfaellig %}{% else %}sla=ueberfaellig{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip{% if nur_ueberfaellig %} fw-on{% endif %}">{% trans "SLA überfällig" %}{% if nur_ueberfaellig %} ×{% endif %}</a>
+</div>
+
+<div id="fwBoardMeldung" class="fw-hinweis crit hidden" role="alert"><span class="fw-hi">{% zeichen 'kritisch' %}</span><div class="fw-ht" id="fwBoardMeldungText"></div></div>
+
+<div class="fw-board" id="fwBoard" data-verschieben="{% if kann_verschieben %}1{% endif %}">
+    {% for sp in spalten %}
+    <section class="fw-spalte" data-spalte="{{ sp.key }}" aria-labelledby="sp-{{ sp.key }}">
+        <header class="fw-spalte-kopf">
+            <h2 id="sp-{{ sp.key }}">{{ sp.label }}</h2>
+            <span class="fw-z" data-zaehler>{{ sp.anzahl }}</span>
+        </header>
+        <ul class="fw-spalte-liste" data-liste>
+            {% for z in sp.karten %}
+            <li class="fw-karte {{ z.stufe }}" data-id="{{ z.t.id }}" {% if kann_verschieben %}draggable="true"{% endif %}>
+                <div class="fw-karte-kopf">
+                    <span class="fw-mono">#{{ z.t.id }}</span>
+                    {% if z.t.prioritaet|lower == 'notfall' %}<span class="fw-chip fw-crit">{% trans "Notfall" %}</span>{% elif z.t.prioritaet|lower == 'hoch' %}<span class="fw-chip fw-crit">{% trans "Hoch" %}</span>{% elif z.t.prioritaet|lower == 'tief' or z.t.prioritaet|lower == 'niedrig' %}<span class="fw-chip fw-mut">{% trans "Tief" %}</span>{% endif %}
+                    {% if z.ueberfaellig %}<span class="fw-chip fw-crit" title="{% trans 'Zielzeit überschritten' %}">{% trans "SLA überfällig" %}</span>{% elif z.t.faellig_bis and z.offen %}<span class="fw-chip fw-mut" title="{% trans 'Erledigen bis' %}">{{ z.t.faellig_bis|date:"d.m." }}</span>{% endif %}
+                </div>
+                <a href="/neu/schaeden/{{ z.t.id }}/" class="fw-karte-titel" onclick="return fwModalOpenUrl('/neu/schaeden/{{ z.t.id }}/','{% trans 'Schaden' %} #{{ z.t.id }}')">{{ z.t.titel|truncatechars:80 }}</a>
+                <div class="fw-karte-sub">{{ z.objekt }}{% if z.t.betroffene_einheit %} · {{ z.t.betroffene_einheit.bezeichnung }}{% endif %}</div>
+                {% if z.befunde %}<div class="fw-karte-befunde">{% for b in z.befunde|slice:":2" %}<span class="fw-chip fw-{{ b.stufe }} fw-dot">{{ b.text }}</span>{% endfor %}</div>{% endif %}
+                <div class="fw-karte-fuss">
+                    {% if z.wer %}<span class="fw-avatar fw-avatar-klein" title="{{ z.wer_name }}">{{ z.wer }}</span>{% else %}<span class="fw-avatar fw-avatar-klein fw-avatar-offen" title="{% trans 'niemand zuständig' %}">?</span>{% endif %}
+                    <span class="fw-karte-alter">{% blocktrans count n=z.alter %}vor {{ n }} Tag{% plural %}vor {{ n }} Tagen{% endblocktrans %}</span>
+                    {% if kann_verschieben %}
+                    <form method="post" action="/neu/schaeden/{{ z.t.id }}/verschieben/" class="fw-karte-form">{% csrf_token %}
+                        <label class="sr-only" for="st-{{ z.t.id }}">{% trans "Zustand von Ticket" %} #{{ z.t.id }}</label>
+                        <select id="st-{{ z.t.id }}" name="status" class="fw-karte-wahl" onchange="this.form.requestSubmit()">
+                            {% for wert, bez in z.ziele %}<option value="{{ wert }}"{% if wert == z.t.status %} selected{% endif %}>{{ bez }}</option>{% endfor %}
+                        </select>
+                    </form>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="fw-spalte-leer{% if sp.karten %} hidden{% endif %}" data-leer>{% trans "Nichts in dieser Spalte." %}</div>
+    </section>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include 'fw/_fwmodal.html' %}
+<script>
+(function () {
+    var board = document.getElementById('fwBoard');
+    if (!board || !board.dataset.verschieben) return;
+    var gezogen = null, herkunft = null;
+    var meldung = document.getElementById('fwBoardMeldung'), text = document.getElementById('fwBoardMeldungText');
+    var csrf = (document.querySelector('input[name=csrfmiddlewaretoken]') || {}).value;
+
+    function zaehlen() {
+        board.querySelectorAll('.fw-spalte').forEach(function (sp) {
+            var n = sp.querySelectorAll('.fw-karte').length;
+            sp.querySelector('[data-zaehler]').textContent = n;
+            sp.querySelector('[data-leer]').classList.toggle('hidden', n > 0);
+        });
+    }
+    function fehler(t) { text.textContent = t; meldung.classList.remove('hidden'); meldung.scrollIntoView({block: 'nearest'}); }
+
+    board.addEventListener('dragstart', function (e) {
+        var k = e.target.closest && e.target.closest('.fw-karte'); if (!k) return;
+        gezogen = k; herkunft = k.parentNode; k.classList.add('zieht');
+        e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', k.dataset.id);
+    });
+    board.addEventListener('dragend', function () {
+        if (gezogen) gezogen.classList.remove('zieht');
+        board.querySelectorAll('.ziel').forEach(function (s) { s.classList.remove('ziel'); });
+        gezogen = null;
+    });
+    board.querySelectorAll('.fw-spalte').forEach(function (sp) {
+        sp.addEventListener('dragover', function (e) { if (gezogen) { e.preventDefault(); sp.classList.add('ziel'); } });
+        sp.addEventListener('dragleave', function (e) { if (!sp.contains(e.relatedTarget)) sp.classList.remove('ziel'); });
+        sp.addEventListener('drop', function (e) {
+            e.preventDefault(); sp.classList.remove('ziel');
+            if (!gezogen) return;
+            var karte = gezogen, liste = sp.querySelector('[data-liste]');
+            if (liste === herkunft) return;
+            var vorher = herkunft;
+            liste.insertBefore(karte, liste.firstChild); zaehlen();          // sofort zeigen …
+            var f = new FormData(); f.append('spalte', sp.dataset.spalte); f.append('csrfmiddlewaretoken', csrf);
+            fetch('/neu/schaeden/' + karte.dataset.id + '/verschieben/', {
+                method: 'POST', body: f, credentials: 'same-origin',
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}
+            }).then(function (r) { return r.json().then(function (j) { return [r.ok, j]; }); })
+              .then(function (a) {
+                  if (a[0]) {
+                      meldung.classList.add('hidden');
+                      var s = karte.querySelector('.fw-karte-wahl');
+                      if (s) { s.innerHTML = ''; a[1].ziele.forEach(function (z) { var o = new Option(z[1], z[0]); o.selected = z[0] === a[1].status; s.add(o); }); }
+                  }
+                  else { vorher.appendChild(karte); zaehlen(); fehler(a[1].meldung); }   // … und bei Sperre zurück
+              }).catch(function () { vorher.appendChild(karte); zaehlen(); fehler('{% filter escapejs %}{% trans "Verbindung unterbrochen — Zustand nicht geändert." %}{% endfilter %}'); });
+        });
+    });
+})();
+</script>
+{% endblock %}

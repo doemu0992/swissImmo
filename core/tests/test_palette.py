@@ -28,18 +28,18 @@ BASE = pathlib.Path('core/templates/fw/_schicht.html')
 #: Tailwind-Utilities und wird von `EinFarbtonTests` mitgelesen.
 HUELLE = pathlib.Path('core/templates/fw/base.html')
 
-#: Werte aus mockups/konzept-v8-cockpit.html (Redesign 30.09.2026; vorher
-#: konzept-v3). Wer sie ändert, ändert das Konzept — und muss
+#: Werte aus mockups/konzept-v9-vergleich.html (Navy Mirage, 23.10.2026;
+#: vorher Petrol aus konzept-v8). Wer sie ändert, ändert das Konzept — und muss
 #: `docs/KONZEPT-UI.md` mitziehen.
 KONZEPT = {
-    '--ds-brand': '#0e6b65',
-    '--ds-brand-600': '#0a4f4b',
-    '--ds-brand-soft': '#e2f1ef',
-    '--ds-ink': '#0c1f23',
-    '--ds-muted': '#465b62',
-    '--ds-faint': '#5d7279',
-    '--ds-surface-2': '#f6f8f8',
-    '--ds-line': '#e1e8e9',
+    '--ds-brand': '#35577d',
+    '--ds-brand-600': '#27415f',
+    '--ds-brand-soft': '#e3ebf5',
+    '--ds-ink': '#141e30',
+    '--ds-muted': '#43526a',
+    '--ds-faint': '#5a6980',
+    '--ds-surface-2': '#f6f8fb',
+    '--ds-line': '#dde4ee',
     '--ds-radius': '12px',
     '--ds-radius-sm': '8px',
 }
@@ -220,7 +220,7 @@ def farbton(hexwert):
 
 
 class EinFarbtonTests(TestCase):
-    """Die ganze Datei traegt Petrol — nicht nur der :root-Block.
+    """Die ganze Datei traegt Navy — nicht nur der :root-Block.
 
     WARUM DIESER TEST NOETIG WURDE
 
@@ -242,9 +242,11 @@ class EinFarbtonTests(TestCase):
     Datei.
     """
 
-    #: Indigo und Violett liegen zwischen 215 und 300 Grad, Petrol bei ~180-200.
-    #: Der Abstand ist gross genug, dass kein Grenzfall entscheidet.
-    VERBOTEN = (215, 300)
+    #: Indigo und Violett liegen zwischen 245 und 300 Grad. Navy Mirage
+    #: (seit 23.10.2026: #141E30 / #35577D) liegt bei 210-220 Grad, die
+    #: Info-Farbe (Petrol) bei ~176. Zwischen 220 und 245 Grad steht nichts
+    #: in der Datei, also entscheidet kein Grenzfall.
+    VERBOTEN = (245, 300)
     #: Unterhalb davon ist es Grau und der Farbton bedeutungslos.
     MERKLICH = 0.12
 

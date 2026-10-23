@@ -11,6 +11,10 @@
         <p>{% trans "Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/schaeden/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
+        <div class="fw-segment" role="group" aria-label="{% trans 'Ansicht' %}">
+            <a href="/neu/schaeden/{{ lg_query }}" class="fw-seg-link an" aria-current="page">{% zeichen 'dokument' %} {% trans "Liste" %}</a>
+            <a href="/neu/schaeden/board/{{ lg_query }}" class="fw-seg-link">{% zeichen 'bericht' %} {% trans "Board" %}</a>
+        </div>
         {% if kann_schreiben %}
         <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Schaden erfassen" %}</button>
         {% endif %}
@@ -154,4 +158,8 @@
 
 {% block scripts %}
 {% include 'fw/_fwmodal.html' %}
+<script>
+// «Neues Ticket» vom Board oder von «Heute» öffnet das Formular gleich.
+if (/[?&]neu=1\b/.test(location.search)) { var f = document.getElementById('neuschaden'); if (f) { f.classList.remove('hidden'); f.scrollIntoView({block: 'start'}); } }
+</script>
 {% endblock %}

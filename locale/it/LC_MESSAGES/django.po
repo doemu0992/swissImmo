@@ -25452,3 +25452,246 @@ msgstr "Invia di nuovo per e-mail"
 
 msgid "Per E-Mail an Mieter senden"
 msgstr "Invia agli inquilini per e-mail"
+
+msgid "Zahlungsstatus"
+msgstr "Stato dei pagamenti"
+
+msgid "Ticket-Board"
+msgstr "Bacheca ticket"
+
+msgid "Board"
+msgstr "Bacheca"
+
+msgid "Ansicht"
+msgstr "Vista"
+
+msgid "Liste"
+msgstr "Elenco"
+
+msgid "Mieter kontaktieren"
+msgstr "Contattare l'inquilino"
+
+msgid "Neues Ticket"
+msgstr "Nuovo ticket"
+
+msgid "Ticket oder Objekt suchen…"
+msgstr "Cerca ticket o oggetto…"
+
+msgid "Tickets durchsuchen"
+msgstr "Cerca nei ticket"
+
+msgid "Dringend"
+msgstr "Urgente"
+
+msgid "Erledigen bis"
+msgstr "Da evadere entro"
+
+msgid "Zustand von Ticket"
+msgstr "Stato del ticket"
+
+msgid "Nichts in dieser Spalte."
+msgstr "Niente in questa colonna."
+
+msgid "Verbindung unterbrochen — Zustand nicht geändert."
+msgstr "Connessione interrotta — stato non modificato."
+
+#, python-format
+msgid "%(n)s Tickets nach Zustand. Karten ziehen oder den Zustand an der Karte wählen. Erledigtes bleibt %(erledigt_tage)s Tage sichtbar."
+msgstr "%(n)s ticket per stato. Trascina le schede o scegli lo stato sulla scheda. I ticket chiusi restano visibili per %(erledigt_tage)s giorni."
+
+msgid "Termin planen"
+msgstr "Pianificare un appuntamento"
+
+msgid "Vorheriger Monat"
+msgstr "Mese precedente"
+
+msgid "Nächster Monat"
+msgstr "Mese successivo"
+
+msgid "Eintragsarten"
+msgstr "Tipi di voci"
+
+msgid "Keine Einträge in diesem Monat."
+msgstr "Nessuna voce in questo mese."
+
+msgid "Für diesen Tag steht nichts an."
+msgstr "Niente in programma per questo giorno."
+
+#, python-format
+msgid "%(n)s Einträge im Monat — Termine, Fristen, Ticket-Zielzeiten und Auszüge an einem Ort."
+msgstr "%(n)s voci nel mese — appuntamenti, termini, scadenze dei ticket e traslochi in un unico luogo."
+
+#, python-format
+msgid "+%(n)s weitere"
+msgstr "+%(n)s altri"
+
+msgid "Alle Mandate"
+msgstr "Tutti i mandati"
+
+msgid "Soll-Mietertrag p. a."
+msgstr "Reddito locativo teorico annuo"
+
+msgid "kein Verkehrswert erfasst"
+msgstr "nessun valore venale registrato"
+
+msgid "Zahlungsquote"
+msgstr "Tasso di pagamento"
+
+msgid "Cashflow"
+msgstr "Cash flow"
+
+msgid "Mt."
+msgstr "mesi"
+
+msgid "Netto-Cashflow"
+msgstr "Cash flow netto"
+
+msgid "Ertrag und Aufwand je Monat"
+msgstr "Ricavi e costi per mese"
+
+msgid "ohne Storni und Umbuchungen"
+msgstr "senza storni e giroconti"
+
+msgid "Nutzung"
+msgstr "Destinazione d'uso"
+
+msgid "Portfolio-Verteilung"
+msgstr "Ripartizione del portafoglio"
+
+msgid "Anzahl Objekte je Nutzungsart"
+msgstr "Numero di oggetti per destinazione d'uso"
+
+msgid "Anteil am Soll-Mietertrag je Liegenschaft"
+msgstr "Quota del reddito locativo teorico per immobile"
+
+msgid "Performance je Liegenschaft"
+msgstr "Rendimento per immobile"
+
+msgid "Soll p. a."
+msgstr "Teorico annuo"
+
+msgid "Aufwand 12 Mt."
+msgstr "Costi 12 mesi"
+
+msgid "voll vermietet"
+msgstr "interamente locato"
+
+msgid "Rendite = Netto-Soll-Mietzins ÷ Verkehrswert (ersatzweise Anlagekosten); netto nach Betriebsaufwand der letzten 12 Monate."
+msgstr "Rendimento = canone netto teorico ÷ valore venale (in alternativa costi d'investimento); netto dopo i costi d'esercizio degli ultimi 12 mesi."
+
+msgid "Keine Liegenschaft im Portfolio"
+msgstr "Nessun immobile nel portafoglio"
+
+msgid "Sobald Liegenschaften erfasst sind, erscheinen hier Rendite, Leerstand und Cashflow."
+msgstr "Non appena sono registrati degli immobili, qui compaiono rendimento, sfitti e cash flow."
+
+msgid "Noch keine Buchungen im Zeitraum."
+msgstr "Ancora nessuna registrazione nel periodo."
+
+msgid "Der Cashflow erscheint, sobald Erträge und Aufwände auf Liegenschaften gebucht sind."
+msgstr "Il cash flow compare non appena ricavi e costi sono contabilizzati sugli immobili."
+
+msgid "Keine Daten für die Verteilung."
+msgstr "Nessun dato per la ripartizione."
+
+#, python-format
+msgid "Rendite, Leerstand, Zahlungsmoral und Cashflow des Bestands · Stand %(datum)s"
+msgstr "Rendimento, sfitti, puntualità dei pagamenti e cash flow del portafoglio · stato al %(datum)s"
+
+#, python-format
+msgid "Betriebsaufwand 12 Mt. CHF %(aufwand)s"
+msgstr "Costi d'esercizio 12 mesi CHF %(aufwand)s"
+
+#, python-format
+msgid "brutto %(b)s %% · auf Verkehrswert"
+msgstr "lordo %(b)s %% · sul valore venale"
+
+#, python-format
+msgid "%(n)s von %(m)s Objekten leer"
+msgstr "%(n)s oggetti sfitti su %(m)s"
+
+#, python-format
+msgid "offen CHF %(s)s · %(n)s überfällig"
+msgstr "aperto CHF %(s)s · %(n)s scaduti"
+
+#, python-format
+msgid "letzte %(n)s Monate"
+msgstr "ultimi %(n)s mesi"
+
+#, python-format
+msgid "%(n)s leer · %(q)s %%"
+msgstr "%(n)s sfitti · %(q)s %%"
+
+#, python-format
+msgid "Von «%(von)s» ist kein Wechsel in diese Spalte vorgesehen."
+msgstr "Da «%(von)s» non è previsto il passaggio a questa colonna."
+
+#, python-format
+msgid "Ticket #%(nr)s: %(status)s."
+msgstr "Ticket n. %(nr)s: %(status)s."
+
+msgid "Ticket-Zielzeiten"
+msgstr "Scadenze dei ticket"
+
+msgid "Auszüge"
+msgstr "Traslochi"
+
+msgid "erledigen bis"
+msgstr "da evadere entro"
+
+msgid "Soll-Mietertrag p.a. (CHF)"
+msgstr "Reddito locativo teorico annuo (CHF)"
+
+msgid "Betriebsaufwand 12 Mt. (CHF)"
+msgstr "Costi d'esercizio 12 mesi (CHF)"
+
+msgid "Wert (CHF)"
+msgstr "Valore (CHF)"
+
+msgid "Wertbasis"
+msgstr "Base del valore"
+
+msgid "Bruttorendite (%)"
+msgstr "Rendimento lordo (%)"
+
+msgid "Nettorendite (%)"
+msgstr "Rendimento netto (%)"
+
+msgid "Eingang verbucht"
+msgstr "Incasso contabilizzato"
+
+msgid "Offen, nicht fällig"
+msgstr "Aperto, non scaduto"
+
+msgid "Fälligkeit liegt vor uns"
+msgstr "La scadenza è futura"
+
+msgid "Zahlungsrückstand — Mahnwesen"
+msgstr "Ritardo di pagamento — solleciti"
+
+msgid "grün"
+msgstr "verde"
+
+msgid "gelb"
+msgstr "giallo"
+
+msgid "rot"
+msgstr "rosso"
+
+msgid "Betrag (CHF)"
+msgstr "Importo (CHF)"
+
+msgid "Offen (CHF)"
+msgstr "Aperto (CHF)"
+
+msgid "Ampel"
+msgstr "Semaforo"
+
+msgid "Tage überfällig"
+msgstr "Giorni di ritardo"
+
+#, python-format
+msgid "Für %(n)s Liegenschaft ist weder Verkehrswert noch Anlagekosten erfasst — sie fehlt in der Rendite."
+msgid_plural "Für %(n)s Liegenschaften sind weder Verkehrswert noch Anlagekosten erfasst — sie fehlen in der Rendite."
+msgstr[0] "Per %(n)s immobile non sono registrati né valore venale né costi d'investimento — manca nel rendimento."
+msgstr[1] "Per %(n)s immobili non sono registrati né valore venale né costi d'investimento — mancano nel rendimento."
