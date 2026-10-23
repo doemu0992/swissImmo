@@ -1087,20 +1087,21 @@ belegt; `core/tests/test_palette.py` verwies auf dieses Dokument, das dazu nicht
 
 ### 16.1 Palette
 
-Verbindlich, geprüft von `core/tests/test_palette.py`. Quelle seit dem Redesign vom 30.09.2026:
-`mockups/konzept-v8-cockpit.html`. Definiert in `core/templates/fw/_schicht.html` unter `:root`,
+Verbindlich, geprüft von `core/tests/test_palette.py`. Seit dem 23.10.2026 gilt die Palette «Navy Mirage»
+(`#141E30` / `#35577D`, Mockup `mockups/konzept-v9-vergleich.html`); bis dahin Petrol aus
+`mockups/konzept-v8-cockpit.html`. Info-Farbe ist seither das frühere Petrol (`#0e6b65`). Definiert in `core/templates/fw/_schicht.html` unter `:root`,
 im `@media (prefers-color-scheme:dark)`-Block und unter `:root[data-theme="dark"]`.
 
 | Token | Hell | Dunkel | Rolle |
 |---|---|---|---|
-| `--ds-brand` | `#0e6b65` | `#53b8ae` | Petrol, Markenfarbe |
-| `--ds-brand-600` | `#0a4f4b` | `#7fd0c7` | gedrückter Zustand |
-| `--ds-brand-soft` | `#e2f1ef` | `#123331` | Fläche hinter Markenfarbe |
-| `--ds-ink` | `#0c1f23` | `#e5eeef` | Fliesstext |
-| `--ds-muted` | `#465b62` | `#a7bec3` | Zweitrangiges |
-| `--ds-faint` | `#5d7279` | `#8aa2a8` | Beschriftungen |
-| `--ds-line` | `#e1e8e9` | `#1e363d` | Trennlinien |
-| `--ds-hover` | `#eef3f3` | `#172e34` | Fläche unter dem Zeiger |
+| `--ds-brand` | `#35577d` | `#8fb1da` | Navy, Markenfarbe |
+| `--ds-brand-600` | `#27415f` | `#b4cdea` | gedrückter Zustand |
+| `--ds-brand-soft` | `#e3ebf5` | `#1f3556` | Fläche hinter Markenfarbe |
+| `--ds-ink` | `#141e30` | `#e8eef7` | Fliesstext |
+| `--ds-muted` | `#43526a` | `#b0bfd3` | Zweitrangiges |
+| `--ds-faint` | `#5a6980` | `#93a4bb` | Beschriftungen |
+| `--ds-line` | `#dde4ee` | `#26344c` | Trennlinien |
+| `--ds-hover` | `#eaeff6` | `#202e45` | Fläche unter dem Zeiger |
 | `--ds-radius` / `-sm` | `12px` / `8px` | dieselben | Geometrie, im Dunkeln unverändert |
 
 Dazu `good` / `warn` / `crit` / `info`, jeweils mit `-soft`-Fläche, drei Schattenhöhen

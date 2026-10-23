@@ -64,17 +64,17 @@ und einen Stilblock enthaelt.
            derselbe Petrolton, eine Stufe dunkler. Die Regel weiter unten haengt
            text-slate-400/-300 an --ds-muted; das bleibt unveraendert. */
         :root{
-            --ds-bg:#f2f5f5;--ds-surface:#fff;--ds-surface-2:#f6f8f8;--ds-ink:#0c1f23;--ds-muted:#465b62;--ds-faint:#5d7279;--ds-line:#e1e8e9;
-            --ds-brand:#0e6b65;--ds-brand-600:#0a4f4b;--ds-brand-soft:#e2f1ef;
+            --ds-bg:#f1f4f8;--ds-surface:#fff;--ds-surface-2:#f6f8fb;--ds-ink:#141e30;--ds-muted:#43526a;--ds-faint:#5a6980;--ds-line:#dde4ee;
+            --ds-brand:#35577d;--ds-brand-600:#27415f;--ds-brand-soft:#e3ebf5;
             /* Flaeche unter dem Zeiger (Zeilen, Menues, Knoepfe) — eine Stufe
                ueber --ds-surface-2, damit `hover` von `ruhend` zu unterscheiden
                ist. Grau darauf erreicht noch 4.52:1. */
-            --ds-hover:#eef3f3;
+            --ds-hover:#eaeff6;
             /* Markenverlauf mit weisser Schrift (Kopf des Mieterportals).
                BEWUSST in beiden Modi gleich und nicht an --ds-brand gehaengt:
                Im Dunkelmodus ist die Marke hell, weisse Schrift darauf
                erreichte nur 2.5:1. Mit diesen Werten: Weiss 8.8:1. */
-            --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;
+            --ds-verlauf-von:#2b4a70;--ds-verlauf-bis:#141e30;
             /* Schrift auf einer GESAETTIGTEN Flaeche — Marke, kritisch,
                gut, Warnung. Nachgemessen fuer alle vier: Im Hellmodus
                gewinnt Weiss (5.8-6.8:1), im Dunkelmodus die dunkle Tinte
@@ -82,13 +82,14 @@ und einen Stilblock enthaelt.
             --ds-auf-satt:#ffffff;
             /* Eine Stufe deutlicher als die Grundlinie: fuer Umrandungen,
                die beim Ueberfahren hervortreten sollen. */
-            --ds-line-stark:#cbd7d9;
-            --ds-good:#15683a;--ds-good-soft:#e3f3e8;--ds-warn:#955708;--ds-warn-soft:#fbf0de;--ds-crit:#b0222e;--ds-crit-soft:#fbe9eb;--ds-info:#0b5c8f;--ds-info-soft:#e0eff8;
+            --ds-line-stark:#c6d1e0;
+            --ds-good:#15683a;--ds-good-soft:#e3f3e8;--ds-warn:#955708;--ds-warn-soft:#fbf0de;--ds-crit:#b0222e;--ds-crit-soft:#fbe9eb;--ds-info:#0e6b65;--ds-info-soft:#e2f1ef;
             /* Drei Hoehen wie im Mockup: aufliegend (Karten), schwebend
                (Popover, Freigabeleiste), abgehoben (Schublade, Dialog). */
-            --ds-shadow-sm:0 1px 2px rgba(12,31,35,.05);--ds-shadow:0 1px 2px rgba(12,31,35,.04),0 12px 32px -8px rgba(12,31,35,.10);--ds-shadow-lg:0 24px 64px -12px rgba(12,31,35,.28);
+            --ds-shadow-sm:0 1px 2px rgba(20,30,48,.05);--ds-shadow:0 1px 2px rgba(20,30,48,.04),0 12px 32px -8px rgba(20,30,48,.10);--ds-shadow-lg:0 24px 64px -12px rgba(20,30,48,.28);
             /* Vorhang hinter Schublade, Palette und Dialog. */
-            --ds-scrim:rgba(8,22,26,.36);
+            --ds-scrim:rgba(10,17,32,.4);
+            --ds-glow:rgba(53,87,125,.16);--ds-glow-2:rgba(53,87,125,.08);
             --ds-radius:12px;--ds-radius-sm:8px;--ds-pill:999px;
             /* Knoepfe und Felder (9), Kapsel-Etiketten (5), Dialoge (14). */
             --ds-radius-knopf:9px;--ds-radius-xs:5px;--ds-radius-lg:14px;
@@ -97,27 +98,29 @@ und einen Stilblock enthaelt.
             --ds-ease:cubic-bezier(.2,.8,.2,1);
         }
         @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-            --ds-bg:#0a1417;--ds-surface:#101f23;--ds-surface-2:#13262b;--ds-ink:#e5eeef;--ds-muted:#a7bec3;--ds-faint:#8aa2a8;--ds-line:#1e363d;
-            --ds-brand:#53b8ae;--ds-brand-600:#7fd0c7;--ds-brand-soft:#123331;
-            --ds-hover:#172e34;
-            --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;   /* wie hell: die Schrift darauf ist weiss */
-            --ds-auf-satt:#06201e;
-            --ds-line-stark:#2b4851;
-            --ds-good:#5fcf92;--ds-good-soft:#12302a;--ds-warn:#e2a84f;--ds-warn-soft:#33270f;--ds-crit:#f08b93;--ds-crit-soft:#361b1f;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
+            --ds-bg:#0a1120;--ds-surface:#141e30;--ds-surface-2:#1a2639;--ds-ink:#e8eef7;--ds-muted:#b0bfd3;--ds-faint:#93a4bb;--ds-line:#26344c;
+            --ds-brand:#8fb1da;--ds-brand-600:#b4cdea;--ds-brand-soft:#1f3556;
+            --ds-hover:#202e45;
+            --ds-verlauf-von:#2b4a70;--ds-verlauf-bis:#141e30;   /* wie hell: die Schrift darauf ist weiss */
+            --ds-auf-satt:#0a1120;
+            --ds-line-stark:#35577d;
+            --ds-good:#5fcf92;--ds-good-soft:#12302a;--ds-warn:#e2a84f;--ds-warn-soft:#33270f;--ds-crit:#f08b93;--ds-crit-soft:#361b1f;--ds-info:#53b8ae;--ds-info-soft:#123331;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -8px rgba(0,0,0,.45);--ds-shadow-lg:0 24px 64px -12px rgba(0,0,0,.6);
             --ds-scrim:rgba(0,0,0,.55);
+            --ds-glow:rgba(100,150,210,.14);--ds-glow-2:rgba(100,150,210,.07);
             color-scheme:dark;
         }}
         :root[data-theme="dark"]{
-            --ds-bg:#0a1417;--ds-surface:#101f23;--ds-surface-2:#13262b;--ds-ink:#e5eeef;--ds-muted:#a7bec3;--ds-faint:#8aa2a8;--ds-line:#1e363d;
-            --ds-brand:#53b8ae;--ds-brand-600:#7fd0c7;--ds-brand-soft:#123331;
-            --ds-hover:#172e34;
-            --ds-verlauf-von:#0b5450;--ds-verlauf-bis:#083f3c;   /* wie hell: die Schrift darauf ist weiss */
-            --ds-auf-satt:#06201e;
-            --ds-line-stark:#2b4851;
-            --ds-good:#5fcf92;--ds-good-soft:#12302a;--ds-warn:#e2a84f;--ds-warn-soft:#33270f;--ds-crit:#f08b93;--ds-crit-soft:#361b1f;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
+            --ds-bg:#0a1120;--ds-surface:#141e30;--ds-surface-2:#1a2639;--ds-ink:#e8eef7;--ds-muted:#b0bfd3;--ds-faint:#93a4bb;--ds-line:#26344c;
+            --ds-brand:#8fb1da;--ds-brand-600:#b4cdea;--ds-brand-soft:#1f3556;
+            --ds-hover:#202e45;
+            --ds-verlauf-von:#2b4a70;--ds-verlauf-bis:#141e30;   /* wie hell: die Schrift darauf ist weiss */
+            --ds-auf-satt:#0a1120;
+            --ds-line-stark:#35577d;
+            --ds-good:#5fcf92;--ds-good-soft:#12302a;--ds-warn:#e2a84f;--ds-warn-soft:#33270f;--ds-crit:#f08b93;--ds-crit-soft:#361b1f;--ds-info:#53b8ae;--ds-info-soft:#123331;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -8px rgba(0,0,0,.45);--ds-shadow-lg:0 24px 64px -12px rgba(0,0,0,.6);
             --ds-scrim:rgba(0,0,0,.55);
+            --ds-glow:rgba(100,150,210,.14);--ds-glow-2:rgba(100,150,210,.07);
             color-scheme:dark;
         }
         .fw-num{font-variant-numeric:tabular-nums}
@@ -2094,4 +2097,73 @@ und einen Stilblock enthaelt.
         @media (min-width:1760px){.fw-inhalt{max-width:1680px}}
         @media (min-width:2200px){.fw-inhalt{max-width:2000px}}
         /* ---- Ende Tranche C ---- */
+
+        /* ============================================================
+           KONZEPT V9 «NAVY MIRAGE» (23.10.2026) — mockups/konzept-v9-vergleich.html
+           Aus den Vorlagen (Dashboard-Regeln, 60-30-10, Navy Mirage, Prueflisten):
+
+           60-30-10   60 % ruhige Flaeche (--ds-bg, --ds-surface), 30 % Navy als
+                      Struktur (Leiste, aktive Zustaende, Linien), 10 % Akzent:
+                      EIN Hauptknopf je Seite mit Schatten in Markenfarbe.
+           Bühne      Weicher Schein hinter allem (Verlauf, nie Hintergrundbild);
+                      Leiste, Kopfzeile und Tab-Leiste sind Glas.
+           Kennzahlen Einzelne Kacheln mit Symbol-Chip und Trendkapsel statt
+                      eines Streifens (Regel 1 «Kennzahlen zuerst», Regel 3
+                      «gleiche Karten»).
+           Zustaende  Kapseln tragen Punkt oder Zeichen (`fw-dot`, «●»): Farbe ist nie allein.
+           Pruefliste Fokus, hover, aktiv, deaktiviert fuer jeden Knopf; Ziele
+                      mindestens 40 px hoch; 8-Punkt-Raster bei den Abstaenden.
+           Alles hier sind Tokens und Klassen — keine Seite braucht Utilities.
+           ============================================================ */
+        .fw-body{background-color:var(--ds-bg);
+            background-image:radial-gradient(900px 460px at 88% -120px,var(--ds-glow),transparent 72%),
+                             radial-gradient(760px 420px at -6% 8%,var(--ds-glow-2),transparent 72%);
+            background-repeat:no-repeat;background-attachment:fixed}
+        .fw-side{background:color-mix(in srgb,var(--ds-surface) 78%,transparent);
+            -webkit-backdrop-filter:saturate(1.3) blur(16px);backdrop-filter:saturate(1.3) blur(16px)}
+        .fw-top{background:color-mix(in srgb,var(--ds-bg) 70%,transparent)}
+        .fw-nav-eintrag.hier{box-shadow:inset 3px 0 0 var(--ds-brand)}
+        .fw-btn.fw-primary{box-shadow:0 6px 16px -8px var(--ds-brand)}
+        .fw-btn.fw-primary:hover{box-shadow:0 8px 20px -8px var(--ds-brand)}
+        .fw-btn.fw-primary:active{box-shadow:none}
+        .fw-card{transition:box-shadow .15s var(--ds-ease)}
+        /* Kennzahlen: einzelne Kacheln */
+        .fw-kpis{gap:16px;background:none;border:0;overflow:visible;box-shadow:none}
+        .fw-kpis:not(.fw-stats)>.fw-kpi{border:1px solid var(--ds-line);border-radius:var(--ds-radius);margin:0;box-shadow:var(--ds-shadow-sm)}
+        /* Die dichte Kennzahlenleiste einer Akte (`fw-stats`) bleibt ein Streifen:
+           am Telefon ist sie gemessen 183 px hoch, einzelne Kacheln mit Rahmen
+           und Abstand kaemen auf 210 (telefon.spec.ts). */
+        .fw-kpis.fw-stats{gap:0;background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);
+            overflow:hidden;box-shadow:var(--ds-shadow-sm)}
+        .fw-kpis.fw-stats>.fw-kpi{border:0;border-right:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line);
+            margin:0 -1px -1px 0;box-shadow:none}
+        .fw-lage{gap:16px;background:none;border:0;overflow:visible;box-shadow:none}
+        .fw-lage-kachel{border:1px solid var(--ds-line);border-radius:var(--ds-radius);background:var(--ds-surface);
+            box-shadow:var(--ds-shadow-sm);transition:box-shadow .15s var(--ds-ease),transform .15s var(--ds-ease),border-color .12s}
+        .fw-lage-kachel:first-child{border-left:1px solid var(--ds-line)}
+        .fw-lage-kachel:hover{background:var(--ds-surface);border-color:var(--ds-line-stark);box-shadow:var(--ds-shadow);transform:translateY(-1px)}
+        .fw-lage-kachel:focus-visible{border-radius:var(--ds-radius)}
+        .fw-lage-kopf{display:flex;align-items:center;gap:10px}
+        .fw-lage-kopf .fw-l{min-width:0}
+        /* Symbol-Chip: weiche Flaeche in der Farbe des Zustands */
+        .fw-sym{width:32px;height:32px;flex:0 0 32px;border-radius:var(--ds-radius-knopf);display:grid;place-items:center;
+            background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+        .fw-sym .fw-zeichen{width:17px!important;height:17px!important}
+        .fw-sym.good{background:var(--ds-good-soft);color:var(--ds-good)}
+        .fw-sym.warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
+        .fw-sym.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
+        .fw-sym.info{background:var(--ds-info-soft);color:var(--ds-info)}
+        /* Tab-Leiste am Telefon: schwebende Glaskapsel statt Vollbreite */
+        @media (max-width:1023px){
+            .fw-tabbar{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));width:auto;max-width:none;
+                border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg);padding:6px;box-shadow:var(--ds-shadow-lg);
+                background:color-mix(in srgb,var(--ds-surface) 82%,transparent)}
+            .fw-tabbar a{border-radius:var(--ds-radius);transition:background .12s,color .12s}
+            .fw-tabbar a[aria-current="page"]{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+            .fw-inhalt{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+            .fw-toasts{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+            .fw-lage{gap:12px}.fw-kpis{gap:12px}
+        }
+        @media (prefers-reduced-motion:reduce){.fw-lage-kachel,.fw-card{transition:none}.fw-lage-kachel:hover{transform:none}}
+        /* ---- Ende Konzept V9 ---- */
 </style>
