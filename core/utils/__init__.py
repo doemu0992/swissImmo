@@ -189,6 +189,10 @@ UPLOAD_ORDNER = {
     'Unterhalt':      'unterhalt_belege',
     'Ausstattung':    'ausstattung_fotos',  # Innenaufnahmen des Objekts
     'EinheitFoto':    'objekt_fotos',       # fürs Inserat — bewusst öffentlich
+    # Mängelfotos der Wohnungsabnahme: lagen bis 10/2026 ohne Organisation im
+    # gemeinsamen `abnahme_fotos/`. Der Ordnername bleibt, damit die Regel in
+    # media_protected.py (SENSIBLE_PREFIXE) unverändert greift.
+    'AbnahmeMangel':  'abnahme_fotos',
 }
 
 

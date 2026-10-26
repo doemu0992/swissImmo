@@ -1008,6 +1008,12 @@ class Abnahmeprotokoll(OrganisationAusKette):
     typ = models.CharField("Art", max_length=10, choices=TYP_CHOICES, default='auszug')
     datum = models.DateField("Datum", default=timezone.now)
     mieter_anwesend = models.BooleanField("Mieter anwesend", default=True)
+    # Ohne Unterschrift des Mieters wird nur abgeschlossen, wenn er abwesend war
+    # UND der Grund festgehalten ist: Das Protokoll ist sonst kein Beweis dafür,
+    # dass er den Zustand gesehen hat — und die Rüge muss dann eingeschrieben
+    # an ihn gehen (Art. 267a OR).
+    mieter_abwesend_grund = models.CharField("Grund der Abwesenheit des Mieters", max_length=200,
+                                             blank=True, default='')
     verwalter_name = models.CharField("Abnahme durch", max_length=120, blank=True, default='')
     allgemein_zustand = models.CharField("Allgemeinzustand", max_length=25, blank=True, default='gut',
         choices=[('neuwertig', _('Neuwertig')), ('gut', _('Gut')), ('gebraucht', _('Gebraucht')), ('renovationsbeduerftig', _('Renovationsbedürftig'))])
@@ -1026,6 +1032,11 @@ class Abnahmeprotokoll(OrganisationAusKette):
     unterschrift_verwalter_bild = models.ImageField("Unterschrift Verwaltung (Bild)", upload_to=get_smart_upload_path,
                                                     null=True, blank=True)
     abgeschlossen = models.BooleanField("Abgeschlossen", default=False)
+    # Mängelrüge Art. 267a OR: Massgeblich ist, dass sie VERSANDT ist — nicht,
+    # dass das PDF erzeugt wurde. Erst dieses Datum erledigt die Fristpendenz.
+    ruege_versandt_am = models.DateField("Mängelrüge versandt am", null=True, blank=True)
+    ruege_sendungsnummer = models.CharField("Sendungsnummer Mängelrüge (Einschreiben)", max_length=40,
+                                            blank=True, default='')
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1044,17 +1055,33 @@ class Abnahmeprotokoll(OrganisationAusKette):
 
     @property
     def maengel_mieter(self):
+        """Alle dem Mieter belasteten Mängel — auch die später entdeckten
+        (Art. 267a Abs. 3 OR): Sie gehören in die Schlussabrechnung."""
         return [m for m in self.maengel.all() if m.verursacher == 'mieter']
+
+    @property
+    def maengel_mieter_bei_abnahme(self):
+        """Nur die bei der Abnahme festgestellten Mieter-Mängel. Die Rüge nach
+        Art. 267a Abs. 1 und der Text «oben genannte Mängel» im unterzeichneten
+        Protokoll beziehen sich auf diese — ein später entdeckter Mangel stand
+        nicht im Protokoll, das der Mieter gesehen hat."""
+        return [m for m in self.maengel_mieter if m.entdeckt_am is None]
+
+    @property
+    def schluessel_kosten_total(self):
+        """Ersatzkosten der fehlenden Schlüssel (fehlend × Kosten je Stück)."""
+        return sum((z.kosten_mieter for z in self.schluessel.all()), Decimal('0.00'))
 
     @property
     def kosten_mieter_total(self):
         """Vom Mieter zu tragender Gesamtbetrag — Mieteranteil (nach Lebensdauer)
-        wenn erfasst, sonst die volle Kostenschätzung."""
+        wenn erfasst, sonst die volle Kostenschätzung; dazu der Ersatz fehlender
+        Schlüssel."""
         total = Decimal('0.00')
         for m in self.maengel_mieter:
             anteil = m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung
             total += anteil or Decimal('0.00')
-        return total
+        return total + self.schluessel_kosten_total
 
 
 class AbnahmeMangel(OrganisationAusKette):
@@ -1069,7 +1096,11 @@ class AbnahmeMangel(OrganisationAusKette):
     beschreibung = models.CharField("Mangel", max_length=255)
     verursacher = models.CharField("Verursacher", max_length=12, choices=VERURSACHER, default='abnutzung')
     kostenschaetzung = models.DecimalField("Kostenschätzung CHF", max_digits=9, decimal_places=2, null=True, blank=True)
-    foto = models.ImageField("Foto", upload_to='abnahme_fotos/', null=True, blank=True)
+    # Ablage je Organisation (organisation/<id>/abnahme_fotos/…, siehe
+    # UPLOAD_ORDNER). Bis 10/2026 lag jedes Foto im gemeinsamen
+    # `abnahme_fotos/`; diese Dateien bleiben, wo sie sind — die Zugriffsregel
+    # findet ihre Organisation über die Datenbank.
+    foto = models.ImageField("Foto", upload_to=get_smart_upload_path, null=True, blank=True)
     # Lebensdauertabelle / Zeitwert
     ausstattung = models.ForeignKey('portfolio.Ausstattung', on_delete=models.SET_NULL,
                                     null=True, blank=True, related_name='maengel')
@@ -1077,6 +1108,14 @@ class AbnahmeMangel(OrganisationAusKette):
     mieteranteil = models.DecimalField("Mieteranteil CHF (nach Lebensdauer)", max_digits=9, decimal_places=2, null=True, blank=True)
     # Absichtliche Beschädigung: kein Zeitwertabzug, der Mieter trägt den vollen Betrag.
     vorsaetzlich = models.BooleanField("Absichtlich beschädigt (kein Zeitwertabzug)", default=False)
+    # Versteckter Mangel, nach der Abnahme entdeckt (Art. 267a Abs. 3 OR): Er ist
+    # sofort nach Entdeckung zu rügen, mit eigener Rüge und eigener Frist. Leer =
+    # bei der Abnahme festgestellt.
+    entdeckt_am = models.DateField("Später entdeckt am", null=True, blank=True)
+    ruege_versandt_am = models.DateField("Rüge versandt am (später entdeckter Mangel)", null=True, blank=True)
+    # Der Handwerkerauftrag läuft über ein Ticket; von dort führt der Weg zurück.
+    ticket = models.ForeignKey('tickets.SchadenMeldung', on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='abnahme_maengel')
 
     class Meta:
         db_table = 'core_abnahmemangel'
@@ -1130,6 +1169,11 @@ class AbnahmeSchluessel(OrganisationAusKette):
     anlage = models.CharField("Schliessanlage / Schlüsselnummer", max_length=80, blank=True, default='')
     soll = models.PositiveSmallIntegerField("Soll", default=0)
     ist = models.PositiveSmallIntegerField("Ist", null=True, blank=True)
+    # Ersatz je fehlendem Schlüssel (Schlüssel nachmachen oder Zylinder ersetzen).
+    # Geht wie ein Mangel in die Kosten zulasten des Mieters — ohne Zeitwert-
+    # abzug: ein Schlüssel hat keine Lebensdauer in der paritätischen Tabelle.
+    kosten_je_stueck = models.DecimalField("Ersatz je fehlendem Schlüssel CHF", max_digits=8,
+                                           decimal_places=2, null=True, blank=True)
     sortierung = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -1143,6 +1187,13 @@ class AbnahmeSchluessel(OrganisationAusKette):
     def fehlend(self):
         """Fehlende Schlüssel; None, solange nicht gezählt (None heisst nicht erfasst, 0 heisst vollständig)."""
         return None if self.ist is None else max(0, self.soll - self.ist)
+
+    @property
+    def kosten_mieter(self):
+        """Ersatzkosten zulasten des Mieters: fehlend × Kosten je Stück; 0 ohne beides."""
+        if not self.fehlend or self.kosten_je_stueck is None:
+            return Decimal('0.00')
+        return (self.kosten_je_stueck * self.fehlend).quantize(Decimal('0.01'))
 
 
 class AbnahmePosition(OrganisationAusKette):
