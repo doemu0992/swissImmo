@@ -49,8 +49,9 @@ die beim Speichern entstehen. Ohne JavaScript: Beträge eintippen und speichern.
                 <h2>{% trans "Vorschläge" %}</h2>
                 <ul>
                     {% for v in vorschlaege %}
-                    <li><b>{{ v.mieter }}</b>
+                    <li><b>{{ v.mieter }}</b>{% if not v.stark %} <span class="fw-marke-kapsel">{% trans "nur Betrag" %}</span>{% endif %}
                         <ul>{% for g in v.gruende %}<li>{{ g }}</li>{% endfor %}</ul>
+                        {% if not v.stark %}<p class="fw-kachel-text">{% trans "Der Betrag allein belegt nicht, wer gezahlt hat — deshalb ist nichts vorbefüllt." %}</p>{% endif %}
                     </li>
                     {% endfor %}
                 </ul>

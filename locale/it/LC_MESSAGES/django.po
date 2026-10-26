@@ -27006,3 +27006,138 @@ msgid "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Üb
 msgid_plural "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."
 msgstr[0] "Pagamento cumulativo? %(n)s altra voce aperta di %(mieter)s corrisponde all'eccedenza."
 msgstr[1] "Pagamento cumulativo? %(n)s altre voci aperte di %(mieter)s corrispondono all'eccedenza."
+
+msgid "Diese Zahlung ist keine Verrechnung eines Guthabens."
+msgstr "Questo pagamento non è una compensazione di un credito."
+
+msgid "Nur eine stornierte Zahlung eines Mieters lässt sich wiederherstellen."
+msgstr "Solo un pagamento stornato di un inquilino può essere ripristinato."
+
+msgid "Diese Zahlung war kein Guthaben und keine geparkte Bankzahlung."
+msgstr "Questo pagamento non era né un credito né un pagamento bancario in sospeso."
+
+msgid "Diese Zahlung ist bereits wiederhergestellt."
+msgstr "Questo pagamento è già stato ripristinato."
+
+msgid "Diese Zahlung ist keinem Mieter zugeordnet."
+msgstr "Questo pagamento non è attribuito a nessun inquilino."
+
+msgid "Ein Teil dieser Zahlung wurde zurücküberwiesen oder als Kaution gebucht — bitte zuerst diesen Teil stornieren."
+msgstr "Una parte di questo pagamento è stata rimborsata o contabilizzata come cauzione — stornare prima questa parte."
+
+msgid "Nur eine Bankzahlung lässt sich zurück in die Klärung legen."
+msgstr "Solo un pagamento bancario può essere rimesso in chiarimento."
+
+#, python-format
+msgid "War irrtümlich %(mieter)s zugeordnet."
+msgstr "Era attribuito per errore a %(mieter)s."
+
+#, python-format
+msgid "War irrtümlich %(mieter)s zugeordnet und wurde storniert."
+msgstr "Era attribuito per errore a %(mieter)s ed è stato stornato."
+
+#, python-format
+msgid "Verrechnung aufgehoben: CHF %(betrag)s stehen wieder als Guthaben, «%(titel)s» ist wieder offen."
+msgstr "Compensazione annullata: CHF %(betrag)s risultano di nuovo come credito, «%(titel)s» è di nuovo aperto."
+
+#, python-format
+msgid "Der Absender «%(name)s» ist vergessen und wird nicht mehr automatisch zugeordnet."
+msgstr "Il mittente «%(name)s» è dimenticato e non verrà più attribuito automaticamente."
+
+#, python-format
+msgid "Guthaben von CHF %(betrag)s wiederhergestellt (2030, «offen lassen»). Die damit verrechneten Posten sind wieder offen."
+msgstr "Credito di CHF %(betrag)s ripristinato (2030, «lasciare aperto»). Le voci compensate con esso sono di nuovo aperte."
+
+#, python-format
+msgid "Zahlung von CHF %(betrag)s wiederhergestellt — sie steht wieder unter «Klärungsfälle» und kann richtig zugeordnet werden."
+msgstr "Pagamento di CHF %(betrag)s ripristinato — figura di nuovo tra «Casi da chiarire» e può essere attribuito correttamente."
+
+msgid "Nur der Betrag passt"
+msgstr "Corrisponde solo l'importo"
+
+msgid "Zahler prüfen, bevor Sie zuordnen."
+msgstr "Verificare il pagatore prima di attribuire."
+
+msgid "Stornierte Zuordnungen"
+msgstr "Attribuzioni stornate"
+
+msgid "Das Storno hat auch den Geldeingang aufgehoben — das Geld liegt aber auf der Bank. Wiederherstellen legt es zurück in die Klärungsfälle."
+msgstr "Lo storno ha annullato anche l'entrata di denaro — ma il denaro è in banca. Il ripristino lo rimette tra i casi da chiarire."
+
+msgid "Zahlung wiederherstellen? Der Geldeingang wird neu gebucht und steht wieder als Klärungsfall (1190) — ohne Mieter. Der gelernte Absender wird vergessen."
+msgstr "Ripristinare il pagamento? L'entrata di denaro viene ricontabilizzata e figura di nuovo come caso da chiarire (1190) — senza inquilino. Il mittente appreso viene dimenticato."
+
+msgid "Zahlung wiederherstellen"
+msgstr "Ripristinare il pagamento"
+
+msgid "Zugeordnete Klärungsfälle"
+msgstr "Casi da chiarire attribuiti"
+
+msgid "letzte 120 Tage · falsch zugeordnet? «Zuordnung aufheben» legt die Zahlung zurück, der Geldeingang bleibt"
+msgstr "ultimi 120 giorni · attribuito male? «Annulla attribuzione» rimette il pagamento in sospeso, l'entrata di denaro resta"
+
+msgid "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt."
+msgstr "Annullare l'attribuzione? Il pagamento figura poi di nuovo tra «Casi da chiarire», le fatture sono di nuovo aperte (con livello di sollecito e termine). Un pagamento ripartito viene rimesso in sospeso con tutte le sue parti."
+
+msgid "Zuordnung aufheben"
+msgstr "Annulla attribuzione"
+
+msgid "Keine von Hand zugeordneten Klärungsfälle in den letzten 120 Tagen."
+msgstr "Nessun caso da chiarire attribuito manualmente negli ultimi 120 giorni."
+
+msgid "Stornierte Guthaben-Verrechnungen"
+msgstr "Compensazioni di crediti stornate"
+
+msgid "Das Storno hat auch den Geldeingang bzw. die Gutschrift aufgehoben — das Guthaben fehlt dem Mieter."
+msgstr "Lo storno ha annullato anche l'entrata di denaro o l'accredito — il credito manca all'inquilino."
+
+msgid "Guthaben wiederherstellen? Der Eingang wird neu gebucht (an 2030, «offen lassen»), die damit verrechneten Posten sind wieder offen."
+msgstr "Ripristinare il credito? L'entrata viene ricontabilizzata (su 2030, «lasciare aperto»), le voci compensate con esso sono di nuovo aperte."
+
+msgid "Guthaben wiederherstellen"
+msgstr "Ripristinare il credito"
+
+msgid "Verrechnete Guthaben"
+msgstr "Crediti compensati"
+
+msgid "letzte 120 Tage · «Verrechnung rückgängig» hebt nur die Verrechnung auf, der Geldeingang bleibt"
+msgstr "ultimi 120 giorni · «Annulla compensazione» annulla solo la compensazione, l'entrata di denaro resta"
+
+msgid "Verrechnet"
+msgstr "Compensato"
+
+msgid "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen."
+msgstr "Annullare la compensazione? L'importo risulta poi di nuovo come credito, la fattura è di nuovo aperta."
+
+msgid "Verrechnung rückgängig"
+msgstr "Annulla compensazione"
+
+msgid "Keine Verrechnungen von Guthaben in den letzten 120 Tagen."
+msgstr "Nessuna compensazione di crediti negli ultimi 120 giorni."
+
+msgid "Nur die Verrechnung aufheben — nicht stornieren, sonst geht auch der Geldeingang verloren"
+msgstr "Annullare solo la compensazione — non stornare, altrimenti va persa anche l'entrata di denaro"
+
+msgid "Falsch zugeordnet? Die Zahlung zurück in die Klärungsfälle legen — der Geldeingang bleibt"
+msgstr "Attribuito male? Rimettere il pagamento tra i casi da chiarire — l'entrata di denaro resta"
+
+msgid "Diese Zahlung stornieren? Auch der Geldeingang wird per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert. Nur falsch zugeordnet? Dann «Zuordnung aufheben» wählen."
+msgstr "Stornare questo pagamento? Anche l'entrata di denaro viene annullata con una registrazione di storno e la voce aperta viene riaperta. Un pagamento ripartito viene stornato con tutte le sue parti. Solo attribuito male? Allora scegliere «Annulla attribuzione»."
+
+msgid "nur Betrag"
+msgstr "solo importo"
+
+msgid "Der Betrag allein belegt nicht, wer gezahlt hat — deshalb ist nichts vorbefüllt."
+msgstr "L'importo da solo non prova chi ha pagato — perciò nulla è precompilato."
+
+#, python-format
+msgid "%(n)s storniert — wiederherstellen"
+msgid_plural "%(n)s storniert — wiederherstellen"
+msgstr[0] "%(n)s stornato — ripristinare"
+msgstr[1] "%(n)s stornati — ripristinare"
+
+#, python-format
+msgid "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnung ist wieder offen."
+msgid_plural "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
+msgstr[0] "Attribuzione annullata: CHF %(betrag)s sono di nuovo un caso da chiarire, %(n)s fattura è di nuovo aperta."
+msgstr[1] "Attribuzione annullata: CHF %(betrag)s sono di nuovo un caso da chiarire, %(n)s fatture sono di nuovo aperte."

@@ -56,7 +56,7 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
     ensure_kontenplan()   # Kontenplan garantieren (kein stiller Buchungsverlust)
 
     erstellt = 0
-    gestellt_fuer = []
+    gestellt_fuer, neue_rechnungen = [], []
     with transaction.atomic():
         # Zeilensperre auf die aktiven Verträge: ein gleichzeitiger zweiter
         # Sollstellungs-Lauf (Button + Scheduler) blockiert bis dieser fertig ist,
@@ -144,6 +144,7 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
             erstellt += 1
             gestellt_fuer.append(v.pk)
+            neue_rechnungen.append(rechnung.pk)
     # Guthaben, die «mit der nächsten Rechnung» verrechnet werden sollen
     # (Zahlungs-Cockpit V12). Nach der Transaktion der Sollstellung: Eine
     # gesperrte Periode oder ein Fehler lässt das Guthaben stehen, die
@@ -151,7 +152,9 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
     if gestellt_fuer:
         try:
             from core.services.zahlungsklaerung import guthaben_verrechnen
-            guthaben_verrechnen(gestellt_fuer, user=user)
+            # Nur die eben gestellten Rechnungen — nie ein Rückstand oder eine
+            # Mahngebühr (siehe `guthaben_verrechnen`).
+            guthaben_verrechnen(gestellt_fuer, rechnung_ids=neue_rechnungen, user=user)
         except Exception:
             logger.warning('Guthaben-Verrechnung nach Sollstellung %02d/%s fehlgeschlagen',
                            monat, jahr, exc_info=True)

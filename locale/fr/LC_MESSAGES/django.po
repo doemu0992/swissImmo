@@ -27031,3 +27031,138 @@ msgid "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Üb
 msgid_plural "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."
 msgstr[0] "Paiement groupé ? %(n)s autre poste ouvert de %(mieter)s correspond à l'excédent."
 msgstr[1] "Paiement groupé ? %(n)s autres postes ouverts de %(mieter)s correspondent à l'excédent."
+
+msgid "Diese Zahlung ist keine Verrechnung eines Guthabens."
+msgstr "Ce paiement n'est pas une compensation d'avoir."
+
+msgid "Nur eine stornierte Zahlung eines Mieters lässt sich wiederherstellen."
+msgstr "Seul un paiement annulé d'un locataire peut être restauré."
+
+msgid "Diese Zahlung war kein Guthaben und keine geparkte Bankzahlung."
+msgstr "Ce paiement n'était ni un avoir ni un paiement bancaire en attente."
+
+msgid "Diese Zahlung ist bereits wiederhergestellt."
+msgstr "Ce paiement est déjà restauré."
+
+msgid "Diese Zahlung ist keinem Mieter zugeordnet."
+msgstr "Ce paiement n'est attribué à aucun locataire."
+
+msgid "Ein Teil dieser Zahlung wurde zurücküberwiesen oder als Kaution gebucht — bitte zuerst diesen Teil stornieren."
+msgstr "Une partie de ce paiement a été remboursée ou comptabilisée comme garantie — veuillez d'abord annuler cette partie."
+
+msgid "Nur eine Bankzahlung lässt sich zurück in die Klärung legen."
+msgstr "Seul un paiement bancaire peut être remis en clarification."
+
+#, python-format
+msgid "War irrtümlich %(mieter)s zugeordnet."
+msgstr "Était attribué par erreur à %(mieter)s."
+
+#, python-format
+msgid "War irrtümlich %(mieter)s zugeordnet und wurde storniert."
+msgstr "Était attribué par erreur à %(mieter)s et a été annulé."
+
+#, python-format
+msgid "Verrechnung aufgehoben: CHF %(betrag)s stehen wieder als Guthaben, «%(titel)s» ist wieder offen."
+msgstr "Compensation annulée : CHF %(betrag)s figurent de nouveau comme avoir, « %(titel)s » est de nouveau ouvert."
+
+#, python-format
+msgid "Der Absender «%(name)s» ist vergessen und wird nicht mehr automatisch zugeordnet."
+msgstr "L'expéditeur « %(name)s » est oublié et ne sera plus attribué automatiquement."
+
+#, python-format
+msgid "Guthaben von CHF %(betrag)s wiederhergestellt (2030, «offen lassen»). Die damit verrechneten Posten sind wieder offen."
+msgstr "Avoir de CHF %(betrag)s restauré (2030, « laisser ouvert »). Les postes compensés avec lui sont de nouveau ouverts."
+
+#, python-format
+msgid "Zahlung von CHF %(betrag)s wiederhergestellt — sie steht wieder unter «Klärungsfälle» und kann richtig zugeordnet werden."
+msgstr "Paiement de CHF %(betrag)s restauré — il figure de nouveau sous « Cas à clarifier » et peut être attribué correctement."
+
+msgid "Nur der Betrag passt"
+msgstr "Seul le montant correspond"
+
+msgid "Zahler prüfen, bevor Sie zuordnen."
+msgstr "Vérifiez le payeur avant d'attribuer."
+
+msgid "Stornierte Zuordnungen"
+msgstr "Attributions annulées"
+
+msgid "Das Storno hat auch den Geldeingang aufgehoben — das Geld liegt aber auf der Bank. Wiederherstellen legt es zurück in die Klärungsfälle."
+msgstr "L'annulation a aussi supprimé l'entrée d'argent — or l'argent est bien à la banque. La restauration le remet dans les cas à clarifier."
+
+msgid "Zahlung wiederherstellen? Der Geldeingang wird neu gebucht und steht wieder als Klärungsfall (1190) — ohne Mieter. Der gelernte Absender wird vergessen."
+msgstr "Restaurer le paiement ? L'entrée d'argent est recomptabilisée et figure de nouveau comme cas à clarifier (1190) — sans locataire. L'expéditeur appris est oublié."
+
+msgid "Zahlung wiederherstellen"
+msgstr "Restaurer le paiement"
+
+msgid "Zugeordnete Klärungsfälle"
+msgstr "Cas à clarifier attribués"
+
+msgid "letzte 120 Tage · falsch zugeordnet? «Zuordnung aufheben» legt die Zahlung zurück, der Geldeingang bleibt"
+msgstr "120 derniers jours · mal attribué ? « Annuler l'attribution » remet le paiement en attente, l'entrée d'argent reste"
+
+msgid "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt."
+msgstr "Annuler l'attribution ? Le paiement figure ensuite de nouveau sous « Cas à clarifier », les factures sont de nouveau ouvertes (avec niveau de rappel et délai). Un paiement réparti est remis en attente avec toutes ses parts."
+
+msgid "Zuordnung aufheben"
+msgstr "Annuler l'attribution"
+
+msgid "Keine von Hand zugeordneten Klärungsfälle in den letzten 120 Tagen."
+msgstr "Aucun cas à clarifier attribué manuellement au cours des 120 derniers jours."
+
+msgid "Stornierte Guthaben-Verrechnungen"
+msgstr "Compensations d'avoirs annulées"
+
+msgid "Das Storno hat auch den Geldeingang bzw. die Gutschrift aufgehoben — das Guthaben fehlt dem Mieter."
+msgstr "L'annulation a aussi supprimé l'entrée d'argent ou le crédit — l'avoir manque au locataire."
+
+msgid "Guthaben wiederherstellen? Der Eingang wird neu gebucht (an 2030, «offen lassen»), die damit verrechneten Posten sind wieder offen."
+msgstr "Restaurer l'avoir ? L'entrée est recomptabilisée (au 2030, « laisser ouvert »), les postes compensés avec lui sont de nouveau ouverts."
+
+msgid "Guthaben wiederherstellen"
+msgstr "Restaurer l'avoir"
+
+msgid "Verrechnete Guthaben"
+msgstr "Avoirs compensés"
+
+msgid "letzte 120 Tage · «Verrechnung rückgängig» hebt nur die Verrechnung auf, der Geldeingang bleibt"
+msgstr "120 derniers jours · « Annuler la compensation » n'annule que la compensation, l'entrée d'argent reste"
+
+msgid "Verrechnet"
+msgstr "Compensé"
+
+msgid "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen."
+msgstr "Annuler la compensation ? Le montant figure ensuite de nouveau comme avoir, la facture est de nouveau ouverte."
+
+msgid "Verrechnung rückgängig"
+msgstr "Annuler la compensation"
+
+msgid "Keine Verrechnungen von Guthaben in den letzten 120 Tagen."
+msgstr "Aucune compensation d'avoir au cours des 120 derniers jours."
+
+msgid "Nur die Verrechnung aufheben — nicht stornieren, sonst geht auch der Geldeingang verloren"
+msgstr "N'annuler que la compensation — ne pas annuler le paiement, sinon l'entrée d'argent est aussi perdue"
+
+msgid "Falsch zugeordnet? Die Zahlung zurück in die Klärungsfälle legen — der Geldeingang bleibt"
+msgstr "Mal attribué ? Remettre le paiement dans les cas à clarifier — l'entrée d'argent reste"
+
+msgid "Diese Zahlung stornieren? Auch der Geldeingang wird per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert. Nur falsch zugeordnet? Dann «Zuordnung aufheben» wählen."
+msgstr "Annuler ce paiement ? L'entrée d'argent est aussi annulée par contre-écriture et le poste ouvert est rouvert. Un paiement réparti est annulé avec toutes ses parts. Seulement mal attribué ? Choisissez alors « Annuler l'attribution »."
+
+msgid "nur Betrag"
+msgstr "montant seulement"
+
+msgid "Der Betrag allein belegt nicht, wer gezahlt hat — deshalb ist nichts vorbefüllt."
+msgstr "Le montant seul ne prouve pas qui a payé — c'est pourquoi rien n'est prérempli."
+
+#, python-format
+msgid "%(n)s storniert — wiederherstellen"
+msgid_plural "%(n)s storniert — wiederherstellen"
+msgstr[0] "%(n)s annulé — restaurer"
+msgstr[1] "%(n)s annulés — restaurer"
+
+#, python-format
+msgid "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnung ist wieder offen."
+msgid_plural "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
+msgstr[0] "Attribution annulée : CHF %(betrag)s sont de nouveau un cas à clarifier, %(n)s facture est de nouveau ouverte."
+msgstr[1] "Attribution annulée : CHF %(betrag)s sont de nouveau un cas à clarifier, %(n)s factures sont de nouveau ouvertes."

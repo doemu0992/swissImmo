@@ -68,6 +68,13 @@ def zuordnen(zahlung, rechnung, user=None, heute=None):
         zahlung.bemerkung = (f"{zahlung.bemerkung} → zugeordnet {rechnung.titel}")[:255]
         zahlung.save()
         if rest > 0:
+            # Gemeinsame Referenz, auch ohne Bankbeleg (NK-Gutschrift, manuelle
+            # Erfassung): Nur über den Präfix «<ref>:» findet das Storno den Rest.
+            # Ohne Referenz blieb er nach einem Storno stehen und hielt die
+            # nächste Rechnung als bezahlt (Korrektur 26.10.2026).
+            if not zahlung.bank_referenz:
+                zahlung.bank_referenz = f"MAN{zahlung.pk}"
+                zahlung.save(update_fields=['bank_referenz'])
             # Der Zahler ist jetzt bekannt — der Überschuss ist ein Mieterguthaben
             # (2030) und kein ungeklärter Durchlaufposten mehr. Lag er vorher auf
             # 1190, wird er umgebucht, sonst bliebe er dauerhaft «ungeklärt».
@@ -84,7 +91,7 @@ def zuordnen(zahlung, rechnung, user=None, heute=None):
                 vertrag=vertrag, betrag=rest, datum_eingang=zahlung.datum_eingang,
                 buchungs_monat=zahlung.buchungs_monat,
                 bemerkung=f"Rest-Guthaben aus Zuordnung ({rechnung.titel})"[:255],
-                bank_referenz=(f"{zahlung.bank_referenz}:rest"[:140] if zahlung.bank_referenz else ''),
+                bank_referenz=f"{zahlung.bank_referenz}:rest"[:140],
                 konto=_park_konto('2030'), liegenschaft=lg or zahlung.liegenschaft,
                 erstellt_von=user, status='verbucht',
                 # Ein Rest-Guthaben behält die Verwendung des Guthabens, aus dem
