@@ -2368,8 +2368,8 @@ und einen Stilblock enthaelt.
         .fw-bereich-zeichen{width:28px;height:28px;border-radius:var(--ds-pill);background:var(--ds-surface-2);color:var(--ds-ink)}
         .fw-taste{border-radius:var(--ds-radius-xs)}
         .fw-inhalt{max-width:1440px;padding:28px 32px 64px}
-        @media (min-width:1760px){.fw-kopfleiste,.fw-top{max-width:1680px}}
-        @media (min-width:2200px){.fw-kopfleiste,.fw-top{max-width:2000px}}
+        @media (min-width:1760px){.fw-kopfleiste,.fw-top,.fw-inhalt{max-width:1680px}}
+        @media (min-width:2200px){.fw-kopfleiste,.fw-top,.fw-inhalt{max-width:2000px}}
         .fw-tabbar{display:none!important}
         @media (max-width:1023px){
             .fw-kopfleiste{gap:10px;padding-block:14px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -2409,7 +2409,8 @@ und einen Stilblock enthaelt.
         a.fw-card:hover,a.fw-lage-kachel:hover,.fw-kpis:not(.fw-stats)>.fw-kpi:hover,.fw-lauf:hover,.fw-ampel:hover,.fw-ember-karte:hover{
             transform:translateY(-5px);box-shadow:var(--ds-shadow)}
         .fw-kpi .fw-v,.fw-lage .fw-w{font-weight:500;letter-spacing:-.035em}
-        .fw-kpis:not(.fw-stats) .fw-kpi .fw-v{font-size:32px}
+        /* Gross nur, wo Platz ist — am Telefon gelten die Stufen der Kachelreihe (21 / 17 px) */
+        @media (min-width:721px){.fw-kpis:not(.fw-stats) .fw-kpi .fw-v{font-size:32px}}
         /* Die Akzent-Kachel einer Kennzahlenreihe ist die orange Hauptkarte */
         .fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent{background:radial-gradient(120% 120% at 100% 0%,var(--ds-akzent-hell) 0%,transparent 55%),
             linear-gradient(155deg,var(--ds-akzent-tief) 0%,#a8421a 100%);color:#fff}
@@ -2511,6 +2512,7 @@ und einen Stilblock enthaelt.
         .fw-ember-rund .fw-zeichen{width:15px!important;height:15px!important}
         .fw-ember-klein{font-size:12px;color:var(--ds-faint)}
         .fw-ember-gross{font-size:56px;font-weight:500;letter-spacing:-.045em;line-height:1;display:flex;align-items:flex-start;gap:8px}
+        .fw-ember-gross .fw-chip{letter-spacing:0;line-height:1.4;margin-top:6px}
         .fw-ember-gross .fw-chip{margin-top:8px}
         .k-zahlung{grid-column:span 5}.k-haupt{grid-column:span 2}.k-post{grid-column:span 2}.k-orte{grid-column:span 3}
         .k-balken{grid-column:span 5}.k-woche{grid-column:span 7}
