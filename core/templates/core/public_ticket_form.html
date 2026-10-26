@@ -102,7 +102,7 @@
 
     {% raum_anzeige %}
     <div x-data="ticketWizard()" x-cloak
-         @x-init="document.getElementById('loader').style.display='none'"
+         x-init="document.getElementById('loader').style.display='none'"
          class="w-full max-w-md md:max-w-4xl lg:max-w-5xl fw-flaeche rounded-2xl shadow-xl overflow-hidden min-h-[700px] flex flex-col relative transition-all duration-300">
 
         <div class="fw-balken-voll p-6 md:p-8 text-center text-white relative z-10 shadow-md">

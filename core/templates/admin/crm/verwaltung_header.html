@@ -4,8 +4,8 @@
             <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #f8fafc; color: #475569; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">⚙️</div>
             <div style="overflow: hidden;">
                 <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ firma }}</h2>
-                <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px;">✉️ {% if obj.email %}<a href="mailto:{{ obj.email }}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{{ obj.email }}</a>{% else %}-{% endif %}</p>
-                <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">📞 {% if obj.telefon %}<a href="tel:{{ obj.telefon }}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{{ obj.telefon }}</a>{% else %}-{% endif %}</p>
+                <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px;">✉️ {% if obj.email %}<a href="mailto:{{ obj.email }}" class="hover:text-primary-600 transition-colors" style="text-decoration: none;">{{ obj.email }}</a>{% else %}-{% endif %}</p>
+                <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">📞 {% if obj.telefon %}<a href="tel:{{ obj.telefon }}" class="hover:text-primary-600 transition-colors" style="text-decoration: none;">{{ obj.telefon }}</a>{% else %}-{% endif %}</p>
             </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">

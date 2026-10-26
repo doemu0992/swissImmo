@@ -42,7 +42,10 @@ Knöpfen — `integrationen`, `mietzins`, `objekt_ausschreiben`, `vermarktung`
 Redesign nach konzept-v8 (30.09.2026): Die neue Huelle traegt die Farben
 ueber die Schicht — `base.html` (4 → 1): 136 in 20.
 V11 (26.10.2026): Portal-Badge auf `fw-krit-voll` statt Fläche + `text-white`
-— `mieter_portal` (3 → 2): **STAND 135 in 20 Vorlagen**.
+— `mieter_portal` (3 → 2): 135 in 20.
+Production-Check (26.10.2026): tote Vorlage `core/mietzins_form.html` (73)
+geloescht, alte Reiter-Umschaltung aus `base.html` (1 → 0), Admin-Koepfe auf das
+Ember-Schema (`text-primary-600` statt Blau): **STAND 55 in 15 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -129,7 +132,8 @@ unten. Die 147 ausserhalb sind eine eigene Entscheidung (Admin-Theme und
 Aussenhuellen), nicht der Vorlagendurchgang.
 
 Die grossen Brocken sind also gerade NICHT die Arbeit: `core/mietzins_form.html`
-(73) haengt an Unfold, `admin/finance/abrechnung_vorschau.html` (30) wird per
+(73, Unfold; seit dem Production-Check 26.10.2026 als tote Vorlage geloescht),
+`admin/finance/abrechnung_vorschau.html` (30) wird per
 `mark_safe` in den Admin gerendert (`finance/admin.py:113`). Beide auf `fw-*`
 umzustellen liefert sie unformatiert aus.
 
@@ -275,9 +279,6 @@ FARBMUSTER = re.compile(
 #: Obergrenze eine Buchhaltung ueber fremde Schuld.
 
 OBERGRENZE = {
-    'core/templates/admin/crm/handwerker_header.html': 2,
-    'core/templates/admin/crm/mieter_header.html': 2,
-    'core/templates/admin/crm/verwaltung_header.html': 2,
     'core/templates/admin/finance/abrechnung_vorschau.html': 30,
     'core/templates/core/_passwort_shell_bottom.html': 2,
     'core/templates/core/dossier/base.html': 7,
@@ -287,13 +288,11 @@ OBERGRENZE = {
     'core/templates/core/mieter_schaden.html': 1,
     'core/templates/core/mieter_ticket_detail.html': 1,
     'core/templates/core/mieter_tickets.html': 2,
-    'core/templates/core/mietzins_form.html': 73,
     'core/templates/core/public_bewerbung_form.html': 1,
     'core/templates/core/public_ticket_form.html': 1,
     'core/templates/core/schaden_melden.html': 1,
     'core/templates/fw/_pipeline.html': 1,
     'core/templates/fw/_schicht.html': 2,
-    'core/templates/fw/base.html': 1,
     'core/templates/fw/schaden_detail.html': 2,
 }
 

@@ -54,7 +54,7 @@ td.field-tabular div.readonly > div {
 #result_list tbody tr:hover th,
 .inline-related tbody tr:hover td,
 .inline-related tbody tr:hover th {
-    background-color: #f9fafb !important;
+    background-color: #f6f5f3 !important; /* Ember: --ds-surface-2 */
 }
 
 /* --- CUSTOM HEADERS (CRM & Portfolio) --- */

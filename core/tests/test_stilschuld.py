@@ -109,7 +109,6 @@ OBERGRENZE = {
     'core/mieter_schaden.html': 1,
     'core/mieter_ticket_detail.html': 1,
     'core/mieter_tickets.html': 2,
-    'core/mietzins_form.html': 1,
     'core/public_bewerbung_form.html': 1,
     'fw/_unterschrift_feld.html': 1,
 },

@@ -5,10 +5,10 @@
             <div style="overflow: hidden;">
                 <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ firma }}</h2>
                 <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    ✉️ {% if obj.email %}<a href="mailto:{{ obj.email }}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{{ obj.email }}</a>{% else %}-{% endif %}
+                    ✉️ {% if obj.email %}<a href="mailto:{{ obj.email }}" class="hover:text-primary-600 transition-colors" style="text-decoration: none;">{{ obj.email }}</a>{% else %}-{% endif %}
                 </p>
                 <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    📞 {% if obj.telefon %}<a href="tel:{{ obj.telefon }}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{{ obj.telefon }}</a>{% else %}-{% endif %}
+                    📞 {% if obj.telefon %}<a href="tel:{{ obj.telefon }}" class="hover:text-primary-600 transition-colors" style="text-decoration: none;">{{ obj.telefon }}</a>{% else %}-{% endif %}
                 </p>
             </div>
         </div>

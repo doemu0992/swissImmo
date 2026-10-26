@@ -535,25 +535,31 @@ UNFOLD = {
         # Layout veraendern, nur die Familie bereitstellen. Sie steht vorn,
         # damit die Regeln vor ihrer ersten Verwendung geladen sind.
         lambda request: static("css/schriften.css"),
-        lambda request: static("css/fairwalter_theme.css") + "?v=2",
-        lambda request: static("css/custom_admin.css") + "?v=999",
+        lambda request: static("css/fairwalter_theme.css") + "?v=3",
+        lambda request: static("css/custom_admin.css") + "?v=1000",
     ],
     "SCRIPTS": [
         lambda request: static("js/section_toggle.js") + "?v=999",
     ],
 
+    # Ember-Schema wie die Oberfläche (Production-Check 26.10.2026): Die
+    # Skala läuft über die Tokens der Stilschicht — 100 = `--ds-brand-soft`,
+    # 300/400 = `--ds-brand-600`/`--ds-akzent-hell` (dunkel), 500 = `--ds-akzent`,
+    # 600 = `--ds-akzent-tief`, 700 = `--ds-brand`, 800 = `--ds-brand-600`.
+    # Vorher stand hier das Unfold-Blau — das einzige Blau der Anwendung.
     "COLORS": {
         "primary": {
-            "50": "239 246 255",
-            "100": "219 234 254",
-            "200": "191 219 254",
-            "300": "147 197 253",
-            "400": "96 165 250",
-            "500": "59 130 246",
-            "600": "37 99 235",
-            "700": "29 78 216",
-            "800": "30 64 175",
-            "900": "30 58 138",
+            "50": "253 243 237",
+            "100": "251 231 220",
+            "200": "248 205 181",
+            "300": "246 167 124",
+            "400": "240 138 85",
+            "500": "224 100 47",
+            "600": "196 83 31",
+            "700": "176 68 22",
+            "800": "138 52 16",
+            "900": "110 41 13",
+            "950": "70 26 8",
         },
     },
 
