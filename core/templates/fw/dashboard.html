@@ -42,6 +42,129 @@
     </div>
 </section>
 
+{% comment %} ===== EMBER: SUCHE, DREI ZAHLEN, BENTO (26.10.2026, mockups/immoswiss-ember.html) =====
+   Daten aus faelle/heute_bento.py. Jede Karte führt dorthin, wo man handelt. Die
+   Kopfzeilen-Suche ist auf «Heute» ausgeblendet — diese hier ersetzt sie. {% endcomment %}
+{% if bento %}
+<div class="fw-ember-intro">
+    <form method="get" action="/neu/suche/" class="fw-ember-suche" role="search">
+        <label class="sr-only" for="fwEmberSuche">{% trans "Suche" %}</label>
+        <input id="fwEmberSuche" type="search" name="q" placeholder="{% trans 'Suche nach Mieter, Objekt, Vertrag …' %}" autocomplete="off">
+        <button type="submit" aria-label="{% trans 'Suchen' %}">{% zeichen 'suchen' %}</button>
+    </form>
+    <div class="fw-ember-zahlen">
+        <a href="/neu/objekte/{{ lg_query }}"><span>{% trans "Mietobjekte" %}</span><b class="fw-num">{{ bento.orte.gesamt }}</b></a>
+        <a href="/neu/schaeden/{{ lg_query }}"><span>{% trans "Offene Tickets" %}</span><b class="fw-num">{{ bento.tickets_offen }}</b></a>
+        <a href="/neu/debitoren/?ampel=rot{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"><span>{% trans "Überfällig" %}</span><b class="fw-num">{{ bento.rueckstand.n }}</b></a>
+    </div>
+</div>
+
+<div class="fw-ember-bento">
+    {% with z=bento.zahlung %}
+    <article class="fw-ember-karte k-zahlung" aria-labelledby="b-zahlung">
+        <div class="fw-ember-kopf"><h2 id="b-zahlung">{% trans "Zahlungseingang" %}</h2>
+            <a href="/neu/bankabgleich/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Bankabgleich' %}">{% zeichen 'neu' %}</a></div>
+        <div class="fw-ember-gauge-zeile">
+            <div>
+                <div class="fw-ember-klein">{% trans "Ø Verzug" %}</div>
+                <div class="fw-ember-gross fw-num"><span data-zaehlen>{% if z.dauer is not None %}{{ z.dauer|floatformat:1 }}{% else %}–{% endif %}</span>{% if z.stufe %}<span class="fw-chip {{ z.stufe_klasse }} fw-dot">{{ z.stufe_text }}</span>{% endif %}</div>
+                <div class="fw-ember-klein">{% if z.dauer is not None %}{% blocktrans count n=z.anzahl %}Tage nach Fälligkeit · {{ n }} Zahlung, 90 Tage{% plural %}Tage nach Fälligkeit · {{ n }} Zahlungen, 90 Tage{% endblocktrans %}{% else %}{% trans "noch keine Zahlung in 90 Tagen" %}{% endif %}</div>
+                <div class="fw-ember-knoepfe">
+                    <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Mahnwesen' %}" title="{% trans 'Mahnwesen' %}">{% zeichen 'senden' %}</a>
+                    <a href="/neu/debitoren/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Debitoren' %}" title="{% trans 'Debitoren' %}">{% zeichen 'rechnung' %}</a>
+                    <a href="/neu/bankabgleich/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Bankabgleich' %}" title="{% trans 'Bankabgleich' %}">{% zeichen 'bank' %}</a>
+                </div>
+            </div>
+            <div>
+                <svg class="fw-ember-gauge" viewBox="0 0 240 140" role="img" aria-label="{% blocktrans with q=z.quote|floatformat:1 %}Zahlungsquote {{ q }} Prozent{% endblocktrans %}">
+                    <defs><linearGradient id="fwBogen" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f6b890"/><stop offset="1" stop-color="#d9531d"/></linearGradient></defs>
+                    <path class="spur" d="M 30 120 A 90 90 0 0 1 210 120" fill="none" stroke-width="26" stroke-linecap="round"/>
+                    <path class="bogen" d="M 30 120 A 90 90 0 0 1 210 120" fill="none" stroke-width="26" stroke-linecap="round" pathLength="100" data-bogen="{{ z.bogen|stringformat:'.1f' }}" stroke-dasharray="{{ z.bogen|stringformat:'.1f' }} 400"/>
+                    <g class="knauf" data-grad="{% widthratio z.bogen 100 180 %}" transform="rotate({% widthratio z.bogen 100 180 %})"><circle cx="30" cy="120" r="9"/></g>
+                </svg>
+                <div class="fw-ember-gauge-wert"><b class="fw-num">{% if z.quote is not None %}{{ z.quote|floatformat:1 }} %{% else %}–{% endif %}</b><div class="fw-ember-klein">{% blocktrans with j=heute.year %}Zahlungsquote {{ j }}{% endblocktrans %}</div></div>
+            </div>
+        </div>
+    </article>
+    {% endwith %}
+
+    <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-ember-karte k-haupt" aria-labelledby="b-haupt">
+        <div>
+            <div class="fw-ember-kopf"><h2 id="b-haupt">{% trans "Mahnwesen" %}</h2><span class="fw-ember-rund" aria-hidden="true">{% zeichen 'weiter' %}</span></div>
+            <span class="fw-btn">{% zeichen 'lauf' %} {% trans "Mahnlauf" %}</span>
+        </div>
+        <div><div class="fw-ember-gross fw-num"><span data-zaehlen>{{ bento.rueckstand.n }}</span></div>
+            <small>{% blocktrans with s=bento.rueckstand.summe|chf:0 count n=bento.rueckstand.n %}überfällige Rechnung · CHF {{ s }}{% plural %}überfällige Rechnungen · CHF {{ s }}{% endblocktrans %}</small></div>
+    </a>
+
+    <article class="fw-ember-karte k-post" aria-labelledby="b-post">
+        <div class="fw-ember-kopf"><h2 id="b-post">{% trans "Nachrichten" %}</h2>
+            <a href="/neu/kommunikation/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Mieter kontaktieren' %}">{% zeichen 'neu' %}</a></div>
+        {% if bento.post %}
+        <a href="{{ bento.post.url }}" class="fw-ember-fenster"><div>
+            <b>{{ bento.post.titel|truncatechars:60 }}</b>
+            {% if bento.post.text %}<p>{{ bento.post.text|truncatechars:90 }}</p>{% endif %}
+            <div class="fw-ember-meta"><i></i>{{ bento.post.wer|truncatechars:24 }} · {{ bento.post.art }}</div>
+        </div></a>
+        {% else %}
+        <p class="fw-ember-leer">{% trans "Keine neue Nachricht." %}</p>
+        {% endif %}
+    </article>
+
+    <a href="/neu/liegenschaften/{{ lg_query }}" class="fw-ember-karte k-orte" aria-labelledby="b-orte">
+        <svg class="fw-ember-plan" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <path class="b" d="M-10 80 C 60 60 120 120 200 90 S 280 60 320 80"/><path class="b" d="M60 -10 C 80 80 70 160 110 320"/><path class="b" d="M-10 200 C 90 180 190 230 320 190"/>
+            <path d="M-10 120 L 320 150M140 -10 L 190 320M-10 40 L 320 20M230 -10 L 260 320M20 250 L 320 280"/>
+        </svg>
+        <div class="fw-ember-kopf"><h2 id="b-orte">{% trans "Objekte nach Ort" %}</h2><span class="fw-ember-rund" aria-hidden="true">{% zeichen 'weiter' %}</span></div>
+        {% if bento.orte.reihen|length > 1 %}<ul class="fw-ember-ortliste">{% for r in bento.orte.reihen|slice:"1:" %}<li><span>{{ r.ort }}</span><b class="fw-num">{{ r.n }}</b></li>{% endfor %}</ul>{% endif %}
+        <div class="fw-ember-ortfuss">
+            <span class="fw-ember-blob" aria-hidden="true"></span>
+            {% if bento.orte.erster %}<b class="fw-num"><span data-zaehlen>{{ bento.orte.erster.n }}</span></b><span>{% blocktrans with ort=bento.orte.erster.liegenschaft__ort %}Objekte in<br>{{ ort }}{% endblocktrans %}</span>
+            {% else %}<span>{% trans "Noch keine Objekte erfasst." %}</span>{% endif %}
+        </div>
+    </a>
+
+    {% with e=bento.einnahmen %}
+    <article class="fw-ember-karte k-balken" aria-labelledby="b-balken">
+        <div class="fw-ember-kopf"><h2 id="b-balken">{% trans "Mieteingang" %}</h2>
+            <div class="fw-ember-gruppe"><span class="fw-ember-auswahl">{% trans "Letzte 7 Monate" %}</span>
+            <a href="/neu/portfolio/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Portfolio' %}">{% zeichen 'bericht' %}</a></div></div>
+        {% if e.hat_daten %}
+        <div class="fw-ember-balken" role="img" aria-label="{% trans 'Verbuchte Zahlungseingänge der letzten sieben Monate' %}">
+            <div class="fw-ember-y" aria-hidden="true">{% for a in e.achse %}<span>{{ a }}</span>{% endfor %}</div>
+            <div class="fw-ember-raster" aria-hidden="true">{% for a in e.achse %}<i></i>{% endfor %}</div>
+            {% for r in e.reihe %}
+            <div class="fw-ember-saeule"><div class="fw-ember-stab{% if forloop.last %} an{% endif %}" data-h="{{ r.hoehe|stringformat:'.1f' }}"><span class="fw-ember-tip">CHF {{ r.summe|chf:0 }}</span><i></i></div><span class="x">{{ r.label }}</span></div>
+            {% endfor %}
+        </div>
+        {% else %}
+        {% include 'fw/_empty.html' with knapp=True icon='bericht' titel=_('Noch keine verbuchten Zahlungen.') subtext=_('Die Balken erscheinen mit dem ersten Bankabgleich.') %}
+        {% endif %}
+    </article>
+    {% endwith %}
+
+    {% with w=bento.woche %}
+    <article class="fw-ember-karte k-woche" aria-labelledby="b-woche">
+        <div class="fw-ember-kopf"><h2 id="b-woche">{% trans "Terminplan" %}</h2>
+            <div class="fw-ember-gruppe"><span class="fw-ember-auswahl">{{ w.montag|date:"d.m." }} – {{ w.sonntag|date:"d.m.Y" }}</span>
+            <a href="/neu/termine/kalender/" class="fw-ember-rund" aria-label="{% trans 'Kalender' %}">{% zeichen 'termin' %}</a></div></div>
+        <div class="fw-ember-woche">
+            <span></span>
+            {% for t in w.tage %}<div class="fw-ember-tag{% if t.heute %} heute{% endif %}"><span>{{ t.datum|date:"D" }}</span> <b>{{ t.datum|date:"j" }}</b></div>{% endfor %}
+            {% for z in w.raster %}
+            <span class="fw-ember-zeit">{{ z.name }}</span>
+            {% for s in z.slots %}
+            {% if s.anzahl %}<a href="{{ s.url }}" class="fw-ember-slot{% if s.heiss %} heiss{% endif %}" aria-label="{% for e in s.ereignisse %}{{ e.titel }}{% if not forloop.last %}, {% endif %}{% endfor %}">{% if s.anzahl > 1 %}{{ s.anzahl }}{% endif %}<span class="t">{% for e in s.ereignisse|slice:":3" %}{% if not forloop.first %}<br>{% endif %}{% if e.zeit %}{{ e.zeit }} {% endif %}{{ e.titel|truncatechars:34 }}{% endfor %}{% if s.anzahl > 3 %}<small>+{{ s.anzahl|add:"-3" }}</small>{% endif %}</span></a>
+            {% else %}<span class="fw-ember-slot" aria-hidden="true"></span>{% endif %}
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </article>
+    {% endwith %}
+</div>
+{% endif %}
+
 {% comment %} Vier Zahlen mit Vormonatsvergleich und Zwölf-Monats-Linie. Die Kapsel
    trägt den Vergleich, grün oder rot je nach Richtung (`k.ton` aus
    `delta_gut_wenn` — dieselbe Regel wie bisher der Pfeil). Die Linie zeigt

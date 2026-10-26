@@ -34,6 +34,8 @@ function idAusUrl(url: string, bereich: string): string {
 
 test.describe('Arbeitstag', () => {
   test.setTimeout(120_000);
+  // Gesucht wird im Inhalt (`main`): Seit Ember (26.10.2026) ist die Leiste am Desktop eine
+  // versteckte Schublade — ein Treffer dort ist unsichtbar und wäre sonst `.first()`.
 
   test('Vom Mandat bis zur Sollstellung', async ({ page }) => {
     const fehler: string[] = [];
@@ -59,7 +61,7 @@ test.describe('Arbeitstag', () => {
     await page.locator('form:has(input[name="firma_oder_name"]) button[type="submit"]').click();
     // Das Mandat führt zurück in die Liste der Mandate (nicht in eine Detailseite).
     await page.waitForURL(/\/neu\/mandate\/$/, { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(MANDAT).first()).toBeVisible();
+    await expect(page.locator('main').getByText(MANDAT).first()).toBeVisible();
     await kein500('Mandat');
 
     // 3 — Liegenschaft anlegen und dem Mandat zuordnen
@@ -72,7 +74,7 @@ test.describe('Arbeitstag', () => {
     await page.locator('form:has(input[name="strasse"]) button[type="submit"]').click();
     await page.waitForURL(/\/neu\/liegenschaften\/\d+\/$/, { waitUntil: 'domcontentloaded' });
     const lgId = idAusUrl(page.url(), 'liegenschaften');
-    await expect(page.getByText(STRASSE).first()).toBeVisible();
+    await expect(page.locator('main').getByText(STRASSE).first()).toBeVisible();
     await kein500('Liegenschaft');
 
     // 4 — Objekt (Wohnung) in der Liegenschaft
@@ -99,7 +101,7 @@ test.describe('Arbeitstag', () => {
     await page.locator('form:has(input[name="nachname"]) button[type="submit"]').click();
     await page.waitForURL(/\/neu\/personen\/\d+\/$/, { waitUntil: 'domcontentloaded' });
     const mieterId = idAusUrl(page.url(), 'personen');
-    await expect(page.getByText(NACHNAME).first()).toBeVisible();
+    await expect(page.locator('main').getByText(NACHNAME).first()).toBeVisible();
     await kein500('Person');
 
     // 6 — Mieter einbuchen: Mietvertrag über den Assistenten
@@ -122,7 +124,7 @@ test.describe('Arbeitstag', () => {
     await expect(speichern).toBeVisible();
     await speichern.click();
     await page.waitForURL(/\/neu\/vertraege\/\d+\/$/, { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(NACHNAME).first()).toBeVisible();
+    await expect(page.locator('main').getByText(NACHNAME).first()).toBeVisible();
     await kein500('Vertrag');
 
     // 7 — Ticket erfassen (Telefonanruf des Mieters)
@@ -137,7 +139,7 @@ test.describe('Arbeitstag', () => {
     await formular.getByRole('button', { name: /Ticket erstellen/ }).click();
     await page.waitForURL(/\/neu\/schaeden\/\d+\/$/, { waitUntil: 'domcontentloaded' });
     const ticketId = idAusUrl(page.url(), 'schaeden');
-    await expect(page.getByText(TICKET).first()).toBeVisible();
+    await expect(page.locator('main').getByText(TICKET).first()).toBeVisible();
     await kein500('Ticket erfassen');
 
     // 8 — Ticket intern zuweisen (Frist folgt der Priorität «hoch»: zwei Tage)
@@ -147,13 +149,13 @@ test.describe('Arbeitstag', () => {
     await page.selectOption('select[name="zugewiesen_an"]', { label: 'e2e' });
     await page.locator('form:has(select[name="zugewiesen_an"]) button.fw-primary').click();
     await page.waitForURL(new RegExp(`/neu/schaeden/${ticketId}/$`), { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText('Zuständigkeit').first()).toBeVisible();
-    await expect(page.getByText('erledigen bis').first()).toBeVisible();
+    await expect(page.locator('main').getByText('Zuständigkeit').first()).toBeVisible();
+    await expect(page.locator('main').getByText('erledigen bis').first()).toBeVisible();
     await kein500('Ticket');
 
     // 9 — Monatslauf: Sollstellung für den laufenden Monat
     await goto(page, '/neu/sollstellung/');
-    await expect(page.getByText(NACHNAME).first()).toBeVisible();     // der neue Vertrag ist dabei
+    await expect(page.locator('main').getByText(NACHNAME).first()).toBeVisible();     // der neue Vertrag ist dabei
     // Nachzügler: Ist der Lauf dieses Monats schon abgeschlossen (z. B. weil der Server schon
     // einen Lauf sah), bietet die Seite keinen Start-Knopf an, sondern den Weg über «Läufe».
     if (await page.locator('#soll-gesperrt').isVisible()) {

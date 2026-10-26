@@ -25472,3 +25472,96 @@ msgid "Für %(n)s Liegenschaft ist weder Verkehrswert noch Anlagekosten erfasst 
 msgid_plural "Für %(n)s Liegenschaften sind weder Verkehrswert noch Anlagekosten erfasst — sie fehlen in der Rendite."
 msgstr[0] "For %(n)s property neither market value nor acquisition cost is recorded — it is missing from the yield."
 msgstr[1] "For %(n)s properties neither market value nor acquisition cost is recorded — they are missing from the yield."
+
+msgid "Suche nach Mieter, Objekt, Vertrag …"
+msgstr "Search tenant, property, lease …"
+
+msgid "Mietobjekte"
+msgstr "Rental units"
+
+msgid "Offene Tickets"
+msgstr "Open tickets"
+
+msgid "Ø Verzug"
+msgstr "Avg. delay"
+
+msgid "noch keine Zahlung in 90 Tagen"
+msgstr "no payment in the last 90 days"
+
+msgid "Mahnlauf"
+msgstr "Dunning run"
+
+msgid "Nachrichten"
+msgstr "Messages"
+
+msgid "Keine neue Nachricht."
+msgstr "No new message."
+
+msgid "Objekte nach Ort"
+msgstr "Units by location"
+
+msgid "Noch keine Objekte erfasst."
+msgstr "No units recorded yet."
+
+msgid "Mieteingang"
+msgstr "Rent received"
+
+msgid "Letzte 7 Monate"
+msgstr "Last 7 months"
+
+msgid "Verbuchte Zahlungseingänge der letzten sieben Monate"
+msgstr "Posted payments of the last seven months"
+
+msgid "Terminplan"
+msgstr "Schedule"
+
+msgid "Noch keine verbuchten Zahlungen."
+msgstr "No posted payments yet."
+
+msgid "Die Balken erscheinen mit dem ersten Bankabgleich."
+msgstr "The bars appear with the first bank reconciliation."
+
+#, python-format
+msgid "Zahlungsquote %(q)s Prozent"
+msgstr "Payment rate %(q)s percent"
+
+#, python-format
+msgid "Zahlungsquote %(j)s"
+msgstr "Payment rate %(j)s"
+
+#, python-format
+msgid "Objekte in<br>%(ort)s"
+msgstr "units in<br>%(ort)s"
+
+msgid "Profil und Darstellung"
+msgstr "Profile and appearance"
+
+msgid "pünktlich"
+msgstr "on time"
+
+msgid "verzögert"
+msgstr "delayed"
+
+msgid "spät"
+msgstr "late"
+
+msgid "Ganztags"
+msgstr "All day"
+
+msgid "Vormittag"
+msgstr "Morning"
+
+msgid "Nachmittag"
+msgstr "Afternoon"
+
+#, python-format
+msgid "Tage nach Fälligkeit · %(n)s Zahlung, 90 Tage"
+msgid_plural "Tage nach Fälligkeit · %(n)s Zahlungen, 90 Tage"
+msgstr[0] "days after due date · %(n)s payment, 90 days"
+msgstr[1] "days after due date · %(n)s payments, 90 days"
+
+#, python-format
+msgid "überfällige Rechnung · CHF %(s)s"
+msgid_plural "überfällige Rechnungen · CHF %(s)s"
+msgstr[0] "overdue invoice · CHF %(s)s"
+msgstr[1] "overdue invoices · CHF %(s)s"

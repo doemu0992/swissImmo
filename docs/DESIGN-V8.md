@@ -106,6 +106,38 @@ Dashboard-Regeln, Prüfliste mit gemessenen Kontrasten). Übernommen aus den Vor
 Nicht übernommen, mit Grund: Fotos in Tabellen (DSG), mehrere Diagramme je Seite, violetter
 Verlauf als Fläche, Halbkreis-Diagramme.
 
+## V10 «Ember» (26.10.2026) — löst V9 ab
+
+Quelle: `mockups/immoswiss-ember.html` (nach dem Dashboard-Reel «V15 Ember»: Farben, Animationen,
+Diagramme, Anordnung). Umgesetzt in der bestehenden Django-Oberfläche, nicht als neues Frontend:
+Server-gerenderte Vorlagen, eigene Komponentenschicht (`fw/_schicht.html`), Bewegung in CSS und
+wenigen Zeilen Vanilla-JS. Ein SPA-Umbau hätte jede Seite neu gebaut und die Wächter (Mandanten,
+Rechte, Übersetzung, Stilschuld) umgangen; das Ember-Bild entsteht vollständig aus Tokens und Klassen.
+
+- **Palette und Schrift:** warmer Grund #EFEEEB, Tinte #17181B, Marke Glut-Orange #B04416
+  (Text/Links, AA auf Weiss), Akzent #E0642F für Flächen (`--ds-akzent`, `-hell`, `-tief`).
+  Dunkel: #111113 / #1A1B1E, Marke #F08A55. Schrift DM Sans (lokal, OFL, `static/fonts/`).
+  Rundungen 24 / 28 px, Knöpfe und Reiter als Kapseln, aktive Kapsel in Tinte.
+- **Kopfleiste statt Leiste:** `header.fw-kopfleiste` — Logo-Kapsel, Bereichs-Kapsel
+  (`#fwHauptnav`) mit gleitender Markierung (`.fw-gleiter`, folgt der Maus), Werkzeug-Kapsel
+  (Dunkelmodus, Neuer Fall, Glocke, Einstellungen, Profil). Die alte Leiste `#fwSidebar` bleibt als
+  Schublade für das Telefonmenü (Funktionen und Ids unverändert). Die Tab-Leiste unten entfällt;
+  am Telefon scrollt die Bereichs-Kapsel in sich.
+- **Heute als Bento** (`faelle/heute_bento.py`, Tests `core/tests/test_heute_bento.py`): grosse
+  Suche, drei Zahlen, sechs Karten — Zahlungseingang (Halbkreis = Zahlungsquote des Jahres,
+  Ø Verzug der letzten 90 Tage), Mahnwesen (orange Hauptkarte, überfällige Rechnungen),
+  Nachrichten (neuester Zulauf bzw. Mieternachricht), Objekte nach Ort (Plan mit Glut-Kugel),
+  Mieteingang (schraffierte Balken, aktueller Monat orange, Tooltip), Terminplan (Woche ×
+  ganztags/Vormittag/Nachmittag, gefüllte Kreise = Einträge, orange = heute oder kritisch).
+  Jede Karte führt dorthin, wo man handelt. Keine Zahl ist erfunden: fehlt sie, steht «–».
+- **Kennzahlen:** `fw-kpi.fw-accent` wird zur orangen Hauptkarte (z. B. Debitoren «Total offen»).
+- **Bewegung:** Karten steigen gestaffelt auf (`fw-auf`), Balken wachsen (`fw-wachsen`), Halbkreis
+  füllt sich, grosse Zahlen zählen hoch (Format bleibt: Apostroph, Komma, %), Karten heben sich
+  beim Zeigen. Alles aus bei `prefers-reduced-motion` und in automatisierten Browsern
+  (`html.fw-ruhig`, damit Messungen stabil bleiben).
+- **Datenwerte ohne `style=`:** Balkenhöhen kommen als `data-h`, der Halbkreis als SVG-Attribut —
+  der Stilschuld-Wächter bleibt bei seiner Obergrenze.
+
 ## Was nicht mehr vorkommen soll
 
 - Kachelreihen `grid grid-cols-… gap-4` aus `fw-card p-5` mit Symbolquadrat (`w-11 h-11 rounded-lg fw-*-flaeche`) → `fw-kpis`.

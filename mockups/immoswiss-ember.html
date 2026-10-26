@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>immoswiss Ember</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+<style>
+  /* Dashboard im Stil «V15»: helle Bento-Karten, Kapsel-Navigation, ein warmer Akzent (Orange),
+     schraffierte Balken, Halbkreis-Anzeige, Wochenraster aus Kreisen.
+     Farben sind Tokens. 60-30-10: 60 % warmes Hell (bg, Karten), 30 % Tinte (Navigation, Text),
+     10 % Orange (Hauptkarte, Hervorhebung). Die Wortmarke bleibt: Haus + Schweizer Kreuz. */
+  :root {
+    color-scheme: light;
+    --bg: #efeeeb; --card: #ffffff; --card-2: #f6f5f3; --line: #e7e5e1;
+    --ink: #17181b; --muted: #5d6068; --faint: #8a8d95;
+    --accent: #e0642f; --accent-2: #f08a55; --accent-soft: #fbe3d6; --accent-ink: #9a3d15;
+    --on-accent: #ffffff;
+    --good: #1b7a4b; --good-soft: #def3e7; --bad: #b4232f; --bad-soft: #fbe6e8; --warn: #956000; --warn-soft: #fbefd3;
+    --shadow: 0 1px 2px rgba(23,24,27,.04), 0 18px 40px -22px rgba(23,24,27,.18);
+    --shadow-hover: 0 2px 4px rgba(23,24,27,.05), 0 26px 50px -22px rgba(23,24,27,.28);
+    --ease: cubic-bezier(.2,.8,.2,1);
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.4; }
+  .wrap { max-width: 1360px; margin: 0 auto; padding-block: 20px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* ---------- Kopf: Kapseln ---------- */
+  .top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 28px; }
+  .pill { background: var(--card); border-radius: 999px; box-shadow: var(--shadow); }
+  .logo { display: flex; align-items: center; gap: 8px; padding: 8px 18px 8px 12px; height: 52px; }
+  .logo b { font-size: 19px; font-weight: 700; letter-spacing: -.02em; position: relative; padding-right: 16px; }
+  .logo b .cross { position: absolute; right: 0; top: -2px; width: 12px; height: 12px; }
+  .nav { position: relative; display: flex; align-items: center; gap: 2px; padding: 6px; height: 52px; margin-inline: auto; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { position: relative; z-index: 1; padding: 9px 18px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--muted); white-space: nowrap; transition: color .25s; }
+  .nav a:hover { color: var(--ink); }
+  .nav a[aria-current="page"] { color: #fff; }
+  .nav .glide { position: absolute; z-index: 0; top: 6px; bottom: 6px; left: 0; border-radius: 999px; background: var(--ink); transition: transform .4s var(--ease), width .4s var(--ease); }
+  .tools { display: flex; align-items: center; gap: 8px; padding: 6px; height: 52px; }
+  .tools button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; color: var(--muted); position: relative; transition: background .2s, color .2s; }
+  .tools button:hover { background: var(--card-2); color: var(--ink); }
+  .tools button.dark { background: var(--ink); color: #fff; }
+  .tools .dot { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); border: 2px solid var(--card); }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3b3d44, #a9714d); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+
+  /* ---------- Karten ---------- */
+  .card { background: var(--card); border-radius: 28px; box-shadow: var(--shadow); padding: 22px 24px; position: relative; min-width: 0;
+          transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
+  .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+  .card h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+  .card .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .round { width: 34px; height: 34px; border-radius: 50%; border: 0; display: grid; place-items: center; background: var(--card-2); color: var(--ink); transition: background .2s, transform .2s; }
+  .round:hover { background: var(--line); transform: scale(1.06); }
+  .tiny { font-size: 11.5px; color: var(--faint); }
+  .badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2px 10px; font-size: 11.5px; font-weight: 600; }
+  .badge.good { background: var(--good-soft); color: var(--good); } .badge.bad { background: var(--bad-soft); color: var(--bad); } .badge.warn { background: var(--warn-soft); color: var(--warn); }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 999px; border: 0; font-size: 13.5px; font-weight: 600; transition: transform .2s, box-shadow .2s, background .2s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.ink { background: var(--ink); color: #fff; } .btn.white { background: #fff; color: var(--ink); }
+  .btn.ghost { background: var(--card-2); color: var(--ink); }
+
+  /* Eintritt: gestaffeltes Einblenden */
+  .rise { opacity: 0; transform: translateY(18px); animation: rise .7s var(--ease) forwards; animation-delay: calc(var(--d, 0) * 70ms); }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  /* ---------- Dashboard ---------- */
+  .intro { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: end; margin-bottom: 22px; }
+  .search { display: flex; align-items: center; gap: 12px; }
+  .search input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: clamp(24px, 3.2vw, 34px); font-weight: 500; letter-spacing: -.03em; color: var(--ink); padding: 4px 0; outline: none; }
+  .search input::placeholder { color: var(--ink); opacity: 1; }
+  .search input:focus::placeholder { color: var(--faint); }
+  .search .round { background: var(--card); box-shadow: var(--shadow); }
+  .kpis { display: flex; gap: 40px; padding-right: 8px; }
+  .kpis div { display: flex; flex-direction: column; gap: 2px; }
+  .kpis span { font-size: 11.5px; color: var(--muted); }
+  .kpis b { font-size: 30px; font-weight: 500; letter-spacing: -.03em; line-height: 1.1; }
+
+  .bento { display: grid; gap: 18px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .c-gauge { grid-column: span 5; } .c-hero { grid-column: span 2; } .c-msg { grid-column: span 2; } .c-map { grid-column: span 3; }
+  .c-bars { grid-column: span 5; } .c-cal { grid-column: span 7; }
+
+  .gauge-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; min-height: 190px; }
+  .big { font-size: 56px; font-weight: 500; letter-spacing: -.04em; line-height: 1; display: flex; align-items: flex-start; gap: 8px; }
+  .big .badge { margin-top: 8px; }
+  .gauge { width: 230px; max-width: 100%; }
+  .gauge .track { stroke: #efece8; } .gauge .arc { stroke: url(#gArc); stroke-dasharray: 0 400; transition: stroke-dasharray 1.4s var(--ease) .3s; }
+  .gauge .knob { transform-origin: 120px 120px; transition: transform 1.4s var(--ease) .3s; }
+  .tools-row { display: flex; gap: 10px; margin-top: 20px; }
+  .tools-row .round { width: 44px; height: 44px; background: #fff; border: 1px solid var(--line); }
+
+  .c-hero { background: linear-gradient(160deg, var(--accent-2) -20%, var(--accent) 45%, #c4531f 120%); color: #fff; display: flex; flex-direction: column; justify-content: space-between; min-height: 300px; }
+  .c-hero h2 { color: rgba(255,255,255,.85); font-weight: 500; }
+  .c-hero .round { background: rgba(255,255,255,.22); color: #fff; }
+  .c-hero .round:hover { background: rgba(255,255,255,.34); }
+  .c-hero .big { font-size: 64px; }
+  .c-hero small { font-size: 11.5px; color: rgba(255,255,255,.8); line-height: 1.25; margin-top: 8px; max-width: 8.5em; }
+  .c-hero .btn { height: 34px; padding: 0 14px; font-size: 12.5px; margin-top: 14px; }
+
+  .mini { margin-top: 12px; background: var(--card-2); border-radius: 18px 18px 0 0; padding: 14px 14px 0; box-shadow: inset 0 1px 0 #fff; margin-inline: -4px; overflow: hidden; }
+  .mini .win { background: #fff; border-radius: 14px 14px 0 0; padding: 12px; box-shadow: 0 -6px 22px -12px rgba(23,24,27,.25); transform: translateY(12px); transition: transform .4s var(--ease); }
+  .card:hover .mini .win { transform: translateY(0); }
+  .mini .win b { font-size: 12.5px; display: block; margin-bottom: 6px; line-height: 1.3; }
+  .mini .win p { margin: 0; font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+  .mini .meta { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; color: var(--faint); }
+  .mini .meta i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  .c-map { overflow: hidden; }
+  .map { position: absolute; inset: 0; opacity: .9; }
+  .map path { fill: none; stroke: #e6e3df; stroke-width: 2; } .map .b { stroke: #efece8; stroke-width: 9; }
+  .c-map .head, .c-map .foot { position: relative; z-index: 1; }
+  .c-map .foot { position: absolute; left: 24px; right: 24px; bottom: 20px; display: flex; align-items: flex-end; gap: 10px; }
+  .blob { width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 60%, #b8481a); box-shadow: 0 10px 24px -8px rgba(224,100,47,.6); flex: none; transition: transform .4s var(--ease); }
+  .card:hover .blob { transform: scale(1.12); }
+  .c-map .foot b { font-size: 34px; font-weight: 500; letter-spacing: -.03em; line-height: 1; }
+  .c-map .foot span { font-size: 11.5px; color: var(--muted); padding-bottom: 3px; }
+  .c-map .pin { position: absolute; z-index: 1; right: 30px; top: 96px; width: 34px; height: 34px; border-radius: 50%; background: #fff; box-shadow: var(--shadow); display: grid; place-items: center; font-size: 11px; font-weight: 700; animation: pulse 2.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(224,100,47,.35), var(--shadow); } 50% { box-shadow: 0 0 0 12px rgba(224,100,47,0), var(--shadow); } }
+  .c-map { min-height: 300px; }
+
+  /* Schraffierte Balken */
+  .sel { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 12px; color: var(--muted); }
+  .bars { position: relative; display: grid; grid-template-columns: 38px repeat(7, 1fr); gap: 0 6px; height: 230px; margin-top: 8px; }
+  .bars .ylab { display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: var(--faint); padding-bottom: 26px; text-align: right; padding-right: 8px; }
+  .bar-col { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 26px; border-left: 1px dashed transparent; }
+  .bar-col .x { position: absolute; bottom: 0; font-size: 11.5px; color: var(--faint); }
+  .bar { width: min(26px, 70%); height: 0; border-radius: 999px; background: repeating-linear-gradient(-45deg, #cfccc7 0 2px, transparent 2px 6px), #f4f2ef; transition: height 1s var(--ease), background .25s, transform .25s; transition-delay: calc(var(--i) * 60ms), 0s, 0s; position: relative; }
+  .bar.on, .bar-col:hover .bar { background: linear-gradient(180deg, var(--accent-2), var(--accent)); transform: scaleX(1.12); }
+  .tip { position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translate(-50%, 6px); opacity: 0; pointer-events: none; background: var(--ink); color: #fff; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 8px; white-space: nowrap; transition: opacity .2s, transform .2s; }
+  .bar.on .tip, .bar-col:hover .tip { opacity: 1; transform: translate(-50%, 0); }
+  .bar .knob { position: absolute; left: 50%; top: 9px; width: 7px; height: 7px; border-radius: 50%; background: #fff; transform: translateX(-50%); opacity: 0; }
+  .bar.on .knob, .bar-col:hover .knob { opacity: 1; }
+  .gridlines { position: absolute; inset: 0 0 26px 38px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+  .gridlines i { border-top: 1px solid #f1efec; }
+
+  /* Wochenraster aus Kreisen */
+  .week { display: grid; grid-template-columns: 54px repeat(7, 1fr); gap: 8px 6px; align-items: center; margin-top: 4px; }
+  .wd { text-align: center; font-size: 12px; color: var(--faint); padding: 6px 0; border-radius: 999px; }
+  .wd.today { background: var(--ink); color: #fff; font-weight: 600; }
+  .time { font-size: 11.5px; color: var(--faint); }
+  .slot { position: relative; width: 100%; max-width: 60px; aspect-ratio: 1; margin-inline: auto; border-radius: 50%; border: 1.5px dashed #ebe8e4; background: transparent; padding: 0; transition: transform .3s var(--ease), border-color .2s; }
+  .slot:hover { border-color: #d9d5cf; transform: scale(1.05); }
+  .slot.ev { border: 0; background: radial-gradient(circle at 35% 30%, #fde6d8, var(--accent-soft) 70%); }
+  .slot.ev.hot { background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent)); box-shadow: 0 10px 22px -10px rgba(224,100,47,.7); }
+  .slot.ev:hover { transform: scale(1.12); }
+  .slot .t { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translate(-50%, 6px); opacity: 0; pointer-events: none; background: var(--ink); color: #fff; padding: 5px 10px; border-radius: 10px; font-size: 11.5px; font-weight: 500; white-space: nowrap; z-index: 3; transition: opacity .2s, transform .2s; }
+  .slot.ev:hover .t, .slot.ev:focus-visible .t { opacity: 1; transform: translate(-50%, 0); }
+  .slot .t small { display: block; opacity: .7; font-size: 10.5px; }
+
+  /* ---------- Finanzen-Ansicht ---------- */
+  .page-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .page-title h1 { margin: 0; font-size: clamp(32px, 4vw, 44px); font-weight: 500; letter-spacing: -.04em; line-height: 1.05; }
+  .page-title p { margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 18px; }
+  .stat { padding: 20px 24px; min-height: 108px; display: flex; flex-direction: column; justify-content: space-between; }
+  .stat span { font-size: 12.5px; color: var(--muted); } .stat b { font-size: 34px; font-weight: 500; letter-spacing: -.03em; }
+  .stat.hot { background: linear-gradient(150deg, var(--accent-2) -20%, var(--accent) 50%, #c4531f 130%); color: #fff; } .stat.hot span { color: rgba(255,255,255,.85); }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .chip { height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
+  .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .toolbar .find { margin-left: auto; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 999px; background: var(--card-2); min-width: 220px; }
+  .toolbar .find input { border: 0; background: transparent; font: inherit; font-size: 13px; width: 100%; outline: none; }
+  .table-wrap { overflow-x: auto; margin-inline: -8px; padding-inline: 8px; }
+  table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  th { text-align: left; font-size: 11.5px; font-weight: 500; color: var(--faint); padding: 0 12px 10px; white-space: nowrap; }
+  td { padding: 14px 12px; border-top: 1px solid #f0eeeb; font-size: 13.5px; vertical-align: middle; }
+  td small { display: block; color: var(--faint); font-size: 11.5px; margin-top: 1px; }
+  tr.row { transition: background .2s; } tr.row:hover { background: #faf9f7; }
+  td.r, th.r { text-align: right; }
+  .btn.sm { height: 30px; padding: 0 14px; font-size: 12px; }
+
+  [hidden] { display: none !important; }
+  @media (max-width: 1180px) {
+    .c-gauge { grid-column: span 12; } .c-hero { grid-column: span 4; } .c-msg { grid-column: span 4; } .c-map { grid-column: span 4; }
+    .c-bars { grid-column: span 12; } .c-cal { grid-column: span 12; }
+  }
+  @media (max-width: 860px) {
+    .top { gap: 10px; } .nav { order: 3; width: 100%; margin: 0; } .tools { margin-left: auto; }
+    .intro { grid-template-columns: 1fr; } .kpis { gap: 28px; }
+    .c-hero, .c-msg, .c-map { grid-column: span 12; } .c-hero { min-height: 220px; } .c-map { min-height: 240px; }
+    .stats { grid-template-columns: 1fr; }
+    .week { grid-template-columns: 40px repeat(7, 1fr); gap: 6px 3px; } .wd { font-size: 10.5px; padding: 5px 0; }
+    .toolbar .find { margin-left: 0; width: 100%; }
+  }
+  @media (max-width: 460px) { .tools button:nth-child(2), .tools button:nth-child(4) { display: none; } .card { padding: 18px 16px; border-radius: 24px; } .big { font-size: 44px; } .logo { padding-right: 12px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .rise { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="cross" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#e5342d"/><path d="M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z" fill="#fff"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></symbol>
+    <symbol id="i-cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7l8.5 6 8.5-6"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20h1"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M10 6l6 6-6 6"/></symbol>
+    <symbol id="i-flt" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+    <symbol id="house" viewBox="0 0 32 32"><g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15L16 4l13 11M7 13v14h18V13" stroke="#17181b"/><path d="M12 27v-7h3v7M18 27v-9h3v9" stroke="#e0642f"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <a class="logo pill rise" style="--d:0" href="#dashboard" aria-label="immoswiss">
+      <svg width="30" height="30" aria-hidden="true"><use href="#house"/></svg>
+      <b>immoswiss<svg class="cross" aria-label="Schweiz"><use href="#cross"/></svg></b>
+    </a>
+    <nav class="nav pill rise" style="--d:1" aria-label="Hauptnavigation" id="nav">
+      <span class="glide" aria-hidden="true"></span>
+      <a href="#dashboard" data-view="dashboard" aria-current="page">Dashboard</a>
+      <a href="#immobilien" data-view="dashboard">Immobilien</a>
+      <a href="#mieter" data-view="dashboard">Mieter</a>
+      <a href="#finanzen" data-view="finanzen">Finanzen</a>
+      <a href="#kalender" data-view="dashboard">Kalender</a>
+      <a href="#dokumente" data-view="dashboard">Dokumente</a>
+    </nav>
+    <div class="tools pill rise" style="--d:2">
+      <button class="dark" aria-label="Helle Ansicht"><svg class="i"><use href="#i-sun"/></svg></button>
+      <button aria-label="Dunkle Ansicht"><svg class="i"><use href="#i-moon"/></svg></button>
+      <button aria-label="Mitteilungen"><svg class="i"><use href="#i-bell"/></svg><span class="dot"></span></button>
+      <button aria-label="Einstellungen"><svg class="i"><use href="#i-cog"/></svg></button>
+      <span class="avatar" role="img" aria-label="Dominik Gerber">DG</span>
+    </div>
+  </header>
+
+  <main>
+  <!-- ============ DASHBOARD ============ -->
+  <section id="view-dashboard" aria-label="Dashboard">
+    <div class="intro rise" style="--d:2">
+      <label class="search">
+        <span class="sr">Suche</span>
+        <input type="search" placeholder="Suche nach Mieter, Objekt, Vertrag …">
+        <span class="round" aria-hidden="true"><svg class="i" style="width:16px;height:16px"><use href="#i-search"/></svg></span>
+      </label>
+      <div class="kpis">
+        <div><span>Mietobjekte</span><b class="num" data-count="126">126</b></div>
+        <div><span>Mieter</span><b class="num" data-count="118">118</b></div>
+        <div><span>Offene Tickets</span><b class="num" data-count="14">14</b></div>
+      </div>
+    </div>
+
+    <div class="bento">
+      <article class="card c-gauge rise" style="--d:3">
+        <div class="head"><h2>Zahlungseingang</h2><button class="round" aria-label="Neu"><svg class="i" style="width:15px;height:15px"><use href="#i-plus"/></svg></button></div>
+        <div class="gauge-body">
+          <div>
+            <div class="tiny">Ø Zahlungsdauer</div>
+            <div class="big num"><span data-count="4.2" data-dec="1">4.2</span><span class="badge good">Schnell</span></div>
+            <div class="tiny" style="margin-top:6px">Tage nach Fälligkeit</div>
+            <div class="tools-row">
+              <button class="round" aria-label="Mahnung per E-Mail"><svg class="i"><use href="#i-mail"/></svg></button>
+              <button class="round" aria-label="QR-Rechnung"><svg class="i"><use href="#i-qr"/></svg></button>
+              <button class="round" aria-label="Mieter anrufen"><svg class="i"><use href="#i-phone"/></svg></button>
+            </div>
+          </div>
+          <div style="text-align:center">
+            <svg class="gauge" viewBox="0 0 240 140" role="img" aria-label="Zahlungsquote 97.6 Prozent">
+              <defs><linearGradient id="gArc" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f6b890"/><stop offset="1" stop-color="#d9531d"/></linearGradient></defs>
+              <path class="track" d="M 30 120 A 90 90 0 0 1 210 120" fill="none" stroke-width="26" stroke-linecap="round"/>
+              <path class="arc" id="arc" d="M 30 120 A 90 90 0 0 1 210 120" fill="none" stroke-width="26" stroke-linecap="round" pathLength="100"/>
+              <g class="knob" id="knob"><circle cx="30" cy="120" r="9" fill="#17181b" stroke="#fff" stroke-width="3"/></g>
+            </svg>
+            <div style="margin-top:-30px"><b class="num" style="font-size:26px;font-weight:600;letter-spacing:-.03em">97.6 %</b><div class="tiny">Zahlungsquote</div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card c-hero rise" style="--d:4">
+        <div>
+          <div class="head" style="margin-bottom:0"><h2>Mahnwesen</h2><button class="round" aria-label="Öffnen"><svg class="i" style="width:15px;height:15px"><use href="#i-arrow"/></svg></button></div>
+          <button class="btn white"><svg class="i" style="width:15px;height:15px"><use href="#i-bolt"/></svg>Mahnlauf</button>
+        </div>
+        <div><div class="big num" data-count="7">7</div><small>überfällige Rechnungen · CHF 9'870</small></div>
+      </article>
+
+      <article class="card c-msg rise" style="--d:5">
+        <div class="head"><h2>Mieter-Nachrichten</h2><button class="round" aria-label="Neue Nachricht"><svg class="i" style="width:15px;height:15px"><use href="#i-plus"/></svg></button></div>
+        <div class="mini"><div class="win"><b>Wasserhahn tropft in der Küche</b><p>Seit gestern, bitte um Termin diese Woche.</p><div class="meta"><i></i>Keller Maria · Ticket #1042</div></div></div>
+      </article>
+
+      <article class="card c-map rise" style="--d:6">
+        <svg class="map" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <path class="b" d="M-10 80 C 60 60 120 120 200 90 S 280 60 320 80"/><path class="b" d="M60 -10 C 80 80 70 160 110 320"/><path class="b" d="M-10 200 C 90 180 190 230 320 190"/>
+          <path d="M-10 120 L 320 150M140 -10 L 190 320M-10 40 L 320 20M230 -10 L 260 320M20 250 L 320 280"/>
+        </svg>
+        <div class="head"><h2>Objekte nach Ort</h2><button class="round" aria-label="Karte öffnen"><svg class="i" style="width:15px;height:15px"><use href="#i-arrow"/></svg></button></div>
+        <div class="pin" aria-hidden="true">ZH</div>
+        <div class="foot"><span class="blob" aria-hidden="true"></span><b class="num" data-count="16">16</b><span>Objekte in<br>Zürich</span></div>
+      </article>
+
+      <article class="card c-bars rise" style="--d:7">
+        <div class="head"><h2>Mieteinnahmen</h2><div style="display:flex;gap:8px"><span class="sel">Letzte 7 Monate <svg class="i" style="width:13px;height:13px"><use href="#i-down"/></svg></span><button class="round" aria-label="Exportieren"><svg class="i" style="width:15px;height:15px"><use href="#i-dl"/></svg></button></div></div>
+        <div class="bars" id="bars" role="img" aria-label="Mieteinnahmen der letzten sieben Monate in Tausend Franken, Oktober 482">
+          <div class="ylab" aria-hidden="true"><span>500k</span><span>400k</span><span>300k</span><span>200k</span><span>100k</span><span>0</span></div>
+          <div class="gridlines" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </article>
+
+      <article class="card c-cal rise" style="--d:8">
+        <div class="head"><h2>Terminplan</h2><div style="display:flex;gap:8px;align-items:center"><span class="sel">Oktober 2026 <svg class="i" style="width:13px;height:13px"><use href="#i-down"/></svg></span><button class="round" aria-label="Vorherige Woche"><svg class="i" style="width:15px;height:15px"><use href="#i-left"/></svg></button><button class="round" aria-label="Nächste Woche"><svg class="i" style="width:15px;height:15px"><use href="#i-right"/></svg></button></div></div>
+        <div class="week" id="week" aria-label="Wochenplan 19. bis 25. Oktober"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ FINANZEN ============ -->
+  <section id="view-finanzen" aria-label="Debitoren" hidden>
+    <div class="page-title rise" style="--d:2">
+      <div><h1>Debitoren</h1><p>Mieten und Weiterverrechnungen — offene Posten, Zahlungsstatus, Mahnstufen.</p></div>
+      <button class="btn ink"><svg class="i" style="width:15px;height:15px"><use href="#i-plus"/></svg>Rechnung erstellen</button>
+    </div>
+    <div class="stats">
+      <div class="card stat hot rise" style="--d:3"><span>Total offen</span><b class="num">CHF 38'420</b></div>
+      <div class="card stat rise" style="--d:4"><span>Bezahlt im Oktober</span><b class="num">CHF 412'300</b></div>
+      <div class="card stat rise" style="--d:5"><span>Überfällig</span><b class="num" style="color:var(--bad)">CHF 9'870</b></div>
+    </div>
+    <div class="card rise" style="--d:6">
+      <div class="toolbar">
+        <button class="chip" aria-pressed="true" data-f="alle">Alle</button>
+        <button class="chip" aria-pressed="false" data-f="gruen"><span class="badge good" style="padding:0;background:none"></span>Bezahlt</button>
+        <button class="chip" aria-pressed="false" data-f="gelb"><span class="badge warn" style="padding:0;background:none"></span>Offen</button>
+        <button class="chip" aria-pressed="false" data-f="rot"><span class="badge bad" style="padding:0;background:none"></span>Überfällig</button>
+        <label class="find"><svg class="i" style="width:15px;height:15px;color:var(--faint)"><use href="#i-search"/></svg><span class="sr">Suchen</span><input id="q" placeholder="Mieter oder Rechnung suchen …"></label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Rechnung</th><th>Mieter</th><th>Fällig</th><th class="r">Betrag</th><th>Status</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Navigation: Kapsel gleitet zum aktiven Eintrag; Ansicht wechseln ---- */
+  var nav = document.getElementById('nav'), glide = nav.querySelector('.glide');
+  var views = { dashboard: document.getElementById('view-dashboard'), finanzen: document.getElementById('view-finanzen') };
+  function place(a) { glide.style.width = a.offsetWidth + 'px'; glide.style.transform = 'translateX(' + a.offsetLeft + 'px)'; }
+  function show(a) {
+    nav.querySelectorAll('a').forEach(function (x) { x.removeAttribute('aria-current'); });
+    a.setAttribute('aria-current', 'page'); place(a);
+    Object.keys(views).forEach(function (k) { views[k].hidden = k !== a.dataset.view; });
+    if (a.dataset.view === 'dashboard') animateDashboard();
+  }
+  nav.addEventListener('click', function (e) { var a = e.target.closest('a'); if (!a) return; e.preventDefault(); show(a); });
+  var cur = nav.querySelector('[aria-current]'); glide.style.transition = 'none'; place(cur); requestAnimationFrame(function () { glide.style.transition = ''; });
+  addEventListener('resize', function () { place(nav.querySelector('[aria-current]')); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { place(nav.querySelector('[aria-current]')); });
+
+  /* ---- Zahlen zählen hoch ---- */
+  function countUp(el) {
+    var to = parseFloat(el.dataset.count), dec = +(el.dataset.dec || 0);
+    if (reduce) { el.textContent = to.toFixed(dec); return; }
+    var t0 = performance.now(), d = 1100;
+    (function f(t) { var p = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - p, 3); el.textContent = (to * e).toFixed(dec); if (p < 1) requestAnimationFrame(f); })(t0);
+  }
+
+  /* ---- Halbkreis ---- */
+  var arc = document.getElementById('arc'), knob = document.getElementById('knob');
+  function gauge() {
+    var v = 97.6;                     // Prozent des Halbkreises
+    arc.style.strokeDasharray = '0 400'; knob.style.transform = 'rotate(0deg)';
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      arc.style.strokeDasharray = (v) + ' 400'; knob.style.transform = 'rotate(' + (v * 1.8) + 'deg)';
+    }); });
+  }
+
+  /* ---- Schraffierte Balken ---- */
+  var data = [['Apr', 455, 91], ['Mai', 431, 86], ['Jun', 439, 88], ['Jul', 448, 90], ['Aug', 452, 90], ['Sep', 459, 92], ['Okt', 482, 96]];
+  var bars = document.getElementById('bars');
+  data.forEach(function (d, i) {
+    var col = document.createElement('div'); col.className = 'bar-col';
+    col.innerHTML = '<div class="bar' + (i === data.length - 1 ? ' on' : '') + '" style="--i:' + i + '" data-h="' + d[2] + '"><span class="tip">CHF ' + d[1] + 'k</span><span class="knob"></span></div><span class="x">' + d[0] + '</span>';
+    col.addEventListener('mouseenter', function () { bars.querySelectorAll('.bar.on').forEach(function (b) { b.classList.remove('on'); }); col.firstChild.classList.add('on'); });
+    bars.appendChild(col);
+  });
+  function growBars() {
+    bars.querySelectorAll('.bar').forEach(function (b) { b.style.height = '0'; });
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      var maxH = bars.querySelector('.bar-col').clientHeight - 26;
+      bars.querySelectorAll('.bar').forEach(function (b) { b.style.height = (maxH * (+b.dataset.h) / 100) + 'px'; });
+    }); });
+  }
+
+  /* ---- Wochenraster ---- */
+  var week = document.getElementById('week');
+  var tage = [['Mo', 19], ['Di', 20], ['Mi', 21], ['Do', 22], ['Fr', 23], ['Sa', 24], ['So', 25]];
+  var zeiten = ['08:00', '12:00', '17:00'];
+  var termine = { '2-0': ['Wohnungsabnahme', 'Seefeldstrasse 12 · 08:00', 0], '4-1': ['Besichtigung', 'Rebbergweg 8 · 12:30', 1], '1-2': ['Heizungswartung', 'Bahnhofstrasse 4 · 17:00', 0], '3-0': ['Übergabe', 'Seestrasse 41 · 08:15', 0], '0-1': ['Eigentümergespräch', 'Büro · 12:00', 0] };
+  var html = '<span></span>' + tage.map(function (t, i) { return '<div class="wd' + (i === 4 ? ' today' : '') + '">' + t[0] + ' ' + t[1] + '</div>'; }).join('');
+  zeiten.forEach(function (z, r) {
+    html += '<span class="time">' + z + '</span>';
+    tage.forEach(function (t, c) {
+      var e = termine[c + '-' + r];
+      html += e ? '<button class="slot ev' + (e[2] ? ' hot' : '') + '" aria-label="' + e[0] + ', ' + e[1] + '"><span class="t">' + e[0] + '<small>' + e[1] + '</small></span></button>' : '<span class="slot" aria-hidden="true"></span>';
+    });
+  });
+  week.innerHTML = html;
+
+  function animateDashboard() {
+    document.querySelectorAll('#view-dashboard [data-count]').forEach(countUp);
+    gauge(); growBars();
+  }
+  animateDashboard();
+
+  /* ---- Debitoren ---- */
+  var rechnungen = [
+    ['RE-2610-0142', 'Muster Hans', 'Seefeldstrasse 12 · 3.5 Zi', '05.10.2026', 1850, 'rot', 'Überfällig · 18 T.'],
+    ['RE-2610-0138', 'Keller Maria', 'Bahnhofstrasse 4 · 2.5 Zi', '01.10.2026', 1420, 'rot', 'Überfällig · 22 T.'],
+    ['RE-2611-0007', 'Rossi Luca', 'Seefeldstrasse 12 · 4.5 Zi', '01.11.2026', 2100, 'gelb', 'Offen'],
+    ['RE-2610-0119', 'Bianchi Sara', 'Rebbergweg 8 · 3.5 Zi', '01.10.2026', 1690, 'gelb', 'Teilbezahlt'],
+    ['RE-2610-0101', 'Meier AG', 'Bahnhofstrasse 4 · Laden', '01.10.2026', 4800, 'gruen', 'Bezahlt'],
+    ['RE-2610-0097', 'Schmid Peter', 'Rebbergweg 8 · 2.5 Zi', '01.10.2026', 1560, 'gruen', 'Bezahlt']
+  ];
+  var cls = { rot: 'bad', gelb: 'warn', gruen: 'good' };
+  var tb = document.getElementById('rows'), filter = 'alle', q = '';
+  function chf(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + '.00'; }
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function draw() {
+    var rows = rechnungen.filter(function (r) { return (filter === 'alle' || r[5] === filter) && (r[1] + ' ' + r[0]).toLowerCase().indexOf(q) > -1; });
+    tb.innerHTML = rows.length ? rows.map(function (r) {
+      return '<tr class="row"><td><b>' + esc(r[0]) + '</b><small>' + esc(r[2]) + '</small></td><td>' + esc(r[1]) + '</td><td class="num">' + r[3] + '</td><td class="r num"><b>CHF ' + chf(r[4]) + '</b></td><td><span class="badge ' + cls[r[5]] + '">' + esc(r[6]) + '</span></td><td class="r">' + (r[5] === 'rot' ? '<button class="btn ink sm">Mahnen</button>' : '') + '</td></tr>';
+    }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--faint);padding:32px">Keine Rechnung gefunden.</td></tr>';
+  }
+  draw();
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () { document.querySelectorAll('.chip').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); }); c.setAttribute('aria-pressed', 'true'); filter = c.dataset.f; draw(); });
+  });
+  document.getElementById('q').addEventListener('input', function (e) { q = e.target.value.toLowerCase().trim(); draw(); });
+})();
+</script>
+</body>
+</html>

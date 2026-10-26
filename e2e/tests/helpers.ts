@@ -6,6 +6,12 @@ import { Page, expect } from '@playwright/test';
 // und macht die Tests schnell + stabil.
 export async function goto(page: Page, url: string) {
   await page.goto(url, { waitUntil: 'domcontentloaded' });
+  // Erst messen, wenn die Schriftladung entschieden ist (26.10.2026, Ember/DM Sans):
+  // Bei `domcontentloaded` kann noch die Ersatzschrift aktiv sein. Das Layout
+  // erzwingen startet die Ladung, `fonts.ready` wartet auf sie. In CI mass
+  // telefon.spec trotzdem Werte wie ohne Webfont — deshalb sind die engen
+  // Telefon-Layouts zusätzlich gegen eine breitere Ersatzschrift ausgelegt.
+  await page.evaluate(async () => { void document.body.offsetHeight; await document.fonts.ready; });
 }
 
 export async function warteAufURL(page: Page, glob: string) {

@@ -266,6 +266,7 @@ def fw_dashboard(request):
     /neu/berichte/ — sie waren dort schon immer.
     """
     from faelle.arbeitsvorrat import arbeitsvorrat, was_reisst
+    from faelle.heute_bento import bento
     from faelle.lage import lage
     from faelle.models import Fall
 
@@ -403,6 +404,8 @@ def fw_dashboard(request):
         # «Sollstellung Oktober»).
         'soll_monat': (heute.replace(day=28) + timedelta(days=4)).replace(day=1),
         **lage(heute, aktive_lg),
+        # Bento-Reihe des Ember-Redesigns (faelle/heute_bento.py)
+        **bento(heute, aktive_lg),
     })
 
 

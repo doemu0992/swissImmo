@@ -1,5 +1,5 @@
 /* ============================================================
-   DIE NAVY-PALETTE «Navy Mirage» (#141E30 / #35577D; seit 23.10.2026 nach mockups/konzept-v9-vergleich.html, vorher Petrol aus konzept-v8)
+   DIE EMBER-PALETTE (seit 26.10.2026 nach mockups/immoswiss-ember.html: warmes Hell, Tinte #17181B, Akzent Orange; Schrift-Orange #B04416 fuer AA; vorher Navy Mirage, davor Petrol)
 
    Bis E0.2 stand diese Palette in einem <script>-Block und wurde dem
    Tailwind-CDN zur Laufzeit im Browser untergeschoben. Seit der Bau im
@@ -26,16 +26,16 @@
    weiss. Die Komponentenschicht (fw-*) ist der Weg dorthin.
    ============================================================ */
 module.exports = {
-  /* Markenfarbe — Navy (#35577D). */
-  indigo:  {50:'#f0f4f9',100:'#e3ebf5',200:'#c4d4e8',300:'#94b0d0',400:'#6286b0',500:'#46688f',600:'#35577d',700:'#27415f',800:'#1d3250',900:'#141e30'},
+  /* Markenfarbe — Ember-Orange (#B04416 als Schrift, #E0642F als Flaeche). */
+  indigo:  {50:'#fdf3ed',100:'#fbe7dc',200:'#f6c8ae',300:'#f0a27a',400:'#e8804f',500:'#d0602b',600:'#b04416',700:'#8a3410',800:'#6b290e',900:'#4f1e0b'},
   /* `violet` steht im Bestand fast nur neben indigo (Verläufe im
      Aktenkopf) — eine Stufe kühler, damit der Verlauf Verlauf bleibt. */
-  violet:  {50:'#eef3f9',100:'#dde7f3',200:'#bccee3',300:'#8eaccb',400:'#5f82ab',500:'#3f6591',600:'#2e5079',700:'#233e5f',800:'#1b304a',900:'#121f33'},
-  /* Graustufen, navygetönt. */
-  slate:   {50:'#f6f8fb',100:'#eaeff6',200:'#dde4ee',300:'#c6d1e0',400:'#93a4bb',500:'#5a6980',600:'#43526a',700:'#2f3d54',800:'#1f2b40',900:'#141e30'},
+  violet:  {50:'#fdf4ef',100:'#f9e4d8',200:'#f2c5aa',300:'#e9a079',400:'#de7c4a',500:'#c75d2a',600:'#a84418',700:'#833511',800:'#64290e',900:'#491e0b'},
+  /* Graustufen, warm getönt. */
+  slate:   {50:'#f6f5f3',100:'#f3f1ee',200:'#e7e5e1',300:'#d6d3ce',400:'#9e9b94',500:'#62656d',600:'#5d6068',700:'#3c3e44',800:'#26272b',900:'#17181b'},
   /* `gray` und `zinc` werden im Bestand wie slate benutzt — dieselbe
      Rampe, damit nicht zwei Grautöne nebeneinander stehen. */
-  gray:    {50:'#f6f8fb',100:'#eaeff6',200:'#dde4ee',300:'#c6d1e0',400:'#93a4bb',500:'#5a6980',600:'#43526a',700:'#2f3d54',800:'#1f2b40',900:'#141e30'},
+  gray:    {50:'#f6f5f3',100:'#f3f1ee',200:'#e7e5e1',300:'#d6d3ce',400:'#9e9b94',500:'#62656d',600:'#5d6068',700:'#3c3e44',800:'#26272b',900:'#17181b'},
   /* Semantische Farben: dieselben Töne wie --ds-good/-warn/-crit/-info.
      Rot bleibt Rot — eine Warnung in Petrol wäre keine Warnung mehr. */
   emerald: {50:'#e3f3e8',100:'#c6e6cf',200:'#9bd3ac',300:'#6bba81',400:'#3f9d5b',500:'#237a3d',600:'#15683a',700:'#11512a',800:'#0e4123',900:'#0b341c'},

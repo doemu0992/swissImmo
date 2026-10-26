@@ -28,20 +28,20 @@ BASE = pathlib.Path('core/templates/fw/_schicht.html')
 #: Tailwind-Utilities und wird von `EinFarbtonTests` mitgelesen.
 HUELLE = pathlib.Path('core/templates/fw/base.html')
 
-#: Werte aus mockups/konzept-v9-vergleich.html (Navy Mirage, 23.10.2026;
-#: vorher Petrol aus konzept-v8). Wer sie ändert, ändert das Konzept — und muss
+#: Werte aus mockups/immoswiss-ember.html (Ember, 26.10.2026; vorher Navy
+#: Mirage aus konzept-v9, davor Petrol aus konzept-v8). Wer sie ändert, ändert das Konzept — und muss
 #: `docs/KONZEPT-UI.md` mitziehen.
 KONZEPT = {
-    '--ds-brand': '#35577d',
-    '--ds-brand-600': '#27415f',
-    '--ds-brand-soft': '#e3ebf5',
-    '--ds-ink': '#141e30',
-    '--ds-muted': '#43526a',
-    '--ds-faint': '#5a6980',
-    '--ds-surface-2': '#f6f8fb',
-    '--ds-line': '#dde4ee',
-    '--ds-radius': '12px',
-    '--ds-radius-sm': '8px',
+    '--ds-brand': '#b04416',
+    '--ds-brand-600': '#8a3410',
+    '--ds-brand-soft': '#fbe7dc',
+    '--ds-ink': '#17181b',
+    '--ds-muted': '#5d6068',
+    '--ds-faint': '#62656d',
+    '--ds-surface-2': '#f6f5f3',
+    '--ds-line': '#e7e5e1',
+    '--ds-radius': '24px',
+    '--ds-radius-sm': '14px',
 }
 
 #: Bis konzept-v7 wich die Anwendung an einer Stelle vom Prototyp ab: Dessen

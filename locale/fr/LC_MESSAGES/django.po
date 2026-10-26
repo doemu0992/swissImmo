@@ -25720,3 +25720,96 @@ msgid "Für %(n)s Liegenschaft ist weder Verkehrswert noch Anlagekosten erfasst 
 msgid_plural "Für %(n)s Liegenschaften sind weder Verkehrswert noch Anlagekosten erfasst — sie fehlen in der Rendite."
 msgstr[0] "Pour %(n)s immeuble, ni la valeur vénale ni les coûts de revient ne sont saisis — il manque dans le rendement."
 msgstr[1] "Pour %(n)s immeubles, ni la valeur vénale ni les coûts de revient ne sont saisis — ils manquent dans le rendement."
+
+msgid "Suche nach Mieter, Objekt, Vertrag …"
+msgstr "Rechercher un locataire, un objet, un bail …"
+
+msgid "Mietobjekte"
+msgstr "Objets locatifs"
+
+msgid "Offene Tickets"
+msgstr "Tickets ouverts"
+
+msgid "Ø Verzug"
+msgstr "Retard moyen"
+
+msgid "noch keine Zahlung in 90 Tagen"
+msgstr "aucun paiement depuis 90 jours"
+
+msgid "Mahnlauf"
+msgstr "Relance"
+
+msgid "Nachrichten"
+msgstr "Messages"
+
+msgid "Keine neue Nachricht."
+msgstr "Aucun nouveau message."
+
+msgid "Objekte nach Ort"
+msgstr "Objets par lieu"
+
+msgid "Noch keine Objekte erfasst."
+msgstr "Aucun objet saisi."
+
+msgid "Mieteingang"
+msgstr "Loyers encaissés"
+
+msgid "Letzte 7 Monate"
+msgstr "7 derniers mois"
+
+msgid "Verbuchte Zahlungseingänge der letzten sieben Monate"
+msgstr "Paiements comptabilisés des sept derniers mois"
+
+msgid "Terminplan"
+msgstr "Planning"
+
+msgid "Noch keine verbuchten Zahlungen."
+msgstr "Aucun paiement comptabilisé."
+
+msgid "Die Balken erscheinen mit dem ersten Bankabgleich."
+msgstr "Les barres apparaissent avec le premier rapprochement bancaire."
+
+#, python-format
+msgid "Zahlungsquote %(q)s Prozent"
+msgstr "Taux de paiement %(q)s pour cent"
+
+#, python-format
+msgid "Zahlungsquote %(j)s"
+msgstr "Taux de paiement %(j)s"
+
+#, python-format
+msgid "Objekte in<br>%(ort)s"
+msgstr "objets à<br>%(ort)s"
+
+msgid "Profil und Darstellung"
+msgstr "Profil et affichage"
+
+msgid "pünktlich"
+msgstr "ponctuel"
+
+msgid "verzögert"
+msgstr "retardé"
+
+msgid "spät"
+msgstr "tardif"
+
+msgid "Ganztags"
+msgstr "Toute la journée"
+
+msgid "Vormittag"
+msgstr "Matin"
+
+msgid "Nachmittag"
+msgstr "Après-midi"
+
+#, python-format
+msgid "Tage nach Fälligkeit · %(n)s Zahlung, 90 Tage"
+msgid_plural "Tage nach Fälligkeit · %(n)s Zahlungen, 90 Tage"
+msgstr[0] "jours après l'échéance · %(n)s paiement, 90 jours"
+msgstr[1] "jours après l'échéance · %(n)s paiements, 90 jours"
+
+#, python-format
+msgid "überfällige Rechnung · CHF %(s)s"
+msgid_plural "überfällige Rechnungen · CHF %(s)s"
+msgstr[0] "facture en retard · CHF %(s)s"
+msgstr[1] "factures en retard · CHF %(s)s"
