@@ -67,6 +67,14 @@ TICKET_LESE_ROLLEN = TEAM_ROLLEN + HAUSWART_ROLLEN
 TICKET_SCHREIB_ROLLEN = SCHREIB_ROLLEN + HAUSWART_ROLLEN
 
 
+def _mit_inhaber(rollen):
+    """Der Inhaber darf, was das Team darf (siehe `hat_rolle`)."""
+    rollen = tuple(rollen)
+    if ROLLE_INHABER not in rollen and any(r in TEAM_ROLLEN for r in rollen):
+        rollen += (ROLLE_INHABER,)
+    return rollen
+
+
 def hat_rolle(user, rollen):
     """True wenn der Benutzer in der AKTIVEN Organisation eine der Rollen hat.
 
@@ -101,9 +109,7 @@ def hat_rolle(user, rollen):
     if user.is_superuser:
         return True
 
-    rollen = tuple(rollen)
-    if ROLLE_INHABER not in rollen and any(r in TEAM_ROLLEN for r in rollen):
-        rollen += (ROLLE_INHABER,)
+    rollen = _mit_inhaber(rollen)
 
     from core.tenancy import aktuelle_organisation
     from crm.models import Mitgliedschaft
@@ -208,20 +214,44 @@ def rolle_erforderlich(*rollen):
     return deko
 
 
-def darf_oeffnen(user, pfad):
+def darf_oeffnen(user, pfad, eigene_rollen=None):
     """Darf dieser Benutzer die View hinter `pfad` aufrufen?
 
     Liest die Rollen direkt an der View ab (`benoetigte_rollen`, vom Dekorator
     gesetzt) — es gibt also keine zweite, von Hand gepflegte Liste, die mit
     den Dekoratoren auseinanderlaufen könnte. Für Aktionslisten in der
     Oberfläche gedacht; ersetzt die Prüfung in der View nicht.
-    Unbekannter Pfad → True (nicht ausgrauen, was sich nicht beurteilen lässt)."""
+    Unbekannter Pfad → True (nicht ausgrauen, was sich nicht beurteilen lässt).
+
+    `eigene_rollen` (aus `eigene_rollen(user)`): Wer viele Pfade prüft — die
+    Navigation prüft jeden Reiter und jeden Palette-Eintrag —, liest die Rollen
+    EINMAL statt je Pfad eine Abfrage (UI-Audit 26.10.2026: sonst ~60 Abfragen
+    mehr auf jeder Seite)."""
     from django.urls import resolve
     try:
         rollen = getattr(resolve(pfad.split('?')[0]).func, 'benoetigte_rollen', None)
     except Exception:
         return True
-    return True if rollen is None else hat_rolle(user, rollen)
+    if rollen is None:
+        return True
+    if eigene_rollen is None:
+        return hat_rolle(user, rollen)
+    if user.is_superuser:
+        return True
+    return bool(eigene_rollen & set(_mit_inhaber(rollen)))
+
+
+def eigene_rollen(user):
+    """Die Rollen des Benutzers in der aktiven Organisation — eine Abfrage."""
+    from core.tenancy import aktuelle_organisation
+    from crm.models import Mitgliedschaft
+    if not user or not user.is_authenticated:
+        return set()
+    organisation = aktuelle_organisation()
+    if organisation is None:
+        return set()
+    return set(Mitgliedschaft.objects.filter(benutzer=user, organisation=organisation)
+               .values_list('rolle', flat=True))
 
 
 # ==========================================

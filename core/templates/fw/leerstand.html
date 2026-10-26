@@ -1,0 +1,101 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n chf %}
+{% block title %}{% trans "Leerstand" %} — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %} LEERSTANDS-COCKPIT (UI-Audit 26.10.2026) — jede leere und bald freie Einheit,
+   wie lange schon, was sie kostet und der nächste Handgriff. Regel und Zahlen aus
+   faelle/leerstand_cockpit.py (dieselbe Belegungsregel wie Objekt- und Liegenschaftsliste). {% endcomment %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Leerstand" %}</span></nav>
+        <h1>{% trans "Leerstand" %}</h1>
+        <p>{% blocktrans trimmed with d=heute|date:"d.m.Y" %}Was leer steht, was in den nächsten sechs Monaten frei wird und woran die Vermietung hängt · Stand {{ d }}{% endblocktrans %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <a href="?export=csv&amp;typ={{ typ }}&amp;zustand={{ zustand }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'herunterladen' %} {% trans "CSV-Export" %}</a>
+        <a href="/neu/vermarktung/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'senden' %} {% trans "Vermarktung" %}</a>
+    </div>
+</div>
+
+<div class="fw-kpis">
+    <div class="fw-kpi fw-accent">
+        <span class="fw-l">{% trans "Mietausfall pro Monat" %}</span>
+        <span class="fw-v fw-num">CHF {{ c.ausfall_monat|chf:0 }}</span>
+        <span class="fw-f">{% blocktrans count n=c.n_leer %}{{ n }} Einheit steht leer{% plural %}{{ n }} Einheiten stehen leer{% endblocktrans %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Leerstandsquote" %}</span>
+        <span class="fw-v fw-num{% if c.quote and c.quote > 3 %} fw-warn{% endif %}">{% if c.quote is not None %}{{ c.quote|floatformat:1 }} %{% else %}–{% endif %}</span>
+        <span class="fw-f">{% blocktrans with n=c.n_leer m=c.gesamt %}{{ n }} von {{ m }} Einheiten{% endblocktrans %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Ø Leerdauer" %}</span>
+        <span class="fw-v fw-num{% if c.lange %} fw-crit{% endif %}">{% if c.schnitt_tage is not None %}{{ c.schnitt_tage }} {% trans "Tage" %}{% else %}–{% endif %}</span>
+        <span class="fw-f">{% if c.lange %}{% blocktrans count n=c.lange %}{{ n }} länger als 90 Tage{% plural %}{{ n }} länger als 90 Tage{% endblocktrans %}{% else %}{% trans "keine länger als 90 Tage" %}{% endif %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Wird frei · 180 Tage" %}</span>
+        <span class="fw-v fw-num{% if c.n_bald %} fw-warn{% endif %}">{{ c.n_bald }}</span>
+        <span class="fw-f">{% blocktrans with s=c.ausfall_bald|chf:0 %}ohne Nachmieter · CHF {{ s }} / Monat{% endblocktrans %}</span>
+    </div>
+</div>
+
+{% if c.ohne_preis or c.nicht_inseriert %}
+<div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'kritisch' %}</span>
+    <div class="fw-ht fliess">{% if c.ohne_preis %}{% blocktrans count n=c.ohne_preis %}{{ n }} Einheit hat keinen Mietzins — ohne Preis keine Ausschreibung.{% plural %}{{ n }} Einheiten haben keinen Mietzins — ohne Preis keine Ausschreibung.{% endblocktrans %} {% endif %}{% if c.nicht_inseriert %}{% blocktrans count n=c.nicht_inseriert %}{{ n }} Einheit ist nicht ausgeschrieben.{% plural %}{{ n }} Einheiten sind nicht ausgeschrieben.{% endblocktrans %}{% endif %}</div></div>
+{% endif %}
+
+<section class="fw-card">
+    <div class="fw-kopf">
+        <h2>{% trans "Einheiten" %}</h2><span class="fw-neben">{{ zeilen|length }}</span>
+        <div class="fw-rechts fw-filters fw-nomb" role="group" aria-label="{% trans 'Zustand' %}">
+            {% for k, label, n in zustaende %}<a href="?zustand={{ k }}&amp;typ={{ typ }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip{% if zustand == k %} fw-on{% endif %}">{{ label }} <span class="fw-num">{{ n }}</span></a>{% endfor %}
+        </div>
+    </div>
+    <div class="fw-rumpf fw-filters fw-nomb" role="group" aria-label="{% trans 'Objektart' %}">
+        {% for k, label in typen %}<a href="?typ={{ k }}&amp;zustand={{ zustand }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip{% if typ == k %} fw-on{% endif %}">{{ label }}</a>{% endfor %}
+    </div>
+    {% if zeilen %}
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th>{% trans "Objekt" %}</th>
+                <th>{% trans "Zustand" %}</th>
+                <th class="fw-right">{% trans "Netto-Mietzins" %}</th>
+                <th class="fw-right">{% trans "Ausfall bisher" %}</th>
+                <th>{% trans "Vermarktung" %}</th>
+                <th class="fw-right">{% trans "Nächster Schritt" %}</th>
+            </tr></thead>
+            <tbody>
+                {% for z in zeilen %}
+                <tr>
+                    <td><a href="/neu/objekte/{{ z.e.id }}/" class="fw-zelle-titel">{{ z.e.bezeichnung }}</a><span class="fw-zelle-sub">{{ z.lg.strasse }}, {{ z.lg.ort }} · {{ z.e.get_typ_display }}{% if z.e.zimmer %} · {{ z.e.zimmer|floatformat:"-1" }} Zi{% endif %}</span></td>
+                    <td>{% if z.zustand == 'leer' %}<span class="fw-chip fw-{{ z.stufe }} fw-dot">{% if z.tage is not None %}{% blocktrans count n=z.tage %}leer seit {{ n }} Tag{% plural %}leer seit {{ n }} Tagen{% endblocktrans %}{% else %}{% trans "noch nie vermietet" %}{% endif %}</span>{% if z.leer_seit %}<span class="fw-zelle-sub">{% blocktrans with d=z.leer_seit|date:"d.m.Y" %}Vertragsende {{ d }}{% endblocktrans %}</span>{% endif %}
+                        {% else %}<span class="fw-chip fw-{{ z.stufe }} fw-dot">{% blocktrans with d=z.frei_ab|date:"d.m.Y" %}frei ab {{ d }}{% endblocktrans %}</span><span class="fw-zelle-sub">{% blocktrans count n=z.tage_bis_frei %}in {{ n }} Tag · kein Nachmieter{% plural %}in {{ n }} Tagen · kein Nachmieter{% endblocktrans %}</span>{% endif %}</td>
+                    <td class="fw-right fw-num">{% if z.miete %}{{ z.miete|chf:0 }}{% else %}<span class="fw-chip fw-crit">{% trans "kein Mietzins" %}</span>{% endif %}</td>
+                    <td class="fw-right fw-num">{% if z.ausfall_bisher %}{{ z.ausfall_bisher|chf:0 }}{% else %}–{% endif %}</td>
+                    <td>{% if z.inseriert %}<span class="fw-chip fw-good fw-dot">{% trans "ausgeschrieben" %}</span>{% else %}<span class="fw-chip fw-dot">{% trans "nicht ausgeschrieben" %}</span>{% endif %}{% if z.bewerbungen %}<span class="fw-zelle-sub">{% blocktrans count n=z.bewerbungen %}{{ n }} offene Bewerbung{% plural %}{{ n }} offene Bewerbungen{% endblocktrans %}{% if z.zusage %} · {% trans "Zusage erteilt" %}{% endif %}</span>{% endif %}</td>
+                    <td class="fw-right"><a href="{{ z.schritt.url }}" class="fw-btn fw-knapp{% if z.schritt.stufe == 'crit' or z.schritt.stufe == 'good' %} fw-primary{% endif %}"{% if z.schritt.modal %} onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Zur Vermarktung ausschreiben" %}{% endfilter %}')"{% endif %}>{{ z.schritt.text }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="fw-fuss"><span>{% trans "Ausfall bisher = Netto-Mietzins × Leermonate seit Vertragsende (geschätzt). «Wird frei»: Vertragsende in den nächsten 180 Tagen ohne unterschriebenen Nachmieter." %}</span></div>
+    {% else %}
+    {% include 'fw/_empty.html' with icon='gut' titel=_('Kein Leerstand.') subtext=_('Alle Einheiten in dieser Auswahl sind vermietet oder haben einen Nachmieter.') %}
+    {% endif %}
+</section>
+
+{% if c.versorgt %}
+<details class="fw-klapp">
+    <summary>{% trans "Frei, aber versorgt" %} <span class="fw-neben">{{ c.versorgt|length }}</span></summary>
+    <ul class="fw-liste">
+        {% for z in c.versorgt %}
+        <li><a href="/neu/objekte/{{ z.e.id }}/" class="fw-zelle-titel">{{ z.e.bezeichnung }}</a> <span class="fw-zelle-sub">{{ z.lg.strasse }} · {% blocktrans with d=z.nachmieter_ab|date:"d.m.Y" %}Nachmieter ab {{ d }}{% endblocktrans %}</span></li>
+        {% endfor %}
+    </ul>
+</details>
+{% endif %}
+{% endblock %}

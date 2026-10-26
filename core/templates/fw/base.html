@@ -235,10 +235,10 @@ Detailseiten rufen sie beim Namen.
         <main class="fw-inhalt">
             {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
             <nav id="navsub-{{ g.key }}" class="fw-bereichsreiter" aria-label="{{ g.label }}">
-                {% for it in g.items %}
+                {% for it in g.items %}{% if it.erlaubt %}
                 {% if it.section and not forloop.first %}<span class="fw-bereichsreiter-trenner" aria-hidden="true"></span>{% endif %}
                 <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}>{{ it.label }}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
-                {% endfor %}
+                {% endif %}{% endfor %}
             </nav>
             {% endif %}{% endfor %}
             {% block content %}{% endblock %}
@@ -340,11 +340,28 @@ function fwNavToggle(key) {
 // Bereichsreiter: der aktive Reiter steht am Telefon im Bild, nicht rechts
 // ausserhalb der Zeile (z. B. «Vermarktung» unter Akten).
 (function () {
-    var hier = document.querySelector('.fw-bereichsreiter a.hier');
-    if (!hier) return;
-    var zeile = hier.parentNode;
-    if (zeile.scrollWidth <= zeile.clientWidth) return;
-    zeile.scrollLeft = Math.max(0, hier.offsetLeft - (zeile.clientWidth - hier.offsetWidth) / 2);
+    // Auch die Bereichs-Kapsel oben: Ränder zeigen, wenn sie weiterläuft
+    var kapsel = document.getElementById('fwHauptnav');
+    if (kapsel) {
+        var kr = function () { var m = kapsel.scrollWidth - kapsel.clientWidth;
+            kapsel.classList.toggle('rand-l', m > 1 && kapsel.scrollLeft > 2);
+            kapsel.classList.toggle('rand-r', m > 1 && kapsel.scrollLeft < m - 2); };
+        kr(); kapsel.addEventListener('scroll', kr, { passive: true }); window.addEventListener('resize', kr);
+        setTimeout(kr, 400);
+    }
+    var zeile = document.querySelector('.fw-bereichsreiter');
+    if (!zeile) return;
+    var raender = function () {
+        var mehr = zeile.scrollWidth - zeile.clientWidth;
+        zeile.classList.toggle('rand-l', mehr > 1 && zeile.scrollLeft > 2);
+        zeile.classList.toggle('rand-r', mehr > 1 && zeile.scrollLeft < mehr - 2);
+    };
+    var hier = zeile.querySelector('a.hier');
+    if (hier && zeile.scrollWidth > zeile.clientWidth)
+        zeile.scrollLeft = Math.max(0, hier.offsetLeft - (zeile.clientWidth - hier.offsetWidth) / 2);
+    raender();
+    zeile.addEventListener('scroll', raender, { passive: true });
+    window.addEventListener('resize', raender);
 })();
 
 // Kopfzeile: Trennlinie erst, wenn der Inhalt darunter durchläuft
@@ -552,9 +569,31 @@ document.addEventListener('input', function(e) {
 
 // Globales "⋯ Mehr"-Dropdown: Markup ohne eigenes Script.
 //   <div class="relative" data-menu>
-//     <button data-menu-btn>… Mehr</button>
-//     <div data-menu-list class="hidden absolute …">…Aktionen…</div>
+//     <button data-menu-btn aria-haspopup="menu" aria-expanded="false">… Mehr</button>
+//     <div data-menu-list role="menu" class="hidden absolute …">…Aktionen…</div>
 //   </div>
+// Seit dem UI-Audit (26.10.2026) laufen ALLE Aktionsmenüs hierüber — vorher hatten
+// acht Akten ein eigenes onclick + Schliess-Skript und waren am Telefon und Tablet
+// rechtsbündig verankert: Das Menü ragte links aus dem Bild, kein Eintrag war
+// erreichbar. Jetzt passt `fwMenuEinpassen` das offene Menü in den Bildschirm ein,
+// Escape und ein Klick daneben schliessen, Pfeiltasten führen durch die Einträge.
+function fwMenuEinpassen(list) {
+    list.style.transform = '';
+    list.style.maxWidth = 'calc(100vw - 24px)';
+    var r = list.getBoundingClientRect(), rand = 12, dx = 0;
+    if (r.right > innerWidth - rand) dx = innerWidth - rand - r.right;
+    if (r.left + dx < rand) dx = rand - r.left;
+    if (dx) list.style.transform = 'translateX(' + Math.round(dx) + 'px)';
+    // Unten kein Platz, oben schon → nach oben aufklappen
+    list.classList.remove('fw-menu-oben');
+    if (r.bottom > innerHeight - rand && r.top - r.height - 48 > rand) list.classList.add('fw-menu-oben');
+}
+function fwMenuZu(list) {
+    if (!list || list.classList.contains('hidden')) return;
+    list.classList.add('hidden');
+    var wrap = list.closest('[data-menu]'), btn = wrap && wrap.querySelector('[data-menu-btn]');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+}
 document.addEventListener('click', function(ev) {
     var btn = ev.target.closest ? ev.target.closest('[data-menu-btn]') : null;
     if (btn) {
@@ -563,14 +602,39 @@ document.addEventListener('click', function(ev) {
         var list = wrap && wrap.querySelector('[data-menu-list]');
         if (!list) return;
         var willOpen = list.classList.contains('hidden');
-        document.querySelectorAll('[data-menu-list]').forEach(function(l) { l.classList.add('hidden'); });
-        if (willOpen) list.classList.remove('hidden');
+        document.querySelectorAll('[data-menu-list]').forEach(fwMenuZu);
+        if (willOpen) {
+            list.classList.remove('hidden');
+            btn.setAttribute('aria-expanded', 'true');
+            fwMenuEinpassen(list);
+        }
         return;
     }
     document.querySelectorAll('[data-menu-list]:not(.hidden)').forEach(function(l) {
         var wrap = l.closest('[data-menu]');
-        if (wrap && !wrap.contains(ev.target)) l.classList.add('hidden');
+        if (wrap && !wrap.contains(ev.target)) fwMenuZu(l);
     });
+});
+document.addEventListener('keydown', function(ev) {
+    var offen = document.querySelector('[data-menu-list]:not(.hidden)');
+    if (!offen) return;
+    if (ev.key === 'Escape') {
+        fwMenuZu(offen);
+        var b = offen.closest('[data-menu]').querySelector('[data-menu-btn]');
+        if (b) b.focus();
+        return;
+    }
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        var eintraege = Array.prototype.filter.call(offen.querySelectorAll('a,button'), function(e) { return e.offsetParent !== null; });
+        if (!eintraege.length) return;
+        ev.preventDefault();
+        var i = eintraege.indexOf(document.activeElement);
+        i = ev.key === 'ArrowDown' ? (i + 1) % eintraege.length : (i <= 0 ? eintraege.length - 1 : i - 1);
+        eintraege[i].focus();
+    }
+});
+window.addEventListener('resize', function() {
+    document.querySelectorAll('[data-menu-list]:not(.hidden)').forEach(fwMenuEinpassen);
 });
 
 // ---- Tabellen mobil stapelbar machen ----
@@ -780,6 +844,10 @@ fwSyncThemeButtons();
     // Datenwerte der Diagramme: Höhe der Balken aus data-h (kein style-Attribut in der Vorlage)
     var stäbe = document.querySelectorAll('.fw-ember-stab[data-h]');
     stäbe.forEach(function (el, i) { el.style.setProperty('--h', el.getAttribute('data-h') + '%'); el.style.setProperty('--i', i); });
+    // Lastbalken (Team, Leerstand): Breite aus data-w, im nächsten Bild — dann gleitet sie auf
+    var balken = document.querySelectorAll('.fw-lastbalken[data-w] > i');
+    requestAnimationFrame(function () { balken.forEach(function (i) {
+        i.style.width = Math.max(0, Math.min(100, parseFloat(i.parentNode.getAttribute('data-w')) || 0)) + '%'; }); });
     if (ruhig) return;
     // Der Halbkreis füllt sich von null an
     document.querySelectorAll('.fw-ember-gauge').forEach(function (svg) {

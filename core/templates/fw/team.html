@@ -1,0 +1,92 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Team & Auslastung" %} — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %} TEAM & AUSLASTUNG (UI-Audit 26.10.2026) — offene Arbeit je Person, was niemandem
+   gehört, und wie schnell Tickets erledigt werden. Zahlen aus faelle/team_auslastung.py.
+   Nur für die Verwaltung (Inhaber, Verwalter). {% endcomment %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/berichte/{{ lg_query }}">{% trans "Berichte" %}</a><span aria-hidden="true">/</span><span>{% trans "Team & Auslastung" %}</span></nav>
+        <h1>{% trans "Team & Auslastung" %}</h1>
+        <p>{% trans "Wer trägt wie viel, was bleibt liegen, was gehört niemandem." %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <a href="/neu/abwesenheiten/" class="fw-btn">{% zeichen 'termin' %} {% trans "Vertretung" %}</a>
+        <a href="/neu/schaeden/board/" class="fw-btn fw-primary">{% zeichen 'arbeit' %} {% trans "Ticket-Board" %}</a>
+    </div>
+</div>
+
+<div class="fw-kpis">
+    <div class="fw-kpi fw-accent">
+        <span class="fw-l">{% trans "Offene Tickets" %}</span>
+        <span class="fw-v fw-num">{{ a.offen_tickets }}</span>
+        <span class="fw-f">{% blocktrans with n=a.ueber_tickets %}{{ n }} überfällig{% endblocktrans %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Offene Fälle" %}</span>
+        <span class="fw-v fw-num{% if a.liegen_faelle %} fw-warn{% endif %}">{{ a.offen_faelle }}</span>
+        <span class="fw-f">{% blocktrans count n=a.liegen_faelle %}{{ n }} liegt ohne Bewegung{% plural %}{{ n }} liegen ohne Bewegung{% endblocktrans %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Ø Durchlaufzeit Ticket" %}</span>
+        <span class="fw-v fw-num">{% if a.durchlauf is not None %}{{ a.durchlauf|floatformat:1 }} {% trans "Tage" %}{% else %}–{% endif %}</span>
+        <span class="fw-f">{% blocktrans count n=a.erledigt_n %}{{ n }} erledigt in 90 Tagen{% plural %}{{ n }} erledigt in 90 Tagen{% endblocktrans %}</span>
+    </div>
+    <div class="fw-kpi">
+        <span class="fw-l">{% trans "Termintreue" %}</span>
+        <span class="fw-v fw-num{% if a.termintreue is not None and a.termintreue < 80 %} fw-warn{% endif %}">{% if a.termintreue is not None %}{{ a.termintreue }} %{% else %}–{% endif %}</span>
+        <span class="fw-f">{% trans "erledigt bis zur Zielzeit" %}</span>
+    </div>
+</div>
+
+{% if a.niemand.tickets or a.niemand.faelle or a.niemand.liegenschaften %}
+<div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'kritisch' %}</span>
+    <div class="fw-ht fliess"><b>{% trans "Niemandem zugeteilt:" %}</b>
+        {% if a.niemand.tickets %}<a href="/neu/schaeden/?zustaendig=niemand" class="fw-link">{% blocktrans count n=a.niemand.tickets %}{{ n }} Ticket{% plural %}{{ n }} Tickets{% endblocktrans %}</a>{% endif %}{% if a.niemand.tickets and a.niemand.faelle %} · {% endif %}{% if a.niemand.faelle %}<a href="/neu/?ansicht=alle" class="fw-link">{% blocktrans count n=a.niemand.faelle %}{{ n }} Fall{% plural %}{{ n }} Fälle{% endblocktrans %}</a>{% endif %}{% if a.niemand.liegenschaften %}{% if a.niemand.tickets or a.niemand.faelle %} · {% endif %}<a href="/neu/liegenschaften/" class="fw-link">{% blocktrans count n=a.niemand.liegenschaften %}{{ n }} Liegenschaft ohne Betreuung{% plural %}{{ n }} Liegenschaften ohne Betreuung{% endblocktrans %}</a>{% endif %}
+    </div></div>
+{% endif %}
+
+<div class="fw-bericht-zwei">
+    <section class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Auslastung je Person" %}</h2><span class="fw-neben">{{ a.zeilen|length }}</span></div>
+        {% if a.zeilen %}
+        <ul class="fw-team-liste">
+            {% for z in a.zeilen %}
+            <li class="fw-team-zeile">
+                <span class="fw-avci" aria-hidden="true">{{ z.kuerzel }}</span>
+                <div class="fw-team-mitte">
+                    <div class="fw-team-name"><b>{{ z.name }}</b><span class="fw-zelle-sub">{{ z.rolle }}{% if z.liegenschaften %} · {% blocktrans count n=z.liegenschaften %}{{ n }} Liegenschaft{% plural %}{{ n }} Liegenschaften{% endblocktrans %}{% endif %}</span>
+                        {% if z.abwesend %}<span class="fw-chip fw-warn fw-dot">{% blocktrans with d=z.abwesend.bis|date:"d.m." %}abwesend bis {{ d }}{% endblocktrans %}{% if z.abwesend.vertreten_durch %} · {% blocktrans with v=z.abwesend.vertreten_durch.get_full_name|default:z.abwesend.vertreten_durch.username %}vertreten durch {{ v }}{% endblocktrans %}{% endif %}</span>{% endif %}</div>
+                    <span class="fw-lastbalken {{ z.stufe }}" data-w="{{ z.anteil }}" role="img" aria-label="{% blocktrans with n=z.last %}Last {{ n }}{% endblocktrans %}"><i></i></span>
+                    <div class="fw-team-zahlen">
+                        <span><b class="fw-num">{{ z.tickets }}</b> {% trans "Tickets" %}{% if z.tickets_ueber %} <span class="fw-crit">({% blocktrans with n=z.tickets_ueber %}{{ n }} überfällig{% endblocktrans %})</span>{% endif %}</span>
+                        <span><b class="fw-num">{{ z.faelle }}</b> {% trans "Fälle" %}{% if z.faelle_liegen %} <span class="fw-warnton">({% blocktrans with n=z.faelle_liegen %}{{ n }} liegt{% endblocktrans %})</span>{% endif %}</span>
+                        <span><b class="fw-num">{{ z.termine }}</b> {% trans "Termine · 7 Tage" %}</span>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="fw-fuss"><span>{% trans "Last = offene Tickets + offene Fälle; Überfälliges und Liegengebliebenes zählen doppelt." %}</span></div>
+        {% else %}
+        {% include 'fw/_empty.html' with knapp=True icon='person' titel=_('Noch kein Team erfasst.') subtext=_('Team-Mitglieder legst du unter Einstellungen → Benutzer an.') %}
+        {% endif %}
+    </section>
+
+    <section class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Offene Tickets nach Alter" %}</h2><span class="fw-neben">{% trans "Tage seit Meldung" %}</span></div>
+        {% if a.offen_tickets %}
+        <ul class="fw-team-liste">
+            {% for s in a.alter %}
+            <li class="fw-alter-zeile"><span class="fw-alter-label">{{ s.label }}</span><span class="fw-lastbalken {{ s.stufe }}" data-w="{{ s.anteil }}" aria-hidden="true"><i></i></span><b class="fw-num">{{ s.n }}</b></li>
+            {% endfor %}
+        </ul>
+        <div class="fw-fuss"><span>{% trans "Durchlaufzeit: Meldung bis letzte Änderung erledigter Tickets (ein eigenes Erledigt-Datum führt das Ticket nicht)." %}</span></div>
+        {% else %}
+        {% include 'fw/_empty.html' with knapp=True icon='gut' titel=_('Keine offenen Tickets.') %}
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

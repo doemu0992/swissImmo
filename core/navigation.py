@@ -144,6 +144,7 @@ def nav_gruppen():
             # Ihre Listen bleiben, bis die Fallansicht sie ersetzt.
             _i(_('Schäden'), '/neu/schaeden/', ['schadensfaelle'], section=_('Vorgänge')),
             _i(_('Mieterwechsel'), '/neu/mieterwechsel/', ['mieterwechsel']),
+            _i(_('Leerstand'), '/neu/leerstand/', ['leerstand']),
             _i(_('Vermarktung'), '/neu/vermarktung/', ['vermarktung']),
             _i(_('Bewerbungen'), '/neu/bewerbungen/', ['bewerbungen']),
             _i(_('Ersatz & Ausstattung'), '/neu/ersatzplanung/', ['assets']),
@@ -182,6 +183,7 @@ def nav_gruppen():
             _i(_('Übersicht'), '/neu/berichte/', ['berichte']),
             _i(_('Portfolio'), '/neu/portfolio/', ['portfolio']),
             _i(_('Auswertung'), '/neu/auswertung/', ['auswertung']),
+            _i(_('Team & Auslastung'), '/neu/team/', ['team']),
         ]),
     ]
 
@@ -222,6 +224,15 @@ def fw_navigation(request):
         {'label': _('Einstellungen'), 'url': '/neu/einstellungen/'},
         {'label': _('Zwei-Faktor-Anmeldung'), 'url': '/konto/zwei-faktor/'},
     ]
+    # Was der Benutzer nicht öffnen darf, bieten weder Reiter noch Palette an
+    # (UI-Audit 26.10.2026: «Team & Auslastung» ist der Verwaltung vorbehalten).
+    # Die Rollen werden EINMAL gelesen, nicht je Eintrag.
+    from core.auth import darf_oeffnen, eigene_rollen
+    meine = eigene_rollen(user)
+    for g in gruppen:
+        for it in g['items']:
+            it['erlaubt'] = darf_oeffnen(user, it['ziel'], meine)
+    palette = [p for p in palette if darf_oeffnen(user, p['url'], meine)]
     # Die Organisationen dieses Benutzers — fuer die Auswahl im Kopf der
     # Leiste (E1.2). `alle_organisationen` ist hier notwendig und richtig: Die
     # Frage lautet «wo ist diese Person Mitglied?», und die kann man nicht aus

@@ -80,10 +80,10 @@ kennt, soll den vierten nicht neu lernen müssen.
         </div>
         <div class="fw-akte-rechts">
             <a href="/neu/mandate/{{ md.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
-            <div class="relative">
-                <button type="button" onclick="document.getElementById('mdAktionen').classList.toggle('hidden'); event.stopPropagation();"
+            <div class="relative" data-menu>
+                <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="mdAktionen"
                         class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
-                <div id="mdAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                <div id="mdAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     <a href="/neu/mandate/{{ md.id }}/abrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='w-4' %}{% trans "Eigentümerabrechnung" %}</a>
                     <a href="/neu/mandate/{{ md.id }}/kontokorrent/" class="fw-menuzeile">{% zeichen 'recht' klasse='w-4' %}{% trans "Kontokorrent" %}</a>
                     <a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-menuzeile">{% zeichen 'geld' klasse='w-4' %}{% trans "Auszahlung erfassen" %}</a>
@@ -93,12 +93,6 @@ kennt, soll den vierten nicht neu lernen müssen.
                     <a href="/neu/mandate/{{ md.id }}/portal-zugang/" class="fw-menuzeile">{% zeichen 'schluessel' klasse='w-4' %}{% trans "Portalzugang" %}</a>
                 </div>
             </div>
-            <script>
-              document.addEventListener('click', function (ev) {
-                var d = document.getElementById('mdAktionen');
-                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-              });
-            </script>
         </div>
     </div>
 

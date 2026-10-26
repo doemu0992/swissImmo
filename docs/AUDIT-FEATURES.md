@@ -165,3 +165,37 @@ Nicht gebaut (bewusst, mit Grund): Kanban für Aufgaben ohne Ticket (die Pendenz
 Rechnungs-Workflow als eigene Seite (Kreditoren führen ihn schon: erfasst → freigegeben → bezahlt); Zeitreihe der
 Portfolio-Rendite (es gibt keine Verkehrswert-Historie — eine Linie wäre erfunden).
 Die Übersetzungen FR/IT/EN der neuen Texte sind KI-erzeugt und brauchen eine Fachprüfung.
+
+
+## Nachtrag 26.10.2026 — UI-Audit nach dem Ember-Redesign
+
+Vorgehen: ein Crawler über alle erreichbaren Seiten unter `/neu/` (119 Seiten) bei 1440, 820 und 390 px —
+horizontaler Überlauf, verdeckte Bedienelemente (`elementFromPoint`), Text, der aus seiner Karte ragt, und
+JEDES Aktionsmenü geöffnet und auf Lage und Klickbarkeit geprüft. Der erste Lauf mit abgeschalteten Animationen
+(automatisierte Browser setzen `html.fw-ruhig`) fand nur die Hälfte; erst mit echten Animationen zeigte sich der
+Hauptfehler.
+
+| Befund | Ursache | Behebung |
+|---|---|---|
+| Alle «Mehr»-Menüs unbedienbar, auf jeder Breite | Einblend-Animation mit `animation-fill-mode: both`: jeder Inhaltsblock blieb dauerhaft ein eigener Stapelkontext, das Menü im Seitenkopf lag unter den Kennzahlen | `backwards` statt `both`; der Block mit offenem Menü wird angehoben (`:has`); Menüs `z-index:70` |
+| Acht Akten-Menüs ragten am Tablet/Telefon links aus dem Bild (x = −149) | eigenes `onclick` + Schliess-Skript je Akte, rechtsbündig verankert | alle auf den zentralen `data-menu`-Mechanismus; `fwMenuEinpassen` passt jedes offene Menü ins Bild, klappt bei Platzmangel nach oben; Escape, Klick daneben, Pfeiltasten, `aria-expanded` |
+| Reiterleisten wirkten abgeschnitten («schaften») | 13 Akten-Reiter breiter als der Bildschirm | kompaktere Reiter ab 1024 px, weich auslaufende Ränder, wo die Leiste weiterläuft; Hauptkapsel am Telefon verdichtet |
+| Tooltip der letzten Balkensäule ragte 5 px aus der Karte | zentriert verankert | letzte Säule nach innen |
+| Navigation zeigte Ziele ohne Berechtigung | Reiter und ⌘K-Palette ungefiltert | `darf`-Filter (liest die Rollen am View-Dekorator) |
+
+Nachher: 119 Seiten × 3 Breiten ohne Befund. Wächter: `e2e/tests/menues.spec.ts` (mit echter Animation;
+Gegenprobe: alte CSS → rot auf allen Breiten).
+
+Neu für den Betrieb einer Verwaltung (Lücken aus der Simulation Bewirtschaftung / Buchhaltung / Geschäftsleitung):
+
+| Gruppe | Lücke | Umsetzung |
+|---|---|---|
+| Bewirtschaftung | Leerstand nur als Zahl, Verlauf oder Befund zwischen allen Objekten | **Leerstands-Cockpit** `/neu/leerstand/`: leer und «wird frei» (180 Tage, ohne Nachmieter), Leerdauer, Netto-Ausfall je Monat und aufgelaufen (geschätzt), Inserat und offene Bewerbungen, EIN nächster Schritt je Einheit (Mietzins festlegen → Ausschreiben → Bewerbungen prüfen → Vertrag erfassen); Filter Zustand und Objektart; CSV. Belegungsregel aus `faelle.objekte._belegung` — dieselbe wie Objekt- und Liegenschaftsliste |
+| Geschäftsleitung | Keine Sicht auf Verteilung der Arbeit und Termintreue | **Team & Auslastung** `/neu/team/` (nur Inhaber/Verwalter): je Person Tickets (überfällig), Fälle (liegengeblieben), Termine der Woche, betreute Liegenschaften, Abwesenheit mit Vertretung, Lastbalken; was niemandem zugeteilt ist (Absprung `?zustaendig=niemand` in die Ticketliste); offene Tickets nach Alter, Ø Durchlaufzeit, Termintreue |
+
+Schon vorhanden und deshalb nicht neu gebaut: Ticket-Board, Mahnlauf mit Trockenlauf, OP-Altersstruktur
+(`/neu/mahnwesen/aging/`), Debitoren-Ampel, Portfolio, Leerstands-Verlauf.
+
+Wächter: `core/tests/test_leerstand_team.py` (10 Tests; Gegenprobe 6 von 7 Mutanten erkannt, der siebte ist
+fachlich gleichwertig). Bekannte Grenze: Die Ticket-Durchlaufzeit misst bis zur letzten Änderung, weil das Ticket
+kein eigenes Erledigt-Datum führt — die Seite sagt das.

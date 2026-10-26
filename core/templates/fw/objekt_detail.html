@@ -54,10 +54,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </div>
         <div class="fw-akte-rechts">
             <a href="/neu/objekte/{{ e.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
-            <div class="relative">
-                <button type="button" onclick="document.getElementById('oAktionen').classList.toggle('hidden'); event.stopPropagation();"
+            <div class="relative" data-menu>
+                <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="oAktionen"
                         class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
-                <div id="oAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                <div id="oAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     <form method="post" action="/neu/objekte/{{ e.id }}/ausschreiben/">
                         {% csrf_token %}
                         <input type="hidden" name="ziel" value="{% if e.zur_ausschreibung %}aus{% else %}an{% endif %}">
@@ -69,12 +69,6 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/" class="fw-menuzeile">{% zeichen 'liegenschaft' klasse='w-4' %}{% trans "Zur Liegenschaft" %}</a>
                 </div>
             </div>
-            <script>
-              document.addEventListener('click', function (ev) {
-                var d = document.getElementById('oAktionen');
-                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-              });
-            </script>
         </div>
     </div>
 
