@@ -224,7 +224,7 @@ def fw_nebenkosten_verbuchen(request, pk):
 
     heute = timezone.localdate()
     n_nach = n_gut = 0
-    nachzahler = []
+    nachzahler, nachzahlungen = [], []
     with transaction.atomic():
         # Zeilensperre + Re-Check gegen Doppelklick-Race: der p.abgeschlossen-Check
         # oben läuft ohne Lock — zwei parallele Requests würden sonst beide buchen
@@ -259,6 +259,7 @@ def fw_nebenkosten_verbuchen(request, pk):
                       datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech, user=request.user)
                 n_nach += 1
                 nachzahler.append(v.pk)
+                nachzahlungen.append(rech.pk)
             else:  # Guthaben → als ECHTES Mieterguthaben führen (Audit-Befund W1):
                 # 3020 an 2030 (Verbindlichkeit gegenüber Mieter) statt 3020/1100 —
                 # 1100 wurde sonst ohne Nebenbuch-Beleg entlastet und das Guthaben
@@ -294,8 +295,9 @@ def fw_nebenkosten_verbuchen(request, pk):
     if nachzahler:
         try:
             from core.services.zahlungsklaerung import guthaben_verrechnen
+            # Nur die eben gebuchten Nachzahlungen — nie ein älterer Rückstand.
             _n, verrechnet = guthaben_verrechnen(nachzahler, arten=('naechste_rechnung', 'nk_abrechnung'),
-                                                 user=request.user)
+                                                 rechnung_ids=nachzahlungen, user=request.user)
         except Exception:
             logger.warning('Guthaben-Verrechnung nach NK %s fehlgeschlagen', p.pk, exc_info=True)
     log_aktion(request, "NK-Abrechnung verbucht", p.bezeichnung, f"{n_nach} Nachzahlungen, {n_gut} Gutschriften")

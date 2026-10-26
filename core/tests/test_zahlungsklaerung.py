@@ -430,7 +430,8 @@ class MandantenTests(TestCase):
 
     def test_fremde_zahlung_ist_nicht_erreichbar(self):
         c = Client(); c.force_login(self.a.benutzer)
-        for pfad in ('aufteilen', 'kaution', 'notiz', 'verwendung'):
+        for pfad in ('aufteilen', 'kaution', 'notiz', 'verwendung', 'zuordnung-aufheben', 'wiederherstellen',
+                     'verrechnung-rueckgaengig'):
             with self.subTest(pfad=pfad):
                 url = f'/neu/bankabgleich/zahlung/{self.z_b.id}/{pfad}/'
                 antwort = c.get(url) if pfad == 'aufteilen' else c.post(url, {'notiz': 'x', 'vertrag_id': self.a.vertrag.id})
@@ -456,3 +457,241 @@ class MandantenTests(TestCase):
                 html = c.get(f'/neu/bankabgleich/zahlung/{z_a.id}/aufteilen/', {'q': q, 'fragment': '1'}).content.decode()
                 self.assertIn(f'name="teil_{r_a.id}"', html)
                 self.assertNotIn(f'name="teil_{r_b.id}"', html)
+
+
+class KorrekturVerrechnungTests(_Basis):
+    """Korrektur 26.10.2026: Ein Guthaben «mit nächster Rechnung» tilgte bei der
+    Sollstellung die ÄLTESTEN Posten — einen Rückstand samt Mahngebühr in der
+    letzten Mahnstufe. Er verschwand still aus dem Mahnwesen; das Storno, mit
+    dem man ihn zurückholen wollte, hob auch den Geldeingang auf."""
+
+    def rueckstand(self):
+        alt = self.heute - timedelta(days=90)
+        miete = self.rechnung(self.v, '100', titel='Miete Juli', tage=90)
+        from finance.models import DebitorenRechnung
+        geb = DebitorenRechnung.objects.create(vertrag=self.v, titel='Mahngebühr 3. Mahnung', datum=alt,
+                                               faellig_am=self.heute - timedelta(days=20), betrag=Decimal('40'),
+                                               stammrechnung=miete)
+        return miete, geb
+
+    def nk_guthaben(self, betrag='300.00'):
+        """Ein Guthaben ohne Bankreferenz, wie die NK-Gutschrift es anlegt (3020 an 2030)."""
+        from finance.booking import buche, konto
+        from finance.models import Zahlungseingang
+        z = Zahlungseingang.objects.create(vertrag=self.v, betrag=Decimal(betrag), datum_eingang=self.heute,
+                                           bemerkung='NK-Gutschrift 2025 (Guthaben Mieter)', konto=konto('2030'),
+                                           status='verbucht')
+        buche('3020', '2030', Decimal(betrag), 'NK-Gutschrift Muster', datum=self.heute, zahlung=z)
+        return z
+
+    def test_sollstellung_tilgt_weder_rueckstand_noch_mahngebuehr(self):
+        from core.models import AktivitaetsLog
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        miete, geb = self.rueckstand()
+        self.nk_guthaben()
+        run_sollstellung(self.heute.year, self.heute.month)
+        miete.refresh_from_db(); geb.refresh_from_db()
+        self.assertEqual((miete.status, geb.status), ('offen', 'offen'),
+                         'Rückstand und Mahngebühr bleiben offen und im Mahnwesen')
+        neu = DebitorenRechnung.objects.get(titel=f'Miete & NK {self.heute.month:02d}/{self.heute.year}')
+        self.assertLess(neu.offener_betrag, neu.betrag, 'Das Guthaben tilgt die neue Monatsrechnung')
+        self.assertTrue(AktivitaetsLog.objects.filter(aktion='Guthaben automatisch verrechnet').exists())
+        self.assertIn('Mahngebühr', self.c.get('/neu/mahnwesen/').content.decode())
+
+    def test_verrechnung_rueckgaengig_laesst_den_eingang_stehen(self):
+        from core.services.zahlungsklaerung import guthaben_verrechnen
+        from finance.models import Zahlungseingang
+        miete, _geb = self.rueckstand()
+        g = self.nk_guthaben('100.00')
+        guthaben_verrechnen([self.v.id], rechnung_ids=[miete.id])
+        miete.refresh_from_db()
+        self.assertEqual(miete.status, 'bezahlt')
+        html = self.c.get('/neu/bankabgleich/?spur=guthaben').content.decode()
+        self.assertIn('Verrechnung rückgängig', html)
+        self.c.post(f'/neu/bankabgleich/zahlung/{g.id}/verrechnung-rueckgaengig/', {})
+        miete.refresh_from_db(); g.refresh_from_db()
+        self.assertEqual(miete.status, 'offen')
+        self.assertEqual((g.status, g.konto.nummer, g.guthaben_verwendung), ('verbucht', '2030', 'offen'))
+        self.assertEqual(_kontoblatt('2030'), Decimal('-100.00'))
+        self.assertEqual(_kontoblatt('3020'), Decimal('100.00'), 'Die NK-Gutschrift bleibt gebucht')
+        self.assertEqual(Zahlungseingang.objects.filter(debitoren_rechnung=miete, status='verbucht').count(), 0)
+
+    def _alte_verrechnung_dann_storno(self, guthaben):
+        """Bildet den Fehler mit Altdaten nach: Verrechnung auf den ältesten Posten,
+        Rest ohne Referenz (so legte `zuordnen` ihn bis zur Korrektur an), Storno."""
+        from core.services.zahlungszuordnung import zuordnen
+        from finance.models import Zahlungseingang
+        miete, geb = self.rueckstand()
+        ref = guthaben.bank_referenz
+        zuordnen(guthaben, miete)
+        rest = Zahlungseingang.objects.get(bank_referenz__endswith=':rest', status='verbucht')
+        if not ref:
+            Zahlungseingang.objects.filter(pk__in=[guthaben.pk, rest.pk]).update(bank_referenz='')
+            rest.refresh_from_db()
+        zuordnen(rest, geb)
+        miete.refresh_from_db(); geb.refresh_from_db()
+        self.assertEqual((miete.status, geb.status), ('bezahlt', 'bezahlt'))
+        self.c.post(f'/neu/zahlungen/{guthaben.id}/stornieren/', {})
+        return miete, geb
+
+    def test_storniertes_nk_guthaben_wird_wiederhergestellt(self):
+        g = self.nk_guthaben('300.00')
+        miete, geb = self._alte_verrechnung_dann_storno(g)
+        geb.refresh_from_db()
+        self.assertEqual(geb.status, 'bezahlt', 'Altdaten: der Rest ohne Referenz hält die Mahngebühr bezahlt')
+        html = self.c.get('/neu/bankabgleich/?spur=guthaben').content.decode()
+        self.assertIn('Stornierte Guthaben-Verrechnungen', html)
+        self.c.post(f'/neu/bankabgleich/zahlung/{g.id}/wiederherstellen/', {})
+        miete.refresh_from_db(); geb.refresh_from_db()
+        self.assertEqual((miete.status, geb.status), ('offen', 'offen'))
+        self.assertEqual(_kontoblatt('2030'), Decimal('-300.00'), 'Das ganze Guthaben steht wieder auf 2030')
+        self.assertEqual(_kontoblatt('3020'), Decimal('300.00'), 'Die NK-Gutschrift ist wieder gebucht')
+        self.assertEqual(_kontoblatt('1100'), Decimal('0.00'))
+        # Ein zweites Mal geht nicht, und die Liste ist leer.
+        self.c.post(f'/neu/bankabgleich/zahlung/{g.id}/wiederherstellen/', {})
+        self.assertEqual(_kontoblatt('2030'), Decimal('-300.00'))
+        self.assertNotIn('Stornierte Guthaben-Verrechnungen',
+                         self.c.get('/neu/bankabgleich/?spur=guthaben').content.decode())
+
+    def test_storniertes_bankguthaben_wird_wiederhergestellt(self):
+        g = self.geparkt('300.00', konto='2030', vertrag=self.v, name='Hans Muster', ref='TX-UEBER')
+        miete, geb = self._alte_verrechnung_dann_storno(g)
+        self.assertEqual(_kontoblatt('1020'), Decimal('0.00'), 'Das Storno hob auch den Bankeingang auf')
+        self.c.post(f'/neu/bankabgleich/zahlung/{g.id}/wiederherstellen/', {})
+        miete.refresh_from_db(); geb.refresh_from_db()
+        self.assertEqual((miete.status, geb.status), ('offen', 'offen'))
+        self.assertEqual(_kontoblatt('1020'), Decimal('300.00'))
+        self.assertEqual(_kontoblatt('2030'), Decimal('-300.00'))
+
+    def test_rest_bekommt_jetzt_immer_eine_referenz(self):
+        from core.services.zahlungszuordnung import zuordnen
+        from finance.models import Zahlungseingang
+        miete, geb = self.rueckstand()
+        g = self.nk_guthaben('300.00')
+        zuordnen(g, miete)
+        rest = Zahlungseingang.objects.get(bemerkung__startswith='Rest-Guthaben', status='verbucht')
+        g.refresh_from_db()
+        self.assertTrue(rest.bank_referenz.startswith(f'{g.bank_referenz}:'))
+        zuordnen(rest, geb)
+        self.c.post(f'/neu/zahlungen/{g.id}/stornieren/', {})
+        geb.refresh_from_db()
+        self.assertEqual(geb.status, 'offen', 'Das Storno erreicht den Rest')
+
+
+class FehlzuordnungTests(_Basis):
+    """Korrektur 26.10.2026, der Fall aus dem Betrieb: Die Zahlung eines Fremden
+    («Narrezauber Soledurn», CHF 100) kam ohne Referenz. Der Assistent befüllte
+    sie vor, weil der Betrag auf die Oktobermiete eines Parkplatzmieters passte —
+    der war mit Miete und Mahngebühr im Rückstand, die 257d-Frist lief. Ein Klick
+    auf «Buchen», und die Miete galt als bezahlt, die Frist als «durch Zahlung
+    erledigt», der Fall war abgeschlossen und der Absender für diesen Mieter
+    gelernt. Der Mieter war nicht mehr zu finden."""
+
+    def setUp(self):
+        super().setUp()
+        from django.core.management import call_command
+        from finance.models import DebitorenRechnung
+        call_command('fallarten_anlegen', verbosity=0)
+        self.miete = self.rechnung(self.v, '100', titel='Miete & NK 10/2026', tage=35)
+        self.geb = DebitorenRechnung.objects.create(
+            vertrag=self.v, titel='Mahngebühr 1. Mahnung', datum=self.heute - timedelta(days=20),
+            faellig_am=self.heute - timedelta(days=10), betrag=Decimal('40'), stammrechnung=self.miete)
+        antwort = self.c.post(f'/neu/vertraege/{self.v.id}/verzug/',
+                              {'frist_bis': (self.heute + timedelta(days=37)).isoformat()})
+        self.assertEqual(antwort.status_code, 302)
+
+    def frist(self):
+        from core.models import Pendenz
+        return Pendenz.objects.get(vertrag=self.v, quelle=f'257d:{self.v.pk}')
+
+    def fall(self):
+        from django.contrib.contenttypes.models import ContentType
+        from faelle.models import Fall
+        return Fall.objects.get(akte_typ=ContentType.objects.get_for_model(self.v), akte_id=self.v.pk,
+                                fallart__schluessel='zahlungsverzug')
+
+    def falsch_zuordnen(self, betrag='100.00', **extra):
+        z = self.geparkt(betrag, name='Narrezauber Soledurn', text='Zahlung', ref='TX-NARR')
+        antwort = self.c.post(f'/neu/bankabgleich/zahlung/{z.id}/aufteilen/',
+                              {f'teil_{self.miete.id}': '100', 'rest_ziel': 'offen', **extra})
+        self.assertEqual(antwort.status_code, 302)
+        self.miete.refresh_from_db()
+        self.assertEqual(self.miete.status, 'bezahlt')
+        self.assertTrue(self.frist().erledigt, 'Ausgangslage: die Frist galt als gewahrt')
+        return z
+
+    def test_betrag_allein_befuellt_nichts_vor(self):
+        z = self.geparkt('100.00', name='Narrezauber Soledurn', text='Zahlung', ref='TX-NARR')
+        antwort = self.c.get(f'/neu/bankabgleich/zahlung/{z.id}/aufteilen/')
+        self.assertEqual(antwort.context['vorschlag'], {}, 'Ein passender Betrag belegt nicht, wer gezahlt hat')
+        self.assertIn('nur Betrag', antwort.content.decode())
+        self.assertIn('Nur der Betrag passt', self.c.get('/neu/bankabgleich/?spur=klaerung').content.decode())
+        # Nennt der Absender den Mieter, bleibt der Vorschlag vorbefüllt.
+        z2 = self.geparkt('100.00', name='Hans Muster', text='Miete Oktober', ref='TX-MUSTER')
+        antwort = self.c.get(f'/neu/bankabgleich/zahlung/{z2.id}/aufteilen/')
+        self.assertEqual(antwort.context['vorschlag'], {self.miete.id: Decimal('100.00')})
+
+    def test_zuordnung_aufheben_holt_rueckstand_frist_und_fall_zurueck(self):
+        from core.services.zahlungsverzug import VERMERK_GEWAHRT, aktive_fristen
+        from faelle.models import Fall
+        from finance.models import ZahlerZuordnung
+        z = self.falsch_zuordnen()
+        self.assertEqual(self.fall().status, Fall.ABGESCHLOSSEN)
+        self.assertTrue(ZahlerZuordnung.objects.filter(vertrag=self.v).exists())
+        html = self.c.get('/neu/bankabgleich/?spur=klaerung').content.decode()
+        self.assertIn('Zugeordnete Klärungsfälle', html)
+        self.assertIn(f'/neu/bankabgleich/zahlung/{z.id}/zuordnung-aufheben/', html)
+
+        self.c.post(f'/neu/bankabgleich/zahlung/{z.id}/zuordnung-aufheben/', {})
+        self.miete.refresh_from_db(); self.geb.refresh_from_db(); z.refresh_from_db()
+        self.assertEqual((self.miete.status, self.geb.status), ('offen', 'offen'))
+        self.assertEqual((z.status, z.konto.nummer, z.vertrag_id, z.betrag), ('verbucht', '1190', None, Decimal('100.00')))
+        self.assertEqual(_kontoblatt('1020'), Decimal('100.00'), 'Der Geldeingang bleibt — das Geld IST auf der Bank')
+        from finance.models import Buchung
+        self.assertEqual(list(Buchung.objects.filter(soll_konto__nummer='1020').values_list('storniert_am', flat=True)),
+                         [None], 'Die Bankbuchung wird weder storniert noch neu gebucht (Periodensperre, Revision)')
+        self.assertEqual(_kontoblatt('1190'), Decimal('-100.00'))
+        self.assertEqual(_kontoblatt('1100'), Decimal('0.00'))
+        p = self.frist()
+        self.assertFalse(p.erledigt, 'Die 257d-Frist läuft wieder')
+        self.assertNotIn(VERMERK_GEWAHRT, p.beschreibung, 'Der Sperrvermerk würde eine Kündigung weiter sperren')
+        self.assertTrue(aktive_fristen(self.v).exists())
+        self.assertEqual(self.fall().status, Fall.OFFEN)
+        self.assertFalse(ZahlerZuordnung.objects.filter(vertrag=self.v).exists(), 'Der Absender ist vergessen')
+        html = self.c.get('/neu/bankabgleich/?spur=klaerung').content.decode()
+        self.assertIn('Narrezauber Soledurn', html, 'Die Zahlung ist wieder ein Klärungsfall')
+
+    def test_aufgeteilte_zahlung_mit_guthaben_rest_wird_ganz_zurueckgelegt(self):
+        from finance.models import Zahlungseingang
+        z = self.falsch_zuordnen('150.00', rest_ziel='guthaben', rest_vertrag=self.v.id)
+        self.assertEqual(_kontoblatt('2030'), Decimal('-50.00'))
+        self.c.post(f'/neu/bankabgleich/zahlung/{z.id}/zuordnung-aufheben/', {})
+        z.refresh_from_db()
+        self.assertEqual((z.konto.nummer, z.betrag), ('1190', Decimal('150.00')))
+        self.assertEqual(_kontoblatt('2030'), Decimal('0.00'), 'Das Guthaben aus der Fehlzuordnung ist weg')
+        self.assertEqual(_kontoblatt('1190'), Decimal('-150.00'))
+        self.assertFalse(Zahlungseingang.objects.filter(bank_referenz__startswith='TX-NARR:', status='verbucht').exists())
+
+    def test_storno_statt_aufheben_laesst_sich_wiederherstellen(self):
+        from finance.models import Bankbewegung, Zahlungseingang
+        z = self.falsch_zuordnen()
+        self.c.post(f'/neu/zahlungen/{z.id}/stornieren/', {})
+        self.assertEqual(_kontoblatt('1020'), Decimal('0.00'), 'Das Storno hob auch den Bankeingang auf')
+        self.assertFalse(self.frist().erledigt, 'Schon das Storno öffnet die Frist wieder')
+        html = self.c.get('/neu/bankabgleich/?spur=klaerung').content.decode()
+        self.assertIn('Stornierte Zuordnungen', html)
+        self.c.post(f'/neu/bankabgleich/zahlung/{z.id}/wiederherstellen/', {})
+        neu = Zahlungseingang.objects.get(status='verbucht', konto__nummer='1190')
+        self.assertEqual((neu.betrag, neu.vertrag_id), (Decimal('100.00'), None))
+        self.assertEqual(_kontoblatt('1020'), Decimal('100.00'))
+        self.assertEqual(Bankbewegung.objects.get(bank_referenz='TX-NARR').zahlung_id, neu.id)
+        self.miete.refresh_from_db()
+        self.assertEqual(self.miete.status, 'offen')
+        self.assertNotIn('Stornierte Zuordnungen', self.c.get('/neu/bankabgleich/?spur=klaerung').content.decode())
+
+    def test_zurueckueberwiesener_teil_sperrt_das_aufheben(self):
+        z = self.falsch_zuordnen('150.00', rest_ziel='zurueck', bank_konto='1020')
+        self.c.post(f'/neu/bankabgleich/zahlung/{z.id}/zuordnung-aufheben/', {})
+        self.miete.refresh_from_db()
+        self.assertEqual(self.miete.status, 'bezahlt', 'Geld, das schon zurück ist, kann nicht wieder ungeklärt sein')

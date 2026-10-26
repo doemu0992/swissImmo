@@ -26911,3 +26911,138 @@ msgid "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Üb
 msgid_plural "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."
 msgstr[0] "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Überschuss."
 msgstr[1] "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."
+
+msgid "Diese Zahlung ist keine Verrechnung eines Guthabens."
+msgstr "Diese Zahlung ist keine Verrechnung eines Guthabens."
+
+msgid "Nur eine stornierte Zahlung eines Mieters lässt sich wiederherstellen."
+msgstr "Nur eine stornierte Zahlung eines Mieters lässt sich wiederherstellen."
+
+msgid "Diese Zahlung war kein Guthaben und keine geparkte Bankzahlung."
+msgstr "Diese Zahlung war kein Guthaben und keine geparkte Bankzahlung."
+
+msgid "Diese Zahlung ist bereits wiederhergestellt."
+msgstr "Diese Zahlung ist bereits wiederhergestellt."
+
+msgid "Diese Zahlung ist keinem Mieter zugeordnet."
+msgstr "Diese Zahlung ist keinem Mieter zugeordnet."
+
+msgid "Ein Teil dieser Zahlung wurde zurücküberwiesen oder als Kaution gebucht — bitte zuerst diesen Teil stornieren."
+msgstr "Ein Teil dieser Zahlung wurde zurücküberwiesen oder als Kaution gebucht — bitte zuerst diesen Teil stornieren."
+
+msgid "Nur eine Bankzahlung lässt sich zurück in die Klärung legen."
+msgstr "Nur eine Bankzahlung lässt sich zurück in die Klärung legen."
+
+#, python-format
+msgid "War irrtümlich %(mieter)s zugeordnet."
+msgstr "War irrtümlich %(mieter)s zugeordnet."
+
+#, python-format
+msgid "War irrtümlich %(mieter)s zugeordnet und wurde storniert."
+msgstr "War irrtümlich %(mieter)s zugeordnet und wurde storniert."
+
+#, python-format
+msgid "Verrechnung aufgehoben: CHF %(betrag)s stehen wieder als Guthaben, «%(titel)s» ist wieder offen."
+msgstr "Verrechnung aufgehoben: CHF %(betrag)s stehen wieder als Guthaben, «%(titel)s» ist wieder offen."
+
+#, python-format
+msgid "Der Absender «%(name)s» ist vergessen und wird nicht mehr automatisch zugeordnet."
+msgstr "Der Absender «%(name)s» ist vergessen und wird nicht mehr automatisch zugeordnet."
+
+#, python-format
+msgid "Guthaben von CHF %(betrag)s wiederhergestellt (2030, «offen lassen»). Die damit verrechneten Posten sind wieder offen."
+msgstr "Guthaben von CHF %(betrag)s wiederhergestellt (2030, «offen lassen»). Die damit verrechneten Posten sind wieder offen."
+
+#, python-format
+msgid "Zahlung von CHF %(betrag)s wiederhergestellt — sie steht wieder unter «Klärungsfälle» und kann richtig zugeordnet werden."
+msgstr "Zahlung von CHF %(betrag)s wiederhergestellt — sie steht wieder unter «Klärungsfälle» und kann richtig zugeordnet werden."
+
+msgid "Nur der Betrag passt"
+msgstr "Nur der Betrag passt"
+
+msgid "Zahler prüfen, bevor Sie zuordnen."
+msgstr "Zahler prüfen, bevor Sie zuordnen."
+
+msgid "Stornierte Zuordnungen"
+msgstr "Stornierte Zuordnungen"
+
+msgid "Das Storno hat auch den Geldeingang aufgehoben — das Geld liegt aber auf der Bank. Wiederherstellen legt es zurück in die Klärungsfälle."
+msgstr "Das Storno hat auch den Geldeingang aufgehoben — das Geld liegt aber auf der Bank. Wiederherstellen legt es zurück in die Klärungsfälle."
+
+msgid "Zahlung wiederherstellen? Der Geldeingang wird neu gebucht und steht wieder als Klärungsfall (1190) — ohne Mieter. Der gelernte Absender wird vergessen."
+msgstr "Zahlung wiederherstellen? Der Geldeingang wird neu gebucht und steht wieder als Klärungsfall (1190) — ohne Mieter. Der gelernte Absender wird vergessen."
+
+msgid "Zahlung wiederherstellen"
+msgstr "Zahlung wiederherstellen"
+
+msgid "Zugeordnete Klärungsfälle"
+msgstr "Zugeordnete Klärungsfälle"
+
+msgid "letzte 120 Tage · falsch zugeordnet? «Zuordnung aufheben» legt die Zahlung zurück, der Geldeingang bleibt"
+msgstr "letzte 120 Tage · falsch zugeordnet? «Zuordnung aufheben» legt die Zahlung zurück, der Geldeingang bleibt"
+
+msgid "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt."
+msgstr "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt."
+
+msgid "Zuordnung aufheben"
+msgstr "Zuordnung aufheben"
+
+msgid "Keine von Hand zugeordneten Klärungsfälle in den letzten 120 Tagen."
+msgstr "Keine von Hand zugeordneten Klärungsfälle in den letzten 120 Tagen."
+
+msgid "Stornierte Guthaben-Verrechnungen"
+msgstr "Stornierte Guthaben-Verrechnungen"
+
+msgid "Das Storno hat auch den Geldeingang bzw. die Gutschrift aufgehoben — das Guthaben fehlt dem Mieter."
+msgstr "Das Storno hat auch den Geldeingang bzw. die Gutschrift aufgehoben — das Guthaben fehlt dem Mieter."
+
+msgid "Guthaben wiederherstellen? Der Eingang wird neu gebucht (an 2030, «offen lassen»), die damit verrechneten Posten sind wieder offen."
+msgstr "Guthaben wiederherstellen? Der Eingang wird neu gebucht (an 2030, «offen lassen»), die damit verrechneten Posten sind wieder offen."
+
+msgid "Guthaben wiederherstellen"
+msgstr "Guthaben wiederherstellen"
+
+msgid "Verrechnete Guthaben"
+msgstr "Verrechnete Guthaben"
+
+msgid "letzte 120 Tage · «Verrechnung rückgängig» hebt nur die Verrechnung auf, der Geldeingang bleibt"
+msgstr "letzte 120 Tage · «Verrechnung rückgängig» hebt nur die Verrechnung auf, der Geldeingang bleibt"
+
+msgid "Verrechnet"
+msgstr "Verrechnet"
+
+msgid "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen."
+msgstr "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen."
+
+msgid "Verrechnung rückgängig"
+msgstr "Verrechnung rückgängig"
+
+msgid "Keine Verrechnungen von Guthaben in den letzten 120 Tagen."
+msgstr "Keine Verrechnungen von Guthaben in den letzten 120 Tagen."
+
+msgid "Nur die Verrechnung aufheben — nicht stornieren, sonst geht auch der Geldeingang verloren"
+msgstr "Nur die Verrechnung aufheben — nicht stornieren, sonst geht auch der Geldeingang verloren"
+
+msgid "Falsch zugeordnet? Die Zahlung zurück in die Klärungsfälle legen — der Geldeingang bleibt"
+msgstr "Falsch zugeordnet? Die Zahlung zurück in die Klärungsfälle legen — der Geldeingang bleibt"
+
+msgid "Diese Zahlung stornieren? Auch der Geldeingang wird per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert. Nur falsch zugeordnet? Dann «Zuordnung aufheben» wählen."
+msgstr "Diese Zahlung stornieren? Auch der Geldeingang wird per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert. Nur falsch zugeordnet? Dann «Zuordnung aufheben» wählen."
+
+msgid "nur Betrag"
+msgstr "nur Betrag"
+
+msgid "Der Betrag allein belegt nicht, wer gezahlt hat — deshalb ist nichts vorbefüllt."
+msgstr "Der Betrag allein belegt nicht, wer gezahlt hat — deshalb ist nichts vorbefüllt."
+
+#, python-format
+msgid "%(n)s storniert — wiederherstellen"
+msgid_plural "%(n)s storniert — wiederherstellen"
+msgstr[0] "%(n)s storniert — wiederherstellen"
+msgstr[1] "%(n)s storniert — wiederherstellen"
+
+#, python-format
+msgid "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnung ist wieder offen."
+msgid_plural "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
+msgstr[0] "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnung ist wieder offen."
+msgstr[1] "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."

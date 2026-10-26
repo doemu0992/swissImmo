@@ -26783,3 +26783,138 @@ msgid "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Üb
 msgid_plural "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."
 msgstr[0] "Combined payment? %(n)s more open item of %(mieter)s matches the surplus."
 msgstr[1] "Combined payment? %(n)s more open items of %(mieter)s match the surplus."
+
+msgid "Diese Zahlung ist keine Verrechnung eines Guthabens."
+msgstr "This payment is not an offset of a credit."
+
+msgid "Nur eine stornierte Zahlung eines Mieters lässt sich wiederherstellen."
+msgstr "Only a reversed payment of a tenant can be restored."
+
+msgid "Diese Zahlung war kein Guthaben und keine geparkte Bankzahlung."
+msgstr "This payment was neither a credit nor a parked bank payment."
+
+msgid "Diese Zahlung ist bereits wiederhergestellt."
+msgstr "This payment has already been restored."
+
+msgid "Diese Zahlung ist keinem Mieter zugeordnet."
+msgstr "This payment is not assigned to any tenant."
+
+msgid "Ein Teil dieser Zahlung wurde zurücküberwiesen oder als Kaution gebucht — bitte zuerst diesen Teil stornieren."
+msgstr "Part of this payment was returned or posted as a deposit — please reverse that part first."
+
+msgid "Nur eine Bankzahlung lässt sich zurück in die Klärung legen."
+msgstr "Only a bank payment can be put back into clarification."
+
+#, python-format
+msgid "War irrtümlich %(mieter)s zugeordnet."
+msgstr "Was assigned to %(mieter)s by mistake."
+
+#, python-format
+msgid "War irrtümlich %(mieter)s zugeordnet und wurde storniert."
+msgstr "Was assigned to %(mieter)s by mistake and was reversed."
+
+#, python-format
+msgid "Verrechnung aufgehoben: CHF %(betrag)s stehen wieder als Guthaben, «%(titel)s» ist wieder offen."
+msgstr "Offset undone: CHF %(betrag)s are a credit again, “%(titel)s” is open again."
+
+#, python-format
+msgid "Der Absender «%(name)s» ist vergessen und wird nicht mehr automatisch zugeordnet."
+msgstr "The sender “%(name)s” is forgotten and will no longer be assigned automatically."
+
+#, python-format
+msgid "Guthaben von CHF %(betrag)s wiederhergestellt (2030, «offen lassen»). Die damit verrechneten Posten sind wieder offen."
+msgstr "Credit of CHF %(betrag)s restored (2030, “leave open”). The items offset with it are open again."
+
+#, python-format
+msgid "Zahlung von CHF %(betrag)s wiederhergestellt — sie steht wieder unter «Klärungsfälle» und kann richtig zugeordnet werden."
+msgstr "Payment of CHF %(betrag)s restored — it is listed under “To clarify” again and can be assigned correctly."
+
+msgid "Nur der Betrag passt"
+msgstr "Only the amount matches"
+
+msgid "Zahler prüfen, bevor Sie zuordnen."
+msgstr "Check the payer before assigning."
+
+msgid "Stornierte Zuordnungen"
+msgstr "Reversed assignments"
+
+msgid "Das Storno hat auch den Geldeingang aufgehoben — das Geld liegt aber auf der Bank. Wiederherstellen legt es zurück in die Klärungsfälle."
+msgstr "The reversal also cancelled the money received — but the money is in the bank. Restoring puts it back into the cases to clarify."
+
+msgid "Zahlung wiederherstellen? Der Geldeingang wird neu gebucht und steht wieder als Klärungsfall (1190) — ohne Mieter. Der gelernte Absender wird vergessen."
+msgstr "Restore the payment? The money received is posted again and listed as a case to clarify (1190) — without a tenant. The learned sender is forgotten."
+
+msgid "Zahlung wiederherstellen"
+msgstr "Restore payment"
+
+msgid "Zugeordnete Klärungsfälle"
+msgstr "Assigned cases"
+
+msgid "letzte 120 Tage · falsch zugeordnet? «Zuordnung aufheben» legt die Zahlung zurück, der Geldeingang bleibt"
+msgstr "last 120 days · assigned wrongly? “Undo assignment” puts the payment back, the money received stays"
+
+msgid "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt."
+msgstr "Undo the assignment? The payment is then listed under “To clarify” again, the invoices are open again (with dunning level and deadline). A split payment is put back with all its parts."
+
+msgid "Zuordnung aufheben"
+msgstr "Undo assignment"
+
+msgid "Keine von Hand zugeordneten Klärungsfälle in den letzten 120 Tagen."
+msgstr "No manually assigned cases in the last 120 days."
+
+msgid "Stornierte Guthaben-Verrechnungen"
+msgstr "Reversed credit offsets"
+
+msgid "Das Storno hat auch den Geldeingang bzw. die Gutschrift aufgehoben — das Guthaben fehlt dem Mieter."
+msgstr "The reversal also cancelled the money received or the credit note — the tenant is missing the credit."
+
+msgid "Guthaben wiederherstellen? Der Eingang wird neu gebucht (an 2030, «offen lassen»), die damit verrechneten Posten sind wieder offen."
+msgstr "Restore the credit? The receipt is posted again (to 2030, “leave open”), the items offset with it are open again."
+
+msgid "Guthaben wiederherstellen"
+msgstr "Restore credit"
+
+msgid "Verrechnete Guthaben"
+msgstr "Offset credits"
+
+msgid "letzte 120 Tage · «Verrechnung rückgängig» hebt nur die Verrechnung auf, der Geldeingang bleibt"
+msgstr "last 120 days · “Undo offset” only undoes the offset, the money received stays"
+
+msgid "Verrechnet"
+msgstr "Offset"
+
+msgid "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen."
+msgstr "Undo the offset? The amount is then a credit again, the invoice is open again."
+
+msgid "Verrechnung rückgängig"
+msgstr "Undo offset"
+
+msgid "Keine Verrechnungen von Guthaben in den letzten 120 Tagen."
+msgstr "No credit offsets in the last 120 days."
+
+msgid "Nur die Verrechnung aufheben — nicht stornieren, sonst geht auch der Geldeingang verloren"
+msgstr "Only undo the offset — do not reverse, otherwise the money received is lost too"
+
+msgid "Falsch zugeordnet? Die Zahlung zurück in die Klärungsfälle legen — der Geldeingang bleibt"
+msgstr "Assigned wrongly? Put the payment back into the cases to clarify — the money received stays"
+
+msgid "Diese Zahlung stornieren? Auch der Geldeingang wird per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert. Nur falsch zugeordnet? Dann «Zuordnung aufheben» wählen."
+msgstr "Reverse this payment? The money received is also cancelled by a counter-entry and the open item is reopened. A split payment is reversed with all its parts. Only assigned wrongly? Then choose “Undo assignment”."
+
+msgid "nur Betrag"
+msgstr "amount only"
+
+msgid "Der Betrag allein belegt nicht, wer gezahlt hat — deshalb ist nichts vorbefüllt."
+msgstr "The amount alone does not show who paid — so nothing is pre-filled."
+
+#, python-format
+msgid "%(n)s storniert — wiederherstellen"
+msgid_plural "%(n)s storniert — wiederherstellen"
+msgstr[0] "%(n)s reversed — restore"
+msgstr[1] "%(n)s reversed — restore"
+
+#, python-format
+msgid "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnung ist wieder offen."
+msgid_plural "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
+msgstr[0] "Assignment undone: CHF %(betrag)s are a case to clarify again, %(n)s invoice is open again."
+msgstr[1] "Assignment undone: CHF %(betrag)s are a case to clarify again, %(n)s invoices are open again."

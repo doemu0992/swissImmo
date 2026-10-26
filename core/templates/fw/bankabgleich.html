@@ -41,12 +41,12 @@ hat genau einen Hauptknopf — den nächsten sinnvollen Schritt.
     <a href="?spur=klaerung#spuren" data-spur-link="klaerung" class="fw-kachel b-s {% if klaerung_alt %}akzent{% endif %}">
         <div class="fw-kachel-kopf"><h3>{% trans "Klärungsfälle" %}</h3>{% hilfe 'durchlaufkonto' %}</div>
         <div class="fw-kachel-zahl">{{ klaerung|length }}</div>
-        <p class="fw-kachel-text">{% if klaerung %}CHF {{ geparkt_unklar|chf }}{% if klaerung_alt %} · {% blocktrans count n=klaerung_alt %}{{ n }} länger als 10 Tage{% plural %}{{ n }} länger als 10 Tage{% endblocktrans %}{% endif %}{% else %}{% trans "Nichts ungeklärt" %}{% endif %}</p>
+        <p class="fw-kachel-text">{% if klaerung %}CHF {{ geparkt_unklar|chf }}{% if klaerung_alt %} · {% blocktrans count n=klaerung_alt %}{{ n }} länger als 10 Tage{% plural %}{{ n }} länger als 10 Tage{% endblocktrans %}{% endif %}{% else %}{% trans "Nichts ungeklärt" %}{% endif %}{% if stornierte_klaerung %} · <b>{% blocktrans count n=stornierte_klaerung|length %}{{ n }} storniert — wiederherstellen{% plural %}{{ n }} storniert — wiederherstellen{% endblocktrans %}</b>{% endif %}</p>
     </a>
     <a href="?spur=guthaben#spuren" data-spur-link="guthaben" class="fw-kachel b-s">
         <div class="fw-kachel-kopf"><h3>{% trans "Guthaben" %}</h3>{% hilfe 'mieterguthaben' %}</div>
         <div class="fw-kachel-zahl">{{ guthaben_liste|length }}</div>
-        <p class="fw-kachel-text">{% if guthaben_liste %}CHF {{ geparkt_guthaben|chf }} · {% blocktrans count n=guthaben_auto %}{{ n }} wird automatisch verrechnet{% plural %}{{ n }} werden automatisch verrechnet{% endblocktrans %}{% else %}{% trans "Keine Mieterguthaben" %}{% endif %}</p>
+        <p class="fw-kachel-text">{% if guthaben_liste %}CHF {{ geparkt_guthaben|chf }} · {% blocktrans count n=guthaben_auto %}{{ n }} wird automatisch verrechnet{% plural %}{{ n }} werden automatisch verrechnet{% endblocktrans %}{% else %}{% trans "Keine Mieterguthaben" %}{% endif %}{% if stornierte_guthaben %} · <b>{% blocktrans count n=stornierte_guthaben|length %}{{ n }} storniert — wiederherstellen{% plural %}{{ n }} storniert — wiederherstellen{% endblocktrans %}</b>{% endif %}</p>
     </a>
     <a href="?spur=teil#spuren" data-spur-link="teil" class="fw-kachel b-s">
         <div class="fw-kachel-kopf"><h3>{% trans "Teilzahlungen" %}</h3>{% hilfe 'teilzahlung' %}</div>
@@ -174,7 +174,7 @@ anderes schachteln.
                         · <span class="fw-chip {% if z.alt %}fw-crit{% else %}fw-info{% endif %}">{% blocktrans count n=z.tage %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}</span>
                         {% if z.ref %} · {% trans "Ref." %} <span class="fw-mono">{{ z.ref }}</span>{% endif %}</div>
                     {% if z.mitteilung %}<div class="fw-s break-words">{{ z.mitteilung }}</div>{% endif %}
-                    {% if z.vorschlag %}<div class="fw-s fw-vorschlag">{% zeichen 'gut' %}<b>{% trans "Vorschlag" %}: {{ z.vorschlag.mieter }}</b> — {{ z.vorschlag.gruende.0 }}</div>{% endif %}
+                    {% if z.vorschlag.stark %}<div class="fw-s fw-vorschlag">{% zeichen 'gut' %}<b>{% trans "Vorschlag" %}: {{ z.vorschlag.mieter }}</b> — {{ z.vorschlag.gruende.0 }}</div>{% elif z.vorschlag %}<div class="fw-s fw-mutet">{% zeichen 'hinweis' %}{% trans "Nur der Betrag passt" %}: {{ z.vorschlag.mieter }} — {% trans "Zahler prüfen, bevor Sie zuordnen." %}</div>{% endif %}
                     {% if z.klaerung_notiz %}<div class="fw-s fw-notiz">✎ {{ z.klaerung_notiz }}</div>{% endif %}
                     {% if z.zahler %}
                     <div class="fw-s fw-marke">
@@ -241,6 +241,59 @@ anderes schachteln.
             {% endfor %}
         </div>
     </div>
+    {% if stornierte_klaerung %}
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-punkt crit"></span>
+            <span class="fw-t">{% trans "Stornierte Zuordnungen" %}</span>
+            <span class="fw-neben">{% trans "Das Storno hat auch den Geldeingang aufgehoben — das Geld liegt aber auf der Bank. Wiederherstellen legt es zurück in die Klärungsfälle." %}</span>
+        </div>
+        <div>
+            {% for z in stornierte_klaerung %}
+            <div class="fw-zeile flex-wrap">
+                <span class="fw-chip fw-crit">{% trans "Storniert" %}</span>
+                <div class="fw-mitte">
+                    <div class="fw-t break-words">{{ z.vertrag.mieter.display_name }}{% if z.debitoren_rechnung_id %} · {{ z.debitoren_rechnung.titel }}{% endif %}</div>
+                    <div class="fw-s break-words">{{ z.datum_eingang|date:"d.m.Y" }} · {{ z.bemerkung }}</div>
+                </div>
+                <span class="fw-betrag">CHF {{ z.wieder_betrag|chf }}</span>
+                <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/wiederherstellen/"
+                      onsubmit="return confirm('{% filter escapejs %}{% trans "Zahlung wiederherstellen? Der Geldeingang wird neu gebucht und steht wieder als Klärungsfall (1190) — ohne Mieter. Der gelernte Absender wird vergessen." %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
+                    <button type="submit" class="fw-btn fw-primary fw-knapp">{% trans "Zahlung wiederherstellen" %}</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-t">{% trans "Zugeordnete Klärungsfälle" %}</span>
+            <span class="fw-neben">{% trans "letzte 120 Tage · falsch zugeordnet? «Zuordnung aufheben» legt die Zahlung zurück, der Geldeingang bleibt" %}</span>
+        </div>
+        <div>
+            {% for z in zugeordnete %}
+            <div class="fw-zeile flex-wrap">
+                <span class="fw-chip fw-info">{% trans "Zugeordnet" %}</span>
+                <div class="fw-mitte">
+                    <div class="fw-t break-words">{{ z.vertrag.mieter.display_name }}{% if z.debitoren_rechnung_id %} · {{ z.debitoren_rechnung.titel }}{% endif %}</div>
+                    <div class="fw-s break-words">{{ z.datum_eingang|date:"d.m.Y" }} · {{ z.bemerkung }}</div>
+                </div>
+                <span class="fw-betrag">CHF {{ z.total|chf }}</span>
+                <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/zuordnung-aufheben/"
+                      onsubmit="return confirm('{% filter escapejs %}{% trans "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt." %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
+                    <button type="submit" class="fw-btn fw-knapp">{% trans "Zuordnung aufheben" %}</button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="fw-leer">{% trans "Keine von Hand zugeordneten Klärungsfälle in den letzten 120 Tagen." %}</div>
+            {% endfor %}
+        </div>
+    </div>
 </section>
 
 <!-- ===== GUTHABEN (Konto 2030) ===== -->
@@ -301,6 +354,59 @@ anderes schachteln.
                 <b>{% trans "Keine Mieterguthaben" %}</b>
                 {% trans "Überzahlungen erscheinen hier und werden nach ihrer Verwendung verrechnet oder zurückerstattet." %}
             </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% if stornierte_guthaben %}
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-punkt crit"></span>
+            <span class="fw-t">{% trans "Stornierte Guthaben-Verrechnungen" %}</span>
+            <span class="fw-neben">{% trans "Das Storno hat auch den Geldeingang bzw. die Gutschrift aufgehoben — das Guthaben fehlt dem Mieter." %}</span>
+        </div>
+        <div>
+            {% for z in stornierte_guthaben %}
+            <div class="fw-zeile flex-wrap">
+                <span class="fw-chip fw-crit">{% trans "Storniert" %}</span>
+                <div class="fw-mitte">
+                    <div class="fw-t break-words">{{ z.vertrag.mieter.display_name }}{% if z.debitoren_rechnung_id %} · {{ z.debitoren_rechnung.titel }}{% endif %}</div>
+                    <div class="fw-s">{{ z.datum_eingang|date:"d.m.Y" }} · {{ z.bemerkung }}</div>
+                </div>
+                <span class="fw-betrag">CHF {{ z.wieder_betrag|chf }}</span>
+                <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/wiederherstellen/"
+                      onsubmit="return confirm('{% filter escapejs %}{% trans "Guthaben wiederherstellen? Der Eingang wird neu gebucht (an 2030, «offen lassen»), die damit verrechneten Posten sind wieder offen." %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="/neu/bankabgleich/?spur=guthaben">
+                    <button type="submit" class="fw-btn fw-primary fw-knapp">{% trans "Guthaben wiederherstellen" %}</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-t">{% trans "Verrechnete Guthaben" %}</span>
+            <span class="fw-neben">{% trans "letzte 120 Tage · «Verrechnung rückgängig» hebt nur die Verrechnung auf, der Geldeingang bleibt" %}</span>
+        </div>
+        <div>
+            {% for z in verrechnete %}
+            <div class="fw-zeile flex-wrap">
+                <span class="fw-chip fw-info">{% trans "Verrechnet" %}</span>
+                <div class="fw-mitte">
+                    <div class="fw-t break-words">{{ z.vertrag.mieter.display_name }}{% if z.debitoren_rechnung_id %} · {{ z.debitoren_rechnung.titel }}{% endif %}</div>
+                    <div class="fw-s break-words">{{ z.datum_eingang|date:"d.m.Y" }} · {{ z.bemerkung }}</div>
+                </div>
+                <span class="fw-betrag">CHF {{ z.betrag|chf }}</span>
+                <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/verrechnung-rueckgaengig/"
+                      onsubmit="return confirm('{% filter escapejs %}{% trans "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen." %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="/neu/bankabgleich/?spur=guthaben">
+                    <button type="submit" class="fw-btn fw-knapp">{% trans "Verrechnung rückgängig" %}</button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="fw-leer">{% trans "Keine Verrechnungen von Guthaben in den letzten 120 Tagen." %}</div>
             {% endfor %}
         </div>
     </div>
@@ -583,9 +689,24 @@ anderes schachteln.
             </div>
             <div class="fw-zeit">{{ z.datum_eingang|date:"d.m.Y" }}</div>
             <span class="fw-betrag good">+{{ z.betrag|chf }}</span>
+            {% if z.pk in verrechnet_ids %}
+            <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/verrechnung-rueckgaengig/"
+                  onsubmit="return confirm('{% filter escapejs %}{% trans "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen." %}{% endfilter %}');">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
+                <button type="submit" class="fw-btn fw-knapp" title="{% trans 'Nur die Verrechnung aufheben — nicht stornieren, sonst geht auch der Geldeingang verloren' %}">{% trans "Verrechnung rückgängig" %}</button>
+            </form>
+            {% elif z.pk in zugeordnet_ids or z.vertrag_id and z.bankbewegungen.all %}
+            <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/zuordnung-aufheben/"
+                  onsubmit="return confirm('{% filter escapejs %}{% trans "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt." %}{% endfilter %}');">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
+                <button type="submit" class="fw-btn fw-knapp" title="{% trans 'Falsch zugeordnet? Die Zahlung zurück in die Klärungsfälle legen — der Geldeingang bleibt' %}">{% trans "Zuordnung aufheben" %}</button>
+            </form>
+            {% endif %}
             <div>
                 <form method="post" action="/neu/zahlungen/{{ z.id }}/stornieren/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert." %}{% endfilter %}');">
+                      onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Zahlung stornieren? Auch der Geldeingang wird per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert. Nur falsch zugeordnet? Dann «Zuordnung aufheben» wählen." %}{% endfilter %}');">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
                     <button type="submit" title="{% trans 'Zahlung stornieren' %}"

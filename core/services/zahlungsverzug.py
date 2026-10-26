@@ -158,10 +158,76 @@ def _fall_abschliessen(vertrag, grund):
     return n
 
 
-def pruefe_nach_zahlung(vertrag):
-    """Schliesst gewahrte 257d-Fristen und den Fall, wenn der Rückstand bezahlt ist.
+VERMERK_WIEDER = 'Wieder geöffnet'
 
-    Idempotent und billig, wenn keine Frist läuft (eine Abfrage). Gibt die
+
+def _wieder_oeffnen(vertrag):
+    """Öffnet die jüngste «durch Zahlung» erledigte Frist wieder, wenn ihr
+    Rückstand wieder offen ist (Korrektur 26.10.2026).
+
+    Das geschieht, wenn die Zahlung, die die Frist gewahrt hat, wegfällt:
+    Storno, Rückbuchung der Bank, aufgehobene Fehlzuordnung (etwa die Zahlung
+    eines Fremden, die auf die Miete gebucht wurde). Der Mieter hat dann nicht
+    bezahlt — die Frist läuft bzw. ist abgelaufen, und der Fall gehört wieder
+    in den Arbeitsvorrat. Vorher blieb sie still «erledigt», samt Vermerk, der
+    eine Kündigung sperrt (`kuendigung_sperre`).
+
+    Nur mit Status offen/teilbezahlt: Eine abgeschriebene Forderung ist ein
+    Entscheid der Verwaltung, kein Rückstand, der eine Frist wiederbelebt.
+    """
+    from django.contrib.contenttypes.models import ContentType
+
+    from faelle.models import Fall, Fallschritt
+
+    if aktive_fristen(vertrag).exists():
+        return 0
+    p = (vertrag.pendenzen
+         .filter(Q(quelle__startswith=QUELLE_PRAEFIX)
+                 | Q(kategorie='frist', titel__startswith=_ALT_TITEL))
+         .order_by('-erstellt_am', '-pk').first())
+    if p is None or not p.erledigt or VERMERK_GEWAHRT not in (p.beschreibung or ''):
+        return 0
+    offen = sum((r.offener_betrag for r in gedeckte_forderungen(p)
+                 if r.status in ('offen', 'teilbezahlt')), Decimal('0.00'))
+    if offen <= 0:
+        return 0
+    heute = timezone.localdate()
+    grund = (f'{VERMERK_WIEDER} am {heute:%d.%m.%Y}: Die Zahlung, die den Rückstand '
+             f'beglich, ist storniert oder wurde einem anderen Posten zugeordnet — '
+             f'offen sind wieder CHF {offen}.')
+    # Den Absatz mit dem Sperrvermerk entfernen, sonst sperrt er die Kündigung weiter.
+    rest = [a for a in (p.beschreibung or '').split('\n\n') if VERMERK_GEWAHRT not in a]
+    p.erledigt = False
+    p.erledigt_am = None
+    p.beschreibung = '\n\n'.join([grund, *rest]).strip()
+    p.save(update_fields=['erledigt', 'erledigt_am', 'beschreibung'])
+
+    ct = ContentType.objects.get_for_model(type(vertrag))
+    fall = (Fall.objects.filter(akte_typ=ct, akte_id=vertrag.pk, fallart__schluessel=FALLART_SCHLUESSEL,
+                                status=Fall.ABGESCHLOSSEN, notiz__startswith='Automatisch abgeschlossen')
+            .order_by('-abgeschlossen_am', '-pk').first())
+    if fall is not None and not Fall.objects.offen().filter(
+            akte_typ=ct, akte_id=vertrag.pk, fallart__schluessel=FALLART_SCHLUESSEL).exists():
+        fall.status = Fall.OFFEN
+        fall.abgeschlossen_am = None
+        fall.letzte_bewegung = timezone.now()
+        fall.notiz = f'{grund}\n\n{fall.notiz}'.strip()
+        fall.save(update_fields=['status', 'abgeschlossen_am', 'letzte_bewegung', 'notiz'])
+        for schritt in Fallschritt.objects.filter(fall=fall, bezeichnung=SCHRITT_UEBERWACHEN,
+                                                  bemerkung__startswith='Automatisch abgeschlossen'):
+            schritt.erledigt_am = None
+            schritt.bemerkung = f'{grund}\n\n{schritt.bemerkung}'.strip()
+            schritt.save(update_fields=['erledigt_am', 'bemerkung'])
+    logger.warning('257d-Frist %s (Vertrag %s) wieder geöffnet: Rückstand CHF %s wieder offen',
+                   p.pk, vertrag.pk, offen)
+    return 1
+
+
+def pruefe_nach_zahlung(vertrag):
+    """Schliesst gewahrte 257d-Fristen und den Fall, wenn der Rückstand bezahlt ist
+    — und öffnet sie wieder, wenn die Zahlung wegfällt (`_wieder_oeffnen`).
+
+    Idempotent und billig, wenn keine Frist läuft (zwei Abfragen). Gibt die
     Anzahl geschlossener Fristen zurück.
     """
     if vertrag is None or not vertrag.pk:
@@ -169,6 +235,8 @@ def pruefe_nach_zahlung(vertrag):
     from core.tenancy import organisation_kontext
 
     with organisation_kontext(vertrag.organisation):
+        if _wieder_oeffnen(vertrag):
+            return 0
         geschlossen = 0
         for p in aktive_fristen(vertrag):
             forderungen = gedeckte_forderungen(p)

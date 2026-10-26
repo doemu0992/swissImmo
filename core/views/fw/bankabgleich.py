@@ -174,6 +174,9 @@ def fw_bankabgleich(request):
             z.vorschlag = _vs[0] if _vs else None
             z.kaution_kandidaten = _kaution_offen.get(z.betrag, [])[:5]
     klaerung = [z for z in geparkt if z.konto and z.konto.nummer == '1190']
+    verrechnete = _zk.verrechnete_guthaben()
+    zugeordnete = _zk.zugeordnete_klaerungsfaelle()
+    stornierte = _zk.stornierte_guthaben()
     guthaben_liste = [z for z in geparkt if z.konto and z.konto.nummer == '2030']
 
     # Teilzahlungen: Rechnungen mit Rest — mit Fortschritt und Mahnstand.
@@ -308,6 +311,13 @@ def fw_bankabgleich(request):
         'sammel_vertraege': sammel_vertraege,
         'geparkt_unklar': geparkt_unklar, 'geparkt_guthaben': geparkt_guthaben,
         'klaerung': klaerung, 'guthaben_liste': guthaben_liste,
+        # Korrektur 26.10.2026: Verrechnungen rückgängig machen, stornierte
+        # Guthaben wiederherstellen (core/services/zahlungsklaerung.py).
+        'verrechnete': verrechnete,
+        'stornierte_guthaben': [z for z in stornierte if z.wieder_konto == '2030'],
+        'stornierte_klaerung': [z for z in stornierte if z.wieder_konto == '1190'],
+        'zugeordnete': zugeordnete, 'zugeordnet_ids': {z.pk for z in zugeordnete},
+        'verrechnet_ids': {z.pk for z in verrechnete},
         'klaerung_alt': sum(1 for z in klaerung if z.alt),
         'teilzahlungen': teilzahlungen, 'teil_rest': teil_rest,
         'guthaben_auto': sum(1 for z in guthaben_liste if z.guthaben_verwendung != 'offen'),

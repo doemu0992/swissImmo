@@ -33,6 +33,7 @@ Schuld er tilgt, gilt seine Erklärung (Art. 86 OR); deshalb ist der Vorschlag
 nur vorbefüllt und lässt sich in der Oberfläche überschreiben.
 """
 import re
+from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
@@ -413,18 +414,31 @@ def rueckbuchung(bewegung, zahlung, *, user=None):
     return zahlung
 
 
-def guthaben_verrechnen(vertrag_ids=None, *, arten=('naechste_rechnung',), user=None):
-    """Tilgt offene Rechnungen mit Mieterguthaben, die dafür vorgesehen sind.
+def guthaben_verrechnen(vertrag_ids=None, *, arten=('naechste_rechnung',), rechnung_ids=None, user=None):
+    """Tilgt mit einem dafür vorgesehenen Mieterguthaben die Rechnungen, die der
+    aufrufende Lauf GERADE ERZEUGT hat (`rechnung_ids`).
+
+    WARUM NUR DIESE (Korrektur 26.10.2026): «Mit nächster Rechnung verrechnen»
+    ist eine Bestimmung, welche Schuld das Guthaben tilgt (Art. 86 OR) — die
+    nächste Monatsmiete bzw. die NK-Nachzahlung. Die erste Fassung tilgte die
+    ÄLTESTEN offenen Posten: Ein Rückstand samt Mahngebühr in der letzten
+    Mahnstufe galt nach der Sollstellung als bezahlt und verschwand still aus
+    dem Mahnwesen. Rückstände und Mahngebühren bleiben deshalb offen.
 
     Läuft nach der Sollstellung (`naechste_rechnung`) und nach dem Verbuchen der
-    Nebenkostenabrechnung (zusätzlich `nk_abrechnung`). Älteste Rechnung zuerst
-    (Art. 87 OR), ältestes Guthaben zuerst. Eine gesperrte Periode lässt das
-    Guthaben stehen, statt den Lauf abzubrechen. Gibt (anzahl, summe) zurück.
+    Nebenkostenabrechnung (zusätzlich `nk_abrechnung`). Jede Verrechnung steht im
+    Logbuch und in der Bemerkung der Zahlung. Eine gesperrte Periode lässt das
+    Guthaben stehen. Gibt (anzahl, summe) zurück.
     """
+    from core.auth import log_aktion
     from core.services.zahlungszuordnung import zuordnen
     from finance.models import Zahlungseingang
     import logging
 
+    if rechnung_ids is not None:
+        rechnung_ids = set(rechnung_ids)
+        if not rechnung_ids:
+            return 0, Decimal('0.00')
     qs = Zahlungseingang.objects.filter(status='verbucht', konto__nummer='2030',
                                         vertrag__isnull=False, guthaben_verwendung__in=arten)
     if vertrag_ids is not None:
@@ -439,18 +453,346 @@ def guthaben_verrechnen(vertrag_ids=None, *, arten=('naechste_rechnung',), user=
                      .select_related('konto', 'vertrag').order_by('datum_eingang', 'id').first())
                 if g is None:
                     break
-                offene = [r for r in offene_rechnungen(g.vertrag) if r.offener_betrag > 0]
+                offene = [r for r in offene_rechnungen(g.vertrag) if r.offener_betrag > 0
+                          and (rechnung_ids is None or r.pk in rechnung_ids)]
                 if not offene:
                     break
+                ziel = offene[0]
                 try:
-                    betrag, _rest, _n = zuordnen(g, offene[0], user=user)
+                    betrag, _rest, _n = zuordnen(g, ziel, user=user)
                 except (ZuordnungsFehler, PermissionError):
                     logging.getLogger(__name__).warning(
                         'Guthaben %s nicht verrechnet', g.pk, exc_info=True)
                     break
+                g.bemerkung = f"{g.bemerkung} (automatisch verrechnet)"[:255]
+                g.save(update_fields=['bemerkung'])
+            log_aktion(None, "Guthaben automatisch verrechnet", str(g.vertrag),
+                       f"CHF {betrag} Guthaben (2030) auf {ziel.titel}", ziel=g.vertrag, user=user,
+                       kategorie='finanzen')
             anzahl += 1
             summe += betrag
     return anzahl, summe
+
+
+def _verrechnungsbuchungen(zahlung):
+    """Aktive Buchungen 2030 an 1100 einer Zahlung: die Verrechnung eines Guthabens."""
+    from finance.models import Buchung
+    return Buchung.objects.filter(zahlungseingang=zahlung, soll_konto__nummer='2030',
+                                  haben_konto__nummer='1100', ist_storno=False,
+                                  storniert_am__isnull=True)
+
+
+def verrechnung_rueckgaengig(zahlung, *, user=None):
+    """Hebt NUR die Verrechnung eines Guthabens auf (Korrektur 26.10.2026).
+
+    Ein Storno hebt alle Buchungen der Zahlung auf — auch den Geldeingang bzw.
+    die NK-Gutschrift, aus der das Guthaben stammt. Hier wird nur die Buchung
+    2030 an 1100 storniert: Die Rechnung ist wieder offen (mit ihrer Mahnstufe),
+    der Betrag steht wieder als Guthaben auf 2030 — mit «offen lassen», damit
+    der nächste Lauf ihn nicht gleich wieder verrechnet.
+    """
+    from finance.services import erstelle_storno_buchung
+    buchungen = list(_verrechnungsbuchungen(zahlung))
+    if zahlung.status != 'verbucht' or not buchungen or not zahlung.vertrag_id:
+        raise ZuordnungsFehler(_("Diese Zahlung ist keine Verrechnung eines Guthabens."))
+    rechnung = zahlung.debitoren_rechnung
+    heute = timezone.localdate()
+    with transaction.atomic():
+        for b in buchungen:
+            erstelle_storno_buchung(b, benutzer=user)
+        zahlung.konto = _park_konto('2030')
+        zahlung.debitoren_rechnung = None
+        zahlung.guthaben_verwendung = 'offen'
+        zahlung.bemerkung = f"{zahlung.bemerkung} → Verrechnung rückgängig {heute:%d.%m.%Y}"[:255]
+        zahlung.save(update_fields=['konto', 'debitoren_rechnung', 'guthaben_verwendung', 'bemerkung'])
+        if rechnung is not None and rechnung.status not in ('storniert', 'abgeschrieben'):
+            offen = rechnung.offener_betrag
+            rechnung.status = ('bezahlt' if offen <= 0
+                               else 'offen' if offen >= rechnung.betrag else 'teilbezahlt')
+            rechnung.save(update_fields=['status'])
+    return rechnung
+
+
+_FAMILIE = re.compile(r':(teil\d+|offen|rest|ueber|zurueck)$')
+
+
+def _familie(zahlung):
+    """Ursprüngliche Zahlung und alle aktiven Zeilen, die aus ihr entstanden
+    sind (Teile, Rest, Überschuss, Rest eines Rests) — über den Präfix der
+    Bank-Referenz."""
+    from finance.models import Zahlungseingang
+    ref = zahlung.bank_referenz or ''
+    while _FAMILIE.search(ref):
+        ref = ref.rsplit(':', 1)[0]
+        z = Zahlungseingang.objects.filter(bank_referenz=ref).first()
+        if z is not None:
+            zahlung = z
+    wurzel_z = Zahlungseingang.objects.select_for_update(of=('self',)).get(pk=zahlung.pk)
+    familie = [wurzel_z]
+    if wurzel_z.bank_referenz:
+        familie += list(Zahlungseingang.objects.select_for_update(of=('self',)).filter(
+            bank_referenz__startswith=f"{wurzel_z.bank_referenz}:", status='verbucht')
+            .exclude(id=wurzel_z.id).order_by('id'))
+    return wurzel_z, familie
+
+
+def _ist_bank(konto):
+    # 1015 ist das Mietkautions-Sperrkonto, keine Zahlungseingangsbank.
+    return konto.nummer.startswith('10') and konto.nummer != '1015'
+
+
+def zuordnung_aufheben(zahlung, *, user=None):
+    """Legt eine falsch zugeordnete Bankzahlung zurück in die Klärungsfälle
+    (Korrektur 26.10.2026).
+
+    Anders als ein Storno bleibt der Geldeingang stehen — das Geld IST auf der
+    Bank, nur nicht von diesem Mieter. Storniert wird jede Buchung, die aus der
+    Zuordnung entstand (an 1100, Rest an 2030, dessen Verrechnung), samt aller
+    Teile einer Aufteilung. Die Zahlung liegt danach als ungeklärt auf 1190,
+    die Rechnungen sind wieder offen (Mahnstufe und 257d-Frist leben wieder auf,
+    siehe `zahlungsverzug._wieder_oeffnen`), und der gelernte Absender wird
+    vergessen, sonst bucht ihn der nächste Import gleich wieder auf denselben
+    Mieter. Gibt (zahlung, anzahl_rechnungen, vergessener_absender) zurück.
+    """
+    from core.auth import log_aktion
+    from finance.booking import buche
+    from finance.models import Buchung
+    from finance.services import erstelle_storno_buchung
+
+    with transaction.atomic():
+        wurzel_z, familie = _familie(zahlung)
+        if wurzel_z.status != 'verbucht' or not any(z.vertrag_id for z in familie):
+            raise ZuordnungsFehler(_("Diese Zahlung ist keinem Mieter zugeordnet."))
+        buchungen = list(Buchung.objects.filter(zahlungseingang__in=familie, ist_storno=False,
+                                                storniert_am__isnull=True)
+                         .select_related('soll_konto', 'haben_konto'))
+        if any(_ist_bank(b.haben_konto) or b.haben_konto.nummer in ('2010', '1015') for b in buchungen):
+            raise ZuordnungsFehler(_("Ein Teil dieser Zahlung wurde zurücküberwiesen oder als Kaution "
+                                     "gebucht — bitte zuerst diesen Teil stornieren."))
+        eingaenge = [b for b in buchungen if _ist_bank(b.soll_konto)]
+        if not eingaenge:
+            raise ZuordnungsFehler(_("Nur eine Bankzahlung lässt sich zurück in die Klärung legen."))
+        vertraege = {z.vertrag for z in familie if z.vertrag_id}
+        rechnungen = {z.debitoren_rechnung for z in familie if z.debitoren_rechnung_id}
+        mieter = ', '.join(sorted(str(v.mieter) for v in vertraege))
+        heute = timezone.localdate()
+        for b in buchungen:
+            if b in eingaenge and b.haben_konto.nummer == '1190':
+                continue  # Der Geldeingang auf dem Durchlaufkonto bleibt.
+            erstelle_storno_buchung(b, benutzer=user)
+            if b in eingaenge:
+                # Direkt verbucht (z. B. gelernter Absender): neu auf 1190, am Tag des Eingangs.
+                buche(b.soll_konto, '1190', b.betrag, f"Zuordnung aufgehoben: {b.beleg_text}"[:255],
+                      datum=b.datum, liegenschaft=b.liegenschaft, zahlung=wurzel_z, user=user)
+        for z in familie[1:]:
+            z.status = 'storniert'
+            z.save(update_fields=['status'])
+        wurzel_z.konto = _park_konto('1190')
+        wurzel_z.vertrag = None
+        wurzel_z.debitoren_rechnung = None
+        wurzel_z.betrag = sum((b.betrag for b in eingaenge), Decimal('0.00'))
+        wurzel_z.bemerkung = f"{wurzel_z.bemerkung} → Zuordnung aufgehoben {heute:%d.%m.%Y}"[:255]
+        wurzel_z.klaerung_notiz = (wurzel_z.klaerung_notiz or _("War irrtümlich %(mieter)s zugeordnet.")
+                                   % {'mieter': mieter})[:255]
+        wurzel_z.save(update_fields=['konto', 'vertrag', 'debitoren_rechnung', 'betrag', 'bemerkung',
+                                     'klaerung_notiz'])
+        for rech in rechnungen:
+            rech.refresh_from_db()
+            if rech.status in ('storniert', 'abgeschrieben'):
+                continue
+            offen = rech.offener_betrag
+            rech.status = ('bezahlt' if offen <= 0
+                           else 'offen' if offen >= rech.betrag else 'teilbezahlt')
+            rech.save(update_fields=['status'])
+        vergessen = _absender_vergessen(wurzel_z, vertraege)
+    # Nach dem Commit: Frist und Fall sehen den wieder offenen Rückstand.
+    from core.services.zahlungsverzug import pruefe_nach_zahlung
+    for v in vertraege:
+        pruefe_nach_zahlung(v)
+        log_aktion(None, "Zuordnung aufgehoben", str(v),
+                   f"CHF {wurzel_z.betrag} vom {wurzel_z.datum_eingang:%d.%m.%Y} zurück in die Klärungsfälle"
+                   + (f"; Absender «{vergessen}» vergessen" if vergessen else ''),
+                   ziel=v, user=user, kategorie='finanzen')
+    return wurzel_z, len(rechnungen), vergessen
+
+
+def _eingangsbuchungen_von(ids):
+    from finance.models import Buchung
+    return Buchung.objects.filter(
+        Q(haben_konto__nummer='2030') & ~Q(soll_konto__nummer='2030')
+        | Q(haben_konto__nummer='1190') & ~Q(soll_konto__nummer__in=PARK_KONTEN),
+        zahlungseingang_id__in=ids, ist_storno=False)
+
+
+def _eingangsbuchungen(zahlung):
+    """Die ursprünglichen Buchungen, mit denen Geld auf ein Parkkonto kam — als
+    Guthaben auf 2030 (Bank, 3020 bei einer NK-Gutschrift, 1190 als Rest) oder
+    ungeklärt auf 1190 (Bank) —, storniert oder nicht."""
+    return _eingangsbuchungen_von([zahlung.pk])
+
+
+def _verwaiste_reste(zahlung):
+    """Rest-Guthaben aus einer Verrechnung, die ein Storno nicht erreicht hat.
+
+    Bis zur Korrektur bekam ein Rest nur dann die Referenz der Zahlung, wenn sie
+    eine hatte. Eine NK-Gutschrift hat keine — ihr Rest («Rest-Guthaben aus
+    Zuordnung (…)») blieb nach dem Storno stehen und hielt z. B. eine
+    Mahngebühr als bezahlt. Die Kette wird über den Titel der vorher getilgten
+    Rechnung nachverfolgt, wie `zuordnen` ihn schreibt.
+    """
+    from finance.models import Zahlungseingang
+    kette, titel, nach_pk = [], (zahlung.debitoren_rechnung.titel if zahlung.debitoren_rechnung_id else None), zahlung.pk
+    while titel:
+        r = (Zahlungseingang.objects
+             .filter(vertrag_id=zahlung.vertrag_id, status='verbucht', pk__gt=nach_pk,
+                     bemerkung__startswith=f"Rest-Guthaben aus Zuordnung ({titel})"[:255])
+             .select_related('debitoren_rechnung').order_by('pk').first())
+        if r is None:
+            break
+        kette.append(r)
+        titel = r.debitoren_rechnung.titel if r.debitoren_rechnung_id else None
+        nach_pk = r.pk
+    return kette
+
+
+#: So lange nach einem Storno bietet das Cockpit «wiederherstellen» an.
+WIEDERHERSTELLEN_TAGE = 60
+
+
+def stornierte_guthaben():
+    """Stornierte Zahlungen, die einem Mieter zugeordnet waren und deren
+    Geldeingang mitstorniert wurde — noch nicht wiederhergestellt.
+
+    Zwei Herkünfte: ein verrechnetes Mieterguthaben (2030) oder eine geparkte
+    Bankzahlung (1190), die einem Posten zugeordnet war. In beiden Fällen
+    hebt «Stornieren» auch den Eingang auf; wollte man nur die Zuordnung
+    loswerden, fehlt jetzt Geld, das auf der Bank liegt.
+    """
+    from finance.models import Buchung, Zahlungseingang
+    seit = timezone.now() - timedelta(days=WIEDERHERSTELLEN_TAGE)
+    ids = set(Buchung.objects.filter(zahlungseingang__status='storniert', zahlungseingang__vertrag__isnull=False,
+                                     soll_konto__nummer__in=PARK_KONTEN, haben_konto__nummer='1100',
+                                     ist_storno=False, storniert_am__gte=seit)
+              .values_list('zahlungseingang_id', flat=True))
+    ids &= set(_eingangsbuchungen_von(ids).values_list('zahlungseingang_id', flat=True))
+    schon = set()
+    for bem in Zahlungseingang.objects.filter(status='verbucht', bemerkung__contains='[W').values_list('bemerkung', flat=True):
+        schon.update(int(x) for x in re.findall(r'\[W(\d+)\]', bem))
+    liste = list(Zahlungseingang.objects.filter(pk__in=ids - schon)
+                 .select_related('vertrag__mieter', 'debitoren_rechnung').order_by('-datum_eingang', '-id'))
+    for z in liste:
+        eingaenge = list(_eingangsbuchungen(z).select_related('haben_konto'))
+        z.wieder_betrag = sum((b.betrag for b in eingaenge), Decimal('0.00'))
+        z.wieder_konto = eingaenge[0].haben_konto.nummer if eingaenge else '2030'
+    return liste
+
+
+def _absender_vergessen(zahlung, vertraege):
+    """Löscht die gelernte Zuordnung «Absender → Vertrag», die aus einer
+    Fehlzuordnung entstand. Gibt den Namen zurück oder ''."""
+    from core.services import zahler as _zahler
+    from finance.models import ZahlerZuordnung
+    bew = zahlung.bankbewegungen.first()
+    if bew is None:
+        return ''
+    name, _r, _g = _zahler.aus_bewegung(bew.gegenpartei, bew.text)
+    schluessel = _zahler.normalisiere(name)
+    if schluessel and ZahlerZuordnung.objects.filter(name_norm=schluessel[:160],
+                                                     vertrag__in=list(vertraege)).delete()[0]:
+        return name
+    return ''
+
+
+def guthaben_wiederherstellen(zahlung, *, user=None):
+    """Stellt den Eingang einer Zahlung wieder her, die samt Zuordnung storniert
+    wurde.
+
+    Gebucht werden die ursprünglichen Eingangsbuchungen noch einmal, an einem
+    neuen Zahlungseingang:
+
+    - War es ein Guthaben (an 2030): wieder Guthaben des Mieters, «offen
+      lassen». Verwaiste Reste derselben Verrechnung werden storniert, damit
+      auch die Posten, die sie noch tilgten (z. B. eine Mahngebühr), wieder
+      offen sind.
+    - War es eine geparkte Bankzahlung (an 1190): wieder ein Klärungsfall ohne
+      Mieter — sie war ja offenbar falsch zugeordnet. Der gelernte Absender
+      wird vergessen, die Bankbewegung zeigt auf den neuen Eingang.
+    """
+    from finance.booking import buche
+    from finance.models import Bankbewegung, Zahlungseingang
+    if zahlung.status != 'storniert' or not zahlung.vertrag_id:
+        raise ZuordnungsFehler(_("Nur eine stornierte Zahlung eines Mieters lässt sich wiederherstellen."))
+    eingaenge = list(_eingangsbuchungen(zahlung).select_related('soll_konto', 'haben_konto'))
+    if not eingaenge:
+        raise ZuordnungsFehler(_("Diese Zahlung war kein Guthaben und keine geparkte Bankzahlung."))
+    if Zahlungseingang.objects.filter(status='verbucht', bemerkung__contains=f"[W{zahlung.pk}]").exists():
+        raise ZuordnungsFehler(_("Diese Zahlung ist bereits wiederhergestellt."))
+    betrag = sum((b.betrag for b in eingaenge), Decimal('0.00'))
+    ungeklaert = eingaenge[0].haben_konto.nummer == '1190'
+    with transaction.atomic():
+        if ungeklaert:
+            neu = Zahlungseingang.objects.create(
+                betrag=betrag, datum_eingang=zahlung.datum_eingang, buchungs_monat=zahlung.buchungs_monat,
+                konto=_park_konto('1190'), liegenschaft=zahlung.liegenschaft, erstellt_von=user,
+                status='verbucht',
+                klaerung_notiz=(_("War irrtümlich %(mieter)s zugeordnet und wurde storniert.")
+                                % {'mieter': zahlung.vertrag.mieter})[:255],
+                bemerkung=f"Zahlung wiederhergestellt [W{zahlung.pk}] — {zahlung.bemerkung}"[:255])
+        else:
+            for rest in _verwaiste_reste(zahlung):
+                stornieren(rest, user=user)
+            neu = Zahlungseingang.objects.create(
+                vertrag=zahlung.vertrag, betrag=betrag, datum_eingang=zahlung.datum_eingang,
+                buchungs_monat=zahlung.buchungs_monat, konto=_park_konto('2030'),
+                liegenschaft=zahlung.liegenschaft, guthaben_verwendung='offen', erstellt_von=user,
+                status='verbucht',
+                bemerkung=f"Guthaben wiederhergestellt [W{zahlung.pk}] — {zahlung.bemerkung}"[:255])
+        for b in eingaenge:
+            buche(b.soll_konto, b.haben_konto, b.betrag, f"Wiederherstellung {b.beleg_text}"[:255],
+                  datum=b.datum, liegenschaft=b.liegenschaft, zahlung=neu, user=user)
+        if ungeklaert:
+            _absender_vergessen(zahlung, [zahlung.vertrag])
+            Bankbewegung.objects.filter(zahlung=zahlung).update(zahlung=neu)
+    from core.services.zahlungsverzug import pruefe_nach_zahlung
+    pruefe_nach_zahlung(zahlung.vertrag)
+    return neu
+
+
+def verrechnete_guthaben(tage=120):
+    """Verrechnungen von Guthaben (2030 an 1100) der letzten `tage` — für die
+    Liste mit «Verrechnung rückgängig»."""
+    from finance.models import Buchung, Zahlungseingang
+    seit = timezone.localdate() - timedelta(days=tage)
+    ids = (Buchung.objects.filter(soll_konto__nummer='2030', haben_konto__nummer='1100', ist_storno=False,
+                                  storniert_am__isnull=True, datum__gte=seit, zahlungseingang__status='verbucht')
+           .values_list('zahlungseingang_id', flat=True))
+    return list(Zahlungseingang.objects.filter(pk__in=set(ids), vertrag__isnull=False)
+                .select_related('vertrag__mieter', 'debitoren_rechnung').order_by('-id')[:50])
+
+
+def zugeordnete_klaerungsfaelle(tage=120):
+    """Geparkte Zahlungen (1190), die in den letzten `tage` einem Posten
+    zugeordnet wurden — für die Liste mit «Zuordnung aufheben». Je Aufteilung
+    eine Zeile (die ursprüngliche Zahlung), mit dem Bankbetrag als `total`."""
+    from finance.models import Buchung, Zahlungseingang
+    seit = timezone.localdate() - timedelta(days=tage)
+    ids = set(Buchung.objects.filter(soll_konto__nummer='1190', haben_konto__nummer='1100', ist_storno=False,
+                                     storniert_am__isnull=True, datum__gte=seit, zahlungseingang__status='verbucht')
+              .values_list('zahlungseingang_id', flat=True))
+    liste, gesehen = [], set()
+    for z in (Zahlungseingang.objects.filter(pk__in=ids, vertrag__isnull=False)
+              .select_related('vertrag__mieter', 'debitoren_rechnung').order_by('-id')):
+        w = wurzel(z)
+        if w.pk in gesehen or w.status != 'verbucht':
+            continue
+        gesehen.add(w.pk)
+        if w.pk != z.pk:
+            w = (Zahlungseingang.objects.select_related('vertrag__mieter', 'debitoren_rechnung').get(pk=w.pk))
+        w.total = summe_mit_teilen(w)
+        liste.append(w)
+        if len(liste) >= 50:
+            break
+    return liste
 
 
 def _tokens(s):
@@ -540,25 +882,29 @@ def vorschlaege(zahlung, *, absender='', mitteilung='', referenz='', posten=None
     posten = posten if posten is not None else list(offene_posten()[:2000])
     vorschlag = {}
 
-    def dazu(v, grund, rechnungen):
+    def dazu(v, grund, rechnungen, stark=False):
+        # «stark»: Referenz, gelernter Absender oder Name belegen den Mieter.
+        # Ein passender Betrag allein belegt nichts — 100.00 schuldet jeder
+        # zweite Parkplatzmieter (Korrektur 26.10.2026).
         if v.id in vorschlag:
             if grund not in vorschlag[v.id]['gruende']:
                 vorschlag[v.id]['gruende'].append(grund)
+            vorschlag[v.id]['stark'] = vorschlag[v.id]['stark'] or stark
             return
         vorschlag[v.id] = {'vertrag': v, 'mieter': v.mieter.display_name if v.mieter_id else '—',
-                           'gruende': [grund], 'rechnungen': rechnungen}
+                           'gruende': [grund], 'rechnungen': rechnungen, 'stark': stark}
 
     if referenz:
         r = (DebitorenRechnung.objects.filter(qr_referenz=re.sub(r'\D', '', referenz), vertrag__isnull=False)
              .select_related('vertrag__mieter').first())
         if r is not None:
             dazu(r.vertrag, _("Referenz gehört zu «%(titel)s»") % {'titel': r.titel},
-                 [p for p in posten if p.vertrag_id == r.vertrag_id])
+                 [p for p in posten if p.vertrag_id == r.vertrag_id], stark=True)
     if absender:
         v = _zahler.finde_vertrag(absender)
         if v is not None:
             dazu(v, _("Absender wurde schon diesem Mieter zugeordnet"),
-                 [p for p in posten if p.vertrag_id == v.id])
+                 [p for p in posten if p.vertrag_id == v.id], stark=True)
     text = f"{absender} {mitteilung}"
     namens_treffer = set()
     for p in posten:
@@ -566,7 +912,7 @@ def vorschlaege(zahlung, *, absender='', mitteilung='', referenz='', posten=None
         if v.mieter_id and v.mieter.nachname and _name_passt(v.mieter.nachname, text):
             namens_treffer.add(v.id)
             dazu(v, _("Name «%(name)s» steht im Absender oder in der Mitteilung") % {'name': v.mieter.nachname},
-                 [x for x in posten if x.vertrag_id == v.id])
+                 [x for x in posten if x.vertrag_id == v.id], stark=True)
     for p in posten:
         if p.offener_betrag == betrag:
             dazu(p.vertrag, _("Betrag passt genau auf «%(titel)s»") % {'titel': p.titel}, [p])
@@ -589,7 +935,7 @@ def vorschlaege(zahlung, *, absender='', mitteilung='', referenz='', posten=None
                     "zusammen mit %(n)s weiteren Mietern genau der Betrag — Sammelzahlung",
                     len(genannt) - 1) % {'n': len(genannt) - 1})
                 x['zusammen'] = True
-    rang = sorted(vorschlag.values(), key=lambda x: -len(x['gruende']))
+    rang = sorted(vorschlag.values(), key=lambda x: (not x['stark'], -len(x['gruende'])))
     return rang[:3]
 
 

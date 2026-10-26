@@ -61,7 +61,8 @@ from .kalender import *       # noqa: F401,F403 — Monatskalender
 from .portfolio_seite import *  # noqa: F401,F403 — Portfolio (Eigentümer)
 from .leerstand_team import *   # noqa: F401,F403 — Leerstands-Cockpit, Team & Auslastung (UI-Audit)
 from .zahlungsklaerung import (  # noqa: F401 — Zahlungs-Cockpit V12
-    fw_zahlung_aufteilen, fw_zahlung_kaution, fw_zahlung_notiz, fw_guthaben_verwendung)
+    fw_zahlung_aufteilen, fw_zahlung_kaution, fw_zahlung_notiz, fw_guthaben_verwendung,
+    fw_verrechnung_rueckgaengig, fw_guthaben_wiederherstellen, fw_zuordnung_aufheben)
 from .phase2_formulare import *      # noqa: F401,F403 — Phase 2 (Audit)
 from .verteilschluessel import *      # noqa: F401,F403 — Verteilschlüssel der Liegenschaft
 from .buchhaltung import *   # noqa: F401,F403 — Block 5

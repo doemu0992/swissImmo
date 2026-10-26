@@ -236,7 +236,7 @@ Absender) bleibt; neu ist, was im Alltag fehlte:
 |---|---|---|
 | Sammelzahlung (eine Zahlung, mehrere Posten/Verträge/Mieter) | Split-Screen-Assistent «Zuordnen / Aufteilen»; Vorschlag: genannte Mieter, deren Posten zusammen den Betrag ergeben; Import: Überzahlung per Referenz mit weiterem passendem Posten desselben Mieters wird Klärungsfall statt stilles Guthaben | je Teil Parkkonto an 1100; Teile `…:teilN`, Rest `…:offen` / `:rest` / `:zurueck`; Storno nur als Ganzes |
 | Teilzahlung | Spur «Teilzahlungen» mit Fortschritt, Mahnstand und nächstem Schritt: Rest mahnen, Ratenplan, Kleindifferenz ausbuchen (≤ CHF 5.00); «Teilweise bezahlt» auch im Mieterportal | Rest bleibt offen und läuft in den Mahnlauf (bestehend) |
-| Überzahlung / Guthaben | Verwendung je Guthaben: mit nächster Rechnung verrechnen (Standard für neue Guthaben), für die NK-Abrechnung reservieren, offen lassen; Rückerstattung bleibt ein Knopf | Sollstellung bzw. NK-Verbuchen tilgen automatisch 2030 an 1100 (älteste Rechnung zuerst) |
+| Überzahlung / Guthaben | Verwendung je Guthaben: mit nächster Rechnung verrechnen (Standard für neue Guthaben), für die NK-Abrechnung reservieren, offen lassen; Rückerstattung bleibt ein Knopf | Sollstellung bzw. NK-Verbuchen tilgen automatisch 2030 an 1100 — nur die Rechnung, die der Lauf gerade erzeugt hat (Korrektur unten) |
 | Unklare Zahlung | Spur «Klärungsfälle»: Alter, Vorschlag mit Begründung, Notiz, Zuordnen/Aufteilen, an den Absender zurück; ab 10 Tagen Warnmarke und Pendenz | 1190 an 1100 / 1190 an Bank |
 | Kaution auf dem Mietzinskonto | «Als Kaution verbuchen» (nur exakter Betrag, Vertrag ohne bilanzierte Kaution) + Pendenz «auf Sperrkonto überweisen» | 1190 an 2010 mit `Mietkaution [V…]` — zählt für Freigabe, keine Doppelbuchung |
 | Rückbuchung der Bank | Belastung im Bank-Eingang → «Als Rückbuchung erfassen» (Kandidaten: gleicher Betrag, 120 Tage) | Storno der Zahlung = Buchung der Belastung; Rechnung wieder offen |
@@ -253,3 +253,25 @@ Nebenbei behoben: Ein zurückerstattetes Guthaben stand im Mieterkonto (Team und
 weiter als Haben — der Mieter schien ein Guthaben zu haben, das er längst zurückbekommen
 hatte. Die Rückerstattung (Buchung 2030 an Bank) erscheint jetzt als Soll-Zeile.
 
+
+### Korrektur 26.10.2026 — Fehlzuordnung im Betrieb
+
+Fall: Die Zahlung eines Fremden (CHF 100, ohne Referenz) wurde im Assistenten auf die
+Oktobermiete eines Parkplatzmieters vorbefüllt — nur weil der Betrag passte. Ein Klick
+genügte: Miete «bezahlt», 257d-Frist «durch Zahlung erledigt», Zahlungsverzugsfall
+geschlossen, Absender für diesen Mieter gelernt. Der Mieter mit Rückstand und letzter
+Mahnung war aus allen Listen verschwunden.
+
+| Was | Jetzt |
+|---|---|
+| Vorbefüllen | nur bei Referenz, gelerntem Absender, Name oder Sammelzahlung; «Betrag passt» allein ist als «nur Betrag» markiert und füllt nichts vor |
+| Falsch zugeordnet | «Zuordnung aufheben» (Spur Klärungsfälle → «Zugeordnete Klärungsfälle», «Kürzlich abgeglichen»): Zahlung samt Teilen zurück auf 1190, Bankbuchung bleibt unberührt, Rechnungen wieder offen, gelernter Absender gelöscht |
+| Stattdessen storniert | «Stornierte Zuordnungen» / «Stornierte Guthaben-Verrechnungen» (60 Tage): Eingang neu buchen — als Klärungsfall (1190) bzw. Guthaben (2030, «offen lassen») |
+| 257d | `zahlungsverzug._wieder_oeffnen`: Ist der gemahnte Rückstand einer «durch Zahlung» erledigten Frist wieder offen (Storno, Rückbuchung, aufgehobene Zuordnung), läuft die Frist wieder, der Sperrvermerk für die Kündigung fällt weg, der Fall ist wieder offen |
+| Guthaben «mit nächster Rechnung» | tilgt nur die neu erzeugte Monats- bzw. NK-Rechnung, nie Rückstände oder Mahngebühren (Art. 86 OR); jede Verrechnung im Logbuch; «Verrechnung rückgängig» hebt nur 2030 an 1100 auf |
+| Rest ohne Bankreferenz | bekommt `MAN<id>`, damit ein Storno ihn erreicht |
+
+Wächter: `FehlzuordnungTests` und `KorrekturVerrechnungTests` in
+`core/tests/test_zahlungsklaerung.py`; Gegenprobe mit sieben Mutanten (Vorbefüllen ohne
+Beleg, kein Wiederöffnen, Sperrvermerk bleibt, Absender bleibt, Bankbuchung wird
+storniert/neu gebucht, 1190 nicht wiederherstellbar, zurücküberwiesener Teil) — alle rot.

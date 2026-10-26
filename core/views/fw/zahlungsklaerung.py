@@ -10,9 +10,10 @@ from decimal import Decimal
 from django.contrib import messages
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import gettext
+from django.utils.translation import gettext, ngettext
 
-from core.auth import ROLLE_VERWALTER, SCHREIB_ROLLEN, hat_rolle, log_aktion, rolle_erforderlich
+from core.auth import (ROLLE_VERWALTER, SCHREIB_ROLLEN, VERWALTUNGS_ROLLEN, hat_rolle, log_aktion,
+                       rolle_erforderlich)
 from finance.models import DebitorenRechnung, Zahlungseingang
 from rentals.models import Mietvertrag
 
@@ -40,14 +41,19 @@ def _herkunft(zahlung):
 def _vorbefuellen(zahlung, gruppen, vorschlaege):
     """Vorschlag für die Zuteilung: Posten des ersten Vorschlags (bzw. des
     Guthaben-Mieters), älteste Fälligkeit zuerst (Art. 87 OR), bis der Betrag
-    verteilt ist. Passt der Betrag genau auf einen Posten, nur dieser."""
+    verteilt ist. Passt der Betrag genau auf einen Posten, nur dieser.
+
+    Vorbefüllt wird nur, wenn Referenz, gelernter Absender oder Name den Mieter
+    belegen. Passt nur der Betrag, bleibt alles leer — sonst landet die Zahlung
+    eines Fremden mit einem Klick auf der Miete eines beliebigen Mieters, der
+    zufällig gleich viel schuldet (Korrektur 26.10.2026)."""
     if zahlung.vertrag_id:
         ziel_ids = [r.pk for g in gruppen for r in (p['r'] for p in g['posten'])
                     if r.vertrag_id == zahlung.vertrag_id]
     elif any(v.get('zusammen') for v in vorschlaege):
         # Sammelzahlung mehrerer genannter Mieter: alle ihre Posten.
         ziel_ids = [r.pk for v in vorschlaege if v.get('zusammen') for r in v['rechnungen']]
-    elif vorschlaege:
+    elif vorschlaege and vorschlaege[0].get('stark'):
         ziel_ids = [r.pk for r in vorschlaege[0]['rechnungen']]
     else:
         return {}
@@ -236,4 +242,85 @@ def fw_guthaben_verwendung(request, pk):
     z.guthaben_verwendung = wert
     z.save(update_fields=['guthaben_verwendung'])
     messages.success(request, gettext('Guthaben: %(wert)s.') % {'wert': z.get_guthaben_verwendung_display()})
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_verrechnung_rueckgaengig(request, pk):
+    """Nur die Verrechnung eines Guthabens aufheben — der Geldeingang bleibt."""
+    from core.services.zahlungsklaerung import verrechnung_rueckgaengig
+    from core.services.zahlungszuordnung import ZuordnungsFehler
+    ziel = _ziel(request)
+    if request.method != 'POST':
+        return redirect(ziel)
+    try:
+        with transaction.atomic():
+            z = get_object_or_404(Zahlungseingang.objects.select_for_update(of=('self',)), pk=pk)
+            rechnung = verrechnung_rueckgaengig(z, user=request.user)
+    except ZuordnungsFehler as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect(ziel)
+    except PermissionError as exc:
+        messages.error(request, gettext('Periodensperre: %(e)s') % {'e': exc})
+        return redirect(ziel)
+    log_aktion(request, "Verrechnung eines Guthabens rückgängig", str(z.vertrag),
+               f"CHF {z.betrag} wieder auf 2030" + (f", {rechnung.titel} wieder offen" if rechnung else ''),
+               ziel=z.vertrag)
+    messages.success(request, '✅ ' + gettext('Verrechnung aufgehoben: CHF %(betrag)s stehen wieder als Guthaben, «%(titel)s» ist wieder offen.') % {
+        'betrag': z.betrag, 'titel': rechnung.titel if rechnung else '—'})
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_zuordnung_aufheben(request, pk):
+    """Eine falsch zugeordnete Bankzahlung zurück in die Klärungsfälle — der
+    Geldeingang bleibt, nur die Zuordnung fällt weg (anders als «Stornieren»)."""
+    from core.services.zahlungsklaerung import zuordnung_aufheben
+    from core.services.zahlungszuordnung import ZuordnungsFehler
+    ziel = _ziel(request)
+    if request.method != 'POST':
+        return redirect(ziel)
+    z = get_object_or_404(Zahlungseingang, pk=pk)
+    try:
+        zahlung, n, vergessen = zuordnung_aufheben(z, user=request.user)
+    except ZuordnungsFehler as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect(ziel)
+    except PermissionError as exc:
+        messages.error(request, gettext('Periodensperre: %(e)s') % {'e': exc})
+        return redirect(ziel)
+    text = ngettext('Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnung ist wieder offen.',
+                    'Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen.',
+                    n) % {'betrag': zahlung.betrag, 'n': n}
+    if vergessen:
+        text += ' ' + gettext('Der Absender «%(name)s» ist vergessen und wird nicht mehr automatisch zugeordnet.') % {'name': vergessen}
+    messages.success(request, '✅ ' + text)
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_guthaben_wiederherstellen(request, pk):
+    """Den Eingang einer samt Zuordnung stornierten Zahlung wiederherstellen —
+    als Guthaben (2030) oder als Klärungsfall (1190)."""
+    from core.services.zahlungsklaerung import guthaben_wiederherstellen
+    from core.services.zahlungszuordnung import ZuordnungsFehler
+    ziel = _ziel(request)
+    if request.method != 'POST':
+        return redirect(ziel)
+    try:
+        with transaction.atomic():
+            z = get_object_or_404(Zahlungseingang.objects.select_for_update(of=('self',)), pk=pk)
+            neu = guthaben_wiederherstellen(z, user=request.user)
+    except ZuordnungsFehler as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect(ziel)
+    except PermissionError as exc:
+        messages.error(request, gettext('Periodensperre: %(e)s') % {'e': exc})
+        return redirect(ziel)
+    log_aktion(request, "Storniertes Guthaben wiederhergestellt", str(z.vertrag),
+               f"Zahlung #{z.pk} → neues Guthaben #{neu.pk}, CHF {neu.betrag}", ziel=z.vertrag)
+    if neu.vertrag_id:
+        messages.success(request, '✅ ' + gettext('Guthaben von CHF %(betrag)s wiederhergestellt (2030, «offen lassen»). Die damit verrechneten Posten sind wieder offen.') % {'betrag': neu.betrag})
+    else:
+        messages.success(request, '✅ ' + gettext('Zahlung von CHF %(betrag)s wiederhergestellt — sie steht wieder unter «Klärungsfälle» und kann richtig zugeordnet werden.') % {'betrag': neu.betrag})
     return redirect(ziel)
