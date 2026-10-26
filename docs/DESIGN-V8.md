@@ -168,6 +168,22 @@ normales Formular.
 - **Portale am Desktop:** Die Portal-Leiste wird ab 1024 px zur Ember-Kopfleiste
   (Logo-, Navigations- und Sprach-Kapsel); am Telefon bleibt die Schublade.
 
+## V12 «Zahlungs-Cockpit» (26.10.2026)
+
+Der Bankabgleich ist ein Cockpit: vier Kacheln (Klärungsfälle, Guthaben, Teilzahlungen,
+Bank-Eingang) öffnen die passende Arbeitsliste (`.fw-spur`, Reiter `.fw-spuren`). Ohne
+JavaScript stehen alle Listen untereinander. Jede Zeile hat genau einen Hauptknopf; seltene
+Aktionen liegen unter «Weitere» (`details.fw-mehr-aktionen`).
+
+- **Split-Screen-Assistent** `fw/zahlung_aufteilen.html` (`.fw-split`): links die Zahlung als
+  dunkle Kachel (am Desktop auf einen Posten ziehbar), Absender, Mitteilung, Vorschläge;
+  rechts Suche und offene Posten nach Mieter gruppiert (`fw/_posten_gruppen.html`, auch als
+  Fragment für die Suche ohne Neuladen). «offen …» antippen übernimmt den Betrag, höchstens
+  den Rest der Zahlung. Fussleiste: Zugeteilt / Rest live, Ziel des Rests, «Diese Buchungen
+  entstehen» (Soll/Haben je Zeile), «Buchen» gesperrt, solange zu viel zugeteilt ist.
+- **Fortschritt** `progress.fw-fortschritt` statt Breiten in `style=`.
+- Logik: `core/services/zahlungsklaerung.py`, Skript: `static/js/fw-zahlungen.js`.
+
 ## Was nicht mehr vorkommen soll
 
 - Kachelreihen `grid grid-cols-… gap-4` aus `fw-card p-5` mit Symbolquadrat (`w-11 h-11 rounded-lg fw-*-flaeche`) → `fw-kpis`.

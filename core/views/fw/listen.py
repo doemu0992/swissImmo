@@ -643,8 +643,12 @@ def fw_debitor_abschreiben(request, pk):
     from django.contrib import messages
     from finance.booking import buche, ensure_kontenplan
     from core.auth import log_aktion
+    # Rücksprung: aus dem Zahlungs-Cockpit («Kleindifferenz ausbuchen») zurück
+    # dorthin; nur eigene /neu/-Pfade (kein offener Redirect).
+    _n = (request.POST.get('next') or '').strip()
+    ziel = _n if _n.startswith('/neu/') and '//' not in _n and '\\' not in _n else 'fw_debitoren'
     if request.method != 'POST':
-        return redirect('fw_debitoren')
+        return redirect(ziel)
     with transaction.atomic():
         # Zeilensperre: ohne sie schreiben zwei parallele Requests denselben
         # Betrag zweimal ab (Aufwand + MWST-Korrektur doppelt).
@@ -653,11 +657,11 @@ def fw_debitor_abschreiben(request, pk):
             .select_related('vertrag__mieter'), id=pk)
         if r.status not in ('offen', 'teilbezahlt'):
             messages.info(request, gettext('Nur offene oder teilbezahlte Forderungen können abgeschrieben werden.'))
-            return redirect('fw_debitoren')
+            return redirect(ziel)
         offen = r.offener_betrag
         if offen <= 0:
             messages.info(request, gettext('Kein offener Betrag — nichts abzuschreiben.'))
-            return redirect('fw_debitoren')
+            return redirect(ziel)
         grund = (request.POST.get('grund') or '').strip()
         mieter_name = r.vertrag.mieter.display_name if r.vertrag_id and r.vertrag.mieter_id else ''
         lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
@@ -700,7 +704,7 @@ def fw_debitor_abschreiben(request, pk):
     log_aktion(request, "Forderungsverlust gebucht", r.titel,
                f"CHF {offen} · {grund or 'ohne Grundangabe'}")
     messages.success(request, '✅ ' + gettext("Forderung '%(titel)s' als Debitorenverlust abgeschrieben (CHF %(offen)s, Konto 3805).") % {'titel': r.titel, 'offen': offen})
-    return redirect('fw_debitoren')
+    return redirect(ziel)
 
 
 def _mahngebuehr_historie_ausgleichen(rechnung, user=None):

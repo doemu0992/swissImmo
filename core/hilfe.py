@@ -111,6 +111,32 @@ HILFE = {
     'mwst_option': (_('MWST bei Vermietung'), _(
         'Vermietung ist grundsätzlich von der MWST ausgenommen (Art. 21 MWSTG). Bei Geschäftsräumen kann für die Steuer '
         'optiert werden, wenn der Mieter sie nicht ausschliesslich für Wohnzwecke nutzt (Art. 22 MWSTG).')),
+    # ---- Zahlungs-Cockpit (V12) ----
+    'durchlaufkonto': (_('Durchlaufkonto 1190'), _(
+        'Hier wartet Geld, das sich nicht sicher zuordnen liess — ohne oder mit falscher Referenz. '
+        'Es geht nicht verloren: Es wird zugeordnet, aufgeteilt, als Kaution erkannt oder an den Absender zurücküberwiesen.')),
+    'mieterguthaben': (_('Mieterguthaben (Konto 2030)'), _(
+        'Zahlt ein Mieter mehr als offen, gehört ihm der Überschuss. Er wird mit der nächsten Rechnung '
+        'verrechnet, für die Nebenkostenabrechnung reserviert oder zurückerstattet — wie hinterlegt.')),
+    'sammelzahlung': (_('Sammelzahlung'), _(
+        'Eine Überweisung für mehrere Posten, etwa zwei Verträge oder ein Sozialdienst für mehrere Mieter. '
+        'Jeder Teil wird einem Posten zugeteilt und einzeln gebucht; storniert wird die Zahlung nur als Ganzes.')),
+    'teilzahlung': (_('Teilzahlung'), _(
+        'Ist weniger eingegangen als geschuldet, gilt der Posten als «teilbezahlt». Der Rest bleibt offen '
+        'und läuft in den Mahnlauf, solange keine Mahnsperre oder Zahlungsvereinbarung besteht.')),
+    'tilgungsreihenfolge': (_('Welche Schuld wird getilgt?'), _(
+        'Gibt der Zahler an, welche Schuld er bezahlt, gilt seine Erklärung (Art. 86 OR). Sonst wird die '
+        'älteste fällige Schuld getilgt (Art. 87 OR) — so ist der Vorschlag vorbefüllt.')),
+    'kleindifferenz': (_('Kleindifferenz'), _(
+        'Ein kleiner Rest, etwa von der Bank abgezogene Spesen. Bis CHF 5.00 lässt er sich als '
+        'Debitorenverlust (Konto 3805) ausbuchen, statt ihn zu mahnen.')),
+    'rueckbuchung': (_('Rückbuchung'), _(
+        'Die Bank bucht eine eingegangene Zahlung zurück, etwa wegen falscher Kontoangaben. Die Zahlung wird '
+        'storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen.')),
+    'kautionskonto': (_('Kaution auf dem Mietzinskonto'), _(
+        'Die Kaution gehört auf ein Sperrkonto auf den Namen des Mieters (Art. 257e OR). Ist sie auf dem '
+        'Mietzinskonto eingegangen, wird sie als Kaution verbucht und danach auf das Sperrkonto überwiesen.')),
+
     # ---- Liegenschaft & Kennzahlen ----
     'egid': (_('EGID / EWID'), _(
         'Eidgenössischer Gebäude- bzw. Wohnungsidentifikator aus dem Gebäude- und Wohnungsregister (GWR). '

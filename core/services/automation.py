@@ -56,6 +56,7 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
     ensure_kontenplan()   # Kontenplan garantieren (kein stiller Buchungsverlust)
 
     erstellt = 0
+    gestellt_fuer = []
     with transaction.atomic():
         # Zeilensperre auf die aktiven Verträge: ein gleichzeitiger zweiter
         # Sollstellungs-Lauf (Button + Scheduler) blockiert bis dieser fertig ist,
@@ -142,6 +143,18 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             buche("1100", "2200", mwst, f"MWST {satz}% {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
             erstellt += 1
+            gestellt_fuer.append(v.pk)
+    # Guthaben, die «mit der nächsten Rechnung» verrechnet werden sollen
+    # (Zahlungs-Cockpit V12). Nach der Transaktion der Sollstellung: Eine
+    # gesperrte Periode oder ein Fehler lässt das Guthaben stehen, die
+    # Rechnungen bleiben gestellt.
+    if gestellt_fuer:
+        try:
+            from core.services.zahlungsklaerung import guthaben_verrechnen
+            guthaben_verrechnen(gestellt_fuer, user=user)
+        except Exception:
+            logger.warning('Guthaben-Verrechnung nach Sollstellung %02d/%s fehlgeschlagen',
+                           monat, jahr, exc_info=True)
     return erstellt
 
 
@@ -573,6 +586,29 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
         except ValueError:
             continue
         if not Zahlungseingang.objects.filter(pk=zid, status='verbucht', konto__nummer='2030').exists():
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+    # a3d) Klärungsfälle (Zahlungs-Cockpit V12): Geld, das länger als
+    # KLAERUNG_WARN_TAGE auf dem Durchlaufkonto 1190 liegt, gehört jemandem —
+    # eine Pendenz, bis es zugeordnet, zurücküberwiesen oder storniert ist.
+    from core.services.zahlungsklaerung import KLAERUNG_WARN_TAGE
+    for z in Zahlungseingang.objects.filter(
+            status='verbucht', konto__nummer='1190',
+            datum_eingang__lte=heute - timedelta(days=KLAERUNG_WARN_TAGE)):
+        _ensure(f"auto:klaerung:{z.id}",
+                f"Ungeklärte Zahlung CHF {z.betrag:.2f} vom {z.datum_eingang:%d.%m.%Y} klären",
+                z.datum_eingang + timedelta(days=KLAERUNG_WARN_TAGE), 'finanzen',
+                "Die Zahlung liegt auf dem Durchlaufkonto 1190. Im Bankabgleich unter «Klärungsfälle» "
+                "zuordnen, aufteilen, als Kaution erkennen oder an den Absender zurücküberweisen.",
+                liegenschaft=z.liegenschaft)
+    for p in Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:klaerung:'):
+        try:
+            zid = int(p.quelle.rsplit(':', 1)[-1])
+        except ValueError:
+            continue
+        if not Zahlungseingang.objects.filter(pk=zid, status='verbucht', konto__nummer='1190').exists():
             p.erledigt = True
             p.erledigt_am = heute
             p.save(update_fields=['erledigt', 'erledigt_am'])

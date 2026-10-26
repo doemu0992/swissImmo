@@ -1158,6 +1158,27 @@ def fw_bankbewegung_zuordnen(request):
         messages.success(request, gettext('Bewegung als nicht buchungsrelevant markiert.'))
         return redirect(ziel)
 
+    if art == 'rueckbuchung':
+        # Die Bank bucht eine Mieterzahlung zurück (Rücklastschrift, Rückweisung):
+        # Die ursprüngliche Zahlung wird storniert, die Rechnung ist wieder offen.
+        # Die Stornobuchung ist die Buchung dieser Belastung (Zahlungs-Cockpit V12).
+        from core.services.zahlungsklaerung import rueckbuchung, ZuordnungsFehler
+        z = get_object_or_404(Zahlungseingang, id=request.POST.get('zahlung_id'))
+        try:
+            with transaction.atomic():
+                bew = Bankbewegung.objects.select_for_update().get(pk=bew.pk)
+                rueckbuchung(bew, z, user=request.user)
+        except ZuordnungsFehler as exc:
+            messages.error(request, f"❌ {exc}")
+            return redirect(ziel)
+        except PermissionError as exc:
+            messages.error(request, f"❌ {exc}")
+            return redirect(ziel)
+        log_aktion(request, "Rückbuchung einer Mieterzahlung", str(bew),
+                   f"Zahlung #{z.pk} CHF {abs(bew.betrag)} storniert")
+        messages.success(request, '✅ ' + gettext('Rückbuchung erfasst: Die Zahlung vom %(datum)s ist storniert, die Rechnung wieder offen.') % {'datum': format(z.datum_eingang, '%d.%m.%Y')})
+        return redirect(ziel)
+
     try:
         with transaction.atomic():
             if art == 'kreditor':
@@ -1336,9 +1357,8 @@ def fw_zahlung_stornieren(request, pk):
     korrigieren (und der OP-Status blieb falsch)."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from finance.models import Buchung
-    from finance.services import erstelle_storno_buchung
     from core.auth import log_aktion
+    from core.services.zahlungsklaerung import stornieren
 
     if request.method != 'POST':
         return redirect('fw_bankabgleich')
@@ -1352,34 +1372,14 @@ def fw_zahlung_stornieren(request, pk):
             if z.status == 'storniert':
                 messages.info(request, gettext('Diese Zahlung ist bereits storniert.'))
                 return redirect(request.POST.get('next') or '/neu/bankabgleich/')
-
             # Eine Bankgutschrift kann sich auf mehrere Zahlungseingänge verteilt
-            # haben: der zugeordnete Teil plus ein Überschuss als Mieterguthaben
-            # (bank_referenz «…:ueber») bzw. ein Rest aus der Zuordnung («…:rest»).
-            # Ohne diese Geschwister bliebe das Guthaben nach dem Storno stehen —
-            # der Mieter behielte ein Guthaben aus einer Zahlung, die es nicht gibt.
-            zahlungen = [z]
-            if z.bank_referenz:
-                zahlungen += list(Zahlungseingang.objects.select_for_update().filter(
-                    bank_referenz__startswith=f"{z.bank_referenz}:", status='verbucht')
-                    .exclude(id=z.id))
-            for zz in zahlungen:
-                for b in Buchung.objects.filter(zahlungseingang=zz, ist_storno=False,
-                                                storniert_am__isnull=True):
-                    erstelle_storno_buchung(b, benutzer=request.user)
-                zz.status = 'storniert'
-                zz.save(update_fields=['status'])
-            # Status JEDER betroffenen Rechnung zurückrollen, nicht nur der
-            # ersten: Ein Überschuss («…:ueber») kann per Zuordnung eine andere
-            # Rechnung bezahlt haben. Bliebe sie «bezahlt», fiele sie mit vollem
-            # offenem Betrag aus Mahnwesen und OP-Liste.
-            for rech in {zz.debitoren_rechnung for zz in zahlungen if zz.debitoren_rechnung_id}:
-                if rech.status in ('storniert', 'abgeschrieben'):
-                    continue
-                offen = rech.offener_betrag
-                rech.status = ('bezahlt' if offen <= 0
-                               else 'offen' if offen >= rech.betrag else 'teilbezahlt')
-                rech.save(update_fields=['status'])
+            # haben: Teile einer Aufteilung, ein Überschuss als Guthaben
+            # («…:ueber»), ein Rest aus der Zuordnung («…:rest»). Der Dienst
+            # storniert sie zusammen; ein Teil einer Aufteilung nur mit dem Ganzen
+            # (core/services/zahlungsklaerung.py).
+            storniert = stornieren(z, user=request.user)
+            teil = any(':teil' in (x.bank_referenz or '') or (x.bank_referenz or '').endswith(':offen')
+                       for x in storniert)
     except PermissionError as exc:
         messages.error(request, f"❌ {exc}")
         return redirect(request.POST.get('next') or '/neu/bankabgleich/')
@@ -1389,7 +1389,10 @@ def fw_zahlung_stornieren(request, pk):
 
     log_aktion(request, "Zahlungseingang storniert", f"Zahlung #{z.id}",
                f"CHF {z.betrag} · {z.vertrag.mieter if z.vertrag_id else 'ohne Vertrag'}")
-    messages.success(request, '✅ ' + gettext('Zahlung über CHF %(betrag)s storniert — offener Posten wieder offen.') % {'betrag': z.betrag})
+    if teil:
+        messages.success(request, '✅ ' + gettext('Die Zahlung war aufgeteilt — alle %(n)s Teile sind storniert, die offenen Posten wieder offen.') % {'n': len(storniert)})
+    else:
+        messages.success(request, '✅ ' + gettext('Zahlung über CHF %(betrag)s storniert — offener Posten wieder offen.') % {'betrag': z.betrag})
     return redirect(request.POST.get('next') or '/neu/bankabgleich/')
 
 

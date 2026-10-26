@@ -1,0 +1,35 @@
+{% load i18n chf l10n zeichen %}{% comment %}
+Offene Posten im Assistenten «Zahlung aufteilen», nach Mieter gruppiert.
+Wird auch allein ausgeliefert (Suche ohne Neuladen, `?fragment=1`). Jeder Posten
+trägt ein Betragsfeld `teil_<id>`; «offen …» übernimmt den offenen Betrag
+(static/js/fw-zahlungen.js). Ohne JavaScript tippt man den Betrag selbst ein.
+{% endcomment %}
+{% for g in gruppen %}
+<div class="fw-posten-gruppe" data-vertrag="{{ g.vertrag.id }}" data-mieter="{{ g.mieter }}{% if g.vertrag.einheit_id %} · {{ g.vertrag.einheit.bezeichnung }}{% endif %}">
+    <div class="fw-posten-kopf">
+        <b>{{ g.mieter }}</b>
+        {% if g.objekt %}<span class="fw-s">{{ g.objekt }}</span>{% endif %}
+    </div>
+    {% for p in g.posten %}
+    <div class="fw-posten-karte" data-posten="{{ p.r.id }}">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ p.r.titel }}{% if p.teilbezahlt %} <span class="fw-chip fw-warn">{% trans "Teilbezahlt" %}</span>{% endif %}</div>
+            <div class="fw-s">{% blocktrans with datum=p.r.faellig_am|default:p.r.datum|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %}{% if p.teilbezahlt %} · {% blocktrans with betrag=p.r.betrag|chf %}von {{ betrag }}{% endblocktrans %}{% endif %}</div>
+        </div>
+        <button type="button" class="fw-posten-offen" data-voll
+                title="{% trans 'Offenen Betrag übernehmen' %}">{% trans "offen" %} {{ p.offen|chf }}</button>
+        <input name="teil_{{ p.r.id }}" data-teil data-offen="{{ p.offen|unlocalize }}"
+               data-text="{{ g.mieter }} – {{ p.r.titel }}"
+               value="{% if p.vorschlag %}{{ p.vorschlag|unlocalize }}{% endif %}"
+               inputmode="decimal" autocomplete="off" class="fw-feld fw-num fw-teil-feld"
+               aria-label="{% blocktrans with titel=p.r.titel %}Betrag für {{ titel }}{% endblocktrans %}">
+    </div>
+    {% endfor %}
+</div>
+{% empty %}
+<div class="fw-leer">
+    <span class="fw-leer-zeichen">{% zeichen 'suchen' %}</span>
+    <b>{% trans "Keine offenen Posten gefunden" %}</b>
+    {% trans "Nach Mieter, Firma, Strasse, Objekt, Rechnungsbetrag oder QR-Referenz suchen." %}
+</div>
+{% endfor %}

@@ -1,15 +1,22 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n hilfe %}
+{% load zeichen i18n hilfe statisch %}
 {% load chf %}
 {% block title %}{% trans "Bankabgleich" %} — swissImmo{% endblock %}
 
 {% block content %}
+{% comment %}
+Zahlungs-Cockpit V12 (26.10.2026). Oben vier Kacheln, die zugleich die
+Arbeitslisten öffnen (Klärungsfälle, Guthaben, Teilzahlungen, Bank-Eingang),
+darunter die Reiter. Ohne JavaScript stehen alle Listen untereinander; mit
+JavaScript zeigt der Reiter eine Liste (static/js/fw-zahlungen.js). Jede Zeile
+hat genau einen Hauptknopf — den nächsten sinnvollen Schritt.
+{% endcomment %}
 
 <div class="fw-phead fw-phead-lauf">
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Bankabgleich" %}</span></nav>
         <h1>{% trans "Bankabgleich" %} {% hilfe 'bankabgleich' %}</h1>
-        <p>{% trans "Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen (Bank an Debitoren)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/bankabgleich/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
+        <p>{% trans "Zahlungseingänge klären, aufteilen und verbuchen — Sonderfälle wie Teil-, Sammel- und Überzahlungen inklusive" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/bankabgleich/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     {# Einstieg zu den gelernten Absendern: Die Automatik ordnet sonst unsichtbar zu. #}
     <div class="fw-phead-knoepfe">
@@ -30,109 +37,330 @@
     <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
 
-<!-- KPI + Import-Hinweis -->
-<div class="fw-kpis">
-    <div class="fw-kpi">
-        <div class="fw-l">{% trans "Abzugleichen (offen)" %}</div>
-        <div class="fw-v">CHF {{ total_offen|chf }}</div>
-    </div>
-    <div class="fw-kpi">
-        <div class="fw-l">{% trans "Offene Posten" %}</div>
-        <div class="fw-v">{{ anzahl }}</div>
-    </div>
-</div>
-
-<form method="post" action="/neu/bankabgleich/camt-import/" enctype="multipart/form-data"
-      class="fw-card">
-    {% csrf_token %}
-    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-    <div class="fw-kopf">
-        <span class="fw-t">{% trans "Kontoauszug importieren" %}</span>
-        <span class="fw-neben">{% trans "(camt.053-XML oder Bank-CSV)" %}</span>
-    </div>
-    <div class="fw-zeile">
-        <div class="fw-mitte flex flex-col gap-2">
-            <input type="file" name="camt_datei" accept=".xml,.csv,.txt,text/xml,application/xml,text/csv" required
-                   class="fw-feld w-full">
+<div class="fw-bento fw-zahlungs-bento">
+    <a href="?spur=klaerung#spuren" data-spur-link="klaerung" class="fw-kachel b-s {% if klaerung_alt %}akzent{% endif %}">
+        <div class="fw-kachel-kopf"><h3>{% trans "Klärungsfälle" %}</h3>{% hilfe 'durchlaufkonto' %}</div>
+        <div class="fw-kachel-zahl">{{ klaerung|length }}</div>
+        <p class="fw-kachel-text">{% if klaerung %}CHF {{ geparkt_unklar|chf }}{% if klaerung_alt %} · {% blocktrans count n=klaerung_alt %}{{ n }} länger als 10 Tage{% plural %}{{ n }} länger als 10 Tage{% endblocktrans %}{% endif %}{% else %}{% trans "Nichts ungeklärt" %}{% endif %}</p>
+    </a>
+    <a href="?spur=guthaben#spuren" data-spur-link="guthaben" class="fw-kachel b-s">
+        <div class="fw-kachel-kopf"><h3>{% trans "Guthaben" %}</h3>{% hilfe 'mieterguthaben' %}</div>
+        <div class="fw-kachel-zahl">{{ guthaben_liste|length }}</div>
+        <p class="fw-kachel-text">{% if guthaben_liste %}CHF {{ geparkt_guthaben|chf }} · {% blocktrans count n=guthaben_auto %}{{ n }} wird automatisch verrechnet{% plural %}{{ n }} werden automatisch verrechnet{% endblocktrans %}{% else %}{% trans "Keine Mieterguthaben" %}{% endif %}</p>
+    </a>
+    <a href="?spur=teil#spuren" data-spur-link="teil" class="fw-kachel b-s">
+        <div class="fw-kachel-kopf"><h3>{% trans "Teilzahlungen" %}</h3>{% hilfe 'teilzahlung' %}</div>
+        <div class="fw-kachel-zahl">{{ teilzahlungen|length }}</div>
+        <p class="fw-kachel-text">{% if teilzahlungen %}{% blocktrans with betrag=teil_rest|chf %}Rest CHF {{ betrag }} offen{% endblocktrans %}{% else %}{% trans "Keine Teilzahlungen offen" %}{% endif %}</p>
+    </a>
+    <a href="?spur=bank#spuren" data-spur-link="bank" class="fw-kachel b-s">
+        <div class="fw-kachel-kopf"><h3>{% trans "Bank-Eingang" %}</h3></div>
+        <div class="fw-kachel-zahl">{{ bew_offen_n }}</div>
+        <p class="fw-kachel-text">{% if bew_offen_n %}{% trans "offene Auszugszeilen" %}{% else %}{% trans "Alle Auszugszeilen erledigt" %}{% endif %}</p>
+    </a>
+    <form method="post" action="/neu/bankabgleich/camt-import/" enctype="multipart/form-data" class="fw-kachel b-voll fw-import-kachel">
+        {% csrf_token %}
+        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+        <div class="fw-kachel-kopf">
+            <h2>{% trans "Kontoauszug importieren" %}</h2>
+            <span class="fw-neben">{% trans "(camt.053-XML oder Bank-CSV)" %}</span>
+        </div>
+        <div class="fw-import-zeile">
+            <input type="file" name="camt_datei" accept=".xml,.csv,.txt,text/xml,application/xml,text/csv" required class="fw-feld">
             {% if bankkonten|length > 1 %}
             {# Mehrere Bankkonten: vorher war «1020» im ganzen Import hart verdrahtet. #}
-            <select name="bank_konto" class="fw-feld w-full">
+            <select name="bank_konto" class="fw-feld" aria-label="{% trans 'Bankkonto' %}">
                 {% for k in bankkonten %}<option value="{{ k.nummer }}" {% if k.nummer == '1020' %}selected{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
             </select>
             {% endif %}
+            <button type="submit" class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Import" %}</button>
         </div>
-        <button type="submit" class="fw-btn fw-primary">
-            {% zeichen 'hochladen' %}{% trans "Import" %}
-        </button>
-    </div>
+        {% if saldo_abgleich %}
+        {# Abstimmungsnachweis: stimmt die Buchhaltung mit dem Kontoauszug überein? #}
+        <div class="fw-saldo-zeile">
+            <span class="fw-punkt {% if saldo_abgleich.differenz %}warn{% else %}good{% endif %}"></span>
+            <b>{% blocktrans with nr=saldo_abgleich.auszug.konto.nummer %}Saldoabgleich {{ nr }}{% endblocktrans %}</b>
+            <span>{% trans "laut Auszug" %} CHF {{ saldo_abgleich.auszug.schlusssaldo|chf }}</span>
+            <span>{% trans "laut Buchhaltung" %} CHF {{ saldo_abgleich.buchhaltung|chf }}</span>
+            <span class="{% if saldo_abgleich.differenz %}fw-warn{% else %}fw-good{% endif %}">{% if saldo_abgleich.differenz %}{% trans "Differenz — offene Bewegungen zuordnen" %}{% else %}{% trans "stimmt überein" %}{% endif %} CHF {{ saldo_abgleich.differenz|chf }}</span>
+        </div>
+        <p class="fw-kachel-text">{% blocktrans with name=saldo_abgleich.auszug.dateiname %}Auszug {{ name }}{% endblocktrans %}{% if saldo_abgleich.auszug.bis %} · {% blocktrans with datum=saldo_abgleich.auszug.bis|date:"d.m.Y" %}per {{ datum }}{% endblocktrans %}{% endif %}</p>
+        {% endif %}
+    </form>
+</div>
+
+<nav class="fw-reiter fw-spuren" id="spuren" data-spuren data-start="{{ spur }}" aria-label="{% trans 'Arbeitslisten' %}">
+    <a href="?spur=klaerung#spuren" data-spur="klaerung" class="{% if spur == 'klaerung' %}hier{% endif %}">{% trans "Klärungsfälle" %}{% if klaerung %} <span class="fw-z">{{ klaerung|length }}</span>{% endif %}</a>
+    <a href="?spur=guthaben#spuren" data-spur="guthaben" class="{% if spur == 'guthaben' %}hier{% endif %}">{% trans "Guthaben" %}{% if guthaben_liste %} <span class="fw-z">{{ guthaben_liste|length }}</span>{% endif %}</a>
+    <a href="?spur=teil#spuren" data-spur="teil" class="{% if spur == 'teil' %}hier{% endif %}">{% trans "Teilzahlungen" %}{% if teilzahlungen %} <span class="fw-z">{{ teilzahlungen|length }}</span>{% endif %}</a>
+    <a href="?spur=bank#spuren" data-spur="bank" class="{% if spur == 'bank' %}hier{% endif %}">{% trans "Bank-Eingang" %}{% if bew_offen_n %} <span class="fw-z">{{ bew_offen_n }}</span>{% endif %}</a>
+    <a href="?spur=posten#spuren" data-spur="posten" class="{% if spur == 'posten' %}hier{% endif %}">{% trans "Offene Posten" %}{% if anzahl %} <span class="fw-z">{{ anzahl }}</span>{% endif %}</a>
+</nav>
+
+{% comment %}
+Sammelzuordnung: Zahlt jemand monatlich ohne QR-Referenz, liegen schnell ein
+Dutzend gleich aussehender Posten — einzeln zugeordnet ist das eine Viertelstunde
+Klickarbeit. Das Formular steht ausserhalb der Zeilen; die Auswahlkästchen
+gehören ihm über das form-Attribut an, denn ein Formular lässt sich nicht in ein
+anderes schachteln.
+{% endcomment %}
+{% if sammel_vertraege and geparkt %}
+<form method="post" action="/neu/bankabgleich/sammel-zuordnen/" id="sammelform" class="hidden"
+      onsubmit="return document.querySelectorAll('input[name=zahlung_ids]:checked').length > 0
+                || (alert('{% filter escapejs %}{% trans "Bitte zuerst Zahlungen auswählen." %}{% endfilter %}'), false);">
+    {% csrf_token %}
+    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
 </form>
+{% endif %}
 
-{% if letzte_auszuege %}
-<!-- Letzte Importe — jeder Import ist revisionssicher rückgängig machbar
-     (storniert alle daraus gebuchten Zahlungen und entfernt den Auszug). -->
-<div class="fw-card">
-    <div class="fw-kopf">
-        <span class="fw-t">{% trans "Letzte Importe" %}</span>
+<!-- ===== KLÄRUNGSFÄLLE (Durchlaufkonto 1190) ===== -->
+<section class="fw-spur" data-spur-inhalt="klaerung" id="spur-klaerung">
+    <div class="fw-hilfebox" data-hilfebox="zahlungsklaerung">
+        <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
+        <div class="fw-hilfebox-inhalt">
+            <b>{% trans "So funktioniert die Zahlungsklärung" %}</b>
+            <ol>
+                <li>{% trans "Was der Import nicht sicher zuordnen kann, wartet hier auf dem Durchlaufkonto 1190 — nichts geht verloren." %}</li>
+                <li>{% trans "«Zuordnen / Aufteilen» öffnet den Assistenten: links die Zahlung, rechts die offenen Posten. Eine Zahlung lässt sich auf mehrere Posten und Mieter verteilen." %}</li>
+                <li>{% trans "Gehört das Geld nicht hierher, geht es an den Absender zurück. Ist es eine Kaution, wird es als Kaution verbucht." %}</li>
+            </ol>
+        </div>
+        <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
     </div>
-    <div>
-        {% for a in letzte_auszuege %}
-        <div class="fw-zeile">
-            <div class="fw-mitte">
-                <div class="fw-t truncate">{{ a.dateiname|default:"Kontoauszug" }}</div>
-                <div class="fw-s">
-                    {{ a.quelle|default:_("Import") }} · {% blocktrans with nr=a.konto.nummer %}Konto {{ nr }}{% endblocktrans %}
-                    {% if a.bis %} · {% blocktrans with datum=a.bis|date:"d.m.Y" %}per {{ datum }}{% endblocktrans %}{% endif %}
-                    · {% blocktrans with zeit=a.importiert_am|date:"d.m.Y H:i" %}importiert {{ zeit }}{% endblocktrans %}
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-punkt warn"></span>
+            <span class="fw-t">{% trans "Ungeklärte Zahlungen &amp; Guthaben" %}</span>
+            <span class="fw-neben">{% blocktrans count n=geparkt|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
+                {% if geparkt_unklar %}· {% blocktrans with betrag=geparkt_unklar|chf %}CHF {{ betrag }} ungeklärt (1190){% endblocktrans %}{% endif %}
+                {% if geparkt_guthaben %}· {% blocktrans with betrag=geparkt_guthaben|chf %}CHF {{ betrag }} Mieterguthaben (2030){% endblocktrans %}{% endif %}</span>
+        </div>
+        {% if sammel_vertraege and klaerung %}
+        <div class="fw-band">
+            <label class="fw-haekchen"><input type="checkbox" data-alle class="fw-akzent">{% trans "Alle" %}</label>
+            <span class="fw-klein" data-anzahl>{% trans "0 ausgewählt" %}</span>
+            <select name="vertrag_id" required form="sammelform" class="fw-feld fw-sammel-wahl" aria-label="{% trans 'Mieter wählen…' %}">
+                <option value="">{% trans "Mieter wählen…" %}</option>
+                {% for v in sammel_vertraege %}<option value="{{ v.id }}">{{ v.label }}</option>{% endfor %}
+            </select>
+            <button type="submit" form="sammelform" class="fw-btn fw-primary fw-knapp">{% trans "Ausgewählte zuordnen" %}</button>
+            <span class="fw-klein">{% trans "Getilgt wird jeweils die älteste offene Forderung; ein Überschuss bleibt als Guthaben stehen." %}</span>
+        </div>
+        {% endif %}
+        <div>
+            {% for z in klaerung %}
+            <div class="fw-zeile flex-wrap fw-klaerung">
+                {% if sammel_vertraege %}
+                <input type="checkbox" form="sammelform" name="zahlung_ids" value="{{ z.id }}"
+                       data-zahler="{{ z.zahler|lower }}" class="fw-akzent shrink-0"
+                       title="{% trans 'Für die Sammelzuordnung auswählen' %}">
+                {% endif %}
+                <span class="fw-chip fw-warn">{% trans "Ungeklärt" %}</span>
+                {% comment %}
+                Wer bezahlt hat, steht zuoberst — vorher stand hier der abgeschnittene
+                Importtext und der Auftraggeber war nirgends sichtbar. Kein truncate:
+                auf dem Handy ist Platz nach unten, nicht nach rechts.
+                {% endcomment %}
+                <div class="fw-mitte">
+                    {% if z.zahler %}
+                    <div class="fw-t break-words">{{ z.zahler }}
+                        {% if z.zahler_geraten %}<span class="fw-marke-kapsel"
+                              title="{% trans 'Die Bank liefert keine eigene Auftraggeber-Spalte — aus dem Buchungstext gelesen' %}">{% trans "aus Buchungstext" %}</span>{% endif %}
+                    </div>
+                    {% else %}
+                    <div class="fw-t fw-mutet">{% trans "Auftraggeber von der Bank nicht geliefert" %}</div>
+                    {% endif %}
+                    <div class="fw-s">{{ z.datum_eingang|date:"d.m.Y" }}
+                        · <span class="fw-chip {% if z.alt %}fw-crit{% else %}fw-info{% endif %}">{% blocktrans count n=z.tage %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}</span>
+                        {% if z.ref %} · {% trans "Ref." %} <span class="fw-mono">{{ z.ref }}</span>{% endif %}</div>
+                    {% if z.mitteilung %}<div class="fw-s break-words">{{ z.mitteilung }}</div>{% endif %}
+                    {% if z.vorschlag %}<div class="fw-s fw-vorschlag">{% zeichen 'gut' %}<b>{% trans "Vorschlag" %}: {{ z.vorschlag.mieter }}</b> — {{ z.vorschlag.gruende.0 }}</div>{% endif %}
+                    {% if z.klaerung_notiz %}<div class="fw-s fw-notiz">✎ {{ z.klaerung_notiz }}</div>{% endif %}
+                    {% if z.zahler %}
+                    <div class="fw-s fw-marke">
+                        {% zeichen 'einstellungen' %}{% trans "Nach dem Zuordnen wird dieser Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu." %}
+                        {% if sammel_vertraege %}
+                        · <button type="button" data-alle-von="{{ z.zahler|lower }}"
+                                  class="fw-link">{% blocktrans with zahler=z.zahler %}alle von «{{ zahler }}» auswählen{% endblocktrans %}</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
+                <span class="fw-betrag">CHF {{ z.betrag|chf }}</span>
+                <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-primary fw-knapp">{% zeichen 'weiter' %}{% trans "Zuordnen / Aufteilen" %}</a>
+                <details class="fw-mehr-aktionen">
+                    <summary class="fw-btn fw-knapp">{% trans "Weitere" %}</summary>
+                    <div class="fw-mehr-inhalt">
+                        <form method="post" action="/neu/bankabgleich/zuordnen/" class="fw-mehr-zeile">
+                            {% csrf_token %}
+                            <input type="hidden" name="zahlung_id" value="{{ z.id }}">
+                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            <select name="rechnung_id" required class="fw-feld" aria-label="{% trans 'Offene Rechnung wählen…' %}">
+                                <option value="">{% trans "Offene Rechnung wählen…" %}</option>
+                                {% for row in rows %}
+                                <option value="{{ row.r.id }}">{{ row.mieter }} · {{ row.r.titel }} (CHF {{ row.offen|chf }})</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="fw-btn fw-knapp">{% trans "Zuordnen" %}</button>
+                        </form>
+                        {% if z.kaution_kandidaten %}
+                        <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/kaution/" class="fw-mehr-zeile"
+                              onsubmit="return confirm('{% filter escapejs %}{% trans "Als Kaution verbuchen? Gebucht wird 1190 an 2010 Kautionsverbindlichkeit; danach die Überweisung auf das Sperrkonto veranlassen." %}{% endfilter %}');">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
+                            <select name="vertrag_id" required class="fw-feld" aria-label="{% trans 'Kaution von' %}">
+                                {% for v in z.kaution_kandidaten %}<option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.liegenschaft.strasse }} ({% trans "Kaution" %} CHF {{ v.kautions_betrag|chf }})</option>{% endfor %}
+                            </select>
+                            <button type="submit" class="fw-btn fw-knapp">{% trans "Als Kaution verbuchen" %}</button>
+                            {% hilfe 'kautionskonto' %}
+                        </form>
+                        {% endif %}
+                        <form method="post" action="/neu/bankabgleich/guthaben/rueckerstatten/" class="fw-mehr-zeile"
+                              onsubmit="return confirm('{% filter escapejs %}{% trans "Zahlung an den Absender zurücküberweisen? Gebucht wird 1190 an Bank." %}{% endfilter %}');">
+                            {% csrf_token %}
+                            <input type="hidden" name="zahlung_id" value="{{ z.id }}">
+                            <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
+                            <button type="submit" class="fw-btn fw-knapp">{% trans "An Absender zurücküberweisen" %}</button>
+                        </form>
+                        <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/notiz/" class="fw-mehr-zeile">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
+                            <input name="notiz" value="{{ z.klaerung_notiz }}" maxlength="255" class="fw-feld"
+                                   placeholder="{% trans 'Notiz zur Klärung, z. B. «Mieter angerufen»' %}" aria-label="{% trans 'Klärungsnotiz' %}">
+                            <button type="submit" class="fw-btn fw-knapp">{% trans "Notiz speichern" %}</button>
+                        </form>
+                    </div>
+                </details>
             </div>
-            <form method="post" action="/neu/bankabgleich/auszug/{{ a.id }}/rueckgaengig/"
-                  onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=a.dateiname|default:_('Kontoauszug')|safe %}Import «{{ name }}» wirklich rückgängig machen?{% endblocktrans %}
-
-{% trans "Alle aus diesem Auszug gebuchten Zahlungen werden revisionssicher storniert (Gegenbuchung), die betroffenen Rechnungen gelten wieder als offen, und der Auszug wird entfernt." %}{% endfilter %}');">
-                {% csrf_token %}
-                {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                <button type="submit" class="fw-btn fw-rand-krit fw-knapp">
-                    {% zeichen 'lauf' %} {% trans "Import rückgängig" %}
-                </button>
-            </form>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
-{% if saldo_abgleich %}
-<!-- Abstimmungsnachweis: stimmt die Buchhaltung mit dem Kontoauszug überein?
-     Ohne diesen Vergleich kann man Zahlungen zuordnen, aber nie belegen, dass
-     das Bankkonto stimmt — der erste Schritt jedes Monatsabschlusses. -->
-<div class="fw-card">
-    <div class="fw-kopf">
-        <span class="fw-punkt {% if saldo_abgleich.differenz %}warn{% else %}good{% endif %}"></span>
-        <span class="fw-t">{% blocktrans with nr=saldo_abgleich.auszug.konto.nummer %}Saldoabgleich {{ nr }}{% endblocktrans %}</span>
-        <span class="fw-neben">
-            {% blocktrans with name=saldo_abgleich.auszug.dateiname %}Auszug {{ name }}{% endblocktrans %}{% if saldo_abgleich.auszug.bis %} · {% blocktrans with datum=saldo_abgleich.auszug.bis|date:"d.m.Y" %}per {{ datum }}{% endblocktrans %}{% endif %}
-        </span>
-    </div>
-    <div class="fw-kpis">
-        <div class="fw-kpi">
-            <div class="fw-l">{% trans "laut Auszug" %}</div>
-            <div class="fw-v">CHF {{ saldo_abgleich.auszug.schlusssaldo|chf }}</div>
-        </div>
-        <div class="fw-kpi">
-            <div class="fw-l">{% trans "laut Buchhaltung" %}</div>
-            <div class="fw-v">CHF {{ saldo_abgleich.buchhaltung|chf }}</div>
-        </div>
-        <div class="fw-kpi">
-            <div class="fw-l">{% if saldo_abgleich.differenz %}{% trans "Differenz — offene Bewegungen zuordnen" %}{% else %}{% trans "stimmt überein" %}{% endif %}</div>
-            <div class="fw-v {% if saldo_abgleich.differenz %}fw-warn{% else %}fw-good{% endif %}">CHF {{ saldo_abgleich.differenz|chf }}</div>
+            {% empty %}
+            <div class="fw-leer">
+                <span class="fw-leer-zeichen">{% zeichen 'gut' %}</span>
+                <b>{% trans "Keine Klärungsfälle" %}</b>
+                {% trans "Jede Zahlung ist einem Posten, einem Guthaben oder einer Kaution zugeordnet." %}
+            </div>
+            {% endfor %}
         </div>
     </div>
-</div>
-{% endif %}
+</section>
 
+<!-- ===== GUTHABEN (Konto 2030) ===== -->
+<section class="fw-spur" data-spur-inhalt="guthaben" id="spur-guthaben">
+    <div class="fw-hilfebox" data-hilfebox="guthaben">
+        <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
+        <div class="fw-hilfebox-inhalt">
+            <b>{% trans "Guthaben richtig behandeln" %}</b>
+            <ol>
+                <li>{% trans "Zahlt ein Mieter zu viel, entsteht ein Guthaben auf Konto 2030 — es gehört dem Mieter und verfällt nicht." %}</li>
+                <li>{% trans "«Mit nächster Rechnung verrechnen» tilgt automatisch die nächste Monatsrechnung; «Für die Nebenkostenabrechnung reservieren» wartet auf deren Nachzahlung." %}</li>
+                <li>{% trans "Will der Mieter das Geld zurück, wird es zurückerstattet (2030 an Bank)." %}</li>
+            </ol>
+        </div>
+        <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
+    </div>
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-punkt good"></span>
+            <span class="fw-t">{% trans "Mieterguthaben" %}</span>
+            {% if geparkt_guthaben %}<span class="fw-neben">{% blocktrans with betrag=geparkt_guthaben|chf %}CHF {{ betrag }} Mieterguthaben (2030){% endblocktrans %}</span>{% endif %}
+        </div>
+        <div>
+            {% for z in guthaben_liste %}
+            <div class="fw-zeile flex-wrap">
+                {% if sammel_vertraege %}
+                <input type="checkbox" form="sammelform" name="zahlung_ids" value="{{ z.id }}"
+                       data-zahler="{{ z.zahler|lower }}" class="fw-akzent shrink-0"
+                       title="{% trans 'Für die Sammelzuordnung auswählen' %}">
+                {% endif %}
+                <span class="fw-chip fw-good">{% trans "Guthaben" %}</span>
+                <div class="fw-mitte">
+                    <div class="fw-t break-words">{{ z.zahler|default:z.vertrag.mieter.display_name }}</div>
+                    <div class="fw-s">{{ z.datum_eingang|date:"d.m.Y" }}{% if z.ref %} · {% trans "Ref." %} <span class="fw-mono">{{ z.ref }}</span>{% endif %}</div>
+                    {% if z.mitteilung %}<div class="fw-s break-words">{{ z.mitteilung }}</div>{% endif %}
+                    <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/verwendung/" class="fw-verwendung" data-sofort>
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="/neu/bankabgleich/?spur=guthaben">
+                        <select name="verwendung" class="fw-feld" aria-label="{% trans 'Verwendung des Guthabens' %}">
+                            {% for wert, label in verwendungen %}<option value="{{ wert }}" {% if z.guthaben_verwendung == wert %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                        </select>
+                        <button type="submit" class="fw-btn fw-knapp" data-ohne-js>{% trans "Speichern" %}</button>
+                    </form>
+                </div>
+                <span class="fw-betrag good">CHF {{ z.betrag|chf }}</span>
+                <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-primary fw-knapp">{% trans "Jetzt verrechnen" %}</a>
+                <form method="post" action="/neu/bankabgleich/guthaben/rueckerstatten/"
+                      onsubmit="return confirm('{% filter escapejs %}{% trans "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank." %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="zahlung_id" value="{{ z.id }}">
+                    <input type="hidden" name="next" value="/neu/bankabgleich/?spur=guthaben">
+                    <button type="submit" class="fw-btn fw-knapp">{% trans "Zurückerstatten" %}</button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="fw-leer">
+                <span class="fw-leer-zeichen">{% zeichen 'gut' %}</span>
+                <b>{% trans "Keine Mieterguthaben" %}</b>
+                {% trans "Überzahlungen erscheinen hier und werden nach ihrer Verwendung verrechnet oder zurückerstattet." %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== TEILZAHLUNGEN ===== -->
+<section class="fw-spur" data-spur-inhalt="teil" id="spur-teil">
+    <div class="fw-card">
+        <div class="fw-kopf">
+            <span class="fw-punkt warn"></span>
+            <span class="fw-t">{% trans "Teilweise bezahlt" %}</span>
+            {% if teilzahlungen %}<span class="fw-neben">{% blocktrans with betrag=teil_rest|chf %}Rest CHF {{ betrag }} offen{% endblocktrans %} · {% trans "Der Rest bleibt offen und läuft in den Mahnlauf." %}</span>{% endif %}
+        </div>
+        <div>
+            {% for t in teilzahlungen %}
+            <div class="fw-zeile flex-wrap">
+                <span class="fw-chip fw-warn">{% trans "Teilbezahlt" %}</span>
+                <div class="fw-mitte">
+                    <div class="fw-t break-words">{% if t.r.vertrag_id %}<a href="/neu/vertraege/{{ t.r.vertrag_id }}/" class="fw-link">{{ t.mieter }}</a>{% else %}{{ t.mieter }}{% endif %} · {{ t.r.titel }}</div>
+                    <div class="fw-s">{% blocktrans with datum=t.faellig|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %} · {{ t.objekt }}</div>
+                    <div class="fw-teil-fortschritt">
+                        <progress class="fw-fortschritt" value="{{ t.prozent }}" max="100" aria-label="{% trans 'bezahlt' %} {{ t.prozent }} %">{{ t.prozent }} %</progress>
+                        <span class="fw-s">{% blocktrans with bezahlt=t.bezahlt|chf total=t.r.betrag|chf %}CHF {{ bezahlt }} von {{ total }} bezahlt{% endblocktrans %}</span>
+                    </div>
+                    <div class="fw-s">
+                        {% if t.mahnsperre %}<span class="fw-chip fw-info">{% trans "Mahnsperre" %}</span>
+                        {% elif t.hoechste %}{% blocktrans with stufe=t.hoechste.stufe datum=t.hoechste.datum|date:"d.m.Y" %}Gemahnt: Stufe {{ stufe }} am {{ datum }}{% endblocktrans %}
+                        {% else %}{% trans "Noch nicht gemahnt" %}{% endif %}
+                        {% if t.naechste and not t.mahnsperre %} · <b>{% blocktrans with label=t.naechste.label %}nächster Mahnlauf: {{ label }}{% endblocktrans %}</b>{% endif %}
+                    </div>
+                </div>
+                <span class="fw-betrag crit">{% trans "Rest" %} CHF {{ t.offen|chf }}</span>
+                {% if t.kleindifferenz %}
+                <form method="post" action="/neu/debitoren/{{ t.r.id }}/abschreiben/"
+                      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with betrag=t.offen|chf %}Kleindifferenz von CHF {{ betrag }} ausbuchen (3805 Debitorenverluste)?{% endblocktrans %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="grund" value="{% trans 'Kleindifferenz' %}">
+                    <input type="hidden" name="next" value="/neu/bankabgleich/?spur=teil">
+                    <button type="submit" class="fw-btn fw-primary fw-knapp">{% trans "Kleindifferenz ausbuchen" %}</button>
+                </form>
+                {% hilfe 'kleindifferenz' %}
+                {% else %}
+                <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-btn fw-primary fw-knapp">{% trans "Rest mahnen" %}</a>
+                {% endif %}
+                {% if t.r.vertrag_id %}<a href="/neu/vertraege/{{ t.r.vertrag_id }}/zahlungsvereinbarung/" class="fw-btn fw-knapp">{% trans "Ratenplan" %}</a>{% endif %}
+            </div>
+            {% empty %}
+            <div class="fw-leer">
+                <span class="fw-leer-zeichen">{% zeichen 'gut' %}</span>
+                <b>{% trans "Keine Teilzahlungen offen" %}</b>
+                {% trans "Wer nur einen Teil zahlt, erscheint hier mit dem Restbetrag." %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== BANK-EINGANG: offene Auszugszeilen ===== -->
+<section class="fw-spur" data-spur-inhalt="bank" id="spur-bank">
 {% if bewegungen %}
-<!-- BANK-EINGANG: die Zeilen des Kontoauszugs. Vorher zeigte dieser Screen die
-     Bankbewegungen gar nicht — er listete nur offene Debitoren zum Quittieren. -->
 <div class="fw-card">
     <div class="fw-kopf">
         <span class="fw-t">{% trans "Bank-Eingang — offene Auszugszeilen" %}</span>
@@ -158,11 +386,28 @@
                 <div class="fw-t break-words">{{ b.gegenpartei|default:b.text|default:"Bankbewegung" }}</div>
                 {% if b.text and b.gegenpartei %}<div class="fw-s break-words">{{ b.text }}</div>{% endif %}
                 {% if b.referenz %}<div class="fw-s break-all">{% trans "Ref." %} <span class="fw-mono">{{ b.referenz }}</span></div>{% endif %}
+                {% if b.rueck_kandidaten %}<div class="fw-s fw-vorschlag">{% zeichen 'hinweis' %}{% trans "Möglicherweise eine Rückbuchung einer Mieterzahlung" %}</div>{% endif %}
             </div>
             <span class="fw-betrag {% if b.betrag < 0 %}crit{% else %}good{% endif %}">{{ b.betrag|chf }}</span>
-            <button onclick="document.getElementById('bew-{{ b.id }}').classList.toggle('hidden')"
+            <button type="button" onclick="document.getElementById('bew-{{ b.id }}').classList.toggle('hidden')"
                     class="fw-btn fw-knapp">{% trans "Zuordnen" %}</button>
             <div id="bew-{{ b.id }}" class="hidden w-full fw-flaeche2 rounded-lg p-3 space-y-3">
+                {% if b.rueck_kandidaten %}
+                <form method="post" action="/neu/bankabgleich/bewegung/" class="flex items-end gap-2 flex-wrap"
+                      onsubmit="return confirm('{% filter escapejs %}{% trans "Rückbuchung erfassen? Die gewählte Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen." %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="bewegung_id" value="{{ b.id }}">
+                    <input type="hidden" name="art" value="rueckbuchung">
+                    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                    <label class="fw-feldblock flex-1 min-w-[240px]">
+                        <span class="fw-label">{% trans "Zurückgebuchte Mieterzahlung" %} {% hilfe 'rueckbuchung' %}</span>
+                        <select name="zahlung_id" required class="fw-feld">
+                            {% for z in b.rueck_kandidaten %}<option value="{{ z.id }}">{{ z.vertrag.mieter.display_name }} · {{ z.datum_eingang|date:"d.m.Y" }} · CHF {{ z.betrag|chf }}{% if z.debitoren_rechnung_id %} · {{ z.debitoren_rechnung.titel }}{% endif %}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <button class="fw-btn fw-primary">{% trans "Als Rückbuchung erfassen" %}</button>
+                </form>
+                {% endif %}
                 {% if b.betrag < 0 %}
                 <form method="post" action="/neu/bankabgleich/bewegung/" class="flex items-end gap-2 flex-wrap">
                     {% csrf_token %}
@@ -219,144 +464,56 @@
 <datalist id="bew-konten">
     {% for k in aufwandkonten %}<option value="{{ k.nummer }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
 </datalist>
+{% else %}
+<div class="fw-card">
+    <div class="fw-leer">
+        <span class="fw-leer-zeichen">{% zeichen 'gut' %}</span>
+        <b>{% trans "Alle Auszugszeilen erledigt" %}</b>
+        {% trans "Neue Zeilen kommen mit dem nächsten Kontoauszug." %}
+    </div>
+</div>
 {% endif %}
 
-{% if geparkt %}
-<!-- Geparkte / ungeklärte Zahlungen (1190 + Mieterguthaben 2030) -->
+{% if letzte_auszuege %}
+<!-- Letzte Importe — jeder Import ist revisionssicher rückgängig machbar
+     (storniert alle daraus gebuchten Zahlungen und entfernt den Auszug). -->
 <div class="fw-card">
     <div class="fw-kopf">
-        <span class="fw-punkt warn"></span>
-        <span class="fw-t">{% trans "Ungeklärte Zahlungen &amp; Guthaben" %}</span>
-        <span class="fw-neben">{% blocktrans count n=geparkt|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
-            {% if geparkt_unklar %}· {% blocktrans with betrag=geparkt_unklar|chf %}CHF {{ betrag }} ungeklärt (1190){% endblocktrans %}{% endif %}
-            {% if geparkt_guthaben %}· {% blocktrans with betrag=geparkt_guthaben|chf %}CHF {{ betrag }} Mieterguthaben (2030){% endblocktrans %}{% endif %}</span>
+        <span class="fw-t">{% trans "Letzte Importe" %}</span>
     </div>
-    {% comment %}
-    Sammelzuordnung: Zahlt jemand monatlich ohne QR-Referenz, liegen hier schnell
-    ein Dutzend gleich aussehender Posten — einzeln zugeordnet ist das eine
-    Viertelstunde Klickarbeit. Das Formular steht ausserhalb der Zeilen; die
-    Auswahlkästchen gehören ihm über das form-Attribut an, denn ein Formular
-    lässt sich nicht in ein anderes schachteln.
-    {% endcomment %}
-    {% if sammel_vertraege %}
-    <form method="post" action="/neu/bankabgleich/sammel-zuordnen/" id="sammelform"
-          class="fw-band"
-          onsubmit="return document.querySelectorAll('input[name=zahlung_ids]:checked').length > 0
-                    || (alert('{% filter escapejs %}{% trans "Bitte zuerst Zahlungen auswählen." %}{% endfilter %}'), false);">
-        {% csrf_token %}
-        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <label class="fw-haekchen">
-            <input type="checkbox" data-alle class="fw-akzent">{% trans "Alle" %}
-        </label>
-        <span class="fw-klein" data-anzahl>{% trans "0 ausgewählt" %}</span>
-        <select name="vertrag_id" required
-                class="fw-feld max-w-[260px]">
-            <option value="">{% trans "Mieter wählen…" %}</option>
-            {% for v in sammel_vertraege %}<option value="{{ v.id }}">{{ v.label }}</option>{% endfor %}
-        </select>
-        <button type="submit" class="fw-btn fw-primary fw-knapp">
-            {% trans "Ausgewählte zuordnen" %}
-        </button>
-        <span class="fw-klein w-full sm:w-auto">{% trans "Getilgt wird jeweils die älteste offene Forderung; ein Überschuss bleibt als Guthaben stehen." %}</span>
-    </form>
-    {% endif %}
     <div>
-        {% for z in geparkt %}
-        <form method="post" action="/neu/bankabgleich/zuordnen/" class="fw-zeile flex-wrap">
-            {% csrf_token %}
-            <input type="hidden" name="zahlung_id" value="{{ z.id }}">
-            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            {% if sammel_vertraege %}
-            <input type="checkbox" form="sammelform" name="zahlung_ids" value="{{ z.id }}"
-                   data-zahler="{{ z.zahler|lower }}" class="fw-akzent shrink-0"
-                   title="{% trans 'Für die Sammelzuordnung auswählen' %}">
-            {% endif %}
-            <span class="fw-chip {% if z.konto.nummer == '2030' %}fw-good{% else %}fw-warn{% endif %}">
-                {% if z.konto.nummer == '2030' %}{% trans "Guthaben" %}{% else %}{% trans "Ungeklärt" %}{% endif %}
-            </span>
-            {% comment %}
-            Wer bezahlt hat, steht zuoberst — vorher stand hier der abgeschnittene
-            Importtext («Bank-CSV UNG…») und der Auftraggeber war nirgends sichtbar.
-            Kein truncate: auf dem Handy ist Platz nach unten, nicht nach rechts.
-            {% endcomment %}
+        {% for a in letzte_auszuege %}
+        <div class="fw-zeile">
             <div class="fw-mitte">
-                {% if z.zahler %}
-                <div class="fw-t break-words">{{ z.zahler }}
-                    {% if z.zahler_geraten %}<span class="fw-marke-kapsel"
-                          title="{% trans 'Die Bank liefert keine eigene Auftraggeber-Spalte — aus dem Buchungstext gelesen' %}">{% trans "aus Buchungstext" %}</span>{% endif %}
+                <div class="fw-t truncate">{{ a.dateiname|default:"Kontoauszug" }}</div>
+                <div class="fw-s">
+                    {{ a.quelle|default:_("Import") }} · {% blocktrans with nr=a.konto.nummer %}Konto {{ nr }}{% endblocktrans %}
+                    {% if a.bis %} · {% blocktrans with datum=a.bis|date:"d.m.Y" %}per {{ datum }}{% endblocktrans %}{% endif %}
+                    · {% blocktrans with zeit=a.importiert_am|date:"d.m.Y H:i" %}importiert {{ zeit }}{% endblocktrans %}
                 </div>
-                {% else %}
-                <div class="fw-t fw-mutet">{% trans "Auftraggeber von der Bank nicht geliefert" %}</div>
-                {% endif %}
-                <div class="fw-s">{{ z.datum_eingang|date:"d.m.Y" }}{% if z.ref %} · {% trans "Ref." %} <span class="fw-mono">{{ z.ref }}</span>{% endif %}</div>
-                {% if z.mitteilung %}<div class="fw-s break-words">{{ z.mitteilung }}</div>{% endif %}
-                {% if z.zahler %}
-                <div class="fw-s fw-marke">
-                    {% zeichen 'einstellungen' %}{% trans "Nach dem Zuordnen wird dieser Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu." %}
-                    {% if sammel_vertraege %}
-                    · <button type="button" data-alle-von="{{ z.zahler|lower }}"
-                              class="fw-link">{% blocktrans with zahler=z.zahler %}alle von «{{ zahler }}» auswählen{% endblocktrans %}</button>
-                    {% endif %}
-                </div>
-                {% endif %}
             </div>
-            <span class="fw-betrag">CHF {{ z.betrag|chf }}</span>
-            <select name="rechnung_id" required
-                    class="fw-feld max-w-[240px]">
-                <option value="">{% trans "Offene Rechnung wählen…" %}</option>
-                {% for row in rows %}
-                <option value="{{ row.r.id }}">{{ row.mieter }} · {{ row.r.titel }} (CHF {{ row.offen|chf }})</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="fw-btn fw-primary fw-knapp">
-                {% trans "Zuordnen" %}
-            </button>
-            {% if z.konto.nummer == '2030' and z.vertrag_id %}
-            <button type="submit" formaction="/neu/bankabgleich/guthaben/rueckerstatten/" formnovalidate class="fw-btn fw-knapp"
-                    onclick="return confirm('{% filter escapejs %}{% trans "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank." %}{% endfilter %}');">
-                {% trans "Zurückerstatten" %}
-            </button>
-            {% endif %}
-        </form>
+            <form method="post" action="/neu/bankabgleich/auszug/{{ a.id }}/rueckgaengig/"
+                  onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=a.dateiname|default:_('Kontoauszug')|safe %}Import «{{ name }}» wirklich rückgängig machen?{% endblocktrans %}
+
+{% trans "Alle aus diesem Auszug gebuchten Zahlungen werden revisionssicher storniert (Gegenbuchung), die betroffenen Rechnungen gelten wieder als offen, und der Auszug wird entfernt." %}{% endfilter %}');">
+                {% csrf_token %}
+                {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                <button type="submit" class="fw-btn fw-rand-krit fw-knapp">
+                    {% zeichen 'lauf' %} {% trans "Import rückgängig" %}
+                </button>
+            </form>
+        </div>
         {% endfor %}
     </div>
 </div>
-<script>
-(function () {
-    var kaesten = function () { return document.querySelectorAll('input[name="zahlung_ids"]'); };
-    var anzeige = document.querySelector('[data-anzahl]');
-    var alle = document.querySelector('[data-alle]');
-    function zaehlen() {
-        var n = document.querySelectorAll('input[name="zahlung_ids"]:checked').length;
-        if (anzeige) anzeige.textContent = n + ' ausgewählt';
-        if (alle) alle.checked = n > 0 && n === kaesten().length;
-    }
-    document.addEventListener('change', function (e) {
-        if (e.target.name === 'zahlung_ids') zaehlen();
-        if (e.target.hasAttribute && e.target.hasAttribute('data-alle')) {
-            kaesten().forEach(function (k) { k.checked = e.target.checked; });
-            zaehlen();
-        }
-    });
-    // «alle von diesem Absender» — der eigentliche Zeitgewinn, wenn ein
-    // Dauerauftrag über Monate ungeklärt liegen geblieben ist.
-    document.addEventListener('click', function (e) {
-        var btn = e.target.closest && e.target.closest('[data-alle-von]');
-        if (!btn) return;
-        var name = btn.getAttribute('data-alle-von');
-        kaesten().forEach(function (k) {
-            if (k.getAttribute('data-zahler') === name) k.checked = true;
-        });
-        zaehlen();
-    });
-    zaehlen();
-})();
-</script>
 {% endif %}
+</section>
 
-<!-- Offene Posten -->
+<!-- ===== OFFENE POSTEN ===== -->
+<section class="fw-spur" data-spur-inhalt="posten" id="spur-posten">
 <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">{% trans "Offene Posten abgleichen" %}</span></div>
+    <div class="fw-kopf"><span class="fw-t">{% trans "Offene Posten abgleichen" %}</span>
+        <span class="fw-neben">{% blocktrans count n=anzahl %}{{ n }} Posten{% plural %}{{ n }} Posten{% endblocktrans %} · CHF {{ total_offen|chf }}</span></div>
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead>
@@ -375,10 +532,11 @@
                 <td class="fw-num whitespace-nowrap"><span class="{% if row.ueberfaellig %}fw-strong fw-kritisch{% else %}fw-mutet{% endif %}">{{ row.faellig|date:"d.m.Y" }}</span></td>
                 <td class="fw-strong whitespace-nowrap">
                     {% if row.r.vertrag_id %}<a href="/neu/vertraege/{{ row.r.vertrag_id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
+                    {% if row.r.status == 'teilbezahlt' %}<span class="fw-chip fw-warn">{% trans "Teilbezahlt" %}</span>{% endif %}
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
                 <td class="fw-mono whitespace-nowrap">{{ row.qrr }}</td>
-                <td class="fw-right fw-num fw-strong">{{ row.offen|chf }}</td>
+                <td class="fw-right fw-num fw-strong">{{ row.offen|chf }}{% if row.r.status == 'teilbezahlt' %}<div class="fw-klein">{% blocktrans with betrag=row.r.betrag|chf %}von {{ betrag }}{% endblocktrans %}</div>{% endif %}</td>
                 <td class="fw-right">
                     {% if row.kann_verbuchen %}
                     <form method="post" action="/neu/bankabgleich/verbuchen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with betrag=row.offen|chf mieter=row.mieter|safe %}CHF {{ betrag }} von {{ mieter }} als bezahlt verbuchen?{% endblocktrans %}{% endfilter %}');" class="inline">
@@ -405,6 +563,7 @@
         </table>
     </div>
 </div>
+</section>
 
 <!-- Kürzlich verbucht -->
 {% if letzte %}
@@ -426,7 +585,7 @@
             <span class="fw-betrag good">+{{ z.betrag|chf }}</span>
             <div>
                 <form method="post" action="/neu/zahlungen/{{ z.id }}/stornieren/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet." %}{% endfilter %}');">
+                      onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert." %}{% endfilter %}');">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
                     <button type="submit" title="{% trans 'Zahlung stornieren' %}"
@@ -451,4 +610,5 @@
         </div>
     </div>
 </div>
+<script defer src="{% statisch 'js/fw-zahlungen.js' %}"></script>
 {% endblock %}

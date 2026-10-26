@@ -99,6 +99,7 @@ UEBERSETZT = (
     'fw/_fwmodal.html',
     'fw/_listwerkzeug.html',     # Audit Etappe 4: Suche und Sortierung',
     'fw/_modal_done.html',
+    'fw/_posten_gruppen.html',   # V12: Zahlungs-Cockpit, Trefferliste
     'fw/_prozess.html',          # V11: Prozessleiste Nebenkosten
     'fw/_seiten.html',           # Audit Etappe 4: Blätterleiste',
     'fw/_unterschrift_feld.html',
@@ -214,6 +215,7 @@ UEBERSETZT = (
     'fw/vorlage_form.html',
     'fw/vorlagen.html',
     'fw/weiterverrechnung.html',
+    'fw/zahlung_aufteilen.html',  # V12: Assistent «Zahlung aufteilen»
     'fw/zahler_zuordnungen.html',
     'fw/zahllauf.html',
     'fw/zulauf.html',
