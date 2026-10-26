@@ -134,6 +134,12 @@ AUSNAHMEN = {
      'abnahme.py:100), nicht eingegeben',
     'rentals.AbnahmeSchluessel.protokoll': 'gesetzt vom Code: die Zeile gehört zum Protokoll, in dem sie entsteht',
     'rentals.AbnahmeSchluessel.sortierung': 'Reihenfolge der Zeilen im Formular, vom Code durchnummeriert',
+    'rentals.Abnahmeprotokoll.abgeschlossen':
+     'GESETZT vom Abschluss-Schritt (`fw_abnahme_vorort_abschliessen`), erst wenn die Regeln in '
+     '`abnahme_abschluss.abschluss_pruefen` erfüllt sind — das frühere Häkchen im Formular ist weg',
+    'rentals.AbnahmeMangel.ticket':
+     'GESETZT von «Handwerker beauftragen» (`abnahme_abschluss.ticket_fuer_mangel`): das Ticket '
+     'entsteht aus dem Mangel, es wird nicht gewählt',
     'rentals.Abnahmeprotokoll.folge_vertrag':
      'GESETZT aus der Art «Aus- und Einzug» im Assistenten (`fw_abnahme_vorort_start`): der '
      'Nachmieter-Vertrag der Einheit wird gefunden, nicht gewählt',
@@ -293,6 +299,14 @@ ALIAS = {
     # Abnahme vor Ort: Eingaben je Bauteil, gesendet von fw_abnahme_position_speichern.
     'rentals.AbnahmePosition.kostenschaetzung': 'kosten',
     'rentals.AbnahmePosition.vorsaetzlich': 'vorsatz',
+    # Abschluss der Abnahme: Schlüsselzeilen als parallele Listen (`s_…`).
+    'rentals.AbnahmeSchluessel.kosten_je_stueck': 's_kosten',
+    # «Rüge versandt am» (fw_abnahme_ruege_versandt): Datum und Sendungsnummer
+    # des Einschreibens; dasselbe Formular dient der Rüge eines später
+    # entdeckten Mangels (mit `mangel`).
+    'rentals.Abnahmeprotokoll.ruege_versandt_am': 'datum',
+    'rentals.Abnahmeprotokoll.ruege_sendungsnummer': 'sendungsnummer',
+    'rentals.AbnahmeMangel.ruege_versandt_am': 'datum',
 }
 
 
@@ -402,10 +416,15 @@ class FelderOhneEingabewegTest(SimpleTestCase):
         von selbst sinken.
         """
         lose = _einordnung()['lose']
+        # 170 statt 169 (10/2026): `finance.AbrechnungsPeriode.abgeschlossen`
+        # galt nur als «echt», weil das Abnahmeformular ein Feld
+        # `name="abgeschlossen"` hatte — ein fremdes Formular, also ein
+        # Fehlalarm in die gute Richtung. Mit dem Wegfall des Häkchens steht es
+        # richtig unter «lose»; die Blindstelle ist nicht gewachsen, nur sichtbar.
         self.assertLessEqual(
-            len(lose), 169,
+            len(lose), 170,
             f'Es sind {len(lose)} Felder ohne belegten Eingabeweg geworden '
-            f'(vorher 169). Für ein neues Feld bitte einen echten Weg bauen '
+            f'(vorher 170). Für ein neues Feld bitte einen echten Weg bauen '
             f'(`name="…"` oder `form.…`), statt sich auf eine beliebige '
             f'Erwähnung zu verlassen.')
 

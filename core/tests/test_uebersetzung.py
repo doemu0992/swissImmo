@@ -91,6 +91,7 @@ UEBERSETZT = (
     'core/zweifaktor_einrichten.html',
     'core/zweifaktor_uebersicht.html',
     'fw/_abnahme_schluesselzeile.html',
+    'fw/_abnahme_handwerker.html',
     'fw/_arbeitsvorrat_abschnitte.html',
     'fw/_assistent_attribute.html',  # V11: Assistent (Schritt-Texte)
     'fw/_assistent_leiste.html',

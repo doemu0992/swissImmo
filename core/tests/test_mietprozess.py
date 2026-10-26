@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, _heute, Mieter, Organisation,
-    Liegenschaft, Einheit, Mietvertrag)
+    Liegenschaft, Einheit, Mietvertrag, abschluss_daten)
 
 
 
@@ -96,7 +96,7 @@ class MieterwechselCockpitTests(TestCase):
         from core.models import Pendenz
         from rentals.models import Abnahmeprotokoll
         lg, e, m, v, k, ende = self._kuendigung(tage_bis_ende=40)
-        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today(), abgeschlossen=True)
         generate_auto_pendenzen(horizont_tage=90)
         self.assertFalse(Pendenz.objects.filter(quelle=f'auto:ruecknahme:{k.id}').exists())
 
@@ -105,7 +105,7 @@ class MieterwechselCockpitTests(TestCase):
         vorbefüllt aus dem Rücknahme-Protokoll."""
         from rentals.models import Abnahmeprotokoll
         lg, e, m, v, k, ende = self._kuendigung()   # v hat kautions_betrag 4500, Status 'erwartet'
-        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today(), abgeschlossen=True)
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
@@ -118,7 +118,7 @@ class MieterwechselCockpitTests(TestCase):
         from finance.models import DebitorenRechnung
         lg, e, m, v, k, ende = self._kuendigung()
         v.kautions_betrag = Decimal('0'); v.save()   # keine Kaution
-        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today(), abgeschlossen=True)
         DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
                                          titel='Restmiete', betrag=Decimal('900'),
                                          faellig_am=date.today(), status='offen')
@@ -134,7 +134,7 @@ class MieterwechselCockpitTests(TestCase):
         v.kautions_einbezahlt_am = date(2024, 1, 5)
         v.kautions_zurueckbezahlt_am = date.today()
         v.save()
-        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today(), abgeschlossen=True)
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
@@ -343,12 +343,17 @@ class MieterwechselE2ETests(TestCase):
         self.assertTrue(e.zur_ausschreibung)
         self.assertContains(c.get('/neu/vermarktung/'), '4.5 Zi')
 
-        # 5) RÜCKNAHME protokollieren → 'Wohnungsabnahme'-Pendenz erledigt
+        # 5) RÜCKNAHME protokollieren und abschliessen → 'Wohnungsabnahme'-Pendenz erledigt.
+        # Das Formular erfasst nur; erledigt ist die Abnahme erst mit dem
+        # unterschriebenen Abschluss (seit 10/2026).
         r = c.post(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', {
             'embed': '1', 'typ': 'auszug', 'datum': date.today().isoformat(),
             'allgemein_zustand': 'gut', 'schluessel_anzahl': '3', 'zaehler_strom': '12345'})
         self.assertIn("fwModal: 'done'", r.content.decode())
-        self.assertTrue(v.abnahmen.filter(typ='auszug').exists())
+        aus = v.abnahmen.get(typ='auszug')
+        self.assertTrue(Pendenz.objects.filter(vertrag=v, erledigt=False,
+                                               titel__icontains='Wohnungsabnahme').exists())
+        c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', abschluss_daten())
         self.assertFalse(Pendenz.objects.filter(vertrag=v, erledigt=False,
                                                 titel__icontains='Wohnungsabnahme').exists())
 
@@ -369,7 +374,10 @@ class MieterwechselE2ETests(TestCase):
         r = c.post(f'/neu/vertraege/{nv.id}/abnahme/neu/?typ=einzug', {
             'embed': '1', 'typ': 'einzug', 'datum': date.today().isoformat(), 'allgemein_zustand': 'gut'})
         self.assertIn("fwModal: 'done'", r.content.decode())
-        self.assertTrue(nv.abnahmen.filter(typ='einzug').exists())
+        ein = nv.abnahmen.get(typ='einzug')
+        c.post(f'/neu/abnahme/{ein.id}/vorort/abschliessen/', abschluss_daten())
+        ein.refresh_from_db()
+        self.assertTrue(ein.abgeschlossen)
 
         # 8) SCHLUSSABRECHNUNG verbuchen → Schlussabrechnung + Kaution erledigt
         r = c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/', {

@@ -10,7 +10,7 @@ from decimal import Decimal
 
 from django.test import Client, TestCase
 
-from ._helfer import _basis_objekte, _team_user
+from ._helfer import _basis_objekte, _team_user, abschluss_daten, png_data_url
 from ._isolation import MandantenFixture
 
 
@@ -155,7 +155,7 @@ class VorbestandTests(KetteBasis):
     def test_abschluss_ist_gesperrt_bis_entschieden(self):
         prot, pos = self._auszug('uebermaessig')
         self._speichern(prot, pos, zustand='uebermaessig', kosten='500')
-        r = self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', {}, follow=True)
+        r = self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', abschluss_daten(), follow=True)
         self.assertContains(r, 'schon im Vorgänger-Protokoll beanstandet')
         prot.refresh_from_db()
         self.assertFalse(prot.abgeschlossen)
@@ -166,7 +166,7 @@ class VorbestandTests(KetteBasis):
         self._speichern(prot, pos, vorbestand='vorbestehend')
         pos.refresh_from_db()
         self.assertEqual((pos.mangel.verursacher, pos.mangel.mieteranteil), ('vermieter', Decimal('0.00')))
-        self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', {})
+        self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', abschluss_daten())
         prot.refresh_from_db()
         self.assertTrue(prot.abgeschlossen)
         self.assertEqual(prot.kosten_mieter_total, Decimal('0.00'))
@@ -177,7 +177,7 @@ class VorbestandTests(KetteBasis):
         self._speichern(prot, pos, vorbestand='mieter')
         pos.refresh_from_db()
         self.assertEqual((pos.mangel.verursacher, pos.mangel.mieteranteil), ('mieter', Decimal('500.00')))
-        self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', {})
+        self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', abschluss_daten())
         prot.refresh_from_db()
         self.assertTrue(prot.abgeschlossen)
 
@@ -231,7 +231,7 @@ class AusUndEinzugTests(KetteBasis):
                     {'typ': 'beides', 'datum': '2026-08-31', 'raum': ['Keller']})
         aus = Abnahmeprotokoll.objects.get(typ='auszug')
         self.assertEqual((aus.vertrag_id, aus.folge_vertrag_id), (self.v1.id, v2.id))
-        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', {})
+        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', abschluss_daten())
         ein = Abnahmeprotokoll.objects.get(typ='einzug')
         self.assertEqual((ein.vertrag_id, ein.vorgaenger_id), (v2.id, aus.id))
 
@@ -297,7 +297,7 @@ class AusUndEinzugTests(KetteBasis):
                            ['Kratzer', '', '', '', '']):
             self.c.post(f'/neu/abnahme/{aus.id}/vorort/position/',
                         {'position': p.id, 'zustand': z, 'kommentar': k, 'kosten': '200'})
-        r = self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', {'zaehler_strom': '777'})
+        r = self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', abschluss_daten(zaehler_strom='777'))
         ein = Abnahmeprotokoll.objects.get(typ='einzug')
         self.assertRedirects(r, f'/neu/abnahme/{ein.id}/vorort/?r=1', fetch_redirect_response=False)
         self.assertEqual((ein.vertrag_id, ein.vorgaenger_id, ein.datum), (v2.id, aus.id, date(2026, 8, 31)))
@@ -317,8 +317,8 @@ class AusUndEinzugTests(KetteBasis):
         _vertrag_nachher(self.einheit)
         self.c.post(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/', {'typ': 'beides', 'raum': ['Küche']})
         aus = Abnahmeprotokoll.objects.get(typ='auszug')
-        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', {})
-        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', {})
+        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', abschluss_daten())
+        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', abschluss_daten())
         self.assertEqual(Abnahmeprotokoll.objects.filter(typ='einzug').count(), 1)
 
     def test_einzugsprotokoll_kann_abgeschlossen_werden(self):
@@ -326,9 +326,9 @@ class AusUndEinzugTests(KetteBasis):
         _vertrag_nachher(self.einheit)
         self.c.post(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/', {'typ': 'beides', 'raum': ['Küche']})
         aus = Abnahmeprotokoll.objects.get(typ='auszug')
-        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', {})
+        self.c.post(f'/neu/abnahme/{aus.id}/vorort/abschliessen/', abschluss_daten())
         ein = Abnahmeprotokoll.objects.get(typ='einzug')
-        self.c.post(f'/neu/abnahme/{ein.id}/vorort/abschliessen/', {'unterschrift_mieter': 'Neu Mieter'})
+        self.c.post(f'/neu/abnahme/{ein.id}/vorort/abschliessen/', abschluss_daten(unterschrift_mieter_bild=png_data_url(), unterschrift_mieter='Neu Mieter'))
         ein.refresh_from_db()
         self.assertTrue(ein.abgeschlossen)
 

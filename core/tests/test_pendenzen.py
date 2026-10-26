@@ -196,6 +196,12 @@ class PendenzAktionTests(TestCase):
         c.post(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', {
             'typ': 'auszug', 'datum': date.today().isoformat(), 'allgemein_zustand': 'gut'})
         p.refresh_from_db()
+        self.assertFalse(p.erledigt, 'Erfasst ist noch nicht abgeschlossen (seit 10/2026).')
+        from rentals.models import Abnahmeprotokoll
+        from ._helfer import abschluss_daten
+        prot = Abnahmeprotokoll.objects.get(vertrag=v)
+        c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', abschluss_daten())
+        p.refresh_from_db()
         self.assertTrue(p.erledigt)
 
     def test_schlussabrechnung_hakt_pendenzen_ab(self):

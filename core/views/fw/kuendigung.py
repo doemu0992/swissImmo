@@ -37,6 +37,7 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
     """Legt die Standard-Auszugscheckliste als Pendenzen an (mit Fälligkeit relativ
     zum Vertragsende). Gibt die Anzahl erstellter Pendenzen zurück."""
     from core.models import Pendenz
+    from core.services import abnahme_abschluss as _ab
     heute = timezone.localdate()
     lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
     ist_vermieter = getattr(kuendigung, 'absender', '') == 'vermieter'
@@ -57,8 +58,11 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
         ("Wohnungsabnahme durchführen (Protokoll)", per or heute, 'protokoll' if False else 'aufgabe'),
         # Art. 267a Abs. 1 OR: Mängel, für die der Mieter einzustehen hat, müssen
         # SOFORT nach der Rückgabe gerügt werden — sonst sind die Ersatzansprüche
-        # verwirkt (Praxis: 2-3 Arbeitstage; versteckte Mängel bleiben vorbehalten).
-        ("Mängelrüge Art. 267a: sofort nach Abnahme versenden", tage(2), 'frist'),
+        # verwirkt (versteckte Mängel bleiben vorbehalten). Massgeblich ist der
+        # Tag der Abnahme; der steht hier noch nicht fest. Vorläufig gilt das
+        # Vertragsende plus zwei Arbeitstage, beim Abschluss der Abnahme datiert
+        # `abnahme_abschluss.ruege_pendenz_setzen` die Pendenz auf die Abnahme um.
+        (_ab.RUEGE_TITEL, _ab.ruege_frist(per) if per else heute, 'frist'),
         ("Zählerstände ablesen & Ummeldung", per or heute, 'aufgabe'),
         ("Schlüssel-Rückgabe kontrollieren", per or heute, 'aufgabe'),
         ("Schlussabrechnung erstellen", tage(7), 'finanzen'),

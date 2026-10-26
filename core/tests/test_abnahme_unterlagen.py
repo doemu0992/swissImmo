@@ -11,7 +11,7 @@ from decimal import Decimal
 from django.core.files.base import ContentFile
 from django.test import Client, TestCase
 
-from ._helfer import _basis_objekte, _team_user
+from ._helfer import _basis_objekte, _team_user, abschluss_daten
 from .test_abnahme_kette import _protokoll, _vertrag_nachher
 
 
@@ -60,7 +60,8 @@ class Basis(TestCase):
         return Abnahmeprotokoll.objects.filter(vertrag=self.v1, typ='auszug' if typ == 'beides' else typ).latest('id')
 
     def _abschliessen(self, prot, **daten):
-        return self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', daten, follow=False)
+        # Gültige Abschlussdaten als Grundlage; der Test überschreibt sein Feld.
+        return self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', abschluss_daten(**daten), follow=False)
 
 
 class SchluesselTests(Basis):
@@ -158,12 +159,15 @@ class UnterschriftTests(Basis):
             self.assertTrue(feld.name.endswith('.png'))
         self.assertEqual(prot.unterschrift_mieter_bild.read()[:8], b'\x89PNG\r\n\x1a\n')
 
-    def test_ohne_unterschrift_bleibt_der_name_und_der_abschluss_geht(self):
+    def test_ohne_unterschrift_des_anwesenden_mieters_kein_abschluss(self):
+        """Ein getippter Name ist keine Unterschrift (bis 10/2026 schloss das ab)."""
         prot = self._start()
-        self._abschliessen(prot, unterschrift_mieter='Hans Muster')
+        r = self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/',
+                        abschluss_daten(mieter_anwesend='ja', unterschrift_mieter='Hans Muster'), follow=True)
+        self.assertContains(r, 'Die Unterschrift des Mieters fehlt')
         prot.refresh_from_db()
-        self.assertTrue(prot.abgeschlossen)
-        self.assertFalse(prot.unterschrift_mieter_bild)
+        self.assertFalse(prot.abgeschlossen)
+        self.assertEqual(prot.unterschrift_mieter, 'Hans Muster')     # der Entwurf behält die Eingabe
 
     def test_ungueltige_eingaben_werden_abgelehnt_und_schliessen_nichts_ab(self):
         from rentals.models import Abnahmeprotokoll
@@ -392,7 +396,9 @@ class PdfUnterlagenTests(Basis):
                                 if ueberschrift in text.split('\n'):
                                     self.assertIn(erste_zeile, text,
                                                   f"{extra}/{schluessel}/{zeilen}: «{ueberschrift}» steht allein am Seitenende")
-                            woerter = seite.extract_words()
+                            # Die Seitenzahl («Seite x von y») steht absichtlich im unteren
+                            # Rand; sie hat einen eigenen Test (SeitenzahlTests).
+                            woerter = [w for w in seite.extract_words() if w['top'] < seite.height - 14 * mm]
                             for w in woerter:
                                 self.assertLessEqual(w['bottom'], seite.height - 24 * mm,
                                                      f"{extra}/{schluessel}/{zeilen}: «{w['text']}» steht im unteren Rand")
