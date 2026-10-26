@@ -26918,3 +26918,102 @@ msgid "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s
 msgid_plural "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
 msgstr[0] "Assignment undone: CHF %(betrag)s are a case to clarify again, %(n)s invoice is open again."
 msgstr[1] "Assignment undone: CHF %(betrag)s are a case to clarify again, %(n)s invoices are open again."
+
+msgid "Hängt"
+msgstr "Stuck"
+
+msgid "Ohne Frist"
+msgstr "No deadline"
+
+msgid "Fristen & Vorgänge"
+msgstr "Deadlines & tasks"
+
+msgid "Erledigen"
+msgstr "Complete"
+
+msgid "niemandem zugewiesen"
+msgstr "not assigned"
+
+msgid "Freigaben"
+msgstr "Approvals"
+
+msgid "Überfällige Rechnungen"
+msgstr "Overdue invoices"
+
+msgid "Klären"
+msgstr "Clarify"
+
+msgid "fällig, z. B. Sollstellung"
+msgstr "due, e.g. rent invoicing"
+
+msgid "Eingangsrechnungen"
+msgstr "Supplier invoices"
+
+msgid "zur Freigabe"
+msgstr "awaiting approval"
+
+msgid "Schwerpunkt der Startseite"
+msgstr "Start page focus"
+
+msgid "Heute zu tun"
+msgstr "To do today"
+
+msgid "Filter"
+msgstr "Filter"
+
+msgid "Nichts hängt — jeder Fall ist in Bewegung."
+msgstr "Nothing is stuck — every case is moving."
+
+msgid "Nichts ohne Frist offen."
+msgstr "Nothing open without a deadline."
+
+msgid "Heute & morgen"
+msgstr "Today & tomorrow"
+
+msgid "morgen"
+msgstr "tomorrow"
+
+msgid "Heute und morgen steht nichts im Kalender."
+msgstr "Nothing in the calendar today or tomorrow."
+
+msgid "Was abweicht"
+msgstr "What deviates"
+
+msgid "Mandate mit Befund"
+msgstr "Mandates with findings"
+
+#, python-format
+msgid "%(n)s davon überfällig."
+msgid_plural "%(n)s davon überfällig."
+msgstr[0] "%(n)s of them overdue."
+msgstr[1] "%(n)s of them overdue."
+
+#, python-format
+msgid "Eingang nicht zugeordnet"
+msgid_plural "Eingänge nicht zugeordnet"
+msgstr[0] "item not assigned"
+msgstr[1] "items not assigned"
+
+#, python-format
+msgid "wartet auf Entscheid"
+msgid_plural "warten auf Entscheid"
+msgstr[0] "awaits a decision"
+msgstr[1] "await a decision"
+
+#, python-format
+msgid "Rechnung über Fälligkeit"
+msgid_plural "Rechnungen über Fälligkeit"
+msgstr[0] "invoice past due"
+msgstr[1] "invoices past due"
+
+#, python-format
+msgid "%(n)s länger als %(t)s Tage ungeklärt"
+msgid_plural "%(n)s länger als %(t)s Tage ungeklärt"
+msgstr[0] "%(n)s unclear for more than %(t)s days"
+msgstr[1] "%(n)s unclear for more than %(t)s days"
+
+#, python-format
+msgid "Zahlung ohne Zuordnung"
+msgid_plural "Zahlungen ohne Zuordnung"
+msgstr[0] "payment not assigned"
+msgstr[1] "payments not assigned"

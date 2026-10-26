@@ -34,7 +34,14 @@ from ._basis import _global_filter, _num, team_der_organisation
 
 logger = logging.getLogger(__name__)
 
-#: Die fünf Ansichten aus Abschnitt 3.1, in dieser Reihenfolge.
+#: Die Ansichten des Arbeitsvorrats, in dieser Reihenfolge.
+#:
+#: Dashboard-Reduktion (26.10.2026): «Wartet auf Dritte» und «Liegengeblieben»
+#: sind ein Reiter «Hängt» — beide Male bewegt sich ein Fall nicht, und die
+#: Zeile sagt, warum. «Ohne Frist» nimmt die Sammelposten und Freigaben auf,
+#: die vorher in einer eigenen Karte «Ausserdem» standen. «Alle» ist kein
+#: Reiter mehr, sondern ein Verweis im Fuss (`REITER` in dashboard.py).
+#: Alte Adressen (`?ansicht=wartet|liegen`) führen auf «Hängt» (`ALTE_ANSICHTEN`).
 #:
 #: `gettext_lazy`, nicht `gettext`: Auf Modulebene wird `gettext` EINMAL beim
 #: Import ausgewertet — in der Sprache, die dann gilt (Deutsch). Die Reiter
@@ -42,10 +49,11 @@ logger = logging.getLogger(__name__)
 ANSICHTEN = (
     ('heute', gettext_lazy('Heute')),
     ('woche', gettext_lazy('Diese Woche')),
-    ('wartet', gettext_lazy('Wartet auf Dritte')),
-    ('liegen', gettext_lazy('Liegengeblieben')),
+    ('haengt', gettext_lazy('Hängt')),
+    ('ohnefrist', gettext_lazy('Ohne Frist')),
     ('alle', gettext_lazy('Alle')),
 )
+ALTE_ANSICHTEN = {'wartet': 'haengt', 'liegen': 'haengt'}
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

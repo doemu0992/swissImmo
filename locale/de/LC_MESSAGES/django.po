@@ -27046,3 +27046,102 @@ msgid "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s
 msgid_plural "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
 msgstr[0] "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnung ist wieder offen."
 msgstr[1] "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
+
+msgid "Hängt"
+msgstr "Hängt"
+
+msgid "Ohne Frist"
+msgstr "Ohne Frist"
+
+msgid "Fristen & Vorgänge"
+msgstr "Fristen & Vorgänge"
+
+msgid "Erledigen"
+msgstr "Erledigen"
+
+msgid "niemandem zugewiesen"
+msgstr "niemandem zugewiesen"
+
+msgid "Freigaben"
+msgstr "Freigaben"
+
+msgid "Überfällige Rechnungen"
+msgstr "Überfällige Rechnungen"
+
+msgid "Klären"
+msgstr "Klären"
+
+msgid "fällig, z. B. Sollstellung"
+msgstr "fällig, z. B. Sollstellung"
+
+msgid "Eingangsrechnungen"
+msgstr "Eingangsrechnungen"
+
+msgid "zur Freigabe"
+msgstr "zur Freigabe"
+
+msgid "Schwerpunkt der Startseite"
+msgstr "Schwerpunkt der Startseite"
+
+msgid "Heute zu tun"
+msgstr "Heute zu tun"
+
+msgid "Filter"
+msgstr "Filter"
+
+msgid "Nichts hängt — jeder Fall ist in Bewegung."
+msgstr "Nichts hängt — jeder Fall ist in Bewegung."
+
+msgid "Nichts ohne Frist offen."
+msgstr "Nichts ohne Frist offen."
+
+msgid "Heute & morgen"
+msgstr "Heute & morgen"
+
+msgid "morgen"
+msgstr "morgen"
+
+msgid "Heute und morgen steht nichts im Kalender."
+msgstr "Heute und morgen steht nichts im Kalender."
+
+msgid "Was abweicht"
+msgstr "Was abweicht"
+
+msgid "Mandate mit Befund"
+msgstr "Mandate mit Befund"
+
+#, python-format
+msgid "%(n)s davon überfällig."
+msgid_plural "%(n)s davon überfällig."
+msgstr[0] "%(n)s davon überfällig."
+msgstr[1] "%(n)s davon überfällig."
+
+#, python-format
+msgid "Eingang nicht zugeordnet"
+msgid_plural "Eingänge nicht zugeordnet"
+msgstr[0] "Eingang nicht zugeordnet"
+msgstr[1] "Eingänge nicht zugeordnet"
+
+#, python-format
+msgid "wartet auf Entscheid"
+msgid_plural "warten auf Entscheid"
+msgstr[0] "wartet auf Entscheid"
+msgstr[1] "warten auf Entscheid"
+
+#, python-format
+msgid "Rechnung über Fälligkeit"
+msgid_plural "Rechnungen über Fälligkeit"
+msgstr[0] "Rechnung über Fälligkeit"
+msgstr[1] "Rechnungen über Fälligkeit"
+
+#, python-format
+msgid "%(n)s länger als %(t)s Tage ungeklärt"
+msgid_plural "%(n)s länger als %(t)s Tage ungeklärt"
+msgstr[0] "%(n)s länger als %(t)s Tage ungeklärt"
+msgstr[1] "%(n)s länger als %(t)s Tage ungeklärt"
+
+#, python-format
+msgid "Zahlung ohne Zuordnung"
+msgid_plural "Zahlungen ohne Zuordnung"
+msgstr[0] "Zahlung ohne Zuordnung"
+msgstr[1] "Zahlungen ohne Zuordnung"

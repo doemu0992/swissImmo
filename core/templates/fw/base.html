@@ -158,7 +158,7 @@ Detailseiten rufen sie beim Namen.
             </div>
         </header>
 
-        <header class="fw-top{% if nav == 'dashboard' %} fw-top-heute{% endif %}" id="fwTop">
+        <header class="fw-top" id="fwTop">
             <!-- GLOBALER FILTER: gilt für die ganze Anwendung -->
             <form method="get" class="fw-bereich" title="{% trans 'Globaler Filter' %}">
                 <span class="fw-bereich-zeichen">{% zeichen 'liegenschaft' %}</span>
@@ -841,27 +841,13 @@ fwSyncThemeButtons();
         window.addEventListener('resize', function () { setzen(nav.querySelector('a.hier'), true); });
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setzen(nav.querySelector('a.hier'), true); });
     }
-    // Datenwerte der Diagramme: Höhe der Balken aus data-h (kein style-Attribut in der Vorlage)
-    var stäbe = document.querySelectorAll('.fw-ember-stab[data-h]');
-    stäbe.forEach(function (el, i) { el.style.setProperty('--h', el.getAttribute('data-h') + '%'); el.style.setProperty('--i', i); });
     // Lastbalken (Team, Leerstand): Breite aus data-w, im nächsten Bild — dann gleitet sie auf
     var balken = document.querySelectorAll('.fw-lastbalken[data-w] > i');
     requestAnimationFrame(function () { balken.forEach(function (i) {
         i.style.width = Math.max(0, Math.min(100, parseFloat(i.parentNode.getAttribute('data-w')) || 0)) + '%'; }); });
     if (ruhig) return;
-    // Der Halbkreis füllt sich von null an
-    document.querySelectorAll('.fw-ember-gauge').forEach(function (svg) {
-        var bogen = svg.querySelector('.bogen[data-bogen]'), knauf = svg.querySelector('.knauf[data-grad]');
-        if (!bogen) return;
-        bogen.style.transition = 'none'; bogen.style.strokeDasharray = '0 400';
-        if (knauf) { knauf.style.transition = 'none'; knauf.style.transform = 'rotate(0deg)'; }
-        requestAnimationFrame(function () { requestAnimationFrame(function () {
-            bogen.style.transition = ''; bogen.style.strokeDasharray = bogen.getAttribute('data-bogen') + ' 400';
-            if (knauf) { knauf.style.transition = ''; knauf.style.transform = 'rotate(' + knauf.getAttribute('data-grad') + 'deg)'; }
-        }); });
-    });
     // Zahlen zählen hoch — nur die grossen Kennzahlen, Formatierung bleibt (CHF, Apostroph, %).
-    var ziele = document.querySelectorAll('.fw-kpi .fw-v, .fw-lage .fw-w, .fw-ember-zahlen b, .fw-ember-gross [data-zaehlen], .fw-ampel-zahl b');
+    var ziele = document.querySelectorAll('.fw-kpi .fw-v, .fw-lage .fw-w, .fw-kachel-zahl [data-zaehlen], .fw-ampel-zahl b');
     ziele.forEach(function (el) {
         if (el.children.length) return;
         var text = el.textContent, m = text.match(/-?\d[\d']*(?:[.,]\d+)?/);

@@ -99,7 +99,7 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_kuendigung_pruefen,
                            fw_mandat_detail, fw_dienstleister_detail,
                            fw_laeufe, fw_lauf_detail, fw_lauf_abschliessen, fw_lauf_zuruecksetzen, fw_lauf_ueberspringen, fw_zulauf, fw_zulauf_uebernehmen,
-                           fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_debitor_abschreiben, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
+                           fw_dashboard, fw_schwerpunkt, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_debitor_abschreiben, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
                            fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben, fw_expose_pdf,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_objekt_foto_upload, fw_objekt_foto_loeschen, fw_vertrag_detail,
                            fw_ausstattung_add, fw_ausstattung_edit, fw_ausstattung_katalog, fw_ausstattung_del, fw_lebensdauer,
@@ -227,6 +227,7 @@ urlpatterns = [
 
     # --- FAIRWALTER-REBUILD (neue Oberfläche, wächst etappenweise) ---
     path('neu/', fw_dashboard, name='fw_dashboard'),
+    path('neu/schwerpunkt/', fw_schwerpunkt, name='fw_schwerpunkt'),
     path('neu/debitoren/', fw_debitoren, name='fw_debitoren'),
     path('neu/debitoren/neu/', fw_debitor_neu, name='fw_debitor_neu'),
     path('neu/debitoren/<int:pk>/stornieren/', fw_debitor_stornieren, name='fw_debitor_stornieren'),
