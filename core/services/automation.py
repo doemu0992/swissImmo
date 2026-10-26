@@ -720,21 +720,36 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
     except Exception:
         aktuell_pkt = None
     if aktuell_pkt:
+        from core.services.mietrecht import index_anpassung_vorschlag
         for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='index')
                   .select_related('mieter', 'einheit__liegenschaft')):
-            basis_lik = v.basis_lik_punkte or Decimal('0')
-            if basis_lik <= 0 or not v.einheit_id:
+            if not v.einheit_id or (v.basis_lik_punkte or Decimal('0')) <= 0:
                 continue
             ref_datum = v.index_letzte_anpassung or v.beginn
             naechste = _plus_monate(ref_datum, v.index_intervall_monate or 12)
             if naechste > grenze:
                 continue
-            if Decimal(aktuell_pkt) <= basis_lik:
-                continue   # LIK nicht gestiegen → keine Erhöhung möglich
-            weiter = (v.index_weitergabe_prozent or Decimal('100')) / Decimal('100')
-            faktor = Decimal('1') + (Decimal(aktuell_pkt) - basis_lik) / basis_lik * weiter
-            neuer_netto = (v.netto_mietzins * faktor).quantize(Decimal('0.01'))
-            if neuer_netto <= (v.netto_mietzins or Decimal('0')):
+            # Gerechnet wird ab dem Stand nach der letzten gebuchten Anpassung —
+            # mit derselben Funktion wie im Formular. Bis 26.10.2026 stand hier
+            # eine eigene Rechnung auf `basis_lik_punkte` und `netto_mietzins`
+            # des Vertragsbeginns: Nach der ersten Indexanpassung schlug sie den
+            # bereits weitergegebenen Anstieg ein zweites Mal vor.
+            vorschlag = index_anpassung_vorschlag(v, Decimal(aktuell_pkt), wirksam_ab=naechste)
+            if vorschlag is None:
+                continue
+            basis_lik = vorschlag['basis_lik']
+            alt_netto = vorschlag['alt_netto']
+            neuer_netto = vorschlag['neu_netto']
+            if vorschlag['richtung'] == 'senkung':
+                # Sinkt der Index, folgt der Mietzins ihm ebenso (Befund N). Die
+                # Pendenz ist ein Hinweis zur Mitteilung, keine Zustellfrist.
+                _ensure(f"auto:indexsenkung:{v.id}:{naechste.isoformat()}",
+                        f"Indexmiete senken: {v.mieter.display_name} ({v.einheit.bezeichnung})",
+                        heute, 'vertrag',
+                        (f"LIK {basis_lik}→{aktuell_pkt} Pkt. gesunken: Netto CHF {alt_netto}→{neuer_netto} "
+                         f"auf {naechste.strftime('%d.%m.%Y')} (Art. 269b OR). Anpassung über das "
+                         f"amtliche Formular mitteilen."),
+                        liegenschaft=v.einheit.liegenschaft, vertrag=v)
                 continue
             # DER ZUSTELLTERMIN WIRD GERECHNET, NICHT GESCHAETZT
             #
@@ -814,7 +829,7 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
                     # das Datum aus zwei Wochen gerechnet war. Datum und
                     # Begruendung widersprachen sich damit in einem Satz —
                     # wer nachrechnet, glaubt der Pendenz danach nichts mehr.
-                    (f"LIK {basis_lik}→{aktuell_pkt} Pkt.: Netto CHF {v.netto_mietzins}→{neuer_netto} "
+                    (f"LIK {basis_lik}→{aktuell_pkt} Pkt.: Netto CHF {alt_netto}→{neuer_netto} "
                      f"möglich auf {naechste.strftime('%d.%m.%Y')}. Amtliches Formular "
                      f"(Art. 269d) muss bis {zustellung.strftime('%d.%m.%Y')} beim Mieter "
                      f"sein — zehn Tage vor Beginn der {fristtext} "
@@ -838,7 +853,11 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             aktuell_ref = Decimal(str(aktuell_ref))
         except Exception:
             continue
-        basis_ref = v.basis_referenzzinssatz or Decimal('0')
+        # Die EFFEKTIVE Basis (Befund H, 26.10.2026): nach einer Anpassung die
+        # der jüngsten gebuchten, nicht mehr die des Vertragsbeginns. Bis dahin
+        # meldete die Pendenz einen Senkungsanspruch gegenüber einem Zinsstand,
+        # der längst weitergegeben war.
+        basis_ref = v.effektive_basis(heute)[0] or Decimal('0')
         if not v.einheit_id or basis_ref <= 0 or aktuell_ref >= basis_ref:
             continue
         # Senkung nicht linear: 1 Schritt 2.91 %, 2 Schritte 5.66 % … (Art. 13 VMWG).

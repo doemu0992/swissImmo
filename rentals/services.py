@@ -10,15 +10,36 @@ from .models import Dokument, Mietvertrag
 
 logger = logging.getLogger(__name__)
 
-def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=Decimal('0.00')):
+def bisheriger_stand(vertrag, wirksam_ab=None):
+    """(Netto-Mietzins, Referenzzins, LIK), die unmittelbar VOR `wirksam_ab` gelten.
+
+    Befund A (26.10.2026): Gerechnet wurde auf `vertrag.netto_mietzins` — dem
+    Ursprungsmietzins, den keine Anpassung je fortschreibt. Die zweite Erhöhung
+    setzte damit auf dem Betrag von vor der ersten auf, und die Prüfung
+    «ist das eine Erhöhung?» verglich mit demselben veralteten Wert.
+
+    Stichtag ist der Tag vor dem Wirksamwerden: Was dann gilt, ist der
+    «bisherige» Mietzins des amtlichen Formulars — auch eine bereits versandte,
+    aber erst später wirksame Anpassung zählt dazu. Ohne `wirksam_ab` gilt heute.
+    Entwürfe zählen nie (`Mietvertrag._wirksame_anpassung`).
+    """
+    stichtag = (wirksam_ab - _dt.timedelta(days=1)) if wirksam_ab else _dt.date.today()
+    netto = vertrag.effektiver_netto_mietzins(stichtag)
+    ref, lik = vertrag.effektive_basis(stichtag)
+    return netto, ref, lik
+
+
+def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=Decimal('0.00'),
+                           wirksam_ab=None):
     """
     Berechnet das Erhöhungs- oder Senkungspotenzial nach Schweizer Mietrecht.
     Inklusive Referenzzinssatz, Teuerung (LIK) und allgemeiner Kostensteigerung.
     Rechenkerne und Herleitung: core.services.mietzins_rechner.
 
-    Basis ist der Stand, auf dem der aktuell verrechnete Mietzins beruht
-    (`Mietvertrag.effektive_basis()`: jüngste wirksame Anpassung, sonst Vertragsbeginn) —
-    sonst würde ein bereits weitergegebener Zinsschritt ein zweites Mal verrechnet.
+    Basis und Ausgangsmietzins sind der Stand, auf dem der Mietzins unmittelbar
+    vor `wirksam_ab` beruht (`bisheriger_stand`: jüngste gebuchte Anpassung,
+    Zeitplan, sonst Vertragsbeginn) — sonst würde ein bereits weitergegebener
+    Zinsschritt ein zweites Mal verrechnet, und zwar auf dem falschen Betrag.
     """
     from core.services import mietzins_rechner as rz
     from core.services.mietrecht import runde_mietzins
@@ -26,12 +47,12 @@ def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=De
     if not vertrag.basis_referenzzinssatz or not vertrag.basis_lik_punkte:
         return None
 
-    basis_ref, basis_lik = vertrag.effektive_basis()
+    netto_miete, basis_ref, basis_lik = bisheriger_stand(vertrag, wirksam_ab)
     basis_ref = Decimal(str(basis_ref))
     basis_lik = Decimal(str(basis_lik))
     curr_ref = Decimal(str(aktuell_ref))
     curr_lik = Decimal(str(aktuell_lik))
-    netto_miete = Decimal(str(vertrag.netto_mietzins))
+    netto_miete = Decimal(str(netto_miete or 0))
 
     zins_prozent = rz.referenzzins_prozent(basis_ref, curr_ref)       # 1. Referenzzinssatz
     lik_prozent = rz.lik_prozent(basis_lik, curr_lik)                 # 2. Teuerung (40 %)
@@ -222,13 +243,28 @@ def _monatsende(jahr: int, monat: int) -> _dt.date:
 ZUSTELL_PUFFER_TAGE = 7
 
 
-def naechster_anpassungstermin(vertrag, ankuendigung_datum: _dt.date) -> _dt.date:
+def vermuteter_zugang(versand_am: _dt.date, zugang_am: _dt.date = None) -> _dt.date:
+    """Bestätigter Zugang, sonst Versand + Zustellpuffer.
+
+    Dieselbe Vermutung wie für Art. 269d (unten) und die 257d-Fristansetzung
+    (`fw_verzug_257d`): Massgebend ist, wann das Schreiben dem Empfänger
+    ZUGEHT. Solange das nicht feststeht, wird spät angenommen — eine darauf
+    gerechnete Frist endet dann eher zu spät als zu früh."""
+    if zugang_am:
+        return zugang_am
+    return versand_am + _dt.timedelta(days=ZUSTELL_PUFFER_TAGE)
+
+
+def naechster_anpassungstermin(vertrag, ankuendigung_datum: _dt.date,
+                               zugang_am: _dt.date = None) -> _dt.date:
     """Frühester Termin, auf den eine Mietzinserhöhung wirksam werden kann.
     Die Mitteilung muss dem Mieter mindestens 10 Tage VOR Beginn der Kündigungs-
-    frist ZUGEHEN (Art. 269d OR, Empfangstheorie). Wir rechnen daher Ankündigung
-    + Zustellpuffer (Postweg/Abholfrist) + 10 Tage wie einen Kündigungseingang
-    und nehmen den nächsten ordentlichen Kündigungstermin."""
-    fiktiver_eingang = ankuendigung_datum + _dt.timedelta(days=ZUSTELL_PUFFER_TAGE + 10)
+    frist ZUGEHEN (Art. 269d OR, Empfangstheorie). Wir rechnen daher den Zugang
+    (bestätigt, sonst Ankündigung + Zustellpuffer für Postweg/Abholfrist) + 10
+    Tage wie einen Kündigungseingang und nehmen den nächsten ordentlichen
+    Kündigungstermin."""
+    fiktiver_eingang = (vermuteter_zugang(ankuendigung_datum, zugang_am)
+                        + _dt.timedelta(days=10))
     termin = berechne_kuendigungstermin(vertrag, fiktiver_eingang)
     # Der Mietzins ist periodengerecht ab Monatsbeginn geschuldet — die Erhöhung
     # wird auf den ERSTEN des Folgemonats wirksam (Live-Test I). Explizit auf den

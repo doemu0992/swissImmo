@@ -647,6 +647,102 @@ def hat_original(kanton, typ):
     return kt in reg
 
 
+# ============================================================
+# OHNE ORIGINAL: WARNEN, NICHT ÜBERBRÜCKEN (Befund J, 26.10.2026)
+# ============================================================
+#
+# Für alle Kantone ausser BE, SO und ZH lieferte die Anwendung bisher still eine
+# eigene Nachbildung mit Platzhalter statt Schlichtungsbehörde. Das sieht aus
+# wie ein amtliches Formular und ist keines — eine damit mitgeteilte Erhöhung
+# oder Kündigung ist nichtig (Art. 269d OR; Art. 266l/266o OR). Der Skill
+# `schweizer-fachlogik` sagt es ausdrücklich: Ein fehlender Kanton ist eine
+# Lücke, die gemeldet gehört, nicht eine, die man mit einem generischen
+# Formular überbrückt. Die Nachbildung bleibt als ENTWURF verfügbar — nur nach
+# ausdrücklicher Bestätigung und mit Wasserzeichen.
+
+NACHBILDUNG_WASSERZEICHEN = 'Entwurf – nicht amtlich'
+
+
+def _folge(typ):
+    """Die Folge je Formulartyp, mit der Fundstelle aus dem Gesetzesregister
+    (`core/services/gesetzestexte.py`: 269d «sonst nichtig», 266o «nichtig»)."""
+    from django.utils.translation import gettext
+    if typ == 'kuendigung':
+        return gettext('ohne amtliches Formular ist die Kündigung nichtig (Art. 266l/266o OR)')
+    if typ == 'anfangsmietzins':
+        return gettext('ohne amtliches Formular ist die Mitteilung mangelhaft (Art. 270 Abs. 2 OR)')
+    return gettext('ohne amtliches Formular ist die Anpassung nichtig (Art. 269d OR)')
+
+
+def formular_status(lg, typ):
+    """Was für das amtliche Formular `typ` dieser Liegenschaft vorliegt.
+
+    `kanton` — nur aus dem Feld der Liegenschaft (`kantone.formular_kanton`);
+    `kanton_fehlt` — dann wird KEIN Formular erzeugt, auch keine Nachbildung;
+    `original` — ein Kantonsoriginal ist hinterlegt;
+    `warnung` — der Satz, der ohne Original vor jedem Herunterladen steht.
+    """
+    from django.utils.translation import gettext
+    from core.services.kantone import KANTON_NAMEN, formular_kanton, plz_kantone
+    kt = formular_kanton(lg)
+    original = bool(kt) and hat_original(kt, typ)
+    warnung = ''
+    if kt and not original:
+        warnung = gettext(
+            'Für Kanton %(kanton)s ist kein amtliches Originalformular hinterlegt — verwenden '
+            'Sie das Formular der kantonalen Behörde; %(folge)s.') % {
+                'kanton': KANTON_NAMEN.get(kt, kt), 'folge': _folge(typ)}
+    return {
+        'kanton': kt, 'kanton_name': KANTON_NAMEN.get(kt, '') if kt else '',
+        'kanton_fehlt': kt is None, 'original': original, 'warnung': warnung,
+        'plz_kandidaten': plz_kantone(getattr(lg, 'plz', '')) if kt is None else [],
+    }
+
+
+def kanton_fehlt_meldung(lg):
+    """Klartext, wenn der Kanton der Liegenschaft nicht erfasst ist."""
+    from django.utils.translation import gettext
+    from core.services.kantone import plz_kantone
+    kandidaten = plz_kantone(getattr(lg, 'plz', ''))
+    satz = gettext('Für das amtliche Formular muss der Kanton der Liegenschaft erfasst sein — '
+                   'die Postleitzahl allein bestimmt ihn nicht sicher.')
+    if len(kandidaten) > 1:
+        satz += ' ' + gettext('PLZ %(plz)s liegt in Bereichen von: %(kantone)s.') % {
+            'plz': getattr(lg, 'plz', ''), 'kantone': ', '.join(kandidaten)}
+    return satz
+
+
+def mit_wasserzeichen(pdf_bytes, text=NACHBILDUNG_WASSERZEICHEN):
+    """Legt `text` gross und diagonal über jede Seite, dazu eine Kopfzeile.
+
+    Je Seite ein eigenes Overlay in deren Grösse — die Nachbildungen sind A4,
+    ein Fremd-PDF muss es nicht sein."""
+    reader = PdfReader(io.BytesIO(pdf_bytes))
+    writer = PdfWriter()
+    for page in reader.pages:
+        breite, hoehe = float(page.mediabox.width), float(page.mediabox.height)
+        buf = io.BytesIO()
+        c = canvas.Canvas(buf, pagesize=(breite, hoehe))
+        c.saveState()
+        c.setFillGray(0.55, 0.35)
+        c.setFont('Helvetica-Bold', 44)
+        c.translate(breite / 2, hoehe / 2)
+        c.rotate(45)
+        c.drawCentredString(0, 0, text)
+        c.restoreState()
+        c.setFont('Helvetica-Bold', 9)
+        c.setFillGray(0.2)
+        c.drawCentredString(breite / 2, hoehe - 14, f'{text.upper()} — kein vom Kanton genehmigtes Formular')
+        c.showPage()
+        c.save()
+        buf.seek(0)
+        page.merge_page(PdfReader(buf).pages[0])
+        writer.add_page(page)
+    out = io.BytesIO()
+    writer.write(out)
+    return out.getvalue()
+
+
 @nur_deutsch
 def fill_anfangsmietzins(vertrag, daten, verwaltung=None, kanton=None):
     """Amtliches Anfangsmietzins-Formular (Art. 270 Abs. 2 OR). Nutzt das

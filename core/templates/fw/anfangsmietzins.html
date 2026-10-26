@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n %}
 {% load chf l10n %}
 {% block title %}Anfangsmietzins — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
@@ -154,10 +154,26 @@
         </div>
     </div>
 
+    {% comment %} Kein Formular ohne erfassten Kanton, keine Nachbildung ohne
+       Bestätigung (Befunde G und J, 26.10.2026). {% endcomment %}
+    {% if formular.kanton_fehlt %}
+    <div class="fw-hinweis crit rounded-lg">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht"><b>{% trans "Kein Formular ohne Kanton" %}</b> — {{ kanton_fehlt_meldung }} <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-link">{% trans "Kanton bei der Liegenschaft erfassen" %}</a></div>
+    </div>
+    {% elif not formular.original %}
+    <div class="fw-hinweis crit rounded-lg">
+        <span class="fw-hi">{% zeichen 'recht' %}</span>
+        <div class="fw-ht"><b>{% trans "Kein amtliches Originalformular" %}</b> — {{ formular.warnung }}
+        <label class="fw-haekchen mt-2"><input type="checkbox" name="nachbildung_bestaetigt" class="fw-akzent"> {% trans "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»)." %}</label></div>
+    </div>
+    {% endif %}
     <div class="flex items-center gap-3 flex-wrap">
+        {% if not formular.kanton_fehlt %}
         <button type="submit" class="fw-btn fw-primary">
             {% zeichen 'drucken' %}Formular als PDF erstellen
         </button>
+        {% endif %}
         <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">Abbrechen</a>
     </div>
 </form>

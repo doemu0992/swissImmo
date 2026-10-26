@@ -482,13 +482,28 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
         </div>
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Wirksam ab" %}</th><th class="fw-right">{% trans "Alt" %}</th><th class="fw-right">{% trans "Neu" %}</th><th>{% trans "Grund" %}</th><th></th>
+                <th>{% trans "Wirksam ab" %}</th><th class="fw-right">{% trans "Alt" %}</th><th class="fw-right">{% trans "Neu" %}</th><th>{% trans "Status" %}</th><th>{% trans "Grund" %}</th><th></th>
             </tr></thead>
             <tbody>
             {% for a in anpassungen %}
             <tr><td class="fw-num whitespace-nowrap">{{ a.wirksam_ab|date:"d.m.Y" }}</td>
                 <td class="fw-right fw-num"><span class="fw-mutet">{% if a.alter_netto_mietzins %}{{ a.alter_netto_mietzins|chf }}{% else %}—{% endif %}</span></td>
                 <td class="fw-right fw-num fw-strong">{{ a.neuer_netto_mietzins|chf }}</td>
+                <td class="whitespace-nowrap">
+                    {% comment %} Ablauf Entwurf → versandt → wirksam/angefochten (Befund C):
+                       Ein Entwurf bucht nichts; die Aktionen hier sind die Übergänge. {% endcomment %}
+                    <span class="fw-chip {% if a.status == 'entwurf' %}fw-warn{% elif a.status == 'angefochten' %}fw-crit{% elif a.status == 'wirksam' %}fw-good{% else %}fw-mut{% endif %}">● {{ a.get_status_display }}</span>
+                    {% if a.versand_am %}<div class="fw-klein fw-faint">{% blocktrans with d=a.versand_am|date:"d.m.Y" %}versandt {{ d }}{% endblocktrans %}{% if a.zugang_am %} · {% blocktrans with d=a.zugang_am|date:"d.m.Y" %}Zugang {{ d }}{% endblocktrans %}{% endif %}</div>{% endif %}
+                    {% if a.status == 'entwurf' %}
+                    <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="fw-link fw-klein">{% trans "Entwurf öffnen" %}</a>
+                    {% elif a.status == 'versandt' or a.status == 'angefochten' %}
+                    <form method="post" action="/neu/anpassung/{{ a.id }}/status/" class="flex gap-1 flex-wrap mt-1">{% csrf_token %}
+                        {% if not a.zugang_am %}<input type="date" name="zugang_am" aria-label="{% trans 'Zugang beim Mieter' %}" class="fw-feld"><button name="aktion" value="zugang" class="fw-btn fw-knapp">{% trans "Zugang" %}</button>{% endif %}
+                        <button name="aktion" value="wirksam" class="fw-btn fw-knapp">{% trans "Wirksam" %}</button>
+                        {% if a.status == 'versandt' %}<button name="aktion" value="angefochten" class="fw-btn fw-knapp">{% trans "Angefochten" %}</button>{% endif %}
+                    </form>
+                    {% endif %}
+                </td>
                 <td class="truncate max-w-[220px]"><span class="fw-mutet">{{ a.begruendung|default:"—" }}</span></td>
                 <td class="fw-right">
                     <form method="post" action="/neu/anpassung/{{ a.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Mietzinsanpassung löschen? Künftige Sollläufe verrechnen dann wieder den vorherigen Mietzins." %}{% endfilter %}');">{% csrf_token %}
@@ -496,7 +511,7 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                     </form>
                 </td></tr>
             {% empty %}
-            <tr><td colspan="5" class="fw-leerzeile fw-leer">{% trans "Keine Mietzinsanpassungen." %}</td></tr>
+            <tr><td colspan="6" class="fw-leerzeile fw-leer">{% trans "Keine Mietzinsanpassungen." %}</td></tr>
             {% endfor %}
             </tbody>
         </table></div>

@@ -337,12 +337,17 @@ class Mietvertrag(OrganisationAusKette):
         basis = self.netto_mietzins or Decimal('0.00')
         if not self.pk:
             return basis
+        # Eine gebuchte amtliche Anpassung, die NACH dem Beginn der geltenden
+        # Komponente/Zeitplanzeile wirksam wird, geht vor (Befund B, 26.10.2026).
+        # Bis hierher hatte jeder Gratismonat-Zeitplan unbedingten Vorrang: Die
+        # angekündigte Erhöhung wurde nie verrechnet, solange am Objekt ein
+        # Zeitplan ab Mietbeginn stand.
+        anp = self._vorrangige_anpassung(stichtag)
+        if anp:
+            return anp.neuer_netto_mietzins
         # Datierte Komponenten am Verhältnis haben Vorrang (Gratismonate/gestaffelter
         # Start): die jüngste Komponente mit gueltig_ab <= Stichtag gilt.
-        # Python-Filter über .all() statt .filter() → nutzt prefetch_related (kein N+1).
-        komps = [k for k in self.mietzins_komponenten.all()
-                 if k.gueltig_ab and k.gueltig_ab <= stichtag]
-        komp = max(komps, key=lambda k: (k.gueltig_ab, k.id or 0)) if komps else None
+        komp = self._aktive_komponente(stichtag)
         if komp:
             return komp.netto_mietzins or Decimal('0.00')
         # Datierter Sollmietzins-Zeitplan am OBJEKT (Gratismonate direkt in der
@@ -355,10 +360,36 @@ class Mietvertrag(OrganisationAusKette):
                       if s.ab_datum and s.ab_datum <= stichtag]
             stufe = max(stufen, key=lambda s: (s.ab_datum, s.id or 0)) if stufen else None
             return stufe.netto_mietzins if stufe else basis
+        return basis
+
+    def _wirksame_anpassung(self, fuer_datum=None):
+        """Die jüngste GEBUCHTE Anpassung mit `wirksam_ab <= Stichtag`, sonst None.
+
+        Entwürfe zählen nicht (Befund C). Python-Filter über `.all()` — nutzt
+        `prefetch_related('anpassungen')`, wie die übrigen Methoden hier."""
+        from datetime import date as _d
+        if not self.pk:
+            return None
+        stichtag = fuer_datum or _d.today()
         anps = [a for a in self.anpassungen.all()
-                if a.wirksam_ab and a.wirksam_ab <= stichtag]
-        anp = max(anps, key=lambda a: (a.wirksam_ab, a.id or 0)) if anps else None
-        return anp.neuer_netto_mietzins if anp else basis
+                if a.wirksam_ab and a.wirksam_ab <= stichtag and a.ist_gebucht]
+        return max(anps, key=lambda a: (a.wirksam_ab, a.id or 0)) if anps else None
+
+    def _vorrangige_anpassung(self, fuer_datum=None):
+        """Die Anpassung, die am Stichtag den Netto-Mietzins bestimmt — oder None.
+
+        Sie bestimmt ihn, wenn sie nicht älter ist als die geltende Komponente
+        bzw. Zeitplanzeile: Was zuletzt in Kraft trat, gilt. Bei Staffelmiete nie
+        (Art. 269c OR — die Stufen sind vereinbart, nicht angekündigt)."""
+        if self.mietzins_modell == 'staffel':
+            return None
+        anp = self._wirksame_anpassung(fuer_datum)
+        if anp is None:
+            return None
+        zeile = self._aktive_komponente(fuer_datum) or self._sollmietzins_zeile(fuer_datum)
+        if zeile is not None and zeile.gueltig_ab > anp.wirksam_ab:
+            return None
+        return anp
 
     def effektive_nebenkosten(self, fuer_datum=None):
         """Nebenkosten (Akonto/Pauschal), die an einem Datum gelten — verrechnungs-
@@ -421,7 +452,13 @@ class Mietvertrag(OrganisationAusKette):
         (Sollstellung/Debitor) = Referenz − Rabatt/Erlass. In einem Gratismonat
         (Rabatt == Referenz) ist das 0, während `effektiver_netto_mietzins` den
         vollen Referenzwert für Mieterspiegel/Bilanz behält (Option B: brutto
-        buchen, Rabatt als Ertragsminderung)."""
+        buchen, Rabatt als Ertragsminderung).
+
+        Eine jüngere amtliche Anpassung geht dem Zeitplan vor (Befund B): Der
+        Rabatt einer älteren Periode gilt nach ihr nicht weiter."""
+        anp = self._vorrangige_anpassung(fuer_datum)
+        if anp:
+            return anp.neuer_netto_mietzins
         komp = self._aktive_komponente(fuer_datum)
         if komp:
             return komp.verrechnet_netto
@@ -443,6 +480,8 @@ class Mietvertrag(OrganisationAusKette):
 
     def rabatt_netto_am(self, fuer_datum=None):
         """Netto-Rabatt/-Erlass der am Datum geltenden Komponente (0 ohne)."""
+        if self._vorrangige_anpassung(fuer_datum):
+            return Decimal('0.00')
         komp = self._aktive_komponente(fuer_datum)
         if komp:
             return min(komp.rabatt_netto or Decimal('0.00'), komp.netto_mietzins or Decimal('0.00'))
@@ -532,14 +571,20 @@ class Mietvertrag(OrganisationAusKette):
         mehr auf der veralteten Ursprungsbasis weiter."""
         from datetime import date as _d
         stichtag = fuer_datum or _d.today()
-        if self.pk:
-            anps = [a for a in self.anpassungen.all()
-                    if a.wirksam_ab and a.wirksam_ab <= stichtag]
-            anp = max(anps, key=lambda a: (a.wirksam_ab, a.id or 0)) if anps else None
-            if anp:
-                return (anp.neuer_referenzzinssatz or self.basis_referenzzinssatz,
-                        anp.neuer_lik_index or self.basis_lik_punkte)
+        anp = self._wirksame_anpassung(stichtag)
+        if anp:
+            return (anp.neuer_referenzzinssatz or self.basis_referenzzinssatz,
+                    anp.neuer_lik_index or self.basis_lik_punkte)
         return (self.basis_referenzzinssatz, self.basis_lik_punkte)
+
+    def effektiver_lik_stand(self, fuer_datum=None):
+        """Stand-Monat des LIK, auf dem der Mietzins am Stichtag beruht — aus der
+        jüngsten gebuchten Anpassung, sonst `basis_lik_stand`. Für die Zeile
+        «bisher» des amtlichen Formulars."""
+        anp = self._wirksame_anpassung(fuer_datum)
+        if anp and anp.neuer_lik_stand:
+            return anp.neuer_lik_stand
+        return self.basis_lik_stand
 
     @property
     def kautions_status(self):
@@ -818,8 +863,72 @@ class MietzinsAnpassung(OrganisationAusKette):
     kosten_prozent = models.DecimalField("Anteil Kostensteigerung (%)", max_digits=6, decimal_places=2, null=True, blank=True)
     begruendung = models.TextField(blank=True, null=True)
 
+    # --- ABLAUF: Entwurf → versandt → wirksam / angefochten (Befund C, 26.10.2026) ---
+    #
+    # Bis hierher buchte schon die PDF-VORSCHAU: Jeder Klick auf «Formular als
+    # PDF» legte Anpassung, Sollmietzins und Anfechtungs-Pendenz an, und jeder
+    # geänderte Betrag eine weitere. Jetzt bucht erst der Versand. Ein Entwurf
+    # zählt nirgends — nicht im verrechneten Mietzins, nicht in der Basis der
+    # nächsten Anpassung, nicht im Objekt-Sollmietzins.
+    #
+    # Vorgabe «wirksam» und nicht «entwurf»: Alles, was NICHT über den Assistenten
+    # entsteht (Import, Bestandsdaten, direkte Anlage), galt bisher sofort als
+    # gebucht und tut es weiter. Der Assistent legt ausdrücklich Entwürfe an.
+    # Die Migration setzt den Bestand auf denselben Wert.
+    STATUS_ENTWURF = 'entwurf'
+    STATUS_VERSANDT = 'versandt'
+    STATUS_WIRKSAM = 'wirksam'
+    STATUS_ANGEFOCHTEN = 'angefochten'
+    STATUS_CHOICES = [
+        (STATUS_ENTWURF, _('Entwurf')),
+        (STATUS_VERSANDT, _('Versandt')),
+        (STATUS_WIRKSAM, _('Wirksam')),
+        (STATUS_ANGEFOCHTEN, _('Angefochten')),
+    ]
+    #: Die Stände, die gebucht sind. «Angefochten» bleibt bewusst darin: Was
+    #: während eines Schlichtungsverfahrens verrechnet wird, ist eine Fachregel,
+    #: die hier nicht entschieden wird — die Buchung bleibt, wie sie beim Versand
+    #: entstand, und die Verwaltung korrigiert nach dem Ausgang des Verfahrens.
+    GEBUCHT = (STATUS_VERSANDT, STATUS_WIRKSAM, STATUS_ANGEFOCHTEN)
+    status = models.CharField("Status", max_length=12, choices=STATUS_CHOICES,
+                              default=STATUS_WIRKSAM)
+    versand_am = models.DateField("Versandt am", null=True, blank=True)
+    # Der Zugang zählt, nicht der Versand (Empfangstheorie). Leer = nicht
+    # bestätigt; dann rechnet `zugang_vermutet` mit dem Zustellpuffer.
+    zugang_am = models.DateField("Zugang beim Mieter", null=True, blank=True)
+    # Vorbehalt nicht ausgeschöpfter Reserven — beziffert (CHF oder %), nicht
+    # bloss «Reserven vorbehalten». Beim Versand auf `Mietvertrag.mietzinsreserve_*`.
+    vorbehalt_betrag = models.DecimalField("Vorbehalt (CHF)", max_digits=8, decimal_places=2,
+                                           null=True, blank=True)
+    vorbehalt_prozent = models.DecimalField("Vorbehalt (%)", max_digits=5, decimal_places=2,
+                                            null=True, blank=True)
+    vorbehalt_text = models.TextField("Vorbehalt (Begründung)", blank=True, default='')
+    schlichtungsbehoerde = models.CharField("Schlichtungsbehörde", max_length=300, blank=True,
+                                            default='')
+    # Stand-Monat des neuen LIK und das Datum, bis zu dem die allgemeine
+    # Kostensteigerung mit dieser Anpassung ausgeglichen ist. Beides wird beim
+    # Versand auf den Vertrag übertragen (Befund I) — sonst rechnete die nächste
+    # Anpassung die Kostenpauschale wieder ab Vertragsbeginn.
+    neuer_lik_stand = models.DateField("LIK Stand-Monat (neu)", null=True, blank=True)
+    kosten_ausgeglichen_bis = models.DateField("Kostensteigerung ausgeglichen bis",
+                                               null=True, blank=True)
+
     class Meta:
         db_table = 'core_mietzinsanpassung'
+
+    @property
+    def ist_gebucht(self):
+        return self.status in self.GEBUCHT
+
+    def zugang_vermutet(self):
+        """Bestätigter Zugang, sonst Versand + Zustellpuffer (Postweg und
+        Abholfrist eines Einschreibens, `rentals.services.ZUSTELL_PUFFER_TAGE`),
+        sonst None. Die Vermutung liegt bewusst SPÄT: Die Anfechtungsfrist des
+        Mieters endet dann eher zu spät als zu früh."""
+        if not (self.zugang_am or self.versand_am):
+            return None
+        from rentals.services import vermuteter_zugang
+        return vermuteter_zugang(self.versand_am, self.zugang_am)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -828,6 +937,7 @@ class MietzinsAnpassung(OrganisationAusKette):
         # (amtliches Formular, Alt-View, Import, Admin). So erscheint sie im
         # Objekt-Mietzins und neue Verträge starten ab dem Termin mit dem neuen
         # Wert. Gelöscht wird sie via CASCADE (Sollmietzins.quelle_anpassung).
+        # Ein ENTWURF führt keine Zeile — und verliert eine, falls er eine trug.
         self._sync_objekt_sollmietzins()
 
     def _sync_objekt_sollmietzins(self):
@@ -836,6 +946,13 @@ class MietzinsAnpassung(OrganisationAusKette):
         if not einheit or self.neuer_netto_mietzins is None:
             return
         from portfolio.models import Sollmietzins
+        if not self.ist_gebucht:
+            Sollmietzins.objects.filter(quelle_anpassung=self).delete()
+            return
+        # Ein Entwurf, dessen Termin beim Versand verschoben wurde, liess sonst
+        # die Zeile am alten Datum stehen.
+        Sollmietzins.objects.filter(quelle_anpassung=self).exclude(
+            gueltig_ab=self.wirksam_ab).delete()
         nk = _D('0.00') if getattr(einheit, 'ist_einstellplatz', False) \
             else (einheit.nebenkosten_aktuell or _D('0.00'))
         teile = ["Amtliche Mietzinsanpassung"]
@@ -969,6 +1086,31 @@ class Kuendigung(OrganisationAusKette):
     ende_vorher = models.DateField("Vertragsende vor Kündigung", null=True, blank=True)
     ausserordentlich = models.BooleanField("Ausserordentliche Kündigung", default=False)
     ausserordentlich_grund = models.CharField("Grund (ausserordentlich)", max_length=200, blank=True, default='')
+    # Strukturierter Grund statt Freitext (Befund L): Nur so lässt sich je Grund
+    # die Mindestfrist auf dem Server prüfen. Die Prüfungen stehen in
+    # `rentals.services.ausserordentlicher_termin` — dort auch, für welche
+    # Gründe der Bestand keine Frist belegt und darum nichts prüft.
+    AO_ART_CHOICES = [
+        ('257d', 'Zahlungsverzug (Art. 257d OR)'),
+        ('257f', 'Verletzung von Sorgfalt/Rücksicht (Art. 257f Abs. 3 OR)'),
+        ('266g', 'Wichtige Gründe (Art. 266g OR)'),
+        ('266h', 'Konkurs des Mieters (Art. 266h OR)'),
+        ('266i', 'Tod des Mieters (Art. 266i OR)'),
+        ('266k', 'Art. 266k OR'),
+    ]
+    ausserordentlich_art = models.CharField("Ausserordentlicher Grund", max_length=4,
+                                            choices=AO_ART_CHOICES, blank=True, default='')
+    # Vermieterkündigung: `eingang_datum` ist der Versand (Poststempel). Massgebend
+    # für Frist und Anfechtung ist der ZUGANG beim Mieter (Befund F).
+    zugang_am = models.DateField("Zugang beim Empfänger", null=True, blank=True)
+    # Art. 266m OR: Die Familienwohnung kann ein Ehegatte/Partner nur mit
+    # ausdrücklicher Zustimmung des andern kündigen.
+    zustimmung_ehegatte = models.BooleanField("Zustimmung Ehegatte/Partner (Art. 266m OR)",
+                                              default=False)
+    # Art. 264 OR: vorzeitige Rückgabe mit Ersatzmieter.
+    ersatzmieter = models.TextField("Vorgeschlagene Ersatzmieter (Art. 264 OR)", blank=True,
+                                    default='')
+    ersatzmieter_akzeptiert = models.BooleanField("Ersatzmieter angenommen", default=False)
     erstreckung_bis = models.DateField("Erstreckung bis", null=True, blank=True)
     status = models.CharField("Status", max_length=20, choices=STATUS_CHOICES, default='erfasst')
     bemerkung = models.TextField("Bemerkung", blank=True, default='')

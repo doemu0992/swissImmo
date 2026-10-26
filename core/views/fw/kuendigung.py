@@ -626,22 +626,43 @@ def fw_kuendigung_formular(request, pk):
     from django.contrib import messages
     from rentals.models import Kuendigung
     from crm.models import Organisation
+    from django.shortcuts import redirect
     k = get_object_or_404(Kuendigung.objects.select_related(
         'vertrag__mieter', 'vertrag__mitmieter', 'vertrag__einheit__liegenschaft'), id=pk)
     vw = k.organisation      # Briefkopf der Kuendigung, nicht der aeltesten Verwaltung
-    from core.services.formular_fill import kuendigung_zustellkopien
+    from core.services.formular_fill import (formular_status, kanton_fehlt_meldung,
+                                             kuendigung_zustellkopien, mit_wasserzeichen)
     from core.services.ablage import ablegen
+    lg = k.vertrag.einheit.liegenschaft if k.vertrag.einheit_id else None
+    zurueck = f'/neu/vertraege/{k.vertrag_id}/'
+
+    # Kein Formular ohne erfassten Kanton, keine Nachbildung ohne Bestätigung
+    # (Befunde G und J, 26.10.2026). Bestätigt wird über eine Zwischenseite —
+    # der Aufruf ist ein Link (GET), kein Formular.
+    formular = formular_status(lg, 'kuendigung')
+    if formular['kanton_fehlt']:
+        messages.error(request, '⛔ ' + kanton_fehlt_meldung(lg))
+        return redirect(zurueck)
+    if not formular['original'] and request.GET.get('nachbildung') != 'bestaetigt':
+        return render(request, 'fw/formular_nachbildung.html', {
+            **_global_filter(request), 'nav': 'vertraege',
+            'titel': f"Kündigung {k.vertrag.mieter.display_name}",
+            'warnung': formular['warnung'], 'zurueck': zurueck,
+            'weiter': f'/neu/kuendigung/{k.id}/formular/?nachbildung=bestaetigt'})
+
     kopien = kuendigung_zustellkopien(k.vertrag, k, verwaltung=vw)
-
-    for empf_name, pdf in kopien:
-        suffix = f" — Zustellung an {empf_name}" if empf_name else ""
-        ablegen(pdf, f"Kündigung {auf_deutsch(k.get_absender_display)} {k.eingang_datum:%d.%m.%Y}{suffix}",
-                kategorie='vertrag', vertrag=k.vertrag, dedup=True)
-
-    # Amtliches Formular erstellt → 'schriftlich bestätigen / Formular versenden' abhaken
-    from core.services.automation import erledige_pendenzen_fuer
-    erledige_pendenzen_fuer(k.vertrag, ['schriftlich', 'Kündigungsformular'],
-                            user=request.user)
+    if formular['original']:
+        for empf_name, pdf in kopien:
+            suffix = f" — Zustellung an {empf_name}" if empf_name else ""
+            ablegen(pdf, f"Kündigung {auf_deutsch(k.get_absender_display)} {k.eingang_datum:%d.%m.%Y}{suffix}",
+                    kategorie='vertrag', vertrag=k.vertrag, dedup=True)
+        # Amtliches Formular erstellt → 'schriftlich bestätigen / Formular versenden' abhaken.
+        # Bei einer Nachbildung NICHT: Mit ihr ist das amtliche Formular nicht erstellt.
+        from core.services.automation import erledige_pendenzen_fuer
+        erledige_pendenzen_fuer(k.vertrag, ['schriftlich', 'Kündigungsformular'],
+                                user=request.user)
+    else:
+        kopien = [(n, mit_wasserzeichen(pdf)) for n, pdf in kopien]
 
     if len(kopien) > 1:
         # Art. 266n: alle Kopien in EIN PDF bündeln (jede Seite separat versenden).

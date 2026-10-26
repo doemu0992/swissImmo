@@ -15,6 +15,12 @@
     </div>
 </div>
 
+{% if ausgenommen %}
+<div class="fw-hinweis info rounded-lg mb-3">
+    <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+    <div class="fw-ht">{% blocktrans count n=ausgenommen|length %}{{ n }} Index- oder Staffelmiete ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR).{% plural %}{{ n }} Index- oder Staffelmieten ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR).{% endblocktrans %}</div>
+</div>
+{% endif %}
 <div class="fw-card">
     <div class="fw-tablewrap">
         <table class="fw-table">
@@ -35,7 +41,7 @@
                     <div class="fw-strong">{{ r.v.mieter.display_name }}</div>
                     <div class="fw-sub2">{{ r.v.einheit.liegenschaft.strasse }} · {{ r.v.einheit.bezeichnung }}</div>
                 </td>
-                <td class="fw-right fw-num">{{ r.v.netto_mietzins|chf }}</td>
+                <td class="fw-right fw-num">{{ r.alt_netto|chf }}</td>
                 <td class="fw-right fw-num"><span class="fw-strong {% if r.delta and r.delta > 0 %}fw-gut{% elif r.delta and r.delta < 0 %}fw-kritisch{% else %}fw-mutet{% endif %}">
                     {% if r.neu_netto is not None %}{{ r.neu_netto|chf }}{% else %}—{% endif %}
                 </span></td>
@@ -46,10 +52,13 @@
                 <td class="whitespace-nowrap">
                     {% if r.basis_fehlt %}
                     <span class="fw-chip fw-warn">● {% trans "Basis fehlt — einzeln erfassen" %}</span>
+                    {% elif r.kanton_fehlt %}
+                    <span class="fw-chip fw-warn">● {% trans "Kanton der Liegenschaft fehlt" %}</span>
                     {% elif r.unveraendert %}
                     <span class="fw-chip fw-mut">● {% trans "Kein Potenzial" %}</span>
                     {% else %}
                     <span class="fw-chip fw-good">● {% trans "Wird angepasst" %}</span>
+                    {% if not r.formular.original %}<span class="fw-chip fw-crit">● {% trans "Kein Original" %}</span>{% endif %}
                     {% endif %}
                 </td>
             </tr>
@@ -70,12 +79,19 @@ tun ist.{% endcomment %}
     {% for r in rows %}<input type="hidden" name="vertrag_id" value="{{ r.v.id }}">{% endfor %}
     <div class="fw-hinweis info">
         <span class="fw-hi">{% zeichen 'hinweis' %}</span>
-        <div class="fw-ht">{% trans "Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen." %}</div>
+        <div class="fw-ht">{% trans "Je Vertrag wird ein Entwurf erfasst und das Formular als Sammel-PDF erstellt — gebucht wird noch nichts. Nach dem Versand die Entwürfe unter «Mietzins» als versandt erfassen: Erst dann gilt der neue Mietzins und die Anfechtungsfrist (Art. 270b OR) läuft als Pendenz. Verträge ohne Basisdaten, ohne Kanton oder ohne Potenzial werden übersprungen." %}</div>
     </div>
+    {% if nachbildungen %}
+    <div class="fw-hinweis crit">
+        <span class="fw-hi">{% zeichen 'recht' %}</span>
+        <div class="fw-ht"><b>{% trans "Kein amtliches Originalformular" %}</b> — {{ nachbildungen.0.formular.warnung }}
+        <label class="fw-haekchen mt-2"><input type="checkbox" name="nachbildung_bestaetigt" class="fw-akzent"> {% trans "Verstanden: Nachbildungen sind nur Entwürfe (Wasserzeichen «Entwurf – nicht amtlich»)." %}</label></div>
+    </div>
+    {% endif %}
     <div class="fw-fuss">
     <a href="/neu/mietzins/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     <button type="submit" class="fw-btn fw-primary">
-        {% zeichen 'vertrag' %}{% blocktrans count n=machbar %}{{ n }} Anpassung erfassen + amtliches Formular (Sammel-PDF){% plural %}{{ n }} Anpassungen erfassen + amtliche Formulare (Sammel-PDF){% endblocktrans %}
+        {% zeichen 'vertrag' %}{% blocktrans count n=machbar %}{{ n }} Entwurf + Formular (Sammel-PDF){% plural %}{{ n }} Entwürfe + Formulare (Sammel-PDF){% endblocktrans %}
     </button>
     </div>
 </form>
