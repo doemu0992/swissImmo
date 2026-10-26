@@ -9,7 +9,7 @@ from decimal import Decimal
 
 from django.test import Client, TestCase
 
-from ._helfer import _basis_objekte, _team_user
+from ._helfer import _basis_objekte, _team_user, abschluss_daten
 from ._isolation import MandantenFixture
 
 
@@ -176,8 +176,7 @@ class VorOrtTests(TestCase):
         prot = self._protokoll()
         pos = prot.positionen.filter(ausstattung__isnull=False).get()
         r = self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/',
-                        {'zaehler_strom': '1234', 'schluessel_anzahl': '3',
-                         'unterschrift_mieter': 'Hans Muster'})
+                        abschluss_daten(zaehler_strom='1234', schluessel_anzahl='3'))
         self.assertRedirects(r, f'/neu/abnahme/{prot.id}/', fetch_redirect_response=False)
         prot.refresh_from_db()
         self.assertTrue(prot.abgeschlossen)
@@ -298,7 +297,9 @@ class VorOrtMandantenTests(TestCase):
         self.assertEqual(self.pos_b.zustand, '')
 
     def test_fremdes_protokoll_abschliessen_ist_404(self):
-        r = self.c.post(f'/neu/abnahme/{self.prot_b.id}/vorort/abschliessen/', {})
+        # Mit gültigen Daten: Sonst bliebe B offen, weil der Abschluss an den
+        # Regeln scheitert — auch ohne Isolation, und der Test bewiese nichts.
+        r = self.c.post(f'/neu/abnahme/{self.prot_b.id}/vorort/abschliessen/', abschluss_daten())
         self.assertEqual(r.status_code, 404)
         self.prot_b.refresh_from_db()
         self.assertFalse(self.prot_b.abgeschlossen)

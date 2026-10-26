@@ -51,7 +51,8 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                 {% endif %}
                 <div class="fw-menutrenner"></div>
                 <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='fw-marke w-4' %}{% trans "Schlussabrechnung" %}</a>
-                <a href="/neu/vertraege/{{ v.id }}/abnahme/neu/" class="fw-menuzeile">{% zeichen 'gut' klasse='fw-marke w-4' %}{% trans "Wohnungsabnahme" %}</a>
+                <a href="/neu/vertraege/{{ v.id }}/abnahme/vorort/" class="fw-menuzeile">{% zeichen 'gut' klasse='fw-marke w-4' %}{% trans "Wohnungsabnahme vor Ort" %}</a>
+                <a href="/neu/vertraege/{{ v.id }}/abnahme/neu/" class="fw-menuzeile">{% zeichen 'dokument' klasse='fw-faint w-4' %}{% trans "Abnahme nachträglich erfassen (Formular)" %}</a>
                 {% if kann_schreiben %}{# Erklärungen mit Rechtsfolgen — für «Lesend» ausgeblendet #}
                 <a href="/neu/vertraege/{{ v.id }}/maengelruege/" class="fw-menuzeile">{% zeichen 'warnung' klasse='fw-warnton w-4' %}{% trans "Mängelrüge" %}</a>
                 <a href="/neu/vertraege/{{ v.id }}/untermiete/" class="fw-menuzeile">{% zeichen 'person' klasse='fw-marke w-4' %}{% trans "Untermiete" %}</a>

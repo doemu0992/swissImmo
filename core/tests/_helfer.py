@@ -210,3 +210,32 @@ def _sig_bytes():
 def _heute():
     from django.utils import timezone
     return timezone.localdate()
+
+
+def png_data_url(farbe='black', groesse=(60, 30)):
+    """Eine Unterschrift aus dem Zeichenfeld, wie der Browser sie schickt."""
+    import base64
+    import io as _io
+    from PIL import Image
+    buf = _io.BytesIO()
+    Image.new('RGB', groesse, farbe).save(buf, 'PNG')
+    return 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode()
+
+
+def abschluss_daten(**daten):
+    """Gültige Eingaben für den Abschluss-Schritt der Abnahme.
+
+    Seit 10/2026 schliesst nur ab, wer die Regeln erfüllt
+    (core/services/abnahme_abschluss.py): Unterschrift der Verwaltung, Mieter
+    unterschreibt ODER ist abwesend mit Grund, Allgemeinzustand gewählt,
+    Unbewertetes und volle Beträge bestätigt. Tests, die etwas anderes prüfen
+    als diese Regeln, nehmen diese Vorgabe und überschreiben nur ihr Feld.
+    Mit `unterschrift_mieter_bild` gilt der Mieter als anwesend."""
+    basis = {'unterschrift_verwalter_bild': png_data_url('blue'), 'allgemein_zustand': 'gut',
+             'unbewertet_ok': '1', 'ohne_lebensdauer_ok': '1'}
+    if daten.get('unterschrift_mieter_bild'):
+        basis.update(mieter_anwesend='ja', unterschrift_mieter='Hans Muster')
+    else:
+        basis.update(mieter_anwesend='nein', mieter_abwesend_grund='Im Ausland')
+    basis.update(daten)
+    return basis

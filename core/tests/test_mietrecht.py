@@ -988,7 +988,8 @@ class NachtN2JuristTests(TestCase):
         _auszugscheckliste_anlegen(v, None, per, None)
         p = Pendenz.objects.filter(vertrag=v, titel__icontains='267a').first()
         self.assertIsNotNone(p)
-        self.assertEqual(p.faellig_am, per + timedelta(days=2))   # sofort nach Abnahme
+        from core.services.abnahme_abschluss import arbeitstage_nach
+        self.assertEqual(p.faellig_am, arbeitstage_nach(per, 2))   # vorläufig: zwei Arbeitstage nach Vertragsende
         self.assertEqual(p.kategorie, 'frist')
 
     def test_rueckgabe_ruege_pdf_und_view(self):

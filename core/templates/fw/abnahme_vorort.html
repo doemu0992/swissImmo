@@ -75,12 +75,22 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
 .vo-status.fehler { color: var(--ds-crit); }
 .vo-feld { display: grid; gap: .25rem; }
 .vo-form { display: grid; gap: .9rem; }
+.vo-anteil { margin: 0; font-size: .85rem; color: var(--ds-muted); }
+.vo-anteil-warn { color: var(--ds-crit); font-weight: 600; }
+.vo-liste { margin: 0 0 .5rem; padding-left: 1.1rem; font-size: .9rem; }
+.vo-wahl { display: grid; gap: .4rem; border: 0; margin: 0; padding: 0; min-width: 0; }
+.vo-wahl label, .vo-warn label { display: flex; gap: .5rem; align-items: flex-start; min-height: 2.75rem; }
+.vo-wahl input, .vo-warn input { margin-top: .2rem; flex: 0 0 auto; }
 </style>
+{{ grundlage_texte|json_script:"voGrundlagen" }}
 
 <div class="vo" id="vo" data-url="/neu/abnahme/{{ p.id }}/vorort/position/"
      data-raeume="{{ letzter }}" data-msg-ok="{% trans 'Gespeichert' %}" data-msg-fehler="{% trans 'Nicht gespeichert — bitte erneut versuchen' %}"
      data-msg-offen="{% trans 'noch offen' %}"
-     data-msg-offline="{% trans 'Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet' %}">
+     data-msg-offline="{% trans 'Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet' %}"
+     data-msg-unterschrift-verwaltung="{% trans 'Die Unterschrift der Verwaltung fehlt.' %}"
+     data-msg-unterschrift-mieter="{% trans 'Die Unterschrift des Mieters fehlt. War er nicht da, «Mieter abwesend» wählen und den Grund angeben.' %}"
+     data-msg-name-mieter="{% trans 'Bitte den Namen der Person eintragen, die für den Mieter unterschreibt.' %}">
     {% csrf_token %}
 
     <div class="fw-phead">
@@ -154,6 +164,12 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
                 <div class="vo-feld"><label class="fw-label">{% trans "Kostenschätzung CHF" %}</label>
                     <input class="fw-feld" inputmode="decimal" name="kosten" data-feld="kosten" value="{{ pos.kostenschaetzung|default_if_none:'' }}"></div>
                 <label><input type="checkbox" name="vorsatz" data-feld="vorsatz" {% if pos.vorsaetzlich %}checked{% endif %}> {% trans "Absichtlich beschädigt (kein Zeitwertabzug)" %}</label>
+                {% comment %} Grundlage und Mieteranteil wie auf der Protokollseite: Ohne
+                   Raumbuch-Element (Alter, Lebensdauer) gilt der volle Betrag — das
+                   soll vor Ort sichtbar sein, nicht erst im PDF. Text setzt das Skript. {% endcomment %}
+                <p class="vo-anteil" data-anteil aria-live="polite"
+                   data-betrag="{% if pos.mangel and pos.mangel.mieteranteil is not None %}{{ pos.mangel.mieteranteil|stringformat:'s' }}{% endif %}"
+                   data-grundlage="{% if pos.mangel %}{{ pos.mangel.zeitwert_grundlage }}{% endif %}" hidden></p>
             </div>
             <img class="vo-foto" data-vorschau {% if pos.foto %}src="{{ pos.foto.url }}"{% else %}hidden{% endif %} alt="{% trans 'Foto' %}">
         </div>
@@ -166,14 +182,48 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     </div>
 
     {% else %}
-    <form method="post" action="/neu/abnahme/{{ p.id }}/vorort/abschliessen/" class="fw-card"><div class="fw-rumpf vo-form">
+    {% comment %} novalidate: Die Pflichtfelder prüft das Skript erst NACH dem Abgleich der
+       Warteschlange (reportValidity) — sonst verdeckte die Browserprüfung den Hinweis,
+       dass ohne Empfang noch Änderungen fehlen. Der Server prüft ohnehin selbst. {% endcomment %}
+    <form method="post" action="/neu/abnahme/{{ p.id }}/vorort/abschliessen/" class="fw-card" novalidate><div class="fw-rumpf vo-form">
         {% csrf_token %}
         {% if vorbestand_offen_total %}<p class="fw-kritisch">{% blocktrans with n=vorbestand_offen_total %}Vorbestand noch nicht entschieden: {{ n }}{% endblocktrans %}</p>{% endif %}
-        {% if offen_total %}<p class="fw-kritisch">{% blocktrans with n=offen_total %}Noch nicht bewertet: {{ n }}{% endblocktrans %}</p>{% endif %}
-        <label><input type="checkbox" name="mieter_anwesend" checked> {% trans "Mieter anwesend" %}</label>
-        <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Strom" %}</label><input class="fw-feld" name="zaehler_strom" inputmode="decimal"></div>
-        <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Wasser" %}</label><input class="fw-feld" name="zaehler_wasser" inputmode="decimal"></div>
-        <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Gas/Wärme" %}</label><input class="fw-feld" name="zaehler_gas" inputmode="decimal"></div>
+        {% if unbewertet %}
+        <div class="vo-warn" data-unbewertet>
+            <p>{% blocktrans with n=unbewertet|length %}Noch nicht bewertet: {{ n }}{% endblocktrans %}</p>
+            <ul class="vo-liste">{% for pos in unbewertet %}<li>{{ pos.raum }} – {{ pos.bezeichnung }}</li>{% endfor %}</ul>
+            <label><input type="checkbox" name="unbewertet_ok" value="1" required> {% trans "Bestätigt: Diese Bauteile wurden nicht bewertet." %}</label>
+        </div>
+        {% endif %}
+        {% if ohne_lebensdauer %}
+        <div class="vo-warn" data-ohne-lebensdauer>
+            <p>{% trans "Voller Betrag: Alter/Lebensdauer fehlt" %}</p>
+            <ul class="vo-liste">{% for m in ohne_lebensdauer %}<li>{{ m.raum|default:"—" }} – {{ m.beschreibung }}{% if m.mieteranteil is not None %} · CHF {{ m.mieteranteil }}{% endif %}</li>{% endfor %}</ul>
+            <label><input type="checkbox" name="ohne_lebensdauer_ok" value="1" required> {% trans "Bestätigt: dem Mieter ohne Abzug «neu für alt» belasten (Einbaudatum und Lebensdauer sind nicht erfasst)." %}</label>
+        </div>
+        {% endif %}
+        <fieldset class="vo-wahl">
+            <legend class="fw-label">{% trans "Mieter bei der Abnahme" %}</legend>
+            <label><input type="radio" name="mieter_anwesend" value="ja" required> {% trans "Mieter anwesend" %}</label>
+            <label><input type="radio" name="mieter_anwesend" value="nein" required {% if p.mieter_abwesend_grund %}checked{% endif %}> {% trans "Mieter abwesend" %}</label>
+            <div class="vo-feld" data-abwesend {% if not p.mieter_abwesend_grund %}hidden{% endif %}>
+                <label class="fw-label" for="voGrund">{% trans "Grund der Abwesenheit" %}</label>
+                <input class="fw-feld" id="voGrund" name="mieter_abwesend_grund" maxlength="200" value="{{ p.mieter_abwesend_grund }}">
+                {% if p.typ == 'auszug' %}<small class="fw-faint">{% trans "Ohne Unterschrift des Mieters: die Mängelrüge eingeschrieben versenden (Zugangsnachweis)." %}</small>{% endif %}
+            </div>
+        </fieldset>
+        <div class="vo-feld"><label class="fw-label" for="voZustand">{% trans "Allgemeinzustand" %}</label>
+            <select class="fw-feld" id="voZustand" name="allgemein_zustand" required>
+                <option value="">— {% trans "bitte wählen" %} —</option>
+                {% for wert, label in allgemein_zustaende %}<option value="{{ wert }}" {% if wert == allgemein_vorbelegt %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select></div>
+        {% if p.typ == 'auszug' %}
+        <div class="vo-feld"><label class="fw-label" for="voAdresse">{% trans "Neue Adresse des Mieters" %}</label>
+            <input class="fw-feld" id="voAdresse" name="neue_adresse" maxlength="200" autocomplete="off" value="{{ p.neue_adresse }}" placeholder="{% trans 'Strasse Nr., PLZ Ort' %}"></div>
+        {% endif %}
+        <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Strom" %}</label><input class="fw-feld" name="zaehler_strom" inputmode="decimal" value="{{ p.zaehler_strom }}"></div>
+        <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Wasser" %}</label><input class="fw-feld" name="zaehler_wasser" inputmode="decimal" value="{{ p.zaehler_wasser }}"></div>
+        <div class="vo-feld"><label class="fw-label">{% trans "Zählerstand Gas/Wärme" %}</label><input class="fw-feld" name="zaehler_gas" inputmode="decimal" value="{{ p.zaehler_gas }}"></div>
         <div class="vo-feld"><span class="fw-label">{% trans "Schlüsselverzeichnis" %}</span>
             <div id="voSchluessel">
                 {% for z in schluessel %}{% include 'fw/_abnahme_schluesselzeile.html' with z=z %}{% endfor %}
@@ -181,20 +231,24 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
             <button type="button" class="fw-btn" id="voSchAdd">{% trans "Schlüssel hinzufügen" %}</button>
             <template id="voSchTpl">{% include 'fw/_abnahme_schluesselzeile.html' with z=None %}</template>
         </div>
-        <div class="vo-feld"><label class="fw-label">{% trans "Bemerkungen" %}</label><textarea class="fw-feld" name="bemerkungen" rows="3"></textarea></div>
-        <div class="vo-feld"><label class="fw-label">{% trans "Unterschrift Mieter (Name)" %}</label>
-            <input class="fw-feld" name="unterschrift_mieter" value="{{ v.mieter.display_name }}">
+        <div class="vo-feld"><label class="fw-label">{% trans "Bemerkungen" %}</label><textarea class="fw-feld" name="bemerkungen" rows="3">{{ p.bemerkungen }}</textarea></div>
+        {% comment %} Kein vorbelegter Name: Ein Name unter der Linie sah aus wie eine
+           Unterschrift, auch wenn niemand unterschrieben hatte. Wer unterschreibt,
+           trägt sich selbst ein. {% endcomment %}
+        <div class="vo-feld" data-mieter-unterschrift><label class="fw-label">{% trans "Unterschrift Mieter (Name)" %}</label>
+            <input class="fw-feld" name="unterschrift_mieter" value="{{ p.unterschrift_mieter }}" placeholder="{% trans 'Name der unterzeichnenden Person' %}" autocomplete="off">
             <div class="vo-pad"><canvas data-pad="unterschrift_mieter_bild" width="900" height="360" aria-label="{% trans 'Unterschrift Mieter' %}"></canvas></div>
             <div class="vo-padzeile"><small class="fw-faint">{% trans "Mit dem Finger im Feld unterschreiben" %}</small>
                 <button type="button" class="fw-btn" data-pad-weg="unterschrift_mieter_bild">{% trans "Löschen" %}</button></div>
             <input type="hidden" name="unterschrift_mieter_bild" id="unterschrift_mieter_bild"></div>
         <div class="vo-feld"><label class="fw-label">{% trans "Unterschrift Verwaltung (Name)" %}</label>
-            <input class="fw-feld" name="unterschrift_verwalter" value="{{ p.verwalter_name }}">
+            <input class="fw-feld" name="unterschrift_verwalter" value="{{ p.unterschrift_verwalter|default:p.verwalter_name }}">
             <div class="vo-pad"><canvas data-pad="unterschrift_verwalter_bild" width="900" height="360" aria-label="{% trans 'Unterschrift Verwaltung' %}"></canvas></div>
             <div class="vo-padzeile"><small class="fw-faint">{% trans "Mit dem Finger im Feld unterschreiben" %}</small>
                 <button type="button" class="fw-btn" data-pad-weg="unterschrift_verwalter_bild">{% trans "Löschen" %}</button></div>
             <input type="hidden" name="unterschrift_verwalter_bild" id="unterschrift_verwalter_bild"></div>
         <p class="vo-status fehler" id="voSync" role="alert" hidden>{% trans "Es sind noch Änderungen nicht gesendet. Abschliessen geht erst mit Empfang." %}</p>
+        <p class="vo-status fehler" id="voPruef" role="alert" hidden></p>
         <div class="vo-fuss">
             {% if vorher is not None %}<a class="fw-btn" href="?r={{ vorher }}">{% trans "Zurück" %}</a>{% endif %}
             <button type="submit" class="fw-btn fw-gutknopf">{% trans "Abnahme abschliessen" %}</button>
@@ -213,6 +267,21 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
 
     function melde(text, fehler) { status.textContent = text; status.classList.toggle('fehler', !!fehler); }
     function offenText(n) { return n ? n + ' ' + root.dataset.msgOffen : ''; }
+
+    // Grundlage und Mieteranteil eines Schadens (Schlüssel aus core/services/zeitwert.py)
+    var grundlagen = JSON.parse(document.getElementById('voGrundlagen').textContent);
+    function zeigeAnteil(karte, betrag, grundlage) {
+        var el = karte.querySelector('[data-anteil]');
+        if (!el) return;
+        if (!grundlage) { el.hidden = true; el.textContent = ''; return; }
+        var mitBetrag = betrag && grundlage !== 'ohne_betrag' && grundlage !== 'kein_mieterschaden';
+        el.textContent = (mitBetrag ? 'CHF ' + betrag + ' · ' : '') + (grundlagen[grundlage] || '');
+        el.classList.toggle('vo-anteil-warn', grundlage === 'ohne_lebensdauer');
+        el.hidden = false;
+    }
+    root.querySelectorAll('.vo-karte [data-anteil]').forEach(function (el) {
+        zeigeAnteil(el.closest('.vo-karte'), el.dataset.betrag, el.dataset.grundlage);
+    });
 
     // ---- Warteschlange für fehlenden Empfang (IndexedDB) -------------------
     // Fällt das Netz weg, bleibt jede Eingabe auf dem Gerät und geht beim
@@ -302,7 +371,9 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
             // Liegt noch etwas in der Schlange, reiht sich alles dahinter ein (Reihenfolge bleibt).
             if (w.length) return einreihen(karte, daten).then(function (j) { leeren(); return j; });
             return posten(karte.dataset.pos, daten).then(function (j) {
-                melde(root.dataset.msgOk + (j.offen ? ' · ' + offenText(j.offen) : '')); return j;
+                melde(root.dataset.msgOk + (j.offen ? ' · ' + offenText(j.offen) : ''));
+                zeigeAnteil(karte, j.mieteranteil, j.grundlage);
+                return j;
             }, function (f) {
                 if (f instanceof TypeError && window.indexedDB) {
                     return einreihen(karte, daten).catch(function () { melde(root.dataset.msgFehler, true); throw f; });
@@ -456,7 +527,11 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     function fehlend(zeile) {
         var soll = parseInt(zeile.querySelector('[name=s_soll]').value, 10);
         var ist = parseInt(zeile.querySelector('[name=s_ist]').value, 10);
-        zeile.querySelector('[data-fehlt]').textContent = (isNaN(soll) || isNaN(ist)) ? '–' : Math.max(0, soll - ist);
+        var n = (isNaN(soll) || isNaN(ist)) ? NaN : Math.max(0, soll - ist);
+        zeile.querySelector('[data-fehlt]').textContent = isNaN(n) ? '–' : n;
+        // Zulasten Mieter: fehlend × Ersatz je Stück (wie AbnahmeSchluessel.kosten_mieter)
+        var je = parseFloat((zeile.querySelector('[name=s_kosten]').value || '').replace(/'/g, '').replace(',', '.'));
+        zeile.querySelector('[data-sch-kosten]').textContent = (isNaN(n) || isNaN(je) || !n) ? '–' : (n * je).toFixed(2);
     }
     liste.querySelectorAll('.vo-skz').forEach(fehlend);
     liste.addEventListener('input', function (e) { var z = e.target.closest('.vo-skz'); if (z) fehlend(z); });
@@ -488,19 +563,47 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     document.querySelectorAll('[data-pad-weg]').forEach(function (b) {
         b.addEventListener('click', function () { pads[b.dataset.padWeg].leeren(); document.getElementById(b.dataset.padWeg).value = ''; });
     });
-    // Beim Absenden: gezeichnete Unterschrift als PNG in das versteckte Feld
+    // Anwesenheit: abwesend → Grund statt Unterschrift des Mieters
     var form = liste.closest('form'), freigegeben = false;
+    var vo = document.getElementById('vo');
+    function anwesenheit() {
+        var gewaehlt = form.querySelector('[name=mieter_anwesend]:checked');
+        var abwesend = !!gewaehlt && gewaehlt.value === 'nein';
+        form.querySelector('[data-abwesend]').hidden = !abwesend;
+        form.querySelector('[name=mieter_abwesend_grund]').required = abwesend;
+        form.querySelector('[data-mieter-unterschrift]').hidden = abwesend;
+        return gewaehlt ? gewaehlt.value : '';
+    }
+    form.querySelectorAll('[name=mieter_anwesend]').forEach(function (r) { r.addEventListener('change', anwesenheit); });
+    anwesenheit();
+    // Dieselben Regeln wie auf dem Server (abnahme_abschluss.abschluss_pruefen), vorab:
+    // Eine Absage des Servers liesse die gezeichneten Unterschriften verloren gehen.
+    function pruefen() {
+        var wert = anwesenheit();
+        if (!pads.unterschrift_verwalter_bild.benutzt()) return vo.dataset.msgUnterschriftVerwaltung;
+        if (wert === 'ja' && !pads.unterschrift_mieter_bild.benutzt()) return vo.dataset.msgUnterschriftMieter;
+        if (wert === 'ja' && !form.querySelector('[name=unterschrift_mieter]').value.trim()) return vo.dataset.msgNameMieter;
+        return '';
+    }
+    // Beim Absenden: gezeichnete Unterschrift als PNG in das versteckte Feld
     form.addEventListener('submit', function (e) {
-        Object.keys(pads).forEach(function (name) {
-            document.getElementById(name).value = pads[name].benutzt() ? pads[name].bild() : '';
-        });
-        if (freigegeben || !window.voSync) return;
-        // Erst muss alles Wartende beim Server sein, sonst fehlt es im Protokoll.
+        if (freigegeben) return;
         e.preventDefault();
+        // Erst muss alles Wartende beim Server sein, sonst fehlt es im Protokoll.
         var hinweis = document.getElementById('voSync');
-        window.voSync.leeren().then(window.voSync.wartende).then(function (w) {
+        var abgleich = window.voSync ? window.voSync.leeren().then(window.voSync.wartende) : Promise.resolve([]);
+        abgleich.then(function (w) {
             if (w.length || navigator.onLine === false) { hinweis.hidden = false; return; }
-            hinweis.hidden = true; freigegeben = true; form.submit();
+            hinweis.hidden = true;
+            if (!form.reportValidity()) return;
+            var meldung = pruefen(), feld = document.getElementById('voPruef');
+            feld.textContent = meldung; feld.hidden = !meldung;
+            if (meldung) { feld.scrollIntoView({ block: 'center' }); return; }
+            Object.keys(pads).forEach(function (name) {
+                var mieterWeg = name === 'unterschrift_mieter_bild' && anwesenheit() === 'nein';
+                document.getElementById(name).value = (pads[name].benutzt() && !mieterWeg) ? pads[name].bild() : '';
+            });
+            freigegeben = true; form.submit();
         });
     });
 })();

@@ -1770,8 +1770,10 @@ def _formulare_prozesse(v, user=None):
             {'titel': 'Untermiete (Art. 262)', 'icon': 'person',
              'url': f'/neu/vertraege/{v.id}/untermiete/', 'erledigt': hat('Untermiete-'),
              'sub': 'Zustimmung / Ablehnung'},
+            # Hauptweg ist die Abnahme vor Ort (Raum für Raum, Unterschriften am
+            # Gerät); das klassische Formular bleibt im Menü der Vertragsakte.
             {'titel': 'Wohnungsabnahme', 'icon': 'dokument',
-             'url': f'/neu/vertraege/{v.id}/abnahme/neu/', 'sub': 'Ein- / Auszugsprotokoll'},
+             'url': f'/neu/vertraege/{v.id}/abnahme/vorort/', 'sub': 'Ein- / Auszugsprotokoll vor Ort'},
             {'titel': 'Schlussabrechnung', 'icon': 'rechnung',
              'url': f'/neu/vertraege/{v.id}/schlussabrechnung/', 'verfuegbar': (aktiv or beendet),
              'sub': 'beim Auszug'},
@@ -2272,6 +2274,9 @@ def fw_schlussabrechnung(request, vertrag_id):
                 if m.mieteranteil is not None and m.ausstattung_id:
                     txt += " (Zeitwert)"
                 prefill_positionen.append({'text': txt[:90], 'betrag': betrag})
+        # Fehlende Schlüssel gehen wie Mängel in die Belastung des Mieters.
+        from core.services.abnahme_abschluss import schluessel_positionen
+        prefill_positionen.extend(schluessel_positionen(ab))
     if schaden_betrag > 0:
         prefill_positionen.insert(0, {'text': schaden_text, 'betrag': schaden_betrag})
     return render(request, 'fw/schlussabrechnung.html', {

@@ -282,3 +282,44 @@ def rueckgabe_maengelruege_pdf(vertrag, maengel, verwaltung=None, abnahme_datum=
     ]
     return _brief(absender, empf, ort,
                   f"Mängelrüge nach Rückgabe (Art. 267a OR) — {objekt}", absaetze, name, signatur=sig)
+
+
+@nur_deutsch
+def versteckter_mangel_ruege_pdf(vertrag, maengel, verwaltung=None, abnahme_datum=None, entdeckt_am=None):
+    """Rüge eines nach der Rückgabe entdeckten Mangels (Art. 267a Abs. 3 OR).
+
+    Versteckte, bei der übungsgemässen Untersuchung nicht erkennbare Mängel
+    sind SOFORT nach ihrer Entdeckung zu rügen. Neuer Wortlaut (10/2026), noch
+    ohne juristische Durchsicht — bewusst knapp und ohne Aussage zum
+    Mietzinsdepot (die Kautionsart steht hier nicht fest).
+
+    `maengel`: Liste von dicts {'raum', 'beschreibung', 'betrag' (optional)}."""
+    mieter, einheit, lg, absender, ort, empf, objekt, name, sig = _kontext(vertrag, verwaltung)
+    rueckgabe = abnahme_datum.strftime('%d.%m.%Y') if abnahme_datum else '—'
+    entdeckt = entdeckt_am.strftime('%d.%m.%Y') if entdeckt_am else '—'
+    zeilen, total = [], Decimal('0.00')
+    for m in maengel:
+        teil = f"– {m.get('raum') + ': ' if m.get('raum') else ''}{m.get('beschreibung', '')}"
+        if m.get('betrag'):
+            teil += f" (Kostenanteil ca. CHF {_fr(m['betrag'])})"
+            total += Decimal(str(m['betrag']))
+        zeilen.append(teil)
+    absaetze = [
+        "Sehr geehrte Damen und Herren",
+        f"Nach der Rückgabe des Mietobjekts {objekt} am {rueckgabe} haben wir am {entdeckt} "
+        "folgenden Mangel festgestellt, der bei der übungsgemässen Untersuchung anlässlich der "
+        "Rückgabe nicht erkennbar war und für den Sie nach unserer Auffassung einzustehen haben:",
+        # Je Posten ein Absatz: `_wrap` trennt nur an Leerraum, ein "\n" ginge unter.
+        *(zeilen or ['–']),
+    ]
+    if total > 0:
+        absaetze.append(f"Der voraussichtliche, von Ihnen zu tragende Kostenanteil beträgt ca. CHF "
+                        f"{_fr(total)}; massgeblich sind die effektiven Instandstellungskosten unter "
+                        f"Berücksichtigung der Lebensdauer («neu für alt»).")
+    absaetze += [
+        "Wir rügen diesen Mangel hiermit sofort nach seiner Entdeckung (Art. 267a Abs. 3 OR) und "
+        "behalten uns die Geltendmachung der Kosten ausdrücklich vor.",
+    ]
+    return _brief(absender, empf, ort,
+                  f"Mängelrüge: nach der Rückgabe entdeckter Mangel (Art. 267a Abs. 3 OR) — {objekt}",
+                  absaetze, name, signatur=sig)

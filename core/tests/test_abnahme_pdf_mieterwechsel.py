@@ -10,7 +10,7 @@ from decimal import Decimal
 
 from django.test import Client, TestCase
 
-from ._helfer import _basis_objekte, _team_user
+from ._helfer import _basis_objekte, _team_user, abschluss_daten
 from .test_abnahme_kette import _protokoll, _vertrag_nachher
 
 
@@ -114,11 +114,16 @@ class DurchgefuehrtTests(TestCase):
     def setUp(self):
         self.lg, self.einheit, self.mieter, self.v1 = _basis_objekte()
 
-    def test_entwurf_mit_bauteilen_zaehlt_nicht_klassisches_und_abgeschlossenes_schon(self):
+    def test_nur_abgeschlossene_zaehlen_auch_beim_klassischen_formular(self):
+        """Bis 10/2026 zählte ein offenes Protokoll aus dem klassischen Formular
+        als «Abnahme erfolgt» — ohne Unterschrift. Jetzt zählt nur, was
+        abgeschlossen ist, gleich aus welchem Weg."""
         from core.services.abnahme_vorgaenger import durchgefuehrt
         entwurf = _protokoll(self.v1, 'auszug', date(2026, 6, 30), [('K', 'B', '', '')], abgeschlossen=False)
-        self.assertEqual(durchgefuehrt(self.v1.abnahmen.all()).count(), 0)
         klassisch = _protokoll(self.v1, 'auszug', date(2026, 6, 1), [], abgeschlossen=False)  # altes Formular
+        self.assertEqual(durchgefuehrt(self.v1.abnahmen.all()).count(), 0)
+        klassisch.abgeschlossen = True
+        klassisch.save()
         self.assertEqual({p.id for p in durchgefuehrt(self.v1.abnahmen.all())}, {klassisch.id})
         entwurf.abgeschlossen = True
         entwurf.save()
@@ -166,10 +171,13 @@ class MieterwechselTests(TestCase):
         self.assertNotIn('Rücknahme erfolgt', self._seite())
         from rentals.models import Abnahmeprotokoll
         prot = Abnahmeprotokoll.objects.get()
-        self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', {})
+        self.c.post(f'/neu/abnahme/{prot.id}/vorort/abschliessen/', abschluss_daten())
         html = self._seite()
         self.assertNotIn(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/?typ=auszug', html)   # Knopf weg
 
-    def test_klassisches_protokoll_zaehlt_weiter_als_erfolgt(self):
-        _protokoll(self.v1, 'auszug', date.today(), [], abgeschlossen=False)
+    def test_klassisches_protokoll_zaehlt_erst_abgeschlossen_als_erfolgt(self):
+        prot = _protokoll(self.v1, 'auszug', date.today(), [], abgeschlossen=False)
+        self.assertIn(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/?typ=auszug', self._seite())
+        prot.abgeschlossen = True
+        prot.save()
         self.assertNotIn(f'/neu/vertraege/{self.v1.id}/abnahme/vorort/?typ=auszug', self._seite())
