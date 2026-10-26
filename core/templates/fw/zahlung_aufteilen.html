@@ -1,0 +1,117 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n hilfe chf l10n statisch %}
+{% block title %}{% trans "Zahlung zuordnen" %} — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %}
+Assistent «Zahlung zuordnen / aufteilen» (Zahlungs-Cockpit V12). Split-Screen:
+links die Zahlung (fest), rechts die offenen Posten mit Suche. Unten die
+Fussleiste mit «Zugeteilt / Rest», dem Ziel für einen Rest und den Buchungen,
+die beim Speichern entstehen. Ohne JavaScript: Beträge eintippen und speichern.
+{% endcomment %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/bankabgleich/{{ lg_query }}">{% trans "Bankabgleich" %}</a><span aria-hidden="true">/</span><span>{% if ist_guthaben %}{% trans "Guthaben verrechnen" %}{% else %}{% trans "Zahlung zuordnen" %}{% endif %}</span></nav>
+        <h1>{% if ist_guthaben %}{% trans "Guthaben verrechnen" %}{% else %}{% trans "Zahlung zuordnen" %}{% endif %} {% hilfe 'sammelzahlung' %}</h1>
+        <p>{% trans "Links die Zahlung, rechts die offenen Posten. «offen …» antippen übernimmt den Betrag; am Desktop lässt sich die Zahlung auch auf einen Posten ziehen. Eine Zahlung darf mehrere Posten, Verträge und Mieter tilgen." %}</p>
+    </div>
+</div>
+
+<form id="suchform" method="get" data-suche></form>
+
+<form method="post" data-split data-betrag="{{ z.betrag|unlocalize }}" data-park="{{ z.konto.nummer }}"
+      data-t-guthaben="{% trans 'Guthaben' %}" data-t-zurueck="{% trans 'Rücküberweisung an Absender' %}"
+      data-t-offen="{% trans 'bleibt ungeklärt' %}"
+      data-t-zuviel="{% trans 'Ein Betrag ist höher als der offene Posten.' %}"
+      data-t-ueber="{% trans 'Zugeteilt ist mehr als die Zahlung.' %}"
+      data-t-nichts="{% trans 'Noch nichts zugeteilt — Betrag eintragen oder «offen» antippen.' %}"
+      class="fw-split-form">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ ziel }}">
+    <div class="fw-split">
+        <aside class="fw-split-zahlung">
+            <div class="fw-kachel dunkel fw-zahlung-chip" data-zahlung-chip
+                 aria-label="{% trans 'Zahlung — auf einen Posten ziehen' %}">
+                <span class="fw-ueber">{% if ist_guthaben %}{% trans "Guthaben" %} · 2030{% else %}{% trans "Zahlungseingang" %} · 1190{% endif %}</span>
+                <div class="fw-kachel-zahl">CHF {{ z.betrag|chf }}</div>
+                <p class="fw-kachel-text">{{ z.datum_eingang|date:"d.m.Y" }}{% if not ist_guthaben %} · {% blocktrans count n=tage %}seit {{ n }} Tag ungeklärt{% plural %}seit {{ n }} Tagen ungeklärt{% endblocktrans %}{% endif %}</p>
+                <span class="fw-zieh-hinweis" aria-hidden="true">{% zeichen 'weiter' %} {% trans "auf einen Posten ziehen" %}</span>
+            </div>
+            <dl class="fw-zahlung-daten">
+                <dt>{% trans "Absender" %}</dt>
+                <dd>{% if absender %}{{ absender }}{% if absender_geraten %} <span class="fw-marke-kapsel">{% trans "aus Buchungstext" %}</span>{% endif %}{% elif ist_guthaben %}{{ z.vertrag.mieter.display_name }}{% else %}<span class="fw-mutet">{% trans "Auftraggeber von der Bank nicht geliefert" %}</span>{% endif %}</dd>
+                {% if mitteilung %}<dt>{% trans "Mitteilung" %}</dt><dd>{{ mitteilung }}</dd>{% endif %}
+                {% if referenz %}<dt>{% trans "Referenz" %}</dt><dd class="fw-mono">{{ referenz }}</dd>{% endif %}
+                {% if z.klaerung_notiz %}<dt>{% trans "Notiz" %}</dt><dd>{{ z.klaerung_notiz }}</dd>{% endif %}
+            </dl>
+            {% if vorschlaege %}
+            <div class="fw-vorschlaege">
+                <h2>{% trans "Vorschläge" %}</h2>
+                <ul>
+                    {% for v in vorschlaege %}
+                    <li><b>{{ v.mieter }}</b>
+                        <ul>{% for g in v.gruende %}<li>{{ g }}</li>{% endfor %}</ul>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <p class="fw-kachel-text">{% trans "Nur Vorschläge — gebucht wird erst beim Speichern." %}</p>
+            </div>
+            {% endif %}
+            <p class="fw-split-regel">{% hilfe 'tilgungsreihenfolge' %} {% trans "Vorbefüllt ist die älteste Fälligkeit zuerst. Nennt der Zahler in der Mitteilung einen Monat oder eine Rechnung, gilt seine Angabe — dann die Beträge anpassen." %}</p>
+        </aside>
+
+        <section class="fw-split-posten" aria-label="{% trans 'Offene Posten' %}">
+            <div class="fw-split-suche">
+                <input type="search" name="q" form="suchform" value="{{ q }}" class="fw-feld"
+                       placeholder="{% trans 'Mieter, Objekt, Betrag oder Referenz …' %}"
+                       aria-label="{% trans 'Offene Posten suchen' %}">
+                <button type="submit" form="suchform" class="fw-btn">{% zeichen 'suchen' %}{% trans "Suchen" %}</button>
+            </div>
+            <div class="fw-posten-gruppe fw-gewaehlt aus" data-gewaehlt-block>
+                <div class="fw-posten-kopf"><b>{% trans "Ausgewählt" %}</b></div>
+                <div data-gewaehlt></div>
+            </div>
+            <div data-treffer aria-live="polite">{% include 'fw/_posten_gruppen.html' %}</div>
+        </section>
+    </div>
+
+    <div class="fw-split-fuss">
+        <div class="fw-split-summe">
+            <span>{% trans "Zugeteilt" %} <b>CHF <span data-zugeteilt>{{ vorschlag_summe|chf }}</span></b> {% blocktrans with betrag=z.betrag|chf %}von {{ betrag }}{% endblocktrans %}</span>
+            <span>{% trans "Rest" %} <b>CHF <span data-rest>–</span></b></span>
+            <progress class="fw-fortschritt" data-balken value="0" max="100" aria-label="{% trans 'Anteil zugeteilt' %}"></progress>
+        </div>
+        <div class="fw-split-knoepfe">
+            <a href="{{ ziel }}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+            <button type="submit" class="fw-btn fw-primary" data-split-absenden>{% zeichen 'speichern' %}{% trans "Buchen" %}</button>
+        </div>
+        <fieldset class="fw-rest-wahl" data-rest-wahl>
+            <legend>{% trans "Was passiert mit dem Rest?" %}</legend>
+            {% if not ist_guthaben %}
+            <label class="fw-haekchen"><input type="radio" name="rest_ziel" value="offen" checked class="fw-akzent">{% trans "bleibt ungeklärt (1190)" %}</label>
+            {% endif %}
+            <label class="fw-haekchen"><input type="radio" name="rest_ziel" value="guthaben" {% if ist_guthaben %}checked{% endif %} class="fw-akzent">{% trans "als Guthaben von" %}</label>
+            <select name="rest_vertrag" class="fw-feld" aria-label="{% trans 'Guthaben von' %}">
+                {% for v in rest_vertraege %}<option value="{{ v.id }}">{{ v.mieter.display_name }}{% if v.einheit_id %} · {{ v.einheit.bezeichnung }}{% endif %}</option>{% empty %}<option value="">{% trans "zuerst einen Posten suchen" %}</option>{% endfor %}
+            </select>
+            {% hilfe 'mieterguthaben' %}
+            {% if darf_zurueck %}
+            <label class="fw-haekchen"><input type="radio" name="rest_ziel" value="zurueck" class="fw-akzent">{% trans "an den Absender zurücküberweisen" %}</label>
+            {% if bankkonten|length > 1 %}
+            <select name="bank_konto" class="fw-feld" aria-label="{% trans 'Bankkonto' %}">
+                {% for k in bankkonten %}<option value="{{ k.nummer }}" {% if k.nummer == '1020' %}selected{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+            </select>
+            {% endif %}
+            {% endif %}
+        </fieldset>
+        <details class="fw-pruefung-block">
+            <summary>{% trans "Diese Buchungen entstehen" %}</summary>
+            <ul class="fw-pruefung" data-pruefung>
+                <li><span>{% trans "Je Posten: Parkkonto an 1100 Debitoren über den zugeteilten Betrag." %}</span></li>
+            </ul>
+        </details>
+        <p class="fw-split-meldung aus" data-split-meldung role="status"></p>
+    </div>
+</form>
+<script defer src="{% statisch 'js/fw-zahlungen.js' %}"></script>
+{% endblock %}

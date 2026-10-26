@@ -5,6 +5,26 @@ from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
 
 
+def _rueckerstattungen(zahlungen):
+    """Soll-Zeilen für zurückerstattete Guthaben (Zahlungs-Cockpit V12).
+
+    Ein Mieterguthaben ist ein Zahlungseingang mit Vertrag und zählt im Konto als
+    Haben. Wird es zurückerstattet (2030 an Bank), bleibt der Zahlungseingang
+    stehen — ohne Gegenzeile stünde der Mieter danach weiter mit einem Guthaben
+    da, das er längst zurückhat. Massgebend ist die Buchung, nicht ein Text.
+    """
+    from finance.models import Buchung
+    zeilen = []
+    for datum, betrag in (Buchung.objects
+                          .filter(zahlungseingang__in=zahlungen, soll_konto__nummer='2030',
+                                  ist_storno=False, storniert_am__isnull=True)
+                          .exclude(haben_konto__nummer__in=('1100', '2030'))
+                          .values_list('datum', 'betrag')):
+        zeilen.append({'datum': datum, 'text': 'Rückerstattung Guthaben', 'soll': betrag or Decimal('0'),
+                       'haben': Decimal('0'), 'sort': 2})
+    return zeilen
+
+
 def berechne_mieterkonto(mieter, von=None, bis=None):
     """Gibt (zeilen, endsaldo) zurück. Positiver Saldo = Mieter schuldet."""
     from finance.models import DebitorenRechnung, Zahlungseingang
@@ -32,6 +52,10 @@ def berechne_mieterkonto(mieter, von=None, bis=None):
         text = z.bemerkung or 'Zahlungseingang'
         bewegungen.append({'datum': d, 'text': text, 'soll': Decimal('0'),
                            'haben': z.betrag or Decimal('0'), 'sort': 1})
+    for b in _rueckerstattungen(zahl):
+        if (von and b['datum'] < von) or (bis and b['datum'] > bis):
+            continue
+        bewegungen.append(b)
 
     bewegungen.sort(key=lambda b: (b['datum'], b['sort']))
     saldo = Decimal('0')
@@ -47,7 +71,7 @@ def berechne_vertragskonto(vertrag):
     Dieselbe Rechnung wie `berechne_mieterkonto`, nur auf einen Vertrag
     beschraenkt (Vertragsakte, Reiter «Finanzen», konzept-v8 #mv-…): Soll aus
     den Rechnungen, Haben aus den verbuchten Zahlungen, laufender Saldo.
-    Zwei Abfragen. Positiver Saldo = Mieter schuldet.
+    Drei Abfragen (Rechnungen, Zahlungen, Rückerstattungen). Positiver Saldo = Mieter schuldet.
     """
     from finance.models import DebitorenRechnung, Zahlungseingang
     bewegungen = []
@@ -60,6 +84,7 @@ def berechne_vertragskonto(vertrag):
                                      .values_list('datum_eingang', 'bemerkung', 'betrag')):
         bewegungen.append({'datum': datum, 'text': bemerkung or 'Zahlungseingang',
                            'soll': Decimal('0'), 'haben': betrag or Decimal('0'), 'sort': 1})
+    bewegungen += _rueckerstattungen(Zahlungseingang.objects.filter(vertrag=vertrag, status='verbucht'))
     bewegungen.sort(key=lambda b: (b['datum'], b['sort']))
     saldo = Decimal('0')
     for b in bewegungen:
@@ -69,7 +94,7 @@ def berechne_vertragskonto(vertrag):
 
 
 def saldi_fuer_mieter(mieter_liste):
-    """Endsaldo je Mieter — für die Übersichtsliste, in drei Abfragen.
+    """Endsaldo je Mieter — für die Übersichtsliste, in vier Abfragen.
 
     `berechne_mieterkonto` baut den vollen Auszug auf und braucht dafür drei
     Abfragen JE MIETER. Die Übersicht zeigt aber nur den Saldo; bei 31 Mietern
@@ -112,6 +137,17 @@ def saldi_fuer_mieter(mieter_liste):
     for zeile in haben:
         for wer in vertrag_mieter[zeile['vertrag_id']]:
             saldi[wer] -= zeile['s'] or Decimal('0')
+
+    # Zurückerstattete Guthaben (wie `_rueckerstattungen`): wieder Soll.
+    from finance.models import Buchung
+    rueck = (Buchung.objects
+             .filter(zahlungseingang__vertrag_id__in=vertrag_mieter, zahlungseingang__status='verbucht',
+                     soll_konto__nummer='2030', ist_storno=False, storniert_am__isnull=True)
+             .exclude(haben_konto__nummer__in=('1100', '2030'))
+             .values('zahlungseingang__vertrag_id').annotate(s=Sum('betrag')))
+    for zeile in rueck:
+        for wer in vertrag_mieter[zeile['zahlungseingang__vertrag_id']]:
+            saldi[wer] += zeile['s'] or Decimal('0')
 
     return saldi
 

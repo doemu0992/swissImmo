@@ -26526,3 +26526,508 @@ msgid "An %(n)s Mieter verrechnen"
 msgid_plural "Auf alle %(n)s Mieter verteilen"
 msgstr[0] "Refacturer à %(n)s locataire"
 msgstr[1] "Répartir sur les %(n)s locataires"
+
+msgid "Hier wartet Geld, das sich nicht sicher zuordnen liess — ohne oder mit falscher Referenz. Es geht nicht verloren: Es wird zugeordnet, aufgeteilt, als Kaution erkannt oder an den Absender zurücküberwiesen."
+msgstr "Ici attend l'argent qui n'a pas pu être attribué avec certitude — sans référence ou avec une référence erronée. Il ne se perd pas : il est attribué, réparti, reconnu comme garantie ou remboursé à l'expéditeur."
+
+msgid "Mieterguthaben (Konto 2030)"
+msgstr "Avoir du locataire (compte 2030)"
+
+msgid "Zahlt ein Mieter mehr als offen, gehört ihm der Überschuss. Er wird mit der nächsten Rechnung verrechnet, für die Nebenkostenabrechnung reserviert oder zurückerstattet — wie hinterlegt."
+msgstr "Si un locataire paie plus que le montant ouvert, l'excédent lui appartient. Il est compensé avec la prochaine facture, réservé pour le décompte des frais accessoires ou remboursé — selon le choix enregistré."
+
+msgid "Sammelzahlung"
+msgstr "Paiement groupé"
+
+msgid "Eine Überweisung für mehrere Posten, etwa zwei Verträge oder ein Sozialdienst für mehrere Mieter. Jeder Teil wird einem Posten zugeteilt und einzeln gebucht; storniert wird die Zahlung nur als Ganzes."
+msgstr "Un virement pour plusieurs postes, par exemple deux baux ou un service social pour plusieurs locataires. Chaque part est attribuée à un poste et comptabilisée séparément ; le paiement ne s'annule que dans son ensemble."
+
+msgid "Teilzahlung"
+msgstr "Paiement partiel"
+
+msgid "Ist weniger eingegangen als geschuldet, gilt der Posten als «teilbezahlt». Der Rest bleibt offen und läuft in den Mahnlauf, solange keine Mahnsperre oder Zahlungsvereinbarung besteht."
+msgstr "Si le montant reçu est inférieur au montant dû, le poste est « partiellement payé ». Le solde reste ouvert et passe dans le lot de rappels, tant qu'il n'y a ni blocage des rappels ni accord de paiement."
+
+msgid "Welche Schuld wird getilgt?"
+msgstr "Quelle dette est éteinte ?"
+
+msgid "Gibt der Zahler an, welche Schuld er bezahlt, gilt seine Erklärung (Art. 86 OR). Sonst wird die älteste fällige Schuld getilgt (Art. 87 OR) — so ist der Vorschlag vorbefüllt."
+msgstr "Si le débiteur indique quelle dette il paie, sa déclaration fait foi (art. 86 CO). Sinon, la dette échue la plus ancienne est éteinte (art. 87 CO) — c'est ainsi que la proposition est préremplie."
+
+msgid "Kleindifferenz"
+msgstr "Petite différence"
+
+msgid "Ein kleiner Rest, etwa von der Bank abgezogene Spesen. Bis CHF 5.00 lässt er sich als Debitorenverlust (Konto 3805) ausbuchen, statt ihn zu mahnen."
+msgstr "Un petit solde, par exemple des frais déduits par la banque. Jusqu'à CHF 5.00, il peut être passé en perte sur débiteurs (compte 3805) au lieu d'être rappelé."
+
+msgid "Rückbuchung"
+msgstr "Contre-passation"
+
+msgid "Die Bank bucht eine eingegangene Zahlung zurück, etwa wegen falscher Kontoangaben. Die Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen."
+msgstr "La banque contre-passe un paiement reçu, par exemple en raison de coordonnées erronées. Le paiement est annulé, la facture est de nouveau ouverte et passe dans les rappels."
+
+msgid "Kaution auf dem Mietzinskonto"
+msgstr "Garantie sur le compte des loyers"
+
+msgid "Die Kaution gehört auf ein Sperrkonto auf den Namen des Mieters (Art. 257e OR). Ist sie auf dem Mietzinskonto eingegangen, wird sie als Kaution verbucht und danach auf das Sperrkonto überwiesen."
+msgstr "La garantie doit être placée sur un compte bloqué au nom du locataire (art. 257e CO). Si elle est arrivée sur le compte des loyers, elle est comptabilisée comme garantie puis virée sur le compte bloqué."
+
+msgid "Diese Zahlung liegt nicht auf dem Durchlauf- oder Guthabenkonto."
+msgstr "Ce paiement n'est pas sur le compte de transit ou d'avoirs."
+
+msgid "Unbekanntes Ziel für den Rest."
+msgstr "Destination inconnue pour le solde."
+
+msgid "Nichts zugeteilt."
+msgstr "Rien d'attribué."
+
+msgid "Ein Guthaben bleibt Guthaben — der Rest kann nicht «ungeklärt» werden."
+msgstr "Un avoir reste un avoir — le solde ne peut pas devenir « non clarifié »."
+
+msgid "Nur eine ungeklärte Zahlung oder ein Guthaben kann zurücküberwiesen werden."
+msgstr "Seul un paiement non clarifié ou un avoir peut être remboursé."
+
+msgid "Dieses Guthaben hat keinen Mieter."
+msgstr "Cet avoir n'a pas de locataire."
+
+msgid "Nur eine ungeklärte Zahlung (Konto 1190) kann als Kaution erkannt werden."
+msgstr "Seul un paiement non clarifié (compte 1190) peut être reconnu comme garantie."
+
+msgid "Dieser Vertrag hat eine Kautionsversicherung — es gibt kein Kautionsgeld."
+msgstr "Ce bail a une assurance de garantie — il n'y a pas d'argent de garantie."
+
+msgid "Im Vertrag ist keine Kaution vereinbart."
+msgstr "Aucune garantie n'est convenue dans le bail."
+
+msgid "Für diesen Vertrag ist die Kaution bereits verbucht."
+msgstr "La garantie de ce bail est déjà comptabilisée."
+
+msgid "Nur eine offene Belastung kann eine Rückbuchung sein."
+msgstr "Seul un débit ouvert peut être une contre-passation."
+
+msgid "Diese Zahlung ist nicht über dieses Bankkonto eingegangen."
+msgstr "Ce paiement n'est pas arrivé sur ce compte bancaire."
+
+msgid "Eine Rechnung ist doppelt ausgewählt."
+msgstr "Une facture est sélectionnée deux fois."
+
+msgid "Jeder Teilbetrag muss grösser als 0 sein."
+msgstr "Chaque montant partiel doit être supérieur à 0."
+
+#, python-format
+msgid "Zugeteilt sind CHF %(summe)s, die Zahlung beträgt nur CHF %(betrag)s."
+msgstr "CHF %(summe)s sont attribués, le paiement n'est que de CHF %(betrag)s."
+
+msgid "Für das Guthaben fehlt der Mieter."
+msgstr "Le locataire manque pour l'avoir."
+
+#, python-format
+msgid "Die Zahlung (CHF %(betrag)s) entspricht nicht der vereinbarten Kaution (CHF %(soll)s). Einen Teil als Kaution zu verbuchen ist nicht vorgesehen — bitte mit dem Mieter klären."
+msgstr "Le paiement (CHF %(betrag)s) ne correspond pas à la garantie convenue (CHF %(soll)s). Comptabiliser une partie comme garantie n'est pas prévu — veuillez clarifier avec le locataire."
+
+#, python-format
+msgid "Die Rückbuchung (CHF %(rueck)s) entspricht nicht der Zahlung (CHF %(total)s)."
+msgstr "La contre-passation (CHF %(rueck)s) ne correspond pas au paiement (CHF %(total)s)."
+
+msgid "Absender wurde schon diesem Mieter zugeordnet"
+msgstr "L'expéditeur a déjà été attribué à ce locataire"
+
+#, python-format
+msgid "«%(titel)s» ist nicht offen."
+msgstr "« %(titel)s » n'est pas ouvert."
+
+#, python-format
+msgid "Auf «%(titel)s» sind nur CHF %(offen)s offen."
+msgstr "Seuls CHF %(offen)s sont ouverts sur « %(titel)s »."
+
+#, python-format
+msgid "Dieses Guthaben gehört einem anderen Mieter und kann «%(titel)s» nicht tilgen."
+msgstr "Cet avoir appartient à un autre locataire et ne peut pas éteindre « %(titel)s »."
+
+#, python-format
+msgid "Referenz gehört zu «%(titel)s»"
+msgstr "La référence appartient à « %(titel)s »"
+
+#, python-format
+msgid "Name «%(name)s» steht im Absender oder in der Mitteilung"
+msgstr "Le nom « %(name)s » figure dans l'expéditeur ou la communication"
+
+#, python-format
+msgid "Betrag passt genau auf «%(titel)s»"
+msgstr "Le montant correspond exactement à « %(titel)s »"
+
+#, python-format
+msgid "%(n)s offene Posten ergeben zusammen genau den Betrag"
+msgstr "%(n)s postes ouverts donnent ensemble exactement le montant"
+
+#, python-format
+msgid "Rückbuchung erfasst: Die Zahlung vom %(datum)s ist storniert, die Rechnung wieder offen."
+msgstr "Contre-passation saisie : le paiement du %(datum)s est annulé, la facture de nouveau ouverte."
+
+#, python-format
+msgid "Die Zahlung war aufgeteilt — alle %(n)s Teile sind storniert, die offenen Posten wieder offen."
+msgstr "Le paiement était réparti — les %(n)s parts sont annulées, les postes de nouveau ouverts."
+
+#, python-format
+msgid "CHF %(betrag)s an den Absender zurücküberwiesen (1190 an Bank)."
+msgstr "CHF %(betrag)s remboursés à l'expéditeur (1190 à banque)."
+
+#, python-format
+msgid "CHF %(betrag)s Mieterguthaben mit Nachzahlungen verrechnet."
+msgstr "CHF %(betrag)s d'avoirs de locataires compensés avec des suppléments."
+
+#, python-format
+msgid "CHF %(summe)s auf %(n)s Posten verbucht"
+msgstr "CHF %(summe)s comptabilisés sur %(n)s poste(s)"
+
+msgid "Notiz gespeichert."
+msgstr "Note enregistrée."
+
+msgid "Diese Zahlung ist bereits zugeordnet oder storniert."
+msgstr "Ce paiement est déjà attribué ou annulé."
+
+msgid "Zurücküberweisen dürfen nur Verwalter und Inhaber."
+msgstr "Seuls les gérants et propriétaires du compte peuvent rembourser."
+
+msgid "Nur für ein Mieterguthaben (Konto 2030)."
+msgstr "Uniquement pour un avoir de locataire (compte 2030)."
+
+#, python-format
+msgid "Guthaben: %(wert)s."
+msgstr "Avoir : %(wert)s."
+
+#, python-format
+msgid "CHF %(betrag)s als Kaution von %(mieter)s verbucht. Eine Pendenz erinnert an die Überweisung auf das Sperrkonto."
+msgstr "CHF %(betrag)s comptabilisés comme garantie de %(mieter)s. Une tâche rappelle le virement sur le compte bloqué."
+
+msgid "Eine gewählte Rechnung gibt es nicht (mehr)."
+msgstr "Une facture choisie n'existe pas (plus)."
+
+#, python-format
+msgid "Rest CHF %(rest)s bleibt ungeklärt"
+msgstr "Solde CHF %(rest)s reste non clarifié"
+
+#, python-format
+msgid "Rest CHF %(rest)s als Guthaben"
+msgstr "Solde CHF %(rest)s en avoir"
+
+#, python-format
+msgid "Rest CHF %(rest)s zurücküberwiesen"
+msgstr "Solde CHF %(rest)s remboursé"
+
+msgid "Mit nächster Rechnung verrechnen"
+msgstr "Compenser avec la prochaine facture"
+
+msgid "Für die Nebenkostenabrechnung reservieren"
+msgstr "Réserver pour le décompte des frais accessoires"
+
+msgid "Offen lassen (Entscheid von Hand)"
+msgstr "Laisser ouvert (décision manuelle)"
+
+msgid "Teilweise bezahlt"
+msgstr "Partiellement payé"
+
+#, python-format
+msgid "Rest von CHF %(betrag)s"
+msgstr "Solde de CHF %(betrag)s"
+
+msgid "Offenen Betrag übernehmen"
+msgstr "Reprendre le montant ouvert"
+
+msgid "Keine offenen Posten gefunden"
+msgstr "Aucun poste ouvert trouvé"
+
+msgid "Nach Mieter, Firma, Strasse, Objekt, Rechnungsbetrag oder QR-Referenz suchen."
+msgstr "Rechercher par locataire, entreprise, rue, objet, montant ou référence QR."
+
+#, python-format
+msgid "von %(betrag)s"
+msgstr "sur %(betrag)s"
+
+#, python-format
+msgid "Betrag für %(titel)s"
+msgstr "Montant pour %(titel)s"
+
+msgid "Zahlungseingänge klären, aufteilen und verbuchen — Sonderfälle wie Teil-, Sammel- und Überzahlungen inklusive"
+msgstr "Clarifier, répartir et comptabiliser les paiements reçus — y compris paiements partiels, groupés et excédentaires"
+
+msgid "Klärungsfälle"
+msgstr "Cas à clarifier"
+
+msgid "Nichts ungeklärt"
+msgstr "Rien à clarifier"
+
+msgid "Keine Mieterguthaben"
+msgstr "Aucun avoir de locataire"
+
+msgid "Teilzahlungen"
+msgstr "Paiements partiels"
+
+msgid "Keine Teilzahlungen offen"
+msgstr "Aucun paiement partiel ouvert"
+
+msgid "Bank-Eingang"
+msgstr "Entrées bancaires"
+
+msgid "offene Auszugszeilen"
+msgstr "lignes de relevé ouvertes"
+
+msgid "Alle Auszugszeilen erledigt"
+msgstr "Toutes les lignes de relevé traitées"
+
+msgid "Arbeitslisten"
+msgstr "Listes de travail"
+
+msgid "So funktioniert die Zahlungsklärung"
+msgstr "Comment fonctionne la clarification des paiements"
+
+msgid "Was der Import nicht sicher zuordnen kann, wartet hier auf dem Durchlaufkonto 1190 — nichts geht verloren."
+msgstr "Ce que l'import ne peut pas attribuer avec certitude attend ici sur le compte de transit 1190 — rien ne se perd."
+
+msgid "«Zuordnen / Aufteilen» öffnet den Assistenten: links die Zahlung, rechts die offenen Posten. Eine Zahlung lässt sich auf mehrere Posten und Mieter verteilen."
+msgstr "« Attribuer / répartir » ouvre l'assistant : à gauche le paiement, à droite les postes ouverts. Un paiement peut être réparti sur plusieurs postes et locataires."
+
+msgid "Gehört das Geld nicht hierher, geht es an den Absender zurück. Ist es eine Kaution, wird es als Kaution verbucht."
+msgstr "Si l'argent n'a rien à faire ici, il retourne à l'expéditeur. S'il s'agit d'une garantie, il est comptabilisé comme garantie."
+
+msgid "Zuordnen / Aufteilen"
+msgstr "Attribuer / répartir"
+
+msgid "Weitere"
+msgstr "Plus"
+
+msgid "Als Kaution verbuchen? Gebucht wird 1190 an 2010 Kautionsverbindlichkeit; danach die Überweisung auf das Sperrkonto veranlassen."
+msgstr "Comptabiliser comme garantie ? Écriture 1190 à 2010 dette de garantie ; ensuite ordonner le virement sur le compte bloqué."
+
+msgid "Kaution von"
+msgstr "Garantie de"
+
+msgid "Als Kaution verbuchen"
+msgstr "Comptabiliser comme garantie"
+
+msgid "Zahlung an den Absender zurücküberweisen? Gebucht wird 1190 an Bank."
+msgstr "Rembourser le paiement à l'expéditeur ? Écriture 1190 à banque."
+
+msgid "An Absender zurücküberweisen"
+msgstr "Rembourser à l'expéditeur"
+
+msgid "Notiz zur Klärung, z. B. «Mieter angerufen»"
+msgstr "Note de clarification, p. ex. « locataire appelé »"
+
+msgid "Klärungsnotiz"
+msgstr "Note de clarification"
+
+msgid "Notiz speichern"
+msgstr "Enregistrer la note"
+
+msgid "Keine Klärungsfälle"
+msgstr "Aucun cas à clarifier"
+
+msgid "Jede Zahlung ist einem Posten, einem Guthaben oder einer Kaution zugeordnet."
+msgstr "Chaque paiement est attribué à un poste, un avoir ou une garantie."
+
+msgid "Guthaben richtig behandeln"
+msgstr "Bien traiter les avoirs"
+
+msgid "Zahlt ein Mieter zu viel, entsteht ein Guthaben auf Konto 2030 — es gehört dem Mieter und verfällt nicht."
+msgstr "Si un locataire paie trop, un avoir est créé sur le compte 2030 — il appartient au locataire et n'expire pas."
+
+msgid "«Mit nächster Rechnung verrechnen» tilgt automatisch die nächste Monatsrechnung; «Für die Nebenkostenabrechnung reservieren» wartet auf deren Nachzahlung."
+msgstr "« Compenser avec la prochaine facture » éteint automatiquement la prochaine facture mensuelle ; « Réserver pour le décompte des frais accessoires » attend son supplément."
+
+msgid "Will der Mieter das Geld zurück, wird es zurückerstattet (2030 an Bank)."
+msgstr "Si le locataire veut récupérer l'argent, il est remboursé (2030 à banque)."
+
+msgid "Mieterguthaben"
+msgstr "Avoirs des locataires"
+
+msgid "Verwendung des Guthabens"
+msgstr "Utilisation de l'avoir"
+
+msgid "Jetzt verrechnen"
+msgstr "Compenser maintenant"
+
+msgid "Überzahlungen erscheinen hier und werden nach ihrer Verwendung verrechnet oder zurückerstattet."
+msgstr "Les paiements excédentaires apparaissent ici et sont compensés ou remboursés selon leur utilisation."
+
+msgid "Der Rest bleibt offen und läuft in den Mahnlauf."
+msgstr "Le solde reste ouvert et passe dans le lot de rappels."
+
+msgid "Rest"
+msgstr "Solde"
+
+msgid "Kleindifferenz ausbuchen"
+msgstr "Passer la petite différence en perte"
+
+msgid "Rest mahnen"
+msgstr "Rappeler le solde"
+
+msgid "Ratenplan"
+msgstr "Plan de paiement"
+
+msgid "Wer nur einen Teil zahlt, erscheint hier mit dem Restbetrag."
+msgstr "Qui ne paie qu'une partie apparaît ici avec le solde."
+
+msgid "Möglicherweise eine Rückbuchung einer Mieterzahlung"
+msgstr "Peut-être une contre-passation d'un paiement de locataire"
+
+msgid "Rückbuchung erfassen? Die gewählte Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen."
+msgstr "Saisir la contre-passation ? Le paiement choisi est annulé, la facture de nouveau ouverte et passe dans les rappels."
+
+msgid "Zurückgebuchte Mieterzahlung"
+msgstr "Paiement de locataire contre-passé"
+
+msgid "Als Rückbuchung erfassen"
+msgstr "Saisir comme contre-passation"
+
+msgid "Neue Zeilen kommen mit dem nächsten Kontoauszug."
+msgstr "De nouvelles lignes arrivent avec le prochain relevé."
+
+msgid "Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert."
+msgstr "Annuler ce paiement ? Les écritures sont annulées par contre-écriture et le poste rouvert. Un paiement réparti est annulé avec toutes ses parts."
+
+#, python-format
+msgid "CHF %(bezahlt)s von %(total)s bezahlt"
+msgstr "CHF %(bezahlt)s sur %(total)s payés"
+
+#, python-format
+msgid "Gemahnt: Stufe %(stufe)s am %(datum)s"
+msgstr "Rappelé : niveau %(stufe)s le %(datum)s"
+
+#, python-format
+msgid "nächster Mahnlauf: %(label)s"
+msgstr "prochain lot de rappels : %(label)s"
+
+#, python-format
+msgid "Kleindifferenz von CHF %(betrag)s ausbuchen (3805 Debitorenverluste)?"
+msgstr "Passer en perte la petite différence de CHF %(betrag)s (3805 pertes sur débiteurs) ?"
+
+#, python-format
+msgid "Rest CHF %(betrag)s offen"
+msgstr "Solde CHF %(betrag)s ouvert"
+
+msgid "Zahlung zuordnen"
+msgstr "Attribuer le paiement"
+
+msgid "Guthaben verrechnen"
+msgstr "Compenser l'avoir"
+
+msgid "Links die Zahlung, rechts die offenen Posten. «offen …» antippen übernimmt den Betrag; am Desktop lässt sich die Zahlung auch auf einen Posten ziehen. Eine Zahlung darf mehrere Posten, Verträge und Mieter tilgen."
+msgstr "À gauche le paiement, à droite les postes ouverts. Toucher « ouvert … » reprend le montant ; sur ordinateur, on peut aussi glisser le paiement sur un poste. Un paiement peut éteindre plusieurs postes, baux et locataires."
+
+msgid "Rücküberweisung an Absender"
+msgstr "Remboursement à l'expéditeur"
+
+msgid "bleibt ungeklärt"
+msgstr "reste non clarifié"
+
+msgid "Ein Betrag ist höher als der offene Posten."
+msgstr "Un montant dépasse le poste ouvert."
+
+msgid "Zugeteilt ist mehr als die Zahlung."
+msgstr "Le montant attribué dépasse le paiement."
+
+msgid "Noch nichts zugeteilt — Betrag eintragen oder «offen» antippen."
+msgstr "Rien d'attribué — saisir un montant ou toucher « ouvert »."
+
+msgid "Zahlung — auf einen Posten ziehen"
+msgstr "Paiement — glisser sur un poste"
+
+msgid "auf einen Posten ziehen"
+msgstr "glisser sur un poste"
+
+msgid "Absender"
+msgstr "Expéditeur"
+
+msgid "Mitteilung"
+msgstr "Communication"
+
+msgid "Vorschläge"
+msgstr "Propositions"
+
+msgid "Nur Vorschläge — gebucht wird erst beim Speichern."
+msgstr "Seulement des propositions — rien n'est comptabilisé avant l'enregistrement."
+
+msgid "Vorbefüllt ist die älteste Fälligkeit zuerst. Nennt der Zahler in der Mitteilung einen Monat oder eine Rechnung, gilt seine Angabe — dann die Beträge anpassen."
+msgstr "Prérempli : l'échéance la plus ancienne d'abord. Si le débiteur indique un mois ou une facture dans la communication, son indication prévaut — adapter alors les montants."
+
+msgid "Mieter, Objekt, Betrag oder Referenz …"
+msgstr "Locataire, objet, montant ou référence …"
+
+msgid "Offene Posten suchen"
+msgstr "Rechercher des postes ouverts"
+
+msgid "Ausgewählt"
+msgstr "Sélectionnés"
+
+msgid "Zugeteilt"
+msgstr "Attribué"
+
+msgid "Anteil zugeteilt"
+msgstr "Part attribuée"
+
+msgid "Was passiert mit dem Rest?"
+msgstr "Que devient le solde ?"
+
+msgid "bleibt ungeklärt (1190)"
+msgstr "reste non clarifié (1190)"
+
+msgid "als Guthaben von"
+msgstr "en avoir de"
+
+msgid "Guthaben von"
+msgstr "Avoir de"
+
+msgid "zuerst einen Posten suchen"
+msgstr "rechercher d'abord un poste"
+
+msgid "an den Absender zurücküberweisen"
+msgstr "rembourser à l'expéditeur"
+
+msgid "Diese Buchungen entstehen"
+msgstr "Ces écritures seront créées"
+
+msgid "Je Posten: Parkkonto an 1100 Debitoren über den zugeteilten Betrag."
+msgstr "Par poste : compte d'attente à 1100 débiteurs pour le montant attribué."
+
+#, python-format
+msgid "%(n)s länger als 10 Tage"
+msgid_plural "%(n)s länger als 10 Tage"
+msgstr[0] "%(n)s depuis plus de 10 jours"
+msgstr[1] "%(n)s depuis plus de 10 jours"
+
+#, python-format
+msgid "%(n)s wird automatisch verrechnet"
+msgid_plural "%(n)s werden automatisch verrechnet"
+msgstr[0] "%(n)s est compensé automatiquement"
+msgstr[1] "%(n)s sont compensés automatiquement"
+
+#, python-format
+msgid "seit %(n)s Tag"
+msgid_plural "seit %(n)s Tagen"
+msgstr[0] "depuis %(n)s jour"
+msgstr[1] "depuis %(n)s jours"
+
+#, python-format
+msgid "seit %(n)s Tag ungeklärt"
+msgid_plural "seit %(n)s Tagen ungeklärt"
+msgstr[0] "non clarifié depuis %(n)s jour"
+msgstr[1] "non clarifié depuis %(n)s jours"
+
+#, python-format
+msgid "%(n)s Posten"
+msgid_plural "%(n)s Posten"
+msgstr[0] "%(n)s poste"
+msgstr[1] "%(n)s postes"
+
+#, python-format
+msgid "zusammen mit %(n)s weiteren Mieter genau der Betrag — Sammelzahlung"
+msgid_plural "zusammen mit %(n)s weiteren Mietern genau der Betrag — Sammelzahlung"
+msgstr[0] "avec %(n)s autre locataire, exactement le montant — paiement groupé"
+msgstr[1] "avec %(n)s autres locataires, exactement le montant — paiement groupé"
+
+#, python-format
+msgid "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Überschuss."
+msgid_plural "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."
+msgstr[0] "Paiement groupé ? %(n)s autre poste ouvert de %(mieter)s correspond à l'excédent."
+msgstr[1] "Paiement groupé ? %(n)s autres postes ouverts de %(mieter)s correspondent à l'excédent."

@@ -442,6 +442,24 @@ class Zahlungseingang(OrganisationAusKette):
         related_name='+', verbose_name="Erfasst von"
     )
 
+    # Wofür ein Mieterguthaben (Konto 2030) gedacht ist (Zahlungs-Cockpit V12).
+    # Nur auf Zeilen mit Konto 2030 von Bedeutung. «naechste_rechnung»: die
+    # Sollstellung tilgt damit die nächste Monatsrechnung; «nk_abrechnung»: wird
+    # mit der Nachzahlung der Nebenkostenabrechnung verrechnet; «offen»: jemand
+    # entscheidet von Hand (Pendenz). Bestand vor V12 steht auf «offen» — ein
+    # früheres Guthaben wird nicht nachträglich ungefragt verrechnet.
+    GUTHABEN_VERWENDUNG = [
+        ('naechste_rechnung', gettext_lazy('Mit nächster Rechnung verrechnen')),
+        ('nk_abrechnung', gettext_lazy('Für die Nebenkostenabrechnung reservieren')),
+        ('offen', gettext_lazy('Offen lassen (Entscheid von Hand)')),
+    ]
+    guthaben_verwendung = models.CharField("Verwendung des Guthabens", max_length=20,
+                                           choices=GUTHABEN_VERWENDUNG, default='naechste_rechnung')
+    # Notiz zur Klärung einer ungeklärten Zahlung (Konto 1190), z. B. «Mieter
+    # angerufen». Die Bemerkung trägt die Herkunft und wird bei der Zuordnung
+    # fortgeschrieben — eine Klärungsnotiz darin ginge verloren.
+    klaerung_notiz = models.CharField("Klärungsnotiz", max_length=255, blank=True, default='')
+
     class Meta: db_table = 'core_zahlungseingang'
 
 

@@ -392,6 +392,9 @@ def _mieter_offene(mieter):
             'id': r.id, 'titel': r.titel, 'betrag': betrag,
             'faellig': r.faellig_am,
             'ueberfaellig': bool(r.faellig_am and r.faellig_am < heute),
+            # Teilzahlung: Der Mieter sieht, dass ein Teil angekommen ist und
+            # wie viel noch fehlt (Zahlungs-Cockpit V12).
+            'teilbezahlt': r.status == 'teilbezahlt', 'rechnungsbetrag': r.betrag,
         })
     return offene, total_offen
 

@@ -225,3 +225,31 @@ Wächter: `core/tests/test_bausteine.py` (15 Tests: jeder Hilfe-Schlüssel steht
 Schlüssel, falscher Zustand, verschwundenes Feld → rot), `e2e/tests/assistenten.spec.ts` (1440 und 390 px:
 Pflichtfeld hält an, Zurück behält Eingaben, Prüfen zeigt die Angaben, Hilfe-Blase im Bild,
 Prozessleiste ohne Querscrollen).
+
+## Nachtrag 26.10.2026 — Zahlungs-Cockpit V12 (Sonderfälle im Zahlungseingang)
+
+Analyse des Buchhaltungs- und Zahlungsmoduls, Konzept freigegeben, umgesetzt. Bestehende
+Buchungslogik (Periodensperre, Storno über die Bank-Referenz, Zeilensperren, gelernter
+Absender) bleibt; neu ist, was im Alltag fehlte:
+
+| Sonderfall | Umsetzung | Buchung |
+|---|---|---|
+| Sammelzahlung (eine Zahlung, mehrere Posten/Verträge/Mieter) | Split-Screen-Assistent «Zuordnen / Aufteilen»; Vorschlag: genannte Mieter, deren Posten zusammen den Betrag ergeben; Import: Überzahlung per Referenz mit weiterem passendem Posten desselben Mieters wird Klärungsfall statt stilles Guthaben | je Teil Parkkonto an 1100; Teile `…:teilN`, Rest `…:offen` / `:rest` / `:zurueck`; Storno nur als Ganzes |
+| Teilzahlung | Spur «Teilzahlungen» mit Fortschritt, Mahnstand und nächstem Schritt: Rest mahnen, Ratenplan, Kleindifferenz ausbuchen (≤ CHF 5.00); «Teilweise bezahlt» auch im Mieterportal | Rest bleibt offen und läuft in den Mahnlauf (bestehend) |
+| Überzahlung / Guthaben | Verwendung je Guthaben: mit nächster Rechnung verrechnen (Standard für neue Guthaben), für die NK-Abrechnung reservieren, offen lassen; Rückerstattung bleibt ein Knopf | Sollstellung bzw. NK-Verbuchen tilgen automatisch 2030 an 1100 (älteste Rechnung zuerst) |
+| Unklare Zahlung | Spur «Klärungsfälle»: Alter, Vorschlag mit Begründung, Notiz, Zuordnen/Aufteilen, an den Absender zurück; ab 10 Tagen Warnmarke und Pendenz | 1190 an 1100 / 1190 an Bank |
+| Kaution auf dem Mietzinskonto | «Als Kaution verbuchen» (nur exakter Betrag, Vertrag ohne bilanzierte Kaution) + Pendenz «auf Sperrkonto überweisen» | 1190 an 2010 mit `Mietkaution [V…]` — zählt für Freigabe, keine Doppelbuchung |
+| Rückbuchung der Bank | Belastung im Bank-Eingang → «Als Rückbuchung erfassen» (Kandidaten: gleicher Betrag, 120 Tage) | Storno der Zahlung = Buchung der Belastung; Rechnung wieder offen |
+
+Bestand: Guthaben, die vor V12 entstanden, stehen auf «offen lassen» (Migration
+`finance.0046`) und werden nicht ungefragt verrechnet.
+
+Wächter: `core/tests/test_zahlungsklaerung.py` (25 Tests; Gegenprobe: sechs Mutanten —
+Suche ohne Mandantengrenze, Storno eines Teils allein, Kaution ohne Vertragsmarke, Lernen bei
+mehreren Mietern, Sollstellung ohne Verrechnung, Import ohne Sammelzahlungs-Hinweis — alle
+rot), `e2e/tests/zahlungs-cockpit.spec.ts` (1440 und 390 px).
+
+Nebenbei behoben: Ein zurückerstattetes Guthaben stand im Mieterkonto (Team und Portal)
+weiter als Haben — der Mieter schien ein Guthaben zu haben, das er längst zurückbekommen
+hatte. Die Rückerstattung (Buchung 2030 an Bank) erscheint jetzt als Soll-Zeile.
+

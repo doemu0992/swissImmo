@@ -21,7 +21,7 @@ from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.conf import settings
-from django.utils.translation import gettext
+from django.utils.translation import gettext, ngettext
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
@@ -94,7 +94,10 @@ def fw_bankabgleich(request):
     # Kürzliche Abgleiche (verbuchte Zahlungen) als Kontext.
     # Erst filtern, DANN slicen — ein bereits geslicetes QuerySet lässt sich nicht
     # mehr filtern (TypeError → HTTP 500, sobald ein Liegenschaftsfilter aktiv ist).
+    # Geparktes Geld (1190 ungeklärt, 2030 Guthaben) ist nicht «abgeglichen» —
+    # es steht in den Spuren Klärungsfälle und Guthaben (Zahlungs-Cockpit V12).
     letzte_qs = (Zahlungseingang.objects.filter(status='verbucht')
+                 .exclude(konto__nummer__in=['1190', '2030'])
                  .select_related('vertrag__mieter')
                  .prefetch_related('bankbewegungen'))
     if aktive_lg:
@@ -151,6 +154,57 @@ def fw_bankabgleich(request):
         if not z.zahler and z.vertrag_id and z.vertrag.mieter_id:
             z.zahler, z.zahler_geraten = z.vertrag.mieter.display_name, False
         z.ref = ((bew.referenz if bew else '') or '').strip()
+    # ZAHLUNGS-COCKPIT V12: Klärungsfälle mit Alter, Vorschlag und möglicher
+    # Kaution; Guthaben mit ihrer Verwendung. Die offenen Posten werden einmal
+    # geladen und für alle Vorschläge der Seite geteilt.
+    from core.services import zahlungsklaerung as _zk
+    _posten = list(_zk.offene_posten()[:2000]) if any(
+        z.konto and z.konto.nummer == '1190' for z in geparkt) else []
+    _kaution_offen = {}
+    for _v in (Mietvertrag.objects.filter(status__in=['aktiv', 'gekuendigt'],
+                                          kautions_einbezahlt_am__isnull=True, kautions_betrag__gt=0)
+               .exclude(kautions_art='versicherung').select_related('mieter', 'einheit__liegenschaft')):
+        _kaution_offen.setdefault(_v.kautions_betrag, []).append(_v)
+    for z in geparkt:
+        if z.konto and z.konto.nummer == '1190':
+            z.tage = _zk.tage_ungeklaert(z, heute)
+            z.alt = z.tage >= _zk.KLAERUNG_WARN_TAGE
+            _vs = _zk.vorschlaege(z, absender=z.zahler or '', mitteilung=z.mitteilung or '',
+                                  referenz=z.ref, posten=_posten)
+            z.vorschlag = _vs[0] if _vs else None
+            z.kaution_kandidaten = _kaution_offen.get(z.betrag, [])[:5]
+    klaerung = [z for z in geparkt if z.konto and z.konto.nummer == '1190']
+    guthaben_liste = [z for z in geparkt if z.konto and z.konto.nummer == '2030']
+
+    # Teilzahlungen: Rechnungen mit Rest — mit Fortschritt und Mahnstand.
+    from core.services.mahnstufen import Mahnstufen, eigentuemer_von_rechnung
+    _stufen = Mahnstufen()
+    teilzahlungen = []
+    for row in rows:
+        r = row['r']
+        if r.status != 'teilbezahlt':
+            continue
+        bezahlt = r.betrag - row['offen']
+        hoechste = r.mahnungen.order_by('-stufe').first()
+        naechste = None
+        faellig = r.faellig_am or r.datum
+        if faellig and r.vertrag_id:
+            _tage = _stufen.tage_im_verzug(faellig, heute, eigentuemer_von_rechnung(r),
+                                           organisation=r.organisation)
+            if _tage is not None:
+                _s = _stufen.stufe_fuer_tage(_tage, eigentuemer_von_rechnung(r),
+                                             organisation=r.organisation)
+                if _s and (not hoechste or _s['stufe'] > hoechste.stufe):
+                    naechste = _s
+        teilzahlungen.append({
+            **row, 'bezahlt': bezahlt,
+            'prozent': int((bezahlt / r.betrag * 100) if r.betrag else 0),
+            'hoechste': hoechste, 'naechste': naechste,
+            'mahnsperre': bool(r.vertrag_id and r.vertrag.mieter_id and r.vertrag.mieter.mahnsperre),
+            'kleindifferenz': row['offen'] <= _zk.KLEINDIFFERENZ_CHF,
+        })
+    teil_rest = sum((t['offen'] for t in teilzahlungen), Decimal('0.00'))
+
     # 1190 (Aktiv, ungeklärt) und 2030 (Passiv, Mieterguthaben) sind fachlich
     # verschieden und werden nicht zu einer Summe vermischt.
     geparkt_unklar = sum((z.betrag for z in geparkt if z.konto and z.konto.nummer == '1190'),
@@ -168,6 +222,19 @@ def fw_bankabgleich(request):
     if aktive_lg:
         bew_qs = bew_qs.filter(_Q(liegenschaft=aktive_lg) | _Q(liegenschaft__isnull=True))
     bewegungen = list(bew_qs[:100])
+    # Rückbuchung (Rücklastschrift): Kandidaten sind verbuchte Mieterzahlungen
+    # über genau diesen Betrag aus den letzten 120 Tagen (Zahlungs-Cockpit V12).
+    for b in bewegungen:
+        b.rueck_kandidaten = []
+        if b.betrag < 0:
+            b.rueck_kandidaten = [
+                z for z in (Zahlungseingang.objects
+                            .filter(status='verbucht', vertrag__isnull=False, betrag=-b.betrag,
+                                    datum_eingang__gte=b.datum - _timedelta(days=120),
+                                    datum_eingang__lte=b.datum)
+                            .select_related('vertrag__mieter', 'debitoren_rechnung')
+                            .order_by('-datum_eingang')[:5])
+                if ':' not in (z.bank_referenz or '')]
     bew_offen_n = bew_qs.count()
     # Summen über ALLE offenen Bewegungen, nicht nur die ersten 100 — sonst
     # unterschlägt der Kopf Geld, das weiter unten in der Liste liegt.
@@ -240,6 +307,16 @@ def fw_bankabgleich(request):
         # einzelne Rechnung; getilgt wird dann automatisch die älteste zuerst.
         'sammel_vertraege': sammel_vertraege,
         'geparkt_unklar': geparkt_unklar, 'geparkt_guthaben': geparkt_guthaben,
+        'klaerung': klaerung, 'guthaben_liste': guthaben_liste,
+        'klaerung_alt': sum(1 for z in klaerung if z.alt),
+        'teilzahlungen': teilzahlungen, 'teil_rest': teil_rest,
+        'guthaben_auto': sum(1 for z in guthaben_liste if z.guthaben_verwendung != 'offen'),
+        'verwendungen': Zahlungseingang.GUTHABEN_VERWENDUNG,
+        'kleindifferenz': _zk.KLEINDIFFERENZ_CHF,
+        # Startspur: wo es etwas zu tun gibt — Klärung vor Bank-Eingang vor OP.
+        'spur': (request.GET.get('spur') or ('klaerung' if klaerung else 'bank' if bewegungen
+                                             else 'guthaben' if guthaben_liste
+                                             else 'teil' if teilzahlungen else 'posten')),
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -370,6 +447,7 @@ def fw_guthaben_rueckerstatten(request):
 
     if request.method != 'POST':
         return redirect('fw_bankabgleich')
+    ziel = _ziel(request)
     valuta = timezone.localdate()
     roh = (request.POST.get('valuta') or '').strip()
     if roh:
@@ -378,30 +456,43 @@ def fw_guthaben_rueckerstatten(request):
             messages.error(request, gettext('Ungültiges oder zukünftiges Valutadatum.'))
             return redirect('fw_bankabgleich')
     bank_nr = (request.POST.get('bank_konto') or '1020').strip()
+    from core.services.zahlungsklaerung import zurueckueberweisen, ZuordnungsFehler
     try:
         with transaction.atomic():
             z = get_object_or_404(
                 Zahlungseingang.objects.select_for_update(of=('self',))
                 .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'konto'),
                 id=request.POST.get('zahlung_id'))
-            if z.status != 'verbucht' or not z.konto_id or z.konto.nummer != '2030' or not z.vertrag_id:
-                messages.error(request, gettext('Nur ein verbuchtes Mieterguthaben (Konto 2030) kann zurückerstattet werden.'))
-                return redirect('fw_bankabgleich')
-            lg = z.vertrag.einheit.liegenschaft if z.vertrag.einheit_id else None
-            buche('2030', bank_nr, z.betrag,
-                  f"Rückerstattung Guthaben {z.vertrag.mieter} [Z{z.pk}]",
-                  datum=valuta, liegenschaft=lg, zahlung=z, user=request.user)
-            z.konto = None
-            z.bemerkung = (f"{z.bemerkung} → zurückerstattet {valuta:%d.%m.%Y}")[:255]
-            z.save(update_fields=['konto', 'bemerkung'])
+            # Seit V12 auch ein Fremdeingang (1190): Geld, das nicht hierher
+            # gehört, geht an den Absender zurück.
+            war_guthaben = bool(z.konto_id and z.konto.nummer == '2030')
+            zurueckueberweisen(z, bank_nr=bank_nr, valuta=valuta, user=request.user)
+    except ZuordnungsFehler as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect(ziel)
     except PermissionError as exc:
         messages.error(request, f"❌ {exc}")
-        return redirect('fw_bankabgleich')
+        return redirect(ziel)
+    if not war_guthaben:
+        log_aktion(request, "Fremdeingang zurücküberwiesen", f"Zahlung #{z.pk}",
+                   f"CHF {z.betrag}, Valuta {valuta:%d.%m.%Y}")
+        messages.success(request, '✅ ' + gettext('CHF %(betrag)s an den Absender zurücküberwiesen (1190 an Bank).') % {'betrag': z.betrag})
+        return redirect(ziel)
     log_aktion(request, "Mieterguthaben zurückerstattet", str(z.vertrag),
                f"CHF {z.betrag}, Valuta {valuta:%d.%m.%Y}", ziel=z.vertrag)
     messages.success(request, '✅ ' + gettext('CHF %(betrag)s an %(mieter)s zurückerstattet (2030 an Bank).') % {
         'betrag': z.betrag, 'mieter': z.vertrag.mieter.display_name})
-    return redirect('fw_bankabgleich')
+    return redirect(ziel)
+
+
+def _ziel(request, standard='/neu/bankabgleich/'):
+    """Rücksprung nach einer Aktion: `next` (nur eigene /neu/-Pfade — kein
+    offener Redirect), sonst das Cockpit mit dem aktiven Liegenschaftsfilter."""
+    n = (request.POST.get('next') or request.GET.get('next') or '').strip()
+    if n.startswith('/neu/') and '//' not in n and '\\' not in n:
+        return n
+    lg = (request.POST.get('lg') or '').strip()
+    return f"{standard}?lg={lg}" if lg.isdigit() else standard
 
 
 def _datum_aus_eingabe(roh):
@@ -1051,6 +1142,34 @@ def _camt_import_ausfuehren(request):
             # verschwindet. 2030 statt 1190 (Audit W6): der Mieter ist bekannt, das
             # ist eine echte Verbindlichkeit und kein ungeklärter Durchlaufposten.
             ueberschuss = betrag_e - offen
+            # SAMMELZAHLUNG? (Zahlungs-Cockpit V12) Hat derselbe Mieter weitere
+            # offene Posten, die genau den Überschuss ergeben, war das Geld
+            # vermutlich auch für sie gedacht — etwa zwei Verträge mit einer
+            # Überweisung. Dann wird der Überschuss ein Klärungsfall mit Hinweis
+            # statt still ein Guthaben: Zuteilen kann nur ein Mensch (Art. 86 OR).
+            andere = [r for r in offene
+                      if ueberschuss > 0 and r.pk != rechnung.pk and r.vertrag_id
+                      and r.vertrag.mieter_id == rechnung.vertrag.mieter_id
+                      and r.offener_betrag > 0]
+            passend = [r for r in andere if r.offener_betrag == ueberschuss]
+            if andere and (passend or sum((r.offener_betrag for r in andere), Decimal('0')) == ueberschuss):
+                with transaction.atomic():
+                    z_samm = Zahlungseingang.objects.create(
+                        betrag=ueberschuss, datum_eingang=e['datum'] or heute,
+                        buchungs_monat=(e['datum'] or heute).replace(day=1),
+                        bemerkung=f"{quelle} UNGEKLÄRT: Überschuss aus Zahlung {rechnung.vertrag.mieter} ({rechnung.titel})"[:255],
+                        bank_referenz=f"{aref}:ueber"[:140], konto=konto_clearing,
+                        erstellt_von=request.user, status='verbucht',
+                        klaerung_notiz=(ngettext('Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Überschuss.',
+                                                 'Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss.',
+                                                 len(passend or andere))
+                                        % {'n': len(passend or andere), 'mieter': rechnung.vertrag.mieter.display_name})[:255])
+                    from finance.booking import buche
+                    buche(bank_nr, "1190", ueberschuss,
+                          f"{quelle} Überschuss {rechnung.vertrag.mieter} - Sammelzahlung? ({rechnung.titel})",
+                          datum=e['datum'] or heute, zahlung=z_samm, user=request.user)
+                geklaert += 1
+                return
             if ueberschuss > 0:
                 with transaction.atomic():
                     z_ueber = Zahlungseingang.objects.create(

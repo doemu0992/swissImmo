@@ -86,7 +86,11 @@ def zuordnen(zahlung, rechnung, user=None, heute=None):
                 bemerkung=f"Rest-Guthaben aus Zuordnung ({rechnung.titel})"[:255],
                 bank_referenz=(f"{zahlung.bank_referenz}:rest"[:140] if zahlung.bank_referenz else ''),
                 konto=_park_konto('2030'), liegenschaft=lg or zahlung.liegenschaft,
-                erstellt_von=user, status='verbucht')
+                erstellt_von=user, status='verbucht',
+                # Ein Rest-Guthaben behält die Verwendung des Guthabens, aus dem
+                # es stammt (z. B. «für die NK-Abrechnung reserviert»).
+                guthaben_verwendung=(zahlung.guthaben_verwendung if park_nr == '2030'
+                                     else 'naechste_rechnung'))
             if park_nr != '2030':
                 buche('1190', '2030', rest,
                       f"Rest-Guthaben {vertrag.mieter} aus Zuordnung {rechnung.titel}",

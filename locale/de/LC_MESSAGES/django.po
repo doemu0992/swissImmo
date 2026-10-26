@@ -26406,3 +26406,508 @@ msgid "An %(n)s Mieter verrechnen"
 msgid_plural "Auf alle %(n)s Mieter verteilen"
 msgstr[0] "An %(n)s Mieter verrechnen"
 msgstr[1] "Auf alle %(n)s Mieter verteilen"
+
+msgid "Hier wartet Geld, das sich nicht sicher zuordnen liess — ohne oder mit falscher Referenz. Es geht nicht verloren: Es wird zugeordnet, aufgeteilt, als Kaution erkannt oder an den Absender zurücküberwiesen."
+msgstr "Hier wartet Geld, das sich nicht sicher zuordnen liess — ohne oder mit falscher Referenz. Es geht nicht verloren: Es wird zugeordnet, aufgeteilt, als Kaution erkannt oder an den Absender zurücküberwiesen."
+
+msgid "Mieterguthaben (Konto 2030)"
+msgstr "Mieterguthaben (Konto 2030)"
+
+msgid "Zahlt ein Mieter mehr als offen, gehört ihm der Überschuss. Er wird mit der nächsten Rechnung verrechnet, für die Nebenkostenabrechnung reserviert oder zurückerstattet — wie hinterlegt."
+msgstr "Zahlt ein Mieter mehr als offen, gehört ihm der Überschuss. Er wird mit der nächsten Rechnung verrechnet, für die Nebenkostenabrechnung reserviert oder zurückerstattet — wie hinterlegt."
+
+msgid "Sammelzahlung"
+msgstr "Sammelzahlung"
+
+msgid "Eine Überweisung für mehrere Posten, etwa zwei Verträge oder ein Sozialdienst für mehrere Mieter. Jeder Teil wird einem Posten zugeteilt und einzeln gebucht; storniert wird die Zahlung nur als Ganzes."
+msgstr "Eine Überweisung für mehrere Posten, etwa zwei Verträge oder ein Sozialdienst für mehrere Mieter. Jeder Teil wird einem Posten zugeteilt und einzeln gebucht; storniert wird die Zahlung nur als Ganzes."
+
+msgid "Teilzahlung"
+msgstr "Teilzahlung"
+
+msgid "Ist weniger eingegangen als geschuldet, gilt der Posten als «teilbezahlt». Der Rest bleibt offen und läuft in den Mahnlauf, solange keine Mahnsperre oder Zahlungsvereinbarung besteht."
+msgstr "Ist weniger eingegangen als geschuldet, gilt der Posten als «teilbezahlt». Der Rest bleibt offen und läuft in den Mahnlauf, solange keine Mahnsperre oder Zahlungsvereinbarung besteht."
+
+msgid "Welche Schuld wird getilgt?"
+msgstr "Welche Schuld wird getilgt?"
+
+msgid "Gibt der Zahler an, welche Schuld er bezahlt, gilt seine Erklärung (Art. 86 OR). Sonst wird die älteste fällige Schuld getilgt (Art. 87 OR) — so ist der Vorschlag vorbefüllt."
+msgstr "Gibt der Zahler an, welche Schuld er bezahlt, gilt seine Erklärung (Art. 86 OR). Sonst wird die älteste fällige Schuld getilgt (Art. 87 OR) — so ist der Vorschlag vorbefüllt."
+
+msgid "Kleindifferenz"
+msgstr "Kleindifferenz"
+
+msgid "Ein kleiner Rest, etwa von der Bank abgezogene Spesen. Bis CHF 5.00 lässt er sich als Debitorenverlust (Konto 3805) ausbuchen, statt ihn zu mahnen."
+msgstr "Ein kleiner Rest, etwa von der Bank abgezogene Spesen. Bis CHF 5.00 lässt er sich als Debitorenverlust (Konto 3805) ausbuchen, statt ihn zu mahnen."
+
+msgid "Rückbuchung"
+msgstr "Rückbuchung"
+
+msgid "Die Bank bucht eine eingegangene Zahlung zurück, etwa wegen falscher Kontoangaben. Die Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen."
+msgstr "Die Bank bucht eine eingegangene Zahlung zurück, etwa wegen falscher Kontoangaben. Die Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen."
+
+msgid "Kaution auf dem Mietzinskonto"
+msgstr "Kaution auf dem Mietzinskonto"
+
+msgid "Die Kaution gehört auf ein Sperrkonto auf den Namen des Mieters (Art. 257e OR). Ist sie auf dem Mietzinskonto eingegangen, wird sie als Kaution verbucht und danach auf das Sperrkonto überwiesen."
+msgstr "Die Kaution gehört auf ein Sperrkonto auf den Namen des Mieters (Art. 257e OR). Ist sie auf dem Mietzinskonto eingegangen, wird sie als Kaution verbucht und danach auf das Sperrkonto überwiesen."
+
+msgid "Diese Zahlung liegt nicht auf dem Durchlauf- oder Guthabenkonto."
+msgstr "Diese Zahlung liegt nicht auf dem Durchlauf- oder Guthabenkonto."
+
+msgid "Unbekanntes Ziel für den Rest."
+msgstr "Unbekanntes Ziel für den Rest."
+
+msgid "Nichts zugeteilt."
+msgstr "Nichts zugeteilt."
+
+msgid "Ein Guthaben bleibt Guthaben — der Rest kann nicht «ungeklärt» werden."
+msgstr "Ein Guthaben bleibt Guthaben — der Rest kann nicht «ungeklärt» werden."
+
+msgid "Nur eine ungeklärte Zahlung oder ein Guthaben kann zurücküberwiesen werden."
+msgstr "Nur eine ungeklärte Zahlung oder ein Guthaben kann zurücküberwiesen werden."
+
+msgid "Dieses Guthaben hat keinen Mieter."
+msgstr "Dieses Guthaben hat keinen Mieter."
+
+msgid "Nur eine ungeklärte Zahlung (Konto 1190) kann als Kaution erkannt werden."
+msgstr "Nur eine ungeklärte Zahlung (Konto 1190) kann als Kaution erkannt werden."
+
+msgid "Dieser Vertrag hat eine Kautionsversicherung — es gibt kein Kautionsgeld."
+msgstr "Dieser Vertrag hat eine Kautionsversicherung — es gibt kein Kautionsgeld."
+
+msgid "Im Vertrag ist keine Kaution vereinbart."
+msgstr "Im Vertrag ist keine Kaution vereinbart."
+
+msgid "Für diesen Vertrag ist die Kaution bereits verbucht."
+msgstr "Für diesen Vertrag ist die Kaution bereits verbucht."
+
+msgid "Nur eine offene Belastung kann eine Rückbuchung sein."
+msgstr "Nur eine offene Belastung kann eine Rückbuchung sein."
+
+msgid "Diese Zahlung ist nicht über dieses Bankkonto eingegangen."
+msgstr "Diese Zahlung ist nicht über dieses Bankkonto eingegangen."
+
+msgid "Eine Rechnung ist doppelt ausgewählt."
+msgstr "Eine Rechnung ist doppelt ausgewählt."
+
+msgid "Jeder Teilbetrag muss grösser als 0 sein."
+msgstr "Jeder Teilbetrag muss grösser als 0 sein."
+
+#, python-format
+msgid "Zugeteilt sind CHF %(summe)s, die Zahlung beträgt nur CHF %(betrag)s."
+msgstr "Zugeteilt sind CHF %(summe)s, die Zahlung beträgt nur CHF %(betrag)s."
+
+msgid "Für das Guthaben fehlt der Mieter."
+msgstr "Für das Guthaben fehlt der Mieter."
+
+#, python-format
+msgid "Die Zahlung (CHF %(betrag)s) entspricht nicht der vereinbarten Kaution (CHF %(soll)s). Einen Teil als Kaution zu verbuchen ist nicht vorgesehen — bitte mit dem Mieter klären."
+msgstr "Die Zahlung (CHF %(betrag)s) entspricht nicht der vereinbarten Kaution (CHF %(soll)s). Einen Teil als Kaution zu verbuchen ist nicht vorgesehen — bitte mit dem Mieter klären."
+
+#, python-format
+msgid "Die Rückbuchung (CHF %(rueck)s) entspricht nicht der Zahlung (CHF %(total)s)."
+msgstr "Die Rückbuchung (CHF %(rueck)s) entspricht nicht der Zahlung (CHF %(total)s)."
+
+msgid "Absender wurde schon diesem Mieter zugeordnet"
+msgstr "Absender wurde schon diesem Mieter zugeordnet"
+
+#, python-format
+msgid "«%(titel)s» ist nicht offen."
+msgstr "«%(titel)s» ist nicht offen."
+
+#, python-format
+msgid "Auf «%(titel)s» sind nur CHF %(offen)s offen."
+msgstr "Auf «%(titel)s» sind nur CHF %(offen)s offen."
+
+#, python-format
+msgid "Dieses Guthaben gehört einem anderen Mieter und kann «%(titel)s» nicht tilgen."
+msgstr "Dieses Guthaben gehört einem anderen Mieter und kann «%(titel)s» nicht tilgen."
+
+#, python-format
+msgid "Referenz gehört zu «%(titel)s»"
+msgstr "Referenz gehört zu «%(titel)s»"
+
+#, python-format
+msgid "Name «%(name)s» steht im Absender oder in der Mitteilung"
+msgstr "Name «%(name)s» steht im Absender oder in der Mitteilung"
+
+#, python-format
+msgid "Betrag passt genau auf «%(titel)s»"
+msgstr "Betrag passt genau auf «%(titel)s»"
+
+#, python-format
+msgid "%(n)s offene Posten ergeben zusammen genau den Betrag"
+msgstr "%(n)s offene Posten ergeben zusammen genau den Betrag"
+
+#, python-format
+msgid "Rückbuchung erfasst: Die Zahlung vom %(datum)s ist storniert, die Rechnung wieder offen."
+msgstr "Rückbuchung erfasst: Die Zahlung vom %(datum)s ist storniert, die Rechnung wieder offen."
+
+#, python-format
+msgid "Die Zahlung war aufgeteilt — alle %(n)s Teile sind storniert, die offenen Posten wieder offen."
+msgstr "Die Zahlung war aufgeteilt — alle %(n)s Teile sind storniert, die offenen Posten wieder offen."
+
+#, python-format
+msgid "CHF %(betrag)s an den Absender zurücküberwiesen (1190 an Bank)."
+msgstr "CHF %(betrag)s an den Absender zurücküberwiesen (1190 an Bank)."
+
+#, python-format
+msgid "CHF %(betrag)s Mieterguthaben mit Nachzahlungen verrechnet."
+msgstr "CHF %(betrag)s Mieterguthaben mit Nachzahlungen verrechnet."
+
+#, python-format
+msgid "CHF %(summe)s auf %(n)s Posten verbucht"
+msgstr "CHF %(summe)s auf %(n)s Posten verbucht"
+
+msgid "Notiz gespeichert."
+msgstr "Notiz gespeichert."
+
+msgid "Diese Zahlung ist bereits zugeordnet oder storniert."
+msgstr "Diese Zahlung ist bereits zugeordnet oder storniert."
+
+msgid "Zurücküberweisen dürfen nur Verwalter und Inhaber."
+msgstr "Zurücküberweisen dürfen nur Verwalter und Inhaber."
+
+msgid "Nur für ein Mieterguthaben (Konto 2030)."
+msgstr "Nur für ein Mieterguthaben (Konto 2030)."
+
+#, python-format
+msgid "Guthaben: %(wert)s."
+msgstr "Guthaben: %(wert)s."
+
+#, python-format
+msgid "CHF %(betrag)s als Kaution von %(mieter)s verbucht. Eine Pendenz erinnert an die Überweisung auf das Sperrkonto."
+msgstr "CHF %(betrag)s als Kaution von %(mieter)s verbucht. Eine Pendenz erinnert an die Überweisung auf das Sperrkonto."
+
+msgid "Eine gewählte Rechnung gibt es nicht (mehr)."
+msgstr "Eine gewählte Rechnung gibt es nicht (mehr)."
+
+#, python-format
+msgid "Rest CHF %(rest)s bleibt ungeklärt"
+msgstr "Rest CHF %(rest)s bleibt ungeklärt"
+
+#, python-format
+msgid "Rest CHF %(rest)s als Guthaben"
+msgstr "Rest CHF %(rest)s als Guthaben"
+
+#, python-format
+msgid "Rest CHF %(rest)s zurücküberwiesen"
+msgstr "Rest CHF %(rest)s zurücküberwiesen"
+
+msgid "Mit nächster Rechnung verrechnen"
+msgstr "Mit nächster Rechnung verrechnen"
+
+msgid "Für die Nebenkostenabrechnung reservieren"
+msgstr "Für die Nebenkostenabrechnung reservieren"
+
+msgid "Offen lassen (Entscheid von Hand)"
+msgstr "Offen lassen (Entscheid von Hand)"
+
+msgid "Teilweise bezahlt"
+msgstr "Teilweise bezahlt"
+
+#, python-format
+msgid "Rest von CHF %(betrag)s"
+msgstr "Rest von CHF %(betrag)s"
+
+msgid "Offenen Betrag übernehmen"
+msgstr "Offenen Betrag übernehmen"
+
+msgid "Keine offenen Posten gefunden"
+msgstr "Keine offenen Posten gefunden"
+
+msgid "Nach Mieter, Firma, Strasse, Objekt, Rechnungsbetrag oder QR-Referenz suchen."
+msgstr "Nach Mieter, Firma, Strasse, Objekt, Rechnungsbetrag oder QR-Referenz suchen."
+
+#, python-format
+msgid "von %(betrag)s"
+msgstr "von %(betrag)s"
+
+#, python-format
+msgid "Betrag für %(titel)s"
+msgstr "Betrag für %(titel)s"
+
+msgid "Zahlungseingänge klären, aufteilen und verbuchen — Sonderfälle wie Teil-, Sammel- und Überzahlungen inklusive"
+msgstr "Zahlungseingänge klären, aufteilen und verbuchen — Sonderfälle wie Teil-, Sammel- und Überzahlungen inklusive"
+
+msgid "Klärungsfälle"
+msgstr "Klärungsfälle"
+
+msgid "Nichts ungeklärt"
+msgstr "Nichts ungeklärt"
+
+msgid "Keine Mieterguthaben"
+msgstr "Keine Mieterguthaben"
+
+msgid "Teilzahlungen"
+msgstr "Teilzahlungen"
+
+msgid "Keine Teilzahlungen offen"
+msgstr "Keine Teilzahlungen offen"
+
+msgid "Bank-Eingang"
+msgstr "Bank-Eingang"
+
+msgid "offene Auszugszeilen"
+msgstr "offene Auszugszeilen"
+
+msgid "Alle Auszugszeilen erledigt"
+msgstr "Alle Auszugszeilen erledigt"
+
+msgid "Arbeitslisten"
+msgstr "Arbeitslisten"
+
+msgid "So funktioniert die Zahlungsklärung"
+msgstr "So funktioniert die Zahlungsklärung"
+
+msgid "Was der Import nicht sicher zuordnen kann, wartet hier auf dem Durchlaufkonto 1190 — nichts geht verloren."
+msgstr "Was der Import nicht sicher zuordnen kann, wartet hier auf dem Durchlaufkonto 1190 — nichts geht verloren."
+
+msgid "«Zuordnen / Aufteilen» öffnet den Assistenten: links die Zahlung, rechts die offenen Posten. Eine Zahlung lässt sich auf mehrere Posten und Mieter verteilen."
+msgstr "«Zuordnen / Aufteilen» öffnet den Assistenten: links die Zahlung, rechts die offenen Posten. Eine Zahlung lässt sich auf mehrere Posten und Mieter verteilen."
+
+msgid "Gehört das Geld nicht hierher, geht es an den Absender zurück. Ist es eine Kaution, wird es als Kaution verbucht."
+msgstr "Gehört das Geld nicht hierher, geht es an den Absender zurück. Ist es eine Kaution, wird es als Kaution verbucht."
+
+msgid "Zuordnen / Aufteilen"
+msgstr "Zuordnen / Aufteilen"
+
+msgid "Weitere"
+msgstr "Weitere"
+
+msgid "Als Kaution verbuchen? Gebucht wird 1190 an 2010 Kautionsverbindlichkeit; danach die Überweisung auf das Sperrkonto veranlassen."
+msgstr "Als Kaution verbuchen? Gebucht wird 1190 an 2010 Kautionsverbindlichkeit; danach die Überweisung auf das Sperrkonto veranlassen."
+
+msgid "Kaution von"
+msgstr "Kaution von"
+
+msgid "Als Kaution verbuchen"
+msgstr "Als Kaution verbuchen"
+
+msgid "Zahlung an den Absender zurücküberweisen? Gebucht wird 1190 an Bank."
+msgstr "Zahlung an den Absender zurücküberweisen? Gebucht wird 1190 an Bank."
+
+msgid "An Absender zurücküberweisen"
+msgstr "An Absender zurücküberweisen"
+
+msgid "Notiz zur Klärung, z. B. «Mieter angerufen»"
+msgstr "Notiz zur Klärung, z. B. «Mieter angerufen»"
+
+msgid "Klärungsnotiz"
+msgstr "Klärungsnotiz"
+
+msgid "Notiz speichern"
+msgstr "Notiz speichern"
+
+msgid "Keine Klärungsfälle"
+msgstr "Keine Klärungsfälle"
+
+msgid "Jede Zahlung ist einem Posten, einem Guthaben oder einer Kaution zugeordnet."
+msgstr "Jede Zahlung ist einem Posten, einem Guthaben oder einer Kaution zugeordnet."
+
+msgid "Guthaben richtig behandeln"
+msgstr "Guthaben richtig behandeln"
+
+msgid "Zahlt ein Mieter zu viel, entsteht ein Guthaben auf Konto 2030 — es gehört dem Mieter und verfällt nicht."
+msgstr "Zahlt ein Mieter zu viel, entsteht ein Guthaben auf Konto 2030 — es gehört dem Mieter und verfällt nicht."
+
+msgid "«Mit nächster Rechnung verrechnen» tilgt automatisch die nächste Monatsrechnung; «Für die Nebenkostenabrechnung reservieren» wartet auf deren Nachzahlung."
+msgstr "«Mit nächster Rechnung verrechnen» tilgt automatisch die nächste Monatsrechnung; «Für die Nebenkostenabrechnung reservieren» wartet auf deren Nachzahlung."
+
+msgid "Will der Mieter das Geld zurück, wird es zurückerstattet (2030 an Bank)."
+msgstr "Will der Mieter das Geld zurück, wird es zurückerstattet (2030 an Bank)."
+
+msgid "Mieterguthaben"
+msgstr "Mieterguthaben"
+
+msgid "Verwendung des Guthabens"
+msgstr "Verwendung des Guthabens"
+
+msgid "Jetzt verrechnen"
+msgstr "Jetzt verrechnen"
+
+msgid "Überzahlungen erscheinen hier und werden nach ihrer Verwendung verrechnet oder zurückerstattet."
+msgstr "Überzahlungen erscheinen hier und werden nach ihrer Verwendung verrechnet oder zurückerstattet."
+
+msgid "Der Rest bleibt offen und läuft in den Mahnlauf."
+msgstr "Der Rest bleibt offen und läuft in den Mahnlauf."
+
+msgid "Rest"
+msgstr "Rest"
+
+msgid "Kleindifferenz ausbuchen"
+msgstr "Kleindifferenz ausbuchen"
+
+msgid "Rest mahnen"
+msgstr "Rest mahnen"
+
+msgid "Ratenplan"
+msgstr "Ratenplan"
+
+msgid "Wer nur einen Teil zahlt, erscheint hier mit dem Restbetrag."
+msgstr "Wer nur einen Teil zahlt, erscheint hier mit dem Restbetrag."
+
+msgid "Möglicherweise eine Rückbuchung einer Mieterzahlung"
+msgstr "Möglicherweise eine Rückbuchung einer Mieterzahlung"
+
+msgid "Rückbuchung erfassen? Die gewählte Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen."
+msgstr "Rückbuchung erfassen? Die gewählte Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen."
+
+msgid "Zurückgebuchte Mieterzahlung"
+msgstr "Zurückgebuchte Mieterzahlung"
+
+msgid "Als Rückbuchung erfassen"
+msgstr "Als Rückbuchung erfassen"
+
+msgid "Neue Zeilen kommen mit dem nächsten Kontoauszug."
+msgstr "Neue Zeilen kommen mit dem nächsten Kontoauszug."
+
+msgid "Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert."
+msgstr "Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert."
+
+#, python-format
+msgid "CHF %(bezahlt)s von %(total)s bezahlt"
+msgstr "CHF %(bezahlt)s von %(total)s bezahlt"
+
+#, python-format
+msgid "Gemahnt: Stufe %(stufe)s am %(datum)s"
+msgstr "Gemahnt: Stufe %(stufe)s am %(datum)s"
+
+#, python-format
+msgid "nächster Mahnlauf: %(label)s"
+msgstr "nächster Mahnlauf: %(label)s"
+
+#, python-format
+msgid "Kleindifferenz von CHF %(betrag)s ausbuchen (3805 Debitorenverluste)?"
+msgstr "Kleindifferenz von CHF %(betrag)s ausbuchen (3805 Debitorenverluste)?"
+
+#, python-format
+msgid "Rest CHF %(betrag)s offen"
+msgstr "Rest CHF %(betrag)s offen"
+
+msgid "Zahlung zuordnen"
+msgstr "Zahlung zuordnen"
+
+msgid "Guthaben verrechnen"
+msgstr "Guthaben verrechnen"
+
+msgid "Links die Zahlung, rechts die offenen Posten. «offen …» antippen übernimmt den Betrag; am Desktop lässt sich die Zahlung auch auf einen Posten ziehen. Eine Zahlung darf mehrere Posten, Verträge und Mieter tilgen."
+msgstr "Links die Zahlung, rechts die offenen Posten. «offen …» antippen übernimmt den Betrag; am Desktop lässt sich die Zahlung auch auf einen Posten ziehen. Eine Zahlung darf mehrere Posten, Verträge und Mieter tilgen."
+
+msgid "Rücküberweisung an Absender"
+msgstr "Rücküberweisung an Absender"
+
+msgid "bleibt ungeklärt"
+msgstr "bleibt ungeklärt"
+
+msgid "Ein Betrag ist höher als der offene Posten."
+msgstr "Ein Betrag ist höher als der offene Posten."
+
+msgid "Zugeteilt ist mehr als die Zahlung."
+msgstr "Zugeteilt ist mehr als die Zahlung."
+
+msgid "Noch nichts zugeteilt — Betrag eintragen oder «offen» antippen."
+msgstr "Noch nichts zugeteilt — Betrag eintragen oder «offen» antippen."
+
+msgid "Zahlung — auf einen Posten ziehen"
+msgstr "Zahlung — auf einen Posten ziehen"
+
+msgid "auf einen Posten ziehen"
+msgstr "auf einen Posten ziehen"
+
+msgid "Absender"
+msgstr "Absender"
+
+msgid "Mitteilung"
+msgstr "Mitteilung"
+
+msgid "Vorschläge"
+msgstr "Vorschläge"
+
+msgid "Nur Vorschläge — gebucht wird erst beim Speichern."
+msgstr "Nur Vorschläge — gebucht wird erst beim Speichern."
+
+msgid "Vorbefüllt ist die älteste Fälligkeit zuerst. Nennt der Zahler in der Mitteilung einen Monat oder eine Rechnung, gilt seine Angabe — dann die Beträge anpassen."
+msgstr "Vorbefüllt ist die älteste Fälligkeit zuerst. Nennt der Zahler in der Mitteilung einen Monat oder eine Rechnung, gilt seine Angabe — dann die Beträge anpassen."
+
+msgid "Mieter, Objekt, Betrag oder Referenz …"
+msgstr "Mieter, Objekt, Betrag oder Referenz …"
+
+msgid "Offene Posten suchen"
+msgstr "Offene Posten suchen"
+
+msgid "Ausgewählt"
+msgstr "Ausgewählt"
+
+msgid "Zugeteilt"
+msgstr "Zugeteilt"
+
+msgid "Anteil zugeteilt"
+msgstr "Anteil zugeteilt"
+
+msgid "Was passiert mit dem Rest?"
+msgstr "Was passiert mit dem Rest?"
+
+msgid "bleibt ungeklärt (1190)"
+msgstr "bleibt ungeklärt (1190)"
+
+msgid "als Guthaben von"
+msgstr "als Guthaben von"
+
+msgid "Guthaben von"
+msgstr "Guthaben von"
+
+msgid "zuerst einen Posten suchen"
+msgstr "zuerst einen Posten suchen"
+
+msgid "an den Absender zurücküberweisen"
+msgstr "an den Absender zurücküberweisen"
+
+msgid "Diese Buchungen entstehen"
+msgstr "Diese Buchungen entstehen"
+
+msgid "Je Posten: Parkkonto an 1100 Debitoren über den zugeteilten Betrag."
+msgstr "Je Posten: Parkkonto an 1100 Debitoren über den zugeteilten Betrag."
+
+#, python-format
+msgid "%(n)s länger als 10 Tage"
+msgid_plural "%(n)s länger als 10 Tage"
+msgstr[0] "%(n)s länger als 10 Tage"
+msgstr[1] "%(n)s länger als 10 Tage"
+
+#, python-format
+msgid "%(n)s wird automatisch verrechnet"
+msgid_plural "%(n)s werden automatisch verrechnet"
+msgstr[0] "%(n)s wird automatisch verrechnet"
+msgstr[1] "%(n)s werden automatisch verrechnet"
+
+#, python-format
+msgid "seit %(n)s Tag"
+msgid_plural "seit %(n)s Tagen"
+msgstr[0] "seit %(n)s Tag"
+msgstr[1] "seit %(n)s Tagen"
+
+#, python-format
+msgid "seit %(n)s Tag ungeklärt"
+msgid_plural "seit %(n)s Tagen ungeklärt"
+msgstr[0] "seit %(n)s Tag ungeklärt"
+msgstr[1] "seit %(n)s Tagen ungeklärt"
+
+#, python-format
+msgid "%(n)s Posten"
+msgid_plural "%(n)s Posten"
+msgstr[0] "%(n)s Posten"
+msgstr[1] "%(n)s Posten"
+
+#, python-format
+msgid "zusammen mit %(n)s weiteren Mieter genau der Betrag — Sammelzahlung"
+msgid_plural "zusammen mit %(n)s weiteren Mietern genau der Betrag — Sammelzahlung"
+msgstr[0] "zusammen mit %(n)s weiteren Mieter genau der Betrag — Sammelzahlung"
+msgstr[1] "zusammen mit %(n)s weiteren Mietern genau der Betrag — Sammelzahlung"
+
+#, python-format
+msgid "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Überschuss."
+msgid_plural "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."
+msgstr[0] "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Überschuss."
+msgstr[1] "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."

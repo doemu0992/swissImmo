@@ -224,6 +224,7 @@ def fw_nebenkosten_verbuchen(request, pk):
 
     heute = timezone.localdate()
     n_nach = n_gut = 0
+    nachzahler = []
     with transaction.atomic():
         # Zeilensperre + Re-Check gegen Doppelklick-Race: der p.abgeschlossen-Check
         # oben läuft ohne Lock — zwei parallele Requests würden sonst beide buchen
@@ -257,6 +258,7 @@ def fw_nebenkosten_verbuchen(request, pk):
                 buche("1100", "2200", mwst, f"MWST {satz}% NK-Nachzahlung {v.mieter} - {p.bezeichnung}",
                       datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech, user=request.user)
                 n_nach += 1
+                nachzahler.append(v.pk)
             else:  # Guthaben → als ECHTES Mieterguthaben führen (Audit-Befund W1):
                 # 3020 an 2030 (Verbindlichkeit gegenüber Mieter) statt 3020/1100 —
                 # 1100 wurde sonst ohne Nebenbuch-Beleg entlastet und das Guthaben
@@ -286,7 +288,19 @@ def fw_nebenkosten_verbuchen(request, pk):
         import json as _nk_json
         p.snapshot_json = _nk_json.dumps(_nk_jsonable(result))
         p.save(update_fields=['abgeschlossen', 'snapshot_json'])
+    # Guthaben, die für die NK-Abrechnung reserviert oder für die nächste Rechnung
+    # vorgesehen sind, tilgen jetzt die Nachzahlung (Zahlungs-Cockpit V12).
+    verrechnet = Decimal('0.00')
+    if nachzahler:
+        try:
+            from core.services.zahlungsklaerung import guthaben_verrechnen
+            _n, verrechnet = guthaben_verrechnen(nachzahler, arten=('naechste_rechnung', 'nk_abrechnung'),
+                                                 user=request.user)
+        except Exception:
+            logger.warning('Guthaben-Verrechnung nach NK %s fehlgeschlagen', p.pk, exc_info=True)
     log_aktion(request, "NK-Abrechnung verbucht", p.bezeichnung, f"{n_nach} Nachzahlungen, {n_gut} Gutschriften")
+    if verrechnet:
+        messages.info(request, gettext('CHF %(betrag)s Mieterguthaben mit Nachzahlungen verrechnet.') % {'betrag': verrechnet})
     messages.success(request, '✅ ' + gettext('Abrechnung verbucht: %(n_nach)s Nachzahlung(en), %(n_gut)s Gutschrift(en).') % {'n_nach': n_nach, 'n_gut': n_gut})
     for _w in result.get('warnungen', []):
         messages.warning(request, f"⚠️ {_w}")

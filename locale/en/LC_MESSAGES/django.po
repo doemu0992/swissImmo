@@ -26278,3 +26278,508 @@ msgid "An %(n)s Mieter verrechnen"
 msgid_plural "Auf alle %(n)s Mieter verteilen"
 msgstr[0] "Recharge to %(n)s tenant"
 msgstr[1] "Split across all %(n)s tenants"
+
+msgid "Hier wartet Geld, das sich nicht sicher zuordnen liess — ohne oder mit falscher Referenz. Es geht nicht verloren: Es wird zugeordnet, aufgeteilt, als Kaution erkannt oder an den Absender zurücküberwiesen."
+msgstr "Money that could not be matched reliably waits here — without or with a wrong reference. Nothing is lost: it is matched, split, recognised as a deposit or returned to the sender."
+
+msgid "Mieterguthaben (Konto 2030)"
+msgstr "Tenant credit (account 2030)"
+
+msgid "Zahlt ein Mieter mehr als offen, gehört ihm der Überschuss. Er wird mit der nächsten Rechnung verrechnet, für die Nebenkostenabrechnung reserviert oder zurückerstattet — wie hinterlegt."
+msgstr "If a tenant pays more than is open, the surplus belongs to them. It is offset against the next invoice, reserved for the service charge statement or refunded — as set."
+
+msgid "Sammelzahlung"
+msgstr "Combined payment"
+
+msgid "Eine Überweisung für mehrere Posten, etwa zwei Verträge oder ein Sozialdienst für mehrere Mieter. Jeder Teil wird einem Posten zugeteilt und einzeln gebucht; storniert wird die Zahlung nur als Ganzes."
+msgstr "One transfer for several items, such as two leases or a social service paying for several tenants. Each part is assigned to an item and posted separately; the payment can only be reversed as a whole."
+
+msgid "Teilzahlung"
+msgstr "Partial payment"
+
+msgid "Ist weniger eingegangen als geschuldet, gilt der Posten als «teilbezahlt». Der Rest bleibt offen und läuft in den Mahnlauf, solange keine Mahnsperre oder Zahlungsvereinbarung besteht."
+msgstr "If less was received than owed, the item is “partially paid”. The rest stays open and goes into the dunning run unless dunning is blocked or a payment arrangement exists."
+
+msgid "Welche Schuld wird getilgt?"
+msgstr "Which debt is paid?"
+
+msgid "Gibt der Zahler an, welche Schuld er bezahlt, gilt seine Erklärung (Art. 86 OR). Sonst wird die älteste fällige Schuld getilgt (Art. 87 OR) — so ist der Vorschlag vorbefüllt."
+msgstr "If the payer states which debt they are paying, their declaration applies (Art. 86 CO). Otherwise the oldest due debt is paid (Art. 87 CO) — that is how the suggestion is pre-filled."
+
+msgid "Kleindifferenz"
+msgstr "Small difference"
+
+msgid "Ein kleiner Rest, etwa von der Bank abgezogene Spesen. Bis CHF 5.00 lässt er sich als Debitorenverlust (Konto 3805) ausbuchen, statt ihn zu mahnen."
+msgstr "A small remainder, such as charges deducted by the bank. Up to CHF 5.00 it can be written off as a bad debt (account 3805) instead of being dunned."
+
+msgid "Rückbuchung"
+msgstr "Bank return"
+
+msgid "Die Bank bucht eine eingegangene Zahlung zurück, etwa wegen falscher Kontoangaben. Die Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen."
+msgstr "The bank reverses a received payment, for example because of wrong account details. The payment is reversed, the invoice is open again and goes into dunning."
+
+msgid "Kaution auf dem Mietzinskonto"
+msgstr "Deposit on the rent account"
+
+msgid "Die Kaution gehört auf ein Sperrkonto auf den Namen des Mieters (Art. 257e OR). Ist sie auf dem Mietzinskonto eingegangen, wird sie als Kaution verbucht und danach auf das Sperrkonto überwiesen."
+msgstr "The deposit belongs in a blocked account in the tenant's name (Art. 257e CO). If it arrived on the rent account, it is posted as a deposit and then transferred to the blocked account."
+
+msgid "Diese Zahlung liegt nicht auf dem Durchlauf- oder Guthabenkonto."
+msgstr "This payment is not on the clearing or credit account."
+
+msgid "Unbekanntes Ziel für den Rest."
+msgstr "Unknown destination for the remainder."
+
+msgid "Nichts zugeteilt."
+msgstr "Nothing assigned."
+
+msgid "Ein Guthaben bleibt Guthaben — der Rest kann nicht «ungeklärt» werden."
+msgstr "A credit stays a credit — the remainder cannot become “unclear”."
+
+msgid "Nur eine ungeklärte Zahlung oder ein Guthaben kann zurücküberwiesen werden."
+msgstr "Only an unclear payment or a credit can be returned."
+
+msgid "Dieses Guthaben hat keinen Mieter."
+msgstr "This credit has no tenant."
+
+msgid "Nur eine ungeklärte Zahlung (Konto 1190) kann als Kaution erkannt werden."
+msgstr "Only an unclear payment (account 1190) can be recognised as a deposit."
+
+msgid "Dieser Vertrag hat eine Kautionsversicherung — es gibt kein Kautionsgeld."
+msgstr "This lease has deposit insurance — there is no deposit money."
+
+msgid "Im Vertrag ist keine Kaution vereinbart."
+msgstr "No deposit is agreed in the lease."
+
+msgid "Für diesen Vertrag ist die Kaution bereits verbucht."
+msgstr "The deposit for this lease is already posted."
+
+msgid "Nur eine offene Belastung kann eine Rückbuchung sein."
+msgstr "Only an open debit can be a bank return."
+
+msgid "Diese Zahlung ist nicht über dieses Bankkonto eingegangen."
+msgstr "This payment did not come in through this bank account."
+
+msgid "Eine Rechnung ist doppelt ausgewählt."
+msgstr "An invoice is selected twice."
+
+msgid "Jeder Teilbetrag muss grösser als 0 sein."
+msgstr "Each partial amount must be greater than 0."
+
+#, python-format
+msgid "Zugeteilt sind CHF %(summe)s, die Zahlung beträgt nur CHF %(betrag)s."
+msgstr "CHF %(summe)s assigned, but the payment is only CHF %(betrag)s."
+
+msgid "Für das Guthaben fehlt der Mieter."
+msgstr "The tenant for the credit is missing."
+
+#, python-format
+msgid "Die Zahlung (CHF %(betrag)s) entspricht nicht der vereinbarten Kaution (CHF %(soll)s). Einen Teil als Kaution zu verbuchen ist nicht vorgesehen — bitte mit dem Mieter klären."
+msgstr "The payment (CHF %(betrag)s) does not match the agreed deposit (CHF %(soll)s). Posting part of it as a deposit is not supported — please clarify with the tenant."
+
+#, python-format
+msgid "Die Rückbuchung (CHF %(rueck)s) entspricht nicht der Zahlung (CHF %(total)s)."
+msgstr "The return (CHF %(rueck)s) does not match the payment (CHF %(total)s)."
+
+msgid "Absender wurde schon diesem Mieter zugeordnet"
+msgstr "Sender was already matched to this tenant"
+
+#, python-format
+msgid "«%(titel)s» ist nicht offen."
+msgstr "“%(titel)s” is not open."
+
+#, python-format
+msgid "Auf «%(titel)s» sind nur CHF %(offen)s offen."
+msgstr "Only CHF %(offen)s is open on “%(titel)s”."
+
+#, python-format
+msgid "Dieses Guthaben gehört einem anderen Mieter und kann «%(titel)s» nicht tilgen."
+msgstr "This credit belongs to another tenant and cannot pay “%(titel)s”."
+
+#, python-format
+msgid "Referenz gehört zu «%(titel)s»"
+msgstr "Reference belongs to “%(titel)s”"
+
+#, python-format
+msgid "Name «%(name)s» steht im Absender oder in der Mitteilung"
+msgstr "Name “%(name)s” appears in the sender or message"
+
+#, python-format
+msgid "Betrag passt genau auf «%(titel)s»"
+msgstr "Amount matches “%(titel)s” exactly"
+
+#, python-format
+msgid "%(n)s offene Posten ergeben zusammen genau den Betrag"
+msgstr "%(n)s open items add up to exactly the amount"
+
+#, python-format
+msgid "Rückbuchung erfasst: Die Zahlung vom %(datum)s ist storniert, die Rechnung wieder offen."
+msgstr "Bank return recorded: the payment of %(datum)s is reversed, the invoice is open again."
+
+#, python-format
+msgid "Die Zahlung war aufgeteilt — alle %(n)s Teile sind storniert, die offenen Posten wieder offen."
+msgstr "The payment was split — all %(n)s parts are reversed and the items are open again."
+
+#, python-format
+msgid "CHF %(betrag)s an den Absender zurücküberwiesen (1190 an Bank)."
+msgstr "CHF %(betrag)s returned to the sender (1190 to bank)."
+
+#, python-format
+msgid "CHF %(betrag)s Mieterguthaben mit Nachzahlungen verrechnet."
+msgstr "CHF %(betrag)s of tenant credit offset against additional payments."
+
+#, python-format
+msgid "CHF %(summe)s auf %(n)s Posten verbucht"
+msgstr "CHF %(summe)s posted to %(n)s item(s)"
+
+msgid "Notiz gespeichert."
+msgstr "Note saved."
+
+msgid "Diese Zahlung ist bereits zugeordnet oder storniert."
+msgstr "This payment is already matched or reversed."
+
+msgid "Zurücküberweisen dürfen nur Verwalter und Inhaber."
+msgstr "Only managers and owners may return money."
+
+msgid "Nur für ein Mieterguthaben (Konto 2030)."
+msgstr "Only for a tenant credit (account 2030)."
+
+#, python-format
+msgid "Guthaben: %(wert)s."
+msgstr "Credit: %(wert)s."
+
+#, python-format
+msgid "CHF %(betrag)s als Kaution von %(mieter)s verbucht. Eine Pendenz erinnert an die Überweisung auf das Sperrkonto."
+msgstr "CHF %(betrag)s posted as deposit of %(mieter)s. A task reminds you to transfer it to the blocked account."
+
+msgid "Eine gewählte Rechnung gibt es nicht (mehr)."
+msgstr "A selected invoice does not exist (any more)."
+
+#, python-format
+msgid "Rest CHF %(rest)s bleibt ungeklärt"
+msgstr "Remainder CHF %(rest)s stays unclear"
+
+#, python-format
+msgid "Rest CHF %(rest)s als Guthaben"
+msgstr "Remainder CHF %(rest)s as credit"
+
+#, python-format
+msgid "Rest CHF %(rest)s zurücküberwiesen"
+msgstr "Remainder CHF %(rest)s returned"
+
+msgid "Mit nächster Rechnung verrechnen"
+msgstr "Offset against next invoice"
+
+msgid "Für die Nebenkostenabrechnung reservieren"
+msgstr "Reserve for service charge statement"
+
+msgid "Offen lassen (Entscheid von Hand)"
+msgstr "Leave open (decide manually)"
+
+msgid "Teilweise bezahlt"
+msgstr "Partially paid"
+
+#, python-format
+msgid "Rest von CHF %(betrag)s"
+msgstr "Remainder of CHF %(betrag)s"
+
+msgid "Offenen Betrag übernehmen"
+msgstr "Use the open amount"
+
+msgid "Keine offenen Posten gefunden"
+msgstr "No open items found"
+
+msgid "Nach Mieter, Firma, Strasse, Objekt, Rechnungsbetrag oder QR-Referenz suchen."
+msgstr "Search by tenant, company, street, unit, invoice amount or QR reference."
+
+#, python-format
+msgid "von %(betrag)s"
+msgstr "of %(betrag)s"
+
+#, python-format
+msgid "Betrag für %(titel)s"
+msgstr "Amount for %(titel)s"
+
+msgid "Zahlungseingänge klären, aufteilen und verbuchen — Sonderfälle wie Teil-, Sammel- und Überzahlungen inklusive"
+msgstr "Clarify, split and post incoming payments — including partial, combined and overpayments"
+
+msgid "Klärungsfälle"
+msgstr "Items to clarify"
+
+msgid "Nichts ungeklärt"
+msgstr "Nothing unclear"
+
+msgid "Keine Mieterguthaben"
+msgstr "No tenant credits"
+
+msgid "Teilzahlungen"
+msgstr "Partial payments"
+
+msgid "Keine Teilzahlungen offen"
+msgstr "No partial payments open"
+
+msgid "Bank-Eingang"
+msgstr "Bank inbox"
+
+msgid "offene Auszugszeilen"
+msgstr "open statement lines"
+
+msgid "Alle Auszugszeilen erledigt"
+msgstr "All statement lines done"
+
+msgid "Arbeitslisten"
+msgstr "Work lists"
+
+msgid "So funktioniert die Zahlungsklärung"
+msgstr "How payment clarification works"
+
+msgid "Was der Import nicht sicher zuordnen kann, wartet hier auf dem Durchlaufkonto 1190 — nichts geht verloren."
+msgstr "Whatever the import cannot match reliably waits here on clearing account 1190 — nothing is lost."
+
+msgid "«Zuordnen / Aufteilen» öffnet den Assistenten: links die Zahlung, rechts die offenen Posten. Eine Zahlung lässt sich auf mehrere Posten und Mieter verteilen."
+msgstr "“Match / split” opens the wizard: the payment on the left, open items on the right. A payment can be split across several items and tenants."
+
+msgid "Gehört das Geld nicht hierher, geht es an den Absender zurück. Ist es eine Kaution, wird es als Kaution verbucht."
+msgstr "If the money does not belong here, it goes back to the sender. If it is a deposit, it is posted as a deposit."
+
+msgid "Zuordnen / Aufteilen"
+msgstr "Match / split"
+
+msgid "Weitere"
+msgstr "More"
+
+msgid "Als Kaution verbuchen? Gebucht wird 1190 an 2010 Kautionsverbindlichkeit; danach die Überweisung auf das Sperrkonto veranlassen."
+msgstr "Post as deposit? Booking 1190 to 2010 deposit liability; then arrange the transfer to the blocked account."
+
+msgid "Kaution von"
+msgstr "Deposit of"
+
+msgid "Als Kaution verbuchen"
+msgstr "Post as deposit"
+
+msgid "Zahlung an den Absender zurücküberweisen? Gebucht wird 1190 an Bank."
+msgstr "Return the payment to the sender? Booking 1190 to bank."
+
+msgid "An Absender zurücküberweisen"
+msgstr "Return to sender"
+
+msgid "Notiz zur Klärung, z. B. «Mieter angerufen»"
+msgstr "Clarification note, e.g. “called tenant”"
+
+msgid "Klärungsnotiz"
+msgstr "Clarification note"
+
+msgid "Notiz speichern"
+msgstr "Save note"
+
+msgid "Keine Klärungsfälle"
+msgstr "Nothing to clarify"
+
+msgid "Jede Zahlung ist einem Posten, einem Guthaben oder einer Kaution zugeordnet."
+msgstr "Every payment is matched to an item, a credit or a deposit."
+
+msgid "Guthaben richtig behandeln"
+msgstr "Handling credits correctly"
+
+msgid "Zahlt ein Mieter zu viel, entsteht ein Guthaben auf Konto 2030 — es gehört dem Mieter und verfällt nicht."
+msgstr "If a tenant pays too much, a credit arises on account 2030 — it belongs to the tenant and does not expire."
+
+msgid "«Mit nächster Rechnung verrechnen» tilgt automatisch die nächste Monatsrechnung; «Für die Nebenkostenabrechnung reservieren» wartet auf deren Nachzahlung."
+msgstr "“Offset against next invoice” automatically pays the next monthly invoice; “Reserve for service charge statement” waits for its additional payment."
+
+msgid "Will der Mieter das Geld zurück, wird es zurückerstattet (2030 an Bank)."
+msgstr "If the tenant wants the money back, it is refunded (2030 to bank)."
+
+msgid "Mieterguthaben"
+msgstr "Tenant credits"
+
+msgid "Verwendung des Guthabens"
+msgstr "Use of the credit"
+
+msgid "Jetzt verrechnen"
+msgstr "Offset now"
+
+msgid "Überzahlungen erscheinen hier und werden nach ihrer Verwendung verrechnet oder zurückerstattet."
+msgstr "Overpayments appear here and are offset or refunded according to their use."
+
+msgid "Der Rest bleibt offen und läuft in den Mahnlauf."
+msgstr "The rest stays open and goes into the dunning run."
+
+msgid "Rest"
+msgstr "Remainder"
+
+msgid "Kleindifferenz ausbuchen"
+msgstr "Write off small difference"
+
+msgid "Rest mahnen"
+msgstr "Dun the remainder"
+
+msgid "Ratenplan"
+msgstr "Instalment plan"
+
+msgid "Wer nur einen Teil zahlt, erscheint hier mit dem Restbetrag."
+msgstr "Anyone who pays only part appears here with the remaining amount."
+
+msgid "Möglicherweise eine Rückbuchung einer Mieterzahlung"
+msgstr "Possibly a bank return of a tenant payment"
+
+msgid "Rückbuchung erfassen? Die gewählte Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen."
+msgstr "Record the bank return? The selected payment is reversed, the invoice is open again and goes into dunning."
+
+msgid "Zurückgebuchte Mieterzahlung"
+msgstr "Returned tenant payment"
+
+msgid "Als Rückbuchung erfassen"
+msgstr "Record as bank return"
+
+msgid "Neue Zeilen kommen mit dem nächsten Kontoauszug."
+msgstr "New lines arrive with the next statement."
+
+msgid "Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert."
+msgstr "Reverse this payment? The bookings are cancelled by counter-entry and the item reopened. A split payment is reversed with all its parts."
+
+#, python-format
+msgid "CHF %(bezahlt)s von %(total)s bezahlt"
+msgstr "CHF %(bezahlt)s of %(total)s paid"
+
+#, python-format
+msgid "Gemahnt: Stufe %(stufe)s am %(datum)s"
+msgstr "Dunned: level %(stufe)s on %(datum)s"
+
+#, python-format
+msgid "nächster Mahnlauf: %(label)s"
+msgstr "next dunning run: %(label)s"
+
+#, python-format
+msgid "Kleindifferenz von CHF %(betrag)s ausbuchen (3805 Debitorenverluste)?"
+msgstr "Write off the small difference of CHF %(betrag)s (3805 bad debts)?"
+
+#, python-format
+msgid "Rest CHF %(betrag)s offen"
+msgstr "Remainder CHF %(betrag)s open"
+
+msgid "Zahlung zuordnen"
+msgstr "Match payment"
+
+msgid "Guthaben verrechnen"
+msgstr "Offset credit"
+
+msgid "Links die Zahlung, rechts die offenen Posten. «offen …» antippen übernimmt den Betrag; am Desktop lässt sich die Zahlung auch auf einen Posten ziehen. Eine Zahlung darf mehrere Posten, Verträge und Mieter tilgen."
+msgstr "The payment on the left, open items on the right. Tapping “open …” takes over the amount; on desktop you can also drag the payment onto an item. One payment may settle several items, leases and tenants."
+
+msgid "Rücküberweisung an Absender"
+msgstr "Return to sender"
+
+msgid "bleibt ungeklärt"
+msgstr "stays unclear"
+
+msgid "Ein Betrag ist höher als der offene Posten."
+msgstr "An amount is higher than the open item."
+
+msgid "Zugeteilt ist mehr als die Zahlung."
+msgstr "More is assigned than the payment."
+
+msgid "Noch nichts zugeteilt — Betrag eintragen oder «offen» antippen."
+msgstr "Nothing assigned yet — enter an amount or tap “open”."
+
+msgid "Zahlung — auf einen Posten ziehen"
+msgstr "Payment — drag onto an item"
+
+msgid "auf einen Posten ziehen"
+msgstr "drag onto an item"
+
+msgid "Absender"
+msgstr "Sender"
+
+msgid "Mitteilung"
+msgstr "Message"
+
+msgid "Vorschläge"
+msgstr "Suggestions"
+
+msgid "Nur Vorschläge — gebucht wird erst beim Speichern."
+msgstr "Suggestions only — nothing is posted until you save."
+
+msgid "Vorbefüllt ist die älteste Fälligkeit zuerst. Nennt der Zahler in der Mitteilung einen Monat oder eine Rechnung, gilt seine Angabe — dann die Beträge anpassen."
+msgstr "Pre-filled oldest due date first. If the payer names a month or invoice in the message, their statement applies — then adjust the amounts."
+
+msgid "Mieter, Objekt, Betrag oder Referenz …"
+msgstr "Tenant, unit, amount or reference …"
+
+msgid "Offene Posten suchen"
+msgstr "Search open items"
+
+msgid "Ausgewählt"
+msgstr "Selected"
+
+msgid "Zugeteilt"
+msgstr "Assigned"
+
+msgid "Anteil zugeteilt"
+msgstr "Share assigned"
+
+msgid "Was passiert mit dem Rest?"
+msgstr "What happens to the remainder?"
+
+msgid "bleibt ungeklärt (1190)"
+msgstr "stays unclear (1190)"
+
+msgid "als Guthaben von"
+msgstr "as credit of"
+
+msgid "Guthaben von"
+msgstr "Credit of"
+
+msgid "zuerst einen Posten suchen"
+msgstr "search for an item first"
+
+msgid "an den Absender zurücküberweisen"
+msgstr "return to the sender"
+
+msgid "Diese Buchungen entstehen"
+msgstr "These bookings will be created"
+
+msgid "Je Posten: Parkkonto an 1100 Debitoren über den zugeteilten Betrag."
+msgstr "Per item: holding account to 1100 receivables for the assigned amount."
+
+#, python-format
+msgid "%(n)s länger als 10 Tage"
+msgid_plural "%(n)s länger als 10 Tage"
+msgstr[0] "%(n)s older than 10 days"
+msgstr[1] "%(n)s older than 10 days"
+
+#, python-format
+msgid "%(n)s wird automatisch verrechnet"
+msgid_plural "%(n)s werden automatisch verrechnet"
+msgstr[0] "%(n)s is offset automatically"
+msgstr[1] "%(n)s are offset automatically"
+
+#, python-format
+msgid "seit %(n)s Tag"
+msgid_plural "seit %(n)s Tagen"
+msgstr[0] "for %(n)s day"
+msgstr[1] "for %(n)s days"
+
+#, python-format
+msgid "seit %(n)s Tag ungeklärt"
+msgid_plural "seit %(n)s Tagen ungeklärt"
+msgstr[0] "unclear for %(n)s day"
+msgstr[1] "unclear for %(n)s days"
+
+#, python-format
+msgid "%(n)s Posten"
+msgid_plural "%(n)s Posten"
+msgstr[0] "%(n)s item"
+msgstr[1] "%(n)s items"
+
+#, python-format
+msgid "zusammen mit %(n)s weiteren Mieter genau der Betrag — Sammelzahlung"
+msgid_plural "zusammen mit %(n)s weiteren Mietern genau der Betrag — Sammelzahlung"
+msgstr[0] "together with %(n)s other tenant exactly the amount — combined payment"
+msgstr[1] "together with %(n)s other tenants exactly the amount — combined payment"
+
+#, python-format
+msgid "Sammelzahlung? %(n)s weiterer offener Posten von %(mieter)s passt zum Überschuss."
+msgid_plural "Sammelzahlung? %(n)s weitere offene Posten von %(mieter)s passen zum Überschuss."
+msgstr[0] "Combined payment? %(n)s more open item of %(mieter)s matches the surplus."
+msgstr[1] "Combined payment? %(n)s more open items of %(mieter)s match the surplus."

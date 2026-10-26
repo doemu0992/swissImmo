@@ -26,6 +26,7 @@
                     <div class="text-xs fw-faint mt-0.5">
                         {% if r.faellig %}{% blocktrans with datum=r.faellig|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %}{% endif %}
                         {% if r.ueberfaellig %}<span class="fw-kritisch font-semibold">· {% trans "überfällig" %}</span>{% endif %}
+                        {% if r.teilbezahlt %}<span class="fw-chip fw-warn">{% trans "Teilweise bezahlt" %}</span> {% blocktrans with betrag=r.rechnungsbetrag|chf %}Rest von CHF {{ betrag }}{% endblocktrans %}{% endif %}
                     </div>
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
