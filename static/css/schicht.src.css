@@ -1839,6 +1839,9 @@
             .fw-kpis.fw-stats .fw-kpi{padding:10px 14px;gap:3px}
             .fw-kpis.fw-stats .fw-kpi .fw-v{font-size:18px}
             .fw-kpis.fw-stats .fw-kpi .fw-f{font-size:11.5px}
+            /* Engere Zeilen, damit die Leiste auch mit einer breiteren Ersatzschrift (Webfont noch
+               nicht geladen) unter 195 px bleibt — gemessen 200 px ohne, 185 px mit. */
+            .fw-kpis.fw-stats .fw-kpi .fw-l,.fw-kpis.fw-stats .fw-kpi .fw-f{line-height:1.3}
         }
         /* ---- Tranche B: Läufe und Sollstellung nach konzept-v8 (#laeufe, #lauf-soll) ----
            Laufkarten im Raster (`.runs`, `.run`, `.run-h`, `.run-f`) mit dem
@@ -1860,6 +1863,14 @@
            Stichtag … · in n Tagen», ab dem Monatsersten) unter den Text: 73 statt 43 px am Telefon. */
         .fw-lauf-fuss>span:first-child{flex:1 1 0;min-width:0}
         .fw-lauf-fuss>span:last-child{display:flex;gap:6px;flex:0 0 auto}
+        /* Am Telefon knappere Knöpfe und Zeilen: Der lange Kontext bleibt so auch mit einer
+           breiteren Ersatzschrift zweizeilig neben den Knöpfen (67 statt unter 60 px ohne). */
+        @media (max-width:640px){
+            .fw-lauf-fuss{line-height:1.35}
+            .fw-lauf-fuss>span:last-child{gap:4px}
+            .fw-lauf-fuss .fw-btn.fw-knapp{padding-inline:10px}
+            .fw-lauf-fuss>span:first-child{font-size:11.5px;line-height:1.25}
+        }
         .fw-lauf-leer{grid-column:1 / -1}
         .fw-stufen{list-style:none;margin:0;padding:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
         .fw-stufen li{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:11.5px;color:var(--ds-faint)}
