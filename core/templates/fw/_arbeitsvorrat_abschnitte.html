@@ -1,90 +1,16 @@
 {% load zeichen i18n %}
-{% comment %} Die beiden Abschnitte «Termine» und «Wartet auf Freigabe» aus
-   dem Prototyp (mockups/konzept-struktur.html, Screen «Heute»). Einmal
-   gebaut, von Startseite UND Arbeit-Seite eingebunden — nicht zweimal
-   geschrieben.
+{% comment %} «Wartet auf Freigabe» und «Vertretung» der Startseite.
 
-   Seit 4b.8 auch «Vertretung». Bis dahin fehlte sie, weil es kein
-   Abwesenheitsmodell gab — `Mitgliedschaft` führt Benutzer, Organisation
-   und Rolle, sonst nichts. Jetzt trägt `faelle.Abwesenheit` die Angabe,
-   und «Termine» speist sich zusätzlich aus `faelle.Termin`. {% endcomment %}
+   Dashboard-Reduktion (26.10.2026): Die Läufe-Karte ist weg — fällige und
+   blockierte Läufe stehen im Arbeitsvorrat und als Kachel der Buchhaltung.
+   «Termine» (sieben Tage) ist weg — die Startseite zeigt «Heute & morgen».
+   Die Freigaben stehen im Reiter «Ohne Frist» (`teil='ohnefrist'`). {% endcomment %}
 {% load chf %}
-{% comment %} `teil` (konzept-v8, zweiter Durchgang): «ausserdem» liefert Läufe und
-   Freigaben als Reiterflächen (`data-panel="ausserdem"`) für die Karte
-   «Ausserdem» auf «Heute»; «rechts» Termine und Vertretung für die
-   Kontextspalte. {% endcomment %}
+{% comment %} `teil`: «ohnefrist» liefert die Freigaben für den gleichnamigen Reiter,
+   «rechts» die Vertretung für die Kontextspalte. {% endcomment %}
 
-{% comment %}
-DIE LÄUFE ALS EIGENE KARTE (v7)
-
-Der Prototyp zeigt «Läufe · 2 fällig, 1 blockiert» mit einem Knopf zur
-Übersicht. Bei uns standen sie NUR im Arbeitsvorrat, zwischen Fällen und
-Pendenzen.
-
-DAS IST EIN UNTERSCHIED IN DER SACHE: Ein blockierter Lauf hält eine ganze
-Verwaltung auf — die Sollstellung eines Monats, den Zahllauf. Ein einzelner
-Fall betrifft eine Wohnung. Im gemeinsamen Vorrat sortiert sich der Lauf
-zwischen Kleinigkeiten ein und geht unter.
-
-Die Zeilen bleiben ZUSÄTZLICH im Vorrat — wer nach Frist arbeitet, findet sie
-dort. Die Karte ist der zweite Weg, nicht der einzige.
-
-`av_laeufe`, `av_laeufe_faellig` und `av_laeufe_blockiert` wurden mit dieser
-Begründung berechnet und NIRGENDS gerendert — dritter Fall dieser Art in
-dieser Reihe nach `f_query` (E2.60) und den vier Klassen (E2.66). Hier ist die
-Karte, die sie sichtbar macht.
-{% endcomment %}
-{% if av_laeufe and teil == 'ausserdem' %}
-<div id="ausserdem-laeufe" data-panel="ausserdem"{% if inbox or av_freigaben %} class="hidden"{% endif %}>
-    {% for l in av_laeufe %}
-    <div class="fw-zeile">
-        <span class="fw-marker {{ l.dringlichkeit }}"></span>
-        <div class="fw-mitte">
-            <div class="fw-t">{{ l.titel }}</div>
-            <div class="fw-s">{{ l.zeile }}</div>
-        </div>
-        <div class="fw-zeit">{{ l.datum|date:"d.m.Y" }}</div>
-        <a href="{{ l.ziel }}" class="fw-btn fw-knapp">{{ l.knopf }}</a>
-    </div>
-    {% endfor %}
-    <div class="fw-fuss">
-        <span>{% blocktrans count n=av_laeufe_faellig %}{{ n }} fällig{% plural %}{{ n }} fällig{% endblocktrans %}{% if av_laeufe_blockiert %}, {% blocktrans count n=av_laeufe_blockiert %}{{ n }} blockiert{% plural %}{{ n }} blockiert{% endblocktrans %}{% endif %}</span>
-        <a href="/neu/laeufe/" class="fw-link">{% trans "Alle Läufe" %}</a>
-    </div>
-</div>
-{% endif %}
-
-{% if av_termine and teil == 'rechts' %}
-<div class="fw-card">
-    <div class="fw-kopf">
-        <span class="fw-t">{% trans "Termine" %}</span>
-        <span class="fw-neben">{{ av_termine_gesamt }} {% trans "in den nächsten 7 Tagen" %}</span>
-    </div>
-    {% comment %} Die Terminleiste des Mockups: Uhrzeit, Zeichen der Terminart
-       auf der Linie, Titel. Der Knopf bleibt — er fuehrt zur Akte. {% endcomment %}
-    <div class="fw-agenda">
-    {% for t in av_termine %}
-    <div class="fw-agenda-zeile">
-        <div class="fw-agenda-zeit">
-            {% if t.zeit %}{{ t.zeit|time:"H:i" }}{% else %}{{ t.datum|date:"d.m." }}{% endif %}
-            {% if t.zeit %}<span class="fw-klein">{{ t.datum|date:"d.m." }}</span>{% endif %}
-        </div>
-        <span class="fw-agenda-punkt">{% zeichen_wert t.ikon %}</span>
-        <div class="fw-mitte">
-            <div class="fw-t">{{ t.titel }}</div>
-            <div class="fw-s">{{ t.zeile }}</div>
-            <a href="{{ t.ziel }}" class="fw-link">{{ t.knopf }}</a>
-        </div>
-    </div>
-    {% endfor %}
-    </div>
-    {% comment %} Kein «Kalender»-Verweis wie im Prototyp: Es gibt keine
-       Kalenderansicht, und ein Knopf ins Leere ist schlechter als keiner. {% endcomment %}
-</div>
-{% endif %}
-
-{% if av_freigaben and teil == 'ausserdem' %}
-<div id="ausserdem-freigaben" data-panel="ausserdem"{% if inbox %} class="hidden"{% endif %}>
+{% if av_freigaben and teil == 'ohnefrist' %}
+<div id="ohnefrist-freigaben">
         {% comment %} Der Prototyp nennt den Abschnitt «Wartet auf mich».
            Das Datenmodell trägt das «mich» nicht: Weder KreditorenRechnung
            noch HandwerkerAuftrag führen einen Freigeber. {% endcomment %}

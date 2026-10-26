@@ -360,8 +360,15 @@ class StartseiteTests(TestCase):
         with mandant(self.a.organisation):
             antwort = self._seite()
         self.assertEqual(antwort.status_code, 200)
-        for text in ('Ausstände', 'Leerstand', 'Offene Fälle',
-                     'Liegengeblieben', 'Wartet auf Dritte', 'Mandate'):
+        # Die Kennzahlen stehen im Schwerpunkt «Übersicht» (Dashboard-Reduktion
+        # 26.10.2026); «Hängt» fasst «Wartet auf Dritte» und «Liegengeblieben».
+        self.assertContains(antwort, 'Hängt')
+        c = Client()
+        c.force_login(self.a.benutzer)
+        with mandant(self.a.organisation):
+            c.post('/neu/schwerpunkt/', {'schwerpunkt': 'uebersicht'})
+            antwort = c.get('/neu/')
+        for text in ('Ausstände', 'Leerstand', 'Offene Fälle', 'class="fw-lage"'):
             with self.subTest(text=text):
                 self.assertContains(antwort, text)
 
@@ -376,7 +383,9 @@ class StartseiteTests(TestCase):
     def test_ansicht_wechselt_ueber_die_adresse(self):
         with mandant(self.a.organisation):
             antwort = self._seite('/neu/?ansicht=liegen')
+        # Alte Adresse: «Liegengeblieben» ist jetzt der Reiter «Hängt».
         self.assertContains(antwort, 'Verfallsregel')
+        self.assertEqual(antwort.context['ansicht'], 'haengt')
 
     def test_unbekannte_ansicht_faellt_auf_heute_zurueck(self):
         """Ein Tippfehler in der Adresse darf keine leere Seite ergeben."""
@@ -472,19 +481,26 @@ class AbschnitteErreichenDieSeiteTests(TestCase):
         return c.get('/neu/').content.decode()
 
     def test_termin_erscheint_auf_der_startseite(self):
-        from datetime import timedelta
+        from datetime import datetime, time, timedelta
 
         from django.utils import timezone
 
         from faelle.termin_models import Termin
         with mandant(self.a.organisation):
+            # «Heute & morgen» (Dashboard-Reduktion 26.10.2026): morgen ja,
+            # in drei Tagen nicht — dafür gibt es den Kalender.
+            morgen = timezone.localdate() + timedelta(days=1)
             Termin.objects.create(
                 titel='Eigentuemergespraech Blattner', art=Termin.GESPRAECH,
-                beginn=timezone.now() + timedelta(days=2))
+                beginn=timezone.make_aware(datetime.combine(morgen, time(10, 0))))
+            Termin.objects.create(
+                titel='Begehung Seestrasse', art=Termin.GESPRAECH,
+                beginn=timezone.make_aware(datetime.combine(morgen + timedelta(days=2), time(10, 0))))
             inhalt = self._seite()
-        self.assertIn('Termine', inhalt)
+        self.assertIn('id="h-kurz"', inhalt)
         self.assertIn('Eigentuemergespraech Blattner', inhalt,
                       'Der Termin wird berechnet, aber nicht angezeigt.')
+        self.assertNotIn('Begehung Seestrasse', inhalt, 'Die Startseite zeigt nur heute und morgen.')
 
     def test_freigabe_erscheint_auf_der_startseite(self):
         from datetime import timedelta
@@ -497,9 +513,16 @@ class AbschnitteErreichenDieSeiteTests(TestCase):
                 liegenschaft=self.a.liegenschaft, lieferant='Sanitaer Widmer AG',
                 status='neu', betrag=880,
                 datum=timezone.localdate() - timedelta(days=3))
-            inhalt = self._seite()
-        self.assertIn('Wartet auf Freigabe', inhalt)
-        self.assertIn('Sanitaer Widmer AG', inhalt,
+            # Der Inhaber sieht nach Rolle die Übersicht; die Kachel gehört
+            # zur Bewirtschaftung.
+            c = Client()
+            c.force_login(self.a.benutzer)
+            c.post('/neu/schwerpunkt/', {'schwerpunkt': 'bewirtschaftung'})
+            inhalt = c.get('/neu/').content.decode()
+            reiter = c.get('/neu/?ansicht=ohnefrist').content.decode()
+        # Kachel «Freigaben» oben, die Zeile im Reiter «Ohne Frist».
+        self.assertIn('data-kachel="freigaben"', inhalt)
+        self.assertIn('Sanitaer Widmer AG', reiter,
                       'Die Freigabe wird berechnet, aber nicht angezeigt.')
 
     def test_vertretung_erscheint_auf_der_startseite(self):

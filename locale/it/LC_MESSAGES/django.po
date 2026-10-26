@@ -27141,3 +27141,102 @@ msgid "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s
 msgid_plural "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
 msgstr[0] "Attribuzione annullata: CHF %(betrag)s sono di nuovo un caso da chiarire, %(n)s fattura è di nuovo aperta."
 msgstr[1] "Attribuzione annullata: CHF %(betrag)s sono di nuovo un caso da chiarire, %(n)s fatture sono di nuovo aperte."
+
+msgid "Hängt"
+msgstr "Fermo"
+
+msgid "Ohne Frist"
+msgstr "Senza scadenza"
+
+msgid "Fristen & Vorgänge"
+msgstr "Scadenze e pratiche"
+
+msgid "Erledigen"
+msgstr "Evadere"
+
+msgid "niemandem zugewiesen"
+msgstr "non assegnato"
+
+msgid "Freigaben"
+msgstr "Approvazioni"
+
+msgid "Überfällige Rechnungen"
+msgstr "Fatture scadute"
+
+msgid "Klären"
+msgstr "Chiarire"
+
+msgid "fällig, z. B. Sollstellung"
+msgstr "in scadenza, p. es. emissione pigioni"
+
+msgid "Eingangsrechnungen"
+msgstr "Fatture fornitori"
+
+msgid "zur Freigabe"
+msgstr "da approvare"
+
+msgid "Schwerpunkt der Startseite"
+msgstr "Priorità della pagina iniziale"
+
+msgid "Heute zu tun"
+msgstr "Da fare oggi"
+
+msgid "Filter"
+msgstr "Filtro"
+
+msgid "Nichts hängt — jeder Fall ist in Bewegung."
+msgstr "Nulla è fermo — ogni pratica è in movimento."
+
+msgid "Nichts ohne Frist offen."
+msgstr "Nulla di aperto senza scadenza."
+
+msgid "Heute & morgen"
+msgstr "Oggi e domani"
+
+msgid "morgen"
+msgstr "domani"
+
+msgid "Heute und morgen steht nichts im Kalender."
+msgstr "Niente in calendario oggi e domani."
+
+msgid "Was abweicht"
+msgstr "Cosa si discosta"
+
+msgid "Mandate mit Befund"
+msgstr "Mandati con riscontro"
+
+#, python-format
+msgid "%(n)s davon überfällig."
+msgid_plural "%(n)s davon überfällig."
+msgstr[0] "di cui %(n)s scaduta."
+msgstr[1] "di cui %(n)s scadute."
+
+#, python-format
+msgid "Eingang nicht zugeordnet"
+msgid_plural "Eingänge nicht zugeordnet"
+msgstr[0] "entrata non attribuita"
+msgstr[1] "entrate non attribuite"
+
+#, python-format
+msgid "wartet auf Entscheid"
+msgid_plural "warten auf Entscheid"
+msgstr[0] "attende una decisione"
+msgstr[1] "attendono una decisione"
+
+#, python-format
+msgid "Rechnung über Fälligkeit"
+msgid_plural "Rechnungen über Fälligkeit"
+msgstr[0] "fattura scaduta"
+msgstr[1] "fatture scadute"
+
+#, python-format
+msgid "%(n)s länger als %(t)s Tage ungeklärt"
+msgid_plural "%(n)s länger als %(t)s Tage ungeklärt"
+msgstr[0] "%(n)s non chiarito da oltre %(t)s giorni"
+msgstr[1] "%(n)s non chiariti da oltre %(t)s giorni"
+
+#, python-format
+msgid "Zahlung ohne Zuordnung"
+msgid_plural "Zahlungen ohne Zuordnung"
+msgstr[0] "pagamento senza attribuzione"
+msgstr[1] "pagamenti senza attribuzione"

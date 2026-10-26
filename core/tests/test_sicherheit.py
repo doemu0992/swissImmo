@@ -449,6 +449,11 @@ class RollentrennungTests(TestCase):
         # `core/tests/test_mandant_wechsel.py` versucht genau diesen Umweg mit
         # einer fremden ID.
         'fw_mandant_wechseln': 'setzt nur, welche der eigenen Mitgliedschaften gilt',
+        # Dashboard-Reduktion (26.10.2026): Der Schwerpunkt wählt nur, welche
+        # Kacheln die EIGENE Startseite zeigt (`Mitgliedschaft.schwerpunkt` der
+        # eigenen Mitgliedschaft, sonst die Sitzung) — keine Fachdaten, keine
+        # Rechte. Ein unbekannter Wert wird abgelehnt (`schwerpunkt_setzen`).
+        'fw_schwerpunkt': 'setzt nur die Kachelauswahl der eigenen Startseite',
     }
 
     def test_lesende_rolle_kann_nirgends_unbemerkt_schreiben(self):

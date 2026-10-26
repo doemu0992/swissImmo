@@ -324,7 +324,8 @@ class DoppelungTests(TestCase):
 
             c = Client()
             c.force_login(self.a.benutzer)
-            inhalt = c.get('/neu/').content.decode()
+            # Seit der Dashboard-Reduktion (26.10.2026) im Reiter «Ohne Frist».
+            inhalt = c.get('/neu/?ansicht=ohnefrist').content.decode()
         self.assertIn('ohne Frist', inhalt,
                       'Der Sammelposten wird berechnet, aber von keiner Seite '
                       'angezeigt — fuer den Benutzer ist er damit weg.')
@@ -439,15 +440,17 @@ class SeitenTests(TestCase):
         self.assertContains(antwort, 'nichts fällig')
 
     def test_arbeit_kennt_alle_fuenf_ansichten(self):
-        """Konzept 3.1 nennt genau diese fünf.
+        """Vier Reiter und «Alle Vorgänge» im Fuss (Dashboard-Reduktion
+        26.10.2026): «Wartet auf Dritte» und «Liegengeblieben» sind «Hängt»,
+        «Ohne Frist» nimmt die frühere Karte «Ausserdem» auf.
 
         Sie stehen seit der Zusammenfuehrung vom 21.08.2026 auf der
         STARTSEITE; `/neu/arbeit/` leitet dorthin um.
         """
         antwort = self._hole('/neu/')
         self.assertEqual(antwort.status_code, 200)
-        for bezeichnung in ('Heute', 'Diese Woche', 'Wartet auf Dritte',
-                            'Liegengeblieben', 'Alle'):
+        for bezeichnung in ('Heute', 'Diese Woche', 'Hängt',
+                            'Ohne Frist', 'Alle Vorgänge'):
             with self.subTest(ansicht=bezeichnung):
                 self.assertContains(antwort, bezeichnung)
 
@@ -995,13 +998,17 @@ class ZustaendigkeitTests(TestCase):
             Lauf.objects.create(organisation=org, laufart=art, periode='2026-08',
                                 faellig_am=timezone.localdate())
 
+        # Seit der Dashboard-Reduktion (26.10.2026) ist der fällige Lauf eine
+        # Kachel der Buchhaltung — die eigene Karte ist weg, die Zeile steht
+        # weiter im Arbeitsvorrat.
         c = Client()
         c.force_login(self.a.benutzer)
+        c.post('/neu/schwerpunkt/', {'schwerpunkt': 'buchhaltung'})
         html = c.get('/neu/').content.decode()
 
-        self.assertIn('>Läufe<', html, 'Die Läufe-Karte fehlt auf der Seite.')
-        self.assertIn('Alle Läufe', html)
-        self.assertIn('1 fällig', html)
+        self.assertIn('data-kachel="laeufe"', html, 'Die Läufe-Kachel fehlt auf der Seite.')
+        self.assertIn('href="/neu/laeufe/"', html)
+        self.assertIn('fällig, z. B. Sollstellung', html)
 
     def test_ein_neuer_fall_erbt_die_betreuung_der_liegenschaft(self):
         """Die zentrale Zusage dieser Etappe — und sie war ungeprüft.

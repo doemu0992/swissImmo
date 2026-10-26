@@ -249,24 +249,33 @@ def _vertretung_fuer(request, heute):
         return []
 
 
+#: Die Reiter über dem Arbeitsvorrat. «Alle» bleibt eine gültige Ansicht,
+#: steht aber als Verweis im Fuss (Dashboard-Reduktion 26.10.2026).
+REITER = ('heute', 'woche', 'haengt', 'ohnefrist')
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_dashboard(request):
-    """Die Startseite: Arbeitsvorrat mit Ansichten, Lage, Mandate.
+    """Die Startseite: Aufgabenkacheln je Schwerpunkt, Arbeitsvorrat, Heute & morgen.
 
-    ZUSAMMENFUEHRUNG. Vorher gab es zwei Startflaechen: diese hier mit
-    «Was reisst», «Zulauf» und vier Kennzahlkacheln aus der Vorgaengerzeit —
-    und `/neu/arbeit/` mit denselben zwei Abschnitten plus Ansichten. Beide
-    taten dasselbe, und die aeltere gewann, weil sie unter `/neu/` lag.
-    `fw_arbeit` leitet jetzt hierher um.
+    DASHBOARD-REDUKTION (26.10.2026). Die Seite beantwortet eine Frage: Was
+    muss ich jetzt tun? Was keine Handlung auslöst, ist weg — die Ember-Reihe
+    mit Halbkreis, Ortskarte, Mieteingang-Balken und Wochenraster, die drei
+    Zahlen über ihr, die eigene Suche (die Kopfzeile hat eine), die Karte
+    «Ausserdem» und der Sollstellungsknopf im Kopf (der fällige Lauf ist eine
+    Kachel der Buchhaltung). Die Auswertungen stehen unter /neu/berichte/.
 
-    Die vier alten Kacheln (Mietertrag-Diagramm, Portfolio-Donut, Belegung,
-    Leerstandsliste) sind ersatzlos entfallen. Sie zeigten den Bestand; an
-    ihre Stelle tritt der Lage-Streifen mit Vormonatsvergleich und «Was
-    abweicht». Wer die alten Auswertungen sucht, findet sie unter
-    /neu/berichte/ — sie waren dort schon immer.
+    Oben stehen höchstens vier Aufgabenkacheln, nur mit Zahl > 0, dringendste
+    zuerst; welche, entscheidet der Schwerpunkt (`faelle/heute_kacheln.py`).
+    Der Schwerpunkt «Übersicht» zeigt statt der Kacheln den Kennzahlenstreifen
+    und rechts die Mandate mit Befund.
+
+    ZUSAMMENFUEHRUNG (21.08.2026). Vorher gab es zwei Startflaechen: diese und
+    `/neu/arbeit/` mit denselben Abschnitten. `fw_arbeit` leitet hierher um.
     """
+    from core.views.fw.arbeit import ALTE_ANSICHTEN
     from faelle.arbeitsvorrat import arbeitsvorrat, was_reisst
-    from faelle.heute_bento import bento
+    from faelle.heute_kacheln import SCHWERPUNKTE, kacheln, schwerpunkt_von
     from faelle.lage import lage
     from faelle.models import Fall
 
@@ -275,18 +284,15 @@ def fw_dashboard(request):
     heute = timezone.localdate()
 
     ansicht = request.GET.get('ansicht', 'heute')
+    ansicht = ALTE_ANSICHTEN.get(ansicht, ansicht)
     if ansicht not in dict(ANSICHTEN):
         ansicht = 'heute'
+    schwerpunkt = schwerpunkt_von(request)
 
     # Die gemeinsamen Abschnitte kommen aus dem Sammler — Zulauf, Termine,
-    # Freigaben, Liegezeit, Vertretung unter den `av_*`-Namen, die der
-    # eingebundene Baustein erwartet. Sie hier ein zweites Mal
-    # zusammenzusuchen, war der erste Entwurf; damit haette `arbeitsvorrat()`
-    # ausser Tests keinen Aufrufer mehr gehabt — genau die Waise, die in
-    # dieser Phase schon dreimal aufgetaucht ist.
-    # Die zwei Kopf-Filter aus v7 (E2.60). Sie greifen in die Abfrage der
-    # Fallschritte, nicht auf die fertige Liste — sonst zaehlte die Kopfzeile
-    # weiter alles.
+    # Freigaben, Vertretung unter den `av_*`-Namen. Die zwei Kopf-Filter aus v7
+    # (E2.60) greifen in die Abfrage der Fallschritte, nicht auf die fertige
+    # Liste — sonst zaehlte die Kopfzeile weiter alles.
     vertretung_fuer = _vertretung_fuer(request, heute)
     vertretung_ids = _vertretene_ids(request, heute)
     kf = _kopf_filter(request)
@@ -294,19 +300,32 @@ def fw_dashboard(request):
                        wer=kf['f_wer'], mandat=kf['f_mandat'])
 
     # EIN Durchgang fuer alle Fenster. `was_reisst(365)` ist die Obermenge;
-    # «Diese Woche» und «Heute» sind daraus gefiltert, statt die Sammelarbeit
-    # ueber alle vier Quellen zwei- oder dreimal zu leisten.
+    # «Diese Woche» und «Heute» sind daraus gefiltert.
     alle = was_reisst(heute, grenze=365, aktive_lg=aktive_lg)
     woche = [e for e in alle if e['tage'] <= 7]
     heute_faellig = [e for e in woche if e['tage'] <= 0]
 
-    # Die Zahlen an den Reitern sind die eigentliche Aussage — «3
-    # liegengeblieben» sieht man, ohne die Ansicht zu wechseln.
+    # «Hängt»: wartet auf Dritte ODER liegengeblieben — beide Male bewegt
+    # sich der Fall nicht. Ein Fall, der beides ist, steht einmal.
+    haengt = list(Fall.objects.filter(Q(status=Fall.WARTET)
+                                      | Q(pk__in=Fall.objects.liegengeblieben().values('pk')))
+                  .select_related('fallart', 'zustaendig')
+                  .order_by('letzte_bewegung'))
+
+    # DIE INBOX BLEIBT — als Reiter «Ohne Frist». Sie fuehrt die
+    # Sammelposten ohne Datum (seit 4b.5); der Arbeitsvorrat nimmt nur, was
+    # eine Frist traegt. Dazu die Freigaben, die vorher in «Ausserdem» standen.
+    from core.services.inbox import sammle_inbox
+    inbox, inbox_mehr, _typen = sammle_inbox(
+        aktive_lg=aktive_lg, lg_query=basis['lg_query'],
+        pendenz_ziel=_pendenz_ziel)
+
+    # Die Zahlen an den Reitern sind die eigentliche Aussage.
     zaehler = {
         'heute': len(heute_faellig),
         'woche': len(woche),
-        'liegen': Fall.objects.liegengeblieben().count(),
-        'wartet': Fall.objects.filter(status=Fall.WARTET).count(),
+        'haengt': len(haengt),
+        'ohnefrist': len(inbox) + (inbox_mehr or 0) + (av.get('av_freigaben_gesamt') or 0),
         'alle': len(alle),
     }
 
@@ -316,50 +335,26 @@ def fw_dashboard(request):
         vorrat = heute_faellig
     elif ansicht == 'woche':
         vorrat = woche
-    elif ansicht == 'wartet':
-        faelle = list(Fall.objects.filter(status=Fall.WARTET)
-                      .select_related('fallart', 'zustaendig')
-                      .order_by('letzte_bewegung'))
-    elif ansicht == 'liegen':
-        faelle = list(Fall.objects.liegengeblieben()
-                      .select_related('fallart', 'zustaendig')
-                      .order_by('letzte_bewegung'))
-    else:
-        # «Alle» heisst alle — ohne Fenster. Ein Jahr ist die Obergrenze,
-        # damit eine versehentlich auf 2099 datierte Frist die Seite nicht
-        # allein fuellt.
+    elif ansicht == 'haengt':
+        faelle = haengt
+    elif ansicht == 'alle':
+        # «Alle» heisst alle — ohne Fenster. Ein Jahr ist die Obergrenze.
         vorrat = alle
 
-    # DAS FALLART-BAND (E2.61) — «Alle 3 · Schaden 2 · Mietzins 1».
-    #
-    # Es gehoert HIER hin und nicht in `arbeitsvorrat()`: Jeder Reiter zeigt
-    # eine andere Liste, und das Band steht ueber genau dieser. In
-    # `arbeitsvorrat()` gebaut, zaehlte es das 14-Tage-Fenster ueber einer
-    # Jahresliste — gemessen «Alle 2» ueber vier Zeilen, mit einer Fallart, die
-    # gar kein Feld bekam.
-    #
-    # ZUERST ZAEHLEN, DANN FILTERN. Sonst zeigte jedes Feld nach dem Klick nur
-    # noch seine eigene Zahl, und es gaebe keinen Weg zurueck ausser ueber
-    # «Alle». Und BEIDE Listen werden gefiltert — `faelle` traegt die Reiter
-    # «Wartet auf Dritte» und «Liegengeblieben»; blieben sie aussen vor, waere
-    # das Band dort sichtbar und wirkungslos.
+    # DAS FALLART-BAND (E2.61) — ZUERST ZAEHLEN, DANN FILTERN. Begründung in `_band`.
     band = _band(faelle or vorrat, kf['f_fallart'])
     vorrat = _nach_fallart(vorrat, kf['f_fallart'])
     faelle = _nach_fallart(faelle, kf['f_fallart'])
-
-    # DIE INBOX BLEIBT. Sie stand auf der alten Startseite und waere beim
-    # Zusammenlegen fast verschwunden — nichts anderes rendert sie. Seit 4b.5
-    # fuehrt sie nur noch die Sammelposten: die Pendenzen und Wartungsfristen
-    # sind in den Arbeitsvorrat gewandert (G2, «ein Arbeitsvorrat, nicht zwei
-    # Listen»), was bleibt, sind vor allem die **undatierten** Aufgaben. Genau
-    # die haben sonst keinen Ort: Der Arbeitsvorrat nimmt nur, was eine Frist
-    # traegt.
     _schublade_vorbereiten(vorrat, heute)
 
-    from core.services.inbox import sammle_inbox
-    inbox, inbox_mehr, _typen = sammle_inbox(
-        aktive_lg=aktive_lg, lg_query=basis['lg_query'],
-        pendenz_ziel=_pendenz_ziel)
+    # Heute & morgen: dieselbe Quelle wie die Termine des Sammlers, nur enger.
+    morgen = heute + timedelta(days=1)
+    termine_kurz = [t for t in av.get('av_termine', []) if t['datum'] <= morgen]
+
+    lg = lage(heute, aktive_lg)
+    if schwerpunkt == 'uebersicht':
+        # Mandate nur mit Befund — «ohne Befund» löst keine Handlung aus.
+        lg['lg_mandate'] = [m for m in lg['lg_mandate'] if m.get('offen') or m.get('leer')]
 
     return render(request, 'fw/dashboard.html', {
         **basis, 'nav': 'dashboard',
@@ -367,46 +362,39 @@ def fw_dashboard(request):
         'ansicht': ansicht,
         'ansicht_titel': dict(ANSICHTEN).get(ansicht, _('Heute')),
         'ansichten': [(k, b, k == ansicht, zaehler.get(k))
-                      for k, b in ANSICHTEN],
+                      for k, b in ANSICHTEN if k in REITER],
+        'anzahl_heute': zaehler['heute'],
+        'anzahl_ueberfaellig': sum(1 for e in heute_faellig if e['tage'] < 0),
         'vorrat': vorrat,
         'faelle': faelle,
-        # Zulauf, Termine, Freigaben, Liegezeit und Vertretung — aus dem
-        # Sammler. Ohne sie bliebe der eingebundene Baustein stumm: er ist da,
-        # zeigt aber nichts.
         **av,
         'inbox': inbox,
         'inbox_mehr': inbox_mehr,
-        # Kopfzeile nach Konzept v7 — Begruendung in `_vertretung_fuer` und in
-        # der Vorlage. `isocalendar()[1]` ist die ISO-Woche: Montag als erster
-        # Tag, und die Woche mit dem ersten Donnerstag ist die erste des Jahres.
-        # Das ist die Zaehlung, die auf Schweizer Kalendern steht.
         **kf,
         **band,
         'kw': heute.isocalendar()[1],
-        # DAS BESTE AUS BEIDEM (E2.69).
-        #
-        # Konzept v7 zeigt einen SATZ: «Lea Frey ist bis 29.08. abwesend. Du
-        # vertrittst 7 Fälle.» Unsere Fassung war eine LISTE mit Warnfarbe für
-        # ungedeckte Abwesenheiten (G8).
-        #
-        # Beides hat seinen Grund. Der Satz sagt, was auf MICH zukommt — bei
-        # einer Abwesenheit liest er sich besser als eine Zeile mit Kürzel und
-        # Kapsel. Die Liste zeigt, wer im TEAM fehlt und wer OHNE VERTRETUNG
-        # ist; das ist eine andere Frage, und die Warnfarbe darf nicht in
-        # einen Fliesstext verschwinden.
-        #
-        # Deshalb jetzt beides: der Satz oben, die Liste darunter. Bei vier
-        # gleichzeitigen Abwesenheiten in der Ferienzeit bleibt die Liste
-        # vier Zeilen, während ein Satz zum Absatz würde.
+        # Vertretung: der Satz oben (wen ICH vertrete) und die Liste rechts
+        # (wer im Team fehlt, wer OHNE Vertretung ist) — E2.69.
         'vertretung_fuer': vertretung_fuer,
         'vertretung_faelle': _uebernommene_faelle(vertretung_ids),
-        # Monatsname der nächsten Sollstellung für den Knopf im Kopf (Mockup:
-        # «Sollstellung Oktober»).
-        'soll_monat': (heute.replace(day=28) + timedelta(days=4)).replace(day=1),
-        **lage(heute, aktive_lg),
-        # Bento-Reihe des Ember-Redesigns (faelle/heute_bento.py)
-        **bento(heute, aktive_lg),
+        'schwerpunkt': schwerpunkt,
+        'schwerpunkte': SCHWERPUNKTE,
+        'schwerpunkt_text': dict(SCHWERPUNKTE)[schwerpunkt],
+        'kacheln': kacheln(schwerpunkt, heute, aktive_lg, av, heute_faellig),
+        'termine_kurz': termine_kurz,
+        'morgen': morgen,
+        **lg,
     })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_schwerpunkt(request):
+    """Schwerpunkt der Startseite wählen (POST). Ändert keine Berechtigung."""
+    from django.shortcuts import redirect
+    from faelle.heute_kacheln import schwerpunkt_setzen
+    if request.method == 'POST':
+        schwerpunkt_setzen(request, request.POST.get('schwerpunkt', ''))
+    return redirect('/neu/' + (_global_filter(request).get('lg_query') or ''))
 
 
 def _schublade_vorbereiten(vorrat, heute):

@@ -260,6 +260,15 @@ class Mitgliedschaft(models.Model):
     rolle = models.CharField("Rolle", max_length=20, choices=ROLLEN,
                              default=ROLLE_SACHBEARBEITER)
     erstellt_am = models.DateTimeField("Angelegt am", auto_now_add=True)
+    # Was die Startseite zuerst zeigt (Dashboard-Reduktion 26.10.2026): die
+    # To-dos der Bewirtschaftung, die offenen Posten der Buchhaltung oder die
+    # Kennzahlen der Übersicht. Leer heisst «nach Rolle» — siehe
+    # `faelle/heute_kacheln.py`. Je Organisation, weil die Rolle es auch ist.
+    # Ändert keine Berechtigung, nur die Auswahl der Kacheln.
+    schwerpunkt = models.CharField("Schwerpunkt der Startseite", max_length=20, blank=True, default='',
+                                   choices=[('bewirtschaftung', _('Bewirtschaftung')),
+                                            ('buchhaltung', _('Buchhaltung')),
+                                            ('uebersicht', _('Übersicht'))])
 
 
     objects = TenantManager()

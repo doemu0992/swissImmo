@@ -57,6 +57,10 @@ class TagesstartCockpitTests(TestCase):
                                quelle='auto:ruecknahme:1', vertrag=v, liegenschaft=lg,
                                faellig_am=date.today())
         team = _team_user(); c = Client(); c.force_login(team)
+        # Die Zulauf-Karte steht seit der Dashboard-Reduktion nur, wenn etwas
+        # nicht zugeordnet ist.
+        from faelle.zulauf_models import Eingang
+        Eingang.objects.create(quelle=Eingang.MAIL, betreff='Schlüssel verloren')
         r = c.get('/neu/')
         self.assertEqual(r.status_code, 200)
         # Wie oben: einzelne datierte Pendenz → Arbeitsvorrat, nicht Inbox.

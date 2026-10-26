@@ -1540,7 +1540,7 @@
         :root[data-theme="dark"] select,
         :root[data-theme="dark"] textarea{background-color:var(--ds-surface-2);color:var(--ds-ink);border-color:var(--ds-line-stark)}
         :root[data-theme="dark"] ::placeholder{color:var(--ds-faint)}
-        .fw-bereich select,.fw-suche input,.fw-palette-feld input,.fw-ember-suche input,
+        .fw-bereich select,.fw-suche input,.fw-palette-feld input,
         .fw-kopffilter .fw-feld,.fw-feld-schlank{background-color:transparent!important;border:0!important}
         /* Die Schublade von rechts (`fw/_fwmodal.html`): laedt einen Schritt
            im Rahmen, die Liste bleibt dahinter sichtbar. */
@@ -1632,7 +1632,6 @@
         .fw-tasten{display:flex;gap:14px;flex-wrap:wrap}
         .fw-tasten span{display:inline-flex;align-items:center;gap:5px}
         .fw-tasten .fw-taste{cursor:default}
-        .fw-ausserdem .fw-reiter{padding:0 14px}
         .fw-klapp.fw-card{padding:0}
         /* In der schmalen Kontextspalte bricht die Kapsel unter den Text,
            statt den Text auf drei Wörter je Zeile zu quetschen. */
@@ -1681,7 +1680,7 @@
             .fw-vorrat-wahl{flex-wrap:nowrap}
             .fw-vorrat-wahl select{flex:1 1 0;min-width:0;max-width:none}
             .fw-tasten{display:none}
-            .fw-vorrat .fw-reiter,.fw-ausserdem .fw-reiter{padding:0 6px}
+            .fw-vorrat .fw-reiter{padding:0 6px}
         }
         .fw-reiter a.crit .fw-z{background:var(--ds-crit-soft);color:var(--ds-crit);border-color:transparent}
         a.fw-zeile{text-decoration:none;color:inherit}
@@ -2342,7 +2341,6 @@
         .fw-top{position:relative;top:auto;max-width:1440px;margin:0 auto;width:100%;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;
             border:0;padding-block:16px 0;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}
         .fw-top.fw-gerollt{border:0}
-        .fw-top-heute .fw-suche{display:none}
         .fw-bereich,.fw-suche{height:44px;border:0;border-radius:var(--ds-pill);background:var(--ds-surface);box-shadow:var(--ds-shadow-sm)}
         .fw-suche{padding:0 8px 0 16px;max-width:560px}
         .fw-bereich{padding:0 14px 0 8px}
@@ -2390,9 +2388,9 @@
         .fw-zeile{padding:14px 24px}
         .fw-rumpf{padding:22px 24px}
         /* Was man anklicken kann, hebt sich beim Zeigen (wie `whileHover y:-5`) */
-        a.fw-card,a.fw-lage-kachel,.fw-kpis:not(.fw-stats)>.fw-kpi,.fw-lauf,.fw-ampel,.fw-ember-karte{
+        a.fw-card,a.fw-lage-kachel,.fw-kpis:not(.fw-stats)>.fw-kpi,.fw-lauf,.fw-ampel{
             transition:transform .35s var(--ds-ease),box-shadow .35s var(--ds-ease),border-color .2s}
-        a.fw-card:hover,a.fw-lage-kachel:hover,.fw-kpis:not(.fw-stats)>.fw-kpi:hover,.fw-lauf:hover,.fw-ampel:hover,.fw-ember-karte:hover{
+        a.fw-card:hover,a.fw-lage-kachel:hover,.fw-kpis:not(.fw-stats)>.fw-kpi:hover,.fw-lauf:hover,.fw-ampel:hover{
             transform:translateY(-5px);box-shadow:var(--ds-shadow)}
         .fw-kpi .fw-v,.fw-lage .fw-w{font-weight:500;letter-spacing:-.035em}
         /* Gross nur, wo Platz ist — am Telefon gelten die Stufen der Kachelreihe (21 / 17 px) */
@@ -2471,152 +2469,18 @@
         .fw-inhalt>*:nth-child(2){animation-delay:.05s}.fw-inhalt>*:nth-child(3){animation-delay:.1s}
         .fw-inhalt>*:nth-child(4){animation-delay:.15s}.fw-inhalt>*:nth-child(5){animation-delay:.2s}
         .fw-inhalt>*:nth-child(n+6){animation-delay:.25s}
-        .fw-kpis>*,.fw-lage>*,.fw-ember-bento>*,.fw-ampeln>*{animation:fw-auf .65s var(--ds-ease) backwards}
-        .fw-kpis>*:nth-child(2),.fw-lage>*:nth-child(2),.fw-ember-bento>*:nth-child(2),.fw-ampeln>*:nth-child(2){animation-delay:.07s}
-        .fw-kpis>*:nth-child(3),.fw-lage>*:nth-child(3),.fw-ember-bento>*:nth-child(3),.fw-ampeln>*:nth-child(3){animation-delay:.14s}
-        .fw-kpis>*:nth-child(4),.fw-lage>*:nth-child(4),.fw-ember-bento>*:nth-child(4){animation-delay:.21s}
-        .fw-ember-bento>*:nth-child(5){animation-delay:.28s}.fw-ember-bento>*:nth-child(6){animation-delay:.35s}
+        .fw-kpis>*,.fw-lage>*,.fw-heute-kacheln>*,.fw-ampeln>*{animation:fw-auf .65s var(--ds-ease) backwards}
+        .fw-kpis>*:nth-child(2),.fw-lage>*:nth-child(2),.fw-heute-kacheln>*:nth-child(2),.fw-ampeln>*:nth-child(2){animation-delay:.07s}
+        .fw-kpis>*:nth-child(3),.fw-lage>*:nth-child(3),.fw-heute-kacheln>*:nth-child(3),.fw-ampeln>*:nth-child(3){animation-delay:.14s}
+        .fw-kpis>*:nth-child(4),.fw-lage>*:nth-child(4),.fw-heute-kacheln>*:nth-child(4){animation-delay:.21s}
         @keyframes fw-auf{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-        html._embed .fw-inhalt>*,html.fw-ruhig .fw-inhalt>*,html.fw-ruhig .fw-kpis>*,html.fw-ruhig .fw-lage>*,html.fw-ruhig .fw-ember-bento>*,html.fw-ruhig .fw-ampeln>*{animation:none}
+        html._embed .fw-inhalt>*,html.fw-ruhig .fw-inhalt>*,html.fw-ruhig .fw-kpis>*,html.fw-ruhig .fw-lage>*,html.fw-ruhig .fw-heute-kacheln>*,html.fw-ruhig .fw-ampeln>*{animation:none}
         html.fw-ruhig *{transition-duration:0s!important}
         @media (prefers-reduced-motion:reduce){
-            .fw-inhalt>*,.fw-kpis>*,.fw-lage>*,.fw-ember-bento>*,.fw-ampeln>*{animation:none}
+            .fw-inhalt>*,.fw-kpis>*,.fw-lage>*,.fw-heute-kacheln>*,.fw-ampeln>*{animation:none}
             .fw-hauptnav .fw-gleiter{transition:none}
         }
 
-        /* ============ HEUTE ALS BENTO (Ember) ============ */
-        .fw-ember-intro{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;margin-bottom:22px}
-        .fw-ember-suche{display:flex;align-items:center;gap:12px;min-width:0}
-        .fw-ember-suche input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:clamp(24px,3.2vw,36px);font-weight:500;
-            letter-spacing:-.035em;color:var(--ds-ink);padding:4px 0;outline:none}
-        .fw-ember-suche input::placeholder{color:var(--ds-ink);opacity:1}
-        .fw-ember-suche input:focus::placeholder{color:var(--ds-faint)}
-        .fw-ember-suche button{width:40px;height:40px;flex:0 0 40px;border-radius:var(--ds-pill);border:0;background:var(--ds-surface);box-shadow:var(--ds-shadow-sm);
-            display:grid;place-items:center;color:var(--ds-ink);cursor:pointer}
-        .fw-ember-zahlen{display:flex;gap:40px;padding-right:6px}
-        .fw-ember-zahlen a{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:inherit}
-        .fw-ember-zahlen span{font-size:12px;color:var(--ds-muted)}
-        .fw-ember-zahlen b{font-size:30px;font-weight:500;letter-spacing:-.035em;line-height:1.1}
-        .fw-ember-zahlen a:hover b{color:var(--ds-brand)}
-        .fw-ember-bento{display:grid;gap:18px;grid-template-columns:repeat(12,minmax(0,1fr));margin-bottom:24px}
-        .fw-ember-karte{position:relative;min-width:0;background:var(--ds-surface);border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);padding:22px 24px;color:inherit;text-decoration:none}
-        .fw-ember-karte h2{margin:0;font-size:15.5px;font-weight:600;letter-spacing:-.015em}
-        .fw-ember-kopf{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-        .fw-ember-rund{width:34px;height:34px;flex:0 0 34px;border-radius:var(--ds-pill);border:0;display:grid;place-items:center;background:var(--ds-surface-2);color:var(--ds-ink);
-            text-decoration:none;transition:background .2s,transform .2s}
-        .fw-ember-rund:hover{background:var(--ds-line);transform:scale(1.06)}
-        .fw-ember-rund .fw-zeichen{width:15px!important;height:15px!important}
-        .fw-ember-klein{font-size:12px;color:var(--ds-faint)}
-        .fw-ember-gross{font-size:56px;font-weight:500;letter-spacing:-.045em;line-height:1;display:flex;align-items:flex-start;gap:8px}
-        .fw-ember-gross .fw-chip{letter-spacing:0;line-height:1.4;margin-top:6px}
-        .fw-ember-gross .fw-chip{margin-top:8px}
-        .k-zahlung{grid-column:span 5}.k-haupt{grid-column:span 2}.k-post{grid-column:span 2}.k-orte{grid-column:span 3}
-        .k-balken{grid-column:span 5}.k-woche{grid-column:span 7}
-        /* Halbkreis */
-        .fw-ember-gruppe{display:flex;gap:8px;align-items:center}
-        .k-haupt .fw-ember-kopf{margin-bottom:0}
-        .fw-ember-gauge-zeile{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;min-height:190px}
-        .fw-ember-gauge{width:230px;max-width:100%;display:block}
-        .fw-ember-gauge .spur{stroke:var(--ds-surface-2)}
-        .fw-ember-gauge .bogen{stroke:url(#fwBogen);transition:stroke-dasharray 1.4s var(--ds-ease) .25s}
-        .fw-ember-gauge .knauf{transform-origin:120px 120px;transition:transform 1.4s var(--ds-ease) .25s}
-        .fw-ember-gauge .knauf circle{fill:var(--ds-ink);stroke:var(--ds-surface);stroke-width:3}
-        .fw-ember-gauge-wert{margin-top:-30px;text-align:center}
-        .fw-ember-gauge-wert b{font-size:26px;font-weight:600;letter-spacing:-.03em}
-        .fw-ember-knoepfe{display:flex;gap:10px;margin-top:20px}
-        .fw-ember-knoepfe .fw-ember-rund{width:44px;height:44px;flex-basis:44px;background:var(--ds-surface);border:1px solid var(--ds-line)}
-        .fw-ember-knoepfe .fw-ember-rund .fw-zeichen{width:18px!important;height:18px!important}
-        /* Orange Hauptkarte */
-        .k-haupt{display:flex;flex-direction:column;justify-content:space-between;min-height:300px;color:#fff;
-            background:radial-gradient(130% 90% at 100% 0%,var(--ds-akzent-hell) 0%,transparent 60%),linear-gradient(160deg,var(--ds-akzent-tief) 10%,#a8421a 100%)}
-        .k-haupt h2{color:rgba(255,255,255,.92);font-weight:500}
-        .k-haupt .fw-ember-rund{background:rgba(255,255,255,.2);color:#fff}
-        .k-haupt .fw-ember-rund:hover{background:rgba(255,255,255,.32)}
-        .k-haupt .fw-ember-gross{font-size:64px}
-        .k-haupt small{display:block;font-size:12px;color:rgba(255,255,255,.92);line-height:1.3;margin-top:8px}
-        .k-haupt .fw-btn{background:#fff;color:#17181b;border:0;min-height:34px;padding:5px 14px;font-size:12.5px;margin-top:14px}
-        .k-haupt:hover{box-shadow:0 26px 50px -22px rgba(196,83,31,.7)}
-        /* Nachricht als kleines Fenster */
-        .fw-ember-fenster{margin:12px -4px 0;background:var(--ds-surface-2);border-radius:var(--ds-radius) var(--ds-radius) 0 0;padding:14px 14px 0;overflow:hidden}
-        a.fw-ember-fenster{display:block;color:inherit;text-decoration:none}
-        .fw-ember-fenster>div{background:var(--ds-surface);border-radius:var(--ds-radius-sm) var(--ds-radius-sm) 0 0;padding:12px;box-shadow:0 -6px 22px -12px rgba(23,24,27,.25);
-            transform:translateY(12px);transition:transform .4s var(--ds-ease)}
-        .fw-ember-karte:hover .fw-ember-fenster>div{transform:none}
-        .fw-ember-fenster b{display:block;font-size:12.5px;line-height:1.3;margin-bottom:6px;overflow-wrap:anywhere}
-        .fw-ember-fenster p{margin:0;font-size:12px;color:var(--ds-muted);line-height:1.35}
-        .fw-ember-meta{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11.5px;color:var(--ds-faint)}
-        .fw-ember-meta i{width:6px;height:6px;flex:0 0 6px;border-radius:var(--ds-pill);background:var(--ds-akzent)}
-        .fw-ember-leer{font-size:13px;color:var(--ds-muted);padding:18px 0}
-        /* Orte */
-        .k-orte{overflow:hidden;min-height:300px}
-        .fw-ember-karte .fw-ember-plan{position:absolute;inset:0;width:100%;height:100%}
-        .fw-ember-plan path{fill:none;stroke:var(--ds-surface-2);stroke-width:2}.fw-ember-plan .b{stroke-width:9}
-        .k-orte .fw-ember-kopf,.k-orte .fw-ember-ortliste{position:relative;z-index:1}
-        .fw-ember-ortliste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-        .fw-ember-ortliste li{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--ds-muted);background:color-mix(in srgb,var(--ds-surface) 80%,transparent);
-            padding:3px 10px;border-radius:var(--ds-pill);width:max-content;max-width:100%}
-        .fw-ember-ortfuss{position:absolute;z-index:1;left:24px;right:24px;bottom:20px;display:flex;align-items:flex-end;gap:10px}
-        .fw-ember-blob{width:54px;height:54px;flex:0 0 54px;border-radius:var(--ds-pill);background:radial-gradient(circle at 35% 30%,var(--ds-akzent-hell),var(--ds-akzent) 60%,#b8481a);
-            box-shadow:0 10px 24px -8px rgba(224,100,47,.6);transition:transform .4s var(--ds-ease)}
-        .fw-ember-karte:hover .fw-ember-blob{transform:scale(1.12)}
-        .fw-ember-ortfuss b{font-size:34px;font-weight:500;letter-spacing:-.035em;line-height:1}
-        .fw-ember-ortfuss>span{font-size:12px;color:var(--ds-muted);padding-bottom:3px}
-        /* Schraffierte Balken */
-        .fw-ember-auswahl{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);
-            background:var(--ds-surface);font-size:12px;color:var(--ds-muted)}
-        .fw-ember-balken{position:relative;display:grid;grid-template-columns:44px repeat(var(--n,7),minmax(0,1fr));gap:0 6px;height:230px;margin-top:8px}
-        .fw-ember-y{display:flex;flex-direction:column;justify-content:space-between;font-size:11px;color:var(--ds-faint);padding:0 8px 26px 0;text-align:right}
-        .fw-ember-raster{position:absolute;inset:0 0 26px 44px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
-        .fw-ember-raster i{border-top:1px solid var(--ds-surface-2)}
-        .fw-ember-saeule{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:26px;min-width:0}
-        .fw-ember-saeule .x{position:absolute;bottom:0;font-size:11.5px;color:var(--ds-faint)}
-        .fw-ember-stab{position:relative;width:min(26px,72%);height:var(--h,0%);border-radius:var(--ds-pill);
-            background:repeating-linear-gradient(-45deg,var(--ds-line-stark) 0 2px,transparent 2px 6px),var(--ds-surface-2);
-            transform-origin:bottom;animation:fw-wachsen 1s var(--ds-ease) backwards;animation-delay:calc(var(--i,0) * 60ms + .2s);transition:background .25s,transform .25s}
-        @keyframes fw-wachsen{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-        .fw-ember-stab.an,.fw-ember-saeule:hover .fw-ember-stab{background:linear-gradient(180deg,var(--ds-akzent-hell),var(--ds-akzent))}
-        .fw-ember-stab i{position:absolute;left:50%;top:9px;width:7px;height:7px;border-radius:var(--ds-pill);background:#fff;transform:translateX(-50%);opacity:0}
-        .fw-ember-stab.an i,.fw-ember-saeule:hover .fw-ember-stab i{opacity:1}
-        .fw-ember-tip{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(-50%,6px);opacity:0;pointer-events:none;background:var(--ds-ink);color:var(--ds-surface);
-            font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:var(--ds-radius-xs);white-space:nowrap;transition:opacity .2s,transform .2s;z-index:2}
-        .fw-ember-stab.an .fw-ember-tip,.fw-ember-saeule:hover .fw-ember-tip{opacity:1;transform:translate(-50%,0)}
-        /* Letzte Säule: Notiz nach innen, sonst ragt sie am Telefon über die Karte (UI-Audit) */
-        .fw-ember-saeule:last-child .fw-ember-tip{left:auto;right:-4px;transform:translate(0,6px)}
-        .fw-ember-saeule:last-child .fw-ember-stab.an .fw-ember-tip,.fw-ember-saeule:last-child:hover .fw-ember-tip{transform:none}
-        .fw-ember-balken:hover .fw-ember-stab.an:not(:hover){background:repeating-linear-gradient(-45deg,var(--ds-line-stark) 0 2px,transparent 2px 6px),var(--ds-surface-2)}
-        .fw-ember-balken:hover .fw-ember-saeule:not(:hover) .fw-ember-stab.an .fw-ember-tip,.fw-ember-balken:hover .fw-ember-saeule:not(:hover) .fw-ember-stab.an i{opacity:0}
-        /* Wochenraster aus Kreisen */
-        .fw-ember-woche{display:grid;grid-template-columns:70px repeat(7,minmax(0,1fr));gap:8px 6px;align-items:center;margin-top:4px}
-        .fw-ember-tag{text-align:center;font-size:12px;color:var(--ds-faint);padding:6px 0;border-radius:var(--ds-pill);white-space:nowrap}
-        .fw-ember-tag b{font-weight:inherit}
-        .fw-ember-tag.heute{background:var(--ds-ink);color:var(--ds-surface);font-weight:600}
-        .fw-ember-zeit{font-size:12px;color:var(--ds-faint)}
-        .fw-ember-slot{position:relative;width:100%;max-width:58px;aspect-ratio:1;margin-inline:auto;border-radius:var(--ds-pill);border:1.5px dashed var(--ds-line);
-            display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--ds-brand-600);text-decoration:none;transition:transform .3s var(--ds-ease),border-color .2s}
-        .fw-ember-slot:hover{border-color:var(--ds-line-stark)}
-        a.fw-ember-slot{border:0;background:radial-gradient(circle at 35% 30%,var(--ds-surface),var(--ds-brand-soft) 70%)}
-        a.fw-ember-slot.heiss{background:radial-gradient(circle at 35% 30%,var(--ds-akzent-hell),var(--ds-akzent));color:#fff;box-shadow:0 10px 22px -10px rgba(224,100,47,.7)}
-        a.fw-ember-slot:hover{transform:scale(1.12)}
-        .fw-ember-slot .t{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translate(-50%,6px);opacity:0;pointer-events:none;background:var(--ds-ink);color:var(--ds-surface);
-            padding:6px 10px;border-radius:var(--ds-radius-xs);font-size:11.5px;font-weight:500;width:max-content;max-width:200px;white-space:normal;z-index:3;transition:opacity .2s,transform .2s;text-align:left}
-        .fw-ember-slot .t small{display:block;opacity:.75;font-size:10.5px}
-        a.fw-ember-slot:hover .t,a.fw-ember-slot:focus-visible .t{opacity:1;transform:translate(-50%,0)}
-        /* Am Rand der Woche öffnet die Notiz nach innen, sonst ragt sie über die Seite */
-        .fw-ember-woche>.fw-ember-slot:nth-child(8n+2) .t{left:0;transform:translate(0,6px)}
-        .fw-ember-woche>.fw-ember-slot:nth-child(8n) .t,.fw-ember-woche>.fw-ember-slot:nth-child(8n+7) .t{left:auto;right:0;transform:translate(0,6px)}
-        .fw-ember-woche>a.fw-ember-slot:is(:nth-child(8n+2),:nth-child(8n),:nth-child(8n+7)):is(:hover,:focus-visible) .t{transform:none}
-        @media (max-width:1180px){
-            .k-zahlung{grid-column:span 12}.k-haupt,.k-post,.k-orte{grid-column:span 4}
-            .k-balken,.k-woche{grid-column:span 12}
-        }
-        @media (max-width:860px){
-            .fw-ember-intro{grid-template-columns:1fr}.fw-ember-zahlen{gap:28px}
-            .k-haupt,.k-post,.k-orte{grid-column:span 12}.k-haupt{min-height:220px}.k-orte{min-height:240px}
-            .fw-ember-woche{grid-template-columns:52px repeat(7,minmax(0,1fr));gap:6px 3px}.fw-ember-tag{font-size:10.5px;padding:5px 0;line-height:1.15;border-radius:var(--ds-radius-xs)}.fw-ember-tag span{display:block}
-            .fw-ember-zeit{font-size:10.5px}
-        }
-        @media (max-width:460px){.fw-ember-suche input{font-size:20px}.fw-ember-karte{padding:18px 16px}.fw-ember-gross{font-size:44px}.fw-ember-gauge-zeile{grid-template-columns:1fr}.fw-ember-gauge{margin:0 auto}}
-        /* ---- Ende Ember ---- */
         /* ---- UI-Audit 26.10.2026: Leerstand, Team & Auslastung ----
            Einfache Liste in einer Karte (Leerstand «Frei, aber versorgt»). */
         .fw-liste{list-style:none;margin:0;padding:2px 16px 12px}
@@ -2828,6 +2692,54 @@
            Assistent «Zahlung aufteilen» ist ein Split-Screen (.fw-split) mit
            Fussleiste. Alles ohne JavaScript lesbar; `.aus` blendet nur aus, was
            das Skript gerade nicht braucht (static/js/fw-zahlungen.js). */
+        /* ============ HEUTE: AUFGABENKACHELN (Dashboard-Reduktion 26.10.2026) ============
+           Höchstens vier Kacheln: Zahl, Bedeutung, Verb. Die erste ist die dringendste
+           und trägt den Ember-Akzent. `n-…` legt die Breiten fest. Mehr Weissraum als
+           sonst im Bento — der Blick soll an der ersten Zahl hängen bleiben. */
+        .fw-bento.fw-heute-kacheln{gap:20px;margin-bottom:32px}
+        .fw-heute-kacheln>.fw-kachel{min-height:172px;gap:8px}
+        /* Eine Kachel halb breit, nicht als Banner über die ganze Seite. */
+        .fw-bento.fw-heute-kacheln.n-1>*,.fw-bento.fw-heute-kacheln.n-2>*{grid-column:span 6}
+        .fw-bento.fw-heute-kacheln.n-3>*,.fw-bento.fw-heute-kacheln.n-4>*{grid-column:span 3}
+        .fw-bento.fw-heute-kacheln.n-3>:first-child{grid-column:span 6}
+        .fw-heute-kacheln .fw-kachel-zahl{font-size:52px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+        .fw-heute-kacheln .fw-kachel-zahl small{margin-left:0}
+        .fw-heute-kacheln .fw-kachel>.fw-btn{align-self:flex-start;margin-top:4px}
+        .fw-heute-kacheln .fw-kachel.akzent>.fw-btn{background:#fff;color:#17181b;border:0}
+        .fw-heute-kacheln .fw-kachel.akzent .fw-kachel-zahl small{color:rgba(255,255,255,.88)}
+        .fw-heute-ueber{color:var(--ds-crit);font-weight:500}
+        @media (max-width:1100px){
+            .fw-bento.fw-heute-kacheln>*,.fw-bento.fw-heute-kacheln.n-3>*,.fw-bento.fw-heute-kacheln.n-4>*{grid-column:span 3}
+            .fw-bento.fw-heute-kacheln.n-3>:first-child{grid-column:1 / -1}
+        }
+        /* Telefon: zwei Spalten wie im Zahlungs-Cockpit; bei ungerader Zahl ist die
+           erste (dringendste) Kachel breit. */
+        @media (max-width:640px){
+            .fw-bento.fw-heute-kacheln{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:22px}
+            .fw-bento.fw-heute-kacheln>*{grid-column:span 1 !important;min-height:0;padding:16px}
+            .fw-bento.fw-heute-kacheln.n-1>:first-child,.fw-bento.fw-heute-kacheln.n-3>:first-child{grid-column:1 / -1 !important}
+            .fw-heute-kacheln .fw-kachel-zahl{font-size:34px}
+            .fw-heute-kacheln .fw-kachel-kopf h2{font-size:13.5px}
+        }
+        /* Schwerpunkt der Startseite: Kapsel im Kopf, darunter drei Knöpfe. */
+        .fw-schwerpunkt{position:relative}
+        .fw-schwerpunkt>summary{list-style:none;cursor:pointer}
+        .fw-schwerpunkt>summary::-webkit-details-marker{display:none}
+        /* Am Knopf ausgerichtet und mindestens so breit wie er — der Knopf zeigt
+           selbst einen der drei Namen, die Liste ragt also nicht aus dem Bild. */
+        .fw-schwerpunkt-wahl{position:absolute;left:0;top:calc(100% + 6px);z-index:30;display:flex;flex-direction:column;gap:2px;min-width:100%;width:max-content;padding:6px;
+            background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow)}
+        .fw-schwerpunkt-wahl button{text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:var(--ds-radius-sm);font:inherit;font-size:13.5px;color:var(--ds-ink);cursor:pointer}
+        .fw-schwerpunkt-wahl button:hover{background:var(--ds-surface-2)}
+        .fw-schwerpunkt-wahl button.hier{font-weight:600;background:var(--ds-surface-2)}
+        /* Filter des Arbeitsvorrats: zugeklappt, offen nur, wenn einer gilt. */
+        .fw-vorrat-filterwahl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+        .fw-vorrat-filterwahl>summary{list-style:none;cursor:pointer}
+        .fw-vorrat-filterwahl>summary::-webkit-details-marker{display:none}
+        .fw-vorrat-filterwahl[open]>summary{background:var(--ds-surface-2)}
+        @media (max-width:640px){.fw-vorrat-filterwahl{flex-basis:100%;justify-content:flex-start;margin-left:0}}
+        /* Reiter «Ohne Frist»: Sammelposten und Freigaben untereinander. */
+        .fw-ohnefrist{display:flex;flex-direction:column}
         .fw-zahlungs-bento{margin-bottom:18px}
         .fw-import-zeile{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
         .fw-import-zeile .fw-feld{flex:1 1 200px;min-width:0}

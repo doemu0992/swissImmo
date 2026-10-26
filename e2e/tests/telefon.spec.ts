@@ -75,11 +75,10 @@ test('Die Aufgabenzeile kommt mit zwei Zeilen aus', async ({ page }) => {
   //
   // Die 44 Pixel sind eine ganze Zeile, die nur ein Wort trägt («Geld»).
   await login(page);
-  await goto(page, '/neu/');
-
-  // Seit dem zweiten Durchgang v8 stehen die Aufgaben als Reiter in der Karte
-  // «Ausserdem» unter dem Arbeitsvorrat — die Zeilen sind dieselben.
-  const karte = page.locator('#ausserdem-aufgaben');
+  // Seit der Dashboard-Reduktion (26.10.2026) stehen die Aufgaben im Reiter
+  // «Ohne Frist» des Arbeitsvorrats — die Zeilen sind dieselben.
+  await goto(page, '/neu/?ansicht=ohnefrist');
+  const karte = page.locator('.fw-ohnefrist');
   const zeile = karte.locator('.fw-zeile').first();
   await expect(zeile, 'Die Aufgaben-Karte hat keine Zeilen — dann misst ' +
     'dieser Test nichts.').toBeVisible();
@@ -119,7 +118,10 @@ test('Die zwei Filter sind Kapseln und bleiben flach', async ({ page }) => {
 
   // Seit dem zweiten Durchgang v8 stehen Zuständigkeit und Mandat im Kopf des
   // Arbeitsvorrats (`fw-vorrat-wahl`), am Telefon als eigene Zeile darunter.
+  // Seit der Dashboard-Reduktion zugeklappt hinter «Filter».
+  await page.locator('.fw-vorrat-filterwahl > summary').click();
   const zeile = page.locator('.fw-vorrat-wahl');
+  await expect(zeile).toBeVisible();
   const hoehe = await zeile.evaluate((el) => el.getBoundingClientRect().height);
   expect(hoehe, `Die Filterzeile ist ${Math.round(hoehe)} px hoch (gemessen: ` +
     '29 mit Kapseln, 39 ohne).').toBeLessThan(34);

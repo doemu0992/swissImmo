@@ -200,3 +200,25 @@ Aktionen liegen unter «Weitere» (`details.fw-mehr-aktionen`).
 Formulare (`action`, `method`, `name`, `value`, `csrf_token`), Links (`href`),
 `onclick`/`onchange`/`onsubmit`, Ids, `data-*`-Attribute, `{% if %}`/`{% for %}`,
 `{% trans %}`-Texte, `aria-*`. Umgestellt wird **nur** die Darstellung.
+
+## Dashboard-Reduktion «Heute» (26.10.2026)
+
+Die Startseite beantwortet eine Frage: **Was muss ich jetzt tun?** Vorher standen
+rund 21 Blöcke auf ihr; Geld, Ausstände und Termine kamen je dreimal vor.
+
+| Bereich | Jetzt |
+|---|---|
+| Kopf | Datum, Begrüssung, «n Vorgänge brauchen heute dich — m davon überfällig»; rechts Schwerpunkt und «Neuer Fall» |
+| Aufgabenkacheln | höchstens vier (`fw-bento fw-heute-kacheln n-…`), nur Zahlen > 0, dringendste zuerst und im Ember-Akzent (`faelle/heute_kacheln.py`) |
+| Schwerpunkt | Bewirtschaftung (Fristen, nicht zugewiesene Tickets, Posteingang, Freigaben) · Buchhaltung (überfällige Rechnungen, Klärungsfälle 1190, Läufe, Eingangsrechnungen) · Übersicht (Kennzahlenstreifen `fw-lage`, Mandate mit Befund). Ohne Wahl nach Rolle: Inhaber/Lesezugriff → Übersicht, Verwalter/Sachbearbeiter → Bewirtschaftung; gespeichert an `Mitgliedschaft.schwerpunkt`, ändert keine Rechte |
+| Arbeitsvorrat | Reiter Heute · Woche · **Hängt** (wartet auf Dritte + liegengeblieben) · **Ohne Frist** (Sammelposten + Freigaben, vorher «Ausserdem»); «Alle Vorgänge» im Fuss; Filter Wer/Mandat zugeklappt; alte Adressen `?ansicht=wartet|liegen` führen auf «Hängt» |
+| Rechte Spalte | «Heute & morgen»; nur bei Bedarf: Zulauf, Was abweicht, Vertretung, Mandate mit Befund |
+
+Entfernt (Code und CSS): Ember-Suche und drei Zahlen, Halbkreis «Zahlungsquote»,
+Ø Verzug, «Objekte nach Ort», Mieteingang-Balken, Wochenraster, Kachel «Offene
+Fälle» ausserhalb der Übersicht, Karte «Ausserdem», Läufe- und Termine-Karte,
+Sollstellungsknopf im Kopf, das Ausblenden der Kopfsuche auf «Heute»
+(`faelle/heute_bento.py` gelöscht). Die Auswertungen stehen unter /neu/berichte/.
+
+Wächter: `core/tests/test_heute_kacheln.py` (Gegenprobe: acht Mutanten rot),
+`e2e/tests/heute.spec.ts` (1440 und 390 px).

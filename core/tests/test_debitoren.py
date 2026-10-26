@@ -599,7 +599,8 @@ class MieterkontoblattTests(TestCase):
             betrag=Decimal('1500.00'), datum=date(2026, 1, 1),
             faellig_am=date(2026, 1, 5), status='offen')
         c = Client(); c.force_login(_team_user())
-        html = c.get('/neu/').content.decode('utf-8')
+        # Die Inbox steht seit der Dashboard-Reduktion im Reiter «Ohne Frist».
+        html = c.get('/neu/?ansicht=ohnefrist').content.decode('utf-8')
         # Die Inbox ist mit 4b.13 auf die Komponentenschicht umgestellt: Statt
         # `basis-full sm:basis-0` am einzelnen Element steht die Regel jetzt
         # EINMAL an `.fw-zeile` in base.html und gilt fuer jede Zeile der

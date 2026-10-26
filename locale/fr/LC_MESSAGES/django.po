@@ -27166,3 +27166,102 @@ msgid "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s
 msgid_plural "Zuordnung aufgehoben: CHF %(betrag)s sind wieder ein Klärungsfall, %(n)s Rechnungen sind wieder offen."
 msgstr[0] "Attribution annulée : CHF %(betrag)s sont de nouveau un cas à clarifier, %(n)s facture est de nouveau ouverte."
 msgstr[1] "Attribution annulée : CHF %(betrag)s sont de nouveau un cas à clarifier, %(n)s factures sont de nouveau ouvertes."
+
+msgid "Hängt"
+msgstr "Bloqué"
+
+msgid "Ohne Frist"
+msgstr "Sans délai"
+
+msgid "Fristen & Vorgänge"
+msgstr "Délais et tâches"
+
+msgid "Erledigen"
+msgstr "Traiter"
+
+msgid "niemandem zugewiesen"
+msgstr "attribué à personne"
+
+msgid "Freigaben"
+msgstr "Validations"
+
+msgid "Überfällige Rechnungen"
+msgstr "Factures en retard"
+
+msgid "Klären"
+msgstr "Clarifier"
+
+msgid "fällig, z. B. Sollstellung"
+msgstr "échus, p. ex. facturation des loyers"
+
+msgid "Eingangsrechnungen"
+msgstr "Factures fournisseurs"
+
+msgid "zur Freigabe"
+msgstr "à valider"
+
+msgid "Schwerpunkt der Startseite"
+msgstr "Priorité de la page d'accueil"
+
+msgid "Heute zu tun"
+msgstr "À faire aujourd'hui"
+
+msgid "Filter"
+msgstr "Filtre"
+
+msgid "Nichts hängt — jeder Fall ist in Bewegung."
+msgstr "Rien n'est bloqué — chaque dossier avance."
+
+msgid "Nichts ohne Frist offen."
+msgstr "Rien d'ouvert sans délai."
+
+msgid "Heute & morgen"
+msgstr "Aujourd'hui et demain"
+
+msgid "morgen"
+msgstr "demain"
+
+msgid "Heute und morgen steht nichts im Kalender."
+msgstr "Rien au calendrier aujourd'hui et demain."
+
+msgid "Was abweicht"
+msgstr "Ce qui s'écarte"
+
+msgid "Mandate mit Befund"
+msgstr "Mandats avec constat"
+
+#, python-format
+msgid "%(n)s davon überfällig."
+msgid_plural "%(n)s davon überfällig."
+msgstr[0] "dont %(n)s en retard."
+msgstr[1] "dont %(n)s en retard."
+
+#, python-format
+msgid "Eingang nicht zugeordnet"
+msgid_plural "Eingänge nicht zugeordnet"
+msgstr[0] "entrée non attribuée"
+msgstr[1] "entrées non attribuées"
+
+#, python-format
+msgid "wartet auf Entscheid"
+msgid_plural "warten auf Entscheid"
+msgstr[0] "attend une décision"
+msgstr[1] "attendent une décision"
+
+#, python-format
+msgid "Rechnung über Fälligkeit"
+msgid_plural "Rechnungen über Fälligkeit"
+msgstr[0] "facture échue"
+msgstr[1] "factures échues"
+
+#, python-format
+msgid "%(n)s länger als %(t)s Tage ungeklärt"
+msgid_plural "%(n)s länger als %(t)s Tage ungeklärt"
+msgstr[0] "%(n)s non clarifié depuis plus de %(t)s jours"
+msgstr[1] "%(n)s non clarifiés depuis plus de %(t)s jours"
+
+#, python-format
+msgid "Zahlung ohne Zuordnung"
+msgid_plural "Zahlungen ohne Zuordnung"
+msgstr[0] "paiement sans attribution"
+msgstr[1] "paiements sans attribution"

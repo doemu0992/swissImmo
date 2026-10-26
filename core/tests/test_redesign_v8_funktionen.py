@@ -96,7 +96,7 @@ STARTSEITE = [
     # «Posteingang» in der Zulauf-Karte (wie im Mockup).
     'ansicht_titel', 'kw', 'vertretung_fuer', 'aktive_lg', 'href="/neu/zulauf/"',
     'name="wer"', 'name="mandat"', 'name="ansicht"', 'f_wer_auswahl', 'f_mandat_auswahl',
-    'lg_streifen', 'delta_gut_wenn', 'delta_einheit', 'fw-trend', 'ansichten', 'f_query',
+    'lg_streifen', 'delta_einheit', 'fw-trend', 'ansichten', 'f_query',
     'av_band', 'av_band_gesamt', 'f_query_ohne_fallart', 'fallart=', 'faelle', 'tage_ohne_bewegung',
     'vorrat', 'e.dringlichkeit', 'e.marke', 'e.nummer', 'e.fortschritt', 'e.schritt', 'e.wer',
     'e.wofuer', 'e.tage', 'e.ziel', 'e.modal', 'e.knopf', 'fwModalOpen(this',
@@ -104,15 +104,17 @@ STARTSEITE = [
     'z.sicher', 'z.fallart', 'inbox', 'inbox_mehr', 'e.chip_cls', 'e.cta', 'e.wide',
     '/neu/pendenzen/{{ lg_query }}', 'lg_mandate', 'm.belegung', 'lg_abweichungen',
     'lg_abweichungen_anzahl', '/neu/berichte/', "{% include 'fw/_fwmodal.html' %}",
-    # Zweiter Durchgang: Freigaben und Läufe als Reiter der Karte «Ausserdem»,
-    # die Zahl der Freigaben am Reiter; Schublade und Tastatur.
-    'av_freigaben_gesamt', "teil='ausserdem'", "teil='rechts'",
+    # Dashboard-Reduktion (26.10.2026): «Ausserdem» ist der Reiter «Ohne Frist»,
+    # Freigaben und Läufe sind Aufgabenkacheln je Schwerpunkt; Schublade und Tastatur.
+    "teil='ohnefrist'", "teil='rechts'", 'kacheln', 'k.zahl', 'k.knopf', 'schwerpunkte',
+    '/neu/schwerpunkt/', 'termine_kurz',
     '/neu/fallschritte/{{ e.schritt_pk }}/erledigen/', '/neu/fallschritte/{{ e.schritt_pk }}/verschieben/',
     'fwVorgangAuf', 'fwVorgangZu', "e.key === 'j'", "e.key === 'k'", "e.key === 'e'",
 ]
+# Läufe und Termine (sieben Tage) sind seit der Dashboard-Reduktion keine
+# Abschnitte mehr: Läufe sind eine Kachel der Buchhaltung, Termine «Heute & morgen».
 ABSCHNITTE = [
-    'av_laeufe', 'av_laeufe_faellig', 'av_laeufe_blockiert', '/neu/laeufe/', 'av_termine',
-    'av_termine_gesamt', 'av_freigaben', 'av_liegezeit', '/neu/kreditoren/',
+    'av_freigaben', 'av_liegezeit', '/neu/kreditoren/',
     'av_vertretung', 'vertretung_faelle', '/neu/abwesenheiten/', 'v.ungedeckt',
 ]
 
@@ -165,6 +167,6 @@ class GerendertTests(TestCase):
         html = c.get('/neu/').content.decode('utf-8')
         for hook in ('id="fwSidebar"', 'id="fwPalette"', 'fw-palette-data', 'id="fwModal"',
                      'id="fwBestaetigen"', 'aria-label="Bereiche"', 'name="lg"', 'name="q"',
-                     'class="fw-lage"', 'fw-reiter', 'fwThemeWechseln'):
+                     'class="fw-schwerpunkt"', 'id="h-vorrat"', 'fw-reiter', 'fwThemeWechseln'):
             with self.subTest(hook=hook):
                 self.assertIn(hook, html)

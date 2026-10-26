@@ -4,177 +4,57 @@
 {% block title %}{{ ansicht_titel }} — swissImmo{% endblock %}
 
 {% block content %}
-{% comment %} ===== «HEUTE» NACH KONZEPT-V8, ZWEITER DURCHGANG (30.09.2026) =====
+{% comment %} ===== «HEUTE» NACH DER DASHBOARD-REDUKTION (26.10.2026) =====
 
-   Quelle ist `mockups/konzept-v8-cockpit.html`, Seite «Heute», Stück für
-   Stück: Kopf mit zwei Knöpfen, Kennzahlenstreifen mit Verlaufslinie und
-   Delta-Kapsel, darunter zwei Spalten. Links steht allein der
-   Arbeitsvorrat — Reiter, Filterzeile, Zeilen im Raster, Tastenhinweise im
-   Fuss. Ein Klick auf eine Zeile fährt rechts die Schublade ein: Ablauf des
-   Falls, Eckdaten, und unten die Handlung («Schritt erledigen», «Auf morgen»).
-   Rechts Zulauf, Termine, Mandate.
+   Die Startseite beantwortet eine Frage: Was muss ich jetzt tun?
 
-   Was vorher zusätzlich in der linken Spalte stand — Aufgaben ohne Frist,
-   Freigaben, Läufe — ist nicht weggefallen, sondern in EINER Karte unter dem
-   Arbeitsvorrat zusammengefasst («Ausserdem»), mit Reitern. Vertretung und
-   «Lage des Bestands» stehen rechts unter den Mandaten.
+   1. Kopf: Datum, Begrüssung, ein Satz zur Tageslast. Rechts der Schwerpunkt
+      (Bewirtschaftung, Buchhaltung, Übersicht) und «Neuer Fall».
+   2. Höchstens vier Aufgabenkacheln — Zahl, Bedeutung, Verb; nur Zahlen > 0,
+      die dringendste zuerst und im Ember-Akzent (`faelle/heute_kacheln.py`).
+      Im Schwerpunkt «Übersicht» steht an ihrer Stelle der Kennzahlenstreifen.
+   3. Zwei Spalten: links der Arbeitsvorrat (Heute · Woche · Hängt · Ohne
+      Frist), rechts «Heute & morgen» und nur bei Bedarf Abweichungen,
+      Vertretung, Mandate mit Befund.
 
-   Die Geschichte der Startseite (4b.13: zwei Startflächen zusammengelegt;
-   E2.60/61: Zuständigkeits- und Mandatsfilter, Fallart-Band) gilt weiter;
-   die Begründungen stehen in `core/views/fw/dashboard.py`.
+   Weggefallen sind die Ember-Reihe (Halbkreis, Ortskarte, Mieteingang,
+   Wochenraster), die drei Zahlen und die eigene Suche über ihr, die Karte
+   «Ausserdem» und der Sollstellungsknopf. Begründung in
+   `core/views/fw/dashboard.py::fw_dashboard`.
    ===== {% endcomment %}
 
 <section class="fw-hallo">
     <div>
-        {% comment %} «Mittwoch, 30. September 2026 · KW 40» — die Kalenderwoche ist in der
-           Schweizer Verwaltung die übliche Zeitangabe. Der Vertretungshinweis
-           steht nur, wenn er zutrifft. {% endcomment %}
         <div class="fw-eyebrow">{{ heute|date:"l, d. F Y" }} · KW&nbsp;{{ kw }}{% for name, bis in vertretung_fuer %} · <b class="fw-marke">{% blocktrans with bis=bis|date:"d.m." %}Vertretung für {{ name }} bis {{ bis }}{% endblocktrans %}</b>{% endfor %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse ort=aktive_lg.ort %}Gefiltert auf {{ strasse }}, {{ ort }}{% endblocktrans %}{% endif %}</div>
         {% now "H" as stunde %}{% with name=request.user.first_name|default:request.user.username %}
         <h1>{% if stunde < "11" %}{% blocktrans %}Guten Morgen, {{ name }}.{% endblocktrans %}{% elif stunde < "18" %}{% blocktrans %}Guten Tag, {{ name }}.{% endblocktrans %}{% else %}{% blocktrans %}Guten Abend, {{ name }}.{% endblocktrans %}{% endif %}
-            {% for schluessel, bezeichnung, aktiv, anzahl in ansichten %}{% if schluessel == 'heute' %}<em>{% if anzahl %}{% blocktrans count n=anzahl %}{{ n }} Vorgang braucht heute dich.{% plural %}{{ n }} Vorgänge brauchen heute dich.{% endblocktrans %}{% else %}{% trans "Heute ist nichts fällig." %}{% endif %}</em>{% endif %}{% endfor %}</h1>
+            <em>{% if anzahl_heute %}{% blocktrans count n=anzahl_heute %}{{ n }} Vorgang braucht heute dich.{% plural %}{{ n }} Vorgänge brauchen heute dich.{% endblocktrans %}{% if anzahl_ueberfaellig %} <span class="fw-heute-ueber">{% blocktrans count n=anzahl_ueberfaellig %}{{ n }} davon überfällig.{% plural %}{{ n }} davon überfällig.{% endblocktrans %}</span>{% endif %}{% else %}{% trans "Heute ist nichts fällig." %}{% endif %}</em></h1>
         {% endwith %}
     </div>
     <div class="fw-phead-knoepfe">
         {% if aktive_lg %}<a href="/neu/" class="fw-btn fw-geist">{% zeichen 'schliessen' %} {% trans "Filter aufheben" %}</a>{% endif %}
-        <a href="/neu/sollstellung/{{ lg_query }}" class="fw-btn">{% zeichen 'lauf' %} {% blocktrans with monat=soll_monat|date:"F" %}Sollstellung {{ monat }}{% endblocktrans %}</a>
+        {% comment %} Der Schwerpunkt wählt nur die Kacheln, keine Rechte. Ein Formular
+           mit drei Knöpfen statt einer Auswahlliste: ein Tipp am Telefon. {% endcomment %}
+        <details class="fw-schwerpunkt">
+            <summary class="fw-btn" aria-label="{% trans 'Schwerpunkt der Startseite' %}">{% zeichen 'einstellungen' %} {{ schwerpunkt_text }}</summary>
+            <form method="post" action="/neu/schwerpunkt/{{ lg_query }}" class="fw-schwerpunkt-wahl">
+                {% csrf_token %}
+                {% for wert, text in schwerpunkte %}
+                <button type="submit" name="schwerpunkt" value="{{ wert }}" class="{% if wert == schwerpunkt %}hier{% endif %}"{% if wert == schwerpunkt %} aria-current="true"{% endif %}>{{ text }}</button>
+                {% endfor %}
+            </form>
+        </details>
         {% if kann_schreiben %}<a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
     </div>
 </section>
 
-{% comment %} ===== EMBER: SUCHE, DREI ZAHLEN, BENTO (26.10.2026, mockups/immoswiss-ember.html) =====
-   Daten aus faelle/heute_bento.py. Jede Karte führt dorthin, wo man handelt. Die
-   Kopfzeilen-Suche ist auf «Heute» ausgeblendet — diese hier ersetzt sie. {% endcomment %}
-{% if bento %}
-<div class="fw-ember-intro">
-    <form method="get" action="/neu/suche/" class="fw-ember-suche" role="search">
-        <label class="sr-only" for="fwEmberSuche">{% trans "Suche" %}</label>
-        <input id="fwEmberSuche" type="search" name="q" placeholder="{% trans 'Suche nach Mieter, Objekt, Vertrag …' %}" autocomplete="off">
-        <button type="submit" aria-label="{% trans 'Suchen' %}">{% zeichen 'suchen' %}</button>
-    </form>
-    <div class="fw-ember-zahlen">
-        <a href="/neu/objekte/{{ lg_query }}"><span>{% trans "Mietobjekte" %}</span><b class="fw-num">{{ bento.orte.gesamt }}</b></a>
-        <a href="/neu/schaeden/{{ lg_query }}"><span>{% trans "Offene Tickets" %}</span><b class="fw-num">{{ bento.tickets_offen }}</b></a>
-        <a href="/neu/termine/kalender/"><span>{% trans "Termine diese Woche" %}</span><b class="fw-num">{{ bento.woche.anzahl }}</b></a>
-    </div>
-</div>
-
-<div class="fw-ember-bento">
-    {% with z=bento.zahlung %}
-    <article class="fw-ember-karte k-zahlung" aria-labelledby="b-zahlung">
-        <div class="fw-ember-kopf"><h2 id="b-zahlung">{% trans "Zahlungseingang" %}</h2>
-            <a href="/neu/bankabgleich/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Bankabgleich' %}">{% zeichen 'neu' %}</a></div>
-        <div class="fw-ember-gauge-zeile">
-            <div>
-                <div class="fw-ember-klein">{% trans "Ø Verzug" %}</div>
-                <div class="fw-ember-gross fw-num"><span data-zaehlen>{% if z.dauer is not None %}{{ z.dauer|floatformat:1 }}{% else %}–{% endif %}</span>{% if z.stufe %}<span class="fw-chip {{ z.stufe_klasse }} fw-dot">{{ z.stufe_text }}</span>{% endif %}</div>
-                <div class="fw-ember-klein">{% if z.dauer is not None %}{% blocktrans count n=z.anzahl %}Tage nach Fälligkeit · {{ n }} Zahlung, 90 Tage{% plural %}Tage nach Fälligkeit · {{ n }} Zahlungen, 90 Tage{% endblocktrans %}{% else %}{% trans "noch keine Zahlung in 90 Tagen" %}{% endif %}</div>
-                <div class="fw-ember-knoepfe">
-                    <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Mahnwesen' %}" title="{% trans 'Mahnwesen' %}">{% zeichen 'senden' %}</a>
-                    <a href="/neu/debitoren/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Debitoren' %}" title="{% trans 'Debitoren' %}">{% zeichen 'rechnung' %}</a>
-                    <a href="/neu/bankabgleich/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Bankabgleich' %}" title="{% trans 'Bankabgleich' %}">{% zeichen 'bank' %}</a>
-                </div>
-            </div>
-            <div>
-                <svg class="fw-ember-gauge" viewBox="0 0 240 140" role="img" aria-label="{% blocktrans with q=z.quote|floatformat:1 %}Zahlungsquote {{ q }} Prozent{% endblocktrans %}">
-                    <defs><linearGradient id="fwBogen" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f6b890"/><stop offset="1" stop-color="#d9531d"/></linearGradient></defs>
-                    <path class="spur" d="M 30 120 A 90 90 0 0 1 210 120" fill="none" stroke-width="26" stroke-linecap="round"/>
-                    <path class="bogen" d="M 30 120 A 90 90 0 0 1 210 120" fill="none" stroke-width="26" stroke-linecap="round" pathLength="100" data-bogen="{{ z.bogen|stringformat:'.1f' }}" stroke-dasharray="{{ z.bogen|stringformat:'.1f' }} 400"/>
-                    <g class="knauf" data-grad="{% widthratio z.bogen 100 180 %}" transform="rotate({% widthratio z.bogen 100 180 %})"><circle cx="30" cy="120" r="9"/></g>
-                </svg>
-                <div class="fw-ember-gauge-wert"><b class="fw-num">{% if z.quote is not None %}{{ z.quote|floatformat:1 }} %{% else %}–{% endif %}</b><div class="fw-ember-klein">{% blocktrans with j=heute.year %}Zahlungsquote {{ j }}{% endblocktrans %}</div></div>
-            </div>
-        </div>
-    </article>
-    {% endwith %}
-
-    <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-ember-karte k-haupt" aria-labelledby="b-haupt">
-        <div>
-            <div class="fw-ember-kopf"><h2 id="b-haupt">{% trans "Mahnwesen" %}</h2><span class="fw-ember-rund" aria-hidden="true">{% zeichen 'weiter' %}</span></div>
-            <span class="fw-btn">{% zeichen 'lauf' %} {% trans "Mahnlauf" %}</span>
-        </div>
-        <div><div class="fw-ember-gross fw-num"><span data-zaehlen>{{ bento.rueckstand.n }}</span></div>
-            <small>{% blocktrans with s=bento.rueckstand.summe|chf:0 count n=bento.rueckstand.n %}überfällige Rechnung · CHF {{ s }}{% plural %}überfällige Rechnungen · CHF {{ s }}{% endblocktrans %}</small></div>
-    </a>
-
-    <article class="fw-ember-karte k-post" aria-labelledby="b-post">
-        <div class="fw-ember-kopf"><h2 id="b-post">{% trans "Nachrichten" %}</h2>
-            <a href="/neu/kommunikation/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Mieter kontaktieren' %}">{% zeichen 'neu' %}</a></div>
-        {% if bento.post %}
-        <a href="{{ bento.post.url }}" class="fw-ember-fenster"><div>
-            <b>{{ bento.post.titel|truncatechars:60 }}</b>
-            {% if bento.post.text %}<p>{{ bento.post.text|truncatechars:90 }}</p>{% endif %}
-            <div class="fw-ember-meta"><i></i>{{ bento.post.wer|truncatechars:24 }} · {{ bento.post.art }}</div>
-        </div></a>
-        {% else %}
-        <p class="fw-ember-leer">{% trans "Keine neue Nachricht." %}</p>
-        {% endif %}
-    </article>
-
-    <a href="/neu/liegenschaften/{{ lg_query }}" class="fw-ember-karte k-orte" aria-labelledby="b-orte">
-        <svg class="fw-ember-plan" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            <path class="b" d="M-10 80 C 60 60 120 120 200 90 S 280 60 320 80"/><path class="b" d="M60 -10 C 80 80 70 160 110 320"/><path class="b" d="M-10 200 C 90 180 190 230 320 190"/>
-            <path d="M-10 120 L 320 150M140 -10 L 190 320M-10 40 L 320 20M230 -10 L 260 320M20 250 L 320 280"/>
-        </svg>
-        <div class="fw-ember-kopf"><h2 id="b-orte">{% trans "Objekte nach Ort" %}</h2><span class="fw-ember-rund" aria-hidden="true">{% zeichen 'weiter' %}</span></div>
-        {% if bento.orte.reihen|length > 1 %}<ul class="fw-ember-ortliste">{% for r in bento.orte.reihen|slice:"1:" %}<li><span>{{ r.ort }}</span><b class="fw-num">{{ r.n }}</b></li>{% endfor %}</ul>{% endif %}
-        <div class="fw-ember-ortfuss">
-            <span class="fw-ember-blob" aria-hidden="true"></span>
-            {% if bento.orte.erster %}<b class="fw-num"><span data-zaehlen>{{ bento.orte.erster.n }}</span></b><span>{% blocktrans with ort=bento.orte.erster.liegenschaft__ort %}Objekte in<br>{{ ort }}{% endblocktrans %}</span>
-            {% else %}<span>{% trans "Noch keine Objekte erfasst." %}</span>{% endif %}
-        </div>
-    </a>
-
-    {% with e=bento.einnahmen %}
-    <article class="fw-ember-karte k-balken" aria-labelledby="b-balken">
-        <div class="fw-ember-kopf"><h2 id="b-balken">{% trans "Mieteingang" %}</h2>
-            <div class="fw-ember-gruppe"><span class="fw-ember-auswahl">{% trans "Letzte 7 Monate" %}</span>
-            <a href="/neu/portfolio/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Portfolio' %}">{% zeichen 'bericht' %}</a></div></div>
-        {% if e.hat_daten %}
-        <div class="fw-ember-balken" role="img" aria-label="{% trans 'Verbuchte Zahlungseingänge der letzten sieben Monate' %}">
-            <div class="fw-ember-y" aria-hidden="true">{% for a in e.achse %}<span>{{ a }}</span>{% endfor %}</div>
-            <div class="fw-ember-raster" aria-hidden="true">{% for a in e.achse %}<i></i>{% endfor %}</div>
-            {% for r in e.reihe %}
-            <div class="fw-ember-saeule"><div class="fw-ember-stab{% if forloop.last %} an{% endif %}" data-h="{{ r.hoehe|stringformat:'.1f' }}"><span class="fw-ember-tip">CHF {{ r.summe|chf:0 }}</span><i></i></div><span class="x">{{ r.label }}</span></div>
-            {% endfor %}
-        </div>
-        {% else %}
-        {% include 'fw/_empty.html' with knapp=True icon='bericht' titel=_('Noch keine verbuchten Zahlungen.') subtext=_('Die Balken erscheinen mit dem ersten Bankabgleich.') %}
-        {% endif %}
-    </article>
-    {% endwith %}
-
-    {% with w=bento.woche %}
-    <article class="fw-ember-karte k-woche" aria-labelledby="b-woche">
-        <div class="fw-ember-kopf"><h2 id="b-woche">{% trans "Terminplan" %}</h2>
-            <div class="fw-ember-gruppe"><span class="fw-ember-auswahl">{{ w.montag|date:"d.m." }} – {{ w.sonntag|date:"d.m.Y" }}</span>
-            <a href="/neu/termine/kalender/" class="fw-ember-rund" aria-label="{% trans 'Kalender' %}">{% zeichen 'termin' %}</a></div></div>
-        <div class="fw-ember-woche">
-            <span></span>
-            {% for t in w.tage %}<div class="fw-ember-tag{% if t.heute %} heute{% endif %}"><span>{{ t.datum|date:"D" }}</span> <b>{{ t.datum|date:"j" }}</b></div>{% endfor %}
-            {% for z in w.raster %}
-            <span class="fw-ember-zeit">{{ z.name }}</span>
-            {% for s in z.slots %}
-            {% if s.anzahl %}<a href="{{ s.url }}" class="fw-ember-slot{% if s.heiss %} heiss{% endif %}" aria-label="{% for e in s.ereignisse %}{{ e.titel }}{% if not forloop.last %}, {% endif %}{% endfor %}">{% if s.anzahl > 1 %}{{ s.anzahl }}{% endif %}<span class="t">{% for e in s.ereignisse|slice:":3" %}{% if not forloop.first %}<br>{% endif %}{% if e.zeit %}{{ e.zeit }} {% endif %}{{ e.titel|truncatechars:34 }}{% endfor %}{% if s.anzahl > 3 %}<small>+{{ s.anzahl|add:"-3" }}</small>{% endif %}</span></a>
-            {% else %}<span class="fw-ember-slot" aria-hidden="true"></span>{% endif %}
-            {% endfor %}
-            {% endfor %}
-        </div>
-    </article>
-    {% endwith %}
-</div>
-{% endif %}
-
-{% comment %} Vier Zahlen mit Vormonatsvergleich und Zwölf-Monats-Linie. Die Kapsel
-   trägt den Vergleich, grün oder rot je nach Richtung (`k.ton` aus
-   `delta_gut_wenn` — dieselbe Regel wie bisher der Pfeil). Die Linie zeigt
-   nur gemessene Monate; fehlen sie, fehlt sie.
-
-   `floatformat` OHNE ZAHL, nicht `floatformat:1`: Eine Fallzahl ist ganz,
-   und «▲ 3,0 Fälle» ist keine. Die Einheit kommt aus `delta_einheit`. {% endcomment %}
+{% if schwerpunkt == 'uebersicht' %}
+{% comment %} Übersicht: vier Kennzahlen mit Vormonatsvergleich und Zwölf-Monats-Linie
+   (`faelle/lage.py`). Die Kapsel trägt den Vergleich, grün oder rot je nach
+   Richtung (`k.ton`). `floatformat` OHNE ZAHL: «▲ 3,0 Fälle» ist keine Fallzahl. {% endcomment %}
 <section class="fw-lage" aria-label="{% trans 'Lage im Überblick' %}">
     {% for k in lg_streifen %}
-    <a class="fw-lage-kachel" href="{% if k.schluessel == 'eingang' %}/neu/debitoren/{% elif k.schluessel == 'ausstaende' %}/neu/mahnwesen/aging/{% elif k.schluessel == 'leerstand' %}/neu/vermarktung/{% else %}?ansicht=alle{% endif %}">
+    <a class="fw-lage-kachel" href="{% if k.schluessel == 'eingang' %}/neu/debitoren/{% elif k.schluessel == 'ausstaende' %}/neu/mahnwesen/aging/{% elif k.schluessel == 'leerstand' %}/neu/vermarktung/{% else %}?ansicht=haengt#h-vorrat{% endif %}">
         <div class="fw-lage-kopf">
             <span class="fw-sym{% if k.schluessel == 'ausstaende' %} warn{% endif %}" aria-hidden="true">{% if k.schluessel == 'eingang' %}{% zeichen 'geld' %}{% elif k.schluessel == 'ausstaende' %}{% zeichen 'rechnung' %}{% elif k.schluessel == 'leerstand' %}{% zeichen 'schluessel' %}{% else %}{% zeichen 'dokument' %}{% endif %}</span>
             <div class="fw-l">{{ k.label }}</div>
@@ -192,19 +72,35 @@
     </a>
     {% endfor %}
 </section>
+{% elif kacheln %}
+{% comment %} Aufgabenkacheln: Zahl, Bedeutung, Verb. Die erste ist die dringendste und
+   trägt den Ember-Akzent; `n-…` legt die Breiten fest (eine Kachel über die
+   ganze Breite, zwei halb-halb, drei 6/3/3, vier je ein Viertel). {% endcomment %}
+<section class="fw-bento fw-heute-kacheln n-{{ kacheln|length }}" aria-label="{% trans 'Heute zu tun' %}">
+    {% for k in kacheln %}
+    <a href="{{ k.ziel }}" class="fw-kachel{% if forloop.first %} akzent{% endif %}" data-kachel="{{ k.schluessel }}">
+        <div class="fw-kachel-kopf"><h2>{{ k.titel }}</h2>{% if not forloop.first and k.ton %}<span class="fw-punkt {{ k.ton }}" aria-hidden="true"></span>{% endif %}</div>
+        <div class="fw-kachel-zahl fw-num"><span data-zaehlen>{{ k.zahl }}</span>{% if k.betrag %}<small>CHF {{ k.betrag|chf:0 }}</small>{% endif %}</div>
+        <p class="fw-kachel-text">{{ k.text }}</p>
+        <span class="fw-btn fw-knapp">{{ k.knopf }} {% zeichen 'weiter' %}</span>
+    </a>
+    {% endfor %}
+</section>
+{% endif %}
 
 <div class="fw-cockpit">
 <div class="fw-cockpit-haupt">
 
-<section class="fw-card fw-vorrat" aria-labelledby="h-vorrat">
+<section class="fw-card fw-vorrat" aria-labelledby="h-vorrat" id="h-vorrat">
     <div class="fw-kopf fw-kopf-offen">
-        <h2 class="fw-t" id="h-vorrat">{% trans "Arbeitsvorrat" %}</h2>
-        <span class="fw-neben">{% if ansicht == 'liegen' or ansicht == 'wartet' %}{% blocktrans count n=faelle|length %}{{ n }} Vorgang{% plural %}{{ n }} Vorgänge{% endblocktrans %}{% else %}{% blocktrans count n=vorrat|length %}{{ n }} Vorgang{% plural %}{{ n }} Vorgänge{% endblocktrans %}{% endif %}</span>
-        {% comment %} Zuständigkeit und Mandat (E2.60) — zwei Fragen an den Arbeitsvorrat,
-           rechts im Kopf, wo im Mockup «Ansicht speichern» steht. Sie gelten nur
-           hier; der Liegenschaftsfilter der Kopfzeile wird mitgeführt. «Alle» ist
-           das Fehlen eines Wertes — der leere Eintrag trägt keine ID. {% endcomment %}
-        <form method="get" class="fw-rechts fw-vorrat-wahl">
+        <h2 class="fw-t">{% trans "Arbeitsvorrat" %}</h2>
+        <span class="fw-neben">{% if ansicht == 'haengt' %}{% blocktrans count n=faelle|length %}{{ n }} Vorgang{% plural %}{{ n }} Vorgänge{% endblocktrans %}{% elif ansicht != 'ohnefrist' %}{% blocktrans count n=vorrat|length %}{{ n }} Vorgang{% plural %}{{ n }} Vorgänge{% endblocktrans %}{% endif %}</span>
+        {% comment %} Zuständigkeit und Mandat (E2.60) — zugeklappt hinter «Filter», offen
+           nur, wenn einer gilt. Der Liegenschaftsfilter der Kopfzeile wird
+           mitgeführt. «Alle» ist das Fehlen eines Wertes. {% endcomment %}
+        <details class="fw-rechts fw-vorrat-filterwahl"{% if f_wer or f_mandat %} open{% endif %}>
+            <summary class="fw-btn fw-knapp fw-geist">{% zeichen 'suchen' %} {% trans "Filter" %}{% if f_wer or f_mandat %} <span class="fw-z">{% if f_wer and f_mandat %}2{% else %}1{% endif %}</span>{% endif %}</summary>
+        <form method="get" class="fw-vorrat-wahl">
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <input type="hidden" name="ansicht" value="{{ ansicht }}">
             {% if av_band_aktiv %}<input type="hidden" name="fallart" value="{{ av_band_aktiv }}">{% endif %}
@@ -223,21 +119,21 @@
             </select>
             {% if f_wer or f_mandat %}<a href="?ansicht={{ ansicht }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-link">× {% trans "Filter aufheben" %}</a>{% endif %}
         </form>
+        </details>
     </div>
     <div class="fw-reiter" role="tablist">
         {% for schluessel, bezeichnung, aktiv, anzahl in ansichten %}
         {% comment %} Die Reiter tragen die Filter mit (`lg`, `f_query`) — sonst hebt jeder
            Wechsel still alle Filter auf. `&amp;` im Vorlagentext: ein rohes
            `&` im `href` ist ungültiges HTML. {% endcomment %}
-        <a href="?ansicht={{ schluessel }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{{ f_query }}" role="tab" aria-selected="{% if aktiv %}true{% else %}false{% endif %}" class="{% if aktiv %}hier{% endif %}{% if schluessel == 'liegen' and anzahl %} crit{% endif %}">
+        <a href="?ansicht={{ schluessel }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{{ f_query }}#h-vorrat" role="tab" aria-selected="{% if aktiv %}true{% else %}false{% endif %}" class="{% if aktiv %}hier{% endif %}{% if schluessel == 'haengt' and anzahl %} crit{% endif %}">
             {{ bezeichnung }}<span class="fw-z">{{ anzahl|default:0 }}</span>
         </a>
         {% endfor %}
     </div>
 
-    {% comment %} DIE FILTERZEILE DES MOCKUPS: das Fallart-Band («Alle 3 · Schaden 1 …»,
-       E2.61). Es zählt über genau die Liste darunter und erscheint nur, wenn
-       es etwas zu unterscheiden gibt. {% endcomment %}
+    {% comment %} Das Fallart-Band («Alle 3 · Schaden 1 …», E2.61). Es zählt über genau
+       die Liste darunter und erscheint nur, wenn es etwas zu unterscheiden gibt. {% endcomment %}
     {% if av_band|length > 1 %}
     <div class="fw-vorrat-filter">
         <a href="?ansicht={{ ansicht }}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{{ f_query_ohne_fallart }}"
@@ -249,26 +145,55 @@
     </div>
     {% endif %}
 
-    {% if ansicht == 'wartet' or ansicht == 'liegen' %}
+    {% if ansicht == 'haengt' %}
+    {% comment %} «Hängt»: wartet auf Dritte (Nachfassen ist die Arbeit) oder
+       liegengeblieben (14 Tage ohne Bewegung, 10 beim Warten). Die Regel
+       stammt aus `Fall.ist_liegengeblieben`. {% endcomment %}
     <ul class="fw-vorrat-liste">
     {% for f in faelle %}
-    <li class="fw-vz {% if ansicht == 'liegen' %}crit{% else %}warn{% endif %}" data-href="/neu/faelle/{{ f.id }}/">
+    <li class="fw-vz {% if f.ist_liegengeblieben %}crit{% else %}warn{% endif %}" data-href="/neu/faelle/{{ f.id }}/">
         <div class="fw-vz-haupt">
             <div class="fw-vz-kopf"><span class="fw-marke-kapsel">{{ f.fallart.bezeichnung }}</span><span class="fw-mono">{{ f.nummer }}</span></div>
             <a href="/neu/faelle/{{ f.id }}/" class="fw-vz-titel">{{ f.betreff|default:f.fallart.bezeichnung }}</a>
-            <div class="fw-vz-sub"><span class="fw-vz-obj">{{ f.get_status_display }}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</span></div>
+            <div class="fw-vz-sub"><span class="fw-vz-obj">{% if f.ist_liegengeblieben %}{% trans "Liegengeblieben" %}{% else %}{% trans "Wartet auf Dritte" %}{% endif %}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</span></div>
         </div>
         <div class="fw-vz-wer">{% if f.zustaendig %}<span class="fw-avatar" title="{% trans 'zuständig' %}">{{ f.zustaendig.username|slice:":2"|upper }}</span>{% else %}<span class="fw-avatar fw-avatar-offen" title="{% trans 'niemand zuständig' %}">?</span>{% endif %}</div>
-        <div class="fw-vz-frist {% if ansicht == 'liegen' %}crit{% else %}warn{% endif %}"><b>{% if f.tage_ohne_bewegung is not None %}{% blocktrans count n=f.tage_ohne_bewegung %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}{% endif %}</b><span>{% trans "ohne Bewegung" %}</span></div>
+        <div class="fw-vz-frist {% if f.ist_liegengeblieben %}crit{% else %}warn{% endif %}"><b>{% if f.tage_ohne_bewegung is not None %}{% blocktrans count n=f.tage_ohne_bewegung %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}{% endif %}</b><span>{% trans "ohne Bewegung" %}</span></div>
         <div class="fw-vz-aktion"><a href="/neu/faelle/{{ f.id }}/" class="fw-btn fw-knapp">{% trans "Fall öffnen" %}</a></div>
     </li>
     {% empty %}
-    <li class="fw-leer"><span class="fw-leer-zeichen">{% zeichen 'gut' %}</span><b>{% if ansicht == 'liegen' %}{% trans "Nichts liegengeblieben — jeder Fall ist in Bewegung." %}{% else %}{% trans "Kein Fall wartet auf Dritte." %}{% endif %}</b></li>
+    <li class="fw-leer"><span class="fw-leer-zeichen">{% zeichen 'gut' %}</span><b>{% trans "Nichts hängt — jeder Fall ist in Bewegung." %}</b></li>
     {% endfor %}
     </ul>
     <div class="fw-fuss">
-        {% comment %} Die Regel stammt aus `Fall.ist_liegengeblieben` — hier nur wiedergegeben. {% endcomment %}
-        <span>{% if ansicht == 'liegen' %}{% trans "Verfallsregel: 14 Tage ohne Bewegung, 10 beim Warten auf Dritte." %}{% else %}{% trans "Beim Warten auf Dritte ist das Nachfassen die Arbeit." %}{% endif %}</span>
+        <span>{% trans "Verfallsregel: 14 Tage ohne Bewegung, 10 beim Warten auf Dritte." %}</span>
+    </div>
+
+    {% elif ansicht == 'ohnefrist' %}
+    {% comment %} «Ohne Frist»: die Sammelposten der Inbox (seit 4b.5) und was auf eine
+       Entscheidung wartet (Freigaben). Vorher die Karte «Ausserdem». {% endcomment %}
+    <div class="fw-ohnefrist">
+        {% for e in inbox %}
+        <div class="fw-zeile">
+            <span class="fw-marker {% if e.dringend %}crit{% endif %}"></span>
+            <span class="fw-chip {{ e.chip_cls }}">{{ e.typ_label }}</span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ e.titel }}</div>
+                {% if e.sub %}<div class="fw-s">{{ e.sub }}</div>{% endif %}
+            </div>
+            {% if e.chf %}<span class="fw-betrag">CHF {{ e.chf|chf }}</span>{% endif %}
+            {% if e.faellig %}<div class="fw-zeit">{{ e.faellig|date:"d.m.Y" }}</div>{% endif %}
+            {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-knapp">{{ e.cta }}</a>{% endif %}
+        </div>
+        {% endfor %}
+        {% include 'fw/_arbeitsvorrat_abschnitte.html' with teil='ohnefrist' %}
+        {% if not inbox and not av_freigaben %}
+        <div class="fw-leer"><span class="fw-leer-zeichen">{% zeichen 'gut' %}</span><b>{% trans "Nichts ohne Frist offen." %}</b></div>
+        {% endif %}
+        <div class="fw-fuss">
+            <a href="/neu/pendenzen/{{ lg_query }}" class="fw-link">{% trans "Alle Pendenzen" %}</a>
+            {% if inbox_mehr %}<span>{% blocktrans with n=inbox_mehr %}{{ n }} weitere{% endblocktrans %}</span>{% endif %}
+        </div>
     </div>
 
     {% else %}
@@ -343,53 +268,46 @@
     {% endif %}
 </section>
 
-{% comment %} «AUSSERDEM» — was keinen Platz im Arbeitsvorrat hat, weil es keine Frist
-   trägt (Aufgaben, die Inbox seit 4b.5), eine Entscheidung ist (Freigaben)
-   oder die ganze Verwaltung betrifft (Läufe). Vorher drei Karten unter dem
-   Vorrat; im Mockup steht links allein der Arbeitsvorrat. Jetzt EINE Karte
-   mit Reitern, die erste mit Inhalt ist offen. {% endcomment %}
-{% if inbox or av_freigaben or av_laeufe %}
-<section class="fw-card fw-ausserdem">
-    <div class="fw-kopf fw-kopf-offen"><h2 class="fw-t">{% trans "Ausserdem" %}</h2><span class="fw-neben">{% trans "ohne eigene Frist" %}</span></div>
-    <div class="fw-reiter" role="tablist">
-        {% if inbox %}<button type="button" data-tab="ausserdem" data-target="aufgaben" onclick="fwTab('ausserdem','aufgaben')" class="hier">{% trans "Aufgaben" %}<span class="fw-z">{{ inbox|length }}</span></button>{% endif %}
-        {% if av_freigaben %}<button type="button" data-tab="ausserdem" data-target="freigaben" onclick="fwTab('ausserdem','freigaben')" class="{% if not inbox %}hier{% endif %}">{% trans "Wartet auf Freigabe" %}<span class="fw-z">{{ av_freigaben_gesamt }}</span></button>{% endif %}
-        {% if av_laeufe %}<button type="button" data-tab="ausserdem" data-target="laeufe" onclick="fwTab('ausserdem','laeufe')" class="{% if not inbox and not av_freigaben %}hier{% endif %}">{% trans "Läufe" %}<span class="fw-z{% if av_laeufe_blockiert %} crit{% endif %}">{{ av_laeufe|length }}</span></button>{% endif %}
-    </div>
-    {% if inbox %}
-    <div id="ausserdem-aufgaben" data-panel="ausserdem">
-        {% for e in inbox %}
-        <div class="fw-zeile">
-            <span class="fw-marker {% if e.dringend %}crit{% endif %}"></span>
-            <span class="fw-chip {{ e.chip_cls }}">{{ e.typ_label }}</span>
-            <div class="fw-mitte">
-                <div class="fw-t">{{ e.titel }}</div>
-                {% if e.sub %}<div class="fw-s">{{ e.sub }}</div>{% endif %}
-            </div>
-            {% if e.chf %}<span class="fw-betrag">CHF {{ e.chf|chf }}</span>{% endif %}
-            {% if e.faellig %}<div class="fw-zeit">{{ e.faellig|date:"d.m.Y" }}</div>{% endif %}
-            {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-knapp">{{ e.cta }}</a>{% endif %}
-        </div>
-        {% endfor %}
-        <div class="fw-fuss">
-            <a href="/neu/pendenzen/{{ lg_query }}" class="fw-link">{% trans "Alle Pendenzen" %}</a>
-            {% if inbox_mehr %}<span>{% blocktrans with n=inbox_mehr %}{{ n }} weitere{% endblocktrans %}</span>{% endif %}
-        </div>
-    </div>
-    {% endif %}
-    {% include 'fw/_arbeitsvorrat_abschnitte.html' with teil='ausserdem' %}
-</section>
-{% endif %}
-
 </div>{# /fw-cockpit-haupt #}
 <div class="fw-cockpit-kontext">
 
+{% comment %} Heute & morgen: Termine, Abnahmen, Besichtigungen — enger als die
+   Wochenliste des Sammlers. Der Kalender bleibt einen Klick entfernt. {% endcomment %}
+<section class="fw-card" aria-labelledby="h-kurz">
+    <div class="fw-kopf">
+        <h2 class="fw-t" id="h-kurz">{% trans "Heute & morgen" %}</h2>
+        <span class="fw-rechts"><a href="/neu/termine/kalender/" class="fw-link">{% trans "Kalender" %}</a></span>
+    </div>
+    {% if termine_kurz %}
+    <div class="fw-agenda">
+    {% for t in termine_kurz %}
+    <div class="fw-agenda-zeile">
+        <div class="fw-agenda-zeit">
+            {% if t.zeit %}{{ t.zeit|time:"H:i" }}{% endif %}
+            <span class="fw-klein">{% if t.datum == heute %}{% trans "heute" %}{% else %}{% trans "morgen" %}{% endif %}</span>
+        </div>
+        <span class="fw-agenda-punkt">{% zeichen_wert t.ikon %}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ t.titel }}</div>
+            <div class="fw-s">{{ t.zeile }}</div>
+            <a href="{{ t.ziel }}" class="fw-link">{{ t.knopf }}</a>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+    {% else %}
+    <p class="fw-leer">{% trans "Heute und morgen steht nichts im Kalender." %}</p>
+    {% endif %}
+</section>
+
+{% comment %} Zulauf nur, wenn etwas nicht zugeordnet ist — sonst gibt es nichts zu tun. {% endcomment %}
+{% if av_eingaenge %}
 <section class="fw-card" aria-labelledby="h-zulauf">
     <div class="fw-kopf">
         <h2 class="fw-t" id="h-zulauf">{% trans "Zulauf" %}</h2>
         <span class="fw-neben">{{ av_eingaenge_gesamt }} {% trans "nicht zugeordnet" %}</span>
         <span class="fw-rechts"><a href="/neu/zulauf/" class="fw-link">{% trans "Posteingang" %}</a></span></div>
-    {% for z in av_eingaenge %}
+    {% for z in av_eingaenge|slice:":3" %}
     <div class="fw-zeile fw-eingang">
         <span class="fw-quelle">{% if z.eingang.quelle == 'mail' or z.eingang.quelle == 'post' or z.eingang.quelle == 'scan' %}{% zeichen 'dokument' %}{% else %}{% zeichen 'wartet' %}{% endif %}</span>
         <div class="fw-mitte">
@@ -404,47 +322,18 @@
             </div>
         </div>
     </div>
-    {% empty %}
-    <div class="fw-leer"><span class="fw-leer-zeichen">{% zeichen 'gut' %}</span><b>{% trans "Posteingang leer." %}</b>{% trans "Alles ist zugeordnet." %}</div>
     {% endfor %}
-</section>
-
-{% include 'fw/_arbeitsvorrat_abschnitte.html' with teil='rechts' %}
-
-{% comment %} Sortiert nach Auffälligkeit, nicht nach Grösse — wer von oben liest,
-   sieht zuerst, wo es klemmt. Der Balken zeigt die Belegung; ein Datenwert,
-   deshalb als `style`. {% endcomment %}
-{% if lg_mandate %}
-<section class="fw-card" aria-labelledby="h-mandate">
-    <div class="fw-kopf"><h2 class="fw-t" id="h-mandate">{% trans "Mandate" %}</h2>
-        <span class="fw-neben">{% trans "nach Auffälligkeit" %}</span></div>
-    {% for m in lg_mandate|slice:":8" %}
-    <div class="fw-mandat">
-        <div class="fw-mitte">
-            <div class="fw-t">{{ m.mandat }}</div>
-            <div class="fw-s">{% if m.objekte is not None %}{% blocktrans count n=m.objekte %}{{ n }} Objekt{% plural %}{{ n }} Objekte{% endblocktrans %} · {% endif %}{{ m.belegung }} % {% trans "belegt" %}</div>
-        </div>
-        {% if m.offen %}<span class="fw-chip fw-crit">{% blocktrans with betrag=m.offen|chf %}CHF {{ betrag }} offen{% endblocktrans %}</span>
-        {% elif m.leer %}<span class="fw-chip fw-warn">{% blocktrans with n=m.leer %}{{ n }} leer{% endblocktrans %}</span>
-        {% else %}<span class="fw-chip fw-good">{% trans "ohne Befund" %}</span>{% endif %}
-        <span class="fw-belegung {{ m.stufe }}"><i style="width:{{ m.belegung }}%"></i></span>
-    </div>
-    {% endfor %}
-    <div class="fw-fuss">
-        <span>{% if lg_mandate|length > 8 %}{% blocktrans with n=lg_mandate|length|add:"-8" %}{{ n }} weitere{% endblocktrans %}{% else %}{% trans "Sortiert nach Auffälligkeit, nicht nach Grösse." %}{% endif %}</span>
-        <a href="/neu/berichte/" class="fw-link">{% trans "Alle Berichte" %}</a>
-    </div>
 </section>
 {% endif %}
 
-{% comment %} Zu ist der Normalfall — was ruhig ist, soll keinen Platz beanspruchen.
-   Nur wenn etwas abweicht, steht der Block offen. {% endcomment %}
-<details class="fw-klapp fw-card"{% if lg_abweichungen_anzahl %} open{% endif %}>
-    <summary>
-        <span class="fw-ikon{% if lg_abweichungen_anzahl %} warn{% endif %}">{% zeichen 'bericht' %}</span>
-        {% trans "Lage des Bestands" %}
-        <span class="fw-klein">{% if lg_abweichungen_anzahl %}— {% blocktrans count n=lg_abweichungen_anzahl %}{{ n }} Abweichung{% plural %}{{ n }} Abweichungen{% endblocktrans %}{% else %}— {% trans "keine Abweichung" %}{% endif %}</span>
-    </summary>
+{% comment %} Abweichungen nur, wenn es welche gibt — Ruhiges beansprucht keinen Platz. {% endcomment %}
+{% if lg_abweichungen %}
+<section class="fw-card" aria-labelledby="h-abweichung">
+    <div class="fw-kopf">
+        <span class="fw-ikon warn">{% zeichen 'bericht' %}</span>
+        <h2 class="fw-t" id="h-abweichung">{% trans "Was abweicht" %}</h2>
+        <span class="fw-neben">{% blocktrans count n=lg_abweichungen_anzahl %}{{ n }} Abweichung{% plural %}{{ n }} Abweichungen{% endblocktrans %}</span>
+    </div>
     {% for a in lg_abweichungen %}
     <div class="fw-zeile">
         <span class="fw-marker {{ a.stufe }}"></span>
@@ -454,10 +343,32 @@
         </div>
         <a href="{{ a.ziel }}" class="fw-btn fw-knapp">{{ a.knopf }}</a>
     </div>
-    {% empty %}
-    <p class="fw-leer">{% trans "Nichts weicht ab. Ruhige Kennzahlen erscheinen hier nicht." %}</p>
     {% endfor %}
-</details>
+</section>
+{% endif %}
+
+{% include 'fw/_arbeitsvorrat_abschnitte.html' with teil='rechts' %}
+
+{% comment %} Mandate nur im Schwerpunkt «Übersicht» und nur mit Befund (offen oder
+   leer), sortiert nach Auffälligkeit. Der Balken zeigt die Belegung; ein
+   Datenwert, deshalb als `style`. {% endcomment %}
+{% if schwerpunkt == 'uebersicht' and lg_mandate %}
+<section class="fw-card" aria-labelledby="h-mandate">
+    <div class="fw-kopf"><h2 class="fw-t" id="h-mandate">{% trans "Mandate mit Befund" %}</h2>
+        <span class="fw-rechts"><a href="/neu/berichte/" class="fw-link">{% trans "Alle Berichte" %}</a></span></div>
+    {% for m in lg_mandate|slice:":6" %}
+    <div class="fw-mandat">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ m.mandat }}</div>
+            <div class="fw-s">{% if m.objekte is not None %}{% blocktrans count n=m.objekte %}{{ n }} Objekt{% plural %}{{ n }} Objekte{% endblocktrans %} · {% endif %}{{ m.belegung }} % {% trans "belegt" %}</div>
+        </div>
+        {% if m.offen %}<span class="fw-chip fw-crit">{% blocktrans with betrag=m.offen|chf %}CHF {{ betrag }} offen{% endblocktrans %}</span>
+        {% else %}<span class="fw-chip fw-warn">{% blocktrans with n=m.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
+        <span class="fw-belegung {{ m.stufe }}"><i style="width:{{ m.belegung }}%"></i></span>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
 
 </div>{# /fw-cockpit-kontext #}
 </div>{# /fw-cockpit #}
@@ -490,7 +401,7 @@
 <script>
 // ─── Arbeitsvorrat: Auswahl, Schublade, Tastatur (konzept-v8) ───
 (function () {
-    // Zeilen aus «Wartet auf Dritte»/«Liegengeblieben» führen direkt zum Fall.
+    // Zeilen aus «Hängt» führen direkt zum Fall.
     document.querySelectorAll('.fw-vz[data-href]').forEach(function (r) {
         r.addEventListener('click', function (e) { if (!e.target.closest('a,button')) location.href = r.dataset.href; });
     });
