@@ -6,6 +6,11 @@ import { Page, expect } from '@playwright/test';
 // und macht die Tests schnell + stabil.
 export async function goto(page: Page, url: string) {
   await page.goto(url, { waitUntil: 'domcontentloaded' });
+  // Erst messen, wenn die Hausschrift steht (26.10.2026, Ember/DM Sans): Bei
+  // `domcontentloaded` kann noch die Ersatzschrift aktiv sein — sie ist breiter
+  // und bricht Beschriftungen um. In CI ergab das 200 statt 183 px Kennzahlenleiste.
+  // Das Layout erzwingen startet die Schriftladung, `fonts.ready` wartet auf sie.
+  await page.evaluate(async () => { void document.body.offsetHeight; await document.fonts.ready; });
 }
 
 export async function warteAufURL(page: Page, glob: string) {
