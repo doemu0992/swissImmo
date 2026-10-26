@@ -1,4 +1,4 @@
-{% load zeichen i18n rechte %}{% get_current_language as aktuelle_sprache %}
+{% load zeichen i18n %}{% get_current_language as aktuelle_sprache %}
 <!DOCTYPE html>
 <html lang="{{ aktuelle_sprache|slice:':2'|default:'de' }}">
 <head>
@@ -235,7 +235,7 @@ Detailseiten rufen sie beim Namen.
         <main class="fw-inhalt">
             {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
             <nav id="navsub-{{ g.key }}" class="fw-bereichsreiter" aria-label="{{ g.label }}">
-                {% for it in g.items %}{% if request.user|darf:it.ziel %}
+                {% for it in g.items %}{% if it.erlaubt %}
                 {% if it.section and not forloop.first %}<span class="fw-bereichsreiter-trenner" aria-hidden="true"></span>{% endif %}
                 <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}>{{ it.label }}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
                 {% endif %}{% endfor %}
