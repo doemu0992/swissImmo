@@ -45,6 +45,7 @@
 {% comment %} ===== EMBER: SUCHE, DREI ZAHLEN, BENTO (26.10.2026, mockups/immoswiss-ember.html) =====
    Daten aus faelle/heute_bento.py. Jede Karte führt dorthin, wo man handelt. Die
    Kopfzeilen-Suche ist auf «Heute» ausgeblendet — diese hier ersetzt sie. {% endcomment %}
+{% if bento %}
 <div class="fw-ember-intro">
     <form method="get" action="/neu/suche/" class="fw-ember-suche" role="search">
         <label class="sr-only" for="fwEmberSuche">{% trans "Suche" %}</label>
@@ -66,7 +67,7 @@
         <div class="fw-ember-gauge-zeile">
             <div>
                 <div class="fw-ember-klein">{% trans "Ø Verzug" %}</div>
-                <div class="fw-ember-gross fw-num"><span data-zaehlen>{% if z.dauer is not None %}{{ z.dauer|floatformat:1 }}{% else %}–{% endif %}</span>{% if z.stufe %}<span class="fw-chip fw-{{ z.stufe }} fw-dot">{{ z.stufe_text }}</span>{% endif %}</div>
+                <div class="fw-ember-gross fw-num"><span data-zaehlen>{% if z.dauer is not None %}{{ z.dauer|floatformat:1 }}{% else %}–{% endif %}</span>{% if z.stufe %}<span class="fw-chip {{ z.stufe_klasse }} fw-dot">{{ z.stufe_text }}</span>{% endif %}</div>
                 <div class="fw-ember-klein">{% if z.dauer is not None %}{% blocktrans count n=z.anzahl %}Tage nach Fälligkeit · {{ n }} Zahlung, 90 Tage{% plural %}Tage nach Fälligkeit · {{ n }} Zahlungen, 90 Tage{% endblocktrans %}{% else %}{% trans "noch keine Zahlung in 90 Tagen" %}{% endif %}</div>
                 <div class="fw-ember-knoepfe">
                     <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-ember-rund" aria-label="{% trans 'Mahnwesen' %}" title="{% trans 'Mahnwesen' %}">{% zeichen 'senden' %}</a>
@@ -162,6 +163,7 @@
     </article>
     {% endwith %}
 </div>
+{% endif %}
 
 {% comment %} Vier Zahlen mit Vormonatsvergleich und Zwölf-Monats-Linie. Die Kapsel
    trägt den Vergleich, grün oder rot je nach Richtung (`k.ton` aus

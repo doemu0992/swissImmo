@@ -61,6 +61,7 @@ def zahlung(heute, aktive_lg=None):
     else:
         stufe = 'crit'
     return {'quote': quote, 'dauer': dauer, 'anzahl': len(verzug), 'stufe': stufe,
+            'stufe_klasse': f'fw-{stufe}' if stufe else '',
             'stufe_text': {'good': _('pünktlich'), 'warn': _('verzögert'), 'crit': _('spät')}.get(stufe, ''),
             # Halbkreis: 0–100 % als Anteil von 180°
             'bogen': max(0.0, min(100.0, quote or 0.0))}
