@@ -558,3 +558,29 @@ class NeueAktionenMandantenTests(TestCase):
                            (f'/neu/abnahme/{self.prot_b.id}/handwerker/', {'mangel': self.mangel_b.id})):
             self.assertEqual(self.c.post(url, daten).status_code, 404, url)
         self.assertEqual(self._stand_b(), vorher)
+
+
+# --- Bestandsschutz (Migration rentals.0047) --------------------------------
+
+class AltbestandTests(Basis):
+    """Offene Protokolle aus dem klassischen Formular galten bis 10/2026 als
+    durchgeführt. Die Datenmigration übernimmt das für den Bestand — neue
+    Protokolle brauchen den Abschluss."""
+
+    def test_migration_uebernimmt_offene_klassische_als_durchgefuehrt(self):
+        import importlib
+        from django.apps import apps
+        from core.services.abnahme_vorgaenger import durchgefuehrt
+        from rentals.models import Abnahmeprotokoll
+        klassisch = _protokoll(self.v, 'auszug', date(2026, 9, 30), [], abgeschlossen=False)
+        vorort = _protokoll(self.v, 'auszug', date(2026, 9, 30), [('Küche', 'Boden', 'io', '')],
+                            abgeschlossen=False)
+        alle = Abnahmeprotokoll.objects.filter(pk__in=[klassisch.pk, vorort.pk])
+        self.assertEqual(list(durchgefuehrt(alle)), [], 'Ohne Abschluss zählt nach neuer Regel nichts')
+        mig = importlib.import_module('rentals.migrations.0047_abnahme_altbestand')
+        mig.altbestand_markieren(apps, None)
+        self.assertEqual(list(durchgefuehrt(alle)), [klassisch],
+                         'Bestand aus dem klassischen Formular bleibt durchgeführt, ein offener Vor-Ort-Entwurf nicht')
+        # Ein neues klassisches Protokoll nach der Migration bekommt die Markierung nicht.
+        neu = _protokoll(self.v, 'auszug', date(2026, 10, 27), [], abgeschlossen=False)
+        self.assertNotIn(neu, list(durchgefuehrt(Abnahmeprotokoll.objects.filter(pk=neu.pk))))

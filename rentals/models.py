@@ -1032,6 +1032,14 @@ class Abnahmeprotokoll(OrganisationAusKette):
     unterschrift_verwalter_bild = models.ImageField("Unterschrift Verwaltung (Bild)", upload_to=get_smart_upload_path,
                                                     null=True, blank=True)
     abgeschlossen = models.BooleanField("Abgeschlossen", default=False)
+    # BESTANDSSCHUTZ (Production-Check 26.10.2026). Bis dahin galt jedes
+    # Protokoll aus dem klassischen Formular als durchgeführt, auch ohne
+    # Abschluss. Seither zählt nur der Abschluss mit Unterschriften. Für den
+    # Bestand bleibt die alte Bedeutung: Sonst bekämen Mieter, die längst
+    # zurückgegeben haben, wieder Nutzungsentschädigung, und Pendenzen lebten
+    # auf. Gesetzt nur von der Datenmigration 0047, nie für neue Protokolle.
+    altbestand_durchgefuehrt = models.BooleanField("Altbestand: als durchgeführt übernommen", default=False,
+                                                   editable=False)
     # Mängelrüge Art. 267a OR: Massgeblich ist, dass sie VERSANDT ist — nicht,
     # dass das PDF erzeugt wurde. Erst dieses Datum erledigt die Fristpendenz.
     ruege_versandt_am = models.DateField("Mängelrüge versandt am", null=True, blank=True)

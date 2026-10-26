@@ -15,8 +15,12 @@ def durchgefuehrt(qs):
     galt eine Abnahme als erfolgt, die niemand unterschrieben hatte. Seither
     schliesst auch das klassische Formular über den Abschluss-Schritt mit
     Unterschriften ab (core/services/abnahme_abschluss.py) — und ein offener
-    Entwurf, gleich aus welchem Weg, ist noch keine Abnahme."""
-    return qs.filter(abgeschlossen=True)
+    Entwurf, gleich aus welchem Weg, ist noch keine Abnahme.
+
+    Ausnahme Bestand: Protokolle, die vor der Umstellung nach alter Regel als
+    durchgeführt galten, bleiben es (`altbestand_durchgefuehrt`, Migration 0047)."""
+    from django.db.models import Q
+    return qs.filter(Q(abgeschlossen=True) | Q(altbestand_durchgefuehrt=True))
 
 
 def vorgaenger_fuer(einheit, datum, ausser=None):
