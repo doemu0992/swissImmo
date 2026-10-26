@@ -63,6 +63,14 @@
             <ul id="k-warn-list" class="list-disc pl-5 space-y-0.5"></ul></div>
         </div></div>
 
+        {% if termine_fehlen %}
+        <div class="fw-hinweis warn rounded-lg">
+            <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+            <div class="fw-ht"><b>{% trans "Kündigungstermine fehlen im Vertrag" %}</b> — {% blocktrans trimmed %}Der Vertrag nennt keine lesbaren Termine und für den Kanton ist keine Regel hinterlegt. Der Termin unten nimmt jedes Monatsende an und ist damit nur der früheste denkbare. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen.{% endblocktrans %}</div>
+        </div>
+        {% elif termine_kanton %}
+        <p class="fw-hilfe">{% trans "Termine aus der Kantonsregel des Regelwerks — der Vertrag nennt keine." %}</p>
+        {% endif %}
         <!-- Berechneter Termin -->
         <div class="fw-kpis fw-nomb">
             <div class="fw-kpi fw-accent">
