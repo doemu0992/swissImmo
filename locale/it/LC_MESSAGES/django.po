@@ -25788,3 +25788,219 @@ msgid "überfällige Rechnung · CHF %(s)s"
 msgid_plural "überfällige Rechnungen · CHF %(s)s"
 msgstr[0] "fattura scaduta · CHF %(s)s"
 msgstr[1] "fatture scadute · CHF %(s)s"
+
+msgid "Mietausfall pro Monat"
+msgstr "Perdita di affitto al mese"
+
+msgid "Ø Leerdauer"
+msgstr "Durata media sfitto"
+
+msgid "keine länger als 90 Tage"
+msgstr "nessuno oltre 90 giorni"
+
+msgid "Wird frei · 180 Tage"
+msgstr "Si libera · 180 giorni"
+
+msgid "Objektart"
+msgstr "Tipo di oggetto"
+
+msgid "Ausfall bisher"
+msgstr "Perdita finora"
+
+msgid "noch nie vermietet"
+msgstr "mai affittato"
+
+msgid "kein Mietzins"
+msgstr "nessun affitto"
+
+msgid "Ausfall bisher = Netto-Mietzins × Leermonate seit Vertragsende (geschätzt). «Wird frei»: Vertragsende in den nächsten 180 Tagen ohne unterschriebenen Nachmieter."
+msgstr "Perdita finora = affitto netto × mesi sfitti dalla fine del contratto (stima). «Si libera»: fine del contratto nei prossimi 180 giorni senza subentrante firmato."
+
+msgid "Frei, aber versorgt"
+msgstr "Libero, ma coperto"
+
+msgid "Kein Leerstand."
+msgstr "Nessuno sfitto."
+
+msgid "Alle Einheiten in dieser Auswahl sind vermietet oder haben einen Nachmieter."
+msgstr "Tutte le unità di questa selezione sono affittate o hanno un subentrante."
+
+#, python-format
+msgid "Was leer steht, was in den nächsten sechs Monaten frei wird und woran die Vermietung hängt · Stand %(d)s"
+msgstr "Cosa è sfitto, cosa si libera nei prossimi sei mesi e cosa blocca l'affitto · stato al %(d)s"
+
+#, python-format
+msgid "%(n)s von %(m)s Einheiten"
+msgstr "%(n)s di %(m)s unità"
+
+#, python-format
+msgid "ohne Nachmieter · CHF %(s)s / Monat"
+msgstr "senza subentrante · CHF %(s)s / mese"
+
+#, python-format
+msgid "Vertragsende %(d)s"
+msgstr "Fine contratto %(d)s"
+
+#, python-format
+msgid "Nachmieter ab %(d)s"
+msgstr "Subentrante dal %(d)s"
+
+msgid "Team & Auslastung"
+msgstr "Team & carico"
+
+msgid "Wer trägt wie viel, was bleibt liegen, was gehört niemandem."
+msgstr "Chi porta quanto, cosa resta fermo, cosa non è assegnato a nessuno."
+
+msgid "Ø Durchlaufzeit Ticket"
+msgstr "Tempo medio di un ticket"
+
+msgid "Termintreue"
+msgstr "Rispetto delle scadenze"
+
+msgid "erledigt bis zur Zielzeit"
+msgstr "evaso entro il termine"
+
+msgid "Niemandem zugeteilt:"
+msgstr "Non assegnato:"
+
+msgid "Auslastung je Person"
+msgstr "Carico per persona"
+
+msgid "Termine · 7 Tage"
+msgstr "appuntamenti · 7 giorni"
+
+msgid "Last = offene Tickets + offene Fälle; Überfälliges und Liegengebliebenes zählen doppelt."
+msgstr "Carico = ticket aperti + pratiche aperte; ritardi e pratiche ferme contano doppio."
+
+msgid "Offene Tickets nach Alter"
+msgstr "Ticket aperti per età"
+
+msgid "Durchlaufzeit: Meldung bis letzte Änderung erledigter Tickets (ein eigenes Erledigt-Datum führt das Ticket nicht)."
+msgstr "Tempo: dalla segnalazione all'ultima modifica dei ticket chiusi (il ticket non registra una data di chiusura propria)."
+
+msgid "Noch kein Team erfasst."
+msgstr "Nessun team registrato."
+
+msgid "Team-Mitglieder legst du unter Einstellungen → Benutzer an."
+msgstr "Aggiungi i membri del team in Impostazioni → Utenti."
+
+msgid "Keine offenen Tickets."
+msgstr "Nessun ticket aperto."
+
+#, python-format
+msgid "abwesend bis %(d)s"
+msgstr "assente fino al %(d)s"
+
+#, python-format
+msgid "vertreten durch %(v)s"
+msgstr "sostituito da %(v)s"
+
+#, python-format
+msgid "Last %(n)s"
+msgstr "Carico %(n)s"
+
+#, python-format
+msgid "%(n)s liegt"
+msgstr "%(n)s fermi"
+
+msgid "Leer seit"
+msgstr "Sfitto dal"
+
+msgid "Frei ab"
+msgstr "Libero dal"
+
+msgid "Tage leer"
+msgstr "Giorni sfitti"
+
+msgid "Netto-Mietzins (CHF)"
+msgstr "Affitto netto (CHF)"
+
+msgid "Ausfall bisher geschätzt (CHF)"
+msgstr "Perdita stimata finora (CHF)"
+
+msgid "Offene Bewerbungen"
+msgstr "Candidature aperte"
+
+msgid "wird frei"
+msgstr "si libera"
+
+msgid "Parkplatz & Nebenobjekte"
+msgstr "Posteggi & oggetti accessori"
+
+msgid "Steht leer"
+msgstr "Sfitto"
+
+msgid "Wird frei"
+msgstr "Si libera"
+
+#, python-format
+msgid "%(n)s Einheit steht leer"
+msgid_plural "%(n)s Einheiten stehen leer"
+msgstr[0] "%(n)s unità sfitta"
+msgstr[1] "%(n)s unità sfitte"
+
+#, python-format
+msgid "%(n)s länger als 90 Tage"
+msgid_plural "%(n)s länger als 90 Tage"
+msgstr[0] "%(n)s oltre 90 giorni"
+msgstr[1] "%(n)s oltre 90 giorni"
+
+#, python-format
+msgid "%(n)s Einheit hat keinen Mietzins — ohne Preis keine Ausschreibung."
+msgid_plural "%(n)s Einheiten haben keinen Mietzins — ohne Preis keine Ausschreibung."
+msgstr[0] "%(n)s unità non ha affitto — senza prezzo nessun annuncio."
+msgstr[1] "%(n)s unità non hanno affitto — senza prezzo nessun annuncio."
+
+#, python-format
+msgid "%(n)s Einheit ist nicht ausgeschrieben."
+msgid_plural "%(n)s Einheiten sind nicht ausgeschrieben."
+msgstr[0] "%(n)s unità non è pubblicata."
+msgstr[1] "%(n)s unità non sono pubblicate."
+
+#, python-format
+msgid "leer seit %(n)s Tag"
+msgid_plural "leer seit %(n)s Tagen"
+msgstr[0] "sfitto da %(n)s giorno"
+msgstr[1] "sfitto da %(n)s giorni"
+
+#, python-format
+msgid "in %(n)s Tag · kein Nachmieter"
+msgid_plural "in %(n)s Tagen · kein Nachmieter"
+msgstr[0] "tra %(n)s giorno · nessun subentrante"
+msgstr[1] "tra %(n)s giorni · nessun subentrante"
+
+#, python-format
+msgid "%(n)s offene Bewerbung"
+msgid_plural "%(n)s offene Bewerbungen"
+msgstr[0] "%(n)s candidatura aperta"
+msgstr[1] "%(n)s candidature aperte"
+
+#, python-format
+msgid "%(n)s liegt ohne Bewegung"
+msgid_plural "%(n)s liegen ohne Bewegung"
+msgstr[0] "%(n)s senza movimento"
+msgstr[1] "%(n)s senza movimento"
+
+#, python-format
+msgid "%(n)s erledigt in 90 Tagen"
+msgid_plural "%(n)s erledigt in 90 Tagen"
+msgstr[0] "%(n)s evaso in 90 giorni"
+msgstr[1] "%(n)s evasi in 90 giorni"
+
+#, python-format
+msgid "%(n)s Ticket"
+msgid_plural "%(n)s Tickets"
+msgstr[0] "%(n)s ticket"
+msgstr[1] "%(n)s ticket"
+
+#, python-format
+msgid "%(n)s Fall"
+msgid_plural "%(n)s Fälle"
+msgstr[0] "%(n)s pratica"
+msgstr[1] "%(n)s pratiche"
+
+#, python-format
+msgid "%(n)s Liegenschaft ohne Betreuung"
+msgid_plural "%(n)s Liegenschaften ohne Betreuung"
+msgstr[0] "%(n)s immobile senza gestore"
+msgstr[1] "%(n)s immobili senza gestore"

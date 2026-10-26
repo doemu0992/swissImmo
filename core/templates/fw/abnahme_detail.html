@@ -28,12 +28,12 @@
         {% if p.kosten_mieter_total %}
         <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="fw-btn fw-primary">{% zeichen 'rechnung' %}{% trans "In Schlussabrechnung" %}</a>
         {% endif %}
-        <div class="relative">
-            <button type="button" onclick="document.getElementById('aAktionen').classList.toggle('hidden'); event.stopPropagation();"
+        <div class="relative" data-menu>
+            <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="aAktionen"
                     class="fw-btn">
                 {% zeichen 'mehr' %}{% trans "Mehr" %}
             </button>
-            <div id="aAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+            <div id="aAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                 <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Protokoll als PDF" %}</a>
                 <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
@@ -43,12 +43,6 @@
                 </form>
             </div>
         </div>
-        <script>
-          document.addEventListener('click', function (ev) {
-            var d = document.getElementById('aAktionen');
-            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-          });
-        </script>
     </div>
 </div>
 

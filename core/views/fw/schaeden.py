@@ -99,6 +99,9 @@ def fw_schaeden(request):
     nur_meine = request.GET.get('zustaendig') == 'ich'
     if nur_meine:
         qs = qs.filter(zugewiesen_an=request.user)
+    # «Niemandem zugeteilt» — Absprung aus Team & Auslastung (UI-Audit 26.10.2026)
+    elif request.GET.get('zustaendig') == 'niemand':
+        qs = qs.filter(zugewiesen_an__isnull=True)
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = qs.filter(Q(titel__icontains=q) | Q(beschreibung__icontains=q)

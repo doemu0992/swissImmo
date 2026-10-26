@@ -39,12 +39,12 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
         </div>
     </div>
     <div class="fw-phead-knoepfe">
-        <div class="relative">
-            <button type="button" onclick="document.getElementById('vAktionen').classList.toggle('hidden'); event.stopPropagation();"
+        <div class="relative" data-menu>
+            <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="vAktionen"
                     class="fw-btn">
                 {% zeichen 'mehr' %}{% trans "Mehr" %}
             </button>
-            <div id="vAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+            <div id="vAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                 <a href="/neu/vertraege/{{ v.id }}/bearbeiten/" class="fw-menuzeile">{% zeichen 'bearbeiten' klasse='w-4' %}{% trans "Bearbeiten" %}{% if v.status == 'entwurf' %} <span class="fw-chip fw-brand">{% trans "Entwurf" %}</span>{% endif %}</a>
                 {% if v.status != 'gekuendigt' %}
                 {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ v.id }}/kuendigen/" class="fw-menuzeile">{% zeichen 'kritisch' klasse='fw-warnton w-4' %}{% trans "Kündigung erfassen" %}</a>{% endif %}
@@ -70,12 +70,6 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                 </form>
             </div>
         </div>
-        <script>
-          document.addEventListener('click', function (ev) {
-            var d = document.getElementById('vAktionen');
-            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-          });
-        </script>
         <a href="/neu/bankabgleich/?lg={{ v.einheit.liegenschaft_id }}" class="fw-btn" title="{% trans 'Offene Posten dieses Mietverhältnisses im Bankabgleich verbuchen' %}">{% trans "Zahlung erfassen" %}</a>
         <a href="/neu/faelle/neu/?akte=mv-{{ v.id }}" class="fw-btn fw-primary" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')">{% zeichen 'neu' %}{% trans "Neuer Fall" %}</a>
     </div>

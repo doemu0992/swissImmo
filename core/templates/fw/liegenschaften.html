@@ -15,20 +15,14 @@
         <p>{% blocktrans count n=alle_rows %}{{ n }} Liegenschaft im Portfolio{% plural %}{{ n }} Liegenschaften im Portfolio{% endblocktrans %}{% if aktive_lg %} · {% trans "gefiltert" %} <a href="/neu/liegenschaften/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <div class="relative">
-            <button type="button" onclick="document.getElementById('lgListMenu').classList.toggle('hidden'); event.stopPropagation();" class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
-            <div id="lgListMenu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb shadow-lg py-1.5 z-30">
+        <div class="relative" data-menu>
+            <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="lgListMenu" class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
+            <div id="lgListMenu" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb shadow-lg py-1.5 z-30">
                 <a href="/neu/mieterspiegel/{{ lg_query }}" class="fw-menuzeile">{% zeichen 'filtern' klasse='w-4' %}{% trans "Mieterspiegel (Rent Roll)" %}</a>
                 <a href="{{ csv_url }}" download class="fw-menuzeile">{% zeichen 'herunterladen' klasse='w-4' %}{% trans "Liste als CSV (Excel)" %}</a>
             </div>
         </div>
         <a href="/neu/liegenschaften/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Liegenschaft erfassen" %}</a>
-        <script>
-          document.addEventListener('click', function (ev) {
-            var d = document.getElementById('lgListMenu');
-            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-          });
-        </script>
     </div>
 </div>
 

@@ -33,10 +33,10 @@ Liegenschaft ohne Betreuung soll auffallen.
             · <span class="fw-mono" title="{% trans 'Liegenschaft' %}">{{ lg_nummer }}</span></p>
     </div>
     <div class="fw-phead-knoepfe">
-        <div class="relative">
-            <button type="button" onclick="document.getElementById('lAktionen').classList.toggle('hidden'); event.stopPropagation();"
+        <div class="relative" data-menu>
+            <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="lAktionen"
                     class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
-            <div id="lAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+            <div id="lAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                 <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-menuzeile">{% zeichen 'bearbeiten' klasse='w-4' %}{% trans "Bearbeiten" %}</a>
                 <div class="fw-menutrenner"></div>
                 <a href="/neu/mieterspiegel/?lg={{ lg.id }}" class="fw-menuzeile">{% zeichen 'filtern' klasse='w-4' %}{% trans "Mieterspiegel" %}</a>
@@ -60,12 +60,6 @@ Liegenschaft ohne Betreuung soll auffallen.
                 </form>
             </div>
         </div>
-        <script>
-          document.addEventListener('click', function (ev) {
-            var d = document.getElementById('lAktionen');
-            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-          });
-        </script>
         <a href="?tab=dokumente" class="fw-btn" onclick="fwTab('lg', 'dokumente'); document.getElementById('lg-dokumente').scrollIntoView({behavior: 'smooth', block: 'start'}); return false;">{% trans "Dokumente" %}</a>
         <a href="/neu/faelle/neu/?akte=lg-{{ lg.id }}" class="fw-btn fw-primary" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')">{% zeichen 'neu' %}{% trans "Neuer Fall" %}</a>
     </div>

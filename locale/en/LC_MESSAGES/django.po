@@ -25565,3 +25565,219 @@ msgid "überfällige Rechnung · CHF %(s)s"
 msgid_plural "überfällige Rechnungen · CHF %(s)s"
 msgstr[0] "overdue invoice · CHF %(s)s"
 msgstr[1] "overdue invoices · CHF %(s)s"
+
+msgid "Mietausfall pro Monat"
+msgstr "Rent loss per month"
+
+msgid "Ø Leerdauer"
+msgstr "Avg. vacancy"
+
+msgid "keine länger als 90 Tage"
+msgstr "none longer than 90 days"
+
+msgid "Wird frei · 180 Tage"
+msgstr "Becoming vacant · 180 days"
+
+msgid "Objektart"
+msgstr "Unit type"
+
+msgid "Ausfall bisher"
+msgstr "Loss to date"
+
+msgid "noch nie vermietet"
+msgstr "never let"
+
+msgid "kein Mietzins"
+msgstr "no rent"
+
+msgid "Ausfall bisher = Netto-Mietzins × Leermonate seit Vertragsende (geschätzt). «Wird frei»: Vertragsende in den nächsten 180 Tagen ohne unterschriebenen Nachmieter."
+msgstr "Loss to date = net rent × vacant months since the lease ended (estimate). “Becoming vacant”: lease ends within 180 days without a signed successor."
+
+msgid "Frei, aber versorgt"
+msgstr "Vacant, but covered"
+
+msgid "Kein Leerstand."
+msgstr "No vacancies."
+
+msgid "Alle Einheiten in dieser Auswahl sind vermietet oder haben einen Nachmieter."
+msgstr "All units in this selection are let or have a successor."
+
+#, python-format
+msgid "Was leer steht, was in den nächsten sechs Monaten frei wird und woran die Vermietung hängt · Stand %(d)s"
+msgstr "What is vacant, what becomes vacant in the next six months and what holds up letting · as of %(d)s"
+
+#, python-format
+msgid "%(n)s von %(m)s Einheiten"
+msgstr "%(n)s of %(m)s units"
+
+#, python-format
+msgid "ohne Nachmieter · CHF %(s)s / Monat"
+msgstr "without successor · CHF %(s)s / month"
+
+#, python-format
+msgid "Vertragsende %(d)s"
+msgstr "Lease end %(d)s"
+
+#, python-format
+msgid "Nachmieter ab %(d)s"
+msgstr "Successor from %(d)s"
+
+msgid "Team & Auslastung"
+msgstr "Team & workload"
+
+msgid "Wer trägt wie viel, was bleibt liegen, was gehört niemandem."
+msgstr "Who carries how much, what is stuck, what belongs to no one."
+
+msgid "Ø Durchlaufzeit Ticket"
+msgstr "Avg. ticket lead time"
+
+msgid "Termintreue"
+msgstr "On-time rate"
+
+msgid "erledigt bis zur Zielzeit"
+msgstr "resolved by the target date"
+
+msgid "Niemandem zugeteilt:"
+msgstr "Unassigned:"
+
+msgid "Auslastung je Person"
+msgstr "Workload per person"
+
+msgid "Termine · 7 Tage"
+msgstr "appointments · 7 days"
+
+msgid "Last = offene Tickets + offene Fälle; Überfälliges und Liegengebliebenes zählen doppelt."
+msgstr "Load = open tickets + open cases; overdue and stalled items count double."
+
+msgid "Offene Tickets nach Alter"
+msgstr "Open tickets by age"
+
+msgid "Durchlaufzeit: Meldung bis letzte Änderung erledigter Tickets (ein eigenes Erledigt-Datum führt das Ticket nicht)."
+msgstr "Lead time: from report to last change of resolved tickets (tickets do not store their own resolution date)."
+
+msgid "Noch kein Team erfasst."
+msgstr "No team recorded yet."
+
+msgid "Team-Mitglieder legst du unter Einstellungen → Benutzer an."
+msgstr "Add team members under Settings → Users."
+
+msgid "Keine offenen Tickets."
+msgstr "No open tickets."
+
+#, python-format
+msgid "abwesend bis %(d)s"
+msgstr "away until %(d)s"
+
+#, python-format
+msgid "vertreten durch %(v)s"
+msgstr "covered by %(v)s"
+
+#, python-format
+msgid "Last %(n)s"
+msgstr "Load %(n)s"
+
+#, python-format
+msgid "%(n)s liegt"
+msgstr "%(n)s stalled"
+
+msgid "Leer seit"
+msgstr "Vacant since"
+
+msgid "Frei ab"
+msgstr "Vacant from"
+
+msgid "Tage leer"
+msgstr "Days vacant"
+
+msgid "Netto-Mietzins (CHF)"
+msgstr "Net rent (CHF)"
+
+msgid "Ausfall bisher geschätzt (CHF)"
+msgstr "Estimated loss to date (CHF)"
+
+msgid "Offene Bewerbungen"
+msgstr "Open applications"
+
+msgid "wird frei"
+msgstr "becoming vacant"
+
+msgid "Parkplatz & Nebenobjekte"
+msgstr "Parking & ancillary units"
+
+msgid "Steht leer"
+msgstr "Vacant"
+
+msgid "Wird frei"
+msgstr "Becoming vacant"
+
+#, python-format
+msgid "%(n)s Einheit steht leer"
+msgid_plural "%(n)s Einheiten stehen leer"
+msgstr[0] "%(n)s unit vacant"
+msgstr[1] "%(n)s units vacant"
+
+#, python-format
+msgid "%(n)s länger als 90 Tage"
+msgid_plural "%(n)s länger als 90 Tage"
+msgstr[0] "%(n)s longer than 90 days"
+msgstr[1] "%(n)s longer than 90 days"
+
+#, python-format
+msgid "%(n)s Einheit hat keinen Mietzins — ohne Preis keine Ausschreibung."
+msgid_plural "%(n)s Einheiten haben keinen Mietzins — ohne Preis keine Ausschreibung."
+msgstr[0] "%(n)s unit has no rent — no price, no listing."
+msgstr[1] "%(n)s units have no rent — no price, no listing."
+
+#, python-format
+msgid "%(n)s Einheit ist nicht ausgeschrieben."
+msgid_plural "%(n)s Einheiten sind nicht ausgeschrieben."
+msgstr[0] "%(n)s unit is not listed."
+msgstr[1] "%(n)s units are not listed."
+
+#, python-format
+msgid "leer seit %(n)s Tag"
+msgid_plural "leer seit %(n)s Tagen"
+msgstr[0] "vacant for %(n)s day"
+msgstr[1] "vacant for %(n)s days"
+
+#, python-format
+msgid "in %(n)s Tag · kein Nachmieter"
+msgid_plural "in %(n)s Tagen · kein Nachmieter"
+msgstr[0] "in %(n)s day · no successor"
+msgstr[1] "in %(n)s days · no successor"
+
+#, python-format
+msgid "%(n)s offene Bewerbung"
+msgid_plural "%(n)s offene Bewerbungen"
+msgstr[0] "%(n)s open application"
+msgstr[1] "%(n)s open applications"
+
+#, python-format
+msgid "%(n)s liegt ohne Bewegung"
+msgid_plural "%(n)s liegen ohne Bewegung"
+msgstr[0] "%(n)s without activity"
+msgstr[1] "%(n)s without activity"
+
+#, python-format
+msgid "%(n)s erledigt in 90 Tagen"
+msgid_plural "%(n)s erledigt in 90 Tagen"
+msgstr[0] "%(n)s resolved in 90 days"
+msgstr[1] "%(n)s resolved in 90 days"
+
+#, python-format
+msgid "%(n)s Ticket"
+msgid_plural "%(n)s Tickets"
+msgstr[0] "%(n)s ticket"
+msgstr[1] "%(n)s tickets"
+
+#, python-format
+msgid "%(n)s Fall"
+msgid_plural "%(n)s Fälle"
+msgstr[0] "%(n)s case"
+msgstr[1] "%(n)s cases"
+
+#, python-format
+msgid "%(n)s Liegenschaft ohne Betreuung"
+msgid_plural "%(n)s Liegenschaften ohne Betreuung"
+msgstr[0] "%(n)s property without manager"
+msgstr[1] "%(n)s properties without manager"

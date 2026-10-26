@@ -54,12 +54,12 @@ alten Liegenschaft betreut.
                beim Umbau mit ihm verschwunden. `faelle/test_aktionen_vollstaendig.py`
                hält sie jetzt fest — der Wächter deckte bis 20.08.2026 nur den
                Vertrag ab und konnte den Verlust deshalb nicht melden. {% endcomment %}
-            <div class="relative">
-                <button type="button" onclick="document.getElementById('pAktionen').classList.toggle('hidden'); event.stopPropagation();"
+            <div class="relative" data-menu>
+                <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="pAktionen"
                         class="fw-btn">
                     {% zeichen 'mehr' klasse='mr-1' %}{% trans "Mehr" %}
                 </button>
-                <div id="pAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                <div id="pAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     {% if not m.anonymisiert %}
                     <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/"
                           onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
@@ -75,12 +75,6 @@ alten Liegenschaft betreut.
                     </form>
                 </div>
             </div>
-            <script>
-              document.addEventListener('click', function (ev) {
-                var d = document.getElementById('pAktionen');
-                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-              });
-            </script>
         </div>
     </div>
 

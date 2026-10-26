@@ -49,12 +49,12 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             </div>
         </div>
         <div class="fw-akte-rechts">
-            <div class="relative">
-                <button type="button" onclick="document.getElementById('sAktionen').classList.toggle('hidden'); event.stopPropagation();"
+            <div class="relative" data-menu>
+                <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="sAktionen"
                         class="fw-btn fw-knapp">
                     {% zeichen 'mehr' %}{% trans "Mehr" %}
                 </button>
-                <div id="sAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                <div id="sAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with id=t.id %}Schadensmeldung #{{ id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
@@ -62,12 +62,6 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     </form>
                 </div>
             </div>
-            <script>
-              document.addEventListener('click', function (ev) {
-                var d = document.getElementById('sAktionen');
-                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-              });
-            </script>
         </div>
     </div>
 

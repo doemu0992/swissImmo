@@ -25813,3 +25813,219 @@ msgid "überfällige Rechnung · CHF %(s)s"
 msgid_plural "überfällige Rechnungen · CHF %(s)s"
 msgstr[0] "facture en retard · CHF %(s)s"
 msgstr[1] "factures en retard · CHF %(s)s"
+
+msgid "Mietausfall pro Monat"
+msgstr "Perte de loyer par mois"
+
+msgid "Ø Leerdauer"
+msgstr "Durée moyenne de vacance"
+
+msgid "keine länger als 90 Tage"
+msgstr "aucune plus de 90 jours"
+
+msgid "Wird frei · 180 Tage"
+msgstr "Se libère · 180 jours"
+
+msgid "Objektart"
+msgstr "Type d'objet"
+
+msgid "Ausfall bisher"
+msgstr "Perte à ce jour"
+
+msgid "noch nie vermietet"
+msgstr "jamais loué"
+
+msgid "kein Mietzins"
+msgstr "pas de loyer"
+
+msgid "Ausfall bisher = Netto-Mietzins × Leermonate seit Vertragsende (geschätzt). «Wird frei»: Vertragsende in den nächsten 180 Tagen ohne unterschriebenen Nachmieter."
+msgstr "Perte à ce jour = loyer net × mois vacants depuis la fin du bail (estimation). « Se libère » : fin du bail dans les 180 prochains jours sans successeur signé."
+
+msgid "Frei, aber versorgt"
+msgstr "Libre, mais pourvu"
+
+msgid "Kein Leerstand."
+msgstr "Aucune vacance."
+
+msgid "Alle Einheiten in dieser Auswahl sind vermietet oder haben einen Nachmieter."
+msgstr "Toutes les unités de cette sélection sont louées ou ont un successeur."
+
+#, python-format
+msgid "Was leer steht, was in den nächsten sechs Monaten frei wird und woran die Vermietung hängt · Stand %(d)s"
+msgstr "Ce qui est vacant, ce qui se libère dans les six prochains mois et ce qui bloque la location · état au %(d)s"
+
+#, python-format
+msgid "%(n)s von %(m)s Einheiten"
+msgstr "%(n)s sur %(m)s unités"
+
+#, python-format
+msgid "ohne Nachmieter · CHF %(s)s / Monat"
+msgstr "sans successeur · CHF %(s)s / mois"
+
+#, python-format
+msgid "Vertragsende %(d)s"
+msgstr "Fin du bail %(d)s"
+
+#, python-format
+msgid "Nachmieter ab %(d)s"
+msgstr "Successeur dès le %(d)s"
+
+msgid "Team & Auslastung"
+msgstr "Équipe & charge"
+
+msgid "Wer trägt wie viel, was bleibt liegen, was gehört niemandem."
+msgstr "Qui porte quelle charge, ce qui stagne, ce qui n'est attribué à personne."
+
+msgid "Ø Durchlaufzeit Ticket"
+msgstr "Délai moyen d'un ticket"
+
+msgid "Termintreue"
+msgstr "Respect des délais"
+
+msgid "erledigt bis zur Zielzeit"
+msgstr "traité dans le délai cible"
+
+msgid "Niemandem zugeteilt:"
+msgstr "Attribué à personne :"
+
+msgid "Auslastung je Person"
+msgstr "Charge par personne"
+
+msgid "Termine · 7 Tage"
+msgstr "rendez-vous · 7 jours"
+
+msgid "Last = offene Tickets + offene Fälle; Überfälliges und Liegengebliebenes zählen doppelt."
+msgstr "Charge = tickets ouverts + dossiers ouverts ; les retards et dossiers en souffrance comptent double."
+
+msgid "Offene Tickets nach Alter"
+msgstr "Tickets ouverts par ancienneté"
+
+msgid "Durchlaufzeit: Meldung bis letzte Änderung erledigter Tickets (ein eigenes Erledigt-Datum führt das Ticket nicht)."
+msgstr "Délai : du signalement à la dernière modification des tickets clos (le ticket n'enregistre pas de date de clôture propre)."
+
+msgid "Noch kein Team erfasst."
+msgstr "Aucune équipe saisie."
+
+msgid "Team-Mitglieder legst du unter Einstellungen → Benutzer an."
+msgstr "Ajoute les membres de l'équipe sous Paramètres → Utilisateurs."
+
+msgid "Keine offenen Tickets."
+msgstr "Aucun ticket ouvert."
+
+#, python-format
+msgid "abwesend bis %(d)s"
+msgstr "absent jusqu'au %(d)s"
+
+#, python-format
+msgid "vertreten durch %(v)s"
+msgstr "remplacé par %(v)s"
+
+#, python-format
+msgid "Last %(n)s"
+msgstr "Charge %(n)s"
+
+#, python-format
+msgid "%(n)s liegt"
+msgstr "%(n)s en souffrance"
+
+msgid "Leer seit"
+msgstr "Vacant depuis"
+
+msgid "Frei ab"
+msgstr "Libre dès"
+
+msgid "Tage leer"
+msgstr "Jours vacants"
+
+msgid "Netto-Mietzins (CHF)"
+msgstr "Loyer net (CHF)"
+
+msgid "Ausfall bisher geschätzt (CHF)"
+msgstr "Perte estimée à ce jour (CHF)"
+
+msgid "Offene Bewerbungen"
+msgstr "Candidatures ouvertes"
+
+msgid "wird frei"
+msgstr "se libère"
+
+msgid "Parkplatz & Nebenobjekte"
+msgstr "Places de parc & annexes"
+
+msgid "Steht leer"
+msgstr "Vacant"
+
+msgid "Wird frei"
+msgstr "Se libère"
+
+#, python-format
+msgid "%(n)s Einheit steht leer"
+msgid_plural "%(n)s Einheiten stehen leer"
+msgstr[0] "%(n)s unité vacante"
+msgstr[1] "%(n)s unités vacantes"
+
+#, python-format
+msgid "%(n)s länger als 90 Tage"
+msgid_plural "%(n)s länger als 90 Tage"
+msgstr[0] "%(n)s plus de 90 jours"
+msgstr[1] "%(n)s plus de 90 jours"
+
+#, python-format
+msgid "%(n)s Einheit hat keinen Mietzins — ohne Preis keine Ausschreibung."
+msgid_plural "%(n)s Einheiten haben keinen Mietzins — ohne Preis keine Ausschreibung."
+msgstr[0] "%(n)s unité n'a pas de loyer — sans prix, pas d'annonce."
+msgstr[1] "%(n)s unités n'ont pas de loyer — sans prix, pas d'annonce."
+
+#, python-format
+msgid "%(n)s Einheit ist nicht ausgeschrieben."
+msgid_plural "%(n)s Einheiten sind nicht ausgeschrieben."
+msgstr[0] "%(n)s unité n'est pas annoncée."
+msgstr[1] "%(n)s unités ne sont pas annoncées."
+
+#, python-format
+msgid "leer seit %(n)s Tag"
+msgid_plural "leer seit %(n)s Tagen"
+msgstr[0] "vacant depuis %(n)s jour"
+msgstr[1] "vacant depuis %(n)s jours"
+
+#, python-format
+msgid "in %(n)s Tag · kein Nachmieter"
+msgid_plural "in %(n)s Tagen · kein Nachmieter"
+msgstr[0] "dans %(n)s jour · pas de successeur"
+msgstr[1] "dans %(n)s jours · pas de successeur"
+
+#, python-format
+msgid "%(n)s offene Bewerbung"
+msgid_plural "%(n)s offene Bewerbungen"
+msgstr[0] "%(n)s candidature ouverte"
+msgstr[1] "%(n)s candidatures ouvertes"
+
+#, python-format
+msgid "%(n)s liegt ohne Bewegung"
+msgid_plural "%(n)s liegen ohne Bewegung"
+msgstr[0] "%(n)s sans mouvement"
+msgstr[1] "%(n)s sans mouvement"
+
+#, python-format
+msgid "%(n)s erledigt in 90 Tagen"
+msgid_plural "%(n)s erledigt in 90 Tagen"
+msgstr[0] "%(n)s traité en 90 jours"
+msgstr[1] "%(n)s traités en 90 jours"
+
+#, python-format
+msgid "%(n)s Ticket"
+msgid_plural "%(n)s Tickets"
+msgstr[0] "%(n)s ticket"
+msgstr[1] "%(n)s tickets"
+
+#, python-format
+msgid "%(n)s Fall"
+msgid_plural "%(n)s Fälle"
+msgstr[0] "%(n)s dossier"
+msgstr[1] "%(n)s dossiers"
+
+#, python-format
+msgid "%(n)s Liegenschaft ohne Betreuung"
+msgid_plural "%(n)s Liegenschaften ohne Betreuung"
+msgstr[0] "%(n)s immeuble sans gérant"
+msgstr[1] "%(n)s immeubles sans gérant"
