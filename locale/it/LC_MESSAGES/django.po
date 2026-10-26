@@ -25695,3 +25695,96 @@ msgid "Für %(n)s Liegenschaft ist weder Verkehrswert noch Anlagekosten erfasst 
 msgid_plural "Für %(n)s Liegenschaften sind weder Verkehrswert noch Anlagekosten erfasst — sie fehlen in der Rendite."
 msgstr[0] "Per %(n)s immobile non sono registrati né valore venale né costi d'investimento — manca nel rendimento."
 msgstr[1] "Per %(n)s immobili non sono registrati né valore venale né costi d'investimento — mancano nel rendimento."
+
+msgid "Suche nach Mieter, Objekt, Vertrag …"
+msgstr "Cerca inquilino, oggetto, contratto …"
+
+msgid "Mietobjekte"
+msgstr "Oggetti in locazione"
+
+msgid "Offene Tickets"
+msgstr "Ticket aperti"
+
+msgid "Ø Verzug"
+msgstr "Ritardo medio"
+
+msgid "noch keine Zahlung in 90 Tagen"
+msgstr "nessun pagamento negli ultimi 90 giorni"
+
+msgid "Mahnlauf"
+msgstr "Sollecito"
+
+msgid "Nachrichten"
+msgstr "Messaggi"
+
+msgid "Keine neue Nachricht."
+msgstr "Nessun nuovo messaggio."
+
+msgid "Objekte nach Ort"
+msgstr "Oggetti per luogo"
+
+msgid "Noch keine Objekte erfasst."
+msgstr "Nessun oggetto registrato."
+
+msgid "Mieteingang"
+msgstr "Affitti incassati"
+
+msgid "Letzte 7 Monate"
+msgstr "Ultimi 7 mesi"
+
+msgid "Verbuchte Zahlungseingänge der letzten sieben Monate"
+msgstr "Incassi registrati degli ultimi sette mesi"
+
+msgid "Terminplan"
+msgstr "Agenda"
+
+msgid "Noch keine verbuchten Zahlungen."
+msgstr "Nessun pagamento registrato."
+
+msgid "Die Balken erscheinen mit dem ersten Bankabgleich."
+msgstr "Le barre appaiono con la prima riconciliazione bancaria."
+
+#, python-format
+msgid "Zahlungsquote %(q)s Prozent"
+msgstr "Tasso di pagamento %(q)s per cento"
+
+#, python-format
+msgid "Zahlungsquote %(j)s"
+msgstr "Tasso di pagamento %(j)s"
+
+#, python-format
+msgid "Objekte in<br>%(ort)s"
+msgstr "oggetti a<br>%(ort)s"
+
+msgid "Profil und Darstellung"
+msgstr "Profilo e visualizzazione"
+
+msgid "pünktlich"
+msgstr "puntuale"
+
+msgid "verzögert"
+msgstr "in ritardo"
+
+msgid "spät"
+msgstr "tardivo"
+
+msgid "Ganztags"
+msgstr "Tutto il giorno"
+
+msgid "Vormittag"
+msgstr "Mattina"
+
+msgid "Nachmittag"
+msgstr "Pomeriggio"
+
+#, python-format
+msgid "Tage nach Fälligkeit · %(n)s Zahlung, 90 Tage"
+msgid_plural "Tage nach Fälligkeit · %(n)s Zahlungen, 90 Tage"
+msgstr[0] "giorni dopo la scadenza · %(n)s pagamento, 90 giorni"
+msgstr[1] "giorni dopo la scadenza · %(n)s pagamenti, 90 giorni"
+
+#, python-format
+msgid "überfällige Rechnung · CHF %(s)s"
+msgid_plural "überfällige Rechnungen · CHF %(s)s"
+msgstr[0] "fattura scaduta · CHF %(s)s"
+msgstr[1] "fatture scadute · CHF %(s)s"

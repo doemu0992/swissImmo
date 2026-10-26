@@ -1087,22 +1087,23 @@ belegt; `core/tests/test_palette.py` verwies auf dieses Dokument, das dazu nicht
 
 ### 16.1 Palette
 
-Verbindlich, geprüft von `core/tests/test_palette.py`. Seit dem 23.10.2026 gilt die Palette «Navy Mirage»
+Verbindlich, geprüft von `core/tests/test_palette.py`. Seit dem 26.10.2026 gilt «Ember» (warmes Hell, Tinte `#17181B`,
+Akzent Orange: `#E0642F` als Fläche, `#B04416` als Schrift; Mockup `mockups/immoswiss-ember.html`). Davor «Navy Mirage»
 (`#141E30` / `#35577D`, Mockup `mockups/konzept-v9-vergleich.html`); bis dahin Petrol aus
 `mockups/konzept-v8-cockpit.html`. Info-Farbe ist seither das frühere Petrol (`#0e6b65`). Definiert in `core/templates/fw/_schicht.html` unter `:root`,
 im `@media (prefers-color-scheme:dark)`-Block und unter `:root[data-theme="dark"]`.
 
 | Token | Hell | Dunkel | Rolle |
 |---|---|---|---|
-| `--ds-brand` | `#35577d` | `#8fb1da` | Navy, Markenfarbe |
-| `--ds-brand-600` | `#27415f` | `#b4cdea` | gedrückter Zustand |
-| `--ds-brand-soft` | `#e3ebf5` | `#1f3556` | Fläche hinter Markenfarbe |
-| `--ds-ink` | `#141e30` | `#e8eef7` | Fliesstext |
-| `--ds-muted` | `#43526a` | `#b0bfd3` | Zweitrangiges |
-| `--ds-faint` | `#5a6980` | `#93a4bb` | Beschriftungen |
-| `--ds-line` | `#dde4ee` | `#26344c` | Trennlinien |
-| `--ds-hover` | `#eaeff6` | `#202e45` | Fläche unter dem Zeiger |
-| `--ds-radius` / `-sm` | `12px` / `8px` | dieselben | Geometrie, im Dunkeln unverändert |
+| `--ds-brand` | `#b04416` | `#f08a55` | Ember-Orange, Markenfarbe als Schrift (AA) |
+| `--ds-brand-600` | `#8a3410` | `#f6a77c` | gedrückter Zustand |
+| `--ds-brand-soft` | `#fbe7dc` | `#3a2317` | Fläche hinter Markenfarbe |
+| `--ds-ink` | `#17181b` | `#f1efec` | Fliesstext, aktive Kapsel, Hauptknopf |
+| `--ds-muted` | `#5d6068` | `#b9b6b0` | Zweitrangiges |
+| `--ds-faint` | `#62656d` | `#9e9b94` | Beschriftungen |
+| `--ds-line` | `#e7e5e1` | `#2c2d32` | Trennlinien |
+| `--ds-hover` | `#f3f1ee` | `#28292e` | Fläche unter dem Zeiger |
+| `--ds-radius` / `-sm` | `24px` / `14px` | dieselben | Geometrie, im Dunkeln unverändert |
 
 Dazu `good` / `warn` / `crit` / `info`, jeweils mit `-soft`-Fläche, drei Schattenhöhen
 (`--ds-shadow-sm`, `--ds-shadow`, `--ds-shadow-lg`) und `--ds-scrim` für den Vorhang.

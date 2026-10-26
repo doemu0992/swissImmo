@@ -6,13 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}swissImmo{% endblock %}</title>
     <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2230%22 fill=%22%2335577d%22/><text x=%2250%22 y=%2266%22 font-size=%2244%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2230%22 fill=%22%23b04416%22/><path d=%22M24 50 L50 27 L76 50 M32 45 V75 H68 V45%22 fill=%22none%22 stroke=%22white%22 stroke-width=%227%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
 {% include 'fw/_assets.html' %}
     {% include 'fw/_schicht_link.html' %}
 {% include 'fw/_zeichen.html' %}
     <script>
         // Zustand vor dem ersten Paint anwenden (kein Flackern)
         if (localStorage.getItem('sbCollapsed') === '1') document.documentElement.classList.add('_sbc');
+        // Automatisierte Läufe (Playwright, Selenium) ohne Bewegung: Messungen und
+        // Bildschirmfotos sehen den Endzustand, nicht die Mitte einer Animation.
+        try { if (navigator.webdriver) document.documentElement.classList.add('fw-ruhig'); } catch (e) {}
         // Im Modal geladen → Chrome ausblenden. Erkennung über den iframe-Kontext,
         // damit der Embed-Modus auch nach internen Weiterleitungen (POST→Redirect,
         // Bewerbung→Vertrag, Wizard-Ende) erhalten bleibt — nicht nur solange ?embed=1
@@ -126,9 +129,36 @@ Detailseiten rufen sie beim Namen.
     <!-- ================= INHALT ================= -->
     <div class="fw-haupt">
 
-        <header class="fw-top" id="fwTop">
-            <button type="button" onclick="fwOpenMobileNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund fw-nur-mobil">{% zeichen 'mehr' %}</button>
+        {% comment %} ===== KOPFLEISTE NACH DEM EMBER-MOCKUP (26.10.2026, mockups/immoswiss-ember.html) =====
+           Drei Kapseln: Wortmarke links, die fünf Bereiche in der Mitte (die schwarze
+           Kapsel gleitet zum aktiven Bereich), Werkzeuge rechts. Am Telefon steht die
+           Bereichskapsel unter der Zeile und scrollt in sich. Die Leiste links
+           (`#fwSidebar`) bleibt als Schublade für Mandant, «Zuletzt geöffnet» und
+           Einstellungen (Menüknopf). Ids und Funktionen sind unverändert. {% endcomment %}
+        <header class="fw-kopfleiste" id="fwKopf">
+            <a href="/neu/{{ lg_query }}" class="fw-kapsel fw-logo-kapsel" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
+                <svg class="fw-logo-haus" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
+                <b>immoswiss<svg class="fw-logo-kreuz" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="3" fill="#e5342d"/><path d="M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z" fill="#fff"/></svg></b>
+            </a>
+            <nav class="fw-kapsel fw-hauptnav" id="fwHauptnav" aria-label="{% trans 'Bereiche' %}">
+                <span class="fw-gleiter" aria-hidden="true"></span>
+                {% for g in fw_nav_gruppen %}
+                <a href="{{ g.ziel }}{{ lg_query }}" class="{% if nav in g.alle_keys %}hier{% endif %}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>{{ g.label }}{% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-hauptnav-zahl" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
+                {% endfor %}
+            </nav>
+            <div class="fw-kapsel fw-werkzeug-kapsel">
+                <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
+                <a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
+                   class="fw-knopf-rund fw-nur-breit">{% zeichen 'neu' %}</a>
+                <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
+                   class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
+                <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-nur-breit{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
+                <button type="button" onclick="fwOpenMobileNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund fw-nur-mobil">{% zeichen 'mehr' %}</button>
+                <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
+            </div>
+        </header>
 
+        <header class="fw-top{% if nav == 'dashboard' %} fw-top-heute{% endif %}" id="fwTop">
             <!-- GLOBALER FILTER: gilt für die ganze Anwendung -->
             <form method="get" class="fw-bereich" title="{% trans 'Globaler Filter' %}">
                 <span class="fw-bereich-zeichen">{% zeichen 'liegenschaft' %}</span>
@@ -145,15 +175,6 @@ Detailseiten rufen sie beim Namen.
                 <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="{% trans 'Suche nach Person, Objekt, Vertrag …' %}" aria-label="{% trans 'Suche nach Person, Objekt, Vertrag …' %}">
                 {% if fw_palette %}<kbd class="fw-taste" onclick="fwPaletteOpen()">⌘K</kbd>{% endif %}
             </form>
-
-            <div class="fw-top-rechts">
-                <a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
-                   class="fw-knopf-rund fw-nur-breit">{% zeichen 'neu' %}</a>
-                <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
-                   class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
-                <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund">{% zeichen 'darstellung' %}</button>
-                <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-nur-mobil"><span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span></button>
-            </div>
         </header>
 
         <!-- Profilmenü -->
@@ -727,26 +748,82 @@ function fwSyncThemeButtons(){
 }
 fwSyncThemeButtons();
 </script>
+<script>
+// ─── Ember: gleitende Kapsel der Bereiche, hochzählende Kennzahlen ───
+(function () {
+    var ruhig = document.documentElement.classList.contains('fw-ruhig')
+        || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var nav = document.getElementById('fwHauptnav');
+    if (nav) {
+        var gleiter = nav.querySelector('.fw-gleiter');
+        var setzen = function (a, sofort) {
+            if (!a || !gleiter) return;
+            if (sofort) gleiter.style.transition = 'none';
+            gleiter.style.width = a.offsetWidth + 'px';
+            gleiter.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+            if (sofort) requestAnimationFrame(function () { gleiter.style.transition = ''; });
+        };
+        var aktiv = nav.querySelector('a.hier');
+        if (aktiv) {
+            setzen(aktiv, true);
+            // Am Telefon steht der aktive Bereich im Bild
+            if (nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, aktiv.offsetLeft - (nav.clientWidth - aktiv.offsetWidth) / 2);
+        } else if (gleiter) { gleiter.style.opacity = '0'; }
+        // Beim Zeigen gleitet die Kapsel mit, beim Verlassen zurück
+        nav.querySelectorAll('a').forEach(function (a) {
+            a.addEventListener('mouseenter', function () { if (!ruhig && aktiv) { setzen(a); nav.querySelectorAll('a').forEach(function (x) { x.classList.toggle('zeigt', x === a); }); } });
+        });
+        nav.addEventListener('mouseleave', function () { setzen(aktiv); nav.querySelectorAll('a.zeigt').forEach(function (x) { x.classList.remove('zeigt'); }); });
+        window.addEventListener('resize', function () { setzen(nav.querySelector('a.hier'), true); });
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setzen(nav.querySelector('a.hier'), true); });
+    }
+    // Datenwerte der Diagramme: Höhe der Balken aus data-h (kein style-Attribut in der Vorlage)
+    var stäbe = document.querySelectorAll('.fw-ember-stab[data-h]');
+    stäbe.forEach(function (el, i) { el.style.setProperty('--h', el.getAttribute('data-h') + '%'); el.style.setProperty('--i', i); });
+    if (ruhig) return;
+    // Der Halbkreis füllt sich von null an
+    document.querySelectorAll('.fw-ember-gauge').forEach(function (svg) {
+        var bogen = svg.querySelector('.bogen[data-bogen]'), knauf = svg.querySelector('.knauf[data-grad]');
+        if (!bogen) return;
+        bogen.style.transition = 'none'; bogen.style.strokeDasharray = '0 400';
+        if (knauf) { knauf.style.transition = 'none'; knauf.style.transform = 'rotate(0deg)'; }
+        requestAnimationFrame(function () { requestAnimationFrame(function () {
+            bogen.style.transition = ''; bogen.style.strokeDasharray = bogen.getAttribute('data-bogen') + ' 400';
+            if (knauf) { knauf.style.transition = ''; knauf.style.transform = 'rotate(' + knauf.getAttribute('data-grad') + 'deg)'; }
+        }); });
+    });
+    // Zahlen zählen hoch — nur die grossen Kennzahlen, Formatierung bleibt (CHF, Apostroph, %).
+    var ziele = document.querySelectorAll('.fw-kpi .fw-v, .fw-lage .fw-w, .fw-ember-zahlen b, .fw-ember-gross [data-zaehlen], .fw-ampel-zahl b');
+    ziele.forEach(function (el) {
+        if (el.children.length) return;
+        var text = el.textContent, m = text.match(/-?\d[\d']*(?:[.,]\d+)?/);
+        if (!m) return;
+        var roh = m[0], dez = (roh.split(/[.,]/)[1] || '').length, trenner = roh.indexOf("'") > -1;
+        var ziel = parseFloat(roh.replace(/'/g, '').replace(',', '.'));
+        if (!isFinite(ziel) || ziel === 0) return;
+        var vor = text.slice(0, m.index), nach = text.slice(m.index + roh.length), komma = roh.indexOf(',') > -1;
+        var fmt = function (v) {
+            var t = v.toFixed(dez);
+            if (komma) t = t.replace('.', ',');
+            if (trenner) { var teile = t.split(/[.,]/); teile[0] = teile[0].replace(/\B(?=(\d{3})+(?!\d))/g, "'"); t = teile.join(komma ? ',' : '.'); }
+            return vor + t + nach;
+        };
+        var t0 = null, dauer = 1100;
+        el.textContent = fmt(0);
+        var schritt = function (t) {
+            if (t0 === null) t0 = t;
+            var p = Math.min(1, (t - t0) / dauer), e = 1 - Math.pow(1 - p, 3);
+            el.textContent = p < 1 ? fmt(ziel * e) : text;
+            if (p < 1) requestAnimationFrame(schritt);
+        };
+        requestAnimationFrame(schritt);
+    });
+})();
+</script>
 {% block scripts %}{% endblock %}
 
-{% if fw_nav_gruppen %}
-{% comment %} ===== TAB-LEISTE (nur Telefon, E1.2) =====================================
-   Die fünf Bereiche stehen unten, in Daumenreichweite. Die Schublade (Knopf
-   oben links) bleibt: Sie führt die Untereinträge, die hier keinen Platz haben.
-
-   Masse, `env(safe-area-inset-bottom)` und die Breitenbegrenzung (`100vw`,
-   `min-width:0` je Spalte) stehen in der Stilschicht unter `.fw-tabbar` —
-   ohne sie dehnte sich die Leiste auf 690 px und schob das Telefon quer.
-   ===================================================================== {% endcomment %}
-<nav class="fw-tabbar" aria-label="{% trans 'Bereiche' %}">
-    {% for g in fw_nav_gruppen %}
-    <a href="{{ g.ziel }}{{ lg_query }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
-        {% zeichen_wert g.icon %}
-        <span>{{ g.label }}</span>
-    </a>
-    {% endfor %}
-</nav>
-{% endif %}
+{% comment %} Die Tab-Leiste unten ist mit dem Ember-Redesign entfallen: Die Bereiche stehen
+   als Kapsel oben, am Telefon in sich scrollbar (mockups/immoswiss-ember.html). {% endcomment %}
 {% include 'fw/_bestaetigen.html' %}
 </body>
 </html>

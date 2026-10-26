@@ -723,11 +723,17 @@ class FaviconKonsistenzTests(TestCase):
     ]
 
     def test_alle_aussen_seiten_haben_favicon(self):
+        import re
         from django.template.loader import get_template
+        icon = re.compile(r'<link rel="icon" href="([^"]+)"')
+        haus = icon.search(get_template('fw/base.html').template.source).group(1)
+        # Seit Ember (26.10.2026) ein weisses Haus auf Orange statt «si»
+        self.assertIn('M24 50 L50 27 L76 50', haus)
         for name in self.AUSSEN_TEMPLATES:
             quelle = get_template(name).template.source
             self.assertIn('rel="icon"', quelle, f'{name}: kein Favicon-Link')
-            self.assertIn('>si</text>', quelle, f'{name}: nicht das Haus-Favicon')
+            treffer = icon.search(quelle)
+            self.assertEqual(treffer and treffer.group(1), haus, f'{name}: nicht das Haus-Favicon des Cockpits')
 
     def test_login_seite_liefert_favicon(self):
         # End-to-End: die Login-Seite (ohne Anmeldung erreichbar) rendert das Favicon.
