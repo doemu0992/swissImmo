@@ -35,7 +35,8 @@ def ausgelieferter_stil(html):
         m = re.search(r'href=["\']([^"\']+)["\']', treffer)
         if not m:
             continue
-        pfad = m.group(1)
+        # `?v=<Prüfsumme>` (Tag `statisch`) gehört zur Adresse, nicht zum Dateinamen
+        pfad = m.group(1).split('?')[0]
         if pfad.startswith(('http://', 'https://', '//')):
             continue
         # `/static/css/schicht.css` -> `static/css/schicht.css`
