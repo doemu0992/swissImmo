@@ -1,9 +1,19 @@
 # Amtliche kantonale Mietformulare — Quellen & Integrationsstatus
 
-Für jede Liegenschaft wird anhand des Kantons (`Liegenschaft.kanton`, ersatzweise
-PLZ) automatisch das richtige Formular gewählt. Ein Kanton ist **„eingebaut"**,
-sobald sein Original-PDF unter `core/services/formulare/` liegt und die
-Feld-Koordinaten in `core/services/formular_fill.py` gemappt sind.
+Für jede Liegenschaft wird anhand des Kantons (`Liegenschaft.kanton`) automatisch
+das richtige Formular gewählt. Ein Kanton ist **„eingebaut"**, sobald sein
+Original-PDF unter `core/services/formulare/` liegt und die Feld-Koordinaten in
+`core/services/formular_fill.py` gemappt sind.
+
+> **Seit 26.10.2026 (Audit, Befunde G und J):** Ein amtliches Formular entsteht
+> nur, wenn der Kanton **im Feld der Liegenschaft** erfasst ist
+> (`kantone.formular_kanton`) — die PLZ allein genügt nicht mehr. Die
+> PLZ-Heuristik (`plz_to_kanton`) gibt bei überlappenden Bereichen (z. B. 1201,
+> 8200, 3920) keinen Kanton mehr zurück statt des ersten Treffers. Für Kantone
+> ohne Original zeigt die Anwendung eine sperrende Warnung; die Nachbildung gibt
+> es nur nach ausdrücklicher Bestätigung, mit Wasserzeichen «Entwurf – nicht
+> amtlich» und ohne Ablage in der Akte (`formular_fill.formular_status`,
+> `mit_wasserzeichen`).
 
 > **Download-Hinweis:** Die Behörden-PDFs können aus der Build-Umgebung nicht
 > automatisch heruntergeladen werden (Netzwerk-Policy → 403). Die Originale müssen
@@ -52,5 +62,7 @@ Zwei Formulartypen je Kanton:
    `fill_kuendigung_<kt>` ergänzen (analog Solothurn).
 3. In `core/views/fw.py` (`fw_mietzins_anpassung`, `fw_kuendigung_formular`) den
    Kanton auf „Original ausfüllen" schalten.
-4. Bis dahin greift für den Kanton die generische Nachbildung mit dem korrekten
-   Schlichtungsbehörden-Block (sobald dessen Adressen hinterlegt sind).
+4. Bis dahin gibt es für den Kanton nur die Nachbildung als **Entwurf**
+   (Wasserzeichen, Bestätigung, keine Ablage). Sie ist kein vom Kanton
+   genehmigtes Formular: Eine damit mitgeteilte Anpassung oder Kündigung ist
+   nichtig (Art. 269d OR; Art. 266l/266o OR).
